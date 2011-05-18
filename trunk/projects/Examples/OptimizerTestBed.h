@@ -33,10 +33,9 @@ public:
     for (size_t i = 0; i < inputTab.size(); i++)
     {
       double x = inputTab[i];
-      
       double xhat;
       if (x != 0)
-        xhat = log(abs(x));
+        xhat = log(fabs(x));
       else
         xhat = 0;
       
@@ -101,7 +100,6 @@ public:
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
     const std::vector<double>& inputTab = input->getValues();
-    
     jassert(coefs.size() == inputTab.size());
     
     std::vector<double> diff;

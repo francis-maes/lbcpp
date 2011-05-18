@@ -10,7 +10,8 @@
 # define LBCPP_ASYNC_EDA_OPTIMIZER_H_
 
 # include <lbcpp/Optimizer/Optimizer.h>
-# include <lbcpp/Distribution/DistributionBuilder.h>
+# include <lbcpp/Distribution/DistributionBuilder.h> // old
+# include <lbcpp/Sampler/Sampler.h> // new
 
 namespace lbcpp
 {
@@ -24,31 +25,28 @@ public:
   AsyncEDAOptimizer() : random(new RandomGenerator()) {}
   
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
-  {  
-    DistributionBasedOptimizerStatePtr state = optimizerState.dynamicCast<DistributionBasedOptimizerState>();
-    jassert(state);  // TODO arnaud : message erreur
-    
+  {   
     jassert(numBests < populationSize);
     
-    size_t i = (size_t) (state->getTotalNumberOfEvaluations()/populationSize);	// interger division	
+    size_t i = (size_t) (optimizerState->getTotalNumberOfEvaluations()/populationSize);	// interger division	
     context.progressCallback(new ProgressionState(i, numIterations, T("Iterations")));
     
     context.enterScope(T("Iteration ") + String((int)i + 1));
     context.resultCallback(T("iteration"), i + 1);
     
     size_t totalNumberEvaluationsRequested = numIterations * populationSize;
-    while (state->getTotalNumberOfEvaluations() < totalNumberEvaluationsRequested) 
+    while (optimizerState->getTotalNumberOfEvaluations() < totalNumberEvaluationsRequested) 
     {      
       // Send WU's on network
-      if (state->getNumberOfInProgressEvaluations() < numberEvaluationsInProgress && state->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && state->getNumberOfProcessedRequests() < populationSize) 
+      if (optimizerState->getNumberOfInProgressEvaluations() < numberEvaluationsInProgress && optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && optimizerState->getNumberOfProcessedRequests() < populationSize) 
       {
-        while (state->getNumberOfInProgressEvaluations() < numberEvaluationsInProgress && state->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && state->getNumberOfProcessedRequests() < populationSize) 
+        while (optimizerState->getNumberOfInProgressEvaluations() < numberEvaluationsInProgress && optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && optimizerState->getNumberOfProcessedRequests() < populationSize) 
         {
-          Variable input = state->getDistribution()->sample(random);
+          Variable input = sampleCandidate(context, optimizerState, random);
           if (optimizerContext->evaluate(input))
           {
-            state->incTotalNumberOfRequests();
-            context.progressCallback(new ProgressionState(state->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
+            optimizerState->incTotalNumberOfRequests();
+            context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
           }          
         }
       }
@@ -56,20 +54,20 @@ public:
       
       // don't do busy waiting
       juce::Thread::sleep(optimizerContext->getTimeToSleep());
-      context.progressCallback(new ProgressionState(state->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
-      state->autoSaveToFile(context);
+      context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
+      optimizerState->autoSaveToFile(context);
       
       // enough WUs evaluated -> update distribution (with best results)
-      if (state->getNumberOfProcessedRequests() >= populationSize) 
+      if (optimizerState->getNumberOfProcessedRequests() >= populationSize) 
       {   
         context.progressCallback(new ProgressionState(populationSize, populationSize, T("Evaluations"))); // TODO arnaud : forced
         // sort results
         std::multimap<double, Variable> sortedScores;
         {
-          ScopedLock _(state->getLock());
+          ScopedLock _(optimizerState->getLock());
           std::vector< std::pair<double, Variable> >::const_iterator it;
           size_t i = 1;
-          for (it = state->getProcessedRequests().begin(); it < state->getProcessedRequests().begin() + populationSize; it++) {  // use only populationSize results
+          for (it = optimizerState->getProcessedRequests().begin(); it < optimizerState->getProcessedRequests().begin() + populationSize; it++) {  // use only populationSize results
             sortedScores.insert(*it);
             
             if (verbose) 
@@ -81,38 +79,21 @@ public:
             }
             i++;  // outside if to avoid a warning for unused variable
           }
-          state->flushFirstProcessedRequests(populationSize);  // TODO arnaud : maybe do that after building new distri
+          optimizerState->flushFirstProcessedRequests(populationSize);  // TODO arnaud : maybe do that after building new distri
         }
         
-        // build new distribution
-        DistributionBuilderPtr distributionsBuilder = state->getDistribution()->createBuilder();
-        size_t nb = 0;
-        std::multimap<double, Variable>::iterator mapIt;
-        // best results : use them then delete
-        for (mapIt = sortedScores.begin(); mapIt != sortedScores.end() && nb < numBests; mapIt++)
+        // build new distribution & update OptimizerState
+        learnDistribution(context, optimizerState, sortedScores, updateFactor);
+
+        if (sortedScores.begin()->first < optimizerState->getBestScore()) 
         {
-          distributionsBuilder->addElement(mapIt->second);  // TODO arnaud : maybe use all results and use weight
-          nb++;
+          ScopedLock _(optimizerState->getLock());
+          optimizerState->setBestScore(sortedScores.begin()->first);
+          optimizerState->setBestVariable(sortedScores.begin()->second);
         }
-        
-        DistributionPtr newDistri = distributionsBuilder->build(context);
-        distributionsBuilder->clear();
-        distributionsBuilder->addDistribution(state->getDistribution());  // old distri
-        for (size_t x = 0; x < updateFactor; ++x)
-          distributionsBuilder->addDistribution(newDistri);
-        newDistri = distributionsBuilder->build(context);
-        state->setDistribution(newDistri);        
-        context.resultCallback(T("distribution"), newDistri);
-        
-        if (sortedScores.begin()->first < state->getBestScore()) 
-        {
-          ScopedLock _(state->getLock());
-          state->setBestScore(sortedScores.begin()->first);
-          state->setBestVariable(sortedScores.begin()->second);
-        }
-        context.resultCallback(T("bestScore"), state->getBestScore());
-        context.resultCallback(T("bestParameters"), state->getBestVariable());
-        context.leaveScope(sortedScores.begin()->first); // may be diffrent from state->getBestScore(), this is the return value of performEDAIteration, not the best score of all time !!!
+        context.resultCallback(T("bestScore"), optimizerState->getBestScore());
+        context.resultCallback(T("bestParameters"), optimizerState->getBestVariable());
+        context.leaveScope(sortedScores.begin()->first); // may be diffrent from optimizerState->getBestScore(), this is the return value of performEDAIteration, not the best score of all time !!!
         context.progressCallback(new ProgressionState(i + 1, numIterations, T("Iterations")));
         
         i++;
@@ -121,11 +102,11 @@ public:
           context.resultCallback(T("iteration"), i + 1);
         }
         
-        state->autoSaveToFile(context);
+        optimizerState->autoSaveToFile(context);
       }
     }
-    state->autoSaveToFile(context, true); // force to save at end of optimization
-    return state->getBestVariable();
+    optimizerState->autoSaveToFile(context, true); // force to save at end of optimization
+    return optimizerState->getBestVariable();
   }
   
 protected:
@@ -138,6 +119,78 @@ protected:
   size_t updateFactor;                    // preponderance of new distri vs old distri (low value avoid too quick convergence)
   bool verbose;
   RandomGeneratorPtr random;
+  
+  Variable sampleCandidate(ExecutionContext& context, const OptimizerStatePtr& state, const RandomGeneratorPtr& random) const
+  {
+    // TODO: replace by state.staticCast<SamplerBasedOptimizerState>()->getSampler()->sample(context, random);
+    
+    // new
+    SamplerBasedOptimizerStatePtr samplerBasedState = state.dynamicCast<SamplerBasedOptimizerState>();
+    if (samplerBasedState)
+      return samplerBasedState->getSampler()->sample(context, random);
+    
+    // old
+    DistributionBasedOptimizerStatePtr distributionBasedState = state.dynamicCast<DistributionBasedOptimizerState>();
+    if (distributionBasedState)
+      return distributionBasedState->getDistribution()->sample(random);
+    
+    jassert(false);
+    return Variable();
+  }  
+  
+  void learnDistribution(ExecutionContext& context, const OptimizerStatePtr& state, const std::multimap<double, Variable>& sortedScores, size_t updateFactor) const
+  {
+    // new
+    SamplerBasedOptimizerStatePtr samplerBasedState = state.dynamicCast<SamplerBasedOptimizerState>();
+    if (samplerBasedState)
+    {
+      SamplerPtr oldSampler = samplerBasedState->getSampler();
+      SamplerPtr newSampler = oldSampler->cloneAndCast<Sampler>();
+      
+      VectorPtr bestVariables = vector(sortedScores.begin()->second.getType());
+      bestVariables->reserve(numBests);
+      
+      std::multimap<double, Variable>::const_iterator it = sortedScores.begin();
+      for (size_t i = 0; i < numBests && it != sortedScores.end(); ++i, ++it)
+        bestVariables->append(it->second);
+      newSampler->learn(context, ContainerPtr(), bestVariables);
+      
+      DenseDoubleVectorPtr probas = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType, 2);
+      probas->setValue(0, 1.0/(1.0+updateFactor));
+      probas->setValue(1, updateFactor/(1.0+updateFactor));
+      std::vector<SamplerPtr> vec;
+      vec.reserve(2);
+      vec.push_back(oldSampler);
+      vec.push_back(newSampler);
+      samplerBasedState->setSampler(mixtureSampler(probas, vec));
+      
+      context.resultCallback(T("sampler"), samplerBasedState->getSampler());
+      return;
+    }
+    
+    // old
+    DistributionBasedOptimizerStatePtr distributionBasedState = state.dynamicCast<DistributionBasedOptimizerState>();
+    if (distributionBasedState)
+    {
+      // build new distribution & update OptimizerState
+      DistributionBuilderPtr builder = distributionBasedState->getDistribution()->createBuilder();
+      std::multimap<double, Variable>::const_iterator it = sortedScores.begin();
+      for (size_t i = 0; i < numBests && it != sortedScores.end(); ++i, ++it)
+        builder->addElement(it->second);
+      DistributionPtr newDistribution = builder->build(context);
+      
+      builder->clear();
+      builder->addDistribution(distributionBasedState->getDistribution());  // old distri
+      for (size_t x = 0; x < updateFactor; ++x)
+        builder->addDistribution(newDistribution);
+      
+      distributionBasedState->setDistribution(builder->build(context));
+      context.resultCallback(T("distribution"), newDistribution);      
+      return;
+    }
+    
+    jassert(false);
+  }
   
 };
 
