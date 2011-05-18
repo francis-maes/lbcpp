@@ -112,7 +112,7 @@ public:
     String text = what;
     if (where.isNotEmpty())
       text += T(" (in ") + where + T(")");
-    print(T("warning"), text, true);
+    print(T("warning"), text, false);
   }
 
   virtual void errorCallback(const String& where, const String& what)
