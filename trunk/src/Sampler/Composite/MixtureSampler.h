@@ -75,7 +75,10 @@ public:
   virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
                                                 const ContainerPtr& validationInputs, const ContainerPtr& validationSamples)
   {
-    jassert(trainingSamples->getNumElements() > 1);
+    for (size_t i = 0; i < samplers.size(); ++i)
+      jassert(samplers[i].isInstanceOf<ScalarContinuousSampler>());
+
+    jassert(trainingSamples->getNumElements() > 0);
     DoubleMatrixPtr modelsProbabilities = new DoubleMatrix(trainingSamples->getNumElements(),
         samplers.size(), 0);
 

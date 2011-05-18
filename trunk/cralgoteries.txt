@@ -34,4 +34,3 @@ Go:
  * Courbes dans l'evaluateur
  * GoPatterns
  * Utilisation du manager
-

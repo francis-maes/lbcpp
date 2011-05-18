@@ -54,6 +54,12 @@ public:
     }
   }
 
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    CompositeSampler::clone(context, target);
+    target.staticCast<IndependentDoubleVectorSampler>()->outputType = outputType;
+  }
+
 protected:
   friend class IndependentDoubleVectorSamplerClass;
 
