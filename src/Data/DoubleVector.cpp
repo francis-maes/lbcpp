@@ -309,11 +309,15 @@ void SparseDoubleVector::setElement(size_t index, const Variable& value)
 ** DenseDoubleVector
 */
 DenseDoubleVector::DenseDoubleVector(ClassPtr thisClass, std::vector<double>& values)
-  : DoubleVector(thisClass), values(&values), ownValues(false) {}
+  : DoubleVector(thisClass), values(&values), ownValues(false)
+{
+  jassert(thisClass && thisClass->inheritsFrom(denseDoubleVectorClass()));
+}
 
 DenseDoubleVector::DenseDoubleVector(ClassPtr thisClass, size_t initialSize, double initialValue)
   : DoubleVector(thisClass), ownValues(true)
 {
+  jassert(thisClass && thisClass->inheritsFrom(denseDoubleVectorClass()));
   if (initialSize == (size_t)-1)
     initialSize = getElementsEnumeration()->getNumElements();
   values = new std::vector<double>(initialSize, initialValue);
