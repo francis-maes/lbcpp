@@ -117,7 +117,7 @@ double getConformationScore(ExecutionContext& context, const ProteinPtr& prot,
  * @return the score of the actual conformation.
  */
 double getConformationScore(const core::pose::PoseOP& pose, double(*scoreFunction)(
-    const core::pose::PoseOP&));
+    const core::pose::PoseOP&), double* energy = NULL);
 
 /**
  * Initializes a Pose object, in fact its pointer, to the given sequence.

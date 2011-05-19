@@ -10,6 +10,7 @@
 # define LBCPP_PROTEINS_ROSETTA_WORKUNIT_H_
 
 # include "precompiled.h"
+# include <lbcpp/Data/RandomVariable.h>
 # include "../Data/Protein.h"
 # include "../Data/Formats/PDBFileGenerator.h"
 # include "RosettaUtils.h"
@@ -304,8 +305,14 @@ public:
       outputFile.createDirectory();
     }
 
+    std::vector<ScalarVariableMeanAndVariancePtr> meansAndVariances(numIterations);
+    for (size_t i = 0; i < numIterations; i++)
+      meansAndVariances[i] = new ScalarVariableMeanAndVariance();
+
     juce::OwnedArray<File> references;
     referenceFile.findChildFiles(references, File::findFiles, false, T("*.xml"));
+
+    context.enterScope(T("Finding best movers"));
 
     for (int j = 0; j < references.size(); j++)
     {
@@ -337,8 +344,8 @@ public:
         context.resultCallback(T("Energy"), Variable(getConformationScore(targetPose,
             centroidEnergy)));
 
+        // choose sampler
         SamplerPtr moverSampler;
-
         if (oneOrAll == 0)
           moverSampler = objectCompositeSampler(phiPsiMoverClass, new SimpleResidueSampler(
               targetPose->n_residue()), gaussianSampler(0, 25), gaussianSampler(0, 25));
@@ -347,9 +354,15 @@ public:
 
         std::vector<ProteinMoverPtr> returnMovers(numMoversToKeep);
 
+        // find best movers by EDA
+        DenseDoubleVectorPtr energyMeans = new DenseDoubleVector(numIterations, 0);
         ProteinEDAOptimizerPtr opti = new ProteinEDAOptimizer(energyWeight);
         SamplerPtr out = opti->findBestMovers(context, random, targetPose, referencePose, moverSampler,
-            returnMovers, numIterations, numSamples, ratioGoodSamples, numMoversToKeep);
+            returnMovers, numIterations, numSamples, ratioGoodSamples, numMoversToKeep, &energyMeans);
+
+        // save gathered data
+        for (size_t k = 0;k < numIterations; k++)
+          meansAndVariances[k]->push(energyMeans->getValue(k));
         out->saveToFile(context, File(outputFile.getFullPathName() + T("/")
             + (*targets[i]).getFileNameWithoutExtension() + T("_sampler.xml")));
 
@@ -364,6 +377,20 @@ public:
           T("Intermediate conformations")));
       context.leaveScope();
     }
+
+    // export results
+    context.enterScope(T("Results"));
+    for (size_t k = 0; k < numIterations; k++)
+    {
+      context.enterScope(T("Values"));
+      context.resultCallback(T("Iteration"), Variable(k));
+      double meanDeltaEnergy = meansAndVariances[k]->getMean();
+      context.resultCallback(T("Mean"), Variable(meanDeltaEnergy));
+      context.resultCallback(T("Std Dev"), Variable(meansAndVariances[k]->getStandardDeviation()));
+      context.leaveScope(Variable(meanDeltaEnergy));
+    }
+    context.leaveScope();
+    context.leaveScope();
 
     context.informationCallback(T("All samplers generated."));
     return Variable();
