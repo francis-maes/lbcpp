@@ -47,83 +47,82 @@ public:
     size_t n = trainingSamples->getNumElements();
     jassert(n);
 
-    means = new DoubleMatrix(numVariables, 1, 0.0);
-    for (size_t i = 0; i < n; i++)
-      means->add(trainingSamples->getElement(i).getObjectAndCast<DoubleMatrix> ());
-    double factor = 1.0 / (double)n;
-    means->multiplyByScalar(factor);
-
-    covariances = new DoubleMatrix(numVariables, numVariables, 0.0);
-    for (size_t i = 0; i < n; i++)
+    if (trainingWeights)
     {
-      DoubleMatrixPtr sub = trainingSamples->getElement(i).getObjectAndCast<DoubleMatrix>();
-      sub->subtract(means);
-      DoubleMatrixPtr subT = sub->transpose();
-      DoubleMatrixPtr product = sub->multiplyBy(subT);
-      covariances->add(product);
+      // means
+      DoubleMatrixPtr tempSum = new DoubleMatrix(means->getNumRows(), means->getNumColumns(), 0);
+      DoubleMatrixPtr factor;
+      double nj = 0;
+      for (size_t i = 0; i < n; i++)
+      {
+        factor = (trainingSamples->getElement(i).getObjectAndCast<DoubleMatrix> ())->cloneAndCast<DoubleMatrix> ();
+        factor->multiplyByScalar(trainingWeights->getValue(i));
+        tempSum->add(factor);
+        nj += trainingWeights->getValue(i);
+      }
+      tempSum->multiplyByScalar(1.0 / nj);
+      means = tempSum;
+
+      // covariances
+      DoubleMatrixPtr tempSub;
+      DoubleMatrixPtr tempSubT;
+      DoubleMatrixPtr product;
+      DoubleMatrixPtr tempCov = new DoubleMatrix(covariances->getNumRows(), covariances->getNumColumns(), 0);
+      for (size_t i = 0; i < n; i++)
+      {
+        tempSub = (trainingSamples->getElement(i).getObjectAndCast<DoubleMatrix> ())->cloneAndCast<DoubleMatrix> ();
+        tempSub->subtract(means);
+        tempSubT = tempSub->transpose();
+        product = tempSub->multiplyBy(tempSubT);
+        product->multiplyByScalar(trainingWeights->getValue(i));
+        tempCov->add(product);
+      }
+      tempCov->multiplyByScalar(1.0 / nj);
+      covariances = tempCov;
     }
-    covariances->multiplyByScalar(1.0 / (n - 1));
+    else
+    {
+      means = new DoubleMatrix(numVariables, 1, 0.0);
+      for (size_t i = 0; i < n; i++)
+        means->add(trainingSamples->getElement(i).getObjectAndCast<DoubleMatrix> ());
+      double factor = 1.0 / (double)n;
+      means->multiplyByScalar(factor);
+
+      covariances = new DoubleMatrix(numVariables, numVariables, 0.0);
+      for (size_t i = 0; i < n; i++)
+      {
+        DoubleMatrixPtr sub = trainingSamples->getElement(i).getObjectAndCast<DoubleMatrix> ();
+        sub->subtract(means);
+        DoubleMatrixPtr subT = sub->transpose();
+        DoubleMatrixPtr product = sub->multiplyBy(subT);
+        covariances->add(product);
+      }
+      covariances->multiplyByScalar(1.0 / (n - 1));
+    }
   }
 
-  virtual void computeProbabilities(const ContainerPtr& data, DoubleMatrixPtr& probabilities,
-      size_t numColumnToFill) const
+  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
   {
+    DenseDoubleVectorPtr result = new DenseDoubleVector(samples->getNumElements(), 0);
     double invDenominator;
-    invDenominator = 1.0 / (std::pow(2 * M_PI, (double)data->getElement(0).getObjectAndCast<
-        DoubleMatrix> ()->getNumRows() / 2.0) * std::pow(covariances->determinant(), 0.5));
+    invDenominator = 1.0 / (std::pow(2 * M_PI, (double)numVariables / 2.0) * std::sqrt(covariances->determinant()));
     DoubleMatrixPtr inverseCovariance = covariances->getInverse();
     DoubleMatrixPtr tempSub;
     DoubleMatrixPtr tempSubT;
     DoubleMatrixPtr product;
-    for (size_t i = 0; i < data->getNumElements(); i++)
+    for (size_t i = 0; i < samples->getNumElements(); i++)
     {
-      tempSub
-          = (data->getElement(i).getObjectAndCast<DoubleMatrix> ())->cloneAndCast<DoubleMatrix> ();
+      tempSub = (samples->getElement(i).getObjectAndCast<DoubleMatrix> ())->cloneAndCast<
+          DoubleMatrix> ();
       tempSub->subtract(means);
       tempSubT = tempSub->transpose();
       product = inverseCovariance->multiplyBy(tempSub);
       product = tempSubT->multiplyBy(product);
       double numerator = std::exp(-0.5 * product->getValue(0, 0));
 
-      probabilities->setValue(i, numColumnToFill, numerator * invDenominator);
+      result->setValue(i, numerator * invDenominator);
     }
-  }
-
-  virtual void updateParameters(const ContainerPtr& data,
-      const DoubleMatrixPtr& probabilitiesForAllModels, size_t numColumn)
-  {
-    // means
-    DoubleMatrixPtr tempSum = new DoubleMatrix(means->getNumRows(), means->getNumColumns(), 0);
-    DoubleMatrixPtr factor;
-    double nj = 0;
-    for (size_t i = 0; i < data->getNumElements(); i++)
-    {
-      factor
-          = (data->getElement(i).getObjectAndCast<DoubleMatrix> ())->cloneAndCast<DoubleMatrix> ();
-      factor->multiplyByScalar(probabilitiesForAllModels->getValue(i, numColumn));
-      tempSum->add(factor);
-      nj += probabilitiesForAllModels->getValue(i, numColumn);
-    }
-    tempSum->multiplyByScalar(1.0 / nj);
-    means = tempSum;
-
-    // covariances
-    DoubleMatrixPtr tempSub;
-    DoubleMatrixPtr tempSubT;
-    DoubleMatrixPtr product;
-    DoubleMatrixPtr tempCov = new DoubleMatrix(covariances->getNumRows(),
-            covariances->getNumColumns(), 0);
-    for (size_t i = 0; i < data->getNumElements(); i++)
-    {
-      tempSub = (data->getElement(i).getObjectAndCast<DoubleMatrix>())->cloneAndCast<DoubleMatrix>();
-      tempSub->subtract(means);
-      tempSubT = tempSub->transpose();
-      product = tempSub->multiplyBy(tempSubT);
-      product->multiplyByScalar(probabilitiesForAllModels->getValue(i, numColumn));
-      tempCov->add(product);
-    }
-    tempCov->multiplyByScalar(1.0 / nj);
-    covariances = tempCov;
+    return result;
   }
 
 protected:
