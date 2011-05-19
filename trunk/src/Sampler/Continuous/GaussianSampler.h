@@ -31,45 +31,48 @@ public:
   virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights,
                                                     const ContainerPtr& validationInputs, const ContainerPtr& validationSamples, const DenseDoubleVectorPtr& supervisionWeights)
   {
-    // TODO: particular case when trainingSamples are DenseDoubleVectors
-    size_t n = trainingSamples->getNumElements();
-    ScalarVariableMeanAndVariance v;
-    for (size_t i = 0; i < n; i++)
-      v.push(trainingSamples->getElement(i).getDouble());
-    mean = v.getMean();
-    stddev = v.getStandardDeviation();
+    if (trainingWeights)
+    {
+      jassert(trainingSamples->getNumElements() == trainingWeights->getNumElements());
+      double denominator = 0;
+      double tempMean = 0;
+      double tempStdDev = 0;
+      double gamma = 0;
+      double value = 0;
+      for (size_t i = 0; i < trainingSamples->getNumElements(); i++)
+      {
+        gamma = trainingWeights->getValue(i);
+        value = trainingSamples->getElement(i).getDouble();
+        denominator += gamma;
+        tempMean += gamma * value;
+        tempStdDev += gamma * (value - mean) * (value - mean);
+      }
+      mean = tempMean / denominator;
+      stddev = std::sqrt(tempStdDev / denominator);
+    }
+    else
+    {
+      // TODO: particular case when trainingSamples are DenseDoubleVectors
+      size_t n = trainingSamples->getNumElements();
+      ScalarVariableMeanAndVariance v;
+      for (size_t i = 0; i < n; i++)
+        v.push(trainingSamples->getElement(i).getDouble());
+      mean = v.getMean();
+      stddev = v.getStandardDeviation();
+    }
   }
 
-  virtual void computeProbabilities(const ContainerPtr& data, DoubleMatrixPtr& probabilities,
-      size_t numColumnToFill) const
+  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
   {
-    jassert((data->getNumElements() == probabilities->getNumRows()) && (numColumnToFill < probabilities->getNumColumns()));
     double invDenom = 1.0 / (std::sqrt(2 * M_PI) * stddev);
-    for (size_t i = 0; i < data->getNumElements(); i++)
+    DenseDoubleVectorPtr result = new DenseDoubleVector(samples->getNumElements(), 0);
+    for (size_t i = 0; i < samples->getNumElements(); i++)
     {
       double currentProbability = invDenom * std::exp(-0.5 * std::pow(
-          (data->getElement(i).getDouble() - mean) / stddev, 2.0));
-      probabilities->setValue(i, numColumnToFill, currentProbability);
+          (samples->getElement(i).getDouble() - mean) / stddev, 2.0));
+      result->setValue(i, currentProbability);
     }
-  }
-
-  virtual void updateParameters(const ContainerPtr& data,
-      const DoubleMatrixPtr& probabilitiesForAllModels, size_t numColumn)
-  {
-    jassert(data->getNumElements() == probabilitiesForAllModels->getNumRows());
-    double denominator = 0;
-    double tempMean = 0;
-    double tempStdDev = 0;
-    for (size_t i = 0; i < data->getNumElements(); i++)
-    {
-      denominator += probabilitiesForAllModels->getValue(i, numColumn);
-      tempMean += probabilitiesForAllModels->getValue(i, numColumn)
-          * data->getElement(i).getDouble();
-      tempStdDev += probabilitiesForAllModels->getValue(i, numColumn) * std::pow(
-          data->getElement(i).getDouble() - mean, 2.0);
-    }
-    mean = tempMean / denominator;
-    stddev = std::sqrt(tempStdDev / denominator);
+    return result;
   }
 
 protected:

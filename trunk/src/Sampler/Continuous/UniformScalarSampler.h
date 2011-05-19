@@ -44,18 +44,6 @@ public:
     }
   }
 
-  virtual void computeProbabilities(const ContainerPtr& data, DoubleMatrixPtr& probabilities, size_t numColumnToFill) const
-  {
-    jassert(false);
-    // TODO
-  }
-
-  virtual void updateParameters(const ContainerPtr& data, const DoubleMatrixPtr& probabilitiesForAllModels, size_t numColumn)
-  {
-    jassert(false);
-    // TODO
-  }
-
 protected:
   friend class UniformScalarSamplerClass;
 

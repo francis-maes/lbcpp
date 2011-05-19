@@ -34,57 +34,58 @@ public:
     // FIXME
   }
 
-  double computeLogLikelihood(const DoubleMatrixPtr& rawProbabilities)
+  double computeLogLikelihood(const std::vector<DenseDoubleVectorPtr>& rawProbabilities)
   {
+    jassert(rawProbabilities.size());
+    size_t numSamples = rawProbabilities[0]->getNumElements();
     double ll = 0;
-    for (size_t i = 0; i < rawProbabilities->getNumRows(); i++)
+    for (size_t i = 0; i < numSamples; i++)
     {
       double accumulator = 0;
-      for (size_t j = 0; j < rawProbabilities->getNumColumns(); j++)
-        accumulator += rawProbabilities->getValue(i, j);
+      for (size_t j = 0; j < rawProbabilities.size(); j++)
+        accumulator += rawProbabilities[j]->getValue(i);
       ll += std::log(accumulator);
     }
+    ll = ll / (double)numSamples;
     return ll;
   }
 
-  void computeModelsProbabilities(const ContainerPtr& trainingSamples, DoubleMatrixPtr& rawProbabilities)
+  void computeProbabilitiesForAllModels(const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples,
+      std::vector<DenseDoubleVectorPtr>& rawProbabilities)
   {
     for (size_t j = 0; j < samplers.size(); j++)
     {
-      (samplers[j].staticCast<ScalarContinuousSampler> ())->computeProbabilities(trainingSamples,
-          rawProbabilities, j);
+      rawProbabilities[j] = samplers[j]->computeProbabilities(trainingInputs, trainingSamples);
 
       for (size_t i = 0; i < trainingSamples->getNumElements(); i++)
-        rawProbabilities->setValue(i, j, rawProbabilities->getValue(i, j)
-            * probabilities->getValue(j));
+        rawProbabilities[j]->setValue(i, rawProbabilities[j]->getValue(i) * probabilities->getValue(j));
     }
   }
 
-  void normalizeModelsProbabilities(DoubleMatrixPtr& rawProbabilities)
+  void normalizeProbabilitiesForAllModels(std::vector<DenseDoubleVectorPtr>& rawProbabilities)
   {
-    for (size_t i = 0; i < rawProbabilities->getNumRows(); i++)
+    jassert(rawProbabilities.size());
+    size_t numSamples = rawProbabilities[0]->getNumElements();
+    for (size_t i = 0; i < numSamples; i++)
     {
       double Z = 0;
       for (size_t j = 0; j < samplers.size(); j++)
-        Z += rawProbabilities->getValue(i, j);
-      Z = 1 / Z;
+        Z += rawProbabilities[j]->getValue(i);
+      Z = 1.0 / Z;
       for (size_t j = 0; j < samplers.size(); j++)
-        rawProbabilities->setValue(i, j, rawProbabilities->getValue(i, j) * Z);
+        rawProbabilities[j]->setValue(i, rawProbabilities[j]->getValue(i) * Z);
     }
   }
 
   virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights,
-                                                    const ContainerPtr& validationInputs, const ContainerPtr& validationSamples, const DenseDoubleVectorPtr& supervisionWeights)
+                                                    const ContainerPtr& validationInputs, const ContainerPtr& validationSamples, const DenseDoubleVectorPtr& validationWeights)
   {
-    for (size_t i = 0; i < samplers.size(); ++i)
-      jassert(samplers[i].isInstanceOf<ScalarContinuousSampler>());
-
-    jassert(trainingSamples->getNumElements() > 0);
-    DoubleMatrixPtr modelsProbabilities = new DoubleMatrix(trainingSamples->getNumElements(),
-        samplers.size(), 0);
+    size_t numSamples = trainingSamples->getNumElements();
+    jassert(numSamples > 0);
+    std::vector<DenseDoubleVectorPtr> modelsProbabilities(samplers.size());
 
     // compute raw probabilities
-    computeModelsProbabilities(trainingSamples, modelsProbabilities);
+    computeProbabilitiesForAllModels(trainingInputs, trainingSamples, modelsProbabilities);
 
     double tolerance = 0.01;
     size_t maxIterations = 1000;
@@ -95,26 +96,37 @@ public:
     for (size_t k = 0; (k < maxIterations) && (std::abs((oldLL - newLL) / oldLL) > tolerance); k++)
     {
       // normalize probabilities for a sample
-      normalizeModelsProbabilities(modelsProbabilities);
+      normalizeProbabilitiesForAllModels(modelsProbabilities);
 
       // update parameters of models
       for (size_t j = 0; j < samplers.size(); j++)
-        (samplers[j].staticCast<ScalarContinuousSampler> ())->updateParameters(trainingSamples,
-            modelsProbabilities, j);
+        samplers[j]->learn(context, trainingInputs, trainingSamples, modelsProbabilities[j], validationInputs,
+            validationSamples, validationWeights);
 
       // update probabilities of mixture
       for (size_t j = 0; j < samplers.size(); j++)
       {
         double accumulatedProbabilities = 0;
-        for (size_t i = 0; i < modelsProbabilities->getNumRows(); i++)
-          accumulatedProbabilities += modelsProbabilities->getValue(i, j);
-        probabilities->setValue(j, accumulatedProbabilities / modelsProbabilities->getNumRows());
+        for (size_t i = 0; i < numSamples; i++)
+          accumulatedProbabilities += modelsProbabilities[j]->getValue(i);
+        probabilities->setValue(j, accumulatedProbabilities / (double)numSamples);
       }
 
-      computeModelsProbabilities(trainingSamples, modelsProbabilities);
+      computeProbabilitiesForAllModels(trainingInputs, trainingSamples, modelsProbabilities);
       oldLL = newLL;
       newLL = computeLogLikelihood(modelsProbabilities);
     }
+  }
+
+  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
+  {
+    DenseDoubleVectorPtr result = new DenseDoubleVector(samples->getNumElements(), 0);
+    for (size_t i = 0; i < probabilities->getNumElements(); i++)
+    {
+      DenseDoubleVectorPtr tempProbabilities = samplers[i]->computeProbabilities(inputs, samples);
+      tempProbabilities->addWeightedTo(result, 0, probabilities->getValue(i));
+    }
+    return result;
   }
 
 protected:
