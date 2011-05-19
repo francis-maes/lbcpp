@@ -20,6 +20,11 @@ namespace lbcpp
 class MultiLinearLearnableFunction : public NumericalLearnableFunction
 {
 public:
+  MultiLinearLearnableFunction(EnumerationPtr outputsEnumeration = EnumerationPtr())
+    : outputsEnumeration(outputsEnumeration) {}
+  // outputsEnumeration can either be passed to the constructor, either be infered
+  //  automatically in initializeFunction() if the supervision type is an enum or a doubleVector
+
   virtual size_t getNumRequiredInputs() const
     {return 2;}
 
@@ -31,13 +36,16 @@ public:
     // retrieve features and outputs
     featuresEnumeration = DoubleVector::getElementsEnumeration(inputVariables[0]->getType());
     jassert(featuresEnumeration);
-    outputsEnumeration = inputVariables[1]->getType().dynamicCast<Enumeration>();
-    if (!outputsEnumeration)
-      outputsEnumeration = DoubleVector::getElementsEnumeration(inputVariables[1]->getType());
     if (!outputsEnumeration)
     {
-      context.errorCallback(T("Could not identify elements enumeration"));
-      return TypePtr();
+      outputsEnumeration = inputVariables[1]->getType().dynamicCast<Enumeration>();
+      if (!outputsEnumeration)
+        outputsEnumeration = DoubleVector::getElementsEnumeration(inputVariables[1]->getType());
+      if (!outputsEnumeration)
+      {
+        context.errorCallback(T("Could not identify elements enumeration"));
+        return TypePtr();
+      }
     }
 
     // make parameters class

@@ -30,7 +30,7 @@ public:
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const = 0;
 
   virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights = DenseDoubleVectorPtr(),
-                                                const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr(), const DenseDoubleVectorPtr& supervisionWeights = DenseDoubleVectorPtr())
+                                                const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr(), const DenseDoubleVectorPtr& validationWeights = DenseDoubleVectorPtr())
     {jassert(false);}
 
   lbcpp_UseDebuggingNewOperator
@@ -53,9 +53,11 @@ typedef ReferenceCountedObjectPtr<ContinuousSampler> ContinuousSamplerPtr;
 class ScalarContinuousSampler : public ContinuousSampler
 {
 public:
+  virtual void computeProbabilities(const ContainerPtr& data, DoubleMatrixPtr& probabilities, size_t numColumnToFill) const
+    {jassert(false);}
 
-  virtual void computeProbabilities(const ContainerPtr& data, DoubleMatrixPtr& probabilities, size_t numColumnToFill) const = 0;
-  virtual void updateParameters(const ContainerPtr& data, const DoubleMatrixPtr& probabilitiesForAllModels, size_t numColumn) = 0;
+  virtual void updateParameters(const ContainerPtr& data, const DoubleMatrixPtr& probabilitiesForAllModels, size_t numColumn)
+    {jassert(false);}
 
   lbcpp_UseDebuggingNewOperator
 };

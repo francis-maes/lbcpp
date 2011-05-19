@@ -77,15 +77,20 @@
     <variable type="Boolean" name="del"/>
   </class>
 
-  <class name="GaussianLogValueFunction" base="ScalarVectorFunction">
-    <constructor/>
-  </class>
-
   <!-- Francis -->
   <class name="MaximumEntropySampler" base="DiscreteSampler">
     <variable type="Function" name="predictor"/>
   </class>
-  
-  <class name="RosettaSandBox" base="WorkUnit"/>
+
+  <class name="ConditionalGaussianLossFunction" base="ScalarVectorFunction">
+    <constructor/>
+  </class>
+
+  <class name="ConditionalGaussianSampler" base="ScalarContinuousSampler">
+    <variable type="NumericalLearnableFunction" name="multiLinearFunction"/>
+  </class>
+  <class name="RosettaSandBox" base="WorkUnit">
+    <variable type="PositiveInteger" name="numExamples"/>
+  </class>
   
 </library>

@@ -47,8 +47,6 @@ using namespace std;
 
 namespace lbcpp
 {
-class GaussianLogLikelihoodFunction;
-extern ScalarVectorFunctionPtr gaussianLogValueFunction();
 
 void outputEnergiesAndQScores(ExecutionContext& context, String referenceDirectory, String targetDirectory);
 
@@ -370,43 +368,6 @@ public:
     return Variable();
 
   }
-};
-
-class GaussianLogValueFunction : public ScalarVectorFunction
-{
-public:
-  virtual bool isDerivable() const
-    {return true;}
-
-  // if (output) *output += result
-  // if (gradientTarget) *gradientTarget += resultGradinet * gradientWeight
-  virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input,
-      const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget,
-      double gradientWeight) const
-  {
-    double mean = input->getValue(0);
-    double stdDev = input->getValue(1);
-    double invStdDev = 1.0 / stdDev;
-    double x = otherInputs->getDouble();
-    double srPi = std::sqrt(2 * M_PI);
-
-    double result = -1.0 * std::log(srPi * stdDev) - 0.5 * std::pow((x - mean) * invStdDev, 2.0);
-    DenseDoubleVectorPtr resultGradient = new DenseDoubleVector(2, 0);
-    resultGradient->setValue(0, (x - mean) * std::pow(invStdDev, 2.0));
-    resultGradient->setValue(1, (-1.0 / stdDev) + std::pow(x - mean, 2.0)
-        * std::pow(invStdDev, 3.0));
-
-    if (output)
-      *output += result;
-    if (gradientTarget)
-      resultGradient->addWeightedTo(*gradientTarget, 0, gradientWeight);
-  }
-
-  virtual size_t getNumRequiredInputs() const
-    {return 2;}
-
-protected:
-  friend class GaussianLogValueFunctionClass;
 };
 
 }; /* namespace lbcpp */

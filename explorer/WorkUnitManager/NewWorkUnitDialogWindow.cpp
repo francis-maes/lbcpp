@@ -511,7 +511,10 @@ public:
         argumentsSelectorLabel->setText(T("Arguments"), false);
       }
       else
+      {
+        workUnitParameters = String::empty;
         argumentsSelectorLabel->setText(T("No arguments"), false);
+      }
 
       resized();
     }

@@ -95,6 +95,7 @@ public:
     double l2norm = (parameters ? parameters->l2norm() : 0.0);
 
     double mean = lossValue.getMean();
+    //context->resultCallback(T("Parameters"), parameters);
     context->resultCallback(T("Empirical Risk"), mean);
     context->resultCallback(T("Mean Active Features"), numberOfActiveFeatures.getMean());
     context->resultCallback(T("Num Params"), (parameters ? parameters->l0norm() : 0));
