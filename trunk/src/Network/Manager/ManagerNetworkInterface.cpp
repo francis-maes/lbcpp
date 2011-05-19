@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ManagerNetworkInterface.cpp    | Manager Network Interface      |
+| Filename: ManagerNetworkInterface.cpp    | Manager Network Interface       |
 | Author  : Julien Becker                  |                                 |
 | Started : 26/02/2011 19:31               |                                 |
 `------------------------------------------/                                 |

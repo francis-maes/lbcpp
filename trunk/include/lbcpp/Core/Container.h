@@ -188,6 +188,8 @@ public:
       @see range, invFold
   */
   ContainerPtr invRange(size_t begin, size_t end) const;
+
+  static ContainerPtr makePairsContainer(const ContainerPtr& inputs, const ContainerPtr& samples);
 };
 
 extern ClassPtr containerClass(TypePtr elementsType = anyType);

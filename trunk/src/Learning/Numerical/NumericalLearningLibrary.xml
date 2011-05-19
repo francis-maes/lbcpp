@@ -57,7 +57,7 @@
   </class>
 
   <class name="MultiLinearLearnableFunction" base="NumericalLearnableFunction">
-    <constructor/>
+    <constructor arguments="EnumerationPtr outputsEnumeration"/>
     <variable type="CompositeDoubleVector[EnumValue,Double]" name="parameters"/>
   </class>
 

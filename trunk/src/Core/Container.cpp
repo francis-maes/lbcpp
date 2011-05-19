@@ -10,6 +10,7 @@
 #include <lbcpp/Data/RandomGenerator.h>
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Core/Vector.h>
+#include <lbcpp/Core/Pair.h>
 #include <lbcpp/Data/SymmetricMatrix.h>
 #include <lbcpp/Core/Function.h>
 #include <lbcpp/Execution/WorkUnit.h>
@@ -310,3 +311,15 @@ ContainerPtr Container::invFold(size_t fold, size_t numFolds) const
   size_t end = (size_t)((fold + 1) * meanFoldSize);
   return invRange(begin, end);
 }
+
+ContainerPtr Container::makePairsContainer(const ContainerPtr& inputs, const ContainerPtr& samples)
+{
+  size_t n = inputs->getNumElements();
+  jassert(n == samples->getNumElements());
+  ClassPtr pairType = pairClass(inputs->getElementsType(), samples->getElementsType());
+  ObjectVectorPtr res = new ObjectVector(pairType, n);
+  for (size_t i = 0; i < n; ++i)
+    res->set(i, new Pair(pairType, inputs->getElement(i), samples->getElement(i)));
+  return res;
+}
+
