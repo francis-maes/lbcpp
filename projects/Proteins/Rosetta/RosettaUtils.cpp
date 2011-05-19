@@ -166,7 +166,7 @@ double formattingCorrectionFactor(double value, double mean, double std)
 }
 
 double lbcpp::getConformationScore(const core::pose::PoseOP& pose, double(*scoreFunction)(
-    const core::pose::PoseOP&))
+    const core::pose::PoseOP&), double* energy)
 {
 #ifdef LBCPP_PROTEIN_ROSETTA
   // Correct the energy function
@@ -206,8 +206,10 @@ double lbcpp::getConformationScore(const core::pose::PoseOP& pose, double(*score
   correctionFactor += formattingCorrectionFactor(coordinatesCA.distance(coordinatesC), meanCAC,
       stdCAC);
 
-  double score = (*scoreFunction)(pose) + juce::jmax(0.0, correctionFactor - (double)3
-      * numberResidues + 1);
+  double tempEn = (*scoreFunction)(pose);
+  if (energy != NULL)
+    *energy = tempEn;
+  double score = tempEn + juce::jmax(0.0, correctionFactor - (double)3 * numberResidues + 1);
   return (score >= 1 ? score : std::exp(score - 1));
 #else
   jassert(false);

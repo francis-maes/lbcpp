@@ -19,23 +19,28 @@
 
 namespace lbcpp
 {
+
 struct MoverAndScore
 {
   ProteinMoverPtr mover;
   double score;
+  double deltaEnergy;
+  double energy;
+  double qScore;
   MoverAndScore() :
-    mover(NULL), score(-1)
+    mover(NULL), score(-1), deltaEnergy(-1), energy(-1), qScore(-1)
   {
   }
-  MoverAndScore(ProteinMoverPtr& m, double s) :
-    mover(m), score(s)
+  MoverAndScore(ProteinMoverPtr& m, double s, double dE, double en, double qs) :
+    mover(m), score(s), deltaEnergy(dE), energy(en), qScore(qs)
   {
   }
   MoverAndScore(const MoverAndScore& x) :
-    mover(x.mover), score(x.score)
+    mover(x.mover), score(x.score), deltaEnergy(x.deltaEnergy), energy(x.energy), qScore(x.qScore)
   {
   }
 };
+
 typedef struct MoverAndScore MoverAndScore;
 
 bool compareMovers(MoverAndScore first, MoverAndScore second)
@@ -59,15 +64,16 @@ public:
   {
   }
 
-  double evaluate(ExecutionContext& context, const core::pose::PoseOP& target, const core::pose::PoseOP& reference)
+  MoverAndScore evaluate(ExecutionContext& context, const core::pose::PoseOP& target,
+      const core::pose::PoseOP& reference, double energyBeforeMove)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
-    int minDist =
-        juce::jlimit(1, (int)target->n_residue(), juce::jmin(20, target->n_residue() / 2));
+    int minDist = juce::jlimit(1, (int)target->n_residue(), juce::jmin(20, target->n_residue() / 2));
     int maxDist = -1;
 
+    double realTargetEnergy = 0;
     double referenceEnergy = getConformationScore(reference, fullAtomEnergy);
-    double targetEnergy = getConformationScore(target, fullAtomEnergy);
+    double targetEnergy = getConformationScore(target, fullAtomEnergy, &realTargetEnergy);
     double energyScore;
     if (targetEnergy == 0)
       energyScore = std::numeric_limits<double>::max();
@@ -78,27 +84,34 @@ public:
     QScoreObjectPtr scores = QScoreSingleEvaluator(target, reference, minDist, maxDist);
 
     if (scores.get() == NULL)
-      context.errorCallback(
-          T("Error in QScoreObject returned. Check that the two proteins are the same."));
+      context.errorCallback(T("Error in QScoreObject returned. Check that the two proteins are the same."));
     structureScore = scores->getMean();
 
+    double globalScore = 0;
     if (energyWeight >= 0)
-      return energyWeight * energyScore + (1 - energyWeight) * structureScore;
+      globalScore = energyWeight * energyScore + (1 - energyWeight) * structureScore;
     else
-      return energyScore * energyScore + juce::jmax(0.0, 1 - energyScore) * structureScore;
+      globalScore = energyScore * energyScore + juce::jmax(0.0, 1 - energyScore) * structureScore;
+
+    MoverAndScore result;
+    result.mover = ProteinMoverPtr();
+    result.score = globalScore;
+    result.deltaEnergy = energyBeforeMove - realTargetEnergy;
+    result.energy = realTargetEnergy;
+    result.qScore = structureScore;
+    return result;
 #else
     jassert(false);
-    return 0.0;
+    return MoverAndScore();
 #endif // LBCPP_PROTEIN_ROSETTA
   }
 
-  SamplerPtr findBestMovers(ExecutionContext& context,
-      const RandomGeneratorPtr& random, const core::pose::PoseOP& target,
-      const core::pose::PoseOP& reference, SamplerPtr sampler, std::vector<
-          ProteinMoverPtr>& movers, size_t maxIterations, size_t numSamples = 1000,
-      double ratioGoodSamples = 0.5, size_t numMoversToKeep = 20)
+  SamplerPtr findBestMovers(ExecutionContext& context, const RandomGeneratorPtr& random,
+      const core::pose::PoseOP& target, const core::pose::PoseOP& reference, SamplerPtr sampler, std::vector<
+          ProteinMoverPtr>& movers, size_t maxIterations, size_t numSamples = 1000, double ratioGoodSamples = 0.5,
+      size_t numMoversToKeep = 20, DenseDoubleVectorPtr* energyMeans = NULL)
   {
-    SamplerPtr workingSampler = sampler->cloneAndCast<Sampler>();
+    SamplerPtr workingSampler = sampler->cloneAndCast<Sampler> ();
 #ifdef LBCPP_PROTEIN_ROSETTA
     core::pose::PoseOP workingPose = new core::pose::Pose(*target);
 
@@ -110,26 +123,57 @@ public:
     {
       context.progressCallback(new ProgressionState(i, maxIterations, T("Iterations")));
       std::list<MoverAndScore> tempList;
+      double energyBeforeMove = getTotalEnergy(workingPose, fullAtomEnergy);
+      ScalarVariableMeanAndVariance scoreRandomVariable;
+      ScalarVariableMeanAndVariance deltaEnergyRandomVariable;
+      ScalarVariableMeanAndVariance energyRandomVariable;
+      ScalarVariableMeanAndVariance qScoreRandomVariable;
       for (size_t j = 0; j < numSamples; j++)
       {
-        ProteinMoverPtr mover = workingSampler->sample(context, random, NULL).getObjectAndCast<ProteinMover>();
+        ProteinMoverPtr mover = workingSampler->sample(context, random, NULL).getObjectAndCast<ProteinMover> ();
 
         mover->move(workingPose);
-        double score = evaluate(context, workingPose, reference);
+        //double score = evaluate(context, workingPose, reference);
+        //MoverAndScore candidate(mover, score);
 
-        MoverAndScore candidate(mover, score);
+        MoverAndScore candidate = evaluate(context, workingPose, reference, energyBeforeMove);
+        candidate.mover = mover;
+
+        scoreRandomVariable.push(candidate.score);
+        deltaEnergyRandomVariable.push(candidate.deltaEnergy);
+        energyRandomVariable.push(candidate.energy);
+        qScoreRandomVariable.push(candidate.qScore);
+
         tempList.push_back(candidate);
         *workingPose = *target;
 
         moversToKeep.push_back(MoverAndScore(candidate));
       }
 
+      // sort movers
       tempList.sort(compareMovers);
 
+      // evaluate performance of the iteration
+      context.enterScope(T("Values"));
+      context.resultCallback(T("Mean score"), Variable(scoreRandomVariable.getMean()));
+      context.resultCallback(T("Std Dev score"), Variable(scoreRandomVariable.getStandardDeviation()));
+      double meanDeltaEnergy = deltaEnergyRandomVariable.getMean();
+      context.resultCallback(T("Mean deltaEnergy"), Variable(meanDeltaEnergy));
+      if (energyMeans != NULL)
+        (*energyMeans)->setValue(i, meanDeltaEnergy);
+      context.resultCallback(T("Std Dev deltaEnergy"), Variable(deltaEnergyRandomVariable.getStandardDeviation()));
+      context.resultCallback(T("Mean energy"), Variable(energyRandomVariable.getMean()));
+      context.resultCallback(T("Std Dev energy"), Variable(energyRandomVariable.getStandardDeviation()));
+      context.resultCallback(T("Mean qScore"), Variable(scoreRandomVariable.getMean()));
+      context.resultCallback(T("Std Dev qScore"), Variable(scoreRandomVariable.getStandardDeviation()));
+      context.leaveScope(Variable(meanDeltaEnergy));
+
+      // best samplers ever seen
       moversToKeep.sort(compareMovers);
       while (moversToKeep.size() > numMoversToKeep)
         moversToKeep.pop_back();
 
+      // keep best samplers
       size_t numLearningSamples = (size_t)(numSamples * ratioGoodSamples);
       size_t numLearningSamplesFirstPass = numLearningSamples / 2;
       size_t numLearningSamplesSecondPass = numLearningSamples - numLearningSamplesFirstPass;
