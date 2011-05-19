@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <library name="ProteinRosettaSampler" directory="Rosetta/Sampler">
-
-  <class name="MultiVariateGaussianSampler" base="ScalarContinuousSampler">
-    <constructor arguments="const DoubleMatrixPtr&amp; initialMean, const DoubleMatrixPtr&amp; initialStdDev"/>
-    <variable type="PositiveInteger" name="numVariables"/>
-    <variable type="DoubleMatrix[Double]" name="means"/>
-    <variable type="DoubleMatrix[Double]" name="covariances"/>
-  </class>
   
   <class name="ResiduePairSampler" base="CompositeSampler">
     <constructor arguments="size_t numResidues"/>
