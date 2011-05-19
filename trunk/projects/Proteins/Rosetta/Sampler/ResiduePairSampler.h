@@ -9,9 +9,7 @@
 #ifndef LBCPP_PROTEINS_ROSETTA_RESIDUE_PAIR_SAMPLER_H_
 # define LBCPP_PROTEINS_ROSETTA_RESIDUE_PAIR_SAMPLER_H_
 
-# include "precompiled.h"
 # include "../Sampler.h"
-# include "GaussianMultivariateSampler.h"
 
 namespace lbcpp
 {
@@ -31,7 +29,7 @@ public:
     // initialize means
     std::vector<MatrixPtr> means(2);
     means[0] = new DoubleMatrix(2, 1, 0.45 * numResidues);
-    means[1] = new DoubleMatrix(2, 1, 0.45 * numResidues);
+    means[1] = new DoubleMatrix(2, 1, 0.55 * numResidues);
 
     // initialize covarianceMatrix
     std::vector<MatrixPtr> covarianceMatrix(2);
@@ -45,8 +43,14 @@ public:
     covarianceMatrix[1] = new DoubleMatrix(2, 2, covar);
     covarianceMatrix[1]->setElement(0, 0, Variable(var));
     covarianceMatrix[1]->setElement(1, 1, Variable(var));
-    GaussianMultivariateSamplerPtr p = new GaussianMultivariateSampler(1000, 0.001, probabilities,
-        means, covarianceMatrix);
+
+    ScalarContinuousSamplerPtr gauss0 = multiVariateGaussianSampler(means[0], covarianceMatrix[0]);
+    ScalarContinuousSamplerPtr gauss1 = multiVariateGaussianSampler(means[1], covarianceMatrix[1]);
+    DenseDoubleVectorPtr probas = new DenseDoubleVector(2, 0.5);
+    std::vector<SamplerPtr> mixtsamp;
+    mixtsamp.push_back(gauss0);
+    mixtsamp.push_back(gauss1);
+    CompositeSamplerPtr p = mixtureSampler(probas, mixtsamp);
 
     samplers[0] = p;
   }
@@ -56,9 +60,9 @@ public:
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
-    MatrixPtr temp = samplers[0]->sample(context, random, inputs).getObjectAndCast<Matrix>();
-    double rand1 = std::abs(temp->getElement(0, 0).getDouble());
-    double rand2 = std::abs(temp->getElement(1, 0).getDouble());
+    DoubleMatrixPtr temp = samplers[0]->sample(context, random, inputs).getObjectAndCast<DoubleMatrix>();
+    double rand1 = std::abs(temp->getValue(0, 0));
+    double rand2 = std::abs(temp->getValue(1, 0));
 
     size_t firstResidue = juce::jlimit((size_t)0, (size_t)(numResidues - 1), (size_t)std::floor(rand1));
     size_t secondResidue = juce::jlimit((size_t)0, (size_t)(numResidues - 1), (size_t)std::floor(rand2));
@@ -117,9 +121,7 @@ public:
   }
 
   virtual void makeSubExamples(const ContainerPtr& inputs, const ContainerPtr& samples, std::vector<ContainerPtr>& subInputs, std::vector<ContainerPtr>& subSamples) const
-  {
-    jassert(false);
-  }
+    {jassert(false);}
 
 protected:
   friend class ResiduePairSamplerClass;
