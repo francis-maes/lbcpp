@@ -33,8 +33,8 @@
 //# include "../Predictor/ProteinPredictorParameters.h"
 # include "ProteinGridEvoOptimizer.h"
 //# include "../../../src/Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h"
-//# include "../../../src/Optimizer/Optimizer/EDAOptimizer.h"
-//# include "../../../src/Optimizer/Optimizer/AsyncEDAOptimizer.h"
+# include "../../../src/Optimizer/Optimizer/EDAOptimizer.h"
+# include "../../../src/Optimizer/Optimizer/AsyncEDAOptimizer.h"
 //# include "../../../src/Optimizer/Context/SynchroneousOptimizerContext.h"
 //# include "../../../src/Optimizer/Context/MultiThreadsOptimizerContext.h"
 
@@ -153,17 +153,19 @@ class OptimizerTestBedWorkUnit : public WorkUnit
     */
     
     
-    //OptimizerPtr optimizer = edaOptimizer(20, 100, 30, false, false);
-    OptimizerPtr optimizer = asyncEDAOptimizer(20, 100, 30, 30, 100);
+    //OptimizerPtr optimizer = new EDAOptimizer(20, 100, 30, 0.2);
+    OptimizerPtr optimizer = new AsyncEDAOptimizer(100, 2000, 300, 300, 0.3);
     
-    std::vector<double> coefs;
-    coefs.push_back(2.0);
-    coefs.push_back(4.0);
-    FunctionPtr f = new SphereFunction(coefs, -2.0);
+    DenseDoubleVectorPtr coefs = new DenseDoubleVector(4, 0.0);
+    coefs->setValue(0, 2.0);
+    coefs->setValue(1, 4.0);
+    coefs->setValue(2, -3.0);
+    coefs->setValue(3, 0.0);
+
+    FunctionPtr f = new RastriginFunction(coefs, -1);
     OptimizerContextPtr optimizerContext = synchroneousOptimizerContext(context, f);
     
-    DenseDoubleVectorPtr test = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType, 2);
-    SamplerPtr sampler = independentDoubleVectorSampler(2, gaussianSampler(0.0, 5.0));
+    SamplerPtr sampler = independentDoubleVectorSampler(4, gaussianSampler(0.0, 5.0));
     OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler);  
     
     return optimizer->compute(context, optimizerContext, optimizerState);
@@ -180,9 +182,9 @@ class OptimizerTestBedWorkUnit : public WorkUnit
     double output;
     output = f->compute(context, input).toDouble();
     std::cout << output << std::endl;
-    
-    return Variable();
     */
+    return Variable();
+    
 
   }
 };
@@ -234,6 +236,62 @@ public:
     distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(15,100));
     distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,225));
     
+    std::vector<SamplerPtr> samplers;
+    samplers.reserve(14);
+    for (size_t i = 0; i < 14; ++i)
+    {
+      SamplerPtr mySampler;
+      switch (i) {
+        case 0:
+          mySampler = discretizeSampler(gaussianSampler(1, 3), 0, 15);
+          break;
+        case 1:
+          mySampler = discretizeSampler(gaussianSampler(3, 3), 0, 20);
+          break;
+        case 2:
+          mySampler = discretizeSampler(gaussianSampler(5, 3), 0, 20);
+          break;
+        case 3:
+          mySampler = discretizeSampler(gaussianSampler(3, 3), 0, 20);
+          break;
+        case 4:
+          mySampler = discretizeSampler(gaussianSampler(5, 3), 0, 20);
+          break;
+        case 5:
+          mySampler = discretizeSampler(gaussianSampler(3, 3), 0, 20);
+          break;
+        case 6:
+          mySampler = discretizeSampler(gaussianSampler(2, 3), 0, 15);
+          break;
+        case 7:
+          mySampler = discretizeSampler(gaussianSampler(3, 3), 0, 20);
+          break;
+        case 8:
+          mySampler = discretizeSampler(gaussianSampler(5, 3), 0, 20);
+          break;
+        case 9:
+          mySampler = discretizeSampler(gaussianSampler(5, 3), 0, 20);
+          break;
+        case 10:
+          mySampler = bernoulliSampler(0.5, 0.1, 0.9); // avoid prob = 0 or prob = 1
+          break;
+        case 11:
+          mySampler = discretizeSampler(gaussianSampler(15, 2), 0, 25);
+          break;
+        case 12:
+          mySampler = discretizeSampler(gaussianSampler(15, 10), 0, 55);
+          break;
+        case 13:
+          mySampler = discretizeSampler(gaussianSampler(50, 15), 0, 110);
+          break;
+        default:
+          jassertfalse;
+      }
+      
+      samplers.push_back(mySampler);
+    }
+    SamplerPtr sampler = objectCompositeSampler(numericalProteinFeaturesParametersClass, samplers);
+    
     /*WorkUnitPtr wu = new FunctionWorkUnit(squareFunction(), 5.0);
     wu->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("MyWorkUnit.xml")));
     std::cout << "HERE HERE HERE HERE !!!!" << std::endl;*/
@@ -266,19 +324,20 @@ public:
     state->initialize();
     std::cout << state->getTotalNumberOfEvaluations() << " VS " << state->getTotalNumberOfRequests() << std::endl;*/
     
-    
+    /*
     // TESTS OPTIMIZER
     //OptimizerPtr optimizer = uniformSampleAndPickBestOptimizer(100);
-    //OptimizerPtr optimizer = edaOptimizer(100, 100, 30, false, false);
-    OptimizerPtr optimizer = asyncEDAOptimizer(10, 100, 30, 30, 100);
+    OptimizerPtr optimizer = edaOptimizer(10, 20, 5, false, false);
+    //OptimizerPtr optimizer = asyncEDAOptimizer(10, 100, 30, 30, 100);
     //OptimizerContextPtr optimizerContext = synchroneousOptimizerContext(context, squareFunction());
-    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, squareFunction());
+    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, new ProteinLearnerObjectiveFunction());
     //OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, squareFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime);
-    DistributionBasedOptimizerStatePtr optimizerState = new DistributionBasedOptimizerState();
+    //DistributionBasedOptimizerStatePtr optimizerState = new DistributionBasedOptimizerState();
+    SamplerBasedOptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler);
     //optimizerState->setDistribution(new UniformDistribution(-5,5));    // TODO arnaud use constructor from library
-    optimizerState->setDistribution(new GaussianDistribution(10, 10000));  // TODO arnaud use constructor from library
+    //optimizerState->setDistribution(new GaussianDistribution(10, 10000));  // TODO arnaud use constructor from library
     return optimizer->compute(context, optimizerContext, optimizerState);
-    
+    */
     
     /*OptimizerPtr optimizer = asyncEDAOptimizer(15, 1000, 300, 1500, 15);
     OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, new ProteinLearnerObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime, 150000);
@@ -355,14 +414,14 @@ public:
      * Tests
      */
     /*
-    ExecutionTracePtr trace = Object::createFromFile(context, File(T("/Users/arnaudschoofs/Proteins/traces/1299675529047.trace"))).staticCast<ExecutionTrace>();
+    ExecutionTracePtr trace = Object::createFromFile(context, File(T("/Users/arnaudschoofs/Proteins/traces/MyTrace.xml"))).staticCast<ExecutionTrace>();
     FunctionPtr f1 = new ProteinGetScoreFromTraceFunction();
     std::cout << f1->compute(context, trace).toString() << std::endl;
     
     FunctionPtr f2 = new ProteinGetVariableFromTraceFunction();
     std::cout << f2->compute(context, trace).toString() << std::endl;
     */
-    
+    return Variable();
     
   }
 protected:

@@ -12,25 +12,23 @@
     <variable type="Boolean" name="verbose"/>
   </class>
   
-  <class name="EDAOptimizer" base="Optimizer" shortName="eda">
-    <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, bool reinjectBest, bool verbose"/>
+  <class name="PopulationBasedOptimizer" base="Optimizer" abstract="yes">
     <variable type="PositiveInteger" name="numIterations"/>
     <variable type="PositiveInteger" name="populationSize"/>
     <variable type="PositiveInteger" name="numBests"/>
+    <variable type="Double" name="slowingFactor"/>
     <variable type="Boolean" name="reinjectBest"/>
     <variable type="Boolean" name="verbose"/>
     <variable type="RandomGenerator" name="random"/>
   </class>
   
-  <class name="AsyncEDAOptimizer" base="Optimizer">
-    <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, size_t numberEvaluationsInProgress, size_t updateFactor, bool verbose"/>
-    <variable type="PositiveInteger" name="numIterations"/>
-    <variable type="PositiveInteger" name="populationSize"/>
-    <variable type="PositiveInteger" name="numBests"/>
+  <class name="EDAOptimizer" base="PopulationBasedOptimizer" shortName="eda">
+    <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, double slowingFactor, bool reinjectBest, bool verbose"/>
+  </class>
+  
+  <class name="AsyncEDAOptimizer" base="PopulationBasedOptimizer">
+    <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, size_t numberEvaluationsInProgress, double slowingFactor, bool reinjectBest, bool verbose"/>
     <variable type="PositiveInteger" name="numberEvaluationsInProgress"/>
-    <variable type="PositiveInteger" name="updateFactor"/>
-    <variable type="Boolean" name="verbose"/>
-    <variable type="RandomGenerator" name="random"/>
   </class>
      
   <!--

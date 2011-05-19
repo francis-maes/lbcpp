@@ -9,27 +9,27 @@
 #ifndef LBCPP_ASYNC_EDA_OPTIMIZER_H_
 # define LBCPP_ASYNC_EDA_OPTIMIZER_H_
 
-# include <lbcpp/Optimizer/Optimizer.h>
-# include <lbcpp/Distribution/DistributionBuilder.h> // old
-# include <lbcpp/Sampler/Sampler.h> // new
+# include "PopulationBasedOptimizer.h"
 
 namespace lbcpp
 {
 
-class AsyncEDAOptimizer : public Optimizer
+class AsyncEDAOptimizer : public PopulationBasedOptimizer
 {
 public:  
-  AsyncEDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, size_t numberEvaluationsInProgress, size_t updateFactor, bool verbose = false) // TODO arnaud : rename update factor and use real instead of size_t
-  : numIterations(numIterations), populationSize(populationSize), numBests(numBests), numberEvaluationsInProgress(numberEvaluationsInProgress), updateFactor(updateFactor), verbose(verbose), random(new RandomGenerator()) {}
+  AsyncEDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, size_t numberEvaluationsInProgress, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
+    : PopulationBasedOptimizer(numIterations, populationSize, numBests, slowingFactor, reinjectBest, verbose),  numberEvaluationsInProgress(numberEvaluationsInProgress)  {}
 
-  AsyncEDAOptimizer() : random(new RandomGenerator()) {}
+  AsyncEDAOptimizer() : PopulationBasedOptimizer() {}
   
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {   
-    jassert(numBests < populationSize);
     
+    // useful to restart optimizer from state
     size_t i = (size_t) (optimizerState->getTotalNumberOfEvaluations()/populationSize);	// interger division	
     context.progressCallback(new ProgressionState(i, numIterations, T("Iterations")));
+    
+    bool doReinjectBest = i ? true : false;  // used to know when to reinject best parameter
     
     context.enterScope(T("Iteration ") + String((int)i + 1));
     context.resultCallback(T("iteration"), i + 1);
@@ -37,20 +37,29 @@ public:
     size_t totalNumberEvaluationsRequested = numIterations * populationSize;
     while (optimizerState->getTotalNumberOfEvaluations() < totalNumberEvaluationsRequested) 
     {      
-      // Send WU's on network
+      // Send evaluation requests
       if (optimizerState->getNumberOfInProgressEvaluations() < numberEvaluationsInProgress && optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && optimizerState->getNumberOfProcessedRequests() < populationSize) 
       {
         while (optimizerState->getNumberOfInProgressEvaluations() < numberEvaluationsInProgress && optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && optimizerState->getNumberOfProcessedRequests() < populationSize) 
         {
-          Variable input = sampleCandidate(context, optimizerState, random);
+          
+          Variable input;
+          if (reinjectBest && doReinjectBest && optimizerState->getBestVariable().exists())
+          {
+            input = optimizerState->getBestVariable();
+            doReinjectBest = false;
+          }
+          else 
+            input = sampleCandidate(context, optimizerState, random);
+          
           if (optimizerContext->evaluate(input))
           {
             optimizerState->incTotalNumberOfRequests();
             context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
-          }          
+          } else
+            break;  // TODO arnaud
         }
       }
-      
       
       // don't do busy waiting
       juce::Thread::sleep(optimizerContext->getTimeToSleep());
@@ -60,49 +69,25 @@ public:
       // enough WUs evaluated -> update distribution (with best results)
       if (optimizerState->getNumberOfProcessedRequests() >= populationSize) 
       {   
-        context.progressCallback(new ProgressionState(populationSize, populationSize, T("Evaluations"))); // TODO arnaud : forced
+        context.progressCallback(new ProgressionState(populationSize, populationSize, T("Evaluations"))); // WARNING : force display of 100% in Explorer
+        
         // sort results
         std::multimap<double, Variable> sortedScores;
-        {
-          ScopedLock _(optimizerState->getLock());
-          std::vector< std::pair<double, Variable> >::const_iterator it;
-          size_t i = 1;
-          for (it = optimizerState->getProcessedRequests().begin(); it < optimizerState->getProcessedRequests().begin() + populationSize; it++) {  // use only populationSize results
-            sortedScores.insert(*it);
-            
-            if (verbose) 
-            {
-              context.enterScope(T("Request ") + String((int) i));
-              context.resultCallback(T("requestNumber"), i);
-              context.resultCallback(T("parameter"), it->second);      
-              context.leaveScope(it->first);
-            }
-            i++;  // outside if to avoid a warning for unused variable
-          }
-          optimizerState->flushFirstProcessedRequests(populationSize);  // TODO arnaud : maybe do that after building new distri
-        }
+        pushResultsSortedbyScore(context, optimizerState, sortedScores);
         
         // build new distribution & update OptimizerState
-        learnDistribution(context, optimizerState, sortedScores, updateFactor);
+        learnDistribution(context, optimizerState, sortedScores);
 
-        if (sortedScores.begin()->first < optimizerState->getBestScore()) 
-        {
-          ScopedLock _(optimizerState->getLock());
-          optimizerState->setBestScore(sortedScores.begin()->first);
-          optimizerState->setBestVariable(sortedScores.begin()->second);
-        }
-        context.resultCallback(T("bestScore"), optimizerState->getBestScore());
-        context.resultCallback(T("bestParameters"), optimizerState->getBestVariable());
-        context.leaveScope(sortedScores.begin()->first); // may be diffrent from optimizerState->getBestScore(), this is the return value of performEDAIteration, not the best score of all time !!!
+        // display results & update state
+        handleResultOfIteration(context, optimizerState, optimizerContext, sortedScores.begin()->first, sortedScores.begin()->second);
         context.progressCallback(new ProgressionState(i + 1, numIterations, T("Iterations")));
         
         i++;
         if (i < numIterations) {
           context.enterScope(T("Iteration ") + String((int)i + 1));
           context.resultCallback(T("iteration"), i + 1);
+          doReinjectBest = true;
         }
-        
-        optimizerState->autoSaveToFile(context);
       }
     }
     optimizerState->autoSaveToFile(context, true); // force to save at end of optimization
@@ -112,86 +97,7 @@ public:
 protected:
   friend class AsyncEDAOptimizerClass;
   
-  size_t numIterations;
-  size_t populationSize;
-  size_t numBests;
-  size_t numberEvaluationsInProgress;              // number of evaluations in progress to maintain
-  size_t updateFactor;                    // preponderance of new distri vs old distri (low value avoid too quick convergence)
-  bool verbose;
-  RandomGeneratorPtr random;
-  
-  Variable sampleCandidate(ExecutionContext& context, const OptimizerStatePtr& state, const RandomGeneratorPtr& random) const
-  {
-    // TODO: replace by state.staticCast<SamplerBasedOptimizerState>()->getSampler()->sample(context, random);
-    
-    // new
-    SamplerBasedOptimizerStatePtr samplerBasedState = state.dynamicCast<SamplerBasedOptimizerState>();
-    if (samplerBasedState)
-      return samplerBasedState->getSampler()->sample(context, random);
-    
-    // old
-    DistributionBasedOptimizerStatePtr distributionBasedState = state.dynamicCast<DistributionBasedOptimizerState>();
-    if (distributionBasedState)
-      return distributionBasedState->getDistribution()->sample(random);
-    
-    jassert(false);
-    return Variable();
-  }  
-  
-  void learnDistribution(ExecutionContext& context, const OptimizerStatePtr& state, const std::multimap<double, Variable>& sortedScores, size_t updateFactor) const
-  {
-    // new
-    SamplerBasedOptimizerStatePtr samplerBasedState = state.dynamicCast<SamplerBasedOptimizerState>();
-    if (samplerBasedState)
-    {
-      SamplerPtr oldSampler = samplerBasedState->getSampler();
-      SamplerPtr newSampler = oldSampler->cloneAndCast<Sampler>();
-      
-      VectorPtr bestVariables = vector(sortedScores.begin()->second.getType());
-      bestVariables->reserve(numBests);
-      
-      std::multimap<double, Variable>::const_iterator it = sortedScores.begin();
-      for (size_t i = 0; i < numBests && it != sortedScores.end(); ++i, ++it)
-        bestVariables->append(it->second);
-      newSampler->learn(context, ContainerPtr(), bestVariables);
-      
-      DenseDoubleVectorPtr probas = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType, 2);
-      probas->setValue(0, 1.0/(1.0+updateFactor));
-      probas->setValue(1, updateFactor/(1.0+updateFactor));
-      std::vector<SamplerPtr> vec;
-      vec.reserve(2);
-      vec.push_back(oldSampler);
-      vec.push_back(newSampler);
-      samplerBasedState->setSampler(mixtureSampler(probas, vec));
-      
-      context.resultCallback(T("sampler"), samplerBasedState->getSampler());
-      return;
-    }
-    
-    // old
-    DistributionBasedOptimizerStatePtr distributionBasedState = state.dynamicCast<DistributionBasedOptimizerState>();
-    if (distributionBasedState)
-    {
-      // build new distribution & update OptimizerState
-      DistributionBuilderPtr builder = distributionBasedState->getDistribution()->createBuilder();
-      std::multimap<double, Variable>::const_iterator it = sortedScores.begin();
-      for (size_t i = 0; i < numBests && it != sortedScores.end(); ++i, ++it)
-        builder->addElement(it->second);
-      DistributionPtr newDistribution = builder->build(context);
-      
-      builder->clear();
-      builder->addDistribution(distributionBasedState->getDistribution());  // old distri
-      for (size_t x = 0; x < updateFactor; ++x)
-        builder->addDistribution(newDistribution);
-      
-      distributionBasedState->setDistribution(builder->build(context));
-      context.resultCallback(T("distribution"), newDistribution);      
-      return;
-    }
-    
-    jassert(false);
-  }
-  
+  size_t numberEvaluationsInProgress;              // number of evaluations in progress to maintain  
 };
 
 typedef ReferenceCountedObjectPtr<AsyncEDAOptimizer> AsyncEDAOptimizerPtr;  

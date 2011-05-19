@@ -55,14 +55,14 @@ public:
     distributions->setSubDistribution(11, new PositiveIntegerGaussianDistribution(15,4));
     distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(15,100));
     distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,225));
-    
+    /*
     // Optimizer
     OptimizerPtr optimizer = asyncEDAOptimizer(15, 1000, 300, 1500, 15);
     OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, new ProteinLearnerObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime, 150000);
     DistributionBasedOptimizerStatePtr optimizerState = new DistributionBasedOptimizerState();
     optimizerState->setDistribution(distributions);
     return optimizer->compute(context, optimizerContext, optimizerState);    
-    
+    */
     /*ProteinGridEvoOptimizerStatePtr state = Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml"))).staticCast<ProteinGridEvoOptimizerState>();
     foo(context, state);
     

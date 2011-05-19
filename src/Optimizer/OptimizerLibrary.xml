@@ -27,6 +27,7 @@
   </class>
   <class name="SamplerBasedOptimizerState" base="OptimizerState">
     <variable type="Sampler" name="sampler"/>
+    <variable type="Sampler" name="initialSampler"/>
   </class>
 
   <class name="OptimizerContext" base="Object" abstract="yes">
