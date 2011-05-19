@@ -26,8 +26,8 @@ public:
   virtual Variable computeExpectation(const Variable* inputs = NULL) const
     {return Variable(probability, probabilityType);}
 
-  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
-                                                const ContainerPtr& validationInputs, const ContainerPtr& validationSamples)
+  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights,
+                                                    const ContainerPtr& validationInputs, const ContainerPtr& validationSamples, const DenseDoubleVectorPtr& supervisionWeights)
   {
     size_t n = trainingSamples->getNumElements();
     jassert(n);

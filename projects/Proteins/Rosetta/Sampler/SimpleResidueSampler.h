@@ -38,7 +38,7 @@ public:
       const Variable* inputs = NULL) const
     {return samplers[0]->sample(context, random, inputs);}
 
-  virtual void makeSubExamples(const ContainerPtr& inputs, const ContainerPtr& samples, std::vector<ContainerPtr>& subInputs, std::vector<ContainerPtr>& subSamples) const
+  virtual void makeSubExamples(const ContainerPtr& inputs, const ContainerPtr& samples, const DenseDoubleVectorPtr& weights, std::vector<ContainerPtr>& subInputs, std::vector<ContainerPtr>& subSamples, std::vector<ContainerPtr>& subWeights) const
   {
     subInputs.resize(1);
     subInputs[0] = inputs;

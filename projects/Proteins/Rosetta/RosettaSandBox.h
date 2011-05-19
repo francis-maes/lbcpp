@@ -64,8 +64,8 @@ public:
     return res;
   }
 
-  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
-                                                const ContainerPtr& validationInputs, const ContainerPtr& validationSamples)
+  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights,
+                                                    const ContainerPtr& validationInputs, const ContainerPtr& validationSamples, const DenseDoubleVectorPtr& supervisionWeights)
   {
     ContainerPtr trainingData = mergeInputAndOutputs(trainingInputs, trainingSamples);
     ContainerPtr validationData;

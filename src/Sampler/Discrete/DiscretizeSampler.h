@@ -31,14 +31,14 @@ public:
     return juce::jlimit(minValue, maxValue, juce::roundDoubleToInt(doubleSample));
   }
 
-  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
-                                                const ContainerPtr& validationInputs, const ContainerPtr& validationSamples)
+  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights,
+                                                    const ContainerPtr& validationInputs, const ContainerPtr& validationSamples, const DenseDoubleVectorPtr& supervisionWeights)
   {
     DenseDoubleVectorPtr doubleTrainingSamples = convertToDouble(trainingSamples);
     if (validationSamples)
     {
       DenseDoubleVectorPtr doubleValidationSamples = convertToDouble(validationSamples);
-      sampler->learn(context, trainingInputs, doubleTrainingSamples, validationInputs, doubleValidationSamples);
+      sampler->learn(context, trainingInputs, doubleTrainingSamples, trainingWeights, validationInputs, doubleValidationSamples, supervisionWeights);
     }
     else
       sampler->learn(context, trainingInputs, doubleTrainingSamples);

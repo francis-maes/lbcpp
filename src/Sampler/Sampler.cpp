@@ -13,22 +13,22 @@ using namespace lbcpp;
 /*
 ** CompositeSampler
 */
-void CompositeSampler::learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
-                                                        const ContainerPtr& validationInputs, const ContainerPtr& validationSamples)
+void CompositeSampler::learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights,
+                                                        const ContainerPtr& validationInputs, const ContainerPtr& validationSamples, const DenseDoubleVectorPtr& supervisionWeights)
 {
-  std::vector<ContainerPtr> subTrainingInputs(samplers.size()), subTrainingSamples(samplers.size());
-  makeSubExamples(trainingInputs, trainingSamples, subTrainingInputs, subTrainingSamples);
+  std::vector<ContainerPtr> subTrainingInputs(samplers.size()), subTrainingSamples(samplers.size()), subTrainingWeights(samplers.size());
+  makeSubExamples(trainingInputs, trainingSamples, trainingWeights, subTrainingInputs, subTrainingSamples, subTrainingWeights);
   jassert(subTrainingInputs.size() == samplers.size() && subTrainingSamples.size() == samplers.size());
 
   if (validationSamples)
   {
-    std::vector<ContainerPtr> subValidationInputs(samplers.size()), subValidationSamples(samplers.size());
-    makeSubExamples(validationInputs, validationSamples, subValidationInputs, subValidationSamples);
+    std::vector<ContainerPtr> subValidationInputs(samplers.size()), subValidationSamples(samplers.size()), subValidationWeights(samplers.size());
+    makeSubExamples(validationInputs, validationSamples, supervisionWeights, subValidationInputs, subValidationSamples, subValidationWeights);
     jassert(subValidationInputs.size() == samplers.size() && subValidationSamples.size() == samplers.size());
     
     for (size_t i = 0; i < samplers.size(); ++i)
       if (subTrainingSamples[i]->getNumElements())
-        samplers[i]->learn(context, subTrainingInputs[i], subTrainingSamples[i], subValidationInputs[i], subValidationSamples[i]);
+        samplers[i]->learn(context, subTrainingInputs[i], subTrainingSamples[i], subTrainingWeights[i], subValidationInputs[i], subValidationSamples[i], subValidationWeights[i]);
   }
   else
   {
