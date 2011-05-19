@@ -9,14 +9,10 @@
 #ifndef LBCPP_SAMPLER_MULTIVARIATE_GAUSSIAN_SAMPLER_H_
 # define LBCPP_SAMPLER_MULTIVARIATE_GAUSSIAN_SAMPLER_H_
 
-# include "precompiled.h"
-# include "../Sampler.h"
+# include "lbcpp/Sampler/Sampler.h"
 
 namespace lbcpp
 {
-
-class MultiVariateGaussianSampler;
-typedef ReferenceCountedObjectPtr<MultiVariateGaussianSampler> MultiVariateGaussianSamplerPtr;
 
 class MultiVariateGaussianSampler : public ScalarContinuousSampler
 {
@@ -45,7 +41,7 @@ public:
     return result;
   }
 
-  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
+  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples,
                                                 const ContainerPtr& validationInputs, const ContainerPtr& validationSamples)
   {
     size_t n = trainingSamples->getNumElements();
@@ -86,7 +82,7 @@ public:
       tempSub->subtract(means);
       tempSubT = tempSub->transpose();
       product = inverseCovariance->multiplyBy(tempSub);
-      product = product->multiplyBy(tempSubT);
+      product = tempSubT->multiplyBy(product);
       double numerator = std::exp(-0.5 * product->getValue(0, 0));
 
       probabilities->setValue(i, numColumnToFill, numerator * invDenominator);
@@ -137,6 +133,8 @@ protected:
   DoubleMatrixPtr means;
   DoubleMatrixPtr covariances;
 };
+
+typedef ReferenceCountedObjectPtr<MultiVariateGaussianSampler> MultiVariateGaussianSamplerPtr;
 
 }; /* namespace lbcpp */
 

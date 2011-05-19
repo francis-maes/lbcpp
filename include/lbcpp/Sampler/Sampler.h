@@ -63,6 +63,7 @@ typedef ReferenceCountedObjectPtr<ScalarContinuousSampler> ScalarContinuousSampl
 
 extern ScalarContinuousSamplerPtr uniformScalarSampler(double minValue = 0.0, double maxValue = 1.0);
 extern ScalarContinuousSamplerPtr gaussianSampler(double mean = 0.0, double stddev = 1.0);
+extern ScalarContinuousSamplerPtr multiVariateGaussianSampler(const DoubleMatrixPtr& initialMean, const DoubleMatrixPtr& initialStdDev);
 
 /*
 ** Discrete Sampler

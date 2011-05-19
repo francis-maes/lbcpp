@@ -201,7 +201,6 @@ void DoubleMatrix::inverse()
   for (size_t i = 0; i < this->getNumRows(); i++)
     for (size_t j = 0; j < this->getNumColumns(); j++)
       this->setValue(i, j, invD * this->getValue(i, j));
-  this->multiplyByScalar(1.0 / this->determinant());
 }
 
 DoubleMatrixPtr DoubleMatrix::getInverse() const
