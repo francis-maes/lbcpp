@@ -70,14 +70,20 @@
   
   <!-- OptimizerTestBed -->
   <class name="SphereFunction" base="ScalarVectorFunction">
-    <constructor arguments="const std::vector&lt;double&gt;&amp; coefs, double fopt"/>
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="coefs"/>
+    <constructor arguments="const DenseDoubleVectorPtr&amp; xopt, double fopt"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="xopt"/>
     <variable type="Double" name="fopt"/> 
   </class>
   
   <class name="EllipsoidalFunction" base="ScalarVectorFunction">
-    <constructor arguments="const std::vector&lt;double&gt;&amp; coefs, double fopt"/>
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="coefs"/>
+    <constructor arguments="const DenseDoubleVectorPtr&amp; xopt, double fopt"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="xopt"/>
+    <variable type="Double" name="fopt"/> 
+  </class>
+  
+  <class name="RastriginFunction" base="ScalarVectorFunction">
+    <constructor arguments="const DenseDoubleVectorPtr&amp; xopt, double fopt"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="xopt"/>
     <variable type="Double" name="fopt"/> 
   </class>
 </library>

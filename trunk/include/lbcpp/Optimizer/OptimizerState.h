@@ -106,7 +106,7 @@ class SamplerBasedOptimizerState : public OptimizerState
 {
 public:
   SamplerBasedOptimizerState(const SamplerPtr& sampler, size_t autoSaveStateFrequency = 0)
-    : OptimizerState(autoSaveStateFrequency), sampler(sampler) {}
+    : OptimizerState(autoSaveStateFrequency), sampler(sampler), initialSampler(sampler) {}
   SamplerBasedOptimizerState() {}
 
   const SamplerPtr& getSampler() const
@@ -115,10 +115,14 @@ public:
   void setSampler(const SamplerPtr& newSampler)
     {sampler = newSampler;}
   
+  SamplerPtr getCloneOfInitialSamplerInstance() const
+    {return initialSampler->cloneAndCast<Sampler>();}
+  
 protected:
   friend class SamplerBasedOptimizerStateClass;
 
   SamplerPtr sampler;
+  SamplerPtr initialSampler;
 };
 
 typedef ReferenceCountedObjectPtr<SamplerBasedOptimizerState> SamplerBasedOptimizerStatePtr;

@@ -17,7 +17,24 @@
 
 namespace lbcpp
 {
-
+  
+// TODO arnaud : move some static methods elsewhere
+ 
+class UsefulFunctions
+{
+public:
+  static DoubleMatrixPtr getLambdaMatrix(double alpha, size_t size)
+  {
+    DoubleMatrixPtr ret = new DoubleMatrix(size, size, 0.0);
+    for (size_t i = 0; i < size; ++i) 
+    {
+      double value = pow(alpha, 0.5*i/(double)(size-1));  // WARNING : index i starts at 0
+      ret->setValue(i, i, value);
+    }
+    return ret;
+  }
+};
+  
 class LinearTransformation 
 {
 public:
@@ -28,20 +45,20 @@ public:
     return 0;
   }
   
-  static void Tosz(std::vector<double>& inputTab) 
+  static void Tosz(const DenseDoubleVectorPtr& tab)
   {
-    for (size_t i = 0; i < inputTab.size(); i++)
+    for (size_t i = 0; i < tab->getNumValues(); i++)
     {
-      double x = inputTab[i];
+      double x = tab->getValue(i);
       double xhat;
       if (x != 0)
         xhat = log(fabs(x));
       else
-        xhat = 0;
+        xhat = 0.0;
       
       double c1;
       if (x > 0)
-        c1 = 10;
+        c1 = 10.0;
       else
         c1 = 5.5;
       
@@ -51,16 +68,28 @@ public:
       else
         c1 = 3.1;
       
-      inputTab[i] = sign(x)*exp(xhat + 0.049*(sin(c1*xhat) + sin(c2*xhat)));
+      tab->setValue(i, sign(x)*exp(xhat + 0.049*(sin(c1*xhat) + sin(c2*xhat))));
+    }
+  }
+
+  static void Tasy(const DenseDoubleVectorPtr& tab, double beta)
+  {
+    for (size_t i = 0; i < tab->getNumValues(); ++i) 
+    {
+      if (tab->getValue(i) > 0)
+        tab->setValue(i, pow(tab->getValue(i), 1 + beta*i*sqrt(tab->getValue(i))/(tab->getNumValues()-1)));
     }
   }
 };
   
-// f(x) = ||z||^2 + f_opt
+  
+  
+  
+// f(x) = ||z||^2 + f_opt, with z = x - x_opt
 class SphereFunction : public ScalarVectorFunction
 {
 public:
-  SphereFunction(const std::vector<double>& coefs, double fopt) : coefs(coefs), fopt(fopt) {}
+  SphereFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) {}
   SphereFunction() {}
   
   virtual bool isDerivable() const
@@ -68,30 +97,29 @@ public:
   
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
-    const std::vector<double>& inputTab = input->getValues();
+    jassert(input->getNumValues() == xopt->getNumValues());
     
-    jassert(coefs.size() == inputTab.size());
-    double result = 0;
-    for (size_t i = 0; i < coefs.size(); i++)
-    {
-      double diff = inputTab[i] - coefs[i];
-      result += diff*diff;
-    }
-    result += fopt;
-    *output = result;
+    // z = x - x_opt
+    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
+    xopt->subtractFrom(z);
+    
+    double norm = z->sumOfSquares();
+    *output = norm + fopt;
   }
   
 protected:
   friend class SphereFunctionClass;
   
-  std::vector<double> coefs;
+  DenseDoubleVectorPtr xopt;
   double fopt;
 };
   
+// f(x) = \sum_{i=1}^{D} 10^(6*(i-1)/(D-1))*z_i^2 + f_opt
+// with : D = dimension, z = Tosz(x - x_opt)
 class EllipsoidalFunction : public ScalarVectorFunction
 {
 public:
-  EllipsoidalFunction(const std::vector<double>& coefs, double fopt) : coefs(coefs), fopt(fopt) {}
+  EllipsoidalFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) {}
   EllipsoidalFunction() {}
   
   virtual bool isDerivable() const
@@ -99,27 +127,73 @@ public:
   
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
-    const std::vector<double>& inputTab = input->getValues();
-    jassert(coefs.size() == inputTab.size());
+    jassert(input->getNumValues() == xopt->getNumValues())
+
+    // z = x - x_opt
+    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
+    xopt->subtractFrom(z);
     
-    std::vector<double> diff;
-    diff.resize(inputTab.size());
-    for (size_t i = 0; i < coefs.size(); i++)
-      diff[i] = coefs[i] - inputTab[i];
-    LinearTransformation::Tosz(diff);
+    // z = Tosz(x - x_opt)
+    LinearTransformation::Tosz(z);
     
     double result = 0;
-    for (size_t i = 1; i <= coefs.size(); i++)
-      result += pow(10.0, 6.0*((i-1)/(coefs.size()-1)))*diff[i]*diff[i];
+    for (size_t i = 0; i < z->getNumValues(); ++i)    // WARNING: index i starts at 0
+      result += pow(10.0, 6.0*((double)i/(double)(z->getNumValues()-1)))*z->getValue(i)*z->getValue(i);
 
-    result += fopt;
-    *output = result;
+    *output = result + fopt;
   }
   
 protected:
   friend class EllipsoidalFunctionClass;
   
-  std::vector<double> coefs;
+  DenseDoubleVectorPtr xopt;
+  double fopt;
+};
+
+class RastriginFunction : public ScalarVectorFunction
+{
+public:
+  RastriginFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) {}
+  RastriginFunction() {}
+  
+  virtual bool isDerivable() const
+  {jassertfalse; return false;} // TODO arnaud
+  
+  virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
+  {
+    jassert(input->getNumValues() == xopt->getNumValues())
+    
+    // z = x - x_opt
+    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
+    xopt->subtractFrom(z);
+    
+    // z = Tosz(x - x_opt)
+    LinearTransformation::Tosz(z);
+    
+    // z = Tasy^0.2(Tosz(x - x_opt))
+    LinearTransformation::Tasy(z, 0.2);
+    
+    DoubleMatrixPtr lambda = UsefulFunctions::getLambdaMatrix(10.0, z->getNumValues());
+    
+    // z = lambda * Tasy^0.2(Tosz(x - x_opt))
+    for (size_t i = 0; i < z->getNumValues(); ++i) 
+    {
+      z->setValue(i, lambda->getValue(i,i)*z->getValue(i));
+    }
+    
+    double term = z->getNumValues();
+    for (size_t i = 0; i < z->getNumValues(); ++i)
+      term -= cos(2*M_PI*z->getValue(i));
+    term *= 10;
+    
+    *output = term + z->sumOfSquares() + fopt;
+  
+  }
+  
+protected:
+  friend class RastriginFunctionClass;
+  
+  DenseDoubleVectorPtr xopt;
   double fopt;
 };
   

@@ -34,8 +34,10 @@ public:
 typedef ReferenceCountedObjectPtr<Optimizer> OptimizerPtr;
 
 extern OptimizerPtr uniformSampleAndPickBestOptimizer(size_t numSamples, bool verbose = false);
-extern OptimizerPtr edaOptimizer(size_t numIterations, size_t populationSize, size_t numBests, bool reinjectBest = false, bool verbose = false);
-extern OptimizerPtr asyncEDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, size_t numberEvaluationsInProgress, size_t updateFactor, bool verbose = false);
+  
+// TODO francis  
+//extern OptimizerPtr edaOptimizer(size_t numIterations, size_t populationSize, size_t numBests, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false);
+//extern OptimizerPtr asyncEDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, size_t numberEvaluationsInProgress, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false);
 
 }; /* namespace lbcpp */
 

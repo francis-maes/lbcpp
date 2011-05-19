@@ -9,24 +9,22 @@
 #ifndef LBCPP_EDA_OPTIMIZER_H_
 # define LBCPP_EDA_OPTIMIZER_H_
 
-# include <lbcpp/Optimizer/Optimizer.h>
-# include <lbcpp/Distribution/DistributionBuilder.h> // old
-# include <lbcpp/Sampler/Sampler.h> // new
+# include "PopulationBasedOptimizer.h"
 
 namespace lbcpp
 {
 
-class EDAOptimizer : public Optimizer
+class EDAOptimizer : public PopulationBasedOptimizer
 {
 public:
-  EDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, bool reinjectBest = false, bool verbose = false)
-    : numIterations(numIterations), populationSize(populationSize), numBests(numBests), reinjectBest(reinjectBest), verbose(verbose), random(new RandomGenerator()) {}
+  EDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
+    : PopulationBasedOptimizer(numIterations, populationSize, numBests, slowingFactor, reinjectBest, verbose) {}
   
-  EDAOptimizer()
-    : numIterations(0), populationSize(0), numBests(0), reinjectBest(false), verbose(false), random(new RandomGenerator()) {}
+  EDAOptimizer() : PopulationBasedOptimizer() {}
   
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {     
+    // useful to restart optimizer from optimizerState
     size_t i = (size_t) (optimizerState->getTotalNumberOfEvaluations()/populationSize);	// integer division
     context.progressCallback(new ProgressionState(i, numIterations, T("Iterations")));
 
@@ -37,163 +35,55 @@ public:
 
       context.enterScope(T("Iteration ") + String((int)i + 1));
       context.resultCallback(T("iteration"), i + 1);
-      bool ok = performEDAIteration(context, bestIterationParameters, optimizerContext, optimizerState, bestIterationScore, verbose);
+      bool ok = performEDAIteration(context, bestIterationParameters, bestIterationScore, optimizerContext, optimizerState);
       if (!ok)
-        return false;
+        return false; // TODO arnaud : handle this
       
-      // update OptimizerState if necessary
-      {
-        if (bestIterationScore < optimizerState->getBestScore())
-        {
-          ScopedLock _(optimizerState->getLock());
-          optimizerState->setBestScore(bestIterationScore);
-          optimizerState->setBestVariable(bestIterationParameters);
-        }
-      }
-
-      context.resultCallback(T("bestParameters"), optimizerState->getBestVariable());
-      context.resultCallback(T("bestScore"), bestIterationScore);
-      FunctionPtr validationFunction = optimizerContext->getValidationFunction();
-      double validationScore = 0.0;
-      if (validationFunction)
-      {
-        validationScore = validationFunction->compute(context, optimizerState->getBestVariable()).toDouble();
-        context.resultCallback(T("validationScore"), validationScore);
-      }
-      
-      context.resultCallback(T("allTimesBestScore"), optimizerState->getBestScore());
-
-      // bestIterationScore may be diffrent from optimizerState->getBestScore(),
-      // this is the return value of performEDAIteration, not the best score of all time !!!
-      context.leaveScope(validationFunction ? Variable(new Pair(bestIterationScore, validationScore)) : Variable(bestIterationScore)); 
-
+      // display results & update optimizerState
+      handleResultOfIteration(context, optimizerState, optimizerContext, bestIterationScore, bestIterationParameters);
       context.progressCallback(new ProgressionState(i + 1, numIterations, T("Iterations")));
-      
-      optimizerState->autoSaveToFile(context, true);  // force to save at end of iteration
+
     }
+    optimizerState->autoSaveToFile(context, true); // force to save at end of optimization
     return optimizerState->getBestVariable();
   }
   
 protected:
   friend class EDAOptimizerClass;
-  
-  size_t numIterations;
-  size_t populationSize;
-  size_t numBests;
-  bool reinjectBest;
-  bool verbose;
-  RandomGeneratorPtr random;
 
-  Variable sampleCandidate(ExecutionContext& context, const OptimizerStatePtr& state, const RandomGeneratorPtr& random) const
-  {
-    // TODO: replace by state.staticCast<SamplerBasedOptimizerState>()->getSampler()->sample(context, random);
-
-    // new
-    SamplerBasedOptimizerStatePtr samplerBasedState = state.dynamicCast<SamplerBasedOptimizerState>();
-    if (samplerBasedState)
-      return samplerBasedState->getSampler()->sample(context, random);
-
-    // old
-    DistributionBasedOptimizerStatePtr distributionBasedState = state.dynamicCast<DistributionBasedOptimizerState>();
-    if (distributionBasedState)
-      return distributionBasedState->getDistribution()->sample(random);
-
-    jassert(false);
-    return Variable();
-  }
-
-  void learnDistribution(ExecutionContext& context, const OptimizerStatePtr& state, const std::multimap<double, Variable>& sortedScores) const
-  {
-    // new
-    SamplerBasedOptimizerStatePtr samplerBasedState = state.dynamicCast<SamplerBasedOptimizerState>();
-    if (samplerBasedState)
-    {
-      SamplerPtr sampler = samplerBasedState->getSampler();
-
-      VectorPtr bestVariables = vector(sortedScores.begin()->second.getType());
-      bestVariables->reserve(numBests);
-
-      std::multimap<double, Variable>::const_iterator it = sortedScores.begin();
-      for (size_t i = 0; i < numBests && it != sortedScores.end(); ++i, ++it)
-        bestVariables->append(it->second);
-
-      sampler->learn(context, ContainerPtr(), bestVariables);
-      context.resultCallback(T("sampler"), sampler);
-      return;
-    }
-
-    // old
-    DistributionBasedOptimizerStatePtr distributionBasedState = state.dynamicCast<DistributionBasedOptimizerState>();
-    if (distributionBasedState)
-    {
-      // build new distribution & update OptimizerState
-      DistributionBuilderPtr builder = distributionBasedState->getDistribution()->createBuilder();
-      std::multimap<double, Variable>::const_iterator it = sortedScores.begin();
-      for (size_t i = 0; i < numBests && it != sortedScores.end(); ++i, ++it)
-        builder->addElement(it->second);
-      DistributionPtr newDistribution = builder->build(context);
-      distributionBasedState->setDistribution(newDistribution);
-      context.resultCallback(T("distribution"), newDistribution);
-      return;
-    }
-
-    jassert(false);
-  }
-    
-  bool performEDAIteration(ExecutionContext& context, Variable& bestParameters, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& state, double& bestScore, bool verbose = false) const
-  {
-    jassert(numBests < populationSize);
-    
+  bool performEDAIteration(ExecutionContext& context, Variable& bestParameters, double& bestScore, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
+  {    
     // generate evaluations requests
-    size_t offset = state->getNumberOfProcessedRequests();   // always 0 except if optimizer has been restarted from file !
+    size_t offset = optimizerState->getNumberOfProcessedRequests();   // always 0 except if optimizer has been restarted from file !
     for (size_t i = offset; i < populationSize; i++) {  // init condition used to restart from file
       Variable input;
       if (reinjectBest && i == 0 && bestParameters.exists())
         input = bestParameters;
       else 
-        input = sampleCandidate(context, state, random);
+        input = sampleCandidate(context, optimizerState, random);
       
       if (!optimizerContext->evaluate(input))
         return false; // TODO arnaud : handle this
-      state->incTotalNumberOfRequests();
-      context.progressCallback(new ProgressionState(state->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
+      optimizerState->incTotalNumberOfRequests();
+      context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
     }
     
     // wait (in case of async context) & update progression
     while (!optimizerContext->areAllRequestsProcessed())
     {
       Thread::sleep(optimizerContext->getTimeToSleep());
-      context.progressCallback(new ProgressionState(state->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
-
-      state->autoSaveToFile(context);
+      context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
+      optimizerState->autoSaveToFile(context);
     }
-    jassert(state->getNumberOfProcessedRequests() == populationSize);
-    context.progressCallback(new ProgressionState(state->getNumberOfProcessedRequests(), populationSize, T("Evaluations"))); // needed to be sure to have 100% in Explorer
+    jassert(optimizerState->getNumberOfProcessedRequests() == populationSize);
+    context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations"))); // needed to be sure to have 100% in Explorer
 
     // sort results
     std::multimap<double, Variable> sortedScores;
-    {
-      ScopedLock _(state->getLock());
-      std::vector< std::pair<double, Variable> >::const_iterator it;
-      size_t i = 1;
-      for (it = state->getProcessedRequests().begin(); it < state->getProcessedRequests().end(); it++)
-      {
-        sortedScores.insert(*it);
-
-        if (verbose) 
-        {
-          context.enterScope(T("Request ") + String((int) i));
-          context.resultCallback(T("requestNumber"), i);
-          context.resultCallback(T("parameter"), it->second);      
-          context.leaveScope(it->first);
-        }
-        i++;  // outside if to avoid a warning for unused variable
-      }
-      state->flushProcessedRequests();  // TODO arnaud : maybe do that after building new distri
-    }
+    pushResultsSortedbyScore(context, optimizerState, sortedScores);
     
     // build new distribution & update OptimizerState
-    learnDistribution(context, state, sortedScores);
+    learnDistribution(context, optimizerState, sortedScores);
     
     // return best score and best parameter of this iteration
     bestParameters = sortedScores.begin()->second;
