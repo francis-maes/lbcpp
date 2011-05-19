@@ -612,6 +612,7 @@ SET(LBCPP_OPTIMIZER_CONTEXT_SOURCES
 )
 
 SET(LBCPP_OPTIMIZER_OPTIMIZER_SOURCES
+  Optimizer/Optimizer/PopulationBasedOptimizer.h
   Optimizer/Optimizer/EDAOptimizer.h
   Optimizer/Optimizer/AsyncEDAOptimizer.h
   Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h
