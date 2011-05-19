@@ -45,13 +45,14 @@ public:
     return samplers[index]->sample(context, random, inputs);
   }
 
-  virtual void makeSubExamples(const ContainerPtr& inputs, const ContainerPtr& samples, std::vector<ContainerPtr>& subInputs, std::vector<ContainerPtr>& subSamples) const
+  virtual void makeSubExamples(const ContainerPtr& inputs, const ContainerPtr& samples, const DenseDoubleVectorPtr& weights, std::vector<ContainerPtr>& subInputs, std::vector<ContainerPtr>& subSamples, std::vector<ContainerPtr>& subWeights) const
   {
     size_t n = samples->getNumElements();
 
     size_t numSamplers = samplers.size();
     subInputs.resize(numSamplers);
     subSamples.resize(numSamplers);
+    subWeights.resize(numSamplers);
 
     VectorPtr classSamples = vector(proteinMoverEnumerationEnumeration, n);
     for (size_t i = 0; i < numSamplers - 1; ++i)

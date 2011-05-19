@@ -28,7 +28,8 @@ public:
     return samplers[index]->sample(context, random, inputs);
   }
 
-  virtual void makeSubExamples(const ContainerPtr& inputs, const ContainerPtr& samples, std::vector<ContainerPtr>& subInputs, std::vector<ContainerPtr>& subSamples) const
+  virtual void makeSubExamples(const ContainerPtr& inputs, const ContainerPtr& samples, const DenseDoubleVectorPtr& weights,
+                               std::vector<ContainerPtr>& subInputs, std::vector<ContainerPtr>& subSamples, std::vector<ContainerPtr>& subWeights) const
   {
     // FIXME
   }
@@ -72,8 +73,8 @@ public:
     }
   }
 
-  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
-                                                const ContainerPtr& validationInputs, const ContainerPtr& validationSamples)
+  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights,
+                                                    const ContainerPtr& validationInputs, const ContainerPtr& validationSamples, const DenseDoubleVectorPtr& supervisionWeights)
   {
     for (size_t i = 0; i < samplers.size(); ++i)
       jassert(samplers[i].isInstanceOf<ScalarContinuousSampler>());
