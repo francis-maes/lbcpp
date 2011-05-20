@@ -104,7 +104,8 @@ protected:
         vec.push_back(oldSampler);
         vec.push_back(newSampler);
         samplerBasedState->setSampler(mixtureSampler(probabilities, vec));
-      } else 
+      }
+      else 
       {
         SamplerPtr sampler = samplerBasedState->getSampler();
         sampler->learn(context, ContainerPtr(), bestVariables);
