@@ -23,11 +23,11 @@
   </class>
   
   <class name="EDAOptimizer" base="PopulationBasedOptimizer" shortName="eda">
-    <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, double slowingFactor, bool reinjectBest, bool verbose"/>
+    <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, double slowingFactor, bool reinjectBest, bool verbose" returnType="Optimizer"/>
   </class>
   
   <class name="AsyncEDAOptimizer" base="PopulationBasedOptimizer">
-    <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, size_t numberEvaluationsInProgress, double slowingFactor, bool reinjectBest, bool verbose"/>
+    <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, size_t numberEvaluationsInProgress, double slowingFactor, bool reinjectBest, bool verbose" returnType="Optimizer"/>
     <variable type="PositiveInteger" name="numberEvaluationsInProgress"/>
   </class>
      

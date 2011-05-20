@@ -34,7 +34,7 @@ public:
     {jassert(false);}
 
   virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
-    {jassert(false);}
+    {jassert(false); return DenseDoubleVectorPtr();}
 
   lbcpp_UseDebuggingNewOperator
 
