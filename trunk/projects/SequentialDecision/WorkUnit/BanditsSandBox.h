@@ -18,7 +18,6 @@
 
 namespace lbcpp
 {
-
   
 ///////////////////////////////////////////////////
 //////// Bandit policies base classes /////////////
@@ -32,15 +31,15 @@ public:
   BanditStatistics(size_t numMoments)
     : Object(banditStatisticsClass), statistics(new ScalarVariableStatistics(T("reward")))
   {
-    if (numMoments > 2)
-      moments.resize(numMoments - 2);
+    //if (numMoments > 2)
+    //  moments.resize(numMoments - 2);
   }
   BanditStatistics() {}
 
   void update(double reward)
   {
     statistics->push(reward);
-    if (moments.size())
+   /* if (moments.size())
     {
       if (reward == 0)
       {
@@ -55,7 +54,7 @@ public:
       else
         for (size_t i = 0; i < moments.size(); ++i)
           moments[i].push(pow(reward, (double)(i + 2)));
-    }
+    }*/
   }
 
   size_t getPlayedCount() const
@@ -66,6 +65,9 @@ public:
 
   double getSquaredRewardMean() const
     {return statistics->getSquaresMean();}
+
+  double getSquaredRewardSum() const
+    {return statistics->getSquaresMean() * getPlayedCount();}
 
   double getRewardVariance() const
     {return statistics->getVariance();}
@@ -78,7 +80,7 @@ public:
 
   double getMaxReward() const
     {return statistics->getMaximum();}
-
+/*
   size_t getNumMoments() const
     {return moments.size() + 2;}
 
@@ -94,13 +96,13 @@ public:
       return statistics->getMean();
     else
       return pow(moments[index - 2].getMean(), 1.0 / (double)index);
-  }
+  }*/
 
 private:
   friend class BanditStatisticsClass;
 
   ScalarVariableStatisticsPtr statistics;
-  std::vector<ScalarVariableMean> moments;
+  //std::vector<ScalarVariableMean> moments;
 };
 
 typedef ReferenceCountedObjectPtr<BanditStatistics> BanditStatisticsPtr;
@@ -193,11 +195,78 @@ protected:
   }
 };
 
-class UCB2DiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy
+class UCB1NormalDiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy
+{
+public:
+  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
+  {
+    const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
+    double qj = statistics->getSquaredRewardSum();
+    double nj = (double)statistics->getPlayedCount();
+    double xj2 = statistics->getRewardMean() * statistics->getRewardMean();
+    double n = (double)timeStep;
+    return statistics->getRewardMean() + sqrt(16.0 * ((qj - nj * xj2) / (nj - 1)) * (log(n - 1.0) / nj));
+  }
+
+  virtual size_t selectBandit(size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
+  {
+    if (timeStep < banditStatistics.size())
+      return timeStep; // play each bandit once
+
+    // if there is a machine which has been played less then 8log(n) times, then play this machine
+    size_t limit = (size_t)ceil(8 * log((double)timeStep));
+    for (size_t i = 0; i < banditStatistics.size(); ++i)
+      if (banditStatistics[i]->getPlayedCount() < limit)
+        return i;
+
+    return selectMaximumIndexBandit(timeStep, banditStatistics);
+  }
+};
+
+///////////////////////////////////////////////////
+/////////// Optimized Bandit Policy ///////////////
+///////////////////////////////////////////////////
+
+class Parameterized
+{
+public:
+  virtual ~Parameterized() {}
+
+  virtual SamplerPtr createParametersSampler() const = 0;
+
+  virtual void setParameters(const Variable& parameters) = 0;
+  virtual Variable getParameters() const = 0;
+
+  static Parameterized* get(const ObjectPtr& object)
+    {return dynamic_cast<Parameterized* >(object.get());}
+
+  static TypePtr getParametersType(const ObjectPtr& object)
+    {Parameterized* p = get(object); return p ? p->getParameters().getType() : TypePtr();}
+
+  static ObjectPtr cloneWithNewParameters(const ObjectPtr& object, const Variable& newParameters)
+  {
+    ObjectPtr res = object->clone(defaultExecutionContext());
+    Parameterized* parameterized = get(res);
+    jassert(parameterized);
+    parameterized->setParameters(newParameters);
+    return res;
+  }
+};
+
+class UCB2DiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
 {
 public:
   UCB2DiscreteBanditPolicy(double alpha = 1.0) : alpha(alpha) {}
- 
+
+  virtual SamplerPtr createParametersSampler() const
+    {return gaussianSampler(-3, 2);}
+
+  virtual void setParameters(const Variable& parameters)
+    {alpha = pow(10, parameters.getDouble());}
+
+  virtual Variable getParameters() const
+    {return log10(alpha);}
+
   virtual void initialize(size_t numBandits)
   {
     IndexBasedDiscreteBanditPolicy::initialize(numBandits);
@@ -234,6 +303,8 @@ protected:
       currentBandit = selectMaximumIndexBandit(timeStep, banditStatistics);
       size_t& rj = episodeCounts[currentBandit];
       episodeRemainingSteps = tau(rj + 1) - tau(rj);
+      if (!episodeRemainingSteps)
+        ++episodeRemainingSteps; // TMP !
       ++rj;
     }
 
@@ -243,36 +314,6 @@ protected:
 
   size_t tau(size_t count) const
     {return (size_t)ceil(pow(1 + alpha, (double)count));}
-};
-
-///////////////////////////////////////////////////
-/////////// Optimized Bandit Policy ///////////////
-///////////////////////////////////////////////////
-
-class Parameterized
-{
-public:
-  virtual ~Parameterized() {}
-
-  virtual SamplerPtr createParametersSampler() const = 0;
-
-  virtual void setParameters(const Variable& parameters) = 0;
-  virtual Variable getParameters() const = 0;
-
-  static Parameterized* get(const ObjectPtr& object)
-    {return dynamic_cast<Parameterized* >(object.get());}
-
-  static TypePtr getParametersType(const ObjectPtr& object)
-    {Parameterized* p = get(object); return p ? p->getParameters().getType() : TypePtr();}
-
-  static ObjectPtr cloneWithNewParameters(const ObjectPtr& object, const Variable& newParameters)
-  {
-    ObjectPtr res = object->clone(defaultExecutionContext());
-    Parameterized* parameterized = get(res);
-    jassert(parameterized);
-    parameterized->setParameters(newParameters);
-    return res;
-  }
 };
 
 class EpsilonGreedyDiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
@@ -329,6 +370,42 @@ protected:
   double c;
   double d;
   RandomGeneratorPtr random;
+};
+
+class UCBvDiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
+{
+public:
+  UCBvDiscreteBanditPolicy() : c(1.0), zeta(1.0) {}
+
+  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
+  {
+    const BanditStatisticsPtr& bandit = banditStatistics[banditNumber];
+
+    double mean = bandit->getRewardMean();
+    double variance = bandit->getRewardVariance();
+    double s = (double)bandit->getPlayedCount();
+    double epsilon = zeta * log((double)timeStep);
+    return mean + sqrt((2.0 * variance * epsilon) / s) + c * (3.0 * epsilon) / s; 
+  }
+
+  virtual SamplerPtr createParametersSampler() const
+    {return objectCompositeSampler(pairClass(doubleType, doubleType), gaussianSampler(1.0), gaussianSampler(1.0));}
+
+  virtual void setParameters(const Variable& parameters)
+  {
+    const PairPtr& pair = parameters.getObjectAndCast<Pair>();
+    c = pair->getFirst().getDouble();
+    zeta = pair->getSecond().getDouble();
+  }
+
+  virtual Variable getParameters() const
+    {return new Pair(c, zeta);}
+
+protected:
+  friend class UCBvDiscreteBanditPolicyClass;
+
+  double c;
+  double zeta;
 };
 
 class WeightedUCBBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
@@ -391,7 +468,7 @@ protected:
   // score = a * log((double)timeStep) + b * statistics->getPlayedCount() + c
   DenseDoubleVectorPtr parameters;
 };
-
+/*
 class PerTimesWeightedUCBBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
 {
 public:
@@ -462,7 +539,7 @@ protected:
 
   DenseDoubleVectorPtr parameters;
 };
-
+*/
 class PowerFunctionParameterizedBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
 {
 public:
@@ -756,56 +833,6 @@ public:
   virtual Variable getParameters() const
     {return parameters;}
 
-#if 0
-  double rewardMargin;
-  virtual size_t selectBandit(size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
-  {
-    size_t numBandits = banditStatistics.size();
-    if (timeStep < numBandits)
-      return timeStep; // play each bandit once
-
-    size_t optimalBandit;
-    double bestRewardMean = -DBL_MAX;
-    for (size_t i = 0; i < numBandits; ++i)
-    {
-      double rewardMean = banditStatistics[i]->getRewardMean();
-      if (rewardMean > bestRewardMean)
-        bestRewardMean = rewardMean, optimalBandit = i;
-    }
-    double secondBestRewardMean = -DBL_MAX;
-    for (size_t i = 0; i < numBandits; ++i)
-      if (i == optimalBandit)
-        continue;
-      else
-        secondBestRewardMean = juce::jmax(secondBestRewardMean, banditStatistics[i]->getRewardMean());
-    
-    rewardMargin = bestRewardMean - secondBestRewardMean;
-
-    double score = parameters->getValue(0) + (parameters->getValue(1) / (double)timeStep) + parameters->getValue(2) * rewardMargin;
-
-                  //(parameters->getValue(2) + parameters->getValue(3)) * rewardMargin +
-                  //(parameters->getValue(4) + parameters->getValue(5)) * rewardMargin / timeStep;
-
-/*
-    double v1 = 1.0 / (double)timeStep;
-    double v2 = secondBestRewardMean;
-    double v3 = bestRewardMean;*/
-    //double score = parameters->getValue(0) * v1 + parameters->getValue(1) * v2 + parameters->getValue(2) * v3 + parameters->getValue(3);
-    double probability = 1.0 / (1.0 + exp(-score));
-
-    if (random->sampleBool(probability))
-    {
-      //return random->sampleSize(numBandits);
-      size_t index = random->sampleSize(numBandits - 1);
-      if (index >= optimalBandit)
-        ++index;
-      return index;
-    }
-    else
-      return selectMaximumIndexBandit(timeStep, banditStatistics);
-  }
-#endif // 0
-
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
     BanditStatisticsPtr bandit = banditStatistics[banditNumber];
@@ -1056,7 +1083,7 @@ public:
 
       context.resultCallback(T("deltaRegret"), optimizedScore - baselineScore);
       context.resultCallback(T("outperformPercentage"), outperformPercentage);
-      return new Pair(optimizedScore - baselineScore, outperformPercentage);
+      return new Pair(optimizedScore, outperformPercentage);
     }
 
   protected:
@@ -1076,14 +1103,19 @@ public:
       : CompositeWorkUnit(T("Evaluating policy ") + policyFilePath)
     {
       addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Bernoulli problems with hor=10"), numBandits, 10, states, baselinePolicy, optimizedPolicy));
-      addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Bernoulli problems with hor=100"), numBandits, 100, states, baselinePolicy, optimizedPolicy));
-      addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Bernoulli problems with hor=1000"), numBandits, 1000, states, baselinePolicy, optimizedPolicy));
-      addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Bernoulli problems with hor=10000"), numBandits, 10000, states, baselinePolicy, optimizedPolicy));
-
       addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Gaussian problems with hor=10"), numBandits, 10, states2, baselinePolicy, optimizedPolicy));
+
+      addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Bernoulli problems with hor=100"), numBandits, 100, states, baselinePolicy, optimizedPolicy));
       addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Gaussian problems with hor=100"), numBandits, 100, states2, baselinePolicy, optimizedPolicy));
+
+      addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Bernoulli problems with hor=1000"), numBandits, 1000, states, baselinePolicy, optimizedPolicy));
       addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Gaussian problems with hor=1000"), numBandits, 1000, states2, baselinePolicy, optimizedPolicy));
+
+      addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Bernoulli problems with hor=10000"), numBandits, 10000, states, baselinePolicy, optimizedPolicy));
       addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Gaussian problems with hor=10000"), numBandits, 10000, states2, baselinePolicy, optimizedPolicy));
+
+      addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Bernoulli problems with hor=100000"), numBandits, 100000, states, baselinePolicy, optimizedPolicy));
+      addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Gaussian problems with hor=100000"), numBandits, 100000, states2, baselinePolicy, optimizedPolicy));
 
       setProgressionUnit(T("Evaluations"));
       setPushChildrenIntoStackFlag(true);
@@ -1104,9 +1136,14 @@ public:
     */
     ClassPtr bernoulliSamplerClass = lbcpp::getType(T("BernoulliSampler"));
     ClassPtr gaussianSamplerClass = lbcpp::getType(T("GaussianSampler"));
+    ClassPtr rejectionSamplerClass = lbcpp::getType(T("RejectionSampler"));
 
-    SamplerPtr initialStateSampler = new DiscreteBanditInitialStateSampler(objectCompositeSampler(bernoulliSamplerClass, uniformScalarSampler(0.0, 1.0)), numBandits);
-    SamplerPtr initialStateSampler2 = new DiscreteBanditInitialStateSampler(objectCompositeSampler(gaussianSamplerClass, uniformScalarSampler(), uniformScalarSampler()), numBandits);
+    SamplerPtr banditSamplerSampler = objectCompositeSampler(bernoulliSamplerClass, uniformScalarSampler(0.0, 1.0));
+    SamplerPtr initialStateSampler = new DiscreteBanditInitialStateSampler(banditSamplerSampler, numBandits);
+    SamplerPtr banditSamplerSampler2 = objectCompositeSampler(rejectionSamplerClass,
+                                                objectCompositeSampler(gaussianSamplerClass, uniformScalarSampler(), uniformScalarSampler()),
+                                                constantSampler(logicalAnd(lessThanOrEqualToPredicate(1.0), greaterThanOrEqualToPredicate(0.0))));
+    SamplerPtr initialStateSampler2 = new DiscreteBanditInitialStateSampler(banditSamplerSampler2, numBandits);
 
     RandomGeneratorPtr random = new RandomGenerator();
     std::vector<DiscreteBanditStatePtr> states(numProblems);
@@ -1136,7 +1173,7 @@ public:
     */
     String description = T("Evaluating ");
     if (policyFiles.size() == 1)
-      description += T(" one policy");
+      description += T("one policy");
     else
       description += String(policyFiles.size()) + T(" policies");
     CompositeWorkUnitPtr workUnit(new CompositeWorkUnit(description));
@@ -1196,6 +1233,8 @@ public:
     std::vector<DiscreteBanditPolicyPtr> policies;
     //policies.push_back(new UCB2DiscreteBanditPolicy(0.001));
     policies.push_back(new UCB1TunedDiscreteBanditPolicy());
+    policies.push_back(new UCBvDiscreteBanditPolicy());
+    policies.push_back(new UCB1NormalDiscreteBanditPolicy());
     //policies.push_back(new EpsilonGreedyDiscreteBanditPolicy(0.05, 0.1));
 
     CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Evaluating policies "), policies.size());
@@ -1209,9 +1248,13 @@ public:
     context.run(workUnit);
 
     std::vector<std::pair<DiscreteBanditPolicyPtr, String> > policiesToOptimize;
-    policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(1), T("powerFunction1")));
-    policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(2), T("powerFunction2")));
-    policiesToOptimize.push_back(std::make_pair(new OldStyleParameterizedBanditPolicy(false), T("oldStyle")));
+    policiesToOptimize.push_back(std::make_pair(new UCBvDiscreteBanditPolicy(), T("UCBv")));
+    policiesToOptimize.push_back(std::make_pair(new UCB2DiscreteBanditPolicy(), T("UCB2")));
+    policiesToOptimize.push_back(std::make_pair(new WeightedUCBBanditPolicy(), T("WeightedUCB1")));
+
+    //policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(1), T("powerFunction1")));
+    //policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(2), T("powerFunction2")));
+    //policiesToOptimize.push_back(std::make_pair(new OldStyleParameterizedBanditPolicy(false), T("oldStyle")));
 
     //policiesToOptimize.push_back(std::make_pair(new UltimateParameterizedBanditPolicy(), T("ultimate")));
     //policiesToOptimize.push_back(std::make_pair(new OldStyleParameterizedBanditPolicy(true), T("oldStyle-sparse")));
@@ -1249,34 +1292,6 @@ public:
       workUnit->setProgressionUnit(T("Problem Sets"));
       workUnit->setPushChildrenIntoStackFlag(true);
       context.run(workUnit);
-      
-#if 0
-      // detailed evaluation
-      DiscreteBanditPolicyPtr baselinePolicy = new UCB1TunedDiscreteBanditPolicy();
-      context.enterScope(T("DetailedEvaluation"));
-      double baselineScoreSum = 0.0;
-      double optimizedScoreSum = 0.0;
-      for (size_t i = 0; i < testingStates.size(); ++i)
-      {
-        context.enterScope(T("Problem ") + String((int)i));
-        DiscreteBanditStatePtr initialState = testingStates[i];
-        context.resultCallback(T("index"), i);
-        context.resultCallback(T("problem"), initialState);
-        std::vector<DiscreteBanditStatePtr> initialStates(1, initialState);
-
-        double baselineScore = context.run(makeEvaluationWorkUnit(initialStates, T("Testing Problem"), baselinePolicy, true)).toDouble();
-        baselineScoreSum += baselineScore;
-        double optimizedScore = context.run(makeEvaluationWorkUnit(initialStates, T("Testing Problem"), optimizedPolicy, true)).toDouble();
-        optimizedScoreSum += optimizedScore;
-
-        context.resultCallback(T("baseline"), baselineScore);
-        context.resultCallback(T("optimized"), optimizedScore);
-        context.resultCallback(T("delta"), optimizedScore - baselineScore);
-        context.leaveScope(new Pair(baselineScore, optimizedScore));
-      }
-      PairPtr result = new Pair(baselineScoreSum / testingStates.size(), optimizedScoreSum / testingStates.size());
-      context.leaveScope(result);
-#endif // 0
 
       context.leaveScope(true);
     }
@@ -1318,6 +1333,11 @@ protected:
     // eda parameters
     size_t populationSize = numParameters * 8;
     size_t numBests = numParameters * 2;
+
+    if (populationSize < 50)
+      populationSize = 50;
+    if (numBests < 10)
+      numBests = 10;
 
     //populationSize = 100, numBests = 10;
 

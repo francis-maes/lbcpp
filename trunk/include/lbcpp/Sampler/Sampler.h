@@ -43,6 +43,25 @@ protected:
 };
 typedef ReferenceCountedObjectPtr<Sampler> SamplerPtr;
 
+class ConstantSampler : public Sampler
+{
+public:
+  ConstantSampler(const Variable& value = Variable())
+    : value(value) {}
+ 
+  virtual Variable computeExpectation(const Variable* inputs = NULL) const;
+  virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const;
+  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights = DenseDoubleVectorPtr(),
+                                                const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr(), const DenseDoubleVectorPtr& validationWeights = DenseDoubleVectorPtr());
+  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const;
+
+protected:
+  friend class ConstantSamplerClass;
+  Variable value;
+};
+
+extern SamplerPtr constantSampler(const Variable& value);
+
 /*
 ** Continuous Sampler
 */
@@ -122,6 +141,35 @@ extern CompositeSamplerPtr independentDoubleMatrixSampler(size_t numRows, size_t
 extern CompositeSamplerPtr mixtureSampler(const DenseDoubleVectorPtr& probabilities, const std::vector<SamplerPtr>& samplers);
 
 extern CompositeSamplerPtr zeroOrScalarContinuousSampler(DiscreteSamplerPtr equalZeroSampler, ScalarContinuousSamplerPtr scalarSampler);
+
+/*
+** DecoratorSampler
+*/
+class DecoratorSampler : public Sampler
+{
+public:
+  DecoratorSampler(SamplerPtr sampler)
+    : sampler(sampler) {}
+  DecoratorSampler() {}
+ 
+  virtual Variable computeExpectation(const Variable* inputs = NULL) const;
+  virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const;
+  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights = DenseDoubleVectorPtr(),
+                                                const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr(), const DenseDoubleVectorPtr& validationWeights = DenseDoubleVectorPtr());
+
+  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const;
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
+
+protected:
+  friend class DecoratorSamplerClass;
+
+  SamplerPtr sampler;
+};
+
+typedef ReferenceCountedObjectPtr<DecoratorSampler> DecoratorSamplerPtr;
+
+extern DecoratorSamplerPtr rejectionSampler(SamplerPtr sampler, FunctionPtr predicate);
 
 }; /* namespace lbcpp */
 
