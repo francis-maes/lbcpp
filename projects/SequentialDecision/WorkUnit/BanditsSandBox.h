@@ -1251,6 +1251,7 @@ public:
     policiesToOptimize.push_back(std::make_pair(new UCBvDiscreteBanditPolicy(), T("UCBv")));
     policiesToOptimize.push_back(std::make_pair(new UCB2DiscreteBanditPolicy(), T("UCB2")));
     policiesToOptimize.push_back(std::make_pair(new WeightedUCBBanditPolicy(), T("WeightedUCB1")));
+    policiesToOptimize.push_back(std::make_pair(new EpsilonGreedyDiscreteBanditPolicy(0.1, 0.1), T("epsilonGreedy")));
 
     //policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(1), T("powerFunction1")));
     //policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(2), T("powerFunction2")));
@@ -1259,7 +1260,7 @@ public:
     //policiesToOptimize.push_back(std::make_pair(new UltimateParameterizedBanditPolicy(), T("ultimate")));
     //policiesToOptimize.push_back(std::make_pair(new OldStyleParameterizedBanditPolicy(true), T("oldStyle-sparse")));
 
-    //policiesToOptimize.push_back(std::make_pair(new EpsilonGreedyDiscreteBanditPolicy(0.1, 0.1), T("epsilonGreedy")));
+    
     //policiesToOptimize.push_back(std::make_pair(new TimeDependentWeightedUCBBanditPolicy(), T("timeDependentWeighted")));
 
     //policiesToOptimize.push_back(new PerTimesWeightedUCBBanditPolicy(maxTimeStep));
