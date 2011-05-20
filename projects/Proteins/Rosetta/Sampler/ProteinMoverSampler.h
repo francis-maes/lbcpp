@@ -14,12 +14,10 @@
 # include "SimpleResidueSampler.h"
 # include "ResiduePairSampler.h"
 # include "../ProteinMover.h"
+# include "SmoothEnumerationSampler.h"
 
 namespace lbcpp
 {
-
-class ProteinMoverSampler;
-typedef ReferenceCountedObjectPtr<ProteinMoverSampler> ProteinMoverSamplerPtr;
 
 class ProteinMoverSampler : public CompositeSampler
 {
@@ -33,7 +31,7 @@ public:
   ProteinMoverSampler(size_t numResidues)
   {
     createObjectSamplers(numResidues);
-    samplers.push_back(enumerationSampler(proteinMoverEnumerationEnumeration));
+    samplers.push_back(new SmoothEnumerationSampler(proteinMoverEnumerationEnumeration, 0.1, 0.1));
   }
 
   ProteinMoverSampler() {}
@@ -94,6 +92,8 @@ protected:
     samplers.push_back(objectCompositeSampler(rigidBodyMoverClass, new ResiduePairSampler(numResidues), gaussianSampler(1, 1), gaussianSampler(0, 25)));
   }
 };
+
+typedef ReferenceCountedObjectPtr<ProteinMoverSampler> ProteinMoverSamplerPtr;
 
 }; /* namespace lbcpp */
 

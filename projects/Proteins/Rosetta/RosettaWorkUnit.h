@@ -352,13 +352,18 @@ public:
         else
           moverSampler = new ProteinMoverSampler(targetPose->n_residue());
 
+        bool bestLearning = true;
+        if (includeBestMoversInLearning == 0)
+          bestLearning = false;
+
         std::vector<ProteinMoverPtr> returnMovers(numMoversToKeep);
 
         // find best movers by EDA
         DenseDoubleVectorPtr energyMeans = new DenseDoubleVector(numIterations, 0);
         ProteinEDAOptimizerPtr opti = new ProteinEDAOptimizer(energyWeight);
-        SamplerPtr out = opti->findBestMovers(context, random, targetPose, referencePose, moverSampler,
-            returnMovers, numIterations, numSamples, ratioGoodSamples, numMoversToKeep, &energyMeans);
+        SamplerPtr out = opti->findBestMovers(context, random, targetPose, referencePose,
+            moverSampler, returnMovers, numIterations, numSamples, numGoodSamples,
+            numMoversToKeep, bestLearning, &energyMeans);
 
         // save gathered data
         for (size_t k = 0;k < numIterations; k++)
@@ -409,9 +414,10 @@ protected:
   double energyWeight;
   int numIterations;
   int numSamples;
+  int includeBestMoversInLearning;
   int numMoversToKeep;
   int oneOrAll;
-  double ratioGoodSamples;
+  int numGoodSamples;
 };
 
 class ConformationSortingWorkUnit : public WorkUnit
@@ -508,6 +514,11 @@ public:
     if (!(outputDirectory.isEmpty()))
     {
       outputFile = context.getFile(outputDirectory);
+      if (outputFile.exists())
+      {
+        outputFile.deleteFile();
+        outputFile.create();
+      }
       fos = outputFile.createOutputStream();
       out = true;
     }

@@ -107,11 +107,15 @@ public:
   }
 
   SamplerPtr findBestMovers(ExecutionContext& context, const RandomGeneratorPtr& random,
-      const core::pose::PoseOP& target, const core::pose::PoseOP& reference, SamplerPtr sampler, std::vector<
-          ProteinMoverPtr>& movers, size_t maxIterations, size_t numSamples = 1000, double ratioGoodSamples = 0.5,
-      size_t numMoversToKeep = 20, DenseDoubleVectorPtr* energyMeans = NULL)
+      const core::pose::PoseOP& target, const core::pose::PoseOP& reference, SamplerPtr sampler,
+      std::vector<ProteinMoverPtr>& movers, size_t maxIterations, size_t numSamples = 1000,
+      size_t numGoodSamples = 500, size_t numMoversToKeep = 20, bool includeBestMoversInLearning =
+          true, DenseDoubleVectorPtr* energyMeans = NULL)
   {
     SamplerPtr workingSampler = sampler->cloneAndCast<Sampler> ();
+    size_t numLearningSamplesFirstPass = numGoodSamples / 2;
+    size_t numLearningSamplesSecondPass = numGoodSamples - numLearningSamplesFirstPass;
+
 #ifdef LBCPP_PROTEIN_ROSETTA
     core::pose::PoseOP workingPose = new core::pose::Pose(*target);
 
@@ -128,13 +132,12 @@ public:
       ScalarVariableMeanAndVariance deltaEnergyRandomVariable;
       ScalarVariableMeanAndVariance energyRandomVariable;
       ScalarVariableMeanAndVariance qScoreRandomVariable;
+
       for (size_t j = 0; j < numSamples; j++)
       {
         ProteinMoverPtr mover = workingSampler->sample(context, random, NULL).getObjectAndCast<ProteinMover> ();
 
         mover->move(workingPose);
-        //double score = evaluate(context, workingPose, reference);
-        //MoverAndScore candidate(mover, score);
 
         MoverAndScore candidate = evaluate(context, workingPose, reference, energyBeforeMove);
         candidate.mover = mover;
@@ -155,6 +158,7 @@ public:
 
       // evaluate performance of the iteration
       context.enterScope(T("Values"));
+      context.resultCallback(T("Iteration"), Variable(i));
       context.resultCallback(T("Mean score"), Variable(scoreRandomVariable.getMean()));
       context.resultCallback(T("Std Dev score"), Variable(scoreRandomVariable.getStandardDeviation()));
       double meanDeltaEnergy = deltaEnergyRandomVariable.getMean();
@@ -164,41 +168,59 @@ public:
       context.resultCallback(T("Std Dev deltaEnergy"), Variable(deltaEnergyRandomVariable.getStandardDeviation()));
       context.resultCallback(T("Mean energy"), Variable(energyRandomVariable.getMean()));
       context.resultCallback(T("Std Dev energy"), Variable(energyRandomVariable.getStandardDeviation()));
-      context.resultCallback(T("Mean qScore"), Variable(scoreRandomVariable.getMean()));
-      context.resultCallback(T("Std Dev qScore"), Variable(scoreRandomVariable.getStandardDeviation()));
+      context.resultCallback(T("Mean qScore"), Variable(qScoreRandomVariable.getMean()));
+      context.resultCallback(T("Std Dev qScore"), Variable(qScoreRandomVariable.getStandardDeviation()));
       context.leaveScope(Variable(meanDeltaEnergy));
 
       // best samplers ever seen
       moversToKeep.sort(compareMovers);
-      while (moversToKeep.size() > numMoversToKeep)
+      while (moversToKeep.size() > juce::jmax((int)numGoodSamples, (int)numMoversToKeep))
         moversToKeep.pop_back();
 
       // keep best samplers
-      size_t numLearningSamples = (size_t)(numSamples * ratioGoodSamples);
-      size_t numLearningSamplesFirstPass = numLearningSamples / 2;
-      size_t numLearningSamplesSecondPass = numLearningSamples - numLearningSamplesFirstPass;
-      std::vector<MoverAndScore> moversVector(numLearningSamples);
-      for (size_t j = 0; j < numLearningSamplesFirstPass; j++)
+      std::vector<MoverAndScore> moversVector;
+
+      if (includeBestMoversInLearning)
       {
-        moversVector[j] = MoverAndScore(tempList.front());
-        tempList.pop_front();
+        moversVector.clear();
+        moversVector.resize(moversToKeep.size());
+        std::list<MoverAndScore>::iterator it;
+        size_t k = 0;
+        for (it = moversToKeep.begin(); it != moversToKeep.end(); it++)
+          moversVector[k++] = *it;
       }
-
-      std::vector<MoverAndScore> rest(tempList.size());
-      for (size_t j = 0; j < rest.size(); j++)
+      else
       {
-        rest[j] = MoverAndScore(tempList.front());
-        tempList.pop_front();
+        if (numGoodSamples > numSamples)
+        {
+          jassert(false);
+          numGoodSamples = numSamples;
+          numLearningSamplesFirstPass = numGoodSamples / 2;
+          numLearningSamplesSecondPass = numGoodSamples - numLearningSamplesFirstPass;
+        }
+        moversVector = std::vector<MoverAndScore>(numGoodSamples);
+        for (size_t j = 0; j < numLearningSamplesFirstPass; j++)
+        {
+          moversVector[j] = MoverAndScore(tempList.front());
+          tempList.pop_front();
+        }
+
+        std::vector<MoverAndScore> rest(tempList.size());
+        for (size_t j = 0; j < rest.size(); j++)
+        {
+          rest[j] = MoverAndScore(tempList.front());
+          tempList.pop_front();
+        }
+
+        std::vector<size_t> ordering;
+        random->sampleOrder((size_t)(rest.size()), ordering);
+
+        for (size_t j = 0; j < numLearningSamplesSecondPass; j++)
+          moversVector[numLearningSamplesFirstPass + j] = MoverAndScore(rest[ordering[j]]);
       }
-
-      std::vector<size_t> ordering;
-      random->sampleOrder((size_t)(rest.size()), ordering);
-
-      for (size_t j = 0; j < numLearningSamplesSecondPass; j++)
-        moversVector[numLearningSamplesFirstPass + j] = MoverAndScore(rest[ordering[j]]);
 
       ObjectVectorPtr dataset = new ObjectVector(proteinMoverClass, 0);
-      for (size_t j = 0; j < numLearningSamples; j++)
+      for (size_t j = 0; j < moversVector.size(); j++)
         dataset->append(moversVector[j].mover);
       workingSampler->learn(context, ContainerPtr(), dataset);
     }
