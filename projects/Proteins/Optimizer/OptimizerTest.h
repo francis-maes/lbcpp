@@ -153,8 +153,8 @@ class OptimizerTestBedWorkUnit : public WorkUnit
     */
     
     
-    //OptimizerPtr optimizer = new EDAOptimizer(20, 100, 30, 0.2);
-    OptimizerPtr optimizer = new AsyncEDAOptimizer(100, 2000, 300, 300, 0.3);
+    //OptimizerPtr optimizer = edaOptimizer(20, 100, 30, 0.2);
+    OptimizerPtr optimizer = asyncEDAOptimizer(100, 2000, 300, 300, 0.3);
     
     DenseDoubleVectorPtr coefs = new DenseDoubleVector(4, 0.0);
     coefs->setValue(0, 2.0);
