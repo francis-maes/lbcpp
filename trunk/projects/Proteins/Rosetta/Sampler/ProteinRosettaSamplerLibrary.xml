@@ -35,4 +35,10 @@
     <constructor arguments="size_t numResidues"/>
   </class>
   
+  <class name="SmoothEnumerationSampler" base="DiscreteSampler">
+    <variable type="DenseDoubleVector[EnumValue, Probability]" name="probabilities"/>
+    <variable type="Double" name="learningRate"/>
+    <variable type="Double" name="probabilityForUnseenSample"/>
+  </class>
+  
 </library>
