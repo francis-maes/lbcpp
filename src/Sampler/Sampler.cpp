@@ -11,6 +11,29 @@
 using namespace lbcpp;
 
 /*
+** ConstantSampler
+*/
+Variable ConstantSampler::computeExpectation(const Variable* inputs) const
+  {return value;}
+
+Variable ConstantSampler::sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs) const
+  {return value;}
+
+void ConstantSampler::learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights,
+                                              const ContainerPtr& validationInputs, const ContainerPtr& validationSamples, const DenseDoubleVectorPtr& validationWeights)
+  {}
+
+DenseDoubleVectorPtr ConstantSampler::computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
+{
+  size_t n = samples->getNumElements();
+  DenseDoubleVectorPtr res = new DenseDoubleVector(n, 0.0);
+  for (size_t i = 0; i < n; ++i)
+    if (samples->getElement(i) == value)
+      res->setValue(i, 1.0);
+  return res;
+}
+
+/*
 ** CompositeSampler
 */
 void CompositeSampler::learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights,
@@ -71,4 +94,26 @@ CompositeSamplerPtr lbcpp::objectCompositeSampler(ClassPtr objectClass, const Sa
   samplers[1] = secondVariableSampler;
   samplers[2] = thirdVariableSampler;
   return objectCompositeSampler(objectClass, samplers);
+}
+
+/*
+** DecoratorSampler
+*/
+Variable DecoratorSampler::computeExpectation(const Variable* inputs) const
+  {return sampler->computeExpectation(inputs);}
+
+Variable DecoratorSampler::sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs) const
+  {return sampler->sample(context, random, inputs);}
+
+void DecoratorSampler::learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights,
+                                              const ContainerPtr& validationInputs, const ContainerPtr& validationSamples, const DenseDoubleVectorPtr& validationWeights)
+  {return sampler->learn(context, trainingInputs, trainingSamples, trainingWeights, validationInputs, validationSamples, validationWeights);}
+
+DenseDoubleVectorPtr DecoratorSampler::computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
+  {return sampler->computeProbabilities(inputs, samples);}
+
+void DecoratorSampler::clone(ExecutionContext& context, const ObjectPtr& target) const
+{
+  Sampler::clone(context, target);
+  target.staticCast<DecoratorSampler>()->sampler = sampler->cloneAndCast<Sampler>(context);
 }

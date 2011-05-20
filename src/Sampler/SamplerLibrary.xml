@@ -5,13 +5,22 @@
   <include file="lbcpp/Sampler/Sampler.h"/>
 
   <class name="Sampler" base="Object" abstract="yes"/>
+
+  <class name="ConstantSampler" base="Sampler">
+    <constructor arguments="const Variable&amp; value"/>
+  </class>
+  
   <class name="ContinuousSampler" base="Sampler" abstract="yes"/>
   <class name="ScalarContinuousSampler" base="ContinuousSampler" abstract="yes"/>
   <class name="DiscreteSampler" base="Sampler" abstract="yes"/>
   <class name="CompositeSampler" base="Sampler" abstract="yes">
     <variable type="ObjectVector[Sampler]" name="samplers"/>
   </class>
-  
+
+  <class name="DecoratorSampler" base="Sampler" abstract="yes">
+    <variable type="Sampler" name="sampler"/>
+  </class>
+
   <import name="ContinuousSampler"/>
   <import name="DiscreteSampler"/>
   <import name="CompositeSampler"/>

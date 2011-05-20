@@ -24,6 +24,9 @@ public:
   virtual String toString() const
     {return T("(") + predicate1->toString() + T(" v ") + predicate2->toString() + T(")");}
 
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return anyType;}
+
   virtual bool computePredicate(ExecutionContext& context, const Variable& value) const
     {return predicate1->computePredicate(context, value) || predicate2->computePredicate(context, value);}
 };
@@ -37,6 +40,9 @@ public:
 
   virtual String toString() const
     {return T("(") + predicate1->toString() + T(" ^ ") + predicate2->toString() + T(")");}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return anyType;}
 
   virtual bool computePredicate(ExecutionContext& context, const Variable& value) const
     {return predicate1->computePredicate(context, value) && predicate2->computePredicate(context, value);}

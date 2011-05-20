@@ -22,10 +22,13 @@ public:
   /*
   ** Function
   */
-  virtual TypePtr getInputType() const
-    {return topLevelType;}
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
 
-  virtual TypePtr getOutputType(TypePtr inputType) const
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {jassert(false); return anyType;}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return booleanType;}
 
 protected:
@@ -83,6 +86,9 @@ public:
 
   virtual String toString() const
     {return T("(x ") + operatorToString() + T(" ") + operand.toString() + T(")");}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return operand.getType();}
 
   Variable getOperand() const
     {return operand;}

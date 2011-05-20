@@ -327,6 +327,7 @@ SET(LBCPP_SAMPLER_DISCRETE_SOURCES
 SET(LBCPP_SAMPLER_COMPOSITE_SOURCES
   Sampler/Composite/ObjectCompositeSampler.h
   Sampler/Composite/MixtureSampler.h
+  Sampler/Composite/RejectionSampler.h
   Sampler/Composite/IndependentDoubleVectorSampler.h
   Sampler/Composite/IndependentDoubleMatrixSampler.h
   Sampler/Composite/ZeroOrScalarContinuousSampler.h

@@ -81,9 +81,12 @@
   <class name="UCB1TunedDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucb1Tuned"/>
   <class name="UCB2DiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucb2">
     <variable type="Double" name="alpha"/>
-<!--    <variable type="GenericVector[PositiveInteger]" name="episodeCounts"/>
-    <variable type="PositiveInteger" name="episodeRemainingSteps"/>
-    <variable type="PositiveInteger" name="currentBandit"/> -->
+  </class>
+  <class name="UCB1NormalDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucb1Normal"/>
+
+  <class name="UCBvDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucbv">
+    <variable type="Double" name="c"/>
+    <variable type="Double" name="zeta"/>
   </class>
 
   <class name="EpsilonGreedyDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="epsilonGreedy">
@@ -104,10 +107,11 @@
   <class name="TimeDependentWeightedUCBBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="timeDependentWeightedUCB">
     <variable type="DenseDoubleVector[TimeDependentWeightedUCBBanditPolicyEnumeration,Double]" name="parameters"/>
   </class>
-
+<!--
   <class name="MomentsWeightedUCBBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="momentsWeighted">
     <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
   </class>
+  -->
 
   <class name="PowerFunctionParameterizedBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="powerFunction">
     <variable type="PositiveInteger" name="maxPower"/>

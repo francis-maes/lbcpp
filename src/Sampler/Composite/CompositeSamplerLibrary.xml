@@ -28,4 +28,9 @@
     <constructor arguments="DiscreteSamplerPtr equalZeroSampler, ScalarContinuousSamplerPtr scalarSampler"/>
   </class>
 
+  <class name="RejectionSampler" base="DecoratorSampler">
+    <constructor arguments="SamplerPtr sampler, FunctionPtr predicate"/>
+    <variable type="Function" name="predicate"/>
+  </class>
+
 </library>
