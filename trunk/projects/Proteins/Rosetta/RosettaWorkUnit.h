@@ -306,8 +306,12 @@ public:
     }
 
     std::vector<ScalarVariableMeanAndVariancePtr> meansAndVariances(numIterations);
+    std::vector<ScalarVariableMeanAndVariancePtr> meansAndVariancesQScore(numIterations);
     for (size_t i = 0; i < numIterations; i++)
+    {
       meansAndVariances[i] = new ScalarVariableMeanAndVariance();
+      meansAndVariancesQScore[i] = new ScalarVariableMeanAndVariance();
+    }
 
     juce::OwnedArray<File> references;
     referenceFile.findChildFiles(references, File::findFiles, false, T("*.xml"));
@@ -360,14 +364,19 @@ public:
 
         // find best movers by EDA
         DenseDoubleVectorPtr energyMeans = new DenseDoubleVector(numIterations, 0);
+        DenseDoubleVectorPtr qScoreMeans = new DenseDoubleVector(numIterations, 0);
         ProteinEDAOptimizerPtr opti = new ProteinEDAOptimizer(energyWeight);
         SamplerPtr out = opti->findBestMovers(context, random, targetPose, referencePose,
             moverSampler, returnMovers, numIterations, numSamples, numGoodSamples,
-            numMoversToKeep, bestLearning, &energyMeans);
+            numMoversToKeep, bestLearning, &energyMeans, &qScoreMeans);
 
         // save gathered data
         for (size_t k = 0;k < numIterations; k++)
+        {
           meansAndVariances[k]->push(energyMeans->getValue(k));
+          meansAndVariancesQScore[k]->push(qScoreMeans->getValue(k));
+        }
+
         out->saveToFile(context, File(outputFile.getFullPathName() + T("/")
             + (*targets[i]).getFileNameWithoutExtension() + T("_sampler.xml")));
 
@@ -390,8 +399,10 @@ public:
       context.enterScope(T("Values"));
       context.resultCallback(T("Iteration"), Variable(k));
       double meanDeltaEnergy = meansAndVariances[k]->getMean();
-      context.resultCallback(T("Mean"), Variable(meanDeltaEnergy));
-      context.resultCallback(T("Std Dev"), Variable(meansAndVariances[k]->getStandardDeviation()));
+      context.resultCallback(T("Mean deltaEnergy"), Variable(meanDeltaEnergy));
+      context.resultCallback(T("Std Dev deltaEnergy"), Variable(meansAndVariances[k]->getStandardDeviation()));
+      context.resultCallback(T("Mean QScore"), Variable(meansAndVariancesQScore[k]->getMean()));
+    context.resultCallback(T("Std Dev QScore"), Variable(meansAndVariancesQScore[k]->getStandardDeviation()));
       context.leaveScope(Variable(meanDeltaEnergy));
     }
     context.leaveScope();
