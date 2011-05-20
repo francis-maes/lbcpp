@@ -1,4 +1,4 @@
-\documentclass[a4paper, 11pt]{article}
+\documentclass[a4paper, 11pt]{report}
 \usepackage[utf8x]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[french]{babel}
@@ -107,76 +107,112 @@ Francis \textsc{Maes}
 \tableofcontents
 \newpage
 
+\chapter{Introduction et contexte applicatif}
 
 \section{Introduction}
-
-\subsection{Contexte}
-\label{contexte}
+\label{intro}
 Dans de nombreux domaines scientifiques la demande en puissance de calcul devient de plus en plus importante. Pour répondre à cette demande sont apparus les super-calculateurs, les grilles de calcul et le calcul distribué.
 % TODO preuve d'implications ?
 
 Personnellement, j'ai découvert le concept de calcul distribué, et plus précisément de calcul volontaire, le 28/02/2008 grâce à un article publié sur un site informatique~\cite{MACG}. J'ai rapidement été séduit par le concept et me suis fortement impliqué au sein de la communauté des volontaires de l'\textit{L'Alliance Francophone}~\cite{AF}. Arrivé en deuxième année de Master en ingénieur civil en informatique, il m'a semblé intéressant d'étudier l'intérêt que pourrait avoir le calcul volontaire pour les chercheurs de l'université de Liège. 
 
-Actuellement, les solutions privilégiées au sein de l'\textit{Institut Montefiore} sont l'utilisation d'ordinateurs très puissant (e.g. 24 cores @ 1.9GHz avec 24Go de RAM), l'utilisation du super-calculateur NIC3 et l'utilisation d'une petite grille de calcul au sein de l'institut. Un des buts principaux de ce travail est donc de présenter une solution alternative à ces trois solutions et d'en dégager les avantages et inconvénients.
+Actuellement, les solutions privilégiées au sein de l'\textit{Institut Montefiore} sont l'utilisation d'ordinateurs très puissant (e.g. 24 cores @ 1.9GHz avec 24Go de RAM), l'utilisation du super-calculateur NIC3 et l'utilisation d'une petite grille de calcul au sein de l'institut. Le calcul distribué volontaire se présente comme une alternative à ces trois solutions.
 % TODO comparer les GFLOPS
 
-Afin de mener à bien ce projet, un sujet de recherche était nécessaire. Après divers contacts avec le corps enseignant, les recherches de F. \textsc{Maes} et J. \textsc{Becker} et L. \textsc{Wehenkel} concernant l'annotation de protéines grâce à des méthodes d'apprentissage ont semblées bien adaptées à ce nouveau paradigme de calcul~\cite{POSTER}\cite{CAP}. C'est donc principalement dans le cadre de l'apprentissage automatique et de l'étude des protéines que ce travail a été réalisé.
+Afin de mener à bien ce projet, un sujet de recherche était nécessaire. Après divers contacts avec le corps enseignant, les recherches de F. \textsc{Maes} et J. \textsc{Becker} et L. \textsc{Wehenkel} concernant l'annotation de protéines grâce à des méthodes d'apprentissage ont semblées bien adaptées à ce nouveau paradigme de calcul~\cite{POSTER}\cite{CAP}. Le travail réalisé vise à optimiser les algorithmes d'apprentissage utilisé dans le cadre de l'étude des protéines.
 
-\subsection{Objectifs}
-Comme mentionné dans la section~\ref{contexte}, l'objectif premier de ce travail est de fournir une solution alternative aux solutions actuellement utilisées par les chercheurs de l'\textit{Institut Montefiore} lorsque la demande en temps de calcul est très importante. A ce titre, le travail vise également à mettre en avant les avantages et inconvénients de la méthode proposée.
+\section{Objectifs}
+\label{objectifs}
+Comme mentionné dans la section~\ref{intro}, l'objectif premier de ce travail est de mettre en place un serveur de calcul distribué permettant de fournir une solution alternative aux solutions actuellement utilisées par les chercheurs de l'\textit{Institut Montefiore} lorsque la demande en temps de calcul est très importante. A ce titre, le travail vise également à mettre en avant les avantages et inconvénients de la méthode proposée.
 
-Un autre objectif du travail est de se familiariser avec les algorithmes d'apprentissage de type évolutionnaires et d'implémenter un tel algorithme.
+Un autre objectif du travail est de se familiariser avec les algorithmes d'apprentissage de type évolutionnaires dans le cadre de l'optimisation et d'implémenter des algorithmes de ce type adaptés au cadre de recherche fixé.
 
-Comme souvent en recherche, partant de ces deux objectifs bien définis, de nouveaux objectifs secondaires sont venus s'ajouter petit à petit durant la réalisation du travail en fonction des résultats obtenus. Ceux-ci seront détaillés au fur et à mesure dans ce rapport. En particulier, la solution proposée étant très prometteuse, des recherches approfondies en la matière sont nécessaires. C'est pourquoi un objectif du travail, et plus précisément de ce rapport, est de fourni un document aussi complet et compréhensible que possible afin que le travail de recherche puisse être continué à partir de cette base. Dans la même optique, la suite de ce rapport montrera qu'une partie importante du travail réalisé a été consacrée à l'intégration de la solution proposée au sein des recherches de F. \textsc{Maes} afin de faciliter les recherches en la matière à moyen et à long terme. 
+Il est important de distinguer dès maintenant les réalisations principales de ce travail:
+\begin{itemize}
+\item Une réalisation très pratique: la mise en place du serveur de calcul distribué, son maintien et sa promotion. Cet aspect requiert des connaissances pratiques très variées dans le domaine de l'informatique. Il s'agit ici d'une réalisation assimilable au travail d'un administrateur réseau.
+\item Une réalisation plus théorique: la compréhension des algorithmes évolutionnaires à estimation de distribution et le développement d'algorithmes évolutionnaires originales utiles dans le cadre de ce travail. Il s'agit ici d'un travail de recherche plus conventionnel comprenant les trois phases habituel que sont: la prise de connaissance de l'état de l'art, la développement d'un solution originale et la réalisation de tests visant à juger la qualité de la solution proposée.
+\item Une réalisation de génie logiciel: l'intégration des algorithmes développés au sein de la plate-forme de calcul distribué. 
+\end{itemize}
 
-\subsection{Rapport} % TODO meilleur titre
-% TODO mettre des ref vers les sections
-Dans ce rapport je commencerai par faire un bref rappel de ce qu'est le calcul distribué. Je présenterai ensuite l'architecture choisie pour le calcul volontaire dans le cadre de ce travail. Ensuite, chaque tâche réalisée pour la mise en oeuvre et l'implémentation sera décrite en suivant, dans la mesure du possible, l'ordre chronologique de réalisation. Enfin, les conclusions mettront en avant les avantages et inconvénients de la solution proposée et des propositions de recherche future seront proposées.
- % TODO étoffer 
+\section{Structure de ce rapport}
+TODO
+
+%Dans la suite de ce rapport, un chapitre sera consacré à chacune de ces réalisations. % TODO section
+
+%Une partie très importante du travail a bien entendu été consacrée à l'intégration des algorithmes évolutionnaires au sein de la plate-forme de calcul distribué. Deux solutions ont été envisagées. La première est une sorte de prototype dont l'objectif premier était de servir de \textit{proof of concept}. Cette première solution sera abordée dans ce rapport mais pas détaillée (). %TODO section
+
+%
+%Comme souvent en recherche, partant de ces deux objectifs bien définis, de nouveaux objectifs secondaires sont venus s'ajouter petit à petit durant la réalisation du travail en fonction des résultats obtenus. Ceux-ci seront détaillés au fur et à mesure dans ce rapport. En particulier, la solution proposée étant très prometteuse, des recherches approfondies en la matière sont nécessaires. C'est pourquoi un objectif du travail, et plus précisément de ce rapport, est de fourni un document aussi complet et compréhensible que possible afin que le travail de recherche puisse être continué à partir de cette base. Dans la même optique, la suite de ce rapport montrera qu'une partie importante du travail réalisé a été consacrée à l'intégration de la solution proposée au sein des recherches de F. \textsc{Maes} afin de faciliter les recherches en la matière à moyen et à long terme. 
+
+%\subsection{Rapport} % TODO meilleur titre
+%% TODO mettre des ref vers les sections
+%Dans ce rapport je commencerai par faire un bref rappel de ce qu'est le calcul distribué. Je présenterai ensuite l'architecture choisie pour le calcul volontaire dans le cadre de ce travail. Ensuite, chaque tâche réalisée pour la mise en oeuvre et l'implémentation sera décrite en suivant, dans la mesure du possible, l'ordre chronologique de réalisation. Enfin, les conclusions mettront en avant les avantages et inconvénients de la solution proposée et des propositions de recherche future seront proposées.
+% % TODO étoffer 
+
+\chapter{Contexte}
+
+\section{Introduction}
+Ce chapitre a pour but d'introduire le contexte dans lequel a été réalisé ce travail. Il s'articule en trois parties principales:
+\begin{itemize}
+%TODO ref
+\item Une présentation de ce qu'est le calcul distribué.
+\item Une présentation de la plate-forme de calcul distribué utilisée.
+\item Une présentation des recherches de F. \textsc{Maes}, J. \textsc{Becker} et L. \textsc{Wehenkel} concernant l'annotation de protéines \textit{via} des algorithmes d'apprentissage.
+\end{itemize}
 
 \section{Le calcul distribué}
 
 \subsection{Introduction}
 % TODO parler des différentes types et différentes architectures http://en.wikipedia.org/wiki/Distributed_computing#Models ?
+% (mémoire partagée/distribuée, message passing etc)
 En informatique, lorsque les calculs à effectuer demandent énormément de temps d'exécution, la tendance actuelle est de diviser le problème en plusieurs tâches aussi indépendantes les unes des autres que possible. Une fois le problème divisé en plusieurs unités de calcul, différents niveaux de parallèlisation sont possibles:
 \begin{itemize}
 \item Répartition au sein de plusieurs coeurs d'un même processeurs. % TODO nom
 \item Répartition au sein de plusieurs processeurs d'une même machine. % TODO nom
 \item Répartition au sein de plusieurs machines du même type faisant partie d'une infrastructure particulière, on parlera souvent de \textit{supercomputers}.
 \item Répartition au sein de plusieurs machines hétérogènes faisant partie d'une infrastructure particulière, on parlera souvent de \textit{clusters} ou de \textit{soupercomputers}. % TODO vérifier
-\item Répartition au sein de plusieurs machines hétérogènes ne faisant pas partie d'une infrastructure particulière, on parlera souvent de \textit{grid computing} ou de \textit{volunteer computing}. Le terme \textit{grid computing} étant plutôt destiné aux organisations qui partagent leurs ressources entre elles en suivant certaines règles afin d'atteindre un but commun, tandis que le terme \textit{volunteer computing} désigne plutôt le cas de figure où quiconque (ayant un accès au réseau) peut mettre à disposition une certaine puissance de calcul sur base volontaire.
-% TODO avantages des stats etc
+\item Répartition au sein de plusieurs machines hétérogènes ne faisant pas partie d'une infrastructure particulière, on parlera souvent de \textit{grid computing} ou de \textit{volunteer computing} (calcul volontaire). Le terme \textit{grid computing} étant plutôt destiné aux organisations qui partagent leurs ressources entre elles en suivant certaines règles afin d'atteindre un but commun, tandis que le terme \textit{volunteer computing} désigne plutôt le cas de figure où quiconque (ayant un accès au réseau) peut mettre à disposition une certaine puissance de calcul sur base volontaire.
 \end{itemize}
 C'est à cette dernière catégorie que s'intéresse principalement ce travail. 
 
 \subsection{Le calcul volontaire}
-Cette section a pour but d'introduire le calcul volontaire, ses contraintes et ses avantages. Le texte présenté ci-dessous reprend les idées reprises dans~\cite{VOLUNTEER}.
+Le calcul volontaire est une forme particulière de calcul distribué où des volontaires mettent à disposition du projet une certaine puissance de calcul. Les machines des volontaires peuvent être très variées et la seule réelle restriction pour participer est d'avoir un accès au réseau. 
 
-Comme expliqué précédemment, un projet de calcul volontaire est un projet où des volontaires peuvent mettre à disposition du projet une certaine puissance de calcul. Les volontaires participant sont la plupart du temps anonymes, ils ne sont connus du projet que par un \textit{login} permettant de les identifier au sein d'une base de données. Etant anonymes, ils n'ont aucune responsabilité vis à vis des projets. En particulier, rien n'empêche un volontaire de renvoyer sciemment des résultats falsifiés. C'est à l'administrateur de se protéger par rapport à ce genre de problématique.
+Avant même de s'intéresser aux enseignements tirés de ce travail, il est important de remarquer que ce concept, bien que séduisant, possèdent certains désavantages par rapport à l'utilisation d'un super-calculateur par exemple~\cite{VOLUNTEER}.
 
-Pour qu'un projet de calcul volontaire ait du succès, celui-ci doit inspirer la confiance. En effet, les volontaires doivent faire confiance aux projets à différents points de vue:
+En effet, les volontaires participent de manière bénévole et anonyme au projet et ne sont donc en aucune responsabilité vis à vis du projet. Il n'y a donc aucune garantie quant à la puissance de calcul délivrée. Ceci n'est en général pas vrai pour un super-calculateur où la puissance de calcul est fixe et connue. Il faut tout de même nuancer cette dernière remarque puisqu'en général une infrastructure telle qu'un super-calculateur est partagée par plusieurs équipes de chercheurs et que donc la puissance effectivement disponible peut varier.
+
+Parallèlement à cela, les utilisateurs n'ayant aucune responsabilité vis à vis du projet, ceux-ci peuvent tout à fait renvoyer de faux résultats au serveur (intentionnellement ou non). C'est donc à l'administrateur du projet de se protéger contre ce genre de problématique.
+
+A côté de ces inconvénients, il y a bien entendu certains avantages, le principal étant probablement le coût. En effet, les super-calculateurs coûtent en général très cher et tous les projets de recherche n'ont pas les moyens de se payer une telle infrastructure. Pour mettre en place un serveur de calcul distribué une machine standard peut déjà suffire ! Comme mentionné précédemment, l'aspect négatif et qu'il n'y a aucune garantie quant à la puissance de calcul. C'est le rôle de l'administrateur du projet de rendre celui-ci attractif. La communication avec les volontaires est donc un aspect à ne pas négliger. Dans la même optique, le projet doit inspirer la confiance car les volontaires doivent faire confiance au projet à différents points de vue:
 \begin{itemize}
-\item Les volontaires exécutent les applications fournies par les projets et doivent donc être convaincu que celles-ci ne sont nuisibles d'aucune façon.
-\item Les volontaires doivent faire confiance aux administrateurs des projets quant aux mesures de sécurité mises en place afin de protéger le serveur. En effet, un serveur vulnérable pourrait être utilisé comme vecteur de transmission pour toutes sortes de \textit{malwares}.
-\item Les volontaires doivent faire confiance aux projets quant aux recherches effectuées et aux publications qui s'en suivent.
+\item Les volontaires exécutent les applications fournies par le projet et doivent donc être convaincu que celles-ci ne sont nuisibles d'aucune façon. Ceux-ci préfèrent en général les projets dont le code source est public (au moins en partie).
+\item Les volontaires doivent faire confiance à l'administrateur du projet quant aux mesures de sécurité mises en place afin de protéger le serveur. En effet, un serveur vulnérable pourrait être utilisé comme vecteur de transmission pour toutes sortes de \textit{malwares}.
+\item Les volontaires doivent faire confiance au projet quant au sérieux des recherches effectuées et aux publications qui s'en suivent. Ceux-ci privilégient en général les projets dont les découvertes tombent dans le domaine public ce qui est tout à fait normal vu qu'elles ont été réalisées grâce au travail de bénévoles.
 \end{itemize}
-Lors de la mise en place d'un projet de calcul volontaire, la communication avec les volontaires est donc un aspect à ne pas négliger.
+En résumé, dans le cadre de projets utilisant le calcul distribué la puissance de calcul ne s'achète pas avec de l'argent mais elle se mérite.
 
-\subsection{Le choix de la plateforme}
-Pour la réalisation de ce travail deux approches sont possibles:
-\begin{itemize}
-\item Réaliser "à partir d'une page blanche" un serveur permettant de distribuer le calcul et s'intéresser ainsi plus particulièrement à la partie réseau du travail.
-\item Utiliser une plateforme existante de calcul distribué et consacrer plus de temps à l'amélioration/création d'algorithmes d'apprentissage et à l'intégration de la solution proposée au sein de l'\textit{Institut Montefiore}.
-\end{itemize}
+Enfin, un autre avantage du calcul volontaire est qu'il permet de sensibiliser le public aux recherches effectuées.
 
-Dans ce travail, c'est la deuxième approche qui a été retenue. En particulier, c'est la plateforme libre \textsc{BOINC} qui a été utilisée. Il s'agit d'une plateforme de calcul distribué développée par l'université de \textit{Berkeley}. Les raisons de ce choix sont multiples:
+\section{\textsc{BOINC}: une plate-forme de calcul distribué}
+
+\subsection{Introduction}
+Le but de cette section est de présenter la plate-forme de calcul distribué utilisée: \textsc{BOINC}. Les différents aspects qu'il faut maîtriser afin de mettre en place un serveur \textsc{BOINC} seront également abordés. Ceux-ci sont détaillés dans la documentation de \textsc{BOINC} fournie par l'université de \textit{Berkeley}~\cite{WIKI}.
+
+\subsection{Le choix de \textsc{BOINC} comme plate-forme de calcul distribué}
+% TODO qu'est ce qui se fait d'autre
+Pour la réalisation de ce travail une plate-forme de calcul distribué existante a été utilisée: \textsc{BOINC}. Bien entendu, il aurait été possible de réaliser l'implémentation d'une plate-forme de calcul distribué "à partir d'une page blanche" mais ce n'est pas l'approche qui a été suivie pour plusieurs raisons.
+
+La raison principale est que ce travail d'implémentation aurait pris un temps considérable et n'aurait donc pas permis de conférer à ce travail l'aspect "multi-facette" décrit dans la section~\ref{objectifs}. La travail aurait été un pur travail d'implémentation réseau, il n'aurait pas été possible de s'intéresser en plus à la problématique de l'optimisation à l'aide d'algorithmes évolutionnaires. De plus, pour qu'un projet de calcul volontaire soit fonctionnel il faut bien entendu des volontaires... Utiliser une plate-forme existante permet d'être directement en contact avec des volontaires potentiels.
+
+C'est la plate-forme \textsc{BOINC} développée par l'université de \textit{Berkeley} qui a été retenue. Les raisons de ce choix sont multiples:
 \begin{itemize}
 \item La plateforme \textsc{BOINC} existe depuis plusieurs années et est stable.
-\item Celle-ci est libre est de nombreux volontaires travaillent sans cesse à l'améliorer.
+\item Celle-ci est libre et de nombreux volontaires travaillent sans cesse à l'améliorer.
 % TODO check chiffres
 \item La communauté \textsc{BOINC} représente un nombre très importants de volontaires: 494671 machines pour 305398 volontaires représentant une moyenne de 5959,08 TFLOPS sur 24h~\cite{BOINC}. A titre comparatif, actuellement le super-calculateur le plus puissant au monde a une puissance effective de 2566 TFLOPS~\cite{TOP500}.
 \item Mon implication dans le monde \textsc{BOINC}, et plus précisément au sein de l'\textit{Alliance Francophone}~\cite{AF}, depuis plusieurs années m'assurait un certain soutien des volontaires de cette communauté.
-\item Les volontaires qui calculent sur le réseau \textsc{BOINC} reçoivent un certain nombre de crédits pour chaque unité calculée. Ces crédits ne représentent rien de concret mais ils engendrent une émulation importante au sein de la communauté: de nombreux sites présentent sous formes diverses et variées des statistiques par rapport à ces crédits, les utilisateurs se regroupent en équipe et organiser des compétitions entre eux (Fig.~\ref{fb}), ... En bref, ce système de crédits bien que n'ayant aucun intérêt scientifique permet de rendre la communauté très active et évite une certaine lassitude des utilisateurs.
+\item Les volontaires qui calculent sur le réseau \textsc{BOINC} reçoivent un certain nombre de crédits pour chaque unité calculée. Ces crédits ne représentent rien de concret mais ils engendrent une émulation importante au sein de la communauté: de nombreux sites présentent sous formes diverses et variées des statistiques par rapport à ces crédits, les utilisateurs se regroupent en équipe et organiser des compétitions entre eux (Fig.~\ref{fb}), ... En bref, ce système de crédits, bien que n'ayant aucun intérêt scientifique, permet de rendre la communauté très active et évite une certaine lassitude des utilisateurs.\label{credits}
 %TODO liens
 \end{itemize}
 
@@ -188,27 +224,17 @@ Dans ce travail, c'est la deuxième approche qui a été retenue. En particulier
 \end{figure}
 
 
-Le fait de partir d'une plateforme existante permet de conférer un double aspect à ce travail:
-\begin{itemize}
-\item Un aspect très pratique consistant en la compréhension du mode de fonctionnement de la plateforme existante, à la mise en place du serveur et à son entretien ainsi que la gestion des plaintes et demandes des volontaires via le site web du projet.
-\item Un aspect plus théorique visant à développer des algorithmes d'apprentissage et à intégrer ceux-ci à la plateforme \textsc{BOINC}.
-\end{itemize}
-
-
-\section{\textsc{BOINC}}
-Le but de cette section est d'introduire la plupart des aspects qu'il faut maîtriser afin de mettre en place un serveur \textsc{BOINC}. Les informations qui suivent constituent, en grande majorité, un résumé de la documentation du serveur \textsc{BOINC}~\cite{WIKI}.
-
-\subsection{Introduction}
-La plateforme \textsc{BOINC} est basée sur une architecture client-server (Fig.~\ref{clientserver}). Le serveur et le client sont disponibles gratuitement sur le site de \textit{Berkeley}~\cite{BOINC}.
+\subsection{Architecture et fonctionnement général}
+La plateforme \textsc{BOINC} est basée sur une architecture client-serveur (Fig.~\ref{clientserveur}). Le serveur et le client sont disponibles gratuitement sur le site de \textit{Berkeley}~\cite{BOINC}.
 \begin{figure}[!h]
 \centering
 \includegraphics[scale=0.4]{img/Boinc_arch.pdf}
-\caption{\textsc{BOINC}: architecture client-server}
-\label{clientserver}
+\caption{\textsc{BOINC}: architecture client-serveur}
+\label{clientserveur}
 \end{figure}
 
 Chaque projet scientifique désirant utiliser cette infrastructure déploie un serveur \textsc{BOINC} et publie l'adresse de celui-ci sur internet~\footnote{Plusieurs sites recensent l'ensemble des projets \textsc{BOINC}.}. % TODO exemples.
-Les volontaires exécutent quant à eux l'application client, \textit{BOINC Manager}, sur leur(s) machine(s). Ce manager permet aux volontaires de rejoindre simplement n'importe quel projet en spécifiant simplement son URL (Fig.~\ref{boincmanager}). Ce programme est disponible sous forme de sources et sous forme binaire pour différentes plateformes (Windows, Linux, OS X, ...). Enfin, cette application permet de régler un ensemble de paramètres définissant la manière dont la machine sera utilisée pour calculer les unités de travail des projets (Fig.~\ref{boincpref}): pourcentage de CPU maximum alloué, quantité maximale de RAM utilisable, espace disque maximum utilisable, calcul en permanence vs. calcul quand l'utilisateur est inactif, utilisation réseau, ... Une fois ces paramètres réglés, l'application s'exécutant avec une priorité extrêmement faible, l'utilisateur ne se rend normalement même plus compte qu'il calcule pour des projets scientifiques!
+Les volontaires exécutent quant à eux l'application client, \textit{BOINC Manager}, sur leur(s) machine(s). Cette interface permet aux volontaires de rejoindre simplement n'importe quel projet en spécifiant simplement son URL (Fig.~\ref{boincmanager}). Ce programme est disponible sous forme de sources et sous forme binaire pour différentes plateformes (Windows, Linux, OS X, ...). Enfin, cette application permet de régler un ensemble de paramètres définissant la manière dont la machine sera utilisée pour calculer les unités de travail des projets (Fig.~\ref{boincpref}): pourcentage de CPU maximum alloué, quantité maximale de RAM utilisable, espace disque maximum utilisable, calcul en permanence vs. calcul quand l'utilisateur est inactif, utilisation réseau, ... Une fois ces paramètres réglés, l'application s'exécutant avec une priorité extrêmement faible, l'utilisateur ne se rend normalement même plus compte qu'il calcule pour des projets scientifiques!
 
 \begin{figure}[!h]
 \centering
@@ -224,40 +250,41 @@ Les volontaires exécutent quant à eux l'application client, \textit{BOINC Mana
 \label{boincpref}
 \end{figure}
 
-\subsection{Fonctionnement général}
 Le principe général de fonctionnement est assez simple: le serveur \textsc{BOINC} génère des \textit{Work Units} (WU) et le \textit{BOINC Manager}, installé sur les ordinateurs des volontaires, contacte périodiquement le serveur afin de récupérer des WU. Dès que ces WU sont calculées, le \textit{BOINC Manager} renvoie les résultats au serveur qui se charge de traiter ces résultats et de générer de nouvelles unités. 
 
 Le fonctionnement du serveur est paramétrable à l'aide de fichiers XML de configuration (e.g. \textit{config.xml}). Le serveur repose principalement sur une base de données MySQL contenant toutes les informations nécessaires concernant les utilisateurs, les unités de travail, divers statistiques, ...
 
-Comme expliqué précédemment, le serveur \textsc{BOINC} est fourni par l'université de \textit{Berkeley}, et il n'y a donc pas eu un travail trop important à réaliser afin de pouvoir distribuer des unités de travail. Cependant, afin de pouvoir utiliser ce serveur, il faut se familiariser avec son mode de fonctionnement et réaliser certains "sous-programmes" utilisés par le serveur\footnote{Le rôle de chacun de ces programmes sera détaillé à la section~\ref{daemons}.}.
-En effet, tous les projets ne fonctionnent évidemment pas exactement de la même façon et il est donc logique que certaines parties du serveur doivent être adaptées selon les besoins du projet. Pour ce faire, l'université de \textit{Berkeley} maintient un wiki reprenant la documentation nécessaire à l'utilisation du serveur \textsc{BOINC} \cite{WIKI}.
+Comme expliqué précédemment, le serveur \textsc{BOINC} est fourni par l'université de \textit{Berkeley}, et il n'y a donc pas eu un travail trop important d'implémentation à réaliser afin de pouvoir distribuer des unités de travail. Cependant, afin de pouvoir utiliser ce serveur, il faut se familiariser avec son mode de fonctionnement et implémenter certains programmes auxiliaires utilisés par le serveur. En effet, tous les projets ne fonctionnent évidemment pas exactement de la même façon et il est donc logique que certaines parties du serveur doivent être adaptées selon les besoins du projet. Pour ce faire, l'université de \textit{Berkeley} maintient un wiki reprenant la documentation nécessaire à l'utilisation du serveur \textsc{BOINC} \cite{WIKI}.
 
-\subsection{Daemons}
+\subsection{Les programmes auxiliaires}
 \label{daemons}
-Les programmes devant être développés pour mettre sur pied un serveur \textsc{BOINC} fonctionnel prennent la forme de \textit{daemons}. Les implémentations réalisées de ces programmes seront décrites plus loin dans ce rapport. Cette section vise simplement à introduire d'un point de vue fonctionnel ces programmes ainsi que les API permettant d'implémenter ceux-ci facilement.
+Cette section vise à introduire les programmes qui doivent être développés pour mettre sur pied un serveur \textsc{BOINC} fonctionnel. Ceux-ci prennent la forme de \textit{daemons} et sont au nombre de trois (minimum): \textit{work generator}, \textit{validator}, \textit{assimilator}. 
+
+Les implémentations réalisées seront décrites plus loin dans ce rapport. %TODO section
+Cette section vise uniquement à introduire d'un point de vue fonctionnel ces programmes ainsi que les API permettant d'implémenter ceux-ci facilement.
 
  %TODO sources pour chaque section ?
 \subsubsection{Work generator}
-Il s'agit du programme qui génère les unités de travail (\textit{Jobs} ou \textit{Work Units}). Concrètement une unité de travail consiste souvent en un ensemble de fichiers \textit{input} et/ou de paramètres à passer en ligne de commande au programme exécuté chez le volontaire. L'implémentation du \textit{work generator} est réalisée en utilisant l'API \textsc{BOINC} ce qui facilite grandement l'ajout du/des \textit{job(s)} créé(s) dans la base de données du serveur \textsc{BOINC} afin que ceux-ci soient prêt à être envoyés aux volontaires.
+Il s'agit du programme qui génère les unités de travail (\textit{Jobs} ou \textit{Work Units}). Concrètement une unité de travail consiste souvent en un ensemble de fichiers \textit{input} et/ou de paramètres à passer en ligne de commande au programme exécuté chez le volontaire. 
 
-Le serveur \textsc{BOINC} étant fourni avec un exemple de \textit{work generator}, l'implémentation de la partie \textsc{BOINC} du programme est facilement réalisée en se basant sur cet exemple (\textit{sample\_work\_generator.cpp}). Les étapes importantes sont:
+L'implémentation du \textit{work generator} est réalisée en utilisant l'API \textsc{BOINC} ce qui facilite grandement l'ajout du/des \textit{job(s)} créé(s) dans la base de données du serveur \textsc{BOINC} afin que ceux-ci soient prêt à être envoyés aux volontaires.
+
+Le serveur \textsc{BOINC} étant fourni avec un exemple de \textit{work generator}, l'implémentation de la partie \textsc{BOINC} du programme est facilement réalisée en se basant sur cet exemple (\textit{sample\_work\_generator.cpp}). Les étapes importantes du programme sont:
 \begin{itemize}
 \item Génération du ou des fichiers \textit{input}.
-\item Placement des fichiers \textit{input} dans la hiérarchie de dossiers \textit{download} (via l'API \textsc{BOINC}). Les fichiers téléchargeables par l'utilisateur doivent impérativement se trouver dans le dossier \textit{download}. Ce dossier pouvant contenir des milliers de fichiers, l'API \textsc{BOINC} utilise une hiérarchie de dossiers où le nom du sous-dossier contenant un fichier est déterminé sur base du nom de ce fichier. Il s'agit d'une technique courante permettant de retrouver plus rapidement des fichiers lorsque ceux-ci sont nombreux au sein d'un répertoire.
-\item Remplissage de la structure de données décrivant une unité de travail (\textit{DB\_WORKUNIT}). Cette structure contient entre autres: nom de l'unité, application client cible, divers paramètres décrivant les ressources susceptibles d'être utilisées par le calcul de l'unité (mémoire RAM, temps CPU, ...).
-\item Appel de la fonction \textit{create\_work()} de l'API \textsc{BOINC}. Cette fonction se charge de mettre toutes les informations concernant l'unité dans la base de données. Après cet appel, l'unité est prête à être téléchargée par un volontaire. Les arguments à passer à cette fonction sont principalement: la structure \textit{DB\_WORKUNIT}, le ou les noms des fichiers \textit{input}, les fichiers \textit{template} décrivant les fichiers \textit{input} et les fichiers \textit{output} de l'unité de travail. % TODO plus d'info sur les templates
+\item Placement des fichiers \textit{input} dans la hiérarchie de dossiers \textit{download} (via l'API \textsc{BOINC}). Les fichiers téléchargeables par l'utilisateur doivent impérativement se trouver dans le dossier \textit{download} du serveur. Ce dossier pouvant contenir des milliers de fichiers, l'API \textsc{BOINC} utilise une hiérarchie de dossiers où le nom du sous-dossier contenant un fichier est déterminé sur base du nom de ce fichier. Il s'agit d'une technique courante permettant de retrouver plus rapidement des fichiers lorsque ceux-ci sont nombreux au sein d'un répertoire.
+\item Remplissage de la structure de données décrivant une unité de travail (\textit{DB\_WORKUNIT}). Cette structure contient entre autres: nom de l'unité, application client cible, divers paramètres décrivant les ressources susceptibles d'être utilisées pour le calcul de cette unité (mémoire RAM, temps CPU, ...).
+\item Appel de la fonction \textit{create\_work()} de l'API \textsc{BOINC}. Cette fonction se charge de mettre toutes les informations concernant l'unité dans la base de données. Après cet appel, l'unité est prête à être téléchargée par un volontaire. Les arguments à passer à cette fonction sont principalement: la structure \textit{DB\_WORKUNIT}, le ou les noms des fichiers \textit{input} et les fichiers \textit{template} décrivant les noms et le nombres les fichiers \textit{input} et \textit{output} de l'unité de travail. % TODO plus d'info sur les templates
 \end{itemize}
 
 Les parties spécifique à une application sont principalement la génération des fichiers \textit{input} et les \textit{templates} \textit{input}/\textit{output} correspondant.
 
 \subsubsection{Validator}
-Les \textit{jobs} étant calculés par des volontaires, il est important d'implémenter une politique de validation des résultats renvoyés. 
-
-En effet, certains ordinateurs des volontaires peuvent être overclocké à outrance engeandrant parfois des résultats erronés. Parallèlement à cela, vu le système de points mis en place, certains utilisateurs pourraient être tentés de tricher en renvoyant volontairement de faux résultats. 
+Les \textit{jobs} étant calculés par des volontaires, il est important d'implémenter une politique de validation des résultats renvoyés. En effet, certains ordinateurs des volontaires peuvent être overclocké à outrance engeandrant parfois des résultats erronés. Parallèlement à cela, vu le système de crédits mis en place au sein de \textsc{BOINC} (voir section ~\ref{credits}), certains utilisateurs pourraient être tentés de tricher en renvoyant volontairement de faux résultats. 
 
 Généralement, un même \textit{job} sera envoyé au moins deux fois sur le réseau \textsc{BOINC}. C'est ce qu'on appelle le principe de réplication. Ceci permet de valider simplement des résultats en les comparant par exemple. L'implémentation du \textit{validator} passe donc par l'implémentation d'une fonction de comparaison des résultats. La configuration du serveur \textsc{BOINC} (et plus particulièrement du \textit{scheduler} qui distribue les unités) permet également de pousser la validation encore plus loin en imposant que les multiples instances d'un \textit{job} soient calculées par des machines différentes par exemple.
 
-Concrètement l'implémentation d'un \textit{validator} passe par l'implémentation de 3 fonctions:
+Concrètement, l'implémentation d'un \textit{validator} passe par l'implémentation de 3 fonctions:
 \begin{verbatim}
 extern int init_result(RESULT& result, void*& data)
 extern int compare_results(RESULT& r1, void* data1, 
@@ -265,16 +292,16 @@ extern int compare_results(RESULT& r1, void* data1,
 extern int cleanup_result(RESULT& r, void* data)
 \end{verbatim}
 
-La première fonction prend en entrée un résultat ($result$), analyse d'une manière ou d'une autre les fichiers \textit{output} associés (ceux-ci sont accessibles via la structure $RESULT$) et crée une structure permettant de déterminer si deux résultats sont identiques. Un pointeur vers cette structure est alors retourné via le paramètre $data$. La valeur de retour de la fonction indique si l'opération s'est bien déroulée (0 en cas de succès, \textit{ERR\_OPENDIR} en cas d'erreur temporaire et toute autre valeur en cas d'erreur définitive).
+La première fonction prend en entrée un résultat ($result$), analyse d'une manière ou d'une autre les fichiers \textit{output} associés (ceux-ci sont accessibles via la structure $RESULT$) et crée une structure permettant de déterminer si deux résultats sont identiques sur base de cette structure uniquement. Un pointeur vers cette structure est alors retourné via le paramètre $data$. La valeur de retour de la fonction indique si l'opération s'est bien déroulée (0 en cas de succès, \textit{ERR\_OPENDIR} en cas d'erreur temporaire et toute autre valeur en cas d'erreur définitive).
 
-La deuxième fonction prend en entrée deux résultats et leur structure de données associée (crée grâce à la méthode précédente) et retourne via l'argument \textit{match} si les deux résultats sont identiques ou pas\footnote{Le terme identique n'est pas à prendre au pied de la lettre. Deux résultats sont considérés comme "identiques" par rapport à l'application visée.}.
+La deuxième fonction prend en entrée deux résultats et leur structure de données associée (crée grâce à la méthode précédente) et retourne, via l'argument \textit{match}, si les deux résultats sont identiques ou pas\footnote{Le terme identique n'est pas à prendre au pied de la lettre. Deux résultats sont considérés comme "identiques" par rapport à l'application visée.}.
 
 Enfin, la dernière fonction est appelée afin de libérer l'espace mémoire occupé par la structure de donnée \textit{data}.
 
-Pour que le programme soit fonctionnel, ces fonctions doivent être liées avec les fichiers \textit{validator.cpp}, \textit{validate\_util.cpp} et \textit{validate\_util2.cpp}. Deux exemples de \textit{validator} sont fournis avec le code source du serveur \textsc{BOINC} ce qui facilite l'implémentation d'un \textit{validator} particulier (\textit{sample\_trivial\_validator.cpp} et \textit{sample\_bitwise\_validator.cpp}).
+Pour que le programme soit fonctionnel, ces fonctions doivent être liées avec les fichiers \textit{validator.cpp}, \textit{validate\_util.cpp} et \textit{validate\_util2.cpp} du serveur \textsc{BOINC}. Deux exemples de \textit{validator} sont fournis avec le code source ce qui facilite l'implémentation d'un \textit{validator} particulier (\textit{sample\_trivial\_validator.cpp} et \textit{sample\_bitwise\_validator.cpp}).
 
 \subsubsection{Assimilator}
-Le rôle de l'\textit{assimilator} est de traiter les résultats canoniques (i.e. un résultat ayant passé l'étape de validation). En effet, sauf spécification contraire, lorsqu'un \textit{job} a obtenu un résultat valide, celui-ci est, après un certain laps de temps, retiré de la base de données et ses fichiers associés sont supprimés du serveur. Le rôle de l'\textit{assimilator} est donc par exemple de stocker les résultats dans une base de données dédiée ou de stocker les résultats à un autre endroit du disque (ou sur une autre machine).
+Le rôle de l'\textit{assimilator} est de traiter les résultats canoniques (i.e. les résultats ayant passé l'étape de validation). En effet, sauf spécification contraire, lorsqu'un \textit{job} a obtenu un résultat valide, celui-ci est, après un certain laps de temps, retiré de la base de données et ses fichiers associés sont supprimés du serveur. Le rôle de l'\textit{assimilator} est donc par exemple de stocker les résultats dans une base de données dédiée ou de stocker les résultats à un autre endroit du disque (ou sur une autre machine).
 
 Concrètement, l'implémentation de ce programme est réalisée en implémentant la fonction:
 \begin{verbatim}
@@ -302,7 +329,18 @@ Comme souvent, une valeur de retour égale à 0 indique un succès. La valeur sp
 \subsection{Sécurité}
 
 
-\section{Installation du server BOINC}
+\section{Recherches sur l'annotation des protéines}
+
+\chapter{Installation et administration du serveur \textsc{BOINC}}
+
+\chapter{Algorithmes évolutionnaires développés et résultats}
+
+\chapter{Génie logiciel pour l'intégration des EDA au sein de \textsc{BOINC}}
+
+\chapter{Perspectives et conclusions}
+
+\chapter{TODO: not restructured yet}
+\section{Installation du serveur BOINC}
 
 \subsection{Premiers pas}
 Après la lecture de la documentation, la première étape fût l'installation du serveur \textsc{BOINC} sur mon ordinateur personnel. La démarche pour compiler le code du serveur et pour installer celui-ci est décrite en détail pour les plateformes de type \textit{Debian} sur le site de \textit{Berkeley}~\cite{BOINC}.
@@ -935,6 +973,7 @@ Ainsi, j'ai utiliser l'API à disposition afin que l'exécution des \textit{Opti
 % TODO avantages calcul volontaire : http://boinc.berkeley.edu/trac/wiki/VolunteerComputing
 % TODO vérifier que tt les .cpp cité sont sur svn
 % TODO utiliser les anciennes images de présentation du TFE
+% TODO images top ou bottom
 \newpage
 \nocite{*}
 \bibliographystyle{plain}
