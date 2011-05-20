@@ -110,7 +110,7 @@ public:
       const core::pose::PoseOP& target, const core::pose::PoseOP& reference, SamplerPtr sampler,
       std::vector<ProteinMoverPtr>& movers, size_t maxIterations, size_t numSamples = 1000,
       size_t numGoodSamples = 500, size_t numMoversToKeep = 20, bool includeBestMoversInLearning =
-          true, DenseDoubleVectorPtr* energyMeans = NULL)
+          true, DenseDoubleVectorPtr* energyMeans = NULL, DenseDoubleVectorPtr* qScoreMeans = NULL)
   {
     SamplerPtr workingSampler = sampler->cloneAndCast<Sampler> ();
     size_t numLearningSamplesFirstPass = numGoodSamples / 2;
@@ -169,6 +169,8 @@ public:
       context.resultCallback(T("Mean energy"), Variable(energyRandomVariable.getMean()));
       context.resultCallback(T("Std Dev energy"), Variable(energyRandomVariable.getStandardDeviation()));
       context.resultCallback(T("Mean qScore"), Variable(qScoreRandomVariable.getMean()));
+      if (qScoreMeans != NULL)
+        (*qScoreMeans)->setValue(i, qScoreRandomVariable.getMean());
       context.resultCallback(T("Std Dev qScore"), Variable(qScoreRandomVariable.getStandardDeviation()));
       context.leaveScope(Variable(meanDeltaEnergy));
 
