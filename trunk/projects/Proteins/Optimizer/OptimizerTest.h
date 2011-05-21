@@ -160,7 +160,7 @@ public:
     // Optimizer
     OptimizerPtr optimizer = asyncEDAOptimizer(20, 500, 150, 750, 10);
     OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, new ProteinLearnerObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime, 300000);
-    SamplerBasedOptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler);
+    SamplerBasedOptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler, 300000);
     return optimizer->compute(context, optimizerContext, optimizerState);
   }
   

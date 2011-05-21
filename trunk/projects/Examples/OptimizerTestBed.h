@@ -15,15 +15,21 @@
 # include <lbcpp/Function/ScalarVectorFunction.h>
 # include <lbcpp/Optimizer/OptimizerContext.h>
 
+
+
 namespace lbcpp
-{
+{ 
   
-// TODO arnaud : move some static methods elsewhere
- 
-class UsefulFunctions
+namespace testbed 
 {
-public:
-  static DoubleMatrixPtr getLambdaMatrix(double alpha, size_t size)
+  int sign(double x)
+  {
+    if (x < 0) return -1;
+    if (x > 0) return 1;
+    return 0;
+  }
+  
+  DoubleMatrixPtr getLambdaMatrix(double alpha, size_t size)
   {
     DoubleMatrixPtr ret = new DoubleMatrix(size, size, 0.0);
     for (size_t i = 0; i < size; ++i) 
@@ -33,19 +39,8 @@ public:
     }
     return ret;
   }
-};
   
-class LinearTransformation 
-{
-public:
-  static int sign(double x)
-  {
-    if (x < 0) return -1;
-    if (x > 0) return 1;
-    return 0;
-  }
-  
-  static void Tosz(const DenseDoubleVectorPtr& tab)
+  void linearTransformTosz(const DenseDoubleVectorPtr& tab)
   {
     for (size_t i = 0; i < tab->getNumValues(); i++)
     {
@@ -71,8 +66,8 @@ public:
       tab->setValue(i, sign(x)*exp(xhat + 0.049*(sin(c1*xhat) + sin(c2*xhat))));
     }
   }
-
-  static void Tasy(const DenseDoubleVectorPtr& tab, double beta)
+  
+  void linearTransformTasy(const DenseDoubleVectorPtr& tab, double beta)
   {
     for (size_t i = 0; i < tab->getNumValues(); ++i) 
     {
@@ -80,9 +75,7 @@ public:
         tab->setValue(i, pow(tab->getValue(i), 1 + beta*i*sqrt(tab->getValue(i))/(tab->getNumValues()-1)));
     }
   }
-};
-  
-  
+}; 
   
   
 // f(x) = ||z||^2 + f_opt, with z = x - x_opt
@@ -134,7 +127,7 @@ public:
     xopt->subtractFrom(z);
     
     // z = Tosz(x - x_opt)
-    LinearTransformation::Tosz(z);
+    testbed::linearTransformTosz(z);
     
     double result = 0;
     for (size_t i = 0; i < z->getNumValues(); ++i)    // WARNING: index i starts at 0
@@ -168,12 +161,12 @@ public:
     xopt->subtractFrom(z);
     
     // z = Tosz(x - x_opt)
-    LinearTransformation::Tosz(z);
+    testbed::linearTransformTosz(z);
     
     // z = Tasy^0.2(Tosz(x - x_opt))
-    LinearTransformation::Tasy(z, 0.2);
+    testbed::linearTransformTasy(z, 0.2);
     
-    DoubleMatrixPtr lambda = UsefulFunctions::getLambdaMatrix(10.0, z->getNumValues());
+    DoubleMatrixPtr lambda = testbed::getLambdaMatrix(10.0, z->getNumValues());
     
     // z = lambda * Tasy^0.2(Tosz(x - x_opt))
     for (size_t i = 0; i < z->getNumValues(); ++i) 
