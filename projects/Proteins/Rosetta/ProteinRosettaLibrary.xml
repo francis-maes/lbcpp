@@ -52,7 +52,7 @@
   <class name="EnergyAndQScoreComparisonWorkUnit" base="WorkUnit">
     <variable type="String" name="referenceDirectory" description="Directory of reference proteins to load"/>
     <variable type="String" name="targetDirectory" description="Directory of target proteins to load"/>
-    <variable type="String" name="outputDirectory" description="Directory of output file containing the results"/>
+    <variable type="String" name="outputPath" description="Path of the file containing the results"/>
   </class>
   
   <class name="FilesHarmonizationWorkUnit" base="WorkUnit">

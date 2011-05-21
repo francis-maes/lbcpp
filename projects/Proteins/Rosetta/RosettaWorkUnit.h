@@ -522,9 +522,9 @@ public:
     File outputFile;
     bool out = false;
     juce::OutputStream *fos;
-    if (!(outputDirectory.isEmpty()))
+    if (!(outputPath.isEmpty()))
     {
-      outputFile = context.getFile(outputDirectory);
+      outputFile = context.getFile(outputPath);
       if (outputFile.exists())
       {
         outputFile.deleteFile();
@@ -538,8 +538,9 @@ public:
     referenceFile.findChildFiles(references, File::findFiles, false, T("*.xml"));
 
     std::vector<File> toDelete;
-    for (int j = 0; j < references.size(); j++)
+    for (size_t j = 0; j < references.size(); j++)
     {
+      context.progressCallback(new ProgressionState(j, (size_t)references.size(), T("Reference proteins")));
       ProteinPtr proteinRef = Protein::createFromXml(context, *references[j]);
       core::pose::PoseOP referencePose;
       convertProteinToPose(context, proteinRef, referencePose);
@@ -631,6 +632,8 @@ public:
         *fos << "\r\n";
     }
 
+    context.progressCallback(new ProgressionState((size_t)references.size(),
+        (size_t)references.size(), T("Reference proteins")));
     if (out)
     {
       fos->flush();
@@ -655,7 +658,7 @@ protected:
   friend class EnergyAndQScoreComparisonWorkUnitClass;
   String referenceDirectory;
   String targetDirectory;
-  String outputDirectory;
+  String outputPath;
 };
 
 }; /* namespace lbcpp */
