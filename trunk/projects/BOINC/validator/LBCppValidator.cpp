@@ -103,7 +103,8 @@ int init_result(RESULT& result, void*& data)
       log_messages.printf(MSG_CRITICAL,
                           "[RESULT#%d %s] Couldn't get score in %s\n",
                           result.id, result.name, fi.path.c_str());
-      score = DBL_MAX;	// TODO arnaud : avoid to polute optimizer policy and avoid to stop validator
+      int randscore = (rand() % RAND_MAX) + (RAND_MAX / 2); 
+      score = (double) randscore;	// TODO arnaud : avoid to polute optimizer policy and avoid to stop validator
     }
     scores->push_back(score);
     data = (void*) scores;

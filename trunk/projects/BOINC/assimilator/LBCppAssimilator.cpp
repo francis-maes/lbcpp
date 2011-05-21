@@ -83,7 +83,7 @@ int assimilate_handler(WORKUNIT& wu, vector<RESULT>& /*results*/, RESULT& canoni
           File fileToMove(config.project_path("Network/.WorkUnit/InProgress/%s.workUnit", wu.name));
           if (!fileToMove.moveFileTo(File(config.project_path("Network/.WorkUnit/Finished/%s.workUnit", wu.name))))
           {
-          	log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] Can't copy workunit file : %s -> %s\n", wu.id, wu.name, fileToMove.getFullPathName().toUTF8() , File(config.project_path("Network/.WorkUnit/Finished/%s.workUnit", wu.name)).getFullPathName().toUTF8());
+          	log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] Can't move workunit file : %s -> %s\n", wu.id, wu.name, fileToMove.getFullPathName().toUTF8() , File(config.project_path("Network/.WorkUnit/Finished/%s.workUnit", wu.name)).getFullPathName().toUTF8());
             return 1;
           }
 
@@ -121,11 +121,18 @@ int assimilate_handler(WORKUNIT& wu, vector<RESULT>& /*results*/, RESULT& canoni
     }
     else
     {
+      File traceToCopy(config.project_path("Network/.WorkUnit/fakeTrace.trace"));
       File fileToCopy(config.project_path("Network/.WorkUnit/InProgress/%s.workUnit", wu.name));
-      if (!fileToCopy.copyFileTo(File(config.project_path("Network/.WorkUnit/Errors/%s.workUnit", wu.name))))
-        log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] Can't copy workunit file : %s -> %s\n", wu.id, wu.name, fileToCopy.getFullPathName().toUTF8() , config.project_path("Network/.WorkUnit/Errors/%s.workUnit", wu.name));
+      if (!traceToCopy.copyFileTo(File(config.project_path("Network/.WorkUnit/Traces/%s.trace", wu.name))))
+        log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] Can't copy fakeTrace file : %s -> %s\n", wu.id, wu.name, traceToCopy.getFullPathName().toUTF8() , config.project_path("Network/.WorkUnit/Traces/%s.trace", wu.name));
+      else
+      {
+        if (!fileToCopy.copyFileTo(File(config.project_path("Network/.WorkUnit/Finished/%s.workUnit", wu.name))))
+          log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] Can't copy workunit file : %s -> %s\n", wu.id, wu.name, fileToCopy.getFullPathName().toUTF8() , File(config.project_path("Network/.WorkUnit/Finished/%s.workUnit", wu.name)).getFullPathName().toUTF8());
+      }
+      if (!fileToCopy.moveFileTo(File(config.project_path("Network/.WorkUnit/Errors/%s.workUnit", wu.name))))
+        log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] Can't move workunit file : %s -> %s\n", wu.id, wu.name, fileToCopy.getFullPathName().toUTF8() , config.project_path("Network/.WorkUnit/Errors/%s.workUnit", wu.name));
 
-      // TODO : generate trace with socre = 0 in finished !!! 
       char buf[1024];
       sprintf(buf, "%s: 0x%x\n", wu.name, wu.error_mask);
       return write_error(buf);

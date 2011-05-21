@@ -34,9 +34,12 @@ MyUSER=`cat $WorkingDir/dbinfo | awk '{print $1}'`	# USERNAME
 MyPASS=`cat $WorkingDir/dbinfo | awk '{print $2}'`   # PASSWORD
 MyHOST=`cat $WorkingDir/dbinfo | awk '{print $3}'`	# Hostname
 
+
+
 # SCP variables
-DestSCP=`cat $WorkingDir/scpinfo | awk '{print $1}'`		# login@host.domain:path/
-PasswordSCP=`cat $WorkingDir/scpinfo | awk '{print $2}'`	# password
+DestSCP=`cat $WorkingDir/scpinfo | awk '{print $1}'`          # login@host.domain:path/
+# uncomment to use scp
+#PasswordSCP=`cat $WorkingDir/scpinfo | awk '{print $2}'`	# password
 
 # Linux bin paths, change this if it can not be autodetected via which command
 MYSQL="$(which mysql)"
@@ -84,8 +87,12 @@ done
 /usr/sbin/logrotate -s ./projects/$Project/pid_boinc/logrotate.state ./projects/$Project/logrotate.conf &> ./projects/$Project/logrotate.log
 
 # Backup
-$ExecDir/scplogin.exp $PasswordSCP $DestSCP $WorkingDir/$DIR
-$ExecDir/rsynclogin.exp $PasswordSCP $DestSCP ./projects/$Project $ExecDir/excludePATH		# files listed in excludePATH are ignored
+# with public/private key pair
+scp -rp $WorkingDir/$DIR $DestSCP
+rsync -avz --delete --exclude-from=$ExecDir/excludePATH ./projects/$Project $DestSCP
+# with expect
+#$ExecDir/scplogin.exp $PasswordSCP $DestSCP $WorkingDir/$DIR
+#$ExecDir/rsynclogin.exp $PasswordSCP $DestSCP ./projects/$Project $ExecDir/excludePATH		# files listed in excludePATH are ignored
 
 # Restarts boinc server
 ./projects/$Project/bin/start
