@@ -773,7 +773,7 @@ int assign_credit_set(
             wu.id, x
         );
     }
-    credit = x;
+    credit = x*2;	// ARNAUD : *2 factor to take into account the huge ram consumption !
     return 0;
 }
 
