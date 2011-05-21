@@ -41,4 +41,13 @@
     <variable type="Double" name="probabilityForUnseenSample"/>
   </class>
   
+  <class name="GeneralProteinMoverSampler" base="CompositeSampler">
+  </class>
+  
+  <class name="GeneralSimpleResidueSampler" base="CompositeSampler">
+  </class>
+  
+  <class name="GeneralResiduePairSampler" base="CompositeSampler">
+  </class>
+  
 </library>

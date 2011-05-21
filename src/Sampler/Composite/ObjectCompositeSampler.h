@@ -33,11 +33,15 @@ public:
   {
     size_t n = samples->getNumElements();
     size_t numSamplers = samplers.size();
-    subInputs.resize(numSamplers, inputs);
+    subInputs.resize(numSamplers);
     subSamples.resize(numSamplers);
-    subWeights.resize(numSamplers, weights);
+    subWeights.resize(numSamplers);
     for (size_t i = 0; i < numSamplers; ++i)
+    {
+      subInputs[i] = inputs;
       subSamples[i] = new VariableVector(0); // todo: static typing for better vector implementation
+      subWeights[i] = weights;
+    }
 
     for (size_t i = 0; i < n; ++i)
     {
