@@ -85,7 +85,87 @@ class DebugNetworkWorkUnit : public WorkUnit
     return Variable();
   }
 };  
+class AsyncEDAOptimizerExperience : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    String projectName(T("AsyncEDAOptimizerExperience"));
+    String source(T("localhost"));
+    String destination(T("boincadm@boinc.run"));
+    String managerHostName(T("localhost"));
+    size_t managerPort = 1665;
+    size_t requiredMemory = 1;
+    size_t requiredCpus = 1;
+    size_t requiredTime = 1;
+    
+    // initial sampler
+    std::vector<SamplerPtr> samplers;
+    samplers.reserve(14);
+    for (size_t i = 0; i < 14; ++i)
+    {
+      SamplerPtr mySampler;
+      switch (i) {
+        case 0:
+          mySampler = discretizeSampler(gaussianSampler(5, 3), 0, 15);
+          break;
+        case 1:
+          mySampler = discretizeSampler(gaussianSampler(5, 3), 0, 20);
+          break;
+        case 2:
+          mySampler = discretizeSampler(gaussianSampler(5, 3), 0, 20);
+          break;
+        case 3:
+          mySampler = discretizeSampler(gaussianSampler(5, 3), 0, 20);
+          break;
+        case 4:
+          mySampler = discretizeSampler(gaussianSampler(5, 3), 0, 20);
+          break;
+        case 5:
+          mySampler = discretizeSampler(gaussianSampler(5, 3), 0, 20);
+          break;
+        case 6:
+          mySampler = discretizeSampler(gaussianSampler(5, 3), 0, 15);
+          break;
+        case 7:
+          mySampler = discretizeSampler(gaussianSampler(5, 3), 0, 20);
+          break;
+        case 8:
+          mySampler = discretizeSampler(gaussianSampler(5, 3), 0, 20);
+          break;
+        case 9:
+          mySampler = discretizeSampler(gaussianSampler(5, 3), 0, 20);
+          break;
+        case 10:
+          mySampler = bernoulliSampler(0.5, 0.1, 0.9); // avoid prob = 0 or prob = 1
+          break;
+        case 11:
+          mySampler = discretizeSampler(gaussianSampler(10, 5), 0, 25);
+          break;
+        case 12:
+          mySampler = discretizeSampler(gaussianSampler(20, 10), 0, 55);
+          break;
+        case 13:
+          mySampler = discretizeSampler(gaussianSampler(50, 20), 0, 110);
+          break;
+        default:
+          jassertfalse;
+      }
+      
+      samplers.push_back(mySampler);
+    }
+    SamplerPtr sampler = objectCompositeSampler(numericalProteinFeaturesParametersClass, samplers);
+    
+    
+    // Optimizer
+    OptimizerPtr optimizer = asyncEDAOptimizer(20, 500, 150, 750, 10);
+    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, new ProteinLearnerObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime);
+    SamplerBasedOptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler);
+    return optimizer->compute(context, optimizerContext, optimizerState);
+  }
   
+};
+
 class GridEvoOptimizerExperience : public WorkUnit  
 {
 public:
