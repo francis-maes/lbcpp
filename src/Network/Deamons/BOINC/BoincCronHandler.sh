@@ -5,7 +5,7 @@ programDirectory="/home/boincadm/LBCPP/bin/Release"
 rootProjectDirectory="/home/boincadm/projects/evo/Network/Projects"
 
 serverName="boincadm@boinc.run"
-masterHostname="monster24.montefiore.ulg.ac.be"
+masterHostname="localhost"
 
 # Take the lock
 if [ -f $workUnitDirectory/.lock ]
@@ -19,7 +19,7 @@ touch $workUnitDirectory/.lock
 
 # Communication with Monster24
 cd $programDirectory
-./RunWorkUnit GridWorkUnit --hostName $masterHostname --gridName $serverName --gridEngine BOINC --projectDirectory $workUnitDirectory
+./RunWorkUnit GridWorkUnit --hostName $masterHostname --port 1665 --gridName $serverName --gridEngine BOINC --projectDirectory $workUnitDirectory
 
 rm $workUnitDirectory/.lock
 
