@@ -85,6 +85,8 @@ public:
   }
 
 protected:
+  friend class ProteinMoverSamplerClass;
+
   void createObjectSamplers(size_t numResidues)
   {
     samplers.push_back(objectCompositeSampler(phiPsiMoverClass, new SimpleResidueSampler(numResidues), gaussianSampler(0, 25), gaussianSampler(0, 25)));
