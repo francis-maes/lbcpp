@@ -91,7 +91,7 @@ int make_job(File* file) {
   wu.rsc_fpops_bound = 3e13;
   wu.rsc_memory_bound = 1.5e9;
   wu.rsc_disk_bound = 1e9;
-  wu.delay_bound = 3*86400;
+  wu.delay_bound = 1*86400;
   wu.min_quorum = REPLICATION_FACTOR;
   wu.target_nresults = REPLICATION_FACTOR;
   wu.max_error_results = REPLICATION_FACTOR*2;
