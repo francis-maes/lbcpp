@@ -90,7 +90,7 @@ class AsyncEDAOptimizerExperience : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
-    String projectName(T("AsyncEDAOptimizerExperience"));
+    String projectName(T("AsyncEDAOptimizerExperience2"));
     String source(T("localhost"));
     String destination(T("boincadm@boinc.run"));
     String managerHostName(T("localhost"));
@@ -158,9 +158,9 @@ public:
     
     
     // Optimizer
-    OptimizerPtr optimizer = asyncEDAOptimizer(20, 500, 150, 750, 10);
+    OptimizerPtr optimizer = asyncEDAOptimizer(20, 500, 150, 750, 0.15);
     OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, new ProteinLearnerObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime, 300000);
-    SamplerBasedOptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler, 300000);
+    SamplerBasedOptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler, 300);
     return optimizer->compute(context, optimizerContext, optimizerState);
   }
   
@@ -234,7 +234,7 @@ class OptimizerTestBedWorkUnit : public WorkUnit
     
     
     //OptimizerPtr optimizer = edaOptimizer(20, 100, 30, 0.2);
-    OptimizerPtr optimizer = asyncEDAOptimizer(100, 2000, 300, 300, 0.3);
+    OptimizerPtr optimizer = asyncEDAOptimizer(10, 100, 30, 50, 0.1);
     
     DenseDoubleVectorPtr coefs = new DenseDoubleVector(4, 0.0);
     coefs->setValue(0, 2.0);
@@ -243,10 +243,10 @@ class OptimizerTestBedWorkUnit : public WorkUnit
     coefs->setValue(3, 0.0);
 
     FunctionPtr f = new RastriginFunction(coefs, -1);
-    OptimizerContextPtr optimizerContext = synchroneousOptimizerContext(context, f);
+    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1000);
     
     SamplerPtr sampler = independentDoubleVectorSampler(4, gaussianSampler(0.0, 5.0));
-    OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler);  
+    OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler, 10);  
     
     return optimizer->compute(context, optimizerContext, optimizerState);
     
