@@ -592,7 +592,7 @@ public:
   virtual SamplerPtr createParametersSampler() const
   {
     SamplerPtr scalarSampler = gaussianSampler(0.0, 1.0);
-    if (true)
+    if (false)
       scalarSampler = zeroOrScalarContinuousSampler(bernoulliSampler(0.5, 0.1, 0.9), scalarSampler);
     return independentDoubleVectorSampler(parameters->getElementsEnumeration(), scalarSampler);
   }

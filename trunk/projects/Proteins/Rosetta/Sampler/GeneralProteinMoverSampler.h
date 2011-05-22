@@ -68,7 +68,7 @@ public:
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
-    size_t numResidues = inputs[0].getObjectAndCast<DenseDoubleVector>()->getValue(0);
+    size_t numResidues = (size_t)inputs[0].getObjectAndCast<DenseDoubleVector>()->getValue(0);
     size_t indexResidueOne = (size_t)samplers[0]->sample(context, random, inputs).getInteger();
     size_t indexResidueTwo = (size_t)samplers[1]->sample(context, random, inputs).getInteger();
 

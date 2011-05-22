@@ -177,5 +177,33 @@
     <!-- <variable type="DiscreteBanditPolicy" name="policyToOptimize" shortName="p"/> -->
   </class>
 
+  <!-- GP SandBox -->
+  <enumeration name="GPOperator">
+    <value name="addition" shortName="+"/>
+    <value name="subtraction" shortName="-"/>
+    <value name="multiplication" shortName="*"/>
+    <value name="division" shortName="/"/>
+  </enumeration>
+
+  <enumeration name="GPPre">
+    <value name="sinus" shortName="sin"/>
+    <value name="cosinus" shortName="cos"/>
+    <value name="exponential" shortName="exp"/>
+    <value name="logarithm" shortName="log"/>
+  </enumeration>
+
+  <class name="GPExpr" base="Object" abstract="yes"/>
+  <class name="BinaryGPExpr" base="GPExpr" shortName="binary">
+    <variable type="GPExpr" name="left"/>
+    <variable type="GPOperator" name="op" enumeration="yes"/>
+    <variable type="GPExpr" name="right"/>
+  </class>
+  <class name="UnaryGPExpr" base="GPExpr" shortName="unary">
+    <variable type="GPPre" name="pre" enumeration="yes"/>
+    <variable type="GPExpr" name="expr"/>
+  </class>
+  <class name="VariableGPExpr" base="GPExpr" shortName="variable">
+    <variable type="PositiveInteger" name="index"/>
+  </class>
 
 </library>
