@@ -369,7 +369,6 @@ public:
           Variable var = getVariableFromTrace->compute(context, trace);
           resultsMap.insert(std::pair<double, Variable>(score,var));
         }
-        
         IndependentMultiVariateDistributionBuilderPtr distributionsBuilder = state->distributions->createBuilder();
         size_t nb = 0;
         std::multimap<double, Variable>::reverse_iterator mapIt;
@@ -379,27 +378,23 @@ public:
           distributionsBuilder->addElement((*mapIt).second);  // TODO arnaud : maybe use all results and use weight
           nb++;
         }
-        
         IndependentMultiVariateDistributionPtr newDistri = distributionsBuilder->build(context);
         distributionsBuilder->clear();
         distributionsBuilder->addDistribution(state->distributions);  // old distri
         for (size_t i = 0; i < updateFactor; ++i)
           distributionsBuilder->addDistribution(newDistri);
         state->distributions = distributionsBuilder->build(context);        
-        
         if ((*(resultsMap.rbegin())).first > state->bestScore) {
           state->bestScore = (*(resultsMap.rbegin())).first;
           state->bestVariable = (*(resultsMap.rbegin())).second;
           context.informationCallback(T("New best result found : ") + state->bestVariable.toString() + T(" ( ") + String(state->bestScore) + T(" )"));
         }
-               
         // delete files and clear vector
         for (it = state->currentEvaluatedWUs.begin(); it != state->currentEvaluatedWUs.end(); it++) {
           File::getCurrentWorkingDirectory().getChildFile(String(*it) + T(".trace")).deleteFile();
         }
         state->currentEvaluatedWUs.clear(); // clear map
         context.informationCallback(T("State updated"));
-        
         // save state
         File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")).copyFileTo(File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState_backup.xml")));
         state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")));

@@ -198,7 +198,7 @@ public:
     distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,225));
     
     // Create initial state either from distri or from existing file
-    ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(distributions);
+    ProteinGridEvoOptimizerStatePtr state = Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml"))).staticCast<ProteinGridEvoOptimizerState>(); //new ProteinGridEvoOptimizerState(distributions);
     
     // variables used by EvoOptimizer
     size_t totalNumberWuRequested = 10000; // total number of WUs to evaluate
