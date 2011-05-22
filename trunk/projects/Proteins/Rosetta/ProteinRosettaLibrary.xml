@@ -86,17 +86,6 @@
   </enumeration>
   
   <!-- Francis -->
-  <class name="MaximumEntropySampler" base="DiscreteSampler">
-    <variable type="Function" name="predictor"/>
-  </class>
-
-  <class name="ConditionalGaussianLossFunction" base="ScalarVectorFunction">
-    <constructor/>
-  </class>
-
-  <class name="ConditionalGaussianSampler" base="ScalarContinuousSampler">
-    <variable type="NumericalLearnableFunction" name="multiLinearFunction"/>
-  </class>
   <class name="RosettaSandBox" base="WorkUnit">
     <variable type="PositiveInteger" name="numExamples"/>
   </class>

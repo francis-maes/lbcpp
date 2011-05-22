@@ -23,7 +23,7 @@ class ConditionalSimpleResidueSampler : public CompositeSampler
 public:
   ConditionalSimpleResidueSampler()
   {
-    samplers.push_back(new ConditionalGaussianSampler());
+    samplers.push_back(conditionalGaussianSampler());
   }
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
@@ -111,7 +111,7 @@ public:
   ConditionalProteinMoverSampler(size_t level)
   {
     createObjectSamplers(level);
-    samplers.push_back(new MaximumEntropySampler(proteinMoverEnumerationEnumeration));
+    samplers.push_back(maximumEntropySampler(proteinMoverEnumerationEnumeration));
   }
 
   ConditionalProteinMoverSampler() {}
@@ -183,9 +183,9 @@ protected:
       }
       else
       {
-        samplers.push_back(objectCompositeSampler(phiPsiMoverClass, new ConditionalSimpleResidueSampler(), new ConditionalGaussianSampler(), new ConditionalGaussianSampler()));
-        samplers.push_back(objectCompositeSampler(shearMoverClass, new ConditionalSimpleResidueSampler(), new ConditionalGaussianSampler(), new ConditionalGaussianSampler()));
-        samplers.push_back(objectCompositeSampler(rigidBodyMoverClass, new ConditionalResiduePairSampler(), new ConditionalGaussianSampler(), new ConditionalGaussianSampler()));
+        samplers.push_back(objectCompositeSampler(phiPsiMoverClass, new ConditionalSimpleResidueSampler(), conditionalGaussianSampler(), conditionalGaussianSampler()));
+        samplers.push_back(objectCompositeSampler(shearMoverClass, new ConditionalSimpleResidueSampler(), conditionalGaussianSampler(), conditionalGaussianSampler()));
+        samplers.push_back(objectCompositeSampler(rigidBodyMoverClass, new ConditionalResiduePairSampler(), conditionalGaussianSampler(), conditionalGaussianSampler()));
       }
     }
   };
