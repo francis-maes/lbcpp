@@ -149,6 +149,8 @@ protected:
   NumericalLearnableFunctionPtr multiLinearFunction;
 };
 
+typedef ReferenceCountedObjectPtr<ConditionalGaussianSampler> ConditionalGaussianSamplerPtr;
+
 class MaximumEntropySampler : public DiscreteSampler
 {
 public:
@@ -211,11 +213,29 @@ public:
 
     for (size_t i = 0; i < n; ++i)
     {
+# if 0
       double x = random->sampleDouble(0, 1);
       double mean = meanOrigin + x * meanCoefficient;
       double stddev = stddevOrigin + x * stddevCoefficient;
-      double y = random->sampleDoubleFromGaussian(mean, stddev);
+# else
+      double x = 0;
+      double mean = 0;
+      double stddev = 0;
+      if ((i % 2) == 0)
+      {
+        x = random->sampleDoubleFromGaussian(20, 1);
+        mean = 13;
+        stddev = 1;
+      }
+      else
+      {
+        x = random->sampleDoubleFromGaussian(50, 2);
+        mean = 33;
+        stddev = 0.5;
+      }
+# endif
 
+      double y = random->sampleDoubleFromGaussian(mean, stddev);
       DenseDoubleVectorPtr input = new DenseDoubleVector(inputClass);
       input->setValue(0, 1.0);
       input->setValue(1, x);
@@ -336,7 +356,11 @@ public:
     for (size_t i = 0; i < 1000; ++i)
     {
       context.enterScope(T("Sample ") + String((int)i + 1));
+# if 0
       double x = random->sampleDouble(0.0, 1.0);
+#else
+      double x = random->sampleDouble(0.0, 50.0);
+# endif
       context.resultCallback(T("x"), x);
       DenseDoubleVectorPtr features = new DenseDoubleVector(falseOrTrueEnumeration, doubleType);
       features->setValue(0, 1.0);
@@ -352,12 +376,12 @@ public:
 #if 0
     generateMoversDataSet(inputs, samples);
     SamplerPtr moverClassSampler = new MaximumEntropySampler(proteinMoverEnumerationEnumeration);
-    SamplerPtr sampler = proteinMoverSampler(moverClassSampler, 1000);
+    SamplerPtr MEsampler = proteinMoverSampler(moverClassSampler, 1000);
 
-    sampler->learn(context, inputs, samples);
+    MEsampler->learn(context, inputs, samples);
   
     ClassPtr inputClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
-    RandomGeneratorPtr random = new RandomGenerator();
+    random = new RandomGenerator();
 
     context.enterScope(T("Samples 1"));
     DenseDoubleVectorPtr input = new DenseDoubleVector(inputClass);
@@ -365,7 +389,7 @@ public:
     Variable inputVariable = input;
     for (size_t i = 0; i < 100; ++i)
     {
-      Variable sample = sampler->sample(context, random, &inputVariable);
+      Variable sample = MEsampler->sample(context, random, &inputVariable);
       context.resultCallback(T("sample ") + String((int)i + 1), sample);
     }
     context.leaveScope();
@@ -376,7 +400,7 @@ public:
     inputVariable = input;
     for (size_t i = 0; i < 100; ++i)
     {
-      Variable sample = sampler->sample(context, random, &inputVariable);
+      Variable sample = MEsampler->sample(context, random, &inputVariable);
       context.resultCallback(T("sample ") + String((int)i + 1), sample);
     }
     context.leaveScope();

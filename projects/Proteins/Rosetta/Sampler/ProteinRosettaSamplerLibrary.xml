@@ -50,4 +50,13 @@
   <class name="GeneralResiduePairSampler" base="CompositeSampler">
   </class>
   
+  <class name="ConditionalProteinMoverSampler" base="CompositeSampler">
+  </class>
+  
+  <class name="ConditionalSimpleResidueSampler" base="CompositeSampler">
+  </class>
+  
+  <class name="ConditionalResiduePairSampler" base="CompositeSampler">
+  </class>
+  
 </library>

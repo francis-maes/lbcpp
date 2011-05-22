@@ -175,6 +175,7 @@ SET(LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES
 )
 
   SET(LBCPP_PROTEIN_ROSETTA_SAMPLER_SOURCES
+  Rosetta/Sampler/ConditionalProteinMoverSampler.h
   Rosetta/Sampler/GeneralProteinMoverSampler.h
   Rosetta/Sampler/SmoothEnumerationSampler.h
   Rosetta/Sampler/ParzenContinuousSampler.h

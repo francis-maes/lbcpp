@@ -29,6 +29,7 @@
   
   <!-- WorkUnits -->
   <class name="RosettaTest" base="WorkUnit">
+    <variable type="Double" name="value"/>
     <variable type="Integer" name="arg" shortName="a" description="An input argument to RosettaTest"/>
     <variable type="String" name="proteinsDir" shortName="d" description="Directory of proteins to load"/>
   </class>
@@ -78,6 +79,12 @@
     <variable type="Boolean" name="del"/>
   </class>
 
+  <enumeration name="FeaturesMoverEnumeration">
+    <value name="numResidues"/>
+    <value name="first"/>
+    <value name="second"/>
+  </enumeration>
+  
   <!-- Francis -->
   <class name="MaximumEntropySampler" base="DiscreteSampler">
     <variable type="Function" name="predictor"/>

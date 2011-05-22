@@ -33,6 +33,8 @@
 # include "Sampler/SimpleResidueSampler.h"
 # include "Sampler/ResiduePairSampler.h"
 # include "Sampler/GeneralProteinMoverSampler.h"
+# include "Sampler/ConditionalProteinMoverSampler.h"
+# include "RosettaSandBox.h"
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 #  undef T
@@ -48,14 +50,16 @@ using namespace std;
 
 namespace lbcpp
 {
+extern EnumerationPtr featuresMoverEnumerationEnumeration;
 
-void outputEnergiesAndQScores(ExecutionContext& context, String referenceDirectory, String targetDirectory);
+void generateMoversDataSet(VectorPtr& inputs, VectorPtr& samples);
 
 class RosettaTest : public WorkUnit
 {
 private:
   friend class RosettaTestClass;
   size_t arg;
+  double value;
   String proteinsDir;
 
 public:
@@ -67,34 +71,93 @@ public:
 # ifdef LBCPP_PROTEIN_ROSETTA
 # endif // LBCPP_PROTEIN_ROSETTA
 
-    // --------------- General sampler
-    GeneralProteinMoverSamplerPtr gen = new GeneralProteinMoverSampler();
-    GeneralSimpleResidueSampler simple;
-    GeneralResiduePairSampler pair;
+    // -------------- max ent
+    VectorPtr inputs;
+    VectorPtr samples;
+    generateMoversDataSet(inputs, samples);
+
+    ConditionalProteinMoverSamplerPtr MEsampler = new ConditionalProteinMoverSampler(0);
+
+    MEsampler->learn(context, inputs, samples, DenseDoubleVectorPtr(), ContainerPtr(),
+        ContainerPtr(), DenseDoubleVectorPtr());
+
+    ClassPtr inputClass = denseDoubleVectorClass(featuresMoverEnumerationEnumeration, doubleType);
+    random = new RandomGenerator();
+
+    context.enterScope(T("Samples 1"));
+    DenseDoubleVectorPtr input = new DenseDoubleVector(inputClass, 3, 0.0);
+    input->setValue(0, 20.0); // length of protein
+    input->setValue(1, 1.0); // first distribution
+    Variable inputVariable = input;
+    for (size_t i = 0; i < 100; ++i)
+    {
+      Variable sample = MEsampler->sample(context, random, &inputVariable);
+      context.resultCallback(T("sample ") + String((int)i + 1), sample);
+    }
+    context.leaveScope();
+
+    context.enterScope(T("Samples 2"));
+    input = new DenseDoubleVector(inputClass, 3, 0.0);
+    input->setValue(0, 10.0); // length of protein
+    input->setValue(2, 1.0); // second distribution
+    inputVariable = input;
+    for (size_t i = 0; i < 100; ++i)
+    {
+      Variable sample = MEsampler->sample(context, random, &inputVariable);
+      context.resultCallback(T("sample ") + String((int)i + 1), sample);
+    }
+    context.leaveScope();
+
+# if 0
+    // --------------- Conditional sampler
+    ConditionalProteinMoverSamplerPtr gen = new ConditionalProteinMoverSampler(0);
+    ConditionalSimpleResidueSamplerPtr simple = new ConditionalSimpleResidueSampler();
+    ConditionalResiduePairSamplerPtr pair = new ConditionalResiduePairSampler();
 
     VariableVectorPtr samples = new VariableVector(0);
-    VariableVectorPtr inputs = new VariableVector(0);
-    Variable input1(Variable((int)20));
-    Variable input2(Variable((int)20));
-    Variable input3(Variable((int)20));
-    Variable input4(Variable((int)50));
-    Variable input5(Variable((int)50));
-    Variable input6(Variable((int)50));
-    Variable input7(Variable((int)50));
-    inputs->append(input1);
-    inputs->append(input2);
-    inputs->append(input3);
-    inputs->append(input4);
-    inputs->append(input5);
-    inputs->append(input6);
-    inputs->append(input7);
-    RigidBodyMoverPtr temp1 = new RigidBodyMover(10, 15, 4.5, -23.3);
-    RigidBodyMoverPtr temp2 = new RigidBodyMover(11, 15, 4.1, -22.3);
-    RigidBodyMoverPtr temp3 = new RigidBodyMover(12, 17, 4.2, -21.3);
-    RigidBodyMoverPtr temp4 = new RigidBodyMover(22, 26, 5.5, -24.3);
-    RigidBodyMoverPtr temp5 = new RigidBodyMover(20, 26, 3.5, -23.1);
-    PhiPsiMoverPtr temp6 = new PhiPsiMover(24, 34.2, 87.3);
-    PhiPsiMoverPtr temp7 = new PhiPsiMover(25, 33.2, 84.3);
+    VectorPtr inputs = vector(denseDoubleVectorClass(falseOrTrueEnumeration, doubleType), 0);
+    DenseDoubleVectorPtr features1 = new DenseDoubleVector(2, 1.0);
+    features1->setValue(0, 0.21);
+    DenseDoubleVectorPtr features2 = new DenseDoubleVector(2, 1.0);
+    features2->setValue(0, 0.22);
+    DenseDoubleVectorPtr features3 = new DenseDoubleVector(2, 1.0);
+    features3->setValue(0, 0.23);
+    DenseDoubleVectorPtr features4 = new DenseDoubleVector(2, 1.0);
+    features4->setValue(0, 0.51);
+    DenseDoubleVectorPtr features5 = new DenseDoubleVector(2, 1.0);
+    features5->setValue(0, 0.49);
+    DenseDoubleVectorPtr features6 = new DenseDoubleVector(2, 1.0);
+    features6->setValue(0, 0.54);
+    DenseDoubleVectorPtr features7 = new DenseDoubleVector(2, 1.0);
+    features7->setValue(0, 0.52);
+    Variable input1(features1);
+    Variable input2(features2);
+    Variable input3(features3);
+    Variable input4(features4);
+    Variable input5(features5);
+    Variable input6(features6);
+    Variable input7(features7);
+    inputs->append(features1);
+    inputs->append(features2);
+    inputs->append(features3);
+    inputs->append(features4);
+    inputs->append(features5);
+    inputs->append(features6);
+    inputs->append(features7);
+    //    inputs->append(input1);
+    //    inputs->append(input2);
+    //    inputs->append(input3);
+    //    inputs->append(input4);
+    //    inputs->append(input5);
+    //    inputs->append(input6);
+    //    inputs->append(input7);
+    Variable temp1(Variable(10.0));
+    Variable temp2(Variable(11.0));
+    Variable temp3(Variable(12.0));
+    Variable temp4(Variable(33.0));
+    Variable temp5(Variable(34.0));
+    Variable temp6(Variable(32.0));
+    Variable temp7(Variable(31.0));
     samples->append(temp1);
     samples->append(temp2);
     samples->append(temp3);
@@ -103,37 +166,98 @@ public:
     samples->append(temp6);
     samples->append(temp7);
 
-    gen->learn(context, inputs, samples, DenseDoubleVectorPtr(), ContainerPtr(), ContainerPtr(),
+    VectorPtr samples2 = new DenseDoubleVector(7, 0.0);
+    samples2->setElement(0, (double)0.10);
+    samples2->setElement(1, (double)0.11);
+    samples2->setElement(2, (double)0.12);
+    samples2->setElement(3, (double)0.33);
+    samples2->setElement(4, (double)0.34);
+    samples2->setElement(5, (double)0.32);
+    samples2->setElement(6, (double)0.31);
+
+    simple->learn(context, inputs, samples2, DenseDoubleVectorPtr(), ContainerPtr(), ContainerPtr(),
         DenseDoubleVectorPtr());
 
-    int count1 = 0;
-    int count2 = 0;
-    int count3 = 0;
-    for (size_t j = 10; j < 40; j += 10)
+    for (size_t j = 10; j <= 50; j += 10)
     {
-      for (size_t i = 0; i < 20; i++)
+      for (size_t i = 0; i < 5; i++)
       {
-        Variable input((int)j);
-        ProteinMoverPtr mover =
-            gen->sample(context, random, &input).getObjectAndCast<ProteinMover> ();
-        cout << (const char*)mover->toString() << endl;
+        DenseDoubleVectorPtr features = new DenseDoubleVector(2, 1.0);
+        features->setValue(0, (double)j / 100);
+        Variable input(features);
 
-        if (mover.isInstanceOf<PhiPsiMover> ())
-          count1++;
-        else if (mover.isInstanceOf<ShearMover> ())
-          count2++;
-        else if (mover.isInstanceOf<RigidBodyMover> ())
-          count3++;
+        //ProteinMoverPtr mover =
+        //    gen->sample(context, random, &input).getObjectAndCast<ProteinMover> ();
+        Variable mover =
+                    simple->sample(context, random, &input);
+        //cout << (const char*)mover->toString() << endl;
+        cout << (const char*)mover.toString() << endl;
       }
       cout << "===" << endl;
     }
 
-    int num = count1 + count2 + count3;
-    cout << "il y a  " << endl;
-    cout << "phipsi : " << (double)count1 / (double)num << endl;
-    cout << "shear : " << (double)count2 / (double)num << endl;
-    cout << "rigidbody : " << (double)count3 / (double)num << endl;
-
+//    VariableVectorPtr samples = new VariableVector(0);
+//    VariableVectorPtr inputs = new VariableVector(0);
+//    Variable input1(Variable((int)20));
+//    Variable input2(Variable((int)20));
+//    Variable input3(Variable((int)20));
+//    Variable input4(Variable((int)50));
+//    Variable input5(Variable((int)50));
+//    Variable input6(Variable((int)50));
+//    Variable input7(Variable((int)50));
+//    inputs->append(input1);
+//    inputs->append(input2);
+//    inputs->append(input3);
+//    inputs->append(input4);
+//    inputs->append(input5);
+//    inputs->append(input6);
+//    inputs->append(input7);
+//    RigidBodyMoverPtr temp1 = new RigidBodyMover(10, 15, 4.5, -23.3);
+//    RigidBodyMoverPtr temp2 = new RigidBodyMover(11, 15, 4.1, -22.3);
+//    RigidBodyMoverPtr temp3 = new RigidBodyMover(12, 17, 4.2, -21.3);
+//    RigidBodyMoverPtr temp4 = new RigidBodyMover(22, 26, 5.5, -24.3);
+//    RigidBodyMoverPtr temp5 = new RigidBodyMover(20, 26, 3.5, -23.1);
+//    PhiPsiMoverPtr temp6 = new PhiPsiMover(24, 34.2, 87.3);
+//    PhiPsiMoverPtr temp7 = new PhiPsiMover(25, 33.2, 84.3);
+//    samples->append(temp1);
+//    samples->append(temp2);
+//    samples->append(temp3);
+//    samples->append(temp4);
+//    samples->append(temp5);
+//    samples->append(temp6);
+//    samples->append(temp7);
+//
+//    gen->learn(context, inputs, samples, DenseDoubleVectorPtr(), ContainerPtr(), ContainerPtr(),
+//        DenseDoubleVectorPtr());
+//
+//    int count1 = 0;
+//    int count2 = 0;
+//    int count3 = 0;
+//    for (size_t j = 10; j < 40; j += 10)
+//    {
+//      for (size_t i = 0; i < 20; i++)
+//      {
+//        Variable input((int)j);
+//        ProteinMoverPtr mover =
+//            gen->sample(context, random, &input).getObjectAndCast<ProteinMover> ();
+//        cout << (const char*)mover->toString() << endl;
+//
+//        if (mover.isInstanceOf<PhiPsiMover> ())
+//          count1++;
+//        else if (mover.isInstanceOf<ShearMover> ())
+//          count2++;
+//        else if (mover.isInstanceOf<RigidBodyMover> ())
+//          count3++;
+//      }
+//      cout << "===" << endl;
+//    }
+//
+//    int num = count1 + count2 + count3;
+//    cout << "il y a  " << endl;
+//    cout << "phipsi : " << (double)count1 / (double)num << endl;
+//    cout << "shear : " << (double)count2 / (double)num << endl;
+//    cout << "rigidbody : " << (double)count3 / (double)num << endl;
+# endif
 #  if 0
     // --------------- residuepair sampler
     cout << "======================= dual residue sampler ===================" << endl;
@@ -509,6 +633,81 @@ public:
 
   }
 };
+
+void generateMoversDataSet(VectorPtr& inputs, VectorPtr& samples)
+{
+  size_t numExamples = 100;
+  ClassPtr inputClass = denseDoubleVectorClass(featuresMoverEnumerationEnumeration, doubleType);
+  inputs = vector(inputClass);
+  samples = vector(proteinMoverClass);
+
+  DenseDoubleVectorPtr input = new DenseDoubleVector(inputClass, 3, 0.0);
+  input->setValue(0, 20.0); // length of protein
+  input->setValue(1, 1.0); // first distribution
+  for (size_t i = 0; i < numExamples / 2; ++i)
+  {
+    inputs->append(input);
+    samples->append(phiPsiMover(15, 32, -123));
+
+    inputs->append(input);
+    samples->append(phiPsiMover(12, 34, -120));
+
+    inputs->append(input);
+    samples->append(phiPsiMover(14, 38, -121));
+
+    inputs->append(input);
+    samples->append(phiPsiMover(13, 30, -122));
+  }
+
+  input = new DenseDoubleVector(inputClass, 3, 0.0);
+  input->setValue(0, 10.0); // length of protein
+  input->setValue(2, 1.0); // second distribution
+  for (size_t i = 0; i < numExamples / 2; ++i)
+  {
+    inputs->append(input);
+    samples->append(shearMover(3, 0.9, 4.5));
+
+    inputs->append(input);
+    samples->append(shearMover(4, 0.7, 4.3));
+
+    inputs->append(input);
+    samples->append(shearMover(3, 0.8, 3.4));
+
+//    inputs->append(input);
+//    samples->append(shearMover(2, 1.0, 4.53));
+//
+//    inputs->append(input);
+//    samples->append(shearMover(4, 1.1, 4.32));
+//
+//    inputs->append(input);
+//    samples->append(shearMover(5, 0.853, 3.45));
+
+    // general
+    inputs->append(input);
+    samples->append(rigidBodyMover(1, 3, 20.8, -3.4));
+
+    inputs->append(input);
+    samples->append(rigidBodyMover(0, 3, 20.5, -2.4));
+
+    inputs->append(input);
+    samples->append(rigidBodyMover(1, 3, 20.18, -3.4));
+
+    inputs->append(input);
+    samples->append(rigidBodyMover(0, 4, 21.2, -2.4));
+
+    inputs->append(input);
+    samples->append(rigidBodyMover(0, 4, 20.3, -3.4));
+
+    inputs->append(input);
+    samples->append(rigidBodyMover(1, 3, 20.76, -4.2));
+
+    inputs->append(input);
+    samples->append(rigidBodyMover(1, 3, 20.76, -4.2));
+
+    inputs->append(input);
+    samples->append(rigidBodyMover(0, 3, 21.01, -4));
+  }
+}
 
 }; /* namespace lbcpp */
 

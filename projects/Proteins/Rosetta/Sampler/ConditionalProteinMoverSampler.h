@@ -1,76 +1,74 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: GeneralProteinMoverSampler.h   | GeneralProteinMoverSampler      |
+| Filename: ConditionalProtein..Sampler.h  | ConditionalProteinMoverSampler  |
 | Author  : Alejandro Marcos Alvarez       |                                 |
-| Started : 21 mai 2011  16:15:42          |                                 |
+| Started : 22 mai 2011  10:31:16          |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_SAMPLER_GENERAL_PROTEIN_MOVER_SAMPLER_H_
-# define LBCPP_SAMPLER_GENERAL_PROTEIN_MOVER_SAMPLER_H_
+#ifndef LBCPP_SAMPLER_CONDITIONAL_PROTEIN_MOVER_SAMPLER_H_
+# define LBCPP_SAMPLER_CONDITIONAL_PROTEIN_MOVER_SAMPLER_H_
 
 # include "precompiled.h"
 # include "../Sampler.h"
 # include "../ProteinMover.h"
+# include "../RosettaSandBox.h"
+# include "GeneralProteinMoverSampler.h"
 
 namespace lbcpp
 {
 
-class GeneralSimpleResidueSampler : public CompositeSampler
+class ConditionalSimpleResidueSampler : public CompositeSampler
 {
 public:
-  GeneralSimpleResidueSampler()
+  ConditionalSimpleResidueSampler()
   {
-    samplers.push_back(gaussianSampler(0.5, 0.3));
+    samplers.push_back(new ConditionalGaussianSampler());
   }
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
     jassert(inputs != NULL);
-    double numResidues = inputs[0].getObjectAndCast<DenseDoubleVector> ()->getValue(0);
+    size_t numResidues = (size_t)((inputs[0].getObjectAndCast<DenseDoubleVector>())->getValue(0));
     jassert(numResidues);
-    size_t indexResidue = (size_t)juce::jlimit(0, (int)numResidues - 1, (int)std::floor(
-        samplers[0]->sample(context, random).getDouble() * numResidues));
+    double value = samplers[0]->sample(context, random, inputs).getDouble();
+    size_t indexResidue = (size_t)juce::jlimit(0, (int)numResidues - 1, (int)std::floor(value));
     return indexResidue;
   }
 
   virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights = DenseDoubleVectorPtr(),
                                                 const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr(), const DenseDoubleVectorPtr& supervisionWeights = DenseDoubleVectorPtr())
   {
-    VariableVectorPtr values = new VariableVector(0);
+    VectorPtr training2 = new DenseDoubleVector(trainingSamples->getNumElements(), 0.0);
     for (size_t i = 0; i < trainingSamples->getNumElements(); i++)
-    {
-      size_t residue = trainingSamples->getElement(i).getInteger();
-      double length = (trainingInputs->getElement(i).getObjectAndCast<DenseDoubleVector>())->getValue(0);
-      jassert(length > 2);
-      Variable temp((double)residue / length);
-      values->append(temp);
-    }
-    samplers[0]->learn(context, ContainerPtr(), values, DenseDoubleVectorPtr(), ContainerPtr(), ContainerPtr(), DenseDoubleVectorPtr());
+      training2->setElement(i, trainingSamples->getElement(i).toDouble());
+
+    samplers[0]->learn(context, trainingInputs, training2, trainingWeights, validationInputs,
+        validationSamples, supervisionWeights);
   }
 
 protected:
-  friend class GeneralSimpleResidueSamplerClass;
+  friend class ConditionalSimpleResidueSamplerClass;
 };
 
-typedef ReferenceCountedObjectPtr<GeneralSimpleResidueSampler> GeneralSimpleResidueSamplerPtr;
+typedef ReferenceCountedObjectPtr<ConditionalSimpleResidueSampler> ConditionalSimpleResidueSamplerPtr;
 
-class GeneralResiduePairSampler : public CompositeSampler
+class ConditionalResiduePairSampler : public CompositeSampler
 {
 public:
-  GeneralResiduePairSampler()
+  ConditionalResiduePairSampler()
   {
-    samplers.push_back(new GeneralSimpleResidueSampler());
-    samplers.push_back(new GeneralSimpleResidueSampler());
+    samplers.push_back(new ConditionalSimpleResidueSampler());
+    samplers.push_back(new ConditionalSimpleResidueSampler());
   }
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
-    size_t numResidues = inputs[0].getObjectAndCast<DenseDoubleVector>()->getValue(0);
-    size_t indexResidueOne = (size_t)samplers[0]->sample(context, random, inputs).getInteger();
-    size_t indexResidueTwo = (size_t)samplers[1]->sample(context, random, inputs).getInteger();
+    size_t numResidues = (size_t)((inputs[0].getObjectAndCast<DenseDoubleVector>())->getValue(0));
+    size_t indexResidueOne = (size_t)(samplers[0]->sample(context, random, inputs).getInteger());
+    size_t indexResidueTwo = (size_t)(samplers[1]->sample(context, random, inputs).getInteger());
 
     if (std::abs((int)indexResidueOne - (int)indexResidueTwo) <= 1)
     {
@@ -84,16 +82,16 @@ public:
   virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights = DenseDoubleVectorPtr(),
                                                 const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr(), const DenseDoubleVectorPtr& supervisionWeights = DenseDoubleVectorPtr())
   {
-    VariableVectorPtr valuesOne = new VariableVector(0);
-    VariableVectorPtr valuesTwo = new VariableVector(0);
+    VectorPtr valuesOne = new DenseDoubleVector(trainingSamples->getNumElements(), 0.0);
+    VectorPtr valuesTwo = new DenseDoubleVector(trainingSamples->getNumElements(), 0.0);
     PairPtr residues;
     for (size_t i = 0; i < trainingSamples->getNumElements(); i++)
     {
       residues = (trainingSamples->getElement(i)).getObjectAndCast<Pair> ();
-      Variable temp1(residues->getFirst());
-      Variable temp2(residues->getSecond());
-      valuesOne->append(temp1);
-      valuesTwo->append(temp2);
+      Variable temp1 = residues->getFirst();
+      Variable temp2 = residues->getSecond();
+      valuesOne->setElement(i, temp1.toDouble());
+      valuesTwo->setElement(i, temp2.toDouble());
     }
     samplers[0]->learn(context, trainingInputs, valuesOne, trainingWeights, validationInputs,
         validationSamples, supervisionWeights);
@@ -102,19 +100,21 @@ public:
   }
 
 protected:
-  friend class GeneralResiduePairSamplerClass;
+  friend class ConditionalResiduePairSamplerClass;
 };
 
-typedef ReferenceCountedObjectPtr<GeneralResiduePairSampler> GeneralResiduePairSamplerPtr;
+typedef ReferenceCountedObjectPtr<ConditionalResiduePairSampler> ConditionalResiduePairSamplerPtr;
 
-class GeneralProteinMoverSampler : public CompositeSampler
+class ConditionalProteinMoverSampler : public CompositeSampler
 {
 public:
-  GeneralProteinMoverSampler()
+  ConditionalProteinMoverSampler(size_t level)
   {
-    createObjectSamplers();
-    samplers.push_back(enumerationSampler(proteinMoverEnumerationEnumeration));
+    createObjectSamplers(level);
+    samplers.push_back(new MaximumEntropySampler(proteinMoverEnumerationEnumeration));
   }
+
+  ConditionalProteinMoverSampler() {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
   {
@@ -165,18 +165,33 @@ public:
   }
 
 protected:
-  friend class GeneralProteinMoverSamplerClass;
+  friend class ConditionalProteinMoverSamplerClass;
 
-  void createObjectSamplers()
-  {
-    samplers.push_back(objectCompositeSampler(phiPsiMoverClass, new GeneralSimpleResidueSampler(), gaussianSampler(0, 25), gaussianSampler(0, 25)));
-    samplers.push_back(objectCompositeSampler(shearMoverClass, new GeneralSimpleResidueSampler(), gaussianSampler(0, 25), gaussianSampler(0, 25)));
-    samplers.push_back(objectCompositeSampler(rigidBodyMoverClass, new GeneralResiduePairSampler(), gaussianSampler(1, 1), gaussianSampler(0, 25)));
-  }
-};
+  void createObjectSamplers(size_t level)
+    {
+      if (level == 0)
+      {
+        samplers.push_back(objectCompositeSampler(phiPsiMoverClass, new GeneralSimpleResidueSampler(), gaussianSampler(0, 25), gaussianSampler(0, 25)));
+        samplers.push_back(objectCompositeSampler(shearMoverClass, new GeneralSimpleResidueSampler(), gaussianSampler(0, 25), gaussianSampler(0, 25)));
+        samplers.push_back(objectCompositeSampler(rigidBodyMoverClass, new GeneralResiduePairSampler(), gaussianSampler(1, 1), gaussianSampler(0, 25)));
+      }
+      else if (level == 1)
+      {
+        samplers.push_back(objectCompositeSampler(phiPsiMoverClass, new ConditionalSimpleResidueSampler(), gaussianSampler(0, 25), gaussianSampler(0, 25)));
+        samplers.push_back(objectCompositeSampler(shearMoverClass, new ConditionalSimpleResidueSampler(), gaussianSampler(0, 25), gaussianSampler(0, 25)));
+        samplers.push_back(objectCompositeSampler(rigidBodyMoverClass, new ConditionalResiduePairSampler(), gaussianSampler(1, 1), gaussianSampler(0, 25)));
+      }
+      else
+      {
+        samplers.push_back(objectCompositeSampler(phiPsiMoverClass, new ConditionalSimpleResidueSampler(), new ConditionalGaussianSampler(), new ConditionalGaussianSampler()));
+        samplers.push_back(objectCompositeSampler(shearMoverClass, new ConditionalSimpleResidueSampler(), new ConditionalGaussianSampler(), new ConditionalGaussianSampler()));
+        samplers.push_back(objectCompositeSampler(rigidBodyMoverClass, new ConditionalResiduePairSampler(), new ConditionalGaussianSampler(), new ConditionalGaussianSampler()));
+      }
+    }
+  };
 
-typedef ReferenceCountedObjectPtr<GeneralProteinMoverSampler> GeneralProteinMoverSamplerPtr;
+typedef ReferenceCountedObjectPtr<ConditionalProteinMoverSampler> ConditionalProteinMoverSamplerPtr;
 
 }; /* namespace lbcpp */
 
-#endif //! LBCPP_SAMPLER_GENERAL_PROTEIN_MOVER_SAMPLER_H_
+#endif //! LBCPP_SAMPLER_CONDITIONAL_PROTEIN_MOVER_SAMPLER_H_
