@@ -155,7 +155,7 @@ public:
 
   SamplerPtr createExpressionSampler() const
   {
-    
+    //return 
   }
 
   bool optimize(ExecutionContext& context, const SamplerPtr& sampler, const FunctionPtr& objective)

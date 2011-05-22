@@ -14,11 +14,19 @@
     <variable type="Double" name="maxValue"/>
   </class>
   
-  <class name="MultiVariateGaussianSampler" base="ScalarContinuousSampler">
+  <class name="MultiVariateGaussianSampler" base="ContinuousSampler">
     <constructor arguments="const DoubleMatrixPtr&amp; initialMean, const DoubleMatrixPtr&amp; initialStdDev"/>
     <variable type="PositiveInteger" name="numVariables"/>
     <variable type="DoubleMatrix[Double]" name="means"/>
     <variable type="DoubleMatrix[Double]" name="covariances"/>
   </class>
-  
+
+  <class name="ConditionalGaussianLossFunction" base="ScalarVectorFunction">
+    <constructor/>
+  </class>
+  <class name="ConditionalGaussianSampler" base="ScalarContinuousSampler">
+    <constructor/>
+    <variable type="NumericalLearnableFunction" name="multiLinearFunction"/>
+  </class>
+
 </library>

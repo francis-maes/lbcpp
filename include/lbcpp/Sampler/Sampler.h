@@ -18,6 +18,11 @@
 namespace lbcpp
 { 
 
+class Sampler;
+typedef ReferenceCountedObjectPtr<Sampler> SamplerPtr;
+class ContinuousSampler;
+typedef ReferenceCountedObjectPtr<ContinuousSampler> ContinuousSamplerPtr;
+
 /*
 ** Sampler Base Class
 */
@@ -41,7 +46,6 @@ public:
 protected:
   friend class SamplerClass;
 };
-typedef ReferenceCountedObjectPtr<Sampler> SamplerPtr;
 
 class ConstantSampler : public Sampler
 {
@@ -63,27 +67,6 @@ protected:
 extern SamplerPtr constantSampler(const Variable& value);
 
 /*
-** Continuous Sampler
-*/
-class ContinuousSampler : public Sampler
-{
-public:
-  lbcpp_UseDebuggingNewOperator
-};
-typedef ReferenceCountedObjectPtr<ContinuousSampler> ContinuousSamplerPtr;
-
-class ScalarContinuousSampler : public ContinuousSampler
-{
-public:
-  lbcpp_UseDebuggingNewOperator
-};
-typedef ReferenceCountedObjectPtr<ScalarContinuousSampler> ScalarContinuousSamplerPtr;
-
-extern ScalarContinuousSamplerPtr uniformScalarSampler(double minValue = 0.0, double maxValue = 1.0);
-extern ScalarContinuousSamplerPtr gaussianSampler(double mean = 0.0, double stddev = 1.0);
-extern ScalarContinuousSamplerPtr multiVariateGaussianSampler(const DoubleMatrixPtr& initialMean, const DoubleMatrixPtr& initialStdDev);
-
-/*
 ** Discrete Sampler
 */
 class DiscreteSampler : public Sampler
@@ -98,6 +81,31 @@ extern DiscreteSamplerPtr enumerationSampler(EnumerationPtr enumeration);
 extern DiscreteSamplerPtr enumerationSampler(const DenseDoubleVectorPtr& probabilities);
 
 extern DiscreteSamplerPtr discretizeSampler(const ContinuousSamplerPtr& sampler, int minValue = INT_MIN, int maxValue = INT_MAX);
+
+extern DiscreteSamplerPtr maximumEntropySampler(TypePtr outputType);
+
+/*
+** Continuous Sampler
+*/
+class ContinuousSampler : public Sampler
+{
+public:
+  lbcpp_UseDebuggingNewOperator
+};
+
+extern ContinuousSamplerPtr multiVariateGaussianSampler(const DoubleMatrixPtr& initialMean, const DoubleMatrixPtr& initialStdDev);
+
+class ScalarContinuousSampler : public ContinuousSampler
+{
+public:
+  lbcpp_UseDebuggingNewOperator
+};
+typedef ReferenceCountedObjectPtr<ScalarContinuousSampler> ScalarContinuousSamplerPtr;
+
+extern ScalarContinuousSamplerPtr uniformScalarSampler(double minValue = 0.0, double maxValue = 1.0);
+extern ScalarContinuousSamplerPtr gaussianSampler(double mean = 0.0, double stddev = 1.0);
+
+extern ScalarContinuousSamplerPtr conditionalGaussianSampler();
 
 /*
 ** Composite Sampler

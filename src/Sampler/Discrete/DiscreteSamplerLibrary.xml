@@ -21,5 +21,10 @@
     <variable type="Integer" name="minValue" description="Minimum value returned."/>
     <variable type="Integer" name="maxValue" description="Maximum value returned."/>
   </class>
+  
+  <class name="MaximumEntropySampler" base="DiscreteSampler">
+    <constructor arguments="TypePtr outputType"/>
+    <variable type="Function" name="predictor"/>
+  </class>
 
 </library>

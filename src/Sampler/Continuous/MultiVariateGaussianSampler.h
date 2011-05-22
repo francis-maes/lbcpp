@@ -14,7 +14,7 @@
 namespace lbcpp
 {
 
-class MultiVariateGaussianSampler : public ScalarContinuousSampler
+class MultiVariateGaussianSampler : public ContinuousSampler
 {
 public:
   MultiVariateGaussianSampler(const DoubleMatrixPtr& initialMean, const DoubleMatrixPtr& initialStdDev)
