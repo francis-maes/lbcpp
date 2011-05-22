@@ -999,8 +999,8 @@ public:
 
     // TMP !!!
     //context.resultCallback(T("policy"), policy);
-    context.resultCallback(T("log10(C)"), log10(policy->getVariable(0).toDouble()));
-    context.resultCallback(T("score"), actualRegretStatistics->getMean());
+    //context.resultCallback(T("log10(C)"), log10(policy->getVariable(0).toDouble()));
+    //context.resultCallback(T("score"), actualRegretStatistics->getMean());
 
     return actualRegretStatistics;
   }
