@@ -71,7 +71,7 @@ public:
   static String positiveNumberToShortString(double d)
   {
     int l1 = (int)log10(d);
-    int l3 = (l1 / 3) * 3;
+    int l3 = (int)(floor(l1 / 3.0) * 3.0);
     
     double Z = pow(10.0, (double)l3);
     String res = String(d / Z, 3 - abs(l1 - l3));
