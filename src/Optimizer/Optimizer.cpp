@@ -167,7 +167,7 @@ void OptimizerState::functionReturned(ExecutionContext& context, const FunctionP
   if (!output.isConvertibleToDouble())
   {
     context.warningCallback(T("OptimizerState::functionReturned"), T("Return value is not convertible to double"));
-    processedRequests.push_back(std::make_pair(output.toDouble(), DBL_MAX));
+    processedRequests.push_back(std::make_pair(DBL_MAX, inputs[0]));
   }
   else
     processedRequests.push_back(std::make_pair(output.toDouble(), inputs[0]));

@@ -42,6 +42,8 @@ escapeinside={\%*}{*)},          % if you want to add a comment within your code
 aboveskip=1pt,
 belowskip=5pt
 }
+\usepackage{algorithm}
+\usepackage{algorithmic}
 
 \newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
 
@@ -67,7 +69,7 @@ belowskip=5pt
 
 \huge Intérêt du calcul distribué pour l'optimisation à l'aide d'algorithmes évolutionnaires
 \HRule \\[0.4cm]
-\includegraphics[width=5cm]{evo.pdf}
+\includegraphics[width=5cm]{img/evo.png}
 
 
 \vfill
@@ -77,7 +79,7 @@ belowskip=5pt
 Arnaud \textsc{Schoofs}\\
 \href{mailto:arnaud.schoofs@gmail.com}{arnaud.schoofs@gmail.com}\\
 \large $2^{\textnormal{ème}}$ année du grade de master en ingénieur civil en informatique,\\
-à finalité approfondie \\[1.5cm]
+à finalité approfondie \\[1cm]
 
 \begin{minipage}{0.4\textwidth}
 \begin{flushleft} \large
@@ -96,7 +98,7 @@ Francis \textsc{Maes}
 \end{flushright}
 \end{minipage}
 
-\ \\[1.5cm]
+\ \\[1cm]
 
 {\large \today}
 
@@ -154,14 +156,13 @@ TODO
 \section{Introduction}
 Ce chapitre a pour but d'introduire le contexte dans lequel a été réalisé ce travail. Il s'articule en trois parties principales:
 \begin{itemize}
-%TODO ref
-\item Une présentation de ce qu'est le calcul distribué.
-\item Une présentation de la plate-forme de calcul distribué utilisée.
-\item Une présentation des recherches de F. \textsc{Maes}, J. \textsc{Becker} et L. \textsc{Wehenkel} concernant l'annotation de protéines \textit{via} des algorithmes d'apprentissage.
+\item Une présentation de ce qu'est le calcul distribué (section~\ref{calculdistribue}).
+\item Une présentation de la plate-forme de calcul distribué utilisée (section~\ref{boincpresentation}).
+\item Une présentation des recherches de F. \textsc{Maes}, J. \textsc{Becker} et L. \textsc{Wehenkel} concernant l'annotation de protéines \textit{via} des algorithmes d'apprentissage (section~\ref{proteines}).
 \end{itemize}
 
 \section{Le calcul distribué}
-
+\label{calculdistribue}
 \subsection{Introduction}
 % TODO parler des différentes types et différentes architectures http://en.wikipedia.org/wiki/Distributed_computing#Models ?
 % (mémoire partagée/distribuée, message passing etc)
@@ -176,6 +177,7 @@ En informatique, lorsque les calculs à effectuer demandent énormément de temp
 C'est à cette dernière catégorie que s'intéresse principalement ce travail. 
 
 \subsection{Le calcul volontaire}
+\label{calculvolontaire}
 Le calcul volontaire est une forme particulière de calcul distribué où des volontaires mettent à disposition du projet une certaine puissance de calcul. Les machines des volontaires peuvent être très variées et la seule réelle restriction pour participer est d'avoir un accès au réseau. 
 
 Avant même de s'intéresser aux enseignements tirés de ce travail, il est important de remarquer que ce concept, bien que séduisant, possèdent certains désavantages par rapport à l'utilisation d'un super-calculateur par exemple~\cite{VOLUNTEER}.
@@ -195,7 +197,7 @@ En résumé, dans le cadre de projets utilisant le calcul distribué la puissanc
 Enfin, un autre avantage du calcul volontaire est qu'il permet de sensibiliser le public aux recherches effectuées.
 
 \section{\textsc{BOINC}: une plate-forme de calcul distribué}
-
+\label{boincpresentation}
 \subsection{Introduction}
 Le but de cette section est de présenter la plate-forme de calcul distribué utilisée: \textsc{BOINC}. Les différents aspects qu'il faut maîtriser afin de mettre en place un serveur \textsc{BOINC} seront également abordés. Ceux-ci sont détaillés dans la documentation de \textsc{BOINC} fournie par l'université de \textit{Berkeley}~\cite{WIKI}.
 
@@ -209,6 +211,7 @@ C'est la plate-forme \textsc{BOINC} développée par l'université de \textit{Be
 \begin{itemize}
 \item La plateforme \textsc{BOINC} existe depuis plusieurs années et est stable.
 \item Celle-ci est libre et de nombreux volontaires travaillent sans cesse à l'améliorer.
+\item Des dizaines de projets scientifiques très variés utilisent la plate-forme \textsc{BOINC}. Cela va de la recherche d'une intelligence extraterrestre (SETI@home~\cite{SETI}), aux recherches contre le virus du sida (FightAIDS@home~\cite{FIGHTAIDS}), en passant par la recherche de nouveaux nombres premiers (PrimeGrid~\cite{PRIMEGRID}).
 % TODO check chiffres
 \item La communauté \textsc{BOINC} représente un nombre très importants de volontaires: 494671 machines pour 305398 volontaires représentant une moyenne de 5959,08 TFLOPS sur 24h~\cite{BOINC}. A titre comparatif, actuellement le super-calculateur le plus puissant au monde a une puissance effective de 2566 TFLOPS~\cite{TOP500}.
 \item Mon implication dans le monde \textsc{BOINC}, et plus précisément au sein de l'\textit{Alliance Francophone}~\cite{AF}, depuis plusieurs années m'assurait un certain soutien des volontaires de cette communauté.
@@ -322,70 +325,96 @@ Comme souvent, une valeur de retour égale à 0 indique un succès. La valeur sp
 % TODO
 
 \subsection{BOINC API vs. wrapper}
+Habituellement les applications \textsc{BOINC} (i.e. les applications clients exécutées sur les machines des volontaires) sont codées en C++ et utilisent l'API \textsc{BOINC} afin de communiquer avec le \textit{BOINC Manager}. Cet API définit des fonctions d'initialisation et de terminaison devant être appelée en début et fin de programme, mais également des fonctions d'utilité plus pratique. Ainsi, la fonction \textit{boinc\_fraction\_done(double fraction\_done)} permet par exemple de communiquer le pourcentage de complétion de l'unité de travail au \textit{BOINC Manager}. Cette valeur est alors utilisée par ce dernier pour afficher une barre de progression à l'utilisateur (Fig.~\ref{boincmanager}). 
+%TODO dire qu'on décrit pas tout et donner le lien + p e resolve_filename
+% TODO exemple de job.xml
 
+Parallèlement à cette utilisation "classique", il est également possible d'utiliser le \textsc{BOINC} \textit{wrapper}. Il s'agit d'un programme fourni avec le code source qui permet d'exécuter n'importe quelle application sur \textsc{BOINC}. Ce programme exécute les applications comme sous-processus et gère la communication avec le  \textsc{core client} \textsc{BOINC} (le code exécuté derrière l'interface graphique qu'est le \textit{BOINC Manager}).
 
-\subsection{Site web}
+Le(s) programme(s) appelé(s) par le \textit{wrapper} (ces programmes seront appelés des \textit{worker}) ainsi que les paramètres associés sont décrits dans un fichier XML. Il est par exemple possible de spécifier les noms des fichiers vers lesquels les flux \textit{stdin}/\textit{stdout}/\textit{stderr} doivent être redirigé. Il est également possible de spécifier le nom d'un fichier supposé contenir le pourcentage de progression de la tâche. Ce fichier est alors lu périodiquement par le \textit{wrapper} afin de communiquer l'état d'avancement au \textit{core client}. L'écriture de ce fichier est un responsabilité de l'application exécutée, c'est dans la seule modification devant être apportée au programme afin d'être exécuté sur \textsc{BOINC}. Il est cependant important de signaler que ceci est une option facultative. Si le mécanisme n'est pas implémenté par l'application, celle-ci peut tout à fait être exécutée sur \textsc{BOINC} mais le pourcentage de progression restera sur 0\% tout au long du calcul ce qui peut être très perturbant pour les utilisateurs. Ce mécanisme, bien que non nécessaire, est donc fortement recommandé.
+% TODO ref
 
-\subsection{Sécurité}
+Dans le cadre de ce travail un objectif est de mettre à disposition des chercheurs un moyen d'exécuter des expériences. Il ne s'agit pas de mettre en place une expérience particulière, mais de permettre la mise en place, aussi facilement que possible, de n'importe quelle expérience. Tout naturellement c'est donc le \textit{wrapper} qui a été utilisé tout au long de ce travail.
 
+% TODO autres langages etc ?
 
 \section{Recherches sur l'annotation des protéines}
+\label{proteines}
+% TODO
 
 \chapter{Installation et administration du serveur \textsc{BOINC}}
 
-\chapter{Algorithmes évolutionnaires développés et résultats}
+\section{Premiers pas}
+Après lecture de la documentation, la première étape fût l'installation du serveur \textsc{BOINC} sur mon ordinateur personnel. La démarche pour compiler le code du serveur et pour installer celui-ci est décrite en détails pour les plateformes de type \textit{Debian} sur le site de \textit{Berkeley}~\cite{BOINC}.
 
-\chapter{Génie logiciel pour l'intégration des EDA au sein de \textsc{BOINC}}
+Les sources du serveur \textsc{BOINC} contiennent une application de test, \textit{uppercase}. Cette application permet de convertir le contenu d'un fichier texte en majuscules. Elle n'a donc aucun intérêt scientifique, mais permet de tester très rapidement que le serveur fonctionne comme attendu.
 
-\chapter{Perspectives et conclusions}
+En plus de l'application proprement dite, les sources contiennent également un exemple de \textit{work generator}, de \textit{validator} et d'\textit{assimilator}. Tout est donc à disposition afin de tester l'infrastructure très rapidement. J'ai donc pu créer un projet de test "privé" (dont l'URL n'était pas publique) et j'ai pu ainsi me familiariser avec le fonctionnement du serveur.
 
-\chapter{TODO: not restructured yet}
-\section{Installation du serveur BOINC}
-
-\subsection{Premiers pas}
-Après la lecture de la documentation, la première étape fût l'installation du serveur \textsc{BOINC} sur mon ordinateur personnel. La démarche pour compiler le code du serveur et pour installer celui-ci est décrite en détail pour les plateformes de type \textit{Debian} sur le site de \textit{Berkeley}~\cite{BOINC}.
-
-Les sources du serveur \textsc{BOINC} contiennent une application de test, \textit{uppercase}. Cette application permet de convertir le contenu d'un fichier texte en majuscules. Elle n'a donc aucun intérêt scientifique, mais permet de tester rapidement que le serveur fonctionne comme attendu.
-
-En plus de l'application proprement dite, les sources contiennent également un exemple de \textit{workgenerator}, de \textit{validator} et d'\textit{assimilator}. Tout est donc à disposition afin de tester l'infrastructure très rapidement. J'ai donc pu créer un projet de test "privé" (dont l'URL n'était pas publique) et j'ai pu ainsi me familiariser avec le fonctionnement du serveur.
-
-% TODO release projet: logo, site web, publier les stats, ...
-
-\subsection{Installation à Montefiore}
+\section{Installation à Montefiore}
 Une fois ces premiers tests réalisés, j'ai décidé d'installer le serveur à Montefiore. Il a donc fallu trouver une machine et un local où l'installer. Après divers contacts avec le corps enseignant, j'ai obtenu une ancienne machine du réseau 8 et j'ai pu installer celle-ci dans le laboratoire RUN (\url{boinc.run.montefiore.ulg.ac.be}).
 
 La machine en question est un Pentium 4 \@ $2,4$GHz avec 1Go de RAM. Cette "petite" configuration peut sembler surprenante pour un serveur, mais il faut bien se rendre compte que dans notre cas de figure, le serveur se contente de distribuer les unités et de récupérer les résultats. Contrairement à la situation classique, ici ce sont les clients qui calculent et non le serveur. Bien entendu, plus le nombre de clients augmente, plus la charge du serveur augmente mais durant les expérimentations réalisées, aucun problème du à la charge du serveur n'a été rencontré.
 
-\subsection{Monitoring}
-Comme expliqué dans la section précédente, la "petite" configuration du serveur peut faire peur de prime abord, c'est pourquoi j'ai rapidement décidé de mettre en place un système de monitoring du serveur. De manière générale c'est une bonne pratique de disposer d'outils pour monitorer un serveur. Cela permet en général de détecter la source d'un problème de performance (goulot d'étranglement au niveau réseau par exemple, ...).
+\section{Monitoring}
+Comme expliqué dans la section précédente, la "petite" configuration du serveur peut faire peur de prime abord, c'est pourquoi j'ai rapidement décidé de mettre en place un système de monitoring du serveur. De manière générale c'est une bonne pratique de disposer d'outils pour monitorer un serveur. Cela permet en général de détecter la source d'un problème de performance (goulot d'étranglement au niveau réseau par exemple).
 
-\subsubsection{Première approche: script CGI}
-Le serveur \textsc{BOINC} est livré avec un script CGI permettant de visualiser sous forme graphique des fichiers textes dont le contenu est:\\
-\begin{tabular}{ccccc}
-CIVDATE & UNIXDATE & VALUE1 & VALUE2 & ...\\
-\end{tabular}\\
-où CIVDATE est la date au format $\%Y:\%m:\%d:\%H:\%M$ et où UNIXDATE est le timestamp UNIX correspondant (ex: 2010:10:30:00:00 1288389602 24).
+\subsection{Première approche: script CGI}
+Le serveur \textsc{BOINC} est livré avec un script CGI permettant de visualiser sous forme graphique des fichiers textes dont le contenu est:
+\begin{verbatim}
+CIVDATE    UNIXDATE    VALUE1    VALUE2    ...
+\end{verbatim}
+où $CIVDATE$ est la date au format $\%Y:\%m:\%d:\%H:\%M$ et où $UNIXDATE$ est le \textit{timestamp} UNIX correspondant. Un exemple d'une ligne d'un tel fichier pourrait être:
+\begin{verbatim}
+2010:10:30:00:00    1288389602    24
+\end{verbatim}
 
-Pour pouvoir utiliser ce mécanisme, il faut donc avoir un moyen de générer ces fichiers textes. L'approche que j'ai utilisée consiste à utiliser des commandes de base UNIX dans des script \textit{shell} et à isoler l'information pertinente via les commandes de type \textit{grep}, \textit{awk}, \textit{tr}, \textit{sed}, ... Cette approche m'a permis d'obtenir des graphique pour: l'utilisation du disque dur, la charge CPU, la consommation réseau, la charge réseau, l'utilisation RAM et la puissance délivrée par le projet (\textit{floating point operations per second}, FLOPS).
+Pour pouvoir utiliser ce mécanisme, il faut donc avoir un moyen de générer ces fichiers textes de ce type contenant les valeurs intéressantes à monitorer. L'approche que j'ai utilisée consiste à utiliser des commandes de base UNIX dans des script \textit{shell} et à isoler l'information pertinente via les commandes de type \textit{grep}, \textit{awk}, \textit{tr}, \textit{sed}, ... Cette approche m'a permis d'obtenir des graphique pour: l'utilisation du disque dur, la charge CPU, la consommation réseau, la charge réseau, l'utilisation RAM et la puissance délivrée par le projet (\textit{floating point operations per second}, FLOPS).
 
 Pour ce qui est de la puissance délivrée par le projet, quelques remarques s'imposent. Le script calculant cette valeur utilise la commande \textit{mysql} pour se connecter à la base de données du projet et sélectionne les résultats reçus au cours de la dernière minute\footnote{Le script est exécuté toutes les minutes.}. Pour chaque résultat, la base de données contient le temps CPU utilisé pour calculer le résultat ainsi qu'une estimation de la puissance du processeur utilisé (en FLOPS). Il est donc possible de calculer le nombre d'opérations qui ont été nécessaires pour chaque résultat. La somme de ces estimations divisé par l'intervalle de temps donne une estimation de la puissance délivrée par le projet.
 
-L'ensemble des scripts est exécuté de manière périodique via la \textit{crontab} et l'exécution de ceux-ci remplit progressivement les fichiers \textit{logs} utilisés pour les graphiques.
-%TODO nombre
-%TODO lignes de code ?
+L'ensemble des scripts est exécuté de manière périodique via la \textit{crontab} et l'exécution de ceux-ci remplit progressivement les fichiers \textit{logs} utilisés pour les graphiques. A titre illustratif, le script permettant de connaitre l'utilisation du disque dur se trouve dans le List.~\ref{shellhd}. %TODO les autres sont dans le répertoire ....
 
-\subsubsection{Deuxième approche: Munin}
-Bien que la première approche soit fonctionnelle, celle-ci n'était pas assez "\textit{user-friendly}" à mon goût et l'écriture des script \textit{shell} n'était pas toujours facile. Je me suis donc tourné vers des solutions de monitoring gratuites ayant fait leur preuve. La solution \textit{Munin} a retenu mon intérêt car elle est très facile d'utilisation, relativement \textit{plug-and-play}~\footnote{Il n'y a pas grand chose à configurer pour avoir accès aux graphiques de base.} et l'écriture de nouveaux \textit{plugins} est possible.%TODO source
+
+\lstset{language=bash,caption={\textit{shell} script: utilisation du disque dur},label=shellhd}
+\begin{lstlisting}
+#!/bin/bash
+
+CIVDATE=`date "+%Y:%m:%d:%H:%M"`
+UNIXDATE=`perl -e 'print time()'`
+disk=`df -h | grep "/dev/sda1" | awk '{print $5}' | tr '%' ' '`
+
+echo $CIVDATE $UNIXDATE $disk
+\end{lstlisting}
+
+
+\subsection{Deuxième approche: Munin}
+Bien que la première approche fût fonctionnelle, celle-ci n'était pas assez "\textit{user-friendly}" à mon goût et l'écriture des script \textit{shell} n'était pas toujours facile. Je me suis donc tourné vers des solutions de monitoring gratuites ayant fait leur preuve. La solution \textit{Munin}~\cite{MUNIN} a retenu mon intérêt car elle est très facile d'utilisation, relativement \textit{plug-and-play}~\footnote{Il n'y a pas grand chose à configurer pour avoir accès aux graphiques de base.} et l'écriture de nouveaux \textit{plugins} est possible.
 
 En utilisant le même principe que celui décrit à la section précédente, j'ai écrit un \textit{plugin} permettant de visualiser la puissance délivrée par le projet.
 
-Le résultat est visible ici: \url{http://boinc.run.montefiore.ulg.ac.be/munin/}.
+Deux exemples de graphique fournis par \textit{Munin} sont visibles Fig.~\ref{munin1} et Fig.~\ref{munin2}. L'ensemble des graphiques est accessible à l'adresse suivante: \url{http://boinc.run.montefiore.ulg.ac.be/munin/}.
 
-\subsection{Sauvegarde}
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.5]{img/munin1.png}
+\caption{\textsc{Munin}: estimation du nombre de GFLOPS fourni par le projet}
+\label{munin1}
+\end{figure}
+
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.5]{img/munin2.png}
+\caption{\textsc{BOINC}: activité MySQL}
+\label{munin2}
+\end{figure}
+
+
+\section{Sauvegarde}
 Dès le début du projet, il m'est apparu évident qu'il fallait mettre en place un système de sauvegarde du serveur.
 
-\subsubsection{Première approche: machine virtuelle}
-La première idée explorée fût l'installation du serveur dans une machine virtuelle\footnote{Le logiciel VMWare Server 2 a été utilisé.}. %TODO source
+\subsection{Première approche: machine virtuelle}
+La première idée explorée fût l'installation du serveur dans une machine virtuelle\footnote{Le logiciel VMWare Server 2 a été utilisé~\cite{VMWARE}.}.
 Cette solution présente certains avantages:
 \begin{itemize}
 \item La restauration d'une sauvegarde d'une machine virtuelle se fait très simplement et ne nécessite aucune re-configuration du serveur.
@@ -398,11 +427,11 @@ Malheureusement cette solution a aussi ses inconvénients:
 \item Le temps de sauvegarde est relativement important et la taille du fichier de sauvegarde également.
 \item Bien que d'énormes progrès aient été fait en la matière, l'utilisation d'une machine virtuelle dégrade toujours un peu les performances.
 \end{itemize}
-Ce dernier inconvénient n'est pas réellement problématique ici, mais les deux autres constituent un problème majeur. En effet, il est important de faire des sauvegardes régulières (afin d'éviter la perte de résultats et la perte de crédits (points) pour les volontaires~\footnote{La perte de crédits ne pose aucun problème d'un point de vue scientifique, mais une telle perte peut rendre les volontaires mécontents ou amener ceux-ci à penser que le projet n'est pas sérieux, ce qui serait nuisible au projet.}) et il est impensable d'arrêter le projet plusieurs heures chaque jour.
+Ce dernier inconvénient n'est pas réellement problématique ici, mais les deux autres constituent un problème majeur. En effet, il est important de faire des sauvegardes régulières (afin d'éviter la perte de résultats ou la perte de crédits (points) pour les volontaires~\footnote{La perte de crédits ne pose aucun problème d'un point de vue scientifique, mais une telle perte peut rendre les volontaires mécontents ou amener ceux-ci à penser que le projet n'est pas sérieux, ce qui serait nuisible au projet.}) et il est impensable d'arrêter le projet plusieurs heures chaque jour.
 
 Enfin, pour que la sauvegarde soit fiable, celle-ci doit se trouver sur un autre disque dur ou mieux sur une autre machine. Il faudrait donc pouvoir transférer la sauvegarde par le réseau ce qui est relativement problématique vu sa taille importante. L'autre solution consistant à faire la sauvegarde sur un deuxième disque dur est également impossible car la machine utilisée ne comporte qu'un seul disque dur~\footnote{Pour la même raison, un système de sauvegarder de type RAID est également impossible.}. 
 
-\subsubsection{Deuxième approche: sauvegarde réseau}
+\subsection{Deuxième approche: sauvegarde réseau}
 La deuxième approche consiste à ne sauvegarder que les parties nécessaires à la réinstallation du serveur en l'état de la sauvegarde. Il y a donc deux éléments à prendre en considération:
 \begin{itemize}
 \item La base de données.
@@ -412,6 +441,7 @@ La deuxième approche consiste à ne sauvegarder que les parties nécessaires à
 L'implémentation de cette politique de sauvegarde a été réalisée à l'aide d'un script \textit{shell}. Celui-ci permet de faire les sauvegardes de manière automatique grâce à la \textit{crontab} et ces sauvegardes sont automatiquement transférées sur le réseau 8 (ms8xx). 
 
 Le script s'articule en deux parties. La première partie consiste à effectuer un \textit{dump} des bases de données et à transférer celui-ci via la commande \textit{scp} sur le réseau 8. La deuxième partie consiste à sauvegarder l'ensemble des fichiers nécessaires à la restauration. Cette sauvegarde s'effectue directement en réseau et de manière incrémentale via la commande \textit{rsync}. Ainsi, seul les modifications sont transférées sur le réseau. % TODO code et/ou précisions
+% TODO non du fichier
 
 Lorsque l'on parle de sauvegarde automatique sur le réseau 8 se pose la question de l'authentification. Deux solutions différentes ont été apportées:
 \begin{itemize}
@@ -420,44 +450,345 @@ Lorsque l'on parle de sauvegarde automatique sur le réseau 8 se pose la questio
 \end{itemize}
 % TODO code ?
 
-\subsubsection{Les fichiers \textit{log}}
-Comme dans n'importe quel serveur, des fichiers \textit{log} sont générés en cours d'exécution. Ceux-ci sont d'un intérêt majeur lorsqu'il s'agit de comprendre un bug. La verbosité de ceux-ci peut-être contrôlée via les fichiers de configuration du serveur. Au fur et à mesure du temps, ces fichiers peuvent finalement occuper une place considérable. Il est donc important d'implémenter une politique de rotation de \textit{logs}. Pour ce faire, l'utilitaire \textit{logrotate} de \textit{linux} a été utilisé. L'exécution de \textit{logrotate} a lieu a chaque sauvegarde du serveur et la rotation a lieu selon les préférences définies dans le fichier de configuration. %TODO fichier config
+\subsection{Les fichiers \textit{log}}
+Comme dans n'importe quel serveur, des fichiers \textit{log} sont générés en cours d'exécution. Ceux-ci sont d'un intérêt majeur lorsqu'il s'agit de comprendre un bug. La verbosité de ceux-ci peut-être contrôlée via les fichiers de configuration du serveur. 
+
+Au fur et à mesure du temps, ces fichiers peuvent finalement occuper une place considérable. Il est donc important d'implémenter une politique de rotation de \textit{logs}. Pour ce faire, l'utilitaire \textit{logrotate} de Linux a été utilisé. L'exécution de \textit{logrotate} a lieu a chaque sauvegarde du serveur et la rotation a lieu selon les préférences définies dans le fichier de configuration. %TODO fichier config
+
+\section{Communication avec les volontaires}
+Le serveur \textsc{BOINC} est fourni avec un site internet basique. Celui-ci est principalement utilisé afin de communiquer avec les volontaires par l'intermédiaires de \textit{news} et d'un forum. Les sujets abordés vont des recherches effectuées par le projet jusqu'au résultat obtenus en passant par certains aspects plus techniques (disponibilités de WU, durée de celles-ci, consommation RAM, bugs, etc).
+
+Comme mentionné dans la section~\ref{calculvolontaire}, la communication est un aspect à ne pas négliger pour un projet de calcul volontaire. Il est primordial d'intéresser les volontaires et de leur inspirer une certaine confiance. J'ai donc tout au long du projet essayé d'être aussi disponible que possible vis à vis des questions/remarques des volontaires et j'ai communiqué un maximum quant aux recherches effectuées et leurs résultats.
+Toujours dans le but de rendre le projet attractif, j'ai également fait appel à L. \textsc{Schoonbrodt}, un ami graphiste, afin de réaliser un logo pour le projet et une feuille de style CSS. Le site internet du projet est accessible à l'adresse suivante: \url{http://boinc.run.montefiore.ulg.ac.be/evo/}
+
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.6]{img/evo.png}
+\caption{Logo du projet \textsc{BOINC} mis en place (\textsc{Evo@home})}
+\label{evologo}
+\end{figure}
+
+J'ai également fait le nécessaire pour que le projet soit référencé sur les différents sites de statistiques (crédits) de \textsc{BOINC}.
+
+Ce travail de communication, bien que ne présentant qu'un intérêt pédagogique limité, était cependant nécessaire pour faire de ce projet un succès.
+% TODO dire que c'est evo@home
+% TODO images des stats
+\section{Sécurité}
+% TODO
 
 
+\chapter{Algorithmes évolutionnaires développés et résultats}
+% TODO état de l'art + d'autres ref
+% TODO différencier état de l'art et contributions
+\section{Introduction}
+% TODO
 
 \section{Algorithmes évolutionnaires}
+\label{evointro}
 % TODO source http://fr.wikipedia.org/wiki/Algorithme_évolutionniste
-Avant de passer aux implémentations réalisées et aux expériences réalisées, il est important de préciser ce que sont les algorithmes de types évolutionnaires. 
+Les algorithmes évolutionnaires représentent une classe d'algorithmes d'apprentissages s'inspirant de la théorie de l'évolution de \textit{Darwin}. L'idée de base est de faire évoluer un ensemble de solutions à un problème donné vers de meilleurs solutions. Ce type d'algorithme est en général utilisé pour l'optimisation.
 
-Il s'agit d'algorithmes d'apprentissage s'inspirant de la théorie de l'évolution de \textit{Darwin}. L'idée de base est de faire évoluer un ensemble de solutions à un problème donné vers de meilleurs solutions. Ce type d'algorithme est en général utilisé pour l'optimisation.
-
-Afin de bien comprendre l'idée qui se cache derrière ce type d'algorithmes, il est indispensable de faire le parallèle avec la théorie de l'évolution. Pour rappel cette théorique indique que l'évolution des êtres vivants tend à produire des individus plus adaptés à leur environnement. %TODO citation
-Différents mécanismes entrent en jeux dans ce processus:
+Afin de bien comprendre l'idée qui se cache derrière ce type d'algorithmes, il est indispensable de faire le parallèle avec la théorie de l'évolution. Pour rappel cette théorique indique que l'évolution des êtres vivants tend à produire des individus plus adaptés à leur environnement. Différents mécanismes entrent en jeux dans ce processus~\cite{WIKI_EVO}:
 \begin{itemize}
 \item Les propriétés d'un individu sont codées dans ses gènes.
 \item Une population est composée d'individus différents.
-\item Selon ses différences, un individu est plus ou moins bien adapté à son environnement.
-\item Les individus transmettent une partie de leurs propriétés à leur descendance.
+\item Selon ses caractéristiques, un individu est plus ou moins bien adapté à son environnement.
+\item Les individus transmettent une partie de leurs gènes à leur descendance.
 \item Les individus plus adaptés se reproduisent plus efficacement.
-\end{itemize} %TODO cite
-Dans le cadre de l'optimisation on cherche en général à fixer la valeur d'un certain nombre de paramètres afin de maximiser (ou minimiser) une fonction objectif (\textit{fitness}). Dans ce contexte, un jeu de paramètres (i.e. une valeur associée à chaque paramètre, une solution potentielle du problème d'optimisation) représente un individu. Les caractéristiques de la solution (de l'individu) sont les valeurs associées à chaque paramètre, ceci représente en quelque sorte le génotype. En biologie, l'expression du génotype est le phénotype. Ici les caractéristiques de la solution s'expriment au travers de la fonction objectif. De manière générale, les algorithmes évolutionnaires sont conçus de manière à favoriser la transmission des génotypes conduisant à un bon score.  
+\end{itemize}
 
-% TODO shéma algo général cf wiki + remarques
+Dans le cadre de l'optimisation, on cherche en général à fixer la valeur d'un certain nombre de paramètres afin de maximiser (ou minimiser) une fonction objectif (\textit{fitness}). Dans ce contexte, un jeu de paramètres (i.e. une valeur associée à chaque paramètre, une solution potentielle du problème d'optimisation) représente un individu. Les caractéristiques de la solution (de l'individu) sont les valeurs associées à chaque paramètre, ceci représente en quelque sorte le génotype. En biologie, l'expression du génotype est le phénotype. Ici les caractéristiques de la solution s'expriment au travers de la fonction objectif. De manière générale, les algorithmes évolutionnaires sont conçus de manière à favoriser la transmission des génotypes conduisant à un bon score.  
+
+L'Algorithm~\ref{evoalgo} et la Fig.~\ref{evoschema} décrivent le fonctionnement général de cette classe d'algorithmes.
+
+\begin{algorithm}                      
+\caption{Algorithme évolutionnaire général~\cite{WIKI_EVO}}          
+\label{evoalgo}                           
+\begin{algorithmic}                    
+\STATE $X = i()$ \COMMENT{Génération de la population initiale}
+\STATE $scores = \textnormal{f}(X)$ \COMMENT{Evaluation de la population initiale (\textit{fitness})}
+\WHILE{Critère d'arrêt non atteint}
+\STATE $X' = \textnormal{Se}(X, scores)$ \COMMENT{Sélection d'une partie de la population sur base des scores}
+\STATE $newX = \textnormal{Cr}(X')$ \COMMENT{Croisement/reproduction des individus sélectionnés} 
+\STATE $newX = \textnormal{Mu}(newX)$ \COMMENT{Mutation de la descendance}
+\STATE $scores = \textnormal{f}(newX)$ \COMMENT{Evaluation de la nouvelle population (\textit{fitness})}
+\STATE $X = newX$ \COMMENT{Remplacement de la population initiale par la nouvelle population}
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.35]{img/evoschema.jpg}	
+\caption{Algorithme évolutionnaire général~\cite{WIKI_EVO}}
+\label{evoschema}
+\end{figure}
 
 Ces algorithmes, bien qu'assez simple conceptuellement, produisent d'excellent résultats dans beaucoup de domaine.
 
-\subsection{Algorithmes à estimation de distribution}
-Les algorithmes à estimation de distribution (\textit{Estimation of distribution algorithm}, EDA) sont des variations plus "évoluées" des algorithmes évolutionnaires classiques. Contrairement à ces-derniers, les EDA n'utilisent pas d'opérateurs de croisement ou de mutation. En effet, un EDA cherche à estimer les relations entre les différentes variables du problème d'optimisation en y associant une distribution de probabilité. Les nouveaux individus (enfants) sont alors généré directement à partir de la distribution de probabilité.
+\section{Algorithmes à estimation de distribution}
+\label{edageneral}
+% TODO dire qu'on prend paramètres indépendants et dire que autre chose existe
+Les algorithmes à estimation de distribution (\textit{Estimation of distribution algorithm}, EDA) sont des variations plus "évoluées" des algorithmes évolutionnaires classiques. Contrairement à ces-derniers, les EDA n'utilisent pas d'opérateurs de croisement ou de mutation. En effet, un EDA cherche à estimer les relations entre les différentes variables d'un problème d'optimisation en y associant une distribution de probabilité. Les nouveaux individus (enfants) sont alors générés directement à partir de la distribution de probabilité.
+
+L'algorithme général d'un EDA est présenté dans l'Algorithm~\ref{edaalgo}. La Fig.~\ref{edaschema} présente quant à elle l'évolution de la distribution et de la population au cours des itérations. Dans l'exemple présenté la fonction de \textit{fitness} présente un seul optimum en $O$ et une loi normale est utilisée pour l'estimation de la distribution (univariée).
+
+\begin{algorithm}                      
+\caption{EDA général}          
+\label{edaalgo}                           
+\begin{algorithmic}                    
+\STATE $P = \textnormal{sample}(PDu_{init})$ \COMMENT{Tirage aléatoire d'un ensemble d'individus selon une distribution de probabilité donnée (population initiale)}
+\STATE $scores = \textnormal{f}(P)$ \COMMENT{Evaluation de la population initiale (\textit{fitness})}
+\WHILE{Critère d'arrêt non atteint}
+\STATE $PS = \textnormal{Se}(X, scores)$ \COMMENT{Sélection d'une partie de la population sur base des scores}
+\STATE $PDe = \textnormal{buildDistribution}(PS)$ \COMMENT{Construction d'une nouvelle distribution sur base des individus sélectionnés}
+\STATE $PDu = PDe$
+\STATE $P = \textnormal{sample}(PDu)$ \COMMENT{Tirage aléatoire d'un ensemble d'individus selon la nouvelle distribution}
+\STATE $scores = \textnormal{f}(P)$ \COMMENT{Evaluation de la nouvelle population (\textit{fitness})}
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.35]{img/edaschema.jpg}
+\caption{EDA général: évolution de la distribution et de la population~\cite{WIKI_EDA}}
+\label{edaschema}
+\end{figure}
+
+
+% TODO variantes + complexes, UMDA, etc
+% TODO relire les articles de wehenkel
+
 % TODO image wikipedia
 % TODO implémentation et/ou détail
-\section{Cadre de recherche}
+
+% TODO : http://www.cleveralgorithms.com/nature-inspired/probabilistic/umda.html
+% TODO : http://fr.wikipedia.org/wiki/Algorithme_à_estimation_de_distribution
+
+
+\section{EDA Asynchrone}
+
+\subsection{Introduction}
+Les EDA sont des processus itératif. Dans l'algorithme général décrit dans la section~\ref{edageneral} une population de taille fixe est générée à chaque itération et ce dès que chaque individu de la population précédente a été évalué. Cette approche classique n'est pas applicable en pratique au cas de \textsc{BOINC} à cause des temps de latence. En effet, ce système de génération des individus par \textit{batch} rendrait le projet très inefficace.
+
+Pour comprendre le phénomène il est utile de considérer un scénario simplifié. Dans ce scénario la taille de la population est fixée à 100 et 100 volontaires participent au projet:
+\begin{enumerate}[1)]
+\item Génération de 100 individus.
+\item Chaque volontaire récupère 1 individu à évaluer.
+\item Après 10 minutes, tous les volontaires ont renvoyé leur résultat, sauf un.
+\item Il n'y a plus de travail disponible (plus d'individus à évaluer) sur le serveur \textsc{BOINC} et les 99 volontaires ne peuvent donc pas calculer pour le projet. Il sont contraint d'attendre le résultat du dernier volontaire.
+\item Après 4 heures, le dernier volontaire renvoie son résultat.
+\item Une nouvelle population de 100 individus est générée.
+\item Les volontaires peuvent à nouveau calculer.
+\end{enumerate}
+Il s'agit bien entendu d'un scénario très simplifié, mais l'idée est là: si un EDA classique est utilisé, énormément de temps sera perdu à "attendre" dans le processus d'optimisation. 
+
+Pour réduire ce temps d'attente, il est possible de spécifier dans la configuration du serveur \textsc{BOINC} le temps maximal après lequel une unité doit avoir été renvoyée, mais cela n'est pas suffisant. Cette section vise à présenter l'algorithme original développé afin de contourner ce problème.
+
+\subsection{L'algorithme}
+Comme mentionné dans la section précédente, le but de cette variation de l'EDA classique est d'empêcher la situation où des volontaires se trouvent dans l'obligation d'attendre car il n'y a plus d'individus prêt à être évalué. Formulé ainsi, la solution est évidente: il faut essayer de maintenir un nombre minimum d'individus en cours d'évaluation. Ce nombre est simplement la différence entre la taille de la population et le nombre de résultats déjà obtenus pour cette itération. 
+
+Afin que l'algorithme présenté ait du sens il faut bien entendu que la fonction d'évaluation ($f$, \textit{fitness}) soit asynchrone. Dans le cas de \textsc{BOINC} l'évaluation peut-être décomposée en 3 étapes:
+\begin{enumerate}[1)]
+\item Envoi d'un individu sur le réseau \textsc{BOINC} pour évaluation par l'optimiseur.
+\item Evaluation de l'individu par un volontaire \textit{via} la fonction de \textit{fitness}.
+\item Récupération du résultat par l'optimiseur.
+\end{enumerate}
+
+L'algorithme général de l'EDA asynchrone proposé est présenté dans l'Algorithm~\ref{asyncedaalgo}. Les résultats sont récupérés par un \textit{thread} auxiliaire qui n'est pas décrit ici. 
+
+% TODO dire qu'en pratique on maintient un certain nombre en fct du nb de volontaires
+
+% TODO détailler plus
+\begin{algorithm}                      
+\caption{EDA Asynchrone: algorithme général}          
+\label{asyncedaalgo}                           
+\begin{algorithmic}   
+\WHILE{Critère d'arrêt non atteint}
+\IF{nombre d'individus en cours d'évaluation trop faible}
+\STATE $X = \textnormal{sample}(PD)$
+\STATE send$(X)$
+\ENDIF
+\IF{assez de résultat disponibles}
+\STATE $PD = \textnormal{buildDistribution}()$
+\ENDIF
+\ENDWHILE
+             
+\end{algorithmic}
+\end{algorithm}
+
+\section{Conservative policy iteration}
 TODO
+% TODO titre
+% TODO introduire dans intro
+% TODO recherches
 
-\section{BOINC API vs wrapper}
-% TODO comparaison + mise en place wrapper
-% TODO template BOINC
+\section{Résultats}
 
-% TODO evaluation purement au hasard
+\subsection{Expériences locales réalisées grâce un banc de test}
+
+\subsection{Expériences réalisées sur \textsc{BOINC}}
+
+
+
+\chapter{Génie logiciel pour l'intégration des EDA au sein de \textsc{BOINC}}
+
+\section{Introduction}
+
+\section{Prototype}
+\label{prototype}
+% TODO 
+% TODO peut supprimer pour remonter tout d'une section
+
+\section{Implémentation finale: un \textit{framework} pour l'optimisation}
+\subsection{Introduction}
+\label{frameworkintro}
+Les premières expérimentations réalisées à l'aide du prototype décrit dans la section~\ref{prototype} ont été très convaincantes. Aussi, il est apparu important de pousser l'intégration de \textsc{BOINC} encore plus loin afin d'en faciliter l'utilisation pour un chercheur. L'idée est de voir l'infrastructure \textsc{BOINC} comme une grille de calcul susceptible d'exécuter toutes sortes d'unités de travail et non pas comme un moyen d'exécuter une expérience particulière.
+
+Parallèlement à cela, il semblait intéressant de découpler au maximum l'algorithme évolutionnaire utilisé pour générer les individus du contexte d'exécution qu'est \textsc{BOINC}, et ce afin de pouvoir utiliser l'EDA dans d'autres contextes d'exécution.
+
+Actuellement, une partie importante des recherches menées par F. \textsc{Maes}, J. \textsc{Becker} et L. \textsc{Wehenkel} sont réalisées au sein d'une librairie C++ développée par F. \textsc{Maes}, J. \textsc{Becker}, LBCpp. Cette librairie a été choisie comme cadre de développement pour 3 raisons principales:
+\begin{itemize}
+\item Il s'agit d'une librairie dédiée à l'apprentissage et elle se prête donc bien à l'ajout d'un \textit{framework} pour l'optimisation.
+\item Au moment de la réalisation, J. \textsc{Becker} était en train de mettre sur pied un module réseau au sein de LBCpp. Le but du module était de permettre facilement l'exécution de morceaux de code LBCpp sur le super-calculateur NIC3 de l'\textit{Institut Montefiore}. Il paraissait séduisant d'ajouter les fonctionnalités nécessaires pour réaliser la même chose avec l'infrastructure \textsc{BOINC}.
+\item F. \textsc{Maes}, auteur principal de la librairie, convaincu par les premiers essais menés à l'aide du prototype était convaincu que ces ajouts serait un plus pour sa librairie.
+\end{itemize}
+
+Cette section a pour but de décrire le \textit{framework} d'optimisation qui a été développé. La section s'articule en deux parties bien distinctes: % TODO ref
+\begin{itemize}
+\item Une brève présentation du cadre de développement, la librairie LBCpp (section~\ref{LBCpp}).
+\item Une présentation détaillée du \textit{framework} développé (section~\ref{frameworkintro}).
+\end{itemize}
+
+\subsection{Présentation de LBCpp}
+\label{LBCpp}
+LBCpp est une librairie d'apprentissage développée principalement par F. \textsc{Maes} mais également par J. \textsc{Becker}. Celle-ci est écrite en C++ mais dispose d'une sur-couche particulière. Cette sur-couche apporte principalement 2 améliorations par rapport au C++:
+\begin{itemize}
+\item Chaque classe, en plus d'être décrite dans son fichier \textit{.h}, est également partiellement ou totalement décrite par un fichier XML. Ces fichiers XML sont parsés à la compilation et utilisés pour générer du code permettant une certaine introspection des classes. A l'aide d'un typage un peu particulier, ce système permet par exemple de savoir combien de champs compte une classe mais également leur type. Ce système permet également très facilement la (dé)sérialisation d'objets.
+\item Une structure maintient l'ensemble des références vers un objet créé grâce à l'opérateur \textit{new} si bien que celui-ci est supprimé automatiquement lorsqu'il n'est plus accessible. Attention cependant que les cycles ne sont pas détectés contrairement au fonctionnement du \textit{garbage collector} de Java !
+\end{itemize}
+Ces particularités, couplées à la richesse des fonctions disponibles dans la librairies rendent celle-ci très puissante mais un certain temps d'adaptation est nécessaire avant de pouvoir en tirer profit.
+
+Les paragraphes suivants sont destinés  à présenter un peu plus en détails 3 aspects important de LBCpp qui ont été utilisés afin de réaliser le \textit{framework}.
+
+\subsubsection{La librairie Juce}
+\subsubsection{Les \textit{samplers} LBCpp}
+\subsubsection{Le module réseau de LBCpp}
+
+\subsection{\textit{Framework} d'optimisation développé}
+\label{frameworkintro}
+% TODO dire que les diagrammes sont pas 100% fidèles (Ptr, const, &, * etc)
+Un \textit{Optimizer}, quelque soit son mode de fonctionnement, peut être vu comme une fonction dont la valeur de retour est le paramètre optimum d'une fonction objectif (ou \textit{fitness}) fournie en argument. Le concept de fonction étant déjà présent au sein de LBCpp, il était logique de faire dériver le concept d'\textit{Optimizer} de celui-ci.
+
+Lorsque l'on parle de fonction, il est importante de préciser quels sont ses arguments et quel est sa valeur de retour. Le problème de la valeur de retour a déjà été abordé. En ce qui concerne les arguments, un argument au minimum est nécessaire: la fonction de \textit{fitness}~\footnote{Dans la suite, l'objectif d'un \textit{Optimizer} est de minimiser la fonction de \textit{fitness}.}. Parallèlement à cela, comme mentionné dans l'introduction~\ref{frameworkintro}, le framework doit permettre de choisir le contexte d'exécution responsable d'évaluer les individus. Plutôt que de passer la fonction \textit{fitness} en argument de la fonction d'optimisation, un concept plus général d'\textit{OptimizerContext} a été défini et c'est une instance de ce concept qui est passée en argument à la fonction d'optimisation. La responsabilité principale de ce concept est de permettre l'évaluation d'individus. %TODO ref
+
+Ce seul argument pourrait sembler suffisant, mais un deuxième argument est cependant nécessaire: une instance d'\textit{OptimizerState}. La nécessite de ce concept vient du fait qu'un processus d'optimisation est un tâche qui peut être relativement longue. Il est donc intéressant de pouvoir sauver l'état du processus afin de pouvoir arrêter celui-ci et le relancer à partir de l'état sauvegardé. Il est par exemple nécessaire de sauvegarder au minimum le meilleur score obtenu jusqu'à présent ainsi que la variable correspondante (les paramètres). Conceptuellement, l'évaluation d'une fonction n'a aucune raison de modifier l'état de celle-ci. Seuls des variables locales sont susceptibles d'être modifiées durant le processus d'évaluation. Ainsi, l'implémentation de la responsabilité \textit{compute(...)} d'une \textit{Function} est une fonction définie comme étant \textit{const}. Pour cette raison, l'état du processus d'optimisation ne peut être stocké au sein même du concept d'\textit{Optimizer} mais doit être stocké au sein d'un concept externe: l'\textit{OptimizerState}. Parallèlement à ces considérations, un nombre important d'algorithmes d'optimisation utilisent une connaissance \textit{a priori} au début du processus d'optimisation. Cette connaissance \textit{a priori}, dépendant du type d'\textit{Optimizer}, peut-être vue comme un attribut du concept d'\textit{OptimizerState}. %TODO ref
+ 
+La Fig.~\ref{framework1} reprend sous forme de diagramme conceptuel statique (UML) les éléments principaux présentés. Dans la suite de cette section, l'implémentation des trois éléments principaux de cette structure sera détaillée ainsi que leurs spécialisations.
+
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.7]{img/framework1.pdf}
+\caption{\textit{Optimizer framework}: diagramme conceptuel statique}
+\label{framework1}
+\end{figure}
+
+\subsubsection{Optimizer}
+Il s'agit de la hiérarchie de classes implémentant la logique d'optimisation. Dans le cadre de ce travail, les algorithmes d'optimisation considérés sont de type évolutionnaires (voir section~\ref{evointro}) et se basent donc sur l'évolution d'une population. Plus précisément il s'agit d'EDA (voir section~\ref{edageneral}). Une classe abstraite reprenant les méthodes communes aux implémentations de ce type d'algorithmes a donc été créée. Il s'agit de la classe abstraite \textit{PopulationBasedOptimizer}. Deux implémentations de cette classe abstraite ont été réalisées: \textit{EDAOptimizer} et \textit{AsyncEDAOptimizer}. La Fig.~\ref{optimizerhierarchy} présente un diagramme de classes statique de cette hiérarchie.
+
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.7]{img/optimizerhierarchy.pdf}
+\caption{\textit{Optimizer}: diagramme de classes statique}
+\label{optimizerhierarchy}
+\end{figure}
+
+\paragraph{EDAOptimizer} TODO
+% TODO
+%Il s'agit de la version classique d'un EDA basé sur une distribution multi-variée indépendante. L'algorithme est celui décrit dans % TODO.
+
+\paragraph{AsyncEDAOptimizer} TODO
+%Il s'agit d'une variation de l'EDA Asynchrone décrit dans la section .%TODO
+%Celle-ci tend à s'approcher encore un peu plus de la version classique. 
+
+%En particulier, précédemment la mise à jour de la distribution était basée sur \textbf{au moins} un certain nombre de résultas. Plus précisément, l'optimiseur attendait de disposer d'au moins $X$ résultats, % TODO
+%et puis calculait la nouvelle distribution sur base des $Y$\% meilleurs résultats. Le nombre de résultats utilisés pour calculer la nouvelle distribution était donc variable mais toujours égal ou supérieur à un certain seuil.
+
+%Dans cette nouvelle version de l'algorithme, la mise à jour est toujours basée sur exactement \textit{populationSize} résultats, et plus précisément la nouvelle distribution est calculée sur base des \textit{numBests} meilleurs résultats parmi cette population. 
+
+%Il ne reste donc plus que deux différences majeur par rapport à la version classique de l'EDA:
+%\begin{itemize}
+%\item Le caractère asynchrone de l'optimiseur: celui-ci essaye de maintenir en permanence un certain nombre d'évaluations en cours contrairement à la version classique qui attend d'avoir obtenu tous les résultas d'une population avant de générer d'autres individus.
+%\item La possibilité de "freiner" la convergence à l'aide du paramètre \textit{updateFactor} (cf. ) %TODO 
+%\end{itemize}
+
+\subsubsection{OptimizerContext}
+% TODO restructurer
+Cette classe permet à un \textit{Optimizer} d'évaluer des individus. L'évaluation étant asynchrone (Fig.~\ref{framework1}), on parlera plutôt de requêtes d'évaluation puisque le score n'est pas retourné directement à l'appelant.
+
+Le résultat n'étant pas retourné directement à l'appelant, une \textit{Callback} est utilisée et plus précisément une \textit{FunctionCallback}. L'\textit{Optimizer} doit, avant d'utiliser l'\textit{OptimizerContext} pour des évaluations, appeler la méthode \textit{setPostEvaluationCallback(...)} de la classe \textit{OptimizerContext}. Cette méthode permet de transmettre une référence vers l'instance de \textit{FunctionCallback} qu'il faut contacter une fois le résultat de l'évaluation obtenu. 
+
+\textit{FunctionCallback} est une classe définissant deux fonctions destinées à être sur-chargées~\footnote{La classe n'est pas abstraite mais les implémentations par défaut consiste à ne "rien faire".}: \textit{functionCalled(...)} et \textit{functionReturned(...)}. Seul la fonction \textit{functionReturned(...)} présente un intérêt dans le cas qui nous occupe.
+
+Dans le \textit{framework} développé, c'est l'\textit{OptimizerState} qui hérite de \textit{FunctionCallback} et qui implémente donc la méthode \textit{functionReturned(...)}. L'implémentation consiste simplement à stocker les résultats (\textit{pair<Double, Variable>}) dans un tableau (qui joue le rôle d'un \textit{buffer}) accessible par l'\textit{Optimizer}.
+
+Il est également de la responsabilité de l'utilisateur de l'\textit{OptimizerContext} d'appeler la méthode \textit{removePostEvaluationCallback(...)} lorsque celui-ci a terminé d'utiliser l'\textit{OptimizerContext}.
+
+Par défaut, les méthodes \textit{setPostEvaluationCallback(...)}/\textit{removePostEvaluationCallback(...)} se contentent d'ajouter/supprimer une \textit{callback} à l'instance de la fonction à optimiser. L'opération de \textit{callback} est donc directement réalisée au sein même de l'évaluation de la fonction (i.e. processus de \textit{callback} ne repasse pas par l'\textit{OptimizerContext} par défaut).
+
+Le processus d'évaluation étant \textit{a priori} asynchrone, les méthodes \textit{waitUntilAllRequestsAreProcessed()} et \textit{areAllRequestsProcessed()} permettent à l'\textit{Optimizer} d'attendre que toutes les évaluations aient été effectuées~\footnote{Ceci est particulièrement utile pour l'implémentation de \textit{EDAOptimizer} par exemple.}. L'implémentation de \textit{waitUntilAllRequestsAreProcessed()} consiste simplement à boucler sur \textit{areAllRequestsProcessed()}. Celle-ci évite le \textit{busy-waiting} en mettant le \textit{thread} en sommeil entre chaque appel à \textit{areAllRequestsProcessed()}. La méthode \textit{getTimeToSleep()} permet au client de l'\textit{OptimizerContext} d'obtenir le laps de temps utilisé pour ces périodes de sommeil.
+
+La Fig.~\ref{optimizercontext} reprend sous forme de diagramme de classes statique les points mentionnés ci-dessus. Trois implémentations de \textit{OptimizerContext} ont été réalisées. Celles-ci sont détaillées dans les paragraphes suivant.
+
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.7]{img/optimizercontext.pdf}
+\caption{\textit{OptimizerContext}: diagramme de classes statique}
+\label{optimizercontext}
+\end{figure}
+
+\paragraph{SynchroneousOptimizerContext} TODO
+%Il s'agit d'une version synchrone d'un \textit{OptimizerContext}. La méthode \textit{evaluate(...)} est donc bloquante et le retour de cette fonction s'effectue \textbf{après} le callback renvoyant le résultat de l'évaluation.
+
+\paragraph{MultiThreadedOptimizerContext} TODO
+%Il s'agit d'une version asynchrone d'un \textit{OptimizerContext} s'appuyant sur un \textit{MultiThreadedExecutionContext} de LBCpp. Le processus de callback ne passant pas par l'\textit{OptimizerContext}, une référence vers une variable entière est utilisée afin de tracker le nombre d'évaluations en cours.
+
+\paragraph{DistributedOptimizerContext} TODO
+%Il s'agit de l'\textit{OptimizerContext} permettant de distribuer les requêtes d'évaluations sur une grille de calcul. L'implémentation de ce contexte est un peu plus délicate et se compose de deux parties.
+
+%La fonction \textit{evaluate(...)} est chargée de créer une \textit{WorkUnit} LBCpp à partir de la requête d'évaluation de la fonction~\footnote{Ceci est nécessaire puisque le Manager traite uniquement des \textit{WorkUnit} LBCpp.}. Ceci est en réalité très simple à réaliser vu la présence de la classe \textit{FunctionWorkUnit} au sein de LBCpp. Une fois l'unité créée, celle-ci est envoyée au Manager grâce à l'API Network développée par Julien Becker.
+
+%A chaque instance de \textit{DistributedOptimizerContext} est associé une instance de \textit{GetFinishedExecutionTracesDaemon}. Il s'agit d'une classe dérivant de \textit{Thread} dont le but est de récupérer périodiquement les résultats disponibles sur le Manager et d'appeler la callback spécifiée par l'utilisateur une fois le résultat récupéré. L'instance de \textit{DistributedOptimizerContext} et celle de \textit{GetFinishedExecutionTracesDaemon} ont toutes deux accès (en lecture et en écriture) à une structure de données maintenant les requêtes en cours d'évaluation. Les opérations des deux classes s'effectuant dans deux threads différents il faut bien entendu introduire une certain synchronisation entre les deux~\footnote{La librairie Juce fournit un moyen très simple et similaire à ce qui se fait en Java pour introduire cette synchronisation.}.
+
+
+\subsubsection{OptimizerState}
+Il s'agit de la classe responsable de stocker l'état d'un \textit{Optimizer}. En effet, comme expliqué à la section %TODO
+, la fonction \textit{optimize(...)} étant \textit{const}, l'état doit être stocké dans une classe auxiliaire. Cet classe contient:
+\begin{itemize}
+\item Le nombre total de requêtes d'évaluation effectuées et le nombre total de résultats obtenus (la différence étant le nombre d'évaluations en cours).
+\item Une structure contenant les résultats obtenus mais qui n'ont pas encore été traité par l'optimiseur. Cette structure est remplie via la callback appelée à la fin de l'évaluation de la fonction à optimiser.
+\item Le meilleur score obtenu jusqu'à présent ainsi que la variable associée~\footnote{Afin d'homogénéiser le code, les optimiseurs ont désormais pour but de minimiser le score.}.
+\item Un verrou Juce permettant de synchroniser les accès à l'état puisque ceux-ci peuvent se faire depuis des threads différents.
+\end{itemize}
+
+Comme mentionné plus haut, cette classe implémente l'interface \textit{FunctionCallback}, i.e. la méthode \textit{functionReturned(...)}. L'implémentation consiste simplement à stocker le résultat dans une structure de donnée propre à l'\textit{OptimizerState}. Cette structure sera par la suite consultée/vidée par la routine d'optimisation proprement dite.
+
+Grâce à la sur-couche de LBCpp ()%TODO
+cette classe est facilement sérialisable en XML afin de sauvegarder l'état de l'optimiseur en vue de pouvoir le redémarrer. En pratique il est intéressant de pouvoir sauvegarder l'état de manière régulière sans toute fois perdre trop de temps processeur pour la sauvegarde. Ainsi, le programmeur utilisant cette classe afin de coder un optimiseur est invité à appeler la fonction \textit{OptimizerState::autoSaveToFile(...)} de manière régulière (à des moments où l'était est cohérent). Un paramètre utilisé lors de l'instanciation de l'\textit{OptimizerState} permet de fixer la fréquence maximum de sauvegarde, si bien que la sauvegarde ne sera effective que si un certains laps de temps minimum s'est écoulé depuis la dernière sauvegarde, empêchant ainsi de gaspiller trop de temps processeur. L'utilisateur de cette fonction peut également contourner se principe à l'aide d'un flag boolean (ceci peut-être utile en fin de procédure d'optimisation par exemple). 
+
+\paragraph{DistributionBasedOptimizerState}
+Certains optimiseur, dont les EDA, se basent sur une distribution. Il est donc logique de prévoir une classe dérivant \textit{OptimizerState} mais contenant une distribution de probabilité en plus dans l'état.
+
+% TODO samplerbased
+
+
+
+
+\chapter{Perspectives et conclusions}
+
+\chapter{TODO: not restructured yet}
+
 
 % TODO unzipper
 \section{BoincEvaluator}
