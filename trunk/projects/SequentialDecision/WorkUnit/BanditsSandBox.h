@@ -272,6 +272,7 @@ public:
     IndexBasedDiscreteBanditPolicy::initialize(numBandits);
     episodeCounts.clear();
     episodeCounts.resize(numBandits, 0);
+    tauValues.reserve(10000);
     episodeRemainingSteps = 0;
     currentBandit = 0;
   }
@@ -281,6 +282,7 @@ protected:
 
   double alpha;
   std::vector<size_t> episodeCounts;
+  std::vector<size_t> tauValues;
   size_t episodeRemainingSteps;
   size_t currentBandit;
 
@@ -288,9 +290,23 @@ protected:
   {
     const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
     double tauEpisodeCount = tau(episodeCounts[banditNumber]);
-    double e = 1.0;//2.71828183;
+    double e = 2.71828183;
     return statistics->getRewardMean() + sqrt((1.0 + alpha) * log(e * timeStep / tauEpisodeCount) / (2.0 * tauEpisodeCount));
   }
+
+  static size_t argmax(const std::vector<double>& values)
+  {
+    size_t res = (size_t)-1;
+    double m = -DBL_MAX;
+    for (size_t i = 0; i < values.size(); ++i)
+    {
+      double v = values[i];
+      if (v > m)
+        m = v, res = i;
+    }
+    return res;
+  }
+
 
   virtual size_t selectBandit(size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
   {
@@ -298,14 +314,24 @@ protected:
     if (timeStep < numBandits)
       return timeStep; // play each bandit once
 
-    while (episodeRemainingSteps == 0)
+    if (episodeRemainingSteps == 0)
     {
-      currentBandit = selectMaximumIndexBandit(timeStep, banditStatistics);
-      size_t& rj = episodeCounts[currentBandit];
-      episodeRemainingSteps = tau(rj + 1) - tau(rj);
-      if (!episodeRemainingSteps)
-        ++episodeRemainingSteps; // TMP !
-      ++rj;
+      std::vector<double> banditScores(numBandits);
+      for (size_t i = 0; i < banditScores.size(); ++i)
+        banditScores[i] = computeBanditScore(i, timeStep, banditStatistics);
+
+      while (true)
+      {
+        currentBandit = argmax(banditScores);
+        size_t& rj = episodeCounts[currentBandit];
+        episodeRemainingSteps = tau(rj + 1) - tau(rj);
+        ++rj;
+
+        if (episodeRemainingSteps == 0)
+          banditScores[currentBandit] = computeBanditScore(currentBandit, timeStep, banditStatistics);
+        else
+          break;
+      }
     }
 
     --episodeRemainingSteps;
@@ -313,7 +339,15 @@ protected:
   }
 
   size_t tau(size_t count) const
-    {return (size_t)ceil(pow(1 + alpha, (double)count));}
+  {
+    if (count >= tauValues.size())
+    {
+      std::vector<size_t>& v = const_cast<UCB2DiscreteBanditPolicy* >(this)->tauValues;
+      v.resize(count + 1);
+      v[count] = (size_t)ceil(pow(1 + alpha, (double)count));
+    }
+    return tauValues[count];
+  }
 };
 
 class EpsilonGreedyDiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
@@ -963,6 +997,11 @@ public:
       }
     }
 
+    // TMP !!!
+    //context.resultCallback(T("policy"), policy);
+    context.resultCallback(T("log10(C)"), log10(policy->getVariable(0).toDouble()));
+    context.resultCallback(T("score"), actualRegretStatistics->getMean());
+
     return actualRegretStatistics;
   }
  
@@ -1231,30 +1270,34 @@ public:
     ** Compute a bunch of baseline policies
     */
     std::vector<DiscreteBanditPolicyPtr> policies;
+    for (double power = 0.0; power >= -5.0; power -= 0.1)
+      policies.push_back(new UCB2DiscreteBanditPolicy(pow(10.0, power)));
+
     //policies.push_back(new UCB2DiscreteBanditPolicy(0.001));
-    policies.push_back(new UCB1TunedDiscreteBanditPolicy());
-    policies.push_back(new UCBvDiscreteBanditPolicy());
-    policies.push_back(new UCB1NormalDiscreteBanditPolicy());
+    //policies.push_back(new UCB1TunedDiscreteBanditPolicy());
+    //policies.push_back(new UCBvDiscreteBanditPolicy());
+    //policies.push_back(new UCB1NormalDiscreteBanditPolicy());
     //policies.push_back(new EpsilonGreedyDiscreteBanditPolicy(0.05, 0.1));
 
     CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Evaluating policies "), policies.size());
     for (size_t i = 0; i < policies.size(); ++i)
     {
       policies[i]->saveToFile(context, context.getFile(T("Policies/") + policies[i]->toString() + T(".policy")));
-      workUnit->setWorkUnit(i, makeEvaluationWorkUnit(testingStates, T("Testing Problems"), policies[i], true));
+      //workUnit->setWorkUnit(i * 2, makeEvaluationWorkUnit(testingStates, T("Testing Problems"), policies[i], true));
+      workUnit->setWorkUnit(i, makeEvaluationWorkUnit(trainingStates, T("Training Problems"), policies[i], true));
     }
     workUnit->setProgressionUnit(T("Policies"));
     workUnit->setPushChildrenIntoStackFlag(true);
     context.run(workUnit);
 
     std::vector<std::pair<DiscreteBanditPolicyPtr, String> > policiesToOptimize;
+    policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(1), T("powerFunction1")));
+    policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(2), T("powerFunction2")));
     policiesToOptimize.push_back(std::make_pair(new UCBvDiscreteBanditPolicy(), T("UCBv")));
     policiesToOptimize.push_back(std::make_pair(new UCB2DiscreteBanditPolicy(), T("UCB2")));
     policiesToOptimize.push_back(std::make_pair(new WeightedUCBBanditPolicy(), T("WeightedUCB1")));
     policiesToOptimize.push_back(std::make_pair(new EpsilonGreedyDiscreteBanditPolicy(0.1, 0.1), T("epsilonGreedy")));
 
-    //policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(1), T("powerFunction1")));
-    //policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(2), T("powerFunction2")));
     //policiesToOptimize.push_back(std::make_pair(new OldStyleParameterizedBanditPolicy(false), T("oldStyle")));
 
     //policiesToOptimize.push_back(std::make_pair(new UltimateParameterizedBanditPolicy(), T("ultimate")));

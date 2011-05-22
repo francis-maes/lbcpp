@@ -30,8 +30,8 @@ inline FileType getFileType(const File& file)
     return nonexistantFile;
   if (file.isDirectory())
     return directory;
-  if (file.getSize() > 100 * 1024 * 1024) // do not open files that do more than 100 Mb
-    return binaryFile;
+  //if (file.getSize() > 100 * 1024 * 1024) // do not open files that do more than 100 Mb
+  //  return binaryFile;
 
   InputStream* istr = file.createInputStream();
   if (!istr)

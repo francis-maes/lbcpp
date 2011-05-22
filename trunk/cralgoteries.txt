@@ -1,6 +1,4 @@
 
-../../lbcpp/bin/Release/RunWorkUnit --numThreads 5 --library ../../lbcpp/bin/Release/libsequentialdecision.so --traceAutoSave 600 --trace Bandits5Hor10.trace BanditsSandBox --numTestingProblems 1000 -T 100 -K 2 -N 10
-
 Proteins:
  * Ajouter des features de segments
 
