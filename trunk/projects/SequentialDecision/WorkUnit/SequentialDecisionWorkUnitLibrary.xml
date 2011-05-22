@@ -151,6 +151,7 @@
     <variable type="PositiveInteger" name="maxTimeStep"/>
     <variable type="ObjectVector[DiscreteBanditState]" name="initialStates"/>
     <variable type="DiscreteBanditPolicy" name="policy"/>
+    <variable type="PositiveInteger" name="numEstimationsPerBandit"/>
     <variable type="Boolean" name="verbose"/>
   </class>
   

@@ -56,6 +56,7 @@ public:
   virtual double entropy() const = 0;
 
   virtual size_t l0norm() const = 0;
+  virtual double l1norm() const = 0;
   virtual double sumOfSquares() const = 0;
   virtual double getExtremumValue(bool lookForMaximum, size_t* index = NULL) const = 0;
   
@@ -134,6 +135,7 @@ public:
   // DoubleVector
   virtual double entropy() const;
   virtual size_t l0norm() const;
+  virtual double l1norm() const;
   virtual double sumOfSquares() const;
   virtual double getExtremumValue(bool lookForMaximum, size_t* index = NULL) const;
   virtual void multiplyByScalar(double scalar);
@@ -221,6 +223,7 @@ public:
   // DoubleVector
   virtual double entropy() const;
   virtual size_t l0norm() const;
+  virtual double l1norm() const;
   virtual double sumOfSquares() const;
   virtual double getExtremumValue(bool lookForMaximum, size_t* index = NULL) const;
   virtual void multiplyByScalar(double value);
@@ -275,6 +278,7 @@ public:
   // DoubleVector
   virtual double entropy() const;
   virtual size_t l0norm() const;
+  virtual double l1norm() const;
   virtual double sumOfSquares() const;
   virtual double getExtremumValue(bool lookForMaximum, size_t* index = NULL) const;
   virtual void multiplyByScalar(double value);
@@ -334,6 +338,7 @@ public:
   // DoubleVector
   virtual double entropy() const;
   virtual size_t l0norm() const;
+  virtual double l1norm() const;
   virtual double sumOfSquares() const;
   virtual double getExtremumValue(bool lookForMaximum, size_t* index = NULL) const;
   virtual void multiplyByScalar(double value);

@@ -69,6 +69,23 @@ public:
   size_t res;
 };
 
+class ComputeL1NormFeatureGeneratorCallback : public FeatureGeneratorCallback
+{
+public:
+  ComputeL1NormFeatureGeneratorCallback() : res(0.0) {}
+
+  virtual void sense(size_t index, double value)
+    {res += fabs(value);}
+
+  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
+    {if (weight) res += fabs(weight) * vector->l1norm();}
+
+  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
+    {if (weight) res += fabs(weight) * featureGenerator->l1norm(inputs);}
+
+  double res;
+};
+
 class ComputeEntropyFeatureGeneratorCallback : public FeatureGeneratorCallback
 {
 public:

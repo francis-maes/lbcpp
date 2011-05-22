@@ -86,6 +86,13 @@ size_t FeatureGenerator::l0norm(const Variable* inputs) const
   return callback.res;
 }
 
+double FeatureGenerator::l1norm(const Variable* inputs) const
+{
+  ComputeL1NormFeatureGeneratorCallback callback;
+  computeFeatures(&inputs[0], callback);
+  return callback.res;
+}
+
 double FeatureGenerator::sumOfSquares(const Variable* inputs) const
 {
   ComputeSumOfSquaresFeatureGeneratorCallback callback;

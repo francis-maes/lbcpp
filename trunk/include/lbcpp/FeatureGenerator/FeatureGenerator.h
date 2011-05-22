@@ -65,6 +65,7 @@ public:
 
   virtual double entropy(const Variable* inputs) const;
   virtual size_t l0norm(const Variable* inputs) const;
+  virtual double l1norm(const Variable* inputs) const;
   virtual double sumOfSquares(const Variable* inputs) const;
   virtual double getExtremumValue(const Variable* inputs, bool lookForMaximum, size_t* index) const;
   virtual void appendTo(const Variable* inputs, const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const;

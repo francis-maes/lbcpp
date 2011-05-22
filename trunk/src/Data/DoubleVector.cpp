@@ -70,6 +70,14 @@ inline size_t defaultL0Norm(const VectorType& vector)
 }
 
 template<class VectorType>
+inline double defaultL1Norm(const VectorType& vector)
+{
+  ComputeL1NormFeatureGeneratorCallback callback;
+  computeFeatures(vector, callback);
+  return callback.res;
+}
+
+template<class VectorType>
 inline double defaultEntropy(const VectorType& vector)
 {
   ComputeEntropyFeatureGeneratorCallback callback;
@@ -211,6 +219,9 @@ double SparseDoubleVector::entropy() const
 
 size_t SparseDoubleVector::l0norm() const
   {return values.size();} // /!\ this may be an overestimate when values contains some null values
+
+double SparseDoubleVector::l1norm() const
+  {return defaultL1Norm(*this);}
 
 double SparseDoubleVector::sumOfSquares() const
   {return defaultSumOfSquares(*this);}
@@ -433,6 +444,9 @@ double DenseDoubleVector::entropy() const
 size_t DenseDoubleVector::l0norm() const
   {return values ? defaultL0Norm(*this) : 0;}
 
+double DenseDoubleVector::l1norm() const
+  {return values ? defaultL1Norm(*this) : 0.0;}
+
 double DenseDoubleVector::sumOfSquares() const
   {return values ? defaultSumOfSquares(*this) : 0.0;}
 
@@ -579,6 +593,9 @@ double LazyDoubleVector::entropy() const
 size_t LazyDoubleVector::l0norm() const
   {return defaultL0Norm(*this);}
 
+double LazyDoubleVector::l1norm() const
+  {return defaultL1Norm(*this);}
+
 double LazyDoubleVector::sumOfSquares() const
   {return defaultSumOfSquares(*this);}
 
@@ -676,6 +693,9 @@ double CompositeDoubleVector::entropy() const
 
 size_t CompositeDoubleVector::l0norm() const
   {return defaultL0Norm(*this);}
+
+double CompositeDoubleVector::l1norm() const
+  {return defaultL1Norm(*this);}
 
 double CompositeDoubleVector::sumOfSquares() const
   {return defaultSumOfSquares(*this);}
