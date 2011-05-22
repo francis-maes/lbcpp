@@ -21,6 +21,14 @@ public:
     : CompositeSampler(variableSamplers), objectClass(objectClass) {}
   ObjectCompositeSampler() {}
 
+  virtual String toShortString() const
+  {
+    String res = objectClass->getShortName();
+    if (res.isEmpty())
+      res = objectClass->getName();
+    return res + CompositeSampler::toShortString();
+  }
+
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
   {
     ObjectPtr res = Object::create(objectClass);

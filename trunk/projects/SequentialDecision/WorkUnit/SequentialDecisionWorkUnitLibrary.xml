@@ -206,4 +206,19 @@
     <variable type="PositiveInteger" name="index"/>
   </class>
 
+  <enumeration name="GPExprEnumeration">
+    <value name="binary"/>
+    <value name="unary"/>
+    <value name="variable"/>
+  </enumeration>
+
+  <class name="GPExprSampler" base="CompositeSampler"/>
+
+  <class name="GPSandBox" base="WorkUnit">
+    <variable type="Double" name="lambda"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="PositiveInteger" name="populationSize"/>
+    <variable type="PositiveInteger" name="numBests"/>
+  </class>
+
 </library>

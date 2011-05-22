@@ -69,6 +69,18 @@ void CompositeSampler::clone(ExecutionContext& context, const ObjectPtr& t) cons
     target->samplers[i] = samplers[i]->cloneAndCast<Sampler>();
 }
 
+String CompositeSampler::toShortString() const
+{
+  String res = T("(");
+  for (size_t i = 0; i < samplers.size(); ++i)
+  {
+    res += samplers[i]->toShortString();
+    if (i < samplers.size() - 1)
+      res += T(", ");
+  }
+  return res + T(")");
+}
+
 /*
 ** ObjectCompositeSampler
 */
