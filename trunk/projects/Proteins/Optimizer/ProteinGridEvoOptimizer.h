@@ -56,14 +56,22 @@ public:
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return variableType;}
-  
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     std::vector<ExecutionTraceItemPtr> vec = (input.dynamicCast<ExecutionTrace>())->getRootNode()->getSubItems();
     ExecutionTraceNodePtr traceNode = vec[0].staticCast<ExecutionTraceNode>();
+    if (!traceNode)
+      return numericalProteinPredictorParameters();
+    
     std::vector< std::pair<String, Variable> > results = traceNode->getResults();
-    return results[0].second.dynamicCast<NumericalProteinPredictorParameters>()->featuresParameters;
-  }  
+    if (results.size() == 0)
+      return numericalProteinPredictorParameters();
+    
+    if (results[0].second.dynamicCast<NumericalProteinPredictorParameters>())
+      return results[0].second.dynamicCast<NumericalProteinPredictorParameters>()->featuresParameters;
+    else
+      return numericalProteinPredictorParameters();
+  }    
 };
 
 typedef ReferenceCountedObjectPtr<ProteinGetVariableFromTraceFunction> ProteinGetVariableFromTraceFunctionPtr;
@@ -85,9 +93,22 @@ public:
   
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    std::vector<ExecutionTraceItemPtr> vec = (input.dynamicCast<ExecutionTrace>())->getRootNode()->getSubItems();
-    ExecutionTraceNodePtr traceNode = vec[0].staticCast<ExecutionTraceNode>();
-    return 1 - ((traceNode->getReturnValue()).dynamicCast<ProteinLearnerScoreObject>())->getScoreToMinimize();
+    std::vector<ExecutionTraceItemPtr> vec = (input.dynamicCast<ExecutionTrace>())->getRootNode()->getSubItems();    
+  
+    ExecutionTraceNodePtr traceNode = vec[0].dynamicCast<ExecutionTraceNode>();
+    if (!traceNode)
+      return 0;
+    
+    
+    Variable returnValue = traceNode->getReturnValue();
+    if (!returnValue.exists())
+      return 0;
+    
+    if (returnValue.dynamicCast<ProteinLearnerScoreObject>())
+      return 1 - (returnValue.dynamicCast<ProteinLearnerScoreObject>())->getScoreToMinimize();
+    else 
+      return 0;
+    
   }  
 };
 
