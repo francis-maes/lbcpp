@@ -8,6 +8,7 @@
 
   <class name="ConstantSampler" base="Sampler">
     <constructor arguments="const Variable&amp; value"/>
+    <variable type="Variable" name="value"/>
   </class>
   
   <class name="ContinuousSampler" base="Sampler" abstract="yes"/>

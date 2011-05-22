@@ -124,6 +124,8 @@ public:
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
+  virtual String toShortString() const;
+
   lbcpp_UseDebuggingNewOperator
 
 protected:

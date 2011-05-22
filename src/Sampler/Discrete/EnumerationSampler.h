@@ -24,6 +24,31 @@ public:
     : probabilities(probabilities) {}
   EnumerationSampler() {}
 
+  virtual String toShortString() const
+  {
+    EnumerationPtr enumeration = probabilities->getElementsEnumeration();
+    std::set<size_t> nonNullProbabilities;
+    size_t n = probabilities->getNumValues();
+    for (size_t i = 0; i < n; ++i)
+      if (probabilities->getValue(i) > 1e-12)
+        nonNullProbabilities.insert(i);
+    if (nonNullProbabilities.size() == 1)
+      return enumeration->getElementName(*nonNullProbabilities.begin());
+    else if (nonNullProbabilities.size() <= 4)
+    {
+      String res;
+      for (std::set<size_t>::const_iterator it = nonNullProbabilities.begin(); it != nonNullProbabilities.end(); ++it)
+      {
+        if (res.isNotEmpty())
+          res += T(", ");
+        res += enumeration->getElementName(*it) + T(": ") + Variable(probabilities->getValue(*it), probabilityType).toShortString();
+      }
+      return res;
+    }
+    else
+      return T("distribution over ") + enumeration->getName();
+  }
+
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
     {return random->sampleWithProbabilities(probabilities->getValues());}
 
