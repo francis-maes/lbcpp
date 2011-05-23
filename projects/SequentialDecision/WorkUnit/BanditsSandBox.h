@@ -510,7 +510,7 @@ protected:
 class PowerFunctionParameterizedBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
 {
 public:
-  PowerFunctionParameterizedBanditPolicy(size_t maxPower) : maxPower(maxPower)
+  PowerFunctionParameterizedBanditPolicy(size_t maxPower, bool useSparseSampler) : maxPower(maxPower), useSparseSampler(useSparseSampler)
   {
     jassert(maxPower >= 1);
     parametersEnumeration = createParametersEnumeration();
@@ -525,7 +525,7 @@ public:
   virtual SamplerPtr createParametersSampler() const
   {
     SamplerPtr scalarSampler = gaussianSampler(0.0, 1.0);
-    if (false)
+    if (useSparseSampler)
       scalarSampler = zeroOrScalarContinuousSampler(bernoulliSampler(0.5, 0.1, 0.9), scalarSampler);
     return independentDoubleVectorSampler(parameters->getElementsEnumeration(), scalarSampler);
   }
@@ -604,6 +604,7 @@ protected:
   friend class PowerFunctionParameterizedBanditPolicyClass;
 
   size_t maxPower;
+  bool useSparseSampler;
   EnumerationPtr parametersEnumeration;
   DenseDoubleVectorPtr parameters;
 };
@@ -948,15 +949,15 @@ public:
   {
     const DenseDoubleVectorPtr& inputVector = input.getObjectAndCast<DenseDoubleVector>();
     DenseDoubleVectorPtr v = inputVector->cloneAndCast<DenseDoubleVector>();
-    double l2norm = v->l2norm();
-    if (l2norm)
-      v->multiplyByScalar(1.0 / l2norm); // normalize
+    //double l2norm = v->l2norm();
+    //if (l2norm)
+    //  v->multiplyByScalar(1.0 / l2norm); // normalize
 
     double penalty = 0.0;
     if (l0Weight)
       penalty += l0Weight * (double)v->l0norm();
-    if (l1Weight)
-      penalty += l1Weight * (double)v->l1norm();
+    //if (l1Weight)
+    //  penalty += l1Weight * (double)v->l1norm();
     //if (l2Weight)
     //  penalty += l2Weight * (double)inputVector->sumOfSquares();
     return objectiveFunction->compute(context, input).getDouble() + penalty;
@@ -1154,7 +1155,7 @@ private:
 class BanditsSandBox : public WorkUnit
 {
 public:
-  BanditsSandBox() : numBandits(2), maxTimeStep(100000), numTrainingProblems(100), numTestingProblems(1000) {}
+  BanditsSandBox() : numBandits(2), maxTimeStep(100000), numTrainingProblems(100), numTestingProblems(1000), l0Weight(0.0) {}
  
   virtual Variable run(ExecutionContext& context)
   {
@@ -1199,8 +1200,9 @@ public:
     context.run(workUnit);
 
     std::vector<std::pair<DiscreteBanditPolicyPtr, String> > policiesToOptimize;
-    //policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(1), T("powerFunction1")));
-    policiesToOptimize.push_back(std::make_pair(new UltimateParameterizedBanditPolicy(), T("ultimate")));
+    policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(2, false), T("powerFunction2-dense")));
+    policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(2, true), T("powerFunction2-sparse")));
+    //policiesToOptimize.push_back(std::make_pair(new UltimateParameterizedBanditPolicy(), T("ultimate")));
 
     
     //policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(2), T("powerFunction2")));
@@ -1262,13 +1264,15 @@ protected:
   size_t numTrainingProblems;
   size_t numTestingProblems;
 
+  double l0Weight;
+
 //  DiscreteBanditPolicyPtr policyToOptimize;
 
   WorkUnitPtr makeEvaluationWorkUnit(const std::vector<DiscreteBanditStatePtr>& initialStates, const String& initialStatesDescription, const DiscreteBanditPolicyPtr& policy, bool verbose) const
     {return new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, initialStates, initialStatesDescription, policy, 100, verbose);}
   
   Variable optimizePolicy(ExecutionContext& context, DiscreteBanditPolicyPtr policy, const std::vector<DiscreteBanditStatePtr>& trainingStates,
-                          const std::vector<DiscreteBanditStatePtr>& testingStates, size_t numIterations = 10)
+                          const std::vector<DiscreteBanditStatePtr>& testingStates, size_t numIterations = 100)
   {
     TypePtr parametersType = Parameterized::getParametersType(policy);
     jassert(parametersType);
@@ -1291,15 +1295,11 @@ protected:
     size_t populationSize = numParameters * 8;
     size_t numBests = numParameters * 2;
 
-/*    if (populationSize < 50)
+    if (populationSize < 50)
       populationSize = 50;
     if (numBests < 10)
-      numBests = 10;*/
+      numBests = 10;
 
-    populationSize = 1000;
-    numBests = 50;
-
-    double l0Weight = 0.0, l1Weight = 0.0, l2Weight = 0.0;
 
     //populationSize = 100, numBests = 10;
 
@@ -1307,8 +1307,10 @@ protected:
     OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(Parameterized::get(policy)->createParametersSampler());
 
     // optimizer context
-    //FunctionPtr objectiveFunction = new AddRegularizerFunction(new EvaluateOptimizedDiscreteBanditPolicyParameters(policy, numBandits, maxTimeStep, trainingStates, 100), l0Weight, l1Weight, l2Weight);
     FunctionPtr objectiveFunction = new EvaluateOptimizedDiscreteBanditPolicyParameters(policy, numBandits, maxTimeStep, trainingStates, 100);
+    if (l0Weight)
+      objectiveFunction = new AddRegularizerFunction(objectiveFunction, l0Weight, 0.0, 0.0);
+
     objectiveFunction->initialize(context, parametersType);
 
     FunctionPtr validationFunction = new EvaluateOptimizedDiscreteBanditPolicyParameters(policy, numBandits, maxTimeStep, testingStates);

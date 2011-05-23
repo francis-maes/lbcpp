@@ -182,6 +182,7 @@
     <variable type="PositiveInteger" name="maxTimeStep" shortName="N"/>
     <variable type="PositiveInteger" name="numTrainingProblems" shortName="T"/>
     <variable type="PositiveInteger" name="numTestingProblems"/>
+    <variable type="Double" name="l0Weight" shortName="l0"/>
     <!-- <variable type="DiscreteBanditPolicy" name="policyToOptimize" shortName="p"/> -->
   </class>
 
