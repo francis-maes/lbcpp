@@ -307,10 +307,12 @@ public:
 
     std::vector<ScalarVariableMeanAndVariancePtr> meansAndVariances(numIterations);
     std::vector<ScalarVariableMeanAndVariancePtr> meansAndVariancesQScore(numIterations);
+    std::vector<ScalarVariableMeanAndVariancePtr> meansAndVariancesScores(numIterations);
     for (size_t i = 0; i < numIterations; i++)
     {
       meansAndVariances[i] = new ScalarVariableMeanAndVariance();
       meansAndVariancesQScore[i] = new ScalarVariableMeanAndVariance();
+      meansAndVariancesScores[i] = new ScalarVariableMeanAndVariance();
     }
 
     juce::OwnedArray<File> references;
@@ -365,16 +367,18 @@ public:
         // find best movers by EDA
         DenseDoubleVectorPtr energyMeans = new DenseDoubleVector(numIterations, 0);
         DenseDoubleVectorPtr qScoreMeans = new DenseDoubleVector(numIterations, 0);
+        DenseDoubleVectorPtr scoreMeans = new DenseDoubleVector(numIterations, 0);
         ProteinEDAOptimizerPtr opti = new ProteinEDAOptimizer(energyWeight);
         SamplerPtr out = opti->findBestMovers(context, random, targetPose, referencePose,
-            moverSampler, returnMovers, numIterations, numSamples, numGoodSamples,
-            numMoversToKeep, bestLearning, &energyMeans, &qScoreMeans);
+            moverSampler, returnMovers, numIterations, numSamples, numGoodSamples, numMoversToKeep,
+            bestLearning, &energyMeans, &qScoreMeans, &scoreMeans);
 
         // save gathered data
         for (size_t k = 0;k < numIterations; k++)
         {
           meansAndVariances[k]->push(energyMeans->getValue(k));
           meansAndVariancesQScore[k]->push(qScoreMeans->getValue(k));
+          meansAndVariancesScores[k]->push(scoreMeans->getValue(k));
         }
 
         out->saveToFile(context, File(outputFile.getFullPathName() + T("/")
@@ -398,6 +402,8 @@ public:
     {
       context.enterScope(T("Values"));
       context.resultCallback(T("Iteration"), Variable(k));
+      context.resultCallback(T("Mean deltaScore"), Variable(meansAndVariancesScores[k]->getMean()));
+      context.resultCallback(T("Std deltaScore"), Variable(meansAndVariancesScores[k]->getStandardDeviation()));
       double meanDeltaEnergy = meansAndVariances[k]->getMean();
       context.resultCallback(T("Mean deltaEnergy"), Variable(meanDeltaEnergy));
       context.resultCallback(T("Std Dev deltaEnergy"), Variable(meansAndVariances[k]->getStandardDeviation()));

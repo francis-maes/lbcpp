@@ -44,8 +44,8 @@ public:
     covarianceMatrix[1]->setElement(0, 0, Variable(var));
     covarianceMatrix[1]->setElement(1, 1, Variable(var));
 
-    ScalarContinuousSamplerPtr gauss0 = multiVariateGaussianSampler(means[0], covarianceMatrix[0]);
-    ScalarContinuousSamplerPtr gauss1 = multiVariateGaussianSampler(means[1], covarianceMatrix[1]);
+    ContinuousSamplerPtr gauss0 = multiVariateGaussianSampler(means[0], covarianceMatrix[0]);
+    ContinuousSamplerPtr gauss1 = multiVariateGaussianSampler(means[1], covarianceMatrix[1]);
     DenseDoubleVectorPtr probas = new DenseDoubleVector(2, 0.5);
     std::vector<SamplerPtr> mixtsamp;
     mixtsamp.push_back(gauss0);

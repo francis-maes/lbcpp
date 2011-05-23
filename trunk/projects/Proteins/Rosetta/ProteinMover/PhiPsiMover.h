@@ -138,6 +138,22 @@ public:
     return deltaPsi;
   }
 
+  virtual bool isEqual(const ProteinMoverPtr& mover, double tolerance)
+  {
+    if (mover.isInstanceOf<PhiPsiMover> ())
+    {
+      double errorResidue = std::abs((double)residue
+          - (double)mover.staticCast<PhiPsiMover> ()->residue) / (double)residue;
+      double errorPhi = std::abs((double)deltaPhi
+          - (double)mover.staticCast<PhiPsiMover> ()->deltaPhi) / (double)deltaPhi;
+      double errorPsi = std::abs((double)deltaPsi
+          - (double)mover.staticCast<PhiPsiMover> ()->deltaPsi) / (double)deltaPsi;
+      return ((errorResidue < tolerance) && (errorPhi < tolerance) && (errorPsi < tolerance));
+    }
+    else
+      return false;
+  }
+
 protected:
   friend class PhiPsiMoverClass;
 

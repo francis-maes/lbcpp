@@ -210,11 +210,28 @@ double lbcpp::getConformationScore(const core::pose::PoseOP& pose, double(*score
   if (energy != NULL)
     *energy = tempEn;
   double score = tempEn + juce::jmax(0.0, correctionFactor - (double)3 * numberResidues + 1);
-  return (score >= 1 ? score : std::exp(score - 1));
+  return score;
 #else
   jassert(false);
   return 0.0;
 #endif // LBCPP_PROTEIN_ROSETTA
+}
+
+double sigmoid(double k, double x)
+{
+  return 1 / (1 + std::exp(-k * x));
+}
+
+double lbcpp::getNormalizedEnergy(const core::pose::PoseOP& pose, double(*scoreFunction)(
+    const core::pose::PoseOP&))
+{
+  return sigmoid(0.0001, getTotalEnergy(pose, scoreFunction));
+}
+
+double lbcpp::getNormalizedScore(const core::pose::PoseOP& pose, double(*scoreFunction)(
+    const core::pose::PoseOP&))
+{
+  return sigmoid(0.0001, getConformationScore(pose, scoreFunction));
 }
 
 void lbcpp::rosettaInitialization(ExecutionContext& context)

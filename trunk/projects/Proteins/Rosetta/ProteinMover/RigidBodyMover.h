@@ -230,6 +230,31 @@ public:
     return residues->getSecond().getInteger();
   }
 
+  virtual bool isEqual(const ProteinMoverPtr& mover, double tolerance)
+  {
+    if (mover.isInstanceOf<RigidBodyMover> ())
+    {
+      size_t thisResidueOne = residues->getFirst().getInteger();
+      size_t thisResidueTwo = residues->getSecond().getInteger();
+      size_t moverResidueOne =
+          mover.staticCast<RigidBodyMover> ()->residues->getFirst().getInteger();
+      size_t moverResidueTwo =
+          mover.staticCast<RigidBodyMover> ()->residues->getSecond().getInteger();
+      double errorResidueOne = std::abs((double)thisResidueOne - (double)moverResidueOne)
+          / (double)thisResidueOne;
+      double errorResidueTwo = std::abs((double)thisResidueTwo - (double)moverResidueTwo)
+          / (double)thisResidueTwo;
+      double errorMagnitude = std::abs((double)magnitude
+          - (double)mover.staticCast<RigidBodyMover> ()->magnitude) / (double)magnitude;
+      double errorAmplitude = std::abs((double)amplitude
+          - (double)mover.staticCast<RigidBodyMover> ()->amplitude) / (double)amplitude;
+      return ((errorResidueOne < tolerance) && (errorResidueTwo < tolerance) && (errorMagnitude
+          < tolerance) && (errorAmplitude < tolerance));
+    }
+    else
+      return false;
+  }
+
 protected:
   friend class RigidBodyMoverClass;
 

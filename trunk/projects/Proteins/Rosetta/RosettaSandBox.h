@@ -182,7 +182,7 @@ public:
     VectorPtr inputs;
     VectorPtr samples;
     RandomGeneratorPtr random = new RandomGenerator();
-
+# if 1
     generateConditionalGaussianDataSet(inputs, samples);
     displayDataSet(context, T("Conditional gaussian dataset"), inputs, samples);
 
@@ -209,10 +209,10 @@ public:
       context.leaveScope(true);
     }
     context.leaveScope(true);
-
+# endif
 #if 0
     generateMoversDataSet(inputs, samples);
-    SamplerPtr moverClassSampler = new MaximumEntropySampler(proteinMoverEnumerationEnumeration);
+    SamplerPtr moverClassSampler = maximumEntropySampler(proteinMoverEnumerationEnumeration);
     SamplerPtr MEsampler = proteinMoverSampler(moverClassSampler, 1000);
 
     MEsampler->learn(context, inputs, samples);

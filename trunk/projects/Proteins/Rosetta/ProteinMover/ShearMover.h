@@ -141,8 +141,25 @@ public:
     return deltaPsi;
   }
 
+  virtual bool isEqual(const ProteinMoverPtr& mover, double tolerance)
+  {
+    if (mover.isInstanceOf<ShearMover> ())
+    {
+      double errorResidue = std::abs((double)residue
+          - (double)mover.staticCast<ShearMover> ()->residue) / (double)residue;
+      double errorPhi = std::abs((double)deltaPhi
+          - (double)mover.staticCast<ShearMover> ()->deltaPhi) / (double)deltaPhi;
+      double errorPsi = std::abs((double)deltaPsi
+          - (double)mover.staticCast<ShearMover> ()->deltaPsi) / (double)deltaPsi;
+      return ((errorResidue < tolerance) && (errorPhi < tolerance) && (errorPsi < tolerance));
+    }
+    else
+      return false;
+  }
+
 protected:
   friend class ShearMoverClass;
+
   size_t residue;
   double deltaPhi;
   double deltaPsi;

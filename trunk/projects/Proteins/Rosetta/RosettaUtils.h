@@ -85,6 +85,11 @@ ProteinPtr convertPoseToProtein(ExecutionContext& context, const core::pose::Pos
 double fullAtomEnergy(const core::pose::PoseOP& pose);
 double centroidEnergy(const core::pose::PoseOP& pose);
 
+double getNormalizedEnergy(const core::pose::PoseOP& pose, double(*scoreFunction)(
+    const core::pose::PoseOP&));
+double getNormalizedScore(const core::pose::PoseOP& pose, double(*scoreFunction)(
+    const core::pose::PoseOP&));
+
 /**
  * Returns the total energy of a Protein object.
  * @param protein a pointer to the Protein object
