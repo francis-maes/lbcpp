@@ -138,11 +138,19 @@
     <variable type="DenseDoubleVector[OldStyleParameterizedBanditPolicyEnumeration,Double]" name="parameters"/>
   </class>
 
-  <class name="BanditTimeFeatureGenerator" base="FeatureGenerator"/>
-  <class name="BanditStatisticFeatureGenerator" base="FeatureGenerator"/>
-  <class name="UltimateParameterizedBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="oldStyle">
-    <variable type="Enumeration" name="parametersEnumeration" generated="yes"/>
-    <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
+  <enumeration name="UltimatePolicyVariables">
+    <value name="T"/>
+    <value name="T_i"/>
+    <value name="mean(R)"/>
+    <value name="stddev(R)"/>
+<!--    <value name="min(R)"/>
+    <value name="max(R)"/>
+    <value name="ucb1-rightterm"/>
+    <value name="ucb1tuned-rightterm"/> -->
+  </enumeration>
+  
+  <class name="UltimateParameterizedBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ultimate">
+    <variable type="GPExpr" name="indexFunction"/>
   </class>
   
 
@@ -186,10 +194,23 @@
   </enumeration>
 
   <enumeration name="GPPre">
-    <value name="sinus" shortName="sin"/>
+    <!-- <value name="sinus" shortName="sin"/>
     <value name="cosinus" shortName="cos"/>
-    <value name="exponential" shortName="exp"/>
+    -->
+    <!--<value name="exponential" shortName="exp"/> -->
     <value name="logarithm" shortName="log"/>
+    <value name="squareRoot" shortName="sqrt"/>
+    <value name="inverse" shortName="inverse"/>
+  </enumeration>
+
+  <enumeration name="GPConstant">
+    <value name="1"/>
+    <value name="2"/>
+    <value name="5"/>
+    <value name="10"/>
+    <value name="20"/>
+    <value name="50"/>
+    <value name="100"/>
   </enumeration>
 
   <class name="GPExpr" base="Object" abstract="yes"/>
@@ -203,13 +224,32 @@
     <variable type="GPExpr" name="expr"/>
   </class>
   <class name="VariableGPExpr" base="GPExpr" shortName="variable">
-    <variable type="PositiveInteger" name="index"/>
+    <variable type="Integer" name="index"/>
+  </class>
+  <class name="ConstantGPExpr" base="GPExpr">
+    <variable type="Double" name="value"/>
   </class>
 
-  <enumeration name="GPExprEnumeration">
-    <value name="binary"/>
-    <value name="unary"/>
-    <value name="variable"/>
+  <class name="GPExprSamplingContext" base="Object">
+    <variable type="GPExprSamplingContext" name="parent"/>
+    <variable type="GPExprLabels" name="parentLabel"/>
+    <variable type="GPExprLabels" name="grandParentLabel"/>
+    <variable type="PositiveInteger" name="depth"/>
+  </class>
+
+  <enumeration name="GPExprLabels">
+    <value name="addition"/>
+    <value name="subtraction"/>
+    <value name="multiplication"/>
+    <value name="division"/>
+    <value name="logarithm"/>
+    <value name="squareRoot"/>
+    <value name="inverse"/>
+    <value name="constant"/>
+    <value name="variable1"/>
+    <value name="variable2"/>
+    <value name="variable3"/>
+    <value name="variable4"/>
   </enumeration>
 
   <class name="GPExprSampler" base="CompositeSampler"/>

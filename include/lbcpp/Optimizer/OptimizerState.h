@@ -86,7 +86,7 @@ extern ClassPtr optimizerStateClass;
 class DistributionBasedOptimizerState : public OptimizerState
 {
 public:
-  DistributionBasedOptimizerState(size_t autoSaveStateFrequency = 0) : OptimizerState(autoSaveStateFrequency) {}
+  DistributionBasedOptimizerState(double autoSaveStateFrequency = 0) : OptimizerState(autoSaveStateFrequency) {}
   
   const DistributionPtr& getDistribution() const
     {return distribution;}
@@ -105,7 +105,7 @@ typedef ReferenceCountedObjectPtr<DistributionBasedOptimizerState> DistributionB
 class SamplerBasedOptimizerState : public OptimizerState
 {
 public:
-  SamplerBasedOptimizerState(const SamplerPtr& sampler, size_t autoSaveStateFrequency = 0)
+  SamplerBasedOptimizerState(const SamplerPtr& sampler, double autoSaveStateFrequency = 0)
     : OptimizerState(autoSaveStateFrequency), sampler(sampler), initialSampler(sampler) {}
   SamplerBasedOptimizerState() {}
 
