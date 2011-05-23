@@ -34,9 +34,11 @@ public:
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
   {
     DenseDoubleVectorPtr probabilities = predictor->compute(context, inputs[0], Variable::missingValue(outputType)).getObjectAndCast<DenseDoubleVector>();
+    EnumerationPtr outputs = (EnumerationPtr)outputType;
     if (!probabilities)
-      return Variable();
-    return Variable(random->sampleWithNormalizedProbabilities(probabilities->getValues()), probabilities->getElementsEnumeration());
+      return Variable(random->sampleSize(outputs->getNumElements()), outputs);
+    else
+      return Variable(random->sampleWithNormalizedProbabilities(probabilities->getValues()), outputs);
   }
 
   virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights,
@@ -47,6 +49,13 @@ public:
     if (validationSamples)
       validationData = Container::makePairsContainer(validationInputs, validationSamples);
     predictor->train(context, trainingData, validationData, T("Training maxent"));
+  }
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    const ReferenceCountedObjectPtr<MaximumEntropySampler>& target = t.staticCast<MaximumEntropySampler>();
+    target->outputType = outputType;
+    target->predictor = predictor->cloneAndCast<Function>();
   }
 
 protected:

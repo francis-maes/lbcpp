@@ -65,7 +65,7 @@ void OptimizerState::autoSaveToFile(ExecutionContext& context, bool force)
 {
   ScopedLock _(lock);
   double time = Time::getMillisecondCounter() / 1000.0;
-  if (force || (autoSaveStateFrequency > 0.0 && (time - lastSaveTime >= autoSaveStateFrequency)))
+  if (autoSaveStateFrequency > 0.0 && (force || (time - lastSaveTime >= autoSaveStateFrequency)))
   {
     lastSaveTime = time;
     if (context.getFile(T("optimizerState.xml")).existsAsFile())

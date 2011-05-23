@@ -332,6 +332,12 @@ public:
     return result;
   }
 
+  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, int* counterToDecrementWhenDone = NULL, bool pushIntoStack = true)
+  {
+    WaitingWorkUnitQueuePtr queue = thread->getWaitingQueue();
+    queue->push(workUnit, stack, counterToDecrementWhenDone, pushIntoStack);
+  }
+
   lbcpp_UseDebuggingNewOperator
 
 protected:

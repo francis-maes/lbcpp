@@ -16,6 +16,7 @@
 
 # include <lbcpp/Optimizer/Optimizer.h>
 # include <lbcpp/Sampler/Sampler.h>
+# include <lbcpp/Data/RandomVariable.h>
 
 namespace lbcpp
 {
@@ -77,44 +78,47 @@ protected:
   
   void learnDistribution(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const std::multimap<double, Variable>& sortedScores) const
   {          
-    // TODO: replace by optimizerState.staticCast<SamplerBasedOptimizerState>()->getSampler()->sample(context, random);
-    SamplerBasedOptimizerStatePtr samplerBasedState = optimizerState.dynamicCast<SamplerBasedOptimizerState>();
+    SamplerBasedOptimizerStatePtr samplerBasedState = optimizerState.staticCast<SamplerBasedOptimizerState>();
     
-    if (samplerBasedState)
-    {
-      VectorPtr bestVariables = vector(sortedScores.begin()->second.getType());
-      bestVariables->reserve(numBests);
-      std::multimap<double, Variable>::const_iterator it = sortedScores.begin();
-      for (size_t i = 0; i < numBests && it != sortedScores.end(); ++i, ++it)
-        bestVariables->append(it->second);
-      
-      if (slowingFactor > 0) 
-      {
-        SamplerPtr oldSampler = samplerBasedState->getSampler();
-        SamplerPtr newSampler = samplerBasedState->getCloneOfInitialSamplerInstance();
-        newSampler->learn(context, ContainerPtr(), bestVariables);
-        // new sampler is a mixture sampler : 
-        // oldSampler with proba = slowingFactor
-        // newSampler with proba = 1-slowingFactor
-        DenseDoubleVectorPtr probabilities = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, probabilityType, 2);
-        probabilities->setValue(0, slowingFactor);
-        probabilities->setValue(1, 1-slowingFactor);
-        std::vector<SamplerPtr> vec;
-        vec.reserve(2);
-        vec.push_back(oldSampler);
-        vec.push_back(newSampler);
-        samplerBasedState->setSampler(mixtureSampler(probabilities, vec));
-      }
-      else 
-      {
-        SamplerPtr sampler = samplerBasedState->getSampler();
-        sampler->learn(context, ContainerPtr(), bestVariables);
-      }
+    std::map<Variable, ScalarVariableStatistics> bestVariables;
+    std::multimap<double, Variable>::const_iterator it;
+    for (it = sortedScores.begin(); bestVariables.size() < numBests && it != sortedScores.end(); ++it)
+      bestVariables[it->second].push(it->first);
 
-      context.resultCallback(T("sampler"), samplerBasedState->getSampler());
-      return;
+    VectorPtr bestVariablesVector = vector(sortedScores.begin()->second.getType(), bestVariables.size());
+    size_t i = 0;
+    for (std::map<Variable, ScalarVariableStatistics>::const_iterator it = bestVariables.begin(); it != bestVariables.end(); ++it)
+    {
+//      if (i < 10) // TMP !
+        context.informationCallback(it->first.toShortString() + T(": ") + it->second.toShortString());
+      bestVariablesVector->setElement(i, it->first);
+      ++i;
     }
-    jassertfalse;
+    
+    if (slowingFactor > 0) 
+    {
+      SamplerPtr oldSampler = samplerBasedState->getSampler();
+      SamplerPtr newSampler = samplerBasedState->getCloneOfInitialSamplerInstance();
+      newSampler->learn(context, ContainerPtr(), bestVariablesVector);
+      // new sampler is a mixture sampler : 
+      // oldSampler with proba = slowingFactor
+      // newSampler with proba = 1-slowingFactor
+      DenseDoubleVectorPtr probabilities = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, probabilityType, 2);
+      probabilities->setValue(0, slowingFactor);
+      probabilities->setValue(1, 1-slowingFactor);
+      std::vector<SamplerPtr> vec;
+      vec.reserve(2);
+      vec.push_back(oldSampler);
+      vec.push_back(newSampler);
+      samplerBasedState->setSampler(mixtureSampler(probabilities, vec));
+    }
+    else 
+    {
+      SamplerPtr sampler = samplerBasedState->getSampler();
+      sampler->learn(context, ContainerPtr(), bestVariablesVector);
+    }
+
+    context.resultCallback(T("sampler"), samplerBasedState->getSampler());
   }
   
   void handleResultOfIteration(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizerContextPtr& optimizerContext, double bestIterationScore, const Variable& bestIterationParameters) const

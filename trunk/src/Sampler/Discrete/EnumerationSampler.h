@@ -19,14 +19,13 @@ class EnumerationSampler : public DiscreteSampler
 public:
   EnumerationSampler(EnumerationPtr enumeration)
     : probabilities(new DenseDoubleVector(enumeration, probabilityType,
-      enumeration->getNumElements(), 1.0 / enumeration->getNumElements())) {}
+      enumeration->getNumElements(), 1.0 / enumeration->getNumElements())), enumeration(enumeration) {}
   EnumerationSampler(const DenseDoubleVectorPtr& probabilities)
-    : probabilities(probabilities) {}
+    : probabilities(probabilities), enumeration(probabilities->getElementsEnumeration()) {}
   EnumerationSampler() {}
 
   virtual String toShortString() const
   {
-    EnumerationPtr enumeration = probabilities->getElementsEnumeration();
     std::set<size_t> nonNullProbabilities;
     size_t n = probabilities->getNumValues();
     for (size_t i = 0; i < n; ++i)
@@ -50,7 +49,7 @@ public:
   }
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
-    {return random->sampleWithProbabilities(probabilities->getValues());}
+    {return Variable(random->sampleWithProbabilities(probabilities->getValues()), enumeration);}
 
   virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights,
                                                     const ContainerPtr& validationInputs, const ContainerPtr& validationSamples, const DenseDoubleVectorPtr& supervisionWeights)
@@ -69,10 +68,25 @@ public:
     probabilities = empiricalFrequencies;
   }
 
+  virtual bool loadFromXml(XmlImporter& importer)
+  {
+    if (!DiscreteSampler::loadFromXml(importer))
+      return false;
+    enumeration = probabilities->getElementsEnumeration();
+    return true;
+  }
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    DiscreteSampler::clone(context, target);
+    target.staticCast<EnumerationSampler>()->enumeration = enumeration;
+  }
+
 protected:
   friend class EnumerationSamplerClass;
 
   DenseDoubleVectorPtr probabilities;
+  EnumerationPtr enumeration;
 };
 
 }; /* namespace lbcpp */

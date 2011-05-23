@@ -59,7 +59,7 @@ protected:
       Variable input;
       if (reinjectBest && i == 0 && bestParameters.exists())
         input = bestParameters;
-      else 
+      else
         input = sampleCandidate(context, optimizerState, random);
       
       if (!optimizerContext->evaluate(input))
@@ -91,8 +91,6 @@ protected:
     return true;
   }
 };
-
-typedef ReferenceCountedObjectPtr<EDAOptimizer> EDAOptimizerPtr;  
 
 }; /* namespace lbcpp */
 
