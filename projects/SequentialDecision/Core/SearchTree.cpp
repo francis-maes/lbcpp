@@ -26,7 +26,7 @@ SearchTreeNode::SearchTreeNode()
 {
 }
 
-void SearchTreeNode::open(const DecisionProblemPtr& problem, size_t parentIndex, const Variable& action)
+void SearchTreeNode::open(ExecutionContext& context, const DecisionProblemPtr& problem, size_t parentIndex, const Variable& action)
 {
   this->parentIndex = parentIndex;
   this->previousAction = action;
@@ -36,10 +36,12 @@ void SearchTreeNode::open(const DecisionProblemPtr& problem, size_t parentIndex,
   depth = parentNode->depth + 1;
 
   state = parentNode->state->cloneAndCast<DecisionProblemState>();
-  state->performTransition(action, reward);
+  state->performTransition(context, action, reward);
 
   bestReturn = currentReturn = parentNode->currentReturn + reward * pow(problem->getDiscount(), (double)parentNode->depth);
   parentNode->updateBestReturn(currentReturn, refCountedPointerFromThis(this));
+
+  //context.informationCallback(T("[") + Variable(reward).toShortString() + T(", ") + Variable(currentReturn).toShortString() + T("] ") + state->toShortString());
 }
 
 void SearchTreeNode::updateBestReturn(double newReturn, SearchTreeNodePtr childNode)
@@ -94,7 +96,7 @@ void SearchTree::exploreNode(ExecutionContext& context, size_t nodeIndex)
   for (size_t i = 0; i < n; ++i)
   {
     SearchTreeNodePtr childNode = new SearchTreeNode(nodeClass, nodes, firstChildIndex + i, node->getNodeUid() * n + i);
-    childNode->open(problem, nodeIndex, actions->getElement(i));
+    childNode->open(context, problem, nodeIndex, actions->getElement(i));
     addCandidate(context, childNode);
   }
 }

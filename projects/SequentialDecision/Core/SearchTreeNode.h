@@ -33,7 +33,7 @@ public:
   TypePtr getActionType() const
     {return getClass()->getTemplateArgument(1);}
 
-  void open(const DecisionProblemPtr& problem, size_t parentIndex, const Variable& action);
+  void open(ExecutionContext& context, const DecisionProblemPtr& problem, size_t parentIndex, const Variable& action);
 
   /*
   ** Properties

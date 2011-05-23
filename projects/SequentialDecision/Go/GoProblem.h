@@ -136,7 +136,7 @@ public:
   virtual ContainerPtr getAvailableActions() const
     {return availableActions;}
 
-  virtual void performTransition(const Variable& action, double& reward);
+  virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward);
 
   /*
   ** Object

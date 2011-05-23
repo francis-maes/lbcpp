@@ -53,9 +53,8 @@ public:
   double getExpectedReward(size_t banditNumber) const
     {return samplers[banditNumber]->computeExpectation().toDouble();}
 
-  virtual void performTransition(const Variable& action, double& reward)
+  virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward)
   {
-    ExecutionContext& context = defaultExecutionContext();
     size_t banditNumber = (size_t)action.getInteger();
     jassert(banditNumber < randomGenerators.size());
     reward = samplers[banditNumber]->sample(context, randomGenerators[banditNumber]).toDouble();

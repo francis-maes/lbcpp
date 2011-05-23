@@ -118,7 +118,7 @@ public:
       for (size_t i = 0; i < 150; ++i)
       {
         double r;
-        state->performTransition(trajectory->getElement(i), r);
+        state->performTransition(context, trajectory->getElement(i), r);
       }
       context.resultCallback(T("state"), state);
       return true;

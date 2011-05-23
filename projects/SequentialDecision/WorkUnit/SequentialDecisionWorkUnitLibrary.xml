@@ -150,7 +150,7 @@
   </enumeration>
   
   <class name="UltimateParameterizedBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ultimate">
-    <variable type="GPExpr" name="indexFunction"/>
+    <variable type="GPExpression" name="indexFunction"/>
   </class>
   
 
@@ -187,74 +187,6 @@
   </class>
 
   <!-- GP SandBox -->
-  <enumeration name="GPOperator">
-    <value name="addition" shortName="+"/>
-    <value name="subtraction" shortName="-"/>
-    <value name="multiplication" shortName="*"/>
-    <value name="division" shortName="/"/>
-  </enumeration>
-
-  <enumeration name="GPPre">
-    <!-- <value name="sinus" shortName="sin"/>
-    <value name="cosinus" shortName="cos"/>
-    -->
-    <!--<value name="exponential" shortName="exp"/> -->
-    <value name="logarithm" shortName="log"/>
-    <value name="squareRoot" shortName="sqrt"/>
-    <value name="inverse" shortName="inverse"/>
-  </enumeration>
-
-  <enumeration name="GPConstant">
-    <value name="1"/>
-    <value name="2"/>
-    <value name="5"/>
-    <value name="10"/>
-    <value name="20"/>
-    <value name="50"/>
-    <value name="100"/>
-  </enumeration>
-
-  <class name="GPExpr" base="Object" abstract="yes"/>
-  <class name="BinaryGPExpr" base="GPExpr" shortName="binary">
-    <variable type="GPExpr" name="left"/>
-    <variable type="GPOperator" name="op" enumeration="yes"/>
-    <variable type="GPExpr" name="right"/>
-  </class>
-  <class name="UnaryGPExpr" base="GPExpr" shortName="unary">
-    <variable type="GPPre" name="pre" enumeration="yes"/>
-    <variable type="GPExpr" name="expr"/>
-  </class>
-  <class name="VariableGPExpr" base="GPExpr" shortName="variable">
-    <variable type="Integer" name="index"/>
-  </class>
-  <class name="ConstantGPExpr" base="GPExpr">
-    <variable type="Double" name="value"/>
-  </class>
-
-  <class name="GPExprSamplingContext" base="Object">
-    <variable type="GPExprSamplingContext" name="parent"/>
-    <variable type="GPExprLabels" name="parentLabel"/>
-    <variable type="GPExprLabels" name="grandParentLabel"/>
-    <variable type="PositiveInteger" name="depth"/>
-  </class>
-
-  <enumeration name="GPExprLabels">
-    <value name="addition"/>
-    <value name="subtraction"/>
-    <value name="multiplication"/>
-    <value name="division"/>
-    <value name="logarithm"/>
-    <value name="squareRoot"/>
-    <value name="inverse"/>
-    <value name="constant"/>
-    <value name="variable1"/>
-    <value name="variable2"/>
-    <value name="variable3"/>
-    <value name="variable4"/>
-  </enumeration>
-
-  <class name="GPExprSampler" base="CompositeSampler"/>
-
   <class name="GPSandBox" base="WorkUnit">
     <variable type="Double" name="lambda"/>
     <variable type="PositiveInteger" name="numIterations"/>

@@ -102,7 +102,7 @@ public:
         return false;
 
       double reward;
-      state->performTransition(correctAction, reward);
+      state->performTransition(context, correctAction, reward);
 
       if (!process.writeStandardInput(T("undo\n")))
         return ScoreObjectPtr();

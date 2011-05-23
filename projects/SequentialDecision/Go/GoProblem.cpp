@@ -253,7 +253,7 @@ ContainerPtr GoState::computeAvailableActions() const
   return res;
 }
 
-void GoState::performTransition(const Variable& a, double& reward)
+void GoState::performTransition(ExecutionContext& context, const Variable& a, double& reward)
 {
   const PositiveIntegerPairPtr& action = a.getObjectAndCast<PositiveIntegerPair>();
   addStone(getCurrentPlayer(), action->getFirst(), action->getSecond());

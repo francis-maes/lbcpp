@@ -686,13 +686,13 @@ class UltimateParameterizedBanditPolicy : public IndexBasedDiscreteBanditPolicy,
 {
 public:
   UltimateParameterizedBanditPolicy() : random(new RandomGenerator())
-    {indexFunction = new BinaryGPExpr(new VariableGPExpr(2), gpSubtraction, new VariableGPExpr(0));}
+    {indexFunction = new BinaryGPExpression(new VariableGPExpression(2), gpSubtraction, new VariableGPExpression(0));}
 
   virtual SamplerPtr createParametersSampler() const
-    {return new GPExprSampler(maximumEntropySampler(gpExprLabelsEnumeration), ultimatePolicyVariablesEnumeration, 1);}
+    {return new GPExpressionSampler(maximumEntropySampler(gpExprLabelsEnumeration), ultimatePolicyVariablesEnumeration, 1);}
 
   virtual void setParameters(const Variable& parameters)
-    {indexFunction = parameters.getObjectAndCast<GPExpr>();}
+    {indexFunction = parameters.getObjectAndCast<GPExpression>();}
 
   virtual Variable getParameters() const
     {return indexFunction;}
@@ -762,7 +762,7 @@ protected:
   friend class UltimateParameterizedBanditPolicyClass;
 
   RandomGeneratorPtr random;
-  GPExprPtr indexFunction;
+  GPExpressionPtr indexFunction;
 };
 
 /*
@@ -893,7 +893,7 @@ protected:
   {
     size_t action = policy->selectNextBandit();
     double reward;
-    state->performTransition(action, reward);
+    state->performTransition(defaultExecutionContext(), action, reward);
     policy->updatePolicy(action, reward);
     return action;
   }
@@ -1284,7 +1284,7 @@ protected:
       numParameters = 1;
     else if (parametersType->inheritsFrom(pairClass(doubleType, doubleType)))
       numParameters = 2;
-    else if (parametersType->inheritsFrom(gpExprClass))
+    else if (parametersType->inheritsFrom(gpExpressionClass))
       numParameters = 100;
     jassert(numParameters);
     context.resultCallback(T("numParameters"), numParameters);

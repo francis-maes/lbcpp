@@ -171,6 +171,10 @@ public:
   void append(const ReferenceCountedObjectPtr<Type>& object)
     {objects->push_back(object);}
 
+  template<class Type>
+  void append(Type* object)
+    {objects->push_back(ObjectPtr(object));}
+
   const std::vector<ObjectPtr>& getObjects() const
     {return *objects;}
 
