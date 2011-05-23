@@ -52,13 +52,13 @@ Variable Optimizer::computeFunction(ExecutionContext& context, const Variable* i
  ** OptimizerState
  */
 OptimizerState::OptimizerState(double autoSaveStateFrequency) 
-  : totalNumberOfRequests(0), totalNumberOfEvaluations(0), bestVariable(Variable()), bestScore(DBL_MAX), autoSaveStateFrequency(autoSaveStateFrequency), lastSaveTime(0) {}
+  : totalNumberOfRequests(0), totalNumberOfResults(0), bestVariable(Variable()), bestScore(DBL_MAX), autoSaveStateFrequency(autoSaveStateFrequency), lastSaveTime(0) {}
 
 void OptimizerState::initialize()
 {
   // usefull if Optimizer is "restarted" with an existing OptimizerState (in pogress evaluations are lost)
-  if (totalNumberOfRequests > totalNumberOfEvaluations)
-    totalNumberOfRequests = totalNumberOfEvaluations;
+  if (totalNumberOfRequests > totalNumberOfResults)
+    totalNumberOfRequests = totalNumberOfResults;
 }
 
 void OptimizerState::autoSaveToFile(ExecutionContext& context, bool force)
@@ -87,16 +87,16 @@ void OptimizerState::incTotalNumberOfRequests()
   totalNumberOfRequests++;
 }
 
-size_t OptimizerState::getTotalNumberOfEvaluations() const
+size_t OptimizerState::getTotalNumberOfResults() const
 {
   ScopedLock _(lock);
-  return totalNumberOfEvaluations;
+  return totalNumberOfResults;
 }
 
 size_t OptimizerState::getNumberOfInProgressEvaluations() const
 {
   ScopedLock _(lock);
-  return getTotalNumberOfRequests() - getTotalNumberOfEvaluations();
+  return getTotalNumberOfRequests() - getTotalNumberOfResults();
 }
 
 // Processeded requests
@@ -171,7 +171,7 @@ void OptimizerState::functionReturned(ExecutionContext& context, const FunctionP
   }
   else
     processedRequests.push_back(std::make_pair(output.toDouble(), inputs[0]));
-  totalNumberOfEvaluations++;
+  totalNumberOfResults++;
 }
 
 /*

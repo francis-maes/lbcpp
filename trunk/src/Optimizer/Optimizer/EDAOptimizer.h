@@ -25,7 +25,7 @@ public:
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {     
     // useful to restart optimizer from optimizerState
-    size_t i = (size_t) (optimizerState->getTotalNumberOfEvaluations()/populationSize);	// integer division
+    size_t i = (size_t) (optimizerState->getTotalNumberOfResults()/populationSize);	// integer division
     context.progressCallback(new ProgressionState(i, numIterations, T("Iterations")));
 
     for ( ; i < numIterations; ++i)
