@@ -26,7 +26,7 @@ public:
   {   
     
     // useful to restart optimizer from state
-    size_t i = (size_t) (optimizerState->getTotalNumberOfEvaluations()/populationSize);	// interger division	
+    size_t i = (size_t) (optimizerState->getTotalNumberOfResults()/populationSize);	// interger division	
     context.progressCallback(new ProgressionState(i, numIterations, T("Iterations")));
     
     bool doReinjectBest = i ? true : false;  // used to know when to reinject best parameter
@@ -35,9 +35,10 @@ public:
     context.resultCallback(T("iteration"), i + 1);
     
     size_t totalNumberEvaluationsRequested = numIterations * populationSize;
-    while (optimizerState->getTotalNumberOfEvaluations() < totalNumberEvaluationsRequested) 
+    while (optimizerState->getTotalNumberOfResults() < totalNumberEvaluationsRequested) 
     {      
       // Send evaluation requests
+      // TODO arnaud : if useless
       if (optimizerState->getNumberOfInProgressEvaluations() < numberEvaluationsInProgress && optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && optimizerState->getNumberOfProcessedRequests() < populationSize) 
       {
         while (optimizerState->getNumberOfInProgressEvaluations() < numberEvaluationsInProgress && optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && optimizerState->getNumberOfProcessedRequests() < populationSize) 

@@ -15,7 +15,7 @@
   <class name="OptimizerState" base="Object">
     <constructor arguments="size_t autoSaveStateFrequency"/>
     <variable type="PositiveInteger" name="totalNumberOfRequests"/>
-    <variable type="PositiveInteger" name="totalNumberOfEvaluations"/>
+    <variable type="PositiveInteger" name="totalNumberOfResults"/>
     <variable type="Variable" name="bestVariable"/>
     <variable type="Double" name="bestScore"/>
     <variable type="ObjectVector[Pair[Double, Variable]]" name="processedRequests"/>

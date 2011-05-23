@@ -32,7 +32,7 @@ public:
   */
   size_t getTotalNumberOfRequests() const;
   void incTotalNumberOfRequests();
-  size_t getTotalNumberOfEvaluations() const;
+  size_t getTotalNumberOfResults() const;
   size_t getNumberOfInProgressEvaluations() const;
   
   /*
@@ -69,7 +69,7 @@ protected:
   CriticalSection lock;
     
   size_t totalNumberOfRequests;
-  size_t totalNumberOfEvaluations;
+  size_t totalNumberOfResults;
   
   Variable bestVariable;
   double bestScore;
@@ -83,6 +83,7 @@ protected:
 typedef ReferenceCountedObjectPtr<OptimizerState> OptimizerStatePtr;
 extern ClassPtr optimizerStateClass;
 
+// TODO arnaud : useless  
 class DistributionBasedOptimizerState : public OptimizerState
 {
 public:
