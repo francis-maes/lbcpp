@@ -153,7 +153,7 @@ public:
       Variable action = trajectory->getElement(i);
       supervisedDecisionMaker->compute(context, state, action);
       double reward;
-      state->performTransition(action, reward);
+      state->performTransition(context, action, reward);
     }
     return state;
   }

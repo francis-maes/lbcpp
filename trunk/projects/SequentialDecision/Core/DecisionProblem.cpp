@@ -11,6 +11,7 @@ using namespace lbcpp;
 
 void DecisionProblemState::performTrajectory(const ContainerPtr& actions, double& sumOfRewards, size_t maxSteps)
 {
+  ExecutionContext& context = defaultExecutionContext();
   jassert(actions->getElementsType() == getActionType());
   size_t n = actions->getNumElements();
   if (maxSteps && n > maxSteps)
@@ -18,7 +19,7 @@ void DecisionProblemState::performTrajectory(const ContainerPtr& actions, double
   for (size_t i = 0; i < n; ++i)
   {
     double reward;
-    performTransition(actions->getElement(i), reward);
+    performTransition(context, actions->getElement(i), reward);
     sumOfRewards += reward;
   }
 }
@@ -50,7 +51,7 @@ bool DecisionProblemState::checkTrajectoryValidity(ExecutionContext& context, co
     }
 
     double reward;
-    state->performTransition(action, reward);
+    state->performTransition(context, action, reward);
   }
   //context.resultCallback(state->getName(), state);
   return true;

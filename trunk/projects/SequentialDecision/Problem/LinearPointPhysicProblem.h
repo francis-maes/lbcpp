@@ -40,7 +40,7 @@ public:
     return res;
   }
 
-  virtual void performTransition(const Variable& action, double& reward)
+  virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward)
   {
     static const double deltaT = 0.1;
     position += deltaT * velocity;

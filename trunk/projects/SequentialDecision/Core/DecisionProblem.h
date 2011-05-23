@@ -25,7 +25,7 @@ public:
 
   virtual TypePtr getActionType() const = 0;
   virtual ContainerPtr getAvailableActions() const = 0;
-  virtual void performTransition(const Variable& action, double& reward) = 0;
+  virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward) = 0;
 
   virtual bool isFinalState() const
     {return !getAvailableActions();}
@@ -45,7 +45,7 @@ class DecisionProblem : public Object
 public:
   DecisionProblem(const FunctionPtr& initialStateSampler, double discount)
     : initialStateSampler(initialStateSampler), discount(discount)
-    {initialStateSampler->initialize(defaultExecutionContext(), randomGeneratorClass);}
+    {if (initialStateSampler) initialStateSampler->initialize(defaultExecutionContext(), randomGeneratorClass);}
   DecisionProblem() {}
 
   /*

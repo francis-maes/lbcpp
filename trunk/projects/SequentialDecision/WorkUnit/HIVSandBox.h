@@ -247,7 +247,7 @@ public:
         Variable action = searchTree->getBestAction();
 
         double reward = 0.0;
-        state->performTransition(action, reward);
+        state->performTransition(context, action, reward);
         res += reward * pow(discount, (double)t);
       }
     }
@@ -642,7 +642,7 @@ private:
         Variable bestAction = searchTree->getBestAction();
 
         double reward = 0.0;
-        state->performTransition(bestAction, reward);
+        state->performTransition(context, bestAction, reward);
         returnValue += reward * pow(discount, (double)t);
 
         if (verboseTrajectories)

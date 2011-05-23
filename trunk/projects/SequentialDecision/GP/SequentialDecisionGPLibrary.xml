@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="SequentialDecisionGP" directory="GP">
+
+  <!-- GP Expr -->
+  <enumeration name="GPOperator">
+    <value name="addition" shortName="+"/>
+    <value name="subtraction" shortName="-"/>
+    <value name="multiplication" shortName="*"/>
+    <value name="division" shortName="/"/>
+  </enumeration>
+
+  <enumeration name="GPPre">
+    <!-- <value name="sinus" shortName="sin"/>
+    <value name="cosinus" shortName="cos"/>
+    -->
+    <!--<value name="exponential" shortName="exp"/> -->
+    <value name="logarithm" shortName="log"/>
+    <value name="squareRoot" shortName="sqrt"/>
+    <value name="inverse" shortName="inverse"/>
+  </enumeration>
+
+  <enumeration name="GPConstant">
+    <value name="1"/>
+    <value name="2"/>
+    <value name="5"/>
+    <value name="10"/>
+    <value name="20"/>
+    <value name="50"/>
+    <value name="100"/>
+  </enumeration>
+
+  <class name="GPExpression" base="Object" abstract="yes"/>
+  <class name="BinaryGPExpression" base="GPExpression" shortName="binary">
+    <variable type="GPExpression" name="left"/>
+    <variable type="GPOperator" name="op" enumeration="yes"/>
+    <variable type="GPExpression" name="right"/>
+  </class>
+  <class name="UnaryGPExpression" base="GPExpression" shortName="unary">
+    <variable type="GPPre" name="pre" enumeration="yes"/>
+    <variable type="GPExpression" name="expr"/>
+  </class>
+  <class name="VariableGPExpression" base="GPExpression" shortName="variable">
+    <variable type="Integer" name="index"/>
+  </class>
+  <class name="ConstantGPExpression" base="GPExpression">
+    <variable type="Double" name="value"/>
+  </class>
+
+  <class name="GPExpressionSamplingContext" base="Object">
+    <variable type="GPExpressionSamplingContext" name="parent"/>
+    <variable type="GPExprLabels" name="parentLabel"/>
+    <variable type="GPExprLabels" name="grandParentLabel"/>
+    <variable type="PositiveInteger" name="depth"/>
+  </class>
+
+  <enumeration name="GPExprLabels">
+    <value name="addition"/>
+    <value name="subtraction"/>
+    <value name="multiplication"/>
+    <value name="division"/>
+    <value name="logarithm"/>
+    <value name="squareRoot"/>
+    <value name="inverse"/>
+    <value name="constant"/>
+    <value name="variable1"/>
+    <value name="variable2"/>
+    <value name="variable3"/>
+    <value name="variable4"/>
+  </enumeration>
+
+  <!-- GPExpression Sampler -->
+  <class name="GPExpressionSampler" base="CompositeSampler"/>
+
+  <!-- GPExpression Builder -->
+  <class name="GPExpressionBuilderAction" base="Object" abstract="yes"/>
+
+  <class name="VariableGPExpressionBuilderAction" base="GPExpressionBuilderAction" shortName="variable">
+    <variable type="Variable" name="index"/>
+  </class>
+  
+  <class name="UnaryGPExpressionBuilderAction" base="GPExpressionBuilderAction" shortName="unary">
+    <variable type="GPPre" name="op" enumeration="yes"/>
+    <variable type="PositiveInteger" name="index"/>
+  </class>
+
+  <class name="BinaryGPExpressionBuilderAction" base="GPExpressionBuilderAction" shortName="binary">
+    <variable type="GPOperator" name="op" enumeration="yes"/>
+    <variable type="PositiveInteger" name="left"/>
+    <variable type="PositiveInteger" name="right"/>
+  </class>
+
+  <class name="GPExpressionBuilderState" base="DecisionProblemState">
+    <variable type="ObjectVector[GPExpression]" name="expressions"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="expressionScores"/>
+  </class>
+  
+  <class name="GPExpressionBuilderProblem" base="DecisionProblem"/>
+  
+</library>
