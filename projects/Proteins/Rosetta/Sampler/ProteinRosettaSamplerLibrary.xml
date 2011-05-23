@@ -39,6 +39,8 @@
     <variable type="DenseDoubleVector[EnumValue, Probability]" name="probabilities"/>
     <variable type="Double" name="learningRate"/>
     <variable type="Double" name="probabilityForUnseenSample"/>
+    <variable type="Integer" name="minValue"/>
+    <variable type="Integer" name="maxValue"/>
   </class>
   
   <class name="GeneralProteinMoverSampler" base="CompositeSampler">

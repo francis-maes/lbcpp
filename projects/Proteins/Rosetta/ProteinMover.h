@@ -26,7 +26,9 @@ public:
    * classes.
    * @param pose the pose to perturb.
    */
-  virtual void move(core::pose::PoseOP& pose)=0;
+  virtual void move(core::pose::PoseOP& pose) = 0;
+
+  virtual bool isEqual(const ProteinMoverPtr& mover, double tolerance) = 0;
 
 protected:
   friend class ProteinMoverClass;

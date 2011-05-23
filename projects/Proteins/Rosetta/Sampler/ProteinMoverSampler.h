@@ -89,9 +89,48 @@ protected:
 
   void createObjectSamplers(size_t numResidues)
   {
-    samplers.push_back(objectCompositeSampler(phiPsiMoverClass, new SimpleResidueSampler(numResidues), gaussianSampler(0, 25), gaussianSampler(0, 25)));
-    samplers.push_back(objectCompositeSampler(shearMoverClass, new SimpleResidueSampler(numResidues), gaussianSampler(0, 25), gaussianSampler(0, 25)));
-    samplers.push_back(objectCompositeSampler(rigidBodyMoverClass, new ResiduePairSampler(numResidues), gaussianSampler(1, 1), gaussianSampler(0, 25)));
+    DenseDoubleVectorPtr r1 = new DenseDoubleVector(numResidues, 1.0 / (double)numResidues);
+    DenseDoubleVectorPtr r2 = new DenseDoubleVector(numResidues, 1.0 / (double)numResidues);
+    DiscreteSamplerPtr res1 = new SmoothEnumerationSampler(r1, 0.1, 1.0 / (5 * (double)numResidues), 0, numResidues - 1);
+    DiscreteSamplerPtr res2 = new SmoothEnumerationSampler(r2, 0.1, 1.0 / (5 * (double)numResidues), 0, numResidues - 1);
+
+    size_t num = 3;
+    std::vector<SamplerPtr> mixtsamp1Phi = generateGaussian(num);
+    std::vector<SamplerPtr> mixtsamp1Psi = generateGaussian(num);
+    std::vector<SamplerPtr> mixtsamp2Phi = generateGaussian(num);
+    std::vector<SamplerPtr> mixtsamp2Psi = generateGaussian(num);
+    std::vector<SamplerPtr> mixtsampMag = generateGaussian(2);
+    std::vector<SamplerPtr> mixtsampAmp = generateGaussian(2);
+
+    DenseDoubleVectorPtr probas1Phi = new DenseDoubleVector(num, 1.0 / num);
+    DenseDoubleVectorPtr probas1Psi = new DenseDoubleVector(num, 1.0 / num);
+    DenseDoubleVectorPtr probas2Phi = new DenseDoubleVector(num, 1.0 / num);
+    DenseDoubleVectorPtr probas2Psi = new DenseDoubleVector(num, 1.0 / num);
+    DenseDoubleVectorPtr probasMag = new DenseDoubleVector(2, 0.5);
+    DenseDoubleVectorPtr probasAmp = new DenseDoubleVector(2, 0.5);
+    CompositeSamplerPtr p1Phi = mixtureSampler(probas1Phi, mixtsamp1Phi);
+    CompositeSamplerPtr p1Psi = mixtureSampler(probas1Psi, mixtsamp1Psi);
+    CompositeSamplerPtr p2Phi = mixtureSampler(probas2Phi, mixtsamp2Phi);
+    CompositeSamplerPtr p2Psi = mixtureSampler(probas2Psi, mixtsamp2Psi);
+    CompositeSamplerPtr pMag = mixtureSampler(probasMag, mixtsampMag);
+    CompositeSamplerPtr pAmp = mixtureSampler(probasAmp, mixtsampAmp);
+
+    samplers.push_back(objectCompositeSampler(phiPsiMoverClass, res1, p1Phi, p1Psi));
+    samplers.push_back(objectCompositeSampler(shearMoverClass, res2, p2Phi, p2Psi));
+    samplers.push_back(objectCompositeSampler(rigidBodyMoverClass, new ResiduePairSampler(numResidues), pMag, pAmp));
+
+    // OR
+    //      samplers.push_back(objectCompositeSampler(phiPsiMoverClass, new SimpleResidueSampler(numResidues), gaussianSampler(0, 25), gaussianSampler(0, 25)));
+    //      samplers.push_back(objectCompositeSampler(shearMoverClass, new SimpleResidueSampler(numResidues), gaussianSampler(0, 25), gaussianSampler(0, 25)));
+    //      samplers.push_back(objectCompositeSampler(rigidBodyMoverClass, new ResiduePairSampler(numResidues), gaussianSampler(1, 1), gaussianSampler(0, 25)));
+  }
+
+  std::vector<SamplerPtr> generateGaussian(size_t num)
+  {
+    std::vector<SamplerPtr> mixtsamp;
+    for (size_t i = 0; i < num; i++)
+      mixtsamp.push_back(gaussianSampler(0, 25));
+    return mixtsamp;
   }
 };
 

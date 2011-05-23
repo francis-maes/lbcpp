@@ -673,9 +673,9 @@ void generateMoversDataSet(VectorPtr& inputs, VectorPtr& samples)
     inputs->append(input);
     samples->append(shearMover(3, 0.8, 3.4));
 
-//    inputs->append(input);
-//    samples->append(shearMover(2, 1.0, 4.53));
-//
+    inputs->append(input);
+    samples->append(shearMover(2, 1.0, 4.53));
+
 //    inputs->append(input);
 //    samples->append(shearMover(4, 1.1, 4.32));
 //

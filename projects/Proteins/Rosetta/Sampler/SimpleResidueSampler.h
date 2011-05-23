@@ -32,6 +32,12 @@ public:
     samplers[0] = discretizeSampler(temp, 0, (int)(numResidues - 1));
   }
 
+  SimpleResidueSampler(const DiscreteSamplerPtr& residueSampler, size_t numResidues)
+      : CompositeSampler(1), numResidues(numResidues)
+  {
+    samplers[0] = residueSampler;
+  }
+
   SimpleResidueSampler() : CompositeSampler(1) {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
