@@ -10,6 +10,7 @@
 # define LBCPP_BANDITS_DISCRETE_EXPERIMENT_H_
 
 # include "Bandits/DiscreteBanditPolicy.h"
+# include "../GP/GPExpression.h"
 
 namespace lbcpp
 {
@@ -168,66 +169,21 @@ class DiscreteBanditExperiment : public WorkUnit
 public:
   DiscreteBanditExperiment() : numBandits(2), numTrainingProblems(100), numTestingProblems(10000), maxTimeStep(1000) {}
   
-  struct EvaluatePolicyWorkUnit : public WorkUnit
-  {
-    EvaluatePolicyWorkUnit(const DiscreteBanditPolicyPtr& policy, size_t numBandits, size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& testingProblems,
-                                                                  const std::vector<DiscreteBanditStatePtr>& generalizationProblems)
-        : policy(policy), numBandits(numBandits), maxTimeStep(maxTimeStep), testingProblems(testingProblems), generalizationProblems(generalizationProblems) {}
-              
-    virtual Variable run(ExecutionContext& context)
-    {
-      WorkUnitPtr workUnit = new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, testingProblems, T("Testing Problems"), policy, 100, true);
-      Variable testingResult = context.run(workUnit);
-
-      workUnit = new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, generalizationProblems, T("Generalization Problems"), policy, 100, true);
-      Variable generalizationResult = context.run(workUnit);
-      PairPtr res(new Pair(testingResult, generalizationResult));
-      context.informationCallback(res->toShortString());
-      return res;
-    }
-    
-    virtual String toShortString() const
-      {return T("Evaluating policy ") + policy->toShortString();}
-
-  protected:
-    DiscreteBanditPolicyPtr policy;
-    size_t numBandits;
-    size_t maxTimeStep;
-    const std::vector<DiscreteBanditStatePtr>& testingProblems;
-    const std::vector<DiscreteBanditStatePtr>& generalizationProblems;
-  };
-
-  bool evaluatePolicies(ExecutionContext& context, const std::vector<DiscreteBanditPolicyPtr>& policies)
-  {
-    CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Evaluating policies"), policies.size());
-    for (size_t i = 0; i < policies.size(); ++i)
-      workUnit->setWorkUnit(i, new EvaluatePolicyWorkUnit(policies[i], numBandits, maxTimeStep, testingProblems, generalizationProblems));
-    workUnit->setProgressionUnit(T("Policies"));
-    workUnit->setPushChildrenIntoStackFlag(true);
-    context.run(workUnit, false);
-    return true;
-  }
-
-  bool evaluateUntunedPolicies(ExecutionContext& context)
-  {
-    std::vector<DiscreteBanditPolicyPtr> policies;
-    policies.push_back(greedyDiscreteBanditPolicy());
-    policies.push_back(ucb1DiscreteBanditPolicy());
-    policies.push_back(ucb1TunedDiscreteBanditPolicy());
-    policies.push_back(ucb1NormalDiscreteBanditPolicy());
-    policies.push_back(ucb2DiscreteBanditPolicy());
-    policies.push_back(ucbvDiscreteBanditPolicy());
-    policies.push_back(epsilonGreedyDiscreteBanditPolicy());
-    return evaluatePolicies(context, policies);
-  }
-
   virtual Variable run(ExecutionContext& context)
   {
     sampleProblems(context, trainingProblems, testingProblems, generalizationProblems);
 
-    context.enterScope(T("Untuned Policies"));
+    context.enterScope(T("Untuned policies"));
     bool ok = evaluateUntunedPolicies(context);
     context.leaveScope(ok);  
+
+    context.enterScope(T("Tuned policies"));
+    ok = tuneAndEvaluatePolicies(context);
+    context.leaveScope();
+
+    context.enterScope(T("Learned policies"));
+    ok = learnAndEvaluatePolicies(context);
+    context.leaveScope();
 
     return true;
   }
@@ -274,6 +230,156 @@ protected:
     for (size_t i = 0; i < generalization.size(); ++i)
       generalization[i] = initialStateSampler2->sample(context, random).getObjectAndCast<DiscreteBanditState>();
   }
+
+  bool evaluateUntunedPolicies(ExecutionContext& context) const
+  {
+    std::vector<DiscreteBanditPolicyPtr> policies;
+    policies.push_back(greedyDiscreteBanditPolicy());
+    policies.push_back(ucb1DiscreteBanditPolicy());
+    policies.push_back(ucb1TunedDiscreteBanditPolicy());
+    policies.push_back(ucb1NormalDiscreteBanditPolicy());
+    policies.push_back(ucb2DiscreteBanditPolicy());
+    policies.push_back(ucbvDiscreteBanditPolicy());
+    policies.push_back(epsilonGreedyDiscreteBanditPolicy());
+    return evaluatePolicies(context, policies);
+  }
+
+  bool tuneAndEvaluatePolicies(ExecutionContext& context) const
+  {
+    std::vector<DiscreteBanditPolicyPtr> policies;
+    policies.push_back(ucb1DiscreteBanditPolicy());
+    //policies.push_back(ucb2DiscreteBanditPolicy());
+    policies.push_back(ucbvDiscreteBanditPolicy());
+    policies.push_back(epsilonGreedyDiscreteBanditPolicy());
+    return optimizeAndEvaluatePolicies(context, policies);
+  }
+
+  bool learnAndEvaluatePolicies(ExecutionContext& context) const
+  {
+    std::vector<DiscreteBanditPolicyPtr> policies;
+    policies.push_back(powerDiscreteBanditPolicy(1, false));
+    policies.push_back(powerDiscreteBanditPolicy(2, false));
+    return optimizeAndEvaluatePolicies(context, policies);
+  }
+
+private:
+  bool optimizeAndEvaluatePolicies(ExecutionContext& context, std::vector<DiscreteBanditPolicyPtr>& policies) const
+  {
+    bool allOk = true;
+    for (size_t horizon = 10; horizon <= maxTimeStep; horizon *= 10)
+    {
+      context.enterScope(T("Horizon ") + String((int)horizon));
+      bool ok = optimizePolicies(context, policies, horizon) && evaluatePolicies(context, policies, false);
+      context.leaveScope(ok);
+      allOk &= ok;
+    }
+    return allOk;
+  }
+
+  bool optimizePolicies(ExecutionContext& context, std::vector<DiscreteBanditPolicyPtr>& policies, size_t horizon) const
+  {
+    bool allOk = true;
+    for (size_t i = 0; i < policies.size(); ++i)
+    {
+      DiscreteBanditPolicyPtr& policy = policies[i];
+      context.enterScope(T("Optimize policy ") + policy->toShortString());
+      bool ok = optimizePolicy(context, policy, horizon);
+      allOk &= ok;
+      context.leaveScope(ok);
+    }
+    return allOk;
+  }
+
+  bool optimizePolicy(ExecutionContext& context, DiscreteBanditPolicyPtr& policy, size_t horizon) const
+  {
+    TypePtr parametersType = Parameterized::getParametersType(policy);
+    jassert(parametersType);
+    size_t numParameters = 0;
+    EnumerationPtr enumeration = DoubleVector::getElementsEnumeration(parametersType);
+    if (enumeration)
+      numParameters = enumeration->getNumElements();
+    else if (parametersType->inheritsFrom(doubleType))
+      numParameters = 1;
+    else if (parametersType->inheritsFrom(pairClass(doubleType, doubleType)))
+      numParameters = 2;
+    else if (parametersType->inheritsFrom(gpExpressionClass))
+      numParameters = 100;
+    jassert(numParameters);
+    context.resultCallback(T("numParameters"), numParameters);
+
+    // eda parameters
+    size_t numIterations = (numParameters <= 2 ? 30 : 100);
+    size_t populationSize = numParameters * 8;
+    size_t numBests = numParameters * 2;
+
+    if (populationSize < 50)
+      populationSize = 50;
+    if (numBests < 10)
+      numBests = 10;
+
+    // optimizer state
+    OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(Parameterized::get(policy)->createParametersSampler());
+
+    // optimizer context
+    FunctionPtr objectiveFunction = new EvaluateOptimizedDiscreteBanditPolicyParameters(policy, numBandits, horizon, trainingProblems, 100);
+    objectiveFunction->initialize(context, parametersType);
+
+    FunctionPtr validationFunction = new EvaluateOptimizedDiscreteBanditPolicyParameters(policy, numBandits, horizon, testingProblems, 1);
+    validationFunction->initialize(context, parametersType);
+
+    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, objectiveFunction, validationFunction);
+
+    // optimizer
+    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests);
+    optimizer->compute(context, optimizerContext, optimizerState);
+
+    // best parameters
+    Variable bestParameters = optimizerState->getBestVariable();
+    policy = Parameterized::cloneWithNewParameters(policy, bestParameters);
+    context.informationCallback(policy->toShortString());
+    context.resultCallback(T("optimizedPolicy"), policy);
+    return policy;
+  }
+
+  bool evaluatePolicies(ExecutionContext& context, const std::vector<DiscreteBanditPolicyPtr>& policies, bool pushIntoStack = false) const
+  {
+    CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Evaluating policies"), policies.size());
+    for (size_t i = 0; i < policies.size(); ++i)
+      workUnit->setWorkUnit(i, new EvaluatePolicyWorkUnit(policies[i], numBandits, maxTimeStep, testingProblems, generalizationProblems));
+    workUnit->setProgressionUnit(T("Policies"));
+    workUnit->setPushChildrenIntoStackFlag(true);
+    context.run(workUnit, pushIntoStack);
+    return true;
+  }
+
+  struct EvaluatePolicyWorkUnit : public WorkUnit
+  {
+    EvaluatePolicyWorkUnit(const DiscreteBanditPolicyPtr& policy, size_t numBandits, size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& testingProblems,
+                                                                  const std::vector<DiscreteBanditStatePtr>& generalizationProblems)
+        : policy(policy), numBandits(numBandits), maxTimeStep(maxTimeStep), testingProblems(testingProblems), generalizationProblems(generalizationProblems) {}
+              
+    virtual Variable run(ExecutionContext& context)
+    {
+      WorkUnitPtr workUnit = new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, testingProblems, T("Testing Problems"), policy, 100, true);
+      Variable testingResult = context.run(workUnit);
+
+      workUnit = new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, generalizationProblems, T("Generalization Problems"), policy, 100, true);
+      Variable generalizationResult = context.run(workUnit);
+      PairPtr res(new Pair(testingResult, generalizationResult));
+      context.informationCallback(res->toShortString());
+      return res;
+    }
+    
+    virtual String toShortString() const
+      {return T("Evaluating policy ") + policy->toShortString();}
+
+  protected:
+    DiscreteBanditPolicyPtr policy;
+    size_t numBandits;
+    size_t maxTimeStep;
+    const std::vector<DiscreteBanditStatePtr>& testingProblems;
+    const std::vector<DiscreteBanditStatePtr>& generalizationProblems;
+  };
 };
 
 }; /* namespace lbcpp */
