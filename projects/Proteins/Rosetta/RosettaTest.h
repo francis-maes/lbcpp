@@ -35,6 +35,7 @@
 # include "Sampler/GeneralProteinMoverSampler.h"
 # include "Sampler/ConditionalProteinMoverSampler.h"
 # include "RosettaSandBox.h"
+# include "RosettaProtein.h"
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 #  undef T
@@ -71,6 +72,39 @@ public:
 # ifdef LBCPP_PROTEIN_ROSETTA
 # endif // LBCPP_PROTEIN_ROSETTA
 
+    // -------------- rosetta protein features
+    core::pose::PoseOP pose = new core::pose::Pose();
+    core::pose::PoseOP initialized;
+    FunctionPtr features = new RosettaProteinFeatures();
+    features->initialize(context, rosettaProteinClass);
+
+    String increment = T("AAAA");
+    String acc(increment);
+    makePoseFromSequence(pose, acc);
+    RosettaProteinPtr protein = new RosettaProtein(pose);
+    Variable result = features->compute(context, protein);
+    cout << protein->getNumResidues() << ": " << (const char*)result.toString() << endl;
+
+    for (size_t i = 0; i < 10; i++)
+    {
+      acc += increment + increment + increment;
+      makePoseFromSequence(pose, acc);
+      initializeProteinStructure(pose, initialized);
+      RosettaProteinPtr protein = new RosettaProtein(initialized);
+      Variable result = features->compute(context, protein);
+      cout << protein->getNumResidues() << ": " << (const char*)result.toString() << endl;
+    }
+
+//    EnumerationPtr kl = aminoAcidTypeEnumeration;
+//    for (size_t i = 0; i < kl->getNumElements(); i++)
+//    {
+//      EnumerationElementPtr l = kl->getElement(i);
+//      for (size_t j = 0; j < l->getNumVariables(); j++)
+//        cout << (const char*)l->getVariable(j).toString() << endl;
+//      cout << (const char*)kl->getElement(i)->getVariable(1).toString() << endl;
+//    }
+
+# if 0
     // -------------- max ent
     VectorPtr inputs;
     VectorPtr samples;
@@ -107,6 +141,7 @@ public:
       context.resultCallback(T("sample ") + String((int)i + 1), sample);
     }
     context.leaveScope();
+# endif
 
 # if 0
     // --------------- Conditional sampler

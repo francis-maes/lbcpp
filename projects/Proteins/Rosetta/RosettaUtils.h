@@ -85,6 +85,7 @@ ProteinPtr convertPoseToProtein(ExecutionContext& context, const core::pose::Pos
 double fullAtomEnergy(const core::pose::PoseOP& pose);
 double centroidEnergy(const core::pose::PoseOP& pose);
 
+double sigmoid(double k, double x);
 double getNormalizedEnergy(const core::pose::PoseOP& pose, double(*scoreFunction)(
     const core::pose::PoseOP&));
 double getNormalizedScore(const core::pose::PoseOP& pose, double(*scoreFunction)(

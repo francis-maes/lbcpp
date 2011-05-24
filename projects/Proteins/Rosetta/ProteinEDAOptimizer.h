@@ -74,7 +74,7 @@ public:
     double realTargetEnergy = 0;
     double referenceEnergy = scoreBeforeMove;
     double targetEnergy = getConformationScore(target, fullAtomEnergy, &realTargetEnergy);
-    double energyScore = 2 / (1 + std::exp(-0.0001 * (referenceEnergy - targetEnergy)));
+    double energyScore = 2 / (1 + std::exp(-0.0005 * (referenceEnergy - targetEnergy)));
 
     double structureScore = 0;
     QScoreObjectPtr scores = QScoreSingleEvaluator(target, reference, minDist, maxDist);
