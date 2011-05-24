@@ -11,6 +11,7 @@
 #include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Core/Function.h>
+#include <lbcpp/Data/RandomGenerator.h>
 #include <lbcpp/library.h>
 using namespace lbcpp;
 
@@ -18,7 +19,7 @@ using namespace lbcpp;
 ** ExecutionContext
 */
 ExecutionContext::ExecutionContext(const File& projectDirectory)
-  : stack(new ExecutionStack()), projectDirectory(projectDirectory)
+  : stack(new ExecutionStack()), projectDirectory(projectDirectory), random(new RandomGenerator())
 {
   initialize(*this);
 }

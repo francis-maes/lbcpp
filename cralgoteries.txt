@@ -1,10 +1,5 @@
-'''Clean Bandits'''
 
- * New directory SequentialDecision/Bandits
- * Do one file per Bandit Policy
- * Merge WeightUCBDiscreteBanditPolicy into UCB1DiscreteBanditPolicy
- * UCB1DiscreteBanditPolicy: the constant is now inside the square-root
- * 
+ * IndexBasedBanditPolicy: randomize the argmax
  
  
 

@@ -37,12 +37,6 @@ public:
   virtual TypePtr getParametersType() const
     {return gpExpressionClass;}
 
-  virtual void initialize(size_t numBandits)
-  {
-    IndexBasedDiscreteBanditPolicy::initialize(numBandits);
-    random = new RandomGenerator();
-  }
-
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
     BanditStatisticsPtr bandit = banditStatistics[banditNumber];
@@ -63,45 +57,9 @@ public:
     return indexFunction->compute(inputs);
   }
 
-  virtual size_t selectBandit(size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
-  {
-    size_t numBandits = banditStatistics.size();
-    if (timeStep < numBandits)
-      return timeStep; // play each bandit once
-
-    std::set<size_t> argmax;
-    double bestScore = -DBL_MAX;
-    for (size_t i = 0; i < numBandits; ++i)
-    {
-      double score = computeBanditScore(i, timeStep, banditStatistics);
-      if (score >= bestScore)
-      {
-        if (score > bestScore)
-        {
-          argmax.clear();
-          bestScore = score;
-        }
-        argmax.insert(i);
-      }
-    }
-    if (!argmax.size())
-      return random->sampleSize(numBandits);
-
-    size_t index = random->sampleSize(argmax.size());
-    std::set<size_t>::const_iterator it = argmax.begin();
-    while (index > 0)
-    {
-      ++it;
-      --index;
-    }
-    return *it;
-    //return selectMaximumIndexBandit(timeStep, banditStatistics);
-  }
-
 protected:
   friend class GPExpressionDiscreteBanditPolicyClass;
 
-  RandomGeneratorPtr random;
   GPExpressionPtr indexFunction;
 };
 

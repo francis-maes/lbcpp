@@ -4,7 +4,6 @@
 
   <!-- Discrete Bandit Decision Problem -->
   <class name="DiscreteBanditState" base="DecisionProblemState">
-    <variable type="RandomGenerator" name="random"/>
     <variable type="ObjectVector[Sampler]" name="samplers"/>
     <variable type="GenericVector[PositiveInteger]" name="availableActions"/>
   </class>
@@ -21,12 +20,16 @@
   <class name="DiscreteBanditPolicy" base="Object" abstract="yes"/>
   <class name="IndexBasedDiscreteBanditPolicy" base="DiscreteBanditPolicy" abstract="yes"/>
 
+  <class name="GreedyDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="greedy">
+    <constructor/>
+  </class>
+  
   <class name="UCB1DiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucb1">
     <constructor arguments="double C"/>
     <variable type="Double" name="C"/>
   </class>
 
-  <class name="UCB1TunedDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucb1Tuned">
+  <class name="UCB1TunedDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucb1Bernoulli">
     <constructor/>
   </class>
 
@@ -51,7 +54,7 @@
     <variable type="Double" name="d"/>
   </class>
 
-  <class name="PowerDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="powerFunction">
+  <class name="PowerDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="power">
     <constructor arguments="size_t maxPower, bool useSparseSampler"/>
     
     <variable type="PositiveInteger" name="maxPower"/>
@@ -60,7 +63,7 @@
     <variable type="Boolean" name="useSparseSampler"/>
   </class>
 
-  <enumeration name="GPExpressionDiscreteBanditPolicyVariables">
+  <enumeration name="GPExpressionDiscreteBanditPolicyVariables" shortName="gp">
     <value name="T"/>
     <value name="T_i"/>
     <value name="mean(R)"/>

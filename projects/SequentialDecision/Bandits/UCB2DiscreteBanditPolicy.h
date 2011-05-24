@@ -69,7 +69,7 @@ protected:
   }
 
 
-  virtual size_t selectBandit(size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
+  virtual size_t selectBandit(ExecutionContext& context, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
   {
     size_t numBandits = banditStatistics.size();
     if (timeStep < numBandits)

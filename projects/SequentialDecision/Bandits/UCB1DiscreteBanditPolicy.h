@@ -14,6 +14,13 @@
 namespace lbcpp
 {
 
+class GreedyDiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy
+{
+public:
+  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
+    {return banditStatistics[banditNumber]->getRewardMean();}
+};
+
 class UCB1DiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
 {
 public:
@@ -67,7 +74,7 @@ public:
     return statistics->getRewardMean() + sqrt(16.0 * ((qj - nj * xj2) / (nj - 1)) * (log(n - 1.0) / nj));
   }
 
-  virtual size_t selectBandit(size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
+  virtual size_t selectBandit(ExecutionContext& context, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
   {
     if (timeStep < banditStatistics.size())
       return timeStep; // play each bandit once
@@ -78,7 +85,7 @@ public:
       if (banditStatistics[i]->getPlayedCount() < limit)
         return i;
 
-    return selectMaximumIndexBandit(timeStep, banditStatistics);
+    return selectMaximumIndexBandit(context, timeStep, banditStatistics);
   }
 };
 

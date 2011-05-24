@@ -105,8 +105,8 @@ public:
       banditStatistics[i] = new BanditStatistics();
   }
 
-  size_t selectNextBandit()
-    {return selectBandit(timeStep, banditStatistics);}
+  size_t selectNextBandit(ExecutionContext& context)
+    {return selectBandit(context, timeStep, banditStatistics);}
 
   void updatePolicy(size_t banditNumber, double reward)
   {
@@ -121,7 +121,7 @@ protected:
   size_t timeStep;
   std::vector<BanditStatisticsPtr> banditStatistics;
 
-  virtual size_t selectBandit(size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) = 0;
+  virtual size_t selectBandit(ExecutionContext& context, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) = 0;
 };
 
 typedef ReferenceCountedObjectPtr<DiscreteBanditPolicy> DiscreteBanditPolicyPtr;
@@ -131,28 +131,54 @@ class IndexBasedDiscreteBanditPolicy : public DiscreteBanditPolicy
 protected:
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const = 0;
 
-  virtual size_t selectBandit(size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
+  virtual size_t selectBandit(ExecutionContext& context, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
   {
     if (timeStep < banditStatistics.size())
       return timeStep; // play each bandit once
-    return selectMaximumIndexBandit(timeStep, banditStatistics);
+    return selectMaximumIndexBandit(context, timeStep, banditStatistics);
   }
 
-  size_t selectMaximumIndexBandit(size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
+  size_t selectMaximumIndexBandit(ExecutionContext& context, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
   {
+    std::set<size_t> argmax;
     double bestScore = -DBL_MAX;
-    size_t bestBandit = 0;
-    for (size_t i = 0; i < banditStatistics.size(); ++i)
+    size_t numBests = 0;
+    size_t bestBandit;
+    size_t numBandits = banditStatistics.size();
+    std::vector<double> scores(numBandits);
+    for (size_t i = 0; i < numBandits; ++i)
     {
       double score = computeBanditScore(i, timeStep, banditStatistics);
-      if (score > bestScore)
-        bestBandit = i, bestScore = score;
+      scores[i] = score;
+      if (score == bestScore)
+        ++numBests;
+      else if (score > bestScore)
+        bestScore = score, numBests = 1, bestBandit = i;
     }
-    return bestBandit;
+    const RandomGeneratorPtr& random = context.getRandomGenerator();
+    if (numBests == 0)
+      return random->sampleSize(numBandits);
+    else if (numBests == 1)
+      return bestBandit;
+    else
+    {
+      size_t index = random->sampleSize(numBests);
+      for (size_t i = 0; i < numBandits; ++i)
+        if (scores[i] == bestScore)
+        {
+          if (!index)
+            return i;
+          --index;
+        }
+      jassert(false);
+      return 0;
+    }
   }
 };
 
 typedef ReferenceCountedObjectPtr<IndexBasedDiscreteBanditPolicy> IndexBasedDiscreteBanditPolicyPtr;
+
+extern IndexBasedDiscreteBanditPolicyPtr greedyDiscreteBanditPolicy();
 
 extern IndexBasedDiscreteBanditPolicyPtr ucb1DiscreteBanditPolicy(double C = 2.0);
 extern IndexBasedDiscreteBanditPolicyPtr ucb1TunedDiscreteBanditPolicy();
