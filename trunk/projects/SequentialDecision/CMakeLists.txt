@@ -8,6 +8,7 @@ GENERATE_INTROSPECTION_CODE(Core/SequentialDecisionCoreLibrary.xml SequentialDec
 GENERATE_INTROSPECTION_CODE(Problem/SequentialDecisionProblemLibrary.xml SequentialDecisionProblemLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(WorkUnit/SequentialDecisionWorkUnitLibrary.xml SequentialDecisionWorkUnitLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Go/SequentialDecisionGoLibrary.xml SequentialDecisionGoLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Bandits/SequentialDecisionBanditsLibrary.xml SequentialDecisionBanditsLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(GP/SequentialDecisionGPLibrary.xml SequentialDecisionGPLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(SequentialDecisionLibrary.xml SequentialDecisionLibrary.cpp)
 
@@ -28,7 +29,6 @@ SET(LBCPP_SEQUENTIAL_DECISION_CORE_SOURCES
 )
 
 SET(LBCPP_SEQUENTIAL_DECISION_PROBLEM_SOURCES
-  Problem/DiscreteBanditDecisionProblem.h
   Problem/LinearPointPhysicProblem.h
   Problem/DamienDecisionProblem.h
   Problem/SequentialDecisionProblemLibrary.xml
@@ -58,6 +58,18 @@ SET(LBCPP_SEQUENTIAL_DECISION_GP_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionGPLibrary.cpp
 )
 
+SET(LBCPP_SEQUENTIAL_DECISION_BANDITS_SOURCES
+  Bandits/DiscreteBanditDecisionProblem.h
+  Bandits/DiscreteBanditPolicy.h
+  Bandits/EpsilonGreedyDiscreteBanditPolicy.h
+  Bandits/UCB1DiscreteBanditPolicy.h
+  Bandits/UCB2DiscreteBanditPolicy.h
+  Bandits/UCBvDiscreteBanditPolicy.h
+  Bandits/PowerDiscreteBanditPolicy.h
+  Bandits/GPExpressionDiscreteBanditPolicy.h
+  Bandits/SequentialDecisionBanditsLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionBanditsLibrary.cpp
+)
 
 SET(LBCPP_SEQUENTIAL_DECISION_GO_SOURCES
   Go/GoProblem.h
@@ -87,6 +99,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_SOURCES
   ${LBCPP_SEQUENTIAL_DECISION_WORK_UNIT_SOURCES}
   ${LBCPP_SEQUENTIAL_DECISION_GO_SOURCES}
   ${LBCPP_SEQUENTIAL_DECISION_GP_SOURCES}
+  ${LBCPP_SEQUENTIAL_DECISION_BANDITS_SOURCES}
 
   SequentialDecisionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionLibrary.cpp
@@ -99,6 +112,7 @@ SOURCE_SUB_GROUP(Problem Damien FILES ${LBCPP_SEQUENTIAL_DECISION_PROBLEM_DAMIEN
 SOURCE_GROUP(WorkUnit FILES ${LBCPP_SEQUENTIAL_DECISION_WORK_UNIT_SOURCES})
 SOURCE_GROUP(Go FILES ${LBCPP_SEQUENTIAL_DECISION_GO_SOURCES})
 SOURCE_GROUP(GP FILES ${LBCPP_SEQUENTIAL_DECISION_GP_SOURCES})
+SOURCE_GROUP(Bandits FILES ${LBCPP_SEQUENTIAL_DECISION_BANDITS_SOURCES})
 
 GENERATE_LBCPP_PRECOMPILED(precompiled LBCPP_SEQUENTIAL_DECISION_SOURCES)
 

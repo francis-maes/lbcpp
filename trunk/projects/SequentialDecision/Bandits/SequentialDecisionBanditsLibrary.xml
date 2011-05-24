@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="SequentialDecisionBandits" directory="Bandits">
+
+  <!-- Discrete Bandit Decision Problem -->
+  <class name="DiscreteBanditState" base="DecisionProblemState">
+    <variable type="RandomGenerator" name="random"/>
+    <variable type="ObjectVector[Sampler]" name="samplers"/>
+    <variable type="GenericVector[PositiveInteger]" name="availableActions"/>
+  </class>
+  <class name="DiscreteBanditDecisionProblem" base="DecisionProblem" abstract="yes">
+    <variable type="PositiveInteger" name="numBandits"/>
+  </class>
+
+  <class name="DiscreteBanditInitialStateSampler" base="CompositeSampler">
+    <variable type="PositiveInteger" name="numBandits"/>
+  </class>
+
+  <!-- Discrete Bandit Policies -->
+  <class name="BanditStatistics" base="Object"/>
+  <class name="DiscreteBanditPolicy" base="Object" abstract="yes"/>
+  <class name="IndexBasedDiscreteBanditPolicy" base="DiscreteBanditPolicy" abstract="yes"/>
+
+  <class name="UCB1DiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucb1">
+    <constructor arguments="double C"/>
+    <variable type="Double" name="C"/>
+  </class>
+
+  <class name="UCB1TunedDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucb1Tuned">
+    <constructor/>
+  </class>
+
+  <class name="UCB1NormalDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucb1Normal">
+    <constructor/>
+  </class>
+   
+  <class name="UCB2DiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucb2">
+    <constructor arguments="double alpha"/>
+    <variable type="Double" name="alpha"/>
+  </class>
+
+  <class name="UCBVDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucbv">
+    <constructor arguments="double c, double zeta"/>
+    <variable type="Double" name="c"/>
+    <variable type="Double" name="zeta"/>
+  </class>
+
+  <class name="EpsilonGreedyDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="epsilonGreedy">
+    <constructor arguments="double c, double d"/>
+    <variable type="Double" name="c"/>
+    <variable type="Double" name="d"/>
+  </class>
+
+  <class name="PowerDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="powerFunction">
+    <constructor arguments="size_t maxPower, bool useSparseSampler"/>
+    
+    <variable type="PositiveInteger" name="maxPower"/>
+    <variable type="Enumeration" name="parametersEnumeration" generated="yes"/>
+    <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
+    <variable type="Boolean" name="useSparseSampler"/>
+  </class>
+
+  <enumeration name="GPExpressionDiscreteBanditPolicyVariables">
+    <value name="T"/>
+    <value name="T_i"/>
+    <value name="mean(R)"/>
+    <value name="stddev(R)"/>
+    <!--    <value name="min(R)"/>
+    <value name="max(R)"/>
+    <value name="ucb1-rightterm"/>
+    <value name="ucb1tuned-rightterm"/> -->
+  </enumeration>
+
+  <class name="GPExpressionDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ultimate">
+    <constructor arguments="GPExpressionPtr indexFunction"/>
+    <variable type="GPExpression" name="indexFunction"/>
+  </class>
+
+</library>
