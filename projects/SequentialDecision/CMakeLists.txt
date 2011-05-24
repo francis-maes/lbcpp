@@ -61,6 +61,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_GP_SOURCES
 SET(LBCPP_SEQUENTIAL_DECISION_BANDITS_SOURCES
   Bandits/DiscreteBanditDecisionProblem.h
   Bandits/DiscreteBanditPolicy.h
+  Bandits/DiscreteBanditExperiment.h
   Bandits/EpsilonGreedyDiscreteBanditPolicy.h
   Bandits/UCB1DiscreteBanditPolicy.h
   Bandits/UCB2DiscreteBanditPolicy.h

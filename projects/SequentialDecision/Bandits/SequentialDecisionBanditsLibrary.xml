@@ -79,4 +79,29 @@
     <variable type="GPExpression" name="indexFunction"/>
   </class>
 
+  <!-- Discrete Bandit Experiment -->
+  <class name="EvaluateDiscreteBanditPolicyWorkUnit" base="WorkUnit">
+    <variable type="PositiveInteger" name="numBandits"/>
+    <variable type="PositiveInteger" name="maxTimeStep"/>
+    <variable type="ObjectVector[DiscreteBanditState]" name="initialStates"/>
+    <variable type="DiscreteBanditPolicy" name="policy"/>
+    <variable type="PositiveInteger" name="numEstimationsPerBandit"/>
+    <variable type="Boolean" name="verbose"/>
+  </class>
+
+  <class name="EvaluateOptimizedDiscreteBanditPolicyParameters" base="Function">
+    <variable type="DiscreteBanditPolicy" name="policy"/>
+    <variable type="PositiveInteger" name="numBandits"/>
+    <variable type="PositiveInteger" name="maxTimeStep"/>
+    <variable type="ObjectVector[DiscreteBanditState]" name="initialStates"/>
+    <variable type="Boolean" name="verbose"/>
+  </class>
+  
+  <class name="DiscreteBanditExperiment" base="WorkUnit">
+    <variable type="PositiveInteger" name="numBandits" shortName="k"/>
+    <variable type="PositiveInteger" name="numTrainingProblems" shortName="training"/>
+    <variable type="PositiveInteger" name="numTestingProblems" shortName="testing"/>
+    <variable type="PositiveInteger" name="maxTimeStep" shortName="H"/>
+  </class>
+
 </library>
