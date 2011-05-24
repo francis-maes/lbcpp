@@ -227,6 +227,10 @@ public:
     for (size_t i = 0; i < trainingStates.size(); ++i)
       trainingStates[i] = initialStateSampler->sample(context, random).getObjectAndCast<DiscreteBanditState>();
 
+    ultimatePolicySearch(context, trainingStates, testingStates);
+    return true;
+
+
     /*
     ** Compute a bunch of baseline policies
     */
@@ -255,9 +259,6 @@ public:
     workUnit->setProgressionUnit(T("Policies"));
     workUnit->setPushChildrenIntoStackFlag(true);
     context.run(workUnit);
-
-    ultimatePolicySearch(context, trainingStates, testingStates);
-    return true;
 
 
     std::vector<std::pair<DiscreteBanditPolicyPtr, String> > policiesToOptimize;
@@ -361,9 +362,6 @@ protected:
     if (numBests < 10)
       numBests = 10;
 
-
-    //populationSize = 100, numBests = 10;
-
     // optimizer state
     OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(Parameterized::get(policy)->createParametersSampler());
 
@@ -399,17 +397,33 @@ protected:
         !validation->initialize(context, gpExpressionClass))
       return false;
 
-    DecisionProblemStatePtr state = new GPExpressionBuilderState(T("toto"), gpExpressionDiscreteBanditPolicyVariablesEnumeration, objective);
+/*    
+    for (size_t maxSearchNodes = 2; maxSearchNodes <= 2048; maxSearchNodes *= 2)
+    {
+      context.enterScope(T("maxSearchNodes = ") + String((int)maxSearchNodes));
+      breadthFirstSearch(context, gpExpressionDiscreteBanditPolicyVariablesEnumeration, objective, validation, maxSearchNodes);
+      context.leaveScope();
+    }
+    return true;*/
 
-    size_t maxDepth = 4;
 
-    std::vector<std::pair<GPExpressionPtr, double> > bestExpressionsPerDepth(maxDepth, std::make_pair(GPExpressionPtr(), DBL_MAX));
-    recursiveExhaustiveSearch(context, state, validation, 0, bestExpressionsPerDepth);
+    for (size_t maxDepth = 1; maxDepth <= 10; ++maxDepth)
+    {
+      context.enterScope(T("maxDepth = ") + String((int)maxDepth));
 
-    for (size_t i = 0; i < bestExpressionsPerDepth.size(); ++i)
-      context.informationCallback(T("Best at depth ") + String((int)i + 1) + T(" ") + bestExpressionsPerDepth[i].first->toShortString()
-        + T(" [") + String(bestExpressionsPerDepth[i].second) + T("]"));
+      std::vector<std::pair<GPExpressionPtr, double> > bestExpressionsPerDepth(maxDepth, std::make_pair(GPExpressionPtr(), DBL_MAX));
+      DecisionProblemStatePtr state = new GPExpressionBuilderState(T("toto"), gpExpressionDiscreteBanditPolicyVariablesEnumeration, objective);
+      recursiveExhaustiveSearch(context, state, validation, 0, bestExpressionsPerDepth);
+
+      for (size_t i = 0; i < bestExpressionsPerDepth.size(); ++i)
+        context.informationCallback(T("Best at depth ") + String((int)i + 1) + T(" ") + bestExpressionsPerDepth[i].first->toShortString()
+          + T(" [") + String(bestExpressionsPerDepth[i].second) + T("]"));
+
+      context.leaveScope(true);
+    }
     return true;
+
+  
     //return breadthFirstSearch(context, ultimatePolicyVariablesEnumeration, objective, validation);
   }
 
@@ -447,10 +461,8 @@ protected:
   } 
 
 
-  bool breadthFirstSearch(ExecutionContext& context, EnumerationPtr inputVariables, const FunctionPtr& objective, const FunctionPtr& validation)
+  bool breadthFirstSearch(ExecutionContext& context, EnumerationPtr inputVariables, const FunctionPtr& objective, const FunctionPtr& validation, size_t maxSearchNodes = 50)
   {
-    size_t maxSearchNodes = 50;
-
     DecisionProblemPtr problem = new GPExpressionBuilderProblem(inputVariables, objective);
     DecisionProblemStatePtr state = new GPExpressionBuilderState(T("toto"), inputVariables, objective);
 
