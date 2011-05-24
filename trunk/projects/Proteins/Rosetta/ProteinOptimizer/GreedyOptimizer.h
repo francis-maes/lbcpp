@@ -92,8 +92,10 @@ public:
       resultCallbackValues.push_back(Variable((int)0));
       resultCallbackValues.push_back(Variable(minimumEnergy));
       resultCallbackValues.push_back(Variable(temporaryEnergy));
-      resultCallbackValues.push_back(Variable(log10(minimumEnergy)));
-      resultCallbackValues.push_back(Variable(log10(temporaryEnergy)));
+      double logMinimumEnergy = minimumEnergy >= 1 ? log10(minimumEnergy) : -log10(std::abs(minimumEnergy - 2));
+      double logTemporaryEnergy = temporaryEnergy >= 1 ? log10(temporaryEnergy) : -log10(std::abs(temporaryEnergy - 2));
+      resultCallbackValues.push_back(Variable(logMinimumEnergy));
+      resultCallbackValues.push_back(Variable(logTemporaryEnergy));
       callback(context, resultCallbackValues, Variable(minimumEnergy), maxSteps);
     }
     int intervalSaveToFile = juce::jlimit(1, maxSteps, maxSteps / numOutputFiles);

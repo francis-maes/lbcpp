@@ -7,6 +7,9 @@
   <import name="ProteinRosettaOptimizer"/>
   <import name="ProteinRosettaSampler"/>
   
+  <class name="RosettaProtein" base="Object">
+  </class>
+  
   <!-- Movers -->
   <class name="ProteinMover" base="Object" abstract="yes">
   </class>

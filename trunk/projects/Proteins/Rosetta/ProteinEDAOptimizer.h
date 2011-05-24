@@ -223,7 +223,7 @@ public:
 //      {
         size_t numToLearn = (size_t)juce::jmin((int)numGoodSamples, (int)tempList.size());
 
-        numLearningSamplesFirstPass = 0.5 * numToLearn;
+        numLearningSamplesFirstPass = (size_t)(0.5 * numToLearn);
         numLearningSamplesSecondPass = numToLearn - numLearningSamplesFirstPass;
         moversVector = std::vector<MoverAndScore>(numToLearn);
         for (size_t j = 0; j < numLearningSamplesFirstPass; j++)
