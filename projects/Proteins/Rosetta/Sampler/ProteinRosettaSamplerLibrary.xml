@@ -43,15 +43,20 @@
     <variable type="Integer" name="maxValue"/>
   </class>
   
+  <!-- general samplers -->
   <class name="GeneralProteinMoverSampler" base="CompositeSampler">
+    <variable type="PositiveInteger" name="numResidues"/>
   </class>
   
   <class name="GeneralSimpleResidueSampler" base="CompositeSampler">
+    <variable type="PositiveInteger" name="numResidues"/>
   </class>
   
   <class name="GeneralResiduePairSampler" base="CompositeSampler">
+    <variable type="PositiveInteger" name="numResidues"/>
   </class>
   
+  <!-- conditional samplers -->
   <class name="ConditionalProteinMoverSampler" base="CompositeSampler">
   </class>
   

@@ -171,9 +171,9 @@ protected:
     {
       if (level == 0)
       {
-        samplers.push_back(objectCompositeSampler(phiPsiMoverClass, new GeneralSimpleResidueSampler(), gaussianSampler(0, 25), gaussianSampler(0, 25)));
-        samplers.push_back(objectCompositeSampler(shearMoverClass, new GeneralSimpleResidueSampler(), gaussianSampler(0, 25), gaussianSampler(0, 25)));
-        samplers.push_back(objectCompositeSampler(rigidBodyMoverClass, new GeneralResiduePairSampler(), gaussianSampler(1, 1), gaussianSampler(0, 25)));
+//        samplers.push_back(objectCompositeSampler(phiPsiMoverClass, new GeneralSimpleResidueSampler(), gaussianSampler(0, 25), gaussianSampler(0, 25)));
+//        samplers.push_back(objectCompositeSampler(shearMoverClass, new GeneralSimpleResidueSampler(), gaussianSampler(0, 25), gaussianSampler(0, 25)));
+//        samplers.push_back(objectCompositeSampler(rigidBodyMoverClass, new GeneralResiduePairSampler(), gaussianSampler(1, 1), gaussianSampler(0, 25)));
       }
       else if (level == 1)
       {

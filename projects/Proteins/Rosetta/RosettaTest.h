@@ -62,6 +62,7 @@ private:
   size_t arg;
   double value;
   String proteinsDir;
+  ProteinMoverPtr moverEnter;
 
 public:
   virtual Variable run(ExecutionContext& context)
@@ -71,28 +72,34 @@ public:
 # ifdef LBCPP_PROTEIN_ROSETTA
     rosettaInitialization(context, false);
 
+    cout << (const char*)moverEnter->toString() << endl;
+
     // -------------- rosetta protein features
     core::pose::PoseOP pose = new core::pose::Pose();
     core::pose::PoseOP initialized;
-    FunctionPtr features = new RosettaProteinFeatures();
+    FunctionPtr features = new RosettaProteinFeatures(0, 0, 0, 1);
     features->initialize(context, rosettaProteinClass);
-
-    String increment = T("AAAA");
+    String increment = T("AADRVY");
     String acc(increment);
+    acc += String(T("PSHHH"));
     makePoseFromSequence(pose, acc);
-    RosettaProteinPtr protein = new RosettaProtein(pose);
-    Variable result = features->compute(context, protein);
-    cout << protein->getNumResidues() << ": " << (const char*)result.toString() << endl;
+    //RosettaProteinPtr protein = new RosettaProtein(pose, 0, 0, 1, 0);
+    RosettaWorkerPtr worker = new RosettaWorker(pose, 1, 1, 1, 1);
+    //Variable result = features->compute(context, protein);
+    Variable result = worker->getFeatures(context);
+    cout << worker->getNumResidues() << ": " << (const char*)result.toString() << endl;
+
 
     for (size_t i = 0; i < 10; i++)
     {
       acc += increment + increment + increment;
       makePoseFromSequence(pose, acc);
       initializeProteinStructure(pose, initialized);
-      RosettaProteinPtr protein = new RosettaProtein(initialized);
-      Variable result = features->compute(context, protein);
-      cout << protein->getNumResidues() << ": " << (const char*)result.toString() << endl;
+      worker->setPose(initialized);
+      Variable result2 = worker->getFeatures(context);
+      cout << worker->getNumResidues() << ": " << (const char*)result2.toString() << endl;
     }
+
 
 //    EnumerationPtr kl = aminoAcidTypeEnumeration;
 //    for (size_t i = 0; i < kl->getNumElements(); i++)

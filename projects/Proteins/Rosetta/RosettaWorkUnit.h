@@ -125,7 +125,7 @@ public:
       ProteinOptimizerPtr o = new ProteinSimulatedAnnealingOptimizer(4.0, 0.01, 50,
           maxNumberIterations, 5, currentProtein->getName(), 0.0001, timesFeatureGeneration,
           outputDirectory);
-      RandomGeneratorPtr random = new RandomGenerator(0);
+      RandomGeneratorPtr random = new RandomGenerator();
 
       WorkUnitPtr childWorkUnit = new ProteinOptimizerWorkUnit(currentName, initialPose, o,
           moverSampler, random);
@@ -335,7 +335,7 @@ public:
       targetFile.findChildFiles(targets, File::findFiles, false,
           (*references[j]).getFileNameWithoutExtension() + T("*.xml"));
 
-      RandomGeneratorPtr random = new RandomGenerator(0);
+      RandomGeneratorPtr random = new RandomGenerator();
       for (int i = 0; i < targets.size(); i++)
       {
         ProteinPtr proteinTarget = Protein::createFromXml(context, *targets[i]);
@@ -576,7 +576,7 @@ public:
       targetFile.findChildFiles(targets, File::findFiles, false,
           (*references[j]).getFileNameWithoutExtension() + T("*.xml"));
 
-      RandomGeneratorPtr random = new RandomGenerator(0);
+      RandomGeneratorPtr random = new RandomGenerator();
       bool cont = true;
       for (int i = 0; cont && (i < targets.size()); i++)
       {

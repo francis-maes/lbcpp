@@ -7,12 +7,35 @@
   <import name="ProteinRosettaOptimizer"/>
   <import name="ProteinRosettaSampler"/>
   
+  <class name="RosettaWorker" base="Object">
+    <variable type="RosettaProtein" name="protein"/> 
+    <variable type="RosettaProteinFeatures" name="features"/>
+  </class>
+
+  <class name="RosettaProteinFeatures" base="CompositeFunction">
+    <constructor arguments="size_t residues, size_t energy, size_t histogram, size_t distances"/>
+    <variable type="PositiveInteger" name="selectResiduesFeatures"/> 
+    <variable type="PositiveInteger" name="selectEnergyFeatures"/>
+    <variable type="PositiveInteger" name="selectHistogramFeatures"/>
+    <variable type="PositiveInteger" name="selectDistanceFeatures"/>
+  </class>
+  
+  <class name="RosettaProteinResidueHistogramFeatureGenerator" base="FeatureGenerator">
+  </class>
+  
   <class name="RosettaProtein" base="Object">
     <variable type="PositiveInteger" name="numResidues"/>
     <variable type="Double" name="energy"/>
     <variable type="Double" name="score"/>
     <variable type="Double" name="normalizedScore"/>
     <variable type="DoubleVector[AminoAcidType,Double]" name="histogram"/>
+    <variable type="Double" name="shortDistance"/>
+    <variable type="Double" name="longDistance"/>
+    <variable type="PositiveInteger" name="computeResidues"/>
+    <variable type="PositiveInteger" name="computeEnergy"/>
+    <variable type="PositiveInteger" name="computeHistogram"/>
+    <variable type="PositiveInteger" name="computeDistances"/>
+    <variable type="Boolean" name="updated"/>
   </class>
   
   <!-- Movers -->
@@ -40,6 +63,7 @@
     <variable type="Double" name="value"/>
     <variable type="Integer" name="arg" shortName="a" description="An input argument to RosettaTest"/>
     <variable type="String" name="proteinsDir" shortName="d" description="Directory of proteins to load"/>
+    <variable type="ProteinMover" name="moverEnter"/>
   </class>
 
   <class name="ProteinFeaturesGeneratorWorkUnit" base="WorkUnit">
