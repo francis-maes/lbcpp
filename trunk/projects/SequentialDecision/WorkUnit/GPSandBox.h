@@ -16,9 +16,9 @@
 # include "../GP/GPExpression.h"
 # include "../GP/GPExpressionSampler.h"
 # include "../GP/GPExpressionBuilder.h"
-# include "../core/SearchTree.h"
-# include "../core/SearchPolicy.h"
-# include "../core/SearchHeuristic.h"
+# include "../Core/SearchTree.h"
+# include "../Core/SearchPolicy.h"
+# include "../Core/SearchHeuristic.h"
 
 namespace lbcpp
 {
