@@ -90,7 +90,7 @@ protected:
     for (std::map<Variable, ScalarVariableStatistics>::const_iterator it = bestVariables.begin(); it != bestVariables.end(); ++it)
     {
 //      if (i < 10) // TMP !
-        context.informationCallback(it->first.toShortString() + T(": ") + it->second.toShortString());
+        //context.informationCallback(it->first.toShortString() + T(": ") + it->second.toShortString());
       bestVariablesVector->setElement(i, it->first);
       ++i;
     }

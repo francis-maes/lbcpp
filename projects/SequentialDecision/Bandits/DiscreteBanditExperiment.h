@@ -269,7 +269,10 @@ private:
     for (size_t horizon = 10; horizon <= maxTimeStep; horizon *= 10)
     {
       context.enterScope(T("Horizon ") + String((int)horizon));
-      bool ok = optimizePolicies(context, policies, horizon) && evaluatePolicies(context, policies, false);
+      std::vector<DiscreteBanditPolicyPtr> pols(policies.size());
+      for (size_t i = 0; i < pols.size(); ++i)
+        pols[i] = policies[i]->cloneAndCast<DiscreteBanditPolicy>(context);
+      bool ok = optimizePolicies(context, pols, horizon) && evaluatePolicies(context, pols, false);
       context.leaveScope(ok);
       allOk &= ok;
     }
