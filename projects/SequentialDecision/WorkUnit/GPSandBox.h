@@ -176,8 +176,31 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    RandomGeneratorPtr random = new RandomGenerator();
+    DefaultEnumerationPtr inputVariables = new DefaultEnumeration(T("variables"));
+    inputVariables->addElement(context, T("x1"));
+    inputVariables->addElement(context, T("x2"));
+    inputVariables->addElement(context, T("x3"));
+    inputVariables->addElement(context, T("x4"));
 
+    FunctionPtr objective = createObjectiveFunction(context);
+    if (!objective->initialize(context, gpExpressionClass))
+      return false;
+
+    return breadthFirstSearch(context, inputVariables, objective);
+
+    //SamplerPtr sampler = createExpressionSampler(inputVariables);
+    //for (size_t i = 0; i < 10; ++i)
+    //  context.informationCallback(sampler->sample(context, random).toShortString());
+
+    //return optimize(context, sampler, objective);
+  }
+
+  SamplerPtr createExpressionSampler(EnumerationPtr inputVariables) const
+    {return new GPExpressionSampler(maximumEntropySampler(gpExprLabelsEnumeration), inputVariables, 1);}
+
+  FunctionPtr createObjectiveFunction(ExecutionContext& context) const
+  {
+    RandomGeneratorPtr random = new RandomGenerator();
     std::vector<std::pair<std::vector<double> , double> > examples;
     for (size_t i = 0; i < 1000; ++i)
     {
@@ -192,27 +215,9 @@ public:
       examples.push_back(std::make_pair(x, y));
     }
 
-    FunctionPtr objective = /*new GPStructureObjectiveFunction*/(new GPObjectiveFunction(examples, lambda));
-    if (!objective->initialize(context, gpExpressionClass))
-      return false;
-
-    DefaultEnumerationPtr inputVariables = new DefaultEnumeration(T("variables"));
-    inputVariables->addElement(context, T("x1"));
-    inputVariables->addElement(context, T("x2"));
-    inputVariables->addElement(context, T("x3"));
-    inputVariables->addElement(context, T("x4"));
-    SamplerPtr sampler = createExpressionSampler(inputVariables);
-
-    //for (size_t i = 0; i < 10; ++i)
-    //  context.informationCallback(sampler->sample(context, random).toShortString());
-
-    return breadthFirstSearch(context, inputVariables, objective);
-
-    //return optimize(context, sampler, objective);
+    return new GPObjectiveFunction(examples, lambda);
+    //return new GPStructureObjectiveFunction(objective);
   }
-
-  SamplerPtr createExpressionSampler(EnumerationPtr inputVariables) const
-    {return new GPExpressionSampler(maximumEntropySampler(gpExprLabelsEnumeration), inputVariables, 1);}
 
   bool breadthFirstSearch(ExecutionContext& context, EnumerationPtr inputVariables, const FunctionPtr& objective)
   {

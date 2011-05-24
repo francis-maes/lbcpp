@@ -70,7 +70,6 @@ public:
     RandomGeneratorPtr random = new RandomGenerator(0);
 
 # ifdef LBCPP_PROTEIN_ROSETTA
-# endif // LBCPP_PROTEIN_ROSETTA
 
     // -------------- rosetta protein features
     core::pose::PoseOP pose = new core::pose::Pose();
@@ -103,6 +102,7 @@ public:
 //        cout << (const char*)l->getVariable(j).toString() << endl;
 //      cout << (const char*)kl->getElement(i)->getVariable(1).toString() << endl;
 //    }
+# endif // LBCPP_PROTEIN_ROSETTA
 
 # if 0
     // -------------- max ent

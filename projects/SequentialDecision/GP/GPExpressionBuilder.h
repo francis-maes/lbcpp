@@ -164,6 +164,23 @@ public:
     description += action.toShortString();
   }
 
+  virtual bool undoTransition(ExecutionContext& context, const Variable& action)
+  {
+    const GPExpressionBuilderActionPtr& builderAction = action.getObjectAndCast<GPExpressionBuilderAction>();
+    if (builderAction.dynamicCast<VariableGPExpressionBuilderAction>())
+    {
+      size_t index = builderAction.staticCast<VariableGPExpressionBuilderAction>()->getIndex();
+      jassert(areVariableUsed[index]);
+      areVariableUsed[index] = false;
+    }
+
+    expressions.pop_back();
+    expressionScores.pop_back();
+    int i = description.lastIndexOf(T(" -> "));
+    description = (i >= 0 ? description.substring(0, i) : String::empty);
+    return true;
+  }
+
   virtual bool isFinalState() const
     {return false;}
 

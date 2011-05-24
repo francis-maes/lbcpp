@@ -19,9 +19,10 @@ class RosettaProtein : public Object
 {
 public:
   RosettaProtein(const core::pose::PoseOP& pose)
-    : pose(pose), energy(0), score(0), normalizedScore(0)
+    : energy(0), score(0), normalizedScore(0)
   {
 # ifdef LBCPP_PROTEIN_ROSETTA
+    pose = pose;
     numResidues = (size_t)pose->n_residue();
     update();
 # else
@@ -31,7 +32,13 @@ public:
   RosettaProtein() : numResidues(0), energy(0), score(0), normalizedScore(0) {}
 
   void getPose(core::pose::PoseOP& returnPose)
-    {returnPose = pose;}
+  {
+#ifdef LBCPP_PROTEIN_ROSETTA
+    returnPose = pose;
+#else
+    jassert(false);
+# endif // LBCPP_PROTEIN_ROSETTA
+  }
 
   DenseDoubleVectorPtr getHistogram()
     {return histogram;}
@@ -48,7 +55,11 @@ public:
   void update()
   {
     numResidues = getNumResidues();
+#ifdef LBCPP_PROTEIN_ROSETTA
     score = getConformationScore(pose, fullAtomEnergy, &energy);
+#else
+    score = 0.0;
+#endif
     normalizedScore = sigmoid(0.0005, score);
     updateHistogram();
   }
@@ -81,7 +92,9 @@ public:
 protected:
   friend class RosettaProteinClass;
 
+#ifdef LBCPP_PROTEIN_ROSETTA
   core::pose::PoseOP pose;
+#endif // LBCPP_PROTEIN_ROSETTA
   size_t numResidues;
   double energy;
   double score;
@@ -122,7 +135,7 @@ public:
   {
     size_t input = builder.addInput(rosettaProteinClass);
     size_t numResidues = builder.addFunction(getVariableFunction(T("numResidues")), input);
-    size_t residueFeatures = builder.addFunction(softDiscretizedLogNumberFeatureGenerator(1, std::log10(100), 10, true), numResidues);
+    size_t residueFeatures = builder.addFunction(softDiscretizedLogNumberFeatureGenerator(1, std::log10(100.0), 10, true), numResidues);
 
     size_t energy = builder.addFunction(getVariableFunction(T("normalizedScore")), input);
     size_t energyFeatures = builder.addFunction(defaultProbabilityFeatureGenerator(5), energy);
