@@ -405,7 +405,7 @@ public:
     DenseDoubleVectorPtr zhat = testbed::productMatrixVector(Rlambda, z);
     
     DenseDoubleVectorPtr ztilde = new DenseDoubleVector(z->getNumValues(), 0.0);
-    for (size_t i; i < z->getNumValues(); i++)
+    for (size_t i = 0; i < z->getNumValues(); i++)
     {
       if (zhat->getValue(i) > 0.5) 
         ztilde->setValue(i, floor(0.5+zhat->getValue(i))); 
@@ -445,7 +445,7 @@ public:
     DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
     xopt->subtractFrom(z);
     
-    z->multiplyByScalar(std::max(1.0,sqrt(z->getNumValues())/(double)8));
+    z->multiplyByScalar(std::max(1.0,sqrt((double)z->getNumValues())/(double)8));
     DenseDoubleVectorPtr ones = new DenseDoubleVector(z->getNumValues(), 1);
     ones->addTo(z);
     
@@ -488,7 +488,7 @@ public:
     DenseDoubleVectorPtr z = new DenseDoubleVector(input->getNumValues(), 0.0);
     z = testbed::productMatrixVector(testbed::getRotationMatrix(z->getNumValues()), input);
     
-    z->multiplyByScalar(std::max(1.0,sqrt(z->getNumValues())/(double)8));
+    z->multiplyByScalar(std::max(1.0,sqrt((double)z->getNumValues())/(double)8));
     DenseDoubleVectorPtr half = new DenseDoubleVector(z->getNumValues(), 0.5);
     half->addTo(z);
     

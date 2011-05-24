@@ -240,12 +240,14 @@ public:
 
   virtual void setParameters(const Variable& parameters) = 0;
   virtual Variable getParameters() const = 0;
+  virtual TypePtr getParametersType() const
+    {return getParameters().getType();}
 
   static Parameterized* get(const ObjectPtr& object)
     {return dynamic_cast<Parameterized* >(object.get());}
 
   static TypePtr getParametersType(const ObjectPtr& object)
-    {Parameterized* p = get(object); return p ? p->getParameters().getType() : TypePtr();}
+    {Parameterized* p = get(object); return p ? p->getParametersType() : TypePtr();}
 
   static ObjectPtr cloneWithNewParameters(const ObjectPtr& object, const Variable& newParameters)
   {
@@ -685,6 +687,9 @@ extern EnumerationPtr ultimatePolicyVariablesEnumeration;
 class UltimateParameterizedBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
 {
 public:
+  UltimateParameterizedBanditPolicy(GPExpressionPtr indexFunction)
+    : random(new RandomGenerator()), indexFunction(indexFunction) {}
+
   UltimateParameterizedBanditPolicy() : random(new RandomGenerator())
     {indexFunction = new BinaryGPExpression(new VariableGPExpression(2), gpSubtraction, new VariableGPExpression(0));}
 
@@ -696,6 +701,15 @@ public:
 
   virtual Variable getParameters() const
     {return indexFunction;}
+
+  virtual TypePtr getParametersType() const
+    {return gpExpressionClass;}
+
+  virtual void initialize(size_t numBandits)
+  {
+    IndexBasedDiscreteBanditPolicy::initialize(numBandits);
+    random->setSeed(16645186);
+  }
 
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
@@ -820,9 +834,10 @@ public:
       {
         DiscreteBanditStatePtr state = initialState->cloneAndCast<DiscreteBanditState>();
   
-        static int globalSeed = 1664;
-        state->setSeed((juce::uint32)globalSeed);
-        juce::atomicIncrement(globalSeed);
+//        static int globalSeed = 1664;
+  //      state->setSeed((juce::uint32)globalSeed);
+    //    juce::atomicIncrement(globalSeed);
+        state->setSeed(estimation * 1664);
         
         policy->initialize(numBandits);
 
@@ -914,6 +929,7 @@ public:
     DiscreteBanditPolicyPtr policy = Parameterized::cloneWithNewParameters(this->policy, input);
     WorkUnitPtr workUnit = new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, initialStates, T("Training Problems"), policy, numEstimationsPerBandit, verbose);
     ScalarVariableStatisticsPtr stats = context.run(workUnit, false).getObjectAndCast<ScalarVariableStatistics>();
+    //context.informationCallback(input.toShortString() + T(" -> ") + stats->toShortString());
     return stats->getMean();
     //return stats->getMaximum();
   }
@@ -1184,6 +1200,9 @@ public:
 
     //policies.push_back(new UCB2DiscreteBanditPolicy(0.001));
     policies.push_back(new UCB1TunedDiscreteBanditPolicy());
+    policies.push_back(new WeightedUCBBanditPolicy(0.0));
+    policies.push_back(new UltimateParameterizedBanditPolicy(new VariableGPExpression(Variable(2, ultimatePolicyVariablesEnumeration))));
+
     //policies.push_back(new UCBvDiscreteBanditPolicy());
     //policies.push_back(new UCB1NormalDiscreteBanditPolicy());
     //policies.push_back(new EpsilonGreedyDiscreteBanditPolicy(0.05, 0.1));
@@ -1193,11 +1212,15 @@ public:
     {
       //policies[i]->saveToFile(context, context.getFile(T("Policies/") + policies[i]->toString() + T(".policy")));
       workUnit->setWorkUnit(i * 2, makeEvaluationWorkUnit(testingStates, T("Testing Problems"), policies[i], true));
-      workUnit->setWorkUnit(i * 2 + 1, makeEvaluationWorkUnit(trainingStates, T("Training Problems"), policies[i], true));
+      workUnit->setWorkUnit(i * 2 + 1, makeEvaluationWorkUnit(trainingStates, T("Training Problems"), policies[i]->cloneAndCast<DiscreteBanditPolicy>(), true));
     }
     workUnit->setProgressionUnit(T("Policies"));
     workUnit->setPushChildrenIntoStackFlag(true);
     context.run(workUnit);
+
+    ultimatePolicySearch(context, trainingStates, testingStates);
+    return true;
+
 
     std::vector<std::pair<DiscreteBanditPolicyPtr, String> > policiesToOptimize;
     policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(2, false), T("powerFunction2-dense")));
@@ -1328,6 +1351,115 @@ protected:
     Variable bestParameters = optimizerState->getBestVariable();
     context.resultCallback(T("optimizedPolicy"), Parameterized::cloneWithNewParameters(policy, bestParameters));
     return bestParameters;
+  }
+
+  bool ultimatePolicySearch(ExecutionContext& context, const std::vector<DiscreteBanditStatePtr>& trainingStates, const std::vector<DiscreteBanditStatePtr>& testingStates)
+  {
+    FunctionPtr objective = new EvaluateOptimizedDiscreteBanditPolicyParameters(
+      new UltimateParameterizedBanditPolicy(), numBandits, maxTimeStep, trainingStates);
+    FunctionPtr validation = new EvaluateOptimizedDiscreteBanditPolicyParameters(
+      new UltimateParameterizedBanditPolicy(), numBandits, maxTimeStep, testingStates);
+    if (!objective->initialize(context, gpExpressionClass) ||
+        !validation->initialize(context, gpExpressionClass))
+      return false;
+
+    DecisionProblemStatePtr state = new GPExpressionBuilderState(T("toto"), ultimatePolicyVariablesEnumeration, objective);
+
+    size_t maxDepth = 4;
+
+    std::vector<std::pair<GPExpressionPtr, double> > bestExpressionsPerDepth(maxDepth, std::make_pair(GPExpressionPtr(), DBL_MAX));
+    recursiveExhaustiveSearch(context, state, validation, 0, bestExpressionsPerDepth);
+
+    for (size_t i = 0; i < bestExpressionsPerDepth.size(); ++i)
+      context.informationCallback(T("Best at depth ") + String((int)i + 1) + T(" ") + bestExpressionsPerDepth[i].first->toShortString()
+        + T(" [") + String(bestExpressionsPerDepth[i].second) + T("]"));
+    return true;
+    //return breadthFirstSearch(context, ultimatePolicyVariablesEnumeration, objective, validation);
+  }
+
+
+  void recursiveExhaustiveSearch(ExecutionContext& context, GPExpressionBuilderStatePtr state, const FunctionPtr& validation,
+                                 size_t depth, std::vector<std::pair<GPExpressionPtr, double> >& bestExpressionsPerDepth) // bestExpressionsPerDepth determines maxDepth
+  {
+    if (depth)
+    {
+      double score = state->getScore();
+      jassert((depth - 1) < bestExpressionsPerDepth.size());
+      std::pair<GPExpressionPtr, double>& best = bestExpressionsPerDepth[depth - 1];
+      if (!best.first || score < best.second)
+      {
+        best = std::make_pair(state->getExpression(), state->getScore());
+        double validationScore = validation->compute(context, state->getExpression()).toDouble();
+        context.informationCallback(T("D = ") + String((int)depth) + T(" E = ") + best.first->toShortString() + T(" [") + String(best.second) + T(", ") + String(validationScore) + T("]"));
+      }
+    }
+
+    size_t maxDepth = bestExpressionsPerDepth.size();
+    if (depth < maxDepth)
+    {
+      ContainerPtr actions = state->getAvailableActions();
+      size_t n = actions->getNumElements();
+      for (size_t i = 0; i < n; ++i)
+      {
+        Variable action = actions->getElement(i);
+        double reward;
+        state->performTransition(context, action, reward);
+        recursiveExhaustiveSearch(context, state, validation, depth + 1, bestExpressionsPerDepth);
+        state->undoTransition(context, action);
+      }
+    }
+  } 
+
+
+  bool breadthFirstSearch(ExecutionContext& context, EnumerationPtr inputVariables, const FunctionPtr& objective, const FunctionPtr& validation)
+  {
+    size_t maxSearchNodes = 50;
+
+    DecisionProblemPtr problem = new GPExpressionBuilderProblem(inputVariables, objective);
+    DecisionProblemStatePtr state = new GPExpressionBuilderState(T("toto"), inputVariables, objective);
+
+    for (size_t depth = 0; depth < 10; ++depth)
+    {
+      context.enterScope(T("Depth ") + String((int)depth + 1));
+
+      SearchTreePtr searchTree = new SearchTree(problem, state, maxSearchNodes);
+      
+      PolicyPtr searchPolicy = bestFirstSearchPolicy(new MinDepthSearchHeuristic());
+
+      searchTree->doSearchEpisode(context, searchPolicy, maxSearchNodes);
+
+      context.resultCallback(T("bestReturn"), searchTree->getBestReturn());
+      bool isFinished = (searchTree->getBestReturn() <= 0.0);
+      if (!isFinished)
+      {
+        context.resultCallback(T("bestAction"), searchTree->getBestAction());
+        context.resultCallback(T("bestTrajectory"), searchTree->getBestNodeTrajectory());
+
+        double transitionReward;
+        state->performTransition(context, searchTree->getBestAction(), transitionReward);
+        context.resultCallback(T("newState"), state->clone(context));
+        context.resultCallback(T("transitionReward"), transitionReward);
+
+        GPExpressionBuilderStatePtr expressionBuilderState = state.dynamicCast<GPExpressionBuilderState>();
+        jassert(expressionBuilderState);
+        GPExpressionPtr expression = expressionBuilderState->getExpression();
+        double trainScore = expressionBuilderState->getScore();
+        double validationScore = validation->compute(context, expression).toDouble();
+
+        context.resultCallback(T("expression"), expression);
+        context.resultCallback(T("score"), trainScore);
+        context.resultCallback(T("validationScore"), validationScore);
+        context.informationCallback(T("Best Formula: ") + expression->toShortString());
+
+        context.leaveScope(new Pair(trainScore, validationScore));
+      }
+      else
+      {
+        context.leaveScope(state);
+        break;
+      }
+    }
+    return true;
   }
 };
 

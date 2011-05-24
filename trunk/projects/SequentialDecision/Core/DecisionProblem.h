@@ -26,6 +26,8 @@ public:
   virtual TypePtr getActionType() const = 0;
   virtual ContainerPtr getAvailableActions() const = 0;
   virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward) = 0;
+  virtual bool undoTransition(ExecutionContext& context, const Variable& action)
+    {return false;}
 
   virtual bool isFinalState() const
     {return !getAvailableActions();}
