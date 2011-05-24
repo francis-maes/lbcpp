@@ -18,18 +18,22 @@ namespace lbcpp
 class RosettaProtein : public Object
 {
 public:
-  RosettaProtein(const core::pose::PoseOP& pose)
-    : energy(0), score(0), normalizedScore(0)
+  RosettaProtein(const core::pose::PoseOP& pose, size_t computeResidues, size_t computeEnergy, size_t computeHistogram, size_t computeDistances)
+    : energy(0), score(0), normalizedScore(0), shortDistance(0), longDistance(0), computeResidues(computeResidues),
+      computeEnergy(computeEnergy), computeHistogram(computeHistogram), computeDistances(computeDistances), updated(false)
   {
 # ifdef LBCPP_PROTEIN_ROSETTA
-    pose = pose;
+    this->pose = pose;
     numResidues = (size_t)pose->n_residue();
     update();
 # else
     jassert(false);
 # endif // LBCPP_PROTEIN_ROSETTA
   }
-  RosettaProtein() : numResidues(0), energy(0), score(0), normalizedScore(0) {}
+
+  RosettaProtein()
+    : numResidues(0), energy(0), score(0), normalizedScore(0), shortDistance(0), longDistance(0),
+      computeResidues(1), computeEnergy(1), computeHistogram(1), computeDistances(1), updated(false) {}
 
   void getPose(core::pose::PoseOP& returnPose)
   {
@@ -38,6 +42,16 @@ public:
 #else
     jassert(false);
 # endif // LBCPP_PROTEIN_ROSETTA
+  }
+
+  void setPose(const core::pose::PoseOP& pose)
+  {
+#ifdef LBCPP_PROTEIN_ROSETTA
+    this->pose = pose;
+#else
+    jassert(false);
+#endif
+    updated = false;
   }
 
   DenseDoubleVectorPtr getHistogram()
@@ -54,30 +68,46 @@ public:
 
   void update()
   {
+    if (updated)
+      return;
     numResidues = getNumResidues();
-#ifdef LBCPP_PROTEIN_ROSETTA
-    score = getConformationScore(pose, fullAtomEnergy, &energy);
-#else
-    score = 0.0;
-#endif
-    normalizedScore = sigmoid(0.0005, score);
-    updateHistogram();
+    if (computeEnergy)
+    {
+# ifdef LBCPP_PROTEIN_ROSETTA
+      score = getConformationScore(pose, fullAtomEnergy, &energy);
+# else
+      score = 0.0;
+# endif
+      normalizedScore = sigmoid(0.0005, score);
+    }
+    if (computeHistogram)
+      updateHistogram();
+    if (computeDistances)
+      updateDistances();
+    updated = true;
   }
 
   void updateHistogram()
-  {// TODO
+  {
+# ifdef LBCPP_PROTEIN_ROSETTA
     histogram = new DenseDoubleVector(aminoAcidTypeEnumeration, doubleType);
-    histogram->setValue(0, 0.999);
-    histogram->setValue(1, 0.99);
-    histogram->setValue(2, 0.98);
-    std::cout << "size ddv : " << histogram->getNumValues() << std::endl;
-    std::cout << "h : " << histogram->toString() << std::endl;
-
+    double increment = 1.0 / numResidues;
     for (size_t i = 0; i < numResidues; i++)
     {
-      // String residueName = featuresEnumeration->getElement(i)->getVariable(1).toString();
+      char n = pose->residue(i+1).name1();
+      std::string name(&n, 1);
+      String resName(name.c_str());
+
+      for (size_t j = 0; j < aminoAcidTypeEnumeration->getNumElements(); j++)
+        if (!resName.compare(aminoAcidTypeEnumeration->getElement(j)->getVariable(1).toString()))
+        {
+          histogram->incrementValue(j, increment);
+          break;
+        }
     }
-    std::cout << "h apres : " << histogram->toString() << std::endl;
+# else
+    jassert(false);
+# endif // LBCPP_PROTEIN_ROSETTA
   }
 
   void energies(double* energy, double* score, double* normalizedScore = NULL)
@@ -89,17 +119,61 @@ public:
     if (normalizedScore != NULL)
       *normalizedScore = this->normalizedScore;
   }
+
+  void updateDistances()
+  {
+# ifdef LBCPP_PROTEIN_ROSETTA
+    SymmetricMatrixPtr distances = createCalphaMatrixDistance(pose);
+
+    int minDist = juce::jmin(20, (int)(numResidues * 0.5));
+
+    double maxShortDist = 5.4 * minDist / 3.6;
+    double maxLongDist = 5.4 * numResidues / 3.6;
+
+    double tempShortDist = 0;
+    double tempLongDist = 0;
+    size_t countShort = 0;
+    size_t countLong = 0;
+    for (size_t i = 0; i < distances->getNumRows(); i++)
+      for (size_t j = 0; j < distances->getNumColumns(); j++)
+        if (std::abs((int)i - (int)j) < minDist)
+        {
+          tempShortDist += distances->getElement(i, j).getDouble();
+          countShort++;
+        }
+        else
+        {
+          tempLongDist += distances->getElement(i, j).getDouble();
+          countLong++;
+        }
+    shortDistance = tempShortDist / (double)countShort;
+    shortDistance /= maxShortDist;
+    longDistance = tempLongDist / (double)countLong;
+    longDistance /= maxLongDist;
+# else
+    jassert(false);
+# endif
+  }
+
 protected:
   friend class RosettaProteinClass;
-
-#ifdef LBCPP_PROTEIN_ROSETTA
+  
+# ifdef LBCPP_PROTEIN_ROSETTA
   core::pose::PoseOP pose;
-#endif // LBCPP_PROTEIN_ROSETTA
+# endif // LBCPP_PROTEIN_ROSETTA
+
   size_t numResidues;
   double energy;
   double score;
   double normalizedScore;
   DenseDoubleVectorPtr histogram;
+  double shortDistance;
+  double longDistance;
+  size_t computeResidues;
+  size_t computeEnergy;
+  size_t computeHistogram;
+  size_t computeDistances;
+  bool updated;
 };
 
 extern ClassPtr rosettaProteinClass;
@@ -119,38 +193,124 @@ public:
 
   virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
   {
-    DenseDoubleVectorPtr histogram = (inputs[0].getObjectAndCast<RosettaProtein>())->getHistogram();
-    std::cout << "histo values : " << histogram->toString() << std::endl;
-    // TODO
-    //    for (size_t i = 0; i < histogram->getNumValues(); i++)
-    //      callback.sense(i, histogram->getValue(i));
-    callback.sense(0, histogram, 1);
+    DenseDoubleVectorPtr histogram =
+        (inputs[0].getObjectAndCast<RosettaProtein> ())->getHistogram();
+    for (size_t i = 0; i < histogram->getNumValues(); i++)
+      callback.sense(i, histogram->getValue(i));
   }
+
+protected:
+  friend class RosettaProteinResidueHistogramFeatureGeneratorClass;
 };
 
 class RosettaProteinFeatures : public CompositeFunction
 {
 public:
+  RosettaProteinFeatures(size_t residues, size_t energy, size_t histogram, size_t distances)
+    : selectResiduesFeatures(residues), selectEnergyFeatures(energy),
+      selectHistogramFeatures(histogram), selectDistanceFeatures(distances) {}
+
+  RosettaProteinFeatures()
+    : selectResiduesFeatures(1), selectEnergyFeatures(1),
+      selectHistogramFeatures(1), selectDistanceFeatures(1) {}
+
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
+    // inputs and variables
     size_t input = builder.addInput(rosettaProteinClass);
     size_t numResidues = builder.addFunction(getVariableFunction(T("numResidues")), input);
-    size_t residueFeatures = builder.addFunction(softDiscretizedLogNumberFeatureGenerator(1, std::log10(100.0), 10, true), numResidues);
-
     size_t energy = builder.addFunction(getVariableFunction(T("normalizedScore")), input);
-    size_t energyFeatures = builder.addFunction(defaultProbabilityFeatureGenerator(5), energy);
-
-    size_t temp = builder.addFunction(concatenateFeatureGenerator(), residueFeatures, energyFeatures);
-
     size_t histogram = builder.addFunction(getVariableFunction(T("histogram")), input);
-    size_t histogramFeatures = builder.addFunction(new RosettaProteinResidueHistogramFeatureGenerator(), input);
+    size_t shortDistance = builder.addFunction(getVariableFunction(T("shortDistance")), input);
+    size_t longDistance = builder.addFunction(getVariableFunction(T("longDistance")), input);
 
-    builder.addFunction(concatenateFeatureGenerator(), temp, histogramFeatures);
+    // select features
+    builder.startSelection();
+    size_t residueFeatures;
+    size_t energyFeatures;
+    size_t histogramFeatures;
+    size_t shortDistancesFeatures;
+    size_t longDistancesFeatures;
+    if (selectResiduesFeatures)
+      residueFeatures = builder.addFunction(softDiscretizedLogNumberFeatureGenerator(1, std::log10(100.0), 10, true), numResidues);
+    if (selectEnergyFeatures)
+      energyFeatures = builder.addFunction(defaultProbabilityFeatureGenerator(10), energy);
+    if (selectHistogramFeatures)
+      histogramFeatures = builder.addFunction(new RosettaProteinResidueHistogramFeatureGenerator(), input);
+    if (selectDistanceFeatures)
+    {
+      shortDistancesFeatures = builder.addFunction(defaultProbabilityFeatureGenerator(10), shortDistance);
+      longDistancesFeatures = builder.addFunction(defaultProbabilityFeatureGenerator(10), longDistance);
+    }
+
+    // end selection
+    builder.finishSelectionWithFunction(concatenateFeatureGenerator());
   }
 
 protected:
   friend class RosettaProteinFeaturesClass;
+
+  size_t selectResiduesFeatures;
+  size_t selectEnergyFeatures;
+  size_t selectHistogramFeatures;
+  size_t selectDistanceFeatures;
 };
+
+typedef ReferenceCountedObjectPtr<RosettaProteinFeatures> RosettaProteinFeaturesPtr;
+extern CompositeFunctionPtr rosettaProteinFeatures(size_t residues, size_t energy, size_t histogram, size_t distances);
+
+class RosettaWorker : public Object
+{
+public:
+  RosettaWorker(core::pose::PoseOP& pose, size_t residues, size_t energy, size_t histogram, size_t distances)
+  {
+# ifdef LBCPP_PROTEIN_ROSETTA
+    this->protein = new RosettaProtein(pose, residues, energy, histogram, distances);
+    this->features = rosettaProteinFeatures(residues, energy, histogram, distances);
+# else
+    jassert(false);
+# endif
+  }
+  RosettaWorker() {}
+
+  void getPose(core::pose::PoseOP& returnPose)
+  {
+# ifdef LBCPP_PROTEIN_ROSETTA
+    protein->getPose(returnPose);
+# else
+    jassert(false);
+# endif
+  }
+
+  void setPose(const core::pose::PoseOP& pose)
+  {
+# ifdef LBCPP_PROTEIN_ROSETTA
+    protein->setPose(pose);
+# else
+    jassert(false);
+# endif
+  }
+
+  size_t getNumResidues()
+    {return protein->getNumResidues();}
+
+  void update()
+    {protein->update();}
+
+  Variable getFeatures(ExecutionContext& context)
+  {
+    protein->update();
+    return features->compute(context, protein);
+  }
+
+protected:
+  friend class RosettaWorkerClass;
+
+  RosettaProteinPtr protein;
+  RosettaProteinFeaturesPtr features;
+};
+
+typedef ReferenceCountedObjectPtr<RosettaWorker> RosettaWorkerPtr;
 
 }; /* namespace lbcpp */
 

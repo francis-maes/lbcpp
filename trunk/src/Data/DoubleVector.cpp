@@ -767,7 +767,7 @@ Variable CompositeDoubleVector::getElement(size_t index) const
     return missingElement();
 
   int i = 1;
-  while (i < (int)vectors.size() && vectors[i].first < index)
+  while (i < (int)vectors.size() && vectors[i].first <= index)
     ++i;
   --i;
   jassert(i >= 0 && i < (int)vectors.size());
