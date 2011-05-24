@@ -537,7 +537,7 @@ public:
     const size_t n = cysteinIndices.size();
     VectorPtr res = vector(positiveIntegerType, n);
     for (size_t i = 0; i < n; ++i)
-      res->setElement(i, Variable(abs(cysteinIndices[i] - position), positiveIntegerType));
+      res->setElement(i, Variable(abs((int)cysteinIndices[i] - (int)position), positiveIntegerType));
 
     return res;
   }

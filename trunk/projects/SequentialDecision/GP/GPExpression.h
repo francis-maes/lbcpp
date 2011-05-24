@@ -151,7 +151,7 @@ public:
     //case gpSin: return sin(e);
     //case gpCos: return cos(e);
     //case gpExp: return exp(e);
-    case gpLog: return e <= 0.0 ? 0.0 : log(e);
+    case gpLog: return e <= 0.0 ? -DBL_MAX : log(e);
     case gpSquareRoot: return sqrt(e);
     //case gpSquare: return e * e;
     case gpInverse: return e != 0.0 ? 1.0 / e : 0.0;

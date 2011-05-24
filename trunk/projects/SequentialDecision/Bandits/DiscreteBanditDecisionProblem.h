@@ -23,8 +23,7 @@ typedef ReferenceCountedObjectPtr<DiscreteBanditState> DiscreteBanditStatePtr;
 class DiscreteBanditState : public DecisionProblemState
 {
 public:
-  DiscreteBanditState(const std::vector<SamplerPtr>& samplers, juce::uint32 seedValue)
-    : random(new RandomGenerator(seedValue)), samplers(samplers)
+  DiscreteBanditState(const std::vector<SamplerPtr>& samplers) : samplers(samplers)
   {
     size_t n = samplers.size();
     availableActions = vector(positiveIntegerType, n);
@@ -39,12 +38,6 @@ public:
   virtual ContainerPtr getAvailableActions() const
     {return availableActions;}
 
-  void setRandomGenerator(const RandomGeneratorPtr& random)
-    {this->random = random;}
-
-  void setSeed(juce::uint32 seedValue)
-    {random->setSeed(seedValue);}
-
   double getExpectedReward(size_t banditNumber) const
     {return samplers[banditNumber]->computeExpectation().toDouble();}
 
@@ -52,7 +45,7 @@ public:
   {
     size_t banditNumber = (size_t)action.getInteger();
     jassert(banditNumber < samplers.size());
-    reward = samplers[banditNumber]->sample(context, random).toDouble();
+    reward = samplers[banditNumber]->sample(context, context.getRandomGenerator()).toDouble();
   }
 
   virtual ObjectPtr clone(ExecutionContext& context) const
@@ -67,7 +60,6 @@ public:
     const DiscreteBanditStatePtr& target = t.staticCast<DiscreteBanditState>();
     target->availableActions = availableActions;
     target->samplers = samplers;
-    target->random = random;//->cloneAndCast<RandomGenerator>(context);
     target->name = name;
   }
 
@@ -76,7 +68,6 @@ public:
 protected:
   friend class DiscreteBanditStateClass;
 
-  RandomGeneratorPtr random;
   std::vector<SamplerPtr> samplers;
   ContainerPtr availableActions;
 };
@@ -93,7 +84,7 @@ public:
     std::vector<SamplerPtr> samplers(numBandits);
     for (size_t i = 0; i < samplers.size(); ++i)
       samplers[i] = this->samplers[0]->sample(context, random, inputs).getObjectAndCast<Sampler>();
-    return new DiscreteBanditState(samplers, random->sampleUint32());
+    return new DiscreteBanditState(samplers);
   }
 
 protected:

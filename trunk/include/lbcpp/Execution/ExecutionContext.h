@@ -14,6 +14,9 @@
 namespace lbcpp
 {
 
+class RandomGenerator;
+typedef ReferenceCountedObjectPtr<RandomGenerator> RandomGeneratorPtr;
+
 class ExecutionContext : public CompositeExecutionCallback
 {
 public:
@@ -70,6 +73,12 @@ public:
   void setProjectDirectory(const File& projectDirectory)
     {this->projectDirectory = projectDirectory;}
 
+  /*
+  ** Random generator
+  */
+  const RandomGeneratorPtr& getRandomGenerator() const
+    {return random;}
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -77,6 +86,7 @@ protected:
 
   ExecutionStackPtr stack;
   File projectDirectory;
+  RandomGeneratorPtr random;
 };
 
 extern ExecutionContext& defaultExecutionContext();

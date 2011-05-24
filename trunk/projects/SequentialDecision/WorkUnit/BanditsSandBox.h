@@ -58,20 +58,17 @@ public:
     ScalarVariableStatisticsPtr actualRegretStatistics = new ScalarVariableStatistics(T("actualRegret")); 
 
     // main calculation loop
-    RandomGeneratorPtr random = new RandomGenerator();
-//        static int globalSeed = 1664;
-  //      random->setSeed((juce::uint32)globalSeed);
-    //    juce::atomicIncrement(globalSeed);
+    context.getRandomGenerator()->setSeed(16645186); // make the function deterministic
 
     for (size_t i = 0; i < initialStates.size(); ++i)
     {
-      DiscreteBanditStatePtr initialState = initialStates[i];
+      DiscreteBanditStatePtr state = initialStates[i];
       std::vector<double> expectedRewards(numBandits);
       double bestReward = -DBL_MAX;
       size_t optimalBandit = 0;
       for (size_t j = 0; j < numBandits; ++j)
       {
-        double er = initialState->getExpectedReward(j);
+        double er = state->getExpectedReward(j);
         expectedRewards[j] = er;
         if (er > bestReward)
           bestReward = er, optimalBandit = j;
@@ -79,9 +76,6 @@ public:
 
       for (size_t estimation = 0; estimation < numEstimationsPerBandit; ++estimation)
       {
-        DiscreteBanditStatePtr state = initialState->cloneAndCast<DiscreteBanditState>();
-        state->setRandomGenerator(random);
-        
         policy->initialize(numBandits);
 
         double sumOfRewards = 0.0;
@@ -92,7 +86,7 @@ public:
           size_t numTimeSteps = timeSteps[j] - (j > 0 ? timeSteps[j - 1] : 0);
           for (size_t k = 0; k < numTimeSteps; ++k, ++timeStep)
           {
-            size_t action = performBanditStep(state, policy);
+            size_t action = performBanditStep(context, state, policy);
             sumOfRewards += expectedRewards[action];
             if (action == optimalBandit)
               ++numberOfTimesOptimalIsPlayed;
@@ -147,11 +141,11 @@ protected:
   size_t numEstimationsPerBandit;
   bool verbose;
 
-  static size_t performBanditStep(DiscreteBanditStatePtr state, DiscreteBanditPolicyPtr policy)
+  static size_t performBanditStep(ExecutionContext& context, DiscreteBanditStatePtr state, DiscreteBanditPolicyPtr policy)
   {
-    size_t action = policy->selectNextBandit();
+    size_t action = policy->selectNextBandit(context);
     double reward;
-    state->performTransition(defaultExecutionContext(), action, reward);
+    state->performTransition(context, action, reward);
     policy->updatePolicy(action, reward);
     return action;
   }
@@ -438,7 +432,7 @@ public:
     ** Compute a bunch of baseline policies
     */
     std::vector<DiscreteBanditPolicyPtr> policies;
-    policies.push_back(ucb1DiscreteBanditPolicy(0.0));
+    policies.push_back(greedyDiscreteBanditPolicy());
     policies.push_back(ucb1DiscreteBanditPolicy());
     policies.push_back(ucb1TunedDiscreteBanditPolicy());
     policies.push_back(ucb1NormalDiscreteBanditPolicy());
