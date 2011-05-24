@@ -8,6 +8,11 @@
   <import name="ProteinRosettaSampler"/>
   
   <class name="RosettaProtein" base="Object">
+    <variable type="PositiveInteger" name="numResidues"/>
+    <variable type="Double" name="energy"/>
+    <variable type="Double" name="score"/>
+    <variable type="Double" name="normalizedScore"/>
+    <variable type="DoubleVector[AminoAcidType,Double]" name="histogram"/>
   </class>
   
   <!-- Movers -->

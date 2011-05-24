@@ -217,7 +217,7 @@ double lbcpp::getConformationScore(const core::pose::PoseOP& pose, double(*score
 #endif // LBCPP_PROTEIN_ROSETTA
 }
 
-double sigmoid(double k, double x)
+double lbcpp::sigmoid(double k, double x)
 {
   return 1 / (1 + std::exp(-k * x));
 }
@@ -225,13 +225,13 @@ double sigmoid(double k, double x)
 double lbcpp::getNormalizedEnergy(const core::pose::PoseOP& pose, double(*scoreFunction)(
     const core::pose::PoseOP&))
 {
-  return sigmoid(0.0001, getTotalEnergy(pose, scoreFunction));
+  return sigmoid(0.0005, getTotalEnergy(pose, scoreFunction));
 }
 
 double lbcpp::getNormalizedScore(const core::pose::PoseOP& pose, double(*scoreFunction)(
     const core::pose::PoseOP&))
 {
-  return sigmoid(0.0001, getConformationScore(pose, scoreFunction));
+  return sigmoid(0.0005, getConformationScore(pose, scoreFunction));
 }
 
 void lbcpp::rosettaInitialization(ExecutionContext& context)
