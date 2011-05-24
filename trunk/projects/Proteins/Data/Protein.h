@@ -71,7 +71,7 @@ inline void variableToNative(ExecutionContext& context, std::pair<ProteinTarget,
   }
 }
 
-template<class TT>
+template<class TT> // FIXME: is it still necessary ? (julien)
 inline void variableToNative(ExecutionContext& context, std::vector< std::pair<ProteinTarget, TT> >& dest, const Variable& source)
 {
   jassert(source.isObject());

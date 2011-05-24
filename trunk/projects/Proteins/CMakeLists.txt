@@ -110,8 +110,6 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/ProteinInferenceEvaluator.cpp
   WorkUnit/ProteinInferenceEvaluatorWorkUnit.cpp
   WorkUnit/ProteinInferenceEvaluatorWorkUnit.h
-  WorkUnit/SnowBox.cpp
-  WorkUnit/SnowBox.h
   WorkUnit/ProteinLearner.h
   WorkUnit/ProteinLearner.cpp
   WorkUnit/BricoBox.h

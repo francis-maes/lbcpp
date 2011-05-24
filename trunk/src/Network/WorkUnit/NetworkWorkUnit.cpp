@@ -85,10 +85,7 @@ void ManagerWorkUnit::serverCommunication(ExecutionContext& context, const Manag
     }
 
     if (notification.dynamicCast<CloseCommunicationNotification>())
-    {
-      context.informationCallback(T("Disconnected"));
       client->stopClient();
-    }
 
     notification->notifyNetwork(interface, client);
   }
