@@ -10,9 +10,10 @@
 
   <template name="NumericalProteinPrimaryFeatures" base="ProteinPrimaryPerception">
     <parameter name="featuresEnumeration"/>
+    <parameter name="globalFeaturesEnumeration"/>
     <variable type="Vector[DoubleVector[featuresEnumeration, Double]]" name="primaryResidueFeatures"/>
     <variable type="Container[DenseDoubleVector[AddMissingToEnumeration[featuresEnumeration], Double]]" name="accumulator"/>
-    <variable type="DenseDoubleVector[featuresEnumeration, Double]" name="globalFeatures"/>
+    <variable type="DenseDoubleVector[globalFeaturesEnumeration, Double]" name="globalFeatures"/>
   </template>
   
   <class name="ProteinLengthFunction" base="SimpleUnaryFunction"/>
@@ -26,6 +27,8 @@
   <class name="CreateCysteinBondingStateVectorFunction" base="Function">
     <variable type="Function" name="elementGeneratorFunction"/>
   </class>
+  <class name="CreateCysteinSeparationProfil" base="Function"/>
+  <class name="BondedCysteinRatio" base="SimpleUnaryFunction"/>
 
   <class name="ProteinPredictor" base="CompositeFunction">
     <variable type="ProteinPredictorParameters" name="parameters"/>
@@ -59,7 +62,7 @@
     
     <variable type="PositiveInteger" name="drDiscretization"/>
 
-    <variable type="Boolean" name="residueGlobalFeatures" description="Incorporate global mean features"/>
+    <variable type="Boolean" name="residuePairGlobalFeatures" description="Incorporate global mean features"/>
     <variable type="PositiveInteger" name="residueWindowSize" description="The size of the residues window"/>
     <variable type="PositiveInteger" name="residueLocalMeanSize" description="The size of the first residue local mean"/>
     <variable type="PositiveInteger" name="residueMediumMeanSize" description="The size of the second residue local mean"/>

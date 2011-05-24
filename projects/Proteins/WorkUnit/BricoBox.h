@@ -394,4 +394,62 @@ public:
   }
 };
 
+class GenerateFoldsWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    const String prefix(T("fold_"));
+
+    if (sourceDirectory == File::nonexistent)
+      sourceDirectory = File::getCurrentWorkingDirectory();
+    
+    if (destinationDirectory == File::nonexistent)
+      destinationDirectory = File::getCurrentWorkingDirectory();
+    
+    /* create train and test directories */
+    for (size_t i = 0; i < numFolds; ++i)
+    {
+      const String dirName(prefix + String((int)i));
+      destinationDirectory.getChildFile(dirName).createDirectory();
+      destinationDirectory.getChildFile(dirName + T("/test")).createDirectory();
+      destinationDirectory.getChildFile(dirName + T("/train")).createDirectory();
+      destinationDirectory.getChildFile(dirName + T("/validation")).createDirectory();
+    }
+
+    /* List source folder */
+    juce::OwnedArray< File > results;
+    sourceDirectory.findChildFiles(results, File::findFiles, false, T("*.xml"));
+    const size_t n = results.size();
+
+    /* Build fold */
+    size_t currentFold = 0;
+    for (size_t i = 0; i < n; ++i)
+    {
+      const File* toCopy = results[i];
+      // testing fold
+      toCopy->copyFileTo(destinationDirectory.getChildFile(prefix + String((int)currentFold) + T("/test/") + toCopy->getFileName()));
+      // training fold
+      for (size_t j = 0; j < n; ++j)
+      {
+        if (j == currentFold)
+          continue;
+        toCopy->copyFileTo(destinationDirectory.getChildFile(prefix + String((int)j) + T("/train/") + toCopy->getFileName()));
+      }
+
+      ++currentFold;
+      currentFold %= numFolds;
+    }
+    
+    return true;
+  }
+
+protected:
+  friend class GenerateFoldsWorkUnitClass;
+
+  File sourceDirectory;
+  File destinationDirectory;
+  size_t numFolds;
+};
+
 };
