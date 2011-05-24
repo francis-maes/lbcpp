@@ -29,34 +29,14 @@ extern ClassPtr banditStatisticsClass;
 class BanditStatistics : public Object
 {
 public:
-  BanditStatistics(size_t numMoments)
+  BanditStatistics()
     : Object(banditStatisticsClass), statistics(new ScalarVariableStatistics(T("reward")))
   {
-    //if (numMoments > 2)
-    //  moments.resize(numMoments - 2);
   }
   BanditStatistics() {}
 
   void update(double reward)
-  {
-    statistics->push(reward);
-   /* if (moments.size())
-    {
-      if (reward == 0)
-      {
-        for (size_t i = 0; i < moments.size(); ++i)
-          moments[i].push(0.0);
-      }
-      else if (reward == 1)
-      {
-        for (size_t i = 0; i < moments.size(); ++i)
-          moments[i].push(1.0);
-      }
-      else
-        for (size_t i = 0; i < moments.size(); ++i)
-          moments[i].push(pow(reward, (double)(i + 2)));
-    }*/
-  }
+    {statistics->push(reward);}
 
   size_t getPlayedCount() const
     {return (size_t)statistics->getCount();}
@@ -84,29 +64,11 @@ public:
 
   double getMaxReward() const
     {return statistics->getMaximum();}
-/*
-  size_t getNumMoments() const
-    {return moments.size() + 2;}
-
-  // 0 -> 1
-  // 1 -> mean
-  // i -> E[X^i]^{1/i}
-  double getMoment(size_t index) const
-  {
-    jassert(index < getNumMoments());
-    if (index == 0)
-      return 1.0;
-    else if (index == 1)
-      return statistics->getMean();
-    else
-      return pow(moments[index - 2].getMean(), 1.0 / (double)index);
-  }*/
 
 private:
   friend class BanditStatisticsClass;
 
   ScalarVariableStatisticsPtr statistics;
-  //std::vector<ScalarVariableMean> moments;
 };
 
 typedef ReferenceCountedObjectPtr<BanditStatistics> BanditStatisticsPtr;
@@ -688,10 +650,10 @@ class UltimateParameterizedBanditPolicy : public IndexBasedDiscreteBanditPolicy,
 {
 public:
   UltimateParameterizedBanditPolicy(GPExpressionPtr indexFunction)
-    : random(new RandomGenerator()), indexFunction(indexFunction) {}
+    : indexFunction(indexFunction) {}
 
-  UltimateParameterizedBanditPolicy() : random(new RandomGenerator())
-    {indexFunction = new BinaryGPExpression(new VariableGPExpression(2), gpSubtraction, new VariableGPExpression(0));}
+  UltimateParameterizedBanditPolicy()
+    : indexFunction(new BinaryGPExpression(new VariableGPExpression(2), gpSubtraction, new VariableGPExpression(0))) {}
 
   virtual SamplerPtr createParametersSampler() const
     {return new GPExpressionSampler(maximumEntropySampler(gpExprLabelsEnumeration), ultimatePolicyVariablesEnumeration, 1);}
@@ -708,7 +670,7 @@ public:
   virtual void initialize(size_t numBandits)
   {
     IndexBasedDiscreteBanditPolicy::initialize(numBandits);
-    random->setSeed(16645186);
+    random = new RandomGenerator();
   }
 
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
@@ -719,7 +681,7 @@ public:
 //    double lnn = log((double)timeStep);
 //    double varianceUB = bandit->getRewardVariance() + sqrt(2 * lnn / Tj);
 
-    std::vector<double> inputs(4);
+    double inputs[4];
     inputs[0] = timeStep;
     inputs[1] = Tj;
     inputs[2] = bandit->getRewardMean();
@@ -766,12 +728,6 @@ public:
     //return selectMaximumIndexBandit(timeStep, banditStatistics);
   }
 
-  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
-  {
-    IndexBasedDiscreteBanditPolicy::clone(context, target);
-    target.staticCast<UltimateParameterizedBanditPolicy>()->random = random->cloneAndCast<RandomGenerator>();
-  }
-
 protected:
   friend class UltimateParameterizedBanditPolicyClass;
 
@@ -816,6 +772,11 @@ public:
     ScalarVariableStatisticsPtr actualRegretStatistics = new ScalarVariableStatistics(T("actualRegret")); 
 
     // main calculation loop
+    RandomGeneratorPtr random = new RandomGenerator();
+//        static int globalSeed = 1664;
+  //      random->setSeed((juce::uint32)globalSeed);
+    //    juce::atomicIncrement(globalSeed);
+
     for (size_t i = 0; i < initialStates.size(); ++i)
     {
       DiscreteBanditStatePtr initialState = initialStates[i];
@@ -833,11 +794,7 @@ public:
       for (size_t estimation = 0; estimation < numEstimationsPerBandit; ++estimation)
       {
         DiscreteBanditStatePtr state = initialState->cloneAndCast<DiscreteBanditState>();
-  
-//        static int globalSeed = 1664;
-  //      state->setSeed((juce::uint32)globalSeed);
-    //    juce::atomicIncrement(globalSeed);
-        state->setSeed(estimation * 1664);
+        state->setRandomGenerator(random);
         
         policy->initialize(numBandits);
 

@@ -33,6 +33,8 @@
 namespace lbcpp
 {
 
+extern ClassPtr randomGeneratorClass;
+
 /*!
 ** @class RandomGenerator
 ** @brief Pseudo-random number generator
@@ -50,8 +52,8 @@ public:
   **
   ** @param seedValue : seed for the random numbers generator.
   */
-  RandomGenerator(juce::uint32 seedValue = 16645186)
-    {setSeed(seedValue);}
+  RandomGenerator(juce::uint32 seedValue);
+  RandomGenerator();
 
 
   /** Seed setter.
@@ -302,14 +304,21 @@ public:
       res.insert(elements[order[i]]);
   }
 
+  virtual ObjectPtr clone(ExecutionContext& context) const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
   
+  static void initializeRandomGenerator();
+
 private:
   friend class RandomGeneratorClass;
+
+  RandomGenerator(void* dummy) {}
 
   enum {N = 624};
   juce::uint32 mt[N];
   int mti;
+
+  static juce::uint32 defaultSeed[N];
 
   /**
   ** Swaps @a a and @a b content.
@@ -320,8 +329,6 @@ private:
   inline void swap(size_t& a, size_t& b)
     {size_t tmp = a; a = b; b = tmp;}
 };
-
-extern ClassPtr randomGeneratorClass;
 
 }; /* namespace lbcpp */
 

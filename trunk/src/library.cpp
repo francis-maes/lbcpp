@@ -292,6 +292,7 @@ void lbcpp::initialize(const char* executableName)
   jassert(!applicationContext);
   applicationContext = new ApplicationContext();
   applicationContext->defaultExecutionContext = defaultConsoleExecutionContext(true);
+  RandomGenerator::initializeRandomGenerator();
   
   // types
   importLibrary(coreLibrary());
@@ -428,6 +429,8 @@ void lbcpp::initializeDynamicLibrary(lbcpp::ApplicationContext& applicationConte
 #ifdef JUCE_WIN32
   lbcpp::applicationContext = &applicationContext;
   ExecutionContext& context = defaultExecutionContext();
+
+  RandomGenerator::initializeRandomGenerator();
 
   coreLibraryCacheTypes(context);
   lbCppLibraryCacheTypes(context);

@@ -37,7 +37,7 @@ public:
     double res = 0.0;
     for (size_t i = 0; i < examples.size(); ++i)
     {
-      double prediction = expression->compute(examples[i].first);
+      double prediction = expression->compute(&examples[i].first[0]);
       res += fabs(prediction - examples[i].second);
     }
 

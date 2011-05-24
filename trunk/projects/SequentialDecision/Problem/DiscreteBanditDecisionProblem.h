@@ -24,16 +24,12 @@ class DiscreteBanditState : public DecisionProblemState
 {
 public:
   DiscreteBanditState(const std::vector<SamplerPtr>& samplers, juce::uint32 seedValue)
-    : randomGenerators(samplers.size()), samplers(samplers)
+    : random(new RandomGenerator(seedValue)), samplers(samplers)
   {
     size_t n = samplers.size();
     availableActions = vector(positiveIntegerType, n);
-    ++seedValue;
     for (size_t i = 0; i < n; ++i)
-    {
-      randomGenerators[i] = new RandomGenerator(seedValue * i);
       availableActions->setElement(i, i);
-    }
   }
   DiscreteBanditState() {}
 
@@ -43,12 +39,11 @@ public:
   virtual ContainerPtr getAvailableActions() const
     {return availableActions;}
 
+  void setRandomGenerator(const RandomGeneratorPtr& random)
+    {this->random = random;}
+
   void setSeed(juce::uint32 seedValue)
-  {
-    ++seedValue;
-    for (size_t i = 0; i < randomGenerators.size(); ++i)
-      randomGenerators[i] = new RandomGenerator(seedValue * i);
-  }
+    {random->setSeed(seedValue);}
 
   double getExpectedReward(size_t banditNumber) const
     {return samplers[banditNumber]->computeExpectation().toDouble();}
@@ -56,18 +51,24 @@ public:
   virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward)
   {
     size_t banditNumber = (size_t)action.getInteger();
-    jassert(banditNumber < randomGenerators.size());
-    reward = samplers[banditNumber]->sample(context, randomGenerators[banditNumber]).toDouble();
+    jassert(banditNumber < samplers.size());
+    reward = samplers[banditNumber]->sample(context, random).toDouble();
+  }
+
+  virtual ObjectPtr clone(ExecutionContext& context) const
+  {
+    ObjectPtr res = new DiscreteBanditState();
+    clone(context, res);
+    return res;
   }
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
   {
-    Object::clone(context, t);
     const DiscreteBanditStatePtr& target = t.staticCast<DiscreteBanditState>();
     target->availableActions = availableActions;
-    target->randomGenerators.resize(randomGenerators.size());
-    for (size_t i = 0; i < randomGenerators.size(); ++i)
-      target->randomGenerators[i] = randomGenerators[i]->cloneAndCast<RandomGenerator>(context);
+    target->samplers = samplers;
+    target->random = random;//->cloneAndCast<RandomGenerator>(context);
+    target->name = name;
   }
 
   lbcpp_UseDebuggingNewOperator
@@ -75,7 +76,7 @@ public:
 protected:
   friend class DiscreteBanditStateClass;
 
-  std::vector<RandomGeneratorPtr> randomGenerators;
+  RandomGeneratorPtr random;
   std::vector<SamplerPtr> samplers;
   ContainerPtr availableActions;
 };
@@ -118,95 +119,6 @@ protected:
 
   size_t numBandits;
 };
-
-/*
-** Bernouilli Bandits
-*
-class BernouilliDiscreteBanditState : public DiscreteBanditState
-{
-public:
-  BernouilliDiscreteBanditState(const std::vector<double>& probabilities, juce::uint32 seedValue)
-    : DiscreteBanditState(probabilities.size(), seedValue), probabilities(probabilities)
-  {
-    String name;
-    for (size_t i = 0; i < probabilities.size(); ++i)
-    {
-      if (name.isNotEmpty())
-        name += T(" ");
-      name += T("p") + String((int)i + 1) + T(" = ") + String(probabilities[i]);
-    }
-    setName(name);
-  }
-  BernouilliDiscreteBanditState() {}
-
-  virtual double sampleReward(size_t banditNumber, RandomGeneratorPtr random) const
-    {return random->sampleBool(probabilities[banditNumber]) ? 1.0 : 0.0;}
-
-  virtual double getExpectedReward(size_t banditNumber) const
-    {jassert(banditNumber < probabilities.size()); return probabilities[banditNumber];}
-
-  virtual size_t getOptimalBandit(double& bestReward, double& secondBestReward) const
-  {
-    size_t res = 0;
-    bestReward = -DBL_MAX;
-    for (size_t i = 0; i < probabilities.size(); ++i)
-    {
-      double p = probabilities[i];
-      if (p > bestReward)
-      {
-        bestReward = p;
-        res = i;
-      }
-    }
-
-    secondBestReward = -DBL_MAX;
-    for (size_t i = 0; i < probabilities.size(); ++i)
-      if (i != res)
-        secondBestReward = juce::jmax(secondBestReward, probabilities[i]);
-
-    jassert(secondBestReward < bestReward);
-    return res;
-  }
-
-protected:
-  friend class BernouilliDiscreteBanditStateClass;
-
-  std::vector<double> probabilities;
-};
-
-extern ClassPtr bernouilliDiscreteBanditStateClass;
-
-
-class BernouilliBanditsInitialStateSampler : public SimpleUnaryFunction
-{
-public:
-  BernouilliBanditsInitialStateSampler(size_t numBandits = 0)
-    : SimpleUnaryFunction(randomGeneratorClass, bernouilliDiscreteBanditStateClass), numBandits(numBandits) {}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-  {
-    const RandomGeneratorPtr& random = input.getObjectAndCast<RandomGenerator>();
-    std::vector<SamplerPtr> samplers(numBandit);
-    for (size_t i = 0; i < numBandits; ++i)
-      samplers[i] = bernouilliSampler(random->sampleDouble(1.0));
-    juce::uint32 seed = random->sampleUint32();
-    return new DiscreteBanditState(samplers, seed);   
-  }
-
-protected:
-  friend class BernouilliBanditsInitialStateSamplerClass;
-
-  size_t numBandits;
-};
-
-class BernouilliDiscreteBanditDecisionProblem : public DiscreteBanditDecisionProblem
-{
-public:
-  BernouilliDiscreteBanditDecisionProblem(size_t numBandits)
-    : DiscreteBanditDecisionProblem(new BernouilliBanditsInitialStateSampler(numBandits), numBandits) {}
-  BernouilliDiscreteBanditDecisionProblem() {}
-};*/
-
 
 }; /* namespace lbcpp */
 

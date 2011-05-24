@@ -66,10 +66,10 @@ private:
 public:
   virtual Variable run(ExecutionContext& context)
   {
-    rosettaInitialization(context, false);
-    RandomGeneratorPtr random = new RandomGenerator(0);
+    RandomGeneratorPtr random = new RandomGenerator();
 
 # ifdef LBCPP_PROTEIN_ROSETTA
+    rosettaInitialization(context, false);
 
     // -------------- rosetta protein features
     core::pose::PoseOP pose = new core::pose::Pose();
