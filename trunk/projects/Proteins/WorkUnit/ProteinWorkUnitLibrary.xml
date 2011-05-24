@@ -2,35 +2,6 @@
 
 <library name="ProteinWorkUnit" directory="WorkUnit">
 
-  <class name="ProteinTargetsArgument" base="Object">
-    <variable type="ObjectVector[GenericVector[VariablesEnumeration[Protein]]]" name="stages"/>
-    <variable type="String" name="description"/>
-  </class>
-
-  <class name="SnowBox" base="WorkUnit">
-    <variable type="File" name="learningDirectory" description="The path to the learning set directory" shortName="ls"/>
-    <variable type="File" name="testingDirectory" description="The path to the testing set directory" shortName="ts"/>
-    <variable type="File" name="validationDirectory" description="The path to the validation set directory" shortName="vs"/>
-    <variable type="File" name="output" description="The prefix path to the outputs" shortName="o"/>
-    <variable type="File" name="inputDirectory" description="Pre-learned protein directory" shortName="in"/>
-    <variable type="Integer" name="maxProteinsToLoad" description="Maximum number of learning proteins to load" shortName="max"/>
-    <variable type="Integer" name="numberOfFolds" description="The number of fold of the training set" shortName="n"/>
-    <variable type="Integer" name="currentFold" description="The current fold" shortName="c"/>
-    <variable type="Boolean" name="useCrossValidation" description="Use cross-validation protocol ? (see 'numberofFolds')" shortName="cv"/>
-    <variable type="Integer" name="partAsValidation" description="The part of learning proteins to use as validation proteins." shortName="vpart"/>
-    <variable type="String" name="baseLearner" description="The base learner. Available: 'OneAgainstAllLinearSVM', 'MultiClassLinearSVM', 'MultiClassLinearSVMMostViolated' and 'ExtraTree'" shortName="bl"/>
-    <variable type="Integer" name="maxIterations" description="The maximum number of iteration per learner" shortName="iter"/>
-    <variable type="Integer" name="numTrees" description="ExtraTree's parameter: Number of trees" shortName="n3"/>
-    <variable type="Integer" name="numAttributesPerSplit" description="ExtraTree's parameter: Number of sample attributes per split" shortName="k"/>
-    <variable type="Integer" name="numForSplitting" description="ExtraTree's parameter: Minimum size for splitting" shortName="nmin"/>
-    <variable type="ProteinTargetsArgument" name="target" description="The target. Format: '(Task1-Task2-...)NumPass1(Tasks ...)NumPass...'" shortName="t"/>
-    <variable type="Boolean" name="exportPerceptions" description="Export perceptions of protein's sets to CSV files" shortName="csv"/>
-    <variable type="Boolean" name="optimizeLearningParameter" description="Opti" shortName="optim"/>
-    <variable type="Boolean" name="saveIntermediatePredictions" description="Save intermediate predictions (usefull for debug)" shortName="debug"/>
-    <variable type="String" name="targetToOptimize"/>
-    <variable type="Integer" name="stageToOptimize"/>
-  </class>
-
   <class name="ProteinInferenceEvaluatorWorkUnit" base="WorkUnit">
     <variable type="File" name="inputDirectory" description="Input protein directory" shortName="in"/>
     <variable type="File" name="outputDirectory" description="Output protein directory" shortName="o"/>
@@ -123,5 +94,11 @@
   <class name="CheckManagerWorkUnit" base="WorkUnit"/>
 
   <class name="DebugWorkUnit" base="WorkUnit"/>
+  
+  <class name="GenerateFoldsWorkUnit" base="WorkUnit">
+    <variable type="File" name="sourceDirectory" shortName="i"/>
+    <variable type="File" name="destinationDirectory" shortName="o"/>
+    <variable type="PositiveInteger" name="numFolds" shortName="n"/>
+  </class>
 
 </library>

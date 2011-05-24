@@ -51,9 +51,31 @@ public:
       builder.addFunction(new NumCysteinsFunction(), protein);
       size_t primaryFeatures = builder.addFunction(createVectorFunction(lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, primaryResidueFeatures)), length, protein);
       size_t primaryFeaturesAcc = builder.addFunction(accumulateContainerFunction(), primaryFeatures);
-      builder.addFunction(accumulatorGlobalMeanFunction(), primaryFeaturesAcc, T("globalmean"));
+      builder.addFunction(lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, globalFeatures), protein, primaryFeaturesAcc, T("globalFeatures"));
 
     builder.finishSelectionWithFunction(new CreateProteinPerceptionFunction());
+  }
+
+  void globalFeatures(CompositeFunctionBuilder& builder) const
+  {
+    size_t protein = builder.addInput(proteinClass, T("protein"));
+    size_t primaryFeaturesAcc = builder.addInput(containerClass(doubleVectorClass()));
+
+    size_t length = builder.addFunction(new ProteinLengthFunction(), protein);
+    size_t numCysteins = builder.addFunction(new NumCysteinsFunction(), protein);
+
+    builder.startSelection();
+
+      if (featuresParameters->proteinLengthDiscretization)
+        builder.addFunction(defaultPositiveIntegerFeatureGenerator(featuresParameters->proteinLengthDiscretization, 3.0), length, T("proteinLength"));
+
+      if (featuresParameters->numCysteinsDiscretization)
+        builder.addFunction(defaultPositiveIntegerFeatureGenerator(featuresParameters->numCysteinsDiscretization, 1.3), numCysteins, T("numCysteins"));
+
+      if (featuresParameters->residueGlobalMeanFeatures)
+        builder.addFunction(accumulatorGlobalMeanFunction(), primaryFeaturesAcc, T("globalMean"));
+    
+    builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
 
   void primaryResidueFeatures(CompositeFunctionBuilder& builder) const
@@ -62,7 +84,7 @@ public:
     size_t position = builder.addInput(positiveIntegerType, T("position"));
     size_t protein = builder.addInput(proteinClass, T("protein"));
 
-    /* 1D - Precompute */
+    /* Precompute */
     size_t aminoAcid = builder.addFunction(getElementInVariableFunction(T("primaryStructure")), protein, position);
     size_t pssmRow = builder.addFunction(getElementInVariableFunction(T("positionSpecificScoringMatrix")), protein, position);
     size_t ss3 = builder.addFunction(getElementInVariableFunction(T("secondaryStructure")), protein, position);
@@ -71,8 +93,31 @@ public:
     size_t sa20 = builder.addFunction(getElementInVariableFunction(T("solventAccessibilityAt20p")), protein, position);
     size_t dr = builder.addFunction(getElementInVariableFunction(T("disorderRegions")), protein, position);
 
-    /* 2D - Precompute */
     size_t cysteinIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, position);
+    size_t cbs = builder.addFunction(getElementInVariableFunction(T("cysteinBondingStates")), protein, cysteinIndex);
+
+    /* feature generators */
+    builder.startSelection();
+
+      builder.addFunction(enumerationFeatureGenerator(), aminoAcid, T("aa"));
+      addEnumerationDistributionFeatureGenerator(builder, pssmRow, T("pssm"), featuresParameters->pssmDiscretization, featuresParameters->pssmEntropyDiscretization);
+      addEnumerationDistributionFeatureGenerator(builder, ss3, T("ss3"), featuresParameters->ss3Discretization, featuresParameters->ss3EntropyDiscretization);
+      addEnumerationDistributionFeatureGenerator(builder, ss8, T("ss8"), featuresParameters->ss8Discretization, featuresParameters->ss8EntropyDiscretization);
+      addEnumerationDistributionFeatureGenerator(builder, stal, T("stal"), featuresParameters->stalDiscretization, featuresParameters->stalEntropyDiscretization);
+      addBinaryDistributionFeatureGenerator(builder, sa20, T("sa20"), featuresParameters->sa20Discretization);
+      addBinaryDistributionFeatureGenerator(builder, dr, T("dr"), featuresParameters->drDiscretization);
+      addBinaryDistributionFeatureGenerator(builder, cbs, T("cbs"), featuresParameters->cbsDiscretization);
+
+    builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
+  }
+/*
+  void primaryPairResidueFeatures(CompositeFunctionBuilder& builder) const
+  {
+    size_t position = builder.addInput(positiveIntegerType, T("position"));
+    size_t protein = builder.addInput(proteinClass, T("protein"));
+
+    size_t cysteinIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, position);
+
     size_t dsb = builder.addFunction(getVariableFunction(T("disulfideBonds")), protein);
     size_t normalizedDsb = builder.addFunction(new NormalizeDisulfideBondFunction(), dsb);
 
@@ -91,8 +136,8 @@ public:
       cysteinEntropyRow = builder.addFunction(new ComputeCysteinEntropy(true), normalizedDsb, cysteinIndex);
       cysteinEntropyColumn = builder.addFunction(new ComputeCysteinEntropy(false), normalizedDsb, cysteinIndex);
     }
-    
-    size_t cbs = builder.addFunction(getVariableFunction(T("cysteinBondingStates")), protein);
+    size_t cbs = builder.addFunction(getElementInVariableFunction(T("cysteinBondingStates")), protein, cysteinIndex);
+
     size_t discretizedCbs = (size_t)-1;
     if (featuresParameters->cbsDiscretization)
       discretizedCbs = builder.addFunction(mapContainerFunction(defaultProbabilityFeatureGenerator(featuresParameters->cbsDiscretization)), cbs, T("cbs"));
@@ -100,16 +145,6 @@ public:
     // feature generators
     builder.startSelection();
 
-      /* 1D */
-      builder.addFunction(enumerationFeatureGenerator(), aminoAcid, T("aa"));
-      addEnumerationDistributionFeatureGenerator(builder, pssmRow, T("pssm"), featuresParameters->pssmDiscretization, featuresParameters->pssmEntropyDiscretization);
-      addEnumerationDistributionFeatureGenerator(builder, ss3, T("ss3"), featuresParameters->ss3Discretization, featuresParameters->ss3EntropyDiscretization);
-      addEnumerationDistributionFeatureGenerator(builder, ss8, T("ss8"), featuresParameters->ss8Discretization, featuresParameters->ss8EntropyDiscretization);
-      addEnumerationDistributionFeatureGenerator(builder, stal, T("stal"), featuresParameters->stalDiscretization, featuresParameters->stalEntropyDiscretization);
-      addBinaryDistributionFeatureGenerator(builder, sa20, T("sa20"), featuresParameters->sa20Discretization);
-      addBinaryDistributionFeatureGenerator(builder, dr, T("dr"), featuresParameters->drDiscretization);
-
-      /* 2D */
       if (discretizedDsb != (size_t)-1 && featuresParameters->dsbWindowRows && featuresParameters->dsbWindowColumns)
         builder.addFunction(matrixWindowFeatureGenerator(featuresParameters->dsbWindowRows, featuresParameters->dsbWindowColumns), discretizedDsb, cysteinIndex, cysteinIndex, T("dsbWindow"));
 
@@ -126,11 +161,11 @@ public:
     
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
   }
-  
+*/
   /* Residue Perception */
   virtual void residueVectorPerception(CompositeFunctionBuilder& builder) const
   {
-    size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType));
+    size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType, enumValueType));
     
     builder.startSelection();
 
@@ -152,7 +187,7 @@ public:
     
     builder.startSelection();
 
-      if (featuresParameters->residueGlobalFeatures)
+      if (featuresParameters->residueGlobalMeanFeatures)
         builder.addInSelection(globalFeatures);
 
       if (featuresParameters->residueWindowSize)
@@ -170,7 +205,7 @@ public:
   /* Residue Pair Perception */
   virtual void residuePairVectorPerception(CompositeFunctionBuilder& builder) const
   {
-    size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType));
+    size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType, enumValueType));
     
     builder.startSelection();
     
@@ -265,7 +300,7 @@ public:
   /* Dissulfide Residue Pair Perception */
   virtual void disulfideResiduePairVectorPerception(CompositeFunctionBuilder& builder) const
   {
-    size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType));
+    size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType, enumValueType));
     
     builder.startSelection();
 
@@ -281,16 +316,62 @@ public:
   /* Cystein Bonding State Residue Perception */
   virtual void cysteinBondingStateVectorPerception(CompositeFunctionBuilder& builder) const
   {
-    size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType));
-    
+    size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType, enumValueType));
+
     builder.startSelection();
-    
+
       builder.addFunction(getVariableFunction(T("protein")), proteinPerception);
+      builder.addInSelection(proteinPerception);
+
+    builder.finishSelectionWithFunction(new CreateCysteinBondingStateVectorFunction(lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, cysteinBondingStateFeatures)), T("cysteinBondingStateResidueFeature"));    
+  }
+
+  void cysteinBondingStateFeatures(CompositeFunctionBuilder& builder) const
+  {
+    /* Inputs */
+    size_t position = builder.addInput(positiveIntegerType);
+    size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType, enumValueType));
+
+    /* Residue features */
+    builder.startSelection();
+
+      builder.addInSelection(position);
       builder.addFunction(getVariableFunction(T("primaryResidueFeatures")), proteinPerception);
       builder.addFunction(getVariableFunction(T("accumulator")), proteinPerception);
       builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception);
+
+    size_t residueFeatures = builder.finishSelectionWithFunction(lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, residueFeatures), T("residueFeatures"));
+
+    /* Cystein Separation Profil */
+    size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinPerception);
+    size_t cysteinIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, position);
+
+    size_t cysteinSeparationProfil = builder.addFunction(new CreateCysteinSeparationProfil(), protein, position, T("cysSepProfil"));
+    cysteinSeparationProfil = builder.addFunction(mapContainerFunction(defaultPositiveIntegerFeatureGenerator(featuresParameters->cbsSeparationProfilDiscretization, 3.0)), cysteinSeparationProfil);
+
+    /* Structural features */
+    size_t cbs = builder.addFunction(getVariableFunction(T("cysteinBondingStates")), protein);
+    size_t cbsDiscretized = builder.addFunction(mapContainerFunction(defaultProbabilityFeatureGenerator(featuresParameters->cbsDiscretization)), cbs);
+
+    /* Bonded ratio : \sum probability_of_bonded / num_cysteins */
+    // TODO: move to global features
+    size_t ratio = builder.addFunction(new BondedCysteinRatio(), cbs, T("bondedRatio"));
     
-    builder.finishSelectionWithFunction(new CreateCysteinBondingStateVectorFunction(lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, residueFeatures)), T("cysteinBondingStateResidueFeature"));    
+    /* Concatenation */
+    builder.startSelection();
+
+      builder.addInSelection(residueFeatures);
+
+      if (featuresParameters->cbsSeparationProfilSize)
+        builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->cbsSeparationProfilSize), cysteinSeparationProfil, cysteinIndex, T("window"));
+    
+      if (featuresParameters->cbsDiscretization)
+        builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->cbsWindowSize), cbsDiscretized, cysteinIndex, T("window"));
+
+      if (featuresParameters->cbsRatioDiscretization)
+        builder.addFunction(defaultProbabilityFeatureGenerator(featuresParameters->cbsRatioDiscretization), ratio);
+
+    builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
 
   // Learning Machine

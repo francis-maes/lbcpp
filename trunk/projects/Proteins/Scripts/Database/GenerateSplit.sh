@@ -56,8 +56,8 @@ tail -n +$numTest .tmp_create_split_sorted > .tmp_create_split
 head -$numValidation .tmp_create_split > ${DATABASE}/.validation
 tail -n +$numTest .tmp_create_split > ${DATABASE}/.train
 
-rm .tmp_create_split
-rm .tmp_create_split_sorted
+rm .tmp_create_split 2>&1 > /dev/null
+rm .tmp_create_split_sorted 2>&1 > /dev/null
 
 buildSplit test
 buildSplit validation

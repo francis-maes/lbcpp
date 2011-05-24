@@ -7,10 +7,7 @@ then
   processName="$1"
 fi
 
-startTime=`date "+%Y-%m-%d_%H-%M-%S"`
-outputFile="${processName}_${startTime}"
-
-echo -n > $outputFile
+outputFile=""
 
 echo -n "Looking for PID of ${processName} ... "
 processId="";
@@ -20,11 +17,15 @@ do
 
   if [ "x$processId" == "x" ]
   then
-    processId=`ps | tail -n +2 | grep "$processName" | grep -v "grep" | cut -f 1 -d ' '`
+    processId=`ps -a | tail -n +2 | grep "$processName" | grep -v "grep"`
+    processId=` echo $processId | cut -f 1 -d ' '`
     if [ "x$processId" != "x" ]
     then
       i=0
       echo $processId
+      startTime=`date "+%Y-%m-%d_%H-%M-%S"`
+      outputFile="${processName}_${startTime}"
+      echo -n > $outputFile
     else
       continue
     fi

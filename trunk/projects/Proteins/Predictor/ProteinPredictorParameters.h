@@ -117,7 +117,10 @@ class NumericalProteinFeaturesParameters : public Object
 {
 public:
   NumericalProteinFeaturesParameters()
-      : pssmDiscretization(4), pssmEntropyDiscretization(6),
+      : 
+      proteinLengthDiscretization(20), numCysteinsDiscretization(5),
+
+      pssmDiscretization(4), pssmEntropyDiscretization(6),
       ss3Discretization(9), ss3EntropyDiscretization(2),
       ss8Discretization(12), ss8EntropyDiscretization(4),
       stalDiscretization(2), stalEntropyDiscretization(5),
@@ -127,10 +130,12 @@ public:
       dsbDiscretization(3), dsbNormalizedDiscretization(3),
       dsbWindowRows(3), dsbWindowColumns(3), dsbEntropyDiscretization(4),
       dsbPairWindowRows(3), dsbPairWindowColumns(3),
-  
-      cbsWindowSize(3), cbsDiscretization(5),
 
-      residueGlobalFeatures(true), residueWindowSize(9),
+      cbsWindowSize(7), cbsDiscretization(5),
+      cbsSeparationProfilSize(7), cbsSeparationProfilDiscretization(5),
+      cbsRatioDiscretization(5),
+
+      residueGlobalMeanFeatures(true), residueWindowSize(9),
       residueLocalMeanSize(18), residueMediumMeanSize(90),
       residuePairGlobalFeatures(true), residuePairWindowSize(15),
       residuePairLocalMeanSize(15), residuePairMediumMeanSize(50),
@@ -139,6 +144,10 @@ public:
   {
   }
 
+  // protein
+  size_t proteinLengthDiscretization;
+  size_t numCysteinsDiscretization;
+  
   // pssm
   size_t pssmDiscretization;
   size_t pssmEntropyDiscretization;
@@ -173,9 +182,12 @@ public:
   // cbs
   size_t cbsWindowSize;
   size_t cbsDiscretization;
+  size_t cbsSeparationProfilSize;
+  size_t cbsSeparationProfilDiscretization;
+  size_t cbsRatioDiscretization;
 
   // global
-  bool residueGlobalFeatures;
+  bool residueGlobalMeanFeatures;
   size_t residueWindowSize;
   size_t residueLocalMeanSize;
   size_t residueMediumMeanSize;

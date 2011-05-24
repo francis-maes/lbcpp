@@ -66,13 +66,13 @@ protected:
   ProteinPrimaryPerception() {}
 };
 
-extern ClassPtr numericalProteinPrimaryFeaturesClass(TypePtr type);
+extern ClassPtr numericalProteinPrimaryFeaturesClass(TypePtr first, TypePtr second);
 
 class NumericalProteinPrimaryFeatures : public ProteinPrimaryPerception
 {
 public:
-  NumericalProteinPrimaryFeatures(TypePtr type)
-    : ProteinPrimaryPerception(numericalProteinPrimaryFeaturesClass(type)) {}
+  NumericalProteinPrimaryFeatures(TypePtr first, TypePtr second)
+    : ProteinPrimaryPerception(numericalProteinPrimaryFeaturesClass(first, second)) {}
   NumericalProteinPrimaryFeatures() {}
   
   void setPrimaryResidueFeatures(VectorPtr features)
@@ -118,13 +118,14 @@ public:
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
-    TypePtr res = inputVariables[4]->getType()->getTemplateArgument(0);
-    return numericalProteinPrimaryFeaturesClass(res);
+    firstTemplate = inputVariables[3]->getType()->getTemplateArgument(0)->getTemplateArgument(0);
+    secondTemplate = inputVariables[5]->getType()->getTemplateArgument(0);
+    return numericalProteinPrimaryFeaturesClass(firstTemplate, secondTemplate);
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    NumericalProteinPrimaryFeaturesPtr res = new NumericalProteinPrimaryFeatures(getOutputType()->getTemplateArgument(0));
+    NumericalProteinPrimaryFeaturesPtr res = new NumericalProteinPrimaryFeatures(firstTemplate, secondTemplate);
     res->setProtein(inputs[0].getObject());
     res->setLenght((size_t)inputs[1].getInteger());
     res->setNumCysteins((size_t)inputs[2].getInteger());
@@ -133,6 +134,10 @@ public:
     res->setGlobalFeatures(inputs[5].getObject());
     return res;
   }
+
+private:
+  TypePtr firstTemplate;
+  TypePtr secondTemplate;
 };
 
 /*
@@ -505,6 +510,59 @@ protected:
   friend class CreateCysteinBondingStateVectorFunctionClass;
 
   FunctionPtr elementGeneratorFunction;
+};
+
+class CreateCysteinSeparationProfil : public Function
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : (TypePtr)proteinClass;}
+
+  virtual String getOutputPostFix() const
+    {return T("CysSepProfil");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return vectorClass(positiveIntegerType);}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    ProteinPtr protein = inputs[0].getObjectAndCast<Protein>(context);
+    jassert(protein);
+    size_t position = inputs[1].getInteger();
+
+    const std::vector<size_t>& cysteinIndices = protein->getCysteinIndices();
+    const size_t n = cysteinIndices.size();
+    VectorPtr res = vector(positiveIntegerType, n);
+    for (size_t i = 0; i < n; ++i)
+      res->setElement(i, Variable(abs(cysteinIndices[i] - position), positiveIntegerType));
+
+    return res;
+  }
+};
+
+class BondedCysteinRatio : public SimpleUnaryFunction
+{
+public:
+  BondedCysteinRatio() : SimpleUnaryFunction(doubleVectorClass(enumValueType, probabilityType), probabilityType, T("BondedRatio")) {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    const DoubleVectorPtr& vector = input.getObjectAndCast<DoubleVector>(context);
+    if (!vector)
+      return Variable::missingValue(probabilityType);
+    
+    const size_t n = vector->getNumElements();
+    if (!n)
+      return Variable::missingValue(probabilityType);
+    
+    double res = 0.0;
+    for (size_t i = 0; i < n; i++)
+      res += vector->getElement(i).getDouble();
+    return probability(res / (double)n);
+  }
 };
 
 }; /* namespace lbcpp */
