@@ -38,7 +38,7 @@ extern EnumerationPtr gpConstantEnumeration;
 class GPExpression : public Object
 {
 public:
-  virtual double compute(const std::vector<double>& x) const = 0;
+  virtual double compute(const double* x) const = 0;
 
   virtual size_t size() const = 0;
 };
@@ -68,7 +68,7 @@ public:
   virtual size_t size() const
     {return left->size() + 1 + right->size();}
 
-  virtual double compute(const std::vector<double>& x) const
+  virtual double compute(const double* x) const
   {
     double l = left->compute(x);
     double r = right->compute(x);
@@ -142,7 +142,7 @@ public:
   virtual size_t size() const
     {return 1 + expr->size();}
 
-  virtual double compute(const std::vector<double>& x) const
+  virtual double compute(const double* x) const
   {
     double e = expr->compute(x);
     jassert(isNumberValid(e));
@@ -201,8 +201,8 @@ public:
   virtual size_t size() const
     {return 1;}
 
-  virtual double compute(const std::vector<double>& x) const
-    {jassert(index.getInteger() < (int)x.size()); return x[index.getInteger()];}
+  virtual double compute(const double* x) const
+    {return x[index.getInteger()];}
 
   virtual String toShortString() const
     {return index.toShortString();}
@@ -230,7 +230,7 @@ public:
   virtual size_t size() const
     {return 1;}
 
-  virtual double compute(const std::vector<double>& x) const
+  virtual double compute(const double* x) const
     {return value;}
 
   virtual String toShortString() const

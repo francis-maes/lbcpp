@@ -4,7 +4,7 @@
 
   <!-- Bandits -->
   <class name="DiscreteBanditState" base="DecisionProblemState">
-    <variable type="ObjectVector[RandomGenerator]" name="randomGenerators"/>
+    <variable type="RandomGenerator" name="random"/>
     <variable type="ObjectVector[Sampler]" name="samplers"/>
     <variable type="GenericVector[PositiveInteger]" name="availableActions"/>
   </class>
@@ -16,15 +16,6 @@
     <variable type="PositiveInteger" name="numBandits"/>
   </class>
 
-  <!--
-  <class name="BernouilliDiscreteBanditState" base="DiscreteBanditState">
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="probabilities"/>
-  </class>
-  <class name="BernouilliBanditsInitialStateSampler" base="Function">
-    <variable type="PositiveInteger" name="numBandits"/>
-  </class>
-  <class name="BernouilliDiscreteBanditDecisionProblem" base="DiscreteBanditDecisionProblem"/>
-  -->
 
   <!-- LinearPointPhysic System -->
   <class name="LinearPointPhysicState" base="DecisionProblemState">

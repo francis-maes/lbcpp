@@ -116,9 +116,34 @@ juce::uint32 RandomGenerator::sampleUint32()
 
 //////////////////////////////////////////////////////////////////////////////
 
+juce::uint32 RandomGenerator::defaultSeed[RandomGenerator::N];
+
+void RandomGenerator::initializeRandomGenerator()
+{
+  RandomGenerator gen(16645186);
+  memcpy(defaultSeed, gen.mt, sizeof (juce::uint32) * N);
+}
+
+RandomGenerator::RandomGenerator(juce::uint32 seedValue)
+  : Object(randomGeneratorClass)
+  {setSeed(seedValue);}
+
+RandomGenerator::RandomGenerator()
+  : Object(randomGeneratorClass)
+{
+  memcpy(mt, defaultSeed, sizeof (juce::uint32) * N);
+  mti = N;
+}
+
+ObjectPtr RandomGenerator::clone(ExecutionContext& context) const
+{
+  ObjectPtr res = new RandomGenerator((void* )0); // use private empty constructor
+  clone(context, res);
+  return res;
+}
+
 void RandomGenerator::clone(ExecutionContext& context, const ObjectPtr& t) const
 {
-  Object::clone(context, t);
   const RandomGeneratorPtr& target = t.staticCast<RandomGenerator>();
   memcpy(target->mt, mt, sizeof (juce::uint32) * N);
   target->mti = mti;

@@ -443,7 +443,7 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     rosettaInitialization(context, false);
-    RandomGeneratorPtr random = new RandomGenerator(0);
+    RandomGeneratorPtr random = new RandomGenerator();
 
     File dir = context.getFile(referenceDir);
     if (!dir.exists())
