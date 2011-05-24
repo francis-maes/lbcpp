@@ -7,5 +7,6 @@
   <import name="SequentialDecisionWorkUnit"/>
   <import name="SequentialDecisionGo"/>
   <import name="SequentialDecisionGP"/>
+  <import name="SequentialDecisionBandits"/>
   
 </library>

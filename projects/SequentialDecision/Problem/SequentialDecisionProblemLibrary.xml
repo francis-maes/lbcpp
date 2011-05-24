@@ -2,21 +2,6 @@
 
 <library name="DecisionProblem" directory="Problem">
 
-  <!-- Bandits -->
-  <class name="DiscreteBanditState" base="DecisionProblemState">
-    <variable type="RandomGenerator" name="random"/>
-    <variable type="ObjectVector[Sampler]" name="samplers"/>
-    <variable type="GenericVector[PositiveInteger]" name="availableActions"/>
-  </class>
-  <class name="DiscreteBanditDecisionProblem" base="DecisionProblem" abstract="yes">
-    <variable type="PositiveInteger" name="numBandits"/>
-  </class>
-
-  <class name="DiscreteBanditInitialStateSampler" base="CompositeSampler">
-    <variable type="PositiveInteger" name="numBandits"/>
-  </class>
-
-
   <!-- LinearPointPhysic System -->
   <class name="LinearPointPhysicState" base="DecisionProblemState">
     <variable type="Double" name="position"/>

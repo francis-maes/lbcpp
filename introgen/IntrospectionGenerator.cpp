@@ -68,7 +68,8 @@ protected:
       return String::empty;
     int numUpper = 0;
     for (numUpper = 0; numUpper < str.length(); ++numUpper)
-      if (!CharacterFunctions::isUpperCase(str[numUpper]))
+      if (!CharacterFunctions::isUpperCase(str[numUpper]) &&
+          !CharacterFunctions::isDigit(str[numUpper]))
         break;
 
     if (numUpper == 0)
@@ -76,10 +77,11 @@ protected:
 
     String res = str;
     if (numUpper == 1)
-      res[0] += 'a' - 'A';
+      res[0] = CharacterFunctions::toLowerCase(res[0]);
     else
       for (int i = 0; i < numUpper - 1; ++i)
-        res[i] += 'a' - 'A';
+        res[i] = CharacterFunctions::toLowerCase(res[i]);
+
     return res;
   }
 

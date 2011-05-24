@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_SEQUENTIAL_DECISION_PROBLEM_BANDITS_H_
-# define LBCPP_SEQUENTIAL_DECISION_PROBLEM_BANDITS_H_
+#ifndef LBCPP_BANDITS_DISCRETE_DECISION_PROBLEM_H_
+# define LBCPP_BANDITS_DISCRETE_DECISION_PROBLEM_H_
 
 # include "../Core/DecisionProblem.h"
 
@@ -122,4 +122,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_SEQUENTIAL_DECISION_PROBLEM_BANDITS_H_
+#endif // !LBCPP_BANDITS_DISCRETE_DECISION_PROBLEM_H_
