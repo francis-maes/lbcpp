@@ -30,7 +30,7 @@ public:
 
   virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights = DenseDoubleVectorPtr(),
                                                 const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr(), const DenseDoubleVectorPtr& supervisionWeights = DenseDoubleVectorPtr())
-    {jassert(false);}
+    {}
 
 protected:
   friend class GeneralSimpleResidueSamplerClass;
@@ -68,7 +68,7 @@ public:
 
   virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights = DenseDoubleVectorPtr(),
                                                 const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr(), const DenseDoubleVectorPtr& supervisionWeights = DenseDoubleVectorPtr())
-    {jassert(false);}
+    {}
 
 protected:
   friend class GeneralResiduePairSamplerClass;
@@ -78,17 +78,76 @@ protected:
 
 typedef ReferenceCountedObjectPtr<GeneralResiduePairSampler> GeneralResiduePairSamplerPtr;
 
+class ClamperSampler : public CompositeSampler
+{
+public:
+  ClamperSampler(double minValue, double maxValue)
+    : CompositeSampler(1), minValue(minValue), maxValue(maxValue), mean((minValue + maxValue) / 2)
+    {samplers[0] = conditionalGaussianSampler();}
+  ClamperSampler() : CompositeSampler(1), minValue(0), maxValue(0), mean(0) {}
+
+  virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
+  {
+    double value = samplers[0]->sample(context, random, inputs).getDouble();
+
+    value *= 0.5 * (maxValue - minValue);
+    value += mean;
+    value = juce::jlimit(minValue, maxValue, value);
+    return value;
+  }
+
+  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights = DenseDoubleVectorPtr(),
+                                                const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr(), const DenseDoubleVectorPtr& supervisionWeights = DenseDoubleVectorPtr())
+  {
+    double normalize = 1.0 / (0.5 * (maxValue - minValue));
+    VectorPtr samples = new DenseDoubleVector(trainingSamples->getNumElements(), 0.0);
+    for (size_t i = 0; i < trainingSamples->getNumElements(); i++)
+    {
+      double valueToSet = juce::jlimit(minValue, maxValue, trainingSamples->getElement(i).getDouble());
+      valueToSet -= mean;
+      valueToSet *= normalize;
+      samples->setElement(i, valueToSet);
+    }
+
+    samplers[0]->learn(context, trainingInputs, samples, trainingWeights, validationInputs,
+        validationSamples, supervisionWeights);
+  }
+
+protected:
+  friend class ClamperSamplerClass;
+
+  double minValue;
+  double maxValue;
+  double mean;
+};
+
+class GaussianSamplerWithoutLearn : public CompositeSampler
+{
+public:
+
+  GaussianSamplerWithoutLearn(double mean, double std)
+      : CompositeSampler(1)
+      {samplers[0] = gaussianSampler(mean, std);}
+  GaussianSamplerWithoutLearn() : CompositeSampler(1) {}
+
+    virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
+      {return samplers[0]->sample(context, random, inputs);}
+
+    virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights = DenseDoubleVectorPtr(),
+                                                  const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr(), const DenseDoubleVectorPtr& supervisionWeights = DenseDoubleVectorPtr())
+      {}
+
+protected:
+  friend class GaussianSamplerWithoutLearnClass;
+};
+
 class GeneralProteinMoverSampler : public CompositeSampler
 {
 public:
-  GeneralProteinMoverSampler(size_t numResidues)
-    : numResidues(numResidues)
-  {
-    createObjectSamplers(numResidues);
-    // TODO specifier le sampleur de mover
-    samplers.push_back(enumerationSampler(proteinMoverEnumerationEnumeration));
-  }
-  GeneralProteinMoverSampler() : numResidues(0) {}
+  GeneralProteinMoverSampler(size_t numResidues, size_t learningPolicy)
+    : numResidues(numResidues), learningPolicy(learningPolicy)
+    {createObjectSamplers(numResidues, learningPolicy);}
+  GeneralProteinMoverSampler() : numResidues(0), learningPolicy(0) {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
   {
@@ -131,54 +190,105 @@ public:
       else if (type == rigidBodyMoverClass)
         target = 2;
       else
+      {
         jassert(false);
+      }
 
       classSamples->setElement(i, Variable(target, proteinMoverEnumerationEnumeration));
 
-      subSamples[target].staticCast<Vector>()->append(element);
+      subSamples[target].staticCast<Vector> ()->append(element);
       if (inputs)
-        subInputs[target].staticCast<Vector>()->append(inputs->getElement(i));
+        subInputs[target].staticCast<Vector> ()->append(inputs->getElement(i));
     }
   }
 
-  void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights,
-                                        const ContainerPtr& validationInputs, const ContainerPtr& validationSamples, const DenseDoubleVectorPtr& supervisionWeights)
+  void learn(ExecutionContext& context, const ContainerPtr& trainingInputs,
+      const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights,
+      const ContainerPtr& validationInputs, const ContainerPtr& validationSamples,
+      const DenseDoubleVectorPtr& supervisionWeights)
   {
-    // TODO ajouter differents criteres de learn...
-    std::vector<ContainerPtr> subTrainingInputs(samplers.size()), subTrainingSamples(samplers.size()), subTrainingWeights(samplers.size());
-    makeSubExamples(trainingInputs, trainingSamples, trainingWeights, subTrainingInputs, subTrainingSamples, subTrainingWeights);
-    jassert(subTrainingInputs.size() == samplers.size() && subTrainingSamples.size() == samplers.size());
-
-    if (validationSamples)
+    if (learningPolicy)
     {
-      std::vector<ContainerPtr> subValidationInputs(samplers.size()), subValidationSamples(samplers.size()), subValidationWeights(samplers.size());
-      makeSubExamples(validationInputs, validationSamples, supervisionWeights, subValidationInputs, subValidationSamples, subValidationWeights);
-      jassert(subValidationInputs.size() == samplers.size() && subValidationSamples.size() == samplers.size());
+      std::vector<ContainerPtr> subTrainingInputs(samplers.size()), subTrainingSamples(
+          samplers.size()), subTrainingWeights(samplers.size());
+      makeSubExamples(trainingInputs, trainingSamples, trainingWeights, subTrainingInputs,
+          subTrainingSamples, subTrainingWeights);
+      jassert(subTrainingInputs.size() == samplers.size() && subTrainingSamples.size() == samplers.size());
 
-      for (size_t i = 0; i < samplers.size(); ++i)
-        if (subTrainingSamples[i]->getNumElements())
-          samplers[i]->learn(context, subTrainingInputs[i], subTrainingSamples[i], subTrainingWeights[i], subValidationInputs[i], subValidationSamples[i], subValidationWeights[i]);
-    }
-    else
-    {
-      for (size_t i = 0; i < samplers.size(); ++i)
-        if (subTrainingSamples[i]->getNumElements())
-          samplers[i]->learn(context, subTrainingInputs[i], subTrainingSamples[i]);
+      if (validationSamples)
+      {
+        std::vector<ContainerPtr> subValidationInputs(samplers.size()), subValidationSamples(
+            samplers.size()), subValidationWeights(samplers.size());
+        makeSubExamples(validationInputs, validationSamples, supervisionWeights,
+            subValidationInputs, subValidationSamples, subValidationWeights);
+        jassert(subValidationInputs.size() == samplers.size() && subValidationSamples.size() == samplers.size());
+
+        for (size_t i = 0; i < samplers.size(); ++i)
+          if (subTrainingSamples[i]->getNumElements())
+            samplers[i]->learn(context, subTrainingInputs[i], subTrainingSamples[i],
+                subTrainingWeights[i], subValidationInputs[i], subValidationSamples[i],
+                subValidationWeights[i]);
+      }
+      else
+      {
+        for (size_t i = 0; i < samplers.size(); ++i)
+          if (subTrainingSamples[i]->getNumElements())
+            samplers[i]->learn(context, subTrainingInputs[i], subTrainingSamples[i]);
+      }
     }
   }
 
 protected:
   friend class GeneralProteinMoverSamplerClass;
 
-  void createObjectSamplers(size_t numResidues)
+  void createObjectSamplers(size_t numResidues, size_t learningPolicy)
   {
-    // TODO creer les differents samplers en fonction des entrees
-    samplers.push_back(objectCompositeSampler(phiPsiMoverClass, new GeneralSimpleResidueSampler(numResidues), gaussianSampler(0, 25), gaussianSampler(0, 25)));
-    samplers.push_back(objectCompositeSampler(shearMoverClass, new GeneralSimpleResidueSampler(numResidues), gaussianSampler(0, 25), gaussianSampler(0, 25)));
-    samplers.push_back(objectCompositeSampler(rigidBodyMoverClass, new GeneralResiduePairSampler(numResidues), gaussianSampler(1, 1), gaussianSampler(0, 25)));
+    // create samplers, by default corresponds to learningPolicy == 0 and 1
+    // mover
+    SamplerPtr moverSampler = enumerationSampler(proteinMoverEnumerationEnumeration);
+    // mover parameters
+    // residues
+    SamplerPtr phiPsiResidues = new GeneralSimpleResidueSampler(numResidues);
+    SamplerPtr shearResidues = new GeneralSimpleResidueSampler(numResidues);
+    SamplerPtr rbResidues = new GeneralResiduePairSampler(numResidues);
+    // other parameters
+    SamplerPtr phiPsiDeltaPhi = new GaussianSamplerWithoutLearn(0, 25);
+    SamplerPtr phiPsiDeltaPsi = new GaussianSamplerWithoutLearn(0, 25);
+    SamplerPtr shearDeltaPhi = new GaussianSamplerWithoutLearn(0, 25);
+    SamplerPtr shearDeltaPsi = new GaussianSamplerWithoutLearn(0, 25);
+    SamplerPtr rbDeltaMag = new GaussianSamplerWithoutLearn(1, 1);
+    SamplerPtr rbDeltaAmp = new GaussianSamplerWithoutLearn(0, 25);
+
+    if (learningPolicy == 2)
+    {
+      moverSampler = maximumEntropySampler(proteinMoverEnumerationEnumeration);
+    }
+    else if (learningPolicy == 3)
+    {
+      moverSampler = maximumEntropySampler(proteinMoverEnumerationEnumeration);
+      phiPsiDeltaPhi = new ClamperSampler(-180, 180);
+      phiPsiDeltaPsi = new ClamperSampler(-180, 180);
+      shearDeltaPhi = new ClamperSampler(-180, 180);
+      shearDeltaPsi = new ClamperSampler(-180, 180);
+      rbDeltaMag = new ClamperSampler(-5, 5);
+      rbDeltaAmp = new ClamperSampler(-180, 180);
+    }
+
+    // add movers' samplers
+    samplers.push_back(objectCompositeSampler(phiPsiMoverClass, phiPsiResidues, phiPsiDeltaPhi, phiPsiDeltaPsi));
+    samplers.push_back(objectCompositeSampler(shearMoverClass, shearResidues, shearDeltaPhi, shearDeltaPsi));
+    samplers.push_back(objectCompositeSampler(rigidBodyMoverClass, rbResidues, rbDeltaMag, rbDeltaAmp));
+
+    // and sampler to choose mover
+    samplers.push_back(moverSampler);
   }
 
   size_t numResidues;
+  size_t learningPolicy;
+  // 0 -> no learning, all random
+  // 1 -> learned the enumeration sampler for movers
+  // 2 -> learned maxent for movers
+  // 3 -> learned maxent for movers and conditionnal gaussian for angles and distances
 };
 
 typedef ReferenceCountedObjectPtr<GeneralProteinMoverSampler> GeneralProteinMoverSamplerPtr;

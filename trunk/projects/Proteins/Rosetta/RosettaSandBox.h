@@ -23,6 +23,7 @@
 # include "Sampler/ResiduePairSampler.h"
 # include "Sampler/ProteinMoverSampler.h"
 # include "Sampler.h"
+# include "Sampler/GeneralProteinMoverSampler.h"
 //using namespace std;
 
 namespace lbcpp
@@ -60,15 +61,15 @@ public:
       double stddev = 0;
       if ((i % 2) == 0)
       {
-        x = random->sampleDoubleFromGaussian(20, 1);
-        mean = 13;
-        stddev = 1;
+        x = random->sampleDoubleFromGaussian(0.20, 0.01);
+        mean = 390;
+        stddev = 5;
       }
       else
       {
-        x = random->sampleDoubleFromGaussian(50, 2);
-        mean = 33;
-        stddev = 0.5;
+        x = random->sampleDoubleFromGaussian(0.50, 0.02);
+        mean = 450;
+        stddev = 5;
       }
 # endif
 
@@ -186,7 +187,8 @@ public:
     generateConditionalGaussianDataSet(inputs, samples);
     displayDataSet(context, T("Conditional gaussian dataset"), inputs, samples);
 
-    SamplerPtr sampler = conditionalGaussianSampler();
+    //SamplerPtr sampler = conditionalGaussianSampler();
+    SamplerPtr sampler = new ClamperSampler(360, 480);
     sampler->learn(context, inputs, samples);
 
     context.enterScope(T("Testing conditional gaussian"));
@@ -196,7 +198,7 @@ public:
 # if 0
       double x = random->sampleDouble(0.0, 1.0);
 #else
-      double x = random->sampleDouble(0.0, 50.0);
+      double x = random->sampleDouble(0.0, 1.0);
 # endif
       context.resultCallback(T("x"), x);
       DenseDoubleVectorPtr features = new DenseDoubleVector(falseOrTrueEnumeration, doubleType);
