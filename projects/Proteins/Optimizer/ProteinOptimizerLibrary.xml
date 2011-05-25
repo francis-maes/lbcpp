@@ -3,6 +3,7 @@
 <library name="ProteinOptimizer" directory="Optimizer">
 
   <class name="OptimizerTest" base="WorkUnit"/>
+  <class name"ExtractMeanScoreWorkUnit" base="WorkUnit"/>
   <class name="GridEvoOptimizerExperience" base="WorkUnit"/>
   <class name="AsyncEDAOptimizerExperience" base="WorkUnit"/>  
   <class name="DebugNetworkWorkUnit" base="WorkUnit"/>
