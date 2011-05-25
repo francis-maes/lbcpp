@@ -47,12 +47,12 @@ protected:
 class UnaryGPExpressionBuilderAction : public GPExpressionBuilderAction
 {
 public:
-  UnaryGPExpressionBuilderAction(GPPre op, size_t index)
+  UnaryGPExpressionBuilderAction(GPPre op, size_t index = (size_t)-1)
     : op(op), index(index) {}
   UnaryGPExpressionBuilderAction() {}
 
   virtual GPExpressionPtr makeExpression(const std::vector<GPExpressionPtr>& currentExpressions) const
-    {return new UnaryGPExpression(op, currentExpressions[index]);}
+    {return new UnaryGPExpression(op, index == (size_t)-1 ? GPExpressionPtr() : currentExpressions[index]);}
 
 protected:
   friend class UnaryGPExpressionBuilderActionClass;
@@ -64,12 +64,13 @@ protected:
 class BinaryGPExpressionBuilderAction : public GPExpressionBuilderAction
 {
 public:
-  BinaryGPExpressionBuilderAction(GPOperator op, size_t left, size_t right)
+  BinaryGPExpressionBuilderAction(GPOperator op, size_t left = (size_t)-1, size_t right = (size_t)-1)
     : op(op), left(left), right(right) {}
   BinaryGPExpressionBuilderAction() {}
 
   virtual GPExpressionPtr makeExpression(const std::vector<GPExpressionPtr>& currentExpressions) const
-    {return new BinaryGPExpression(currentExpressions[left], op, currentExpressions[right]);}
+    {return new BinaryGPExpression(left == (size_t)-1 ? GPExpressionPtr() : currentExpressions[left], op,
+                                   right == (size_t)-1 ? GPExpressionPtr() : currentExpressions[right]);}
 
 protected:
   friend class BinaryGPExpressionBuilderActionClass;
@@ -219,26 +220,150 @@ extern ClassPtr gpExpressionBuilderStateClass;
 
 typedef ReferenceCountedObjectPtr<GPExpressionBuilderState> GPExpressionBuilderStatePtr;
 
+
+class CompactGPExpressionBuilderState : public DecisionProblemState
+{
+public:
+  CompactGPExpressionBuilderState(const String& name, EnumerationPtr inputVariables, FunctionPtr objectiveFunction)
+    : DecisionProblemState(name), inputVariables(inputVariables), objectiveFunction(objectiveFunction)
+  {
+    stack.push_back(std::make_pair(GPExpressionPtr(), &expression));
+  }
+  CompactGPExpressionBuilderState() {}
+ 
+  virtual String toShortString() const
+    {return expression ? expression->toShortString() : T("<initial>");}
+  
+  virtual TypePtr getActionType() const
+    {return gpExpressionBuilderActionClass;}
+
+  virtual bool isFinalState() const
+    {return stack.empty();}
+
+  virtual ContainerPtr getAvailableActions() const
+  {
+    if (!stack.size())
+      return ContainerPtr();
+
+    ObjectVectorPtr res = new ObjectVector(gpExpressionBuilderActionClass);
+    
+    // variables
+    for (size_t i = 0; i < inputVariables->getNumElements(); ++i)
+      res->append(new VariableGPExpressionBuilderAction(Variable(i, inputVariables)));
+
+    // unary expressions
+    size_t n = gpPreEnumeration->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+      res->append(new UnaryGPExpressionBuilderAction((GPPre)i));
+
+    // binary expressions
+    n = gpOperatorEnumeration->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      //bool isCommutative = (i == 0 || i == 2);
+      res->append(new BinaryGPExpressionBuilderAction((GPOperator)i));
+    }
+    return res;
+  }
+
+  virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward)
+  {
+    const GPExpressionBuilderActionPtr& builderAction = action.getObjectAndCast<GPExpressionBuilderAction>();
+
+    jassert(stack.size());
+    stackBackup.push_back(stack.back());
+    GPExpressionPtr* expression = stack.back().second;
+    (*expression) = builderAction->makeExpression(std::vector<GPExpressionPtr>());
+    stack.pop_back();
+
+    UnaryGPExpressionPtr unaryExpression = expression->dynamicCast<UnaryGPExpression>();
+    if (unaryExpression)
+      stack.push_back(std::make_pair(unaryExpression, &unaryExpression->getExpression()));
+    else
+    {
+      BinaryGPExpressionPtr binaryExpression = expression->dynamicCast<BinaryGPExpression>();
+      if (binaryExpression)
+      {
+        stack.push_back(std::make_pair(binaryExpression, &binaryExpression->getLeft()));
+        stack.push_back(std::make_pair(binaryExpression, &binaryExpression->getRight()));
+      }
+    }
+    if (stack.empty())
+    {
+      double score = objectiveFunction->compute(context, this->expression).toDouble();
+      //context.informationCallback(T("FinalState: ") + this->expression->toShortString() + T(" -> ") + String(score));
+      reward = -score;
+    }
+    else
+      reward = 0.0;
+  }
+
+  virtual bool undoTransition(ExecutionContext& context, const Variable& action)
+  {
+    jassert(stackBackup.size());
+    if (action.dynamicCast<UnaryGPExpressionBuilderAction>())
+      stack.pop_back();
+    else if (action.dynamicCast<BinaryGPExpressionBuilderAction>())
+    {
+      stack.pop_back();
+      stack.pop_back();
+    }
+    stack.push_back(stackBackup.back());
+    stackBackup.pop_back();
+    return true;
+  }
+
+  const GPExpressionPtr& getExpression() const
+    {return expression;}
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    const ReferenceCountedObjectPtr<CompactGPExpressionBuilderState>& target = t.staticCast<CompactGPExpressionBuilderState>();
+    target->name = name;
+    target->inputVariables = inputVariables;
+    target->objectiveFunction = objectiveFunction;
+    jassert(false);
+    // FIXME 
+  }
+
+protected:
+  friend class CompactGPExpressionBuilderStateClass;
+
+  EnumerationPtr inputVariables;
+  FunctionPtr objectiveFunction;
+  GPExpressionPtr expression;
+  std::vector< std::pair<GPExpressionPtr, GPExpressionPtr*> > stack; // parent, pointer to child
+  std::vector< std::pair<GPExpressionPtr, GPExpressionPtr*> > stackBackup; // parent, pointer to child
+};
+
+typedef ReferenceCountedObjectPtr<CompactGPExpressionBuilderState> CompactGPExpressionBuilderStatePtr;
+
 class GPExpressionBuilderInitialStateSampler : public SimpleUnaryFunction
 {
 public:
-  GPExpressionBuilderInitialStateSampler(EnumerationPtr inputVariables, FunctionPtr objectiveFunction)
-    : SimpleUnaryFunction(randomGeneratorClass, gpExpressionBuilderStateClass), inputVariables(inputVariables), objectiveFunction(objectiveFunction) {}
+  GPExpressionBuilderInitialStateSampler(EnumerationPtr inputVariables, FunctionPtr objectiveFunction, bool useCompactSpace)
+    : SimpleUnaryFunction(randomGeneratorClass, gpExpressionBuilderStateClass), inputVariables(inputVariables), objectiveFunction(objectiveFunction), useCompactSpace(useCompactSpace) {}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {return new GPExpressionBuilderState(T("toto"), inputVariables, objectiveFunction);}
+  {
+    if (useCompactSpace)
+      return new CompactGPExpressionBuilderState(T("toto"), inputVariables, objectiveFunction);
+    else
+      return new GPExpressionBuilderState(T("toto"), inputVariables, objectiveFunction);
+  }
 
 protected:
   EnumerationPtr inputVariables;
   FunctionPtr objectiveFunction;
+  bool useCompactSpace;
 };
 
 
 class GPExpressionBuilderProblem : public DecisionProblem
 {
 public:
-  GPExpressionBuilderProblem(EnumerationPtr inputVariables, FunctionPtr objectiveFunction)
-    : DecisionProblem(new GPExpressionBuilderInitialStateSampler(inputVariables, objectiveFunction), 1.0) {}
+  GPExpressionBuilderProblem(EnumerationPtr inputVariables, FunctionPtr objectiveFunction, bool useCompactSpace = false)
+    : DecisionProblem(new GPExpressionBuilderInitialStateSampler(inputVariables, objectiveFunction, useCompactSpace), 1.0) {}
   GPExpressionBuilderProblem() {}
 
   virtual TypePtr getActionType() const
