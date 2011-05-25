@@ -20,10 +20,10 @@ public:
   UCB2DiscreteBanditPolicy(double alpha = 1.0) : alpha(alpha) {}
 
   virtual SamplerPtr createParametersSampler() const
-    {return gaussianSampler(-3, 2);}
+    {return gaussianSampler(-3, 1);}
 
   virtual void setParameters(const Variable& parameters)
-    {alpha = pow(10, parameters.getDouble());}
+    {alpha = pow(10, juce::jmax(-5.0, parameters.getDouble()));}
 
   virtual Variable getParameters() const
     {return log10(alpha);}

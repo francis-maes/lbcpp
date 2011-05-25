@@ -172,19 +172,30 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     sampleProblems(context, trainingProblems, testingProblems, generalizationProblems);
+    bool ok;
 
-    context.enterScope(T("Untuned policies"));
-    bool ok = evaluateUntunedPolicies(context);
+    /*
+    for (double C = 0.0; C <= 2.0; C += 0.1)
+    {
+      context.enterScope(T("C = ") + String(C));
+      context.resultCallback(T("C"), C);
+      evaluatePolicy(context, ucb1DiscreteBanditPolicy(C), false);
+      context.leaveScope(true);
+    }
+    return true;*/
+
+/*    context.enterScope(T("Untuned policies"));
+    ok = evaluateUntunedPolicies(context);
     context.leaveScope(ok);  
-
+*/
     context.enterScope(T("Tuned policies"));
     ok = tuneAndEvaluatePolicies(context);
-    context.leaveScope();
-
+    context.leaveScope(ok);
+/*
     context.enterScope(T("Learned policies"));
     ok = learnAndEvaluatePolicies(context);
-    context.leaveScope();
-
+    context.leaveScope(ok);
+*/
     return true;
   }
 
@@ -248,7 +259,7 @@ protected:
   {
     std::vector<DiscreteBanditPolicyPtr> policies;
     policies.push_back(ucb1DiscreteBanditPolicy());
-    //policies.push_back(ucb2DiscreteBanditPolicy());
+    policies.push_back(ucb2DiscreteBanditPolicy());
     policies.push_back(ucbvDiscreteBanditPolicy());
     policies.push_back(epsilonGreedyDiscreteBanditPolicy());
     return optimizeAndEvaluatePolicies(context, policies);
@@ -333,7 +344,7 @@ private:
     OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, objectiveFunction, validationFunction);
 
     // optimizer
-    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests);
+    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, 0, true);
     optimizer->compute(context, optimizerContext, optimizerState);
 
     // best parameters
@@ -344,13 +355,16 @@ private:
     return policy;
   }
 
+  bool evaluatePolicy(ExecutionContext& context, const DiscreteBanditPolicyPtr& policy, bool pushIntoStack = false) const
+    {return evaluatePolicies(context, std::vector<DiscreteBanditPolicyPtr>(1, policy), pushIntoStack);}
+
   bool evaluatePolicies(ExecutionContext& context, const std::vector<DiscreteBanditPolicyPtr>& policies, bool pushIntoStack = false) const
   {
     CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Evaluating policies"), policies.size());
     for (size_t i = 0; i < policies.size(); ++i)
       workUnit->setWorkUnit(i, new EvaluatePolicyWorkUnit(policies[i], numBandits, maxTimeStep, testingProblems, generalizationProblems));
     workUnit->setProgressionUnit(T("Policies"));
-    workUnit->setPushChildrenIntoStackFlag(true);
+    workUnit->setPushChildrenIntoStackFlag(policies.size() > 1);
     context.run(workUnit, pushIntoStack);
     return true;
   }
@@ -364,10 +378,17 @@ private:
     virtual Variable run(ExecutionContext& context)
     {
       WorkUnitPtr workUnit = new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, testingProblems, T("Testing Problems"), policy, 100, true);
-      Variable testingResult = context.run(workUnit);
+      DenseDoubleVectorPtr testingResult = context.run(workUnit).getObjectAndCast<DenseDoubleVector>();
+
+      for (size_t i = 0; i < testingResult->getNumElements(); ++i)
+        context.resultCallback(T("testingRegret@") + String(pow(10.0, i + 1.0)), testingResult->getValue(i));
 
       workUnit = new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, generalizationProblems, T("Generalization Problems"), policy, 100, true);
-      Variable generalizationResult = context.run(workUnit);
+      DenseDoubleVectorPtr generalizationResult = context.run(workUnit).getObjectAndCast<DenseDoubleVector>();
+
+      for (size_t i = 0; i < generalizationResult->getNumElements(); ++i)
+        context.resultCallback(T("generalizationRegret@") + String(pow(10.0, i + 1.0)), generalizationResult->getValue(i));
+
       PairPtr res(new Pair(testingResult, generalizationResult));
       context.informationCallback(res->toShortString());
       return res;
