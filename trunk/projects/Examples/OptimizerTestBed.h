@@ -7,6 +7,11 @@
  *
  */
 
+/**
+ * SOURCE :  http://coco.lri.fr/downloads/download10.61/bbobdocfunctionsdef.pdf
+ */
+
+
 #ifndef LBCPP_OPTIMIZER_TEST_BED_H_
 # define LBCPP_OPTIMIZER_TEST_BED_H_
 
@@ -18,6 +23,8 @@
 // TODO arnaud : commenter et deplacer certaines fonctions auxilliaire
 // TODO arnaud : clean code
 // TODO arnaud : utiliser sumofsquare
+// TODO arnaud: utiliser le DenseDoubleVectorPtr DoubleMatrix::multiplyVector(const DenseDoubleVectorPtr& vector) const
+
 namespace lbcpp
 { 
   
@@ -552,11 +559,11 @@ protected:
 };
  
 // f11  
-class DiscussFunction : public ScalarVectorFunction
+class DiscusFunction : public ScalarVectorFunction
 {
 public:
-  DiscussFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) {}
-  DiscussFunction() {}
+  DiscusFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) {}
+  DiscusFunction() {}
   
   virtual bool isDerivable() const
     {jassertfalse; return false;} // TODO arnaud
@@ -585,7 +592,7 @@ public:
   }
   
 protected:
-  friend class DiscussFunctionClass;
+  friend class DiscusFunctionClass;
   
   DenseDoubleVectorPtr xopt;
   double fopt;
@@ -631,6 +638,7 @@ protected:
   double fopt;
 };
   
+// f13  
 class SharpRidgeFunction : public ScalarVectorFunction
 {
 public:
@@ -674,39 +682,41 @@ protected:
   double fopt;
   
 };
+
+// f14  
+class DifferentPowersFunction : public ScalarVectorFunction
+{
+public:
+  DifferentPowersFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) {}
+  DifferentPowersFunction() {}
   
-  class DifferentPowersFunction : public ScalarVectorFunction
+  virtual bool isDerivable() const
+    {jassertfalse; return false;} // TODO arnaud
+  
+  virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
-  public:
-    DifferentPowersFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) {}
-    DifferentPowersFunction() {}
+    jassert(input->getNumValues() == xopt->getNumValues())
+    // z = x - x_opt
+    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
+    xopt->subtractFrom(z);
     
-    virtual bool isDerivable() const
-      {jassertfalse; return false;} // TODO arnaud
+    DenseDoubleVectorPtr newZ = testbed::productMatrixVector(testbed::getRotationMatrix(z->getNumValues()), z);
+    z = newZ;
     
-    virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
-    {
-      jassert(input->getNumValues() == xopt->getNumValues())
-      // z = x - x_opt
-      DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
-      xopt->subtractFrom(z);
-      
-      DenseDoubleVectorPtr newZ = testbed::productMatrixVector(testbed::getRotationMatrix(z->getNumValues()), z);
-      z = newZ;
-      
-      double sum = 0.0;
-      for (size_t i = 0; i < z->getNumValues(); i++) 
-        sum += pow(fabs(z->getValue(i)), 2 + (double)(4*i)/(double)(z->getNumValues()-1));
-      
-      *output = sqrt(sum) + fopt;
-    }
+    double sum = 0.0;
+    for (size_t i = 0; i < z->getNumValues(); i++) 
+      sum += pow(fabs(z->getValue(i)), 2 + (double)(4*i)/(double)(z->getNumValues()-1));
     
-  protected:
-    friend class DifferentPowersFunctionClass;
-    
-    DenseDoubleVectorPtr xopt;
-    double fopt;
-  };
+    *output = sqrt(sum) + fopt;
+  }
+  
+protected:
+  friend class DifferentPowersFunctionClass;
+  
+  DenseDoubleVectorPtr xopt;
+  double fopt;
+};
+  
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OPTIMIZER_TEST_BED_H_

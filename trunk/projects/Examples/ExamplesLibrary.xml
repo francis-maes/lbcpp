@@ -129,7 +129,7 @@
     <variable type="Double" name="fopt"/> 
   </class>
 
-  <class name="DiscussFunction" base="ScalarVectorFunction">
+  <class name="DiscusFunction" base="ScalarVectorFunction">
     <constructor arguments="const DenseDoubleVectorPtr&amp; xopt, double fopt"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="xopt"/>
     <variable type="Double" name="fopt"/> 

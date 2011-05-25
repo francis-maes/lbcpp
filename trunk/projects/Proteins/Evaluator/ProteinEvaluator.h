@@ -68,6 +68,9 @@ protected:
   size_t numFeaturesPerResidue;
 };
 
+typedef ReferenceCountedObjectPtr<ProteinLearnerScoreObject> ProteinLearnerScoreObjectPtr;
+  
+  
 class ProteinEvaluator : public CompositeEvaluator
 {
 public:

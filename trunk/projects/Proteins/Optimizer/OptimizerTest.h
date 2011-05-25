@@ -41,6 +41,46 @@
 namespace lbcpp
 {
 
+class ExtractMeanScoreWorkUnit : public WorkUnit
+{
+  virtual Variable run(ExecutionContext& context)
+  {
+    juce::DirectoryIterator iter (File ("/home/arnaud/Manager2/AsyncEDAOptimizerExperience2"), true, "*.archive");
+    
+    double validationMean = 0.0;
+    double testMean = 0.0;
+    size_t nb = 0;
+    size_t i = 0;
+    size_t iteration = 1;
+    while (iter.next())
+    {
+      File theFileItFound (iter.getFile());
+      NetworkArchivePtr archive = Object::createFromFile(context, theFileItFound).staticCast<NetworkArchive>();
+      ExecutionTracePtr trace =  archive->getExecutionTraceNetworkResponse()->getExecutionTrace(context);
+      std::vector<ExecutionTraceItemPtr> vec = trace->getRootNode()->getSubItems();      
+      ProteinLearnerScoreObjectPtr scoreObject = ((vec[0].dynamicCast<ExecutionTraceNode>())->getReturnValue()).dynamicCast<ProteinLearnerScoreObject>();
+      double validationScore = scoreObject->getValidatinScoreToMinimize();
+      double testScore = scoreObject->getTestScoreToMinimize();
+      if (validationScore <= 1 && testScore <= 1) 
+      {
+        validationMean += validationScore;
+        testMean += testScore;
+        nb++;
+      }
+      i++;
+      if (i == 500) {
+        std::cout << iteration << " " << validationMean/nb << " " << testMean/nb << std::endl;
+        validationMean = 0.0;
+        testMean = 0.0;
+        i = 0;
+        nb = 0;
+      }
+      iteration++;
+    }
+    return Variable();
+  }
+  
+};
   
 class DebugNetworkWorkUnit : public WorkUnit
 {
@@ -237,143 +277,166 @@ class OptimizerTestBedWorkUnit : public WorkUnit
     std::cout << output << std::endl;
     */
     
-    DenseDoubleVectorPtr coefs = new DenseDoubleVector(2, 0.0);
+    DenseDoubleVectorPtr coefs = new DenseDoubleVector(5, 0.0);
     coefs->setValue(0, -2.0);
     coefs->setValue(1, 3.0);
-    //coefs->setValue(2, -3.0);
-    //coefs->setValue(3, 0.0);
-    //coefs->setValue(4, -2.0);
+    coefs->setValue(2, -4.0);
+    coefs->setValue(3, 0.0);
+    coefs->setValue(4, 1.0);
     double fopt = 0.0;
+    FunctionPtr f1 = new SphereFunction(coefs, fopt);
+    FunctionPtr f2 = new EllipsoidalFunction(coefs, fopt);
+    FunctionPtr f3 = new RastriginFunction(coefs, fopt);
+    FunctionPtr f4 = new BucheRastriginFunction(coefs, fopt);
+    FunctionPtr f5 = new LinearSlopeFunction(coefs, fopt);
+    FunctionPtr f6 = new AttractiveSectorFunction(coefs, fopt);
+    FunctionPtr f7 = new StepEllipsoidalFunction(coefs, fopt);
+    FunctionPtr f8 = new RosenbrockFunction(coefs, fopt);
+    FunctionPtr f9 = new RosenbrockRotatedFunction(coefs, fopt);
+    FunctionPtr f10 = new IllEllipsoidalFunction(coefs, fopt);
+    FunctionPtr f11 = new DiscusFunction(coefs, fopt);
+    FunctionPtr f12 = new BentCigarFunction(coefs, fopt);
+    FunctionPtr f13 = new SharpRidgeFunction(coefs, fopt);
+    FunctionPtr f14 = new DifferentPowersFunction(coefs, fopt);
+
     OptimizerPtr optimizer;
     OptimizerContextPtr optimizerContext;
     OptimizerStatePtr optimizerState;
-    FunctionPtr f;
     SamplerPtr sampler;
-    
+    FunctionPtr f;
     /** Influence de inProgressEvaluations **/
-    /*
-     size_t numIterations = 30;
-     size_t populationSize = 500;
-     size_t numBests = 150;
-     size_t inProgressEvaluations;
-     f = new RastriginFunction(coefs, fopt);
-     // EDAOptimizer
-     context.informationCallback(T("eda_rastrigin_noslowing"));
-     sampler = independentDoubleVectorSampler(2, gaussianSampler(0.0, 5.0));
-     optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.0);
-     optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
-     optimizerState = new SamplerBasedOptimizerState(sampler);
-     optimizer->compute(context, optimizerContext, optimizerState);
-     
-     // AsyncEDAOptimizer: inProgressEvaluations = 750
-     context.informationCallback(T("asynceda_rastrigin_noslowing_750"));
-     inProgressEvaluations = 750;
-     sampler = independentDoubleVectorSampler(2, gaussianSampler(0.0, 5.0));
-     optimizer = asyncEDAOptimizer(numIterations, populationSize, numBests, inProgressEvaluations,0.0);
-     optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
-     optimizerState = new SamplerBasedOptimizerState(sampler);
-     optimizer->compute(context, optimizerContext, optimizerState);
-     
-     // AsyncEDAOptimizer: inProgressEvaluations = 500
-     context.informationCallback(T("asynceda_rastrigin_noslowing_500"));
-     inProgressEvaluations = populationSize;
-     sampler = independentDoubleVectorSampler(2, gaussianSampler(0.0, 5.0));
-     optimizer = asyncEDAOptimizer(numIterations, populationSize, numBests, inProgressEvaluations,0.0);
-     optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
-     optimizerState = new SamplerBasedOptimizerState(sampler);
-     optimizer->compute(context, optimizerContext, optimizerState);
-     
-     // AsyncEDAOptimizer: inProgressEvaluations = 100
-     context.informationCallback(T("asynceda_rastrigin_noslowing_100"));
-     inProgressEvaluations = 100;
-     sampler = independentDoubleVectorSampler(2, gaussianSampler(0.0, 5.0));
-     optimizer = asyncEDAOptimizer(numIterations, populationSize, numBests, inProgressEvaluations,0.0);
-     optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
-     optimizerState = new SamplerBasedOptimizerState(sampler);
-     optimizer->compute(context, optimizerContext, optimizerState);
-     
-     // AsyncEDAOptimizer: inProgressEvaluations = 50
-     context.informationCallback(T("asynceda_rastrigin_noslowing_50"));
-     inProgressEvaluations = 50;
-     sampler = independentDoubleVectorSampler(2, gaussianSampler(0.0, 5.0));
-     optimizer = asyncEDAOptimizer(numIterations, populationSize, numBests, inProgressEvaluations,0.0);
-     optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
-     optimizerState = new SamplerBasedOptimizerState(sampler);
-     optimizer->compute(context, optimizerContext, optimizerState);
-     
-     // AsyncEDAOptimizer: inProgressEvaluations = 1
-     context.informationCallback(T("asynceda_rastrigin_noslowing_1"));
-     inProgressEvaluations = 1;
-     sampler = independentDoubleVectorSampler(2, gaussianSampler(0.0, 5.0));
-     optimizer = asyncEDAOptimizer(numIterations, populationSize, numBests, inProgressEvaluations,0.0);
-     optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
-     optimizerState = new SamplerBasedOptimizerState(sampler);
-     optimizer->compute(context, optimizerContext, optimizerState);
-     */
     
-    /** Influence de slowingfactor sur eda **/
-    
-     size_t numIterations = 40;
-     size_t populationSize = 100;
-     size_t numBests = 30;
-     f = new DifferentPowersFunction(coefs, fopt);
-    
-    /*
+    size_t numIterations = 40;
+    size_t populationSize = 100;
+    size_t numBests = 30;
+    size_t inProgressEvaluations;
+    f = f13;
     // EDAOptimizer
-     context.informationCallback(T("eda_rastrigin_noslowing"));
-     sampler = independentDoubleVectorSampler(2, gaussianSampler(0.0, 5.0));
-     optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.0);
-     optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
-     optimizerState = new SamplerBasedOptimizerState(sampler);
-     optimizer->compute(context, optimizerContext, optimizerState);
-     
-     // EDAOptimizer slowing 0.1
-     context.informationCallback(T("eda_rastrigin_0.1"));
-     sampler = independentDoubleVectorSampler(2, gaussianSampler(0.0, 5.0));
-     optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.1);
-     optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
-     optimizerState = new SamplerBasedOptimizerState(sampler);
-     optimizer->compute(context, optimizerContext, optimizerState);
-     
-     // EDAOptimizer slowing 0.2
-     context.informationCallback(T("eda_rastrigin_0.2"));
-     sampler = independentDoubleVectorSampler(2, gaussianSampler(0.0, 5.0));
-     optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.2);
-     optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
-     optimizerState = new SamplerBasedOptimizerState(sampler);
-     optimizer->compute(context, optimizerContext, optimizerState);
-     
-     // EDAOptimizer slowing 0.3
-     context.informationCallback(T("eda_rastrigin_0.3"));
-     sampler = independentDoubleVectorSampler(2, gaussianSampler(0.0, 5.0));
-     optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.3);
-     optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
-     optimizerState = new SamplerBasedOptimizerState(sampler);
-     optimizer->compute(context, optimizerContext, optimizerState);
-     
-     // EDAOptimizer slowing 0.4
-     context.informationCallback(T("eda_rastrigin_0.4"));
-     sampler = independentDoubleVectorSampler(2, gaussianSampler(0.0, 5.0));
-     optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.4);
-     optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
-     optimizerState = new SamplerBasedOptimizerState(sampler);
-     optimizer->compute(context, optimizerContext, optimizerState);
-     
-     // EDAOptimizer slowing 0.5
-     context.informationCallback(T("eda_rastrigin_0.5"));
-     sampler = independentDoubleVectorSampler(2, gaussianSampler(0.0, 5.0));
-     optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.5);
-     optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
-     optimizerState = new SamplerBasedOptimizerState(sampler);
-     optimizer->compute(context, optimizerContext, optimizerState);
-  */
+    /*context.informationCallback(T("eda_f10_noslowing"));
+    sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
+    optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.0);
+    optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
+    optimizerState = new SamplerBasedOptimizerState(sampler);
+    optimizer->compute(context, optimizerContext, optimizerState);
+    
+    // AsyncEDAOptimizer: inProgressEvaluations = 150
+    context.informationCallback(T("asynceda_f10_noslowing_150"));
+    inProgressEvaluations = 150;
+    sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
+    optimizer = asyncEDAOptimizer(numIterations, populationSize, numBests, inProgressEvaluations,0.0);
+    optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
+    optimizerState = new SamplerBasedOptimizerState(sampler);
+    optimizer->compute(context, optimizerContext, optimizerState);
+    
+    // AsyncEDAOptimizer: inProgressEvaluations = 100
+    context.informationCallback(T("asynceda_f10_noslowing_100"));
+    inProgressEvaluations = 100;
+    sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
+    optimizer = asyncEDAOptimizer(numIterations, populationSize, numBests, inProgressEvaluations,0.0);
+    optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
+    optimizerState = new SamplerBasedOptimizerState(sampler);
+    optimizer->compute(context, optimizerContext, optimizerState);
+    
+    // AsyncEDAOptimizer: inProgressEvaluations = 50
+    context.informationCallback(T("asynceda_f10_noslowing_50"));
+    inProgressEvaluations = 50;
+    sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
+    optimizer = asyncEDAOptimizer(numIterations, populationSize, numBests, inProgressEvaluations,0.0);
+    optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
+    optimizerState = new SamplerBasedOptimizerState(sampler);
+    optimizer->compute(context, optimizerContext, optimizerState);
+*/
+    // AsyncEDAOptimizer: inProgressEvaluations = 30
+    context.informationCallback(T("asynceda_f10_noslowing_30"));
+    inProgressEvaluations = 30;
+    sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
+    optimizer = asyncEDAOptimizer(numIterations, populationSize, numBests, inProgressEvaluations,0.0);
+    optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
+    optimizerState = new SamplerBasedOptimizerState(sampler);
+    optimizer->compute(context, optimizerContext, optimizerState);
+/*
+    // AsyncEDAOptimizer: inProgressEvaluations = 20
+    context.informationCallback(T("asynceda_f10_noslowing_20"));
+    inProgressEvaluations = 20;
+    sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
+    optimizer = asyncEDAOptimizer(numIterations, populationSize, numBests, inProgressEvaluations,0.0);
+    optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
+    optimizerState = new SamplerBasedOptimizerState(sampler);
+    optimizer->compute(context, optimizerContext, optimizerState);
 
-    sampler = independentDoubleVectorSampler(2, gaussianSampler(0, 5));;
+    // AsyncEDAOptimizer: inProgressEvaluations = 10
+    context.informationCallback(T("asynceda_f10_noslowing_10"));
+    inProgressEvaluations = 10;
+    sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
+    optimizer = asyncEDAOptimizer(numIterations, populationSize, numBests, inProgressEvaluations,0.0);
+    optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
+    optimizerState = new SamplerBasedOptimizerState(sampler);
+    optimizer->compute(context, optimizerContext, optimizerState);
+    
+    */
+    /** Influence de slowingfactor sur eda **/
+  /*  
+    size_t numIterations = 40;
+    size_t populationSize = 100;
+    size_t numBests = 30;
+    f = f10;
+
+    // EDAOptimizer
+    context.informationCallback(T("eda_f10_noslowing"));
+    sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
+    optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.0);
+    optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
+    optimizerState = new SamplerBasedOptimizerState(sampler);
+    optimizer->compute(context, optimizerContext, optimizerState);
+
+    // EDAOptimizer slowing 0.1
+    context.informationCallback(T("eda_f10_0.1"));
+    sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
     optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.1);
     optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
     optimizerState = new SamplerBasedOptimizerState(sampler);
     optimizer->compute(context, optimizerContext, optimizerState);
-     
+
+    // EDAOptimizer slowing 0.2
+    context.informationCallback(T("eda_f10_0.2"));
+    sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
+    optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.2);
+    optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
+    optimizerState = new SamplerBasedOptimizerState(sampler);
+    optimizer->compute(context, optimizerContext, optimizerState);
+
+    // EDAOptimizer slowing 0.3
+    context.informationCallback(T("eda_f10_0.3"));
+    sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
+    optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.3);
+    optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
+    optimizerState = new SamplerBasedOptimizerState(sampler);
+    optimizer->compute(context, optimizerContext, optimizerState);
+
+    // EDAOptimizer slowing 0.4
+    context.informationCallback(T("eda_f10_0.4"));
+    sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
+    optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.4);
+    optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
+    optimizerState = new SamplerBasedOptimizerState(sampler);
+    optimizer->compute(context, optimizerContext, optimizerState);
+
+    // EDAOptimizer slowing 0.5
+    context.informationCallback(T("eda_f10_0.5"));
+    sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
+    optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.5);
+    optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
+    optimizerState = new SamplerBasedOptimizerState(sampler);
+    optimizer->compute(context, optimizerContext, optimizerState);
+  */
+/*
+    sampler = independentDoubleVectorSampler(5, gaussianSampler(0, 5));;
+    optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.1);
+    optimizerContext = synchroneousOptimizerContext(context, f13, FunctionPtr());
+    optimizerState = new SamplerBasedOptimizerState(sampler);
+    optimizer->compute(context, optimizerContext, optimizerState);
+  
+*/
     
     return Variable();
     
