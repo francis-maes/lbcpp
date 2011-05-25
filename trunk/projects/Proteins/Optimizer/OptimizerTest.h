@@ -37,7 +37,7 @@
 # include "../../../src/Optimizer/Optimizer/AsyncEDAOptimizer.h"
 //# include "../../../src/Optimizer/Context/SynchroneousOptimizerContext.h"
 //# include "../../../src/Optimizer/Context/MultiThreadsOptimizerContext.h"
-
+#include <map>
 namespace lbcpp
 {
 
@@ -46,36 +46,16 @@ class ExtractMeanScoreWorkUnit : public WorkUnit
   virtual Variable run(ExecutionContext& context)
   {
     juce::DirectoryIterator iter (File ("/home/arnaud/Manager2/AsyncEDAOptimizerExperience2"), true, "*.archive");
-    
-    double validationMean = 0.0;
-    double testMean = 0.0;
-    size_t nb = 0;
-    size_t i = 0;
-    size_t iteration = 1;
     while (iter.next())
     {
       File theFileItFound (iter.getFile());
       NetworkArchivePtr archive = Object::createFromFile(context, theFileItFound).staticCast<NetworkArchive>();
       ExecutionTracePtr trace =  archive->getExecutionTraceNetworkResponse()->getExecutionTrace(context);
       std::vector<ExecutionTraceItemPtr> vec = trace->getRootNode()->getSubItems();      
-      ProteinLearnerScoreObjectPtr scoreObject = ((vec[0].dynamicCast<ExecutionTraceNode>())->getReturnValue()).dynamicCast<ProteinLearnerScoreObject>();
-      double validationScore = scoreObject->getValidatinScoreToMinimize();
-      double testScore = scoreObject->getTestScoreToMinimize();
-      if (validationScore <= 1 && testScore <= 1) 
-      {
-        validationMean += validationScore;
-        testMean += testScore;
-        nb++;
-      }
-      i++;
-      if (i == 500) {
-        std::cout << iteration << " " << validationMean/nb << " " << testMean/nb << std::endl;
-        validationMean = 0.0;
-        testMean = 0.0;
-        i = 0;
-        nb = 0;
-      }
-      iteration++;
+      Variable ret = (vec[0].dynamicCast<ExecutionTraceNode>())->getReturnValue();
+      double validationScore = ret.toDouble();
+      std::cout << theFileItFound.getFileNameWithoutExtension().getLargeIntValue() << " " << validationScore << std::endl;
+      break;
     }
     return Variable();
   }
