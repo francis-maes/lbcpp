@@ -54,8 +54,7 @@ void XmlElement::saveObject(ExecutionContext& context, const ObjectPtr& object, 
 
 ObjectPtr XmlElement::createObject(ExecutionContext& context) const
 {
-  juce::XmlDocument newDocument(createJuceXmlElement()->createDocument(String::empty));
-  XmlImporter importer(context, newDocument);
+  XmlImporter importer(context, createJuceXmlElement());
   Variable v = importer.isOpened() ? importer.load() : Variable();
   jassert(v.isObject());
   return v.getObject();
@@ -436,6 +435,12 @@ XmlImporter::XmlImporter(ExecutionContext& context, juce::XmlDocument& document)
   
   if (lastParseError.isNotEmpty())
     context.warningCallback(T("NetworkClient::messageReceived"), lastParseError);
+}
+
+XmlImporter::XmlImporter(ExecutionContext& context, juce::XmlElement* newRoot)
+  : context(context), root(newRoot)
+{
+  enter(root);
 }
 
 void XmlImporter::errorMessage(const String& where, const String& what) const

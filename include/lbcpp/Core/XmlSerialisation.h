@@ -216,6 +216,7 @@ class XmlImporter
 public:
   XmlImporter(ExecutionContext& context, const File& file);
   XmlImporter(ExecutionContext& context, juce::XmlDocument& document);
+  XmlImporter(ExecutionContext& context, juce::XmlElement* newRoot);
   ~XmlImporter()
     {if (root) delete root;}
 
