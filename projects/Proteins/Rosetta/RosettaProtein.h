@@ -11,6 +11,7 @@
 
 # include "RosettaUtils.h"
 # include <lbcpp/FeatureGenerator/FeatureGenerator.h>
+# include "Sampler/GeneralProteinMoverSampler.h"
 
 namespace lbcpp
 {
@@ -262,11 +263,13 @@ extern CompositeFunctionPtr rosettaProteinFeatures(size_t residues, size_t energ
 class RosettaWorker : public Object
 {
 public:
-  RosettaWorker(core::pose::PoseOP& pose, size_t residues, size_t energy, size_t histogram, size_t distances)
+  RosettaWorker(core::pose::PoseOP& pose, size_t learningPolicy,
+                size_t residues, size_t energy, size_t histogram, size_t distances)
   {
 # ifdef LBCPP_PROTEIN_ROSETTA
     this->protein = new RosettaProtein(pose, residues, energy, histogram, distances);
     this->features = rosettaProteinFeatures(residues, energy, histogram, distances);
+    this->sampler = new GeneralProteinMoverSampler(pose->n_residue(), learningPolicy);
 # else
     jassert(false);
 # endif
@@ -303,11 +306,28 @@ public:
     return features->compute(context, protein);
   }
 
+  Variable sample(ExecutionContext& context, RandomGeneratorPtr& random)
+  {
+    Variable input = getFeatures(context);
+    return sampler->sample(context, random, &input);
+  }
+
+  void learn(ExecutionContext& context, ContainerPtr& inputWorkers, ContainerPtr& inputMovers)
+  {
+    VectorPtr inputs = variableVector(inputWorkers->getNumElements());
+    for (size_t i = 0; i < inputWorkers->getNumElements(); i++)
+      inputs->setElement(i, inputWorkers->getElement(i).getObjectAndCast<RosettaWorker>()->getFeatures(context));
+
+    sampler->learn(context, inputs, inputMovers, DenseDoubleVectorPtr(),
+                  ContainerPtr(), ContainerPtr(), DenseDoubleVectorPtr());
+  }
+
 protected:
   friend class RosettaWorkerClass;
 
   RosettaProteinPtr protein;
   RosettaProteinFeaturesPtr features;
+  GeneralProteinMoverSamplerPtr sampler;
 };
 
 typedef ReferenceCountedObjectPtr<RosettaWorker> RosettaWorkerPtr;

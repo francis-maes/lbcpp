@@ -84,7 +84,7 @@ public:
     acc += String(T("PSHHH"));
     makePoseFromSequence(pose, acc);
     //RosettaProteinPtr protein = new RosettaProtein(pose, 0, 0, 1, 0);
-    RosettaWorkerPtr worker = new RosettaWorker(pose, 1, 1, 1, 1);
+    RosettaWorkerPtr worker = new RosettaWorker(pose, 0, 1, 1, 1, 1);
     //Variable result = features->compute(context, protein);
     Variable result = worker->getFeatures(context);
     cout << worker->getNumResidues() << ": " << (const char*)result.toString() << endl;

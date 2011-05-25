@@ -12,6 +12,12 @@
     <variable type="PositiveInteger" name="numResidues" shortName="n" description="The number of residues to sample from."/>
   </class>
   
+  <class name="ClamperSampler" base="CompositeSampler">
+    <variable type="Double" name="minValue"/>
+    <variable type="Double" name="maxValue"/>
+    <variable type="Double" name="mean"/>
+  </class>
+  
   <class name="ParzenContinuousSampler" base="ContinuousSampler">
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration, Double]" name="abscissa" shortName="a" description="Abscissa where the integral is evaluated"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration, Double]" name="integral" shortName="i" description="Values of the integral of the density probability function"/>
@@ -46,6 +52,7 @@
   <!-- general samplers -->
   <class name="GeneralProteinMoverSampler" base="CompositeSampler">
     <variable type="PositiveInteger" name="numResidues"/>
+    <variable type="PositiveInteger" name="learningPolicy"/>
   </class>
   
   <class name="GeneralSimpleResidueSampler" base="CompositeSampler">
