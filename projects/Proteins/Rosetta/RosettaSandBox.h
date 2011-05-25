@@ -24,6 +24,7 @@
 # include "Sampler/ProteinMoverSampler.h"
 # include "Sampler.h"
 # include "Sampler/GeneralProteinMoverSampler.h"
+# include "RosettaProtein.h"
 //using namespace std;
 
 namespace lbcpp
@@ -83,64 +84,95 @@ public:
   }
 
   void generateMoversDataSet(VectorPtr& inputs, VectorPtr& samples)
-  {
+  {rosettaInitialization(defaultExecutionContext(), false);
     ClassPtr inputClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
-    inputs = vector(inputClass);
+    //inputs = vector(inputClass);
+    //inputs = new ObjectVector(doubleVectorClass(), 0); // not work
+    inputs = vector(doubleVectorClass(), 0);
     samples = vector(proteinMoverClass);
+
+    core::pose::PoseOP pose = new core::pose::Pose();
+    String acc = T("AAAAAAAAAPSHHH");
+    makePoseFromSequence(pose, acc);
+    RosettaWorkerPtr worker1 = new RosettaWorker(pose, 2, 1, 0, 0, 0);
+    RosettaProteinPtr protein = new RosettaProtein(pose, 1, 0, 0, 0);
+    RosettaProteinFeaturesPtr feat = new RosettaProteinFeatures(1, 0, 0, 0);
+    feat->initialize(defaultExecutionContext(), rosettaProteinClass);
 
     DenseDoubleVectorPtr input = new DenseDoubleVector(inputClass);
     input->setValue(0, 1.0); // first distribution
     for (size_t i = 0; i < numExamples / 2; ++i)
     {
-      inputs->append(input);
+      //inputs->append(input);
+      inputs->append(feat->compute(defaultExecutionContext(), protein));
       samples->append(phiPsiMover(0, 32, -123));
 
-      inputs->append(input);
+      //inputs->append(input);
+      inputs->append(feat->compute(defaultExecutionContext(), protein));
       samples->append(phiPsiMover(1, 34, -120));
 
-      inputs->append(input);
+      //inputs->append(input);
+      inputs->append(feat->compute(defaultExecutionContext(), protein));
       samples->append(phiPsiMover(2, 38, -121));
 
-      inputs->append(input);
+      //inputs->append(input);
+      inputs->append(feat->compute(defaultExecutionContext(), protein));
       samples->append(phiPsiMover(3, 30, -122));
     }
+
+
+    acc = T("AAAAAAAAAAAAAAAAAAAAAAAAPSHHH");
+    makePoseFromSequence(pose, acc);
+    RosettaProteinPtr protein2 = new RosettaProtein(pose, 1, 0, 0, 0);
+
 
     input = new DenseDoubleVector(inputClass);
     input->setValue(1, 1.0); // second distribution
     for (size_t i = 0; i < numExamples / 2; ++i)
     {
-      inputs->append(input);
+      //inputs->append(input);
+      inputs->append(feat->compute(defaultExecutionContext(), protein2));
       samples->append(shearMover(3, 0.9, 4.5));
 
-      inputs->append(input);
+      //inputs->append(input);
+      inputs->append(feat->compute(defaultExecutionContext(), protein2));
       samples->append(shearMover(4, 0.7, 4.3));
 
-      inputs->append(input);
+      //inputs->append(input);
+      inputs->append(feat->compute(defaultExecutionContext(), protein2));
       samples->append(shearMover(3, 0.8, 3.4));
 
       // general
-      inputs->append(input);
+      //inputs->append(input);
+      inputs->append(feat->compute(defaultExecutionContext(), protein2));
       samples->append(rigidBodyMover(3, 5, 2.8, -3.4));
 
-      inputs->append(input);
+      //inputs->append(input);
+      inputs->append(feat->compute(defaultExecutionContext(), protein2));
       samples->append(rigidBodyMover(3, 5, 2.5, -2.4));
 
-      inputs->append(input);
+      //inputs->append(input);
+      inputs->append(feat->compute(defaultExecutionContext(), protein2));
       samples->append(rigidBodyMover(1, 3, 0.8, 3.4));
 
-      inputs->append(input);
+      //inputs->append(input);
+      inputs->append(feat->compute(defaultExecutionContext(), protein2));
       samples->append(rigidBodyMover(0, 4, 1.2, 2.4));
 
-      inputs->append(input);
+      //inputs->append(input);
+      inputs->append(feat->compute(defaultExecutionContext(), protein2));
       samples->append(rigidBodyMover(2, 4, 0.3, 3.4));
 
-      inputs->append(input);
+      //inputs->append(input);
+      inputs->append(feat->compute(defaultExecutionContext(), protein2));
       samples->append(rigidBodyMover(1, 3, 0.76, 4.2));
 
-      inputs->append(input);
+      //inputs->append(input);
+      inputs->append(feat->compute(defaultExecutionContext(), protein2));
       samples->append(rigidBodyMover(1, 3, 0.76, 4.2));
 
-      inputs->append(input);
+      //inputs->append(input);
+      inputs->append(feat->compute(defaultExecutionContext(), protein2));
       samples->append(rigidBodyMover(0, 3, 1.01, 4));
     }
   }
@@ -183,7 +215,7 @@ public:
     VectorPtr inputs;
     VectorPtr samples;
     RandomGeneratorPtr random = new RandomGenerator();
-# if 1
+# if 0
     generateConditionalGaussianDataSet(inputs, samples);
     displayDataSet(context, T("Conditional gaussian dataset"), inputs, samples);
 
@@ -212,37 +244,37 @@ public:
     }
     context.leaveScope(true);
 # endif
-#if 0
+#if 1
     generateMoversDataSet(inputs, samples);
     SamplerPtr moverClassSampler = maximumEntropySampler(proteinMoverEnumerationEnumeration);
     SamplerPtr MEsampler = proteinMoverSampler(moverClassSampler, 1000);
 
     MEsampler->learn(context, inputs, samples);
   
-    ClassPtr inputClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
-    random = new RandomGenerator();
-
-    context.enterScope(T("Samples 1"));
-    DenseDoubleVectorPtr input = new DenseDoubleVector(inputClass);
-    input->setValue(0, 1.0); // first distribution
-    Variable inputVariable = input;
-    for (size_t i = 0; i < 100; ++i)
-    {
-      Variable sample = MEsampler->sample(context, random, &inputVariable);
-      context.resultCallback(T("sample ") + String((int)i + 1), sample);
-    }
-    context.leaveScope();
-
-    context.enterScope(T("Samples 2"));
-    input = new DenseDoubleVector(inputClass);
-    input->setValue(1, 1.0); // second distribution
-    inputVariable = input;
-    for (size_t i = 0; i < 100; ++i)
-    {
-      Variable sample = MEsampler->sample(context, random, &inputVariable);
-      context.resultCallback(T("sample ") + String((int)i + 1), sample);
-    }
-    context.leaveScope();
+//    ClassPtr inputClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
+//    random = new RandomGenerator();
+//
+//    context.enterScope(T("Samples 1"));
+//    DenseDoubleVectorPtr input = new DenseDoubleVector(inputClass);
+//    input->setValue(0, 1.0); // first distribution
+//    Variable inputVariable = input;
+//    for (size_t i = 0; i < 100; ++i)
+//    {
+//      Variable sample = MEsampler->sample(context, random, &inputVariable);
+//      context.resultCallback(T("sample ") + String((int)i + 1), sample);
+//    }
+//    context.leaveScope();
+//
+//    context.enterScope(T("Samples 2"));
+//    input = new DenseDoubleVector(inputClass);
+//    input->setValue(1, 1.0); // second distribution
+//    inputVariable = input;
+//    for (size_t i = 0; i < 100; ++i)
+//    {
+//      Variable sample = MEsampler->sample(context, random, &inputVariable);
+//      context.resultCallback(T("sample ") + String((int)i + 1), sample);
+//    }
+//    context.leaveScope();
 #endif // 0
 #if 0
 

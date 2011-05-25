@@ -65,6 +65,53 @@ private:
   ProteinMoverPtr moverEnter;
 
 public:
+  void generateMoversDataset(VectorPtr& inputWorker, VectorPtr& inputMover)
+  {
+    String acc;
+    for (size_t i = 0; i < 20; i++)
+    {
+      core::pose::PoseOP pose = new core::pose::Pose();
+      acc = T("AAAAAAAAAPSHHH");
+      makePoseFromSequence(pose, acc);
+      RosettaWorkerPtr worker1 = new RosettaWorker(pose, 2, 1, 0, 0, 0);
+      ProteinMoverPtr m1 = new PhiPsiMover(3, 23.2, -23.2);
+      inputWorker->append(worker1);
+      inputMover->append(m1);
+
+      core::pose::PoseOP pose2 = new core::pose::Pose();
+      acc = T("AAAAAAAAAAAAAPSHHHAAAAAAAA");
+      makePoseFromSequence(pose2, acc);
+      RosettaWorkerPtr worker2 = new RosettaWorker(pose2, 2, 1, 0, 0, 0);
+      ProteinMoverPtr m2 = new PhiPsiMover(15, 2.2, 53.2);
+      inputWorker->append(worker2);
+      inputMover->append(m2);
+
+      core::pose::PoseOP pose3 = new core::pose::Pose();
+      acc = T("AAAAAPSHHH");
+      makePoseFromSequence(pose3, acc);
+      RosettaWorkerPtr worker3 = new RosettaWorker(pose3, 2, 1, 0, 0, 0);
+      ProteinMoverPtr m3 = new ShearMover(2, -53.2, -23.2);
+      inputWorker->append(worker3);
+      inputMover->append(m3);
+
+      core::pose::PoseOP pose4 = new core::pose::Pose();
+      acc = T("HHHHHHAAAAAAAAAPSHHHHHHHHHHHHHHHHHH");
+      makePoseFromSequence(pose4, acc);
+      RosettaWorkerPtr worker4 = new RosettaWorker(pose4, 2, 1, 0, 0, 0);
+      ProteinMoverPtr m4 = new PhiPsiMover(23, -23.2, -23.2);
+      inputWorker->append(worker4);
+      inputMover->append(m4);
+
+      core::pose::PoseOP pose5 = new core::pose::Pose();
+      acc = T("HHHHHHAAAPSHHHHHHHHHHHHHAAAPSHHHHHHHHHHHHHHHHHH");
+      makePoseFromSequence(pose5, acc);
+      RosettaWorkerPtr worker5 = new RosettaWorker(pose5, 2, 1, 0, 0, 0);
+      ProteinMoverPtr m5 = new RigidBodyMover(10, 15, -23.2, -23.2);
+      inputWorker->append(worker5);
+      inputMover->append(m5);
+    }
+  }
+
   virtual Variable run(ExecutionContext& context)
   {
     RandomGeneratorPtr random = new RandomGenerator();
@@ -72,45 +119,60 @@ public:
 # ifdef LBCPP_PROTEIN_ROSETTA
     rosettaInitialization(context, false);
 
-    cout << (const char*)moverEnter->toString() << endl;
-
     // -------------- rosetta protein features
     core::pose::PoseOP pose = new core::pose::Pose();
     core::pose::PoseOP initialized;
     FunctionPtr features = new RosettaProteinFeatures(0, 0, 0, 1);
     features->initialize(context, rosettaProteinClass);
-    String increment = T("AADRVY");
-    String acc(increment);
-    acc += String(T("PSHHH"));
-    makePoseFromSequence(pose, acc);
-    //RosettaProteinPtr protein = new RosettaProtein(pose, 0, 0, 1, 0);
-    RosettaWorkerPtr worker = new RosettaWorker(pose, 0, 1, 1, 1, 1);
-    //Variable result = features->compute(context, protein);
-    Variable result = worker->getFeatures(context);
-    cout << worker->getNumResidues() << ": " << (const char*)result.toString() << endl;
+    String acc;
 
+    VectorPtr inputWorker = new VariableVector(0);
+    VectorPtr inputMover = vector(proteinMoverClass, 0);
 
-    for (size_t i = 0; i < 10; i++)
+    ClassPtr inputClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
+    VectorPtr inputTest = vector(inputClass, 0);
+    VectorPtr samples = vector(proteinMoverClass);
+
+    generateMoversDataset(inputWorker, inputMover);
+
+//    for (size_t i = 0; i < inputMover->getNumElements(); i++)
+//      cout << inputWorker->getElement(i).getObjectAndCast<RosettaWorker>()->getFeatures(context).getObjectAndCast<DoubleVector>()->toString() << " : " << (const char*)inputMover->getElement(i).getObjectAndCast<ProteinMover>()->toString() << endl;
+
+    //SamplerPtr maxent = maximumEntropySampler(proteinMoverEnumerationEnumeration);
+
+    ObjectVectorPtr featureVectors = new ObjectVector(doubleVectorClass(), 0);
+
+    for (size_t i = 0; i < inputWorker->getNumElements(); i++)
     {
-      acc += increment + increment + increment;
-      makePoseFromSequence(pose, acc);
-      initializeProteinStructure(pose, initialized);
-      worker->setPose(initialized);
-      Variable result2 = worker->getFeatures(context);
-      cout << worker->getNumResidues() << ": " << (const char*)result2.toString() << endl;
+      RosettaWorkerPtr klWorker = inputWorker->getElement(i).getObjectAndCast<RosettaWorker>();
+      Variable klFeature = klWorker->getFeatures(context);
+      //featureVectors->append(klFeature);
+
+
+      // TEST
+      DenseDoubleVectorPtr input = new DenseDoubleVector(inputClass);
+      input->setValue(0, 1.0); // first distribution
+      inputTest->append(input);
+      samples->append(inputMover->getElement(i));
     }
 
+//    maxent->learn(context, inputTest, inputMover, DenseDoubleVectorPtr(),
+//        ContainerPtr(), ContainerPtr(), DenseDoubleVectorPtr());
 
-//    EnumerationPtr kl = aminoAcidTypeEnumeration;
-//    for (size_t i = 0; i < kl->getNumElements(); i++)
-//    {
-//      EnumerationElementPtr l = kl->getElement(i);
-//      for (size_t j = 0; j < l->getNumVariables(); j++)
-//        cout << (const char*)l->getVariable(j).toString() << endl;
-//      cout << (const char*)kl->getElement(i)->getVariable(1).toString() << endl;
-//    }
+
+
+//    Variable result2 = worker->getFeatures(context);
+//    cout << worker->getNumResidues() << ": " << (const char*)result2.toString() << endl;
+
+    //    EnumerationPtr kl = aminoAcidTypeEnumeration;
+    //    for (size_t i = 0; i < kl->getNumElements(); i++)
+    //    {
+    //      EnumerationElementPtr l = kl->getElement(i);
+    //      for (size_t j = 0; j < l->getNumVariables(); j++)
+    //        cout << (const char*)l->getVariable(j).toString() << endl;
+    //      cout << (const char*)kl->getElement(i)->getVariable(1).toString() << endl;
+    //    }
 # endif // LBCPP_PROTEIN_ROSETTA
-
 # if 0
     // -------------- max ent
     VectorPtr inputs;

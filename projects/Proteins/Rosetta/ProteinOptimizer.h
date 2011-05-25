@@ -19,10 +19,7 @@
 # include <vector>
 # include "Sampler.h"
 # include "ProteinMover.h"
-
-//# undef T   // TODO: Alejandro: if this include is truely usefull, add #ifdef LBCPP_PROTEINS_ROSETTA, otherwise remove this comment
-//#  include <core/conformation/Conformation.hh>
-//# define T JUCE_T
+# include "RosettaProtein.h"
 
 namespace lbcpp
 {
@@ -125,8 +122,8 @@ public:
   double getFrequency()
     {return frequencyVerbosity;}
 
-  virtual void apply(ExecutionContext& context, const core::pose::PoseOP& pose,
-                     const RandomGeneratorPtr& random, const SamplerPtr& sampler, core::pose::PoseOP& res) = 0;
+  virtual void apply(ExecutionContext& context, RosettaWorkerPtr& worker,
+                     const RandomGeneratorPtr& random, DenseDoubleVectorPtr& energiesAtIteration) = 0;
 
 protected:
   friend class ProteinOptimizerClass;

@@ -35,11 +35,11 @@ public:
 
   ProteinSimulatedAnnealingOptimizer() {}
 
-  virtual void apply(ExecutionContext& context, const core::pose::PoseOP& pose,
-                     const RandomGeneratorPtr& random, const SamplerPtr& sampler, core::pose::PoseOP& res)
+  virtual void apply(ExecutionContext& context, RosettaWorkerPtr& worker,
+                    const RandomGeneratorPtr& random, DenseDoubleVectorPtr& energiesAtIteration)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
-    res = simulatedAnnealingOptimization(pose, sampler, context, random, initialTemperature,
+    simulatedAnnealingOptimization(context, worker, random, energiesAtIteration, initialTemperature,
         finalTemperature, numberDecreasingSteps, maxSteps, timesReinitialization);
 #else
     jassert(false);
@@ -64,11 +64,15 @@ public:
    * Default = 5.
    * @return the new conformation
    */
-  core::pose::PoseOP simulatedAnnealingOptimization(const core::pose::PoseOP& pose,
-      const SamplerPtr& sampler, ExecutionContext& context, const RandomGeneratorPtr& random,
+  void simulatedAnnealingOptimization(ExecutionContext& context, RosettaWorkerPtr& worker,
+      const RandomGeneratorPtr& random, DenseDoubleVectorPtr& energiesAtIteration,
       double initialTemperature = 4.0, double finalTemperature = 0.01, int numberDecreasingSteps =
           50, int maxSteps = 50000, int timesReinitialization = 5)
   {
+    core::pose::PoseOP pose;
+    worker->getPose(pose);
+    energiesAtIteration = new DenseDoubleVector(0, 0.0);
+
     double currentEnergy = getConformationScore(pose, fullAtomEnergy);
     double minimumEnergy = currentEnergy;
     double temporaryEnergy = currentEnergy;
@@ -76,10 +80,7 @@ public:
     if ((initialTemperature < finalTemperature) || (numberDecreasingSteps > maxSteps)
         || (numberDecreasingSteps <= 0) || (maxSteps <= 0) || (initialTemperature <= 0)
         || (finalTemperature <= 0))
-    {
-      std::cout << "Error in arguments of optimizer, check out in implementation." << std::endl;
-      return NULL;
-    }
+      {jassert(false);}
 
     int reinitializationInterval = -1;
     if (timesReinitialization > 0)
@@ -90,6 +91,7 @@ public:
     core::pose::PoseOP optimizedPose = new core::pose::Pose((*pose));
     core::pose::PoseOP temporaryOptimizedPose = new core::pose::Pose((*pose));
     core::pose::PoseOP workingPose = new core::pose::Pose((*pose));
+    worker->setPose(workingPose);
 
     // Init verbosity
     String nameEnglobingScope("Simulated annealing optimization : ");
@@ -134,10 +136,11 @@ public:
 
     for (int i = 1; i <= maxSteps; i++)
     {
-      ProteinMoverPtr mover = sampler->sample(context, random).getObjectAndCast<ProteinMover> ();
-
+      worker->update();
+      ProteinMoverPtr mover = worker->sample(context, random).getObjectAndCast<ProteinMover> ();
+      //std::cout << (const char*)mover->toString() << std::endl;
       mover->move(workingPose);
-      temporaryEnergy = getConformationScore(workingPose, fullAtomEnergy);
+      worker->energies(NULL, &temporaryEnergy, NULL);
 
       if (keepConformation(random, temporaryEnergy - currentEnergy, currentTemperature))
       {
@@ -156,7 +159,7 @@ public:
         minimumEnergy = temporaryEnergy;
       }
 
-      if ((reinitializationInterval > 0) && (i % reinitializationInterval) == 0)
+      if (((reinitializationInterval > 0) && (i % reinitializationInterval) == 0) || (i == maxSteps))
       {
         (*workingPose) = (*optimizedPose);
         (*temporaryOptimizedPose) = (*optimizedPose);
@@ -173,6 +176,7 @@ public:
       // Verbosity
       if (verbosity && (((i % intervalVerbosity) == 0) || (i == maxSteps)))
       {
+        energiesAtIteration->appendValue(minimumEnergy);
         resultCallbackValues.at(0) = Variable((int)i);
         resultCallbackValues.at(1) = Variable(minimumEnergy);
         resultCallbackValues.at(2) = Variable(currentEnergy);
@@ -194,8 +198,6 @@ public:
     // Verbosity
     if (verbosity)
       finalizeCallbacks(context, minimumEnergy);
-
-    return optimizedPose;
   }
 #endif // LBCPP_PROTEIN_ROSETTA
 

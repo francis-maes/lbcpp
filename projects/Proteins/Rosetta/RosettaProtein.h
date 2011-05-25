@@ -19,9 +19,10 @@ namespace lbcpp
 class RosettaProtein : public Object
 {
 public:
-  RosettaProtein(const core::pose::PoseOP& pose, size_t computeResidues, size_t computeEnergy, size_t computeHistogram, size_t computeDistances)
-    : energy(0), score(0), normalizedScore(0), shortDistance(0), longDistance(0), computeResidues(computeResidues),
-      computeEnergy(computeEnergy), computeHistogram(computeHistogram), computeDistances(computeDistances), updated(false)
+  RosettaProtein(core::pose::PoseOP& pose, size_t computeResidues, size_t computeEnergy, size_t computeHistogram, size_t computeDistances)
+    : energy(0), score(0), normalizedScore(0), shortDistance(0), longDistance(0),
+      computeResidues(computeResidues), computeEnergy(computeEnergy), computeHistogram(computeHistogram),
+      computeDistances(computeDistances)
   {
 # ifdef LBCPP_PROTEIN_ROSETTA
     this->pose = pose;
@@ -34,7 +35,7 @@ public:
 
   RosettaProtein()
     : numResidues(0), energy(0), score(0), normalizedScore(0), shortDistance(0), longDistance(0),
-      computeResidues(1), computeEnergy(1), computeHistogram(1), computeDistances(1), updated(false) {}
+      computeResidues(1), computeEnergy(1), computeHistogram(1), computeDistances(1) {}
 
   void getPose(core::pose::PoseOP& returnPose)
   {
@@ -52,7 +53,6 @@ public:
 #else
     jassert(false);
 #endif
-    updated = false;
   }
 
   DenseDoubleVectorPtr getHistogram()
@@ -69,23 +69,19 @@ public:
 
   void update()
   {
-    if (updated)
-      return;
     numResidues = getNumResidues();
     if (computeEnergy)
     {
 # ifdef LBCPP_PROTEIN_ROSETTA
-      score = getConformationScore(pose, fullAtomEnergy, &energy);
+      energies(NULL, NULL, NULL);
 # else
-      score = 0.0;
+      jassert(false);
 # endif
-      normalizedScore = sigmoid(0.0005, score);
     }
     if (computeHistogram)
       updateHistogram();
     if (computeDistances)
       updateDistances();
-    updated = true;
   }
 
   void updateHistogram()
@@ -113,6 +109,11 @@ public:
 
   void energies(double* energy, double* score, double* normalizedScore = NULL)
   {
+    // energies updated
+    this->score = getConformationScore(pose, fullAtomEnergy, &(this->energy));
+    this->normalizedScore = sigmoid(0.0005, this->score);
+
+    // return
     if (energy != NULL)
       *energy = this->energy;
     if (score != NULL)
@@ -174,7 +175,6 @@ protected:
   size_t computeEnergy;
   size_t computeHistogram;
   size_t computeDistances;
-  bool updated;
 };
 
 extern ClassPtr rosettaProteinClass;
@@ -260,16 +260,21 @@ protected:
 typedef ReferenceCountedObjectPtr<RosettaProteinFeatures> RosettaProteinFeaturesPtr;
 extern CompositeFunctionPtr rosettaProteinFeatures(size_t residues, size_t energy, size_t histogram, size_t distances);
 
+class RosettaWorker;
+typedef ReferenceCountedObjectPtr<RosettaWorker> RosettaWorkerPtr;
+
 class RosettaWorker : public Object
 {
 public:
   RosettaWorker(core::pose::PoseOP& pose, size_t learningPolicy,
                 size_t residues, size_t energy, size_t histogram, size_t distances)
+    : learningPolicy(learningPolicy)
   {
 # ifdef LBCPP_PROTEIN_ROSETTA
-    this->protein = new RosettaProtein(pose, residues, energy, histogram, distances);
-    this->features = rosettaProteinFeatures(residues, energy, histogram, distances);
-    this->sampler = new GeneralProteinMoverSampler(pose->n_residue(), learningPolicy);
+    protein = new RosettaProtein(pose, residues, energy, histogram, distances);
+    features = rosettaProteinFeatures(residues, energy, histogram, distances);
+    features->initialize(defaultExecutionContext(), rosettaProteinClass);
+    sampler = new GeneralProteinMoverSampler(pose->n_residue(), learningPolicy);
 # else
     jassert(false);
 # endif
@@ -302,24 +307,35 @@ public:
 
   Variable getFeatures(ExecutionContext& context)
   {
+    if (learningPolicy <= 1)
+      return Variable();
     protein->update();
     return features->compute(context, protein);
   }
 
-  Variable sample(ExecutionContext& context, RandomGeneratorPtr& random)
+  void energies(double* energy, double* score = NULL, double* normalizedScore = NULL)
+    {protein->energies(energy, score, normalizedScore);}
+
+  Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random)
   {
-    Variable input = getFeatures(context);
+    Variable input;
+    if (learningPolicy > 1)
+      input = getFeatures(context);
     return sampler->sample(context, random, &input);
   }
 
   void learn(ExecutionContext& context, ContainerPtr& inputWorkers, ContainerPtr& inputMovers)
   {
-    VectorPtr inputs = variableVector(inputWorkers->getNumElements());
+    VectorPtr inputs = vector(doubleVectorClass());
     for (size_t i = 0; i < inputWorkers->getNumElements(); i++)
-      inputs->setElement(i, inputWorkers->getElement(i).getObjectAndCast<RosettaWorker>()->getFeatures(context));
+    {
+      RosettaWorkerPtr tempWorker = inputWorkers->getElement(i).getObjectAndCast<RosettaWorker> ();
+      DoubleVectorPtr tempFeatures = (tempWorker->getFeatures(context)).getObjectAndCast<DoubleVector>();
+      inputs->append(tempFeatures);
+    }
 
-    sampler->learn(context, inputs, inputMovers, DenseDoubleVectorPtr(),
-                  ContainerPtr(), ContainerPtr(), DenseDoubleVectorPtr());
+    sampler->learn(context, inputs, inputMovers, DenseDoubleVectorPtr(), ContainerPtr(),
+        ContainerPtr(), DenseDoubleVectorPtr());
   }
 
 protected:
@@ -328,9 +344,8 @@ protected:
   RosettaProteinPtr protein;
   RosettaProteinFeaturesPtr features;
   GeneralProteinMoverSamplerPtr sampler;
+  size_t learningPolicy;
 };
-
-typedef ReferenceCountedObjectPtr<RosettaWorker> RosettaWorkerPtr;
 
 }; /* namespace lbcpp */
 

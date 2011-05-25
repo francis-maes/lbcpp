@@ -33,11 +33,11 @@ public:
   {
   }
 
-  virtual void apply(ExecutionContext& context, const core::pose::PoseOP& pose,
-                     const RandomGeneratorPtr& random, const SamplerPtr& sampler, core::pose::PoseOP& res)
+  virtual void apply(ExecutionContext& context, RosettaWorkerPtr& worker,
+      const RandomGeneratorPtr& random, DenseDoubleVectorPtr& energiesAtIteration)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
-    res = greedyOptimization(pose, sampler, context, random, maxSteps);
+    greedyOptimization(context, worker, random, energiesAtIteration, maxSteps);
 #else
     jassert(false);
 #endif // LBCPP_PROTEIN_ROSETTA
@@ -57,103 +57,105 @@ public:
    * @param context, the context used to create the trace. NULL if no trace desired, default.
    * @return the new conformation
    */
-  core::pose::PoseOP greedyOptimization(const core::pose::PoseOP& pose, const SamplerPtr& sampler,
-      ExecutionContext& context, const RandomGeneratorPtr& random, int maxSteps = 50000)
+  core::pose::PoseOP greedyOptimization(ExecutionContext& context, RosettaWorkerPtr& worker,
+      const RandomGeneratorPtr& random, DenseDoubleVectorPtr& energiesAtIteration, int maxSteps = 50000)
   {
-    // Initialization
-    double minimumEnergy = getConformationScore(pose, fullAtomEnergy);
-    double temporaryEnergy = minimumEnergy;
-    core::pose::PoseOP optimizedPose = new core::pose::Pose((*pose));
-    core::pose::PoseOP workingPose = new core::pose::Pose((*pose));
-
-    if (maxSteps <= 0)
-    {
-      std::cout << "Error in arguments of optimizer, check out in implementation." << std::endl;
-      return NULL;
-    }
-
-    // Init verbosity
-    String nameEnglobingScope("Greedy optimization : ");
-    int intervalVerbosity =
-        juce::jlimit(1, maxSteps, (int)std::ceil(maxSteps * frequencyVerbosity));
-    std::vector<Variable> resultCallbackValues;
-    if (verbosity)
-    {
-      std::vector<String> englobingScopesNames;
-      englobingScopesNames.push_back(nameEnglobingScope);
-      englobingScopesNames.push_back(T("Energies"));
-      englobingScopesNames.push_back(T("Energy"));
-      englobingScopesNames.push_back(T("Step"));
-      englobingScopesNames.push_back(T("Minimal energy"));
-      englobingScopesNames.push_back(T("Temporary energy"));
-      englobingScopesNames.push_back(T("Minimal energy (log10)"));
-      englobingScopesNames.push_back(T("Temporary energy (log10)"));
-      initializeCallbacks(context, englobingScopesNames, minimumEnergy);
-      resultCallbackValues.push_back(Variable((int)0));
-      resultCallbackValues.push_back(Variable(minimumEnergy));
-      resultCallbackValues.push_back(Variable(temporaryEnergy));
-      double logMinimumEnergy = minimumEnergy >= 1 ? log10(minimumEnergy) : -log10(std::abs(minimumEnergy - 2));
-      double logTemporaryEnergy = temporaryEnergy >= 1 ? log10(temporaryEnergy) : -log10(std::abs(temporaryEnergy - 2));
-      resultCallbackValues.push_back(Variable(logMinimumEnergy));
-      resultCallbackValues.push_back(Variable(logTemporaryEnergy));
-      callback(context, resultCallbackValues, Variable(minimumEnergy), maxSteps);
-    }
-    int intervalSaveToFile = juce::jlimit(1, maxSteps, maxSteps / numOutputFiles);
-    String nameOutputFile = outputDirectory.getFullPathName() + T("/") + name + T("_");
-    int indexOutputFile = 0;
-
-    if (saveToFile)
-    {
-      ProteinPtr protein = convertPoseToProtein(context, optimizedPose);
-      String temporaryOutputFileName = nameOutputFile + String(indexOutputFile) + T(".xml");
-      File temporaryFile(temporaryOutputFileName);
-      protein->saveToXmlFile(context, temporaryFile);
-      indexOutputFile++;
-    }
-
-    for (int i = 1; i <= maxSteps; i++)
-    {
-      ProteinMoverPtr mover = sampler->sample(context, random).getObjectAndCast<ProteinMover> ();
-      mover->move(workingPose);
-      temporaryEnergy = getConformationScore(workingPose, fullAtomEnergy);
-
-      if (temporaryEnergy < minimumEnergy)
-      {
-        (*optimizedPose) = (*workingPose);
-        minimumEnergy = temporaryEnergy;
-      }
-      else
-      {
-        (*workingPose) = (*optimizedPose);
-      }
-
-      // Verbosity
-      if (verbosity && (((i % intervalVerbosity) == 0) || (i == maxSteps)))
-      {
-        resultCallbackValues.at(0) = Variable((int)i);
-        resultCallbackValues.at(1) = Variable(minimumEnergy);
-        resultCallbackValues.at(2) = Variable(temporaryEnergy);
-        resultCallbackValues.at(3) = Variable(log10(minimumEnergy));
-        resultCallbackValues.at(4) = Variable(log10(temporaryEnergy));
-        callback(context, resultCallbackValues, Variable(minimumEnergy), maxSteps);
-      }
-
-      if (saveToFile && (((i % intervalSaveToFile) == 0) || (i == maxSteps)))
-      {
-        ProteinPtr protein = convertPoseToProtein(context, optimizedPose);
-        String temporaryOutputFileName = nameOutputFile + String(indexOutputFile) + T(".xml");
-        File temporaryFile(temporaryOutputFileName);
-        protein->saveToXmlFile(context, temporaryFile);
-        indexOutputFile++;
-      }
-    }
-
-    // Verbosity
-    if (verbosity)
-      finalizeCallbacks(context, minimumEnergy);
-
-    // Return
-    return optimizedPose;
+//    core::pose::PoseOP pose;
+//    worker->getPose(pose);
+//    // Initialization
+//    double minimumEnergy = getConformationScore(pose, fullAtomEnergy);
+//    double temporaryEnergy = minimumEnergy;
+//    core::pose::PoseOP optimizedPose = new core::pose::Pose((*pose));
+//    core::pose::PoseOP workingPose = new core::pose::Pose((*pose));
+//
+//    if (maxSteps <= 0)
+//    {
+//      std::cout << "Error in arguments of optimizer, check out in implementation." << std::endl;
+//      return NULL;
+//    }
+//
+//    // Init verbosity
+//    String nameEnglobingScope("Greedy optimization : ");
+//    int intervalVerbosity =
+//        juce::jlimit(1, maxSteps, (int)std::ceil(maxSteps * frequencyVerbosity));
+//    std::vector<Variable> resultCallbackValues;
+//    if (verbosity)
+//    {
+//      std::vector<String> englobingScopesNames;
+//      englobingScopesNames.push_back(nameEnglobingScope);
+//      englobingScopesNames.push_back(T("Energies"));
+//      englobingScopesNames.push_back(T("Energy"));
+//      englobingScopesNames.push_back(T("Step"));
+//      englobingScopesNames.push_back(T("Minimal energy"));
+//      englobingScopesNames.push_back(T("Temporary energy"));
+//      englobingScopesNames.push_back(T("Minimal energy (log10)"));
+//      englobingScopesNames.push_back(T("Temporary energy (log10)"));
+//      initializeCallbacks(context, englobingScopesNames, minimumEnergy);
+//      resultCallbackValues.push_back(Variable((int)0));
+//      resultCallbackValues.push_back(Variable(minimumEnergy));
+//      resultCallbackValues.push_back(Variable(temporaryEnergy));
+//      double logMinimumEnergy = minimumEnergy >= 1 ? log10(minimumEnergy) : -log10(std::abs(minimumEnergy - 2));
+//      double logTemporaryEnergy = temporaryEnergy >= 1 ? log10(temporaryEnergy) : -log10(std::abs(temporaryEnergy - 2));
+//      resultCallbackValues.push_back(Variable(logMinimumEnergy));
+//      resultCallbackValues.push_back(Variable(logTemporaryEnergy));
+//      callback(context, resultCallbackValues, Variable(minimumEnergy), maxSteps);
+//    }
+//    int intervalSaveToFile = juce::jlimit(1, maxSteps, maxSteps / numOutputFiles);
+//    String nameOutputFile = outputDirectory.getFullPathName() + T("/") + name + T("_");
+//    int indexOutputFile = 0;
+//
+//    if (saveToFile)
+//    {
+//      ProteinPtr protein = convertPoseToProtein(context, optimizedPose);
+//      String temporaryOutputFileName = nameOutputFile + String(indexOutputFile) + T(".xml");
+//      File temporaryFile(temporaryOutputFileName);
+//      protein->saveToXmlFile(context, temporaryFile);
+//      indexOutputFile++;
+//    }
+//
+//    for (int i = 1; i <= maxSteps; i++)
+//    {
+//      ProteinMoverPtr mover = worker->sample(context, random).getObjectAndCast<ProteinMover> ();
+//      mover->move(workingPose);
+//      temporaryEnergy = getConformationScore(workingPose, fullAtomEnergy);
+//
+//      if (temporaryEnergy < minimumEnergy)
+//      {
+//        (*optimizedPose) = (*workingPose);
+//        minimumEnergy = temporaryEnergy;
+//      }
+//      else
+//      {
+//        (*workingPose) = (*optimizedPose);
+//      }
+//
+//      // Verbosity
+//      if (verbosity && (((i % intervalVerbosity) == 0) || (i == maxSteps)))
+//      {
+//        resultCallbackValues.at(0) = Variable((int)i);
+//        resultCallbackValues.at(1) = Variable(minimumEnergy);
+//        resultCallbackValues.at(2) = Variable(temporaryEnergy);
+//        resultCallbackValues.at(3) = Variable(log10(minimumEnergy));
+//        resultCallbackValues.at(4) = Variable(log10(temporaryEnergy));
+//        callback(context, resultCallbackValues, Variable(minimumEnergy), maxSteps);
+//      }
+//
+//      if (saveToFile && (((i % intervalSaveToFile) == 0) || (i == maxSteps)))
+//      {
+//        ProteinPtr protein = convertPoseToProtein(context, optimizedPose);
+//        String temporaryOutputFileName = nameOutputFile + String(indexOutputFile) + T(".xml");
+//        File temporaryFile(temporaryOutputFileName);
+//        protein->saveToXmlFile(context, temporaryFile);
+//        indexOutputFile++;
+//      }
+//    }
+//
+//    // Verbosity
+//    if (verbosity)
+//      finalizeCallbacks(context, minimumEnergy);
+//
+//    // Return
+//    return optimizedPose;
   }
 #endif // LBCPP_PROTEIN_ROSETTA
 
