@@ -107,6 +107,20 @@ DoubleMatrixPtr DoubleMatrix::multiplyBy(const DoubleMatrixPtr& factor) const
   return product;
 }
 
+DenseDoubleVectorPtr DoubleMatrix::multiplyVector(const DenseDoubleVectorPtr& vector) const
+{
+  jassert(this->getNumColumns() == vector->getNumValues());
+  DenseDoubleVectorPtr result = new DenseDoubleVector(this->getNumRows(), 0.0);
+  for (size_t i = 0; i < this->getNumRows(); i++)
+  {
+    double value = 0.0;
+    for (size_t j = 0; j < this->getNumColumns(); j++) 
+      value += this->getValue(i,j)*vector->getValue(j);
+    result->setValue(i, value);
+  }
+  return result;
+}
+
 DoubleMatrixPtr DoubleMatrix::transpose()
 {
   DoubleMatrixPtr transposed = new DoubleMatrix(this->getNumColumns(), this->getNumRows(), 0.0);

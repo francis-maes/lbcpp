@@ -11,6 +11,7 @@
 
 # include "../Core/Container.h"
 # include "../Core/Pair.h"
+# include "DoubleVector.h"
 
 namespace lbcpp
 {
@@ -197,6 +198,7 @@ public:
     {size_t index = makeIndex(row, column); jassert(index < elements.size()); return elements[index];}
 
   DoubleMatrixPtr multiplyBy(const DoubleMatrixPtr& factor) const;
+  DenseDoubleVectorPtr multiplyVector(const DenseDoubleVectorPtr& vector) const;
   DoubleMatrixPtr transpose();
 
   void add(const DoubleMatrixPtr& term);
