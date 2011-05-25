@@ -89,17 +89,21 @@ protected:
     size_t i = 0;
     for (std::map<Variable, ScalarVariableStatistics>::const_iterator it = bestVariables.begin(); it != bestVariables.end(); ++it)
     {
-//      if (i < 10) // TMP !
-        //context.informationCallback(it->first.toShortString() + T(": ") + it->second.toShortString());
+      if (verbose && i < 10)
+        context.informationCallback(it->first.toShortString() + T(": ") + it->second.toShortString());
       bestVariablesVector->setElement(i, it->first);
       ++i;
     }
+    if (verbose)
+      context.informationCallback(String((int)sortedScores.size()) + T(" scores, ") + String(juce::jmin((int)numBests, (int)sortedScores.size())) + T(" bests, ")
+        + String((int)bestVariables.size()) + T(" unique bests"));
+
+    SamplerPtr newSampler = samplerBasedState->getCloneOfInitialSamplerInstance();
+    newSampler->learn(context, ContainerPtr(), bestVariablesVector);
     
     if (slowingFactor > 0) 
     {
       SamplerPtr oldSampler = samplerBasedState->getSampler();
-      SamplerPtr newSampler = samplerBasedState->getCloneOfInitialSamplerInstance();
-      newSampler->learn(context, ContainerPtr(), bestVariablesVector);
       // new sampler is a mixture sampler : 
       // oldSampler with proba = slowingFactor
       // newSampler with proba = 1-slowingFactor
@@ -113,10 +117,7 @@ protected:
       samplerBasedState->setSampler(mixtureSampler(probabilities, vec));
     }
     else 
-    {
-      SamplerPtr sampler = samplerBasedState->getSampler();
-      sampler->learn(context, ContainerPtr(), bestVariablesVector);
-    }
+      samplerBasedState->setSampler(newSampler);
 
     context.resultCallback(T("sampler"), samplerBasedState->getSampler());
   }
