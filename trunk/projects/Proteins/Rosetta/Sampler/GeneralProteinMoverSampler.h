@@ -21,7 +21,10 @@ class GeneralSimpleResidueSampler : public CompositeSampler
 public:
   GeneralSimpleResidueSampler(size_t numResidues)
     : numResidues(numResidues)
-    {samplers.push_back(enumerationSampler(proteinMoverEnumerationEnumeration));}
+    {
+      DenseDoubleVectorPtr probas = new DenseDoubleVector(numResidues, 1.0 / numResidues);
+      samplers.push_back(enumerationSampler(probas));
+    }
   GeneralSimpleResidueSampler() : numResidues(0) {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
@@ -46,8 +49,10 @@ public:
   GeneralResiduePairSampler(size_t numResidues)
     : numResidues(numResidues)
   {
-    samplers.push_back(enumerationSampler(proteinMoverEnumerationEnumeration));
-    samplers.push_back(enumerationSampler(proteinMoverEnumerationEnumeration));
+    DenseDoubleVectorPtr probas = new DenseDoubleVector(numResidues, 1.0 / numResidues);
+    samplers.push_back(enumerationSampler(probas));
+    DenseDoubleVectorPtr probas2 = new DenseDoubleVector(numResidues, 1.0 / numResidues);
+    samplers.push_back(enumerationSampler(probas2));
   }
   GeneralResiduePairSampler() : numResidues(0) {}
 
@@ -60,7 +65,7 @@ public:
     if (std::abs((int)indexResidueOne - (int)indexResidueTwo) <= 1)
     {
       indexResidueOne = (size_t)juce::jlimit(0, (int)numResidues - 1, (int)indexResidueOne - 2);
-      indexResidueOne = (size_t)juce::jlimit(0, (int)numResidues - 1, (int)indexResidueTwo + 2);
+      indexResidueTwo = (size_t)juce::jlimit(0, (int)numResidues - 1, (int)indexResidueTwo + 2);
     }
     PairPtr residues = new Pair(indexResidueOne, indexResidueTwo);
     return residues;

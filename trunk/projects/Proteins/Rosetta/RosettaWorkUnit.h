@@ -23,6 +23,139 @@
 namespace lbcpp
 {
 
+class ProteinOptimizationWithLearningWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    rosettaInitialization(context, false);
+
+    File inputFile = context.getFile(inputDirectory);
+    if (!inputFile.exists())
+      context.errorCallback(T("Proteins' directory not found."));
+
+    juce::File outputFile = context.getFile(outputDirectory);
+    if (!outputFile.exists())
+      outputFile.createDirectory();
+
+    File referencesFile = context.getFile(referencesDirectory);
+    if (!referencesFile.exists() && (learningPolicy > 0))
+      context.errorCallback(T("References' directory not found."));
+
+    File moversFile = context.getFile(moversDirectory);
+    if (!moversFile.exists() && (learningPolicy > 0))
+      context.errorCallback(T("Movers' directory not found."));
+
+    VariableVectorPtr inputWorkers = new VariableVector(0);
+    VariableVectorPtr inputMovers = new VariableVector(0);
+    if (learningPolicy)
+    {
+      juce::OwnedArray<File> references;
+      referencesFile.findChildFiles(references, File::findFiles, false, T("*.xml"));
+
+      for (size_t i = 0; i < references.size(); i++)
+      {
+        juce::OwnedArray<File> movers;
+        String nameToSearch = (*references[i]).getFileNameWithoutExtension();
+
+        ProteinPtr protein = Protein::createFromFile(context, (*references[i]));
+        core::pose::PoseOP pose;
+        convertProteinToPose(context, protein, pose);
+
+        nameToSearch += T("_mover_*.xml");
+        moversFile.findChildFiles(movers, File::findFiles, false, nameToSearch);
+        for (size_t j = 0; j < movers.size(); j++)
+        {
+          RosettaWorkerPtr inWorker = new RosettaWorker(pose, learningPolicy, residueFeatures,
+              energyFeatures, histogramFeatures, distanceFeatures);
+          ProteinMoverPtr inMover = Variable::createFromFile(context, (*movers[j])).getObjectAndCast<ProteinMover>();
+          inputWorkers->append(inWorker);
+          inputMovers->append(inMover);
+        }
+      }
+    }
+
+
+    juce::OwnedArray<File> results;
+    inputFile.findChildFiles(results, File::findFiles, false, T("*.xml"));
+
+    double frequenceVerbosity = 0.0001;
+    std::vector<ScalarVariableMeanAndVariancePtr> meansAndVariances;
+
+    for (size_t i = 0; i < results.size(); i++)
+    {
+      ProteinPtr currentProtein = Protein::createFromXml(context, (*results[i]));
+
+      String currentName = currentProtein->getName();
+      context.enterScope(T("Optimizing protein : ") + currentName);
+
+      core::pose::PoseOP currentPose;
+      convertProteinToPose(context, currentProtein, currentPose);
+      core::pose::PoseOP initialPose;
+      initializeProteinStructure(currentPose, initialPose);
+
+      RosettaWorkerPtr worker = new RosettaWorker(initialPose, learningPolicy, residueFeatures,
+          energyFeatures, histogramFeatures, distanceFeatures);
+
+      ContainerPtr addWorkers = inputWorkers;
+      ContainerPtr addMovers = inputMovers;
+      // learn
+      worker->learn(context, addWorkers, addMovers);
+
+
+
+      RandomGeneratorPtr random = new RandomGenerator();
+      DenseDoubleVectorPtr energiesAtIteration;
+//      ProteinSimulatedAnnealingOptimizerPtr optimizer = new ProteinSimulatedAnnealingOptimizer(4.0,
+//          0.01, 50, 50000, 5, currentName, frequenceVerbosity, 10, outputFile);
+      ProteinSimulatedAnnealingOptimizerPtr optimizer = new ProteinSimulatedAnnealingOptimizer(4.0,
+                0.01, 50, 100, 5, currentName, frequenceVerbosity, 10, outputFile);
+
+      optimizer->apply(context, worker, random, energiesAtIteration);
+
+      for (size_t j = 0; j < energiesAtIteration->getNumValues(); j++)
+        if (j >= meansAndVariances.size())
+        {
+          meansAndVariances.push_back(new ScalarVariableMeanAndVariance());
+          meansAndVariances[j]->push(energiesAtIteration->getValue(j));
+        }
+        else
+          meansAndVariances[j]->push(energiesAtIteration->getValue(j));
+
+      context.leaveScope(String("Done."));
+    }
+
+    // export results
+    context.enterScope(T("Results"));
+    for (size_t k = 0; k < meansAndVariances.size(); k++)
+    {
+      context.enterScope(T("Values"));
+      context.resultCallback(T("Iteration"), Variable(k));
+      double meanEnergy = meansAndVariances[k]->getMean();
+      context.resultCallback(T("Mean energy"), Variable(meanEnergy));
+      context.resultCallback(T("Std Dev energy"), Variable(meansAndVariances[k]->getStandardDeviation()));
+      context.leaveScope(Variable(meanEnergy));
+    }
+    context.leaveScope();
+
+    context.informationCallback(T("Done."));
+    return Variable();
+  }
+
+protected:
+  friend class ProteinOptimizationWithLearningWorkUnitClass;
+
+  String inputDirectory;
+  String outputDirectory;
+  String referencesDirectory;
+  String moversDirectory;
+  size_t learningPolicy;
+  size_t residueFeatures;
+  size_t energyFeatures;
+  size_t histogramFeatures;
+  size_t distanceFeatures;
+};
+
 class ProteinOptimizerWorkUnit;
 typedef ReferenceCountedObjectPtr<ProteinOptimizerWorkUnit> ProteinOptimizerWorkUnitPtr;
 
@@ -54,7 +187,7 @@ public:
     context.resultCallback(T("Initial energy"),
         Variable(getConformationScore(pose, fullAtomEnergy)));
     core::pose::PoseOP returnPose = new core::pose::Pose(*pose);
-    optimizer->apply(context, pose, random, sampler, returnPose);
+    //optimizer->apply(context, pose, random, sampler, returnPose);
     context.informationCallback(T("Optimization done."));
     double score = getConformationScore(returnPose, fullAtomEnergy);
     context.resultCallback(T("Final energy"), Variable(score));

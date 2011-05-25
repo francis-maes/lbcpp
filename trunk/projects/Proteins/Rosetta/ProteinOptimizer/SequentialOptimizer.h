@@ -45,11 +45,11 @@ public:
     return sequentialOptimization(pose, sampler, context, random);
   }*/
 
-  virtual void apply(ExecutionContext& context, const core::pose::PoseOP& pose,
-                     const RandomGeneratorPtr& random, const SamplerPtr& sampler, core::pose::PoseOP& res)
+  virtual void apply(ExecutionContext& context, RosettaWorkerPtr& worker,
+                const RandomGeneratorPtr& random, DenseDoubleVectorPtr& energiesAtIteration)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
-    res = sequentialOptimization(pose, sampler, context, random);
+    sequentialOptimization(context, worker, random, energiesAtIteration);
 #else
     jassert(false);
 #endif // LBCPP_PROTEIN_ROSETTA
@@ -65,9 +65,11 @@ public:
    * @param mover pointer to a mover that perturbs the object at each iteration.
    * @return the new conformation
    */
-  core::pose::PoseOP sequentialOptimization(const core::pose::PoseOP& pose,
-      const SamplerPtr& sampler, ExecutionContext& context, const RandomGeneratorPtr& random)
+  core::pose::PoseOP sequentialOptimization(ExecutionContext& context, RosettaWorkerPtr& worker,
+      const RandomGeneratorPtr& random, DenseDoubleVectorPtr& energiesAtIteration)
   {
+    core::pose::PoseOP pose;
+    worker->getPose(pose);
     core::pose::PoseOP acc = new core::pose::Pose();
 
     double initialTemperature = 4.0;
@@ -79,7 +81,7 @@ public:
     bool store = getVerbosity();
     setVerbosity(false);
 
-    for (size_t i = 1; i <= pose->n_residue(); i++)
+    for (size_t i = 1; i <= worker->getNumResidues(); i++)
     {
       maxSteps = (int)std::max((int)((factor * log((double)i)) + 1), numberDecreasingSteps);
 
