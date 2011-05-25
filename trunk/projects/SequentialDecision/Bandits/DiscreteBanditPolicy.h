@@ -159,7 +159,7 @@ protected:
         bestScore = score, numBests = 1, bestBandit = i;
     }
     const RandomGeneratorPtr& random = context.getRandomGenerator();
-    if (numBests == 0)
+    if (numBests == 0 || bestScore == -DBL_MAX)
       return random->sampleSize(numBandits);
     else if (numBests == 1)
       return bestBandit;

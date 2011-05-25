@@ -58,6 +58,68 @@ class UnaryGPExpression;
 typedef ReferenceCountedObjectPtr<UnaryGPExpression> UnaryGPExpressionPtr;
 
 
+
+class UnaryGPExpression : public GPExpression
+{
+public:
+  UnaryGPExpression(GPPre pre, GPExpressionPtr expr)
+    : pre(pre), expr(expr) {}
+  UnaryGPExpression() {}
+
+  virtual size_t size() const
+    {return 1 + expr->size();}
+
+  virtual double compute(const double* x) const
+  {
+    double e = expr->compute(x);
+    switch (pre)
+    {
+    //case gpSin: return sin(e);
+    //case gpCos: return cos(e);
+    //case gpExp: return exp(e);
+    case gpLog: return e <= 0.0 || !isNumberValid(e) ? -DBL_MAX : log(e);
+    case gpSquareRoot: return isNumberValid(e) ? sqrt(e) : e;
+    //case gpSquare: return e * e;
+    case gpInverse: return isNumberValid(e) ? (e != 0.0 ? 1.0 / e : DBL_MAX) : e;
+    default: jassert(false); return 0.0;
+    };
+  }
+
+  virtual String toShortString() const
+    {return Variable(pre, gpPreEnumeration).toShortString() + T("(") + (expr ? expr->toShortString() : String("<null>")) + T(")");}
+
+  GPPre getOperator() const
+    {return pre;}
+
+  GPExpressionPtr& getExpression()
+    {return expr;}
+
+  const GPExpressionPtr& getExpression() const
+    {return expr;}
+
+  virtual int compare(const ObjectPtr& otherObject) const
+  {
+    const UnaryGPExpressionPtr& other = otherObject.staticCast<UnaryGPExpression>();
+    if (pre != other->pre)
+      return (int)pre - (int)other->pre;
+    else
+      return Variable(expr).compare(other->expr);
+  }
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& o) const
+  {
+    const UnaryGPExpressionPtr& other = o.staticCast<UnaryGPExpression>();
+    other->pre = pre;
+    other->expr = expr->cloneAndCast<GPExpression>(context);
+  }
+ 
+protected:
+  friend class UnaryGPExpressionClass;
+
+  GPPre pre;
+  GPExpressionPtr expr;
+};
+
 class BinaryGPExpression : public GPExpression
 {
 public:
@@ -72,13 +134,15 @@ public:
   {
     double l = left->compute(x);
     double r = right->compute(x);
-    jassert(isNumberValid(l) && isNumberValid(r));
+    if (!isNumberValid(l) || !isNumberValid(r))
+      return l;
+
     switch (op)
     {
     case gpAddition: return l + r;
     case gpSubtraction: return l - r;
     case gpMultiplication: return l * r;
-    case gpDivision: return r ? l / r : 0.0;
+    case gpDivision: return r ? l / r : DBL_MAX;
     default: jassert(false); return 0.0;
     }
   }
@@ -94,10 +158,16 @@ public:
   GPOperator getOperator() const
     {return op;}
 
-  GPExpressionPtr getLeft() const
+  GPExpressionPtr& getLeft()
     {return left;}
 
-  GPExpressionPtr getRight() const
+  const GPExpressionPtr& getLeft() const
+    {return left;}
+
+  GPExpressionPtr& getRight()
+    {return right;}
+
+  const GPExpressionPtr& getRight() const
     {return right;}
 
   virtual int compare(const ObjectPtr& otherObject) const
@@ -114,15 +184,14 @@ public:
         return Variable(right).compare(other->right);
     }
   }
-  /*
+
   virtual void clone(ExecutionContext& context, const ObjectPtr& other) const
   {
-    GPExpression::clone(context, other);
     const BinaryGPExpressionPtr& o = other.staticCast<BinaryGPExpression>();
     o->left = left->cloneAndCast<GPExpression>(context);
+    o->op = op;
     o->right = right->cloneAndCast<GPExpression>(context);
   }
-  */ 
 
 protected:
   friend class BinaryGPExpressionClass;
@@ -132,91 +201,34 @@ protected:
   GPExpressionPtr right;
 };
 
-class UnaryGPExpression : public GPExpression
-{
-public:
-  UnaryGPExpression(GPPre pre, GPExpressionPtr expr)
-    : pre(pre), expr(expr) {}
-  UnaryGPExpression() {}
-
-  virtual size_t size() const
-    {return 1 + expr->size();}
-
-  virtual double compute(const double* x) const
-  {
-    double e = expr->compute(x);
-    jassert(isNumberValid(e));
-    switch (pre)
-    {
-    //case gpSin: return sin(e);
-    //case gpCos: return cos(e);
-    //case gpExp: return exp(e);
-    case gpLog: return e <= 0.0 ? -DBL_MAX : log(e);
-    case gpSquareRoot: return sqrt(e);
-    //case gpSquare: return e * e;
-    case gpInverse: return e != 0.0 ? 1.0 / e : 0.0;
-    default: jassert(false); return 0.0;
-    };
-  }
-
-  virtual String toShortString() const
-    {return Variable(pre, gpPreEnumeration).toShortString() + T("(") + (expr ? expr->toShortString() : String("<null>")) + T(")");}
-
-  GPPre getOperator() const
-    {return pre;}
-
-  GPExpressionPtr getExpression() const
-    {return expr;}
-
-  virtual int compare(const ObjectPtr& otherObject) const
-  {
-    const UnaryGPExpressionPtr& other = otherObject.staticCast<UnaryGPExpression>();
-    if (pre != other->pre)
-      return (int)pre - (int)other->pre;
-    else
-      return Variable(expr).compare(other->expr);
-  }
-/*
-  virtual void clone(ExecutionContext& context, const ObjectPtr& other) const
-  {
-    GPExpression::clone(context, other);
-    other.staticCast<UnaryGPExpression>()->expr = expr->cloneAndCast<GPExpression>(context);
-  }*/
- 
-protected:
-  friend class UnaryGPExpressionClass;
-
-  GPPre pre;
-  GPExpressionPtr expr;
-};
-
 class VariableGPExpression : public GPExpression
 {
 public:
   VariableGPExpression(size_t index = 0)
     : index(index) {}
   VariableGPExpression(const Variable& index)
-    : index(index) {}
+    : index((size_t)index.getInteger()), enumeration(index.getType()) {}
 
   virtual size_t size() const
     {return 1;}
 
   virtual double compute(const double* x) const
-    {return x[index.getInteger()];}
+    {return x[index];}
 
   virtual String toShortString() const
-    {return index.toShortString();}
+    {return Variable(index, enumeration).toShortString();}
 
   size_t getIndex() const
-    {return (size_t)index.getInteger();}
+    {return index;}
 
   virtual int compare(const ObjectPtr& otherObject) const
-    {return index.compare(otherObject.staticCast<VariableGPExpression>()->index);}
+    {return (int)index - (int)otherObject.staticCast<VariableGPExpression>()->index;}
 
 protected:
   friend class VariableGPExpressionClass;
 
-  Variable index;
+  size_t index;
+  EnumerationPtr enumeration;
 };
 
 typedef ReferenceCountedObjectPtr<VariableGPExpression> VariableGPExpressionPtr;

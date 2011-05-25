@@ -42,6 +42,7 @@
   </class>
   <class name="VariableGPExpression" base="GPExpression" shortName="variable">
     <variable type="Integer" name="index"/>
+    <variable type="Enumeration" name="enumeration"/>
   </class>
   <class name="ConstantGPExpression" base="GPExpression">
     <variable type="Double" name="value"/>
@@ -94,7 +95,11 @@
     <variable type="ObjectVector[GPExpression]" name="expressions"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="expressionScores"/>
   </class>
-  
+
   <class name="GPExpressionBuilderProblem" base="DecisionProblem"/>
-  
+
+  <class name="CompactGPExpressionBuilderState" base="DecisionProblemState">
+    <variable type="GPExpression" name="expression"/>
+  </class>
+
 </library>

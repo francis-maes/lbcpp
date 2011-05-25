@@ -89,15 +89,18 @@ void SearchTree::exploreNode(ExecutionContext& context, size_t nodeIndex)
   openedNodes.push_back(nodeIndex);
 
   ContainerPtr actions = node->getState()->getAvailableActions();
-  size_t n = actions->getNumElements();
-
-  size_t firstChildIndex = nodes.size();
-  node->setChildrenIndices(firstChildIndex, firstChildIndex + n);
-  for (size_t i = 0; i < n; ++i)
+  if (actions)
   {
-    SearchTreeNodePtr childNode = new SearchTreeNode(nodeClass, nodes, firstChildIndex + i, node->getNodeUid() * n + i);
-    childNode->open(context, problem, nodeIndex, actions->getElement(i));
-    addCandidate(context, childNode);
+    size_t n = actions->getNumElements();
+
+    size_t firstChildIndex = nodes.size();
+    node->setChildrenIndices(firstChildIndex, firstChildIndex + n);
+    for (size_t i = 0; i < n; ++i)
+    {
+      SearchTreeNodePtr childNode = new SearchTreeNode(nodeClass, nodes, firstChildIndex + i, node->getNodeUid() * n + i);
+      childNode->open(context, problem, nodeIndex, actions->getElement(i));
+      addCandidate(context, childNode);
+    }
   }
 }
 
