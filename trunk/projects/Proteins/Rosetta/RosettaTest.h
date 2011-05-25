@@ -67,6 +67,7 @@ private:
 public:
   void generateMoversDataset(VectorPtr& inputWorker, VectorPtr& inputMover)
   {
+# ifdef LBCPP_PROTEIN_ROSETTA
     String acc;
     for (size_t i = 0; i < 20; i++)
     {
@@ -110,6 +111,7 @@ public:
       inputWorker->append(worker5);
       inputMover->append(m5);
     }
+# endif
   }
 
   virtual Variable run(ExecutionContext& context)

@@ -28,6 +28,7 @@ class ProteinOptimizationWithLearningWorkUnit : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
+# ifdef LBCPP_PROTEIN_ROSETTA
     rosettaInitialization(context, false);
 
     File inputFile = context.getFile(inputDirectory);
@@ -139,6 +140,7 @@ public:
     context.leaveScope();
 
     context.informationCallback(T("Done."));
+# endif
     return Variable();
   }
 
