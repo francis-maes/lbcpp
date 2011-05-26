@@ -87,7 +87,9 @@ public:
       reinitializationInterval = juce::jlimit(1, maxSteps, maxSteps / timesReinitialization);
 
     double currentTemperature = initialTemperature;
-    int intervalDecreasingTemperature = maxSteps / numberDecreasingSteps;
+    int intervalDecreasingTemperature = juce::jmax(1, maxSteps / numberDecreasingSteps);
+    double bCoeff = initialTemperature;
+    double aCoeff = (finalTemperature - initialTemperature) / maxSteps;
     core::pose::PoseOP optimizedPose = new core::pose::Pose((*pose));
     core::pose::PoseOP temporaryOptimizedPose = new core::pose::Pose((*pose));
     core::pose::PoseOP workingPose = new core::pose::Pose((*pose));
@@ -138,7 +140,7 @@ public:
     {
       worker->update();
       ProteinMoverPtr mover = worker->sample(context, random).getObjectAndCast<ProteinMover> ();
-      //std::cout << (const char*)mover->toString() << std::endl;
+
       mover->move(workingPose);
       worker->energies(NULL, &temporaryEnergy, NULL);
 
@@ -168,10 +170,7 @@ public:
       }
 
       if ((i % intervalDecreasingTemperature) == 0)
-      {
-        currentTemperature = currentTemperature - ((initialTemperature - finalTemperature)
-            / (double)numberDecreasingSteps);
-      }
+        currentTemperature = aCoeff * i + bCoeff;
 
       // Verbosity
       if (verbosity && (((i % intervalVerbosity) == 0) || (i == maxSteps)))

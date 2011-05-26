@@ -51,11 +51,14 @@ public:
     VariableVectorPtr inputMovers = new VariableVector(0);
     if (learningPolicy)
     {
+      context.enterScope(T("Loading learning examples..."));
       juce::OwnedArray<File> references;
       referencesFile.findChildFiles(references, File::findFiles, false, T("*.xml"));
 
       for (size_t i = 0; i < references.size(); i++)
       {
+        context.progressCallback(new ProgressionState((size_t)i, (size_t)references.size(),
+            T("Intermediate conformations")));
         juce::OwnedArray<File> movers;
         String nameToSearch = (*references[i]).getFileNameWithoutExtension();
 
@@ -67,15 +70,20 @@ public:
         moversFile.findChildFiles(movers, File::findFiles, false, nameToSearch);
         for (size_t j = 0; j < movers.size(); j++)
         {
-          RosettaWorkerPtr inWorker = new RosettaWorker(pose, learningPolicy, residueFeatures,
-              energyFeatures, histogramFeatures, distanceFeatures);
-          ProteinMoverPtr inMover = Variable::createFromFile(context, (*movers[j])).getObjectAndCast<ProteinMover>();
+          RosettaProteinPtr inWorker = new RosettaProtein(pose, residueFeatures, energyFeatures,
+              histogramFeatures, distanceFeatures);
+          ProteinMoverPtr inMover =
+              Variable::createFromFile(context, (*movers[j])).getObjectAndCast<ProteinMover> ();
           inputWorkers->append(inWorker);
           inputMovers->append(inMover);
         }
       }
+      context.progressCallback(new ProgressionState((size_t)references.size(), (size_t)references.size(),
+          T("Intermediate conformations")));
+      context.leaveScope();
     }
 
+    core::pose::PoseOP currentPose;
 
     juce::OwnedArray<File> results;
     inputFile.findChildFiles(results, File::findFiles, false, T("*.xml"));
@@ -86,31 +94,31 @@ public:
     for (size_t i = 0; i < results.size(); i++)
     {
       ProteinPtr currentProtein = Protein::createFromXml(context, (*results[i]));
-
       String currentName = currentProtein->getName();
-      context.enterScope(T("Optimizing protein : ") + currentName);
 
-      core::pose::PoseOP currentPose;
       convertProteinToPose(context, currentProtein, currentPose);
+
+      if ((int)currentProtein->getLength() != (int)currentPose->n_residue())
+      {
+        context.warningCallback(T("Conversion from protein to pose incorrect, skipping : ") + currentName);
+        continue;
+      }
+
       core::pose::PoseOP initialPose;
       initializeProteinStructure(currentPose, initialPose);
+      context.enterScope(T("Optimizing protein : ") + currentName);
 
       RosettaWorkerPtr worker = new RosettaWorker(initialPose, learningPolicy, residueFeatures,
           energyFeatures, histogramFeatures, distanceFeatures);
-
       ContainerPtr addWorkers = inputWorkers;
       ContainerPtr addMovers = inputMovers;
       // learn
       worker->learn(context, addWorkers, addMovers);
 
-
-
       RandomGeneratorPtr random = new RandomGenerator();
       DenseDoubleVectorPtr energiesAtIteration;
-//      ProteinSimulatedAnnealingOptimizerPtr optimizer = new ProteinSimulatedAnnealingOptimizer(4.0,
-//          0.01, 50, 50000, 5, currentName, frequenceVerbosity, 10, outputFile);
       ProteinSimulatedAnnealingOptimizerPtr optimizer = new ProteinSimulatedAnnealingOptimizer(4.0,
-                0.01, 50, 100, 5, currentName, frequenceVerbosity, 10, outputFile);
+          0.01, 50, 500000, 5, currentName, frequenceVerbosity, 10, outputFile);
 
       optimizer->apply(context, worker, random, energiesAtIteration);
 

@@ -68,7 +68,8 @@ public:
       const core::pose::PoseOP& reference, double energyBeforeMove, double scoreBeforeMove)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
-    int minDist = juce::jlimit(1, (int)target->n_residue(), juce::jmin(20, target->n_residue() / 2));
+    int minDist =
+        juce::jlimit(1, (int)target->n_residue(), juce::jmin(20, target->n_residue() / 2));
     int maxDist = -1;
 
     double realTargetEnergy = 0;
@@ -80,7 +81,8 @@ public:
     QScoreObjectPtr scores = QScoreSingleEvaluator(target, reference, minDist, maxDist);
 
     if (scores.get() == NULL)
-      context.errorCallback(T("Error in QScoreObject returned. Check that the two proteins are the same."));
+      context.errorCallback(
+          T("Error in QScoreObject returned. Check that the two proteins are the same."));
     structureScore = scores->getMean();
 
     double globalScore = 0;
@@ -110,37 +112,28 @@ public:
       DenseDoubleVectorPtr* scoreMeans = NULL)
   {
     SamplerPtr workingSampler = sampler->cloneAndCast<Sampler> ();
-
-#ifdef LBCPP_PROTEIN_ROSETTA
     size_t numLearningSamplesFirstPass = numGoodSamples / 2;
     size_t numLearningSamplesSecondPass = numGoodSamples - numLearningSamplesFirstPass;
+
+#ifdef LBCPP_PROTEIN_ROSETTA
     core::pose::PoseOP workingPose = new core::pose::Pose(*target);
+    double energyBeforeMove = 0;
+    double scoreBeforeMove = getConformationScore(workingPose, fullAtomEnergy, &energyBeforeMove);
+    MoverAndScore initialScore = evaluate(context, workingPose, reference, energyBeforeMove, scoreBeforeMove);
 
     std::list<MoverAndScore> moversToKeep;
-    MoverAndScore initStruct;
-    initStruct.score = 0;
-    moversToKeep.push_back(initStruct);
-    std::vector<MoverAndScore> moversVector;
-    context.enterScope(T("Protein EDA optimizer."));
 
-    if (numGoodSamples > numSamples)
-    {
-      jassert(false);
-      numGoodSamples = numSamples;
-    }
+    context.enterScope(T("Protein EDA optimizer."));
 
     for (size_t i = 0; i < maxIterations; i++)
     {
       context.progressCallback(new ProgressionState(i, maxIterations, T("Iterations")));
       std::list<MoverAndScore> tempList;
-      double energyBeforeMove = 0;
-      double scoreBeforeMove = getConformationScore(workingPose, fullAtomEnergy, &energyBeforeMove);
+      double energyBeforeMove = getTotalEnergy(workingPose, fullAtomEnergy);
       ScalarVariableMeanAndVariance scoreRandomVariable;
       ScalarVariableMeanAndVariance deltaEnergyRandomVariable;
       ScalarVariableMeanAndVariance energyRandomVariable;
       ScalarVariableMeanAndVariance qScoreRandomVariable;
-
-      MoverAndScore initialScore = evaluate(context, workingPose, reference, energyBeforeMove, scoreBeforeMove);
 
       for (size_t j = 0; j < numSamples; j++)
       {
@@ -149,8 +142,7 @@ public:
 
         mover->move(workingPose);
 
-        MoverAndScore candidate = evaluate(context, workingPose, reference, energyBeforeMove,
-            scoreBeforeMove);
+        MoverAndScore candidate = evaluate(context, workingPose, reference, energyBeforeMove, scoreBeforeMove);
         candidate.mover = mover;
 
         scoreRandomVariable.push(candidate.score - initialScore.score);
@@ -158,28 +150,10 @@ public:
         energyRandomVariable.push(candidate.energy);
         qScoreRandomVariable.push(candidate.qScore);
 
-//        bool add = true;
-//        std::list<MoverAndScore>::iterator it;
-//        for (it = tempList.begin(); (it != tempList.end()) && add; it++)
-//        {
-//          if (mover->isEqual((*it).mover, 0.05))
-//          {
-//            add = false;
-//            break;
-//          }
-//        }
-//
-//        if (add)
-        if (candidate.score > initialScore.score)
-          tempList.push_back(candidate);
-
-        if (candidate.score > moversToKeep.front().score)
-        {
-          moversToKeep.pop_back();
-          moversToKeep.push_back(MoverAndScore(candidate));
-        }
-
+        tempList.push_back(candidate);
         *workingPose = *target;
+
+        moversToKeep.push_back(MoverAndScore(candidate));
       }
 
       // sort movers
@@ -188,10 +162,10 @@ public:
       // evaluate performance of the iteration
       context.enterScope(T("Values"));
       context.resultCallback(T("Iteration"), Variable(i));
-      context.resultCallback(T("Mean deltaScore"), Variable(scoreRandomVariable.getMean()));
+      context.resultCallback(T("Mean delta score"), Variable(scoreRandomVariable.getMean()));
+      context.resultCallback(T("Std Dev delta score"), Variable(scoreRandomVariable.getStandardDeviation()));
       if (scoreMeans != NULL)
         (*scoreMeans)->setValue(i, scoreRandomVariable.getMean());
-      context.resultCallback(T("Std Dev deltaScore"), Variable(scoreRandomVariable.getStandardDeviation()));
       double meanDeltaEnergy = deltaEnergyRandomVariable.getMean();
       context.resultCallback(T("Mean deltaEnergy"), Variable(meanDeltaEnergy));
       if (energyMeans != NULL)
@@ -206,26 +180,32 @@ public:
       context.leaveScope(Variable(meanDeltaEnergy));
 
       // best samplers ever seen
-//      moversToKeep.sort(compareMovers);
-//      while (moversToKeep.size() > juce::jmax((int)numGoodSamples, (int)numMoversToKeep))
-//        moversToKeep.pop_back();
+      moversToKeep.sort(compareMovers);
+      while (moversToKeep.size() > juce::jmax((int)numGoodSamples, (int)numMoversToKeep))
+        moversToKeep.pop_back();
 
-//      if (includeBestMoversInLearning)
-//      {
-//        moversVector.clear();
-//        moversVector.resize(moversToKeep.size());
-//        std::list<MoverAndScore>::iterator it;
-//        size_t k = 0;
-//        for (it = moversToKeep.begin(); it != moversToKeep.end(); it++)
-//          moversVector[k++] = *it;
-//      }
-//      else
-//      {
-        size_t numToLearn = (size_t)juce::jmin((int)numGoodSamples, (int)tempList.size());
+      // keep best samplers
+      std::vector<MoverAndScore> moversVector;
 
-        numLearningSamplesFirstPass = (size_t)(0.5 * numToLearn);
-        numLearningSamplesSecondPass = numToLearn - numLearningSamplesFirstPass;
-        moversVector = std::vector<MoverAndScore>(numToLearn);
+      if (includeBestMoversInLearning)
+      {
+        moversVector.clear();
+        moversVector.resize(moversToKeep.size());
+        std::list<MoverAndScore>::iterator it;
+        size_t k = 0;
+        for (it = moversToKeep.begin(); it != moversToKeep.end(); it++)
+          moversVector[k++] = *it;
+      }
+      else
+      {
+        if (numGoodSamples > numSamples)
+        {
+          jassert(false);
+          numGoodSamples = numSamples;
+          numLearningSamplesFirstPass = numGoodSamples / 2;
+          numLearningSamplesSecondPass = numGoodSamples - numLearningSamplesFirstPass;
+        }
+        moversVector = std::vector<MoverAndScore>(numGoodSamples);
         for (size_t j = 0; j < numLearningSamplesFirstPass; j++)
         {
           moversVector[j] = MoverAndScore(tempList.front());
@@ -244,7 +224,7 @@ public:
 
         for (size_t j = 0; j < numLearningSamplesSecondPass; j++)
           moversVector[numLearningSamplesFirstPass + j] = MoverAndScore(rest[ordering[j]]);
-//      }
+      }
 
       ObjectVectorPtr dataset = new ObjectVector(proteinMoverClass, 0);
       for (size_t j = 0; j < moversVector.size(); j++)
@@ -252,13 +232,12 @@ public:
       workingSampler->learn(context, ContainerPtr(), dataset);
     }
 
-//    movers = std::vector<ProteinMoverPtr>(
-//        juce::jmin((int)numMoversToKeep, (int)moversToKeep.size()));
-    movers = std::vector<ProteinMoverPtr>(
-            juce::jmin((int)numMoversToKeep, (int)moversVector.size() + 1));
-    movers[0] = moversToKeep.front().mover;
-    for (size_t i = 1; i < movers.size(); i++)
-      movers[i] = moversVector[i - 1].mover;
+    movers = std::vector<ProteinMoverPtr>(numMoversToKeep);
+    for (size_t i = 0; i < numMoversToKeep; i++)
+    {
+      movers[i] = moversToKeep.front().mover;
+      moversToKeep.pop_front();
+    }
 
     context.progressCallback(new ProgressionState((double)maxIterations, (double)maxIterations,
         T("Iterations")));

@@ -50,6 +50,7 @@ public:
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
     this->pose = pose;
+    numResidues = pose->n_residue();
 #else
     jassert(false);
 #endif
@@ -277,7 +278,8 @@ public:
 # ifdef LBCPP_PROTEIN_ROSETTA
     protein = new RosettaProtein(pose, residues, energy, histogram, distances);
     features = rosettaProteinFeatures(residues, energy, histogram, distances);
-    features->initialize(defaultExecutionContext(), rosettaProteinClass);
+    if (learningPolicy > 1)
+      features->initialize(defaultExecutionContext(), rosettaProteinClass);
     sampler = new GeneralProteinMoverSampler(pose->n_residue(), learningPolicy);
 # else
     jassert(false);
@@ -317,6 +319,12 @@ public:
     return features->compute(context, protein);
   }
 
+  Variable getFeatures(ExecutionContext& context, const RosettaProteinPtr& input)
+  {
+    input->update();
+    return features->compute(context, input);
+  }
+
   void energies(double* energy, double* score = NULL, double* normalizedScore = NULL)
     {protein->energies(energy, score, normalizedScore);}
 
@@ -325,19 +333,29 @@ public:
     Variable input;
     if (learningPolicy > 1)
       input = getFeatures(context);
+    context.resultCallback(T("toto"), input);
     return sampler->sample(context, random, &input);
   }
 
-  void learn(ExecutionContext& context, ContainerPtr& inputWorkers, ContainerPtr& inputMovers)
+  void learn(ExecutionContext& context, const ContainerPtr& inputProteins,
+      const ContainerPtr& inputMovers)
   {
-    VectorPtr inputs = vector(doubleVectorClass());
-    for (size_t i = 0; i < inputWorkers->getNumElements(); i++)
+    //TypePtr doubleVectorType = features->getOutputType();
+    //EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(doubleVectorType);
+    VectorPtr inputs;
+    if (learningPolicy > 1)
     {
-      RosettaWorkerPtr tempWorker = inputWorkers->getElement(i).getObjectAndCast<RosettaWorker> ();
-      DoubleVectorPtr tempFeatures = (tempWorker->getFeatures(context)).getObjectAndCast<DoubleVector>();
-      inputs->append(tempFeatures);
+      inputs = vector(features->getOutputType());
+      for (size_t i = 0; i < inputProteins->getNumElements(); i++)
+      {
+        RosettaProteinPtr tempProtein = inputProteins->getElement(i).getObjectAndCast<
+            RosettaProtein> ();
+        DoubleVectorPtr tempFeatures;
+        if (learningPolicy > 1)
+          tempFeatures = getFeatures(context, tempProtein).getObjectAndCast<DoubleVector> ();
+        inputs->append(tempFeatures);
+      }
     }
-
     sampler->learn(context, inputs, inputMovers, DenseDoubleVectorPtr(), ContainerPtr(),
         ContainerPtr(), DenseDoubleVectorPtr());
   }
