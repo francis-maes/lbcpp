@@ -109,6 +109,7 @@ public:
 
   void energies(double* energy, double* score, double* normalizedScore = NULL)
   {
+#ifdef LBCPP_PROTEIN_ROSETTA
     // energies updated
     this->score = getConformationScore(pose, fullAtomEnergy, &(this->energy));
     this->normalizedScore = sigmoid(0.0005, this->score);
@@ -120,6 +121,9 @@ public:
       *score = this->score;
     if (normalizedScore != NULL)
       *normalizedScore = this->normalizedScore;
+#else
+    jassert(false);
+#endif // LBCPP_PROTEIN_ROSETTA
   }
 
   void updateDistances()
