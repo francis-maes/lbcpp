@@ -277,7 +277,8 @@ private:
   bool optimizeAndEvaluatePolicies(ExecutionContext& context, std::vector<DiscreteBanditPolicyPtr>& policies) const
   {
     bool allOk = true;
-    for (size_t horizon = 10; horizon <= maxTimeStep; horizon *= 10)
+    // tmp, normal is "horizon = 10"
+    for (size_t horizon = maxTimeStep; horizon <= maxTimeStep; horizon *= 10)
     {
       context.enterScope(T("Horizon ") + String((int)horizon));
       std::vector<DiscreteBanditPolicyPtr> pols(policies.size());
