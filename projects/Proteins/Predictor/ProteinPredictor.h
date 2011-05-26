@@ -20,7 +20,8 @@ class ProteinPredictor : public CompositeFunction
 public:
   ProteinPredictor(ProteinPredictorParametersPtr parameters);
   ProteinPredictor()
-    : activeResiduePerception(false),
+    : activeGlobalPerception(false),
+      activeResiduePerception(false),
       activeResiduePairPerception(false),
       activeDisulfideResiduePairPerception(false) {}
 
@@ -37,6 +38,7 @@ protected:
   ProteinPredictorParametersPtr parameters;
   std::vector< std::pair<ProteinTarget, FunctionPtr> > targetPredictors;
 
+  bool activeGlobalPerception;
   bool activeResiduePerception;
   bool activeResiduePairPerception;
   bool activeDisulfideResiduePairPerception;

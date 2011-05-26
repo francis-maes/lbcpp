@@ -76,6 +76,7 @@ class ProteinEvaluator : public CompositeEvaluator
 public:
   ProteinEvaluator(bool isFinalEvaluation = false)
   {
+    addEvaluator(cbpTarget,  classificationEvaluator());
     addEvaluator(ss3Target,  containerSupervisedEvaluator(classificationEvaluator()));
     addEvaluator(ss8Target,  containerSupervisedEvaluator(classificationEvaluator()));
     addEvaluator(sa20Target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)));

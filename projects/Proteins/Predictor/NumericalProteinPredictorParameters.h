@@ -63,6 +63,7 @@ public:
 
     size_t length = builder.addFunction(new ProteinLengthFunction(), protein);
     size_t numCysteins = builder.addFunction(new NumCysteinsFunction(), protein);
+    size_t cbp = builder.addFunction(getVariableFunction(T("cysteinBondingProperty")), protein);
 
     builder.startSelection();
 
@@ -74,6 +75,9 @@ public:
 
       if (featuresParameters->residueGlobalMeanFeatures)
         builder.addFunction(accumulatorGlobalMeanFunction(), primaryFeaturesAcc, T("globalMean"));
+    
+      if (featuresParameters->bondingPropertyDiscretization)
+        builder.addFunction(enumerationDistributionFeatureGenerator(featuresParameters->bondingPropertyDiscretization, featuresParameters->bondingPropertyEntropyDiscretization), cbp, T("cysteinBondingProperty"));
     
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
@@ -109,6 +113,18 @@ public:
       addBinaryDistributionFeatureGenerator(builder, cbs, T("cbs"), featuresParameters->cbsDiscretization);
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
+  }
+  
+  /* Global Perception */
+  virtual void globalPerception(CompositeFunctionBuilder& builder) const
+  {
+    size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType, enumValueType));
+
+    builder.startSelection();
+
+      builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception);
+
+    builder.finishSelection();
   }
 /*
   void primaryPairResidueFeatures(CompositeFunctionBuilder& builder) const
@@ -379,8 +395,13 @@ public:
   {
     switch (target)
     {
-    case dsbTarget:
     case cbsTarget:
+      {
+        FunctionPtr res = linearBinaryClassifier(learningParameters, true, binaryClassificationSensitivityAndSpecificityScore);
+        res->setEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore));
+        return res;
+      }
+    case dsbTarget:
     case drTarget:
       {
         FunctionPtr res = linearBinaryClassifier(learningParameters, true, binaryClassificationMCCScore);

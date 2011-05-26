@@ -23,23 +23,23 @@ class ParzenContinuousSampler : public ContinuousSampler
 public:
   ParzenContinuousSampler(double precision, double excursion = 6, double kernelWidth = 0.25,
       double initialMean = 0, double initialStddev = 1)
-    : mean(initialMean), stddev(initialStddev), precision(precision), excursion(excursion),
-      kernelWidth(kernelWidth), learned(false), fixedAbscissa(false)
+    : learned(false), mean(initialMean), stddev(initialStddev), precision(precision), excursion(excursion),
+      kernelWidth(kernelWidth), fixedAbscissa(false)
   {
   }
 
   ParzenContinuousSampler(double precision, double minAbscissa, double maxAbscissa,
       double kernelWidth, double initialMean, double initialStddev)
-    : mean(initialMean), stddev(initialStddev), precision(precision), excursion(1),
-      kernelWidth(kernelWidth), learned(false), fixedAbscissa(true)
+    : learned(false), mean(initialMean), stddev(initialStddev), precision(precision), excursion(1),
+      kernelWidth(kernelWidth), fixedAbscissa(true)
   {
     double delta = std::abs((maxAbscissa - minAbscissa) * precision);
     abscissa = createAbscissa(minAbscissa, maxAbscissa, delta);
   }
 
   ParzenContinuousSampler()
-    : mean(0.0), stddev(1.0), precision(0.0001), excursion(6), kernelWidth(0.25),
-      learned(false), fixedAbscissa(false)
+    : learned(false), mean(0.0), stddev(1.0), precision(0.0001), excursion(6), kernelWidth(0.25),
+      fixedAbscissa(false)
   {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,

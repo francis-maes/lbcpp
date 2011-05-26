@@ -452,4 +452,39 @@ protected:
   size_t numFolds;
 };
 
+class CysteinBondingPropertyStatisticsWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (inputDirectory == File::nonexistent)
+      inputDirectory = File::getCurrentWorkingDirectory();
+    
+    ContainerPtr proteins = Protein::loadProteinsFromDirectory(context, inputDirectory, 0, T("Loading proteins"));
+    std::vector<size_t> sums(4, 0);
+    const size_t n = proteins->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>();
+      Variable value = protein->getCysteinBondingProperty(context);
+      if (!value.exists())
+        sums[3]++;
+      else
+        sums[value.getObjectAndCast<DoubleVector>()->getIndexOfMaximumValue()]++;
+    }
+    
+    std::cout << "All  : " << (sums[0] / (double)n) << std::endl;
+    std::cout << "None : " << (sums[1] / (double)n) << std::endl;
+    std::cout << "Mix  : " << (sums[2] / (double)n) << std::endl;
+    std::cout << "Miss : " << (sums[3] / (double)n) << std::endl;
+    
+    return true;
+  }
+  
+protected:
+  friend class CysteinBondingPropertyStatisticsWorkUnitClass;
+  
+  File inputDirectory;
+};
+
 };

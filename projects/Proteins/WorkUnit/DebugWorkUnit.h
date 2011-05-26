@@ -34,10 +34,12 @@ public:
     String source(T("arnaud@monster24"));
     String destination(T("boincadm@boinc.run"));
     String managerHostName(T("localhost"));
+    /* FIXME: warning during the compilation process (julien)
     size_t managerPort = 1664;
     size_t requiredMemory = 1;
     size_t requiredCpus = 1;
     size_t requiredTime = 1;
+     */
     
     // initial distribution
     IndependentMultiVariateDistributionPtr distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);      

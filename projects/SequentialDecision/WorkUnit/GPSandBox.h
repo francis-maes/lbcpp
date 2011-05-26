@@ -28,7 +28,7 @@ class GPObjectiveFunction : public SimpleUnaryFunction
 {
 public:
   GPObjectiveFunction(const std::vector<std::pair< std::vector<double> , double> >& examples, double lambda)
-    : SimpleUnaryFunction(gpExpressionClass, doubleType), examples(examples), lambda(lambda) {}
+    : SimpleUnaryFunction(gpExpressionClass, doubleType), lambda(lambda), examples(examples) {}
  
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {

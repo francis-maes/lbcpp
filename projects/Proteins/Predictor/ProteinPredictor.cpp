@@ -13,9 +13,11 @@ using namespace lbcpp;
 
 ProteinPredictor::ProteinPredictor(ProteinPredictorParametersPtr parameters = ProteinPredictorParametersPtr())
   : parameters(parameters),
+    activeGlobalPerception(false),
     activeResiduePerception(false),
     activeResiduePairPerception(false),
-    activeDisulfideResiduePairPerception(false)
+    activeDisulfideResiduePairPerception(false),
+    activeCysteinResiduePerception(false)
 {
 }
 
@@ -24,7 +26,11 @@ void ProteinPredictor::addTarget(ProteinTarget target)
   FunctionPtr targetPredictor = parameters->createTargetPredictor(target);
   jassert(targetPredictor);
   targetPredictors.push_back(std::make_pair(target, targetPredictor));
-  switch (typeOfProteinPerception(target)) {
+  switch (typeOfProteinPerception(target))
+  {
+    case globalType:
+      activeGlobalPerception = true;
+      break;
     case residueType:
       activeResiduePerception = true;
       break;
@@ -51,6 +57,7 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
 
   /* Perceptions */
   size_t proteinPerception = builder.addFunction(parameters->createProteinPerception(), input);
+  size_t globalPerception = activeGlobalPerception ? builder.addFunction(parameters->createGlobalPerception(), proteinPerception) : (size_t)-1;
   size_t residuePerception = activeResiduePerception ? builder.addFunction(parameters->createResidueVectorPerception(), proteinPerception) : (size_t)-1;
   size_t residuePairPerception = activeResiduePairPerception ? builder.addFunction(parameters->createResiduePairVectorPerception(), proteinPerception) : (size_t)-1;
   size_t disulfideResiduePerception = activeDisulfideResiduePairPerception ? builder.addFunction(parameters->createDisulfideResiduePairVectorPerception(), proteinPerception) : (size_t)-1;
@@ -73,6 +80,9 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
     size_t targetPredictorInput = 0;
     switch (targetPerceptionType)
     {
+      case globalType:
+        targetPredictorInput = globalPerception;
+        break;
       case residueType:
         targetPredictorInput = residuePerception;
         break;

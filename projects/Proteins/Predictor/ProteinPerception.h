@@ -15,6 +15,7 @@ namespace lbcpp
 enum ProteinPerceptionType
 {
   noProteinPerceptionType,
+  globalType,
   residueType,
   residuePairType,
   disulfideBondType,
@@ -24,6 +25,7 @@ enum ProteinPerceptionType
 inline ProteinPerceptionType typeOfProteinPerception(ProteinTarget target)
 {
   switch (target) {
+    case cbpTarget: return globalType;
     case ss3Target:
     case ss8Target:
     case stalTarget:

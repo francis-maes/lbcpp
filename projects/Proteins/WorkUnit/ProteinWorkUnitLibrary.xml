@@ -100,5 +100,9 @@
     <variable type="File" name="destinationDirectory" shortName="o"/>
     <variable type="PositiveInteger" name="numFolds" shortName="n"/>
   </class>
+  
+  <class name="CysteinBondingPropertyStatisticsWorkUnit" base="WorkUnit">
+    <variable type="File" name="inputDirectory" shortName="i"/>
+  </class>
 
 </library>
