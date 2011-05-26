@@ -339,10 +339,28 @@ Dans le cadre de ce travail un objectif est de mettre à disposition des cherche
 
 % TODO autres langages etc ?
 
-\section{Recherches sur l'annotation des protéines}
+\section{Cadre applicatif: prédiction de propriétés structurelles de protéines}
 \label{proteines}
-TODO
-% TODO
+\subsection{Introduction}
+Le cadre applicatif choisi pour la réalisation de ce travail consiste en la prédiction de propriétés structurelles de protéines. Plus précisément, le travail a été réalisé dans le cadre des recherches de F. \textsc{Maes}, J. \textsc{Becker} et L. \textsc{Wehenkel} concernant la prédiction structurée multi-tâche itérative de propriétés structurelles de protéines~\cite{CAP}~\cite{POSTER}.
+
+Cette section présente succinctement les enjeux et défis de la prédiction \textit{abinitio} de la structure tertiaire des protéines (section~\ref{abinitio}) ainsi que la solution proposée dans~\cite{CAP} (section~\ref{psmi}). 
+
+\subsection{Prédiction de la structure tertiaire des protéines}
+\label{abinitio}
+La prédiction \textit{ab initio} de la structure tertiaire des protéines (i.e. le calcul de la position 3D de chaque atome à partir de la séquence d'acide aminés d'une protéine) constitue un des défis majeur de la bioinformatique à l'heure actuelle. Il s'agit d'un problème délicat et non résolu à ce jour. Les enjeux sont majeurs puisque la connaissance de la structure 3D d'une protéine permet aux biologistes de déduire énormément d'informations concernant le fonctionnement et le rôle de la protéines. Ces informations peuvent alors être utilisées pour comprendre certaines maladies afin de mieux les soigner. Les motivations dans ce domaine ne manquent donc pas.
+
+Le problème de la prédiction \textit{ab initio} étant très difficile, l'approche actuellement suivie dans le cadre de l'apprentissage automatique consiste à diviser le problème en sous-problèmes plus simples: prédiction de la structure secondaire (hélices alpha, feuillets beta, ...), prédiction de l'accessibilité au solvant, prédiction de régions désordonnées, prédiction des matrices de contacts, ...
+
+\subsection{Prédiction structurée multitâche itérative (\textsc{Psmi})}
+\label{psmi}
+L'approche classique consiste à résoudre de manière indépendante les divers sous-problèmes introduits à la section précédente. Les recherches de F. \textsc{Maes}, J. \textsc{Becker} et L. \textsc{Wehenkel}~\cite{CAP} proposent une solution alternative en proposant un cadre d'apprentissage générique pour la prédiction structurée multitâche. 
+
+L'idée principale derrière ces recherches est simple: les divers sous-problèmes sont intimement liés entre eux et il parait donc intéressant de profiter des corrélations entre les différents problèmes afin d'augmenter la qualité des modèles appris. 
+
+Dans le cadre générique développé dans~\cite{CAP}, une tâche est associée à chaque sous-problème. Le cadre repose sur l'assemblage d'un ensemble de modèles de prédiction structurée simple-tâche. L'algorithme proposé est un algorithme itératif fonctionnant par passes. A chaque passe un modèle est appris pour chaque tâche en se servant des données de base, mais également des prédictions actuelles pour chaque tâche.
+
+Les expérimentations réalisées dans~\cite{CAP} sont plus qu'encourageantes puisque les résultats obtenus surpassent l'état de l'art en la matière.
 
 \chapter{Installation et administration du serveur \textsc{BOINC}}
 % TODO intro
@@ -542,8 +560,15 @@ Pour ce qui est de la plateforme Linux, deux machines virtuelles aussi vieilles 
 
 \chapter{Algorithmes évolutionnaires développés et résultats}
 \section{Introduction}
-TODO
-% TODO
+Cette section s'intéresse aux recherches faites durant ce travail concernant les algorithmes évolutionnaires et plus précisément les algorithmes à estimation de distribution (EDA).
+
+Les sections~\ref{evointro} et~\ref{edaintro} présentent les algrithmes évolutionnaires et les algorithmes à estimation de distribution d'une manière générale.
+
+Dans la section~\ref{edaasynch} un EDA original mieux adapté au contexte du calcul distribué est présenté. La section~\ref{mixture} présente également une contribution originale concernant la construction de la distribution utilisée par l'EDA.
+
+La section~\ref{edaimprove} soulève quelques problèmes pratiques rencontrés en général avec les EDA et propose quelques solutions trouvées dans la littérature.
+
+Enfin, la section~\ref{results} présente les résultats obtenus avec ce nouvel EDA.
 
 \section{Algorithmes évolutionnaires}
 \label{evointro}
@@ -588,6 +613,7 @@ L'Algorithm~\ref{evoalgo} et la Fig.~\ref{evoschema} décrivent le fonctionnemen
 Ces algorithmes, bien qu'assez simple conceptuellement, produisent d'excellent résultats dans beaucoup de domaine.
 
 \section{Algorithmes à estimation de distribution}
+\label{edaintro}
 \subsection{Introduction et algorithme général}
 \label{edageneral}
 Les algorithmes à estimation de distribution (\textit{Estimation of distribution algorithm}, EDA) sont des variations plus "évoluées" des algorithmes évolutionnaires classiques. Contrairement à ces-derniers, les EDA n'utilisent pas d'opérateurs de croisement ou de mutation. En effet, un EDA cherche à estimer les relations entre les différentes variables d'un problème d'optimisation en y associant une distribution de probabilité. Les nouveaux individus (enfants) sont alors générés directement à partir de la distribution de probabilité.
@@ -699,6 +725,7 @@ Une contribution de ce travail est l'utilisation de mixtures pour représenter l
 Afin d'éviter ce genre de problèmes, les EDA implémentés construisent leur distribution comme une mixture de distributions. Plus précisément, à chaque itération la distribution construite est une mixture de l'ancienne distribution et de la distribution apprise à l'aide des meilleurs individus de cette itération. Le paramètre $slowingFactor$ permet de contrôler la probabilité des deux distributions au sein de la mixture, i.e. lors de l'échantillonnage l'ancienne distribution est choisie avec une probabilité de $slowingFactor$ tandis que la nouvelle distribution est choisie avec une probabilité de $1-slowingFactor$. Bien entendu, une valeur nulle pour le paramètre $slowingFactor$ permet de désactiver ce mécanisme.
 
 \section{Amélioration de la convergence des EDA}
+\label{edaimprove}
 Un problème courant avec les EDA est la convergence trop rapide vers un optimum local empêchant ainsi la convergence vers l'optimum global. La source de ce problème vient du manque de diversité dans la population générée lorsque l'EDA approche un optimum. 
 
 Le cas d'un EDA utilisant des distributions gaussiennes peut-être considéré afin de mieux comprendre le phénomène. Pour plus de facilité, le cas d'une fonction à une dimension est considéré. Si le couple $(\mu, \sigma)$ initial ne permet pas (i.e. avec une probabilité suffisante) d'atteindre l'optimum global mais permet d'atteindre un optimum local (proche de $\mu$ initial), alors la distribution apprise à l'itération suivante se rapprochera de cet optimum local et $\sigma$ diminuera. Se rapprocher de l'optimum local n'est pas un problème en soit, mais c'est la diminution de $\sigma$, i.e. la baisse de diversité, qui est problématique puisque celle-ci ne permettra pas d'atteindre l'optimum global si elle diminue trop fortement.
@@ -706,6 +733,7 @@ Le cas d'un EDA utilisant des distributions gaussiennes peut-être considéré a
 Ce problème est bien entendu également valable pour les fonctions $fitness$ à plusieurs dimensions. Il s'agit d'un problème typique avec les algorithmes de type EDA. L'article~\cite{DIVERSITE} décrit plus en détails la nature du problème et propose quelques solutions. Celles-ci consistent principalement à utiliser des heuristiques afin de ne mettre à jour $\sigma$ que lorsque l'état de l'optimiseur semble proche de l'optimum global. L'heuristique employée consiste par exemple à regarder la distance entre le vecteur moyen des caractéristiques de la population et le vecteur des caractéristiques de l'individu ayant obtenu le meilleur score: une distance faible suggère que l'optimiseur est proche de l'optimum global tandis qu'une distance élevée suggère que l'état de l'optimiseur tend à se déplacer vers une autre région et dans ce cas la variance ne doit pas être réduite. Ces techniques n'ont pas été implémentées dans ce travail, mais il s'agit de perspectives d'amélioration intéressantes.
 
 \section{Expériences réalisées et résultats}
+\label{results}
 \subsection{Introduction}
 Cette section vise à présenter plus concrètement les deux EDA implémentés (classique et asynchrone) ainsi que les expériences réalisées à l'aide de ces EDA et les résultats obtenus. % TODO finir intro
 
@@ -722,7 +750,7 @@ La section s'articule en quatre volets:
 \subsection{Implémentation concrète des EDA}
 Les EDA implémentés utilisent un modèle sans dépendance. Les variables de la fonction $fitness$ sont donc considérées comme étant indépendantes. Ce type d'EDA bien qu'assez simple conceptuellement donne souvent de bons résultats sur des problèmes pratiques. De plus, étant donné qu'aucune structure d'arbre ou de réseau Bayésien n'est impliquée dans la construction des distributions, ce type d'algorithmes est très efficace et permet de gérer des populations de grande taille.
 
-L'implémentation réalisée permet d'associer n'importe quel type de distribution à chaque variable, la seule contrainte étant que la distribution puisse être apprise sur base d'un \textit{dataset}~\footnote{Le détail de l'implémentation est présenté dans le chapitre~\ref{génie}.}. En pratique ce sont principalement des distributions normales (pour les réels) ou de \textsc{Bernoulli} (pour les types énumérés) qui ont été utilisées. Pour les variables entières, une version discrétisée de la loi normale à été utilisée avec possibilité de fixer un domaine de définition~\footnote{Concrètement les échantillons d'une loi normale sont arrondis et ramenés dans le domaine de définition.}.
+L'implémentation réalisée permet d'associer n'importe quel type de distribution à chaque variable, la seule contrainte étant que la distribution puisse être apprise sur base d'un \textit{dataset}~\footnote{Le détail de l'implémentation est présenté dans le chapitre~\ref{genie}.}. En pratique ce sont principalement des distributions normales (pour les réels) ou de \textsc{Bernoulli} (pour les types énumérés) qui ont été utilisées. Pour les variables entières, une version discrétisée de la loi normale à été utilisée avec possibilité de fixer un domaine de définition~\footnote{Concrètement les échantillons d'une loi normale sont arrondis et ramenés dans le domaine de définition.}.
 
 Les paramètres des EDAs sont les suivants:
 \begin{itemize}
@@ -803,9 +831,13 @@ Les résultats sont visibles Fig.~\ref{compare_eda_async_f10_1},~\ref{compare_ed
 \end{figure}
 
 \subsection{Utilisation de l'EDA Asynchrone sur \textsc{BOINC} pour résoudre un problème pratique}
-TODO : problème -> learner structure secondaire des protéines + expliquer qq paramètres + dire que paramètres entiers + dimension problème
+L'expérience réalisée est directement en rapport avec les recherches de F. \textsc{Maes}, J. \textsc{Becker} et L. \textsc{Wehenkel} concernant la prédiction structurée multitâche itérative de propriétés structurelles de protéines~\cite{CAP} (voir section~\ref{psmi}).
 
-L'expérience réalisée consiste a d'essayer d'améliorer le meilleur score obtenu jusqu'à présent par F. \textsc{Maes}. La distribution initiale de l'EDA a donc été choisie afin d'être plus ou moins centrée sur cette meilleur solution mais de grands écarts types ont été utilisé afin de permettre de découvrir d'autres solutions optimales. Cette expérience ayant été réalisée sur le réseau \textsc{BOINC} c'est bien entendu la version asynchrone de l'EDA qui a été utilisée. Cependant, cette expérience ayant été réalisée avant les expériences menées dans la section.~\ref{edavsasync}, les remarques faites quant à la valeur de $numEvaluationsInProgress$  ne sont pas prises en compte.
+Les expérimentations réalisées dans~\cite{CAP} se basent notamment sur le \textit{dataset} \textit{Protein Data Bank} (PDB)~\cite{PDB}. Cependant, cette données ne sont pas utilisées telles quelles. Une série des pré-traitements sont appliqués afin d'enrichir les données. L'opération consiste en quelque sorte à établir un "profil génétique" de chaque séquence d'acides aminés. Il s'agit là d'une opération de type extraction de \textit{features}. La qualité des \textit{features} extraites influence directement la qualité du modèle appris.
+
+L'opération d'extraction de \textit{features} est contrôlée par un ensemble de paramètres. L'expérience réalisée décrite dans cette section a utilisé l'EDA Asynchrone sur le réseau \textsc{BOINC} afin d'améliorer la qualité du modèle appris. 
+ 
+F. \textsc{Maes} ayant déjà réalisé des expérimentations dans ce domaine, un jeu de paramètres relativement bons était déjà disponible. L'objectif était donc de trouver un jeu de paramètre permettant d'améliorer encore les résultats grâce à l'EDA. La distribution initiale de l'EDA a donc été choisie afin d'être plus ou moins centrée sur cette meilleur solution mais de grands écarts types ont été utilisé afin de permettre de découvrir d'autres solutions optimales. Cette expérience ayant été réalisée sur le réseau \textsc{BOINC} c'est bien entendu la version asynchrone de l'EDA qui a été utilisée. Cependant, cette expérience ayant été réalisée avant les expériences menées dans la section.~\ref{edavsasync}, les remarques faites quant à la valeur de $numEvaluationsInProgress$ n'ont pas été prises en compte.
 
 Pour cette expérience, les paramètres utilisés ont été les suivants:
 \begin{itemize}
