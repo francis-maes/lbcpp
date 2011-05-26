@@ -87,7 +87,7 @@ namespace testbed
   // TODO arnaud : http://coco.gforge.inria.fr/doku.php?id=downloads
   DoubleMatrixPtr getRotationMatrix(int DIM)
   {
-    DoubleMatrixPtr R = independentDoubleMatrixSampler(DIM, DIM, gaussianSampler())->sample(defaultExecutionContext(), RandomGenerator::getInstance()).getObjectAndCast<DoubleMatrix>();
+    DoubleMatrixPtr R = independentDoubleMatrixSampler(DIM, DIM, gaussianSampler())->sample(defaultExecutionContext(), defaultExecutionContext().getRandomGenerator()).getObjectAndCast<DoubleMatrix>();
     
     double prod;
     int i, j, k;
