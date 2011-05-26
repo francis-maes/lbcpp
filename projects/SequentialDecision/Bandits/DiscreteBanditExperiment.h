@@ -259,7 +259,7 @@ protected:
   {
     std::vector<DiscreteBanditPolicyPtr> policies;
     policies.push_back(ucb1DiscreteBanditPolicy());
-    policies.push_back(ucb2DiscreteBanditPolicy());
+    //policies.push_back(ucb2DiscreteBanditPolicy());
     policies.push_back(ucbvDiscreteBanditPolicy());
     policies.push_back(epsilonGreedyDiscreteBanditPolicy());
     return optimizeAndEvaluatePolicies(context, policies);
