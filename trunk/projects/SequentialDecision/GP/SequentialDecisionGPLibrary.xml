@@ -46,6 +46,7 @@
   </class>
   <class name="ConstantGPExpression" base="GPExpression">
     <variable type="Double" name="value"/>
+    <variable type="Boolean" name="learnable"/>
   </class>
 
   <class name="GPExpressionSamplingContext" base="Object">
@@ -90,16 +91,22 @@
     <variable type="PositiveInteger" name="left"/>
     <variable type="PositiveInteger" name="right"/>
   </class>
+  <class name="ConstantGPExpressionBuilderAction" base="GPExpressionBuilderAction">
+    <variable type="Double" name="value"/>
+    <variable type="Boolean" name="learnable"/>
+  </class>
 
-  <class name="GPExpressionBuilderState" base="DecisionProblemState">
+  <class name="GPExpressionBuilderState" base="DecisionProblemState" abstract="yes"/>
+
+  <class name="CompactGPExpressionBuilderState" base="GPExpressionBuilderState">
+    <variable type="GPExpression" name="expression"/>
+  </class>
+  
+  <class name="LargeGPExpressionBuilderState" base="GPExpressionBuilderState">
     <variable type="ObjectVector[GPExpression]" name="expressions"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="expressionScores"/>
   </class>
 
   <class name="GPExpressionBuilderProblem" base="DecisionProblem"/>
-
-  <class name="CompactGPExpressionBuilderState" base="DecisionProblemState">
-    <variable type="GPExpression" name="expression"/>
-  </class>
 
 </library>

@@ -72,6 +72,11 @@ public:
   virtual double compute(const double* x) const
   {
     double e = expr->compute(x);
+    if (e == -DBL_MAX)
+      return -DBL_MAX;
+    else if (e == DBL_MAX)
+      return DBL_MAX;
+
     switch (pre)
     {
     //case gpSin: return sin(e);
@@ -110,7 +115,8 @@ public:
   {
     const UnaryGPExpressionPtr& other = o.staticCast<UnaryGPExpression>();
     other->pre = pre;
-    other->expr = expr->cloneAndCast<GPExpression>(context);
+    if (expr)
+      other->expr = expr->cloneAndCast<GPExpression>(context);
   }
  
 protected:
@@ -188,9 +194,11 @@ public:
   virtual void clone(ExecutionContext& context, const ObjectPtr& other) const
   {
     const BinaryGPExpressionPtr& o = other.staticCast<BinaryGPExpression>();
-    o->left = left->cloneAndCast<GPExpression>(context);
+    if (left)
+      o->left = left->cloneAndCast<GPExpression>(context);
     o->op = op;
-    o->right = right->cloneAndCast<GPExpression>(context);
+    if (right)
+      o->right = right->cloneAndCast<GPExpression>(context);
   }
 
 protected:
@@ -236,8 +244,8 @@ typedef ReferenceCountedObjectPtr<VariableGPExpression> VariableGPExpressionPtr;
 class ConstantGPExpression : public GPExpression
 {
 public:
-  ConstantGPExpression(double value = 0.0)
-    : value(value) {}
+  ConstantGPExpression(double value = 0.0, bool isLearnable = false)
+    : value(value), learnable(isLearnable) {}
 
   virtual size_t size() const
     {return 1;}
@@ -246,7 +254,10 @@ public:
     {return value;}
 
   virtual String toShortString() const
-    {return String(getValue());}
+  {
+    String res(getValue());
+    return learnable ? T("<cst(") + res + T(")>") : res;
+  }
 
   double getValue() const
     {return value;}
@@ -257,10 +268,14 @@ public:
   virtual int compare(const ObjectPtr& otherObject) const
     {return Variable(value).compare(otherObject.staticCast<ConstantGPExpression>()->value);}
  
+  bool isLearnable() const
+    {return learnable;}
+
 protected:
   friend class ConstantGPExpressionClass;
 
   double value;
+  bool learnable;
 };
 
 typedef ReferenceCountedObjectPtr<ConstantGPExpression> ConstantGPExpressionPtr;
