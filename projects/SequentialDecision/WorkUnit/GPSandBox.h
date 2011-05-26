@@ -63,21 +63,25 @@ public:
     objectiveFunction->initialize(defaultExecutionContext(), gpExpressionClass);
   }
 
-  size_t getNumConstants(const GPExpressionPtr& expression) const
+  void getLearnableConstants(const GPExpressionPtr& expression, std::vector<double>& res) const
   {
-    if (expression.dynamicCast<ConstantGPExpression>())
-      return 1;
+    ConstantGPExpressionPtr constantExpression = expression.dynamicCast<ConstantGPExpression>();
+    if (constantExpression)
+    {
+      if (constantExpression->isLearnable())
+        res.push_back(constantExpression->getValue());
+    }
     else if (expression.dynamicCast<BinaryGPExpression>())
     {
       const BinaryGPExpressionPtr& expr = expression.staticCast<BinaryGPExpression>();
-      return getNumConstants(expr->getLeft()) + getNumConstants(expr->getRight());
+      getLearnableConstants(expr->getLeft(), res);
+      getLearnableConstants(expr->getRight(), res);
     }
     else if (expression.dynamicCast<UnaryGPExpression>())
     {
       const UnaryGPExpressionPtr& expr = expression.staticCast<UnaryGPExpression>();
-      return getNumConstants(expr->getExpression());
+      getLearnableConstants(expr->getExpression(), res);
     }
-    return 0;
   }
 
 
@@ -92,10 +96,14 @@ public:
 
     void setConstantsRecursively(const GPExpressionPtr& expression, const DenseDoubleVectorPtr& constants, size_t& index) const
     {
-      if (expression.dynamicCast<ConstantGPExpression>())
+      ConstantGPExpressionPtr constantExpression = expression.dynamicCast<ConstantGPExpression>();
+      if (constantExpression)
       {
-        expression.staticCast<ConstantGPExpression>()->setValue(constants->getValue(index));
-        ++index;
+        if (constantExpression->isLearnable())
+        {
+          constantExpression->setValue(constants->getValue(index));
+          ++index;
+        }
       }
       else if (expression.dynamicCast<BinaryGPExpression>())
       {
@@ -129,15 +137,16 @@ public:
   {
     const GPExpressionPtr& expression = input.getObjectAndCast<GPExpression>();
 
-    size_t numConstants = getNumConstants(expression);
-    if (numConstants == 0)
+    std::vector<double> constants;
+    getLearnableConstants(expression, constants);
+    if (constants.size() == 0)
       return objectiveFunction->compute(context, input);
 
     context.enterScope(T("Optimizing constants in ") + expression->toShortString());
     // Enumeration des constantes
     DefaultEnumerationPtr constantsEnumeration = new DefaultEnumeration(T("constants"));
-    for (size_t i = 0; i < numConstants; ++i)
-      constantsEnumeration->addElement(context, T("C") + String((int)i));
+    for (size_t i = 0; i < constants.size(); ++i)
+      constantsEnumeration->addElement(context, T("cst") + String((int)i));
 
     // Sampler de DenseDoubleVector pour les constantes
     SamplerPtr constantsSampler = independentDoubleVectorSampler((EnumerationPtr)constantsEnumeration, gaussianSampler());
@@ -150,7 +159,7 @@ public:
     OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(constantsSampler);
 
     // optimizer
-    OptimizerPtr optimizer = edaOptimizer(3, 100, 10, 0.0, true);
+    OptimizerPtr optimizer = edaOptimizer(3, 10, 3, 0.0, false);
     optimizer->compute(context, optimizerContext, optimizerState);
     
     Variable res = optimizerState->getBestScore();
@@ -224,7 +233,7 @@ public:
     size_t maxSearchNodes = 100;
 
     DecisionProblemPtr problem = new GPExpressionBuilderProblem(inputVariables, objective);
-    DecisionProblemStatePtr state = new GPExpressionBuilderState(T("toto"), inputVariables, objective);
+    DecisionProblemStatePtr state = new LargeGPExpressionBuilderState(T("toto"), inputVariables, objective);
 
     for (size_t depth = 0; depth < 10; ++depth)
     {
@@ -248,7 +257,7 @@ public:
         context.resultCallback(T("newState"), state->clone(context));
         context.resultCallback(T("transitionReward"), transitionReward);
 
-        GPExpressionBuilderStatePtr expressionBuilderState = state.dynamicCast<GPExpressionBuilderState>();
+        GPExpressionBuilderStatePtr expressionBuilderState = state.dynamicCast<LargeGPExpressionBuilderState>();
         jassert(expressionBuilderState);
         context.resultCallback(T("expression"), expressionBuilderState->getExpression());
         context.resultCallback(T("score"), expressionBuilderState->getScore());

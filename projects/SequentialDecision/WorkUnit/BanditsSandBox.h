@@ -209,7 +209,105 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     const GPExpressionPtr& expression = input.getObjectAndCast<GPExpression>();
-    return rewrite(expression);
+    GPExpressionPtr rewritedExpression = rewrite(expression);
+    //context.informationCallback(expression->toShortString() + T(" ==> ") + rewritedExpression->toShortString());
+    return rewritedExpression;
+  }
+
+  GPExpressionPtr rewriteBinaryExpression(GPOperator op, const GPExpressionPtr& left, const GPExpressionPtr& right) const
+  {
+    ConstantGPExpressionPtr constantLeft = left.dynamicCast<ConstantGPExpression>();
+    ConstantGPExpressionPtr constantRight = right.dynamicCast<ConstantGPExpression>();
+
+    if (constantLeft && constantRight)
+      return new ConstantGPExpression(BinaryGPExpression(left, op, right).compute(NULL), constantLeft->isLearnable() || constantRight->isLearnable());
+
+    ConstantGPExpressionPtr learnableLeft;
+    if (constantLeft && constantLeft->isLearnable())
+    {
+      learnableLeft = constantLeft;
+      constantLeft = ConstantGPExpressionPtr();
+    }
+    ConstantGPExpressionPtr learnableRight;
+    if (constantRight && constantRight->isLearnable())
+    {
+      learnableRight = constantRight;
+      constantRight = ConstantGPExpressionPtr();
+    }
+    UnaryGPExpressionPtr unaryLeft = left.dynamicCast<UnaryGPExpression>();
+    UnaryGPExpressionPtr unaryRight = right.dynamicCast<UnaryGPExpression>();
+
+    if (op == gpDivision)
+    {
+      // x / 1 = x
+      if (constantRight && constantRight->getValue() == 1.0)
+        return left;
+
+      // 1 / x = inverse(x)
+      if (constantLeft && constantLeft->getValue() == 1.0)
+        return right;
+
+      // x / x = 1
+      if (Variable(left).compare(right) == 0)
+        return new ConstantGPExpression(1.0);
+
+      // x / inverse(y) = x * y
+      if (unaryRight && unaryRight->getOperator() == gpInverse)
+        return rewrite(new BinaryGPExpression(left, gpMultiplication, unaryRight->getExpression()));
+
+    }
+    else if (op == gpMultiplication)
+    {
+      // 1 * x = x
+      if (constantLeft && constantLeft->getValue() == 1.0)
+        return right;
+
+      // x * 1 = x
+      if (constantRight && constantRight->getValue() == 1.0)
+        return left;
+
+      // inverse(x) * y = y / x
+      if (unaryLeft && unaryLeft->getOperator() == gpInverse)
+        return rewrite(new BinaryGPExpression(right, gpDivision, unaryLeft->getExpression()));
+
+      // x * inverse(y) = x / y
+      if (unaryRight && unaryRight->getOperator() == gpInverse)
+        return rewrite(new BinaryGPExpression(left, gpDivision, unaryRight->getExpression()));
+    }
+    else if (op == gpSubtraction)
+    {
+      // x - x = 0
+      if (Variable(left).compare(right) == 0)
+        return new ConstantGPExpression(0.0);
+    }
+
+    if (op == gpAddition || op == gpMultiplication)
+    {
+
+      // x + y and x * y commutativity
+      if (Variable(left).compare(right) > 0)
+        return rewrite(new BinaryGPExpression(right, op, left));
+    }
+    
+    return new BinaryGPExpression(left, op, right);
+  }
+
+  GPExpressionPtr rewriteUnaryExpression(GPPre op, GPExpressionPtr expression) const
+  {
+    // precompute constants
+    ConstantGPExpressionPtr constant = expression.dynamicCast<ConstantGPExpression>();
+    if (constant)
+      return new ConstantGPExpression(UnaryGPExpression(op, expression).compute(NULL), constant->isLearnable());
+
+    // inverse(inverse(x)) = x
+    if (op == gpInverse)
+    {
+      UnaryGPExpressionPtr unary = expression.dynamicCast<UnaryGPExpression>();
+      if (unary && unary->getOperator() == gpInverse)
+        return unary->getExpression();
+    }
+
+    return new UnaryGPExpression(op, expression);
   }
 
   GPExpressionPtr rewrite(const GPExpressionPtr& expression) const
@@ -220,49 +318,17 @@ public:
       GPExpressionPtr left = rewrite(binaryExpression->getLeft());
       GPExpressionPtr right = rewrite(binaryExpression->getRight());
       GPOperator op = binaryExpression->getOperator();
-
-      UnaryGPExpressionPtr unaryLeft = left.dynamicCast<UnaryGPExpression>();
-      UnaryGPExpressionPtr unaryRight = right.dynamicCast<UnaryGPExpression>();
-
-      if (op == gpDivision)
-      {
-        // x / inverse(y) = x * y
-        if (unaryRight && unaryRight->getOperator() == gpInverse)
-          return rewrite(new BinaryGPExpression(left, gpMultiplication, unaryRight->getExpression()));
-
-        // inverse(x) / y = inverse(x * y)
-      }
-      else if (op == gpMultiplication)
-      {
-        // inverse(x) * y = y / x
-        if (unaryLeft && unaryLeft->getOperator() == gpInverse)
-          return rewrite(new BinaryGPExpression(right, gpDivision, unaryLeft->getExpression()));
-
-        // x * inverse(y) = x / y
-        if (unaryRight && unaryRight->getOperator() == gpInverse)
-          return rewrite(new BinaryGPExpression(left, gpDivision, unaryRight->getExpression()));
-      }
-
-      if (op == gpAddition || op == gpMultiplication)
-      {
-        // x + y and x * y commutativity
-        if (Variable(left).compare(right) > 0)
-          return rewrite(new BinaryGPExpression(right, op, left));
-      }
-      
-      return new BinaryGPExpression(left, op, right);
+      return rewriteBinaryExpression(op, left, right);
     }
 
     UnaryGPExpressionPtr unaryExpression = expression.dynamicCast<UnaryGPExpression>();
     if (unaryExpression)
     {
       GPExpressionPtr expr = rewrite(unaryExpression->getExpression());
-      return new UnaryGPExpression(unaryExpression->getOperator(), expr);
+      return rewriteUnaryExpression(unaryExpression->getOperator(), expr);
     }
-
     return expression;
   }
- 
 };
 
 
@@ -314,7 +380,7 @@ protected:
   {
     ScopedReadLock _(cacheLock);
     juce::atomicIncrement(cacheRequests);
-    std::map<Variable, Variable>::const_iterator it = cache.find(input.toShortString());
+    std::map<Variable, Variable>::const_iterator it = cache.find(input);
     if (it == cache.end())
       return false;
     juce::atomicIncrement(cacheAccesses);
@@ -325,7 +391,7 @@ protected:
   void addResultInCache(ExecutionContext& context, const Variable& input, const Variable& output)
   {
     //context.informationCallback(T("cache ") + input.toShortString() + T(" (") + output.toShortString() + T(")"));
-    ScopedWriteLock _(cacheLock); cache[input.toShortString()] = output;
+    ScopedWriteLock _(cacheLock); cache[input.clone(context)] = output;
   }
 };
 
@@ -521,7 +587,8 @@ protected:
   {
     FunctionPtr objective = new EvaluateOptimizedDiscreteBanditPolicyParameters(
       gpExpressionDiscreteBanditPolicy(), numBandits, maxTimeStep, trainingStates);
-    
+    objective = new GPStructureObjectiveFunction(objective);
+
     UnaryCacheFunctionPtr cacheFunction = new UnaryCacheFunction(objective);
     objective = composeFunction(new MakeGPExpressionUnique(), cacheFunction);
 
@@ -542,58 +609,69 @@ protected:
 */
     for (size_t maxDepth = 1; maxDepth <= 5; ++maxDepth)
     {
-      context.enterScope(T("maxDepth = ") + String((int)maxDepth));
-
-      DecisionProblemStatePtr state = new CompactGPExpressionBuilderState(T("toto"), gpExpressionDiscreteBanditPolicyVariablesEnumeration, objective);
-      double allTimesBestScore = DBL_MAX;
-      double allTimesBestValidation = DBL_MAX;
-      GPExpressionPtr allTimesBestExpression;
-
-      for (size_t timeStep = 0; timeStep < 10; ++timeStep)
-      {
-        context.enterScope(T("TimeStep ") + String((int)timeStep));
-        double bestScore = DBL_MAX;
-        GPExpressionPtr bestExpression;
-        Variable bestFirstAction;
-        Variable currentFirstAction;
-        recursiveExhaustiveSearch(context, state, validation, 0, maxDepth, bestScore, bestExpression, bestFirstAction, currentFirstAction);
-        double bestValidation = validation->compute(context, bestExpression).toDouble();
-
-        context.resultCallback(T("timeStep"), timeStep);
-        context.resultCallback(T("bestScore"), bestScore);
-        context.resultCallback(T("bestValidation"), bestValidation);
-        context.resultCallback(T("bestExpression"), bestExpression);
-        context.informationCallback(T("Best: ") + bestExpression->toShortString() + T(" -> ") + String(bestScore) + T(", ") + String(bestValidation));
-        context.informationCallback(T("Best First Action: ") + bestFirstAction.toShortString());
-        cacheFunction->displayAndFlushCacheUsage(context);
-
-        if (bestScore < allTimesBestScore)
-          allTimesBestScore = bestScore, allTimesBestValidation = bestValidation, allTimesBestExpression = bestExpression;
-
-        double reward;
-        state->performTransition(context, bestFirstAction, reward);
-
-        context.leaveScope(new Pair(bestScore, bestValidation));
-        if (state->isFinalState())
-        {
-          context.informationCallback(T("Reached Final State"));
-          break;
-        }
-      }
-      context.informationCallback(T("Best: ") + allTimesBestExpression->toShortString());
-
-      context.resultCallback(T("bestScore"), allTimesBestScore);
-      context.resultCallback(T("bestValidation"), allTimesBestValidation);
-      context.resultCallback(T("bestExpression"), allTimesBestExpression);
-      context.leaveScope(new Pair(allTimesBestScore, allTimesBestValidation));
+      searchBestFormula(context, cacheFunction, objective, validation, maxDepth, true);
+      searchBestFormula(context, cacheFunction, objective, validation, maxDepth, false);
     }
     return true;
-
-  
     //return breadthFirstSearch(context, ultimatePolicyVariablesEnumeration, objective, validation);
   }
 
-  void recursiveExhaustiveSearch(ExecutionContext& context, CompactGPExpressionBuilderStatePtr state, const FunctionPtr& validation,
+  bool searchBestFormula(ExecutionContext& context, const UnaryCacheFunctionPtr& cacheFunction, const FunctionPtr& objective, const FunctionPtr& validation, size_t maxDepth, bool useCompactStateSpace)
+  {
+    context.enterScope(T("maxDepth = ") + String((int)maxDepth) + T(" ") + (useCompactStateSpace ? T("compact") : T("large")));
+
+    DecisionProblemStatePtr state;
+    if (useCompactStateSpace)
+      state = new CompactGPExpressionBuilderState(T("toto"), gpExpressionDiscreteBanditPolicyVariablesEnumeration, objective);
+    else
+      state = new LargeGPExpressionBuilderState(T("toto"), gpExpressionDiscreteBanditPolicyVariablesEnumeration, objective);
+
+    double allTimesBestScore = DBL_MAX;
+    double allTimesBestValidation = DBL_MAX;
+    GPExpressionPtr allTimesBestExpression;
+
+    for (size_t timeStep = 0; timeStep < 10; ++timeStep)
+    {
+      context.enterScope(T("TimeStep ") + String((int)timeStep));
+      double bestScore = DBL_MAX;
+      GPExpressionPtr bestExpression;
+      Variable bestFirstAction;
+      Variable currentFirstAction;
+      recursiveExhaustiveSearch(context, state, validation, 0, maxDepth, bestScore, bestExpression, bestFirstAction, currentFirstAction);
+      double bestValidation = validation->compute(context, bestExpression).toDouble();
+
+      context.resultCallback(T("timeStep"), timeStep);
+      context.resultCallback(T("bestScore"), bestScore);
+      context.resultCallback(T("bestValidation"), bestValidation);
+      context.resultCallback(T("bestExpression"), bestExpression);
+      context.resultCallback(T("bestFirstAction"), bestFirstAction);
+      context.informationCallback(T("Best: ") + bestExpression->toShortString() + T(" -> ") + String(bestScore) + T(", ") + String(bestValidation));
+      context.informationCallback(T("Best First Action: ") + bestFirstAction.toShortString());
+      cacheFunction->displayAndFlushCacheUsage(context);
+
+      if (bestScore < allTimesBestScore)
+        allTimesBestScore = bestScore, allTimesBestValidation = bestValidation, allTimesBestExpression = bestExpression;
+
+      double reward;
+      state->performTransition(context, bestFirstAction, reward);
+
+      context.leaveScope(new Pair(bestScore, bestValidation));
+      if (state->isFinalState())
+      {
+        context.informationCallback(T("Reached Final State"));
+        break;
+      }
+    }
+    context.informationCallback(T("Best: ") + allTimesBestExpression->toShortString() + T(" -> ") + String(allTimesBestScore) + T(", ") + String(allTimesBestValidation));
+
+    context.resultCallback(T("bestScore"), allTimesBestScore);
+    context.resultCallback(T("bestValidation"), allTimesBestValidation);
+    context.resultCallback(T("bestExpression"), allTimesBestExpression);
+    context.leaveScope(new Pair(allTimesBestScore, allTimesBestValidation));
+    return true;
+  }
+
+  void recursiveExhaustiveSearch(ExecutionContext& context, GPExpressionBuilderStatePtr state, const FunctionPtr& validation,
                   size_t depth, size_t maxDepth, double& bestScore, GPExpressionPtr& bestExpression, Variable& bestFirstAction, Variable& currentFirstAction)
   {
     ContainerPtr actions = state->getAvailableActions();
@@ -605,26 +683,30 @@ protected:
         currentFirstAction = action;
 
       double reward;
+      //context.enterScope(action.toShortString());
       state->performTransition(context, action, reward);
 
-      if (state->isFinalState())
+      GPExpressionPtr expression = state->getExpression();
+      if (expression)
       {
-        double score = -reward;
-        if (score < bestScore)
+        double score = state->getScore();
+        
+        //context.informationCallback(expression->toShortString() + T(" -> ") + String(score));
+
+        if (score <= bestScore)
         {
           bestScore = score;
-          bestExpression = state->getExpression()->cloneAndCast<GPExpression>();
+          bestExpression = expression->cloneAndCast<GPExpression>();
           //context.informationCallback(bestExpression->toShortString() + T(" -> ") + String(bestScore));
           bestFirstAction = currentFirstAction;
         }
       }
-      else
-      {
-        size_t nextDepth = depth + 1;
-        if (nextDepth < maxDepth)
-          recursiveExhaustiveSearch(context, state, validation, nextDepth, maxDepth, bestScore, bestExpression, bestFirstAction, currentFirstAction);
-      }
+
+      if (!state->isFinalState() && depth < maxDepth - 1)
+        recursiveExhaustiveSearch(context, state, validation, depth + 1, maxDepth, bestScore, bestExpression, bestFirstAction, currentFirstAction);
+
       state->undoTransition(context, action);
+      //context.leaveScope(true);
     }
   } 
 
@@ -656,7 +738,7 @@ protected:
         context.resultCallback(T("newState"), state->clone(context));
         context.resultCallback(T("transitionReward"), transitionReward);
 
-        GPExpressionBuilderStatePtr expressionBuilderState = state.dynamicCast<GPExpressionBuilderState>();
+        GPExpressionBuilderStatePtr expressionBuilderState = state.dynamicCast<LargeGPExpressionBuilderState>();
         jassert(expressionBuilderState);
         GPExpressionPtr expression = expressionBuilderState->getExpression();
         double trainScore = expressionBuilderState->getScore();
