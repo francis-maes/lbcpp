@@ -46,6 +46,7 @@ class ExtractMeanScoreWorkUnit : public WorkUnit
   virtual Variable run(ExecutionContext& context)
   {
     juce::DirectoryIterator iter (File ("/home/arnaud/Manager2/AsyncEDAOptimizerExperience2"), true, "*.archive");
+    std::map<juce::int64, double> scores;
     while (iter.next())
     {
       File theFileItFound (iter.getFile());
@@ -54,8 +55,31 @@ class ExtractMeanScoreWorkUnit : public WorkUnit
       std::vector<ExecutionTraceItemPtr> vec = trace->getRootNode()->getSubItems();      
       Variable ret = (vec[0].dynamicCast<ExecutionTraceNode>())->getReturnValue();
       double validationScore = ret.toDouble();
-      std::cout << theFileItFound.getFileNameWithoutExtension().getLargeIntValue() << " " << validationScore << std::endl;
-      break;
+      //std::cout << theFileItFound.getFileNameWithoutExtension().getLargeIntValue() << " " << validationScore << std::endl;
+      scores.insert(std::pair<juce::int64, double>(theFileItFound.getFileNameWithoutExtension().getLargeIntValue(), validationScore));
+    }
+
+    double validationMean = 0.0;
+    size_t nb = 0;
+    size_t i = 0;
+    size_t iteration = 1;
+    std::map<juce::int64, double>::iterator it;
+    for ( it=scores.begin() ; it != scores.end(); it++ )
+    {
+      if (it->second <= 1)
+      {
+        validationMean += it->second;
+        nb++;
+      }
+      i++;
+      if (i == 500) 
+      {
+        std::cout << iteration << " " << validationMean/nb << std::endl;
+        validationMean = 0.0;
+        i = 0;
+        nb = 0;
+        iteration++;
+      }
     }
     return Variable();
   }
