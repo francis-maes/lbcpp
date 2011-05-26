@@ -84,7 +84,9 @@ public:
   }
 
   void generateMoversDataSet(VectorPtr& inputs, VectorPtr& samples)
-  {rosettaInitialization(defaultExecutionContext(), false);
+  {
+#ifdef LBCPP_PROTEIN_ROSETTA
+    rosettaInitialization(defaultExecutionContext(), false);
     ClassPtr inputClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
     //inputs = vector(inputClass);
     //inputs = new ObjectVector(doubleVectorClass(), 0); // not work
@@ -175,6 +177,9 @@ public:
       inputs->append(feat->compute(defaultExecutionContext(), protein2));
       samples->append(rigidBodyMover(0, 3, 1.01, 4));
     }
+#else
+    jassert(false);
+#endif // LBCPP_PROTEIN_ROSETTA
   }
 
   void displayDataSet(ExecutionContext& context, const String& name, const ContainerPtr& inputs, const ContainerPtr& samples)
