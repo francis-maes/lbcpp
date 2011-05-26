@@ -25,7 +25,7 @@ class GPExpressionSamplingContext : public Object
 {
 public:
   GPExpressionSamplingContext(GPExpressionSamplingContextPtr parent, size_t parentLabel)
-    : parent(parent), depth(parent->depth + 1), parentLabel(parentLabel), grandParentLabel(parent->parentLabel){}
+    : parent(parent), parentLabel(parentLabel), grandParentLabel(parent->parentLabel), depth(parent->depth + 1) {}
   GPExpressionSamplingContext() : parentLabel(gpExprLabelsEnumeration->getNumElements()),
     grandParentLabel(gpExprLabelsEnumeration->getNumElements()), depth(0) {}
 

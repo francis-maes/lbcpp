@@ -26,6 +26,7 @@ enum ProteinTarget
   noTarget = 0, // corresponds to "name" variable
   aaTarget,
   pssmTarget,
+  cbpTarget,
   ss3Target,
   ss8Target,
   stalTarget,
@@ -144,6 +145,14 @@ public:
   static ContainerPtr createEmptyPositionSpecificScoringMatrix(size_t length);
 
   /*
+  ** Cystein Bonding Property
+  */
+  Variable getCysteinBondingProperty(ExecutionContext& context) const;
+
+  void setCysteinBondingProperty(DoubleVectorPtr cysteinBondingProperty)
+    {this->cysteinBondingProperty = cysteinBondingProperty;}
+
+  /*
   ** Secondary Structure
   */
   void setSecondaryStructure(ContainerPtr secondaryStructure)
@@ -235,6 +244,9 @@ protected:
   std::vector<size_t> cysteinIndices;
   std::vector<int> cysteinInvIndices; // residue position => cystein index
 
+  // 0D
+  DoubleVectorPtr cysteinBondingProperty;
+
   // 1D
   ContainerPtr secondaryStructure;
   ContainerPtr dsspSecondaryStructure;
@@ -258,6 +270,7 @@ protected:
   CartesianPositionVectorPtr calphaTrace;
   TertiaryStructurePtr tertiaryStructure;
 
+  static DoubleVectorPtr computeCysteinBondingProperty(DoubleVectorPtr cysteinBondingStates);
   static DoubleVectorPtr computeDisorderRegionsFromTertiaryStructure(TertiaryStructurePtr tertiaryStructure);
   static ContainerPtr computeSecondaryStructureFromDSSPSecondaryStructure(ContainerPtr dsspSecondaryStructure);
   static DoubleVectorPtr computeBinarySolventAccessibilityFromSolventAccessibility(DoubleVectorPtr solventAccessibility, double threshold);

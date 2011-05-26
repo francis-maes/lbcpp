@@ -22,6 +22,7 @@ class ProteinPredictorParameters : public Object
 {
 public:
   virtual void proteinPerception(CompositeFunctionBuilder& builder) const = 0;
+  virtual void globalPerception(CompositeFunctionBuilder& builder) const = 0;
   virtual void residueVectorPerception(CompositeFunctionBuilder& builder) const = 0;
   virtual void residuePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
   virtual void disulfideResiduePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
@@ -34,8 +35,16 @@ public:
     function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
     return function;
   }
+  
+  // ProteinPerception -> DoubleVector
+  virtual FunctionPtr createGlobalPerception() const
+  {
+    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, globalPerception);
+    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
+    return function;
+  }
 
-  // Protein, ProteinPerception -> Vector[Residue Perception]
+  // ProteinPerception -> Vector[Residue Perception]
   virtual FunctionPtr createResidueVectorPerception() const
   {
     FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, residueVectorPerception);
@@ -89,6 +98,9 @@ public:
   
   virtual FunctionPtr disulfideBondPredictor(ProteinTarget target) const
     {return mapNSymmetricMatrixFunction(binaryClassifier(target), 1);}
+  
+  virtual FunctionPtr labelPropertyPredictor(ProteinTarget target) const
+    {return multiClassClassifier(target);}
 
   // Features Container x Target supervision -> Predicted target
   virtual FunctionPtr createTargetPredictor(ProteinTarget target) const
@@ -102,6 +114,8 @@ public:
       res = contactMapPredictor(target);
     else if (target == dsbTarget)
       res = disulfideBondPredictor(target);
+    else if (target == cbpTarget)
+      res = labelPropertyPredictor(target);
     else
     {
       jassert(false);
@@ -119,6 +133,7 @@ public:
   NumericalProteinFeaturesParameters()
       : 
       proteinLengthDiscretization(20), numCysteinsDiscretization(5),
+      bondingPropertyDiscretization(5), bondingPropertyEntropyDiscretization(5),
 
       pssmDiscretization(4), pssmEntropyDiscretization(6),
       ss3Discretization(9), ss3EntropyDiscretization(2),
@@ -147,6 +162,8 @@ public:
   // protein
   size_t proteinLengthDiscretization;
   size_t numCysteinsDiscretization;
+  size_t bondingPropertyDiscretization;
+  size_t bondingPropertyEntropyDiscretization;
   
   // pssm
   size_t pssmDiscretization;

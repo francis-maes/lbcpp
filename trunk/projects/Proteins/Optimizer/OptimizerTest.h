@@ -221,7 +221,7 @@ public:
     String managerHostName(T("localhost"));
     size_t managerPort = 1665;
     size_t requiredMemory = 1;
-    size_t requiredCpus = 1;
+    //size_t requiredCpus = 1;
     size_t requiredTime = 1;
     
     // initial distribution
@@ -478,10 +478,10 @@ public:
     String source(T("arnaud@monster24"));
     String destination(T("boincadm@boinc.run"));
     String managerHostName(T("monster24.montefiore.ulg.ac.be"));
-    size_t managerPort = 1664;
-    size_t requiredMemory = 1;
-    size_t requiredCpus = 1;
-    size_t requiredTime = 1;
+    //size_t managerPort = 1664;
+    //size_t requiredMemory = 1;
+    //size_t requiredCpus = 1;
+    //size_t requiredTime = 1;
     
     
     // initial distribution

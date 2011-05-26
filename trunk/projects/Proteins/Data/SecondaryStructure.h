@@ -14,6 +14,15 @@
 namespace lbcpp
 {
 
+enum CysteinBondingPropertyElement
+{
+  all = 0,
+  none,
+  mix
+};
+
+extern EnumerationPtr cysteinBondingPropertyElementEnumeration;
+
 enum SecondaryStructureElement
 {
   helix = 0, // G (threeTurnHelix) or H (alphaHelix)

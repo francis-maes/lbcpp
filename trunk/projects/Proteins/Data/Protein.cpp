@@ -189,20 +189,21 @@ Variable Protein::getTargetOrComputeIfMissing(ExecutionContext& context, size_t 
   {
   case 0: return getPrimaryStructure();
   case 1: return getPositionSpecificScoringMatrix();
-  case 2: return getSecondaryStructure();
-  case 3: return getDSSPSecondaryStructure();
-  case 4: return getStructuralAlphabetSequence();
-  case 5: return getSolventAccessibility();
-  case 6: return getSolventAccessibilityAt20p();
-  case 7: return getDisorderRegions();
-  case 8: return getContactMap(context, 8, false);
-  case 9: return getContactMap(context, 8, true);
-  case 10: return getDistanceMap(context, false);
-  case 11: return getDistanceMap(context, true);
-  case 12: return getDisulfideBonds(context);
-  case 13: return getCysteinBondingStates(context);
-  case 14: return getCAlphaTrace();
-  case 15: return getTertiaryStructure();
+  case 2: return getCysteinBondingProperty(context);
+  case 3: return getSecondaryStructure();
+  case 4: return getDSSPSecondaryStructure();
+  case 5: return getStructuralAlphabetSequence();
+  case 6: return getSolventAccessibility();
+  case 7: return getSolventAccessibilityAt20p();
+  case 8: return getDisorderRegions();
+  case 9: return getContactMap(context, 8, false);
+  case 10: return getContactMap(context, 8, true);
+  case 11: return getDistanceMap(context, false);
+  case 12: return getDistanceMap(context, true);
+  case 13: return getDisulfideBonds(context);
+  case 14: return getCysteinBondingStates(context);
+  case 15: return getCAlphaTrace();
+  case 16: return getTertiaryStructure();
   default: jassert(false); return Variable();
   }
 }
@@ -210,6 +211,22 @@ Variable Protein::getTargetOrComputeIfMissing(ExecutionContext& context, size_t 
 /*
 ** Compute Missing Targets
 */
+
+Variable Protein::getCysteinBondingProperty(ExecutionContext& context) const
+{
+  if (!cysteinIndices.size())
+    return Variable::missingValue(sparseDoubleVectorClass(cysteinBondingPropertyElementEnumeration, probabilityType));
+
+  if (!cysteinBondingProperty)
+  {
+    DoubleVectorPtr bondingStates = getCysteinBondingStates(context);
+    if (bondingStates)
+      const_cast<Protein* >(this)->cysteinBondingProperty = computeCysteinBondingProperty(bondingStates);
+  }
+  return cysteinBondingProperty;
+}
+
+
 ContainerPtr Protein::getSecondaryStructure() const
 {
   if (!secondaryStructure && dsspSecondaryStructure)
@@ -323,6 +340,38 @@ CartesianPositionVectorPtr Protein::getCAlphaTrace() const
 /*
 ** Converters
 */
+DoubleVectorPtr Protein::computeCysteinBondingProperty(DoubleVectorPtr bondingStates)
+{
+  if (!bondingStates)
+    return DoubleVectorPtr();
+
+  const size_t n = bondingStates->getNumElements();
+  if (!n)
+    return DoubleVectorPtr();
+  
+  SparseDoubleVectorPtr res = new SparseDoubleVector(sparseDoubleVectorClass(cysteinBondingPropertyElementEnumeration, probabilityType));
+
+  bool isAllUnbonded = true;
+  bool isAllbonded = true;
+  
+  for (size_t i = 0; i < n; ++i)
+  {
+    const bool isBonded = bondingStates->getElement(i).getDouble() > 0.5;
+    isAllbonded &= isBonded;
+    isAllUnbonded &= !isBonded;
+  }
+
+  jassert(!isAllbonded || !isAllUnbonded);
+  CysteinBondingPropertyElement bondingClass = mix;  
+  if (isAllbonded)
+    bondingClass = all;
+  else if (isAllUnbonded)
+    bondingClass = none;
+
+  res->setElement(bondingClass, probability(1.0));
+  return res;
+}
+
 DoubleVectorPtr Protein::computeDisorderRegionsFromTertiaryStructure(TertiaryStructurePtr tertiaryStructure)
 {
   if (!tertiaryStructure)

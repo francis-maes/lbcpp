@@ -72,6 +72,7 @@ protected:
 
   virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, const ScoreObjectPtr& result) const
   {
+    jassert(correctObject.exists());
     ClassificationScoreObjectPtr score = result.staticCast<ClassificationScoreObject>();
 
     int correctLabel = getLabel(correctObject);

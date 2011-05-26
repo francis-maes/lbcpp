@@ -69,6 +69,12 @@
     
     <value name="gap"                 oneLetterCode="." threeLettersCode="GAP"/>
   </enumeration>
+  
+  <enumeration name="CysteinBondingPropertyElement">
+    <value name="all"  oneLetterCode="a"/>
+    <value name="none" oneLetterCode="n"/>
+    <value name="mix"  oneLetterCode="x"/>
+  </enumeration>
 
   <enumeration name="SecondaryStructureElement">
     <value name="helix" oneLetterCode="H"/>
@@ -157,6 +163,9 @@
     <!-- Primary Structure -->
     <variable type="GenericVector[AminoAcidType]" name="primaryStructure" shortName="aa" description="Primary Structure"/>
     <variable type="ObjectVector[DenseDoubleVector[PositionSpecificScoringMatrix, Probability]]" name="positionSpecificScoringMatrix" shortName="pssm" description="PSSM"/>
+    
+    <!-- Property -->
+    <variable type="DoubleVector[CysteinBondingPropertyElement, Probability]" name="cysteinBondingProperty" shortName="cbp" description="Cystein Bonding Property"/>
     
     <!-- Secondary Structure -->
     <variable type="ObjectVector[DoubleVector[SecondaryStructureElement, Probability]]" name="secondaryStructure" shortName="ss3" description="Secondary Structure"/>

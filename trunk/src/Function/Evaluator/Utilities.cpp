@@ -168,7 +168,15 @@ double BinaryClassificationConfusionMatrix::computeSpecificity() const
   {return (trueNegative || falsePositive) ? trueNegative / (double)(trueNegative + falsePositive) : 0.0;}
 
 double BinaryClassificationConfusionMatrix::computeSensitivityAndSpecificity() const
-  {return (computeSensitivity() + computeSpecificity()) / 2;}
+{
+  const double sensitivity = computeSensitivity();
+  const double specificity = computeSpecificity();
+  const double sum = sensitivity + specificity;
+  if (sum < 10e-6)
+    return 0.0;
+  return 2 * (sensitivity * specificity) / sum;
+  //return (computeSensitivity() + computeSpecificity() / 2;
+}
 
 void BinaryClassificationConfusionMatrix::saveToXml(XmlExporter& exporter) const
 {
