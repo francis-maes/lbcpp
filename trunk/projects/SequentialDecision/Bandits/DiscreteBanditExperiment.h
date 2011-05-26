@@ -187,15 +187,15 @@ public:
 /*    context.enterScope(T("Untuned policies"));
     ok = evaluateUntunedPolicies(context);
     context.leaveScope(ok);  
-*/
+
     context.enterScope(T("Tuned policies"));
     ok = tuneAndEvaluatePolicies(context);
     context.leaveScope(ok);
-/*
+    */
+
     context.enterScope(T("Learned policies"));
     ok = learnAndEvaluatePolicies(context);
     context.leaveScope(ok);
-*/
     return true;
   }
 
@@ -268,7 +268,7 @@ protected:
   bool learnAndEvaluatePolicies(ExecutionContext& context) const
   {
     std::vector<DiscreteBanditPolicyPtr> policies;
-    policies.push_back(powerDiscreteBanditPolicy(1, false));
+    //policies.push_back(powerDiscreteBanditPolicy(1, false));
     policies.push_back(powerDiscreteBanditPolicy(2, false));
     return optimizeAndEvaluatePolicies(context, policies);
   }
