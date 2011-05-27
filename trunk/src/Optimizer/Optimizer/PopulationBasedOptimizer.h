@@ -25,14 +25,14 @@ class PopulationBasedOptimizer : public Optimizer
 {
 public:
   PopulationBasedOptimizer(size_t numIterations, size_t populationSize, size_t numBests, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
-    : numIterations(numIterations), populationSize(populationSize), numBests(numBests), slowingFactor(slowingFactor), reinjectBest(reinjectBest), verbose(verbose), random(new RandomGenerator()) 
+    : numIterations(numIterations), populationSize(populationSize), numBests(numBests), slowingFactor(slowingFactor), reinjectBest(reinjectBest), verbose(verbose), random(new RandomGenerator()) // FIXME : random generator use less 
     {
       jassert(slowingFactor >= 0 && slowingFactor <= 1);
       jassert(numBests < populationSize);
     }
   
   PopulationBasedOptimizer()
-    : numIterations(0), populationSize(0), numBests(0), slowingFactor(0), reinjectBest(false), verbose(false), random(new RandomGenerator()) {}
+    : numIterations(0), populationSize(0), numBests(0), slowingFactor(0), reinjectBest(false), verbose(false), random(new RandomGenerator()) {} // FIXME : random generator use less
   
 protected:
   friend class PopulationBasedOptimizerClass;
@@ -43,14 +43,14 @@ protected:
   double slowingFactor;
   bool reinjectBest;
   bool verbose;
-  RandomGeneratorPtr random;
+  RandomGeneratorPtr random;  // FIXME : useless
   
   Variable sampleCandidate(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const RandomGeneratorPtr& random) const
   {
     // TODO: replace by optimizerState.staticCast<SamplerBasedOptimizerState>()->getSampler()->sample(context, random);
     SamplerBasedOptimizerStatePtr samplerBasedState = optimizerState.dynamicCast<SamplerBasedOptimizerState>();
     if (samplerBasedState)
-      return samplerBasedState->getSampler()->sample(context, random);
+      return samplerBasedState->getSampler()->sample(context, context.getRandomGenerator());  // WARNING : uses new random generator method !!!
     
     jassert(false);
     return Variable();
