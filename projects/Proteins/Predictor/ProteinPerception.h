@@ -545,10 +545,10 @@ public:
   }
 };
 
-class BondedCysteinRatio : public SimpleUnaryFunction
+class CysteinBondingStateRatio : public SimpleUnaryFunction
 {
 public:
-  BondedCysteinRatio() : SimpleUnaryFunction(doubleVectorClass(enumValueType, probabilityType), probabilityType, T("BondedRatio")) {}
+  CysteinBondingStateRatio() : SimpleUnaryFunction(doubleVectorClass(enumValueType, probabilityType), probabilityType, T("BondedRatio")) {}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {

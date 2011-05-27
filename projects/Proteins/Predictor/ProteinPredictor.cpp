@@ -57,7 +57,7 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
 
   /* Perceptions */
   size_t proteinPerception = builder.addFunction(parameters->createProteinPerception(), input);
-  size_t globalPerception = activeGlobalPerception ? builder.addFunction(parameters->createGlobalPerception(), proteinPerception) : (size_t)-1;
+  size_t propertyPerception = activeGlobalPerception ? builder.addFunction(parameters->createGlobalPerception(), proteinPerception) : (size_t)-1;
   size_t residuePerception = activeResiduePerception ? builder.addFunction(parameters->createResidueVectorPerception(), proteinPerception) : (size_t)-1;
   size_t residuePairPerception = activeResiduePairPerception ? builder.addFunction(parameters->createResiduePairVectorPerception(), proteinPerception) : (size_t)-1;
   size_t disulfideResiduePerception = activeDisulfideResiduePairPerception ? builder.addFunction(parameters->createDisulfideResiduePairVectorPerception(), proteinPerception) : (size_t)-1;
@@ -81,7 +81,7 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
     switch (targetPerceptionType)
     {
       case globalType:
-        targetPredictorInput = globalPerception;
+        targetPredictorInput = propertyPerception;
         break;
       case residueType:
         targetPredictorInput = residuePerception;
@@ -106,7 +106,7 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
     size_t targetSupervision = builder.addFunction(new GetProteinTargetFunction(target), supervision, targetName + T("Supervision"));
     makeProteinInputs.push_back(builder.addConstant((int)target));
     makeProteinInputs.push_back(builder.addFunction(targetPredictor, targetPredictorInput, targetSupervision, targetName + T("Prediction")));
-    targetPredictor->getOutputVariable()->setName(proteinClass->getMemberVariableName(target));
+    //targetPredictor->getOutputVariable()->setName(proteinClass->getMemberVariableName(target));
   }
 
   builder.addFunction(new MakeProteinFunction(), makeProteinInputs);

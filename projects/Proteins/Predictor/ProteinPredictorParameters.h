@@ -22,11 +22,11 @@ class ProteinPredictorParameters : public Object
 {
 public:
   virtual void proteinPerception(CompositeFunctionBuilder& builder) const = 0;
-  virtual void globalPerception(CompositeFunctionBuilder& builder) const = 0;
+  virtual void propertyPerception(CompositeFunctionBuilder& builder) const = 0;
   virtual void residueVectorPerception(CompositeFunctionBuilder& builder) const = 0;
   virtual void residuePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
-  virtual void disulfideResiduePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
-  virtual void cysteinBondingStateVectorPerception(CompositeFunctionBuilder& builder) const = 0;
+  virtual void cysteinResiudePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
+  virtual void cysteinResiudeVectorPerception(CompositeFunctionBuilder& builder) const = 0;
 
   // Protein -> ProteinPerception
   virtual FunctionPtr createProteinPerception() const
@@ -39,7 +39,7 @@ public:
   // ProteinPerception -> DoubleVector
   virtual FunctionPtr createGlobalPerception() const
   {
-    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, globalPerception);
+    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, propertyPerception);
     function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
     return function;
   }
@@ -61,14 +61,14 @@ public:
   
   virtual FunctionPtr createDisulfideResiduePairVectorPerception() const
   {
-    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, disulfideResiduePairVectorPerception);
+    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, cysteinResiudePairVectorPerception);
     function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
     return function;
   }
   
   virtual FunctionPtr createCysteinBondingStateVectorPerception() const
   {
-    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, cysteinBondingStateVectorPerception);
+    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, cysteinResiudeVectorPerception);
     function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
     return function;
   }
@@ -146,15 +146,16 @@ public:
       dsbWindowRows(3), dsbWindowColumns(3), dsbEntropyDiscretization(4),
       dsbPairWindowRows(3), dsbPairWindowColumns(3),
 
-      cbsWindowSize(7), cbsDiscretization(5),
+      cbsWindowSize(9), cbsDiscretization(5),
       cbsSeparationProfilSize(7), cbsSeparationProfilDiscretization(5),
       cbsRatioDiscretization(5),
 
       residueGlobalMeanFeatures(true), residueWindowSize(9),
       residueLocalMeanSize(18), residueMediumMeanSize(90),
-      residuePairGlobalFeatures(true), residuePairWindowSize(15),
-      residuePairLocalMeanSize(15), residuePairMediumMeanSize(50),
-      aminoAcidDistanceFeature(true), useIntervalMean(true),
+      //residuePairGlobalFeatures(true), 
+      residuePairWindowSize(15),
+      //residuePairLocalMeanSize(15), residuePairMediumMeanSize(50),
+      useAminoAcidDistance(true), useIntervalMean(true),
       cartesianProductPrimaryWindowSize(0)
   {
   }
@@ -210,11 +211,11 @@ public:
   size_t residueMediumMeanSize;
 
   // pair
-  bool residuePairGlobalFeatures;
+//  bool residuePairGlobalFeatures;
   size_t residuePairWindowSize;
-  size_t residuePairLocalMeanSize;
-  size_t residuePairMediumMeanSize;
-  bool aminoAcidDistanceFeature;
+//  size_t residuePairLocalMeanSize;
+//  size_t residuePairMediumMeanSize;
+  bool useAminoAcidDistance;
   bool useIntervalMean;
   size_t cartesianProductPrimaryWindowSize;
 
