@@ -61,9 +61,12 @@ public:
         context.resultCallback(T("problem"), initialState);
         std::vector<DiscreteBanditStatePtr> initialStates(1, initialState);
 
-        double baselineScore = context.run(new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, initialStates, T("Baseline Policy"), baselinePolicy->cloneAndCast<DiscreteBanditPolicy>(), 100, false)).toDouble();
+        DenseDoubleVectorPtr baselineRegrets = context.run(new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, initialStates, T("Baseline Policy"), baselinePolicy->cloneAndCast<DiscreteBanditPolicy>(), 100, false)).getObjectAndCast<DenseDoubleVector>();;
+        double baselineScore = baselineRegrets->getValue(baselineRegrets->getNumValues() - 1);
         baselineScoreSum += baselineScore;
-        double optimizedScore = context.run(new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, initialStates, T("Optimized Policy"), optimizedPolicy->cloneAndCast<DiscreteBanditPolicy>(), 100, false)).toDouble();
+
+        DenseDoubleVectorPtr optimizedRegrets = context.run(new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, initialStates, T("Optimized Policy"), optimizedPolicy->cloneAndCast<DiscreteBanditPolicy>(), 100, false)).getObjectAndCast<DenseDoubleVector>();
+        double optimizedScore = optimizedRegrets->getValue(optimizedRegrets->getNumValues() - 1);
         optimizedScoreSum += optimizedScore;
 
         context.resultCallback(T("baseline"), baselineScore);

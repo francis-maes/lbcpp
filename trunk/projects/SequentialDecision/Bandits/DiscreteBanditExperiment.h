@@ -22,7 +22,10 @@ class EvaluateDiscreteBanditPolicyWorkUnit : public WorkUnit
 {
 public:
   EvaluateDiscreteBanditPolicyWorkUnit(size_t numBandits, size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& initialStates, const String& initialStatesDescription, const DiscreteBanditPolicyPtr& policy,  size_t numEstimationsPerBandit = 100, bool verbose = true)
-    : numBandits(numBandits), maxTimeStep(maxTimeStep), initialStates(initialStates), initialStatesDescription(initialStatesDescription), policy(policy), numEstimationsPerBandit(numEstimationsPerBandit), verbose(verbose) {}
+    : numBandits(numBandits), maxTimeStep(maxTimeStep), initialStates(initialStates), initialStatesDescription(initialStatesDescription), policy(policy), numEstimationsPerBandit(numEstimationsPerBandit), verbose(verbose)
+  {
+    jassert(policy);
+  }
 
   EvaluateDiscreteBanditPolicyWorkUnit()
     : numBandits(0), maxTimeStep(0), verbose(false) {}
@@ -138,6 +141,7 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     DiscreteBanditPolicyPtr policy = Parameterized::cloneWithNewParameters(this->policy, input);
+    jassert(policy);
     WorkUnitPtr workUnit = new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, initialStates, T("Training Problems"), policy, numEstimationsPerBandit, verbose);
     DenseDoubleVectorPtr regrets = context.run(workUnit, false).getObjectAndCast<DenseDoubleVector>();
     double res = regrets->getValue(regrets->getNumValues() - 1);;
@@ -174,15 +178,20 @@ public:
     sampleProblems(context, trainingProblems, testingProblems, generalizationProblems);
     bool ok;
 
-    /*
-    for (double C = 0.0; C <= 2.0; C += 0.1)
+    /*for (double C = 0.0; C >= -6.0; C -= 0.1)
     {
       context.enterScope(T("C = ") + String(C));
       context.resultCallback(T("C"), C);
-      evaluatePolicy(context, ucb1DiscreteBanditPolicy(C), false);
+      evaluatePolicy(context, ucb2DiscreteBanditPolicy(pow(10.0, C)), false);
       context.leaveScope(true);
     }
     return true;*/
+
+    context.enterScope(T("Saved policies"));
+    ok = evaluateSavedPolicies(context);
+    context.leaveScope(ok);
+    return true;
+
 
 /*    context.enterScope(T("Untuned policies"));
     ok = evaluateUntunedPolicies(context);
@@ -244,14 +253,14 @@ protected:
 
   bool evaluateUntunedPolicies(ExecutionContext& context) const
   {
-    std::vector<DiscreteBanditPolicyPtr> policies;
-    policies.push_back(greedyDiscreteBanditPolicy());
-    policies.push_back(ucb1DiscreteBanditPolicy());
-    policies.push_back(ucb1TunedDiscreteBanditPolicy());
-    policies.push_back(ucb1NormalDiscreteBanditPolicy());
-    policies.push_back(ucb2DiscreteBanditPolicy());
-    policies.push_back(ucbvDiscreteBanditPolicy());
-    policies.push_back(epsilonGreedyDiscreteBanditPolicy());
+    std::vector<std::pair<DiscreteBanditPolicyPtr, String> > policies;
+    policies.push_back(std::make_pair(greedyDiscreteBanditPolicy(), T("greedy")));
+    policies.push_back(std::make_pair(ucb1DiscreteBanditPolicy(), T("ucb1")));
+    policies.push_back(std::make_pair(ucb1TunedDiscreteBanditPolicy(), T("ucb1-Bernoulli")));
+    policies.push_back(std::make_pair(ucb1NormalDiscreteBanditPolicy(), T("ucb1-Gaussian")));
+    policies.push_back(std::make_pair(ucb2DiscreteBanditPolicy(), T("ucb2")));
+    policies.push_back(std::make_pair(ucbvDiscreteBanditPolicy(), T("ucbv")));
+    policies.push_back(std::make_pair(epsilonGreedyDiscreteBanditPolicy(), T("e-greedy")));
     return evaluatePolicies(context, policies);
   }
 
@@ -268,23 +277,49 @@ protected:
   bool learnAndEvaluatePolicies(ExecutionContext& context) const
   {
     std::vector<DiscreteBanditPolicyPtr> policies;
-    //policies.push_back(powerDiscreteBanditPolicy(1, false));
+    policies.push_back(powerDiscreteBanditPolicy(1, false));
     policies.push_back(powerDiscreteBanditPolicy(2, false));
     return optimizeAndEvaluatePolicies(context, policies);
+  }
+
+  bool evaluateSavedPolicies(ExecutionContext& context) const
+  {
+    File directory = context.getFile(T("Policies"));
+    juce::OwnedArray<File> policyFiles;
+    directory.findChildFiles(policyFiles, File::findFiles, false, T("*.policy"));
+    std::vector< std::pair<DiscreteBanditPolicyPtr, String> > policies;
+    policies.reserve(policyFiles.size());
+    for (int i = 0; i < policyFiles.size(); ++i)
+    {
+      DiscreteBanditPolicyPtr policy = Object::createFromFile(context, *policyFiles[i]);
+      if (policy)
+        policies.push_back(std::make_pair(policy, policyFiles[i]->getFileName()));
+      else
+        context.warningCallback(T("Could not load policy ") + policyFiles[i]->getFileName());
+    }
+    if (policies.empty())
+    {
+      context.informationCallback(T("No saved policies"));
+      return true;
+    }
+    return evaluatePolicies(context, policies);
   }
 
 private:
   bool optimizeAndEvaluatePolicies(ExecutionContext& context, std::vector<DiscreteBanditPolicyPtr>& policies) const
   {
     bool allOk = true;
-    // tmp, normal is "horizon = 10"
-    for (size_t horizon = maxTimeStep; horizon <= maxTimeStep; horizon *= 10)
+    for (size_t horizon = 10; horizon <= maxTimeStep; horizon *= 10)
     {
       context.enterScope(T("Horizon ") + String((int)horizon));
       std::vector<DiscreteBanditPolicyPtr> pols(policies.size());
       for (size_t i = 0; i < pols.size(); ++i)
         pols[i] = policies[i]->cloneAndCast<DiscreteBanditPolicy>(context);
-      bool ok = optimizePolicies(context, pols, horizon) && evaluatePolicies(context, pols, false);
+      bool ok = optimizePolicies(context, pols, horizon);
+      std::vector< std::pair<DiscreteBanditPolicyPtr, String> > namedPolicies(policies.size());
+      for (size_t i = 0; i < pols.size(); ++i)
+        namedPolicies[i] = std::make_pair(pols[i], pols[i]->toShortString());
+      ok &= evaluatePolicies(context, namedPolicies, false);
       context.leaveScope(ok);
       allOk &= ok;
     }
@@ -357,13 +392,25 @@ private:
   }
 
   bool evaluatePolicy(ExecutionContext& context, const DiscreteBanditPolicyPtr& policy, bool pushIntoStack = false) const
-    {return evaluatePolicies(context, std::vector<DiscreteBanditPolicyPtr>(1, policy), pushIntoStack);}
+    {return evaluatePolicies(context, std::vector< std::pair<DiscreteBanditPolicyPtr, String> >(1, std::make_pair(policy, T("Policy"))), pushIntoStack);}
 
-  bool evaluatePolicies(ExecutionContext& context, const std::vector<DiscreteBanditPolicyPtr>& policies, bool pushIntoStack = false) const
+  bool evaluatePolicies(ExecutionContext& context, const std::vector< std::pair<DiscreteBanditPolicyPtr, String> >& policies, bool pushIntoStack = false) const
   {
     CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Evaluating policies"), policies.size());
     for (size_t i = 0; i < policies.size(); ++i)
-      workUnit->setWorkUnit(i, new EvaluatePolicyWorkUnit(policies[i], numBandits, maxTimeStep, testingProblems, generalizationProblems));
+    {
+      size_t referenceHorizon = maxTimeStep;
+      String name = policies[i].second;
+      int n = name.lastIndexOfChar('.');
+      if (n >= 0)
+      {
+        name = name.substring(0, n);
+        n = name.lastIndexOfChar('_');
+        if (n >= 0)
+          referenceHorizon = (size_t)name.substring(n + 1).getIntValue();
+      }
+      workUnit->setWorkUnit(i, new EvaluatePolicyWorkUnit(policies[i].first, policies[i].second, numBandits, maxTimeStep, testingProblems, generalizationProblems, referenceHorizon));
+    }
     workUnit->setProgressionUnit(T("Policies"));
     workUnit->setPushChildrenIntoStackFlag(policies.size() > 1);
     context.run(workUnit, pushIntoStack);
@@ -372,9 +419,12 @@ private:
 
   struct EvaluatePolicyWorkUnit : public WorkUnit
   {
-    EvaluatePolicyWorkUnit(const DiscreteBanditPolicyPtr& policy, size_t numBandits, size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& testingProblems,
-                                                                  const std::vector<DiscreteBanditStatePtr>& generalizationProblems)
-        : policy(policy), numBandits(numBandits), maxTimeStep(maxTimeStep), testingProblems(testingProblems), generalizationProblems(generalizationProblems) {}
+    EvaluatePolicyWorkUnit(const DiscreteBanditPolicyPtr& policy, const String& policyName, size_t numBandits, size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& testingProblems,
+                                                                  const std::vector<DiscreteBanditStatePtr>& generalizationProblems, size_t referenceHorizon)
+        : policy(policy), policyName(policyName), numBandits(numBandits), maxTimeStep(maxTimeStep), testingProblems(testingProblems), generalizationProblems(generalizationProblems), referenceHorizon(referenceHorizon)
+    {
+      jassert(policy);
+    }
               
     virtual Variable run(ExecutionContext& context)
     {
@@ -390,20 +440,59 @@ private:
       for (size_t i = 0; i < generalizationResult->getNumElements(); ++i)
         context.resultCallback(T("generalizationRegret@") + String(pow(10.0, i + 1.0)), generalizationResult->getValue(i));
 
-      PairPtr res(new Pair(testingResult, generalizationResult));
-      context.informationCallback(res->toShortString());
+      context.informationCallback(PairPtr(new Pair(testingResult, generalizationResult))->toShortString());
+
+      Variable res = performDetailedEvaluation(context);
+      context.informationCallback(T("Outperform percentage: ") + res.getObjectAndCast<Pair>()->getSecond().toShortString());
       return res;
     }
     
     virtual String toShortString() const
-      {return T("Evaluating policy ") + policy->toShortString();}
+      {return T("Evaluating policy ") + policyName;}
 
   protected:
     DiscreteBanditPolicyPtr policy;
+    String policyName;
     size_t numBandits;
     size_t maxTimeStep;
     const std::vector<DiscreteBanditStatePtr>& testingProblems;
     const std::vector<DiscreteBanditStatePtr>& generalizationProblems;
+    size_t referenceHorizon;
+
+    Variable performDetailedEvaluation(ExecutionContext& context)
+    {
+      DiscreteBanditPolicyPtr baselinePolicy = ucb1TunedDiscreteBanditPolicy();
+      context.enterScope(T("Detailed evaluation H=") + String((int)referenceHorizon));
+      double baselineScoreSum = 0.0;
+      double optimizedScoreSum = 0.0;
+      size_t numberOptimizedOutperforms = 0; 
+      for (size_t i = 0; i < testingProblems.size(); ++i)
+      {
+        std::vector<DiscreteBanditStatePtr> initialStates(1, testingProblems[i]);
+
+        DenseDoubleVectorPtr baselineRegrets = context.run(new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, referenceHorizon, initialStates, T("Baseline Policy"), baselinePolicy->cloneAndCast<DiscreteBanditPolicy>(), 100, false), false).getObjectAndCast<DenseDoubleVector>();;
+        double baselineScore = baselineRegrets->getValue(baselineRegrets->getNumValues() - 1);
+        baselineScoreSum += baselineScore;
+
+        DenseDoubleVectorPtr optimizedRegrets = context.run(new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, referenceHorizon, initialStates, T("This Policy"), policy->cloneAndCast<DiscreteBanditPolicy>(), 100, false), false).getObjectAndCast<DenseDoubleVector>();
+        double optimizedScore = optimizedRegrets->getValue(optimizedRegrets->getNumValues() - 1);
+        optimizedScoreSum += optimizedScore;
+
+        if (optimizedScore < baselineScore)
+          ++numberOptimizedOutperforms;
+        context.progressCallback(new ProgressionState(i + 1, testingProblems.size(), T("Problems")));
+      }
+
+      Variable outperformPercentage(numberOptimizedOutperforms / (double)testingProblems.size(), probabilityType);
+      double baselineScore = baselineScoreSum / testingProblems.size();
+      double optimizedScore = optimizedScoreSum / testingProblems.size();
+      PairPtr result = new Pair(new Pair(baselineScore, optimizedScore), outperformPercentage);
+      context.leaveScope(result);
+      
+      context.resultCallback(T("deltaRegret"), optimizedScore - baselineScore);
+      context.resultCallback(T("outperformPercentage"), outperformPercentage);
+      return new Pair(optimizedScore, outperformPercentage);
+    }
   };
 };
 
