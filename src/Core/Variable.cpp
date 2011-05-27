@@ -289,6 +289,7 @@ double Variable::toDouble() const
   if (mean)
     return mean->getMean();
 
+  defaultExecutionContext().errorCallback(T("Variable ") + toShortString() + T(" is not convertible to double"));
   jassert(false); // not convertible to double
   return 0.0;
 }
