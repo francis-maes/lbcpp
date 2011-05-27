@@ -5,11 +5,11 @@
   <class name="OptimizerTest" base="WorkUnit"/>
   <class name="ExtractMeanScoreWorkUnit" base="WorkUnit"/>
   <class name="GridEvoOptimizerExperience" base="WorkUnit"/>
-  <class name="AsyncEDAOptimizerExperience" base="WorkUnit"/>  
+  <class name="AsyncEDAOptimizerExperience" base="WorkUnit"/>
+  <class name="AsyncEDAOptimizerExperience3" base="WorkUnit"/>  
   <class name="DebugNetworkWorkUnit" base="WorkUnit"/>
   <class name="ProteinGridEvoOptimizerState" base="GridEvoOptimizerState">
    <constructor arguments="IndependentMultiVariateDistributionPtr distributions"/>
   </class>
   <class name="OptimizerTestBedWorkUnit" base="WorkUnit"/>
-    
 </library>

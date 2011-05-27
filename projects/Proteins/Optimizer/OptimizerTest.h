@@ -38,6 +38,7 @@
 //# include "../../../src/Optimizer/Context/SynchroneousOptimizerContext.h"
 //# include "../../../src/Optimizer/Context/MultiThreadsOptimizerContext.h"
 #include <map>
+
 namespace lbcpp
 {
 
@@ -128,7 +129,89 @@ class DebugNetworkWorkUnit : public WorkUnit
     
     return Variable();
   }
-};  
+};
+  
+class AsyncEDAOptimizerExperience3 : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    String projectName(T("AsyncEDAOptimizerExperience3"));
+    String source(T("localhost"));
+    String destination(T("boincadm@boinc.run"));
+    String managerHostName(T("localhost"));
+    size_t managerPort = 1665;
+    size_t requiredMemory = 1;
+    size_t requiredCpus = 1;
+    size_t requiredTime = 1;
+    
+    // initial sampler
+    std::vector<SamplerPtr> samplers;
+    samplers.reserve(14);
+    for (size_t i = 0; i < 14; ++i)
+    {
+      SamplerPtr mySampler;
+      switch (i) {
+        case 0:
+          mySampler = discretizeSampler(gaussianSampler(3.42, 1), 0, 15);
+          break;
+        case 1:
+          mySampler = discretizeSampler(gaussianSampler(4.467, 3), 0, 20);
+          break;
+        case 2:
+          mySampler = discretizeSampler(gaussianSampler(8.513, 2), 0, 20);
+          break;
+        case 3:
+          mySampler = discretizeSampler(gaussianSampler(4.58, 3), 0, 20);
+          break;
+        case 4:
+          mySampler = discretizeSampler(gaussianSampler(12.07, 3), 0, 20);
+          break;
+        case 5:
+          mySampler = discretizeSampler(gaussianSampler(4.66, 3), 0, 20);
+          break;
+        case 6:
+          mySampler = discretizeSampler(gaussianSampler(1.58, 2), 0, 15);
+          break;
+        case 7:
+          mySampler = discretizeSampler(gaussianSampler(4.447, 3), 0, 20);
+          break;
+        case 8:
+          mySampler = discretizeSampler(gaussianSampler(6.333, 3), 0, 20);
+          break;
+        case 9:
+          mySampler = discretizeSampler(gaussianSampler(6.807, 3), 0, 20);
+          break;
+        case 10:
+          mySampler = bernoulliSampler(0.95, 0.05, 0.95); // avoid prob = 0 or prob = 1
+          break;
+        case 11:
+          mySampler = discretizeSampler(gaussianSampler(9.16, 2), 0, 25);
+          break;
+        case 12:
+          mySampler = discretizeSampler(gaussianSampler(16.38, 8), 0, 55);
+          break;
+        case 13:
+          mySampler = discretizeSampler(gaussianSampler(56.6, 20), 0, 110);
+          break;
+        default:
+          jassertfalse;
+      }
+      
+      samplers.push_back(mySampler);
+    }
+    SamplerPtr sampler = objectCompositeSampler(numericalProteinFeaturesParametersClass, samplers);
+    
+    
+    // Optimizer
+    OptimizerPtr optimizer = asyncEDAOptimizer(20, 500, 150, 500, 0.10);
+    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, new ProteinLearnerObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime, 300000);
+    SamplerBasedOptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler, 300);
+    return optimizer->compute(context, optimizerContext, optimizerState);
+  }
+  
+};
+  
 class AsyncEDAOptimizerExperience : public WorkUnit
 {
 public:
@@ -263,7 +346,6 @@ public:
   
 };
 
-  
 class OptimizerTestBedWorkUnit : public WorkUnit 
 {
   virtual Variable run(ExecutionContext& context)
@@ -281,12 +363,12 @@ class OptimizerTestBedWorkUnit : public WorkUnit
     std::cout << output << std::endl;
     */
     
-    DenseDoubleVectorPtr coefs = new DenseDoubleVector(2, 0.0);
+    DenseDoubleVectorPtr coefs = new DenseDoubleVector(5, 0.0);
     coefs->setValue(0, -2.0);
     coefs->setValue(1, 3.0);
-    //coefs->setValue(2, -4.0);
-    //coefs->setValue(3, 0.0);
-    //coefs->setValue(4, 1.0);
+    coefs->setValue(2, -4.0);
+    coefs->setValue(3, 0.0);
+    coefs->setValue(4, 1.0);
     //coefs->setValue(5, -2.0);
     //coefs->setValue(6, 3.0);
     //coefs->setValue(7, -4.0);
@@ -319,71 +401,50 @@ class OptimizerTestBedWorkUnit : public WorkUnit
     size_t populationSize = 100;
     size_t numBests = 30;
     size_t inProgressEvaluations;
-    f = f13;
-    // EDAOptimizer
-    /*
-    context.informationCallback(T("eda_f10_noslowing"));
-    sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
-    optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.0);
-    optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
-    optimizerState = new SamplerBasedOptimizerState(sampler);
-    optimizer->compute(context, optimizerContext, optimizerState);
+    f = f10;
     
-    // AsyncEDAOptimizer: inProgressEvaluations = 150
-    context.informationCallback(T("asynceda_f10_noslowing_150"));
-    inProgressEvaluations = 150;
-    sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
-    optimizer = asyncEDAOptimizer(numIterations, populationSize, numBests, inProgressEvaluations,0.0);
-    optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
-    optimizerState = new SamplerBasedOptimizerState(sampler);
-    optimizer->compute(context, optimizerContext, optimizerState);
+    double start;
+    double end;
+    size_t nbIter = 20;
+    context.progressCallback(new ProgressionState(0, nbIter, T("Iterations")));
+    for (size_t i = 0; i < nbIter; i++) {
+      context.enterScope(T("Iteration ") + String((int)i + 1));
+      context.resultCallback(T("iteration"), i + 1);
+      
+      // EDAOptimizer
+      context.enterScope(T("eda_f10_noslowing"));
+      context.resultCallback(T("inProgressEvaluations"), (int) 0);
+      sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
+      optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.0);
+      optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
+      optimizerState = new SamplerBasedOptimizerState(sampler);
+      start = Time::getMillisecondCounter() / 1000.0;
+      optimizer->compute(context, optimizerContext, optimizerState);
+      end = Time::getMillisecondCounter() / 1000.0;
+      context.resultCallback(T("time"), end-start);
+      context.leaveScope();
+      
+      size_t inProgressEvaluationsTab[] = {150,100,50,30,20,10};
+      for (size_t j = 0; j < 6; j++) {
+        inProgressEvaluations = inProgressEvaluationsTab[j];
+        context.enterScope(T("asynceda_f10_noslowing_") + String((int)inProgressEvaluations));
+        context.resultCallback(T("inProgressEvaluations"), (int) inProgressEvaluations);
+        sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
+        optimizer = asyncEDAOptimizer(numIterations, populationSize, numBests, inProgressEvaluations,0.0);
+        optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
+        optimizerState = new SamplerBasedOptimizerState(sampler);
+        start = Time::getMillisecondCounter() / 1000.0;
+        optimizer->compute(context, optimizerContext, optimizerState);
+        end = Time::getMillisecondCounter() / 1000.0;
+        context.resultCallback(T("time"), end-start);
+        context.leaveScope();        
+      }
+      context.leaveScope();
+      context.progressCallback(new ProgressionState(i + 1, nbIter, T("Iterations")));
+    }
     
-    // AsyncEDAOptimizer: inProgressEvaluations = 100
-    context.informationCallback(T("asynceda_f10_noslowing_100"));
-    inProgressEvaluations = 100;
-    sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
-    optimizer = asyncEDAOptimizer(numIterations, populationSize, numBests, inProgressEvaluations,0.0);
-    optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
-    optimizerState = new SamplerBasedOptimizerState(sampler);
-    optimizer->compute(context, optimizerContext, optimizerState);
     
-    // AsyncEDAOptimizer: inProgressEvaluations = 50
-    context.informationCallback(T("asynceda_f10_noslowing_50"));
-    inProgressEvaluations = 50;
-    sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
-    optimizer = asyncEDAOptimizer(numIterations, populationSize, numBests, inProgressEvaluations,0.0);
-    optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
-    optimizerState = new SamplerBasedOptimizerState(sampler);
-    optimizer->compute(context, optimizerContext, optimizerState);
-*/
-    // AsyncEDAOptimizer: inProgressEvaluations = 30
-    //context.informationCallback(T("asynceda_f10_noslowing_30"));
-    inProgressEvaluations = 30;
-    sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
-    optimizer = asyncEDAOptimizer(numIterations, populationSize, numBests, inProgressEvaluations,0.0);
-    optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
-    optimizerState = new SamplerBasedOptimizerState(sampler);
-    optimizer->compute(context, optimizerContext, optimizerState);
-/*
-    // AsyncEDAOptimizer: inProgressEvaluations = 20
-    context.informationCallback(T("asynceda_f10_noslowing_20"));
-    inProgressEvaluations = 20;
-    sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
-    optimizer = asyncEDAOptimizer(numIterations, populationSize, numBests, inProgressEvaluations,0.0);
-    optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
-    optimizerState = new SamplerBasedOptimizerState(sampler);
-    optimizer->compute(context, optimizerContext, optimizerState);
-
-    // AsyncEDAOptimizer: inProgressEvaluations = 10
-    context.informationCallback(T("asynceda_f10_noslowing_10"));
-    inProgressEvaluations = 10;
-    sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
-    optimizer = asyncEDAOptimizer(numIterations, populationSize, numBests, inProgressEvaluations,0.0);
-    optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
-    optimizerState = new SamplerBasedOptimizerState(sampler);
-    optimizer->compute(context, optimizerContext, optimizerState);
     
-    */
     /** Influence de slowingfactor sur eda **/
     /*
     size_t numIterations = 100;
