@@ -19,6 +19,7 @@
 # include "ProteinOptimizer/SimulatedAnnealingOptimizer.h"
 # include "Sampler.h"
 # include "Sampler/ProteinMoverSampler.h"
+# include "../Data/TertiaryStructure.h"
 
 namespace lbcpp
 {
@@ -775,6 +776,19 @@ public:
         std::cout << "secondary structure score pose : " << QScorePose2 << std::endl;
         if (out)
           *fos << QScorePose2 << " ";
+
+        size_t numGooAlign = proteinRef->getTertiaryStructure()->computeCAlphaAtomsGDTTS(
+            proteinTarget->getTertiaryStructure(), 5.0);
+        double gdtts = (double)numGooAlign / (double)proteinRef->getLength();
+        std::cout << "GDTTS 5 ang : " << gdtts << std::endl;
+        numGooAlign = proteinRef->getTertiaryStructure()->computeCAlphaAtomsGDTTS(
+            proteinTarget->getTertiaryStructure(), 2.0);
+        if (out)
+          *fos << gdtts << " ";
+        gdtts = (double)numGooAlign / (double)proteinRef->getLength();
+        std::cout << "GDTTS 2 ang : " << gdtts << std::endl;
+        if (out)
+          *fos << gdtts << " ";
       }
 
       if (out)
