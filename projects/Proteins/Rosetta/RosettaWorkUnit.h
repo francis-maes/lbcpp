@@ -198,7 +198,14 @@ public:
     context.resultCallback(T("Initial energy"),
         Variable(getConformationScore(pose, fullAtomEnergy)));
     core::pose::PoseOP returnPose = new core::pose::Pose(*pose);
-    //optimizer->apply(context, pose, random, sampler, returnPose);
+
+    RosettaWorkerPtr worker = new RosettaWorker(pose, 0, 0, 0, 0, 0);
+
+    RandomGeneratorPtr random = new RandomGenerator();
+    DenseDoubleVectorPtr energiesAtIteration;
+
+    optimizer->apply(context, worker, random, energiesAtIteration);
+
     context.informationCallback(T("Optimization done."));
     double score = getConformationScore(returnPose, fullAtomEnergy);
     context.resultCallback(T("Final energy"), Variable(score));
@@ -258,13 +265,7 @@ public:
           outputDirectory.createDirectory();
       }
 
-      SamplerPtr moverSampler;
-
-      if (oneOrAll == 0)
-        moverSampler = objectCompositeSampler(rigidBodyMoverClass, new ResiduePairSampler(
-            currentProtein->getLength()), gaussianSampler(0, 0), gaussianSampler(0, 25));
-      else
-        moverSampler = new ProteinMoverSampler(currentProtein->getLength());
+      SamplerPtr moverSampler = new ProteinMoverSampler(currentProtein->getLength());
 
       ProteinOptimizerPtr o = new ProteinSimulatedAnnealingOptimizer(4.0, 0.01, 50,
           maxNumberIterations, 5, currentProtein->getName(), 0.0001, timesFeatureGeneration,
@@ -293,7 +294,6 @@ protected:
 
   String proteinsDirectory;
   String resultsDirectory;
-  int oneOrAll;
   int timesFeatureGeneration;
   int maxNumberIterations;
 };
