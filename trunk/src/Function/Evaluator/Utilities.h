@@ -192,9 +192,6 @@ protected:
   BinaryClassificationConfusionMatrixPtr bestConfusionMatrix;
   std::vector< BinaryClassificationConfusionMatrixPtr > confusionMatrices;
 
-  std::vector< std::pair<double, double> > precision;
-  std::vector< std::pair<double, double> > recall;
-
 private:
   typedef std::map<double, std::pair<size_t, size_t> > ScoresMap;
 
