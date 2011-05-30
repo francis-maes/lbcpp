@@ -278,7 +278,7 @@ public:
 
     builder.startSelection();
 
-      builder.addFunction(getVariableFunction(T("globalsFeatures")), proteinPerception, T("globalFeatures"));
+      builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception, T("globalFeatures"));
 
       builder.addFunction(lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, residueFeatures), firstPosition, proteinPerception, T("residueFeature[first]"));
       builder.addFunction(lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, residueFeatures), secondPosition, proteinPerception, T("residueFeature[second]"));
@@ -344,7 +344,6 @@ public:
     builder.startSelection();
 
       builder.addFunction(getVariableFunction(T("protein")), proteinPerception);
-      builder.addFunction(getVariableFunction(T("protein")), proteinPerception);
       builder.addInSelection(proteinPerception);
 
     builder.finishSelectionWithFunction(new CreateDisulfideSymmetricMatrixFunction(
@@ -361,7 +360,7 @@ public:
 
     builder.startSelection();
 
-      builder.addFunction(getVariableFunction(T("globalsFeatures")), proteinPerception, T("globalFeatures"));
+      builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception, T("globalFeatures"));
 
       builder.addFunction(lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, residueFeatures), firstPosition, proteinPerception, T("residueFeature[first]"));
       builder.addFunction(lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, residueFeatures), secondPosition, proteinPerception, T("residueFeature[second]"));
