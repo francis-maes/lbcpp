@@ -301,6 +301,8 @@ double ROCScoreObject::findBestThreshold(ScoreFunction measure, double& bestScor
   }
 
   const_cast<ROCScoreObject*>(this)->bestConfusionMatrix = new BinaryClassificationConfusionMatrix(bestMatrix);
+  const_cast<ROCScoreObject*>(this)->bestThresholdScore = bestScore;
+  const_cast<ROCScoreObject*>(this)->bestThreshold = bestThreshold;
   bestConfusionMatrix->setName(getName() + T(" confusion matrix"));
 
 #ifdef JUCE_DEBUG
@@ -363,60 +365,7 @@ void ROCScoreObject::finalize(bool saveConfusionMatrices)
 {
   ScopedLock _(lock);
 
-  size_t truePositives = numPositives;
-  size_t falsePositives = numNegatives;
-
-  double bestF1Score = 0.0;
-  double bestPrecAt10 = 0.0, bestPrecAt25 = 0.0, bestPrecAt50 = 0.0, bestPrecAt75 = 0.0, bestPrecAt90 = 0.0;
-  double bestRecAt10 = 0.0, bestRecAt25 = 0.0, bestRecAt50 = 0.0, bestRecAt75 = 0.0, bestRecAt90 = 0.0;
-
-  for (std::map<double, std::pair<size_t, size_t> >::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
-  {
-    size_t falseNegatives = numPositives - truePositives;
-    double recall = truePositives / (double)numPositives;
-    double precision = truePositives / (double)(truePositives + falsePositives);
-    double f1 = 2.0 * truePositives / (2.0 * truePositives + falseNegatives + falsePositives);
-    
-    bestF1Score = juce::jmax(f1, bestF1Score);
-    
-    if (recall >= 0.1)
-      bestPrecAt10 = juce::jmax(bestPrecAt10, precision);
-    if (recall >= 0.25)
-      bestPrecAt25 = juce::jmax(bestPrecAt25, precision);
-    if (recall >= 0.5)
-      bestPrecAt50 = juce::jmax(bestPrecAt50, precision);
-    if (recall >= 0.75)
-      bestPrecAt75 = juce::jmax(bestPrecAt75, precision);
-    if (recall >= 0.9)
-      bestPrecAt90 = juce::jmax(bestPrecAt90, precision);
-    
-    if (precision >= 0.1)
-      bestRecAt10 = juce::jmax(bestRecAt10, recall);
-    if (precision >= 0.25)
-      bestRecAt25 = juce::jmax(bestRecAt25, recall);
-    if (precision >= 0.5)
-      bestRecAt50 = juce::jmax(bestRecAt50, recall);
-    if (precision >= 0.75)
-      bestRecAt75 = juce::jmax(bestRecAt75, recall);
-    if (precision >= 0.9)
-      bestRecAt90 = juce::jmax(bestRecAt90, recall);
-    
-    falsePositives -= it->second.first;
-    truePositives -= it->second.second;
-  }
-
   bestThreshold = findBestThreshold(scoreToOptimize, bestThresholdScore);
-
-  precision.push_back(std::make_pair(10, bestPrecAt10));
-  precision.push_back(std::make_pair(25, bestPrecAt25));
-  precision.push_back(std::make_pair(50, bestPrecAt50));
-  precision.push_back(std::make_pair(75, bestPrecAt75));
-  precision.push_back(std::make_pair(90, bestPrecAt90));
-  recall.push_back(std::make_pair(10, bestRecAt10));
-  recall.push_back(std::make_pair(25, bestRecAt25));
-  recall.push_back(std::make_pair(50, bestRecAt50));
-  recall.push_back(std::make_pair(75, bestRecAt75));
-  recall.push_back(std::make_pair(90, bestRecAt90));
 
   if (saveConfusionMatrices)
   {
