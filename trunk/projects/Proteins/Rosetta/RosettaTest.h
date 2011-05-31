@@ -121,21 +121,33 @@ public:
 # ifdef LBCPP_PROTEIN_ROSETTA
     rosettaInitialization(context, false);
 
+    core::pose::PoseOP pose = new core::pose::Pose("/Users/alex/Documents/Ulg/2M/tfe/structs/final_struct_lo_100mil.pdb");
+
+    for (size_t i = 1; i < pose->n_residue(); i++)
+      std::cout << "i : " << i << " phi : " << pose->phi(i) << ", psi : " << pose->psi(i) << std::endl;
+
+    ShearMoverPtr shear = shearMover(3, 10, -10);
+    shear->move(pose);
+    core::io::pdb::dump_pdb(*pose, "/Users/alex/Desktop/shear.pdb");
+
+    for (size_t i = 1; i < pose->n_residue(); i++)
+      std::cout << "i : " << i << " phi : " << pose->phi(i) << ", psi : " << pose->psi(i) << std::endl;
+
     // -------------- rosetta protein features
-    core::pose::PoseOP pose = new core::pose::Pose();
-    core::pose::PoseOP initialized;
-    FunctionPtr features = new RosettaProteinFeatures(0, 0, 0, 1);
-    features->initialize(context, rosettaProteinClass);
-    String acc;
-
-    VectorPtr inputWorker = new VariableVector(0);
-    VectorPtr inputMover = vector(proteinMoverClass, 0);
-
-    ClassPtr inputClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
-    VectorPtr inputTest = vector(inputClass, 0);
-    VectorPtr samples = vector(proteinMoverClass);
-
-    generateMoversDataset(inputWorker, inputMover);
+    //    core::pose::PoseOP pose = new core::pose::Pose();
+//    core::pose::PoseOP initialized;
+//    FunctionPtr features = new RosettaProteinFeatures(0, 0, 0, 1);
+//    features->initialize(context, rosettaProteinClass);
+//    String acc;
+//
+//    VectorPtr inputWorker = new VariableVector(0);
+//    VectorPtr inputMover = vector(proteinMoverClass, 0);
+//
+//    ClassPtr inputClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
+//    VectorPtr inputTest = vector(inputClass, 0);
+//    VectorPtr samples = vector(proteinMoverClass);
+//
+//    generateMoversDataset(inputWorker, inputMover);
 
 //    for (size_t i = 0; i < inputMover->getNumElements(); i++)
 //      cout << inputWorker->getElement(i).getObjectAndCast<RosettaWorker>()->getFeatures(context).getObjectAndCast<DoubleVector>()->toString() << " : " << (const char*)inputMover->getElement(i).getObjectAndCast<ProteinMover>()->toString() << endl;
@@ -144,19 +156,19 @@ public:
 
     ObjectVectorPtr featureVectors = new ObjectVector(doubleVectorClass(), 0);
 
-    for (size_t i = 0; i < inputWorker->getNumElements(); i++)
-    {
-      RosettaWorkerPtr klWorker = inputWorker->getElement(i).getObjectAndCast<RosettaWorker>();
-      Variable klFeature = klWorker->getFeatures(context);
-      //featureVectors->append(klFeature);
-
-
-      // TEST
-      DenseDoubleVectorPtr input = new DenseDoubleVector(inputClass);
-      input->setValue(0, 1.0); // first distribution
-      inputTest->append(input);
-      samples->append(inputMover->getElement(i));
-    }
+//    for (size_t i = 0; i < inputWorker->getNumElements(); i++)
+//    {
+//      RosettaWorkerPtr klWorker = inputWorker->getElement(i).getObjectAndCast<RosettaWorker>();
+//      Variable klFeature = klWorker->getFeatures(context);
+//      //featureVectors->append(klFeature);
+//
+//
+//      // TEST
+//      DenseDoubleVectorPtr input = new DenseDoubleVector(inputClass);
+//      input->setValue(0, 1.0); // first distribution
+//      inputTest->append(input);
+//      samples->append(inputMover->getElement(i));
+//    }
 
 //    maxent->learn(context, inputTest, inputMover, DenseDoubleVectorPtr(),
 //        ContainerPtr(), ContainerPtr(), DenseDoubleVectorPtr());

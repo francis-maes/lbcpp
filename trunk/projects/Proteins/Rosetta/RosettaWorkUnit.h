@@ -69,7 +69,7 @@ public:
 
         nameToSearch += T("_mover_*.xml");
         moversFile.findChildFiles(movers, File::findFiles, false, nameToSearch);
-        for (size_t j = 0; j < movers.size(); j++)
+        for (size_t j = 0; (j < movers.size()) && (j < numMoversToLearn); j++)
         {
           RosettaProteinPtr inWorker = new RosettaProtein(pose, residueFeatures, energyFeatures,
               histogramFeatures, distanceFeatures);
@@ -89,7 +89,7 @@ public:
     juce::OwnedArray<File> results;
     inputFile.findChildFiles(results, File::findFiles, false, T("*.xml"));
 
-    double frequenceVerbosity = 0.0001;
+    double frequenceVerbosity = 0.001;
     std::vector<ScalarVariableMeanAndVariancePtr> meansAndVariances;
 
     for (size_t i = 0; i < results.size(); i++)
@@ -118,8 +118,10 @@ public:
 
       RandomGeneratorPtr random = new RandomGenerator();
       DenseDoubleVectorPtr energiesAtIteration;
+//      ProteinSimulatedAnnealingOptimizerPtr optimizer = new ProteinSimulatedAnnealingOptimizer(4.0,
+      //          0.01, 50, 500000, 5, currentName, frequenceVerbosity, 10, outputFile);
       ProteinSimulatedAnnealingOptimizerPtr optimizer = new ProteinSimulatedAnnealingOptimizer(4.0,
-          0.01, 50, 500000, 5, currentName, frequenceVerbosity, 10, outputFile);
+          0.01, 50, 1000, 5, currentName, frequenceVerbosity, 2, outputFile);
 
       optimizer->apply(context, worker, random, energiesAtIteration);
 
@@ -165,6 +167,7 @@ protected:
   size_t energyFeatures;
   size_t histogramFeatures;
   size_t distanceFeatures;
+  size_t numMoversToLearn;
 };
 
 class ProteinOptimizerWorkUnit;
