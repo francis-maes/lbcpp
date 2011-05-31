@@ -61,7 +61,6 @@ GENERATE_INTROSPECTION_CODE(Optimizer/ObjectiveFunction/ObjectiveFunctionLibrary
 GENERATE_INTROSPECTION_CODE(Optimizer/Optimizer/OptimizerOptimizerLibrary.xml OptimizerOptimizerLibrary.cpp)
 IF(LBCPP_NETWORKING)
   GENERATE_INTROSPECTION_CODE(Optimizer/Context/Network/OptimizerContextNetworkLibrary.xml OptimizerContextNetworkLibrary.cpp)
-  GENERATE_INTROSPECTION_CODE(Optimizer/Optimizer/Grid/OptimizerOptimizerGridLibrary.xml OptimizerOptimizerGridLibrary.cpp)
 ENDIF(LBCPP_NETWORKING)
 
 IF(LBCPP_USER_INTERFACE)
@@ -633,23 +632,6 @@ IF(LBCPP_NETWORKING)
   )
 ENDIF(LBCPP_NETWORKING)
 
-SET(LBCPP_OPTIMIZER_OLD_SOURCES
-  ../include/lbcpp/Optimizer/GridOptimizer.h
-  Optimizer/Optimizer/IterativeBracketingOptimizer.h
-  Optimizer/ObjectiveFunction/MarginalObjectiveFunction.h
-  Optimizer/ObjectiveFunction/ObjectiveFunctionLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ObjectiveFunctionLibrary.cpp
-)
-IF(LBCPP_NETWORKING)
-  SET(LBCPP_OPTIMIZER_OLD_SOURCES
-    Optimizer/Optimizer/Grid/GridEvoOptimizer.h
-    Optimizer/Optimizer/Grid/OptimizerOptimizerGridLibrary.xml
-    ${CMAKE_CURRENT_BINARY_DIR}/OptimizerOptimizerGridLibrary.cpp
-    ${LBCPP_OPTIMIZER_OLD_SOURCES}
-  )
-ENDIF(LBCPP_NETWORKING)
-
-
 #### UserInterface ####
 IF(LBCPP_USER_INTERFACE)
 
@@ -891,7 +873,6 @@ SOURCE_GROUP(Optimizer FILES ${LBCPP_OPTIMIZER_SOURCES})
 SOURCE_SUB_GROUP(Optimizer Context FILES ${LBCPP_OPTIMIZER_CONTEXT_SOURCES} ${LBCPP_OPTIMIZER_CONTEXT_NETWORK_SOURCES})
 SOURCE_SUB_GROUP(Optimizer ObjectiveFunction FILES ${LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(Optimizer Optimizer FILES ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES})
-SOURCE_SUB_GROUP(Optimizer Old FILES ${LBCPP_OPTIMIZER_OLD_SOURCES})
 
 ## UserInterface
 SOURCE_GROUP(UserInterface FILES ${LBCPP_USER_INTERFACE_SOURCES})

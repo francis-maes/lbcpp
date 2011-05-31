@@ -39,7 +39,6 @@
     <variable type="File" name="learnedModelFile" shortName="l" description="The file where to save learned model (optional)"/>
   </class>
   
-  <!-- ProteinLearnerObjectiveFunction -->
   <class name="ProteinLearnerObjectiveFunction" base="SimpleUnaryFunction"/>
          
   <!-- BricoBox -->
@@ -92,8 +91,6 @@
   </class>
   
   <class name="CheckManagerWorkUnit" base="WorkUnit"/>
-
-  <class name="DebugWorkUnit" base="WorkUnit"/>
   
   <class name="GenerateFoldsWorkUnit" base="WorkUnit">
     <variable type="File" name="sourceDirectory" shortName="i"/>

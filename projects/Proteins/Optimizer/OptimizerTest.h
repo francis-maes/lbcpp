@@ -31,7 +31,6 @@
 //# include "../Optimizer/ProteinGridEvoOptimizer.h"
 //# include "../../../src/Optimizer/Optimizer/Grid/GridEvoOptimizer.h"
 //# include "../Predictor/ProteinPredictorParameters.h"
-# include "ProteinGridEvoOptimizer.h"
 //# include "../../../src/Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h"
 # include "../../../src/Optimizer/Optimizer/EDAOptimizer.h"
 # include "../../../src/Optimizer/Optimizer/AsyncEDAOptimizer.h"
@@ -90,7 +89,7 @@ class ExtractMeanScoreWorkUnit : public WorkUnit
 class DebugNetworkWorkUnit : public WorkUnit
 {
   virtual Variable run(ExecutionContext& context)
-  {
+  {/*
     String projectName(T("DebugNetwork3"));
     String source(T("arnaud@monster24"));
     String destination(T("notdefined@unknown"));
@@ -126,7 +125,7 @@ class DebugNetworkWorkUnit : public WorkUnit
     
     client->sendVariable(new CloseCommunicationNotification());
     client->stopClient();
-    
+    */
     return Variable();
   }
 };
@@ -292,7 +291,7 @@ public:
   }
   
 };
-
+/*
 class GridEvoOptimizerExperience : public WorkUnit  
 {
 public:
@@ -335,9 +334,6 @@ public:
     size_t timeToSleep = 5*60;            // time to sleep between work generation and attemps to use finished results (avoid busy waiting)
     size_t updateFactor = 10;            // preponderance of new distri vs old distri (low value avoid too quick convergence)
     
-    /**
-     * GridEvoOptimizer
-     */
     GridEvoOptimizerPtr optimizer = new GridEvoOptimizer(totalNumberWuRequested, numberWuToUpdate, numberWuInProgress, ratioUsedForUpdate, projectName, source, destination,
                                                          managerHostName, managerPort, requiredMemory, requiredTime, timeToSleep, updateFactor);
     return optimizer->optimize(context, state, new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
@@ -345,7 +341,7 @@ public:
   }
   
 };
-
+*/
 class OptimizerTestBedWorkUnit : public WorkUnit 
 {
   virtual Variable run(ExecutionContext& context)
@@ -401,7 +397,7 @@ class OptimizerTestBedWorkUnit : public WorkUnit
     size_t populationSize = 100;
     size_t numBests = 30;
     size_t inProgressEvaluations;
-    f = f10;
+    f = f13;
     
     double start;
     double end;

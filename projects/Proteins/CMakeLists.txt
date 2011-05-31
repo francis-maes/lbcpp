@@ -115,7 +115,6 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/BricoBox.h
   WorkUnit/BricoBox.cpp
   WorkUnit/FabienBox.h
-  WorkUnit/DebugWorkUnit.h
   WorkUnit/ProteinWorkUnitLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinWorkUnitLibrary.cpp
 )
@@ -123,7 +122,6 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
 IF(LBCPP_NETWORKING)
   SET(LBCPP_PROTEIN_OPTIMIZER_SOURCES
     Optimizer/OptimizerTest.h
-    Optimizer/ProteinGridEvoOptimizer.h
     Optimizer/ProteinOptimizerLibrary.xml
     ${CMAKE_CURRENT_BINARY_DIR}/ProteinOptimizerLibrary.cpp
   )

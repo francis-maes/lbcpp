@@ -26,7 +26,7 @@ public:
   {   
     
     // useful to restart optimizer from state
-    size_t i = (size_t) (optimizerState->getTotalNumberOfResults()/populationSize);	// interger division	
+    size_t i = (size_t) (optimizerState->getTotalNumberOfResults()/populationSize);	// WARNING : integer division
     context.progressCallback(new ProgressionState(i, numIterations, T("Iterations")));
     
     bool doReinjectBest = i ? true : false;  // used to know when to reinject best parameter
@@ -37,30 +37,27 @@ public:
     size_t totalNumberEvaluationsRequested = numIterations * populationSize;
     while (optimizerState->getTotalNumberOfResults() < totalNumberEvaluationsRequested) 
     {      
-      // Send evaluation requests
-      // TODO arnaud : if useless
-      if (optimizerState->getNumberOfInProgressEvaluations() < numberEvaluationsInProgress && optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && optimizerState->getNumberOfProcessedRequests() < populationSize) 
+      // Send evaluation requests      
+      while (optimizerState->getNumberOfInProgressEvaluations() < numberEvaluationsInProgress && optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && optimizerState->getNumberOfProcessedRequests() < populationSize) 
       {
-        while (optimizerState->getNumberOfInProgressEvaluations() < numberEvaluationsInProgress && optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && optimizerState->getNumberOfProcessedRequests() < populationSize) 
+        
+        Variable input;
+        if (reinjectBest && doReinjectBest && optimizerState->getBestVariable().exists())
         {
-          
-          Variable input;
-          if (reinjectBest && doReinjectBest && optimizerState->getBestVariable().exists())
-          {
-            input = optimizerState->getBestVariable();
-            doReinjectBest = false;
-          }
-          else 
-            input = sampleCandidate(context, optimizerState, random);
-          
-          if (optimizerContext->evaluate(input))
-          {
-            optimizerState->incTotalNumberOfRequests();
-            context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
-          } else
-            break;  // TODO arnaud
+          input = optimizerState->getBestVariable();
+          doReinjectBest = false;
         }
+        else 
+          input = sampleCandidate(context, optimizerState);
+        
+        if (optimizerContext->evaluate(input))
+        {
+          optimizerState->incTotalNumberOfRequests();
+          context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
+        } else
+          break;  // wait before retrying
       }
+      
       
       // don't do busy waiting
       juce::Thread::sleep(optimizerContext->getTimeToSleep());
@@ -70,7 +67,7 @@ public:
       // enough WUs evaluated -> update distribution (with best results)
       if (optimizerState->getNumberOfProcessedRequests() >= populationSize) 
       {   
-        context.progressCallback(new ProgressionState(populationSize, populationSize, T("Evaluations"))); // WARNING : force display of 100% in Explorer
+        context.progressCallback(new ProgressionState(populationSize, populationSize, T("Evaluations"))); // WARNING : force display of 100% in Explorer (may be more than populationSize individus in processedRequests)
         
         // sort results
         std::multimap<double, Variable> sortedScores;
@@ -98,7 +95,7 @@ public:
 protected:
   friend class AsyncEDAOptimizerClass;
   
-  size_t numberEvaluationsInProgress;              // number of evaluations in progress to maintain  
+  size_t numberEvaluationsInProgress; /**< Number of evaluations in progress to maintain */ 
 };
 
 typedef ReferenceCountedObjectPtr<AsyncEDAOptimizer> AsyncEDAOptimizerPtr;  

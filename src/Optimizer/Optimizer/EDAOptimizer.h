@@ -1,6 +1,6 @@
 /*-----------------------------------------.---------------------------------.
 | Filename: EDAOptimizer.h                 | Basic EDA Optimizer             |
-| Author  : Arnaud Schoofs                 |                                 |
+| Author  : Arnaud Schoofs                 | (synchronous)                   |
 | Started : 06/04/2011                     |                                 |
 `------------------------------------------/                                 |
                                |                                             |
@@ -25,7 +25,7 @@ public:
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {     
     // useful to restart optimizer from optimizerState
-    size_t i = (size_t) (optimizerState->getTotalNumberOfResults()/populationSize);	// integer division
+    size_t i = (size_t) (optimizerState->getTotalNumberOfResults()/populationSize); // WARNING : integer division
     context.progressCallback(new ProgressionState(i, numIterations, T("Iterations")));
 
     for ( ; i < numIterations; ++i)
@@ -37,7 +37,7 @@ public:
       context.resultCallback(T("iteration"), i + 1);
       bool ok = performEDAIteration(context, bestIterationParameters, bestIterationScore, optimizerContext, optimizerState);
       if (!ok)
-        return false; // TODO arnaud : handle this
+        return false; // FIXME : handle this
       
       // display results & update optimizerState
       handleResultOfIteration(context, optimizerState, optimizerContext, bestIterationScore, bestIterationParameters);
@@ -54,21 +54,22 @@ protected:
   bool performEDAIteration(ExecutionContext& context, Variable& bestParameters, double& bestScore, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {    
     // generate evaluations requests
-    size_t offset = optimizerState->getNumberOfProcessedRequests();   // always 0 except if optimizer has been restarted from file !
-    for (size_t i = offset; i < populationSize; i++) {  // init condition used to restart from file
+    size_t offset = optimizerState->getNumberOfProcessedRequests();   // always 0 except if optimizer has been restarted from optimizerState file !
+    for (size_t i = offset; i < populationSize; i++) {
       Variable input;
       if (reinjectBest && i == 0 && bestParameters.exists())
         input = bestParameters;
       else
-        input = sampleCandidate(context, optimizerState, random);
+        input = sampleCandidate(context, optimizerState);
       
       if (!optimizerContext->evaluate(input))
-        return false; // TODO arnaud : handle this
+        return false; // FIXME : handle this ?
       optimizerState->incTotalNumberOfRequests();
       context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
     }
     
     // wait (in case of async context) & update progression
+    // (waitUntilAllRequestsAreProcessed is not used to enable doing progressCallback)
     while (!optimizerContext->areAllRequestsProcessed())
     {
       Thread::sleep(optimizerContext->getTimeToSleep());
