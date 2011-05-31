@@ -69,6 +69,7 @@
     <variable type="PositiveInteger" name="energyFeatures"/>
     <variable type="PositiveInteger" name="histogramFeatures"/>
     <variable type="PositiveInteger" name="distanceFeatures"/>
+    <variable type="PositiveInteger" name="numMoversToLearn"/>
   </class>
   
   <class name="RosettaTest" base="WorkUnit">
