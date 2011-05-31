@@ -15,6 +15,9 @@
 #include <fstream>
 using namespace lbcpp;
 
+/**
+ * Callback used to write BOINC progression file
+ */
 class BoincProgressionExecutionCallback : public ExecutionCallback
 {
 public:

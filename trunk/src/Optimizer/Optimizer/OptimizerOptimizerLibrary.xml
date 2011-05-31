@@ -2,8 +2,6 @@
 
 <library name="OptimizerOptimizer" directory="Optimizer/Optimizer">
 
-  <import name="OptimizerOptimizerGrid" ifdef="LBCPP_NETWORKING"/>
-
   <include file="lbcpp/Optimizer/Optimizer.h"/>
 
   <class name="UniformSampleAndPickBestOptimizer" base="Optimizer">
@@ -19,7 +17,6 @@
     <variable type="Double" name="slowingFactor"/>
     <variable type="Boolean" name="reinjectBest"/>
     <variable type="Boolean" name="verbose"/>
-    <variable type="RandomGenerator" name="random"/>
   </class>
   
   <class name="EDAOptimizer" base="PopulationBasedOptimizer" shortName="eda">
@@ -30,14 +27,5 @@
     <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, size_t numberEvaluationsInProgress, double slowingFactor, bool reinjectBest, bool verbose" returnType="Optimizer"/>
     <variable type="PositiveInteger" name="numberEvaluationsInProgress"/>
   </class>
-     
-  <!--
-  <class name="IterativeBracketingOptimizer" base="Optimizer">
-    <constructor arguments="size_t numPasses, double reductionFactor, const OptimizerOldPtr&amp; baseOptimizer"/>
-    <variable type="PositiveInteger" name="numPasses"/>
-    <variable type="Double" name="reductionFactor"/>
-    <variable type="Optimizer" name="baseOptimizer"/>
-  </class> 
-  -->
   
 </library>

@@ -1,11 +1,10 @@
-/*
- *  OptimizerTestBed.h
- *  LBCpp
- *
- *  Created by Arnaud Schoofs on 9/05/11.
- *  Copyright 2011 __MyCompanyName__. All rights reserved.
- *
- */
+/*-----------------------------------------.---------------------------------.
+| Filename: OptimizerTestBed               | Contains functions useful to    |
+| Author  : Arnaud Schoofs                 | asses the quality of an         |
+| Started : 09/05/2011                     | Optimizer                       |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
 
 /**
  * SOURCE :  http://coco.lri.fr/downloads/download10.61/bbobdocfunctionsdef.pdf
@@ -15,15 +14,12 @@
 #ifndef LBCPP_OPTIMIZER_TEST_BED_H_
 # define LBCPP_OPTIMIZER_TEST_BED_H_
 
-# include <lbcpp/Distribution/Distribution.h>
-# include <lbcpp/Core/Function.h>
 # include <lbcpp/Function/ScalarVectorFunction.h>
-# include <lbcpp/Optimizer/OptimizerContext.h>
 # include <algorithm>
-// TODO arnaud : commenter et deplacer certaines fonctions auxilliaire
+
+// TODO arnaud : commenter
 // TODO arnaud : clean code
 // TODO arnaud : utiliser sumofsquare
-// TODO arnaud: utiliser le DenseDoubleVectorPtr DoubleMatrix::multiplyVector(const DenseDoubleVectorPtr& vector) const
 
 namespace lbcpp
 { 
@@ -84,7 +80,7 @@ namespace testbed
     }
   }
   
-  // TODO arnaud : http://coco.gforge.inria.fr/doku.php?id=downloads
+  // source : http://coco.gforge.inria.fr/doku.php?id=downloads
   DoubleMatrixPtr getRotationMatrix(int DIM)
   {
     DoubleMatrixPtr R = independentDoubleMatrixSampler(DIM, DIM, gaussianSampler())->sample(defaultExecutionContext(), defaultExecutionContext().getRandomGenerator()).getObjectAndCast<DoubleMatrix>();
@@ -111,20 +107,6 @@ namespace testbed
     return R;
   }
   
-  DenseDoubleVectorPtr productMatrixVector(const DoubleMatrixPtr& matrix, const DenseDoubleVectorPtr& vector)
-  {
-    jassert(matrix->getNumColumns() == vector->getNumValues());
-    DenseDoubleVectorPtr result = new DenseDoubleVector(matrix->getNumRows(), 0.0);
-    for (size_t i = 0; i < matrix->getNumRows(); i++)
-    {
-      double value = 0.0;
-      for (size_t j = 0; j < matrix->getNumColumns(); j++) 
-        value += matrix->getValue(i,j)*vector->getValue(j);
-      result->setValue(i, value);
-    }
-    return result;
-  }
-  
   double fpen(const DenseDoubleVectorPtr& vector)
   {
     double result = 0.0;
@@ -146,7 +128,7 @@ public:
   SphereFunction() {}
   
   virtual bool isDerivable() const
-    {jassertfalse; return false;} // TODO arnaud
+    {jassertfalse; return false;}  // not implemented
   
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
@@ -176,7 +158,7 @@ public:
   EllipsoidalFunction() {}
   
   virtual bool isDerivable() const
-    {jassertfalse; return false;} // TODO arnaud
+    {jassertfalse; return false;}  // not implemented
   
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
@@ -211,7 +193,7 @@ public:
   RastriginFunction() {}
   
   virtual bool isDerivable() const
-    {jassertfalse; return false;} // TODO arnaud
+    {jassertfalse; return false;}  // not implemented
   
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
@@ -267,7 +249,7 @@ public:
   BucheRastriginFunction() {}
   
   virtual bool isDerivable() const
-    {jassertfalse; return false;} // TODO arnaud
+    {jassertfalse; return false;}  // not implemented
   
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
@@ -310,7 +292,7 @@ public:
   LinearSlopeFunction() {}
   
   virtual bool isDerivable() const
-    {jassertfalse; return false;} // TODO arnaud
+    {jassertfalse; return false;}  // not implemented
   
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
@@ -348,7 +330,7 @@ public:
   AttractiveSectorFunction() {}
   
   virtual bool isDerivable() const
-    {jassertfalse; return false;} // TODO arnaud
+    {jassertfalse; return false;}  // not implemented
   
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
@@ -362,7 +344,7 @@ public:
     DoubleMatrixPtr R = testbed::getRotationMatrix(z->getNumValues());
     DoubleMatrixPtr Qlambda = Q->multiplyBy(lambda);
     DoubleMatrixPtr QlambdaR = Qlambda->multiplyBy(R);
-    DenseDoubleVectorPtr newZ = testbed::productMatrixVector(QlambdaR, z);
+    DenseDoubleVectorPtr newZ =  QlambdaR->multiplyVector(z);
 
     double sum = 0.0;
     for (size_t i = 0; i < z->getNumValues(); i++) 
@@ -397,7 +379,7 @@ public:
   StepEllipsoidalFunction() {}
   
   virtual bool isDerivable() const
-    {jassertfalse; return false;} // TODO arnaud
+    {jassertfalse; return false;}  // not implemented
   
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
@@ -409,7 +391,7 @@ public:
     DoubleMatrixPtr lambda = testbed::getLambdaMatrix(10.0, z->getNumValues());
     DoubleMatrixPtr R = testbed::getRotationMatrix(z->getNumValues());
     DoubleMatrixPtr Rlambda = lambda->multiplyBy(R);
-    DenseDoubleVectorPtr zhat = testbed::productMatrixVector(Rlambda, z);
+    DenseDoubleVectorPtr zhat = Rlambda->multiplyVector(z);
     
     DenseDoubleVectorPtr ztilde = new DenseDoubleVector(z->getNumValues(), 0.0);
     for (size_t i = 0; i < z->getNumValues(); i++)
@@ -420,7 +402,7 @@ public:
         ztilde->setValue(i, floor(0.5+10*zhat->getValue(i))/(double)10);
     }
     
-    z = testbed::productMatrixVector(testbed::getRotationMatrix(z->getNumValues()), ztilde);
+    z = testbed::getRotationMatrix(z->getNumValues())->multiplyVector(ztilde);
     
     double sum = 0.0;
     for (size_t i = 0; i < z->getNumValues(); i++) 
@@ -443,7 +425,7 @@ public:
   RosenbrockFunction() {}
   
   virtual bool isDerivable() const
-  {jassertfalse; return false;} // TODO arnaud
+  {jassertfalse; return false;}  // not implemented
   
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
@@ -486,14 +468,14 @@ public:
   RosenbrockRotatedFunction() {}
   
   virtual bool isDerivable() const
-  {jassertfalse; return false;} // TODO arnaud
+  {jassertfalse; return false;}  // not implemented
   
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
     jassert(input->getNumValues() == xopt->getNumValues())
     // z = x - x_opt
     DenseDoubleVectorPtr z = new DenseDoubleVector(input->getNumValues(), 0.0);
-    z = testbed::productMatrixVector(testbed::getRotationMatrix(z->getNumValues()), input);
+    z = testbed::getRotationMatrix(z->getNumValues())->multiplyVector(input);
     
     z->multiplyByScalar(std::max(1.0,sqrt((double)z->getNumValues())/(double)8));
     DenseDoubleVectorPtr half = new DenseDoubleVector(z->getNumValues(), 0.5);
@@ -528,7 +510,7 @@ public:
   IllEllipsoidalFunction() {}
   
   virtual bool isDerivable() const
-    {jassertfalse; return false;} // TODO arnaud
+    {jassertfalse; return false;}  // not implemented
   
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
@@ -538,7 +520,7 @@ public:
     DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
     xopt->subtractFrom(z);
     
-    DenseDoubleVectorPtr newZ = testbed::productMatrixVector(testbed::getRotationMatrix(z->getNumValues()), z);
+    DenseDoubleVectorPtr newZ = testbed::getRotationMatrix(z->getNumValues())->multiplyVector(z);
     
     z = newZ;    
     testbed::linearTransformTosz(z);
@@ -566,7 +548,7 @@ public:
   DiscusFunction() {}
   
   virtual bool isDerivable() const
-    {jassertfalse; return false;} // TODO arnaud
+    {jassertfalse; return false;}  // not implemented
   
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
@@ -576,7 +558,7 @@ public:
     DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
     xopt->subtractFrom(z);
     
-    DenseDoubleVectorPtr newZ = testbed::productMatrixVector(testbed::getRotationMatrix(z->getNumValues()), z);
+    DenseDoubleVectorPtr newZ = testbed::getRotationMatrix(z->getNumValues())->multiplyVector(z);
     
     z = newZ;    
     testbed::linearTransformTosz(z);
@@ -606,7 +588,7 @@ public:
   BentCigarFunction() {}
   
   virtual bool isDerivable() const
-    {jassertfalse; return false;} // TODO arnaud
+    {jassertfalse; return false;}  // not implemented
   
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
@@ -617,9 +599,9 @@ public:
     xopt->subtractFrom(z);
     
     DoubleMatrixPtr R = testbed::getRotationMatrix(z->getNumValues());
-    DenseDoubleVectorPtr newZ = testbed::productMatrixVector(R, z);
+    DenseDoubleVectorPtr newZ = R->multiplyVector(z);
     testbed::linearTransformTasy(newZ, 0.5);
-    z = testbed::productMatrixVector(R, newZ);
+    z = R->multiplyVector(newZ);
     
     double sum = 0.0;
     for (size_t i = 1; i < z->getNumValues(); i++) 
@@ -646,7 +628,7 @@ public:
   SharpRidgeFunction() {}
   
   virtual bool isDerivable() const
-    {jassertfalse; return false;} // TODO arnaud
+    {jassertfalse; return false;}  // not implemented
   
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
@@ -660,7 +642,7 @@ public:
     DoubleMatrixPtr R = testbed::getRotationMatrix(z->getNumValues());
     DoubleMatrixPtr Qlambda = Q->multiplyBy(lambda);
     DoubleMatrixPtr QlambdaR = Qlambda->multiplyBy(R);
-    DenseDoubleVectorPtr newZ = testbed::productMatrixVector(QlambdaR, z);
+    DenseDoubleVectorPtr newZ = QlambdaR->multiplyVector(z);
     
     z = newZ;
     
@@ -691,7 +673,7 @@ public:
   DifferentPowersFunction() {}
   
   virtual bool isDerivable() const
-    {jassertfalse; return false;} // TODO arnaud
+    {jassertfalse; return false;}  // not implemented
   
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
@@ -700,7 +682,7 @@ public:
     DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
     xopt->subtractFrom(z);
     
-    DenseDoubleVectorPtr newZ = testbed::productMatrixVector(testbed::getRotationMatrix(z->getNumValues()), z);
+    DenseDoubleVectorPtr newZ = testbed::getRotationMatrix(z->getNumValues())->multiplyVector(z);
     z = newZ;
     
     double sum = 0.0;

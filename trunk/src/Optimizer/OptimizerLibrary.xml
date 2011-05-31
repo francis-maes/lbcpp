@@ -3,15 +3,12 @@
 <library name="Optimizer" directory="Optimizer">
 
   <include file="lbcpp/Optimizer/Optimizer.h"/>
-  <include file="lbcpp/Optimizer/GridOptimizer.h"/>
-  <include file="lbcpp/Function/ScalarVectorFunction.h"/>
 
-  <!-- <import name="ObjectiveFunction"/> -->
-  <import name="OptimizerContext"/>
+  <!-- Optimizer -->
+  <class name="Optimizer" base="Function" abstract="yes"/>
   <import name="OptimizerOptimizer"/>
 
-  <class name="Optimizer" base="Function" abstract="yes"/>
-  
+  <!-- OptimizerState -->
   <class name="OptimizerState" base="Object">
     <constructor arguments="size_t autoSaveStateFrequency"/>
     <variable type="PositiveInteger" name="totalNumberOfRequests"/>
@@ -22,21 +19,18 @@
     <variable type="Time" name="autoSaveStateFrequency"/>
   </class>
   
-  <class name="DistributionBasedOptimizerState" base="OptimizerState">
-    <variable type="Distribution[Variable]" name="distribution"/>
-  </class>
   <class name="SamplerBasedOptimizerState" base="OptimizerState">
     <variable type="Sampler" name="sampler"/>
     <variable type="Sampler" name="initialSampler"/>
   </class>
 
+  <!-- OptimizerContext -->
   <class name="OptimizerContext" base="Object" abstract="yes">
     <variable type="Function" name="objectiveFunction"/>
     <variable type="Function" name="validationFunction"/>
     <variable type="PositiveInteger" name="timeToSleep"/>
   </class>
-  
-  <class name="GridOptimizer" base="Function" abstract="yes"/>
-  <class name="GridOptimizerState" base="Object" abstract="yes"/>
+
+  <import name="OptimizerContext"/>
 
 </library>

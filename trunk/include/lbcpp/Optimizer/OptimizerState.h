@@ -9,10 +9,8 @@
 #ifndef LBCPP_OPTIMIZER_STATE_H_
 # define LBCPP_OPTIMIZER_STATE_H_
 
-# include <lbcpp/Sampler/Sampler.h> // new 
-# include <lbcpp/Distribution/Distribution.h> // old
+# include <lbcpp/Sampler/Sampler.h>
 # include <lbcpp/Core/Function.h>
-# include <lbcpp/Optimizer/OptimizerContext.h>
 
 namespace lbcpp
 {
@@ -21,10 +19,19 @@ namespace lbcpp
 class OptimizerState : public Object, public FunctionCallback
 {
 public:
-  // args in seconds -> converted into ms
   OptimizerState(double autoSaveStateFrequency = 0);
   
+  /** 
+   * This function must be called before using the OptimizerState.
+   * It is usefull if the Optimizer is "restarted" with an existing OptimizerState (i.e. in progress evaluations are lost).
+   * This functions forces: totalNumberOfRequests = totalNumberOfResults
+   */
   void initialize();
+  /**
+   * Save this OptimizerState in optimizerState.xml.
+   * The saving operation is performed only if there is at least autoSaveStateFrequency seconds since the last saving operation.
+   * @param force true value forces the saving operation even if there is less than autoSaveStateFrequency seconds since the last saving operation.
+   */
   void autoSaveToFile(ExecutionContext& context, bool force = false);
   
   /*
@@ -66,7 +73,7 @@ public:
 protected:  
   friend class OptimizerStateClass;
   
-  CriticalSection lock;
+  CriticalSection lock; /**< Lock used to synchronize access to variables. */
     
   size_t totalNumberOfRequests;
   size_t totalNumberOfResults;
@@ -74,34 +81,14 @@ protected:
   Variable bestVariable;
   double bestScore;
     
-  std::vector< std::pair<double, Variable> > processedRequests;  // evaluated WUs not processed yet
+  std::vector< std::pair<double, Variable> > processedRequests; /**< Buffer used to store results not handled yet by the Optimizer. */
   
-  double autoSaveStateFrequency; // in seconds
-  double lastSaveTime;  // not serialized
+  double autoSaveStateFrequency;    /**< Minimum delay between two save operations (in seconds). */
+  double lastSaveTime;  /**< Timestamp of the last save operation. This variable is not serialized. */
 };
   
 typedef ReferenceCountedObjectPtr<OptimizerState> OptimizerStatePtr;
 extern ClassPtr optimizerStateClass;
-
-// TODO arnaud : useless  
-class DistributionBasedOptimizerState : public OptimizerState
-{
-public:
-  DistributionBasedOptimizerState(double autoSaveStateFrequency = 0) : OptimizerState(autoSaveStateFrequency) {}
-  
-  const DistributionPtr& getDistribution() const
-    {return distribution;}
-  
-  void setDistribution(const DistributionPtr& newDistribution)
-    {distribution = newDistribution;}
-  
-protected:  
-  friend class DistributionBasedOptimizerStateClass;
-  
-  DistributionPtr distribution;
-};
-
-typedef ReferenceCountedObjectPtr<DistributionBasedOptimizerState> DistributionBasedOptimizerStatePtr;
 
 class SamplerBasedOptimizerState : public OptimizerState
 {
@@ -116,6 +103,9 @@ public:
   void setSampler(const SamplerPtr& newSampler)
     {sampler = newSampler;}
   
+  /**
+   * Prototype design pattern method.
+   */
   SamplerPtr getCloneOfInitialSamplerInstance() const
     {return initialSampler->cloneAndCast<Sampler>();}
   
@@ -123,7 +113,7 @@ protected:
   friend class SamplerBasedOptimizerStateClass;
 
   SamplerPtr sampler;
-  SamplerPtr initialSampler;
+  SamplerPtr initialSampler;  /**< Prototype design patter. */
 };
 
 typedef ReferenceCountedObjectPtr<SamplerBasedOptimizerState> SamplerBasedOptimizerStatePtr;

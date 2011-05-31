@@ -63,7 +63,6 @@
   
   <!-- Optimizer Example -->
   <class name="OptimizerExampleWorkUnit" base="WorkUnit"/>
-  <class name="TestObjectiveFunction" base="Function"/>
   
   <!-- Random Generator Example -->
   <class name="RandomGeneratorExample" base="WorkUnit"/>

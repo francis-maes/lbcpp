@@ -25,15 +25,19 @@ public:
   DistributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime, size_t timeToSleep = 60000);
   DistributedOptimizerContext() {timeToSleep = 60000;}
   
+  // overide default implementation
+  // store the pointer to the callback
+  // it is used by the GetFinishedExecutionTracesDaemon when a result is found
   virtual void setPostEvaluationCallback(const FunctionCallbackPtr& callback)
     {functionCallback = callback;}
-  virtual void removePostEvaluationCallback(const FunctionCallbackPtr& callback); // TODO arnaud : code should be elsewhere ?
+  virtual void removePostEvaluationCallback(const FunctionCallbackPtr& callback);
   
   virtual bool areAllRequestsProcessed() const
     {return inProgressWUs.size() == 0;}
   
   virtual bool evaluate(const Variable& parameters)
   {
+    // create a WU for this request and send it to the Manager
     NetworkClientPtr client;
     ManagerNetworkInterfacePtr interface = getNetworkInterfaceAndConnect(client);
     
@@ -52,7 +56,7 @@ public:
     }
     
     {
-      ScopedLock _(inProgressWUsLock);
+      ScopedLock _(inProgressWUsLock);  // synchronized because it is alsa accessible by GetFinishedExecutionTracesDaemon
       inProgressWUs.push_back(std::make_pair(res, parameters));
     }
     return true;
@@ -61,7 +65,7 @@ public:
   
 protected:  
   friend class DistributedOptimizerContextClass;
-  friend class GetFinishedExecutionTracesDaemon;
+  friend class GetFinishedExecutionTracesDaemon;  // friend class so that there is no need to declare too much accessor methods
   
   String projectName;
   String source;
@@ -74,10 +78,10 @@ protected:
   
   FunctionCallbackPtr functionCallback;
   
-  CriticalSection inProgressWUsLock;
-  std::vector< std::pair<String, Variable> > inProgressWUs;
+  CriticalSection inProgressWUsLock;  /**< lock to use to acces inProgessWUs safely */
+  std::vector< std::pair<String, Variable> > inProgressWUs; /**< Contains pair <id, variable> of the FunctionWorkUnit sent to the manager. */
 
-  GetFinishedExecutionTracesDaemon* getFinishedTracesThread;
+  GetFinishedExecutionTracesDaemon* getFinishedTracesThread;  /**< Pointer to the thread that contacts the Manager to get the results. */
   
   ManagerNetworkInterfacePtr getNetworkInterfaceAndConnect(NetworkClientPtr& client) const
   {       
@@ -102,6 +106,9 @@ protected:
   
 typedef ReferenceCountedObjectPtr<DistributedOptimizerContext> DistributedOptimizerContextPtr;
 
+/**
+ * Thread used to get the results from the Manager.
+ */
 class GetFinishedExecutionTracesDaemon : public Thread
 {
 public:
@@ -112,14 +119,15 @@ public:
   {    
     while (!threadShouldExit())
     {
-      sleep(optimizerContext->timeToSleep);
+      sleep(optimizerContext->timeToSleep); // avoid busy waiting
        
-      // handle finished WUs
       NetworkClientPtr client;
       ManagerNetworkInterfacePtr interface = optimizerContext->getNetworkInterfaceAndConnect(client);
       if (!interface) 
         continue;
       
+      // walk through inProgressWUs and check if the result is available,
+      // if it is, get it
       std::vector< std::pair<String, Variable> >::iterator it;
       {
         ScopedLock _(optimizerContext->inProgressWUsLock);
@@ -130,8 +138,8 @@ public:
             ExecutionTraceNetworkResponsePtr res = interface->getExecutionTrace(it->first);
             if (res)
             {  
-              // TODO arnaud : traiter cas où qq pas valide mieux
-             
+              // Parse XML file to get the return value
+              // FIXME : there should be an easier way to do that
               ExecutionTracePtr trace = res->getExecutionTrace(context);
               if (!trace) {
                 context.warningCallback(T("Trace of ") + it->first + T(" is not a valide ExecutionTrace"));
@@ -188,7 +196,7 @@ public:
   }
   
 private:
-  DistributedOptimizerContextPtr optimizerContext;
+  DistributedOptimizerContextPtr optimizerContext;  /**< Pointer to the DistributedOptimizerContext associated to access inProgressWUs for instance. */
   ExecutionContext& context;
 };
   

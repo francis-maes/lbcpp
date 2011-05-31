@@ -1,7 +1,7 @@
 /*-----------------------------------------.---------------------------------.
 | Filename: SynchroneousOptimizerContext.h | OptimizerContext that evaluates |
 | Author  : Arnaud Schoofs                 | the requests from the Optimizer |
-| Started : 03/04/2011                     | synchronously (single-thread    |
+| Started : 03/04/2011                     | synchronously (single-thread)   |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/

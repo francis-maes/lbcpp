@@ -1,15 +1,10 @@
-/*
- *  PopulationBasedOptimizer.h
- *  LBCpp
- *
- *  Created by Arnaud Schoofs on 19/05/11.
- *  Copyright 2011 __MyCompanyName__. All rights reserved.
- *
- */
-
-// TODO arnaud : header
-
-// TODO arnaud : remove distribution when useless
+/*-----------------------------------------.---------------------------------.
+| Filename: PopulationBasedOptimizer.h     | Abstract class that contains    |
+| Author  : Arnaud Schoofs                 | common methods for population   |
+| Started : 19/05/2011                     | based algorithm                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
 
 #ifndef LBCPP_POPULATION_BASED_OPTIMIZER_H_
 # define LBCPP_POPULATION_BASED_OPTIMIZER_H_
@@ -25,14 +20,14 @@ class PopulationBasedOptimizer : public Optimizer
 {
 public:
   PopulationBasedOptimizer(size_t numIterations, size_t populationSize, size_t numBests, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
-    : numIterations(numIterations), populationSize(populationSize), numBests(numBests), slowingFactor(slowingFactor), reinjectBest(reinjectBest), verbose(verbose), random(new RandomGenerator()) // FIXME : random generator use less 
+    : numIterations(numIterations), populationSize(populationSize), numBests(numBests), slowingFactor(slowingFactor), reinjectBest(reinjectBest), verbose(verbose)
     {
       jassert(slowingFactor >= 0 && slowingFactor <= 1);
       jassert(numBests < populationSize);
     }
   
   PopulationBasedOptimizer()
-    : numIterations(0), populationSize(0), numBests(0), slowingFactor(0), reinjectBest(false), verbose(false), random(new RandomGenerator()) {} // FIXME : random generator use less
+    : numIterations(0), populationSize(0), numBests(0), slowingFactor(0), reinjectBest(false), verbose(false) {}
   
 protected:
   friend class PopulationBasedOptimizerClass;
@@ -40,22 +35,27 @@ protected:
   size_t numIterations;
   size_t populationSize;
   size_t numBests;
-  double slowingFactor;
-  bool reinjectBest;
-  bool verbose;
-  RandomGeneratorPtr random;  // FIXME : useless
+  double slowingFactor; /**< if != 0, the distribution learned is a Mixture: with probability "slowingFactor" the old distribution and with probability "1-slowingFactor" the new one. */
+  bool reinjectBest;  /**< if true the best individu is inserted in each new population. */
+  bool verbose; /**< if true increase the verbosity. */
   
-  Variable sampleCandidate(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const RandomGeneratorPtr& random) const
+  /**
+   * Creates a new individu from the distribution on OptimizerState.
+   */
+  Variable sampleCandidate(ExecutionContext& context, const OptimizerStatePtr& optimizerState) const
   {
     // TODO: replace by optimizerState.staticCast<SamplerBasedOptimizerState>()->getSampler()->sample(context, random);
     SamplerBasedOptimizerStatePtr samplerBasedState = optimizerState.dynamicCast<SamplerBasedOptimizerState>();
     if (samplerBasedState)
-      return samplerBasedState->getSampler()->sample(context, context.getRandomGenerator());  // WARNING : uses new random generator method !!!
+      return samplerBasedState->getSampler()->sample(context, context.getRandomGenerator());
     
     jassert(false);
     return Variable();
   }
   
+  /**
+   * Push the results of the OptimizerState buffer in the sorted map "sortedScore"
+   */
   void pushResultsSortedbyScore(ExecutionContext& context, const OptimizerStatePtr& optimizerState, std::multimap<double, Variable>& sortedScores) const
   {
     ScopedLock _(optimizerState->getLock());
@@ -73,12 +73,21 @@ protected:
         context.leaveScope(it->first);
       }
     }
-    optimizerState->flushFirstProcessedRequests(populationSize);  // TODO arnaud : maybe do that after building new distri      
+    optimizerState->flushFirstProcessedRequests(populationSize);  // exactly populationSize individus have been extracted
   }
   
+  /**
+   * Learn a new distribution from the results in sortedScores.
+   * The OptimizerState is updated.
+   */
   void learnDistribution(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const std::multimap<double, Variable>& sortedScores) const
   {          
     SamplerBasedOptimizerStatePtr samplerBasedState = optimizerState.staticCast<SamplerBasedOptimizerState>();
+    if (!samplerBasedState) 
+    {
+      jassertfalse;
+      return;
+    }
     
     std::map<Variable, ScalarVariableStatistics> bestVariables;
     std::multimap<double, Variable>::const_iterator it;
@@ -98,7 +107,7 @@ protected:
       context.informationCallback(String((int)sortedScores.size()) + T(" scores, ") + String(juce::jmin((int)numBests, (int)sortedScores.size())) + T(" bests, ")
         + String((int)bestVariables.size()) + T(" unique bests"));
 
-    SamplerPtr newSampler = samplerBasedState->getCloneOfInitialSamplerInstance();
+    SamplerPtr newSampler = samplerBasedState->getCloneOfInitialSamplerInstance();  // get instance from prototype
     newSampler->learn(context, ContainerPtr(), bestVariablesVector);
     
     if (slowingFactor > 0) 
@@ -134,6 +143,7 @@ protected:
       }
     }
     
+    // give information for execution trace
     context.resultCallback(T("bestIterationParameters"), bestIterationParameters);
     context.resultCallback(T("bestIterationScore"), bestIterationScore);
     
@@ -141,7 +151,7 @@ protected:
     double validationScore = 0.0;
     if (validationFunction)
     {
-      validationScore = validationFunction->compute(context, bestIterationParameters).toDouble(); // TODO francis : there was an incoherence between the args here and the leaveScope
+      validationScore = validationFunction->compute(context, bestIterationParameters).toDouble();
       context.resultCallback(T("validationScore"), validationScore);
     }
     
@@ -152,7 +162,7 @@ protected:
     // this is the return value of performEDAIteration, not the best score of all time !!!
     context.leaveScope(validationFunction ? Variable(new Pair(bestIterationScore, validationScore)) : Variable(bestIterationScore)); 
         
-    optimizerState->autoSaveToFile(context);  // TODO arnaud : flag to force to save at end of iteration ?
+    optimizerState->autoSaveToFile(context);
   }
 };
   

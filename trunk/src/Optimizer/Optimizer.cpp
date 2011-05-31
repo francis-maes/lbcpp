@@ -12,7 +12,8 @@
 using namespace lbcpp;
 
 /*
-** Optimizer
+** Optimizer <- Function
+** OptimizerContext, OptimizerState -> Variable
 */
 TypePtr Optimizer::getRequiredContextType() const
   {return optimizerContextClass;}
@@ -36,10 +37,10 @@ Variable Optimizer::computeFunction(ExecutionContext& context, const Variable* i
 {
   OptimizerContextPtr optimizerContext = inputs[0].getObjectAndCast<OptimizerContext>();
   OptimizerStatePtr optimizerState = inputs[1].getObjectAndCast<OptimizerState>();
-  optimizerState->initialize();
+  optimizerState->initialize(); // in case OptimizerState is instantiated from a file and totalNumberOfRequests != totalNumberOfResults
   context.enterScope(T("Optimizing"));
   context.informationCallback(toString());
-  optimizerContext->setPostEvaluationCallback((FunctionCallbackPtr) optimizerState.get());
+  optimizerContext->setPostEvaluationCallback((FunctionCallbackPtr) optimizerState.get());  // the FunctionCallback is the OptimizerState, it stores the results in processedRequests
   Variable output = optimize(context, optimizerContext, optimizerState);
   optimizerContext->removePostEvaluationCallback((FunctionCallbackPtr) optimizerState.get());
   context.resultCallback(T("bestParameters"), optimizerState->getBestVariable());
@@ -50,6 +51,7 @@ Variable Optimizer::computeFunction(ExecutionContext& context, const Variable* i
 
 /*
  ** OptimizerState
+ ** this class can be accessed in reading and writing from different contexts -> synchronized using lock
  */
 OptimizerState::OptimizerState(double autoSaveStateFrequency) 
   : totalNumberOfRequests(0), totalNumberOfResults(0), bestVariable(Variable()), bestScore(DBL_MAX), autoSaveStateFrequency(autoSaveStateFrequency), lastSaveTime(0) {}
@@ -70,7 +72,7 @@ void OptimizerState::autoSaveToFile(ExecutionContext& context, bool force)
     lastSaveTime = time;
     if (context.getFile(T("optimizerState.xml")).existsAsFile())
       context.getFile(T("optimizerState.xml")).copyFileTo(context.getFile(T("optimizerState_backup.xml")));
-    saveToFile(context, context.getFile(T("optimizerState.xml")));// TODO arnaud : file name as args ?
+    saveToFile(context, context.getFile(T("optimizerState.xml")));
   }
 }
 
@@ -163,15 +165,14 @@ const CriticalSection& OptimizerState::getLock() const
 void OptimizerState::functionReturned(ExecutionContext& context, const FunctionPtr& function, const Variable* inputs, const Variable& output) 
 {
   ScopedLock _(lock);
-  
   if (!output.isConvertibleToDouble())
   {
     context.warningCallback(T("OptimizerState::functionReturned"), T("Return value is not convertible to double"));
-    processedRequests.push_back(std::make_pair(DBL_MAX, inputs[0]));
+    processedRequests.push_back(std::make_pair(DBL_MAX, inputs[0]));  // DBL_MAX -> don't polute optimizer
   }
   else
-    processedRequests.push_back(std::make_pair(output.toDouble(), inputs[0]));
-  totalNumberOfResults++;
+    processedRequests.push_back(std::make_pair(output.toDouble(), inputs[0]));  // push into buffer
+  totalNumberOfResults++;  
 }
 
 /*
@@ -184,16 +185,8 @@ OptimizerContext::OptimizerContext(ExecutionContext& context, const FunctionPtr&
   jassert(!validationFunction || validationFunction->getNumRequiredInputs() == 1);
 }
 
-/*bool OptimizerContext::evaluate(ExecutionContext& context, const std::vector<Variable>& parametersVector)
-{
-  bool ok = true;
-  for (size_t i = 0; i < parametersVector.size(); ++i)
-    ok &= evaluate(context, parametersVector[i]);
-  return ok;
-}*/
-
 void OptimizerContext::setPostEvaluationCallback(const FunctionCallbackPtr& callback)
-  {objectiveFunction->addPostCallback(callback);}
+  {objectiveFunction->addPostCallback(callback);} // by default the callback is done inside the Function
 
 void OptimizerContext::removePostEvaluationCallback(const FunctionCallbackPtr& callback)
   {objectiveFunction->removePostCallback(callback);}
@@ -201,7 +194,7 @@ void OptimizerContext::removePostEvaluationCallback(const FunctionCallbackPtr& c
 void OptimizerContext::waitUntilAllRequestsAreProcessed() const 
 {
   while (!areAllRequestsProcessed())
-    Thread::sleep(timeToSleep);
+    Thread::sleep(timeToSleep); // avoid busy waiting
 }
 
 size_t OptimizerContext::getTimeToSleep() const 

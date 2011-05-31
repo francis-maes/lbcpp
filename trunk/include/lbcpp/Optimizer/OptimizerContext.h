@@ -9,7 +9,6 @@
 #ifndef LBCPP_OPTIMIZER_CONTEXT_H_
 # define LBCPP_OPTIMIZER_CONTEXT_H_
 
-# include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Core/Function.h>
 
 namespace lbcpp
@@ -22,12 +21,19 @@ public:
   OptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction = FunctionPtr(), size_t timeToSleep = 0);
   OptimizerContext() : context(*(ExecutionContext* )0) {}
   
+  /** Set the FunctionCallback that should be called once the evaluation is done. */
   virtual void setPostEvaluationCallback(const FunctionCallbackPtr& callback);
   virtual void removePostEvaluationCallback(const FunctionCallbackPtr& callback);
   
   virtual void waitUntilAllRequestsAreProcessed() const;
   virtual bool areAllRequestsProcessed() const = 0;
   virtual size_t getTimeToSleep() const;
+  
+  /**
+   * This function is supposed to be asynchronous, ie the result is not returned directly but through the callback.
+   * @param parmeters value to use for the evaluation of objectiveFunction.
+   * @return true if the operation is successful, false otherwise.
+   */
   virtual bool evaluate(const Variable& parameters) = 0;
   
   const FunctionPtr& getValidationFunction() const
@@ -37,7 +43,7 @@ protected:
   friend class OptimizerContextClass;
   
   ExecutionContext& context;
-  FunctionPtr objectiveFunction;
+  FunctionPtr objectiveFunction;  /**< Function used for the evaluations. */
   FunctionPtr validationFunction;
   size_t timeToSleep;
 };

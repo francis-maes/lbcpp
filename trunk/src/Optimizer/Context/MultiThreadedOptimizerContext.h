@@ -33,7 +33,7 @@ public:
   virtual bool evaluate(const Variable& parameters) 
   {
     juce::atomicIncrement(numEvaluationInProgress);
-    context.pushWorkUnit(new FunctionWorkUnit(objectiveFunction, parameters), &numEvaluationInProgress, false); // TODO arnaud verbose ?
+    context.pushWorkUnit(new FunctionWorkUnit(objectiveFunction, parameters), &numEvaluationInProgress, false); // numEvaluationsInProgress is decremented at end of evaluation
     return true;
   }
   

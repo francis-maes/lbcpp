@@ -22,7 +22,9 @@ public:
     : numSamples(numSamples), verbose(verbose) {}
   
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
-  {   
+  { 
+    // TODO arnaud : FIXME
+#if 0
     DistributionBasedOptimizerStatePtr state = optimizerState.dynamicCast<DistributionBasedOptimizerState>();
     jassert(state);  // TODO arnaud : message erreur
     
@@ -72,6 +74,9 @@ public:
       state->flushProcessedRequests();
     }
     return state->getBestScore();
+#else // 0
+    return Variable();
+#endif
  }
   
 protected:

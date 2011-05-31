@@ -1,16 +1,17 @@
-/*
- *  DistributedOptimizerContext.cpp
- *  LBCpp
- *
- *  Created by Arnaud Schoofs on 28/04/11.
- *  Copyright 2011 __MyCompanyName__. All rights reserved.
- *
- */
-#include "precompiled.h"
+/*-----------------------------------------.---------------------------------.
+| Filename: DistributedOptimizerContext.cpp| Implementation file of          |
+| Author  : Arnaud Schoofs                 | DistributedOptimizerContext.h   |
+| Started : 03/04/2011                     |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
 # include "DistributedOptimizerContext.h"
 
 using namespace lbcpp;
-// TODO arnaud : use validationFunction
+
+// TODO arnaud : add validationFunction
+
 DistributedOptimizerContext::DistributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime, size_t timeToSleep)
 : OptimizerContext(context, objectiveFunction, FunctionPtr(), timeToSleep), projectName(projectName), source(source), destination(destination), managerHostName(managerHostName), managerPort(managerPort), 
 requiredCpus(requiredCpus), requiredMemory(requiredMemory), requiredTime(requiredTime)
@@ -21,6 +22,7 @@ requiredCpus(requiredCpus), requiredMemory(requiredMemory), requiredTime(require
 
 void DistributedOptimizerContext::removePostEvaluationCallback(const FunctionCallbackPtr& callback)
 {
+  // stop and delete the GetFinishedExecutionTracesDaemon thread associated
   functionCallback = NULL;
   getFinishedTracesThread->signalThreadShouldExit();
   while (getFinishedTracesThread->isThreadRunning())
