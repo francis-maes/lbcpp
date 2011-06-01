@@ -6,10 +6,11 @@
                                |                                             |
                                `--------------------------------------------*/
 
-// TODO handle NetworkRequest File
+// FIXME : handle NetworkRequest File (memory usage)
 
 // LBCpp include
 #include <lbcpp/library.h>
+// FIXME : include conflict between BOINC and LBCpp !
 //#include <lbcpp/common.h>
 //#include <lbcpp/Core/Variable.h>
 //#include "../../../src/Network/Node/NetworkRequest.h"
@@ -65,6 +66,8 @@ int make_job(File* file) {
     log_messages.printf(MSG_CRITICAL, "can't move file: %s ---> %s\n", file->getFullPathName().toUTF8(), config.project_path(newLocation.toUTF8()));
     return 1;
   }
+  
+  // FIXME : not working due to include conflict
 /*
   Variable var = Object::createFromFile(defaultExecutionContext(), (file->getParentDirectory().getChildFile(T("Requests/") + String(name) + T("requests"))));
   if (!var.exists() || !var.isObject())
@@ -83,7 +86,6 @@ int make_job(File* file) {
   size_t RAMConsoEst = request->getRequiredMemory();    // Mo
 */
   // Fill in the job parameters
-  // TODO : use that kind of parameters in LBCpp for the request
   wu.clear();
   wu.appid = app.id;
   strcpy(wu.name, name);

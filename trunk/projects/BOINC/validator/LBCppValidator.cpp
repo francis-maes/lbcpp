@@ -22,10 +22,10 @@
 using namespace lbcpp;
 
 int getScoreImpl(const char* fileName, double& score)
-{
+{ 
+  // TODO : C like or C++ like (throw catch) ?
   
-  // TODO arnaud : throw catch ?
-  
+  // Parse file and extract return value
   ObjectPtr obj = Object::createFromFile(defaultExecutionContext(), File(fileName));
   if (!obj) {
     log_messages.printf(MSG_CRITICAL, "Can't create an Object from file : %s\n", fileName);
@@ -98,13 +98,13 @@ int init_result(RESULT& result, void*& data)
 
     double score;
     retval = getScore(fi.path.c_str(), score);
-    if (retval)
+    if (retval)	// -> can't get valid score
     {
       log_messages.printf(MSG_CRITICAL,
                           "[RESULT#%d %s] Couldn't get score in %s\n",
                           result.id, result.name, fi.path.c_str());
       int randscore = (rand() % RAND_MAX) + (RAND_MAX / 2); 
-      score = (double) randscore;	// TODO arnaud : avoid to polute optimizer policy and avoid to stop validator
+      score = (double) randscore;	// WARNING : avoid to poluate optimizer policy and avoid to stop validator
     }
     scores->push_back(score);
     data = (void*) scores;

@@ -1,0 +1,247 @@
+<?xml version="1.0" ?>
+<!-- Config file of the BOINC server -->
+<boinc>
+  <config>
+    <httpd_user>
+      www-data
+    </httpd_user>	
+    <upload_dir>
+      /home/boincadm/projects/evo/upload
+    </upload_dir>
+    <send_result_abort>
+      1
+    </send_result_abort>
+    <long_name>
+      Evo@Home
+    </long_name>
+    <cgi_url>
+      http://boinc.run.montefiore.ulg.ac.be/evo_cgi/
+    </cgi_url>
+    <sched_debug_level>
+      1
+    </sched_debug_level>
+    <disable_account_creation>
+      0
+    </disable_account_creation>
+    <uldl_dir_fanout>
+      1024
+    </uldl_dir_fanout>
+    <download_url>
+      http://boinc.run.montefiore.ulg.ac.be/evo/download
+    </download_url>
+    <db_user>
+      boincadm
+    </db_user>
+    <log_dir>
+      /home/boincadm/projects/evo/log_boinc
+    </log_dir>
+    <app_dir>
+      /home/boincadm/projects/evo/apps
+    </app_dir>
+    <download_dir>
+      /home/boincadm/projects/evo/download
+    </download_dir>
+    <fuh_debug_level>
+      1
+    </fuh_debug_level>
+    <master_url>
+      http://boinc.run.montefiore.ulg.ac.be/evo/
+    </master_url>
+    <host>
+      boinc
+    </host>
+    <db_name>
+      evo
+    </db_name>
+    <shmem_key>
+      0x11115420
+    </shmem_key>
+    <show_results>
+      1
+    </show_results>
+    <key_dir>
+      /home/boincadm/projects/evo/keys/
+    </key_dir>
+    <upload_url>
+      http://boinc.run.montefiore.ulg.ac.be/evo_cgi/file_upload_handler
+    </upload_url>
+    <db_passwd>
+      002230
+    </db_passwd>
+    <min_sendwork_interval>
+      120
+    </min_sendwork_interval>
+    <db_host>
+      localhost
+    </db_host>
+    <daily_result_quota>
+      100
+    </daily_result_quota>
+    <one_result_per_user_per_wu>
+      0
+    </one_result_per_user_per_wu>
+    <max_wus_to_send>
+      1
+    </max_wus_to_send>
+    <max_wus_in_progress>
+      1
+    </max_wus_in_progress>
+    <homogeneous_redundancy>2</homogeneous_redundancy>
+    <verify_files_on_app_start/>
+    <profile_screening/>
+    <show_results/>
+    <dont_store_success_stderr/>
+  </config>
+  <tasks>
+    <task>
+      <cmd>
+        db_dump -d 1 --dump_spec ../db_dump_spec.xml
+      </cmd>
+      <period>
+        24 hours
+      </period>
+      <disabled>
+        0
+      </disabled>
+      <output>
+        db_dump.out
+      </output>
+    </task>
+    <task>
+      <cmd>
+        run_in_ops ./update_uotd.php
+      </cmd>
+      <period>
+        1 days
+      </period>
+      <disabled>
+        0
+      </disabled>
+      <output>
+        update_uotd.out
+      </output>
+    </task>
+    <task>
+      <cmd>
+        run_in_ops ./update_forum_activities.php
+      </cmd>
+      <period>
+        2 hours
+      </period>
+      <disabled>
+        0
+      </disabled>
+      <output>
+        update_forum_activities.out
+      </output>
+    </task>
+    <task>
+      <cmd>
+        update_stats --update_users --update_teams --update_hosts
+      </cmd>
+      <period>
+        1 days
+      </period>
+      <disabled>
+        0
+      </disabled>
+      <output>
+        update_stats.out
+      </output>
+    </task>
+    <task>
+      <cmd>
+        run_in_ops ./update_profile_pages.php
+      </cmd>
+      <period>
+        24 hours
+      </period>
+      <disabled>
+        0
+      </disabled>
+      <output>
+        update_profile_pages.out
+      </output>
+    </task>
+    <task>
+      <cmd>
+        run_in_ops ./team_import.php
+      </cmd>
+      <period>
+        24 hours
+      </period>
+      <disabled>
+        0
+      </disabled>
+      <output>
+        team_import.out
+      </output>
+    </task>
+    <task>
+      <cmd>
+        run_in_ops ./notify.php
+      </cmd>
+      <period>
+        24 hours
+      </period>
+      <disabled>
+        0
+      </disabled>
+      <output>
+        notify.out
+      </output>
+    </task>
+    <task>
+   <cmd>census</cmd>
+     <period>1 day</period>
+   </task>
+  </tasks>
+  <daemons>
+  	<daemon>
+     <cmd>
+      db_purge -min_age_days 7 -max_wu_per_file 10000 -gzip -daily_dir -d 1
+     </cmd>
+    </daemon>
+    <daemon>
+      <cmd>
+        feeder -d 1 
+      </cmd>
+    </daemon>
+    <daemon>
+      <cmd>
+        transitioner -d 1 
+      </cmd>
+    </daemon>
+    <daemon>
+      <cmd>
+        file_deleter -d 1 
+      </cmd>
+      <disabled>0</disabled>
+    </daemon>
+    <daemon>
+      <cmd>
+        LBCppValidator -d 1 -app LBCppBeta
+      </cmd>
+      <disabled>0</disabled>
+      <output>LBCppValidator.log</output>
+      <pid_file>LBCppValidator.pid</pid_file>
+    </daemon>
+    <daemon>
+      <cmd>
+        LBCppAssimilator -d 1 -app LBCppBeta
+      </cmd>
+      <disabled>0</disabled>
+      <output>LBCppAssimilator.log</output>
+      <pid_file>LBCppAssimilator.pid</pid_file>
+    </daemon>
+    <daemon>
+      <cmd>
+        LBCppWorkGenerator -d 1 --app LBCppBeta
+      </cmd>
+      <disabled>0</disabled>
+      <output>LBCppWorkGenerator.log</output>
+      <pid_file>LBCppWorkGenerator.pid</pid_file>
+    </daemon>
+  </daemons>
+</boinc>
+
