@@ -513,7 +513,7 @@ private:
     //double bestIndividualScore = evaluateEachFeature(context, functionToOptimize, featuresEnumeration);
 
     Variable bestParameters;
-    double bestScore = performEDA(context, functionToOptimize, initialDistribution, bestParameters);
+    /*double bestScore = */performEDA(context, functionToOptimize, initialDistribution, bestParameters);
     return new HIVSearchHeuristic(featuresFunction, bestParameters.getObjectAndCast<DenseDoubleVector>());
   }
 

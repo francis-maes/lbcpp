@@ -50,14 +50,13 @@ public:
   static DenseDoubleVectorPtr computeScores(ExecutionContext& context, const DecisionProblemStatePtr& state, CompositeFunctionPtr goDecisionMaker, ContainerPtr& availableActions)
   {
     availableActions = state->getAvailableActions();
-    size_t n = availableActions->getNumElements();
 
     // compute scores
     std::vector<Variable> decisionMakerInputs(2);
     decisionMakerInputs[0] = Variable(state, goStateClass);
     decisionMakerInputs[1] = Variable::missingValue(positiveIntegerPairClass);
     DenseDoubleVectorPtr scoreVector = goDecisionMaker->computeUntilStep(context, &decisionMakerInputs[0], goDecisionMaker->getNumSteps() - 2).getObjectAndCast<DenseDoubleVector>();
-    jassert(!scoreVector || scoreVector->getNumElements() == n);
+    jassert(!scoreVector || scoreVector->getNumElements() == availableActions->getNumElements());
     return scoreVector;
   }
 
