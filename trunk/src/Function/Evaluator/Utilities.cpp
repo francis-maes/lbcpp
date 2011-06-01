@@ -301,7 +301,6 @@ double ROCScoreObject::findBestThreshold(ScoreFunction measure, double& bestScor
   }
 
   const_cast<ROCScoreObject*>(this)->bestConfusionMatrix = new BinaryClassificationConfusionMatrix(bestMatrix);
-  const_cast<ROCScoreObject*>(this)->bestThresholdScore = bestScore;
   const_cast<ROCScoreObject*>(this)->bestThreshold = bestThreshold;
   bestConfusionMatrix->setName(getName() + T(" confusion matrix"));
 

@@ -141,21 +141,25 @@ public:
       stalDiscretization(2), stalEntropyDiscretization(5),
       sa20Discretization(7),
       drDiscretization(7),
-  
-      dsbDiscretization(3), dsbNormalizedDiscretization(3),
-      dsbWindowRows(3), dsbWindowColumns(3), dsbEntropyDiscretization(4),
-      dsbPairWindowRows(3), dsbPairWindowColumns(3),
+
+      dsbDiscretization(5), dsbNormalizedDiscretization(3),
+      dsbEntropyDiscretization(5),
+      dsbPairWindowRows(7), dsbPairWindowColumns(7),
+      dsbCartesianCbpSize(7), dsbCartesianCbsSize(3),
 
       cbsWindowSize(9), cbsDiscretization(5),
       cbsSeparationProfilSize(7), cbsSeparationProfilDiscretization(5),
       cbsRatioDiscretization(5),
+      useCartesianCBPvsCBS(true),
 
       residueGlobalMeanFeatures(true), residueWindowSize(9),
       residueLocalMeanSize(18), residueMediumMeanSize(90),
       //residuePairGlobalFeatures(true), 
-      residuePairWindowSize(15),
+      //residuePairWindowSize(15),
       //residuePairLocalMeanSize(15), residuePairMediumMeanSize(50),
-      useAminoAcidDistance(true), useIntervalMean(true),
+      
+      // residue pair
+      aminoAcidDistanceDiscretization(5), useIntervalMean(false),
       cartesianProductPrimaryWindowSize(0)
   {
   }
@@ -191,11 +195,11 @@ public:
   // dsb
   size_t dsbDiscretization;
   size_t dsbNormalizedDiscretization;
-  size_t dsbWindowRows;
-  size_t dsbWindowColumns;
   size_t dsbEntropyDiscretization;
   size_t dsbPairWindowRows;
   size_t dsbPairWindowColumns;
+  size_t dsbCartesianCbpSize;
+  size_t dsbCartesianCbsSize;
   
   // cbs
   size_t cbsWindowSize;
@@ -203,6 +207,7 @@ public:
   size_t cbsSeparationProfilSize;
   size_t cbsSeparationProfilDiscretization;
   size_t cbsRatioDiscretization;
+  bool useCartesianCBPvsCBS;
 
   // global
   bool residueGlobalMeanFeatures;
@@ -212,10 +217,10 @@ public:
 
   // pair
 //  bool residuePairGlobalFeatures;
-  size_t residuePairWindowSize;
+//  size_t residuePairWindowSize;
 //  size_t residuePairLocalMeanSize;
 //  size_t residuePairMediumMeanSize;
-  bool useAminoAcidDistance;
+  size_t aminoAcidDistanceDiscretization;
   bool useIntervalMean;
   size_t cartesianProductPrimaryWindowSize;
 
