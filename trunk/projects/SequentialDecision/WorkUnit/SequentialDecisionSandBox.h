@@ -90,7 +90,7 @@ public:
       builder.addFunction(softDiscretizedNumberFeatureGenerator(0.0, maxReward, 7), reward);
       builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0.0, log10(maxReturn), 7), currentReturn);
 
-    size_t allFeatures = builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
+    /*size_t allFeatures = */builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
 
 //    builder.addFunction(new CartesianProductFeatureGenerator(), allFeatures, allFeatures, T("conjunctions"));
   }
@@ -231,7 +231,7 @@ public:
         context.leaveScope(score);
       }
       parameters->setValue(param, bestValue);
-      double score = evaluate(context, featuresEnumeration->getElementName(param), learnedSearchPolicy, testingStates);
+      /*double score = */evaluate(context, featuresEnumeration->getElementName(param), learnedSearchPolicy, testingStates);
 
       context.leaveScope(bestScore);
     }

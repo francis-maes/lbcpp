@@ -146,7 +146,7 @@ protected:
     std::set<size_t> argmax;
     double bestScore = -DBL_MAX;
     size_t numBests = 0;
-    size_t bestBandit;
+    size_t bestBandit = 0;
     size_t numBandits = banditStatistics.size();
     std::vector<double> scores(numBandits);
     for (size_t i = 0; i < numBandits; ++i)

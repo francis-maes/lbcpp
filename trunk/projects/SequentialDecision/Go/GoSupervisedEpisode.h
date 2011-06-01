@@ -90,8 +90,7 @@ protected:
     const DenseDoubleVectorPtr& scores = predictedScores.getObjectAndCast<DenseDoubleVector>();
     if (!scores)
       return Variable::missingValue(actionsType);
-    size_t n = actions->getNumElements();
-    jassert(n == scores->getNumElements());
+    jassert(actions->getNumElements() == scores->getNumElements());
     int best = scores->getIndexOfMaximumValue();
     if (best < 0)
       return Variable::missingValue(actionsType);

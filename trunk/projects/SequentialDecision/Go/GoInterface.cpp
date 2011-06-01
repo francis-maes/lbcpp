@@ -103,7 +103,7 @@ void lbcppgo::francisCompute(int boardSize, int board[361], double *patternValue
   DoubleMatrixPtr scores = new DoubleMatrix(size, size, 0.0);
   // fill output scores
   size_t n = actions->getNumElements();
-  size_t bestX, bestY;
+  size_t bestX = 0, bestY = 0;
   double bestScore = -DBL_MAX;
   for (size_t i = 0; i < n; ++i)
   {
