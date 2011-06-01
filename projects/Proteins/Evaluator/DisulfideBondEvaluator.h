@@ -19,7 +19,7 @@ class DisulfidePatternScoreObject : public ScoreObject
 {
 public:
   DisulfidePatternScoreObject()
-    : accuracyVector(new ScalarVariableMean()) {}
+    : accuracyVector(new ScalarVariableMean()), validGraphAccuracyVector(new ScalarVariableMean()) {}
 
   virtual double getScoreToMinimize() const
     {return 1.0 - accuracy;}
@@ -27,14 +27,22 @@ public:
   void addPrediction(bool isCorrect)
     {accuracyVector->push(isCorrect);}
   
+  void addValidGraphPrediction(bool isValid)
+    {validGraphAccuracyVector->push(isValid);}
+  
   void finalize()
-    {accuracy = accuracyVector->getMean();}
+  {
+    accuracy = accuracyVector->getMean();
+    validGraphAccuracy = validGraphAccuracyVector->getMean();
+  }
 
 protected:
   friend class DisulfidePatternScoreObjectClass;
 
   double accuracy;
+  double validGraphAccuracy;
   ScalarVariableMeanPtr accuracyVector;
+  ScalarVariableMeanPtr validGraphAccuracyVector;
 };
 
 typedef ReferenceCountedObjectPtr<DisulfidePatternScoreObject> DisulfidePatternScoreObjectPtr;
@@ -62,7 +70,28 @@ public:
 
     if (minimumDistanceFromDiagonal >= dimension)
       return;
+    
     const size_t numRows = dimension - minimumDistanceFromDiagonal;
+    // check validity of graph
+    bool isValidGraph = true;
+    for (size_t i = 0; i < dimension; ++i)
+    {
+      size_t numBridges = 0;
+      for (size_t j = 0; j < dimension; ++j)
+      {
+        if (i == j)
+          continue;
+        if (predictedMatrix->getElement(i, j).getDouble() > threshold)
+          ++numBridges;
+      }
+      if (numBridges > 1)
+      {
+        isValidGraph = false;
+        break;
+      }
+    }
+    score->addValidGraphPrediction(isValidGraph);
+    // check pattern
     for (size_t i = 0; i < numRows; ++i)
       for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
         if (predictedMatrix->getElement(i, j).getDouble() > threshold != supervisedMatrix->getElement(i, j).getDouble() > threshold)
