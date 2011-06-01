@@ -1,3 +1,8 @@
+##################################
+# Script to extract network load #
+# Author : Arnaud Schoofs        #
+##################################
+
 #!/bin/bash
 
 RX1=`sudo ifconfig eth0 | grep "RX bytes" | tr ':' ' ' | awk '{ print $3 }'`

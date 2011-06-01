@@ -1,0 +1,25 @@
+<!-- Describe the jobs that should be executed by the BOINC wrapper -->
+<!-- Author : Arnaud Schoofs -->
+<job_desc>
+	<task>
+		<application>unzipper</application>
+		<command_line>"$PROJECT_DIR/supervision.zip" "$PROJECT_DIR"</command_line>
+		<weight>1</weight>
+		<setenv>DYLD_LIBRARY_PATH=$PROJECT_DIR:$DYLD_LIBRARY_PATH</setenv>
+	</task>
+	<task>
+		<application>unzipper</application>
+		<command_line>"$PROJECT_DIR/predicted.zip" "$PROJECT_DIR"</command_line>
+		<weight>1</weight>
+		<setenv>DYLD_LIBRARY_PATH=$PROJECT_DIR:$DYLD_LIBRARY_PATH</setenv>
+	</task>
+	<task>
+		<application>RunBoincWorkUnit</application>
+		<command_line>--numThreads 1 --library "$PROJECT_DIR/libproteins_20.32_i686-apple-darwin.dylib" --trace output.trace --traceAutoSave 60 WorkUnitExample.xml</command_line>
+		<stdout_filename>stdout.txt</stdout_filename>
+		<stderr_filename>stderr.txt</stderr_filename>
+		<fraction_done_filename>fractiondone</fraction_done_filename>
+		<weight>50</weight>
+		<setenv>DYLD_LIBRARY_PATH=$PROJECT_DIR:$DYLD_LIBRARY_PATH</setenv>
+	</task>
+</job_desc>

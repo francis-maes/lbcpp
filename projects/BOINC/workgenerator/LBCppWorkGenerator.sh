@@ -1,6 +1,9 @@
-#!/bin/bash
+##########################################################
+# Script version of the BOINC work generator for LBCpp   #
+# Author : Arnaud Schoofs                                #
+##########################################################
 
-# TODO may be not up to date
+#!/bin/bash
 
 workUnitDirectory="/home/boincadm/projects/evo/Network/.WorkUnit"
 BoincProjectDir="/home/boincadm/projects/evo"

@@ -1,3 +1,8 @@
+###############################
+# Script to extract RAM usage #
+# Author : Arnaud Schoofs     #
+###############################
+
 #! /bin/bash 
 
 ram=`vmstat -S M | awk '{print $3}' | tr '\n' ' ' | awk '{print $3}'`

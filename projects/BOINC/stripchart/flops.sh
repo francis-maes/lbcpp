@@ -1,3 +1,8 @@
+##############################
+# Script to extract FLOPS    #
+# Author : Arnaud Schoofs    #
+##############################
+
 #!/bin/bash
 
 CIVDATE=`date "+%Y:%m:%d:%H:%M"`

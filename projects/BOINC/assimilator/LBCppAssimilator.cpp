@@ -86,35 +86,7 @@ int assimilate_handler(WORKUNIT& wu, vector<RESULT>& /*results*/, RESULT& canoni
           	log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] Can't move workunit file : %s -> %s\n", wu.id, wu.name, fileToMove.getFullPathName().toUTF8() , File(config.project_path("Network/.WorkUnit/Finished/%s.workUnit", wu.name)).getFullPathName().toUTF8());
             return 1;
           }
-
-	/*
-          juce::OwnedArray<File> foundFiles;
-          File directory(config.project_path("Network/.WorkUnit/InProgress"));
-          directory.findChildFiles(foundFiles, File::findFiles, false, strcat(wu.name, ".*"));
-          if (foundFiles.size() == 0)
-          {
-            log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] Can't find InProgress file\n", wu.id, wu.name);
-            return 1;
-          }
-          if (foundFiles.size() > 1)
-          {
-            log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] More than one InProgress file\n", wu.id, wu.name);
-            return 1;
-          }
-          */
-
-
-          // Only one file found
-          /*
-          String newLocation("NetworkTest/.WorkUnit/Finished/");
-          newLocation += foundFiles[0]->getFileName();
-          if (!foundFiles[0]->moveFileTo(File(config.project_path(newLocation.toUTF8()))))
-          {
-            log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] Can't copy workunit file : %s -> %s\n", wu.id, wu.name, foundFiles[0]->getFullPathName().toUTF8() , config.project_path("NetworkTest/.WorkUnit/Finished"));
-            return 1;
-          }
-          */
-
+          
           break;  // only one file to assimilate (trace)
         }
       }
