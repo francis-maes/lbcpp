@@ -54,7 +54,6 @@ public:
   Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     WorkUnitPtr wu = new ProteinLearner();
-    // TODO arnaud : paths as args
     wu->parseArguments(context, T("-s ./../../projects/boinc.run.montefiore.ulg.ac.be_evo/supervision -i ./../../projects/boinc.run.montefiore.ulg.ac.be_evo/predicted -p \"numerical(") + inputs->toString() + T(",sgd)\" -t ss3 -n 1"));
     ScoreObjectPtr scoreObject = (wu->run(context)).getObjectAndCast<ScoreObject>();
     return scoreObject->getScoreToMinimize();

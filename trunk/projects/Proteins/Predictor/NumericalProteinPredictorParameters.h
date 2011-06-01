@@ -502,7 +502,7 @@ public:
     };
   }
 
-  NumericalProteinFeaturesParametersPtr featuresParameters; // TODO arnaud : accessor
+  NumericalProteinFeaturesParametersPtr featuresParameters; // TODO : accessor
 
 protected:
   friend class NumericalProteinPredictorParametersClass;

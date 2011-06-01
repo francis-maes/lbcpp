@@ -15,7 +15,7 @@
 namespace lbcpp
 {
 
-// TODO arnaud : force abstract in xml ?
+// TODO : force abstract in xml ?
 class OptimizerState : public Object, public FunctionCallback
 {
 public:
