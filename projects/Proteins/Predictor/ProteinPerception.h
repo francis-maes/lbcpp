@@ -234,9 +234,6 @@ public:
 class ComputeCysteinEntropy : public Function
 {
 public:
-  ComputeCysteinEntropy(bool rowEntropy = true)
-    : rowEntropy(rowEntropy) {}
-
   virtual size_t getNumRequiredInputs() const
     {return 2;}
   
@@ -253,36 +250,20 @@ public:
     const MatrixPtr& matrix = inputs[0].getObjectAndCast<Matrix>();
     if (!matrix)
       return Variable::missingValue(doubleType);
-    size_t position = inputs[1].getInteger();
 
+    const size_t position = inputs[1].getInteger();
     const size_t numRows = matrix->getNumRows();
-    const size_t numColumns = matrix->getNumColumns();
-    jassert((rowEntropy && position < numRows) || (!rowEntropy && position < numColumns));
-
     double entropy = 0.0;
-    if (rowEntropy)
-      for (size_t i = 0; i < numRows; ++i)
-      {
-        Variable v = matrix->getElement(position, i);
-        if (!v.exists() || v.getDouble() < 1e-06)
-          continue;
-        const double value = v.getDouble();
-        entropy -= value * log2(value);
-      }
-    else
-      for (size_t i = 0; i < numColumns; ++i)
-      {
-        Variable v = matrix->getElement(i, position);
-        if (!v.exists() || v.getDouble() < 1e-06)
-          continue;
-        const double value = v.getDouble();
-        entropy -= value * log2(value);
-      }
+    for (size_t i = 0; i < numRows; ++i)
+    {
+      Variable v = matrix->getElement(position, i);
+      if (!v.exists() || v.getDouble() < 1e-06)
+        continue;
+      const double value = v.getDouble();
+      entropy -= value * log2(value);
+    }
     return Variable(entropy, doubleType);
   }
-
-protected:
-  bool rowEntropy;
 };
 
 class ApplyFeatureGeneratorOnCytein : public FeatureGenerator
