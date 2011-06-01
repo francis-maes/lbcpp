@@ -1,6 +1,6 @@
 /*-----------------------------------------.---------------------------------.
 | Filename: ContinuousProbabilityDistri...h| Continuous Probability          |
-| Author  : Julien Becker                  | Distributions                   |
+| Author  : Julien Becker, Arnaud Schoofs  | Distributions                   |
 | Started : 06/07/2010 15:15               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
@@ -49,7 +49,7 @@ public:
     {return maximum;}
   
   virtual DistributionBuilderPtr createBuilder() const
-    {jassertfalse; return NULL;}  // not implemented // TODO arnaud
+    {jassertfalse; return NULL;}  // TODO : not implemented
 
   juce_UseDebuggingNewOperator
 
@@ -100,28 +100,27 @@ protected:
 
 typedef ReferenceCountedObjectPtr<GaussianDistribution> GaussianDistributionPtr;
 
-class IntegerGaussianDistribution : public GaussianDistribution // TODO arnaud : should be discrete but problem with builder !
+class IntegerGaussianDistribution : public GaussianDistribution
 {
 public:
-  // TODO arnaud complete implementation
   IntegerGaussianDistribution(double mean = 0.0, double variance = 0.0) : GaussianDistribution(mean, variance) {}
   
   virtual TypePtr getElementsType() const
-    {return integerType;} // TODO arnaud : not used because not template
+    {return integerType;}
   
   virtual double computeEntropy() const
-    {jassert(false); return 0;} // not implemented !
+    {jassert(false); return 0;} // TODO : not implemented !
   
   virtual double computeProbability(const Variable& value) const
-    {jassert(false); return 0;} // not implemented !
+    {jassert(false); return 0;} // TODO : not implemented !
   
   virtual Variable sample(RandomGeneratorPtr random) const
     {return Variable((int)roundDouble(random->sampleDoubleFromGaussian(getMean(), getStandardDeviation())), integerType);}
   
   virtual Variable sampleBest(RandomGeneratorPtr random) const
-    {jassert(false); return Variable();} // not implemented !
+    {jassert(false); return Variable();} // TODO : not implemented !
   virtual void sampleUniformly(size_t numSamples, std::vector<double>& res) const
-    {jassertfalse;} // not implemented !
+    {jassertfalse;} // TODO : not implemented !
   
   virtual DistributionBuilderPtr createBuilder() const;
   
@@ -151,7 +150,6 @@ typedef ReferenceCountedObjectPtr<IntegerGaussianDistribution> IntegerGaussianDi
 class PositiveIntegerGaussianDistribution : public IntegerGaussianDistribution
 {
 public:
-  // TODO arnaud complete implementation
   PositiveIntegerGaussianDistribution(double mean = 0.0, double variance = 0.0) : IntegerGaussianDistribution(mean, variance) {}
   
   virtual TypePtr getElementsType() const

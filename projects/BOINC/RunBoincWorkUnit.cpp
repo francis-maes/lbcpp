@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-// TODO arnaud : merge RunBoincWorkUnit and RunWorkUnit
+// TODO : merge RunBoincWorkUnit and RunWorkUnit
 
 #include <lbcpp/Execution/WorkUnit.h>
 #include <lbcpp/Execution/ExecutionTrace.h>
@@ -18,13 +18,13 @@ using namespace lbcpp;
 /**
  * Callback used to write BOINC progression file
  */
+// FIXME : general mechanism to write global progression
 class BoincProgressionExecutionCallback : public ExecutionCallback
 {
 public:
   virtual void progressCallback(const ProgressionStatePtr& progression)
   {
-    // TODO arnaud : hard coded for ProteinLearner !!
-    // TODO arnaud : stops at 0.65
+    // FIXME : hard coded for ProteinLearner !!
     if (progression->getUnit() == T("Learning Iterations")) {
       writeProgressionFile(progression->getNormalizedValue());
     }
@@ -33,14 +33,14 @@ public:
   virtual void preExecutionCallback(const ExecutionStackPtr& stack,
                                     const String& description, const WorkUnitPtr& workUnit)
   {
-    // appelé lorsque l'on rentre dans un sous-scope   // TODO arnaud
+    // appelé lorsque l'on rentre dans un sous-scope
   }
   
   virtual void postExecutionCallback(const ExecutionStackPtr& stack,
                                      const String& description, const WorkUnitPtr& workUnit, const
                                      Variable& result)
   {
-    // appelé lorsque l'on sort d'un sous-scope       // TODO arnaud
+    // appelé lorsque l'on sort d'un sous-scope
   }
   
 private:  
@@ -52,7 +52,6 @@ private:
       progressionFile << globalProgression;
       progressionFile.close();
     }
-    //TODO arnaud : else
   }
 };
 
@@ -185,7 +184,6 @@ int mainImpl(int argc, char** argv)
     return 1;
   }
 
-  // TODO arnaud : maybe change this a little bit
   // load dynamic libraries
   lbcpp::importLibrariesFromDirectory(File::getCurrentWorkingDirectory());
   if (File::isAbsolutePath(argv[0]))
@@ -230,7 +228,6 @@ int mainImpl(int argc, char** argv)
     context->appendCallback(makeTraceCallback);
   }
 
-  // TODO add globalprogressioncallback
   context->appendCallback(new BoincProgressionExecutionCallback());
   
   // run work unit from file
@@ -241,7 +238,7 @@ int mainImpl(int argc, char** argv)
     result = runWorkUnitFromFile(*context, firstArgumentAsFile) ? 0 : 1;
   else
   {
-    // TODO
+    jassertfalse;
   }
 
   // save trace

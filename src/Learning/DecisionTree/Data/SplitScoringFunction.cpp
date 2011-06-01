@@ -77,7 +77,7 @@ EnumerationDistributionPtr ClassificationIGSplitScoringFunction::getDiscreteOutp
 DistributionBuilderPtr ClassificationIGSplitScoringFunction::createProbabilityBuilder(EnumerationPtr enumeration) const
 {
   if (!cacheBuilder)
-    const_cast<ClassificationIGSplitScoringFunction* >(this)->cacheBuilder = enumerationDistributionBuilder(enumeration); // TODO arnaud : enumeration modified and not tested
+    const_cast<ClassificationIGSplitScoringFunction* >(this)->cacheBuilder = enumerationDistributionBuilder(enumeration); // TODO : enumeration modified and this has not been tested yet
   return cacheBuilder->cloneAndCast<DistributionBuilder>();
 }
 

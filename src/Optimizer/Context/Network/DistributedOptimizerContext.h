@@ -22,6 +22,7 @@ class GetFinishedExecutionTracesDaemon;
 class DistributedOptimizerContext : public OptimizerContext
 {
 public:
+  // TODO : add validationFunction
   DistributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime, size_t timeToSleep = 60000);
   DistributedOptimizerContext() {timeToSleep = 60000;}
   

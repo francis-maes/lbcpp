@@ -308,7 +308,7 @@ public:
       client->sendVariable(T("PONG"));
     }
 #endif
-	return Variable();	// TODO arnaud : to compile on windows
+	return Variable();
   }
 };
 
@@ -341,7 +341,7 @@ public:
     }
     return true;
 #endif
-	return false; 	// TODO arnaud : to compile on windows
+	return false;
   }
 };
 

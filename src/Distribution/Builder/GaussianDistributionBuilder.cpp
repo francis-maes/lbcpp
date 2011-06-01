@@ -27,7 +27,7 @@ void GaussianDistributionBuilder::addDistribution(const DistributionPtr& value, 
 
 DistributionPtr GaussianDistributionBuilder::build(ExecutionContext& context) const
 {
-  //jassert((means && variances) != meanAndVariances);  // TODO arnaud
+  //jassert((means && variances) != meanAndVariances);  // FIXME : must be commented -> ok ?
   
   if (means)
     return new GaussianDistribution(means->getMean(), variances->getMean());
@@ -43,7 +43,7 @@ DistributionPtr GaussianDistributionBuilder::build(ExecutionContext& context) co
  */
 DistributionPtr IntegerGaussianDistributionBuilder::build(ExecutionContext& context) const
 {
-  //jassert((means && variances) != meanAndVariances);  // TODO arnaud
+  //jassert((means && variances) != meanAndVariances);  // FIXME : must be commented -> ok ?
  
   if (means)
     return new IntegerGaussianDistribution(means->getMean(), variances->getMean());
@@ -59,7 +59,7 @@ DistributionPtr IntegerGaussianDistributionBuilder::build(ExecutionContext& cont
  */
 DistributionPtr PositiveIntegerGaussianDistributionBuilder::build(ExecutionContext& context) const
 {
-  //jassert((means && variances) != meanAndVariances);  // TODO arnaud
+  //jassert((means && variances) != meanAndVariances);  // FIXME : must be commented -> ok ?
   
   if (means)
     return new PositiveIntegerGaussianDistribution(means->getMean(), variances->getMean());

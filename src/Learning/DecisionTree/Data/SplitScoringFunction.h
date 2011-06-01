@@ -9,7 +9,7 @@
 #ifndef LBCPP_DECISION_TREE_SPLIT_SCORING_FUNCTION_H_
 # define LBCPP_DECISION_TREE_SPLIT_SCORING_FUNCTION_H_
 
-//# include <lbcpp/Optimizer/ObjectiveFunction.h>   //TODO arnaud : ObjectiveFunction -> Function : not tested
+// TODO : ObjectiveFunction -> Function : this class has not been tested yet
 # include <lbcpp/Core/Function.h>
 # include <lbcpp/Distribution/DiscreteDistribution.h>
 # include <lbcpp/Distribution/DistributionBuilder.h>

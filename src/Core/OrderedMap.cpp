@@ -1,7 +1,7 @@
 /*-----------------------------------------.---------------------------------.
 | Filename: OrderedMap.cpp                 | OrderedMap of Variables         |
-| Author  : Arnaud Schoofs                 | TODO arnaud : not finished !    |
-| Started : 10/03/2011 21:41               |                                 |
+| Author  : Arnaud Schoofs                 | TODO : not finished !    |
+| Started : 10/03/2011 21:41               | (not used currently)            |
 `------------------------------------------/                                 |
 															 |                                             |
                                `--------------------------------------------*/

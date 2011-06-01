@@ -1,6 +1,6 @@
 /*-----------------------------------------.---------------------------------.
 | Filename: UniformSampleAndPickBestOpti..h| Uniform sample and pick best    |
-| Author  : Francis Maes, Arnaud Schoofs   |  optimizer                      |
+| Author  : Francis Maes, Arnaud Schoofs   | optimizer                       |
 | Started : 21/12/2010 23:43               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
@@ -10,7 +10,7 @@
 # define LBCPP_OPTIMIZER_UNIFORM_SAMPLE_AND_PICK_BEST_H_
 
 # include <lbcpp/Optimizer/Optimizer.h>
-# include <lbcpp/Distribution/ContinuousDistribution.h> // TODO arnaud : should no be here !!!
+# include <lbcpp/Distribution/ContinuousDistribution.h>
 
 namespace lbcpp
 {
@@ -23,10 +23,10 @@ public:
   
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   { 
-    // TODO arnaud : FIXME
-#if 0
+    
+#if 0 // TODO : use SamplerBasedOptimizerState ?
     DistributionBasedOptimizerStatePtr state = optimizerState.dynamicCast<DistributionBasedOptimizerState>();
-    jassert(state);  // TODO arnaud : message erreur
+    jassert(state);
     
     std::vector<double> values;
     ContinuousDistributionPtr apriori = state->getDistribution().dynamicCast<ContinuousDistribution>();

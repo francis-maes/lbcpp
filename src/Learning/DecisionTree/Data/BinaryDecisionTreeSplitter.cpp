@@ -39,7 +39,7 @@ double BinaryDecisionTreeSplitter::computeSplitScore(ExecutionContext& context,
     return -DBL_MAX;
   }
 
-  return scoringFunction->compute(context, new SplitScoringInput(examples, leftExamples, rightExamples)).getDouble(); // TODO arnaud : check if double
+  return scoringFunction->compute(context, new SplitScoringInput(examples, leftExamples, rightExamples)).getDouble();
 }
 
 Variable DoubleBinaryDecisionTreeSplitter::sampleSplit(const DecisionTreeExampleVector& examples) const

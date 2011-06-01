@@ -22,6 +22,8 @@
     <parameter name="elementsType" type="Variable"/>
     <variable type="ObjectVector[MatrixRegion[elementsType]]" name="regions"/>
   </template>
+  
+  <!-- FIXME : disable this if UI is disabled in CMake -->
   <uicomponent name="SegmentedMatrixComponent" type="SegmentedMatrix[Variable]"/>
 
   <class name="SegmentMatrixFunction" base="Function">
