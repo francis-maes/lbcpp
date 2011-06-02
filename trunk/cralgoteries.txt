@@ -1,9 +1,3 @@
-
- * IndexBasedBanditPolicy: randomize the argmax
- 
- 
-
-
 Proteins:
  * Ajouter des features de segments
 
