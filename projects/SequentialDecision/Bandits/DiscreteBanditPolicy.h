@@ -115,9 +115,6 @@ public:
     banditStatistics[banditNumber]->update(reward);
   }
 
-  virtual String toShortString() const
-    {return getClass()->getShortName() + T("(") + Object::toShortString() + T(")");}
-
 protected:
   friend class DiscreteBanditPolicyClass;
 
