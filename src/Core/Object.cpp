@@ -159,7 +159,13 @@ String Object::toString() const
 }
 
 String Object::toShortString() const
-  {return defaultToStringImplementation(true);}
+{
+  ClassPtr thisClass = getClass();
+  String res = thisClass->getShortName().isNotEmpty() ? thisClass->getShortName() : thisClass->getName();
+  if (getNumVariables())
+    res += T("(") + defaultToStringImplementation(true) + T(")");
+  return res;
+}
 
 String Object::defaultToStringImplementation(bool useShortString) const
 {

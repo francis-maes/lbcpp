@@ -78,6 +78,9 @@ public:
   */
   const RandomGeneratorPtr& getRandomGenerator() const
     {return random;}
+    
+  void setRandomGenerator(const RandomGeneratorPtr& random)
+    {this->random = random;}
 
   lbcpp_UseDebuggingNewOperator
 

@@ -14,17 +14,18 @@
     <variable type="PositiveInteger" name="numIterations"/>
     <variable type="PositiveInteger" name="populationSize"/>
     <variable type="PositiveInteger" name="numBests"/>
+    <variable type="StoppingCriterion" name="stoppingCriterion"/>
     <variable type="Double" name="slowingFactor"/>
     <variable type="Boolean" name="reinjectBest"/>
     <variable type="Boolean" name="verbose"/>
   </class>
   
   <class name="EDAOptimizer" base="PopulationBasedOptimizer" shortName="eda">
-    <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, double slowingFactor, bool reinjectBest, bool verbose" returnType="Optimizer"/>
+    <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion, double slowingFactor, bool reinjectBest, bool verbose" returnType="Optimizer"/>
   </class>
   
   <class name="AsyncEDAOptimizer" base="PopulationBasedOptimizer">
-    <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, size_t numberEvaluationsInProgress, double slowingFactor, bool reinjectBest, bool verbose" returnType="Optimizer"/>
+    <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, size_t numberEvaluationsInProgress, StoppingCriterionPtr stoppingCriterion, double slowingFactor, bool reinjectBest, bool verbose" returnType="Optimizer"/>
     <variable type="PositiveInteger" name="numberEvaluationsInProgress"/>
   </class>
   

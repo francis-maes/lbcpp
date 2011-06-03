@@ -109,4 +109,10 @@
 
   <class name="GPExpressionBuilderProblem" base="DecisionProblem"/>
 
+  <!-- Score Object --> 
+  <class name="GPStructureScoreObject" base="ScoreObject">
+    <variable type="GPExpression" name="expression"/>
+    <variable type="Double" name="score"/>
+  </class>
+
 </library>

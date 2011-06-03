@@ -21,8 +21,8 @@ namespace lbcpp
 class EvaluateDiscreteBanditPolicyWorkUnit : public WorkUnit
 {
 public:
-  EvaluateDiscreteBanditPolicyWorkUnit(size_t numBandits, size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& initialStates, const String& initialStatesDescription, const DiscreteBanditPolicyPtr& policy,  size_t numEstimationsPerBandit = 100, bool verbose = true)
-    : numBandits(numBandits), maxTimeStep(maxTimeStep), initialStates(initialStates), initialStatesDescription(initialStatesDescription), policy(policy), numEstimationsPerBandit(numEstimationsPerBandit), verbose(verbose)
+  EvaluateDiscreteBanditPolicyWorkUnit(size_t numBandits, size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& initialStates, const String& initialStatesDescription, const DiscreteBanditPolicyPtr& policy,  size_t numEstimationsPerBandit = 100, bool verbose = true, juce::uint32 seedValue = 166451)
+    : numBandits(numBandits), maxTimeStep(maxTimeStep), initialStates(initialStates), initialStatesDescription(initialStatesDescription), policy(policy), numEstimationsPerBandit(numEstimationsPerBandit), verbose(verbose), seedValue(seedValue)
   {
     jassert(policy);
   }
@@ -42,8 +42,8 @@ public:
     DenseDoubleVectorPtr actualRegretVector = new DenseDoubleVector(numPowersOfTen + (log10MaxTimeStep > numPowersOfTen ? 1 : 0), 0.0);
 
     // main calculation loop
-    context.getRandomGenerator()->setSeed(16645186); // make the function deterministic
-
+    RandomGeneratorPtr previousRandomGenerator = context.getRandomGenerator();
+    context.setRandomGenerator(new RandomGenerator(seedValue)); // make function deterministic
     for (size_t i = 0; i < initialStates.size(); ++i)
     {
       DiscreteBanditStatePtr state = initialStates[i];
@@ -83,27 +83,9 @@ public:
 
     if (verbose)
       for (size_t i = 0; i < numPowersOfTen; ++i)
-      {
-      //bestMachinePlayedVector[i] *= invZ;
         context.resultCallback(T("actualRegret@") + String(pow(10.0, i + 1.0)), actualRegretVector->getValue(i));
-/*
-      if (verbose)
-      {
-        size_t timeStep = timeSteps[i];
-        context.enterScope(String((int)timeStep) + T(" Steps"));
-        context.resultCallback(T("log10(n)"), log10((double)timeStep));
-        //context.resultCallback(T("bestMachinePlayed"), bestMachinePlayedVector[i] * 100.0);
-        context.resultCallback(T("actualRegret"), actualRegretVector[i]);
-        context.resultCallback(T("n"), timeStep);
-        context.leaveScope(actualRegretVector[i]);
-      }*/
-      }
 
-    // TMP !!!
-    //context.resultCallback(T("policy"), policy);
-    //context.resultCallback(T("log10(C)"), log10(policy->getVariable(0).toDouble()));
-    //context.resultCallback(T("score"), actualRegretStatistics->getMean());
-
+    context.setRandomGenerator(previousRandomGenerator);
     return actualRegretVector;
   }
  
@@ -117,6 +99,7 @@ protected:
   DiscreteBanditPolicyPtr policy;
   size_t numEstimationsPerBandit;
   bool verbose;
+  juce::uint32 seedValue;
 
   static size_t performBanditStep(ExecutionContext& context, DiscreteBanditStatePtr state, DiscreteBanditPolicyPtr policy)
   {
@@ -128,33 +111,33 @@ protected:
   }
 };
 
-class EvaluateOptimizedDiscreteBanditPolicyParameters : public SimpleUnaryFunction
+class EvaluateDiscreteBanditPolicyParameters : public SimpleUnaryFunction
 {
 public:
-  EvaluateOptimizedDiscreteBanditPolicyParameters(const DiscreteBanditPolicyPtr& policy, size_t numBandits, size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& initialStates, size_t numEstimationsPerBandit = 100, double l0Weight = 0.0)
+  EvaluateDiscreteBanditPolicyParameters(const DiscreteBanditPolicyPtr& policy, size_t numBandits, size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& initialStates, size_t numEstimationsPerBandit = 100, juce::uint32 seedValue = 166451)
     : SimpleUnaryFunction(Parameterized::getParametersType(policy), doubleType), policy(policy),
-      numBandits(numBandits), maxTimeStep(maxTimeStep), initialStates(initialStates), numEstimationsPerBandit(numEstimationsPerBandit), verbose(false), l0Weight(l0Weight)
+      numBandits(numBandits), maxTimeStep(maxTimeStep), initialStates(initialStates), numEstimationsPerBandit(numEstimationsPerBandit), verbose(false), seedValue(seedValue)
   {
   }
-  EvaluateOptimizedDiscreteBanditPolicyParameters() : SimpleUnaryFunction(variableType, variableType) {}
+  EvaluateDiscreteBanditPolicyParameters() : SimpleUnaryFunction(variableType, variableType) {}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     DiscreteBanditPolicyPtr policy = Parameterized::cloneWithNewParameters(this->policy, input);
     jassert(policy);
-    WorkUnitPtr workUnit = new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, initialStates, T("Training Problems"), policy, numEstimationsPerBandit, verbose);
+    WorkUnitPtr workUnit = new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, initialStates, T("Training Problems"), policy, numEstimationsPerBandit, verbose, seedValue);
     DenseDoubleVectorPtr regrets = context.run(workUnit, false).getObjectAndCast<DenseDoubleVector>();
-    double res = regrets->getValue(regrets->getNumValues() - 1);;
-    if (l0Weight)
+    double res = regrets->getValue(regrets->getNumValues() - 1);
+/*    if (l0Weight)
     {
       const DenseDoubleVectorPtr& inputVector = input.getObjectAndCast<DenseDoubleVector>();
       res += inputVector->l0norm() * l0Weight;
-    }
+    }*/
     return res;
   }
 
 protected:
-  friend class EvaluateOptimizedDiscreteBanditPolicyParametersClass;
+  friend class EvaluateDiscreteBanditPolicyParametersClass;
 
   DiscreteBanditPolicyPtr policy;
   size_t numBandits;
@@ -162,7 +145,7 @@ protected:
   std::vector<DiscreteBanditStatePtr> initialStates;
   size_t numEstimationsPerBandit;
   bool verbose;
-  double l0Weight;
+  juce::uint32 seedValue;
 };
 
 ///////////////////////////////////////////////////////////////
@@ -371,16 +354,16 @@ private:
     OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(Parameterized::get(policy)->createParametersSampler());
 
     // optimizer context
-    FunctionPtr objectiveFunction = new EvaluateOptimizedDiscreteBanditPolicyParameters(policy, numBandits, horizon, trainingProblems, 100);
+    FunctionPtr objectiveFunction = new EvaluateDiscreteBanditPolicyParameters(policy, numBandits, horizon, trainingProblems, 100);
     objectiveFunction->initialize(context, parametersType);
 
-    FunctionPtr validationFunction = new EvaluateOptimizedDiscreteBanditPolicyParameters(policy, numBandits, horizon, testingProblems, 1);
+    FunctionPtr validationFunction = new EvaluateDiscreteBanditPolicyParameters(policy, numBandits, horizon, testingProblems, 1);
     validationFunction->initialize(context, parametersType);
 
     OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, objectiveFunction, validationFunction);
 
     // optimizer
-    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, 0, true);
+    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0, true);
     optimizer->compute(context, optimizerContext, optimizerState);
 
     // best parameters

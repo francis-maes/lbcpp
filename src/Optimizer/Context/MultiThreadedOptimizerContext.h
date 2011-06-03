@@ -20,7 +20,11 @@ class MultiThreadedOptimizerContext : public OptimizerContext
 public:
   MultiThreadedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction, size_t timeToSleep = 100)
     : OptimizerContext(context, objectiveFunction, validationFunction, timeToSleep) 
-    {numEvaluationInProgress = 0;}
+  {
+    jassert(context.isMultiThread());
+    numEvaluationInProgress = 0;
+  }
+  
   MultiThreadedOptimizerContext() 
   {
     numEvaluationInProgress = 0;

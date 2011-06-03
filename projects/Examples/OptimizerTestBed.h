@@ -65,7 +65,7 @@ namespace testbed
       if (x > 0)
         c2 = 7.9;
       else
-        c1 = 3.1;
+        c2 = 3.1;
       
       tab->setValue(i, sign(x)*exp(xhat + 0.049*(sin(c1*xhat) + sin(c2*xhat))));
     }

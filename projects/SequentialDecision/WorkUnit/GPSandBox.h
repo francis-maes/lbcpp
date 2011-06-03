@@ -125,7 +125,7 @@ public:
       size_t index = 0;
       setConstantsRecursively(expression, constants, index);
       Variable res = finalObjective->compute(context, expression);
-      return res;
+      return res.toDouble();
     }
 
   protected:
@@ -140,9 +140,10 @@ public:
     std::vector<double> constants;
     getLearnableConstants(expression, constants);
     if (constants.size() == 0)
-      return objectiveFunction->compute(context, input);
+      return new GPStructureScoreObject(expression->cloneAndCast<GPExpression>(), objectiveFunction->compute(context, input).toDouble());
+    size_t numParameters = constants.size();
 
-    context.enterScope(T("Optimizing constants in ") + expression->toShortString());
+    //context.enterScope(T("Optimizing constants in ") + expression->toShortString());
     // Enumeration des constantes
     DefaultEnumerationPtr constantsEnumeration = new DefaultEnumeration(T("constants"));
     for (size_t i = 0; i < constants.size(); ++i)
@@ -152,19 +153,29 @@ public:
     SamplerPtr constantsSampler = independentDoubleVectorSampler((EnumerationPtr)constantsEnumeration, gaussianSampler());
 
     // opmitizer context and state
-    FunctionPtr objective = new Objective(objectiveFunction, expression);
+    ReferenceCountedObjectPtr<Objective> objective = new Objective(objectiveFunction, expression);
     objective->initialize(context, denseDoubleVectorClass(constantsEnumeration));
 
     OptimizerContextPtr optimizerContext = synchroneousOptimizerContext(context, objective);
     OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(constantsSampler);
 
     // optimizer
-    OptimizerPtr optimizer = edaOptimizer(3, 10, 3, 0.0, false);
-    optimizer->compute(context, optimizerContext, optimizerState);
+    size_t numIterations = 100;
+    size_t populationSize = numParameters * 12;
+    size_t numBests = numParameters * 3;
+    StoppingCriterionPtr stoppingCriterion = maxIterationsWithoutImprovementStoppingCriterion(5);
     
-    Variable res = optimizerState->getBestScore();
-    context.leaveScope(res);
-    return res;
+    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, stoppingCriterion, 0.0, false);
+    ExecutionContextPtr silentContext = singleThreadedExecutionContext();
+    optimizer->compute(*silentContext, optimizerContext, optimizerState);
+
+    // retrieve best score and best constants and compute best expression
+    double bestScore = optimizerState->getBestScore();
+    DenseDoubleVectorPtr bestConstants = optimizerState->getBestVariable().getObjectAndCast<DenseDoubleVector>();
+    GPExpressionPtr bestExpression = expression->cloneAndCast<GPExpression>();
+    size_t index = 0;
+    objective->setConstantsRecursively(bestExpression, bestConstants, index);
+    return new GPStructureScoreObject(bestExpression, bestScore);
   }
 
 protected:
@@ -280,7 +291,7 @@ public:
     OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler);
 
     // optimizer
-    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.0, true, false);
+    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0, true, false);
     optimizer->compute(context, optimizerContext, optimizerState);
 
     return true;

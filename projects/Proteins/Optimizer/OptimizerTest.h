@@ -203,7 +203,7 @@ public:
     
     
     // Optimizer
-    OptimizerPtr optimizer = asyncEDAOptimizer(20, 500, 150, 500, 0.10);
+    OptimizerPtr optimizer = asyncEDAOptimizer(20, 500, 150, 500, StoppingCriterionPtr(), 0.10);
     OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, new ProteinLearnerObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime, 300000);
     SamplerBasedOptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler, 300);
     return optimizer->compute(context, optimizerContext, optimizerState);
@@ -284,7 +284,7 @@ public:
     
     
     // Optimizer
-    OptimizerPtr optimizer = asyncEDAOptimizer(20, 500, 150, 750, 0.15);
+    OptimizerPtr optimizer = asyncEDAOptimizer(20, 500, 150, 750, StoppingCriterionPtr(), 0.15);
     OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, new ProteinLearnerObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime, 300000);
     SamplerBasedOptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler, 300);
     return optimizer->compute(context, optimizerContext, optimizerState);
@@ -411,7 +411,7 @@ class OptimizerTestBedWorkUnit : public WorkUnit
       context.enterScope(T("eda_f10_noslowing"));
       context.resultCallback(T("inProgressEvaluations"), (int) 0);
       sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
-      optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.0);
+      optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0);
       optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
       optimizerState = new SamplerBasedOptimizerState(sampler);
       start = Time::getMillisecondCounter() / 1000.0;
@@ -426,7 +426,7 @@ class OptimizerTestBedWorkUnit : public WorkUnit
         context.enterScope(T("asynceda_f10_noslowing_") + String((int)inProgressEvaluations));
         context.resultCallback(T("inProgressEvaluations"), (int) inProgressEvaluations);
         sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
-        optimizer = asyncEDAOptimizer(numIterations, populationSize, numBests, inProgressEvaluations,0.0);
+        optimizer = asyncEDAOptimizer(numIterations, populationSize, numBests, inProgressEvaluations, StoppingCriterionPtr(), 0.0);
         optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 1);
         optimizerState = new SamplerBasedOptimizerState(sampler);
         start = Time::getMillisecondCounter() / 1000.0;
@@ -451,7 +451,7 @@ class OptimizerTestBedWorkUnit : public WorkUnit
     // EDAOptimizer
     context.informationCallback(T("eda_f13_noslowing"));
     sampler = independentDoubleVectorSampler(2, gaussianSampler(0.0, 5.0));
-    optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.0);
+    optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0);
     optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
     optimizerState = new SamplerBasedOptimizerState(sampler);
     optimizer->compute(context, optimizerContext, optimizerState);
@@ -459,7 +459,7 @@ class OptimizerTestBedWorkUnit : public WorkUnit
     // EDAOptimizer slowing 0.1
     context.informationCallback(T("eda_f13_0.1"));
     sampler = independentDoubleVectorSampler(2, gaussianSampler(0.0, 5.0));
-    optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.1);
+    optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.1);
     optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
     optimizerState = new SamplerBasedOptimizerState(sampler);
     optimizer->compute(context, optimizerContext, optimizerState);
@@ -467,7 +467,7 @@ class OptimizerTestBedWorkUnit : public WorkUnit
     // EDAOptimizer slowing 0.2
     context.informationCallback(T("eda_f13_0.2"));
     sampler = independentDoubleVectorSampler(2, gaussianSampler(0.0, 5.0));
-    optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.2);
+    optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.2);
     optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
     optimizerState = new SamplerBasedOptimizerState(sampler);
     optimizer->compute(context, optimizerContext, optimizerState);
@@ -475,7 +475,7 @@ class OptimizerTestBedWorkUnit : public WorkUnit
     // EDAOptimizer slowing 0.3
     context.informationCallback(T("eda_f13_0.3"));
     sampler = independentDoubleVectorSampler(2, gaussianSampler(0.0, 5.0));
-    optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.3);
+    optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.3);
     optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
     optimizerState = new SamplerBasedOptimizerState(sampler);
     optimizer->compute(context, optimizerContext, optimizerState);
@@ -483,7 +483,7 @@ class OptimizerTestBedWorkUnit : public WorkUnit
     // EDAOptimizer slowing 0.4
     context.informationCallback(T("eda_f13_0.4"));
     sampler = independentDoubleVectorSampler(2, gaussianSampler(0.0, 5.0));
-    optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.4);
+    optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.4);
     optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
     optimizerState = new SamplerBasedOptimizerState(sampler);
     optimizer->compute(context, optimizerContext, optimizerState);
@@ -491,14 +491,14 @@ class OptimizerTestBedWorkUnit : public WorkUnit
     // EDAOptimizer slowing 0.5
     context.informationCallback(T("eda_f13_0.5"));
     sampler = independentDoubleVectorSampler(2, gaussianSampler(0.0, 5.0));
-    optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.7);
+    optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.7);
     optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
     optimizerState = new SamplerBasedOptimizerState(sampler);
     optimizer->compute(context, optimizerContext, optimizerState);
   */
 /*
     sampler = independentDoubleVectorSampler(5, gaussianSampler(0, 5));;
-    optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.1);
+    optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.1);
     optimizerContext = synchroneousOptimizerContext(context, f13, FunctionPtr());
     optimizerState = new SamplerBasedOptimizerState(sampler);
     optimizer->compute(context, optimizerContext, optimizerState);
@@ -649,8 +649,8 @@ public:
     /*
     // TESTS OPTIMIZER
     //OptimizerPtr optimizer = uniformSampleAndPickBestOptimizer(100);
-    OptimizerPtr optimizer = edaOptimizer(10, 20, 5, false, false);
-    //OptimizerPtr optimizer = asyncEDAOptimizer(10, 100, 30, 30, 100);
+    OptimizerPtr optimizer = edaOptimizer(10, 20, 5, StoppingCriterionPtr(), false, false);
+    //OptimizerPtr optimizer = asyncEDAOptimizer(10, 100, 30, 30, StoppingCriterionPtr(), 100);
     //OptimizerContextPtr optimizerContext = synchroneousOptimizerContext(context, squareFunction());
     OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, new ProteinLearnerObjectiveFunction());
     //OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, squareFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime);
@@ -661,7 +661,7 @@ public:
     return optimizer->compute(context, optimizerContext, optimizerState);
     */
     
-    /*OptimizerPtr optimizer = asyncEDAOptimizer(15, 1000, 300, 1500, 15);
+    /*OptimizerPtr optimizer = asyncEDAOptimizer(15, 1000, 300, 1500, StoppingCriterionPtr(), 15);
     OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, new ProteinLearnerObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime, 150000);
     OptimizerStatePtr optimizerState = new OptimizerState();
     optimizerState->setDistribution(distributions);

@@ -110,6 +110,9 @@ public:
   virtual GPExpressionPtr getExpression() const = 0;
   virtual double getScore() const = 0;
 
+  virtual GPExpressionPtr getOptimizedExpression() const
+    {jassert(false); return GPExpressionPtr();}
+
 protected:
   friend class GPExpressionBuilderStateClass;
 
@@ -314,10 +317,11 @@ public:
     }
 
     expressions.push_back(expression);
-    double previousScore = expressionScores.size() ? expressionScores.back() : objectiveFunction->compute(context, new ConstantGPExpression(0.0)).toDouble();
-    double score = objectiveFunction->compute(context, expression).toDouble();
+    double previousScore = expressionScores.size() ? expressionScores.back().toDouble() : objectiveFunction->compute(context, new ConstantGPExpression(0.0)).toDouble();
+    
+    Variable score = objectiveFunction->compute(context, expression);
     expressionScores.push_back(score);
-    reward = previousScore - score; // score must be minimized, reward must be maximized
+    reward = previousScore - score.toDouble(); // score must be minimized, reward must be maximized
 
     if (description.isNotEmpty())
       description += T(" -> ");
@@ -359,17 +363,28 @@ public:
   }
 
   virtual double getScore() const
-    {return expressionScores.size() ? expressionScores.back() : DBL_MAX;}
+    {return expressionScores.size() ? expressionScores.back().toDouble() : DBL_MAX;}
 
   virtual GPExpressionPtr getExpression() const
     {return expressions.size() ? expressions.back() : GPExpressionPtr();}
+
+  virtual GPExpressionPtr getOptimizedExpression() const
+  {
+    if (expressionScores.empty())
+      return GPExpressionPtr();
+    GPStructureScoreObjectPtr scoreObject = expressionScores.back().dynamicCast<GPStructureScoreObject>();
+    if (scoreObject)
+      return scoreObject->getExpression();
+    else
+      return expressions.back();
+  }
 
 protected:
   friend class LargeGPExpressionBuilderStateClass;
 
   std::vector<bool> areVariableUsed;
   std::vector<GPExpressionPtr> expressions;
-  std::vector<double> expressionScores;
+  std::vector<Variable> expressionScores;
   String description;
 };
 

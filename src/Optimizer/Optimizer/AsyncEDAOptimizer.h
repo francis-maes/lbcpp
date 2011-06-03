@@ -17,14 +17,15 @@ namespace lbcpp
 class AsyncEDAOptimizer : public PopulationBasedOptimizer
 {
 public:  
-  AsyncEDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, size_t numberEvaluationsInProgress, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
-    : PopulationBasedOptimizer(numIterations, populationSize, numBests, slowingFactor, reinjectBest, verbose),  numberEvaluationsInProgress(numberEvaluationsInProgress)  {}
+  AsyncEDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, size_t numberEvaluationsInProgress, StoppingCriterionPtr stoppingCriterion, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
+    : PopulationBasedOptimizer(numIterations, populationSize, numBests, stoppingCriterion, slowingFactor, reinjectBest, verbose),  numberEvaluationsInProgress(numberEvaluationsInProgress)  {}
 
   AsyncEDAOptimizer() : PopulationBasedOptimizer() {}
   
+  // todo: support for stopping criterion
+  
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {   
-    
     // useful to restart optimizer from state
     size_t i = (size_t) (optimizerState->getTotalNumberOfResults()/populationSize);	// WARNING : integer division
     context.progressCallback(new ProgressionState(i, numIterations, T("Iterations")));
