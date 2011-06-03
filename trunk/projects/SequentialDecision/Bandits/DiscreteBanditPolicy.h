@@ -173,9 +173,9 @@ protected:
             return i;
           --index;
         }
-      jassert(false);
-      return 0;
     }
+    jassert(false);
+    return 0;
   }
 };
 

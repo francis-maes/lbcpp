@@ -280,6 +280,28 @@ protected:
 
 typedef ReferenceCountedObjectPtr<ConstantGPExpression> ConstantGPExpressionPtr;
 
+class GPStructureScoreObject : public ScoreObject
+{
+public:
+  GPStructureScoreObject(GPExpressionPtr expression, double score)
+    : expression(expression), score(score) {}
+  GPStructureScoreObject() : score(0.0) {}
+
+  virtual double getScoreToMinimize() const
+    {return score;}
+
+  const GPExpressionPtr& getExpression() const
+    {return expression;}
+
+protected:
+  friend class GPStructureScoreObjectClass;
+  
+  GPExpressionPtr expression;
+  double score;
+};
+
+typedef ReferenceCountedObjectPtr<GPStructureScoreObject> GPStructureScoreObjectPtr;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_GENETIC_PROGRAMMING_EXPRESSION_H_

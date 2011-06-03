@@ -44,7 +44,6 @@ SET(LBCPP_SEQUENTIAL_DECISION_PROBLEM_DAMIEN_SOURCES
 SET(LBCPP_SEQUENTIAL_DECISION_WORK_UNIT_SOURCES
   WorkUnit/HIVSandBox.h
   WorkUnit/SequentialDecisionSandBox.h
-  WorkUnit/BanditsSandBox.h
   WorkUnit/GPSandBox.h
   WorkUnit/SequentialDecisionWorkUnitLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionWorkUnitLibrary.cpp
@@ -62,6 +61,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_BANDITS_SOURCES
   Bandits/DiscreteBanditDecisionProblem.h
   Bandits/DiscreteBanditPolicy.h
   Bandits/DiscreteBanditExperiment.h
+  Bandits/FindBanditsFormula.h
   Bandits/EpsilonGreedyDiscreteBanditPolicy.h
   Bandits/UCB1DiscreteBanditPolicy.h
   Bandits/UCB2DiscreteBanditPolicy.h

@@ -62,6 +62,9 @@ public:
     target->samplers = samplers;
     target->name = name;
   }
+  
+  size_t getNumBandits() const
+    {return samplers.size();}
 
   lbcpp_UseDebuggingNewOperator
 

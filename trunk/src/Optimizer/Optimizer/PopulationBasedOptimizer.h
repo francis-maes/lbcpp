@@ -19,8 +19,8 @@ namespace lbcpp
 class PopulationBasedOptimizer : public Optimizer
 {
 public:
-  PopulationBasedOptimizer(size_t numIterations, size_t populationSize, size_t numBests, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
-    : numIterations(numIterations), populationSize(populationSize), numBests(numBests), slowingFactor(slowingFactor), reinjectBest(reinjectBest), verbose(verbose)
+  PopulationBasedOptimizer(size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
+    : numIterations(numIterations), populationSize(populationSize), numBests(numBests), stoppingCriterion(stoppingCriterion), slowingFactor(slowingFactor), reinjectBest(reinjectBest), verbose(verbose)
     {
       jassert(slowingFactor >= 0 && slowingFactor <= 1);
       jassert(numBests < populationSize);
@@ -35,6 +35,7 @@ protected:
   size_t numIterations;
   size_t populationSize;
   size_t numBests;
+  StoppingCriterionPtr stoppingCriterion;
   double slowingFactor; /**< if != 0, the distribution learned is a Mixture: with probability "slowingFactor" the old distribution and with probability "1-slowingFactor" the new one. */
   bool reinjectBest;  /**< if true the best individu is inserted in each new population. */
   bool verbose; /**< if true increase the verbosity. */

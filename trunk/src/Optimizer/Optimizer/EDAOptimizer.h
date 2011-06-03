@@ -17,8 +17,8 @@ namespace lbcpp
 class EDAOptimizer : public PopulationBasedOptimizer
 {
 public:
-  EDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
-    : PopulationBasedOptimizer(numIterations, populationSize, numBests, slowingFactor, reinjectBest, verbose) {}
+  EDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
+    : PopulationBasedOptimizer(numIterations, populationSize, numBests, stoppingCriterion, slowingFactor, reinjectBest, verbose) {}
   
   EDAOptimizer() : PopulationBasedOptimizer() {}
   
@@ -28,21 +28,36 @@ public:
     size_t i = (size_t) (optimizerState->getTotalNumberOfResults()/populationSize); // WARNING : integer division
     context.progressCallback(new ProgressionState(i, numIterations, T("Iterations")));
 
+    if (stoppingCriterion)
+      stoppingCriterion->reset();
     for ( ; i < numIterations; ++i)
     {
       Variable bestIterationParameters = optimizerState->getBestVariable();
       double bestIterationScore;
+      double worstIterationScore;
 
       context.enterScope(T("Iteration ") + String((int)i + 1));
       context.resultCallback(T("iteration"), i + 1);
-      bool ok = performEDAIteration(context, bestIterationParameters, bestIterationScore, optimizerContext, optimizerState);
+      bool ok = performEDAIteration(context, bestIterationParameters, bestIterationScore, worstIterationScore, optimizerContext, optimizerState);
       if (!ok)
         return false; // FIXME : handle this
-      
+        
       // display results & update optimizerState
       handleResultOfIteration(context, optimizerState, optimizerContext, bestIterationScore, bestIterationParameters);
       context.progressCallback(new ProgressionState(i + 1, numIterations, T("Iterations")));
 
+      jassert(bestIterationScore <= worstIterationScore);
+      if (worstIterationScore - bestIterationScore < 1e-9) // all scores are nearly identical
+      {
+        context.informationCallback(T("EDA has converged"));
+        break;
+      }
+      
+      if (stoppingCriterion && stoppingCriterion->shouldStop(bestIterationScore))
+      {
+        context.informationCallback(T("Stopping criterion: ") + stoppingCriterion->toString());
+        break;
+      }
     }
     optimizerState->autoSaveToFile(context, true); // force to save at end of optimization
     return optimizerState->getBestVariable();
@@ -51,11 +66,12 @@ public:
 protected:
   friend class EDAOptimizerClass;
 
-  bool performEDAIteration(ExecutionContext& context, Variable& bestParameters, double& bestScore, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
+  bool performEDAIteration(ExecutionContext& context, Variable& bestParameters, double& bestScore, double& worstScore, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {    
     // generate evaluations requests
     size_t offset = optimizerState->getNumberOfProcessedRequests();   // always 0 except if optimizer has been restarted from optimizerState file !
-    for (size_t i = offset; i < populationSize; i++) {
+    for (size_t i = offset; i < populationSize; i++)
+    {
       Variable input;
       if (reinjectBest && i == 0 && bestParameters.exists())
         input = bestParameters;
@@ -89,6 +105,7 @@ protected:
     // return best score and best parameter of this iteration
     bestParameters = sortedScores.begin()->second;
     bestScore = sortedScores.begin()->first;
+    worstScore = sortedScores.rbegin()->first;
     return true;
   }
 };
