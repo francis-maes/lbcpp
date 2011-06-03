@@ -29,7 +29,7 @@ public:
     FunctionPtr f = squareFunction();
     SamplerPtr sampler = gaussianSampler(0.0, 5.0);
     
-    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, 0.0);
+    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0);
     OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 10);
     OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler);
     
