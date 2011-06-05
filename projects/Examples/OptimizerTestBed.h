@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/**
- * SOURCE :  http://coco.lri.fr/downloads/download10.61/bbobdocfunctionsdef.pdf
+/*
+ ** SOURCE :  http://coco.lri.fr/downloads/download10.61/bbobdocfunctionsdef.pdf
  */
 
 
@@ -23,9 +23,16 @@
 
 namespace lbcpp
 { 
-  
+
+/**
+ * This namespace contains some usefull functions to define the
+ * "Real-Parameter Black-Box Optimization Benchmarking Noiseless Functions"
+ */
 namespace testbed 
 {
+  /**
+   * @return -1 if x < 0, 0 if x = 0 and 1 otherwise
+   */
   int sign(double x)
   {
     if (x < 0) return -1;
@@ -33,18 +40,27 @@ namespace testbed
     return 0;
   }
   
-  DoubleMatrixPtr getLambdaMatrix(double alpha, size_t size)
+  /**
+   * Returns a diagonal matrix with i-th diagonal element as \lambda_{ii} = \alpha^{\frac{i-1}{2*(D-1)}}
+   * @param alpha \alpha
+   * @param D dimension
+   */
+  DoubleMatrixPtr getLambdaMatrix(double alpha, size_t dimension)
   {
-    DoubleMatrixPtr ret = new DoubleMatrix(size, size, 0.0);
-    for (size_t i = 0; i < size; ++i) 
+    DoubleMatrixPtr ret = new DoubleMatrix(dimension, dimension, 0.0);
+    for (size_t i = 1; i <= dimension; ++i) 
     {
-      double value = pow(alpha, 0.5*i/(double)(size-1));  // WARNING : index i starts at 0
+      double value = pow(alpha, 0.5*((double)(i-1)/(double)(dimension-1)));
       ret->setValue(i, i, value);
     }
     return ret;
   }
   
-  void linearTransformTosz(const DenseDoubleVectorPtr& tab)
+  /**
+   * Tosz function used to introduce non-linearity and assimetry.
+   * @param tab vector to which the transformation is applied.
+   */
+  void transformTosz(const DenseDoubleVectorPtr& tab)
   {
     for (size_t i = 0; i < tab->getNumValues(); i++)
     {
@@ -71,7 +87,12 @@ namespace testbed
     }
   }
   
-  void linearTransformTasy(const DenseDoubleVectorPtr& tab, double beta)
+  /**
+   * Tasy function used to introduce non-linearity and assimetry.
+   * @param beta \beta
+   * @param tab vector to which the transformation is applied.
+   */
+  void transformTasy(const DenseDoubleVectorPtr& tab, double beta)
   {
     for (size_t i = 0; i < tab->getNumValues(); ++i) 
     {
@@ -80,9 +101,16 @@ namespace testbed
     }
   }
   
-  // source : http://coco.gforge.inria.fr/doku.php?id=downloads
+  /**
+   * Generates a random orthogonal (rotation) matrix.
+   * The orthogonal matrix is generated from standard normally distributed entries by Gramn-Schmidt orthonormalization.
+   * (source: http://coco.gforge.inria.fr/doku.php?id=downloads )
+   * @param DIM dimension of the matrix to return.
+   * @return random orthogonal matrix.
+   */ 
   DoubleMatrixPtr getRotationMatrix(int DIM)
   {
+    // TODO : maybe use a static variable for a dedicated RandomGenerator initialized with a constant seed (so that two executions of a program give the same results).
     DoubleMatrixPtr R = independentDoubleMatrixSampler(DIM, DIM, gaussianSampler())->sample(defaultExecutionContext(), defaultExecutionContext().getRandomGenerator()).getObjectAndCast<DoubleMatrix>();
     
     double prod;
@@ -107,6 +135,11 @@ namespace testbed
     return R;
   }
   
+  /**
+   * Penalty boundary handling term.
+   * @param vector vector used to caculate the penalty boundary handling term.
+   * @return f_{pen}
+   */
   double fpen(const DenseDoubleVectorPtr& vector)
   {
     double result = 0.0;
@@ -169,7 +202,7 @@ public:
     xopt->subtractFrom(z);
     
     // z = Tosz(x - x_opt)
-    testbed::linearTransformTosz(z);
+    testbed::transformTosz(z);
     
     double result = 0;
     for (size_t i = 0; i < z->getNumValues(); ++i)    // WARNING: index i starts at 0
@@ -204,10 +237,10 @@ public:
     xopt->subtractFrom(z);
     
     // z = Tosz(x - x_opt)
-    testbed::linearTransformTosz(z);
+    testbed::transformTosz(z);
     
     // z = Tasy^0.2(Tosz(x - x_opt))
-    testbed::linearTransformTasy(z, 0.2);
+    testbed::transformTasy(z, 0.2);
     
     DoubleMatrixPtr lambda = testbed::getLambdaMatrix(10.0, z->getNumValues());
     
@@ -258,7 +291,7 @@ public:
     // z = x - x_opt
     DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
     xopt->subtractFrom(z);
-    testbed::linearTransformTosz(z);
+    testbed::transformTosz(z);
     
     for (size_t i = 0; i < z->getNumValues(); i++) 
     {
@@ -357,7 +390,7 @@ public:
       sum += product*product;
     }
     DenseDoubleVectorPtr ssum = new DenseDoubleVector(1, sum);
-    testbed::linearTransformTosz(ssum);
+    testbed::transformTosz(ssum);
     
     double power = pow(ssum->getValue(0), 0.9);
     *output = power + fopt;
@@ -523,7 +556,7 @@ public:
     DenseDoubleVectorPtr newZ = testbed::getRotationMatrix(z->getNumValues())->multiplyVector(z);
     
     z = newZ;    
-    testbed::linearTransformTosz(z);
+    testbed::transformTosz(z);
     
     double result = 0;
     for (size_t i = 0; i < z->getNumValues(); ++i)    // WARNING: index i starts at 0
@@ -561,7 +594,7 @@ public:
     DenseDoubleVectorPtr newZ = testbed::getRotationMatrix(z->getNumValues())->multiplyVector(z);
     
     z = newZ;    
-    testbed::linearTransformTosz(z);
+    testbed::transformTosz(z);
     
     double sum = 1000000*z->getValue(0)*z->getValue(0);
     for (size_t i = 1; i < z->getNumValues(); i++) 
@@ -600,7 +633,7 @@ public:
     
     DoubleMatrixPtr R = testbed::getRotationMatrix(z->getNumValues());
     DenseDoubleVectorPtr newZ = R->multiplyVector(z);
-    testbed::linearTransformTasy(newZ, 0.5);
+    testbed::transformTasy(newZ, 0.5);
     z = R->multiplyVector(newZ);
     
     double sum = 0.0;
