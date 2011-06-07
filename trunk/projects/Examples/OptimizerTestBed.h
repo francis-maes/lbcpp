@@ -17,10 +17,6 @@
 # include <lbcpp/Function/ScalarVectorFunction.h>
 # include <algorithm>
 
-// TODO arnaud : commenter
-// TODO arnaud : clean code
-// TODO arnaud : utiliser sumofsquare
-
 namespace lbcpp
 { 
 
@@ -152,7 +148,7 @@ namespace testbed
   }
 }; 
   
-  
+// f1  
 class SphereFunction : public ScalarVectorFunction
 {
 public:
@@ -180,8 +176,7 @@ protected:
   double fopt;
 };
   
-// f2(x) = \sum_{i=1}^{D} 10^(6*(i-1)/(D-1))*z_i^2 + f_opt
-// with : D = dimension, z = Tosz(x - x_opt)
+// f2  
 class EllipsoidalFunction : public ScalarVectorFunction
 {
 public:
@@ -195,18 +190,17 @@ public:
   {
     jassert(input->getNumValues() == xopt->getNumValues())
 
-    // z = x - x_opt
-    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
-    xopt->subtractFrom(z);
+    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();  // z = x
+    xopt->subtractFrom(z);  // z = x - x_opt
     
-    // z = Tosz(x - x_opt)
     testbed::transformTosz(z);
     
-    double result = 0;
+    double dimensionMinusOne = z->getNumValues()-1;
+    double sum = 0;
     for (size_t i = 0; i < z->getNumValues(); ++i)    // WARNING: index i starts at 0
-      result += pow(10.0, 6.0*((double)i/(double)(z->getNumValues()-1)))*z->getValue(i)*z->getValue(i);
+      sum += pow(10.0, 6.0*((double)i/(double)dimensionMinusOne))*z->getValue(i)*z->getValue(i);
 
-    *output = result + fopt;
+    *output = sum + fopt;
   }
   
 protected:
@@ -230,23 +224,15 @@ public:
   {
     jassert(input->getNumValues() == xopt->getNumValues())
     
-    // z = x - x_opt
-    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
-    xopt->subtractFrom(z);
+    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();  // z = x
+    xopt->subtractFrom(z);  // z = x - x_opt
     
-    // z = Tosz(x - x_opt)
     testbed::transformTosz(z);
-    
-    // z = Tasy^0.2(Tosz(x - x_opt))
     testbed::transformTasy(z, 0.2);
     
     DoubleMatrixPtr lambda = testbed::getLambdaMatrix(10.0, z->getNumValues());
-    
-    // z = lambda * Tasy^0.2(Tosz(x - x_opt))
-    for (size_t i = 0; i < z->getNumValues(); ++i) 
-    {
+    for (size_t i = 0; i < z->getNumValues(); ++i)  // z = lambda * z
       z->setValue(i, lambda->getValue(i,i)*z->getValue(i));
-    }
     
     double term = z->getNumValues();
     for (size_t i = 0; i < z->getNumValues(); ++i)
@@ -254,7 +240,6 @@ public:
     term *= 10;
     
     *output = term + z->sumOfSquares() + fopt;
-  
   }
   
 protected:
@@ -265,14 +250,8 @@ protected:
 };
 
 // f4
-// don't converge easily
-  /*
-  size_t numIterations = 30;
-  size_t populationSize = 1000;
-  size_t numBests = 10;
-  double slowingFactor = 0.3;
-   */
-  
+// don't converge with classic EDA
+// probably because highly multimodal
 class BucheRastriginFunction : public ScalarVectorFunction
 {
 public:
@@ -286,17 +265,18 @@ public:
   {
     jassert(input->getNumValues() == xopt->getNumValues())
    
-    // z = x - x_opt
-    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
-    xopt->subtractFrom(z);
+    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();  // z = x
+    xopt->subtractFrom(z);  // z = x - x_opt
+
     testbed::transformTosz(z);
     
-    for (size_t i = 0; i < z->getNumValues(); i++) 
+    double dimensionMinusOne = z->getNumValues()-1;
+    for (size_t i = 0; i < z->getNumValues(); i++)  // z = z*s_i
     {
       if (z->getValue(i) > 0 && i % 2 == 0) // WARNING i starts at 0
-        z->setValue(i, z->getValue(i) * 10 * pow(10.0, 0.5*i/(double)(z->getNumValues()-1)));
+        z->setValue(i, z->getValue(i) * 10.0 * pow(10.0, 0.5*(double)i/(double)dimensionMinusOne));
       else
-        z->setValue(i, z->getValue(i) * pow(10.0, 0.5*i/(double)(z->getNumValues()-1)));
+        z->setValue(i, z->getValue(i) * pow(10.0, 0.5*(double)i/(double)dimensionMinusOne));
     }
     
     double term = z->getNumValues();
@@ -315,11 +295,22 @@ protected:
 };
 
 // f5
-// TODO arnaud : don't converge, maybe bugged
+// WARNING : x_opt is not xopt, x_opt is a random vector of {-5, 5}
 class LinearSlopeFunction : public ScalarVectorFunction 
 {
 public:
-  LinearSlopeFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) {}
+  LinearSlopeFunction(const DenseDoubleVectorPtr& xopt, double fopt) : fopt(fopt) 
+  {
+    int DIM = xopt->getNumValues();
+    this->xopt = independentDoubleVectorSampler(DIM, gaussianSampler())->sample(defaultExecutionContext(), defaultExecutionContext().getRandomGenerator()).getObjectAndCast<DenseDoubleVector>();
+    for (size_t i = 0; i < DIM; i++)
+    {
+      if (this->xopt->getValue(i) < 0)
+        this->xopt->setValue(i, -5);
+      else
+        this->xopt->setValue(i, 5);
+    }
+  }
   LinearSlopeFunction() {}
   
   virtual bool isDerivable() const
@@ -329,20 +320,20 @@ public:
   {
     jassert(input->getNumValues() == xopt->getNumValues())
     
+    double dimensionMinusOne = input->getNumValues()-1;
     DenseDoubleVectorPtr s = new DenseDoubleVector(input->getNumValues(), 0.0);
     for (size_t i = 0; i < input->getNumValues(); i++)
-      s->setValue(i, testbed::sign(xopt->getValue(i))*pow(10.0, (double)i/(double)(input->getNumValues()-1)));  // WARNING i starts at 0
+      s->setValue(i, testbed::sign(xopt->getValue(i))*pow(10.0, (double)i/(double)dimensionMinusOne));  // WARNING i starts at 0
     
     DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
     for (size_t i = 0; i < z->getNumValues(); i++)
-      if (xopt->getValue(i)*input->getValue(i) > 25) 
+      if (xopt->getValue(i)*input->getValue(i) >= 25) 
         z->setValue(i, xopt->getValue(i));
 
     double sum = 0.0;
     for (size_t i = 0; i < z->getNumValues(); i++)
-    {
       sum += 5*fabs(s->getValue(i)) - s->getValue(i)*z->getValue(i);
-    }
+    
      *output = sum + fopt;
   }
   
@@ -357,7 +348,15 @@ protected:
 class AttractiveSectorFunction : public ScalarVectorFunction
 {
 public:
-  AttractiveSectorFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) {}
+  AttractiveSectorFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) 
+  {
+    int DIM = xopt->getNumValues();
+    DoubleMatrixPtr Q = testbed::getRotationMatrix(DIM);
+    DoubleMatrixPtr lambda = testbed::getLambdaMatrix(10.0, DIM);
+    DoubleMatrixPtr R = testbed::getRotationMatrix(DIM);
+    DoubleMatrixPtr Qlambda = Q->multiplyBy(lambda);
+    QlambdaR = Qlambda->multiplyBy(R);
+  }
   AttractiveSectorFunction() {}
   
   virtual bool isDerivable() const
@@ -367,24 +366,20 @@ public:
   {
     jassert(input->getNumValues() == xopt->getNumValues())
     // z = x - x_opt
-    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
-    xopt->subtractFrom(z);
+    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();  // z = x
+    xopt->subtractFrom(z);  // z = x - x_opt
     
-    DoubleMatrixPtr Q = testbed::getRotationMatrix(z->getNumValues());
-    DoubleMatrixPtr lambda = testbed::getLambdaMatrix(10.0, z->getNumValues());
-    DoubleMatrixPtr R = testbed::getRotationMatrix(z->getNumValues());
-    DoubleMatrixPtr Qlambda = Q->multiplyBy(lambda);
-    DoubleMatrixPtr QlambdaR = Qlambda->multiplyBy(R);
-    DenseDoubleVectorPtr newZ =  QlambdaR->multiplyVector(z);
+    DenseDoubleVectorPtr tmpZ =  QlambdaR->multiplyVector(z);
+    z = tmpZ;
 
     double sum = 0.0;
     for (size_t i = 0; i < z->getNumValues(); i++) 
     {
       double si = 1;
-      if (newZ->getValue(i) * xopt->getValue(i) > 0) {
+      if (z->getValue(i) * xopt->getValue(i) > 0) {
         si = 100;
       }
-      double product = si*newZ->getValue(i);
+      double product = si*z->getValue(i);
       sum += product*product;
     }
     DenseDoubleVectorPtr ssum = new DenseDoubleVector(1, sum);
@@ -392,7 +387,6 @@ public:
     
     double power = pow(ssum->getValue(0), 0.9);
     *output = power + fopt;
-
   }
   
 protected:
@@ -400,13 +394,23 @@ protected:
   
   DenseDoubleVectorPtr xopt;
   double fopt;
+  
+  DoubleMatrixPtr QlambdaR;
 };
 
 // f7  
 class StepEllipsoidalFunction : public ScalarVectorFunction
 {
 public:
-  StepEllipsoidalFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) {}
+  StepEllipsoidalFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) 
+  {
+    int DIM = xopt->getNumValues();
+    DoubleMatrixPtr lambda = testbed::getLambdaMatrix(10.0, DIM);
+    DoubleMatrixPtr R = testbed::getRotationMatrix(DIM);
+    Rlambda = lambda->multiplyBy(R);
+    
+    Q = testbed::getRotationMatrix(DIM);
+  }
   StepEllipsoidalFunction() {}
   
   virtual bool isDerivable() const
@@ -415,13 +419,10 @@ public:
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
     jassert(input->getNumValues() == xopt->getNumValues())
-    // z = x - x_opt
-    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
-    xopt->subtractFrom(z);
+
+    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();  // z = x
+    xopt->subtractFrom(z);  // z = x - x_opt
     
-    DoubleMatrixPtr lambda = testbed::getLambdaMatrix(10.0, z->getNumValues());
-    DoubleMatrixPtr R = testbed::getRotationMatrix(z->getNumValues());
-    DoubleMatrixPtr Rlambda = lambda->multiplyBy(R);
     DenseDoubleVectorPtr zhat = Rlambda->multiplyVector(z);
     
     DenseDoubleVectorPtr ztilde = new DenseDoubleVector(z->getNumValues(), 0.0);
@@ -433,11 +434,12 @@ public:
         ztilde->setValue(i, floor(0.5+10*zhat->getValue(i))/(double)10);
     }
     
-    z = testbed::getRotationMatrix(z->getNumValues())->multiplyVector(ztilde);
+    z = Q->multiplyVector(ztilde);
     
+    double dimensionMinusOne = z->getNumValues()-1;
     double sum = 0.0;
     for (size_t i = 0; i < z->getNumValues(); i++) 
-      sum += pow(10.0, (double)(2*i)/(double)(z->getNumValues()-1))*z->getValue(i)*z->getValue(i);
+      sum += pow(10.0, (double)(2*i)/(double)dimensionMinusOne)*z->getValue(i)*z->getValue(i);  // WARNING : i starts at 0
     *output = 0.1*std::max(fabs(zhat->getValue(0))/(double)10000, sum) + testbed::fpen(input) + fopt;
   }
   
@@ -446,13 +448,18 @@ protected:
   
   DenseDoubleVectorPtr xopt;
   double fopt;
+  
+  DoubleMatrixPtr Rlambda;
+  DoubleMatrixPtr Q;
 };
 
 // f8
+// converge to a local optimum (not the global !) with classic EDA
 class RosenbrockFunction : public ScalarVectorFunction
 {
 public:
-  RosenbrockFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) {}
+  RosenbrockFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) 
+    {scaleFactor = std::max(1.0,sqrt((double)xopt->getNumValues())/(double)8);}
   RosenbrockFunction() {}
   
   virtual bool isDerivable() const
@@ -461,11 +468,11 @@ public:
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
     jassert(input->getNumValues() == xopt->getNumValues())
-    // z = x - x_opt
-    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
-    xopt->subtractFrom(z);
+
+    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();  // z = x
+    xopt->subtractFrom(z);  // z = x - x_opt
     
-    z->multiplyByScalar(std::max(1.0,sqrt((double)z->getNumValues())/(double)8));
+    z->multiplyByScalar(scaleFactor);
     DenseDoubleVectorPtr ones = new DenseDoubleVector(z->getNumValues(), 1);
     ones->addTo(z);
     
@@ -479,7 +486,6 @@ public:
       sum += 100*diff1*diff1 + diff2*diff2;
     }
     *output = sum + fopt;
-    
   }
   
 protected:
@@ -488,14 +494,25 @@ protected:
   DenseDoubleVectorPtr xopt;
   double fopt;
   
+  double scaleFactor;
+  
 };
   
 // f9
-// TODO arnaud : don't converge, maybe bugged
+// converge to a local optimum (not the global !) with classic EDA
 class RosenbrockRotatedFunction : public ScalarVectorFunction
 {
 public:
-  RosenbrockRotatedFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) {}
+  RosenbrockRotatedFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt)
+  {
+    int DIM = xopt->getNumValues();
+    
+    double scaleFactor = std::max(1.0,sqrt((double)DIM)/(double)8);
+    Rscaled = testbed::getRotationMatrix(DIM);
+    Rscaled->multiplyByScalar(scaleFactor);
+    
+    half = new DenseDoubleVector(DIM, 0.5);
+  }
   RosenbrockRotatedFunction() {}
   
   virtual bool isDerivable() const
@@ -504,12 +521,9 @@ public:
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
     jassert(input->getNumValues() == xopt->getNumValues())
-    // z = x - x_opt
+
     DenseDoubleVectorPtr z = new DenseDoubleVector(input->getNumValues(), 0.0);
-    z = testbed::getRotationMatrix(z->getNumValues())->multiplyVector(input);
-    
-    z->multiplyByScalar(std::max(1.0,sqrt((double)z->getNumValues())/(double)8));
-    DenseDoubleVectorPtr half = new DenseDoubleVector(z->getNumValues(), 0.5);
+    z = Rscaled->multiplyVector(input);
     half->addTo(z);
     
     double sum = 0.0;
@@ -522,7 +536,6 @@ public:
       sum += 100*diff1*diff1 + diff2*diff2;
     }
     *output = sum + fopt;
-    
   }
   
 protected:
@@ -531,13 +544,17 @@ protected:
   DenseDoubleVectorPtr xopt;
   double fopt;
   
+  DoubleMatrixPtr Rscaled;
+  DenseDoubleVectorPtr half;
 };
 
-// f10  
+// f10
+// doesn't converge "enough" with classic EDA, probably not enough diversity after few iterations
 class IllEllipsoidalFunction : public ScalarVectorFunction
 {
 public:
-  IllEllipsoidalFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) {}
+  IllEllipsoidalFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) 
+    {R = testbed::getRotationMatrix(xopt->getNumValues());}
   IllEllipsoidalFunction() {}
   
   virtual bool isDerivable() const
@@ -547,21 +564,20 @@ public:
   {
     jassert(input->getNumValues() == xopt->getNumValues());
     
-    // z = x - x_opt
-    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
-    xopt->subtractFrom(z);
+    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();  // z = x
+    xopt->subtractFrom(z);  // z = x - x_opt
     
-    DenseDoubleVectorPtr newZ = testbed::getRotationMatrix(z->getNumValues())->multiplyVector(z);
-    
-    z = newZ;    
+    DenseDoubleVectorPtr tmpZ = R->multiplyVector(z);
+    z = tmpZ;
+
     testbed::transformTosz(z);
     
-    double result = 0;
+    double dimensionMinusOne = z->getNumValues()-1;
+    double sum = 0;
     for (size_t i = 0; i < z->getNumValues(); ++i)    // WARNING: index i starts at 0
-      result += pow(10.0, 6.0*((double)i/(double)(z->getNumValues()-1)))*z->getValue(i)*z->getValue(i);
+      sum += pow(10.0, 6.0*((double)i/(double)dimensionMinusOne))*z->getValue(i)*z->getValue(i);
     
-    *output = result + fopt;
-    
+    *output = sum + fopt;
   }
   
 protected:
@@ -569,13 +585,17 @@ protected:
   
   DenseDoubleVectorPtr xopt;
   double fopt;
+
+  DoubleMatrixPtr R;
 };
  
 // f11  
+// converge to a local optimum (not the global !) with classic EDA
 class DiscusFunction : public ScalarVectorFunction
 {
 public:
-  DiscusFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) {}
+  DiscusFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt)
+    {R = testbed::getRotationMatrix(xopt->getNumValues());}
   DiscusFunction() {}
   
   virtual bool isDerivable() const
@@ -585,13 +605,12 @@ public:
   {
     jassert(input->getNumValues() == xopt->getNumValues());
     
-    // z = x - x_opt
-    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
-    xopt->subtractFrom(z);
+    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();  // z = x
+    xopt->subtractFrom(z);  // z = x - x_opt
     
-    DenseDoubleVectorPtr newZ = testbed::getRotationMatrix(z->getNumValues())->multiplyVector(z);
-    
-    z = newZ;    
+    DenseDoubleVectorPtr tmpZ = R->multiplyVector(z);
+    z = tmpZ;
+
     testbed::transformTosz(z);
     
     double sum = 1000000*z->getValue(0)*z->getValue(0);
@@ -609,13 +628,17 @@ protected:
   
   DenseDoubleVectorPtr xopt;
   double fopt;
+  
+  DoubleMatrixPtr R;
 };
 
 // f12  
+// doesn't converge "enough" with classic EDA, probably not enough diversity after few iterations
 class BentCigarFunction : public ScalarVectorFunction
 {
 public:
-  BentCigarFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) {}
+  BentCigarFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt)
+    {R = testbed::getRotationMatrix(xopt->getNumValues());}
   BentCigarFunction() {}
   
   virtual bool isDerivable() const
@@ -625,14 +648,12 @@ public:
   {
     jassert(input->getNumValues() == xopt->getNumValues());
     
-    // z = x - x_opt
-    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
-    xopt->subtractFrom(z);
+    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();  // z = x
+    xopt->subtractFrom(z);  // z = x - x_opt
     
-    DoubleMatrixPtr R = testbed::getRotationMatrix(z->getNumValues());
-    DenseDoubleVectorPtr newZ = R->multiplyVector(z);
-    testbed::transformTasy(newZ, 0.5);
-    z = R->multiplyVector(newZ);
+    DenseDoubleVectorPtr tmpZ = R->multiplyVector(z);
+    testbed::transformTasy(tmpZ, 0.5);
+    z = R->multiplyVector(tmpZ);
     
     double sum = 0.0;
     for (size_t i = 1; i < z->getNumValues(); i++) 
@@ -649,13 +670,23 @@ protected:
   
   DenseDoubleVectorPtr xopt;
   double fopt;
+
+  DoubleMatrixPtr R;
 };
   
 // f13  
 class SharpRidgeFunction : public ScalarVectorFunction
 {
 public:
-  SharpRidgeFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) {}
+  SharpRidgeFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) 
+  {
+    int DIM = xopt->getNumValues();
+    DoubleMatrixPtr Q = testbed::getRotationMatrix(DIM);
+    DoubleMatrixPtr lambda = testbed::getLambdaMatrix(10.0, DIM);
+    DoubleMatrixPtr R = testbed::getRotationMatrix(DIM);
+    DoubleMatrixPtr Qlambda = Q->multiplyBy(lambda);
+    QlambdaR = Qlambda->multiplyBy(R);
+  }
   SharpRidgeFunction() {}
   
   virtual bool isDerivable() const
@@ -664,18 +695,12 @@ public:
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
     jassert(input->getNumValues() == xopt->getNumValues())
-    // z = x - x_opt
-    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
-    xopt->subtractFrom(z);
+
+    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();  // z = x
+    xopt->subtractFrom(z);  // z = x - x_opt
     
-    DoubleMatrixPtr Q = testbed::getRotationMatrix(z->getNumValues());
-    DoubleMatrixPtr lambda = testbed::getLambdaMatrix(10.0, z->getNumValues());
-    DoubleMatrixPtr R = testbed::getRotationMatrix(z->getNumValues());
-    DoubleMatrixPtr Qlambda = Q->multiplyBy(lambda);
-    DoubleMatrixPtr QlambdaR = Qlambda->multiplyBy(R);
-    DenseDoubleVectorPtr newZ = QlambdaR->multiplyVector(z);
-    
-    z = newZ;
+    DenseDoubleVectorPtr tmpZ = QlambdaR->multiplyVector(z);
+    z = tmpZ;
     
     double sum = 0.0;
     for (size_t i = 1; i < z->getNumValues(); i++) 
@@ -685,7 +710,6 @@ public:
     }
     
     *output = z->getValue(0)*z->getValue(0) + 100*sqrt(sum) + fopt;
-    
   }
   
 protected:
@@ -694,13 +718,15 @@ protected:
   DenseDoubleVectorPtr xopt;
   double fopt;
   
+  DoubleMatrixPtr QlambdaR;
 };
 
 // f14  
 class DifferentPowersFunction : public ScalarVectorFunction
 {
 public:
-  DifferentPowersFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt) {}
+  DifferentPowersFunction(const DenseDoubleVectorPtr& xopt, double fopt) : xopt(xopt), fopt(fopt)
+    {R = testbed::getRotationMatrix(xopt->getNumValues());}
   DifferentPowersFunction() {}
   
   virtual bool isDerivable() const
@@ -709,16 +735,17 @@ public:
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
     jassert(input->getNumValues() == xopt->getNumValues())
-    // z = x - x_opt
-    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
-    xopt->subtractFrom(z);
+
+    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();  // z = x
+    xopt->subtractFrom(z);  // z = x - x_opt
     
-    DenseDoubleVectorPtr newZ = testbed::getRotationMatrix(z->getNumValues())->multiplyVector(z);
-    z = newZ;
+    DenseDoubleVectorPtr tmpZ = R->multiplyVector(z);
+    z = tmpZ;
     
+    double dimensionMinusOne = z->getNumValues()-1;
     double sum = 0.0;
     for (size_t i = 0; i < z->getNumValues(); i++) 
-      sum += pow(fabs(z->getValue(i)), 2 + (double)(4*i)/(double)(z->getNumValues()-1));
+      sum += pow(fabs(z->getValue(i)), 2 + (double)(4*i)/(double)(dimensionMinusOne));  // WARNING : i starts at 0
     
     *output = sqrt(sum) + fopt;
   }
@@ -728,6 +755,8 @@ protected:
   
   DenseDoubleVectorPtr xopt;
   double fopt;
+  
+  DoubleMatrixPtr R;
 };
   
 }; /* namespace lbcpp */
