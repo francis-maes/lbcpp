@@ -19,7 +19,8 @@ class DisulfidePatternScoreObject : public ScoreObject
 {
 public:
   DisulfidePatternScoreObject()
-    : accuracyVector(new ScalarVariableMean()), validGraphAccuracyVector(new ScalarVariableMean()) {}
+    : accuracy(0.0), validGraphAccuracy(0.0),
+      accuracyVector(new ScalarVariableMean()), validGraphAccuracyVector(new ScalarVariableMean()) {}
 
   virtual double getScoreToMinimize() const
     {return 1.0 - accuracy;}
@@ -69,7 +70,11 @@ public:
     jassert(supervisedMatrix && predictedMatrix && predictedMatrix->getDimension() == dimension);
 
     if (minimumDistanceFromDiagonal >= dimension)
+    { // FIXME
+      //score->addValidGraphPrediction(isValidGraph);
+      //score->addPrediction(true);
       return;
+    }
     
     const size_t numRows = dimension - minimumDistanceFromDiagonal;
     // check validity of graph
@@ -114,6 +119,61 @@ protected:
 
   double threshold;
   size_t minimumDistanceFromDiagonal;
+};
+
+class NaiveDisulfidePatternBuilderEvaluator : public DisulfidePatternEvaluator
+{
+public:
+  NaiveDisulfidePatternBuilderEvaluator(double threshold = 0.5, size_t minimumDistanceFromDiagonal = 1)
+    : DisulfidePatternEvaluator(threshold, minimumDistanceFromDiagonal) {}
+  
+  virtual void addPrediction(ExecutionContext& context, const Variable& prediction, const Variable& supervision, const ScoreObjectPtr& result) const
+  {
+    SymmetricMatrixPtr predictedMatrix = prediction.getObjectAndCast<SymmetricMatrix>();
+    SymmetricMatrixPtr supervisedMatrix = supervision.getObjectAndCast<SymmetricMatrix>();
+    const size_t dimension = supervisedMatrix->getDimension();
+    jassert(supervisedMatrix && predictedMatrix && predictedMatrix->getDimension() == dimension);
+
+    if (minimumDistanceFromDiagonal >= dimension)
+    {
+      DisulfidePatternEvaluator::addPrediction(context, prediction, supervision, result);
+      return;
+    }
+    
+    SymmetricMatrixPtr res = predictedMatrix->cloneAndCast<SymmetricMatrix>(context);
+    for (size_t i = 0; i < dimension - minimumDistanceFromDiagonal; ++i)
+    {
+      // Find best predicted element of row i
+      size_t bestIndex = (size_t)-1;
+      double bestValue = -DBL_MAX;
+      for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
+      {
+        if (res->getElement(i, j).getDouble() > bestValue)
+        {
+          bestIndex = j;
+          bestValue = res->getElement(i, j).getDouble();
+        }
+      }
+      //jassert(bestIndex != (size_t)-1);
+      // Update predictd matrix with a connection between i and bestIndex if bestValue > threshold
+      updateMatrix(res, i, bestIndex, bestValue > threshold);
+    }
+    
+    DisulfidePatternEvaluator::addPrediction(context, res, supervision, result);
+  }
+
+private:
+  void updateMatrix(const SymmetricMatrixPtr& matrix, size_t x, size_t y, bool isConnected) const
+  {
+    const size_t dimension = matrix->getDimension();
+    for (size_t i = 0; i < dimension; ++i)
+    {
+      matrix->setElement(x, i, probability(0.0));
+      matrix->setElement(y, i, probability(0.0));
+    }
+    if (isConnected)
+      matrix->setElement(x, y, probability(1.0));
+  }
 };
 
 }; /* namespace lbcpp */

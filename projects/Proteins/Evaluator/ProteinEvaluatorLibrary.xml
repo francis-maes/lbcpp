@@ -28,5 +28,7 @@
     <variable type="Double" name="threshold"/>
     <variable type="PositiveInteger" name="minimumDistanceFromDiagonal"/>
   </class>
+  
+  <class name="NaiveDisulfidePatternBuilderEvaluator" base="DisulfidePatternEvaluator"/>
 
 </library>

@@ -86,6 +86,19 @@ public:
   virtual Variable getElement(size_t index) const
     {jassert(index < elements.size()); return Variable(elements[index], elementsType);}
 
+  /* Object */
+  void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    Object::clone(context, target);
+    ReferenceCountedObjectPtr<BuiltinTypeSymmetricMatrix> targetMatrix = target.staticCast<BuiltinTypeSymmetricMatrix>();
+    targetMatrix->dimension = dimension;
+    targetMatrix->elementsType = elementsType;
+    const size_t n = getNumElements();
+    targetMatrix->elements.resize(n);
+    for (size_t i = 0; i < n; ++i)
+      targetMatrix->elements[i] = elements[i];
+  }
+  
   lbcpp_UseDebuggingNewOperator
 
 protected:
