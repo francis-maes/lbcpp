@@ -104,8 +104,15 @@
     <variable type="PositiveInteger" name="numTestingProblems" shortName="testing"/>
     <variable type="PositiveInteger" name="maxTimeStep" shortName="H"/>
   </class>
-  
-  
+    
+  <class name="SingleParameterIndexBasedDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" abstract="yes">
+    <variable type="Double" name="C"/>
+  </class>
+  <class name="Formula1IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula1"/>
+  <class name="Formula2IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula2"/>
+  <class name="Formula3IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula3"/>
+  <class name="Formula4IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula4"/>
+
   <class name="FindBanditsFormula" base="WorkUnit">
     <variable type="PositiveInteger" name="problemIndex" shortName="p"/>
     <variable type="PositiveInteger" name="maxTimeStep" shortName="N"/>
