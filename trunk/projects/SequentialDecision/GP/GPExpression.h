@@ -224,7 +224,7 @@ public:
     {return x[index];}
 
   virtual String toShortString() const
-    {return Variable(index, enumeration).toShortString();}
+    {return enumeration ? Variable(index, enumeration).toShortString() : T("v") + String((int)index);}
 
   size_t getIndex() const
     {return index;}
