@@ -51,7 +51,7 @@ namespace testbed
     for (size_t i = 1; i <= dimension; ++i) 
     {
       double value = pow(alpha, 0.5*((double)(i-1)/(double)(dimension-1)));
-      ret->setValue(i, i, value);
+      ret->setValue((i-1), (i-1), value);
     }
     return ret;
   }
@@ -153,7 +153,6 @@ namespace testbed
 }; 
   
   
-// f1(x) = ||z||^2 + f_opt, with z = x - x_opt
 class SphereFunction : public ScalarVectorFunction
 {
 public:
@@ -167,12 +166,11 @@ public:
   {
     jassert(input->getNumValues() == xopt->getNumValues());
     
-    // z = x - x_opt
-    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();
-    xopt->subtractFrom(z);
+    DenseDoubleVectorPtr z = input->cloneAndCast<DenseDoubleVector>();  // z = x
+    xopt->subtractFrom(z);  // z = x - x_opt
     
-    double norm = z->sumOfSquares();
-    *output = norm + fopt;
+    double squarenorm = z->sumOfSquares();
+    *output = squarenorm + fopt;
   }
   
 protected:
