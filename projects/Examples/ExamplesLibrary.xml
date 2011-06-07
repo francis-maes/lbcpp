@@ -102,54 +102,65 @@
     <constructor arguments="const DenseDoubleVectorPtr&amp; xopt, double fopt"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="xopt"/>
     <variable type="Double" name="fopt"/> 
+    <variable type="DoubleMatrix[Double]" name="QlambdaR"/>
   </class>
   
   <class name="StepEllipsoidalFunction" base="ScalarVectorFunction">
     <constructor arguments="const DenseDoubleVectorPtr&amp; xopt, double fopt"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="xopt"/>
     <variable type="Double" name="fopt"/> 
+    <variable type="DoubleMatrix[Double]" name="Rlambda"/>
+    <variable type="DoubleMatrix[Double]" name="Q"/>
   </class>
-  
+
   <class name="RosenbrockFunction" base="ScalarVectorFunction">
     <constructor arguments="const DenseDoubleVectorPtr&amp; xopt, double fopt"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="xopt"/>
     <variable type="Double" name="fopt"/> 
+    <variable type="Double" name="scaleFactor"/>
   </class>
   
   <class name="RosenbrockRotatedFunction" base="ScalarVectorFunction">
     <constructor arguments="const DenseDoubleVectorPtr&amp; xopt, double fopt"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="xopt"/>
     <variable type="Double" name="fopt"/> 
+    <variable type="DoubleMatrix[Double]" name="Rscaled"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="half"/>
   </class>
   
   <class name="IllEllipsoidalFunction" base="ScalarVectorFunction">
     <constructor arguments="const DenseDoubleVectorPtr&amp; xopt, double fopt"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="xopt"/>
-    <variable type="Double" name="fopt"/> 
+    <variable type="Double" name="fopt"/>
+    <variable type="DoubleMatrix[Double]" name="R"/>
   </class>
 
   <class name="DiscusFunction" base="ScalarVectorFunction">
     <constructor arguments="const DenseDoubleVectorPtr&amp; xopt, double fopt"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="xopt"/>
-    <variable type="Double" name="fopt"/> 
+    <variable type="Double" name="fopt"/>
+    <variable type="DoubleMatrix[Double]" name="R"/>
   </class>
   
   <class name="BentCigarFunction" base="ScalarVectorFunction">
     <constructor arguments="const DenseDoubleVectorPtr&amp; xopt, double fopt"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="xopt"/>
     <variable type="Double" name="fopt"/> 
+    <variable type="DoubleMatrix[Double]" name="R"/>
   </class>
   
   <class name="SharpRidgeFunction" base="ScalarVectorFunction">
     <constructor arguments="const DenseDoubleVectorPtr&amp; xopt, double fopt"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="xopt"/>
     <variable type="Double" name="fopt"/> 
+    <variable type="DoubleMatrix[Double]" name="QlambdaR"/>
   </class>
   
   <class name="DifferentPowersFunction" base="ScalarVectorFunction">
     <constructor arguments="const DenseDoubleVectorPtr&amp; xopt, double fopt"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="xopt"/>
     <variable type="Double" name="fopt"/> 
+    <variable type="DoubleMatrix[Double]" name="R"/>
   </class>
   
 </library>
