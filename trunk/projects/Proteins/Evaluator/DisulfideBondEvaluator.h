@@ -139,7 +139,7 @@ public:
       DisulfidePatternEvaluator::addPrediction(context, prediction, supervision, result);
       return;
     }
-    
+
     SymmetricMatrixPtr res = predictedMatrix->cloneAndCast<SymmetricMatrix>(context);
     for (size_t i = 0; i < dimension - minimumDistanceFromDiagonal; ++i)
     {
@@ -154,11 +154,12 @@ public:
           bestValue = res->getElement(i, j).getDouble();
         }
       }
-      //jassert(bestIndex != (size_t)-1);
+      jassert(bestIndex != (size_t)-1);
       // Update predictd matrix with a connection between i and bestIndex if bestValue > threshold
-      updateMatrix(res, i, bestIndex, bestValue > threshold);
+      if (bestValue != 0.0)
+        updateMatrix(res, i, bestIndex, bestValue > threshold);
     }
-    
+
     DisulfidePatternEvaluator::addPrediction(context, res, supervision, result);
   }
 
