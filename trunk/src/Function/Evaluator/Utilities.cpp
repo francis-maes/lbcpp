@@ -209,7 +209,7 @@ bool BinaryClassificationConfusionMatrix::loadFromXml(XmlImporter& importer)
     return false;
   falseNegative = v.getInteger();
 
-  v = Variable::createFromString(importer.getContext(), positiveIntegerType, tokens[2]);
+  v = Variable::createFromString(importer.getContext(), positiveIntegerType, tokens[3]);
   if (!v.exists())
     return false;
   trueNegative = v.getInteger();
