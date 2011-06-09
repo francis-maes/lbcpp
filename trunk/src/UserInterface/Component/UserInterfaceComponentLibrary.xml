@@ -2,6 +2,8 @@
 
 <library name="UserInterfaceComponent" directory="UserInterface/Component">
 
+  <include file="lbcpp/UserInterface/PieChartComponent.h"/>
+
   <class name="CurveAxisConfiguration">
     <variable type="Double" name="rangeMin"/>
     <variable type="Double" name="rangeMax"/>
@@ -28,5 +30,11 @@
   <uicomponent name="ConfusionMatrixComponent" type="BinaryClassificationConfusionMatrix"/>
 
   <uicomponent name="DoubleMatrixComponent" type="DoubleMatrix[Double]"/>
+
+  <class name="PieChartConfiguration" base="Object">
+    <variable type="GenericVector[Pair[String, Double]]" name="values"/>
+  </class>
+
+  <uicomponent name="PieChartComponent" type="PieChartConfiguration"/>
 
 </library>

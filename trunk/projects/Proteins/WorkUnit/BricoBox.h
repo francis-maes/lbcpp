@@ -9,6 +9,9 @@
 # include <lbcpp/Network/NetworkNotification.h>
 #endif
 
+#include <lbcpp/UserInterface/PieChartComponent.h>
+# include <lbcpp/UserInterface/VariableSelector.h>
+
 /*
 ** BricoBox - Some non-important test tools
 */
@@ -452,39 +455,252 @@ protected:
   size_t numFolds;
 };
 
-class CysteinBondingPropertyStatisticsWorkUnit : public WorkUnit
+class ProteinStatisticsWorkUnit : public WorkUnit
 {
 public:
   virtual Variable run(ExecutionContext& context)
   {
     if (inputDirectory == File::nonexistent)
       inputDirectory = File::getCurrentWorkingDirectory();
+
+    ContainerPtr trainingProteins = Protein::loadProteinsFromDirectory(context, File(inputDirectory.getFullPathName() + T("/train/")), 0, T("Loading training proteins"));
+    ContainerPtr validationProteins = Protein::loadProteinsFromDirectory(context, File(inputDirectory.getFullPathName() + T("/validation/")), 0, T("Loading validation proteins"));
+    ContainerPtr testingProteins = Protein::loadProteinsFromDirectory(context, File(inputDirectory.getFullPathName() + T("/test/")), 0, T("Loading testing proteins"));
+
+    if (!trainingProteins->getNumElements() && !validationProteins->getNumElements() && !testingProteins->getNumElements())
+    {
+      context.informationCallback(T("No proteins"));
+      return false;
+    }
+
+    VectorPtr allProteins = vector(proteinClass, trainingProteins->getNumElements() + validationProteins->getNumElements() + testingProteins->getNumElements());
+    size_t index = 0;
+    for (size_t i = 0; i < trainingProteins->getNumElements(); ++i, ++index)
+      allProteins->setElement(index, trainingProteins->getElement(i));
+    for (size_t i = 0; i < validationProteins->getNumElements(); ++i, ++index)
+      allProteins->setElement(index, validationProteins->getElement(i));
+    for (size_t i = 0; i < testingProteins->getNumElements(); ++i, ++index)
+      allProteins->setElement(index, testingProteins->getElement(i));
+
+    computeStatistics(context, trainingProteins, validationProteins, testingProteins, allProteins, ss3Target);
+    computeStatistics(context, trainingProteins, validationProteins, testingProteins, allProteins, ss8Target);
+    computeStatistics(context, trainingProteins, validationProteins, testingProteins, allProteins, sa20Target);
+    computeStatistics(context, trainingProteins, validationProteins, testingProteins, allProteins, drTarget);
+    computeStatistics(context, trainingProteins, validationProteins, testingProteins, allProteins, stalTarget);
+    computeStatistics(context, trainingProteins, validationProteins, testingProteins, allProteins, cbpTarget);
+    computeStatistics(context, trainingProteins, validationProteins, testingProteins, allProteins, cbsTarget);
+    computeStatistics(context, trainingProteins, validationProteins, testingProteins, allProteins, dsbTarget);
+    computeStatistics(context, trainingProteins, validationProteins, testingProteins, allProteins, cma8Target);
     
-    ContainerPtr proteins = Protein::loadProteinsFromDirectory(context, inputDirectory, 0, T("Loading proteins"));
-    std::vector<size_t> sums(4, 0);
+    return true;
+  }
+
+protected:
+  friend class ProteinStatisticsWorkUnitClass;
+
+  File inputDirectory;
+
+protected:
+  void computeStatistics(ExecutionContext& context, ContainerPtr trainingProteins, ContainerPtr validationProteins, ContainerPtr testingProteins, ContainerPtr allProteins, ProteinTarget target) const
+  {
+    context.enterScope(T("Computing statistics of ") + proteinClass->getMemberVariableName(target), WorkUnitPtr());
+
+    const TypePtr targetType = proteinClass->getMemberVariableType(target);
+    if (targetType->inheritsFrom(objectVectorClass(doubleVectorClass(enumValueType, probabilityType))))
+    {
+      PieChartConfigurationPtr res;
+      res = computeMultiClassStatistics(context, trainingProteins, target, T("Training"));
+      context.resultCallback(T("Train"), res);
+
+      res = computeMultiClassStatistics(context, validationProteins, target, T("Validation"));
+      context.resultCallback(T("Validation"), res);
+
+      res = computeMultiClassStatistics(context, testingProteins, target, T("Testing"));
+      context.resultCallback(T("Test"), res);
+
+      res = computeMultiClassStatistics(context, allProteins, target, T("Global"));
+      context.resultCallback(T("All"), res);
+    }
+    else if (targetType->inheritsFrom(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType)))
+    {
+      PieChartConfigurationPtr res;
+      res = computeBinaryStatistics(context, trainingProteins, target, T("Training"));
+      context.resultCallback(T("Train"), res);
+      
+      res = computeBinaryStatistics(context, validationProteins, target, T("Validation"));
+      context.resultCallback(T("Validation"), res);
+      
+      res = computeBinaryStatistics(context, testingProteins, target, T("Testing"));
+      context.resultCallback(T("Test"), res);
+      
+      res = computeBinaryStatistics(context, allProteins, target, T("Global"));
+      context.resultCallback(T("All"), res);
+    }
+    else if (target == cbpTarget)
+    {
+      PieChartConfigurationPtr res;
+      res = computeMultiClassPropertyStatistics(context, trainingProteins, target, T("Training"));
+      context.resultCallback(T("Train"), res);
+      
+      res = computeMultiClassPropertyStatistics(context, validationProteins, target, T("Validation"));
+      context.resultCallback(T("Validation"), res);
+      
+      res = computeMultiClassPropertyStatistics(context, testingProteins, target, T("Testing"));
+      context.resultCallback(T("Test"), res);
+      
+      res = computeMultiClassPropertyStatistics(context, allProteins, target, T("Global"));
+      context.resultCallback(T("All"), res);
+    }
+    else if (targetType->inheritsFrom(doubleSymmetricMatrixClass(probabilityType)))
+    {
+      PieChartConfigurationPtr res;
+      res = computeSymmetricMatrixStatistics(context, trainingProteins, target, T("Training"));
+      context.resultCallback(T("Train"), res);
+      
+      res = computeSymmetricMatrixStatistics(context, validationProteins, target, T("Validation"));
+      context.resultCallback(T("Validation"), res);
+      
+      res = computeSymmetricMatrixStatistics(context, testingProteins, target, T("Testing"));
+      context.resultCallback(T("Test"), res);
+      
+      res = computeSymmetricMatrixStatistics(context, allProteins, target, T("Global"));
+      context.resultCallback(T("All"), res);
+    }
+    else
+      context.errorCallback(T("computeStatistics"), T("The target is not (yet) supported !"));
+
+    context.leaveScope();
+  }
+
+  PieChartConfigurationPtr computeMultiClassStatistics(ExecutionContext& context, const ContainerPtr& proteins, ProteinTarget target, const String& name) const
+  {
+    EnumerationPtr enumeration = proteinClass->getMemberVariableType(target)->getTemplateArgument(0)->getTemplateArgument(0).dynamicCast<Enumeration>();
+    jassert(enumeration);
+    std::vector<size_t> counts(enumeration->getNumElements() + 1, 0);
+    size_t totalCount = 0;
     const size_t n = proteins->getNumElements();
     for (size_t i = 0; i < n; ++i)
     {
       ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>();
-      Variable value = protein->getCysteinBondingProperty(context);
-      if (!value.exists())
-        sums[3]++;
-      else
-        sums[value.getObjectAndCast<DoubleVector>()->getIndexOfMaximumValue()]++;
+      jassert(protein);
+      ObjectVectorPtr vector = protein->getTargetOrComputeIfMissing(context, target).getObjectAndCast<ObjectVector>(context);
+      jassert(vector);
+      size_t numElements = vector->getNumElements();
+      for (size_t j = 0; j < numElements; ++j)
+      {
+        size_t index = (size_t)-1;
+        DoubleVectorPtr values = vector->getElement(j).getObjectAndCast<DoubleVector>();
+        if (values)
+          index = (size_t)values->getIndexOfMaximumValue();
+        counts[index == (size_t)-1 ? counts.size() - 1 : index]++;
+      }
+      totalCount += numElements;
     }
-    
-    std::cout << "All  : " << (sums[0] / (double)n) << std::endl;
-    std::cout << "None : " << (sums[1] / (double)n) << std::endl;
-    std::cout << "Mix  : " << (sums[2] / (double)n) << std::endl;
-    std::cout << "Miss : " << (sums[3] / (double)n) << std::endl;
-    
-    return true;
+
+    PieChartConfigurationPtr config = new PieChartConfiguration(name + T(" ") + proteinClass->getMemberVariableShortName(target),
+                                                                T("Number of examples: ") + String((int)totalCount));
+    for (size_t i = 0; i < enumeration->getNumElements(); ++i)
+      config->appendElement(enumeration->getElementName(i) + T(" (") + String((int)counts[i]) + T(" examples)"), (double)counts[i]/(double)totalCount);
+    config->appendElement(T("Missing (") + String((int)counts[counts.size() - 1]) + T(" examples)"), (double)counts[counts.size()-1]/(double)totalCount);
+
+    return config;
   }
   
-protected:
-  friend class CysteinBondingPropertyStatisticsWorkUnitClass;
+  PieChartConfigurationPtr computeBinaryStatistics(ExecutionContext& context, const ContainerPtr& proteins, ProteinTarget target, const String& name) const
+  {
+    enum {numBinaryElement = 3};
+    std::vector<size_t> counts(numBinaryElement, 0);
+    size_t totalCount = 0;
+
+    const size_t n = proteins->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>();
+      jassert(protein);
+      DoubleVectorPtr vector = protein->getTargetOrComputeIfMissing(context, target).getObjectAndCast<DoubleVector>(context);
+      jassert(vector);
+      size_t numElements = vector->getNumElements();
+      for (size_t j = 0; j < numElements; ++j)
+      {
+        size_t index = numBinaryElement - 1; // Missing
+        Variable value = vector->getElement(j);
+        if (value.exists())
+          index = value.getDouble() > 0.5 ? 0 : 1;
+        counts[index]++;
+      }
+      totalCount += numElements;
+    }
+
+    PieChartConfigurationPtr config = new PieChartConfiguration(name + T(" ") + proteinClass->getMemberVariableShortName(target),
+                                                                T("Number of examples: ") + String((int)totalCount));
+                                                                
+    config->appendElement(T("True (") + String((int)counts[0]) + T(" examples)"), (double)counts[0]/(double)totalCount);
+    config->appendElement(T("False (") + String((int)counts[1]) + T(" examples)"), (double)counts[1]/(double)totalCount);
+    config->appendElement(T("Missing (") + String((int)counts[2]) + T(" examples)"), (double)counts[2]/(double)totalCount);
+
+    return config;
+  }
   
-  File inputDirectory;
+  PieChartConfigurationPtr computeMultiClassPropertyStatistics(ExecutionContext& context, const ContainerPtr& proteins, ProteinTarget target, const String& name) const
+  {
+    EnumerationPtr enumeration = proteinClass->getMemberVariableType(target)->getTemplateArgument(0).dynamicCast<Enumeration>();
+    jassert(enumeration);
+    std::vector<size_t> counts(enumeration->getNumElements() + 1, 0);
+    const size_t n = proteins->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>();
+      jassert(protein);
+
+      size_t index = (size_t)-1;
+      DoubleVectorPtr values = protein->getTargetOrComputeIfMissing(context, target).getObjectAndCast<DoubleVector>();
+      if (values)
+        index = (size_t)values->getIndexOfMaximumValue();
+      counts[index == (size_t)-1 ? counts.size() - 1 : index]++;
+    }
+    
+    PieChartConfigurationPtr config = new PieChartConfiguration(name + T(" ") + proteinClass->getMemberVariableShortName(target),
+                                                                T("Number of examples: ") + String((int)n));
+    for (size_t i = 0; i < enumeration->getNumElements(); ++i)
+      config->appendElement(enumeration->getElementName(i) + T(" (")+ String((int)counts[i]) + T(" examples)"), (double)counts[i]/(double)n);
+    config->appendElement(T("Missing (") + String((int)counts[counts.size() - 1]) + T(" examples)"), (double)counts[counts.size()-1]/(double)n);
+    
+    return config;
+  }
+  
+  PieChartConfigurationPtr computeSymmetricMatrixStatistics(ExecutionContext& context, const ContainerPtr& proteins, ProteinTarget target, const String& name) const
+  {
+    enum {numBinaryElement = 3};
+    std::vector<size_t> counts(numBinaryElement, 0);
+    size_t totalCount = 0;
+
+    const size_t n = proteins->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>();
+      jassert(protein);
+      SymmetricMatrixPtr matrix = protein->getTargetOrComputeIfMissing(context, target).getObjectAndCast<SymmetricMatrix>(context);
+      jassert(matrix);
+      size_t numElements = matrix->getNumElements();
+      for (size_t j = 0; j < numElements; ++j)
+      {
+        size_t index = numBinaryElement - 1; // Missing
+        Variable value = matrix->getElement(j);
+        if (value.exists())
+          index = value.getDouble() > 0.5 ? 0 : 1;
+        counts[index]++;
+      }
+      totalCount += numElements;
+    }
+
+    PieChartConfigurationPtr config = new PieChartConfiguration(name + T(" ") + proteinClass->getMemberVariableShortName(target),
+                                                                T("Number of examples: ") + String((int)totalCount));
+    config->appendElement(T("True (") + String((int)counts[0]) + T(" examples)"), (double)counts[0]/(double)totalCount);
+    config->appendElement(T("False (") + String((int)counts[1]) + T(" examples)"), (double)counts[1]/(double)totalCount);
+    config->appendElement(T("Missing (") + String((int)counts[2]) + T(" examples)"), (double)counts[2]/(double)totalCount);
+
+    return config;
+  }
 };
 
 };
