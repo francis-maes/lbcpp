@@ -29,6 +29,8 @@
     <variable type="PositiveInteger" name="minimumDistanceFromDiagonal"/>
   </class>
   
-  <class name="NaiveDisulfidePatternBuilderEvaluator" base="DisulfidePatternEvaluator"/>
+  <class name="DisulfidePatternBuilderEvaluator" base="DisulfidePatternEvaluator" abstract="yes"/>
+  <class name="NaiveDisulfidePatternBuilderEvaluator" base="DisulfidePatternBuilderEvaluator"/>
+  <class name="BestFirstDisulfidePatternBuilderEvaluator" base="DisulfidePatternBuilderEvaluator"/>
 
 </library>

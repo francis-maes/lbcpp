@@ -621,7 +621,7 @@ protected:
       jassert(protein);
       ObjectVectorPtr vector = protein->getTargetOrComputeIfMissing(context, target).getObjectAndCast<ObjectVector>(context);
       if (!vector)
-        break;
+        continue;
 
       size_t numElements = vector->getNumElements();
       for (size_t j = 0; j < numElements; ++j)
@@ -657,7 +657,7 @@ protected:
       jassert(protein);
       DoubleVectorPtr vector = protein->getTargetOrComputeIfMissing(context, target).getObjectAndCast<DoubleVector>(context);
       if (!vector)
-        break;
+        continue;
 
       size_t numElements = vector->getNumElements();
       for (size_t j = 0; j < numElements; ++j)
@@ -721,7 +721,7 @@ protected:
       jassert(protein);
       SymmetricMatrixPtr matrix = protein->getTargetOrComputeIfMissing(context, target).getObjectAndCast<SymmetricMatrix>(context);
       if (!matrix)
-        break;
+        continue;
 
       size_t numElements = matrix->getNumElements();
       for (size_t j = 0; j < numElements; ++j)
