@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_USER_INTERFACE_COMPONENT_PIE_CHART_OBJECT_H_
-# define LBCPP_USER_INTERFACE_COMPONENT_PIE_CHART_OBJECT_H_
+#ifndef LBCPP_USER_INTERFACE_COMPONENT_PIE_CHART_H_
+# define LBCPP_USER_INTERFACE_COMPONENT_PIE_CHART_H_
 
 # include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
 
@@ -147,4 +147,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_USER_INTERFACE_COMPONENT_PIE_CHART_OBJECT_H_
+#endif // !LBCPP_USER_INTERFACE_COMPONENT_PIE_CHART_H_

@@ -3,6 +3,7 @@
 <library name="UserInterfaceComponent" directory="UserInterface/Component">
 
   <include file="lbcpp/UserInterface/PieChartComponent.h"/>
+  <include file="lbcpp/UserInterface/HistogramComponent.h"/>
 
   <class name="CurveAxisConfiguration">
     <variable type="Double" name="rangeMin"/>
@@ -32,9 +33,19 @@
   <uicomponent name="DoubleMatrixComponent" type="DoubleMatrix[Double]"/>
 
   <class name="PieChartConfiguration" base="Object">
+    <variable type="String" name="description"/>
     <variable type="GenericVector[Pair[String, Double]]" name="values"/>
   </class>
 
   <uicomponent name="PieChartComponent" type="PieChartConfiguration"/>
 
+  <class name="HistogramConfiguration" base="NameableObject">
+    <variable type="Double" name="stepSize"/>
+    <variable type="Double" name="minValue"/>
+    <variable type="Double" name="maxValue"/>
+    <variable type="Boolean" name="includeOutOfBound"/>
+    <variable type="GenericVector[Double]" name="values"/>
+  </class>
+  
+  <uicomponent name="HistogramComponent" type="HistogramConfiguration"/>
 </library>
