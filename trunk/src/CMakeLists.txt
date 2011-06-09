@@ -676,6 +676,7 @@ IF(LBCPP_USER_INTERFACE)
     ../include/lbcpp/UserInterface/ObjectEditor.h
     ../include/lbcpp/UserInterface/MatrixComponent.h
     ../include/lbcpp/UserInterface/PieChartComponent.h
+    ../include/lbcpp/UserInterface/HistogramComponent.h
     UserInterface/UserInterfaceManager.cpp
     ${LBCPP_USER_INTEFACE_GENERATED_FILES}
   )

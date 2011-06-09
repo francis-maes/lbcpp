@@ -10,7 +10,9 @@
 #endif
 
 #include <lbcpp/UserInterface/PieChartComponent.h>
-# include <lbcpp/UserInterface/VariableSelector.h>
+#include <lbcpp/UserInterface/HistogramComponent.h>
+
+#include <lbcpp/UserInterface/VariableSelector.h>
 
 /*
 ** BricoBox - Some non-important test tools
@@ -482,6 +484,7 @@ public:
     for (size_t i = 0; i < testingProteins->getNumElements(); ++i, ++index)
       allProteins->setElement(index, testingProteins->getElement(i));
 
+    computeProteinStatistics(context, trainingProteins, validationProteins, testingProteins, allProteins);
     computeStatistics(context, trainingProteins, validationProteins, testingProteins, allProteins, ss3Target);
     computeStatistics(context, trainingProteins, validationProteins, testingProteins, allProteins, ss8Target);
     computeStatistics(context, trainingProteins, validationProteins, testingProteins, allProteins, sa20Target);
@@ -501,6 +504,39 @@ protected:
   File inputDirectory;
 
 protected:
+  void computeProteinStatistics(ExecutionContext& context, ContainerPtr trainingProteins, ContainerPtr validationProteins, ContainerPtr testingProteins, ContainerPtr allProteins) const
+  {
+    context.enterScope(T("Computing gobal statistics"), WorkUnitPtr());
+    
+    HistogramConfigurationPtr res;
+    res = computeLengthStatistics(context, trainingProteins, T("Training"));
+    context.resultCallback(T("Train"), res);
+    
+    res = computeLengthStatistics(context, validationProteins, T("Validation"));
+    context.resultCallback(T("Validation"), res);
+    
+    res = computeLengthStatistics(context, testingProteins, T("Testing"));
+    context.resultCallback(T("Test"), res);
+    
+    res = computeLengthStatistics(context, allProteins, T("Global"));
+    context.resultCallback(T("All"), res);
+
+    context.leaveScope();
+  }
+  
+  HistogramConfigurationPtr computeLengthStatistics(ExecutionContext& context, const ContainerPtr& proteins, const String& name) const
+  {
+    const size_t n = proteins->getNumElements();
+    HistogramConfigurationPtr config = new HistogramConfiguration(10, 0, 500, true, name);
+    for (size_t i = 0; i < n; i++)
+    {
+      ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>(context);
+      jassert(protein);
+      config->addData(protein->getLength());
+    }
+    return config;
+  }
+  
   void computeStatistics(ExecutionContext& context, ContainerPtr trainingProteins, ContainerPtr validationProteins, ContainerPtr testingProteins, ContainerPtr allProteins, ProteinTarget target) const
   {
     context.enterScope(T("Computing statistics of ") + proteinClass->getMemberVariableName(target), WorkUnitPtr());
@@ -584,7 +620,9 @@ protected:
       ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>();
       jassert(protein);
       ObjectVectorPtr vector = protein->getTargetOrComputeIfMissing(context, target).getObjectAndCast<ObjectVector>(context);
-      jassert(vector);
+      if (!vector)
+        break;
+
       size_t numElements = vector->getNumElements();
       for (size_t j = 0; j < numElements; ++j)
       {
@@ -618,7 +656,9 @@ protected:
       ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>();
       jassert(protein);
       DoubleVectorPtr vector = protein->getTargetOrComputeIfMissing(context, target).getObjectAndCast<DoubleVector>(context);
-      jassert(vector);
+      if (!vector)
+        break;
+
       size_t numElements = vector->getNumElements();
       for (size_t j = 0; j < numElements; ++j)
       {
@@ -680,7 +720,9 @@ protected:
       ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>();
       jassert(protein);
       SymmetricMatrixPtr matrix = protein->getTargetOrComputeIfMissing(context, target).getObjectAndCast<SymmetricMatrix>(context);
-      jassert(matrix);
+      if (!matrix)
+        break;
+
       size_t numElements = matrix->getNumElements();
       for (size_t j = 0; j < numElements; ++j)
       {
