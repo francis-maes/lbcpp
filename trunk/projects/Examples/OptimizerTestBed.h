@@ -301,7 +301,7 @@ class LinearSlopeFunction : public ScalarVectorFunction
 public:
   LinearSlopeFunction(const DenseDoubleVectorPtr& xopt, double fopt) : fopt(fopt) 
   {
-    int DIM = xopt->getNumValues();
+    size_t DIM = xopt->getNumValues();
     this->xopt = independentDoubleVectorSampler(DIM, gaussianSampler())->sample(defaultExecutionContext(), defaultExecutionContext().getRandomGenerator()).getObjectAndCast<DenseDoubleVector>();
     for (size_t i = 0; i < DIM; i++)
     {
