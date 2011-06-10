@@ -29,7 +29,7 @@ public:
   }
 
   size_t getNumBins() const
-    {return ceil((maxValue - minValue) / stepSize);}
+    {return (size_t)(ceil((maxValue - minValue) / stepSize));}
   
   size_t getBin(size_t index) const
   {
@@ -98,7 +98,7 @@ private:
       else if (values[i] > maxValue)
         ++rightOutOfBound;
       else
-        bins[(values[i] - minValue) / stepSize]++;
+        bins[(size_t)((values[i] - minValue) / stepSize)]++;
     }
   }
 };
@@ -123,15 +123,15 @@ public:
   {
     const int width = getWidth();
     const int height = getHeight();
-    double currentY = 0.;
+    float currentY = 0.f;
 
     juce::Font f = g.getCurrentFont();
     g.setFont(24, juce::Font::bold);
     g.drawText(configuration->getName(), 0, 0, width, 30, juce::Justification::centred, false);
     g.setFont(f);
-    currentY += 40;
+    currentY += 40.f;
 
-    drawHistogram(g, 20, currentY, width - 40, juce::jmin(300., height - currentY - 10));
+    drawHistogram(g, 20.f, currentY, width - 40.f, juce::jmin(300.f, height - currentY - 10.f));
   }
 
 protected:
@@ -139,13 +139,13 @@ protected:
 
   void drawHistogram(juce::Graphics& g, float x, float y, float width, float height)
   {
-    const float binWidth = width / ((double)configuration->getNumBins() + (configuration->drawOutOfBound() ? 2 : 0));
-    const double binUnitHeight = height / (double)configuration->getMaximumBinValue();
+    const float binWidth = width / ((float)configuration->getNumBins() + (configuration->drawOutOfBound() ? 2 : 0));
+    const float binUnitHeight = height / (float)configuration->getMaximumBinValue();
     const size_t n = configuration->getNumBins();
     // draw bar
     for (size_t i = 0; i < n; ++i)
     {
-      juce::Colour c = juce::Colour(i / (double)configuration->getNumBins(), 1.f, 0.75f, (juce::uint8)255);
+      juce::Colour c = juce::Colour(i / (float)configuration->getNumBins(), 1.f, 0.75f, (juce::uint8)255);
       g.setColour(c);
       g.fillRect(x + (i + (configuration->drawOutOfBound() ? 1 : 0)) * binWidth, y + height - binUnitHeight * configuration->getBin(i), binWidth, binUnitHeight * configuration->getBin(i));
     }

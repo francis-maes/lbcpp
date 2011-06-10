@@ -60,7 +60,7 @@ public:
   {
     const int width = getWidth();
     //const int height = getHeight();
-    double currentY = 0.;
+    float currentY = 0.f;
 
     juce::Font f = g.getCurrentFont();
     g.setFont(24, juce::Font::bold);
@@ -68,17 +68,17 @@ public:
     g.setFont(f);
     currentY += 40;
     
-    const int radius = width / 3.;
-    drawPieChart(g, width / 2., currentY + radius, radius);
-    currentY += 2 * radius + 10;
+    const float radius = width / 3.f;
+    drawPieChart(g, width / 2.f, currentY + radius, (int)radius);
+    currentY += 2 * radius + 10.f;
     
     if (configuration->getDescription() != String::empty)
     {
-      g.drawText(configuration->getDescription(), 20, currentY, width - 20, 50, juce::Justification::centred, true);
-      currentY += 60;
+      g.drawText(configuration->getDescription(), 20, (int)currentY, width - 20, 50, juce::Justification::centred, true);
+      currentY += 60.f;
     }
     
-    drawPieLegend(g, width / 2. - 125, currentY);
+    drawPieLegend(g, width / 2.f - 125.f, currentY);
   }
 
 protected:
@@ -87,22 +87,22 @@ protected:
 
   void drawPieChart(juce::Graphics& g, float x, float y, int radius)
   {
-    const int diameter = radius * 2;
-    const double innerCircle = 1/2.;
+    const float diameter = radius * 2.f;
+    const float innerCircle = 0.5f;
     colors.clear();
 
-    std::vector<double> angles;
-    angles.push_back(0.0);
+    std::vector<float> angles;
+    angles.push_back(0.f);
 
-    double currentAngle = 0.0;
+    float currentAngle = 0.0;
     for (size_t i = 0; i < configuration->getNumElements(); ++i)
     {
-      double nextAngle = currentAngle + M_2_TIMES_PI * configuration->getElementValue(i);
+      float nextAngle = currentAngle + (float)(M_2_TIMES_PI * configuration->getElementValue(i));
       angles.push_back(nextAngle);
 
       juce::Path path;
-      path.addPieSegment(x - radius, y - radius, diameter, diameter, currentAngle + M_PI / 2, nextAngle + M_PI / 2, 1/2.);
-      juce::Colour c = juce::Colour(i / (double)configuration->getNumElements(), 1.f, 0.75f, (juce::uint8)255);
+      path.addPieSegment(x - radius, y - radius, diameter, diameter, currentAngle + (float)(M_PI / 2), nextAngle + (float)(M_PI / 2), 0.5f);
+      juce::Colour c = juce::Colour(i / (float)configuration->getNumElements(), 1.f, 0.75f, (juce::uint8)255);
       colors.push_back(c);
       g.setColour(c);
       g.fillPath(path);
@@ -111,7 +111,7 @@ protected:
       currentAngle = nextAngle;
     }
     
-    const double innerRadius = radius * innerCircle;
+    const float innerRadius = radius * innerCircle;
     g.drawEllipse(x - radius, y - radius, diameter, diameter, 1);
     g.drawEllipse(x - innerRadius, y - innerRadius, diameter * innerCircle, diameter * innerCircle, 1);
     
@@ -133,14 +133,14 @@ protected:
     const size_t n = configuration->getNumElements();
     for (size_t i = 0; i < n; ++i)
     {
-      const double currentY = y + i * lineHeight;
+      const float currentY = y + i * lineHeight;
       g.setColour(colors[i]);
-      g.fillRect((float)x, (float)currentY + (lineHeight - squareSize) / 2., (float)squareSize, (float)squareSize);
+      g.fillRect(x, currentY + (lineHeight - squareSize) / 2.f, (float)squareSize, (float)squareSize);
       g.setColour(juce::Colours::black);
-      g.drawRect((float)x, (float)currentY + (lineHeight - squareSize) / 2., (float)squareSize, (float)squareSize);
+      g.drawRect(x, currentY + (lineHeight - squareSize) / 2.f, (float)squareSize, (float)squareSize);
 
-      g.drawText(String(configuration->getElementValue(i) * 100, 2) + T(" %"), x + squareSize + 10, currentY, percentValueWidth, lineHeight, juce::Justification::centredRight, false);
-      g.drawText(configuration->getElementName(i), x + squareSize + percentValueWidth + 20, currentY, textWidth, lineHeight, juce::Justification::centredLeft, true);
+      g.drawText(String(configuration->getElementValue(i) * 100, 2) + T(" %"), (int)x + squareSize + 10, (int)currentY, percentValueWidth, lineHeight, juce::Justification::centredRight, false);
+      g.drawText(configuration->getElementName(i), (int)x + squareSize + percentValueWidth + 20, (int)currentY, textWidth, lineHeight, juce::Justification::centredLeft, true);
     }
   }
 };
