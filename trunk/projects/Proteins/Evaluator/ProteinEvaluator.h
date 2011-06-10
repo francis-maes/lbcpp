@@ -76,20 +76,20 @@ class ProteinEvaluator : public CompositeEvaluator
 public:
   ProteinEvaluator(bool isFinalEvaluation = false)
   {
-    addEvaluator(cbpTarget,  classificationEvaluator());
-    addEvaluator(ss3Target,  containerSupervisedEvaluator(classificationEvaluator()));
-    addEvaluator(ss8Target,  containerSupervisedEvaluator(classificationEvaluator()));
-    addEvaluator(sa20Target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)));
-    addEvaluator(drTarget,   containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)));
-    addEvaluator(stalTarget, containerSupervisedEvaluator(classificationEvaluator()));
+    addEvaluator(cbpTarget,  classificationEvaluator(), T("Cystein Bonding Property"));
+    addEvaluator(ss3Target,  containerSupervisedEvaluator(classificationEvaluator()), T("Secondary Structure"));
+    addEvaluator(ss8Target,  containerSupervisedEvaluator(classificationEvaluator()), T("DSSP Secondary Structure"));
+    addEvaluator(sa20Target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("Solvent Accessibility (@20)"));
+    addEvaluator(drTarget,   containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("Disorder regions"));
+    addEvaluator(stalTarget, containerSupervisedEvaluator(classificationEvaluator()), T("Structural Alphabet"));
 //    addEvaluator(cma8Target, containerSupervisedEvaluator(new ContactMapEvaluator(8)));
 //    addEvaluator(cmb8Target, containerSupervisedEvaluator(new ContactMapEvaluator(8)));
-    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, isFinalEvaluation), 1));
+    addEvaluator(cbsTarget,  containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation)), T("Cystein Bonding States"));
+    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, isFinalEvaluation), 1), T("Disulfide Bonds"));
 //    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, isFinalEvaluation), 1));
-    addEvaluator(dsbTarget,  new DisulfidePatternEvaluator());
-    addEvaluator(dsbTarget,  new NaiveDisulfidePatternBuilderEvaluator());
-    addEvaluator(dsbTarget,  new BestFirstDisulfidePatternBuilderEvaluator());
-    addEvaluator(cbsTarget,  containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation)));
+    addEvaluator(dsbTarget,  new DisulfidePatternEvaluator(), T("Disulfide Bonds"));
+    addEvaluator(dsbTarget,  new NaiveDisulfidePatternBuilderEvaluator(), T("Disulfide Bonds (Naive Reconstruction)"));
+    addEvaluator(dsbTarget,  new BestFirstDisulfidePatternBuilderEvaluator(), T("Disulfide Bonds (Best First)"));
   }
 
   /* CompositeEvaluator */
@@ -99,10 +99,14 @@ public:
     ProteinPtr supervision = example->getVariable(1).getObjectAndCast<Protein>();
     ProteinPtr predicted = output.getObjectAndCast<Protein>();
 
-    /* Strore container for fast access */
+    /* Store container for fast access */
     size_t numTargets = targets.size();
     for (size_t i = 0; i < numTargets; ++i)
     {
+      // noTarget = whole protein
+      if (targets[i] == noTarget && !evaluators[i]->updateScoreObject(context, scoreObject, example, output))
+        return false;
+      
       ContainerPtr supervisionContainer = supervision->getTargetOrComputeIfMissing(context, (int)targets[i]).getObjectAndCast<Container>();
       ContainerPtr predictedContainer = predicted->getTargetOrComputeIfMissing(context, (int)targets[i]).getObjectAndCast<Container>();
 
@@ -131,16 +135,18 @@ public:
     CompositeScoreObjectPtr res = CompositeEvaluator::createEmptyScoreObject(context, function);
     res->setName(T("Protein's Scores"));
     for (size_t i = 0; i < targets.size(); ++i)
-      res->getScoreObject(i)->setName(proteinClass->getMemberVariableName((int)targets[i]));
+      res->getScoreObject(i)->setName(descriptions[i]);
     return res;
   }
 
 protected:
   std::vector<ProteinTarget> targets;
+  std::vector<String> descriptions;
   
-  void addEvaluator(ProteinTarget target, EvaluatorPtr evaluator)
+  void addEvaluator(ProteinTarget target, EvaluatorPtr evaluator, const String& description)
   {
     targets.push_back(target);
+    descriptions.push_back(description);
     CompositeEvaluator::addEvaluator(evaluator);
   }
 };

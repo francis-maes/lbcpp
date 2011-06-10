@@ -38,13 +38,19 @@ public:
     Variable myMissingObject = Variable::missingValue(getType(T("VerySimpleClass")));
     Variable myPair = Variable::pair(myBoolean, myObject);
     Variable myMissingPair = Variable::missingValue(pairClass(booleanType, getType(T("VerySimpleClass"))));
+    DenseDoubleVectorPtr myVector = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, probabilityType, 3);
+    myVector->setValue(0, 0.0);
+    myVector->setValue(1, 1.0);
+    myVector->setValue(2, doubleType->getMissingValue().getDouble());
     
+    // FIXME: use informationCallback and resultCallback
     std::cout << myBoolean << " " << myMissingBoolean << std::endl
               << myInt << " " << myMissingInt << std::endl
               << myDouble << " " << myMissingDouble << std::endl
               << myString << " " << myMissingString << std::endl
               << myObject << " " << myMissingObject << std::endl
-              << myPair << " " << myMissingPair << std::endl;
+              << myPair << " " << myMissingPair << std::endl
+              << myVector->toString() << std::endl;
         
     std::cout << myBoolean.isMissingValue() << " " << myMissingBoolean.isMissingValue() << std::endl
               << myInt.isMissingValue() << " " << myMissingInt.isMissingValue() << std::endl

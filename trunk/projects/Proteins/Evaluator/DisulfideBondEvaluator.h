@@ -70,9 +70,9 @@ public:
     jassert(supervisedMatrix && predictedMatrix && predictedMatrix->getDimension() == dimension);
 
     if (minimumDistanceFromDiagonal >= dimension)
-    { // FIXME
-      //score->addValidGraphPrediction(isValidGraph);
-      //score->addPrediction(true);
+    {
+      score->addValidGraphPrediction(true);
+      score->addPrediction(true);
       return;
     }
     
@@ -143,25 +143,6 @@ public:
     SymmetricMatrixPtr res = predictedMatrix->cloneAndCast<SymmetricMatrix>(context);
 
     buildPattern(predictedMatrix, res);
-    
-    for (size_t i = 0; i < dimension - minimumDistanceFromDiagonal; ++i)
-    {
-      // Find best predicted element of row i
-      size_t bestIndex = (size_t)-1;
-      double bestValue = -DBL_MAX;
-      for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
-      {
-        if (res->getElement(i, j).getDouble() > bestValue)
-        {
-          bestIndex = j;
-          bestValue = res->getElement(i, j).getDouble();
-        }
-      }
-      jassert(bestIndex != (size_t)-1);
-      // Update predictd matrix with a connection between i and bestIndex if bestValue > threshold
-      if (bestValue != 0.0)
-        updateMatrix(res, i, bestIndex, bestValue > threshold);
-    }
     
     DisulfidePatternEvaluator::addPrediction(context, res, supervision, result);
   }
@@ -235,7 +216,7 @@ protected:
         return;
     }
   }
-  
+
   void findBestValue(const SymmetricMatrixPtr& resultMatrix, double& bestValue, size_t& bestI, size_t& bestJ) const
   {
     const size_t dimension = resultMatrix->getDimension();

@@ -48,7 +48,7 @@ String Vector::toString() const
       else
         value += String(variable.getDouble());
       if (i < n - 1)
-        value += ", ";
+        value += " ";
     }
     return value;
   }
