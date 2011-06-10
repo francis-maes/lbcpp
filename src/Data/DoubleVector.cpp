@@ -361,9 +361,16 @@ void DenseDoubleVector::saveToXml(XmlExporter& exporter) const
 {
   Object::saveToXml(exporter);
   size_t n = values->size();
+  TypePtr elementsType = getElementsType();
   String res;
   for (size_t i = 0; i < n; ++i)
-    res += String((*values)[i]) + T(" ");
+  {
+    double value = (*values)[i];
+    if (elementsType->isMissingValue(VariableValue(value)))
+      res += T("_ ");
+    else
+      res += String(value) + T(" ");
+  }
   exporter.addTextElement(res.trimEnd());
   exporter.setAttribute(T("size"), n);
 }
@@ -390,10 +397,17 @@ bool DenseDoubleVector::loadFromXml(XmlImporter& importer)
     }
   }
 
-  TypePtr elementType = getElementsType();
+  TypePtr elementsType = getElementsType();
   ensureSize(n);
   for (size_t i = 0; i < n; ++i)
-    getValueReference(i) = tokens[i].getDoubleValue();
+  {
+    String token = tokens[i];
+    double& value = getValueReference(i);
+    if (token == T("_") || token == T("6.23902437e-232")) // Compatibility w.r.t. an old serialisation bug on missing values
+      value = elementsType->getMissingValue().getDouble();
+    else
+      value = tokens[i].getDoubleValue();
+  }
   return ok;
 }
 

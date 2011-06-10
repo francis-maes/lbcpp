@@ -120,14 +120,12 @@ public:
     {return String(value.getDouble() * 100, 1) + T("%");}
 
   virtual String toString(const VariableValue& value) const
-    {return String(value.getDouble() * 100, 3) + T("%");}
+    {return String(value.getDouble());}
 
   virtual Variable createFromString(ExecutionContext& context, const String& value) const
   {
-    String str = value.trim();
-    if (str.endsWithChar('%'))
-      str.dropLastCharacters(1);
-    return Variable(str.getDoubleValue() / 100.0, refCountedPointerFromThis(this));
+    jassert(!value.endsWithChar('%'));
+    return Variable(value.getDoubleValue(), refCountedPointerFromThis(this));
   }
 };
 

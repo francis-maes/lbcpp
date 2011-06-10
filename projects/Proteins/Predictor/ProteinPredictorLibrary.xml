@@ -29,6 +29,10 @@
   </class>
   <class name="CreateCysteinSeparationProfil" base="Function"/>
   <class name="CysteinBondingStateRatio" base="SimpleUnaryFunction"/>
+  <class name="BestFirstDisulfidePatternBuilder" base="SimpleUnaryFunction">
+    <variable type="Probability" name="threshold"/>
+    <variable type="PositiveInteger" name="minimumDistanceFromDiagonal"/>
+  </class>
 
   <class name="ProteinPredictor" base="CompositeFunction">
     <variable type="ProteinPredictorParameters" name="parameters"/>
