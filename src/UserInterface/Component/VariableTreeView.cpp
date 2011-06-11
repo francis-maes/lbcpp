@@ -80,8 +80,20 @@ public:
     CompositeDoubleVectorPtr compositeVector = variable.dynamicCast<CompositeDoubleVector>();
     if (compositeVector)
     {
+      EnumerationPtr elementsEnumeration = compositeVector->getElementsEnumeration();
       for (size_t i = 0; i < compositeVector->getNumSubVectors(); ++i)
-        addSubVariable(T("[") + String((int)i) + T("]"), compositeVector->getSubVector(i));
+      {
+        size_t offset = compositeVector->getSubVectorOffset(i);
+        DoubleVectorPtr subVector = compositeVector->getSubVector(i);
+        String name = T("[") + String((int)i) + T("]");
+
+        String parentName = elementsEnumeration->getElementName(offset);
+        String childName = subVector->getElementName(0);
+        int j = parentName.indexOf(childName);
+        if (j >= 0)
+          name = parentName.substring(0, j - 1);
+        addSubVariable(name, subVector);
+      }
       mightContainSubItemsFlag = true;
       return;
     }
