@@ -219,6 +219,8 @@ public:
 
   const DoubleVectorPtr& getCysteinBondingStates(ExecutionContext& context) const;
   
+  size_t getNumBondedCysteins() const;
+  
   /*
   ** Tertiary Structure
   */

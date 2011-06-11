@@ -133,7 +133,7 @@ public:
   NumericalProteinFeaturesParameters()
       : 
       proteinLengthDiscretization(20), numCysteinsDiscretization(5),
-      bondingPropertyDiscretization(5), bondingPropertyEntropyDiscretization(5),
+      bondingPropertyDiscretization(5), bondingPropertyEntropyDiscretization(0),
 
       pssmDiscretization(4), pssmEntropyDiscretization(6),
       ss3Discretization(9), ss3EntropyDiscretization(2),
@@ -154,9 +154,6 @@ public:
 
       residueGlobalMeanFeatures(true), residueWindowSize(9),
       residueLocalMeanSize(18), residueMediumMeanSize(90),
-      //residuePairGlobalFeatures(true), 
-      //residuePairWindowSize(15),
-      //residuePairLocalMeanSize(15), residuePairMediumMeanSize(50),
       
       // residue pair
       aminoAcidDistanceDiscretization(5), useIntervalMean(false),
@@ -216,10 +213,6 @@ public:
   size_t residueMediumMeanSize;
 
   // pair
-//  bool residuePairGlobalFeatures;
-//  size_t residuePairWindowSize;
-//  size_t residuePairLocalMeanSize;
-//  size_t residuePairMediumMeanSize;
   size_t aminoAcidDistanceDiscretization;
   bool useIntervalMean;
   size_t cartesianProductPrimaryWindowSize;
@@ -244,6 +237,8 @@ extern ClassPtr numericalProteinFeaturesParametersClass;
 
 ProteinPredictorParametersPtr numericalProteinPredictorParameters(NumericalProteinFeaturesParametersPtr featuresParameters, LearnerParametersPtr learningParameters);
 ProteinPredictorParametersPtr numericalProteinPredictorParameters();
+
+ProteinPredictorParametersPtr numericalCysteinPredictorParameters();
 
 }; /* namespace lbcpp */
 

@@ -457,6 +457,53 @@ protected:
   size_t numFolds;
 };
 
+class ProteinMaxLength : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (inputDirectory == File::nonexistent)
+      inputDirectory = File::getCurrentWorkingDirectory();
+
+    ContainerPtr trainingProteins = Protein::loadProteinsFromDirectory(context, File(inputDirectory.getFullPathName() + T("/train/")), 0, T("Loading training proteins"));
+    ContainerPtr validationProteins = Protein::loadProteinsFromDirectory(context, File(inputDirectory.getFullPathName() + T("/validation/")), 0, T("Loading validation proteins"));
+    ContainerPtr testingProteins = Protein::loadProteinsFromDirectory(context, File(inputDirectory.getFullPathName() + T("/test/")), 0, T("Loading testing proteins"));
+
+    size_t trainingLength = getMaxLength(context, trainingProteins);
+    context.resultCallback(T("trainingLength"), trainingLength);
+    std::cout << "Training length: " << trainingLength << std::endl;
+
+    size_t validationLength = getMaxLength(context, validationProteins);
+    context.resultCallback(T("validationLength"), validationLength);
+    std::cout << "Validation length: " << validationLength << std::endl;
+
+    size_t testingLength = getMaxLength(context, testingProteins);
+    context.resultCallback(T("testingLength"), testingLength);
+    std::cout << "Test length: " << testingLength << std::endl;
+
+    return juce::jmax((int)trainingLength, (int)validationLength, (int)testingLength);
+  }
+  
+protected:
+  friend class ProteinMaxLengthClass;
+  
+  File inputDirectory;
+  
+  size_t getMaxLength(ExecutionContext& context, const ContainerPtr& proteins) const
+  {
+    size_t maxLength = 0;
+    const size_t n = proteins->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>(context);
+      jassert(protein);
+      if (protein->getLength() > maxLength)
+        maxLength = protein->getLength();
+    }
+    return maxLength;
+  }
+};
+
 class ProteinStatisticsWorkUnit : public WorkUnit
 {
 public:
@@ -493,7 +540,8 @@ public:
     computeStatistics(context, trainingProteins, validationProteins, testingProteins, allProteins, cbpTarget);
     computeStatistics(context, trainingProteins, validationProteins, testingProteins, allProteins, cbsTarget);
     computeStatistics(context, trainingProteins, validationProteins, testingProteins, allProteins, dsbTarget);
-    computeStatistics(context, trainingProteins, validationProteins, testingProteins, allProteins, cma8Target);
+    //computeStatistics(context, trainingProteins, validationProteins, testingProteins, allProteins, cma8Target);
+    computeDisulfideStatistics(context, allProteins);
     
     return true;
   }
@@ -527,7 +575,7 @@ protected:
   HistogramConfigurationPtr computeLengthStatistics(ExecutionContext& context, const ContainerPtr& proteins, const String& name) const
   {
     const size_t n = proteins->getNumElements();
-    HistogramConfigurationPtr config = new HistogramConfiguration(10, 0, 500, true, name);
+    HistogramConfigurationPtr config = new HistogramConfiguration(36, 0, 1400, true, name);
     for (size_t i = 0; i < n; i++)
     {
       ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>(context);
@@ -604,6 +652,34 @@ protected:
     }
     else
       context.errorCallback(T("computeStatistics"), T("The target is not (yet) supported !"));
+
+    context.leaveScope();
+  }
+  
+  void computeDisulfideStatistics(ExecutionContext& context, const ContainerPtr& proteins) const
+  {
+    const size_t n = proteins->getNumElements();
+    context.enterScope(T("Computing disulfide histograms"), WorkUnitPtr());
+    
+    HistogramConfigurationPtr configNumBridges = new HistogramConfiguration(1, 0, 30, false, T("#Seqs vs #Bridges"));
+    HistogramConfigurationPtr configBridgeDensity = new HistogramConfiguration(0.00555555, 0, 0.18, false, T("#Seqs vs #Briges/Length"));
+    for (size_t i = 0; i < n; i++)
+    {
+      ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>(context);
+      jassert(protein);
+      const DoubleVectorPtr& states = protein->getCysteinBondingStates(context);
+      const size_t numStates = states->getNumElements();
+      size_t numBondedCysteins = 0;
+      for (size_t i = 0; i < numStates; ++i)
+        if (states->getElement(i).getDouble() > 0.5)
+          ++numBondedCysteins;
+      jassert(numBondedCysteins % 2 == 0);
+      
+      configNumBridges->addData(numBondedCysteins / 2);
+      configBridgeDensity->addData((numBondedCysteins / 2) / (double)protein->getLength());
+    }
+    context.resultCallback(T("#Seqs vs #Bridges"), configNumBridges);
+    context.resultCallback(T("#Seqs vs #Briges/Length"), configBridgeDensity);
 
     context.leaveScope();
   }

@@ -98,6 +98,10 @@
     <variable type="PositiveInteger" name="numFolds" shortName="n"/>
   </class>
 
+  <class name="ProteinMaxLength" base="WorkUnit">
+    <variable type="File" name="inputDirectory" shortName="i"/>
+  </class>
+
   <class name="ProteinStatisticsWorkUnit" base="WorkUnit">
     <variable type="File" name="inputDirectory" shortName="i"/>
   </class>

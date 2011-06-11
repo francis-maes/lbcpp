@@ -330,6 +330,20 @@ const DoubleVectorPtr& Protein::getCysteinBondingStates(ExecutionContext& contex
   return cysteinBondingStates;
 }
 
+size_t Protein::getNumBondedCysteins() const
+{
+  if (!cysteinBondingStates)
+    return 0;
+
+  const size_t numCysteins = cysteinBondingStates->getNumElements();
+  size_t numBondedCysteins = 0;
+  for (size_t i = 0; i < numCysteins; ++i)
+    if (cysteinBondingStates->getElement(i).getDouble() > 0.5)
+      ++numBondedCysteins;
+
+  return numBondedCysteins;
+}
+
 CartesianPositionVectorPtr Protein::getCAlphaTrace() const
 {
   if (!calphaTrace && tertiaryStructure)
@@ -345,30 +359,21 @@ DoubleVectorPtr Protein::computeCysteinBondingProperty(DoubleVectorPtr bondingSt
   if (!bondingStates)
     return DoubleVectorPtr();
 
-  const size_t n = bondingStates->getNumElements();
-  if (!n)
-    return DoubleVectorPtr();
-  
+  const size_t numCysteins = bondingStates->getNumElements();
+  size_t numBondedCysteins = 0;
+  for (size_t i = 0; i < numCysteins; ++i)
+    if (bondingStates->getElement(i).getDouble() > 0.5)
+      ++numBondedCysteins;
+
   SparseDoubleVectorPtr res = new SparseDoubleVector(sparseDoubleVectorClass(cysteinBondingPropertyElementEnumeration, probabilityType));
 
-  bool isAllUnbonded = true;
-  bool isAllbonded = true;
-  
-  for (size_t i = 0; i < n; ++i)
-  {
-    const bool isBonded = bondingStates->getElement(i).getDouble() > 0.5;
-    isAllbonded &= isBonded;
-    isAllUnbonded &= !isBonded;
-  }
+  if (!numBondedCysteins)
+    res->setElement(none, probability(1.0));
+  else if (numBondedCysteins == numCysteins)
+    res->setElement(all, probability(1.0));
+  else
+    res->setElement(mix, probability(1.0));
 
-  jassert(!isAllbonded || !isAllUnbonded);
-  CysteinBondingPropertyElement bondingClass = mix;  
-  if (isAllbonded)
-    bondingClass = all;
-  else if (isAllUnbonded)
-    bondingClass = none;
-
-  res->setElement(bondingClass, probability(1.0));
   return res;
 }
 
