@@ -80,4 +80,9 @@
     <variable type="LearnerParameters" name="learningParameters" shortName="l"/>
   </class>
   
+  <class name="NumericalCysteinPredictorParameters" base="ProteinPredictorParameters" shortName="numericalCystein">
+    <constructor/>
+    <variable type="LearnerParameters" name="learningParameters" shortName="l"/>
+  </class>
+  
 </library>
