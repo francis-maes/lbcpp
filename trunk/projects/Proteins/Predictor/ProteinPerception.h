@@ -535,11 +535,11 @@ public:
   {
     const DoubleVectorPtr& vector = input.getObjectAndCast<DoubleVector>(context);
     if (!vector)
-      return Variable::missingValue(probabilityType);
+      return Variable::missingValue(getOutputType());
     
     const size_t n = vector->getNumElements();
     if (!n)
-      return Variable::missingValue(probabilityType);
+      return probability(0.f);
     
     double res = 0.0;
     for (size_t i = 0; i < n; i++)
@@ -548,10 +548,87 @@ public:
   }
 };
 
-class BestFirstDisulfidePatternBuilder : public SimpleUnaryFunction
+class GreedyDisulfideBondSumOfRow : public Function
 {
 public:
-  BestFirstDisulfidePatternBuilder(double threshold = 0.5, size_t minimumDistanceFromDiagonal = 1)
+  GreedyDisulfideBondSumOfRow(size_t minimumDistanceFromDiagonal = 1)
+    : minimumDistanceFromDiagonal(minimumDistanceFromDiagonal) {}
+  
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : (TypePtr)symmetricMatrixClass(probabilityType);}
+  
+  virtual String getOutputPostFix() const
+    {return T("GreedySumOfRow");}
+  
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return probabilityType;}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    const SymmetricMatrixPtr& matrix = inputs[0].getObjectAndCast<SymmetricMatrix>(context);
+    if (!matrix)
+      return Variable::missingValue(getOutputType());
+
+    const size_t index = inputs[1].getInteger();
+    
+    const size_t dimension = matrix->getDimension();
+    
+    double sum = 0.f;
+    if (index >= minimumDistanceFromDiagonal)
+      for (size_t i = 0; i <= index - minimumDistanceFromDiagonal; ++i)
+        sum += matrix->getElement(index, i).getDouble();
+    for (size_t i = index + minimumDistanceFromDiagonal; i < dimension; ++i)
+      sum += matrix->getElement(index, i).getDouble();
+
+    jassert(sum <= 1 + 10e-6);
+    return probability(sum);
+  }
+  
+protected:
+  friend class GreedyDisulfideBondSumOfRowClass;
+
+  size_t minimumDistanceFromDiagonal;
+};
+
+class GreedyDisulfideBondRatio : public SimpleUnaryFunction
+{
+public:
+  GreedyDisulfideBondRatio(size_t minimumDistanceFromDiagonal = 1)
+    : SimpleUnaryFunction(symmetricMatrixClass(probabilityType), probabilityType, T("GreedyRatio"))
+    , minimumDistanceFromDiagonal(minimumDistanceFromDiagonal) {}
+  
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    const SymmetricMatrixPtr& matrix = input.getObjectAndCast<SymmetricMatrix>(context);
+    if (!matrix)
+      return Variable::missingValue(getOutputType());
+    
+    const size_t dimension = matrix->getDimension();
+    if (dimension <= minimumDistanceFromDiagonal)
+      return probability(0.f);
+    
+    double sum = 0.f;
+    for (size_t i = 0; i < dimension - minimumDistanceFromDiagonal; ++i)
+      for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
+        sum += matrix->getElement(i, j).getDouble();
+
+    jassert(sum <= (double)(dimension / 2) + 10e-6);
+    return probability(sum / (double)(dimension / 2));
+  }
+  
+protected:
+  friend class GreedyDisulfideBondRatioClass;
+
+  size_t minimumDistanceFromDiagonal;
+};
+
+class GreedyDisulfidePatternBuilder : public SimpleUnaryFunction
+{
+public:
+  GreedyDisulfidePatternBuilder(double threshold = 0.5, size_t minimumDistanceFromDiagonal = 1)
     : SimpleUnaryFunction(symmetricMatrixClass(probabilityType), symmetricMatrixClass(probabilityType), T("PatternBuilder"))
     , threshold(threshold), minimumDistanceFromDiagonal(minimumDistanceFromDiagonal) {}
 
@@ -583,7 +660,7 @@ public:
   }
 
 protected:
-  friend class BestFirstDisulfidePatternBuilderClass;
+  friend class GreedyDisulfidePatternBuilderClass;
   
   double threshold;
   size_t minimumDistanceFromDiagonal;

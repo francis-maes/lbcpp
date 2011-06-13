@@ -65,8 +65,9 @@ public:
     {
       addTab(T("Residue Features"), Colours::white);
       addTab(T("Residue Pair Features"), Colours::red);
-      addTab(T("Disulfide Pair Features"), Colours::red);
-      addTab(T("Cystein BS Features"), Colours::red);
+      addTab(T("Cystein 0D"), Colours::white);
+      addTab(T("Cystein 1D"), Colours::white);
+      addTab(T("Cystein 2D"), Colours::white);
       addTab(T("Compute Missing"), Colours::pink);
     }
   }
@@ -86,10 +87,23 @@ public:
         proteins[0]->getTargetOrComputeIfMissing(context, i);
       return userInterfaceManager().createVariableTreeView(context, proteins[0], names[0]);
     }
-    else if (tabName == T("Cystein BS Features"))
+    else if (tabName == T("Cystein 0D"))
     {
-      NumericalProteinFeaturesParametersPtr featuresParameters = new NumericalProteinFeaturesParameters();
-      ProteinPredictorParametersPtr predictorParameters = numericalProteinPredictorParameters(featuresParameters, new StochasticGDParameters());
+      ProteinPredictorParametersPtr predictorParameters = numericalCysteinPredictorParameters();
+
+      FunctionPtr proteinfunction = predictorParameters->createProteinPerception();
+      proteinfunction->initialize(context, (TypePtr)proteinClass);
+      Variable proteinPerception = proteinfunction->compute(context, proteins[0]);
+
+      FunctionPtr residuefunction = predictorParameters->createGlobalPerception();
+      residuefunction->initialize(context, proteinfunction->getOutputType());
+      Variable description = residuefunction->compute(context, proteinPerception);
+      
+      return userInterfaceManager().createVariableTreeView(context, description);
+    }
+    else if (tabName == T("Cystein 1D"))
+    {
+      ProteinPredictorParametersPtr predictorParameters = numericalCysteinPredictorParameters();
       
       FunctionPtr proteinfunction = predictorParameters->createProteinPerception();
       proteinfunction->initialize(context, (TypePtr)proteinClass);
@@ -101,10 +115,9 @@ public:
       
       return userInterfaceManager().createVariableTreeView(context, description);
     }
-    else if (tabName == T("Disulfide Pair Features"))
+    else if (tabName == T("Cystein 2D"))
     {
-      NumericalProteinFeaturesParametersPtr featuresParameters = new NumericalProteinFeaturesParameters();
-      ProteinPredictorParametersPtr predictorParameters = numericalProteinPredictorParameters(featuresParameters, new StochasticGDParameters());
+      ProteinPredictorParametersPtr predictorParameters = numericalCysteinPredictorParameters();
       
       FunctionPtr proteinfunction = predictorParameters->createProteinPerception();
       proteinfunction->initialize(context, (TypePtr)proteinClass);
@@ -133,7 +146,8 @@ public:
     }
     else if (tabName == T("Residue Features"))
     {
-      ProteinPredictorParametersPtr predictorParameters = numericalCysteinPredictorParameters(/*featuresParameters, new StochasticGDParameters()*/);
+      NumericalProteinFeaturesParametersPtr featuresParameters = new NumericalProteinFeaturesParameters();
+      ProteinPredictorParametersPtr predictorParameters = numericalProteinPredictorParameters(featuresParameters, new StochasticGDParameters());
 
       FunctionPtr proteinfunction = predictorParameters->createProteinPerception();
       proteinfunction->initialize(context, (TypePtr)proteinClass);
