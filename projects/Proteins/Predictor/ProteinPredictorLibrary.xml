@@ -29,8 +29,14 @@
   </class>
   <class name="CreateCysteinSeparationProfil" base="Function"/>
   <class name="CysteinBondingStateRatio" base="SimpleUnaryFunction"/>
-  <class name="BestFirstDisulfidePatternBuilder" base="SimpleUnaryFunction">
+  <class name="GreedyDisulfidePatternBuilder" base="SimpleUnaryFunction">
     <variable type="Probability" name="threshold"/>
+    <variable type="PositiveInteger" name="minimumDistanceFromDiagonal"/>
+  </class>
+  <class name="GreedyDisulfideBondRatio" base="SimpleUnaryFunction">
+    <variable type="PositiveInteger" name="minimumDistanceFromDiagonal"/>
+  </class>
+  <class name="GreedyDisulfideBondSumOfRow" base="Function">
     <variable type="PositiveInteger" name="minimumDistanceFromDiagonal"/>
   </class>
 
@@ -83,6 +89,9 @@
   <class name="NumericalCysteinPredictorParameters" base="ProteinPredictorParameters" shortName="numericalCystein">
     <constructor/>
     <variable type="LearnerParameters" name="learningParameters" shortName="l"/>
+    <variable type="PositiveInteger" name="residueWindowSize"/>
+    <variable type="Boolean" name="useGlobalFeature"/>
+    <variable type="Boolean" name="useCartesianProduct"/>
   </class>
   
 </library>

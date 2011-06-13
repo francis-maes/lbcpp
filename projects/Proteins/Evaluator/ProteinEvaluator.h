@@ -84,7 +84,8 @@ public:
     addEvaluator(stalTarget, containerSupervisedEvaluator(classificationEvaluator()), T("Structural Alphabet"));
 //    addEvaluator(cma8Target, containerSupervisedEvaluator(new ContactMapEvaluator(8)));
 //    addEvaluator(cmb8Target, containerSupervisedEvaluator(new ContactMapEvaluator(8)));
-    addEvaluator(cbsTarget,  containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation)), T("Cystein Bonding States"));
+    addEvaluator(cbsTarget,  containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation)), T("Cystein Bonding States (Sens. & Spec.)"));
+    addEvaluator(cbsTarget,  containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, isFinalEvaluation)), T("Cystein Bonding States (Accuracy)"));
     addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, isFinalEvaluation), 1), T("Disulfide Bonds"));
 //    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, isFinalEvaluation), 1));
     addEvaluator(dsbTarget,  new DisulfidePatternEvaluator(), T("Disulfide Bonds"));
