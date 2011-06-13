@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="LibSVMLearning" directory="Learning/Numerical/LibSVM">
+
+  <enumeration name="LibSVMKernelType">
+    <value name="linear"/>
+    <value name="polynomial"/>
+    <value name="rbf"/>
+    <value name="sigmoid"/>
+  </enumeration>
+
+  <class name="LibSVMLearningMachine" base="Function" abstract="yes">
+    <variable type="Double" name="C"/>
+    <variable type="LibSVMKernelType" name="kernelType"/>
+    <variable type="PositiveInteger" name="kernelDegree"/>
+    <variable type="Double" name="kernelGamma"/>
+    <variable type="Double" name="kernelCoef0"/>
+  </class>
+
+  <class name="LibSVMBatchLearner" base="BatchLearner">
+    <constructor/>
+  </class>
+
+  <class name="LibSVMClassifier" base="LibSVMLearningMachine">
+    <constructor arguments="double C, size_t kernelType, size_t kernelDegree, double kernelGamma, double kernelCoef0" returnType="Function"/>
+  </class>
+
+
+</library>
