@@ -535,7 +535,7 @@ public:
   {
     const DoubleVectorPtr& vector = input.getObjectAndCast<DoubleVector>(context);
     if (!vector)
-      return Variable::missingValue(getOutputType());
+      return probability(0.f);
     
     const size_t n = vector->getNumElements();
     if (!n)
@@ -570,7 +570,7 @@ public:
   {
     const SymmetricMatrixPtr& matrix = inputs[0].getObjectAndCast<SymmetricMatrix>(context);
     if (!matrix)
-      return Variable::missingValue(getOutputType());
+      return Variable(0.f, getOutputType());
 
     const size_t index = inputs[1].getInteger();
     
@@ -604,7 +604,7 @@ public:
   {
     const SymmetricMatrixPtr& matrix = input.getObjectAndCast<SymmetricMatrix>(context);
     if (!matrix)
-      return Variable::missingValue(getOutputType());
+      return probability(0.f);
     
     const size_t dimension = matrix->getDimension();
     if (dimension <= minimumDistanceFromDiagonal)
