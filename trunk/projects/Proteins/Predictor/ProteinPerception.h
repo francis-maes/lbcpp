@@ -508,7 +508,7 @@ public:
     {return T("CysSepProfil");}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return vectorClass(positiveIntegerType);}
+    {return vectorClass(doubleType);}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
@@ -518,9 +518,9 @@ public:
 
     const std::vector<size_t>& cysteinIndices = protein->getCysteinIndices();
     const size_t n = cysteinIndices.size();
-    VectorPtr res = vector(positiveIntegerType, n);
+    VectorPtr res = vector(doubleType, n);
     for (size_t i = 0; i < n; ++i)
-      res->setElement(i, Variable(abs((int)cysteinIndices[i] - (int)position), positiveIntegerType));
+      res->setElement(i, Variable((double)abs((int)cysteinIndices[i] - (int)position), doubleType));
 
     return res;
   }

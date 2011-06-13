@@ -95,6 +95,7 @@
     <variable type="Boolean" name="useGlobalFeature"/>
     <variable type="Boolean" name="useCartesianProduct"/>
     <variable type="PositiveInteger" name="localHistogramSize"/>
+    <variable type="PositiveInteger" name="separationProfilSize"/>
   </class>
   
 </library>

@@ -201,6 +201,7 @@ public:
   
   size_t residueWindowSize;
   size_t localHistogramSize;
+  size_t separationProfilSize;
   
   
   NumericalCysteinPredictorParameters()
@@ -208,14 +209,15 @@ public:
     // primary residue
     , useAminoAcid(true), usePSSM(true)
     // global
-    , useGlobalFeature(true)
+    , useGlobalFeature(false)
     , useGlobalHistogram(true)
     , useProteinLength(false), useDiscretizeProteinLength(false)
     , useNumCysteins(false), useDiscretizeNumCysteins(true), useCysteinParity(true)
   
     // residue
-    , residueWindowSize(1)
-    , localHistogramSize(0)
+    , residueWindowSize(0)
+    , localHistogramSize(10)
+    , separationProfilSize(3)
 
     , learningParameters(new StochasticGDParameters(constantIterationFunction(0.1), /*maxIterationsWithoutImprovementStoppingCriterion(20)*/ StoppingCriterionPtr(), 1000))
     {}
@@ -371,7 +373,7 @@ public:
         builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception, T("globalFeatures"));
 
       builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, residueFeatures), position, proteinPerception, T("residueFeatures"));
-      //builder.addFunction(lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, cysteinResidueFeatures), position, proteinPerception, T("cysteinFeatures"));
+      builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, cysteinResidueFeatures), position, proteinPerception, T("cysteinFeatures"));
     
     size_t features = builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
     // Information from D0
@@ -384,7 +386,6 @@ public:
 
   void cysteinResidueFeatures(CompositeFunctionBuilder& builder) const
   {
-#if 0
     /* Inputs */
     size_t position = builder.addInput(positiveIntegerType);
     size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType, enumValueType));
@@ -394,30 +395,17 @@ public:
     size_t cysteinIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, position);
 
     size_t cysteinSeparationProfil = builder.addFunction(new CreateCysteinSeparationProfil(), protein, position, T("cysSepProfil"));
-    cysteinSeparationProfil = builder.addFunction(mapContainerFunction(defaultPositiveIntegerFeatureGenerator(featuresParameters->cbsSeparationProfilDiscretization, 3.0)), cysteinSeparationProfil);
+    cysteinSeparationProfil = builder.addFunction(mapContainerFunction(doubleFeatureGenerator()), cysteinSeparationProfil);
 
-    /* Structural features */
-    size_t cbs = builder.addFunction(getVariableFunction(T("cysteinBondingStates")), protein);
-    size_t cbsDiscretized = builder.addFunction(mapContainerFunction(defaultProbabilityFeatureGenerator(featuresParameters->cbsDiscretization)), cbs);
-
-    /* Cystein Bonding Property */
-    size_t cbp = builder.addFunction(getVariableFunction(T("cysteinBondingProperty")), protein);
-    
     /* Output */
     builder.startSelection();
 
-      if (featuresParameters->cbsSeparationProfilSize)
-        builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->cbsSeparationProfilSize), cysteinSeparationProfil, cysteinIndex, T("window"));
-    
-      size_t cbsDiscretizedWindow = (size_t)-1;
-      if (featuresParameters->cbsDiscretization)
-        cbsDiscretizedWindow = builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->cbsWindowSize), cbsDiscretized, cysteinIndex, T("window"));
+      builder.addConstant(0.f, T("identity"));
 
-      if (featuresParameters->bondingPropertyDiscretization && featuresParameters->cbsDiscretization && featuresParameters->useCartesianCBPvsCBS)
-        builder.addFunction(cartesianProductFeatureGenerator(true), cbp, cbsDiscretizedWindow, T("Product"));
+      if (separationProfilSize)
+        builder.addFunction(centeredContainerWindowFeatureGenerator(separationProfilSize), cysteinSeparationProfil, cysteinIndex, T("cysSepProfil"));
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
-#endif
   }
   
   /*
