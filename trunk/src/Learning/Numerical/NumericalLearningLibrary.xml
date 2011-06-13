@@ -2,6 +2,8 @@
 
 <library name="NumericalLearning" directory="Learning/Numerical">
 
+  <import name="LibSVMLearning"/>
+  
   <!-- Learning Parameters -->
   <class name="StochasticGDParameters" base="LearnerParameters" shortName="sgd">
     <variable type="Function" name="lossFunction"/>

@@ -179,9 +179,12 @@ extern FunctionPtr linearMultiClassClassifier(LearnerParametersPtr parameters);
 extern FunctionPtr linearRankingMachine(LearnerParametersPtr parameters);
 extern FunctionPtr linearLearningMachine(LearnerParametersPtr parameters);
 
-
 // conversion utilities
 extern bool convertSupervisionVariableToBoolean(const Variable& supervision, bool& result);
+
+// libsvm
+extern FunctionPtr libSVMClassifier(double C = 0.1, size_t kernelType = 0, size_t kernelDegree = 1, double kernelGamma = 0.1, double kernelCoef0 = 0.0);
+extern BatchLearnerPtr libSVMBatchLearner();
 
 }; /* namespace lbcpp */
 

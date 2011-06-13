@@ -364,7 +364,6 @@ class OptimizerTestBedWorkUnit : public WorkUnit
     size_t numIterations = 20;
     size_t populationSize = 100;
     size_t numBests = 30;
-    size_t inProgressEvaluations;
     f = f1;
     
     // test the function at kown global optimum

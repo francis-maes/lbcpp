@@ -51,6 +51,7 @@ GENERATE_INTROSPECTION_CODE(Learning/LearningLibrary.xml LearningLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/OnlineLearner/OnlineLearnerLibrary.xml OnlineLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/BatchLearner/BatchLearnerLibrary.xml BatchLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/Numerical/NumericalLearningLibrary.xml NumericalLearningLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Learning/Numerical/LibSVM/LibSVMLearningLibrary.xml LibSVMLearningLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/DecisionTree/DecisionTreeLibrary.xml DecisionTreeLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/DecisionTree/Data/DecisionTreeDataLibrary.xml DecisionTreeDataLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/LossFunction/LearningLossFunctionLibrary.xml LearningLossFunctionLibrary.cpp)
@@ -570,6 +571,14 @@ SET(LBCPP_LEARNING_NUMERICAL_BATCH_SOURCES
   Learning/Numerical/AddBiasBatchLearner.h
 )
 
+SET(LBCPP_LEARNING_NUMERICAL_LIBSVM_SOURCES
+  Learning/Numerical/LibSVM/libsvm.h
+  Learning/Numerical/LibSVM/libsvm.cpp
+  Learning/Numerical/LibSVM/LibSVMLearningMachine.h
+  Learning/Numerical/LibSVM/LibSVMLearningLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/LibSVMLearningLibrary.cpp
+)
+
 SET(LBCPP_LEARNING_DECISION_TREE_SOURCES
   Learning/DecisionTree/DecisionTree.cpp
   Learning/DecisionTree/RTreeFunction.h
@@ -782,6 +791,7 @@ SET(LBCPP_SOURCES
       ${LBCPP_LEARNING_NUMERICAL_LEARNABLE_FUNCTION_SOURCES}
       ${LBCPP_LEARNING_NUMERICAL_ONLINE_SOURCES}
       ${LBCPP_LEARNING_NUMERICAL_BATCH_SOURCES}
+      ${LBCPP_LEARNING_NUMERICAL_LIBSVM_SOURCES}
     
     ${LBCPP_LEARNING_DECISION_TREE_SOURCES}
       ${LBCPP_LEARNING_DECISION_TREE_DATA_SOURCES}
@@ -867,6 +877,7 @@ SOURCE_SUB_GROUP(Learning Numerical FILES ${LBCPP_LEARNING_NUMERICAL_SOURCES})
 SOURCE_SUB_GROUP2(Learning Numerical LearnableFunction FILES ${LBCPP_LEARNING_NUMERICAL_LEARNABLE_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP2(Learning Numerical OnlineLearner FILES ${LBCPP_LEARNING_NUMERICAL_ONLINE_SOURCES})
 SOURCE_SUB_GROUP2(Learning Numerical BatchLearner FILES ${LBCPP_LEARNING_NUMERICAL_BATCH_SOURCES})
+SOURCE_SUB_GROUP2(Learning Numerical LibSVM FILES ${LBCPP_LEARNING_NUMERICAL_LIBSVM_SOURCES})
 SOURCE_SUB_GROUP(Learning DecisionTree FILES ${LBCPP_LEARNING_DECISION_TREE_SOURCES})
 SOURCE_SUB_GROUP2(Learning DecisionTree Data FILES ${LBCPP_LEARNING_DECISION_TREE_DATA_SOURCES})
 
