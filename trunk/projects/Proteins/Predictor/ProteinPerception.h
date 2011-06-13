@@ -694,6 +694,36 @@ protected:
   }
 };
 
+// DoubleVector<T>, PositiveInteger -> T
+class GetDoubleVectorValueFunction : public Function
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : (TypePtr)doubleVectorClass(enumValueType, doubleType);}
+
+  virtual String getOutputPostFix() const
+    {return T("Element");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return Container::getTemplateParameter(inputVariables[0]->getType());}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    const DoubleVectorPtr& vector = inputs[0].getObjectAndCast<Container>();
+    if (vector)
+    {
+      int index = inputs[1].getInteger();
+      if (index >= 0 && index < (int)vector->getNumElements())
+        return vector->getElement((size_t)index);
+    }
+
+    return Variable(0.f, getOutputType());
+  }
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEIN_PERCEPTION_H_

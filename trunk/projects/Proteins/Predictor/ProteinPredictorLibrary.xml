@@ -40,6 +40,8 @@
     <variable type="PositiveInteger" name="minimumDistanceFromDiagonal"/>
   </class>
 
+  <class name="GetDoubleVectorValueFunction" base="Function"/>
+  
   <class name="ProteinPredictor" base="CompositeFunction">
     <variable type="ProteinPredictorParameters" name="parameters"/>
     <variable type="GenericVector[Pair[VariablesEnumeration[Protein], Function]]" name="targetPredictors"/>
@@ -92,6 +94,7 @@
     <variable type="PositiveInteger" name="residueWindowSize"/>
     <variable type="Boolean" name="useGlobalFeature"/>
     <variable type="Boolean" name="useCartesianProduct"/>
+    <variable type="PositiveInteger" name="localHistogramSize"/>
   </class>
   
 </library>

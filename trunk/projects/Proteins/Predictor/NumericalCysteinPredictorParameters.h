@@ -200,10 +200,11 @@ public:
   bool useCysteinParity;
   
   size_t residueWindowSize;
+  size_t localHistogramSize;
   
   
   NumericalCysteinPredictorParameters()
-    : useCartesianProduct(false)
+    : useCartesianProduct(true)
     // primary residue
     , useAminoAcid(true), usePSSM(true)
     // global
@@ -213,7 +214,8 @@ public:
     , useNumCysteins(false), useDiscretizeNumCysteins(true), useCysteinParity(true)
   
     // residue
-    , residueWindowSize(3)
+    , residueWindowSize(0)
+    , localHistogramSize(20)
 
     , learningParameters(new StochasticGDParameters(constantIterationFunction(0.1), /*maxIterationsWithoutImprovementStoppingCriterion(20)*/ StoppingCriterionPtr(), 1000))
     {}
@@ -244,11 +246,11 @@ public:
 
     size_t features = builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception, T("globalFeatures"));
     // Information from D0
-    features = builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, includeD0), proteinPerception, features, T("D0"));
+    //features = builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, includeD0), proteinPerception, features, T("D0"));
     // Information from D1
-    features = builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, includeD1ToD0), proteinPerception, features, T("D1"));
+    //features = builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, includeD1ToD0), proteinPerception, features, T("D1"));
     // Information from D2
-    features = builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, includeD2ToD0), proteinPerception, features, T("D2"));
+    //features = builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, includeD2ToD0), proteinPerception, features, T("D2"));
   }
   
   void globalFeatures(CompositeFunctionBuilder& builder) const
@@ -278,7 +280,7 @@ public:
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
   }
-  
+
   void primaryResidueFeatures(CompositeFunctionBuilder& builder) const
   {
     /* Inputs */
@@ -299,6 +301,7 @@ public:
 
       if (useAminoAcid)
         builder.addFunction(enumerationFeatureGenerator(), aminoAcid, T("aa"));
+
       if (usePSSM)
         builder.addInSelection(pssmRow);
 
@@ -319,7 +322,7 @@ public:
 
     /* Data */
     size_t primaryResidueFeatures = builder.addFunction(getVariableFunction(T("primaryResidueFeatures")), proteinPerception);
-    //size_t primaryResidueFeaturesAcc = builder.addFunction(getVariableFunction(T("accumulator")), proteinPerception);
+    size_t primaryResidueFeaturesAcc = builder.addFunction(getVariableFunction(T("accumulator")), proteinPerception);
 
     /* Output */
     builder.startSelection();
@@ -329,8 +332,8 @@ public:
       if (residueWindowSize)
         builder.addFunction(centeredContainerWindowFeatureGenerator(residueWindowSize), primaryResidueFeatures, position, T("window"));
 
-      //if (featuresParameters->residueLocalMeanSize)
-      //  builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residueLocalMeanSize), primaryResidueFeaturesAcc, position, T("mean") + String((int)featuresParameters->residueLocalMeanSize));
+      if (localHistogramSize)
+        builder.addFunction(accumulatorLocalMeanFunction(localHistogramSize), primaryResidueFeaturesAcc, position, T("localHisto[") + String((int)localHistogramSize) + T("]"));
 
       //if (featuresParameters->residueMediumMeanSize)
       //  builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residueMediumMeanSize), primaryResidueFeaturesAcc, position, T("mean") + String((int)featuresParameters->residueMediumMeanSize));
@@ -363,11 +366,10 @@ public:
 
     /* Output */
     builder.startSelection();
-    
-      builder.addConstant(0.f);
-    
+
       if (useGlobalFeature)
         builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception, T("globalFeatures"));
+
       builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, residueFeatures), position, proteinPerception, T("residueFeatures"));
       //builder.addFunction(lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, cysteinResidueFeatures), position, proteinPerception, T("cysteinFeatures"));
     
@@ -375,9 +377,9 @@ public:
     // Information from D0
     features = builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, includeD0), proteinPerception, features);
     // Information from D1
-    features = builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, includeD1ToD1), proteinPerception, position, features);
+    //features = builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, includeD1ToD1), proteinPerception, position, features);
     // Inforamtion from D2
-    features = builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, includeD2ToD1), proteinPerception, position, features);
+    //features = builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, includeD2ToD1), proteinPerception, position, features);
   }
 
   void cysteinResidueFeatures(CompositeFunctionBuilder& builder) const
@@ -578,8 +580,8 @@ public:
       builder.startSelection();
       
         builder.addConstant(1.f, T("identity"));
-        builder.addFunction(getElementFunction(), cbp, pAllIndex, T("p[All]"));
-        builder.addFunction(getElementFunction(), cbp, pMixIndex, T("p[Mix]"));
+        builder.addFunction(new GetDoubleVectorValueFunction(), cbp, pAllIndex, T("p[All]"));
+        builder.addFunction(new GetDoubleVectorValueFunction(), cbp, pMixIndex, T("p[Mix]"));
       
       size_t cbpFeatures = builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
       builder.addFunction(cartesianProductFeatureGenerator(true), features, cbpFeatures);
@@ -589,9 +591,9 @@ public:
       builder.startSelection();
       
         builder.addInSelection(features);
-        builder.addFunction(getElementFunction(), cbp, pAllIndex, T("p[All]"));
-        builder.addFunction(getElementFunction(), cbp, pNoneIndex, T("p[None]"));
-        builder.addFunction(getElementFunction(), cbp, pMixIndex, T("p[Mix]"));
+        builder.addFunction(new GetDoubleVectorValueFunction(), cbp, pAllIndex, T("p[All]"));
+        builder.addFunction(new GetDoubleVectorValueFunction(), cbp, pNoneIndex, T("p[None]"));
+        builder.addFunction(new GetDoubleVectorValueFunction(), cbp, pMixIndex, T("p[Mix]"));
       
       builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
     }
@@ -670,7 +672,7 @@ public:
     size_t cbs = builder.addFunction(getVariableFunction(T("cysteinBondingStates")), protein, T("cysteinBondingProperty"));
     
     size_t cysteinIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, position);
-    size_t prob = builder.addFunction(getElementFunction(), cbs, cysteinIndex, T("p[D1]"));
+    size_t prob = builder.addFunction(new GetDoubleVectorValueFunction(), cbs, cysteinIndex, T("p[D1]"));
 
     if (useCartesianProduct)
     {
