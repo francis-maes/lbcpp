@@ -308,22 +308,9 @@ public:
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
     const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
+    double tk = (double)statistics->getPlayedCount();
     double rk = statistics->getRewardMean();
-    return rk * (rk - C);
-  }
-};
-
-class Formula6IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
-{
-public:
-  virtual double getParameterInitialGuess() const
-    {return 1.0;}
-    
-  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
-  {
-    const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
-    double sk = statistics->getRewardStandardDeviation();
-    return sk * (sk - C);
+    return tk * (rk - C);
   }
 };
 
@@ -380,7 +367,6 @@ public:
     policies.push_back(new Formula3IndexBasedDiscreteBanditPolicy());
     policies.push_back(new Formula4IndexBasedDiscreteBanditPolicy());  
     policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy());  
-    policies.push_back(new Formula6IndexBasedDiscreteBanditPolicy());  
 
     for (size_t problemIndex = 0; problemIndex < numProblems; ++problemIndex)
     {
