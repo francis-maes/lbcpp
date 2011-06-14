@@ -42,6 +42,8 @@
 
   <class name="GetDoubleVectorValueFunction" base="Function"/>
   
+  <class name="GetSupervisionFunction" base="Function"/>
+  
   <class name="ProteinPredictor" base="CompositeFunction">
     <variable type="ProteinPredictorParameters" name="parameters"/>
     <variable type="GenericVector[Pair[VariablesEnumeration[Protein], Function]]" name="targetPredictors"/>
@@ -91,6 +93,9 @@
   <class name="NumericalCysteinPredictorParameters" base="ProteinPredictorParameters" shortName="numericalCystein">
     <constructor/>
     <variable type="LearnerParameters" name="learningParameters" shortName="l"/>
+    <variable type="Boolean" name="useOracleD0"/>
+    <variable type="Boolean" name="useOracleD1"/>
+    <variable type="Boolean" name="useOracleD2"/>
     <variable type="PositiveInteger" name="residueWindowSize"/>
     <variable type="Boolean" name="useGlobalFeature"/>
     <variable type="Boolean" name="useCartesianProduct"/>
