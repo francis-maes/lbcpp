@@ -10,7 +10,7 @@
 #include "../Evaluator/ProteinEvaluator.h"
 using namespace lbcpp;
 
-ProteinLearner::ProteinLearner() : maxProteins(0), numStacks(1)
+ProteinLearner::ProteinLearner() : maxProteins(0), numStacks(1), sequentialLearning(false)
 {
   parameters = numericalProteinPredictorParameters();
   proteinTargets.push_back(ss3Target);
@@ -140,7 +140,15 @@ FunctionPtr ProteinLearner::createPredictor(ExecutionContext& context, ProteinPr
     context.errorCallback(T("No stacks. You need at least one stack"));
     return FunctionPtr();
   }
-  else if (numStacks == 1)
+  
+  if (sequentialLearning)
+    return createSequentialPredictor(context, parameters);
+  return createParallelPredictor(context, parameters);
+}
+
+FunctionPtr ProteinLearner::createParallelPredictor(ExecutionContext& context, ProteinPredictorParametersPtr parameters) const
+{
+  if (numStacks == 1)
     return createOneStackPredictor(context, parameters);
   else
   {
@@ -154,6 +162,39 @@ FunctionPtr ProteinLearner::createPredictor(ExecutionContext& context, ProteinPr
     }
     return res;
   }
+}
+
+FunctionPtr ProteinLearner::createSequentialPredictor(ExecutionContext& context, ProteinPredictorParametersPtr parameters) const
+{
+  if (proteinTargets.empty())
+  {
+    context.errorCallback(T("No protein targets were selected"));
+    return FunctionPtr();
+  }
+  std::set<ProteinTarget> uniqueTargets;
+  for (size_t i = 0; i < proteinTargets.size(); ++i)
+  {
+    if (uniqueTargets.find(proteinTargets[i]) != uniqueTargets.end())
+    {
+      context.errorCallback(T("Protein targets are not unique: ") + proteinClass->getMemberVariableName(proteinTargets[i]) + T(" appears multiple times"));
+      return FunctionPtr();
+    }
+    uniqueTargets.insert(proteinTargets[i]);
+  }
+
+  ProteinSequentialPredictorPtr res = new ProteinSequentialPredictor();
+  for (size_t i = 0; i < numStacks; ++i)
+  {
+    for (size_t i = 0; i < proteinTargets.size(); ++i)
+    {
+      ProteinPredictorPtr stack = new ProteinPredictor(parameters);
+      stack->addTarget(proteinTargets[i]);
+      stack->setEvaluator(new ProteinEvaluator());
+      res->addPredictor(stack);
+    }
+  }
+
+  return res;
 }
 
 ScoreObjectPtr ProteinLearner::selectScoresFromTargets(EvaluatorPtr evaluator, ScoreObjectPtr scores) const

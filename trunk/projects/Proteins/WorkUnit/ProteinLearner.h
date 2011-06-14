@@ -34,11 +34,14 @@ protected:
 
   std::vector<ProteinTarget> proteinTargets;
   size_t numStacks;
+  bool sequentialLearning;
 
   File predictionDirectory;
   File learnedModelFile;
 
   FunctionPtr createPredictor(ExecutionContext& context, ProteinPredictorParametersPtr parameters) const;
+  FunctionPtr createSequentialPredictor(ExecutionContext& context, ProteinPredictorParametersPtr parameters) const;
+  FunctionPtr createParallelPredictor(ExecutionContext& context, ProteinPredictorParametersPtr parameters) const;
   FunctionPtr createOneStackPredictor(ExecutionContext& context, ProteinPredictorParametersPtr parameters) const;
   ContainerPtr loadProteinPairs(ExecutionContext& context, const String& subDirectoryName) const;
   bool savePredictionsToDirectory(ExecutionContext& context, FunctionPtr predictor, ContainerPtr proteinPairs, const File& predictionDirectory) const;

@@ -186,6 +186,10 @@ class NumericalCysteinPredictorParameters : public ProteinPredictorParameters
 public:
   enum {maxProteinLengthOnSPX = 1733, maxProteinLengthOnSPXFromFile = 1395};
   
+  bool useOracleD0;
+  bool useOracleD1;
+  bool useOracleD2;
+  
   bool useCartesianProduct;
 
   bool useAminoAcid;
@@ -205,19 +209,22 @@ public:
   
   
   NumericalCysteinPredictorParameters()
-    : useCartesianProduct(true)
+    // -----  Oracle  -----
+    : useOracleD0(false), useOracleD1(false), useOracleD2(false)
+    // ----- Features -----
+    , useCartesianProduct(false)
     // primary residue
     , useAminoAcid(true), usePSSM(true)
     // global
-    , useGlobalFeature(false)
+    , useGlobalFeature(true)
     , useGlobalHistogram(true)
     , useProteinLength(false), useDiscretizeProteinLength(false)
     , useNumCysteins(false), useDiscretizeNumCysteins(true), useCysteinParity(true)
   
     // residue
-    , residueWindowSize(0)
-    , localHistogramSize(10)
-    , separationProfilSize(3)
+    , residueWindowSize(3)
+    , localHistogramSize(100)
+    , separationProfilSize(0)
 
     , learningParameters(new StochasticGDParameters(constantIterationFunction(0.1), /*maxIterationsWithoutImprovementStoppingCriterion(20)*/ StoppingCriterionPtr(), 1000))
     {}
@@ -337,9 +344,6 @@ public:
       if (localHistogramSize)
         builder.addFunction(accumulatorLocalMeanFunction(localHistogramSize), primaryResidueFeaturesAcc, position, T("localHisto[") + String((int)localHistogramSize) + T("]"));
 
-      //if (featuresParameters->residueMediumMeanSize)
-      //  builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residueMediumMeanSize), primaryResidueFeaturesAcc, position, T("mean") + String((int)featuresParameters->residueMediumMeanSize));
-
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
   
@@ -369,9 +373,25 @@ public:
     /* Output */
     builder.startSelection();
 
-      if (useGlobalFeature)
-        builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception, T("globalFeatures"));
+    size_t global = -1;  
+    if (useGlobalFeature)
+        global = builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception, T("globalFeatures"));
+// ________
+#if 0
+    size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinPerception);
+    
+    //size_t aminoAcid = builder.addFunction(getVariableFunction(T("primaryStructure")), protein);
+    size_t pssmRow = builder.addFunction(getVariableFunction(T("positionSpecificScoringMatrix")), protein, T("pssm"));
 
+    //size_t aa = builder.addFunction(mapContainerFunction(enumerationFeatureGenerator()), aminoAcid, T("aa"));
+    size_t pssm = builder.addFunction(centeredContainerWindowFeatureGenerator(1), pssmRow, position);
+
+    //aa = builder.addFunction(centeredContainerWindowFeatureGenerator(3), aa, position);
+    builder.addFunction(cartesianProductFeatureGenerator(true), global, pssm);
+    //builder.addFunction(concatenateFeatureGenerator(true), global, aa);
+    return;
+#endif
+// ________
       builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, residueFeatures), position, proteinPerception, T("residueFeatures"));
       builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, cysteinResidueFeatures), position, proteinPerception, T("cysteinFeatures"));
     
@@ -459,93 +479,7 @@ public:
 
   void cysteinResiduePairFeatures(CompositeFunctionBuilder& builder) const
   {
-#if 0
-    /* Inputs */
-    size_t firstPosition = builder.addInput(positiveIntegerType, T("firstPosition"));
-    size_t secondPosition = builder.addInput(positiveIntegerType, T("secondPosition"));
-    size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType, enumValueType));
-
-    /* Data */
-    size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinPerception, T("protein"));
-    size_t firstCysteinIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, firstPosition);
-    size_t secondCysteinIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, secondPosition);
-
-    size_t dsb = builder.addFunction(getVariableFunction(T("disulfideBonds")), protein);
-    size_t normalizedDsb = builder.addFunction(new NormalizeDisulfideBondFunction(), dsb);
-    
-    size_t dsbFirstEntropy = builder.addFunction(new ComputeCysteinEntropy(), normalizedDsb, firstCysteinIndex, T("firstEntropy"));
-    size_t dsbSecondEntropy = builder.addFunction(new ComputeCysteinEntropy(), normalizedDsb, secondCysteinIndex, T("secondEntropy"));
-
-    /* Discretization */
-    size_t discretizedDsb = (size_t)-1;
-    size_t discretizedNormalizedDsb = (size_t)-1;
-    if (featuresParameters->dsbDiscretization)
-    {
-      discretizedDsb = builder.addFunction(mapContainerFunction(defaultProbabilityFeatureGenerator(featuresParameters->dsbDiscretization)), dsb);
-      discretizedNormalizedDsb = builder.addFunction(mapContainerFunction(defaultProbabilityFeatureGenerator(featuresParameters->dsbDiscretization)), normalizedDsb);
-    }
-
-    // Cystein bonding property
-    size_t cbp = (size_t)-1;
-    size_t firstWindowForCbp = (size_t)-1;
-    size_t secondWindowForCbp = (size_t)-1;
-    if (featuresParameters->bondingPropertyDiscretization && featuresParameters->dsbCartesianCbpSize)
-    {
-      cbp = builder.addFunction(getVariableFunction(T("cysteinBondingProperty")), protein, T("cysteinBondingProperty"));
-      cbp = builder.addFunction(enumerationDistributionFeatureGenerator(featuresParameters->bondingPropertyDiscretization, featuresParameters->bondingPropertyEntropyDiscretization), cbp);
-      firstWindowForCbp = builder.addFunction(matrixWindowFeatureGenerator(featuresParameters->dsbCartesianCbpSize, featuresParameters->dsbCartesianCbpSize), discretizedDsb, firstCysteinIndex, secondCysteinIndex, T("w1"));
-      secondWindowForCbp = builder.addFunction(matrixWindowFeatureGenerator(featuresParameters->dsbCartesianCbpSize, featuresParameters->dsbCartesianCbpSize), discretizedNormalizedDsb, firstCysteinIndex, secondCysteinIndex, T("w2"));
-    }
-
-    // Cystein bonding state
-    size_t firstCbs = (size_t)-1;
-    size_t secondCbs = (size_t)-1;
-    size_t firstWindowForCbs = (size_t)-1;
-    size_t secondWindowForCbs = (size_t)-1;
-    if (featuresParameters->cbsDiscretization && featuresParameters->dsbCartesianCbsSize)
-    {
-      firstCbs = builder.addFunction(getElementInVariableFunction(T("cysteinBondingStates")), protein, firstCysteinIndex, T("firstState"));
-      secondCbs = builder.addFunction(getElementInVariableFunction(T("cysteinBondingStates")), protein, secondCysteinIndex, T("secondState"));
-      firstCbs = builder.addFunction(defaultProbabilityFeatureGenerator(featuresParameters->cbsDiscretization), firstCbs);
-      secondCbs = builder.addFunction(defaultProbabilityFeatureGenerator(featuresParameters->cbsDiscretization), secondCbs);
-      firstWindowForCbs = builder.addFunction(matrixWindowFeatureGenerator(featuresParameters->dsbCartesianCbsSize, featuresParameters->dsbCartesianCbsSize), discretizedDsb, firstCysteinIndex, secondCysteinIndex, T("windowForCbs[first]"));
-      secondWindowForCbs = builder.addFunction(matrixWindowFeatureGenerator(featuresParameters->dsbCartesianCbsSize, featuresParameters->dsbCartesianCbsSize), discretizedNormalizedDsb, firstCysteinIndex, secondCysteinIndex, T("windowForCbs[second]"));
-    }
-    
-    /* Output */
-    builder.startSelection();
-      // window on dsb
-      if (featuresParameters->dsbDiscretization && featuresParameters->dsbPairWindowRows && featuresParameters->dsbPairWindowColumns)
-      {
-        builder.addFunction(matrixWindowFeatureGenerator(featuresParameters->dsbPairWindowRows, featuresParameters->dsbPairWindowColumns)
-                            , discretizedDsb, firstCysteinIndex, secondCysteinIndex, T("dsbWindowBoth"));
-        builder.addFunction(matrixWindowFeatureGenerator(featuresParameters->dsbPairWindowRows, featuresParameters->dsbPairWindowColumns)
-                            , discretizedNormalizedDsb, firstCysteinIndex, secondCysteinIndex, T("dsbWindowBoth"));
-      }
-      // entropies
-      if (featuresParameters->dsbEntropyDiscretization)
-      {
-        builder.addFunction(defaultPositiveDoubleFeatureGenerator(featuresParameters->dsbEntropyDiscretization, -10, 1), dsbFirstEntropy);
-        builder.addFunction(defaultPositiveDoubleFeatureGenerator(featuresParameters->dsbEntropyDiscretization, -10, 1), dsbSecondEntropy);
-      }
-      // Cystein bonding property
-      if (featuresParameters->dsbDiscretization && featuresParameters->dsbCartesianCbpSize)
-      {
-        builder.addFunction(cartesianProductFeatureGenerator(true), firstWindowForCbp, cbp);
-        builder.addFunction(cartesianProductFeatureGenerator(true), secondWindowForCbp, cbp);
-      }
-      // Cystein bonding state
-      if (featuresParameters->cbsDiscretization && featuresParameters->dsbCartesianCbsSize)
-      {
-        builder.addFunction(cartesianProductFeatureGenerator(true), firstWindowForCbs, firstCbs);
-        builder.addFunction(cartesianProductFeatureGenerator(true), firstWindowForCbs, secondCbs);
-
-        builder.addFunction(cartesianProductFeatureGenerator(true), secondWindowForCbs, firstCbs);
-        builder.addFunction(cartesianProductFeatureGenerator(true), secondWindowForCbs, secondCbs);
-      }
-
-    builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
-#endif
+    jassertfalse;
   }
   
   /*
@@ -562,7 +496,7 @@ public:
     size_t pAllIndex = builder.addConstant(Variable(0, positiveIntegerType));
     size_t pNoneIndex = builder.addConstant(Variable(1, positiveIntegerType));
     size_t pMixIndex = builder.addConstant(Variable(2, positiveIntegerType));
-    
+
     if (useCartesianProduct)
     {
       builder.startSelection();
@@ -738,6 +672,18 @@ public:
   }
 
   // Learning Machine
+  virtual FunctionPtr createTargetPredictor(ProteinTarget target) const
+  {
+    if (target == cbpTarget && useOracleD0
+        || target == cbsTarget && useOracleD1
+        || target == dsbTarget && useOracleD2)
+    {
+      return new GetSupervisionFunction();
+    }
+    else
+      return ProteinPredictorParameters::createTargetPredictor(target);
+  }
+  
   virtual FunctionPtr learningMachine(ProteinTarget target) const
   {
     switch (target)
