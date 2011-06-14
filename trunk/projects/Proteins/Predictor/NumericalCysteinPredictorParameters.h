@@ -394,13 +394,13 @@ public:
     size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinPerception);
     size_t cysteinIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, position);
 
-    size_t cysteinSeparationProfil = builder.addFunction(new CreateCysteinSeparationProfil(), protein, position, T("cysSepProfil"));
+    size_t cysteinSeparationProfil = builder.addFunction(new CreateCysteinSeparationProfil(true), protein, position, T("cysSepProfil"));
     cysteinSeparationProfil = builder.addFunction(mapContainerFunction(doubleFeatureGenerator()), cysteinSeparationProfil);
 
     /* Output */
     builder.startSelection();
 
-      builder.addConstant(0.f, T("identity"));
+      builder.addConstant(0.f);
 
       if (separationProfilSize)
         builder.addFunction(centeredContainerWindowFeatureGenerator(separationProfilSize), cysteinSeparationProfil, cysteinIndex, T("cysSepProfil"));
