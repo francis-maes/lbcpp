@@ -498,6 +498,9 @@ protected:
 class CreateCysteinSeparationProfil : public Function
 {
 public:
+  CreateCysteinSeparationProfil(bool normalize = true)
+    : normalize(normalize) {}
+  
   virtual size_t getNumRequiredInputs() const
     {return 2;}
 
@@ -518,12 +521,22 @@ public:
 
     const std::vector<size_t>& cysteinIndices = protein->getCysteinIndices();
     const size_t n = cysteinIndices.size();
+    if (!n)
+      return VectorPtr();
+    
+    const size_t z = cysteinIndices[n-1] - cysteinIndices[0];
     VectorPtr res = vector(doubleType, n);
+
     for (size_t i = 0; i < n; ++i)
-      res->setElement(i, Variable((double)abs((int)cysteinIndices[i] - (int)position), doubleType));
+      res->setElement(i, Variable((double)abs((int)cysteinIndices[i] - (int)position) / (z ? (double)z : 1.f), doubleType));
 
     return res;
   }
+  
+protected:
+  friend class CreateCysteinSeparationProfilClass;
+
+  bool normalize;
 };
 
 class CysteinBondingStateRatio : public SimpleUnaryFunction
