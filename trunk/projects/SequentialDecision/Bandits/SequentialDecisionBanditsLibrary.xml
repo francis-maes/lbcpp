@@ -113,6 +113,8 @@
   <class name="Formula3IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula3"/>
   <class name="Formula4IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula4"/>
   <class name="Formula5IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula5"/>
+  <class name="Formula6IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula6"/>
+  <class name="Formula7IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula7"/>
 
   <class name="FindBanditsFormula" base="WorkUnit">
     <variable type="PositiveInteger" name="problemIndex" shortName="p"/>
