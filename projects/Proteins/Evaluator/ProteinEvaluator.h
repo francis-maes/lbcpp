@@ -13,6 +13,7 @@
 # include "ContactMapEvaluator.h"
 # include "TertiaryStructureEvaluator.h"
 # include "DisulfideBondEvaluator.h"
+# include "../Data/ProteinFunctions.h"
 
 namespace lbcpp
 {
@@ -86,11 +87,11 @@ public:
 //    addEvaluator(cmb8Target, containerSupervisedEvaluator(new ContactMapEvaluator(8)));
     addEvaluator(cbsTarget,  containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation)), T("Cystein Bonding States (Sens. & Spec.)"));
     addEvaluator(cbsTarget,  containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, isFinalEvaluation)), T("Cystein Bonding States (Accuracy)"));
-    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, isFinalEvaluation), 1), T("Disulfide Bonds"));
+    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation), 1), T("Disulfide Bonds"));
 //    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, isFinalEvaluation), 1));
     addEvaluator(dsbTarget,  new DisulfidePatternEvaluator(), T("Disulfide Bonds"));
-    addEvaluator(dsbTarget,  new NaiveDisulfidePatternBuilderEvaluator(), T("Disulfide Bonds (Naive Reconstruction)"));
-    addEvaluator(dsbTarget,  new BestFirstDisulfidePatternBuilderEvaluator(), T("Disulfide Bonds (Best First)"));
+    addEvaluator(dsbTarget,  new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(1)), T("Disulfide Bonds (Greedy L=1)"));
+    addEvaluator(dsbTarget,  new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6)), T("Disulfide Bonds (Greedy L=6)"));
   }
 
   /* CompositeEvaluator */

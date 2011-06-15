@@ -25,12 +25,9 @@
   </class>
   
   <class name="DisulfidePatternEvaluator" base="SupervisedEvaluator">
+    <variable type="Function" name="decoratedFunction"/>
     <variable type="Double" name="threshold"/>
     <variable type="PositiveInteger" name="minimumDistanceFromDiagonal"/>
   </class>
-  
-  <class name="DisulfidePatternBuilderEvaluator" base="DisulfidePatternEvaluator" abstract="yes"/>
-  <class name="NaiveDisulfidePatternBuilderEvaluator" base="DisulfidePatternBuilderEvaluator"/>
-  <class name="BestFirstDisulfidePatternBuilderEvaluator" base="DisulfidePatternBuilderEvaluator"/>
 
 </library>

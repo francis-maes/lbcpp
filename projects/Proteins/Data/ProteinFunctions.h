@@ -117,6 +117,130 @@ protected:
   ProteinTarget target;
 };
 
+class GreedyDisulfidePatternBuilder : public SimpleUnaryFunction
+{
+public:
+  GreedyDisulfidePatternBuilder(size_t numOfRuns = 1, double threshold = 0.5, size_t minimumDistanceFromDiagonal = 1)
+    : SimpleUnaryFunction(symmetricMatrixClass(probabilityType), symmetricMatrixClass(probabilityType), T("PatternBuilder"))
+    , numOfRuns(numOfRuns), threshold(threshold), minimumDistanceFromDiagonal(minimumDistanceFromDiagonal) {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    SymmetricMatrixPtr matrix = input.getObjectAndCast<SymmetricMatrix>(context);
+    if (!matrix)
+      return Variable::missingValue(getOutputType());
+    
+    const size_t dimension = matrix->getDimension();
+    if (dimension <= minimumDistanceFromDiagonal)
+      return matrix;
+    
+    SortedScoresMap sortedScores;
+    insertScoreToMap(matrix, sortedScores);
+    SymmetricMatrixPtr mask;
+    findBestMask(context, matrix, sortedScores, mask);
+
+    SymmetricMatrixPtr res = makeResult(context, matrix, mask);
+    return res;
+  }
+
+protected:
+  typedef std::multimap<double, std::pair<size_t, size_t> > SortedScoresMap;
+  enum {notBridged = -2, bridged = -1};
+  
+  friend class GreedyDisulfidePatternBuilderClass;
+  
+  size_t numOfRuns;
+  double threshold;
+  size_t minimumDistanceFromDiagonal;
+
+  void insertScoreToMap(const SymmetricMatrixPtr& matrix, SortedScoresMap& sortedScores) const
+  {
+    const size_t dimension = matrix->getDimension();
+    for (size_t i = 0; i < dimension - minimumDistanceFromDiagonal; ++i)
+      for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
+      {
+        const double value = matrix->getElement(i, j).getDouble();
+        sortedScores.insert(std::make_pair(value, std::make_pair(i, j)));
+      }
+  }
+  
+  void findBestMask(ExecutionContext& context, const SymmetricMatrixPtr& matrix, const SortedScoresMap& sortedScores, SymmetricMatrixPtr& bestMask) const
+  {
+    double bestScore = -DBL_MAX;
+    const size_t n = sortedScores.size() < numOfRuns ? sortedScores.size() : numOfRuns;
+    SortedScoresMap::const_reverse_iterator it = sortedScores.rbegin();
+    for (size_t i = 0; i < n; ++i, it++)
+    {
+      SymmetricMatrixPtr mask = matrix->cloneAndCast<SymmetricMatrix>(context);
+      // force first edge
+      double score = (it->first > threshold) ? it->first : 0.f;
+      updateMatrix(mask, it->second.first, it->second.second, score > threshold);
+      // find the other edges
+      while (true)
+      {
+        size_t i = (size_t)-1;
+        size_t j = (size_t)-1;
+        double value = findBestValue(mask, i, j);
+        
+        if (value < 0.f)
+          break;
+        updateMatrix(mask, i, j, value > threshold);
+        score += (value > threshold) ? value : 0.f;
+      }
+      // keep best score
+      if (score > bestScore)
+      {
+        bestScore = score;
+        bestMask = mask;
+      }
+    }
+    jassert(bestMask);
+  }
+
+  double findBestValue(const SymmetricMatrixPtr& resultMatrix, size_t& bestI, size_t& bestJ) const
+  {
+    double bestValue = -DBL_MAX;
+    const size_t dimension = resultMatrix->getDimension();
+    for (size_t i = 0; i < dimension - minimumDistanceFromDiagonal; ++i)
+      for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
+      {
+        const double value = resultMatrix->getElement(i, j).getDouble();
+        if (value > bestValue)
+        {
+          bestI = i;
+          bestJ = j;
+          bestValue = value;
+        }
+      }
+    return bestValue;
+  }
+
+  void updateMatrix(const SymmetricMatrixPtr& matrix, size_t x, size_t y, bool isConnected) const
+  {
+    const size_t dimension = matrix->getDimension();
+    for (size_t i = 0; i < dimension; ++i)
+    {
+      matrix->setElement(x, i, probability((double)notBridged));
+      matrix->setElement(y, i, probability((double)notBridged));
+    }
+    if (isConnected)
+      matrix->setElement(x, y, probability((double)bridged));
+  }
+  
+  SymmetricMatrixPtr makeResult(ExecutionContext& context, const SymmetricMatrixPtr& matrix, const SymmetricMatrixPtr& mask) const
+  {
+    SymmetricMatrixPtr res = matrix->cloneAndCast<SymmetricMatrix>(context);
+    
+    const size_t dimension = matrix->getDimension();
+    for (size_t i = 0; i < dimension - minimumDistanceFromDiagonal; ++i)
+      for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
+        if (mask->getElement(i, j).getDouble() == (double)notBridged)
+          res->setElement(i, j, probability(0.f));
+    
+    return res;
+  }
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEIN_DATA_FUNCTIONS_H_
