@@ -44,6 +44,10 @@
   
   <class name="GetSupervisionFunction" base="Function"/>
   
+  <class name="SumDoubleVectorFeatureGenerator" base="FeatureGenerator"/>
+  
+  <class name="GetBondingStateProbabilities" base="FeatureGenerator"/>
+  
   <class name="ProteinPredictor" base="CompositeFunction">
     <variable type="ProteinPredictorParameters" name="parameters"/>
     <variable type="GenericVector[Pair[VariablesEnumeration[Protein], Function]]" name="targetPredictors"/>
