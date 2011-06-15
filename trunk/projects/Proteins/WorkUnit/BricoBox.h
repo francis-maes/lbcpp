@@ -178,18 +178,6 @@ protected:
   File outputProtein;
 };
 
-#if 1
-class UnknownFromManagerWorkUnit : public WorkUnit
-{
-public:
-  virtual Variable run(ExecutionContext& context)
-  {
-    std::cout << "Mouahaha, I'm Fantomas" << std::endl;
-    return true;
-  }
-};
-#endif
-
 class LoadModelAndEvaluate : public WorkUnit
 {
 public:
@@ -261,25 +249,6 @@ protected:
   friend class DebugExecutionTraceLoadingClass;
   
   File traceFile;
-};
-
-class CheckSymmetricMatrixWorkUnit : public WorkUnit
-{
-public:
-  virtual Variable run(ExecutionContext& context)
-  {
-    SymmetricMatrixPtr mat = new DoubleSymmetricMatrix(doubleType, 5, 0.0);
-    
-    size_t n = mat->getNumElements();
-    if (n != 15)
-      context.errorCallback(T("CheckSymmetricMatrixWorkUnit::run"), T("Wrong number of elements: ") + String((int)n));
-
-    for (size_t i = 0; i < n; ++i)
-      mat->setElement(i, (double)i);
-    
-    context.informationCallback(mat->toString());
-    return true;
-  }
 };
 
 class CheckNetworkServerWorkUnit : public WorkUnit
@@ -387,7 +356,7 @@ public:
     ManagerNetworkInterfacePtr interface = forwarderManagerNetworkInterface(context, client, T("Alpha"));
     client->sendVariable(ReferenceCountedObjectPtr<NetworkInterface>(interface));
     
-    WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(context, T("CheckManagerWorkUnit"), T("Alpha"), T("Omega"), new UnknownFromManagerWorkUnit(), 1, 1, 1);
+    WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(context, T("CheckManagerWorkUnit"), T("Alpha"), T("Omega"), WorkUnitPtr(), 1, 1, 1);
     for (size_t i = 0; i < 1500; ++i)
       context.informationCallback(String((int)i) + T(" : ") + interface->pushWorkUnit(request));
     client->sendVariable(new CloseCommunicationNotification());
@@ -502,6 +471,33 @@ protected:
     }
     return maxLength;
   }
+};
+
+class CheckGreedyDisulfideBondWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (inputFile == File::nonexistent || !inputFile.exists())
+      return false;
+
+    ProteinPtr protein = Protein::createFromXml(context, inputFile);
+    jassert(protein);
+
+    SymmetricMatrixPtr matrix = protein->getDisulfideBonds(context);
+    jassert(matrix);
+
+    FunctionPtr function = new GreedyDisulfidePatternBuilder(3);
+    SymmetricMatrixPtr res = function->compute(context, matrix).getObjectAndCast<SymmetricMatrix>();
+    jassert(res);
+
+    return res;
+  }
+
+protected:
+  friend class CheckGreedyDisulfideBondWorkUnitClass;
+
+  File inputFile;
 };
 
 class ProteinStatisticsWorkUnit : public WorkUnit

@@ -59,9 +59,7 @@
   <class name="CheckXmlElementWorkUnit" base="WorkUnit">
     <variable type="XmlElement" name="aaa"/>
   </class>
-  
-  <class name="UnknownFromManagerWorkUnit" base="WorkUnit"/>
-  
+
   <class name="Save1DProteinTargets" base="WorkUnit">
     <variable type="File" name="inputProtein" shortName="in"/>
     <variable type="File" name="outputProtein" shortName="out"/>
@@ -75,9 +73,7 @@
   <class name="DebugExecutionTraceLoading" base="WorkUnit">
     <variable type="File" name="traceFile" shortName="i"/>
   </class>
-  
-  <class name="CheckSymmetricMatrixWorkUnit" base="WorkUnit"/>
-  
+
   <class name="CheckNetworkServerWorkUnit" base="WorkUnit"/>
   <class name="CheckNetworkClientWorkUnit" base="WorkUnit"/>
     
@@ -101,6 +97,10 @@
 
   <class name="ProteinMaxLength" base="WorkUnit">
     <variable type="File" name="inputDirectory" shortName="i"/>
+  </class>
+  
+  <class name="CheckGreedyDisulfideBondWorkUnit" base="WorkUnit">
+    <variable type="File" name="inputFile"/>
   </class>
 
   <class name="ProteinStatisticsWorkUnit" base="WorkUnit">

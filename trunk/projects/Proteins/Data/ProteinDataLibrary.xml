@@ -198,6 +198,13 @@
   <class name="GetProteinTargetFunction" base="Function">
     <variable type="PositiveInteger" name="target" enumeration="yes"/>
   </class>
+
   <class name="MakeProteinFunction" base="Function"/>
+
+  <class name="GreedyDisulfidePatternBuilder" base="SimpleUnaryFunction">
+    <variable type="PositiveInteger" name="numOfRuns"/>
+    <variable type="Probability" name="threshold"/>
+    <variable type="PositiveInteger" name="minimumDistanceFromDiagonal"/>
+  </class>
 
 </library>
