@@ -753,6 +753,101 @@ public:
     {return inputs[1];}
 };
 
+class SumDoubleVectorFeatureGenerator : public FeatureGenerator
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return doubleVectorClass(enumValueType, doubleType);}
+  
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    TypePtr firstType = inputVariables[0]->getType()->getTemplateArgument(0);
+    TypePtr secondType = inputVariables[0]->getType()->getTemplateArgument(0);
+    
+    if (firstType != secondType)
+    {
+      jassertfalse;
+      return EnumerationPtr();
+    }
+
+    return firstType;
+  }
+  
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    const DoubleVectorPtr& v1 = inputs[0].getObjectAndCast<DoubleVector>();
+    const DoubleVectorPtr& v2 = inputs[1].getObjectAndCast<DoubleVector>();
+    if (!v1 || !v2)
+      return;
+
+    const size_t n = v1->getNumElements();
+    DenseDoubleVectorPtr res = new DenseDoubleVector(getFeaturesEnumeration(), doubleType, n);
+    v1->addWeightedTo(res, 0, 1.f);
+    v2->addWeightedTo(res, 0, 1.f);
+    
+    for (size_t i = 0; i < n; ++i)
+      callback.sense(i, *(res->getValuePointer(i)));
+  }
+};
+
+class GetBondingStateProbabilities : public FeatureGenerator
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 3;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : (TypePtr)doubleVectorClass(enumValueType, probabilityType);}
+  
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration();
+    res->addElement(context, T("p1+p2"));
+    res->addElement(context, T("p1xp2"));
+    return res;
+  }
+  
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    const DoubleVectorPtr& values = inputs[0].getObjectAndCast<DoubleVector>();
+    if (!values)
+      return;
+    const double pFirst = values->getElement(inputs[1].getInteger()).getDouble();
+    const double pSecond = values->getElement(inputs[2].getInteger()).getDouble();
+    callback.sense(0, pFirst + pSecond);
+    callback.sense(1, pFirst * pSecond);
+  }
+};
+
+class GetDisulfideBondProbability : public FeatureGenerator
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 3;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : (TypePtr)symmetricMatrixClass(probabilityType);}
+  
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration();
+    res->addElement(context, T("p1,2"));
+    return res;
+  }
+  
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    const SymmetricMatrixPtr& matrix = inputs[0].getObjectAndCast<SymmetricMatrix>();
+    if (!matrix)
+      return;
+    const double p = matrix->getElement(inputs[1].getInteger(), inputs[2].getInteger()).getDouble();
+    callback.sense(0, p);
+  }
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEIN_PERCEPTION_H_
