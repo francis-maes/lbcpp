@@ -164,7 +164,7 @@ public:
   const ReferenceCountedObjectPtr<T>& getAndCast(size_t index) const
     {const ObjectPtr& res = get(index); return res.staticCast<T>();}
 
-  void set(size_t index, ObjectPtr object)
+  void set(size_t index, const ObjectPtr& object)
     {jassert(objects && index < objects->size()); (*objects)[index] = object;}
 
   template<class Type>

@@ -17,10 +17,11 @@ namespace lbcpp
 class OptimizerContext : public Object
 {
 public:
-
   OptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction = FunctionPtr(), size_t timeToSleep = 0);
   OptimizerContext() : context(*(ExecutionContext* )0) {}
   
+  virtual bool isSynchroneous() const = 0;
+
   /** Set the FunctionCallback that should be called once the evaluation is done. */
   virtual void setPostEvaluationCallback(const FunctionCallbackPtr& callback);
   virtual void removePostEvaluationCallback(const FunctionCallbackPtr& callback);

@@ -31,6 +31,9 @@ public:
     timeToSleep = 100;
   }
   
+  virtual bool isSynchroneous() const
+    {return false;}
+
   virtual bool areAllRequestsProcessed() const
     {return numEvaluationInProgress == 0;}
   

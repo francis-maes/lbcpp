@@ -42,11 +42,24 @@ public:
     DenseDoubleVectorPtr actualRegretVector = new DenseDoubleVector(numPowersOfTen + (log10MaxTimeStep > numPowersOfTen ? 1 : 0), 0.0);
 
     // main calculation loop
-    RandomGeneratorPtr previousRandomGenerator = context.getRandomGenerator();
-    context.setRandomGenerator(new RandomGenerator(seedValue)); // make function deterministic
-    for (size_t i = 0; i < initialStates.size(); ++i)
+    //RandomGeneratorPtr previousRandomGenerator = context.getRandomGenerator();
+    //context.setRandomGenerator(new RandomGenerator(seedValue)); // make function deterministic
+    RandomGeneratorPtr random = context.getRandomGenerator();
+
+    std::vector<DiscreteBanditStatePtr> states;
+    size_t numEstimationsPerBandit = this->numEstimationsPerBandit;
+    if (numEstimationsPerBandit == 0)
     {
-      DiscreteBanditStatePtr state = initialStates[i];
+      states.resize(1);
+      states[0] = this->initialStates[random->sampleSize(this->initialStates.size())];
+      numEstimationsPerBandit = 1;
+    }
+    else
+      states = this->initialStates;
+
+    for (size_t i = 0; i < states.size(); ++i)
+    {
+      DiscreteBanditStatePtr state = states[i];
       std::vector<double> expectedRewards(numBandits);
       double bestReward = -DBL_MAX;
       size_t optimalBandit = 0;
@@ -79,13 +92,13 @@ public:
         context.progressCallback(new ProgressionState(i + 1, initialStates.size(), T("Problems")));
     }
 
-    actualRegretVector->multiplyByScalar(1.0 / (initialStates.size() * numEstimationsPerBandit));
+    actualRegretVector->multiplyByScalar(1.0 / (states.size() * numEstimationsPerBandit));
 
     if (verbose)
       for (size_t i = 0; i < numPowersOfTen; ++i)
         context.resultCallback(T("actualRegret@") + String(pow(10.0, i + 1.0)), actualRegretVector->getValue(i));
 
-    context.setRandomGenerator(previousRandomGenerator);
+    //context.setRandomGenerator(previousRandomGenerator);
     return actualRegretVector;
   }
  
@@ -150,6 +163,9 @@ protected:
 
 ///////////////////////////////////////////////////////////////
 
+extern OptimizerPtr banditEDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, size_t maxNumBandits, StoppingCriterionPtr stoppingCriterion, bool verbose = false);
+extern SamplerBasedOptimizerStatePtr banditEDAOptimizerState(const SamplerPtr& sampler, double autoSaveFrequency = 0);
+
 
 class DiscreteBanditExperiment : public WorkUnit
 {
@@ -169,11 +185,11 @@ public:
       context.leaveScope(true);
     }
     return true;*/
-
+/*
     context.enterScope(T("Saved policies"));
     ok = evaluateSavedPolicies(context);
     context.leaveScope(ok);
-    return true;
+    return true;*/
 
 
 /*    context.enterScope(T("Untuned policies"));
@@ -292,7 +308,7 @@ private:
   bool optimizeAndEvaluatePolicies(ExecutionContext& context, std::vector<DiscreteBanditPolicyPtr>& policies) const
   {
     bool allOk = true;
-    for (size_t horizon = 10; horizon <= maxTimeStep; horizon *= 10)
+    for (size_t horizon = /*10*/ maxTimeStep; horizon <= maxTimeStep; horizon *= 10)
     {
       context.enterScope(T("Horizon ") + String((int)horizon));
       std::vector<DiscreteBanditPolicyPtr> pols(policies.size());
@@ -341,7 +357,7 @@ private:
     context.resultCallback(T("numParameters"), numParameters);
 
     // eda parameters
-    size_t numIterations = (numParameters <= 2 ? 30 : 100);
+    size_t numIterations = 100;//(numParameters <= 2 ? 30 : 100);
     size_t populationSize = numParameters * 8;
     size_t numBests = numParameters * 2;
 
@@ -351,19 +367,23 @@ private:
       numBests = 10;
 
     // optimizer state
-    OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(Parameterized::get(policy)->createParametersSampler());
+    //OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(Parameterized::get(policy)->createParametersSampler());
+    OptimizerStatePtr optimizerState = banditEDAOptimizerState(Parameterized::get(policy)->createParametersSampler());
 
     // optimizer context
-    FunctionPtr objectiveFunction = new EvaluateDiscreteBanditPolicyParameters(policy, numBandits, horizon, trainingProblems, 100);
+    FunctionPtr objectiveFunction = new EvaluateDiscreteBanditPolicyParameters(policy, numBandits, horizon, trainingProblems, 0);
     objectiveFunction->initialize(context, parametersType);
 
-    FunctionPtr validationFunction = new EvaluateDiscreteBanditPolicyParameters(policy, numBandits, horizon, testingProblems, 1);
+    FunctionPtr validationFunction = new EvaluateDiscreteBanditPolicyParameters(policy, numBandits, horizon, testingProblems, 10);
     validationFunction->initialize(context, parametersType);
 
-    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, objectiveFunction, validationFunction);
+    //OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, objectiveFunction, validationFunction);
+    OptimizerContextPtr optimizerContext = synchroneousOptimizerContext(context, objectiveFunction, validationFunction);
 
     // optimizer
-    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0, true);
+    //OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0, true);
+    OptimizerPtr optimizer = banditEDAOptimizer(numIterations, populationSize, numBests, populationSize * 10, StoppingCriterionPtr());
+
     optimizer->compute(context, optimizerContext, optimizerState);
 
     // best parameters

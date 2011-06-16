@@ -21,6 +21,9 @@ public:
     : OptimizerContext(context, objectiveFunction, validationFunction, 0) {}
   SynchroneousOptimizerContext() {}
   
+  virtual bool isSynchroneous() const
+    {return true;}
+
   // evaluate is a blocking method
   virtual bool areAllRequestsProcessed() const
     {return true;}
