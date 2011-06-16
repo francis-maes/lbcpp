@@ -102,6 +102,7 @@
     <variable type="Boolean" name="useCartesianProduct"/>
     <variable type="PositiveInteger" name="localHistogramSize"/>
     <variable type="PositiveInteger" name="separationProfilSize"/>
+    <variable type="Boolean" name="useSymmetricFeature"/>
   </class>
   
 </library>
