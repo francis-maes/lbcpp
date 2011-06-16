@@ -241,20 +241,8 @@ protected:
   double C;
 };
 
-class Formula1IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
-{
-public:
-  virtual double getParameterInitialGuess() const
-    {return 1.0;}
-    
-  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
-  {
-    const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
-    return statistics->getRewardMean() + C / (double)statistics->getPlayedCount();
-  }
-};
 
-class Formula2IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
+class Formula1IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
 {
 public:
   virtual double getParameterInitialGuess() const
@@ -267,7 +255,64 @@ public:
   }
 };
 
+class Formula2IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
+{
+public:
+  virtual double getParameterInitialGuess() const
+    {return 1.0;}
+    
+  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
+  {
+    const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
+    double tk = (double)statistics->getPlayedCount();
+    double rk = statistics->getRewardMean();
+    return tk * (rk - C);
+  }
+};
+
+
 class Formula3IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
+{
+public:
+  virtual double getParameterInitialGuess() const
+    {return 1.0;}
+    
+  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
+  {
+    const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
+    double rk = statistics->getRewardMean();
+    return rk * (rk - C);
+  }
+};
+
+class Formula4IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
+{
+public:
+  virtual double getParameterInitialGuess() const
+    {return 1.0;}
+    
+  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
+  {
+    const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
+    double sk = statistics->getRewardStandardDeviation();
+    return sk * (sk - C);
+  }
+};
+
+class Formula5IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
+{
+public:
+  virtual double getParameterInitialGuess() const
+    {return 1.0;}
+    
+  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
+  { 
+    const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
+    return statistics->getRewardMean() + C / (double)statistics->getPlayedCount();
+  }
+};
+
+class Formula6IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
 {
 public:
   virtual double getParameterInitialGuess() const
@@ -283,7 +328,7 @@ public:
   }
 };
 
-class Formula4IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
+class Formula7IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
 {
 public:
   virtual double getParameterInitialGuess() const
@@ -298,50 +343,6 @@ public:
     return tk * (rk * rk - C * sk);
   }
 };
-
-class Formula5IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
-{
-public:
-  virtual double getParameterInitialGuess() const
-    {return 1.0;}
-    
-  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
-  {
-    const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
-    double tk = (double)statistics->getPlayedCount();
-    double rk = statistics->getRewardMean();
-    return tk * (rk - C);
-  }
-};
-
-class Formula6IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
-{
-public:
-  virtual double getParameterInitialGuess() const
-    {return 1.0;}
-    
-  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
-  {
-    const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
-    double rk = statistics->getRewardMean();
-    return rk * (rk - C);
-  }
-};
-
-class Formula7IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
-{
-public:
-  virtual double getParameterInitialGuess() const
-    {return 1.0;}
-    
-  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
-  {
-    const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
-    double sk = statistics->getRewardStandardDeviation();
-    return sk * (sk - C);
-  }
-};
-
 
 /*
 ** FindBanditsFormula
@@ -387,7 +388,7 @@ public:
     return true;
   }
 
-  bool makePolicyParameterCurves(ExecutionContext& context)
+  bool makePolicyParameterCurves(ExecutionContext& context, const std::vector<DiscreteBanditStatePtr>& problems, const String& problemsName)
   {
     std::vector<DiscreteBanditPolicyPtr> policies;
     policies.push_back(ucb1DiscreteBanditPolicy());
@@ -399,18 +400,20 @@ public:
     policies.push_back(new Formula6IndexBasedDiscreteBanditPolicy());  
     policies.push_back(new Formula7IndexBasedDiscreteBanditPolicy());  
 
-    for (size_t problemIndex = 0; problemIndex < numProblems; ++problemIndex)
+   // for (size_t problemIndex = 0; problemIndex < numProblems; ++problemIndex)
     {
-      DiscreteBanditStatePtr problem = createBanditProblem(problemIndex);
-      String problemName = problem->toShortString();
-      context.enterScope(T("Problem ") + String((int)problemIndex) + T(": ") + problemName);
+//      DiscreteBanditStatePtr problem = createBanditProblem(problemIndex);
+//      String problemName = problem->toShortString();
+//      context.enterScope(T("Problem ") + String((int)problemIndex) + T(": ") + problemName);
+
+      context.enterScope(problemsName);
       for (double C = 0.0; C <= 5.0; C += 0.05)
       {
         context.enterScope(T("C = ") + String(C));
         context.resultCallback(T("C"), C);
         for (size_t i = 0; i < policies.size(); ++i)
         {
-          double regret = evaluatePolicy(context, problem, problemName, Parameterized::cloneWithNewParameters(policies[i], C));
+          double regret = evaluatePolicy(context, problems, problemsName, Parameterized::cloneWithNewParameters(policies[i], C));
           context.resultCallback(policies[i]->getClass()->getShortName(), regret);
         }
         context.leaveScope(true);
@@ -427,16 +430,25 @@ public:
     return regrets->getValue(regrets->getNumValues() - 1);
   }
  
+  
+  double evaluatePolicy(ExecutionContext& context, const std::vector<DiscreteBanditStatePtr>& problems, const String& problemsName, const DiscreteBanditPolicyPtr& policy)
+  {
+    DenseDoubleVectorPtr regrets = context.run(makeEvaluationWorkUnit(problems, problemsName, policy->cloneAndCast<DiscreteBanditPolicy>(), true)).getObjectAndCast<DenseDoubleVector>();
+    return regrets->getValue(regrets->getNumValues() - 1);
+  }
+
   virtual Variable run(ExecutionContext& context)
   {
-    return makePolicyParameterCurves(context);
-
 //    return tuneAndTestPolicyOnEachProblem(context, new TestDiscreteBanditPolicy());
   
-  
-    DiscreteBanditStatePtr problem = createBanditProblem(problemIndex);
-    String problemName = problem->toShortString();
-    std::vector<DiscreteBanditStatePtr> problemSingleton(1, problem);
+//    DiscreteBanditStatePtr problem = createBanditProblem(problemIndex);
+//    String problemName = problem->toShortString();
+    std::vector<DiscreteBanditStatePtr> problems(12);
+    for (size_t i = 0; i < problems.size(); ++i)
+      problems[i] = createBanditProblem(i);
+    String problemsName = T("Problems 1--12");
+    
+    makePolicyParameterCurves(context, problems, problemsName);
     
     /*
     ** Evaluate un-parametrized baseline policies
@@ -448,7 +460,7 @@ public:
     policies.push_back(greedyDiscreteBanditPolicy());
     CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Evaluating policies "), policies.size());
     for (size_t i = 0; i < policies.size(); ++i)
-      workUnit->setWorkUnit(i, makeEvaluationWorkUnit(problemSingleton, problemName, policies[i], true));
+      workUnit->setWorkUnit(i, makeEvaluationWorkUnit(problems, problemsName, policies[i], true));
     workUnit->setProgressionUnit(T("Policies"));
     workUnit->setPushChildrenIntoStackFlag(true);
     context.run(workUnit);
@@ -461,22 +473,22 @@ public:
     policiesToOptimize.push_back(std::make_pair(ucbvDiscreteBanditPolicy(), T("UCBv")));
     policiesToOptimize.push_back(std::make_pair(epsilonGreedyDiscreteBanditPolicy(0.1, 0.1), T("epsilonGreedy")));
     policiesToOptimize.push_back(std::make_pair(powerDiscreteBanditPolicy(1, false), T("powerFunction1")));
-    policiesToOptimize.push_back(std::make_pair(powerDiscreteBanditPolicy(2, false), T("powerFunction2")));
+//    policiesToOptimize.push_back(std::make_pair(powerDiscreteBanditPolicy(2, false), T("powerFunction2")));
     for (size_t i = 0; i < policiesToOptimize.size(); ++i)
     {
       DiscreteBanditPolicyPtr policyToOptimize = policiesToOptimize[i].first;
       context.enterScope(T("Optimizing ") + policiesToOptimize[i].second);
       double bestScore;
-      Variable bestParameters = optimizePolicy(context, policyToOptimize, problemSingleton, bestScore);
+      Variable bestParameters = optimizePolicy(context, policyToOptimize, problems, bestScore);
       DiscreteBanditPolicyPtr optimizedPolicy = Parameterized::cloneWithNewParameters(policyToOptimize, bestParameters);
-      DenseDoubleVectorPtr regrets = context.run(makeEvaluationWorkUnit(problemSingleton, problemName, optimizedPolicy->cloneAndCast<DiscreteBanditPolicy>(), true)).getObjectAndCast<DenseDoubleVector>();
+      DenseDoubleVectorPtr regrets = context.run(makeEvaluationWorkUnit(problems, problemsName, optimizedPolicy->cloneAndCast<DiscreteBanditPolicy>(), true)).getObjectAndCast<DenseDoubleVector>();
       context.leaveScope(regrets->getValue(regrets->getNumValues() - 1));
     }
 
     /*
     ** Find formula
     */
-    ultimatePolicySearch(context, problemSingleton);
+    ultimatePolicySearch(context, problems);
     return true;
   }
 
