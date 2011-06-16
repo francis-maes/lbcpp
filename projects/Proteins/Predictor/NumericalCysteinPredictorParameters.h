@@ -213,7 +213,7 @@ public:
     // -----  Oracle  -----
     : useOracleD0(false), useOracleD1(false), useOracleD2(false)
     // ----- Features -----
-    , useCartesianProduct(true)
+    , useCartesianProduct(false)
     // primary residue
     , useAminoAcid(true), usePSSM(true)
     // global
@@ -769,8 +769,8 @@ public:
       }
     case dsbTarget:
       {
-        FunctionPtr res = linearBinaryClassifier(learningParameters, true, binaryClassificationMCCScore);
-        res->setEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore));
+        FunctionPtr res = linearBinaryClassifier(learningParameters, true, binaryClassificationAccuracyScore);
+        res->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
         return res;
       }
 
