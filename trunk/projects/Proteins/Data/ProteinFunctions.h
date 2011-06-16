@@ -120,8 +120,8 @@ protected:
 class GreedyDisulfidePatternBuilder : public SimpleUnaryFunction
 {
 public:
-  GreedyDisulfidePatternBuilder(size_t numOfRuns = 1, double threshold = 0.5, size_t minimumDistanceFromDiagonal = 1)
-    : SimpleUnaryFunction(symmetricMatrixClass(doubleType), symmetricMatrixClass(doubleType), T("PatternBuilder"))
+  GreedyDisulfidePatternBuilder(size_t numOfRuns = 1, double threshold = 0.5, TypePtr elementsType = probabilityType, size_t minimumDistanceFromDiagonal = 1)
+    : SimpleUnaryFunction(symmetricMatrixClass(elementsType), symmetricMatrixClass(elementsType), T("PatternBuilder"))
     , numOfRuns(numOfRuns), threshold(threshold), minimumDistanceFromDiagonal(minimumDistanceFromDiagonal) {}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const

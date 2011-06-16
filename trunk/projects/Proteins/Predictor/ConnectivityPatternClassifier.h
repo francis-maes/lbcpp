@@ -82,7 +82,7 @@ public:
     // Find the best threshold the 0/1 Loss score
     for (size_t i = 0; i < thresholds.size(); ++i)
     {
-      SupervisedEvaluatorPtr evaluator = new DisulfidePatternEvaluator(true, new GreedyDisulfidePatternBuilder(6), thresholds[i]);
+      SupervisedEvaluatorPtr evaluator = new DisulfidePatternEvaluator(true, new GreedyDisulfidePatternBuilder(6, thresholds[i], doubleType), thresholds[i]);
       ScoreObjectPtr scoreObject = evaluator->createEmptyScoreObject(context, FunctionPtr());
 
       insertToEvaluatorScoreObject(context, trainingData, evaluator, scoreObject);
