@@ -58,6 +58,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_GP_SOURCES
 )
 
 SET(LBCPP_SEQUENTIAL_DECISION_BANDITS_SOURCES
+  Bandits/BanditEDAOptimizer.h
   Bandits/DiscreteBanditDecisionProblem.h
   Bandits/DiscreteBanditPolicy.h
   Bandits/DiscreteBanditExperiment.h

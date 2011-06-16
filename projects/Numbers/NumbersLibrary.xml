@@ -2,7 +2,31 @@
 
 <library name="Numbers" dynamic="yes">
   
-  <!-- New -->
+  <!-- Properties and analysers -->
+  <class name="Property" base="Object" abstract="yes"/>
+  <class name="PredicateProperty" base="Property">
+    <constructor arguments="PredicatePtr predicate, double probability, size_t numberOfMeasures"/>
+    <variable type="Predicate" name="predicate"/>
+    <variable type="Double" name="probability"/>
+    <variable type="PositiveInteger" name="numberOfMeasures"/>
+  </class>
+  
+  <class name="PropertyList" base="ObjectVector[Property]"/>
+
+  <class name="Analyser" base="Object" abstract="yes"/>
+  <class name="CompositeAnalyser" base="Analyser">
+    <variable type="ObjectVector[Analyser]" name="analysers"/>
+  </class>
+
+  <class name="DoubleRangePredicate" base="Predicate">
+    <variable type="Double" name="lowerLimit"/>
+    <variable type="Double" name="upperLimit"/>
+  </class>
+  <class name="DoubleRangeAnalyser" base="Analyser"/>
+
+  <class name="AnalyserSandBox" base="WorkUnit"/>
+  
+  <!-- Blah -->
   <class name="EnrichedNumberSequence">
     <constructor arguments="ContainerPtr numbers"/>
     <variable type="GenericVector[Integer]" name="numbers"/>

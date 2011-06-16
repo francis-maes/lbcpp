@@ -11,6 +11,7 @@ SET(LBCPP_NUMBERS_SOURCES
   precompiled.cpp
   NumbersSandBox.h  
   NumberPerceptions.h
+  PropertyFinder.h
   NumbersLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NumbersLibrary.cpp
 )
