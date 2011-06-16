@@ -41,7 +41,7 @@
   
   <class name="GetSupervisionFunction" base="Function"/>
   
-  <class name="SumDoubleVectorFeatureGenerator" base="FeatureGenerator"/>
+  <class name="SumDoubleVectorFunction" base="Function"/>
   
   <class name="GetBondingStateProbabilities" base="FeatureGenerator"/>
   
@@ -105,4 +105,17 @@
     <variable type="Boolean" name="useSymmetricFeature"/>
   </class>
   
+  <!-- Connectivity Pattern Classifier -->
+  <class name="AddConnectivityPatternBiasBatchLearner" base="BatchLearner"/>
+
+  <class name="AddConnectivityPatternBiasLearnableFunction" base="Function">
+    <variable type="Double" name="bias"/>
+  </class>
+
+  <class name="NoPostProcessingLinearBinaryClassifier" base="SupervisedNumericalFunction"/>
+
+  <class name="ConnectivityPatternClassifier" base="CompositeFunction">
+    <variable type="LearnerParameters" name="learningParameters"/>
+  </class>
+
 </library>

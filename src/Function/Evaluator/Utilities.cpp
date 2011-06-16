@@ -390,3 +390,33 @@ void ROCScoreObject::finalize(bool saveConfusionMatrices)
 
   predictedScores.clear();
 }
+
+void ROCScoreObject::getAllThresholds(std::vector<double>& results) const
+{
+  const double margin = 1.0;
+  
+  if (!predictedScores.size())
+    return;
+
+  BinaryClassificationConfusionMatrix confusionMatrix;
+  confusionMatrix.set(numPositives, numNegatives, 0, 0);
+
+  results.push_back(predictedScores.begin()->first - margin);
+  
+  for (ScoresMap::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
+  {
+    if (it->second.first)
+    {
+      confusionMatrix.removePrediction(true, false, it->second.first);
+      confusionMatrix.addPrediction(false, false, it->second.first);
+    }
+    if (it->second.second)
+    {
+      confusionMatrix.removePrediction(true, true, it->second.second);
+      confusionMatrix.addPrediction(false, true, it->second.second);
+    }
+    jassert(confusionMatrix.getSampleCount() == numPositives + numNegatives);
+    
+    results.push_back(getBestThreshold(it, margin));
+  }
+}

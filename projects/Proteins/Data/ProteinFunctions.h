@@ -121,7 +121,7 @@ class GreedyDisulfidePatternBuilder : public SimpleUnaryFunction
 {
 public:
   GreedyDisulfidePatternBuilder(size_t numOfRuns = 1, double threshold = 0.5, size_t minimumDistanceFromDiagonal = 1)
-    : SimpleUnaryFunction(symmetricMatrixClass(probabilityType), symmetricMatrixClass(probabilityType), T("PatternBuilder"))
+    : SimpleUnaryFunction(symmetricMatrixClass(doubleType), symmetricMatrixClass(doubleType), T("PatternBuilder"))
     , numOfRuns(numOfRuns), threshold(threshold), minimumDistanceFromDiagonal(minimumDistanceFromDiagonal) {}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
@@ -145,7 +145,7 @@ public:
 
 protected:
   typedef std::multimap<double, std::pair<size_t, size_t> > SortedScoresMap;
-  enum {notBridged = -2, bridged = -1};
+  enum {notBridged = -INT_MAX, bridged = -INT_MAX + 1};
   
   friend class GreedyDisulfidePatternBuilderClass;
   
@@ -182,7 +182,7 @@ protected:
         size_t j = (size_t)-1;
         double value = findBestValue(mask, i, j);
         
-        if (value < 0.f)
+        if (value == notBridged || value == bridged)
           break;
         updateMatrix(mask, i, j, value > threshold);
         score += (value > threshold) ? value : 0.f;

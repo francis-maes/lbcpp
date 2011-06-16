@@ -684,7 +684,7 @@ public:
     {return inputs[1];}
 };
 
-class SumDoubleVectorFeatureGenerator : public FeatureGenerator
+class SumDoubleVectorFunction : public Function
 {
 public:
   virtual size_t getNumRequiredInputs() const
@@ -693,7 +693,7 @@ public:
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
     {return doubleVectorClass(enumValueType, doubleType);}
   
-  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
     TypePtr firstType = inputVariables[0]->getType()->getTemplateArgument(0);
     TypePtr secondType = inputVariables[0]->getType()->getTemplateArgument(0);
@@ -704,23 +704,22 @@ public:
       return EnumerationPtr();
     }
 
-    return firstType;
+    return (TypePtr)denseDoubleVectorClass(firstType, doubleType);
   }
   
-  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     const DoubleVectorPtr& v1 = inputs[0].getObjectAndCast<DoubleVector>();
     const DoubleVectorPtr& v2 = inputs[1].getObjectAndCast<DoubleVector>();
     if (!v1 || !v2)
-      return;
+      return Variable::missingValue(getOutputType());
 
     const size_t n = v1->getNumElements();
-    DenseDoubleVectorPtr res = new DenseDoubleVector(getFeaturesEnumeration(), doubleType, n);
+    DenseDoubleVectorPtr res = new DenseDoubleVector(getOutputType(), n);
     v1->addWeightedTo(res, 0, 1.f);
     v2->addWeightedTo(res, 0, 1.f);
     
-    for (size_t i = 0; i < n; ++i)
-      callback.sense(i, *(res->getValuePointer(i)));
+    return res;
   }
 };
 
