@@ -56,7 +56,7 @@ public:
 
   /* SupervisedEvaluator */
   virtual TypePtr getRequiredPredictionType() const
-    {return symmetricMatrixClass(probabilityType);}
+    {return symmetricMatrixClass(doubleType);}
 
   virtual TypePtr getRequiredSupervisionType() const
     {return symmetricMatrixClass(probabilityType);}

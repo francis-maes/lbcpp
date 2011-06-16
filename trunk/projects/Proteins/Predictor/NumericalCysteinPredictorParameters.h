@@ -15,6 +15,7 @@
 # include <lbcpp/Distribution/DiscreteDistribution.h>
 # include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 # include <lbcpp/Learning/Numerical.h>
+# include "ConnectivityPatternClassifier.h"
 
 namespace lbcpp
 {
@@ -213,7 +214,7 @@ public:
     // -----  Oracle  -----
     : useOracleD0(false), useOracleD1(false), useOracleD2(false)
     // ----- Features -----
-    , useCartesianProduct(false)
+    , useCartesianProduct(true)
     // primary residue
     , useAminoAcid(true), usePSSM(true)
     // global
@@ -473,7 +474,7 @@ public:
       builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception, T("globalFeatures"));
 
     if (useSymmetricFeature)
-      builder.addFunction(new SumDoubleVectorFeatureGenerator(), rf1, rf2, T("rf1+rf2"));
+      builder.addFunction(new SumDoubleVectorFunction(), rf1, rf2, T("rf1+rf2"));
     else
     {
       builder.addInSelection(rf1);
@@ -747,8 +748,12 @@ public:
     {
       return new GetSupervisionFunction();
     }
-    else
-      return ProteinPredictorParameters::createTargetPredictor(target);
+    else if (target == dsbTarget)
+    {
+      return new ConnectivityPatternClassifier(learningParameters);
+    }
+
+    return ProteinPredictorParameters::createTargetPredictor(target);
   }
   
   virtual FunctionPtr learningMachine(ProteinTarget target) const
@@ -769,6 +774,7 @@ public:
       }
     case dsbTarget:
       {
+        jassertfalse;
         FunctionPtr res = linearBinaryClassifier(learningParameters, true, binaryClassificationAccuracyScore);
         res->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
         return res;

@@ -151,6 +151,7 @@ public:
   void addPrediction(ExecutionContext& context, double predictedScore, bool isPositive); 
   void finalize(bool saveConfusionMatrices);
   double findBestThreshold(BinaryClassificationScore scoreToOptimize, double& bestScore) const;
+  void getAllThresholds(std::vector<double>& results) const;
   
   BinaryClassificationConfusionMatrixPtr findBestSensitivitySpecificityTradeOff() const;
 
