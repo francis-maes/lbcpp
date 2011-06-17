@@ -43,7 +43,13 @@
   
   <class name="SumDoubleVectorFunction" base="Function"/>
   
-  <class name="GetBondingStateProbabilities" base="FeatureGenerator"/>
+  <class name="GetPairBondingStateProbabilities" base="FeatureGenerator">
+    <variable type="Boolean" name="useSpecialFeatures"/>
+  </class>
+
+  <class name="GetBondingStateProbabilities" base="FeatureGenerator">
+    <variable type="Boolean" name="useSpecialFeatures"/>
+  </class>
   
   <class name="ProteinPredictor" base="CompositeFunction">
     <variable type="ProteinPredictorParameters" name="parameters"/>
