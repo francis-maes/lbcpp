@@ -612,7 +612,7 @@ public:
     size_t cbs = builder.addFunction(getVariableFunction(T("cysteinBondingStates")), protein, T("cysteinBondingProperty"));
     
     size_t cysteinIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, position);
-    size_t prob = builder.addFunction(new GetDoubleVectorValueFunction(), cbs, cysteinIndex, T("p[D1]"));
+    size_t prob = builder.addFunction(new GetBondingStateProbabilities(false), cbs, cysteinIndex, T("p[D1]"));
 
     if (useCartesianProduct)
     {
@@ -681,7 +681,7 @@ public:
     size_t secondIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, secondPosition);
 
     size_t cbs = builder.addFunction(getVariableFunction(T("cysteinBondingStates")), protein, T("cysteinBondingProperty"));
-    size_t probs = builder.addFunction(new GetBondingStateProbabilities(), cbs, firstIndex, secondIndex, T("P[D1]"));
+    size_t probs = builder.addFunction(new GetPairBondingStateProbabilities(false), cbs, firstIndex, secondIndex, T("P[D1]"));
 
     if (useCartesianProduct)
     {

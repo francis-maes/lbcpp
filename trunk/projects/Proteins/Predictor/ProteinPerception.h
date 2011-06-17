@@ -723,9 +723,12 @@ public:
   }
 };
 
-class GetBondingStateProbabilities : public FeatureGenerator
+class GetPairBondingStateProbabilities : public FeatureGenerator
 {
 public:
+  GetPairBondingStateProbabilities(bool useSpecialFeatures = false)
+    : useSpecialFeatures(useSpecialFeatures) {}
+  
   virtual size_t getNumRequiredInputs() const
     {return 3;}
   
@@ -737,6 +740,13 @@ public:
     DefaultEnumerationPtr res = new DefaultEnumeration();
     res->addElement(context, T("p1+p2"));
     res->addElement(context, T("p1xp2"));
+    if (useSpecialFeatures)
+    {
+      res->addElement(context, T("p1"));
+      res->addElement(context, T("p2"));
+      res->addElement(context, T("1-p1"));
+      res->addElement(context, T("1-p2"));
+    }
     return res;
   }
   
@@ -749,7 +759,57 @@ public:
     const double pSecond = values->getElement(inputs[2].getInteger()).getDouble();
     callback.sense(0, pFirst + pSecond);
     callback.sense(1, pFirst * pSecond);
+    if (useSpecialFeatures)
+    {
+      callback.sense(2, pFirst);
+      callback.sense(3, pSecond);
+      callback.sense(4, 1 - pFirst);
+      callback.sense(5, 1 - pSecond);
+    }
   }
+
+protected:
+  friend class GetPairBondingStateProbabilitiesClass;
+
+  bool useSpecialFeatures;
+};
+
+class GetBondingStateProbabilities : public FeatureGenerator
+{
+public:
+  GetBondingStateProbabilities(bool useSpecialFeatures = false)
+    : useSpecialFeatures(useSpecialFeatures) {}
+  
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : (TypePtr)doubleVectorClass(enumValueType, probabilityType);}
+  
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration();
+    res->addElement(context, T("p"));
+    if (useSpecialFeatures)
+      res->addElement(context, T("1-p"));
+    return res;
+  }
+  
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    const DoubleVectorPtr& values = inputs[0].getObjectAndCast<DoubleVector>();
+    if (!values)
+      return;
+    const double p = values->getElement(inputs[1].getInteger()).getDouble();
+    callback.sense(0, p);
+    if (useSpecialFeatures)
+      callback.sense(1, 1 - p);
+  }
+
+protected:
+  friend class GetBondingStateProbabilitiesClass;
+
+  bool useSpecialFeatures;
 };
 
 class GetDisulfideBondProbability : public FeatureGenerator
