@@ -51,8 +51,8 @@ typedef ReferenceCountedObjectPtr<DisulfidePatternScoreObject> DisulfidePatternS
 class DisulfidePatternEvaluator : public SupervisedEvaluator
 {
 public:
-  DisulfidePatternEvaluator(bool isFinalEvaluation = false, FunctionPtr decoratedFunction = FunctionPtr(), double threshold = 0.5, size_t minimumDistanceFromDiagonal = 1)
-    : isFinalEvaluation(isFinalEvaluation), decoratedFunction(decoratedFunction), threshold(threshold), minimumDistanceFromDiagonal(minimumDistanceFromDiagonal) {}
+  DisulfidePatternEvaluator(FunctionPtr decoratedFunction = FunctionPtr(), double threshold = 0.5, size_t minimumDistanceFromDiagonal = 1)
+    : decoratedFunction(decoratedFunction), threshold(threshold), minimumDistanceFromDiagonal(minimumDistanceFromDiagonal) {}
 
   /* SupervisedEvaluator */
   virtual TypePtr getRequiredPredictionType() const
@@ -63,9 +63,6 @@ public:
   
   virtual void addPrediction(ExecutionContext& context, const Variable& prediction, const Variable& supervision, const ScoreObjectPtr& result) const
   {
-    if (!isFinalEvaluation)
-      return;
-
     SymmetricMatrixPtr predictedMatrix = prediction.getObjectAndCast<SymmetricMatrix>();
     SymmetricMatrixPtr supervisedMatrix = supervision.getObjectAndCast<SymmetricMatrix>();
     DisulfidePatternScoreObjectPtr score = result.staticCast<DisulfidePatternScoreObject>();
@@ -123,7 +120,6 @@ public:
 protected:
   friend class DisulfidePatternEvaluatorClass;
 
-  bool isFinalEvaluation;
   FunctionPtr decoratedFunction;
   double threshold;
   size_t minimumDistanceFromDiagonal;

@@ -726,8 +726,8 @@ public:
 class GetPairBondingStateProbabilities : public FeatureGenerator
 {
 public:
-  GetPairBondingStateProbabilities(bool useSpecialFeatures = false)
-    : useSpecialFeatures(useSpecialFeatures) {}
+  GetPairBondingStateProbabilities(bool useSpecialFeatures = false, size_t windowHalfSize = 0)
+    : useSpecialFeatures(useSpecialFeatures), windowHalfSize(windowHalfSize) {}
   
   virtual size_t getNumRequiredInputs() const
     {return 3;}
@@ -738,15 +738,28 @@ public:
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
     DefaultEnumerationPtr res = new DefaultEnumeration();
-    res->addElement(context, T("p1+p2"));
-    res->addElement(context, T("p1xp2"));
-    if (useSpecialFeatures)
+
+    for (int i = -windowHalfSize; i <= (int)windowHalfSize; ++i)
     {
-      res->addElement(context, T("p1"));
-      res->addElement(context, T("p2"));
-      res->addElement(context, T("1-p1"));
-      res->addElement(context, T("1-p2"));
+      res->addElement(context, T("p1[0]+p2[" + String(i) + "]"));
+      res->addElement(context, T("p1[0]xp2[" + String(i) + "]"));
+      if (i)
+      {
+        res->addElement(context, T("p1[" + String(i) + "]+p2[0]"));
+        res->addElement(context, T("p1[" + String(i) + "]xp2[0]"));
+      }
     }
+    
+    if (useSpecialFeatures)
+      for (int i = -windowHalfSize; i <= (int)windowHalfSize; ++i)
+      {
+        res->addElement(context, T("p2[" + String(i) + "]"));
+        res->addElement(context, T("1-p2[" + String(i) + "]"));
+
+        res->addElement(context, T("p1[" + String(i) + "]"));
+        res->addElement(context, T("1-p1[" + String(i) + "]"));
+      }
+
     return res;
   }
   
@@ -755,23 +768,65 @@ public:
     const DoubleVectorPtr& values = inputs[0].getObjectAndCast<DoubleVector>();
     if (!values)
       return;
-    const double pFirst = values->getElement(inputs[1].getInteger()).getDouble();
-    const double pSecond = values->getElement(inputs[2].getInteger()).getDouble();
-    callback.sense(0, pFirst + pSecond);
-    callback.sense(1, pFirst * pSecond);
-    if (useSpecialFeatures)
+    const size_t n = values->getNumElements();
+
+    const size_t firstIndex = inputs[1].getInteger();
+    const size_t secondIndex = inputs[2].getInteger();
+
+    const double pFirst = values->getElement(firstIndex).getDouble();
+    const double pSecond = values->getElement(secondIndex).getDouble();
+
+    size_t index = 0;
+    for (int i = -windowHalfSize; i < (int)windowHalfSize + 1; ++i)
     {
-      callback.sense(2, pFirst);
-      callback.sense(3, pSecond);
-      callback.sense(4, 1 - pFirst);
-      callback.sense(5, 1 - pSecond);
+      size_t thirdIndex = secondIndex + i;
+      if (thirdIndex >= 0 && thirdIndex < n)
+      {
+        const double value = values->getElement(thirdIndex).getDouble();
+        callback.sense(index, pFirst + value);
+        callback.sense(index + 1, pFirst * value);
+      }
+      index += 2;
+      if (i)
+      {
+        thirdIndex = firstIndex + i;
+        if (thirdIndex >= 0 && thirdIndex < n)
+        {
+          const double value = values->getElement(thirdIndex).getDouble();
+          callback.sense(index, pSecond + value);
+          callback.sense(index + 1, pSecond * value);
+        }
+        index += 2;
+      }
     }
+    
+    if (useSpecialFeatures)
+      for (int i = -windowHalfSize; i < (int)windowHalfSize + 1; ++i)
+      {
+        size_t thirdIndex = secondIndex + i;
+        if (thirdIndex >= 0 && thirdIndex < n)
+        {
+          const double value = values->getElement(thirdIndex).getDouble();
+          callback.sense(index, value);
+          callback.sense(index + 1, 1 - value);
+        }
+        index += 2;
+        thirdIndex = firstIndex + i;
+        if (thirdIndex >= 0 && thirdIndex < n)
+        {
+          const double value = values->getElement(thirdIndex).getDouble();
+          callback.sense(index, value);
+          callback.sense(index + 1, 1 - value);
+        }
+        index += 2;
+      }
   }
 
 protected:
   friend class GetPairBondingStateProbabilitiesClass;
 
   bool useSpecialFeatures;
+  size_t windowHalfSize;
 };
 
 class GetBondingStateProbabilities : public FeatureGenerator
@@ -836,6 +891,168 @@ public:
     const double p = matrix->getElement(inputs[1].getInteger(), inputs[2].getInteger()).getDouble();
     callback.sense(0, p);
   }
+};
+
+class ProteinLengthFeatureGenerator : public FeatureGenerator
+{
+public:
+  ProteinLengthFeatureGenerator(size_t maxLength, size_t stepSize, bool lazy = false) 
+    : FeatureGenerator(lazy), maxLength(maxLength), stepSize(stepSize)
+    {jassert(stepSize && maxLength);}
+  
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return proteinClass;}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration(T("ProteinLengthFeatures"));
+
+    const size_t numFeatures = maxLength / stepSize;
+    for (size_t i = 0; i < numFeatures; ++i)
+      res->addElement(context, T("[") + String((int)(i * stepSize)) + T(";") + String((int)((i + 1) * stepSize)) + T("["));
+    res->addElement(context, T("[") + String((int)(numFeatures * stepSize)) + T(";+inf"));
+
+    return res;
+  }
+
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    const ProteinPtr& protein = inputs[0].getObjectAndCast<Protein>();
+    jassert(protein);
+
+    const size_t numFeatures = maxLength / stepSize;
+    size_t index = protein->getLength() / stepSize;
+    if (index > numFeatures)
+      index = numFeatures;
+
+    callback.sense(index, 1.0);
+  }
+
+protected:
+  size_t maxLength;
+  size_t stepSize;
+};
+
+class ProteinLengthNormalized : public SimpleUnaryFunction
+{
+public:
+  ProteinLengthNormalized(size_t maxLength)
+    : SimpleUnaryFunction(proteinClass, probabilityType, T("ProteinLengthNormalized")), maxLength(maxLength) {}
+  
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    const ProteinPtr& protein = input.getObjectAndCast<Protein>(context);
+    jassert(protein);
+    
+    const size_t length = protein->getLength();
+    if (length > maxLength)
+    {
+      jassertfalse;
+      return probability(1.f);
+    }
+    return probability(length / (double)maxLength);
+  }
+
+protected:
+  size_t maxLength;
+};
+
+class NumCysteinsFeatureGenerator : public FeatureGenerator
+{
+public:
+  NumCysteinsFeatureGenerator(bool hardDiscretization = true, bool lazy = false) 
+    : FeatureGenerator(lazy), hardDiscretization(hardDiscretization) {}
+  
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return proteinClass;}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration(T("NumCysteinsFeatures"));
+
+    if (!hardDiscretization)
+    {
+      res->addElement(context, T("value"));
+      return res;
+    }
+
+    res->addElement(context, T("1-"));
+    res->addElement(context, T("2"));
+    res->addElement(context, T("3"));
+    res->addElement(context, T("4"));
+    res->addElement(context, T("5"));
+    res->addElement(context, T("[6;10["));
+    res->addElement(context, T("[10;15["));
+    res->addElement(context, T("[15;20["));
+    res->addElement(context, T("[20;25["));
+    res->addElement(context, T("25+"));
+    
+    return res;
+  }
+
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    const ProteinPtr& protein = inputs[0].getObjectAndCast<Protein>();
+    jassert(protein);
+
+    const size_t numCysteins = protein->getCysteinIndices().size();
+
+    if (!hardDiscretization)
+    {
+      callback.sense(0, (double)numCysteins);
+      return;
+    }
+
+    size_t index = 9; // 25+
+    if (numCysteins <= 1)
+      index = 0;
+    else if (numCysteins == 2)
+      index = 1;
+    else if (numCysteins == 3)
+      index = 2;
+    else if (numCysteins == 4)
+      index = 3;
+    else if (numCysteins == 5)
+      index = 4;
+    else if (numCysteins < 10)
+      index = 5;
+    else if (numCysteins < 15)
+      index = 6;
+    else if (numCysteins < 20)
+      index = 7;
+    else if (numCysteins < 25)
+      index = 8;
+
+    callback.sense(index, 1.0);
+  }
+  
+protected:
+  bool hardDiscretization;
+};
+
+class IsNumCysteinPair : public SimpleUnaryFunction
+{
+public:
+  IsNumCysteinPair()
+    : SimpleUnaryFunction(proteinClass, probabilityType, T("IsNumCysteinPair")) {}
+  
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    const ProteinPtr& protein = input.getObjectAndCast<Protein>(context);
+    jassert(protein);
+    
+    const size_t numCysteins = protein->getCysteinIndices().size();
+    return probability((numCysteins + 1) % 2);
+  }
+
+protected:
+  size_t maxLength;
 };
 
 }; /* namespace lbcpp */
