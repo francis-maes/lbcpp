@@ -107,4 +107,12 @@
     <variable type="File" name="inputDirectory" shortName="i"/>
   </class>
 
+  <class name="CysteinLearnerFunction" base="Function">
+    <variable type="File" name="inputDirectory"/>
+  </class>
+
+  <class name="EDACysteinProteinLearner" base="WorkUnit">
+    <variable type="File" name="inputDirectory"/>
+  </class>
+
 </library>

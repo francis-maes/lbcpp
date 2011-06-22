@@ -14,6 +14,8 @@
 
 #include <lbcpp/UserInterface/VariableSelector.h>
 
+#include "../Predictor/NumericalCysteinPredictorParameters.h"
+
 /*
 ** BricoBox - Some non-important test tools
 */
@@ -815,6 +817,97 @@ protected:
 
     return config;
   }
+};
+
+class CysteinLearnerFunction : public Function
+{
+public:
+  CysteinLearnerFunction(const File& inputDirectory)
+    : inputDirectory(inputDirectory) {}
+  CysteinLearnerFunction() {}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return numericalCysteinFeaturesParametersClass;}
+  
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return doubleType;}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    size_t numStacks = 5;
+
+    ContainerPtr trainingData = Protein::loadProteinsFromDirectoryPair(context, File(), inputDirectory.getChildFile(T("train/")), 0, T("Loading training proteins"));
+
+    NumericalCysteinPredictorParametersPtr parameters = new NumericalCysteinPredictorParameters(input.getObjectAndCast<NumericalCysteinFeaturesParameters>(context));
+    ProteinSequentialPredictorPtr predictor = new ProteinSequentialPredictor();
+    for (size_t i = 0; i < numStacks; ++i)
+    {
+      ProteinPredictorPtr stack = new ProteinPredictor(parameters);
+      stack->addTarget(cbpTarget);
+      predictor->addPredictor(stack);
+      
+      stack = new ProteinPredictor(parameters);
+      stack->addTarget(cbsTarget);
+      predictor->addPredictor(stack);
+      
+      stack = new ProteinPredictor(parameters);
+      stack->addTarget(dsbTarget);
+      predictor->addPredictor(stack);
+    }
+    
+    if (!predictor->train(context, trainingData, ContainerPtr(), T("Training")))
+      return false;
+
+    ProteinEvaluatorPtr trainEvaluator = new ProteinEvaluator();
+    CompositeScoreObjectPtr trainScores = predictor->evaluate(context, trainingData, trainEvaluator, T("Evaluate on training proteins"));
+    
+    ContainerPtr testingData = Protein::loadProteinsFromDirectoryPair(context, File(), inputDirectory.getChildFile(T("test/")), 0, T("Loading testing proteins"));
+
+    ProteinEvaluatorPtr testEvaluator = new ProteinEvaluator();
+    CompositeScoreObjectPtr testScores = predictor->evaluate(context, testingData, testEvaluator, T("Evaluate on test proteins"));
+
+    OutputStream *o = File::getCurrentWorkingDirectory().getChildFile(T("out.txt")).createOutputStream();
+    *o 
+    << ";" << String(testEvaluator->getScoreObjectOfTarget(trainScores, dsbTarget)->getScoreToMinimize())
+    << ";" << String(testEvaluator->getScoreObjectOfTarget(testScores, dsbTarget)->getScoreToMinimize())
+    << "\"" << input.toString() << "\"\n";
+    delete o;
+    
+    return testEvaluator->getScoreObjectOfTarget(testScores, dsbTarget)->getScoreToMinimize();
+  }
+
+protected:
+  friend class CysteinLearnerFunctionClass;
+
+  File inputDirectory;
+};
+
+class EDACysteinProteinLearner : public WorkUnit
+{
+public:
+  Variable run(ExecutionContext& context)
+  {
+    size_t numIterations = 100;
+    size_t populationSize = 5;
+    size_t numBests = 1;
+
+    FunctionPtr f = new CysteinLearnerFunction(inputDirectory);
+    SamplerPtr sampler = objectCompositeSampler(numericalCysteinFeaturesParametersClass, NumericalCysteinFeaturesParameters::createSamplers());
+
+    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0);
+    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 10);
+    OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler);
+
+    return optimizer->compute(context, optimizerContext, optimizerState);
+  }
+
+protected:
+  friend class EDACysteinProteinLearnerClass;
+
+  File inputDirectory;
 };
 
 };

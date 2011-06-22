@@ -20,28 +20,16 @@
 namespace lbcpp
 {
 
-class NumericalCysteinPredictorParameters : public ProteinPredictorParameters
+extern ClassPtr numericalCysteinFeaturesParametersClass;
+
+class NumericalCysteinFeaturesParameters : public Object
 {
 public:
-  enum {maxProteinLengthOnSPX = 1733, maxProteinLengthOnSPXFromFile = 1395};
-  
-  bool useOracleD0;
-  bool useOracleD1;
-  bool useOracleD2;
-  
   bool useCartesianProduct;
 
-  bool useAminoAcid;
-  bool usePSSM;
-  
-  bool useGlobalFeature;
-  bool useGlobalHistogram;
   bool useProteinLength;
   bool useDiscretizeProteinLength;
-  bool useNumCysteins;
-  bool useDiscretizeNumCysteins;
-  bool useCysteinParity;
-  
+
   size_t residueWindowSize;
   size_t localHistogramSize;
   size_t separationProfilSize;
@@ -56,38 +44,96 @@ public:
   size_t d1WindowSize;
   bool useExtendedD2Feature;
   
-  NumericalCysteinPredictorParameters()
+  static std::vector<SamplerPtr> createSamplers()
+  {
+    ClassPtr thisType = numericalCysteinFeaturesParametersClass;
+    const size_t n = thisType->getNumMemberVariables();
+    std::vector<SamplerPtr> res(n);
+    
+    for (size_t i = 0; i < n; ++i)
+    {
+      if (thisType->getMemberVariableType(i)->inheritsFrom(booleanType))
+        res[i] = bernoulliSampler(0.5, 0.0, 1.0);
+      else if (thisType->getMemberVariableName(i) == T("residueWindowSize"))
+        res[i] = discretizeSampler(gaussianSampler(20, 15), 0, 50);
+      else if (thisType->getMemberVariableName(i) == T("localHistogramSize"))
+        res[i] = discretizeSampler(gaussianSampler(100, 100), 0, 500);
+      else if (thisType->getMemberVariableName(i) == T("separationProfilSize"))
+        res[i] = discretizeSampler(gaussianSampler(0, 15), 0, 26);
+      else if (thisType->getMemberVariableName(i) == T("pairWindowSize"))
+        res[i] = discretizeSampler(gaussianSampler(9, 15), 0, 26);
+      else if (thisType->getMemberVariableName(i) == T("normalizedWindowSize"))
+        res[i] = discretizeSampler(gaussianSampler(0, 15), 0, 26);
+      else if (thisType->getMemberVariableName(i) == T("d1WindowSize"))
+        res[i] = discretizeSampler(gaussianSampler(3, 15), 0, 26);
+      else
+        jassertfalse;
+    }
+
+    return res;
+  }
+
+protected:
+  friend class NumericalCysteinFeaturesParametersClass;
+};
+
+typedef ReferenceCountedObjectPtr<NumericalCysteinFeaturesParameters> NumericalCysteinFeaturesParametersPtr;
+
+class NumericalCysteinPredictorParameters : public ProteinPredictorParameters
+{
+public:
+  NumericalCysteinFeaturesParametersPtr fp;
+
+  enum {maxProteinLengthOnSPX = 1733, maxProteinLengthOnSPXFromFile = 1395};
+
+  bool useOracleD0;
+  bool useOracleD1;
+  bool useOracleD2;
+
+  bool useAminoAcid;
+  bool usePSSM;
+
+  bool useGlobalFeature;
+  bool useGlobalHistogram;
+
+  bool useNumCysteins;
+  bool useDiscretizeNumCysteins;
+  bool useCysteinParity;
+
+  NumericalCysteinPredictorParameters(NumericalCysteinFeaturesParametersPtr fp)
+    : fp(fp)
     // -----  Oracle  -----
-    : useOracleD0(false), useOracleD1(false), useOracleD2(false)
+    , useOracleD0(false), useOracleD1(false), useOracleD2(false)
     // ----- Features -----
-    , useCartesianProduct(false)
+    //, useCartesianProduct(false)
     // primary residue
     , useAminoAcid(true), usePSSM(true)
     // global
     , useGlobalFeature(true)
     , useGlobalHistogram(true)
-    , useProteinLength(false), useDiscretizeProteinLength(false)
+    //, useProteinLength(false), useDiscretizeProteinLength(false)
     , useNumCysteins(false), useDiscretizeNumCysteins(true), useCysteinParity(true)
   
     // residue
-    , residueWindowSize(3)
-    , localHistogramSize(100)
-    , separationProfilSize(0)
+    //, residueWindowSize(3)
+    //, localHistogramSize(100)
+    //, separationProfilSize(0)
   
     // pair
-    , useSymmetricFeature(true)
-    , useIntervalHistogram(false)
-    , useAADistance(true)
-    , pairWindowSize(5)
-    , normalizedWindowSize(0)
+    //, useSymmetricFeature(true)
+    //, useIntervalHistogram(false)
+    //, useAADistance(false)
+    //, pairWindowSize(3)
+    //, normalizedWindowSize(3)
   
     // MultiTask
-    , useExtendedD1Feature(false)
-    , d1WindowSize(3)
-    , useExtendedD2Feature(false)
+    //, useExtendedD1Feature(false)
+    //, d1WindowSize(0)
+    //, useExtendedD2Feature(false)
 
     , learningParameters(new StochasticGDParameters(constantIterationFunction(0.1), /*maxIterationsWithoutImprovementStoppingCriterion(20)*/ StoppingCriterionPtr(), 1000))
     {}
+  NumericalCysteinPredictorParameters() {}
   
   /*
   ************************ Protein Perception ************************
@@ -131,9 +177,9 @@ public:
     /* Data */
     builder.startSelection();
       // protein length
-      if (useProteinLength)
+      if (fp->useProteinLength)
         builder.addFunction(new ProteinLengthNormalized(maxProteinLengthOnSPXFromFile), protein);
-      if (useDiscretizeProteinLength)
+      if (fp->useDiscretizeProteinLength)
         builder.addFunction(new ProteinLengthFeatureGenerator(1000, 10), protein);
       // global composition
       if (useGlobalHistogram)
@@ -198,11 +244,11 @@ public:
 
       builder.addConstant(0.f);
     
-      if (residueWindowSize)
-        builder.addFunction(centeredContainerWindowFeatureGenerator(residueWindowSize), primaryResidueFeatures, position, T("window"));
+      if (fp->residueWindowSize)
+        builder.addFunction(centeredContainerWindowFeatureGenerator(fp->residueWindowSize), primaryResidueFeatures, position, T("window"));
 
-      if (localHistogramSize)
-        builder.addFunction(accumulatorLocalMeanFunction(localHistogramSize), primaryResidueFeaturesAcc, position, T("localHisto[") + String((int)localHistogramSize) + T("]"));
+      if (fp->localHistogramSize)
+        builder.addFunction(accumulatorLocalMeanFunction(fp->localHistogramSize), primaryResidueFeaturesAcc, position, T("localHisto[") + String((int)fp->localHistogramSize) + T("]"));
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
@@ -282,8 +328,8 @@ public:
 
       builder.addConstant(0.f);
 
-      if (separationProfilSize)
-        builder.addFunction(centeredContainerWindowFeatureGenerator(separationProfilSize), cysteinSeparationProfil, cysteinIndex, T("cysSepProfil"));
+      if (fp->separationProfilSize)
+        builder.addFunction(centeredContainerWindowFeatureGenerator(fp->separationProfilSize), cysteinSeparationProfil, cysteinIndex, T("cysSepProfil"));
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
@@ -305,17 +351,17 @@ public:
     size_t primaryResidueFeaturesAcc = builder.addFunction(getVariableFunction(T("accumulator")), proteinPerception);
 
     size_t aaDist = (size_t)-1;
-    if (useAADistance)
+    if (fp->useAADistance)
       aaDist = builder.addFunction(new SubtractFunction(), secondPosition, firstPosition);
 
     builder.startSelection();
 
       builder.addConstant(0.f);
 
-      if (useIntervalHistogram)
+      if (fp->useIntervalHistogram)
         builder.addFunction(accumulatorWindowMeanFunction(), primaryResidueFeaturesAcc, firstPosition, secondPosition, T("interval"));
 
-      if (useAADistance)
+      if (fp->useAADistance)
         builder.addFunction(hardDiscretizedNumberFeatureGenerator(0.f, (double)maxProteinLengthOnSPXFromFile, 20, false), aaDist, T("|AA2-AA1|"));
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
@@ -355,7 +401,7 @@ public:
       if (useGlobalFeature)
         builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception, T("globalFeatures"));
 
-      if (useSymmetricFeature)
+      if (fp->useSymmetricFeature)
         builder.addFunction(new SumDoubleVectorFunction(), rf1, rf2, T("rf1+rf2"));
       else
       {
@@ -395,7 +441,7 @@ public:
     size_t pNoneIndex = builder.addConstant(Variable(1, positiveIntegerType));
     size_t pMixIndex = builder.addConstant(Variable(2, positiveIntegerType));
 
-    if (useCartesianProduct)
+    if (fp->useCartesianProduct)
     {
       builder.startSelection();
       
@@ -429,7 +475,7 @@ public:
 
     size_t cbsRatio = builder.addFunction(new CysteinBondingStateRatio(), cbs, T("ratio"));
     
-    if (useCartesianProduct)
+    if (fp->useCartesianProduct)
     {
       builder.startSelection();
 
@@ -461,7 +507,7 @@ public:
     size_t dsbGreedy = builder.addFunction(new GreedyDisulfidePatternBuilder(), dsb, T("greedy"));
     size_t dsbGreedyRatio = builder.addFunction(new GreedyDisulfideBondRatio(), dsbGreedy, T("ratio"));
 
-    if (useCartesianProduct)
+    if (fp->useCartesianProduct)
     {
       builder.startSelection();
 
@@ -492,9 +538,9 @@ public:
     size_t cbs = builder.addFunction(getVariableFunction(T("cysteinBondingStates")), protein, T("cysteinBondingProperty"));
     
     size_t cysteinIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, position);
-    size_t prob = builder.addFunction(new GetBondingStateProbabilities(useExtendedD1Feature), cbs, cysteinIndex, T("p[D1]"));
+    size_t prob = builder.addFunction(new GetBondingStateProbabilities(fp->useExtendedD1Feature), cbs, cysteinIndex, T("p[D1]"));
 
-    if (useCartesianProduct)
+    if (fp->useCartesianProduct)
     {
       builder.startSelection();
       
@@ -528,7 +574,7 @@ public:
     size_t dsbGreedy = builder.addFunction(new GreedyDisulfidePatternBuilder(), dsb, T("greedy"));
     size_t dsbGreedySumRow = builder.addFunction(new GreedyDisulfideBondSumOfRow(), dsbGreedy, cysteinIndex, T("sumOfRow"));
     
-    if (useCartesianProduct)
+    if (fp->useCartesianProduct)
     {
       builder.startSelection();
       
@@ -561,9 +607,9 @@ public:
     size_t secondIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, secondPosition);
 
     size_t cbs = builder.addFunction(getVariableFunction(T("cysteinBondingStates")), protein, T("cysteinBondingProperty"));
-    size_t probs = builder.addFunction(new GetPairBondingStateProbabilities(useExtendedD1Feature, d1WindowSize), cbs, firstIndex, secondIndex, T("P[D1]"));
+    size_t probs = builder.addFunction(new GetPairBondingStateProbabilities(fp->useExtendedD1Feature, fp->d1WindowSize), cbs, firstIndex, secondIndex, T("P[D1]"));
 
-    if (useCartesianProduct)
+    if (fp->useCartesianProduct)
     {
       builder.startSelection();
       
@@ -600,7 +646,7 @@ public:
     size_t prob = builder.addFunction(new GetDisulfideBondProbability(), dsb, firstIndex, secondIndex, T("P[D2]"));
     
     size_t probGreedy = (size_t)-1;
-    if (useExtendedD2Feature)
+    if (fp->useExtendedD2Feature)
     {
       size_t dsbGreedy = builder.addFunction(new GreedyDisulfidePatternBuilder(), dsb, T("greedy"));
       probGreedy = builder.addFunction(new GetDisulfideBondProbability(), dsbGreedy, firstIndex, secondIndex, T("P[Greedy(D2)]"));
@@ -609,7 +655,7 @@ public:
     size_t normalizedD2 = builder.addFunction(new NormalizeDisulfideBondFunction(), dsb);
     size_t normalizedD2Features = builder.addFunction(mapContainerFunction(doubleFeatureGenerator()), normalizedD2);
 
-    if (useCartesianProduct)
+    if (fp->useCartesianProduct)
     {
       builder.startSelection();
 
@@ -632,11 +678,11 @@ public:
         if (probGreedy != (size_t)-1)
           builder.addInSelection(probGreedy);
 
-      if (pairWindowSize)
-        builder.addFunction(matrixWindowFeatureGenerator(pairWindowSize, pairWindowSize)
+      if (fp->pairWindowSize)
+        builder.addFunction(matrixWindowFeatureGenerator(fp->pairWindowSize, fp->pairWindowSize)
                             , dsbFeatures, firstIndex, secondIndex, T("dsbWindow"));
-      if (normalizedWindowSize)
-        builder.addFunction(matrixWindowFeatureGenerator(normalizedWindowSize, normalizedWindowSize)
+      if (fp->normalizedWindowSize)
+        builder.addFunction(matrixWindowFeatureGenerator(fp->normalizedWindowSize, fp->normalizedWindowSize)
                             , normalizedD2Features, firstIndex, secondIndex, T("normalizedD2Features"));
 
       builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
