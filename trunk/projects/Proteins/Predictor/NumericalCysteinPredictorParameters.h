@@ -49,6 +49,8 @@ public:
   bool useSymmetricFeature;
   bool useIntervalHistogram;
   bool useAADistance;
+  size_t pairWindowSize;
+  size_t normalizedWindowSize;
 
   bool useExtendedD1Feature;
   size_t d1WindowSize;
@@ -74,12 +76,14 @@ public:
   
     // pair
     , useSymmetricFeature(true)
-    , useIntervalHistogram(true)
+    , useIntervalHistogram(false)
     , useAADistance(true)
+    , pairWindowSize(5)
+    , normalizedWindowSize(0)
   
     // MultiTask
     , useExtendedD1Feature(false)
-    , d1WindowSize(0)
+    , d1WindowSize(3)
     , useExtendedD2Feature(false)
 
     , learningParameters(new StochasticGDParameters(constantIterationFunction(0.1), /*maxIterationsWithoutImprovementStoppingCriterion(20)*/ StoppingCriterionPtr(), 1000))
@@ -592,6 +596,7 @@ public:
     size_t secondIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, secondPosition);
     
     size_t dsb = builder.addFunction(getVariableFunction(T("disulfideBonds")), protein, T("cysteinBondingProperty"));
+    size_t dsbFeatures = builder.addFunction(mapContainerFunction(doubleFeatureGenerator()), dsb);
     size_t prob = builder.addFunction(new GetDisulfideBondProbability(), dsb, firstIndex, secondIndex, T("P[D2]"));
     
     size_t probGreedy = (size_t)-1;
@@ -600,6 +605,9 @@ public:
       size_t dsbGreedy = builder.addFunction(new GreedyDisulfidePatternBuilder(), dsb, T("greedy"));
       probGreedy = builder.addFunction(new GetDisulfideBondProbability(), dsbGreedy, firstIndex, secondIndex, T("P[Greedy(D2)]"));
     }
+    
+    size_t normalizedD2 = builder.addFunction(new NormalizeDisulfideBondFunction(), dsb);
+    size_t normalizedD2Features = builder.addFunction(mapContainerFunction(doubleFeatureGenerator()), normalizedD2);
 
     if (useCartesianProduct)
     {
@@ -623,6 +631,13 @@ public:
 
         if (probGreedy != (size_t)-1)
           builder.addInSelection(probGreedy);
+
+      if (pairWindowSize)
+        builder.addFunction(matrixWindowFeatureGenerator(pairWindowSize, pairWindowSize)
+                            , dsbFeatures, firstIndex, secondIndex, T("dsbWindow"));
+      if (normalizedWindowSize)
+        builder.addFunction(matrixWindowFeatureGenerator(normalizedWindowSize, normalizedWindowSize)
+                            , normalizedD2Features, firstIndex, secondIndex, T("normalizedD2Features"));
 
       builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
     }
