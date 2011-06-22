@@ -97,18 +97,30 @@
     <variable type="LearnerParameters" name="learningParameters" shortName="l"/>
   </class>
   
+  <class name="NumericalCysteinFeaturesParameters" base="Object">
+    <variable type="Boolean" name="useCartesianProduct"/>
+    <variable type="Boolean" name="useProteinLength"/>
+    <variable type="Boolean" name="useDiscretizeProteinLength"/>
+    <variable type="PositiveInteger" name="residueWindowSize"/>
+    <variable type="PositiveInteger" name="localHistogramSize"/>
+    <variable type="PositiveInteger" name="separationProfilSize"/>
+    <variable type="Boolean" name="useSymmetricFeature"/>
+    <variable type="Boolean" name="useIntervalHistogram"/>
+    <variable type="Boolean" name="useAADistance"/>
+    <variable type="PositiveInteger" name="pairWindowSize"/>
+    <variable type="PositiveInteger" name="normalizedWindowSize"/>
+    <variable type="Boolean" name="useExtendedD1Feature"/>
+    <variable type="PositiveInteger" name="d1WindowSize"/>
+    <variable type="Boolean" name="useExtendedD2Feature"/>
+  </class>
+  
   <class name="NumericalCysteinPredictorParameters" base="ProteinPredictorParameters" shortName="numericalCystein">
     <constructor/>
     <variable type="LearnerParameters" name="learningParameters" shortName="l"/>
     <variable type="Boolean" name="useOracleD0"/>
     <variable type="Boolean" name="useOracleD1"/>
     <variable type="Boolean" name="useOracleD2"/>
-    <variable type="PositiveInteger" name="residueWindowSize"/>
     <variable type="Boolean" name="useGlobalFeature"/>
-    <variable type="Boolean" name="useCartesianProduct"/>
-    <variable type="PositiveInteger" name="localHistogramSize"/>
-    <variable type="PositiveInteger" name="separationProfilSize"/>
-    <variable type="Boolean" name="useSymmetricFeature"/>
   </class>
   
   <!-- Connectivity Pattern Classifier -->
