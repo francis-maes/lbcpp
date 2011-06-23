@@ -739,7 +739,7 @@ public:
   {
     DefaultEnumerationPtr res = new DefaultEnumeration();
 
-    for (int i = -windowHalfSize; i <= (int)windowHalfSize; ++i)
+    for (int i = -(int)windowHalfSize; i <= (int)windowHalfSize; ++i)
     {
       res->addElement(context, T("p1[0]+p2[" + String(i) + "]"));
       res->addElement(context, T("p1[0]xp2[" + String(i) + "]"));
@@ -751,7 +751,7 @@ public:
     }
     
     if (useSpecialFeatures)
-      for (int i = -windowHalfSize; i <= (int)windowHalfSize; ++i)
+      for (int i = -(int)windowHalfSize; i <= (int)windowHalfSize; ++i)
       {
         res->addElement(context, T("p2[" + String(i) + "]"));
         res->addElement(context, T("1-p2[" + String(i) + "]"));
@@ -777,7 +777,7 @@ public:
     const double pSecond = values->getElement(secondIndex).getDouble();
 
     size_t index = 0;
-    for (int i = -windowHalfSize; i < (int)windowHalfSize + 1; ++i)
+    for (int i = -(int)windowHalfSize; i < (int)windowHalfSize + 1; ++i)
     {
       size_t thirdIndex = secondIndex + i;
       if (thirdIndex >= 0 && thirdIndex < n)
@@ -801,7 +801,7 @@ public:
     }
     
     if (useSpecialFeatures)
-      for (int i = -windowHalfSize; i < (int)windowHalfSize + 1; ++i)
+      for (int i = -(int)windowHalfSize; i < (int)windowHalfSize + 1; ++i)
       {
         size_t thirdIndex = secondIndex + i;
         if (thirdIndex >= 0 && thirdIndex < n)
