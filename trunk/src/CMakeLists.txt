@@ -713,6 +713,67 @@ IF(LBCPP_USER_INTERFACE)
 
 ENDIF(LBCPP_USER_INTERFACE)
 
+SET(LBCPP_LUA_LUA_SOURCES
+  Lua/lua/lapi.c
+  Lua/lua/lapi.h
+  Lua/lua/lauxlib.c
+  Lua/lua/lauxlib.h
+  Lua/lua/lbaselib.c
+  Lua/lua/lcode.c
+  Lua/lua/lcode.h
+  Lua/lua/ldblib.c
+  Lua/lua/ldebug.c
+  Lua/lua/ldebug.h
+  Lua/lua/ldo.c
+  Lua/lua/ldo.h
+  Lua/lua/ldump.c
+  Lua/lua/lfunc.c
+  Lua/lua/lfunc.h
+  Lua/lua/lgc.c
+  Lua/lua/lgc.h
+  Lua/lua/linit.c
+  Lua/lua/liolib.c
+  Lua/lua/llex.c
+  Lua/lua/llex.h
+  Lua/lua/llimits.h
+  Lua/lua/lmathlib.c
+  Lua/lua/lmem.c
+  Lua/lua/lmem.h
+  Lua/lua/loadlib.c
+  Lua/lua/lobject.c
+  Lua/lua/lobject.h
+  Lua/lua/lopcodes.c
+  Lua/lua/lopcodes.h
+  Lua/lua/loslib.c
+  Lua/lua/lparser.c
+  Lua/lua/lparser.h
+  Lua/lua/lstate.c
+  Lua/lua/lstate.h
+  Lua/lua/lstring.c
+  Lua/lua/lstring.h
+  Lua/lua/lstrlib.c
+  Lua/lua/ltable.c
+  Lua/lua/ltable.h
+  Lua/lua/ltablib.c
+  Lua/lua/ltm.c
+  Lua/lua/ltm.h
+  #Lua/lua/lua.c
+  Lua/lua/lua.h
+  #Lua/lua/luac.c
+  Lua/lua/luaconf.h
+  Lua/lua/lualib.h
+  Lua/lua/lundump.c
+  Lua/lua/lundump.h
+  Lua/lua/lvm.c
+  Lua/lua/lvm.h
+  Lua/lua/lzio.c
+  Lua/lua/lzio.h
+  #Lua/lua/print.c
+) 
+# interpreter:	lua.c
+#  compiler:	luac.c print.c
+
+
 
 ##### MAIN ####
 
@@ -806,6 +867,9 @@ SET(LBCPP_SOURCES
     ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES}
     ${LBCPP_OPTIMIZER_OLD_SOURCES}
     
+  # Lua
+  ${LBCPP_LUA_LUA_SOURCES}
+    
   # User Interface
   ${LBCPP_USER_INTERFACE_SOURCES}
     ${LBCPP_USER_INTERFACE_COMPONENT_SOURCES}
@@ -888,6 +952,9 @@ SOURCE_GROUP(Optimizer FILES ${LBCPP_OPTIMIZER_SOURCES})
 SOURCE_SUB_GROUP(Optimizer Context FILES ${LBCPP_OPTIMIZER_CONTEXT_SOURCES} ${LBCPP_OPTIMIZER_CONTEXT_NETWORK_SOURCES})
 SOURCE_SUB_GROUP(Optimizer ObjectiveFunction FILES ${LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(Optimizer Optimizer FILES ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES})
+
+## Lua
+SOURCE_SUB_GROUP(Lua Lua FILES ${LBCPP_LUA_LUA_SOURCES})
 
 ## UserInterface
 SOURCE_GROUP(UserInterface FILES ${LBCPP_USER_INTERFACE_SOURCES})

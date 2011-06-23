@@ -18,6 +18,7 @@ SET(LBCPP_EXAMPLES_SOURCES
   OptimizerExampleWorkUnit.h
   RandomGeneratorExample.h
   OptimizerTestBed.h
+  LuaSandBox.h
   ExamplesLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExamplesLibrary.cpp
 )

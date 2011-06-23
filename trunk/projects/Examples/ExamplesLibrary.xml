@@ -163,4 +163,7 @@
     <variable type="DoubleMatrix[Double]" name="R"/>
   </class>
   
+  <!-- Lua -->
+  <class name="LuaSandBox" base="WorkUnit"/>
+  
 </library>
