@@ -819,11 +819,48 @@ protected:
   }
 };
 
+class EDAResultFileWriter : public Object
+{
+public:
+  EDAResultFileWriter(const File& outputFile, const File& logFile)
+    : outputFile(outputFile), logFile(logFile) {}
+  EDAResultFileWriter() {}
+
+  void write(String features, double trainScore, double testScore)
+  {
+    ScopedLock _(lock);
+
+    OutputStream *o = outputFile.createOutputStream();
+    *o 
+    << trainScore << ";"
+    << testScore << ";"
+    << "\"" << features << "\"\n";
+    delete o;
+  }
+  
+  void writeLog(String features)
+  {
+    ScopedLock _(lock);
+    OutputStream *o = logFile.createOutputStream();
+    *o << features << "\"\n";
+    delete o;
+  }
+
+protected:
+  friend class EDAResultFileWriterClass;
+
+  CriticalSection lock;
+  File outputFile;
+  File logFile;
+};
+
+typedef ReferenceCountedObjectPtr<EDAResultFileWriter> EDAResultFileWriterPtr;
+
 class CysteinLearnerFunction : public Function
 {
 public:
-  CysteinLearnerFunction(const File& inputDirectory)
-    : inputDirectory(inputDirectory) {}
+  CysteinLearnerFunction(const File& inputDirectory, EDAResultFileWriterPtr fileWriter)
+    : inputDirectory(inputDirectory), fileWriter(fileWriter) {}
   CysteinLearnerFunction() {}
 
   virtual size_t getNumRequiredInputs() const
@@ -837,6 +874,8 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
+    fileWriter->writeLog(input.toString());
+    
     size_t numStacks = 5;
 
     ContainerPtr trainingData = Protein::loadProteinsFromDirectoryPair(context, File(), inputDirectory.getChildFile(T("train/")), 0, T("Loading training proteins"));
@@ -869,13 +908,9 @@ public:
     ProteinEvaluatorPtr testEvaluator = new ProteinEvaluator();
     CompositeScoreObjectPtr testScores = predictor->evaluate(context, testingData, testEvaluator, T("Evaluate on test proteins"));
 
-    OutputStream *o = File::getCurrentWorkingDirectory().getChildFile(T("out.txt")).createOutputStream();
-    *o 
-    << ";" << String(testEvaluator->getScoreObjectOfTarget(trainScores, dsbTarget)->getScoreToMinimize())
-    << ";" << String(testEvaluator->getScoreObjectOfTarget(testScores, dsbTarget)->getScoreToMinimize())
-    << "\"" << input.toString() << "\"\n";
-    delete o;
-    
+    fileWriter->write(input.toString(), trainEvaluator->getScoreObjectOfTarget(trainScores, dsbTarget)->getScoreToMinimize()
+                                    , testEvaluator->getScoreObjectOfTarget(testScores, dsbTarget)->getScoreToMinimize());
+
     return testEvaluator->getScoreObjectOfTarget(testScores, dsbTarget)->getScoreToMinimize();
   }
 
@@ -883,6 +918,7 @@ protected:
   friend class CysteinLearnerFunctionClass;
 
   File inputDirectory;
+  EDAResultFileWriterPtr fileWriter;
 };
 
 class EDACysteinProteinLearner : public WorkUnit
@@ -894,7 +930,9 @@ public:
     size_t populationSize = 5;
     size_t numBests = 1;
 
-    FunctionPtr f = new CysteinLearnerFunction(inputDirectory);
+    EDAResultFileWriterPtr fileWriter = new EDAResultFileWriter(File::getCurrentWorkingDirectory().getChildFile(T("out.txt")), File::getCurrentWorkingDirectory().getChildFile(T("log.txt")));
+
+    FunctionPtr f = new CysteinLearnerFunction(inputDirectory, fileWriter);
     SamplerPtr sampler = objectCompositeSampler(numericalCysteinFeaturesParametersClass, NumericalCysteinFeaturesParameters::createSamplers());
 
     OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0);
