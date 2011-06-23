@@ -15,6 +15,7 @@
 # include <lbcpp/UserInterface/VariableSelector.h>
 # include "../Predictor/ProteinPredictor.h"
 # include "../Predictor/NumericalCysteinPredictorParameters.h"
+# include "../Predictor/Lin09PredictorParameters.h"
 
 namespace lbcpp
 {
@@ -117,7 +118,7 @@ public:
     }
     else if (tabName == T("Cystein 2D"))
     {
-      ProteinPredictorParametersPtr predictorParameters = numericalCysteinPredictorParameters();
+      ProteinPredictorParametersPtr predictorParameters = new Lin09PredictorParameters();
       
       FunctionPtr proteinfunction = predictorParameters->createProteinPerception();
       proteinfunction->initialize(context, (TypePtr)proteinClass);

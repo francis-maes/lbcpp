@@ -135,5 +135,12 @@
   <class name="ConnectivityPatternClassifier" base="CompositeFunction">
     <variable type="LearnerParameters" name="learningParameters"/>
   </class>
+  
+  <!-- BEGIN Article: Lin 2009 -->
+  <class name="NormalizedCysteinPositionDifference" base="FeatureGenerator"/>
+  <class name="NormalizedCysteinIndexDifference" base="FeatureGenerator"/>
+  
+  <class name="Lin09PredictorParameters" base="ProteinPredictorParameters" shortName="lin09"/>
+  <!-- END Article: Lin 2009 -->
 
 </library>

@@ -927,8 +927,8 @@ public:
   Variable run(ExecutionContext& context)
   {
     size_t numIterations = 100;
-    size_t populationSize = 5;
-    size_t numBests = 1;
+    size_t populationSize = 40;
+    size_t numBests = 10;
 
     EDAResultFileWriterPtr fileWriter = new EDAResultFileWriter(File::getCurrentWorkingDirectory().getChildFile(T("out.txt")), File::getCurrentWorkingDirectory().getChildFile(T("log.txt")));
 
