@@ -107,8 +107,14 @@
     <variable type="File" name="inputDirectory" shortName="i"/>
   </class>
 
+  <class name="EDAResultFileWriter" base="Object">
+    <variable type="File" name="outputFile"/>
+    <variable type="File" name="logFile"/>
+  </class>
+
   <class name="CysteinLearnerFunction" base="Function">
     <variable type="File" name="inputDirectory"/>
+    <variable type="EDAResultFileWriter" name="fileWriter"/>
   </class>
 
   <class name="EDACysteinProteinLearner" base="WorkUnit">
