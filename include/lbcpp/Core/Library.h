@@ -52,6 +52,8 @@ public:
   juce::Component* createUIComponentIfExists(ExecutionContext& context, const ObjectPtr& object, const String& name = String::empty);
 #endif
   
+  int luaRegister(lua_State* L);
+
   lbcpp_UseDebuggingNewOperator
 
 protected:

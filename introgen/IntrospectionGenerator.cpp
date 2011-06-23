@@ -124,6 +124,7 @@ protected:
     writeLine(T("#include \"precompiled.h\""));
     writeLine(T("#include <lbcpp/Core/Variable.h>"));
     writeLine(T("#include <lbcpp/Core/Library.h>"));
+    writeLine(T("#include <lbcpp/Lua/Lua.h>"));
     writeLine(T("#include <lbcpp/library.h>"));
 
     OwnedArray<File> headerFiles;
@@ -377,6 +378,19 @@ protected:
    
     forEachXmlChildElementWithTagName(*xml, elt, T("code"))
       {generateCode(elt); newLine();}
+
+    if (classBaseClass == T("DefaultClass"))
+    {
+      writeLine("#define LuaClass " + className);
+      writeLine("#define LuaClassName " + className.quoted());
+      if (isAbstract)
+        writeLine(T("#define AbstractLuaClass"));
+      writeLine(T("#include <lbcpp/Lua/LuaRegistrationTemplate.hpp>"));
+      if (isAbstract)
+        writeLine(T("#undef AbstractLuaClass"));
+      writeLine(T("#undef LuaClassName"));
+      writeLine(T("#undef LuaClass"));
+    }
 
     closeClass();
 

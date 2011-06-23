@@ -31,6 +31,8 @@
 # include "../Execution/ExecutionContext.h"
 # include "impl/VariableValue.hpp"
 
+struct lua_State;
+
 namespace lbcpp
 {
 
@@ -181,6 +183,9 @@ public:
 
   virtual String toShortString() const
     {return shortName.isNotEmpty() ? shortName : toString();}
+
+  virtual int luaRegister(lua_State* L)
+    {return 0;}
 
   lbcpp_UseDebuggingNewOperator
 

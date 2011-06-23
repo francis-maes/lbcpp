@@ -355,6 +355,15 @@ std::vector<TypePtr> Library::getTypesInheritingFrom(TypePtr baseType) const
   return res;
 }
 
+int Library::luaRegister(lua_State* L)
+{
+  for (size_t i = 0; i < types.size(); ++i)
+    types[i]->luaRegister(L);
+  for (size_t i = 0; i < subLibraries.size(); ++i)
+    subLibraries[i]->luaRegister(L);
+  return 1;
+}
+
 /*
 ** Global
 */
