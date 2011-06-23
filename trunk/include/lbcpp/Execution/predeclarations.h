@@ -38,9 +38,6 @@ typedef ReferenceCountedObjectPtr<WorkUnit> WorkUnitPtr;
 class CompositeWorkUnit;
 typedef ReferenceCountedObjectPtr<CompositeWorkUnit> CompositeWorkUnitPtr;
 
-class TestUnit;
-typedef ReferenceCountedObjectPtr<TestUnit> TestUnitPtr;
-
 class Notification;
 typedef ReferenceCountedObjectPtr<Notification> NotificationPtr;
 

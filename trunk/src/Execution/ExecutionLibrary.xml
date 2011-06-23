@@ -8,6 +8,8 @@
   <include file="lbcpp/Execution/WorkUnit.h"/>
   <include file="lbcpp/Execution/ExecutionStack.h"/>
   <include file="lbcpp/Execution/ExecutionTrace.h"/>
+  <include file="lbcpp/Execution/Notification.h"/>
+  <include file="lbcpp/Execution/TestUnit.h"/>
 
   <import name="ExecutionCallback"/>
   <import name="ExecutionContext"/>
