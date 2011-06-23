@@ -575,6 +575,8 @@ SET(LBCPP_LEARNING_NUMERICAL_LIBSVM_SOURCES
   Learning/Numerical/LibSVM/libsvm.h
   Learning/Numerical/LibSVM/libsvm.cpp
   Learning/Numerical/LibSVM/LibSVMLearningMachine.h
+  Learning/Numerical/LibSVM/LibSVMClassifier.h
+  Learning/Numerical/LibSVM/LibSVMBinaryClassifier.h
   Learning/Numerical/LibSVM/LibSVMLearningLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LibSVMLearningLibrary.cpp
 )

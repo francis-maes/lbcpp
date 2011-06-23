@@ -86,6 +86,7 @@ SET(LBCPP_PROTEIN_PREDICTOR_SOURCES
   Predictor/ProteinPredictorParameters.h
   Predictor/NumericalProteinPredictorParameters.h
   Predictor/NumericalCysteinPredictorParameters.h
+  Predictor/Lin09PredictorParameters.h
   Predictor/ConnectivityPatternClassifier.h
   Predictor/ConnectivityPatternClassifier.cpp
   Predictor/ProteinPredictorLibrary.xml

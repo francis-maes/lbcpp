@@ -25,5 +25,8 @@
     <constructor arguments="double C, size_t kernelType, size_t kernelDegree, double kernelGamma, double kernelCoef0" returnType="Function"/>
   </class>
 
+  <class name="LibSVMBinaryClassifier" base="LibSVMClassifier">
+    <constructor arguments="double C, size_t kernelType, size_t kernelDegree, double kernelGamma, double kernelCoef0" returnType="Function"/>
+  </class>
 
 </library>
