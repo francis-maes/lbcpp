@@ -164,6 +164,10 @@
   </class>
   
   <!-- Lua -->
+  <class name="MyLuaObject">
+    <variable type="Double" name="d"/>
+  </class>
+
   <class name="LuaSandBox" base="WorkUnit"/>
   
 </library>
