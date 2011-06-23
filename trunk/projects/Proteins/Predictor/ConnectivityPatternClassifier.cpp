@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
+#include "precompiled.h"
 #include "ConnectivityPatternClassifier.h"
-
 using namespace lbcpp;
 
 TypePtr AddConnectivityPatternBiasLearnableFunction::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)

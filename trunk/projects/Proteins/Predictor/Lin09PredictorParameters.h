@@ -207,7 +207,8 @@ public:
     {
     case dsbTarget:
       {
-        return libSVMBinaryClassifier(exp2(7.4), 2, 0, exp2(-4.6), 0.0);
+        // FIXME: exp2 
+        return libSVMBinaryClassifier(pow(2.0, 7.4), 2, 0, pow(2.0, -4.6), 0.0);
       }
     default:
       {
