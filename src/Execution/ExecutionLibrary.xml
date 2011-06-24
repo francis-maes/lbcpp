@@ -61,9 +61,11 @@
   </class>
 
   <class name="ExecutionCallback" base="Object" abstract="yes">
-    <!-- <function lang="lua" name="errorCallback" shortName="error"/>
-    <function lang="lua" name="warningCallback" shortName="warning"/> -->
+    <function lang="lua" name="error"/>
+    <function lang="lua" name="warning"/>
     <function lang="lua" name="information"/>
+    <function lang="lua" name="progress"/>
+    <function lang="lua" name="result"/>
   </class>
   
   <class name="CompositeExecutionCallback" base="ExecutionCallback" abstract="yes">
@@ -74,6 +76,8 @@
   <class name="ExecutionContext" base="CompositeExecutionCallback" abstract="yes">
     <variable type="ExecutionStack" name="stack"/>
     <variable type="File" name="projectDirectory"/>
+    <function lang="lua" name="enter"/>
+    <function lang="lua" name="leave"/>
   </class>
 
   <!--

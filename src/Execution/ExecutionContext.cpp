@@ -132,6 +132,24 @@ String ExecutionContext::getFilePath(const File& file) const
     return file.getFullPathName();
 }
 
+int ExecutionContext::enter(LuaState& state)
+{
+  ExecutionContextPtr pthis = state.checkObject(1, executionContextClass);
+  String name = state.checkString(2);
+  pthis->enterScope(name);
+  return 0;
+}
+
+int ExecutionContext::leave(LuaState& state)
+{
+  ExecutionContextPtr pthis = state.checkObject(1, executionContextClass);
+  Variable res(true);
+  if (state.getTop() >= 2)
+    res = state.checkVariable(2);
+  pthis->leaveScope(res);
+  return 0;
+}
+
 /*
 ** ExecutionStack
 */

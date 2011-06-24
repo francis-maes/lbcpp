@@ -1,7 +1,5 @@
 
 Next steps:
- * Remove Lua includes from LuaSandBox and factorize Object declaration code into Lua.cpp
- * Implement all ExecutionContext callbacks
  * Implement some strategical functions such as WorkUnit::run(), Container::{get|set|getNum}Element(), and a few on proteins 
 
 Proteins:
