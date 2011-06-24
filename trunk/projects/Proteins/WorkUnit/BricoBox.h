@@ -555,8 +555,11 @@ public:
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return doubleType;}
 
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  virtual Variable computeFunction(ExecutionContext& ctx, const Variable& input) const
   {
+    ExecutionContextPtr subContext = singleThreadedExecutionContext(ctx.getProjectDirectory());
+    ExecutionContext& context = *subContext;
+  
     fileWriter->writeLog(input.toString());
     
     size_t numStacks = 5;
@@ -613,7 +616,7 @@ public:
     size_t populationSize = 40;
     size_t numBests = 10;
 
-    EDAResultFileWriterPtr fileWriter = new EDAResultFileWriter(File::getCurrentWorkingDirectory().getChildFile(T("out.txt")), File::getCurrentWorkingDirectory().getChildFile(T("log.txt")));
+    EDAResultFileWriterPtr fileWriter = new EDAResultFileWriter(context.getFile(T("out.txt")), context.getFile(T("log.txt")));
 
     FunctionPtr f = new CysteinLearnerFunction(inputDirectory, fileWriter);
     SamplerPtr sampler = objectCompositeSampler(numericalCysteinFeaturesParametersClass, NumericalCysteinFeaturesParameters::createSamplers());
@@ -621,12 +624,8 @@ public:
     OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0);
     OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 10);
     OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler);
-
-    context.enterScope(T("Toto Optimizing"));
     
-    Variable res = optimizer->compute(context, optimizerContext, optimizerState);
-    context.leaveScope(res);
-    return res;
+    return optimizer->compute(context, optimizerContext, optimizerState);
   }
 
 protected:
