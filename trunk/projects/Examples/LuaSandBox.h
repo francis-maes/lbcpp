@@ -130,6 +130,25 @@ public:
     for (size_t i = 0; i < lbcpp::getNumLibraries(); ++i)
       lbcpp::getLibrary(i)->luaRegister(lua->L);
 
+    std::string currentCode;
+    while (true)
+    {
+      std::cout << "> " << std::flush;
+      char code[1024];
+      std::cin.getline(code, 1024);
+      if (strlen(code) == 0)
+      {
+        if (currentCode.size())
+        {
+          lua->execute(currentCode.c_str());
+          currentCode = "";
+        }
+      }
+      else
+        currentCode += code;
+    }
+    return true;
+/*
     const char* helloWorldCode = "print (\"Hello World!\")\n"
       "a = MyLuaObject.new()\n"
       "print (a)\n"
