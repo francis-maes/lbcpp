@@ -17,11 +17,99 @@ extern "C" {
 
 using namespace lbcpp;
 
-LuaState::LuaState(ExecutionContext& context)
+namespace lua
+{
+
+  static int createObject(lua_State* L)
+  {
+    LuaState state(L);
+    const char* className = state.checkString(1);
+    TypePtr type = getType(className);
+    if (!type)
+      return 0;
+    ObjectPtr res = Object::create(type);
+    if (!res)
+      return 0;
+    state.pushObject(res);
+    return 1;
+  }
+
+  static int objectToString(lua_State* L)
+  {
+    LuaState state(L);
+    ObjectPtr object = state.checkObject(1);
+    state.pushString(object->toString());
+    return 1;
+  }
+
+  static int objectIndex(lua_State* L)
+  {
+    LuaState state(L);
+
+    ObjectPtr object = state.checkObject(1);
+    if (state.isString(2))
+    {
+      String string = state.checkString(2);
+
+      TypePtr type = object->getClass();
+      int index = type->findMemberVariable(string);
+      if (index >= 0)
+      {
+        state.pushVariable(object->getVariable(index));
+        return 1;
+      }
+
+      index = type->findMemberFunction(string);
+      if (index >= 0)
+      {
+        LuaFunctionSignaturePtr signature = type->getMemberFunction(index).dynamicCast<LuaFunctionSignature>();
+        if (!signature)
+          return 0;
+
+        state.pushFunction(signature->getFunction());
+        return 1;
+      }
+    }
+    return 0;
+  }
+
+  int initializeObject(lua_State* L)
+  {
+    if (!luaL_newmetatable(L, "Object"))
+      return 0;
+
+    // methods
+    static const struct luaL_reg methods[] = {
+      {"__index", lua::objectIndex},
+      {"__tostring", lua::objectToString},
+    //  {"toto", toto},
+      {NULL, NULL}
+    };
+    luaL_openlib(L, NULL, methods, 0);
+
+    // functions
+    static const struct luaL_reg functions[] = {
+      {"create", lua::createObject},
+      {NULL, NULL}
+    };
+    luaL_openlib(L, "Object", functions, 0);
+    return 1;
+  }
+
+}; /* namespace lua */
+
+LuaState::LuaState(ExecutionContext& context, bool initializeLuaLibraries, bool initializeLBCppLibrary)
   : context(context), owned(false)
 {
   L = lua_open();
-  luaL_openlibs(L);
+  if (initializeLuaLibraries)
+    luaL_openlibs(L);
+  if (initializeLBCppLibrary)
+  {
+    lua::initializeObject(L);
+    pushObject(ObjectPtr(&context));
+    setGlobal("context");
+  }
 }
 
 LuaState::LuaState(lua_State* L)
@@ -78,6 +166,24 @@ void LuaState::pushVariable(const Variable& variable)
   // todo: continue ...
 }
 
+int LuaState::getTop() const
+  {return lua_gettop(L);}
+
+LuaType LuaState::getType(int index) const
+  {return (LuaType)lua_type(L, index);}
+
+bool LuaState::isString(int index) const
+  {return lua_isstring(L, index) != 0;}
+
+bool LuaState::checkBoolean(int index)
+{
+  jassert(false); // not implemented
+  return false;
+}
+
+double LuaState::checkNumber(int index)
+  {return luaL_checknumber(L, index);}
+
 const char* LuaState::checkString(int index)
   {return luaL_checkstring(L, index);}
 
@@ -104,6 +210,27 @@ ObjectPtr LuaState::checkObject(int index, TypePtr expectedType)
 
 ObjectPtr LuaState::checkObject(int index)
   {return checkObject(index, objectClass);}
+
+Variable LuaState::checkVariable(int index)
+{
+  LuaType luaType = getType(index);
+  switch (luaType)
+  {
+  case luaTypeNone: 
+  case luaTypeNil:      return Variable();
+  case luaTypeBoolean:  return Variable(checkBoolean(index));
+  case luaTypeNumber:   return Variable(checkNumber(index));
+  case luaTypeString:   return Variable(String(checkString(index)));
+  case luaTypeUserData: return Variable(checkObject(index));
+  case luaTypeLightUserData:
+  case luaTypeTable:
+  case luaTypeFunction:
+  case luaTypeThread:
+  default:
+    jassert(false); // not implemented
+    return Variable();
+  }
+}
 
 void LuaState::pushObject(ObjectPtr object)
 {

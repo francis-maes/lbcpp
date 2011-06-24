@@ -19,10 +19,24 @@ namespace lbcpp
 
 typedef int (*LuaFunction) (lua_State* L);
 
+enum LuaType
+{
+  luaTypeNone = -1,
+  luaTypeNil = 0,
+  luaTypeBoolean,
+  luaTypeLightUserData,
+  luaTypeNumber,
+  luaTypeString,
+  luaTypeTable,
+  luaTypeFunction,
+  luaTypeUserData,
+  luaTypeThread
+};
+
 class LuaState
 {
 public:
-  LuaState(ExecutionContext& context);
+  LuaState(ExecutionContext& context, bool initializeLuaLibraries = true, bool initializeLBCppLibrary = true);
   LuaState(lua_State* L);
   virtual ~LuaState();
 
@@ -42,10 +56,19 @@ public:
   void pushVariable(const Variable& variable);
   void pushObject(ObjectPtr object);
 
+  int getTop() const;
+
+  LuaType getType(int index) const;
+
+  bool isString(int index) const;
+
+  bool checkBoolean(int index);
+  double checkNumber(int index);
   const char* checkString(int index);
   ObjectPtr checkObject(int index, TypePtr expectedType);
   ObjectPtr checkObject(int index);
-
+  Variable checkVariable(int index);
+  
   bool newMetaTable(const char* name);
   
 protected:

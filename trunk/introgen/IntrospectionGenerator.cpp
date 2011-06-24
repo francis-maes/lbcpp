@@ -266,6 +266,7 @@ protected:
 
     // constructor
     std::vector<XmlElement* > variables;
+    std::vector<XmlElement* > functions;
     if (isTemplate)
       openScope(declaration.implementationClassName + T("(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)")
         + T(" : ") + classBaseClass + T("(templateType, templateArguments, baseClass)"));
@@ -284,7 +285,10 @@ protected:
     openScope(T("virtual bool initialize(ExecutionContext& context)"));
     
       forEachXmlChildElementWithTagName(*xml, elt, T("function"))
+      {
         generateFunctionRegistrationCode(className, elt);
+        functions.push_back(elt);
+      }
 
       forEachXmlChildElementWithTagName(*xml, elt, T("variable"))
       {
@@ -379,7 +383,16 @@ protected:
         closeScope();
       closeScope();
     }
-   
+
+    // function forwarders
+    for (size_t i = 0; i < functions.size(); ++i)
+    {
+      XmlElement* elt = functions[i];
+      String functionName = elt->getStringAttribute(T("name"));
+      writeShortFunction(T("static int ") + functionName + T("Forwarder(lua_State* L)"),
+                         T("LuaState state(L); return ") + className + T("::") + functionName + T("(state);")); 
+    }
+
     forEachXmlChildElementWithTagName(*xml, elt, T("code"))
       {generateCode(elt); newLine();}
 
@@ -426,7 +439,7 @@ protected:
     if (lang != T("lua"))
       std::cerr << "Unsupported language " << (const char* )lang << " for function " << (const char* )name << std::endl;
 
-    String arguments = className + T("::") + name + T(", T(") + name.quoted() + T(")");
+    String arguments = name + T("Forwarder, T(") + name.quoted() + T(")");
     arguments += T(", ");
     arguments += shortName.isEmpty() ? T("String::empty") : T("T(") + shortName.quoted() + T(")");
     arguments += T(", ");

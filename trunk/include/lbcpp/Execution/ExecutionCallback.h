@@ -80,19 +80,19 @@ public:
   /*
   ** Lua
   */
-  static int information(lua_State* L)
-  {
-    LuaState state(L);
-    ExecutionCallbackPtr pthis = state.checkObject(1, executionCallbackClass);
-    String what = state.checkString(2);
-    pthis->informationCallback(what);
-    return 0;
-  }
+  static int error(LuaState& state);
+  static int warning(LuaState& state);
+  static int information(LuaState& state);
+
+  static int progress(LuaState& state);
+  static int result(LuaState& state);
 
   lbcpp_UseDebuggingNewOperator
 
 protected:
   ExecutionContext* context;
+
+  static void getThisWhereAndWhat(LuaState& state, ExecutionCallbackPtr& pthis, String& where, String& what);
 };
 
 extern ExecutionCallbackPtr consoleExecutionCallback();
@@ -192,6 +192,9 @@ public:
   double getTotal() const
     {return total;}
 
+  void setTotal(double total)
+    {this->total = total;}
+
   bool isBounded() const
     {return total > 0.0;}
 
@@ -200,6 +203,9 @@ public:
 
   const String& getUnit() const
     {return unit;}
+
+  void setUnit(const String& unit)
+    {this->unit = unit;}
 
   // Object
   virtual String toString() const;

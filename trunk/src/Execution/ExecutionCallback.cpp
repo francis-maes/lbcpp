@@ -21,6 +21,65 @@ void ExecutionCallback::notificationCallback(const NotificationPtr& notification
   executionNotification->notifyCallback(refCountedPointerFromThis(this));
 }
 
+void ExecutionCallback::getThisWhereAndWhat(LuaState& state, ExecutionCallbackPtr& pthis, String& where, String& what)
+{
+  pthis = state.checkObject(1, executionCallbackClass);
+  if (state.getTop() >= 3)
+    where = state.checkString(3);
+  what = state.checkString(2);
+}
+
+int ExecutionCallback::error(LuaState& state)
+{
+  ExecutionCallbackPtr pthis;
+  String where, what;
+  getThisWhereAndWhat(state, pthis, where, what);
+  pthis->errorCallback(where, what);
+  return 0;
+}
+
+int ExecutionCallback::warning(LuaState& state)
+{
+  ExecutionCallbackPtr pthis;
+  String where, what;
+  getThisWhereAndWhat(state, pthis, where, what);
+  pthis->warningCallback(where, what);
+  return 0;
+}
+
+int ExecutionCallback::information(LuaState& state)
+{
+  ExecutionCallbackPtr pthis;
+  String where, what;
+  getThisWhereAndWhat(state, pthis, where, what);
+  pthis->informationCallback(where, what);
+  return 0;
+}
+
+int ExecutionCallback::progress(LuaState& state)
+{
+  ExecutionCallbackPtr pthis = state.checkObject(1, executionCallbackClass);
+  ProgressionStatePtr progression(new ProgressionState(0.0, 100.0, T("%")));
+  int numArguments = state.getTop();
+  if (numArguments >= 2)
+    progression->setValue(state.checkNumber(2));
+  if (numArguments >= 3)
+    progression->setTotal(state.checkNumber(3));
+  if (numArguments >= 4)
+    progression->setUnit(state.checkString(4));
+  pthis->progressCallback(progression);
+  return 0;
+}
+
+int ExecutionCallback::result(LuaState& state)
+{
+  ExecutionCallbackPtr pthis = state.checkObject(1, executionCallbackClass);
+  const char* name = state.checkString(2);
+  Variable value = state.checkVariable(3);
+  pthis->resultCallback(name, value);
+  return 0;
+}
+
 
 /*
 ** CompositeExecutionCallback

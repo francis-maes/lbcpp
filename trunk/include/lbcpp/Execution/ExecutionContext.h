@@ -82,6 +82,12 @@ public:
   void setRandomGenerator(const RandomGeneratorPtr& random)
     {this->random = random;}
 
+  /*
+  ** Lua
+  */
+  static int enter(LuaState& state);
+  static int leave(LuaState& state);
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -91,6 +97,8 @@ protected:
   File projectDirectory;
   RandomGeneratorPtr random;
 };
+
+extern ClassPtr executionContextClass;
 
 extern ExecutionContext& defaultExecutionContext();
 extern void setDefaultExecutionContext(ExecutionContextPtr defaultContext);
