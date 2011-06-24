@@ -147,8 +147,7 @@ public:
   virtual String toShortString() const
     {return shortName.isNotEmpty() ? shortName : toString();}
 
-  virtual int luaRegister(lua_State* L)
-    {return 0;}
+  void luaRegister(LuaState& state) const;
 
   lbcpp_UseDebuggingNewOperator
 

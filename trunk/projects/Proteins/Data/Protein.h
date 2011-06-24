@@ -102,7 +102,7 @@ public:
   ** Save/Load operators
   */
   static ProteinPtr createFromPDB(ExecutionContext& context, const File& pdbFile, bool beTolerant = true);
-  static ProteinPtr createFromPDB(ExecutionContext& context, const String pdbString, bool beTolerant = true);
+  static ProteinPtr createFromPDB(ExecutionContext& context, const String& pdbString, bool beTolerant = true);
   static ProteinPtr createFromXml(ExecutionContext& context, const File& file);
   static ProteinPtr createFromFASTA(ExecutionContext& context, const File& file);
 

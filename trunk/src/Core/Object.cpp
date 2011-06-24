@@ -456,3 +456,65 @@ void Object::saveToFile(ExecutionContext& context, const File& file) const
 
 ObjectPtr Object::createFromFile(ExecutionContext& context, const File& file)
   {return Variable::createFromFile(context, file).getObject();}
+
+/*
+** Lua
+*/
+int Object::create(LuaState& state)
+{
+  const char* className = state.checkString(1);
+  TypePtr type = getType(className);
+  if (!type)
+    return 0;
+  ObjectPtr res = Object::create(type);
+  if (!res)
+    return 0;
+  state.pushObject(res);
+  return 1;
+}
+
+int Object::createFromFile(LuaState& state)
+{
+  File file = state.checkFile(1);
+  ObjectPtr res = createFromFile(state.getContext(), file);
+  if (!res)
+    return 0;
+  state.pushObject(res);
+  return 1;
+}
+
+int Object::toString(LuaState& state)
+{
+  ObjectPtr object = state.checkObject(1);
+  state.pushString(object->toString());
+  return 1;
+}
+
+int Object::index(LuaState& state)
+{
+  ObjectPtr object = state.checkObject(1);
+  if (state.isString(2))
+  {
+    String string = state.checkString(2);
+
+    TypePtr type = object->getClass();
+    int index = type->findMemberVariable(string);
+    if (index >= 0)
+    {
+      state.pushVariable(object->getVariable(index));
+      return 1;
+    }
+
+    index = type->findMemberFunction(string);
+    if (index >= 0)
+    {
+      LuaFunctionSignaturePtr signature = type->getMemberFunction(index).dynamicCast<LuaFunctionSignature>();
+      if (!signature)
+        return 0;
+
+      state.pushFunction(signature->getFunction());
+      return 1;
+    }
+  }
+  return 0;
+}

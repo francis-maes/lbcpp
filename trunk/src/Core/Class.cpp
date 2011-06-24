@@ -257,7 +257,7 @@ int DefaultClass::findMemberFunction(const String& name) const
   return baseType->findMemberFunction(name);
 }
 
-size_t DefaultClass::addMemberFunction(ExecutionContext& context, LuaFunction function, const String& name, const String& shortName, const String& description)
+size_t DefaultClass::addMemberFunction(ExecutionContext& context, LuaFunction function, const String& name, const String& shortName, const String& description, bool isStatic)
 {
   if (!function || name.isEmpty())
   {
@@ -269,7 +269,7 @@ size_t DefaultClass::addMemberFunction(ExecutionContext& context, LuaFunction fu
     context.errorCallback(T("Class::addMemberFunction"), T("Another function with name '") + name + T("' already exists"));
     return (size_t)-1;
   }
-  FunctionSignaturePtr signature = new LuaFunctionSignature(function, name, shortName, description);
+  FunctionSignaturePtr signature = new LuaFunctionSignature(function, name, shortName, description, isStatic);
  
   size_t res = functions.size();
   functionsMap[signature->getName()] = res;

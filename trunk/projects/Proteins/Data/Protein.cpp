@@ -44,7 +44,7 @@ ProteinPtr Protein::createFromPDB(ExecutionContext& context, const File& pdbFile
   return res;
 }
 
-ProteinPtr Protein::createFromPDB(ExecutionContext& context, const String pdbString,
+ProteinPtr Protein::createFromPDB(ExecutionContext& context, const String& pdbString,
 		bool beTolerant)
 {
 	const char* tab0 = pdbString.toUTF8();

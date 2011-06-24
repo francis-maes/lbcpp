@@ -27,7 +27,8 @@
 
   <!-- Object -->
   <class name="Object" base="Variable" abstract="yes">
-    <!-- <variable type="Class" name="thisClass"/> : bad idea: induces moult complexity on DenseDoubleObjects -->
+    <function lang="lua" name="create" static="yes"/>
+    <function lang="lua" name="createFromFile" static="yes"/>
   </class>
   
   <class name="NameableObject" base="Object" abstract="yes">
@@ -39,7 +40,9 @@
     <variable type="String" name="shortName"/>
     <variable type="String" name="description"/>
   </class>
-  <class name="FunctionSignature" base="Signature"/>
+  <class name="FunctionSignature" base="Signature">
+    <variable type="Boolean" name="staticFunction"/>
+  </class>
   <class name="LuaFunctionSignature" base="FunctionSignature">
     <!-- variable: lua function -->
   </class>

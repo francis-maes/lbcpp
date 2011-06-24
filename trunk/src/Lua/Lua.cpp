@@ -8,6 +8,8 @@
 #include "precompiled.h"
 #include <lbcpp/Lua/Lua.h>
 #include <lbcpp/Core/Variable.h>
+#include <lbcpp/Core/Library.h>
+#include <lbcpp/library.h>
 
 extern "C" {
 # include "lua/lua.h"
@@ -17,103 +19,38 @@ extern "C" {
 
 using namespace lbcpp;
 
-namespace lua
-{
+static int objectIndex(lua_State* L)
+  {LuaState state(L); return Object::index(state);}
 
-  static int createObject(lua_State* L)
-  {
-    LuaState state(L);
-    const char* className = state.checkString(1);
-    TypePtr type = getType(className);
-    if (!type)
-      return 0;
-    ObjectPtr res = Object::create(type);
-    if (!res)
-      return 0;
-    state.pushObject(res);
-    return 1;
-  }
-
-  static int objectToString(lua_State* L)
-  {
-    LuaState state(L);
-    ObjectPtr object = state.checkObject(1);
-    state.pushString(object->toString());
-    return 1;
-  }
-
-  static int objectIndex(lua_State* L)
-  {
-    LuaState state(L);
-
-    ObjectPtr object = state.checkObject(1);
-    if (state.isString(2))
-    {
-      String string = state.checkString(2);
-
-      TypePtr type = object->getClass();
-      int index = type->findMemberVariable(string);
-      if (index >= 0)
-      {
-        state.pushVariable(object->getVariable(index));
-        return 1;
-      }
-
-      index = type->findMemberFunction(string);
-      if (index >= 0)
-      {
-        LuaFunctionSignaturePtr signature = type->getMemberFunction(index).dynamicCast<LuaFunctionSignature>();
-        if (!signature)
-          return 0;
-
-        state.pushFunction(signature->getFunction());
-        return 1;
-      }
-    }
-    return 0;
-  }
-
-  int initializeObject(lua_State* L)
-  {
-    if (!luaL_newmetatable(L, "Object"))
-      return 0;
-
-    // methods
-    static const struct luaL_reg methods[] = {
-      {"__index", lua::objectIndex},
-      {"__tostring", lua::objectToString},
-    //  {"toto", toto},
-      {NULL, NULL}
-    };
-    luaL_openlib(L, NULL, methods, 0);
-
-    // functions
-    static const struct luaL_reg functions[] = {
-      {"create", lua::createObject},
-      {NULL, NULL}
-    };
-    luaL_openlib(L, "Object", functions, 0);
-    return 1;
-  }
-
-}; /* namespace lua */
+static int objectToString(lua_State* L)
+  {LuaState state(L); return Object::toString(state);}
 
 LuaState::LuaState(ExecutionContext& context, bool initializeLuaLibraries, bool initializeLBCppLibrary)
-  : context(context), owned(false)
+  : owned(false)
 {
   L = lua_open();
   if (initializeLuaLibraries)
     luaL_openlibs(L);
   if (initializeLBCppLibrary)
   {
-    lua::initializeObject(L);
+    luaL_newmetatable(L, "LBCppObject");
+    static const struct luaL_reg methods[] = {
+      {"__index", objectIndex},
+      {"__tostring", objectToString},
+      {NULL, NULL}
+    };
+    luaL_openlib(L, NULL, methods, 0);
+
+    for (size_t i = 0; i < lbcpp::getNumLibraries(); ++i)
+      lbcpp::getLibrary(i)->luaRegister(*this);
+    
     pushObject(ObjectPtr(&context));
     setGlobal("context");
   }
 }
 
 LuaState::LuaState(lua_State* L)
-  : context(defaultExecutionContext()), L(L), owned(false) {}
+  : L(L), owned(false) {}
 
 LuaState::~LuaState()
   {if (owned) lua_close(L);}
@@ -123,23 +60,22 @@ bool LuaState::execute(const char* code, const char* codeName)
   int error = luaL_loadbuffer(L, code, strlen(code), codeName) || lua_pcall(L, 0, 0, 0);
   if (error)
   {
-    context.errorCallback(lua_tostring(L, -1));
+    String what = lua_tostring(L, -1);
+    getContext().errorCallback(what);
     lua_pop(L, 1);  // pop error message from the stack
     return false;
   }
   return true;
 }
 
-void LuaState::createTable()
-{
-  lua_newtable(L);
-}
-
-void LuaState::setTableField(const char *name, double value)
-  {pushString(name); pushNumber(value); lua_settable(L, -3);}
-
 void LuaState::setGlobal(const char* name)
   {lua_setglobal(L, name);}
+
+void LuaState::getGlobal(const char* name)
+  {lua_getglobal(L, name);}
+
+void LuaState::pushBoolean(bool value)
+  {lua_pushboolean(L, value ? 1 : 0);}
 
 void LuaState::pushString(const char* value)
   {lua_pushstring(L, value);}
@@ -150,21 +86,33 @@ void LuaState::pushNumber(double value)
 void LuaState::pushFunction(lua_CFunction function)
   {lua_pushcfunction(L, function);}
 
-bool LuaState::newMetaTable(const char* name)
-  {return luaL_newmetatable(L, name) == 1;}
+void LuaState::pushObject(ObjectPtr object)
+{
+  ObjectPtr* res = (ObjectPtr* )lua_newuserdata(L, sizeof (ObjectPtr));
+  memcpy(res, &object, sizeof (ObjectPtr));
+  memset(&object, 0, sizeof (ObjectPtr));
+  //getGlobal("LBCppObject");
+  luaL_getmetatable(L, "LBCppObject");
+  lua_setmetatable(L, -2);
+}
 
 void LuaState::pushVariable(const Variable& variable)
 {
   if (variable.isDouble())
-    lua_pushnumber(L, variable.getDouble());
+    pushNumber(variable.getDouble());
   else if (variable.isBoolean())
-    lua_pushboolean(L, variable.getBoolean() ? 1 : 0);
+    pushBoolean(variable.getBoolean());
   else if (variable.isString())
-    lua_pushstring(L, variable.getString());
+    pushString(makeString(variable.getString()));
+  else if (variable.isObject())
+    pushObject(variable.getObject());
   else
     jassert(false);
   // todo: continue ...
 }
+
+void LuaState::pop(int count) const
+  {lua_pop(L, count);}
 
 int LuaState::getTop() const
   {return lua_gettop(L);}
@@ -187,11 +135,19 @@ double LuaState::checkNumber(int index)
 const char* LuaState::checkString(int index)
   {return luaL_checkstring(L, index);}
 
+File LuaState::checkFile(int index)
+{
+  const char* name = checkString(index);
+  if (!name)
+    return File::nonexistent;
+  return getContext().getFile(name);
+}
+
 ObjectPtr LuaState::checkObject(int index, TypePtr expectedType)
 {
   ExecutionContext& context = defaultExecutionContext();
 
-  ObjectPtr* p = (ObjectPtr* )luaL_checkudata(L, index, "Object");
+  ObjectPtr* p = (ObjectPtr* )luaL_checkudata(L, index, "LBCppObject");
   if (p)
   {
     TypePtr type = (*p)->getClass();
@@ -232,11 +188,52 @@ Variable LuaState::checkVariable(int index)
   }
 }
 
-void LuaState::pushObject(ObjectPtr object)
+void LuaState::createTable()
+  {lua_newtable(L);}
+
+void LuaState::setTableField(const char *name, double value)
+  {pushString(name); pushNumber(value); lua_settable(L, -3);}
+
+bool LuaState::newMetaTable(const char* name)
+  {return luaL_newmetatable(L, name) == 1;}
+
+void LuaState::openLibrary(const char* name, const luaL_Reg* functions, size_t numUpValues)
+  {luaL_openlib(L, name, functions, (int)numUpValues);}
+
+ExecutionContext& LuaState::getContext()
 {
-  ObjectPtr* res = (ObjectPtr* )lua_newuserdata(L, sizeof (ObjectPtr));
-  memcpy(res, &object, sizeof (ObjectPtr));
-  memset(&object, 0, sizeof (ObjectPtr));
-  luaL_getmetatable(L, "Object");
-  lua_setmetatable(L, -2);
+  getGlobal("context");
+  ExecutionContextPtr res = checkObject(1, executionContextClass).staticCast<ExecutionContext>();
+  return *res;
 }
+
+const char* LuaState::makeString(const String& str)
+{
+  const char* res = lua_pushfstring(L, str); // FIXME: find a better way
+  pop();
+  return res;
+}
+
+void Type::luaRegister(LuaState& state) const
+{
+  std::vector<luaL_Reg> functions;
+  size_t n = getNumMemberFunctions();
+  for (size_t i = 0; i < n; ++i)
+  {
+    LuaFunctionSignaturePtr luaFunction = getMemberFunction(i).dynamicCast<LuaFunctionSignature>();
+    if (luaFunction)// && luaFunction->isStatic())
+    {
+      luaL_reg reg;
+      reg.name = state.makeString(luaFunction->getName());
+      reg.func = luaFunction->getFunction();
+      functions.push_back(reg);
+    }
+  }
+  luaL_reg reg;
+  reg.name = NULL;
+  reg.func = NULL;
+  functions.push_back(reg);
+
+  state.openLibrary(state.makeString(name), &functions[0]);
+}
+

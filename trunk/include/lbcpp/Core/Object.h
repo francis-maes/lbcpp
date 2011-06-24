@@ -28,6 +28,7 @@
 # define LBCPP_CORE_OBJECT_H_
 
 # include "predeclarations.h"
+# include "../Lua/Lua.h"
 
 namespace lbcpp
 {
@@ -178,13 +179,21 @@ public:
     {return NULL;}
 
   /*
-  ** Introspection: User Interface
+  ** User Interface
   */
 #ifdef LBCPP_USER_INTERFACE
   virtual juce::Component* createComponent() const
     {return NULL;}
 #endif
-  
+
+  /*
+  ** Lua
+  */
+  static int create(LuaState& state);
+  static int createFromFile(LuaState& state);
+  static int index(LuaState& state);
+  static int toString(LuaState& state);
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
