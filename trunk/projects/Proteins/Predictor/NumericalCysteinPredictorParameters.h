@@ -72,6 +72,19 @@ public:
 
     return res;
   }
+  
+  virtual String toString() const
+    {return T("(") + defaultToStringImplementation(false) + T(")");}
+  
+  virtual bool loadFromString(ExecutionContext& context, const String& str)
+  {
+    if (str.length() < 2 || str[0] != '(' || str[str.length() - 1] != ')')
+    {
+      context.errorCallback(T("Invalid syntax: ") + str.quoted());
+      return false;
+    }
+    return Object::loadFromString(context, str.substring(1, str.length() - 1));
+  }
 
 protected:
   friend class NumericalCysteinFeaturesParametersClass;

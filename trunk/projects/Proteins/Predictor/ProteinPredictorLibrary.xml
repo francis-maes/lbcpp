@@ -97,7 +97,7 @@
     <variable type="LearnerParameters" name="learningParameters" shortName="l"/>
   </class>
   
-  <class name="NumericalCysteinFeaturesParameters" base="Object">
+  <class name="NumericalCysteinFeaturesParameters" base="Object" shortName="ncFeatures">
     <variable type="Boolean" name="useCartesianProduct"/>
     <variable type="Boolean" name="useProteinLength"/>
     <variable type="Boolean" name="useDiscretizeProteinLength"/>
@@ -116,6 +116,7 @@
   
   <class name="NumericalCysteinPredictorParameters" base="ProteinPredictorParameters" shortName="numericalCystein">
     <constructor/>
+    <variable type="NumericalCysteinFeaturesParameters" name="fp"/>
     <variable type="LearnerParameters" name="learningParameters" shortName="l"/>
     <variable type="Boolean" name="useOracleD0"/>
     <variable type="Boolean" name="useOracleD1"/>
