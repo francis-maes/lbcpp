@@ -59,8 +59,13 @@
     <variable type="Double" name="total"/>
     <variable type="String" name="unit"/>
   </class>
+
+  <class name="ExecutionCallback" base="Object" abstract="yes">
+    <!-- <function lang="lua" name="errorCallback" shortName="error"/>
+    <function lang="lua" name="warningCallback" shortName="warning"/> -->
+    <function lang="lua" name="information"/>
+  </class>
   
-  <class name="ExecutionCallback" base="Object" abstract="yes"/>
   <class name="CompositeExecutionCallback" base="ExecutionCallback" abstract="yes">
     <variable type="ObjectVector[ExecutionCallback]" name="callbacks"/>
   </class>

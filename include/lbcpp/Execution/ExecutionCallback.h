@@ -11,6 +11,7 @@
 
 # include "predeclarations.h"
 # include "../Core/Object.h"
+# include "../Lua/Lua.h"
 
 namespace lbcpp
 {
@@ -21,6 +22,8 @@ enum ExecutionMessageType
   warningMessageType,
   errorMessageType
 };
+
+extern ClassPtr executionCallbackClass;
 
 class ExecutionCallback : public Object
 {
@@ -73,6 +76,18 @@ public:
 
   ExecutionContext& getContext()
     {jassert(context); return *context;}
+
+  /*
+  ** Lua
+  */
+  static int information(lua_State* L)
+  {
+    LuaState state(L);
+    ExecutionCallbackPtr pthis = state.checkObject(1, executionCallbackClass);
+    String what = state.checkString(2);
+    pthis->informationCallback(what);
+    return 0;
+  }
 
   lbcpp_UseDebuggingNewOperator
 

@@ -250,6 +250,18 @@ String Type::getMemberVariableDescription(size_t index) const
   return signature ? signature->getDescription() : String::empty;
 }
 
+/*
+** Member Functions
+*/
+size_t Type::getNumMemberFunctions() const
+  {jassert(baseType); return baseType->getNumMemberFunctions();}
+
+FunctionSignaturePtr Type::getMemberFunction(size_t index) const
+  {jassert(baseType); return baseType->getMemberFunction(index);}
+
+int Type::findMemberFunction(const String& name) const
+  {jassert(baseType); return baseType->findMemberFunction(name);}
+  
 #include "Type/FileType.h"
 
 //DirectoriesCache FileType::cache;

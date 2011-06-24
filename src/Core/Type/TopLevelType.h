@@ -83,6 +83,15 @@ public:
   virtual Variable getMemberVariableValue(const VariableValue& value, size_t index) const
     {jassert(false); return Variable();}
 
+  virtual size_t getNumMemberFunctions() const
+    {return 0;}
+
+  virtual FunctionSignaturePtr getMemberFunction(size_t index) const
+    {jassert(false); return FunctionSignaturePtr();}
+
+  virtual int findMemberFunction(const String& name) const
+    {return -1;}
+
   lbcpp_UseDebuggingNewOperator
 };
 

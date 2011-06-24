@@ -27,56 +27,12 @@
 #ifndef LBCPP_CORE_TYPE_H_
 # define LBCPP_CORE_TYPE_H_
 
-# include "Object.h"
+# include "Signature.h"
 # include "../Execution/ExecutionContext.h"
 # include "impl/VariableValue.hpp"
 
-struct lua_State;
-
 namespace lbcpp
 {
-
-extern ClassPtr variableSignatureClass;
-
-class VariableSignature : public NameableObject
-{
-public:
-  VariableSignature(TypePtr type,
-                    const String& name,
-                    const String& shortName = String::empty,
-                    const String& description = String::empty)
-    : NameableObject(variableSignatureClass, name), type(type), shortName(shortName), description(description) {}
-  VariableSignature(const VariableSignature& other)
-    : NameableObject(variableSignatureClass, other.name), type(other.type), shortName(other.shortName), description(other.description) {}
-  VariableSignature() {}
-
-  const TypePtr& getType() const
-    {return type;}
-
-  void setType(TypePtr t)
-    {type = t;}
-
-  const String& getShortName() const
-    {return shortName;}
-
-  void setShortName(const String& shortName)
-    {this->shortName = shortName;}
-
-  const String& getDescription() const
-    {return description;}
-
-  void setDescription(const String& description)
-    {this->description = description;}
-
-  lbcpp_UseDebuggingNewOperator
-
-protected:
-  friend class VariableSignatureClass;
-
-  TypePtr type;
-  String shortName;
-  String description;
-};
 
 class Type : public NameableObject
 {
@@ -169,6 +125,13 @@ public:
   virtual int findMemberVariable(const String& name) const;
   virtual Variable getMemberVariableValue(const Object* pthis, size_t index) const;
   virtual void setMemberVariableValue(Object* pthis, size_t index, const Variable& subValue) const;
+
+  /*
+  ** Member Functions
+  */
+  virtual size_t getNumMemberFunctions() const;
+  virtual FunctionSignaturePtr getMemberFunction(size_t index) const;
+  virtual int findMemberFunction(const String& name) const;
 
   /*
   ** Object

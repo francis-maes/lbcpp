@@ -282,9 +282,13 @@ protected:
     newLine();
 
     openScope(T("virtual bool initialize(ExecutionContext& context)"));
+    
+      forEachXmlChildElementWithTagName(*xml, elt, T("function"))
+        generateFunctionRegistrationCode(className, elt);
+
       forEachXmlChildElementWithTagName(*xml, elt, T("variable"))
       {
-        generateVariableDeclarationInConstructor(className, elt);
+        generateVariableRegistrationCode(className, elt);
         variables.push_back(elt);
       }
       writeLine(T("return ") + classBaseClass + T("::initialize(context);"));
@@ -379,19 +383,6 @@ protected:
     forEachXmlChildElementWithTagName(*xml, elt, T("code"))
       {generateCode(elt); newLine();}
 
-    if (classBaseClass == T("DefaultClass"))
-    {
-      writeLine("#define LuaClass " + className);
-      writeLine("#define LuaClassName " + className.quoted());
-      if (isAbstract)
-        writeLine(T("#define AbstractLuaClass"));
-      writeLine(T("#include <lbcpp/Lua/LuaRegistrationTemplate.hpp>"));
-      if (isAbstract)
-        writeLine(T("#undef AbstractLuaClass"));
-      writeLine(T("#undef LuaClassName"));
-      writeLine(T("#undef LuaClass"));
-    }
-
     closeClass();
 
     // class declarator
@@ -405,7 +396,7 @@ protected:
     }
   }
 
-  void generateVariableDeclarationInConstructor(const String& className, XmlElement* xml)
+  void generateVariableRegistrationCode(const String& className, XmlElement* xml)
   {
     String type = xmlTypeToCppType(xml->getStringAttribute(T("type"), T("???")));
     String name = xml->getStringAttribute(T("name"), T("???"));
@@ -423,6 +414,24 @@ protected:
       arguments += T(", true");
     
     writeLine(T("addMemberVariable(context, ") + arguments + T(");"));
+  }
+
+  void generateFunctionRegistrationCode(const String& className, XmlElement* xml)
+  {
+    String lang = xml->getStringAttribute(T("lang"), T("???"));
+    String name = xml->getStringAttribute(T("name"), T("???"));
+    String shortName = xml->getStringAttribute(T("shortName"), String::empty);
+    String description = xml->getStringAttribute(T("description"), String::empty);
+
+    if (lang != T("lua"))
+      std::cerr << "Unsupported language " << (const char* )lang << " for function " << (const char* )name << std::endl;
+
+    String arguments = className + T("::") + name + T(", T(") + name.quoted() + T(")");
+    arguments += T(", ");
+    arguments += shortName.isEmpty() ? T("String::empty") : T("T(") + shortName.quoted() + T(")");
+    arguments += T(", ");
+    arguments += description.isEmpty() ? T("String::empty") : T("T(") + description.quoted() + T(")");
+    writeLine(T("addMemberFunction(context, ") + arguments + T(");"));
   }
 
   void generateClassConstructorMethod(XmlElement* xml, const String& className, const String& baseClassName)

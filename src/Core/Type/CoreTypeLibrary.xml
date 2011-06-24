@@ -34,11 +34,17 @@
     <variable type="String" name="name"/>
   </class>
 
-  <!-- VariableSignature -->
-  <class name="VariableSignature" base="NameableObject">
-    <variable type="Type" name="type"/>
+  <!-- Signature -->
+  <class name="Signature" base="NameableObject">
     <variable type="String" name="shortName"/>
     <variable type="String" name="description"/>
+  </class>
+  <class name="FunctionSignature" base="Signature"/>
+  <class name="LuaFunctionSignature" base="FunctionSignature">
+    <!-- variable: lua function -->
+  </class>
+  <class name="VariableSignature" base="Signature">
+    <variable type="Type" name="type"/>
   </class>
   
   <!-- Type -->
