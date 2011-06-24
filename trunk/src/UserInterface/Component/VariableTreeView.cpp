@@ -311,7 +311,7 @@ void VariableTreeView::invalidateSelection()
 
 int VariableTreeView::getDefaultWidth() const
 {
-  return juce::Desktop::getInstance().getMainMonitorArea().getWidth() / 3;
+  return juce::Desktop::getInstance().getMainMonitorArea().getWidth() / 5;
   /*
   int numFields = 1;
   if (options.showTypes) ++numFields;

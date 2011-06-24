@@ -7,7 +7,7 @@
 #ifndef SMODE_PROJECT_REPOSITORY_CONSOLE_PROCESS_H_
 # define SMODE_PROJECT_REPOSITORY_CONSOLE_PROCESS_H_
 
-#include "juce_amalgamated.h"
+# include "juce_amalgamated.h"
 
 namespace juce
 {

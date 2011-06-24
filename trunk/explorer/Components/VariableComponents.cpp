@@ -12,7 +12,7 @@
 #include "VariableBrowser.h"
 #include "HexadecimalFileComponent.h"
 #include "../Utilities/FileType.h"
-
+#include "LuaCodeEditorComponent.h"
 using namespace lbcpp;
 
 extern void flushErrorAndWarningMessages(const String& title);
@@ -79,6 +79,10 @@ Component* createComponentForVariableImpl(ExecutionContext& context, const Varia
   if (variable.isFile())
   {
     File file = variable.getFile();
+    String extension = file.getFileExtension();
+    if (extension == T(".lua"))
+      return new LuaCodeEditorComponent(file);
+
     switch (getFileType(file))
     {
     case binaryFile: return new HexadecimalFileComponent(variable, explicitName);
