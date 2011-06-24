@@ -18,6 +18,15 @@ SET(JUCE_ADDITIONAL_SOURCES
   ConsoleProcess.cpp
   Win32ConsoleProcess.h
   PosixConsoleProcess.h
+  juce_CodeDocument.h
+  juce_CodeDocument.cpp
+  juce_CodeEditorComponent.h
+  juce_CodeEditorComponent.cpp
+  juce_CodeTokeniser.h
+  juce_CPlusPlusCodeTokeniser.h
+  juce_CPlusPlusCodeTokeniser.cpp
+  juce_LuaCodeTokeniser.h
+  juce_LuaCodeTokeniser.cpp
 )
 
 IF(APPLE)
