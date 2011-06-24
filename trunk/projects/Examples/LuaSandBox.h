@@ -12,8 +12,88 @@
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Lua/Lua.h>
 
+// tmp
+extern "C" {
+
+# include "../../src/Lua/lua/lua.h"
+# include "../../src/Lua/lua/lauxlib.h"
+# include "../../src/Lua/lua/lualib.h"
+
+}; /* extern "C" */
+
 namespace lbcpp
 {
+
+namespace lua
+{
+
+  //////////////////
+
+  static int createObject(lua_State* L)
+  {
+    LuaState state(L);
+    const char* className = state.checkString(1);
+    TypePtr type = getType(className);
+    if (!type)
+      return 0;
+    ObjectPtr res = Object::create(type);
+    if (!res)
+      return 0;
+    state.pushObject(res);
+    return 1;
+  }
+/*
+  static int newObject(lua_State* L)
+  {
+    Object** a = (Object** )lua_newuserdata(L, sizeof (Object*));
+    *a = new MyLuaObject();
+    (*a)->incrementReferenceCounter();
+    luaL_getmetatable(L, "MyLuaObject");
+    lua_setmetatable(L, -2);
+    return 1;  // new userdatum is already on the stack 
+  }*/
+
+  static int objectToString(lua_State* L)
+  {
+    LuaState state(L);
+    ObjectPtr object = state.checkObject(1);
+    String str = object->toString();
+    lua_pushstring(L, str);
+    return 1;
+  }
+
+  static int objectIndex(lua_State* L)
+  {
+    LuaState state(L);
+
+    ObjectPtr object = state.checkObject(1);
+    if (lua_isstring(L, 2))
+    {
+      const char* string = state.checkString(2);
+
+      TypePtr type = object->getClass();
+      int index = type->findMemberVariable(string);
+      if (index >= 0)
+      {
+        state.pushVariable(object->getVariable(index));
+        return 1;
+      }
+
+      index = type->findMemberFunction(string);
+      if (index >= 0)
+      {
+        LuaFunctionSignaturePtr signature = type->getMemberFunction(index).dynamicCast<LuaFunctionSignature>();
+        if (!signature)
+          return 0;
+
+        state.pushFunction(signature->getFunction());
+        return 1;
+      }
+    }
+    return 0;
+  }
+};
+
 
 class MyLuaObject : public Object
 {
@@ -29,91 +109,32 @@ extern ClassPtr myLuaObjectClass;
 class LuaSandBox : public WorkUnit
 {
 public:
-  static MyLuaObjectPtr& checkObject(lua_State* L)
+  int initializeLua(lua_State *L)
   {
-    void *ud = luaL_checkudata(L, 1, "MyLuaObject");
-    luaL_argcheck(L, ud != NULL, 1, "`MyLuaObject' expected");
-    return *(MyLuaObjectPtr*)ud;
-  }
-
-  static int newObject(lua_State* L)
-  {
-    Object** a = (Object** )lua_newuserdata(L, sizeof (Object*));
-    *a = new MyLuaObject();
-    (*a)->incrementReferenceCounter();
-    luaL_getmetatable(L, "MyLuaObject");
-    lua_setmetatable(L, -2);
-    return 1;  /* new userdatum is already on the stack */
-  }
-
-  static int objectToString(lua_State* L)
-  {
-    MyLuaObjectPtr& object = checkObject(L);
-    String str = object->toString();
-    lua_pushstring(L, str);
-    return 1;
-  }
-
-  static int objectIndexFunction(lua_State* L)
-  {
-    int type1 = lua_type(L, 1);
-    int type2 = lua_type(L, 2);
-
-    MyLuaObjectPtr& object = checkObject(L);
-    if (lua_isstring(L, 2))
-    {
-      const char* string = luaL_checkstring(L, 2);
-      
-      if (!strcmp(string, "toto"))
-      {
-        lua_pushcfunction(L, toto);
-        return 1;
-      }
-
-      int index = object->getClass()->findMemberVariable(string);
-      if (index < 0)
-        return 0;
-
-      LuaState(L).pushVariable(object->getVariable(index));
-      return 1;
-    }
-    return 0;
-  }
-
-  static int toto(lua_State* L)
-  {
-    MyLuaObjectPtr& object = checkObject(L);
-    lua_pushnumber(L, object->d);
-    return 1;
-  }
-
-  int luaopen_MyLuaObject(lua_State *L)
-  {
-    String name = T("MyLuaObject");// myLuaObjectClass
-    bool ok = (luaL_newmetatable(L, name) == 1);
+    bool ok = (luaL_newmetatable(L, "Object") == 1);
     jassert(ok);
-    //lua_pushstring(L, "__index");
-    //lua_pushvalue(L, -2);  /* pushes the metatable */
-    //lua_settable(L, -3);  /* metatable.__index = metatable */
-  
-    static const struct luaL_reg functions[] = {
-      {"new", newObject},
-      {NULL, NULL}
-    };
-    
-    lua_pushcfunction(L, objectIndexFunction);
+
+    // methods
+    /*lua_pushcfunction(L, lua::objectIndex);
     lua_setfield(L, -2, "__index");
 
-    lua_pushcfunction(L, objectToString);
-    lua_setfield(L, -2, "__tostring");
+    lua_pushcfunction(L, lua::objectToString);
+    lua_setfield(L, -2, "__tostring");*/
  
     static const struct luaL_reg methods[] = {
-      {"toto", toto},
+      {"__index", lua::objectIndex},
+      {"__tostring", lua::objectToString},
+    //  {"toto", toto},
       {NULL, NULL}
     };
     luaL_openlib(L, NULL, methods, 0);
 
-    luaL_openlib(L, name, functions, 0);
+    // functions
+    static const struct luaL_reg functions[] = {
+      {"create", lua::createObject},
+      {NULL, NULL}
+    };
+    luaL_openlib(L, "Object", functions, 0);
     return 1;
   }
 
@@ -126,26 +147,25 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    LuaStatePtr lua = new LuaState(context);
-    for (size_t i = 0; i < lbcpp::getNumLibraries(); ++i)
-      lbcpp::getLibrary(i)->luaRegister(lua->L);
+    LuaState luaState(context);
+    initializeLua(luaState);
 
-    std::string currentCode;
+    luaState.pushObject(ObjectPtr(&defaultExecutionContext()));
+    luaState.setGlobal("context");
+
+    //for (size_t i = 0; i < lbcpp::getNumLibraries(); ++i)
+    //  lbcpp::getLibrary(i)->luaRegister(lua->L);
+
+
     while (true)
     {
       std::cout << "> " << std::flush;
       char code[1024];
       std::cin.getline(code, 1024);
-      if (strlen(code) == 0)
-      {
-        if (currentCode.size())
-        {
-          lua->execute(currentCode.c_str());
-          currentCode = "";
-        }
-      }
+      if (code)
+        luaState.execute(code);
       else
-        currentCode += code;
+        break;
     }
     return true;
 /*

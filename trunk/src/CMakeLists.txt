@@ -79,6 +79,7 @@ SET(LBCPP_CORE_SOURCES
   Core/Object.cpp
   ../include/lbcpp/Core/TypeManager.h
   Core/TypeManager.cpp
+  ../include/lbcpp/Core/Signature.h
   ../include/lbcpp/Core/Type.h
   Core/Type.cpp
   ../include/lbcpp/Core/Enumeration.h
@@ -715,7 +716,7 @@ ENDIF(LBCPP_USER_INTERFACE)
 
 SET(LBCPP_LUA_SOURCES
   ../include/lbcpp/Lua/Lua.h
-  ../include/lbcpp/Lua/LuaRegistrationTemplate.hpp
+  Lua/Lua.cpp
 )
 
 SET(LBCPP_LUA_LUA_SOURCES

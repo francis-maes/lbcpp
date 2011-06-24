@@ -94,6 +94,9 @@ public:
 
   virtual void deinitialize();
 
+  /*
+  ** Member variables
+  */
   virtual size_t getNumMemberVariables() const;
   virtual VariableSignaturePtr getMemberVariable(size_t index) const;
   bool isMemberVariableGenerated(size_t index) const;
@@ -109,6 +112,15 @@ public:
   size_t addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName = String::empty, const String& description = String::empty, bool isGenerated = false);
   virtual size_t addMemberVariable(ExecutionContext& context, VariableSignaturePtr signature);
 
+  /*
+  ** Member functions
+  */
+  virtual size_t getNumMemberFunctions() const;
+  virtual FunctionSignaturePtr getMemberFunction(size_t index) const;
+  virtual int findMemberFunction(const String& name) const;
+
+  size_t addMemberFunction(ExecutionContext& context, LuaFunction function, const String& name, const String& shortName = String::empty, const String& description = String::empty);
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -116,6 +128,10 @@ protected:
 
   std::vector<VariableSignaturePtr> variables;
   std::map<String, size_t> variablesMap;
+
+  std::vector<FunctionSignaturePtr> functions;
+  std::map<String, size_t> functionsMap;
+
   bool abstractClass;
 };
 

@@ -234,3 +234,45 @@ size_t DefaultClass::findOrAddMemberVariable(ExecutionContext& context, const St
     return (size_t)idx;
   return addMemberVariable(context, type, name);
 }
+
+size_t DefaultClass::getNumMemberFunctions() const
+  {return baseType->getNumMemberFunctions() + functions.size();}
+
+FunctionSignaturePtr DefaultClass::getMemberFunction(size_t index) const
+{
+  size_t n = baseType->getNumMemberFunctions();
+  if (index < n)
+    return baseType->getMemberFunction(index);
+  index -= n;
+
+  jassert(index < functions.size());
+  return functions[index];
+}
+
+int DefaultClass::findMemberFunction(const String& name) const
+{
+ std::map<String, size_t>::const_iterator it = functionsMap.find(name);
+  if (it != functionsMap.end())
+    return (int)(baseType->getNumMemberFunctions() + it->second);
+  return baseType->findMemberFunction(name);
+}
+
+size_t DefaultClass::addMemberFunction(ExecutionContext& context, LuaFunction function, const String& name, const String& shortName, const String& description)
+{
+  if (!function || name.isEmpty())
+  {
+    context.errorCallback(T("Class::addMemberFunction"), T("Invalid function or name"));
+    return (size_t)-1;
+  }
+  if (findMemberFunction(name) >= 0)
+  {
+    context.errorCallback(T("Class::addMemberFunction"), T("Another function with name '") + name + T("' already exists"));
+    return (size_t)-1;
+  }
+  FunctionSignaturePtr signature = new LuaFunctionSignature(function, name, shortName, description);
+ 
+  size_t res = functions.size();
+  functionsMap[signature->getName()] = res;
+  functions.push_back(signature);
+  return res;
+}
