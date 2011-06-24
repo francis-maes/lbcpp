@@ -323,3 +323,29 @@ ContainerPtr Container::makePairsContainer(const ContainerPtr& inputs, const Con
   return res;
 }
 
+/*
+** Lua
+*/
+int Container::size(LuaState& state)
+{ 
+  ContainerPtr container = state.checkObject(1, containerClass()).staticCast<Container>();
+  state.pushInteger(container->getNumElements());
+  return 1;
+}
+
+int Container::set(LuaState& state)
+{
+  ContainerPtr container = state.checkObject(1, containerClass()).staticCast<Container>();
+  int index = state.checkInteger(2);
+  Variable value = state.checkVariable(3);
+  container->setElement(index, value);
+  return 0;
+}
+
+int Container::get(LuaState& state)
+{
+  ContainerPtr container = state.checkObject(1, containerClass()).staticCast<Container>();
+  int index = state.checkInteger(2);
+  state.pushVariable(container->getElement(index));
+  return 1;
+}

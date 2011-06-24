@@ -190,6 +190,8 @@
 
     <!-- Functions -->
     <function lang="lua" name="fromFile" static="yes"/>
+    <function lang="lua" name="fromDirectory" static="yes"/>
+    <function lang="lua" name="length"/>
   </class>
   
   <!-- Protein Functions -->

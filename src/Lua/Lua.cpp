@@ -92,6 +92,12 @@ void LuaState::pushString(const char* value)
 void LuaState::pushNumber(double value)
   {lua_pushnumber(L, value);}
 
+void LuaState::pushInteger(size_t value)
+  {lua_pushinteger(L, (int)value);}
+
+void LuaState::pushInteger(int value)
+  {lua_pushinteger(L, value);}
+
 void LuaState::pushFunction(lua_CFunction function)
   {lua_pushcfunction(L, function);}
 
@@ -100,7 +106,6 @@ void LuaState::pushObject(ObjectPtr object)
   ObjectPtr* res = (ObjectPtr* )lua_newuserdata(L, sizeof (ObjectPtr));
   memcpy(res, &object, sizeof (ObjectPtr));
   memset(&object, 0, sizeof (ObjectPtr));
-  //getGlobal("LBCppObject");
   luaL_getmetatable(L, "LBCppObject");
   lua_setmetatable(L, -2);
 }
@@ -111,6 +116,8 @@ void LuaState::pushVariable(const Variable& variable)
     pushNumber(variable.getDouble());
   else if (variable.isBoolean())
     pushBoolean(variable.getBoolean());
+  else if (variable.isInteger())
+    pushInteger(variable.getInteger());
   else if (variable.isString())
     pushString(makeString(variable.getString()));
   else if (variable.isObject())
@@ -132,6 +139,12 @@ LuaType LuaState::getType(int index) const
 bool LuaState::isString(int index) const
   {return lua_isstring(L, index) != 0;}
 
+String LuaState::toString(int index)
+{
+  Variable v = checkVariable(index);
+  return v.toString();
+}
+
 bool LuaState::checkBoolean(int index)
 {
   jassert(false); // not implemented
@@ -140,6 +153,9 @@ bool LuaState::checkBoolean(int index)
 
 double LuaState::checkNumber(int index)
   {return luaL_checknumber(L, index);}
+
+int LuaState::checkInteger(int index)
+  {return luaL_checkinteger(L, index);}
 
 const char* LuaState::checkString(int index)
   {return luaL_checkstring(L, index);}
