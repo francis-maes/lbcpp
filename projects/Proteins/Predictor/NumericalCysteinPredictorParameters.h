@@ -25,8 +25,6 @@ extern ClassPtr numericalCysteinFeaturesParametersClass;
 class NumericalCysteinFeaturesParameters : public Object
 {
 public:
-  bool useCartesianProduct;
-
   bool useProteinLength;
   bool useDiscretizeProteinLength;
 
@@ -99,6 +97,8 @@ public:
 
   enum {maxProteinLengthOnSPX = 1733, maxProteinLengthOnSPXFromFile = 1395};
 
+  bool useCartesianProduct;
+  
   bool useOracleD0;
   bool useOracleD1;
   bool useOracleD2;
@@ -115,6 +115,7 @@ public:
 
   NumericalCysteinPredictorParameters(NumericalCysteinFeaturesParametersPtr fp)
     : fp(fp)
+    , useCartesianProduct(false)
     // -----  Oracle  -----
     , useOracleD0(false), useOracleD1(false), useOracleD2(false)
     // ----- Features -----
@@ -454,7 +455,7 @@ public:
     size_t pNoneIndex = builder.addConstant(Variable(1, positiveIntegerType));
     size_t pMixIndex = builder.addConstant(Variable(2, positiveIntegerType));
 
-    if (fp->useCartesianProduct)
+    if (useCartesianProduct)
     {
       builder.startSelection();
       
@@ -488,7 +489,7 @@ public:
 
     size_t cbsRatio = builder.addFunction(new CysteinBondingStateRatio(), cbs, T("ratio"));
     
-    if (fp->useCartesianProduct)
+    if (useCartesianProduct)
     {
       builder.startSelection();
 
@@ -520,7 +521,7 @@ public:
     size_t dsbGreedy = builder.addFunction(new GreedyDisulfidePatternBuilder(), dsb, T("greedy"));
     size_t dsbGreedyRatio = builder.addFunction(new GreedyDisulfideBondRatio(), dsbGreedy, T("ratio"));
 
-    if (fp->useCartesianProduct)
+    if (useCartesianProduct)
     {
       builder.startSelection();
 
@@ -553,7 +554,7 @@ public:
     size_t cysteinIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, position);
     size_t prob = builder.addFunction(new GetBondingStateProbabilities(fp->useExtendedD1Feature), cbs, cysteinIndex, T("p[D1]"));
 
-    if (fp->useCartesianProduct)
+    if (useCartesianProduct)
     {
       builder.startSelection();
       
@@ -587,7 +588,7 @@ public:
     size_t dsbGreedy = builder.addFunction(new GreedyDisulfidePatternBuilder(), dsb, T("greedy"));
     size_t dsbGreedySumRow = builder.addFunction(new GreedyDisulfideBondSumOfRow(), dsbGreedy, cysteinIndex, T("sumOfRow"));
     
-    if (fp->useCartesianProduct)
+    if (useCartesianProduct)
     {
       builder.startSelection();
       
@@ -622,7 +623,7 @@ public:
     size_t cbs = builder.addFunction(getVariableFunction(T("cysteinBondingStates")), protein, T("cysteinBondingProperty"));
     size_t probs = builder.addFunction(new GetPairBondingStateProbabilities(fp->useExtendedD1Feature, fp->d1WindowSize), cbs, firstIndex, secondIndex, T("P[D1]"));
 
-    if (fp->useCartesianProduct)
+    if (useCartesianProduct)
     {
       builder.startSelection();
       
@@ -668,7 +669,7 @@ public:
     size_t normalizedD2 = builder.addFunction(new NormalizeDisulfideBondFunction(), dsb);
     size_t normalizedD2Features = builder.addFunction(mapContainerFunction(doubleFeatureGenerator()), normalizedD2);
 
-    if (fp->useCartesianProduct)
+    if (useCartesianProduct)
     {
       builder.startSelection();
 

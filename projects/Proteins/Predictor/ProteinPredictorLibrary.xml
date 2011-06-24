@@ -98,7 +98,6 @@
   </class>
   
   <class name="NumericalCysteinFeaturesParameters" base="Object" shortName="ncFeatures">
-    <variable type="Boolean" name="useCartesianProduct"/>
     <variable type="Boolean" name="useProteinLength"/>
     <variable type="Boolean" name="useDiscretizeProteinLength"/>
     <variable type="PositiveInteger" name="residueWindowSize"/>
