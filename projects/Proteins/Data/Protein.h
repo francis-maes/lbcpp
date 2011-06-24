@@ -235,6 +235,11 @@ public:
   void setTertiaryStructure(const TertiaryStructurePtr& tertiaryStructure)
     {this->tertiaryStructure = tertiaryStructure;}
 
+  /*
+  ** Lua
+  */
+  static int fromFile(LuaState& state);
+
   lbcpp_UseDebuggingNewOperator
 
 protected:

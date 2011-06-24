@@ -31,6 +31,9 @@ public:
   {
     LuaState luaState(context);
 
+    if (luaFile.existsAsFile())
+      luaState.execute(luaFile);
+
     while (true)
     {
       std::cout << "> " << std::flush;
@@ -43,6 +46,11 @@ public:
     }
     return true;
   }
+
+protected:
+  friend class LuaSandBoxClass;
+
+  File luaFile;
 };
 
 }; /* namespace lbcpp */

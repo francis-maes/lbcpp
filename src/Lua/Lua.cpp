@@ -55,17 +55,26 @@ LuaState::LuaState(lua_State* L)
 LuaState::~LuaState()
   {if (owned) lua_close(L);}
 
-bool LuaState::execute(const char* code, const char* codeName)
+bool LuaState::processExecuteError(int error)
 {
-  int error = luaL_loadbuffer(L, code, strlen(code), codeName) || lua_pcall(L, 0, 0, 0);
   if (error)
   {
     String what = lua_tostring(L, -1);
-    getContext().errorCallback(what);
     lua_pop(L, 1);  // pop error message from the stack
+    std::cerr << what << std::endl;
+    //getContext().errorCallback(what);
     return false;
   }
   return true;
+}
+
+bool LuaState::execute(const char* code, const char* codeName)
+  {return processExecuteError(luaL_loadbuffer(L, code, strlen(code), codeName) || lua_pcall(L, 0, 0, 0));}
+
+bool LuaState::execute(const File& luaFile)
+{
+  // todo: check existency of luaFile
+  return processExecuteError(luaL_loadfile(L, luaFile.getFullPathName()) || lua_pcall(L, 0, 0, 0));
 }
 
 void LuaState::setGlobal(const char* name)
@@ -188,6 +197,17 @@ Variable LuaState::checkVariable(int index)
   }
 }
 
+int LuaState::returnObject(ObjectPtr object)
+{
+  if (object)
+  {
+    pushObject(object);
+    return 1;
+  }
+  else
+    return 0;
+}
+
 void LuaState::createTable()
   {lua_newtable(L);}
 
@@ -203,7 +223,8 @@ void LuaState::openLibrary(const char* name, const luaL_Reg* functions, size_t n
 ExecutionContext& LuaState::getContext()
 {
   getGlobal("context");
-  ExecutionContextPtr res = checkObject(1, executionContextClass).staticCast<ExecutionContext>();
+  ExecutionContextPtr res = checkObject(-1, executionContextClass).staticCast<ExecutionContext>();
+  pop(1);
   return *res;
 }
 

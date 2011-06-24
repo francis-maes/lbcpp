@@ -187,6 +187,9 @@
     <!-- Tertiary Structure -->
     <variable type="CartesianPositionVector" name="calphaTrace" shortName="cat" description="C-alpha Trace"/>
     <variable type="TertiaryStructure" name="tertiaryStructure" shortName="ts" description="Tertiary Structure"/>
+
+    <!-- Functions -->
+    <function lang="lua" name="fromFile" static="yes"/>
   </class>
   
   <!-- Protein Functions -->

@@ -168,6 +168,8 @@
     <variable type="Double" name="d"/>
   </class>
 
-  <class name="LuaSandBox" base="WorkUnit"/>
+  <class name="LuaSandBox" base="WorkUnit">
+    <variable type="File" name="luaFile"/>
+  </class>
   
 </library>

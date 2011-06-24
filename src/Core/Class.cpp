@@ -251,7 +251,7 @@ FunctionSignaturePtr DefaultClass::getMemberFunction(size_t index) const
 
 int DefaultClass::findMemberFunction(const String& name) const
 {
- std::map<String, size_t>::const_iterator it = functionsMap.find(name);
+  std::map<String, size_t>::const_iterator it = functionsMap.find(name);
   if (it != functionsMap.end())
     return (int)(baseType->getNumMemberFunctions() + it->second);
   return baseType->findMemberFunction(name);
@@ -264,11 +264,13 @@ size_t DefaultClass::addMemberFunction(ExecutionContext& context, LuaFunction fu
     context.errorCallback(T("Class::addMemberFunction"), T("Invalid function or name"));
     return (size_t)-1;
   }
-  if (findMemberFunction(name) >= 0)
+  /*int index = findMemberFunction(name);
+  if (index >= 0)
   {
+    // override
     context.errorCallback(T("Class::addMemberFunction"), T("Another function with name '") + name + T("' already exists"));
     return (size_t)-1;
-  }
+  }*/
   FunctionSignaturePtr signature = new LuaFunctionSignature(function, name, shortName, description, isStatic);
  
   size_t res = functions.size();
