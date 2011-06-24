@@ -444,6 +444,9 @@ protected:
     arguments += shortName.isEmpty() ? T("String::empty") : T("T(") + shortName.quoted() + T(")");
     arguments += T(", ");
     arguments += description.isEmpty() ? T("String::empty") : T("T(") + description.quoted() + T(")");
+    if (xml->getBoolAttribute(T("static"), false))
+      arguments += T(", true");
+
     writeLine(T("addMemberFunction(context, ") + arguments + T(");"));
   }
 
@@ -499,7 +502,6 @@ protected:
   /*
   ** Template
   */
-
   void generateTemplateClassDeclaration(XmlElement* xml)
   {
     String className = xml->getStringAttribute(T("name"), T("???"));

@@ -93,9 +93,18 @@ class FunctionSignature : public Signature
 public:
   FunctionSignature(const String& name,
                         const String& shortName = String::empty,
-                        const String& description = String::empty)
-    : Signature(name, shortName, description) {}
+                        const String& description = String::empty,
+                        bool isStatic = false)
+    : Signature(name, shortName, description), staticFunction(isStatic) {}
   FunctionSignature() {}
+
+  bool isStatic() const
+    {return staticFunction;}
+
+protected:
+  friend class FunctionSignatureClass;
+
+  bool staticFunction;
 };
 
 typedef ReferenceCountedObjectPtr<FunctionSignature> FunctionSignaturePtr;
@@ -106,8 +115,10 @@ public:
   LuaFunctionSignature(LuaFunction function,
                         const String& name,
                         const String& shortName = String::empty,
-                        const String& description = String::empty)
-    : FunctionSignature(name, shortName, description), function(function) {}
+                        const String& description = String::empty,
+                        bool isStatic = false)
+    : FunctionSignature(name, shortName, description, isStatic), function(function) {}
+
   LuaFunctionSignature() : function(NULL) {}
 
   LuaFunction getFunction() const

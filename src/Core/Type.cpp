@@ -261,7 +261,7 @@ FunctionSignaturePtr Type::getMemberFunction(size_t index) const
 
 int Type::findMemberFunction(const String& name) const
   {jassert(baseType); return baseType->findMemberFunction(name);}
-  
+
 #include "Type/FileType.h"
 
 //DirectoriesCache FileType::cache;
