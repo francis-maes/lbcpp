@@ -25,8 +25,8 @@ void ExecutionCallback::getThisWhereAndWhat(LuaState& state, ExecutionCallbackPt
 {
   pthis = state.checkObject(1, executionCallbackClass);
   if (state.getTop() >= 3)
-    where = state.checkString(3);
-  what = state.checkString(2);
+    where = state.toString(3);
+  what = state.toString(2).unquoted();
 }
 
 int ExecutionCallback::error(LuaState& state)

@@ -630,7 +630,6 @@ SymmetricMatrixPtr Protein::createEmptyDistanceMap(size_t length)
 int Protein::fromFile(LuaState& state)
 {
   ExecutionContext& context = state.getContext();
-
   File file = state.checkFile(1);
   String ext = file.getFileExtension();
   ProteinPtr res;
@@ -641,4 +640,24 @@ int Protein::fromFile(LuaState& state)
   else
     res = Protein::createFromXml(context, file);
   return state.returnObject(res);
+}
+
+int Protein::fromDirectory(LuaState& state)
+{
+  ExecutionContext& context = state.getContext();
+  File directory = state.checkFile(1);
+  int maxCount = 0;
+  String scopeName = T("Loading Proteins");
+  if (state.getTop() >= 2)
+    maxCount = state.checkInteger(2);
+  if (state.getTop() >= 3)
+    scopeName = state.checkString(3);
+  return state.returnObject(Protein::loadProteinsFromDirectory(context, directory, maxCount, scopeName));
+}
+
+int Protein::length(LuaState& state)
+{
+  ProteinPtr protein = state.checkObject(1, proteinClass).staticCast<Protein>();
+  state.pushInteger(protein->getLength());
+  return 1;
 }

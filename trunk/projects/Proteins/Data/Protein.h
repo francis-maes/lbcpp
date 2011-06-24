@@ -239,6 +239,9 @@ public:
   ** Lua
   */
   static int fromFile(LuaState& state);
+  static int fromDirectory(LuaState& state);
+
+  static int length(LuaState& state);
 
   lbcpp_UseDebuggingNewOperator
 

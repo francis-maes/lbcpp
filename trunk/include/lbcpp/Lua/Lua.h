@@ -56,6 +56,8 @@ public:
 
   void pushBoolean(bool value);
   void pushString(const char* value);
+  void pushInteger(int value);
+  void pushInteger(size_t value);
   void pushNumber(double value);
   void pushFunction(LuaFunction function);
   void pushVariable(const Variable& variable);
@@ -70,8 +72,10 @@ public:
   LuaType getType(int index) const;
 
   bool isString(int index) const;
+  String toString(int index);
 
   bool checkBoolean(int index);
+  int checkInteger(int index);
   double checkNumber(int index);
   const char* checkString(int index);
   ObjectPtr checkObject(int index, TypePtr expectedType);

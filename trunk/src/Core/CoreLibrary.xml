@@ -29,6 +29,10 @@
   <!-- Container -->
   <template name="Container" base="Object" abstract="yes">
     <parameter name="elementsType"/>
+
+    <function lang="lua" name="size"/>
+    <function lang="lua" name="get"/>
+    <function lang="lua" name="set"/>
   </template>
   
   <!-- Vector -->

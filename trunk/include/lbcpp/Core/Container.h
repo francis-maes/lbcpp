@@ -53,6 +53,13 @@ public:
 
   void makeOrder(size_t variableIndex, bool increasingOrder, std::vector<size_t>& res) const;
 
+  /*
+  ** Lua
+  */
+  static int size(LuaState& state);
+  static int set(LuaState& state);
+  static int get(LuaState& state);
+
   lbcpp_UseDebuggingNewOperator
 
 public:
