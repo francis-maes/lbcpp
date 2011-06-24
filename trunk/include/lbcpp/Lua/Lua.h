@@ -46,6 +46,7 @@ public:
     {return L;}
 
   bool execute(const char* code, const char* codeName = "code");
+  bool execute(const File& luaFile);
 
   void createTable();
   void setTableField(const char *name, double value);
@@ -59,6 +60,8 @@ public:
   void pushFunction(LuaFunction function);
   void pushVariable(const Variable& variable);
   void pushObject(ObjectPtr object);
+
+  int returnObject(ObjectPtr object);
 
   void pop(int count = 1) const;
 
@@ -87,6 +90,8 @@ public:
 protected:
   lua_State* L;
   bool owned;
+
+  bool processExecuteError(int error);
 };
 
 }; /* namespace lbcpp */

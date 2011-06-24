@@ -28,7 +28,7 @@
   <!-- Object -->
   <class name="Object" base="Variable" abstract="yes">
     <function lang="lua" name="create" static="yes"/>
-    <function lang="lua" name="createFromFile" static="yes"/>
+    <function lang="lua" name="fromFile" static="yes"/>
   </class>
   
   <class name="NameableObject" base="Object" abstract="yes">

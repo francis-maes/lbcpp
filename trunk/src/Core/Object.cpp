@@ -464,23 +464,14 @@ int Object::create(LuaState& state)
 {
   const char* className = state.checkString(1);
   TypePtr type = getType(className);
-  if (!type)
-    return 0;
-  ObjectPtr res = Object::create(type);
-  if (!res)
-    return 0;
-  state.pushObject(res);
-  return 1;
+  return type ? state.returnObject(Object::create(type)) : 0;
 }
 
-int Object::createFromFile(LuaState& state)
+int Object::fromFile(LuaState& state)
 {
   File file = state.checkFile(1);
   ObjectPtr res = createFromFile(state.getContext(), file);
-  if (!res)
-    return 0;
-  state.pushObject(res);
-  return 1;
+  return state.returnObject(res);
 }
 
 int Object::toString(LuaState& state)

@@ -190,7 +190,7 @@ public:
   ** Lua
   */
   static int create(LuaState& state);
-  static int createFromFile(LuaState& state);
+  static int fromFile(LuaState& state);
   static int index(LuaState& state);
   static int toString(LuaState& state);
 

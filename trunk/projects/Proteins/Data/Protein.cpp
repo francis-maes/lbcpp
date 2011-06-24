@@ -623,3 +623,22 @@ SymmetricMatrixPtr Protein::createEmptyContactMap(size_t length)
 
 SymmetricMatrixPtr Protein::createEmptyDistanceMap(size_t length)
   {return new DoubleSymmetricMatrix(angstromDistanceType, length, Variable::missingValue(angstromDistanceType).getDouble());}
+
+/*
+** Lua
+*/
+int Protein::fromFile(LuaState& state)
+{
+  ExecutionContext& context = state.getContext();
+
+  File file = state.checkFile(1);
+  String ext = file.getFileExtension();
+  ProteinPtr res;
+  if (ext == T(".pdb"))
+    res = Protein::createFromPDB(context, file);
+  else if (ext == T(".fasta"))
+    res = Protein::createFromFASTA(context, file);
+  else
+    res = Protein::createFromXml(context, file);
+  return state.returnObject(res);
+}
