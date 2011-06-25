@@ -213,6 +213,10 @@ public:
     /** Changes the size of the scrollbars. */
     void setScrollbarThickness (const int thickness) throw();
 
+    // francis
+    String getSelectedText() const
+      {return document.getTextBetween (selectionStart, selectionEnd);}
+
     //==============================================================================
     /** @internal */
     void resized();
