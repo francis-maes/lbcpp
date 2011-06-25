@@ -20,9 +20,6 @@ public:
   LibSVMBinaryClassifier(double C, size_t kernelType, size_t kernelDegree, double kernelGamma, double kernelCoef0)
     : LibSVMClassifier(C, kernelType, kernelDegree, kernelGamma, kernelCoef0) {}
   LibSVMBinaryClassifier() {}
-
-  virtual size_t getSvmType() const
-    {return ONE_CLASS;}
   
   virtual TypePtr getSupervisionType() const
     {return sumType(booleanType, probabilityType);}
@@ -48,12 +45,11 @@ public:
     svm_node* node = convertDoubleVector(input);
     svm_predict_probability(model, &node[0], &probs[0]);
     delete [] node;
-    
+
     // reorder classes and return probabilities
     std::vector<int> labelIndices(model->nr_class);
     svm_get_labels(model, &labelIndices[0]);
-
-    return probability(labelIndices[0]);
+    return probability(probs[labelIndices[0]]);
   }
 };
   
