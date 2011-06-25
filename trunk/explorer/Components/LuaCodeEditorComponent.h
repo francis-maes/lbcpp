@@ -16,7 +16,7 @@
 # include <lbcpp/Lua/Lua.h>
 # include "../../juce/juce_CodeEditorComponent.h"
 # include "../../juce/juce_LuaCodeTokeniser.h"
-# include "../Explorer/ExplorerProject.h"
+# include "../explorer/ExplorerProject.h"
 
 namespace lbcpp
 {
