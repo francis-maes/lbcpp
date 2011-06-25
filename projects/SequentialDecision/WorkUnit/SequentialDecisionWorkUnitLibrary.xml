@@ -72,4 +72,30 @@
     <variable type="PositiveInteger" name="numBests"/>
   </class>
 
+  <!-- Bandit Based Optimization -->
+  <class name="BBOSupervisionInfo" base="Object">
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="neighborValues"/>
+    <variable type="Double" name="correctOutput"/>
+  </class>
+  
+  <class name="BBODatabase" base="Object" abstract="yes"/>
+  <class name="ScalarBBODatabase" base="BBODatabase"/>
+  <class name="ScalarBBORelationFeatureGenerator" base="FeatureGenerator"/>
+
+  <class name="NearestNeighborPredictor" base="Function" abstract="yes">
+    <variable type="BBODatabase" name="database"/>
+    <variable type="PositiveInteger" name="numNeighbors"/>
+  </class>
+
+  <class name="GaussianNearestNeighborPredictor" base="NearestNeighborPredictor">
+    <variable type="Double" name="width"/>
+  </class>
+
+  <class name="LearnableNearestNeighborPredictor" base="NearestNeighborPredictor">
+    <variable type="Function" name="relationFeatureGenerator"/>
+    <variable type="NumericalLearnableFunction" name="activationsPredictor"/>
+  </class>
+
+  <class name="BBOptimizationSandBox" base="WorkUnit"/>
+
 </library>

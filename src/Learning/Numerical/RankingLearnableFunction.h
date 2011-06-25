@@ -27,7 +27,7 @@ public:
     {return 2;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index ? doubleVectorClass(positiveIntegerEnumerationEnumeration) : containerClass(doubleVectorClass());}
+    {return index ? anyType : containerClass(doubleVectorClass());} // supervision may be of any type here
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
@@ -84,6 +84,25 @@ public:
 
   virtual bool computeLoss(const FunctionPtr& lossFunction, const Variable* inputs, const Variable& prediction, double& lossValue, Variable& lossDerivativeOrGradient) const
   {
+    const ScalarVectorFunctionPtr& loss = lossFunction.staticCast<ScalarVectorFunction>();
+    const ObjectVectorPtr& features = inputs[0].getObjectAndCast<ObjectVector>();
+    DenseDoubleVectorPtr scores = prediction.getObjectAndCast<DenseDoubleVector>();
+
+    if (!scores)
+      scores = new DenseDoubleVector(getOutputType(), features->getNumElements(), 0.0);
+    size_t n = scores->getNumElements();
+
+    jassert(features->getNumElements() == n);
+    
+    lossValue = 0.0;
+    DenseDoubleVectorPtr lossGradient = new DenseDoubleVector(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration), n, 0.0);
+    loss->computeScalarVectorFunction(scores, inputs + 1, &lossValue, &lossGradient, 1.0);
+    if (!isNumberValid(lossValue))
+      return false;
+    
+    lossDerivativeOrGradient = lossGradient;
+    return true;
+#if 0 // old version with RankingLossFunction
     const RankingLossFunctionPtr& rankingLoss = lossFunction.staticCast<RankingLossFunction>();
     const ObjectVectorPtr& features = inputs[0].getObjectAndCast<ObjectVector>();
     DenseDoubleVectorPtr scores = prediction.getObjectAndCast<DenseDoubleVector>();
@@ -102,6 +121,7 @@ public:
       return false;
     
     lossDerivativeOrGradient = lossGradient;
+#endif // 0
     return true;
   }
 

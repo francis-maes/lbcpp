@@ -95,8 +95,18 @@ public:
     double l2norm = (parameters ? parameters->l2norm() : 0.0);
 
     double mean = lossValue.getMean();
-    //context->resultCallback(T("Parameters"), parameters);
+    
+
     context->resultCallback(T("Empirical Risk"), mean);
+
+    DenseDoubleVectorPtr denseParameters = parameters.dynamicCast<DenseDoubleVector>();
+    if (denseParameters && denseParameters->getNumValues() <= 5)
+    {
+      for (size_t i = 0; i < denseParameters->getNumValues(); ++i)
+        context->resultCallback(T("Parameter ") + denseParameters->getElementName(i), denseParameters->getValue(i));
+      //context->resultCallback(T("Parameters"), parameters);
+    }
+
     context->resultCallback(T("Mean Active Features"), numberOfActiveFeatures.getMean());
     context->resultCallback(T("Num Params"), (parameters ? parameters->l0norm() : 0));
     context->resultCallback(T("Params Norm"), l2norm);
