@@ -140,7 +140,10 @@
   <class name="NormalizedCysteinPositionDifference" base="FeatureGenerator"/>
   <class name="NormalizedCysteinIndexDifference" base="FeatureGenerator"/>
   
-  <class name="Lin09PredictorParameters" base="ProteinPredictorParameters" shortName="lin09"/>
+  <class name="Lin09PredictorParameters" base="ProteinPredictorParameters" shortName="lin09">
+    <variable type="Double" name="C"/>
+    <variable type="Double" name="kernelGamma"/>
+  </class>
   <!-- END Article: Lin 2009 -->
 
 </library>
