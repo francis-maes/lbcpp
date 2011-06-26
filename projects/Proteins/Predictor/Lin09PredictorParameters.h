@@ -77,7 +77,8 @@ public:
 
 class Lin09PredictorParameters : public ProteinPredictorParameters
 {
-public:  
+public:
+  Lin09PredictorParameters() : C(7.4), kernelGamma(-4.6) {}
   /*
   ************************ Protein Perception ************************
   */
@@ -207,8 +208,7 @@ public:
     {
     case dsbTarget:
       {
-        // FIXME: exp2 
-        return libSVMBinaryClassifier(pow(2.0, 7.4), 2, 0, pow(2.0, -4.6), 0.0);
+        return libSVMBinaryClassifier(pow(2.0, C), 2, 0, pow(2.0, kernelGamma), 0.0);
       }
     default:
       {
@@ -218,6 +218,11 @@ public:
     };
   }
 
+protected:
+  friend class Lin09PredictorParametersClass;
+  
+  double C;
+  double kernelGamma;
 };
 
 }; /* namespace lbcpp */
