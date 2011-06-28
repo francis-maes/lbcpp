@@ -110,6 +110,7 @@ typedef ReferenceCountedObjectPtr<NumericalCysteinFeaturesParameters> NumericalC
 class NumericalCysteinPredictorParameters : public ProteinPredictorParameters
 {
 public:
+  bool useAddBiasLearner;
   NumericalCysteinFeaturesParametersPtr fp;
 
   enum {maxProteinLengthOnSPX = 1733, maxProteinLengthOnSPXFromFile = 1395};
@@ -131,7 +132,8 @@ public:
   bool useCysteinParity;
 
   NumericalCysteinPredictorParameters(NumericalCysteinFeaturesParametersPtr fp = ObjectPtr())
-    : fp(fp)
+    : useAddBiasLearner(false)
+    , fp(fp)
     , useCartesianProduct(false)
     // -----  Oracle  -----
     , useOracleD0(false), useOracleD1(false), useOracleD2(false)
@@ -741,7 +743,7 @@ public:
     {
       return new GetSupervisionFunction();
     }
-    else if (target == dsbTarget)
+    else if (useAddBiasLearner && target == dsbTarget)
     {
       return new ConnectivityPatternClassifier(learningParameters);
     }
@@ -767,7 +769,7 @@ public:
       }
     case dsbTarget:
       {
-        jassertfalse;
+        jassert(!useAddBiasLearner);
         FunctionPtr res = linearBinaryClassifier(learningParameters, true, binaryClassificationAccuracyScore);
         res->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
         return res;
