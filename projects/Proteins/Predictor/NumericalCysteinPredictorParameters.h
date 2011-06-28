@@ -31,7 +31,7 @@ public:
   size_t residueWindowSize;
   size_t localHistogramSize;
   size_t separationProfilSize;
-  
+
   bool useSymmetricFeature;
   bool useIntervalHistogram;
   bool useAADistance;
@@ -41,6 +41,23 @@ public:
   bool useExtendedD1Feature;
   size_t d1WindowSize;
   bool useExtendedD2Feature;
+  
+  bool useCysteinPositionDifference;
+  bool useCysteinIndexDifference;
+  
+  bool useConnectivityPattern;
+  bool useCartesianConnectivity;
+  bool useConnectivityStats;
+
+  NumericalCysteinFeaturesParameters()
+  : useProteinLength(false), useDiscretizeProteinLength(false)
+  , residueWindowSize(20), localHistogramSize(60), separationProfilSize(15)
+  , useSymmetricFeature(false), useIntervalHistogram(true), useAADistance(true)
+  , pairWindowSize(21), normalizedWindowSize(21)
+  , useExtendedD1Feature(false), d1WindowSize(0), useExtendedD2Feature(false)
+  , useCysteinPositionDifference(true), useCysteinIndexDifference(true)
+  , useConnectivityPattern(true), useCartesianConnectivity(true), useConnectivityStats(true)
+  {}
   
   static std::vector<SamplerPtr> createSamplers()
   {
@@ -127,7 +144,7 @@ public:
     , useGlobalHistogram(true)
     //, useProteinLength(false), useDiscretizeProteinLength(false)
     , useNumCysteins(false), useDiscretizeNumCysteins(true), useCysteinParity(true)
-  
+
     // residue
     //, residueWindowSize(3)
     //, localHistogramSize(100)
@@ -256,7 +273,7 @@ public:
     /* Output */
     builder.startSelection();
 
-      builder.addConstant(0.f);
+      builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 0, 0.0));
     
       if (fp->residueWindowSize)
         builder.addFunction(centeredContainerWindowFeatureGenerator(fp->residueWindowSize), primaryResidueFeatures, position, T("window"));
@@ -293,25 +310,9 @@ public:
     /* Output */
     builder.startSelection();
 
-    size_t global = -1;  
-    if (useGlobalFeature)
-        global = builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception, T("globalFeatures"));
-// ________
-#if 0
-    size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinPerception);
-    
-    //size_t aminoAcid = builder.addFunction(getVariableFunction(T("primaryStructure")), protein);
-    size_t pssmRow = builder.addFunction(getVariableFunction(T("positionSpecificScoringMatrix")), protein, T("pssm"));
+      if (useGlobalFeature)
+        builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception, T("globalFeatures"));
 
-    //size_t aa = builder.addFunction(mapContainerFunction(enumerationFeatureGenerator()), aminoAcid, T("aa"));
-    size_t pssm = builder.addFunction(centeredContainerWindowFeatureGenerator(1), pssmRow, position);
-
-    //aa = builder.addFunction(centeredContainerWindowFeatureGenerator(3), aa, position);
-    builder.addFunction(cartesianProductFeatureGenerator(true), global, pssm);
-    //builder.addFunction(concatenateFeatureGenerator(true), global, aa);
-    return;
-#endif
-// ________
       builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, residueFeatures), position, proteinPerception, T("residueFeatures"));
       builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, cysteinResidueFeatures), position, proteinPerception, T("cysteinFeatures"));
     
@@ -340,7 +341,7 @@ public:
     /* Output */
     builder.startSelection();
 
-      builder.addConstant(0.f);
+      builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 0, 0.0));
 
       if (fp->separationProfilSize)
         builder.addFunction(centeredContainerWindowFeatureGenerator(fp->separationProfilSize), cysteinSeparationProfil, cysteinIndex, T("cysSepProfil"));
@@ -370,7 +371,7 @@ public:
 
     builder.startSelection();
 
-      builder.addConstant(0.f);
+      builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 0, 0.0));
 
       if (fp->useIntervalHistogram)
         builder.addFunction(accumulatorWindowMeanFunction(), primaryResidueFeaturesAcc, firstPosition, secondPosition, T("interval"));
@@ -406,6 +407,10 @@ public:
     size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType, enumValueType));
 
     /* Data */
+    size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinPerception, T("protein"));
+    size_t firstIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, firstPosition);
+    size_t secondIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, secondPosition);
+    
     size_t rf1 = builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, residueFeatures), firstPosition, proteinPerception, T("residueFeature[first]"));
     size_t rf2 = builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, residueFeatures), secondPosition, proteinPerception, T("residueFeature[second]"));
 
@@ -427,6 +432,12 @@ public:
       //builder.addFunction(lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, cysteinResiduePairFeatures), firstPosition, secondPosition, proteinPerception, T("cysteinResiduePairFeatures"));    
       builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, cysteinResidueFeatures), firstPosition, proteinPerception, T("cysteinResidueFeatures[first]"));
       builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, cysteinResidueFeatures), secondPosition, proteinPerception, T("cysteinResidueFeatures[second]"));
+
+      // Lin09 features
+      if (fp->useCysteinPositionDifference)
+        builder.addFunction(new NormalizedCysteinPositionDifference(), protein, firstPosition, secondPosition, T("NCPD"));
+      if (fp->useCysteinIndexDifference)
+        builder.addFunction(new NormalizedCysteinIndexDifference(), protein, firstIndex, secondIndex, T("NCID"));
 
     size_t features = builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
     // Information from D0
@@ -459,7 +470,7 @@ public:
     {
       builder.startSelection();
       
-        builder.addConstant(1.f, T("identity"));
+        builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 0, 1.0), T("identity"));
         builder.addFunction(new GetDoubleVectorValueFunction(), cbp, pAllIndex, T("p[All]"));
         builder.addFunction(new GetDoubleVectorValueFunction(), cbp, pMixIndex, T("p[Mix]"));
       
@@ -493,7 +504,7 @@ public:
     {
       builder.startSelection();
 
-        builder.addConstant(1.f, T("identity"));
+        builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 0, 1.0), T("identity"));
         builder.addInSelection(cbsRatio);
       
       size_t cbsFeatures = builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
@@ -525,7 +536,7 @@ public:
     {
       builder.startSelection();
 
-        builder.addConstant(1.f, T("identity"));
+        builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 0, 1.0), T("identity"));
         builder.addInSelection(dsbGreedyRatio);
 
       size_t dsbFeatures = builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
@@ -558,7 +569,7 @@ public:
     {
       builder.startSelection();
       
-        builder.addConstant(1.f, T("identity"));
+        builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 0, 1.0), T("identity"));
         builder.addInSelection(prob);
       
       size_t cbsFeatures = builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
@@ -592,7 +603,7 @@ public:
     {
       builder.startSelection();
       
-        builder.addConstant(1.f, T("identity"));
+        builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 0, 1.0), T("identity"));
         builder.addInSelection(dsbGreedySumRow);
       
       size_t dsbFeatures = builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
@@ -627,7 +638,7 @@ public:
     {
       builder.startSelection();
       
-        builder.addConstant(1.f, T("identity"));
+        builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 0, 1.0), T("identity"));
         builder.addInSelection(probs);
       
       size_t cbsFeatures = builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
@@ -655,7 +666,7 @@ public:
     size_t firstIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, firstPosition);
     size_t secondIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, secondPosition);
     
-    size_t dsb = builder.addFunction(getVariableFunction(T("disulfideBonds")), protein, T("cysteinBondingProperty"));
+    size_t dsb = builder.addFunction(getVariableFunction(T("disulfideBonds")), protein, T("disulfideBonds"));
     size_t dsbFeatures = builder.addFunction(mapContainerFunction(doubleFeatureGenerator()), dsb);
     size_t prob = builder.addFunction(new GetDisulfideBondProbability(), dsb, firstIndex, secondIndex, T("P[D2]"));
     
@@ -669,11 +680,15 @@ public:
     size_t normalizedD2 = builder.addFunction(new NormalizeDisulfideBondFunction(), dsb);
     size_t normalizedD2Features = builder.addFunction(mapContainerFunction(doubleFeatureGenerator()), normalizedD2);
 
+    size_t firstConnectivity = builder.addFunction(new SimpleConnectivityPatternFeatureGenerator(), dsb, firstIndex, T("Connectivity[first]"));
+    size_t secondConnectivity = builder.addFunction(new SimpleConnectivityPatternFeatureGenerator(), dsb, secondIndex, T("Connectivity[second]"));
+
+    
     if (useCartesianProduct)
     {
       builder.startSelection();
 
-        builder.addConstant(1.f, T("identity"));
+        builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 0, 1.0), T("identity"));
         builder.addInSelection(prob);
 
         if (probGreedy != (size_t)-1)
@@ -692,13 +707,28 @@ public:
         if (probGreedy != (size_t)-1)
           builder.addInSelection(probGreedy);
 
-      if (fp->pairWindowSize)
-        builder.addFunction(matrixWindowFeatureGenerator(fp->pairWindowSize, fp->pairWindowSize)
-                            , dsbFeatures, firstIndex, secondIndex, T("dsbWindow"));
-      if (fp->normalizedWindowSize)
-        builder.addFunction(matrixWindowFeatureGenerator(fp->normalizedWindowSize, fp->normalizedWindowSize)
-                            , normalizedD2Features, firstIndex, secondIndex, T("normalizedD2Features"));
+        if (fp->pairWindowSize)
+          builder.addFunction(matrixWindowFeatureGenerator(fp->pairWindowSize, fp->pairWindowSize)
+                              , dsbFeatures, firstIndex, secondIndex, T("dsbWindow"));
+        if (fp->normalizedWindowSize)
+          builder.addFunction(matrixWindowFeatureGenerator(fp->normalizedWindowSize, fp->normalizedWindowSize)
+                              , normalizedD2Features, firstIndex, secondIndex, T("normalizedD2Features"));
 
+        if (fp->useConnectivityPattern)
+        {
+          builder.addInSelection(firstConnectivity);
+          builder.addInSelection(secondConnectivity);
+        }
+      
+        if (fp->useCartesianConnectivity)
+          builder.addFunction(cartesianProductFeatureGenerator(true), firstConnectivity, secondConnectivity, T("Connectivity[first]xConnectivity[second]"));
+
+        if (fp->useConnectivityStats)
+        {
+          builder.addFunction(new SymmetricMatrixRowStatisticsFeatureGenerator(), dsb, firstIndex, T("ConnectivityStats[first]"));
+          builder.addFunction(new SymmetricMatrixRowStatisticsFeatureGenerator(), dsb, secondIndex, T("ConnectivityStats[second]"));
+        }
+      
       builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
     }
   }

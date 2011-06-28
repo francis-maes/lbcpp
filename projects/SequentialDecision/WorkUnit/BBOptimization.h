@@ -249,7 +249,7 @@ public:
     {return 2;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index ? bboSupervisionInfoClass : (TypePtr)denseDoubleVectorClass();}
+    {return index ? (TypePtr)bboSupervisionInfoClass : (TypePtr)denseDoubleVectorClass();}
 
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& scores,
       const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const

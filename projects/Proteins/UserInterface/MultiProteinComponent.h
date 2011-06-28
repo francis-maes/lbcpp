@@ -118,7 +118,8 @@ public:
     }
     else if (tabName == T("Cystein 2D"))
     {
-      ProteinPredictorParametersPtr predictorParameters = new Lin09PredictorParameters();
+      NumericalCysteinFeaturesParametersPtr features = new NumericalCysteinFeaturesParameters();
+      ProteinPredictorParametersPtr predictorParameters = new NumericalCysteinPredictorParameters(features);
       
       FunctionPtr proteinfunction = predictorParameters->createProteinPerception();
       proteinfunction->initialize(context, (TypePtr)proteinClass);
