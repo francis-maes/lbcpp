@@ -162,7 +162,7 @@ public:
     //, d1WindowSize(0)
     //, useExtendedD2Feature(false)
 
-    , learningParameters(new StochasticGDParameters(constantIterationFunction(0.1), /*maxIterationsWithoutImprovementStoppingCriterion(20)*/ StoppingCriterionPtr(), 1000))
+    , learningParameters(new StochasticGDParameters(constantIterationFunction(1), /*maxIterationsWithoutImprovementStoppingCriterion(20)*/ StoppingCriterionPtr(), 150))
     {}
   
   /*
@@ -743,7 +743,7 @@ public:
     }
     else if (target == dsbTarget)
     {
-      //return new ConnectivityPatternClassifier(learningParameters);
+      return new ConnectivityPatternClassifier(learningParameters);
     }
 
     return ProteinPredictorParameters::createTargetPredictor(target);
@@ -767,7 +767,7 @@ public:
       }
     case dsbTarget:
       {
-        //jassertfalse;
+        jassertfalse;
         FunctionPtr res = linearBinaryClassifier(learningParameters, true, binaryClassificationAccuracyScore);
         res->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
         return res;

@@ -102,7 +102,7 @@ public:
     // check pattern
     for (size_t i = 0; i < numRows; ++i)
       for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
-        if (predictedMatrix->getElement(i, j).getDouble() > threshold != supervisedMatrix->getElement(i, j).getDouble() > threshold)
+        if (predictedMatrix->getElement(i, j).getDouble() > threshold != supervisedMatrix->getElement(i, j).getDouble() > 0.5)
         {
           score->addPrediction(false);
           return;

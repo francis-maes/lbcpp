@@ -248,7 +248,10 @@ ScoreObjectPtr Function::train(ExecutionContext& context, const ContainerPtr& tr
   if (isInitialized() || initializeWithInputsObjectClass(context, trainingData->getElementsType()))
   {
     if (!batchLearner)
-      context.errorCallback(T("Function ") + toShortString(), T("No batch learners"));
+    {
+      //context.errorCallback(T("Function ") + toShortString(), T("No batch learners"));
+      res = new DummyScoreObject();
+    }
     else if (batchLearner->compute(context, this, trainingData, Variable(validationData, trainingData->getClass())).getBoolean())
     {
       // evaluate
