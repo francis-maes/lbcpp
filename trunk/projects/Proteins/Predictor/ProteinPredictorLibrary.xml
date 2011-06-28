@@ -122,6 +122,7 @@
   
   <class name="NumericalCysteinPredictorParameters" base="ProteinPredictorParameters" shortName="numericalCystein">
     <constructor/>
+    <variable type="Boolean" name="useAddBiasLearner"/>
     <variable type="NumericalCysteinFeaturesParameters" name="fp"/>
     <variable type="LearnerParameters" name="learningParameters" shortName="l"/>
     <variable type="Boolean" name="useOracleD0"/>
