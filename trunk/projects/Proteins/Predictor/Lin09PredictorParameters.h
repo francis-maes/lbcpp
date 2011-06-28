@@ -19,62 +19,6 @@
 namespace lbcpp
 {
 
-class NormalizedCysteinPositionDifference : public FeatureGenerator
-{
-public:
-  virtual size_t getNumRequiredInputs() const
-    {return 3;}
-  
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index ? positiveIntegerType : (TypePtr)proteinClass;}
-  
-  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
-  {
-    DefaultEnumerationPtr res = new DefaultEnumeration();
-    res->addElement(context, T("ncpd"));
-    return res;
-  }
-  
-  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
-  {
-    ProteinPtr protein = inputs[0].getObjectAndCast<Protein>();
-    jassert(protein);
-    size_t first = inputs[1].getInteger();
-    size_t second = inputs[2].getInteger();
-    
-    const std::vector<size_t>& cysteinIndices = protein->getCysteinIndices();
-    callback.sense(0, (second - first) / (double)(cysteinIndices[cysteinIndices.size()-1] - cysteinIndices[0]));
-  }
-};
-
-class NormalizedCysteinIndexDifference : public FeatureGenerator
-{
-public:
-  virtual size_t getNumRequiredInputs() const
-    {return 3;}
-  
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index ? positiveIntegerType : (TypePtr)proteinClass;}
-  
-  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
-  {
-    DefaultEnumerationPtr res = new DefaultEnumeration();
-    res->addElement(context, T("ncid"));
-    return res;
-  }
-  
-  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
-  {
-    ProteinPtr protein = inputs[0].getObjectAndCast<Protein>();
-    jassert(protein);
-    size_t first = inputs[1].getInteger();
-    size_t second = inputs[2].getInteger();
-    
-    const std::vector<size_t>& cysteinIndices = protein->getCysteinIndices();
-    callback.sense(0, (second - first) / (double)cysteinIndices.size());
-  }
-};
-
 class Lin09PredictorParameters : public ProteinPredictorParameters
 {
 public:

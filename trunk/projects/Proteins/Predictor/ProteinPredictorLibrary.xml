@@ -37,7 +37,7 @@
     <variable type="PositiveInteger" name="minimumDistanceFromDiagonal"/>
   </class>
 
-  <class name="GetDoubleVectorValueFunction" base="Function"/>
+  <class name="GetDoubleVectorValueFunction" base="FeatureGenerator"/>
   
   <class name="GetSupervisionFunction" base="Function"/>
   
@@ -50,6 +50,8 @@
   <class name="GetBondingStateProbabilities" base="FeatureGenerator">
     <variable type="Boolean" name="useSpecialFeatures"/>
   </class>
+  
+  <class name="IsNumCysteinPair" base="FeatureGenerator"/>
   
   <class name="ProteinPredictor" base="CompositeFunction">
     <variable type="ProteinPredictorParameters" name="parameters"/>
@@ -111,6 +113,11 @@
     <variable type="Boolean" name="useExtendedD1Feature"/>
     <variable type="PositiveInteger" name="d1WindowSize"/>
     <variable type="Boolean" name="useExtendedD2Feature"/>
+    <variable type="Boolean" name="useCysteinPositionDifference"/>
+    <variable type="Boolean" name="useCysteinIndexDifference"/>
+    <variable type="Boolean" name="useConnectivityPattern"/>
+    <variable type="Boolean" name="useCartesianConnectivity"/>
+    <varaible type="Boolean" name="useConnectivityStats"/>
   </class>
   
   <class name="NumericalCysteinPredictorParameters" base="ProteinPredictorParameters" shortName="numericalCystein">

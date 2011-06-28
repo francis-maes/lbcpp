@@ -639,7 +639,7 @@ protected:
 };
 
 // DoubleVector<T>, PositiveInteger -> T
-class GetDoubleVectorValueFunction : public Function
+class GetDoubleVectorValueFunction : public FeatureGenerator
 {
 public:
   virtual size_t getNumRequiredInputs() const
@@ -650,21 +650,23 @@ public:
 
   virtual String getOutputPostFix() const
     {return T("Element");}
+  
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration();
+    res->addElement(context, T("value"));
+    return res;
+  }
 
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return Container::getTemplateParameter(inputVariables[0]->getType());}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
   {
     const DoubleVectorPtr& vector = inputs[0].getObjectAndCast<Container>();
     if (vector)
     {
       int index = inputs[1].getInteger();
       if (index >= 0 && index < (int)vector->getNumElements())
-        return vector->getElement((size_t)index);
+        callback.sense(0, vector->getElement((size_t)index).getDouble());
     }
-
-    return Variable(0.f, getOutputType());
   }
 };
 
@@ -1036,23 +1038,187 @@ protected:
   bool hardDiscretization;
 };
 
-class IsNumCysteinPair : public SimpleUnaryFunction
+class IsNumCysteinPair : public FeatureGenerator
 {
 public:
-  IsNumCysteinPair()
-    : SimpleUnaryFunction(proteinClass, probabilityType, T("IsNumCysteinPair")) {}
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
   
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return (TypePtr)proteinClass;}
+  
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
-    const ProteinPtr& protein = input.getObjectAndCast<Protein>(context);
+    DefaultEnumerationPtr res = new DefaultEnumeration();
+    res->addElement(context, T("IsNumCysteinPair"));
+    return res;
+  }
+  
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    const ProteinPtr& protein = inputs[0].getObjectAndCast<Protein>();
     jassert(protein);
     
     const size_t numCysteins = protein->getCysteinIndices().size();
-    return probability((numCysteins + 1) % 2);
+    callback.sense(0, (numCysteins + 1) % 2);
+  }
+};
+
+class NormalizedCysteinPositionDifference : public FeatureGenerator
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 3;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : (TypePtr)proteinClass;}
+  
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration();
+    res->addElement(context, T("ncpd"));
+    return res;
+  }
+  
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    ProteinPtr protein = inputs[0].getObjectAndCast<Protein>();
+    jassert(protein);
+    size_t first = inputs[1].getInteger();
+    size_t second = inputs[2].getInteger();
+    
+    const std::vector<size_t>& cysteinIndices = protein->getCysteinIndices();
+    callback.sense(0, (second - first) / (double)(cysteinIndices[cysteinIndices.size()-1] - cysteinIndices[0]));
+  }
+};
+
+class NormalizedCysteinIndexDifference : public FeatureGenerator
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 3;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : (TypePtr)proteinClass;}
+  
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration();
+    res->addElement(context, T("ncid"));
+    return res;
+  }
+  
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    ProteinPtr protein = inputs[0].getObjectAndCast<Protein>();
+    jassert(protein);
+    size_t first = inputs[1].getInteger();
+    size_t second = inputs[2].getInteger();
+    
+    const std::vector<size_t>& cysteinIndices = protein->getCysteinIndices();
+    callback.sense(0, (second - first) / (double)cysteinIndices.size());
+  }
+};
+
+class SimpleConnectivityPatternFeatureGenerator : public FeatureGenerator
+{
+public:
+  SimpleConnectivityPatternFeatureGenerator(size_t maxConnection = 25, bool senseSumOfValues = false, double threshold = 0.5)
+    : maxConnection(maxConnection), senseSumOfValues(senseSumOfValues), threshold(threshold) {}
+  
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : (TypePtr)symmetricMatrixClass(probabilityType);}
+  
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration();
+    for (size_t i = 0; i < maxConnection; ++i)
+      res->addElement(context, T("connectedTo[" + String((int)i) + "]"));
+    res->addElement(context, T("connectedTo[" + String((int)maxConnection) + "+]"));
+    return res;
+  }
+  
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    SymmetricMatrixPtr matrix = inputs[0].getObjectAndCast<SymmetricMatrix>();
+    if (!matrix)
+      return;
+    const size_t row = inputs[1].getInteger();
+    const size_t dimension = matrix->getDimension();
+    
+    size_t numConnection = 0;
+    double sumValues = 0.0;
+    for (size_t i = 0; i < dimension; ++i)
+    {
+      if (i == row)
+        continue;
+      const double value = matrix->getElement(row, i).getDouble();
+      if (value >= threshold)
+      {
+        ++numConnection;
+        sumValues += value;
+      }
+    }
+    
+    callback.sense((numConnection >= maxConnection) ? maxConnection : numConnection
+                  , senseSumOfValues ? sumValues / (double)numConnection : 1.0);
   }
 
 protected:
-  size_t maxLength;
+  friend class SimpleConnectivityPatternFeatureGeneratorClass;
+  
+  size_t maxConnection;
+  bool senseSumOfValues;
+  double threshold;
+};
+
+class SymmetricMatrixRowStatisticsFeatureGenerator : public FeatureGenerator
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : (TypePtr)symmetricMatrixClass(probabilityType);}
+  
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration();
+    res->addElement(context, T("min"));
+    res->addElement(context, T("max"));
+    res->addElement(context, T("mean"));
+    return res;
+  }
+  
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    SymmetricMatrixPtr matrix = inputs[0].getObjectAndCast<SymmetricMatrix>();
+    if (!matrix)
+      return;
+    const size_t row = inputs[1].getInteger();
+    const size_t dimension = matrix->getDimension();
+    
+    double min = DBL_MAX;
+    double max = -DBL_MAX;
+    double sum = 0.0;
+    for (size_t i = 0; i < dimension; ++i)
+    {
+      if (i == row)
+        continue;
+      const double value = matrix->getElement(row, i).getDouble();
+      sum += value;
+      if (value < min)
+        min = value;
+      if (value > max)
+        max = value;
+    }
+    callback.sense(0, min);
+    callback.sense(1, max);
+    callback.sense(2, sum / (double)(dimension - 1));
+  }
 };
 
 }; /* namespace lbcpp */
