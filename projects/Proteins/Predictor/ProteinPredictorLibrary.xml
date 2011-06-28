@@ -117,7 +117,7 @@
     <variable type="Boolean" name="useCysteinIndexDifference"/>
     <variable type="Boolean" name="useConnectivityPattern"/>
     <variable type="Boolean" name="useCartesianConnectivity"/>
-    <varaible type="Boolean" name="useConnectivityStats"/>
+    <variable type="Boolean" name="useConnectivityStats"/>
   </class>
   
   <class name="NumericalCysteinPredictorParameters" base="ProteinPredictorParameters" shortName="numericalCystein">
