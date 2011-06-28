@@ -130,7 +130,7 @@ public:
   bool useDiscretizeNumCysteins;
   bool useCysteinParity;
 
-  NumericalCysteinPredictorParameters(NumericalCysteinFeaturesParametersPtr fp)
+  NumericalCysteinPredictorParameters(NumericalCysteinFeaturesParametersPtr fp = ObjectPtr())
     : fp(fp)
     , useCartesianProduct(false)
     // -----  Oracle  -----
@@ -164,7 +164,6 @@ public:
 
     , learningParameters(new StochasticGDParameters(constantIterationFunction(0.1), /*maxIterationsWithoutImprovementStoppingCriterion(20)*/ StoppingCriterionPtr(), 1000))
     {}
-  NumericalCysteinPredictorParameters() {}
   
   /*
   ************************ Protein Perception ************************
