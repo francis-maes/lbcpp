@@ -72,13 +72,13 @@ public:
       else if (thisType->getMemberVariableName(i) == T("residueWindowSize"))
         res[i] = discretizeSampler(gaussianSampler(20, 15), 0, 50);
       else if (thisType->getMemberVariableName(i) == T("localHistogramSize"))
-        res[i] = discretizeSampler(gaussianSampler(100, 100), 0, 500);
+        res[i] = discretizeSampler(gaussianSampler(60, 60), 0, 500);
       else if (thisType->getMemberVariableName(i) == T("separationProfilSize"))
-        res[i] = discretizeSampler(gaussianSampler(0, 15), 0, 26);
+        res[i] = discretizeSampler(gaussianSampler(15, 15), 0, 26);
       else if (thisType->getMemberVariableName(i) == T("pairWindowSize"))
-        res[i] = discretizeSampler(gaussianSampler(9, 15), 0, 26);
+        res[i] = discretizeSampler(gaussianSampler(20, 15), 0, 26);
       else if (thisType->getMemberVariableName(i) == T("normalizedWindowSize"))
-        res[i] = discretizeSampler(gaussianSampler(0, 15), 0, 26);
+        res[i] = discretizeSampler(gaussianSampler(15, 15), 0, 26);
       else if (thisType->getMemberVariableName(i) == T("d1WindowSize"))
         res[i] = discretizeSampler(gaussianSampler(3, 15), 0, 26);
       else

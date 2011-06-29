@@ -88,12 +88,8 @@ public:
 //    addEvaluator(cbsTarget,  containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, isFinalEvaluation)), T("Cystein Bonding States (Accuracy)"));
 //    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation), 1), T("Disulfide Bonds"));
 //    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, isFinalEvaluation), 1));
-    addEvaluator(dsbTarget,  new DisulfidePatternEvaluator(), T("Disulfide Bonds"));
+//    addEvaluator(dsbTarget,  new DisulfidePatternEvaluator(), T("Disulfide Bonds"));
     addEvaluator(dsbTarget,  new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6)), T("Disulfide Bonds (Greedy L=6)"));
-    for (double i = 0.0; i <= 1.0; i += 0.01)
-      addEvaluator(dsbTarget,  new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, i), i), T("Lin09 - "+ String(i) +" - Disulfide Bonds (Greedy L=6)"));
-    for (double i = 0.0; i <= 1.0; i += 0.01)
-      addEvaluator(dsbTarget,  new DisulfidePatternEvaluator(FunctionPtr(), i), T("Lin09 - "+ String(i) +" - Disulfide Bonds"));
   }
 
   /* CompositeEvaluator */

@@ -100,19 +100,18 @@
   </class>
   
   <class name="NumericalCysteinFeaturesParameters" base="Object" shortName="ncFeatures">
-    <variable type="Boolean" name="useProteinLength"/>
-    <variable type="Boolean" name="useDiscretizeProteinLength"/>
     <variable type="PositiveInteger" name="residueWindowSize"/>
     <variable type="PositiveInteger" name="localHistogramSize"/>
     <variable type="PositiveInteger" name="separationProfilSize"/>
-    <variable type="Boolean" name="useSymmetricFeature"/>
+
     <variable type="Boolean" name="useIntervalHistogram"/>
-    <variable type="Boolean" name="useAADistance"/>
+
     <variable type="PositiveInteger" name="pairWindowSize"/>
     <variable type="PositiveInteger" name="normalizedWindowSize"/>
-    <variable type="Boolean" name="useExtendedD1Feature"/>
+
     <variable type="PositiveInteger" name="d1WindowSize"/>
     <variable type="Boolean" name="useExtendedD2Feature"/>
+
     <variable type="Boolean" name="useCysteinPositionDifference"/>
     <variable type="Boolean" name="useCysteinIndexDifference"/>
     <variable type="Boolean" name="useConnectivityPattern"/>
