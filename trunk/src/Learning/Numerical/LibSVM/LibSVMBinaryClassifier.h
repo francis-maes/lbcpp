@@ -49,7 +49,7 @@ public:
     // reorder classes and return probabilities
     std::vector<int> labelIndices(model->nr_class);
     svm_get_labels(model, &labelIndices[0]);
-    return probability(probs[labelIndices[0]]);
+    return probability(probs[labelIndices[1]]);
   }
 };
   
