@@ -66,7 +66,7 @@ public:
     
     ROCScoreObject roc;
     insertToROCScoreObject(context, trainingData, roc);
-    insertToROCScoreObject(context, validationData, roc);
+    //insertToROCScoreObject(context, validationData, roc);
     
     if (!roc.getSampleCount())
     {
@@ -82,20 +82,23 @@ public:
     // Find the best threshold the 0/1 Loss score
     for (size_t i = 0; i < thresholds.size(); ++i)
     {
+      context.enterScope(T("Threshold ") + String((int)i));
       SupervisedEvaluatorPtr evaluator = new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, thresholds[i], doubleType), thresholds[i]);
       ScoreObjectPtr scoreObject = evaluator->createEmptyScoreObject(context, FunctionPtr());
 
       insertToEvaluatorScoreObject(context, trainingData, evaluator, scoreObject);
-      insertToEvaluatorScoreObject(context, validationData, evaluator, scoreObject);
+      //insertToEvaluatorScoreObject(context, validationData, evaluator, scoreObject);
 
       evaluator->finalizeScoreObject(scoreObject, FunctionPtr());
       double score = scoreObject->getScoreToMinimize();
-
+      context.resultCallback(T("threshold"), thresholds[i]);
+      context.resultCallback(T("score"), score);
       if (score < bestScore)
       {
         bestScore = score;
         bestThreshold = thresholds[i];
       }
+      context.leaveScope();
     }
 
     context.resultCallback(T("Best threshold"), bestThreshold);
@@ -190,6 +193,9 @@ public:
     FunctionPtr classifier = new NoPostProcessingLinearBinaryClassifier(learningParameters);
     classifier->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
     size_t prediction = builder.addFunction(mapNSymmetricMatrixFunction(classifier, 1), input, supervision);
+    
+    prediction = builder.addFunction(mapNSymmetricMatrixFunction(signedScalarToProbabilityFunction(), 1), prediction);
+
     prediction = builder.addFunction(new AddConnectivityPatternBiasLearnableFunction(), prediction, supervision);
     builder.addFunction(mapNSymmetricMatrixFunction(signedScalarToProbabilityFunction(), 1), prediction);
   }
