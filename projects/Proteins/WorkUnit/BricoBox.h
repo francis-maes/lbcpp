@@ -509,23 +509,39 @@ public:
     : outputFile(outputFile), logFile(logFile) {}
   EDAResultFileWriter() {}
 
-  void write(String features, double trainScore, double testScore)
+  void write(String features, double trainScore, double testScore) const
   {
     ScopedLock _(lock);
 
     OutputStream *o = outputFile.createOutputStream();
-    *o 
-    << trainScore << ";"
-    << testScore << ";"
-    << "\"" << features << "\"\n";
+    *o << trainScore << ";" << testScore;
+
+    StringArray tokens;
+    tokens.addTokens(features.substring(1, features.length() - 1), T(","), NULL);
+    for (size_t i = 0; i < tokens.size(); ++i)
+      *o << ";" << tokens[i];
+    *o << "\n";
+
     delete o;
   }
   
-  void writeLog(String features)
+  void writeLog(String features) const
   {
     ScopedLock _(lock);
     OutputStream *o = logFile.createOutputStream();
     *o << features << "\"\n";
+    delete o;
+  }
+
+  void createFile(TypePtr type) const
+  {
+    ScopedLock _(lock);
+
+    OutputStream* o = outputFile.createOutputStream();
+    *o << "Train Score; Test Score";
+    for (size_t i = 0; i < type->getNumMemberVariables(); ++i)
+      *o << ";" << type->getMemberVariableName(i);
+    *o << "\n";
     delete o;
   }
 
@@ -567,6 +583,10 @@ public:
     ContainerPtr trainingData = Protein::loadProteinsFromDirectoryPair(context, File(), inputDirectory.getChildFile(T("train/")), 0, T("Loading training proteins"));
 
     NumericalCysteinPredictorParametersPtr parameters = new NumericalCysteinPredictorParameters(input.getObjectAndCast<NumericalCysteinFeaturesParameters>(context));
+    parameters->useAddBiasLearner = true;
+    parameters->useOracleD0 = true;
+    parameters->useOracleD1 = true;
+
     ProteinSequentialPredictorPtr predictor = new ProteinSequentialPredictor();
     for (size_t i = 0; i < numStacks; ++i)
     {
@@ -616,7 +636,8 @@ public:
     size_t populationSize = 40;
     size_t numBests = 10;
 
-    EDAResultFileWriterPtr fileWriter = new EDAResultFileWriter(context.getFile(T("out.txt")), context.getFile(T("log.txt")));
+    EDAResultFileWriterPtr fileWriter = new EDAResultFileWriter(context.getFile(T("O0-O1-D2-AddBias.eda")), context.getFile(T("log.txt")));
+    fileWriter->createFile(numericalCysteinFeaturesParametersClass);
 
     FunctionPtr f = new CysteinLearnerFunction(inputDirectory, fileWriter);
     SamplerPtr sampler = objectCompositeSampler(numericalCysteinFeaturesParametersClass, NumericalCysteinFeaturesParameters::createSamplers());
