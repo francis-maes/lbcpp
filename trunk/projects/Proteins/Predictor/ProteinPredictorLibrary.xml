@@ -150,6 +150,9 @@
   <class name="Lin09PredictorParameters" base="ProteinPredictorParameters" shortName="lin09">
     <variable type="Double" name="C"/>
     <variable type="Double" name="kernelGamma"/>
+    <variable type="Boolean" name="useLibSVM"/>
+    <variable type="Double" name="learningRate"/>
+    <variable type="PositiveInteger" name="numIterations"/>
   </class>
   <!-- END Article: Lin 2009 -->
 
