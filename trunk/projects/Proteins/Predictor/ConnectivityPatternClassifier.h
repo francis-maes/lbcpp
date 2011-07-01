@@ -79,10 +79,16 @@ public:
     
     double bestScore = DBL_MAX;
     double bestThreshold = 0.0;
+    double previousThreshold = thresholds.size() ? thresholds[0] - 1.0 : 0;
     // Find the best threshold the 0/1 Loss score
     for (size_t i = 0; i < thresholds.size(); ++i)
     {
-      context.enterScope(T("Threshold ") + String((int)i));
+      if (thresholds[i] - previousThreshold <= 1e-3)
+        continue;
+      else
+        previousThreshold = thresholds[i];
+
+      //context.enterScope(T("Threshold ") + String((int)i));
       SupervisedEvaluatorPtr evaluator = new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, thresholds[i], doubleType), thresholds[i]);
       ScoreObjectPtr scoreObject = evaluator->createEmptyScoreObject(context, FunctionPtr());
 
@@ -91,14 +97,14 @@ public:
 
       evaluator->finalizeScoreObject(scoreObject, FunctionPtr());
       double score = scoreObject->getScoreToMinimize();
-      context.resultCallback(T("threshold"), thresholds[i]);
-      context.resultCallback(T("score"), score);
+      //context.resultCallback(T("threshold"), thresholds[i]);
+      //context.resultCallback(T("score"), score);
       if (score < bestScore)
       {
         bestScore = score;
         bestThreshold = thresholds[i];
       }
-      context.leaveScope();
+      //context.leaveScope();
     }
 
     context.resultCallback(T("Best threshold"), bestThreshold);
