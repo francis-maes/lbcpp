@@ -48,6 +48,12 @@ public:
   bool useConnectivityPattern;
   bool useCartesianConnectivity;
   bool useConnectivityStats;
+  
+  bool useCysteinDistance; // like CysteinIndexDifference but not normalized (and hardDiscretize)
+  bool useCommonNeighbors;
+  bool useJaccardsCoef;
+  bool useAdomicAdar;
+  bool useAttachement;
 
   NumericalCysteinFeaturesParameters()
   : useProteinLength(false), useDiscretizeProteinLength(false)
@@ -57,6 +63,8 @@ public:
   , useExtendedD1Feature(false), d1WindowSize(0), useExtendedD2Feature(false)
   , useCysteinPositionDifference(true), useCysteinIndexDifference(true)
   , useConnectivityPattern(true), useCartesianConnectivity(true), useConnectivityStats(true)
+  , useCysteinDistance(true)
+  , useCommonNeighbors(true), useJaccardsCoef(true), useAdomicAdar(true), useAttachement(true)
   {}
   
   static std::vector<SamplerPtr> createSamplers()
@@ -93,6 +101,8 @@ public:
   
   virtual bool loadFromString(ExecutionContext& context, const String& str)
   {
+    if (str == T("Missing"))
+      return true;
     if (str.length() < 2 || str[0] != '(' || str[str.length() - 1] != ')')
     {
       context.errorCallback(T("Invalid syntax: ") + str.quoted());
@@ -408,13 +418,9 @@ public:
     size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType, enumValueType));
 
     /* Data */
-    size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinPerception, T("protein"));
-    size_t firstIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, firstPosition);
-    size_t secondIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, secondPosition);
-    
     size_t rf1 = builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, residueFeatures), firstPosition, proteinPerception, T("residueFeature[first]"));
     size_t rf2 = builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, residueFeatures), secondPosition, proteinPerception, T("residueFeature[second]"));
-
+    
     /* Output */
     builder.startSelection();
 
@@ -434,12 +440,6 @@ public:
       builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, cysteinResidueFeatures), firstPosition, proteinPerception, T("cysteinResidueFeatures[first]"));
       builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, cysteinResidueFeatures), secondPosition, proteinPerception, T("cysteinResidueFeatures[second]"));
 
-      // Lin09 features
-      if (fp->useCysteinPositionDifference)
-        builder.addFunction(new NormalizedCysteinPositionDifference(), protein, firstPosition, secondPosition, T("NCPD"));
-      if (fp->useCysteinIndexDifference)
-        builder.addFunction(new NormalizedCysteinIndexDifference(), protein, firstIndex, secondIndex, T("NCID"));
-
     size_t features = builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
     // Information from D0
     features = builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, includeD0), proteinPerception, features);
@@ -450,7 +450,35 @@ public:
   }
 
   void cysteinResiduePairFeatures(CompositeFunctionBuilder& builder) const
-    {jassertfalse;}
+  {
+    /* Inputs */
+    size_t firstPosition = builder.addInput(positiveIntegerType, T("firstPosition"));
+    size_t secondPosition = builder.addInput(positiveIntegerType, T("secondPosition"));
+    size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType, enumValueType));
+
+    /* Data */
+    size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinPerception, T("protein"));
+    size_t firstIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, firstPosition);
+    size_t secondIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, secondPosition);
+    
+    size_t cysDist = (size_t)-1;
+    if (fp->useCysteinDistance)
+      cysDist = builder.addFunction(new SubtractFunction(), secondIndex, firstIndex);
+  
+    builder.startSelection();
+    
+      // Lin09 features
+      if (fp->useCysteinPositionDifference)
+        builder.addFunction(new NormalizedCysteinPositionDifference(), protein, firstPosition, secondPosition, T("NCPD"));
+      if (fp->useCysteinIndexDifference)
+        builder.addFunction(new NormalizedCysteinIndexDifference(), protein, firstIndex, secondIndex, T("NCID"));
+    
+      if (fp->useCysteinDistance)
+        builder.addFunction(hardDiscretizedNumberFeatureGenerator(0.f, 26.f, 20, false), cysDist, T("|CYS2-CYS1|"));
+
+    
+    builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
+  }
   
   /*
    ************************ Multi Task Features ************************
@@ -729,6 +757,18 @@ public:
           builder.addFunction(new SymmetricMatrixRowStatisticsFeatureGenerator(), dsb, firstIndex, T("ConnectivityStats[first]"));
           builder.addFunction(new SymmetricMatrixRowStatisticsFeatureGenerator(), dsb, secondIndex, T("ConnectivityStats[second]"));
         }
+      
+        if (fp->useCommonNeighbors)
+          builder.addFunction(new NumCommonNeighborsFeatureGenerator(), dsb, firstIndex, secondIndex, T("NumCommonNeighbors"));
+      
+        if (fp->useJaccardsCoef)
+          builder.addFunction(new JaccardsCoefficientFeatureGenerator(), dsb, firstIndex, secondIndex, T("JaccardsCoef"));
+      
+        if (fp->useAdomicAdar)
+          builder.addFunction(new AdamicAdarFeatureGenerator(), dsb, firstIndex, secondIndex, T("AdamicAdarsCoef"));
+      
+        if (fp->useAttachement)
+          builder.addFunction(new PreferentialAttachementFeatureGenerator(), dsb, firstIndex, secondIndex, T("Attachement"));
       
       builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
     }

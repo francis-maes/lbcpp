@@ -1221,6 +1221,188 @@ public:
   }
 };
 
+class NumCommonNeighborsFeatureGenerator : public FeatureGenerator
+{
+public:
+  NumCommonNeighborsFeatureGenerator(size_t maxNeighbors = 25)
+    : maxNeighbors(maxNeighbors) {}
+  
+  virtual size_t getNumRequiredInputs() const
+    {return 3;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : (TypePtr)symmetricMatrixClass(probabilityType);}
+  
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration();
+    res->addElement(context, T("#commonNeigbors/") + String((int)maxNeighbors));
+    return res;
+  }
+  
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    SymmetricMatrixPtr matrix = inputs[0].getObjectAndCast<SymmetricMatrix>();
+    if (!matrix)
+      return;
+    const size_t firstIndex = inputs[1].getInteger();
+    const size_t secondIndex = inputs[2].getInteger();
+    const size_t dimension = matrix->getDimension();
+    
+    size_t numCommonNeighbors = 0;
+    for (size_t i = 0; i < dimension; i++)
+    {
+      if (i != firstIndex && i != secondIndex
+          && matrix->getElement(firstIndex, i).getDouble() > 0.5
+          && matrix->getElement(secondIndex, i).getDouble() > 0.5)
+        numCommonNeighbors++;
+    }
+    callback.sense(0, numCommonNeighbors / (double)maxNeighbors);
+  }
+protected:
+  size_t maxNeighbors;
+};
+// |L(x) ^ L(y)| / |L(x) v L(y)|
+class JaccardsCoefficientFeatureGenerator : public FeatureGenerator
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 3;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : (TypePtr)symmetricMatrixClass(probabilityType);}
+  
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration();
+    res->addElement(context, T("value"));
+    return res;
+  }
+  
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    SymmetricMatrixPtr matrix = inputs[0].getObjectAndCast<SymmetricMatrix>();
+    if (!matrix)
+      return;
+    const size_t firstIndex = inputs[1].getInteger();
+    const size_t secondIndex = inputs[2].getInteger();
+    const size_t dimension = matrix->getDimension();
+    
+    size_t numNeighbors = 0; // |L(x) v L(y)|
+    for (size_t i = 0; i < dimension; i++)
+    {
+      if (i != firstIndex && i != secondIndex
+          && (matrix->getElement(firstIndex, i).getDouble() > 0.5
+              || matrix->getElement(secondIndex, i).getDouble() > 0.5))
+        numNeighbors++;
+    }
+    
+    size_t numCommonNeighbors = 0; // |L(x) ^ L(y)|
+    for (size_t i = 0; i < dimension; i++)
+    {
+      if (i != firstIndex && i != secondIndex
+          && matrix->getElement(firstIndex, i).getDouble() > 0.5
+          && matrix->getElement(secondIndex, i).getDouble() > 0.5)
+        numCommonNeighbors++;
+    }
+    callback.sense(0, numCommonNeighbors / (double)numNeighbors);
+  }
+};
+
+class AdamicAdarFeatureGenerator : public FeatureGenerator
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 3;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : (TypePtr)symmetricMatrixClass(probabilityType);}
+  
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration();
+    res->addElement(context, T("value"));
+    return res;
+  }
+  
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    SymmetricMatrixPtr matrix = inputs[0].getObjectAndCast<SymmetricMatrix>();
+    if (!matrix)
+      return;
+    const size_t firstIndex = inputs[1].getInteger();
+    const size_t secondIndex = inputs[2].getInteger();
+    const size_t dimension = matrix->getDimension();
+
+    double sum = 0.0;
+    for (size_t i = 0; i < dimension; i++)
+    {
+      if (i != firstIndex && i != secondIndex
+          && matrix->getElement(firstIndex, i).getDouble() > 0.5
+          && matrix->getElement(secondIndex, i).getDouble() > 0.5)
+      {
+        const size_t numNeighbors = getNumNeighbors(matrix, dimension, i);
+        jassert(numNeighbors >= 2);
+        sum += 1 / log2(numNeighbors); // log2 ou log10 ? Boh, It's not specified
+      }
+    }
+    callback.sense(0, sum);
+  }
+  
+protected:
+  size_t getNumNeighbors(const SymmetricMatrixPtr& matrix, const size_t dimension, const size_t index) const
+  {
+    size_t res = 0;
+    for (size_t i = 0; i < dimension; ++i)
+      if (i != index && matrix->getElement(index, i).getDouble() > 0.5)
+        ++res;
+    return res;
+  }
+};
+
+class PreferentialAttachementFeatureGenerator : public FeatureGenerator
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 3;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : (TypePtr)symmetricMatrixClass(probabilityType);}
+  
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration();
+    res->addElement(context, T("value"));
+    return res;
+  }
+  
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    SymmetricMatrixPtr matrix = inputs[0].getObjectAndCast<SymmetricMatrix>();
+    if (!matrix)
+      return;
+    const size_t firstIndex = inputs[1].getInteger();
+    const size_t secondIndex = inputs[2].getInteger();
+    const size_t dimension = matrix->getDimension();
+
+    size_t attachement = getNumNeighbors(matrix, dimension, firstIndex)
+                       * getNumNeighbors(matrix, dimension, secondIndex);
+    callback.sense(0, attachement / (double)(dimension * dimension - 2));
+  }
+
+protected:
+  size_t maxValue;
+
+  size_t getNumNeighbors(const SymmetricMatrixPtr& matrix, const size_t dimension, const size_t index) const
+  {
+    size_t res = 0;
+    for (size_t i = 0; i < dimension; ++i)
+      if (i != index && matrix->getElement(index, i).getDouble() > 0.5)
+        ++res;
+    return res;
+  }
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEIN_PERCEPTION_H_
