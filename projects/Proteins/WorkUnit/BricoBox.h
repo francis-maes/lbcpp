@@ -518,7 +518,7 @@ public:
 
     StringArray tokens;
     tokens.addTokens(features.substring(1, features.length() - 1), T(","), NULL);
-    for (size_t i = 0; i < tokens.size(); ++i)
+    for (size_t i = 0; i < (size_t)tokens.size(); ++i)
       *o << ";" << tokens[i];
     *o << "\n";
 

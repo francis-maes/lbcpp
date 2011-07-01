@@ -105,9 +105,13 @@
     <variable type="PositiveInteger" name="separationProfilSize"/>
 
     <variable type="Boolean" name="useIntervalHistogram"/>
+    
+    <varaible type="Boolean" name="useAADistance"/> <!-- useless for EDA -->
 
     <variable type="PositiveInteger" name="pairWindowSize"/>
     <variable type="PositiveInteger" name="normalizedWindowSize"/>
+    
+    <variable type="Boolean" name="useExtendedD1Feature"/> <!-- useless for EDA -->
 
     <variable type="PositiveInteger" name="d1WindowSize"/>
     <variable type="Boolean" name="useExtendedD2Feature"/>
@@ -117,6 +121,12 @@
     <variable type="Boolean" name="useConnectivityPattern"/>
     <variable type="Boolean" name="useCartesianConnectivity"/>
     <variable type="Boolean" name="useConnectivityStats"/>
+    
+    <variable type="Boolean" name="useCysteinDistance"/>
+    <variable type="Boolean" name="useCommonNeighbors"/>
+    <variable type="Boolean" name="useJaccardsCoef"/>
+    <variable type="Boolean" name="useAdomicAdar"/>
+    <variable type="Boolean" name="useAttachement"/>
   </class>
   
   <class name="NumericalCysteinPredictorParameters" base="ProteinPredictorParameters" shortName="numericalCystein">
