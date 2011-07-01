@@ -467,6 +467,8 @@ public:
   
     builder.startSelection();
     
+      builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 0, 0.0));
+    
       // Lin09 features
       if (fp->useCysteinPositionDifference)
         builder.addFunction(new NormalizedCysteinPositionDifference(), protein, firstPosition, secondPosition, T("NCPD"));
