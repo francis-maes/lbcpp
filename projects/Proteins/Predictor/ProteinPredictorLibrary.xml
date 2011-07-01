@@ -106,7 +106,7 @@
 
     <variable type="Boolean" name="useIntervalHistogram"/>
     
-    <varaible type="Boolean" name="useAADistance"/> <!-- useless for EDA -->
+    <variable type="Boolean" name="useAADistance"/> <!-- useless for EDA -->
 
     <variable type="PositiveInteger" name="pairWindowSize"/>
     <variable type="PositiveInteger" name="normalizedWindowSize"/>
