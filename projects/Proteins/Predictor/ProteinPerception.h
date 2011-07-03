@@ -1305,7 +1305,8 @@ public:
           && matrix->getElement(secondIndex, i).getDouble() > 0.5)
         numCommonNeighbors++;
     }
-    callback.sense(0, numCommonNeighbors / (double)numNeighbors);
+    if (numNeighbors)
+      callback.sense(0, numCommonNeighbors / (double)numNeighbors);
   }
 };
 

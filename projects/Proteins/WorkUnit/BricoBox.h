@@ -578,7 +578,7 @@ public:
   
     fileWriter->writeLog(input.toString());
     
-    size_t numStacks = 5;
+    size_t numStacks = 3;
 
     ContainerPtr trainingData = Protein::loadProteinsFromDirectoryPair(context, File(), inputDirectory.getChildFile(T("train/")), 0, T("Loading training proteins"));
 
@@ -588,16 +588,17 @@ public:
     parameters->useOracleD1 = true;
 
     ProteinSequentialPredictorPtr predictor = new ProteinSequentialPredictor();
+
+    ProteinPredictorPtr stack = new ProteinPredictor(parameters);
+    stack->addTarget(cbpTarget);
+    predictor->addPredictor(stack);
+      
+    stack = new ProteinPredictor(parameters);
+    stack->addTarget(cbsTarget);
+    predictor->addPredictor(stack);
+
     for (size_t i = 0; i < numStacks; ++i)
     {
-      ProteinPredictorPtr stack = new ProteinPredictor(parameters);
-      stack->addTarget(cbpTarget);
-      predictor->addPredictor(stack);
-      
-      stack = new ProteinPredictor(parameters);
-      stack->addTarget(cbsTarget);
-      predictor->addPredictor(stack);
-      
       stack = new ProteinPredictor(parameters);
       stack->addTarget(dsbTarget);
       predictor->addPredictor(stack);
@@ -636,14 +637,15 @@ public:
     size_t populationSize = 40;
     size_t numBests = 10;
 
-    EDAResultFileWriterPtr fileWriter = new EDAResultFileWriter(context.getFile(T("O0-O1-D2-AddBias.eda")), context.getFile(T("log.txt")));
+    EDAResultFileWriterPtr fileWriter = new EDAResultFileWriter(context.getFile(T("O0-O1-D2-NodeNeighbors.eda")), context.getFile(T("log.txt")));
     fileWriter->createFile(numericalCysteinFeaturesParametersClass);
 
     FunctionPtr f = new CysteinLearnerFunction(inputDirectory, fileWriter);
     SamplerPtr sampler = objectCompositeSampler(numericalCysteinFeaturesParametersClass, NumericalCysteinFeaturesParameters::createSamplers());
 
     OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0);
-    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 10);
+//    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 10);
+    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, f, T("edaDisulfideBonds"), T("jbecker@monster24"), T("jbecker@nic3"), T("localhost"), 1664, 1, 4, 10, 300000);
     OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler);
     
     return optimizer->compute(context, optimizerContext, optimizerState);
