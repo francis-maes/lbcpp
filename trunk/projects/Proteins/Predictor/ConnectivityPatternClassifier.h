@@ -80,6 +80,7 @@ public:
     double bestScore = DBL_MAX;
     double bestThreshold = 0.0;
     double previousThreshold = thresholds.size() ? thresholds[0] - 1.0 : 0;
+    size_t numTestedThresholds = 0;
     // Find the best threshold the 0/1 Loss score
     for (size_t i = 0; i < thresholds.size(); ++i)
     {
@@ -87,7 +88,7 @@ public:
         continue;
       else
         previousThreshold = thresholds[i];
-
+      ++numTestedThresholds;
       //context.enterScope(T("Threshold ") + String((int)i));
       SupervisedEvaluatorPtr evaluator = new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, thresholds[i], doubleType), thresholds[i]);
       ScoreObjectPtr scoreObject = evaluator->createEmptyScoreObject(context, FunctionPtr());
@@ -109,6 +110,7 @@ public:
 
     context.resultCallback(T("Best threshold"), bestThreshold);
     context.resultCallback(T("Best threshold score"), bestScore);
+    context.resultCallback(T("Num. tested thresholds"), numTestedThresholds);
     function->setBias(-bestThreshold);
     return true;
   }

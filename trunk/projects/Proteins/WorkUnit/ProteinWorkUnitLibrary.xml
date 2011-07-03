@@ -118,7 +118,7 @@
   </class>
 
   <class name="EDACysteinProteinLearner" base="WorkUnit">
-    <variable type="File" name="inputDirectory"/>
+    <variable type="LocalFile" name="inputDirectory"/>
   </class>
 
 </library>
