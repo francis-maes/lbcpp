@@ -647,7 +647,7 @@ public:
     size_t populationSize = 40;
     size_t numBests = 10;
 
-    EDAResultFileWriterPtr fileWriter = new EDAResultFileWriter(context.getFile(T("O0-O1-D2-NodeNeighbors.eda")), context.getFile(T("log.txt")));
+    EDAResultFileWriterPtr fileWriter = new EDAResultFileWriter(context.getFile(T("O0-O1-D2-WindowSizes-500Iterations.eda")), context.getFile(T("log.txt")));
     fileWriter->createFile(numericalCysteinFeaturesParametersClass);
 
     FunctionPtr f = new CysteinLearnerFunction(inputDirectory, fileWriter);
