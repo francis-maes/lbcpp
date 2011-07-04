@@ -58,13 +58,13 @@ public:
   NumericalCysteinFeaturesParameters()
   : useProteinLength(false), useDiscretizeProteinLength(false)
   , residueWindowSize(20), localHistogramSize(60), separationProfilSize(15)
-  , useSymmetricFeature(false), useIntervalHistogram(true), useAADistance(true)
+  , useSymmetricFeature(false), useIntervalHistogram(false), useAADistance(true)
   , pairWindowSize(21), normalizedWindowSize(21)
-  , useExtendedD1Feature(false), d1WindowSize(0), useExtendedD2Feature(false)
-  , useCysteinPositionDifference(true), useCysteinIndexDifference(true)
-  , useConnectivityPattern(true), useCartesianConnectivity(true), useConnectivityStats(true)
+  , useExtendedD1Feature(false), d1WindowSize(0), useExtendedD2Feature(true)
+  , useCysteinPositionDifference(false), useCysteinIndexDifference(true)
+  , useConnectivityPattern(true), useCartesianConnectivity(false), useConnectivityStats(true)
   , useCysteinDistance(true)
-  , useCommonNeighbors(true), useJaccardsCoef(true), useAdomicAdar(true), useAttachement(true)
+  , useCommonNeighbors(true), useJaccardsCoef(true), useAdomicAdar(false), useAttachement(false)
   {}
   
   static std::vector<SamplerPtr> createSamplers()
@@ -174,7 +174,7 @@ public:
     //, d1WindowSize(0)
     //, useExtendedD2Feature(false)
 
-    , learningParameters(new StochasticGDParameters(constantIterationFunction(1), /*maxIterationsWithoutImprovementStoppingCriterion(20)*/ StoppingCriterionPtr(), 150))
+    , learningParameters(new StochasticGDParameters(constantIterationFunction(1), /*maxIterationsWithoutImprovementStoppingCriterion(20)*/ StoppingCriterionPtr(), 500))
     {}
   
   /*
