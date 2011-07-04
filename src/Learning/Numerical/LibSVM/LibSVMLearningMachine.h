@@ -21,7 +21,7 @@ extern ClassPtr libSVMLearningMachineClass;
 class LibSVMLearningMachine : public Function
 {
 public:
-  LibSVMLearningMachine(double C = 0.1, size_t kernelType = 0, size_t kernelDegree = 1, double kernelGamma = 0.1, double kernelCoef0 = 0.0)
+  LibSVMLearningMachine(double C = 0.1, LibSVMKernelType kernelType = linearKernel, size_t kernelDegree = 1, double kernelGamma = 0.1, double kernelCoef0 = 0.0)
       : C(C), kernelType(kernelType), kernelDegree(kernelDegree), kernelGamma(kernelGamma), kernelCoef0(kernelCoef0), model(NULL), problem(NULL)
   {
     setBatchLearner(libSVMBatchLearner());

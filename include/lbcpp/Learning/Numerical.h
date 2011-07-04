@@ -183,8 +183,16 @@ extern FunctionPtr linearLearningMachine(LearnerParametersPtr parameters);
 extern bool convertSupervisionVariableToBoolean(const Variable& supervision, bool& result);
 
 // libsvm
-extern FunctionPtr libSVMClassifier(double C = 0.1, size_t kernelType = 0, size_t kernelDegree = 1, double kernelGamma = 0.1, double kernelCoef0 = 0.0);
-extern FunctionPtr libSVMBinaryClassifier(double C = 0.1, size_t kernelType = 0, size_t kernelDegree = 1, double kernelGamma = 0.1, double kernelCoef0 = 0.0);
+enum LibSVMKernelType
+{
+  linearKernel = 0,
+  polynomialKernal,
+  rbfKernel,
+  sigmoidKernel
+};
+  
+extern FunctionPtr libSVMClassifier(double C = 0.1, LibSVMKernelType kernelType = linearKernel, size_t kernelDegree = 1, double kernelGamma = 0.1, double kernelCoef0 = 0.0);
+extern FunctionPtr libSVMBinaryClassifier(double C = 0.1, LibSVMKernelType kernelType = linearKernel, size_t kernelDegree = 1, double kernelGamma = 0.1, double kernelCoef0 = 0.0);
 extern BatchLearnerPtr libSVMBatchLearner();
 
 }; /* namespace lbcpp */

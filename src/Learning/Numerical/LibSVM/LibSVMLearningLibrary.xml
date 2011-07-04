@@ -22,11 +22,11 @@
   </class>
 
   <class name="LibSVMClassifier" base="LibSVMLearningMachine">
-    <constructor arguments="double C, size_t kernelType, size_t kernelDegree, double kernelGamma, double kernelCoef0" returnType="Function"/>
+    <constructor arguments="double C, LibSVMKernelType kernelType, size_t kernelDegree, double kernelGamma, double kernelCoef0" returnType="Function"/>
   </class>
 
   <class name="LibSVMBinaryClassifier" base="LibSVMClassifier">
-    <constructor arguments="double C, size_t kernelType, size_t kernelDegree, double kernelGamma, double kernelCoef0" returnType="Function"/>
+    <constructor arguments="double C, LibSVMKernelType kernelType, size_t kernelDegree, double kernelGamma, double kernelCoef0" returnType="Function"/>
   </class>
 
 </library>
