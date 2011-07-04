@@ -148,10 +148,9 @@ public:
   // Learning Machine
   virtual FunctionPtr createTargetPredictor(ProteinTarget target) const
   {
-    if (target == dsbTarget)
+    if (target == dsbTarget && !useLibSVM)
       return new ConnectivityPatternClassifier(new StochasticGDParameters(constantIterationFunction(learningRate), StoppingCriterionPtr(), numIterations));
-    jassertfalse;
-    return FunctionPtr();
+    ProteinPredictorParameters::createTargetPredictor(target);
   }
 
   virtual FunctionPtr learningMachine(ProteinTarget target) const
