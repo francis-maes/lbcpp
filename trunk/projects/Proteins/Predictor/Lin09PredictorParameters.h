@@ -161,7 +161,7 @@ public:
     case dsbTarget:
       {
         if (useLibSVM)
-          return libSVMBinaryClassifier(pow(2.0, C), 2, 0, pow(2.0, kernelGamma), 0.0);
+          return libSVMBinaryClassifier(pow(2.0, C), rbfKernel, 0, pow(2.0, kernelGamma), 0.0);
       }
     default:
       {

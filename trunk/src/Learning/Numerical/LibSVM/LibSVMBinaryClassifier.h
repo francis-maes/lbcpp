@@ -17,7 +17,7 @@ namespace lbcpp
 class LibSVMBinaryClassifier : public LibSVMClassifier
 {
 public:
-  LibSVMBinaryClassifier(double C, size_t kernelType, size_t kernelDegree, double kernelGamma, double kernelCoef0)
+  LibSVMBinaryClassifier(double C, LibSVMKernelType kernelType, size_t kernelDegree, double kernelGamma, double kernelCoef0)
     : LibSVMClassifier(C, kernelType, kernelDegree, kernelGamma, kernelCoef0) {}
   LibSVMBinaryClassifier() {}
   

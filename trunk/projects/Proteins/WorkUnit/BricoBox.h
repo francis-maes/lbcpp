@@ -581,6 +581,11 @@ public:
     size_t numStacks = 3;
 
     ContainerPtr trainingData = Protein::loadProteinsFromDirectoryPair(context, File(), inputDirectory.getChildFile(T("train/")), 0, T("Loading training proteins"));
+    if (!trainingData || !trainingData->getNumElements())
+    {
+      context.errorCallback(T("No training proteins !"));
+      return false;
+    }
 
     NumericalCysteinPredictorParametersPtr parameters = new NumericalCysteinPredictorParameters(input.getObjectAndCast<NumericalCysteinFeaturesParameters>(context));
     parameters->useAddBiasLearner = true;
@@ -611,7 +616,12 @@ public:
     CompositeScoreObjectPtr trainScores = predictor->evaluate(context, trainingData, trainEvaluator, T("Evaluate on training proteins"));
     
     ContainerPtr testingData = Protein::loadProteinsFromDirectoryPair(context, File(), inputDirectory.getChildFile(T("test/")), 0, T("Loading testing proteins"));
-
+    if (!testingData || !testingData->getNumElements())
+    {
+      context.warningCallback(T("No testing proteins ! Training score is returned !"));
+      return trainEvaluator->getScoreObjectOfTarget(trainScores, dsbTarget)->getScoreToMinimize();
+    }
+    
     ProteinEvaluatorPtr testEvaluator = new ProteinEvaluator();
     CompositeScoreObjectPtr testScores = predictor->evaluate(context, testingData, testEvaluator, T("Evaluate on test proteins"));
 
