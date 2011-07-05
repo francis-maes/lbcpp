@@ -27,11 +27,16 @@
     <variable type="PositiveInteger" name="epoch"/>
   </class>
   
-  <class name="StochasticGDOnlineLearner" base="GradientDescentOnlineLearner">
+  <class name="StochasticGDOnlineLearner" base="GradientDescentOnlineLearner" shortName="sgd">
     <constructor arguments="FunctionPtr lossFunction, IterationFunctionPtr learningRate, bool normalizeLearningRate" returnType="OnlineLearner"/>
   </class>
 
-  <class name="PerEpisodeGDOnlineLearner" base="GradientDescentOnlineLearner">
+  <class name="AutoStochasticGDOnlineLearner" base="StochasticGDOnlineLearner" shortName="autoSgd">
+    <constructor arguments="FunctionPtr lossFunction, size_t memorySize" returnType="OnlineLearner"/>
+    <variable type="PositiveInteger" name="memorySize"/>
+  </class>
+  
+  <class name="PerEpisodeGDOnlineLearner" base="GradientDescentOnlineLearner" shortName="perEpisode">
     <constructor arguments="FunctionPtr lossFunction, IterationFunctionPtr learningRate, bool normalizeLearningRate" returnType="OnlineLearner"/>
   </class>
   

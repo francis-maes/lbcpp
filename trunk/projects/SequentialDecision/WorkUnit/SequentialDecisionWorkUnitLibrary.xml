@@ -98,4 +98,11 @@
 
   <class name="BBOptimizationSandBox" base="WorkUnit"/>
 
+  <!-- Auto SGD -->
+  <class name="AutoSGDSandBox" base="WorkUnit">
+    <variable type="File" name="learningData"/>
+    <variable type="PositiveInteger" name="maxCount"/>
+    <variable type="PositiveInteger" name="numFolds"/>
+  </class>
+
 </library>

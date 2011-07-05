@@ -108,7 +108,8 @@ TextParser::~TextParser()
 
 ProgressionStatePtr TextParser::getCurrentPosition() const
 {
-  const_cast<TextParser* >(this)->progression->setValue(istr ? (double)(istr->getPosition() / 1024) : progression->getTotal());
+  if (progression)
+    const_cast<TextParser* >(this)->progression->setValue(istr ? (double)(istr->getPosition() / 1024) : progression->getTotal());
   return progression;
 }
 

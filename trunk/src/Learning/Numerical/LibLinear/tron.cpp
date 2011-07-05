@@ -1,3 +1,6 @@
+#include "precompiled.h"
+#pragma warning(disable:4996)
+
 #include <math.h>
 #include <stdio.h>
 #include <string.h>

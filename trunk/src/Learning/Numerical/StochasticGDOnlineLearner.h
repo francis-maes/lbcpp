@@ -29,6 +29,26 @@ public:
   }
 };
 
+
+class AutoStochasticGDOnlineLearner : public StochasticGDOnlineLearner
+{
+public:
+  AutoStochasticGDOnlineLearner(const FunctionPtr& lossFunction, size_t memorySize)
+    : StochasticGDOnlineLearner(lossFunction, IterationFunctionPtr(), true), memorySize(memorySize) {}
+  AutoStochasticGDOnlineLearner() : memorySize(0) {}
+
+  virtual double computeLearningRate() const
+  {
+    double res = StochasticGDOnlineLearner::computeLearningRate();
+    double alpha = 1.0; // FIXME
+    return res * alpha;
+  }
+
+private:
+  friend class AutoStochasticGDOnlineLearnerClass;
+  size_t memorySize;
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_LEARNING_NUMERICAL_STOCHASTIC_GD_ONLINE_LEARNER_H_

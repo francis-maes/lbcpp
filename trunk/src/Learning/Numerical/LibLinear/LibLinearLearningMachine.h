@@ -133,7 +133,7 @@ public:
     for (unsigned i = 0; i < data.size(); ++i)
     {
       problem->x[i] = machine->getInput(data[i]);
-      problem->y[i] = machine->getSupervision(data[i]);
+      problem->y[i] = (int)machine->getSupervision(data[i]);
     }
     return problem;
   }
