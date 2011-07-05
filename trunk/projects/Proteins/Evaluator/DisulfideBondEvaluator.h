@@ -176,7 +176,7 @@ public:
     
     //std::cout << "Starting matrix:" << std::endl << matrix->toString() << std::endl;
     SymmetricMatrixPtr mask;
-    double score = findBestMatrixScore(context, matrix, mask);
+    findBestMatrixScore(context, matrix, mask);
     //std::cout << "Score: " << score << std::endl;
     SymmetricMatrixPtr res = makeResult(context, matrix, mask);
     //std::cout << "Pattern: " << std::endl << mask->toString() << std::endl;

@@ -52,6 +52,7 @@ GENERATE_INTROSPECTION_CODE(Learning/OnlineLearner/OnlineLearnerLibrary.xml Onli
 GENERATE_INTROSPECTION_CODE(Learning/BatchLearner/BatchLearnerLibrary.xml BatchLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/Numerical/NumericalLearningLibrary.xml NumericalLearningLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/Numerical/LibSVM/LibSVMLearningLibrary.xml LibSVMLearningLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Learning/Numerical/LibLinear/LibLinearLearningLibrary.xml LibLinearLearningLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/DecisionTree/DecisionTreeLibrary.xml DecisionTreeLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/DecisionTree/Data/DecisionTreeDataLibrary.xml DecisionTreeDataLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/LossFunction/LearningLossFunctionLibrary.xml LearningLossFunctionLibrary.cpp)
@@ -582,6 +583,18 @@ SET(LBCPP_LEARNING_NUMERICAL_LIBSVM_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/LibSVMLearningLibrary.cpp
 )
 
+SET(LBCPP_LEARNING_NUMERICAL_LIBLINEAR_SOURCES
+  Learning/Numerical/LibLinear/linear.h
+  Learning/Numerical/LibLinear/linear.cpp
+  Learning/Numerical/LibLinear/tron.h
+  Learning/Numerical/LibLinear/tron.cpp
+  Learning/Numerical/LibLinear/LibLinearLearningMachine.h
+  Learning/Numerical/LibLinear/LibLinearClassifier.h
+  Learning/Numerical/LibLinear/LibLinearBinaryClassifier.h
+  Learning/Numerical/LibLinear/LibLinearLearningLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/LibLinearLearningLibrary.cpp
+)
+
 SET(LBCPP_LEARNING_DECISION_TREE_SOURCES
   Learning/DecisionTree/DecisionTree.cpp
   Learning/DecisionTree/RTreeFunction.h
@@ -861,6 +874,7 @@ SET(LBCPP_SOURCES
       ${LBCPP_LEARNING_NUMERICAL_ONLINE_SOURCES}
       ${LBCPP_LEARNING_NUMERICAL_BATCH_SOURCES}
       ${LBCPP_LEARNING_NUMERICAL_LIBSVM_SOURCES}
+      ${LBCPP_LEARNING_NUMERICAL_LIBLINEAR_SOURCES}
     
     ${LBCPP_LEARNING_DECISION_TREE_SOURCES}
       ${LBCPP_LEARNING_DECISION_TREE_DATA_SOURCES}
@@ -951,6 +965,7 @@ SOURCE_SUB_GROUP2(Learning Numerical LearnableFunction FILES ${LBCPP_LEARNING_NU
 SOURCE_SUB_GROUP2(Learning Numerical OnlineLearner FILES ${LBCPP_LEARNING_NUMERICAL_ONLINE_SOURCES})
 SOURCE_SUB_GROUP2(Learning Numerical BatchLearner FILES ${LBCPP_LEARNING_NUMERICAL_BATCH_SOURCES})
 SOURCE_SUB_GROUP2(Learning Numerical LibSVM FILES ${LBCPP_LEARNING_NUMERICAL_LIBSVM_SOURCES})
+SOURCE_SUB_GROUP2(Learning Numerical LibLinear FILES ${LBCPP_LEARNING_NUMERICAL_LIBLINEAR_SOURCES})
 SOURCE_SUB_GROUP(Learning DecisionTree FILES ${LBCPP_LEARNING_DECISION_TREE_SOURCES})
 SOURCE_SUB_GROUP2(Learning DecisionTree Data FILES ${LBCPP_LEARNING_DECISION_TREE_DATA_SOURCES})
 

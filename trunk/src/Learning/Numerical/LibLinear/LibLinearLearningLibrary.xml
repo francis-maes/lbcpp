@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="LibLinearLearning" directory="Learning/Numerical/LibLinear">
+
+  <enumeration name="LibLinearSolverType">
+    <value name="l2RegularizedLogisticRegression"/>
+    <value name="l2RegularizedL2LossDual"/>
+    <value name="l2RegularizedL2Loss"/>
+    <value name="l2RegularizedL1LossDual"/>
+    <value name="multiclass"/>
+    <value name="l1RegularizedL2Loss"/>
+    <value name="l1RegularizedLogisticRegression"/>
+    <value name="l2RegularizedLogisticRegressionDual"/>
+  </enumeration>
+
+  <class name="LibLinearLearningMachine" base="Function" abstract="yes">
+    <variable type="Double" name="C"/>
+    <variable type="LibLinearSolverType" name="solverType"/>
+  </class>
+  
+  <class name="LibLinearBatchLearner" base="BatchLearner">
+    <constructor/>
+  </class>
+  
+  <class name="LibLinearClassifier" base="LibLinearLearningMachine">
+    <constructor arguments="double C" returnType="Function"/>
+  </class>
+  
+  <class name="LibLinearBinaryClassifier" base="LibLinearClassifier">
+    <constructor arguments="double C, LibLinearClassificationType solverType" returnType="Function"/>
+  </class>
+
+</library>
