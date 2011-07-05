@@ -165,7 +165,7 @@ protected:
     gradient->addWeightedTo(parameters, 0, -computeLearningRate() * weight);
   }
 
-  void computeAndAddGradient(const Variable* inputs, const Variable& prediction, DoubleVectorPtr& target, double weight)
+  void computeAndAddGradient(const Variable* inputs, const Variable& prediction, DoubleVectorPtr& target, double weight, double* lossValueResult = NULL)
   {
     if (failure || !inputs[1].exists())
       return; // failed or no supervision
@@ -183,6 +183,9 @@ protected:
       target = function->createParameters();
     function->addGradient(lossGradient, inputs, target, weight);
     ++epoch;
+
+    if (lossValueResult)
+      *lossValueResult = exampleLossValue;
     lossValue.push(exampleLossValue);
   }
 

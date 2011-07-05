@@ -33,11 +33,12 @@ class ScalarVariableRecentSparseStatistics : public Object
 {
 public:
   ScalarVariableRecentSparseStatistics(size_t memorySize)
-    : memorySize(memorySize), sum(0.0) {}
+    : memorySize(memorySize), sum(0.0), sumOfSquares(0.0) {}
 
   void push(size_t currentEpoch, double value)
   {
     sum += value;
+    sumOfSquares += value * value;
     observations.push_back(std::make_pair(currentEpoch, value));
     removeTooOldValues(currentEpoch);
   }
@@ -49,7 +50,9 @@ public:
     size_t timeLimit = currentEpoch - memorySize;
     while (observations.size() && observations.front().first <= timeLimit)
     {
-      sum -= observations.front().second;
+      double x = observations.front().second;
+      sum -= x;
+      sumOfSquares -= x * x;
       observations.pop_front();
     }
   }
@@ -60,17 +63,25 @@ public:
   double getMean() const
     {return observations.size() ? sum / observations.size() : 0.0;}
 
+  double getVariance() const
+  {
+    size_t n = observations.size();
+    double mean = getMean();
+    return n ? (sumOfSquares / n - mean * mean) : 0.0;
+  }
+
 private:
   size_t memorySize;
   std::deque< std::pair<size_t, double> > observations; // epoch reward
   double sum;
+  double sumOfSquares;
 };
 
 class AutoStochasticGDOnlineLearner : public GradientDescentOnlineLearner
 {
 public:
-  AutoStochasticGDOnlineLearner(const FunctionPtr& lossFunction, size_t memorySize)
-    : GradientDescentOnlineLearner(lossFunction, IterationFunctionPtr(), true), memorySize(memorySize)
+  AutoStochasticGDOnlineLearner(const FunctionPtr& lossFunction, size_t episodeLength, size_t memorySize)
+    : GradientDescentOnlineLearner(lossFunction, IterationFunctionPtr(), true), episodeLength(episodeLength), memorySize(memorySize), currentBandit(0)
   {
     bandits.resize(maxPower - minPower + 1, ScalarVariableRecentSparseStatistics(memorySize));
   }
@@ -88,53 +99,21 @@ public:
   {
     DoubleVectorPtr target = function->getParameters();
 
-    size_t bandit = selectBandit();
-    double p = (double)(minPower + (int)bandit);
-    double alpha = pow((double)powerBase, p);
-    logAlphaMean.push(p);
+    if (epoch % episodeLength == 0)
+    {
+      if (epoch > 0)
+        finishBanditEpisode(target);
+      startBanditEpisode(target);
+    }
 
     double loss;
-    computeAndAddGradient(inputs, output, target, -computeLearningRate() * alpha, loss); // computeLearningRate() returns the normalization constant
-    double reward = loss > 100 ? 0.0 : exp(-loss);
-    receiveReward(bandit, reward);
+    computeAndAddGradient(inputs, output, target, -computeLearningRate() * currentAlpha, &loss); // computeLearningRate() returns the normalization constant
+    currentLoss.push(loss);
 
     //if (epoch % 100 == 0)
      // clampParametersL2Norm(target);
 
     function->setParameters(target);
-  }
-  
-  void computeAndAddGradient(const Variable* inputs, const Variable& prediction, DoubleVectorPtr& target, double weight, double& exampleLossValue)
-  {
-    if (failure || !inputs[1].exists())
-      return; // failed or no supervision
-
-    exampleLossValue = 0.0;
-
-    Variable lossDerivativeOrGradient;
-    if (!function->computeLoss(lossFunction, inputs, prediction, exampleLossValue, lossDerivativeOrGradient))
-    {
-      context->errorCallback(T("Learning failed: could not compute loss gradient"));
-      failure = true;
-      return;
-    }
-    if (!target)
-      target = function->createParameters();
-
-    ++epoch;
-
-    const DenseDoubleVectorPtr& lossGradient = lossDerivativeOrGradient.getObjectAndCast<DenseDoubleVector>();
-    jassert(lossGradient);
-    if (lossGradient->l2norm() * fabs(weight) > 10)
-    {
-      exampleLossValue = 100.0; // skip moves bigger than 10
-      lossValue.push(100.0);
-    }
-    else
-    {
-      function->addGradient(lossGradient, inputs, target, weight);
-      lossValue.push(exampleLossValue);
-    }
   }
 
   void clampParametersL2Norm(const DoubleVectorPtr& parameters, double maxL2Norm = 1.0)
@@ -147,22 +126,53 @@ public:
   virtual bool finishLearningIteration(size_t iteration, double& objectiveValueToMinimize)
   {
     bool res = GradientDescentOnlineLearner::finishLearningIteration(iteration, objectiveValueToMinimize);
-    context->resultCallback(T("log") + String(powerBase) + T("(alpha)"), logAlphaMean.getMean());
+    //context->resultCallback(T("log") + String(powerBase) + T("(alpha)"), logAlphaMean.getMean());
     return res;
   }
 
 private:
   friend class AutoStochasticGDOnlineLearnerClass;
+  size_t episodeLength;
   size_t memorySize;
 
   std::vector<ScalarVariableRecentSparseStatistics> bandits;
   ScalarVariableMean logAlphaMean;
 
+  size_t currentBandit;
+  double currentAlpha;
+  double previousLoss;
+  DoubleVectorPtr parametersBackup;
+  ScalarVariableMean currentLoss;
+
+  void startBanditEpisode(const DoubleVectorPtr& parameters)
+  {
+    currentBandit = selectBandit();
+    double p = (double)(minPower + (int)currentBandit);
+    context->informationCallback(T("LogAlpha = ") + String(p) + T(", Mean Reward of this bandit: ") + String(bandits[currentBandit].getMean()));
+    currentAlpha = pow((double)powerBase, p);
+    parametersBackup = parameters ? parameters->cloneAndCast<DoubleVector>() : DoubleVectorPtr();
+    previousLoss = currentLoss.getCount() ? currentLoss.getMean() : DBL_MAX;
+    currentLoss.clear();
+  }
+
+  void finishBanditEpisode(DoubleVectorPtr& parameters)
+  {
+    double meanLoss = currentLoss.getMean();
+    receiveReward(currentBandit, exp(-meanLoss));
+    if (meanLoss > 5 * previousLoss)
+    {
+      context->informationCallback(T("Restore previous parameters. Old loss: ") + String(previousLoss) + T(" New loss: ") + String(meanLoss));
+      parameters = parametersBackup; // restore previous parameters
+    }
+    else
+      logAlphaMean.push(log10(currentAlpha)); // keep
+  }
+
   size_t selectBandit()
   {
     double bestScore = -DBL_MAX;
     size_t bestBandit = 0;
-    String info;
+  //  String info;
     for (size_t i = 0; i < bandits.size(); ++i)
     {
       ScalarVariableRecentSparseStatistics& stats = bandits[i];
@@ -172,16 +182,22 @@ private:
         return i;
 
       double rk = stats.getMean();
-      info += Variable(rk).toShortString() + T(" [") + String((int)tk) + T("], ");
+     // info += Variable(rk).toShortString() + T(" [") + String((int)tk) + T("], ");
 
-      double score = rk + 1.0 / tk;
+      // UCB1-Tuned
+      double lnn = log((double)((!memorySize || epoch < memorySize) ? epoch : memorySize));
+      double varianceUB = stats.getVariance() + sqrt(2 * lnn / tk);
+      double score = rk + sqrt((lnn / tk) * juce::jmin(0.25, varianceUB));
+      // -
+
+      //double score = rk + 1.0 / tk;
       if (score > bestScore)
       {
         bestScore = score;
         bestBandit = i;
       }
     }
-    context->informationCallback(info);
+   // context->informationCallback(info);
     return bestBandit;
   }
 

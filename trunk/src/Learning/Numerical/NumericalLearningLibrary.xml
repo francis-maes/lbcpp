@@ -32,8 +32,9 @@
   </class>
 
   <class name="AutoStochasticGDOnlineLearner" base="GradientDescentOnlineLearner" shortName="autoSgd">
-    <constructor arguments="FunctionPtr lossFunction, size_t memorySize" returnType="OnlineLearner"/>
+    <constructor arguments="FunctionPtr lossFunction, size_t episodeLength, size_t memorySize" returnType="OnlineLearner"/>
     <variable type="PositiveInteger" name="memorySize"/>
+    <variable type="PositiveInteger" name="episodeLength"/>
   </class>
   
   <class name="PerEpisodeGDOnlineLearner" base="GradientDescentOnlineLearner" shortName="perEpisode">
