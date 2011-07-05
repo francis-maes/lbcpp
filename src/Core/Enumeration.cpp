@@ -162,7 +162,14 @@ void DefaultEnumeration::addElement(ExecutionContext& context, const String& nam
     context.errorCallback(T("Enumeration::addElement"), T("Element '") + name + T("' already exists"));
     return;
   }
+  elementsMap[name] = elements.size();
   elements.push_back(new EnumerationElement(name, oneLetterCode, shortName, description));
+}
+
+int DefaultEnumeration::findElementByName(const String& name) const
+{
+  std::map<String, size_t>::const_iterator it = elementsMap.find(name);
+  return it == elementsMap.end() ? -1 : it->second;
 }
 
 size_t DefaultEnumeration::findOrAddElement(ExecutionContext& context, const String& name)
@@ -171,6 +178,7 @@ size_t DefaultEnumeration::findOrAddElement(ExecutionContext& context, const Str
   if (elt >= 0)
     return (size_t)elt;
   size_t res = elements.size();
+  elementsMap[name] = elements.size();
   elements.push_back(new EnumerationElement(name));
   return res;
 }

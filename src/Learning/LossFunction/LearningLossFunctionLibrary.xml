@@ -24,17 +24,17 @@
   <!-- MultiClass Loss Functions -->
   <class name="MultiClassLossFunction" base="ScalarVectorFunction" abstract="yes"/>
 
-  <class name="OneAgainstAllMultiClassLossFunction" base="MultiClassLossFunction">
+  <class name="OneAgainstAllMultiClassLossFunction" base="MultiClassLossFunction" shortName="oneAgainstAllMultiClass">
     <constructor arguments="DiscriminativeLossFunctionPtr binaryLossFunction"/>
     <variable type="DiscriminativeLossFunction" name="binaryLoss"/>
   </class>
   
-  <class name="MostViolatedMultiClassLossFunction" base="MultiClassLossFunction">
+  <class name="MostViolatedMultiClassLossFunction" base="MultiClassLossFunction" shortName="mostViolatedMultiClass">
     <constructor arguments="DiscriminativeLossFunctionPtr binaryLossFunction"/>
     <variable type="DiscriminativeLossFunction" name="binaryLoss"/>
   </class>
   
-  <class name="LogBinomialMultiClassLossFunction" base="MultiClassLossFunction">
+  <class name="LogBinomialMultiClassLossFunction" base="MultiClassLossFunction" shortName="logBinomialMultiClass">
     <constructor/>
   </class>
 

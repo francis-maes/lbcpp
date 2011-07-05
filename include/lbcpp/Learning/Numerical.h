@@ -172,6 +172,8 @@ extern OnlineLearnerPtr stochasticGDOnlineLearner(FunctionPtr lossFunction, Iter
 extern OnlineLearnerPtr perEpisodeGDOnlineLearner(FunctionPtr lossFunction, IterationFunctionPtr learningRate, bool normalizeLearningRate = true);
 extern OnlineLearnerPtr parallelPerEpisodeGDOnlineLearner(FunctionPtr lossFunction, IterationFunctionPtr learningRate, bool normalizeLearningRate = true);
 
+extern OnlineLearnerPtr autoStochasticGDOnlineLearner(FunctionPtr lossFunction, size_t memorySize = 0); // memorySize = 0 means +oo
+
 // high-level learning machines
 extern FunctionPtr linearRegressor(LearnerParametersPtr parameters);
 extern FunctionPtr linearBinaryClassifier(LearnerParametersPtr parameters, bool incorporateBias = false, BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore);

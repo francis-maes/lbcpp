@@ -28,6 +28,23 @@ public:
 
 typedef ReferenceCountedObjectPtr<LearnerParameters> LearnerParametersPtr;
 
+class SimpleLearnerParameters : public LearnerParameters
+{
+public:
+  SimpleLearnerParameters(BatchLearnerPtr batchLearner, OnlineLearnerPtr onlineLearner)
+    : batchLearner(batchLearner), onlineLearner(onlineLearner) {}
+
+  virtual BatchLearnerPtr createBatchLearner(ExecutionContext& context) const
+    {return batchLearner;}
+
+  virtual OnlineLearnerPtr createOnlineLearner(ExecutionContext& context) const
+    {return onlineLearner;}
+
+protected:
+  BatchLearnerPtr batchLearner;
+  OnlineLearnerPtr onlineLearner;
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_LEARNING_LEARNABLE_FUNCTION_H_

@@ -330,7 +330,10 @@ DenseDoubleVector::DenseDoubleVector(ClassPtr thisClass, size_t initialSize, dou
 {
   jassert(thisClass && thisClass->inheritsFrom(denseDoubleVectorClass()));
   if (initialSize == (size_t)-1)
-    initialSize = getElementsEnumeration()->getNumElements();
+  {
+    EnumerationPtr elementsEnumeration = getElementsEnumeration();
+    initialSize = elementsEnumeration->getNumElements();
+  }
   values = new std::vector<double>(initialSize, initialValue);
 }
 

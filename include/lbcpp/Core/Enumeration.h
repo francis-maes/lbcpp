@@ -86,7 +86,7 @@ public:
 
   String getElementName(size_t index) const;
 
-  int findElementByName(const String& name) const;
+  virtual int findElementByName(const String& name) const;
   int findElementByOneLetterCode(const juce::tchar c) const;
 
   bool hasOneLetterCodes() const;
@@ -122,6 +122,8 @@ public:
     {jassert(index < elements.size()); return elements[index];}
 
   void addElement(ExecutionContext& context, const String& elementName, const String& oneLetterCode = String::empty, const String& shortName = String::empty, const String& description = String::empty);
+  virtual int findElementByName(const String& name) const;
+
   size_t findOrAddElement(ExecutionContext& context, const String& name);
   
   void addElementsWithPrefix(ExecutionContext& context, const EnumerationPtr& enumeration, const String& namePrefix, const String& shortNamePrefix);
@@ -133,6 +135,7 @@ private:
   friend class DefaultEnumerationClass;
   
   std::vector<EnumerationElementPtr> elements;
+  std::map<String, size_t> elementsMap;
 };
 
 class ConcatenateEnumeration : public Enumeration

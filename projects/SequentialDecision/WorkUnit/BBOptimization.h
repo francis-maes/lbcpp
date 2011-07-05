@@ -441,6 +441,27 @@ public:
     return random->sampleBool(p) ? 1.0 : 0.0;
   }
 
+  /*
+  **
+
+  trueSampler = Sampler.bernoulli(function (x) return (math.sin(13 * x) * math.sin(27 * x) + 1) /2 end)
+
+  function learnedSampler(theta, x) =
+    
+    neighbors = nearestNeighbors(x, database, 50)
+
+    neighborFeatures = map(neighbors, function ((x,y)) return DoubleVector.create(x - n) end)
+    neighborValues = map(neighbors, function ((x,y)) return y end)
+    neighborActivations = map(neighborFeatures, function (f) return dotProduct(f,theta) end)
+    neighborScores = map(neighborActivations, math.exp)
+    y = dotProduct(neighborScores, neighborValues) / neighborScores:l1norm()
+    return Sampler.bernoulli(y)
+  end
+
+  gradientLogProbability(y,x)
+
+  */
+
   virtual Variable run(ExecutionContext& context)
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
