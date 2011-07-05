@@ -150,7 +150,7 @@
   <class name="NoPostProcessingLinearBinaryClassifier" base="SupervisedNumericalFunction"/>
 
   <class name="ConnectivityPatternClassifier" base="CompositeFunction">
-    <variable type="LearnerParameters" name="learningParameters"/>
+    <variable type="Function" name="classifier"/>
   </class>
   
   <!-- BEGIN Article: Lin 2009 -->
@@ -164,6 +164,7 @@
     <variable type="Boolean" name="useLibLinear"/>
     <variable type="Double" name="learningRate"/>
     <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="Boolean" name="useAddBias"/>
   </class>
   <!-- END Article: Lin 2009 -->
 

@@ -178,8 +178,8 @@ extern ClassPtr connectivityPatternClassifierClass;
 class ConnectivityPatternClassifier : public CompositeFunction
 {
 public:
-  ConnectivityPatternClassifier(LearnerParametersPtr learningParameters)
-    : learningParameters(learningParameters)
+  ConnectivityPatternClassifier(FunctionPtr classifier)
+    : classifier(classifier)
     {thisClass = connectivityPatternClassifierClass;}
 
   ConnectivityPatternClassifier() {}
@@ -198,11 +198,12 @@ public:
     size_t input = builder.addInput(symmetricMatrixClass(doubleVectorClass()));
     size_t supervision = builder.addInput(symmetricMatrixClass(probabilityType));
 
-    FunctionPtr classifier = new NoPostProcessingLinearBinaryClassifier(learningParameters);
-    classifier->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
+    //FunctionPtr classifier = new NoPostProcessingLinearBinaryClassifier(learningParameters);
+    //classifier->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
+
     size_t prediction = builder.addFunction(mapNSymmetricMatrixFunction(classifier, 1), input, supervision);
     
-    prediction = builder.addFunction(mapNSymmetricMatrixFunction(signedScalarToProbabilityFunction(), 1), prediction);
+    //prediction = builder.addFunction(mapNSymmetricMatrixFunction(signedScalarToProbabilityFunction(), 1), prediction);
 
     prediction = builder.addFunction(new AddConnectivityPatternBiasLearnableFunction(), prediction, supervision);
     builder.addFunction(mapNSymmetricMatrixFunction(signedScalarToProbabilityFunction(), 1), prediction);
@@ -211,7 +212,7 @@ public:
 protected:
   friend class ConnectivityPatternClassifierClass;
 
-  LearnerParametersPtr learningParameters;
+  FunctionPtr classifier;
 };
 
 }; /* namespace lbcpp */

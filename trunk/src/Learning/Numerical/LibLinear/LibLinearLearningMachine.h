@@ -21,7 +21,8 @@ extern ClassPtr libLinearLearningMachineClass;
 class LibLinearLearningMachine : public Function
 {
 public:
-  LibLinearLearningMachine(double C = 1.f, size_t solverType = L2R_L2LOSS_SVC_DUAL) : C(C), model(NULL), problem(NULL)
+  LibLinearLearningMachine(double C = 1.f, size_t solverType = L2R_L2LOSS_SVC_DUAL)
+    : C(C), solverType(solverType), model(NULL), problem(NULL)
   {
     setBatchLearner(libLinearBatchLearner());
   }
@@ -102,15 +103,14 @@ protected:
     std::pair<size_t, double>* v = features->getValues();
     size_t n = features->getNumValues();
     struct feature_node* res = new struct feature_node[n + 1];
-    size_t i;
-    for (i = 0; i < n; ++i)
+    for (size_t i = 0; i < n; ++i)
     {
       res[i].index = (int)v->first;
       res[i].value = v->second;
       ++v;
     }
-    res[i].index = -1;
-    res[i].value = 0;
+    res[n].index = -1;
+    res[n].value = 0;
     return res;
   }
 };
@@ -125,8 +125,9 @@ public:
 
   struct problem* createProblem(const LibLinearLearningMachinePtr& machine, const std::vector<ObjectPtr>& data) const
   {
-    struct problem* problem = new struct problem;
+    struct problem* problem = new struct problem();
     problem->l = data.size();
+    problem->n = data.size() ? data[0]->getVariable(0).getObjectAndCast<DoubleVector>()->getNumElements() : 0;
     problem->x = new struct feature_node*[data.size()];
     problem->y = new int[data.size()];
     problem->bias = -1;
@@ -147,7 +148,7 @@ public:
 
     // learn the new model
     struct parameter param = machine->createSvmParameters();
-    machine->model = ::train(machine->problem, &param);
+    machine->model = ::train(context, machine->problem, &param);
 
     //svm_save_model("toto.model", model);
 

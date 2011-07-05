@@ -405,7 +405,7 @@ class Solver_MCSVM_CS
 	public:
 		Solver_MCSVM_CS(const problem *prob, int nr_class, double *C, double eps=0.1, int max_iter=100000);
 		~Solver_MCSVM_CS();
-		void Solve(double *w);
+  void Solve(lbcpp::ExecutionContext& context, double *w);
 	private:
 		void solve_sub_problem(double A_i, int yi, double C_yi, int active_i, double *alpha_new);
 		bool be_shrunk(int i, int m, int yi, double alpha_i, double minG);
@@ -480,7 +480,7 @@ bool Solver_MCSVM_CS::be_shrunk(int i, int m, int yi, double alpha_i, double min
 	return false;
 }
 
-void Solver_MCSVM_CS::Solve(double *w)
+void Solver_MCSVM_CS::Solve(lbcpp::ExecutionContext& context, double *w)
 {
 	int i, m, s;
 	int iter = 0;
@@ -626,10 +626,7 @@ void Solver_MCSVM_CS::Solve(double *w)
 		}
 
 		iter++;
-		if(iter % 10 == 0)
-		{
-			info(".");
-		}
+		context.progressCallback(new lbcpp::ProgressionState((size_t)iter, (size_t)max_iter, T("Iterations")));
 
 		if(stopping < eps_shrink)
 		{
@@ -649,9 +646,7 @@ void Solver_MCSVM_CS::Solve(double *w)
 			start_from_all = false;
 	}
 
-	info("\noptimization finished, #iter = %d\n",iter);
-	if (iter >= max_iter)
-		info("\nWARNING: reaching max number of iterations\n");
+  context.resultCallback(T("Num. Iterations"), iter);
 
 	// calculate objective value
 	double v = 0;
@@ -667,8 +662,8 @@ void Solver_MCSVM_CS::Solve(double *w)
 	}
 	for(i=0;i<l;i++)
 		v -= alpha[i*nr_class+prob->y[i]];
-	info("Objective value = %lf\n",v);
-	info("nSV = %d\n",nSV);
+  context.resultCallback(T("Objective value"), v);
+  context.resultCallback(T("Num. support vector"), nSV);
 
 	delete [] alpha;
 	delete [] alpha_new;
@@ -711,7 +706,7 @@ void Solver_MCSVM_CS::Solve(double *w)
 #define GETI(i) (y[i]+1)
 // To support weights for instances, use GETI(i) (i)
 
-static void solve_l2r_l1l2_svc(
+static void solve_l2r_l1l2_svc(lbcpp::ExecutionContext& context,
 	const problem *prob, double *w, double eps, 
 	double Cp, double Cn, int solver_type)
 {
@@ -841,8 +836,7 @@ static void solve_l2r_l1l2_svc(
 		}
 
 		iter++;
-		if(iter % 10 == 0)
-			info(".");
+		context.progressCallback(new lbcpp::ProgressionState((size_t)iter, (size_t)max_iter, T("Iterations")));
 
 		if(PGmax_new - PGmin_new <= eps)
 		{
@@ -851,7 +845,6 @@ static void solve_l2r_l1l2_svc(
 			else
 			{
 				active_size = l;
-				info("*");
 				PGmax_old = INF;
 				PGmin_old = -INF;
 				continue;
@@ -865,9 +858,10 @@ static void solve_l2r_l1l2_svc(
 			PGmin_old = -INF;
 	}
 
-	info("\noptimization finished, #iter = %d\n",iter);
+	context.resultCallback(T("Num. Iterations"), iter);
+  
 	if (iter >= max_iter)
-		info("\nWARNING: reaching max number of iterations\nUsing -s 2 may be faster (also see FAQ)\n\n");
+		context.warningCallback(T("LibLinear::solve_l2r_l1l2_svc"), T("Reaching max number of iterations. Using -s 2 may be faster (also see FAQ)"));
 
 	// calculate objective value
 
@@ -881,8 +875,9 @@ static void solve_l2r_l1l2_svc(
 		if(alpha[i] > 0)
 			++nSV;
 	}
-	info("Objective value = %lf\n",v/2);
-	info("nSV = %d\n",nSV);
+
+  context.resultCallback(T("Objective value"), v / 2);
+  context.resultCallback(T("Num. support vector"), nSV);
 
 	delete [] QD;
 	delete [] alpha;
@@ -912,7 +907,7 @@ static void solve_l2r_l1l2_svc(
 #define GETI(i) (y[i]+1)
 // To support weights for instances, use GETI(i) (i)
 
-void solve_l2r_lr_dual(const problem *prob, double *w, double eps, double Cp, double Cn)
+void solve_l2r_lr_dual(lbcpp::ExecutionContext& context, const problem *prob, double *w, double eps, double Cp, double Cn)
 {
 	int l = prob->l;
 	int w_size = prob->n;
@@ -1026,8 +1021,7 @@ void solve_l2r_lr_dual(const problem *prob, double *w, double eps, double Cp, do
 		}
 
 		iter++;
-		if(iter % 10 == 0)
-			info(".");
+    context.progressCallback(new lbcpp::ProgressionState((size_t)iter, (size_t)max_iter, T("Iterations")));
 
 		if(Gmax < eps) 
 			break;
@@ -1037,9 +1031,9 @@ void solve_l2r_lr_dual(const problem *prob, double *w, double eps, double Cp, do
 
 	}
 
-	info("\noptimization finished, #iter = %d\n",iter);
+  context.resultCallback(T("Num. Iterations"), iter);
 	if (iter >= max_iter)
-		info("\nWARNING: reaching max number of iterations\nUsing -s 0 may be faster (also see FAQ)\n\n");
+		context.warningCallback(T("LibLinear::solve_l2r_lr_dual"), T("Reaching max number of iterations\nUsing -s 0 may be faster (also see FAQ)"));
 
 	// calculate objective value
 	
@@ -1050,7 +1044,7 @@ void solve_l2r_lr_dual(const problem *prob, double *w, double eps, double Cp, do
 	for(i=0; i<l; i++)
 		v += alpha[2*i] * log(alpha[2*i]) + alpha[2*i+1] * log(alpha[2*i+1]) 
 			- upper_bound[GETI(i)] * log(upper_bound[GETI(i)]);
-	info("Objective value = %lf\n", v);
+	context.resultCallback(T("Objective value"), v);
 
 	delete [] xTx;
 	delete [] alpha;
@@ -1075,7 +1069,7 @@ void solve_l2r_lr_dual(const problem *prob, double *w, double eps, double Cp, do
 #define GETI(i) (y[i]+1)
 // To support weights for instances, use GETI(i) (i)
 
-static void solve_l1r_l2_svc(
+static void solve_l1r_l2_svc(lbcpp::ExecutionContext& context,
 	problem *prob_col, double *w, double eps, 
 	double Cp, double Cn)
 {
@@ -1287,8 +1281,7 @@ static void solve_l1r_l2_svc(
 		if(iter == 0)
 			Gnorm1_init = Gnorm1_new;
 		iter++;
-		if(iter % 10 == 0)
-			info(".");
+    context.progressCallback(new lbcpp::ProgressionState((size_t)iter, (size_t)max_iter, T("Iterations")));
 
 		if(Gnorm1_new <= eps*Gnorm1_init)
 		{
@@ -1306,9 +1299,7 @@ static void solve_l1r_l2_svc(
 		Gmax_old = Gmax_new;
 	}
 
-	info("\noptimization finished, #iter = %d\n", iter);
-	if(iter >= max_iter)
-		info("\nWARNING: reaching max number of iterations\n");
+	context.resultCallback(T("Num. Iterations"), iter);
 
 	// calculate objective value
 
@@ -1332,8 +1323,9 @@ static void solve_l1r_l2_svc(
 		if(b[j] > 0)
 			v += C[GETI(j)]*b[j]*b[j];
 
-	info("Objective value = %lf\n", v);
-	info("#nonzeros/#features = %d/%d\n", nnz, w_size);
+  context.resultCallback(T("Objective value"), v);
+  context.resultCallback(T("Num. non zeros"), nnz);
+  context.resultCallback(T("Num. features"), w_size);
 
 	delete [] index;
 	delete [] y;
@@ -1825,7 +1817,7 @@ static void group_classes(const problem *prob, int *nr_class_ret, int **label_re
 	free(data_label);
 }
 
-static void train_one(const problem *prob, const parameter *param, double *w, double Cp, double Cn)
+static void train_one(lbcpp::ExecutionContext& context, const problem *prob, const parameter *param, double *w, double Cp, double Cn)
 {
 	double eps=param->eps;
 	int pos = 0;
@@ -1857,17 +1849,17 @@ static void train_one(const problem *prob, const parameter *param, double *w, do
 			break;
 		}
 		case L2R_L2LOSS_SVC_DUAL:
-			solve_l2r_l1l2_svc(prob, w, eps, Cp, Cn, L2R_L2LOSS_SVC_DUAL);
+			solve_l2r_l1l2_svc(context, prob, w, eps, Cp, Cn, L2R_L2LOSS_SVC_DUAL);
 			break;
 		case L2R_L1LOSS_SVC_DUAL:
-			solve_l2r_l1l2_svc(prob, w, eps, Cp, Cn, L2R_L1LOSS_SVC_DUAL);
+			solve_l2r_l1l2_svc(context, prob, w, eps, Cp, Cn, L2R_L1LOSS_SVC_DUAL);
 			break;
 		case L1R_L2LOSS_SVC:
 		{
 			problem prob_col;
 			feature_node *x_space = NULL;
 			transpose(prob, &x_space ,&prob_col);
-			solve_l1r_l2_svc(&prob_col, w, eps*min(pos,neg)/prob->l, Cp, Cn);
+			solve_l1r_l2_svc(context, &prob_col, w, eps*min(pos,neg)/prob->l, Cp, Cn);
 			delete [] prob_col.y;
 			delete [] prob_col.x;
 			delete [] x_space;
@@ -1885,10 +1877,10 @@ static void train_one(const problem *prob, const parameter *param, double *w, do
 			break;
 		}
 		case L2R_LR_DUAL:
-			solve_l2r_lr_dual(prob, w, eps, Cp, Cn);
+			solve_l2r_lr_dual(context, prob, w, eps, Cp, Cn);
 			break;
 		default:
-			fprintf(stderr, "Error: unknown solver_type\n");
+      context.errorCallback(T("LibLinear::train_one"), T("Error: unknown solver_type: ") + String(param->solver_type));
 			break;
 	}
 }
@@ -1896,7 +1888,7 @@ static void train_one(const problem *prob, const parameter *param, double *w, do
 //
 // Interface functions
 //
-model* train(const problem *prob, const parameter *param)
+model* train(lbcpp::ExecutionContext& context, const problem *prob, const parameter *param)
 {
 	int i,j;
 	int l = prob->l;
@@ -1935,7 +1927,7 @@ model* train(const problem *prob, const parameter *param)
 			if(param->weight_label[i] == label[j])
 				break;
 		if(j == nr_class)
-			fprintf(stderr,"WARNING: class label %d specified in weight is not found\n", param->weight_label[i]);
+      context.warningCallback(T("LibLinear::train"), T("WARNING: class label " + String(param->weight_label[i]) + T(" specified in weight is not found\n")));
 		else
 			weighted_C[j] *= param->weight[i];
 	}
@@ -1963,7 +1955,7 @@ model* train(const problem *prob, const parameter *param)
 			for(j=start[i];j<start[i]+count[i];j++)
 				sub_prob.y[j] = i;
 		Solver_MCSVM_CS Solver(&sub_prob, nr_class, weighted_C, param->eps);
-		Solver.Solve(model_->w);
+		Solver.Solve(context, model_->w);
 	}
 	else
 	{
@@ -1978,7 +1970,7 @@ model* train(const problem *prob, const parameter *param)
 			for(; k<sub_prob.l; k++)
 				sub_prob.y[k] = -1;
 
-			train_one(&sub_prob, param, &model_->w[0], weighted_C[0], weighted_C[1]);
+			train_one(context, &sub_prob, param, &model_->w[0], weighted_C[0], weighted_C[1]);
 		}
 		else
 		{
@@ -1997,7 +1989,7 @@ model* train(const problem *prob, const parameter *param)
 				for(; k<sub_prob.l; k++)
 					sub_prob.y[k] = -1;
 
-				train_one(&sub_prob, param, w, weighted_C[i], param->C);
+				train_one(context, &sub_prob, param, w, weighted_C[i], param->C);
 
 				for(int j=0;j<w_size;j++)
 					model_->w[j*nr_class+i] = w[j];
@@ -2018,7 +2010,7 @@ model* train(const problem *prob, const parameter *param)
 	return model_;
 }
 
-void cross_validation(const problem *prob, const parameter *param, int nr_fold, int *target)
+void cross_validation(lbcpp::ExecutionContext& context, const problem *prob, const parameter *param, int nr_fold, int *target)
 {
 	int i;
 	int *fold_start = Malloc(int,nr_fold+1);
@@ -2060,7 +2052,7 @@ void cross_validation(const problem *prob, const parameter *param, int nr_fold, 
 			subprob.y[k] = prob->y[perm[j]];
 			++k;
 		}
-		struct model *submodel = train(&subprob,param);
+		struct model *submodel = train(context, &subprob,param);
 		for(j=begin;j<end;j++)
 			target[perm[j]] = predict(submodel,prob->x[perm[j]]);
 		free_and_destroy_model(&submodel);
@@ -2123,7 +2115,7 @@ int predict(const model *model_, const feature_node *x)
 
 int predict_probability(const struct model *model_, const struct feature_node *x, double* prob_estimates)
 {
-	if(check_probability_model(model_))
+	if(true || check_probability_model(model_)) // FIXME: I force the probability check
 	{
 		int i;
 		int nr_class=model_->nr_class;
@@ -2152,7 +2144,10 @@ int predict_probability(const struct model *model_, const struct feature_node *x
 		return label;		
 	}
 	else
-		return 0;
+  {
+    jassertfalse;
+    return 0;
+  }
 }
 
 static const char *solver_type_table[]=
