@@ -85,7 +85,8 @@ public:
   ** Sub Items
   */
   void appendSubItem(const ExecutionTraceItemPtr& item);
-  ExecutionTraceNodePtr findSubNode(const String& description, const WorkUnitPtr& workUnit) const;
+  ExecutionTraceNodePtr findSubNode(const String& description, const WorkUnitPtr& workUnit = WorkUnitPtr()) const;
+  ExecutionTraceNodePtr findFirstNode() const;
   std::vector<ExecutionTraceItemPtr> getSubItems() const;
   size_t getNumSubItems() const;
 
