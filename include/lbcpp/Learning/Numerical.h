@@ -202,7 +202,7 @@ enum LibLinearClassificationType
   l2RegularizedL2LossDual = 1,
   l2RegularizedL2Loss,
   l2RegularizedL1LossDual,
-  l1RegularizedL2Loss = 4
+  l1RegularizedL2Loss = 5
 };
 
 enum LibLinearRegressionType

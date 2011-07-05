@@ -39,7 +39,7 @@ public:
       return Variable();
     
     DoubleVectorPtr input = inputs[0].getObjectAndCast<DoubleVector>();
-    
+
     // predict probabilities
     std::vector<double> probs(get_nr_class(model));
     struct feature_node* node = convertDoubleVector(input);

@@ -786,10 +786,7 @@ public:
       return new GetSupervisionFunction();
     }
     else if (useAddBiasLearner && target == dsbTarget)
-    {
-      return new ConnectivityPatternClassifier(learningParameters);
-    }
-
+      return new ConnectivityPatternClassifier(learningMachine(target));
     return ProteinPredictorParameters::createTargetPredictor(target);
   }
   
@@ -811,7 +808,6 @@ public:
       }
     case dsbTarget:
       {
-        jassert(!useAddBiasLearner);
         FunctionPtr res = linearBinaryClassifier(learningParameters, true, binaryClassificationAccuracyScore);
         res->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
         return res;

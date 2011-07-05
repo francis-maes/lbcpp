@@ -1,6 +1,9 @@
 #ifndef _LIBLINEAR_H
 #define _LIBLINEAR_H
 
+#include <lbcpp/Execution/ExecutionContext.h>
+#include <lbcpp/Core/Variable.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -19,7 +22,7 @@ struct problem
 	double bias;            /* < 0 if no bias term */  
 };
 
-enum { L2R_LR, L2R_L2LOSS_SVC_DUAL, L2R_L2LOSS_SVC, L2R_L1LOSS_SVC_DUAL, MCSVM_CS, L1R_L2LOSS_SVC, L1R_LR, L2R_LR_DUAL }; /* solver_type */
+enum { L2R_LR = 0, L2R_L2LOSS_SVC_DUAL, L2R_L2LOSS_SVC, L2R_L1LOSS_SVC_DUAL, MCSVM_CS, L1R_L2LOSS_SVC, L1R_LR, L2R_LR_DUAL }; /* solver_type */
 
 struct parameter
 {
@@ -43,8 +46,8 @@ struct model
 	double bias;
 };
 
-struct model* train(const struct problem *prob, const struct parameter *param);
-void cross_validation(const struct problem *prob, const struct parameter *param, int nr_fold, int *target);
+struct model* train(lbcpp::ExecutionContext& context, const struct problem *prob, const struct parameter *param);
+void cross_validation(lbcpp::ExecutionContext& context, const struct problem *prob, const struct parameter *param, int nr_fold, int *target);
 
 int predict_values(const struct model *model_, const struct feature_node *x, double* dec_values);
 int predict(const struct model *model_, const struct feature_node *x);
