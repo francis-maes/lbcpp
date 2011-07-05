@@ -150,7 +150,7 @@ public:
   {
     if (target == dsbTarget && !useLibSVM)
       return new ConnectivityPatternClassifier(new StochasticGDParameters(constantIterationFunction(learningRate), StoppingCriterionPtr(), numIterations));
-    ProteinPredictorParameters::createTargetPredictor(target);
+    return ProteinPredictorParameters::createTargetPredictor(target);
   }
 
   virtual FunctionPtr learningMachine(ProteinTarget target) const
