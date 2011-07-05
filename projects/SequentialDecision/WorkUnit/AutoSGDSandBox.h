@@ -182,8 +182,8 @@ public:
     std::vector< std::pair<OnlineLearnerPtr, String> > onlineLearners;
     onlineLearners.push_back(std::make_pair(stochasticGDOnlineLearner(lossFunction->cloneAndCast<Function>(), constantIterationFunction(1.0)), T("constant(1)"))); // lbcpp sgd "factory" setting
     onlineLearners.push_back(std::make_pair(stochasticGDOnlineLearner(lossFunction->cloneAndCast<Function>(), invLinearIterationFunction(2.0, numTrainingExamples)), T("invLinear(2,N)"))); // another good setting
-    onlineLearners.push_back(std::make_pair(autoStochasticGDOnlineLearner(lossFunction->cloneAndCast<Function>(), 0), T("autoSgd(+oo)"))); // infinite memory
-    onlineLearners.push_back(std::make_pair(autoStochasticGDOnlineLearner(lossFunction, numTrainingExamples), T("autoSgd(N)"))); // memory = dataset size
+    onlineLearners.push_back(std::make_pair(autoStochasticGDOnlineLearner(lossFunction->cloneAndCast<Function>(), numTrainingExamples / 10, 0), T("autoSgd(N/10,+oo)"))); // infinite memory
+    onlineLearners.push_back(std::make_pair(autoStochasticGDOnlineLearner(lossFunction, numTrainingExamples / 10, 30), T("autoSgd(N/10,30)"))); // memory = dataset size
 /*    onlineLearners.push_back(autoStochasticGDOnlineLearner(lossFunction, 10));   // auto sgd with different memory sizes ...
     onlineLearners.push_back(autoStochasticGDOnlineLearner(lossFunction, 100));
     onlineLearners.push_back(autoStochasticGDOnlineLearner(lossFunction, 1000));
