@@ -194,6 +194,25 @@ enum LibSVMKernelType
 extern FunctionPtr libSVMClassifier(double C = 0.1, LibSVMKernelType kernelType = linearKernel, size_t kernelDegree = 1, double kernelGamma = 0.1, double kernelCoef0 = 0.0);
 extern FunctionPtr libSVMBinaryClassifier(double C = 0.1, LibSVMKernelType kernelType = linearKernel, size_t kernelDegree = 1, double kernelGamma = 0.1, double kernelCoef0 = 0.0);
 extern BatchLearnerPtr libSVMBatchLearner();
+  
+enum LibLinearClassificationType
+{
+  l2RegularizedL2LossDual = 1,
+  l2RegularizedL2Loss,
+  l2RegularizedL1LossDual,
+  l1RegularizedL2Loss = 4
+};
+
+enum LibLinearRegressionType
+{
+  l2RegularizedLogisticRegression = 0,
+  l1RegularizedLogisticRegression = 6,
+  l2RegularizedLogisticRegressionDual
+};
+
+extern FunctionPtr libLinearClassifier(double C);
+extern FunctionPtr libLinearBinaryClassifier(double C, LibLinearClassificationType solverType);
+extern BatchLearnerPtr libLinearBatchLearner();
 
 }; /* namespace lbcpp */
 

@@ -3,6 +3,7 @@
 <library name="NumericalLearning" directory="Learning/Numerical">
 
   <import name="LibSVMLearning"/>
+  <import name="LibLinearLearning"/>
   
   <!-- Learning Parameters -->
   <class name="StochasticGDParameters" base="LearnerParameters" shortName="sgd">

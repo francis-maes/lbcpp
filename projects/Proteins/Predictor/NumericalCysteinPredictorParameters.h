@@ -141,7 +141,7 @@ public:
   bool useDiscretizeNumCysteins;
   bool useCysteinParity;
 
-  NumericalCysteinPredictorParameters(NumericalCysteinFeaturesParametersPtr fp = ObjectPtr())
+  NumericalCysteinPredictorParameters(NumericalCysteinFeaturesParametersPtr fp = new NumericalCysteinFeaturesParameters())
     : useAddBiasLearner(false)
     , fp(fp)
     , useCartesianProduct(false)
