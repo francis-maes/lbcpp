@@ -90,6 +90,9 @@ public:
 //    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, isFinalEvaluation), 1));
     addEvaluator(dsbTarget,  new DisulfidePatternEvaluator(), T("Disulfide Bonds"));
     addEvaluator(dsbTarget,  new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6)), T("Disulfide Bonds (Greedy L=6)"));
+    
+    addEvaluator(dsbTarget, new DoNotApplyOnDimensionGreaterThan(new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6)), 10), T("Disulfide Bonds (Greedy L=6 & # <= 10)"));
+    addEvaluator(dsbTarget, new DoNotApplyOnDimensionGreaterThan(new DisulfidePatternEvaluator(new ExhaustiveDisulfidePatternBuilder()), 10), T("Disulfide Bonds (Exhaustive & # <= 10)"));
   }
 
   /* CompositeEvaluator */
