@@ -109,7 +109,7 @@ public:
       ScoreObjectPtr trainingScore = classifier->evaluate(context, trainingData, evaluator, T("Evaluating on training data"));
       result->trainingScore->push(trainingScore->getScoreToMinimize());
       ScoreObjectPtr testingScore = classifier->evaluate(context, testingData, evaluator, T("Evaluating on testing data"));
-      result->testingScore->push(trainingScore->getScoreToMinimize());
+      result->testingScore->push(testingScore->getScoreToMinimize());
 
       return testingScore->getScoreToMinimize();
     }
@@ -180,10 +180,10 @@ public:
     size_t numTrainingExamples = data->getNumElements();
 
     std::vector< std::pair<OnlineLearnerPtr, String> > onlineLearners;
-    onlineLearners.push_back(std::make_pair(stochasticGDOnlineLearner(lossFunction, constantIterationFunction(1.0)), T("constant(1)"))); // lbcpp sgd "factory" setting
-    onlineLearners.push_back(std::make_pair(stochasticGDOnlineLearner(lossFunction, invLinearIterationFunction(2.0, numTrainingExamples)), T("invLinear(2,N)"))); // another good setting
-    onlineLearners.push_back(std::make_pair(autoStochasticGDOnlineLearner(lossFunction, 0), T("autoSgd(+oo)"))); // infinite memory
-    onlineLearners.push_back(std::make_pair(autoStochasticGDOnlineLearner(lossFunction, numTrainingExamples / 5), T("autoSgd(N/5)"))); // infinite memory
+    onlineLearners.push_back(std::make_pair(stochasticGDOnlineLearner(lossFunction->cloneAndCast<Function>(), constantIterationFunction(1.0)), T("constant(1)"))); // lbcpp sgd "factory" setting
+    onlineLearners.push_back(std::make_pair(stochasticGDOnlineLearner(lossFunction->cloneAndCast<Function>(), invLinearIterationFunction(2.0, numTrainingExamples)), T("invLinear(2,N)"))); // another good setting
+    onlineLearners.push_back(std::make_pair(autoStochasticGDOnlineLearner(lossFunction->cloneAndCast<Function>(), 0), T("autoSgd(+oo)"))); // infinite memory
+    onlineLearners.push_back(std::make_pair(autoStochasticGDOnlineLearner(lossFunction, numTrainingExamples), T("autoSgd(N)"))); // memory = dataset size
 /*    onlineLearners.push_back(autoStochasticGDOnlineLearner(lossFunction, 10));   // auto sgd with different memory sizes ...
     onlineLearners.push_back(autoStochasticGDOnlineLearner(lossFunction, 100));
     onlineLearners.push_back(autoStochasticGDOnlineLearner(lossFunction, 1000));
@@ -194,7 +194,7 @@ public:
     std::vector<LearnerResultsPtr> perLearnerResults(onlineLearners.size());
     for (size_t i = 0; i < onlineLearners.size(); ++i)
     {
-        OnlineLearnerPtr sgdLearner = onlineLearners[i];
+        OnlineLearnerPtr sgdLearner = onlineLearners[i].first;
 
         std::vector<OnlineLearnerPtr> cl;
         cl.push_back(sgdLearner);
@@ -202,7 +202,7 @@ public:
         cl.push_back(restoreBestParametersOnlineLearner());
         OnlineLearnerPtr onlineLearner = compositeOnlineLearner(cl);
         
-        workUnit->setWorkUnit(i, new TestLearnerWorkUnit(data, numFolds, onlineLearner, sgdLearner->toShortString(), perLearnerResults[i]));
+        workUnit->setWorkUnit(i, new TestLearnerWorkUnit(data, numFolds, onlineLearner, onlineLearners[i].second, perLearnerResults[i]));
     }
 
     workUnit->setPushChildrenIntoStackFlag(true);
@@ -213,7 +213,7 @@ public:
     return Variable();
   }
 
-  void displaySummaryResults(ExecutionContext& context, const std::vector<OnlineLearnerPtr>& onlineLearners, const std::vector<LearnerResultsPtr>& perLearnerResults)
+  void displaySummaryResults(ExecutionContext& context, const std::vector< std::pair<OnlineLearnerPtr, String> >& onlineLearners, const std::vector<LearnerResultsPtr>& perLearnerResults)
   {
     jassert(onlineLearners.size() == perLearnerResults.size());
 
@@ -236,7 +236,7 @@ public:
           const LearnerResults::StatisticsVector& v = learnerResults->results[i];
           double mean = iteration < v.size() ? v[iteration].getMean() : 0.0;
           double stddev = iteration < v.size() ? v[iteration].getStandardDeviation() : 0.0;
-          String name = onlineLearners[learner]->toShortString();
+          const String& name = onlineLearners[learner].second;
           context.resultCallback(name, mean);
           context.resultCallback(name + T(" Stddev"), stddev);
         }

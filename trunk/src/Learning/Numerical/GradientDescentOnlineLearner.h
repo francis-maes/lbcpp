@@ -186,7 +186,7 @@ protected:
     lossValue.push(exampleLossValue);
   }
 
-  virtual double computeLearningRate() const
+  double computeLearningRate() const
   {
     double res = 1.0;
     if (learningRate)
