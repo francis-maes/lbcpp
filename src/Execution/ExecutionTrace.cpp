@@ -128,6 +128,18 @@ void ExecutionTraceNode::appendSubItem(const ExecutionTraceItemPtr& item)
   subItems.push_back(item);
 }
 
+ExecutionTraceNodePtr ExecutionTraceNode::findFirstNode() const
+{
+  ScopedLock _(subItemsLock);
+  for (size_t i = 0; i < subItems.size(); ++i)
+  {
+    ExecutionTraceNodePtr res = subItems[i].dynamicCast<ExecutionTraceNode>();
+    if (res)
+      return res;
+  }
+  return ExecutionTraceNodePtr();
+}
+
 ExecutionTraceNodePtr ExecutionTraceNode::findSubNode(const String& description, const WorkUnitPtr& workUnit) const
 {
   ScopedLock _(subItemsLock);
