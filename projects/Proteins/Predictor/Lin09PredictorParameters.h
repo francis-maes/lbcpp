@@ -22,7 +22,7 @@ namespace lbcpp
 class Lin09PredictorParameters : public ProteinPredictorParameters
 {
 public:
-  Lin09PredictorParameters() : C(7.4), kernelGamma(-4.6), useLibSVM(true), learningRate(1.0), numIterations(150) {}
+  Lin09PredictorParameters() : C(7.4), kernelGamma(-4.6), useLibSVM(true), useLibLinear(false), learningRate(1.0), numIterations(150) {}
   /*
   ************************ Protein Perception ************************
   */
@@ -148,7 +148,7 @@ public:
   // Learning Machine
   virtual FunctionPtr createTargetPredictor(ProteinTarget target) const
   {
-    if (target == dsbTarget && !useLibSVM)
+    if (target == dsbTarget && !useLibSVM && !useLibLinear)
       return new ConnectivityPatternClassifier(new StochasticGDParameters(constantIterationFunction(learningRate), StoppingCriterionPtr(), numIterations));
     return ProteinPredictorParameters::createTargetPredictor(target);
   }
@@ -161,6 +161,8 @@ public:
       {
         if (useLibSVM)
           return libSVMBinaryClassifier(pow(2.0, C), rbfKernel, 0, pow(2.0, kernelGamma), 0.0);
+        if (useLibLinear)
+          return libLinearBinaryClassifier(pow(2.0, C), l2RegularizedL2LossDual);
       }
     default:
       {
@@ -176,6 +178,7 @@ protected:
   double C;
   double kernelGamma;
   bool useLibSVM;
+  bool useLibLinear;
   double learningRate;
   size_t numIterations;
 };

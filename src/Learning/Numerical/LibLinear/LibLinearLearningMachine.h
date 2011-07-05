@@ -129,6 +129,7 @@ public:
     problem->l = data.size();
     problem->x = new struct feature_node*[data.size()];
     problem->y = new int[data.size()];
+    problem->bias = -1;
     for (unsigned i = 0; i < data.size(); ++i)
     {
       problem->x[i] = machine->getInput(data[i]);
