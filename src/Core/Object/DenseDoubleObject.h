@@ -91,7 +91,7 @@ Variable DenseDoubleObject::getVariable(size_t index) const
 }
 
 void DenseDoubleObject::setVariable(size_t index, const Variable& value)
-  {getValueReference(index) = value.getDouble();}
+  {getValueReference(index) = value.toDouble();}
 
 String DenseDoubleObject::toString() const
 {

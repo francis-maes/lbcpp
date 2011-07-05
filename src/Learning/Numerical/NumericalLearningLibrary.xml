@@ -31,7 +31,7 @@
     <constructor arguments="FunctionPtr lossFunction, IterationFunctionPtr learningRate, bool normalizeLearningRate" returnType="OnlineLearner"/>
   </class>
 
-  <class name="AutoStochasticGDOnlineLearner" base="StochasticGDOnlineLearner" shortName="autoSgd">
+  <class name="AutoStochasticGDOnlineLearner" base="GradientDescentOnlineLearner" shortName="autoSgd">
     <constructor arguments="FunctionPtr lossFunction, size_t memorySize" returnType="OnlineLearner"/>
     <variable type="PositiveInteger" name="memorySize"/>
   </class>

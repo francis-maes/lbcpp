@@ -85,8 +85,8 @@ int RecentWorkUnitsConfiguration::findRecentWorkUnit(const String& workUnit) con
 ExplorerProject::ExplorerProject() : recentWorkUnits(new RecentWorkUnitsConfiguration()), managerConnected(false), managerHostName(T("localhost")), managerPort(1664)
 {
   int numCpus = juce::SystemStats::getNumCpus();
-  workUnitContext =  multiThreadedExecutionContext(/*numCpus > 1 ? numCpus - 1 : 1*/ 5);
-  workUnitContext->appendCallback(consoleExecutionCallback());
+  workUnitContext =  multiThreadedExecutionContext(numCpus > 1 ? numCpus - 1 : 1);
+//  workUnitContext->appendCallback(consoleExecutionCallback());
 }
 
 ExplorerProjectPtr ExplorerProject::createProject(ExecutionContext& context, const File& rootDirectory)
