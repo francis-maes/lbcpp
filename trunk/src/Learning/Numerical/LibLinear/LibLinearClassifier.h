@@ -68,7 +68,7 @@ public:
     DoubleVectorPtr input = inputs[0].getObjectAndCast<DoubleVector>();
 
     // predict probabilities
-    std::vector<double> probs(model->nr_class);
+    std::vector<double> probs(get_nr_class(model));
     struct feature_node* node = convertDoubleVector(input);
     predict_probability(model, &node[0], &probs[0]);
     delete [] node;
