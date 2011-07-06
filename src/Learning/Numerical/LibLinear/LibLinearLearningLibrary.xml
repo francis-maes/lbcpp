@@ -23,11 +23,11 @@
   </class>
   
   <class name="LibLinearClassifier" base="LibLinearLearningMachine">
-    <constructor arguments="double C" returnType="Function"/>
+    <constructor arguments="double C, LibLinearSolverType solverType" returnType="Function"/>
   </class>
   
   <class name="LibLinearBinaryClassifier" base="LibLinearClassifier">
-    <constructor arguments="double C, LibLinearClassificationType solverType" returnType="Function"/>
+    <constructor arguments="double C, LibLinearSolverType solverType" returnType="Function"/>
   </class>
 
 </library>

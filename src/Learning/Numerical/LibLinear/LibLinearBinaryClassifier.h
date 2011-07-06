@@ -17,7 +17,7 @@ namespace lbcpp
 class LibLinearBinaryClassifier : public LibLinearClassifier
 {
 public:
-  LibLinearBinaryClassifier(double C, LibLinearClassificationType solverType)
+  LibLinearBinaryClassifier(double C, LibLinearSolverType solverType)
       : LibLinearClassifier(C, solverType) {}
   LibLinearBinaryClassifier() {}
   
@@ -41,17 +41,33 @@ public:
       return Variable();
     
     DoubleVectorPtr input = inputs[0].getObjectAndCast<DoubleVector>();
-    return probability(0.0);
     // predict probabilities
     std::vector<double> probs(get_nr_class(model));
     struct feature_node* node = convertDoubleVector(input);
-    predict_probability(model, &node[0], &probs[0]);
+    Variable res;
+    if (check_probability_model(model))
+    {
+      predict_probability(model, &node[0], &probs[0]);
+      // reorder classes and return probabilities
+      std::vector<int> labelIndices(get_nr_class(model));
+      get_labels(model, &labelIndices[0]);
+      
+      res = probability(probs[labelIndices[1]]);
+    }
+    else
+    {
+      predict_values(model, &node[0], &probs[0]);
+      res = convertToProbability(probs[0]);
+    }
     delete [] node;
-
-    // reorder classes and return probabilities
-    std::vector<int> labelIndices(get_nr_class(model));
-    get_labels(model, &labelIndices[0]);
-    return probability(probs[labelIndices[1]]);
+    return res;
+  }
+  
+protected:
+  Variable convertToProbability(double score) const
+  {
+    static const double temperature = 1.0;
+    return Variable(1.0 / (1.0 + exp(-score * temperature)), probabilityType);
   }
 };
   

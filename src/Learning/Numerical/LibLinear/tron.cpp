@@ -243,7 +243,7 @@ TRON::~TRON()
 {
 }
 
-void TRON::tron(double *w)
+void TRON::tron(lbcpp::ExecutionContext& context, double *w)
 {
 	// Parameters for updating the iterates.
 	double eta0 = 1e-4, eta1 = 0.25, eta2 = 0.75;
@@ -310,7 +310,16 @@ void TRON::tron(double *w)
 		else
 			delta = max(delta, min(alpha*snorm, sigma3*delta));
 
-		info("iter %2d act %5.3e pre %5.3e delta %5.3e f %5.3e |g| %5.3e CG %3d\n", iter, actred, prered, delta, f, gnorm, cg_iter);
+    context.progressCallback(new lbcpp::ProgressionState((size_t)iter, (size_t)max_iter, T("Iteration")));
+    
+    context.enterScope(T("Iteration ") + String(iter));
+    context.resultCallback(T("Actual reduction"), actred);
+    context.resultCallback(T("Previous reduction"), prered);
+    context.resultCallback(T("Delta"), delta);
+    context.resultCallback(T("Fonction objective"), f);
+    context.resultCallback(T("gnorm"), gnorm);
+    context.resultCallback(T("cg_iter"), cg_iter);
+    context.leaveScope();
 
 		if (actred > eta0*prered)
 		{
@@ -377,7 +386,7 @@ int TRON::trcg(double delta, double *g, double *s, double *r)
 		daxpy_(&n, &alpha, d, &inc, s, &inc);
 		if (dnrm2_(&n, s, &inc) > delta)
 		{
-			info("cg reaches trust region boundary\n");
+			//info("cg reaches trust region boundary\n");
 			alpha = -alpha;
 			daxpy_(&n, &alpha, d, &inc, s, &inc);
 
