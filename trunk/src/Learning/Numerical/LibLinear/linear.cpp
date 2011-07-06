@@ -2117,7 +2117,7 @@ int predict(const model *model_, const feature_node *x)
 
 int predict_probability(const struct model *model_, const struct feature_node *x, double* prob_estimates)
 {
-	if(true || check_probability_model(model_)) // FIXME: I force the probability check
+	if(true || check_probability_model(model_))
 	{
 		int i;
 		int nr_class=model_->nr_class;

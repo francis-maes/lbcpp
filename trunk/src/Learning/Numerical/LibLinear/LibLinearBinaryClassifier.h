@@ -24,10 +24,12 @@ public:
   virtual TypePtr getSupervisionType() const
     {return sumType(booleanType, probabilityType);}
   
-  virtual double getSupervision(const ObjectPtr& example) const
+  virtual int getSupervision(const ObjectPtr& example) const
   {
     Variable supervision = example->getVariable(1);
-    return supervision.getDouble();
+    if (supervision.isBoolean())
+      return supervision.getBoolean() ? 1 : 0;
+    return supervision.getDouble() > 0.5 ? 1 : 0;
   }
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
@@ -39,7 +41,7 @@ public:
       return Variable();
     
     DoubleVectorPtr input = inputs[0].getObjectAndCast<DoubleVector>();
-
+    return probability(0.0);
     // predict probabilities
     std::vector<double> probs(get_nr_class(model));
     struct feature_node* node = convertDoubleVector(input);
