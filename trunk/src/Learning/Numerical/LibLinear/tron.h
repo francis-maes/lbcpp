@@ -1,6 +1,9 @@
 #ifndef _TRON_H
 #define _TRON_H
 
+#include <lbcpp/Execution/ExecutionContext.h>
+#include <lbcpp/Core/Variable.h>
+
 class function
 {
 public:
@@ -18,7 +21,7 @@ public:
 	TRON(const function *fun_obj, double eps = 0.1, int max_iter = 1000);
 	~TRON();
 
-	void tron(double *w);
+	void tron(lbcpp::ExecutionContext& context, double *w);
 	void set_print_string(void (*i_print) (const char *buf));
 
 private:

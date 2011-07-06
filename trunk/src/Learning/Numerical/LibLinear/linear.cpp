@@ -861,7 +861,7 @@ static void solve_l2r_l1l2_svc(lbcpp::ExecutionContext& context,
 	context.resultCallback(T("Num. Iterations"), iter);
   
 	if (iter >= max_iter)
-		context.warningCallback(T("LibLinear::solve_l2r_l1l2_svc"), T("Reaching max number of iterations. Using -s 2 may be faster (also see FAQ)"));
+		context.warningCallback(T("LibLinear::solve_l2r_l1l2_svc"), T("Reaching max number of iterations. Using l2RegularizedL2Loss may be faster (also see FAQ)"));
 
 	// calculate objective value
 
@@ -1835,7 +1835,7 @@ static void train_one(lbcpp::ExecutionContext& context, const problem *prob, con
 			fun_obj=new l2r_lr_fun(prob, Cp, Cn);
 			TRON tron_obj(fun_obj, eps*min(pos,neg)/prob->l);
 			tron_obj.set_print_string(liblinear_print_string);
-			tron_obj.tron(w);
+			tron_obj.tron(context, w);
 			delete fun_obj;
 			break;
 		}
@@ -1844,7 +1844,7 @@ static void train_one(lbcpp::ExecutionContext& context, const problem *prob, con
 			fun_obj=new l2r_l2_svc_fun(prob, Cp, Cn);
 			TRON tron_obj(fun_obj, eps*min(pos,neg)/prob->l);
 			tron_obj.set_print_string(liblinear_print_string);
-			tron_obj.tron(w);
+			tron_obj.tron(context, w);
 			delete fun_obj;
 			break;
 		}
@@ -2117,7 +2117,7 @@ int predict(const model *model_, const feature_node *x)
 
 int predict_probability(const struct model *model_, const struct feature_node *x, double* prob_estimates)
 {
-	if(true || check_probability_model(model_))
+	if(check_probability_model(model_))
 	{
 		int i;
 		int nr_class=model_->nr_class;

@@ -17,10 +17,8 @@ namespace lbcpp
 class LibLinearClassifier : public LibLinearLearningMachine
 {
 public:
-  LibLinearClassifier(double C, LibLinearClassificationType solverType)
+  LibLinearClassifier(double C, LibLinearSolverType solverType)
     : LibLinearLearningMachine(C, solverType) {}
-  LibLinearClassifier(double C)
-    : LibLinearLearningMachine(C, MCSVM_CS) {}
   LibLinearClassifier() {}
 
   virtual TypePtr getSupervisionType() const
@@ -70,7 +68,21 @@ public:
     // predict probabilities
     std::vector<double> probs(get_nr_class(model));
     struct feature_node* node = convertDoubleVector(input);
-    predict_probability(model, &node[0], &probs[0]);
+    
+    if (check_probability_model(model))
+    {
+      predict_probability(model, &node[0], &probs[0]);
+    }
+    else 
+    {
+      predict_values(model, &node[0], &probs[0]);
+      double sum = 0.0;
+      for (size_t i = 0; i < probs.size(); ++i)
+        sum += probs[i];
+      if (sum > 0.0 + DBL_EPSILON)
+        for (size_t i = 0; i < probs.size(); ++i)
+          probs[i] /= sum;
+    }
     delete [] node;
 
     // reorder classes and return probabilities
