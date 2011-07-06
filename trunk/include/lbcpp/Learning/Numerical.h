@@ -188,7 +188,7 @@ extern bool convertSupervisionVariableToBoolean(const Variable& supervision, boo
 enum LibSVMKernelType
 {
   linearKernel = 0,
-  polynomialKernal,
+  polynomialKernel,
   rbfKernel,
   sigmoidKernel
 };
@@ -209,14 +209,19 @@ enum LibLinearSolverType
   l2RegularizedLogisticRegressionDual
 };
 
-enum LibLinearRegressionType
-{
-  
-};
-
 extern FunctionPtr libLinearClassifier(double C, LibLinearSolverType solverType);
 extern FunctionPtr libLinearBinaryClassifier(double C, LibLinearSolverType solverType);
 extern BatchLearnerPtr libLinearBatchLearner();
+
+enum LaRankKernelType
+{
+  laRankLinearKernel = 0,
+  laRankPolynomialKernel,
+  laRankRBFKernel
+};
+
+extern FunctionPtr laRankClassifier(double C = 0.1, LaRankKernelType kernelType = laRankLinearKernel, size_t kernelDegree = 1, double kernelGamma = 0.1, double kernelCoef0 = 0.0);
+extern BatchLearnerPtr laRankBatchLearner();
 
 }; /* namespace lbcpp */
 
