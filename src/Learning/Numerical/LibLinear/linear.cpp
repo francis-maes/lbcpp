@@ -1902,6 +1902,8 @@ model* train(lbcpp::ExecutionContext& context, const problem *prob, const parame
 		model_->nr_feature=n;
 	model_->param = *param;
 	model_->bias = prob->bias;
+  model_->w = NULL;
+  model_->label = NULL;
 
 	int nr_class;
 	int *label = NULL;
@@ -2319,9 +2321,15 @@ void get_labels(const model *model_, int* label)
 void free_model_content(struct model *model_ptr)
 {
 	if(model_ptr->w != NULL)
+  {
 		free(model_ptr->w);
+    model_ptr->w = NULL;
+  }
 	if(model_ptr->label != NULL)
+  {
 		free(model_ptr->label);
+    model_ptr->label = NULL;
+  }
 }
 
 void free_and_destroy_model(struct model **model_ptr_ptr)
@@ -2331,6 +2339,7 @@ void free_and_destroy_model(struct model **model_ptr_ptr)
 	{
 		free_model_content(model_ptr);
 		free(model_ptr);
+    model_ptr = NULL;
 	}
 }
 
