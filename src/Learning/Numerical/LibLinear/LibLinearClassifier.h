@@ -29,20 +29,20 @@ public:
   virtual struct feature_node* getInput(const ObjectPtr& example) const
     {return convertDoubleVector(example->getVariable(0).getObjectAndCast<DoubleVector>());}
 
-  virtual double getSupervision(const ObjectPtr& example) const
+  virtual int getSupervision(const ObjectPtr& example) const
   {
     Variable supervision = example->getVariable(1);
     if (supervision.isEnumeration())
-      return supervision.toDouble();
+      return supervision.getInteger();
     else
     {
       DoubleVectorPtr vector = supervision.dynamicCast<DoubleVector>();
       if (vector)
-        return (double)vector->getIndexOfMaximumValue();
+        return (int)vector->getIndexOfMaximumValue();
       else
       {
         jassert(false);
-        return 0.0;
+        return 0;
       }
     }
   }

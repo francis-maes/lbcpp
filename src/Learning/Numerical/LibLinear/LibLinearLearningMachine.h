@@ -32,7 +32,7 @@ public:
 
   virtual TypePtr getSupervisionType() const = 0;
   virtual struct feature_node* getInput(const ObjectPtr& example) const = 0;
-  virtual double getSupervision(const ObjectPtr& example) const = 0;
+  virtual int getSupervision(const ObjectPtr& example) const = 0;
 
   virtual size_t getNumRequiredInputs() const
     {return 2;}
@@ -105,7 +105,7 @@ protected:
     struct feature_node* res = new struct feature_node[n + 1];
     for (size_t i = 0; i < n; ++i)
     {
-      res[i].index = (int)v->first;
+      res[i].index = (int)v->first + 1;
       res[i].value = v->second;
       ++v;
     }
@@ -127,7 +127,7 @@ public:
   {
     struct problem* problem = new struct problem();
     problem->l = data.size();
-    problem->n = data.size() ? data[0]->getVariable(0).getObjectAndCast<DoubleVector>()->getNumElements() : 0;
+    problem->n = data.size() ? data[0]->getVariable(0).getObjectAndCast<DoubleVector>()->getNumElements() + 1 : 0;
     problem->x = new struct feature_node*[data.size()];
     problem->y = new int[data.size()];
     problem->bias = -1;
