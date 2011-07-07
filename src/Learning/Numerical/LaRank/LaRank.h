@@ -19,19 +19,30 @@
 #ifndef LARANK_H
 #define LARANK_H
 
+#pragma warning(disable:4996)
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include <fstream>
 #include <sstream>
-# include <ctime>
-# include <sys/time.h>
+//# include <ctime>
+//# include <sys/time.h>
+# include <cmath>
+
+#ifdef JUCE_WIN32
+# include <hash_map>
+# include <hash_set>
+
+# define std_hash_map stdext::hash_map
+# define std_hash_set stdext::hash_set
+
+#else
+# define STDEXT_NAMESPACE __gnu_cxx
 # include <ext/hash_map>
 # include <ext/hash_set>
-# include <cmath>
-# define STDEXT_NAMESPACE __gnu_cxx
 # define std_hash_map STDEXT_NAMESPACE::hash_map
 # define std_hash_set STDEXT_NAMESPACE::hash_set
+#endif // JUCE_WIN32
 
 #include "kcache.h"
 #include "vectors.h"
@@ -261,9 +272,9 @@ public:
   }
 
 private:
-  std_hash_set < unsigned >freeidx;
+  std_hash_set < unsigned > freeidx;
   std::vector < LaRankPattern > patterns;
-  std_hash_map < int, unsigned >x_id2rank;
+  std_hash_map < int, unsigned > x_id2rank;
 };
 
 
@@ -308,16 +319,7 @@ extern Machine *create_larank (void* closure);
 inline double
 getTime ()
 {
-  struct timeval tv;
-  struct timezone tz;
-  long int sec;
-  long int usec;
-  double mytime;
-  gettimeofday (&tv, &tz);
-  sec = (long int) tv.tv_sec;
-  usec = (long int) tv.tv_usec;
-  mytime = (double) sec + usec * 0.000001;
-  return mytime;
+  return Time::getApproximateMillisecondCounter() / 1000.0;
 }
 
 #endif

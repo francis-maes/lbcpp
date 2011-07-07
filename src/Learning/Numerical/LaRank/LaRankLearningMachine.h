@@ -96,7 +96,7 @@ protected:
     LaRankConfiguration* laRank = (LaRankConfiguration*)config;
     SVector xi = laRank->data.data[i].inpt;
     SVector xj = laRank->data.data[j].inpt;
-    return pow(laRank->machine->kernelGamma * dot(xi, xj) + laRank->machine->kernelCoef0, laRank->machine->kernelDegree);
+    return pow(laRank->machine->kernelGamma * dot(xi, xj) + laRank->machine->kernelCoef0, (double)laRank->machine->kernelDegree);
   }
   
   static double rbfKernel(int i, int j, void* config)
