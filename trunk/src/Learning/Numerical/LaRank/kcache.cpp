@@ -27,6 +27,8 @@
  * $Id: kcache.c,v 1.9 2007/01/25 22:42:09 leonb Exp $
  **********************************************************************/
 
+#include "precompiled.h"
+
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>

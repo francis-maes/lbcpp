@@ -20,6 +20,7 @@
 
 // $Id: vectors.cpp,v 1.19 2007/10/02 20:40:06 cvs Exp $
 
+#include "precompiled.h"
 
 #include "vectors.h"
 #include <ios>
