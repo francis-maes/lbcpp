@@ -89,6 +89,17 @@ public:
 	return dot (beta, row, l);
       }
   }
+  
+  double computeScore()
+  {
+    if (l == 0)
+      return 0.0;
+
+    std::vector<float> rowvec(l);
+    for (int p = 0; p < l; p++)
+      rowvec[p] = larank_query(kernel, p);
+    return dot (beta, &rowvec[0], l);
+  }
 
   // !Important! Computing the gradient of a given input vector for the actual output           
   double computeGradient (int xi_id, int yi, int ythis)
@@ -360,6 +371,12 @@ public:
 	  }
       }
     return res;
+  }
+  
+  virtual void predict(std::vector<double>& results)
+  {
+    for (outputhash_t::iterator it = outputs.begin (); it != outputs.end ();++it)
+      results[it->first] = it->second.computeScore();
   }
 
   virtual void destroy ()

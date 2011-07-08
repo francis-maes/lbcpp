@@ -221,6 +221,7 @@ enum LaRankKernelType
 };
 
 extern FunctionPtr laRankClassifier(double C = 0.1, LaRankKernelType kernelType = laRankLinearKernel, size_t kernelDegree = 1, double kernelGamma = 0.1, double kernelCoef0 = 0.0);
+extern FunctionPtr laRankBinaryClassifier(double C = 0.1, LaRankKernelType kernelType = laRankLinearKernel, size_t kernelDegree = 1, double kernelGamma = 0.1, double kernelCoef0 = 0.0);
 extern BatchLearnerPtr laRankBatchLearner();
 
 }; /* namespace lbcpp */

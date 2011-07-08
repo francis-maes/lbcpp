@@ -4,6 +4,7 @@
 
   <import name="LibSVMLearning"/>
   <import name="LibLinearLearning"/>
+  <import name="LaRankLearning"/>
   
   <!-- Learning Parameters -->
   <class name="StochasticGDParameters" base="LearnerParameters" shortName="sgd">

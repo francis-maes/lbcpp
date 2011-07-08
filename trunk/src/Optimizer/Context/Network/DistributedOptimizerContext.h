@@ -23,7 +23,14 @@ class DistributedOptimizerContext : public OptimizerContext
 {
 public:
   // TODO : add validationFunction
-  DistributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime, size_t timeToSleep = 60000);
+  DistributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction
+                             , String projectName, String source, String destination
+                             , String managerHostName, size_t managerPort
+                             , size_t requiredCpus, size_t requiredMemory, size_t requiredTime, size_t timeToSleep = 60000);
+  DistributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction
+                              , String projectName, String source, const std::vector<String>& destinations
+                              , String managerHostName, size_t managerPort
+                              , size_t requiredCpus, size_t requiredMemory, size_t requiredTime, size_t timeToSleep = 60000);
   DistributedOptimizerContext() {timeToSleep = 60000;}
   
   virtual bool isSynchroneous() const
@@ -73,7 +80,7 @@ protected:
   
   String projectName;
   String source;
-  String destination;
+  std::vector<String> destinations;
   String managerHostName;
   size_t managerPort;
   size_t requiredCpus;
@@ -101,11 +108,16 @@ protected:
     return interface;
   }
   
-  String sendWU(WorkUnitPtr wu, ManagerNetworkInterfacePtr interface) const
+  String sendWU(WorkUnitPtr wu, ManagerNetworkInterfacePtr interface)
   {    
-    WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(context, projectName, source, destination, wu, requiredCpus, requiredMemory, requiredTime);
+    WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(context, projectName, source, destinations[nextDestination], wu, requiredCpus, requiredMemory, requiredTime);
+    ++nextDestination;
+    nextDestination %= destinations.size();
     return interface->pushWorkUnit(request);
   }
+  
+private:
+  size_t nextDestination;
 };
   
 typedef ReferenceCountedObjectPtr<DistributedOptimizerContext> DistributedOptimizerContextPtr;

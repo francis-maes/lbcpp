@@ -24,7 +24,7 @@ class Lin09PredictorParameters : public ProteinPredictorParameters
 public:
   Lin09PredictorParameters()
     : C(7.4), kernelGamma(-4.6)
-    , useLibSVM(true), useLibLinear(false)
+    , useLibSVM(true), useLibLinear(false), useLaRank(false)
     , learningRate(1.0), numIterations(150)
     , useAddBias(false) {}
   /*
@@ -167,6 +167,8 @@ public:
           return libSVMBinaryClassifier(pow(2.0, C), rbfKernel, 0, pow(2.0, kernelGamma), 0.0);
         if (useLibLinear)
           return libLinearBinaryClassifier(pow(2.0, C), l2RegularizedL2LossDual);
+        if (useLaRank)
+          return laRankBinaryClassifier(pow(2.0, C), laRankRBFKernel, 0, pow(2.0, kernelGamma), 0.0);
 
         FunctionPtr classifier = linearBinaryClassifier(new StochasticGDParameters(constantIterationFunction(learningRate), StoppingCriterionPtr(), numIterations));
         classifier->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
@@ -187,6 +189,7 @@ protected:
   double kernelGamma;
   bool useLibSVM;
   bool useLibLinear;
+  bool useLaRank;
   double learningRate;
   size_t numIterations;
   bool useAddBias;
