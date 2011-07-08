@@ -661,6 +661,7 @@ SET(LBCPP_OPTIMIZER_OPTIMIZER_SOURCES
   Optimizer/Optimizer/EDAOptimizer.h
   Optimizer/Optimizer/AsyncEDAOptimizer.h
   Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h
+  Optimizer/Optimizer/BestFirstSearchOptimizer.h
   Optimizer/Optimizer/OptimizerOptimizerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OptimizerOptimizerLibrary.cpp
 )
