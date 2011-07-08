@@ -290,6 +290,7 @@ public:
   // MAIN functions for straining and testing      
   virtual int add (int x_id, int classnumber) = 0;
   virtual int predict (int x_id) = 0;
+  virtual void predict (std::vector<double>& results) = 0;
 
   // Functions for saving and loading model
   virtual void save_outputs (std::ostream & ostr) = 0;

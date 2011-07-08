@@ -34,7 +34,8 @@ public:
     {destroyModel();}
 
   virtual TypePtr getSupervisionType() const = 0;
-  virtual size_t getInput(const ObjectPtr& example, SVector& result) const = 0;
+  virtual size_t getNumClasses() const = 0;
+  virtual void getInput(const ObjectPtr& example, SVector& result) const = 0;
   virtual int getSupervision(const ObjectPtr& example) const = 0;
 
   virtual size_t getNumRequiredInputs() const
@@ -49,9 +50,11 @@ protected:
 
   struct LaRankConfiguration
   {
-    LaRankLearningMachinePtr& machine;
-    Exampler& data;
-  };
+    LaRankLearningMachinePtr machine;
+    Exampler trainingData;
+    SVector testingData;
+    double normTestingData;
+  } configuration;
   
   double C;
   size_t kernelType;
@@ -66,27 +69,25 @@ protected:
     model->destroy();
   }
 
-  static size_t convertDoubleVector(const DoubleVectorPtr& vector, SVector& result)
+  static void convertDoubleVector(const DoubleVectorPtr& vector, SVector& result)
   {
+    result.clear();
     SparseDoubleVectorPtr features = vector->toSparseVector();
     std::pair<size_t, double>* v = features->getValues();
     size_t n = features->getNumValues();
     for (size_t i = 0; i < n; ++i)
     {
       result.set(v->first, v->second);
-      if (i == n - 1)
-        return v->first;
       ++v;
     }
-    return 0;
   }
   
   static double linearKernel(int i, int j, void* config)
   {
     jassert(config);
     LaRankConfiguration* laRank = (LaRankConfiguration*)config;
-    SVector xi = laRank->data.data[i].inpt;
-    SVector xj = laRank->data.data[j].inpt;
+    SVector xi = i == -1 ? laRank->testingData : laRank->trainingData.data[i].inpt;
+    SVector xj = laRank->trainingData.data[j].inpt;
     return dot(xi, xj);
   }
   
@@ -94,8 +95,8 @@ protected:
   {
     jassert(config);
     LaRankConfiguration* laRank = (LaRankConfiguration*)config;
-    SVector xi = laRank->data.data[i].inpt;
-    SVector xj = laRank->data.data[j].inpt;
+    SVector xi = i == -1 ? laRank->testingData : laRank->trainingData.data[i].inpt;
+    SVector xj = laRank->trainingData.data[j].inpt;
     return pow(laRank->machine->kernelGamma * dot(xi, xj) + laRank->machine->kernelCoef0, (double)laRank->machine->kernelDegree);
   }
   
@@ -103,9 +104,11 @@ protected:
   {
     jassert(config);
     LaRankConfiguration* laRank = (LaRankConfiguration*)config;
-    SVector xi = laRank->data.data[i].inpt;
-    SVector xj = laRank->data.data[j].inpt;
-    return exp(-laRank->machine->kernelGamma * (laRank->data.data[i].norm + laRank->data.data[j].norm - 2 * dot(xi, xj)));
+    SVector xi = i == -1 ? laRank->testingData : laRank->trainingData.data[i].inpt;
+    SVector xj = laRank->trainingData.data[j].inpt;
+    const double normXi = i == -1 ? laRank->normTestingData : laRank->trainingData.data[i].norm;
+    const double normXj = laRank->trainingData.data[j].norm;
+    return exp(-laRank->machine->kernelGamma * (normXi + normXj - 2 * dot(xi, xj)));
   }
 };
 
@@ -118,18 +121,14 @@ public:
   void createExampler(const LaRankLearningMachinePtr& machine, const std::vector<ObjectPtr>& data, Exampler& db) const
   {
     db.nb_ex = data.size();
-    db.max_index = 0;
-    db.nb_labels = 0;
+    db.max_index = data.size() ? data[0]->getVariable(0).getObjectAndCast<DoubleVector>()->getNumElements() : 0;
+    db.nb_labels = machine->getNumClasses();
     db.data.resize(data.size());
     for (size_t i = 0; i < data.size(); ++i)
     {
-      size_t maxIndex = machine->getInput(data[i], db.data[i].inpt);
+      machine->getInput(data[i], db.data[i].inpt);
       db.data[i].cls = machine->getSupervision(data[i]);
       db.data[i].norm = dot(db.data[i].inpt, db.data[i].inpt);
-      if ((int)maxIndex > db.max_index)
-        db.max_index = (int)maxIndex;
-      if (db.data[i].cls >= db.nb_labels)
-        db.nb_labels = db.data[i].cls + 1;
     }
   };
 
@@ -160,27 +159,27 @@ public:
   virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
     LaRankLearningMachinePtr machine = function.staticCast<LaRankLearningMachine>();
-    
-    Exampler trainingExampler;
-    createExampler(machine, trainingData, trainingExampler);
+    machine->configuration.machine = machine;
 
-    LaRankLearningMachine::LaRankConfiguration config = {machine, trainingExampler};
-    Machine* svm = createMachine(machine, (void*)&config);
+    createExampler(machine, trainingData, machine->configuration.trainingData);
+    Machine* svm = createMachine(machine, (void*)&machine->configuration);
 
+    size_t iteration = 0;
     double gap = DBL_MAX;
     while (gap > svm->C)
     {
       for (size_t i = 0; i < trainingData.size(); ++i)
-      {
-        svm->add((int)i, trainingExampler.data[i].cls);
-        gap = svm->computeGap();
-      }
+        svm->add((int)i, machine->configuration.trainingData.data[i].cls);
+      gap = svm->computeGap();
+      context.enterScope(T("Iteration ") + String((int)iteration));
+      context.resultCallback(T("Iteration"), iteration);
+      context.resultCallback(T("Gap"), gap);
+      context.resultCallback(T("C"), svm->C);
+      context.leaveScope(gap);
+      ++iteration;
     }
 
     machine->model = svm;
-
-    // free memory
-    trainingExampler = Exampler();
     return true;
   }
 };

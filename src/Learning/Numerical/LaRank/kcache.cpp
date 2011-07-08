@@ -418,6 +418,11 @@ larank_kcache_query_row (larank_kcache_t * self, int i, int len)
   return self->rdata[i];
 }
 
+float larank_query(larank_kcache_t * self, int i)
+{
+  return (*self->func) (-1, self->r2i[i], self->closure);
+}
+
 int
 larank_kcache_status_row (larank_kcache_t * self, int i)
 {

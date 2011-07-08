@@ -31,6 +31,9 @@ public:
       return supervision.getBoolean() ? 1 : 0;
     return supervision.getDouble() > 0.5 ? 1 : 0;
   }
+  
+  virtual size_t getNumClasses() const
+    {return 2;}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return probabilityType;}
@@ -38,22 +41,22 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     if (!model)
-      return Variable();
-    
-    DoubleVectorPtr input = inputs[0].getObjectAndCast<DoubleVector>();
-    /*
-    // predict probabilities
-    std::vector<double> probs(model->nr_class);
-    svm_node* node = convertDoubleVector(input);
-    svm_predict_probability(model, &node[0], &probs[0]);
-    delete [] node;
+      return Variable::missingValue(getOutputType());
 
-    // reorder classes and return probabilities
-    std::vector<int> labelIndices(model->nr_class);
-    svm_get_labels(model, &labelIndices[0]);
-    return probability(probs[labelIndices[1]]);
-    */
-    return probability(0.f);
+    convertDoubleVector(inputs[0].getObjectAndCast<DoubleVector>(context), const_cast<LaRankBinaryClassifier*>(this)->configuration.testingData);
+    const_cast<LaRankBinaryClassifier*>(this)->configuration.normTestingData = dot(configuration.testingData, configuration.testingData);
+
+    std::vector<double> scores(getNumClasses());
+    model->predict(scores);
+
+    return convertToProbability(scores[1]);
+  }
+
+protected:
+  Variable convertToProbability(double score) const
+  {
+    static const double temperature = 1.0;
+    return Variable(1.0 / (1.0 + exp(-score * temperature)), probabilityType);
   }
 };
   

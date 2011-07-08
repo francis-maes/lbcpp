@@ -107,6 +107,7 @@ extern "C"
 
   float *larank_kcache_query_row (larank_kcache_t * self, int i, int len);
 
+  float larank_query(larank_kcache_t * self, int i);
 /* --- larank_kcache_status_row
    Returns the number of cached entries for row i.
 */

@@ -162,6 +162,7 @@
     <variable type="Double" name="kernelGamma"/>
     <variable type="Boolean" name="useLibSVM"/>
     <variable type="Boolean" name="useLibLinear"/>
+    <variable type="Boolean" name="useLaRank"/>
     <variable type="Double" name="learningRate"/>
     <variable type="PositiveInteger" name="numIterations"/>
     <variable type="Boolean" name="useAddBias"/>

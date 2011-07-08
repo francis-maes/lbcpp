@@ -24,8 +24,8 @@ public:
   virtual TypePtr getSupervisionType() const
     {return sumType(denseDoubleVectorClass(), enumValueType);}
 
-  virtual size_t getInput(const ObjectPtr& example, SVector& result) const
-    {return convertDoubleVector(example->getVariable(0).getObjectAndCast<DoubleVector>(), result);}
+  virtual void getInput(const ObjectPtr& example, SVector& result) const
+    {convertDoubleVector(example->getVariable(0).getObjectAndCast<DoubleVector>(), result);}
 
   virtual int getSupervision(const ObjectPtr& example) const
   {
@@ -39,11 +39,14 @@ public:
         return (int)vector->getIndexOfMaximumValue();
       else
       {
-        jassert(false);
+        jassertfalse;
         return 0;
       }
     }
   }
+
+  virtual size_t getNumClasses() const
+    {jassert(labels); return labels->getNumElements();}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
@@ -61,25 +64,22 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     if (!model)
-      return Variable();
+      return Variable::missingValue(getOutputType());
 
-    DoubleVectorPtr input = inputs[0].getObjectAndCast<DoubleVector>();
+    getInput(inputs[0].getObject(), const_cast<LaRankClassifier*>(this)->configuration.testingData);
+    const_cast<LaRankClassifier*>(this)->configuration.normTestingData = dot(configuration.testingData, configuration.testingData);
+    
+    std::vector<double> scores(getNumClasses());
+    model->predict(scores);
 
-    /*
-    // predict probabilities
-    std::vector<double> probs(model->nr_class);
-    svm_node* node = convertDoubleVector(input);
-    svm_predict_probability(model, &node[0], &probs[0]);
-    delete [] node;
-
-    // reorder classes and return probabilities
+    double scoreSum = 0.0;
+    for (size_t i = 0; i < scores.size(); ++i)
+      scoreSum += scores[i];
+    
     DenseDoubleVectorPtr res = new DenseDoubleVector(getOutputType());
-    std::vector<int> labelIndices(model->nr_class);
-    svm_get_labels(model, &labelIndices[0]);
-    for (int i = 0; i < model->nr_class; ++i)
-      res->setValue(labelIndices[i], probs[i]);
+    for (size_t i = 0; i < scores.size(); ++i)
+      res->setValue(i, scores[i] / scoreSum);
     return res;
-    */
   }
 
 protected:

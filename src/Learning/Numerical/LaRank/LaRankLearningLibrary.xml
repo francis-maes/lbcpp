@@ -23,9 +23,9 @@
   <class name="LaRankClassifier" base="LaRankLearningMachine">
     <constructor arguments="double C, LaRankKernelType kernelType, size_t kernelDegree, double kernelGamma, double kernelCoef0" returnType="Function"/>
   </class>
-<!--
-  <class name="LibSVMBinaryClassifier" base="LibSVMClassifier">
-    <constructor arguments="double C, LibSVMKernelType kernelType, size_t kernelDegree, double kernelGamma, double kernelCoef0" returnType="Function"/>
+
+  <class name="LaRankBinaryClassifier" base="LaRankClassifier">
+    <constructor arguments="double C, LaRankKernelType kernelType, size_t kernelDegree, double kernelGamma, double kernelCoef0" returnType="Function"/>
   </class>
--->
+
 </library>

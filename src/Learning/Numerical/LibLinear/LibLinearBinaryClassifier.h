@@ -62,7 +62,7 @@ public:
     delete [] node;
     return res;
   }
-  
+
 protected:
   Variable convertToProbability(double score) const
   {
