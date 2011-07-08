@@ -667,4 +667,86 @@ protected:
   File inputDirectory;
 };
 
+class DoubleStream : public Stream
+{
+public:
+  DoubleStream(const std::vector<double>& values) : values(values), currentPosition(0) {}
+  DoubleStream() : currentPosition(0) {}
+  
+  virtual TypePtr getElementsType() const
+    {return doubleType;} // use an elementsType
+  
+  virtual ProgressionStatePtr getCurrentPosition() const
+    {return new ProgressionState(currentPosition, values.size(), T("Double"));}
+  
+  virtual Variable next()
+  {
+    jassert(currentPosition < values.size());
+    return values[currentPosition++];
+  }
+  
+  virtual bool rewind()
+  {
+    currentPosition = 0;
+    return true;
+  }
+
+  virtual bool isExhausted() const
+    {return currentPosition == values.size();}
+
+protected:
+  std::vector<double> values;
+  size_t currentPosition;
+};
+
+class BFSTestParameter : public Object
+{
+public:
+  double a;
+  double b;
+  double c;
+  
+  BFSTestParameter() : a(10.f), b(10.f), c(10.f) {}
+
+protected:
+  friend class BFSTestParameterClass;
+};
+
+extern ClassPtr bfsTestParameterClass;
+
+class BFSTestObjectiveFunction : public SimpleUnaryFunction
+{
+public:
+  BFSTestObjectiveFunction()
+    : SimpleUnaryFunction(bfsTestParameterClass, doubleType, T("BFSTest")) {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    ReferenceCountedObjectPtr<BFSTestParameter> param = input.getObjectAndCast<BFSTestParameter>(context);
+    return Variable(fabs(param->a * param->a + param->b * param->c - 10), doubleType);
+  }
+};
+
+class BFSTestWorkUnit : public WorkUnit
+{
+public:
+  Variable run(ExecutionContext& context)
+  {
+    std::vector<double> values(5);
+    for (size_t i = 0; i < 5; ++i)
+      values[i] = (double)i - 2;
+    StreamPtr doubleStream = new DoubleStream(values);
+    
+    std::vector<StreamPtr> streams(3);
+    for (size_t i = 0; i < 3; ++i)
+      streams[i] = doubleStream;
+    
+    OptimizerPtr optimizer = bestFirstSearchOptimizer();
+    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, new BFSTestObjectiveFunction(), FunctionPtr(), 3000.0);
+    OptimizerStatePtr optimizerState = streamBasedOptimizerState(new BFSTestParameter(), streams);
+    
+    return optimizer->compute(context, optimizerContext, optimizerState);
+  }
+};
+
 };

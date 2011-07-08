@@ -120,5 +120,15 @@
   <class name="EDACysteinProteinLearner" base="WorkUnit">
     <variable type="LocalFile" name="inputDirectory"/>
   </class>
+  
+  <class name="DoubleStream" base="Stream"/>
+
+  <class name="BFSTestParameter" base="Object">
+    <variable type="Double" name="a"/>
+    <variable type="Double" name="b"/>
+    <variable type="Double" name="c"/>
+  </class>
+  <class name="BFSTestObjectiveFunction" base="SimpleUnaryFunction"/>
+  <class name="BFSTestWorkUnit" base="WorkUnit"/>
 
 </library>

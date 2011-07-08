@@ -38,6 +38,8 @@ extern OptimizerPtr uniformSampleAndPickBestOptimizer(size_t numSamples, bool ve
 extern OptimizerPtr edaOptimizer(size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr(), double slowingFactor = 0, bool reinjectBest = false, bool verbose = false);
 extern OptimizerPtr asyncEDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, size_t numberEvaluationsInProgress, StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr(), double slowingFactor = 0, bool reinjectBest = false, bool verbose = false);
 
+extern OptimizerPtr bestFirstSearchOptimizer();
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OPTIMIZER_H_

@@ -28,5 +28,14 @@
     <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, size_t numberEvaluationsInProgress, StoppingCriterionPtr stoppingCriterion, double slowingFactor, bool reinjectBest, bool verbose" returnType="Optimizer"/>
     <variable type="PositiveInteger" name="numberEvaluationsInProgress"/>
   </class>
+
+  <class name="StreamBasedOptimizerState" base="OptimizerState">
+    <constructor arguments="const ObjectPtr&amp; initialState, const std::vector&lt;StreamPtr&gt;&amp; streams"/>
+    <variable type="GenericVector[Stream]" name="streams"/>
+  </class>
+
+  <class name="BestFirstSearchOptimizer" base="Optimizer">
+    <constructor/>
+  </class>
   
 </library>
