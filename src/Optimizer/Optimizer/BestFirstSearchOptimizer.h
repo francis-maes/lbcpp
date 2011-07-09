@@ -114,6 +114,7 @@ class BestFirstSearchOptimizer : public Optimizer
       double bestScore = DBL_MAX;
       size_t bestExperiment = (size_t)-1;
       size_t previousParameter = (size_t)-1;
+      double bestParameterScore = DBL_MAX;
       for (size_t i = 0; i < experiments.size(); ++i)
       {
         size_t currentParameter = experiments[i].first;
@@ -121,7 +122,10 @@ class BestFirstSearchOptimizer : public Optimizer
         if (previousParameter != currentParameter)
         {
           if (i)
-            context.leaveScope();
+          {
+            context.leaveScope(bestParameterScore);
+            bestParameterScore = DBL_MAX;
+          }
           context.enterScope(T("Parameter ") + baseObject->getVariableName(currentParameter));
         }
 
@@ -131,14 +135,17 @@ class BestFirstSearchOptimizer : public Optimizer
           bestScore = score;
           bestExperiment = i;
         }
+        
+        if (score < bestParameterScore)
+          bestParameterScore = score;
 
         context.enterScope(T("Value ") + value.toString());
         context.resultCallback(T("Value"), value);
         context.resultCallback(T("Score"), score);
-        context.leaveScope();
+        context.leaveScope(score);
 
         if (i == experiments.size() - 1)
-          context.leaveScope();
+          context.leaveScope(bestParameterScore);
         previousParameter = currentParameter;
       }
 

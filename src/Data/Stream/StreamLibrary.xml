@@ -73,7 +73,7 @@
     <constructor arguments="TypePtr elementsType, const std::vector&lt;double&gt;&amp; values" parameters="elementsType" returnType="Stream"/>
   </template>
   
-  <template name="IntegerStream" base="Steam">
+  <template name="IntegerStream" base="Stream">
     <parameter name="elementsType" type="Integer"/>
     <constructor arguments="TypePtr elementsType, const std::vector&lt;int&gt;&amp; values" parameters="elementsType" returnType="Stream"/>
   </template>
