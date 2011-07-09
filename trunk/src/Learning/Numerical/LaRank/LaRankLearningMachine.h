@@ -168,10 +168,12 @@ public:
     double gap = DBL_MAX;
     while (gap > svm->C)
     {
+      context.enterScope(T("Iteration ") + String((int)iteration));
+
       for (size_t i = 0; i < trainingData.size(); ++i)
         svm->add((int)i, machine->configuration.trainingData.data[i].cls);
       gap = svm->computeGap();
-      context.enterScope(T("Iteration ") + String((int)iteration));
+
       context.resultCallback(T("Iteration"), iteration);
       context.resultCallback(T("Gap"), gap);
       context.resultCallback(T("C"), svm->C);
