@@ -581,7 +581,7 @@ public:
     if (!trainingData || !trainingData->getNumElements())
     {
       context.errorCallback(T("No training proteins !"));
-      return false;
+      return DBL_MAX;
     }
 
     NumericalCysteinPredictorParametersPtr parameters = new NumericalCysteinPredictorParameters(input.getObjectAndCast<NumericalCysteinFeaturesParameters>(context));
@@ -607,7 +607,7 @@ public:
     }
     
     if (!predictor->train(context, trainingData, ContainerPtr(), T("Training")))
-      return false;
+      return DBL_MAX;
 
     ProteinEvaluatorPtr trainEvaluator = new ProteinEvaluator();
     CompositeScoreObjectPtr trainScores = predictor->evaluate(context, trainingData, trainEvaluator, T("Evaluate on training proteins"));
