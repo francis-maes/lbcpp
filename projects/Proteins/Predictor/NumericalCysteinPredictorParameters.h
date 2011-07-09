@@ -31,7 +31,6 @@ public:
   bool useAminoAcid;
   bool usePSSM;
   
-  bool useGlobalFeature;
   bool useGlobalHistogram;
   
   bool useNumCysteins;
@@ -70,7 +69,6 @@ public:
 
   NumericalCysteinFeaturesParameters()
   : useAminoAcid(true), usePSSM(true)
-  , useGlobalFeature(true)
   , useGlobalHistogram(true)
 
   , useNumCysteins(false), useDiscretizeNumCysteins(true), useCysteinParity(true)
@@ -401,8 +399,7 @@ public:
     /* Output */
     builder.startSelection();
 
-      if (fp->useGlobalFeature)
-        builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception, T("globalFeatures"));
+      builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception, T("globalFeatures"));
 
       builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, residueFeatures), position, proteinPerception, T("residueFeatures"));
       builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, cysteinResidueFeatures), position, proteinPerception, T("cysteinFeatures"));
@@ -504,8 +501,7 @@ public:
     /* Output */
     builder.startSelection();
 
-      if (fp->useGlobalFeature)
-        builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception, T("globalFeatures"));
+      builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception, T("globalFeatures"));
 
       if (fp->useSymmetricFeature)
         builder.addFunction(new SumDoubleVectorFunction(), rf1, rf2, T("rf1+rf2"));

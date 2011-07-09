@@ -102,7 +102,6 @@
   <class name="NumericalCysteinFeaturesParameters" base="Object" shortName="ncFeatures">
     <variable type="Boolean" name="useAminoAcid"/>
     <variable type="Boolean" name="usePSSM"/>
-    <variable type="Boolean" name="useGlobalFeature"/>
     <variable type="Boolean" name="useGlobalHistogram"/>
     <variable type="Boolean" name="useNumCysteins"/>
     <variable type="Boolean" name="useDiscretizeNumCysteins"/>
