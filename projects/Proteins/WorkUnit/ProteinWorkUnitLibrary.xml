@@ -119,9 +119,14 @@
 
   <class name="EDACysteinProteinLearner" base="WorkUnit">
     <variable type="LocalFile" name="inputDirectory"/>
+    <variable type="String" name="resultFile"/>
   </class>
-  
-  <class name="DoubleStream" base="Stream"/>
+
+<!-- BEGIN BuiltinTypeStream -->
+
+
+
+<!-- END BuiltinTypeStream -->
 
   <class name="BFSTestParameter" base="Object">
     <variable type="Double" name="a"/>

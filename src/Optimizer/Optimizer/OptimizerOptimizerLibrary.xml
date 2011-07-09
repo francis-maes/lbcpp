@@ -30,7 +30,7 @@
   </class>
 
   <class name="StreamBasedOptimizerState" base="OptimizerState">
-    <constructor arguments="const ObjectPtr&amp; initialState, const std::vector&lt;StreamPtr&gt;&amp; streams"/>
+    <constructor arguments="ExecutionContext&amp; context, const ObjectPtr&amp; initialState, const std::vector&lt;StreamPtr&gt;&amp; streams"/>
     <variable type="GenericVector[Stream]" name="streams"/>
   </class>
 

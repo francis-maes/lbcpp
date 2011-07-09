@@ -22,9 +22,22 @@ namespace lbcpp
 
 extern ClassPtr numericalCysteinFeaturesParametersClass;
 
+class NumericalCysteinFeaturesParameters;
+typedef ReferenceCountedObjectPtr<NumericalCysteinFeaturesParameters> NumericalCysteinFeaturesParametersPtr;
+
 class NumericalCysteinFeaturesParameters : public Object
 {
 public:
+  bool useAminoAcid;
+  bool usePSSM;
+  
+  bool useGlobalFeature;
+  bool useGlobalHistogram;
+  
+  bool useNumCysteins;
+  bool useDiscretizeNumCysteins;
+  bool useCysteinParity;
+
   bool useProteinLength;
   bool useDiscretizeProteinLength;
 
@@ -56,7 +69,12 @@ public:
   bool useAttachement;
 
   NumericalCysteinFeaturesParameters()
-  : useProteinLength(false), useDiscretizeProteinLength(false)
+  : useAminoAcid(true), usePSSM(true)
+  , useGlobalFeature(true)
+  , useGlobalHistogram(true)
+
+  , useNumCysteins(false), useDiscretizeNumCysteins(true), useCysteinParity(true)
+  , useProteinLength(false), useDiscretizeProteinLength(false)
   , residueWindowSize(20), localHistogramSize(60), separationProfilSize(15)
   , useSymmetricFeature(false), useIntervalHistogram(false), useAADistance(true)
   , pairWindowSize(21), normalizedWindowSize(21)
@@ -96,6 +114,101 @@ public:
     return res;
   }
   
+  static std::vector<StreamPtr> createStreams()
+  {
+    ClassPtr thisType = numericalCysteinFeaturesParametersClass;
+    const size_t n = thisType->getNumMemberVariables();
+    std::vector<StreamPtr> res(n);
+    
+    for (size_t i = 0; i < n; ++i)
+    {
+      if (thisType->getMemberVariableType(i)->inheritsFrom(booleanType))
+        res[i] = booleanStream(true);
+      else if (thisType->getMemberVariableName(i) == T("residueWindowSize"))
+      {
+        std::vector<int> values;
+        values.push_back(1);
+        values.push_back(5);
+        values.push_back(9);
+        values.push_back(15);
+        values.push_back(19);
+        values.push_back(25);
+        values.push_back(29);
+        res[i] = integerStream(positiveIntegerType, values);
+      }
+      else if (thisType->getMemberVariableName(i) == T("localHistogramSize"))
+      {
+        std::vector<int> values;
+        values.push_back(20);
+        values.push_back(50);
+        values.push_back(100);
+        values.push_back(150);
+        res[i] = integerStream(positiveIntegerType, values);
+      }
+      else if (thisType->getMemberVariableName(i) == T("separationProfilSize"))
+      {
+        std::vector<int> values;
+        values.push_back(1);
+        values.push_back(3);
+        values.push_back(9);
+        values.push_back(11);
+        values.push_back(15);
+        res[i] = integerStream(positiveIntegerType, values);
+      }
+      else if (thisType->getMemberVariableName(i) == T("pairWindowSize"))
+      {
+        std::vector<int> values;
+        values.push_back(1);
+        values.push_back(5);
+        values.push_back(9);
+        values.push_back(15);
+        res[i] = integerStream(positiveIntegerType, values);
+      }
+      else if (thisType->getMemberVariableName(i) == T("normalizedWindowSize"))
+      {
+        std::vector<int> values;
+        values.push_back(1);
+        values.push_back(5);
+        values.push_back(9);
+        values.push_back(15);
+        res[i] = integerStream(positiveIntegerType, values);
+      }
+      else if (thisType->getMemberVariableName(i) == T("d1WindowSize"))
+      {
+        std::vector<int> values;
+        values.push_back(1);
+        values.push_back(5);
+        values.push_back(9);
+        values.push_back(15);
+        res[i] = integerStream(positiveIntegerType, values);
+      }
+      else
+        jassertfalse;
+    }
+    return res;
+  }
+  
+  static NumericalCysteinFeaturesParametersPtr createInitialObject()
+  {
+    NumericalCysteinFeaturesParametersPtr res = new NumericalCysteinFeaturesParameters();
+
+    const size_t n = res->getNumVariables();
+    for (size_t i = 0; i < n; ++i)
+    {
+      const TypePtr currentType = res->getVariableType(i);
+      if (currentType->inheritsFrom(booleanType))
+        res->setVariable(i, Variable(false, booleanType));
+      else if (currentType->inheritsFrom(integerType))
+        res->setVariable(i, Variable(0, currentType));
+      else if (currentType->inheritsFrom(doubleType))
+        res->setVariable(i, Variable(0.f, currentType));
+      else
+        jassertfalse;
+    }
+
+    return res;
+  }
+  
   virtual String toString() const
     {return T("(") + defaultToStringImplementation(false) + T(")");}
   
@@ -115,8 +228,6 @@ protected:
   friend class NumericalCysteinFeaturesParametersClass;
 };
 
-typedef ReferenceCountedObjectPtr<NumericalCysteinFeaturesParameters> NumericalCysteinFeaturesParametersPtr;
-
 class NumericalCysteinPredictorParameters : public ProteinPredictorParameters
 {
 public:
@@ -131,16 +242,6 @@ public:
   bool useOracleD1;
   bool useOracleD2;
 
-  bool useAminoAcid;
-  bool usePSSM;
-
-  bool useGlobalFeature;
-  bool useGlobalHistogram;
-
-  bool useNumCysteins;
-  bool useDiscretizeNumCysteins;
-  bool useCysteinParity;
-
   NumericalCysteinPredictorParameters(NumericalCysteinFeaturesParametersPtr fp = new NumericalCysteinFeaturesParameters())
     : useAddBiasLearner(false)
     , fp(fp)
@@ -150,29 +251,6 @@ public:
     // ----- Features -----
     //, useCartesianProduct(false)
     // primary residue
-    , useAminoAcid(true), usePSSM(true)
-    // global
-    , useGlobalFeature(true)
-    , useGlobalHistogram(true)
-    //, useProteinLength(false), useDiscretizeProteinLength(false)
-    , useNumCysteins(false), useDiscretizeNumCysteins(true), useCysteinParity(true)
-
-    // residue
-    //, residueWindowSize(3)
-    //, localHistogramSize(100)
-    //, separationProfilSize(0)
-  
-    // pair
-    //, useSymmetricFeature(true)
-    //, useIntervalHistogram(false)
-    //, useAADistance(false)
-    //, pairWindowSize(3)
-    //, normalizedWindowSize(3)
-  
-    // MultiTask
-    //, useExtendedD1Feature(false)
-    //, d1WindowSize(0)
-    //, useExtendedD2Feature(false)
 
     , learningParameters(new StochasticGDParameters(constantIterationFunction(1), /*maxIterationsWithoutImprovementStoppingCriterion(20)*/ StoppingCriterionPtr(), 500))
     {}
@@ -224,15 +302,15 @@ public:
       if (fp->useDiscretizeProteinLength)
         builder.addFunction(new ProteinLengthFeatureGenerator(1000, 10), protein);
       // global composition
-      if (useGlobalHistogram)
+      if (fp->useGlobalHistogram)
         builder.addFunction(accumulatorGlobalMeanFunction(), primaryFeaturesAcc, T("histogram"));
       // number of cysteins
-      if (useNumCysteins)
+      if (fp->useNumCysteins)
         builder.addFunction(new NumCysteinsFeatureGenerator(false), protein, T("numCysteins"));
-      if (useDiscretizeNumCysteins)
+      if (fp->useDiscretizeNumCysteins)
         builder.addFunction(new NumCysteinsFeatureGenerator(true), protein, T("numCysteins"));
 
-      if (useCysteinParity)
+      if (fp->useCysteinParity)
         builder.addFunction(new IsNumCysteinPair(), protein, T("isNumCysteinsPair"));
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
@@ -246,20 +324,22 @@ public:
 
     /* Precompute */
     size_t aminoAcid = (size_t)-1;
-    if (useAminoAcid)
+    if (fp->useAminoAcid)
       aminoAcid = builder.addFunction(getElementInVariableFunction(T("primaryStructure")), protein, position);
     
     size_t pssmRow = (size_t)-1;
-    if (usePSSM)
+    if (fp->usePSSM)
       pssmRow = builder.addFunction(getElementInVariableFunction(T("positionSpecificScoringMatrix")), protein, position, T("pssm"));
 
     /* feature generators */
     builder.startSelection();
 
-      if (useAminoAcid)
+      builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 0, 0.0));
+    
+      if (fp->useAminoAcid)
         builder.addFunction(enumerationFeatureGenerator(), aminoAcid, T("aa"));
 
-      if (usePSSM)
+      if (fp->usePSSM)
         builder.addInSelection(pssmRow);
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
@@ -321,7 +401,7 @@ public:
     /* Output */
     builder.startSelection();
 
-      if (useGlobalFeature)
+      if (fp->useGlobalFeature)
         builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception, T("globalFeatures"));
 
       builder.addFunction(lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, residueFeatures), position, proteinPerception, T("residueFeatures"));
@@ -424,7 +504,7 @@ public:
     /* Output */
     builder.startSelection();
 
-      if (useGlobalFeature)
+      if (fp->useGlobalFeature)
         builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception, T("globalFeatures"));
 
       if (fp->useSymmetricFeature)

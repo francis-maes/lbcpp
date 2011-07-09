@@ -118,7 +118,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<SamplerBasedOptimizerState> SamplerBasedOptimizerStatePtr;
 
-extern OptimizerStatePtr streamBasedOptimizerState(const ObjectPtr& initialState, const std::vector<StreamPtr>& streams);
+extern OptimizerStatePtr streamBasedOptimizerState(ExecutionContext& context, const ObjectPtr& initialState, const std::vector<StreamPtr>& streams);
 
 }; /* namespace lbcpp */
 
