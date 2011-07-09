@@ -200,6 +200,7 @@ SET(LBCPP_DATA_STREAM_SOURCES
   Data/Stream/ARFFDataParser.h
   Data/Stream/ARFFDataParser.cpp
   Data/Stream/SaveToFileConsumer.h
+  Data/Stream/BuiltinTypeStream.h
   Data/Stream/StreamLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/StreamLibrary.cpp
 )

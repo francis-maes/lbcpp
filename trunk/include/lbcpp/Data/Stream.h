@@ -137,6 +137,11 @@ protected:
   ExecutionContext& context;
 };
 
+extern StreamPtr doubleStream(TypePtr elementsType, const std::vector<double>& values);
+extern StreamPtr integerStream(TypePtr elementsType, const std::vector<int>& values);
+extern StreamPtr booleanStream(const std::vector<bool>& values);
+extern StreamPtr booleanStream(bool value);
+
 StreamPtr directoryFileStream(ExecutionContext& context, const File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
 StreamPtr directoryPairFileStream(ExecutionContext& context, const File& mainDirectory, const File& secondDirectory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
 

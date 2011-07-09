@@ -19,10 +19,17 @@ namespace lbcpp
 class StreamBasedOptimizerState : public OptimizerState
 {
 public:
-  StreamBasedOptimizerState(const ObjectPtr& initialState, const std::vector<StreamPtr>& streams)
+  StreamBasedOptimizerState(ExecutionContext& context, const ObjectPtr& initialState, const std::vector<StreamPtr>& streams)
     : streams(streams)
   {
-    jassert(initialState->getNumVariables() == streams.size());
+    if (initialState->getNumVariables() != streams.size())
+      context.errorCallback(T("StreamBasedOptimizerState"), T("Invalid number of streams, Expected ") 
+                            + String((int)initialState->getNumVariables()) 
+                            + T(" found ") + streams.size());
+
+    for (size_t i = 0; i < streams.size(); ++i)
+      context.checkInheritance(streams[i]->getElementsType(), initialState->getVariableType(i));
+
     setBestVariable(initialState);
   }
 
@@ -31,10 +38,10 @@ public:
 
   size_t getNumStreams() const
     {return streams.size();}
-  
+
   const StreamPtr& getStream(size_t index) const
     {jassert(index < streams.size()); return streams[index];}
-  
+
   void appendStream(const StreamPtr& stream)
     {streams.push_back(stream);}
   

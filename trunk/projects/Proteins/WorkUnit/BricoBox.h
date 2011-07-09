@@ -1,8 +1,8 @@
-#include <lbcpp/lbcpp.h>
 #include "Data/Protein.h"
 #include "../Evaluator/ProteinEvaluator.h"
 
 #include "Data/Formats/SPXFileParser.h"
+#include <lbcpp/Data/Stream.h>
 
 #ifdef LBCPP_NETWORKING
 # include <lbcpp/Network/NetworkInterface.h>
@@ -510,8 +510,9 @@ public:
   EDAResultFileWriter() {}
 
   void write(String features, double trainScore, double testScore) const
-  {
-    ScopedLock _(lock);
+  {    
+    if (!outputFile.exists())
+      createFile(numericalCysteinFeaturesParametersClass);
 
     OutputStream *o = outputFile.createOutputStream();
     *o << trainScore << ";" << testScore;
@@ -527,7 +528,6 @@ public:
   
   void writeLog(String features) const
   {
-    ScopedLock _(lock);
     OutputStream *o = logFile.createOutputStream();
     *o << features << "\"\n";
     delete o;
@@ -535,8 +535,6 @@ public:
 
   void createFile(TypePtr type) const
   {
-    ScopedLock _(lock);
-
     OutputStream* o = outputFile.createOutputStream();
     *o << "Train Score; Test Score";
     for (size_t i = 0; i < type->getNumMemberVariables(); ++i)
@@ -548,7 +546,6 @@ public:
 protected:
   friend class EDAResultFileWriterClass;
 
-  CriticalSection lock;
   File outputFile;
   File logFile;
 };
@@ -578,7 +575,7 @@ public:
   
     fileWriter->writeLog(input.toString());
     
-    size_t numStacks = 3;
+    size_t numStacks = 2;
 
     ContainerPtr trainingData = Protein::loadProteinsFromDirectoryPair(context, File(), inputDirectory.getChildFile(T("train/")), 0, T("Loading training proteins"));
     if (!trainingData || !trainingData->getNumElements())
@@ -641,23 +638,27 @@ protected:
 class EDACysteinProteinLearner : public WorkUnit
 {
 public:
+  EDACysteinProteinLearner() : resultFile(T("result")) {}
+  
   Variable run(ExecutionContext& context)
   {
     size_t numIterations = 100;
     size_t populationSize = 40;
     size_t numBests = 10;
 
-    EDAResultFileWriterPtr fileWriter = new EDAResultFileWriter(context.getFile(T("O0-O1-D2-WindowSizes-500Iterations.eda")), context.getFile(T("log.txt")));
-    fileWriter->createFile(numericalCysteinFeaturesParametersClass);
+    EDAResultFileWriterPtr fileWriter = new EDAResultFileWriter(context.getFile(resultFile), context.getFile(resultFile + T(".log")));
 
     FunctionPtr f = new CysteinLearnerFunction(inputDirectory, fileWriter);
-    SamplerPtr sampler = objectCompositeSampler(numericalCysteinFeaturesParametersClass, NumericalCysteinFeaturesParameters::createSamplers());
 
-    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0);
-//    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 10);
-    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, f, T("edaDisulfideBonds"), T("jbecker@monster24"), T("jbecker@nic3"), T("localhost"), 1664, 1, 4, 10, 300000);
-    OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler);
-    
+    OptimizerPtr optimizer = bestFirstSearchOptimizer();
+    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 60000);
+    OptimizerStatePtr optimizerState = streamBasedOptimizerState(context, NumericalCysteinFeaturesParameters::createInitialObject(), NumericalCysteinFeaturesParameters::createStreams());
+
+//    SamplerPtr sampler = objectCompositeSampler(numericalCysteinFeaturesParametersClass, NumericalCysteinFeaturesParameters::createSamplers());
+//    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0);
+//    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, f, T("edaDisulfideBonds"), T("jbecker@monster24"), T("jbecker@nic3"), T("localhost"), 1664, 1, 4, 10, 300000);
+//    OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler);
+
     return optimizer->compute(context, optimizerContext, optimizerState);
   }
 
@@ -665,38 +666,7 @@ protected:
   friend class EDACysteinProteinLearnerClass;
 
   File inputDirectory;
-};
-
-class DoubleStream : public Stream
-{
-public:
-  DoubleStream(const std::vector<double>& values) : values(values), currentPosition(0) {}
-  DoubleStream() : currentPosition(0) {}
-  
-  virtual TypePtr getElementsType() const
-    {return doubleType;} // use an elementsType
-  
-  virtual ProgressionStatePtr getCurrentPosition() const
-    {return new ProgressionState(currentPosition, values.size(), T("Double"));}
-  
-  virtual Variable next()
-  {
-    jassert(currentPosition < values.size());
-    return values[currentPosition++];
-  }
-  
-  virtual bool rewind()
-  {
-    currentPosition = 0;
-    return true;
-  }
-
-  virtual bool isExhausted() const
-    {return currentPosition == values.size();}
-
-protected:
-  std::vector<double> values;
-  size_t currentPosition;
+  String resultFile;
 };
 
 class BFSTestParameter : public Object
@@ -735,15 +705,15 @@ public:
     std::vector<double> values(5);
     for (size_t i = 0; i < 5; ++i)
       values[i] = (double)i - 2;
-    StreamPtr doubleStream = new DoubleStream(values);
+    StreamPtr dStream = doubleStream(doubleType, values);
     
     std::vector<StreamPtr> streams(3);
     for (size_t i = 0; i < 3; ++i)
-      streams[i] = doubleStream;
+      streams[i] = dStream;
     
     OptimizerPtr optimizer = bestFirstSearchOptimizer();
     OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, new BFSTestObjectiveFunction(), FunctionPtr(), 3000.0);
-    OptimizerStatePtr optimizerState = streamBasedOptimizerState(new BFSTestParameter(), streams);
+    OptimizerStatePtr optimizerState = streamBasedOptimizerState(context, new BFSTestParameter(), streams);
     
     return optimizer->compute(context, optimizerContext, optimizerState);
   }

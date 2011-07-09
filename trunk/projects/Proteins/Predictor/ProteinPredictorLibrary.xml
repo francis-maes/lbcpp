@@ -100,33 +100,41 @@
   </class>
   
   <class name="NumericalCysteinFeaturesParameters" base="Object" shortName="ncFeatures">
+    <variable type="Boolean" name="useAminoAcid"/>
+    <variable type="Boolean" name="usePSSM"/>
+    <variable type="Boolean" name="useGlobalFeature"/>
+    <variable type="Boolean" name="useGlobalHistogram"/>
+    <variable type="Boolean" name="useNumCysteins"/>
+    <variable type="Boolean" name="useDiscretizeNumCysteins"/>
+    <variable type="Boolean" name="useCysteinParity"/>
+  
     <variable type="PositiveInteger" name="residueWindowSize"/>
     <variable type="PositiveInteger" name="localHistogramSize"/>
     <variable type="PositiveInteger" name="separationProfilSize"/>
 
-<!--    <variable type="Boolean" name="useIntervalHistogram"/> -->
+    <variable type="Boolean" name="useIntervalHistogram"/>
     
-<!--    <variable type="Boolean" name="useAADistance"/> -->
+    <variable type="Boolean" name="useAADistance"/>
 
     <variable type="PositiveInteger" name="pairWindowSize"/>
     <variable type="PositiveInteger" name="normalizedWindowSize"/>
     
-<!--    <variable type="Boolean" name="useExtendedD1Feature"/> -->
+    <variable type="Boolean" name="useExtendedD1Feature"/>
 
     <variable type="PositiveInteger" name="d1WindowSize"/>
-<!--    <variable type="Boolean" name="useExtendedD2Feature"/>
+    <variable type="Boolean" name="useExtendedD2Feature"/>
 
     <variable type="Boolean" name="useCysteinPositionDifference"/>
     <variable type="Boolean" name="useCysteinIndexDifference"/>
     <variable type="Boolean" name="useConnectivityPattern"/>
-    <variable type="Boolean" name="useCartesianConnectivity"/> -->
+    <variable type="Boolean" name="useCartesianConnectivity"/>
     <variable type="Boolean" name="useConnectivityStats"/>
     
-<!--    <variable type="Boolean" name="useCysteinDistance"/>
+    <variable type="Boolean" name="useCysteinDistance"/>
     <variable type="Boolean" name="useCommonNeighbors"/>
     <variable type="Boolean" name="useJaccardsCoef"/>
     <variable type="Boolean" name="useAdomicAdar"/>
-    <variable type="Boolean" name="useAttachement"/> -->
+    <variable type="Boolean" name="useAttachement"/>
   </class>
   
   <class name="NumericalCysteinPredictorParameters" base="ProteinPredictorParameters" shortName="numericalCystein">
@@ -137,7 +145,6 @@
     <variable type="Boolean" name="useOracleD0"/>
     <variable type="Boolean" name="useOracleD1"/>
     <variable type="Boolean" name="useOracleD2"/>
-    <variable type="Boolean" name="useGlobalFeature"/>
   </class>
   
   <!-- Connectivity Pattern Classifier -->
