@@ -311,6 +311,8 @@ public:
       if (fp->useCysteinParity)
         builder.addFunction(new IsNumCysteinPair(), protein, T("isNumCysteinsPair"));
 
+      builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 0, 0.0));
+
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
   }
 

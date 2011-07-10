@@ -119,7 +119,7 @@ public:
     else if (tabName == T("Cystein 2D"))
     {
       NumericalCysteinFeaturesParametersPtr features = new NumericalCysteinFeaturesParameters();
-      //features->loadFromString(context, T("(False,False,25,100,0,False,False,False,0,0,False,0,False,False,False,False,False,False)"));
+      features->loadFromString(context, T("(False, True, False, False, False, False, 25, 0, 0, False, False, 0, 0, False, 0, False, False, False, False, False, False, False, False, False, False, False)"));
       ProteinPredictorParametersPtr predictorParameters = new NumericalCysteinPredictorParameters(features);
       
       FunctionPtr proteinfunction = predictorParameters->createProteinPerception();
