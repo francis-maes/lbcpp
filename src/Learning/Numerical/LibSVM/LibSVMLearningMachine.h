@@ -64,7 +64,7 @@ protected:
     parameter.gamma = kernelGamma; // 1 / k
     parameter.coef0 = kernelCoef0;
     parameter.nu = 0.5;
-    parameter.cache_size = 40;
+    parameter.cache_size = 2048;
     parameter.C = C;
     parameter.eps = 0.001;
     parameter.p = 0.1;

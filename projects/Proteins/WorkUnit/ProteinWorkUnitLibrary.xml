@@ -112,21 +112,21 @@
     <variable type="File" name="logFile"/>
   </class>
 
-  <class name="CysteinLearnerFunction" base="Function">
-    <variable type="File" name="inputDirectory"/>
-    <variable type="EDAResultFileWriter" name="fileWriter"/>
+  <class name="CParameterOptimizer" base="Optimizer">
+    <variable type="Lin09Parameters" name="parameters"/>
   </class>
 
-  <class name="EDACysteinProteinLearner" base="WorkUnit">
+  <class name="CysteinLearnerFunction" base="SimpleUnaryFunction">
     <variable type="LocalFile" name="inputDirectory"/>
-    <variable type="String" name="resultFile"/>
+  </class>
+  
+  <class name="COptimizerFunction" base="SimpleUnaryFunction">
+    <variable type="LocalFile" name="inputDirectory"/>
   </class>
 
-<!-- BEGIN BuiltinTypeStream -->
-
-
-
-<!-- END BuiltinTypeStream -->
+  <class name="BFSCysteinProteinLearner" base="WorkUnit">
+    <variable type="LocalFile" name="inputDirectory"/>
+  </class>
 
   <class name="BFSTestParameter" base="Object">
     <variable type="Double" name="a"/>

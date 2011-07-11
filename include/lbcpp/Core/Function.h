@@ -219,6 +219,9 @@ extern FunctionPtr getVariableFunction(const String& variableName);
 extern FunctionPtr getElementFunction();
 extern FunctionPtr getElementInVariableFunction(const String& variableName);
 
+extern FunctionPtr setVariableFunction(size_t variableIndex);
+extern FunctionPtr setVariableFunction(const String& variableName);
+
 extern FunctionPtr loadFromFileFunction(TypePtr expectedType = objectClass); // File -> Object
 extern FunctionPtr loadFromFilePairFunction(TypePtr expectedType1 = objectClass, TypePtr expectedType2 = objectClass);
 

@@ -15,6 +15,7 @@
 #include <lbcpp/UserInterface/VariableSelector.h>
 
 #include "../Predictor/NumericalCysteinPredictorParameters.h"
+#include "../Predictor/Lin09PredictorParameters.h"
 
 /*
 ** BricoBox - Some non-important test tools
@@ -552,30 +553,60 @@ protected:
 
 typedef ReferenceCountedObjectPtr<EDAResultFileWriter> EDAResultFileWriterPtr;
 
-class CysteinLearnerFunction : public Function
+class CParameterOptimizer : public Optimizer
 {
 public:
-  CysteinLearnerFunction(const File& inputDirectory, EDAResultFileWriterPtr fileWriter)
-    : inputDirectory(inputDirectory), fileWriter(fileWriter) {}
-  CysteinLearnerFunction() {}
+  CParameterOptimizer(Lin09ParametersPtr parameters)
+    : parameters(parameters) {}
+  CParameterOptimizer() {}
 
-  virtual size_t getNumRequiredInputs() const
-    {return 1;}
+  virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
+  {
+    std::vector<double> values;
+    for (size_t i = 0; i < 5; ++i)
+      values.push_back(5.4 + (double)i);
+    
+    for (size_t i = 0; i < values.size(); ++i)
+    {
+      Lin09PredictorParametersPtr candidate = new Lin09PredictorParameters(parameters);
+      candidate->useLibSVM = true;
+      candidate->C = values[i];
+      
+      if (!optimizerContext->evaluate(candidate))
+        return DBL_MAX;
+      optimizerState->incTotalNumberOfRequests();
+    }
+    
+    while (!optimizerContext->areAllRequestsProcessed())
+      Thread::sleep(optimizerContext->getTimeToSleep());
+    
+    jassert(optimizerState->getNumberOfProcessedRequests() == values.size());
+    double bestScore = DBL_MAX;
+    const std::vector<std::pair<double, Variable> >& results = optimizerState->getProcessedRequests();
+    for (size_t i = 0; i < results.size(); ++i)
+      if (results[i].first < bestScore)
+        bestScore = results[i].first;
 
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return numericalCysteinFeaturesParametersClass;}
-  
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return doubleType;}
+    optimizerState->setBestScore(bestScore);
+    return bestScore;
+  }
+
+protected:
+  friend class CParameterOptimizerClass;
+  Lin09ParametersPtr parameters;
+};
+
+class CysteinLearnerFunction : public SimpleUnaryFunction
+{
+public:
+  CysteinLearnerFunction(File inputDirectory = File::nonexistent)
+    : SimpleUnaryFunction(lin09PredictorParametersClass, doubleType, T("CysteinLearner"))
+    , inputDirectory(inputDirectory) {}
 
   virtual Variable computeFunction(ExecutionContext& ctx, const Variable& input) const
   {
-    ExecutionContextPtr subContext = singleThreadedExecutionContext(ctx.getProjectDirectory());
+    ExecutionContextPtr subContext = multiThreadedExecutionContext(8, ctx.getProjectDirectory());
     ExecutionContext& context = *subContext;
-  
-    fileWriter->writeLog(input.toString());
-    
-    size_t numStacks = 2;
 
     ContainerPtr trainingData = Protein::loadProteinsFromDirectoryPair(context, File(), inputDirectory.getChildFile(T("train/")), 0, T("Loading training proteins"));
     if (!trainingData || !trainingData->getNumElements())
@@ -584,34 +615,23 @@ public:
       return DBL_MAX;
     }
 
-    NumericalCysteinPredictorParametersPtr parameters = new NumericalCysteinPredictorParameters(input.getObjectAndCast<NumericalCysteinFeaturesParameters>(context));
-    parameters->useAddBiasLearner = true;
-    parameters->useOracleD0 = true;
-    parameters->useOracleD1 = true;
+    Lin09PredictorParametersPtr parameters = input.getObjectAndCast<Lin09PredictorParameters>(context);
 
+    size_t numStacks = 1;
     ProteinSequentialPredictorPtr predictor = new ProteinSequentialPredictor();
-
-    ProteinPredictorPtr stack = new ProteinPredictor(parameters);
-    stack->addTarget(cbpTarget);
-    predictor->addPredictor(stack);
-      
-    stack = new ProteinPredictor(parameters);
-    stack->addTarget(cbsTarget);
-    predictor->addPredictor(stack);
-
     for (size_t i = 0; i < numStacks; ++i)
     {
-      stack = new ProteinPredictor(parameters);
+      ProteinPredictorPtr stack = new ProteinPredictor(parameters);
       stack->addTarget(dsbTarget);
       predictor->addPredictor(stack);
     }
-    
+
     if (!predictor->train(context, trainingData, ContainerPtr(), T("Training")))
       return DBL_MAX;
 
     ProteinEvaluatorPtr trainEvaluator = new ProteinEvaluator();
     CompositeScoreObjectPtr trainScores = predictor->evaluate(context, trainingData, trainEvaluator, T("Evaluate on training proteins"));
-    
+
     ContainerPtr testingData = Protein::loadProteinsFromDirectoryPair(context, File(), inputDirectory.getChildFile(T("test/")), 0, T("Loading testing proteins"));
     if (!testingData || !testingData->getNumElements())
     {
@@ -622,9 +642,6 @@ public:
     ProteinEvaluatorPtr testEvaluator = new ProteinEvaluator();
     CompositeScoreObjectPtr testScores = predictor->evaluate(context, testingData, testEvaluator, T("Evaluate on test proteins"));
 
-    fileWriter->write(input.toString(), trainEvaluator->getScoreObjectOfTarget(trainScores, dsbTarget)->getScoreToMinimize()
-                                    , testEvaluator->getScoreObjectOfTarget(testScores, dsbTarget)->getScoreToMinimize());
-
     return testEvaluator->getScoreObjectOfTarget(testScores, dsbTarget)->getScoreToMinimize();
   }
 
@@ -632,41 +649,57 @@ protected:
   friend class CysteinLearnerFunctionClass;
 
   File inputDirectory;
-  EDAResultFileWriterPtr fileWriter;
 };
 
-class EDACysteinProteinLearner : public WorkUnit
+class COptimizerFunction : public SimpleUnaryFunction
 {
 public:
-  EDACysteinProteinLearner() : resultFile(T("result")) {}
-  
-  Variable run(ExecutionContext& context)
+  COptimizerFunction(File inputDirectory = File::nonexistent)
+    : SimpleUnaryFunction(lin09ParametersClass, doubleType, T("COptimizer")), inputDirectory(inputDirectory) {}
+
+  virtual Variable computeFunction(ExecutionContext& ctx, const Variable& input) const
   {
-    size_t numIterations = 100;
-    size_t populationSize = 40;
-    size_t numBests = 10;
+    ExecutionContextPtr subContext = singleThreadedExecutionContext(ctx.getProjectDirectory());
+    ExecutionContext& context = *subContext;
 
-    EDAResultFileWriterPtr fileWriter = new EDAResultFileWriter(context.getFile(resultFile), context.getFile(resultFile + T(".log")));
+    Lin09ParametersPtr parameters = input.getObjectAndCast<Lin09Parameters>(context);
 
-    FunctionPtr f = new CysteinLearnerFunction(inputDirectory, fileWriter);
+    std::vector<String> destination;
+    destination.push_back(T("jbecker@nic3"));
+    destination.push_back(T("fmaes@nic3"));
 
-    OptimizerPtr optimizer = bestFirstSearchOptimizer();
-    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 60000);
-    OptimizerStatePtr optimizerState = streamBasedOptimizerState(context, NumericalCysteinFeaturesParameters::createInitialObject(), NumericalCysteinFeaturesParameters::createStreams());
-
-//    SamplerPtr sampler = objectCompositeSampler(numericalCysteinFeaturesParametersClass, NumericalCysteinFeaturesParameters::createSamplers());
-//    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0);
-//    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, f, T("edaDisulfideBonds"), T("jbecker@monster24"), T("jbecker@nic3"), T("localhost"), 1664, 1, 4, 10, 300000);
-//    OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler);
+    FunctionPtr f = new CysteinLearnerFunction(inputDirectory);
+    OptimizerPtr optimizer = new CParameterOptimizer(parameters);
+    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, f, T("bfsCysBondsLibSVM"), T("jbecker@monster24"), destination, T("localhost"), 1994, 8, 5, 48, 6000);
+    OptimizerStatePtr optimizerState = new OptimizerState();
 
     return optimizer->compute(context, optimizerContext, optimizerState);
   }
 
 protected:
-  friend class EDACysteinProteinLearnerClass;
+  friend class COptimizerFunctionClass;
 
   File inputDirectory;
-  String resultFile;
+};
+
+class BFSCysteinProteinLearner : public WorkUnit
+{
+public:  
+  Variable run(ExecutionContext& context)
+  {
+    FunctionPtr f = new COptimizerFunction(inputDirectory);
+
+    OptimizerPtr optimizer = bestFirstSearchOptimizer();
+    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 60000);
+    OptimizerStatePtr optimizerState = streamBasedOptimizerState(context, Lin09Parameters::createInitialObject(), Lin09Parameters::createStreams());
+
+    return optimizer->compute(context, optimizerContext, optimizerState);
+  }
+
+protected:
+  friend class BFSCysteinProteinLearnerClass;
+
+  File inputDirectory;
 };
 
 class BFSTestParameter : public Object

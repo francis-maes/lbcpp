@@ -17,6 +17,10 @@
     <constructor/>
   </class>
   
+  <class name="IntegerFeatureGenerator" base="FeatureGenerator">
+    <constructor/>
+  </class>
+  
   <!-- Number Features -->
   <class name="DiscretizedNumberFeatureGenerator" base="FeatureGenerator" abstract="yes">
     <variable type="Double" name="minimumValue"/>

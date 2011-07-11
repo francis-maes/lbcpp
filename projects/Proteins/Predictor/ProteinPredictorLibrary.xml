@@ -15,7 +15,7 @@
     <variable type="Container[DenseDoubleVector[AddMissingToEnumeration[featuresEnumeration], Double]]" name="accumulator"/>
     <variable type="DenseDoubleVector[globalFeaturesEnumeration, Double]" name="globalFeatures"/>
   </template>
-  
+
   <class name="ProteinLengthFunction" base="SimpleUnaryFunction"/>
   <class name="NumCysteinsFunction" base="SimpleUnaryFunction"/>
   
@@ -162,8 +162,41 @@
   <!-- BEGIN Article: Lin 2009 -->
   <class name="NormalizedCysteinPositionDifference" base="FeatureGenerator"/>
   <class name="NormalizedCysteinIndexDifference" base="FeatureGenerator"/>
+  <class name="CreateLin09ProteinPerception" base="Function"/>
+
+  <template name="Lin09ProteinPerception" base="ProteinPrimaryPerception">
+    <parameter name="globalFeaturesEnumeration"/>
+    <parameter name="aaFeaturesEnumeration"/>
+    <parameter name="pssmFeaturesEnumeration"/>
+    <variable type="DenseDoubleVector[globalFeaturesEnumeration, Double]" name="globalFeatures"/>
+    <variable type="Vector[DoubleVector[aaFeaturesEnumeration, Double]]" name="aaResidueFeatures"/>
+    <variable type="Container[DenseDoubleVector[AddMissingToEnumeration[aaFeaturesEnumeration], Double]]" name="aaAccumulator"/>
+    <variable type="Vector[DoubleVector[pssmFeaturesEnumeration, Double]]" name="pssmResidueFeatures"/>
+    <variable type="Container[DenseDoubleVector[AddMissingToEnumeration[pssmFeaturesEnumeration], Double]]" name="pssmAccumulator"/>
+  </template>
+  
+  <class name="Lin09Parameters" base="Object">
+    <variable type="Boolean" name="useProteinLength"/>
+    <variable type="Boolean" name="useAminoAcidGlobalHistogram"/>
+    <variable type="Boolean" name="usePSSMGlobalHistogram"/>
+    <variable type="Boolean" name="useNumCysteins"/>
+    <variable type="Boolean" name="useCysteinParity"/>
+
+    <variable type="PositiveInteger" name="aminoAcidWindowSize"/>
+    <variable type="PositiveInteger" name="pssmWindowSize"/>
+    <variable type="PositiveInteger" name="separationProfilSize"/>
+    <variable type="PositiveInteger" name="aminoAcidLocalHistogramSize"/>
+    <variable type="PositiveInteger" name="pssmLocalHistogramSize"/>
+
+    <variable type="Boolean" name="useSymmetricFeature"/>
+    <variable type="Boolean" name="useAminoAcidIntervalHistogram"/>
+    <variable type="Boolean" name="usePSSMIntervalHistogram"/>
+    <variable type="Boolean" name="useAADistance"/>
+    <variable type="Boolean" name="useCysteinDistance"/>
+  </class>
   
   <class name="Lin09PredictorParameters" base="ProteinPredictorParameters" shortName="lin09">
+    <variable type="Lin09Parameters" name="fp"/>
     <variable type="Double" name="C"/>
     <variable type="Double" name="kernelGamma"/>
     <variable type="Boolean" name="useLibSVM"/>
