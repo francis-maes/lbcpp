@@ -117,15 +117,15 @@
   </class>
 
   <class name="CysteinLearnerFunction" base="SimpleUnaryFunction">
-    <variable type="LocalFile" name="inputDirectory"/>
+    <variable type="String" name="inputDirectory"/>
   </class>
   
   <class name="COptimizerFunction" base="SimpleUnaryFunction">
-    <variable type="LocalFile" name="inputDirectory"/>
+    <variable type="String" name="inputDirectory"/>
   </class>
 
   <class name="BFSCysteinProteinLearner" base="WorkUnit">
-    <variable type="LocalFile" name="inputDirectory"/>
+    <variable type="String" name="inputDirectory"/>
   </class>
 
   <class name="BFSTestParameter" base="Object">

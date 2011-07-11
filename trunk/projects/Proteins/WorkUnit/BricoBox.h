@@ -599,7 +599,7 @@ protected:
 class CysteinLearnerFunction : public SimpleUnaryFunction
 {
 public:
-  CysteinLearnerFunction(File inputDirectory = File::nonexistent)
+  CysteinLearnerFunction(String inputDirectory = String::empty)
     : SimpleUnaryFunction(lin09PredictorParametersClass, doubleType, T("CysteinLearner"))
     , inputDirectory(inputDirectory) {}
 
@@ -608,7 +608,7 @@ public:
     ExecutionContextPtr subContext = multiThreadedExecutionContext(8, ctx.getProjectDirectory());
     ExecutionContext& context = *subContext;
 
-    ContainerPtr trainingData = Protein::loadProteinsFromDirectoryPair(context, File(), inputDirectory.getChildFile(T("train/")), 0, T("Loading training proteins"));
+    ContainerPtr trainingData = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(inputDirectory).getChildFile(T("train/")), 0, T("Loading training proteins"));
     if (!trainingData || !trainingData->getNumElements())
     {
       context.errorCallback(T("No training proteins !"));
@@ -632,7 +632,7 @@ public:
     ProteinEvaluatorPtr trainEvaluator = new ProteinEvaluator();
     CompositeScoreObjectPtr trainScores = predictor->evaluate(context, trainingData, trainEvaluator, T("Evaluate on training proteins"));
 
-    ContainerPtr testingData = Protein::loadProteinsFromDirectoryPair(context, File(), inputDirectory.getChildFile(T("test/")), 0, T("Loading testing proteins"));
+    ContainerPtr testingData = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(inputDirectory).getChildFile(T("test/")), 0, T("Loading testing proteins"));
     if (!testingData || !testingData->getNumElements())
     {
       context.warningCallback(T("No testing proteins ! Training score is returned !"));
@@ -648,13 +648,13 @@ public:
 protected:
   friend class CysteinLearnerFunctionClass;
 
-  File inputDirectory;
+  String inputDirectory;
 };
 
 class COptimizerFunction : public SimpleUnaryFunction
 {
 public:
-  COptimizerFunction(File inputDirectory = File::nonexistent)
+  COptimizerFunction(String inputDirectory = String::empty)
     : SimpleUnaryFunction(lin09ParametersClass, doubleType, T("COptimizer")), inputDirectory(inputDirectory) {}
 
   virtual Variable computeFunction(ExecutionContext& ctx, const Variable& input) const
@@ -679,7 +679,7 @@ public:
 protected:
   friend class COptimizerFunctionClass;
 
-  File inputDirectory;
+  String inputDirectory;
 };
 
 class BFSCysteinProteinLearner : public WorkUnit
@@ -690,7 +690,7 @@ public:
     FunctionPtr f = new COptimizerFunction(inputDirectory);
 
     OptimizerPtr optimizer = bestFirstSearchOptimizer();
-    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 30000.0);
+    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 30000);
     OptimizerStatePtr optimizerState = streamBasedOptimizerState(context, Lin09Parameters::createInitialObject(), Lin09Parameters::createStreams());
 
     return optimizer->compute(context, optimizerContext, optimizerState);
@@ -699,7 +699,7 @@ public:
 protected:
   friend class BFSCysteinProteinLearnerClass;
 
-  File inputDirectory;
+  String inputDirectory;
 };
 
 class BFSTestParameter : public Object
@@ -745,7 +745,7 @@ public:
       streams[i] = dStream;
     
     OptimizerPtr optimizer = bestFirstSearchOptimizer();
-    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, new BFSTestObjectiveFunction(), FunctionPtr(), 3000.0);
+    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, new BFSTestObjectiveFunction(), FunctionPtr(), 3000);
     OptimizerStatePtr optimizerState = streamBasedOptimizerState(context, new BFSTestParameter(), streams);
     
     return optimizer->compute(context, optimizerContext, optimizerState);
