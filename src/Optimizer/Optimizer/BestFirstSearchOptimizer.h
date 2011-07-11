@@ -31,6 +31,7 @@ public:
       context.checkInheritance(streams[i]->getElementsType(), initialState->getVariableType(i));
 
     setBestVariable(initialState);
+    setBestScore(DBL_MAX);
   }
 
   StreamBasedOptimizerState(const ObjectPtr& initialState = ObjectPtr())

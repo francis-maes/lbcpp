@@ -670,7 +670,7 @@ public:
 
     FunctionPtr f = new CysteinLearnerFunction(inputDirectory);
     OptimizerPtr optimizer = new CParameterOptimizer(parameters);
-    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, f, T("bfsCysBondsLibSVM"), T("jbecker@monster24"), destination, T("localhost"), 1994, 8, 5, 48, 6000);
+    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, f, T("bfsCysBondsLibSVM"), T("jbecker@monster24"), destination, T("localhost"), 1664, 8, 5, 48, 6000);
     OptimizerStatePtr optimizerState = new OptimizerState();
 
     return optimizer->compute(context, optimizerContext, optimizerState);
@@ -690,7 +690,7 @@ public:
     FunctionPtr f = new COptimizerFunction(inputDirectory);
 
     OptimizerPtr optimizer = bestFirstSearchOptimizer();
-    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 60000);
+    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 30000.0);
     OptimizerStatePtr optimizerState = streamBasedOptimizerState(context, Lin09Parameters::createInitialObject(), Lin09Parameters::createStreams());
 
     return optimizer->compute(context, optimizerContext, optimizerState);
