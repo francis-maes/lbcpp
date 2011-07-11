@@ -19,6 +19,13 @@
     <variable type="PositiveInteger" name="variableIndex"/>
     <variable type="String" name="variableName"/>
   </class>
+  
+  <class name="SetVariableFunction" base="Function">
+    <constructor arguments="const String&amp; variableName"/>
+    <constructor arguments="size_t variableIndex"/>
+    <variable type="PositiveInteger" name="variableIndex"/>
+    <variable type="String" name="variableName"/>
+  </class>
 
   <class name="GetElementFunction" base="Function">
     <constructor/>

@@ -145,6 +145,7 @@ SET(LBCPP_CORE_OBJECT_SOURCES
 
 SET(LBCPP_CORE_FUNCTION_SOURCES
   Core/Function/GetVariableFunction.h
+  Core/Function/SetVariableFunction.h
   Core/Function/GetElementFunction.h
   Core/Function/CreateObjectFunction.h
   Core/Function/CreateVectorFunction.h
@@ -475,6 +476,7 @@ SET(LBCPP_FEATURE_GENERATOR_ATOMIC_SOURCES
   FeatureGenerator/Atomic/BooleanFeatureGenerator.h
   FeatureGenerator/Atomic/EnumerationFeatureGenerator.h
   FeatureGenerator/Atomic/DoubleFeatureGenerator.h
+  FeatureGenerator/Atomic/IntegerFeatureGenerator.h
   FeatureGenerator/Atomic/DiscretizedNumberFeatureGenerator.h
   FeatureGenerator/Atomic/HardDiscretizedNumberFeatureGenerator.h
   FeatureGenerator/Atomic/SoftDiscretizedNumberFeatureGenerator.h

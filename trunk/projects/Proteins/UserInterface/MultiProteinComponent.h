@@ -118,9 +118,12 @@ public:
     }
     else if (tabName == T("Cystein 2D"))
     {
-      NumericalCysteinFeaturesParametersPtr features = new NumericalCysteinFeaturesParameters();
-      features->loadFromString(context, T("(False, True, False, False, False, False, 25, 0, 0, False, False, 0, 0, False, 0, False, False, False, False, False, False, False, False, False, False, False)"));
-      ProteinPredictorParametersPtr predictorParameters = new NumericalCysteinPredictorParameters(features);
+      //NumericalCysteinFeaturesParametersPtr features = new NumericalCysteinFeaturesParameters();
+      //features->loadFromString(context, T("(True, False, False, False, False, False, 5, 0, 0, False, False, 0, 0, False, 0, False, False, False, False, False, False, False, False, False, False, False)"));
+      //ProteinPredictorParametersPtr predictorParameters = new NumericalCysteinPredictorParameters(features);
+      Lin09ParametersPtr fp = new Lin09Parameters();
+      fp->loadFromString(context, T("True,True,True,True,True,5,5,5,5,5,False,True,True,True,True"));
+      ReferenceCountedObjectPtr<Lin09PredictorParameters> predictorParameters = new Lin09PredictorParameters(fp);
       
       FunctionPtr proteinfunction = predictorParameters->createProteinPerception();
       proteinfunction->initialize(context, (TypePtr)proteinClass);

@@ -55,6 +55,7 @@ typedef ReferenceCountedObjectPtr<StreamBasedOptimizerState> StreamBasedOptimize
 
 class BestFirstSearchOptimizer : public Optimizer
 {
+public:
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {
     StreamBasedOptimizerStatePtr streams = optimizerState.dynamicCast<StreamBasedOptimizerState>();
