@@ -603,10 +603,10 @@ public:
     : SimpleUnaryFunction(lin09PredictorParametersClass, doubleType, T("CysteinLearner"))
     , inputDirectory(inputDirectory) {}
 
-  virtual Variable computeFunction(ExecutionContext& ctx, const Variable& input) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    ExecutionContextPtr subContext = multiThreadedExecutionContext(8, ctx.getProjectDirectory());
-    ExecutionContext& context = *subContext;
+//    ExecutionContextPtr subContext = multiThreadedExecutionContext(8, ctx.getProjectDirectory());
+//    ExecutionContext& context = *subContext;
 
     ContainerPtr trainingData = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(inputDirectory).getChildFile(T("train/")), 0, T("Loading training proteins"));
     if (!trainingData || !trainingData->getNumElements())
