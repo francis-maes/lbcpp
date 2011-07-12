@@ -58,7 +58,7 @@ public:
     }
     /* Short way that avoid to use network trafic */
     bool ack = false;
-    if (!client->receiveBoolean(300000, ack) || !ack)
+    if (!client->receiveBoolean(3000, ack) || !ack)
       return;
     target->removeExecutionTraces(res);
   }
