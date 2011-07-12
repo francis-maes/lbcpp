@@ -37,7 +37,7 @@ Variable ManagerWorkUnit::run(ExecutionContext& context)
     
     /* Which kind of connection ? */
     NetworkInterfacePtr remoteInterface;
-    if (!client->receiveObject<NetworkInterface>(300000, remoteInterface) || !remoteInterface)
+    if (!client->receiveObject<NetworkInterface>(5000, remoteInterface) || !remoteInterface)
     {
       context.warningCallback(connectedHostName, T("Unknown NetworkInterface - Need to update Manager and/or Client? Invalid NetworkInterface?"));
       client->stopClient();
@@ -78,7 +78,7 @@ void ManagerWorkUnit::serverCommunication(ExecutionContext& context, const Manag
   while (client->isConnected() || client->hasVariableInQueue())
   {
     NetworkNotificationPtr notification;
-    if (!client->receiveObject<NetworkNotification>(300000, notification) || !notification)
+    if (!client->receiveObject<NetworkNotification>(3000, notification) || !notification)
     {
       context.warningCallback(T("NetworkContext::run"), T("No notification received"));
       return;

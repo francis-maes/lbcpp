@@ -15,7 +15,7 @@ String ForwarderManagerNetworkInterface::pushWorkUnit(WorkUnitNetworkRequestPtr 
 {
   client->sendVariable(new PushWorkUnitNotification(request));
   String res = T("Error");
-  if (!client->receiveString(15000/*1000*/, res))
+  if (!client->receiveString(300000, res))
     context.warningCallback(request->getSource(), T("ForwarderManagerNetworkInterface::pushWorkUnit"));
   return res;
 }
@@ -24,7 +24,7 @@ bool ForwarderManagerNetworkInterface::isFinished(const String& identifier)
 {
   client->sendVariable(new IsWorkUnitFinishedNotification(identifier));
   bool res = false;
-  if (!client->receiveBoolean(10000, res))
+  if (!client->receiveBoolean(300000, res))
     context.warningCallback(T("ForwarderManagerNetworkInterface::isFinished"), T("Timeout"));
   return res;
 }
