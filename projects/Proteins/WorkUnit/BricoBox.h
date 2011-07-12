@@ -572,8 +572,13 @@ public:
       candidate->useLibSVM = true;
       candidate->C = values[i];
       
-      if (!optimizerContext->evaluate(candidate))
-        return DBL_MAX;
+      size_t numAttempt = 0;
+      while (!optimizerContext->evaluate(candidate))
+      {
+        context.informationCallback(T("Evaluation - Attempt ") + String((int)numAttempt));
+        Thread::sleep(optimizerContext->getTimeToSleep());
+      }
+
       optimizerState->incTotalNumberOfRequests();
     }
     
@@ -586,6 +591,9 @@ public:
     for (size_t i = 0; i < results.size(); ++i)
       if (results[i].first < bestScore)
         bestScore = results[i].first;
+
+    if (bestScore == DBL_MAX)
+      context.errorCallback(T("CParameterOptimizer"), T("Jobs Failed ! Parameter: ") + parameters->toString());
 
     optimizerState->setBestScore(bestScore);
     return bestScore;
@@ -612,7 +620,7 @@ public:
     if (!trainingData || !trainingData->getNumElements())
     {
       context.errorCallback(T("No training proteins !"));
-      return DBL_MAX;
+      return 101;
     }
 
     Lin09PredictorParametersPtr parameters = input.getObjectAndCast<Lin09PredictorParameters>(context);
@@ -627,7 +635,7 @@ public:
     }
 
     if (!predictor->train(context, trainingData, ContainerPtr(), T("Training")))
-      return DBL_MAX;
+      return 102;
 
     ProteinEvaluatorPtr trainEvaluator = new ProteinEvaluator();
     CompositeScoreObjectPtr trainScores = predictor->evaluate(context, trainingData, trainEvaluator, T("Evaluate on training proteins"));
@@ -661,6 +669,7 @@ public:
   {
     ExecutionContextPtr subContext = singleThreadedExecutionContext(ctx.getProjectDirectory());
     ExecutionContext& context = *subContext;
+    context.appendCallback(consoleExecutionCallback());
 
     Lin09ParametersPtr parameters = input.getObjectAndCast<Lin09Parameters>(context);
 
