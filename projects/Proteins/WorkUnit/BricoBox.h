@@ -613,9 +613,6 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-//    ExecutionContextPtr subContext = multiThreadedExecutionContext(8, ctx.getProjectDirectory());
-//    ExecutionContext& context = *subContext;
-
     ContainerPtr trainingData = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(inputDirectory).getChildFile(T("train/")), 0, T("Loading training proteins"));
     if (!trainingData || !trainingData->getNumElements())
     {
@@ -707,6 +704,33 @@ public:
 
 protected:
   friend class BFSCysteinProteinLearnerClass;
+
+  String inputDirectory;
+};
+
+class EDACysteinHyperParameter : public WorkUnit
+{
+public:
+  Variable run(ExecutionContext& context)
+  {
+    FunctionPtr f = new CysteinLearnerFunction(inputDirectory);
+
+    std::vector<String> destinations;
+    destinations.push_back(T("jbecker@nic3"));
+    destinations.push_back(T("fmaes@nic3"));
+    destinations.push_back(T("amarcos@nic3"));
+    
+    Lin09PredictorParametersPtr lin09 = new Lin09PredictorParameters();
+    
+    OptimizerPtr optimizer = edaOptimizer(3, 100, 20, StoppingCriterionPtr(), 0.0);
+    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, f, T("bfsCysBondsLibSVM"), T("jbecker@monster24"), destinations, T("localhost"), 1664, 8, 3, 48, 60000);
+    OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(lin09->createSampler());
+
+    return optimizer->compute(context, optimizerContext, optimizerState);
+  }
+
+protected:
+  friend class EDACysteinHyperParameterClass;
 
   String inputDirectory;
 };

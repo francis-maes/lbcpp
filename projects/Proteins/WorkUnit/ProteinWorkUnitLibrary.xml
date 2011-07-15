@@ -127,6 +127,10 @@
   <class name="BFSCysteinProteinLearner" base="WorkUnit">
     <variable type="String" name="inputDirectory"/>
   </class>
+  
+  <class name="EDACysteinHyperParameter" base="WorkUnit">
+    <variable type="String" name="inputDirectory"/>
+  </class>
 
   <class name="BFSTestParameter" base="Object">
     <variable type="Double" name="a"/>
