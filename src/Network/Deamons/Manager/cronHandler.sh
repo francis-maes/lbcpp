@@ -1,6 +1,6 @@
 #!/bin/bash
 
-managerDirectory="/home/jbecker/Manager"
+managerDirectory="/home/jbecker/Manager/"
 programDirectory="/home/jbecker/Workspace/LBC++/bin/Release/"
 
 cd $managerDirectory
