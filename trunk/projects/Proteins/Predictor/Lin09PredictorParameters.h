@@ -206,6 +206,31 @@ public:
     , useLibSVM(true), useLibLinear(false), useLaRank(false)
     , learningRate(1.0), numIterations(150)
     , useAddBias(true) {}
+  
+  SamplerPtr createSampler() const
+  {
+    std::vector<SamplerPtr> res(lin09PredictorParametersClass->getNumMemberVariables());
+    
+    for (size_t i = 0; i < res.size(); ++i)
+    {
+      const String varName = lin09PredictorParametersClass->getMemberVariableName(i);
+      if (varName == T("fp"))
+      {
+        Lin09ParametersPtr param = new Lin09Parameters();
+        param->separationProfilSize = 9;
+        res[i] = constantSampler(param);
+      }
+      else if (varName == T("C"))
+        res[i] = gaussianSampler(C, 10);
+      else if (varName == T("kernelGamma"))
+        res[i] = gaussianSampler(kernelGamma, 10);
+      else
+        res[i] = constantSampler(getVariable(i));
+    }
+    
+    return objectCompositeSampler(lin09PredictorParametersClass, res);
+  }
+  
   /*
   ************************ Protein Perception ************************
   */
