@@ -66,12 +66,12 @@ public:
     nb_obj_in_core_table = 1;
     core_table = (CORETABLE_TYPE *)MyMalloc((size_t)nb_attributes * sizeof(CORETABLE_TYPE));
     jassert(core_table);
-    ObjectPtr obj = input.getObject();
-    jassert(obj->getNumVariables() == (size_t)nb_attributes);
+    ContainerPtr obj = input.getObjectAndCast<Container>(context);
+    jassert(obj->getNumElements() == (size_t)nb_attributes);
     for (size_t j = 0; j < (size_t)nb_attributes; ++j)
     {
-      TypePtr objType = obj->getVariableType(j);
-      Variable objVariable = obj->getVariable(j);
+      Variable objVariable = obj->getElement(j);
+      TypePtr objType = objVariable.getType();
       CORETABLE_TYPE value;
       if (objType->inheritsFrom(booleanType))
         value = (CORETABLE_TYPE)(objVariable.getBoolean() ? 1 : 0);
@@ -101,7 +101,7 @@ public:
       res = Variable((double)*output, doubleType);
     else if (outputType->inheritsFrom(enumValueType))
     {
-      DenseDoubleVectorPtr resVector = new DenseDoubleVector(outputType, doubleType);
+      DenseDoubleVectorPtr resVector = new DenseDoubleVector(outputType, probabilityType);
       for (size_t i = 0; i < (size_t)nb_goal_multiregr; ++i)
         resVector->getValueReference(i) = output[i];
       res = resVector;
@@ -238,7 +238,7 @@ Variable RTreeFunction::computeFunction(ExecutionContext& context, const Variabl
 {
   if (!trees)
     Variable::missingValue(getOutputType());
-  return trees.staticCast<RTree>()->makePrediction(context, inputs[0], getOutputType());
+  return trees.staticCast<RTree>()->makePrediction(context, inputs[0], getInputVariable(1)->getType());
 }
 
 /*
@@ -281,7 +281,9 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
   }
 
   size_t n = trainingData.size();
-  context.resultCallback(T("Num Attributes"), function->getInputsClass()->getNumMemberVariables());
+  nb_attributes = trainingData[0]->getVariable(0).getObjectAndCast<Container>()->getNumElements();
+
+  context.resultCallback(T("Num Attributes"), nb_attributes);
   context.resultCallback(T("K"), rTreeFunction->getNumAttributeSamplesPerSplit());
   context.resultCallback(T("nmin"), rTreeFunction->getMinimumSizeForSplitting());
   context.resultCallback(T("Num Examples"), n);
@@ -289,18 +291,18 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
   set_print_result(0, 0);
   goal_type = MULTIREGR;
   goal = MULTIREGR;
-  nb_attributes = function->getInputsClass()->getMemberVariable(0)->getType()->getNumMemberVariables();
+  jassert(nb_attributes);
   nb_obj_in_core_table = n;
   
   core_table = (CORETABLE_TYPE *)MyMalloc((size_t)nb_obj_in_core_table * (size_t)nb_attributes * sizeof(CORETABLE_TYPE));
   for (size_t i = 0; i < (size_t)nb_obj_in_core_table; ++i)
   {
-    ObjectPtr obj = trainingData[i]->getVariable(0).getObject(); // training inputs
-    jassert(obj->getNumVariables() == (size_t)nb_attributes);
+    ContainerPtr obj = trainingData[i]->getVariable(0).getObjectAndCast<Container>(); // training inputs
+    jassert(obj->getNumElements() == (size_t)nb_attributes);
     for (size_t j = 0; j < (size_t)nb_attributes; ++j)
     {
-      TypePtr objType = obj->getVariableType(j);
-      Variable objVariable = obj->getVariable(j);
+      Variable objVariable = obj->getElement(j);
+      TypePtr objType =  objVariable.getType();
       CORETABLE_TYPE value;
       if (objType->inheritsFrom(booleanType))
         value = (CORETABLE_TYPE)(objVariable.getBoolean() ? 1 : 0);
@@ -310,19 +312,19 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
         value = (CORETABLE_TYPE)objVariable.getDouble();
       else if (objType->inheritsFrom(integerType))
         value = (CORETABLE_TYPE)objVariable.getInteger();
-      else {
+      else
         jassertfalse;
-      }
+
       core_table[nb_obj_in_core_table * j + i] = value;
     }
   }
 
   length_attribute_descriptors = nb_attributes;
   attribute_descriptors = (int*)MyMalloc((size_t)nb_attributes * sizeof(int));
-  TypePtr inputType = function->getInputsClass()->getMemberVariable(0)->getType();
+  ContainerPtr firstData = trainingData[0]->getVariable(0).getObjectAndCast<Container>(context);
   for (size_t i = 0; i < (size_t)nb_attributes; ++i)
   {
-    TypePtr attrType = inputType->getMemberVariableType(i);
+    TypePtr attrType = firstData->getElement(i).getType();
     int value;
     if (attrType->inheritsFrom(booleanType))
       value = 2;
@@ -332,9 +334,9 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
       value = 0;
     else if (attrType->inheritsFrom(integerType))
       value = 0;
-    else {
+    else
       jassertfalse;
-    }
+
     attribute_descriptors[i] = value;
   }
   
@@ -361,7 +363,7 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
   for (size_t i = 0; i < (size_t)nb_obj_in_core_table; ++i)
     object_weight[i] = 1.0;
   
-  TypePtr outputType = rTreeFunction->getOutputType();
+  TypePtr outputType = trainingData[0]->getVariable(1).getType();
   nb_goal_multiregr = outputType->inheritsFrom(enumValueType) ? outputType.dynamicCast<Enumeration>()->getNumElements() : 1;
   core_table_y = (CORETABLE_TYPE *)MyMalloc((size_t)nb_obj_in_core_table * (size_t)nb_goal_multiregr * sizeof(CORETABLE_TYPE));
   for (size_t i = 0; i < (size_t)nb_obj_in_core_table; ++i)
@@ -376,9 +378,9 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
         value = (CORETABLE_TYPE)objVariable.getDouble();
       else if (outputType->inheritsFrom(integerType))
         value = (CORETABLE_TYPE)objVariable.getInteger();
-      else {
+      else
         jassertfalse;
-      }
+
       core_table_y[i] = value;
     }
     else

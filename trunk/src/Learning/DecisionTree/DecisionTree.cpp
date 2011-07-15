@@ -9,25 +9,28 @@
 #include <lbcpp/Learning/DecisionTree.h>
 #include "RTreeFunction.h"
 
-using namespace lbcpp;
+namespace lbcpp
+{
 
-FunctionPtr regressionExtraTree(ExecutionContext& context, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0)
+FunctionPtr regressionExtraTree(ExecutionContext& context, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
 {
   FunctionPtr res = new RegressionRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
-  res->initialize(context, doubleType);
+  res->initialize(context, (TypePtr)containerClass(anyType), doubleType);
   return res;
 }
 
-FunctionPtr binaryClassificationExtraTree(ExecutionContext& context, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0)
+FunctionPtr binaryClassificationExtraTree(ExecutionContext& context, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
 {
   FunctionPtr res = new BinaryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
-  res->initialize(context, booleanType);
+  res->initialize(context, (TypePtr)containerClass(anyType), booleanType);
   return res;
 }
 
-FunctionPtr classificationExtraTree(ExecutionContext& context, EnumerationPtr classes, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0)
+FunctionPtr classificationExtraTree(ExecutionContext& context, EnumerationPtr classes, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
 {
   FunctionPtr res = new ClassificationRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
-  res->initialize(context, (TypePtr)classes);
+  res->initialize(context, (TypePtr)containerClass(anyType), (TypePtr)classes);
   return res;
 }
+
+};
