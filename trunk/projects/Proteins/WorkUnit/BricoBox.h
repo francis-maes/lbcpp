@@ -737,6 +737,37 @@ protected:
   String inputDirectory;
 };
 
+class CysteinCrossValidation : public WorkUnit
+{
+public:
+  Variable run(ExecutionContext& context)
+  {
+    std::vector<Variable> results(numFolds);
+    for (size_t i = 0; i < numFolds; ++i)
+    {
+      FunctionPtr f = new CysteinLearnerFunction(inputPath + String((int)i));
+
+      Lin09PredictorParametersPtr lin09 = new Lin09PredictorParameters();
+      lin09->fp->separationProfilSize = 9;
+      
+      context.pushWorkUnit(new FunctionWorkUnit(f, lin09, T("Fold ") + String((int)i), &results[i]));
+    }
+    context.waitUntilAllWorkUnitsAreDone();
+
+    double sum = 0.0;
+    for (size_t i = 0; i < numFolds; ++i)
+      sum += results[i].getDouble();
+    context.resultCallback(T("Average"), Variable(sum / (double)numFolds, doubleType));
+    return Variable(sum / (double)numFolds, doubleType);
+  }
+
+protected:
+  friend class CysteinCrossValidationClass;
+
+  String inputPath;
+  size_t numFolds;
+};
+
 class BFSTestParameter : public Object
 {
 public:

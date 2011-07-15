@@ -268,15 +268,14 @@ protected:
       size_t& refCount = referenceCounts[index];
       jassert(refCount > 0);
       --refCount;
-///*
-    if (refCount == 0)
+      if (refCount == 0)
       {
         Variable missing = Variable::missingValue(function->getStateClass()->getMemberVariableType(index));
         for (size_t i = 0; i < trainingStates.size(); ++i)
           trainingStates[i]->setVariable(index, missing);
         for (size_t i = 0; i < validationStates.size(); ++i)
           validationStates[i]->setVariable(index, missing);
-      }//*/
+      }
     }
   }
 };

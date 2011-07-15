@@ -131,6 +131,11 @@
   <class name="EDACysteinHyperParameter" base="WorkUnit">
     <variable type="String" name="inputDirectory"/>
   </class>
+  
+  <class name="CysteinCrossValidation" base="WorkUnit">
+    <variable type="String" name="inputPath"/>
+    <variable type="PositiveInteger" name="numFolds"/>
+  </class>
 
   <class name="BFSTestParameter" base="Object">
     <variable type="Double" name="a"/>
