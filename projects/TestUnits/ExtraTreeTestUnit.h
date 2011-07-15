@@ -9,48 +9,14 @@
 #ifndef LBCPP_TEST_UNIT_EXTRA_TREES_H_
 # define LBCPP_TEST_UNIT_EXTRA_TREES_H_
 
-# if 0 // broken
-
 # include <lbcpp/Execution/TestUnit.h>
-# include <lbcpp/Perception/Perception.h>
-# include <lbcpp/DecisionTree/DecisionTree.h>
-# include <lbcpp/Function/OldEvaluator.h>
+# include <lbcpp/Learning/DecisionTree.h>
 
 namespace lbcpp
 {
 
 extern EnumerationPtr waveFormTypeEnumeration;
-  
-class FlattenContainerPerception : public Perception
-{
-public:
-  FlattenContainerPerception(size_t numElements = 10, TypePtr elementType = doubleType)
-  : numElements(numElements), elementType(elementType) {}
-
-  virtual TypePtr getInputType() const
-    {return vectorClass(elementType);}
-  
-  virtual void computeOutputType()
-  {
-    for (size_t i = 0; i < numElements; ++i)
-      addOutputVariable(T("FlatContPer[") + String((int)i) + T("]"), elementType);
-    Perception::computeOutputType();
-  }
-  
-  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
-  {
-    ContainerPtr data = input.getObjectAndCast<Container>(context);
-    for (size_t i = 0; i < numElements; ++i)
-      callback->sense(i, data->getElement(i).getDouble());
-  }
-  
-protected:
-  friend class FlattenContainerPerceptionClass;
-  
-  size_t numElements;
-  TypePtr elementType;
-};
-  
+ 
 class ExtraTreeTestUnit : public TestUnit
 {
 public:
@@ -75,53 +41,56 @@ protected:
 
   void runClassification(ExecutionContext& context)
   {  
-    //File input(File::getSpecialLocation(File::currentExecutableFile).getChildFile(T("../../projects/Examples/Data/ExtraTrees/classification.csv")));
+    context.enterScope(T("Classification"));
+
     File input(File::getCurrentWorkingDirectory().getChildFile(T("../../projects/Examples/Data/ExtraTrees/classification.csv")));
 
     std::vector<std::vector<double> > data;
     parseDataFile(context, input, data, true);
-    
-    ContainerPtr learningData = loadDataToContainer(data, 0, 300, true);
-    ContainerPtr testingData = loadDataToContainer(data, 300, 2300, true);
-    
-    PerceptionPtr perception = flattenPerception(new FlattenContainerPerception(21));
-    InferencePtr inference = classificationExtraTreeInference(T("x3Test"), perception, waveFormTypeEnumeration, numTrees, numAttributes, minSplitSize);
 
-    inference->train(context, learningData, ContainerPtr());
-    jassertfalse;
-    OldEvaluatorPtr evaluator = OldEvaluatorPtr(); // FIXME
+    ContainerPtr learningData = loadDataToContainer(context, data, 0, 300, true);
+    ContainerPtr testingData = loadDataToContainer(context, data, 300, 2300, true);
+
+    FunctionPtr learner = classificationExtraTree(context, waveFormTypeEnumeration, numTrees, numAttributes, minSplitSize);
+
+    learner->train(context, learningData, ContainerPtr(), T("Training"));
     
-    inference->evaluate(context, learningData, evaluator, T("Evaluating on training data"));
-    checkIsCloseTo(context, 1.0, 0.0, evaluator->getDefaultScore());
-    jassertfalse;
-    evaluator = OldEvaluatorPtr(); //FIXME
-    inference->evaluate(context, testingData, evaluator, T("Evaluating on testing data"));
-    checkIsCloseTo(context, 0.85, 0.03, evaluator->getDefaultScore());
+    EvaluatorPtr evaluator = classificationEvaluator();
+    ScoreObjectPtr score = learner->evaluate(context, learningData, evaluator, T("Evaluating on training data"));
+    checkIsCloseTo(context, 1.0, 0.0, 1 - score->getScoreToMinimize());
+
+    evaluator = classificationEvaluator();
+    score = learner->evaluate(context, testingData, evaluator, T("Evaluating on testing data"));
+    checkIsCloseTo(context, 0.85, 0.03, 1 - score->getScoreToMinimize());
+    
+    context.leaveScope();
   }
-  
+
   void runRegression(ExecutionContext& context)
   {
-    //File input(File::getSpecialLocation(File::currentExecutableFile).getChildFile(T("../../../projects/Examples/Data/ExtraTrees/regression.csv")));
+    context.enterScope(T("Regression"));
+
     File input(File::getCurrentWorkingDirectory().getChildFile(T("../../projects/Examples/Data/ExtraTrees/regression.csv")));
     
     std::vector<std::vector<double> > data;
     parseDataFile(context, input, data, false);
     
-    ContainerPtr learningData = loadDataToContainer(data, 0, 300, false);
-    ContainerPtr testingData = loadDataToContainer(data, 300, 2300, false);
+    ContainerPtr learningData = loadDataToContainer(context, data, 0, 300, false);
+    ContainerPtr testingData = loadDataToContainer(context, data, 300, 2300, false);
     
-    PerceptionPtr perception = flattenPerception(new FlattenContainerPerception(10));
-    InferencePtr inference = regressionExtraTreeInference(T("x3Test"), perception, numTrees, numAttributes, minSplitSize);
+    FunctionPtr learner = regressionExtraTree(context, numTrees, numAttributes, minSplitSize);
 
-    inference->train(context, learningData, ContainerPtr());
-    jassertfalse;
-    OldEvaluatorPtr evaluator = OldEvaluatorPtr(); //FIXME
-    inference->evaluate(context, learningData, evaluator);
-    checkIsCloseTo(context, 0.0, 0.0001, evaluator->getDefaultScore());
-    jassertfalse;
-    evaluator = OldEvaluatorPtr(); // FIXME
-    inference->evaluate(context, testingData, evaluator);
-    checkIsCloseTo(context, 2.2, 0.3, -evaluator->getDefaultScore());
+    learner->train(context, learningData, ContainerPtr(), T("Training"));
+
+    EvaluatorPtr evaluator = regressionEvaluator();
+    ScoreObjectPtr score = learner->evaluate(context, learningData, evaluator, T("Evaluating on training data"));
+    checkIsCloseTo(context, 0.0, 0.0001, score->getScoreToMinimize());
+
+    evaluator = regressionEvaluator();
+    score = learner->evaluate(context, testingData, evaluator, T("Evaluating on testing data"));
+    checkIsCloseTo(context, 2.2, 0.3, score->getScoreToMinimize());
+    
+    context.leaveScope();
   }
 
 private:  
@@ -148,17 +117,22 @@ private:
     delete is;
   }
   
-  ContainerPtr loadDataToContainer(const std::vector<std::vector<double> >& data, size_t from, size_t to, bool isClassification)
+  ContainerPtr loadDataToContainer(ExecutionContext& context, const std::vector<std::vector<double> >& data, size_t from, size_t to, bool isClassification)
   {
     if (data.empty())
       return ContainerPtr();
     jassert(from <= to && to <= data.size());
     TypePtr outputType = isClassification ? (TypePtr)waveFormTypeEnumeration : doubleType;
-    ContainerPtr res = vector(pairClass(vectorClass(doubleType), outputType), to - from);
+    
+    DefaultEnumerationPtr enumeration = new DefaultEnumeration();
+    for (size_t i = 0; i < data[0].size(); ++i)
+      enumeration->addElement(context, String((int)i));
+
+    ContainerPtr res = vector(pairClass(doubleVectorClass(enumeration, doubleType), outputType), to - from);
     for (size_t i = from; i < to; ++i)
     {
-      ContainerPtr example = vector(doubleType, data[i].size());
-      for (size_t j = 0; j < data[i].size(); ++j)
+      ContainerPtr example = new DenseDoubleVector(enumeration, doubleType);
+      for (size_t j = 0; j < data[i].size() - 1; ++j)
         example->setElement(j, Variable(data[i][j], doubleType));
       double output = data[i][data[i].size() - 1];
       if (isClassification)
@@ -171,7 +145,5 @@ private:
 };
 
 };
-
-#endif // 0
 
 #endif // !LBCPP_TEST_UNIT_EXTRA_TREES_H_

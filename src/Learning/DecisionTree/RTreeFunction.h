@@ -9,8 +9,8 @@
 #ifndef LBCPP_DECISION_TREE_R_TREE_FUNCTION_H_
 # define LBCPP_DECISION_TREE_R_TREE_FUNCTION_H_
 
-//# include <lbcpp/Learning/LearnableFunction.h>
 # include <lbcpp/Core/Function.h>
+# include <lbcpp/Data/DoubleVector.h>
 
 namespace lbcpp
 {
@@ -43,7 +43,7 @@ public:
     {return 2;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index == 0 ? (TypePtr)objectClass : getSupervisionType();}
+    {return index == 0 ? (TypePtr)containerClass(anyType) : getSupervisionType();}
 
   virtual String getOutputPostFix() const
     {return T("RTree");}  
@@ -76,7 +76,7 @@ public:
     {return enumValueType;}
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return inputVariables[1]->getType();}
+    {return denseDoubleVectorClass(inputVariables[1]->getType(), probabilityType);}
 };
   
 class RegressionRTreeFunction : public RTreeFunction

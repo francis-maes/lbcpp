@@ -749,7 +749,7 @@ public:
 
       Lin09PredictorParametersPtr lin09 = new Lin09PredictorParameters();
       lin09->fp->separationProfilSize = 9;
-      
+
       context.pushWorkUnit(new FunctionWorkUnit(f, lin09, T("Fold ") + String((int)i), &results[i]));
     }
     context.waitUntilAllWorkUnitsAreDone();
