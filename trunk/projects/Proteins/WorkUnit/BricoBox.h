@@ -572,11 +572,12 @@ public:
       candidate->useLibSVM = true;
       candidate->C = values[i];
       
-      size_t numAttempt = 0;
+      size_t numAttempts = 0;
       while (!optimizerContext->evaluate(candidate))
       {
-        context.informationCallback(T("Evaluation - Attempt ") + String((int)numAttempt));
+        context.informationCallback(T("Evaluation - Attempt ") + String((int)numAttempts));
         Thread::sleep(optimizerContext->getTimeToSleep());
+        ++numAttempts;
       }
 
       optimizerState->incTotalNumberOfRequests();
@@ -601,6 +602,7 @@ public:
 
 protected:
   friend class CParameterOptimizerClass;
+
   Lin09ParametersPtr parameters;
 };
 
@@ -676,7 +678,7 @@ public:
 
     FunctionPtr f = new CysteinLearnerFunction(inputDirectory);
     OptimizerPtr optimizer = new CParameterOptimizer(parameters);
-    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, f, T("bfsCysBondsLibSVM"), T("jbecker@monster24"), destination, T("localhost"), 1664, 8, 5, 48, 6000);
+    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, f, T("bfsCysBondsLibSVM"), T("jbecker@monster24"), destination, T("localhost"), 1664, 8, 4, 24, 60000);
     OptimizerStatePtr optimizerState = new OptimizerState();
 
     return optimizer->compute(context, optimizerContext, optimizerState);
