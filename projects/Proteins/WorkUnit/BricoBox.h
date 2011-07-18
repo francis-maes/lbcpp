@@ -636,14 +636,15 @@ public:
     if (!predictor->train(context, trainingData, ContainerPtr(), T("Training")))
       return 102;
 
-    ProteinEvaluatorPtr trainEvaluator = new ProteinEvaluator();
-    CompositeScoreObjectPtr trainScores = predictor->evaluate(context, trainingData, trainEvaluator, T("Evaluate on training proteins"));
+//    ProteinEvaluatorPtr trainEvaluator = new ProteinEvaluator();
+//    CompositeScoreObjectPtr trainScores = predictor->evaluate(context, trainingData, trainEvaluator, T("Evaluate on training proteins"));
 
     ContainerPtr testingData = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(inputDirectory).getChildFile(T("test/")), 0, T("Loading testing proteins"));
     if (!testingData || !testingData->getNumElements())
     {
       context.warningCallback(T("No testing proteins ! Training score is returned !"));
-      return trainEvaluator->getScoreObjectOfTarget(trainScores, dsbTarget)->getScoreToMinimize();
+//      return trainEvaluator->getScoreObjectOfTarget(trainScores, dsbTarget)->getScoreToMinimize();
+      return 103;
     }
     
     ProteinEvaluatorPtr testEvaluator = new ProteinEvaluator();
@@ -742,6 +743,7 @@ class CysteinCrossValidation : public WorkUnit
 public:
   Variable run(ExecutionContext& context)
   {
+    CompositeWorkUnitPtr wus = new CompositeWorkUnit(T("Folds"), numFolds);
     std::vector<Variable> results(numFolds);
     for (size_t i = 0; i < numFolds; ++i)
     {
@@ -750,9 +752,13 @@ public:
       Lin09PredictorParametersPtr lin09 = new Lin09PredictorParameters();
       lin09->fp->separationProfilSize = 9;
 
-      context.pushWorkUnit(new FunctionWorkUnit(f, lin09, T("Fold ") + String((int)i), &results[i]));
+      lin09->C = 5.86;
+      lin09->kernelGamma = -6.234;
+
+      wus->setWorkUnit(i, new FunctionWorkUnit(f, lin09, T("Fold ") + String((int)i), &results[i]));
     }
-    context.waitUntilAllWorkUnitsAreDone();
+
+    context.run(wus, true);
 
     double sum = 0.0;
     for (size_t i = 0; i < numFolds; ++i)
@@ -766,6 +772,27 @@ protected:
 
   String inputPath;
   size_t numFolds;
+};
+
+class CysteinWorkUnit : public WorkUnit
+{
+public:
+  Variable run(ExecutionContext& context)
+  { 
+    FunctionPtr f = new CysteinLearnerFunction(inputDirectory);
+
+    Lin09PredictorParametersPtr lin09 = new Lin09PredictorParameters();
+    lin09->fp->separationProfilSize = 9;
+      
+    Variable res = f->compute(context, lin09);
+    context.resultCallback(T("Test"), res);
+    return res;
+  }
+
+protected:
+  friend class CysteinWorkUnitClass;
+
+  String inputDirectory;
 };
 
 class BFSTestParameter : public Object

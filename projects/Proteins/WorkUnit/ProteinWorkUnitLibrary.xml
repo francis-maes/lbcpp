@@ -137,6 +137,10 @@
     <variable type="PositiveInteger" name="numFolds"/>
   </class>
 
+  <class name="CysteinWorkUnit" base="WorkUnit">
+    <variable type="String" name="inputDirectory"/>
+  </class>
+
   <class name="BFSTestParameter" base="Object">
     <variable type="Double" name="a"/>
     <variable type="Double" name="b"/>
