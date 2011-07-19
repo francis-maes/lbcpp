@@ -33,7 +33,7 @@
   <class name="LearningProblem" abstract="yes"/>
 
   <class name="RegressionProblem" base="LearningProblem" shortName="regression"/>
-  <class name="BinaryClassificationProblem" base="LearningProblem" shortName="binary"/>
+  <class name="BinaryClassificationProblem" base="LearningProblem" shortName="binaryProblem"/>
   <class name="MultiClassClassificationProblem" base="LearningProblem" shortName="multiClass"/>
   <class name="MultiLabelClassificationProblem" base="LearningProblem" shortName="multiLabel"/>
   
