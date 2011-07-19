@@ -10,6 +10,9 @@
 #include <string.h>
 #include <stdarg.h>
 #include "libsvm.h"
+
+#include <lbcpp/Data/RandomGenerator.h>
+
 int libsvm_version = LIBSVM_VERSION;
 typedef float Qfloat;
 typedef signed char schar;
@@ -1906,7 +1909,8 @@ static void svm_binary_svc_probability(lbcpp::ExecutionContext& context,
 	for(i=0;i<prob->l;i++) perm[i]=i;
 	for(i=0;i<prob->l;i++)
 	{
-		int j = i+rand()%(prob->l-i);
+    int j = i + context.getRandomGenerator()->sampleSize(prob->l-i);
+		//int j = i+rand()%(prob->l-i);
 		swap(perm[i],perm[j]);
 	}
 	for(i=0;i<nr_fold;i++)
@@ -2343,7 +2347,8 @@ void svm_cross_validation(lbcpp::ExecutionContext& context, const svm_problem *p
 		for (c=0; c<nr_class; c++) 
 			for(i=0;i<count[c];i++)
 			{
-				int j = i+rand()%(count[c]-i);
+        int j = i + context.getRandomGenerator()->sampleSize(count[c]-i);
+				//int j = i+rand()%(count[c]-i);
 				swap(index[start[c]+j],index[start[c]+i]);
 			}
 		for(i=0;i<nr_fold;i++)
@@ -2380,7 +2385,8 @@ void svm_cross_validation(lbcpp::ExecutionContext& context, const svm_problem *p
 		for(i=0;i<l;i++) perm[i]=i;
 		for(i=0;i<l;i++)
 		{
-			int j = i+rand()%(l-i);
+      int j = i + context.getRandomGenerator()->sampleSize(l-i);
+			//int j = i+rand()%(l-i);
 			swap(perm[i],perm[j]);
 		}
 		for(i=0;i<=nr_fold;i++)

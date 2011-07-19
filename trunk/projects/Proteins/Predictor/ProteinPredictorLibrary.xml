@@ -176,11 +176,10 @@
   </template>
   
   <class name="Lin09Parameters" base="Object">
-    <variable type="Boolean" name="useProteinLength"/>
+<!--    <variable type="Boolean" name="useProteinLength"/> -->
     <variable type="Boolean" name="useAminoAcidGlobalHistogram"/>
     <variable type="Boolean" name="usePSSMGlobalHistogram"/>
     <variable type="Boolean" name="useNumCysteins"/>
-    <variable type="Boolean" name="useCysteinParity"/>
 
     <variable type="PositiveInteger" name="aminoAcidWindowSize"/>
     <variable type="PositiveInteger" name="pssmWindowSize"/>
@@ -188,11 +187,13 @@
     <variable type="PositiveInteger" name="aminoAcidLocalHistogramSize"/>
     <variable type="PositiveInteger" name="pssmLocalHistogramSize"/>
 
-    <variable type="Boolean" name="useSymmetricFeature"/>
+<!--    <variable type="Boolean" name="useSymmetricFeature"/> -->
     <variable type="Boolean" name="useAminoAcidIntervalHistogram"/>
     <variable type="Boolean" name="usePSSMIntervalHistogram"/>
     <variable type="Boolean" name="useAADistance"/>
     <variable type="Boolean" name="useCysteinDistance"/>
+    <variable type="Boolean" name="usePositionDifference"/>
+    <variable type="Boolean" name="useIndexDifference"/>
   </class>
   
   <class name="Lin09PredictorParameters" base="ProteinPredictorParameters" shortName="lin09">

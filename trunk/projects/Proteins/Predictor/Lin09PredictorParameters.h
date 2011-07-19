@@ -111,7 +111,6 @@ public:
   bool useAminoAcidGlobalHistogram;
   bool usePSSMGlobalHistogram;
   bool useNumCysteins;
-  bool useCysteinParity;
   // residue
   size_t aminoAcidWindowSize;
   size_t pssmWindowSize;
@@ -124,19 +123,23 @@ public:
   bool usePSSMIntervalHistogram;
   bool useAADistance;
   bool useCysteinDistance;
+  
+  bool usePositionDifference;
+  bool useIndexDifference;
 
   Lin09Parameters()
   : // global
     useProteinLength(false)
   , useAminoAcidGlobalHistogram(false), usePSSMGlobalHistogram(false)
-  , useNumCysteins(false), useCysteinParity(false)
+  , useNumCysteins(false)
     // residue
-  , aminoAcidWindowSize(0), pssmWindowSize(23)
+  , aminoAcidWindowSize(0), pssmWindowSize(0)
   , separationProfilSize(0), aminoAcidLocalHistogramSize(0), pssmLocalHistogramSize(0)
     // pair
   , useSymmetricFeature(false)
   , useAminoAcidIntervalHistogram(false), usePSSMIntervalHistogram(false)
   , useAADistance(false), useCysteinDistance(false)
+  , usePositionDifference(false), useIndexDifference(false)
   {}
 
   static std::vector<StreamPtr> createStreams()
@@ -155,13 +158,9 @@ public:
               || varName == T("pssmWindowSize"))
       {
         std::vector<int> values;
-        values.push_back(1);
         values.push_back(5);
-        values.push_back(9);
         values.push_back(15);
-        values.push_back(19);
         values.push_back(25);
-        values.push_back(29);
         res[i] = integerStream(positiveIntegerType, values);
       }
       else if (varName == T("aminoAcidLocalHistogramSize")
@@ -170,21 +169,16 @@ public:
         std::vector<int> values;
         values.push_back(25);
         values.push_back(50);
-        values.push_back(75);
         values.push_back(100);
-        values.push_back(125);
-        values.push_back(150);
         res[i] = integerStream(positiveIntegerType, values);
       }
       else if (varName == T("separationProfilSize"))
       {
         std::vector<int> values;
-        values.push_back(1);
         values.push_back(3);
         values.push_back(5);
         values.push_back(9);
         values.push_back(11);
-        values.push_back(15);
         res[i] = integerStream(positiveIntegerType, values);
       }
       else
@@ -205,7 +199,8 @@ public:
     , C(7.4), kernelGamma(-4.6)
     , useLibSVM(true), useLibLinear(false), useLaRank(false)
     , learningRate(1.0), numIterations(150)
-    , useAddBias(true) {}
+    , useAddBias(true)
+  {}
   
   SamplerPtr createSampler() const
   {
@@ -287,10 +282,10 @@ public:
 
       // number of cysteins
       if (fp->useNumCysteins)
+      {
         builder.addFunction(integerFeatureGenerator(), numCys, T("#Cys"));
-
-      if (fp->useCysteinParity)
         builder.addFunction(new IsNumCysteinPair(), protein, T("(#Cys+1) % 2"));
+      }
       
       builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 0, 0.0));
 
@@ -424,8 +419,10 @@ public:
       if (fp->useCysteinDistance)
         builder.addFunction(doubleFeatureGenerator(), cysDist, T("|CYS2-CYS1|"));
 
+      if (fp->usePositionDifference)
       builder.addFunction(new NormalizedCysteinPositionDifference(), protein, firstPosition, secondPosition, T("NCPD"));
-      builder.addFunction(new NormalizedCysteinIndexDifference(), protein, firstIndex, secondIndex, T("NCID"));
+      if (fp->useIndexDifference)
+        builder.addFunction(new NormalizedCysteinIndexDifference(), protein, firstIndex, secondIndex, T("NCID"));
 
       if (fp->useAminoAcidIntervalHistogram)
         builder.addFunction(accumulatorWindowMeanFunction(), aaAccumulator, firstPosition, secondPosition, T("h(AA1,AA2)"));
@@ -491,6 +488,7 @@ public:
   double learningRate;
   size_t numIterations;
   bool useAddBias;
+  String inputDirectory;
 };
 
 typedef ReferenceCountedObjectPtr<Lin09PredictorParameters> Lin09PredictorParametersPtr;
