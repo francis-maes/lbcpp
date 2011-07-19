@@ -66,7 +66,9 @@ protected:
 
   void destroyModel()
   {
-    model->destroy();
+    if (model)
+      model->destroy();
+    model = NULL;
   }
 
   static void convertDoubleVector(const DoubleVectorPtr& vector, SVector& result)
@@ -166,7 +168,7 @@ public:
 
     size_t iteration = 0;
     double gap = DBL_MAX;
-    while (gap > svm->C)
+    while (gap > svm->C && gap == DBL_MAX) // TODO: Use of StoppingCriterion. One iteration = Online mode, Several Iteration (until gap < C) = Batch mode
     {
       context.enterScope(T("Iteration ") + String((int)iteration));
 
