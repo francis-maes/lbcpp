@@ -24,7 +24,8 @@ namespace lbcpp
 class LuaCodeEditorComponent : public Component, public ComponentWithPreferedSize, public VariableSelector
 {
 public:
-  LuaCodeEditorComponent(const File& luaFile) : name(luaFile.getFileName()), context(ExplorerProject::currentProject->workUnitContext), luaState(*context)
+  LuaCodeEditorComponent(const File& luaFile)
+    : luaFile(luaFile), name(luaFile.getFileName()), context(ExplorerProject::currentProject->workUnitContext), luaState(*context)
   {
     InputStream* istr = luaFile.createInputStream();
     if (istr)
@@ -40,6 +41,12 @@ public:
       context->errorCallback(T("Could not open file ") + luaFile.getFullPathName());
 
     addAndMakeVisible(codeEditor = new juce::CodeEditorComponent(document, &tokeniser));
+  }
+
+  virtual ~LuaCodeEditorComponent()
+  {
+    deleteAllChildren();
+    document.replaceAllContent(String::empty);
   }
 
   virtual int getDefaultWidth() const
@@ -65,11 +72,28 @@ public:
     luaState.execute(code, name);
   }
  
+  void saveFile()
+  {
+    if (luaFile.exists())
+      luaFile.deleteFile();
+    OutputStream* ostr = luaFile.createOutputStream();
+    if (ostr)
+    {
+      *ostr << document.getAllContent();
+      delete ostr;
+    }
+  }
+
   virtual bool keyPressed(const juce::KeyPress& key)
   {
     if (key.getKeyCode() == juce::KeyPress::returnKey && key.getModifiers().isCommandDown())
     {
       executeSelectedCode();
+      return true;
+    }
+    if (juce::CharacterFunctions::toLowerCase((char)key.getKeyCode()) == 's' && key.getModifiers().isCommandDown())
+    {
+      saveFile();
       return true;
     }
     return false;
@@ -79,6 +103,7 @@ public:
     {return userInterfaceManager().createExecutionTraceInteractiveTreeView(context, trace, this->context);}
 
 protected:
+  File luaFile;
   String name;
   ExecutionContextPtr context;  
   juce::CodeEditorComponent* codeEditor;

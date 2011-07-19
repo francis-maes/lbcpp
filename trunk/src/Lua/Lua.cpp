@@ -15,6 +15,7 @@ extern "C" {
 # include "lua/lua.h"
 # include "lua/lauxlib.h"
 # include "lua/lualib.h"
+# include "lua/lpeg.h"
 }; /* extern "C" */
 
 using namespace lbcpp;
@@ -30,7 +31,10 @@ LuaState::LuaState(ExecutionContext& context, bool initializeLuaLibraries, bool 
 {
   L = lua_open();
   if (initializeLuaLibraries)
+  {
     luaL_openlibs(L);
+    luaopen_lpeg(L);
+  }
   if (initializeLBCppLibrary)
   {
     luaL_newmetatable(L, "LBCppObject");
