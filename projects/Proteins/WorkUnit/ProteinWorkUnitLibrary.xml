@@ -107,40 +107,6 @@
     <variable type="File" name="inputDirectory" shortName="i"/>
   </class>
 
-  <class name="EDAResultFileWriter" base="Object">
-    <variable type="File" name="outputFile"/>
-    <variable type="File" name="logFile"/>
-  </class>
-
-  <class name="CParameterOptimizer" base="Optimizer">
-    <variable type="Lin09Parameters" name="parameters"/>
-  </class>
-
-  <class name="CysteinLearnerFunction" base="SimpleUnaryFunction">
-    <variable type="String" name="inputDirectory"/>
-  </class>
-  
-  <class name="COptimizerFunction" base="SimpleUnaryFunction">
-    <variable type="String" name="inputDirectory"/>
-  </class>
-
-  <class name="BFSCysteinProteinLearner" base="WorkUnit">
-    <variable type="String" name="inputDirectory"/>
-  </class>
-  
-  <class name="EDACysteinHyperParameter" base="WorkUnit">
-    <variable type="String" name="inputDirectory"/>
-  </class>
-  
-  <class name="CysteinCrossValidation" base="WorkUnit">
-    <variable type="String" name="inputPath"/>
-    <variable type="PositiveInteger" name="numFolds"/>
-  </class>
-
-  <class name="CysteinWorkUnit" base="WorkUnit">
-    <variable type="String" name="inputDirectory"/>
-  </class>
-
   <class name="BFSTestParameter" base="Object">
     <variable type="Double" name="a"/>
     <variable type="Double" name="b"/>
@@ -148,5 +114,35 @@
   </class>
   <class name="BFSTestObjectiveFunction" base="SimpleUnaryFunction"/>
   <class name="BFSTestWorkUnit" base="WorkUnit"/>
+  
+  <!-- BEGIN CysteinBox -->
+  <class name="CysteinLearnerParameters" base="Object">
+    <variable type="ProteinPredictorParameters" name="predictorParameters"/>
+    <variable type="String" name="foldDirectory"/>
+  </class>
+  
+  <class name="CysteinLearnerFunction" base="SimpleUnaryFunction"/>
+
+  <class name="CysteinCrossValidationOptimizer" base="Optimizer">
+    <variable type="ProteinPredictorParameters" name="parameters"/>
+    <variable type="String" name="path"/>
+  </class>
+
+  <class name="CysteinCrossValidationFunction" base="SimpleUnaryFunction">
+    <variable type="String" name="path"/>
+  </class>
+
+  <class name="CParameterOptimizer" base="Optimizer">
+    <variable type="Lin09Parameters" name="parameters"/>
+  </class>
+
+  <class name="COptimizerFunction" base="SimpleUnaryFunction">
+    <variable type="String" name="inputDirectory"/>
+  </class>
+
+  <class name="BFSCysteinProteinLearner" base="WorkUnit">
+    <variable type="String" name="inputDirectory"/>
+  </class>
+  <!-- END CysteinBox -->
 
 </library>
