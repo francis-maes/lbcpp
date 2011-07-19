@@ -397,14 +397,14 @@ larank_kcache_query_row (larank_kcache_t * self, int i, int len)
 	{
 	  if (olen < 0)
 	    {
-	      self->rdiag[i] = (*self->func) (i, i, self->closure);
+	      self->rdiag[i] = (float)(*self->func) (i, i, self->closure);
 	      olen = self->rsize[i] = 0;
 	    }
 	  xextend (self, i, len);
 	  d = self->rdata[i];
 	  self->rsize[i] = olen;
 	  for (p = olen; p < len; p++)
-	    d[p] = larank_kcache_query (self, self->r2i[p], i);
+	    d[p] = (float)larank_kcache_query (self, self->r2i[p], i);
 	  self->rsize[i] = len;
 	}
       self->rnext[self->rprev[i]] = self->rnext[i];
@@ -420,7 +420,7 @@ larank_kcache_query_row (larank_kcache_t * self, int i, int len)
 
 float larank_query(larank_kcache_t * self, int i)
 {
-  return (*self->func) (-1, self->r2i[i], self->closure);
+  return (float)(*self->func) (-1, self->r2i[i], self->closure);
 }
 
 int

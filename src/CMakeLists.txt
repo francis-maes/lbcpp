@@ -810,6 +810,8 @@ SET(LBCPP_LUA_LUA_SOURCES
   Lua/lua/lzio.c
   Lua/lua/lzio.h
   #Lua/lua/print.c
+  Lua/lua/lpeg.h
+  Lua/lua/lpeg.c
 ) 
 # interpreter:	lua.c
 #  compiler:	luac.c print.c
