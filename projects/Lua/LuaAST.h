@@ -29,6 +29,18 @@ public:
   LuaASTNodePtr getChildNode(size_t index) const
     {jassert(index < childNodes.size()); return childNodes[index];}
 
+  const std::vector<LuaASTNodePtr>& getChildNodes() const
+    {return childNodes;}
+
+  size_t getNumNodeVariables() const
+    {return variables.size();}
+
+  Variable getNodeVariable(size_t index) const
+    {return variables[index];}
+
+  const std::vector<Variable>& getNodeVariables() const
+    {return variables;}
+
   virtual String toString() const
   {
     String res = tag;
