@@ -10,7 +10,7 @@
 # define LBCPP_LUA_SANDBOX_H_
 
 # include "LuaAST.h"
-
+# include "LuaASTPrettyPrinter.h"
 
 extern "C" {
 # include "../../src/Lua/lua/lua.h"
@@ -70,10 +70,7 @@ private:
   }
 
   String prettyPrint(LuaState& lua, const LuaASTNodePtr& tree) const
-  {
-    // FIXME !!
-    return String::empty;
-  }
+    {return LuaASTPrettyPrinter::toString(tree);}
 
   void ensureTreeIsUpToDate() const
   {
@@ -128,8 +125,6 @@ public:
 
     context.resultCallback(T("code-before"), chunk.getCode());
     context.resultCallback(T("tree-before"), chunk.getTree());
-    return true;
-
 
     chunk.setTree(rewriteTree(chunk.getTree()));
 
