@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Lua" dynamic="yes">
+
+  <class name="LuaInterpreter" base="WorkUnit">
+    <variable type="File" name="luaFile"/>
+  </class>
+
+  <class name="LuaASTNode" base="Object">
+    <variable type="String" name="tag"/>
+    <variable type="ObjectVector[LuaASTNode]" name="childNodes"/>
+  </class>
+  
+</library>

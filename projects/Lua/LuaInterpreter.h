@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuaSandBox.h                   | Lua Sand Box                    |
+| Filename: LuaInterpreter.h               | Lua File Interpreter            |
 | Author  : Francis Maes                   |                                 |
-| Started : 23/06/2011 16:35               |                                 |
+| Started : 20/07/2011 12:49               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXAMPLES_LUA_SAND_BOX_H_
-# define LBCPP_EXAMPLES_LUA_SAND_BOX_H_
+#ifndef LBCPP_LUA_INTERPRETER_H_
+# define LBCPP_LUA_INTERPRETER_H_
 
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Lua/Lua.h>
@@ -15,40 +15,34 @@
 namespace lbcpp
 {
 
-class MyLuaObject : public Object
-{
-public:
-  MyLuaObject() : d(8.6) {}
-  double d;
-};
-
-typedef ReferenceCountedObjectPtr<MyLuaObject> MyLuaObjectPtr;
-
-class LuaSandBox : public WorkUnit
+class LuaInterpreter : public WorkUnit
 {
 public:
   virtual Variable run(ExecutionContext& context)
   {
     LuaState luaState(context);
 
-    if (luaFile.existsAsFile())
-      luaState.execute(luaFile);
-
-    while (true)
+    if (luaFile == File::nonexistent)
     {
-      std::cout << "> " << std::flush;
-      char code[1024];
-      std::cin.getline(code, 1024);
-      if (code)
-        luaState.execute(code);
-      else
-        break;
+      // interactive lua
+      while (true)
+      {
+        std::cout << "> " << std::flush;
+        char code[1024];
+        std::cin.getline(code, 1024);
+        if (code)
+          luaState.execute(code);
+        else
+          break;
+      }
     }
+    else
+      luaState.execute(luaFile);
     return true;
   }
 
 protected:
-  friend class LuaSandBoxClass;
+  friend class LuaInterpreterClass;
 
   File luaFile;
 };

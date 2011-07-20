@@ -69,6 +69,9 @@ public:
       sendSelectionChanged(trace, name);
     }
 
+    // set current working directory to root directory
+    // FIXME: find a better way to fix lua directly to take our root directory
+    ExplorerProject::getCurrentProject()->getRootDirectory().setAsCurrentWorkingDirectory(); 
     luaState.execute(code, name);
   }
  
