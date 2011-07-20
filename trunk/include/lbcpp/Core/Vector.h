@@ -39,6 +39,11 @@ public:
   virtual bool loadFromXml(XmlImporter& importer);
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
+  /*
+  ** Lua
+  */
+  static int resize(LuaState& state);
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -321,7 +326,7 @@ public:
   lbcpp_UseDebuggingNewOperator
 };
 
-extern ClassPtr vectorClass(TypePtr elementsType);
+extern ClassPtr vectorClass(TypePtr elementsType = anyType);
 extern ClassPtr genericVectorClass(TypePtr elementsType);
 extern ClassPtr objectVectorClass(TypePtr elementsType);
 extern ClassPtr booleanVectorClass;

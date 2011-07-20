@@ -484,10 +484,11 @@ int Object::toString(LuaState& state)
 int Object::index(LuaState& state)
 {
   ObjectPtr object = state.checkObject(1);
-  if (state.isString(2))
+  if (state.isString(2)) // indiced by a string
   {
     String string = state.checkString(2);
 
+    // check if it is a variable
     TypePtr type = object->getClass();
     int index = type->findMemberVariable(string);
     if (index >= 0)
@@ -496,16 +497,58 @@ int Object::index(LuaState& state)
       return 1;
     }
 
+    // check if it is a function
     index = type->findMemberFunction(string);
     if (index >= 0)
     {
       LuaFunctionSignaturePtr signature = type->getMemberFunction(index).dynamicCast<LuaFunctionSignature>();
       if (!signature)
+      {
+        state.error("This kind of functions is not supported");
         return 0;
+      }
 
       state.pushFunction(signature->getFunction());
       return 1;
     }
+
+    state.error("Could not find identifier");
+    return 0;
+  }
+  else if (state.isInteger(2))
+  {
+    state.error("No operator to index this kind of objects with integers");
+    return 0;
+  }
+  else
+  {
+    state.error("Invalid type of key in index");
+    return 0;
+  }
+}
+
+int Object::newIndex(LuaState& state)
+{
+  ObjectPtr object = state.checkObject(1);
+  if (state.isString(2))
+  {
+    String string = state.checkString(2);
+
+    // check if it is a variable
+    TypePtr type = object->getClass();
+    int index = type->findMemberVariable(string);
+    if (index >= 0)
+    {
+      Variable variable = state.checkVariable(3);
+      object->setVariable(index, variable);
+    }
+    else
+      state.error("Could not find variable");
+  }
+  else
+  {
+    state.error("Invalid type of key in newindex");
+    return 0;
   }
   return 0;
 }

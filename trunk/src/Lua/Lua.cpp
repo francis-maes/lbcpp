@@ -23,6 +23,9 @@ using namespace lbcpp;
 static int objectIndex(lua_State* L)
   {LuaState state(L); return Object::index(state);}
 
+static int objectNewIndex(lua_State* L)
+  {LuaState state(L); return Object::newIndex(state);}
+
 static int objectToString(lua_State* L)
   {LuaState state(L); return Object::toString(state);}
 
@@ -40,6 +43,7 @@ LuaState::LuaState(ExecutionContext& context, bool initializeLuaLibraries, bool 
     luaL_newmetatable(L, "LBCppObject");
     static const struct luaL_reg methods[] = {
       {"__index", objectIndex},
+      {"__newindex", objectNewIndex},
       {"__tostring", objectToString},
       {NULL, NULL}
     };
@@ -149,6 +153,9 @@ String LuaState::toString(int index)
   return v.toString();
 }
 
+bool LuaState::isInteger(int index) const
+  {return lua_isnumber(L, index) != 0;} // fixme: not distinction between numbers and integers
+
 bool LuaState::checkBoolean(int index)
 {
   jassert(false); // not implemented
@@ -255,6 +262,12 @@ const char* LuaState::makeString(const String& str)
   return res;
 }
 
+void LuaState::error(const char* message)
+{
+  pushString(message);
+  lua_error(L);
+}
+
 void Type::luaRegister(LuaState& state) const
 {
   std::vector<luaL_Reg> functions;
@@ -277,4 +290,3 @@ void Type::luaRegister(LuaState& state) const
 
   state.openLibrary(state.makeString(name), &functions[0]);
 }
-
