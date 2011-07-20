@@ -66,13 +66,42 @@ public:
   virtual ~LuaASTVisitor() {}
 
   // general
+  virtual void acceptRawCode(const String& rawCode)
+    {}
+
   virtual void acceptList(const std::vector<LuaASTNodePtr>& childNodes)
   {
     for (size_t i = 0; i < childNodes.size(); ++i)
       accept(childNodes[i]);
   }
 
+  virtual void acceptBlock(const std::vector<LuaASTNodePtr>& childNodes)
+  {
+    for (size_t i = 0; i < childNodes.size(); ++i)
+      accept(childNodes[i]);
+  }
+
+
+  // stat
+  virtual void acceptSetStatement(const std::vector<LuaASTNodePtr>& lhs, const std::vector<LuaASTNodePtr>& expressions)
+  {
+    acceptList(lhs);
+    acceptList(expressions);
+  }
+
+  virtual void acceptReturn(const std::vector<LuaASTNodePtr>& returnValues)
+    {acceptList(returnValues);}
+
   // expr
+  virtual void acceptNumber(double number)
+    {}
+
+  virtual void acceptFunction(const std::vector<LuaASTNodePtr>& signature, const std::vector<LuaASTNodePtr>& body)
+  {
+    acceptList(signature);
+    acceptBlock(body);
+  }
+
   virtual void acceptUnaryOperation(const String& opid, const LuaASTNodePtr& childNode)
     {accept(childNode);}
 
@@ -91,44 +120,59 @@ public:
   // -
   virtual void accept(const LuaASTNodePtr& node)
   {
+    jassert(node);
     const String& tag = node->getTag();
-    if (tag == String::empty && node->getNumVariables() == 0)
-    {
+    if (tag == String::empty && node->getNumArguments() == 0)
       acceptList(node->getChildNodes());
-      return;
+    else if (tag == T("Raw"))
+    {
+      Variable v = node->getArgument(0);
+      acceptRawCode(v.getString());
     }
-    
+
+
+    /*
+    ** stat
+    */
+    else if (tag == T("Set"))
+    {
+      jassert(node->getNumChildNodes() == 2);
+      acceptSetStatement(node->getChildNode(0)->getChildNodes(), node->getChildNode(1)->getChildNodes());
+    }
+    else if (tag == T("Return"))
+      acceptReturn(node->getChildNodes());
+
     /*
     ** expr
     */
-    if (tag == T("Op"))
+    else if (tag == T("Number"))
+      acceptNumber(node->getArgument(0).getDouble());
+    else if (tag == T("Function"))
     {
-      String opid = node->getNodeVariable(0).getString();
+      jassert(node->getNumChildNodes() == 2);
+      acceptFunction(node->getChildNode(0)->getChildNodes(), node->getChildNode(1)->getChildNodes());
+    }
+    else if (tag == T("Op"))
+    {
+      String opid = node->getArgument(0).getString();
       if (node->getNumChildNodes() == 1)
         acceptUnaryOperation(opid, node->getChildNode(0));
       else if (node->getNumChildNodes() == 2)
         acceptBinaryOperation(opid, node->getChildNode(0), node->getChildNode(1));
       else
         jassert(false);
-      return;
     }
-
-    if (tag == T("Paren"))
-    {
+    else if (tag == T("Paren"))
       acceptParenthesis(node->getChildNode(0));
-      return;
-    }
 
     /*
     ** Ident
     */
-    if (tag == T("Id"))
-    {
-      acceptIdentifier(node->getNodeVariable(0).getString());
-      return;
-    }
+    else if (tag == T("Id"))
+      acceptIdentifier(node->getArgument(0).getString());
 
-    jassert(false); // not implemented
+    else
+      jassert(false); // not implemented
   }
 };
 

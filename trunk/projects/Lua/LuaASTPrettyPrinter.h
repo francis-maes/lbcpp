@@ -27,7 +27,65 @@ public:
     return String(ostr.getData());
   }
   
+   // general
+  virtual void acceptRawCode(const String& rawCode)
+    {write(rawCode);}
+
+  virtual void acceptList(const std::vector<LuaASTNodePtr>& childNodes)
+  {
+    size_t n = childNodes.size();
+    for (size_t i = 0; i < n; ++i)
+    {
+      accept(childNodes[i]);
+      if (i < n - 1)
+        write(", ");
+    }
+  }
+
+  virtual void acceptBlock(const std::vector<LuaASTNodePtr>& childNodes)
+  {
+    for (size_t i = 0; i < childNodes.size(); ++i)
+    {
+      accept(childNodes[i]);
+      endline();
+    }
+  }
+
+  // stat
+  virtual void acceptSetStatement(const std::vector<LuaASTNodePtr>& lhs, const std::vector<LuaASTNodePtr>& expressions)
+  {
+    acceptList(lhs);
+    write(" = ");
+    acceptList(expressions);
+    endline();
+  }
+
+  virtual void acceptReturn(const std::vector<LuaASTNodePtr>& returnValues)
+  {
+    write("return ");
+    acceptList(returnValues);
+    endline();
+  }
+
   // expr
+  virtual void acceptNumber(double number)
+    {write(String(number));}
+
+  virtual void acceptFunction(const std::vector<LuaASTNodePtr>& signature, const std::vector<LuaASTNodePtr>& body)
+  {
+    write("function (");
+    acceptList(signature);
+    write(")");
+    endline();
+
+    ++indentation;
+    acceptBlock(body);
+    --indentation;
+
+    write("end");
+    endline();
+  }
+
   virtual void acceptUnaryOperation(const String& opid, const LuaASTNodePtr& childNode)
   {
     write(opid);
@@ -79,6 +137,13 @@ private:
 
   void write(const String& str)
     {ostr << str;}
+
+  void endline()
+  {
+    ostr << "\n";
+    for (int i = 0; i < indentation; ++i)
+      ostr << "  ";
+  }
 };
 
 }; /* namespace lbcpp */

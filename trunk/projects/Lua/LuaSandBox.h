@@ -70,7 +70,7 @@ private:
   }
 
   String prettyPrint(LuaState& lua, const LuaASTNodePtr& tree) const
-    {return LuaASTPrettyPrinter::toString(tree);}
+    {return tree->print();}
 
   void ensureTreeIsUpToDate() const
   {
@@ -84,6 +84,11 @@ private:
       const_cast<LuaChunk* >(this)->code = prettyPrint(lua, tree);
   }
 };
+
+// todo: move this
+String LuaASTNode::print() const
+  {return LuaASTPrettyPrinter::toString(refCountedPointerFromThis(this));}
+// -
 
 /*
 
@@ -107,7 +112,6 @@ end
 
 */
 
-
 class LuaSandBox : public WorkUnit
 {
 public:
@@ -121,7 +125,12 @@ public:
     luaState.execute(initializeCode, "initializeCode");
 
 
-    LuaChunk chunk(luaState, luaExpression, T("a + (b * c)"));
+    static const char* inputCode = 
+      "function times(x, y) \n"
+      "  return 2 * x * y\n"
+      "end";
+
+    LuaChunk chunk(luaState, luaStatement, inputCode);
 
     context.resultCallback(T("code-before"), chunk.getCode());
     context.resultCallback(T("tree-before"), chunk.getTree());
@@ -134,8 +143,137 @@ public:
     return true;
   }
 
+
+  static LuaASTNodePtr multiply(const LuaASTNodePtr& left, const LuaASTNodePtr& right)
+  {
+    bool isLeftNumber = (left->getTag() == T("Number"));
+    bool isRightNumber = (right->getTag() == T("Number"));
+
+    if (isLeftNumber && isRightNumber)
+      return LuaASTNode::newNumber(left->getArgument(0).getDouble() * right->getArgument(0).getDouble());
+
+    if ((isLeftNumber && !isRightNumber) || (isRightNumber && !isLeftNumber))
+    {
+      double number = (isLeftNumber ? left : right)->getArgument(0).getDouble();
+      LuaASTNodePtr expr = (isLeftNumber ? right : left);
+      if (number == 0.0)
+        return LuaASTNode::newNumber(0.0);
+      else if (number == 1.0)
+        return expr;
+      else if (number == -1.0)
+        return LuaASTNode::newOp("unm", expr);
+    }
+
+    return LuaASTNode::newOp("mul", left, right);
+  }
+
+  static LuaASTNodePtr add(const LuaASTNodePtr& left, const LuaASTNodePtr& right)
+  {
+    bool isLeftNumber = (left->getTag() == T("Number"));
+    bool isRightNumber = (right->getTag() == T("Number"));
+
+    if (isLeftNumber && isRightNumber)
+      return LuaASTNode::newNumber(left->getArgument(0).getDouble() + right->getArgument(0).getDouble());
+
+    // x + 0 = x, 0 + x = x
+    if ((isLeftNumber && !isRightNumber) || (isRightNumber && !isLeftNumber))
+    {
+      double number = (isLeftNumber ? left : right)->getArgument(0).getDouble();
+      LuaASTNodePtr expr = (isLeftNumber ? right : left);
+      if (number == 0.0)
+        return expr;
+    }
+
+    return LuaASTNode::newParen(LuaASTNode::newOp("add", left, right));
+  }
+
+  LuaASTNodePtr computeExpressionDerivative(const LuaASTNodePtr& expression, const LuaASTNodePtr& variable) const
+  {
+    if (expression->getTag() == T("Id"))
+    {
+      if (expression->getArgument(0).getString() == variable->getArgument(0).getString())
+        return LuaASTNode::newNumber(1.0); // d(x)/dx = 1
+      else
+        return LuaASTNode::newNumber(0.0); // d(y)/dx = 0
+    }
+
+    if (expression->getTag() == T("Op"))
+    {
+      String opid = expression->getArgument(0).getString();
+
+      if (expression->getNumChildNodes() == 2)
+      {
+        LuaASTNodePtr u = expression->getChildNode(0);
+        LuaASTNodePtr v = expression->getChildNode(1);
+        LuaASTNodePtr uprime = computeExpressionDerivative(u, variable);
+        LuaASTNodePtr vprime = computeExpressionDerivative(v, variable);
+
+        // (uv)' = (u'v + uv')
+        if (opid == T("mul"))
+          return add(multiply(uprime, v), multiply(u, vprime));
+
+        // (u + v)' = (u' + v')
+        else if (opid == T("add"))
+          return add(uprime, vprime);
+
+
+      }
+    }
+
+    if (expression->getTag() == T("Number"))
+    {
+      // d(cst)/dx = 0
+      return LuaASTNode::newNumber(0.0);
+    }
+
+    return expression;
+  }
+
+  LuaASTNodePtr computeStatementDerivative(const LuaASTNodePtr& statement, const LuaASTNodePtr& variable) const
+  {
+    if (statement->getTag() == T("Return"))
+    {
+      std::vector<LuaASTNodePtr> childNodes(statement->getNumChildNodes());
+      for (size_t i = 0; i < childNodes.size(); ++i)
+        childNodes[i] = computeExpressionDerivative(statement->getChildNode(i), variable);
+      return new LuaASTNode(T("Return"), childNodes);
+    }
+    return statement;
+  }
+
+  LuaASTNodePtr computeBlockDerivative(const LuaASTNodePtr& block, const LuaASTNodePtr& variable) const
+  {
+    std::vector<LuaASTNodePtr> res;
+    for (size_t i = 0; i < block->getNumChildNodes(); ++i)
+      res.push_back(computeStatementDerivative(block->getChildNode(i), variable));
+    return new LuaASTNode(res);
+  }
+
+
+  // 'Set Id = Function' statement => statement block 
   LuaASTNodePtr rewriteTree(const LuaASTNodePtr& tree) const
-    {return tree;}
+  {
+    jassert(tree->getTag() == T("Set"));
+    LuaASTNodePtr identifier = tree->getChildNode(0)->getChildNode(0);
+    LuaASTNodePtr function = tree->getChildNode(1)->getChildNode(0);
+    jassert(identifier->getTag() == T("Id") && function->getTag() == T("Function"));
+    LuaASTNodePtr arguments = function->getChildNode(0);
+    LuaASTNodePtr body = function->getChildNode(1);
+
+    std::vector<LuaASTNodePtr> block;
+    String id = identifier->print();
+    block.push_back(new LuaASTNode(T("set ") + id + T(" = {}\n")));
+    block.push_back(new LuaASTNode(T("function ") + id + T(".f(") + arguments->print() + T(") ") + body->print() + T("end")));
+
+    for (size_t i = 0; i < arguments->getNumChildNodes(); ++i)
+    {
+      LuaASTNodePtr argumentIdentifier = arguments->getChildNode(i);
+      String arg = argumentIdentifier->print();
+      LuaASTNodePtr derivativeBody = computeBlockDerivative(body, argumentIdentifier);
+      block.push_back(new LuaASTNode(T("function ") + id + T(".d") + arg + T("(") + arguments->print() + T(") ") + derivativeBody->print() + T("end")));
+    }
+    return new LuaASTNode(block);
+  }
 
 protected:
   friend class LuaSandBoxClass;

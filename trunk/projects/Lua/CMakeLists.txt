@@ -9,6 +9,8 @@ SET(LBCPP_LUA_CPP_SOURCES
   precompiled.h
   precompiled.cpp
   LuaAST.h
+  LuaASTVisitor.h
+  LuaASTPrettyPrinter.h
   LuaInterpreter.h
   LuaSandBox.h
   LuaLibrary.xml
