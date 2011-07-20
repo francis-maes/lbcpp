@@ -128,11 +128,8 @@ public:
     , path(path)
   {}
   
-  virtual Variable computeFunction(ExecutionContext& ctx, const Variable& input) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    ExecutionContextPtr subContext = singleThreadedExecutionContext(ctx.getProjectDirectory());
-    ExecutionContext& context = *subContext;
-
     std::vector<String> destinations;
     destinations.push_back(T("jbecker@nic3"));
     destinations.push_back(T("fmaes@nic3"));
@@ -237,8 +234,10 @@ public:
     OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 30000);
     OptimizerStatePtr optimizerState = new OptimizerState();
 
-    context.leaveScope();
-    return optimizer->compute(context, optimizerContext, optimizerState);
+    Variable res = optimizer->compute(context, optimizerContext, optimizerState);
+    
+    context.leaveScope(res);
+    return res;
   }
 
 protected:
