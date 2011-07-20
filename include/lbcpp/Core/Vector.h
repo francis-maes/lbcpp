@@ -43,6 +43,7 @@ public:
   ** Lua
   */
   static int resize(LuaState& state);
+  static int append(LuaState& state);
 
   lbcpp_UseDebuggingNewOperator
 

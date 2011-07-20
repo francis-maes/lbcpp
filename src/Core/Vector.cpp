@@ -93,12 +93,20 @@ void Vector::clone(ExecutionContext& context, const ObjectPtr& target) const
 
 int Vector::resize(LuaState& state)
 {
-  VectorPtr container = state.checkObject(1, vectorClass()).staticCast<Vector>();
+  VectorPtr vector = state.checkObject(1, vectorClass()).staticCast<Vector>();
   int size = state.checkInteger(2);
   if (size >= 0)
-    container->resize((size_t)size);
+    vector->resize((size_t)size);
   else
-    state.error("Invalid size in resize()");
+    state.error("Invalid size in Vector::resize()");
+  return 0;
+}
+
+int Vector::append(LuaState& state)
+{
+  VectorPtr vector = state.checkObject(1, vectorClass()).staticCast<Vector>();
+  Variable value = state.checkVariable(2);
+  vector->append(value);
   return 0;
 }
 
