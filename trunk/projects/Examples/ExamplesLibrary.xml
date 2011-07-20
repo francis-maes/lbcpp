@@ -162,14 +162,5 @@
     <variable type="Double" name="fopt"/> 
     <variable type="DoubleMatrix[Double]" name="R"/>
   </class>
-  
-  <!-- Lua -->
-  <class name="MyLuaObject">
-    <variable type="Double" name="d"/>
-  </class>
 
-  <class name="LuaSandBox" base="WorkUnit">
-    <variable type="File" name="luaFile"/>
-  </class>
-  
 </library>
