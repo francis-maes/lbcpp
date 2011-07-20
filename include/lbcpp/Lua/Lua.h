@@ -73,6 +73,7 @@ public:
 
   bool isString(int index) const;
   String toString(int index);
+  bool isInteger(int index) const;
 
   bool checkBoolean(int index);
   int checkInteger(int index);
@@ -90,6 +91,8 @@ public:
   const char* makeString(const String& str);
 
   ExecutionContext& getContext();
+
+  void error(const char* message);
 
 protected:
   lua_State* L;

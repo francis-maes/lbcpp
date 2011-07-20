@@ -91,6 +91,17 @@ void Vector::clone(ExecutionContext& context, const ObjectPtr& target) const
   Container::clone(context, targetVector);
 }
 
+int Vector::resize(LuaState& state)
+{
+  VectorPtr container = state.checkObject(1, vectorClass()).staticCast<Vector>();
+  int size = state.checkInteger(2);
+  if (size >= 0)
+    container->resize((size_t)size);
+  else
+    state.error("Invalid size in resize()");
+  return 0;
+}
+
 /*
 ** GenericVector
 */

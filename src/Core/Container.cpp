@@ -337,6 +337,11 @@ int Container::set(LuaState& state)
 {
   ContainerPtr container = state.checkObject(1, containerClass()).staticCast<Container>();
   int index = state.checkInteger(2);
+  if (index < 0 || index >= (int)container->getNumElements())
+  {
+    state.error("Invalid index in Container::set()");
+    return 0;
+  }
   Variable value = state.checkVariable(3);
   container->setElement(index, value);
   return 0;
@@ -346,6 +351,11 @@ int Container::get(LuaState& state)
 {
   ContainerPtr container = state.checkObject(1, containerClass()).staticCast<Container>();
   int index = state.checkInteger(2);
+  if (index < 0 || index >= (int)container->getNumElements())
+  {
+    state.error("Invalid index in Container::get()");
+    return 0;
+  }
   state.pushVariable(container->getElement(index));
   return 1;
 }

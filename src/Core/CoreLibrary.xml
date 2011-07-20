@@ -38,6 +38,7 @@
   <!-- Vector -->
   <template name="Vector" base="Container[elementsType]" abstract="yes">
     <parameter name="elementsType"/>
+    <function lang="lua" name="resize"/>
   </template>
 
   <template name="GenericVector" base="Vector[elementsType]">
