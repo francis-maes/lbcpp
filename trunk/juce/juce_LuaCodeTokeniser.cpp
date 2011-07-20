@@ -515,10 +515,10 @@ int LuaCodeTokeniser::readNextToken (CodeDocument::Iterator& source)
 
         break;
 
-    case T('#'):
+    /*case T('#'):
         result = tokenType_preprocessor;
         source.skipToEndOfLine();
-        break;
+        break;*/
 
     default:
         if (LuaTokeniser::isIdentifierStart (firstChar))
