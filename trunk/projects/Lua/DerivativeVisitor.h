@@ -44,9 +44,13 @@ public:
   {
     switch (operation.getOp())
     {
+    case unmOp:
+      // (-u)' = - u'
+      setResult(unm(rewrite(operation.getExpr())));
+      break;
+
     case notOp:
     case lenOp:
-    case unmOp:
       jassert(false); // not yet implemented
     }
   }
@@ -92,6 +96,34 @@ public:
   
   virtual void visit(Parenthesis& p)
     {setResult(parenthesis(rewrite(p.getExpr())));}
+
+  static ExpressionPtr ternaryOperator(const ExpressionPtr& condition, const ExpressionPtr& valueIfTrue, const ExpressionPtr& valueIfFalse)
+    {return new Call(new Identifier("LuaChunk.ternaryOperator"), condition, valueIfTrue, valueIfFalse);}
+
+  virtual void visit(Call& call)
+  {
+    String fun = call.getFunction()->print();
+    if (fun == T("math.exp") && call.getNumArguments() == 1)
+    {
+      // (exp(u))' = u' exp(u)
+      ExpressionPtr u = call.getArgument(0);
+      setResult(multiply(rewrite(u), new Call(call.getFunction(), u)));
+      return;
+    }
+
+    if ((fun == T("math.max") || fun == T("math.min")) && call.getNumArguments() == 2)
+    {
+      // max(u,v)' = (u >= v ? u' : v')
+      // min(u,v)' = (u <= v ? u' : v')
+
+      ExpressionPtr u = call.getArgument(0);
+      ExpressionPtr v = call.getArgument(1);
+      setResult(ternaryOperator(fun == T("math.max") ? not(lt(u, v)) : le(u, v),
+                    rewrite(u), rewrite(v)));
+    }
+
+    jassert(false); // not yet implemented
+  }
 
 protected:
   IdentifierPtr variable;

@@ -273,6 +273,11 @@ extern ExpressionPtr add(const ExpressionPtr& left, const ExpressionPtr& right);
 extern ExpressionPtr multiply(const ExpressionPtr& left, const ExpressionPtr& right);
 extern ExpressionPtr pow(const ExpressionPtr& left, const ExpressionPtr& right);
 extern ExpressionPtr parenthesis(const ExpressionPtr& expr);
+extern ExpressionPtr unm(const ExpressionPtr& expr);
+
+extern ExpressionPtr lt(const ExpressionPtr& left, const ExpressionPtr& right);
+extern ExpressionPtr le(const ExpressionPtr& left, const ExpressionPtr& right);
+extern ExpressionPtr not(const ExpressionPtr& expr);
 
 class AtomicExpression : public Expression
 {
@@ -298,18 +303,21 @@ public:
   virtual void accept(Visitor& visitor);
 };
 
-class True : public AtomicExpression
+class LiteralBoolean : public AtomicExpression
 {
 public:
-  virtual String getTag() const {return "True";}
+  virtual String getTag() const {return value ? "True" : "False";}
   virtual void accept(Visitor& visitor);
-};
 
-class False : public AtomicExpression
-{
-public:
-  virtual String getTag() const {return "False";}
-  virtual void accept(Visitor& visitor);
+  bool getValue() const
+    {return value;}
+
+  void setValue(bool v)
+    {value = v;}
+
+protected:
+  friend class LiteralBooleanClass;
+  bool value;
 };
 
 class LiteralNumber : public AtomicExpression
@@ -354,6 +362,8 @@ protected:
 
   String value;
 };
+
+typedef ReferenceCountedObjectPtr<LiteralString> LiteralStringPtr;
 
 class FunctionClass; // trick, because FunctionClass is already declared in the lbcpp namespace
 class Function : public Expression
@@ -482,12 +492,17 @@ public:
   const ExpressionPtr& getExpr() const
     {return expr;}
 
+  void setExpr(const ExpressionPtr& expr)
+    {this->expr = expr;}
+
 protected:
   friend class UnaryOperationClass;
 
   UnaryOp op;
   ExpressionPtr expr;
 };
+
+typedef ReferenceCountedObjectPtr<UnaryOperation> UnaryOperationPtr;
 
 enum BinaryOp
 {
@@ -531,6 +546,8 @@ protected:
   ExpressionPtr right;
 };
 
+typedef ReferenceCountedObjectPtr<BinaryOperation> BinaryOperationPtr;
+
 class Parenthesis : public Expression
 {
 public:
@@ -568,6 +585,8 @@ class Call : public ApplyExpression
 public:
   Call(const ExpressionPtr& function, const std::vector<ExpressionPtr>& arguments)
     : function(function), arguments(arguments) {}
+  Call(const ExpressionPtr& function, const ExpressionPtr& argument1, const ExpressionPtr& argument2, const ExpressionPtr& argument3)
+    : function(function), arguments(3) {arguments[0] = argument1; arguments[1] = argument2; arguments[2] = argument3;}
   Call(const ExpressionPtr& function, const ExpressionPtr& argument1, const ExpressionPtr& argument2)
     : function(function), arguments(2) {arguments[0] = argument1; arguments[1] = argument2;}
   Call(const ExpressionPtr& function, const ExpressionPtr& argument)

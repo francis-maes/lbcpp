@@ -49,8 +49,10 @@
 
     <class name="Nil" base="lua::Expression"/>
     <class name="Dots" base="lua::Expression"/>
-    <class name="True" base="lua::Expression"/>
-    <class name="False" base="lua::Expression"/>
+
+    <class name="LiteralBoolean" base="lua::Expression">
+      <variable type="Boolean" name="value"/>
+    </class>
     
     <class name="LiteralNumber" base="lua::Expression">
       <variable type="Double" name="value"/>
