@@ -63,14 +63,6 @@ public:
   virtual void visit(While& statement)
     {jassert(false);} // not yet implemented
 
-  void printBlockWithIndentation(const BlockPtr& block)
-  {
-    endLine();
-    ++indentation;
-    block->accept(*this);
-    --indentation;
-  }
-
   virtual void visit(If& statement)
   {
     for (size_t i = 0; i < statement.getNumConditions(); ++i)
@@ -158,9 +150,21 @@ public:
   {
     static const char* luaOperators[] = {"not", "#", "-"};
     write(luaOperators[operation.getOp()]);
-    if (operation.getOp() == notOp)
+    if (operation.getOp() == notOp ||
+        (operation.getOp() == unmOp && !operation.getExpr().dynamicCast<LiteralNumber>()) ||
+        (operation.getOp() == lenOp && !operation.getExpr().dynamicCast<Identifier>()))
       write(" ");
     operation.getExpr()->accept(*this);
+  }
+
+
+  bool areParenthesisRequired(BinaryOperation& operation, bool isLeftOperand)
+  {
+    NodePtr operand = isLeftOperand ? operation.getLeft() : operation.getRight();
+    int pre = operation.getPrecendenceRank();
+    OperationPtr operandOp = operand.dynamicCast<Operation>();
+    return operandOp && (operandOp->getPrecendenceRank() < pre ||
+      (operandOp->getPrecendenceRank() == pre && !isLeftOperand));
   }
 
   virtual void visit(BinaryOperation& operation)
@@ -170,11 +174,9 @@ public:
       "%", "^", "..", "==",
       "<", "<=", "and", "or"
     };
-    operation.getLeft()->accept(*this);
-    write(" ");
+    printWithParenthesis(operation.getLeft(), areParenthesisRequired(operation, true));
     write(luaOperators[operation.getOp()]);
-    write(" ");
-    operation.getRight()->accept(*this);
+    printWithParenthesis(operation.getRight(), areParenthesisRequired(operation, false));
   }
 
   virtual void visit(Parenthesis& parenthesis)
@@ -258,6 +260,24 @@ private:
     write("[");
     expr->accept(*this);
     write("]");
+  }
+
+
+  void printBlockWithIndentation(const BlockPtr& block)
+  {
+    endLine();
+    ++indentation;
+    block->accept(*this);
+    --indentation;
+  }
+
+  void printWithParenthesis(const NodePtr& node, bool doParenthesis = true)
+  {
+    if (doParenthesis)
+      write("(");
+    node->accept(*this);
+    if (doParenthesis)
+      write(")");
   }
 };
 

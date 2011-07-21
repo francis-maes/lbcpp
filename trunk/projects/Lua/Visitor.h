@@ -98,6 +98,9 @@ public:
     return res;
   }
 
+  void apply(NodePtr& node)
+    {node = rewrite(node);}
+
 protected:
   NodePtr result;
 
@@ -159,6 +162,13 @@ public:
 
   virtual void visit(Index& index)
     {rewriteChildren(index);}
+};
+
+class RemoveParenthesisRewriter : public DefaultRewriter
+{
+public:
+  virtual void visit(Parenthesis& parenthesis)
+    {setResult(rewrite(parenthesis.getExpr()));}
 };
 
 }; /* namespace lua */
