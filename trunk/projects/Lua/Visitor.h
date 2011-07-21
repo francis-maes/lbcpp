@@ -29,6 +29,8 @@ public:
     {jassert(false);}
   virtual void visit(While& statement)
     {jassert(false);}
+  virtual void visit(If& statement)
+    {jassert(false);}
   virtual void visit(Return& statement)
     {jassert(false);}
   virtual void visit(CallStatement& statement)
@@ -118,6 +120,8 @@ public:
   virtual void visit(Set& statement)
     {rewriteChildren(statement);}
   virtual void visit(While& statement)
+    {rewriteChildren(statement);}
+  virtual void visit(If& statement)
     {rewriteChildren(statement);}
   virtual void visit(Return& statement)
     {rewriteChildren(statement);}

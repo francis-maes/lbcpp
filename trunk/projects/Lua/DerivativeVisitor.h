@@ -111,6 +111,15 @@ public:
       return;
     }
 
+    if (fun == T("math.log") && call.getNumArguments() == 1)
+    {
+      // (log(u))' = u' / u
+      ExpressionPtr u = call.getArgument(0);
+      setResult(div(parenthesis(rewrite(u)), parenthesis(u)));
+      return;
+    }
+
+
     if ((fun == T("math.max") || fun == T("math.min")) && call.getNumArguments() == 2)
     {
       // max(u,v)' = (u >= v ? u' : v')

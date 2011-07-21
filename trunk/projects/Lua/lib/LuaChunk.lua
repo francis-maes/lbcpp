@@ -98,6 +98,21 @@ function _M.metaLuaAstToLbcppAst(ast)
   elseif ast.tag == "While" then
     --print ("While: num sub nodes " .. #subNodes .. " subtags = " .. getTag(ast[1]) .. " " .. getTag(ast[2]))
     return Object.create("lua::While", subNodes[1], makeBlock(ast[2]))
+  elseif ast.tag == "If" then
+    local conditions = Object.create("ObjectVector<lua::Expression>")
+    local blocks = Object.create("ObjectVector<lua::Block>")
+    local i = 1
+    assert (#subNodes == #ast)
+    while i <= #subNodes do
+      if i < #subNodes then
+        conditions:append(subNodes[i])
+        blocks:append(makeBlock(ast[i + 1]))
+      else
+        blocks:append(makeBlock(ast[i]))
+      end
+      i = i + 2
+    end
+    return Object.create("lua::If", conditions, blocks)
   elseif ast.tag == "Return" then
     return Object.create("lua::Return", makeObjectVector("lua::Expression", subNodes, 1))
   

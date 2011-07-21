@@ -204,6 +204,43 @@ protected:
   BlockPtr block;
 };
 
+class If : public Statement
+{
+public:
+  virtual String getTag() const
+    {return "If";}
+
+  virtual size_t getNumSubNodes() const
+    {return conditions.size() + blocks.size();}
+
+  virtual NodePtr& getSubNode(size_t index)
+  {
+    bool cond = (index % 2 == 0);
+    index /= 2;
+    return cond ? (NodePtr&)blocks[index] : (NodePtr&)conditions[index];
+  }
+
+  virtual void accept(Visitor& visitor);
+
+  size_t getNumConditions() const
+    {return conditions.size();}
+
+  const ExpressionPtr& getCondition(size_t index) const
+    {jassert(index < conditions.size()); return conditions[index];}
+
+  size_t getNumBlocks() const
+    {return blocks.size();}
+
+  const BlockPtr& getBlock(size_t index) const
+    {jassert(index < blocks.size()); return blocks[index];}
+
+protected:
+  friend class IfClass;
+
+  std::vector<ExpressionPtr> conditions;
+  std::vector<BlockPtr> blocks;
+};
+
 class Return : public Statement
 {
 public:
@@ -271,6 +308,7 @@ public:
 extern ExpressionPtr sub(const ExpressionPtr& left, const ExpressionPtr& right);
 extern ExpressionPtr add(const ExpressionPtr& left, const ExpressionPtr& right);
 extern ExpressionPtr multiply(const ExpressionPtr& left, const ExpressionPtr& right);
+extern ExpressionPtr div(const ExpressionPtr& left, const ExpressionPtr& right);
 extern ExpressionPtr pow(const ExpressionPtr& left, const ExpressionPtr& right);
 extern ExpressionPtr parenthesis(const ExpressionPtr& expr);
 extern ExpressionPtr unm(const ExpressionPtr& expr);
@@ -698,7 +736,7 @@ x| `Do{ block }
 x| `Set{ {lhs+} {expr+} }
 x| `While{ expr block }
 | `Repeat{ block expr }
-| `If{ (expr block)+ block? }
+x| `If{ (expr block)+ block? }
 | `Fornum{ ident expr expr expr? block }
 | `Forin{ {ident+} {expr+} block }
 | `Local{ {ident+} {expr+}? }

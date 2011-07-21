@@ -36,6 +36,10 @@
       <variable type="lua::Expression" name="expr"/>
       <variable type="lua::Block" name="block"/>
     </class>
+    <class name="If" base="lua::Statement">
+      <variable type="ObjectVector[lua::Expression]" name="conditions"/>
+      <variable type="ObjectVector[lua::Block]" name="blocks"/>
+    </class>
     <class name="Return" base="lua::Statement">
       <variable type="ObjectVector[lua::Expression]" name="expressions"/>
     </class>

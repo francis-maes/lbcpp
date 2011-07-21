@@ -25,6 +25,7 @@ NODE_ACCEPT_FUNCTION(Block)
 NODE_ACCEPT_FUNCTION(Do)
 NODE_ACCEPT_FUNCTION(Set)
 NODE_ACCEPT_FUNCTION(While)
+NODE_ACCEPT_FUNCTION(If)
 NODE_ACCEPT_FUNCTION(Return)
 NODE_ACCEPT_FUNCTION(CallStatement)
 
@@ -65,6 +66,21 @@ ExpressionPtr lbcpp::lua::multiply(const ExpressionPtr& left, const ExpressionPt
   }
 
   return new BinaryOperation(mulOp, left, right);
+}
+
+ExpressionPtr lbcpp::lua::div(const ExpressionPtr& left, const ExpressionPtr& right)
+{
+  LiteralNumberPtr leftNumber = left.dynamicCast<LiteralNumber>();
+  LiteralNumberPtr rightNumber = right.dynamicCast<LiteralNumber>();
+
+  if (leftNumber && rightNumber)
+    return new LiteralNumber(leftNumber->getValue() / rightNumber->getValue());
+  
+  // x / 1 = x
+  if (rightNumber && rightNumber->getValue() == 1.0)
+    return left;
+
+  return new BinaryOperation(divOp, left, right);
 }
 
 ExpressionPtr lbcpp::lua::add(const ExpressionPtr& left, const ExpressionPtr& right)
@@ -136,7 +152,7 @@ ExpressionPtr lbcpp::lua::pow(const ExpressionPtr& left, const ExpressionPtr& ri
 ExpressionPtr lbcpp::lua::parenthesis(const ExpressionPtr& expr)
 {
   LiteralNumberPtr number = expr.dynamicCast<LiteralNumber>();
-  return number ? number : ExpressionPtr(new Parenthesis(expr));
+  return number ? (ExpressionPtr)number : ExpressionPtr(new Parenthesis(expr));
 }
 
 ExpressionPtr lbcpp::lua::unm(const ExpressionPtr& expr)

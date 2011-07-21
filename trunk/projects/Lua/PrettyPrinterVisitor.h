@@ -63,6 +63,31 @@ public:
   virtual void visit(While& statement)
     {jassert(false);} // not yet implemented
 
+  void printBlockWithIndentation(const BlockPtr& block)
+  {
+    endLine();
+    ++indentation;
+    block->accept(*this);
+    --indentation;
+  }
+
+  virtual void visit(If& statement)
+  {
+    for (size_t i = 0; i < statement.getNumConditions(); ++i)
+    {
+      write(i == 0 ? "if" : "elseif");
+      write(" ");
+      statement.getCondition(i)->accept(*this);
+      write(" then");
+      printBlockWithIndentation(statement.getBlock(i));
+    }
+    if (statement.getNumBlocks() > statement.getNumConditions())
+    {
+      write("else");
+      printBlockWithIndentation(statement.getBlock(statement.getNumBlocks() - 1));
+    }
+  }
+
   virtual void visit(Return& statement)
   {
     write("return ");
