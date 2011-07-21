@@ -31,8 +31,7 @@ NODE_ACCEPT_FUNCTION(CallStatement)
 // expressions
 NODE_ACCEPT_FUNCTION(Nil)
 NODE_ACCEPT_FUNCTION(Dots)
-NODE_ACCEPT_FUNCTION(True)
-NODE_ACCEPT_FUNCTION(False)
+NODE_ACCEPT_FUNCTION(LiteralBoolean)
 NODE_ACCEPT_FUNCTION(LiteralNumber)
 NODE_ACCEPT_FUNCTION(LiteralString)
 NODE_ACCEPT_FUNCTION(Function)
@@ -139,3 +138,30 @@ ExpressionPtr lbcpp::lua::parenthesis(const ExpressionPtr& expr)
   LiteralNumberPtr number = expr.dynamicCast<LiteralNumber>();
   return number ? number : ExpressionPtr(new Parenthesis(expr));
 }
+
+ExpressionPtr lbcpp::lua::unm(const ExpressionPtr& expr)
+{
+  LiteralNumberPtr number = expr.dynamicCast<LiteralNumber>();
+  if (number)
+    return new LiteralNumber(-number->getValue());
+
+  UnaryOperationPtr unaryOperation = expr.dynamicCast<UnaryOperation>();
+  if (unaryOperation && unaryOperation->getOp() == unmOp)
+    return unaryOperation->getExpr(); // - (- x) ==> x
+
+  BinaryOperationPtr binaryOperation = expr.dynamicCast<BinaryOperation>();
+  if (binaryOperation && binaryOperation->getOp() == subOp)
+    return sub(binaryOperation->getRight(), binaryOperation->getLeft()); // -(x - y) ==> (y - x)
+
+  return new UnaryOperation(unmOp, expr);
+}
+
+// todo: precompute constants
+ExpressionPtr lbcpp::lua::lt(const ExpressionPtr& left, const ExpressionPtr& right)
+  {return new BinaryOperation(ltOp, left, right);}
+
+ExpressionPtr lbcpp::lua::le(const ExpressionPtr& left, const ExpressionPtr& right)
+  {return new BinaryOperation(leOp, left, right);}
+
+ExpressionPtr lbcpp::lua::not(const ExpressionPtr& expr)
+  {return new UnaryOperation(notOp, expr);}

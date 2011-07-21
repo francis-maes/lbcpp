@@ -102,16 +102,18 @@ function _M.metaLuaAstToLbcppAst(ast)
     return Object.create("lua::Return", makeObjectVector("lua::Expression", subNodes, 1))
   
   -- expressions  
-  elseif ast.tag == "Nil" or ast.tag == "False" or ast.tag == "True" or ast.tag == "False" then
+  elseif ast.tag == "Nil" or ast.tag == "Dots" then
     return Object.create("lua::" .. ast.tag)
+  elseif ast.tag == "False" or ast.tag == "True" then
+    return Object.create("lua::LiteralConstant", ast.tag == "True")
   elseif ast.tag == "Id" then
     return Object.create("lua::Identifier", ast[1])
   elseif ast.tag == "Derivable" then
     return Object.create("lua::Identifier", ast[1][1], true)
   elseif ast.tag == "Number" or ast.tag == "String" then
     return Object.create("lua::Literal" .. ast.tag, ast[1])
-  elseif ast.tag == "Function" or ast.tag == "Index" then
-    return Object.create("lua::" .. ast.tag, subNodes[1], makeBlock(ast[2]))
+  elseif ast.tag == "Function" then
+    return Object.create("lua::Function", subNodes[1], makeBlock(ast[2]))
   elseif ast.tag == "Table" then
     return Object.create("lua::Table", makeObjectVector("lua::Expression", subNodes, 1))
   elseif ast.tag == "Pair" then
@@ -128,6 +130,8 @@ function _M.metaLuaAstToLbcppAst(ast)
     return Object.create("lua::Parenthesis", subNodes[1])
   elseif ast.tag == "Call" then
     return Object.create("lua::Call", subNodes[1], makeObjectVector("lua::Expression", subNodes, 2))
+  elseif ast.tag == "Index" then
+    return Object.create("lua::Index", subNodes[1], subNodes[2])
   else
     error("unknown tag " .. ast.tag .. " (numSubNodes = " .. #subNodes .. " numAttributes = " .. (#ast - #subNodes) .. ")")
   end

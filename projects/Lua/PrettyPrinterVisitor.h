@@ -85,11 +85,8 @@ public:
   virtual void visit(Dots& expression)
     {write("...");}
 
-  virtual void visit(True& expression)
-    {write("true");}
-
-  virtual void visit(False& expression)
-    {write("false");}
+  virtual void visit(LiteralBoolean& expression)
+    {write(expression.getValue() ? "true" : "false");}
 
   virtual void visit(LiteralNumber& expression)
     {write(String(expression.getValue()));}
@@ -112,11 +109,32 @@ public:
     endLine();
   }
 
+  void writeIdentifierOrGenericAccess(const ExpressionPtr& expr, bool addDotBeforeIdentifier = false)
+  {
+    LiteralStringPtr str = expr.dynamicCast<LiteralString>();
+    if (str)
+    {
+      String value = str->getValue();
+      if (value.length() > 0 && !value.containsAnyOf(T(" \t\r\n")) && 
+          (juce::CharacterFunctions::isLetterOrDigit(value[0]) || value[0] == '_'))
+      {
+        if (addDotBeforeIdentifier)
+          write(".");
+        write(value); // identifier
+        return;
+      }
+    }
+
+    // string access
+    write("[");
+    expr->accept(*this);
+    write("]");
+  }
+
   virtual void visit(Pair& pair)
   {
-    write("[");
-    pair.getSubNode(0)->accept(*this);
-    write("] = ");
+    writeIdentifierOrGenericAccess(pair.getSubNode(0));
+    write(" = ");
     pair.getSubNode(1)->accept(*this);
   }
 
@@ -183,8 +201,7 @@ public:
   virtual void visit(Index& index)
   {
     index.getLeft()->accept(*this);
-    write(".");
-    index.getRight()->accept(*this);
+    writeIdentifierOrGenericAccess(index.getRight(), true);
   }
 
 private:

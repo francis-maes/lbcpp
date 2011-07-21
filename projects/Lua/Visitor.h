@@ -39,9 +39,7 @@ public:
     {jassert(false);}
   virtual void visit(Dots& expression)
     {jassert(false);}
-  virtual void visit(True& expression)
-    {jassert(false);}
-  virtual void visit(False& expression)
+  virtual void visit(LiteralBoolean& expression)
     {jassert(false);}
   virtual void visit(LiteralNumber& expression)
     {jassert(false);}
@@ -90,9 +88,12 @@ public:
 
   NodePtr rewrite(const NodePtr& node)
   {
+    NodePtr prevResult = result;
     result = NodePtr();
     node->accept(*this);
-    return result ? result : node;
+    NodePtr res = result ? result : node;
+    result = prevResult;
+    return res;
   }
 
 protected:
@@ -126,8 +127,7 @@ public:
   // expressions
   virtual void visit(Nil& expression)   {}
   virtual void visit(Dots& expression)  {}
-  virtual void visit(True& expression)  {}
-  virtual void visit(False& expression) {}
+  virtual void visit(LiteralBoolean& expression) {}
   virtual void visit(LiteralNumber& expression) {}
   virtual void visit(LiteralString& expression) {}
   virtual void visit(Function& function)
