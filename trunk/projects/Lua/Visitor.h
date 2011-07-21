@@ -43,6 +43,22 @@ public:
   virtual void visit(Index& index) {}
 };
 
+class RewriteVisitor : public Visitor
+{
+public:
+  const NodePtr& getResult() const
+    {return result;}
+
+  NodePtr rewrite(const NodePtr& node)
+    {node->accept(*this); return result;}
+
+protected:
+  NodePtr result;
+
+  void setResult(NodePtr result)
+    {this->result = result;}
+};
+
 }; /* namespace lua */
 }; /* namespace lbcpp */
 

@@ -5,13 +5,7 @@
   <class name="LuaInterpreter" base="WorkUnit">
     <variable type="File" name="luaFile"/>
   </class>
-
-  <class name="LuaASTNode" base="Object">
-    <variable type="String" name="tag"/>
-    <variable type="VariableVector" name="variables"/>
-    <variable type="ObjectVector[LuaASTNode]" name="childNodes"/>
-  </class>
-
+  
   <class name="LuaSandBox" base="WorkUnit">
     <variable type="File" name="luaFile"/>
   </class>

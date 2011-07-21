@@ -11,8 +11,7 @@
 
 # include <lbcpp/Lua/Lua.h>
 
-namespace lbcpp
-{
+namespace lbcpp {
 
 enum LuaChunkType
 {
@@ -22,483 +21,518 @@ enum LuaChunkType
   luaOtherChunk,
 };
 
-namespace lua
+namespace lua {
+
+class Node;
+typedef ReferenceCountedObjectPtr<Node> NodePtr;
+class List;
+typedef ReferenceCountedObjectPtr<List> ListPtr;
+
+class Block;
+typedef ReferenceCountedObjectPtr<Block> BlockPtr;
+class Statement;
+typedef ReferenceCountedObjectPtr<Statement> StatementPtr;
+class Expression;
+typedef ReferenceCountedObjectPtr<Expression> ExpressionPtr;
+class LHSExpression;
+typedef ReferenceCountedObjectPtr<LHSExpression> LHSExpressionPtr;
+
+class Visitor;
+
+class Node : public Object
 {
-  class Node;
-  typedef ReferenceCountedObjectPtr<Node> NodePtr;
-  class List;
-  typedef ReferenceCountedObjectPtr<List> ListPtr;
+public:
+  virtual String getTag() const = 0;
+  virtual LuaChunkType getType() const = 0;
 
-  class Block;
-  typedef ReferenceCountedObjectPtr<Block> BlockPtr;
-  class Statement;
-  typedef ReferenceCountedObjectPtr<Statement> StatementPtr;
-  class Expression;
-  typedef ReferenceCountedObjectPtr<Expression> ExpressionPtr;
-  class LHSExpression;
-  typedef ReferenceCountedObjectPtr<LHSExpression> LHSExpressionPtr;
+  virtual size_t getNumSubNodes() const = 0;
+  virtual NodePtr getSubNode(size_t index) const = 0;
 
-  class Visitor;
+  virtual void accept(Visitor& visitor) = 0;
 
-  class Node : public Object
-  {
-  public:
-    virtual String getTag() const = 0;
-    virtual LuaChunkType getType() const = 0;
+  String print() const;
+};
 
-    virtual size_t getNumSubNodes() const = 0;
-    virtual NodePtr getSubNode(size_t index) const = 0;
+extern ClassPtr nodeClass;
 
-    virtual void accept(Visitor& visitor) = 0;
+class List : public Node
+{
+public:
+  virtual String getTag() const
+    {return String::empty;}
 
-    String print() const;
-  };
+  virtual LuaChunkType getType() const
+    {return luaOtherChunk;}
 
-  extern ClassPtr nodeClass;
+  virtual size_t getNumSubNodes() const
+    {return nodes.size();}
 
-  class List : public Node
-  {
-  public:
-    virtual String getTag() const
-      {return String::empty;}
+  virtual NodePtr getSubNode(size_t index) const
+    {jassert(index < nodes.size()); return nodes[index];}
 
-    virtual LuaChunkType getType() const
-      {return luaOtherChunk;}
+  virtual void accept(Visitor& visitor);
 
-    virtual size_t getNumSubNodes() const
-      {return nodes.size();}
+private:
+  friend class ListClass;
 
-    virtual NodePtr getSubNode(size_t index) const
-      {jassert(index < nodes.size()); return nodes[index];}
+  std::vector<NodePtr> nodes;
+};
 
-    virtual void accept(Visitor& visitor);
+/*
+** Block
+*/
+class Block : public Node
+{
+public:
+  virtual String getTag() const
+    {return String::empty;}
 
-  private:
-    friend class ListClass;
+  virtual LuaChunkType getType() const
+    {return luaStatementBlock;}
 
-    std::vector<NodePtr> nodes;
-  };
+  virtual size_t getNumSubNodes() const
+    {return statements.size();}
 
-  /*
-  ** Block
-  */
-  class Block : public Node
-  {
-  public:
-    virtual String getTag() const
-      {return String::empty;}
+  virtual NodePtr getSubNode(size_t index) const
+    {jassert(index < statements.size()); return statements[index];}
 
-    virtual LuaChunkType getType() const
-      {return luaStatementBlock;}
+  virtual void accept(Visitor& visitor);
 
-    virtual size_t getNumSubNodes() const
-      {return statements.size();}
+private:
+  friend class BlockClass;
 
-    virtual NodePtr getSubNode(size_t index) const
-      {jassert(index < statements.size()); return statements[index];}
+  std::vector<StatementPtr> statements;
+};
 
-    virtual void accept(Visitor& visitor);
+/*
+** Statement
+*/
+class Statement : public Node
+{
+public:
+  virtual LuaChunkType getType() const
+    {return luaStatement;}
+};
 
-  private:
-    friend class BlockClass;
+class Do : public Statement
+{
+public:
+  virtual String getTag() const
+    {return "Do";}
 
-    std::vector<StatementPtr> statements;
-  };
+  virtual size_t getNumSubNodes() const
+    {return 1;}
 
-  /*
-  ** Statement
-  */
-  class Statement : public Node
-  {
-  public:
-    virtual LuaChunkType getType() const
-      {return luaStatement;}
-  };
+  virtual NodePtr getSubNode(size_t index) const
+    {return block;}
 
-  class Do : public Statement
-  {
-  public:
-    virtual String getTag() const
-      {return "Do";}
+  virtual void accept(Visitor& visitor);
 
-    virtual size_t getNumSubNodes() const
-      {return 1;}
+protected:
+  friend class DoClass;
 
-    virtual NodePtr getSubNode(size_t index) const
-      {return block;}
+  BlockPtr block;
+};
 
-    virtual void accept(Visitor& visitor);
+class Set : public Statement
+{
+public:
+  virtual String getTag() const
+    {return "Set";}
 
-  protected:
-    friend class DoClass;
+  virtual size_t getNumSubNodes() const
+    {return 2;}
 
-    BlockPtr block;
-  };
+  virtual NodePtr getSubNode(size_t index) const
+    {return index ? expr : lhs;}
 
-  class Set : public Statement
-  {
-  public:
-    virtual String getTag() const
-      {return "Set";}
+  virtual void accept(Visitor& visitor);
 
-    virtual size_t getNumSubNodes() const
-      {return 2;}
+  const ListPtr& getLhs() const
+    {return lhs;}
 
-    virtual NodePtr getSubNode(size_t index) const
-      {return index ? expr : lhs;}
+  const ListPtr& getExpr() const
+    {return expr;}
 
-    virtual void accept(Visitor& visitor);
+protected:
+  friend class SetClass;
+  ListPtr lhs;
+  ListPtr expr;
+};
 
-  protected:
-    friend class SetClass;
-    ListPtr lhs;
-    ListPtr expr;
-  };
+class While : public Statement
+{
+public:
+  virtual String getTag() const
+    {return "While";}
 
-  class While : public Statement
-  {
-  public:
-    virtual String getTag() const
-      {return "While";}
+  virtual size_t getNumSubNodes() const
+    {return 2;}
+
+  virtual NodePtr getSubNode(size_t index) const
+    {return index ? (NodePtr)block : (NodePtr)expr;}
+
+  virtual void accept(Visitor& visitor);
+
+protected:
+  friend class WhileClass;
+
+  ExpressionPtr expr;
+  BlockPtr block;
+};
+
+class Return : public Statement
+{
+public:
+  virtual String getTag() const
+    {return "Return";}
+
+  virtual size_t getNumSubNodes() const
+    {return expressions.size();}
+
+  virtual NodePtr getSubNode(size_t index) const
+    {jassert(index < expressions.size()); return expressions[index];}
+
+  virtual void accept(Visitor& visitor);
+
+protected:
+  friend class ReturnClass;
 
-    virtual size_t getNumSubNodes() const
-      {return 2;}
-
-    virtual NodePtr getSubNode(size_t index) const
-      {return index ? (NodePtr)block : (NodePtr)expr;}
-
-    virtual void accept(Visitor& visitor);
-
-  protected:
-    friend class WhileClass;
-
-    ExpressionPtr expr;
-    BlockPtr block;
-  };
-
-  class Return : public Statement
-  {
-  public:
-    virtual String getTag() const
-      {return "Return";}
-
-    virtual size_t getNumSubNodes() const
-      {return expressions.size();}
+  std::vector<ExpressionPtr> expressions;
+};
 
-    virtual NodePtr getSubNode(size_t index) const
-      {jassert(index < expressions.size()); return expressions[index];}
-
-    virtual void accept(Visitor& visitor);
-
-  protected:
-    friend class ReturnClass;
+class CallStatement : public Statement
+{
+public:
+  virtual String getTag() const
+    {return "Call";}
+
+  virtual size_t getNumSubNodes() const
+    {return 1 + arguments.size();}
 
-    std::vector<ExpressionPtr> expressions;
-  };
+  virtual NodePtr getSubNode(size_t index) const
+    {return index == 0 ? function : arguments[index - 1];}
 
-  class CallStatement : public Statement
-  {
-  public:
-    virtual String getTag() const
-      {return "Call";}
+  virtual void accept(Visitor& visitor);
 
-    virtual size_t getNumSubNodes() const
-      {return 1 + arguments.size();}
+protected:
+  friend class CallStatementClass;
 
-    virtual NodePtr getSubNode(size_t index) const
-      {return index == 0 ? function : arguments[index - 1];}
-
-    virtual void accept(Visitor& visitor);
-
-  protected:
-    friend class CallStatementClass;
-
-    ExpressionPtr function;
-    std::vector<ExpressionPtr> arguments;
-  };
+  ExpressionPtr function;
+  std::vector<ExpressionPtr> arguments;
+};
 
-  // ...
-
-  /*
-  ** Expression
-  */
-  class Expression : public Node
-  {
-  public:
-    virtual LuaChunkType getType() const
-      {return luaExpression;}
-  };
+// ...
 
-  class AtomicExpression : public Expression
-  {
-  public:
-    virtual size_t getNumSubNodes() const
-      {return 0;}
-
-    virtual NodePtr getSubNode(size_t index) const
-      {jassert(false); return NodePtr();}
-  };
-
-  class Nil : public AtomicExpression
-  {
-  public:
-    virtual String getTag() const {return "Nil";}
-    virtual void accept(Visitor& visitor);
-  };
-
-  class Dots : public AtomicExpression
-  {
-  public:
-    virtual String getTag() const {return "Dots";}
-    virtual void accept(Visitor& visitor);
-  };
+/*
+** Expression
+*/
+class Expression : public Node
+{
+public:
+  virtual LuaChunkType getType() const
+    {return luaExpression;}
+};
 
-  class True : public AtomicExpression
-  {
-  public:
-    virtual String getTag() const {return "True";}
-    virtual void accept(Visitor& visitor);
-  };
+// construction function to simplify the tree on the fly 
+extern ExpressionPtr sub(const ExpressionPtr& left, const ExpressionPtr& right);
+extern ExpressionPtr add(const ExpressionPtr& left, const ExpressionPtr& right);
+extern ExpressionPtr multiply(const ExpressionPtr& left, const ExpressionPtr& right);
 
-  class False : public AtomicExpression
-  {
-  public:
-    virtual String getTag() const {return "False";}
-    virtual void accept(Visitor& visitor);
-  };
-
-  class LiteralNumber : public AtomicExpression
-  {
-  public:
-    virtual String getTag() const
-      {return "Number";}
-
-    virtual void accept(Visitor& visitor);
-
-    double getValue() const
-      {return value;}
-
-  protected:
-    friend class LiteralNumberClass;
+class AtomicExpression : public Expression
+{
+public:
+  virtual size_t getNumSubNodes() const
+    {return 0;}
 
-    double value;
-  };
+  virtual NodePtr getSubNode(size_t index) const
+    {jassert(false); return NodePtr();}
+};
 
-  class LiteralString : public AtomicExpression
-  {
-  public:
-    virtual String getTag() const
-      {return "String";}
+class Nil : public AtomicExpression
+{
+public:
+  virtual String getTag() const {return "Nil";}
+  virtual void accept(Visitor& visitor);
+};
 
-    virtual void accept(Visitor& visitor);
+class Dots : public AtomicExpression
+{
+public:
+  virtual String getTag() const {return "Dots";}
+  virtual void accept(Visitor& visitor);
+};
 
-    const String& getValue() const
-      {return value;}
+class True : public AtomicExpression
+{
+public:
+  virtual String getTag() const {return "True";}
+  virtual void accept(Visitor& visitor);
+};
 
-  protected:
-    friend class LiteralStringClass;
+class False : public AtomicExpression
+{
+public:
+  virtual String getTag() const {return "False";}
+  virtual void accept(Visitor& visitor);
+};
 
-    String value;
-  };
+class LiteralNumber : public AtomicExpression
+{
+public:
+  LiteralNumber(double value = 0.0)
+    : value(value) {}
 
-  class FunctionClass; // trick, because FunctionClass is already declared in the lbcpp namespace
-  class Function : public Expression
-  {
-  public:
-    virtual String getTag() const
-      {return "Function";}
-  
-    virtual size_t getNumSubNodes() const
-      {return 2;}
+  virtual String getTag() const
+    {return "Number";}
 
-    virtual NodePtr getSubNode(size_t index) const
-      {return index ? (NodePtr)block : (NodePtr)prototype;}
+  virtual void accept(Visitor& visitor);
 
-    virtual void accept(Visitor& visitor);
+  double getValue() const
+    {return value;}
 
-    const ListPtr& getPrototype() const
-      {return prototype;}
+protected:
+  friend class LiteralNumberClass;
 
-    const BlockPtr& getBlock() const
-      {return block;}
+  double value;
+};
 
-  protected:
-    friend class FunctionClass;
+typedef ReferenceCountedObjectPtr<LiteralNumber> LiteralNumberPtr;
 
-    ListPtr prototype;
-    BlockPtr block;
-  };
+class LiteralString : public AtomicExpression
+{
+public:
+  virtual String getTag() const
+    {return "String";}
 
-  enum UnaryOp
-  {
-    notOp = 0,  lenOp,  unmOp,
-  };
-  
-  class UnaryOperation : public Expression
-  {
-  public:
-    virtual String getTag() const
-      {return "Op";}
+  virtual void accept(Visitor& visitor);
 
-    virtual size_t getNumSubNodes() const
-      {return 1;}
+  const String& getValue() const
+    {return value;}
 
-    virtual NodePtr getSubNode(size_t index) const
-      {return expr;}
+protected:
+  friend class LiteralStringClass;
 
-    virtual void accept(Visitor& visitor);
+  String value;
+};
 
-    UnaryOp getOp() const
-      {return op;}
+class FunctionClass; // trick, because FunctionClass is already declared in the lbcpp namespace
+class Function : public Expression
+{
+public:
+  virtual String getTag() const
+    {return "Function";}
 
-    const ExpressionPtr& getExpr() const
-      {return expr;}
+  virtual size_t getNumSubNodes() const
+    {return 2;}
 
-  protected:
-    friend class UnaryOperationClass;
+  virtual NodePtr getSubNode(size_t index) const
+    {return index ? (NodePtr)block : (NodePtr)prototype;}
 
-    UnaryOp op;
-    ExpressionPtr expr;
-  };
+  virtual void accept(Visitor& visitor);
 
-  enum BinaryOp
-  {
-    addOp = 0,  subOp,    mulOp,    divOp,
-    modOp,      powOp,    concatOp, eqOp,
-    ltOp,       leOp,     andOp,    orOp
-  };
+  const ListPtr& getPrototype() const
+    {return prototype;}
 
-  class BinaryOperation : public Expression
-  {
-  public:
-    virtual String getTag() const
-      {return "Op";}
+  const BlockPtr& getBlock() const
+    {return block;}
 
-    virtual size_t getNumSubNodes() const
-      {return 2;}
+protected:
+  friend class FunctionClass;
 
-    virtual NodePtr getSubNode(size_t index) const
-      {return index ? right : left;}
+  ListPtr prototype;
+  BlockPtr block;
+};
 
-    virtual void accept(Visitor& visitor);
+typedef ReferenceCountedObjectPtr<Function> FunctionPtr;
 
-    BinaryOp getOp() const
-      {return op;}
+enum UnaryOp
+{
+  notOp = 0,  lenOp,  unmOp,
+};
 
-    const ExpressionPtr& getLeft() const
-      {return left;}
+class UnaryOperation : public Expression
+{
+public:
+  UnaryOperation(UnaryOp op, const ExpressionPtr& expr)
+    : op(op), expr(expr) {}
+  UnaryOperation() : op(notOp) {}
 
-    const ExpressionPtr& getRight() const
-      {return right;}
+  virtual String getTag() const
+    {return "Op";}
 
-  protected:
-    friend class BinaryOperationClass;
+  virtual size_t getNumSubNodes() const
+    {return 1;}
 
-    BinaryOp op;
-    ExpressionPtr left;
-    ExpressionPtr right;
-  };
+  virtual NodePtr getSubNode(size_t index) const
+    {return expr;}
 
-  class Parenthesis : public Expression
-  {
-  public:
-    virtual String getTag() const
-      {return "Paren";}
+  virtual void accept(Visitor& visitor);
 
-    virtual size_t getNumSubNodes() const
-      {return 1;}
+  UnaryOp getOp() const
+    {return op;}
 
-    virtual NodePtr getSubNode(size_t index) const
-      {return expr;}
+  const ExpressionPtr& getExpr() const
+    {return expr;}
 
-    virtual void accept(Visitor& visitor);
+protected:
+  friend class UnaryOperationClass;
 
-    const ExpressionPtr& getExpr() const
-      {return expr;}
+  UnaryOp op;
+  ExpressionPtr expr;
+};
 
-  protected:
-    friend class ParenthesisClass;
+enum BinaryOp
+{
+  addOp = 0,  subOp,    mulOp,    divOp,
+  modOp,      powOp,    concatOp, eqOp,
+  ltOp,       leOp,     andOp,    orOp
+};
 
-    ExpressionPtr expr;
-  };
-  
-  /*
-  ** Apply Expression
-  */
-  class ApplyExpression : public Expression {};
+class BinaryOperation : public Expression
+{
+public:
+  BinaryOperation(BinaryOp op, const ExpressionPtr& left, const ExpressionPtr& right)
+    : op(op), left(left), right(right) {}
+  BinaryOperation() {}
 
-  class Call : public ApplyExpression
-  {
-  public:
-    virtual String getTag() const
-      {return "Call";}
+  virtual String getTag() const
+    {return "Op";}
 
-    virtual size_t getNumSubNodes() const
-      {return 1 + arguments.size();}
+  virtual size_t getNumSubNodes() const
+    {return 2;}
 
-    virtual NodePtr getSubNode(size_t index) const
-      {return index == 0 ? function : arguments[index - 1];}
+  virtual NodePtr getSubNode(size_t index) const
+    {return index ? right : left;}
 
-    virtual void accept(Visitor& visitor);
+  virtual void accept(Visitor& visitor);
 
-  protected:
-    friend class CallClass;
+  BinaryOp getOp() const
+    {return op;}
 
-    ExpressionPtr function;
-    std::vector<ExpressionPtr> arguments;
-  };
+  const ExpressionPtr& getLeft() const
+    {return left;}
 
-  
-  /*
-  ** LHS Expression
-  */
-  class LHSExpression : public Expression {};
+  const ExpressionPtr& getRight() const
+    {return right;}
 
-  class Identifier : public LHSExpression
-  {
-  public:
-    virtual String getTag() const
-      {return "Id";}
+protected:
+  friend class BinaryOperationClass;
 
-    virtual size_t getNumSubNodes() const
-      {return 0;}
+  BinaryOp op;
+  ExpressionPtr left;
+  ExpressionPtr right;
+};
 
-    virtual NodePtr getSubNode(size_t index) const
-      {jassert(false); return NodePtr();}
+class Parenthesis : public Expression
+{
+public:
+  Parenthesis(const ExpressionPtr& expr)
+    : expr(expr) {}
+  Parenthesis() {}
 
-    virtual void accept(Visitor& visitor);
+  virtual String getTag() const
+    {return "Paren";}
 
-    const String& getIdentifier() const
-      {return identifier;}
+  virtual size_t getNumSubNodes() const
+    {return 1;}
 
-  protected:
-    friend class IdentifierClass;
+  virtual NodePtr getSubNode(size_t index) const
+    {return expr;}
 
-    String identifier;
-  };
+  virtual void accept(Visitor& visitor);
 
-  class Index : public LHSExpression
-  {
-  public:
-    virtual String getTag() const
-      {return "Index";}
+  const ExpressionPtr& getExpr() const
+    {return expr;}
 
-    virtual size_t getNumSubNodes() const
-      {return 2;}
+protected:
+  friend class ParenthesisClass;
 
-    virtual NodePtr getSubNode(size_t index) const
-      {return index ? right : left;}
+  ExpressionPtr expr;
+};
 
-    virtual void accept(Visitor& visitor);
+/*
+** Apply Expression
+*/
+class ApplyExpression : public Expression {};
 
-  protected:
-    friend class IndexClass;
+class Call : public ApplyExpression
+{
+public:
+  virtual String getTag() const
+    {return "Call";}
 
-    ExpressionPtr left;
-    ExpressionPtr right;
-  };
+  virtual size_t getNumSubNodes() const
+    {return 1 + arguments.size();}
 
-}; /* namespace lua */
+  virtual NodePtr getSubNode(size_t index) const
+    {return index == 0 ? function : arguments[index - 1];}
+
+  virtual void accept(Visitor& visitor);
+
+protected:
+  friend class CallClass;
+
+  ExpressionPtr function;
+  std::vector<ExpressionPtr> arguments;
+};
+
+
+/*
+** LHS Expression
+*/
+class LHSExpression : public Expression {};
+
+class Identifier : public LHSExpression
+{
+public:
+  Identifier(const String& identifier)
+    : identifier(identifier) {}
+  Identifier() {}
+
+  virtual String getTag() const
+    {return "Id";}
+
+  virtual size_t getNumSubNodes() const
+    {return 0;}
+
+  virtual NodePtr getSubNode(size_t index) const
+    {jassert(false); return NodePtr();}
+
+  virtual void accept(Visitor& visitor);
+
+  const String& getIdentifier() const
+    {return identifier;}
+
+protected:
+  friend class IdentifierClass;
+
+  String identifier;
+};
+
+typedef ReferenceCountedObjectPtr<Identifier> IdentifierPtr;
+
+class Index : public LHSExpression
+{
+public:
+  virtual String getTag() const
+    {return "Index";}
+
+  virtual size_t getNumSubNodes() const
+    {return 2;}
+
+  virtual NodePtr getSubNode(size_t index) const
+    {return index ? right : left;}
+
+  virtual void accept(Visitor& visitor);
+
+protected:
+  friend class IndexClass;
+
+  ExpressionPtr left;
+  ExpressionPtr right;
+};
+
 
 /*
 x block: { stat* }
@@ -546,108 +580,7 @@ x binopid: "add" | "sub" | "mul"    | "div"
 x unopid:  "not" | "len" | "unm"
 */
 
-class LuaASTNode;
-typedef ReferenceCountedObjectPtr<LuaASTNode> LuaASTNodePtr;
-
-class LuaASTNode : public Object
-{
-public:
-  LuaASTNode(const String& tag, const std::vector<Variable>& variables, const std::vector<LuaASTNodePtr>& childNodes)
-    : tag(tag), variables(variables), childNodes(childNodes) {}
-  LuaASTNode(const String& tag, const std::vector<LuaASTNodePtr>& childNodes)
-    : tag(tag), childNodes(childNodes) {}
-  LuaASTNode(const std::vector<LuaASTNodePtr>& childNodes)
-    : childNodes(childNodes) {}
-  LuaASTNode(const String& rawCode)
-    : tag(T("Raw")), variables(1, rawCode) {}
-  LuaASTNode() {}
-
-  static LuaASTNodePtr newOp(const String& opid, const LuaASTNodePtr& operand)
-  {
-    std::vector<LuaASTNodePtr> childNodes(1);
-    childNodes[0] = operand;
-    return new LuaASTNode(T("Op"), std::vector<Variable>(1, opid), childNodes);
-  }
-
-  static LuaASTNodePtr newOp(const String& opid, const LuaASTNodePtr& left, const LuaASTNodePtr& right)
-  {
-    std::vector<LuaASTNodePtr> childNodes(2);
-    childNodes[0] = left;
-    childNodes[1] = right;
-    return new LuaASTNode(T("Op"), std::vector<Variable>(1, opid), childNodes);
-  }
-
-  static LuaASTNodePtr newParen(const LuaASTNodePtr& content)
-    {return new LuaASTNode(T("Paren"), std::vector<LuaASTNodePtr>(1, content));}
-
-  static LuaASTNodePtr newNumber(double value)
-    {return new LuaASTNode(T("Number"), std::vector<Variable>(1, value), std::vector<LuaASTNodePtr>());}
-
-  const String& getTag() const
-    {return tag;}
-
-  size_t getNumChildNodes() const
-    {return childNodes.size();}
-
-  LuaASTNodePtr getChildNode(size_t index) const
-    {jassert(index < childNodes.size()); return childNodes[index];}
-
-  const std::vector<LuaASTNodePtr>& getChildNodes() const
-    {return childNodes;}
-
-  size_t getNumArguments() const
-    {return variables.size();}
-
-  Variable getArgument(size_t index) const
-    {return variables[index];}
-
-  const std::vector<Variable>& getArguments() const
-    {return variables;}
-
-  virtual String toString() const
-  {
-    String res = tag;
-    if (tag.isNotEmpty())
-      res += T("(");
-
-    bool needComma = false;
-    for (size_t i = 0; i < variables.size(); ++i)
-    {
-      if (needComma)
-        res += T(",");
-      res += variables[i].toString();
-      needComma = true;
-    }
-    for (size_t i = 0; i < childNodes.size(); ++i)
-    {
-      if (needComma)
-        res += T(",");
-      res += childNodes[i]->toString();
-      needComma = true;
-    }
-
-    if (tag.isNotEmpty())
-      res += T(")");
-    return res;
-  }
-
-  virtual String toShortString() const
-    {return toString();}
-
-  String print() const;
-
-protected:
-  friend class LuaASTNodeClass;
-
-  String tag;
-  std::vector<Variable> variables;
-  std::vector<LuaASTNodePtr> childNodes;
-};
-
-extern ClassPtr luaASTNodeClass;
-
-
-
+}; /* namespace lua */
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_LUA_NODE_H_
