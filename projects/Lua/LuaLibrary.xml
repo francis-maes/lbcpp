@@ -63,6 +63,15 @@
       <variable type="lua::List" name="prototype"/>
       <variable type="lua::Block" name="block"/>
     </class>
+
+    <class name="Pair" base="lua::Expression">
+      <variable type="lua::Expression" name="first"/>
+      <variable type="lua::Expression" name="second"/>
+    </class>
+
+    <class name="Table" base="lua::Expression">
+      <variable type="ObjectVector[lua::Expression]" name="fields"/>
+    </class>
     
     <enumeration name="UnaryOp">
       <value name="not"/>

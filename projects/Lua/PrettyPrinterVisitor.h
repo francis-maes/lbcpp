@@ -112,6 +112,27 @@ public:
     endLine();
   }
 
+  virtual void visit(Pair& pair)
+  {
+    write("[");
+    pair.getSubNode(0)->accept(*this);
+    write("] = ");
+    pair.getSubNode(1)->accept(*this);
+  }
+
+  virtual void visit(Table& table)
+  {
+    write("{");
+    size_t n = table.getNumSubNodes();
+    for (size_t i = 0; i < n; ++i)
+    {
+      table.getSubNode(i)->accept(*this);
+      if (i < n - 1)
+        write(", ");
+    }
+    write("}");
+  }
+
   virtual void visit(UnaryOperation& operation)
   {
     static const char* luaOperators[] = {"not", "#", "-"};
@@ -138,13 +159,32 @@ public:
     {write("("); parenthesis.getExpr()->accept(*this); write(")");}
 
   virtual void visit(Call& call)
-    {jassert(false);} // not yet implemented
+  {
+    call.getFunction()->accept(*this);
+    write("(");
+    size_t n = call.getNumArguments();
+    for (size_t i = 0; i < n; ++i)
+    {
+      call.getArgument(i)->accept(*this);
+      if (i < n - 1)
+        write(", ");
+    }
+    write(")");
+  }
 
   virtual void visit(Identifier& identifier)
-    {write(identifier.getIdentifier());}
+  {
+    if (identifier.hasDerivableFlag())
+      write("derivable ");
+    write(identifier.getIdentifier());
+  }
 
   virtual void visit(Index& index)
-    {jassert(false);} // not yet implemented
+  {
+    index.getLeft()->accept(*this);
+    write(".");
+    index.getRight()->accept(*this);
+  }
 
 private:
   OutputStream& ostr;

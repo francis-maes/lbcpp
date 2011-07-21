@@ -33,7 +33,7 @@ public:
     if (istr)
     {
       while (!istr->isExhausted())
-        code += istr->readNextLine();
+        code += istr->readNextLine() + T("\n");
       delete istr;
     }
   }
@@ -123,21 +123,15 @@ public:
       "require 'LuaChunk'\n";
     luaState.execute(initializeCode, "initializeCode");
 
-
-    /*static const char* inputCode = "2 * x * y";
-      "function times(x, y) \n"
-      "  return 2 * x * y, x\n"
-      "end";*/
-
-    //LuaChunk chunk(luaState, luaExpression, inputCode);
-    LuaChunk chunk(luaState, luaExpression, luaFile);
+    LuaChunk chunk(luaState, luaStatementBlock, luaFile);
 
     context.resultCallback(T("code-before"), chunk.getCode());
     context.resultCallback(T("tree-before"), chunk.getTree());
 
-    chunk.setTree(lua::ExpressionDerivativeRewriter::computeWrtVariable(chunk.getTree(), new lua::Identifier("x")));
+    lua::BlockPtr block = chunk.getTree().staticCast<lua::Block>();
+    lua::DerivableRewriter::applyExtension(block);
+    chunk.setTree(block);
 
-    //chunk.setTree(/*rewriteTree*/(chunk.getTree()));
     context.resultCallback(T("tree-after"), chunk.getTree());
     context.resultCallback(T("code-after"), chunk.getCode());
 
@@ -155,54 +149,6 @@ public:
     }
     return true;
   }
-
-#if 0
-
-  LuaASTNodePtr computeStatementDerivative(const LuaASTNodePtr& statement, const LuaASTNodePtr& variable) const
-  {
-    if (statement->getTag() == T("Return"))
-    {
-      std::vector<LuaASTNodePtr> childNodes(statement->getNumChildNodes());
-      for (size_t i = 0; i < childNodes.size(); ++i)
-        childNodes[i] = computeExpressionDerivative(statement->getChildNode(i), variable);
-      return new LuaASTNode(T("Return"), childNodes);
-    }
-    return statement;
-  }
-
-  LuaASTNodePtr computeBlockDerivative(const LuaASTNodePtr& block, const LuaASTNodePtr& variable) const
-  {
-    std::vector<LuaASTNodePtr> res;
-    for (size_t i = 0; i < block->getNumChildNodes(); ++i)
-      res.push_back(computeStatementDerivative(block->getChildNode(i), variable));
-    return new LuaASTNode(res);
-  }
-
-  // 'Set Id = Function' statement => statement block 
-  LuaASTNodePtr rewriteTree(const LuaASTNodePtr& tree) const
-  {
-    jassert(tree->getTag() == T("Set"));
-    LuaASTNodePtr identifier = tree->getChildNode(0)->getChildNode(0);
-    LuaASTNodePtr function = tree->getChildNode(1)->getChildNode(0);
-    jassert(identifier->getTag() == T("Id") && function->getTag() == T("Function"));
-    LuaASTNodePtr arguments = function->getChildNode(0);
-    LuaASTNodePtr body = function->getChildNode(1);
-
-    std::vector<LuaASTNodePtr> block;
-    String id = identifier->print();
-    block.push_back(new LuaASTNode(T("set ") + id + T(" = {}\n")));
-    block.push_back(new LuaASTNode(T("function ") + id + T(".f(") + arguments->print() + T(") ") + body->print() + T("end")));
-
-    for (size_t i = 0; i < arguments->getNumChildNodes(); ++i)
-    {
-      LuaASTNodePtr argumentIdentifier = arguments->getChildNode(i);
-      String arg = argumentIdentifier->print();
-      LuaASTNodePtr derivativeBody = computeBlockDerivative(body, argumentIdentifier);
-      block.push_back(new LuaASTNode(T("function ") + id + T(".d") + arg + T("(") + arguments->print() + T(") ") + derivativeBody->print() + T("end")));
-    }
-    return new LuaASTNode(block);
-  }
-#endif // 0
 
 protected:
   friend class LuaSandBoxClass;
