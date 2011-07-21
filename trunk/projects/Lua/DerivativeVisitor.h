@@ -14,15 +14,16 @@
 namespace lbcpp {
 namespace lua {
 
-class ExpressionDerivativeRewriter : public RewriteVisitor
+// compute the derivate of an expression w.r.t a variable
+class ExpressionDerivateRewriter : public Rewriter
 {
 public:
-  ExpressionDerivativeRewriter(const IdentifierPtr& variableId)
-    : variableId(variableId) {}
+  ExpressionDerivateRewriter(const IdentifierPtr& variable)
+    : variable(variable) {}
 
-  static ExpressionPtr computeWrtVariable(const ExpressionPtr& expr, const IdentifierPtr& variableIdentifier)
+  static ExpressionPtr computeWrtVariable(const ExpressionPtr& expr, const IdentifierPtr& variableentifier)
   {
-    ExpressionDerivativeRewriter visitor(variableIdentifier);
+    ExpressionDerivateRewriter visitor(variableentifier);
     return visitor.rewrite(expr).staticCast<Expression>();
   }
 
@@ -31,7 +32,7 @@ public:
  
   virtual void visit(Identifier& identifier)
   {
-    if (identifier.getIdentifier() == variableId->getIdentifier())
+    if (identifier.getIdentifier() == variable->getIdentifier())
       setResult(new LiteralNumber(1.0)); // d(x)/dx = 1
     else
     {
@@ -76,39 +77,87 @@ public:
   }
 
 protected:
-  IdentifierPtr variableId;
+  IdentifierPtr variable;
 };
 
-// function f(x, y) ... end
-//  ==>
-// f = {
-//   __call(x, y) ... end
-//   dx(x, y) ... end
-//   dy(x, y) ... end
-// }
-class DerivableFunctionDeclarationRewriter : public RewriteVisitor
+// compute the derivate of a function w.r.t one of its parameters
+class FunctionDerivateRewriter : public DefaultRewriter
 {
 public:
-  virtual void visit(Set& statement)
-  {
-    if (statement.getLhs()->getNumSubNodes() != 1 &&
-        statement.getExpr()->getNumSubNodes() != 1)
-    {
-      setResult(&statement);
-      return;
-    }
+  FunctionDerivateRewriter(const IdentifierPtr& variable)
+    : variable(variable), expressionRewriter(variable) {}
 
-    FunctionPtr function = statement.getExpr()->getSubNode(0).dynamicCast<Function>();
-    if (!function)
-    {
-      setResult(&statement);
-      return;
-    }
-    
-    // .. to be continued
+  virtual void visit(Return& statement)
+  {
+    std::vector<ExpressionPtr> newExpressions(statement.getNumReturnValues());
+    for (size_t i = 0; i < newExpressions.size(); ++i)
+      newExpressions[i] = rewriteExpression(statement.getReturnValue(i));
+    setResult(new Return(newExpressions));
   }
+
+  ExpressionPtr rewriteExpression(const ExpressionPtr& expression)
+    {return expressionRewriter.rewrite(expression).staticCast<Expression>();}
+
+protected:
+  IdentifierPtr variable;
+  ExpressionDerivateRewriter expressionRewriter;
 };
 
+// Top-level rewriter : replace all occurences of (in a whole block)
+// function (derivable x, y) ... end
+//  ==>
+/*
+  setmetatable({
+   f = function (x) return 2 * x end,
+   dx = function (x) return 2 end
+  }, DerivableFunction)
+*/
+class DerivableRewriter : public DefaultRewriter
+{
+public:
+  static void applyExtension(BlockPtr& block)
+    {DerivableRewriter().rewriteChildren((Node&)*block);}
+
+  FunctionPtr computeFunctionDerivate(const FunctionPtr& function, const IdentifierPtr& variable) const
+  {
+    FunctionDerivateRewriter derivateFunction(variable);
+    BlockPtr newBlock = derivateFunction.rewrite(function->getBlock()->cloneAndCast<Block>());
+    return new Function(function->getPrototype(), newBlock);
+  }
+
+  ExpressionPtr transformFunction(Function& function, const std::vector<IdentifierPtr>& derivables) const
+  {
+    TablePtr table = new Table();
+    
+    table->append("f", &function);
+    for (size_t i = 0; i < derivables.size(); ++i)
+    {
+      ExpressionPtr derivateFunction = computeFunctionDerivate(&function, derivables[i]);
+      table->append("d" + derivables[i]->getIdentifier(), derivateFunction);
+    }
+    return new Call(new Identifier("setmetatable"), table, new Index(new Identifier("LuaChunk"), new Identifier("DerivableFunction")));
+  }
+
+  virtual void visit(Function& function)
+  {
+    DefaultRewriter::visit(function); // apply recursively first
+
+    bool atLeastOneDerivable = false;
+    std::vector<IdentifierPtr> derivables;
+    size_t n = function.getNumParameters();
+    for (size_t i = 0; i < n; ++i)
+    {
+      IdentifierPtr id = function.getParameterIdentifier(i);
+      if (id->hasDerivableFlag())
+      {
+        derivables.push_back(id);
+        function.setParameterIdentifier(i, new Identifier(id->getIdentifier())); // remove "derivable flag"
+      }
+    }
+    if (derivables.size() > 0)
+      setResult(transformFunction(function, derivables));
+  }
+};
 
 }; /* namespace lua */
 }; /* namespace lbcpp */

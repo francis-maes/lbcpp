@@ -18,11 +18,6 @@ _M.parseExpression = mlp.expr
 _M.parseStatement = mlp.stat
 _M.parseStatementBlock = mlp.block
 
-function _M.initializeDerivableExtension()
-  mlp.lexer:add{ "derivable" }
-  mlp.func_param_content:add{ "derivable", mlp.id, builder = "Derivable" }
-end
-
 function _M.stringLexer(src, filename)
   return mlp.lexer:newstream(src, filename)
 end
@@ -117,6 +112,10 @@ function _M.metaLuaAstToLbcppAst(ast)
     return Object.create("lua::Literal" .. ast.tag, ast[1])
   elseif ast.tag == "Function" or ast.tag == "Index" then
     return Object.create("lua::" .. ast.tag, subNodes[1], makeBlock(ast[2]))
+  elseif ast.tag == "Table" then
+    return Object.create("lua::Table", makeObjectVector("lua::Expression", subNodes, 1))
+  elseif ast.tag == "Pair" then
+    return Object.create("lua::Pair", subNodes[1], subNodes[2])
   elseif ast.tag == "Op" then
     if #subNodes == 2 then
       return Object.create("lua::BinaryOperation", convertBinaryOp(ast[1]), subNodes[1], subNodes[2])
@@ -130,7 +129,7 @@ function _M.metaLuaAstToLbcppAst(ast)
   elseif ast.tag == "Call" then
     return Object.create("lua::Call", subNodes[1], makeObjectVector("lua::Expression", subNodes, 2))
   else
-    error("unknown tag " .. ast.tag)
+    error("unknown tag " .. ast.tag .. " (numSubNodes = " .. #subNodes .. " numAttributes = " .. (#ast - #subNodes) .. ")")
   end
 end
 
@@ -167,7 +166,11 @@ function _M.parse(codeType, lexer)
   elseif (codeType == 1) then
     return _M.metaLuaAstToLbcppAst(_M.parseStatement(lexer))
   elseif (codeType == 2) then
-    return _M.metaLuaAstToLbcppAst(_M.parseStatementBlock(lexer))
+    -- transform result into block
+    local list = _M.metaLuaAstToLbcppAst(_M.parseStatementBlock(lexer))
+    local res = Object.create("lua::Block")
+    res.statements = list.nodes
+    return res
   else
     error("Unknown code type")
   end
@@ -177,3 +180,9 @@ function _M.parseFromString(codeType, code, codeName)
   local lexer = _M.stringLexer(code, codeName)
   return _M.parse(codeType, lexer)
 end
+
+-- 'derivable' extension
+DerivableFunction = {__call = function (tbl, ...) return tbl.f(...) end} -- metatable
+
+mlp.lexer:add{ "derivable" }
+mlp.func_param_content:add{ "derivable", mlp.id, builder = "Derivable" }
