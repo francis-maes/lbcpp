@@ -97,12 +97,45 @@ ExpressionPtr lbcpp::lua::sub(const ExpressionPtr& left, const ExpressionPtr& ri
     return new LiteralNumber(leftNumber->getValue() - rightNumber->getValue());
 
   // x - 0 = x
-  if (!leftNumber && rightNumber->getValue() == 0.0)
+  if (rightNumber && rightNumber->getValue() == 0.0)
     return left;
 
   // 0 - x = -x
-  if (!rightNumber && leftNumber->getValue() == 0.0)
+  if (leftNumber && leftNumber->getValue() == 0.0)
     return new UnaryOperation(unmOp, right);
 
   return new Parenthesis(new BinaryOperation(subOp, left, right));
+}
+
+ExpressionPtr lbcpp::lua::pow(const ExpressionPtr& left, const ExpressionPtr& right)
+{
+  LiteralNumberPtr leftNumber = left.dynamicCast<LiteralNumber>();
+  LiteralNumberPtr rightNumber = right.dynamicCast<LiteralNumber>();
+
+  if (leftNumber && rightNumber)
+    return new LiteralNumber(std::pow(leftNumber->getValue(), rightNumber->getValue()));
+
+  if (rightNumber)
+  {
+    double p = rightNumber->getValue();
+    // x ^ 0 = 1
+    if (p == 0.0)
+      return new LiteralNumber(1.0);
+
+    // x ^ 1 = x
+    if (p == 1.0)
+      return left;
+  }
+
+  // 0 ^ x = 0
+  if (leftNumber && leftNumber->getValue() == 0.0)
+    return new LiteralNumber(0.0);
+    
+  return new BinaryOperation(powOp, left, right);
+}
+
+ExpressionPtr lbcpp::lua::parenthesis(const ExpressionPtr& expr)
+{
+  LiteralNumberPtr number = expr.dynamicCast<LiteralNumber>();
+  return number ? number : ExpressionPtr(new Parenthesis(expr));
 }
