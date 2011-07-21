@@ -487,8 +487,8 @@ class Identifier : public LHSExpression
 {
 public:
   Identifier(const String& identifier)
-    : identifier(identifier) {}
-  Identifier() {}
+    : identifier(identifier), derivable(false) {}
+  Identifier() : derivable(false)  {}
 
   virtual String getTag() const
     {return "Id";}
@@ -504,10 +504,14 @@ public:
   const String& getIdentifier() const
     {return identifier;}
 
+  bool hasDerivableFlag() const
+    {return derivable;}
+
 protected:
   friend class IdentifierClass;
 
   String identifier;
+  bool derivable; // extension 'derivable'
 };
 
 typedef ReferenceCountedObjectPtr<Identifier> IdentifierPtr;
@@ -532,7 +536,6 @@ protected:
   ExpressionPtr left;
   ExpressionPtr right;
 };
-
 
 /*
 x block: { stat* }

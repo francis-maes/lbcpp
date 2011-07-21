@@ -8,6 +8,7 @@
   
   <class name="LuaSandBox" base="WorkUnit">
     <variable type="File" name="luaFile"/>
+    <variable type="File" name="outputFile"/>
   </class>
 
   <namespace name="lua">
@@ -110,6 +111,7 @@
     <class name="LHSExpression" base="lua::Expression" abstract="yes"/>
     <class name="Identifier" base="lua::LHSExpression">
       <variable type="String" name="identifier"/>
+      <variable type="Boolean" name="derivable"/>
     </class>
     <class name="Index" base="lua::LHSExpression">
       <variable type="lua::Expression" name="left"/>

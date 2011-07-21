@@ -73,7 +73,10 @@ public:
 
   bool isString(int index) const;
   String toString(int index);
+
   bool isInteger(int index) const;
+  bool isBoolean(int index) const;
+
 
   bool checkBoolean(int index);
   int checkInteger(int index);

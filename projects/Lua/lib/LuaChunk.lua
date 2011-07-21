@@ -18,6 +18,11 @@ _M.parseExpression = mlp.expr
 _M.parseStatement = mlp.stat
 _M.parseStatementBlock = mlp.block
 
+function _M.initializeDerivableExtension()
+  mlp.lexer:add{ "derivable" }
+  mlp.func_param_content:add{ "derivable", mlp.id, builder = "Derivable" }
+end
+
 function _M.stringLexer(src, filename)
   return mlp.lexer:newstream(src, filename)
 end
@@ -106,6 +111,8 @@ function _M.metaLuaAstToLbcppAst(ast)
     return Object.create("lua::" .. ast.tag)
   elseif ast.tag == "Id" then
     return Object.create("lua::Identifier", ast[1])
+  elseif ast.tag == "Derivable" then
+    return Object.create("lua::Identifier", ast[1][1], true)
   elseif ast.tag == "Number" or ast.tag == "String" then
     return Object.create("lua::Literal" .. ast.tag, ast[1])
   elseif ast.tag == "Function" or ast.tag == "Index" then
