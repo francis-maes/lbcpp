@@ -8,9 +8,10 @@ GENERATE_INTROSPECTION_CODE(LuaLibrary.xml LuaLibrary.cpp)
 SET(LBCPP_LUA_CPP_SOURCES
   precompiled.h
   precompiled.cpp
-  LuaAST.h
-  LuaASTVisitor.h
-  LuaASTPrettyPrinter.h
+  Node.h
+  Node.cpp
+  Visitor.h
+  PrettyPrinterVisitor.h
   LuaInterpreter.h
   LuaSandBox.h
   LuaLibrary.xml

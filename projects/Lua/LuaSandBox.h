@@ -9,8 +9,7 @@
 #ifndef LBCPP_LUA_SANDBOX_H_
 # define LBCPP_LUA_SANDBOX_H_
 
-# include "LuaAST.h"
-# include "LuaASTPrettyPrinter.h"
+# include "Node.h"
 
 extern "C" {
 # include "../../src/Lua/lua/lua.h"
@@ -63,7 +62,7 @@ private:
   }
 
   String prettyPrint(LuaState& lua, const lua::NodePtr& tree) const
-    {return "prout";}
+    {return tree->print();}
 
   void ensureTreeIsUpToDate() const
   {
@@ -77,11 +76,6 @@ private:
       const_cast<LuaChunk* >(this)->code = prettyPrint(lua, tree);
   }
 };
-
-// todo: move this
-String LuaASTNode::print() const
-  {return LuaASTPrettyPrinter::toString(refCountedPointerFromThis(this));}
-// -
 
 /*
 
@@ -120,7 +114,7 @@ public:
 
     static const char* inputCode = 
       "function times(x, y) \n"
-      "  return 2 * x * y\n"
+      "  return 2 * x * y, x\n"
       "end";
 
     LuaChunk chunk(luaState, luaStatement, inputCode);
@@ -128,12 +122,14 @@ public:
 
     context.resultCallback(T("code-before"), chunk.getCode());
     context.resultCallback(T("tree-before"), chunk.getTree());
-/*
-    chunk.setTree(rewriteTree(chunk.getTree()));
 
+    chunk.setTree(/*rewriteTree*/(chunk.getTree()));
     context.resultCallback(T("tree-after"), chunk.getTree());
     context.resultCallback(T("code-after"), chunk.getCode());
-*/
+
+    std::cout << "-- generated code:" << std::endl;
+    std::cout << chunk.getCode() << std::endl;
+
     return true;
   }
 
