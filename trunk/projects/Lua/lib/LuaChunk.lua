@@ -88,16 +88,18 @@ function _M.metaLuaAstToLbcppAst(ast)
     return Object.create("lua::List", makeObjectVector("lua::Node", subNodes, 1))
   end
 
-  print ("tag: " .. ast.tag .. " num sub nodes = " .. (#subNodes))
+  --print ("tag: " .. ast.tag .. " num sub nodes = " .. (#subNodes))
 
   -- statements
-  if ast.tag == "Do" or ast.tag == "Return" then
+  if ast.tag == "Do" then
     return Object.create("lua::" .. ast.tag, subNodes[1])
   elseif ast.tag == "Set" then
     return Object.create("lua::Set", subNodes[1], subNodes[2])
   elseif ast.tag == "While" then
-    print ("While: num sub nodes " .. #subNodes .. " subtags = " .. getTag(ast[1]) .. " " .. getTag(ast[2]))
+    --print ("While: num sub nodes " .. #subNodes .. " subtags = " .. getTag(ast[1]) .. " " .. getTag(ast[2]))
     return Object.create("lua::While", subNodes[1], makeBlock(ast[2]))
+  elseif ast.tag == "Return" then
+    return Object.create("lua::Return", makeObjectVector("lua::Expression", subNodes, 1))
   
   -- expressions  
   elseif ast.tag == "Nil" or ast.tag == "False" or ast.tag == "True" or ast.tag == "False" then

@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuaAST.h                       | Lua AST                         |
+| Filename: Node.h                         | Lua AST                         |
 | Author  : Francis Maes                   |                                 |
 | Started : 20/07/2011 12:52               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUA_AST_H_
-# define LBCPP_LUA_AST_H_
+#ifndef LBCPP_LUA_NODE_H_
+# define LBCPP_LUA_NODE_H_
 
 # include <lbcpp/Lua/Lua.h>
 
@@ -38,6 +38,8 @@ namespace lua
   class LHSExpression;
   typedef ReferenceCountedObjectPtr<LHSExpression> LHSExpressionPtr;
 
+  class Visitor;
+
   class Node : public Object
   {
   public:
@@ -46,6 +48,10 @@ namespace lua
 
     virtual size_t getNumSubNodes() const = 0;
     virtual NodePtr getSubNode(size_t index) const = 0;
+
+    virtual void accept(Visitor& visitor) = 0;
+
+    String print() const;
   };
 
   extern ClassPtr nodeClass;
@@ -64,6 +70,8 @@ namespace lua
 
     virtual NodePtr getSubNode(size_t index) const
       {jassert(index < nodes.size()); return nodes[index];}
+
+    virtual void accept(Visitor& visitor);
 
   private:
     friend class ListClass;
@@ -88,6 +96,8 @@ namespace lua
 
     virtual NodePtr getSubNode(size_t index) const
       {jassert(index < statements.size()); return statements[index];}
+
+    virtual void accept(Visitor& visitor);
 
   private:
     friend class BlockClass;
@@ -117,6 +127,8 @@ namespace lua
     virtual NodePtr getSubNode(size_t index) const
       {return block;}
 
+    virtual void accept(Visitor& visitor);
+
   protected:
     friend class DoClass;
 
@@ -134,6 +146,8 @@ namespace lua
 
     virtual NodePtr getSubNode(size_t index) const
       {return index ? expr : lhs;}
+
+    virtual void accept(Visitor& visitor);
 
   protected:
     friend class SetClass;
@@ -153,6 +167,8 @@ namespace lua
     virtual NodePtr getSubNode(size_t index) const
       {return index ? (NodePtr)block : (NodePtr)expr;}
 
+    virtual void accept(Visitor& visitor);
+
   protected:
     friend class WhileClass;
 
@@ -167,15 +183,17 @@ namespace lua
       {return "Return";}
 
     virtual size_t getNumSubNodes() const
-      {return 1;}
+      {return expressions.size();}
 
     virtual NodePtr getSubNode(size_t index) const
-      {return expr;}
+      {jassert(index < expressions.size()); return expressions[index];}
+
+    virtual void accept(Visitor& visitor);
 
   protected:
     friend class ReturnClass;
 
-    ExpressionPtr expr;
+    std::vector<ExpressionPtr> expressions;
   };
 
   class CallStatement : public Statement
@@ -189,6 +207,8 @@ namespace lua
 
     virtual NodePtr getSubNode(size_t index) const
       {return index == 0 ? function : arguments[index - 1];}
+
+    virtual void accept(Visitor& visitor);
 
   protected:
     friend class CallStatementClass;
@@ -223,24 +243,28 @@ namespace lua
   {
   public:
     virtual String getTag() const {return "Nil";}
+    virtual void accept(Visitor& visitor);
   };
 
   class Dots : public AtomicExpression
   {
   public:
     virtual String getTag() const {return "Dots";}
+    virtual void accept(Visitor& visitor);
   };
 
   class True : public AtomicExpression
   {
   public:
     virtual String getTag() const {return "True";}
+    virtual void accept(Visitor& visitor);
   };
 
   class False : public AtomicExpression
   {
   public:
     virtual String getTag() const {return "False";}
+    virtual void accept(Visitor& visitor);
   };
 
   class LiteralNumber : public AtomicExpression
@@ -248,6 +272,11 @@ namespace lua
   public:
     virtual String getTag() const
       {return "Number";}
+
+    virtual void accept(Visitor& visitor);
+
+    double getValue() const
+      {return value;}
 
   protected:
     friend class LiteralNumberClass;
@@ -260,6 +289,11 @@ namespace lua
   public:
     virtual String getTag() const
       {return "String";}
+
+    virtual void accept(Visitor& visitor);
+
+    const String& getValue() const
+      {return value;}
 
   protected:
     friend class LiteralStringClass;
@@ -279,6 +313,14 @@ namespace lua
 
     virtual NodePtr getSubNode(size_t index) const
       {return index ? (NodePtr)block : (NodePtr)prototype;}
+
+    virtual void accept(Visitor& visitor);
+
+    const ListPtr& getPrototype() const
+      {return prototype;}
+
+    const BlockPtr& getBlock() const
+      {return block;}
 
   protected:
     friend class FunctionClass;
@@ -302,6 +344,14 @@ namespace lua
       {return 1;}
 
     virtual NodePtr getSubNode(size_t index) const
+      {return expr;}
+
+    virtual void accept(Visitor& visitor);
+
+    UnaryOp getOp() const
+      {return op;}
+
+    const ExpressionPtr& getExpr() const
       {return expr;}
 
   protected:
@@ -330,6 +380,17 @@ namespace lua
     virtual NodePtr getSubNode(size_t index) const
       {return index ? right : left;}
 
+    virtual void accept(Visitor& visitor);
+
+    BinaryOp getOp() const
+      {return op;}
+
+    const ExpressionPtr& getLeft() const
+      {return left;}
+
+    const ExpressionPtr& getRight() const
+      {return right;}
+
   protected:
     friend class BinaryOperationClass;
 
@@ -348,6 +409,11 @@ namespace lua
       {return 1;}
 
     virtual NodePtr getSubNode(size_t index) const
+      {return expr;}
+
+    virtual void accept(Visitor& visitor);
+
+    const ExpressionPtr& getExpr() const
       {return expr;}
 
   protected:
@@ -372,6 +438,8 @@ namespace lua
 
     virtual NodePtr getSubNode(size_t index) const
       {return index == 0 ? function : arguments[index - 1];}
+
+    virtual void accept(Visitor& visitor);
 
   protected:
     friend class CallClass;
@@ -398,6 +466,11 @@ namespace lua
     virtual NodePtr getSubNode(size_t index) const
       {jassert(false); return NodePtr();}
 
+    virtual void accept(Visitor& visitor);
+
+    const String& getIdentifier() const
+      {return identifier;}
+
   protected:
     friend class IdentifierClass;
 
@@ -415,6 +488,8 @@ namespace lua
 
     virtual NodePtr getSubNode(size_t index) const
       {return index ? right : left;}
+
+    virtual void accept(Visitor& visitor);
 
   protected:
     friend class IndexClass;
@@ -440,7 +515,7 @@ x| `While{ expr block }
 | `Localrec{ {ident+} {expr+}? }
 | `Goto{string}
 | `Label{string}
-x| `Return{expr}
+x| `Return{expr+}
 | `Break
 p| apply
 
@@ -575,4 +650,4 @@ extern ClassPtr luaASTNodeClass;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUA_AST_H_
+#endif // !LBCPP_LUA_NODE_H_
