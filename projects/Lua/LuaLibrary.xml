@@ -78,6 +78,8 @@
     <class name="Table" base="lua::Expression">
       <variable type="ObjectVector[lua::Expression]" name="fields"/>
     </class>
+
+    <class name="Operation" base="lua::Expression" abstract="yes"/>
     
     <enumeration name="UnaryOp">
       <value name="not"/>
@@ -85,7 +87,7 @@
       <value name="unm"/>
     </enumeration>
 
-    <class name="UnaryOperation" base="lua::Expression">
+    <class name="UnaryOperation" base="lua::Operation">
       <variable type="lua::UnaryOp" name="op" enumeration="yes"/>
       <variable type="lua::Expression" name="expr"/>
     </class>
@@ -105,7 +107,7 @@
       <value name="or"/>
     </enumeration>
 
-    <class name="BinaryOperation" base="lua::Expression">
+    <class name="BinaryOperation" base="lua::Operation">
       <variable type="lua::BinaryOp" name="op" enumeration="yes"/>
       <variable type="lua::Expression" name="left"/>
       <variable type="lua::Expression" name="right"/>

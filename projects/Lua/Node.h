@@ -310,7 +310,6 @@ extern ExpressionPtr add(const ExpressionPtr& left, const ExpressionPtr& right);
 extern ExpressionPtr multiply(const ExpressionPtr& left, const ExpressionPtr& right);
 extern ExpressionPtr div(const ExpressionPtr& left, const ExpressionPtr& right);
 extern ExpressionPtr pow(const ExpressionPtr& left, const ExpressionPtr& right);
-extern ExpressionPtr parenthesis(const ExpressionPtr& expr);
 extern ExpressionPtr unm(const ExpressionPtr& expr);
 
 extern ExpressionPtr lt(const ExpressionPtr& left, const ExpressionPtr& right);
@@ -501,20 +500,31 @@ protected:
 
 typedef ReferenceCountedObjectPtr<Table> TablePtr;
 
+class Operation : public Expression
+{
+public:
+  virtual String getTag() const
+    {return "Op";}
+
+  // low number = low priority
+  virtual int getPrecendenceRank() const = 0;
+};
+
+typedef ReferenceCountedObjectPtr<Operation> OperationPtr;
+
 enum UnaryOp
 {
   notOp = 0,  lenOp,  unmOp,
 };
 
-class UnaryOperation : public Expression
+class UnaryOperation : public Operation
 {
 public:
   UnaryOperation(UnaryOp op, const ExpressionPtr& expr)
     : op(op), expr(expr) {}
   UnaryOperation() : op(notOp) {}
 
-  virtual String getTag() const
-    {return "Op";}
+  virtual int getPrecendenceRank() const;
 
   virtual size_t getNumSubNodes() const
     {return 1;}
@@ -549,15 +559,14 @@ enum BinaryOp
   ltOp,       leOp,     andOp,    orOp
 };
 
-class BinaryOperation : public Expression
+class BinaryOperation : public Operation
 {
 public:
   BinaryOperation(BinaryOp op, const ExpressionPtr& left, const ExpressionPtr& right)
     : op(op), left(left), right(right) {}
   BinaryOperation() {}
 
-  virtual String getTag() const
-    {return "Op";}
+  virtual int getPrecendenceRank() const;
 
   virtual size_t getNumSubNodes() const
     {return 2;}

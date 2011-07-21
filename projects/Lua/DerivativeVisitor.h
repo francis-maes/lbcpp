@@ -104,7 +104,7 @@ public:
   }
   
   virtual void visit(Parenthesis& p)
-    {setResult(parenthesis(rewrite(p.getExpr())));}
+    {setResult(rewrite(p.getExpr()));}
 
   static ExpressionPtr ternaryOperator(const ExpressionPtr& condition, const ExpressionPtr& valueIfTrue, const ExpressionPtr& valueIfFalse)
     {return new Call(new Identifier("LuaChunk.ternaryOperator"), condition, valueIfTrue, valueIfFalse);}
@@ -124,7 +124,7 @@ public:
     {
       // (log(u))' = u' / u
       ExpressionPtr u = call.getArgument(0);
-      setResult(div(parenthesis(rewrite(u)), parenthesis(u)));
+      setResult(div(rewrite(u), u));
       return;
     }
 

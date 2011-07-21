@@ -129,6 +129,7 @@ public:
     context.resultCallback(T("tree-before"), chunk.getTree());
 
     lua::BlockPtr block = chunk.getTree().staticCast<lua::Block>();
+    block = lua::RemoveParenthesisRewriter().rewrite(block);
     lua::DerivableRewriter::applyExtension(block);
     chunk.setTree(block);
 

@@ -45,6 +45,29 @@ NODE_ACCEPT_FUNCTION(Call)
 NODE_ACCEPT_FUNCTION(Identifier)
 NODE_ACCEPT_FUNCTION(Index)
 
+int UnaryOperation::getPrecendenceRank() const
+  {return 7;}
+
+int BinaryOperation::getPrecendenceRank() const
+{
+  if (op == powOp)
+    return 8;
+  if (op == mulOp || op == divOp || op == modOp)
+    return 6;
+  if (op == addOp || op == subOp)
+    return 5;
+  if (op == concatOp)
+    return 4;
+  if (op == ltOp || op == leOp || op == eqOp)
+    return 3;
+  if (op == andOp)
+    return 2;
+  if (op == orOp)
+    return 1;
+  jassert(false);
+  return 0;
+}
+
 ExpressionPtr lbcpp::lua::multiply(const ExpressionPtr& left, const ExpressionPtr& right)
 {
   LiteralNumberPtr leftNumber = left.dynamicCast<LiteralNumber>();
@@ -100,7 +123,7 @@ ExpressionPtr lbcpp::lua::add(const ExpressionPtr& left, const ExpressionPtr& ri
       return expr;
   }
 
-  return new Parenthesis(new BinaryOperation(addOp, left, right));
+  return new BinaryOperation(addOp, left, right);
 }
 
 ExpressionPtr lbcpp::lua::sub(const ExpressionPtr& left, const ExpressionPtr& right)
@@ -117,9 +140,9 @@ ExpressionPtr lbcpp::lua::sub(const ExpressionPtr& left, const ExpressionPtr& ri
 
   // 0 - x = -x
   if (leftNumber && leftNumber->getValue() == 0.0)
-    return new UnaryOperation(unmOp, right);
+    return unm(right);
 
-  return new Parenthesis(new BinaryOperation(subOp, left, right));
+  return new BinaryOperation(subOp, left, right);
 }
 
 ExpressionPtr lbcpp::lua::pow(const ExpressionPtr& left, const ExpressionPtr& right)
@@ -147,12 +170,6 @@ ExpressionPtr lbcpp::lua::pow(const ExpressionPtr& left, const ExpressionPtr& ri
     return new LiteralNumber(0.0);
     
   return new BinaryOperation(powOp, left, right);
-}
-
-ExpressionPtr lbcpp::lua::parenthesis(const ExpressionPtr& expr)
-{
-  LiteralNumberPtr number = expr.dynamicCast<LiteralNumber>();
-  return number ? (ExpressionPtr)number : ExpressionPtr(new Parenthesis(expr));
 }
 
 ExpressionPtr lbcpp::lua::unm(const ExpressionPtr& expr)
