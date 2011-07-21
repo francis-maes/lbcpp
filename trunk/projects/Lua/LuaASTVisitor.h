@@ -14,52 +14,6 @@
 namespace lbcpp
 {
 
-/*
-block: { stat* }
-
-stat:
-| `Do{ block }
-| `Set{ {lhs+} {expr+} }
-| `While{ expr block }
-| `Repeat{ block expr }
-| `If{ (expr block)+ block? }
-| `Fornum{ ident expr expr expr? block }
-| `Forin{ {ident+} {expr+} block }
-| `Local{ {ident+} {expr+}? }
-| `Localrec{ {ident+} {expr+}? }
-| `Goto{string}
-| `Label{string}
-| `Return
-| `Break
-| apply
-
-expr:
-| `Nil | `Dots | `True | `False
-| `Number{ number }
-| `String{ string }
-| `Function{ { ident* `Dots? } block } 
-| `Table{ ( `Pair{ expr expr } | expr )* }
-| `Op{ binopid expr expr } | `Op{ unopid expr }
-| `Paren{ expr }
-| `Stat{ block expr }
-| apply
-| lhs
-
-apply:
-| `Call{ expr expr* }
-| `Invoke{ expr `String{ string } expr* }
-
-lhs: ident | `Index{ expr expr }
-
-ident: `Id{ string }
-
-binopid: "add" | "sub" | "mul"    | "div"
-       | "mod" | "pow" | "concat" | "eq"
-       | "lt"  | "le"  | "and"    | "or"
-
-unopid:  "not" | "len" | "unm"
-*/
-
 class LuaASTVisitor
 {
 public:

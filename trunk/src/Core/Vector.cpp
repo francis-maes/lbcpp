@@ -416,13 +416,17 @@ void ObjectVector::prepend(const Variable& value)
   {objects->insert(objects->begin(), value.getObject());}
 
 void ObjectVector::append(const Variable& value)
-  {objects->push_back(value.getObject());}
+{
+  if (!objects)
+    reserve(5);
+  objects->push_back(value.getObject());
+}
 
 void ObjectVector::remove(size_t index)
   {objects->erase(objects->begin() + index);}
 
 size_t ObjectVector::getNumElements() const
-  {return objects->size();}
+  {return objects ? objects->size() : 0;}
 
 Variable ObjectVector::getElement(size_t index) const
 {

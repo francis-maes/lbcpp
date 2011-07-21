@@ -462,9 +462,31 @@ ObjectPtr Object::createFromFile(ExecutionContext& context, const File& file)
 */
 int Object::create(LuaState& state)
 {
+  int numArguments = state.getTop();
+
   const char* className = state.checkString(1);
   TypePtr type = getType(className);
-  return type ? state.returnObject(Object::create(type)) : 0;
+  if (!type)
+    return 0;
+
+  if (numArguments - 1 > (int)type->getNumMemberVariables())
+  {
+    state.error("Too much arguments in Object::create()");
+    return 0;
+  }
+
+  ObjectPtr res = Object::create(type);
+  for (int i = 2; i <= numArguments; ++i)
+  {
+    Variable v = state.checkVariable(i);
+    TypePtr targetType = type->getMemberVariableType(i - 2);
+    TypePtr sourceType = v.getType();
+    if (targetType->inheritsFrom(integerType) && sourceType->inheritsFrom(doubleType))
+      res->setVariable(i - 2, (int)v.getDouble()); // a la rache cast from double to int
+    else
+      res->setVariable(i - 2, v);
+  }
+  return state.returnObject(res);
 }
 
 int Object::fromFile(LuaState& state)
@@ -487,6 +509,12 @@ int Object::index(LuaState& state)
   if (state.isString(2)) // indiced by a string
   {
     String string = state.checkString(2);
+
+    if (string == T("className"))
+    {
+      state.pushString(object->getClassName());
+      return 1;
+    }
 
     // check if it is a variable
     TypePtr type = object->getClass();

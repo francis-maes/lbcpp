@@ -103,9 +103,23 @@ protected:
       else if (tag == T("enumeration"))
         generateEnumerationDeclaration(elt);
       else if (tag == T("uicomponent"))
-        declarations.push_back(Declaration::makeUIComponent(elt->getStringAttribute(T("name")), xmlTypeToCppType(elt->getStringAttribute(T("type")))));
+        declarations.push_back(Declaration::makeUIComponent(currentNamespace, elt->getStringAttribute(T("name")), xmlTypeToCppType(elt->getStringAttribute(T("type")))));
       else if (tag == T("code"))
         generateCode(elt);
+      else if (tag == T("namespace"))
+      {
+        String name = elt->getStringAttribute(T("name"), T("???"));
+        String previousNamespace = currentNamespace;
+        if (currentNamespace.isNotEmpty())
+          currentNamespace += T("::");
+        currentNamespace += name;
+
+        writeLine(T("namespace ") + name + T(" {"));
+        generateCodeForChildren(elt);
+        writeLine(T("}; /* namespace ") + name + T(" */"));
+
+        currentNamespace = previousNamespace;
+      }
       else if (tag == T("import") || tag == T("include"))
         continue;
       else
@@ -189,7 +203,7 @@ protected:
     }
     fullName += T(")");
 
-    Declaration declaration = Declaration::makeType(typeName, T("Type"));
+    Declaration declaration = Declaration::makeType(currentNamespace, typeName, T("Type"));
     declaration.implementationClassName = fullName;
     declarations.push_back(declaration);
     // String singletonVariableName = replaceFirstLettersByLowerCase(typeName) + T("Type");
@@ -215,13 +229,13 @@ protected:
   {
     String enumName = xml->getStringAttribute(T("name"), T("???"));
 
-    Declaration declaration = Declaration::makeType(enumName, T("Enumeration"));
+    Declaration declaration = Declaration::makeType(currentNamespace, enumName, T("Enumeration"));
     declarations.push_back(declaration);
     
     openClass(declaration.implementationClassName, T("DefaultEnumeration"));
 
     // constructor
-    openScope(declaration.implementationClassName + T("() : DefaultEnumeration(T(") + enumName.quoted() + T("))"));
+    openScope(declaration.implementationClassName + T("() : DefaultEnumeration(T(") + makeFullName(enumName, true) + T("))"));
     closeScope();
 
     newLine();
@@ -246,6 +260,12 @@ protected:
     //  T("static TypeCache cache(T(") + enumName.quoted() + T(")); return (EnumerationPtr)cache();"));
   }
 
+  String makeFullName(const String& identifier, bool quote = false) const
+  {
+    String res = currentNamespace.isNotEmpty() ? currentNamespace + T("::") + identifier : identifier;
+    return quote ? res.quoted() : res;
+  }
+
   /*
   ** Class
   */
@@ -258,7 +278,7 @@ protected:
     String metaClass = getMetaClass(classBaseClass);
     String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), getDefaultBaseType(metaClass)));
 
-    Declaration declaration = isTemplate ? Declaration::makeTemplateType(className, metaClass) : Declaration::makeType(className, metaClass);
+    Declaration declaration = isTemplate ? Declaration::makeTemplateType(currentNamespace, className, metaClass) : Declaration::makeType(currentNamespace, className, metaClass);
     if (!isTemplate)
       declarations.push_back(declaration);
 
@@ -272,7 +292,7 @@ protected:
         + T(" : ") + classBaseClass + T("(templateType, templateArguments, baseClass)"));
     else
     {
-      String arguments = T("T(") + className.quoted() + T("), T(") + baseClassName.quoted() + T(")");
+      String arguments = T("T(") + makeFullName(className, true) + T("), T(") + baseClassName.quoted() + T(")");
       openScope(declaration.implementationClassName + T("() : ") + classBaseClass + T("(") + arguments + T(")"));
     }
     if (classShortName.isNotEmpty())
@@ -509,7 +529,7 @@ protected:
     String metaClass = getMetaClass(classBaseClass);
     String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), getDefaultBaseType(metaClass)));
 
-    Declaration declaration = Declaration::makeTemplateType(className, T("Template") + metaClass);
+    Declaration declaration = Declaration::makeTemplateType(currentNamespace, className, T("Template") + metaClass);
     declarations.push_back(declaration);
 
     openClass(declaration.implementationClassName, T("DefaultTemplateType"));
@@ -631,7 +651,7 @@ protected:
     {
       const Declaration& declaration = declarations[i];
       if (declaration.cacheVariableName.isNotEmpty())
-        writeLine(declaration.cacheVariableName + T(" = typeManager().getType(context, T(") + declaration.name.quoted() + T("));"));
+        writeLine(declaration.getCacheVariableFullName() + T(" = typeManager().getType(context, T(") + declaration.getFullName().quoted() + T("));"));
     }
     closeScope();
     
@@ -646,7 +666,7 @@ protected:
     {
       const Declaration& declaration = declarations[i];
       if (declaration.cacheVariableName.isNotEmpty())
-        writeLine(declaration.cacheVariableName + T(".clear();"));
+        writeLine(declaration.getCacheVariableFullName() + T(".clear();"));
     }
     closeScope();
 
@@ -684,7 +704,7 @@ protected:
           code += T("TemplateType");
         else if (declaration.type == Declaration::typeDeclaration)
           code += T("Type");
-        code += T("(context, new ") + declaration.implementationClassName + T(");");
+        code += T("(context, new ") + declaration.getImplementationClassFullName() + T(");");
         writeLine(code);
       }
     }
@@ -741,6 +761,7 @@ private:
   String fileName;
   String directoryName;
   int indentation;
+  String currentNamespace;
 
   struct Declaration
   {
@@ -751,9 +772,10 @@ private:
       uiComponentDeclaration,
     } type;
 
-    static Declaration makeType(const String& typeName, const String& kind)
+    static Declaration makeType(const String& namespaceName, const String& typeName, const String& kind)
     {
       Declaration res;
+      res.namespaceName = namespaceName;
       res.type = typeDeclaration;
       res.name = typeName;
       res.implementationClassName = typeName + kind;
@@ -761,18 +783,20 @@ private:
       return res;
     }
 
-    static Declaration makeTemplateType(const String& typeName, const String& kind)
+    static Declaration makeTemplateType(const String& namespaceName, const String& typeName, const String& kind)
     {
       Declaration res;
+      res.namespaceName = namespaceName;
       res.type = templateTypeDeclaration;
       res.name = typeName;
       res.implementationClassName = typeName + kind;
       return res;
     }
 
-    static Declaration makeUIComponent(const String& className, const String& typeName)
+    static Declaration makeUIComponent(const String& namespaceName, const String& className, const String& typeName)
     {
       Declaration res;
+      res.namespaceName = namespaceName;
       res.type = uiComponentDeclaration;
       res.implementationClassName = className;
       res.name = typeName;
@@ -780,8 +804,18 @@ private:
     }
 
     String name;
+    String namespaceName;
     String implementationClassName;
     String cacheVariableName;
+
+    String getFullName() const // namespace and name
+      {return namespaceName.isEmpty() ? name : namespaceName + T("::") + name;}
+
+    String getCacheVariableFullName() const
+      {return namespaceName.isEmpty() ? cacheVariableName : namespaceName + T("::") + cacheVariableName;}
+
+    String getImplementationClassFullName() const
+      {return namespaceName.isEmpty() ? implementationClassName : namespaceName + T("::") + implementationClassName;}
   };
 
   std::vector<Declaration> declarations;

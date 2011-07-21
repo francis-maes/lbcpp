@@ -21,23 +21,16 @@ extern "C" {
 namespace lbcpp
 {
 
-enum LuaChunkType
-{
-  luaExpression = 0,
-  luaStatement,
-  luaStatementBlock,
-};
-
 class LuaChunk : public NameableObject
 {
 public:
   LuaChunk(LuaState& lua, LuaChunkType type, const String& code)
     : lua(lua), type(type), code(code) {}
 
-  LuaASTNodePtr getTree() const
+  lua::NodePtr getTree() const
     {ensureTreeIsUpToDate(); return tree;}
 
-  void setTree(const LuaASTNodePtr& tree)
+  void setTree(const lua::NodePtr& tree)
     {code = String::empty; this->tree = tree;}
 
   const String& getCode() const
@@ -49,9 +42,9 @@ private:
   LuaState& lua;
   LuaChunkType type;
   String code;
-  LuaASTNodePtr tree;
+  lua::NodePtr tree;
 
-  LuaASTNodePtr parse(LuaState& lua, const String& code) const
+  lua::NodePtr parse(LuaState& lua, const String& code) const
   {
     int dbg1 = lua.getTop();
     // call lua function LuaChunk.parseFromString with (codeType, code, codeName)
@@ -62,15 +55,15 @@ private:
     lua.pushString(code);
     lua.pushString(name);
     lua_call(lua, 3, 1);
-    LuaASTNodePtr res = lua.checkObject(-1, luaASTNodeClass).staticCast<LuaASTNode>();
+    lua::NodePtr res = lua.checkObject(-1, lua::nodeClass).staticCast<lua::Node>();
     lua.pop();
     int dbg2 = lua.getTop();
     jassert(dbg1 == dbg2);
     return res;
   }
 
-  String prettyPrint(LuaState& lua, const LuaASTNodePtr& tree) const
-    {return tree->print();}
+  String prettyPrint(LuaState& lua, const lua::NodePtr& tree) const
+    {return "prout";}
 
   void ensureTreeIsUpToDate() const
   {
@@ -131,15 +124,16 @@ public:
       "end";
 
     LuaChunk chunk(luaState, luaStatement, inputCode);
+    //LuaChunk chunk(luaState, luaStatementBlock, luaFile);
 
     context.resultCallback(T("code-before"), chunk.getCode());
     context.resultCallback(T("tree-before"), chunk.getTree());
-
+/*
     chunk.setTree(rewriteTree(chunk.getTree()));
 
     context.resultCallback(T("tree-after"), chunk.getTree());
     context.resultCallback(T("code-after"), chunk.getCode());
-
+*/
     return true;
   }
 
@@ -215,8 +209,6 @@ public:
         // (u + v)' = (u' + v')
         else if (opid == T("add"))
           return add(uprime, vprime);
-
-
       }
     }
 

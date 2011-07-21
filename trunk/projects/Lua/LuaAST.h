@@ -14,6 +14,463 @@
 namespace lbcpp
 {
 
+enum LuaChunkType
+{
+  luaExpression = 0,
+  luaStatement,
+  luaStatementBlock,
+  luaOtherChunk,
+};
+
+namespace lua
+{
+  class Node;
+  typedef ReferenceCountedObjectPtr<Node> NodePtr;
+  class List;
+  typedef ReferenceCountedObjectPtr<List> ListPtr;
+
+  class Block;
+  typedef ReferenceCountedObjectPtr<Block> BlockPtr;
+  class Statement;
+  typedef ReferenceCountedObjectPtr<Statement> StatementPtr;
+  class Expression;
+  typedef ReferenceCountedObjectPtr<Expression> ExpressionPtr;
+  class LHSExpression;
+  typedef ReferenceCountedObjectPtr<LHSExpression> LHSExpressionPtr;
+
+  class Node : public Object
+  {
+  public:
+    virtual String getTag() const = 0;
+    virtual LuaChunkType getType() const = 0;
+
+    virtual size_t getNumSubNodes() const = 0;
+    virtual NodePtr getSubNode(size_t index) const = 0;
+  };
+
+  extern ClassPtr nodeClass;
+
+  class List : public Node
+  {
+  public:
+    virtual String getTag() const
+      {return String::empty;}
+
+    virtual LuaChunkType getType() const
+      {return luaOtherChunk;}
+
+    virtual size_t getNumSubNodes() const
+      {return nodes.size();}
+
+    virtual NodePtr getSubNode(size_t index) const
+      {jassert(index < nodes.size()); return nodes[index];}
+
+  private:
+    friend class ListClass;
+
+    std::vector<NodePtr> nodes;
+  };
+
+  /*
+  ** Block
+  */
+  class Block : public Node
+  {
+  public:
+    virtual String getTag() const
+      {return String::empty;}
+
+    virtual LuaChunkType getType() const
+      {return luaStatementBlock;}
+
+    virtual size_t getNumSubNodes() const
+      {return statements.size();}
+
+    virtual NodePtr getSubNode(size_t index) const
+      {jassert(index < statements.size()); return statements[index];}
+
+  private:
+    friend class BlockClass;
+
+    std::vector<StatementPtr> statements;
+  };
+
+  /*
+  ** Statement
+  */
+  class Statement : public Node
+  {
+  public:
+    virtual LuaChunkType getType() const
+      {return luaStatement;}
+  };
+
+  class Do : public Statement
+  {
+  public:
+    virtual String getTag() const
+      {return "Do";}
+
+    virtual size_t getNumSubNodes() const
+      {return 1;}
+
+    virtual NodePtr getSubNode(size_t index) const
+      {return block;}
+
+  protected:
+    friend class DoClass;
+
+    BlockPtr block;
+  };
+
+  class Set : public Statement
+  {
+  public:
+    virtual String getTag() const
+      {return "Set";}
+
+    virtual size_t getNumSubNodes() const
+      {return 2;}
+
+    virtual NodePtr getSubNode(size_t index) const
+      {return index ? expr : lhs;}
+
+  protected:
+    friend class SetClass;
+    ListPtr lhs;
+    ListPtr expr;
+  };
+
+  class While : public Statement
+  {
+  public:
+    virtual String getTag() const
+      {return "While";}
+
+    virtual size_t getNumSubNodes() const
+      {return 2;}
+
+    virtual NodePtr getSubNode(size_t index) const
+      {return index ? (NodePtr)block : (NodePtr)expr;}
+
+  protected:
+    friend class WhileClass;
+
+    ExpressionPtr expr;
+    BlockPtr block;
+  };
+
+  class Return : public Statement
+  {
+  public:
+    virtual String getTag() const
+      {return "Return";}
+
+    virtual size_t getNumSubNodes() const
+      {return 1;}
+
+    virtual NodePtr getSubNode(size_t index) const
+      {return expr;}
+
+  protected:
+    friend class ReturnClass;
+
+    ExpressionPtr expr;
+  };
+
+  class CallStatement : public Statement
+  {
+  public:
+    virtual String getTag() const
+      {return "Call";}
+
+    virtual size_t getNumSubNodes() const
+      {return 1 + arguments.size();}
+
+    virtual NodePtr getSubNode(size_t index) const
+      {return index == 0 ? function : arguments[index - 1];}
+
+  protected:
+    friend class CallStatementClass;
+
+    ExpressionPtr function;
+    std::vector<ExpressionPtr> arguments;
+  };
+
+  // ...
+
+  /*
+  ** Expression
+  */
+  class Expression : public Node
+  {
+  public:
+    virtual LuaChunkType getType() const
+      {return luaExpression;}
+  };
+
+  class AtomicExpression : public Expression
+  {
+  public:
+    virtual size_t getNumSubNodes() const
+      {return 0;}
+
+    virtual NodePtr getSubNode(size_t index) const
+      {jassert(false); return NodePtr();}
+  };
+
+  class Nil : public AtomicExpression
+  {
+  public:
+    virtual String getTag() const {return "Nil";}
+  };
+
+  class Dots : public AtomicExpression
+  {
+  public:
+    virtual String getTag() const {return "Dots";}
+  };
+
+  class True : public AtomicExpression
+  {
+  public:
+    virtual String getTag() const {return "True";}
+  };
+
+  class False : public AtomicExpression
+  {
+  public:
+    virtual String getTag() const {return "False";}
+  };
+
+  class LiteralNumber : public AtomicExpression
+  {
+  public:
+    virtual String getTag() const
+      {return "Number";}
+
+  protected:
+    friend class LiteralNumberClass;
+
+    double value;
+  };
+
+  class LiteralString : public AtomicExpression
+  {
+  public:
+    virtual String getTag() const
+      {return "String";}
+
+  protected:
+    friend class LiteralStringClass;
+
+    String value;
+  };
+
+  class FunctionClass; // trick, because FunctionClass is already declared in the lbcpp namespace
+  class Function : public Expression
+  {
+  public:
+    virtual String getTag() const
+      {return "Function";}
+  
+    virtual size_t getNumSubNodes() const
+      {return 2;}
+
+    virtual NodePtr getSubNode(size_t index) const
+      {return index ? (NodePtr)block : (NodePtr)prototype;}
+
+  protected:
+    friend class FunctionClass;
+
+    ListPtr prototype;
+    BlockPtr block;
+  };
+
+  enum UnaryOp
+  {
+    notOp = 0,  lenOp,  unmOp,
+  };
+  
+  class UnaryOperation : public Expression
+  {
+  public:
+    virtual String getTag() const
+      {return "Op";}
+
+    virtual size_t getNumSubNodes() const
+      {return 1;}
+
+    virtual NodePtr getSubNode(size_t index) const
+      {return expr;}
+
+  protected:
+    friend class UnaryOperationClass;
+
+    UnaryOp op;
+    ExpressionPtr expr;
+  };
+
+  enum BinaryOp
+  {
+    addOp = 0,  subOp,    mulOp,    divOp,
+    modOp,      powOp,    concatOp, eqOp,
+    ltOp,       leOp,     andOp,    orOp
+  };
+
+  class BinaryOperation : public Expression
+  {
+  public:
+    virtual String getTag() const
+      {return "Op";}
+
+    virtual size_t getNumSubNodes() const
+      {return 2;}
+
+    virtual NodePtr getSubNode(size_t index) const
+      {return index ? right : left;}
+
+  protected:
+    friend class BinaryOperationClass;
+
+    BinaryOp op;
+    ExpressionPtr left;
+    ExpressionPtr right;
+  };
+
+  class Parenthesis : public Expression
+  {
+  public:
+    virtual String getTag() const
+      {return "Paren";}
+
+    virtual size_t getNumSubNodes() const
+      {return 1;}
+
+    virtual NodePtr getSubNode(size_t index) const
+      {return expr;}
+
+  protected:
+    friend class ParenthesisClass;
+
+    ExpressionPtr expr;
+  };
+  
+  /*
+  ** Apply Expression
+  */
+  class ApplyExpression : public Expression {};
+
+  class Call : public ApplyExpression
+  {
+  public:
+    virtual String getTag() const
+      {return "Call";}
+
+    virtual size_t getNumSubNodes() const
+      {return 1 + arguments.size();}
+
+    virtual NodePtr getSubNode(size_t index) const
+      {return index == 0 ? function : arguments[index - 1];}
+
+  protected:
+    friend class CallClass;
+
+    ExpressionPtr function;
+    std::vector<ExpressionPtr> arguments;
+  };
+
+  
+  /*
+  ** LHS Expression
+  */
+  class LHSExpression : public Expression {};
+
+  class Identifier : public LHSExpression
+  {
+  public:
+    virtual String getTag() const
+      {return "Id";}
+
+    virtual size_t getNumSubNodes() const
+      {return 0;}
+
+    virtual NodePtr getSubNode(size_t index) const
+      {jassert(false); return NodePtr();}
+
+  protected:
+    friend class IdentifierClass;
+
+    String identifier;
+  };
+
+  class Index : public LHSExpression
+  {
+  public:
+    virtual String getTag() const
+      {return "Index";}
+
+    virtual size_t getNumSubNodes() const
+      {return 2;}
+
+    virtual NodePtr getSubNode(size_t index) const
+      {return index ? right : left;}
+
+  protected:
+    friend class IndexClass;
+
+    ExpressionPtr left;
+    ExpressionPtr right;
+  };
+
+}; /* namespace lua */
+
+/*
+x block: { stat* }
+
+stat:
+x| `Do{ block }
+x| `Set{ {lhs+} {expr+} }
+x| `While{ expr block }
+| `Repeat{ block expr }
+| `If{ (expr block)+ block? }
+| `Fornum{ ident expr expr expr? block }
+| `Forin{ {ident+} {expr+} block }
+| `Local{ {ident+} {expr+}? }
+| `Localrec{ {ident+} {expr+}? }
+| `Goto{string}
+| `Label{string}
+x| `Return{expr}
+| `Break
+p| apply
+
+expr:
+x| `Nil | `Dots | `True | `False
+x| `Number{ number }
+x| `String{ string }
+x| `Function{ { ident* `Dots? } block } 
+| `Table{ ( `Pair{ expr expr } | expr )* }
+x| `Op{ binopid expr expr } | `Op{ unopid expr }
+c| `Paren{ expr }
+| `Stat{ block expr }
+p| apply
+x| lhs
+
+apply:
+x| `Call{ expr expr* }
+| `Invoke{ expr `String{ string } expr* }
+
+x lhs: ident | `Index{ expr expr }
+
+x ident: `Id{ string }
+
+x binopid: "add" | "sub" | "mul"    | "div"
+       | "mod" | "pow" | "concat" | "eq"
+       | "lt"  | "le"  | "and"    | "or"
+
+x unopid:  "not" | "len" | "unm"
+*/
+
 class LuaASTNode;
 typedef ReferenceCountedObjectPtr<LuaASTNode> LuaASTNodePtr;
 
@@ -113,6 +570,8 @@ protected:
 };
 
 extern ClassPtr luaASTNodeClass;
+
+
 
 }; /* namespace lbcpp */
 
