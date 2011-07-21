@@ -30,7 +30,7 @@ public:
         std::cout << "> " << std::flush;
         char code[1024];
         std::cin.getline(code, 1024);
-        if (code)
+        if (code && strcmp(code, "exit"))
           luaState.execute(code);
         else
           break;

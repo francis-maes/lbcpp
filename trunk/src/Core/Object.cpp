@@ -580,3 +580,11 @@ int Object::newIndex(LuaState& state)
   }
   return 0;
 }
+
+int Object::garbageCollect(LuaState& state)
+{
+  ObjectPtr& object = state.checkObject(1);
+  //std::cout << "GC: " << object->toShortString() << std::endl;
+  object = ObjectPtr();
+  return 0;
+}

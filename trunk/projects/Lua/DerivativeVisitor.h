@@ -68,6 +68,15 @@ public:
     case subOp: setResult(sub(uprime, vprime)); return;  // (u - v)' = u' - v'
     case mulOp: setResult(add(multiply(uprime, v), multiply(u, vprime))); return; // (uv)' = u'v + uv'
     case divOp:
+      {
+        // (u/v)' = (u'v - uv') / v^2
+
+        // function (_v) return (u'_v - uv') / _v^2 end (v)
+        setResult(div(
+            sub(multiply(uprime, v), multiply(u, vprime)),
+            pow(v, new LiteralNumber(2))));
+          return;
+      }
     case modOp:
     case powOp:
       {
@@ -129,6 +138,7 @@ public:
       ExpressionPtr v = call.getArgument(1);
       setResult(ternaryOperator(fun == T("math.max") ? not(lt(u, v)) : le(u, v),
                     rewrite(u), rewrite(v)));
+      return;
     }
 
     jassert(false); // not yet implemented
