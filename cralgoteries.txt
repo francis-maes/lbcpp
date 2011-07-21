@@ -1,7 +1,10 @@
 
+* Gerer Function expression
+* Gerer plus de statements
+* Gerer les gradient et les DoubleVector
+* PrettyPrintVisitor: gerer les parentheses en fonction des precedences entres operateurs
+
 Lua:
- * Liberer les ObjectPtr
- * Verifier si il n'y a un bug avec le remplissage de la stack à l'init de lbcpp
  * Container: index/newindex, iterators, ...
 
 Proteins:

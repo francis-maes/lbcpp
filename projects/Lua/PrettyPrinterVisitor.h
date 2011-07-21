@@ -134,28 +134,6 @@ public:
     endLine();
   }
 
-  void writeIdentifierOrGenericAccess(const ExpressionPtr& expr, bool addDotBeforeIdentifier = false)
-  {
-    LiteralStringPtr str = expr.dynamicCast<LiteralString>();
-    if (str)
-    {
-      String value = str->getValue();
-      if (value.length() > 0 && !value.containsAnyOf(T(" \t\r\n")) && 
-          (juce::CharacterFunctions::isLetterOrDigit(value[0]) || value[0] == '_'))
-      {
-        if (addDotBeforeIdentifier)
-          write(".");
-        write(value); // identifier
-        return;
-      }
-    }
-
-    // string access
-    write("[");
-    expr->accept(*this);
-    write("]");
-  }
-
   virtual void visit(Pair& pair)
   {
     writeIdentifierOrGenericAccess(pair.getSubNode(0));
@@ -249,6 +227,37 @@ private:
   {
     ostr << "\n";
     isLineStart = true;
+  }
+
+  void writeIdentifierOrGenericAccess(const ExpressionPtr& expr, bool addDotBeforeIdentifier = false)
+  {
+    IdentifierPtr id = expr.dynamicCast<Identifier>();
+    if (id)
+    {
+      if (addDotBeforeIdentifier)
+        write(".");
+      write(id->getIdentifier());
+      return;
+    }
+
+    LiteralStringPtr str = expr.dynamicCast<LiteralString>();
+    if (str)
+    {
+      String value = str->getValue();
+      if (value.length() > 0 && !value.containsAnyOf(T(" \t\r\n")) && 
+          (juce::CharacterFunctions::isLetterOrDigit(value[0]) || value[0] == '_'))
+      {
+        if (addDotBeforeIdentifier)
+          write(".");
+        write(value); // string becomes identifier
+        return;
+      }
+    }
+
+    // string access
+    write("[");
+    expr->accept(*this);
+    write("]");
   }
 };
 

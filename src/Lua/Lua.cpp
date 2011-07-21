@@ -29,14 +29,18 @@ static int objectNewIndex(lua_State* L)
 static int objectToString(lua_State* L)
   {LuaState state(L); return Object::toString(state);}
 
+static int objectGarbageCollect(lua_State* L)
+  {LuaState state(L); return Object::garbageCollect(state);}
+
 LuaState::LuaState(ExecutionContext& context, bool initializeLuaLibraries, bool initializeLBCppLibrary)
-  : owned(false)
+  : owned(true)
 {
   L = lua_open();
   if (initializeLuaLibraries)
   {
     luaL_openlibs(L);
-    luaopen_lpeg(L);
+    int n = luaopen_lpeg(L);
+    pop(n);
   }
   if (initializeLBCppLibrary)
   {
@@ -45,6 +49,7 @@ LuaState::LuaState(ExecutionContext& context, bool initializeLuaLibraries, bool 
       {"__index", objectIndex},
       {"__newindex", objectNewIndex},
       {"__tostring", objectToString},
+      {"__gc", objectGarbageCollect},
       {NULL, NULL}
     };
     luaL_openlib(L, NULL, methods, 0);
@@ -52,7 +57,9 @@ LuaState::LuaState(ExecutionContext& context, bool initializeLuaLibraries, bool 
     for (size_t i = 0; i < lbcpp::getNumLibraries(); ++i)
       lbcpp::getLibrary(i)->luaRegister(*this);
     
+    pop(1);
     pushObject(ObjectPtr(&context));
+
     setGlobal("context");
   }
 }
@@ -61,7 +68,13 @@ LuaState::LuaState(lua_State* L)
   : L(L), owned(false) {}
 
 LuaState::~LuaState()
-  {if (owned) lua_close(L);}
+{
+  if (owned)
+  {
+    owned = false;
+    lua_close(L);
+  }
+}
 
 bool LuaState::processExecuteError(int error)
 {
@@ -179,7 +192,7 @@ File LuaState::checkFile(int index)
   return getContext().getFile(name);
 }
 
-ObjectPtr LuaState::checkObject(int index, TypePtr expectedType)
+ObjectPtr& LuaState::checkObject(int index, TypePtr expectedType)
 {
   ExecutionContext& context = defaultExecutionContext();
 
@@ -187,20 +200,19 @@ ObjectPtr LuaState::checkObject(int index, TypePtr expectedType)
   if (p)
   {
     TypePtr type = (*p)->getClass();
-    if (!type->inheritsFrom(expectedType))
-    {
+    if (type->inheritsFrom(expectedType))
+      return *p;
+    else
       luaL_error(L, "%s does not inherit from %s", (const char* )type->getName(), (const char* )expectedType->getName());
-      return ObjectPtr();
-    }
-    return *p;
   }
+  else
+    // value is not a userdata or does not have meta-table
+    luaL_error(L, "expected '%s'", (const char* )expectedType->getName());
 
-  // value is not a userdata or does not have meta-table
-  luaL_error(L, "expected '%s'", (const char* )expectedType->getName());
-  return ObjectPtr();
+  return *(ObjectPtr* )0;
 }
 
-ObjectPtr LuaState::checkObject(int index)
+ObjectPtr& LuaState::checkObject(int index)
   {return checkObject(index, objectClass);}
 
 Variable LuaState::checkVariable(int index)
@@ -245,7 +257,10 @@ bool LuaState::newMetaTable(const char* name)
   {return luaL_newmetatable(L, name) == 1;}
 
 void LuaState::openLibrary(const char* name, const luaL_Reg* functions, size_t numUpValues)
-  {luaL_openlib(L, name, functions, (int)numUpValues);}
+{
+  luaL_openlib(L, name, functions, (int)numUpValues);
+  pop(1);
+}
 
 ExecutionContext& LuaState::getContext()
 {

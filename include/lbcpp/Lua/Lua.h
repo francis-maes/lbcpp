@@ -82,8 +82,8 @@ public:
   int checkInteger(int index);
   double checkNumber(int index);
   const char* checkString(int index);
-  ObjectPtr checkObject(int index, TypePtr expectedType);
-  ObjectPtr checkObject(int index);
+  ObjectPtr& checkObject(int index, TypePtr expectedType);
+  ObjectPtr& checkObject(int index);
   File checkFile(int index);
   Variable checkVariable(int index);
   
