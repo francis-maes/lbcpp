@@ -91,9 +91,12 @@ local method_args = gg.multisequence{
 -- parser uses the latter, they will notice updates of [func_val]
 -- definitions.
 --------------------------------------------------------------------------------
-func_params_content = gg.list{ name="function parameters",
-   gg.multisequence{ { "...", builder = "Dots" }, default = id },
-   separators  = ",", terminators = {")", "|"} } 
+
+-- francis
+func_param_content = gg.multisequence{ { "...", builder = "Dots" }, default = id }
+--
+
+func_params_content = gg.list{ name="function parameters", func_param_content, separators  = ",", terminators = {")", "|"} } 
 
 local _func_params_content = function (lx) return func_params_content(lx) end
 

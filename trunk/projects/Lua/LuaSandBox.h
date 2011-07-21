@@ -26,6 +26,17 @@ class LuaChunk : public NameableObject
 public:
   LuaChunk(LuaState& lua, LuaChunkType type, const String& code)
     : lua(lua), type(type), code(code) {}
+  LuaChunk(LuaState& lua, LuaChunkType type, const File& file)
+    : lua(lua), type(type)
+  {
+    InputStream* istr = file.createInputStream();
+    if (istr)
+    {
+      while (!istr->isExhausted())
+        code += istr->readNextLine();
+      delete istr;
+    }
+  }
 
   lua::NodePtr getTree() const
     {ensureTreeIsUpToDate(); return tree;}
@@ -113,13 +124,13 @@ public:
     luaState.execute(initializeCode, "initializeCode");
 
 
-    static const char* inputCode = "2 * x * y";
-      /*"function times(x, y) \n"
+    /*static const char* inputCode = "2 * x * y";
+      "function times(x, y) \n"
       "  return 2 * x * y, x\n"
       "end";*/
 
-    LuaChunk chunk(luaState, luaExpression, inputCode);
-    //LuaChunk chunk(luaState, luaStatementBlock, luaFile);
+    //LuaChunk chunk(luaState, luaExpression, inputCode);
+    LuaChunk chunk(luaState, luaExpression, luaFile);
 
     context.resultCallback(T("code-before"), chunk.getCode());
     context.resultCallback(T("tree-before"), chunk.getTree());
@@ -133,6 +144,15 @@ public:
     std::cout << "-- generated code:" << std::endl;
     std::cout << chunk.getCode() << std::endl;
 
+    // write to output file
+    if (outputFile.exists())
+      outputFile.deleteFile();
+    OutputStream* ostr = outputFile.createOutputStream();
+    if (ostr)
+    {
+      *ostr << chunk.getCode();
+      delete ostr;
+    }
     return true;
   }
 
@@ -188,6 +208,7 @@ protected:
   friend class LuaSandBoxClass;
 
   File luaFile;
+  File outputFile;
 };
 
 }; /* namespace lbcpp */

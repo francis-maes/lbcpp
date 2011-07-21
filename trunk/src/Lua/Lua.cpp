@@ -156,11 +156,11 @@ String LuaState::toString(int index)
 bool LuaState::isInteger(int index) const
   {return lua_isnumber(L, index) != 0;} // fixme: not distinction between numbers and integers
 
+bool LuaState::isBoolean(int index) const
+  {return lua_type(L, index) == LUA_TBOOLEAN;}
+
 bool LuaState::checkBoolean(int index)
-{
-  jassert(false); // not implemented
-  return false;
-}
+  {return lua_toboolean(L, index) != 0;}
 
 double LuaState::checkNumber(int index)
   {return luaL_checknumber(L, index);}
