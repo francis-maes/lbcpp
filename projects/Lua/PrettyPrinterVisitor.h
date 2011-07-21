@@ -137,7 +137,8 @@ public:
   {
     static const char* luaOperators[] = {"not", "#", "-"};
     write(luaOperators[operation.getOp()]);
-    write(" ");
+    if (operation.getOp() == notOp)
+      write(" ");
     operation.getExpr()->accept(*this);
   }
 

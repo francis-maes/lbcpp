@@ -51,7 +51,19 @@ public:
   virtual size_t getNumSubNodes() const = 0;
   virtual NodePtr& getSubNode(size_t index) = 0;
 
+  const NodePtr& getSubNode(size_t index) const
+    {return const_cast<Node* >(this)->getSubNode(index);}
+
   virtual void accept(Visitor& visitor) = 0;
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    Object::clone(context, t);
+    const NodePtr& target = t.staticCast<Node>();
+    size_t n = getNumSubNodes();
+    for (size_t i = 0; i < n; ++i)
+      target->getSubNode(i) = getSubNode(i)->cloneAndCast<Node>();
+  }
 
   String print() const;
 };
@@ -68,7 +80,6 @@ public:
   List(const NodePtr& node)
     : nodes(1, node) {}
   List() {}
-
 
   virtual String getTag() const
     {return String::empty;}
@@ -260,6 +271,8 @@ public:
 extern ExpressionPtr sub(const ExpressionPtr& left, const ExpressionPtr& right);
 extern ExpressionPtr add(const ExpressionPtr& left, const ExpressionPtr& right);
 extern ExpressionPtr multiply(const ExpressionPtr& left, const ExpressionPtr& right);
+extern ExpressionPtr pow(const ExpressionPtr& left, const ExpressionPtr& right);
+extern ExpressionPtr parenthesis(const ExpressionPtr& expr);
 
 class AtomicExpression : public Expression
 {

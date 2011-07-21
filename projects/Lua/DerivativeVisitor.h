@@ -60,12 +60,26 @@ public:
 
     switch (operation.getOp())
     {
-    case addOp: setResult(add(uprime, vprime)); return;
-    case subOp: setResult(sub(uprime, vprime)); return;
-    case mulOp: setResult(add(multiply(uprime, v), multiply(u, vprime))); return;
+    case addOp: setResult(add(uprime, vprime)); return;  // (u + v)' = u' + v'
+    case subOp: setResult(sub(uprime, vprime)); return;  // (u - v)' = u' - v'
+    case mulOp: setResult(add(multiply(uprime, v), multiply(u, vprime))); return; // (uv)' = u'v + uv'
     case divOp:
     case modOp:
     case powOp:
+      {
+        LiteralNumberPtr vnumber = v.dynamicCast<LiteralNumber>();
+        if (vnumber)
+        {
+          // u ^ n = (n u^{n-1}) u'
+          double n = vnumber->getValue();
+          setResult(multiply(multiply(vnumber, pow(u, new LiteralNumber(n - 1.0))), uprime));
+          return;
+        }
+        else
+          jassert(false); // not yet implemented
+        break;
+      }
+
     case concatOp:
     case eqOp:
     case ltOp:
@@ -75,6 +89,9 @@ public:
       jassert(false); // not yet implemented
     }
   }
+  
+  virtual void visit(Parenthesis& p)
+    {setResult(parenthesis(rewrite(p.getExpr())));}
 
 protected:
   IdentifierPtr variable;
