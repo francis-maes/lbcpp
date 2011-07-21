@@ -15,5 +15,113 @@
   <class name="LuaSandBox" base="WorkUnit">
     <variable type="File" name="luaFile"/>
   </class>
+
+  <namespace name="lua">
+  
+    <class name="Node" abstract="yes"/>
+    <class name="List" base="lua::Node">
+      <variable type="ObjectVector[lua::Node]" name="nodes"/>
+    </class>
+    
+    <!-- Statement block -->
+    <class name="Block" base="lua::Node">
+      <variable type="ObjectVector[lua::Statement]" name="statements"/>
+    </class>
+    
+    <!-- Statements -->
+    <class name="Statement" base="lua::Node" abstract="yes"/>
+    <class name="Do" base="lua::Statement">
+      <variable type="lua::Block" name="block"/>
+    </class>
+    <class name="Set" base="lua::Statement">
+      <variable type="lua::List" name="lhs"/>
+      <variable type="lua::List" name="expr"/>
+    </class>
+    <class name="While" base="lua::Statement">
+      <variable type="lua::Expression" name="expr"/>
+      <variable type="lua::Block" name="block"/>
+    </class>
+    <class name="Return" base="lua::Statement">
+      <variable type="lua::Expression" name="expr"/>
+    </class>
+    <class name="CallStatement" base="lua::Statement">
+      <variable type="lua::Expression" name="function"/>
+      <variable type="ObjectVector[lua::Expression]" name="arguments"/>
+    </class>
+
+    <!-- Expressions -->
+    <class name="Expression" base="lua::Node" abstract="yes"/>
+
+    <class name="Nil" base="lua::Expression"/>
+    <class name="Dots" base="lua::Expression"/>
+    <class name="True" base="lua::Expression"/>
+    <class name="False" base="lua::Expression"/>
+    
+    <class name="LiteralNumber" base="lua::Expression">
+      <variable type="Double" name="value"/>
+    </class>
+    <class name="LiteralString" base="lua::Expression">
+      <variable type="String" name="value"/>
+    </class>
+    
+    <class name="Function" base="lua::Expression">
+      <variable type="lua::List" name="prototype"/>
+      <variable type="lua::Block" name="block"/>
+    </class>
+    
+    <enumeration name="UnaryOp">
+      <value name="not"/>
+      <value name="len"/>
+      <value name="unm"/>
+    </enumeration>
+
+    <class name="UnaryOperation" base="lua::Expression">
+      <variable type="lua::UnaryOp" name="op" enumeration="yes"/>
+      <variable type="lua::Expression" name="expr"/>
+    </class>
+
+    <enumeration name="BinaryOp">
+      <value name="add"/>
+      <value name="sub"/>
+      <value name="mul"/>
+      <value name="div"/>
+      <value name="mod"/>
+      <value name="pow"/>
+      <value name="concat"/>
+      <value name="eq"/>
+      <value name="lt"/>
+      <value name="le"/>
+      <value name="and"/>
+      <value name="or"/>
+    </enumeration>
+
+    <class name="BinaryOperation" base="lua::Expression">
+      <variable type="lua::BinaryOp" name="op" enumeration="yes"/>
+      <variable type="lua::Expression" name="left"/>
+      <variable type="lua::Expression" name="right"/>
+    </class>
+
+    <class name="Parenthesis" base="lua::Expression">
+      <variable type="lua::Expression" name="expr"/>
+    </class>
+
+    <!-- Apply Expression -->
+    <class name="ApplyExpression" base="lua::Expression" abstract="yes"/>
+    <class name="Call" base="lua::ApplyExpression">
+      <variable type="lua::Expression" name="function"/>
+      <variable type="ObjectVector[lua::Expression]" name="arguments"/>
+    </class>
+
+    <!-- LHS Expression -->
+    <class name="LHSExpression" base="lua::Expression" abstract="yes"/>
+    <class name="Identifier" base="lua::LHSExpression">
+      <variable type="String" name="identifier"/>
+    </class>
+    <class name="Index" base="lua::LHSExpression">
+      <variable type="lua::Expression" name="left"/>
+      <variable type="lua::Expression" name="right"/>
+    </class>
+    
+  </namespace>
   
 </library>

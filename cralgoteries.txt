@@ -1,10 +1,7 @@
-Objectifs:
-  2- interface de haut niveau en C++
-  3- pretty printing
-  4- source-to-source transformation for derivatives calculation
 
 Lua:
  * Liberer les ObjectPtr
+ * Verifier si il n'y a un bug avec le remplissage de la stack à l'init de lbcpp
  * Container: index/newindex, iterators, ...
 
 Proteins:
