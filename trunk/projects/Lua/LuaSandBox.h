@@ -135,6 +135,7 @@ public:
     block = lua::RemoveUnmLiteralRewriter().rewrite(block);
     block = lua::TransformInvokeIntoCallRewriter().rewrite(block);
     
+    lua::Scope::print(block);
     lua::ScopePtr scopes = lua::Scope::get(block);
     context.resultCallback(T("scopes"), scopes);
 
