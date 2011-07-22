@@ -81,6 +81,17 @@ public:
     write("end");
   }
 
+  virtual void visit(Local& statement)
+  {
+    write("local ");
+    statement.getIdentifiers()->accept(*this);
+    if (statement.getExpressions())
+    {
+      write(" = ");
+      statement.getExpressions()->accept(*this);
+    }
+  }
+
   virtual void visit(Return& statement)
   {
     write("return ");

@@ -31,6 +31,8 @@ public:
     {jassert(false);}
   virtual void visit(If& statement)
     {jassert(false);}
+  virtual void visit(Local& statement)
+    {jassert(false);}
   virtual void visit(Return& statement)
     {jassert(false);}
   virtual void visit(CallStatement& statement)
@@ -69,69 +71,33 @@ public:
     {jassert(false);}
 };
 
-class Rewriter : public Visitor
+template<class BaseClass>
+class DefaultVisitorT : public BaseClass
 {
 public:
-  const NodePtr& getResult() const
-    {return result;}
+  virtual void visitChildren(Node& node) = 0;
 
-  void rewriteChildren(Node& node)
-  {
-    size_t n = node.getNumSubNodes();
-    NodePtr prevResult = result;
-    for (size_t i = 0; i < n; ++i)
-    {
-      result = NodePtr();
-      NodePtr& subNode = node.getSubNode(i);
-      subNode->accept(*this);
-      if (result)
-        subNode = result;
-    }
-    result = prevResult;
-  }
-
-  NodePtr rewrite(const NodePtr& node)
-  {
-    NodePtr prevResult = result;
-    result = NodePtr();
-    node->accept(*this);
-    NodePtr res = result ? result : node;
-    result = prevResult;
-    return res;
-  }
-
-  void apply(NodePtr& node)
-    {node = rewrite(node);}
-
-protected:
-  NodePtr result;
-
-  void setResult(NodePtr result)
-    {this->result = result;}
-};
-
-class DefaultRewriter : public Rewriter
-{
-public:
   virtual void visit(List& list)
-    {rewriteChildren(list);}
+    {visitChildren(list);}
 
   virtual void visit(Block& block)
-    {rewriteChildren(block);}
+    {visitChildren(block);}
 
   // statements
   virtual void visit(Do& statement)
-    {rewriteChildren(statement);}
+    {visitChildren(statement);}
   virtual void visit(Set& statement)
-    {rewriteChildren(statement);}
+    {visitChildren(statement);}
   virtual void visit(While& statement)
-    {rewriteChildren(statement);}
+    {visitChildren(statement);}
   virtual void visit(If& statement)
-    {rewriteChildren(statement);}
+    {visitChildren(statement);}
+  virtual void visit(Local& statement)
+    {visitChildren(statement);}
   virtual void visit(Return& statement)
-    {rewriteChildren(statement);}
+    {visitChildren(statement);}
   virtual void visit(CallStatement& statement)
-    {rewriteChildren(statement);}
+    {visitChildren(statement);}
 
   // expressions
   virtual void visit(Nil& expression)   {}
@@ -140,66 +106,43 @@ public:
   virtual void visit(LiteralNumber& expression) {}
   virtual void visit(LiteralString& expression) {}
   virtual void visit(Function& function)
-    {rewriteChildren(function);}
+    {visitChildren(function);}
 
   virtual void visit(Pair& pair)
-    {rewriteChildren(pair);}
+    {visitChildren(pair);}
 
   virtual void visit(Table& table)
-    {rewriteChildren(table);}
+    {visitChildren(table);}
 
   virtual void visit(UnaryOperation& operation)
-    {rewriteChildren(operation);}
+    {visitChildren(operation);}
 
   virtual void visit(BinaryOperation& operation)
-    {rewriteChildren(operation);}
+    {visitChildren(operation);}
 
   virtual void visit(Parenthesis& parenthesis)
-    {rewriteChildren(parenthesis);}
+    {visitChildren(parenthesis);}
 
   virtual void visit(Call& call)
-    {rewriteChildren(call);}
+    {visitChildren(call);}
 
   virtual void visit(Invoke& invoke)
-    {rewriteChildren(invoke);}
+    {visitChildren(invoke);}
 
   virtual void visit(Identifier& identifier)  {}
 
   virtual void visit(Index& index)
-    {rewriteChildren(index);}
+    {visitChildren(index);}
 };
 
-class RemoveParenthesisRewriter : public DefaultRewriter
+class DefaultVisitor : public DefaultVisitorT<Visitor>
 {
 public:
-  virtual void visit(Parenthesis& parenthesis)
-    {setResult(rewrite(parenthesis.getExpr()));}
-};
-
-class RemoveUnmLiteralRewriter : public DefaultRewriter
-{
-public:
-  virtual void visit(UnaryOperation& operation)
+  virtual void visitChildren(Node& node)
   {
-    if (operation.getOp() == unmOp)
-    {
-      LiteralNumberPtr number = operation.getExpr().dynamicCast<LiteralNumber>();
-      if (number)
-        setResult(new LiteralNumber(-number->getValue()));
-    }
-  }
-};
-
-class TransformInvokeIntoCallRewriter : public DefaultRewriter
-{
-public:
-  // a:b(...)  ==> a.b(a, ...)
-  virtual void visit(Invoke& invoke)
-  {
-    CallPtr call = new Call(new Index(invoke.getObject(), invoke.getFunction()));
-    call->addArgument(invoke.getObject());
-    call->addArguments(invoke.getArguments());
-    setResult(call);
+    size_t n = node.getNumSubNodes();
+    for (size_t i = 0; i < n; ++i)
+      node.getSubNode(i)->accept(*this);
   }
 };
 

@@ -47,6 +47,10 @@
       <variable type="ObjectVector[lua::Expression]" name="conditions"/>
       <variable type="ObjectVector[lua::Block]" name="blocks"/>
     </class>
+    <class name="Local" base="lua::Statement">
+      <variable type="lua::List" name="identifiers"/>
+      <variable type="lua::List" name="expressions"/>
+    </class>
     <class name="Return" base="lua::Statement">
       <variable type="ObjectVector[lua::Expression]" name="expressions"/>
     </class>
@@ -145,6 +149,22 @@
     <class name="Index" base="lua::LHSExpression">
       <variable type="lua::Expression" name="left"/>
       <variable type="lua::Expression" name="right"/>
+    </class>
+
+    <!-- ------------------------- -->
+
+    <!-- Scope -->
+    <class name="Variable" base="Object">
+      <variable type="lua::Identifier" name="declaration"/>
+      <variable type="lua::Expression" name="initialValue"/>
+      <variable type="Boolean" name="isConstant"/>
+    </class>
+    
+    <class name="Scope" base="Object">
+      <variable type="lua::Statement" name="node"/>
+      <variable type="lua::Scope" name="parent"/>
+      <variable type="ObjectVector[lua::Variable]" name="variables"/>
+      <variable type="ObjectVector[lua::Scope]" name="subScopes"/>
     </class>
     
   </namespace>

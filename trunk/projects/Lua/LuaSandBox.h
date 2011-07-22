@@ -10,7 +10,8 @@
 # define LBCPP_LUA_SANDBOX_H_
 
 # include "Node.h"
-# include "DerivativeVisitor.h"
+# include "DerivableRewriter.h"
+# include "Rewriter.h"
 
 extern "C" {
 # include "../../src/Lua/lua/lua.h"

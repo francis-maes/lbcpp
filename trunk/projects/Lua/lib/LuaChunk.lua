@@ -117,6 +117,13 @@ function _M.metaLuaAstToLbcppAst(ast)
       i = i + 2
     end
     return Object.create("lua::If", conditions, blocks)
+  elseif ast.tag == "Local" then
+    if #subNodes == 2 then
+      return Object.create("lua::Local", subNodes[1], subNodes[2])
+    else
+      assert(#subNodes == 1)
+      return Object.create("lua::Local", subNodes[1])
+    end     
   elseif ast.tag == "Return" then
     return Object.create("lua::Return", makeObjectVector("lua::Expression", subNodes, 1))
   

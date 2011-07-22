@@ -322,11 +322,11 @@ protected:
     // create() function
     if (classBaseClass == T("DefaultClass"))
     {
-      openScope(T("virtual Variable create(ExecutionContext& context) const"));
+      openScope(T("virtual lbcpp::Variable create(ExecutionContext& context) const"));
       if (isAbstract)
       {
         writeLine(T("context.errorCallback(\"Cannot instantiate abstract class ") + className + T("\");"));
-        writeLine(T("return Variable();"));
+        writeLine(T("return lbcpp::Variable();"));
       }
       else
       {
@@ -342,14 +342,14 @@ protected:
     if (variables.size() && !xml->getBoolAttribute(T("manualAccessors"), false) && classBaseClass == T("DefaultClass"))
     {
       // getMemberVariableValue
-      openScope(T("virtual Variable getMemberVariableValue(const Object* __thisbase__, size_t __index__) const"));
+      openScope(T("virtual lbcpp::Variable getMemberVariableValue(const Object* __thisbase__, size_t __index__) const"));
         writeLine(T("static size_t numBaseMemberVariables = baseType->getNumMemberVariables();"));
         writeLine(T("if (__index__ < numBaseMemberVariables)"));
         writeLine(T("return baseType->getMemberVariableValue(__thisbase__, __index__);"), 1);
         writeLine(T("__index__ -= numBaseMemberVariables;"));
         writeLine(T("const ") + className + T("* __this__ = static_cast<const ") + className + T("* >(__thisbase__);"));
         writeLine(T("const TypePtr& expectedType = variables[__index__]->getType();"));
-        writeLine(T("Variable __res__;"));
+        writeLine(T("lbcpp::Variable __res__;"));
         newLine();
         openScope(T("switch (__index__)"));
           for (size_t i = 0; i < variables.size(); ++i)
@@ -368,7 +368,7 @@ protected:
             code += T(", expectedType); break;");
             writeLine(code, -1);
           }
-          writeLine(T("default: jassert(false); return Variable();"), -1);
+          writeLine(T("default: jassert(false); return lbcpp::Variable();"), -1);
         closeScope();
         writeLine(T("jassert(__res__.getType()->inheritsFrom(expectedType));"));
         writeLine(T("return __res__;"));
@@ -376,7 +376,7 @@ protected:
       newLine();
 
       // setMemberVariableValue
-      openScope(T("virtual void setMemberVariableValue(Object* __thisbase__, size_t __index__, const Variable& __subValue__) const"));
+      openScope(T("virtual void setMemberVariableValue(Object* __thisbase__, size_t __index__, const lbcpp::Variable& __subValue__) const"));
         writeLine(T("if (__index__ < baseType->getNumMemberVariables())"));
         writeLine(T("{baseType->setMemberVariableValue(__thisbase__, __index__, __subValue__); return;}"), 1);
         writeLine(T("__index__ -= baseType->getNumMemberVariables();"));
