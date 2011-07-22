@@ -12,7 +12,14 @@
   </class>
 
   <namespace name="lua">
-  
+
+    <class name="LineInfo" base="Object">
+      <variable type="PositiveInteger" name="line"/>
+      <variable type="PositiveInteger" name="column"/>
+      <variable type="String" name="filename"/>
+      <variable type="String" name="comments"/>
+    </class>
+
     <class name="Node" abstract="yes"/>
     <class name="List" base="lua::Node">
       <variable type="ObjectVector[lua::Node]" name="nodes"/>
@@ -121,6 +128,11 @@
     <class name="ApplyExpression" base="lua::Expression" abstract="yes"/>
     <class name="Call" base="lua::ApplyExpression">
       <variable type="lua::Expression" name="function"/>
+      <variable type="ObjectVector[lua::Expression]" name="arguments"/>
+    </class>
+    <class name="Invoke" base="lua::ApplyExpression">
+      <variable type="lua::Expression" name="object"/>
+      <variable type="lua::LiteralString" name="function"/>
       <variable type="ObjectVector[lua::Expression]" name="arguments"/>
     </class>
 
