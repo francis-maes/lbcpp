@@ -1,15 +1,15 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: DerivativeVisitor.h            | Derivative Visitor              |
+| Filename: DerivableRewriter.h            | Derivative Rewriter             |
 | Author  : Francis Maes                   |                                 |
 | Started : 20/07/2011 16:15               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUA_DERIVATIVE_VISITOR_H_
-# define LBCPP_LUA_DERIVATIVE_VISITOR_H_
+#ifndef LBCPP_LUA_REWRITER_DERIVATIVE_H_
+# define LBCPP_LUA_REWRITER_DERIVATIVE_H_
 
-# include "Visitor.h"
+# include "Rewriter.h"
 
 namespace lbcpp {
 namespace lua {
@@ -297,5 +297,5 @@ public:
 }; /* namespace lua */
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUA_DERIVATIVE_VISITOR_H_
+#endif // !LBCPP_LUA_REWRITER_DERIVATIVE_H_
 

@@ -11,8 +11,10 @@ SET(LBCPP_LUA_CPP_SOURCES
   Node.h
   Node.cpp
   Visitor.h
+  Rewriter.h
+  Scope.h
   PrettyPrinterVisitor.h
-  DerivativeVisitor.h
+  DerivableRewriter.h
   LuaInterpreter.h
   LuaSandBox.h
   LuaLibrary.xml

@@ -255,6 +255,33 @@ protected:
   std::vector<BlockPtr> blocks;
 };
 
+class Local : public Statement
+{
+public:
+  virtual String getTag() const
+    {return "Local";}
+
+  virtual size_t getNumSubNodes() const
+    {return expressions ? 2 : 1;}
+
+  virtual NodePtr& getSubNode(size_t index)
+    {return (NodePtr&)(index ? expressions : identifiers);}
+
+  virtual void accept(Visitor& visitor);
+
+  const ListPtr& getIdentifiers() const
+    {return identifiers;}
+
+  const ListPtr& getExpressions() const
+    {return expressions;}
+
+protected:
+  friend class LocalClass;
+
+  ListPtr identifiers;
+  ListPtr expressions;
+};
+
 class Return : public Statement
 {
 public:
@@ -823,7 +850,7 @@ x| `While{ expr block }
 x| `If{ (expr block)+ block? }
 | `Fornum{ ident expr expr expr? block }
 | `Forin{ {ident+} {expr+} block }
-| `Local{ {ident+} {expr+}? }
+x| `Local{ {ident+} {expr+}? }
 | `Localrec{ {ident+} {expr+}? }
 | `Goto{string}
 | `Label{string}
@@ -840,10 +867,10 @@ x| `Table{ ( `Pair{ expr expr } | expr )* }
 x| `Op{ binopid expr expr } | `Op{ unopid expr }
 c| `Paren{ expr }
 | `Stat{ block expr }
-p| apply
+x| apply
 x| lhs
 
-apply:
+xapply:
 x| `Call{ expr expr* }
 x| `Invoke{ expr `String{ string } expr* }
 
