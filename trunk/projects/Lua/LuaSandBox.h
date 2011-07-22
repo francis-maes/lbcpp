@@ -131,6 +131,7 @@ public:
     lua::BlockPtr block = chunk.getTree().staticCast<lua::Block>();
     block = lua::RemoveParenthesisRewriter().rewrite(block);
     block = lua::RemoveUnmLiteralRewriter().rewrite(block);
+    block = lua::TransformInvokeIntoCallRewriter().rewrite(block);
     lua::DerivableRewriter::applyExtension(block);
     chunk.setTree(block);
 
