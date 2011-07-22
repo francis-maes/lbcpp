@@ -78,6 +78,7 @@ public:
       write("else");
       printBlockWithIndentation(statement.getBlock(statement.getNumBlocks() - 1));
     }
+    write("end");
   }
 
   virtual void visit(Return& statement)
@@ -135,24 +136,45 @@ public:
 
   virtual void visit(Table& table)
   {
-    write("{");
     size_t n = table.getNumSubNodes();
+    bool formatWithNewScope = false;
+    for (size_t i = 0; i < n; ++i)
+    {
+      PairPtr pn = table.getSubNode(i).dynamicCast<Pair>();
+      if (pn && pn->getSubNode(1).isInstanceOf<Function>())
+      {
+        formatWithNewScope = true;
+        break;
+      }
+    }
+
+    write("{");
+    if (formatWithNewScope)
+    {
+      endLine();
+      ++indentation;
+    }
     for (size_t i = 0; i < n; ++i)
     {
       table.getSubNode(i)->accept(*this);
       if (i < n - 1)
         write(", ");
     }
+    if (formatWithNewScope)
+      --indentation;
     write("}");
   }
 
   virtual void visit(UnaryOperation& operation)
   {
     static const char* luaOperators[] = {"not", "#", "-"};
+    bool isLiteralOrIdentifier = operation.getExpr().dynamicCast<LiteralNumber>() || 
+      operation.getExpr().dynamicCast<Identifier>();
+
     write(luaOperators[operation.getOp()]);
     if (operation.getOp() == notOp ||
-        (operation.getOp() == unmOp && !operation.getExpr().dynamicCast<LiteralNumber>()) ||
-        (operation.getOp() == lenOp && !operation.getExpr().dynamicCast<Identifier>()))
+        (operation.getOp() == unmOp && !isLiteralOrIdentifier) ||
+        (operation.getOp() == lenOp && !isLiteralOrIdentifier))
       write(" ");
     operation.getExpr()->accept(*this);
   }
@@ -175,7 +197,9 @@ public:
       "<", "<=", "and", "or"
     };
     printWithParenthesis(operation.getLeft(), areParenthesisRequired(operation, true));
+    write(" ");
     write(luaOperators[operation.getOp()]);
+    write(" ");
     printWithParenthesis(operation.getRight(), areParenthesisRequired(operation, false));
   }
 
@@ -184,7 +208,24 @@ public:
 
   virtual void visit(Call& call)
   {
-    call.getFunction()->accept(*this);
+    ExpressionPtr function = call.getFunction();
+    printWithParenthesis(function, function.dynamicCast<Operation>());
+    write("(");
+    size_t n = call.getNumArguments();
+    for (size_t i = 0; i < n; ++i)
+    {
+      call.getArgument(i)->accept(*this);
+      if (i < n - 1)
+        write(", ");
+    }
+    write(")");
+  }
+ 
+  virtual void visit(Invoke& call)
+  {
+    call.getObject()->accept(*this);
+    write(":");
+    write(call.getFunction()->getValue());
     write("(");
     size_t n = call.getNumArguments();
     for (size_t i = 0; i < n; ++i)

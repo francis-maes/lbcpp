@@ -61,6 +61,8 @@ public:
     {jassert(false);}
   virtual void visit(Call& call)
     {jassert(false);}
+  virtual void visit(Invoke& invoke)
+    {jassert(false);}
   virtual void visit(Identifier& identifier)
     {jassert(false);}
   virtual void visit(Index& index)
@@ -158,6 +160,9 @@ public:
   virtual void visit(Call& call)
     {rewriteChildren(call);}
 
+  virtual void visit(Invoke& invoke)
+    {rewriteChildren(invoke);}
+
   virtual void visit(Identifier& identifier)  {}
 
   virtual void visit(Index& index)
@@ -169,6 +174,33 @@ class RemoveParenthesisRewriter : public DefaultRewriter
 public:
   virtual void visit(Parenthesis& parenthesis)
     {setResult(rewrite(parenthesis.getExpr()));}
+};
+
+class RemoveUnmLiteralRewriter : public DefaultRewriter
+{
+public:
+  virtual void visit(UnaryOperation& operation)
+  {
+    if (operation.getOp() == unmOp)
+    {
+      LiteralNumberPtr number = operation.getExpr().dynamicCast<LiteralNumber>();
+      if (number)
+        setResult(new LiteralNumber(-number->getValue()));
+    }
+  }
+};
+
+class TransformInvokeIntoCallRewriter : public DefaultRewriter
+{
+public:
+  // a:b(...)  ==> a.b(a, ...)
+  virtual void visit(Invoke& invoke)
+  {
+    CallPtr call = new Call(new Index(invoke.getObject(), invoke.getFunction()));
+    call->addArgument(invoke.getObject());
+    call->addArguments(invoke.getArguments());
+    setResult(call);
+  }
 };
 
 }; /* namespace lua */

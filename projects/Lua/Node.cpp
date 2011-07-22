@@ -42,6 +42,7 @@ NODE_ACCEPT_FUNCTION(UnaryOperation)
 NODE_ACCEPT_FUNCTION(BinaryOperation)
 NODE_ACCEPT_FUNCTION(Parenthesis)
 NODE_ACCEPT_FUNCTION(Call)
+NODE_ACCEPT_FUNCTION(Invoke)
 NODE_ACCEPT_FUNCTION(Identifier)
 NODE_ACCEPT_FUNCTION(Index)
 
@@ -114,7 +115,7 @@ ExpressionPtr lbcpp::lua::add(const ExpressionPtr& left, const ExpressionPtr& ri
   if (leftNumber && rightNumber)
     return new LiteralNumber(leftNumber->getValue() + rightNumber->getValue());
 
-  // x + 0 = x, 0 + x = x
+  // x + 0 ==> x, 0 + x ==> x
   if ((leftNumber && !rightNumber) || (!leftNumber && rightNumber))
   {
     double number = (leftNumber ? leftNumber->getValue() : rightNumber->getValue());
@@ -122,6 +123,11 @@ ExpressionPtr lbcpp::lua::add(const ExpressionPtr& left, const ExpressionPtr& ri
     if (number == 0.0)
       return expr;
   }
+
+  // x + (-y) ==> x - y
+  UnaryOperationPtr rightUnaryOp = right.dynamicCast<UnaryOperation>();
+  if (rightUnaryOp && rightUnaryOp->getOp() == unmOp)
+    return sub(left, right);
 
   return new BinaryOperation(addOp, left, right);
 }
@@ -141,6 +147,11 @@ ExpressionPtr lbcpp::lua::sub(const ExpressionPtr& left, const ExpressionPtr& ri
   // 0 - x = -x
   if (leftNumber && leftNumber->getValue() == 0.0)
     return unm(right);
+
+ // x - (-y) ==> x + y
+  UnaryOperationPtr rightUnaryOp = right.dynamicCast<UnaryOperation>();
+  if (rightUnaryOp && rightUnaryOp->getOp() == unmOp)
+    return add(left, right);
 
   return new BinaryOperation(subOp, left, right);
 }

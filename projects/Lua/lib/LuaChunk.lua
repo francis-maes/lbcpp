@@ -39,6 +39,10 @@ local function convertBinaryOp(opid)
   return opids[opid]
 end
 
+local function convertLineInfo(lineinfo) -- not used yet, to be finished
+  local comments = (lineinfo.comments and lineinfo.comments or "")
+  return Object.create("lua::LineInfo", lineinfo[1], lineinfo[2], lineinfo[4], comments)
+end
 
 function _M.metaLuaAstToLbcppAst(ast)
 
@@ -145,6 +149,8 @@ function _M.metaLuaAstToLbcppAst(ast)
     return Object.create("lua::Parenthesis", subNodes[1])
   elseif ast.tag == "Call" then
     return Object.create("lua::Call", subNodes[1], makeObjectVector("lua::Expression", subNodes, 2))
+  elseif ast.tag == "Invoke" then
+    return Object.create("lua::Invoke", subNodes[1], subNodes[2], makeObjectVector("lua::Expression", subNodes, 3))
   elseif ast.tag == "Index" then
     return Object.create("lua::Index", subNodes[1], subNodes[2])
   else
@@ -201,7 +207,27 @@ function _M.parseFromString(codeType, code, codeName)
 end
 
 -- 'derivable' extension
-DerivableFunction = {__call = function (tbl, ...) return tbl.f(...) end} -- metatable
+DerivableFunction = {  -- metatable
+   __call = function (tbl, ...) return tbl.f(...) end,
+   
+   __index = function (tbl, key)
+
+      if type(key) == "number" then
+        local p = tbl.prototype[key] 
+        return p ~= nil and tbl[p] or nil
+      else
+        return tbl
+      end
+  end
+}
+
+function callIfExists(f, defValue, ...)
+  if f == nil then
+    return defValue
+  else
+    return f(...)
+  end
+end
 
 mlp.lexer:add{ "derivable" }
 mlp.func_param_content:add{ "derivable", mlp.id, builder = "Derivable" }

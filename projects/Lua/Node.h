@@ -39,8 +39,22 @@ typedef ReferenceCountedObjectPtr<LHSExpression> LHSExpressionPtr;
 class Identifier;
 typedef ReferenceCountedObjectPtr<Identifier> IdentifierPtr;
 
-
 class Visitor;
+
+class LineInfo : public Object
+{
+public:
+
+protected:
+  friend class LineInfoClass;
+
+  size_t line;
+  size_t column;
+  String filename;
+  String comments;
+};
+
+typedef ReferenceCountedObjectPtr<LineInfo> LineInfoPtr;
 
 class Node : public Object
 {
@@ -471,6 +485,8 @@ protected:
   ExpressionPtr second;
 };
 
+typedef ReferenceCountedObjectPtr<Pair> PairPtr;
+
 class Table : public Expression
 {
 public:
@@ -638,6 +654,8 @@ public:
     : function(function), arguments(2) {arguments[0] = argument1; arguments[1] = argument2;}
   Call(const ExpressionPtr& function, const ExpressionPtr& argument)
     : function(function), arguments(1, argument) {}
+  Call(const ExpressionPtr& function)
+    : function(function) {}
   Call() {}
 
   virtual String getTag() const
@@ -660,6 +678,19 @@ public:
   const ExpressionPtr& getArgument(size_t index) const
     {jassert(index < arguments.size()); return arguments[index];}
 
+  const std::vector<ExpressionPtr>& getArguments() const
+    {return arguments;}
+
+  void addArgument(const ExpressionPtr& argument)
+    {arguments.push_back(argument);}
+    
+  void addArgument(const std::vector<ExpressionPtr>& arguments)
+  {
+    this->arguments.reserve(this->arguments.size() + arguments.size());
+    for (size_t i = 0; i < arguments.size(); ++i)
+      this->arguments.push_back(arguments[i]);
+  }
+
 protected:
   friend class CallClass;
 
@@ -667,6 +698,48 @@ protected:
   std::vector<ExpressionPtr> arguments;
 };
 
+class Invoke : public ApplyExpression
+{
+public:
+  virtual String getTag() const
+    {return "Invoke";}
+
+  virtual size_t getNumSubNodes() const
+    {return 2 + arguments.size();}
+
+  virtual NodePtr& getSubNode(size_t index)
+  {
+    if (index == 0)
+      return (NodePtr&)object;
+    if (index == 1)
+      return (NodePtr&)function;
+    return (NodePtr&)arguments[index - 2];
+  }
+
+  virtual void accept(Visitor& visitor);
+
+  const ExpressionPtr& getObject() const
+    {return object;}
+
+  const LiteralStringPtr& getFunction() const
+    {return function;}
+
+  size_t getNumArguments() const
+    {return arguments.size();}
+
+  const ExpressionPtr& getArgument(size_t index) const
+    {jassert(index < arguments.size()); return arguments[index];}
+
+  const std::vector<ExpressionPtr>& getArguments() const
+    {return arguments;}
+
+protected:
+  friend class InvokeClass;
+
+  ExpressionPtr object;
+  LiteralStringPtr function;
+  std::vector<ExpressionPtr> arguments;
+};
 
 /*
 ** LHS Expression
@@ -770,7 +843,7 @@ x| lhs
 
 apply:
 x| `Call{ expr expr* }
-| `Invoke{ expr `String{ string } expr* }
+x| `Invoke{ expr `String{ string } expr* }
 
 x lhs: ident | `Index{ expr expr }
 

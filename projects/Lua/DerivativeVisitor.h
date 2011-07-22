@@ -27,6 +27,13 @@ public:
     return visitor.rewrite(expr).staticCast<Expression>();
   }
 
+  static ExpressionPtr ternaryOperator(const ExpressionPtr& condition, const ExpressionPtr& valueIfTrue, const ExpressionPtr& valueIfFalse)
+  {
+    if (valueIfTrue->print() == valueIfFalse->print())
+      return valueIfTrue;
+    return new Call(new Identifier("LuaChunk.ternaryOperator"), condition, valueIfTrue, valueIfFalse);
+  }
+
   virtual void visit(LiteralNumber& expression)
     {setResult(new LiteralNumber(0.0));}
  
@@ -64,20 +71,26 @@ public:
 
     switch (operation.getOp())
     {
-    case addOp: setResult(add(uprime, vprime)); return;  // (u + v)' = u' + v'
-    case subOp: setResult(sub(uprime, vprime)); return;  // (u - v)' = u' - v'
-    case mulOp: setResult(add(multiply(uprime, v), multiply(u, vprime))); return; // (uv)' = u'v + uv'
-    case divOp:
-      {
-        // (u/v)' = (u'v - uv') / v^2
+    case addOp: // (u + v)' = u' + v'
+      setResult(add(uprime, vprime));
+      return;  
 
+    case subOp: // (u - v)' = u' - v'
+      setResult(sub(uprime, vprime));
+      return;
+
+    case mulOp: // (uv)' = u'v + uv'
+      setResult(add(multiply(uprime, v), multiply(u, vprime)));
+      return;
+
+    case divOp: // (u/v)' = (u'v - uv') / v^2
+      {
         // function (_v) return (u'_v - uv') / _v^2 end (v)
         setResult(div(
             sub(multiply(uprime, v), multiply(u, vprime)),
             pow(v, new LiteralNumber(2))));
           return;
       }
-    case modOp:
     case powOp:
       {
         LiteralNumberPtr vnumber = v.dynamicCast<LiteralNumber>();
@@ -93,21 +106,26 @@ public:
         break;
       }
 
+    case orOp:
+      setResult(ternaryOperator(u, uprime, vprime));
+      return;
+      
+    case andOp:
+      setResult(ternaryOperator(u, vprime, new LiteralNumber(0.0)));
+      return;
+
     case concatOp:
+    case modOp:
     case eqOp:
     case ltOp:
     case leOp:
-    case andOp:
-    case orOp:
+      std::cerr << "Warning: Unsuported binary operation : " << operation.toString() << std::endl;
       jassert(false); // not yet implemented
     }
   }
   
   virtual void visit(Parenthesis& p)
     {setResult(rewrite(p.getExpr()));}
-
-  static ExpressionPtr ternaryOperator(const ExpressionPtr& condition, const ExpressionPtr& valueIfTrue, const ExpressionPtr& valueIfFalse)
-    {return new Call(new Identifier("LuaChunk.ternaryOperator"), condition, valueIfTrue, valueIfFalse);}
 
   virtual void visit(Call& call)
   {
@@ -134,14 +152,51 @@ public:
       // max(u,v)' = (u >= v ? u' : v')
       // min(u,v)' = (u <= v ? u' : v')
 
-      ExpressionPtr u = call.getArgument(0);
-      ExpressionPtr v = call.getArgument(1);
+      const ExpressionPtr& u = call.getArgument(0);
+      const ExpressionPtr& v = call.getArgument(1);
       setResult(ternaryOperator(fun == T("math.max") ? not(lt(u, v)) : le(u, v),
                     rewrite(u), rewrite(v)));
       return;
     }
 
-    jassert(false); // not yet implemented
+    if (call.getNumArguments() == 0)
+    {
+      // no changes
+      return;
+    }
+    else
+    {
+      // f(u)' = f'(u) u'
+      // f(u, v)' = f'1(u, v) u' + f'2(u, v) v'
+      // ...
+
+      std::vector<ExpressionPtr> terms;
+      terms.reserve(call.getNumArguments());
+      for (size_t i = 0; i < call.getNumArguments(); ++i)
+      {
+        const ExpressionPtr& u = call.getArgument(i);
+
+        // (f[1] or (function (...) return 0 end))(...)
+        ExpressionPtr derivateFunction = new Index(call.getFunction(), new LiteralNumber(i + 1));
+        derivateFunction = new BinaryOperation(orOp, derivateFunction, new Identifier("LuaChunk.returnZeroFunction"));
+        ExpressionPtr newCall = new Call(derivateFunction, call.getArguments());
+        ExpressionPtr term = multiply(newCall, rewrite(call.getArgument(i)));
+        
+        LiteralNumberPtr termNumber = term.dynamicCast<LiteralNumber>();
+        if (!termNumber || termNumber->getValue() != 0.0)
+          terms.push_back(term); // skip zeros
+      }
+      if (terms.size())
+      {
+        ExpressionPtr result = terms.back();
+        for (int i = (int)terms.size() - 2; i >= 0; --i) // fold_left
+          result = new BinaryOperation(addOp, terms[i], result);
+        setResult(result);
+      }
+      else
+        setResult(new LiteralNumber(0.0));
+      return;
+    }    
   }
 
 protected:
@@ -203,6 +258,21 @@ public:
       ExpressionPtr derivateFunction = computeFunctionDerivate(&function, derivables[i]);
       table->append("d" + derivables[i]->getIdentifier(), derivateFunction);
     }
+
+    std::vector<ExpressionPtr> prototype(function.getNumParameters());
+    for (size_t i = 0; i < prototype.size(); ++i)
+    {
+      IdentifierPtr id = function.getParameterIdentifier(i);
+      if (id->hasDerivableFlag())
+      {
+        prototype[i] = new LiteralString("d" + id->getIdentifier());
+        function.setParameterIdentifier(i, new Identifier(id->getIdentifier())); // remove "derivable flag"
+      }
+      else
+        prototype[i] = new Nil();
+    }
+    table->append("prototype", new Table(prototype));
+
     return new Call(new Identifier("setmetatable"), table, new Index(new Identifier("LuaChunk"), new Identifier("DerivableFunction")));
   }
 
@@ -217,10 +287,7 @@ public:
     {
       IdentifierPtr id = function.getParameterIdentifier(i);
       if (id->hasDerivableFlag())
-      {
         derivables.push_back(id);
-        function.setParameterIdentifier(i, new Identifier(id->getIdentifier())); // remove "derivable flag"
-      }
     }
     if (derivables.size() > 0)
       setResult(transformFunction(function, derivables));
