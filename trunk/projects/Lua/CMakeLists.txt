@@ -13,6 +13,7 @@ SET(LBCPP_LUA_CPP_SOURCES
   Visitor.h
   Rewriter.h
   Scope.h
+  GetScopesVisitor.h
   PrettyPrinterVisitor.h
   DerivableRewriter.h
   LuaInterpreter.h

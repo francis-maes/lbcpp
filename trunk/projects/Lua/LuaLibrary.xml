@@ -40,7 +40,7 @@
       <variable type="lua::List" name="expr"/>
     </class>
     <class name="While" base="lua::Statement">
-      <variable type="lua::Expression" name="expr"/>
+      <variable type="lua::Expression" name="condition"/>
       <variable type="lua::Block" name="block"/>
     </class>
     <class name="If" base="lua::Statement">
