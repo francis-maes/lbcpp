@@ -21,6 +21,8 @@ public:
   virtual void enterScope(Node& node) {}
   virtual void leaveScope() {}
   virtual void newVariable(IdentifierPtr identifier, ExpressionPtr initialValue = ExpressionPtr()) {}
+  virtual void variableSet(IdentifierPtr identifier, ExpressionPtr value) {}
+  virtual void variableGet(IdentifierPtr identifier) {}
 
   virtual void visit(Do& statement)
   {
@@ -40,7 +42,7 @@ public:
       NodePtr lhsi = lhs->getSubNode(i);
       IdentifierPtr identifier = lhsi.dynamicCast<Identifier>();
       if (identifier) // FIXME: multiret
-        newVariable(identifier, expr->getSubNode(i));
+        variableSet(identifier, expr->getSubNode(i));
       else
         lhsi->accept(*this);
     }
@@ -54,26 +56,58 @@ public:
     leaveScope();
   }
 
-  /*virtual void visit(Repeat& statement)
+  virtual void visit(Repeat& statement)
   {
     enterScope(statement);
     statement.getBlock()->accept(*this);
     statement.getCondition()->accept(*this);
     leaveScope();
-  }*/
+  }
 
   virtual void visit(If& statement)
-    {jassert(false);}
+  {
+    for (size_t i = 0; i < statement.getNumBlocks(); ++i)
+    {
+      if (i < statement.getNumConditions())
+        statement.getCondition(i)->accept(*this);
+      enterScope(statement);
+      statement.getBlock(i)->accept(*this);
+      leaveScope();
+    }
+  }
+
+  virtual void visit(ForNum& statement)
+  {
+    enterScope(statement);
+    newVariable(statement.getIdentifier());
+    for (size_t i = 1; i < statement.getNumSubNodes(); ++i)
+      statement.getSubNode(i)->accept(*this);
+    leaveScope();
+  }
+
+  virtual void visit(ForIn& statement)
+  {
+    enterScope(statement);
+
+    const ListPtr& identifiers = statement.getIdentifiers();
+    for (size_t i = 0; i < identifiers->getNumSubNodes(); ++i)
+      newVariable(identifiers->getSubNode(i).staticCast<Identifier>());
+
+    statement.getExpressions()->accept(*this);
+    statement.getBlock()->accept(*this);
+
+    leaveScope();
+  }
 
   virtual void visit(Local& statement)
   {
+    // the order between variable declarations and expression evaluation depends
+    //  on wheter we declare a local function or anything else
     const ListPtr& expressions = statement.getExpressions();
-    size_t numExpressions = 0;
-    if (expressions)
-    {
+    size_t numExpressions = expressions ? expressions->getNumSubNodes() : 0;
+    
+    if (!statement.isFunction() && numExpressions)
       expressions->accept(*this);
-      numExpressions = expressions->getNumSubNodes();
-    }
 
     const ListPtr& identifiers = statement.getIdentifiers();
     for (size_t i = 0; i < identifiers->getNumSubNodes(); ++i)
@@ -81,13 +115,20 @@ public:
       IdentifierPtr identifier = identifiers->getSubNode(i).dynamicCast<Identifier>();
       newVariable(identifier, i < numExpressions ? expressions->getSubNode(i) : ExpressionPtr());
     }
+
+    if (statement.isFunction() && numExpressions)
+      expressions->accept(*this);
   }
 
   virtual void visit(Return& statement)
     {visitChildren(statement);}
+
   virtual void visit(ExpressionStatement& statement)
     {visitChildren(statement);}
 
+  /*
+  ** Expressions
+  */
   virtual void visit(Function& function)
   {
     enterScope(function);
@@ -101,37 +142,94 @@ public:
     leaveScope();
   }
 
+  // default implementation for:
+  // Table, Pair, UnaryOperation, BinaryOperation
+  // Parenthesis, Call, Invoke, Index
+
+  virtual void visit(Identifier& identifier)
+    {variableGet(&identifier);}
+
+  /*
+  ** Terminal Nodes
+  */
+  // statements
+  virtual void visit(Break& statement)            {}
+
+  // expressions
+  virtual void visit(Nil& expression)             {}
+  virtual void visit(Dots& expression)            {}
+  virtual void visit(LiteralBoolean& expression)  {}
+  virtual void visit(LiteralNumber& expression)   {}
+  virtual void visit(LiteralString& expression)   {}
 };
 
-class GetScopesVisitor : public ScopeVisitor
+class PrintScopesVisitor : public ScopeVisitor
 {
 public:
   virtual void enterScope(Node& node)
-  {
-    std::cout << "Enter Scope " << node.getTag() << std::endl;
-  }
+    {std::cout << "Enter Scope " << node.getTag() << std::endl;}
 
   virtual void leaveScope()
-  {
-    std::cout << "Leave Scope" << std::endl;
-  }
+    {std::cout << "Leave Scope" << std::endl;}
+
   virtual void newVariable(IdentifierPtr identifier, ExpressionPtr initialValue = ExpressionPtr())
   {
-    std::cout << "  New Variable " << identifier->getIdentifier();
+    std::cout << "newVariable " << identifier->getIdentifier();
     if (initialValue)
       std::cout << " = " << initialValue->print();
     std::cout << std::endl;
   }
+  virtual void variableSet(IdentifierPtr identifier, ExpressionPtr value)
+    {std::cout << "setVariable " << identifier->getIdentifier() << " = " << value->print() << std::endl;}
 
-  ScopePtr getRootScope() const
-    {return ScopePtr();}
+  virtual void variableUsed(IdentifierPtr identifier)
+    {std::cout << "getVariable " << identifier->getIdentifier() << std::endl;}
+};
+
+void Scope::print(NodePtr tree)
+{
+  PrintScopesVisitor visitor;
+  tree->accept(visitor);
+}
+
+class GetScopesVisitor : public ScopeVisitor
+{
+public:
+  GetScopesVisitor() : currentScope(new Scope(T("<root>"))) {}
+
+  virtual void enterScope(Node& node)
+  {
+    ScopePtr newScope = new Scope(node.getTag()); // todo: better name
+    currentScope->addSubScope(newScope);
+    scopes.push_back(currentScope);
+    currentScope = newScope;
+  }
+
+  virtual void leaveScope()
+    {currentScope = scopes.back(); scopes.pop_back();}
+
+  virtual void newVariable(IdentifierPtr identifier, ExpressionPtr initialValue = ExpressionPtr())
+    {currentScope->newVariable(identifier, initialValue);}
+
+  virtual void variableSet(IdentifierPtr identifier, ExpressionPtr value)
+    {currentScope->variableSet(identifier, value);}
+
+  virtual void variableGet(IdentifierPtr identifier)
+    {currentScope->variableGet(identifier);}
+
+  const ScopePtr& getCurrentScope() const
+    {return currentScope;}
+
+protected:
+  std::vector<ScopePtr> scopes;
+  ScopePtr currentScope;
 };
 
 ScopePtr Scope::get(NodePtr tree)
 {
   GetScopesVisitor visitor;
   tree->accept(visitor);
-  return visitor.getRootScope();
+  return visitor.getCurrentScope();
 }
 
 }; /* namespace lua */

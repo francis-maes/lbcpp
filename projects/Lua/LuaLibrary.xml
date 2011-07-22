@@ -179,7 +179,6 @@
     
     <class name="Scope" base="Object">
       <variable type="lua::Statement" name="node"/>
-      <variable type="lua::Scope" name="parent"/>
       <variable type="ObjectVector[lua::Variable]" name="variables"/>
       <variable type="ObjectVector[lua::Scope]" name="subScopes"/>
     </class>

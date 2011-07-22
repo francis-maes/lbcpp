@@ -1,8 +1,5 @@
 
 Lua:
- * Transcrire walk.lua vers GetScopesVisitor de maniere exhaustive
- * Renommer GetScopesVisitor en PrintScopesVisitor et faire un GetScopesVisitor
- 
  * derivable: se servir des Scope pour gérer les interdépendances entre variables
  
  * derivable: Gerer les gradient et les DoubleVector
