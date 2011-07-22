@@ -9,6 +9,8 @@ SET(LBCPP_LUA_CPP_SOURCES
   precompiled.h
   precompiled.cpp
   Node.h
+  Expression.h
+  Statement.h
   Node.cpp
   Visitor.h
   Rewriter.h

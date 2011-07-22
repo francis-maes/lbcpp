@@ -118,20 +118,27 @@ function _M.metaLuaAstToLbcppAst(ast)
       i = i + 2
     end
     return Object.create("lua::If", conditions, blocks)
-  elseif ast.tag == "Fornum" then
+  elseif ast.tag == "ForNum" then
     if #subNodes == 5 then
-      return Object.create("lua::Fornum", subNodes[1], subNodes[2], subNodes[3], subNodes[4], makeBlock(ast[5]))
+      return Object.create("lua::ForNum", subNodes[1], subNodes[2], subNodes[3], subNodes[4], makeBlock(ast[5]))
     else
       assert (#subNodes == 4)
-      return Object.create("lua::Fornum", subNodes[1], subNodes[2], subNodes[3], nil, makeBlock(ast[4]))
+      return Object.create("lua::ForNum", subNodes[1], subNodes[2], subNodes[3], nil, makeBlock(ast[4]))
     end
+  elseif ast.tag == "ForIn" then
+    return Object.create("lua::ForIn", subNodes[1], subNodes[2], makeBlock(ast[3]))
   elseif ast.tag == "Local" then
     if #subNodes == 2 then
       return Object.create("lua::Local", subNodes[1], subNodes[2])
     else
       assert(#subNodes == 1)
       return Object.create("lua::Local", subNodes[1])
-    end     
+    end
+  elseif ast.tag == "Localrec" then
+    assert (#subNodes == 2)
+    return Object.create("lua::Local", subNodes[1], subNodes[2], true)
+  elseif ast.tag == "Break" then
+    return Object.create("lua::Break");
   elseif ast.tag == "Return" then
     return Object.create("lua::Return", makeObjectVector("lua::Expression", subNodes, 1))
   

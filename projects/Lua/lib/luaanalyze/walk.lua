@@ -53,12 +53,12 @@ local function find_vars(ast, istart, callback)
           process(ast[i])
         end
       end
-    elseif ast.tag == 'Fornum' then
+    elseif ast.tag == 'ForNum' then
       if callback.newscope then callback.newscope() end
       if callback.newvar then callback.newvar(ast[1]) end
       for i=2,#ast do process(ast[i]) end
       if callback.endscope then callback.endscope() end
-    elseif ast.tag == 'Forin' then
+    elseif ast.tag == 'ForIn' then
       local vars_ast, vals_ast = ast[1], ast[2]
       if callback.newscope then callback.newscope() end
       for i=1,#vars_ast do

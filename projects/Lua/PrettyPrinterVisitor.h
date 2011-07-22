@@ -104,7 +104,7 @@ public:
     write("end");
   }
 
-  virtual void visit(Fornum& statement)
+  virtual void visit(ForNum& statement)
   {
     write("for ");
     statement.getIdentifier()->accept(*this);
@@ -117,6 +117,17 @@ public:
       write(",");
       statement.getStep()->accept(*this);
     }
+    write(" do");
+    printBlockWithIndentation(statement.getBlock());
+    write("end");
+  }
+
+  virtual void visit(ForIn& statement)
+  {
+    write("for ");
+    statement.getIdentifiers()->accept(*this);
+    write(" in ");
+    statement.getExpressions()->accept(*this);
     write(" do");
     printBlockWithIndentation(statement.getBlock());
     write("end");
@@ -144,7 +155,10 @@ public:
         write(", ");
     }
   }
-      
+
+  virtual void visit(Break& statement)
+    {write("break");}
+   
   virtual void visit(ExpressionStatement& statement)
     {statement.getExpression()->accept(*this);}
 

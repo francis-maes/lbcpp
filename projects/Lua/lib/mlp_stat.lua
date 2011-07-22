@@ -81,13 +81,13 @@ local return_expr_list_parser = gg.multisequence{
 function for_header (lx)
    local var = mlp.id (lx)
    if lx:is_keyword (lx:peek(), "=") then 
-      -- Fornum: only 1 variable
+      -- ForNum: only 1 variable
       lx:next() -- skip "="
       local e = expr_list (lx)
       assert (2 <= #e and #e <= 3, "2 or 3 values in a fornum")
-      return { tag="Fornum", var, unpack (e) }
+      return { tag="ForNum", var, unpack (e) }
    else
-      -- Forin: there might be several vars
+      -- ForIn: there might be several vars
       local a = lx:is_keyword (lx:next(), ",", "in")
       if a=="in" then var_list = { var } else
          -- several vars; first "," skipped, read other vars
@@ -97,7 +97,7 @@ function for_header (lx)
          lx:next() -- skip "in"
       end
       local e = expr_list (lx)
-      return { tag="Forin", var_list, e }
+      return { tag="ForIn", var_list, e }
    end
 end
 

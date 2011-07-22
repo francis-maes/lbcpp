@@ -1,6 +1,5 @@
 
 Lua:
- * Finir de completer l'AST de maniere exhaustive
  * Transcrire walk.lua vers GetScopesVisitor de maniere exhaustive
  * Renommer GetScopesVisitor en PrintScopesVisitor et faire un GetScopesVisitor
  

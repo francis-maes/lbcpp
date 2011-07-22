@@ -10,6 +10,8 @@
 # define LBCPP_LUA_VISITOR_H_
 
 # include "Node.h"
+# include "Expression.h"
+# include "Statement.h"
 
 namespace lbcpp {
 namespace lua {
@@ -33,11 +35,15 @@ public:
     {jassert(false);}
   virtual void visit(If& statement)
     {jassert(false);}
-  virtual void visit(Fornum& statement)
+  virtual void visit(ForNum& statement)
+    {jassert(false);}
+  virtual void visit(ForIn& statement)
     {jassert(false);}
   virtual void visit(Local& statement)
     {jassert(false);}
   virtual void visit(Return& statement)
+    {jassert(false);}
+  virtual void visit(Break& statement)
     {jassert(false);}
   virtual void visit(ExpressionStatement& statement)
     {jassert(false);}
@@ -98,12 +104,16 @@ public:
     {visitChildren(statement);}
   virtual void visit(If& statement)
     {visitChildren(statement);}
-  virtual void visit(Fornum& statement)
+  virtual void visit(ForNum& statement)
+    {visitChildren(statement);}
+  virtual void visit(ForIn& statement)
     {visitChildren(statement);}
   virtual void visit(Local& statement)
     {visitChildren(statement);}
   virtual void visit(Return& statement)
     {visitChildren(statement);}
+  virtual void visit(Break& statement)
+    {}
   virtual void visit(ExpressionStatement& statement)
     {visitChildren(statement);}
 
