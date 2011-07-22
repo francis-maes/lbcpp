@@ -224,6 +224,33 @@ protected:
   BlockPtr block;
 };
 
+class Repeat : public Statement
+{
+public:
+  virtual String getTag() const
+    {return "Repeat";}
+
+  virtual size_t getNumSubNodes() const
+    {return 2;}
+
+  virtual NodePtr& getSubNode(size_t index)
+    {return index ? (NodePtr&)condition : (NodePtr&)block;}
+
+  virtual void accept(Visitor& visitor);
+
+  const BlockPtr& getBlock() const
+    {return block;}
+
+  const ExpressionPtr& getCondition() const
+    {return condition;}
+
+protected:
+  friend class RepeatClass;
+
+  BlockPtr block;
+  ExpressionPtr condition;
+};
+
 class If : public Statement
 {
 public:
@@ -259,6 +286,55 @@ protected:
 
   std::vector<ExpressionPtr> conditions;
   std::vector<BlockPtr> blocks;
+};
+
+class Fornum : public Statement
+{
+public:
+  virtual String getTag() const
+    {return "Fornum";}
+
+  virtual size_t getNumSubNodes() const
+    {return step ? 5 : 4;}
+
+  virtual NodePtr& getSubNode(size_t index)
+  {
+    if (index == 0)
+      return (NodePtr&)identifier;
+    if (index == 1)
+      return (NodePtr&)from;
+    if (index == 2)
+      return (NodePtr&)to;
+    if (index == 3)
+      return step ? (NodePtr&)step : (NodePtr&)block;
+    return (NodePtr&)block;
+  }
+
+  virtual void accept(Visitor& visitor);
+
+  const IdentifierPtr& getIdentifier() const
+    {return identifier;}
+
+  const ExpressionPtr& getFrom() const
+    {return from;}
+
+  const ExpressionPtr& getTo() const
+    {return to;}
+
+  const ExpressionPtr& getStep() const
+    {return step;}
+
+  const BlockPtr& getBlock() const
+    {return block;}
+
+protected:
+  friend class FornumClass;
+
+  IdentifierPtr identifier;
+  ExpressionPtr from;
+  ExpressionPtr to;
+  ExpressionPtr step;
+  BlockPtr block;
 };
 
 class Local : public Statement
@@ -318,25 +394,27 @@ protected:
   std::vector<ExpressionPtr> expressions;
 };
 
-class CallStatement : public Statement
+class ExpressionStatement : public Statement
 {
 public:
   virtual String getTag() const
-    {return "Call";}
+    {return Node::getSubNode(0)->getTag();}
 
   virtual size_t getNumSubNodes() const
-    {return 1 + arguments.size();}
+    {return 1;}
 
   virtual NodePtr& getSubNode(size_t index)
-    {return index == 0 ? (NodePtr&)function : (NodePtr&)arguments[index - 1];}
+    {return (NodePtr&)expression;}
 
   virtual void accept(Visitor& visitor);
 
-protected:
-  friend class CallStatementClass;
+  const ExpressionPtr& getExpression() const
+    {return expression;}
 
-  ExpressionPtr function;
-  std::vector<ExpressionPtr> arguments;
+protected:
+  friend class ExpressionStatementClass;
+
+  ExpressionPtr expression;
 };
 
 // ...
@@ -852,9 +930,9 @@ stat:
 x| `Do{ block }
 x| `Set{ {lhs+} {expr+} }
 x| `While{ expr block }
-| `Repeat{ block expr }
+x| `Repeat{ block expr }
 x| `If{ (expr block)+ block? }
-| `Fornum{ ident expr expr expr? block }
+x| `Fornum{ ident expr expr expr? block }
 | `Forin{ {ident+} {expr+} block }
 x| `Local{ {ident+} {expr+}? }
 | `Localrec{ {ident+} {expr+}? }

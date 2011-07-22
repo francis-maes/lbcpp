@@ -43,9 +43,20 @@
       <variable type="lua::Expression" name="condition"/>
       <variable type="lua::Block" name="block"/>
     </class>
+    <class name="Repeat" base="lua::Statement">
+      <variable type="lua::Block" name="block"/>
+      <variable type="lua::Expression" name="condition"/>
+    </class>
     <class name="If" base="lua::Statement">
       <variable type="ObjectVector[lua::Expression]" name="conditions"/>
       <variable type="ObjectVector[lua::Block]" name="blocks"/>
+    </class>
+    <class name="Fornum" base="lua::Statement">
+      <variable type="lua::Identifier" name="identifier"/>
+      <variable type="lua::Expression" name="from"/>
+      <variable type="lua::Expression" name="to"/>
+      <variable type="lua::Expression" name="step"/>
+      <variable type="lua::Block" name="block"/>
     </class>
     <class name="Local" base="lua::Statement">
       <variable type="lua::List" name="identifiers"/>
@@ -54,9 +65,8 @@
     <class name="Return" base="lua::Statement">
       <variable type="ObjectVector[lua::Expression]" name="expressions"/>
     </class>
-    <class name="CallStatement" base="lua::Statement">
-      <variable type="lua::Expression" name="function"/>
-      <variable type="ObjectVector[lua::Expression]" name="arguments"/>
+    <class name="ExpressionStatement" base="lua::Statement">
+      <variable type="lua::Expression" name="expression"/>
     </class>
 
     <!-- Expressions -->
