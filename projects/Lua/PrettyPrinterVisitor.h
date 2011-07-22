@@ -18,7 +18,7 @@ class PrettyPrinterVisitor : public Visitor
 {
 public:
   PrettyPrinterVisitor(OutputStream& ostr, int indentation = 0)
-    : ostr(ostr), indentation(indentation), isLineStart(true) {}
+    : ostr(ostr), indentation(indentation), isLineStart(true), lineNumber(1) {}
 
   static String print(const Node& node)
   {
@@ -44,7 +44,10 @@ public:
     size_t n = block.getNumSubNodes();
     for (size_t i = 0; i < n; ++i)
     {
+      size_t line = lineNumber;
       block.getSubNode(i)->accept(*this);
+      if (line != lineNumber)
+        endLine();
       endLine();
     }
   }
@@ -61,7 +64,27 @@ public:
   }
 
   virtual void visit(While& statement)
-    {jassert(false);} // not yet implemented
+  {
+    write("while ");
+    statement.getCondition()->accept(*this);
+    write(" do");
+    endLine();
+    ++indentation;
+    statement.getBlock()->accept(*this);
+    --indentation;
+    write("end");
+  }
+
+  virtual void visit(Repeat& statement)
+  {
+    write("repeat");
+    endLine();
+    ++indentation;
+    statement.getBlock()->accept(*this);
+    --indentation;
+    write("until ");
+    statement.getCondition()->accept(*this);
+  }
 
   virtual void visit(If& statement)
   {
@@ -78,6 +101,24 @@ public:
       write("else");
       printBlockWithIndentation(statement.getBlock(statement.getNumBlocks() - 1));
     }
+    write("end");
+  }
+
+  virtual void visit(Fornum& statement)
+  {
+    write("for ");
+    statement.getIdentifier()->accept(*this);
+    write(" = ");
+    statement.getFrom()->accept(*this);
+    write(",");
+    statement.getTo()->accept(*this);
+    if (statement.getStep())
+    {
+      write(",");
+      statement.getStep()->accept(*this);
+    }
+    write(" do");
+    printBlockWithIndentation(statement.getBlock());
     write("end");
   }
 
@@ -104,8 +145,8 @@ public:
     }
   }
       
-  virtual void visit(CallStatement& statement)
-    {jassert(false);} // not yet implemented
+  virtual void visit(ExpressionStatement& statement)
+    {statement.getExpression()->accept(*this);}
 
   // expressions
   virtual void visit(Nil& expression)
@@ -265,6 +306,7 @@ private:
   OutputStream& ostr;
   int indentation;
   bool isLineStart;
+  size_t lineNumber;
 
   void write(const String& str)
   {
@@ -281,6 +323,7 @@ private:
   {
     ostr << "\n";
     isLineStart = true;
+    ++lineNumber;
   }
 
   void writeIdentifierOrGenericAccess(const ExpressionPtr& expr, bool addDotBeforeIdentifier = false)

@@ -29,13 +29,17 @@ public:
     {jassert(false);}
   virtual void visit(While& statement)
     {jassert(false);}
+  virtual void visit(Repeat& statement)
+    {jassert(false);}
   virtual void visit(If& statement)
+    {jassert(false);}
+  virtual void visit(Fornum& statement)
     {jassert(false);}
   virtual void visit(Local& statement)
     {jassert(false);}
   virtual void visit(Return& statement)
     {jassert(false);}
-  virtual void visit(CallStatement& statement)
+  virtual void visit(ExpressionStatement& statement)
     {jassert(false);}
 
   // expressions
@@ -90,13 +94,17 @@ public:
     {visitChildren(statement);}
   virtual void visit(While& statement)
     {visitChildren(statement);}
+  virtual void visit(Repeat& statement)
+    {visitChildren(statement);}
   virtual void visit(If& statement)
+    {visitChildren(statement);}
+  virtual void visit(Fornum& statement)
     {visitChildren(statement);}
   virtual void visit(Local& statement)
     {visitChildren(statement);}
   virtual void visit(Return& statement)
     {visitChildren(statement);}
-  virtual void visit(CallStatement& statement)
+  virtual void visit(ExpressionStatement& statement)
     {visitChildren(statement);}
 
   // expressions

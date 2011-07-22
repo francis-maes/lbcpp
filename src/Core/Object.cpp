@@ -479,6 +479,8 @@ int Object::create(LuaState& state)
   for (int i = 2; i <= numArguments; ++i)
   {
     Variable v = state.checkVariable(i);
+    if (v.isNil())
+      continue; // ignore nil values
     TypePtr targetType = type->getMemberVariableType(i - 2);
     TypePtr sourceType = v.getType();
     if (targetType->inheritsFrom(integerType) && sourceType->inheritsFrom(doubleType))

@@ -85,7 +85,7 @@ public:
 
   virtual void visit(Return& statement)
     {visitChildren(statement);}
-  virtual void visit(CallStatement& statement)
+  virtual void visit(ExpressionStatement& statement)
     {visitChildren(statement);}
 
   virtual void visit(Function& function)

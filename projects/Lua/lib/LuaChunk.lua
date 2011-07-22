@@ -67,10 +67,9 @@ function _M.metaLuaAstToLbcppAst(ast)
   local function makeBlock(subAst)
     local statements = convertSubNodes(subAst)
     for i=1,#statements do
-      if statements[i].className == "lua::Call" then
-        local f = statements[i]["function"]
-        local g = statements[i].arguments
-        statements[i] = Object.create("lua::CallStatement", f, g)
+      local cl = statements[i].className
+      if cl == "lua::Call" or cl == "lua::Invoke" then
+        statements[i] = Object.create("lua::ExpressionStatement", statements[i])
       end
     end
     return Object.create("lua::Block", makeObjectVector("lua::Statement", statements, 1))
@@ -102,6 +101,8 @@ function _M.metaLuaAstToLbcppAst(ast)
   elseif ast.tag == "While" then
     --print ("While: num sub nodes " .. #subNodes .. " subtags = " .. getTag(ast[1]) .. " " .. getTag(ast[2]))
     return Object.create("lua::While", subNodes[1], makeBlock(ast[2]))
+  elseif ast.tag == "Repeat" then
+    return Object.create("lua::Repeat", makeBlock(ast[1]), subNodes[2])
   elseif ast.tag == "If" then
     local conditions = Object.create("ObjectVector<lua::Expression>")
     local blocks = Object.create("ObjectVector<lua::Block>")
@@ -117,6 +118,13 @@ function _M.metaLuaAstToLbcppAst(ast)
       i = i + 2
     end
     return Object.create("lua::If", conditions, blocks)
+  elseif ast.tag == "Fornum" then
+    if #subNodes == 5 then
+      return Object.create("lua::Fornum", subNodes[1], subNodes[2], subNodes[3], subNodes[4], makeBlock(ast[5]))
+    else
+      assert (#subNodes == 4)
+      return Object.create("lua::Fornum", subNodes[1], subNodes[2], subNodes[3], nil, makeBlock(ast[4]))
+    end
   elseif ast.tag == "Local" then
     if #subNodes == 2 then
       return Object.create("lua::Local", subNodes[1], subNodes[2])
@@ -131,7 +139,7 @@ function _M.metaLuaAstToLbcppAst(ast)
   elseif ast.tag == "Nil" or ast.tag == "Dots" then
     return Object.create("lua::" .. ast.tag)
   elseif ast.tag == "False" or ast.tag == "True" then
-    return Object.create("lua::LiteralConstant", ast.tag == "True")
+    return Object.create("lua::LiteralBoolean", ast.tag == "True")
   elseif ast.tag == "Id" then
     return Object.create("lua::Identifier", ast[1])
   elseif ast.tag == "Derivable" then
