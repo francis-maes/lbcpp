@@ -684,7 +684,7 @@ public:
   void addArgument(const ExpressionPtr& argument)
     {arguments.push_back(argument);}
     
-  void addArgument(const std::vector<ExpressionPtr>& arguments)
+  void addArguments(const std::vector<ExpressionPtr>& arguments)
   {
     this->arguments.reserve(this->arguments.size() + arguments.size());
     for (size_t i = 0; i < arguments.size(); ++i)
@@ -697,6 +697,8 @@ protected:
   ExpressionPtr function;
   std::vector<ExpressionPtr> arguments;
 };
+
+typedef ReferenceCountedObjectPtr<Call> CallPtr;
 
 class Invoke : public ApplyExpression
 {
