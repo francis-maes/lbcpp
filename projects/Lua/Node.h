@@ -207,14 +207,20 @@ public:
     {return 2;}
 
   virtual NodePtr& getSubNode(size_t index)
-    {return index ? (NodePtr&)block : (NodePtr&)expr;}
+    {return index ? (NodePtr&)block : (NodePtr&)condition;}
 
   virtual void accept(Visitor& visitor);
+
+  const ExpressionPtr& getCondition() const
+    {return condition;}
+
+  const BlockPtr& getBlock() const
+    {return block;}
 
 protected:
   friend class WhileClass;
 
-  ExpressionPtr expr;
+  ExpressionPtr condition;
   BlockPtr block;
 };
 

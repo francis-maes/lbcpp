@@ -12,6 +12,7 @@
 # include "Node.h"
 # include "DerivableRewriter.h"
 # include "Rewriter.h"
+# include "Scope.h"
 
 extern "C" {
 # include "../../src/Lua/lua/lua.h"
@@ -133,6 +134,10 @@ public:
     block = lua::RemoveParenthesisRewriter().rewrite(block);
     block = lua::RemoveUnmLiteralRewriter().rewrite(block);
     block = lua::TransformInvokeIntoCallRewriter().rewrite(block);
+    
+    lua::ScopePtr scopes = lua::Scope::get(block);
+    context.resultCallback(T("scopes"), scopes);
+
     lua::DerivableRewriter::applyExtension(block);
     chunk.setTree(block);
 
