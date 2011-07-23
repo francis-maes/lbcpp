@@ -10,6 +10,7 @@
 # define LBCPP_LUA_REWRITER_DERIVATIVE_H_
 
 # include "Rewriter.h"
+# include "Scope.h"
 
 namespace lbcpp {
 namespace lua {
@@ -18,8 +19,8 @@ namespace lua {
 class ExpressionDerivateRewriter : public Rewriter
 {
 public:
-  ExpressionDerivateRewriter(const IdentifierPtr& variable)
-    : variable(variable) {}
+  ExpressionDerivateRewriter(const ScopePtr& scope, const VariablePtr& variable)
+    : variable(variable->declaration) {}
 
   static ExpressionPtr computeWrtVariable(const ExpressionPtr& expr, const IdentifierPtr& variableentifier)
   {
@@ -207,8 +208,8 @@ protected:
 class FunctionDerivateRewriter : public DefaultRewriter
 {
 public:
-  FunctionDerivateRewriter(const IdentifierPtr& variable)
-    : variable(variable), expressionRewriter(variable) {}
+  FunctionDerivateRewriter(const ScopePtr& scope, const VariablePtr& variable)
+    : scope(scope), variable(variable) {}
 
   virtual void visit(Return& statement)
   {
@@ -218,12 +219,15 @@ public:
     setResult(new Return(newExpressions));
   }
 
-  ExpressionPtr rewriteExpression(const ExpressionPtr& expression)
-    {return expressionRewriter.rewrite(expression).staticCast<Expression>();}
+  ExpressionPtr derivateExpressionWrtVariable(const ExpressionPtr& expression, const ScopePtr& expressionScope, const VariablePtr& variable)
+  {
+    ExpressionDerivateRewriter rewriter(expressionScope, variable);
+    return rewriter.rewrite(expression).staticCast<Expression>();
+  }
 
 protected:
-  IdentifierPtr variable;
-  ExpressionDerivateRewriter expressionRewriter;
+  ScopePtr scope;
+  VariablePtr variable;
 };
 
 // Top-level rewriter : replace all occurences of (in a whole block)
@@ -238,24 +242,32 @@ protected:
 class DerivableRewriter : public DefaultRewriter
 {
 public:
-  static void applyExtension(BlockPtr& block)
-    {DerivableRewriter().rewriteChildren((Node&)*block);}
+  DerivableRewriter(const std::map<NodePtr, ScopePtr>& allScopes)
+    : allScopes(allScopes) {}
 
-  FunctionPtr computeFunctionDerivate(const FunctionPtr& function, const IdentifierPtr& variable) const
+  static void applyExtension(BlockPtr& block, const std::map<NodePtr, ScopePtr>& allScopes)
+    {DerivableRewriter(allScopes).rewriteChildren((Node&)*block);}
+
+  FunctionPtr computeFunctionDerivate(const FunctionPtr& function, const ScopePtr& functionScope, const IdentifierPtr& variableIdentifier) const
   {
-    FunctionDerivateRewriter derivateFunction(variable);
+    VariablePtr variable = functionScope->findVariable(variableIdentifier, false);
+    jassert(variable);
+    FunctionDerivateRewriter derivateFunction(functionScope, variable);
     BlockPtr newBlock = derivateFunction.rewrite(function->getBlock()->cloneAndCast<Block>());
     return new Function(function->getPrototype(), newBlock);
   }
 
   ExpressionPtr transformFunction(Function& function, const std::vector<IdentifierPtr>& derivables) const
   {
+    ScopePtr scope = getFunctionScope(function);
+    jassert(scope);
+
     TablePtr table = new Table();
     
     table->append("f", &function);
     for (size_t i = 0; i < derivables.size(); ++i)
     {
-      ExpressionPtr derivateFunction = computeFunctionDerivate(&function, derivables[i]);
+      ExpressionPtr derivateFunction = computeFunctionDerivate(&function, scope, derivables[i]);
       table->append("d" + derivables[i]->getIdentifier(), derivateFunction);
     }
 
@@ -291,6 +303,15 @@ public:
     }
     if (derivables.size() > 0)
       setResult(transformFunction(function, derivables));
+  }
+
+protected:
+  const std::map<NodePtr, ScopePtr>& allScopes;
+
+  ScopePtr getFunctionScope(Function& function) const
+  {
+    std::map<NodePtr, ScopePtr>::const_iterator it = allScopes.find(NodePtr(&function));
+    return it == allScopes.end() ? ScopePtr() : it->second;
   }
 };
 

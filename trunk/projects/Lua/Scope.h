@@ -10,6 +10,7 @@
 # define LBCPP_LUA_SCOPE_H_
 
 # include "Node.h"
+# include "Expression.h"
 
 namespace lbcpp {
 namespace lua {
@@ -29,6 +30,7 @@ public:
   bool isConstant;
   bool isUsed;
 };
+
 typedef ReferenceCountedObjectPtr<Variable> VariablePtr;
 
 class Scope;
@@ -37,55 +39,31 @@ typedef ReferenceCountedObjectPtr<Scope> ScopePtr;
 class Scope : public NameableObject
 {
 public:
-  Scope(const String& name)
-    : NameableObject(name), parent(NULL) {}
+  Scope(const NodePtr& node, const String& name = "Scope");
   Scope() : parent(NULL) {}
 
-  static ScopePtr get(NodePtr tree);
+  static ScopePtr get(NodePtr tree, std::map<NodePtr, ScopePtr>* allScopes);
   static void print(NodePtr tree);
 
-  void addSubScope(const ScopePtr& subScope)
-  {
-    subScope->parent = this;
-    subScopes.push_back(subScope);
-  }
+  void addSubScope(const ScopePtr& subScope);
 
-  void newVariable(IdentifierPtr identifier, ExpressionPtr initialValue)
-    {variables.push_back(new Variable(identifier, initialValue));}
+  void newVariable(IdentifierPtr identifier, ExpressionPtr initialValue);
+  void variableSet(IdentifierPtr identifier, ExpressionPtr value);
+  void variableGet(IdentifierPtr identifier);
 
-  void variableSet(IdentifierPtr identifier, ExpressionPtr value)
-  {
-    VariablePtr variable = findVariable(identifier);
-    if (variable)
-      variable->isConstant = false;
-    else
-      std::cout << "Could not find variable " << identifier->getIdentifier() << std::endl;
-  }
+  VariablePtr findVariable(const IdentifierPtr& identifier, bool recursively = true) const;
 
-  void variableGet(IdentifierPtr identifier)
-  {
-    VariablePtr variable = findVariable(identifier);
-    if (variable)
-      variable->isUsed = true;
-    else
-      std::cout << "Could not find variable " << identifier->getIdentifier() << std::endl;
-    // todo...
-  }
+  ScopePtr getParentScope() const
+    {return parent;}
 
-  VariablePtr findVariable(const IdentifierPtr& identifier) const
-  {
-    const String& id = identifier->getIdentifier();
-    for (size_t i = 0; i < variables.size(); ++i)
-      if (variables[i]->getIdentifier() == id)
-        return variables[i];
-    return parent ? parent->findVariable(identifier) : VariablePtr();
-  }
+  NodePtr getOwnerNode() const
+    {return node;} // Do, While, Repeat, If, ForNum, ForIn or Function
 
 protected:
   friend class ScopeClass;
 
   Scope* parent;
-  StatementPtr node;
+  NodePtr node;
   std::vector<VariablePtr> variables;
   std::vector<ScopePtr> subScopes;
 };

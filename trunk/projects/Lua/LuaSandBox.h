@@ -136,10 +136,12 @@ public:
     block = lua::TransformInvokeIntoCallRewriter().rewrite(block);
     
     lua::Scope::print(block);
-    lua::ScopePtr scopes = lua::Scope::get(block);
+
+    std::map<lua::NodePtr, lua::ScopePtr> allScopes;
+    lua::ScopePtr scopes = lua::Scope::get(block, &allScopes);
     context.resultCallback(T("scopes"), scopes);
 
-    lua::DerivableRewriter::applyExtension(block);
+    lua::DerivableRewriter::applyExtension(block, allScopes);
     chunk.setTree(block);
 
     context.resultCallback(T("tree-after"), chunk.getTree());
