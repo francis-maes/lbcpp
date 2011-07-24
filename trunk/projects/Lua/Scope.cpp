@@ -23,6 +23,14 @@ void Scope::addSubScope(const ScopePtr& subScope)
   subScopes.push_back(subScope);
 }
 
+ScopePtr Scope::getSubScope(const NodePtr& ownerNode)
+{
+  for (size_t i = 0; i < subScopes.size(); ++i)
+    if (subScopes[i]->getOwnerNode() == ownerNode)
+      return subScopes[i];
+  return ScopePtr();
+}
+
 void Scope::newVariable(IdentifierPtr identifier, ExpressionPtr initialValue)
   {variables.push_back(new Variable(identifier, initialValue));}
 
@@ -75,7 +83,7 @@ public:
   virtual void variableSet(IdentifierPtr identifier, ExpressionPtr value)
     {std::cout << "setVariable " << identifier->getIdentifier() << " = " << value->print() << std::endl;}
 
-  virtual void variableUsed(IdentifierPtr identifier)
+  virtual void variableGet(IdentifierPtr identifier)
     {std::cout << "getVariable " << identifier->getIdentifier() << std::endl;}
 };
 
@@ -91,46 +99,55 @@ void Scope::print(NodePtr tree)
 class GetScopesVisitor : public ScopeVisitor
 {
 public:
-  GetScopesVisitor(ScopePtr rootScope, std::map<NodePtr, ScopePtr>* allScopes = NULL)
-    : currentScope(rootScope), allScopes(allScopes) {}
+  GetScopesVisitor(ScopePtr rootScope)
+    : currentScope(rootScope) {}
 
   virtual void enterScope(Node& node)
   {
     ScopePtr newScope = new Scope(&node, node.getTag()); // todo: better name
     currentScope->addSubScope(newScope);
+    node.setScope(newScope);
     scopes.push_back(currentScope);
     currentScope = newScope;
-
-    if (allScopes)
-      (*allScopes)[NodePtr(&node)] = newScope;
   }
 
   virtual void leaveScope()
     {currentScope = scopes.back(); scopes.pop_back();}
 
   virtual void newVariable(IdentifierPtr identifier, ExpressionPtr initialValue = ExpressionPtr())
-    {currentScope->newVariable(identifier, initialValue);}
+  {
+    identifier->setScope(currentScope);
+    currentScope->newVariable(identifier, initialValue);
+  }
 
   virtual void variableSet(IdentifierPtr identifier, ExpressionPtr value)
-    {currentScope->variableSet(identifier, value);}
+  {
+    identifier->setScope(currentScope);
+    currentScope->variableSet(identifier, value);
+  }
 
   virtual void variableGet(IdentifierPtr identifier)
-    {currentScope->variableGet(identifier);}
+  {
+    identifier->setScope(currentScope);
+    currentScope->variableGet(identifier);
+  }
 
   const ScopePtr& getCurrentScope() const
     {return currentScope;}
 
+  virtual void accept(NodePtr& node)
+    {node->setScope(currentScope); ScopeVisitor::accept(node);}
+
 protected:
   std::vector<ScopePtr> scopes;
   ScopePtr currentScope;
-  std::map<NodePtr, ScopePtr>* allScopes; // optional output value
 };
 
-ScopePtr Scope::get(NodePtr tree, std::map<NodePtr, ScopePtr>* allScopes)
+ScopePtr Scope::get(NodePtr tree)
 {
   ScopePtr rootScope = new Scope(tree, "<root>");
-  GetScopesVisitor visitor(rootScope, allScopes);
-  tree->accept(visitor);
+  GetScopesVisitor visitor(rootScope);
+  visitor.accept(tree);
   return rootScope;
 }
 
@@ -140,7 +157,7 @@ ScopePtr Scope::get(NodePtr tree, std::map<NodePtr, ScopePtr>* allScopes)
 void ScopeVisitor::visit(Do& statement)
 {
   enterScope(statement);
-  visitChildren(statement);
+  acceptChildren(statement);
   leaveScope();
 }
 
@@ -150,11 +167,13 @@ void ScopeVisitor::visit(Set& statement)
   expr->accept(*this);
 
   ListPtr lhs = statement.getLhs();
+
+  jassert(expr->getNumSubNodes() == lhs->getNumSubNodes()); // FIXME: multiret
   for (size_t i = 0; i < lhs->getNumSubNodes(); ++i)
   {
     NodePtr lhsi = lhs->getSubNode(i);
     IdentifierPtr identifier = lhsi.dynamicCast<Identifier>();
-    if (identifier) // FIXME: multiret
+    if (identifier)
       variableSet(identifier, expr->getSubNode(i));
     else
       lhsi->accept(*this);

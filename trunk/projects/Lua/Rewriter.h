@@ -17,49 +17,77 @@ namespace lua {
 class Rewriter : public Visitor
 {
 public:
-  const NodePtr& getResult() const
-    {return result;}
-
-  void rewriteChildren(Node& node)
-  {
-    size_t n = node.getNumSubNodes();
-    NodePtr prevResult = result;
-    for (size_t i = 0; i < n; ++i)
-    {
-      result = NodePtr();
-      NodePtr& subNode = node.getSubNode(i);
-      subNode->accept(*this);
-      if (result)
-        subNode = result;
-    }
-    result = prevResult;
-  }
-
   NodePtr rewrite(const NodePtr& node)
-  {
-    NodePtr prevResult = result;
-    result = NodePtr();
-    node->accept(*this);
-    NodePtr res = result ? result : node;
-    result = prevResult;
-    return res;
-  }
-
-  void apply(NodePtr& node)
-    {node = rewrite(node);}
+    {NodePtr res = node; accept(res); return res;}
 
 protected:
   NodePtr result;
 
   void setResult(NodePtr result)
     {this->result = result;}
+
+  virtual void accept(NodePtr& node)
+  {
+    NodePtr prevResult = result;
+    result = NodePtr();
+    node->accept(*this);
+    if (result)
+    {
+      if (!result->getScope() && node->getScope())
+        result->setScope(node->getScope()); // forward scope information
+      node = result;
+    }
+    result = prevResult;
+  }
 };
 
 class DefaultRewriter : public DefaultVisitorT<Rewriter>
 {
 public:
-  virtual void visitChildren(Node& node)
-    {rewriteChildren(node);}
+  virtual void visit(Block& block)
+  {
+    size_t n = block.getNumSubNodes();
+    NodePtr prevResult = result;
+    bool hasNewSubBlocks = false;
+    for (size_t i = 0; i < n; ++i)
+    {
+      result = NodePtr();
+      NodePtr& subNode = block.getSubNode(i);
+      subNode->accept(*this);
+      if (result)
+      {
+        subNode = result;
+        hasNewSubBlocks |= result.isInstanceOf<Block>();
+      }
+    }
+    result = prevResult;
+
+    // flatten blocks
+    if (hasNewSubBlocks)
+    {
+      std::vector<StatementPtr> statements;
+      fillStatementsRecursively(&block, statements);
+      block.setStatements(statements);
+    }
+  }
+
+private:
+  void fillStatementsRecursively(const BlockPtr& block, std::vector<StatementPtr>& res)
+  {
+    size_t n = block->getNumSubNodes();
+    for (size_t i = 0; i < n; ++i)
+    {
+      BlockPtr subBlock = block->getSubNode(i).dynamicCast<Block>();
+      if (subBlock)
+        fillStatementsRecursively(subBlock, res);
+      else
+      {
+        StatementPtr statement = block->getSubNode(i).dynamicCast<Statement>();
+        jassert(statement);
+        res.push_back(statement);
+      }
+    }
+  }
 };
 
 class RemoveParenthesisRewriter : public DefaultRewriter

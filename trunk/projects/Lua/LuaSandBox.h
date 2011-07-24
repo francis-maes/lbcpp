@@ -137,18 +137,17 @@ public:
     
     lua::Scope::print(block);
 
-    std::map<lua::NodePtr, lua::ScopePtr> allScopes;
-    lua::ScopePtr scopes = lua::Scope::get(block, &allScopes);
+    lua::ScopePtr scopes = lua::Scope::get(block);
     context.resultCallback(T("scopes"), scopes);
 
-    lua::DerivableRewriter::applyExtension(block, allScopes);
+    lua::DerivableRewriter::applyExtension(block);
     chunk.setTree(block);
 
     context.resultCallback(T("tree-after"), chunk.getTree());
     context.resultCallback(T("code-after"), chunk.getCode());
 
-    std::cout << "-- generated code:" << std::endl;
-    std::cout << chunk.getCode() << std::endl;
+    //std::cout << "-- generated code:" << std::endl;
+    //std::cout << chunk.getCode() << std::endl;
 
     // write to output file
     if (outputFile.exists())

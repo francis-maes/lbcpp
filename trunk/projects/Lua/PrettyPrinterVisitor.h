@@ -46,7 +46,7 @@ public:
     {
       size_t line = lineNumber;
       block.getSubNode(i)->accept(*this);
-      if (line != lineNumber)
+      if (line != lineNumber && indentation == 0)
         endLine();
       endLine();
     }

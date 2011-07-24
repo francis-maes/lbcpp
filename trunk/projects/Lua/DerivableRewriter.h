@@ -11,22 +11,17 @@
 
 # include "Rewriter.h"
 # include "Scope.h"
+# include "ScopeVisitor.h"
 
 namespace lbcpp {
 namespace lua {
 
 // compute the derivate of an expression w.r.t a variable
-class ExpressionDerivateRewriter : public Rewriter
+class ExpressionDerivateRewriter : public DefaultRewriter
 {
 public:
-  ExpressionDerivateRewriter(const ScopePtr& scope, const VariablePtr& variable)
-    : variable(variable->declaration) {}
-
-  static ExpressionPtr computeWrtVariable(const ExpressionPtr& expr, const IdentifierPtr& variableentifier)
-  {
-    ExpressionDerivateRewriter visitor(variableentifier);
-    return visitor.rewrite(expr).staticCast<Expression>();
-  }
+  ExpressionDerivateRewriter(const VariablePtr& variable)
+    : variable(variable) {}
 
   static ExpressionPtr ternaryOperator(const ExpressionPtr& condition, const ExpressionPtr& valueIfTrue, const ExpressionPtr& valueIfFalse)
   {
@@ -34,18 +29,23 @@ public:
       return valueIfTrue;
     return new Call(new Identifier("LuaChunk.ternaryOperator"), condition, valueIfTrue, valueIfFalse);
   }
-
+ 
+  // return "du/dx"
+  static IdentifierPtr makeDerivativeIdentifier(const VariablePtr& u, const VariablePtr& x)
+    {return new Identifier("_d" + u->getIdentifier() + "_d" + x->getIdentifier());}
+ 
   virtual void visit(LiteralNumber& expression)
     {setResult(new LiteralNumber(0.0));}
  
   virtual void visit(Identifier& identifier)
   {
-    if (identifier.getIdentifier() == variable->getIdentifier())
+    VariablePtr thisVariable = identifier.getScope()->findVariable(&identifier);
+    jassert(thisVariable);
+
+    if (thisVariable == variable)
       setResult(new LiteralNumber(1.0)); // d(x)/dx = 1
     else
-    {
-      setResult(new LiteralNumber(0.0)); // bouh, pas bien. C'est ici que ca devient plus compliqué avec les statements ...
-    }
+      setResult(ExpressionDerivateRewriter::makeDerivativeIdentifier(thisVariable, variable));
   }
 
   virtual void visit(UnaryOperation& operation)
@@ -201,32 +201,71 @@ public:
   }
 
 protected:
-  IdentifierPtr variable;
+  VariablePtr variable;
 };
 
 // compute the derivate of a function w.r.t one of its parameters
 class FunctionDerivateRewriter : public DefaultRewriter
 {
 public:
-  FunctionDerivateRewriter(const ScopePtr& scope, const VariablePtr& variable)
-    : scope(scope), variable(variable) {}
+  FunctionDerivateRewriter(const VariablePtr& variable)
+    : variable(variable) {}
+  
+  virtual void visit(Set& statement)
+  {
+    const ListPtr& identifiers = statement.getLhs();
+    const ListPtr& expressions = statement.getExpr();
+    jassert(identifiers->getNumSubNodes() == 1 && expressions->getNumSubNodes() == 1);
+
+    ScopePtr scope = statement.getScope();
+    jassert(scope);
+
+    VariablePtr u = scope->findVariable(identifiers->getSubNode(0));
+    jassert(u);
+    IdentifierPtr du_dx = ExpressionDerivateRewriter::makeDerivativeIdentifier(u, variable);
+    ExpressionPtr du_dxValue = derivateExpressionWrtVariable(expressions->getSubNode(0), variable);
+
+    BlockPtr block = new Block();
+    block->addStatement(&statement);
+    block->addStatement(new Set(du_dx, du_dxValue));
+    setResult(block);
+  }
+
+  virtual void visit(Local& statement)
+  {
+    const ListPtr& identifiers = statement.getIdentifiers();
+    const ListPtr& expressions = statement.getExpressions();
+    jassert(identifiers->getNumSubNodes() == 1 && expressions->getNumSubNodes() == 1);
+    
+    ScopePtr scope = statement.getScope();
+    jassert(scope);
+
+    VariablePtr u = scope->findVariable(identifiers->getSubNode(0));
+    jassert(u);
+    IdentifierPtr du_dx = ExpressionDerivateRewriter::makeDerivativeIdentifier(u, variable);
+    ExpressionPtr du_dxValue = derivateExpressionWrtVariable(expressions->getSubNode(0), variable);
+
+    BlockPtr block = new Block();
+    block->addStatement(&statement);
+    block->addStatement(new Local(du_dx, du_dxValue));
+    setResult(block);
+  }
 
   virtual void visit(Return& statement)
   {
     std::vector<ExpressionPtr> newExpressions(statement.getNumReturnValues());
     for (size_t i = 0; i < newExpressions.size(); ++i)
-      newExpressions[i] = rewriteExpression(statement.getReturnValue(i));
+      newExpressions[i] = derivateExpressionWrtVariable(statement.getReturnValue(i), variable);
     setResult(new Return(newExpressions));
   }
 
-  ExpressionPtr derivateExpressionWrtVariable(const ExpressionPtr& expression, const ScopePtr& expressionScope, const VariablePtr& variable)
+  ExpressionPtr derivateExpressionWrtVariable(const ExpressionPtr& expression, const VariablePtr& variable)
   {
-    ExpressionDerivateRewriter rewriter(expressionScope, variable);
+    ExpressionDerivateRewriter rewriter(variable);
     return rewriter.rewrite(expression).staticCast<Expression>();
   }
 
 protected:
-  ScopePtr scope;
   VariablePtr variable;
 };
 
@@ -242,32 +281,29 @@ protected:
 class DerivableRewriter : public DefaultRewriter
 {
 public:
-  DerivableRewriter(const std::map<NodePtr, ScopePtr>& allScopes)
-    : allScopes(allScopes) {}
+  static void applyExtension(BlockPtr& block)
+    {DerivableRewriter().acceptChildren((Node&)*block);}
 
-  static void applyExtension(BlockPtr& block, const std::map<NodePtr, ScopePtr>& allScopes)
-    {DerivableRewriter(allScopes).rewriteChildren((Node&)*block);}
-
-  FunctionPtr computeFunctionDerivate(const FunctionPtr& function, const ScopePtr& functionScope, const IdentifierPtr& variableIdentifier) const
+  FunctionPtr computeFunctionDerivate(const FunctionPtr& function, const IdentifierPtr& variableIdentifier) const
   {
+    ScopePtr functionScope = function->getScope();
+    jassert(functionScope);
+
     VariablePtr variable = functionScope->findVariable(variableIdentifier, false);
     jassert(variable);
-    FunctionDerivateRewriter derivateFunction(functionScope, variable);
-    BlockPtr newBlock = derivateFunction.rewrite(function->getBlock()->cloneAndCast<Block>());
-    return new Function(function->getPrototype(), newBlock);
+    BlockPtr newBlock = function->getBlock()->cloneAndCast<Block>();
+    FunctionDerivateRewriter derivateFunction(variable);
+    return new Function(function->getPrototype(), derivateFunction.rewrite(newBlock));
   }
 
   ExpressionPtr transformFunction(Function& function, const std::vector<IdentifierPtr>& derivables) const
   {
-    ScopePtr scope = getFunctionScope(function);
-    jassert(scope);
-
     TablePtr table = new Table();
     
     table->append("f", &function);
     for (size_t i = 0; i < derivables.size(); ++i)
     {
-      ExpressionPtr derivateFunction = computeFunctionDerivate(&function, scope, derivables[i]);
+      ExpressionPtr derivateFunction = computeFunctionDerivate(&function, derivables[i]);
       table->append("d" + derivables[i]->getIdentifier(), derivateFunction);
     }
 
@@ -290,7 +326,7 @@ public:
 
   virtual void visit(Function& function)
   {
-    DefaultRewriter::visit(function); // apply recursively first
+    DefaultVisitorT<Rewriter>::visit(function); // apply recursively first
 
     bool atLeastOneDerivable = false;
     std::vector<IdentifierPtr> derivables;
@@ -303,15 +339,6 @@ public:
     }
     if (derivables.size() > 0)
       setResult(transformFunction(function, derivables));
-  }
-
-protected:
-  const std::map<NodePtr, ScopePtr>& allScopes;
-
-  ScopePtr getFunctionScope(Function& function) const
-  {
-    std::map<NodePtr, ScopePtr>::const_iterator it = allScopes.find(NodePtr(&function));
-    return it == allScopes.end() ? ScopePtr() : it->second;
   }
 };
 

@@ -39,6 +39,8 @@ class Identifier;
 typedef ReferenceCountedObjectPtr<Identifier> IdentifierPtr;
 
 class Visitor;
+class Scope;
+typedef ReferenceCountedObjectPtr<Scope> ScopePtr;
 
 class LineInfo : public Object
 {
@@ -58,6 +60,8 @@ typedef ReferenceCountedObjectPtr<LineInfo> LineInfoPtr;
 class Node : public Object
 {
 public:
+  Node() : scope(NULL) {}
+
   virtual String getTag() const = 0;
   virtual LuaChunkType getType() const = 0;
 
@@ -76,9 +80,19 @@ public:
     size_t n = getNumSubNodes();
     for (size_t i = 0; i < n; ++i)
       target->getSubNode(i) = getSubNode(i)->cloneAndCast<Node>();
+    target->scope = scope;
   }
 
   String print() const;
+
+  ScopePtr getScope() const
+    {return scope;}
+
+  void setScope(const ScopePtr& scope)
+    {this->scope = scope.get();}
+
+protected:
+  Scope* scope;
 };
 
 extern ClassPtr nodeClass;
@@ -133,6 +147,12 @@ public:
     {jassert(index < statements.size()); return (NodePtr& )statements[index];}
 
   virtual void accept(Visitor& visitor);
+
+  void addStatement(const StatementPtr& statement)
+    {statements.push_back(statement);}
+
+  void setStatements(const std::vector<StatementPtr>& statements)
+    {this->statements = statements;}
 
 private:
   friend class BlockClass;

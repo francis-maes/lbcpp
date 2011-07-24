@@ -44,6 +44,12 @@ protected:
 class Set : public Statement
 {
 public:
+  Set(const ListPtr& lhs, const ListPtr& expr)
+    : lhs(lhs), expr(expr) {}
+  Set(const IdentifierPtr& identifier, const ExpressionPtr& expression)
+    : lhs(new List(identifier)), expr(new List(expression)) {}
+  Set() {}
+
   virtual String getTag() const
     {return "Set";}
 
@@ -63,6 +69,7 @@ public:
 
 protected:
   friend class SetClass;
+
   ListPtr lhs;
   ListPtr expr;
 };
@@ -249,6 +256,10 @@ protected:
 class Local : public Statement
 {
 public:
+  Local(const ListPtr& identifiers, const ListPtr& expressions)
+    : identifiers(identifiers), expressions(expressions), localFunction(false) {}
+  Local(const IdentifierPtr& identifier, const ExpressionPtr& expression)
+    : identifiers(new List(identifier)), expressions(new List(expression)), localFunction(false) {}
   Local() : localFunction(false) {}
 
   virtual String getTag() const
