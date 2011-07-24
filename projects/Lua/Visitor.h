@@ -79,43 +79,52 @@ public:
     {jassert(false);}
   virtual void visit(Index& index)
     {jassert(false);}
+
+protected:
+  virtual void accept(NodePtr& node)
+    {node->accept(*this);}
+
+  virtual void acceptChildren(Node& node)
+  {
+    size_t n = node.getNumSubNodes();
+    for (size_t i = 0; i < n; ++i)
+      accept(node.getSubNode(i));
+  }
 };
 
 template<class BaseClass>
 class DefaultVisitorT : public BaseClass
 {
 public:
-  virtual void visitChildren(Node& node) = 0;
-
   virtual void visit(List& list)
-    {visitChildren(list);}
+    {acceptChildren(list);}
 
   virtual void visit(Block& block)
-    {visitChildren(block);}
+    {acceptChildren(block);}
 
   // statements
   virtual void visit(Do& statement)
-    {visitChildren(statement);}
+    {acceptChildren(statement);}
   virtual void visit(Set& statement)
-    {visitChildren(statement);}
+    {acceptChildren(statement);}
   virtual void visit(While& statement)
-    {visitChildren(statement);}
+    {acceptChildren(statement);}
   virtual void visit(Repeat& statement)
-    {visitChildren(statement);}
+    {acceptChildren(statement);}
   virtual void visit(If& statement)
-    {visitChildren(statement);}
+    {acceptChildren(statement);}
   virtual void visit(ForNum& statement)
-    {visitChildren(statement);}
+    {acceptChildren(statement);}
   virtual void visit(ForIn& statement)
-    {visitChildren(statement);}
+    {acceptChildren(statement);}
   virtual void visit(Local& statement)
-    {visitChildren(statement);}
+    {acceptChildren(statement);}
   virtual void visit(Return& statement)
-    {visitChildren(statement);}
+    {acceptChildren(statement);}
   virtual void visit(Break& statement)
     {}
   virtual void visit(ExpressionStatement& statement)
-    {visitChildren(statement);}
+    {acceptChildren(statement);}
 
   // expressions
   virtual void visit(Nil& expression)   {}
@@ -124,45 +133,36 @@ public:
   virtual void visit(LiteralNumber& expression) {}
   virtual void visit(LiteralString& expression) {}
   virtual void visit(Function& function)
-    {visitChildren(function);}
+    {acceptChildren(function);}
 
   virtual void visit(Pair& pair)
-    {visitChildren(pair);}
+    {acceptChildren(pair);}
 
   virtual void visit(Table& table)
-    {visitChildren(table);}
+    {acceptChildren(table);}
 
   virtual void visit(UnaryOperation& operation)
-    {visitChildren(operation);}
+    {acceptChildren(operation);}
 
   virtual void visit(BinaryOperation& operation)
-    {visitChildren(operation);}
+    {acceptChildren(operation);}
 
   virtual void visit(Parenthesis& parenthesis)
-    {visitChildren(parenthesis);}
+    {acceptChildren(parenthesis);}
 
   virtual void visit(Call& call)
-    {visitChildren(call);}
+    {acceptChildren(call);}
 
   virtual void visit(Invoke& invoke)
-    {visitChildren(invoke);}
+    {acceptChildren(invoke);}
 
   virtual void visit(Identifier& identifier)  {}
 
   virtual void visit(Index& index)
-    {visitChildren(index);}
+    {acceptChildren(index);}
 };
 
-class DefaultVisitor : public DefaultVisitorT<Visitor>
-{
-public:
-  virtual void visitChildren(Node& node)
-  {
-    size_t n = node.getNumSubNodes();
-    for (size_t i = 0; i < n; ++i)
-      node.getSubNode(i)->accept(*this);
-  }
-};
+class DefaultVisitor : public DefaultVisitorT<Visitor> {};
 
 }; /* namespace lua */
 }; /* namespace lbcpp */

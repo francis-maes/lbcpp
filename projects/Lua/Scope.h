@@ -42,10 +42,11 @@ public:
   Scope(const NodePtr& node, const String& name = "Scope");
   Scope() : parent(NULL) {}
 
-  static ScopePtr get(NodePtr tree, std::map<NodePtr, ScopePtr>* allScopes);
+  static ScopePtr get(NodePtr tree);
   static void print(NodePtr tree);
 
   void addSubScope(const ScopePtr& subScope);
+  ScopePtr getSubScope(const NodePtr& ownerNode);
 
   void newVariable(IdentifierPtr identifier, ExpressionPtr initialValue);
   void variableSet(IdentifierPtr identifier, ExpressionPtr value);
