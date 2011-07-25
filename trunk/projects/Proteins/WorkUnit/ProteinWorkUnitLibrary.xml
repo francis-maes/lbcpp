@@ -143,6 +143,10 @@
   <class name="BFSCysteinProteinLearner" base="WorkUnit">
     <variable type="String" name="inputDirectory"/>
   </class>
+
+  <class name="CysteinLearnerWorkUnit" base="WorkUnit">
+    <variable type="File" name="inputDirectory"/>
+  </class>
   <!-- END CysteinBox -->
 
 </library>
