@@ -266,4 +266,31 @@ protected:
   String inputDirectory;
 };
 
+class CysteinLearnerWorkUnit : public WorkUnit
+{
+public:
+  Variable run(ExecutionContext& context)
+  {
+    Lin09ParametersPtr lin09 = new Lin09Parameters();
+    lin09->pssmWindowSize = 23;
+    lin09->usePositionDifference = true;
+    lin09->useIndexDifference = true;
+
+    Lin09PredictorParametersPtr lin09Pred = new Lin09PredictorParameters(lin09);
+    lin09Pred->useLibSVM = false;
+    lin09Pred->useLaRank = true;
+
+    CysteinLearnerParametersPtr p = new CysteinLearnerParameters();
+    p->predictorParameters = lin09Pred;
+    p->foldDirectory = inputDirectory.getFullPathName();
+
+    return (new CysteinLearnerFunction())->compute(context, p);
+  }
+
+protected:
+  friend class CysteinLearnerWorkUnitClass;
+
+  File inputDirectory;
+};
+
 };
