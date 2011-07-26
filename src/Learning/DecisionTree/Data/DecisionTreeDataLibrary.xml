@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<library name="DecisionTreeData" directory="Learning/DecisionTree/Data">
-
-  <class name="BinaryDecisionTree"/>
-  <class name="SplitScoringInput"/>
-  
-</library>

@@ -55,7 +55,6 @@ GENERATE_INTROSPECTION_CODE(Learning/Numerical/LibSVM/LibSVMLearningLibrary.xml 
 GENERATE_INTROSPECTION_CODE(Learning/Numerical/LibLinear/LibLinearLearningLibrary.xml LibLinearLearningLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/Numerical/LaRank/LaRankLearningLibrary.xml LaRankLearningLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/DecisionTree/DecisionTreeLibrary.xml DecisionTreeLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Learning/DecisionTree/Data/DecisionTreeDataLibrary.xml DecisionTreeDataLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/LossFunction/LearningLossFunctionLibrary.xml LearningLossFunctionLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
@@ -621,24 +620,8 @@ SET(LBCPP_LEARNING_DECISION_TREE_SOURCES
   Learning/DecisionTree/RTreeFunction.h
   Learning/DecisionTree/RTreeFunction.cpp
   Learning/DecisionTree/RTreeBatchLearner.h
-  Learning/DecisionTree/BinaryDecisionTreeFunction.h
-  Learning/DecisionTree/BinaryDecisionTreeBatchLearner.h
-  Learning/DecisionTree/BinaryDecisionTreeBatchLearner.cpp
   Learning/DecisionTree/DecisionTreeLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeLibrary.cpp
-)
-
-SET(LBCPP_LEARNING_DECISION_TREE_DATA_SOURCES
-  Learning/DecisionTree/Data/BinaryDecisionTree.h
-  Learning/DecisionTree/Data/BinaryDecisionTree.cpp
-  Learning/DecisionTree/Data/DecisionTreeExampleVector.h
-  Learning/DecisionTree/Data/DecisionTreeExampleVector.cpp
-  Learning/DecisionTree/Data/SplitScoringFunction.h
-  Learning/DecisionTree/Data/SplitScoringFunction.cpp
-  Learning/DecisionTree/Data/BinaryDecisionTreeSplitter.h
-  Learning/DecisionTree/Data/BinaryDecisionTreeSplitter.cpp
-  Learning/DecisionTree/Data/DecisionTreeDataLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeDataLibrary.cpp
 )
 
 #### Optimizer ####
@@ -993,7 +976,6 @@ SOURCE_SUB_GROUP2(Learning Numerical LibSVM FILES ${LBCPP_LEARNING_NUMERICAL_LIB
 SOURCE_SUB_GROUP2(Learning Numerical LibLinear FILES ${LBCPP_LEARNING_NUMERICAL_LIBLINEAR_SOURCES})
 SOURCE_SUB_GROUP2(Learning Numerical LaRank FILES ${LBCPP_LEARNING_NUMERICAL_LARANK_SOURCES})
 SOURCE_SUB_GROUP(Learning DecisionTree FILES ${LBCPP_LEARNING_DECISION_TREE_SOURCES})
-SOURCE_SUB_GROUP2(Learning DecisionTree Data FILES ${LBCPP_LEARNING_DECISION_TREE_DATA_SOURCES})
 
 ## Optimizer
 SOURCE_GROUP(Optimizer FILES ${LBCPP_OPTIMIZER_SOURCES})
