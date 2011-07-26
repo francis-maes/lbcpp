@@ -56,18 +56,21 @@ public:
 
   /* SupervisedEvaluator */
   virtual TypePtr getRequiredPredictionType() const
-    {return symmetricMatrixClass(doubleType);}
+    {return matrixClass(doubleType);}
 
   virtual TypePtr getRequiredSupervisionType() const
-    {return symmetricMatrixClass(probabilityType);}
+    {return matrixClass(probabilityType);}
   
   virtual void addPrediction(ExecutionContext& context, const Variable& prediction, const Variable& supervision, const ScoreObjectPtr& result) const
   {
-    SymmetricMatrixPtr predictedMatrix = prediction.getObjectAndCast<SymmetricMatrix>();
-    SymmetricMatrixPtr supervisedMatrix = supervision.getObjectAndCast<SymmetricMatrix>();
+    MatrixPtr predictedMatrix = prediction.getObjectAndCast<Matrix>();
+    MatrixPtr supervisedMatrix = supervision.getObjectAndCast<Matrix>();
+    jassert(predictedMatrix->getNumRows() == predictedMatrix->getNumColumns()
+            && supervisedMatrix->getNumRows() == supervisedMatrix->getNumColumns()
+            && supervisedMatrix->getNumRows() == predictedMatrix->getNumRows());
+
     DisulfidePatternScoreObjectPtr score = result.staticCast<DisulfidePatternScoreObject>();
-    const size_t dimension = supervisedMatrix->getDimension();
-    jassert(supervisedMatrix && predictedMatrix && predictedMatrix->getDimension() == dimension);
+    const size_t dimension = supervisedMatrix->getNumRows();
 
     if (minimumDistanceFromDiagonal >= dimension)
     {
@@ -77,7 +80,7 @@ public:
     }
     
     if (decoratedFunction)
-      predictedMatrix = decoratedFunction->compute(context, predictedMatrix).getObjectAndCast<SymmetricMatrix>(context);
+      predictedMatrix = decoratedFunction->compute(context, predictedMatrix).getObjectAndCast<Matrix>(context);
 
     const size_t numRows = dimension - minimumDistanceFromDiagonal;
     // check validity of graph
@@ -125,12 +128,13 @@ protected:
   size_t minimumDistanceFromDiagonal;
 };
 
-class DoNotApplyOnDimensionGreaterThan : public SupervisedEvaluator
+class DecoratorSupervisedEvaluator : public SupervisedEvaluator
 {
 public:
-  DoNotApplyOnDimensionGreaterThan(SupervisedEvaluatorPtr decorated, size_t maxCysteins)
-    : decorated(decorated), maxCysteins(maxCysteins) {}
-  
+  DecoratorSupervisedEvaluator(SupervisedEvaluatorPtr decorated)
+    : decorated(decorated) {}
+  DecoratorSupervisedEvaluator() {}
+
   /* SupervisedEvaluator */
   virtual TypePtr getRequiredPredictionType() const
     {return decorated->getRequiredPredictionType();}
@@ -139,6 +143,74 @@ public:
     {return decorated->getRequiredSupervisionType();}
   
   virtual void addPrediction(ExecutionContext& context, const Variable& prediction, const Variable& supervision, const ScoreObjectPtr& result) const
+    {decorated->addPrediction(context, prediction, supervision, result);}
+  
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
+    {return decorated->createEmptyScoreObject(context, function);}
+  
+  virtual void finalizeScoreObject(const ScoreObjectPtr& score, const FunctionPtr& function) const
+    {decorated->finalizeScoreObject(score, function);}
+
+protected:
+  friend class DecoratorSupervisedEvaluatorClass;
+
+  SupervisedEvaluatorPtr decorated;
+};
+
+class MatrixToSymmetricMatrix : public DecoratorSupervisedEvaluator
+{
+public:
+  MatrixToSymmetricMatrix(SupervisedEvaluatorPtr decorated)
+    : DecoratorSupervisedEvaluator(decorated) {}
+
+  virtual TypePtr getRequiredPredictionType() const
+    {return matrixClass(doubleType);}
+  
+  virtual TypePtr getRequiredSupervisionType() const
+    {return matrixClass(doubleType);}
+
+  virtual void addPrediction(ExecutionContext& context, const Variable& prediction, const Variable& supervision, const ScoreObjectPtr& result) const
+  {
+    MatrixPtr predictedMatrix = prediction.getObjectAndCast<Matrix>();
+    MatrixPtr supervisedMatrix = supervision.getObjectAndCast<Matrix>();
+    jassert(predictedMatrix && supervisedMatrix);
+    jassert(predictedMatrix->getNumRows() == predictedMatrix->getNumColumns()
+            && supervisedMatrix->getNumRows() == supervisedMatrix->getNumColumns()
+            && supervisedMatrix->getNumRows() == predictedMatrix->getNumRows());
+    const size_t dimension = predictedMatrix->getNumRows();
+    SymmetricMatrixPtr predSymMatrix = symmetricMatrix(predictedMatrix->getElementsType(), dimension);
+    SymmetricMatrixPtr supSymMatrix = symmetricMatrix(supervisedMatrix->getElementsType(), dimension);
+
+    for (size_t i = 0; i < dimension; ++i)
+      for (size_t j = i; j < dimension; ++j)
+      {
+        if (i == j)
+        {
+          predSymMatrix->setElement(i, j, Variable::missingValue(predictedMatrix->getElementsType()));
+          supSymMatrix->setElement(i, j, Variable::missingValue(supervisedMatrix->getElementsType()));
+          continue;
+        }
+        Variable a = predictedMatrix->getElement(i, j);
+        Variable b = predictedMatrix->getElement(j, i);
+        predSymMatrix->setElement(i, j, (a < b) ? a : b);
+
+        a = supervisedMatrix->getElement(i, j);
+        b = supervisedMatrix->getElement(j, i);
+        supSymMatrix->setElement(i, j, (a > b) ? a : b);
+      }
+    
+    decorated->addPrediction(context, predSymMatrix, supSymMatrix, result);
+  }
+};
+
+class DoNotApplyOnDimensionGreaterThan : public DecoratorSupervisedEvaluator
+{
+public:
+  DoNotApplyOnDimensionGreaterThan(SupervisedEvaluatorPtr decorated, size_t maxCysteins)
+    : DecoratorSupervisedEvaluator(decorated), maxCysteins(maxCysteins) {}
+  
+  /* SupervisedEvaluator */
+  virtual void addPrediction(ExecutionContext& context, const Variable& prediction, const Variable& supervision, const ScoreObjectPtr& result) const
   {
     SymmetricMatrixPtr matrix = supervision.getObjectAndCast<SymmetricMatrix>(context);
     if (!matrix || matrix->getDimension() > maxCysteins)
@@ -146,14 +218,7 @@ public:
     decorated->addPrediction(context, prediction, supervision, result);
   }
 
-  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
-    {return decorated->createEmptyScoreObject(context, function);}
-  
-  virtual void finalizeScoreObject(const ScoreObjectPtr& score, const FunctionPtr& function) const
-    {decorated->finalizeScoreObject(score, function);}
-  
 protected:
-  SupervisedEvaluatorPtr decorated;
   size_t maxCysteins;
 };
 

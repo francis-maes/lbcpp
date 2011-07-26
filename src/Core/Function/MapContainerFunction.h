@@ -269,6 +269,43 @@ protected:
   }
 };
 
+/*
+** MapNFunction
+*/
+class MapNFunction : public ProxyFunction
+{
+public:
+  MapNFunction(const FunctionPtr& mapFunction)
+    : mapFunction(mapFunction) {}
+  MapNFunction() {}
+
+  virtual size_t getMinimumNumRequiredInputs() const
+    {return 1;}
+  
+  virtual size_t getMaximumNumRequiredInputs() const
+    {return (size_t)-1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index == 0 ? (TypePtr)containerClass(anyType) : anyType;}
+
+  virtual String getOutputPostFix() const
+    {return T("MapN");}
+
+  virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const
+  {
+    if (inputVariables[0]->getType()->inheritsFrom(symmetricMatrixClass()))
+      return mapNSymmetricMatrixFunction(mapFunction, 1);
+    else if (inputVariables[0]->getType()->inheritsFrom(matrixClass()))
+      return mapNMatrixFunction(mapFunction);
+    else
+      return mapNContainerFunction(mapFunction);
+  }
+
+protected:
+  friend class MapNFunctionClass;
+
+  FunctionPtr mapFunction;
+};
 
 }; /* namespace lbcpp */
 

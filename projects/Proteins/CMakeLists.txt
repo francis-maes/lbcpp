@@ -88,7 +88,6 @@ SET(LBCPP_PROTEIN_PREDICTOR_SOURCES
   Predictor/NumericalCysteinPredictorParameters.h
   Predictor/Lin09PredictorParameters.h
   Predictor/ConnectivityPatternClassifier.h
-  Predictor/ConnectivityPatternClassifier.cpp
   Predictor/ProteinPredictorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinPredictorLibrary.cpp
 )

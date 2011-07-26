@@ -1,50 +1,60 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: MapSymmetricMatrixFunction.h   | Map symmetric matrices          |
+| Filename: MapMatrixFunction.h            | Map matrices                    |
 | Author  : Julien Becker                  |                                 |
-| Started : 16/02/2011 10:49               |                                 |
+| Started : 25/07/2011 15:58               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_FUNCTION_MAP_SYMMETRIC_MATRIX_H_
-# define LBCPP_CORE_FUNCTION_MAP_SYMMETRIC_MATRIX_H_
+#ifndef LBCPP_CORE_FUNCTION_MAP_MATRIX_H_
+# define LBCPP_CORE_FUNCTION_MAP_MATRIX_H_
 
 # include <lbcpp/Core/Function.h>
-# include <lbcpp/Data/SymmetricMatrix.h>
+# include <lbcpp/Data/Matrix.h>
 
 namespace lbcpp
 {
 
-class MapSymmetricMatrixFunction : public UnaryHigherOrderFunction
+// Do not take into account elements on diagonal
+class MapMatrixFunction : public UnaryHigherOrderFunction
 {
 public:
-  MapSymmetricMatrixFunction(FunctionPtr baseFunction, size_t minimumDistanceFromDiagonal)
-    : UnaryHigherOrderFunction(baseFunction), minimumDistanceFromDiagonal(minimumDistanceFromDiagonal) {}
-  MapSymmetricMatrixFunction() {}
+  MapMatrixFunction(FunctionPtr baseFunction)
+    : UnaryHigherOrderFunction(baseFunction) {}
+  MapMatrixFunction() {}
 
   /* UnaryHigherOrderFunction */
    virtual size_t getNumSubInputs(const ObjectPtr& inputsObject) const
   {
-    SymmetricMatrixPtr matrix = inputsObject->getVariable(0).getObjectAndCast<SymmetricMatrix>();
+    MatrixPtr matrix = inputsObject->getVariable(0).getObjectAndCast<Matrix>();
     if (!matrix)
       return 0;
-    const size_t dimension = matrix->getDimension() - minimumDistanceFromDiagonal;
-    return dimension * (dimension + 1) / 2;
+
+    const size_t numRows = matrix->getNumRows();
+    const size_t numColumns = matrix->getNumColumns();
+
+    const size_t diagonalSize = (numRows < numColumns) ? numRows : numColumns;
+    return numRows * numColumns - diagonalSize;
   }
 
   virtual void appendSubInputs(const ObjectPtr& example, std::vector<ObjectPtr>& res, size_t& index) const
   {
-    SymmetricMatrixPtr matrix = example->getVariable(0).getObjectAndCast<SymmetricMatrix>();
+    MatrixPtr matrix = example->getVariable(0).getObjectAndCast<Matrix>();
     if (!matrix)
       return;
 
     const size_t numSubInputs = example->getNumVariables();
     jassert(inputsClass->getNumMemberVariables() == numSubInputs);
 
-    const size_t dimension = matrix->getDimension();
-    for (size_t i = 0; i < dimension - minimumDistanceFromDiagonal; ++i)
-      for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
+    const size_t numRows = matrix->getNumRows();
+    const size_t numColumns = matrix->getNumColumns();
+
+    for (size_t i = 0; i < numRows; ++i)
+      for (size_t j = 0; j < numColumns; ++j)
       {
+        if (i == j)
+          continue;
+
         ObjectPtr subExample = Object::create(baseFunction->getInputsClass());
         subExample->setVariable(0, matrix->getElement(i, j));
 
@@ -62,7 +72,7 @@ public:
     {return (size_t)-1;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index == 0 ? (TypePtr)symmetricMatrixClass(anyType) : anyType;}
+    {return index == 0 ? (TypePtr)matrixClass(anyType) : anyType;}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
@@ -71,15 +81,15 @@ public:
     if (!baseFunction->initialize(context, subInputs))
       return TypePtr();
 
-    outputName = baseFunction->getOutputVariable()->getName() + T("SymmetricMatrix");
+    outputName = baseFunction->getOutputVariable()->getName() + T("Matrix");
     outputShortName = T("[") + baseFunction->getOutputVariable()->getShortName() + T("]");
-    return symmetricMatrixClass(baseFunction->getOutputType());
+    return matrixClass(baseFunction->getOutputType());
   }
  
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     const size_t numInputs = getNumInputs();
-    const SymmetricMatrixPtr matrix = inputs[0].getObjectAndCast<SymmetricMatrix>();
+    const MatrixPtr matrix = inputs[0].getObjectAndCast<Matrix>();
     if (!matrix)
       return Variable::missingValue(getOutputType());
 
@@ -87,11 +97,19 @@ public:
     for (size_t i = 1; i < numInputs; ++i)
       subInputs[i] = inputs[i];
     
-    const size_t dimension = matrix->getDimension();
-    SymmetricMatrixPtr res = symmetricMatrix(Container::getTemplateParameter(getOutputType()), dimension);
-    for (size_t i = 0; i < dimension - minimumDistanceFromDiagonal; ++i)
-      for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
+    const size_t numRows = matrix->getNumRows();
+    const size_t numColumns = matrix->getNumColumns();
+    MatrixPtr res = lbcpp::matrix(Container::getTemplateParameter(getOutputType()), numRows, numColumns);
+
+    for (size_t i = 0; i < numRows; ++i)
+      for (size_t j = 0; j < numColumns; ++j)
       {
+        if (i == j)
+        {
+          res->setElement(i, j, Variable::missingValue(baseFunction->getOutputType()));
+          continue;
+        }
+
         subInputs[0] = matrix->getElement(i, j);
         res->setElement(i, j, baseFunction->compute(context, subInputs));
       }
@@ -99,43 +117,41 @@ public:
   }
 
 protected:
-  friend class MapSymmetricMatrixFunctionClass;
-
-  size_t minimumDistanceFromDiagonal;
+  friend class MapMatrixFunctionClass;
 };
 
-class MapNSymmetricMatrixFunction : public MapSymmetricMatrixFunction
+class MapNMatrixFunction : public MapMatrixFunction
 {
 public:
-  MapNSymmetricMatrixFunction(FunctionPtr baseFunction, size_t minimumDistanceFromDiagonal)
-    : MapSymmetricMatrixFunction(baseFunction, minimumDistanceFromDiagonal) {}
-  MapNSymmetricMatrixFunction() {}
+  MapNMatrixFunction(FunctionPtr baseFunction)
+    : MapMatrixFunction(baseFunction) {}
+  MapNMatrixFunction() {}
 
   /* UnaryHigherOrderFunction */
   virtual void appendSubInputs(const ObjectPtr& example, std::vector<ObjectPtr>& res, size_t& index) const
   {
-    SymmetricMatrixPtr matrix = example->getVariable(0).getObjectAndCast<SymmetricMatrix>();
+    MatrixPtr matrix = example->getVariable(0).getObjectAndCast<Matrix>();
     if (!matrix)
       return;
 
-    const size_t dimension = matrix->getDimension();
+    const size_t numRows = matrix->getNumRows();
+    const size_t numColumns = matrix->getNumColumns();
     const size_t numInputs = getNumInputs();
 
-    std::vector<SymmetricMatrixPtr> matrices(numInputs);
+    std::vector<MatrixPtr> matrices(numInputs);
     matrices[0] = matrix;
     for (size_t i = 1; i < numInputs; ++i)
     {
-      matrices[i] = example->getVariable(i).getObjectAndCast<SymmetricMatrix>();
-      jassert(!matrices[i] || matrices[i]->getDimension() == dimension);
+      matrices[i] = example->getVariable(i).getObjectAndCast<Matrix>();
+      jassert(!matrices[i] || (matrices[i]->getNumRows() == numRows && matrices[i]->getNumColumns() == numColumns));
     }
 
-    if (minimumDistanceFromDiagonal > dimension)
-      return;
-    
-    const size_t numRows = dimension - minimumDistanceFromDiagonal;
     for (size_t i = 0; i < numRows; ++i)
-      for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
+      for (size_t j = 0; j < numColumns; ++j)
       {
+        if (i == j)
+          continue;
+
         ObjectPtr subExample = Object::create(baseFunction->getInputsClass());
         for (size_t input = 0; input < numInputs; ++input)
           if (matrices[input])
@@ -146,7 +162,7 @@ public:
   
   /* Function */
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return (TypePtr)symmetricMatrixClass(anyType);}
+    {return (TypePtr)matrixClass(anyType);}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
@@ -161,37 +177,39 @@ public:
     if (!baseFunction->initialize(context, subInputVariables))
       return TypePtr();
 
-    outputName = baseFunction->getOutputVariable()->getName() + T("SymmetricMatrix");
+    outputName = baseFunction->getOutputVariable()->getName() + T("Matrix");
     outputShortName = T("[") + baseFunction->getOutputVariable()->getShortName() + T("]");
-    return symmetricMatrixClass(baseFunction->getOutputType());
+    return matrixClass(baseFunction->getOutputType());
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    SymmetricMatrixPtr matrix = inputs[0].getObjectAndCast<SymmetricMatrix>();
+    MatrixPtr matrix = inputs[0].getObjectAndCast<Matrix>();
     if (!matrix)
       return Variable::missingValue(getOutputType());
     
-    const size_t dimension = matrix->getDimension();
+    const size_t numRows = matrix->getNumRows();
+    const size_t numColumns = matrix->getNumColumns();
     const size_t numInputs = getNumInputs();
 
-    std::vector<SymmetricMatrixPtr> matrices(numInputs);
+    std::vector<MatrixPtr> matrices(numInputs);
     matrices[0] = matrix;
     for (size_t i = 1; i < numInputs; ++i)
     {
-      matrices[i] = inputs[i].getObjectAndCast<SymmetricMatrix>();
-      jassert(!matrices[i] || matrices[i]->getDimension() == dimension);
+      matrices[i] = inputs[i].getObjectAndCast<Matrix>();
+      jassert(!matrices[i] || (matrices[i]->getNumRows() == numRows && matrices[i]->getNumColumns() == numColumns));
     }
 
-    SymmetricMatrixPtr res = symmetricMatrix(baseFunction->getOutputType(), dimension);
-    
-    if (minimumDistanceFromDiagonal > dimension)
-      return res;
-
-    const size_t numRows = dimension - minimumDistanceFromDiagonal;
+    MatrixPtr res = lbcpp::matrix(baseFunction->getOutputType(), numRows, numColumns);
     for (size_t i = 0; i < numRows; ++i)
-      for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
+      for (size_t j = 0; j < numColumns; ++j)
       {
+        if (i == j)
+        {
+          res->setElement(i, j, Variable::missingValue(baseFunction->getOutputType()));
+          continue;
+        }
+
         std::vector<Variable> subInputs(numInputs);
         for (size_t input = 0; input < numInputs; ++input)
           subInputs[input] = matrices[input] ? matrices[input]->getElement(i, j) : Variable::missingValue(baseFunction->getInputsClass()->getMemberVariableType(input));
@@ -203,4 +221,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_FUNCTION_MAP_SYMMETRIC_MATRIX_H_
+#endif // !LBCPP_CORE_FUNCTION_MAP_MATRIX_H_

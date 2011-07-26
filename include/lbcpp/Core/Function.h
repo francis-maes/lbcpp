@@ -407,8 +407,14 @@ typedef ReferenceCountedObjectPtr<UnaryHigherOrderFunction> UnaryHigherOrderFunc
 
 extern UnaryHigherOrderFunctionPtr mapContainerFunction(const FunctionPtr& mapFunction);
 extern UnaryHigherOrderFunctionPtr mapNContainerFunction(const FunctionPtr& mapFunction);
+
+extern UnaryHigherOrderFunctionPtr mapMatrixFunction(const FunctionPtr& mapFunction);
+extern UnaryHigherOrderFunctionPtr mapNMatrixFunction(const FunctionPtr& mapFunction);
+
 extern UnaryHigherOrderFunctionPtr mapSymmetricMatrixFunction(const FunctionPtr& mapFunction, size_t minimumDistanceFromDiagonal = 0);
 extern UnaryHigherOrderFunctionPtr mapNSymmetricMatrixFunction(const FunctionPtr& mapFunction, size_t minimumDistanceFromDiagonal = 0);
+
+extern ProxyFunctionPtr mapNFunction(const FunctionPtr& mapFunction);
 
 }; /* namespace lbcpp */
 

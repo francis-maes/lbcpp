@@ -17,6 +17,7 @@ ProteinPredictor::ProteinPredictor(ProteinPredictorParametersPtr parameters = Pr
     activeResiduePerception(false),
     activeResiduePairPerception(false),
     activeDisulfideResiduePairPerception(false),
+    activeDisulfideSymmetricResiduePairPerception(false),
     activeCysteinResiduePerception(false)
 {
 }
@@ -40,6 +41,9 @@ void ProteinPredictor::addTarget(ProteinTarget target)
     case disulfideBondType:
       activeDisulfideResiduePairPerception = true;
       break;
+    case disulfideSymmetricBondType:
+      activeDisulfideSymmetricResiduePairPerception = true;
+      break;
     case cysteinBondingStateType:
       activeCysteinResiduePerception = true;
       break;
@@ -60,6 +64,7 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
   size_t propertyPerception = activeGlobalPerception ? builder.addFunction(parameters->createGlobalPerception(), proteinPerception) : (size_t)-1;
   size_t residuePerception = activeResiduePerception ? builder.addFunction(parameters->createResidueVectorPerception(), proteinPerception) : (size_t)-1;
   size_t residuePairPerception = activeResiduePairPerception ? builder.addFunction(parameters->createResiduePairVectorPerception(), proteinPerception) : (size_t)-1;
+  size_t disulfideSymmetricResiduePerception = activeDisulfideSymmetricResiduePairPerception ? builder.addFunction(parameters->createDisulfideSymmetricResiduePairVectorPerception(), proteinPerception) : (size_t)-1;
   size_t disulfideResiduePerception = activeDisulfideResiduePairPerception ? builder.addFunction(parameters->createDisulfideResiduePairVectorPerception(), proteinPerception) : (size_t)-1;
   size_t cysteinBondingStatePerception = activeCysteinResiduePerception ? builder.addFunction(parameters->createCysteinBondingStateVectorPerception(), proteinPerception) : (size_t)-1;
 
@@ -88,6 +93,9 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
         break;
       case residuePairType:
         targetPredictorInput = residuePairPerception;
+        break;
+      case disulfideSymmetricBondType:
+        targetPredictorInput = disulfideSymmetricResiduePerception;
         break;
       case disulfideBondType:
         targetPredictorInput = disulfideResiduePerception;

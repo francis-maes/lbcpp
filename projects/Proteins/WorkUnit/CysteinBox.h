@@ -27,37 +27,36 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     CysteinLearnerParametersPtr param = input.getObjectAndCast<CysteinLearnerParameters>(context);
+
     ContainerPtr trainingData = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(param->foldDirectory).getChildFile(T("train/")), 0, T("Loading training proteins"));
     if (!trainingData || !trainingData->getNumElements())
     {
       context.errorCallback(T("No training proteins !"));
-      return 101;
+      return 101.f;
     }
-
-    ProteinPredictorParametersPtr parameters = input.getObjectAndCast<ProteinPredictorParameters>(context);
 
     ProteinSequentialPredictorPtr predictor = new ProteinSequentialPredictor();
     for (size_t i = 0; i < numStacks; ++i)
     {
       ProteinPredictorPtr stack = new ProteinPredictor(param->predictorParameters);
-      stack->addTarget(dsbTarget);
+      stack->addTarget(fdsbTarget);
       predictor->addPredictor(stack);
     }
 
     if (!predictor->train(context, trainingData, ContainerPtr(), T("Training")))
-      return 102;
+      return 102.f;
 
     ContainerPtr testingData = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(param->foldDirectory).getChildFile(T("test/")), 0, T("Loading testing proteins"));
     if (!testingData || !testingData->getNumElements())
     {
       context.warningCallback(T("No testing proteins ! Training score is returned !"));
-      return 103;
+      return 103.f;
     }
 
     ProteinEvaluatorPtr testEvaluator = new ProteinEvaluator();
     CompositeScoreObjectPtr testScores = predictor->evaluate(context, testingData, testEvaluator, T("Evaluate on test proteins"));
 
-    return testEvaluator->getScoreObjectOfTarget(testScores, dsbTarget)->getScoreToMinimize();
+    return testEvaluator->getScoreObjectOfTarget(testScores, fdsbTarget)->getScoreToMinimize();
   }
 
 protected:
@@ -278,13 +277,16 @@ public:
 
     Lin09PredictorParametersPtr lin09Pred = new Lin09PredictorParameters(lin09);
     lin09Pred->useLibSVM = false;
-    lin09Pred->useLaRank = true;
+    lin09Pred->useLaRank = false;
+    lin09Pred->useLibLinear = false;
+    lin09Pred->useAddBias = true;
 
     CysteinLearnerParametersPtr p = new CysteinLearnerParameters();
     p->predictorParameters = lin09Pred;
     p->foldDirectory = inputDirectory.getFullPathName();
 
-    return (new CysteinLearnerFunction())->compute(context, p);
+    FunctionPtr f = new CysteinLearnerFunction();
+    return f->compute(context, p);
   }
 
 protected:

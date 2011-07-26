@@ -24,6 +24,9 @@
   <class name="CreateDisulfideSymmetricMatrixFunction" base="Function">
     <variable type="Function" name="elementGeneratorFunction"/>
   </class>
+  <class name="CreateDisulfideMatrixFunction" base="Function">
+    <variable type="Function" name="elementGeneratorFunction"/>
+  </class>
   <class name="CreateCysteinBondingStateVectorFunction" base="Function">
     <variable type="Function" name="elementGeneratorFunction"/>
   </class>
@@ -60,6 +63,7 @@
     <variable type="Boolean" name="activeResiduePerception"/>
     <varaible type="Boolean" name="activeResiduePairPerception"/>
     <variable type="Boolean" name="activeDisulfideResiduePairPerception"/>
+    <variable type="Boolean" name="activeDisulfideSymmetricResiduePairPerception"/>
     <variable type="Boolean" name="activeCysteinResiduePerception"/>
   </class>
   
@@ -147,16 +151,17 @@
   </class>
   
   <!-- Connectivity Pattern Classifier -->
-  <class name="AddConnectivityPatternBiasBatchLearner" base="BatchLearner"/>
+  <class name="AddConnectivityPatternBiasBatchLearner" base="BatchLearner">
+    <constructor/>
+  </class>
 
   <class name="AddConnectivityPatternBiasLearnableFunction" base="Function">
     <variable type="Double" name="bias"/>
   </class>
 
-  <class name="NoPostProcessingLinearBinaryClassifier" base="SupervisedNumericalFunction"/>
-
   <class name="ConnectivityPatternClassifier" base="CompositeFunction">
     <variable type="Function" name="classifier"/>
+    <variable type="Boolean" name="isSymmetricMatrix"/>
   </class>
   
   <!-- BEGIN Article: Lin 2009 -->

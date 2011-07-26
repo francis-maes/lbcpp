@@ -196,14 +196,15 @@ Variable Protein::getTargetOrComputeIfMissing(ExecutionContext& context, size_t 
   case 6: return getSolventAccessibility();
   case 7: return getSolventAccessibilityAt20p();
   case 8: return getDisorderRegions();
-  case 9: return getContactMap(context, 8, false);
-  case 10: return getContactMap(context, 8, true);
-  case 11: return getDistanceMap(context, false);
-  case 12: return getDistanceMap(context, true);
-  case 13: return getDisulfideBonds(context);
-  case 14: return getCysteinBondingStates(context);
-  case 15: return getCAlphaTrace();
-  case 16: return getTertiaryStructure();
+  case 9: return getCysteinBondingStates(context);
+  case 10: return getContactMap(context, 8, false);
+  case 11: return getContactMap(context, 8, true);
+  case 12: return getDistanceMap(context, false);
+  case 13: return getDistanceMap(context, true);
+  case 14: return getDisulfideBonds(context);
+  case 15: return getFullDisulfideBonds(context);
+  case 16: return getCAlphaTrace();
+  case 17: return getTertiaryStructure();
   default: jassert(false); return Variable();
   }
 }
@@ -297,6 +298,18 @@ const SymmetricMatrixPtr& Protein::getDisulfideBonds(ExecutionContext& context) 
       const_cast<Protein* >(this)->disulfideBonds = computeDisulfideBondsFromTertiaryStructure(distanceMap);
   }
   return disulfideBonds;
+}
+
+const MatrixPtr& Protein::getFullDisulfideBonds(ExecutionContext& context) const
+{
+  if (fullDisulfideBonds)
+    return fullDisulfideBonds;
+
+  const SymmetricMatrixPtr& symmetricBonds = getDisulfideBonds(context);
+  if (symmetricBonds)
+    const_cast<Protein* >(this)->fullDisulfideBonds = symmetricBonds->toMatrix();
+
+  return fullDisulfideBonds;
 }
 
 const DoubleVectorPtr& Protein::getCysteinBondingStates(ExecutionContext& context) const

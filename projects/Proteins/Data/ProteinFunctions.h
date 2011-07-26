@@ -120,58 +120,64 @@ protected:
 class GreedyDisulfidePatternBuilder : public SimpleUnaryFunction
 {
 public:
-  GreedyDisulfidePatternBuilder(size_t numOfRuns = 1, double threshold = 0.5, TypePtr elementsType = probabilityType, size_t minimumDistanceFromDiagonal = 1)
-    : SimpleUnaryFunction(symmetricMatrixClass(elementsType), symmetricMatrixClass(elementsType), T("PatternBuilder"))
-    , numOfRuns(numOfRuns), threshold(threshold), minimumDistanceFromDiagonal(minimumDistanceFromDiagonal) {}
+  GreedyDisulfidePatternBuilder(size_t numOfRuns = 1, double threshold = 0.5, TypePtr elementsType = probabilityType)
+    : SimpleUnaryFunction(matrixClass(elementsType), matrixClass(elementsType), T("PatternBuilder"))
+    , numOfRuns(numOfRuns), threshold(threshold) {}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    SymmetricMatrixPtr matrix = input.getObjectAndCast<SymmetricMatrix>(context);
+    MatrixPtr matrix = input.getObjectAndCast<Matrix>(context);
     if (!matrix)
       return Variable::missingValue(getOutputType());
-    
-    const size_t dimension = matrix->getDimension();
-    if (dimension <= minimumDistanceFromDiagonal)
+    jassert(matrix->getNumRows() == matrix->getNumColumns());
+    const size_t dimension = matrix->getNumRows();
+    if (dimension <= 1)
       return matrix;
     
+    //std::cout << "BEFORE" << std::endl << matrix->toString() << std::endl;
     SortedScoresMap sortedScores;
     insertScoreToMap(matrix, sortedScores);
-    SymmetricMatrixPtr mask;
+    MatrixPtr mask;
     findBestMask(context, matrix, sortedScores, mask);
-
-    SymmetricMatrixPtr res = makeResult(context, matrix, mask);
+    //std::cout << "MASK" << std::endl << mask->toString() << std::endl;
+    MatrixPtr res = makeResult(context, matrix, mask);
+    //std::cout << "AFTER" << std::endl << res->toString() << std::endl;
     return res;
   }
 
 protected:
   typedef std::multimap<double, std::pair<size_t, size_t> > SortedScoresMap;
-  enum {notBridged = -INT_MAX, bridged = -INT_MAX + 1};
+//  enum {notBridged = -INT_MAX, bridged = -INT_MAX + 1};
+  enum {notBridged = -3, bridged = -2};
+
   
   friend class GreedyDisulfidePatternBuilderClass;
   
   size_t numOfRuns;
   double threshold;
-  size_t minimumDistanceFromDiagonal;
 
-  void insertScoreToMap(const SymmetricMatrixPtr& matrix, SortedScoresMap& sortedScores) const
+  void insertScoreToMap(const MatrixPtr& matrix, SortedScoresMap& sortedScores) const
   {
-    const size_t dimension = matrix->getDimension();
-    for (size_t i = 0; i < dimension - minimumDistanceFromDiagonal; ++i)
-      for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
+    const size_t numRows = matrix->getNumRows();
+    for (size_t i = 0; i < numRows; ++i)
+      for (size_t j = 0; j < numRows; ++j)
       {
+        if (i == j)
+          continue;
+
         const double value = matrix->getElement(i, j).getDouble();
         sortedScores.insert(std::make_pair(value, std::make_pair(i, j)));
       }
   }
   
-  void findBestMask(ExecutionContext& context, const SymmetricMatrixPtr& matrix, const SortedScoresMap& sortedScores, SymmetricMatrixPtr& bestMask) const
+  void findBestMask(ExecutionContext& context, const MatrixPtr& matrix, const SortedScoresMap& sortedScores, MatrixPtr& bestMask) const
   {
     double bestScore = -DBL_MAX;
     const size_t n = sortedScores.size() < numOfRuns ? sortedScores.size() : numOfRuns;
     SortedScoresMap::const_reverse_iterator it = sortedScores.rbegin();
     for (size_t i = 0; i < n; ++i, it++)
     {
-      SymmetricMatrixPtr mask = matrix->cloneAndCast<SymmetricMatrix>(context);
+      MatrixPtr mask = matrix->cloneAndCast<Matrix>(context);
       // force first edge
       double score = (it->first > threshold) ? it->first : 0.f;
       updateMatrix(mask, it->second.first, it->second.second, score > threshold);
@@ -197,13 +203,16 @@ protected:
     jassert(bestMask);
   }
 
-  double findBestValue(const SymmetricMatrixPtr& resultMatrix, size_t& bestI, size_t& bestJ) const
+  double findBestValue(const MatrixPtr& resultMatrix, size_t& bestI, size_t& bestJ) const
   {
     double bestValue = -DBL_MAX;
-    const size_t dimension = resultMatrix->getDimension();
-    for (size_t i = 0; i < dimension - minimumDistanceFromDiagonal; ++i)
-      for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
+    const size_t numRows = resultMatrix->getNumRows();
+    for (size_t i = 0; i < numRows; ++i)
+      for (size_t j = 0; j < numRows; ++j)
       {
+        if (i == j)
+          continue;
+
         const double value = resultMatrix->getElement(i, j).getDouble();
         if (value > bestValue)
         {
@@ -215,27 +224,40 @@ protected:
     return bestValue;
   }
 
-  void updateMatrix(const SymmetricMatrixPtr& matrix, size_t x, size_t y, bool isConnected) const
+  void updateMatrix(const MatrixPtr& matrix, size_t x, size_t y, bool isConnected) const
   {
-    const size_t dimension = matrix->getDimension();
-    for (size_t i = 0; i < dimension; ++i)
+    const size_t numRows = matrix->getNumRows();
+    for (size_t i = 0; i < numRows; ++i)
     {
       matrix->setElement(x, i, probability((double)notBridged));
+      matrix->setElement(i, x, probability((double)notBridged));
+
       matrix->setElement(y, i, probability((double)notBridged));
+      matrix->setElement(i, y, probability((double)notBridged));
     }
     if (isConnected)
+    {
       matrix->setElement(x, y, probability((double)bridged));
+      matrix->setElement(y, x, probability((double)bridged));
+    }
   }
   
-  SymmetricMatrixPtr makeResult(ExecutionContext& context, const SymmetricMatrixPtr& matrix, const SymmetricMatrixPtr& mask) const
+  MatrixPtr makeResult(ExecutionContext& context, const MatrixPtr& matrix, const MatrixPtr& mask) const
   {
-    SymmetricMatrixPtr res = matrix->cloneAndCast<SymmetricMatrix>(context);
-    
-    const size_t dimension = matrix->getDimension();
-    for (size_t i = 0; i < dimension - minimumDistanceFromDiagonal; ++i)
-      for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
+    const size_t numRows = matrix->getNumRows();
+    MatrixPtr res = matrix->cloneAndCast<Matrix>(context);
+    for (size_t i = 0; i < numRows; ++i)
+      for (size_t j = 0; j < numRows; ++j)
+      {
+        if (i == j)
+        {
+          res->setElement(i, j, Variable::missingValue(probabilityType));
+          continue;
+        }
+
         if (mask->getElement(i, j).getDouble() == (double)notBridged)
           res->setElement(i, j, probability(0.f));
+      }
     
     return res;
   }

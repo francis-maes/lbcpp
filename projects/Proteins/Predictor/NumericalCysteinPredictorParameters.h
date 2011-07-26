@@ -475,6 +475,8 @@ public:
   /*
   ************************ Cystein Residue Pair Perception ************************
   */
+  virtual void cysteinSymmetricResiudePairVectorPerception(CompositeFunctionBuilder& builder) const {}
+
   virtual void cysteinResiudePairVectorPerception(CompositeFunctionBuilder& builder) const
   {
     size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType, enumValueType));
@@ -864,7 +866,7 @@ public:
       return new GetSupervisionFunction();
     }
     else if (useAddBiasLearner && target == dsbTarget)
-      return new ConnectivityPatternClassifier(learningMachine(target));
+      return new ConnectivityPatternClassifier(learningMachine(target), true);
     return ProteinPredictorParameters::createTargetPredictor(target);
   }
   
