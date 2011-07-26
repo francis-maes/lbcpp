@@ -33,12 +33,13 @@ enum ProteinTarget
   saTarget,
   sa20Target,
   drTarget,
+  cbsTarget,
   cma8Target,
   cmb8Target,
   dmaTarget,
   dmbTarget,
   dsbTarget,
-  cbsTarget
+  fdsbTarget
 
   // todo: continue
 };
@@ -214,6 +215,8 @@ public:
   ** Disulfide Bonds
   */
   const SymmetricMatrixPtr& getDisulfideBonds(ExecutionContext& context) const;
+  const MatrixPtr& getFullDisulfideBonds(ExecutionContext& context) const;
+
   void setDisulfideBonds(const SymmetricMatrixPtr& disulfideBonds)
     {jassert(disulfideBonds->getDimension() == cysteinIndices.size()); this->disulfideBonds = disulfideBonds;}
 
@@ -266,6 +269,7 @@ protected:
   DoubleVectorPtr solventAccessibilityAt20p;
 
   DoubleVectorPtr disorderRegions;
+  DoubleVectorPtr cysteinBondingStates;
 
   // 2D
   SymmetricMatrixPtr contactMap8Ca;
@@ -274,7 +278,7 @@ protected:
   SymmetricMatrixPtr distanceMapCb;
 
   SymmetricMatrixPtr disulfideBonds;
-  DoubleVectorPtr cysteinBondingStates;
+  MatrixPtr fullDisulfideBonds;
 
   // 3D
   CartesianPositionVectorPtr calphaTrace;

@@ -26,6 +26,7 @@ public:
   virtual void residueVectorPerception(CompositeFunctionBuilder& builder) const = 0;
   virtual void residuePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
   virtual void cysteinResiudePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
+  virtual void cysteinSymmetricResiudePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
   virtual void cysteinResiudeVectorPerception(CompositeFunctionBuilder& builder) const = 0;
 
   // Protein -> ProteinPerception
@@ -59,13 +60,20 @@ public:
     return function;
   }
   
+  virtual FunctionPtr createDisulfideSymmetricResiduePairVectorPerception() const
+  {
+    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, cysteinSymmetricResiudePairVectorPerception);
+    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
+    return function;
+  }
+
   virtual FunctionPtr createDisulfideResiduePairVectorPerception() const
   {
     FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, cysteinResiudePairVectorPerception);
     function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
     return function;
   }
-  
+
   virtual FunctionPtr createCysteinBondingStateVectorPerception() const
   {
     FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, cysteinResiudeVectorPerception);
@@ -116,6 +124,8 @@ public:
       res = disulfideBondPredictor(target);
     else if (target == cbpTarget)
       res = labelPropertyPredictor(target);
+    else if (target == fdsbTarget)
+      res = mapNMatrixFunction(binaryClassifier(target));
     else
     {
       jassert(false);

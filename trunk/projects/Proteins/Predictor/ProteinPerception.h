@@ -18,6 +18,7 @@ enum ProteinPerceptionType
   globalType,
   residueType,
   residuePairType,
+  disulfideSymmetricBondType,
   disulfideBondType,
   cysteinBondingStateType
 };
@@ -36,7 +37,8 @@ inline ProteinPerceptionType typeOfProteinPerception(ProteinTarget target)
     case cmb8Target:
     case dmaTarget:
     case dmbTarget: return residuePairType;
-    case dsbTarget: return disulfideBondType;
+    case fdsbTarget: return disulfideBondType;
+    case dsbTarget: return disulfideSymmetricBondType;
     case cbsTarget: return cysteinBondingStateType;
     default:
       jassertfalse;
@@ -387,7 +389,7 @@ public:
     {return (size_t)-1;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return (index == 0) ? (TypePtr)proteinClass : elementGeneratorFunction->getRequiredInputType(index + 1, numInputs);}
+    {return index == 0 ? (TypePtr)proteinClass : elementGeneratorFunction->getRequiredInputType(index + 1, numInputs);}
 
   virtual String getOutputPostFix() const
     {return T("Generated");}
@@ -433,6 +435,75 @@ public:
 
 protected:
   friend class CreateDisulfideSymmetricMatrixFunctionClass;
+
+  FunctionPtr elementGeneratorFunction;
+};
+
+// generates a matrix M(i, j) = f(i, j, x) where i,j in [0,n[ from input n,x
+class CreateDisulfideMatrixFunction : public Function
+{
+public:
+  CreateDisulfideMatrixFunction(FunctionPtr elementGeneratorFunction = FunctionPtr())
+    : elementGeneratorFunction(elementGeneratorFunction) {}
+
+  virtual size_t getMinimumNumRequiredInputs() const
+    {return 1;}
+
+  virtual size_t getMaximumNumRequiredInputs() const
+    {return (size_t)-1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index == 0 ? (TypePtr)proteinClass : elementGeneratorFunction->getRequiredInputType(index + 1, numInputs);}
+
+  virtual String getOutputPostFix() const
+    {return T("Generated");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    std::vector<VariableSignaturePtr> inputVars = inputVariables;
+    inputVars[0] = new VariableSignature(positiveIntegerType, T("Position"));
+    inputVars.insert(inputVars.begin(), inputVars.front());
+    if (!elementGeneratorFunction->initialize(context, inputVars))
+      return TypePtr();
+
+    VariableSignaturePtr elementsSignature = elementGeneratorFunction->getOutputVariable();
+    outputName = elementsSignature->getName() + T("DisulfideMatrix");
+    outputShortName = elementsSignature->getShortName() + T("sm");
+    return matrixClass(elementsSignature->getType());
+  }
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    size_t numInputs = getNumInputs();
+    ProteinPtr protein = inputs[0].getObjectAndCast<Protein>();
+
+    const std::vector<size_t> cysteinIndices = protein->getCysteinIndices();
+    const size_t n = cysteinIndices.size();
+
+    MatrixPtr res = matrix(elementGeneratorFunction->getOutputType(), n, n);
+    std::vector<Variable> subInputs(numInputs + 1);
+    for (size_t i = 2; i < subInputs.size(); ++i)
+      subInputs[i] = inputs[i - 1];
+
+    for (size_t i = 0; i < n; ++i)
+    {
+      subInputs[0] = Variable(cysteinIndices[i], positiveIntegerType);
+      for (size_t j = 0; j < n; ++j)
+      {
+        if (i == j)
+        {
+          res->setElement(i, j, Variable::missingValue(elementGeneratorFunction->getOutputType()));
+          continue;
+        }
+        subInputs[1] = Variable(cysteinIndices[j], positiveIntegerType);
+        res->setElement(i, j, elementGeneratorFunction->compute(context, subInputs));
+      }
+    }
+    return res;
+  }
+
+protected:
+  friend class CreateDisulfideMatrixFunctionClass;
 
   FunctionPtr elementGeneratorFunction;
 };
@@ -1084,11 +1155,12 @@ public:
   {
     ProteinPtr protein = inputs[0].getObjectAndCast<Protein>();
     jassert(protein);
-    size_t first = inputs[1].getInteger();
-    size_t second = inputs[2].getInteger();
-    
+    const size_t first = inputs[1].getInteger();
+    const size_t second = inputs[2].getInteger();
+    const size_t diff = (first < second) ? second - first : first - second;
+
     const std::vector<size_t>& cysteinIndices = protein->getCysteinIndices();
-    callback.sense(0, (second - first) / (double)(cysteinIndices[cysteinIndices.size()-1] - cysteinIndices[0]));
+    callback.sense(0, diff / (double)(cysteinIndices[cysteinIndices.size()-1] - cysteinIndices[0]));
   }
 };
 
@@ -1112,11 +1184,12 @@ public:
   {
     ProteinPtr protein = inputs[0].getObjectAndCast<Protein>();
     jassert(protein);
-    size_t first = inputs[1].getInteger();
-    size_t second = inputs[2].getInteger();
-    
+    const size_t first = inputs[1].getInteger();
+    const size_t second = inputs[2].getInteger();
+    const size_t diff = (first < second) ? second - first : first - second;
+
     const std::vector<size_t>& cysteinIndices = protein->getCysteinIndices();
-    callback.sense(0, (second - first) / (double)cysteinIndices.size());
+    callback.sense(0, diff / (double)cysteinIndices.size());
   }
 };
 

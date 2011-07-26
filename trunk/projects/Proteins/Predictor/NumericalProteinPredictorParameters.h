@@ -255,6 +255,8 @@ public:
   /*
   ************************ Residue Pair Perception ************************
   */
+  virtual void cysteinSymmetricResiudePairVectorPerception(CompositeFunctionBuilder& builder) const {}
+
   virtual void residuePairVectorPerception(CompositeFunctionBuilder& builder) const
   {
     size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType, enumValueType));

@@ -375,6 +375,20 @@ public:
     size_t proteinPerception = builder.addInput(lin09ProteinPerceptionClass(enumValueType, enumValueType, enumValueType));
     
     builder.startSelection();
+    
+    builder.addFunction(getVariableFunction(T("protein")), proteinPerception);
+    builder.addInSelection(proteinPerception);
+    
+    builder.finishSelectionWithFunction(new CreateDisulfideMatrixFunction(
+            lbcppMemberCompositeFunction(Lin09PredictorParameters, cysteinResiduePairVectorFeatures))
+                                        , T("cysteinResiduePairFeatures"));
+  }
+
+  virtual void cysteinSymmetricResiudePairVectorPerception(CompositeFunctionBuilder& builder) const
+  {
+    size_t proteinPerception = builder.addInput(lin09ProteinPerceptionClass(enumValueType, enumValueType, enumValueType));
+    
+    builder.startSelection();
 
       builder.addFunction(getVariableFunction(T("protein")), proteinPerception);
       builder.addInSelection(proteinPerception);
@@ -445,8 +459,8 @@ public:
   // Learning Machine
   virtual FunctionPtr createTargetPredictor(ProteinTarget target) const
   {
-    if (target == dsbTarget && useAddBias)
-      return new ConnectivityPatternClassifier(learningMachine(target));
+    if ((target == dsbTarget || target == fdsbTarget) && useAddBias)
+      return new ConnectivityPatternClassifier(learningMachine(target), target == dsbTarget);
     return ProteinPredictorParameters::createTargetPredictor(target);
   }
 
@@ -454,6 +468,7 @@ public:
   {
     switch (target)
     {
+    case fdsbTarget:
     case dsbTarget:
       {
         if (useLibSVM)

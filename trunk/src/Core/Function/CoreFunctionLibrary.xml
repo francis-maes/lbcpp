@@ -71,7 +71,15 @@
   <class name="MapNContainerFunction" base="MapContainerFunction">
     <constructor arguments="const FunctionPtr&amp; baseFunction" returnType="UnaryHigherOrderFunction"/>
   </class>
+
+  <class name="MapMatrixFunction" base="UnaryHigherOrderFunction">
+    <constructor arguments="const FunctionPtr&amp; baseFunction"/>
+  </class>
   
+  <class name="MapNMatrixFunction" base="MapMatrixFunction">
+    <constructor arguments="const FunctionPtr&amp; baseFunction" returnType="UnaryHigherOrderFunction"/>
+  </class>
+
   <class name="MapSymmetricMatrixFunction" base="UnaryHigherOrderFunction">
     <constructor arguments="const FunctionPtr&amp; baseFunction, size_t minimumDistanceFromDiagonal"/>
     <variable type="PositiveInteger" name="minimumDistanceFromDiagonal"/>
@@ -79,6 +87,11 @@
   
   <class name="MapNSymmetricMatrixFunction" base="MapSymmetricMatrixFunction">
     <constructor arguments="const FunctionPtr&amp; baseFunction, size_t minimumDistanceFromDiagonal" returnType="UnaryHigherOrderFunction"/>
+  </class>
+  
+  <class name="MapNFunction" base="ProxyFunction">
+    <constructor arguments="const FunctionPtr&amp; mapFunction"/>
+    <variable type="Function" name="mapFunction"/>
   </class>
 
   <!-- Loading functions -->

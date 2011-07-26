@@ -23,7 +23,10 @@ public:
     : activeGlobalPerception(false),
       activeResiduePerception(false),
       activeResiduePairPerception(false),
-      activeDisulfideResiduePairPerception(false) {}
+      activeDisulfideResiduePairPerception(false),
+      activeDisulfideSymmetricResiduePairPerception(false),
+      activeCysteinResiduePerception(false)
+    {}
 
   void addTarget(ProteinTarget target);
 
@@ -42,6 +45,7 @@ protected:
   bool activeResiduePerception;
   bool activeResiduePairPerception;
   bool activeDisulfideResiduePairPerception;
+  bool activeDisulfideSymmetricResiduePairPerception;
   bool activeCysteinResiduePerception;
 
   TypePtr residuePerceptionType;

@@ -23,6 +23,8 @@ public:
   
   virtual void setDimension(size_t size) = 0;
   virtual size_t getDimension() const = 0;
+  virtual MatrixPtr toMatrix() const
+    {jassertfalse; return MatrixPtr();}
   
   /* Matrix */
   virtual size_t getNumRows() const
@@ -129,7 +131,22 @@ public:
     : BuiltinTypeSymmetricMatrix<double>(elementsType, dimension, defaultValue)
     {setThisClass(doubleSymmetricMatrixClass(elementsType));}
   DoubleSymmetricMatrix() {}
-  
+
+  virtual MatrixPtr toMatrix() const
+  {
+    DoubleMatrixPtr res = new DoubleMatrix(getElementsType(), getDimension(), getDimension());
+    
+    for (size_t i = 0; i < getDimension(); ++i)
+      for (size_t j = i; j < getDimension(); ++j)
+      {
+        const double value = getValue(i, j);
+        res->setElement(i, j, value);
+        res->setElement(j, i, value);
+      }
+
+    return res;
+  }
+
   /* Matrix */
   virtual void setElement(size_t row, size_t column, const Variable& value)
     {BuiltinTypeSymmetricMatrix<double>::setElement(row, column, value.getDouble());}
