@@ -9,7 +9,6 @@
 #include <lbcpp/Core/Vector.h>
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Data/DoubleVector.h>
-#include <lbcpp/Distribution/Distribution.h>
 using namespace lbcpp;
 
 /*

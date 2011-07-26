@@ -371,6 +371,8 @@ private:
   std::vector< std::pair<size_t, DoubleVectorPtr> > vectors;
 };
 
+extern FunctionPtr doubleVectorEntropyFunction();
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_DATA_DOUBLE_VECTOR_H_

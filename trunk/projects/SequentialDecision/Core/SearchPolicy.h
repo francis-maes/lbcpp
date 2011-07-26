@@ -60,7 +60,7 @@ class RandomSearchPolicy : public SearchPolicy
 public:
   virtual size_t searchNext(ExecutionContext& context, const SearchTreePtr& searchTree)
   {
-    RandomGeneratorPtr random = RandomGenerator::getInstance();
+    RandomGeneratorPtr random = context.getRandomGenerator();
 
     // in average, there should be more nodes to explore, than already explored nodes
     // this loop should thus terminate relatively quick

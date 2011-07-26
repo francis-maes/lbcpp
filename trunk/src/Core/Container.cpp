@@ -272,7 +272,7 @@ ContainerPtr Container::subset(const std::vector<size_t>& indices) const
 ContainerPtr Container::randomize() const
 {
   std::vector<size_t> indices;
-  lbcpp::RandomGenerator::getInstance()->sampleOrder(getNumElements(), indices);
+  defaultExecutionContext().getRandomGenerator()->sampleOrder(getNumElements(), indices);
   return subset(indices);
 }
 

@@ -14,7 +14,6 @@
 # include <lbcpp/Learning/LossFunction.h>
 # include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Function/StoppingCriterion.h>
-# include <lbcpp/Distribution/DiscreteDistribution.h>
 # include "../../Core/Function/MapContainerFunction.h"
 
 namespace lbcpp
