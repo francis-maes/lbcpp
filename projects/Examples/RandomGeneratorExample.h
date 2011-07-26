@@ -22,7 +22,7 @@ public:
   {
     static const size_t N = 1000000;
 
-    RandomGeneratorPtr random = RandomGenerator::getInstance();
+    RandomGeneratorPtr random = context.getRandomGenerator();
     ScalarVariableStatisticsPtr stats;
 
     context.enterScope(T("sampleBoolean(0.86)"));

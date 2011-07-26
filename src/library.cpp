@@ -248,7 +248,6 @@ struct ApplicationContext
 #ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
     memoryLeakDetector = new MemoryLeakDetector();
 #endif
-    defaultRandomGenerator = new RandomGenerator();
 #ifdef LBCPP_USER_INTERFACE
     userInterfaceManager = new UserInterfaceManager();
 #endif
@@ -266,7 +265,6 @@ struct ApplicationContext
   LibraryManager libraryManager;
   TypeManager typeManager;
   ExecutionContextPtr defaultExecutionContext;
-  RandomGeneratorPtr defaultRandomGenerator;
 #ifdef LBCPP_USER_INTERFACE
   UserInterfaceManager* userInterfaceManager;
 #endif
@@ -305,7 +303,6 @@ void lbcpp::deinitialize()
   if (applicationContext)
   {
     applicationContext->defaultExecutionContext = ExecutionContextPtr();
-    applicationContext->defaultRandomGenerator = RandomGeneratorPtr();
 
 #ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
     deleteAndZero(applicationContext->memoryLeakDetector);
@@ -331,9 +328,6 @@ void lbcpp::deinitialize()
 
 TypeManager& lbcpp::typeManager()
   {jassert(applicationContext); return applicationContext->typeManager;}
-
-RandomGeneratorPtr RandomGenerator::getInstance()
-  {jassert(applicationContext); return applicationContext->defaultRandomGenerator;}
 
 #ifdef LBCPP_USER_INTERFACE
 UserInterfaceManager& lbcpp::userInterfaceManager()

@@ -479,7 +479,7 @@ using juce::Colour;
 using juce::Colours;
 inline Colour randomColour()
 {
-  RandomGeneratorPtr random = RandomGenerator::getInstance();
+  RandomGeneratorPtr random = defaultExecutionContext().getRandomGenerator();
   return Colour(random->sampleByte(), random->sampleByte(), random->sampleByte(), (unsigned char)255);
 }
 

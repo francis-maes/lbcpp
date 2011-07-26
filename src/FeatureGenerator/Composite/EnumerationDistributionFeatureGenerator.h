@@ -11,7 +11,6 @@
 
 # include <lbcpp/Core/CompositeFunction.h>
 # include <lbcpp/FeatureGenerator/FeatureGenerator.h>
-# include <lbcpp/Distribution/DiscreteDistribution.h>
 
 namespace lbcpp
 {

@@ -41,7 +41,7 @@ public:
 
   inline juce::Colour randomColour()
   {
-    RandomGeneratorPtr random = RandomGenerator::getInstance();
+    RandomGeneratorPtr random = defaultExecutionContext().getRandomGenerator();
     return juce::Colour(random->sampleByte(), random->sampleByte(), random->sampleByte(), (unsigned char)255);
   }
 

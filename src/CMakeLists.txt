@@ -358,7 +358,6 @@ SET(LBCPP_DISTRIBUTION_SOURCES
 
 SET(LBCPP_DISTRIBUTION_FUNCTION_SOURCES
   Distribution/Function/DistributionEntropyFunction.h
-  Distribution/Function/SampleDistributionFunction.h
   Distribution/Function/DistributionFunctionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DistributionFunctionLibrary.cpp
 )

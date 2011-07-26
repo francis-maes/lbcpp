@@ -42,12 +42,6 @@ extern ClassPtr randomGeneratorClass;
 class RandomGenerator : public Object
 {
 public:
-  /** Singleton instance getter.
-  **
-  ** @return a reference on the RandomGenerator singleton.
-  */
-  static RandomGeneratorPtr getInstance();
-
   /** Constructor.
   **
   ** @param seedValue : seed for the random numbers generator.

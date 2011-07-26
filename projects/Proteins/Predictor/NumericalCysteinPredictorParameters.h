@@ -12,7 +12,6 @@
 # include "ProteinPredictor.h"
 # include "ProteinPerception.h"
 # include "ProteinPredictorParameters.h"
-# include <lbcpp/Distribution/DiscreteDistribution.h>
 # include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 # include <lbcpp/Learning/Numerical.h>
 # include "ConnectivityPatternClassifier.h"

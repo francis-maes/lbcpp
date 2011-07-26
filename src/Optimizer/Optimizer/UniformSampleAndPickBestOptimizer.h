@@ -10,7 +10,6 @@
 # define LBCPP_OPTIMIZER_UNIFORM_SAMPLE_AND_PICK_BEST_H_
 
 # include <lbcpp/Optimizer/Optimizer.h>
-# include <lbcpp/Distribution/ContinuousDistribution.h>
 
 namespace lbcpp
 {

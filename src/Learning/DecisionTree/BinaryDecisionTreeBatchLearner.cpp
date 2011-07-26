@@ -166,7 +166,7 @@ void BinaryDecisionTreeBatchLearner::sampleTreeRecursively(ExecutionContext& con
   if (numAttributeSamplesPerSplit >= nonConstantVariables.size())
     splitVariables = nonConstantVariables;
   else
-    RandomGenerator::getInstance()->sampleSubset(nonConstantVariables, numAttributeSamplesPerSplit, splitVariables); 
+    context.getRandomGenerator()->sampleSubset(nonConstantVariables, numAttributeSamplesPerSplit, splitVariables); 
   size_t K = splitVariables.size();
 
   // generate split predicates, score them, and keep the best one
@@ -202,7 +202,7 @@ void BinaryDecisionTreeBatchLearner::sampleTreeRecursively(ExecutionContext& con
     }
   }
   jassert(bestSplits.size());
-  int bestIndex = RandomGenerator::getInstance()->sampleInt(0, (int)bestSplits.size());
+  int bestIndex = context.getRandomGenerator()->sampleInt(0, (int)bestSplits.size());
   Split selectedSplit = bestSplits[bestIndex];
 
   // allocate child nodes

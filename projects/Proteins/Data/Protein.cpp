@@ -11,7 +11,6 @@
 #include "Formats/PDBFileGenerator.h"
 #include "Formats/FASTAFileParser.h"
 #include "Formats/FASTAFileGenerator.h"
-#include <lbcpp/Distribution/DiscreteDistribution.h>
 
 using namespace lbcpp;
 

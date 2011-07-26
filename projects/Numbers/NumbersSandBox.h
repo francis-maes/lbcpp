@@ -232,7 +232,7 @@ public:
 
     // Random Number Sequences
     context.informationCallback(T("Generating random number sequences"));
-    ContainerPtr randomInputs = sampleNumberSequences(RandomGenerator::getInstance(), 0, 100, 6, 1000);
+    ContainerPtr randomInputs = sampleNumberSequences(context.getRandomGenerator(), 0, 100, 6, 1000);
 
     context.informationCallback(T("Computing feature informations"));
     FeaturesInformation featuresInfo(perception);

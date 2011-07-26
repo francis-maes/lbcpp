@@ -324,7 +324,7 @@ public:
     }
 
     // sample initial states
-    RandomGeneratorPtr random = RandomGenerator::getInstance();
+    RandomGeneratorPtr random = context.getRandomGenerator();
     ContainerPtr initialStates = problem->sampleInitialStates(context, random, numInitialStates);
 
     // load heuristics
@@ -469,7 +469,7 @@ private:
       {
         context.enterScope(T("Trial ") + String((int)j));
 
-        ContainerPtr trainingStates = problem->sampleInitialStates(context, RandomGenerator::getInstance(), numTrainingStates);
+        ContainerPtr trainingStates = problem->sampleInitialStates(context, context.getRandomGenerator(), numTrainingStates);
         FunctionPtr optimizedHeuristic = optimizeLookAHeadTreePolicy(context, trainingStates, maxSearchNodes);
 
         context.resultCallback(T("numTrainingStates"), numTrainingStates);
@@ -549,7 +549,7 @@ private:
     jassert(numBests < populationSize);
     //Object::displayObjectAllocationInfo(std::cout);
 
-    RandomGeneratorPtr random = RandomGenerator::getInstance();
+    RandomGeneratorPtr random = context.getRandomGenerator();
     
     // generate evaluation work units
     CompositeWorkUnitPtr workUnit(new CompositeWorkUnit(T("Evaluating ") + String((int)populationSize) + T(" parameters"), populationSize));
@@ -619,9 +619,95 @@ private:
     return bestScore;
   }
 
+#if 0
+  struct UnderstandHIVBudget2Policy : public Policy
+  {
+    UnderstandHIVBudget2Policy(PolicyPtr pol)
+      : pol(pol) {}
+    PolicyPtr pol;
+    
+    virtual Variable policyStart(ExecutionContext& context, const Variable& state, const ContainerPtr& actions)
+    {
+      Variable res = pol->policyStart(context, state, actions);
+      jassert(res.getInteger() == 0);
+      return res;
+    }
+
+    size_t greedyAction;
+    size_t secondAction;
+
+    virtual Variable policyStep(ExecutionContext& context, double reward, const Variable& state, const ContainerPtr& actions)
+    {
+      SearchTreePtr tree = state.getObjectAndCast<SearchTree>();
+      greedyAction = tree->getRootNode()->getBestChildNode()->getNodeIndex();
+      jassert(greedyAction >= 1 && greedyAction <= 4);
+
+      Variable res = pol->policyStep(context, reward, state, actions);
+      secondAction = (size_t)res.getInteger();
+      jassert(secondAction >= 1 && secondAction <= 4);
+      //if (i == greedyAction)
+      {
+        probZeroG.push(greedyAction == 1 ? 1.0 : 0.0);
+        probOneG.push(greedyAction == 2 ? 1.0 : 0.0);
+        probTwoG.push(greedyAction == 3 ? 1.0 : 0.0);
+        probThreeG.push(greedyAction == 4 ? 1.0 : 0.0);
+      }
+     // else
+      {
+        probZero.push(secondAction == 1 ? 1.0 : 0.0);
+        probOne.push(secondAction == 2 ? 1.0 : 0.0);
+        probTwo.push(secondAction == 3 ? 1.0 : 0.0);
+        probThree.push(secondAction == 4 ? 1.0 : 0.0);
+      }      
+      probGreedy.push(secondAction == greedyAction ? 1.0 : 0.0);
+      return res;
+    }
+
+    virtual void policyEnd(ExecutionContext& context, double reward, const Variable& finalState)
+    {
+      SearchTreePtr searchTree = finalState.getObjectAndCast<SearchTree>();
+      
+      size_t finalAction = searchTree->getRootNode()->getBestChildNode()->getNodeIndex();
+      probUsefull.push(finalAction != greedyAction ? 1.0 : 0.0);
+      probSecondAction.push(finalAction == secondAction ? 1.0 : 0.0);
+
+      pol->policyEnd(context, reward, finalState);
+    }
+
+    void showResults(ExecutionContext& context)
+    {
+      context.resultCallback(T("probGreedy"), probGreedy.getMean());
+      context.resultCallback(T("probUsefull"), probUsefull.getMean());
+      context.resultCallback(T("probZero"), probZero.getMean());
+      context.resultCallback(T("probOne"), probOne.getMean());
+      context.resultCallback(T("probTwo"), probTwo.getMean());
+      context.resultCallback(T("probThree"), probThree.getMean());
+      context.resultCallback(T("probZeroG"), probZeroG.getMean());
+      context.resultCallback(T("probOneG"), probOneG.getMean());
+      context.resultCallback(T("probTwoG"), probTwoG.getMean());
+      context.resultCallback(T("probThreeG"), probThreeG.getMean());
+      context.resultCallback(T("probSecondAction"), probSecondAction.getMean());
+    }
+
+    ScalarVariableMean probGreedy;
+    ScalarVariableMean probUsefull;
+    ScalarVariableMean probZero;
+    ScalarVariableMean probOne;
+    ScalarVariableMean probTwo;
+    ScalarVariableMean probThree;
+    ScalarVariableMean probZeroG;
+    ScalarVariableMean probOneG;
+    ScalarVariableMean probTwoG;
+    ScalarVariableMean probThreeG;
+    ScalarVariableMean probSecondAction;
+  };
+#endif // 0
+
   double computeTrajectory(ExecutionContext& context, const DecisionProblemPtr& problem, const ContainerPtr& initialStates, const FunctionPtr& heuristic, const String& name, size_t maxSearchNodes) const
   {
     PolicyPtr searchPolicy = new BestFirstSearchPolicy(heuristic);
+    
+    //ReferenceCountedObjectPtr<UnderstandHIVBudget2Policy> searchPolicy = new UnderstandHIVBudget2Policy(searchPolicy);
 
     double res = 0.0;
     size_t n = initialStates->getNumElements();
@@ -684,6 +770,8 @@ private:
     }
     res /= (double)n;
     context.resultCallback(name, res);
+
+    //popo->showResults(context);
     return res;
   }
 };

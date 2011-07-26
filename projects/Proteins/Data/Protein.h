@@ -12,7 +12,6 @@
 # include <lbcpp/Core/Pair.h>
 # include <lbcpp/Data/DoubleVector.h>
 # include <lbcpp/Data/SymmetricMatrix.h>
-# include <lbcpp/Distribution/Distribution.h>
 
 # include "AminoAcid.h"
 # include "SecondaryStructure.h"
