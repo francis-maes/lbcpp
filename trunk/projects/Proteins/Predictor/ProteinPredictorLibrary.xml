@@ -214,4 +214,20 @@
   </class>
   <!-- END Article: Lin 2009 -->
 
+
+  <!-- BEGIN GaussianKernel -->
+  <class name="DecoratorProteinPredictorParameters" base="ProteinPredictorParameters">
+    <variable type="ProteinPredictorParameters" name="decorated"/>
+  </class>
+
+  <class name="GaussianKernelFeatureGenerator" base="FeatureGenerator">
+    <variable type="Double" name="gamma"/>
+    <variable type="GenericVector[DoubleVector[PositiveIntegerEnumeration,Double]]" name="supportVectors"/>
+    <variable type="GenericVector[Double]" name="supportNorms"/>
+  </class>
+  
+  <class name="GaussianKernelPredictorParameters" base="DecoratorProteinPredictorParameters">
+    <variable type="FeatureGenerator" name="gaussianKernel"/>
+  </class>
+  <!-- END GaussianKernel -->
 </library>

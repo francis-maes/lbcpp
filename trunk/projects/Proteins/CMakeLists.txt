@@ -84,6 +84,7 @@ SET(LBCPP_PROTEIN_PREDICTOR_SOURCES
   Predictor/ProteinPredictor.cpp
   Predictor/ProteinPerception.h
   Predictor/ProteinPredictorParameters.h
+  Predictor/DecoratorProteinPredictorParameters.h
   Predictor/NumericalProteinPredictorParameters.h
   Predictor/NumericalCysteinPredictorParameters.h
   Predictor/Lin09PredictorParameters.h
