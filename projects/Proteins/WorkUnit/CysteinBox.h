@@ -1,5 +1,6 @@
 
 #include <lbcpp/Core/Function.h>
+#include "../Predictor/DecoratorProteinPredictorParameters.h"
 
 namespace lbcpp
 {
@@ -35,11 +36,17 @@ public:
       return 101.f;
     }
 
+    if (true)
+    {
+      param->predictorParameters = new GaussianKernelPredictorParameters(context, param->predictorParameters, -4.7, trainingData->fold(0, 5));
+      trainingData = trainingData->invFold(0, 5);
+    }
+
     ProteinSequentialPredictorPtr predictor = new ProteinSequentialPredictor();
     for (size_t i = 0; i < numStacks; ++i)
     {
       ProteinPredictorPtr stack = new ProteinPredictor(param->predictorParameters);
-      stack->addTarget(fdsbTarget);
+      stack->addTarget(dsbTarget);
       predictor->addPredictor(stack);
     }
 
@@ -56,7 +63,7 @@ public:
     ProteinEvaluatorPtr testEvaluator = new ProteinEvaluator();
     CompositeScoreObjectPtr testScores = predictor->evaluate(context, testingData, testEvaluator, T("Evaluate on test proteins"));
 
-    return testEvaluator->getScoreObjectOfTarget(testScores, fdsbTarget)->getScoreToMinimize();
+    return testEvaluator->getScoreObjectOfTarget(testScores, dsbTarget)->getScoreToMinimize();
   }
 
 protected:
