@@ -1,0 +1,82 @@
+set(lua_core_headers lua.h lauxlib.h lualib.h lpeg.h) # francis
+
+set(lua_core_files lapi.c lcode.c ldebug.c ldo.c ldump.c lfunc.c lgc.c llex.c lmem.c
+                   lobject.c lopcodes.c lparser.c lstate.c lstring.c ltable.c ltm.c
+                   lundump.c lvm.c lzio.c    lpeg.c) # francis: added lpeg
+                   
+                   
+set(lua_lib_files lauxlib.c lbaselib.c ldblib.c liolib.c lmathlib.c loslib.c ltablib.c
+                  lstrlib.c loadlib.c linit.c)
+#set(lua_lua_files lua.c)
+#set(lua_luac_files luac.c print.c)
+
+add_library(lua ${lua_core_files} ${lua_lib_files} ${lua_core_headers})
+#add_executable(luac ${lua_core_files} ${lua_lib_files} ${lua_luac_files})
+#add_executable(luaexe ${lua_core_files} ${lua_lib_files} ${lua_lua_files})
+
+#set_target_properties(lua PROPERTIES LINKER_LANGUAGE "CXX")
+#set_source_files_properties(${lua_core_files} ${lua_lib_files} ${lua_luac_files} ${lua_lua_files} PROPERTIES LANGUAGE "CXX")
+
+#if(WIN32)
+#  if(${WITH_LUACPP} EQUAL "1")
+#    set_target_properties(luaexe PROPERTIES LINKER_LANGUAGE "CXX")
+#  endif(${WITH_LUACPP} EQUAL "1")
+#else(WIN32)
+#  if(${WITH_LUACPP} EQUAL "1")
+#    set_target_properties(luaexe PROPERTIES LINKER_LANGUAGE "CXX" OUTPUT_NAME "lua")
+#  else(${WITH_LUACPP} EQUAL "1")
+#    set_target_properties(luaexe PROPERTIES OUTPUT_NAME "lua")
+#  endif(${WITH_LUACPP} EQUAL "1")
+#endif(WIN32)
+
+set(compile_flags "")
+set(link_flags "")
+set(definitions "")
+
+if(UNIX)
+  if(APPLE)
+    set(LIBS ${LIBS} readline)
+    set(definitions "${definitions} -DLUA_USE_MACOSX -DLUA_USE_DLOPEN")
+    if(${ENFORCE_32_BIT} EQUAL "0" AND ${ENFORCE_64_BIT} EQUAL "0")
+      set(definitions "${definitions} -DLUA_USE_READLINE")
+    endif(${ENFORCE_32_BIT} EQUAL "0" AND ${ENFORCE_64_BIT} EQUAL "0")
+    #set(link_flags ${link_flags} "-dynamiclib -undefined dynamic_lookup")
+  else(APPLE)
+    if(${ENFORCE_32_BIT} EQUAL "0" AND ${ENFORCE_64_BIT} EQUAL "0")
+      set(definitions "${definitions} -DLUA_USE_LINUX")
+    else(${ENFORCE_32_BIT} EQUAL "0" AND ${ENFORCE_64_BIT} EQUAL "0")
+      set(definitions "${definitions} -DLUA_USE_POSIX -DLUA_USE_DLOPEN")
+    endif(${ENFORCE_32_BIT} EQUAL "0" AND ${ENFORCE_64_BIT} EQUAL "0")
+
+    if(${ENFORCE_32_BIT} EQUAL "1" OR ${ENFORCE_64_BIT} EQUAL "1")
+      set(LIBS ${LIBS} m dl)
+    else(${ENFORCE_32_BIT} EQUAL "1" OR ${ENFORCE_64_BIT} EQUAL "1")
+      set(LIBS ${LIBS} m dl readline history ncurses)
+    endif(${ENFORCE_32_BIT} EQUAL "1" OR ${ENFORCE_64_BIT} EQUAL "1")
+    set(link_flags ${link_flags} "-Wl,-E")
+  endif(APPLE)
+else(UNIX)
+  if(WIN32)
+    #set(definitions "${definitions} -DLUA_BUILD_AS_DLL")
+    set(definitions "${definitions} -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS")
+  endif(WIN32)
+endif(UNIX)
+
+if(NOT ${definitions} EQUAL "")
+  add_definitions(${definitions})
+endif(NOT ${definitions} EQUAL "")
+
+if(NOT ${compile_flags} EQUAL "")
+  set_target_properties(lua PROPERTIES COMPILE_FLAGS ${compile_flags})
+endif(NOT ${compile_flags} EQUAL "")
+
+if(NOT ${link_flags} EQUAL "")
+  set_target_properties(lua PROPERTIES LINK_FLAGS ${link_flags})
+endif(NOT ${link_flags} EQUAL "")
+
+#target_link_libraries(luac ${LIBS})
+#target_link_libraries(luaexe ${LIBS})
+
+#if(WIN32)
+#  set_target_properties(lua luaexe luac PROPERTIES PREFIX "../")
+#endif(WIN32)

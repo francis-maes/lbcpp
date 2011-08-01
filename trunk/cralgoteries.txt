@@ -1,11 +1,7 @@
 
 Lua:
- * derivable: se servir des Scope pour gérer les interdépendances entre variables
- 
- * derivable: Gerer les gradient et les DoubleVector
- 
+ * derivable: Gerer les gradient et les DoubleVector 
  * Garder les commentaires dans le source-to-source
- * Container: index/newindex, iterators, ...
 
 Proteins:
  * Ajouter des features de segments
@@ -32,7 +28,6 @@ Explorer:
      - Component: Type -> UIComponent: (preferedSize, variableSelector, parameters, ...)
 
 Go:
- * learn a big model
  * integrate's olivier last modifs
  * Nouvelles features
  * Courbes dans l'evaluateur

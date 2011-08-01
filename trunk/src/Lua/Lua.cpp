@@ -10,14 +10,7 @@
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Core/Library.h>
 #include <lbcpp/library.h>
-
-extern "C" {
-# include "lua/lua.h"
-# include "lua/lauxlib.h"
-# include "lua/lualib.h"
-# include "lua/lpeg.h"
-}; /* extern "C" */
-
+#include "../../lua/lua.h"
 using namespace lbcpp;
 
 static int objectIndex(lua_State* L)
