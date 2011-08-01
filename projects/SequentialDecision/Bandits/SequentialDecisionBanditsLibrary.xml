@@ -130,22 +130,16 @@
     <variable type="PositiveInteger" name="numRunsPerEstimation" shortName="r"/>
  </class>
 
-  <!-- MCTS Work Unit -->
+  <!-- MCTS Work Unit
   <class name="BanditsMCTSWorkUnit" base="WorkUnit">
     <variable type="PositiveInteger" name="numIterations" shortName="N"/>
     <variable type="PositiveInteger" name="maxDepth" shortName="D"/>
-   </class>
-   
-   
-     
-    <class name="MCTSExpressionBuilderState" base="GPExpressionBuilderState">
+ </class>
+  <class name="MCTSExpressionBuilderState" base="GPExpressionBuilderState">
     <variable type="ObjectVector[GPExpression]" name="expressions"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="expressionScores"/>
   </class>
-   
-   
-   
-   
+ -->   
    
    
    

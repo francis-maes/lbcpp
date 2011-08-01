@@ -544,7 +544,7 @@ void lj_cconv_ct_tv(CTState *cts, CType *d,
     flags |= CCF_FROMTV;
   } else if (tviscdata(o)) {
     sp = cdataptr(cdataV(o));
-    sid = cdataV(o)->typeid_;
+    sid = cdataV(o)->typeid;
     s = ctype_get(cts, sid);
     if (ctype_isref(s->info)) {  /* Resolve reference for value. */
       lua_assert(s->size == CTSIZE_PTR);

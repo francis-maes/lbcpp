@@ -32,8 +32,8 @@ LuaState::LuaState(ExecutionContext& context, bool initializeLuaLibraries, bool 
   if (initializeLuaLibraries)
   {
     luaL_openlibs(L);
-    int n = luaopen_lpeg(L);
-    pop(n);
+    //int n = luaopen_lpeg(L);
+    //pop(n);
   }
   if (initializeLBCppLibrary)
   {

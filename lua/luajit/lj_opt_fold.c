@@ -1908,7 +1908,7 @@ LJFOLD(FLOAD KGC IRFL_CDATA_TYPEID)
 LJFOLDF(fload_cdata_typeid_kgc)
 {
   if (LJ_LIKELY(J->flags & JIT_F_OPT_FOLD))
-    return INTFOLD((int32_t)ir_kcdata(fleft)->typeid_);
+    return INTFOLD((int32_t)ir_kcdata(fleft)->typeid);
   return NEXTFOLD;
 }
 

@@ -16,7 +16,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 file(GLOB buildvm_files buildvm*.c)
 add_executable(buildvm ${buildvm_files})
 
-set(all_lib lib_base.c lib_math.c lib_bit.c lib_string.c lib_table.c lib_io.c lib_os.c lib_package.c lib_debug.c lib_jit.c)
+set(all_lib lib_base.c lib_math.c lib_bit.c lib_string.c lib_table.c lib_io.c lib_os.c lib_package.c lib_debug.c lib_jit.c lib_ffi.c)
 
 dobuildvm(peobj lj_vm.obj "")
 dobuildvm(bcdef lj_bcdef.h "${all_lib}")
@@ -26,9 +26,14 @@ dobuildvm(recdef lj_recdef.h "${all_lib}")
 dobuildvm(vmdef ../lib/vmdef.lua "${all_lib}")
 dobuildvm(folddef lj_folddef.h lj_opt_fold.c)
 
-add_definitions(-U_FORTIFY_SOURCE -fno-stack-protector -D_FILE_OFFSET_BITS=64)
+if(WIN32)
+  add_definitions(-D_FILE_OFFSET_BITS=64)
+else(WIN32)
+  add_definitions(-U_FORTIFY_SOURCE -fno-stack-protector -D_FILE_OFFSET_BITS=64)
+endif(WIN32)
 
-file(GLOB lua_files lj_*.c lib_*.c)
+
+file(GLOB lua_files lj_*.c lib_*.c lj_*.h lib_*.h)
 
 set(ASM_FLAGS "")
 
@@ -48,8 +53,14 @@ set(ASM_FLAGS "")
 #  COMMENT "compiling lj_vm.s"
 #)
 
-add_library(lua ${lua_files} ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.obj)
-set_target_properties(lua PROPERTIES LINKER_LANGUAGE C)
+
+file(GLOB luajit_generated_files ${CMAKE_CURRENT_BINARY_DIR}/lj_*.h)
+
+add_library(lua ${lua_files} ${luajit_generated_files} ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.obj)
+#set_target_properties(lua PROPERTIES LINKER_LANGUAGE C)
+
+SOURCE_GROUP(Generated FILES ${luajit_generated_files})
+
 
 add_dependencies(lua buildvm_asm buildvm_ffdef buildvm_libdef buildvm_recdef buildvm_vmdef buildvm_folddef)
 
@@ -76,7 +87,7 @@ else(UNIX)
   if(WIN32)
     #set(definitions "${definitions} -DLUA_BUILD_AS_DLL")
     set(definitions "${definitions} -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS")
-    set(compile_flags ${compile_flags} "/TP")
+    #set(compile_flags ${compile_flags} "/TP")
   endif(WIN32)
 endif(UNIX)
 
