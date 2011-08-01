@@ -45,6 +45,10 @@
   <template name="DoubleVector" base="Vector[elementsType]" abstract="yes">
     <parameter name="elementsEnumeration" type="EnumValue"/>
     <parameter name="elementsType" type="Double"/>
+
+    <function lang="lua" name="add"/>
+    <function lang="lua" name="dot"/>
+    <function lang="lua" name="l2norm"/>
   </template>
 
   <template name="SparseDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">
