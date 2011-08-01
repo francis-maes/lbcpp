@@ -41,7 +41,7 @@ end
 
 local function convertLineInfo(lineinfo) -- not used yet, to be finished
   local comments = (lineinfo.comments and lineinfo.comments or "")
-  return Object.create("lua::LineInfo", lineinfo[1], lineinfo[2], lineinfo[4], comments)
+  return lbcpp.Object.create("lua::LineInfo", lineinfo[1], lineinfo[2], lineinfo[4], comments)
 end
 
 function _M.metaLuaAstToLbcppAst(ast)
@@ -57,7 +57,7 @@ function _M.metaLuaAstToLbcppAst(ast)
   end
 
   local function makeObjectVector(class, inputTable, startIndex)
-    local res = Object.create('ObjectVector<' .. class .. '>')
+    local res = lbcpp.Object.create('ObjectVector<' .. class .. '>')
     for i=startIndex,#inputTable do
       res:append(inputTable[i])
     end
@@ -69,10 +69,10 @@ function _M.metaLuaAstToLbcppAst(ast)
     for i=1,#statements do
       local cl = statements[i].className
       if cl == "lua::Call" or cl == "lua::Invoke" then
-        statements[i] = Object.create("lua::ExpressionStatement", statements[i])
+        statements[i] = lbcpp.Object.create("lua::ExpressionStatement", statements[i])
       end
     end
-    return Object.create("lua::Block", makeObjectVector("lua::Statement", statements, 1))
+    return lbcpp.Object.create("lua::Block", makeObjectVector("lua::Statement", statements, 1))
   end
 
   local function getTag(ast)
@@ -88,24 +88,24 @@ function _M.metaLuaAstToLbcppAst(ast)
    
   -- create this node
   if ast.tag == nil then
-    return Object.create("lua::List", makeObjectVector("lua::Node", subNodes, 1))
+    return lbcpp.Object.create("lua::List", makeObjectVector("lua::Node", subNodes, 1))
   end
 
   --print ("tag: " .. ast.tag .. " num sub nodes = " .. (#subNodes))
 
   -- statements
   if ast.tag == "Do" then
-    return Object.create("lua::" .. ast.tag, subNodes[1])
+    return lbcpp.Object.create("lua::" .. ast.tag, subNodes[1])
   elseif ast.tag == "Set" then
-    return Object.create("lua::Set", subNodes[1], subNodes[2])
+    return lbcpp.Object.create("lua::Set", subNodes[1], subNodes[2])
   elseif ast.tag == "While" then
     --print ("While: num sub nodes " .. #subNodes .. " subtags = " .. getTag(ast[1]) .. " " .. getTag(ast[2]))
-    return Object.create("lua::While", subNodes[1], makeBlock(ast[2]))
+    return lbcpp.Object.create("lua::While", subNodes[1], makeBlock(ast[2]))
   elseif ast.tag == "Repeat" then
-    return Object.create("lua::Repeat", makeBlock(ast[1]), subNodes[2])
+    return lbcpp.Object.create("lua::Repeat", makeBlock(ast[1]), subNodes[2])
   elseif ast.tag == "If" then
-    local conditions = Object.create("ObjectVector<lua::Expression>")
-    local blocks = Object.create("ObjectVector<lua::Block>")
+    local conditions = lbcpp.Object.create("ObjectVector<lua::Expression>")
+    local blocks = lbcpp.Object.create("ObjectVector<lua::Block>")
     local i = 1
     assert (#subNodes == #ast)
     while i <= #subNodes do
@@ -117,64 +117,64 @@ function _M.metaLuaAstToLbcppAst(ast)
       end
       i = i + 2
     end
-    return Object.create("lua::If", conditions, blocks)
+    return lbcpp.Object.create("lua::If", conditions, blocks)
   elseif ast.tag == "ForNum" then
     if #subNodes == 5 then
-      return Object.create("lua::ForNum", subNodes[1], subNodes[2], subNodes[3], subNodes[4], makeBlock(ast[5]))
+      return lbcpp.Object.create("lua::ForNum", subNodes[1], subNodes[2], subNodes[3], subNodes[4], makeBlock(ast[5]))
     else
       assert (#subNodes == 4)
-      return Object.create("lua::ForNum", subNodes[1], subNodes[2], subNodes[3], nil, makeBlock(ast[4]))
+      return lbcpp.Object.create("lua::ForNum", subNodes[1], subNodes[2], subNodes[3], nil, makeBlock(ast[4]))
     end
   elseif ast.tag == "ForIn" then
-    return Object.create("lua::ForIn", subNodes[1], subNodes[2], makeBlock(ast[3]))
+    return lbcpp.Object.create("lua::ForIn", subNodes[1], subNodes[2], makeBlock(ast[3]))
   elseif ast.tag == "Local" then
     if #subNodes == 2 then
-      return Object.create("lua::Local", subNodes[1], subNodes[2])
+      return lbcpp.Object.create("lua::Local", subNodes[1], subNodes[2])
     else
       assert(#subNodes == 1)
-      return Object.create("lua::Local", subNodes[1])
+      return lbcpp.Object.create("lua::Local", subNodes[1])
     end
   elseif ast.tag == "Localrec" then
     assert (#subNodes == 2)
-    return Object.create("lua::Local", subNodes[1], subNodes[2], true)
+    return lbcpp.Object.create("lua::Local", subNodes[1], subNodes[2], true)
   elseif ast.tag == "Break" then
-    return Object.create("lua::Break");
+    return lbcpp.Object.create("lua::Break");
   elseif ast.tag == "Return" then
-    return Object.create("lua::Return", makeObjectVector("lua::Expression", subNodes, 1))
+    return lbcpp.Object.create("lua::Return", makeObjectVector("lua::Expression", subNodes, 1))
   
   -- expressions  
   elseif ast.tag == "Nil" or ast.tag == "Dots" then
-    return Object.create("lua::" .. ast.tag)
+    return lbcpp.Object.create("lua::" .. ast.tag)
   elseif ast.tag == "False" or ast.tag == "True" then
-    return Object.create("lua::LiteralBoolean", ast.tag == "True")
+    return lbcpp.Object.create("lua::LiteralBoolean", ast.tag == "True")
   elseif ast.tag == "Id" then
-    return Object.create("lua::Identifier", ast[1])
+    return lbcpp.Object.create("lua::Identifier", ast[1])
   elseif ast.tag == "Derivable" then
-    return Object.create("lua::Identifier", ast[1][1], true)
+    return lbcpp.Object.create("lua::Identifier", ast[1][1], true)
   elseif ast.tag == "Number" or ast.tag == "String" then
-    return Object.create("lua::Literal" .. ast.tag, ast[1])
+    return lbcpp.Object.create("lua::Literal" .. ast.tag, ast[1])
   elseif ast.tag == "Function" then
-    return Object.create("lua::Function", subNodes[1], makeBlock(ast[2]))
+    return lbcpp.Object.create("lua::Function", subNodes[1], makeBlock(ast[2]))
   elseif ast.tag == "Table" then
-    return Object.create("lua::Table", makeObjectVector("lua::Expression", subNodes, 1))
+    return lbcpp.Object.create("lua::Table", makeObjectVector("lua::Expression", subNodes, 1))
   elseif ast.tag == "Pair" then
-    return Object.create("lua::Pair", subNodes[1], subNodes[2])
+    return lbcpp.Object.create("lua::Pair", subNodes[1], subNodes[2])
   elseif ast.tag == "Op" then
     if #subNodes == 2 then
-      return Object.create("lua::BinaryOperation", convertBinaryOp(ast[1]), subNodes[1], subNodes[2])
+      return lbcpp.Object.create("lua::BinaryOperation", convertBinaryOp(ast[1]), subNodes[1], subNodes[2])
     elseif #subNodes == 1 then
-      return Object.create("lua::UnaryOperation", convertUnaryOp(ast[1]), subNodes[1])
+      return lbcpp.Object.create("lua::UnaryOperation", convertUnaryOp(ast[1]), subNodes[1])
     else
       error("invalid number of operands: " .. #subNodes)
     end
   elseif ast.tag == "Paren" then
-    return Object.create("lua::Parenthesis", subNodes[1])
+    return lbcpp.Object.create("lua::Parenthesis", subNodes[1])
   elseif ast.tag == "Call" then
-    return Object.create("lua::Call", subNodes[1], makeObjectVector("lua::Expression", subNodes, 2))
+    return lbcpp.Object.create("lua::Call", subNodes[1], makeObjectVector("lua::Expression", subNodes, 2))
   elseif ast.tag == "Invoke" then
-    return Object.create("lua::Invoke", subNodes[1], subNodes[2], makeObjectVector("lua::Expression", subNodes, 3))
+    return lbcpp.Object.create("lua::Invoke", subNodes[1], subNodes[2], makeObjectVector("lua::Expression", subNodes, 3))
   elseif ast.tag == "Index" then
-    return Object.create("lua::Index", subNodes[1], subNodes[2])
+    return lbcpp.Object.create("lua::Index", subNodes[1], subNodes[2])
   else
     error("unknown tag " .. ast.tag .. " (numSubNodes = " .. #subNodes .. " numAttributes = " .. (#ast - #subNodes) .. ")")
   end
@@ -182,7 +182,7 @@ end
 
 function _M.oldMetaLuaAstToLbcppAst(ast)
   if (ast) then
-    local res = Object.create("LuaASTNode")
+    local res = lbcpp.Object.create("LuaASTNode")
 
     if (ast.tag) then
       res.tag = ast.tag
@@ -215,7 +215,7 @@ function _M.parse(codeType, lexer)
   elseif (codeType == 2) then
     -- transform result into block
     local list = _M.metaLuaAstToLbcppAst(_M.parseStatementBlock(lexer))
-    local res = Object.create("lua::Block")
+    local res = lbcpp.Object.create("lua::Block")
     res.statements = list.nodes
     return res
   else

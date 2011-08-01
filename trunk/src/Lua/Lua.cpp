@@ -296,5 +296,5 @@ void Type::luaRegister(LuaState& state) const
   reg.func = NULL;
   functions.push_back(reg);
 
-  state.openLibrary(state.makeString(name), &functions[0]);
+  state.openLibrary(state.makeString("lbcpp." + name), &functions[0]);
 }

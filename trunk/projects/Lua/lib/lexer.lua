@@ -31,7 +31,10 @@
 
 module ("lexer", package.seeall)
 
-require 'metalua.runtime'
+require 'base'
+require 'table2'
+require 'string2'
+--require 'metalua.runtime'
 
 
 lexer = { alpha={ }, sym={ } }
