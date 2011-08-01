@@ -50,6 +50,7 @@
   <template name="SparseDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">
     <parameter name="elementsEnumeration" type="EnumValue"/>
     <parameter name="elementsType" type="Double"/>
+    <function lang="lua" name="append"/>
   </template>
 
   <template name="DenseDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">

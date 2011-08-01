@@ -207,7 +207,7 @@
       virtual size_t getNumElements() const
         {return 0;}
       virtual EnumerationElementPtr getElement(size_t index) const
-        {String str((int)index); return new EnumerationElement(T("[") + str + T("]"), String::empty, str);}
+        {String str((int)index); return new EnumerationElement(str, String::empty, str);}
     </code>
   </class>
   

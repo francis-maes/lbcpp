@@ -160,8 +160,12 @@ public:
   virtual void setElement(size_t index, const Variable& value);
   
   // Object
+  virtual String toShortString() const;
   void saveToXml(XmlExporter& exporter) const;
   bool loadFromXml(XmlImporter& importer);
+
+  // Lua
+  static int append(LuaState& state);
 
   lbcpp_UseDebuggingNewOperator
 

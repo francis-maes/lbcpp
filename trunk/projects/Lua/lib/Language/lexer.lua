@@ -31,9 +31,9 @@
 
 module ("lexer", package.seeall)
 
-require 'base'
-require 'table2'
-require 'string2'
+require 'Language.base'
+require 'Language.table2'
+require 'Language.string2'
 --require 'metalua.runtime'
 
 

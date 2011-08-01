@@ -194,6 +194,7 @@ public:
   static int index(LuaState& state);
   static int newIndex(LuaState& state);
   static int toString(LuaState& state);
+  static int toShortString(LuaState& state);
   static int garbageCollect(LuaState& state);
 
   lbcpp_UseDebuggingNewOperator

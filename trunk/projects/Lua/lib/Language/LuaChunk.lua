@@ -1,14 +1,14 @@
 
 -- note: includes gg/mlp Lua parsing Libraries taken from Metalua.
-require "lexer"
-require "gg"
-require "mlp_lexer"
-require "mlp_misc"
-require "mlp_table"
-require "mlp_meta"
-require "mlp_expr"
-require "mlp_stat"
-require "mlp_ext"
+require "Language.lexer"
+require "Language.gg"
+require "Language.mlp_lexer"
+require "Language.mlp_misc"
+require "Language.mlp_table"
+require "Language.mlp_meta"
+require "Language.mlp_expr"
+require "Language.mlp_stat"
+require "Language.mlp_ext"
 mlc = {} -- make gg happy
 local mlp = assert(_G.mlp)
 

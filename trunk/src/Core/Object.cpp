@@ -505,6 +505,13 @@ int Object::toString(LuaState& state)
   return 1;
 }
 
+int Object::toShortString(LuaState& state)
+{
+  ObjectPtr object = state.checkObject(1);
+  state.pushString(state.makeString(object->toShortString()));
+  return 1;
+}
+
 int Object::index(LuaState& state)
 {
   ObjectPtr object = state.checkObject(1);
