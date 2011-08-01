@@ -128,7 +128,7 @@ public:
   CompactGPExpressionBuilderState(const String& name, EnumerationPtr inputVariables, FunctionPtr objectiveFunction)
     : GPExpressionBuilderState(name, inputVariables, objectiveFunction), score(0.0)
   {
-    stack.push_back(std::make_pair(GPExpressionPtr(), &expression));
+    stack.push_back(&expression);
   }
   CompactGPExpressionBuilderState() {}
  
@@ -170,26 +170,30 @@ public:
     return res;
   }
 
-  virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward)
+  virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward, Variable* stateBackup = NULL)
   {
     const GPExpressionBuilderActionPtr& builderAction = action.getObjectAndCast<GPExpressionBuilderAction>();
 
     jassert(stack.size());
-    stackBackup.push_back(stack.back());
-    GPExpressionPtr* expression = stack.back().second;
+    
+    GPExpressionPtr* expression = stack.back();
+
+    if (stateBackup)
+      *stateBackup = new Backup(action, expression);
+
     (*expression) = builderAction->makeExpression(std::vector<GPExpressionPtr>());
     stack.pop_back();
 
     UnaryGPExpressionPtr unaryExpression = expression->dynamicCast<UnaryGPExpression>();
     if (unaryExpression)
-      stack.push_back(std::make_pair(unaryExpression, &unaryExpression->getExpression()));
+      stack.push_back(&unaryExpression->getExpression());
     else
     {
       BinaryGPExpressionPtr binaryExpression = expression->dynamicCast<BinaryGPExpression>();
       if (binaryExpression)
       {
-        stack.push_back(std::make_pair(binaryExpression, &binaryExpression->getLeft()));
-        stack.push_back(std::make_pair(binaryExpression, &binaryExpression->getRight()));
+        stack.push_back(&binaryExpression->getLeft());
+        stack.push_back(&binaryExpression->getRight());
       }
     }
     if (stack.empty())
@@ -202,18 +206,19 @@ public:
       reward = 0.0;
   }
 
-  virtual bool undoTransition(ExecutionContext& context, const Variable& action)
+  virtual bool undoTransition(ExecutionContext& context, const Variable& stateBackup)
   {
-    jassert(stackBackup.size());
-    if (action.dynamicCast<UnaryGPExpressionBuilderAction>())
+    const BackupPtr& b = stateBackup.getObjectAndCast<Backup>();
+    jassert(b);
+
+    if (b->action.dynamicCast<UnaryGPExpressionBuilderAction>())
       stack.pop_back();
-    else if (action.dynamicCast<BinaryGPExpressionBuilderAction>())
+    else if (b->action.dynamicCast<BinaryGPExpressionBuilderAction>())
     {
       stack.pop_back();
       stack.pop_back();
     }
-    stack.push_back(stackBackup.back());
-    stackBackup.pop_back();
+    stack.push_back(b->expression);
     score = 0.0;
     return true;
   }
@@ -226,12 +231,14 @@ public:
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
   {
+    // warning: untested code
     const ReferenceCountedObjectPtr<CompactGPExpressionBuilderState>& target = t.staticCast<CompactGPExpressionBuilderState>();
     target->name = name;
     target->inputVariables = inputVariables;
     target->objectiveFunction = objectiveFunction;
-    jassert(false);
-    // FIXME 
+    target->expression = expression->cloneAndCast<GPExpression>();
+    target->cloneStack(target->expression, target->stack);
+    jassert(target->stack.size() == stack.size());
   }
 
 protected:
@@ -239,8 +246,47 @@ protected:
 
   GPExpressionPtr expression;
   double score;
-  std::vector< std::pair<GPExpressionPtr, GPExpressionPtr*> > stack; // parent, pointer to child
-  std::vector< std::pair<GPExpressionPtr, GPExpressionPtr*> > stackBackup; // parent, pointer to child
+  std::vector<GPExpressionPtr* > stack; // expression to fill
+
+  struct Backup : public Object
+  {
+    Backup(const Variable& action, GPExpressionPtr* expression)
+      : action(action), expression(expression) {}
+
+    Variable action;
+    GPExpressionPtr* expression;
+  };
+  typedef ReferenceCountedObjectPtr<Backup> BackupPtr;
+
+  void cloneStack(GPExpressionPtr expression, std::vector<GPExpressionPtr* >& res)
+  {
+    UnaryGPExpressionPtr unaryExpression = expression.dynamicCast<UnaryGPExpression>();
+    if (unaryExpression)
+    {
+      GPExpressionPtr* e = &unaryExpression->getExpression();
+      if (*e)
+        cloneStack(*e, res);
+      else
+        res.push_back(e);
+    }
+    else
+    {
+      BinaryGPExpressionPtr binaryExpression = expression.dynamicCast<BinaryGPExpression>();
+      if (binaryExpression)
+      {
+        GPExpressionPtr* e = &binaryExpression->getLeft();
+        if (*e)
+          cloneStack(*e, res);
+        else
+          res.push_back(e);
+        e = &binaryExpression->getRight();
+        if (*e)
+          cloneStack(*e, res);
+        else
+          res.push_back(e);
+      }
+    }
+  }
 };
 
 class LargeGPExpressionBuilderState : public GPExpressionBuilderState
@@ -304,7 +350,7 @@ public:
     return res;
   }
 
-  virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward)
+  virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward, Variable* stateBackup = NULL)
   {
     const GPExpressionBuilderActionPtr& builderAction = action.getObjectAndCast<GPExpressionBuilderAction>();
     GPExpressionPtr expression = builderAction->makeExpression(expressions);
@@ -326,11 +372,14 @@ public:
     if (description.isNotEmpty())
       description += T(" -> ");
     description += action.toShortString();
+
+    if (stateBackup)
+      *stateBackup = action; // knowing the action is enough to undo the transition
   }
 
-  virtual bool undoTransition(ExecutionContext& context, const Variable& action)
+  virtual bool undoTransition(ExecutionContext& context, const Variable& stateBackup)
   {
-    const GPExpressionBuilderActionPtr& builderAction = action.getObjectAndCast<GPExpressionBuilderAction>();
+    const GPExpressionBuilderActionPtr& builderAction = stateBackup.getObjectAndCast<GPExpressionBuilderAction>();
     if (builderAction.dynamicCast<VariableGPExpressionBuilderAction>())
     {
       size_t index = builderAction.staticCast<VariableGPExpressionBuilderAction>()->getIndex();
