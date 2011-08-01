@@ -33,6 +33,9 @@ set(compile_flags "")
 set(link_flags "")
 set(definitions "")
 
+set(ENFORCE_32_BIT 0)
+set(ENFORCE_64_BIT 0)
+
 if(UNIX)
   if(APPLE)
     set(LIBS ${LIBS} readline)
