@@ -147,6 +147,12 @@
   <class name="CysteinLearnerWorkUnit" base="WorkUnit">
     <variable type="File" name="inputDirectory"/>
   </class>
+
+  <class name="GaussianKernelParameters" base="Object">
+    <variable type="Double" name="gamma"/>
+    <variable type="Double" name="C"/>
+  </class>
+
   <!-- END CysteinBox -->
 
 </library>

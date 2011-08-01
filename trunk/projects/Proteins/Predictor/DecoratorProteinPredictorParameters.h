@@ -90,6 +90,9 @@ public:
       callback.sense(i, exp(-gamma * (norm + supportNorms[i] - 2 * supportVectors[i]->dotProduct(values, 0))));
     }
   }
+  
+  virtual bool isSparse() const
+    {return false;}
 
 protected:
   friend class GaussianKernelFeatureGeneratorClass;
@@ -106,18 +109,34 @@ public:
     : DecoratorProteinPredictorParameters(decorated)
   {
     FunctionPtr f = lbcppMemberCompositeFunction(DecoratorProteinPredictorParameters, cysteinSymmetricResiudePairVectorPerception);
+    if (!f->initialize(context, lin09ProteinPerceptionClass(enumValueType, enumValueType, enumValueType)))
+    {
+      context.errorCallback(T("GaussianKernelPredictorParameters"), T("Initialization failed !"));
+      return;
+    }
+    
     std::vector<DoubleVectorPtr> supportVectors;
     const size_t numProteins = supportProteins->getNumElements();
+    FunctionPtr proteinPerceptionFunction = lbcppMemberCompositeFunction(DecoratorProteinPredictorParameters, proteinPerception);
+    if (!proteinPerceptionFunction->initialize(context, proteinClass))
+    {
+      context.errorCallback(T("GaussianKernelPredictorParameters"), T("Initialization failed !"));
+      return;
+    }
+
     for (size_t i = 0; i < numProteins; ++i)
     {
-      ObjectPtr proteinPerception = lbcppMemberCompositeFunction(DecoratorProteinPredictorParameters, proteinPerception)->compute(context, supportProteins->getElement(i)).getObject();
+      ProteinPtr protein = supportProteins->getElement(i).getObjectAndCast<Pair>(context)->getVariable(0).getObjectAndCast<Protein>(context);
+      jassert(protein);
+      ObjectPtr proteinPerception = proteinPerceptionFunction->compute(context, protein).getObject();
+      jassert(proteinPerception);
       ContainerPtr featuresVectors = f->compute(context, proteinPerception).getObjectAndCast<Container>();
       if (!featuresVectors)
         continue;
       const size_t n = featuresVectors->getNumElements();
-      for (size_t i = 0; i < n; ++i)
+      for (size_t j = 0; j < n; ++j)
       {
-        DoubleVectorPtr features = featuresVectors->getElement(i).getObjectAndCast<DoubleVector>();
+        DoubleVectorPtr features = featuresVectors->getElement(j).getObjectAndCast<DoubleVector>();
         if (features)
           supportVectors.push_back(features);
       }
@@ -132,7 +151,7 @@ public:
   {
     size_t proteinPerception = builder.addInput(lin09ProteinPerceptionClass(enumValueType, enumValueType, enumValueType));
 
-    size_t features = builder.addFunction(lbcppMemberCompositeFunction(DecoratorProteinPredictorParameters, cysteinSymmetricResiudePairVectorPerception), proteinPerception);
+    size_t features = builder.addFunction(lbcppMemberCompositeFunction(Lin09PredictorParameters, cysteinSymmetricResiudePairVectorPerception), proteinPerception);
 
     builder.addFunction(mapNFunction(gaussianKernel), features, T("Gaussian"));
   }
