@@ -90,6 +90,13 @@ public:
 
   virtual SparseDoubleVectorPtr toSparseVector() const;
 
+  /*
+  ** Lua
+  */
+  static int dot(LuaState& state);
+  static int add(LuaState& state);
+  static int l2norm(LuaState& state);
+
   lbcpp_UseDebuggingNewOperator
 };
 

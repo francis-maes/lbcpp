@@ -153,6 +153,65 @@ int DoubleVector::getIndexOfMinimumValue() const
   return getExtremumValue(false, &res) == DBL_MAX ? -1 : (int)res;
 }
 
+// arguments: a, b
+// <a, b>
+int DoubleVector::dot(LuaState& state)
+{
+  DoubleVectorPtr vector1 = state.checkObject(1, doubleVectorClass()).staticCast<DoubleVector>();
+  DoubleVectorPtr vector2 = state.checkObject(2, doubleVectorClass()).staticCast<DoubleVector>();
+ 
+  DenseDoubleVectorPtr dv = vector1.dynamicCast<DenseDoubleVector>();
+  if (dv)
+  {
+    state.pushNumber(vector2->dotProduct(dv, 0));
+    return 1;
+  }
+  else
+  {
+    dv = vector2.dynamicCast<DenseDoubleVector>();
+    if (dv)
+    {
+      state.pushNumber(vector1->dotProduct(dv, 0));
+      return 1;
+    }
+    else
+    {
+      state.error("Invalid vector type");
+      return 0;
+    }
+  }
+}
+
+// arguments: a, b, w=1
+// a += b * w
+int DoubleVector::add(LuaState& state)
+{
+  DoubleVectorPtr vector1 = state.checkObject(1, doubleVectorClass()).staticCast<DoubleVector>();
+  DoubleVectorPtr vector2 = state.checkObject(2, doubleVectorClass()).staticCast<DoubleVector>();
+  double weight = (state.getTop() == 3 ? state.checkNumber(3) : 1.0);
+
+  DenseDoubleVectorPtr dv = vector1.dynamicCast<DenseDoubleVector>();
+  if (dv)
+    vector2->addWeightedTo(dv, 0, weight);
+  else
+  {
+    SparseDoubleVectorPtr sv = vector1.dynamicCast<SparseDoubleVector>();
+    if (sv)
+      vector2->addWeightedTo(sv, 0, weight);
+    else
+      state.error("Invalid vector type");
+  }
+  return 0;
+}
+
+int DoubleVector::l2norm(LuaState& state)
+{
+  DoubleVectorPtr vector = state.checkObject(1, doubleVectorClass()).staticCast<DoubleVector>();
+  state.pushNumber(vector->l2norm());
+  return 1;
+}
+
+
 /*
 ** SparseDoubleVector
 */
@@ -269,9 +328,12 @@ void SparseDoubleVector::addWeightedTo(const DenseDoubleVectorPtr& denseVector, 
 double SparseDoubleVector::dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const
 {
   double res = 0.0;
-  const double* target = denseVector->getValuePointer(offsetInDenseVector);
-  for (size_t i = 0; i < values.size(); ++i)
-    res += target[values[i].first] * values[i].second;
+  if (denseVector->getNumValues())
+  {
+    const double* target = denseVector->getValuePointer(offsetInDenseVector);
+    for (size_t i = 0; i < values.size(); ++i)
+      res += target[values[i].first] * values[i].second;
+  }
   return res;
 }
 
