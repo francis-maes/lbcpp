@@ -11,7 +11,6 @@
 
 # include <lbcpp/Core/Function.h>
 # include <lbcpp/Data/DoubleVector.h>
-# include <lbcpp/Distribution/DiscreteDistribution.h>
 
 namespace lbcpp
 {
@@ -160,44 +159,6 @@ public:
   }
 };
 
-// enum values + entropy + missing
-class AccumulateEnumerationDistributionContainerFunction : public AccumulateContainerFunctionImpl
-{
-public:
-  virtual EnumerationPtr getScoresEnumeration(ExecutionContext& context, TypePtr elementsType)
-  {
-    TypePtr distributionElementsType;
-    if (!Distribution::getTemplateParameter(context, elementsType, distributionElementsType))
-      return EnumerationPtr();
-    inputEnumeration = distributionElementsType.dynamicCast<Enumeration>();
-    if (!inputEnumeration)
-    {
-      context.errorCallback(T("Not an enumeration"));
-      return EnumerationPtr();
-    }
-    return addMissingToEnumerationEnumeration(addEntropyToEnumerationEnumeration(inputEnumeration));
-  }
-
-  virtual void accumulate(const ContainerPtr& container, const CumulativeScoreVectorPtr& res) const
-  {
-    size_t n = container->getNumElements();
-    for (size_t i = 0; i < n; ++i)
-    {
-      res->computeStep(i);
-      EnumerationDistributionPtr distribution = container->getElement(i).getObjectAndCast<EnumerationDistribution>();
-      jassert(distribution);
-      size_t enumSize = inputEnumeration->getNumElements();
-      for (size_t j = 0; j < enumSize; ++j)
-        res->incrementValue(i, j, distribution->computeProbability(Variable(j, inputEnumeration)));
-      res->incrementValue(i, enumSize, distribution->computeEntropy());
-      res->incrementValue(i, enumSize + 1, distribution->computeProbability(Variable(enumSize, inputEnumeration)));
-    }
-  }
-
-private:
-  EnumerationPtr inputEnumeration;
-};
-
 // value sum, missing value count
 class AccumulateDoubleContainerFunction : public AccumulateContainerFunctionImpl
 {
@@ -276,8 +237,6 @@ public:
           return new AccumulateEnumerationContainerFunction();
         else if (elementsType->inheritsFrom(doubleType))
           return new AccumulateDoubleContainerFunction();
-        else if (elementsType->inheritsFrom(enumerationDistributionClass(anyType)))
-          return new AccumulateEnumerationDistributionContainerFunction();
         else if (elementsType->inheritsFrom(doubleVectorClass()))
           return new AccumulateDoubleVectorContainerFunction();
         else

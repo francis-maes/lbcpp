@@ -506,6 +506,7 @@ private:
     if (!functionToOptimize->initialize(context, parametersClass))
       return FunctionPtr();
 
+#if 0 // FIXME: reimplement with samplers
     IndependentDoubleVectorDistributionPtr initialDistribution = new IndependentDoubleVectorDistribution(featuresEnumeration);
     for (size_t i = 0; i < featuresEnumeration->getNumElements(); ++i)
       initialDistribution->setSubDistribution(i, new GaussianDistribution(0.0, 1.0));
@@ -515,8 +516,11 @@ private:
     Variable bestParameters;
     /*double bestScore = */performEDA(context, functionToOptimize, initialDistribution, bestParameters);
     return new HIVSearchHeuristic(featuresFunction, bestParameters.getObjectAndCast<DenseDoubleVector>());
+#endif // 0
+    return FunctionPtr();
   }
 
+#if 0 // FIXME: replace by default eda
   double performEDA(ExecutionContext& context, const FunctionPtr& functionToOptimize, const DistributionPtr& initialDistribution, Variable& bestParameters) const
   {
     double bestScore = DBL_MAX;
@@ -590,6 +594,7 @@ private:
     bestParameters = inputs[sortedScores.begin()->second];
     return sortedScores.begin()->first;
   }
+#endif // 0
 
   double evaluateEachFeature(ExecutionContext& context, const FunctionPtr& functionToMinimize, EnumerationPtr featuresEnumeration) const
   {
