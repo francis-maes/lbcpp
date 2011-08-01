@@ -35,7 +35,7 @@ public:
   virtual TypePtr getActionType() const
     {return denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);}
 
-  virtual void performTransition(ExecutionContext& context, const Variable& a, double& reward)
+  virtual void performTransition(ExecutionContext& context, const Variable& a, double& reward, Variable* stateBackup)
   {
     const DenseDoubleVectorPtr& action = a.getObjectAndCast<DenseDoubleVector>();
     std::vector<double> state;
