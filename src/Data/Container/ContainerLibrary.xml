@@ -43,7 +43,6 @@
 
   <class name="AccumulateContainerFunctionImpl" base="Function" abstract="yes"/>
   <class name="AccumulateEnumerationContainerFunction" base="AccumulateContainerFunctionImpl"/>
-  <class name="AccumulateEnumerationDistributionContainerFunction" base="AccumulateContainerFunctionImpl"/>
   <class name="AccumulateDoubleContainerFunction" base="AccumulateContainerFunctionImpl"/>
   <class name="AccumulateDoubleVectorContainerFunction" base="AccumulateContainerFunctionImpl"/>
   <class name="AccumulateContainerFunction" base="ProxyFunction">

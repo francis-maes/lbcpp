@@ -8,7 +8,6 @@
   <import name="Data"/>
   <import name="Network" ifdef="LBCPP_NETWORKING"/>
   <import name="Function"/>
-  <import name="Distribution"/>
   <import name="Sampler"/>
 
   <import name="FeatureGenerator"/>

@@ -21,10 +21,6 @@ IF(LBCPP_NETWORKING)
   GENERATE_INTROSPECTION_CODE(Network/WorkUnit/NetworkWorkUnitLibrary.xml NetworkWorkUnitLibrary.cpp)
 ENDIF(LBCPP_NETWORKING)
 
-GENERATE_INTROSPECTION_CODE(Distribution/DistributionLibrary.xml DistributionLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Distribution/Function/DistributionFunctionLibrary.xml DistributionFunctionLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Distribution/Builder/DistributionBuilderLibrary.xml DistributionBuilderLibrary.cpp)
-
 GENERATE_INTROSPECTION_CODE(Sampler/SamplerLibrary.xml SamplerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Sampler/Continuous/ContinuousSamplerLibrary.xml ContinuousSamplerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Sampler/Discrete/DiscreteSamplerLibrary.xml DiscreteSamplerLibrary.cpp)
@@ -304,7 +300,7 @@ IF(LBCPP_NETWORKING)
 
 ENDIF(LBCPP_NETWORKING)
 
-#### Sampler / Distribution ####
+#### Sampler ####
 
 SET(LBCPP_SAMPLER_SOURCES
   ../include/lbcpp/Sampler/Sampler.h
@@ -341,38 +337,6 @@ SET(LBCPP_SAMPLER_COMPOSITE_SOURCES
   Sampler/Composite/CompositeSamplerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/CompositeSamplerLibrary.cpp
 )
-
-SET(LBCPP_DISTRIBUTION_SOURCES
-  ../include/lbcpp/Distribution/predeclarations.h
-  ../include/lbcpp/Distribution/Distribution.h
-  ../include/lbcpp/Distribution/DiscreteDistribution.h
-  Distribution/DiscreteDistribution.cpp
-  ../include/lbcpp/Distribution/ContinuousDistribution.h
-  Distribution/ContinuousDistribution.cpp
-  ../include/lbcpp/Distribution/MultiVariateDistribution.h
-  Distribution/MultiVariateDistribution.cpp
-  Distribution/DistributionLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/DistributionLibrary.cpp
-)
-
-SET(LBCPP_DISTRIBUTION_FUNCTION_SOURCES
-  Distribution/Function/DistributionEntropyFunction.h
-  Distribution/Function/DistributionFunctionLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/DistributionFunctionLibrary.cpp
-)
-
-SET(LBCPP_DISTRIBUTION_BUILDER_SOURCES
-  ../include/lbcpp/Distribution/DistributionBuilder.h
-  Distribution/Builder/EnumerationDistributionBuilder.h
-  Distribution/Builder/GaussianDistributionBuilder.h
-  Distribution/Builder/GaussianDistributionBuilder.cpp
-  Distribution/Builder/BernoulliDistributionBuilder.h
-  Distribution/Builder/IndependentMultiVariateDistributionBuilder.h
-  Distribution/Builder/IndependentDoubleVectorDistributionBuilder.h
-  Distribution/Builder/DistributionBuilderLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/DistributionBuilderLibrary.cpp
-)
-
 
 #### Function ####
 
@@ -836,15 +800,11 @@ SET(LBCPP_SOURCES
     ${LBCPP_NETWORK_MANAGER_SOURCES}
     ${LBCPP_NETWORK_WORK_UNIT_SOURCES}
   
-  # Sampler / Distribution
+  # Sampler
   ${LBCPP_SAMPLER_SOURCES}
     ${LBCPP_SAMPLER_CONTINUOUS_SOURCES}
     ${LBCPP_SAMPLER_DISCRETE_SOURCES}
     ${LBCPP_SAMPLER_COMPOSITE_SOURCES}
-
-  ${LBCPP_DISTRIBUTION_SOURCES}
-    ${LBCPP_DISTRIBUTION_FUNCTION_SOURCES}
-    ${LBCPP_DISTRIBUTION_BUILDER_SOURCES}  
 
   # Execution
   ${LBCPP_EXECUTION_SOURCES}
@@ -929,16 +889,12 @@ SOURCE_SUB_GROUP(Network Grid FILES ${LBCPP_NETWORK_GRID_SOURCES})
 SOURCE_SUB_GROUP(Network Manager FILES ${LBCPP_NETWORK_MANAGER_SOURCES})
 SOURCE_SUB_GROUP(Network WorkUnit FILES ${LBCPP_NETWORK_WORK_UNIT_SOURCES})
 
-## Sampler / Distribution
+## Sampler
 SOURCE_GROUP(Sampler FILES ${LBCPP_SAMPLER_SOURCES})
 SOURCE_SUB_GROUP(Sampler Continuous FILES ${LBCPP_SAMPLER_CONTINUOUS_SOURCES})
 SOURCE_SUB_GROUP(Sampler Discrete FILES ${LBCPP_SAMPLER_DISCRETE_SOURCES})
 SOURCE_SUB_GROUP(Sampler Composite FILES ${LBCPP_SAMPLER_COMPOSITE_SOURCES})
     
-SOURCE_GROUP(Distribution FILES ${LBCPP_DISTRIBUTION_SOURCES})
-SOURCE_SUB_GROUP(Distribution Function FILES ${LBCPP_DISTRIBUTION_FUNCTION_SOURCES})
-SOURCE_SUB_GROUP(Distribution Builder FILES ${LBCPP_DISTRIBUTION_BUILDER_SOURCES})
-
 ## Execution
 SOURCE_GROUP(Execution FILES ${LBCPP_EXECUTION_SOURCES})
 SOURCE_SUB_GROUP(Execution Callback FILES ${LBCPP_EXECUTION_CALLBACK_SOURCES})

@@ -46,10 +46,6 @@
     <variable type="Boolean" name="applyLogScale"/>
   </class>
   
-  <class name="SignedScalarToProbabilityFunction" base="SimpleUnaryFunction">
-    <constructor returnType="Function"/>
-  </class>
-
   <!-- Generate Vector Function -->
   <class name="CreateVectorFunction" base="Function">
     <constructor arguments="FunctionPtr elementGeneratorFunction, bool transmitIndexToGeneratorFunction"/>
@@ -114,6 +110,14 @@
   </class>
   
   <class name="ConcatenateContainerFunction" base="Function">
+    <constructor/>
+  </class>
+  
+  <!-- Misc -->
+  <class name="SignedScalarToProbabilityFunction" base="SimpleUnaryFunction">
+    <constructor returnType="Function"/>
+  </class>
+  <class name="DoubleVectorEntropyFunction" base="Function">
     <constructor/>
   </class>
 

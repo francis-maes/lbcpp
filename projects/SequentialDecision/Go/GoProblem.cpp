@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include "GoProblem.h"
+#include <algorithm>
 using namespace lbcpp;
 
 /*
