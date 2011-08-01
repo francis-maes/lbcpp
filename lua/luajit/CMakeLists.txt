@@ -23,7 +23,7 @@ dobuildvm(bcdef lj_bcdef.h "${all_lib}")
 dobuildvm(ffdef lj_ffdef.h "${all_lib}")
 dobuildvm(libdef lj_libdef.h "${all_lib}")
 dobuildvm(recdef lj_recdef.h "${all_lib}")
-dobuildvm(vmdef ../lib/vmdef.lua "${all_lib}")
+dobuildvm(vmdef vmdef.lua "${all_lib}") # francis: replace ../lib/vmdef.lua by vmdef.lua
 dobuildvm(folddef lj_folddef.h lj_opt_fold.c)
 
 if(WIN32)
