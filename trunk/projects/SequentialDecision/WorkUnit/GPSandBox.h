@@ -28,8 +28,8 @@ class GPObjectiveFunction : public SimpleUnaryFunction
 {
 public:
   GPObjectiveFunction(const std::vector<std::pair< std::vector<double> , double> >& examples, double lambda)
-    : SimpleUnaryFunction(gpExpressionClass, doubleType), lambda(lambda), examples(examples) {}
- 
+  : SimpleUnaryFunction(gpExpressionClass, doubleType), lambda(lambda), examples(examples) {}
+
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     const GPExpressionPtr& expression = input.getObjectAndCast<GPExpression>();
@@ -38,16 +38,25 @@ public:
     for (size_t i = 0; i < examples.size(); ++i)
     {
       double prediction = expression->compute(&examples[i].first[0]);
+      if(prediction >= DBL_MAX || prediction <= -DBL_MAX || prediction == NAN || prediction == -NAN)
+        return 1.0; // very bad score
+
+      if(res >= DBL_MAX || res <= -DBL_MAX || res == NAN || res == -NAN)
+        return 1.0;
       res += fabs(prediction - examples[i].second);
     }
-
+    if(res >= DBL_MAX || res <= -DBL_MAX || res == NAN || res == -NAN)
+           return 1.0;
     // tmp
     //context.informationCallback(expression->toShortString() + T(" -> ") + String(res / (double)examples.size()));
     // -
 
-    return res / (double)examples.size() + lambda * expression->size();
+    // normalize
+    res /= (double)examples.size();
+    res /= (1+res);
+    return res; //+ lambda * expression->size(); // lamba = penalize length...
   }
- 
+
 protected:
   double lambda;
   std::vector<std::pair<std::vector<double> , double> > examples;
@@ -58,7 +67,7 @@ class GPStructureObjectiveFunction : public SimpleUnaryFunction
 {
 public:
   GPStructureObjectiveFunction(FunctionPtr objectiveFunction)
-    : SimpleUnaryFunction(gpExpressionClass, doubleType), objectiveFunction(objectiveFunction)
+  : SimpleUnaryFunction(gpExpressionClass, doubleType), objectiveFunction(objectiveFunction)
   {
     objectiveFunction->initialize(defaultExecutionContext(), gpExpressionClass);
   }
@@ -89,8 +98,8 @@ public:
   struct Objective : public SimpleUnaryFunction
   {
     Objective(FunctionPtr finalObjective, const GPExpressionPtr& structure)
-      : SimpleUnaryFunction(denseDoubleVectorClass(), doubleType),
-        finalObjective(finalObjective), structure(structure)
+    : SimpleUnaryFunction(denseDoubleVectorClass(), doubleType),
+      finalObjective(finalObjective), structure(structure)
     {
     }
 
@@ -164,7 +173,7 @@ public:
     size_t populationSize = numParameters * 12;
     size_t numBests = numParameters * 3;
     StoppingCriterionPtr stoppingCriterion = maxIterationsWithoutImprovementStoppingCriterion(5);
-    
+
     OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, stoppingCriterion, 0.0, false);
     ExecutionContextPtr silentContext = singleThreadedExecutionContext();
     optimizer->compute(*silentContext, optimizerContext, optimizerState);
@@ -178,7 +187,7 @@ public:
     return new GPStructureScoreObject(bestExpression, bestScore);
   }
 
-protected:
+  protected:
   FunctionPtr objectiveFunction;
 };
 
@@ -216,7 +225,7 @@ public:
   }
 
   SamplerPtr createExpressionSampler(EnumerationPtr inputVariables) const
-    {return new GPExpressionSampler(maximumEntropySampler(gpExprLabelsEnumeration), inputVariables, 1);}
+  {return new GPExpressionSampler(maximumEntropySampler(gpExprLabelsEnumeration), inputVariables, 1);}
 
   FunctionPtr createObjectiveFunction(ExecutionContext& context) const
   {
@@ -231,7 +240,7 @@ public:
       x[2] = random->sampleDouble(1.0, 6.0);
       x[3] = random->sampleDouble(1.0, 6.0);
       double y = x[0] + log(x[1] * x[2]);// + x[2] + x[3];// 10.0 / (5.0 + (x[0] - 2) * (x[0] - 2) + (x[1] - 2) * (x[1] - 2));
-//      double y = 1.0 + x[0] + x[1];//cos(x[0] * (1 + cos(x[0])));
+      //      double y = 1.0 + x[0] + x[1];//cos(x[0] * (1 + cos(x[0])));
       examples.push_back(std::make_pair(x, y));
     }
 
@@ -251,7 +260,7 @@ public:
       context.enterScope(T("Depth ") + String((int)depth + 1));
 
       SearchTreePtr searchTree = new SearchTree(problem, state, maxSearchNodes);
-      
+
       PolicyPtr searchPolicy = bestFirstSearchPolicy(new MinDepthSearchHeuristic());
 
       searchTree->doSearchEpisode(context, searchPolicy, maxSearchNodes);

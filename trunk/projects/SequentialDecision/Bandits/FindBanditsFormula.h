@@ -441,14 +441,16 @@ public:
   {
 //    return tuneAndTestPolicyOnEachProblem(context, new TestDiscreteBanditPolicy());
   
-//    DiscreteBanditStatePtr problem = createBanditProblem(problemIndex);
-//    String problemName = problem->toShortString();
+    DiscreteBanditStatePtr problem = createBanditProblem(problemIndex);
+    String problemName = problem->toShortString();
+ 
+    // evate policies on all problems
     std::vector<DiscreteBanditStatePtr> problems(12);
     for (size_t i = 0; i < problems.size(); ++i)
       problems[i] = createBanditProblem(i);
     String problemsName = T("Problems 1--12");
     
-    makePolicyParameterCurves(context, problems, problemsName);
+//    makePolicyParameterCurves(context, problems, problemsName);
     
     /*
     ** Evaluate un-parametrized baseline policies
