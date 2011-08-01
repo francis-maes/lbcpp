@@ -36,12 +36,12 @@ public:
       return 101.f;
     }
 
-    if (true)
+/*    if (true)
     {
       param->predictorParameters = new GaussianKernelPredictorParameters(context, param->predictorParameters, -4.7, trainingData->fold(0, 5));
       trainingData = trainingData->invFold(0, 5);
     }
-
+*/
     ProteinSequentialPredictorPtr predictor = new ProteinSequentialPredictor();
     for (size_t i = 0; i < numStacks; ++i)
     {
@@ -153,6 +153,37 @@ protected:
   friend class CysteinCrossValidationFunctionClass;
 
   String path;
+};
+
+class GaussianKernelParameters : public Object
+{
+public:
+  GaussianKernelParameters(double gamma = -4.6, double C = 1.4)
+    : gamma(gamma), C(C) {}
+
+  std::vector<StreamPtr> createStreams()
+  {
+    std::vector<StreamPtr> res(2);
+    
+    std::vector<int> gammaValues;
+    for (int i = -15; i <= 15; i += 2)
+      gammaValues.push_back(i);
+    
+    std::vector<int> cValues;
+    for (int i = -15; i <= 15; i += 2)
+      cValues.push_back(i);
+
+    res[0] = integerStream(positiveIntegerType, gammaValues);
+    res[1] = integerStream(positiveIntegerType, cValues);
+
+    return res;
+  }
+
+protected:
+  friend class GaussianKernelParametersClass;
+
+  double gamma;
+  double C;
 };
 
 class CParameterOptimizer : public Optimizer
@@ -278,15 +309,19 @@ public:
   Variable run(ExecutionContext& context)
   {
     Lin09ParametersPtr lin09 = new Lin09Parameters();
-    lin09->pssmWindowSize = 23;
+    lin09->pssmWindowSize = 15;
+    lin09->separationProfilSize = 9;
     lin09->usePositionDifference = true;
-    lin09->useIndexDifference = true;
+    lin09->pssmLocalHistogramSize = 100;
 
     Lin09PredictorParametersPtr lin09Pred = new Lin09PredictorParameters(lin09);
-    lin09Pred->useLibSVM = false;
+    lin09Pred->useLibSVM = true;
     lin09Pred->useLaRank = false;
     lin09Pred->useLibLinear = false;
     lin09Pred->useAddBias = true;
+    
+    lin09Pred->C = 1.4;
+    lin09Pred->kernelGamma = -4.6;
 
     CysteinLearnerParametersPtr p = new CysteinLearnerParameters();
     p->predictorParameters = lin09Pred;
