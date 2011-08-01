@@ -45,10 +45,10 @@ static int parseIdentifier (CodeDocument::Iterator& source) throw()
       { T("else"), T("then"), T("true"), 0};
 
     static const tchar* keywords5Char[] =
-      { T("break"), T("false"), T("local"), T("repeat"), T("until"), T("while"), 0};
+      { T("break"), T("false"), T("local"), T("until"), T("while"), 0};
 
     static const tchar* keywords6Char[] =
-      { T("elseif"), T("return"), 0};
+      { T("elseif"), T("repeat"), T("return"), 0};
         
     static const tchar* keywordsOther[] =
         { T("function"), 0 };

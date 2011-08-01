@@ -316,6 +316,36 @@ void SparseDoubleVector::setElement(size_t index, const Variable& value)
     SparseDoubleVectorHelper::set(values, index, value.getDouble());
 }
 
+String SparseDoubleVector::toShortString() const
+{
+  String res;
+  for (size_t i = 0; i < values.size(); ++i)
+    if (values[i].second)
+      res += getElementName(values[i].first) + T(":") + String(values[i].second) + T(" ");
+  if (res.isNotEmpty())
+    res.dropLastCharacters(1);
+  return res;
+}
+
+int SparseDoubleVector::append(LuaState& state)
+{
+  if (state.getTop() == 3)
+  {
+    SparseDoubleVectorPtr vector = state.checkObject(1, sparseDoubleVectorClass()).staticCast<SparseDoubleVector>();
+    int index = state.checkInteger(2);
+    if (index < 0)
+      state.error("Invalid index in SparseDoubleVector::append");
+    else
+    {
+      double value = state.checkNumber(3);
+      vector->appendValue((size_t)index, value);
+    }
+  }
+  else
+    DoubleVector::append(state);
+  return 0;
+}
+
 /*
 ** DenseDoubleVector
 */

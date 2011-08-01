@@ -14,11 +14,7 @@
 # include "Rewriter.h"
 # include "Scope.h"
 
-extern "C" {
-# include "../../src/Lua/lua/lua.h"
-# include "../../src/Lua/lua/lauxlib.h"
-# include "../../src/Lua/lua/lualib.h"
-}; /* extern "C" */
+# include "../../lua/lua.h"
 
 namespace lbcpp
 {
@@ -122,7 +118,7 @@ public:
 
     static const char* initializeCode = 
       "package.path = 'C:/Projets/lbcpp/projects/Lua/lib/?.lua;' .. package.path\n"
-      "require 'LuaChunk'\n";
+      "require 'Language.LuaChunk'\n";
     luaState.execute(initializeCode, "initializeCode");
 
     LuaChunk chunk(luaState, luaStatementBlock, luaFile);

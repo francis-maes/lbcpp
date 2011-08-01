@@ -20,7 +20,7 @@ static int objectNewIndex(lua_State* L)
   {LuaState state(L); return Object::newIndex(state);}
 
 static int objectToString(lua_State* L)
-  {LuaState state(L); return Object::toString(state);}
+  {LuaState state(L); return Object::toShortString(state);}
 
 static int objectGarbageCollect(lua_State* L)
   {LuaState state(L); return Object::garbageCollect(state);}
