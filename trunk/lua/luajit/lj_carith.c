@@ -35,7 +35,7 @@ static int carith_checkarg(lua_State *L, CTState *cts, CDArith *ca)
   for (i = 0; i < 2; i++, o++) {
     if (tviscdata(o)) {
       GCcdata *cd = cdataV(o);
-      CType *ct = ctype_raw(cts, (CTypeID)cd->typeid_);
+      CType *ct = ctype_raw(cts, (CTypeID)cd->typeid);
       uint8_t *p = (uint8_t *)cdataptr(cd);
       if (ctype_isptr(ct->info)) {
 	p = (uint8_t *)cdata_getptr(p, ct->size);
@@ -194,9 +194,9 @@ static int lj_carith_meta(lua_State *L, CTState *cts, CDArith *ca, MMS mm)
 {
   cTValue *tv = NULL;
   if (tviscdata(L->base))
-    tv = lj_ctype_meta(cts, cdataV(L->base)->typeid_, mm);
+    tv = lj_ctype_meta(cts, cdataV(L->base)->typeid, mm);
   if (!tv && L->base+1 < L->top && tviscdata(L->base+1))
-    tv = lj_ctype_meta(cts, cdataV(L->base+1)->typeid_, mm);
+    tv = lj_ctype_meta(cts, cdataV(L->base+1)->typeid, mm);
   if (!tv) {
     const char *repr[2];
     int i;

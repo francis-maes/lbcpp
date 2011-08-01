@@ -9,7 +9,6 @@
 #include "lua.h"
 
 #if defined(_MSC_VER)
-#include <intrin.h> // francis
 /* MSVC is stuck in the last century and doesn't have C99's stdint.h. */
 typedef __int8 int8_t;
 typedef __int16 int16_t;
@@ -234,12 +233,12 @@ static LJ_AINLINE uint32_t lj_getu32(const void *p)
 
 static LJ_AINLINE uint32_t lj_ffs(uint32_t x)
 {
-  unsigned long r; _BitScanForward(&r, x); return r;
+  uint32_t r; _BitScanForward(&r, x); return r;
 }
 
 static LJ_AINLINE uint32_t lj_fls(uint32_t x)
 {
-  unsigned long r; _BitScanReverse(&r, x); return r;
+  uint32_t r; _BitScanReverse(&r, x); return r;
 }
 
 #define lj_bswap(x)	(_byteswap_ulong((x)))

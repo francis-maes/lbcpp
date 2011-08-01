@@ -71,7 +71,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_BANDITS_SOURCES
   Bandits/UCBvDiscreteBanditPolicy.h
   Bandits/PowerDiscreteBanditPolicy.h
   Bandits/GPExpressionDiscreteBanditPolicy.h
-  Bandits/BanditsMCTSWorkUnit.h
+#  Bandits/BanditsMCTSWorkUnit.h
   Bandits/SequentialDecisionBanditsLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionBanditsLibrary.cpp
 )

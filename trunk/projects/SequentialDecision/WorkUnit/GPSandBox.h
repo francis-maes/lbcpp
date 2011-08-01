@@ -38,15 +38,12 @@ public:
     for (size_t i = 0; i < examples.size(); ++i)
     {
       double prediction = expression->compute(&examples[i].first[0]);
-      if(prediction >= DBL_MAX || prediction <= -DBL_MAX || prediction == NAN || prediction == -NAN)
+      if (!isNumberValid(prediction))
         return 1.0; // very bad score
-
-      if(res >= DBL_MAX || res <= -DBL_MAX || res == NAN || res == -NAN)
-        return 1.0;
       res += fabs(prediction - examples[i].second);
+      if (!isNumberValid(res))
+        return 1.0;
     }
-    if(res >= DBL_MAX || res <= -DBL_MAX || res == NAN || res == -NAN)
-           return 1.0;
     // tmp
     //context.informationCallback(expression->toShortString() + T(" -> ") + String(res / (double)examples.size()));
     // -
