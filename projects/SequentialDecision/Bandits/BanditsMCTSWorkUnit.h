@@ -50,7 +50,7 @@ public:
 
   //TODO implement as a singly linked list
   std::vector<MCTSNodePtr> child;       // list of children
-  float reward;            // value accumulated so far
+  double reward;            // value accumulated so far
   int parent;              // position of the parent
   int visit;               // visit count
   bool isLeaf;			 // is a leaf node
@@ -139,7 +139,7 @@ public:
       for (size_t i = 0; i < cur->child.size(); ++i)
       {
         MCTSNodePtr tmp = cur->child[i];
-        score = (tmp->visit>0) ? tmp->reward/tmp->visit + c*sqrt(log(1+tree[tmp->parent]->visit)/(1+tmp->visit))
+        score = (tmp->visit>0) ? tmp->reward/tmp->visit + c*sqrt(log(1.0+tree[tmp->parent]->visit)/(1+tmp->visit))
         : DBL_MAX;
 
         if (score >= bestScore)
@@ -209,7 +209,7 @@ public:
     // depth
     // GPExpressionBuilderStatePtr state =p->getState().staticCast<GPExpressionBuilderState>();
     GPExpressionBuilderStatePtr clone =  p->getState()->cloneAndCast<GPExpressionBuilderState>();
-    for(int i = p->depth ; i< maxDepth ; ++i)
+    for(size_t i = p->depth ; i< maxDepth ; ++i)
     {
       // ajoute un action
       ContainerPtr availableActions = clone->getAvailableActions();
@@ -267,11 +267,11 @@ if(score!=score)
     // traverse
     while(!cur->isLeaf)
     {
-MCTSNodePtr best;
+      MCTSNodePtr best;
       for (size_t i = 0; i < cur->child.size(); ++i)
       {
         MCTSNodePtr tmp = cur->child[i];
-        if(tmp->visit>best)
+        if (tmp->visit > best) // FIXME: this is not correct, comparing an int with a MCTSNodePtr
           best=tmp;
       }
       cur=best;
@@ -349,7 +349,7 @@ public:
     return res;
   }
 
-  virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward)
+  virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward, Variable* stateBackup)
   {
     const GPExpressionBuilderActionPtr& builderAction = action.getObjectAndCast<GPExpressionBuilderAction>();
     GPExpressionPtr expression = builderAction->makeExpression(expressions);
@@ -374,7 +374,7 @@ public:
   }
 
   virtual bool isFinalState() const
-  {return false;}
+    {return false;}
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
   {
