@@ -12,7 +12,7 @@ print (#examples .. " examples, " .. labels:size() .. " labels")
 --end
 
 
-learnBinaryClassifier = subspecified function (examples)
+subspecified function learnBinaryClassifier(examples)
 
   parameter rate = {default = IterationFunction.constant(1)}
   parameter normalizeRate = {default = true}
@@ -36,7 +36,7 @@ learnBinaryClassifier = subspecified function (examples)
   local function iteration(parameters, iteration)
     context:result("iteration", iteration)
 
-    local lossStats = Statistics.meanVarianceAndBounds()
+    local lossStats = Statistics.mean()
     for i=1,#examples do
       local example = examples[i]
       --print (parameters, example[1])

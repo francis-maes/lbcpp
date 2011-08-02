@@ -2,7 +2,8 @@ hop = subspecified 51
 
 print (hop)
 
-toto = subspecified function (x)
+
+subspecified function toto(x)
   parameter constant1 = {default = 51}
   parameter constant2 = {default = 1}
   return constant1 + constant2 * x
@@ -15,4 +16,3 @@ totoInstance = toto{constant2 = 8.6}
 print (totoInstance)
 
 print (totoInstance(2))
-

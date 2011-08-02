@@ -20,14 +20,14 @@ namespace lua {
 class ExpressionDerivateRewriter : public DefaultRewriter
 {
 public:
-  ExpressionDerivateRewriter(const VariablePtr& variable)
-    : variable(variable) {}
+  ExpressionDerivateRewriter(ExecutionContextPtr context, const VariablePtr& variable)
+    : DefaultRewriter(context), variable(variable) {}
 
   static ExpressionPtr ternaryOperator(const ExpressionPtr& condition, const ExpressionPtr& valueIfTrue, const ExpressionPtr& valueIfFalse)
   {
     if (valueIfTrue->print() == valueIfFalse->print())
       return valueIfTrue;
-    return new Call(new Identifier("LuaChunk.ternaryOperator"), condition, valueIfTrue, valueIfFalse);
+    return new Call(new Index("Derivable", "ternaryOperator"), condition, valueIfTrue, valueIfFalse);
   }
  
   // return "du/dx"
@@ -40,7 +40,11 @@ public:
   virtual void visit(Identifier& identifier)
   {
     VariablePtr thisVariable = identifier.getScope()->findVariable(&identifier);
-    jassert(thisVariable);
+    if (!thisVariable)
+    {
+      warning(identifier, "Could not find variable " + identifier.getIdentifier());
+      return;
+    }
 
     if (thisVariable == variable)
       setResult(new LiteralNumber(1.0)); // d(x)/dx = 1
@@ -115,13 +119,17 @@ public:
       setResult(ternaryOperator(u, vprime, new LiteralNumber(0.0)));
       return;
 
-    case concatOp:
-    case modOp:
-    case eqOp:
     case ltOp:
     case leOp:
-      std::cerr << "Warning: Unsuported binary operation : " << operation.toString() << std::endl;
-      jassert(false); // not yet implemented
+    case eqOp:
+      // FIXME: a better implementation may be required
+      setResult(new LiteralNumber(0.0));
+      return;
+
+    case concatOp:
+    case modOp:
+      warning(operation, "Cannot derivate operation " + operation.toString());
+      return;
     }
   }
   
@@ -206,8 +214,8 @@ protected:
 class FunctionDerivateRewriter : public DefaultRewriter
 {
 public:
-  FunctionDerivateRewriter(const VariablePtr& variable)
-    : variable(variable) {}
+  FunctionDerivateRewriter(ExecutionContextPtr context, const VariablePtr& variable)
+    : DefaultRewriter(context), variable(variable) {}
   
   virtual void visit(Set& statement)
   {
@@ -259,8 +267,8 @@ public:
 
   ExpressionPtr derivateExpressionWrtVariable(const ExpressionPtr& expression, const VariablePtr& variable)
   {
-    ExpressionDerivateRewriter rewriter(variable);
-    return rewriter.rewrite(expression).staticCast<Expression>();
+    ExpressionDerivateRewriter rewriter(context, variable);
+    return rewriter.rewrite(expression->cloneAndCast<Expression>()).staticCast<Expression>();
   }
 
 protected:
@@ -293,7 +301,7 @@ public:
     VariablePtr variable = functionScope->findVariable(variableIdentifier, false);
     jassert(variable);
     BlockPtr newBlock = function->getBlock()->cloneAndCast<Block>();
-    FunctionDerivateRewriter derivateFunction(variable);
+    FunctionDerivateRewriter derivateFunction(context, variable);
     return new Function(function->getPrototype(), derivateFunction.rewrite(newBlock));
   }
 
@@ -334,7 +342,7 @@ public:
     for (size_t i = 0; i < n; ++i)
     {
       IdentifierPtr id = function.getParameterIdentifier(i);
-      if (id->hasDerivableFlag())
+      if (id && id->hasDerivableFlag())
         derivables.push_back(id);
     }
     if (derivables.size() > 0)

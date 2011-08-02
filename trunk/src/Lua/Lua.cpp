@@ -116,8 +116,11 @@ void LuaState::getGlobal(const char* name)
 void LuaState::getGlobal(const char* scopeName, const char* name)
 {
   getGlobal(scopeName);
-  lua_getfield(L, -1, name);
-  lua_remove(L, -2); // remove scope from stack
+  if (!lua_isnil(L, -1))
+  {
+    lua_getfield(L, -1, name);
+    lua_remove(L, -2); // remove scope from stack
+  }
 }
 
 void LuaState::pushBoolean(bool value)

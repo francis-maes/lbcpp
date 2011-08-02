@@ -259,11 +259,13 @@ public:
       operation.getExpr().dynamicCast<Identifier>();
 
     write(luaOperators[operation.getOp()]);
-    if (operation.getOp() == notOp ||
-        (operation.getOp() == unmOp && !isLiteralOrIdentifier) ||
-        (operation.getOp() == lenOp && !isLiteralOrIdentifier))
+    if (isLiteralOrIdentifier)
       write(" ");
-    operation.getExpr()->accept(*this);
+    else
+      write("(");
+     operation.getExpr()->accept(*this);
+     if (!isLiteralOrIdentifier)
+       write(")");
   }
 
   virtual void visit(BinaryOperation& operation)
