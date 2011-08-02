@@ -39,8 +39,8 @@ void Scope::variableSet(IdentifierPtr identifier, ExpressionPtr value)
   VariablePtr variable = findVariable(identifier);
   if (variable)
     variable->isConstant = false;
-  else
-    std::cerr << "Could not find variable " << identifier->getIdentifier() << std::endl;
+  //else
+    //std::cerr << "Could not find variable " << identifier->getIdentifier() << std::endl;
 }
 
 void Scope::variableGet(IdentifierPtr identifier)
@@ -48,8 +48,8 @@ void Scope::variableGet(IdentifierPtr identifier)
   VariablePtr variable = findVariable(identifier);
   if (variable)
     variable->isUsed = true;
-  else
-    std::cerr << "Could not find variable " << identifier->getIdentifier() << std::endl;
+  //else
+    //std::cerr << "Could not find variable " << identifier->getIdentifier() << std::endl;
 }
 
 VariablePtr Scope::findVariable(const IdentifierPtr& identifier, bool recursively) const

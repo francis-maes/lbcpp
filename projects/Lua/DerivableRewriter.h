@@ -321,7 +321,7 @@ public:
     }
     table->append("prototype", new Table(prototype));
 
-    return new Call(new Identifier("setmetatable"), table, new Index(new Identifier("LuaChunk"), new Identifier("DerivableFunction")));
+    return new Call(new Identifier("setmetatable"), table, new Index(new Identifier("LuaChunk"), new LiteralString("DerivableFunction")));
   }
 
   virtual void visit(Function& function)

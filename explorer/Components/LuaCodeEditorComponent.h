@@ -74,6 +74,7 @@ public:
     ExplorerProject::getCurrentProject()->getRootDirectory().setAsCurrentWorkingDirectory(); 
     WorkUnitPtr workUnit = WorkUnit::create(getType("ExecuteLuaString"));
     workUnit->setVariable(0, code);
+    workUnit->setVariable(1, name);
     context->run(workUnit);
   }
  

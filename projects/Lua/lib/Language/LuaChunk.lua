@@ -44,6 +44,39 @@ local function convertLineInfo(lineinfo) -- not used yet, to be finished
   return lbcpp.Object.create("lua::LineInfo", lineinfo[1], lineinfo[2], lineinfo[4], comments)
 end
 
+local function makeObjectVector(class, inputTable, startIndex)
+  local res = lbcpp.Object.create('ObjectVector<' .. class .. '>')
+  for i=startIndex,#inputTable do
+    res:append(inputTable[i])
+  end
+  return res
+end
+
+local function createBlock(statements)
+
+  local function ensureIsStatement(node)
+    local cl = node.className
+    if cl == "lua::Call" or cl == "lua::Invoke" then
+      return lbcpp.Object.create("lua::ExpressionStatement", node)
+    else
+      return node
+    end
+  end
+
+  if type(statements) == 'table' then
+    for i=1,#statements do
+      statements[i] = ensureIsStatement(statements[i])
+    end
+  else 
+    local tmp = {}
+    for i=1,statements:size() do
+      table.insert(tmp, ensureIsStatement(statements:get(i - 1)))
+    end
+    statements = tmp
+  end
+  return lbcpp.Object.create("lua::Block", makeObjectVector("lua::Statement", statements, 1))
+end
+
 function _M.metaLuaAstToLbcppAst(ast)
 
   local function convertSubNodes(ast)
@@ -56,23 +89,9 @@ function _M.metaLuaAstToLbcppAst(ast)
     return res
   end
 
-  local function makeObjectVector(class, inputTable, startIndex)
-    local res = lbcpp.Object.create('ObjectVector<' .. class .. '>')
-    for i=startIndex,#inputTable do
-      res:append(inputTable[i])
-    end
-    return res
-  end
 
   local function makeBlock(subAst)
-    local statements = convertSubNodes(subAst)
-    for i=1,#statements do
-      local cl = statements[i].className
-      if cl == "lua::Call" or cl == "lua::Invoke" then
-        statements[i] = lbcpp.Object.create("lua::ExpressionStatement", statements[i])
-      end
-    end
-    return lbcpp.Object.create("lua::Block", makeObjectVector("lua::Statement", statements, 1))
+    return createBlock(convertSubNodes(subAst))
   end
 
   local function getTag(ast)
@@ -215,9 +234,7 @@ function _M.parse(codeType, lexer)
   elseif (codeType == 2) then
     -- transform result into block
     local list = _M.metaLuaAstToLbcppAst(_M.parseStatementBlock(lexer))
-    local res = lbcpp.Object.create("lua::Block")
-    res.statements = list.nodes
-    return res
+    return createBlock(list.nodes)
   else
     error("Unknown code type")
   end

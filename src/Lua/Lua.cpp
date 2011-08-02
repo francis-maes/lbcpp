@@ -69,26 +69,42 @@ LuaState::~LuaState()
   }
 }
 
+bool LuaState::call(int numArguments, int numResults)
+{
+  // todo: more elaborated error handler
+  int res = lua_pcall(L, numArguments, numResults, 0);
+  return processExecuteError(res);
+}
+
 bool LuaState::processExecuteError(int error)
 {
   if (error)
   {
-    String what = lua_tostring(L, -1);
-    lua_pop(L, 1);  // pop error message from the stack
-    std::cerr << what << std::endl;
-    //getContext().errorCallback(what);
+    String what = toString(-1);
+    pop(1); // pop error message from the stack
+
+    ExecutionContext& context = getContext();
+    if (error == LUA_ERRRUN)
+      context.errorCallback(what.isEmpty() ? "Runtime error" : what);
+    else if (error == LUA_ERRMEM)
+      context.errorCallback("Memory allocation error: " + what);
+    else if (error == LUA_ERRERR)
+      context.errorCallback("Error while running the error handler function: " + what);
+    else
+      context.errorCallback("Unknown error: " + what);
     return false;
   }
   return true;
 }
 
 bool LuaState::execute(const char* code, const char* codeName)
-  {return processExecuteError(luaL_loadbuffer(L, code, strlen(code), codeName) || lua_pcall(L, 0, 0, 0));}
+{
+  return processExecuteError(luaL_loadbuffer(L, code, strlen(code), codeName)) && call(0, 0);
+}
 
 bool LuaState::execute(const File& luaFile)
 {
-  // todo: check existency of luaFile
-  return processExecuteError(luaL_loadfile(L, luaFile.getFullPathName()) || lua_pcall(L, 0, 0, 0));
+  return processExecuteError(luaL_loadfile(L, luaFile.getFullPathName())) && call(0, 0);
 }
 
 void LuaState::setGlobal(const char* name)
@@ -163,7 +179,9 @@ bool LuaState::isString(int index) const
 String LuaState::toString(int index)
 {
   Variable v = checkVariable(index);
-  return v.toString();
+  if (v.isString())
+    return v.getString();
+  return v.isObject() ? v.toShortString() : v.toString();
 }
 
 bool LuaState::isInteger(int index) const
@@ -282,9 +300,6 @@ void LuaState::error(const char* message)
   pushString(message);
   lua_error(L);
 }
-
-void LuaState::call(int numArguments, int numResults)
-  {lua_call(L, numArguments, numResults);}
 
 void LuaState::insert(int index)
   {lua_insert(L, index);}

@@ -342,15 +342,6 @@ private:
 
   void writeIdentifierOrGenericAccess(const ExpressionPtr& expr, bool addDotBeforeIdentifier = false)
   {
-    IdentifierPtr id = expr.dynamicCast<Identifier>();
-    if (id)
-    {
-      if (addDotBeforeIdentifier)
-        write(".");
-      write(id->getIdentifier());
-      return;
-    }
-
     LiteralStringPtr str = expr.dynamicCast<LiteralString>();
     if (str)
     {
