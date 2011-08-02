@@ -31,8 +31,8 @@ ScopePtr Scope::getSubScope(const NodePtr& ownerNode)
   return ScopePtr();
 }
 
-void Scope::newVariable(IdentifierPtr identifier, ExpressionPtr initialValue)
-  {variables.push_back(new Variable(identifier, initialValue));}
+void Scope::newVariable(NodePtr declarator, IdentifierPtr identifier, ExpressionPtr initialValue)
+  {variables.push_back(new Variable(declarator, identifier, initialValue));}
 
 void Scope::variableSet(IdentifierPtr identifier, ExpressionPtr value)
 {
@@ -52,11 +52,10 @@ void Scope::variableGet(IdentifierPtr identifier)
     //std::cerr << "Could not find variable " << identifier->getIdentifier() << std::endl;
 }
 
-VariablePtr Scope::findVariable(const IdentifierPtr& identifier, bool recursively) const
+VariablePtr Scope::findVariable(const String& identifier, bool recursively) const
 {
-  const String& id = identifier->getIdentifier();
   for (size_t i = 0; i < variables.size(); ++i)
-    if (variables[i]->getIdentifier() == id)
+    if (variables[i]->getIdentifier() == identifier)
       return variables[i];
   return recursively && parent ? parent->findVariable(identifier) : VariablePtr();
 }
@@ -73,9 +72,9 @@ public:
   virtual void leaveScope()
     {std::cout << "Leave Scope" << std::endl;}
 
-  virtual void newVariable(IdentifierPtr identifier, ExpressionPtr initialValue = ExpressionPtr())
+  virtual void newVariable(NodePtr declarator, IdentifierPtr identifier, ExpressionPtr initialValue = ExpressionPtr())
   {
-    std::cout << "newVariable " << identifier->getIdentifier();
+    std::cout << "newVariable " << identifier->getIdentifier() << " in " << declarator->print();
     if (initialValue)
       std::cout << " = " << initialValue->print();
     std::cout << std::endl;
@@ -114,10 +113,10 @@ public:
   virtual void leaveScope()
     {currentScope = scopes.back(); scopes.pop_back();}
 
-  virtual void newVariable(IdentifierPtr identifier, ExpressionPtr initialValue = ExpressionPtr())
+  virtual void newVariable(NodePtr declarator, IdentifierPtr identifier, ExpressionPtr initialValue = ExpressionPtr())
   {
     identifier->setScope(currentScope);
-    currentScope->newVariable(identifier, initialValue);
+    currentScope->newVariable(declarator, identifier, initialValue);
   }
 
   virtual void variableSet(IdentifierPtr identifier, ExpressionPtr value)
@@ -211,7 +210,7 @@ void ScopeVisitor::visit(If& statement)
 void ScopeVisitor::visit(ForNum& statement)
 {
   enterScope(statement);
-  newVariable(statement.getIdentifier());
+  newVariable(&statement, statement.getIdentifier());
   for (size_t i = 1; i < statement.getNumSubNodes(); ++i)
     statement.getSubNode(i)->accept(*this);
   leaveScope();
@@ -223,7 +222,7 @@ void ScopeVisitor::visit(ForIn& statement)
 
   const ListPtr& identifiers = statement.getIdentifiers();
   for (size_t i = 0; i < identifiers->getNumSubNodes(); ++i)
-    newVariable(identifiers->getSubNode(i).staticCast<Identifier>());
+    newVariable(&statement, identifiers->getSubNode(i).staticCast<Identifier>());
 
   statement.getExpressions()->accept(*this);
   statement.getBlock()->accept(*this);
@@ -245,11 +244,19 @@ void ScopeVisitor::visit(Local& statement)
   for (size_t i = 0; i < identifiers->getNumSubNodes(); ++i)
   {
     IdentifierPtr identifier = identifiers->getSubNode(i).dynamicCast<Identifier>();
-    newVariable(identifier, i < numExpressions ? expressions->getSubNode(i) : ExpressionPtr());
+    newVariable(&statement, identifier, i < numExpressions ? expressions->getSubNode(i) : ExpressionPtr());
   }
 
   if (statement.isFunction() && numExpressions)
     expressions->accept(*this);
+}
+
+void ScopeVisitor::visit(Parameter& statement)
+{
+  IdentifierPtr identifier = statement.getIdentifier();
+  TablePtr properties = statement.getProperties();
+  properties->accept(*this);
+  newVariable(&statement, identifier, properties);
 }
 
 void ScopeVisitor::visit(Function& function)
@@ -259,7 +266,7 @@ void ScopeVisitor::visit(Function& function)
   {
     IdentifierPtr parameter = function.getParameterIdentifier(i);
     if (parameter)
-      newVariable(parameter);
+      newVariable(&function, parameter);
   }
   function.getBlock()->accept(*this);
   leaveScope();

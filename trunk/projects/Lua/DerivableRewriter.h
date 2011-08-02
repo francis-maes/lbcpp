@@ -281,8 +281,11 @@ protected:
 class DerivableRewriter : public DefaultRewriter
 {
 public:
-  static void applyExtension(BlockPtr& block)
-    {DerivableRewriter().acceptChildren((Node&)*block);}
+  DerivableRewriter(ExecutionContextPtr context)
+    : DefaultRewriter(context) {}
+
+  static void applyExtension(ExecutionContext& context, BlockPtr& block)
+    {DerivableRewriter(&context).acceptChildren((Node&)*block);}
 
   FunctionPtr computeFunctionDerivate(const FunctionPtr& function, const IdentifierPtr& variableIdentifier) const
   {
@@ -321,7 +324,7 @@ public:
     }
     table->append("prototype", new Table(prototype));
 
-    return new Call(new Identifier("setmetatable"), table, new Index(new Identifier("Derivable"), new LiteralString("MT")));
+    return new Call("setmetatable", table, new Index("Derivable", "MT"));
   }
 
   virtual void visit(Function& function)

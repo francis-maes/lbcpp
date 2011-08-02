@@ -10,9 +10,10 @@
 # define LBCPP_LUA_INTERPRETER_H_
 
 # include "Node.h"
-# include "DerivableRewriter.h"
-# include "Rewriter.h"
 # include "Scope.h"
+
+# include "DerivableRewriter.h"
+# include "SubspecifiedRewriter.h"
 
 namespace lbcpp {
 
@@ -74,7 +75,7 @@ public:
   {
     static const char* initializeCode = 
       "package.path = 'C:/Projets/lbcpp/projects/Lua/lib/?.lua;' .. package.path\n"
-      "require 'Language.LuaChunk'\n";
+      "require 'SubLua'\n";
     lua.execute(initializeCode, "initializeCode");
   }
   
@@ -158,6 +159,8 @@ protected:
 
   void rewrite(lua::BlockPtr& block)
   {
+    ExecutionContext& context = lua.getContext();
+
     // preprocessing
     block = lua::SubLuaPreprocessRewriter().rewrite(block);
 
@@ -166,7 +169,8 @@ protected:
     //context.resultCallback(T("scopes"), scopes);
 
     // derivable extension
-    lua::DerivableRewriter::applyExtension(block);
+    lua::SubspecifiedRewriter::applyExtension(context, block); // FIXME: are scopes still good ?
+    lua::DerivableRewriter::applyExtension(context, block);
   }
 
   String prettyPrint(const lua::NodePtr& tree) const

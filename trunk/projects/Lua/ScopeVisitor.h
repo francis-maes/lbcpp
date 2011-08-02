@@ -29,6 +29,7 @@ public:
   virtual void visit(ForNum& statement);
   virtual void visit(ForIn& statement);
   virtual void visit(Local& statement);
+  virtual void visit(Parameter& statement);
   // Default implementations for Break, Return and ExpressionStatement
 
   /*
@@ -43,7 +44,7 @@ public:
 
 protected:
   virtual void enterScope(Node& node) {}
-  virtual void newVariable(IdentifierPtr identifier, ExpressionPtr initialValue = ExpressionPtr()) {}
+  virtual void newVariable(NodePtr declarator, IdentifierPtr identifier, ExpressionPtr initialValue = ExpressionPtr()) {}
   virtual void variableSet(IdentifierPtr identifier, ExpressionPtr value) {}
   virtual void variableGet(IdentifierPtr identifier) {}
   virtual void leaveScope() {}

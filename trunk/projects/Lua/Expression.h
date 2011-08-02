@@ -119,6 +119,80 @@ protected:
 
 typedef ReferenceCountedObjectPtr<LiteralString> LiteralStringPtr;
 
+
+/*
+** LHS Expression
+*/
+class LHSExpression : public Expression {};
+
+class Identifier : public LHSExpression
+{
+public:
+  Identifier(const String& identifier)
+    : identifier(identifier), derivable(false) {}
+  Identifier() : derivable(false)  {}
+
+  virtual String getTag() const
+    {return "Id";}
+
+  virtual size_t getNumSubNodes() const
+    {return 0;}
+
+  virtual NodePtr& getSubNode(size_t index)
+    {jassert(false); return *(NodePtr* )0;}
+
+  virtual void accept(Visitor& visitor);
+
+  const String& getIdentifier() const
+    {return identifier;}
+
+  bool hasDerivableFlag() const
+    {return derivable;}
+
+protected:
+  friend class IdentifierClass;
+
+  String identifier;
+  bool derivable; // extension 'derivable'
+};
+
+typedef ReferenceCountedObjectPtr<Identifier> IdentifierPtr;
+
+class Index : public LHSExpression
+{
+public:
+  Index(const ExpressionPtr& left, const ExpressionPtr& right)
+    : left(left), right(right) {}
+  Index(const String& left, const ExpressionPtr& right)
+    : left(new Identifier(left)), right(right) {}
+  Index(const String& left, const String& right)
+    : left(new Identifier(left)), right(new LiteralString(right)) {}
+  Index() {}
+
+  virtual String getTag() const
+    {return "Index";}
+
+  virtual size_t getNumSubNodes() const
+    {return 2;}
+
+  virtual NodePtr& getSubNode(size_t index)
+    {return (NodePtr&)(index ? right : left);}
+
+  virtual void accept(Visitor& visitor);
+
+  const ExpressionPtr& getLeft() const
+    {return left;}
+
+  const ExpressionPtr& getRight() const
+    {return right;}
+
+protected:
+  friend class IndexClass;
+
+  ExpressionPtr left;
+  ExpressionPtr right;
+};
+
 class FunctionClass; // trick, because FunctionClass is already declared in the lbcpp namespace
 class Function : public Expression
 {
@@ -209,7 +283,10 @@ public:
   virtual void accept(Visitor& visitor);
 
   void append(const String& key, const ExpressionPtr& value)
-    {fields.push_back(new Pair(new LiteralString(key), value));}
+    {append(new LiteralString(key), value);}
+
+  void append(const ExpressionPtr& key, const ExpressionPtr& value)
+    {fields.push_back(new Pair(key, value));}
 
 protected:
   friend class TableClass;
@@ -353,10 +430,16 @@ public:
     : function(function), arguments(3) {arguments[0] = argument1; arguments[1] = argument2; arguments[2] = argument3;}
   Call(const ExpressionPtr& function, const ExpressionPtr& argument1, const ExpressionPtr& argument2)
     : function(function), arguments(2) {arguments[0] = argument1; arguments[1] = argument2;}
+  Call(const String& function, const ExpressionPtr& argument1, const ExpressionPtr& argument2)
+    : function(new Identifier(function)), arguments(2) {arguments[0] = argument1; arguments[1] = argument2;}
   Call(const ExpressionPtr& function, const ExpressionPtr& argument)
     : function(function), arguments(1, argument) {}
+  Call(const String& function, const ExpressionPtr& argument)
+    : function(new Identifier(function)), arguments(1, argument) {}
   Call(const ExpressionPtr& function)
     : function(function) {}
+  Call(const String& function)
+    : function(new Identifier(function)) {}
   Call() {}
 
   virtual String getTag() const
@@ -442,75 +525,6 @@ protected:
   ExpressionPtr object;
   LiteralStringPtr function;
   std::vector<ExpressionPtr> arguments;
-};
-
-/*
-** LHS Expression
-*/
-class LHSExpression : public Expression {};
-
-class Identifier : public LHSExpression
-{
-public:
-  Identifier(const String& identifier)
-    : identifier(identifier), derivable(false) {}
-  Identifier() : derivable(false)  {}
-
-  virtual String getTag() const
-    {return "Id";}
-
-  virtual size_t getNumSubNodes() const
-    {return 0;}
-
-  virtual NodePtr& getSubNode(size_t index)
-    {jassert(false); return *(NodePtr* )0;}
-
-  virtual void accept(Visitor& visitor);
-
-  const String& getIdentifier() const
-    {return identifier;}
-
-  bool hasDerivableFlag() const
-    {return derivable;}
-
-protected:
-  friend class IdentifierClass;
-
-  String identifier;
-  bool derivable; // extension 'derivable'
-};
-
-typedef ReferenceCountedObjectPtr<Identifier> IdentifierPtr;
-
-class Index : public LHSExpression
-{
-public:
-  Index(const ExpressionPtr& left, const ExpressionPtr& right)
-    : left(left), right(right) {}
-  Index() {}
-
-  virtual String getTag() const
-    {return "Index";}
-
-  virtual size_t getNumSubNodes() const
-    {return 2;}
-
-  virtual NodePtr& getSubNode(size_t index)
-    {return (NodePtr&)(index ? right : left);}
-
-  virtual void accept(Visitor& visitor);
-
-  const ExpressionPtr& getLeft() const
-    {return left;}
-
-  const ExpressionPtr& getRight() const
-    {return right;}
-
-protected:
-  friend class IndexClass;
-
-  ExpressionPtr left;
-  ExpressionPtr right;
 };
 
 class Subspecified : public Expression

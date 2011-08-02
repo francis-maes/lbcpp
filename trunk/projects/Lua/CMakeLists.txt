@@ -19,6 +19,7 @@ SET(LBCPP_LUA_CPP_SOURCES
   Scope.cpp
   PrettyPrinterVisitor.h
   DerivableRewriter.h
+  SubspecifiedRewriter.h
   LuaInterpreter.h
   LuaLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuaLibrary.cpp

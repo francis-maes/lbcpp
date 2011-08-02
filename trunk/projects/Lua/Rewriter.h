@@ -17,6 +17,9 @@ namespace lua {
 class Rewriter : public Visitor
 {
 public:
+  Rewriter(ExecutionContextPtr context = ExecutionContextPtr())
+    : Visitor(context) {}
+
   NodePtr rewrite(const NodePtr& node)
     {NodePtr res = node; accept(res); return res;}
 
@@ -41,14 +44,37 @@ protected:
   }
 };
 
+// A fake node that can be returned to remove a statement from a block
+class EmptyNode : public Node
+{
+public:
+  virtual String getTag() const
+    {return "Empty";}
+
+  virtual LuaChunkType getType() const
+    {return luaOtherChunk;}
+
+  virtual size_t getNumSubNodes() const
+    {return 0;}
+
+  virtual NodePtr& getSubNode(size_t index)
+    {jassert(false); return *(NodePtr* )0;}
+
+  virtual void accept(Visitor& visitor)
+    {jassert(false);}
+};
+
 class DefaultRewriter : public DefaultVisitorT<Rewriter>
 {
 public:
+  DefaultRewriter(ExecutionContextPtr context = ExecutionContextPtr())
+    : DefaultVisitorT<Rewriter>(context) {}
+
   virtual void visit(Block& block)
   {
     size_t n = block.getNumSubNodes();
     NodePtr prevResult = result;
-    bool hasNewSubBlocks = false;
+    bool hasModifications = false;
     for (size_t i = 0; i < n; ++i)
     {
       result = NodePtr();
@@ -59,13 +85,13 @@ public:
       if (result)
       {
         subNode = result;
-        hasNewSubBlocks |= result.isInstanceOf<Block>();
+        hasModifications = true;
       }
     }
     result = prevResult;
 
     // flatten blocks
-    if (hasNewSubBlocks)
+    if (hasModifications)
     {
       std::vector<StatementPtr> statements;
       fillStatementsRecursively(&block, statements);
@@ -79,14 +105,17 @@ private:
     size_t n = block->getNumSubNodes();
     for (size_t i = 0; i < n; ++i)
     {
-      BlockPtr subBlock = block->getSubNode(i).dynamicCast<Block>();
+      NodePtr node = block->getSubNode(i);
+      BlockPtr subBlock = node.dynamicCast<Block>();
       if (subBlock)
         fillStatementsRecursively(subBlock, res);
       else
       {
-        StatementPtr statement = block->getSubNode(i).dynamicCast<Statement>();
-        jassert(statement);
-        res.push_back(statement);
+        StatementPtr statement = node.dynamicCast<Statement>();
+        if (statement)
+          res.push_back(statement);
+        else
+          jassert(node.isInstanceOf<EmptyNode>());
       }
     }
   }
