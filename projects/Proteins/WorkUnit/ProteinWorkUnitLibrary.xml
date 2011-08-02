@@ -152,6 +152,10 @@
     <variable type="Double" name="gamma"/>
     <variable type="Double" name="C"/>
   </class>
+  
+  <class name="CysteinCrossValidationWorkUnit" base="WorkUnit">
+    <variable type="String" name="inputPath"/>
+  </class>
 
   <!-- END CysteinBox -->
 
