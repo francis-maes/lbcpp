@@ -53,6 +53,8 @@ public:
     {
       result = NodePtr();
       NodePtr& subNode = block.getSubNode(i);
+      if (!subNode)
+        continue; // skip non existing sub trees
       subNode->accept(*this);
       if (result)
       {
