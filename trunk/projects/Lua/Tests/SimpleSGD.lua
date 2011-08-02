@@ -1,10 +1,3 @@
-require 'Vector'
-require 'Dictionary'
-require 'Parser'
-require 'Data'
-require 'Context'
-require 'Statistics'
-require 'IterationFunction'
 
 filename = "C:/Projets/lbcpp/projects/Examples/Data/BinaryClassification/a1a.test"
 labels = Dictionary.new()
@@ -19,15 +12,11 @@ print (#examples .. " examples, " .. labels:size() .. " labels")
 --end
 
 
-function learnBinaryClassifier(examples)
+learnBinaryClassifier = subspecified function (examples)
 
-  -- parameters
-  --parameter rate = {default = IterationFunction.constant(1)}
-  --parameter normalizeRate = {default = true}
-  --
-  local rate = IterationFunction.constant(1.0)
-  local normalizeRate = true
-  -- 
+  parameter rate = {default = IterationFunction.constant(1)}
+  parameter normalizeRate = {default = true}
+
 
   local parameters = Vector.newDense()
   local epoch = 0
@@ -81,6 +70,6 @@ function learnBinaryClassifier(examples)
 end
 
 
-learner = learnBinaryClassifier --{rate = IterationFunction.invLinear(2.0, 1000)}
+learner = learnBinaryClassifier{rate = IterationFunction.invLinear(2.0, 1000)}
 
 params = context:call("learn binary classifier", learner, examples)
