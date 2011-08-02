@@ -17,7 +17,7 @@ function one(epoch)
 end
 
 function constant(value)
-  return function (epoch) return constant end
+  return function (epoch) return value end
 end
 
 function invLinear(initialValue, halfPeriod)

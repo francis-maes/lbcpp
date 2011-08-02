@@ -99,7 +99,7 @@ public:
   void error(const char* message);
 
   void insert(int index);
-  void call(int numArguments, int numResults);
+  bool call(int numArguments, int numResults);
 
 protected:
   lua_State* L;

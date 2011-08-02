@@ -1,13 +1,6 @@
-
  
- Extension: parameters
+Extension: parameters
  * Subspecified stochastic gradient descent
-
-Integration sublua dans explorer
- * Forward de print() vers Context:information()
- * Forward de error() vers Context:error()
- * Integration du sublua dans l'explorer directement
- * Extension de langage: |x| y => function (x) return y end
 
 Lua:
  * derivable: Gerer les gradient et les DoubleVector 

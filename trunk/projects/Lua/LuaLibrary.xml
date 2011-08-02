@@ -4,6 +4,7 @@
 
   <class name="ExecuteLuaString" base="WorkUnit">
     <variable type="String" name="code"/>
+    <variable type="String" name="description"/>
   </class>
   
   <class name="ExecuteLuaFile" base="WorkUnit">

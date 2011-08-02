@@ -19,12 +19,15 @@ print (#examples .. " examples, " .. labels:size() .. " labels")
 --end
 
 
-subspecified function learnBinaryClassifier(examples)
+function learnBinaryClassifier(examples)
 
   -- parameters
-  parameter rate = {default = IterationFunction.constant(1)}
-  parameter normalizeRate = {default = true}
+  --parameter rate = {default = IterationFunction.constant(1)}
+  --parameter normalizeRate = {default = true}
   --
+  local rate = IterationFunction.constant(1.0)
+  local normalizeRate = true
+  -- 
 
   local parameters = Vector.newDense()
   local epoch = 0
@@ -44,25 +47,31 @@ subspecified function learnBinaryClassifier(examples)
   local function iteration(parameters, iteration)
     context:result("iteration", iteration)
 
-    local totalHingeLoss = 0.0
+    local lossStats = Statistics.meanVarianceAndBounds()
     for i=1,#examples do
       local example = examples[i]
-       --print (parameters, example[1])
+      --print (parameters, example[1])
       local prediction = parameters.dot(parameters, example[1])
       local sign = examples[2] == 2 and 1 or -1
       local score = prediction * sign
+      --print (score)
+      --assert(sign == 1 or sign == -1)
       local hingeLoss = math.max(0, 1 - score)
-      totalHingeLoss = totalHingeLoss + hingeLoss
+      lossStats:observe(hingeLoss)
+      
       if score < 1 then
-        parameters:add(example[1], rateNormalizer * rate(epoch) * sign)
+        local currentRate = rate(epoch)
+        parameters:add(example[1], rateNormalizer * currentRate * sign)
       end
       epoch = epoch + 1
     end
-    context:result("mean hinge loss", totalHingeLoss / numExamples)
+    context:result("loss stats", lossStats)
+    context:result("mean hinge loss", lossStats:getMean())
     context:result("parameters l0norm", parameters:l0norm())
     context:result("parameters l1norm", parameters:l1norm())
     context:result("parameters l2norm", parameters:l2norm())
     context:result("parameters", parameters:clone())
+    context:result("rate", rate(epoch))
     context:result("epoch", epoch)
   end
 
@@ -72,6 +81,6 @@ subspecified function learnBinaryClassifier(examples)
 end
 
 
-learner = learnBinaryClassifier{rate = IterationFunction.invLinear(2.0, 1000)}
+learner = learnBinaryClassifier --{rate = IterationFunction.invLinear(2.0, 1000)}
 
 params = context:call("learn binary classifier", learner, examples)

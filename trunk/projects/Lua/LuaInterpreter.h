@@ -14,8 +14,57 @@
 # include "Rewriter.h"
 # include "Scope.h"
 
-namespace lbcpp
+namespace lbcpp {
+
+namespace lua {
+
+class SubLuaPreprocessRewriter : public DefaultRewriter
 {
+public:
+  // remove parenthesis:
+  // Parenthesis(x) => x
+  virtual void visit(Parenthesis& parenthesis)
+    {setResult(rewrite(parenthesis.getExpr()));}
+
+  // replace unary minus literals:
+  // - LiteralNumber(x) => LiteralNumber(-x)
+  virtual void visit(UnaryOperation& operation)
+  {
+    if (operation.getOp() == unmOp)
+    {
+      LiteralNumberPtr number = operation.getExpr().dynamicCast<LiteralNumber>();
+      if (number)
+        setResult(new LiteralNumber(-number->getValue()));
+    }
+  }
+
+  // transform invokation into call
+  // a:b(...)  ==> a.b(a, ...)
+  virtual void visit(Invoke& invoke)
+  {
+    CallPtr call = new Call(new Index(invoke.getObject(), invoke.getFunction()));
+    call->addArgument(invoke.getObject());
+    call->addArguments(invoke.getArguments());
+    setResult(call);
+  }
+
+  // replace print() calls
+  // print(...) => context.information(context, ...)
+  virtual void visit(Call& call)
+  {
+    ExpressionPtr function = call.getFunction();
+    IdentifierPtr functionIdentifier = call.getFunction().dynamicCast<Identifier>();
+    if (functionIdentifier && functionIdentifier->getIdentifier() == T("print"))
+    {
+      CallPtr newCall = new Call(new Index(new Identifier("context"), new LiteralString("information")));
+      newCall->addArgument(new Identifier("context"));
+      newCall->addArguments(call.getArguments());
+      setResult(newCall);
+    }
+  }
+};
+
+}; /* namespace lua */
 
 class SubLuaInterpreter
 {
@@ -69,18 +118,23 @@ public:
     lua::BlockPtr block = parse(code, name, luaStatementBlock).staticCast<lua::Block>();
     if (!block)
     {
-      context.errorCallback("Parse error", name);
+      context.errorCallback(name, "Parse error");
       return false;
     }
+
+    // tmp
+    context.resultCallback("input ast", block);
+
     rewrite(block);
     if (!block)
     {
-      context.errorCallback("Translation error", name);
+      context.errorCallback(name, "Translation error");
       return false;
     }
 
     String generatedCode = prettyPrint(block);
-    context.informationCallback(T("Generated code"), generatedCode);
+    //context.informationCallback(T("Generated code"), generatedCode);
+    std::cout << "Generated Code:" << std::endl << generatedCode << std::endl;
     return lua.execute(generatedCode, name);
   }
 
@@ -94,7 +148,9 @@ protected:
     lua.pushInteger((int)type);
     lua.pushString(code);
     lua.pushString(name);
-    lua.call(3, 1);
+    if (!lua.call(3, 1))
+      return lua::NodePtr();
+    
     lua::NodePtr res = lua.checkObject(-1, lua::nodeClass).staticCast<lua::Node>();
     lua.pop();
     return res;
@@ -103,9 +159,7 @@ protected:
   void rewrite(lua::BlockPtr& block)
   {
     // preprocessing
-    block = lua::RemoveParenthesisRewriter().rewrite(block);
-    block = lua::RemoveUnmLiteralRewriter().rewrite(block);
-    block = lua::TransformInvokeIntoCallRewriter().rewrite(block);
+    block = lua::SubLuaPreprocessRewriter().rewrite(block);
 
     // scope analysis
     lua::ScopePtr scopes = lua::Scope::get(block);
@@ -124,9 +178,12 @@ class ExecuteLuaString : public WorkUnit
 {
 public:
   String code;
+  String description;
  
   virtual String toShortString() const
   {
+    if (description.isNotEmpty())
+      return description;
     int n = code.indexOfChar('\n');
     if (n < 0)
       return code;
@@ -137,7 +194,7 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     SubLuaInterpreter interpreter(context);
-    return interpreter.interpretCode(code, "ExecuteLuaString");
+    return interpreter.interpretCode(code, toShortString());
   }
 };
 
