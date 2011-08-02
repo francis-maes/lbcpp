@@ -19,15 +19,26 @@
   <class name="ScalarVariableMean" base="NameableObject">
     <variable type="Double" name="samplesSum"/>
     <variable type="Double" name="samplesCount"/>
+
+    <function lang="lua" name="clear"/>
+    <function lang="lua" name="observe"/>
+    
+    <function lang="lua" name="getMean"/>
+    <function lang="lua" name="getSum"/>
+    <function lang="lua" name="getCount"/>
   </class>
   
   <class name="ScalarVariableMeanAndVariance" base="ScalarVariableMean">
     <variable type="Double" name="samplesSumOfSquares"/>
+    <function lang="lua" name="getStandardDeviation"/>
+    <function lang="lua" name="getVariance"/>
   </class>
   
   <class name="ScalarVariableStatistics" base="ScalarVariableMeanAndVariance">
     <variable type="Double" name="minimumValue"/>
     <variable type="Double" name="maximumValue"/>
+    <function lang="lua" name="getMinimum"/>
+    <function lang="lua" name="getMaximum"/>
   </class>
 
   <class name="ScalarVariableRecentMean" base="NameableObject"/>
@@ -48,6 +59,8 @@
 
     <function lang="lua" name="add"/>
     <function lang="lua" name="dot"/>
+    <function lang="lua" name="l0norm"/>
+    <function lang="lua" name="l1norm"/>
     <function lang="lua" name="l2norm"/>
   </template>
 

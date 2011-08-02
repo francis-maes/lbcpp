@@ -31,6 +31,49 @@ String ScalarVariableMean::toString() const
 String ScalarVariableMean::toShortString() const
   {return Variable(getMean()).toShortString();}
 
+int ScalarVariableMean::clear(LuaState& state)
+{
+  ScalarVariableMeanPtr stats = state.checkObject(1, scalarVariableMeanClass).staticCast<ScalarVariableMean>();
+  stats->clear();
+  return 0;
+}
+
+int ScalarVariableMean::observe(LuaState& state)
+{
+  ScalarVariableMeanPtr stats = state.checkObject(1, scalarVariableMeanClass).staticCast<ScalarVariableMean>();
+  double value = state.checkNumber(2);
+  if (state.getTop() >= 3)
+  {
+    double weight = state.checkNumber(3);
+    stats->push(value, weight);
+  }
+  else
+    stats->push(value);
+  return 0;    
+}
+
+int ScalarVariableMean::getMean(LuaState& state)
+{
+  ScalarVariableMeanPtr stats = state.checkObject(1, scalarVariableMeanClass).staticCast<ScalarVariableMean>();
+  state.pushNumber(stats->getMean());
+  return 1;
+}
+
+int ScalarVariableMean::getSum(LuaState& state)
+{
+  ScalarVariableMeanPtr stats = state.checkObject(1, scalarVariableMeanClass).staticCast<ScalarVariableMean>();
+  state.pushNumber(stats->getSum());
+  return 1;
+}
+
+int ScalarVariableMean::getCount(LuaState& state)
+{
+  ScalarVariableMeanPtr stats = state.checkObject(1, scalarVariableMeanClass).staticCast<ScalarVariableMean>();
+  state.pushNumber(stats->getCount());
+  return 1;
+}
+
+
 /*
 ** ScalarVariableMeanAndVariance
 */
@@ -47,6 +90,20 @@ String ScalarVariableMeanAndVariance::toShortString() const
   if (stddev)
     res += T(" +/- ") + Variable(stddev).toShortString();
   return res;
+}
+
+int ScalarVariableMeanAndVariance::getStandardDeviation(LuaState& state)
+{
+  ScalarVariableMeanAndVariancePtr stats = state.checkObject(1, scalarVariableMeanAndVarianceClass).staticCast<ScalarVariableMeanAndVariance>();
+  state.pushNumber(stats->getStandardDeviation());
+  return 1;
+}
+
+int ScalarVariableMeanAndVariance::getVariance(LuaState& state)
+{
+  ScalarVariableMeanAndVariancePtr stats = state.checkObject(1, scalarVariableMeanAndVarianceClass).staticCast<ScalarVariableMeanAndVariance>();
+  state.pushNumber(stats->getVariance());
+  return 1;
 }
 
 /*
@@ -89,6 +146,20 @@ String ScalarVariableStatistics::toString() const
 
 String ScalarVariableStatistics::toShortString() const
   {return ScalarVariableMeanAndVariance::toShortString();}
+
+int ScalarVariableStatistics::getMinimum(LuaState& state)
+{
+  ScalarVariableStatisticsPtr stats = state.checkObject(1, scalarVariableStatisticsClass).staticCast<ScalarVariableStatistics>();
+  state.pushNumber(stats->getMinimum());
+  return 1;
+}
+
+int ScalarVariableStatistics::getMaximum(LuaState& state)
+{
+  ScalarVariableStatisticsPtr stats = state.checkObject(1, scalarVariableStatisticsClass).staticCast<ScalarVariableStatistics>();
+  state.pushNumber(stats->getMaximum());
+  return 1;
+}
 
 /*
 ** ScalarVariableRecentMean

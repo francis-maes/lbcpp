@@ -40,13 +40,13 @@ class ScalarVariableMean : public NameableObject
 public:
   ScalarVariableMean(const String& name = String::empty);
 
-  void clear()
+  virtual void clear()
     {samplesSum = samplesCount = 0.0;}
 
-  void push(double val)
+  virtual void push(double val)
     {samplesSum += val; samplesCount += 1.0;}
 
-  void push(double val, double weight)
+  virtual void push(double val, double weight)
     {samplesSum += weight * val; samplesCount += weight;}
 
   double getMean() const
@@ -61,6 +61,14 @@ public:
   virtual String toString() const;
   virtual String toShortString() const;
 
+  // Lua
+  static int clear(LuaState& state);
+  static int observe(LuaState& state);
+
+  static int getMean(LuaState& state);
+  static int getSum(LuaState& state);
+  static int getCount(LuaState& state);
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -71,6 +79,7 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<ScalarVariableMean> ScalarVariableMeanPtr;
+extern ClassPtr scalarVariableMeanClass;
 
 class ScalarVariableMeanAndVariance : public ScalarVariableMean
 {
@@ -98,6 +107,10 @@ public:
   virtual String toString() const;
   virtual String toShortString() const;
  
+  // Lua
+  static int getStandardDeviation(LuaState& state);
+  static int getVariance(LuaState& state);
+
 private:
   friend class ScalarVariableMeanAndVarianceClass;
 
@@ -108,6 +121,7 @@ private:
 };
 
 typedef ReferenceCountedObjectPtr<ScalarVariableMeanAndVariance> ScalarVariableMeanAndVariancePtr;
+extern ClassPtr scalarVariableMeanAndVarianceClass;
 
 class ScalarVariableStatistics : public ScalarVariableMeanAndVariance
 {
@@ -130,6 +144,10 @@ public:
   virtual String toString() const;
   virtual String toShortString() const;
 
+  // Lua
+  static int getMinimum(LuaState& state);
+  static int getMaximum(LuaState& state);
+
 private:
   friend class ScalarVariableStatisticsClass;
 
@@ -138,6 +156,7 @@ private:
 };
 
 typedef ReferenceCountedObjectPtr<ScalarVariableStatistics> ScalarVariableStatisticsPtr;
+extern ClassPtr scalarVariableStatisticsClass;
 
 class ScalarVariableRecentMean : public NameableObject
 {

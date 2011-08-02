@@ -204,6 +204,20 @@ int DoubleVector::add(LuaState& state)
   return 0;
 }
 
+int DoubleVector::l0norm(LuaState& state)
+{
+  DoubleVectorPtr vector = state.checkObject(1, doubleVectorClass()).staticCast<DoubleVector>();
+  state.pushInteger(vector->l0norm());
+  return 1;
+}
+
+int DoubleVector::l1norm(LuaState& state)
+{
+  DoubleVectorPtr vector = state.checkObject(1, doubleVectorClass()).staticCast<DoubleVector>();
+  state.pushNumber(vector->l1norm());
+  return 1;
+}
+
 int DoubleVector::l2norm(LuaState& state)
 {
   DoubleVectorPtr vector = state.checkObject(1, doubleVectorClass()).staticCast<DoubleVector>();
