@@ -18,7 +18,24 @@ add_executable(buildvm ${buildvm_files})
 
 set(all_lib lib_base.c lib_math.c lib_bit.c lib_string.c lib_table.c lib_io.c lib_os.c lib_package.c lib_debug.c lib_jit.c lib_ffi.c)
 
-dobuildvm(peobj lj_vm.obj "")
+
+if(WIN32)
+  set(LJVM_BUILDED_FILE lj_vm.obj)
+  set(LJVM_OBJECT_FILE lj_vm.obj)
+else(WIN32)
+  set(LJVM_BUILDED_FILE lj_vm.s)
+  set(LJVM_OBJECT_FILE lj_vm.o)
+  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.o
+    COMMAND gcc
+    ARGS -c ${ASM_FLAGS} -o ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.o ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.s
+    DEPENDS buildvm ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.s
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "compiling lj_vm.s"
+  )
+endif(WIN32)
+
+
+dobuildvm(peobj ${LJVM_BUILDED_FILE} "")
 dobuildvm(bcdef lj_bcdef.h "${all_lib}")
 dobuildvm(ffdef lj_ffdef.h "${all_lib}")
 dobuildvm(libdef lj_libdef.h "${all_lib}")
@@ -47,7 +64,7 @@ set(ASM_FLAGS "")
 
 #add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.o
 #  COMMAND gcc
-#  ARGS -c ${ASM_FLAGS} -o ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.o ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.s
+#  ARGS -c ${ASM_FLAGS} -o ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.o ${CMAKE_CURRENT_BINARY_DIR}/${LJVM_OBJECT_FILE}
 #  DEPENDS buildvm ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.s
 #  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 #  COMMENT "compiling lj_vm.s"
@@ -56,7 +73,7 @@ set(ASM_FLAGS "")
 
 file(GLOB luajit_generated_files ${CMAKE_CURRENT_BINARY_DIR}/lj_*.h)
 
-add_library(lua ${lua_files} ${luajit_generated_files} ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.obj)
+add_library(lua ${lua_files} ${luajit_generated_files} ${CMAKE_CURRENT_BINARY_DIR}/${LJVM_OBJECT_FILE})
 #set_target_properties(lua PROPERTIES LINKER_LANGUAGE C)
 
 SOURCE_GROUP(Generated FILES ${luajit_generated_files})
