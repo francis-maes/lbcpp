@@ -37,6 +37,8 @@ class LHSExpression;
 typedef ReferenceCountedObjectPtr<LHSExpression> LHSExpressionPtr;
 class Identifier;
 typedef ReferenceCountedObjectPtr<Identifier> IdentifierPtr;
+class Table;
+typedef ReferenceCountedObjectPtr<Table> TablePtr;
 
 class Visitor;
 class Scope;

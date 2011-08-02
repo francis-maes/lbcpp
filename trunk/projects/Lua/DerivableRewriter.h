@@ -179,7 +179,7 @@ public:
 
         // (f[1] or (function (...) return 0 end))(...)
         ExpressionPtr derivateFunction = new Index(call.getFunction(), new LiteralNumber(i + 1));
-        derivateFunction = new BinaryOperation(orOp, derivateFunction, new Identifier("LuaChunk.returnZeroFunction"));
+        derivateFunction = new BinaryOperation(orOp, derivateFunction, new Identifier("Derivable.returnZeroFunction"));
         ExpressionPtr newCall = new Call(derivateFunction, call.getArguments());
         ExpressionPtr term = multiply(newCall, rewrite(call.getArgument(i)));
         
@@ -321,7 +321,7 @@ public:
     }
     table->append("prototype", new Table(prototype));
 
-    return new Call(new Identifier("setmetatable"), table, new Index(new Identifier("LuaChunk"), new LiteralString("DerivableFunction")));
+    return new Call(new Identifier("setmetatable"), table, new Index(new Identifier("Derivable"), new LiteralString("MT")));
   }
 
   virtual void visit(Function& function)
