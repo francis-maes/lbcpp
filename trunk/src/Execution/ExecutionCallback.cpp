@@ -49,10 +49,16 @@ int ExecutionCallback::warning(LuaState& state)
 
 int ExecutionCallback::information(LuaState& state)
 {
-  ExecutionCallbackPtr pthis;
-  String where, what;
-  getThisWhereAndWhat(state, pthis, where, what);
-  pthis->informationCallback(where, what);
+  ExecutionCallbackPtr pthis = state.checkObject(1, executionCallbackClass);
+  
+  String info;
+  for (int i = 2; i <= state.getTop(); ++i)
+  {
+    info += state.toString(i);
+    if (i < state.getTop())
+      info + T("    ");
+  }
+  pthis->informationCallback(info);
   return 0;
 }
 
