@@ -97,6 +97,13 @@ void LuaState::setGlobal(const char* name)
 void LuaState::getGlobal(const char* name)
   {lua_getglobal(L, name);}
 
+void LuaState::getGlobal(const char* scopeName, const char* name)
+{
+  getGlobal(scopeName);
+  lua_getfield(L, -1, name);
+  lua_remove(L, -2); // remove scope from stack
+}
+
 void LuaState::pushBoolean(bool value)
   {lua_pushboolean(L, value ? 1 : 0);}
 
@@ -275,6 +282,12 @@ void LuaState::error(const char* message)
   pushString(message);
   lua_error(L);
 }
+
+void LuaState::call(int numArguments, int numResults)
+  {lua_call(L, numArguments, numResults);}
+
+void LuaState::insert(int index)
+  {lua_insert(L, index);}
 
 void Type::luaRegister(LuaState& state) const
 {

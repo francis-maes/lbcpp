@@ -14,8 +14,6 @@
 # include "Rewriter.h"
 # include "Scope.h"
 
-# include "../../lua/lua.h"
-
 namespace lbcpp
 {
 
@@ -57,13 +55,11 @@ private:
   {
     int dbg1 = lua.getTop();
     // call lua function LuaChunk.parseFromString with (codeType, code, codeName)
-    lua_getfield(lua, LUA_GLOBALSINDEX, "LuaChunk");
-    lua_getfield(lua, -1, "parseFromString");
-    lua_remove(lua, -2); // remove "LuaChunk" from stack
+    lua.getGlobal("LuaChunk", "parseFromString");
     lua.pushInteger((int)type);
     lua.pushString(code);
     lua.pushString(name);
-    lua_call(lua, 3, 1);
+    lua.call(3, 1);
     lua::NodePtr res = lua.checkObject(-1, lua::nodeClass).staticCast<lua::Node>();
     lua.pop();
     int dbg2 = lua.getTop();

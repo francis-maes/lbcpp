@@ -87,6 +87,7 @@ public:
   */
   static int enter(LuaState& state);
   static int leave(LuaState& state);
+  static int call(LuaState& state);
 
   lbcpp_UseDebuggingNewOperator
 
