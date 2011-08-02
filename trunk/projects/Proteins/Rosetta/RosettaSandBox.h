@@ -45,10 +45,10 @@ public:
     samples = new DenseDoubleVector(n, 0.0);
 
     // in interval x \in [0, 1], mean goes from 0.5 to -0.5 and stddev goes from 0.0 to 1.0
-    double meanOrigin = 0.5;
-    double meanCoefficient = -1;
-    double stddevOrigin = 0.0;
-    double stddevCoefficient = 1.0;
+    //double meanOrigin = 0.5;
+    //double meanCoefficient = -1;
+    //double stddevOrigin = 0.0;
+    //double stddevCoefficient = 1.0;
 
     for (size_t i = 0; i < n; ++i)
     {

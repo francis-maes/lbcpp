@@ -214,5 +214,5 @@ ExpressionPtr lbcpp::lua::lt(const ExpressionPtr& left, const ExpressionPtr& rig
 ExpressionPtr lbcpp::lua::le(const ExpressionPtr& left, const ExpressionPtr& right)
   {return new BinaryOperation(leOp, left, right);}
 
-ExpressionPtr lbcpp::lua::not(const ExpressionPtr& expr)
+ExpressionPtr lbcpp::lua::notExpr(const ExpressionPtr& expr)
   {return new UnaryOperation(notOp, expr);}

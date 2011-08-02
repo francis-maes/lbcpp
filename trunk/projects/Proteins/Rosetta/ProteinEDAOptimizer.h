@@ -112,8 +112,8 @@ public:
       DenseDoubleVectorPtr* scoreMeans = NULL)
   {
     SamplerPtr workingSampler = sampler->cloneAndCast<Sampler> ();
-    size_t numLearningSamplesFirstPass = numGoodSamples / 2;
-    size_t numLearningSamplesSecondPass = numGoodSamples - numLearningSamplesFirstPass;
+    //size_t numLearningSamplesFirstPass = numGoodSamples / 2;
+    //size_t numLearningSamplesSecondPass = numGoodSamples - numLearningSamplesFirstPass;
 
 #ifdef LBCPP_PROTEIN_ROSETTA
     core::pose::PoseOP workingPose = new core::pose::Pose(*target);

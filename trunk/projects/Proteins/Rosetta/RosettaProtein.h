@@ -226,7 +226,7 @@ public:
     size_t input = builder.addInput(rosettaProteinClass);
     size_t numResidues = builder.addFunction(getVariableFunction(T("numResidues")), input);
     size_t energy = builder.addFunction(getVariableFunction(T("normalizedScore")), input);
-    size_t histogram = builder.addFunction(getVariableFunction(T("histogram")), input);
+    //size_t histogram = builder.addFunction(getVariableFunction(T("histogram")), input);
     size_t shortDistance = builder.addFunction(getVariableFunction(T("shortDistance")), input);
     size_t longDistance = builder.addFunction(getVariableFunction(T("longDistance")), input);
 
