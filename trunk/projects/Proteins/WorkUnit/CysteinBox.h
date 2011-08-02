@@ -80,7 +80,7 @@ public:
   
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {
-    enum {numFolds = 5};
+    enum {numFolds = 10};
     for (size_t i = 0; i < numFolds; ++i)
     {
       CysteinLearnerParametersPtr candidate = new CysteinLearnerParameters();
@@ -137,13 +137,13 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     std::vector<String> destinations;
-    destinations.push_back(T("jbecker@nic3"));
-    destinations.push_back(T("fmaes@nic3"));
+    //destinations.push_back(T("jbecker@nic3"));
+    //destinations.push_back(T("fmaes@nic3"));
     destinations.push_back(T("amarcos@nic3"));
 
     FunctionPtr f = new CysteinLearnerFunction();
     OptimizerPtr optimizer = new CysteinCrossValidationOptimizer(input.getObjectAndCast<ProteinPredictorParameters>(context), path);
-    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, f, T("CysBonds_BFS+C+5CV"), T("jbecker@monster24"), destinations, T("localhost"), 1664, 8, 3, 48, 60000);
+    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, f, T("CysBonds_10CV"), T("jbecker@monster24"), destinations, T("localhost"), 1664, 8, 3, 48, 60000);
     OptimizerStatePtr optimizerState = new OptimizerState();
 
     return optimizer->compute(context, optimizerContext, optimizerState);
@@ -301,6 +301,36 @@ protected:
   friend class BFSCysteinProteinLearnerClass;
 
   String inputDirectory;
+};
+
+class CysteinCrossValidationWorkUnit : public WorkUnit
+{
+public:
+  Variable run(ExecutionContext& context)
+  {
+    Lin09ParametersPtr lin09 = new Lin09Parameters();
+    lin09->pssmWindowSize = 15;
+    lin09->separationProfilSize = 9;
+    lin09->usePositionDifference = true;
+    lin09->pssmLocalHistogramSize = 100;
+    
+    Lin09PredictorParametersPtr lin09Pred = new Lin09PredictorParameters(lin09);
+    lin09Pred->useLibSVM = true;
+    lin09Pred->useLaRank = false;
+    lin09Pred->useLibLinear = false;
+    lin09Pred->useAddBias = true;
+    
+    lin09Pred->C = 1.4;
+    lin09Pred->kernelGamma = -4.6;
+    
+    FunctionPtr f = new CysteinCrossValidationFunction(inputPath);
+    return f->compute(context, lin09Pred);
+  }
+
+protected:
+  friend class CysteinCrossValidationWorkUnitClass;
+
+  String inputPath;
 };
 
 class CysteinLearnerWorkUnit : public WorkUnit
