@@ -203,7 +203,20 @@ public:
 
   virtual void visit(Pair& pair)
   {
-    writeIdentifierOrGenericAccess(pair.getSubNode(0));
+    ExpressionPtr key = pair.getSubNode(0);
+    String str;
+
+    IdentifierPtr identifier = key.dynamicCast<Identifier>();
+    if (identifier)
+      identifier->accept(*this); // identifier access
+    else if (isLiteralStringConvertibleToIdentifier(key, str))
+      write(str); // literal string becomes identifier
+    else
+    { 
+      write("[");   // generic access
+      pair.getSubNode(0)->accept(*this);
+      write("]");
+    }
     write(" = ");
     pair.getSubNode(1)->accept(*this);
   }
@@ -251,16 +264,6 @@ public:
         (operation.getOp() == lenOp && !isLiteralOrIdentifier))
       write(" ");
     operation.getExpr()->accept(*this);
-  }
-
-
-  bool areParenthesisRequired(BinaryOperation& operation, bool isLeftOperand)
-  {
-    NodePtr operand = isLeftOperand ? operation.getLeft() : operation.getRight();
-    int pre = operation.getPrecendenceRank();
-    OperationPtr operandOp = operand.dynamicCast<Operation>();
-    return operandOp && (operandOp->getPrecendenceRank() < pre ||
-      (operandOp->getPrecendenceRank() == pre && !isLeftOperand));
   }
 
   virtual void visit(BinaryOperation& operation)
@@ -321,7 +324,19 @@ public:
   virtual void visit(Index& index)
   {
     index.getLeft()->accept(*this);
-    writeIdentifierOrGenericAccess(index.getRight(), true);
+    String str;
+    if (isLiteralStringConvertibleToIdentifier(index.getRight(), str))
+    {
+      write(".");
+      write(str); // string becomes identifier
+    }
+    else
+    {
+      // string access
+      write("[");
+      index.getRight()->accept(*this);
+      write("]");
+    }
   }
 
   virtual void visit(Subspecified& subspecified)
@@ -354,29 +369,6 @@ private:
     ++lineNumber;
   }
 
-  void writeIdentifierOrGenericAccess(const ExpressionPtr& expr, bool addDotBeforeIdentifier = false)
-  {
-    LiteralStringPtr str = expr.dynamicCast<LiteralString>();
-    if (str)
-    {
-      String value = str->getValue();
-      if (value.length() > 0 && !value.containsAnyOf(T(" \t\r\n")) && 
-          (juce::CharacterFunctions::isLetterOrDigit(value[0]) || value[0] == '_'))
-      {
-        if (addDotBeforeIdentifier)
-          write(".");
-        write(value); // string becomes identifier
-        return;
-      }
-    }
-
-    // string access
-    write("[");
-    expr->accept(*this);
-    write("]");
-  }
-
-
   void printBlockWithIndentation(const BlockPtr& block)
   {
     endLine();
@@ -392,6 +384,25 @@ private:
     node->accept(*this);
     if (doParenthesis)
       write(")");
+  }
+
+  bool areParenthesisRequired(BinaryOperation& operation, bool isLeftOperand)
+  {
+    NodePtr operand = isLeftOperand ? operation.getLeft() : operation.getRight();
+    int pre = operation.getPrecendenceRank();
+    OperationPtr operandOp = operand.dynamicCast<Operation>();
+    return operandOp && (operandOp->getPrecendenceRank() < pre ||
+      (operandOp->getPrecendenceRank() == pre && !isLeftOperand));
+  }
+
+  bool isLiteralStringConvertibleToIdentifier(const ExpressionPtr& expr, String& value)
+  {
+    LiteralStringPtr str = expr.dynamicCast<LiteralString>();
+    if (!str)
+      return false;
+    value = str->getValue();
+    return value.length() > 0 && !value.containsAnyOf(T(" \t\r\n")) && 
+          (juce::CharacterFunctions::isLetterOrDigit(value[0]) || value[0] == '_');
   }
 };
 

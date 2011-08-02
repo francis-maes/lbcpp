@@ -19,6 +19,9 @@ namespace lua {
 class Visitor
 {
 public:
+  Visitor(ExecutionContextPtr context = ExecutionContextPtr())
+    : context(context) {}
+
   virtual void visit(List& list)
     {jassert(false);}
   virtual void visit(Block& block)
@@ -85,6 +88,8 @@ public:
     {jassert(false);}
 
 protected:
+  ExecutionContextPtr context;
+
   virtual void accept(NodePtr& node)
     {node->accept(*this);}
 
@@ -94,12 +99,27 @@ protected:
     for (size_t i = 0; i < n; ++i)
       accept(node.getSubNode(i));
   }
+
+  void error(Node& node, const String& message)
+  {
+    jassert(context);
+    context->errorCallback(message); // todo: "where" string
+  }
+
+  void warning(Node& node, const String& message)
+  {
+    jassert(context);
+    context->warningCallback(message); // todo: "where" string
+  }
 };
 
 template<class BaseClass>
 class DefaultVisitorT : public BaseClass
 {
 public:
+  DefaultVisitorT(ExecutionContextPtr context = ExecutionContextPtr())
+    : BaseClass(context) {}
+
   virtual void visit(List& list)
     {acceptChildren(list);}
 
@@ -171,7 +191,12 @@ public:
     {acceptChildren(subspecified);}
 };
 
-class DefaultVisitor : public DefaultVisitorT<Visitor> {};
+class DefaultVisitor : public DefaultVisitorT<Visitor>
+{
+public:
+  DefaultVisitor(ExecutionContextPtr context = ExecutionContextPtr())
+    : DefaultVisitorT<Visitor>(context) {}
+};
 
 }; /* namespace lua */
 }; /* namespace lbcpp */

@@ -51,7 +51,7 @@ static int parseIdentifier (CodeDocument::Iterator& source) throw()
       { T("elseif"), T("repeat"), T("return"), 0};
         
     static const tchar* keywordsOther[] =
-        { T("function"), 0 };
+        { T("function"), T("subspecified"), T("parameter"), T("derivable"), 0 };
 
     int tokenLength = 0;
     tchar possibleIdentifier [19];

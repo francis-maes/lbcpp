@@ -295,6 +295,8 @@ class Return : public Statement
 public:
   Return(const std::vector<ExpressionPtr>& expressions)
     : expressions(expressions) {}
+  Return(const ExpressionPtr& expression)
+    : expressions(1, expression) {}
   Return() {}
 
   virtual String getTag() const

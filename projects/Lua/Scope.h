@@ -15,16 +15,26 @@
 namespace lbcpp {
 namespace lua {
   
+class Scope;
+typedef ReferenceCountedObjectPtr<Scope> ScopePtr;
+
 class Variable : public Object
 {
 public:
-  Variable(const IdentifierPtr& declaration, const ExpressionPtr& initialValue)
-    : declaration(declaration), initialValue(initialValue), isConstant(true), isUsed(false) {}
+  Variable(const NodePtr& declarator, const IdentifierPtr& declaration, const ExpressionPtr& initialValue)
+    : declarator(declarator), declaration(declaration), initialValue(initialValue), isConstant(true), isUsed(false) {}
   Variable() : isConstant(true), isUsed(false) {}
 
   const String& getIdentifier() const
     {return declaration->getIdentifier();}
 
+  ScopePtr getScope() const
+    {return declaration->getScope();}
+
+  const NodePtr& getDeclarator() const
+    {return declarator;}
+
+  NodePtr declarator; // ForNum, ForIn, Local, Parameter, Function
   IdentifierPtr declaration;
   ExpressionPtr initialValue;
   bool isConstant;
@@ -32,9 +42,6 @@ public:
 };
 
 typedef ReferenceCountedObjectPtr<Variable> VariablePtr;
-
-class Scope;
-typedef ReferenceCountedObjectPtr<Scope> ScopePtr;
 
 class Scope : public NameableObject
 {
@@ -48,11 +55,13 @@ public:
   void addSubScope(const ScopePtr& subScope);
   ScopePtr getSubScope(const NodePtr& ownerNode);
 
-  void newVariable(IdentifierPtr identifier, ExpressionPtr initialValue);
+  void newVariable(NodePtr declarator, IdentifierPtr identifier, ExpressionPtr initialValue);
   void variableSet(IdentifierPtr identifier, ExpressionPtr value);
   void variableGet(IdentifierPtr identifier);
 
-  VariablePtr findVariable(const IdentifierPtr& identifier, bool recursively = true) const;
+  VariablePtr findVariable(const String& identifier, bool recursively = true) const;
+  VariablePtr findVariable(const IdentifierPtr& identifier, bool recursively = true) const
+    {return findVariable(identifier->getIdentifier(), recursively);}
 
   ScopePtr getParentScope() const
     {return parent;}

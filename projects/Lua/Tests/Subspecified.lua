@@ -1,5 +1,7 @@
 require 'Subspecified'
 
+hop = subspecified 51
+
 
 toto = subspecified function (x)
   parameter constant1 = {default = 51}
