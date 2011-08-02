@@ -4,6 +4,8 @@ require 'Parser'
 require 'Data'
 require 'Context'
 require 'Statistics'
+require 'IterationFunction'
+
 filename = "C:/Projets/lbcpp/projects/Examples/Data/BinaryClassification/a1a.test"
 labels = Dictionary.new()
 examples = Data.load(Parser.libSVMClassification, 100, filename, labels)
@@ -17,13 +19,11 @@ print (#examples .. " examples, " .. labels:size() .. " labels")
 --end
 
 
-function learnBinaryClassifier(examples)
+subspecified function learnBinaryClassifier(examples)
 
   -- parameters
-  --parameter rate = {default = function (i) return 1 end}
-  --parameter normalizeRate = {default = true}
-  local rate = function (i) return 1 end
-  local normalizeRate = true
+  parameter rate = {default = IterationFunction.constant(1)}
+  parameter normalizeRate = {default = true}
   --
 
   local parameters = Vector.newDense()
@@ -71,4 +71,7 @@ function learnBinaryClassifier(examples)
   end
 end
 
-params = context:call("learn binary classifier", learnBinaryClassifier, examples)
+
+learner = learnBinaryClassifier{rate = IterationFunction.invLinear(2.0, 1000)}
+
+params = context:call("learn binary classifier", learner, examples)

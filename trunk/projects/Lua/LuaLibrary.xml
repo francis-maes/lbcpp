@@ -2,13 +2,12 @@
 
 <library name="Lua" dynamic="yes">
 
-  <class name="LuaInterpreter" base="WorkUnit">
-    <variable type="File" name="luaFile"/>
+  <class name="ExecuteLuaString" base="WorkUnit">
+    <variable type="String" name="code"/>
   </class>
   
-  <class name="LuaSandBox" base="WorkUnit">
-    <variable type="File" name="luaFile"/>
-    <variable type="File" name="outputFile"/>
+  <class name="ExecuteLuaFile" base="WorkUnit">
+    <variable type="File" name="file"/>
   </class>
 
   <namespace name="lua">

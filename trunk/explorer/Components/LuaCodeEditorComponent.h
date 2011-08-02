@@ -25,7 +25,7 @@ class LuaCodeEditorComponent : public Component, public ComponentWithPreferedSiz
 {
 public:
   LuaCodeEditorComponent(const File& luaFile)
-    : luaFile(luaFile), name(luaFile.getFileName()), context(ExplorerProject::currentProject->workUnitContext), luaState(*context)
+    : luaFile(luaFile), name(luaFile.getFileName()), context(ExplorerProject::currentProject->workUnitContext)
   {
     InputStream* istr = luaFile.createInputStream();
     if (istr)
@@ -72,7 +72,9 @@ public:
     // set current working directory to root directory
     // FIXME: find a better way to fix lua directly to take our root directory
     ExplorerProject::getCurrentProject()->getRootDirectory().setAsCurrentWorkingDirectory(); 
-    luaState.execute(code, name);
+    WorkUnitPtr workUnit = WorkUnit::create(getType("ExecuteLuaString"));
+    workUnit->setVariable(0, code);
+    context->run(workUnit);
   }
  
   void saveFile()
@@ -113,7 +115,6 @@ protected:
   juce::CodeDocument document;
   juce::LuaCodeTokeniser tokeniser;
   ExecutionTracePtr trace;
-  LuaState luaState;
 };
 
 }; /* namespace lbcpp */
