@@ -15,8 +15,8 @@ module("Subspecified", package.seeall)
 --
 instanceMT = {} 
   
-function instanceMT.__call(self, param)
-  return self:get()(param)
+function instanceMT.__call(self, ...)
+  return self:get()(...)
 end
 
 function instanceMT.__tostring(self)

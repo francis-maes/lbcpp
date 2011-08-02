@@ -70,7 +70,7 @@ local function perceptronLoss(derivable x)
 end
 
 -- LargeMargin loss function
-local function largeMarginLoss(derivable x)
+local function hingeLoss(derivable x)
   return math.max(1 - x, 0.0)
 end
 

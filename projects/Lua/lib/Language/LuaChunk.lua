@@ -231,3 +231,19 @@ mlp.lexer:add{ "subspecified", "parameter" }
 mlp.expr:add{ "subspecified", mlp.expr, builder = "Subspecified" }
 mlp.stat:add{ "parameter", mlp.id, "=", mlp.table, builder = "Parameter" }
    
+local function subspecified_funcdef_builder(x)
+   local name, method, func = x[1], x[2], x[3]
+   if method then 
+      name = { tag="Index", name, method, lineinfo = {
+         first = name.lineinfo.first,
+         last  = method.lineinfo.last } }
+      _G.table.insert (func[1], 1, {tag="Id", "self"}) 
+   end
+   func = {tag = "Subspecified", func}
+   local r = { tag="Set", {name}, {func} } 
+   r[1].lineinfo = name.lineinfo
+   r[2].lineinfo = func.lineinfo
+   return r
+end 
+
+mlp.stat:add{"subspecified", "function", mlp.func_name, mlp.method_name, mlp.func_val, builder=subspecified_funcdef_builder }

@@ -32,3 +32,7 @@ function callIfExists(f, defValue, ...)
     return f(...)
   end
 end
+
+function ternaryOperator(cond, exprIfTrue, exprIfFalse)
+  return cond and exprIfTrue or exprIfFalse
+end

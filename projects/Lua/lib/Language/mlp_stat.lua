@@ -109,13 +109,13 @@ local function fn_builder (list)
    for i = 2, #list do r = { tag="Index", r, id2string(list[i]) } end
    return r
 end
-local func_name = gg.list{ id, separators = ".", builder = fn_builder }
+func_name = gg.list{ id, separators = ".", builder = fn_builder }  -- francis: pass from local to public
 
 --------------------------------------------------------------------------------
 -- Function def parser helper: ( : id )?
 --------------------------------------------------------------------------------
-local method_name = gg.onkeyword{ name = "method invocation", ":", id, 
-   transformers = { function(x) return x and id2string(x) end } }
+method_name = gg.onkeyword{ name = "method invocation", ":", id, 
+   transformers = { function(x) return x and id2string(x) end } }  -- francis: pass from local to public
 
 --------------------------------------------------------------------------------
 -- Function def builder

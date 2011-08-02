@@ -56,7 +56,7 @@ int ExecutionCallback::information(LuaState& state)
   {
     info += state.toString(i);
     if (i < state.getTop())
-      info + T("    ");
+      info += T("    ");
   }
   pthis->informationCallback(info);
   return 0;
