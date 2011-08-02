@@ -178,10 +178,18 @@ bool LuaState::isString(int index) const
 
 String LuaState::toString(int index)
 {
-  Variable v = checkVariable(index);
+  // returns tostring(value)
+  getGlobal("tostring");
+  lua_pushvalue(L, index);
+  lua_call(L, 1, 1);
+  String res = checkString(-1);
+  pop(1);
+  return res;
+
+  /*Variable v = checkVariable(index);
   if (v.isString())
     return v.getString();
-  return v.isObject() ? v.toShortString() : v.toString();
+  return v.isObject() ? v.toShortString() : v.toString();*/
 }
 
 bool LuaState::isInteger(int index) const

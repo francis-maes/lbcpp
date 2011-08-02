@@ -1,7 +1,6 @@
-require 'Subspecified'
-
 hop = subspecified 51
 
+print (hop)
 
 toto = subspecified function (x)
   parameter constant1 = {default = 51}
@@ -9,29 +8,11 @@ toto = subspecified function (x)
   return constant1 + constant2 * x
 end
 
-t1 = toto{}
-print (t1(x))
+print (toto)
 
-t2 = toto{constant1 = 8.6}
-print (t2(x))
+totoInstance = toto{constant2 = 8.6}
 
-t2.saveToFile("t2.data")
-t3 = toto.loadFromFile("t2.data")
+print (totoInstance)
 
-subspecified function totoWrapper()
-  parameter constant = {default = 8.6}
-  return toto{constant1 = constant, constant2 = constant}
-end
+print (totoInstance(2))
 
-t3 = totoWrapper{8.6}
-
---energy = |totoFunction| totoFunction(x)
---objective = |c| energy(totoWrapper{c})
-
---[[ output should be as following:
-
-function toto(parameters)
-  return {
-end
-
-------------------------
