@@ -162,6 +162,14 @@ public:
   virtual void visit(ExpressionStatement& statement)
     {statement.getExpression()->accept(*this);}
 
+  virtual void visit(Parameter& statement)
+  {
+    write("parameter ");
+    statement.getIdentifier()->accept(*this);
+    write(" = ");
+    statement.getProperties()->accept(*this);
+  }
+
   // expressions
   virtual void visit(Nil& expression)
     {write("nil");}
@@ -314,6 +322,12 @@ public:
   {
     index.getLeft()->accept(*this);
     writeIdentifierOrGenericAccess(index.getRight(), true);
+  }
+
+  virtual void visit(Subspecified& subspecified)
+  {
+    write("subspecified ");
+    subspecified.getExpr()->accept(*this);
   }
 
 private:

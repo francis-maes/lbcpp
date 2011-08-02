@@ -33,6 +33,7 @@ NODE_ACCEPT_FUNCTION(Local)
 NODE_ACCEPT_FUNCTION(Return)
 NODE_ACCEPT_FUNCTION(Break)
 NODE_ACCEPT_FUNCTION(ExpressionStatement)
+NODE_ACCEPT_FUNCTION(Parameter)
 
 // expressions
 NODE_ACCEPT_FUNCTION(Nil)
@@ -50,6 +51,7 @@ NODE_ACCEPT_FUNCTION(Call)
 NODE_ACCEPT_FUNCTION(Invoke)
 NODE_ACCEPT_FUNCTION(Identifier)
 NODE_ACCEPT_FUNCTION(Index)
+NODE_ACCEPT_FUNCTION(Subspecified)
 
 int UnaryOperation::getPrecendenceRank() const
   {return 7;}

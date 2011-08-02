@@ -75,6 +75,10 @@
     <class name="ExpressionStatement" base="lua::Statement">
       <variable type="lua::Expression" name="expression"/>
     </class>
+    <class name="Parameter" base="lua::Statement">
+      <variable type="lua::Identifier" name="identifier"/>
+      <variable type="lua::Table" name="properties"/>
+    </class>
 
     <!-- Expressions -->
     <class name="Expression" base="lua::Node" abstract="yes"/>
@@ -168,6 +172,10 @@
       <variable type="lua::Expression" name="right"/>
     </class>
 
+    <!-- Sub Lua -->
+    <class name="Subspecified" base="lua::Expression">
+      <variable type="lua::Expression" name="expr"/>
+    </class>
     <!-- ------------------------- -->
 
     <!-- Scope -->

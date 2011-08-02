@@ -160,6 +160,8 @@ function _M.metaLuaAstToLbcppAst(ast)
     return lbcpp.Object.create("lua::Break");
   elseif ast.tag == "Return" then
     return lbcpp.Object.create("lua::Return", makeObjectVector("lua::Expression", subNodes, 1))
+  elseif ast.tag == "Parameter" then
+    return lbcpp.Object.create("lua::Parameter", subNodes[1], subNodes[2])
   
   -- expressions  
   elseif ast.tag == "Nil" or ast.tag == "Dots" then
@@ -194,35 +196,10 @@ function _M.metaLuaAstToLbcppAst(ast)
     return lbcpp.Object.create("lua::Invoke", subNodes[1], subNodes[2], makeObjectVector("lua::Expression", subNodes, 3))
   elseif ast.tag == "Index" then
     return lbcpp.Object.create("lua::Index", subNodes[1], subNodes[2])
+  elseif ast.tag == "Subspecified" then
+    return lbcpp.Object.create("lua::Subspecified", subNodes[1])
   else
     error("unknown tag " .. ast.tag .. " (numSubNodes = " .. #subNodes .. " numAttributes = " .. (#ast - #subNodes) .. ")")
-  end
-end
-
-function _M.oldMetaLuaAstToLbcppAst(ast)
-  if (ast) then
-    local res = lbcpp.Object.create("LuaASTNode")
-
-    if (ast.tag) then
-      res.tag = ast.tag
-    end
-    local childNodes = res.childNodes
-    local variables = res.variables
-    
-    for i=1, # ast do
-      local var = ast[i]
-      if (type(var) == "table") then
-        childNodes:append(_M.metaLuaAstToLbcppAst(ast[i]))
-      else
-        variables:append(ast[i])
-      end
-    end
-    
-    res.childNodes = childNodes
-    res.variables = variables
-    return res
-  else
-    return nil
   end
 end
 
@@ -246,27 +223,11 @@ function _M.parseFromString(codeType, code, codeName)
 end
 
 -- 'derivable' extension
-DerivableFunction = {  -- metatable
-   __call = function (tbl, ...) return tbl.f(...) end,
-   
-   __index = function (tbl, key)
-
-      if type(key) == "number" then
-        local p = tbl.prototype[key] 
-        return p ~= nil and tbl[p] or nil
-      else
-        return tbl
-      end
-  end
-}
-
-function callIfExists(f, defValue, ...)
-  if f == nil then
-    return defValue
-  else
-    return f(...)
-  end
-end
-
 mlp.lexer:add{ "derivable" }
 mlp.func_param_content:add{ "derivable", mlp.id, builder = "Derivable" }
+
+-- 'subspecified' extension
+mlp.lexer:add{ "subspecified", "parameter" }
+mlp.expr:add{ "subspecified", mlp.expr, builder = "Subspecified" }
+mlp.stat:add{ "parameter", mlp.id, "=", mlp.table, builder = "Parameter" }
+   

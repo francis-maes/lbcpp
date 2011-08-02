@@ -217,8 +217,6 @@ protected:
   std::vector<ExpressionPtr> fields;
 };
 
-typedef ReferenceCountedObjectPtr<Table> TablePtr;
-
 class Operation : public Expression
 {
 public:
@@ -513,6 +511,33 @@ protected:
 
   ExpressionPtr left;
   ExpressionPtr right;
+};
+
+class Subspecified : public Expression
+{
+public:
+  Subspecified(const ExpressionPtr& expr)
+    : expr(expr) {}
+  Subspecified() {}
+
+  virtual String getTag() const
+    {return "Subspecified";}
+
+  virtual size_t getNumSubNodes() const
+    {return 1;}
+
+  virtual NodePtr& getSubNode(size_t index)
+    {return (NodePtr&)expr;}
+
+  virtual void accept(Visitor& visitor);
+
+  const ExpressionPtr& getExpr() const
+    {return expr;}
+
+protected:
+  friend class SubspecifiedClass;
+
+  ExpressionPtr expr;
 };
 
 }; /* namespace lua */

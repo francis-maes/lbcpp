@@ -358,6 +358,35 @@ protected:
   ExpressionPtr expression;
 };
 
+class Parameter : public Statement
+{
+public:
+  virtual String getTag() const
+    {return "Parameter";}
+
+  virtual size_t getNumSubNodes() const
+    {return 2;}
+
+  virtual NodePtr& getSubNode(size_t index)
+    {return index ? (NodePtr&)properties : (NodePtr&)identifier;}
+
+  virtual void accept(Visitor& visitor);
+
+  const IdentifierPtr& getIdentifier() const
+    {return identifier;}
+
+  const TablePtr& getProperties() const
+    {return properties;}
+
+protected:
+  friend class ParameterClass;
+
+  IdentifierPtr identifier;
+  TablePtr      properties;
+};
+
+typedef ReferenceCountedObjectPtr<Parameter> ParameterPtr;
+
 }; /* namespace lua */
 }; /* namespace lbcpp */
 

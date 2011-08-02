@@ -47,6 +47,8 @@ public:
     {jassert(false);}
   virtual void visit(ExpressionStatement& statement)
     {jassert(false);}
+  virtual void visit(Parameter& statement)
+    {jassert(false);}
 
   // expressions
   virtual void visit(Nil& expression)
@@ -78,6 +80,8 @@ public:
   virtual void visit(Identifier& identifier)
     {jassert(false);}
   virtual void visit(Index& index)
+    {jassert(false);}
+  virtual void visit(Subspecified& subspecified)
     {jassert(false);}
 
 protected:
@@ -125,6 +129,8 @@ public:
     {}
   virtual void visit(ExpressionStatement& statement)
     {acceptChildren(statement);}
+  virtual void visit(Parameter& statement)
+    {acceptChildren(statement);}
 
   // expressions
   virtual void visit(Nil& expression)   {}
@@ -160,6 +166,9 @@ public:
 
   virtual void visit(Index& index)
     {acceptChildren(index);}
+
+  virtual void visit(Subspecified& subspecified)
+    {acceptChildren(subspecified);}
 };
 
 class DefaultVisitor : public DefaultVisitorT<Visitor> {};
