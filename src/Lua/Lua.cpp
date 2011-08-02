@@ -220,8 +220,6 @@ File LuaState::checkFile(int index)
 
 ObjectPtr& LuaState::checkObject(int index, TypePtr expectedType)
 {
-  ExecutionContext& context = defaultExecutionContext();
-
   ObjectPtr* p = (ObjectPtr* )luaL_checkudata(L, index, "LBCppObject");
   if (p)
   {

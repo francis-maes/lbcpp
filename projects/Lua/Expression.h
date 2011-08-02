@@ -31,7 +31,7 @@ extern ExpressionPtr unm(const ExpressionPtr& expr);
 
 extern ExpressionPtr lt(const ExpressionPtr& left, const ExpressionPtr& right);
 extern ExpressionPtr le(const ExpressionPtr& left, const ExpressionPtr& right);
-extern ExpressionPtr not(const ExpressionPtr& expr);
+extern ExpressionPtr notExpr(const ExpressionPtr& expr);
 
 class AtomicExpression : public Expression
 {

@@ -155,7 +155,7 @@ public:
 
       const ExpressionPtr& u = call.getArgument(0);
       const ExpressionPtr& v = call.getArgument(1);
-      setResult(ternaryOperator(fun == T("math.max") ? not(lt(u, v)) : le(u, v),
+      setResult(ternaryOperator(fun == T("math.max") ? notExpr(lt(u, v)) : le(u, v),
                     rewrite(u), rewrite(v)));
       return;
     }
@@ -175,8 +175,6 @@ public:
       terms.reserve(call.getNumArguments());
       for (size_t i = 0; i < call.getNumArguments(); ++i)
       {
-        const ExpressionPtr& u = call.getArgument(i);
-
         // (f[1] or (function (...) return 0 end))(...)
         ExpressionPtr derivateFunction = new Index(call.getFunction(), new LiteralNumber(i + 1));
         derivateFunction = new BinaryOperation(orOp, derivateFunction, new Identifier("Derivable.returnZeroFunction"));
@@ -331,7 +329,6 @@ public:
   {
     DefaultVisitorT<Rewriter>::visit(function); // apply recursively first
 
-    bool atLeastOneDerivable = false;
     std::vector<IdentifierPtr> derivables;
     size_t n = function.getNumParameters();
     for (size_t i = 0; i < n; ++i)

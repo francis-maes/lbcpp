@@ -67,23 +67,23 @@ class PrintScopesVisitor : public ScopeVisitor
 {
 public:
   virtual void enterScope(Node& node)
-    {std::cout << "Enter Scope " << node.getTag() << std::endl;}
+    {std::cout << "Enter Scope " << (const char* )node.getTag() << std::endl;}
 
   virtual void leaveScope()
     {std::cout << "Leave Scope" << std::endl;}
 
   virtual void newVariable(NodePtr declarator, IdentifierPtr identifier, ExpressionPtr initialValue = ExpressionPtr())
   {
-    std::cout << "newVariable " << identifier->getIdentifier() << " in " << declarator->print();
+    std::cout << "newVariable " << (const char* )identifier->getIdentifier() << " in " << (const char* )declarator->print();
     if (initialValue)
-      std::cout << " = " << initialValue->print();
+      std::cout << " = " << (const char* )initialValue->print();
     std::cout << std::endl;
   }
   virtual void variableSet(IdentifierPtr identifier, ExpressionPtr value)
-    {std::cout << "setVariable " << identifier->getIdentifier() << " = " << value->print() << std::endl;}
+    {std::cout << "setVariable " << (const char* )identifier->getIdentifier() << " = " << (const char* )value->print() << std::endl;}
 
   virtual void variableGet(IdentifierPtr identifier)
-    {std::cout << "getVariable " << identifier->getIdentifier() << std::endl;}
+    {std::cout << "getVariable " << (const char* )identifier->getIdentifier() << std::endl;}
 };
 
 void Scope::print(NodePtr tree)
@@ -244,7 +244,7 @@ void ScopeVisitor::visit(Local& statement)
   for (size_t i = 0; i < identifiers->getNumSubNodes(); ++i)
   {
     IdentifierPtr identifier = identifiers->getSubNode(i).dynamicCast<Identifier>();
-    newVariable(&statement, identifier, i < numExpressions ? expressions->getSubNode(i) : ExpressionPtr());
+    newVariable(&statement, identifier, i < numExpressions ? expressions->getSubNode(i).staticCast<Expression>() : ExpressionPtr());
   }
 
   if (statement.isFunction() && numExpressions)

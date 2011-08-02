@@ -21,6 +21,7 @@ class Visitor
 public:
   Visitor(ExecutionContextPtr context = ExecutionContextPtr())
     : context(context) {}
+  virtual ~Visitor() {}
 
   virtual void visit(List& list)
     {jassert(false);}
@@ -121,36 +122,36 @@ public:
     : BaseClass(context) {}
 
   virtual void visit(List& list)
-    {acceptChildren(list);}
+    {BaseClass::acceptChildren(list);}
 
   virtual void visit(Block& block)
-    {acceptChildren(block);}
+    {BaseClass::acceptChildren(block);}
 
   // statements
   virtual void visit(Do& statement)
-    {acceptChildren(statement);}
+    {BaseClass::acceptChildren(statement);}
   virtual void visit(Set& statement)
-    {acceptChildren(statement);}
+    {BaseClass::acceptChildren(statement);}
   virtual void visit(While& statement)
-    {acceptChildren(statement);}
+    {BaseClass::acceptChildren(statement);}
   virtual void visit(Repeat& statement)
-    {acceptChildren(statement);}
+    {BaseClass::acceptChildren(statement);}
   virtual void visit(If& statement)
-    {acceptChildren(statement);}
+    {BaseClass::acceptChildren(statement);}
   virtual void visit(ForNum& statement)
-    {acceptChildren(statement);}
+    {BaseClass::acceptChildren(statement);}
   virtual void visit(ForIn& statement)
-    {acceptChildren(statement);}
+    {BaseClass::acceptChildren(statement);}
   virtual void visit(Local& statement)
-    {acceptChildren(statement);}
+    {BaseClass::acceptChildren(statement);}
   virtual void visit(Return& statement)
-    {acceptChildren(statement);}
+    {BaseClass::acceptChildren(statement);}
   virtual void visit(Break& statement)
     {}
   virtual void visit(ExpressionStatement& statement)
-    {acceptChildren(statement);}
+    {BaseClass::acceptChildren(statement);}
   virtual void visit(Parameter& statement)
-    {acceptChildren(statement);}
+    {BaseClass::acceptChildren(statement);}
 
   // expressions
   virtual void visit(Nil& expression)   {}
@@ -159,36 +160,36 @@ public:
   virtual void visit(LiteralNumber& expression) {}
   virtual void visit(LiteralString& expression) {}
   virtual void visit(Function& function)
-    {acceptChildren(function);}
+    {BaseClass::acceptChildren(function);}
 
   virtual void visit(Pair& pair)
-    {acceptChildren(pair);}
+    {BaseClass::acceptChildren(pair);}
 
   virtual void visit(Table& table)
-    {acceptChildren(table);}
+    {BaseClass::acceptChildren(table);}
 
   virtual void visit(UnaryOperation& operation)
-    {acceptChildren(operation);}
+    {BaseClass::acceptChildren(operation);}
 
   virtual void visit(BinaryOperation& operation)
-    {acceptChildren(operation);}
+    {BaseClass::acceptChildren(operation);}
 
   virtual void visit(Parenthesis& parenthesis)
-    {acceptChildren(parenthesis);}
+    {BaseClass::acceptChildren(parenthesis);}
 
   virtual void visit(Call& call)
-    {acceptChildren(call);}
+    {BaseClass::acceptChildren(call);}
 
   virtual void visit(Invoke& invoke)
-    {acceptChildren(invoke);}
+    {BaseClass::acceptChildren(invoke);}
 
   virtual void visit(Identifier& identifier)  {}
 
   virtual void visit(Index& index)
-    {acceptChildren(index);}
+    {BaseClass::acceptChildren(index);}
 
   virtual void visit(Subspecified& subspecified)
-    {acceptChildren(subspecified);}
+    {BaseClass::acceptChildren(subspecified);}
 };
 
 class DefaultVisitor : public DefaultVisitorT<Visitor>

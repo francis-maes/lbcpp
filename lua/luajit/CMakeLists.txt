@@ -22,20 +22,17 @@ set(all_lib lib_base.c lib_math.c lib_bit.c lib_string.c lib_table.c lib_io.c li
 if(WIN32)
   set(LJVM_BUILDED_FILE lj_vm.obj)
   set(LJVM_OBJECT_FILE lj_vm.obj)
+  dobuildvm(peobj ${LJVM_BUILDED_FILE} "")
 else(WIN32)
   set(LJVM_BUILDED_FILE lj_vm.s)
   set(LJVM_OBJECT_FILE lj_vm.o)
-  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.o
-    COMMAND gcc
-    ARGS -c ${ASM_FLAGS} -o ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.o ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.s
-    DEPENDS buildvm ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.s
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMENT "compiling lj_vm.s"
-  )
+  if(APPLE)
+    dobuildvm(machasm ${LJVM_BUILDED_FILE} "")
+  else(APPLE)
+    # fixme
+  endif(APPLE)
 endif(WIN32)
 
-
-dobuildvm(peobj ${LJVM_BUILDED_FILE} "")
 dobuildvm(bcdef lj_bcdef.h "${all_lib}")
 dobuildvm(ffdef lj_ffdef.h "${all_lib}")
 dobuildvm(libdef lj_libdef.h "${all_lib}")
@@ -46,9 +43,12 @@ dobuildvm(folddef lj_folddef.h lj_opt_fold.c)
 if(WIN32)
   add_definitions(-D_FILE_OFFSET_BITS=64)
 else(WIN32)
-  add_definitions(-U_FORTIFY_SOURCE -fno-stack-protector -D_FILE_OFFSET_BITS=64)
+  if (APPLE)
+    add_definitions(-U_FORTIFY_SOURCE -D_FILE_OFFSET_BITS=64)
+  else(APPLE)
+    add_definitions(-U_FORTIFY_SOURCE -fno-stack-protector -D_FILE_OFFSET_BITS=64)
+  endif(APPLE)
 endif(WIN32)
-
 
 file(GLOB lua_files lj_*.c lib_*.c lj_*.h lib_*.h)
 
@@ -62,13 +62,18 @@ set(ASM_FLAGS "")
 #  set(ASM_FLAGS ${ASM_FLAGS} -m64)
 #endif(${ENFORCE_64_BIT} EQUAL "1")
 
-#add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.o
-#  COMMAND gcc
-#  ARGS -c ${ASM_FLAGS} -o ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.o ${CMAKE_CURRENT_BINARY_DIR}/${LJVM_OBJECT_FILE}
-#  DEPENDS buildvm ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.s
-#  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-#  COMMENT "compiling lj_vm.s"
-#)
+IF(WIN32)
+
+ELSE(WIN32)
+  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.o
+    COMMAND gcc
+    ARGS -c ${ASM_FLAGS} -o ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.o ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.s
+    DEPENDS buildvm ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.s
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "compiling lj_vm.s"
+  )
+
+ENDIF(WIN32)
 
 
 file(GLOB luajit_generated_files ${CMAKE_CURRENT_BINARY_DIR}/lj_*.h)
