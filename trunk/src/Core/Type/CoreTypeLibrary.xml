@@ -29,6 +29,7 @@
   <class name="Object" base="Variable" abstract="yes">
     <function lang="lua" name="create" static="yes"/>
     <function lang="lua" name="fromFile" static="yes"/>
+    <function lang="lua" name="clone"/>
     <function lang="lua" name="toShortString"/>
   </class>
   

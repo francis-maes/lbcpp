@@ -2,6 +2,7 @@ require 'Vector'
 require 'Dictionary'
 require 'Parser'
 require 'Data'
+require 'Context'
 
 filename = "C:/Projets/lbcpp/projects/Examples/Data/BinaryClassification/a1a.test"
 labels = Dictionary.new()
@@ -14,14 +15,6 @@ print (#examples .. " examples, " .. labels:size() .. " labels")
 --    print (k2,v2)
 --  end
 --end
-
-
-function contextCall(description, fun, ...)
-  context:enter(description)
-  res = fun(...)
-  context:leave(res)
-  return res
-end
 
 function learnBinaryClassifier(examples)
 
@@ -46,13 +39,12 @@ function learnBinaryClassifier(examples)
     end
     context:result("mean hinge loss", totalHingeLoss / numExamples)
     context:result("parameters norm", parameters:l2norm())
-    context:result("parameters", parameters)
+    context:result("parameters", parameters:clone())
   end
 
-  for i = 1,100 do
-    contextCall("iteration " .. i,  iteration, parameters, i)
+  for i = 1,10 do
+    context:call("iteration " .. i,  iteration, parameters, i)
   end
-
 end
 
-params = contextCall("learn binary classifier", learnBinaryClassifier, examples)
+params = context:call("learn binary classifier", learnBinaryClassifier, examples)

@@ -78,6 +78,7 @@
     <variable type="File" name="projectDirectory"/>
     <function lang="lua" name="enter"/>
     <function lang="lua" name="leave"/>
+    <function lang="lua" name="call"/>
   </class>
 
   <!--

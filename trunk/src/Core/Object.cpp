@@ -512,6 +512,16 @@ int Object::toShortString(LuaState& state)
   return 1;
 }
 
+int Object::clone(LuaState& state)
+{
+  ObjectPtr object = state.checkObject(1);
+  ObjectPtr res = object->clone(state.getContext());
+  if (!res)
+    return 0;
+  state.pushObject(res);
+  return 1;
+}
+
 int Object::index(LuaState& state)
 {
   ObjectPtr object = state.checkObject(1);

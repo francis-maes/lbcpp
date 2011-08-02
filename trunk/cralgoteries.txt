@@ -1,4 +1,5 @@
- * Transformer contextCall en context:call (soit l'implementer en C, soit permettre d'ettendre l'interface depuis lua)
+  
+ 
  * Subspecified stochastic gradient descent
 
 Lua:

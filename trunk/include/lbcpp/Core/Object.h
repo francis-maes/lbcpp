@@ -191,6 +191,7 @@ public:
   */
   static int create(LuaState& state);
   static int fromFile(LuaState& state);
+  static int clone(LuaState& state);
   static int index(LuaState& state);
   static int newIndex(LuaState& state);
   static int toString(LuaState& state);

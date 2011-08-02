@@ -150,6 +150,17 @@ int ExecutionContext::leave(LuaState& state)
   return 0;
 }
 
+// function (...) return Context.call(...) end
+int ExecutionContext::call(LuaState& state)
+{
+  int numArguments = state.getTop();
+  ExecutionContextPtr pthis = state.checkObject(1, executionContextClass);
+  state.getGlobal("Context", "call");
+  state.insert(1); // move function to top of stack
+  state.call(numArguments, 1);
+  return 1;
+}
+
 /*
 ** ExecutionStack
 */
