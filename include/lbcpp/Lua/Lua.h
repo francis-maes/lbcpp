@@ -39,13 +39,15 @@ class LuaState
 {
 public:
   LuaState(ExecutionContext& context, bool initializeLuaLibraries = true, bool initializeLBCppLibrary = true, bool verbose = false);
-  LuaState(lua_State* L);
+  LuaState(lua_State* L = NULL);
   virtual ~LuaState();
 
   void clear();
 
   operator lua_State*()
     {return L;}
+
+  bool loadBuffer(const char* code, const char* chunkName);
 
   bool execute(const char* code, const char* codeName = "code", bool verbose = false);
   bool execute(const File& luaFile);
@@ -57,6 +59,7 @@ public:
   void getGlobal(const char* name);
   void getGlobal(const char* scopeName, const char* name);
 
+  void pushNil();
   void pushBoolean(bool value);
   void pushString(const char* value);
   void pushInteger(int value);
@@ -80,6 +83,8 @@ public:
   bool isInteger(int index) const;
   bool isBoolean(int index) const;
 
+  bool isFunction(int index) const;
+  LuaFunction toFunction(int index);
 
   bool checkBoolean(int index);
   int checkInteger(int index);

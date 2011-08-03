@@ -56,9 +56,10 @@ LuaState::LuaState(ExecutionContext& context, bool initializeLuaLibraries, bool 
       lbcpp::getLibrary(i)->luaRegister(*this);
     
     pop(1);
-    pushObject(ObjectPtr(&context));
 
+    pushObject(ObjectPtr(&context));
     setGlobal("context");
+
     if (verbose) context.leaveScope(true);
   }
 }
@@ -119,19 +120,25 @@ bool LuaState::processExecuteError(int error)
   return true;
 }
 
-bool LuaState::execute(const char* code, const char* codeName, bool verbose)
+bool LuaState::loadBuffer(const char* code, const char* chunkName)
+{
+  // if ok, the loaded chunk is on returned on the stack, otherwise nothing is left on the stack
+  return processExecuteError(luaL_loadbuffer(L, code, strlen(code), chunkName));
+}
+
+bool LuaState::execute(const char* code, const char* chunkName, bool verbose)
 {
   ExecutionContext& context = getContext();
 
-  if (verbose) context.enterScope(String("Lua parsing ") + codeName); 
-  bool ok = processExecuteError(luaL_loadbuffer(L, code, strlen(code), codeName));
+  if (verbose) context.enterScope(String("Lua loading ") + chunkName); 
+  bool ok = loadBuffer(code, chunkName);
   if (verbose) context.leaveScope(ok);
-  if (!ok)
-    return false;
-
-  if (verbose) context.enterScope(String("Lua interpreting ") + codeName);
-  ok = call(0, 0);
-  if (verbose) context.leaveScope(ok);
+  if (ok)
+  {
+    if (verbose) context.enterScope(String("Lua interpreting ") + chunkName);
+    ok = call(0, 0);
+    if (verbose) context.leaveScope(ok);
+  }
   return ok;
 }
 
@@ -155,6 +162,9 @@ void LuaState::getGlobal(const char* scopeName, const char* name)
     lua_remove(L, -2); // remove scope from stack
   }
 }
+
+void LuaState::pushNil()
+  {lua_pushnil(L);}
 
 void LuaState::pushBoolean(bool value)
   {lua_pushboolean(L, value ? 1 : 0);}
@@ -227,6 +237,12 @@ String LuaState::toString(int index)
     return v.getString();
   return v.isObject() ? v.toShortString() : v.toString();*/
 }
+
+bool LuaState::isFunction(int index) const
+  {return lua_iscfunction(L, index) != 0;}
+
+LuaFunction LuaState::toFunction(int index)
+  {return lua_tocfunction(L, index);}
 
 bool LuaState::isInteger(int index) const
   {return lua_isnumber(L, index) != 0;} // fixme: not distinction between numbers and integers

@@ -1,5 +1,12 @@
 
+
 -- note: includes gg/mlp Lua parsing Libraries taken from Metalua.
+
+-- interface:
+--
+-- parseFromString(codeType, code, codeName)
+-- parseFromFile(codeType, filename)
+
 require "Language.lexer"
 require "Language.gg"
 require "Language.mlp_lexer"
@@ -12,20 +19,13 @@ require "Language.mlp_ext"
 mlc = {} -- make gg happy
 local mlp = assert(_G.mlp)
 
+-- error handler
+function __errorHandler(msg)
+  context:error(msg)
+  return msg
+end
+
 module ("LuaChunk", package.seeall)
-
-_M.parseExpression = mlp.expr
-_M.parseStatement = mlp.stat
-_M.parseStatementBlock = mlp.block
-
-function _M.stringLexer(src, filename)
-  return mlp.lexer:newstream(src, filename)
-end
-
-function _M.fileLexer(filename)
-  -- FIXME return mlp.lexer:newstream(src, filename)
-end
-
 
 local function convertUnaryOp(opid)
   opids = {['not'] = 0, len = 1, unm = 2}
@@ -77,13 +77,13 @@ local function createBlock(statements)
   return lbcpp.Object.create("lua::Block", makeObjectVector("lua::Statement", statements, 1))
 end
 
-function _M.metaLuaAstToLbcppAst(ast)
+local function metaLuaAstToLbcppAst(ast)
 
   local function convertSubNodes(ast)
     local res = {}
     for i=1,#ast do
       if type(ast[i]) == "table" then
-        table.insert(res, _M.metaLuaAstToLbcppAst(ast[i]))
+        table.insert(res, metaLuaAstToLbcppAst(ast[i]))
       end
     end
     return res
@@ -203,14 +203,14 @@ function _M.metaLuaAstToLbcppAst(ast)
   end
 end
 
-function _M.parse(codeType, lexer)
+local function parse(codeType, lexer)
   if (codeType == 0) then
-    return _M.metaLuaAstToLbcppAst(_M.parseExpression(lexer))
+    return metaLuaAstToLbcppAst(mlp.expr(lexer))
   elseif (codeType == 1) then
-    return _M.metaLuaAstToLbcppAst(_M.parseStatement(lexer))
+    return metaLuaAstToLbcppAst(mlp.stat(lexer))
   elseif (codeType == 2) then
     -- transform result into block
-    local list = _M.metaLuaAstToLbcppAst(_M.parseStatementBlock(lexer))
+    local list = metaLuaAstToLbcppAst(mlp.block(lexer))
     return createBlock(list.nodes)
   else
     error("Unknown code type")
@@ -218,8 +218,15 @@ function _M.parse(codeType, lexer)
 end
 
 function _M.parseFromString(codeType, code, codeName)
-  local lexer = _M.stringLexer(code, codeName)
-  return _M.parse(codeType, lexer)
+  local lexer = mlp.lexer:newstream(code, codeName)
+  return parse(codeType, lexer)
+end
+
+function _M.parseFromFile(codeType, filename)
+  local f = assert(io.open(filename, "r"))
+  local code = f:read("*all")
+  f:close()
+  return _M.parseFromString(codeType, code, filename)
 end
 
 -- 'derivable' extension
@@ -247,10 +254,3 @@ local function subspecified_funcdef_builder(x)
 end 
 
 mlp.stat:add{"subspecified", "function", mlp.func_name, mlp.method_name, mlp.func_val, builder=subspecified_funcdef_builder }
-
-
--- error handler
-function _G.__errorHandler(msg)
-  context:error(msg)
-  return msg
-end

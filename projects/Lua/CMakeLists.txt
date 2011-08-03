@@ -8,7 +8,8 @@ GENERATE_INTROSPECTION_CODE(LuaLibrary.xml LuaLibrary.cpp)
 SET(INTELUA_INTERPRETER_SOURCES
   precompiled.h
   precompiled.cpp
-  LuaInterpreter.h
+  InteluaInterpreter.h
+  InteluaInterpreter.cpp
   LuaLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuaLibrary.cpp
 )
