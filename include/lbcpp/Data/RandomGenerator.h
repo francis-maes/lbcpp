@@ -303,6 +303,10 @@ public:
   
   static void initializeRandomGenerator();
 
+  // Lua
+  static int create(LuaState& state);
+  static int sample(LuaState& state);
+
 private:
   friend class RandomGeneratorClass;
 

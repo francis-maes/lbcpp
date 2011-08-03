@@ -13,7 +13,10 @@
   <include file="lbcpp/Data/SymmetricMatrix.h"/>
   
   <!-- Random Generator -->
-  <class name="RandomGenerator"/>
+  <class name="RandomGenerator">
+    <function lang="lua" name="create" static="yes"/>
+    <function lang="lua" name="sample"/>
+  </class>
   
   <!-- Random Variable -->
   <class name="ScalarVariableMean" base="NameableObject">
