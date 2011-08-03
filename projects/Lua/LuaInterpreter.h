@@ -14,54 +14,26 @@
 
 # include "DerivableRewriter.h"
 # include "SubspecifiedRewriter.h"
+# include "InteluaPreprocessRewriter.h"
 
-namespace lbcpp {
+namespace lbcpp
+{
 
-namespace lua {
-
-class SubLuaPreprocessRewriter : public DefaultRewriter
+class InteluaInterpreter
 {
 public:
-  // remove parenthesis:
-  // Parenthesis(x) => x
-  virtual void visit(Parenthesis& parenthesis)
-    {setResult(rewrite(parenthesis.getExpr()));}
-
-  // replace unary minus literals:
-  // - LiteralNumber(x) => LiteralNumber(-x)
-  virtual void visit(UnaryOperation& operation)
-  {
-    if (operation.getOp() == unmOp)
-    {
-      LiteralNumberPtr number = operation.getExpr().dynamicCast<LiteralNumber>();
-      if (number)
-        setResult(new LiteralNumber(-number->getValue()));
-    }
-  }
-
-  // transform invokation into call
-  // a:b(...)  ==> a.b(a, ...)
-  virtual void visit(Invoke& invoke)
-  {
-    CallPtr call = new Call(new Index(invoke.getObject(), invoke.getFunction()));
-    call->addArgument(invoke.getObject());
-    call->addArguments(invoke.getArguments());
-    setResult(call);
-  }
-};
-
-}; /* namespace lua */
-
-class SubLuaInterpreter
-{
-public:
-  SubLuaInterpreter(ExecutionContext& context, bool verbose = false)
+  InteluaInterpreter(ExecutionContext& context, bool verbose = false)
     : lua(context, true, true, verbose)
   {
     static const char* initializeCode = 
       "package.path = 'C:/Projets/lbcpp/projects/Lua/lib/?.lua;' .. package.path\n"
-      "require 'SubLua'\n";
-    lua.execute(initializeCode, "initializeCode", verbose);
+      "require 'InteluaCore'\n";
+    lua.execute(initializeCode, "initializeCode");
+  }
+
+  ~InteluaInterpreter()
+  {
+    lua.clear();
   }
   
   bool interpretFile(const File& subLuaFile, LuaChunkType type = luaStatementBlock)
@@ -141,16 +113,24 @@ protected:
 
   lua::NodePtr parse(const char* code, const char* name, LuaChunkType type = luaStatementBlock)
   {
+    LuaState translatorState(lua.getContext(), true, true); // needs lbcpp to create ast nodes
+
+    static const char* initializeCode = 
+      "package.path = 'C:/Projets/lbcpp/projects/Lua/lib/?.lua;' .. package.path\n"
+      "require 'Language.LuaChunk'\n";
+    translatorState.execute(initializeCode, "initializeCode");
+
     // call lua function LuaChunk.parseFromString with (codeType, code, codeName)
-    lua.getGlobal("LuaChunk", "parseFromString");
-    lua.pushInteger((int)type);
-    lua.pushString(code);
-    lua.pushString(name);
-    if (!lua.call(3, 1))
+    translatorState.getGlobal("LuaChunk", "parseFromString");
+    translatorState.pushInteger((int)type);
+    translatorState.pushString(code);
+    translatorState.pushString(name);
+    if (!translatorState.call(3, 1))
       return lua::NodePtr();
     
-    lua::NodePtr res = lua.checkObject(-1, lua::nodeClass).staticCast<lua::Node>();
-    lua.pop();
+    lua::NodePtr res = translatorState.checkObject(-1, lua::nodeClass).staticCast<lua::Node>();
+    translatorState.pop();
+    jassert(translatorState.getTop() == 0);    
     return res;
   }
 
@@ -159,7 +139,7 @@ protected:
     ExecutionContext& context = lua.getContext();
 
     // preprocessing
-    block = lua::SubLuaPreprocessRewriter().rewrite(block);
+    block = lua::InteluaPreprocessRewriter().rewrite(block);
 
     // scope analysis
     lua::ScopePtr scopes = lua::Scope::get(block);
@@ -172,7 +152,6 @@ protected:
 
   String prettyPrint(const lua::NodePtr& tree) const
     {return tree->print();}
-
 };
 
 class ExecuteLuaString : public WorkUnit
@@ -195,7 +174,7 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     static bool verbose = true;
-    SubLuaInterpreter interpreter(context, verbose);
+    InteluaInterpreter interpreter(context, verbose);
     return interpreter.interpretCode(code, toShortString(), verbose);
   }
 };
@@ -207,7 +186,7 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    SubLuaInterpreter interpreter(context);
+    InteluaInterpreter interpreter(context);
     return interpreter.interpretFile(file);
   }
 };

@@ -249,9 +249,8 @@ end
 mlp.stat:add{"subspecified", "function", mlp.func_name, mlp.method_name, mlp.func_val, builder=subspecified_funcdef_builder }
 
 
-
 -- error handler
-function errorHandler(msg)
+function _G.__errorHandler(msg)
   context:error(msg)
-  return "toto"
+  return msg
 end

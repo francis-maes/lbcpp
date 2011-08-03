@@ -1,4 +1,36 @@
-require 'DiscreteBandit'
+require 'Statistics'
+require 'IterationFunction'
+
+function print(...)
+  context:information(...)
+end
+
+for k,v in pairs(package.loaders) do
+print (k,v)
+end
+
+
+function myLoader(name)
+  print ("myLoader: " .. name)
+
+  return intelua:loadFile("C:/Projets/lbcpp/projects/Lua/lib/" .. name .. ".lua")
+
+  return loadfile("C:/Projets/lbcpp/projects/Lua/lib/" .. name .. ".lua")
+end
+
+assert(#package.loaders == 4)
+table.remove(package.loaders, 4)
+table.remove(package.loaders, 3)
+table.remove(package.loaders, 2)
+table.remove(package.loaders, 1)
+table.insert(package.loaders, myLoader)
+
+for k,v in pairs(package.loaders) do
+print (k,v)
+end
+
+
+require 'SubLua'
 
 ---------- evaluation -----------------
 

@@ -1,6 +1,8 @@
-
  
+ Objectif:
  * Apply translator recursively when using the "require" command
+
+
 
  * DoubleVector: implement index, newindex, len functions (==> metatable problem)
  * New lua function: DoubleVector::argmax

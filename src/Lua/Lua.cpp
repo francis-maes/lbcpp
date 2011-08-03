@@ -68,18 +68,24 @@ LuaState::LuaState(lua_State* L)
 
 LuaState::~LuaState()
 {
+  clear();
+}
+
+void LuaState::clear()
+{
   if (owned)
   {
     owned = false;
     lua_close(L);
   }
+  L = NULL;
 }
 
 bool LuaState::call(int numArguments, int numResults)
 {
   int oldTop = getTop();
 
-  getGlobal("LuaChunk", "errorHandler");
+  getGlobal("__errorHandler");
   insert(1);
 
   // todo: more elaborated error handler
