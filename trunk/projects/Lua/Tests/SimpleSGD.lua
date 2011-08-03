@@ -21,7 +21,7 @@ print (#examples .. " examples, " .. labels:size() .. " labels")
 
 subspecified function learnBinaryClassifier(examples)
 
-  parameter rate = {default = IterationFunction.constant(1)}
+  parameter rate = {default = IterationFunction.constant{1}}
   parameter normalizeRate = {default = true}
 
 
@@ -77,6 +77,6 @@ subspecified function learnBinaryClassifier(examples)
 end
 
 
-learner = learnBinaryClassifier{rate = IterationFunction.invLinear(2.0, 1000)}
+learner = learnBinaryClassifier{rate = IterationFunction.invLinear{2.0, 1000}}
 
 params = context:call("learn binary classifier", learner, examples)

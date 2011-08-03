@@ -12,14 +12,15 @@ Interface:
 
 module("IterationFunction", package.seeall)
 
-function one(epoch)
-  return 1.0
+one = |epoch| 1
+
+subspecified function constant(epoch)
+  parameter value = {default = 1}
+  return value
 end
 
-function constant(value)
-  return function (epoch) return value end
-end
-
-function invLinear(initialValue, halfPeriod)
-  return function (epoch) return initialValue * halfPeriod / (halfPeriod + epoch) end
+subspecified function invLinear(epoch)
+  parameter initialValue = {default = 2}
+  parameter halfPeriod = {default = 1000}
+  return initialValue * halfPeriod / (halfPeriod + epoch)
 end

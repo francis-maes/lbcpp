@@ -2,6 +2,11 @@
 
 <library name="Lua" dynamic="yes">
 
+  <class name="InteluaInterpreter" base="Object">
+    <function lang="lua" name="loadFile"/>
+    <!-- todo: parse, execute, ...  -->
+  </class>
+
   <class name="ExecuteLuaString" base="WorkUnit">
     <variable type="String" name="code"/>
     <variable type="String" name="description"/>
