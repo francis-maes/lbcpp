@@ -48,21 +48,6 @@ public:
     call->addArguments(invoke.getArguments());
     setResult(call);
   }
-
-  // replace print() calls
-  // print(...) => context.information(context, ...)
-  virtual void visit(Call& call)
-  {
-    ExpressionPtr function = call.getFunction();
-    IdentifierPtr functionIdentifier = call.getFunction().dynamicCast<Identifier>();
-    if (functionIdentifier && functionIdentifier->getIdentifier() == T("print"))
-    {
-      CallPtr newCall = new Call(new Index(new Identifier("context"), new LiteralString("information")));
-      newCall->addArgument(new Identifier("context"));
-      newCall->addArguments(call.getArguments());
-      setResult(newCall);
-    }
-  }
 };
 
 }; /* namespace lua */
@@ -70,13 +55,13 @@ public:
 class SubLuaInterpreter
 {
 public:
-  SubLuaInterpreter(ExecutionContext& context)
-    : lua(context)
+  SubLuaInterpreter(ExecutionContext& context, bool verbose = false)
+    : lua(context, true, true, verbose)
   {
     static const char* initializeCode = 
       "package.path = 'C:/Projets/lbcpp/projects/Lua/lib/?.lua;' .. package.path\n"
       "require 'SubLua'\n";
-    lua.execute(initializeCode, "initializeCode");
+    lua.execute(initializeCode, "initializeCode", verbose);
   }
   
   bool interpretFile(const File& subLuaFile, LuaChunkType type = luaStatementBlock)
@@ -112,31 +97,43 @@ public:
     return interpretCode(code, fileName);
   }
 
-  bool interpretCode(const char* code, const char* name)
+  bool interpretCode(const char* code, const char* name, bool verbose = false)
   {
     ExecutionContext& context = lua.getContext();
 
+    if (verbose) context.enterScope("Parsing");
     lua::BlockPtr block = parse(code, name, luaStatementBlock).staticCast<lua::Block>();
+    if (verbose)
+    {
+      if (block)
+        context.resultCallback("input ast", block);
+      context.leaveScope(block != lua::BlockPtr());
+    }
     if (!block)
     {
       context.errorCallback(name, "Parse error");
       return false;
     }
 
-    // tmp
-    context.resultCallback("input ast", block);
-
+    if (verbose) context.enterScope("Rewriting");
     rewrite(block);
+    if (verbose) context.leaveScope(block != lua::BlockPtr());
     if (!block)
     {
       context.errorCallback(name, "Translation error");
       return false;
     }
 
+    if (verbose) context.enterScope("Pretty printing");
     String generatedCode = prettyPrint(block);
-    //context.informationCallback(T("Generated code"), generatedCode);
-    std::cout << "Generated Code:" << std::endl << generatedCode << std::endl;
-    return lua.execute(generatedCode, name);
+    if (verbose)
+    {
+      context.leaveScope(generatedCode.isNotEmpty());
+      //context.informationCallback(T("Generated code"), generatedCode);
+      std::cout << "Generated Code:" << std::endl << generatedCode << std::endl;
+    }
+
+    return lua.execute(generatedCode, name, verbose);
   }
 
 protected:
@@ -197,8 +194,9 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    SubLuaInterpreter interpreter(context);
-    return interpreter.interpretCode(code, toShortString());
+    static bool verbose = true;
+    SubLuaInterpreter interpreter(context, verbose);
+    return interpreter.interpretCode(code, toShortString(), verbose);
   }
 };
 

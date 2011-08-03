@@ -25,18 +25,23 @@ static int objectToString(lua_State* L)
 static int objectGarbageCollect(lua_State* L)
   {LuaState state(L); return Object::garbageCollect(state);}
 
-LuaState::LuaState(ExecutionContext& context, bool initializeLuaLibraries, bool initializeLBCppLibrary)
+LuaState::LuaState(ExecutionContext& context, bool initializeLuaLibraries, bool initializeLBCppLibrary, bool verbose)
   : owned(true)
 {
+  if (verbose) context.enterScope("Lua Open");
   L = lua_open();
+  if (verbose) context.leaveScope(true);
   if (initializeLuaLibraries)
   {
+    if (verbose) context.enterScope("Initialize Lua Libraries");
     luaL_openlibs(L);
+    if (verbose) context.leaveScope(true);
     //int n = luaopen_lpeg(L);
     //pop(n);
   }
   if (initializeLBCppLibrary)
   {
+    if (verbose) context.enterScope("Initialize Lbcpp Library");
     luaL_newmetatable(L, "LBCppObject");
     static const struct luaL_reg methods[] = {
       {"__index", objectIndex},
@@ -54,6 +59,7 @@ LuaState::LuaState(ExecutionContext& context, bool initializeLuaLibraries, bool 
     pushObject(ObjectPtr(&context));
 
     setGlobal("context");
+    if (verbose) context.leaveScope(true);
   }
 }
 
@@ -71,9 +77,19 @@ LuaState::~LuaState()
 
 bool LuaState::call(int numArguments, int numResults)
 {
+  int oldTop = getTop();
+
+  getGlobal("LuaChunk", "errorHandler");
+  insert(1);
+
   // todo: more elaborated error handler
-  int res = lua_pcall(L, numArguments, numResults, 0);
-  return processExecuteError(res);
+  int res = lua_pcall(L, numArguments, numResults, 1);
+  bool ok = processExecuteError(res);
+  lua_remove(L, 1);
+
+  int newTop = getTop();
+
+  return ok;
 }
 
 bool LuaState::processExecuteError(int error)
@@ -97,9 +113,20 @@ bool LuaState::processExecuteError(int error)
   return true;
 }
 
-bool LuaState::execute(const char* code, const char* codeName)
+bool LuaState::execute(const char* code, const char* codeName, bool verbose)
 {
-  return processExecuteError(luaL_loadbuffer(L, code, strlen(code), codeName)) && call(0, 0);
+  ExecutionContext& context = getContext();
+
+  if (verbose) context.enterScope(String("Lua parsing ") + codeName); 
+  bool ok = processExecuteError(luaL_loadbuffer(L, code, strlen(code), codeName));
+  if (verbose) context.leaveScope(ok);
+  if (!ok)
+    return false;
+
+  if (verbose) context.enterScope(String("Lua interpreting ") + codeName);
+  ok = call(0, 0);
+  if (verbose) context.leaveScope(ok);
+  return ok;
 }
 
 bool LuaState::execute(const File& luaFile)

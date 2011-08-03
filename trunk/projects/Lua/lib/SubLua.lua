@@ -12,3 +12,7 @@ require 'Data'
 require 'Context'
 require 'Statistics'
 require 'IterationFunction'
+
+function print(...)
+  context:information(...)
+end
