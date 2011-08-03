@@ -45,12 +45,12 @@ end
 uniformInteger = new()
 
 function uniformInteger:sample(a, b)
-  assert(a <= b)
+  assert(type(a) == "number" and type(b) == "number" and a <= b)
   if a == b then
     return a
   else
     local res = a + math.floor(context:random() * (b - a + 1))
-    assert (res >= a and res < b)
+    assert (res >= a and res <= b)
     return res
   end
 end
