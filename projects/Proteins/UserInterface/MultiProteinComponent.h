@@ -118,11 +118,22 @@ public:
     }
     else if (tabName == T("Cystein 2D"))
     {
-      Lin09ParametersPtr fp = new Lin09Parameters();
-      fp->pssmWindowSize = 23;
-      fp->usePositionDifference = true;
-      fp->useIndexDifference = true;
-      ReferenceCountedObjectPtr<Lin09PredictorParameters> predictorParameters = new Lin09PredictorParameters(fp);
+      Lin09ParametersPtr lin09 = new Lin09Parameters();
+      lin09->pssmWindowSize = 15;
+      lin09->separationProfilSize = 9;
+      lin09->usePositionDifference = true;
+      lin09->pssmLocalHistogramSize = 100;
+      
+      Lin09PredictorParametersPtr lin09Pred = new Lin09PredictorParameters(lin09);
+      lin09Pred->useLibSVM = false;
+      lin09Pred->useLaRank = false;
+      lin09Pred->useLibLinear = false;
+      lin09Pred->useAddBias = true;
+      
+      lin09Pred->C = 1.4;
+      lin09Pred->kernelGamma = -4.6;
+      
+      ProteinPredictorParametersPtr predictorParameters = lin09Pred;
 
       FunctionPtr proteinfunction = predictorParameters->createProteinPerception();
       proteinfunction->initialize(context, (TypePtr)proteinClass);
