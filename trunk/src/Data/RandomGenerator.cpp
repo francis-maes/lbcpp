@@ -6,6 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
+#include <lbcpp/Core/Variable.h>
 #include <lbcpp/Data/RandomGenerator.h>
 using namespace lbcpp;
 
@@ -180,4 +181,18 @@ double RandomGenerator::sampleDoubleFromGaussian()
 
   w = sqrt((-2.0 * log(w)) / w);
   return x1 * w; // (x2 * w) is another sample from the same gaussian
+}
+
+int RandomGenerator::create(LuaState& state)
+{
+  int seed = state.checkInteger(1);
+  state.pushObject(new RandomGenerator(seed));
+  return 1;
+}
+
+int RandomGenerator::sample(LuaState& state)
+{
+  RandomGeneratorPtr random = state.checkObject(1, randomGeneratorClass).staticCast<RandomGenerator>();
+  state.pushNumber(random->sampleDouble());
+  return 1;
 }

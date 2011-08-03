@@ -19,7 +19,7 @@ using namespace lbcpp;
 ** ExecutionContext
 */
 ExecutionContext::ExecutionContext(const File& projectDirectory)
-  : stack(new ExecutionStack()), projectDirectory(projectDirectory), random(new RandomGenerator())
+  : stack(new ExecutionStack()), projectDirectory(projectDirectory), randomGenerator(new RandomGenerator())
 {
   initialize(*this);
 }
@@ -150,14 +150,23 @@ int ExecutionContext::leave(LuaState& state)
   return 0;
 }
 
-// function (...) return Context.call(...) end
+// forwarder to Context.call(...)
 int ExecutionContext::call(LuaState& state)
 {
   int numArguments = state.getTop();
-  ExecutionContextPtr pthis = state.checkObject(1, executionContextClass);
   state.getGlobal("Context", "call");
   state.insert(1); // move function to top of stack
-  state.call(numArguments, 1);
+  state.call(numArguments, 1);  // no support for multiple returns yet
+  return 1;
+}
+
+// forwarder to Context.random(...)
+int ExecutionContext::random(LuaState& state)
+{
+  int numArguments = state.getTop();
+  state.getGlobal("Context", "random");
+  state.insert(1); // move function to top of stack
+  state.call(numArguments, 1);  // no support for multiple returns yet
   return 1;
 }
 

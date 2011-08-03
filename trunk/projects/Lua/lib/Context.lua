@@ -19,8 +19,12 @@ Interface:
 module("Context", package.seeall)
 
 function call(self, description, fun, ...)
-  context:enter(description)
+  self:enter(description)
   local res = fun(...)
-  context:leave(res)
+  self:leave(res)
   return res
+end
+
+function random(self)
+  return self.randomGenerator:sample()
 end

@@ -10,6 +10,7 @@
 # define LBCPP_EXECUTION_CONTEXT_H_
 
 # include "ExecutionCallback.h"
+# include "../Data/RandomGenerator.h"
 
 namespace lbcpp
 {
@@ -77,10 +78,10 @@ public:
   ** Random generator
   */
   const RandomGeneratorPtr& getRandomGenerator() const
-    {return random;}
+    {return randomGenerator;}
     
   void setRandomGenerator(const RandomGeneratorPtr& random)
-    {this->random = random;}
+    {randomGenerator = random;}
 
   /*
   ** Lua
@@ -89,6 +90,8 @@ public:
   static int leave(LuaState& state);
   static int call(LuaState& state);
 
+  static int random(LuaState& state);
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -96,7 +99,7 @@ protected:
 
   ExecutionStackPtr stack;
   File projectDirectory;
-  RandomGeneratorPtr random;
+  RandomGeneratorPtr randomGenerator;
 };
 
 extern ClassPtr executionContextClass;

@@ -1,10 +1,13 @@
 
-Objectif: refaire l'experience des bandits NIPS 
- * Choisir si les DoubleVector doivent commencer à 0 ou à 1
- * New Lua File: Sampler.lua 
+ 
+ * Apply translator recursively when using the "require" command
+
+ * DoubleVector: implement index, newindex, len functions (==> metatable problem)
+ * New lua function: DoubleVector::argmax
+    => DoubleVector start at index 1
+ 
  
 Objectif: avoir un classifieur binaire et un sgd qui s'emboitent bien
- * Apply translator recursively when using the "require" command
  * New Lua File: Loss.lua --> transcript lbcpp losses
  * derivable: Gerer les gradient et les DoubleVector 
  * New 'goal' extension to integrate inference and learning
