@@ -75,7 +75,7 @@ public:
     WorkUnitPtr workUnit = WorkUnit::create(getType("ExecuteLuaString"));
     workUnit->setVariable(0, code);
     workUnit->setVariable(1, name);
-    context->run(workUnit);
+    context->pushWorkUnit(workUnit);
   }
  
   void saveFile()

@@ -53,6 +53,7 @@ function evaluatePolicyOnProblems(policy, banditProblems, numEstimationsPerProbl
   local regret = Statistics.mean()
   for i,problem in ipairs(banditProblems) do
     regret:observe(evaluatePolicyOnProblem(policy, problem, numEstimationsPerProblem, numTimeSteps))
+    context:progress(i, #banditProblems, "Problems")
   end
   return regret:getMean()
 end
@@ -93,10 +94,12 @@ numEstimations = 10
 numTimeSteps = 10
 
 policy1 = DiscreteBandit.randomPolicy
-policy2 = DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.greedy}
-policy3 = DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucb1}
-policy4 = DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucb1Tuned}
-policy5 = DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucbV{c=2,zeta=5}}
+
+-- FIXME: in order to create the coroutine, we need a function; we thus need to pass through the wrapper
+policy2 = DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.greedy}.__get
+policy3 = DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucb1}.__get
+policy4 = DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucb1Tuned}.__get
+policy5 = DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucbV{c=2,zeta=5}}.__get
 
 bandits = {Sampler.bernoulli{p = 0.9}(), Sampler.bernoulli{p = 0.6}()}
 
