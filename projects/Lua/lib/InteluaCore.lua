@@ -16,7 +16,7 @@ require 'Derivable'
 require 'Stochastic'
 
 local function inteluaLoader(name)
-  print ("inteluaLoader: " .. name)
+  --print ("inteluaLoader: " .. name)
   return interpreter:loadFile("C:/Projets/lbcpp/projects/Lua/lib/" .. name .. ".lua")
 end
 

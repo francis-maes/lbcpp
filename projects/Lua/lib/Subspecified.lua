@@ -16,17 +16,33 @@ module("Subspecified", package.seeall)
 instanceMT = {} 
   
 function instanceMT.__call(self, ...)
-  return self:get()(...)
+  return self.__get(...)
+end
+
+function instanceMT.__index(self, key)
+  if key == "__get" then
+    return self.__expression.functor(self.__parameters)
+  else
+    return self.__get[key]
+  end
+end
+
+function instanceMT.__newindex(self, key, value)
+ -- if key == "__parameters" or key == "__expression" then
+ --   self.key = value
+ -- else
+    self.__get[key] = value
 end
 
 function instanceMT.__tostring(self)
   res = ""
-  for identifier,value in pairs(self.parameters) do
+  for identifier,value in pairs(self.__parameters) do
     if #res > 0 then res = res .. ", " end
     res = res .. identifier .. " = " .. tostring(value)
   end
-  return "ssExpr instance{" .. res .. "}"
+  return "ssExpr instance{" .. res .. "}: " .. tostring(self.__get)
 end
+
 
 --
 -- class metatable
@@ -35,21 +51,14 @@ MT = {}
 
 function MT.__call(ssExpr, paramValues)
 
- -- create instance
- local res = setmetatable({expression = ssExpr}, instanceMT)
-
  -- fill parameters
- res.parameters = {}
+ local parameters = {}
  for identifier,properties in pairs(ssExpr.parameters) do
-   res.parameters[identifier] = paramValues[identifier] or properties.default
- end
- 
- -- add the "get()" function
- function res:get()
-   return self.expression.functor(self.parameters)
+   parameters[identifier] = paramValues[identifier] or properties.default
  end
 
- return res
+ -- create instance
+ return setmetatable({__expression = ssExpr, __parameters = parameters}, instanceMT)
 
 end
 

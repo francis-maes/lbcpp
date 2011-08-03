@@ -1,8 +1,7 @@
 
- * DoubleVector: implement index, newindex, len functions (==> metatable problem)
- * New lua function: DoubleVector::argmax
-    => DoubleVector start at index 1
- 
+* DoubleVector: implement index, newindex, len functions (==> metatable problem)
+* New lua function: DoubleVector::argmax
+  => DoubleVector start at index 1
  
 Objectif: avoir un classifieur binaire et un sgd qui s'emboitent bien
  * New Lua File: Loss.lua --> transcript lbcpp losses
