@@ -313,6 +313,7 @@ size_t CompositeFunctionBuilder::finishSelectionWithFunction(const FunctionPtr& 
 {
   size_t res = addFunction(function, currentSelection, optionalName, optionalShortName);
   currentSelection.clear();
+  currentSelection.push_back(res);
   return res;
 }
 

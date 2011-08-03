@@ -15,11 +15,13 @@
 namespace lbcpp
 {
 
+extern ClassPtr decoratorProteinPredictorParametersClass;
+
 class DecoratorProteinPredictorParameters : public ProteinPredictorParameters
 {
 public:
   DecoratorProteinPredictorParameters(ProteinPredictorParametersPtr decorated)
-    : decorated(decorated) {}
+    : decorated(decorated) {setThisClass(decoratorProteinPredictorParametersClass);}
   DecoratorProteinPredictorParameters() {}
   
   virtual void proteinPerception(CompositeFunctionBuilder& builder) const
@@ -45,6 +47,9 @@ public:
 
   virtual FunctionPtr learningMachine(ProteinTarget target) const
     {return decorated->learningMachine(target);}
+  
+  virtual FunctionPtr createTargetPredictor(ProteinTarget target) const
+    {return decorated->createTargetPredictor(target);}
 
 protected:
   friend class DecoratorProteinPredictorParametersClass;
@@ -58,6 +63,11 @@ public:
   GaussianKernelFeatureGenerator(double gamma, const std::vector<DoubleVectorPtr>& supportVectors)
     : gamma(gamma), supportVectors(supportVectors)
   {
+/*    std::cout << "Support Vector : " << std::endl;
+    for (size_t i = 0; i < supportVectors.size(); ++i)
+      std::cout << supportVectors[i]->toString() << std::endl;
+    std::cout << std::endl;
+*/    
     supportNorms.resize(supportVectors.size());
     for (size_t i = 0; i < supportVectors.size(); ++i)
       supportNorms[i] = supportVectors[i]->sumOfSquares();
@@ -82,13 +92,39 @@ public:
   {
     DoubleVectorPtr values = inputs[0].getObjectAndCast<DoubleVector>();
     const size_t n = supportVectors.size();
-    for (size_t i = 0; i < n; ++i)
+    
+    DenseDoubleVectorPtr denseVector = new DenseDoubleVector(values->getElementsEnumeration(), values->getElementsType());
+    const size_t numElements = values->getNumElements();
+    double* ptr = denseVector->getValuePointer(0);
+    for (size_t i = 0; i < numElements; ++i, ++ptr)
+      *ptr = values->getElement(i).exists() ? values->getElement(i).getDouble() : 0.0;
+/*
+    std::cout << "Support Vector 0: ";
+    for (size_t i = 0; i < supportVectors[0]->getNumElements(); ++i)
+      std::cout << supportVectors[0]->getElement(i).toString() << " ";
+    std::cout << std::endl;
+
+    std::cout << "Input Vector: ";
+    for (size_t i = 0; i < numElements; ++i)
+      std::cout << denseVector->getElement(i).toString() << " ";
+    std::cout << std::endl;
+
+    std::cout << "Dot Product: " << supportVectors[0]->dotProduct(denseVector, 0) << std::endl;
+
+    std::cout << "Norm of Support Vector 0: " << supportNorms[0] << " - Norm of Input: " <<  denseVector->sumOfSquares() << std::endl;
+
+    std::cout << "Gaussian Values:";
+*/    for (size_t i = 0; i < n; ++i)
     {
       jassert(supportVectors[i]->getNumElements() == values->getNumElements());
 
-      double norm = supportVectors[i]->sumOfSquares();
-      callback.sense(i, exp(-gamma * (norm + supportNorms[i] - 2 * supportVectors[i]->dotProduct(values, 0))));
+      const double norm = denseVector->sumOfSquares();
+      const double res = exp(-gamma * (norm + supportNorms[i] - 2 * supportVectors[i]->dotProduct(denseVector, 0)));
+      //std::cout << res << " ";
+      callback.sense(i, res);
     }
+    //std::cout << std::endl;
+    //jassertfalse;
   }
   
   virtual bool isSparse() const
@@ -102,19 +138,22 @@ protected:
   std::vector<double> supportNorms;
 };
 
+extern ClassPtr gaussianKernelPredictorParametersClass;
+
 class GaussianKernelPredictorParameters : public DecoratorProteinPredictorParameters
 {
 public:
-  GaussianKernelPredictorParameters(ExecutionContext& context, ProteinPredictorParametersPtr decorated, double gamma, ContainerPtr supportProteins)
+  GaussianKernelPredictorParameters(ProteinPredictorParametersPtr decorated)
     : DecoratorProteinPredictorParameters(decorated)
   {
-    FunctionPtr f = lbcppMemberCompositeFunction(DecoratorProteinPredictorParameters, cysteinSymmetricResiudePairVectorPerception);
-    if (!f->initialize(context, lin09ProteinPerceptionClass(enumValueType, enumValueType, enumValueType)))
-    {
-      context.errorCallback(T("GaussianKernelPredictorParameters"), T("Initialization failed !"));
-      return;
-    }
-    
+    setThisClass(gaussianKernelPredictorParametersClass);
+  }
+  
+  void initialize(ExecutionContext& context, double gamma, ContainerPtr supportProteins)
+  {
+    context.enterScope(T("Initialisation of Gaussian Kernel"));
+    //FunctionPtr f = lbcppMemberCompositeFunction(DecoratorProteinPredictorParameters, cysteinSymmetricResiudePairVectorPerception);
+    FunctionPtr f = CompositeFunctionPtr(new MethodBasedCompositeFunction(refCountedPointerFromThis(decorated.get()),  (CompositeFunctionBuilderFunction)(&ProteinPredictorParameters::cysteinSymmetricResiudePairVectorPerception)));
     std::vector<DoubleVectorPtr> supportVectors;
     const size_t numProteins = supportProteins->getNumElements();
     FunctionPtr proteinPerceptionFunction = lbcppMemberCompositeFunction(DecoratorProteinPredictorParameters, proteinPerception);
@@ -130,6 +169,13 @@ public:
       jassert(protein);
       ObjectPtr proteinPerception = proteinPerceptionFunction->compute(context, protein).getObject();
       jassert(proteinPerception);
+
+      if (i == 0 && !f->initialize(context, proteinPerception->getClass()))
+      {
+        context.errorCallback(T("GaussianKernelPredictorParameters"), T("Initialization failed !"));
+        return;
+      }
+
       ContainerPtr featuresVectors = f->compute(context, proteinPerception).getObjectAndCast<Container>();
       if (!featuresVectors)
         continue;
@@ -144,16 +190,20 @@ public:
     jassert(supportVectors.size());
 
     gaussianKernel = new GaussianKernelFeatureGenerator(gamma, supportVectors);
+    context.resultCallback(T("Num. Proteins"), numProteins);
+    context.resultCallback(T("Num. Support Vectors"), supportVectors.size());
+    context.resultCallback(T("Num. Base Features"), supportVectors[0]->getNumElements());
+    context.leaveScope();
   }
   GaussianKernelPredictorParameters() {}
 
   virtual void cysteinSymmetricResiudePairVectorPerception(CompositeFunctionBuilder& builder) const
   {
-    size_t proteinPerception = builder.addInput(lin09ProteinPerceptionClass(enumValueType, enumValueType, enumValueType));
-
-    size_t features = builder.addFunction(lbcppMemberCompositeFunction(Lin09PredictorParameters, cysteinSymmetricResiudePairVectorPerception), proteinPerception);
-
-    builder.addFunction(mapNFunction(gaussianKernel), features, T("Gaussian"));
+//    size_t proteinPerception = builder.addInput(lin09ProteinPerceptionClass(enumValueType, enumValueType, enumValueType));
+//    ProteinPredictorParametersPtr f = CompositeFunctionPtr(new MethodBasedCompositeFunction(refCountedPointerFromThis(decorated.get()),  (CompositeFunctionBuilderFunction)(&ProteinPredictorParameters::cysteinSymmetricResiudePairVectorPerception)));
+//    size_t features = builder.addFunction(f, proteinPerception);
+    DecoratorProteinPredictorParameters::cysteinSymmetricResiudePairVectorPerception(builder);
+    builder.finishSelectionWithFunction(mapNFunction(gaussianKernel), T("Gaussian"));
   }
 
 protected:
@@ -161,6 +211,8 @@ protected:
 
   FeatureGeneratorPtr gaussianKernel;
 };
+
+typedef ReferenceCountedObjectPtr<GaussianKernelPredictorParameters> GaussianKernelPredictorParametersPtr;
 
 }; /* namespace lbcpp */
 

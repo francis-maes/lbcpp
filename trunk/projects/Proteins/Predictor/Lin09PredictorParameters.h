@@ -199,7 +199,7 @@ public:
     , useLibSVM(true), useLibLinear(false), useLaRank(false)
     , learningRate(1.0), numIterations(150)
     , useAddBias(true)
-  {}
+  {setThisClass(lin09PredictorParametersClass);}
   
   SamplerPtr createSampler() const
   {

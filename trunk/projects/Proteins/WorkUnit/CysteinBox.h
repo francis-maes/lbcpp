@@ -36,16 +36,19 @@ public:
       return 101.f;
     }
 
-/*    if (true)
+    ProteinPredictorParametersPtr predictorParameters = param->predictorParameters;
+    if (true)
     {
-      param->predictorParameters = new GaussianKernelPredictorParameters(context, param->predictorParameters, -4.7, trainingData->fold(0, 5));
+      GaussianKernelPredictorParametersPtr gaussianPredictor = new GaussianKernelPredictorParameters(param->predictorParameters);
+      gaussianPredictor->initialize(context, -0.7, trainingData->fold(0, 5));
+      predictorParameters = gaussianPredictor;
       trainingData = trainingData->invFold(0, 5);
     }
-*/
+
     ProteinSequentialPredictorPtr predictor = new ProteinSequentialPredictor();
     for (size_t i = 0; i < numStacks; ++i)
     {
-      ProteinPredictorPtr stack = new ProteinPredictor(param->predictorParameters);
+      ProteinPredictorPtr stack = new ProteinPredictor(predictorParameters);
       stack->addTarget(dsbTarget);
       predictor->addPredictor(stack);
     }
@@ -345,7 +348,7 @@ public:
     lin09->pssmLocalHistogramSize = 100;
 
     Lin09PredictorParametersPtr lin09Pred = new Lin09PredictorParameters(lin09);
-    lin09Pred->useLibSVM = true;
+    lin09Pred->useLibSVM = false;
     lin09Pred->useLaRank = false;
     lin09Pred->useLibLinear = false;
     lin09Pred->useAddBias = true;
