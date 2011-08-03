@@ -1,6 +1,5 @@
 
 Objectif: refaire l'experience des bandits NIPS 
- * Override the "print" function in lua, instead of doing it with the translator
  * Choisir si les DoubleVector doivent commencer à 0 ou à 1
  * New Lua File: Sampler.lua 
  
@@ -11,7 +10,6 @@ Objectif: avoir un classifieur binaire et un sgd qui s'emboitent bien
  * New 'goal' extension to integrate inference and learning
 
 * Garder les commentaires dans le source-to-source
-* Avoir des messages d'erreur plus compréhensible (voir aussi si on arrive à desactiver le jit pour debugger)
 
 Proteins:
  * Ajouter des features de segments

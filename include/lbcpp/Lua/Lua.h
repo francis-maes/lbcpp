@@ -38,14 +38,14 @@ enum LuaType
 class LuaState
 {
 public:
-  LuaState(ExecutionContext& context, bool initializeLuaLibraries = true, bool initializeLBCppLibrary = true);
+  LuaState(ExecutionContext& context, bool initializeLuaLibraries = true, bool initializeLBCppLibrary = true, bool verbose = false);
   LuaState(lua_State* L);
   virtual ~LuaState();
 
   operator lua_State*()
     {return L;}
 
-  bool execute(const char* code, const char* codeName = "code");
+  bool execute(const char* code, const char* codeName = "code", bool verbose = false);
   bool execute(const File& luaFile);
 
   void createTable();
