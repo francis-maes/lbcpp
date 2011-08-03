@@ -1,3 +1,10 @@
+require 'Vector'
+require 'Dictionary'
+require 'Parser'
+require 'Data'
+require 'Statistics'
+require 'IterationFunction'
+
 
 filename = "C:/Projets/lbcpp/projects/Examples/Data/BinaryClassification/a1a.test"
 labels = Dictionary.new()

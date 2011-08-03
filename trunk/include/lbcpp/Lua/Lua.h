@@ -42,6 +42,8 @@ public:
   LuaState(lua_State* L);
   virtual ~LuaState();
 
+  void clear();
+
   operator lua_State*()
     {return L;}
 

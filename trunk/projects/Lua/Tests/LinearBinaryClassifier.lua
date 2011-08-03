@@ -1,3 +1,10 @@
+require 'Vector'
+require 'Dictionary'
+require 'Parser'
+require 'Data'
+require 'Statistics'
+require 'IterationFunction'
+
 
 local function hingeLoss(derivable x)
   return math.max(1 - x, 0.0)
