@@ -1,5 +1,10 @@
 
  
+* Objectif: avoir des tables sous-spécifiées
+* Objectif: avoir un EDA qui marche
+
+
+ 
 Objectif: avoir un classifieur binaire et un sgd qui s'emboitent bien
  * New Lua File: Loss.lua --> transcript lbcpp losses
  * derivable: Gerer les gradient et les DoubleVector 
@@ -10,6 +15,7 @@ Objectif: avoir un classifieur binaire et un sgd qui s'emboitent bien
   => DoubleVector start at index 1
 
 * Garder les commentaires dans le source-to-source
+
 
 Proteins:
  * Ajouter des features de segments
