@@ -73,8 +73,9 @@ private:
   
   struct MakeFunctorRewriter : public DefaultRewriter
   {
+    // remove parameter declarations
     virtual void visit(Parameter& statement)
-      {setResult(new EmptyNode());} // remove parameter declarations
+      {setResult(new EmptyNode());} 
 
     // replace param by __parameters.param 
     virtual void visit(Identifier& identifier)

@@ -61,7 +61,7 @@ public:
     {jassert(false); return *(NodePtr* )0;}
 
   virtual void accept(Visitor& visitor)
-    {jassert(false);}
+    {}
 };
 
 class DefaultRewriter : public DefaultVisitorT<Rewriter>
@@ -97,6 +97,19 @@ public:
       fillStatementsRecursively(&block, statements);
       block.setStatements(statements);
     }
+  }
+
+  // remove EmptyNodes from tables
+  virtual void visit(Table& table)
+  {
+    acceptChildren(table);
+    std::vector<lua::NodePtr> nonEmptyNodes;
+    nonEmptyNodes.reserve(table.getNumSubNodes());
+    for (size_t i = 0; i < table.getNumSubNodes(); ++i)
+      if (!table.getSubNode(i).dynamicCast<lua::EmptyNode>())
+        nonEmptyNodes.push_back(table.getSubNode(i));
+    if (nonEmptyNodes.size() < table.getNumSubNodes())
+      setResult(new Table(nonEmptyNodes));
   }
 
 private:

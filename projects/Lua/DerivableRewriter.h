@@ -316,7 +316,7 @@ public:
       table->append("d" + derivables[i]->getIdentifier(), derivateFunction);
     }
 
-    std::vector<ExpressionPtr> prototype(function.getNumParameters());
+    std::vector<NodePtr> prototype(function.getNumParameters());
     for (size_t i = 0; i < prototype.size(); ++i)
     {
       IdentifierPtr id = function.getParameterIdentifier(i);

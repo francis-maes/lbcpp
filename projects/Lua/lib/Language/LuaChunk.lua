@@ -236,7 +236,6 @@ mlp.func_param_content:add{ "derivable", mlp.id, builder = "Derivable" }
 -- 'subspecified' extension
 mlp.lexer:add{ "subspecified", "parameter" }
 mlp.expr:add{ "subspecified", mlp.expr, builder = "Subspecified" }
-mlp.stat:add{ "parameter", mlp.id, "=", mlp.table, builder = "Parameter" }
    
 local function subspecified_funcdef_builder(x)
    local name, method, func = x[1], x[2], x[3]
@@ -254,3 +253,15 @@ local function subspecified_funcdef_builder(x)
 end 
 
 mlp.stat:add{"subspecified", "function", mlp.func_name, mlp.method_name, mlp.func_val, builder=subspecified_funcdef_builder }
+
+local parameter_declaration = gg.sequence{ "parameter", mlp.id, "=", mlp.table, builder = "Parameter" }
+mlp.stat:add(parameter_declaration) -- { "parameter", mlp.id, "=", mlp.table, builder = "Parameter" }
+
+local traditional_table_field = mlp.table_field
+function mlp.table_field (lx)
+   if lx:is_keyword (lx:peek(), "parameter") then
+     return parameter_declaration (lx)
+   else
+     return traditional_table_field (lx)
+   end
+end

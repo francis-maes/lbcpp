@@ -113,7 +113,7 @@
     </class>
 
     <class name="Table" base="lua::Expression">
-      <variable type="ObjectVector[lua::Expression]" name="fields"/>
+      <variable type="ObjectVector[lua::Node]" name="fields"/>
     </class>
 
     <class name="Operation" base="lua::Expression" abstract="yes"/>
