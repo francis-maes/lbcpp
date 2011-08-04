@@ -206,7 +206,6 @@ public:
    */
   double play(MCTSNodePtr p)
   {
-    return 1.0;
     // depth
     // GPExpressionBuilderStatePtr state =p->getState().staticCast<GPExpressionBuilderState>();
     GPExpressionBuilderStatePtr clone =  p->getState()->cloneAndCast<GPExpressionBuilderState>();
@@ -228,7 +227,7 @@ public:
     double score = clone->getScore();
 
 
-    cout<<" score play ----  "<< score << endl;
+    //  cout<<" score play ----  "<< score << endl;
 
 
     if(score==0) // we got a winner
@@ -308,13 +307,12 @@ public:
       return T("<initial>");
     // return description;
     GPExpressionPtr expr = expressions.back();
-    return expr->toShortString() + T(" (") + String((int)expressions.size()) + T(" steps)");
+    return expr->toShortString();// + T(" (") + String((int)expressions.size()) + T(" steps)");
   }
 
   virtual ContainerPtr getAvailableActions() const
   {
     //TODO also set rule from length max of formula
-
     ObjectVectorPtr res = new ObjectVector(gpExpressionBuilderActionClass);
     size_t numExpressions = expressions.size();
 
@@ -363,63 +361,81 @@ public:
     }
   }
 
-GPExpressionPtr expression;
-double score;
+  GPExpressionPtr expression;
+  double score;
 
-virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward, Variable* stateBackup = NULL)
-{
-     const GPExpressionBuilderActionPtr& builderAction = action.getObjectAndCast<GPExpressionBuilderAction>();
-     GPExpressionPtr expression = builderAction->makeExpression(expressions);
-     expressions.push_back(expression);
+  virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward, Variable* stateBackup = NULL)
+  {
+    const GPExpressionBuilderActionPtr& builderAction = action.getObjectAndCast<GPExpressionBuilderAction>();
+    GPExpressionPtr expression = builderAction->makeExpression(expressions);
 
-     double previousScore = expressionScores.size() ? expressionScores.back().toDouble() : objectiveFunction->compute(context, new ConstantGPExpression(0.0)).toDouble();
+    // follow RNP rule
+    UnaryGPExpressionPtr unaryExpression = expression.dynamicCast<UnaryGPExpression>();
+    if (unaryExpression)
+      expressions.pop_back();
+    BinaryGPExpressionPtr binaryExpression = expression.dynamicCast<BinaryGPExpression>();
+    if (binaryExpression)
+    { expressions.pop_back(); expressions.pop_back();}
 
-         Variable score = objectiveFunction->compute(context, expression);
-         expressionScores.push_back(score);
-         reward = previousScore - score.toDouble(); // score must be minimized, reward must be maximized
+    expressions.push_back(expression);
 
-         if (description.isNotEmpty())
-           description += T(" -> ");
-         description += action.toShortString();
+    double previousScore = expressionScores.size() ? expressionScores.back().toDouble() : objectiveFunction->compute(context, new ConstantGPExpression(0.0)).toDouble();
 
-         if (stateBackup)
-           *stateBackup = action; // knowing the action is enough to undo the transition
-     }
-virtual bool isFinalState() const
-{return false;}
+    Variable score = objectiveFunction->compute(context, expression);
+    expressionScores.push_back(score);
+    reward = previousScore - score.toDouble(); // score must be minimized, reward must be maximized
 
-virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
-{
-  const ReferenceCountedObjectPtr<MCTSExpressionBuilderState>& target = t.staticCast<MCTSExpressionBuilderState>();
-  target->name = name;
-  target->inputVariables = inputVariables;
-  target->objectiveFunction = objectiveFunction;
-  target->areVariableUsed = areVariableUsed;
-  target->expressions.resize(expressions.size());
-  for (size_t i = 0; i < expressions.size(); ++i)
-    target->expressions[i] = expressions[i]->cloneAndCast<GPExpression>(context);
-  target->expressionScores = expressionScores;
-  target->description = description;
-}
+    if (description.isNotEmpty())
+      description += T(" -> ");
+    description += action.toShortString();
 
-virtual double getScore() const
-{return expressionScores.size() ? expressionScores.back().toDouble() : DBL_MAX;}
+    if (stateBackup)
+      *stateBackup = action; // knowing the action is enough to undo the transition
+  }
+  virtual bool isFinalState() const
+  {return false;}
 
-virtual GPExpressionPtr getExpression() const
-{return expressions.size() ? expressions.back() : GPExpressionPtr();}
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    const ReferenceCountedObjectPtr<MCTSExpressionBuilderState>& target = t.staticCast<MCTSExpressionBuilderState>();
+    target->name = name;
+    target->inputVariables = inputVariables;
+    target->objectiveFunction = objectiveFunction;
+    target->areVariableUsed = areVariableUsed;
+    target->expressions.resize(expressions.size());
+    for (size_t i = 0; i < expressions.size(); ++i)
+      target->expressions[i] = expressions[i]->cloneAndCast<GPExpression>(context);
+    target->expressionScores = expressionScores;
+    target->description = description;
+  }
+
+  virtual double getScore() const
+  {return expressionScores.size() ? expressionScores.back().toDouble() : DBL_MAX;}
+
+  virtual GPExpressionPtr getExpression() const
+  {
+    /*   cout<<endl;
+    for(size_t i=0;i<expressions.size();++i)
+      cout<<expressions[i]->toShortString()<<endl;
+
+    cout<<endl;
+    cout<<" size "<< expressions.size();
+
+     */
+    return expressions.size() ? expressions.back() : GPExpressionPtr();}
+
+
 
 protected:
-friend class MCTSExpressionBuilderStateClass;
+  friend class MCTSExpressionBuilderStateClass;
+  std::vector<GPExpressionPtr> expressions;
+  std::vector<bool> areVariableUsed;
 
-std::vector<bool> areVariableUsed;
-std::vector<GPExpressionPtr> expressions;
-std::vector<Variable> expressionScores;
-String description;
+  std::vector<Variable> expressionScores;
+  String description;
 };
 
-
-
-
+typedef ReferenceCountedObjectPtr<MCTSExpressionBuilderState> MCTSExpressionBuilderStatePtr;
 /*
 This is the run method
  */
@@ -434,8 +450,12 @@ public:
 
 
     DecisionProblemStatePtr initialState = createInitialState(context);
+    String s="";
 
-  /*  MCTS mcts(context, initialState, maxDepth);
+    MCTSExpressionBuilderStatePtr mc = ce(context);
+    recursiveExhaustiveSearch(context, mc, 0,3,s);
+
+    /*     MCTS mcts(context, initialState, maxDepth);
     for (size_t i = 0; i < numIterations; ++i)
     {
       if(!mcts.isFound){
@@ -455,11 +475,27 @@ public:
     cout << mcts.bestOjectiveFunctionFound->getScore() << " score " << endl;
     context.leaveScope();
 
-    */
+     */
 
 
 
     return true;
+  }
+
+
+  MCTSExpressionBuilderStatePtr ce(ExecutionContext& context){
+    DefaultEnumerationPtr inputVariables = new DefaultEnumeration(T("variables"));
+    inputVariables->addElement(context, T("x[0]"));
+    inputVariables->addElement(context, T("x[1]"));
+    inputVariables->addElement(context, T("x[2]"));
+    inputVariables->addElement(context, T("x[3]"));
+
+    FunctionPtr objective = createObjectiveFunction(context);
+
+    // TODO tmp
+    // breadthFirstSearch(context, inputVariables, objective);
+
+    return new MCTSExpressionBuilderState("hello", inputVariables, objective);
   }
 
   /**
@@ -478,7 +514,7 @@ public:
       return DecisionProblemStatePtr();
 
     // TODO tmp
-    breadthFirstSearch(context, inputVariables, objective);
+    // breadthFirstSearch(context, inputVariables, objective);
 
     return new MCTSExpressionBuilderState("hello", inputVariables, objective);
   }
@@ -516,6 +552,45 @@ private:
   size_t maxDepth;
 
 
+  void recursiveExhaustiveSearch(ExecutionContext& context, MCTSExpressionBuilderStatePtr state,
+      size_t depth, size_t maxDepth, String s)
+  {
+    ContainerPtr actions = state->getAvailableActions();
+
+    size_t n = actions->getNumElements();
+
+    //   cout<< " depth "<< depth << " size of actions "<< actions->getNumElements()<< endl;
+
+
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable action = actions->getElement(i);
+      String s2 = s;
+
+      double reward;
+      //context.enterScope(action.toShortString());
+      MCTSExpressionBuilderStatePtr newState = state->cloneAndCast<MCTSExpressionBuilderState>();
+      newState->performTransition(context, action, reward);
+      s2+=newState->toShortString();
+
+      if (depth < maxDepth - 1)
+        recursiveExhaustiveSearch(context, newState, depth + 1, maxDepth,s2);
+      else
+      {
+        //    cout << newState->getExpression()->toShortString()<< endl; cout<< endl;
+        s2+="     and the result is ";
+        s2+= newState->getExpression()->toShortString();
+        cout<< s2 << endl;
+        cout<<endl;
+        //  cout<< newState->getExpression()->size() << " size "<<endl;
+
+      }
+
+      //context.leaveScope(true);
+    }
+  }
+
+
   bool breadthFirstSearch(ExecutionContext& context, EnumerationPtr inputVariables, const FunctionPtr& objective) const
   {
     size_t maxSearchNodes = 100000;
@@ -523,7 +598,7 @@ private:
     DecisionProblemPtr problem = new GPExpressionBuilderProblem(inputVariables, objective);
     DecisionProblemStatePtr state = new MCTSExpressionBuilderState(T("toto"), inputVariables, objective);
 
-    for (size_t depth = 0; depth < 5; ++depth)
+    for (size_t depth = 0; depth < 1; ++depth)
     {
       context.enterScope(T("Depth ") + String((int)depth + 1));
 
