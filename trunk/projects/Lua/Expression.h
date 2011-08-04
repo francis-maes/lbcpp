@@ -267,7 +267,7 @@ typedef ReferenceCountedObjectPtr<Pair> PairPtr;
 class Table : public Expression
 {
 public:
-  Table(const std::vector<ExpressionPtr>& fields)
+  Table(const std::vector<NodePtr>& fields)
     : fields(fields) {}
   Table() {}
 
@@ -278,7 +278,7 @@ public:
     {return fields.size();}
 
   virtual NodePtr& getSubNode(size_t index)
-    {jassert(index < fields.size()); return (NodePtr&)fields[index];}
+    {jassert(index < fields.size()); return fields[index];}
 
   virtual void accept(Visitor& visitor);
 
@@ -291,7 +291,7 @@ public:
 protected:
   friend class TableClass;
 
-  std::vector<ExpressionPtr> fields;
+  std::vector<NodePtr> fields; // Expression, Pair or Parameter
 };
 
 class Operation : public Expression
