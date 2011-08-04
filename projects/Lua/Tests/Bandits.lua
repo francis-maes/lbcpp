@@ -26,52 +26,28 @@ Sampler.bernoulli = subspecified function ()
   }, Stochastic.MT)
 end
 
+Sampler.truncatedGaussian = subspecified function ()
+  parameter mean = {default = 0.5}
+  parameter stddev = {default = 0.5}
+
+  return setmetatable({
+    sample = function ()
+      local res = 0
+      repeat
+        res = Stochastic.standardGaussian:sample() * stddev + mean
+      until res >= 0 and res <= 1
+      return res
+    end,
+    expectation = function () return mean end,
+  }, Stochastic.MT)
+end
+
 --subspecified function Sampler.bernoulli()
 --  parameter p = {default = 0.5, min = 0, max = 1, sampler = Stochastic.standardUniform}
 --  return Stochastic.bernoulli:sample(p)
 --end  
 
 ---
-
-subspecified function klUcb(rk, sk, tk, t)
-  parameter c = {default = 3.0}
-  
-  local function kl(p, q)
-    local function alogaov(a, b)
-      if a == 0 then
-        return 0
-      elseif b == 0 then
-        return math.huge
-      else
-        return a * math.log(a / b)
-      end
-    end
-    return alogaov(p, q) + alogaov(1 - p, 1 - q)
-  end
-
-  local limit = (math.log(t) + c * math.log(math.log(t))) / tk
-  local function objective(opt)
-    return kl(rk,opt) - limit
-  end
-  
-  local epsilon = 1e-4
-  function findZero(fn, min, max)
-    --print ("findZero in [" .. min .. ", " .. max .. "]")
-    if math.abs(max - min) < epsilon then
-      return min
-    else
-      local middle = (min + max) / 2
-      local value = fn(middle)
-      if value > 0 then
-        return findZero(fn, min, middle)
-      else
-        return findZero(fn, middle, max)
-      end
-    end
-  end
-
-  return findZero(|opt| kl(rk,opt) - limit, rk, 1)
-end
 
 
 -------------- main -----------------
@@ -80,7 +56,7 @@ context.randomGenerator = Random.new(1664)
 
 numProblems = 10000
 numEstimations = 1
-numTimeSteps = 10
+numTimeSteps = 1000
 
 -- create training problems
 trainingProblems = {}
@@ -90,6 +66,18 @@ for i = 1,numProblems do
   table.insert(trainingProblems, {Sampler.bernoulli{p = p1}(), Sampler.bernoulli{p = p2}()})
 end
 
+gaussianTestProblems = {}
+for i = 1,numProblems do
+  local mean1 = Stochastic.standardUniform()
+  local stddev1 = Stochastic.standardUniform()
+  local mean2 = Stochastic.standardUniform()
+  local stddev2 = Stochastic.standardUniform()
+  table.insert(gaussianTestProblems, {
+    Sampler.truncatedGaussian{mean = mean1, stddev = stddev1}(),
+    Sampler.truncatedGaussian{mean = mean2, stddev = stddev2}()
+  })
+end
+
 -- create policies
 local policies = {}
 local function addPolicy(name, policy)
@@ -97,12 +85,12 @@ local function addPolicy(name, policy)
 end
 
 
-addPolicy("KL-ucb c=0", DiscreteBandit.indexBasedPolicy{indexFunction = klUcb{c=0}}.__get)
-addPolicy("KL-ucb c=3", DiscreteBandit.indexBasedPolicy{indexFunction = klUcb{c=3}}.__get)
-
 addPolicy("ucb1Tuned", DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucb1Tuned}.__get)
+addPolicy("KL-ucb c=0", DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.klUcb{c=0}}.__get)
+addPolicy("KL-ucb c=3", DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.klUcb{c=3}}.__get)
 
 --[[
+
 addPolicy("ucb1", DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucb1}.__get)
 addPolicy("ucb1Tuned", DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucb1Tuned}.__get)
 addPolicy("ucb1Normal", DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucb1Normal}.__get)
@@ -123,8 +111,10 @@ addPolicy("e-greedy_1000", DiscreteBandit.epsilonGreedy{c=0.845, d=0.738}.__get)
 ]]
 
 -- evaluate policies
-function evaluatePolicy(description, policy, problems)
-  context:call(description, DiscreteBandit.estimatePolicyRegretOnProblems, policy, problems, numEstimations, numTimeSteps)
+function evaluatePolicy(description, policy)
+  --context:call(description .. " train", DiscreteBandit.estimatePolicyRegretOnProblems, policy, trainingProblems, numEstimations, numTimeSteps)
+  --context:call(description + " b-test", DiscreteBandit.estimatePolicyRegretOnProblems, policy, problems, numEstimations, numTimeSteps)
+  context:call(description .. " g-test", DiscreteBandit.estimatePolicyRegretOnProblems, policy, gaussianTestProblems, numEstimations, numTimeSteps)
 end
 
 for i,t in ipairs(policies) do
