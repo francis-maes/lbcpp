@@ -13,5 +13,5 @@ Interface:
 module("Random", package.seeall)
 
 function new(seed)
-  local res = lbcpp.RandomGenerator.create(seed)
+  return lbcpp.RandomGenerator.create(seed)
 end

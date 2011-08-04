@@ -1,63 +1,8 @@
 require 'Statistics'
 require 'IterationFunction'
 require 'DiscreteBandit'
-
----------- evaluation -----------------
-
--- returns the sum of reward expectations
-function playBanditGame(policy, bandits, numTimeSteps)
-  local res = 0.0
-  local co = coroutine.create(policy)
-  local info = #bandits
-  for i = 1,numTimeSteps do
-    local ok, bi = coroutine.resume(co, info)
-    assert(ok)
-    res = res + bandits[bi]:expectation()
-    --print ("Bi = ", bi)
-    local ri = bandits[bi]:sample()  -- sample from bandit distribution
-    info = ri
-    --print ("RI = ", info)
-  end
-  return res  
-end
-
-function evaluatePolicyOnProblem(policy, bandits, numEstimations, numTimeSteps)
-
-  local K = #bandits
-  
-  -- find optimal bandit and associated expected reward
-  local bestExpectedReward = -math.huge
-  local bestBandit = 0
-  for i = 1,K do
-    local expectedReward = bandits[i].expectation()
-    if expectedReward > bestExpectedReward then
-      bestExpectedReward = expectedReward
-      bestBandit = i
-    end
-  end
-  --print ("Best bandit: " .. bestBandit .. " with expected reward " .. bestExpectedReward)
-
-  -- play numEstimation games
-  local stats = Statistics.mean()
-  local res = 0.0
-  for i = 1,numEstimations do --line 31
-    stats:observe(playBanditGame(policy, bandits, numTimeSteps))
-  end
-  -- return regret  
-  return bestExpectedReward * numTimeSteps - stats:getMean()
-  
-end
-
-function evaluatePolicyOnProblems(policy, banditProblems, numEstimationsPerProblem, numTimeSteps)
-
-  local regret = Statistics.mean()
-  for i,problem in ipairs(banditProblems) do
-    regret:observe(evaluatePolicyOnProblem(policy, problem, numEstimationsPerProblem, numTimeSteps))
-    context:progress(i, #banditProblems, "Problems")
-  end
-  return regret:getMean()
-end
-
+require 'Random'
+require 'Stochastic'
 
 ------------- Sampler ---------------
 
@@ -86,23 +31,58 @@ end
 --  return Stochastic.bernoulli:sample(p)
 --end  
 
+---
+
+subspecified function klUcb(rk, sk, tk, t)
+  parameter c = {default = 3.0}
+  
+  local function kl(p, q)
+    local function alogaov(a, b)
+      if a == 0 then
+        return 0
+      elseif b == 0 then
+        return math.huge
+      else
+        return a * math.log(a / b)
+      end
+    end
+    return alogaov(p, q) + alogaov(1 - p, 1 - q)
+  end
+
+  local limit = (math.log(t) + c * math.log(math.log(t))) / tk
+  local function objective(opt)
+    return kl(rk,opt) - limit
+  end
+  
+  local epsilon = 1e-4
+  function findZero(fn, min, max)
+    --print ("findZero in [" .. min .. ", " .. max .. "]")
+    if math.abs(max - min) < epsilon then
+      return min
+    else
+      local middle = (min + max) / 2
+      local value = fn(middle)
+      if value > 0 then
+        return findZero(fn, min, middle)
+      else
+        return findZero(fn, middle, max)
+      end
+    end
+  end
+
+  return findZero(|opt| kl(rk,opt) - limit, rk, 1)
+end
+
 
 -------------- main -----------------
 
-numProblems = 100
-numEstimations = 10
+context.randomGenerator = Random.new(1664)
+
+numProblems = 10000
+numEstimations = 1
 numTimeSteps = 10
 
-policy1 = DiscreteBandit.randomPolicy
-
--- FIXME: in order to create the coroutine, we need a function; we thus need to pass through the wrapper
-policy2 = DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.greedy}.__get
-policy3 = DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucb1}.__get
-policy4 = DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucb1Tuned}.__get
-policy5 = DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucbV{c=2,zeta=5}}.__get
-
-bandits = {Sampler.bernoulli{p = 0.9}(), Sampler.bernoulli{p = 0.6}()}
-
+-- create training problems
 trainingProblems = {}
 for i = 1,numProblems do
   local p1 = Stochastic.standardUniform()
@@ -110,12 +90,43 @@ for i = 1,numProblems do
   table.insert(trainingProblems, {Sampler.bernoulli{p = p1}(), Sampler.bernoulli{p = p2}()})
 end
 
-function evaluatePolicy(description, policy, problems)
-   context:call(description, evaluatePolicyOnProblems, policy, problems, numEstimations, numTimeSteps)
+-- create policies
+local policies = {}
+local function addPolicy(name, policy)
+  table.insert(policies, {name, policy})
 end
 
-evaluatePolicy("Evaluate policy random", policy1, trainingProblems)
-evaluatePolicy("greedy", policy2, trainingProblems)
-evaluatePolicy("ucb1(2)", policy3, trainingProblems)
-evaluatePolicy("ucb1Tuned", policy4, trainingProblems)
-evaluatePolicy("ucbv(2,5)", policy5, trainingProblems)
+
+addPolicy("KL-ucb c=0", DiscreteBandit.indexBasedPolicy{indexFunction = klUcb{c=0}}.__get)
+addPolicy("KL-ucb c=3", DiscreteBandit.indexBasedPolicy{indexFunction = klUcb{c=3}}.__get)
+
+addPolicy("ucb1Tuned", DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucb1Tuned}.__get)
+
+--[[
+addPolicy("ucb1", DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucb1}.__get)
+addPolicy("ucb1Tuned", DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucb1Tuned}.__get)
+addPolicy("ucb1Normal", DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucb1Normal}.__get)
+addPolicy("ucb1V", DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucbV{c = 1, zeta = 1}}.__get)
+addPolicy("e-greedy", DiscreteBandit.epsilonGreedy{c = 1, d = 1}.__get)
+
+addPolicy("ucb1_10", DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucb1C{C=0.170}}.__get)
+addPolicy("ucb1_100", DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucb1C{C=0.173}}.__get)
+addPolicy("ucb1_1000", DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucb1C{C=0.187}}.__get)
+
+addPolicy("ucbV_10", DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucbV{c=1.542, zeta=0.0631}}.__get)
+addPolicy("ucbV_100", DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucbV{c=1.681, zeta=0.0347}}.__get)
+addPolicy("ucbV_1000", DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucbV{c=1.304, zeta=0.0852}}.__get)
+
+addPolicy("e-greedy_10", DiscreteBandit.epsilonGreedy{c=0.0499, d=1.505}.__get)
+addPolicy("e-greedy_100", DiscreteBandit.epsilonGreedy{c=1.096, d=1.349}.__get)
+addPolicy("e-greedy_1000", DiscreteBandit.epsilonGreedy{c=0.845, d=0.738}.__get)
+]]
+
+-- evaluate policies
+function evaluatePolicy(description, policy, problems)
+  context:call(description, DiscreteBandit.estimatePolicyRegretOnProblems, policy, problems, numEstimations, numTimeSteps)
+end
+
+for i,t in ipairs(policies) do
+  evaluatePolicy(t[1], t[2], trainingProblems)
+end

@@ -45,7 +45,12 @@ end
 uniformInteger = new()
 
 function uniformInteger:sample(a, b)
-  assert(type(a) == "number" and type(b) == "number" and a <= b)
+  if type(a) ~= "number" or type(b) ~= "number" then
+    error("Invalid arguments in uniformInteger:sample()")
+  elseif a > b then
+    error("min (" .. a .. ") should be lower than max (" .. b .. ")")
+  end
+    
   if a == b then
     return a
   else
@@ -75,11 +80,13 @@ function standardGaussian:sample()
     return res
   else
     local w = 0
+    local x1 = 0
+    local x2 = 0
     repeat
-      local x1 = 2 * context:random() - 1
-      local x2 = 2 * context:random() - 1
+      x1 = 2 * context:random() - 1
+      x2 = 2 * context:random() - 1
       w = x1 * x1 + x2 * x2
-    until w >= 1
+    until w < 1
     w = math.sqrt((-2 * math.log(w)) / w);
     self.readySample = x2 * w
     return x1 * w
