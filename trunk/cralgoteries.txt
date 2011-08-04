@@ -1,5 +1,3 @@
-Interactive (multi-threaded) ExecutionContext in the explorer
-
 
  
 Objectif: avoir un classifieur binaire et un sgd qui s'emboitent bien

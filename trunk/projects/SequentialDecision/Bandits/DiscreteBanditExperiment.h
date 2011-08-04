@@ -192,10 +192,10 @@ public:
     return true;*/
 
 
-/*    context.enterScope(T("Untuned policies"));
+    context.enterScope(T("Untuned policies"));
     ok = evaluateUntunedPolicies(context);
     context.leaveScope(ok);  
-
+/*
     context.enterScope(T("Tuned policies"));
     ok = tuneAndEvaluatePolicies(context);
     context.leaveScope(ok);
