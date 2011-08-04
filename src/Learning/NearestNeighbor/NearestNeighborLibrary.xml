@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="NearestNeighbor" directory="Learning/NearestNeighbor">
+
+  <!-- NearestNeighborFunction -->
+  <class name="NearestNeighborFunction" base="Function" abstract="yes">
+    <variable type="PositiveInteger" name="numNeighbors"/>
+<!--    <variable type="GenericVector[SparseDoubleVector]" name="inputData"/>
+    <variable type="VariableVector" name="supervisionData"/> -->
+  </class>
+
+  <class name="BinaryNearestNeighborFunction" base="NearestNeighborFunction">
+    <variable type="Boolean" name="useWeightedScore"/>
+  </class>
+
+  <class name="NearestNeighborBatchLearner" base="BatchLearner">
+    <constructor/>
+  </class>
+
+</library>

@@ -89,6 +89,7 @@ public:
     {addWeightedTo(denseVector, 0, -1.0);}
 
   virtual SparseDoubleVectorPtr toSparseVector() const;
+  virtual DenseDoubleVectorPtr toDenseDoubleVector() const;
 
   /*
   ** Lua
@@ -172,6 +173,7 @@ public:
   virtual String toShortString() const;
   void saveToXml(XmlExporter& exporter) const;
   bool loadFromXml(XmlImporter& importer);
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
   // Lua
   static int append(LuaState& state);

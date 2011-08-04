@@ -14,6 +14,7 @@
 # include "ProteinPredictorParameters.h"
 # include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 # include <lbcpp/Learning/Numerical.h>
+# include <lbcpp/Learning/NearestNeighbor.h>
 
 namespace lbcpp
 {
@@ -196,8 +197,8 @@ public:
   Lin09PredictorParameters(Lin09ParametersPtr fp = new Lin09Parameters())
     : fp(fp)
     , C(7.4), kernelGamma(-4.6)
-    , useLibSVM(true), useLibLinear(false), useLaRank(false)
-    , learningRate(1.0), numIterations(150)
+    , useLibSVM(true), useLibLinear(false), useLaRank(false), useKNN(false)
+    , learningRate(100.0), numIterations(150), numNeighbors(1)
     , useAddBias(true)
   {setThisClass(lin09PredictorParametersClass);}
   
@@ -476,6 +477,8 @@ public:
           return libLinearBinaryClassifier(pow(2.0, C), l2RegularizedL2LossDual);
         if (useLaRank)
           return laRankBinaryClassifier(pow(2.0, C), laRankRBFKernel, 0, pow(2.0, kernelGamma), 0.0);
+        if (useKNN)
+          return binaryNearestNeighbor(numNeighbors);
 
         FunctionPtr classifier = linearBinaryClassifier(new StochasticGDParameters(constantIterationFunction(learningRate), StoppingCriterionPtr(), numIterations));
         classifier->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
@@ -499,8 +502,10 @@ public:
   bool useLibSVM;
   bool useLibLinear;
   bool useLaRank;
+  bool useKNN;
   double learningRate;
   size_t numIterations;
+  size_t numNeighbors;
   bool useAddBias;
   String inputDirectory;
 };

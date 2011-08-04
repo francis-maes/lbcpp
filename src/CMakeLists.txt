@@ -52,6 +52,7 @@ GENERATE_INTROSPECTION_CODE(Learning/Numerical/LibLinear/LibLinearLearningLibrar
 GENERATE_INTROSPECTION_CODE(Learning/Numerical/LaRank/LaRankLearningLibrary.xml LaRankLearningLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/DecisionTree/DecisionTreeLibrary.xml DecisionTreeLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/LossFunction/LearningLossFunctionLibrary.xml LearningLossFunctionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Learning/NearestNeighbor/NearestNeighborLibrary.xml NearestNeighborLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Optimizer/Context/OptimizerContextLibrary.xml OptimizerContextLibrary.cpp)
@@ -463,6 +464,7 @@ SET(LBCPP_LEARNING_SOURCES
   ../include/lbcpp/Learning/LossFunction.h
   ../include/lbcpp/Learning/Numerical.h
   ../include/lbcpp/Learning/DecisionTree.h
+  ../include/lbcpp/Learning/NearestNeighbor.h
   Learning/LearningLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LearningLibrary.cpp
 )
@@ -587,6 +589,14 @@ SET(LBCPP_LEARNING_DECISION_TREE_SOURCES
   Learning/DecisionTree/DecisionTreeLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeLibrary.cpp
 )
+
+SET(LBCPP_LEARNING_NEAREST_NEIGHBOR_SOURCES
+  Learning/NearestNeighbor/NearestNeighborFunction.h
+  Learning/NearestNeighbor/NearestNeighborFunction.cpp
+  Learning/NearestNeighbor/NearestNeighborLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/NearestNeighborLibrary.cpp
+)
+
 
 #### Optimizer ####
 
@@ -781,7 +791,8 @@ SET(LBCPP_SOURCES
       ${LBCPP_LEARNING_NUMERICAL_LARANK_SOURCES}
     
     ${LBCPP_LEARNING_DECISION_TREE_SOURCES}
-      ${LBCPP_LEARNING_DECISION_TREE_DATA_SOURCES}
+    
+    ${LBCPP_LEARNING_NEAREST_NEIGHBOR_SOURCES}
 
   # Optimizer
   ${LBCPP_OPTIMIZER_SOURCES}
@@ -867,6 +878,7 @@ SOURCE_SUB_GROUP2(Learning Numerical LibSVM FILES ${LBCPP_LEARNING_NUMERICAL_LIB
 SOURCE_SUB_GROUP2(Learning Numerical LibLinear FILES ${LBCPP_LEARNING_NUMERICAL_LIBLINEAR_SOURCES})
 SOURCE_SUB_GROUP2(Learning Numerical LaRank FILES ${LBCPP_LEARNING_NUMERICAL_LARANK_SOURCES})
 SOURCE_SUB_GROUP(Learning DecisionTree FILES ${LBCPP_LEARNING_DECISION_TREE_SOURCES})
+SOURCE_SUB_GROUP(Learning NearestNeighbor FILES ${LBCPP_LEARNING_NEAREST_NEIGHBOR_SOURCES})
 
 ## Optimizer
 SOURCE_GROUP(Optimizer FILES ${LBCPP_OPTIMIZER_SOURCES})
