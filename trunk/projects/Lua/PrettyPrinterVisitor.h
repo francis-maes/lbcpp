@@ -135,12 +135,35 @@ public:
 
   virtual void visit(Local& statement)
   {
-    write("local ");
-    statement.getIdentifiers()->accept(*this);
-    if (statement.getExpressions())
+    const ListPtr& expressions = statement.getExpressions();
+
+    if (statement.isFunction())
     {
-      write(" = ");
-      statement.getExpressions()->accept(*this);
+      write("local function ");
+      statement.getIdentifiers()->accept(*this);
+      jassert(expressions->getNumSubNodes() == 1);
+      FunctionPtr function = expressions->getSubNode(0).dynamicCast<Function>();
+      jassert(function);
+
+      write("(");
+      function->getPrototype()->accept(*this);
+      write(")");
+      endLine();
+      ++indentation;
+      function->getBlock()->accept(*this);
+      --indentation;
+      write("end");
+      endLine();
+    }
+    else
+    {
+      write("local ");
+      statement.getIdentifiers()->accept(*this);
+      if (expressions && expressions->getNumSubNodes())
+      {
+        write(" = ");
+        expressions->accept(*this);
+      }
     }
   }
 

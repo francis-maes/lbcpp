@@ -18,9 +18,14 @@ Interface:
 
 module("Context", package.seeall)
 
+
 function call(self, description, fun, ...)
   self:enter(description)
-  local res = fun(...)
+  local ok, res = pcall(fun, ...)
+  if not ok then
+    context:error(res)
+    res = "Failure"
+  end
   self:leave(res)
   return res
 end

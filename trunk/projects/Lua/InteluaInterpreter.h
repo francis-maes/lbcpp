@@ -68,7 +68,7 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    static bool verbose = false;
+    static bool verbose = true;
     InteluaInterpreter interpreter(context, verbose);
     interpreter.setStaticAllocationFlag();
     return interpreter.executeBuffer(code, toShortString());
