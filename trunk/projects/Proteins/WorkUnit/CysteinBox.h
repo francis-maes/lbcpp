@@ -37,10 +37,10 @@ public:
     }
 
     ProteinPredictorParametersPtr predictorParameters = param->predictorParameters;
-    if (true)
+    if (false)
     {
       GaussianKernelPredictorParametersPtr gaussianPredictor = new GaussianKernelPredictorParameters(param->predictorParameters);
-      gaussianPredictor->initialize(context, -0.7, trainingData->fold(0, 5));
+      gaussianPredictor->initialize(context, -0.1, trainingData->fold(0, 5));
       predictorParameters = gaussianPredictor;
       trainingData = trainingData->invFold(0, 5);
     }
@@ -351,10 +351,13 @@ public:
     lin09Pred->useLibSVM = false;
     lin09Pred->useLaRank = false;
     lin09Pred->useLibLinear = false;
+    lin09Pred->useKNN = true;
     lin09Pred->useAddBias = true;
     
     lin09Pred->C = 1.4;
     lin09Pred->kernelGamma = -4.6;
+    
+    lin09Pred->numNeighbors = 10;
 
     CysteinLearnerParametersPtr p = new CysteinLearnerParameters();
     p->predictorParameters = lin09Pred;

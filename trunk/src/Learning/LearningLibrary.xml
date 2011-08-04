@@ -11,5 +11,6 @@
   <import name="LearningLossFunction"/>
   <import name="NumericalLearning"/>
   <import name="DecisionTree"/>
+  <import name="NearestNeighbor"/>
 
 </library>

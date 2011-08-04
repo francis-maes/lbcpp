@@ -208,8 +208,10 @@
     <variable type="Boolean" name="useLibSVM"/>
     <variable type="Boolean" name="useLibLinear"/>
     <variable type="Boolean" name="useLaRank"/>
+    <variable type="Boolean" name="useKNN"/>
     <variable type="Double" name="learningRate"/>
     <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="PositiveInteger" name="numNeighbors"/>
     <variable type="Boolean" name="useAddBias"/>
   </class>
   <!-- END Article: Lin 2009 -->

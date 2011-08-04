@@ -141,6 +141,19 @@ SparseDoubleVectorPtr DoubleVector::toSparseVector() const
   return res;
 }
 
+DenseDoubleVectorPtr DoubleVector::toDenseDoubleVector() const
+{
+  DenseDoubleVectorPtr res(new DenseDoubleVector(getElementsEnumeration(), getElementsType()));
+  const size_t n = getElementsEnumeration()->getNumElements();
+  if (n)
+  {
+    double* ptr = res->getValuePointer(0);
+    for (size_t i = 0; i < n; ++i, ++ptr)
+      *ptr = getElement(i).toDouble();
+  }
+  return res;
+}
+
 int DoubleVector::getIndexOfMaximumValue() const
 {
   size_t res;
@@ -390,6 +403,13 @@ void SparseDoubleVector::setElement(size_t index, const Variable& value)
   }
   else
     SparseDoubleVectorHelper::set(values, index, value.getDouble());
+}
+
+void SparseDoubleVector::clone(ExecutionContext& context, const ObjectPtr& target) const
+{
+  SparseDoubleVectorPtr targetVector = target.staticCast<SparseDoubleVector>();
+  targetVector->values = values;
+  targetVector->lastIndex = lastIndex;
 }
 
 String SparseDoubleVector::toShortString() const

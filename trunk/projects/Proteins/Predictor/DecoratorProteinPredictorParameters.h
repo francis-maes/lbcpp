@@ -61,7 +61,7 @@ class GaussianKernelFeatureGenerator : public FeatureGenerator
 {
 public:
   GaussianKernelFeatureGenerator(double gamma, const std::vector<DoubleVectorPtr>& supportVectors)
-    : gamma(gamma), supportVectors(supportVectors)
+    : FeatureGenerator(false), gamma(gamma), supportVectors(supportVectors)
   {
 /*    std::cout << "Support Vector : " << std::endl;
     for (size_t i = 0; i < supportVectors.size(); ++i)
@@ -116,7 +116,7 @@ public:
     std::cout << "Gaussian Values:";
 */    for (size_t i = 0; i < n; ++i)
     {
-      jassert(supportVectors[i]->getNumElements() == values->getNumElements());
+      jassert(supportVectors[i]->getElementsEnumeration()->getNumElements() == values->getElementsEnumeration()->getNumElements());
 
       const double norm = denseVector->sumOfSquares();
       const double res = exp(-gamma * (norm + supportNorms[i] - 2 * supportVectors[i]->dotProduct(denseVector, 0)));
