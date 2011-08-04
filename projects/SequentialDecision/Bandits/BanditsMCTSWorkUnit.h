@@ -206,6 +206,7 @@ public:
    */
   double play(MCTSNodePtr p)
   {
+    return 1.0;
     // depth
     // GPExpressionBuilderStatePtr state =p->getState().staticCast<GPExpressionBuilderState>();
     GPExpressionBuilderStatePtr clone =  p->getState()->cloneAndCast<GPExpressionBuilderState>();
@@ -236,8 +237,8 @@ public:
       bestOjectiveFunctionFound = clone;
     }
     //TODO it should not happen but it does!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-if(score!=score)
-  { cout << " i came here --------------------------- " << endl;return -1.0;}
+    if(score!=score)
+    { cout << " i came here --------------------------- " << endl;return -1.0;}
 
     return -score;
   }
@@ -297,6 +298,7 @@ public:
   : GPExpressionBuilderState(name, inputVariables, objectiveFunction)
   {
     areVariableUsed.resize(inputVariables->getNumElements(), false);
+    stack.push_back(&expression);
   }
   MCTSExpressionBuilderState() {}
 
@@ -311,98 +313,123 @@ public:
 
   virtual ContainerPtr getAvailableActions() const
   {
-    ObjectVectorPtr res = new ObjectVector(gpExpressionBuilderActionClass);
+    //TODO also set rule from length max of formula
 
+    ObjectVectorPtr res = new ObjectVector(gpExpressionBuilderActionClass);
     size_t numExpressions = expressions.size();
 
-    // variables
-    for (size_t i = 0; i < areVariableUsed.size(); ++i)
-      if (!areVariableUsed[i])
-        res->append(new VariableGPExpressionBuilderAction(Variable(i, inputVariables)));
-
-    if (numExpressions)
+    // variables; Can be add multiple times
+    if(numExpressions == 0)
+      addVariables(res); // only add set of variables
+    else if(numExpressions == 1)
     {
-      // unary expressions
-      size_t n = gpPreEnumeration->getNumElements();
-      for (size_t i = 0; i < n; ++i)
-      {
-        //for (size_t j = 0; j < numExpressions; ++j)
-        res->append(new UnaryGPExpressionBuilderAction((GPPre)i, numExpressions - 1));
-      }
-
-      // binary expressions
-      n = gpOperatorEnumeration->getNumElements();
-      for (size_t i = 0; i < n; ++i)
-      {
-        bool isCommutative = (i == 0) || (i == 2); // addition and multiplication
-        size_t j = numExpressions - 1;
-        for (size_t k = 0; k < numExpressions; ++k)
-          res->append(new BinaryGPExpressionBuilderAction((GPOperator)i, j, k));
-        if (!isCommutative)
-        {
-          size_t k = numExpressions - 1;
-          for (j = 0; j < numExpressions - 1; ++j)
-            res->append(new BinaryGPExpressionBuilderAction((GPOperator)i, j, k));
-        }
-      }
+      addVariables(res);
+      addUnary(res,numExpressions);
+    }
+    else // numExp >=2
+    {
+      addVariables(res);
+      addUnary(res,numExpressions);
+      addBinary(res,numExpressions);
     }
     return res;
   }
 
-  virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward, Variable* stateBackup)
+  virtual void addVariables(const ObjectVectorPtr& res) const
   {
-    const GPExpressionBuilderActionPtr& builderAction = action.getObjectAndCast<GPExpressionBuilderAction>();
-    GPExpressionPtr expression = builderAction->makeExpression(expressions);
+    for (size_t i = 0; i < areVariableUsed.size(); ++i)
+      res->append(new VariableGPExpressionBuilderAction(Variable(i, inputVariables)));
+  }
 
-    if (builderAction.dynamicCast<VariableGPExpressionBuilderAction>())
+  virtual void addUnary(const ObjectVectorPtr& res, size_t numExpressions) const
+  {
+    // unary expressions
+    size_t n = gpPreEnumeration->getNumElements();
+    for (size_t i = 0; i < n; ++i)
     {
-      size_t index = builderAction.staticCast<VariableGPExpressionBuilderAction>()->getIndex();
-      jassert(!areVariableUsed[index]);
-      areVariableUsed[index] = true;
+      res->append(new UnaryGPExpressionBuilderAction((GPPre)i, numExpressions - 1));
     }
-
-    expressions.push_back(expression);
-    double previousScore = expressionScores.size() ? expressionScores.back().toDouble() : objectiveFunction->compute(context, new ConstantGPExpression(0.0)).toDouble();
-
-    Variable score = objectiveFunction->compute(context, expression);
-    expressionScores.push_back(score);
-    reward = previousScore - score.toDouble(); // score must be minimized, reward must be maximized
-
-    if (description.isNotEmpty())
-      description += T(" -> ");
-    description += action.toShortString();
   }
 
-  virtual bool isFinalState() const
-    {return false;}
-
-  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  virtual void addBinary(const ObjectVectorPtr& res, size_t numExpressions ) const
   {
-    const ReferenceCountedObjectPtr<MCTSExpressionBuilderState>& target = t.staticCast<MCTSExpressionBuilderState>();
-    target->name = name;
-    target->inputVariables = inputVariables;
-    target->objectiveFunction = objectiveFunction;
-    target->areVariableUsed = areVariableUsed;
-    target->expressions.resize(expressions.size());
-    for (size_t i = 0; i < expressions.size(); ++i)
-      target->expressions[i] = expressions[i]->cloneAndCast<GPExpression>(context);
-    target->expressionScores = expressionScores;
-    target->description = description;
+    // binary expressions
+    size_t n = gpOperatorEnumeration->getNumElements();
+    size_t j = numExpressions - 1;
+    size_t k = numExpressions - 2;
+    for (size_t i = 0; i < n; ++i)
+    {
+      res->append(new BinaryGPExpressionBuilderAction((GPOperator)i, j, k));
+    }
   }
 
-  virtual double getScore() const
-  {return expressionScores.size() ? expressionScores.back().toDouble() : DBL_MAX;}
+GPExpressionPtr expression;
+double score;
+std::vector<GPExpressionPtr* > stack; // expression to fill... to change eurk
+virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward, Variable* stateBackup = NULL)
+{
+  /*   const GPExpressionBuilderActionPtr& builderAction = action.getObjectAndCast<GPExpressionBuilderAction>();
 
-  virtual GPExpressionPtr getExpression() const
-  {return expressions.size() ? expressions.back() : GPExpressionPtr();}
+     jassert(stack.size());
+
+     GPExpressionPtr* expression = stack.back();
+
+     (*expression) = builderAction->makeExpression(std::vector<GPExpressionPtr>());
+     stack.pop_back();
+/**
+   * cahgne this. from the aciton you know if its unary or binary or just add variable
+   */
+  /*    UnaryGPExpressionPtr unaryExpression = expression->dynamicCast<UnaryGPExpression>(); // dynamic casst = test
+     if (unaryExpression)
+       stack.push_back(&unaryExpression->getExpression());
+     else
+     {
+       BinaryGPExpressionPtr binaryExpression = expression->dynamicCast<BinaryGPExpression>();
+       if (binaryExpression)
+       {
+         stack.push_back(&binaryExpression->getLeft());
+         stack.push_back(&binaryExpression->getRight());
+       }
+     }
+     if (stack.empty())
+     {
+       score = objectiveFunction->compute(context, this->expression).toDouble();
+       //context.informationCallback(T("FinalState: ") + this->expression->toShortString() + T(" -> ") + String(score));
+       reward = -score;
+     }
+     else
+       reward = 0.0;
+   */  }
+virtual bool isFinalState() const
+{return false;}
+
+virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+{
+  const ReferenceCountedObjectPtr<MCTSExpressionBuilderState>& target = t.staticCast<MCTSExpressionBuilderState>();
+  target->name = name;
+  target->inputVariables = inputVariables;
+  target->objectiveFunction = objectiveFunction;
+  target->areVariableUsed = areVariableUsed;
+  target->expressions.resize(expressions.size());
+  for (size_t i = 0; i < expressions.size(); ++i)
+    target->expressions[i] = expressions[i]->cloneAndCast<GPExpression>(context);
+  target->expressionScores = expressionScores;
+  target->description = description;
+}
+
+virtual double getScore() const
+{return expressionScores.size() ? expressionScores.back().toDouble() : DBL_MAX;}
+
+virtual GPExpressionPtr getExpression() const
+{return expressions.size() ? expressions.back() : GPExpressionPtr();}
 
 protected:
-  friend class MCTSExpressionBuilderStateClass;
+friend class MCTSExpressionBuilderStateClass;
 
-  std::vector<bool> areVariableUsed;
-  std::vector<GPExpressionPtr> expressions;
-  std::vector<Variable> expressionScores;
-  String description;
+std::vector<bool> areVariableUsed;
+std::vector<GPExpressionPtr> expressions;
+std::vector<Variable> expressionScores;
+String description;
 };
 
 
@@ -437,7 +464,7 @@ public:
     {  // best we could do
       mcts.traverse(mcts.root);
     }
-   //TODO marche pas
+    //TODO marche pas
     context.resultCallback(T("expression"), mcts.bestOjectiveFunctionFound->getExpression());
     cout << mcts.bestOjectiveFunctionFound->getExpression()->toShortString() << " in the end " <<endl;
     cout << mcts.bestOjectiveFunctionFound->getScore() << " score " << endl;
