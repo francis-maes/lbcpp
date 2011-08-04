@@ -298,7 +298,7 @@ public:
   : GPExpressionBuilderState(name, inputVariables, objectiveFunction)
   {
     areVariableUsed.resize(inputVariables->getNumElements(), false);
-    stack.push_back(&expression);
+
   }
   MCTSExpressionBuilderState() {}
 
@@ -365,41 +365,26 @@ public:
 
 GPExpressionPtr expression;
 double score;
-std::vector<GPExpressionPtr* > stack; // expression to fill... to change eurk
+
 virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward, Variable* stateBackup = NULL)
 {
-  /*   const GPExpressionBuilderActionPtr& builderAction = action.getObjectAndCast<GPExpressionBuilderAction>();
+     const GPExpressionBuilderActionPtr& builderAction = action.getObjectAndCast<GPExpressionBuilderAction>();
+     GPExpressionPtr expression = builderAction->makeExpression(expressions);
+     expressions.push_back(expression);
 
-     jassert(stack.size());
+     double previousScore = expressionScores.size() ? expressionScores.back().toDouble() : objectiveFunction->compute(context, new ConstantGPExpression(0.0)).toDouble();
 
-     GPExpressionPtr* expression = stack.back();
+         Variable score = objectiveFunction->compute(context, expression);
+         expressionScores.push_back(score);
+         reward = previousScore - score.toDouble(); // score must be minimized, reward must be maximized
 
-     (*expression) = builderAction->makeExpression(std::vector<GPExpressionPtr>());
-     stack.pop_back();
-/**
-   * cahgne this. from the aciton you know if its unary or binary or just add variable
-   */
-  /*    UnaryGPExpressionPtr unaryExpression = expression->dynamicCast<UnaryGPExpression>(); // dynamic casst = test
-     if (unaryExpression)
-       stack.push_back(&unaryExpression->getExpression());
-     else
-     {
-       BinaryGPExpressionPtr binaryExpression = expression->dynamicCast<BinaryGPExpression>();
-       if (binaryExpression)
-       {
-         stack.push_back(&binaryExpression->getLeft());
-         stack.push_back(&binaryExpression->getRight());
-       }
+         if (description.isNotEmpty())
+           description += T(" -> ");
+         description += action.toShortString();
+
+         if (stateBackup)
+           *stateBackup = action; // knowing the action is enough to undo the transition
      }
-     if (stack.empty())
-     {
-       score = objectiveFunction->compute(context, this->expression).toDouble();
-       //context.informationCallback(T("FinalState: ") + this->expression->toShortString() + T(" -> ") + String(score));
-       reward = -score;
-     }
-     else
-       reward = 0.0;
-   */  }
 virtual bool isFinalState() const
 {return false;}
 
@@ -450,7 +435,7 @@ public:
 
     DecisionProblemStatePtr initialState = createInitialState(context);
 
-    MCTS mcts(context, initialState, maxDepth);
+  /*  MCTS mcts(context, initialState, maxDepth);
     for (size_t i = 0; i < numIterations; ++i)
     {
       if(!mcts.isFound){
@@ -469,6 +454,11 @@ public:
     cout << mcts.bestOjectiveFunctionFound->getExpression()->toShortString() << " in the end " <<endl;
     cout << mcts.bestOjectiveFunctionFound->getScore() << " score " << endl;
     context.leaveScope();
+
+    */
+
+
+
     return true;
   }
 
@@ -487,8 +477,8 @@ public:
     if (!objective->initialize(context, gpExpressionClass))
       return DecisionProblemStatePtr();
 
-    // tmp
-    //breadthFirstSearch(context, inputVariables, objective);
+    // TODO tmp
+    breadthFirstSearch(context, inputVariables, objective);
 
     return new MCTSExpressionBuilderState("hello", inputVariables, objective);
   }
@@ -528,12 +518,12 @@ private:
 
   bool breadthFirstSearch(ExecutionContext& context, EnumerationPtr inputVariables, const FunctionPtr& objective) const
   {
-    size_t maxSearchNodes = 1000;
+    size_t maxSearchNodes = 100000;
 
     DecisionProblemPtr problem = new GPExpressionBuilderProblem(inputVariables, objective);
-    DecisionProblemStatePtr state = new LargeGPExpressionBuilderState(T("toto"), inputVariables, objective);
+    DecisionProblemStatePtr state = new MCTSExpressionBuilderState(T("toto"), inputVariables, objective);
 
-    for (size_t depth = 0; depth < 10; ++depth)
+    for (size_t depth = 0; depth < 5; ++depth)
     {
       context.enterScope(T("Depth ") + String((int)depth + 1));
 
@@ -555,7 +545,7 @@ private:
         context.resultCallback(T("newState"), state->clone(context));
         context.resultCallback(T("transitionReward"), transitionReward);
 
-        GPExpressionBuilderStatePtr expressionBuilderState = state.dynamicCast<LargeGPExpressionBuilderState>();
+        GPExpressionBuilderStatePtr expressionBuilderState = state.dynamicCast<MCTSExpressionBuilderState>();
         jassert(expressionBuilderState);
         context.resultCallback(T("expression"), expressionBuilderState->getExpression());
         context.resultCallback(T("score"), expressionBuilderState->getScore());
