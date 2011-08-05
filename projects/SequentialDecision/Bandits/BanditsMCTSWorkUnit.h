@@ -413,16 +413,7 @@ public:
   {return expressionScores.size() ? expressionScores.back().toDouble() : DBL_MAX;}
 
   virtual GPExpressionPtr getExpression() const
-  {
-    /*   cout<<endl;
-    for(size_t i=0;i<expressions.size();++i)
-      cout<<expressions[i]->toShortString()<<endl;
-
-    cout<<endl;
-    cout<<" size "<< expressions.size();
-
-     */
-    return expressions.size() ? expressions.back() : GPExpressionPtr();}
+  {return expressions.size() ? expressions.back() : GPExpressionPtr();}
 
 
 
@@ -448,14 +439,15 @@ public:
   {
     context.enterScope("My Scope");
 
+    myfile.open ("fullTreeD3.txt",ios::app);
 
     DecisionProblemStatePtr initialState = createInitialState(context);
     String s="";
 
     MCTSExpressionBuilderStatePtr mc = ce(context);
-    recursiveExhaustiveSearch(context, mc, 0,3,s);
+  //  recursiveExhaustiveSearch(context, mc, 0,5,s);
 
-    /*     MCTS mcts(context, initialState, maxDepth);
+    /    MCTS mcts(context, initialState, maxDepth);
     for (size_t i = 0; i < numIterations; ++i)
     {
       if(!mcts.isFound){
@@ -475,8 +467,9 @@ public:
     cout << mcts.bestOjectiveFunctionFound->getScore() << " score " << endl;
     context.leaveScope();
 
-     */
 
+
+    myfile.close();
 
 
     return true;
@@ -566,6 +559,7 @@ private:
     {
       Variable action = actions->getElement(i);
       String s2 = s;
+      s2+=" -> ";
 
       double reward;
       //context.enterScope(action.toShortString());
@@ -580,8 +574,9 @@ private:
         //    cout << newState->getExpression()->toShortString()<< endl; cout<< endl;
         s2+="     and the result is ";
         s2+= newState->getExpression()->toShortString();
-        cout<< s2 << endl;
-        cout<<endl;
+        s2+="\n";
+        myfile << s2;
+
         //  cout<< newState->getExpression()->size() << " size "<<endl;
 
       }
@@ -636,6 +631,9 @@ private:
     }
     return true;
   }
+
+  ofstream myfile;
+
 
 };
 
