@@ -146,6 +146,9 @@
 
   <class name="CysteinLearnerWorkUnit" base="WorkUnit">
     <variable type="File" name="inputDirectory"/>
+    <variable type="Double" name="kernelGamma" shortName="g"/>
+    <variable type="Double" name="learningRate" shortName="lr"/>
+    <variable type="PositiveInteger" name="numNeighbors" shortName="kNN"/>
   </class>
 
   <class name="GaussianKernelParameters" base="Object">
