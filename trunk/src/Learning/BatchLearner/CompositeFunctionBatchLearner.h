@@ -53,7 +53,7 @@ protected:
     for (size_t step = 0; step < function->getNumSteps(); ++step)
       if (function->getStepType(step) == CompositeFunction::functionStep)
       {
-        if (!trainFunctionStep(context, function, step, trainingStates, validationStates))
+        if (!trainFunctionStep(context, function, step, trainingStates, validationStates, referenceCounts))
           return false;
 
         const std::vector<size_t>& inputs = function->getSubFunctionInputs(function->getStepArgument(step));
@@ -62,7 +62,7 @@ protected:
     return true;
   }
 
-  bool trainFunctionStep(ExecutionContext& context, const CompositeFunctionPtr& function, size_t step, std::vector<ObjectPtr>& trainingStates, std::vector<ObjectPtr>& validationStates) const
+  bool trainFunctionStep(ExecutionContext& context, const CompositeFunctionPtr& function, size_t step, std::vector<ObjectPtr>& trainingStates, std::vector<ObjectPtr>& validationStates, const std::vector<size_t>& referenceCounts) const
   {
     size_t subFunctionIndex = function->getStepArgument(step);
     const FunctionPtr& subFunction = function->getSubFunction(subFunctionIndex);
@@ -72,7 +72,7 @@ protected:
       return false;
 
     // update states
-    if (!computeSubFunction(context, function, step, trainingStates, validationStates))
+    if (referenceCounts[step] >= 0 && !computeSubFunction(context, function, step, trainingStates, validationStates))
       return false;
     
     return true;
@@ -138,7 +138,7 @@ protected:
       }
 
       // train these steps
-      if (!trainFunctionSteps(context, function, readySteps, trainingStates, validationStates))
+      if (!trainFunctionSteps(context, function, readySteps, trainingStates, validationStates, referenceCounts))
         return false;
 
       // update variableIsReady flags and step reference counts
@@ -169,35 +169,36 @@ protected:
 
   struct TrainFunctionStepWorkUnit : public WorkUnit
   {
-    TrainFunctionStepWorkUnit(const CompositeFunctionBatchLearner* pthis, const CompositeFunctionPtr& function, size_t step, std::vector<ObjectPtr>& trainingStates, std::vector<ObjectPtr>& validationStates, bool& res)
-      : pthis(pthis), function(function), step(step), trainingStates(trainingStates), validationStates(validationStates), res(res) {}
+    TrainFunctionStepWorkUnit(const CompositeFunctionBatchLearner* pthis, const CompositeFunctionPtr& function, size_t step, std::vector<ObjectPtr>& trainingStates, std::vector<ObjectPtr>& validationStates, const std::vector<size_t>& referenceCounts, bool& res)
+      : pthis(pthis), function(function), step(step), trainingStates(trainingStates), validationStates(validationStates), referenceCounts(referenceCounts), res(res) {}
 
     const CompositeFunctionBatchLearner* pthis;
     CompositeFunctionPtr function;
     size_t step;
     std::vector<ObjectPtr>& trainingStates;
     std::vector<ObjectPtr>& validationStates;
+    const std::vector<size_t>& referenceCounts;
     bool& res;
 
     virtual Variable run(ExecutionContext& context)
     {
-      bool ok = pthis->trainFunctionStep(context, function, step, trainingStates, validationStates);
+      bool ok = pthis->trainFunctionStep(context, function, step, trainingStates, validationStates, referenceCounts);
       if (!ok)
         res = false;
       return ok;
     }
   };
 
-  bool trainFunctionSteps(ExecutionContext& context, const CompositeFunctionPtr& function, const std::vector<size_t>& steps, std::vector<ObjectPtr>& trainingStates, std::vector<ObjectPtr>& validationStates) const
+  bool trainFunctionSteps(ExecutionContext& context, const CompositeFunctionPtr& function, const std::vector<size_t>& steps, std::vector<ObjectPtr>& trainingStates, std::vector<ObjectPtr>& validationStates, const std::vector<size_t>& referenceCounts) const
   {
     if (steps.size() == 1)
-      return trainFunctionStep(context, function, steps[0], trainingStates, validationStates);
+      return trainFunctionStep(context, function, steps[0], trainingStates, validationStates, referenceCounts);
 
     CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Training steps"), steps.size());
     workUnit->setProgressionUnit(T("Tasks"));
     bool res = true;
     for (size_t i = 0; i < steps.size(); ++i)
-      workUnit->setWorkUnit(i, new TrainFunctionStepWorkUnit(this, function, steps[i], trainingStates, validationStates, res));
+      workUnit->setWorkUnit(i, new TrainFunctionStepWorkUnit(this, function, steps[i], trainingStates, validationStates, referenceCounts, res));
     context.run(workUnit, false);
     return res;
   }

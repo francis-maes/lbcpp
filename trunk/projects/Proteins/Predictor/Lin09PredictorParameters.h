@@ -158,18 +158,13 @@ public:
       const String varName = thisType->getMemberVariableName(i);
       if (varType->inheritsFrom(booleanType))
         res[i] = booleanStream(true);
-      else if (varName == T("aminoAcidWindowSize"))
+      else if (varName == T("aminoAcidWindowSize")
+               || varName == T("pssmWindowSize"))
       {
         std::vector<int> values;
         values.push_back(5);
         values.push_back(15);
         values.push_back(25);
-        res[i] = integerStream(positiveIntegerType, values);
-      }
-      else if (varName == T("pssmWindowSize"))
-      {
-        std::vector<int> values;
-        values.push_back(15);
         res[i] = integerStream(positiveIntegerType, values);
       }
       else if (varName == T("aminoAcidLocalHistogramSize")
@@ -184,7 +179,10 @@ public:
       else if (varName == T("separationProfilSize"))
       {
         std::vector<int> values;
+        values.push_back(3);
+        values.push_back(5);
         values.push_back(9);
+        values.push_back(11);
         res[i] = integerStream(positiveIntegerType, values);
       }
       else
@@ -196,9 +194,6 @@ public:
   static Lin09ParametersPtr createInitialObject()
   {
     Lin09ParametersPtr res = new Lin09Parameters();
-    res->pssmWindowSize = 15;
-    res->separationProfilSize = 9;
-    res->usePositionDifference = true;
     return res;
   }
 };

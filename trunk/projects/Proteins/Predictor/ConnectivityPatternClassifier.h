@@ -25,6 +25,7 @@ class AddConnectivityPatternBiasLearnableFunction : public Function
 {
 public:
   AddConnectivityPatternBiasLearnableFunction()
+    : bias(0.0)
     {thisClass = addConnectivityPatternBiasLearnableFunctionClass;}
   
   virtual size_t getNumRequiredInputs() const
