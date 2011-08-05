@@ -45,15 +45,15 @@ public:
       trainingData = trainingData->invFold(0, 5);
     }
 
-    ProteinSequentialPredictorPtr predictor = new ProteinSequentialPredictor();
-    for (size_t i = 0; i < numStacks; ++i)
-    {
+    //ProteinSequentialPredictorPtr predictor = new ProteinSequentialPredictor();
+    //for (size_t i = 0; i < numStacks; ++i)
+    //{
       ProteinPredictorPtr stack = new ProteinPredictor(predictorParameters);
       stack->addTarget(dsbTarget);
-      predictor->addPredictor(stack);
-    }
+    //  predictor->addPredictor(stack);
+    //}
 
-    if (!predictor->train(context, trainingData, ContainerPtr(), T("Training")))
+    if (!stack->train(context, trainingData, ContainerPtr(), T("Training")))
       return 102.f;
 
     ContainerPtr testingData = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(param->foldDirectory).getChildFile(T("test/")), 0, T("Loading testing proteins"));
@@ -64,7 +64,7 @@ public:
     }
 
     ProteinEvaluatorPtr testEvaluator = new ProteinEvaluator();
-    CompositeScoreObjectPtr testScores = predictor->evaluate(context, testingData, testEvaluator, T("Evaluate on test proteins"));
+    CompositeScoreObjectPtr testScores = stack->evaluate(context, testingData, testEvaluator, T("Evaluate on test proteins"));
 
     return testEvaluator->getScoreObjectOfTarget(testScores, dsbTarget)->getScoreToMinimize();
   }
@@ -83,7 +83,7 @@ public:
   
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {
-    enum {numFolds = 10};
+    enum {numFolds = 5};
     for (size_t i = 0; i < numFolds; ++i)
     {
       CysteinLearnerParametersPtr candidate = new CysteinLearnerParameters();
@@ -133,20 +133,26 @@ class CysteinCrossValidationFunction : public SimpleUnaryFunction
 {
 public:
   CysteinCrossValidationFunction(String path = String::empty)
-    : SimpleUnaryFunction(proteinPredictorParametersClass, doubleType, T("CrossValidation"))
+    : SimpleUnaryFunction(lin09ParametersClass, doubleType, T("CrossValidation"))
     , path(path)
   {}
   
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     std::vector<String> destinations;
-    //destinations.push_back(T("jbecker@nic3"));
-    //destinations.push_back(T("fmaes@nic3"));
+    destinations.push_back(T("jbecker@nic3"));
+    destinations.push_back(T("fmaes@nic3"));
     destinations.push_back(T("amarcos@nic3"));
 
+    Lin09PredictorParametersPtr candidate = new Lin09PredictorParameters(input.getObjectAndCast<Lin09Parameters>(context));
+    candidate->useLibSVM = false;
+    candidate->useKNN = true;
+    candidate->useAddBias = true;
+    candidate->numNeighbors = 10;
+    
     FunctionPtr f = new CysteinLearnerFunction();
-    OptimizerPtr optimizer = new CysteinCrossValidationOptimizer(input.getObjectAndCast<ProteinPredictorParameters>(context), path);
-    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, f, T("CysBonds_10CV"), T("jbecker@monster24"), destinations, T("localhost"), 1664, 8, 3, 48, 60000);
+    OptimizerPtr optimizer = new CysteinCrossValidationOptimizer(candidate, path);
+    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, f, T("CysBonds_kNN"), T("jbecker@monster24"), destinations, T("localhost"), 1664, 8, 2, 24, 60000);
     OptimizerStatePtr optimizerState = new OptimizerState();
 
     return optimizer->compute(context, optimizerContext, optimizerState);
@@ -291,8 +297,8 @@ class BFSCysteinProteinLearner : public WorkUnit
 public:  
   Variable run(ExecutionContext& context)
   {
-    FunctionPtr f = new COptimizerFunction(inputDirectory);
-
+    //FunctionPtr f = new COptimizerFunction(inputDirectory);
+    FunctionPtr f = new CysteinCrossValidationFunction(inputDirectory);
     OptimizerPtr optimizer = bestFirstSearchOptimizer();
     OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 30000);
     OptimizerStatePtr optimizerState = streamBasedOptimizerState(context, Lin09Parameters::createInitialObject(), Lin09Parameters::createStreams());
