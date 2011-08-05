@@ -24,7 +24,7 @@ class MCTSNode : public Object
 {
 public:
   MCTSNode(DecisionProblemStatePtr state)
-  : reward(0), parent(0), visit(0), isLeaf(true), state(state), actionIndex(0), depth(0) {}
+  : reward(0), parent(0), visit(0), isLeaf(true), depth(0), state(state), actionIndex(0) {}
 
   //TODO remove this
   void setState(DecisionProblemStatePtr s)
@@ -447,7 +447,7 @@ public:
     MCTSExpressionBuilderStatePtr mc = ce(context);
   //  recursiveExhaustiveSearch(context, mc, 0,5,s);
 
-    /    MCTS mcts(context, initialState, maxDepth);
+    MCTS mcts(context, initialState, maxDepth);
     for (size_t i = 0; i < numIterations; ++i)
     {
       if(!mcts.isFound){
