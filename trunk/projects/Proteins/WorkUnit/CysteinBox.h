@@ -40,7 +40,7 @@ public:
     if (false)
     {
       GaussianKernelPredictorParametersPtr gaussianPredictor = new GaussianKernelPredictorParameters(param->predictorParameters);
-      gaussianPredictor->initialize(context, -0.1, trainingData->fold(0, 5));
+      gaussianPredictor->initialize(context, param->predictorParameters.staticCast<Lin09PredictorParameters>()->kernelGamma, trainingData->fold(0, 5));
       predictorParameters = gaussianPredictor;
       trainingData = trainingData->invFold(0, 5);
     }
@@ -339,6 +339,8 @@ protected:
 class CysteinLearnerWorkUnit : public WorkUnit
 {
 public:
+  CysteinLearnerWorkUnit() : kernelGamma(0.1), learningRate(100.0), numNeighbors(10) {}
+
   Variable run(ExecutionContext& context)
   {
     Lin09ParametersPtr lin09 = new Lin09Parameters();
@@ -355,9 +357,11 @@ public:
     lin09Pred->useAddBias = true;
     
     lin09Pred->C = 1.4;
-    lin09Pred->kernelGamma = -4.6;
+    lin09Pred->kernelGamma = kernelGamma;
+    lin09Pred->learningRate = learningRate;
+    lin09Pred->numIterations = 10000;
     
-    lin09Pred->numNeighbors = 10;
+    lin09Pred->numNeighbors = numNeighbors;
 
     CysteinLearnerParametersPtr p = new CysteinLearnerParameters();
     p->predictorParameters = lin09Pred;
@@ -371,6 +375,9 @@ protected:
   friend class CysteinLearnerWorkUnitClass;
 
   File inputDirectory;
+  double kernelGamma;
+  double learningRate;
+  size_t numNeighbors;
 };
 
 };

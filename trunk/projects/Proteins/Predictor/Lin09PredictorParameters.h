@@ -127,6 +127,8 @@ public:
   bool usePositionDifference;
   bool useIndexDifference;
 
+  bool hdSeparationProfil;
+
   Lin09Parameters()
   : // global
     useProteinLength(false)
@@ -140,6 +142,8 @@ public:
   , useAminoAcidIntervalHistogram(false), usePSSMIntervalHistogram(false)
   , useAADistance(false), useCysteinDistance(false)
   , usePositionDifference(false), useIndexDifference(false)
+
+  , hdSeparationProfil(false)
   {}
 
   static std::vector<StreamPtr> createStreams()
@@ -154,13 +158,18 @@ public:
       const String varName = thisType->getMemberVariableName(i);
       if (varType->inheritsFrom(booleanType))
         res[i] = booleanStream(true);
-      else if (varName == T("aminoAcidWindowSize")
-              || varName == T("pssmWindowSize"))
+      else if (varName == T("aminoAcidWindowSize"))
       {
         std::vector<int> values;
         values.push_back(5);
         values.push_back(15);
         values.push_back(25);
+        res[i] = integerStream(positiveIntegerType, values);
+      }
+      else if (varName == T("pssmWindowSize"))
+      {
+        std::vector<int> values;
+        values.push_back(15);
         res[i] = integerStream(positiveIntegerType, values);
       }
       else if (varName == T("aminoAcidLocalHistogramSize")
@@ -175,10 +184,7 @@ public:
       else if (varName == T("separationProfilSize"))
       {
         std::vector<int> values;
-        values.push_back(3);
-        values.push_back(5);
         values.push_back(9);
-        values.push_back(11);
         res[i] = integerStream(positiveIntegerType, values);
       }
       else
@@ -188,7 +194,13 @@ public:
   }
 
   static Lin09ParametersPtr createInitialObject()
-    {return new Lin09Parameters();}
+  {
+    Lin09ParametersPtr res = new Lin09Parameters();
+    res->pssmWindowSize = 15;
+    res->separationProfilSize = 9;
+    res->usePositionDifference = true;
+    return res;
+  }
 };
 
 class Lin09PredictorParameters : public ProteinPredictorParameters
@@ -334,7 +346,10 @@ public:
     size_t pssmAccumulator = builder.addFunction(getVariableFunction(T("pssmAccumulator")), proteinPerception, T("pssmAccumulator"));
 
     size_t cysteinSeparationProfil = builder.addFunction(new CreateCysteinSeparationProfil(true), protein, position, T("SepProfil"));
-    cysteinSeparationProfil = builder.addFunction(mapContainerFunction(doubleFeatureGenerator()), cysteinSeparationProfil);
+    if (fp->hdSeparationProfil)
+      cysteinSeparationProfil = builder.addFunction(mapContainerFunction(hardDiscretizedNumberFeatureGenerator(0, 300, 30, true)), cysteinSeparationProfil);
+    else
+      cysteinSeparationProfil = builder.addFunction(mapContainerFunction(doubleFeatureGenerator()), cysteinSeparationProfil);
 
     /* Output */
     builder.startSelection();
@@ -478,7 +493,7 @@ public:
         if (useLaRank)
           return laRankBinaryClassifier(pow(2.0, C), laRankRBFKernel, 0, pow(2.0, kernelGamma), 0.0);
         if (useKNN)
-          return binaryNearestNeighbor(numNeighbors);
+          return binaryNearestNeighbor(numNeighbors, false);
 
         FunctionPtr classifier = linearBinaryClassifier(new StochasticGDParameters(constantIterationFunction(learningRate), StoppingCriterionPtr(), numIterations));
         classifier->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
