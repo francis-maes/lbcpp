@@ -72,10 +72,14 @@ public:
     // set current working directory to root directory
     // FIXME: find a better way to fix lua directly to take our root directory
     ExplorerProject::getCurrentProject()->getRootDirectory().setAsCurrentWorkingDirectory(); 
-    WorkUnitPtr workUnit = WorkUnit::create(getType("ExecuteLuaString"));
-    workUnit->setVariable(0, code);
-    workUnit->setVariable(1, name);
-    context->pushWorkUnit(workUnit);
+    ClassPtr workUnitClass = getType("ExecuteLuaString");
+    if (workUnitClass)
+    {
+      WorkUnitPtr workUnit = WorkUnit::create(workUnitClass);
+      workUnit->setVariable(0, code);
+      workUnit->setVariable(1, name);
+      context->pushWorkUnit(workUnit);
+    }
   }
  
   void saveFile()
