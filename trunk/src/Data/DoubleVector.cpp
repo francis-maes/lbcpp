@@ -580,6 +580,24 @@ double DenseDoubleVector::computeLogSumOfExponentials() const
   return log(res) + highestValue;
 }
 
+double DenseDoubleVector::getDistanceTo(const SparseDoubleVectorPtr& other) const
+{
+  size_t indexInSparse = 0;
+  const size_t denseSize = values->size();
+  const size_t sparseSize = other->values.size();
+  double res = 0.0;
+  for (size_t i = 0; i < denseSize; ++i)
+    if (indexInSparse < sparseSize && other->values[indexInSparse].first == i)
+    {
+      const double diff = (*values)[i] - other->values[indexInSparse].second;
+      res += diff * diff;
+      ++indexInSparse;
+    }
+    else
+      res += (*values)[i] * (*values)[i];
+  return sqrt(res);
+}
+
 // DoubleVector
 double DenseDoubleVector::entropy() const
   {return defaultEntropy(*this);}

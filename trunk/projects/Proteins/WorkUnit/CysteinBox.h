@@ -359,7 +359,7 @@ public:
     lin09Pred->useLibSVM = false;
     lin09Pred->useLaRank = false;
     lin09Pred->useLibLinear = false;
-    lin09Pred->useKNN = false;
+    lin09Pred->useKNN = true;
     lin09Pred->useExtraTrees = true;
     lin09Pred->useAddBias = false;
     
