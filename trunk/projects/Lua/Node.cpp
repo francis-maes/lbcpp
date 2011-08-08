@@ -14,6 +14,16 @@ using namespace lbcpp::lua;
 String Node::print() const
   {return PrettyPrinterVisitor::print(*this);}
 
+int Node::setLineInfo(lbcpp::LuaState& state)
+{
+  NodePtr node = state.checkObject(1, nodeClass).staticCast<Node>();
+  if (!state.isNil(2))
+    node->firstLineInfo = state.checkObject(2, lineInfoClass).staticCast<LineInfo>();
+  if (!state.isNil(3))
+    node->lastLineInfo = state.checkObject(3, lineInfoClass).staticCast<LineInfo>();
+  return 0;
+}
+
 #define NODE_ACCEPT_FUNCTION(Class) \
   void Class ::accept(Visitor& visitor) \
     {return visitor.visit(*this);}

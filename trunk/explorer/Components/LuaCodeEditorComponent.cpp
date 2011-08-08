@@ -183,10 +183,10 @@ void LuaCodeEditor::updateStatus()
 // command+enter
 void LuaCodeEditor::executeCode()
 {
-  String code = codeEditor->getSelectedText().trim();
-  if (code.isEmpty())
-    code = document.getAllContent().trim();
-  if (code.isEmpty())
+  String code = codeEditor->getSelectedText();
+  if (!code.containsNonWhitespaceChars())
+    code = document.getAllContent();
+  if (!code.containsNonWhitespaceChars())
     return;
 
   if (!trace)

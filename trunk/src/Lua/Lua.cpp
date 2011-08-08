@@ -219,6 +219,9 @@ int LuaState::getTop() const
 LuaType LuaState::getType(int index) const
   {return (LuaType)lua_type(L, index);}
 
+bool LuaState::isNil(int index) const
+  {return lua_isnil(L, index) != 0;}
+
 bool LuaState::isString(int index) const
   {return lua_isstring(L, index) != 0;}
 

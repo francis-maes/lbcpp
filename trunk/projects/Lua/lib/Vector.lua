@@ -14,7 +14,6 @@ Interface:
 
 module("Vector", package.seeall)
 
-
 function newSparse()
   return lbcpp.Object.create("SparseDoubleVector<PositiveIntegerEnumeration, Double>")
 end

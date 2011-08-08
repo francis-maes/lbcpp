@@ -39,9 +39,17 @@ local function convertBinaryOp(opid)
   return opids[opid]
 end
 
-local function convertLineInfo(lineinfo) -- not used yet, to be finished
-  local comments = (lineinfo.comments and lineinfo.comments or "")
-  return lbcpp.Object.create("lua::LineInfo", lineinfo[1], lineinfo[2], lineinfo[4], comments)
+
+local function setLineInfoInNode(node, ali)
+  local function convertLineInfo(lineinfo)
+    if lineinfo then
+--      local comments = (lineinfo.comments and lineinfo.comments or "") -- comments shoult be concatenated
+      return lbcpp.Object.create("lua::LineInfo", lineinfo[1], lineinfo[2], lineinfo[4])
+    else
+      return nil
+    end
+  end
+  node:setLineInfo(convertLineInfo(ali and ali.first), convertLineInfo(ali and ali.last))
 end
 
 local function makeObjectVector(class, inputTable, startIndex)
@@ -77,7 +85,9 @@ local function createBlock(statements)
   return lbcpp.Object.create("lua::Block", makeObjectVector("lua::Statement", statements, 1))
 end
 
-local function metaLuaAstToLbcppAst(ast)
+local metaLuaAstToLbcppAst
+
+local function metaLuaAstToLbcppAstInternal(ast)
 
   local function convertSubNodes(ast)
     local res = {}
@@ -201,6 +211,12 @@ local function metaLuaAstToLbcppAst(ast)
   else
     error("unknown tag " .. ast.tag .. " (numSubNodes = " .. #subNodes .. " numAttributes = " .. (#ast - #subNodes) .. ")")
   end
+end
+
+metaLuaAstToLbcppAst = function(ast)
+  local res = metaLuaAstToLbcppAstInternal(ast)
+  setLineInfoInNode(res, ast.lineinfo)
+  return res
 end
 
 local function parse(codeType, lexer)

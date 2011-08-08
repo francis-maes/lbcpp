@@ -25,7 +25,9 @@
       <variable type="String" name="comments"/>
     </class>
 
-    <class name="Node" abstract="yes"/>
+    <class name="Node" abstract="yes">
+      <function lang="lua" name="setLineInfo"/>
+    </class>
     <class name="List" base="lua::Node">
       <variable type="ObjectVector[lua::Node]" name="nodes"/>
     </class>

@@ -8,9 +8,6 @@ Objectif: avoir un classifieur binaire et un sgd qui s'emboitent bien
 * New lua function: DoubleVector::argmax
   => DoubleVector start at index 1
 
-* Garder les numéros de lignes dans le source-to-source
-* Garder les commentaires dans le source-to-source
-
 Proteins:
  * Ajouter des features de segments
 
