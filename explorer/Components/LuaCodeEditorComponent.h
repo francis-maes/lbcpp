@@ -18,108 +18,41 @@
 # include "../../juce/juce_LuaCodeTokeniser.h"
 # include "../explorer/ExplorerProject.h"
 
+class LuaCodeEditorComponent;
+class LuaCodeEditorStatusBar;
+
 namespace lbcpp
 {
 
-class LuaCodeEditorComponent : public Component, public ComponentWithPreferedSize, public VariableSelector
+class LuaCodeEditor : public Component, public ComponentWithPreferedSize, public VariableSelector
 {
 public:
-  LuaCodeEditorComponent(const File& luaFile)
-    : luaFile(luaFile), name(luaFile.getFileName()), context(ExplorerProject::currentProject->workUnitContext)
-  {
-    InputStream* istr = luaFile.createInputStream();
-    if (istr)
-    {
-      String luaCode;
-      while (!istr->isExhausted())
-        luaCode += istr->readNextLine() + T("\n");
-      delete istr;
-
-      document.replaceAllContent(luaCode);
-    }
-    else
-      context->errorCallback(T("Could not open file ") + luaFile.getFullPathName());
-
-    addAndMakeVisible(codeEditor = new juce::CodeEditorComponent(document, &tokeniser));
-  }
-
-  virtual ~LuaCodeEditorComponent()
-  {
-    deleteAllChildren();
-    document.replaceAllContent(String::empty);
-  }
+  LuaCodeEditor(const File& luaFile);
+  virtual ~LuaCodeEditor();
 
   virtual int getDefaultWidth() const
     {return juce::Desktop::getInstance().getMainMonitorArea().getWidth() / 3;}
 
-  virtual void resized()
-    {codeEditor->setBoundsRelative(0, 0, 1, 1);}
-
-  void executeSelectedCode()
-  {
-    String code = codeEditor->getSelectedText().trim();
-    if (code.isEmpty())
-      code = document.getAllContent().trim();
-    if (code.isEmpty())
-      return;
-
-    if (!trace)
-    {
-      trace = new ExecutionTrace(context->toString());
-      sendSelectionChanged(trace, name);
-    }
-
-    // set current working directory to root directory
-    // FIXME: find a better way to fix lua directly to take our root directory
-    ExplorerProject::getCurrentProject()->getRootDirectory().setAsCurrentWorkingDirectory(); 
-    ClassPtr workUnitClass = getType("ExecuteLuaString");
-    if (workUnitClass)
-    {
-      WorkUnitPtr workUnit = WorkUnit::create(workUnitClass);
-      workUnit->setVariable(0, code);
-      workUnit->setVariable(1, name);
-      context->pushWorkUnit(workUnit);
-    }
-  }
- 
-  void saveFile()
-  {
-    if (luaFile.exists())
-      luaFile.deleteFile();
-    OutputStream* ostr = luaFile.createOutputStream();
-    if (ostr)
-    {
-      *ostr << document.getAllContent();
-      delete ostr;
-    }
-  }
-
-  virtual bool keyPressed(const juce::KeyPress& key)
-  {
-    if (key.getKeyCode() == juce::KeyPress::returnKey && key.getModifiers().isCommandDown())
-    {
-      executeSelectedCode();
-      return true;
-    }
-    if (juce::CharacterFunctions::toLowerCase((char)key.getKeyCode()) == 's' && key.getModifiers().isCommandDown())
-    {
-      saveFile();
-      return true;
-    }
-    return false;
-  }
+  virtual void resized();
+  virtual bool keyPressed(const juce::KeyPress& key);
  
   virtual juce::Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name)
     {return userInterfaceManager().createExecutionTraceInteractiveTreeView(context, trace, this->context);}
+
+  void updateStatus();
 
 protected:
   File luaFile;
   String name;
   ExecutionContextPtr context;  
   juce::CodeEditorComponent* codeEditor;
+  LuaCodeEditorStatusBar* statusBar;
   juce::CodeDocument document;
   juce::LuaCodeTokeniser tokeniser;
   ExecutionTracePtr trace;
+
+  void executeCode();
+  void saveFile();
 };
 
 }; /* namespace lbcpp */

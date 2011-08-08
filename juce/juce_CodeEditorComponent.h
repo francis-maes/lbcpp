@@ -214,6 +214,12 @@ public:
     void setScrollbarThickness (const int thickness) throw();
 
     // francis
+    const CodeDocument::Position& getSelectionStart() const
+      {return selectionStart;}
+
+    const CodeDocument::Position& getSelectionEnd() const
+      {return selectionEnd;}
+
     String getSelectedText() const
       {return document.getTextBetween (selectionStart, selectionEnd);}
 
@@ -247,7 +253,7 @@ public:
     //==============================================================================
     juce_UseDebuggingNewOperator
 
-private:
+protected: // francis
     CodeDocument& document;
 
     Font font;

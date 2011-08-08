@@ -20,6 +20,7 @@ SET(EXPLORER_COMPONENTS_SOURCES
   Components/VariableBrowser.cpp
   Components/HexadecimalFileComponent.h
   Components/LuaCodeEditorComponent.h
+  Components/LuaCodeEditorComponent.cpp
   Components/VariableComponents.cpp
 )
 
