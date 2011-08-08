@@ -176,30 +176,30 @@ public:
   {
     sampleProblems(context, trainingProblems, testingProblems, generalizationProblems);
     bool ok;
-
-    /*for (double C = 0.0; C >= -6.0; C -= 0.1)
+/*
+    for (double C = -5.0; C >= -5.0; C += 0.1)
     {
       context.enterScope(T("C = ") + String(C));
       context.resultCallback(T("C"), C);
-      evaluatePolicy(context, ucb2DiscreteBanditPolicy(pow(10.0, C)), false);
+      //evaluatePolicy(context, ucb2DiscreteBanditPolicy(pow(10.0, C)), false);
+      evaluatePolicy(context, klucbDiscreteBanditPolicy(C), false);
       context.leaveScope(true);
     }
     return true;*/
-/*
+
     context.enterScope(T("Saved policies"));
     ok = evaluateSavedPolicies(context);
     context.leaveScope(ok);
-    return true;*/
+    return true;
 
 
     context.enterScope(T("Untuned policies"));
     ok = evaluateUntunedPolicies(context);
     context.leaveScope(ok);  
-/*
+
     context.enterScope(T("Tuned policies"));
     ok = tuneAndEvaluatePolicies(context);
     context.leaveScope(ok);
-    */
 
     context.enterScope(T("Learned policies"));
     ok = learnAndEvaluatePolicies(context);
@@ -253,23 +253,27 @@ protected:
   bool evaluateUntunedPolicies(ExecutionContext& context) const
   {
     std::vector<std::pair<DiscreteBanditPolicyPtr, String> > policies;
-    policies.push_back(std::make_pair(greedyDiscreteBanditPolicy(), T("greedy")));
+    policies.push_back(std::make_pair(klucbDiscreteBanditPolicy(0.0), T("kl-ucb-0")));
+    policies.push_back(std::make_pair(klucbDiscreteBanditPolicy(3.0), T("kl-ucb-3")));
+    /*policies.push_back(std::make_pair(greedyDiscreteBanditPolicy(), T("greedy")));
     policies.push_back(std::make_pair(ucb1DiscreteBanditPolicy(), T("ucb1")));
     policies.push_back(std::make_pair(ucb1TunedDiscreteBanditPolicy(), T("ucb1-Bernoulli")));
     policies.push_back(std::make_pair(ucb1NormalDiscreteBanditPolicy(), T("ucb1-Gaussian")));
     policies.push_back(std::make_pair(ucb2DiscreteBanditPolicy(), T("ucb2")));
     policies.push_back(std::make_pair(ucbvDiscreteBanditPolicy(), T("ucbv")));
-    policies.push_back(std::make_pair(epsilonGreedyDiscreteBanditPolicy(), T("e-greedy")));
+    policies.push_back(std::make_pair(epsilonGreedyDiscreteBanditPolicy(), T("e-greedy")));*/
     return evaluatePolicies(context, policies);
   }
 
   bool tuneAndEvaluatePolicies(ExecutionContext& context) const
   {
     std::vector<DiscreteBanditPolicyPtr> policies;
+    policies.push_back(klucbDiscreteBanditPolicy());
+    /*
     policies.push_back(ucb1DiscreteBanditPolicy());
     //policies.push_back(ucb2DiscreteBanditPolicy());
     policies.push_back(ucbvDiscreteBanditPolicy());
-    policies.push_back(epsilonGreedyDiscreteBanditPolicy());
+    policies.push_back(epsilonGreedyDiscreteBanditPolicy());*/
     return optimizeAndEvaluatePolicies(context, policies);
   }
 
@@ -357,7 +361,7 @@ private:
     context.resultCallback(T("numParameters"), numParameters);
 
     // eda parameters
-    size_t numIterations = 100;//(numParameters <= 2 ? 30 : 100);
+    size_t numIterations = (numParameters <= 2 ? 5 : 100);
     size_t populationSize = numParameters * 8;
     size_t numBests = numParameters * 2;
 
@@ -381,8 +385,8 @@ private:
     OptimizerContextPtr optimizerContext = synchroneousOptimizerContext(context, objectiveFunction, validationFunction);
 
     // optimizer
-    //OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0, true);
-    OptimizerPtr optimizer = banditEDAOptimizer(numIterations, populationSize, numBests, populationSize * 10, StoppingCriterionPtr());
+    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0, true);
+    //OptimizerPtr optimizer = banditEDAOptimizer(numIterations, populationSize, numBests, populationSize, StoppingCriterionPtr());
 
     optimizer->compute(context, optimizerContext, optimizerState);
 
