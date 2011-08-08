@@ -282,9 +282,9 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
 
   size_t n = trainingData.size();
   nb_attributes = trainingData[0]->getVariable(0).getObjectAndCast<Container>()->getNumElements();
-
+  const size_t numAttributeSamplesPerSplit = rTreeFunction->getNumAttributeSamplesPerSplit() ? rTreeFunction->getNumAttributeSamplesPerSplit() : (size_t)sqrt((double)nb_attributes);
   context.resultCallback(T("Num Attributes"), nb_attributes);
-  context.resultCallback(T("K"), rTreeFunction->getNumAttributeSamplesPerSplit());
+  context.resultCallback(T("K"), numAttributeSamplesPerSplit);
   context.resultCallback(T("nmin"), rTreeFunction->getMinimumSizeForSplitting());
   context.resultCallback(T("Num Examples"), n);
   
@@ -403,7 +403,7 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
   
   set_find_a_threshold_num_function_multiregr(3,1);
   set_find_a_threshold_symb_function_multiregr(1);
-  set_find_a_test_function(6, 10.0, rTreeFunction->getNumAttributeSamplesPerSplit(), rTreeFunction->getNumAttributeSamplesPerSplit());
+  set_find_a_test_function(6, 10.0, numAttributeSamplesPerSplit, numAttributeSamplesPerSplit);
   
   set_ensemble_method_parameters(/*method*/0, rTreeFunction->getNumTrees(), 1, 0, 1, 0, 0, 1.0, z_max);
 

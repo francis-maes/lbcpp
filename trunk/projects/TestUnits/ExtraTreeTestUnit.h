@@ -51,7 +51,7 @@ protected:
     ContainerPtr learningData = loadDataToContainer(context, data, 0, 300, true);
     ContainerPtr testingData = loadDataToContainer(context, data, 300, 2300, true);
 
-    FunctionPtr learner = classificationExtraTree(context, waveFormTypeEnumeration, numTrees, numAttributes, minSplitSize);
+    FunctionPtr learner = classificationExtraTree(waveFormTypeEnumeration, numTrees, numAttributes, minSplitSize);
 
     learner->train(context, learningData, ContainerPtr(), T("Training"));
     
@@ -78,7 +78,7 @@ protected:
     ContainerPtr learningData = loadDataToContainer(context, data, 0, 300, false);
     ContainerPtr testingData = loadDataToContainer(context, data, 300, 2300, false);
     
-    FunctionPtr learner = regressionExtraTree(context, numTrees, numAttributes, minSplitSize);
+    FunctionPtr learner = regressionExtraTree(numTrees, numAttributes, minSplitSize);
 
     learner->train(context, learningData, ContainerPtr(), T("Training"));
 

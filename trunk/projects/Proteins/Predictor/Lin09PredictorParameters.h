@@ -491,7 +491,7 @@ public:
         if (useKNN)
           return binaryNearestNeighbor(numNeighbors, false);
         if (useExtraTrees)
-          return binaryClassificationExtraTree(defaultExecutionContext(), 1000, 10, 0);
+          return binaryClassificationExtraTree(1000, 0, 0);
 
         FunctionPtr classifier = linearBinaryClassifier(new StochasticGDParameters(constantIterationFunction(learningRate), StoppingCriterionPtr(), numIterations));
         classifier->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
