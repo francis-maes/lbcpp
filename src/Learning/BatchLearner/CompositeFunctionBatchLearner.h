@@ -40,12 +40,13 @@ public:
   }
 
 protected:
-
   /*
   ** Single Threaded
   */
   bool trainSingleThread(ExecutionContext& context, const CompositeFunctionPtr& function, std::vector<ObjectPtr>& trainingStates, std::vector<ObjectPtr>& validationStates) const
   {
+    std::vector<bool> variableIsReady;
+    initializeVariableReadyFlags(function, variableIsReady);
     std::vector<size_t> referenceCounts;
     makeInitialReferenceCounts(function, referenceCounts);
 
@@ -53,28 +54,53 @@ protected:
     for (size_t step = 0; step < function->getNumSteps(); ++step)
       if (function->getStepType(step) == CompositeFunction::functionStep)
       {
-        if (!trainFunctionStep(context, function, step, trainingStates, validationStates, referenceCounts))
+        if (!trainFunctionStep(context, function, step, trainingStates, validationStates, variableIsReady, referenceCounts))
           return false;
-
-        const std::vector<size_t>& inputs = function->getSubFunctionInputs(function->getStepArgument(step));
-        decrementReferenceCountsAndFreeVariables(function, inputs, referenceCounts, trainingStates, validationStates);
       }
+    
     return true;
   }
 
-  bool trainFunctionStep(ExecutionContext& context, const CompositeFunctionPtr& function, size_t step, std::vector<ObjectPtr>& trainingStates, std::vector<ObjectPtr>& validationStates, const std::vector<size_t>& referenceCounts) const
+  bool ensureVariableIsReady(ExecutionContext& context, const CompositeFunctionPtr& function, size_t step, std::vector<bool>& variableIsReady,
+                             std::vector<ObjectPtr>& trainingStates, std::vector<ObjectPtr>& validationStates,
+                             std::vector<size_t>& referenceCounts) const
+  {
+    if (variableIsReady[step])
+      return true;
+  
+    size_t subFunctionIndex = function->getStepArgument(step);
+    const FunctionPtr& subFunction = function->getSubFunction(subFunctionIndex);
+    jassert(subFunction);
+    
+    const std::vector<size_t>& inputs = function->getSubFunctionInputs(subFunctionIndex);
+    for (size_t i = 0; i < inputs.size(); ++i)
+      ensureVariableIsReady(context, function, inputs[i], variableIsReady, trainingStates, validationStates, referenceCounts);
+    
+    if (!computeSubFunction(context, function, step, trainingStates, validationStates))
+      return false;
+
+    decrementReferenceCountsAndFreeVariables(context, function, inputs, referenceCounts, trainingStates, validationStates);
+    variableIsReady[step] = true;
+    return true;
+  }
+  
+  bool trainFunctionStep(ExecutionContext& context, const CompositeFunctionPtr& function, size_t step,
+                         std::vector<ObjectPtr>& trainingStates, std::vector<ObjectPtr>& validationStates,
+                         std::vector<bool>& variableIsReady, std::vector<size_t>& referenceCounts) const
   {
     size_t subFunctionIndex = function->getStepArgument(step);
     const FunctionPtr& subFunction = function->getSubFunction(subFunctionIndex);
 
-    // learn
-    if (subFunction->hasBatchLearner() && !learnSubFunction(context, function, step, trainingStates, validationStates))
-      return false;
-
-    // update states
-    if (referenceCounts[step] >= 0 && !computeSubFunction(context, function, step, trainingStates, validationStates))
-      return false;
-    
+    if (subFunction->hasBatchLearner())
+    {
+      // ensure that all inputs are computed
+      const std::vector<size_t>& inputs = function->getSubFunctionInputs(function->getStepArgument(step));
+      for (size_t i = 0; i < inputs.size(); ++i)
+        ensureVariableIsReady(context, function, inputs[i], variableIsReady, trainingStates, validationStates, referenceCounts);
+      
+      if (!learnSubFunction(context, function, step, trainingStates, validationStates))
+        return false;
+    }  
     return true;
   }
 
@@ -108,28 +134,21 @@ protected:
   */
   bool trainMultiThread(ExecutionContext& context, const CompositeFunctionPtr& function, std::vector<ObjectPtr>& trainingStates, std::vector<ObjectPtr>& validationStates) const
   {
-    // initialize "variableIsReady" flags
-    std::vector<bool> variableIsReady(function->getNumSteps());
-    size_t numVariablesToCompute = 0;
-    for (size_t i = 0; i < variableIsReady.size(); ++i)
-    {
-      variableIsReady[i] = (function->getStepType(i) != CompositeFunction::functionStep);
-      if (!variableIsReady[i])
-        ++numVariablesToCompute;
-    }
-    jassert(numVariablesToCompute == function->getNumSubFunctions());
-
-    // initialize reference counts
+    std::vector<bool> variableIsReady;
+    initializeVariableReadyFlags(function, variableIsReady);
     std::vector<size_t> referenceCounts;
     makeInitialReferenceCounts(function, referenceCounts);
-
+    
+    std::vector<bool> variableIsReadyToLearn = variableIsReady;
+    size_t numVariablesToCompute = function->getNumSubFunctions();
+    
     // do learning blocks until all sub functions have been learned
     while (numVariablesToCompute > 0)
     {
       // find new steps that are ready to be learned
       std::vector<size_t> readySteps;
-      for (size_t i = 0; i < variableIsReady.size(); ++i)
-        if (!variableIsReady[i] && areAllInputsReady(function, i, variableIsReady))
+      for (size_t i = 0; i < variableIsReadyToLearn.size(); ++i)
+        if (!variableIsReadyToLearn[i] && areAllInputsReady(function, i, variableIsReadyToLearn))
           readySteps.push_back(i);
       if (readySteps.empty())
       {
@@ -138,17 +157,12 @@ protected:
       }
 
       // train these steps
-      if (!trainFunctionSteps(context, function, readySteps, trainingStates, validationStates, referenceCounts))
+      if (!trainFunctionSteps(context, function, readySteps, trainingStates, validationStates, variableIsReady, referenceCounts))
         return false;
 
       // update variableIsReady flags and step reference counts
       for (size_t i = 0; i < readySteps.size(); ++i)
-      {
-        size_t step = readySteps[i];
-        variableIsReady[step] = true;
-        const std::vector<size_t>& inputs = function->getSubFunctionInputs(function->getStepArgument(step));
-        decrementReferenceCountsAndFreeVariables(function, inputs, referenceCounts, trainingStates, validationStates);
-      }
+        variableIsReadyToLearn[readySteps[i]] = true;
       numVariablesToCompute -= readySteps.size();
     }
     return true;
@@ -169,36 +183,43 @@ protected:
 
   struct TrainFunctionStepWorkUnit : public WorkUnit
   {
-    TrainFunctionStepWorkUnit(const CompositeFunctionBatchLearner* pthis, const CompositeFunctionPtr& function, size_t step, std::vector<ObjectPtr>& trainingStates, std::vector<ObjectPtr>& validationStates, const std::vector<size_t>& referenceCounts, bool& res)
-      : pthis(pthis), function(function), step(step), trainingStates(trainingStates), validationStates(validationStates), referenceCounts(referenceCounts), res(res) {}
+    TrainFunctionStepWorkUnit(const CompositeFunctionBatchLearner* pthis, const CompositeFunctionPtr& function, size_t step,
+                              std::vector<ObjectPtr>& trainingStates, std::vector<ObjectPtr>& validationStates,
+                              std::vector<bool>& variableIsReady, std::vector<size_t>& referenceCounts, bool& res)
+      : pthis(pthis), function(function), step(step),
+        trainingStates(trainingStates), validationStates(validationStates),
+        variableIsReady(variableIsReady), referenceCounts(referenceCounts), res(res) {}
 
     const CompositeFunctionBatchLearner* pthis;
     CompositeFunctionPtr function;
     size_t step;
     std::vector<ObjectPtr>& trainingStates;
     std::vector<ObjectPtr>& validationStates;
-    const std::vector<size_t>& referenceCounts;
+    std::vector<bool>& variableIsReady;
+    std::vector<size_t>& referenceCounts;
     bool& res;
 
     virtual Variable run(ExecutionContext& context)
     {
-      bool ok = pthis->trainFunctionStep(context, function, step, trainingStates, validationStates, referenceCounts);
+      bool ok = pthis->trainFunctionStep(context, function, step, trainingStates, validationStates, variableIsReady, referenceCounts);
       if (!ok)
         res = false;
       return ok;
     }
   };
 
-  bool trainFunctionSteps(ExecutionContext& context, const CompositeFunctionPtr& function, const std::vector<size_t>& steps, std::vector<ObjectPtr>& trainingStates, std::vector<ObjectPtr>& validationStates, const std::vector<size_t>& referenceCounts) const
+  bool trainFunctionSteps(ExecutionContext& context, const CompositeFunctionPtr& function, const std::vector<size_t>& steps,
+                          std::vector<ObjectPtr>& trainingStates, std::vector<ObjectPtr>& validationStates,
+                          std::vector<bool>& variableIsReady, std::vector<size_t>& referenceCounts) const
   {
     if (steps.size() == 1)
-      return trainFunctionStep(context, function, steps[0], trainingStates, validationStates, referenceCounts);
+      return trainFunctionStep(context, function, steps[0], trainingStates, validationStates, variableIsReady, referenceCounts);
 
     CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Training steps"), steps.size());
     workUnit->setProgressionUnit(T("Tasks"));
     bool res = true;
     for (size_t i = 0; i < steps.size(); ++i)
-      workUnit->setWorkUnit(i, new TrainFunctionStepWorkUnit(this, function, steps[i], trainingStates, validationStates, referenceCounts, res));
+      workUnit->setWorkUnit(i, new TrainFunctionStepWorkUnit(this, function, steps[i], trainingStates, validationStates, variableIsReady, referenceCounts, res));
     context.run(workUnit, false);
     return res;
   }
@@ -246,6 +267,17 @@ protected:
   }
 
   /*
+  ** Variable ready flags
+  */
+  // return the number of non-ready flags
+  void initializeVariableReadyFlags(const CompositeFunctionPtr& function, std::vector<bool>& variableIsReady) const
+  {
+    variableIsReady.resize(function->getNumSteps());
+    for (size_t i = 0; i < variableIsReady.size(); ++i)
+      variableIsReady[i] = (function->getStepType(i) != CompositeFunction::functionStep);
+  }
+  
+  /*
   ** Steps reference count
   */
   void makeInitialReferenceCounts(const CompositeFunctionPtr& function, std::vector<size_t>& res) const
@@ -259,7 +291,7 @@ protected:
     }
   }
 
-  void decrementReferenceCountsAndFreeVariables(const CompositeFunctionPtr& function, const std::vector<size_t>& indicesToDecrement,
+  void decrementReferenceCountsAndFreeVariables(ExecutionContext& context, const CompositeFunctionPtr& function, const std::vector<size_t>& indicesToDecrement,
                                                 std::vector<size_t>& referenceCounts,
                                                 std::vector<ObjectPtr>& trainingStates, std::vector<ObjectPtr>& validationStates) const
   {
@@ -271,6 +303,7 @@ protected:
       --refCount;
       if (refCount == 0)
       {
+       // context.informationCallback("Removing variable " + String((int)index));
         Variable missing = Variable::missingValue(function->getStateClass()->getMemberVariableType(index));
         for (size_t i = 0; i < trainingStates.size(); ++i)
           trainingStates[i]->setVariable(index, missing);
