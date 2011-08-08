@@ -139,9 +139,9 @@ public:
 
   virtual NodePtr& getSubNode(size_t index)
   {
-    bool cond = (index % 2 == 0);
+    bool isBlock = (index % 2 == 0);
     index /= 2;
-    return cond ? (NodePtr&)blocks[index] : (NodePtr&)conditions[index];
+    return isBlock ? (NodePtr&)blocks[index] : (NodePtr&)conditions[index];
   }
 
   virtual void accept(Visitor& visitor);

@@ -77,11 +77,13 @@ public:
 
   LuaType getType(int index) const;
 
+  bool isNil(int index) const;
+
+  bool isBoolean(int index) const;
+  bool isInteger(int index) const;
+
   bool isString(int index) const;
   String toString(int index);
-
-  bool isInteger(int index) const;
-  bool isBoolean(int index) const;
 
   bool isFunction(int index) const;
   LuaFunction toFunction(int index);

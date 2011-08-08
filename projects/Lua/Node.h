@@ -48,6 +48,12 @@ class LineInfo : public Object
 {
 public:
 
+  size_t getLine() const
+    {return line;}
+
+  size_t getColumn() const
+    {return column;}
+
 protected:
   friend class LineInfoClass;
 
@@ -56,6 +62,8 @@ protected:
   String filename;
   String comments;
 };
+
+extern ClassPtr lineInfoClass;
 
 typedef ReferenceCountedObjectPtr<LineInfo> LineInfoPtr;
 
@@ -93,8 +101,18 @@ public:
   void setScope(const ScopePtr& scope)
     {this->scope = scope.get();}
 
+  const LineInfoPtr& getFirstLineInfo() const
+    {return firstLineInfo;}
+
+  const LineInfoPtr& getLastLineInfo() const
+    {return lastLineInfo;}
+
+  static int setLineInfo(LuaState& state);
+
 protected:
   Scope* scope;
+  LineInfoPtr firstLineInfo;
+  LineInfoPtr lastLineInfo;
 };
 
 extern ClassPtr nodeClass;

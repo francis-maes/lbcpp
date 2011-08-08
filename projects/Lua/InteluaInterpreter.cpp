@@ -10,6 +10,7 @@
 #include "DerivableRewriter.h"
 #include "SubspecifiedRewriter.h"
 #include "InteluaPreprocessRewriter.h"
+#include "PrettyPrinterVisitor.h"
 using namespace lbcpp;
 
 InteluaInterpreter::InteluaInterpreter(ExecutionContext& context, bool verbose)
@@ -74,38 +75,6 @@ bool InteluaInterpreter::loadFile(const File& file)
     context.errorCallback(file.getFileName(), "Parse error");
     return false;
   }
-#if 0
-  ExecutionContext& context = lua.getContext();
-  // open file
-  if (!file.exists())
-  {
-    context.errorCallback(T("File ") + file.getFullPathName() + T(" does not exists"));
-    return false;
-  }
-  if (file.isDirectory())
-  {
-    context.errorCallback(file.getFullPathName() + T(" is a directory"));
-    return false;
-  }
-  InputStream* istr = file.createInputStream();
-  if (!istr)
-  {
-    context.errorCallback(T("Could not open file ") + file.getFullPathName());
-    return false;
-  }
-
-  // FIXME: this could be improved by directly calling a parser for files
-
-  // read file
-  String code;
-  while (!istr->isExhausted())
-    code += istr->readNextLine() + T("\n");
-  delete istr;
-
-  // load buffer
-  String fileName = file.getFileName();
-  return loadBuffer(code, fileName);
-#endif // 0
 }
 
 bool InteluaInterpreter::loadBuffer(const char* buffer, const char* chunkName)
@@ -236,4 +205,24 @@ void InteluaInterpreter::rewrite(lua::BlockPtr& block)
 }
 
 String InteluaInterpreter::prettyPrint(const lua::NodePtr& tree) const
-  {return tree->print();}
+{
+  juce::MemoryOutputStream ostr;
+  lua::PrettyPrinterVisitor visitor(ostr);
+  tree->accept(visitor);
+
+  String code(ostr.getData());
+
+  visitor.fillMissingLinesInLinesMap();
+  const std::vector<size_t>& linesMap = visitor.getLinesMap();
+  
+  String linesMapStr = "__linesMaps[debug.getinfo(1).source] = {";
+  for (size_t i = 0; i < linesMap.size(); ++i)
+  {
+    linesMapStr += String((int)linesMap[i]); // + 1 because we add the __linesMap line
+    if (i < linesMap.size() - 1)
+      linesMapStr +=  ","; 
+  }
+
+  linesMapStr += "}\n";
+  return linesMapStr + code;
+}

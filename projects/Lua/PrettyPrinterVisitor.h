@@ -18,7 +18,7 @@ class PrettyPrinterVisitor : public Visitor
 {
 public:
   PrettyPrinterVisitor(OutputStream& ostr, int indentation = 0)
-    : ostr(ostr), indentation(indentation), isLineStart(true), lineNumber(1) {}
+    : ostr(ostr), indentation(indentation), isLineStart(true), currentLineNumber(1) {}
 
   static String print(const Node& node)
   {
@@ -33,7 +33,7 @@ public:
     size_t n = list.getNumSubNodes();
     for (size_t i = 0; i < n; ++i)
     {
-      list.getSubNode(i)->accept(*this);
+      accept(list.getSubNode(i));
       if (i < n - 1)
         write(", ");
     }
@@ -44,9 +44,9 @@ public:
     size_t n = block.getNumSubNodes();
     for (size_t i = 0; i < n; ++i)
     {
-      size_t line = lineNumber;
-      block.getSubNode(i)->accept(*this);
-      if (line != lineNumber && indentation == 0)
+      size_t line = currentLineNumber;
+      accept(block.getSubNode(i));
+      if (currentLineNumber != line && indentation == 0)
         endLine();
       endLine();
     }
@@ -58,19 +58,19 @@ public:
 
   virtual void visit(Set& statement)
   {
-    statement.getSubNode(0)->accept(*this);
+    accept(statement.getSubNode(0));
     write(" = ");
-    statement.getSubNode(1)->accept(*this);
+    accept(statement.getSubNode(1));
   }
 
   virtual void visit(While& statement)
   {
     write("while ");
-    statement.getCondition()->accept(*this);
+    accept(statement.getSubNode(0)); // condition
     write(" do");
     endLine();
     ++indentation;
-    statement.getBlock()->accept(*this);
+    accept(statement.getSubNode(1)); // block
     --indentation;
     write("end");
   }
@@ -80,10 +80,10 @@ public:
     write("repeat");
     endLine();
     ++indentation;
-    statement.getBlock()->accept(*this);
+    accept(statement.getSubNode(0)); // block
     --indentation;
     write("until ");
-    statement.getCondition()->accept(*this);
+    accept(statement.getSubNode(1)); // condition
   }
 
   virtual void visit(If& statement)
@@ -92,14 +92,14 @@ public:
     {
       write(i == 0 ? "if" : "elseif");
       write(" ");
-      statement.getCondition(i)->accept(*this);
+      accept(statement.getSubNode(i * 2 + 1)); // condition i
       write(" then");
-      printBlockWithIndentation(statement.getBlock(i));
+      printBlockWithIndentation(statement.getSubNode(i * 2)); // block i
     }
     if (statement.getNumBlocks() > statement.getNumConditions())
     {
       write("else");
-      printBlockWithIndentation(statement.getBlock(statement.getNumBlocks() - 1));
+      printBlockWithIndentation(statement.getSubNode(statement.getNumSubNodes() - 1)); // last block
     }
     write("end");
   }
@@ -107,29 +107,29 @@ public:
   virtual void visit(ForNum& statement)
   {
     write("for ");
-    statement.getIdentifier()->accept(*this);
+    accept(statement.getSubNode(0)); // identifier
     write(" = ");
-    statement.getFrom()->accept(*this);
+    accept(statement.getSubNode(1)); // from
     write(",");
-    statement.getTo()->accept(*this);
+    accept(statement.getSubNode(2)); // to
     if (statement.getStep())
     {
       write(",");
-      statement.getStep()->accept(*this);
+      accept(statement.getSubNode(3)); // step
     }
     write(" do");
-    printBlockWithIndentation(statement.getBlock());
+    printBlockWithIndentation(statement.getSubNode(statement.getNumSubNodes() - 1)); // block
     write("end");
   }
 
   virtual void visit(ForIn& statement)
   {
     write("for ");
-    statement.getIdentifiers()->accept(*this);
+    accept(statement.getSubNode(0)); // identifiers
     write(" in ");
-    statement.getExpressions()->accept(*this);
+    accept(statement.getSubNode(1)); // expressions
     write(" do");
-    printBlockWithIndentation(statement.getBlock());
+    printBlockWithIndentation(statement.getSubNode(2)); // block
     write("end");
   }
 
@@ -140,17 +140,17 @@ public:
     if (statement.isFunction() && expressions->getNumSubNodes() == 1 && expressions->getSubNode(0).isInstanceOf<Function>())
     {
       write("local function ");
-      statement.getIdentifiers()->accept(*this);
+      accept(statement.getSubNode(0)); // identifiers
       jassert(expressions->getNumSubNodes() == 1);
       FunctionPtr function = expressions->getSubNode(0).dynamicCast<Function>();
       jassert(function);
 
       write("(");
-      function->getPrototype()->accept(*this);
+      accept(function->getSubNode(0)); // prototype
       write(")");
       endLine();
       ++indentation;
-      function->getBlock()->accept(*this);
+      accept(function->getSubNode(1)); // block
       --indentation;
       write("end");
       endLine();
@@ -158,11 +158,11 @@ public:
     else
     {
       write("local ");
-      statement.getIdentifiers()->accept(*this);
+      accept(statement.getSubNode(0)); // identifiers
       if (expressions && expressions->getNumSubNodes())
       {
         write(" = ");
-        expressions->accept(*this);
+        accept(statement.getSubNode(1)); // expressions
       }
     }
   }
@@ -173,7 +173,7 @@ public:
     size_t n = statement.getNumSubNodes();
     for (size_t i = 0; i < n; ++i)
     {
-      statement.getSubNode(i)->accept(*this);
+      accept(statement.getSubNode(i));
       if (i < n - 1)
         write(", ");
     }
@@ -183,14 +183,14 @@ public:
     {write("break");}
    
   virtual void visit(ExpressionStatement& statement)
-    {statement.getExpression()->accept(*this);}
+    {accept(statement.getSubNode(0));}
 
   virtual void visit(Parameter& statement)
   {
     write("parameter ");
-    statement.getIdentifier()->accept(*this);
+    accept(statement.getSubNode(0)); // identifier
     write(" = ");
-    statement.getProperties()->accept(*this);
+    accept(statement.getSubNode(1)); // properties
   }
 
   // expressions
@@ -207,19 +207,18 @@ public:
     {write(String(expression.getValue()));}
 
   virtual void visit(LiteralString& expression)
-    {write(expression.getValue().quoted());}
+  {
+    write("\"");
+    write(expression.getValue().replace(T("\""), T("\\\"")));
+    write("\"");
+  }
 
   virtual void visit(Function& function)
   {
     write("function (");
-    function.getPrototype()->accept(*this);
+    accept(function.getSubNode(0)); // prototype
     write(")");
-    endLine();
-
-    ++indentation;
-    function.getBlock()->accept(*this);
-    --indentation;
-
+    printBlockWithIndentation(function.getSubNode(1)); // block
     write("end");
     endLine();
   }
@@ -231,17 +230,17 @@ public:
 
     IdentifierPtr identifier = key.dynamicCast<Identifier>();
     if (identifier)
-      identifier->accept(*this); // identifier access
+      accept(pair.getSubNode(0)); // identifier access
     else if (isLiteralStringConvertibleToIdentifier(key, str))
       write(str); // literal string becomes identifier
     else
     { 
       write("[");   // generic access
-      pair.getSubNode(0)->accept(*this);
+      accept(pair.getSubNode(0));
       write("]");
     }
     write(" = ");
-    pair.getSubNode(1)->accept(*this);
+    accept(pair.getSubNode(1));
   }
 
   virtual void visit(Table& table)
@@ -266,7 +265,7 @@ public:
     }
     for (size_t i = 0; i < n; ++i)
     {
-      table.getSubNode(i)->accept(*this);
+      accept(table.getSubNode(i));
       if (i < n - 1)
         write(", ");
     }
@@ -286,7 +285,7 @@ public:
       write(" ");
     else
       write("(");
-     operation.getExpr()->accept(*this);
+     accept(operation.getSubNode(0));
      if (!isLiteralOrIdentifier)
        write(")");
   }
@@ -298,25 +297,24 @@ public:
       "%", "^", "..", "==",
       "<", "<=", "and", "or"
     };
-    printWithParenthesis(operation.getLeft(), areParenthesisRequired(operation, true));
+    printWithParenthesis(operation.getSubNode(0), areParenthesisRequired(operation, true));
     write(" ");
     write(luaOperators[operation.getOp()]);
     write(" ");
-    printWithParenthesis(operation.getRight(), areParenthesisRequired(operation, false));
+    printWithParenthesis(operation.getSubNode(1), areParenthesisRequired(operation, false));
   }
 
   virtual void visit(Parenthesis& parenthesis)
-    {write("("); parenthesis.getExpr()->accept(*this); write(")");}
+    {write("("); accept(parenthesis.getSubNode(0)); write(")");}
 
   virtual void visit(Call& call)
   {
-    ExpressionPtr function = call.getFunction();
-    printWithParenthesis(function, function.dynamicCast<Operation>());
+    printWithParenthesis(call.getSubNode(0), call.getFunction().isInstanceOf<Operation>());
     write("(");
     size_t n = call.getNumArguments();
     for (size_t i = 0; i < n; ++i)
     {
-      call.getArgument(i)->accept(*this);
+      accept(call.getSubNode(i + 1)); // argument i
       if (i < n - 1)
         write(", ");
     }
@@ -325,14 +323,14 @@ public:
  
   virtual void visit(Invoke& call)
   {
-    call.getObject()->accept(*this);
+    accept(call.getSubNode(0)); // object
     write(":");
     write(call.getFunction()->getValue());
     write("(");
     size_t n = call.getNumArguments();
     for (size_t i = 0; i < n; ++i)
     {
-      call.getArgument(i)->accept(*this);
+      accept(call.getSubNode(i + 2)); // argument i
       if (i < n - 1)
         write(", ");
     }
@@ -348,7 +346,7 @@ public:
 
   virtual void visit(Index& index)
   {
-    index.getLeft()->accept(*this);
+    accept(index.getSubNode(0)); // left
     String str;
     if (isLiteralStringConvertibleToIdentifier(index.getRight(), str))
     {
@@ -359,22 +357,49 @@ public:
     {
       // string access
       write("[");
-      index.getRight()->accept(*this);
+      accept(index.getSubNode(1)); // right
       write("]");
     }
   }
 
   virtual void visit(Subspecified& subspecified)
+    {write("subspecified "); accept(subspecified.getSubNode(0));}
+
+  const std::vector<size_t>& getLinesMap() const
+    {return linesMap;}
+
+  void fillMissingLinesInLinesMap()
   {
-    write("subspecified ");
-    subspecified.getExpr()->accept(*this);
+    size_t line = 0;
+    for (size_t i = 0; i < linesMap.size(); ++i)
+    {
+      ++line;
+      if (linesMap[i] == 0)
+        linesMap[i] = line;
+      else
+        line = linesMap[i];
+    }
   }
 
 private:
   OutputStream& ostr;
   int indentation;
   bool isLineStart;
-  size_t lineNumber;
+  size_t currentLineNumber;
+
+  std::vector<size_t> linesMap;
+
+  virtual void accept(NodePtr& node)
+  {
+    LineInfoPtr info = node->getFirstLineInfo();
+    if (info)
+    {
+      if (linesMap.size() < currentLineNumber)
+        linesMap.resize(currentLineNumber, 0);
+      linesMap[currentLineNumber - 1] = info->getLine();
+    }
+    node->accept(*this);
+  }
 
   void write(const String& str)
   {
@@ -391,22 +416,22 @@ private:
   {
     ostr << "\n";
     isLineStart = true;
-    ++lineNumber;
+    ++currentLineNumber;
   }
 
-  void printBlockWithIndentation(const BlockPtr& block)
+  void printBlockWithIndentation(NodePtr& node)
   {
     endLine();
     ++indentation;
-    block->accept(*this);
+    accept(node);
     --indentation;
   }
 
-  void printWithParenthesis(const NodePtr& node, bool doParenthesis = true)
+  void printWithParenthesis(NodePtr& node, bool doParenthesis = true)
   {
     if (doParenthesis)
       write("(");
-    node->accept(*this);
+    accept(node);
     if (doParenthesis)
       write(")");
   }
