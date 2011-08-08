@@ -360,7 +360,7 @@ public:
     lin09Pred->useLaRank = false;
     lin09Pred->useLibLinear = false;
     lin09Pred->useKNN = true;
-    lin09Pred->useExtraTrees = true;
+    lin09Pred->useExtraTrees = false;
     lin09Pred->useAddBias = false;
     
     lin09Pred->C = 1.4;
