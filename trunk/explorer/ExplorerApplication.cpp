@@ -375,7 +375,7 @@ public:
           AlertWindow aw(T("Connect to Manager"), T("Enter the address of the Manager"), AlertWindow::QuestionIcon);
           aw.addTextEditor(T("hostName"), hostName, T("Manager Host Name"));
           aw.addTextEditor(T("port"), String((int)port), T("Manager Port"));
-          aw.addButton(T("OK"), 1, juce::KeyPress::returnKey);
+          aw.addButton(T("Ok"), 1, juce::KeyPress::returnKey);
           aw.addButton(T("Cancel"), 0, juce::KeyPress::escapeKey);
           if (aw.runModalLoop() == 1)
           {

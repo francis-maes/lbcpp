@@ -81,7 +81,7 @@ Component* createComponentForVariableImpl(ExecutionContext& context, const Varia
     File file = variable.getFile();
     String extension = file.getFileExtension();
     if (extension == T(".lua"))
-      return new LuaCodeEditorComponent(file);
+      return new LuaCodeEditor(file);
 
     switch (getFileType(file))
     {

@@ -137,7 +137,7 @@ public:
   {
     const ListPtr& expressions = statement.getExpressions();
 
-    if (statement.isFunction())
+    if (statement.isFunction() && expressions->getNumSubNodes() == 1 && expressions->getSubNode(0).isInstanceOf<Function>())
     {
       write("local function ");
       statement.getIdentifiers()->accept(*this);
