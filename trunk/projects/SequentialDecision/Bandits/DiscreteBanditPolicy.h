@@ -186,6 +186,7 @@ extern IndexBasedDiscreteBanditPolicyPtr ucb1NormalDiscreteBanditPolicy();
 extern IndexBasedDiscreteBanditPolicyPtr ucb2DiscreteBanditPolicy(double alpha = 0.001);
 extern IndexBasedDiscreteBanditPolicyPtr ucbvDiscreteBanditPolicy(double c = 1.0, double zeta = 1.0);
 extern IndexBasedDiscreteBanditPolicyPtr epsilonGreedyDiscreteBanditPolicy(double c = 1.0, double d = 1.0);
+extern IndexBasedDiscreteBanditPolicyPtr klucbDiscreteBanditPolicy(double c = 0.0);
 
 extern IndexBasedDiscreteBanditPolicyPtr powerDiscreteBanditPolicy(size_t maxPower, bool useSparseSampler);
 

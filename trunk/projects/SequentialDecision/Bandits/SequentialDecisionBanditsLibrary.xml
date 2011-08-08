@@ -54,6 +54,11 @@
     <variable type="Double" name="d"/>
   </class>
 
+  <class name="KLUCBDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="klUcb">
+    <constructor arguments="double c"/>
+    <variable type="Double" name="c"/>
+  </class>
+
   <class name="PowerDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="power">
     <constructor arguments="size_t maxPower, bool useSparseSampler"/>
     

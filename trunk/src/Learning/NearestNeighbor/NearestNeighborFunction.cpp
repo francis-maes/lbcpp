@@ -5,9 +5,8 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "NearestNeighborFunction.h"
-
 using namespace lbcpp;
 
 Variable NearestNeighborFunction::computeFunction(ExecutionContext& context, const Variable* inputs) const

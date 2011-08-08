@@ -263,7 +263,7 @@ public:
    */
   void traverse(MCTSNodePtr cur)
   {
-
+/*
     // traverse
     while(!cur->isLeaf)
     {
@@ -276,7 +276,7 @@ public:
       }
       cur=best;
     }
-    bestOjectiveFunctionFound = cur->getState();
+    bestOjectiveFunctionFound = cur->getState();*/
     //TODO must think of a solution here
     // if length != depthMax --
   }
