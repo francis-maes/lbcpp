@@ -15,6 +15,7 @@
 # include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 # include <lbcpp/Learning/Numerical.h>
 # include <lbcpp/Learning/NearestNeighbor.h>
+# include <lbcpp/Learning/DecisionTree.h>
 
 namespace lbcpp
 {
@@ -204,7 +205,7 @@ public:
   Lin09PredictorParameters(Lin09ParametersPtr fp = new Lin09Parameters())
     : fp(fp)
     , C(7.4), kernelGamma(-4.6)
-    , useLibSVM(true), useLibLinear(false), useLaRank(false), useKNN(false)
+    , useLibSVM(true), useLibLinear(false), useLaRank(false), useKNN(false), useExtraTrees(false)
     , learningRate(100.0), numIterations(150), numNeighbors(1)
     , useAddBias(true)
   {setThisClass(lin09PredictorParametersClass);}
@@ -489,6 +490,8 @@ public:
           return laRankBinaryClassifier(pow(2.0, C), laRankRBFKernel, 0, pow(2.0, kernelGamma), 0.0);
         if (useKNN)
           return binaryNearestNeighbor(numNeighbors, false);
+        if (useExtraTrees)
+          return binaryClassificationExtraTree(defaultExecutionContext(), 1000, 10, 0);
 
         FunctionPtr classifier = linearBinaryClassifier(new StochasticGDParameters(constantIterationFunction(learningRate), StoppingCriterionPtr(), numIterations));
         classifier->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
@@ -513,6 +516,7 @@ public:
   bool useLibLinear;
   bool useLaRank;
   bool useKNN;
+  bool useExtraTrees;
   double learningRate;
   size_t numIterations;
   size_t numNeighbors;

@@ -109,7 +109,7 @@ public:
   BinaryRTreeFunction() {}
   
   virtual TypePtr getSupervisionType() const
-    {return probabilityType;}
+    {return sumType(probabilityType, booleanType);}
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return probabilityType;}

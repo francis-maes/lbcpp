@@ -22,7 +22,7 @@ FunctionPtr regressionExtraTree(ExecutionContext& context, size_t numTrees, size
 FunctionPtr binaryClassificationExtraTree(ExecutionContext& context, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
 {
   FunctionPtr res = new BinaryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
-  res->initialize(context, (TypePtr)containerClass(anyType), booleanType);
+//  res->initialize(context, (TypePtr)containerClass(anyType), booleanType);
   return res;
 }
 
