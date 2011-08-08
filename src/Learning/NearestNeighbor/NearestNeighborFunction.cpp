@@ -19,9 +19,8 @@ Variable NearestNeighborFunction::computeFunction(ExecutionContext& context, con
   jassert(n && n == supervisionData.size());
   for (size_t i = 0; i < n; ++i)
   {
-    DenseDoubleVectorPtr clone = baseVector->cloneAndCast<DenseDoubleVector>(context);
-    inputData[i]->addWeightedTo(clone, 0, -1.0);
-    scoredIndices.insert(std::pair<double, size_t>(-clone->l2norm(), i));
+    const double score = baseVector->getDistanceTo(inputData[i]);
+    scoredIndices.insert(std::pair<double, size_t>(-score, i));
   }
 
   return computeOuput(scoredIndices);
