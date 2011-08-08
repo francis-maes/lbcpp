@@ -12,25 +12,19 @@
 namespace lbcpp
 {
 
-FunctionPtr regressionExtraTree(ExecutionContext& context, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+FunctionPtr regressionExtraTree(size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
 {
-  FunctionPtr res = new RegressionRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
-  res->initialize(context, (TypePtr)containerClass(anyType), doubleType);
-  return res;
+  return new RegressionRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
 }
 
-FunctionPtr binaryClassificationExtraTree(ExecutionContext& context, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+FunctionPtr binaryClassificationExtraTree(size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
 {
-  FunctionPtr res = new BinaryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
-//  res->initialize(context, (TypePtr)containerClass(anyType), booleanType);
-  return res;
+  return new BinaryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
 }
 
-FunctionPtr classificationExtraTree(ExecutionContext& context, EnumerationPtr classes, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+FunctionPtr classificationExtraTree(EnumerationPtr classes, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
 {
-  FunctionPtr res = new ClassificationRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
-  res->initialize(context, (TypePtr)containerClass(anyType), (TypePtr)classes);
-  return res;
+  return new ClassificationRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
 }
 
 };
