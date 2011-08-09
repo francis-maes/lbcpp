@@ -1,13 +1,12 @@
 require 'Statistics'
 require 'Sampler'
+require 'Vector'
 
-subspecified function SimpleEDA(objective, Sampler)
+subspecified function SimpleEDA(objective, sampler)
   
   parameter numIterations = {default=100}
   parameter numCandidates = {default=100}
   parameter numBests = {default=10}
-
-  local sampler = Sampler{}
 
   local bestEverScore = math.huge
   local bestEverCandidate = nil  
@@ -64,7 +63,43 @@ subspecified function SimpleEDA(objective, Sampler)
   return bestEverCandidate, bestEverScore
 end
 
-objective = |input| input * input
+objective = |input| input:l1norm()
+
 eda = SimpleEDA{numIterations=10, numCandidates=100, numBests=10}
 
-eda(objective, Sampler.Gaussian)
+Sampler.IndependentVector = subspecified Stochastic.new(
+{
+  parameter samplers = {},
+
+  sample = function ()
+    local res = Vector.newDense(#samplers)
+    for i,sampler in ipairs(samplers) do
+      res:set(i-1, sampler())
+    end
+    return res
+  end,
+
+  learn = function (samples)
+    local n = #samples
+    for i,sampler in ipairs(samplers) do
+      local subSamples = {}  -- FIXME: use DenseDoubleVector
+      for j=1,n do
+        subSamples[j] = samples[j]:get(i-1)
+      end
+      sampler.learn(subSamples)
+    end
+  end
+})
+
+
+local samplers = {}
+for i=1,10 do
+  samplers[i] = Sampler.Gaussian{}
+end
+eda(objective, Sampler.IndependentVector{samplers = samplers})
+
+
+
+
+
+

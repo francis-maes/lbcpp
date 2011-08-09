@@ -23,8 +23,7 @@ function Context.call(self, description, fun, ...)
   self:enter(description)
   local ok, res = pcall(fun, ...)
   if not ok then
-    print ("toto: ", res)
-    error(res)
+    __errorHandler(res)
     res = "Failure"
   end
   self:leave(res)
