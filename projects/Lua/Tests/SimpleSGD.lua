@@ -9,7 +9,7 @@ local filename = "C:/Projets/lbcpp/projects/Examples/Data/BinaryClassification/a
 local labels = Dictionary.new()
 local examples = Data.load(Parser.libSVMClassification, 100, filename, labels)
 
-print (#examples .. " examples, " .. labels:size() .. " labels")
+print (#examples .. " examples, " .. #labels .. " labels")
 
 --for k,v in ipairs(examples) do 
 --  for k2,v2 in ipairs(v) do

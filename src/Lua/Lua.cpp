@@ -14,10 +14,28 @@
 using namespace lbcpp;
 
 static int objectIndex(lua_State* L)
-  {LuaState state(L); return Object::index(state);}
+{
+  LuaState state(L);
+  ObjectPtr object = state.checkObject(1);
+  state.remove(1);
+  return object->index(state);
+}
 
 static int objectNewIndex(lua_State* L)
-  {LuaState state(L); return Object::newIndex(state);}
+{
+  LuaState state(L);
+  ObjectPtr object = state.checkObject(1);
+  state.remove(1);
+  return object->newIndex(state);
+}
+
+static int objectLen(lua_State* L)
+{
+  LuaState state(L);
+  ObjectPtr object = state.checkObject(1);
+  state.remove(1);
+  return object->len(state);
+}
 
 static int objectToString(lua_State* L)
   {LuaState state(L); return Object::toShortString(state);}
@@ -46,6 +64,7 @@ LuaState::LuaState(ExecutionContext& context, bool initializeLuaLibraries, bool 
     static const struct luaL_reg methods[] = {
       {"__index", objectIndex},
       {"__newindex", objectNewIndex},
+      {"__len", objectLen},
       {"__tostring", objectToString},
       {"__gc", objectGarbageCollect},
       {NULL, NULL}
@@ -210,8 +229,11 @@ void LuaState::pushVariable(const Variable& variable)
   // todo: continue ...
 }
 
-void LuaState::pop(int count) const
+void LuaState::pop(int count)
   {lua_pop(L, count);}
+
+void LuaState::remove(int index)
+  {lua_remove(L, index);}
 
 int LuaState::getTop() const
   {return lua_gettop(L);}
@@ -247,14 +269,23 @@ bool LuaState::isFunction(int index) const
 LuaFunction LuaState::toFunction(int index)
   {return lua_tocfunction(L, index);}
 
-bool LuaState::isInteger(int index) const
-  {return lua_isnumber(L, index) != 0;} // fixme: not distinction between numbers and integers
-
 bool LuaState::isBoolean(int index) const
   {return lua_type(L, index) == LUA_TBOOLEAN;}
 
 bool LuaState::checkBoolean(int index)
   {return lua_toboolean(L, index) != 0;}
+
+bool LuaState::isInteger(int index) const
+  {return lua_isnumber(L, index) != 0;} // fixme: no distinction between numbers and integers
+
+int LuaState::toInteger(int index) const
+  {return lua_tointeger(L, index);}
+
+bool LuaState::isNumber(int index) const
+  {return lua_isnumber(L, index) != 0;}
+
+double LuaState::toNumber(int index) const
+  {return lua_tonumber(L, index);}
 
 double LuaState::checkNumber(int index)
   {return luaL_checknumber(L, index);}
@@ -313,17 +344,6 @@ Variable LuaState::checkVariable(int index)
     jassert(false); // not implemented
     return Variable();
   }
-}
-
-int LuaState::returnObject(ObjectPtr object)
-{
-  if (object)
-  {
-    pushObject(object);
-    return 1;
-  }
-  else
-    return 0;
 }
 
 void LuaState::createTable()

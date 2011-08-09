@@ -326,36 +326,37 @@ ContainerPtr Container::makePairsContainer(const ContainerPtr& inputs, const Con
 /*
 ** Lua
 */
-int Container::size(LuaState& state)
+int Container::len(LuaState& state)
 { 
-  ContainerPtr container = state.checkObject(1, containerClass()).staticCast<Container>();
-  state.pushInteger(container->getNumElements());
+  state.pushInteger(getNumElements());
   return 1;
 }
 
-int Container::set(LuaState& state)
+int Container::newIndex(LuaState& state)
 {
-  ContainerPtr container = state.checkObject(1, containerClass()).staticCast<Container>();
-  int index = state.checkInteger(2);
-  if (index < 0 || index >= (int)container->getNumElements())
-  {
+  if (!state.isInteger(1))
+    return Object::newIndex(state);
+
+  int index = state.toInteger(1);
+  if (index < 1 || index > (int)getNumElements())
     state.error("Invalid index in Container::set()");
-    return 0;
-  }
-  Variable value = state.checkVariable(3);
-  container->setElement(index, value);
+  else
+    setElement(index - 1, state.checkVariable(2));
   return 0;
 }
 
-int Container::get(LuaState& state)
+int Container::index(LuaState& state)
 {
-  ContainerPtr container = state.checkObject(1, containerClass()).staticCast<Container>();
-  int index = state.checkInteger(2);
-  if (index < 0 || index >= (int)container->getNumElements())
+  if (!state.isInteger(1))
+    return Object::index(state);
+
+  int index = state.toInteger(1);
+  if (index < 1 || index > (int)getNumElements())
   {
     state.error("Invalid index in Container::get()");
     return 0;
   }
-  state.pushVariable(container->getElement(index));
+
+  state.pushVariable(getElement(index - 1));
   return 1;
 }

@@ -71,17 +71,17 @@ local function createBlock(statements)
     end
   end
 
-  if type(statements) == 'table' then
+  --if type(statements) == 'table' then
     for i=1,#statements do
       statements[i] = ensureIsStatement(statements[i])
     end
-  else 
-    local tmp = {}
-    for i=1,statements:size() do
-      table.insert(tmp, ensureIsStatement(statements:get(i - 1)))
-    end
-    statements = tmp
-  end
+  --else 
+  --  local tmp = {}
+  --  for i=1,statements:size() do
+  --    table.insert(tmp, ensureIsStatement(statements[i]))
+  --  end
+  --  statements = tmp
+  --end
   return lbcpp.Object.create("lua::Block", makeObjectVector("lua::Statement", statements, 1))
 end
 

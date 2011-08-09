@@ -1,12 +1,9 @@
 
+
 Objectif: avoir un classifieur binaire et un sgd qui s'emboitent bien
  * New Lua File: Loss.lua --> transcript lbcpp losses
  * derivable: Gerer les gradient et les DoubleVector 
  * New 'goal' extension to integrate inference and learning
-
-* DoubleVector: implement index, newindex, len functions (==> metatable problem)
-* New lua function: DoubleVector::argmax
-  => DoubleVector start at index 1
 
 Proteins:
  * Ajouter des features de segments

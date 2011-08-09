@@ -74,7 +74,7 @@ Sampler.IndependentVector = subspecified Stochastic.new(
   sample = function ()
     local res = Vector.newDense(#samplers)
     for i,sampler in ipairs(samplers) do
-      res:set(i-1, sampler())
+      res[i] = sampler()
     end
     return res
   end,
@@ -82,9 +82,9 @@ Sampler.IndependentVector = subspecified Stochastic.new(
   learn = function (samples)
     local n = #samples
     for i,sampler in ipairs(samplers) do
-      local subSamples = {}  -- FIXME: use DenseDoubleVector
+      local subSamples = Vector.newDense(n)
       for j=1,n do
-        subSamples[j] = samples[j]:get(i-1)
+        subSamples[j] = samples[j][i]
       end
       sampler.learn(subSamples)
     end
@@ -93,11 +93,10 @@ Sampler.IndependentVector = subspecified Stochastic.new(
 
 
 local samplers = {}
-for i=1,10 do
+for i=1,100 do
   samplers[i] = Sampler.Gaussian{}
 end
-eda(objective, Sampler.IndependentVector{samplers = samplers})
-
+context:call("EDA", eda, objective, Sampler.IndependentVector{samplers = samplers})
 
 
 
