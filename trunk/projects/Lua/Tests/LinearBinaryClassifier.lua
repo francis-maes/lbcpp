@@ -54,7 +54,7 @@ end
 trainExamples = loadData("a1a.train", 100)
 testExamples = loadData("a1a.test", 100)
 
-print (#trainExamples .. " training examples, " .. #testExamples .. " testing examples, " .. labels:size() .. " labels")
+print (#trainExamples .. " training examples, " .. #testExamples .. " testing examples, " .. #labels .. " labels")
 
 local myClassifier = linearBinaryClassifier{}
 print (myClassifier)

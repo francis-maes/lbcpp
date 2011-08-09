@@ -56,9 +56,9 @@ public:
   /*
   ** Lua
   */
-  static int size(LuaState& state);
-  static int set(LuaState& state);
-  static int get(LuaState& state);
+  virtual int index(LuaState& state);
+  virtual int newIndex(LuaState& state);
+  virtual int len(LuaState& state);
 
   lbcpp_UseDebuggingNewOperator
 

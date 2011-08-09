@@ -488,14 +488,20 @@ int Object::create(LuaState& state)
     else
       res->setVariable(i - 2, v);
   }
-  return state.returnObject(res);
+  if (!res)
+    return 0;
+  state.pushObject(res);
+  return 1;
 }
 
 int Object::fromFile(LuaState& state)
 {
   File file = state.checkFile(1);
   ObjectPtr res = createFromFile(state.getContext(), file);
-  return state.returnObject(res);
+  if (!res)
+    return 0;
+  state.pushObject(res);
+  return 1;
 }
 
 int Object::toString(LuaState& state)
@@ -524,23 +530,22 @@ int Object::clone(LuaState& state)
 
 int Object::index(LuaState& state)
 {
-  ObjectPtr object = state.checkObject(1);
-  if (state.isString(2)) // indiced by a string
+  if (state.isString(1)) // indiced by a string
   {
-    String string = state.checkString(2);
+    String string = state.checkString(1);
 
     if (string == T("className"))
     {
-      state.pushString(object->getClassName());
+      state.pushString(getClassName());
       return 1;
     }
 
     // check if it is a variable
-    TypePtr type = object->getClass();
+    TypePtr type = getClass();
     int index = type->findMemberVariable(string);
     if (index >= 0)
     {
-      state.pushVariable(object->getVariable(index));
+      state.pushVariable(getVariable(index));
       return 1;
     }
 
@@ -562,7 +567,7 @@ int Object::index(LuaState& state)
     state.error("Could not find identifier");
     return 0;
   }
-  else if (state.isInteger(2))
+  else if (state.isInteger(1))
   {
     state.error("No operator to index this kind of objects with integers");
     return 0;
@@ -576,19 +581,15 @@ int Object::index(LuaState& state)
 
 int Object::newIndex(LuaState& state)
 {
-  ObjectPtr object = state.checkObject(1);
-  if (state.isString(2))
+  if (state.isString(1))
   {
-    String string = state.checkString(2);
+    String string = state.checkString(1);
 
     // check if it is a variable
-    TypePtr type = object->getClass();
+    TypePtr type = getClass();
     int index = type->findMemberVariable(string);
     if (index >= 0)
-    {
-      Variable variable = state.checkVariable(3);
-      object->setVariable(index, variable);
-    }
+      setVariable(index, state.checkVariable(2));
     else
       state.error("Could not find variable");
   }
@@ -598,6 +599,12 @@ int Object::newIndex(LuaState& state)
     return 0;
   }
   return 0;
+}
+
+int Object::len(LuaState& state)
+{
+  state.pushInteger(0);
+  return 1;
 }
 
 int Object::garbageCollect(LuaState& state)

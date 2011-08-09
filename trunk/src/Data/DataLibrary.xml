@@ -65,6 +65,8 @@
     <function lang="lua" name="l0norm"/>
     <function lang="lua" name="l1norm"/>
     <function lang="lua" name="l2norm"/>
+    <function lang="lua" name="argmin"/>
+    <function lang="lua" name="argmax"/>
   </template>
 
   <template name="SparseDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">

@@ -99,6 +99,8 @@ public:
   static int l0norm(LuaState& state);
   static int l1norm(LuaState& state);
   static int l2norm(LuaState& state);
+  static int argmin(LuaState& state);
+  static int argmax(LuaState& state);
 
   lbcpp_UseDebuggingNewOperator
 };
@@ -266,6 +268,11 @@ public:
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
   void saveToXml(XmlExporter& exporter) const;
   bool loadFromXml(XmlImporter& importer);
+
+  // Lua
+  virtual int index(LuaState& state);
+  virtual int newIndex(LuaState& state);
+  virtual int len(LuaState& state);
 
   lbcpp_UseDebuggingNewOperator
 

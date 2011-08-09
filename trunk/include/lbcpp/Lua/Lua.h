@@ -59,55 +59,66 @@ public:
   void getGlobal(const char* name);
   void getGlobal(const char* scopeName, const char* name);
 
-  void pushNil();
-  void pushBoolean(bool value);
-  void pushString(const char* value);
-  void pushInteger(int value);
-  void pushInteger(size_t value);
-  void pushNumber(double value);
-  void pushFunction(LuaFunction function);
-  void pushVariable(const Variable& variable);
-  void pushObject(ObjectPtr object);
-
-  int returnObject(ObjectPtr object);
-
-  void pop(int count = 1) const;
+  void pop(int count = 1);
+  void remove(int index);
+  void insert(int index);
 
   int getTop() const;
 
   LuaType getType(int index) const;
 
+  // Nil
   bool isNil(int index) const;
+  void pushNil();
 
+  // Boolean
   bool isBoolean(int index) const;
-  bool isInteger(int index) const;
+  bool checkBoolean(int index);
+  void pushBoolean(bool value);
 
+  // Integer
+  bool isInteger(int index) const;
+  int toInteger(int index) const;
+  int checkInteger(int index);
+  void pushInteger(int value);
+  void pushInteger(size_t value);
+
+  // Number
+  bool isNumber(int index) const;
+  double toNumber(int index) const;
+  double checkNumber(int index);
+  void pushNumber(double value);
+
+  // String
   bool isString(int index) const;
   String toString(int index);
+  const char* checkString(int index);
+  void pushString(const char* value);
 
+  // Function
   bool isFunction(int index) const;
   LuaFunction toFunction(int index);
+  void pushFunction(LuaFunction function);
 
-  bool checkBoolean(int index);
-  int checkInteger(int index);
-  double checkNumber(int index);
-  const char* checkString(int index);
+  // Object
   ObjectPtr& checkObject(int index, TypePtr expectedType);
   ObjectPtr& checkObject(int index);
+  void pushObject(ObjectPtr object);
+
+  // File
   File checkFile(int index);
+
+  // Variable
   Variable checkVariable(int index);
+  void pushVariable(const Variable& variable);
   
   bool newMetaTable(const char* name);
-
   void openLibrary(const char* name, const luaL_Reg* functions, size_t numUpValues = 0);
-
   const char* makeString(const String& str);
 
   ExecutionContext& getContext();
 
   void error(const char* message);
-
-  void insert(int index);
   bool call(int numArguments, int numResults);
 
 protected:

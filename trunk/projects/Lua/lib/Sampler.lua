@@ -18,8 +18,9 @@ Sampler.Gaussian = subspecified Stochastic.new(
   sample = || Stochastic.standardGaussian:sample() * sigma + mu,
   learn = function (samples)
     local stats = Statistics.meanAndVariance()
-    for i,sample in ipairs(samples) do
-      stats:observe(sample)
+    local n = #samples
+    for i=1,n do
+      stats:observe(samples[i])
     end
     mu = stats:getMean()
     sigma = stats:getStandardDeviation()

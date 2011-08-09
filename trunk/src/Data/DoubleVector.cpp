@@ -238,6 +238,25 @@ int DoubleVector::l2norm(LuaState& state)
   return 1;
 }
 
+int DoubleVector::argmin(LuaState& state)
+{
+  DoubleVectorPtr vector = state.checkObject(1, doubleVectorClass()).staticCast<DoubleVector>();
+  int res = vector->getIndexOfMinimumValue();
+  if (res < 0)
+    return 0;
+  state.pushNumber(res + 1);
+  return 1;
+}
+
+int DoubleVector::argmax(LuaState& state)
+{
+  DoubleVectorPtr vector = state.checkObject(1, doubleVectorClass()).staticCast<DoubleVector>();
+  int res = vector->getIndexOfMaximumValue();
+  if (res < 0)
+    return 0;
+  state.pushNumber(res + 1);
+  return 1;
+}
 
 /*
 ** SparseDoubleVector
@@ -735,6 +754,40 @@ void DenseDoubleVector::clone(ExecutionContext& context, const ObjectPtr& t) con
     target->values = new std::vector<double>(*values);
     target->ownValues = true;
   }
+}
+
+int DenseDoubleVector::len(LuaState& state)
+{
+  state.pushInteger(values ? values->size() : 0);
+  return 1;
+}
+
+int DenseDoubleVector::newIndex(LuaState& state)
+{
+  if (!state.isInteger(1))
+    return Object::newIndex(state);
+
+  int index = state.toInteger(1);
+  if (index < 1 || index > (int)getNumElements())
+    state.error("Invalid index in Container::set()");
+  else
+    (*values)[index - 1] = state.toNumber(2);
+  return 0;
+}
+
+int DenseDoubleVector::index(LuaState& state)
+{
+  if (!state.isInteger(1))
+    return Object::index(state);
+
+  int index = state.toInteger(1);
+  if (index < 1 || index > (int)getNumElements())
+  {
+    state.error("Invalid index in Container::get()");
+    return 0;
+  }
+  state.pushNumber((*values)[index - 1]);
+  return 1;
 }
 
 /*
