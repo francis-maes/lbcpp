@@ -18,8 +18,12 @@ function Vector.newSparse()
   return lbcpp.Object.create("SparseDoubleVector<PositiveIntegerEnumeration, Double>")
 end
 
-function Vector.newDense()
-  return lbcpp.Object.create("DenseDoubleVector<PositiveIntegerEnumeration, Double>")
+function Vector.newDense(size)
+  local res = lbcpp.Object.create("DenseDoubleVector<PositiveIntegerEnumeration, Double>")
+  if size then
+    res:resize(size)
+  end
+  return res
 end
 
 return Vector
