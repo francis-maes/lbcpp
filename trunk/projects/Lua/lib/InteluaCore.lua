@@ -6,12 +6,21 @@ __linesMaps = {}
 
 local function parseErrorMessage(str)
   local chunkName = string.gmatch(str, '%[string ".*"%]')()
-  chunkName = string.sub(chunkName, 10, #chunkName - 2)
+  if chunkName then
+    chunkName = string.sub(chunkName, 10, #chunkName - 2)
+  end
   local lineNumber = string.gmatch(str, ":%d*:")()
-  lineNumber = string.sub(lineNumber, 2, #lineNumber - 1)
+  if lineNumber then
+    lineNumber = string.sub(lineNumber, 2, #lineNumber - 1)
+  end
   local lineNumberIndex = string.find(str, ":%d*:")
-  lineNumberIndex = string.find(str, ":", lineNumberIndex + 1)
-  local message = string.sub(str, lineNumberIndex + 2)
+  local message
+  if lineNumberIndex then
+    lineNumberIndex = string.find(str, ":", lineNumberIndex + 1)
+    message = string.sub(str, lineNumberIndex + 2)
+  else
+    message = str
+  end
   return chunkName, lineNumber, message
 end
 
@@ -28,7 +37,14 @@ function __errorHandler(msg)
       lineNumber = ln
     end
   end
-  context:error(message, chunkName .. ":" .. lineNumber)
+  if message == nil then
+    message = "Error"
+  end
+  local where = chunkName or ""
+  if lineNumber then
+    where = (where and (where .. ":") or "") .. lineNumber
+  end
+  context:error(message or "Error", where)
   return msg
 end
 

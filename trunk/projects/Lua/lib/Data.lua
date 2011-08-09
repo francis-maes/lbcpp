@@ -1,16 +1,15 @@
 -- Francis Maes, 01/08/2011
 -- Data container
 
-module("Data", package.seeall)
+Data = {}
 
-function load(stream, maxCount, ...)
+function Data.load(stream, maxCount, ...)
   local res = {}
   local co = coroutine.create(stream)
   repeat
-    local errorfree, element = coroutine.resume(co, ...)
-    if not errorfree then
-      print("error")
-      return
+    local ok, element = coroutine.resume(co, ...)
+    if not ok then
+      error("Could not load element: " .. element)
     end
     table.insert(res, element)
     if maxCount > 0 and #res >= maxCount then
@@ -19,3 +18,5 @@ function load(stream, maxCount, ...)
   until coroutine.status(co) == 'dead'
   return res
 end  
+
+return Data

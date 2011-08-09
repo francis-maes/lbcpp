@@ -1,11 +1,13 @@
 -- Francis Maes, 01/08/2011
 -- Data Parsers
 
-module("Parser", package.seeall)
+Parser = {}
 
-function libSVMClassification(filename, labels)
+function Parser.libSVMClassification(filename, labels)
   local f,err = io.open(filename)
-  if err then print("OOps"); return; end
+  if err then 
+    error("Could not open file " .. filename)
+  end
 
   while true do
     local line = f:read()
@@ -22,3 +24,5 @@ function libSVMClassification(filename, labels)
   end
   f:close()
 end
+
+return Parser

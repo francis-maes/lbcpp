@@ -3,50 +3,20 @@ require 'IterationFunction'
 require 'DiscreteBandit'
 require 'Random'
 require 'Stochastic'
-
-------------- Sampler ---------------
-
-Sampler = {}
-
---stochastic subspecified function Sampler.bernoulli()
---  parameter p = {default = 0.5, min = 0, max = 1}
---  return Stochastic.bernoulli(p)
---end
-
-Sampler.bernoulli = subspecified setmetatable({
-  parameter p = {default = 0.5, min = 0, max = 1, sampler = Stochastic.standardUniform},
-  sample = function () return Stochastic.bernoulli(p) end,
-  expectation = function () return p end,
-}, Stochastic.MT)
-
-Sampler.truncatedGaussian = subspecified setmetatable({
-  parameter mean = {default = 0.5},
-  parameter stddev = {default = 0.5},
-  sample = function ()
-    local res = 0
-    repeat
-      res = Stochastic.standardGaussian() * stddev + mean
-    until res >= 0 and res <= 1
-    return res
-  end,
-  expectation = function () return mean end,
-}, Stochastic.MT)
-
-
--------------- main -----------------
+require 'Sampler'
 
 context.randomGenerator = Random.new(1664)
 
-numProblems = 100
+numProblems = 10
 numEstimations = 10
-numTimeSteps = 100
+numTimeSteps = 10
 
 -- create training problems
 trainingProblems = {}
 for i = 1,numProblems do
   local p1 = 0.9 --Stochastic.standardUniform()
   local p2 = 0.8 --Stochastic.standardUniform()
-  table.insert(trainingProblems, {Sampler.bernoulli{p = p1}, Sampler.bernoulli{p = p2}})
+  table.insert(trainingProblems, {Sampler.Bernoulli{p = p1}, Sampler.Bernoulli{p = p2}})
 end
 
 gaussianTestProblems = {}
@@ -56,8 +26,8 @@ for i = 1,numProblems do
   local mean2 = Stochastic.standardUniform()
   local stddev2 = Stochastic.standardUniform()
   table.insert(gaussianTestProblems, {
-    Sampler.truncatedGaussian{mean = mean1, stddev = stddev1},
-    Sampler.truncatedGaussian{mean = mean2, stddev = stddev2}
+    Sampler.TruncatedGaussian{mu = mean1, sigma = stddev1},
+    Sampler.TruncatedGaussian{mu = mean2, sigma = stddev2}
   })
 end
 
@@ -91,9 +61,9 @@ addPolicy("e-greedy_1000", DiscreteBandit.epsilonGreedy{c=0.845, d=0.738}.__get)
 
 -- evaluate policies
 function evaluatePolicy(description, policy)
-  context:call(description .. " train", DiscreteBandit.estimatePolicyRegretOnProblems, policy, trainingProblems, numEstimations, numTimeSteps)
+  --context:call(description .. " train", DiscreteBandit.estimatePolicyRegretOnProblems, policy, trainingProblems, numEstimations, numTimeSteps)
   --context:call(description + " b-test", DiscreteBandit.estimatePolicyRegretOnProblems, policy, problems, numEstimations, numTimeSteps)
-  --context:call(description .. " g-test", DiscreteBandit.estimatePolicyRegretOnProblems, policy, gaussianTestProblems, numEstimations, numTimeSteps)
+  context:call(description .. " g-test", DiscreteBandit.estimatePolicyRegretOnProblems, policy, gaussianTestProblems, numEstimations, numTimeSteps)
 end
 
 for i,t in ipairs(policies) do

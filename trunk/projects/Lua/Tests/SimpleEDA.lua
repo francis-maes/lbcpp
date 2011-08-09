@@ -1,12 +1,13 @@
 require 'Statistics'
+require 'Sampler'
 
-subspecified function SimpleEDA(objective, Sampler, initialSampler)
+subspecified function SimpleEDA(objective, Sampler)
   
   parameter numIterations = {default=100}
   parameter numCandidates = {default=100}
   parameter numBests = {default=10}
 
-  local sampler = initialSampler
+  local sampler = Sampler{}
 
   local bestEverScore = math.huge
   local bestEverCandidate = nil  
@@ -45,7 +46,7 @@ subspecified function SimpleEDA(objective, Sampler, initialSampler)
     end
     
     -- learn new sampler
-    sampler:learn(bests)
+    sampler.learn(bests)
 
     context:result("iteration", i)
     context:result("bestIterationScore", bestIterationScore)
@@ -63,23 +64,7 @@ subspecified function SimpleEDA(objective, Sampler, initialSampler)
   return bestEverCandidate, bestEverScore
 end
 
-MySampler = subspecified setmetatable({
-  parameter mean = {default = 0.5},
-  parameter stddev = {default = 0.5},
-  sample = || Stochastic.standardGaussian:sample() * stddev + mean,
-  learn = function (self, samples)
-    local stats = Statistics.meanAndVariance()
-    for i,sample in ipairs(samples) do
-      stats:observe(sample)
-    end
-    mean = stats:getMean()
-    stddev = stats:getStandardDeviation()
-    print ("mean", mean, "stddev", stddev)
-  end,
-  expectation = || mean
-}, Stochastic.MT)
-
 objective = |input| input * input
 eda = SimpleEDA{numIterations=10, numCandidates=100, numBests=10}
 
-eda(objective, MySampler, MySampler{})
+eda(objective, Sampler.Gaussian)

@@ -12,12 +12,14 @@ Interface:
  Vector.l2norm(v)             returns the l2-norm of a vector
 ]]
 
-module("Vector", package.seeall)
+Vector = {}
 
-function newSparse()
+function Vector.newSparse()
   return lbcpp.Object.create("SparseDoubleVector<PositiveIntegerEnumeration, Double>")
 end
 
-function newDense()
+function Vector.newDense()
   return lbcpp.Object.create("DenseDoubleVector<PositiveIntegerEnumeration, Double>")
 end
+
+return Vector
