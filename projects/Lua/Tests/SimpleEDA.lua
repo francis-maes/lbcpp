@@ -67,37 +67,12 @@ objective = |input| input:l1norm()
 
 eda = SimpleEDA{numIterations=10, numCandidates=100, numBests=10}
 
-Sampler.IndependentVector = subspecified Stochastic.new(
-{
-  parameter samplers = {},
-
-  sample = function ()
-    local res = Vector.newDense(#samplers)
-    for i,sampler in ipairs(samplers) do
-      res[i] = sampler()
-    end
-    return res
-  end,
-
-  learn = function (samples)
-    local n = #samples
-    for i,sampler in ipairs(samplers) do
-      local subSamples = Vector.newDense(n)
-      for j=1,n do
-        subSamples[j] = samples[j][i]
-      end
-      sampler.learn(subSamples)
-    end
-  end
-})
-
 
 local samplers = {}
 for i=1,100 do
   samplers[i] = Sampler.Gaussian{}
 end
 context:call("EDA", eda, objective, Sampler.IndependentVector{samplers = samplers})
-
 
 
 

@@ -30,12 +30,19 @@ static int objectNewIndex(lua_State* L)
 }
 
 static int objectLen(lua_State* L)
-{
-  LuaState state(L);
-  ObjectPtr object = state.checkObject(1);
-  state.remove(1);
-  return object->len(state);
-}
+  {LuaState state(L); ObjectPtr object = state.checkObject(1); state.remove(1); return object->len(state);}
+
+static int objectAdd(lua_State* L)
+  {LuaState state(L); ObjectPtr object = state.checkObject(1); state.remove(1); return object->__add(state);}
+
+static int objectSub(lua_State* L)
+  {LuaState state(L); ObjectPtr object = state.checkObject(1); state.remove(1); return object->__sub(state);}
+
+static int objectMul(lua_State* L)
+  {LuaState state(L); ObjectPtr object = state.checkObject(1); state.remove(1); return object->__mul(state);}
+
+static int objectDiv(lua_State* L)
+  {LuaState state(L); ObjectPtr object = state.checkObject(1); state.remove(1); return object->__div(state);}
 
 static int objectToString(lua_State* L)
   {LuaState state(L); return Object::toShortString(state);}
@@ -66,6 +73,10 @@ LuaState::LuaState(ExecutionContext& context, bool initializeLuaLibraries, bool 
       {"__newindex", objectNewIndex},
       {"__len", objectLen},
       {"__tostring", objectToString},
+      {"__add", objectAdd},
+      {"__sub", objectSub},
+      {"__mul", objectMul},
+      {"__div", objectDiv},
       {"__gc", objectGarbageCollect},
       {NULL, NULL}
     };

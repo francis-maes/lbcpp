@@ -162,10 +162,9 @@ void ScopeVisitor::visit(Do& statement)
 
 void ScopeVisitor::visit(Set& statement)
 {
+  ListPtr lhs = statement.getLhs();
   ListPtr expr = statement.getExpr();
   expr->accept(*this);
-
-  ListPtr lhs = statement.getLhs();
 
   jassert(expr->getNumSubNodes() == lhs->getNumSubNodes()); // FIXME: multiret
   for (size_t i = 0; i < lhs->getNumSubNodes(); ++i)
@@ -173,7 +172,10 @@ void ScopeVisitor::visit(Set& statement)
     NodePtr lhsi = lhs->getSubNode(i);
     IdentifierPtr identifier = lhsi.dynamicCast<Identifier>();
     if (identifier)
-      variableSet(identifier, expr->getSubNode(i));
+    {
+      size_t j = i < expr->getNumSubNodes() ? i : expr->getNumSubNodes() - 1;
+      variableSet(identifier, expr->getSubNode(j));
+    }
     else
       lhsi->accept(*this);
   }

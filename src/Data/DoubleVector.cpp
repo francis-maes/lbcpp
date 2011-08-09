@@ -258,6 +258,30 @@ int DoubleVector::argmax(LuaState& state)
   return 1;
 }
 
+int DoubleVector::__add(LuaState& state)
+{
+  return Object::__add(state); // not yet implemented
+}
+
+int DoubleVector::__sub(LuaState& state)
+{
+  return Object::__sub(state); // not yet implemented
+}
+
+int DoubleVector::__mul(LuaState& state)
+{
+  double number = state.checkNumber(1);
+  DoubleVectorPtr res = cloneAndCast<DoubleVector>();
+  res->multiplyByScalar(number);
+  state.pushObject(res);
+  return 1;
+}
+
+int DoubleVector::__div(LuaState& state)
+{
+  return Object::__div(state); // not yet implemented
+}
+
 /*
 ** SparseDoubleVector
 */
@@ -377,8 +401,14 @@ double SparseDoubleVector::dotProduct(const DenseDoubleVectorPtr& denseVector, s
   if (denseVector->getNumValues())
   {
     const double* target = denseVector->getValuePointer(offsetInDenseVector);
+    size_t n = denseVector->getNumValues();
     for (size_t i = 0; i < values.size(); ++i)
-      res += target[values[i].first] * values[i].second;
+    {
+      size_t index = values[i].first;
+      if (index >= n)
+        break;
+      res += target[index] * values[i].second;
+    }
   }
   return res;
 }

@@ -54,35 +54,6 @@ local function twice2dbis(derivable x, y)
   return 2 * (x * y)
 end
 
--- square loss function
-local function squareLoss(derivable ycorrect, derivable ypred)
-  return (ypred - ycorrect)^2
-end
-
--- exponential loss function
-local function expLoss(derivable x)
-  return math.exp(-x)
-end
-
--- Perceptron loss function
-local function perceptronLoss(derivable x)
-  return math.max(-x, 0.0)
-end
-
--- LargeMargin loss function
-local function hingeLoss(derivable x)
-  return math.max(1 - x, 0.0)
-end
-
--- LogBinomial loss function
-local function logBinomialLoss(derivable x)
-  if x < -10 then -- avoid approximation errors in the exp(-x) formula
-    return -x
-  else
-    return math.log(1 + math.exp(-x))
-  end
-end
-
 
 -- Sigmoid
 local function sigmoid(derivable x)

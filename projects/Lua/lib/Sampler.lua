@@ -1,4 +1,4 @@
--- Francis Maes, 01/08/2011
+-- Francis Maes, 09/08/2011
 -- Samplers (subspecified stochastic functions that have no arguments)
 
 --[[
@@ -65,6 +65,30 @@ Sampler.Truncated = subspecified Stochastic.new(
 function Sampler.TruncatedGaussian(params)
   return Sampler.Truncated{sampler=Sampler.Gaussian(params),min=0,max=1}
 end
+
+Sampler.IndependentVector = subspecified Stochastic.new(
+{
+  parameter samplers = {},
+
+  sample = function ()
+    local res = Vector.newDense(#samplers)
+    for i,sampler in ipairs(samplers) do
+      res[i] = sampler()
+    end
+    return res
+  end,
+
+  learn = function (samples)
+    local n = #samples
+    for i,sampler in ipairs(samplers) do
+      local subSamples = Vector.newDense(n)
+      for j=1,n do
+        subSamples[j] = samples[j][i]
+      end
+      sampler.learn(subSamples)
+    end
+  end
+})
 
 
 return Sampler
