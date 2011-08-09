@@ -312,7 +312,7 @@ public:
 
     }
     s+="\n";
-    myfile<<s;
+  //  myfile<<s;
     return cur;
   }
 
@@ -454,7 +454,7 @@ if(clone->getNumVariables()>1)
    */
   void traverse(MCTSNodePtr cur)
   {
-/*
+
     // traverse
     while(!cur->isLeaf)
     {
@@ -469,7 +469,7 @@ if(clone->getNumVariables()>1)
       }
       cur=best;
     }
-    bestOjectiveFunctionFound = cur->getState();*/
+    bestOjectiveFunctionFound = cur->getState();
     //TODO must think of a solution here
     // if length != depthMax --
     myfile.close();
