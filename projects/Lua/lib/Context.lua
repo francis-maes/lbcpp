@@ -16,20 +16,23 @@ Interface:
  Context:call(description, function, arguments)  -- self:enter(description) res = function(arguments) self:leave(res)
 ]]
 
-module("Context", package.seeall)
 
+Context = {}
 
-function call(self, description, fun, ...)
+function Context.call(self, description, fun, ...)
   self:enter(description)
   local ok, res = pcall(fun, ...)
   if not ok then
-    context:error(res)
+    print ("toto: ", res)
+    error(res)
     res = "Failure"
   end
   self:leave(res)
   return res
 end
 
-function random(self)
+function Context.random(self)
   return self.randomGenerator:sample()
 end
+
+return Context

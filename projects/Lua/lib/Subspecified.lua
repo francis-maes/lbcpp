@@ -8,18 +8,18 @@ Interface:
 
 ]]
 
-module("Subspecified", package.seeall)
+Subspecified = {}
 
 --
 -- instance metatable
 --
-instanceMT = {} 
+Subspecified.instanceMT = {} 
   
-function instanceMT.__call(self, ...)
+function Subspecified.instanceMT.__call(self, ...)
   return self.__get(...)
 end
 
-function instanceMT.__index(self, key)
+function Subspecified.instanceMT.__index(self, key)
   if key == "__get" then
     return self.__expression.functor(self.__parameters)
   else
@@ -27,14 +27,14 @@ function instanceMT.__index(self, key)
   end
 end
 
-function instanceMT.__newindex(self, key, value)
+function Subspecified.instanceMT.__newindex(self, key, value)
  -- if key == "__parameters" or key == "__expression" then
  --   self.key = value
  -- else
     self.__get[key] = value
 end
 
-function instanceMT.__tostring(self)
+function Subspecified.instanceMT.__tostring(self)
   res = ""
   for identifier,value in pairs(self.__parameters) do
     if #res > 0 then res = res .. ", " end
@@ -47,9 +47,9 @@ end
 --
 -- class metatable
 --
-MT = {}
+Subspecified.MT = {}
 
-function MT.__call(ssExpr, paramValues)
+function Subspecified.MT.__call(ssExpr, paramValues)
 
  -- fill parameters
  local parameters = {}
@@ -58,11 +58,11 @@ function MT.__call(ssExpr, paramValues)
  end
 
  -- create instance
- return setmetatable({__expression = ssExpr, __parameters = parameters}, instanceMT)
+ return setmetatable({__expression = ssExpr, __parameters = parameters}, Subspecified.instanceMT)
 
 end
 
-function MT.__tostring(ssExpr)
+function Subspecified.MT.__tostring(ssExpr)
   res = ""
   for identifier,properties in pairs(ssExpr.parameters) do
     if #res > 0 then res = res .. ", " end
@@ -70,3 +70,5 @@ function MT.__tostring(ssExpr)
   end
   return  "sub-specified expression{" .. res .. "}"
 end
+
+return Subspecified

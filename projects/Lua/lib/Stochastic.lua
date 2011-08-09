@@ -14,37 +14,37 @@ Interface:
 
 ]]
 
-module("Stochastic", package.seeall)
+Stochastic = {}
 
-MT = {} -- Metatable
+Stochastic.MT = {} -- Metatable
  
-function MT.__call(tbl, ...)
+function Stochastic.MT.__call(tbl, ...)
   return tbl:sample(...)
 end
 
-function new()
-  return setmetatable({}, MT)
+function Stochastic.new(table)
+  return setmetatable(table, Stochastic.MT)
 end
 
 --
 -- Standard Uniform ([0,1])
 --
-standardUniform = new()
+Stochastic.standardUniform = Stochastic.new({})
 
-function standardUniform:sample()
+function Stochastic.standardUniform:sample()
   return context:random()
 end
 
-function standardUniform:expectation()
+function Stochastic.standardUniform:expectation()
   return 0.5
 end
 
 --
 -- Uniform integer ([a,b])
 --
-uniformInteger = new()
+Stochastic.uniformInteger = Stochastic.new({})
 
-function uniformInteger:sample(a, b)
+function Stochastic.uniformInteger:sample(a, b)
   if type(a) ~= "number" or type(b) ~= "number" then
     error("Invalid arguments in uniformInteger:sample()")
   elseif a > b then
@@ -60,7 +60,7 @@ function uniformInteger:sample(a, b)
   end
 end
 
-function uniformInteger:expectation(a, b)
+function Stochastic.uniformInteger:expectation(a, b)
   return a + (b - a) / 2
 end
 
@@ -68,12 +68,12 @@ end
 --
 -- Standard Gaussian 
 --
-standardGaussian = new()
-standardGaussian.readySample = nil
+Stochastic.standardGaussian = Stochastic.new({})
+Stochastic.standardGaussian.readySample = nil
 
 -- sampling function,
 -- from http://www.taygeta.com/random/gaussian.html
-function standardGaussian:sample()
+function Stochastic.standardGaussian:sample()
   if self.readySample then
     local res = self.readySample
     self.readySample = nil
@@ -93,7 +93,7 @@ function standardGaussian:sample()
   end
 end
 
-function standardGaussian:expectation()
+function Stochastic.standardGaussian:expectation()
   return 0
 end
 
@@ -101,12 +101,14 @@ end
 --
 -- Bernoulli
 --
-bernoulli = new()
+Stochastic.bernoulli = Stochastic.new({})
 
-function bernoulli:sample(p)
+function Stochastic.bernoulli:sample(p)
   return context:random() < p and 1 or 0
 end
 
-function bernoulli:expectation(p)
+function Stochastic.bernoulli:expectation(p)
   return p
 end
+
+return Stochastic

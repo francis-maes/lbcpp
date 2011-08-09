@@ -9,9 +9,9 @@ Interface:
 
 ]]
 
-module("Derivable", package.seeall)
+Derivable = {}
 
-MT = {  -- metatable
+Derivable.MT = {  -- metatable
    __call = function (tbl, ...) return tbl.f(...) end,
    
    __index = function (tbl, key)
@@ -25,7 +25,7 @@ MT = {  -- metatable
   end
 }
 
-function callIfExists(f, defValue, ...)
+function Derivable.callIfExists(f, defValue, ...)
   if f == nil then
     return defValue
   else
@@ -33,6 +33,8 @@ function callIfExists(f, defValue, ...)
   end
 end
 
-function ternaryOperator(cond, exprIfTrue, exprIfFalse)
+function Derivable.ternaryOperator(cond, exprIfTrue, exprIfFalse)
   return cond and exprIfTrue or exprIfFalse
 end
+
+return Derivable

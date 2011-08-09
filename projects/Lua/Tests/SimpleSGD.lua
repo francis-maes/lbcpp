@@ -5,10 +5,9 @@ require 'Data'
 require 'Statistics'
 require 'IterationFunction'
 
-
-filename = "C:/Projets/lbcpp/projects/Examples/Data/BinaryClassification/a1a.test"
-labels = Dictionary.new()
-examples = Data.load(Parser.libSVMClassification, 100, filename, labels)
+local filename = "C:/Projets/lbcpp/projects/Examples/Data/BinaryClassification/a1a.test"
+local labels = Dictionary.new()
+local examples = Data.load(Parser.libSVMClassification, 100, filename, labels)
 
 print (#examples .. " examples, " .. labels:size() .. " labels")
 
@@ -23,7 +22,6 @@ subspecified function learnBinaryClassifier(examples)
 
   parameter rate = {default = IterationFunction.constant{1}}
   parameter normalizeRate = {default = true}
-
 
   local parameters = Vector.newDense()
   local epoch = 0

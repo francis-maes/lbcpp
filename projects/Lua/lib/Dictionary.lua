@@ -1,12 +1,12 @@
 -- Francis Maes, 01/08/2011
 -- Dictionary of strings
 
-module("Dictionary", package.seeall)
+Dictionary = {}
 
 --Dictionary = {}
-mt = {__index = _M}
+Dictionary.mt = {__index = Dictionary}
 
-function mt.__tostring(dict)
+function Dictionary.mt.__tostring(dict)
   print ("coucou")
   local res = ""
   for i,v in ipairs(dict.content) do
@@ -18,16 +18,16 @@ function mt.__tostring(dict)
   return res
 end
 
-function mt.__len(dict)
+function Dictionary.mt.__len(dict)
   print ("pouet: " .. #dict.content)
   return #dict.content
 end
 
-function get(self, stringOrIndex)
+function Dictionary.get(self, stringOrIndex)
   return self.content[stringOrIndex]
 end
 
-function add(self, string)
+function Dictionary.add(self, string)
   --if not isstring(string) then
   --  error("Not a string")
   --end
@@ -40,11 +40,13 @@ function add(self, string)
   return index
 end
 
-function size(self)
+function Dictionary.size(self)
   return #self.content
 end
 
-function new()
+function Dictionary.new()
   local res = { content = {} }
   return setmetatable(res, Dictionary.mt)
 end
+
+return Dictionary

@@ -10,8 +10,10 @@ Interface:
    
 ]]
 
-module("Random", package.seeall)
+Random = {}
 
-function new(seed)
+function Random.new(seed)
   return lbcpp.RandomGenerator.create(seed)
 end
+
+return Random

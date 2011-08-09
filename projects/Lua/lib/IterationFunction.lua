@@ -10,17 +10,19 @@ Interface:
 
 ]]
 
-module("IterationFunction", package.seeall)
+IterationFunction = {}
 
-one = |epoch| 1
+IterationFunction.one = |epoch| 1
 
-subspecified function constant(epoch)
+subspecified function IterationFunction.constant(epoch)
   parameter value = {default = 1}
   return value
 end
 
-subspecified function invLinear(epoch)
+subspecified function IterationFunction.invLinear(epoch)
   parameter initialValue = {default = 2}
   parameter halfPeriod = {default = 1000}
   return initialValue * halfPeriod / (halfPeriod + epoch)
 end
+
+return IterationFunction

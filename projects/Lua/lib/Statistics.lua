@@ -21,16 +21,18 @@ Interface:
   
 ]]
 
-module("Statistics", package.seeall)
+Statistics = {}
 
-function mean() 
+function Statistics.mean() 
   return lbcpp.Object.create("ScalarVariableMean")
 end
 
-function meanAndVariance()
+function Statistics.meanAndVariance()
   return lbcpp.Object.create("ScalarVariableMeanAndVariance")
 end
 
-function meanVarianceAndBounds()
+function Statistics.meanVarianceAndBounds()
   return lbcpp.Object.create("ScalarVariableStatistics")
 end
+
+return Statistics
