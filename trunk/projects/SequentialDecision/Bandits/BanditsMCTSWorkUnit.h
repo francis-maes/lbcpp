@@ -17,279 +17,6 @@
 namespace lbcpp
 {
 
-class MCTSNode;
-typedef ReferenceCountedObjectPtr<MCTSNode> MCTSNodePtr;
-
-class MCTSNode : public Object
-{
-public:
-  MCTSNode(DecisionProblemStatePtr state)
-  : reward(0), parent(0), visit(0), isLeaf(true), depth(0), state(state), actionIndex(0) {}
-
-  //TODO remove this
-  void setState(DecisionProblemStatePtr s)
-  {state = s;}
-
-  void setAction(size_t index, const Variable& a)
-  {
-    actionIndex = index;
-    action = a;
-  }
-
-  const DecisionProblemStatePtr& getState() const
-  {return state;}
-
-  String toString(String tab = T("")) const
-  {
-    String res = tab + String(pos) + T(" - Visit: ") + String(visit) + T(" - Reward: ") + String(reward) + T("\n");
-    for (size_t i = 0; i < child.size(); ++i)
-      res += child[i]->toString(tab + T("  "));
-    return res;
-  }
-
-
-  //TODO implement as a singly linked list
-  std::vector<MCTSNodePtr> child;       // list of children
-  double reward;            // value accumulated so far
-  int parent;              // position of the parent
-  int visit;               // visit count
-  bool isLeaf;			 // is a leaf node
-  int depth;           // size of the legal action set
-  DecisionProblemStatePtr state;
-
-  size_t actionIndex;
-  Variable action; // the action that lead here
-
-  int pos;
-};
-
-class MCTS
-{
-public:
-  MCTS(ExecutionContext& context, DecisionProblemStatePtr initialState, size_t maxDepth)
-  : context(context), maxDepth(maxDepth), isFound(false)
-  {
-    root = new MCTSNode(initialState);
-    tree.push_back(root);
-
-    createAllChild(root);
-  }
-
-  void doOneIteration(size_t iterationNumber, bool verbose = false)
-  {
-    if (verbose)
-      context.enterScope("Iteration" + String((int)iterationNumber));
-
-    MCTSNodePtr cur = select(root);
-    MCTSNodePtr p = expand(cur);
-    double f=play(p);
-    backpropagate(p->pos, f, p);
-
-    if (verbose)
-    {
-      context.resultCallback("Iteration number", iterationNumber);
-      context.resultCallback("Selected state", cur->getState());
-      context.resultCallback("Reward", f);
-      context.resultCallback("Expanded state", p->getState());
-
-      context.leaveScope();
-    }
-
-  }
-
-  /**
-   * Sets the children of the root node
-   * Called only once.
-   */
-  void createAllChild(MCTSNodePtr node)
-  {
-    ContainerPtr availableActions = node->getState()->getAvailableActions();
-    size_t n = availableActions->getNumElements();
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable action = availableActions->getElement(i);
-      DecisionProblemStatePtr newState = node->getState()->cloneAndCast<DecisionProblemState>();
-      double reward;
-      newState->performTransition(context, action, reward);
-
-      MCTSNodePtr childNode = new MCTSNode(newState);
-      childNode->setAction(i, action);
-      childNode->pos = tree.size();
-      tree.push_back(childNode);
-      node->child.push_back(childNode);
-    }
-    node->isLeaf = false;
-  }
-
-  /**
-   * Select the best node to expand ; BFR
-   * Note: we have a copy of current.
-   * No modif possible in the selection phase
-   */
-  MCTSNodePtr select(MCTSNodePtr cur)
-  {
-    std::vector<MCTSNodePtr> list;
-    double bestScore=-DBL_MAX;
-    double score;
-    double c=2.0;
-
-    while (!cur->isLeaf)
-    {
-      bestScore = -DBL_MAX;
-      for (size_t i = 0; i < cur->child.size(); ++i)
-      {
-        MCTSNodePtr tmp = cur->child[i];
-        score = (tmp->visit>0) ? tmp->reward/tmp->visit + c*sqrt(log(1.0+tree[tmp->parent]->visit)/(1+tmp->visit))
-        : DBL_MAX;
-
-        if (score >= bestScore)
-        {
-          if (score > bestScore)
-          {
-            list.clear();
-            bestScore = score;
-          }
-          list.push_back(tmp);
-        }
-      }
-      // get the selected node
-      cur = list[context.getRandomGenerator()->sampleSize(list.size())];
-    }
-    return cur;
-  }
-
-  /**
-   * This method expand the selected node
-   */
-  MCTSNodePtr expand(MCTSNodePtr select)
-  {
-    // select a random action
-    ContainerPtr availableActions = select->getState()->getAvailableActions();
-    size_t n = availableActions->getNumElements();
-    size_t actionIndex = context.getRandomGenerator()->sampleSize(n);
-    Variable action = availableActions->getElement(actionIndex);
-
-    // clone state and apply system dynamics
-    DecisionProblemStatePtr newState = select->getState()->cloneAndCast<DecisionProblemState>();
-    double reward;
-    newState->performTransition(context, action, reward);
-
-    // look if it exists already
-    //TODO change when singly linked list ////////////
-    for (size_t i = 0; i <select->child.size(); i++)
-      if (select->child[i]->actionIndex == actionIndex)
-        return select->child[i];
-
-    // it did not exist ; set values
-    MCTSNodePtr elem = new MCTSNode(newState);
-    elem->setAction(actionIndex, action);
-    elem->parent = select->pos;
-    elem->pos = tree.size();
-    elem->depth = select->depth+1;
-    // add
-    tree.push_back(elem);
-    // increase children
-    select->child.push_back(elem);
-
-    ///////////// end /////////////
-
-    // if generated every child, isLeaf=false
-    if (select->child.size() == n)
-      select->isLeaf = false;
-
-    return elem;
-  }
-
-
-  /**
-   * execute a "random" simulation
-   */
-  double play(MCTSNodePtr p)
-  {
-    // depth
-    // GPExpressionBuilderStatePtr state =p->getState().staticCast<GPExpressionBuilderState>();
-    GPExpressionBuilderStatePtr clone =  p->getState()->cloneAndCast<GPExpressionBuilderState>();
-    for(size_t i = p->depth ; i< maxDepth ; ++i)
-    {
-      // ajoute un action
-      ContainerPtr availableActions = clone->getAvailableActions();
-      size_t n = availableActions->getNumElements();
-      size_t actionIndex = context.getRandomGenerator()->sampleSize(n);
-      Variable action = availableActions->getElement(actionIndex);
-      double reward;
-
-      clone->performTransition(context, action, reward);
-
-    }
-    if(clone->getExpression()->size()>maxDepth)
-      return -1.0;
-
-    double score = clone->getScore();
-
-
-    //  cout<<" score play ----  "<< score << endl;
-
-
-    if(score==0) // we got a winner
-    {
-      isFound=true;
-      bestOjectiveFunctionFound = clone;
-    }
-    //TODO it should not happen but it does!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    if(score!=score)
-    { cout << " i came here --------------------------- " << endl;return -1.0;}
-
-    return -score;
-  }
-  /**
-   * send the result back
-   * Only works for 1 player game
-   */
-  void backpropagate(int pos, double rew, MCTSNodePtr select)
-  {
-    while (pos!=0)
-    {
-      select->reward += rew;
-      select->visit++;
-      pos = select->parent;
-      select = tree[pos];
-    }
-  }
-
-  /**
-   * If the solution was not yet found
-   * return the best we got
-   * Called once at the end
-   */
-  void traverse(MCTSNodePtr cur)
-  {
-/*
-    // traverse
-    while(!cur->isLeaf)
-    {
-      MCTSNodePtr best;
-      for (size_t i = 0; i < cur->child.size(); ++i)
-      {
-        MCTSNodePtr tmp = cur->child[i];
-        if (tmp->visit > best) // FIXME: this is not correct, comparing an int with a MCTSNodePtr
-          best=tmp;
-      }
-      cur=best;
-    }
-    bestOjectiveFunctionFound = cur->getState();*/
-    //TODO must think of a solution here
-    // if length != depthMax --
-  }
-
-  ExecutionContext& context;
-  MCTSNodePtr root;
-  std::vector<MCTSNodePtr> tree;
-  size_t maxDepth;
-  GPExpressionBuilderStatePtr bestOjectiveFunctionFound;
-  bool isFound;
-};
-
-
 class MCTSExpressionBuilderState : public GPExpressionBuilderState
 {
 public:
@@ -415,6 +142,8 @@ public:
   virtual GPExpressionPtr getExpression() const
   {return expressions.size() ? expressions.back() : GPExpressionPtr();}
 
+  virtual size_t getNumVariables() const
+  {return expressions.size();}
 
 
 protected:
@@ -427,6 +156,339 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<MCTSExpressionBuilderState> MCTSExpressionBuilderStatePtr;
+
+
+
+
+class MCTSNode;
+typedef ReferenceCountedObjectPtr<MCTSNode> MCTSNodePtr;
+
+class MCTSNode : public Object
+{
+public:
+  MCTSNode(DecisionProblemStatePtr state)
+  : reward(0), parent(0), visit(0), isLeaf(true), depth(0), state(state), actionIndex(0) {}
+
+  //TODO remove this
+  void setState(DecisionProblemStatePtr s)
+  {state = s;}
+
+  void setAction(size_t index, const Variable& a)
+  {
+    actionIndex = index;
+    action = a;
+  }
+
+  const DecisionProblemStatePtr& getState() const
+  {return state;}
+
+  String toString(String tab = T("")) const
+  {
+    String res = tab + String(pos) + T(" - Visit: ") + String(visit) + T(" - Reward: ") + String(reward) + T("\n");
+    for (size_t i = 0; i < child.size(); ++i)
+      res += child[i]->toString(tab + T("  "));
+    return res;
+  }
+
+
+  //TODO implement as a singly linked list
+  std::vector<MCTSNodePtr> child;       // list of children
+  double reward;            // value accumulated so far
+  int parent;              // position of the parent
+  int visit;               // visit count
+  bool isLeaf;			 // is a leaf node
+  int depth;           // size of the legal action set
+  DecisionProblemStatePtr state;
+
+  size_t actionIndex;
+  Variable action; // the action that lead here
+
+  int pos;
+};
+
+class MCTS
+{
+public:
+  MCTS(ExecutionContext& context, DecisionProblemStatePtr initialState, size_t maxDepth)
+  : context(context), maxDepth(maxDepth), isFound(false)
+  {
+    root = new MCTSNode(initialState);
+    tree.push_back(root);
+
+    createAllChild(root);
+
+
+
+    myfile.open ("treeXP.txt",ios::app);
+
+
+
+  }
+
+  void doOneIteration(size_t iterationNumber, bool verbose = false)
+  {
+    if (verbose)
+      context.enterScope("Iteration" + String((int)iterationNumber));
+
+    MCTSNodePtr cur = select(root);
+    MCTSNodePtr p = expand(cur);
+    double f=play(p);
+    backpropagate(p->pos, f, p);
+
+    if (verbose)
+    {
+      context.resultCallback("Iteration number", iterationNumber);
+      context.resultCallback("Selected state", cur->getState());
+      context.resultCallback("Reward", f);
+      context.resultCallback("Expanded state", p->getState());
+
+      context.leaveScope();
+    }
+
+  }
+
+  /**
+   * Sets the children of the root node
+   * Called only once.
+   */
+  void createAllChild(MCTSNodePtr node)
+  {
+    ContainerPtr availableActions = node->getState()->getAvailableActions();
+    size_t n = availableActions->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable action = availableActions->getElement(i);
+      DecisionProblemStatePtr newState = node->getState()->cloneAndCast<DecisionProblemState>();
+      double reward;
+      newState->performTransition(context, action, reward);
+
+      MCTSNodePtr childNode = new MCTSNode(newState);
+      childNode->setAction(i, action);
+      childNode->pos = tree.size();
+      tree.push_back(childNode);
+      node->child.push_back(childNode);
+    }
+    node->isLeaf = false;
+  }
+
+  /**
+   * Select the best node to expand ; BFR
+   * Note: we have a copy of current.
+   * No modif possible in the selection phase
+   */
+  MCTSNodePtr select(MCTSNodePtr cur)
+  {
+    std::vector<MCTSNodePtr> list;
+    double bestScore=-DBL_MAX;
+    double score;
+    double c=sqrt(2.0);
+
+    String s="";
+
+    while (!cur->isLeaf)
+    {
+      bestScore = -DBL_MAX;
+      for (size_t i = 0; i < cur->child.size(); ++i)
+      {
+        MCTSNodePtr tmp = cur->child[i];
+        score = (tmp->visit>0) ? tmp->reward/tmp->visit + c*sqrt(log(1.0+tree[tmp->parent]->visit)/(1+tmp->visit))
+        : DBL_MAX;
+
+        if (score >= bestScore)
+        {
+          if (score > bestScore)
+          {
+            list.clear();
+            bestScore = score;
+          }
+          list.push_back(tmp);
+        }
+      }
+      // get the selected node
+      cur = list[context.getRandomGenerator()->sampleSize(list.size())];
+
+      s+=cur->getState()->toShortString();
+      s+=" -> ";
+
+    }
+    s+="\n";
+    myfile<<s;
+    return cur;
+  }
+
+  /**
+   * This method expand the selected node
+   */
+  MCTSNodePtr expand(MCTSNodePtr select)
+  {
+    // select a random action
+    ContainerPtr availableActions = select->getState()->getAvailableActions();
+    size_t n = availableActions->getNumElements();
+    size_t actionIndex = context.getRandomGenerator()->sampleSize(n);
+    Variable action = availableActions->getElement(actionIndex);
+
+    // clone state and apply system dynamics
+    DecisionProblemStatePtr newState = select->getState()->cloneAndCast<DecisionProblemState>();
+    double reward;
+    newState->performTransition(context, action, reward);
+
+    // look if it exists already
+    //TODO change when singly linked list ////////////
+    for (size_t i = 0; i <select->child.size(); i++)
+      if (select->child[i]->actionIndex == actionIndex)
+        return select->child[i];
+
+    // it did not exist ; set values
+    MCTSNodePtr elem = new MCTSNode(newState);
+    elem->setAction(actionIndex, action);
+    elem->parent = select->pos;
+    elem->pos = tree.size();
+    elem->depth = select->depth+1;
+    // add
+    tree.push_back(elem);
+    // increase children
+    select->child.push_back(elem);
+
+    ///////////// end /////////////
+
+    // if generated every child, isLeaf=false
+    if (select->child.size() == n)
+      {select->isLeaf = false;}
+
+    return elem;
+  }
+
+
+  /**
+   * execute a "random" simulation
+   */
+  double play(MCTSNodePtr p)
+  {
+    //TODO THIS is only for a fixed length
+    /*
+    // depth
+    // GPExpressionBuilderStatePtr state =p->getState().staticCast<GPExpressionBuilderState>();
+    GPExpressionBuilderStatePtr clone =  p->getState()->cloneAndCast<GPExpressionBuilderState>();
+    for(size_t i = p->depth ; i< maxDepth ; ++i)
+    {
+      // ajoute un action
+      ContainerPtr availableActions = clone->getAvailableActions();
+      size_t n = availableActions->getNumElements();
+      size_t actionIndex = context.getRandomGenerator()->sampleSize(n);
+      Variable action = availableActions->getElement(actionIndex);
+      double reward;
+
+      clone->performTransition(context, action, reward);
+
+    }
+    if(clone->getExpression()->size()>maxDepth)
+      return -1.0;
+
+*/
+
+
+
+
+    //TODO This is for any length
+    size_t depth = p->depth;
+    MCTSExpressionBuilderStatePtr clone =  p->getState()->cloneAndCast<MCTSExpressionBuilderState>();
+
+   // myfile << clone->getExpression()->toShortString() << " in the end " <<endl;
+
+    while(depth < maxDepth && clone->getNumVariables()>1)
+    {
+      // ajoute un action
+            ContainerPtr availableActions = clone->getAvailableActions();
+            size_t n = availableActions->getNumElements();
+            size_t actionIndex = context.getRandomGenerator()->sampleSize(n);
+            Variable action = availableActions->getElement(actionIndex);
+            double reward;
+
+            clone->performTransition(context, action, reward);
+            ++depth;
+    }
+
+
+if(clone->getNumVariables()>1)
+  return -1.0;
+
+
+
+
+    double score = clone->getScore();
+
+
+    //  cout<<" score play ----  "<< score << endl;
+
+
+    if(score==0) // we got a winner
+    {
+      isFound=true;
+      bestOjectiveFunctionFound = clone;
+    }
+    //TODO it should not happen but it does!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    if(score!=score)
+    { cout << " i came here --------------------------- " << endl;return -1.0;}
+
+    return -score;
+  }
+  /**
+   * send the result back
+   * Only works for 1 player game
+   */
+  void backpropagate(int pos, double rew, MCTSNodePtr select)
+  {
+    while (pos!=0)
+    {
+      select->reward += rew;
+      select->visit++;
+      pos = select->parent;
+      select = tree[pos];
+    }
+  }
+
+  /**
+   * If the solution was not yet found
+   * return the best we got
+   * Called once at the end
+   */
+  void traverse(MCTSNodePtr cur)
+  {
+/*
+    // traverse
+    while(!cur->isLeaf)
+    {
+      MCTSNodePtr best;
+      for (size_t i = 0; i < cur->child.size(); ++i)
+      {
+        MCTSNodePtr tmp = cur->child[i];
+        cout << " isLeaf " << tmp->isLeaf << " visit " << tmp->visit << endl;
+
+        if (tmp->visit > best) // FIXME: this is not correct, comparing an int with a MCTSNodePtr
+          best=tmp;
+      }
+      cur=best;
+    }
+    bestOjectiveFunctionFound = cur->getState();*/
+    //TODO must think of a solution here
+    // if length != depthMax --
+    myfile.close();
+  }
+
+  ExecutionContext& context;
+  MCTSNodePtr root;
+  std::vector<MCTSNodePtr> tree;
+  size_t maxDepth;
+  GPExpressionBuilderStatePtr bestOjectiveFunctionFound;
+  bool isFound;
+
+
+  ofstream myfile;
+
+};
+
+
+
 /*
 This is the run method
  */
@@ -447,7 +509,7 @@ public:
     MCTSExpressionBuilderStatePtr mc = ce(context);
   //  recursiveExhaustiveSearch(context, mc, 0,5,s);
 
-    MCTS mcts(context, initialState, maxDepth);
+       MCTS mcts(context, initialState, maxDepth);
     for (size_t i = 0; i < numIterations; ++i)
     {
       if(!mcts.isFound){
@@ -464,7 +526,7 @@ public:
     //TODO marche pas
     context.resultCallback(T("expression"), mcts.bestOjectiveFunctionFound->getExpression());
     cout << mcts.bestOjectiveFunctionFound->getExpression()->toShortString() << " in the end " <<endl;
-    cout << mcts.bestOjectiveFunctionFound->getScore() << " score " << endl;
+    cout << -mcts.bestOjectiveFunctionFound->getScore() << " score " << endl;
     context.leaveScope();
 
 
@@ -529,7 +591,7 @@ public:
       x[1] = random->sampleDouble(1.0, 6.0);
       x[2] = random->sampleDouble(1.0, 6.0);
       x[3] = random->sampleDouble(1.0, 6.0);
-      double y = x[0] + x[1] * x[2];// + x[2] + x[3];// 10.0 / (5.0 + (x[0] - 2) * (x[0] - 2) + (x[1] - 2) * (x[1] - 2));
+      double y = log(x[0]) + sqrt(x[1] * x[2])*x[0];// + x[2] + x[3];// 10.0 / (5.0 + (x[0] - 2) * (x[0] - 2) + (x[1] - 2) * (x[1] - 2));
       //      double y = 1.0 + x[0] + x[1];//cos(x[0] * (1 + cos(x[0])));
       examples.push_back(std::make_pair(x, y));
     }
