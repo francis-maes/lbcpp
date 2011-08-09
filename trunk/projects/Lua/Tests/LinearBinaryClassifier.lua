@@ -4,18 +4,9 @@ require 'Parser'
 require 'Data'
 require 'Statistics'
 require 'IterationFunction'
+require 'Loss'
 
-
-local function hingeLoss(derivable x)
-  return math.max(1 - x, 0.0)
-end
-
-local function binaryClassificationLoss(discriminantLoss)
-  return function (derivable x, supervision)
-    local sign = supervision and 1 or -1
-    return discriminantLoss(x * sign)
-  end
-end
+local binaryClassificationLoss = Loss.binary{loss = Loss.hinge}
 
 --subspecified function linearBinaryClassifier(features, supervision)
 --  parameter theta = {default = Vector.newDense()}
@@ -34,7 +25,7 @@ subspecified function linearBinaryClassifier(features)
 end
 
 function linearBinaryClassifierLoss(derivable theta, example)
-  local loss = binaryClassificationLoss(hingeLoss)
+  local loss = Loss.binary{loss = Loss.hinge}
   return loss(theta:dot(example[1]) > 0, example[2])
 end
 

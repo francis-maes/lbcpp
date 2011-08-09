@@ -102,6 +102,11 @@ public:
   static int argmin(LuaState& state);
   static int argmax(LuaState& state);
 
+  virtual int __add(LuaState& state);
+  virtual int __sub(LuaState& state);
+  virtual int __mul(LuaState& state);
+  virtual int __div(LuaState& state);
+
   lbcpp_UseDebuggingNewOperator
 };
 

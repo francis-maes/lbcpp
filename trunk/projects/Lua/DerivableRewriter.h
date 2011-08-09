@@ -48,6 +48,8 @@ public:
 
     if (thisVariable == variable)
       setResult(new LiteralNumber(1.0)); // d(x)/dx = 1
+    else if (thisVariable->getDeclarator() == variable->getDeclarator())
+      setResult(new LiteralNumber(0.0)); // in function(x,y), dy_dx = dx_dy = 0
     else
       setResult(ExpressionDerivateRewriter::makeDerivativeIdentifier(thisVariable, variable));
   }
@@ -154,7 +156,15 @@ public:
       setResult(div(rewrite(u), u));
       return;
     }
-
+  
+    if (fun == T("math.abs") && call.getNumArguments() == 1)
+    {
+      // abs(u)' = u' * (u < 0 ? -1 : 1)
+      ExpressionPtr u = call.getArgument(0);
+      ExpressionPtr up = rewrite(u);
+      setResult(multiply(up, ternaryOperator(lt(u, new LiteralNumber(0)), new LiteralNumber(-1), new LiteralNumber(1))));
+      return;
+    }
 
     if ((fun == T("math.max") || fun == T("math.min")) && call.getNumArguments() == 2)
     {

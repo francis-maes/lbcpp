@@ -199,6 +199,10 @@ public:
   virtual int index(LuaState& state);
   virtual int newIndex(LuaState& state);
   virtual int len(LuaState& state);
+  virtual int __add(LuaState& state);
+  virtual int __sub(LuaState& state);
+  virtual int __mul(LuaState& state);
+  virtual int __div(LuaState& state);
 
   lbcpp_UseDebuggingNewOperator
 

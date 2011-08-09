@@ -601,6 +601,30 @@ int Object::newIndex(LuaState& state)
   return 0;
 }
 
+int Object::__add(LuaState& state)
+{
+  state.error("Cannot add an object");
+  return 0;
+}
+
+int Object::__sub(LuaState& state)
+{
+  state.error("Cannot subtract from an object");
+  return 0;
+}
+
+int Object::__mul(LuaState& state)
+{
+  state.error("Cannot multiply an object");
+  return 0;
+}
+
+int Object::__div(LuaState& state)
+{
+  state.error("Cannot divide an object");
+  return 0;
+}
+
 int Object::len(LuaState& state)
 {
   state.pushInteger(0);
