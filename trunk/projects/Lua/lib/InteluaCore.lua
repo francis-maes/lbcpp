@@ -58,7 +58,12 @@ require 'Derivable'
 require 'Stochastic'
 
 local function inteluaLoader(name)
-  local path = package.searchpath(name, package.path)
+  local path
+  if package.searchpath then
+    path = package.searchpath(name, package.path)
+  else
+    path = package.inteluaPath .. "/" .. name .. ".lua"
+  end
 --  print ("inteluaLoader: " .. name, path)  
   return path and interpreter:loadFile(path)
 end
