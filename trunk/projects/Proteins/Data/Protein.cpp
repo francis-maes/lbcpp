@@ -651,7 +651,10 @@ int Protein::fromFile(LuaState& state)
     res = Protein::createFromFASTA(context, file);
   else
     res = Protein::createFromXml(context, file);
-  return state.returnObject(res);
+  if (!res)
+    return 0;
+  state.pushObject(res);
+  return 1;
 }
 
 int Protein::fromDirectory(LuaState& state)
@@ -664,7 +667,12 @@ int Protein::fromDirectory(LuaState& state)
     maxCount = state.checkInteger(2);
   if (state.getTop() >= 3)
     scopeName = state.checkString(3);
-  return state.returnObject(Protein::loadProteinsFromDirectory(context, directory, maxCount, scopeName));
+  ContainerPtr res = Protein::loadProteinsFromDirectory(context, directory, maxCount, scopeName);
+  if (!res)
+    return 0;
+    
+  state.pushObject(res);
+  return 1;
 }
 
 int Protein::length(LuaState& state)

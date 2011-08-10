@@ -21,7 +21,7 @@ typedef ReferenceCountedObjectPtr<InteluaInterpreter> InteluaInterpreterPtr;
 class InteluaInterpreter : public Object
 {
 public:
-  InteluaInterpreter(ExecutionContext& context, bool verbose = false);
+  InteluaInterpreter(ExecutionContext& context, const File& inteluaDirectory, bool verbose = false);
   InteluaInterpreter() {}
   virtual ~InteluaInterpreter();
   
@@ -37,9 +37,9 @@ public:
   static int loadFile(LuaState& state);
 
 protected:
-  bool verbose;
   LuaState translatorState;
   LuaState lua;
+  bool verbose;
 
   lua::NodePtr parse(const File& file, LuaChunkType type = luaStatementBlock);
   lua::NodePtr parse(const char* code, const char* name, LuaChunkType type = luaStatementBlock);
@@ -68,8 +68,11 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    static bool verbose = true;
-    InteluaInterpreter interpreter(context, verbose);
+    File applicationDirectory = File::getSpecialLocation(File::currentApplicationFile).getParentDirectory();
+    File inteluaDirectory = applicationDirectory.getChildFile("../../projects/Lua/lib");
+
+    static bool verbose = false;
+    InteluaInterpreter interpreter(context, inteluaDirectory, verbose);
     interpreter.setStaticAllocationFlag();
     return interpreter.executeBuffer(code, toShortString());
   }
@@ -82,7 +85,9 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    InteluaInterpreter interpreter(context);
+    File applicationDirectory = File::getSpecialLocation(File::currentApplicationFile).getParentDirectory();
+    File inteluaDirectory = applicationDirectory.getChildFile("../../projects/Lua/lib");
+    InteluaInterpreter interpreter(context, inteluaDirectory);
     interpreter.setStaticAllocationFlag();
     return interpreter.executeFile(file);
   }

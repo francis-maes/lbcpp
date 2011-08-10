@@ -9,7 +9,8 @@ function Data.load(stream, maxCount, ...)
   repeat
     local ok, element = coroutine.resume(co, ...)
     if not ok then
-      error("Could not load element: " .. element)
+      __errorHandler(element)
+      return res
     end
     table.insert(res, element)
     if maxCount > 0 and #res >= maxCount then

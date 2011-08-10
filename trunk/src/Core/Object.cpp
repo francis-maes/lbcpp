@@ -114,7 +114,8 @@ ClassPtr Object::getClass() const
   {
     // /!!\ This is not thread-safe
     //jassert(false);
-    const_cast<Object* >(this)->thisClass = lbcpp::getType(getTypeName(typeid(*this)));
+    String typeName = getTypeName(typeid(*this));
+    const_cast<Object* >(this)->thisClass = lbcpp::getType(typeName);
     jassert(thisClass);
   }
   return thisClass;
@@ -247,6 +248,9 @@ void Object::getAllChildObjects(std::set<ObjectPtr>& res) const
 */
 ObjectPtr Object::clone(ExecutionContext& context) const
 {
+  ClassPtr cl = getClass();
+  if (!cl)
+    return ObjectPtr();
   ObjectPtr res = Object::create(getClass());
   jassert(res);
   clone(context, res);

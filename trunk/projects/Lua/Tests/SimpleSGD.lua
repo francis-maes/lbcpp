@@ -94,7 +94,7 @@ end
 
 ----------------------------------------------
 
-local filename = "C:/Projets/lbcpp/projects/Examples/Data/BinaryClassification/a1a.test"
+local filename = package.inteluaPath .. "/../../Examples/Data/BinaryClassification/a1a.test"
 local labels = Dictionary.new()
 local examples = Data.load(Parser.libSVMClassification, 100, filename, labels)
 
