@@ -112,6 +112,8 @@ extern ExecutionContextPtr multiThreadedExecutionContext(size_t numThreads, cons
 
 extern ExecutionContextPtr defaultConsoleExecutionContext(bool noMultiThreading = false);
 
+extern ExecutionContextPtr distributedExecutionContext(ExecutionContext& parentContext, const String& remoteHostName, size_t remotePort);
+
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_EXECUTION_CONTEXT_H_

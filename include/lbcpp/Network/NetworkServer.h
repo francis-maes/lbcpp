@@ -45,6 +45,30 @@ protected:
 
 typedef ReferenceCountedObjectPtr<NetworkServer> NetworkServerPtr;
 
+class XxxNetworkServer : public Object, public InterprocessConnectionServer
+{
+public:
+  XxxNetworkServer(ExecutionContext& context)
+    : context(context) {}
+
+  bool startServer(int port);
+  void stopServer();
+
+  virtual XxxNetworkClient* createNetworkClient() = 0;
+
+  lbcpp_UseDebuggingNewOperator
+
+protected:
+  /* InterprocessConnectionServer */
+  virtual InterprocessConnection* createConnectionObject();
+
+protected:
+  enum {magicNumber = 0xdeadface};
+  ExecutionContext& context;
+};
+
+typedef ReferenceCountedObjectPtr<XxxNetworkServer> XxxNetworkServerPtr;
+
 };
 
 #endif //!LBCPP_NETWORK_SERVER_H_

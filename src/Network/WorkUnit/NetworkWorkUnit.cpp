@@ -230,7 +230,7 @@ Variable DumbWorkUnit::run(ExecutionContext& context)
     context.progressCallback(new ProgressionState(i+1, 10, T("DumbWorkUnit")));
     juce::Thread::sleep(1000);
   }
-  return Variable();
+  return true;
 }
 
 /*

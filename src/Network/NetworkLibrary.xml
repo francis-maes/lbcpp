@@ -10,6 +10,7 @@
   <include file="lbcpp/Network/NetworkServer.h"/>
   <include file="lbcpp/Network/NetworkInterface.h"/>
   <include file="lbcpp/Network/NetworkNotification.h"/>
+  <include file="lbcpp/Network/NetworkMessage.h"/>
 
   <class name="NetworkClient" base="Object" abstract="yes"/>
   <class name="NetworkServer" base="Object"/>
@@ -45,5 +46,24 @@
   <class name="NetworkNotification" base="Notification" abstract="yes"/>
 
   <class name="CloseCommunicationNotification" base="NetworkNotification"/>
+
+
+  <!-- NetworkMessage -->
+  <class name="NetworkMessage" base="Object" abstract="yes"/>
+  
+  <class name="WorkUnitNetworkMessage" base="NetworkMessage">
+    <variable type="PositiveInteger" name="sourceIdentifier"/>
+    <variable type="XmlElement" name="workUnit"/>
+  </class>
+
+  <class name="WorkUnitAcknowledgementNetworkMessage" base="NetworkMessage">
+    <variable type="PositiveInteger" name="sourceIdentifier"/>
+    <variable type="String" name="uniqueIdentifier"/>
+  </class>
+
+  <class name="WorkUnitResultNetworkMessage" base="NetworkMessage">
+    <variable type="String" name="uniqueIdentifier"/>
+    <variable type="XmlElement" name="result"/>
+  </class>
 
 </library>

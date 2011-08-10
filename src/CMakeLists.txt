@@ -255,6 +255,7 @@ SET(LBCPP_EXECUTION_CONTEXT_SOURCES
   Execution/Context/SingleThreadedExecutionContext.h
   Execution/Context/SubExecutionContext.h
   Execution/Context/MultiThreadedExecutionContext.h
+  Execution/Context/DistributedExecutionContext.h
   Execution/Context/ExecutionContextLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExecutionContextLibrary.cpp
 )
@@ -267,6 +268,7 @@ IF(LBCPP_NETWORKING)
     ../include/lbcpp/Network/NetworkServer.h
     Network/NetworkServer.cpp
     ../include/lbcpp/Network/NetworkCallback.h
+    ../include/lbcpp/Network/NetworkMessage.h
     ../include/lbcpp/Network/NetworkInterface.h
     ../include/lbcpp/Network/NetworkNotification.h
     ../include/lbcpp/Network/WorkUnitNetworkRequest.h

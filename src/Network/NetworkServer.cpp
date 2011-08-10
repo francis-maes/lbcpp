@@ -77,3 +77,20 @@ NetworkClientPtr NetworkServer::popClient()
   }
   return res;
 }
+
+/** XxxNetworkServer **/
+bool XxxNetworkServer::startServer(int port)
+{
+  if (!beginWaitingForSocket(port))
+    return false;
+  while (true)
+    juce::Thread::sleep(INT_MAX);
+  return true;
+}
+
+void XxxNetworkServer::stopServer()
+  {stop();}
+
+InterprocessConnection* XxxNetworkServer::createConnectionObject()
+  {return createNetworkClient();}
+
