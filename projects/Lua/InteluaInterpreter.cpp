@@ -13,20 +13,21 @@
 #include "PrettyPrinterVisitor.h"
 using namespace lbcpp;
 
-InteluaInterpreter::InteluaInterpreter(ExecutionContext& context, bool verbose)
-  : lua(context, true, true, verbose), translatorState(context, true, true), verbose(verbose)
+InteluaInterpreter::InteluaInterpreter(ExecutionContext& context, const File& inteluaDirectory, bool verbose)
+  : translatorState(context, true, true), lua(context, true, true, verbose), verbose(verbose)
 {
   {
-    static const char* initializeCode = 
-      "package.path = 'C:/Projets/lbcpp/projects/Lua/lib/?.lua;' .. package.path\n"
+    String initializeCode =
+      "package.path = '" + inteluaDirectory.getFullPathName() + "/?.lua;' .. package.path\n"
       "require 'Language.LuaChunk'\n";
     translatorState.execute(initializeCode, "initializeCode");
   }
 
   {
-    static const char* initializeCode = 
-      "package.path = 'C:/Projets/lbcpp/projects/Lua/lib/?.lua;' .. package.path\n"
-      "require 'InteluaCore'\n";
+    String initializeCode = 
+      "package.path = '" + inteluaDirectory.getFullPathName() + "/?.lua;' .. package.path\n"
+      "require 'InteluaCore'\n"
+      "package.inteluaPath = " + inteluaDirectory.getFullPathName().quoted() + "\n";
     lua.execute(initializeCode, "initializeCode");
 
     lua.pushObject(ObjectPtr(this));

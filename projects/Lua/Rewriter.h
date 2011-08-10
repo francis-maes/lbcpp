@@ -31,6 +31,11 @@ protected:
 
   virtual void accept(NodePtr& node)
   {
+    if (!node)
+    {
+      jassert(false);
+      return;
+    }
     NodePtr prevResult = result;
     result = NodePtr();
     node->accept(*this);

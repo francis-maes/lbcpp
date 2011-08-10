@@ -58,8 +58,9 @@ require 'Derivable'
 require 'Stochastic'
 
 local function inteluaLoader(name)
-  --print ("inteluaLoader: " .. name)
-  return interpreter:loadFile("C:/Projets/lbcpp/projects/Lua/lib/" .. name .. ".lua")
+  local path = package.searchpath(name, package.path)
+--  print ("inteluaLoader: " .. name, path)  
+  return path and interpreter:loadFile(path)
 end
 
-package.loaders = {inteluaLoader}
+package.loaders[2] = inteluaLoader
