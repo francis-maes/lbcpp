@@ -33,7 +33,7 @@ DistributedOptimizerContext::DistributedOptimizerContext(ExecutionContext& conte
 {
   getFinishedTracesThread = new GetFinishedExecutionTracesDaemon(this);
   getFinishedTracesThread->startThread();
-} 
+}
 
 void DistributedOptimizerContext::removePostEvaluationCallback(const FunctionCallbackPtr& callback)
 {

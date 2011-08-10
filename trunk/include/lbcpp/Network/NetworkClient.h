@@ -83,6 +83,41 @@ inline bool NetworkClient::receiveObject(juce::int64 timeout, ReferenceCountedOb
   return true;
 }
 
+/** XxxNetworkClient **/
+class XxxNetworkClient : public Object, public InterprocessConnection
+{
+public:
+  XxxNetworkClient(ExecutionContext& context);
+
+  virtual bool startClient(const String& host, int port);
+  virtual void stopClient();
+
+  bool sendVariable(const Variable& variable);
+  virtual void variableReceived(const Variable& variable) = 0;
+
+  ExecutionContext& getContext()
+    {return context;}
+
+  /* InterprocessConnection */
+  virtual void connectionMade() {}
+  virtual void connectionLost();
+
+  lbcpp_UseDebuggingNewOperator
+  
+protected:
+  enum {magicNumber = 0xdeadface};
+  ExecutionContext& context;
+  volatile bool keepAlive;
+
+  virtual void messageReceived(const juce::MemoryBlock& message);
+
+private:
+  String lastHostName;
+  size_t lastPort;
+};
+
+typedef ReferenceCountedObjectPtr<XxxNetworkClient> XxxNetworkClientPtr;
+
 };
 
 #endif //!LBCPP_NETWORK_CLIENT_H_

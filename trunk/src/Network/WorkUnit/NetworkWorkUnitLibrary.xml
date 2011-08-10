@@ -22,4 +22,12 @@
     <variable type="PositiveInteger" name="port" shortName="p"/>
   </class>
 
+  <!-- xxx revolution -->
+  <class name="XxxServerWorkUnit" base="WorkUnit">
+    <variable type="String" name="serverType" shortName="s" description="Type of server: local"/>
+    <variable type="PositiveInteger" name="port" shortName="p" description="port"/>
+  </class>
+
+  <class name="XxxClientWorkUnit" base="WorkUnit"/>
+
 </library>

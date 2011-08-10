@@ -52,12 +52,25 @@ void XmlElement::saveObject(ExecutionContext& context, const ObjectPtr& object, 
   exporter.writeVariable(object, objectClass);
 }
 
+void XmlElement::saveVariable(ExecutionContext& context, const Variable& variable, const String& tagName)
+{
+  setTagName(tagName);
+  XmlExporter exporter(context, refCountedPointerFromThis(this));
+  exporter.writeVariable(variable, variableType);
+}
+
 ObjectPtr XmlElement::createObject(ExecutionContext& context) const
 {
   XmlImporter importer(context, createJuceXmlElement());
   Variable v = importer.isOpened() ? importer.load() : Variable();
   jassert(v.isObject());
   return v.getObject();
+}
+
+Variable XmlElement::createVariable(ExecutionContext& context) const
+{
+  XmlImporter importer(context, createJuceXmlElement());
+  return importer.isOpened() ? importer.load() : Variable();
 }
 
 XmlElementPtr XmlElement::getChildByName(const String& name) const

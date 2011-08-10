@@ -32,7 +32,7 @@ public:
                               , String managerHostName, size_t managerPort
                               , size_t requiredCpus, size_t requiredMemory, size_t requiredTime, size_t timeToSleep = 60000);
   DistributedOptimizerContext() {timeToSleep = 60000;}
-  
+
   virtual bool isSynchroneous() const
     {return false;}
 
@@ -86,6 +86,7 @@ protected:
   size_t requiredCpus;
   size_t requiredMemory;
   size_t requiredTime;
+  XxxNetworkClientPtr client;
   
   FunctionCallbackPtr functionCallback;
   
@@ -95,7 +96,8 @@ protected:
   GetFinishedExecutionTracesDaemon* getFinishedTracesThread;  /**< Pointer to the thread that contacts the Manager to get the results. */
   
   ManagerNetworkInterfacePtr getNetworkInterfaceAndConnect(NetworkClientPtr& client) const
-  {       
+  {
+    
     client = blockingNetworkClient(context);
     if (!client->startClient(managerHostName, managerPort))
     {
@@ -215,6 +217,16 @@ private:
   DistributedOptimizerContextPtr optimizerContext;  /**< Pointer to the DistributedOptimizerContext associated to access inProgressWUs for instance. */
   ExecutionContext& context;
 };
+
+/*
+class XxxDistributedOptimizerContext : public OptimizerContext
+{
+public:
+  XxxDistributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction
+                                 , String managerHostName, size_t managerPort);
   
 };
+*/
+};
+
 #endif // !LBCPP_DISTRIBUTED_OPTIMIZER_CONTEXT_H_
