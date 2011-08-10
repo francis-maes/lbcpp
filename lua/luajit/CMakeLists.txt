@@ -29,7 +29,7 @@ else(WIN32)
   if(APPLE)
     dobuildvm(machasm ${LJVM_BUILDED_FILE} "")
   else(APPLE)
-    # fixme
+    dobuildvm(elfasm ${LJVM_BUILDED_FILE} "")
   endif(APPLE)
 endif(WIN32)
 
