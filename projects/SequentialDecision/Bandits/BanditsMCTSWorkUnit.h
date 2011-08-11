@@ -464,8 +464,8 @@ if(clone->getNumVariables()>1)
         MCTSNodePtr tmp = cur->child[i];
         cout << " isLeaf " << tmp->isLeaf << " visit " << tmp->visit << endl;
 
-        if (tmp->visit > best) // FIXME: this is not correct, comparing an int with a MCTSNodePtr
-          best=tmp;
+        //if (tmp->visit > best) // FIXME: this is not correct, comparing an int with a MCTSNodePtr
+        //  best=tmp;
       }
       cur=best;
     }

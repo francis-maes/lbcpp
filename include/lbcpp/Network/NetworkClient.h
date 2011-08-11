@@ -127,9 +127,8 @@ typedef XxxManagerNetworkClientCallback* XxxManagerNetworkClientCallbackPtr;
 class XxxManagerNetworkClient : public XxxNetworkClient
 {
 public:
-  XxxManagerNetworkClient(ExecutionContext& context, const XxxManagerNetworkClientCallbackPtr& callback)
-    : XxxNetworkClient(context), callback(callback)
-    {jassert(callback);}
+  XxxManagerNetworkClient(ExecutionContext& context, const XxxManagerNetworkClientCallbackPtr& callback = XxxManagerNetworkClientCallbackPtr())
+    : XxxNetworkClient(context), callback(callback) {}
 
   virtual bool sendWorkUnit(const WorkUnitPtr& workUnit, size_t sourceIdentifier) = 0;
 
@@ -154,9 +153,8 @@ typedef XxxGridNetworkClientCallback* XxxGridNetworkClientCallbackPtr;
 class XxxGridNetworkClient : public XxxNetworkClient
 {
 public:
-  XxxGridNetworkClient(ExecutionContext& context, const XxxGridNetworkClientCallbackPtr& callback)
-    : XxxNetworkClient(context), callback(callback)
-    {jassert(callback);}
+  XxxGridNetworkClient(ExecutionContext& context)
+    : XxxNetworkClient(context) {}
 
   virtual bool sendWorkUnitAcknowledgement(size_t sourceIdentifier, const String& uniqueIdentifier) = 0;
   virtual bool sendWorkUnitResult(const String& uniqueIdentifier, const Variable& result) = 0;

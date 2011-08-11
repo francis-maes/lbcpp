@@ -109,7 +109,7 @@ class XxxLocalGridNetworkClient : public XxxGridNetworkClient, public XxxGridNet
 {
 public:
   XxxLocalGridNetworkClient(ExecutionContext& context)
-    : XxxGridNetworkClient(context, this), lastWorkUnitId(0) {}
+    : XxxGridNetworkClient(context), lastWorkUnitId(0) {callback = this;}
 
   virtual void workUnitRequestReceived(size_t sourceIdentifier, const XmlElementPtr& xmlWorkUnit)
   {

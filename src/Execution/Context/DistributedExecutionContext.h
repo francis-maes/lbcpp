@@ -81,8 +81,8 @@ class XxxDistributedExecutionContextNetworkClient : public XxxManagerNetworkClie
 {
 public:
   XxxDistributedExecutionContextNetworkClient(ExecutionContext& context)
-    : XxxManagerNetworkClient(context, this), numSentWorkUnit(0)
-    {}
+    : XxxManagerNetworkClient(context), numSentWorkUnit(0)
+    {callback = this;}
 
   virtual void workUnitAcknowledgementReceived(size_t sourceIdentifier, const String& uniqueIdentifier)
   {
