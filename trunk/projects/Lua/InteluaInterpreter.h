@@ -71,7 +71,7 @@ public:
     File applicationDirectory = File::getSpecialLocation(File::currentApplicationFile).getParentDirectory();
     File inteluaDirectory = applicationDirectory.getChildFile("../../projects/Lua/lib");
 
-    static bool verbose = false;
+    static bool verbose = true;
     InteluaInterpreter interpreter(context, inteluaDirectory, verbose);
     interpreter.setStaticAllocationFlag();
     return interpreter.executeBuffer(code, toShortString());

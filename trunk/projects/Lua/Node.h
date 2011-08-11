@@ -89,7 +89,11 @@ public:
     const NodePtr& target = t.staticCast<Node>();
     size_t n = getNumSubNodes();
     for (size_t i = 0; i < n; ++i)
-      target->getSubNode(i) = getSubNode(i)->cloneAndCast<Node>();
+    {
+      NodePtr subNode = getSubNode(i);
+      if (subNode)
+        target->getSubNode(i) = subNode->cloneAndCast<Node>();
+    }
     target->scope = scope;
   }
 
@@ -108,6 +112,10 @@ public:
     {return lastLineInfo;}
 
   static int setLineInfo(LuaState& state);
+
+  static int getNumSubNodes(LuaState& state);
+  static int setSubNode(LuaState& state);
+  static int print(LuaState& state);
 
 protected:
   Scope* scope;

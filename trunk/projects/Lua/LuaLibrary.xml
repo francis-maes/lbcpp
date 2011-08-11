@@ -27,6 +27,9 @@
 
     <class name="Node" abstract="yes">
       <function lang="lua" name="setLineInfo"/>
+      <function lang="lua" name="getNumSubNodes"/>
+      <function lang="lua" name="setSubNode"/>
+      <function lang="lua" name="print"/>
     </class>
     <class name="List" base="lua::Node">
       <variable type="ObjectVector[lua::Node]" name="nodes"/>

@@ -16,16 +16,17 @@ using namespace lbcpp;
 InteluaInterpreter::InteluaInterpreter(ExecutionContext& context, const File& inteluaDirectory, bool verbose)
   : translatorState(context, true, true), lua(context, true, true, verbose), verbose(verbose)
 {
+  String baseDirectory = inteluaDirectory.getFullPathName().replaceCharacter('\\', '/');
   {
     String initializeCode =
-      "package.path = '" + inteluaDirectory.getFullPathName() + "/?.lua;' .. package.path\n"
+      "package.path = '" + baseDirectory + "/?.lua;' .. package.path\n"
       "require 'Language.LuaChunk'\n";
     translatorState.execute(initializeCode, "initializeCode");
   }
 
   {
     String initializeCode = 
-      "package.path = '" + inteluaDirectory.getFullPathName() + "/?.lua;' .. package.path\n"
+      "package.path = '" + baseDirectory + "/?.lua;' .. package.path\n"
       "require 'InteluaCore'\n"
       "package.inteluaPath = " + inteluaDirectory.getFullPathName().quoted() + "\n";
     lua.execute(initializeCode, "initializeCode");

@@ -1,5 +1,3 @@
-
-
 -- note: includes gg/mlp Lua parsing Libraries taken from Metalua.
 
 -- interface:
@@ -16,6 +14,8 @@ require "Language.mlp_meta"
 require "Language.mlp_expr"
 require "Language.mlp_stat"
 require "Language.mlp_ext"
+require "AST"
+
 mlc = {} -- make gg happy
 local mlp = assert(_G.mlp)
 
@@ -26,19 +26,6 @@ function __errorHandler(msg)
 end
 
 module ("LuaChunk", package.seeall)
-
-local function convertUnaryOp(opid)
-  opids = {['not'] = 0, len = 1, unm = 2}
-  return opids[opid]
-end
-
-local function convertBinaryOp(opid)
-  opids = {add = 0, sub = 1, mul = 2, div = 3,
-           mod = 4, pow = 5, concat = 6, eq = 7,
-           lt = 8, le = 9, ['and'] = 10, ['or'] = 11}
-  return opids[opid]
-end
-
 
 local function setLineInfoInNode(node, ali)
   local function convertLineInfo(lineinfo)
@@ -71,17 +58,9 @@ local function createBlock(statements)
     end
   end
 
-  --if type(statements) == 'table' then
-    for i=1,#statements do
-      statements[i] = ensureIsStatement(statements[i])
-    end
-  --else 
-  --  local tmp = {}
-  --  for i=1,statements:size() do
-  --    table.insert(tmp, ensureIsStatement(statements[i]))
-  --  end
-  --  statements = tmp
-  --end
+  for i=1,#statements do
+    statements[i] = ensureIsStatement(statements[i])
+  end
   return lbcpp.Object.create("lua::Block", makeObjectVector("lua::Statement", statements, 1))
 end
 
@@ -169,7 +148,7 @@ local function metaLuaAstToLbcppAstInternal(ast)
   elseif ast.tag == "Break" then
     return lbcpp.Object.create("lua::Break");
   elseif ast.tag == "Return" then
-    return lbcpp.Object.create("lua::Return", makeObjectVector("lua::Expression", subNodes, 1))
+    return AST.returnStatement(subNodes)
   elseif ast.tag == "Parameter" then
     return lbcpp.Object.create("lua::Parameter", subNodes[1], subNodes[2])
   
@@ -179,11 +158,13 @@ local function metaLuaAstToLbcppAstInternal(ast)
   elseif ast.tag == "False" or ast.tag == "True" then
     return lbcpp.Object.create("lua::LiteralBoolean", ast.tag == "True")
   elseif ast.tag == "Id" then
-    return lbcpp.Object.create("lua::Identifier", ast[1])
+    return AST.identifier(ast[1])
   elseif ast.tag == "Derivable" then
     return lbcpp.Object.create("lua::Identifier", ast[1][1], true)
-  elseif ast.tag == "Number" or ast.tag == "String" then
-    return lbcpp.Object.create("lua::Literal" .. ast.tag, ast[1])
+  elseif ast.tag == "Number" then
+    return AST.literalNumber(ast[1])
+  elseif ast.tag == "String" then
+    return AST.literalString(ast[1])
   elseif ast.tag == "Function" then
     return lbcpp.Object.create("lua::Function", subNodes[1], makeBlock(ast[2]))
   elseif ast.tag == "Table" then
@@ -192,9 +173,9 @@ local function metaLuaAstToLbcppAstInternal(ast)
     return lbcpp.Object.create("lua::Pair", subNodes[1], subNodes[2])
   elseif ast.tag == "Op" then
     if #subNodes == 2 then
-      return lbcpp.Object.create("lua::BinaryOperation", convertBinaryOp(ast[1]), subNodes[1], subNodes[2])
+      return AST.binaryOperation(ast[1], subNodes[1], subNodes[2])
     elseif #subNodes == 1 then
-      return lbcpp.Object.create("lua::UnaryOperation", convertUnaryOp(ast[1]), subNodes[1])
+      return AST.unaryOperation(ast[1], subNodes[1])
     else
       error("invalid number of operands: " .. #subNodes)
     end
