@@ -4,6 +4,7 @@
 require 'Vector'
 require 'Statistics'
 require 'IterationFunction'
+require 'StoppingCriterion'
 
 Optimizer = {}
 
@@ -20,7 +21,7 @@ Optimizer = {}
 subspecified function Optimizer.StochasticGradientDescent(problem)
   -- todo: parameter randomizeExamples = {default = true}
   parameter rate = {default = IterationFunction.constant{1}}
-  -- todo: StoppingCriterion
+  parameter stoppingCriterion = {default = nil}
   parameter maxIterations = {default = 0, min = 0}
   parameter restoreBestParameters = {default = true}
 
@@ -75,8 +76,14 @@ subspecified function Optimizer.StochasticGradientDescent(problem)
     end
   end
 
+  if stoppingCriterion then
+    stoppingCriterion:reset()
+  end
   while maxIterations == 0 or iter <= maxIterations do
     context:call("Iteration " .. iter,  iteration)
+    if stoppingCriterion and stoppingCriterion:shouldStop(iter, validationScore) then
+      break
+    end
     iter = iter + 1
   end
 
@@ -89,12 +96,14 @@ end
 
 subspecified function Optimizer.EstimationOfDistributionAlgorithm(objective, sampler)
   
-  parameter numIterations = {default=100}
   parameter numCandidates = {default=100}
   parameter numBests = {default=10}
-
+  parameter stoppingCriterion = {default = nil}
+  parameter maxIterations = {default = 0, min = 0}
+  
   local bestEverScore = math.huge
-  local bestEverCandidate = nil  
+  local bestEverCandidate = nil
+  local validationScore = math.huge
 
   local function iteration(i)
 
@@ -115,6 +124,7 @@ subspecified function Optimizer.EstimationOfDistributionAlgorithm(objective, sam
       table.insert(candidates, {candidate, score})
     end
 
+    validationScore = bestIterationScore
     if bestIterationScore < bestEverScore then
       bestEverScore = bestIterationScore
       bestEverCandidate = bestIterationCandidate
@@ -141,8 +151,13 @@ subspecified function Optimizer.EstimationOfDistributionAlgorithm(objective, sam
     return bestIterationScore
   end  
 
-  for i=1,numIterations do
-    context:call("Iteration " .. i, iteration, i)
+  local iter = 1
+  while maxIterations == 0 or iter <= maxIterations do
+    context:call("Iteration " .. iter,  iteration)
+    if stoppingCriterion and stoppingCriterion:shouldStop(iter, validationScore) then
+      break
+    end
+    iter = iter + 1
   end
 
   return bestEverCandidate, bestEverScore
