@@ -391,14 +391,19 @@ private:
 
   virtual void accept(NodePtr& node)
   {
-    LineInfoPtr info = node->getFirstLineInfo();
-    if (info)
+    if (node)
     {
-      if (linesMap.size() < currentLineNumber)
-        linesMap.resize(currentLineNumber, 0);
-      linesMap[currentLineNumber - 1] = info->getLine();
+      LineInfoPtr info = node->getFirstLineInfo();
+      if (info)
+      {
+        if (linesMap.size() < currentLineNumber)
+          linesMap.resize(currentLineNumber, 0);
+        linesMap[currentLineNumber - 1] = info->getLine();
+      }
+      node->accept(*this);
     }
-    node->accept(*this);
+    else
+      write("<null>");
   }
 
   void write(const String& str)

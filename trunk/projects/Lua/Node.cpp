@@ -32,6 +32,22 @@ int Node::getNumSubNodes(LuaState& state)
   return 1;
 }
 
+int Node::getSubNode(LuaState& state)
+{
+  NodePtr node = state.checkObject(1, nodeClass).staticCast<Node>();
+  int index = state.checkInteger(2);
+  if (index <= 0 || index > (int)node->getNumSubNodes())
+  {
+    state.error("Invalid index " + String((int)index));
+    return 0;
+  }
+  else
+  {
+    state.pushObject(node->getSubNode(index - 1));
+    return 1;
+  }
+}
+
 int Node::setSubNode(LuaState& state)
 {
   NodePtr node = state.checkObject(1, nodeClass).staticCast<Node>();

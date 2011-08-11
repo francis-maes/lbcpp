@@ -28,6 +28,7 @@
     <class name="Node" abstract="yes">
       <function lang="lua" name="setLineInfo"/>
       <function lang="lua" name="getNumSubNodes"/>
+      <function lang="lua" name="getSubNode"/>
       <function lang="lua" name="setSubNode"/>
       <function lang="lua" name="print"/>
     </class>
