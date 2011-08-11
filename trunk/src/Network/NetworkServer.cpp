@@ -79,12 +79,15 @@ NetworkClientPtr NetworkServer::popClient()
 }
 
 /** XxxNetworkServer **/
+inline void workAroundVCBugSleep(int milliseconds)
+  {juce::Thread::sleep(milliseconds);}
+
 bool XxxNetworkServer::startServer(int port)
 {
   if (!beginWaitingForSocket(port))
     return false;
   while (true)
-    juce::Thread::sleep(INT_MAX);
+    workAroundVCBugSleep(INT_MAX);
   return true;
 }
 
