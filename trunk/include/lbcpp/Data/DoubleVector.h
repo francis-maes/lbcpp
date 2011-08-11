@@ -242,7 +242,7 @@ public:
   // compute log(sum_i(exp(value[i]))) by avoiding numerical errors
   double computeLogSumOfExponentials() const;
 
-  double getDistanceTo(const SparseDoubleVectorPtr& other) const;
+  double getDistanceTo(const SparseDoubleVectorPtr& other, const DenseDoubleVectorPtr& weights) const;
 
   // DoubleVector
   virtual double entropy() const;

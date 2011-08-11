@@ -17,14 +17,14 @@ namespace lbcpp
 {
 
 class NearestNeighborBatchLearner;
-extern BatchLearnerPtr nearestNeighborBatchLearner();
+extern BatchLearnerPtr nearestNeighborBatchLearner(bool autoNormalizeFeatures = false);
 
 class NearestNeighborFunction : public Function
 {
 public:
-  NearestNeighborFunction(size_t numNeighbors = 1)
+  NearestNeighborFunction(size_t numNeighbors = 1, bool autoNormalizeFeatures = false)
     : numNeighbors(numNeighbors)
-    {setBatchLearner(filterUnsupervisedExamplesBatchLearner(nearestNeighborBatchLearner()));}
+    {setBatchLearner(filterUnsupervisedExamplesBatchLearner(nearestNeighborBatchLearner(autoNormalizeFeatures)));}
 
   virtual TypePtr getSupervisionType() const = 0;
 
@@ -49,6 +49,7 @@ protected:
   size_t numNeighbors;
   std::vector<SparseDoubleVectorPtr> inputData;
   std::vector<Variable> supervisionData;
+  DenseDoubleVectorPtr normalizationFactors;
 
   virtual Variable computeOuput(ScoresMap& scoredIndices) const = 0;
 };
@@ -59,8 +60,8 @@ typedef ReferenceCountedObjectPtr<NearestNeighborFunction> NearestNeighborFuncti
 class BinaryNearestNeighborFunction : public NearestNeighborFunction
 {
 public:
-  BinaryNearestNeighborFunction(size_t numNeighbors = 1, bool useWeightedScore = false)
-    : NearestNeighborFunction(numNeighbors), useWeightedScore(useWeightedScore) {}
+  BinaryNearestNeighborFunction(size_t numNeighbors = 1, bool autoNormalizeFeatures = false, bool useWeightedScore = false)
+    : NearestNeighborFunction(numNeighbors, autoNormalizeFeatures), useWeightedScore(useWeightedScore) {}
 
   virtual TypePtr getSupervisionType() const
     {return sumType(booleanType, probabilityType);}
@@ -79,10 +80,18 @@ protected:
 class NearestNeighborBatchLearner : public BatchLearner
 {
 public:
+  NearestNeighborBatchLearner(bool autoNormalizeFeatures = false)
+    : autoNormalizeFeatures(autoNormalizeFeatures) {}
+
   virtual TypePtr getRequiredFunctionType() const
     {return nearestNeighborFunctionClass;}
 
   virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const;
+
+protected:
+  friend class NearestNeighborBatchLearnerClass;
+
+  bool autoNormalizeFeatures;
 };
 
 }; /* namespace lbcpp */

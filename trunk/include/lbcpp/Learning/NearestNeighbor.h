@@ -14,7 +14,7 @@
 namespace lbcpp
 {
 
-extern FunctionPtr binaryNearestNeighbor(size_t numNeighbors, bool useWeightedScore = false);
+extern FunctionPtr binaryNearestNeighbor(size_t numNeighbors, bool autoNormalizeFeatures = false, bool useWeightedScore = false);
 
 }; /* namespace lbcpp */
 
