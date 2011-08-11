@@ -11,6 +11,7 @@
 
 # include <lbcpp/Core/Variable.h>
 # include <lbcpp/Core/XmlSerialisation.h>
+# include <lbcpp/Execution/WorkUnit.h>
 
 namespace lbcpp
 {
@@ -26,10 +27,12 @@ protected:
 
 typedef ReferenceCountedObjectPtr<NetworkMessage> NetworkMessagePtr;
 
-class WorkUnitNetworkMessage : public NetworkMessage
+extern ClassPtr networkMessageClass;
+
+class WorkUnitRequestNetworkMessage : public NetworkMessage
 {
 public:
-  WorkUnitNetworkMessage(ExecutionContext& context, size_t sourceIdentifier, const WorkUnitPtr& workUnit)
+  WorkUnitRequestNetworkMessage(ExecutionContext& context, size_t sourceIdentifier, const WorkUnitPtr& workUnit)
     : sourceIdentifier(sourceIdentifier), workUnit(new XmlElement())
     {this->workUnit->saveObject(context, workUnit, T("workUnit"));}
 
@@ -43,17 +46,17 @@ public:
     {return workUnit;}
 
 protected:
-  friend class WorkUnitNetworkMessageClass;
+  friend class WorkUnitRequestNetworkMessageClass;
   
-  WorkUnitNetworkMessage() {}
+  WorkUnitRequestNetworkMessage() {}
 
   size_t sourceIdentifier;
   XmlElementPtr workUnit;
 };
 
-typedef ReferenceCountedObjectPtr<WorkUnitNetworkMessage> WorkUnitNetworkMessagePtr;
+typedef ReferenceCountedObjectPtr<WorkUnitRequestNetworkMessage> WorkUnitRequestNetworkMessagePtr;
 
-extern ClassPtr workUnitNetworkMessageClass;
+extern ClassPtr workUnitRequestNetworkMessageClass;
 
 class WorkUnitAcknowledgementNetworkMessage : public NetworkMessage
 {

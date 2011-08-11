@@ -10,6 +10,7 @@
 # define LBCPP_EXECUTION_CONTEXT_H_
 
 # include "ExecutionCallback.h"
+# include "ExecutionContextCallback.h"
 # include "../Data/RandomGenerator.h"
 
 namespace lbcpp
@@ -57,7 +58,9 @@ public:
   virtual Variable run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack = true) = 0;
 
   // multi-thread
-  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, int* counterToDecrementWhenDone = NULL, bool pushIntoStack = true)
+  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, const ExecutionContextCallbackPtr& callback = ExecutionContextCallbackPtr())
+    {pushWorkUnit(workUnit, NULL);}
+  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, int* counterToDecrementWhenDone, bool pushIntoStack = true)
     {jassert(isMultiThread());}
   virtual void waitUntilAllWorkUnitsAreDone()
     {jassert(isMultiThread());}

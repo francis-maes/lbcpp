@@ -24,7 +24,7 @@
 
   <!-- xxx revolution -->
   <class name="XxxServerWorkUnit" base="WorkUnit">
-    <variable type="String" name="serverType" shortName="s" description="Type of server: local"/>
+    <variable type="String" name="serverType" shortName="s" description="Available type of server: local, manager"/>
     <variable type="PositiveInteger" name="port" shortName="p" description="port"/>
   </class>
 

@@ -86,71 +86,54 @@ protected:
 class XxxLocalNetworkClientThread : public Thread
 {
 public:
-  XxxLocalNetworkClientThread(XxxNetworkClientPtr client, WorkUnitNetworkMessagePtr message, const String& uniqueIdentifier)
+  XxxLocalNetworkClientThread(const XxxGridNetworkClientPtr& client, const WorkUnitPtr& workUnit, const String& uniqueIdentifier)
     : Thread(T("LocalNetworkClientThread ") + uniqueIdentifier)
-    , client(client), message(message), uniqueIdentifier(uniqueIdentifier)
+    , client(client), workUnit(workUnit), uniqueIdentifier(uniqueIdentifier)
     {}
 
   virtual void run()
   {
-    client->sendVariable(new WorkUnitAcknowledgementNetworkMessage(message->getSourceIdentifier(), uniqueIdentifier));
-    Variable res = client->getContext().run(message->getWorkUnit(client->getContext()));
-    client->sendVariable(new WorkUnitResultNetworkMessage(client->getContext(), uniqueIdentifier, res));
+    Variable res = client->getContext().run(workUnit);
+    client->sendWorkUnitResult(uniqueIdentifier, res);
   }
 
 protected:
-  XxxNetworkClientPtr client;
-  WorkUnitNetworkMessagePtr message;
+  XxxGridNetworkClientPtr client;
+  WorkUnitPtr workUnit;
   String uniqueIdentifier;
 };
 
 typedef ReferenceCountedObjectPtr<XxxLocalNetworkClientThread> XxxLocalNetworkClientThreadPtr;
 
-class XxxLocalNetworkClient : public XxxNetworkClient
+class XxxLocalGridNetworkClient : public XxxGridNetworkClient, public XxxGridNetworkClientCallback
 {
 public:
-  XxxLocalNetworkClient(ExecutionContext& context)
-    : XxxNetworkClient(context), lastWorkUnitId(0) {}
+  XxxLocalGridNetworkClient(ExecutionContext& context)
+    : XxxGridNetworkClient(context, this), lastWorkUnitId(0) {}
 
-  virtual void variableReceived(const Variable& variable)
+  virtual void workUnitRequestReceived(size_t sourceIdentifier, const XmlElementPtr& xmlWorkUnit)
   {
-    size_t workUnitId = 0;
+    size_t uniqueIdentifier = 0;
     {
       ScopedLock _(lock);
-      workUnitId = ++lastWorkUnitId;
+      uniqueIdentifier = ++lastWorkUnitId;
     }
-
-    if (!variable.isObject())
-    {
-      context.warningCallback(T("xxxLocalNetworkClient::variableReceived")
-                              , T("The message is not an Object ! The message is ") + variable.toString().quoted());
-      return;
-    }
-
-    const ObjectPtr obj = variable.getObject();
-    if (!obj)
-    {
-      context.warningCallback(T("xxxLocalNetworkClient::variableReceived"), T("NULL Object"));
-      return;
-    }
-
-    const ClassPtr objClass = obj->getClass();
-    if (objClass == workUnitNetworkMessageClass)
-    {
-      WorkUnitNetworkMessagePtr message = obj.staticCast<WorkUnitNetworkMessage>();
-      XxxLocalNetworkClientThreadPtr thread = new XxxLocalNetworkClientThread(refCountedPointerFromThis(this), message, String((int)workUnitId));
-      thread->startThread();
-    }
-    else
-    {
-      context.warningCallback(T("xxxLocalNetworkClient::variableReceived")
-                              , T("Unknwon object of type: ") + objClass->toString());
-    }
+    sendWorkUnitAcknowledgement(sourceIdentifier, String((int)uniqueIdentifier));
+    XxxLocalNetworkClientThreadPtr thread = new XxxLocalNetworkClientThread(refCountedPointerFromThis(this)
+                                                                            , xmlWorkUnit->createObjectAndCast<WorkUnit>(context)
+                                                                            , String((int)uniqueIdentifier));
+    thread->startThread();
   }
 
-  virtual void connectionLost() {}
+  virtual bool sendWorkUnitAcknowledgement(size_t sourceIdentifier, const String& uniqueIdentifier)
+  {
+    return sendVariable(new WorkUnitAcknowledgementNetworkMessage(sourceIdentifier, uniqueIdentifier));
+  }
 
-  lbcpp_UseDebuggingNewOperator
+  virtual bool sendWorkUnitResult(const String& uniqueIdentifier, const Variable& result)
+  {
+    return sendVariable(new WorkUnitResultNetworkMessage(context, uniqueIdentifier, result));
+  }
 
 protected:
   CriticalSection lock;
@@ -164,10 +147,57 @@ public:
     : XxxNetworkServer(context) {}
 
   virtual XxxNetworkClient* createNetworkClient()
-    {return new XxxLocalNetworkClient(context);}
+    {return new XxxLocalGridNetworkClient(context);}
+
+  lbcpp_UseDebuggingNewOperator
+};
+
+class NetworkManager : public Object
+{
+public:
+  NetworkManager(ExecutionContext& context)
+    : context(context) {}
+
+  void addRequest(const ObjectPtr& request) {}
+  void archiveRequest(const ObjectPtr& archive) {}
+  void crachedRequest(const ObjectPtr& request) {}
+  ObjectPtr getRequest(const String& identifier) const {return ObjectPtr();}
+  void getWaitingRequests(const String& nodeName, std::vector<ObjectPtr>& results) {}
+  void setAsWaitingRequests(const std::vector<ObjectPtr>& networkRequests) {}
+
+protected:
+  ExecutionContext& context;
+  CriticalSection lock;
+};
+
+typedef ReferenceCountedObjectPtr<NetworkManager> NetworkManagerPtr;
+
+class XxxManagerServerNetworkClient : public XxxNetworkClient
+{
+public:
+  XxxManagerServerNetworkClient(ExecutionContext& context, const NetworkManagerPtr& manager)
+    : XxxNetworkClient(context), manager(manager) {jassert(manager);}
+
+  virtual void variableReceived(const Variable& variable)
+    {jassertfalse;}
+
+protected:
+  NetworkManagerPtr manager;
+};
+
+class XxxManagerNetworkServer : public XxxNetworkServer
+{
+public:
+  XxxManagerNetworkServer(ExecutionContext& context, NetworkManagerPtr manager)
+    : XxxNetworkServer(context), manager(manager) {}
+
+  virtual XxxNetworkClient* createNetworkClient()
+    {return new XxxManagerServerNetworkClient(context, manager);}
 
   lbcpp_UseDebuggingNewOperator
 
+protected:
+  NetworkManagerPtr manager;
 };
 
 class XxxServerWorkUnit : public WorkUnit
@@ -183,6 +213,12 @@ public:
       XxxNetworkServerPtr server = new XxxLocalNetworkServer(context);
       return server->startServer(port);
     }
+    else if (serverType == T("manager"))
+    {
+      NetworkManagerPtr manager = new NetworkManager(context);
+      XxxNetworkServerPtr server = new XxxManagerNetworkServer(context, manager);
+      return server->startServer(port);
+    }
 
     context.errorCallback(T("XxxServerWorkUnit:run"), T("Unknown server: ") + serverType.quoted());
     return false;
@@ -193,6 +229,15 @@ protected:
 
   String serverType;
   size_t port;
+};
+
+class XxxExecutionContextCallback : public ExecutionContextCallback
+{
+public:
+  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
+  {
+    std::cout << result.toString() << std::endl;
+  }
 };
 
 class XxxClientWorkUnit : public WorkUnit
@@ -207,11 +252,12 @@ public:
     
     CompositeWorkUnitPtr workUnits = new CompositeWorkUnit(T("Fuck them all"));
     for (size_t i = 0; i < 10; ++i)
+      //remoteContext->pushWorkUnit(new DumbWorkUnit(), new XxxExecutionContextCallback());
       workUnits->addWorkUnit(new DumbWorkUnit());
     Variable result = remoteContext->run(workUnits);
 
     context.informationCallback(result.toString());
-
+    //remoteContext->waitUntilAllWorkUnitsAreDone();
     return true;
   }
 
