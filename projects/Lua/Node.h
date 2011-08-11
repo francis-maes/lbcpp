@@ -114,6 +114,7 @@ public:
   static int setLineInfo(LuaState& state);
 
   static int getNumSubNodes(LuaState& state);
+  static int getSubNode(LuaState& state);
   static int setSubNode(LuaState& state);
   static int print(LuaState& state);
 

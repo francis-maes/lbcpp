@@ -2,6 +2,7 @@
 -- Discrete Bandit problems and policies
 
 require 'Vector'
+require 'Statistics'
 
 DiscreteBandit = {}
 
