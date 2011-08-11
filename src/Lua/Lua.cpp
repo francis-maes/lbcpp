@@ -114,18 +114,11 @@ void LuaState::clear()
 
 bool LuaState::call(int numArguments, int numResults)
 {
-  int oldTop = getTop();
-
   getGlobal("__errorHandler");
   insert(1);
-
-  // todo: more elaborated error handler
   int res = lua_pcall(L, numArguments, numResults, 1);
   bool ok = processExecuteError(res);
   lua_remove(L, 1);
-
-  int newTop = getTop();
-
   return ok;
 }
 
@@ -193,17 +186,38 @@ void LuaState::getGlobal(const char* scopeName, const char* name)
   }
 }
 
+/*
+** Nil
+*/
+bool LuaState::isNil(int index) const
+  {return lua_isnil(L, index) != 0;}
+
 void LuaState::pushNil()
   {lua_pushnil(L);}
+
+/*
+** Boolean
+*/
+bool LuaState::isBoolean(int index) const
+  {return lua_type(L, index) == LUA_TBOOLEAN;}
+
+bool LuaState::checkBoolean(int index)
+  {return lua_toboolean(L, index) != 0;}
 
 void LuaState::pushBoolean(bool value)
   {lua_pushboolean(L, value ? 1 : 0);}
 
-void LuaState::pushString(const char* value)
-  {lua_pushstring(L, value);}
+/*
+** Integer
+*/
+bool LuaState::isInteger(int index) const
+  {return lua_isnumber(L, index) != 0;} // fixme: no distinction between numbers and integers
 
-void LuaState::pushNumber(double value)
-  {lua_pushnumber(L, value);}
+int LuaState::toInteger(int index) const
+  {return lua_tointeger(L, index);}
+
+int LuaState::checkInteger(int index)
+  {return luaL_checkinteger(L, index);}
 
 void LuaState::pushInteger(size_t value)
   {lua_pushinteger(L, (int)value);}
@@ -211,50 +225,24 @@ void LuaState::pushInteger(size_t value)
 void LuaState::pushInteger(int value)
   {lua_pushinteger(L, value);}
 
-void LuaState::pushFunction(lua_CFunction function)
-  {lua_pushcfunction(L, function);}
+/*
+** Number
+*/
+bool LuaState::isNumber(int index) const
+  {return lua_isnumber(L, index) != 0;}
 
-void LuaState::pushObject(ObjectPtr object)
-{
-  ObjectPtr* res = (ObjectPtr* )lua_newuserdata(L, sizeof (ObjectPtr));
-  memcpy(res, &object, sizeof (ObjectPtr));
-  memset(&object, 0, sizeof (ObjectPtr));
-  luaL_getmetatable(L, "LBCppObject");
-  lua_setmetatable(L, -2);
-}
+double LuaState::toNumber(int index) const
+  {return lua_tonumber(L, index);}
 
-void LuaState::pushVariable(const Variable& variable)
-{
-  if (variable.isDouble())
-    pushNumber(variable.getDouble());
-  else if (variable.isBoolean())
-    pushBoolean(variable.getBoolean());
-  else if (variable.isInteger())
-    pushInteger(variable.getInteger());
-  else if (variable.isString())
-    pushString(makeString(variable.getString()));
-  else if (variable.isObject())
-    pushObject(variable.getObject());
-  else
-    jassert(false);
-  // todo: continue ...
-}
+double LuaState::checkNumber(int index)
+  {return luaL_checknumber(L, index);}
 
-void LuaState::pop(int count)
-  {lua_pop(L, count);}
+void LuaState::pushNumber(double value)
+  {lua_pushnumber(L, value);}
 
-void LuaState::remove(int index)
-  {lua_remove(L, index);}
-
-int LuaState::getTop() const
-  {return lua_gettop(L);}
-
-LuaType LuaState::getType(int index) const
-  {return (LuaType)lua_type(L, index);}
-
-bool LuaState::isNil(int index) const
-  {return lua_isnil(L, index) != 0;}
-
+/*
+** String
+*/
 bool LuaState::isString(int index) const
   {return lua_isstring(L, index) != 0;}
 
@@ -274,47 +262,39 @@ String LuaState::toString(int index)
   return v.isObject() ? v.toShortString() : v.toString();*/
 }
 
+const char* LuaState::checkString(int index)
+  {return luaL_checkstring(L, index);}
+
+void LuaState::pushString(const char* value)
+  {lua_pushstring(L, value);}
+
+const char* LuaState::pushFString(const char* format, ...)
+{
+  va_list argp;
+  va_start(argp, format);
+  const char* res = lua_pushfstring(L, format, argp);
+  va_end(argp);
+  return res;
+}
+
+void LuaState::pushString(const String& value)
+  {pushFString(value);}
+
+/*
+** Function
+*/
 bool LuaState::isFunction(int index) const
   {return lua_iscfunction(L, index) != 0;}
 
 LuaFunction LuaState::toFunction(int index)
   {return lua_tocfunction(L, index);}
 
-bool LuaState::isBoolean(int index) const
-  {return lua_type(L, index) == LUA_TBOOLEAN;}
+void LuaState::pushFunction(lua_CFunction function)
+  {lua_pushcfunction(L, function);}
 
-bool LuaState::checkBoolean(int index)
-  {return lua_toboolean(L, index) != 0;}
-
-bool LuaState::isInteger(int index) const
-  {return lua_isnumber(L, index) != 0;} // fixme: no distinction between numbers and integers
-
-int LuaState::toInteger(int index) const
-  {return lua_tointeger(L, index);}
-
-bool LuaState::isNumber(int index) const
-  {return lua_isnumber(L, index) != 0;}
-
-double LuaState::toNumber(int index) const
-  {return lua_tonumber(L, index);}
-
-double LuaState::checkNumber(int index)
-  {return luaL_checknumber(L, index);}
-
-int LuaState::checkInteger(int index)
-  {return luaL_checkinteger(L, index);}
-
-const char* LuaState::checkString(int index)
-  {return luaL_checkstring(L, index);}
-
-File LuaState::checkFile(int index)
-{
-  const char* name = checkString(index);
-  if (!name)
-    return File::nonexistent;
-  return getContext().getFile(name);
-}
-
+/*
+** Object
+*/
 ObjectPtr& LuaState::checkObject(int index, TypePtr expectedType)
 {
   ObjectPtr* p = (ObjectPtr* )luaL_checkudata(L, index, "LBCppObject");
@@ -336,6 +316,18 @@ ObjectPtr& LuaState::checkObject(int index, TypePtr expectedType)
 ObjectPtr& LuaState::checkObject(int index)
   {return checkObject(index, objectClass);}
 
+void LuaState::pushObject(ObjectPtr object)
+{
+  ObjectPtr* res = (ObjectPtr* )lua_newuserdata(L, sizeof (ObjectPtr));
+  memcpy(res, &object, sizeof (ObjectPtr));
+  memset(&object, 0, sizeof (ObjectPtr));
+  luaL_getmetatable(L, "LBCppObject");
+  lua_setmetatable(L, -2);
+}
+
+/*
+** Variable
+*/
 Variable LuaState::checkVariable(int index)
 {
   LuaType luaType = getType(index);
@@ -355,6 +347,43 @@ Variable LuaState::checkVariable(int index)
     jassert(false); // not implemented
     return Variable();
   }
+}
+
+void LuaState::pushVariable(const Variable& variable)
+{
+  if (variable.isDouble())
+    pushNumber(variable.getDouble());
+  else if (variable.isBoolean())
+    pushBoolean(variable.getBoolean());
+  else if (variable.isInteger())
+    pushInteger(variable.getInteger());
+  else if (variable.isString())
+    pushString(variable.getString());
+  else if (variable.isObject())
+    pushObject(variable.getObject());
+  else
+    jassert(false);
+  // todo: continue ...
+}
+
+void LuaState::pop(int count)
+  {lua_pop(L, count);}
+
+void LuaState::remove(int index)
+  {lua_remove(L, index);}
+
+int LuaState::getTop() const
+  {return lua_gettop(L);}
+
+LuaType LuaState::getType(int index) const
+  {return (LuaType)lua_type(L, index);}
+
+File LuaState::checkFile(int index)
+{
+  const char* name = checkString(index);
+  if (!name)
+    return File::nonexistent;
+  return getContext().getFile(name);
 }
 
 void LuaState::createTable()
@@ -380,21 +409,23 @@ ExecutionContext& LuaState::getContext()
   return *res;
 }
 
-const char* LuaState::makeString(const String& str)
-{
-  const char* res = lua_pushfstring(L, str); // FIXME: find a better way
-  pop();
-  return res;
-}
-
 void LuaState::error(const char* message)
 {
-  pushString(message);
-  lua_error(L);
+  error(String(message));
 }
 
+void LuaState::error(const String& message)
+{
+  luaL_where(L, 1);
+  pushString(message);
+  lua_concat(L, 2);
+  lua_error(L);
+}
+  
 void LuaState::insert(int index)
-  {lua_insert(L, index);}
+{
+  lua_insert(L, index);
+}
 
 void Type::luaRegister(LuaState& state) const
 {
@@ -406,7 +437,10 @@ void Type::luaRegister(LuaState& state) const
     if (luaFunction)// && luaFunction->isStatic())
     {
       luaL_reg reg;
-      reg.name = state.makeString(luaFunction->getName());
+      state.pushString(luaFunction->getName());
+      reg.name = state.checkString(-1);
+      state.pop(1);
+      //reg.name = luaFunction->getName();
       reg.func = luaFunction->getFunction();
       functions.push_back(reg);
     }
@@ -416,5 +450,6 @@ void Type::luaRegister(LuaState& state) const
   reg.func = NULL;
   functions.push_back(reg);
 
-  state.openLibrary(state.makeString("lbcpp." + name), &functions[0]);
+  String libraryName = "lbcpp." + name;
+  state.openLibrary(libraryName, &functions[0]);
 }

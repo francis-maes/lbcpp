@@ -166,7 +166,7 @@ void ScopeVisitor::visit(Set& statement)
   ListPtr expr = statement.getExpr();
   expr->accept(*this);
 
-  jassert(expr->getNumSubNodes() == lhs->getNumSubNodes()); // FIXME: multiret
+  //jassert(expr->getNumSubNodes() == lhs->getNumSubNodes()); // FIXME: multiret
   for (size_t i = 0; i < lhs->getNumSubNodes(); ++i)
   {
     NodePtr lhsi = lhs->getSubNode(i);

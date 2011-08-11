@@ -94,6 +94,8 @@ public:
   String toString(int index);
   const char* checkString(int index);
   void pushString(const char* value);
+  void pushString(const String& value);
+  const char* pushFString(const char* format, ...);
 
   // Function
   bool isFunction(int index) const;
@@ -114,12 +116,13 @@ public:
   
   bool newMetaTable(const char* name);
   void openLibrary(const char* name, const luaL_Reg* functions, size_t numUpValues = 0);
-  const char* makeString(const String& str);
 
   ExecutionContext& getContext();
 
-  void error(const char* message);
   bool call(int numArguments, int numResults);
+
+  void error(const char* message);
+  void error(const String& message);
 
 protected:
   lua_State* L;
