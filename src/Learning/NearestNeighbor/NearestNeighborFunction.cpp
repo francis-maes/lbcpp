@@ -7,6 +7,8 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include "NearestNeighborFunction.h"
+#include <lbcpp/Data/RandomVariable.h>
+
 using namespace lbcpp;
 
 Variable NearestNeighborFunction::computeFunction(ExecutionContext& context, const Variable* inputs) const
@@ -19,7 +21,7 @@ Variable NearestNeighborFunction::computeFunction(ExecutionContext& context, con
   jassert(n && n == supervisionData.size());
   for (size_t i = 0; i < n; ++i)
   {
-    const double score = baseVector->getDistanceTo(inputData[i]);
+    const double score = baseVector->getDistanceTo(inputData[i], normalizationFactors);
     scoredIndices.insert(std::pair<double, size_t>(-score, i));
   }
 
@@ -56,6 +58,13 @@ bool NearestNeighborBatchLearner::train(ExecutionContext& context, const Functio
   NearestNeighborFunctionPtr nnFunction = function.staticCast<NearestNeighborFunction>();
   const size_t n = trainingData.size();
   jassert(n);
+  const EnumerationPtr featuresEnumeration = trainingData[0]->getVariable(0).getObjectAndCast<DoubleVector>(context)->getElementsEnumeration();
+  const size_t numFeatures = featuresEnumeration->getNumElements();
+  std::vector<ScalarVariableMeanAndVariancePtr> variances(numFeatures);
+  if (autoNormalizeFeatures)
+    for (size_t i = 0; i < numFeatures; ++i)
+      variances[i] = new ScalarVariableMeanAndVariance();
+
   for (size_t i = 0; i < n; ++i)
   {
     jassert(trainingData[i]->getNumVariables() == 2);
@@ -65,8 +74,24 @@ bool NearestNeighborBatchLearner::train(ExecutionContext& context, const Functio
       context.errorCallback(T("NearestNeighborBatchLearner::train"), T("Training example without DoubleVector as input data !"));
       return false;
     }
-    nnFunction->inputData.push_back(v->toSparseVector());
+    SparseDoubleVectorPtr inputVector = v->toSparseVector();
+    nnFunction->inputData.push_back(inputVector);
     nnFunction->supervisionData.push_back(trainingData[i]->getVariable(1));
+    
+    if (autoNormalizeFeatures)
+      for (size_t j = 0; j < inputVector->getNumValues(); ++j)
+      {
+        const std::pair<size_t, double>& value = inputVector->getValue(j);
+        variances[value.first]->push(value.second);
+      }
+  }
+  
+  if (autoNormalizeFeatures)
+  {
+    DenseDoubleVectorPtr weights = new DenseDoubleVector(featuresEnumeration, doubleType);
+    for (size_t i = 0; i < numFeatures; ++i)
+      weights->setValue(i, variances[i]->getVariance());
+    nnFunction->normalizationFactors = weights;
   }
   return true;
 }
@@ -74,7 +99,7 @@ bool NearestNeighborBatchLearner::train(ExecutionContext& context, const Functio
 namespace lbcpp
 {
 
-FunctionPtr binaryNearestNeighbor(size_t numNeighbors, bool useWeightedScore)
-  {return new BinaryNearestNeighborFunction(numNeighbors, useWeightedScore);}
+FunctionPtr binaryNearestNeighbor(size_t numNeighbors, bool autoNormalizeFeatures, bool useWeightedScore)
+  {return new BinaryNearestNeighborFunction(numNeighbors, autoNormalizeFeatures, useWeightedScore);}
 
 };

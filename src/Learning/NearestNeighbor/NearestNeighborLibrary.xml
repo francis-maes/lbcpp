@@ -14,7 +14,8 @@
   </class>
 
   <class name="NearestNeighborBatchLearner" base="BatchLearner">
-    <constructor/>
+    <constructor arguments="bool autoNormalizeFeatures"/>
+    <variable type="Boolean" name="autoNormalizeFeatures"/>
   </class>
 
 </library>

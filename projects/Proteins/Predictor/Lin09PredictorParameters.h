@@ -489,7 +489,7 @@ public:
         if (useLaRank)
           return laRankBinaryClassifier(pow(2.0, C), laRankRBFKernel, 0, pow(2.0, kernelGamma), 0.0);
         if (useKNN)
-          return binaryNearestNeighbor(numNeighbors, false);
+          return binaryNearestNeighbor(numNeighbors, true, false);
         if (useExtraTrees)
           return binaryClassificationExtraTree(1000, 0, 0);
 
