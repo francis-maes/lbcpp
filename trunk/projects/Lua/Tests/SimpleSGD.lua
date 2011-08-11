@@ -44,11 +44,11 @@ subspecified function StochasticGradientDescent(problem)
       local index = i -- todo: randomize examples
       
       local score, gradient = problem.objective(index, parameters)
-      print (score,gradient)
+      --print (score,gradient)
       scoreStats:observe(score)
       if gradient then
         parameters:add(gradient, -rate(epoch))
-        print (parameters, parameters:l2norm())
+        --print (parameters, parameters:l2norm())
       end
       epoch = epoch + 1
     end
@@ -94,47 +94,54 @@ end
 
 ----------------------------------------------
 
-local filename = package.inteluaPath .. "/../../Examples/Data/BinaryClassification/a1a.test"
+local trainFilename = package.inteluaPath .. "/../../Examples/Data/BinaryClassification/a1a.train"
+local testFilename = package.inteluaPath .. "/../../Examples/Data/BinaryClassification/a1a.test"
 local labels = Dictionary.new()
-local examples = Data.load(Parser.libSVMClassification, 100, filename, labels)
+local trainExamples = Data.load(Parser.libSVMClassification, 100, trainFilename, labels)
+local testExamples = Data.load(Parser.libSVMClassification, 100, testFilename, labels)
 
-print (#examples .. " examples, " .. #labels .. " labels")
+print (#trainExamples .. " training examples, " .. #testExamples .. " testing examples " .. #labels .. " labels")
 
 local function decomposableObjectiveFunction(index, parameters)
   local lossFunction = Loss.binary{Loss.hinge}
-  local example = examples[index]
+  local example = trainExamples[index]
   local input = example[1]
   local prediction = parameters:dot(input)
-  print ("prediction", prediction, parameters:l2norm(), input:l2norm())
+  --print ("prediction", prediction, parameters:l2norm(), input:l2norm())
   local loss = lossFunction(prediction, example[2])
   local dloss = lossFunction[1](prediction, example[2])
-  print (index,prediction, loss, dloss, example[2])
+  --print (index,prediction, loss, dloss, example[2])
   return loss, input * dloss
 end
 
 local function linearBinaryClassifierAccuracy(parameters, examples)
-  return 51
+  local stats = Statistics.mean()  
+  for i,example in ipairs(examples) do
+    local prediction = parameters:dot(example[1]) * (example[2] and 1 or -1)
+    stats:observe(prediction > 0 and 1 or 0)
+  end
+  return stats:getMean()
 end
 
 local function trainAccuracyFunction(parameters)
-  return linearBinaryClassifierAccuracy(parameters, examples)
+  return linearBinaryClassifierAccuracy(parameters, trainExamples)
 end
 
 local function testAccuracyFunction(parameters)
-  return linearBinaryClassifierAccuracy(parameters, examples)
+  return linearBinaryClassifierAccuracy(parameters, testExamples)
 end
 
 
 local problem = {
   initialSolution = Vector.newDense(),
-  numSamples = #examples,
+  numSamples = #trainExamples,
   objective = decomposableObjectiveFunction,
   scores = { ["Train score"] = trainAccuracyFunction, ["Test score"] = testAccuracyFunction },
   principalScore = "Train score"
 }
 
 sgd = StochasticGradientDescent{maxIterations=10}
-context:enter("coucou")
+context:enter("SGD")
 solution, score = sgd(problem)
 context:result("Solution", solution)
 context:result("Score", score)

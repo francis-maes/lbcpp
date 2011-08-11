@@ -518,7 +518,7 @@ int Object::toString(LuaState& state)
 int Object::toShortString(LuaState& state)
 {
   ObjectPtr object = state.checkObject(1);
-  state.pushString(state.makeString(object->toShortString()));
+  state.pushString(object->toShortString());
   return 1;
 }
 
@@ -568,7 +568,7 @@ int Object::index(LuaState& state)
       return 1;
     }
 
-    state.error("Could not find identifier");
+    state.error("Could not find identifier " + string.quoted() + " in class " + type->getName());
     return 0;
   }
   else if (state.isInteger(1))

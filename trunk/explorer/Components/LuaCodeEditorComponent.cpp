@@ -26,7 +26,7 @@ public:
     if (hasSelectedText && key.getKeyCode() == juce::KeyPress::tabKey)
       {indentSelection(!key.getModifiers().isShiftDown()); return true;}
 
-    if (key.getModifiers().isCommandDown() && key.getKeyCode() == 'G')
+    if (key.getModifiers().isCommandDown() && (key.getKeyCode() == 'G' || key.getKeyCode() == 'g'))
       {gotoLine(); return true;}
 
     bool res = juce::CodeEditorComponent::keyPressed(key);
