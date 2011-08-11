@@ -1,7 +1,4 @@
 
-Better design for SGD on binary classifier (table with predict and compute loss)
-
-
 * Metamethods for ipairs() and pairs()
 * Serialisation of subspecified expressions
 

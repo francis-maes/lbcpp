@@ -47,6 +47,6 @@ end
 --
 subspecified function Loss.binary(derivable prediction, supervision)
   parameter loss = {default = Loss.hinge}
-  local sign = supervision and 1 or -1
+  local sign = supervision == 2 and 1 or -1
   return loss(prediction * sign)
 end
