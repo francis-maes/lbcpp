@@ -451,8 +451,25 @@ private:
     if (!str)
       return false;
     value = str->getValue();
-    return value.length() > 0 && !value.containsAnyOf(T(" \t\r\n")) && 
-          (juce::CharacterFunctions::isLetterOrDigit(value[0]) || value[0] == '_');
+    if (value.length() == 0 || value.containsAnyOf(T(" \t\r\n")))
+      return false;
+    if (!juce::CharacterFunctions::isLetterOrDigit(value[0]) && value[0] != '_')
+      return false;
+
+    static const char* keywords[] = {
+      "and", "break", "do", "else", "elseif",
+      "end", "false", "for", "function", "if",
+      "in", "local", "nil", "not", "or", "repeat",
+      "return", "then", "true", "until", "while"
+    };
+    static const size_t numKeywords = sizeof (keywords) / sizeof (const char* );
+
+    const char* valueStr = (const char* )value;
+    for (size_t i = 0; i < numKeywords; ++i)
+      if (!strcmp(valueStr, keywords[i]))
+        return false;
+
+    return true;
   }
 };
 

@@ -10,11 +10,12 @@
 #include "Visitor.h"
 #include "PrettyPrinterVisitor.h"
 using namespace lbcpp::lua;
+using lbcpp::LuaState;
 
 String Node::print() const
   {return PrettyPrinterVisitor::print(*this);}
 
-int Node::setLineInfo(lbcpp::LuaState& state)
+int Node::setLineInfo(LuaState& state)
 {
   NodePtr node = state.checkObject(1, nodeClass).staticCast<Node>();
   if (!state.isNil(2))
@@ -22,6 +23,31 @@ int Node::setLineInfo(lbcpp::LuaState& state)
   if (!state.isNil(3))
     node->lastLineInfo = state.checkObject(3, lineInfoClass).staticCast<LineInfo>();
   return 0;
+}
+
+int Node::getNumSubNodes(LuaState& state)
+{
+  NodePtr node = state.checkObject(1, nodeClass).staticCast<Node>();
+  state.pushNumber(node->getNumSubNodes());
+  return 1;
+}
+
+int Node::setSubNode(LuaState& state)
+{
+  NodePtr node = state.checkObject(1, nodeClass).staticCast<Node>();
+  int index = state.checkInteger(2);
+  if (index <= 0 || index > (int)node->getNumSubNodes())
+    state.error("Invalid index " + String((int)index));
+  else
+    node->getSubNode(index - 1) = state.checkObject(3, nodeClass).staticCast<Node>();
+  return 0;
+}
+
+int Node::print(LuaState& state)
+{
+  NodePtr node = state.checkObject(1, nodeClass).staticCast<Node>();
+  state.pushString(node->print());
+  return 1;
 }
 
 #define NODE_ACCEPT_FUNCTION(Class) \
