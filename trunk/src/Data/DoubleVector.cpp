@@ -603,8 +603,7 @@ void DenseDoubleVector::ensureSize(size_t minimumSize)
 
 void DenseDoubleVector::multiplyByScalar(double value)
 {
-  jassert(values);
-  if (value == 1.0)
+  if (!values || value == 1.0)
     return;
   else if (value == 0.0)
     memset(&(*values)[0], 0, sizeof (double) * values->size());
