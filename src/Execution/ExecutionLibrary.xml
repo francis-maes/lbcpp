@@ -73,6 +73,8 @@
   </class>
   <class name="DispatchByThreadExecutionCallback" base="CompositeExecutionCallback" abstract="yes"/>
 
+  <class name="ExecutionContextCallback" base="Object" abstract="yes"/>
+
   <class name="ExecutionContext" base="CompositeExecutionCallback" abstract="yes">
     <variable type="ExecutionStack" name="stack"/>
     <variable type="File" name="projectDirectory"/>

@@ -29,19 +29,25 @@ public:
       juce::Thread::sleep(1000);
   }
 
-  void appendWorkUnit(size_t internalId, const WorkUnitPtr& workUnit)
+  void appendWorkUnit(size_t internalId, const WorkUnitPtr& workUnit, const ExecutionContextCallbackPtr& callback)
   {
     ScopedLock _(lock);
     indices[internalId] = workUnits.size();
     workUnits.push_back(workUnit);
     results.push_back(String::empty);
+    callbacks.push_back(callback);
   }
 
   void setResult(size_t internalId, const Variable& result)
   {
     ScopedLock _(lock);
     jassert(indices.count(internalId) && indices[internalId] < results.size());
-    results[indices[internalId]] = result;
+    const size_t index = indices[internalId];
+    results[index] = result;
+
+    if (callbacks[index])
+      callbacks[index]->workUnitFinished(workUnits[index], result);
+
     ++numFinishedWorkUnits;
   }
 
@@ -66,70 +72,50 @@ protected:
   std::map<size_t, size_t> indices; // Internal ID -> index
   std::vector<WorkUnitPtr> workUnits;
   std::vector<Variable> results;
+  std::vector<ExecutionContextCallbackPtr> callbacks;
 };
 
 typedef ReferenceCountedObjectPtr<WorkUnitPool> WorkUnitPoolPtr;
 
-class XxxDistributedExecutionContextNetworkClient : public XxxNetworkClient
+class XxxDistributedExecutionContextNetworkClient : public XxxManagerNetworkClient, public XxxManagerNetworkClientCallback
 {
 public:
   XxxDistributedExecutionContextNetworkClient(ExecutionContext& context)
-    : XxxNetworkClient(context), numSentWorkUnit(0)
+    : XxxManagerNetworkClient(context, this), numSentWorkUnit(0)
     {}
 
-  virtual void variableReceived(const Variable& variable)
+  virtual void workUnitAcknowledgementReceived(size_t sourceIdentifier, const String& uniqueIdentifier)
   {
     ScopedLock _(lock);
-    
-    if (!variable.isObject())
-    {
-      context.warningCallback(T("XxxDistributedExecutionContextNetworkClient::variableReceived")
-                              , T("The message is not an Object ! The message is ") + variable.toString().quoted());
-      return;
-    }
-
-    const ObjectPtr obj = variable.getObject();
-    if (!obj)
-    {
-      context.warningCallback(T("XxxDistributedExecutionContextNetworkClient::variableReceived")
-                              , T("NULL Object"));
-      return;
-    }
-
-    const ClassPtr objClass = obj->getClass();
-    if (objClass == workUnitAcknowledgementNetworkMessageClass)
-    {
-      WorkUnitAcknowledgementNetworkMessagePtr ack = obj.staticCast<WorkUnitAcknowledgementNetworkMessage>();
-      jassert(ack->getSourceIdentifier() < numSentWorkUnit);
-      // Update identifier mapping
-      workUnitIds[ack->getUniqueIdentifier()] = ack->getSourceIdentifier();
-    }
-    else if (objClass == workUnitResultNetworkMessageClass)
-    {
-      WorkUnitResultNetworkMessagePtr res = obj.staticCast<WorkUnitResultNetworkMessage>();
-      jassert(workUnitIds.count(res->getUniqueIdentifier()));
-      const size_t internalId = workUnitIds[res->getUniqueIdentifier()];
-      jassert(pools.count(internalId));
-      WorkUnitPoolPtr pool = pools[internalId];
-      pool->setResult(internalId, res->getResult(context));
-
-      workUnitIds.erase(res->getUniqueIdentifier());
-      pools.erase(internalId);
-    }
-    else
-    {
-      context.warningCallback(T("XxxDistributedExecutionContextNetworkClient::variableReceived")
-                              , T("Unknwon object of type: ") + objClass->toString());
-    }
+    jassert(sourceIdentifier < numSentWorkUnit);
+    // Update identifier mapping
+    workUnitIds[uniqueIdentifier] = sourceIdentifier;
   }
 
-  void sendWorkUnit(const WorkUnitPtr& workUnit, const WorkUnitPoolPtr& pool)
+  virtual void workUnitResultReceived(const String& uniqueIdentifier, const Variable& result)
   {
     ScopedLock _(lock);
-    pool->appendWorkUnit(numSentWorkUnit, workUnit);
+    jassert(workUnitIds.count(uniqueIdentifier));
+    const size_t internalId = workUnitIds[uniqueIdentifier];
+    jassert(pools.count(internalId));
+    WorkUnitPoolPtr pool = pools[internalId];
+    pool->setResult(internalId, result);
+
+    workUnitIds.erase(uniqueIdentifier);
+    pools.erase(internalId);
+  }
+
+  virtual bool sendWorkUnit(const WorkUnitPtr& workUnit, size_t sourceIdentifier)
+  {
+    return sendVariable(new WorkUnitRequestNetworkMessage(context, sourceIdentifier, workUnit));
+  }
+
+  bool sendWorkUnit(const WorkUnitPtr& workUnit, const WorkUnitPoolPtr& pool, const ExecutionContextCallbackPtr& callback = ExecutionContextCallbackPtr())
+  {
+    ScopedLock _(lock);
+    pool->appendWorkUnit(numSentWorkUnit, workUnit, callback);
     pools[numSentWorkUnit] = pool;
-    sendVariable(new WorkUnitNetworkMessage(context, numSentWorkUnit, workUnit));
-    ++numSentWorkUnit;
+    return sendWorkUnit(workUnit, numSentWorkUnit++);
   }
 
 protected:
@@ -172,9 +158,14 @@ public:
   virtual bool isPaused() const
     {return false;}
 
+  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, const ExecutionContextCallbackPtr& callback = ExecutionContextCallbackPtr())
+  {
+    client->sendWorkUnit(workUnit, defaultPool, callback);
+  }
+  
   virtual void pushWorkUnit(const WorkUnitPtr& workUnit, int* counterToDecrementWhenDone = NULL, bool pushIntoStack = true)
   {
-    // FIXME: No mechanisme to retreive result
+    // No mechanisme to retreive result
     client->sendWorkUnit(workUnit, defaultPool);
   }
 

@@ -51,7 +51,7 @@
   <!-- NetworkMessage -->
   <class name="NetworkMessage" base="Object" abstract="yes"/>
   
-  <class name="WorkUnitNetworkMessage" base="NetworkMessage">
+  <class name="WorkUnitRequestNetworkMessage" base="NetworkMessage">
     <variable type="PositiveInteger" name="sourceIdentifier"/>
     <variable type="XmlElement" name="workUnit"/>
   </class>

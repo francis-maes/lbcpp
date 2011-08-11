@@ -279,14 +279,10 @@ NetworkClientPtr nonBlockingNetworkClient(ExecutionContext& context, bool autoRe
 
 /** XxxNetworkClient **/
 XxxNetworkClient::XxxNetworkClient(ExecutionContext& context)
-  : InterprocessConnection(false, magicNumber), context(context), keepAlive(true) {}
+  : InterprocessConnection(false, magicNumber), context(context) {}
 
 bool XxxNetworkClient::startClient(const String& host, int port)
 {
-  lastHostName = host;
-  lastPort = port;
-
-  keepAlive = true;
   size_t timeToSleep = 1000;
   while (!connectToSocket(host, port, 1000))
   {
@@ -301,7 +297,6 @@ bool XxxNetworkClient::startClient(const String& host, int port)
 
 void XxxNetworkClient::stopClient()
 {
-  keepAlive = false;
   disconnect();
 }
 
@@ -329,11 +324,53 @@ void XxxNetworkClient::messageReceived(const juce::MemoryBlock& message)
   variableReceived(importer.isOpened() ? importer.load() : Variable());
 }
 
-void XxxNetworkClient::connectionLost()
+bool isValidNetworkMessage(ExecutionContext& context, const Variable& variable)
 {
-  if (keepAlive)
+  if (!variable.inheritsFrom(networkMessageClass) || !variable.exists())
   {
-    context.warningCallback(T("XxxNetworkClient::connectionLost"), T("Connection lost ! Trying to reconnect."));
-    startClient(lastHostName, lastPort);
+    context.warningCallback(T("isValidNetworkMessage")
+                            , T("The message is not a valid NetworkMessage ! The message is ") + variable.toString().quoted());
+    return false;
   }
+
+  return true;
+}
+
+void XxxManagerNetworkClient::variableReceived(const Variable& variable)
+{
+  if (!isValidNetworkMessage(context, variable))
+    return;
+
+  const ObjectPtr obj = variable.getObject();
+  const ClassPtr objClass = obj->getClass();
+  if (objClass == workUnitAcknowledgementNetworkMessageClass)
+  {
+    WorkUnitAcknowledgementNetworkMessagePtr message = obj.staticCast<WorkUnitAcknowledgementNetworkMessage>();
+    callback->workUnitAcknowledgementReceived(message->getSourceIdentifier(), message->getUniqueIdentifier());
+  }
+  else if (objClass == workUnitResultNetworkMessageClass)
+  {
+    WorkUnitResultNetworkMessagePtr message = obj.staticCast<WorkUnitResultNetworkMessage>();
+    callback->workUnitResultReceived(message->getUniqueIdentifier(), message->getResult(context));
+  }
+  else
+    context.warningCallback(T("XxxManagerNetworkClient::variableReceived")
+                            , T("Unknwon object of type: ") + objClass->toString());
+}
+
+void XxxGridNetworkClient::variableReceived(const Variable& variable)
+{
+  if (!isValidNetworkMessage(context, variable))
+    return;
+
+  const ObjectPtr obj = variable.getObject();
+  const ClassPtr objClass = obj->getClass();
+  if (objClass == workUnitRequestNetworkMessageClass)
+  {
+    WorkUnitRequestNetworkMessagePtr message = obj.staticCast<WorkUnitRequestNetworkMessage>();
+    callback->workUnitRequestReceived(message->getSourceIdentifier(), message->getXmlElementWorkUnit());
+  }
+  else
+    context.warningCallback(T("XxxGridNetworkClient::variableReceived")
+                            , T("Unknwon object of type: ") + objClass->toString());
 }
