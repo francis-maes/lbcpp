@@ -159,8 +159,10 @@ ExpressionPtr lbcpp::lua::div(const ExpressionPtr& left, const ExpressionPtr& ri
   if (leftNumber && rightNumber)
     return new LiteralNumber(leftNumber->getValue() / rightNumber->getValue());
   
+  // 0 / x = 0
   // x / 1 = x
-  if (rightNumber && rightNumber->getValue() == 1.0)
+  if (leftNumber && leftNumber->getValue() == 0.0 ||
+      rightNumber && rightNumber->getValue() == 1.0)
     return left;
 
   return new BinaryOperation(divOp, left, right);

@@ -141,29 +141,38 @@ public:
   virtual void visit(Call& call)
   {
     String fun = call.getFunction()->print();
-    if (fun == T("math.exp") && call.getNumArguments() == 1)
+    if (call.getNumArguments())
     {
-      // (exp(u))' = u' exp(u)
-      ExpressionPtr u = call.getArgument(0);
-      setResult(multiply(rewrite(u), new Call(call.getFunction(), u)));
-      return;
-    }
-
-    if (fun == T("math.log") && call.getNumArguments() == 1)
-    {
-      // (log(u))' = u' / u
-      ExpressionPtr u = call.getArgument(0);
-      setResult(div(rewrite(u), u));
-      return;
-    }
-  
-    if (fun == T("math.abs") && call.getNumArguments() == 1)
-    {
-      // abs(u)' = u' * (u < 0 ? -1 : 1)
       ExpressionPtr u = call.getArgument(0);
       ExpressionPtr up = rewrite(u);
-      setResult(multiply(up, ternaryOperator(lt(u, new LiteralNumber(0)), new LiteralNumber(-1), new LiteralNumber(1))));
-      return;
+        
+      if (fun == T("math.exp"))
+      {
+        // (exp(u))' = u' exp(u)
+        setResult(multiply(up, new Call(call.getFunction(), u)));
+        return;
+      }
+
+      if (fun == T("math.log"))
+      {
+        // (log(u))' = u' / u
+        setResult(div(up, u));
+        return;
+      }
+    
+      if (fun == T("math.abs"))
+      {
+        // abs(u)' = u' * (u < 0 ? -1 : 1)
+        setResult(multiply(up, ternaryOperator(lt(u, new LiteralNumber(0)), new LiteralNumber(-1), new LiteralNumber(1))));
+        return;
+      }
+
+      if (fun == T("math.sqrt"))
+      {
+        // sqrt(u)' = u' / (2 * sqrt(u))
+        setResult(div(up, multiply(new LiteralNumber(2), new Call(new Index("math", "sqrt"), u))));
+        return;
+      }
     }
 
     if ((fun == T("math.max") || fun == T("math.min")) && call.getNumArguments() == 2)
@@ -214,6 +223,21 @@ public:
         setResult(new LiteralNumber(0.0));
       return;
     }    
+  }
+
+  virtual void visit(Index& index)
+  {
+    IdentifierPtr leftIdentifier = index.getLeft().dynamicCast<Identifier>();
+    if (leftIdentifier && leftIdentifier->getIdentifier() == T("math"))
+    {
+      LiteralStringPtr rightString = index.getRight().dynamicCast<LiteralString>();
+      if (rightString && rightString->getValue() == T("pi"))
+      {
+        setResult(new LiteralNumber(0.0));
+        return;
+      }
+    }
+    Visitor::error(index, "Cannot derivate " + index.print());
   }
 
 protected:

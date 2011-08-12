@@ -150,7 +150,7 @@ int InteluaInterpreter::loadFile(LuaState& state)
 {
   InteluaInterpreterPtr interpreter = state.checkObject(1, inteluaInterpreterClass).staticCast<InteluaInterpreter>();
   const char* filename = state.checkString(2);
-  bool ok = interpreter->loadFile(File(String(filename)));
+  bool ok = interpreter->loadFile(File::getCurrentWorkingDirectory().getChildFile(filename));
   if (ok)
     return 1;
   else
