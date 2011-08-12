@@ -8,7 +8,7 @@
 
 #ifndef LBCPP_GRID_NETWORK_NOTIFICATION_H_
 # define LBCPP_GRID_NETWORK_NOTIFICATION_H_
-
+/*
 # include <lbcpp/Network/NetworkNotification.h>
 
 namespace lbcpp
@@ -56,7 +56,7 @@ public:
       target->getContext().warningCallback(T("GetFinishedExecutionTraces"), T("Trace not sent"));
       return;
     }
-    /* Short way that avoid to use network trafic */
+    // Short way that avoid to use network trafic
     bool ack = false;
     if (!client->receiveBoolean(3000, ack) || !ack)
       return;
@@ -66,5 +66,5 @@ public:
 
 
 };
-
+*/
 #endif //!LBCPP_GRID_NETWORK_NOTIFICATION_H_

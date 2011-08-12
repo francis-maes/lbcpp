@@ -46,3 +46,16 @@ bool CheckDisulfideBondsWorkUnit::checkConsistencyOfBridges(SymmetricMatrixPtr b
   }
   return true;
 }
+
+/*
+ ** DumbWorkUnit
+ */
+Variable DumbWorkUnit::run(ExecutionContext& context)
+{
+  for (size_t i = 0; i < 10; ++i)
+  {
+    context.progressCallback(new ProgressionState(i+1, 10, T("DumbWorkUnit")));
+    juce::Thread::sleep(1000);
+  }
+  return true;
+}

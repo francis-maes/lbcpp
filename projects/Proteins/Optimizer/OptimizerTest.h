@@ -14,7 +14,6 @@
 # include <lbcpp/Optimizer/Optimizer.h>
 # include <lbcpp/Optimizer/OptimizerContext.h>
 # include <lbcpp/Optimizer/OptimizerState.h>
-# include <lbcpp/Network/WorkUnitNetworkRequest.h>
 # include "../WorkUnit/ProteinLearner.h"
 # include "../../../projects/Examples/OptimizerTestBed.h"
 
@@ -288,9 +287,10 @@ class ExtractMeanScoreWorkUnit : public WorkUnit
     while (iter.next())
     {
       File theFileItFound (iter.getFile());
-      NetworkArchivePtr archive = Object::createFromFile(context, theFileItFound).staticCast<NetworkArchive>();
-      ExecutionTracePtr trace =  archive->getExecutionTraceNetworkResponse()->getExecutionTrace(context);
-      std::vector<ExecutionTraceItemPtr> vec = trace->getRootNode()->getSubItems();      
+      jassertfalse;
+//      NetworkArchivePtr archive = Object::createFromFile(context, theFileItFound).staticCast<NetworkArchive>();
+//      ExecutionTracePtr trace =  archive->getExecutionTraceNetworkResponse()->getExecutionTrace(context);
+      std::vector<ExecutionTraceItemPtr> vec;// = trace->getRootNode()->getSubItems();      
       Variable ret = (vec[0].dynamicCast<ExecutionTraceNode>())->getReturnValue();
       double validationScore = ret.toDouble();
       //std::cout << theFileItFound.getFileNameWithoutExtension().getLargeIntValue() << " " << validationScore << std::endl;

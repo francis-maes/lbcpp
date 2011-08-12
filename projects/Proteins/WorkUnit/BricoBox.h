@@ -5,8 +5,7 @@
 #include <lbcpp/Data/Stream.h>
 
 #ifdef LBCPP_NETWORKING
-# include <lbcpp/Network/NetworkInterface.h>
-# include <lbcpp/Network/NetworkNotification.h>
+
 #endif
 
 #include <lbcpp/UserInterface/PieChartComponent.h>
@@ -254,74 +253,6 @@ protected:
   File traceFile;
 };
 
-class CheckNetworkServerWorkUnit : public WorkUnit
-{
-public:
-  virtual Variable run(ExecutionContext& context)
-  {
-#ifdef LBCPP_NETWORKING
-    NetworkServerPtr server = new NetworkServer(context);
-    if (!server->startServer(1664))
-    {
-      context.errorCallback(T("WorkUnitManagerServer::run"), T("Not able to open port"));
-      return false;
-    }
-    context.informationCallback(T("Server started !"));
-    
-    while (true)
-    {
-      /* Accept client */
-      NetworkClientPtr client = server->acceptClient(INT_MAX);
-      context.informationCallback(client->getConnectedHostName(), T("Connected"));
-      
-      String ping;
-      if (!client->receiveString(5000, ping))
-      {
-        context.informationCallback(client->getConnectedHostName(), T("Error - Ping"));
-        continue;
-      }
-
-      std::cout << ping << std::endl;
-      client->sendVariable(T("PONG"));
-    }
-#endif
-	return Variable();
-  }
-};
-
-class CheckNetworkClientWorkUnit : public WorkUnit
-{
-public:
-  virtual Variable run(ExecutionContext& context)
-  {
-#ifdef LBCPP_NETWORKING
-    for (size_t i = 0; i < 50; ++i)
-    {
-      NetworkClientPtr client = blockingNetworkClient(context, 3);
-      if (!client->startClient(T("localhost"), 1664))
-      {
-        context.errorCallback(T("WorkUnitManagerServer::run"), T("Not connected !"));
-        return false;
-      }
-      client->sendVariable(T("PING"));
-      
-      String pong;
-      if (!client->receiveString(5000, pong))
-      {
-        context.informationCallback(client->getConnectedHostName(), T("Error - Pong"));
-        continue;
-      }
-
-      std::cout << i << ": " << pong << std::endl;
-      
-      client->stopClient();
-    }
-    return true;
-#endif
-	return false;
-  }
-};
-
 class ConvertSPXFileToProteins : public WorkUnit
 {
 public:
@@ -340,35 +271,6 @@ protected:
 
   File spxFile;
   File outputDirectory;
-};
-
-class CheckManagerWorkUnit : public WorkUnit
-{
-public:
-  virtual Variable run(ExecutionContext& context)
-  {
-#ifdef LBCPP_NETWORKING
-    NetworkClientPtr client = blockingNetworkClient(context);
-    if (!client->startClient(T("localhost"), 1664))
-    {
-      context.errorCallback(T("CheckManagerWorkUnit::run"), T("Not connected !"));
-      return false;
-    }
-    context.informationCallback(T("localhost"), T("Connected !"));
-    
-    ManagerNetworkInterfacePtr interface = forwarderManagerNetworkInterface(context, client, T("Alpha"));
-    client->sendVariable(ReferenceCountedObjectPtr<NetworkInterface>(interface));
-    
-    WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(context, T("CheckManagerWorkUnit"), T("Alpha"), T("Omega"), WorkUnitPtr(), 1, 1, 1);
-    for (size_t i = 0; i < 1500; ++i)
-      context.informationCallback(String((int)i) + T(" : ") + interface->pushWorkUnit(request));
-    client->sendVariable(new CloseCommunicationNotification());
-    client->stopClient();
-    
-    return true;
-#endif
-    return false;
-  }
 };
 
 class GenerateFoldsWorkUnit : public WorkUnit
@@ -551,6 +453,52 @@ public:
     
     return optimizer->compute(context, optimizerContext, optimizerState);
   }
+};
+
+/** Test classes **/
+class DumbWorkUnit : public WorkUnit
+{
+public:
+  DumbWorkUnit() {}
+
+  virtual Variable run(ExecutionContext& context);
+};
+
+class TestExecutionContextCallback : public ExecutionContextCallback
+{
+public:
+  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
+  {
+    std::cout << result.toString() << std::endl;
+  }
+};
+
+class ClientWorkUnit : public WorkUnit
+{
+public:
+  ClientWorkUnit(String hostName = T("localhost"), size_t hostPort = 1664)
+    : hostName(hostName), hostPort(hostPort) {}
+
+  Variable run(ExecutionContext& context)
+  {
+    ExecutionContextPtr remoteContext = distributedExecutionContext(context, hostName, hostPort);
+    
+    CompositeWorkUnitPtr workUnits = new CompositeWorkUnit(T("Fuck them all"));
+    for (size_t i = 0; i < 10; ++i)
+      //remoteContext->pushWorkUnit(new DumbWorkUnit(), new TestExecutionContextCallback());
+      workUnits->addWorkUnit(new DumbWorkUnit());
+    Variable result = remoteContext->run(workUnits);
+
+    context.informationCallback(result.toString());
+    //remoteContext->waitUntilAllWorkUnitsAreDone();
+    return true;
+  }
+
+protected:
+  friend class ClientWorkUnitClass;
+
+  String hostName;
+  size_t hostPort;
 };
 
 };

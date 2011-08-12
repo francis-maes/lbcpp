@@ -8,7 +8,7 @@
 
 #ifndef LBCPP_GRID_NETWORK_INTERFACE_H_
 # define LBCPP_GRID_NETWORK_INTERFACE_H_
-
+/*
 # include <lbcpp/Network/NetworkInterface.h>
 
 namespace lbcpp
@@ -101,5 +101,5 @@ protected:
 };
 
 };
-
+*/
 #endif //!LBCPP_GRID_NETWORK_INTERFACE_H_

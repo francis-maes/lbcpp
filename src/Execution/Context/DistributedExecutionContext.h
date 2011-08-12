@@ -11,8 +11,18 @@
 
 # include "SubExecutionContext.h"
 # include <lbcpp/Core/Vector.h>
-# include <lbcpp/Network/NetworkClient.h>
-# include <lbcpp/Network/NetworkMessage.h>
+
+# ifndef LBCPP_NETWORKING
+
+class DistributedExecutionContext : public SubExecutionContext
+{
+public:
+  DistributedExecutionContext(ExecutionContext& parentContext, const String& remoteHostName, size_t remotePort) {}
+};
+
+# else /* LBCPP_NETWORKING */
+#  include <lbcpp/Network/NetworkClient.h>
+#  include <lbcpp/Network/NetworkMessage.h>
 
 namespace lbcpp
 {
@@ -77,11 +87,11 @@ protected:
 
 typedef ReferenceCountedObjectPtr<WorkUnitPool> WorkUnitPoolPtr;
 
-class XxxDistributedExecutionContextNetworkClient : public XxxManagerNetworkClient, public XxxManagerNetworkClientCallback
+class DistributedExecutionContextNetworkClient : public ManagerNetworkClient, public ManagerNetworkClientCallback
 {
 public:
-  XxxDistributedExecutionContextNetworkClient(ExecutionContext& context)
-    : XxxManagerNetworkClient(context), numSentWorkUnit(0)
+  DistributedExecutionContextNetworkClient(ExecutionContext& context)
+    : ManagerNetworkClient(context), numSentWorkUnit(0)
     {callback = this;}
 
   virtual void workUnitAcknowledgementReceived(size_t sourceIdentifier, const String& uniqueIdentifier)
@@ -105,9 +115,11 @@ public:
     pools.erase(internalId);
   }
 
-  virtual bool sendWorkUnit(const WorkUnitPtr& workUnit, size_t sourceIdentifier)
+  virtual bool sendWorkUnit(size_t sourceIdentifier, const WorkUnitPtr& workUnit,
+                            const String& projectName, const String& source, const String& destination,
+                            size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
   {
-    return sendVariable(new WorkUnitRequestNetworkMessage(context, sourceIdentifier, workUnit));
+    return sendVariable(new WorkUnitRequestNetworkMessage(context, sourceIdentifier, workUnit, projectName, source, destination, requiredCpus, requiredMemory, requiredTime));
   }
 
   bool sendWorkUnit(const WorkUnitPtr& workUnit, const WorkUnitPoolPtr& pool, const ExecutionContextCallbackPtr& callback = ExecutionContextCallbackPtr())
@@ -115,7 +127,7 @@ public:
     ScopedLock _(lock);
     pool->appendWorkUnit(numSentWorkUnit, workUnit, callback);
     pools[numSentWorkUnit] = pool;
-    return sendWorkUnit(workUnit, numSentWorkUnit++);
+    return sendWorkUnit(numSentWorkUnit++, workUnit, T(""), T(""), T(""), 1, 2, 10);
   }
 
 protected:
@@ -126,14 +138,14 @@ protected:
   std::map<size_t, WorkUnitPoolPtr> pools;
 };
 
-typedef ReferenceCountedObjectPtr<XxxDistributedExecutionContextNetworkClient> XxxDistributedExecutionContextNetworkClientPtr;
+typedef ReferenceCountedObjectPtr<DistributedExecutionContextNetworkClient> DistributedExecutionContextNetworkClientPtr;
 
 class DistributedExecutionContext : public SubExecutionContext
 {
 public:
   DistributedExecutionContext(ExecutionContext& parentContext, const String& remoteHostName, size_t remotePort)
     : SubExecutionContext(parentContext)
-    , client(new XxxDistributedExecutionContextNetworkClient(parentContext))
+    , client(new DistributedExecutionContextNetworkClient(parentContext))
     , defaultPool(new WorkUnitPool())
     {
       client->startClient(remoteHostName, remotePort);
@@ -193,10 +205,10 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  XxxDistributedExecutionContextNetworkClientPtr client;
+  DistributedExecutionContextNetworkClientPtr client;
   WorkUnitPoolPtr defaultPool;
 };
 
 }; /* namespace lbcpp */
-
+# endif /* !LBCPP_NETWORKING */
 #endif //!LBCPP_EXECUTION_CONTEXT_DISTRIBUTED_H_

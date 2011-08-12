@@ -9,9 +9,9 @@
 #ifndef LBCPP_NETWORK_MESSAGE_H_
 # define LBCPP_NETWORK_MESSAGE_H_
 
-# include <lbcpp/Core/Variable.h>
 # include <lbcpp/Core/XmlSerialisation.h>
 # include <lbcpp/Execution/WorkUnit.h>
+# include "Manager.h"
 
 namespace lbcpp
 {
@@ -32,30 +32,33 @@ extern ClassPtr networkMessageClass;
 class WorkUnitRequestNetworkMessage : public NetworkMessage
 {
 public:
-  WorkUnitRequestNetworkMessage(ExecutionContext& context, size_t sourceIdentifier, const WorkUnitPtr& workUnit)
-    : sourceIdentifier(sourceIdentifier), workUnit(new XmlElement())
-    {this->workUnit->saveObject(context, workUnit, T("workUnit"));}
+  WorkUnitRequestNetworkMessage(ExecutionContext& context, size_t sourceIdentifier,
+                                const WorkUnitPtr& workUnit,
+                                const String& projectName, const String& source, const String& destination,
+                                size_t requiredCpus = 1, size_t requiredMemory = 2, size_t requiredTime = 10)
+    : sourceIdentifier(sourceIdentifier),
+      request(new WorkUnitNetworkRequest(context,
+                                         workUnit,
+                                         projectName, source, destination,
+                                         requiredCpus, requiredMemory, requiredTime))
+    {}
 
   size_t getSourceIdentifier() const
     {return sourceIdentifier;}
 
-  WorkUnitPtr getWorkUnit(ExecutionContext& context) const
-    {return workUnit->createObjectAndCast<WorkUnit>(context);}
-
-  XmlElementPtr getXmlElementWorkUnit() const
-    {return workUnit;}
+  WorkUnitNetworkRequestPtr getWorkUnitNetworkRequest() const
+    {return request;}
 
 protected:
   friend class WorkUnitRequestNetworkMessageClass;
-  
-  WorkUnitRequestNetworkMessage() {}
 
   size_t sourceIdentifier;
-  XmlElementPtr workUnit;
+  WorkUnitNetworkRequestPtr request;
+  
+  WorkUnitRequestNetworkMessage() {}
 };
 
 typedef ReferenceCountedObjectPtr<WorkUnitRequestNetworkMessage> WorkUnitRequestNetworkMessagePtr;
-
 extern ClassPtr workUnitRequestNetworkMessageClass;
 
 class WorkUnitAcknowledgementNetworkMessage : public NetworkMessage
@@ -73,14 +76,13 @@ public:
 protected:
   friend class WorkUnitAcknowledgementNetworkMessageClass;
 
-  WorkUnitAcknowledgementNetworkMessage() {}
-
   size_t sourceIdentifier;
   String uniqueIdentifier;
+
+  WorkUnitAcknowledgementNetworkMessage() {}
 };
 
 typedef ReferenceCountedObjectPtr<WorkUnitAcknowledgementNetworkMessage> WorkUnitAcknowledgementNetworkMessagePtr;
-
 extern ClassPtr workUnitAcknowledgementNetworkMessageClass;
 
 class WorkUnitResultNetworkMessage : public NetworkMessage
@@ -102,15 +104,100 @@ public:
 protected:
   friend class WorkUnitResultNetworkMessageClass;
 
-  WorkUnitResultNetworkMessage() {}
-
   String uniqueIdentifier;
   XmlElementPtr result;
+
+  WorkUnitResultNetworkMessage() {}
 };
 
 typedef ReferenceCountedObjectPtr<WorkUnitResultNetworkMessage> WorkUnitResultNetworkMessagePtr;
-
 extern ClassPtr workUnitResultNetworkMessageClass;
+
+class GetWorkUnitResultNetworkMessage : public NetworkMessage
+{
+public:
+  GetWorkUnitResultNetworkMessage(const String& uniqueIdentifier)
+    : uniqueIdentifier(uniqueIdentifier) {}
+
+  String getUniqueIdentifier() const
+    {return uniqueIdentifier;}
+
+protected:
+  friend class GetWorkUnitResultNetworkMessageClass;
+
+  String uniqueIdentifier;
+
+  GetWorkUnitResultNetworkMessage() {}
+};
+
+typedef ReferenceCountedObjectPtr<GetWorkUnitResultNetworkMessage> GetWorkUnitResultNetworkMessagePtr;
+extern ClassPtr getWorkUnitResultNetworkMessageClass;
+
+class GetWaitingWorkUnitsNetworkMessage : public NetworkMessage
+{
+public:
+  GetWaitingWorkUnitsNetworkMessage(const String& gridName)
+    : gridName(gridName) {}
+
+  String getGridName() const
+    {return gridName;}
+
+protected:
+  friend class GetWaitingWorkUnitsNetworkMessageClass;
+
+  String gridName;
+
+  GetWaitingWorkUnitsNetworkMessage() {}
+};
+
+typedef ReferenceCountedObjectPtr<GetWaitingWorkUnitsNetworkMessage> GetWaitingWorkUnitsNetworkMessagePtr;
+extern ClassPtr getWaitingWorkUnitsNetworkMessageClass;
+
+class WorkUnitRequestsNetworkMessage : public NetworkMessage
+{
+public:
+  WorkUnitRequestsNetworkMessage(const std::vector<WorkUnitNetworkRequestPtr>& workUnitRequests)
+    : requests(workUnitRequests) {}
+
+  const std::vector<WorkUnitNetworkRequestPtr>& getWorkUnitRequests() const
+    {return requests;}
+
+protected:
+  friend class WorkUnitRequestsNetworkMessageClass;
+
+  std::vector<WorkUnitNetworkRequestPtr> requests;
+
+  WorkUnitRequestsNetworkMessage() {}
+};
+
+typedef ReferenceCountedObjectPtr<WorkUnitRequestsNetworkMessage> WorkUnitRequestsNetworkMessagePtr;
+extern ClassPtr workUnitRequestsNetworkMessageClass;
+
+class ExecutionTracesNetworkMessage : public NetworkMessage
+{
+public:
+  ExecutionTracesNetworkMessage(const std::vector< std::pair<String, XmlElementPtr> >& traces)
+    : traces(traces) {}
+
+  const std::vector< std::pair<String, XmlElementPtr> >& getXmlElementExecutionTraces() const
+    {return traces;}
+
+protected:
+  friend class ExecutionTracesNetworkMessageClass;
+
+  std::vector< std::pair<String, XmlElementPtr> > traces;
+
+  ExecutionTracesNetworkMessage() {}
+};
+
+typedef ReferenceCountedObjectPtr<ExecutionTracesNetworkMessage> ExecutionTracesNetworkMessagePtr;
+extern ClassPtr executionTracesNetworkMessageClass;
+
+class CloseCommunicationNetworkMessage : public NetworkMessage
+  {};
+
+typedef ReferenceCountedObjectPtr<CloseCommunicationNetworkMessage> CloseCommunicationNetworkMessagePtr;
+extern ClassPtr closeCommunicationNetworkMessageClass;
 
 }; /* namespace lbcpp */
 

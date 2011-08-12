@@ -55,7 +55,7 @@
 #ifdef LBCPP_NETWORKING
 # include "Network/NetworkClient.h"
 # include "Network/NetworkServer.h"
-# include "Network/NetworkCallback.h"
+# include "Network/NetworkMessage.h"
 #endif
 
 # include "Sampler/Sampler.h"

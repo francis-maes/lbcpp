@@ -3,31 +3,14 @@
 <library name="NetworkWorkUnit" directory="Network/WorkUnit">
 
   <!-- WorkUnit -->
-  <class name="ManagerWorkUnit" base="WorkUnit">
-    <variable type="PositiveInteger" name="port" shortName="p"/>
-  </class>
-  
-  <class name="GridWorkUnit" base="WorkUnit">
-    <variable type="String" name="gridName" shortName="g"/>
-    <variable type="String" name="gridEngine" shortName="e"/>
-    <variable type="String" name="hostName" shortName="h"/>
-    <variable type="PositiveInteger" name="port" shortName="p"/>
-  </class>
-  
-  <class name="DumbWorkUnit" base="WorkUnit"/>
-
-  <class name="GetTraceWorkUnit" base="WorkUnit">
-    <variable type="String" name="workUnitIdentifier" shortName="id"/>
-    <variable type="String" name="hostName" shortName="h"/>
-    <variable type="PositiveInteger" name="port" shortName="p"/>
-  </class>
-
-  <!-- xxx revolution -->
-  <class name="XxxServerWorkUnit" base="WorkUnit">
-    <variable type="String" name="serverType" shortName="s" description="Available type of server: local, manager"/>
+  <class name="ServerWorkUnit" base="WorkUnit">
     <variable type="PositiveInteger" name="port" shortName="p" description="port"/>
   </class>
 
-  <class name="XxxClientWorkUnit" base="WorkUnit"/>
-
+  <class name="GridWorkUnit" base="WorkUnit">
+    <variable type="String" name="clientType" shortName="c" description="Type of grid : local, sge"/>
+    <variable type="String" name="gridName" shortName="n"/>
+    <variable type="String" name="managerHostName" shortName="h"/>
+    <variable type="PositiveInteger" name="managerPort" shortName="p"/>
+  </class>
 </library>
