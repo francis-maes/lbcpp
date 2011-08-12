@@ -18,6 +18,8 @@ using namespace lbcpp;
 template<class CallbackType>
 inline void computeFeatures(const SparseDoubleVector& sparseVector, CallbackType& callback)
 {
+  if (!sparseVector.getNumValues())
+    return;
   const std::pair<size_t, double>* ptr = sparseVector.getValues();
   const std::pair<size_t, double>* limit = ptr + sparseVector.getNumValues();
   while (ptr < limit)
@@ -389,6 +391,8 @@ void SparseDoubleVector::addWeightedTo(const SparseDoubleVectorPtr& sparseVector
 
 void SparseDoubleVector::addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const
 {
+  if (!getNumValues())
+    return;
   denseVector->ensureSize(offsetInDenseVector + (size_t)(lastIndex + 1));
   double* target = denseVector->getValuePointer(offsetInDenseVector);
   for (size_t i = 0; i < values.size(); ++i)

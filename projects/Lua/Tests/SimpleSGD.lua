@@ -7,6 +7,7 @@ require 'IterationFunction'
 require 'Loss'
 require 'Predictor'
 require 'Optimizer'
+require 'Evaluator'
 
 --for k,v in ipairs(examples) do 
 --  for k2,v2 in ipairs(v) do
@@ -31,11 +32,11 @@ local function decomposableObjectiveFunction(index, parameters)
 end
 
 local function trainAccuracyFunction(parameters)
-  return Predictor.accuracy(Predictor.LinearBinaryClassifier{theta=parameters}, trainExamples)
+  return Evaluator.accuracy(Predictor.LinearBinaryClassifier{theta=parameters}, trainExamples)
 end
 
 local function testAccuracyFunction(parameters)
-  return Predictor.accuracy(Predictor.LinearBinaryClassifier{theta=parameters}, testExamples)
+  return Evaluator.accuracy(Predictor.LinearBinaryClassifier{theta=parameters}, testExamples)
 end
 
 

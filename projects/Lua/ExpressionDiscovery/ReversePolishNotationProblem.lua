@@ -3,6 +3,7 @@
 
 require '../ExpressionDiscovery/DecisionProblem'
 require 'AST'
+require 'Vector'
 
 -- Transforms a formula represented through its abstract syntax tree
 --  into an executable function
@@ -102,28 +103,38 @@ DecisionProblem.ReversePolishNotation = subspecified {
       return nil -- this is a final state
     end
     local ms = maxSize -- FIXME: there is a bug in the lua here !!! 
-    if ms > 0 and stackOrExpressionSize(stack) >= ms then
-      return {AST.returnStatement()} -- maxSize is reached, must finish now
+    local minArity = 0
+    local maxArity = #stack
+    if ms > 0 then
+      local s = stackOrExpressionSize(stack)
+      if s >= ms then
+        return {AST.returnStatement()} -- maxSize is reached, must finish now
+      end
+      local remaining = ms - s
+      minArity = #stack + 1 - remaining
     end
 
     local res = {}
-    local m = #stack
-    if m >= 2 then
+    if minArity <= 2 and 2 <= maxArity then
       for i,v in ipairs(binaryOperations) do
         table.insert(res, AST.binaryOperation(v))
       end
     end
-    if m >= 1 then
+    if minArity <= 1 and 1 <= maxArity then
       for i,v in ipairs(unaryOperations) do
         table.insert(res, AST.unaryOperation(v))
       end
+    end
+    if minArity <= 0 and 0 <= maxArity then
+      for i,v in ipairs(variables) do
+        table.insert(res, AST.identifier(v))
+      end
+      for i,c in ipairs(constants) do
+        table.insert(res, AST.literalNumber(c))
+      end
+    end
+    if 1 <= maxArity then
       table.insert(res, AST.returnStatement())
-    end
-    for i,v in ipairs(variables) do
-      table.insert(res, AST.identifier(v))
-    end
-    for i,c in ipairs(constants) do
-      table.insert(res, AST.literalNumber(c))
     end
     return res
   end,
@@ -141,6 +152,12 @@ DecisionProblem.ReversePolishNotation = subspecified {
     end
   end,
 
+  -- Features
+  actionFeatures = function (x,u)
+    return Vector.newSparse()
+  end,
+
+  -- String descriptions
   stateToString = function (x)
     if type(x) == "table" then
       local res = "{"

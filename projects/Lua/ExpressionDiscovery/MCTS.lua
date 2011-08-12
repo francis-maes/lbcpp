@@ -6,30 +6,7 @@ require 'DiscreteBandit'
 require 'Stochastic'
 require 'Statistics'
 
-function math.argmax(vector, f)
-  local bestScore = -math.huge
-  local bestSolutions = {}
-
-  for key,value in ipairs(vector) do
-    local score = f(key, value)
-    if score > bestScore then
-      bestScore = score
-      bestSolutions = {key}
-    elseif score == bestScore then
-      table.insert(bestSolutions, key)
-    end
-  end
-
-  if #bestSolutions == 0 then
-    return nil
-  elseif #bestSolutions == 1 then
-    return bestSolutions[1]
-  else
-    return bestSolutions[Stochastic.uniformInteger(1,#bestSolutions)]
-  end
-end
-
-subspecified function DecisionProblem.SinglePlayerMCTS(problem, x)
+subspecified function DecisionProblem.SinglePlayerMCTS(problem, x0)
   parameter numEpisodes = {default = 10000, min = 0}
   parameter indexFunction = {default = DiscreteBandit.ucb1C{2}}
   parameter verbose = {default = false}
@@ -38,7 +15,7 @@ subspecified function DecisionProblem.SinglePlayerMCTS(problem, x)
     return {x = x, stats = Statistics.meanAndVariance(), preAction = preAction} -- U = vector of actions, subNodes = vector of subNodes
   end
 
-  local root = newNode(x or problem.x0)
+  local root = newNode(x0 or problem.x0)
 
   local function score(node, subNode)
     local stats = subNode.stats
@@ -149,6 +126,9 @@ subspecified function DecisionProblem.SinglePlayerMCTS(problem, x)
     else
       episode()
     end
+  end
+  if verbose then
+    context:result("rootStats", root.stats)
   end
   return bestFinalState, bestActionSequence, bestScore
 end
