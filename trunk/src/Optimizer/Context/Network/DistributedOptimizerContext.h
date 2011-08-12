@@ -12,8 +12,6 @@
 # include <lbcpp/Optimizer/OptimizerContext.h>
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Network/NetworkClient.h>
-# include <lbcpp/Network/NetworkInterface.h>
-# include <lbcpp/Network/NetworkNotification.h>
 
 namespace lbcpp
 {
@@ -48,6 +46,7 @@ public:
   
   virtual bool evaluate(const Variable& parameters)
   {
+/*
     // create a WU for this request and send it to the Manager
     NetworkClientPtr client;
     ManagerNetworkInterfacePtr interface = getNetworkInterfaceAndConnect(client);
@@ -70,6 +69,8 @@ public:
       ScopedLock _(inProgressWUsLock);  // synchronized because it is alsa accessible by GetFinishedExecutionTracesDaemon
       inProgressWUs.push_back(std::make_pair(res, parameters));
     }
+*/
+    return false;
     return true;
   }
   
@@ -86,7 +87,6 @@ protected:
   size_t requiredCpus;
   size_t requiredMemory;
   size_t requiredTime;
-  XxxNetworkClientPtr client;
   
   FunctionCallbackPtr functionCallback;
   
@@ -95,9 +95,10 @@ protected:
 
   GetFinishedExecutionTracesDaemon* getFinishedTracesThread;  /**< Pointer to the thread that contacts the Manager to get the results. */
   
-  ManagerNetworkInterfacePtr getNetworkInterfaceAndConnect(NetworkClientPtr& client) const
+  ObjectPtr getNetworkInterfaceAndConnect(NetworkClientPtr& client) const
   {
-    
+    jassertfalse;
+    /*
     client = blockingNetworkClient(context);
     if (!client->startClient(managerHostName, managerPort))
     {
@@ -108,14 +109,20 @@ protected:
     ManagerNetworkInterfacePtr interface = forwarderManagerNetworkInterface(context, client, source);
     client->sendVariable(ReferenceCountedObjectPtr<NetworkInterface>(interface));
     return interface;
+     */
+    return ObjectPtr();
   }
   
-  String sendWU(WorkUnitPtr wu, ManagerNetworkInterfacePtr interface)
-  {    
+  String sendWU(WorkUnitPtr wu, ObjectPtr interface)
+  {
+    /*
     WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(context, projectName, source, destinations[nextDestination], wu, requiredCpus, requiredMemory, requiredTime);
     ++nextDestination;
     nextDestination %= destinations.size();
     return interface->pushWorkUnit(request);
+     */
+    jassertfalse;
+    return T("");
   }
   
 private:
@@ -134,7 +141,8 @@ public:
     : Thread(T("GetFinishedExecutionTracesDaemon")), optimizerContext(optimizerContext), context(optimizerContext->context) {}
   
   virtual void run()
-  {    
+  {
+    /*
     while (!threadShouldExit())
     {
       sleep(optimizerContext->timeToSleep); // avoid busy waiting
@@ -211,6 +219,7 @@ public:
       client->sendVariable(new CloseCommunicationNotification());
       client->stopClient();
     }
+     */
   }
   
 private:
@@ -218,15 +227,6 @@ private:
   ExecutionContext& context;
 };
 
-/*
-class XxxDistributedOptimizerContext : public OptimizerContext
-{
-public:
-  XxxDistributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction
-                                 , String managerHostName, size_t managerPort);
-  
-};
-*/
 };
 
 #endif // !LBCPP_DISTRIBUTED_OPTIMIZER_CONTEXT_H_

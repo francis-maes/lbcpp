@@ -2,58 +2,32 @@
 
 <library name="Network" directory="Network">
 
-  <import name="GridNetwork"/>
-  <import name="ManagerNetwork"/>
-  <import name="NetworkWorkUnit"/>
-
   <include file="lbcpp/Network/NetworkClient.h"/>
   <include file="lbcpp/Network/NetworkServer.h"/>
-  <include file="lbcpp/Network/NetworkInterface.h"/>
-  <include file="lbcpp/Network/NetworkNotification.h"/>
   <include file="lbcpp/Network/NetworkMessage.h"/>
+  <include file="lbcpp/Network/Manager.h"/>
 
   <class name="NetworkClient" base="Object" abstract="yes"/>
-  <class name="NetworkServer" base="Object"/>
+  <class name="NetworkServer" base="Object" abstract="yes"/>
 
-  <class name="NetworkCallback" base="Object" abstract="yes"/>
-
-  <!-- NetworkInterface -->
-  <class name="NetworkInterface" base="NameableObject"/>
-  
   <!-- WorkUnitNetworkRequest -->
   <class name="WorkUnitNetworkRequest" base="Object">
-    <variable type="String" name="identifier"/>
+    <variable type="String" name="uniqueIdentifier"/>
+    <variable type="XmlElement" name="workUnit"/>
     <variable type="String" name="projectName"/>
     <variable type="String" name="source"/>
     <variable type="String" name="destination"/>
-    <variable type="XmlElement" name="workUnit"/>
     <variable type="Integer" name="requiredCpus"/>
     <variable type="Integer" name="requiredMemory"/>
     <variable type="Integer" name="requiredTime"/>
   </class>
-
-  <class name="ExecutionTraceNetworkResponse" base="Object">
-    <variable type="String" name="identifier"/>
-    <variable type="XmlElement" name="trace"/>
-  </class>
-
-  <class name="NetworkArchive" base="Object">
-    <variable type="WorkUnitNetworkRequest" name="request"/>
-    <variable type="ExecutionTraceNetworkResponse" name="response"/>
-  </class>
-  
-  <!-- NetworkNotification -->
-  <class name="NetworkNotification" base="Notification" abstract="yes"/>
-
-  <class name="CloseCommunicationNotification" base="NetworkNotification"/>
-
 
   <!-- NetworkMessage -->
   <class name="NetworkMessage" base="Object" abstract="yes"/>
   
   <class name="WorkUnitRequestNetworkMessage" base="NetworkMessage">
     <variable type="PositiveInteger" name="sourceIdentifier"/>
-    <variable type="XmlElement" name="workUnit"/>
+    <variable type="WorkUnitNetworkRequest" name="request"/>
   </class>
 
   <class name="WorkUnitAcknowledgementNetworkMessage" base="NetworkMessage">
@@ -66,4 +40,33 @@
     <variable type="XmlElement" name="result"/>
   </class>
 
+  <class name="GetWorkUnitResultNetworkMessage" base="NetworkMessage">
+    <variable type="String" name="uniqueIdentifier"/>
+  </class>
+  
+  <class name="GetWaitingWorkUnitsNetworkMessage" base="NetworkMessage">
+    <variable type="String" name="gridName"/>
+  </class>
+
+  <class name="WorkUnitRequestsNetworkMessage" base="NetworkMessage">
+    <variable type="ObjectVector[WorkUnitNetworkRequest]" name="requests"/>
+  </class>
+
+  <class name="ExecutionTracesNetworkMessage" base="NetworkMessage">
+    <variable type="ObjectVector[Pair[String, XmlElement]]" name="traces"/>
+  </class>
+  
+  <class name="CloseCommunicationNetworkMessage" base="NetworkMessage"/>
+  
+  <!-- WorkUnit -->
+  <class name="ServerWorkUnit" base="WorkUnit">
+    <variable type="PositiveInteger" name="port" shortName="p"/>
+  </class>
+
+  <class name="GridWorkUnit" base="WorkUnit">
+    <variable type="String" name="clientType" shortName="c" description="Type of grid: local, sge"/>
+    <variable type="String" name="gridName" shortName="g"/>
+    <variable type="String" name="managerHostName" shortName"h"/>
+    <variable type="PositiveInteger" name="managerPort" shortName="p"/>
+  </class>
 </library>

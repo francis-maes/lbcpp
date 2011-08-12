@@ -8,7 +8,6 @@
 #include "precompiled.h"
 #include "ExplorerProject.h"
 #include "WorkUnitManager/NewWorkUnitDialogWindow.h"
-#include <lbcpp/Network/NetworkNotification.h>
 
 using namespace lbcpp;
 
@@ -187,8 +186,8 @@ bool ExplorerProject::connectToManager(ExecutionContext& context, const String& 
   managerHostName = hostName;
   managerPort = port;
   managerConnected = true;
-
-  managerClient = blockingNetworkClient(context);
+  jassertfalse;
+  //managerClient = blockingNetworkClient(context);
   if (!managerClient->startClient(managerHostName, managerPort))
   {
     context.errorCallback(T("ExplorerProject::connectToManager"), T("Could not connect to manager at ") + managerHostName + T(":") + String(port));
@@ -197,13 +196,14 @@ bool ExplorerProject::connectToManager(ExecutionContext& context, const String& 
   context.informationCallback(managerHostName, T("Connected !"));
 
   thisNetworkNodeName = T("lbcpp-explorer on ") + juce::SystemStats::getOperatingSystemName();
-  managerInterface = forwarderManagerNetworkInterface(context, managerClient, thisNetworkNodeName);
-  managerClient->sendVariable(ReferenceCountedObjectPtr<NetworkInterface>(managerInterface));
+  //managerInterface = forwarderManagerNetworkInterface(context, managerClient, thisNetworkNodeName);
+  //managerClient->sendVariable(ReferenceCountedObjectPtr<NetworkInterface>(managerInterface));
   return true;
 }
 
 void ExplorerProject::disconnectFromManager(ExecutionContext& context)
 {
+  /*
   managerConnected = false;
   if (managerClient)
   {
@@ -214,10 +214,13 @@ void ExplorerProject::disconnectFromManager(ExecutionContext& context)
     managerClient->stopClient();
     managerClient = NetworkClientPtr();
   }
+  */
 }
 
 bool ExplorerProject::sendWorkUnitToManager(ExecutionContext& context, const WorkUnitPtr& workUnit, const String& grid, size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
 {
+  jassertfalse;
+  /*
   if (!managerInterface)
   {
     context.errorCallback(T("Not connected to manager"));
@@ -232,5 +235,6 @@ bool ExplorerProject::sendWorkUnitToManager(ExecutionContext& context, const Wor
   }
   request->setIdentifier(res);
   context.informationCallback(T("WorkUnitIdentifier: ") + request->getIdentifier());
+   */
   return true;
 }

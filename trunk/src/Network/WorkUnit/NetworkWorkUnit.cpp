@@ -5,16 +5,17 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#include "precompiled.h"
-#include <lbcpp/Network/NetworkServer.h>
-#include <lbcpp/Network/NetworkNotification.h>
 #include "NetworkWorkUnit.h"
 
 using namespace lbcpp;
 
 /*
-** ManagerWorkUnit
-*/
+#include "precompiled.h"
+#include <lbcpp/Network/NetworkServer.h>
+#include <lbcpp/Network/NetworkNotification.h>
+
+
+
 Variable ManagerWorkUnit::run(ExecutionContext& context)
 {
   fileManager = new NetworkProjectFileManager(context);
@@ -27,7 +28,7 @@ Variable ManagerWorkUnit::run(ExecutionContext& context)
   
   while (true)
   {
-    /* Accept client */
+    // Accept client
     NetworkClientPtr client = server->acceptClient(INT_MAX);
     if (!client)
       continue;
@@ -35,7 +36,7 @@ Variable ManagerWorkUnit::run(ExecutionContext& context)
     String connectedHostName = client->getConnectedHostName();
     context.informationCallback(connectedHostName, T("Connected at ") + Time::getCurrentTime().toString(true, true, true, true));
     
-    /* Which kind of connection ? */
+    // Which kind of connection ?
     NetworkInterfacePtr remoteInterface;
     if (!client->receiveObject<NetworkInterface>(5000, remoteInterface) || !remoteInterface)
     {
@@ -49,7 +50,7 @@ Variable ManagerWorkUnit::run(ExecutionContext& context)
 
     // - replace by virtual function call -->
     ClassPtr type = remoteInterface->getClass();
-    /* Strat communication (depending of the type) */
+    // Strat communication (depending of the type)
     NetworkInterfacePtr interface;
     if (type->inheritsFrom(forwarderManagerNetworkInterfaceClass))
     {
@@ -68,7 +69,7 @@ Variable ManagerWorkUnit::run(ExecutionContext& context)
       continue;
     }
     
-    /* Terminate the connection */
+    // Terminate the connection
     context.informationCallback(connectedHostName, T("Disconnected at ") + Time::getCurrentTime().toString(true, true, true, true));
   }
 }
@@ -100,12 +101,12 @@ void ManagerWorkUnit::clientCommunication(ExecutionContext& context, const GridN
     return;
   }
 
-  /* Send new requests */
+  // Send new requests
   std::vector<WorkUnitNetworkRequestPtr> waitingRequests;
   fileManager->getWaitingRequests(nodeName, waitingRequests);
   sendRequests(context, interface, client, waitingRequests);
 
-  /* Get trace */
+  // Get trace
   ContainerPtr networkResponses = interface->getFinishedExecutionTraces();
   if (!networkResponses)
     return;
@@ -139,12 +140,12 @@ void ManagerWorkUnit::sendRequests(ExecutionContext& context, GridNetworkInterfa
   while (numRequestsSent < numRequests)
   {
     const size_t numThisTime = juce::jmin(numRequests - numRequestsSent, 200);
-    /* Prepare data and send */
+    // Prepare data and send
     ObjectVectorPtr v = objectVector(workUnitNetworkRequestClass, numThisTime);
     for (size_t i = 0; i < numThisTime; ++i)
       v->set(i, requests[numRequestsSent + i]);
     ContainerPtr results = interface->pushWorkUnits(v);
-    /* Check acknowledgement */
+    // Check acknowledgement
     if (!results || results->getNumElements() != numThisTime)
     {
       context.warningCallback(client->getConnectedHostName(), T("PushWorkUnits - No acknowledgement received."));
@@ -166,9 +167,6 @@ void ManagerWorkUnit::sendRequests(ExecutionContext& context, GridNetworkInterfa
   }
 }
 
-/*
-** GridWorkUnit
-*/
 Variable GridWorkUnit::run(ExecutionContext& context)
 {
   if (gridEngine != T("SGE") && gridEngine != T("BOINC"))
@@ -177,7 +175,7 @@ Variable GridWorkUnit::run(ExecutionContext& context)
     return false;
   }
   
-  /* Establishing a connection */
+  // Establishing a connection
   NetworkClientPtr client = blockingNetworkClient(context, 3);
   if (!client->startClient(hostName, port))
   {
@@ -198,7 +196,7 @@ Variable GridWorkUnit::run(ExecutionContext& context)
     return Variable();
   }
   
-  /* Slave mode - Execute received commands */
+  // Slave mode - Execute received commands
   client->sendVariable(interface);
   while (client->isConnected() || client->hasVariableInQueue())
   {
@@ -220,22 +218,6 @@ Variable GridWorkUnit::run(ExecutionContext& context)
   return true;
 }
 
-/*
-** DumbWorkUnit
-*/
-Variable DumbWorkUnit::run(ExecutionContext& context)
-{
-  for (size_t i = 0; i < 10; ++i)
-  {
-    context.progressCallback(new ProgressionState(i+1, 10, T("DumbWorkUnit")));
-    juce::Thread::sleep(1000);
-  }
-  return true;
-}
-
-/*
-** GetTraceWorkUnit
-*/
 Variable GetTraceWorkUnit::run(ExecutionContext& context)
 {
   NetworkClientPtr client = blockingNetworkClient(context);
@@ -278,3 +260,4 @@ Variable GetTraceWorkUnit::run(ExecutionContext& context)
 
   return true;
 }
+*/

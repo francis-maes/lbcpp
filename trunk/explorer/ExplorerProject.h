@@ -10,7 +10,6 @@
 # define LBCPP_EXPLORER_PROJECT_H_
 
 # include <lbcpp/lbcpp.h>
-# include <lbcpp/Network/NetworkInterface.h>
 # include "ExplorerConfiguration.h"
 
 namespace lbcpp
@@ -171,7 +170,6 @@ protected:
 
   String thisNetworkNodeName;
   NetworkClientPtr managerClient;
-  ManagerNetworkInterfacePtr managerInterface;
 };
 
 }; /* namespace lbcpp */

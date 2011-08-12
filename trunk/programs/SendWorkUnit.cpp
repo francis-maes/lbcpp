@@ -10,8 +10,6 @@
 #include <lbcpp/Execution/ExecutionTrace.h>
 #include <lbcpp/library.h>
 #include <lbcpp/Network/NetworkClient.h>
-#include <lbcpp/Network/NetworkInterface.h>
-#include <lbcpp/Network/NetworkNotification.h>
 
 using namespace lbcpp;
 
@@ -249,15 +247,15 @@ int mainImpl(int argc, char** argv)
 
   if (!workUnit)
     return false;
-
-  NetworkClientPtr client = blockingNetworkClient(*context);
+  jassertfalse;
+  NetworkClientPtr client;
   if (!client->startClient(managerHostName, managerPort))
   {
     context->errorCallback(T("SendWorkUnit::run"), T("Not connected !"));
     return false;
   }
   context->informationCallback(managerHostName, T("Connected !"));
-
+/*
   ManagerNetworkInterfacePtr interface = forwarderManagerNetworkInterface(*context, client, source);
   client->sendVariable(ReferenceCountedObjectPtr<NetworkInterface>(interface));
 
@@ -276,7 +274,7 @@ int mainImpl(int argc, char** argv)
 
   File f = context->getFile(projectName + T(".") + request->getIdentifier() + T(".request"));
   request->saveToFile(*context, f);
-  
+  */
   return true;
 }
 

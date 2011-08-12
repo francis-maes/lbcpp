@@ -73,9 +73,6 @@
   <class name="DebugExecutionTraceLoading" base="WorkUnit">
     <variable type="File" name="traceFile" shortName="i"/>
   </class>
-
-  <class name="CheckNetworkServerWorkUnit" base="WorkUnit"/>
-  <class name="CheckNetworkClientWorkUnit" base="WorkUnit"/>
     
   <class name="ConvertFabienFileToProtein" base="WorkUnit">
     <variable type="File" name="inputDirectory" shortName="i"/>
@@ -86,9 +83,7 @@
     <variable type="File" name="spxFile"/>
     <variable type="File" name="outputDirectory"/>
   </class>
-  
-  <class name="CheckManagerWorkUnit" base="WorkUnit"/>
-  
+
   <class name="GenerateFoldsWorkUnit" base="WorkUnit">
     <variable type="File" name="sourceDirectory" shortName="i"/>
     <variable type="File" name="destinationDirectory" shortName="o"/>
@@ -114,6 +109,11 @@
   </class>
   <class name="BFSTestObjectiveFunction" base="SimpleUnaryFunction"/>
   <class name="BFSTestWorkUnit" base="WorkUnit"/>
+  
+  
+  <class name="DumbWorkUnit" base="WorkUnit"/>
+
+  <class name="ClientWorkUnit" base="WorkUnit"/>
   
   <!-- BEGIN CysteinBox -->
   <class name="CysteinLearnerParameters" base="Object">

@@ -5,6 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+/*
 #include "precompiled.h"
 #include <lbcpp/Data/Stream.h>
 #include "GridNetworkInterface.h"
@@ -12,7 +13,7 @@
 
 using namespace lbcpp;
 
-/* ForwarderGridNetworkInterface */
+
 ContainerPtr ForwarderGridNetworkInterface::pushWorkUnits(ContainerPtr networkRequests)
 {
   client->sendVariable(new PushWorkUnitsNotification(networkRequests));
@@ -38,7 +39,6 @@ void ForwarderGridNetworkInterface::removeExecutionTraces(ContainerPtr networkRe
   jassertfalse;
 }
 
-/* SgeGridNetworkInterface */
 SgeGridNetworkInterface::SgeGridNetworkInterface(ExecutionContext& context, const String& name)
   : GridNetworkInterface(context, name)
 {
@@ -100,7 +100,6 @@ void SgeGridNetworkInterface::removeExecutionTraces(ContainerPtr networkResponse
   }
 }
 
-/* BoincGridNetworkInterface */
 BoincGridNetworkInterface::BoincGridNetworkInterface(ExecutionContext& context, const String& Name)
   : GridNetworkInterface(context, Name)
 {
@@ -158,3 +157,4 @@ void BoincGridNetworkInterface::removeExecutionTraces(ContainerPtr networkRespon
     f.deleteFile();
   }
 }
+*/

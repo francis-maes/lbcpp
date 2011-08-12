@@ -19,14 +19,11 @@ class NetworkServer : public Object, public InterprocessConnectionServer
 public:
   NetworkServer(ExecutionContext& context)
     : context(context) {}
-  NetworkServer()
-    : context(*(ExecutionContext*)NULL) {}
-  virtual ~NetworkServer() {}
 
   bool startServer(int port);
   void stopServer();
 
-  NetworkClientPtr acceptClient(juce::int64 timeout);
+  virtual NetworkClient* createNetworkClient() = 0;
 
   lbcpp_UseDebuggingNewOperator
 
@@ -37,38 +34,12 @@ protected:
 protected:
   enum {magicNumber = 0xdeadface};
   ExecutionContext& context;
-  std::deque<NetworkClientPtr> acceptedClients;
-  CriticalSection lock;
-
-  NetworkClientPtr popClient();
 };
 
 typedef ReferenceCountedObjectPtr<NetworkServer> NetworkServerPtr;
 
-class XxxNetworkServer : public Object, public InterprocessConnectionServer
-{
-public:
-  XxxNetworkServer(ExecutionContext& context)
-    : context(context) {}
+extern NetworkServerPtr managerNetworkServer(ExecutionContext& context, const ManagerPtr& manager);
 
-  bool startServer(int port);
-  void stopServer();
-
-  virtual XxxNetworkClient* createNetworkClient() = 0;
-
-  lbcpp_UseDebuggingNewOperator
-
-protected:
-  /* InterprocessConnectionServer */
-  virtual InterprocessConnection* createConnectionObject();
-
-protected:
-  enum {magicNumber = 0xdeadface};
-  ExecutionContext& context;
-};
-
-typedef ReferenceCountedObjectPtr<XxxNetworkServer> XxxNetworkServerPtr;
-
-};
+}; /* namespace lbcpp */
 
 #endif //!LBCPP_NETWORK_SERVER_H_
