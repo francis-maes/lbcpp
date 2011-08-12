@@ -9,7 +9,6 @@ require 'DiscreteBandit'
 require 'Evaluator'
 require 'Sampler'
 
-
 -- decorate objective function 
 
 local numberOfObjectiveEvaluations = 0
@@ -18,7 +17,6 @@ local bestSolutionFound
 local bestSolutionNumberOfEvaluations
 
 local function decorateObjectiveFunction(objective)
-  
   return function (candidate, candidateDescription)
     numberOfObjectiveEvaluations = numberOfObjectiveEvaluations + 1
     local score = objective(candidate)
@@ -29,7 +27,6 @@ local function decorateObjectiveFunction(objective)
     end
     return score
   end
-
 end
 
 local function actionSequenceToString(problem, actionSequence)
@@ -54,7 +51,9 @@ local function testSearchAlgorithm(problem, algorithm)
     bestSolutionFound = nil
     bestSolutionNumberOfEvaluations = nil
   
+    context:enter("Searching")
     local bestFormula, bestActionSequence, bestReturn = algorithm(problem)
+    context:leave(bestReturn)
   
     context:result("bestFormula", bestFormula:print())
     context:result("bestActionSequence", actionSequenceToString(problem, bestActionSequence))
@@ -68,11 +67,13 @@ local function testSearchAlgorithm(problem, algorithm)
     context:information("Found \"" .. bestSolutionFound .. "\" after " ..
                 bestSolutionNumberOfEvaluations .. " evaluations (score = " ..
                 bestSolutionScore .. ")")
+    return bestSolutionFound .. " (" .. bestSolutionNumberOfEvaluations .. ")"
   end
 
-  for i=1,5 do
-    context:call("Run " .. i, run)
-  end
+  --for i=1,1 do
+  --return context:call("Run", run)
+  --end
+  return run()
 end
 
 -- Test1 : symbolic regression
@@ -97,7 +98,7 @@ symbolicRegressionProblem = DecisionProblem.ReversePolishNotation{
   constants = {1,2,5,10},
   objective = decorateObjectiveFunction(makeSymbolicRegressionObjective()),
   maxSize = 5
-}
+}.__get
 
 -- Test2 : bandits formula
 
@@ -114,11 +115,31 @@ banditsProblem = DecisionProblem.ReversePolishNotation{
   constants = {1,2,5,10},
   objective = decorateObjectiveFunction(banditsFormulaObjective),
   maxSize = 10
-}
+}.__get
 
 -- Main
 
-local problem = symbolicRegressionProblem
+local problem = banditsProblem
+
+
+-- Features
+
+require 'Dictionary'
+
+local actionFeatureDictionary = Dictionary.new()
+function problem:actionFeatures(x, u)
+  local dictionary = actionFeatureDictionary
+  local res = Vector.newSparse()
+
+  local function setFeature(str, value)
+    res[dictionary:add(str)] = value or 1.0
+  end
+
+  setFeature(self.stateToString(self.f(x,u)))
+  return res
+end
+
+
 
 --for maxSize=1,3 do 
 --  problem.__parameters.maxSize = maxSize
@@ -137,21 +158,24 @@ local problem = symbolicRegressionProblem
 --end
 
 
-local mctsUCB = DecisionProblem.SinglePlayerMCTS{numEpisodes=50000, indexFunction=DiscreteBandit.ucb1C{2}, verbose=false}
-local mctsUCB2 = DecisionProblem.SinglePlayerMCTS{numEpisodes=50000, indexFunction=DiscreteBandit.ucb1C{0.4}, verbose=false}
-local mctsUCBBernoulli = DecisionProblem.SinglePlayerMCTS{numEpisodes=50000, indexFunction=DiscreteBandit.ucb1Bernoulli, verbose=false}
+local mctsUCB = DecisionProblem.SinglePlayerMCTS{numEpisodes=10000, indexFunction=DiscreteBandit.ucb1C{2}, verbose=false}
+local mctsUCB2 = DecisionProblem.SinglePlayerMCTS{numEpisodes=10000, indexFunction=DiscreteBandit.ucb1C{0.4}, verbose=false}
+local mctsUCBBernoulli = DecisionProblem.SinglePlayerMCTS{numEpisodes=10000, indexFunction=DiscreteBandit.ucb1Bernoulli, verbose=false}
 
 local nestedMC1 = DecisionProblem.NestedMonteCarlo{level=1}
 local nestedMC2 = DecisionProblem.NestedMonteCarlo{level=2}
 local nestedMC3 = DecisionProblem.NestedMonteCarlo{level=3}
 
-local ubola = DecisionProblem.Ubola{numEpisodes = 10000, verbose = true}
+for i,C in ipairs({0, 1, 2, 3, 4, 5, 10}) do
+  for j,alpha in ipairs({0.0001, 0.001, 0.01, 0.1}) do
+    local ubola = DecisionProblem.Ubola{C=C, alpha=alpha, numEpisodes = 10000, numEpisodesPerIteration=10, verbose = false}
+    context:call("Ubola C=" .. C .. " alpha = " .. alpha, testSearchAlgorithm, problem, ubola)
+  end
+end
 
-context:call("Ubola", testSearchAlgorithm, problem, ubola)
-
---context:call("MCTS-UCB 1", testSearchAlgorithm, problem, mctsUCB)
---context:call("MCTS-UCB 2", testSearchAlgorithm, problem, mctsUCB2)
---context:call("MCTS-UCB Bernoulli", testSearchAlgorithm, problem, mctsUCBBernoulli)
---context:call("NestedMC1", testSearchAlgorithm, problem, nestedMC1)
---context:call("NestedMC2", testSearchAlgorithm, problem, nestedMC2)
---context:call("NestedMC3", testSearchAlgorithm, problem, nestedMC3)
+context:call("MCTS-UCB 1", testSearchAlgorithm, problem, mctsUCB)
+context:call("MCTS-UCB 2", testSearchAlgorithm, problem, mctsUCB2)
+context:call("MCTS-UCB Bernoulli", testSearchAlgorithm, problem, mctsUCBBernoulli)
+context:call("NestedMC1", testSearchAlgorithm, problem, nestedMC1)
+context:call("NestedMC2", testSearchAlgorithm, problem, nestedMC2)
+context:call("NestedMC3", testSearchAlgorithm, problem, nestedMC3)

@@ -35,7 +35,7 @@ end
 subspecified function DecisionProblem.ActionValueBasedPolicy(problem, x)
   parameter actionValues = {}
   local U = problem.U(x)
-  return U[math.argmax(U, |u| actionValues(problem, x, u))]
+  return U[math.argmax(U, |i,u| actionValues(problem, x, u))]
 end
 
 function DecisionProblem.doEpisode(problem, x, policy)

@@ -495,6 +495,39 @@ int SparseDoubleVector::append(LuaState& state)
   return 0;
 }
 
+int SparseDoubleVector::__index(LuaState& state) const
+{
+  if (!state.isInteger(1))
+    return Object::__index(state);
+
+  int index = state.toInteger(1);
+  if (index < 1)
+  {
+    state.error("Invalid index in SparseDoubleVector::index()");
+    return 0;
+  }
+  const double* value = SparseDoubleVectorHelper::get(values, index);
+  state.pushNumber(value ? *value : 0.0);
+  return 1;
+}
+
+int SparseDoubleVector::__newIndex(LuaState& state)
+{
+  if (!state.isInteger(1))
+    return Object::__newIndex(state);
+
+  int index = state.toInteger(1);
+  if (index < 1)
+    state.error("Invalid index in SparseDoubleVector::newIndex()");
+
+  double value = state.checkNumber(2);
+  if (index > lastIndex)
+    appendValue(index, value);
+  else
+    SparseDoubleVectorHelper::set(values, index, value);
+  return 0;
+}
+
 /*
 ** DenseDoubleVector
 */
@@ -797,16 +830,16 @@ void DenseDoubleVector::clone(ExecutionContext& context, const ObjectPtr& t) con
   }
 }
 
-int DenseDoubleVector::len(LuaState& state)
+int DenseDoubleVector::__len(LuaState& state) const
 {
   state.pushInteger(values ? values->size() : 0);
   return 1;
 }
 
-int DenseDoubleVector::newIndex(LuaState& state)
+int DenseDoubleVector::__newIndex(LuaState& state)
 {
   if (!state.isInteger(1))
-    return Object::newIndex(state);
+    return Object::__newIndex(state);
 
   int index = state.toInteger(1);
   if (index < 1 || index > (int)getNumElements())
@@ -816,10 +849,10 @@ int DenseDoubleVector::newIndex(LuaState& state)
   return 0;
 }
 
-int DenseDoubleVector::index(LuaState& state)
+int DenseDoubleVector::__index(LuaState& state) const
 {
   if (!state.isInteger(1))
-    return Object::index(state);
+    return Object::__index(state);
 
   int index = state.toInteger(1);
   if (index < 1 || index > (int)getNumElements())

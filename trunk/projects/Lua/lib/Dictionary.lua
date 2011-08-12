@@ -7,7 +7,6 @@ Dictionary = {}
 Dictionary.mt = {__index = Dictionary}
 
 function Dictionary.mt.__tostring(dict)
-  print ("coucou")
   local res = ""
   for i,v in ipairs(dict.content) do
     if #res > 0 then

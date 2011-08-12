@@ -52,8 +52,11 @@ extern ClassPtr inteluaInterpreterClass;
 class ExecuteLuaString : public WorkUnit
 {
 public:
+  ExecuteLuaString() : verbose(false) {}
+
   String code;
   String description;
+  bool verbose;
  
   virtual String toShortString() const
   {
@@ -71,7 +74,6 @@ public:
     File applicationDirectory = File::getSpecialLocation(File::currentApplicationFile).getParentDirectory();
     File inteluaDirectory = applicationDirectory.getChildFile("../../projects/Lua/lib");
 
-    static bool verbose = true;
     InteluaInterpreter interpreter(context, inteluaDirectory, verbose);
     interpreter.setStaticAllocationFlag();
     return interpreter.executeBuffer(code, toShortString());

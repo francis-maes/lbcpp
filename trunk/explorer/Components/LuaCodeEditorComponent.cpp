@@ -160,7 +160,7 @@ bool LuaCodeEditor::keyPressed(const juce::KeyPress& key)
   if (key.getModifiers().isCommandDown())
   {
     if (key.getKeyCode() == juce::KeyPress::returnKey)
-      {executeCode(); return true;}
+      {executeCode(key.getModifiers().isShiftDown()); return true;}
 
     char c = juce::CharacterFunctions::toLowerCase((char)key.getKeyCode());
     if (c == 's')
@@ -181,7 +181,7 @@ void LuaCodeEditor::updateStatus()
 }
 
 // command+enter
-void LuaCodeEditor::executeCode()
+void LuaCodeEditor::executeCode(bool verbose)
 {
   String code = codeEditor->getSelectedText();
   if (!code.containsNonWhitespaceChars())
@@ -204,6 +204,7 @@ void LuaCodeEditor::executeCode()
     WorkUnitPtr workUnit = WorkUnit::create(workUnitClass);
     workUnit->setVariable(0, code);
     workUnit->setVariable(1, name);
+    workUnit->setVariable(2, verbose);
     context->pushWorkUnit(workUnit);
   }
 }

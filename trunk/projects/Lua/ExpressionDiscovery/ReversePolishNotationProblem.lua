@@ -4,6 +4,7 @@
 require '../ExpressionDiscovery/DecisionProblem'
 require 'AST'
 require 'Vector'
+require 'Dictionary'
 
 -- Transforms a formula represented through its abstract syntax tree
 --  into an executable function
@@ -150,11 +151,6 @@ DecisionProblem.ReversePolishNotation = subspecified {
     else
       return 0
     end
-  end,
-
-  -- Features
-  actionFeatures = function (x,u)
-    return Vector.newSparse()
   end,
 
   -- String descriptions
