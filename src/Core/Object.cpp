@@ -532,7 +532,7 @@ int Object::clone(LuaState& state)
   return 1;
 }
 
-int Object::index(LuaState& state)
+int Object::__index(LuaState& state) const
 {
   if (state.isString(1)) // indiced by a string
   {
@@ -583,7 +583,7 @@ int Object::index(LuaState& state)
   }
 }
 
-int Object::newIndex(LuaState& state)
+int Object::__newIndex(LuaState& state)
 {
   if (state.isString(1))
   {
@@ -629,7 +629,7 @@ int Object::__div(LuaState& state)
   return 0;
 }
 
-int Object::len(LuaState& state)
+int Object::__len(LuaState& state) const
 {
   state.pushInteger(0);
   return 1;

@@ -7,6 +7,7 @@ Interface:
 ]]
 
 require 'Loss'
+require 'Vector'
 
 Predictor = {}
 Predictor.MT = {} -- Metatable
@@ -28,5 +29,48 @@ Predictor.LinearBinaryClassifier = subspecified setmetatable({
   end
 }, Predictor.MT)
 
+
+
+--
+-- Conditional Gaussian
+-- 
+
+--local function gaussianDensity(derivable mu, derivable sigma, y)
+--  local ny = (y - mu) / sigma
+--  return math.exp(-ny^2 / 2) / (math.sqrt(2 * math.pi) * sigma)
+--end
+--local function gaussianNLL(derivable mu, derivable sigma, y)
+--  return -math.log(gaussianDensity(mu, sigma, y))
+--end
+
+local function gaussianNLL(derivable mu, derivable sigma, y)
+  local ny = (y - mu) / sigma
+  return math.log(math.sqrt(2 * math.pi) * sigma) + 0.5 * ny ^ 2
+end
+
+local function condGaussianNLL(derivable mu, derivable sigmaParam, y)
+  local sigma = math.log(1 + math.exp(-sigmaParam))
+  return gaussianNLL(mu, sigma, y)
+end
+
+Predictor.ConditionalGaussian = subspecified setmetatable({
+  parameter thetaMu = {default = Vector.newDense()},
+  parameter thetaSigma = {default = Vector.newDense()},
+
+  predict = function (x)
+    local mu = thetaMu:dot(x)
+    local sigma = math.log(1 + math.exp(-thetaSigma:dot(x)))
+    return mu, sigma
+  end,
+
+  lossAndGradient = function (x, supervision)
+    local mu = thetaMu:dot(x)
+    local sigmaParam = thetaSigma:dot(x)
+    local loss = condGaussianNLL(mu, sigmaParam, supervision)
+    local dlossdmu = condGaussianNLL[1](mu, sigmaParam, supervision)
+    local dlossdsigmaParam = condGaussianNLL[2](mu, sigmaParam, supervision)
+    return loss, x * dlossdmu, x * dlossdsigmaParam
+  end
+}, Predictor.MT)
 
 return Predictor

@@ -56,9 +56,9 @@ public:
   /*
   ** Lua
   */
-  virtual int index(LuaState& state);
-  virtual int newIndex(LuaState& state);
-  virtual int len(LuaState& state);
+  virtual int __len(LuaState& state) const;
+  virtual int __index(LuaState& state) const;
+  virtual int __newIndex(LuaState& state);
 
   lbcpp_UseDebuggingNewOperator
 

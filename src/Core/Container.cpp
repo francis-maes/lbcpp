@@ -326,16 +326,16 @@ ContainerPtr Container::makePairsContainer(const ContainerPtr& inputs, const Con
 /*
 ** Lua
 */
-int Container::len(LuaState& state)
+int Container::__len(LuaState& state) const
 { 
   state.pushInteger(getNumElements());
   return 1;
 }
 
-int Container::newIndex(LuaState& state)
+int Container::__newIndex(LuaState& state)
 {
   if (!state.isInteger(1))
-    return Object::newIndex(state);
+    return Object::__newIndex(state);
 
   int index = state.toInteger(1);
   if (index < 1 || index > (int)getNumElements())
@@ -345,10 +345,10 @@ int Container::newIndex(LuaState& state)
   return 0;
 }
 
-int Container::index(LuaState& state)
+int Container::__index(LuaState& state) const
 {
   if (!state.isInteger(1))
-    return Object::index(state);
+    return Object::__index(state);
 
   int index = state.toInteger(1);
   if (index < 1 || index > (int)getNumElements())

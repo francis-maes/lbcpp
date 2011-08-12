@@ -196,9 +196,9 @@ public:
   static int toShortString(LuaState& state);
   static int garbageCollect(LuaState& state);
 
-  virtual int index(LuaState& state);
-  virtual int newIndex(LuaState& state);
-  virtual int len(LuaState& state);
+  virtual int __len(LuaState& state) const;
+  virtual int __index(LuaState& state) const;
+  virtual int __newIndex(LuaState& state);
   virtual int __add(LuaState& state);
   virtual int __sub(LuaState& state);
   virtual int __mul(LuaState& state);

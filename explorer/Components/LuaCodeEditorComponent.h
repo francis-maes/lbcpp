@@ -51,7 +51,7 @@ protected:
   juce::LuaCodeTokeniser tokeniser;
   ExecutionTracePtr trace;
 
-  void executeCode();
+  void executeCode(bool verbose);
   void saveFile();
 };
 

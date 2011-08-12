@@ -14,23 +14,13 @@
 using namespace lbcpp;
 
 static int objectIndex(lua_State* L)
-{
-  LuaState state(L);
-  ObjectPtr object = state.checkObject(1);
-  state.remove(1);
-  return object->index(state);
-}
+  {LuaState state(L); ObjectPtr object = state.checkObject(1); state.remove(1); return object->__index(state);}
 
 static int objectNewIndex(lua_State* L)
-{
-  LuaState state(L);
-  ObjectPtr object = state.checkObject(1);
-  state.remove(1);
-  return object->newIndex(state);
-}
+  {LuaState state(L); ObjectPtr object = state.checkObject(1); state.remove(1); return object->__newIndex(state);}
 
 static int objectLen(lua_State* L)
-  {LuaState state(L); ObjectPtr object = state.checkObject(1); state.remove(1); return object->len(state);}
+  {LuaState state(L); ObjectPtr object = state.checkObject(1); state.remove(1); return object->__len(state);}
 
 static int objectAdd(lua_State* L)
   {LuaState state(L); ObjectPtr object = state.checkObject(1); state.remove(1); return object->__add(state);}
