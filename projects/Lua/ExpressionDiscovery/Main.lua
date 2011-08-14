@@ -114,7 +114,7 @@ banditsProblem = DecisionProblem.ReversePolishNotation{
   variables = {"rk", "sk", "tk", "t"},
   constants = {1,2,5,10},
   objective = decorateObjectiveFunction(banditsFormulaObjective),
-  maxSize = 10
+  maxSize = 5
 }.__get
 
 -- Main
@@ -140,7 +140,6 @@ function problem:actionFeatures(x, u)
 end
 
 
-
 --for maxSize=1,3 do 
 --  problem.__parameters.maxSize = maxSize
 
@@ -162,6 +161,13 @@ local mctsUCB = DecisionProblem.SinglePlayerMCTS{numEpisodes=10000, indexFunctio
 local mctsUCB2 = DecisionProblem.SinglePlayerMCTS{numEpisodes=10000, indexFunction=DiscreteBandit.ucb1C{0.4}, verbose=false}
 local mctsUCBBernoulli = DecisionProblem.SinglePlayerMCTS{numEpisodes=10000, indexFunction=DiscreteBandit.ucb1Bernoulli, verbose=false}
 
+mctsUCB.__parameters.partialExpand = false
+
+context:call("MCTS-UCB 1", testSearchAlgorithm, problem, mctsUCB2)
+context:call("MCTS-UCB 1", testSearchAlgorithm, problem, mctsUCB2)
+
+
+--[[
 local nestedMC1 = DecisionProblem.NestedMonteCarlo{level=1}
 local nestedMC2 = DecisionProblem.NestedMonteCarlo{level=2}
 local nestedMC3 = DecisionProblem.NestedMonteCarlo{level=3}
@@ -173,9 +179,10 @@ for i,C in ipairs({0, 1, 2, 3, 4, 5, 10}) do
   end
 end
 
-context:call("MCTS-UCB 1", testSearchAlgorithm, problem, mctsUCB)
 context:call("MCTS-UCB 2", testSearchAlgorithm, problem, mctsUCB2)
 context:call("MCTS-UCB Bernoulli", testSearchAlgorithm, problem, mctsUCBBernoulli)
 context:call("NestedMC1", testSearchAlgorithm, problem, nestedMC1)
 context:call("NestedMC2", testSearchAlgorithm, problem, nestedMC2)
 context:call("NestedMC3", testSearchAlgorithm, problem, nestedMC3)
+
+]]
