@@ -170,6 +170,7 @@ DecisionProblem.ReversePolishNotation = subspecified {
   end,
 
   actionToString = function (u)
+    assert(u)
     if u.className == "lua::UnaryOperation" then
       local strings = {"not", "len", "unm"}
       return strings[u.op + 1]

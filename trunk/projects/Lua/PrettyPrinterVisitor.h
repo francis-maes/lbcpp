@@ -209,7 +209,21 @@ public:
   virtual void visit(LiteralString& expression)
   {
     write("\"");
-    write(expression.getValue().replace(T("\""), T("\\\"")));
+    const String& str = expression.getValue();
+    for (int i = 0; i < str.length(); ++i)
+    {
+      juce::tchar c = str[i];
+      if (c == '\n')
+        write("\\n");
+      else if (c == '\r')
+        write("\\r");
+      else if (c == '\t')
+        write("\\t");
+      else if (c == '"')
+        write("\\\"");
+      else
+        write(c);
+    }
     write("\"");
   }
 
@@ -404,6 +418,13 @@ private:
     }
     else
       write("<null>");
+  }
+
+  void write(juce::tchar c)
+  {
+    String s;
+    s += c;
+    write(s);
   }
 
   void write(const String& str)
