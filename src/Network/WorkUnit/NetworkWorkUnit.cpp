@@ -5,6 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#include "precompiled.h"
 #include "NetworkWorkUnit.h"
 
 using namespace lbcpp;
