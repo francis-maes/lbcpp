@@ -64,7 +64,7 @@ public:
     bool isStillExists = false;
     {
       ScopedLock _(lock);
-      isStillExists = sourceToUniqueIdentifier.count(sourceIdentifier);
+      isStillExists = sourceToUniqueIdentifier.count(sourceIdentifier) != 0;
       if (isStillExists)
         uniqueIdentifier = sourceToUniqueIdentifier[sourceIdentifier];
       else

@@ -1,8 +1,16 @@
+UBOLA Next steps:
+ * Variant of UBOLA that uses exact statistics instead of a learning machine
+ * Understand why the loss of ConditionalGaussian can be negative
+ * Understand why UBOLA is biased towards -(-(-(-(-(...))))) expressions
+ * Voir pourquoi l'objectif bandits se bloque à 0.3
+ * Features
 
 Lua-Misc
 * Metamethods for ipairs() and pairs()
 * Serialisation of subspecified expressions
 * derivable: Gerer les gradient et les DoubleVector 
+* derivable: Generate function that computes both the output and all derivatives
+* derivable: Advanced formula simplification
 * New 'goal' extension to integrate inference and learning
 
 Proteins:

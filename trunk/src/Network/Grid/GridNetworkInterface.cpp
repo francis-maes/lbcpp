@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: GridNetworkInterface.cpp       | Grid Network Interface         |
+| Filename: GridNetworkInterface.cpp       | Grid Network Interface          |
 | Author  : Julien Becker, Arnaud Schoofs  |                                 |
 | Started : 26/02/2011 19:04               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-/*
+
 #include "precompiled.h"
-#include <lbcpp/Data/Stream.h>
+/*#include <lbcpp/Data/Stream.h>
 #include "GridNetworkInterface.h"
 #include "GridNetworkNotification.h"
 
