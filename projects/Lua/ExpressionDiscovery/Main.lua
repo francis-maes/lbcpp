@@ -156,16 +156,31 @@ end
 --  context:call("Exhaustive search " .. maxSize, exhaustiveSearch, problem, problem.x0)
 --end
 
-randomSearchAlgorithm = {
+PolicyBasedSearchAlgorithm = subspecified {
+  parameter policy = {},
+
   initialize = function (self, problem)
     self.problem = problem
     self.x0 = problem.x0
   end,
 
   episode = function (self)
-    return DecisionProblem.randomEpisode(self.problem, self.x0)
-  end
+    return DecisionProblem.doEpisode(self.problem, self.x0, policy)
+  end,
+  
+  finalize = function (self) end
 }
+
+randomSearchAlgorithm = PolicyBasedSearchAlgorithm{policy = DecisionProblem.randomPolicy}.__get
+nested1SearchAlgorithm = PolicyBasedSearchAlgorithm{
+  policy = DecisionProblem.ActionValueBasedPolicy{
+    actionValues = DecisionProblem.StateToActionValue{
+      stateValues = DecisionProblem.SingleRolloutStateValue{
+        policy = DecisionProblem.randomPolicy
+      }
+    }
+  }
+}.__get
 
 function runSearchAlgorithm(problem, algorithm, numIterations, numEpisodesPerIteration)
   algorithm:initialize(problem)
@@ -196,14 +211,13 @@ function runSearchAlgorithm(problem, algorithm, numIterations, numEpisodesPerIte
     context:result("best iteration final state", problem.stateToString(bestIterationFinalState))
     context:leave(scoreStats:getMaximum())
   end
-  local test = algorithm:bestActionSequence()
-  for i,action in ipairs(test) do
-    print (i,problem.actionToString(action)) 
-  end
+  algorithm:finalize()
 end
 
-local algo = DecisionProblem.SinglePlayerMCTS{indexFunction=DiscreteBandit.ucb1C{0.2}, verbose=false}.__get
-runSearchAlgorithm(symbolicRegressionProblem, algo, 100, 1000)
+local algo = DecisionProblem.SinglePlayerMCTS{indexFunction=DiscreteBandit.ucb1C{2}, verbose=false, partialExpand = false}.__get
+context:call("random",  runSearchAlgorithm, symbolicRegressionProblem, randomSearchAlgorithm, 100, 100)
+context:call("nested1SearchAlgorithm", runSearchAlgorithm, symbolicRegressionProblem, nested1SearchAlgorithm, 100, 100)
+context:call("mcts", runSearchAlgorithm, symbolicRegressionProblem, algo, 100, 100)
 
 --[[
 local mctsUCB = DecisionProblem.SinglePlayerMCTS{numEpisodes=10000, indexFunction=DiscreteBandit.ucb1C{2}, verbose=false}
