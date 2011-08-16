@@ -1,3 +1,4 @@
+
 UBOLA Next steps:
  * Variant of UBOLA that uses exact statistics instead of a learning machine
  * Understand why the loss of ConditionalGaussian can be negative

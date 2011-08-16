@@ -58,8 +58,10 @@ DecisionProblem.SinglePlayerMCTS = subspecified {
   parameter partialExpand = {default = false},
   parameter verbose = {default = false},
 
-  newNode = function (self, x, preAction)
-    local res = {x = x, stats = Statistics.meanVarianceAndBounds(), preAction = preAction, fullyExpanded = false, subNodes = {}, U = self.problem.U(x)}
+  newNode = function (self, x, preAction, preReward)
+    local res = {x = x, stats = Statistics.meanVarianceAndBounds(),
+                 preAction = preAction, preReward = preReward or 0,
+                 fullyExpanded = false, subNodes = {}, U = self.problem.U(x)}
     if res.U == nil then
       res.U = {}
     end
@@ -81,7 +83,7 @@ DecisionProblem.SinglePlayerMCTS = subspecified {
     local res = {}
     local node = self.root
     local depth = 1
-   context:result("BestActionSequence " .. depth, node.stats)    
+    context:result("BestActionSequence " .. depth, node.stats)    
     while not self:isFinal(node) and node.fullyExpanded do
       assert(#node.U > 0)
       local i = math.argmax(node.U, |index, action| node.subNodes[index].stats:getMaximum())
@@ -95,7 +97,7 @@ DecisionProblem.SinglePlayerMCTS = subspecified {
 
   episode = function (self)
   
-    local function score(node, subNode)
+    local function nodeIndex(node, subNode)
       assert(subNode)
       local stats = subNode.stats
       local res
@@ -108,18 +110,20 @@ DecisionProblem.SinglePlayerMCTS = subspecified {
     end
 
     local function select(node) -- returns the whole path from root to leaf
-      local res = {}
+      local nodeSequence = {}
+      local score = 0
       assert(node)
       while not self:isFinal(node) and node.fullyExpanded do
-        table.insert(res, node)
+        table.insert(nodeSequence, node)
         assert(#node.U > 0)
-        local i = math.argmax(node.U, |index, action| score(node, node.subNodes[index]))
+        local i = math.argmax(node.U, |index, action| nodeIndex(node, node.subNodes[index]))
         assert(i ~= nil)
         node = node.subNodes[i]
+        score = score + node.preReward
         assert(node)
       end
-      table.insert(res, node)
-      return res
+      table.insert(nodeSequence, node)
+      return score, nodeSequence, nodeSequence[#nodeSequence]
     end
 
     local function simulate(x)
@@ -134,7 +138,7 @@ DecisionProblem.SinglePlayerMCTS = subspecified {
         local isSelectedAction = self.problem.actionToString(u) == self.problem.actionToString(action) -- FIXME: implement == between actions
         if leaf.subNodes[index] == nil then
           if not partialExpand or isSelectedAction then
-            leaf.subNodes[index] = self:newNode(self.problem.f(leaf.x, u), u)
+            leaf.subNodes[index] = self:newNode(self.problem.f(leaf.x, u), u, self.problem.g(leaf.x, u))
           else
             leaf.fullyExpanded = false
           end
@@ -162,37 +166,34 @@ DecisionProblem.SinglePlayerMCTS = subspecified {
     end
 
     -- select
-    local nodeSequence = select(self.root)
-    local leaf = nodeSequence[#nodeSequence]
-    assert(leaf)
+    local selectScore, nodeSequence, leaf = select(self.root)
     assert(self:isFinal(leaf) or not leaf.fullyExpanded)
-    if self:isFinal(leaf) then -- if we selected a final node, take the parent
-      if verbose then
-        context:information("Selected final node " .. self.problem.stateToString(leaf.x))
-      end
-      table.remove(nodeSequence, #nodeSequence)
-      leaf = nodeSequence[#nodeSequence]
-    end
-    
     if verbose then
       local str = ""
       for i,node in ipairs(nodeSequence) do
         str = str .. " -> " .. self.problem.stateToString(node.x)
       end
-      context:information("Select " .. str)
+      context:information("Select " .. str .. " (score = " .. selectScore .. ")")
     end
 
     -- simulate
     local score, actionSequence, finalState = simulate(leaf.x)
+    score = selectScore + score -- score of 'select' part + score of 'simulate' part
     for i=2,#nodeSequence do
       table.insert(actionSequence, i - 1, nodeSequence[i].preAction) -- insert first actions in actionSequence
     end
     if verbose then
-      context:information("Simulate -> " .. self.problem.stateToString(finalState) .. " return = " .. score)
+      context:information("Simulate " .. 
+        DecisionProblem.actionSequenceToString(self.problem, actionSequence) ..
+        "(" .. self.problem.stateToString(finalState) .. ") ==> " ..
+        score)
     end
 
     -- expand
-    if not leaf.fullyExpanded then
+    if not self:isFinal(leaf) then
+      if verbose then
+        context:information("Expand " .. self.problem.stateToString(leaf.x))
+      end
       local newNode = expand(leaf, actionSequence[1])
       table.insert(nodeSequence, newNode)
     end
@@ -201,5 +202,22 @@ DecisionProblem.SinglePlayerMCTS = subspecified {
     backPropagate(nodeSequence, score)
     
     return score, actionSequence, finalState
+  end,
+
+  finalize = function(self)
+    local function getTreeSize(tree)
+      local res = 1
+      for i,node in ipairs(tree.subNodes) do
+        if node then
+          res = res + getTreeSize(node)
+        end
+      end
+      return res
+    end
+    local test = self:bestActionSequence()
+    for i,action in ipairs(test) do
+      print (i, self.problem.actionToString(action)) 
+    end
+    print ("Tree Size: " .. getTreeSize(self.root))
   end
 }
