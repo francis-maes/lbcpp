@@ -119,7 +119,7 @@ banditsProblem = DecisionProblem.ReversePolishNotation{
 
 -- Main
 
-local problem = banditsProblem
+local problem = symbolicRegressionProblem
 
 
 -- Features
@@ -156,7 +156,56 @@ end
 --  context:call("Exhaustive search " .. maxSize, exhaustiveSearch, problem, problem.x0)
 --end
 
+randomSearchAlgorithm = {
+  initialize = function (self, problem)
+    self.problem = problem
+    self.x0 = problem.x0
+  end,
 
+  episode = function (self)
+    return DecisionProblem.randomEpisode(self.problem, self.x0)
+  end
+}
+
+function runSearchAlgorithm(problem, algorithm, numIterations, numEpisodesPerIteration)
+  algorithm:initialize(problem)
+  local bestScore = -math.huge
+  local bestActionSequence, bestFinalState
+  for i=1,numIterations do
+    context:enter("Iteration " .. i)
+    local scoreStats = Statistics.meanVarianceAndBounds()
+    local bestIterationFinalState
+    for j=1,numEpisodesPerIteration do
+      score, actionSequence, finalState = algorithm:episode()
+      if score > bestScore then
+        bestScore = score
+        bestActionSequence = actionSequence
+        bestFinalState = finalState
+      end
+      if score > scoreStats:getMaximum() then
+        bestIterationFinalState = finalState
+      end
+      scoreStats:observe(score)
+    end
+    context:result("iteration", i)
+    context:result("best ever score", bestScore)
+    context:result("best ever final state", problem.stateToString(bestFinalState))
+    context:result("best iteration score", scoreStats:getMaximum())
+    context:result("mean iteration score", scoreStats:getMean())
+    context:result("worst iteration score", scoreStats:getMinimum())
+    context:result("best iteration final state", problem.stateToString(bestIterationFinalState))
+    context:leave(scoreStats:getMaximum())
+  end
+  local test = algorithm:bestActionSequence()
+  for i,action in ipairs(test) do
+    print (i,problem.actionToString(action)) 
+  end
+end
+
+local algo = DecisionProblem.SinglePlayerMCTS{indexFunction=DiscreteBandit.ucb1C{0.2}, verbose=false}.__get
+runSearchAlgorithm(symbolicRegressionProblem, algo, 100, 1000)
+
+--[[
 local mctsUCB = DecisionProblem.SinglePlayerMCTS{numEpisodes=10000, indexFunction=DiscreteBandit.ucb1C{2}, verbose=false}
 local mctsUCB2 = DecisionProblem.SinglePlayerMCTS{numEpisodes=10000, indexFunction=DiscreteBandit.ucb1C{0.4}, verbose=false}
 local mctsUCBBernoulli = DecisionProblem.SinglePlayerMCTS{numEpisodes=10000, indexFunction=DiscreteBandit.ucb1Bernoulli, verbose=false}
@@ -167,7 +216,6 @@ context:call("MCTS-UCB 1", testSearchAlgorithm, problem, mctsUCB2)
 context:call("MCTS-UCB 1", testSearchAlgorithm, problem, mctsUCB2)
 
 
---[[
 local nestedMC1 = DecisionProblem.NestedMonteCarlo{level=1}
 local nestedMC2 = DecisionProblem.NestedMonteCarlo{level=2}
 local nestedMC3 = DecisionProblem.NestedMonteCarlo{level=3}
