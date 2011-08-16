@@ -50,7 +50,7 @@ function DecisionProblem.doEpisode(problem, x, policy)
     x = problem.f(x, u)
     d = d * problem.discount
   end
-  return x, actionSequence, score
+  return score, actionSequence, x
 end
 
 function DecisionProblem.randomEpisode(problem, x)

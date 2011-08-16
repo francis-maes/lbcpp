@@ -155,7 +155,9 @@ DecisionProblem.ReversePolishNotation = subspecified {
 
   -- String descriptions
   stateToString = function (x)
-    if type(x) == "table" then
+    if x == nil then
+      return "NIL"
+    elseif type(x) == "table" then
       local res = "{"
       for i,f in ipairs(x) do
         res = res .. f:print()
