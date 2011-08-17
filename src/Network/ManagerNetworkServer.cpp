@@ -112,7 +112,7 @@ public:
   void closeCommunicationReceived()
   {
     juce::Thread::sleep(3000);
-    stopClient();
+    //stopClient();
   }
   
   /** Sender **/

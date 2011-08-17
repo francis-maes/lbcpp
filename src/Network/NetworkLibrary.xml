@@ -69,4 +69,8 @@
     <variable type="String" name="managerHostName" shortName"h"/>
     <variable type="PositiveInteger" name="managerPort" shortName="p"/>
   </class>
+
+  <class name="XmlElementWorkUnit" base="WorkUnit">
+    <variable type="File" name="xmlElementFile" shortName="f"/>
+  </class>
 </library>
