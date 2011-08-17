@@ -86,7 +86,7 @@ public:
   
   void getWorkUnitResultReceived(const String& uniqueIdentifier)
   {
-    sendWorkUnitResult(uniqueIdentifier, manager->getXmlResult(uniqueIdentifier));
+    sendWorkUnitResult(uniqueIdentifier, manager->getXmlResult(manager->getRequest(uniqueIdentifier)));
   }
 
   void getWaitingWorkUnitsReceived(const String& gridName)
@@ -117,7 +117,7 @@ public:
       return;
     }
 
-    client->sendVariable(new WorkUnitResultNetworkMessage(context, uniqueIdentifier, manager->getXmlResult(uniqueIdentifier)));
+    client->sendVariable(new WorkUnitResultNetworkMessage(context, uniqueIdentifier, manager->getXmlResult(request)));
   }
 
   void closeCommunicationReceived()
