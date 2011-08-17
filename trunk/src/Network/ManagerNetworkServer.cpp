@@ -75,7 +75,10 @@ public:
       context.warningCallback(T("ManagerServerNetworkClient::workUnitRequestReceived")
                               , T("I still received this request, so I return you the same unique identifier"));
     else
+    {
+      workUnitRequest->setUniqueIdentifier(uniqueIdentifier);
       manager->addRequest(workUnitRequest);
+    }
 
     sendWorkUnitAcknowledgement(sourceIdentifier, uniqueIdentifier);
   }
