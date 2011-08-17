@@ -11,6 +11,7 @@
 
 # include <lbcpp/Core/XmlSerialisation.h>
 # include <lbcpp/Execution/WorkUnit.h>
+# include <lbcpp/Execution/ExecutionTrace.h>
 # include "Manager.h"
 
 namespace lbcpp
@@ -91,6 +92,9 @@ public:
   WorkUnitResultNetworkMessage(ExecutionContext& context, const String& uniqueIdentifier, const Variable& result)
     : uniqueIdentifier(uniqueIdentifier), result(new XmlElement())
     {this->result->saveVariable(context, result, T("result"));}
+
+  WorkUnitResultNetworkMessage(ExecutionContext& context, const String& uniqueIdentifier, const XmlElementPtr& result)
+    : uniqueIdentifier(uniqueIdentifier), result(result) {}
 
   String getUniqueIdentifier() const
     {return uniqueIdentifier;}
@@ -176,18 +180,20 @@ extern ClassPtr workUnitRequestsNetworkMessageClass;
 class ExecutionTracesNetworkMessage : public NetworkMessage
 {
 public:
-  ExecutionTracesNetworkMessage(const std::vector< std::pair<String, XmlElementPtr> >& traces)
-    : traces(traces) {}
-
   const std::vector< std::pair<String, XmlElementPtr> >& getXmlElementExecutionTraces() const
     {return traces;}
+
+  void addExecutionTrace(ExecutionContext& context, const String& uniqueIdentifier, const ExecutionTracePtr& trace)
+  {
+    XmlElementPtr element = new XmlElement();
+    element->saveObject(context, trace, T("trace"));
+    traces.push_back(std::pair<String, XmlElementPtr>(uniqueIdentifier, element));
+  }
 
 protected:
   friend class ExecutionTracesNetworkMessageClass;
 
   std::vector< std::pair<String, XmlElementPtr> > traces;
-
-  ExecutionTracesNetworkMessage() {}
 };
 
 typedef ReferenceCountedObjectPtr<ExecutionTracesNetworkMessage> ExecutionTracesNetworkMessagePtr;

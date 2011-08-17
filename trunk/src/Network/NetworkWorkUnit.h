@@ -49,7 +49,7 @@ public:
     if (clientType == T("local"))
       client = localGridNetworkClient(context);
     else if (clientType == T("sge"))
-      client;// = sgeGridNetworkClient(context);
+      client = sgeGridNetworkClient(context);
     else
     {
       context.errorCallback(T("GridWorkUnit::run"), T("Unknown GridNetworkClient nammed: ") + clientType.quoted());

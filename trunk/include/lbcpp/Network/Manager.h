@@ -18,7 +18,7 @@ class WorkUnitNetworkRequest : public Object
 {
 public:
   WorkUnitNetworkRequest(ExecutionContext& context,
-                         WorkUnitPtr workUnit,
+                         const WorkUnitPtr& workUnit,
                          const String& projectName, const String& source, const String& destination,
                          size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
   : workUnit(new XmlElement()),
@@ -123,7 +123,7 @@ public:
     getRequestFile(context, request).deleteFile();
     requests.erase(request->getUniqueIdentifier());
   }
-  
+
   void crachedRequest(WorkUnitNetworkRequestPtr request)
   {
     ScopedLock _(lock);
@@ -137,10 +137,13 @@ public:
     ScopedLock _(lock);
     std::map<String, WorkUnitNetworkRequestPtr>::const_iterator res = requests.find(identifier);
     if (res == requests.end())
+    {
+      context.warningCallback(T("Manager::getRequest"), T("The associated request to ") + identifier.quoted() + T(" not found !"));
       return WorkUnitNetworkRequestPtr();
+    }
     return res->second;
   }
-  
+
   void getWaitingRequests(const String& nodeName, std::vector<WorkUnitNetworkRequestPtr>& results)
   {
     ScopedLock _(lock);
@@ -157,7 +160,7 @@ public:
     }
     waitingRequests = remainingRequests;
   }
-  
+
   void setAsWaitingRequests(const std::vector<WorkUnitNetworkRequestPtr>& networkRequests)
   {
     ScopedLock _(lock);
@@ -168,10 +171,39 @@ public:
     }
   }
 
-  Variable getResult(const String& uniqueIdentifier)
+  XmlElementPtr getXmlResult(const String& uniqueIdentifier)
   {
-    jassertfalse;
-    return false;
+    File f = getArchiveFile(context, getRequest(uniqueIdentifier));
+    if (!f.exists())
+    {
+      context.warningCallback(T("Manager::getXmlResult"), T("File not found: ") + f.getFileName());
+      return XmlElementPtr();
+    }
+    
+    PairPtr p = Pair::createFromFile(context, f);
+    if (!p)
+    {
+      context.warningCallback(T("Manager::getXmlResult"), T("Corrupted file"));
+      return XmlElementPtr();
+    }
+
+    XmlElementPtr xml = p->getSecond().getObjectAndCast<XmlElement>(context); // tag: lbcpp
+    xml = getXmlChildElementOrWarning(xml, T("variable"));
+    if (!xml)
+      return XmlElementPtr();
+    xml = getXmlChildElementOrWarning(xml, T("node"));
+    if (!xml)
+      return XmlElementPtr();
+      
+    return getXmlChildElementOrWarning(xml, T("return"));
+  }
+
+  XmlElementPtr getXmlChildElementOrWarning(const XmlElementPtr element, const String& tagName) const
+  {
+    XmlElementPtr child = element->getChildByName(tagName);
+    if (!child)
+      context.warningCallback(T("Manager::getXmlChildElementOrWarning"), T("Node ") + tagName.quoted() + T(" not found !"));
+    return child;
   }
 
   String generateUniqueIdentifier()

@@ -105,7 +105,7 @@ protected:
 typedef ReferenceCountedObjectPtr<GridNetworkClient> GridNetworkClientPtr;
 
 extern GridNetworkClientPtr localGridNetworkClient(ExecutionContext& context);
-
+extern GridNetworkClientPtr sgeGridNetworkClient(ExecutionContext& context);
 /** Utility **/
 extern bool isValidNetworkMessage(ExecutionContext& context, const Variable& variable);
 
