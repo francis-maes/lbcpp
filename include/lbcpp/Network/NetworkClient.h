@@ -9,7 +9,9 @@
 #ifndef LBCPP_NETWORK_CLIENT_H_
 # define LBCPP_NETWORK_CLIENT_H_
 
-# include <lbcpp/Network/NetworkMessage.h>
+# include <lbcpp/Core/Object.h>
+# include <lbcpp/Execution/WorkUnit.h>
+# include <lbcpp/Network/WorkUnitNetworkRequest.h>
 
 namespace lbcpp
 {

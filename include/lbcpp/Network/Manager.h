@@ -10,65 +10,11 @@
 # define LBCPP_MANAGER_H_
 
 # include <lbcpp/Data/Stream.h>
+# include <lbcpp/Network/NetworkClient.h>
+# include <lbcpp/Network/WorkUnitNetworkRequest.h>
 
 namespace lbcpp
 {
-
-class WorkUnitNetworkRequest : public Object
-{
-public:
-  WorkUnitNetworkRequest(ExecutionContext& context,
-                         const WorkUnitPtr& workUnit,
-                         const String& projectName, const String& source, const String& destination,
-                         size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
-  : workUnit(new XmlElement()),
-    projectName(projectName), source(source), destination(destination),
-    requiredCpus(requiredCpus), requiredMemory(requiredMemory), requiredTime(requiredTime)
-    {this->workUnit->saveObject(context, workUnit, T("workUnit"));}
-  
- void setUniqueIdentifier(const String& uniqueIdentifier)
-    {this->uniqueIdentifier = uniqueIdentifier;}
-  
-  const String& getUniqueIdentifier() const
-    {return uniqueIdentifier;}
-
-  const String& getProjectName() const
-    {return projectName;}
-
-  const String& getSource() const
-    {return source;}
-
-  const String& getDestination() const
-    {return destination;}
-
-  const size_t& getRequiredMemory() const
-    {return requiredMemory;}
-
-  const size_t& getRequiredTime() const
-    {return requiredTime;}
-
-  WorkUnitPtr getWorkUnit(ExecutionContext& context) const
-    {return workUnit ? workUnit->createObjectAndCast<WorkUnit>(context) : WorkUnitPtr();}
-
-  XmlElementPtr getXmlElementWorkUnit() const
-    {return workUnit;}
-
-protected:
-  friend class WorkUnitNetworkRequestClass;
-
-  WorkUnitNetworkRequest() {}
-
-  String uniqueIdentifier;
-  XmlElementPtr workUnit;
-  String projectName;
-  String source;
-  String destination;
-  size_t requiredCpus;
-  size_t requiredMemory; // Gb
-  size_t requiredTime; // Hour
-};
-
-typedef ReferenceCountedObjectPtr<WorkUnitNetworkRequest> WorkUnitNetworkRequestPtr;
 
 class Manager
 {
@@ -106,13 +52,14 @@ public:
     }
   }
   
-  void addRequest(WorkUnitNetworkRequestPtr request)
+  void addRequest(const WorkUnitNetworkRequestPtr& request, const NetworkClientPtr& client)
   {
     ScopedLock _(lock);
     requests[request->getUniqueIdentifier()] = request;
     request->saveToFile(context, createFullPathOfFile(getRequestFile(context, request)));
     createFullPathOfFile(getWaitingFile(context, request));
     waitingRequests.push_back(request);
+    routingTable[request->getUniqueIdentifier()] = client;
   }
 
   void archiveRequest(PairPtr archive)
@@ -122,6 +69,7 @@ public:
     archive->saveToFile(context, createFullPathOfFile(getArchiveFile(context, request)));
     getRequestFile(context, request).deleteFile();
     requests.erase(request->getUniqueIdentifier());
+    routingTable.erase(request->getUniqueIdentifier());
   }
 
   void crachedRequest(WorkUnitNetworkRequestPtr request)
@@ -220,11 +168,19 @@ public:
     return String(res);
   }
 
+  NetworkClientPtr getNetworkClientOf(const String& uniqueIdentifier) const
+  {
+    if (routingTable.count(uniqueIdentifier))
+      return routingTable.find(uniqueIdentifier)->second;
+    return NetworkClientPtr();
+  }
+
 protected:
   ExecutionContext& context;
   CriticalSection lock;
   std::map<String, WorkUnitNetworkRequestPtr> requests; // id
   std::vector<WorkUnitNetworkRequestPtr> waitingRequests;
+  std::map<String, NetworkClientPtr> routingTable; // uniqueIdentifier > network client
 
   static File createFullPathOfFile(const File& f)
   {

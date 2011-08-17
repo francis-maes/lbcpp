@@ -8,6 +8,7 @@
 #include "precompiled.h"
 #include <lbcpp/Network/NetworkClient.h>
 #include <lbcpp/Core/XmlSerialisation.h>
+#include <lbcpp/Network/NetworkMessage.h>
 
 using namespace lbcpp;
 
