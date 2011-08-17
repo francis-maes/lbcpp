@@ -107,14 +107,17 @@ public:
                               , T("I received trace but I didn't find associated WorkUnit ! So I skip !"));
       return;
     }
-    
-    NetworkClientPtr client = manager->getNetworkClientOf(uniqueIdentifier);
-    if (!client)
-      context.warningCallback(T("ManagerServerNetworkClient::xmlExecutionTracesReceived"), T("The request ") + uniqueIdentifier + (" has no associated NetworkWork client !"));
-    else
-      client->sendVariable(new WorkUnitResultNetworkMessage(context, uniqueIdentifier, manager->getXmlResult(uniqueIdentifier)));
 
+    NetworkClientPtr client = manager->getNetworkClientOf(uniqueIdentifier);
     manager->archiveRequest(new Pair(request, xmlTrace));
+
+    if (!client)
+    {
+      context.warningCallback(T("ManagerServerNetworkClient::xmlExecutionTracesReceived"), T("The request ") + uniqueIdentifier + (" has no associated NetworkWork client !"));
+      return;
+    }
+
+    client->sendVariable(new WorkUnitResultNetworkMessage(context, uniqueIdentifier, manager->getXmlResult(uniqueIdentifier)));
   }
 
   void closeCommunicationReceived()
