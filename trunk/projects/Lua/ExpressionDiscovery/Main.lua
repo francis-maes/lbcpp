@@ -1,10 +1,12 @@
 
 -- Main experiment script
 
+require '../ExpressionDiscovery/SearchAlgorithm'
 require '../ExpressionDiscovery/ReversePolishNotationProblem'
 require '../ExpressionDiscovery/MCTS'
 require '../ExpressionDiscovery/NestedMonteCarlo'
 require '../ExpressionDiscovery/UBOLA'
+
 require 'DiscreteBandit'
 require 'Evaluator'
 require 'Sampler'
@@ -28,6 +30,7 @@ local function decorateObjectiveFunction(objective)
     return score
   end
 end
+
 
 local function actionSequenceToString(problem, actionSequence)
   if actionSequence then
@@ -156,68 +159,13 @@ end
 --  context:call("Exhaustive search " .. maxSize, exhaustiveSearch, problem, problem.x0)
 --end
 
-PolicyBasedSearchAlgorithm = subspecified {
-  parameter policy = {},
+local algo = DecisionProblem.SinglePlayerMCTS{
+  indexFunction=DiscreteBandit.ucb1C{2}, verbose=false,
+  partialExpand = true, fullPathExpand = true, useMaxReward = true}.__get
 
-  initialize = function (self, problem)
-    self.problem = problem
-    self.x0 = problem.x0
-  end,
-
-  episode = function (self)
-    return DecisionProblem.doEpisode(self.problem, self.x0, policy)
-  end,
-  
-  finalize = function (self) end
-}
-
-randomSearchAlgorithm = PolicyBasedSearchAlgorithm{policy = DecisionProblem.randomPolicy}.__get
-nested1SearchAlgorithm = PolicyBasedSearchAlgorithm{
-  policy = DecisionProblem.ActionValueBasedPolicy{
-    actionValues = DecisionProblem.StateToActionValue{
-      stateValues = DecisionProblem.SingleRolloutStateValue{
-        policy = DecisionProblem.randomPolicy
-      }
-    }
-  }
-}.__get
-
-function runSearchAlgorithm(problem, algorithm, numIterations, numEpisodesPerIteration)
-  algorithm:initialize(problem)
-  local bestScore = -math.huge
-  local bestActionSequence, bestFinalState
-  for i=1,numIterations do
-    context:enter("Iteration " .. i)
-    local scoreStats = Statistics.meanVarianceAndBounds()
-    local bestIterationFinalState
-    for j=1,numEpisodesPerIteration do
-      score, actionSequence, finalState = algorithm:episode()
-      if score > bestScore then
-        bestScore = score
-        bestActionSequence = actionSequence
-        bestFinalState = finalState
-      end
-      if score > scoreStats:getMaximum() then
-        bestIterationFinalState = finalState
-      end
-      scoreStats:observe(score)
-    end
-    context:result("iteration", i)
-    context:result("best ever score", bestScore)
-    context:result("best ever final state", problem.stateToString(bestFinalState))
-    context:result("best iteration score", scoreStats:getMaximum())
-    context:result("mean iteration score", scoreStats:getMean())
-    context:result("worst iteration score", scoreStats:getMinimum())
-    context:result("best iteration final state", problem.stateToString(bestIterationFinalState))
-    context:leave(scoreStats:getMaximum())
-  end
-  algorithm:finalize()
-end
-
-local algo = DecisionProblem.SinglePlayerMCTS{indexFunction=DiscreteBandit.ucb1C{2}, verbose=false, partialExpand = false}.__get
-context:call("random",  runSearchAlgorithm, symbolicRegressionProblem, randomSearchAlgorithm, 100, 100)
-context:call("nested1SearchAlgorithm", runSearchAlgorithm, symbolicRegressionProblem, nested1SearchAlgorithm, 100, 100)
-context:call("mcts", runSearchAlgorithm, symbolicRegressionProblem, algo, 100, 100)
+--context:call("random",  runSearchAlgorithm, symbolicRegressionProblem, randomSearchAlgorithm, 100, 100)
+--context:call("nested1SearchAlgorithm", runSearchAlgorithm, symbolicRegressionProblem, nested1SearchAlgorithm, 100, 100)
+context:call("mcts", runSearchAlgorithm, problem, algo, 100, 100)
 
 --[[
 local mctsUCB = DecisionProblem.SinglePlayerMCTS{numEpisodes=10000, indexFunction=DiscreteBandit.ucb1C{2}, verbose=false}
