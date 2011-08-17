@@ -75,6 +75,41 @@ protected:
   size_t managerPort;
 };
 
+/* XmlElementWorkUnit */
+class XmlElementWorkUnit : public WorkUnit
+{
+public:
+  Variable run(ExecutionContext& context)
+  {
+    if (!xmlElementFile.exists())
+    {
+      context.errorCallback(T("XmlElementWorkUnit::run"), T("XML Work Unit File not found !"));
+      return false;
+    }
+
+    XmlElementPtr element = XmlElement::createFromFile(context, xmlElementFile).dynamicCast<XmlElement>();
+    if (!element)
+    {
+      context.errorCallback(T("XmlElementWorkUnit::run"), T("Invalid XML file."));
+      return false;
+    }
+
+    WorkUnitPtr workUnit = element->createObjectAndCast<WorkUnit>(context);
+    if (!workUnit)
+    {
+      context.errorCallback(T("XmlElementWorkUnit::run"), T("It's not a WorkUnit (or maybe I'm not up-to-date)"));
+      return false;
+    }
+
+    return context.run(workUnit);
+  }
+
+protected:
+  friend class XmlElementWorkUnitClass;
+
+  File xmlElementFile;
+};
+
 }; /* namespace */
 
 #endif // !LBCPP_NETWORK_WORK_UNIT_H_
