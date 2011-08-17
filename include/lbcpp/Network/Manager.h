@@ -136,9 +136,6 @@ public:
     }
 
     XmlElementPtr xml = p->getSecond().getObjectAndCast<XmlElement>(context); // tag: lbcpp
-    xml = getXmlChildElementOrWarning(xml, T("trace"));
-    if (!xml)
-      return XmlElementPtr();
     xml = getXmlChildElementOrWarning(xml, T("node"));
     if (!xml)
       return XmlElementPtr();
