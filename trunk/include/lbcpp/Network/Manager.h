@@ -86,7 +86,7 @@ public:
     std::map<String, WorkUnitNetworkRequestPtr>::const_iterator res = requests.find(identifier);
     if (res == requests.end())
     {
-      context.warningCallback(T("Manager::getRequest"), T("The associated request to ") + identifier.quoted() + T(" not found !"));
+      context.warningCallback(T("Manager::getRequest"), T("The associated request of ") + identifier.quoted() + T(" not found !"));
       return WorkUnitNetworkRequestPtr();
     }
     return res->second;
@@ -119,9 +119,9 @@ public:
     }
   }
 
-  XmlElementPtr getXmlResult(const String& uniqueIdentifier)
+  XmlElementPtr getXmlResult(const WorkUnitNetworkRequestPtr& request)
   {
-    File f = getArchiveFile(context, getRequest(uniqueIdentifier));
+    File f = getArchiveFile(context, request);
     if (!f.exists())
     {
       context.warningCallback(T("Manager::getXmlResult"), T("File not found: ") + f.getFileName());
