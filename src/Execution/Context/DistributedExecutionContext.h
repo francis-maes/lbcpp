@@ -122,12 +122,13 @@ public:
     return sendVariable(new WorkUnitRequestNetworkMessage(context, sourceIdentifier, workUnit, projectName, source, destination, requiredCpus, requiredMemory, requiredTime));
   }
 
-  bool sendWorkUnit(const WorkUnitPtr& workUnit, const WorkUnitPoolPtr& pool, const ExecutionContextCallbackPtr& callback = ExecutionContextCallbackPtr())
+  bool sendWorkUnit(const WorkUnitPtr& workUnit, const WorkUnitPoolPtr& pool, const ExecutionContextCallbackPtr& callback,
+                    const String& project, const String& from, const String& to)
   {
     ScopedLock _(lock);
     pool->appendWorkUnit(numSentWorkUnit, workUnit, callback);
     pools[numSentWorkUnit] = pool;
-    return sendWorkUnit(numSentWorkUnit++, workUnit, T(""), T(""), T(""), 1, 2, 10);
+    return sendWorkUnit(numSentWorkUnit++, workUnit, project, from, to, 1, 2, 10);
   }
 
 protected:
@@ -143,10 +144,12 @@ typedef ReferenceCountedObjectPtr<DistributedExecutionContextNetworkClient> Dist
 class DistributedExecutionContext : public SubExecutionContext
 {
 public:
-  DistributedExecutionContext(ExecutionContext& parentContext, const String& remoteHostName, size_t remotePort)
+  DistributedExecutionContext(ExecutionContext& parentContext, const String& remoteHostName, size_t remotePort,
+                              const String& project, const String& from, const String& to)
     : SubExecutionContext(parentContext)
     , client(new DistributedExecutionContextNetworkClient(parentContext))
     , defaultPool(new WorkUnitPool())
+    , project(project), from(from), to(to)
     {
       client->startClient(remoteHostName, remotePort);
     }
@@ -172,13 +175,12 @@ public:
 
   virtual void pushWorkUnit(const WorkUnitPtr& workUnit, const ExecutionContextCallbackPtr& callback = ExecutionContextCallbackPtr())
   {
-    client->sendWorkUnit(workUnit, defaultPool, callback);
+    client->sendWorkUnit(workUnit, defaultPool, callback, project, from, to);
   }
   
   virtual void pushWorkUnit(const WorkUnitPtr& workUnit, int* counterToDecrementWhenDone = NULL, bool pushIntoStack = true)
   {
-    // No mechanisme to retreive result
-    client->sendWorkUnit(workUnit, defaultPool);
+    jassertfalse;
   }
 
   virtual void waitUntilAllWorkUnitsAreDone()
@@ -187,7 +189,7 @@ public:
   virtual Variable run(const WorkUnitPtr& workUnit, bool pushIntoStack)
   {
     WorkUnitPoolPtr pool = new WorkUnitPool();
-    client->sendWorkUnit(workUnit, pool);
+    client->sendWorkUnit(workUnit, pool, ExecutionContextCallbackPtr(), project, from, to);
     pool->waitUntilAllWorkUnitsAreDone();
     return pool->getResult();
   }
@@ -197,7 +199,7 @@ public:
     WorkUnitPoolPtr pool = new WorkUnitPool();
     const size_t n = workUnits->getNumWorkUnits();
     for (size_t i = 0; i < n; ++i)
-      client->sendWorkUnit(workUnits->getWorkUnit(i), pool);
+      client->sendWorkUnit(workUnits->getWorkUnit(i), pool, ExecutionContextCallbackPtr(), project, from, to);
     pool->waitUntilAllWorkUnitsAreDone();
     return pool->getResult();
   }
@@ -207,6 +209,10 @@ public:
 protected:
   DistributedExecutionContextNetworkClientPtr client;
   WorkUnitPoolPtr defaultPool;
+
+  String project;
+  String from;
+  String to;
 };
 
 }; /* namespace lbcpp */

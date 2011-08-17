@@ -263,8 +263,6 @@ IF(LBCPP_NETWORKING)
   SET(LBCPP_NETWORK_SOURCES
     ../include/lbcpp/Network/NetworkClient.h
     Network/NetworkClient.cpp
-    Network/LocalGridNetworkClient.cpp
-    Network/SGEGridNetworkClient.cpp
     ../include/lbcpp/Network/NetworkServer.h
     Network/NetworkServer.cpp
     Network/ManagerNetworkServer.cpp
@@ -276,10 +274,9 @@ IF(LBCPP_NETWORKING)
   )
   
   SET(LBCPP_NETWORK_GRID_SOURCES
-    Network/Grid/GridNetworkInterface.h
-    Network/Grid/GridNetworkInterface.cpp
-    Network/Grid/GridNetworkNotification.h
-    Network/Grid/GridNetworkLibrary.xml
+    Network/Grid/LocalGridNetworkClient.cpp
+    Network/Grid/SGEGridNetworkClient.cpp
+    Network/Grid/BoincGridNetworkClient.cpp
   )
 
 ENDIF(LBCPP_NETWORKING)

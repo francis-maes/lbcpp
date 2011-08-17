@@ -61,17 +61,17 @@ public:
   void workUnitRequestReceived(size_t sourceIdentifier, const WorkUnitNetworkRequestPtr& workUnitRequest)
   {
     String uniqueIdentifier = manager->generateUniqueIdentifier();
-    bool isStillExists = false;
+    bool isAlreadyExists = false;
     {
       ScopedLock _(lock);
-      isStillExists = sourceToUniqueIdentifier.count(sourceIdentifier) != 0;
-      if (isStillExists)
+      isAlreadyExists = sourceToUniqueIdentifier.count(sourceIdentifier) != 0;
+      if (isAlreadyExists)
         uniqueIdentifier = sourceToUniqueIdentifier[sourceIdentifier];
       else
         sourceToUniqueIdentifier[sourceIdentifier] = uniqueIdentifier;
     }
 
-    if (isStillExists)
+    if (isAlreadyExists)
       context.warningCallback(T("ManagerServerNetworkClient::workUnitRequestReceived")
                               , T("I still received this request, so I return you the same unique identifier"));
     else
@@ -82,7 +82,7 @@ public:
   
   void getWorkUnitResultReceived(const String& uniqueIdentifier)
   {
-    sendWorkUnitResult(uniqueIdentifier, manager->getResult(uniqueIdentifier));
+    sendWorkUnitResult(uniqueIdentifier, manager->getXmlResult(uniqueIdentifier));
   }
 
   void getWaitingWorkUnitsReceived(const String& gridName)
@@ -118,7 +118,7 @@ public:
     return sendVariable(new WorkUnitAcknowledgementNetworkMessage(sourceIdentifier, uniqueIdentifier));
   }
 
-  bool sendWorkUnitResult(const String& uniqueIdentifier, const Variable& result)
+  bool sendWorkUnitResult(const String& uniqueIdentifier, const XmlElementPtr& result)
   {
     return sendVariable(new WorkUnitResultNetworkMessage(context, uniqueIdentifier, result));
   }

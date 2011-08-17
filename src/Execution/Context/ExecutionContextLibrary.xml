@@ -14,7 +14,7 @@
   </class>
 
   <class name="DistributedExecutionContext" base="SubExecutionContext">
-    <constructor arguments="ExecutionContext&amp; parentContext, const String&amp; remoteHostName, size_t remotePort" returnType="ExecutionContext"/>
+    <constructor arguments="ExecutionContext&amp; parentContext, const String&amp; remoteHostName, size_t remotePort, const String&amp; project, const String&amp; from, const String&amp; to" returnType="ExecutionContext"/>
   </class>
 
 </library>
