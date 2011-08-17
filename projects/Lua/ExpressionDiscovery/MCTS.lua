@@ -56,6 +56,8 @@ DecisionProblem.SinglePlayerMCTS = subspecified {
 
   parameter indexFunction = {default = DiscreteBandit.ucb1C{2}},
   parameter partialExpand = {default = false},
+  parameter fullPathExpand = {default = false},
+  parameter useMaxReward = {default = false},
   parameter verbose = {default = false},
 
   newNode = function (self, x, preAction, preReward)
@@ -104,7 +106,8 @@ DecisionProblem.SinglePlayerMCTS = subspecified {
       if stats:getCount() == 0 then
         res = math.huge
       else
-        res = indexFunction(stats:getMean(), stats:getStandardDeviation(), stats:getCount(), node.stats:getCount())
+        local r = useMaxReward and stats:getMaximum() or stats:getMean() 
+        res = indexFunction(r, stats:getStandardDeviation(), stats:getCount(), node.stats:getCount())
       end
       return res
     end
@@ -131,9 +134,14 @@ DecisionProblem.SinglePlayerMCTS = subspecified {
     end
 
     local function expand(leaf, action)
+      assert(leaf)
       assert(not leaf.fullyExpanded)
       leaf.fullyExpanded = true
       local res
+      if verbose then
+        context:information("Expand " .. self.problem.stateToString(leaf.x))
+      end
+      local actionFound = false
       for index,u in ipairs(leaf.U) do
         local isSelectedAction = self.problem.actionToString(u) == self.problem.actionToString(action) -- FIXME: implement == between actions
         if leaf.subNodes[index] == nil then
@@ -145,8 +153,17 @@ DecisionProblem.SinglePlayerMCTS = subspecified {
         end
         if isSelectedAction then
           res = leaf.subNodes[index]
+          actionFound = true
         end
       end
+      if not actionFound then
+        context:information("Could not find action ", self.problem.actionToString(action))
+        for index,u in ipairs(leaf.U) do
+          context:information(" ==> action " .. self.problem.actionToString(u))
+        end
+      end
+      assert(actionFound)
+      
       return res
     end
 
@@ -178,6 +195,21 @@ DecisionProblem.SinglePlayerMCTS = subspecified {
 
     -- simulate
     local score, actionSequence, finalState = simulate(leaf.x)
+
+    -- expand
+    if not self:isFinal(leaf) then      
+      if fullPathExpand then
+        for i,action in ipairs(actionSequence) do
+          leaf = expand(leaf, action)
+          table.insert(nodeSequence, leaf)
+        end
+      else
+        local newNode = expand(leaf, actionSequence[1])
+        table.insert(nodeSequence, newNode)
+      end
+    end
+ 
+    -- assemble select part and simulate part
     score = selectScore + score -- score of 'select' part + score of 'simulate' part
     for i=2,#nodeSequence do
       table.insert(actionSequence, i - 1, nodeSequence[i].preAction) -- insert first actions in actionSequence
@@ -189,35 +221,32 @@ DecisionProblem.SinglePlayerMCTS = subspecified {
         score)
     end
 
-    -- expand
-    if not self:isFinal(leaf) then
-      if verbose then
-        context:information("Expand " .. self.problem.stateToString(leaf.x))
-      end
-      local newNode = expand(leaf, actionSequence[1])
-      table.insert(nodeSequence, newNode)
-    end
-
     -- backpropagate
     backPropagate(nodeSequence, score)
     
     return score, actionSequence, finalState
   end,
 
-  finalize = function(self)
-    local function getTreeSize(tree)
-      local res = 1
-      for i,node in ipairs(tree.subNodes) do
-        if node then
-          res = res + getTreeSize(node)
-        end
+  getTreeSize = function (self, tree)
+    local res = 1
+    for i,node in ipairs(tree.subNodes) do
+      if node then
+        res = res + self:getTreeSize(node)
       end
-      return res
     end
+    return res
+  end,
+
+  finalizeIteration = function (self)
+    context:result("tree size", self:getTreeSize(self.root))
+  end,
+
+  finalize = function(self)
+   
     local test = self:bestActionSequence()
     for i,action in ipairs(test) do
       print (i, self.problem.actionToString(action)) 
     end
-    print ("Tree Size: " .. getTreeSize(self.root))
+    print ("Tree Size: " .. self:getTreeSize(self.root))
   end
 }
