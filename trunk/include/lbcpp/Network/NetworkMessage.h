@@ -12,7 +12,7 @@
 # include <lbcpp/Core/XmlSerialisation.h>
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Execution/ExecutionTrace.h>
-# include "Manager.h"
+# include <lbcpp/Network/WorkUnitNetworkRequest.h>
 
 namespace lbcpp
 {

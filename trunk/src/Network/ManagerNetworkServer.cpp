@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Network/NetworkServer.h>
+#include <lbcpp/Network/NetworkMessage.h>
 
 /** ManagerServerNetworkClient **/
 namespace lbcpp
@@ -77,7 +78,7 @@ public:
     else
     {
       workUnitRequest->setUniqueIdentifier(uniqueIdentifier);
-      manager->addRequest(workUnitRequest);
+      manager->addRequest(workUnitRequest, NetworkClientPtr(this));
     }
 
     sendWorkUnitAcknowledgement(sourceIdentifier, uniqueIdentifier);
@@ -106,6 +107,13 @@ public:
                               , T("I received trace but I didn't find associated WorkUnit ! So I skip !"));
       return;
     }
+    
+    NetworkClientPtr client = manager->getNetworkClientOf(uniqueIdentifier);
+    if (!client)
+      context.warningCallback(T("ManagerServerNetworkClient::xmlExecutionTracesReceived"), T("The request ") + uniqueIdentifier + (" has no associated NetworkWork client !"));
+    else
+      client->sendVariable(new WorkUnitResultNetworkMessage(context, uniqueIdentifier, manager->getXmlResult(uniqueIdentifier)));
+
     manager->archiveRequest(new Pair(request, xmlTrace));
   }
 

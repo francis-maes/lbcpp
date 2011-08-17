@@ -10,6 +10,7 @@
 # define LBCPP_NETWORK_SERVER_H_
 
 # include <lbcpp/Network/NetworkClient.h>
+# include <lbcpp/Network/Manager.h>
 
 namespace lbcpp
 {

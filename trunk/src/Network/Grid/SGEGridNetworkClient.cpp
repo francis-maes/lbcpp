@@ -7,6 +7,8 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Network/NetworkClient.h>
+#include <lbcpp/Network/NetworkMessage.h>
+#include <lbcpp/Data/Stream.h>
 
 namespace lbcpp
 {
