@@ -2,11 +2,13 @@
 
 <library name="Optimizer" directory="Optimizer">
 
+  <import name="OptimizerOptimizer"/>
+  <import name="OptimizerContext"/>
+
   <include file="lbcpp/Optimizer/Optimizer.h"/>
 
   <!-- Optimizer -->
   <class name="Optimizer" base="Function" abstract="yes"/>
-  <import name="OptimizerOptimizer"/>
 
   <!-- OptimizerState -->
   <class name="OptimizerState" base="Object">
@@ -30,7 +32,5 @@
     <variable type="Function" name="validationFunction"/>
     <variable type="PositiveInteger" name="timeToSleep"/>
   </class>
-
-  <import name="OptimizerContext"/>
 
 </library>

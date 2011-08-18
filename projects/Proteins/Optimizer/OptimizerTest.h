@@ -99,7 +99,7 @@ public:
     
     // Optimizer
     OptimizerPtr optimizer = asyncEDAOptimizer(20, 500, 150, 750, StoppingCriterionPtr(), 0.15);
-    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, new ProteinLearnerObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime, 300000);
+    OptimizerContextPtr optimizerContext; jassertfalse; // = distributedOptimizerContext(context, new ProteinLearnerObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime, 300000);
     SamplerBasedOptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler, 300);
     return optimizer->compute(context, optimizerContext, optimizerState);
   }
@@ -184,7 +184,7 @@ public:
     
     // Optimizer
     OptimizerPtr optimizer = asyncEDAOptimizer(20, 500, 150, 500, StoppingCriterionPtr(), 0.10);
-    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, new ProteinLearnerObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime, 300000);
+    OptimizerContextPtr optimizerContext; jassertfalse; // = distributedOptimizerContext(context, new ProteinLearnerObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime, 300000);
     SamplerBasedOptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler, 300);
     return optimizer->compute(context, optimizerContext, optimizerState);
   }
@@ -269,7 +269,7 @@ public:
     
     // Optimizer
     OptimizerPtr optimizer = asyncEDAOptimizer(20, 500, 150, 500, StoppingCriterionPtr(), 0.10);
-    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, new ProteinLearnerObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime, 300000);
+    OptimizerContextPtr optimizerContext; jassertfalse; // = distributedOptimizerContext(context, new ProteinLearnerObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime, 300000);
     SamplerBasedOptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler, 300);
     return optimizer->compute(context, optimizerContext, optimizerState);
   }
