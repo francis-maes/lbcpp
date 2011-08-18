@@ -35,64 +35,73 @@ public:
 
   void waitUntilAllWorkUnitsAreDone()
   {
-    while (workUnits.size() != numFinishedWorkUnits)
+    while (entries.size() != numFinishedWorkUnits)
       juce::Thread::sleep(1000);
   }
 
   void appendWorkUnit(size_t internalId, const WorkUnitPtr& workUnit, const ExecutionContextCallbackPtr& callback)
   {
     ScopedLock _(lock);
-    indices[internalId] = workUnits.size();
-    workUnits.push_back(workUnit);
-    results.push_back(String::empty);
-    callbacks.push_back(callback);
+    indices[internalId] = entries.size();
+    entries.push_back(Entry(workUnit, callback));
   }
 
   void setResult(size_t internalId, const Variable& result)
   {
     ScopedLock _(lock);
-    jassert(indices.count(internalId) && indices[internalId] < results.size());
+    jassert(indices.count(internalId) && indices[internalId] < entries.size());
     const size_t index = indices[internalId];
-    results[index] = result;
+    entries[index].result = result;
 
-    if (callbacks[index])
-      callbacks[index]->workUnitFinished(workUnits[index], result);
+    if (entries[index].callback)
+      entries[index].callback->workUnitFinished(entries[index].workUnit, result);
 
     ++numFinishedWorkUnits;
   }
 
   Variable getResult() const
   {
-    jassert(workUnits.size() == results.size());
-    jassert(workUnits.size() == numFinishedWorkUnits);
-    const size_t n = results.size();
+    jassert(entries.size() == numFinishedWorkUnits);
+    const size_t n = entries.size();
     if (n == 1)
-      return results[0];
+      return entries[0].result;
 
     VectorPtr res = variableVector(n);
     for (size_t i = 0; i < n; ++i)
-      res->setElement(i, results[i]);
+      res->setElement(i, entries[i].result);
     return res;
   }
 
 protected:
+  struct Entry
+  {
+    Entry(const WorkUnitPtr& workUnit, const ExecutionContextCallbackPtr& callback)
+      : workUnit(workUnit), callback(callback) {}
+    
+    WorkUnitPtr workUnit;
+    Variable result;
+    ExecutionContextCallbackPtr callback;
+  };
+
   CriticalSection lock;
 
   volatile size_t numFinishedWorkUnits;
   std::map<size_t, size_t> indices; // Internal ID -> index
-  std::vector<WorkUnitPtr> workUnits;
-  std::vector<Variable> results;
-  std::vector<ExecutionContextCallbackPtr> callbacks;
+
+  std::vector<Entry> entries;
 };
 
 typedef ReferenceCountedObjectPtr<WorkUnitPool> WorkUnitPoolPtr;
 
-class DistributedExecutionContextNetworkClient : public ManagerNetworkClient, public ManagerNetworkClientCallback
+class DistributedExecutionContextClientCallback : public ManagerNetworkClientCallback
 {
 public:
-  DistributedExecutionContextNetworkClient(ExecutionContext& context)
-    : ManagerNetworkClient(context), numSentWorkUnit(0)
-    {callback = this;}
+  DistributedExecutionContextClientCallback(ExecutionContext& context)
+    : client(new ManagerNetworkClient(context)), numSentWorkUnit(0)
+    {}
+  
+  NetworkClientPtr getNetworkClient() const
+    {return client;}
 
   virtual void workUnitAcknowledgementReceived(size_t sourceIdentifier, const String& uniqueIdentifier)
   {
@@ -115,31 +124,33 @@ public:
     pools.erase(internalId);
   }
 
-  virtual bool sendWorkUnit(size_t sourceIdentifier, const WorkUnitPtr& workUnit,
-                            const String& projectName, const String& source, const String& destination,
-                            size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
-  {
-    return sendVariable(new WorkUnitRequestNetworkMessage(context, sourceIdentifier, workUnit, projectName, source, destination, requiredCpus, requiredMemory, requiredTime));
-  }
-
   bool sendWorkUnit(const WorkUnitPtr& workUnit, const WorkUnitPoolPtr& pool, const ExecutionContextCallbackPtr& callback,
                     const String& project, const String& from, const String& to)
   {
     ScopedLock _(lock);
     pool->appendWorkUnit(numSentWorkUnit, workUnit, callback);
     pools[numSentWorkUnit] = pool;
-    return sendWorkUnit(numSentWorkUnit++, workUnit, project, from, to, 1, 2, 10);
+    return client->sendWorkUnit(numSentWorkUnit++, workUnit, project, from, to, 1, 2, 10);
+  }
+
+  virtual void connectionMade()
+  {
+    ScopedLock _(lock);
+    for (std::map<String, size_t>::iterator it = workUnitIds.begin(); it != workUnitIds.end(); ++it)
+      client->sendVariable(new GetWorkUnitResultNetworkMessage(it->first));
   }
 
 protected:
   CriticalSection lock;
+
+  ManagerNetworkClientPtr client;
 
   size_t numSentWorkUnit;
   std::map<String, size_t> workUnitIds; // Manager ID to interne ID
   std::map<size_t, WorkUnitPoolPtr> pools;
 };
 
-typedef ReferenceCountedObjectPtr<DistributedExecutionContextNetworkClient> DistributedExecutionContextNetworkClientPtr;
+typedef ReferenceCountedObjectPtr<DistributedExecutionContextClientCallback> DistributedExecutionContextClientCallbackPtr;
 
 class DistributedExecutionContext : public SubExecutionContext
 {
@@ -147,18 +158,18 @@ public:
   DistributedExecutionContext(ExecutionContext& parentContext, const String& remoteHostName, size_t remotePort,
                               const String& project, const String& from, const String& to)
     : SubExecutionContext(parentContext)
-    , client(new DistributedExecutionContextNetworkClient(parentContext))
+    , client(new DistributedExecutionContextClientCallback(parentContext))
     , defaultPool(new WorkUnitPool())
     , project(project), from(from), to(to)
     {
-      client->startClient(remoteHostName, remotePort);
+      client->getNetworkClient()->startClient(remoteHostName, remotePort);
     }
 
   DistributedExecutionContext() {}
 
   virtual ~DistributedExecutionContext()
   {
-    client->stopClient();
+    client->getNetworkClient()->stopClient();
   }
 
   virtual String toString() const
@@ -208,7 +219,7 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  DistributedExecutionContextNetworkClientPtr client;
+  DistributedExecutionContextClientCallbackPtr client;
   WorkUnitPoolPtr defaultPool;
 
   String project;

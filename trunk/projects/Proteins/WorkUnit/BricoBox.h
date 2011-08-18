@@ -471,6 +471,7 @@ public:
   virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
   {
     std::cout << result.toString() << std::endl;
+    delete this;
   }
 };
 

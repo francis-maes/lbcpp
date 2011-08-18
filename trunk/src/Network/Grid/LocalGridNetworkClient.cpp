@@ -70,6 +70,7 @@ public:
     ExecutionTracesNetworkMessagePtr message = new ExecutionTracesNetworkMessage();
     message->addExecutionTrace(context, uniqueIdentifier, trace);
     client->sendVariable(message);
+    delete this;
   }
 
 protected:
@@ -80,7 +81,7 @@ protected:
   String uniqueIdentifier;
 };
 
-typedef ReferenceCountedObjectPtr<LocalGridExecutionContextCallback> LocalGridExecutionContextCallbackPtr;
+typedef LocalGridExecutionContextCallback* LocalGridExecutionContextCallbackPtr;
 
 class LocalGridNetworkClient : public GridNetworkClient, public GridNetworkClientCallback
 {

@@ -15,7 +15,7 @@
 namespace lbcpp
 {
 
-class DistributedOptimizerContext : public OptimizerContext
+class DistributedOptimizerContext : public OptimizerContext, public ExecutionContextCallback
 {
 public:
   DistributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction)
@@ -23,23 +23,35 @@ public:
 
   virtual bool isSynchroneous() const
     {return false;}
-  
+
   virtual bool areAllRequestsProcessed() const
     {return numFinishedEvaluations == results.size();}
-  
-  virtual bool evaluate(const Variable& parameters);
 
-  void setResult(size_t resultIndex, const Variable& result)
+  virtual bool evaluate(const Variable& parameters)
   {
-    jassert(results.size() > resultIndex);
-    results[resultIndex] = result;
+    ScopedLock _(lock);
+    WorkUnitPtr workUnit = new FunctionWorkUnit(objectiveFunction, parameters);
+
+    workUnitIndices[workUnit] = results.size();
+    results.push_back(Variable());
+    context.pushWorkUnit(workUnit, refCountedPointerFromThis(this));
+
+    return true;
+  }
+
+  /* ExecutionContextCallback */
+  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
+  {
+    jassert(workUnitIndices.count(workUnit) == 1);
+    results[workUnitIndices[workUnit]] = result;
     juce::atomicIncrement((int&)numFinishedEvaluations);
   }
 
-protected:  
+protected:
   friend class DistributedOptimizerContextClass;
 
   CriticalSection lock;
+  std::map<WorkUnitPtr, size_t> workUnitIndices;
   std::vector<Variable> results;
   size_t numFinishedEvaluations;
 

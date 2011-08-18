@@ -26,8 +26,13 @@ public:
 
   Variable run(ExecutionContext& context)
   {
-    NetworkServerPtr server = managerNetworkServer(context, new Manager(context));
-    return server->startServer(port);
+    Manager manager(context);
+    NetworkServerPtr server = managerNetworkServer(context, &manager);
+    if (!server->startServer(port))
+      return false;
+    while (true)
+      juce::Thread::sleep(1000);
+    return true;
   }
 
 protected:

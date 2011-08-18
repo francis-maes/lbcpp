@@ -14,12 +14,12 @@
 namespace lbcpp
 {
 
-class ExecutionContextCallback : public Object
+class ExecutionContextCallback
 {
 public:
-  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result) = 0;
+  virtual ~ExecutionContextCallback() {};
 
-  lbcpp_UseDebuggingNewOperator
+  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result) = 0;
 };
 
 typedef ReferenceCountedObjectPtr<ExecutionContextCallback> ExecutionContextCallbackPtr;

@@ -7,21 +7,13 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Network/NetworkServer.h>
-
 using namespace lbcpp;
 
-/** NetworkServer **/
-inline void workAroundVCBugSleep(int milliseconds)
-  {juce::Thread::sleep(milliseconds);}
+// TODO: remove the .cpp file
 
+/** NetworkServer **/
 bool NetworkServer::startServer(int port)
-{
-  if (!beginWaitingForSocket(port))
-    return false;
-  while (true)
-    workAroundVCBugSleep(INT_MAX);
-  return true;
-}
+  {return beginWaitingForSocket(port);}
 
 void NetworkServer::stopServer()
   {stop();}

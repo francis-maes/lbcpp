@@ -86,7 +86,20 @@ public:
   
   void getWorkUnitResultReceived(const String& uniqueIdentifier)
   {
-    sendWorkUnitResult(uniqueIdentifier, manager->getXmlResult(manager->getRequest(uniqueIdentifier)));
+    WorkUnitNetworkRequestPtr request = manager->getRequest(uniqueIdentifier);
+    if (!request)
+    {
+      context.warningCallback(T("ManagerServerNetworkClient::getWorkUnitResultReceived"), T("No request found for :") + uniqueIdentifier);
+      return;
+    }
+
+    XmlElementPtr element = manager->getXmlResult(request);
+    if (!element)
+    {
+      manager->setNetworkClientOf(uniqueIdentifier, refCountedPointerFromThis(this));
+      return;
+    }
+    sendWorkUnitResult(uniqueIdentifier, element);
   }
 
   void getWaitingWorkUnitsReceived(const String& gridName)

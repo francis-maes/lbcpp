@@ -97,6 +97,14 @@ void ManagerNetworkClient::variableReceived(const Variable& variable)
                             , T("Unknwon object of type: ") + objClass->toString());
 }
 
+
+bool ManagerNetworkClient::sendWorkUnit(size_t sourceIdentifier, const WorkUnitPtr& workUnit,
+                          const String& projectName, const String& source, const String& destination,
+                          size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
+{
+  return sendVariable(new WorkUnitRequestNetworkMessage(context, sourceIdentifier, workUnit, projectName, source, destination, requiredCpus, requiredMemory, requiredTime));
+}
+
 void GridNetworkClient::variableReceived(const Variable& variable)
 {
   if (!isValidNetworkMessage(context, variable))
