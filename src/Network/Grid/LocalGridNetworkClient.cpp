@@ -80,7 +80,7 @@ protected:
   String uniqueIdentifier;
 };
 
-  typedef ReferenceCountedObjectPtr<LocalGridExecutionContextCallback> LocalGridExecutionContextCallbackPtr;
+typedef ReferenceCountedObjectPtr<LocalGridExecutionContextCallback> LocalGridExecutionContextCallbackPtr;
 
 class LocalGridNetworkClient : public GridNetworkClient, public GridNetworkClientCallback
 {

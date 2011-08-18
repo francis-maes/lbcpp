@@ -74,8 +74,8 @@ public:
 
   struct Entry
   {
-    Entry(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, bool pushIntoStack, int* counterToDecrementWhenDone, Variable* result)
-      : workUnit(workUnit), stack(stack), pushIntoStack(pushIntoStack), counterToDecrementWhenDone(counterToDecrementWhenDone), result(result) {}
+    Entry(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, bool pushIntoStack, int* counterToDecrementWhenDone, Variable* result, const ExecutionContextCallbackPtr& callback = ExecutionContextCallbackPtr())
+      : workUnit(workUnit), stack(stack), pushIntoStack(pushIntoStack), counterToDecrementWhenDone(counterToDecrementWhenDone), result(result), callback(callback) {}
     Entry() : counterToDecrementWhenDone(NULL) {}
 
     WorkUnitPtr workUnit;
@@ -83,6 +83,7 @@ public:
     bool pushIntoStack;
     int* counterToDecrementWhenDone;
     Variable* result;
+    ExecutionContextCallbackPtr callback;
 
     bool exists() const
       {return workUnit;}
@@ -90,6 +91,7 @@ public:
 
   void push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int* counterToDecrementWhenDone = NULL, bool pushIntoStack = true, Variable* result = NULL);
   void push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& stack, int* numRemainingWorkUnitsCounter = NULL, Variable* result = NULL);
+  void push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, const ExecutionContextCallbackPtr& callback, bool pushIntoStack = true);
 
   Entry pop();
 
@@ -136,6 +138,15 @@ void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const Exe
   //*result = true;
   for (size_t i = 0; i < n; ++i)
     entries[priority].push_back(Entry(workUnits->getWorkUnit(i), stack, workUnits->hasPushChildrenIntoStackFlag(), numRemainingWorkUnitsCounter, NULL));
+}
+
+void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, const ExecutionContextCallbackPtr& callback, bool pushIntoStack)
+{
+  ScopedLock _(lock);
+  size_t priority = stack->getDepth();
+  if (entries.size() <= priority)
+    entries.resize(priority + 1);
+  entries[priority].push_back(Entry(workUnit, stack->cloneAndCast<ExecutionStack>(), pushIntoStack, NULL, NULL, callback));  
 }
 
 WaitingWorkUnitQueue::Entry WaitingWorkUnitQueue::pop()
@@ -238,6 +249,8 @@ private:
       *entry.result = result;
     if (entry.counterToDecrementWhenDone)
       juce::atomicDecrement(*entry.counterToDecrementWhenDone);
+    if (entry.callback)
+      entry.callback->workUnitFinished(entry.workUnit, result);
 
     // thread end callback and restore previous stack
     context->threadEndCallback(entryStack);
@@ -332,6 +345,12 @@ public:
     return result;
   }
 
+  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, const ExecutionContextCallbackPtr& callback = ExecutionContextCallbackPtr(), bool pushIntoStack = true)
+  {
+    WaitingWorkUnitQueuePtr queue = thread->getWaitingQueue();
+    queue->push(workUnit, stack, callback, pushIntoStack);
+  }
+
   virtual void pushWorkUnit(const WorkUnitPtr& workUnit, int* counterToDecrementWhenDone = NULL, bool pushIntoStack = true)
   {
     WaitingWorkUnitQueuePtr queue = thread->getWaitingQueue();
@@ -421,6 +440,12 @@ public:
 
   virtual bool isPaused() const
     {return false;}
+
+  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, const ExecutionContextCallbackPtr& callback = ExecutionContextCallbackPtr(), bool pushIntoStack = true)
+  {
+    WaitingWorkUnitQueuePtr queue = threadPool->getWaitingQueue();
+    queue->push(workUnit, stack, callback, pushIntoStack);
+  }
 
   virtual void pushWorkUnit(const WorkUnitPtr& workUnit, int* counterToDecrementWhenDone = NULL, bool pushIntoStack = true)
   {
