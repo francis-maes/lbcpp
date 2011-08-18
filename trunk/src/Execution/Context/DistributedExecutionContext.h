@@ -97,8 +97,11 @@ class DistributedExecutionContextClientCallback : public ManagerNetworkClientCal
 {
 public:
   DistributedExecutionContextClientCallback(ExecutionContext& context)
-    : client(new ManagerNetworkClient(context)), numSentWorkUnit(0)
-    {}
+    : client(new ManagerNetworkClient(context, this)), numSentWorkUnit(0)
+  {
+    memset(prout, 0, 256);
+    memset(proutAfter, 0, 256);
+  }
   
   NetworkClientPtr getNetworkClient() const
     {return client;}
@@ -127,21 +130,36 @@ public:
   bool sendWorkUnit(const WorkUnitPtr& workUnit, const WorkUnitPoolPtr& pool, const ExecutionContextCallbackPtr& callback,
                     const String& project, const String& from, const String& to)
   {
+    CriticalSection cs;
+    {
+    std::cout << "Send WU 1a" << std::endl;
+      ScopedLock _(cs);
+          std::cout << "Send WU b" << std::endl;
+    }
+    std::cout << "Send WU 1" << std::endl;
     ScopedLock _(lock);
+    std::cout << "Send WU 2" << std::endl;
     pool->appendWorkUnit(numSentWorkUnit, workUnit, callback);
     pools[numSentWorkUnit] = pool;
-    return client->sendWorkUnit(numSentWorkUnit++, workUnit, project, from, to, 1, 2, 10);
+    std::cout << "Send WU 3" << std::endl;
+    bool res = client->sendWorkUnit(numSentWorkUnit++, workUnit, project, from, to, 1, 2, 10);
+    std::cout << "Send WU 4" << std::endl;
+    return res;
   }
 
   virtual void connectionMade()
   {
+    std::cout << "Connection Made 1" << std::endl;
     ScopedLock _(lock);
+    std::cout << "Connection Made 2" << std::endl;
     for (std::map<String, size_t>::iterator it = workUnitIds.begin(); it != workUnitIds.end(); ++it)
       client->sendVariable(new GetWorkUnitResultNetworkMessage(it->first));
   }
 
 protected:
+  unsigned char prout[256];
   CriticalSection lock;
+  unsigned char proutAfter[256];
 
   ManagerNetworkClientPtr client;
 
@@ -150,7 +168,7 @@ protected:
   std::map<size_t, WorkUnitPoolPtr> pools;
 };
 
-typedef ReferenceCountedObjectPtr<DistributedExecutionContextClientCallback> DistributedExecutionContextClientCallbackPtr;
+typedef DistributedExecutionContextClientCallback* DistributedExecutionContextClientCallbackPtr;
 
 class DistributedExecutionContext : public SubExecutionContext
 {
@@ -170,6 +188,7 @@ public:
   virtual ~DistributedExecutionContext()
   {
     client->getNetworkClient()->stopClient();
+    delete client;
   }
 
   virtual String toString() const
