@@ -172,6 +172,11 @@ public:
     return NetworkClientPtr();
   }
 
+  void setNetworkClientOf(const String& uniqueIndentifier, const NetworkClientPtr& client)
+  {
+    routingTable[uniqueIndentifier] = client;
+  }
+
 protected:
   ExecutionContext& context;
   CriticalSection lock;

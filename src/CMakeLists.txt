@@ -591,7 +591,6 @@ SET(LBCPP_OPTIMIZER_CONTEXT_SOURCES
   Optimizer/Context/SynchroneousOptimizerContext.h
   Optimizer/Context/MultiThreadedOptimizerContext.h
   Optimizer/Context/DistributedOptimizerContext.h
-  Optimizer/Context/DistributedOptimizerContext.cpp
   Optimizer/Context/OptimizerContextLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OptimizerContextLibrary.cpp
 )

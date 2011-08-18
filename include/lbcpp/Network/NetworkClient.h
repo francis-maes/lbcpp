@@ -64,9 +64,9 @@ public:
   ManagerNetworkClient(ExecutionContext& context, const ManagerNetworkClientCallbackPtr& callback = ManagerNetworkClientCallbackPtr())
     : NetworkClient(context), callback(callback) {}
 
-  virtual bool sendWorkUnit(size_t sourceIdentifier, const WorkUnitPtr& workUnit,
-                            const String& projectName, const String& source, const String& destination,
-                            size_t requiredCpus, size_t requiredMemory, size_t requiredTime) = 0;
+  bool sendWorkUnit(size_t sourceIdentifier, const WorkUnitPtr& workUnit,
+                    const String& projectName, const String& source, const String& destination,
+                    size_t requiredCpus, size_t requiredMemory, size_t requiredTime);
 
 protected:
   ManagerNetworkClientCallbackPtr callback;
