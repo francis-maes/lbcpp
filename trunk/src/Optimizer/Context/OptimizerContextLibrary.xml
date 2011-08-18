@@ -11,6 +11,10 @@
     <variable type="Integer" name="numEvaluationInProgress"/>
   </class>
   
-  <import name="OptimizerContextNetwork" ifdef="LBCPP_NETWORKING"/>
+  <class name="DistributedOptimizerContext" base="OptimizerContext">
+    <constructor arguments="ExecutionContext&amp; context, const FunctionPtr&amp; objectiveFunction"/>
+    <variable type="GenericVector[Variable]" name="results"/>
+    <variable type="PositiveInteger" name="numFinishedEvaluations"/>
+  </class>
   
 </library>

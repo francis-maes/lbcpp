@@ -152,7 +152,7 @@ public:
     
     FunctionPtr f = new CysteinLearnerFunction();
     OptimizerPtr optimizer = new CysteinCrossValidationOptimizer(candidate, path);
-    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, f, T("CysBonds_kNN"), T("jbecker@monster24"), destinations, T("localhost"), 1664, 8, 2, 24, 60000);
+    OptimizerContextPtr optimizerContext; jassertfalse; // = distributedOptimizerContext(context, f, T("CysBonds_kNN"), T("jbecker@monster24"), destinations, T("localhost"), 1664, 8, 2, 24, 60000);
     OptimizerStatePtr optimizerState = new OptimizerState();
 
     return optimizer->compute(context, optimizerContext, optimizerState);

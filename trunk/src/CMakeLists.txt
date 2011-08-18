@@ -55,9 +55,6 @@ GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Optimizer/Context/OptimizerContextLibrary.xml OptimizerContextLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Optimizer/ObjectiveFunction/ObjectiveFunctionLibrary.xml ObjectiveFunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Optimizer/Optimizer/OptimizerOptimizerLibrary.xml OptimizerOptimizerLibrary.cpp)
-IF(LBCPP_NETWORKING)
-  GENERATE_INTROSPECTION_CODE(Optimizer/Context/Network/OptimizerContextNetworkLibrary.xml OptimizerContextNetworkLibrary.cpp)
-ENDIF(LBCPP_NETWORKING)
 
 IF(LBCPP_USER_INTERFACE)
   GENERATE_INTROSPECTION_CODE(UserInterface/Component/UserInterfaceComponentLibrary.xml UserInterfaceComponentLibrary.cpp)
@@ -593,6 +590,8 @@ SET(LBCPP_OPTIMIZER_SOURCES
 SET(LBCPP_OPTIMIZER_CONTEXT_SOURCES
   Optimizer/Context/SynchroneousOptimizerContext.h
   Optimizer/Context/MultiThreadedOptimizerContext.h
+  Optimizer/Context/DistributedOptimizerContext.h
+  Optimizer/Context/DistributedOptimizerContext.cpp
   Optimizer/Context/OptimizerContextLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OptimizerContextLibrary.cpp
 )
@@ -606,16 +605,6 @@ SET(LBCPP_OPTIMIZER_OPTIMIZER_SOURCES
   Optimizer/Optimizer/OptimizerOptimizerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OptimizerOptimizerLibrary.cpp
 )
-
-IF(LBCPP_NETWORKING)
-  SET(LBCPP_OPTIMIZER_CONTEXT_NETWORK_SOURCES
-    Optimizer/Context/Network/DistributedOptimizerContext.h
-    Optimizer/Context/Network/DistributedOptimizerContext.cpp
-    Optimizer/Context/Network/OptimizerContextNetworkLibrary.xml
-    ${CMAKE_CURRENT_BINARY_DIR}/OptimizerContextNetworkLibrary.cpp
-    ${LBCPP_OPTIMIZER_CONTEXT_NETWORK_SOURCES}
-  )
-ENDIF(LBCPP_NETWORKING)
 
 #### UserInterface ####
 IF(LBCPP_USER_INTERFACE)
@@ -776,7 +765,6 @@ SET(LBCPP_SOURCES
   # Optimizer
   ${LBCPP_OPTIMIZER_SOURCES}
     ${LBCPP_OPTIMIZER_CONTEXT_SOURCES}
-    ${LBCPP_OPTIMIZER_CONTEXT_NETWORK_SOURCES}
     ${LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_SOURCES}
     ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES}
     ${LBCPP_OPTIMIZER_OLD_SOURCES}
@@ -859,7 +847,7 @@ SOURCE_SUB_GROUP(Learning NearestNeighbor FILES ${LBCPP_LEARNING_NEAREST_NEIGHBO
 
 ## Optimizer
 SOURCE_GROUP(Optimizer FILES ${LBCPP_OPTIMIZER_SOURCES})
-SOURCE_SUB_GROUP(Optimizer Context FILES ${LBCPP_OPTIMIZER_CONTEXT_SOURCES} ${LBCPP_OPTIMIZER_CONTEXT_NETWORK_SOURCES})
+SOURCE_SUB_GROUP(Optimizer Context FILES ${LBCPP_OPTIMIZER_CONTEXT_SOURCES})
 SOURCE_SUB_GROUP(Optimizer ObjectiveFunction FILES ${LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(Optimizer Optimizer FILES ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES})
 

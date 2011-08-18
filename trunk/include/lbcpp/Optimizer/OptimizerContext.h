@@ -54,8 +54,7 @@ extern ClassPtr optimizerContextClass;
 
 extern OptimizerContextPtr synchroneousOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction = FunctionPtr());  
 extern OptimizerContextPtr multiThreadedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction = FunctionPtr(), size_t timeToSleep = 100);
-extern OptimizerContextPtr distributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTimesize_t, size_t timeToSleep = 60000);  
-extern OptimizerContextPtr distributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, String projectName, String source, const std::vector<String>& destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTimesize_t, size_t timeToSleep = 60000);  
+extern OptimizerContextPtr distributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction);  
 
 };
 #endif // !LBCPP_OPTIMIZER_CONTEXT_H_
