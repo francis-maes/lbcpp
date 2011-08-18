@@ -130,28 +130,17 @@ public:
   bool sendWorkUnit(const WorkUnitPtr& workUnit, const WorkUnitPoolPtr& pool, const ExecutionContextCallbackPtr& callback,
                     const String& project, const String& from, const String& to)
   {
-    CriticalSection cs;
-    {
-    std::cout << "Send WU 1a" << std::endl;
-      ScopedLock _(cs);
-          std::cout << "Send WU b" << std::endl;
-    }
-    std::cout << "Send WU 1" << std::endl;
     ScopedLock _(lock);
-    std::cout << "Send WU 2" << std::endl;
     pool->appendWorkUnit(numSentWorkUnit, workUnit, callback);
     pools[numSentWorkUnit] = pool;
-    std::cout << "Send WU 3" << std::endl;
     bool res = client->sendWorkUnit(numSentWorkUnit++, workUnit, project, from, to, 1, 2, 10);
-    std::cout << "Send WU 4" << std::endl;
     return res;
   }
 
   virtual void connectionMade()
   {
-    std::cout << "Connection Made 1" << std::endl;
+    // FIXME: Doesn't work
     ScopedLock _(lock);
-    std::cout << "Connection Made 2" << std::endl;
     for (std::map<String, size_t>::iterator it = workUnitIds.begin(); it != workUnitIds.end(); ++it)
       client->sendVariable(new GetWorkUnitResultNetworkMessage(it->first));
   }
