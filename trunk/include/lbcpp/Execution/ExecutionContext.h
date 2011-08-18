@@ -58,7 +58,7 @@ public:
   virtual Variable run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack = true) = 0;
 
   // multi-thread
-  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, const ExecutionContextCallbackPtr& callback = ExecutionContextCallbackPtr())
+  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, const ExecutionContextCallbackPtr& callback = ExecutionContextCallbackPtr(), bool pushIntoStack = true)
     {pushWorkUnit(workUnit, NULL);}
   virtual void pushWorkUnit(const WorkUnitPtr& workUnit, int* counterToDecrementWhenDone, bool pushIntoStack = true)
     {jassert(isMultiThread());}

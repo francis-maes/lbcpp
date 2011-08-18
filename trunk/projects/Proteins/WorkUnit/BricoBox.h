@@ -448,7 +448,8 @@ public:
       streams[i] = dStream;
     
     OptimizerPtr optimizer = bestFirstSearchOptimizer();
-    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, new BFSTestObjectiveFunction(), FunctionPtr(), 3000);
+    std::cout << "BFSTestWorkUnit - Context: " << context.toString() << std::endl;
+    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, new BFSTestObjectiveFunction());
     OptimizerStatePtr optimizerState = streamBasedOptimizerState(context, new BFSTestParameter(), streams);
     
     return optimizer->compute(context, optimizerContext, optimizerState);

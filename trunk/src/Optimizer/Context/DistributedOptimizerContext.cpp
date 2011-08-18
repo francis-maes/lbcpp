@@ -16,8 +16,8 @@ namespace lbcpp
 class OptimizerExecutionContextCallback : public ExecutionContextCallback
 {
 public:
-  OptimizerExecutionContextCallback(const DistributedOptimizerContextPtr& optimizeContext, size_t resultIndex)
-  : optimizerContext(optimizerContext), resultIndex(resultIndex) {}
+  OptimizerExecutionContextCallback(const DistributedOptimizerContextPtr& optimizerContext, size_t resultIndex)
+    : optimizerContext(optimizerContext), resultIndex(resultIndex) {}
   
   virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
     {optimizerContext->setResult(resultIndex, result);}
@@ -38,7 +38,7 @@ bool DistributedOptimizerContext::evaluate(const Variable& parameters)
 
   const size_t resultIndex = results.size();
   results.push_back(Variable());
-  context.pushWorkUnit(workUnit, new OptimizerExecutionContextCallback(DistributedOptimizerContextPtr(this), resultIndex));
+  context.pushWorkUnit(workUnit, new OptimizerExecutionContextCallback(refCountedPointerFromThis(this), resultIndex));
 
   return true;
 }
