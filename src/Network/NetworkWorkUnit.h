@@ -28,10 +28,13 @@ public:
   {
     Manager manager(context);
     NetworkServerPtr server = managerNetworkServer(context, &manager);
+
     if (!server->startServer(port))
       return false;
+
     while (true)
       juce::Thread::sleep(1000);
+
     return true;
   }
 

@@ -20,7 +20,7 @@ class Manager
 {
 public:
   Manager(ExecutionContext& context)
-    : context(context)
+    : context(context), lastUniqueIdentifier(Time::currentTimeMillis())
   {
     juce::OwnedArray<File> projectDirectories;
     context.getProjectDirectory().findChildFiles(projectDirectories, File::findDirectories, false, T("*"));
@@ -154,10 +154,13 @@ public:
   String generateUniqueIdentifier()
   {
     ScopedLock _(indentifierLock);
+    return String(++lastUniqueIdentifier); 
+
+
     juce::int64 res;
     do
     {
-      juce::Thread::sleep(1);
+      juce::Thread::sleep(100);
       res = Time::currentTimeMillis();
     } while (res <= lastUniqueIdentifier);
     
@@ -218,7 +221,7 @@ private:
   CriticalSection indentifierLock;
 };
 
-typedef ReferenceCountedObjectPtr<Manager> ManagerPtr;
+typedef Manager* ManagerPtr;
 
 }; /* namespace */
   
