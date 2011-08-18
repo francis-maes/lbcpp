@@ -163,16 +163,19 @@ local algo = DecisionProblem.SinglePlayerMCTS{
   indexFunction=DiscreteBandit.ucb1C{2}, verbose=false,
   partialExpand = true, fullPathExpand = true, useMaxReward = true}.__get
 
+algo = DecisionProblem.Ubola{
+  C = 5, alpha = 0.001, verbose = true
+}.__get
+
 --context:call("random",  runSearchAlgorithm, symbolicRegressionProblem, randomSearchAlgorithm, 100, 100)
 --context:call("nested1SearchAlgorithm", runSearchAlgorithm, symbolicRegressionProblem, nested1SearchAlgorithm, 100, 100)
-context:call("mcts", runSearchAlgorithm, problem, algo, 100, 100)
+context:call("ubola", runSearchAlgorithm, problem, algo, 100, 100)
 
 --[[
 local mctsUCB = DecisionProblem.SinglePlayerMCTS{numEpisodes=10000, indexFunction=DiscreteBandit.ucb1C{2}, verbose=false}
 local mctsUCB2 = DecisionProblem.SinglePlayerMCTS{numEpisodes=10000, indexFunction=DiscreteBandit.ucb1C{0.4}, verbose=false}
 local mctsUCBBernoulli = DecisionProblem.SinglePlayerMCTS{numEpisodes=10000, indexFunction=DiscreteBandit.ucb1Bernoulli, verbose=false}
 
-mctsUCB.__parameters.partialExpand = false
 
 context:call("MCTS-UCB 1", testSearchAlgorithm, problem, mctsUCB2)
 context:call("MCTS-UCB 1", testSearchAlgorithm, problem, mctsUCB2)

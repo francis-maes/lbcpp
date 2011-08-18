@@ -34,6 +34,9 @@ function runSearchAlgorithm(problem, algorithm, numIterations, numEpisodesPerIte
   local bestActionSequence, bestFinalState
   for i=1,numIterations do
     context:enter("Iteration " .. i)
+    if algorithm.initializeIteration then
+      algorithm:initializeIteration()
+    end
     local scoreStats = Statistics.meanVarianceAndBounds()
     local bestIterationFinalState
     for j=1,numEpisodesPerIteration do
