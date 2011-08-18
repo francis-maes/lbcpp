@@ -22,7 +22,10 @@ local function writeTreeToGraphML(problem, tree, filename)
     nodeNumber = nodeNumber + 1
     local id = "n" .. n
     f:write('<node id="' .. id .. '">\n')
-    f:write('  <data key="d1"><y:ShapeNode><y:NodeLabel>' .. text .. '</y:NodeLabel></y:ShapeNode></data>\n')
+    f:write('  <data key="d1"><y:ShapeNode>')
+    f:write('<y:Geometry height="30.0" width="150"/>')
+    f:write('<y:NodeLabel>' .. text .. '</y:NodeLabel>')
+    f:write('</y:ShapeNode></data>\n')
     f:write('</node>\n')
     return id
   end
@@ -135,7 +138,6 @@ DecisionProblem.SinglePlayerMCTS = subspecified {
 
     local function expand(leaf, action)
       assert(leaf)
-      assert(not leaf.fullyExpanded)
       leaf.fullyExpanded = true
       local res
       if verbose then
@@ -163,7 +165,7 @@ DecisionProblem.SinglePlayerMCTS = subspecified {
         end
       end
       assert(actionFound)
-      
+      assert(res)
       return res
     end
 
@@ -229,7 +231,8 @@ DecisionProblem.SinglePlayerMCTS = subspecified {
 
   getTreeSize = function (self, tree)
     local res = 1
-    for i,node in ipairs(tree.subNodes) do
+    for i,u in ipairs(tree.U) do
+      node = tree.subNodes[i]
       if node then
         res = res + self:getTreeSize(node)
       end
@@ -248,5 +251,6 @@ DecisionProblem.SinglePlayerMCTS = subspecified {
       print (i, self.problem.actionToString(action)) 
     end
     print ("Tree Size: " .. self:getTreeSize(self.root))
+    --writeTreeToGraphML(self.problem, self.root, "mcts.graphml")
   end
 }
