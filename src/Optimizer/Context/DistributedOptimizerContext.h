@@ -14,7 +14,7 @@
 
 namespace lbcpp
 {
-
+#if 0
 class DistributedOptimizerContext : public OptimizerContext, public ExecutionContextCallback
 {
 public:
@@ -60,7 +60,7 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<DistributedOptimizerContext> DistributedOptimizerContextPtr;
-
+#endif //!0
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_DISTRIBUTED_OPTIMIZER_CONTEXT_H_

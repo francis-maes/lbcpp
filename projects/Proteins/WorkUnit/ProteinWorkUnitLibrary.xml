@@ -119,6 +119,7 @@
   </class>
   
   <!-- BEGIN CysteinBox -->
+<!-- FIXME: Optimizer
   <class name="CysteinLearnerParameters" base="Object">
     <variable type="ProteinPredictorParameters" name="predictorParameters"/>
     <variable type="String" name="foldDirectory"/>
@@ -162,7 +163,7 @@
   <class name="CysteinCrossValidationWorkUnit" base="WorkUnit">
     <variable type="String" name="inputPath"/>
   </class>
-
+-->
   <!-- END CysteinBox -->
 
 </library>

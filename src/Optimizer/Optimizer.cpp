@@ -15,6 +15,7 @@ using namespace lbcpp;
 ** Optimizer <- Function
 ** OptimizerContext, OptimizerState -> Variable
 */
+/*
 TypePtr Optimizer::getRequiredContextType() const
   {return optimizerContextClass;}
 
@@ -48,11 +49,26 @@ Variable Optimizer::computeFunction(ExecutionContext& context, const Variable* i
   context.leaveScope(optimizerState->getBestVariable());
   return output;  // bestVariable
 }
+*/
+
+Variable Optimizer::computeFunction(ExecutionContext& context, const Variable* inputs) const
+{
+  OptimizerStatePtr state = createOptimizerState(context); // TODO: Load a partially learn state if exists.
+  context.enterScope(T("Optimizing - ") + toString());
+  jassert(inputs[0].getObjectAndCast<Function>(context));
+  Variable res = optimize(context, state, inputs[0].getObjectAndCast<Function>(context));
+  context.resultCallback(T("bestParameters"), state->getBestParameters());
+  context.resultCallback(T("bestScore"), state->getBestScore());
+  context.leaveScope(res);
+  return res;
+}
+
 
 /*
  ** OptimizerState
  ** this class can be accessed in reading and writing from different contexts -> synchronized using lock
  */
+/*
 OptimizerState::OptimizerState(double autoSaveStateFrequency) 
   : totalNumberOfRequests(0), totalNumberOfResults(0), bestVariable(Variable()), bestScore(DBL_MAX), autoSaveStateFrequency(autoSaveStateFrequency), lastSaveTime(0) {}
 
@@ -174,10 +190,11 @@ void OptimizerState::functionReturned(ExecutionContext& context, const FunctionP
     processedRequests.push_back(std::make_pair(output.toDouble(), inputs[0]));  // push into buffer
   totalNumberOfResults++;  
 }
-
+*/
 /*
  ** OptimizerContext
  */
+/*
 OptimizerContext::OptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction, size_t timeToSleep)
   : context(context), objectiveFunction(objectiveFunction), validationFunction(validationFunction), timeToSleep(timeToSleep)
 {
@@ -199,4 +216,4 @@ void OptimizerContext::waitUntilAllRequestsAreProcessed() const
 
 size_t OptimizerContext::getTimeToSleep() const 
   {return timeToSleep;}
-
+*/

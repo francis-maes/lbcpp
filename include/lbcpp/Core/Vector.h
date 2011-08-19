@@ -209,6 +209,9 @@ public:
   Variable& getElement(size_t index)
     {jassert(index < variables.size()); return variables[index];}
 
+  Variable* getPointerElement(size_t index)
+    {jassert(index < variables.size()); return &variables[index];}
+
   /*
   ** Vector
   */

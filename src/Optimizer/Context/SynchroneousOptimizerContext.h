@@ -13,7 +13,7 @@
 
 namespace lbcpp
 {
-
+#if 0
 class SynchroneousOptimizerContext : public OptimizerContext
 {
 public:
@@ -44,6 +44,6 @@ public:
 protected:  
   friend class SynchroneousOptimizerContextClass;
 };
-
+#endif //!0
 };
 #endif // !LBCPP_SYNCHRONEOUS_OPTIMIZER_CONTEXT_H_

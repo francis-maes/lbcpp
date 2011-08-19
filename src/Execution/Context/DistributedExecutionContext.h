@@ -30,7 +30,7 @@ namespace lbcpp
 class WorkUnitPool : public Object
 {
 public:
-  WorkUnitPool()
+  WorkUnitPool(bool isCompositeWorkUnit = false)
     : numFinishedWorkUnits(0) {}
 
   void waitUntilAllWorkUnitsAreDone()
@@ -63,7 +63,7 @@ public:
   {
     jassert(entries.size() == numFinishedWorkUnits);
     const size_t n = entries.size();
-    if (n == 1)
+    if (n == 1 && !isCompositeWorkUnit)
       return entries[0].result;
 
     VectorPtr res = variableVector(n);
@@ -85,6 +85,7 @@ protected:
 
   CriticalSection lock;
 
+  bool isCompositeWorkUnit;
   volatile size_t numFinishedWorkUnits;
   std::map<size_t, size_t> indices; // Internal ID -> index
 
@@ -163,7 +164,7 @@ public:
                               const String& project, const String& from, const String& to)
     : SubExecutionContext(parentContext)
     , client(new DistributedExecutionContextClientCallback(parentContext))
-    , defaultPool(new WorkUnitPool())
+    , defaultPool(new WorkUnitPool(false))
     , project(project), from(from), to(to)
     {
       client->getNetworkClient()->startClient(remoteHostName, remotePort);
@@ -205,7 +206,7 @@ public:
     
   virtual Variable run(const WorkUnitPtr& workUnit, bool pushIntoStack)
   {
-    WorkUnitPoolPtr pool = new WorkUnitPool();
+    WorkUnitPoolPtr pool = new WorkUnitPool(false);
     client->sendWorkUnit(workUnit, pool, ExecutionContextCallbackPtr(), project, from, to);
     pool->waitUntilAllWorkUnitsAreDone();
     return pool->getResult();
@@ -213,7 +214,7 @@ public:
 
   virtual Variable run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack)
   {
-    WorkUnitPoolPtr pool = new WorkUnitPool();
+    WorkUnitPoolPtr pool = new WorkUnitPool(true);
     const size_t n = workUnits->getNumWorkUnits();
     for (size_t i = 0; i < n; ++i)
       client->sendWorkUnit(workUnits->getWorkUnit(i), pool, ExecutionContextCallbackPtr(), project, from, to);

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <library name="OptimizerContext" directory="Optimizer/Context">
-
+<!--
   <class name="SynchroneousOptimizerContext" base="OptimizerContext">
     <constructor arguments="ExecutionContext&amp; context, const FunctionPtr&amp; objectiveFunction, const FunctionPtr&amp; validationFunction"/>
   </class>
@@ -16,5 +16,5 @@
     <variable type="GenericVector[Variable]" name="results"/>
     <variable type="PositiveInteger" name="numFinishedEvaluations"/>
   </class>
-  
+-->
 </library>

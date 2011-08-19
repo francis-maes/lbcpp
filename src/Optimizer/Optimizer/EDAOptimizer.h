@@ -13,7 +13,7 @@
 
 namespace lbcpp
 {
-
+#if 0
 class EDAOptimizer : public PopulationBasedOptimizer
 {
 public:
@@ -109,7 +109,7 @@ protected:
     return true;
   }
 };
-
+#endif //!0
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_EDA_OPTIMIZER_H_

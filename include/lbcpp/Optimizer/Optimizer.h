@@ -20,15 +20,24 @@ namespace lbcpp
 class Optimizer : public Function
 {
 public:
-  virtual TypePtr getRequiredContextType() const;
-  virtual TypePtr getRequiredStateType() const;
-  virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const = 0;
-  
-  // Function
-  virtual size_t getNumRequiredInputs() const;
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
-  virtual String getOutputPostFix() const;
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
+  /* Optimizer */
+  virtual Variable optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const FunctionPtr& objectiveFunction) const = 0;
+
+  virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context) const = 0;
+
+  /* Function */
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return functionClass;}
+
+  virtual String getOutputPostFix() const
+    {return T("Optimized");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return anyType;}
+
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 };
 
@@ -38,7 +47,7 @@ extern OptimizerPtr uniformSampleAndPickBestOptimizer(size_t numSamples, bool ve
 extern OptimizerPtr edaOptimizer(size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr(), double slowingFactor = 0, bool reinjectBest = false, bool verbose = false);
 extern OptimizerPtr asyncEDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, size_t numberEvaluationsInProgress, StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr(), double slowingFactor = 0, bool reinjectBest = false, bool verbose = false);
 
-extern OptimizerPtr bestFirstSearchOptimizer();
+extern OptimizerPtr bestFirstSearchOptimizer(const ObjectPtr& initialState, const std::vector<StreamPtr>& streams);
 
 }; /* namespace lbcpp */
 

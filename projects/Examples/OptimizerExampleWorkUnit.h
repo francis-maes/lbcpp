@@ -25,7 +25,9 @@ public:
     size_t numIterations = 40;
     size_t populationSize = 100;
     size_t numBests = 30;
-    
+    jassertfalse;
+    // FIXME: Optimizer
+/*
     FunctionPtr f = squareFunction();
     SamplerPtr sampler = gaussianSampler(0.0, 5.0);
     
@@ -34,6 +36,8 @@ public:
     OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler);
     
     return optimizer->compute(context, optimizerContext, optimizerState);
+*/
+    return false;
   }
 };
   

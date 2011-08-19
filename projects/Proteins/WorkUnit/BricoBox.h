@@ -446,13 +446,9 @@ public:
     std::vector<StreamPtr> streams(3);
     for (size_t i = 0; i < 3; ++i)
       streams[i] = dStream;
-    
-    OptimizerPtr optimizer = bestFirstSearchOptimizer();
-    std::cout << "BFSTestWorkUnit - Context: " << context.toString() << std::endl;
-    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, new BFSTestObjectiveFunction());
-    OptimizerStatePtr optimizerState = streamBasedOptimizerState(context, new BFSTestParameter(), streams);
-    
-    return optimizer->compute(context, optimizerContext, optimizerState);
+
+    OptimizerPtr optimizer = bestFirstSearchOptimizer(new BFSTestParameter(), streams);
+    return optimizer->compute(context, new BFSTestObjectiveFunction());
   }
 };
 
