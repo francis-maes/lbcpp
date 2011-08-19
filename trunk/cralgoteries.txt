@@ -1,8 +1,4 @@
 
-UBOLA Next steps:
- * Features
- * Voir pourquoi l'objectif bandits se bloque à 0.3
-
 Lua-Misc
 * Metamethods for ipairs() and pairs()
 * Serialisation of subspecified expressions
