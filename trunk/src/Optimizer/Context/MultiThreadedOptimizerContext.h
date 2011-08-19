@@ -14,7 +14,7 @@
 
 namespace lbcpp
 {  
-  
+#if 0
 class MultiThreadedOptimizerContext : public OptimizerContext
 {
 public:
@@ -50,6 +50,6 @@ protected:
 private:
   int numEvaluationInProgress;
 };
-  
+#endif //!0
 };
 #endif // !LBCPP_MULTI_THEADS_OPTIMIZER_CONTEXT_H_

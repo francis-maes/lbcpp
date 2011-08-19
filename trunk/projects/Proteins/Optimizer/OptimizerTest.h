@@ -98,10 +98,14 @@ public:
     
     
     // Optimizer
+    /* FIXME: Optimizer
     OptimizerPtr optimizer = asyncEDAOptimizer(20, 500, 150, 750, StoppingCriterionPtr(), 0.15);
     OptimizerContextPtr optimizerContext; jassertfalse; // = distributedOptimizerContext(context, new ProteinLearnerObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime, 300000);
     SamplerBasedOptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler, 300);
     return optimizer->compute(context, optimizerContext, optimizerState);
+     */
+    jassertfalse;
+    return false;
   }
 };
 
@@ -183,10 +187,14 @@ public:
     
     
     // Optimizer
+    /* FIXME: Optimizer
     OptimizerPtr optimizer = asyncEDAOptimizer(20, 500, 150, 500, StoppingCriterionPtr(), 0.10);
     OptimizerContextPtr optimizerContext; jassertfalse; // = distributedOptimizerContext(context, new ProteinLearnerObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime, 300000);
     SamplerBasedOptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler, 300);
     return optimizer->compute(context, optimizerContext, optimizerState);
+     */
+    jassertfalse;
+    return false;
   }
 };
 
@@ -268,10 +276,14 @@ public:
     
     
     // Optimizer
+    /* FIXME: Optimizer
     OptimizerPtr optimizer = asyncEDAOptimizer(20, 500, 150, 500, StoppingCriterionPtr(), 0.10);
     OptimizerContextPtr optimizerContext; jassertfalse; // = distributedOptimizerContext(context, new ProteinLearnerObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime, 300000);
     SamplerBasedOptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler, 300);
     return optimizer->compute(context, optimizerContext, optimizerState);
+     */
+    jassertfalse;
+    return false;
   }
 };
   
@@ -421,12 +433,14 @@ class OptimizerTestBedWorkUnit : public WorkUnit
     
     
     // Simple example
+    /* FIXME: Optimizer
     sampler = independentDoubleVectorSampler(5, gaussianSampler(0.0, 5.0));
     optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0);
     optimizerContext = synchroneousOptimizerContext(context, f, FunctionPtr());
     optimizerState = new SamplerBasedOptimizerState(sampler);
     optimizer->compute(context, optimizerContext, optimizerState);
-  
+  */
+    jassertfalse;
     return Variable();
   }
 };

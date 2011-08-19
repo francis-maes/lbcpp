@@ -15,6 +15,34 @@
 namespace lbcpp
 {
 
+class OptimizerState : public Object
+{
+public:
+  OptimizerState(const Variable& initialParameters = Variable(), double initialScore = DBL_MAX)
+    : bestParameters(initialParameters), bestScore(initialScore) {}
+
+  const Variable& getBestParameters() const
+    {return bestParameters;}
+
+  void setBestParameters(const Variable& bestParameters)
+    {this->bestParameters = bestParameters;}
+
+  double getBestScore() const
+    {return bestScore;}
+
+  void setBestScore(double bestScore)
+    {this->bestScore = bestScore;}
+
+protected:
+  friend class OptimizerStateClass;
+
+  Variable bestParameters;
+  double bestScore;
+};
+
+typedef ReferenceCountedObjectPtr<OptimizerState> OptimizerStatePtr;
+
+#if 0
 // TODO : force abstract in xml ?
 class OptimizerState : public Object, public FunctionCallback
 {
@@ -119,7 +147,7 @@ protected:
 typedef ReferenceCountedObjectPtr<SamplerBasedOptimizerState> SamplerBasedOptimizerStatePtr;
 
 extern OptimizerStatePtr streamBasedOptimizerState(ExecutionContext& context, const ObjectPtr& initialState, const std::vector<StreamPtr>& streams);
-
+#endif
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OPTIMIZER_STATE_H_

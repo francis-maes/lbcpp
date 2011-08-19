@@ -13,7 +13,7 @@
 
 namespace lbcpp
 {
-
+#if 0
 class AsyncEDAOptimizer : public PopulationBasedOptimizer
 {
 public:  
@@ -100,7 +100,7 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<AsyncEDAOptimizer> AsyncEDAOptimizerPtr;  
-  
+#endif // !0
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_ASYNC_EDA_OPTIMIZER_H_

@@ -15,7 +15,7 @@
 
 namespace lbcpp
 {
-  
+#if 0
 class PopulationBasedOptimizer : public Optimizer
 {
 public:
@@ -168,7 +168,7 @@ protected:
 };
   
 typedef ReferenceCountedObjectPtr<PopulationBasedOptimizer> PopulationBasedOptimizerPtr;  
-
+#endif // !O
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_POPULATION_BASED_OPTIMIZER_H_

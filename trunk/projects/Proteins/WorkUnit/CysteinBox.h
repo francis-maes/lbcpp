@@ -82,7 +82,7 @@ public:
     : parameters(parameters), path(path) {}
   
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
-  {
+  {/* FIXME: Optimizer
     enum {numFolds = 5};
     for (size_t i = 0; i < numFolds; ++i)
     {
@@ -120,6 +120,9 @@ public:
 
     optimizerState->setBestScore(sum / (double)numValidScore);
     return Variable(sum / (double)numValidScore, doubleType);
+    */
+    jassertfalse;
+    return false;
   }
   
 protected:
@@ -149,13 +152,16 @@ public:
     candidate->useKNN = true;
     candidate->useAddBias = true;
     candidate->numNeighbors = 10;
-    
+/* FIXME : Optimizer    
     FunctionPtr f = new CysteinLearnerFunction();
     OptimizerPtr optimizer = new CysteinCrossValidationOptimizer(candidate, path);
     OptimizerContextPtr optimizerContext; jassertfalse; // = distributedOptimizerContext(context, f, T("CysBonds_kNN"), T("jbecker@monster24"), destinations, T("localhost"), 1664, 8, 2, 24, 60000);
     OptimizerStatePtr optimizerState = new OptimizerState();
 
     return optimizer->compute(context, optimizerContext, optimizerState);
+ */
+    jassertfalse;
+    return false;
   }
   
 protected:
@@ -211,7 +217,7 @@ public:
     values.push_back(7.4);
     values.push_back(8.4);
     values.push_back(11.4);
-    
+/* FIXME: Optimizer
     for (size_t i = 0; i < values.size(); ++i)
     {
       Lin09PredictorParametersPtr candidate = new Lin09PredictorParameters(parameters);
@@ -250,6 +256,9 @@ public:
 
     optimizerState->setBestScore(bestScore);
     return bestScore;
+ */
+    jassertfalse;
+    return false;
   }
 
 protected:
@@ -270,7 +279,7 @@ public:
   {
     context.enterScope(T("COptimizing"));
     context.resultCallback(T("Parameters"), input);
-
+/*
     context.appendCallback(consoleExecutionCallback());
 
     Lin09ParametersPtr parameters = input.getObjectAndCast<Lin09Parameters>(context);
@@ -284,6 +293,9 @@ public:
     
     context.leaveScope(res);
     return res;
+ */
+    jassertfalse;
+    return false;
   }
 
 protected:
@@ -296,7 +308,7 @@ class BFSCysteinProteinLearner : public WorkUnit
 {
 public:  
   Variable run(ExecutionContext& context)
-  {
+  {/* FIXME: Optimizer
     //FunctionPtr f = new COptimizerFunction(inputDirectory);
     FunctionPtr f = new CysteinCrossValidationFunction(inputDirectory);
     OptimizerPtr optimizer = bestFirstSearchOptimizer();
@@ -304,6 +316,9 @@ public:
     OptimizerStatePtr optimizerState = streamBasedOptimizerState(context, Lin09Parameters::createInitialObject(), Lin09Parameters::createStreams());
 
     return optimizer->compute(context, optimizerContext, optimizerState);
+    */
+    jassertfalse;
+    return false;
   }
 
 protected:

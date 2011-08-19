@@ -190,13 +190,15 @@ String WorkUnit::getUsageString() const
 */
 Variable CompositeWorkUnit::run(ExecutionContext& context)
 {
-  size_t n = getNumWorkUnits();
+  const size_t n = getNumWorkUnits();
+  VariableVectorPtr results = variableVector(n);
   for (size_t i = 0; i < n; ++i)
   {
     WorkUnitPtr workUnit = getWorkUnit(i);
-    context.run(workUnit, pushChildrenIntoStack);
+    Variable result = context.run(workUnit, pushChildrenIntoStack);
+    results->setElement(i, result);
   }
-  return Variable();
+  return results;
 }
 
 /*

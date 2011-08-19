@@ -2,35 +2,23 @@
 
 <library name="Optimizer" directory="Optimizer">
 
-  <import name="OptimizerOptimizer"/>
-  <import name="OptimizerContext"/>
-
   <include file="lbcpp/Optimizer/Optimizer.h"/>
+  <import name="OptimizerOptimizer"/>
 
   <!-- Optimizer -->
   <class name="Optimizer" base="Function" abstract="yes"/>
 
   <!-- OptimizerState -->
   <class name="OptimizerState" base="Object">
-    <constructor arguments="size_t autoSaveStateFrequency"/>
-    <variable type="PositiveInteger" name="totalNumberOfRequests"/>
-    <variable type="PositiveInteger" name="totalNumberOfResults"/>
-    <variable type="Variable" name="bestVariable"/>
+    <variable type="Variable" name="bestParameters"/>
     <variable type="Double" name="bestScore"/>
-    <variable type="ObjectVector[Pair[Double, Variable]]" name="processedRequests"/>
-    <variable type="Time" name="autoSaveStateFrequency"/>
   </class>
-  
+
+<!--  
   <class name="SamplerBasedOptimizerState" base="OptimizerState">
     <variable type="Sampler" name="sampler"/>
     <variable type="Sampler" name="initialSampler"/>
   </class>
-
-  <!-- OptimizerContext -->
-  <class name="OptimizerContext" base="Object" abstract="yes">
-    <variable type="Function" name="objectiveFunction"/>
-    <variable type="Function" name="validationFunction"/>
-    <variable type="PositiveInteger" name="timeToSleep"/>
-  </class>
+-->
 
 </library>

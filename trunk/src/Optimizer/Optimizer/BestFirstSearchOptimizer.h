@@ -12,44 +12,200 @@
 # include <lbcpp/Data/Stream.h>
 # include <lbcpp/Optimizer/Optimizer.h>
 # include <lbcpp/Optimizer/OptimizerState.h>
+# include <lbcpp/Execution/WorkUnit.h>
 
 namespace lbcpp
 {
+
+class BestFirstSearchParameter : public Object
+{
+public:
+  BestFirstSearchParameter(size_t index = (size_t)-1)
+    : index(index), isComputed(false) {}
+
+  size_t getIndex() const
+    {return index;}
+
+  double getBestScore()
+  {
+    const_cast<BestFirstSearchParameter*>(this)->ensureIsComputed();
+    return bestScore;
+  }
+
+  size_t getBestValue() const
+  {
+    const_cast<BestFirstSearchParameter*>(this)->ensureIsComputed();
+    return bestValue;
+  }
+
+  double getScore(size_t index) const
+    {jassert(index < scores.size()); return scores[index];}
+
+  void appendValue(double score)
+    {scores.push_back(score);}
+
+protected:
+  friend class BestFirstSearchParameterClass;
+
+  size_t index;
+  std::vector<double> scores;
+
+private:
+  bool isComputed;
+
+  size_t bestValue;
+  size_t bestScore;
+
+  void ensureIsComputed()
+  {
+    if (isComputed)
+      return;
+
+    size_t bestValue = (size_t)-1;
+    double bestScore = DBL_MAX;
+    for (size_t i = 0; i < scores.size(); ++i)
+      if (scores[i] < bestScore)
+      {
+        bestValue = i;
+        bestScore = scores[i];
+      }
+
+    this->bestValue = bestValue;
+    this->bestScore = bestScore;
+
+    isComputed = true;
+  }
+};
+
+typedef ReferenceCountedObjectPtr<BestFirstSearchParameter> BestFirstSearchParameterPtr;
+
+class BestFirstSearchIteration : public Object
+{
+public:
+  BestFirstSearchIteration()
+    : isComputed(false) {}
+
+  size_t getNumParameters() const
+    {return parameters.size();}
+
+  size_t getBestParameter() const
+  {
+    const_cast<BestFirstSearchIteration*>(this)->ensureIsComputed();
+    return bestParameter;
+  }
+
+  size_t getBestValue() const
+  {
+    const_cast<BestFirstSearchIteration*>(this)->ensureIsComputed();
+    return bestValue;
+  }
+
+  double getBestScore() const
+  {
+    const_cast<BestFirstSearchIteration*>(this)->ensureIsComputed();
+    return bestScore;
+  }
+
+  BestFirstSearchParameterPtr getParameter(size_t index) const
+    {jassert(index < parameters.size()); return parameters[index];}
+
+  void appendParameter(const BestFirstSearchParameterPtr& parameter)
+    {parameters.push_back(parameter);}
+
+protected:
+  friend class BestFirstSearchIterationClass;
+
+  std::vector<BestFirstSearchParameterPtr> parameters;
+
+private:
+  bool isComputed;
+
+  size_t bestParameter;
+  size_t bestValue;
+  double bestScore;
+
+  void ensureIsComputed()
+  {
+    if (isComputed)
+      return;
+
+    size_t bestParameter = (size_t)-1;
+    size_t bestValue = (size_t)-1;
+    double bestScore = DBL_MAX;
+    for (size_t i = 0; i < parameters.size(); ++i)
+      if (parameters[i]->getBestScore() < bestScore)
+      {
+        bestParameter = parameters[i]->getIndex();
+        bestValue = parameters[i]->getBestValue();
+        bestScore = parameters[i]->getBestScore();
+      }
+
+    this->bestParameter = bestParameter;
+    this->bestValue = bestValue;
+    this->bestScore = bestScore;
+
+    isComputed = true;
+  }
+};
+
+typedef ReferenceCountedObjectPtr<BestFirstSearchIteration> BestFirstSearchIterationPtr;
 
 class StreamBasedOptimizerState : public OptimizerState
 {
 public:
   StreamBasedOptimizerState(ExecutionContext& context, const ObjectPtr& initialState, const std::vector<StreamPtr>& streams)
-    : streams(streams)
+    : OptimizerState(initialState), streams(streams)
   {
+    // Types checking
     if (initialState->getNumVariables() != streams.size())
       context.errorCallback(T("StreamBasedOptimizerState"), T("Invalid number of streams, Expected ") 
                             + String((int)initialState->getNumVariables()) 
                             + T(" found ") + streams.size());
 
     for (size_t i = 0; i < streams.size(); ++i)
-      context.checkInheritance(streams[i]->getElementsType(), initialState->getVariableType(i));
-
-    setBestVariable(initialState);
-    setBestScore(DBL_MAX);
+      if (streams[i])
+        context.checkInheritance(streams[i]->getElementsType(), initialState->getVariableType(i));
   }
-
-  StreamBasedOptimizerState(const ObjectPtr& initialState = ObjectPtr())
-    {setBestVariable(initialState);}
-
-  size_t getNumStreams() const
-    {return streams.size();}
 
   const StreamPtr& getStream(size_t index) const
     {jassert(index < streams.size()); return streams[index];}
 
-  void appendStream(const StreamPtr& stream)
-    {streams.push_back(stream);}
+  void getNextParameters(std::vector<size_t>& result) const
+  {
+    std::map<size_t, bool> alreadySelectedParameters;
+    for (size_t i = 0; i < iterations.size(); ++i)
+      alreadySelectedParameters[iterations[i]->getBestParameter()] = true;
+
+    for (size_t i = 0; i < streams.size(); ++i)
+    {
+      if (alreadySelectedParameters.count(i) == 1)
+        continue;
+      if (!streams[i] || (streams[i]->rewind() && streams[i]->isExhausted()))
+        continue;
+
+      result.push_back(i);
+    }
+  }
   
+  size_t getNumIterations() const
+    {return iterations.size();}
+
+  BestFirstSearchIterationPtr getIteration(size_t index) const
+    {jassert(index < iterations.size()); return iterations[index];}
+
+  void appendIteration(const BestFirstSearchIterationPtr& iteration)
+    {iterations.push_back(iteration);}
+
+  ClassPtr getObjectClass() const
+    {return getBestParameters().getObject()->getClass();}
+
 protected:
   friend class StreamBasedOptimizerStateClass;
 
   std::vector<StreamPtr> streams;
+  std::vector<BestFirstSearchIterationPtr> iterations;
+
+  StreamBasedOptimizerState() {}
 };
 
 typedef ReferenceCountedObjectPtr<StreamBasedOptimizerState> StreamBasedOptimizerStatePtr;
@@ -57,143 +213,144 @@ typedef ReferenceCountedObjectPtr<StreamBasedOptimizerState> StreamBasedOptimize
 class BestFirstSearchOptimizer : public Optimizer
 {
 public:
-  virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
+  BestFirstSearchOptimizer(const ObjectPtr& initialParameters, const std::vector<StreamPtr>& streams)
+    : initialParameters(initialParameters), streams(streams) {}
+
+  virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context) const
+    {return new StreamBasedOptimizerState(context, initialParameters, streams);}
+
+  virtual Variable optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const FunctionPtr& objectiveFunction) const
   {
-    StreamBasedOptimizerStatePtr streams = optimizerState.dynamicCast<StreamBasedOptimizerState>();
-    if (!streams)
-    {
-      context.errorCallback(T("BestFirstSearchOptimizer::optimize"), T("Expected StreamBasedOptimizerState"));
-      return false;
-    }
-    
-    const size_t numParameters = streams->getNumStreams();
-    
-    std::vector<size_t> parameterIndices(numParameters);
-    for (size_t i = 0; i < numParameters; ++i)
-      parameterIndices[i] = i;
+    StreamBasedOptimizerStatePtr state = optimizerState.dynamicCast<StreamBasedOptimizerState>();
+    jassert(state);
 
-    while (parameterIndices.size())
-    {
-      const size_t currentIteration = numParameters - parameterIndices.size();
-      context.enterScope(T("Iteration ") + String((int)currentIteration));
-      context.resultCallback(T("Iteration"), currentIteration);
+    pushPreviousInterationsIntoStack(context, state);
 
-      std::vector<std::pair<size_t, Variable> > experiments;
+    while (true)
+    {
+      std::vector<size_t> parameterIndices;
+      state->getNextParameters(parameterIndices);
+      if (parameterIndices.size() == 0)
+        break;
+      
+      context.enterScope(T("Iteration ") + String((int)state->getNumIterations()));
+      context.resultCallback(T("Iteration"), state->getNumIterations());
+      
+      CompositeWorkUnitPtr workUnits = new CompositeWorkUnit(T("BestFirstSearch - Iteration ")  + String((int)state->getNumIterations()));
       // Generate candidates
-      ObjectPtr baseObject = streams->getBestVariable().getObject();
+      ObjectPtr baseObject = state->getBestParameters().getObject();
       for (size_t i = 0; i < parameterIndices.size(); ++i)
       {
-        StreamPtr stream = streams->getStream(parameterIndices[i]);
+        StreamPtr stream = state->getStream(parameterIndices[i]);
         stream->rewind();
         while (!stream->isExhausted())
         {
           ObjectPtr candidate = baseObject->clone(context);
           Variable value = stream->next();
           candidate->setVariable(parameterIndices[i], value);
-          
-          if (!optimizerContext->evaluate(candidate))
-          {
-            context.errorCallback(T("BestFirstSearchOptimizer::optimize"), T("Evaluation failed"));
-            return false;
-          }
-          streams->incTotalNumberOfRequests();
-          experiments.push_back(std::make_pair(parameterIndices[i], value));
+
+          workUnits->addWorkUnit(new FunctionWorkUnit(objectiveFunction, candidate));
         }
       }
-
-      // Waiting results
-      while (!optimizerContext->areAllRequestsProcessed())
-      {
-        context.progressCallback(new ProgressionState(streams->getNumberOfProcessedRequests(), experiments.size(), T("Evaluation")));
-        streams->autoSaveToFile(context);
-        Thread::sleep(optimizerContext->getTimeToSleep());
-      }
-
-      jassert(streams->getNumberOfProcessedRequests() == experiments.size());
-      context.progressCallback(new ProgressionState(experiments.size(), experiments.size(), T("Evaluations")));
-
-      // Push results into trace
-      double bestScore = DBL_MAX;
-      size_t bestExperiment = (size_t)-1;
-      size_t previousParameter = (size_t)-1;
-      double bestParameterScore = DBL_MAX;
-      for (size_t i = 0; i < experiments.size(); ++i)
-      {
-        size_t currentParameter = experiments[i].first;
-        const Variable& value = experiments[i].second;
-        if (previousParameter != currentParameter)
-        {
-          if (i)
-          {
-            context.leaveScope(bestParameterScore);
-            bestParameterScore = DBL_MAX;
-          }
-          context.enterScope(T("Parameter ") + baseObject->getVariableName(currentParameter));
-        }
-
-        const double score = getScoreFor(optimizerState, currentParameter, value);
-        if (score < bestScore)
-        {
-          bestScore = score;
-          bestExperiment = i;
-        }
-        
-        if (score < bestParameterScore)
-          bestParameterScore = score;
-
-        context.enterScope(T("Value ") + value.toString());
-        context.resultCallback(T("Value"), value);
-        context.resultCallback(T("Score"), score);
-        context.leaveScope(score);
-
-        if (i == experiments.size() - 1)
-          context.leaveScope(bestParameterScore);
-        previousParameter = currentParameter;
-      }
-
-      if (!experiments.size())
-        return DBL_MAX;
-
-      context.resultCallback(T("Best score"), bestScore);
-      context.resultCallback(T("Best parameter"), baseObject->getVariableName(experiments[bestExperiment].first));
-      context.resultCallback(T("Best value"), experiments[bestExperiment].second);
-      context.leaveScope(bestScore);
-
-      optimizerState->flushProcessedRequests();
-      // Stopping criterion : Stop the search if there are no more improvement
-      if (bestScore >= optimizerState->getBestScore())
-        break;
-
-      // Built new parameter indices for the next iteration
-      std::vector<size_t> nextParameterIndices(parameterIndices.size() - 1);
-      for (size_t i = 0, j = 0; i < parameterIndices.size(); ++i)
-        if (parameterIndices[i] != experiments[bestExperiment].first)
-        {
-          nextParameterIndices[j] = parameterIndices[i];
-          ++j;
-        }
-      parameterIndices = nextParameterIndices;
+      // Get results
+      ContainerPtr results = context.run(workUnits, false).getObjectAndCast<Container>(context);
+      jassert(results);
 
       // Update state
-      optimizerState->setBestScore(bestScore);
-      baseObject->setVariable(experiments[bestExperiment].first, experiments[bestExperiment].second);
+      // TODO: add a callback when sending work units, so, we will be able to save intermediate results
+      // instead of wait that the full iteration is done. Thus, we need to be able to detect unfinished
+      // iteration and restore missing experiments.
+      BestFirstSearchIterationPtr iteration = new BestFirstSearchIteration();
+      size_t resultIndex = 0;
+      for (size_t i = 0; i < parameterIndices.size(); ++i)
+      {
+        BestFirstSearchParameterPtr parameter = new BestFirstSearchParameter(parameterIndices[i]);
+        StreamPtr stream = state->getStream(parameterIndices[i]);
+        stream->rewind();
+        for (size_t j = 0; !stream->isExhausted(); ++j)
+        {
+          parameter->appendValue(results->getElement(resultIndex).getDouble());
+          stream->next();
+          ++resultIndex;
+        }
+        iteration->appendParameter(parameter);
+      }
+
+      state->appendIteration(iteration);
+      pushIterationIntoStack(context, state, iteration);
+      
+      if (iteration->getBestScore() >= state->getBestScore())
+        break;
+      
+      state->setBestScore(iteration->getBestScore());
+      baseObject->setVariable(iteration->getBestParameter(), getParameterValue(state, iteration->getBestParameter(), iteration->getBestValue()));
     }
 
-    return optimizerState->getBestScore();
+    return state->getBestScore();
   }
 
 protected:
-  double getScoreFor(const OptimizerStatePtr& optimizerState, size_t parameter, Variable value) const
+  friend class BestFirstSearchOptimizerClass;
+
+  ObjectPtr initialParameters;
+  std::vector<StreamPtr> streams;
+
+  BestFirstSearchOptimizer() {}
+
+  Variable getParameterValue(const StreamBasedOptimizerStatePtr& state, size_t parameterIndex, size_t valueIndex) const
   {
-    const std::vector<std::pair<double, Variable> >& results = optimizerState->getProcessedRequests();
-    for (size_t i = 0; i < results.size(); ++i)
+    jassert(parameterIndex != (size_t)-1 && valueIndex != (size_t)-1);
+    StreamPtr stream = state->getStream(parameterIndex);
+    stream->rewind();
+    for (size_t i = valueIndex; i != 0; --i)
+      stream->next();
+    return stream->next();
+  }
+
+  void pushPreviousInterationsIntoStack(ExecutionContext& context, const StreamBasedOptimizerStatePtr& state) const
+  {
+    const size_t n = state->getNumIterations();
+    for (size_t i = 0; i < n; ++i)
     {
-      const ObjectPtr candidate = results[i].second.getObject();
-      if (candidate->getVariable(parameter) == value)
-        return results[i].first;
+      context.enterScope(T("Iteration ") + String((int)i));
+      context.resultCallback(T("Iteration"), i);
+      pushIterationIntoStack(context, state, state->getIteration(i));
     }
-    jassertfalse;
-    return DBL_MAX;
+  }
+  
+  void pushIterationIntoStack(ExecutionContext& context, const StreamBasedOptimizerStatePtr& state, const BestFirstSearchIterationPtr& iteration) const
+  {
+    const size_t n = iteration->getNumParameters();
+    const ClassPtr objClass = state->getObjectClass();
+    for (size_t i = 0; i < n; ++i)
+    {
+      BestFirstSearchParameterPtr parameter = iteration->getParameter(i);
+      context.enterScope(T("Parameter ") + objClass->getMemberVariableName(parameter->getIndex()));
+      pushParameterValuesIntoStack(context, state, parameter);
+      context.leaveScope(parameter->getBestScore());
+    }
+
+    context.resultCallback(T("Best score"), iteration->getBestScore());
+    context.resultCallback(T("Best parameter"), objClass->getMemberVariableName(iteration->getBestParameter()));
+    context.resultCallback(T("Best value"), getParameterValue(state, iteration->getBestParameter(), iteration->getBestValue()));
+    context.leaveScope(iteration->getBestScore());
+  }
+
+  void pushParameterValuesIntoStack(ExecutionContext& context, const StreamBasedOptimizerStatePtr& state, const BestFirstSearchParameterPtr& parameter) const
+  {
+    StreamPtr stream = state->getStream(parameter->getIndex());
+    stream->rewind();
+    size_t i = 0;
+    while (!stream->isExhausted())
+    {
+      Variable value = stream->next();
+      context.enterScope(T("Value ") + value.toString());
+      context.resultCallback(T("Value"), value);
+      const double score = parameter->getScore(i);
+      context.resultCallback(T("Score"), score);
+      context.leaveScope(score);
+      ++i;
+    }
   }
 };
 

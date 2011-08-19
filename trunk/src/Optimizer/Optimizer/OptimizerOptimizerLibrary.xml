@@ -3,7 +3,7 @@
 <library name="OptimizerOptimizer" directory="Optimizer/Optimizer">
 
   <include file="lbcpp/Optimizer/Optimizer.h"/>
-
+<!--
   <class name="UniformSampleAndPickBestOptimizer" base="Optimizer">
     <constructor arguments="size_t numSamples, bool verbose"/>
     <variable type="PositiveInteger" name="numSamples"/>
@@ -28,14 +28,25 @@
     <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, size_t numberEvaluationsInProgress, StoppingCriterionPtr stoppingCriterion, double slowingFactor, bool reinjectBest, bool verbose" returnType="Optimizer"/>
     <variable type="PositiveInteger" name="numberEvaluationsInProgress"/>
   </class>
+-->
+
+  <!-- BestFirstSearch -->
+  <class name="BestFirstSearchParameter" base="Object">
+    <variable type="PositiveInteger" name="index"/>
+    <variable type="GenericVector[Double]" name="scores"/>
+  </class>
+
+  <class name="BestFirstSearchIteration" base="Object">
+    <variable type="GenericVector[BestFirstSearchParameter]" name="parameters"/>
+  </class>
 
   <class name="StreamBasedOptimizerState" base="OptimizerState">
-    <constructor arguments="ExecutionContext&amp; context, const ObjectPtr&amp; initialState, const std::vector&lt;StreamPtr&gt;&amp; streams"/>
     <variable type="GenericVector[Stream]" name="streams"/>
+    <variable type="GenericVector[BestFirstSearchIteration]" name="iterations"/>
   </class>
 
   <class name="BestFirstSearchOptimizer" base="Optimizer">
-    <constructor/>
+    <constructor arguments="const ObjectPtr&amp; initialState, const std::vector&lt;StreamPtr&gt;&amp; streams"/>
   </class>
   
 </library>

@@ -136,8 +136,10 @@ void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const Exe
 
   *numRemainingWorkUnitsCounter = (int)n;
   //*result = true;
+  VariableVectorPtr results = variableVector(n);
   for (size_t i = 0; i < n; ++i)
-    entries[priority].push_back(Entry(workUnits->getWorkUnit(i), stack, workUnits->hasPushChildrenIntoStackFlag(), numRemainingWorkUnitsCounter, NULL));
+    entries[priority].push_back(Entry(workUnits->getWorkUnit(i), stack, workUnits->hasPushChildrenIntoStackFlag(), numRemainingWorkUnitsCounter, results->getPointerElement(i)));
+  *result = results;
 }
 
 void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, const ExecutionContextCallbackPtr& callback, bool pushIntoStack)
