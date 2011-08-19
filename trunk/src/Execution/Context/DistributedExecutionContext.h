@@ -97,10 +97,9 @@ class DistributedExecutionContextClientCallback : public ManagerNetworkClientCal
 {
 public:
   DistributedExecutionContextClientCallback(ExecutionContext& context)
-    : client(new ManagerNetworkClient(context, this)), numSentWorkUnit(0)
+    : client(new ManagerNetworkClient(context)), numSentWorkUnit(0)
   {
-    memset(prout, 0, 256);
-    memset(proutAfter, 0, 256);
+    client->setCallback(this);
   }
   
   NetworkClientPtr getNetworkClient() const
@@ -146,9 +145,7 @@ public:
   }
 
 protected:
-  unsigned char prout[256];
   CriticalSection lock;
-  unsigned char proutAfter[256];
 
   ManagerNetworkClientPtr client;
 
