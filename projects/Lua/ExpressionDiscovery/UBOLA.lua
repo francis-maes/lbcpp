@@ -113,6 +113,8 @@ DecisionProblem.Ubola = subspecified {
     for i,action in ipairs(test) do
       print (i, self.problem.actionToString(action)) 
     end
+    context:result("thetaMu", self.predictor.__parameters.thetaMu)
+    context:result("thetaSigma", self.predictor.__parameters.thetaSigma)
   end
 }
 

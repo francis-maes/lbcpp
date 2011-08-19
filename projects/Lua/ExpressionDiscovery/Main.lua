@@ -6,78 +6,36 @@ require '../ExpressionDiscovery/ReversePolishNotationProblem'
 require '../ExpressionDiscovery/MCTS'
 require '../ExpressionDiscovery/NestedMonteCarlo'
 require '../ExpressionDiscovery/UBOLA'
+require '../ExpressionDiscovery/FormulaFeatures'
 
 require 'DiscreteBandit'
 require 'Evaluator'
 require 'Sampler'
+require 'Random'
 
--- decorate objective function 
+--context.randomGenerator = Random.new(0)
 
-local numberOfObjectiveEvaluations = 0
-local bestSolutionScore = math.huge 
-local bestSolutionFound
-local bestSolutionNumberOfEvaluations
+-- decorate objective function
+local trainingDataset = {}
+local testingDataset = {}
+local allExamples = {}
 
+local numEvaluations = 0
 local function decorateObjectiveFunction(objective)
-  return function (candidate, candidateDescription)
-    numberOfObjectiveEvaluations = numberOfObjectiveEvaluations + 1
-    local score = objective(candidate)
-    if score < bestSolutionScore then
-      bestSolutionScore = score
-      bestSolutionFound = candidateDescription
-      bestSolutionNumberOfEvaluations = numberOfObjectiveEvaluations
+  return function (candidate, candidateDescription, candidateAST)
+    local score = allExamples[candidateDescription]
+    if score == nil then
+      score = objective(candidate)
+      print ("Evaluate " .. candidateDescription .. " ==> " .. score)
+      local dataset = numEvaluations % 2 == 0 and trainingDataset or testingDataset
+      numEvaluations = numEvaluations + 1
+      table.insert(dataset, {formulaFeatures(candidateAST), score})
+      allExamples[candidateDescription] = score
     end
     return score
   end
 end
 
-
-local function actionSequenceToString(problem, actionSequence)
-  if actionSequence then
-    local res = ""
-    for i,u in ipairs(actionSequence) do
-      res = res .. problem.actionToString(u) .. " "
-    end
-    return res
-  else
-    return "<empty sequence>"
-  end
-end
-
-
-local function testSearchAlgorithm(problem, algorithm)
-
-  local function run()
-
-    numberOfObjectiveEvaluations = 0
-    bestSolutionScore = math.huge 
-    bestSolutionFound = nil
-    bestSolutionNumberOfEvaluations = nil
-  
-    context:enter("Searching")
-    local bestFormula, bestActionSequence, bestReturn = algorithm(problem)
-    context:leave(bestReturn)
-  
-    context:result("bestFormula", bestFormula:print())
-    context:result("bestActionSequence", actionSequenceToString(problem, bestActionSequence))
-    context:result("bestReturn", bestReturn)
-    context:result("numEvaluations", numberOfObjectiveEvaluations)
-    context:result("bestScore", bestSolutionScore)
-    context:result("bestFormulaCheck", bestSolutionFound)
-    context:result("bestSolutionNumEvaluation", bestSolutionNumberOfEvaluations)
-  
-    context:information("Performed " .. numberOfObjectiveEvaluations .. " evaluations")
-    context:information("Found \"" .. bestSolutionFound .. "\" after " ..
-                bestSolutionNumberOfEvaluations .. " evaluations (score = " ..
-                bestSolutionScore .. ")")
-    return bestSolutionFound .. " (" .. bestSolutionNumberOfEvaluations .. ")"
-  end
-
-  --for i=1,1 do
-  --return context:call("Run", run)
-  --end
-  return run()
-end
 
 -- Test1 : symbolic regression
 
@@ -90,8 +48,8 @@ local function makeSymbolicRegressionObjective()
       Stochastic.standardGaussian(), 
       Stochastic.standardGaussian()
     }
-    --table.insert(example, example[1] * example[2] + example[3])  -- a b * c +
-    table.insert(example, (example[1] + 5) * example[2] + example[3] - 10) -- a * b + b * 5 + c - 10
+    table.insert(example, example[1] * example[2] + example[3])  -- a b * c +
+    --table.insert(example, (example[1] + 5) * example[2] + example[3] - 10) -- a * b + b * 5 + c - 10
     table.insert(dataset, example)
   end
   return |f| Evaluator.meanSquaredError(f, dataset)
@@ -101,7 +59,7 @@ end
 symbolicRegressionProblem = DecisionProblem.ReversePolishNotation{
   constants = {1,2,5,10},
   objective = decorateObjectiveFunction(makeSymbolicRegressionObjective()),
-  maxSize = 9
+  maxSize = 5
 }.__get
 
 -- Test2 : bandits formula
@@ -117,7 +75,7 @@ end
 banditsProblem = DecisionProblem.ReversePolishNotation{
   variables = {"rk", "sk", "tk", "t"},
   constants = {1,2,5,10},
-  objective = decorateObjectiveFunction(banditsFormulaObjective),
+  objective = banditsFormulaObjective,
   maxSize = 5
 }.__get
 
@@ -125,48 +83,135 @@ banditsProblem = DecisionProblem.ReversePolishNotation{
 
 local problem = symbolicRegressionProblem
 
+--[[
+-- Make Dataset
 
--- Features
+local algo = DecisionProblem.SinglePlayerMCTS{
+  indexFunction=DiscreteBandit.ucb1C{2}, verbose=false,
+  partialExpand = true, fullPathExpand = false, useMaxReward = true}.__get
+context:call("mcts", runSearchAlgorithm, problem, algo, 100, 100)
 
-require 'Dictionary'
+print ("datasets size", #trainingDataset, #testingDataset)
+print ("num features", #formulaFeatureDictionary.content)
 
-local actionFeatureDictionary = Dictionary.new()
-function problem:actionFeatures(x, u)
-  local dictionary = actionFeatureDictionary
-  local res = Vector.newSparse()
+-- Train predictor
 
-  local function setFeature(str, value)
-    res[dictionary:add(str)] = value or 1.0
+local predictor = Predictor.ConditionalGaussian{thetaMu = Vector.newDense(), thetaSigma = Vector.newDense()}
+local alpha = 0.001
+local function trainPredictor()
+  local function iteration(iter)
+    context:result("iteration", iter)
+    local lossStats = Statistics.mean()
+    local muStats = Statistics.mean()
+    local sigmaStats = Statistics.mean()
+    for i,example in ipairs(trainingDataset) do
+      local features = example[1]
+      local score = math.exp(-example[2])
+      local mu, sigma = predictor.predict(features)
+      muStats:observe(mu)
+      sigmaStats:observe(sigma)
+      local loss, dlossdmu, dlossdsigma = predictor.lossAndGradient(features, score)
+      lossStats:observe(loss)
+    --print ("loss: ", loss, dlossdmu:l2norm(), dlossdsigma:l2norm())
+      predictor.__parameters.thetaMu:add(dlossdmu, -alpha)
+      predictor.__parameters.thetaSigma:add(dlossdsigma, -alpha)
+    end
+    
+    context:result("mean loss", lossStats:getMean())
+    context:result("mean mu", muStats:getMean())
+    context:result("mean sigma", sigmaStats:getMean())
+    context:result("theta mu norm", predictor.__parameters.thetaMu:l2norm())
+    context:result("theta sigma norm", predictor.__parameters.thetaSigma:l2norm())
+
+    lossStats = Statistics.mean()
+    for i,example in ipairs(testingDataset) do
+      local features = example[1]
+      local score = math.exp(-example[2])
+      lossStats:observe(predictor.loss(features, score))
+    end
+    context:result("testing mean loss", lossStats:getMean())
+    return lossStats:getMean()
   end
 
-  setFeature(self.stateToString(self.f(x,u)))
+  local res
+  for iter=1,100 do
+    res = context:call("Iteration " .. iter, iteration, iter)    
+  end
+  context:result("thetaMu", predictor.__parameters.thetaMu)
+  context:result("thetaSigma", predictor.__parameters.thetaSigma)
   return res
 end
 
+context:call("Training", trainPredictor)
 
---for maxSize=1,3 do 
---  problem.__parameters.maxSize = maxSize
+--]]
 
---  local function exhaustiveSearch(x)
---    if problem.isFinal(x) then
---      print (problem.stateToString(x))
---    else
---      local U = problem.U(x)
---      for i,u in ipairs(U) do
---        exhaustiveSearch(problem.f(x, u))
---      end
---    end
---  end
---  context:call("Exhaustive search " .. maxSize, exhaustiveSearch, problem, problem.x0)
---end
+--[[
+for maxSize=1,3 do 
+  problem.__parameters.maxSize = maxSize
+
+  local function exhaustiveSearch(x)
+    if problem.isFinal(x) then
+      print (problem.stateToString(x))
+    else
+      local U = problem.U(x)
+      for i,u in ipairs(U) do
+        exhaustiveSearch(problem.f(x, u))
+      end
+    end
+  end
+  context:call("Exhaustive search " .. maxSize, exhaustiveSearch, problem, problem.x0)
+end
+--]]
 
 local algo = DecisionProblem.SinglePlayerMCTS{
   indexFunction=DiscreteBandit.ucb1C{2}, verbose=false,
   partialExpand = false, fullPathExpand = false, useMaxReward = true}.__get
 
 algo = DecisionProblem.Ubola{
-  C = 5, alpha = 0.001, verbose = true
+  C = 1, alpha = 0.0001, verbose = false
 }.__get
+
+local actionFeaturesDictionary = Dictionary.new()
+function problem:actionFeatures(x,u)
+
+  local res = Vector.newSparse()
+  local function setFeature(name, value)
+    res[actionFeaturesDictionary:add(name)] = value or 1.0
+  end
+
+  local function makeTerminalFeature(ast)
+    local cn = ast.className
+    if cn == "lua::LiteralNumber" then
+      return "number=" .. ast.value
+    elseif cn == "lua::Identifier" then
+      return "identifier=" .. ast.identifier
+    elseif cn == "lua::UnaryOperation" then
+      local ops = {"not", "len", "unm"}
+      return ops[ast.op + 1]
+    elseif cn == "lua::BinaryOperation" then
+      local ops = {"add", "sub", "mul", "div", 
+                   "mod", "pow", "concat", "eq",
+                   "lt", "le", "and", "or"}
+      return ops[ast.op + 1]
+    elseif cn == "lua::Return" then
+      return "return"
+    else
+      assert(false)
+    end
+  end
+
+  local numExpressions = #x
+  local size = stackOrExpressionSize(x)
+  local prefix = "S" .. size .. " N" .. numExpressions .. " U" .. makeTerminalFeature(u)
+  setFeature(prefix)
+  for i,expr in ipairs(x) do
+    local feature = prefix .. " " .. (#x - i + 1) .. makeTerminalFeature(expr)
+    setFeature(feature)
+  end
+  setFeature("unit")
+  return res
+end
 
 --context:call("random",  runSearchAlgorithm, symbolicRegressionProblem, randomSearchAlgorithm, 100, 100)
 --context:call("nested1SearchAlgorithm", runSearchAlgorithm, symbolicRegressionProblem, nested1SearchAlgorithm, 100, 100)

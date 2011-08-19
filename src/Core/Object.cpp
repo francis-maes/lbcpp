@@ -629,6 +629,13 @@ int Object::__div(LuaState& state)
   return 0;
 }
 
+int Object::__eq(LuaState& state)
+{
+  ObjectPtr otherObject = state.checkObject(1);
+  state.pushBoolean(compare(otherObject) == 0);
+  return 1;
+}
+
 int Object::__len(LuaState& state) const
 {
   state.pushInteger(0);

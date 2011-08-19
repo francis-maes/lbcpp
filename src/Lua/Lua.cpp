@@ -34,6 +34,9 @@ static int objectMul(lua_State* L)
 static int objectDiv(lua_State* L)
   {LuaState state(L); ObjectPtr object = state.checkObject(1); state.remove(1); return object->__div(state);}
 
+static int objectEq(lua_State* L)
+  {LuaState state(L); ObjectPtr object = state.checkObject(1); state.remove(1); return object->__eq(state);}
+
 static int objectToString(lua_State* L)
   {LuaState state(L); return Object::toShortString(state);}
 
@@ -67,6 +70,7 @@ LuaState::LuaState(ExecutionContext& context, bool initializeLuaLibraries, bool 
       {"__sub", objectSub},
       {"__mul", objectMul},
       {"__div", objectDiv},
+      {"__eq", objectEq},
       {"__gc", objectGarbageCollect},
       {NULL, NULL}
     };

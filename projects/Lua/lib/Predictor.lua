@@ -63,6 +63,12 @@ Predictor.ConditionalGaussian = subspecified setmetatable({
     return mu, sigma
   end,
 
+  loss = function (x, supervision)
+    local mu = thetaMu:dot(x)
+    local sigmaParam = thetaSigma:dot(x)
+    return condGaussianNLL(mu, sigmaParam, supervision)
+  end,
+
   lossAndGradient = function (x, supervision)
     local mu = thetaMu:dot(x)
     local sigmaParam = thetaSigma:dot(x)
