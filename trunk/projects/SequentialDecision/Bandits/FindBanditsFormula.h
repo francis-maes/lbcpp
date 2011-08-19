@@ -529,32 +529,24 @@ protected:
     size_t numBests = numParameters * 3;
     StoppingCriterionPtr stoppingCriterion = maxIterationsWithoutImprovementStoppingCriterion(5);
 
-
-    // optimizer state
-    OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(Parameterized::get(policy)->createParametersSampler());
-
     // optimizer context
     FunctionPtr objectiveFunction = new EvaluateDiscreteBanditPolicyParameters(policy, trainingProblems[0]->getNumBandits(), maxTimeStep, trainingProblems, numRunsPerEstimation, 51861664);
     objectiveFunction->initialize(context, parametersType);
 
     FunctionPtr validationFunction = new EvaluateDiscreteBanditPolicyParameters(policy, trainingProblems[0]->getNumBandits(), maxTimeStep, trainingProblems, numRunsPerEstimation);
     validationFunction->initialize(context, parametersType);
-    jassertfalse;
-    //FIXME: Optimizer
-    OptimizerContextPtr optimizerContext;// = synchroneousOptimizerContext(context, objectiveFunction, validationFunction);
+
 
     // optimizer
-    jassertfalse;
-    // FIXME: Optimizer
-    OptimizerPtr optimizer;// = edaOptimizer(numIterations, populationSize, numBests, stoppingCriterion, 0.0, false);
+    OptimizerPtr optimizer = edaOptimizer(Parameterized::get(policy)->createParametersSampler(), numIterations, populationSize, numBests, stoppingCriterion, 0.0, false);
     //OptimizerPtr optimizer = asyncEDAOptimizer(numIterations*populationSize, populationSize, populationSize/numBests, 1, StoppingCriterionPtr(), 10, populationSize);
 
-    optimizer->compute(context, optimizerContext, optimizerState);
+    OptimizerStatePtr state = optimizer->compute(context, objectiveFunction, validationFunction).getObjectAndCast<OptimizerState>();
 
     // best parameters
-    Variable bestParameters = optimizerState->getBestParameters();
+    Variable bestParameters = state->getBestParameters();
     context.resultCallback(T("optimizedPolicy"), Parameterized::cloneWithNewParameters(policy, bestParameters));
-    bestScore = optimizerState->getBestScore();
+    bestScore = state->getBestScore();
     return bestParameters;
   }
 

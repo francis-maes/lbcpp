@@ -56,7 +56,9 @@ Variable Optimizer::computeFunction(ExecutionContext& context, const Variable* i
   OptimizerStatePtr state = createOptimizerState(context); // TODO: Load a partially learn state if exists.
   context.enterScope(T("Optimizing - ") + toString());
   jassert(inputs[0].getObjectAndCast<Function>(context));
-  Variable res = optimize(context, state, inputs[0].getObjectAndCast<Function>(context));
+  const FunctionPtr objectiveFunction = inputs[0].getObjectAndCast<Function>(context);
+  const FunctionPtr validationFunction = getNumInputs() > 1 ? inputs[1].getObjectAndCast<Function>(context) : FunctionPtr();
+  OptimizerStatePtr res = optimize(context, state, objectiveFunction, validationFunction);
   context.resultCallback(T("bestParameters"), state->getBestParameters());
   context.resultCallback(T("bestScore"), state->getBestScore());
   context.leaveScope(res);

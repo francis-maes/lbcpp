@@ -161,10 +161,6 @@ public:
     // opmitizer context and state
     ReferenceCountedObjectPtr<Objective> objective = new Objective(objectiveFunction, expression);
     objective->initialize(context, denseDoubleVectorClass(constantsEnumeration));
-    jassertfalse;
-    // FIXME: Optimizer
-    OptimizerContextPtr optimizerContext;// = synchroneousOptimizerContext(context, objective);
-    OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(constantsSampler);
 
     // optimizer
     size_t numIterations = 100;
@@ -172,17 +168,13 @@ public:
     size_t numBests = numParameters * 3;
     StoppingCriterionPtr stoppingCriterion = maxIterationsWithoutImprovementStoppingCriterion(5);
 
-    jassertfalse;
-    // FIXME: Optimizer
-    OptimizerPtr optimizer;// = edaOptimizer(numIterations, populationSize, numBests, stoppingCriterion, 0.0, false);
+    OptimizerPtr optimizer = edaOptimizer(constantsSampler, numIterations, populationSize, numBests, stoppingCriterion, 0.0, false);
     ExecutionContextPtr silentContext = singleThreadedExecutionContext();
-    optimizer->compute(*silentContext, optimizerContext, optimizerState);
+    OptimizerStatePtr state = optimizer->compute(*silentContext, objective).getObjectAndCast<OptimizerState>();
 
     // retrieve best score and best constants and compute best expression
-    double bestScore = optimizerState->getBestScore();
-    jassertfalse;
-    // FIXME: Optimizer
-    DenseDoubleVectorPtr bestConstants;// = optimizerState->getBestVariable().getObjectAndCast<DenseDoubleVector>();
+    double bestScore = state->getBestScore();
+    DenseDoubleVectorPtr bestConstants = state->getBestParameters().getObjectAndCast<DenseDoubleVector>();
     GPExpressionPtr bestExpression = expression->cloneAndCast<GPExpression>();
     size_t index = 0;
     objective->setConstantsRecursively(bestExpression, bestConstants, index);
@@ -298,16 +290,8 @@ public:
 
   bool optimize(ExecutionContext& context, const SamplerPtr& sampler, const FunctionPtr& objective)
   {
-    jassertfalse;
-    //FIXME: Optimizer
-    OptimizerContextPtr optimizerContext;// = multiThreadedOptimizerContext(context, objective);
-    OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler);
-
-    // optimizer
-    jassertfalse;
-    // FIXME: Optimizer
-    OptimizerPtr optimizer;// = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0, true, false);
-    optimizer->compute(context, optimizerContext, optimizerState);
+    OptimizerPtr optimizer = edaOptimizer(sampler, numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0, true, false);
+    optimizer->compute(context, objective);
 
     return true;
   }

@@ -42,6 +42,8 @@ protected:
 
 typedef ReferenceCountedObjectPtr<OptimizerState> OptimizerStatePtr;
 
+extern ClassPtr optimizerStateClass;
+
 #if 0
 // TODO : force abstract in xml ?
 class OptimizerState : public Object, public FunctionCallback
@@ -123,7 +125,7 @@ class SamplerBasedOptimizerState : public OptimizerState
 {
 public:
   SamplerBasedOptimizerState(const SamplerPtr& sampler)
-    : sampler(sampler), initialSampler(sampler) {}
+    : sampler(sampler), initialSampler(sampler), numIterations(0) {}
 
   const SamplerPtr& getSampler() const
     {return sampler;}
@@ -137,6 +139,9 @@ public:
   size_t getNumIterations() const
     {return numIterations;}
 
+  void incrementNumIterations()
+    {++numIterations;}
+
 protected:
   friend class SamplerBasedOptimizerStateClass;
 
@@ -145,8 +150,7 @@ protected:
 
   size_t numIterations;
 
-  SamplerBasedOptimizerState() {}
-
+  SamplerBasedOptimizerState() : numIterations(0) {}
 };
 
 typedef ReferenceCountedObjectPtr<SamplerBasedOptimizerState> SamplerBasedOptimizerStatePtr;

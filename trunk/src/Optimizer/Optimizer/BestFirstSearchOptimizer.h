@@ -186,7 +186,7 @@ public:
       result.push_back(i);
     }
   }
-  
+
   size_t getNumIterations() const
     {return iterations.size();}
 
@@ -219,7 +219,7 @@ public:
   virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context) const
     {return new StreamBasedOptimizerState(context, initialParameters, streams);}
 
-  virtual Variable optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const FunctionPtr& objectiveFunction) const
+  virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction) const
   {
     StreamBasedOptimizerStatePtr state = optimizerState.dynamicCast<StreamBasedOptimizerState>();
     jassert(state);
@@ -286,7 +286,7 @@ public:
       baseObject->setVariable(iteration->getBestParameter(), getParameterValue(state, iteration->getBestParameter(), iteration->getBestValue()));
     }
 
-    return state->getBestScore();
+    return state;
   }
 
 protected:

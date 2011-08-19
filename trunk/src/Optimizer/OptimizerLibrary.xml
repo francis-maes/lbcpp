@@ -14,11 +14,10 @@
     <variable type="Double" name="bestScore"/>
   </class>
 
-<!--  
   <class name="SamplerBasedOptimizerState" base="OptimizerState">
     <variable type="Sampler" name="sampler"/>
     <variable type="Sampler" name="initialSampler"/>
+    <variable type="PositiveInteger" name="numIterations"/>
   </class>
--->
 
 </library>

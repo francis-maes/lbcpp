@@ -25,23 +25,14 @@ public:
     size_t numIterations = 40;
     size_t populationSize = 100;
     size_t numBests = 30;
-    jassertfalse;
-    // FIXME: Optimizer
-/*
-    FunctionPtr f = squareFunction();
+
     SamplerPtr sampler = gaussianSampler(0.0, 5.0);
     
-    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0);
-    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, f, FunctionPtr(), 10);
-    OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler);
-    
-    return optimizer->compute(context, optimizerContext, optimizerState);
-*/
-    return false;
+    OptimizerPtr optimizer = edaOptimizer(sampler, numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0);
+    return optimizer->compute(context, squareFunction());
   }
 };
-  
-  
+
 };/* namespace lbcpp */
 
 #endif // !OPTIMIZER_EXAMPLE_WORK_UNIT_H_
