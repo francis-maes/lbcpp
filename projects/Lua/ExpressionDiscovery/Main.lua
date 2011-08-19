@@ -90,7 +90,8 @@ local function makeSymbolicRegressionObjective()
       Stochastic.standardGaussian(), 
       Stochastic.standardGaussian()
     }
-    table.insert(example, example[1] * example[2] + example[3])  -- a b * c +
+    --table.insert(example, example[1] * example[2] + example[3])  -- a b * c +
+    table.insert(example, (example[1] + 5) * example[2] + example[3] - 10) -- a * b + b * 5 + c - 10
     table.insert(dataset, example)
   end
   return |f| Evaluator.meanSquaredError(f, dataset)
@@ -100,7 +101,7 @@ end
 symbolicRegressionProblem = DecisionProblem.ReversePolishNotation{
   constants = {1,2,5,10},
   objective = decorateObjectiveFunction(makeSymbolicRegressionObjective()),
-  maxSize = 5
+  maxSize = 9
 }.__get
 
 -- Test2 : bandits formula
@@ -161,7 +162,7 @@ end
 
 local algo = DecisionProblem.SinglePlayerMCTS{
   indexFunction=DiscreteBandit.ucb1C{2}, verbose=false,
-  partialExpand = true, fullPathExpand = true, useMaxReward = true}.__get
+  partialExpand = false, fullPathExpand = false, useMaxReward = true}.__get
 
 algo = DecisionProblem.Ubola{
   C = 5, alpha = 0.001, verbose = true
@@ -169,7 +170,8 @@ algo = DecisionProblem.Ubola{
 
 --context:call("random",  runSearchAlgorithm, symbolicRegressionProblem, randomSearchAlgorithm, 100, 100)
 --context:call("nested1SearchAlgorithm", runSearchAlgorithm, symbolicRegressionProblem, nested1SearchAlgorithm, 100, 100)
-context:call("ubola", runSearchAlgorithm, problem, algo, 100, 100)
+context:call("mcts", runSearchAlgorithm, problem, algo, 100, 100)
+
 
 --[[
 local mctsUCB = DecisionProblem.SinglePlayerMCTS{numEpisodes=10000, indexFunction=DiscreteBandit.ucb1C{2}, verbose=false}
