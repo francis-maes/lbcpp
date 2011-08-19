@@ -4,7 +4,6 @@
 require '../ExpressionDiscovery/DecisionProblem'
 require 'AST'
 require 'Vector'
-require 'Dictionary'
 
 -- Transforms a formula represented through its abstract syntax tree
 --  into an executable function
@@ -34,7 +33,7 @@ local function expressionSize(expression)
   return res
 end
 
-local function stackOrExpressionSize(x)
+function stackOrExpressionSize(x)
   if type(x) == "table" then
     local res = 0
     for i,expression in ipairs(x) do
@@ -146,7 +145,7 @@ DecisionProblem.ReversePolishNotation = subspecified {
       assert (#stack > 0)
       local ast = stack[#stack]
       local f = buildExpression(variables, ast)
-      local o = objective(f, ast:print())
+      local o = objective(f, ast:print(), ast)
       return math.exp(-o)
     else
       return 0
