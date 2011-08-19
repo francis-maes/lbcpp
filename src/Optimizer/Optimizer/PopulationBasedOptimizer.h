@@ -15,7 +15,7 @@
 
 namespace lbcpp
 {
-#if 0
+
 class PopulationBasedOptimizer : public Optimizer
 {
 public:
@@ -25,10 +25,7 @@ public:
       jassert(slowingFactor >= 0 && slowingFactor <= 1);
       jassert(numBests < populationSize);
     }
-  
-  PopulationBasedOptimizer()
-    : numIterations(0), populationSize(0), numBests(0), slowingFactor(0), reinjectBest(false), verbose(false) {}
-  
+
   virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context) const
     {return new SamplerBasedOptimizerState(sampler);}
   
@@ -43,57 +40,42 @@ protected:
   double slowingFactor; /**< if != 0, the distribution learned is a Mixture: with probability "slowingFactor" the old distribution and with probability "1-slowingFactor" the new one. */
   bool reinjectBest;  /**< if true the best individu is inserted in each new population. */
   bool verbose; /**< if true increase the verbosity. */
-  
+
+  PopulationBasedOptimizer()
+    : numIterations(0), populationSize(0), numBests(0), slowingFactor(0), reinjectBest(false), verbose(false) {}
+
   /**
    * Creates a new individu from the distribution on OptimizerState.
    */
-  Variable sampleCandidate(ExecutionContext& context, const OptimizerStatePtr& optimizerState) const
-  {
-    // TODO: replace by optimizerState.staticCast<SamplerBasedOptimizerState>()->getSampler()->sample(context, random);
-    SamplerBasedOptimizerStatePtr samplerBasedState = optimizerState.dynamicCast<SamplerBasedOptimizerState>();
-    if (samplerBasedState)
-      return samplerBasedState->getSampler()->sample(context, context.getRandomGenerator());
-    
-    jassert(false);
-    return Variable();
-  }
+  Variable sampleCandidate(ExecutionContext& context, const SamplerBasedOptimizerStatePtr& state) const
+    {return state->getSampler()->sample(context, context.getRandomGenerator());}
   
   /**
    * Push the results of the OptimizerState buffer in the sorted map "sortedScore"
    */
-  void pushResultsSortedbyScore(ExecutionContext& context, const OptimizerStatePtr& optimizerState, std::multimap<double, Variable>& sortedScores) const
+  void pushResultsSortedbyScore(ExecutionContext& context, const ContainerPtr results, const std::vector<Variable>& parameters, std::multimap<double, Variable>& sortedScores) const
   {
-    ScopedLock _(optimizerState->getLock());
-    // WARNING : there may be more than populationSize results in ProcessedRequests !!! (but not less)
-    jassert(optimizerState->getProcessedRequests().size() >= populationSize);
-    std::vector< std::pair<double, Variable> >::const_iterator it = optimizerState->getProcessedRequests().begin();
-    for (size_t i = 0; i < populationSize && it != optimizerState->getProcessedRequests().end(); ++i, ++it)
+    const size_t n = results->getNumElements();
+    for (size_t i = 0; i < n; ++i)
     {
-      sortedScores.insert(*it);
+      const double score = results->getElement(i).getDouble();
+      sortedScores.insert(std::pair<double, Variable>(score, parameters[i]));
       if (verbose) 
       {
         context.enterScope(T("Request ") + String((int) (i+1)));
         context.resultCallback(T("requestNumber"), i+1);
-        context.resultCallback(T("parameter"), it->second);      
-        context.leaveScope(it->first);
+        context.resultCallback(T("parameter"), parameters[i]);      
+        context.leaveScope(score);
       }
     }
-    optimizerState->flushFirstProcessedRequests(populationSize);  // exactly populationSize individus have been extracted
   }
   
   /**
    * Learn a new distribution from the results in sortedScores.
    * The OptimizerState is updated.
    */
-  void learnDistribution(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const std::multimap<double, Variable>& sortedScores) const
-  {          
-    SamplerBasedOptimizerStatePtr samplerBasedState = optimizerState.staticCast<SamplerBasedOptimizerState>();
-    if (!samplerBasedState) 
-    {
-      jassertfalse;
-      return;
-    }
-    
+  void learnDistribution(ExecutionContext& context, const SamplerBasedOptimizerStatePtr& state, const std::multimap<double, Variable>& sortedScores) const
+  {
     std::map<Variable, ScalarVariableStatistics> bestVariables;
     std::multimap<double, Variable>::const_iterator it;
     for (it = sortedScores.begin(); bestVariables.size() < numBests && it != sortedScores.end(); ++it)
@@ -112,12 +94,12 @@ protected:
       context.informationCallback(String((int)sortedScores.size()) + T(" scores, ") + String(juce::jmin((int)numBests, (int)sortedScores.size())) + T(" bests, ")
         + String((int)bestVariables.size()) + T(" unique bests"));
 
-    SamplerPtr newSampler = samplerBasedState->getCloneOfInitialSamplerInstance();  // get instance from prototype
+    SamplerPtr newSampler = state->getCloneOfInitialSamplerInstance();  // get instance from prototype
     newSampler->learn(context, ContainerPtr(), bestVariablesVector);
     
     if (slowingFactor > 0) 
     {
-      SamplerPtr oldSampler = samplerBasedState->getSampler();
+      SamplerPtr oldSampler = state->getSampler();
       // new sampler is a mixture sampler : 
       // oldSampler with proba = slowingFactor
       // newSampler with proba = 1-slowingFactor
@@ -128,51 +110,45 @@ protected:
       vec.reserve(2);
       vec.push_back(oldSampler);
       vec.push_back(newSampler);
-      samplerBasedState->setSampler(mixtureSampler(probabilities, vec));
+      state->setSampler(mixtureSampler(probabilities, vec));
     }
     else 
-      samplerBasedState->setSampler(newSampler);
+      state->setSampler(newSampler);
 
-    context.resultCallback(T("sampler"), samplerBasedState->getSampler());
+    context.resultCallback(T("sampler"), state->getSampler());
   }
   
-  void handleResultOfIteration(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizerContextPtr& optimizerContext, double bestIterationScore, const Variable& bestIterationParameters) const
+  void handleResultOfIteration(ExecutionContext& context, const SamplerBasedOptimizerStatePtr& state, const FunctionPtr& validationFunction, double bestIterationScore, const Variable& bestIterationParameters) const
   {
     // update OptimizerState if necessary
+    if (bestIterationScore < state->getBestScore())
     {
-      if (bestIterationScore < optimizerState->getBestScore())
-      {
-        ScopedLock _(optimizerState->getLock());
-        optimizerState->setBestScore(bestIterationScore);
-        optimizerState->setBestVariable(bestIterationParameters);
-      }
+      state->setBestScore(bestIterationScore);
+      state->setBestParameters(bestIterationParameters);
     }
     
     // give information for execution trace
     context.resultCallback(T("bestIterationParameters"), bestIterationParameters);
     context.resultCallback(T("bestIterationScore"), bestIterationScore);
-    
-    FunctionPtr validationFunction = optimizerContext->getValidationFunction();
+
     double validationScore = 0.0;
     if (validationFunction)
     {
       validationScore = validationFunction->compute(context, bestIterationParameters).toDouble();
       context.resultCallback(T("validationScore"), validationScore);
     }
-    
-    context.resultCallback(T("allTimesBestParameters"), optimizerState->getBestVariable());
-    context.resultCallback(T("allTimesBestScore"), optimizerState->getBestScore());
+
+    context.resultCallback(T("allTimesBestParameters"), state->getBestParameters());
+    context.resultCallback(T("allTimesBestScore"), state->getBestScore());
     
     // bestIterationScore may be diffrent from optimizerState->getBestScore(),
     // this is the return value of performEDAIteration, not the best score of all time !!!
     context.leaveScope(validationFunction ? Variable(new Pair(bestIterationScore, validationScore)) : Variable(bestIterationScore)); 
-        
-    optimizerState->autoSaveToFile(context);
   }
 };
   
 typedef ReferenceCountedObjectPtr<PopulationBasedOptimizer> PopulationBasedOptimizerPtr;  
-#endif // !O
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_POPULATION_BASED_OPTIMIZER_H_

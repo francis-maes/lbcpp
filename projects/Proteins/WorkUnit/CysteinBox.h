@@ -4,7 +4,7 @@
 
 namespace lbcpp
 {
-
+#if 0
 class CysteinLearnerParameters : public Object
 {
 public:
@@ -401,5 +401,5 @@ protected:
   double learningRate;
   size_t numNeighbors;
 };
-
+#endif //!0
 };

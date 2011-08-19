@@ -13,17 +13,17 @@
 
 namespace lbcpp
 {
-
+#if 0
 class UniformSampleAndPickBestOptimizer : public Optimizer
 {
 public:
   UniformSampleAndPickBestOptimizer(size_t numSamples = 0, bool verbose = false)
     : numSamples(numSamples), verbose(verbose) {}
   
-  virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
+  virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   { 
     
-#if 0 // TODO : use SamplerBasedOptimizerState ?
+ // TODO : use SamplerBasedOptimizerState ?
     DistributionBasedOptimizerStatePtr state = optimizerState.dynamicCast<DistributionBasedOptimizerState>();
     jassert(state);
     
@@ -73,9 +73,9 @@ public:
       state->flushProcessedRequests();
     }
     return state->getBestScore();
-#else // 0
+
     return Variable();
-#endif
+
  }
   
 protected:
@@ -85,7 +85,7 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<UniformSampleAndPickBestOptimizer> UniformSampleAndPickBestOptimizerPtr;  
-
+#endif
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OPTIMIZER_UNIFORM_SAMPLE_AND_PICK_BEST_H_

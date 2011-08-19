@@ -13,46 +13,36 @@
 
 namespace lbcpp
 {
-#if 0
+
 class EDAOptimizer : public PopulationBasedOptimizer
 {
 public:
-  EDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
-    : PopulationBasedOptimizer(numIterations, populationSize, numBests, stoppingCriterion, slowingFactor, reinjectBest, verbose) {}
+  EDAOptimizer(const SamplerPtr& sampler, size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
+    : PopulationBasedOptimizer(sampler, numIterations, populationSize, numBests, stoppingCriterion, slowingFactor, reinjectBest, verbose)
+    {}
 
-  virtual Variable optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const FunctionPtr& objectiveFunction) const
+  virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction) const
   {
-    SamplerBasedOptimizerStatePtr state = optimizeState.dynamicCast<SamplerBasedOptimizerState>(context);
+    SamplerBasedOptimizerStatePtr state = optimizerState.dynamicCast<SamplerBasedOptimizerState>();
     jassert(state);
-
-    for (size_t i = state->getNumIterations(); i < numIterations; ++i)
-    {
-      
-    }
-  }
-
-  virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
-  {
-    // useful to restart optimizer from optimizerState
-    size_t i = (size_t) (optimizerState->getTotalNumberOfResults()/populationSize); // WARNING : integer division
-    context.progressCallback(new ProgressionState(i, numIterations, T("Iterations")));
 
     if (stoppingCriterion)
       stoppingCriterion->reset();
-    for ( ; i < numIterations; ++i)
+
+    for (size_t i = state->getNumIterations(); i < numIterations; ++i)
     {
-      Variable bestIterationParameters = optimizerState->getBestVariable();
+      Variable bestIterationParameters = state->getBestParameters();
       double bestIterationScore;
       double worstIterationScore;
-
+      
       context.enterScope(T("Iteration ") + String((int)i + 1));
       context.resultCallback(T("iteration"), i + 1);
-      bool ok = performEDAIteration(context, bestIterationParameters, bestIterationScore, worstIterationScore, optimizerContext, optimizerState);
-      if (!ok)
-        return false; // FIXME : handle this
-        
+
+      performEDAIteration(context, state, objectiveFunction, bestIterationParameters, bestIterationScore, worstIterationScore);
+
       // display results & update optimizerState
-      handleResultOfIteration(context, optimizerState, optimizerContext, bestIterationScore, bestIterationParameters);
+      handleResultOfIteration(context, state, validationFunction, bestIterationScore, bestIterationParameters);
+
       context.progressCallback(new ProgressionState(i + 1, numIterations, T("Iterations")));
 
       jassert(bestIterationScore <= worstIterationScore);
@@ -67,9 +57,12 @@ public:
         context.informationCallback(T("Stopping criterion: ") + stoppingCriterion->toString());
         break;
       }
+      
+      state->incrementNumIterations();
+      // TODO: save state
     }
-    optimizerState->autoSaveToFile(context, true); // force to save at end of optimization
-    return optimizerState->getBestVariable();
+
+    return state;
   }
   
 protected:
@@ -78,50 +71,38 @@ protected:
   EDAOptimizer()
     : PopulationBasedOptimizer() {}
 
-  bool performEDAIteration(ExecutionContext& context, Variable& bestParameters, double& bestScore, double& worstScore, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
+  void performEDAIteration(ExecutionContext& context, const SamplerBasedOptimizerStatePtr& state, const FunctionPtr& objectiveFunction, Variable& bestParameters, double& bestScore, double& worstScore) const
   {    
     // generate evaluations requests
-    size_t offset = optimizerState->getNumberOfProcessedRequests();   // always 0 except if optimizer has been restarted from optimizerState file !
-    for (size_t i = offset; i < populationSize; i++)
+    CompositeWorkUnitPtr workUnits = new CompositeWorkUnit(T("EDAOptimizer - Iteration ") + String((int)state->getNumIterations()), populationSize);
+    std::vector<Variable> inputs(populationSize);
+    for (size_t i = 0; i < populationSize; ++i)
     {
       Variable input;
       if (reinjectBest && i == 0 && bestParameters.exists())
         input = bestParameters;
       else
-        input = sampleCandidate(context, optimizerState);
-      
-      if (!optimizerContext->evaluate(input))
-        return false; // FIXME : handle this ?
-      optimizerState->incTotalNumberOfRequests();
-      context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
+        input = sampleCandidate(context, state);
+      inputs[i] = input;
+      workUnits->setWorkUnit(i, new FunctionWorkUnit(objectiveFunction, input));
     }
-    
-    // wait (in case of async context) & update progression
-    // (waitUntilAllRequestsAreProcessed is not used to enable doing progressCallback)
-    while (!optimizerContext->areAllRequestsProcessed())
-    {
-      Thread::sleep(optimizerContext->getTimeToSleep());
-      context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
-      optimizerState->autoSaveToFile(context);
-    }
-    jassert(optimizerState->getNumberOfProcessedRequests() == populationSize);
-    context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations"))); // needed to be sure to have 100% in Explorer
+
+    ContainerPtr results = context.run(workUnits, false).getObject();
 
     // sort results
     std::multimap<double, Variable> sortedScores;
-    pushResultsSortedbyScore(context, optimizerState, sortedScores);
-    
+    pushResultsSortedbyScore(context, results, inputs, sortedScores);
+
     // build new distribution & update OptimizerState
-    learnDistribution(context, optimizerState, sortedScores);
-    
+    learnDistribution(context, state, sortedScores);
+
     // return best score and best parameter of this iteration
     bestParameters = sortedScores.begin()->second;
     bestScore = sortedScores.begin()->first;
     worstScore = sortedScores.rbegin()->first;
-    return true;
   }
 };
-#endif //!0
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_EDA_OPTIMIZER_H_

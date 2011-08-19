@@ -163,9 +163,7 @@ protected:
 
 ///////////////////////////////////////////////////////////////
 
-extern OptimizerPtr banditEDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, size_t maxNumBandits, StoppingCriterionPtr stoppingCriterion, bool verbose = false);
-extern SamplerBasedOptimizerStatePtr banditEDAOptimizerState(const SamplerPtr& sampler, double autoSaveFrequency = 0);
-
+extern OptimizerPtr banditEDAOptimizer(const SamplerPtr& sampler, size_t numIterations, size_t populationSize, size_t numBests, size_t maxNumBandits, StoppingCriterionPtr stoppingCriterion, bool verbose = false);
 
 class DiscreteBanditExperiment : public WorkUnit
 {
@@ -370,9 +368,6 @@ private:
     if (numBests < 10)
       numBests = 10;
 
-    // optimizer state
-    //OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(Parameterized::get(policy)->createParametersSampler());
-    OptimizerStatePtr optimizerState = banditEDAOptimizerState(Parameterized::get(policy)->createParametersSampler());
 
     // optimizer context
     FunctionPtr objectiveFunction = new EvaluateDiscreteBanditPolicyParameters(policy, numBandits, horizon, trainingProblems, 0);
@@ -381,23 +376,14 @@ private:
     FunctionPtr validationFunction = new EvaluateDiscreteBanditPolicyParameters(policy, numBandits, horizon, testingProblems, 10);
     validationFunction->initialize(context, parametersType);
 
-    //OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, objectiveFunction, validationFunction);
-    jassertfalse;
-    //FIXME: Optimizer
-    OptimizerContextPtr optimizerContext;// = synchroneousOptimizerContext(context, objectiveFunction, validationFunction);
-
     // optimizer
-    jassertfalse;
-    // FIXME: Optimizer
-    OptimizerPtr optimizer;// = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0, true);
+    OptimizerPtr optimizer = edaOptimizer(Parameterized::get(policy)->createParametersSampler(), numIterations, populationSize, numBests, StoppingCriterionPtr(), 0, true);
     //OptimizerPtr optimizer = banditEDAOptimizer(numIterations, populationSize, numBests, populationSize, StoppingCriterionPtr());
 
-    optimizer->compute(context, optimizerContext, optimizerState);
+    OptimizerStatePtr state = optimizer->compute(context, objectiveFunction, validationFunction).getObjectAndCast<OptimizerState>();
 
     // best parameters
-    jassertfalse;
-    // FIXME: Optimizer
-    Variable bestParameters;// = optimizerState->getBestVariable();
+    Variable bestParameters = state->getBestParameters();
     policy = Parameterized::cloneWithNewParameters(policy, bestParameters);
     context.informationCallback(policy->toShortString());
     context.resultCallback(T("optimizedPolicy"), policy);
