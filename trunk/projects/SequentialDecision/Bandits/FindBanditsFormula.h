@@ -539,17 +539,20 @@ protected:
 
     FunctionPtr validationFunction = new EvaluateDiscreteBanditPolicyParameters(policy, trainingProblems[0]->getNumBandits(), maxTimeStep, trainingProblems, numRunsPerEstimation);
     validationFunction->initialize(context, parametersType);
-    
-    OptimizerContextPtr optimizerContext = synchroneousOptimizerContext(context, objectiveFunction, validationFunction);
+    jassertfalse;
+    //FIXME: Optimizer
+    OptimizerContextPtr optimizerContext;// = synchroneousOptimizerContext(context, objectiveFunction, validationFunction);
 
     // optimizer
-    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, stoppingCriterion, 0.0, false);
+    jassertfalse;
+    // FIXME: Optimizer
+    OptimizerPtr optimizer;// = edaOptimizer(numIterations, populationSize, numBests, stoppingCriterion, 0.0, false);
     //OptimizerPtr optimizer = asyncEDAOptimizer(numIterations*populationSize, populationSize, populationSize/numBests, 1, StoppingCriterionPtr(), 10, populationSize);
 
     optimizer->compute(context, optimizerContext, optimizerState);
 
     // best parameters
-    Variable bestParameters = optimizerState->getBestVariable();
+    Variable bestParameters = optimizerState->getBestParameters();
     context.resultCallback(T("optimizedPolicy"), Parameterized::cloneWithNewParameters(policy, bestParameters));
     bestScore = optimizerState->getBestScore();
     return bestParameters;

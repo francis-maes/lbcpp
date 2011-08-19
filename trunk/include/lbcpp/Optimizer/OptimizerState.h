@@ -117,37 +117,42 @@ protected:
   
 typedef ReferenceCountedObjectPtr<OptimizerState> OptimizerStatePtr;
 extern ClassPtr optimizerStateClass;
+#endif //!0
 
 class SamplerBasedOptimizerState : public OptimizerState
 {
 public:
-  SamplerBasedOptimizerState(const SamplerPtr& sampler, double autoSaveStateFrequency = 0)
-    : OptimizerState(autoSaveStateFrequency), sampler(sampler), initialSampler(sampler) {}
-  SamplerBasedOptimizerState() {}
+  SamplerBasedOptimizerState(const SamplerPtr& sampler)
+    : sampler(sampler), initialSampler(sampler) {}
 
   const SamplerPtr& getSampler() const
     {return sampler;}
   
   void setSampler(const SamplerPtr& newSampler)
     {sampler = newSampler;}
-  
-  /**
-   * Prototype design pattern method.
-   */
+
   SamplerPtr getCloneOfInitialSamplerInstance() const
     {return initialSampler->cloneAndCast<Sampler>();}
-  
+
+  size_t getNumIterations() const
+    {return numIterations;}
+
 protected:
   friend class SamplerBasedOptimizerStateClass;
 
   SamplerPtr sampler;
   SamplerPtr initialSampler;  /**< Prototype design patter. */
+
+  size_t numIterations;
+
+  SamplerBasedOptimizerState() {}
+
 };
 
 typedef ReferenceCountedObjectPtr<SamplerBasedOptimizerState> SamplerBasedOptimizerStatePtr;
 
 extern OptimizerStatePtr streamBasedOptimizerState(ExecutionContext& context, const ObjectPtr& initialState, const std::vector<StreamPtr>& streams);
-#endif
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OPTIMIZER_STATE_H_
