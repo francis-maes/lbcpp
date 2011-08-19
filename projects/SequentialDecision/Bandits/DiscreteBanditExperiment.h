@@ -382,16 +382,22 @@ private:
     validationFunction->initialize(context, parametersType);
 
     //OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, objectiveFunction, validationFunction);
-    OptimizerContextPtr optimizerContext = synchroneousOptimizerContext(context, objectiveFunction, validationFunction);
+    jassertfalse;
+    //FIXME: Optimizer
+    OptimizerContextPtr optimizerContext;// = synchroneousOptimizerContext(context, objectiveFunction, validationFunction);
 
     // optimizer
-    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0, true);
+    jassertfalse;
+    // FIXME: Optimizer
+    OptimizerPtr optimizer;// = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0, true);
     //OptimizerPtr optimizer = banditEDAOptimizer(numIterations, populationSize, numBests, populationSize, StoppingCriterionPtr());
 
     optimizer->compute(context, optimizerContext, optimizerState);
 
     // best parameters
-    Variable bestParameters = optimizerState->getBestVariable();
+    jassertfalse;
+    // FIXME: Optimizer
+    Variable bestParameters;// = optimizerState->getBestVariable();
     policy = Parameterized::cloneWithNewParameters(policy, bestParameters);
     context.informationCallback(policy->toShortString());
     context.resultCallback(T("optimizedPolicy"), policy);

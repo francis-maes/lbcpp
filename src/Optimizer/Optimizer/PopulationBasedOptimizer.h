@@ -19,8 +19,8 @@ namespace lbcpp
 class PopulationBasedOptimizer : public Optimizer
 {
 public:
-  PopulationBasedOptimizer(size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
-    : numIterations(numIterations), populationSize(populationSize), numBests(numBests), stoppingCriterion(stoppingCriterion), slowingFactor(slowingFactor), reinjectBest(reinjectBest), verbose(verbose)
+  PopulationBasedOptimizer(const SamplerPtr& sampler, size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
+    : sampler(sampler), numIterations(numIterations), populationSize(populationSize), numBests(numBests), stoppingCriterion(stoppingCriterion), slowingFactor(slowingFactor), reinjectBest(reinjectBest), verbose(verbose)
     {
       jassert(slowingFactor >= 0 && slowingFactor <= 1);
       jassert(numBests < populationSize);
@@ -29,9 +29,13 @@ public:
   PopulationBasedOptimizer()
     : numIterations(0), populationSize(0), numBests(0), slowingFactor(0), reinjectBest(false), verbose(false) {}
   
+  virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context) const
+    {return new SamplerBasedOptimizerState(sampler);}
+  
 protected:
   friend class PopulationBasedOptimizerClass;
   
+  SamplerPtr sampler;
   size_t numIterations;
   size_t populationSize;
   size_t numBests;

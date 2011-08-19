@@ -19,11 +19,20 @@ class EDAOptimizer : public PopulationBasedOptimizer
 public:
   EDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
     : PopulationBasedOptimizer(numIterations, populationSize, numBests, stoppingCriterion, slowingFactor, reinjectBest, verbose) {}
-  
-  EDAOptimizer() : PopulationBasedOptimizer() {}
-  
+
+  virtual Variable optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const FunctionPtr& objectiveFunction) const
+  {
+    SamplerBasedOptimizerStatePtr state = optimizeState.dynamicCast<SamplerBasedOptimizerState>(context);
+    jassert(state);
+
+    for (size_t i = state->getNumIterations(); i < numIterations; ++i)
+    {
+      
+    }
+  }
+
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
-  {     
+  {
     // useful to restart optimizer from optimizerState
     size_t i = (size_t) (optimizerState->getTotalNumberOfResults()/populationSize); // WARNING : integer division
     context.progressCallback(new ProgressionState(i, numIterations, T("Iterations")));
@@ -65,6 +74,9 @@ public:
   
 protected:
   friend class EDAOptimizerClass;
+  
+  EDAOptimizer()
+    : PopulationBasedOptimizer() {}
 
   bool performEDAIteration(ExecutionContext& context, Variable& bestParameters, double& bestScore, double& worstScore, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {    

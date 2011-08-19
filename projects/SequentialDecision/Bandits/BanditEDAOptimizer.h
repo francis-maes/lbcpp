@@ -13,7 +13,7 @@
 
 namespace lbcpp
 {
-
+#if 0 // FIXME: Optimizer
 class BanditEDAOptimizerState : public SamplerBasedOptimizerState
 {
 public:
@@ -251,7 +251,7 @@ protected:
     return true;
   }
 };
-  
+#endif //!0
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_BANDIT_EDA_OPTIMIZER_H_

@@ -52,9 +52,9 @@ protected:
 typedef ReferenceCountedObjectPtr<OptimizerContext> OptimizerContextPtr;
 extern ClassPtr optimizerContextClass;
 
-extern OptimizerContextPtr synchroneousOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction = FunctionPtr());  
-extern OptimizerContextPtr multiThreadedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction = FunctionPtr(), size_t timeToSleep = 100);
-extern OptimizerContextPtr distributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction);  
+//extern OptimizerContextPtr synchroneousOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction = FunctionPtr());  
+//extern OptimizerContextPtr multiThreadedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction = FunctionPtr(), size_t timeToSleep = 100);
+//extern OptimizerContextPtr distributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction);  
 
 };
 #endif // !LBCPP_OPTIMIZER_CONTEXT_H_
