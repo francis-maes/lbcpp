@@ -482,16 +482,31 @@ int SparseDoubleVector::append(LuaState& state)
   {
     SparseDoubleVectorPtr vector = state.checkObject(1, sparseDoubleVectorClass()).staticCast<SparseDoubleVector>();
     int index = state.checkInteger(2);
-    if (index < 0)
+    if (index <= 0)
       state.error("Invalid index in SparseDoubleVector::append");
     else
     {
       double value = state.checkNumber(3);
-      vector->appendValue((size_t)index, value);
+      vector->appendValue((size_t)(index - 1), value);
     }
   }
   else
     DoubleVector::append(state);
+  return 0;
+}
+
+int SparseDoubleVector::increment(LuaState& state)
+{
+  SparseDoubleVectorPtr vector = state.checkObject(1, sparseDoubleVectorClass()).staticCast<SparseDoubleVector>();
+  int index = state.checkInteger(2);
+  if (index <= 0)
+    state.error("Invalid index in SparseDoubleVector::append");
+  else
+  {
+    double value = state.checkNumber(3);
+    if (value)
+      vector->incrementValue((size_t)(index - 1), value);
+  }
   return 0;
 }
 
@@ -501,12 +516,12 @@ int SparseDoubleVector::__index(LuaState& state) const
     return Object::__index(state);
 
   int index = state.toInteger(1);
-  if (index < 1)
+  if (index <= 0)
   {
     state.error("Invalid index in SparseDoubleVector::index()");
     return 0;
   }
-  const double* value = SparseDoubleVectorHelper::get(values, index);
+  const double* value = SparseDoubleVectorHelper::get(values, (size_t)(index - 1));
   state.pushNumber(value ? *value : 0.0);
   return 1;
 }
@@ -517,14 +532,14 @@ int SparseDoubleVector::__newIndex(LuaState& state)
     return Object::__newIndex(state);
 
   int index = state.toInteger(1);
-  if (index < 1)
+  if (index <= 0)
     state.error("Invalid index in SparseDoubleVector::newIndex()");
 
   double value = state.checkNumber(2);
   if (index > lastIndex)
     appendValue(index, value);
   else
-    SparseDoubleVectorHelper::set(values, index, value);
+    SparseDoubleVectorHelper::set(values, (size_t)(index - 1), value);
   return 0;
 }
 

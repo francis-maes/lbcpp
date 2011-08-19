@@ -73,6 +73,7 @@
     <parameter name="elementsEnumeration" type="EnumValue"/>
     <parameter name="elementsType" type="Double"/>
     <function lang="lua" name="append"/>
+    <function lang="lua" name="increment"/>
   </template>
 
   <template name="DenseDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">

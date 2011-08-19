@@ -184,6 +184,7 @@ public:
 
   // Lua
   static int append(LuaState& state);
+  static int increment(LuaState& state);
   virtual int __index(LuaState& state) const;
   virtual int __newIndex(LuaState& state);
 
