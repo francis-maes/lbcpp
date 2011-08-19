@@ -1,10 +1,7 @@
 
 UBOLA Next steps:
- * Variant of UBOLA that uses exact statistics instead of a learning machine
- * Understand why the loss of ConditionalGaussian can be negative
- * Understand why UBOLA is biased towards -(-(-(-(-(...))))) expressions
- * Voir pourquoi l'objectif bandits se bloque à 0.3
  * Features
+ * Voir pourquoi l'objectif bandits se bloque à 0.3
 
 Lua-Misc
 * Metamethods for ipairs() and pairs()

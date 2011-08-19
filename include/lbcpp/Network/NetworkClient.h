@@ -61,8 +61,11 @@ typedef ManagerNetworkClientCallback* ManagerNetworkClientCallbackPtr;
 class ManagerNetworkClient : public NetworkClient
 {
 public:
-  ManagerNetworkClient(ExecutionContext& context, const ManagerNetworkClientCallbackPtr& callback)
-    : NetworkClient(context), callback(callback) {}
+  ManagerNetworkClient(ExecutionContext& context)
+    : NetworkClient(context) {}
+
+  void setCallback(ManagerNetworkClientCallbackPtr callback)
+    {this->callback = callback;}
 
   bool sendWorkUnit(size_t sourceIdentifier, const WorkUnitPtr& workUnit,
                     const String& projectName, const String& source, const String& destination,
