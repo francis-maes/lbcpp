@@ -54,7 +54,7 @@ private:
   bool isComputed;
 
   size_t bestValue;
-  size_t bestScore;
+  double bestScore;
 
   void ensureIsComputed()
   {
