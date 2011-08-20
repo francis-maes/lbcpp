@@ -43,8 +43,6 @@ public:
       // display results & update optimizerState
       handleResultOfIteration(context, state, validationFunction, bestIterationScore, bestIterationParameters);
 
-      context.progressCallback(new ProgressionState(i + 1, numIterations, T("Iterations")));
-
       jassert(bestIterationScore <= worstIterationScore);
       if (worstIterationScore - bestIterationScore < 1e-9) // all scores are nearly identical
       {

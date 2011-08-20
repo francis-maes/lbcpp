@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<library name="ProteinOptimizer" directory="Optimizer">
-  <class name="ExtractMeanScoreWorkUnit" base="WorkUnit"/>
-  <class name="AsyncEDAOptimizerExperience" base="WorkUnit"/>
-  <class name="AsyncEDAOptimizerExperience3" base="WorkUnit"/>  
-  <class name="AsyncEDAOptimizerExperience4" base="WorkUnit"/>  
-  <class name="OptimizerTestBedWorkUnit" base="WorkUnit"/>
-</library>
