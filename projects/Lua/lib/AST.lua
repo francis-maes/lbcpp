@@ -49,14 +49,32 @@ function AST.unaryOperation(op, expr)
   return lbcpp.Object.create("lua::UnaryOperation", convert(op), expr)
 end
 
+function AST.getUnaryOperationOp(node)
+  local ops = {"not", "len", "unm"}
+  return ops[node.op + 1]
+end
+
 function AST.binaryOperation(op, left, right)
   local function convertBinaryOp(opid)
-    opids = {add = 0, sub = 1, mul = 2, div = 3,
+    local opids = {add = 0, sub = 1, mul = 2, div = 3,
             mod = 4, pow = 5, concat = 6, eq = 7,
             lt = 8, le = 9, ['and'] = 10, ['or'] = 11}
     return opids[opid]
   end
   return lbcpp.Object.create("lua::BinaryOperation", convertBinaryOp(op), left, right)
 end
+
+function AST.getBinaryOperationOp(node)
+  local ops = {"add", "sub", "mul", "div", "mod", "pow", "concat", "eq", "lt", "le", "and", "or"}
+  return ops[node.op + 1]
+end
+
+function AST.isBinaryOperationCommutative(node)
+  local commutativeOps = {true, false, true, false,
+                          false, false, false, true,
+                          false, false, true, true}
+  return commutativeOps[node.op + 1]
+end
+
 
 return AST

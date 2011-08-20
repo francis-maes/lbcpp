@@ -10,6 +10,20 @@ require 'Stochastic'
 
 Sampler = {}
 
+Sampler.Geometric = subspecified Stochastic.new(
+{
+  parameter p = {default=0.5, min=0, max=1},
+  parameter first = {default=1, min=0},
+
+  sample = || first + math.floor(math.log(context:random()) / math.log(1 - p)),
+  learn = function (samples)
+    assert(false) -- not yet implemented
+  end,
+  expectation = function ()
+    assert(false) -- not yet implemented
+  end
+})
+
 Sampler.Gaussian = subspecified Stochastic.new(
 {
   parameter mu = {default = 0},

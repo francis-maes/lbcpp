@@ -204,7 +204,15 @@ public:
     {write(expression.getValue() ? "true" : "false");}
 
   virtual void visit(LiteralNumber& expression)
-    {write(String(expression.getValue()));}
+  {
+    String str(expression.getValue());
+    if (str == T("1.#INF"))
+      write("math.huge");
+    else if (str == T("-1.#INF"))
+      write("-math.huge");
+    else
+      write(str);
+  }
 
   virtual void visit(LiteralString& expression)
   {
