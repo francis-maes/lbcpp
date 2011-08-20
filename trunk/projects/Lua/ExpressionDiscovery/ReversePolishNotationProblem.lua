@@ -45,6 +45,162 @@ function stackOrExpressionSize(x)
   end
 end
 
+function simplifyAndMakeFormulaUnique(formula)
+  local function getLiteralNumber(formula)
+    return formula.className == "lua::LiteralNumber" and formula.value or nil
+  end
+  local function isUnm(formula)
+    return formula.className == "lua::UnaryOperation" and AST.getUnaryOperationOp(formula) == "unm"
+  end
+  local function isDiv(formula)
+    return formula.className == "lua::BinaryOperation" and AST.getBinaryOperationOp(formula) == "div"
+  end
+
+  local n = formula:getNumSubNodes()
+
+  if n == 0 then
+    return formula
+  elseif n == 1 then
+    local subFormula = simplifyAndMakeFormulaUnique(formula:getSubNode(1))
+    local number = getLiteralNumber(subFormula)
+    
+    if isUnm(formula) then
+      -- simplify constant expression
+      if number ~= nil then
+        return AST.literalNumber(-number)
+      end
+      -- Simplify - - x into x
+      if isUnm(subFormula) then
+        return subFormula:getSubNode(1)
+      end
+    end
+
+    return AST.unaryOperation(AST.getUnaryOperationOp(formula), subFormula)
+
+  elseif n == 2 then
+    local op = AST.getBinaryOperationOp(formula)
+    local subFormula1 = simplifyAndMakeFormulaUnique(formula:getSubNode(1))
+    local subFormula2 = simplifyAndMakeFormulaUnique(formula:getSubNode(2))
+    local subFormulaStr1 = subFormula1:print()
+    local subFormulaStr2 = subFormula2:print()
+
+    -- break commutativity
+    if AST.isBinaryOperationCommutative(formula) and subFormulaStr1 > subFormulaStr2 then
+      local tmp = subFormula1
+      subFormula1 = subFormula2
+      subFormula2 = tmp
+      tmp = subFormulaStr1
+      subFormulaStr1 = subFormulaStr2
+      subFormulaStr2 = tmp
+    end
+
+    local number1 = getLiteralNumber(subFormula1)
+    local number2 = getLiteralNumber(subFormula2)
+
+    if op == "add" then
+      -- simplify constant expression
+      if number1 ~= nil and number2 ~= nil then
+        return AST.literalNumber(number1 + number2)
+      end
+      -- Simplify 0 + x into x
+      if number1 == 0 then
+        return subFormula2
+      end
+    elseif op == "sub" then
+      -- simplify constant expression
+      if number1 ~= nil and number2 ~= nil then
+        return AST.literalNumber(number1 - number2)
+      end
+      -- Simplify x - x into 0
+      if subFormulaStr1 == subFormulaStr2 then  
+        return AST.literalNumber(0)
+      end
+      -- Simplify x - 0 into x
+      if number2 == 0 then
+        return subFormula1
+      end
+    elseif op == "mul" then
+      -- simplify constant expression
+      if number1 ~= nil and number2 ~= nil then
+        return AST.literalNumber(number1 * number2)
+      end
+      -- Simplify 1 * x into x
+      if number1 == 1 then
+        return subFormula2
+      end      
+    elseif op == "div" then
+      -- simplify constant expression
+      if number1 ~= nil and number2 ~= nil then
+        return AST.literalNumber(number1 / number2)
+      end
+      -- Simplify x / 1 into x
+      if number2 == 1 then
+        return subFormula1
+      end
+      -- Simplify x / x into 1
+      if subFormulaStr1 == subFormulaStr2 then  
+        return AST.literalNumber(1)
+      end
+      -- Simplfy (a/b)/(c/d) into (a*d)/(b*c)
+      if isDiv(subFormula1) and isDiv(subFormula2) then
+        return simplifyAndMakeFormulaUnique(AST.binaryOperation("div",
+                   AST.binaryOperation("mul", subFormula1:getSubNode(1), subFormula2:getSubNode(2)),
+                   AST.binaryOperation("mul", subFormula1:getSubNode(2), subFormula2:getSubNode(1))))
+      end
+      -- Simplify (a/b)/c into a / (b*c)
+      if isDiv(subFormula1) then
+        return simplifyAndMakeFormulaUnique(AST.binaryOperation("div",
+                   subFormula1:getSubNode(1),
+                   AST.binaryOperation("mul", subFormula1:getSubNode(2), subFormula2)))
+      end
+      -- Simplify a / (b/c) into (a*c)/b
+      if isDiv(subFormula2) then
+        return simplifyAndMakeFormulaUnique(AST.binaryOperation("div",
+                   AST.binaryOperation("mul", subFormula1, subFormula2:getSubNode(2)),
+                   subFormula2:getSubNode(1)))
+      end
+    end    
+
+    return AST.binaryOperation(op, subFormula1, subFormula2)
+  end  
+end
+
+function formulaToTrajectory(formula)
+  local x = {}
+  local res = {x}
+  
+  local function buildTrajectory(node)
+    local n = node:getNumSubNodes()
+    -- Randomize order in case of commutative operators
+    if n == 2 and AST.isBinaryOperationCommutative(node) and context:random() < 0.5 then
+      buildTrajectory(node:getSubNode(2))
+      buildTrajectory(node:getSubNode(1))
+    else
+      for i=1,n do  
+        buildTrajectory(node:getSubNode(i))
+      end
+    end
+
+    local u = node:clone()
+    assert(u)
+    table.insert(res, u) -- action
+    x = problem.f(x, u)
+    assert(x)
+    table.insert(res, x) -- state
+  end
+  
+  buildTrajectory(formula)
+  table.insert(res, AST.returnStatement())
+
+  --local dbg = formula:print() .. " <=="
+  --for i=1,#res/2 do
+  --  dbg = dbg .. " x=" .. problem.stateToString(res[i*2-1]) .. " u=" .. problem.actionToString(res[i*2])
+  --end
+  --print (dbg)
+
+  return res
+end
+
 -- Reverse polish notation Sequential Decision Process
 
 DecisionProblem.ReversePolishNotation = subspecified {

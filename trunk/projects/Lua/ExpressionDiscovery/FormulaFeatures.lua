@@ -4,45 +4,42 @@ require 'AST'
 require 'Vector'
 require 'Dictionary'
 
-function formulaAllPathFeatures(formula)
-
-  -- transforms one node into a symbol
-  local function nodeSymbol(node)
-    local cn = node.className
-    if cn == "lua::Return" then
-      return '@'
-    elseif cn == "lua::LiteralNumber" then
-      return node.value
-    elseif cn == "lua::Identifier" then
-      return node.identifier
-    elseif cn == "lua::UnaryOperation" then
-      local ops = {"~", "#", "_"}
-      return ops[node.op + 1]
-    elseif cn == "lua::BinaryOperation" then
-      local ops = {"+", "-", "*", "/", 
-                   "%", "^", ".", "=",
-                   "<", "[", "&", "|"}
-      return ops[node.op + 1]
-    end
+-- transforms one node into a symbol
+local function nodeSymbol(node)
+  local cn = node.className
+  if cn == "lua::Return" then
+    return '@'
+  elseif cn == "lua::LiteralNumber" then
+    return node.value
+  elseif cn == "lua::Identifier" then
+    return node.identifier
+  elseif cn == "lua::UnaryOperation" then
+    local ops = {"~", "#", "_"}
+    return ops[node.op + 1]
+  elseif cn == "lua::BinaryOperation" then
+    local ops = {"+", "-", "*", "/", 
+                 "%", "^", ".", "=",
+                 "<", "[", "&", "|"}
+    return ops[node.op + 1]
   end
+end
 
-  -- transforms one parent-child link into a symbol (that may be empty)
-  local function linkSymbol(parentNode, childNode)
-    local commutativeOps = {true, false, true, false,
-                            false, false, false, true,
-                            false, false, true, true}
-    if parentNode.className == "lua::BinaryOperation" and not commutativeOps[parentNode.op + 1] then
-      if parentNode:getSubNode(1) == childNode then
-        return "L"
-      elseif parentNode:getSubNode(2) == childNode then
-        return "R"
-      else
-        assert(false)
-      end
+-- transforms one parent-child link into a symbol (that may be empty)
+local function linkSymbol(parentNode, childNode)
+  if parentNode.className == "lua::BinaryOperation" and not AST.isBinaryOperationCommutative(parentNode) then
+    if parentNode:getSubNode(1) == childNode then
+      return "L"
+    elseif parentNode:getSubNode(2) == childNode then
+      return "R"
     else
-      return ""
+      assert(false)
     end
+  else
+    return ""
   end
+end
+
+function formulaAllPathFeatures(formula, addRootNode)
 
   -- this function is called for pair of nodes (n_i, n_j) where i <= j
   local function featuresFromTo(sourceStack, destStack, numCommonNodes)
@@ -106,8 +103,10 @@ function formulaAllPathFeatures(formula)
   end
   -- end of the double loop
 
-  -- add root node 
-  formula = AST.returnStatement({formula}) 
+  -- add root node
+  if addRootNode == true or addRootNode == nil then 
+    formula = AST.returnStatement({formula}) 
+  end
 
   -- launch the double loop
   iterateOverSource({formula}) 
@@ -115,11 +114,58 @@ function formulaAllPathFeatures(formula)
 end
 
 allPathFeaturesDictionary = Dictionary.new()
-function formulaAllPathFeaturesToSparseVector(formula)
+function formulaAllPathFeaturesToSparseVector(formula, addRootNode)
   local res = Vector.newSparse()
-  local iterator = coroutine.wrap(| | formulaAllPathFeatures(formula))
+  local iterator = coroutine.wrap(| | formulaAllPathFeatures(formula, addRootNode))
   for feature, value in iterator do
     res:increment(allPathFeaturesDictionary:add(feature), value or 1.0)
+  end
+  return res
+end
+
+-----------------------------------------------------------------------
+
+function formulaActionFeatures(x, u)
+  --local prefix = "S=" .. stackOrExpressionSize(x) .. 
+  local prefix = "A=" .. nodeSymbol(u)
+ 
+  local function relationSymbol(i)
+    local cn = u.className
+    if cn == "lua::Identifier" or cn == "lua::LiteralNumber" then
+      return "other"
+    elseif cn == "lua::Return" or cn == "lua::UnaryOperation" then
+      return i == 1 and "operand" or "other"
+    elseif cn == "lua::BinaryOperation" then
+      if AST.isBinaryOperationCommutative(u) then
+        return i <= 2 and "operand" or "other"
+      else
+        if i == 1 then return "operand2"
+        elseif i == 2 then return "operand1"
+        else return "other" end
+      end
+    else
+      assert(false)
+    end
+  end
+
+  coroutine.yield(prefix) -- kind of unit feature
+
+  for i,formula in ipairs(x) do
+    local relsymb = relationSymbol(#x - i + 1)
+    local prefix2 = prefix .. " R=" .. relsymb .. " P="
+    local iterator = coroutine.wrap(| | formulaAllPathFeatures(formula, false))
+    for feature, value in iterator do
+      coroutine.yield(prefix2 .. feature, value)
+    end
+  end 
+end
+
+formulaActionFeaturesDictionary = Dictionary.new()
+function formulaActionFeaturesToSparseVector(x, u)
+  local res = Vector.newSparse()
+  local iterator = coroutine.wrap(| | formulaActionFeatures(x, u))
+  for feature, value in iterator do
+    res:increment(formulaActionFeaturesDictionary:add(feature), value or 1.0)
   end
   return res
 end
@@ -138,13 +184,9 @@ function formulaStringFeatures(ast)
     elseif cn == "lua::Identifier" then
       return {isIdentifier = 1, ["identifier=" .. ast.identifier] = 1}
     elseif cn == "lua::UnaryOperation" then
-      local ops = {"not", "len", "unm"}
-      return ops[ast.op + 1]
+      return AST.getUnaryOperationOp(ast)
     elseif cn == "lua::BinaryOperation" then
-      local ops = {"add", "sub", "mul", "div", 
-                   "mod", "pow", "concat", "eq",
-                   "lt", "le", "and", "or"}
-      return ops[ast.op + 1]
+      return AST.getBinaryOperationOp(ast)
     end
   end
 

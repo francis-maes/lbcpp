@@ -15,7 +15,7 @@ subspecified function DecisionProblem.NestedMonteCarlo(problem, x)
     local U = problem.U(x)
     assert(U ~= nil)
     for i,u in ipairs(U) do
-      local finalState, actionSequence, score = episodeFunction(problem.f(x,u))
+      local score, actionSequence, finalState = episodeFunction(problem.f(x,u))
       if score > bestScore then
         bestFinalState = finalState
         bestActionSequence = actionSequence
@@ -24,7 +24,7 @@ subspecified function DecisionProblem.NestedMonteCarlo(problem, x)
       end
     end
     --print ("argmax", problem.stateToString(x), actionSequenceToString(bestActionSequence))
-    return bestFinalState, bestActionSequence, bestScore
+    return bestScore, bestActionSequence, bestFinalState
   end
 
   local bestScore = -math.huge
@@ -37,9 +37,9 @@ subspecified function DecisionProblem.NestedMonteCarlo(problem, x)
   while not problem.isFinal(x) do
     local finalState, actionSequence, score
     if level == 1 then
-      finalState, actionSequence, score = argmax(|x| DecisionProblem.randomEpisode(problem, x), x)
+      score, actionSequence, finalState = argmax(|x| DecisionProblem.randomEpisode(problem, x), x)
     else
-      finalState, actionSequence, score = argmax(|x| DecisionProblem.NestedMonteCarlo{level=level-1}(problem, x), x)
+      score, actionSequence, finalState = argmax(|x| DecisionProblem.NestedMonteCarlo{level=level-1}(problem, x), x)
     end
     --print (actionSequenceToString(actionSequence), finalState:print(), score)
 
@@ -52,7 +52,7 @@ subspecified function DecisionProblem.NestedMonteCarlo(problem, x)
     end
 
     if not bestActionSequence then
-      return bestFinalState, bestActionSequence, bestScore
+      return bestScore, bestActionSequence, bestFinalState
     end
 
     local u = bestActionSequence[#previousActions + 1]
@@ -60,5 +60,5 @@ subspecified function DecisionProblem.NestedMonteCarlo(problem, x)
     x = problem.f(x,u)
     table.insert(previousActions, u)
   end
-  return bestFinalState, bestActionSequence, bestScore
+  return bestScore, bestActionSequence, bestFinalState
 end

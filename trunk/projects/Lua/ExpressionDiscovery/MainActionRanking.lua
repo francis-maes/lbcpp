@@ -5,30 +5,15 @@
 require '../ExpressionDiscovery/DecisionProblem'
 require '../ExpressionDiscovery/ReversePolishNotationProblem'
 require '../ExpressionDiscovery/FormulaFeatures'
-require '../ExpressionDiscovery/NestedMonteCarlo'
 require 'AST'
 require 'Dictionary'
 require 'Vector'
 require 'Evaluator'
 require 'Statistics'
 require 'Random'
+require 'Sampler'
 
-
-context.randomGenerator = Random.new(0)
-
---[[
---myFormula = AST.binaryOperation('add', AST.binaryOperation('mul', AST.identifier('a'), AST.identifier('b')), AST.identifier('c'))
-myFormula = AST.binaryOperation('div',
-   AST.binaryOperation('sub', AST.identifier('a'), AST.identifier('b')),
-   AST.binaryOperation('mod', AST.identifier('a'), AST.identifier('c')))
---myFormula = AST.binaryOperation('mod', AST.identifier('a'), AST.identifier('b'))
- 
-print (myFormula:print())
-v = formulaAllPathFeaturesToSparseVector(myFormula)
-print (v)
-print (allPathFeaturesDictionary)
-]]
-
+--context.randomGenerator = Random.new(0)
 
 -- Application : symbolic regression
 
@@ -54,8 +39,8 @@ local function makeSymbolicRegressionObjective()
       Stochastic.standardGaussian()
     }
     --table.insert(example, example[1]) -- a 
-    --table.insert(example, example[1] * example[2] + example[3])  -- a b * c +
-    table.insert(example, (example[1] + 5) * example[2] + example[3] - 10) -- a * b + b * 5 + c - 10
+    table.insert(example, example[1] * example[2] + example[3])  -- a b * c +
+    --table.insert(example, (example[1] + 5) * example[2] + example[3] - 10) -- a * b + b * 5 + c - 10
     table.insert(dataset, example)
   end
   return |f| Evaluator.meanSquaredError(f, dataset)
@@ -66,7 +51,7 @@ problemCache = {}
 problem = DecisionProblem.ReversePolishNotation{
   constants = {1,2,5,10},
   objective = cacheObjectiveFunction(makeSymbolicRegressionObjective(), problemCache),
-  maxSize = 11
+  maxSize = 10
 }
 
 policy = DecisionProblem.randomPolicy
@@ -83,57 +68,32 @@ function sampleFormula(problem, policy)
   return x
 end
 
---[[
-function sampleDataset(problem, policy, size)
-  local population = {}
-  for i=1,size do
-    local formula = sampleFormula(problem, policy)
-    local expr = buildExpression(problem.__parameters.variables, formula)
-    local score = problem.__parameters.objective(expr, formula:print())
-    population[formula:print()] = {formula, score}
-  end
-  local res = {}
-  for description,example in pairs(population) do
-    table.insert(res, example)
-  end
-  return res
-end
-
-dataset = sampleDataset(problem, policy, 1000)
-
-trainingDataset = {}--sampleDataset(problem, policy, 100)
-testingDataset = {}--sampleDataset(problem, policy, 100)
-for i,example in ipairs(dataset) do
-  table.insert(i % 2 == 0 and trainingDataset or testingDataset, example)
-end
-
-table.sort(trainingDataset, |a,b| a[2] < b[2])
-table.sort(testingDataset, |a,b| a[2] < b[2])
-print (#trainingDataset, "Training examples", #testingDataset, "Testing examples")
-]]
-
 -- Train ranking machine
 
 function trainRankingMachine(trainingDataset)
   local theta = Vector.newDense()
-  local splitPoint = math.ceil(#trainingDataset / 4)
-  print ("Split Point: ", splitPoint)
   for i=1,100 do
     context:enter("Iteration " .. i)
     local accuracyStats = Statistics.mean()
     for j=1,100 do
-      local positiveIndex = Stochastic.uniformInteger(1,splitPoint)
+      local positiveIndex = math.min(#trainingDataset - 1, Sampler.Geometric{p=0.2}())
       local negativeIndex = Stochastic.uniformInteger(positiveIndex+1,#trainingDataset)
       local positiveExample = trainingDataset[positiveIndex]
       local negativeExample = trainingDataset[negativeIndex]
-      local positiveFeatures = formulaAllPathFeaturesToSparseVector(positiveExample[1])
-      local negativeFeatures = formulaAllPathFeaturesToSparseVector(negativeExample[1])
-      local positiveScore = theta:dot(positiveFeatures)
-      local negativeScore = theta:dot(negativeFeatures)
-      accuracyStats:observe(positiveScore > negativeScore and 1 or 0)
-      if positiveScore - negativeScore < 1 then
-        theta:add(positiveFeatures)
-        theta:add(negativeFeatures, -1)
+      local positiveTrajectory = formulaToTrajectory(positiveExample[1])
+      local negativeTrajectory = formulaToTrajectory(negativeExample[1])
+      local minLength = math.min(#positiveTrajectory / 2, #negativeTrajectory / 2)
+      for k=1,minLength do
+
+        local positiveFeatures = formulaActionFeaturesToSparseVector(positiveTrajectory[k*2 - 1], positiveTrajectory[k*2])
+        local negativeFeatures = formulaActionFeaturesToSparseVector(negativeTrajectory[k*2 - 1], negativeTrajectory[k*2])
+        local positiveScore = theta:dot(positiveFeatures)
+        local negativeScore = theta:dot(negativeFeatures)
+        accuracyStats:observe(positiveScore > negativeScore and 1 or 0)
+        if positiveScore - negativeScore < 1 then
+          theta:add(positiveFeatures)
+          theta:add(negativeFeatures, -1)
+        end
       end
     end
     context:result("iteration", i)
@@ -147,7 +107,7 @@ end
 
 local function testRankingMachine(theta, dataset)
   for i,example in ipairs(dataset) do
-    local features = formulaAllPathFeaturesToSparseVector(example[1])
+    local features = formulaActionFeaturesToSparseVector({example[1]}, AST.returnStatement())
     local score = theta:dot(features)
     context:enter("Example " .. i)
     context:result("example", i)
@@ -170,42 +130,38 @@ local function displayWeightVector(theta, dictionary)
   end
 end
 
-local function rankingDrivenPolicy(theta, temperature)
+local function rankingDrivenPolicy(theta, temperature, population)
 
-  local function rankingScore(formula, addRootNode)
-    return theta:dot(formulaAllPathFeaturesToSparseVector(formula, addRootNode))
-  end
-
-  local function stateScore(x)
-    if type(x) == "table" then
-      local res = 0
-      for i,formula in ipairs(x) do
-        res = res + rankingScore(formula, false)
-      end
-      return res
-    else
-      return rankingScore(x, true)
-    end
-  end
-
-  return function (problem, x)
+  return function (problem, x, verbose)
     local U = problem.U(x)
     local probs = {}
     local Z = 0
-    local currentScore = stateScore(x)
-    print ("State: " .. problem.stateToString(x) .. " score = " .. currentScore)
     for i,u in ipairs(U) do
-      local nextScore = stateScore(problem.f(x, u))
-      local prob = math.exp((nextScore - currentScore) * temperature)
+      local prob
+      if u.className == "lua::Return" and population[x[#x]:print] ~= nil then
+        prob = 0
+      else
+        local Q = theta:dot(formulaActionFeaturesToSparseVector(x,u))
+        prob = math.exp(Q * temperature)
+      end
       table.insert(probs, prob)
       Z = Z + prob
     end
-    --print (table.concat(probs, ","))    
-    --local dbg = ""
-    --for i,u in ipairs(U) do
-    --  dbg = dbg .. " " .. problem.actionToString(u) .. " [" .. (probs[i] / Z) .. "]"
-    --end
-    --print (dbg)
+
+    if Z == 0 then -- happens if the only remaining action is Return
+      return DecisionProblem.randomPolicy(problem, x)
+    end
+
+    if verbose then
+      local dbg = ""
+      local function floatToPercentString(flt)
+        return tostring(math.floor(flt * 1000) / 10) .. "%"
+      end
+      for i,u in ipairs(U) do
+        dbg = dbg .. " " .. problem.actionToString(u) .. " [" .. floatToPercentString(probs[i] / Z) .. "]"
+      end
+      print (dbg)
+    end
 
     local r = Stochastic.standardUniform() * Z
     for i,u in ipairs(U) do
@@ -221,20 +177,6 @@ local function rankingDrivenPolicy(theta, temperature)
   end
 end
 
-local function sampleFormulaToMaximize(objective)
-  
-  local surrogateProblem = DecisionProblem.ReversePolishNotation{
-     constants = problem.__parameters.constants,
-     objective = objective,
-     maxSize = problem.__parameters.maxSize
-  }
-  
-  bestScore, bestActionSequence, bestFinalState = DecisionProblem.NestedMonteCarlo{level=1}(surrogateProblem)
-  print (bestFinalState:print())
-  return bestFinalState
-
-end
-
 local function formulaRankingEDA(problem, populationSize)
 
   local policy = DecisionProblem.randomPolicy
@@ -242,7 +184,9 @@ local function formulaRankingEDA(problem, populationSize)
   local population = {}
 
   local function addFormulaToPopulation(formula)
+    --local dbg = "Simplify " .. formula:print() .. " ==> "
     formula = simplifyAndMakeFormulaUnique(formula)
+    --print(dbg .. formula:print())
     local expr = buildExpression(problem.__parameters.variables, formula)
     local score = problem.__parameters.objective(expr, formula:print())
     population[formula:print()] = {formula, score}
@@ -262,20 +206,11 @@ local function formulaRankingEDA(problem, populationSize)
     exhaustiveSearch(problem.x0, 4)    
   end
 
-  local function surrogateFunction(formula, formulaDescription, formulaAST)
-    local node = simplifyAndMakeFormulaUnique(formulaAST)
-    if population[node:print()] ~= nil then
-      return math.huge
-    else
-      return -theta:dot(formulaAllPathFeaturesToSparseVector(node))
-    end
-  end
-
   local function sampleNewCandidates()
     local surrogateScoreStats = Statistics.meanVarianceAndBounds()
     for i=1,populationSize do
-      --local formula = sampleFormula(problem, policy)
-      local formula = sampleFormulaToMaximize(surrogateFunction)
+      local formula = sampleFormula(problem, policy)
+      print ("==>" .. formula:print())
       addFormulaToPopulation(formula)
       local rankingScore = theta:dot(formulaAllPathFeaturesToSparseVector(formula))
       surrogateScoreStats:observe(rankingScore)
@@ -318,7 +253,7 @@ local function formulaRankingEDA(problem, populationSize)
     context:result("Score stats", scoreStats)
   end
 
-  local function iteration (iter, numIterations)
+  local function iteration (iter)
     context:result("iteration", iter)
 
     if iter == 1 then
@@ -330,25 +265,29 @@ local function formulaRankingEDA(problem, populationSize)
 
     local sortedCandidates = context:call("Sort candidates", sortAndKeepBestCandidates) -- sort the current population and restrict its size to "populationSize"
     makeScoreStatistics(sortedCandidates)
-    for best=1,10 do
-      if best <= #sortedCandidates then
-        context:result("Best formula " .. best, sortedCandidates[best][1]:print() .. ' (' .. sortedCandidates[best][2] .. ')')
-      end
+    for best=1,#sortedCandidates/4 do
+      context:result("Best formula " .. best, sortedCandidates[best][1]:print() .. ' (' .. sortedCandidates[best][2] .. ')')
     end
-    
-    if iter < numIterations then
-      theta = context:call("Train ranking machine", trainRankingMachine, sortedCandidates)
-      context:call("Test ranking machine", testRankingMachine, theta, sortedCandidates)
-      context:call("Weights", displayWeightVector, theta, allPathFeaturesDictionary)
-      policy = rankingDrivenPolicy(theta, 0.1)
-    end
+
+    theta = context:call("Train ranking machine", trainRankingMachine, sortedCandidates)
+    context:call("Test ranking machine", testRankingMachine, theta, sortedCandidates)
+
+    context:call("Ranking weights", displayWeightVector, theta, formulaActionFeaturesDictionary)
+
+    policy = rankingDrivenPolicy(theta, 0.5, population)
+
+    policy(problem, {}, true)
+    policy(problem, {AST.identifier('a')}, true)
+    policy(problem, {AST.identifier('b')}, true)
+    policy(problem, {AST.identifier('c')}, true)
+    policy(problem, {AST.binaryOperation('mul', AST.identifier('a'), AST.identifier('b'))}, true)
+    policy(problem, {AST.binaryOperation('mul', AST.identifier('a'), AST.identifier('b')), AST.identifier('c')}, true)
 
     return sortedCandidates[1][2] -- best score
   end
   
-  local numIterations = 10
-  for iter=1,numIterations do
-    context:call("Iteration " .. iter, iteration, iter, numIterations)
+  for iter=1,10 do
+    context:call("Iteration " .. iter, iteration, iter)
   end
 end
 
