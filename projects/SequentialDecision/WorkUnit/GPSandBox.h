@@ -11,7 +11,6 @@
 
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Optimizer/Optimizer.h>
-# include <lbcpp/Optimizer/OptimizerContext.h>
 # include <lbcpp/Optimizer/OptimizerState.h>
 # include "../GP/GPExpression.h"
 # include "../GP/GPExpressionSampler.h"

@@ -11,8 +11,6 @@
 
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Optimizer/Optimizer.h>
-# include <lbcpp/Optimizer/OptimizerContext.h>
-# include <lbcpp/Optimizer/OptimizerState.h>
 # include <lbcpp/Sampler/Sampler.h>
 # include "../WorkUnit/GPSandBox.h"
 # include "DiscreteBanditExperiment.h"
