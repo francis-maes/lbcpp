@@ -22,7 +22,7 @@ public:
   virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result) = 0;
 };
 
-typedef ReferenceCountedObjectPtr<ExecutionContextCallback> ExecutionContextCallbackPtr;
+typedef ExecutionContextCallback* ExecutionContextCallbackPtr;
 
 }; /* namespace lbcpp */
 

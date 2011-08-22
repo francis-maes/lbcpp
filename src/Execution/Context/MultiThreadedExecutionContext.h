@@ -91,7 +91,7 @@ public:
 
   void push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int* counterToDecrementWhenDone = NULL, bool pushIntoStack = true, Variable* result = NULL);
   void push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& stack, int* numRemainingWorkUnitsCounter = NULL, Variable* result = NULL);
-  void push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, const ExecutionContextCallbackPtr& callback, bool pushIntoStack = true);
+  void push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, ExecutionContextCallbackPtr callback, bool pushIntoStack = true);
 
   Entry pop();
 
@@ -142,7 +142,7 @@ void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const Exe
   *result = results;
 }
 
-void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, const ExecutionContextCallbackPtr& callback, bool pushIntoStack)
+void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, ExecutionContextCallbackPtr callback, bool pushIntoStack)
 {
   ScopedLock _(lock);
   size_t priority = stack->getDepth();
@@ -347,7 +347,7 @@ public:
     return result;
   }
 
-  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, const ExecutionContextCallbackPtr& callback = ExecutionContextCallbackPtr(), bool pushIntoStack = true)
+  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, ExecutionContextCallbackPtr callback = NULL, bool pushIntoStack = true)
   {
     WaitingWorkUnitQueuePtr queue = thread->getWaitingQueue();
     queue->push(workUnit, stack, callback, pushIntoStack);
@@ -443,7 +443,7 @@ public:
   virtual bool isPaused() const
     {return false;}
 
-  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, const ExecutionContextCallbackPtr& callback = ExecutionContextCallbackPtr(), bool pushIntoStack = true)
+  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, ExecutionContextCallbackPtr callback = NULL, bool pushIntoStack = true)
   {
     WaitingWorkUnitQueuePtr queue = threadPool->getWaitingQueue();
     queue->push(workUnit, stack, callback, pushIntoStack);

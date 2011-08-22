@@ -190,7 +190,7 @@ public:
   virtual bool isPaused() const
     {return false;}
 
-  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, const ExecutionContextCallbackPtr& callback = ExecutionContextCallbackPtr(), bool pushIntoStack = true)
+  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, ExecutionContextCallbackPtr callback = NULL, bool pushIntoStack = true)
   {
     // TODO: pushIntoStack is not taken into account
     client->sendWorkUnit(workUnit, defaultPool, callback, project, from, to);
