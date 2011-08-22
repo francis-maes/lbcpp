@@ -41,6 +41,9 @@ public:
   double getScore(size_t index) const
     {jassert(index < scores.size()); return scores[index];}
 
+  void setScore(size_t index, double value)
+    {jassert(index < scores.size()); scores[index] = value;}
+
   void appendValue(double score)
     {scores.push_back(score);}
 
@@ -150,7 +153,7 @@ private:
 
 typedef ReferenceCountedObjectPtr<BestFirstSearchIteration> BestFirstSearchIterationPtr;
 
-class StreamBasedOptimizerState : public OptimizerState
+class StreamBasedOptimizerState : public OptimizerState, public ExecutionContextCallback
 {
 public:
   StreamBasedOptimizerState(ExecutionContext& context, const ObjectPtr& initialState, const std::vector<StreamPtr>& streams)
@@ -199,6 +202,29 @@ public:
   ClassPtr getObjectClass() const
     {return getBestParameters().getObject()->getClass();}
 
+  void mapWorkUnitToResult(const WorkUnitPtr& workUnit, size_t parameterIndex, size_t valueIndex)
+  {
+    ScopedLock _(lock);
+    workUnitsToResults[workUnit] = std::make_pair(parameterIndex, valueIndex);
+  }
+
+  bool areAllWorkUnitsDone() const
+    {return workUnitsToResults.size() == 0;}
+
+  size_t getNumWorkUnitInProgress() const
+    {return workUnitsToResults.size();}
+
+  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
+  {
+    ScopedLock _(lock);
+    jassert(workUnitsToResults.count(workUnit) == 1);
+    const std::pair<size_t, size_t> indices = workUnitsToResults[workUnit];
+    const double value = result.isDouble() ? result.getDouble()
+                       : (result.isInteger() ? (double)result.getInteger() : DBL_MAX);
+    iterations[iterations.size() - 1]->getParameter(indices.first)->setScore(indices.second, value);
+    workUnitsToResults.erase(workUnit);
+  }
+
 protected:
   friend class StreamBasedOptimizerStateClass;
 
@@ -206,6 +232,10 @@ protected:
   std::vector<BestFirstSearchIterationPtr> iterations;
 
   StreamBasedOptimizerState() {}
+
+private:
+  CriticalSection lock;
+  std::map<WorkUnitPtr, std::pair<size_t, size_t> > workUnitsToResults;
 };
 
 typedef ReferenceCountedObjectPtr<StreamBasedOptimizerState> StreamBasedOptimizerStatePtr;
@@ -224,63 +254,67 @@ public:
     StreamBasedOptimizerStatePtr state = optimizerState.dynamicCast<StreamBasedOptimizerState>();
     jassert(state);
 
-    pushPreviousInterationsIntoStack(context, state);
+    const double missingValue = Variable::missingValue(doubleType).getDouble();
 
-    while (true)
+    for (size_t numIteration = 0; true; ++numIteration)
     {
-      std::vector<size_t> parameterIndices;
-      state->getNextParameters(parameterIndices);
-      if (parameterIndices.size() == 0)
+      // Create iteration
+      BestFirstSearchIterationPtr iteration = numIteration < state->getNumIterations()
+                                            ? state->getIteration(numIteration)
+                                            : createIteration(state);
+
+      if (!iteration) // No more parameter to test
         break;
-      
+
       context.enterScope(T("Iteration ") + String((int)state->getNumIterations()));
       context.resultCallback(T("Iteration"), state->getNumIterations());
-      
-      CompositeWorkUnitPtr workUnits = new CompositeWorkUnit(T("BestFirstSearch - Iteration ")  + String((int)state->getNumIterations()));
+
       // Generate candidates
       ObjectPtr baseObject = state->getBestParameters().getObject();
-      for (size_t i = 0; i < parameterIndices.size(); ++i)
+      size_t numPushedWorkUnit = 0;
+      const size_t n = iteration->getNumParameters();
+      for (size_t i = 0; i < n; ++i)
       {
-        StreamPtr stream = state->getStream(parameterIndices[i]);
+        BestFirstSearchParameterPtr parameter = iteration->getParameter(i);
+        StreamPtr stream = state->getStream(parameter->getIndex());
         stream->rewind();
-        while (!stream->isExhausted())
+        for (size_t valueIndex = 0; !stream->isExhausted(); ++valueIndex)
         {
+          const Variable value = stream->next();
+          if (parameter->getScore(valueIndex) != missingValue)
+            continue;
+
           ObjectPtr candidate = baseObject->clone(context);
-          Variable value = stream->next();
-          candidate->setVariable(parameterIndices[i], value);
+          candidate->setVariable(parameter->getIndex(), value);
 
-          workUnits->addWorkUnit(new FunctionWorkUnit(objectiveFunction, candidate));
+          WorkUnitPtr workUnit = new FunctionWorkUnit(objectiveFunction, candidate);
+          state->mapWorkUnitToResult(workUnit, i, valueIndex);
+
+          context.pushWorkUnit(workUnit, state.get(), false);
+          ++numPushedWorkUnit;
         }
       }
-      // Get results
-      ContainerPtr results = context.run(workUnits, false).getObjectAndCast<Container>(context);
-      jassert(results);
-      std::cout << results->toString() << std::endl;
-      // Update state
-      // TODO: add a callback when sending work units, so, we will be able to save intermediate results
-      // instead of wait that the full iteration is done. Thus, we need to be able to detect unfinished
-      // iteration and restore missing experiments.
-      BestFirstSearchIterationPtr iteration = new BestFirstSearchIteration();
-      size_t resultIndex = 0;
-      for (size_t i = 0; i < parameterIndices.size(); ++i)
+
+      // Waiting results
+      size_t previousNumWorkUnitInProgress = (size_t)-1;
+      while (!state->areAllWorkUnitsDone())
       {
-        BestFirstSearchParameterPtr parameter = new BestFirstSearchParameter(parameterIndices[i]);
-        StreamPtr stream = state->getStream(parameterIndices[i]);
-        stream->rewind();
-        for (size_t j = 0; !stream->isExhausted(); ++j)
+        const size_t currentNumWorkUnitInProgress = state->getNumWorkUnitInProgress();
+        context.progressCallback(new ProgressionState(numPushedWorkUnit - currentNumWorkUnitInProgress, numPushedWorkUnit, T("Evaluation")));
+        if (currentNumWorkUnitInProgress != previousNumWorkUnitInProgress)
         {
-          const Variable v = results->getElement(resultIndex);
-          jassert(v.isDouble());
-          const double value = v.isDouble() ? v.getDouble() : DBL_MAX;
-          parameter->appendValue(value);
-          stream->next();
-          ++resultIndex;
+          saveOptimizerState(context, state);
+          previousNumWorkUnitInProgress = currentNumWorkUnitInProgress;
         }
-        iteration->appendParameter(parameter);
+        juce::Thread::sleep(500);
       }
+      context.progressCallback(new ProgressionState(numPushedWorkUnit, numPushedWorkUnit, T("Evaluation")));
 
-      state->appendIteration(iteration);
+      // Update state
       pushIterationIntoStack(context, state, iteration);
+
+      if (numPushedWorkUnit == 0) // No need to update and/or save state
+        continue;
 
       if (iteration->getBestScore() >= state->getBestScore())
         break;
@@ -302,6 +336,29 @@ protected:
 
   BestFirstSearchOptimizer() {}
 
+  BestFirstSearchIterationPtr createIteration(const StreamBasedOptimizerStatePtr& state) const
+  {
+    std::vector<size_t> parameterIndices;
+    state->getNextParameters(parameterIndices);
+    if (parameterIndices.size() == 0)
+      return BestFirstSearchIterationPtr();
+
+    BestFirstSearchIterationPtr iteration = new BestFirstSearchIteration();
+    state->appendIteration(iteration);
+    
+    for (size_t i = 0; i < parameterIndices.size(); ++i)
+    {
+      BestFirstSearchParameterPtr parameter = new BestFirstSearchParameter(parameterIndices[i]);
+      iteration->appendParameter(parameter);
+
+      StreamPtr stream = state->getStream(parameterIndices[i]);
+      for (stream->rewind(); !stream->isExhausted(); stream->next())
+        parameter->appendValue(Variable::missingValue(doubleType).getDouble());
+    }
+
+    return iteration;
+  }
+
   Variable getParameterValue(const StreamBasedOptimizerStatePtr& state, size_t parameterIndex, size_t valueIndex) const
   {
     jassert(parameterIndex != (size_t)-1 && valueIndex != (size_t)-1);
@@ -310,17 +367,6 @@ protected:
     for (size_t i = valueIndex; i != 0; --i)
       stream->next();
     return stream->next();
-  }
-
-  void pushPreviousInterationsIntoStack(ExecutionContext& context, const StreamBasedOptimizerStatePtr& state) const
-  {
-    const size_t n = state->getNumIterations();
-    for (size_t i = 0; i < n; ++i)
-    {
-      context.enterScope(T("Iteration ") + String((int)i));
-      context.resultCallback(T("Iteration"), i);
-      pushIterationIntoStack(context, state, state->getIteration(i));
-    }
   }
   
   void pushIterationIntoStack(ExecutionContext& context, const StreamBasedOptimizerStatePtr& state, const BestFirstSearchIterationPtr& iteration) const
