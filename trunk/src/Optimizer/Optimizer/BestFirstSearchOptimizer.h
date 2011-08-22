@@ -213,8 +213,8 @@ typedef ReferenceCountedObjectPtr<StreamBasedOptimizerState> StreamBasedOptimize
 class BestFirstSearchOptimizer : public Optimizer
 {
 public:
-  BestFirstSearchOptimizer(const ObjectPtr& initialParameters, const std::vector<StreamPtr>& streams)
-    : initialParameters(initialParameters), streams(streams) {}
+  BestFirstSearchOptimizer(const ObjectPtr& initialParameters, const std::vector<StreamPtr>& streams, const File& optimizerStateFile)
+    : Optimizer(optimizerStateFile), initialParameters(initialParameters), streams(streams) {}
 
   virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context) const
     {return new StreamBasedOptimizerState(context, initialParameters, streams);}
@@ -255,7 +255,7 @@ public:
       // Get results
       ContainerPtr results = context.run(workUnits, false).getObjectAndCast<Container>(context);
       jassert(results);
-
+      std::cout << results->toString() << std::endl;
       // Update state
       // TODO: add a callback when sending work units, so, we will be able to save intermediate results
       // instead of wait that the full iteration is done. Thus, we need to be able to detect unfinished
@@ -269,7 +269,10 @@ public:
         stream->rewind();
         for (size_t j = 0; !stream->isExhausted(); ++j)
         {
-          parameter->appendValue(results->getElement(resultIndex).getDouble());
+          const Variable v = results->getElement(resultIndex);
+          jassert(v.isDouble());
+          const double value = v.isDouble() ? v.getDouble() : DBL_MAX;
+          parameter->appendValue(value);
           stream->next();
           ++resultIndex;
         }
@@ -278,12 +281,14 @@ public:
 
       state->appendIteration(iteration);
       pushIterationIntoStack(context, state, iteration);
-      
+
       if (iteration->getBestScore() >= state->getBestScore())
         break;
-      
+
       state->setBestScore(iteration->getBestScore());
       baseObject->setVariable(iteration->getBestParameter(), getParameterValue(state, iteration->getBestParameter(), iteration->getBestValue()));
+
+      saveOptimizerState(context, state);
     }
 
     return state;

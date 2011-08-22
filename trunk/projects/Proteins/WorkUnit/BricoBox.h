@@ -429,6 +429,7 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     ReferenceCountedObjectPtr<BFSTestParameter> param = input.getObjectAndCast<BFSTestParameter>(context);
+    juce::Thread::sleep(context.getRandomGenerator()->sampleSize(1000, 3000));
     return Variable(fabs(param->a * param->a + param->b * param->c - 10), doubleType);
   }
 };
@@ -451,8 +452,8 @@ public:
     for (size_t i = 0; i < 3; ++i)
       samplers[i] = gaussianSampler(0.0, 2.0);
     
-    //OptimizerPtr optimizer = bestFirstSearchOptimizer(new BFSTestParameter(), streams);
-    OptimizerPtr optimizer = edaOptimizer(objectCompositeSampler(bfsTestParameterClass, samplers), 20, 20, 5);
+    OptimizerPtr optimizer = bestFirstSearchOptimizer(new BFSTestParameter(), streams, context.getFile(T("osTest.xml")));
+    //OptimizerPtr optimizer = edaOptimizer(objectCompositeSampler(bfsTestParameterClass, samplers), 20, 20, 5);
     return optimizer->compute(context, new BFSTestObjectiveFunction());
   }
 };

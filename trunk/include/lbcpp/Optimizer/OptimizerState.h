@@ -1,7 +1,7 @@
 /*-----------------------------------------.---------------------------------.
 | Filename: OptimizerState.h               | State associated with an        |
-| Author  : Arnaud Schoofs                 | Optimizer (useful to restart    |
-| Started : 04/04/2011                     | the Optimizer)                  |
+| Author  : Julien Becker                  | Optimizer (useful to restart    |
+| Started : 22/08/2011 13:43               | the Optimizer)                  |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
@@ -43,42 +43,6 @@ protected:
 typedef ReferenceCountedObjectPtr<OptimizerState> OptimizerStatePtr;
 
 extern ClassPtr optimizerStateClass;
-
-class SamplerBasedOptimizerState : public OptimizerState
-{
-public:
-  SamplerBasedOptimizerState(const SamplerPtr& sampler)
-    : sampler(sampler), initialSampler(sampler), numIterations(0) {}
-
-  const SamplerPtr& getSampler() const
-    {return sampler;}
-  
-  void setSampler(const SamplerPtr& newSampler)
-    {sampler = newSampler;}
-
-  SamplerPtr getCloneOfInitialSamplerInstance() const
-    {return initialSampler->cloneAndCast<Sampler>();}
-
-  size_t getNumIterations() const
-    {return numIterations;}
-
-  void incrementNumIterations()
-    {++numIterations;}
-
-protected:
-  friend class SamplerBasedOptimizerStateClass;
-
-  SamplerPtr sampler;
-  SamplerPtr initialSampler;  /**< Prototype design patter. */
-
-  size_t numIterations;
-
-  SamplerBasedOptimizerState() : numIterations(0) {}
-};
-
-typedef ReferenceCountedObjectPtr<SamplerBasedOptimizerState> SamplerBasedOptimizerStatePtr;
-
-extern OptimizerStatePtr streamBasedOptimizerState(ExecutionContext& context, const ObjectPtr& initialState, const std::vector<StreamPtr>& streams);
 
 }; /* namespace lbcpp */
 

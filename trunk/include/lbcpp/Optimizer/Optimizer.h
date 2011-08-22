@@ -1,6 +1,6 @@
 /*-----------------------------------------.---------------------------------.
 | Filename: Optimizer.h                    | Optimizer <- Function           |
-| Author  : Francis Maes, Arnaud Schoofs   |                                 |
+| Author  : Julien Becker                  |                                 |
 | Started : 21/12/2010 23:39               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
@@ -15,10 +15,13 @@
 namespace lbcpp
 {
 
-// OptimizerContext, OptimizerState -> Variable
+// Function, Function -> OptimizerState
 class Optimizer : public Function
 {
 public:
+  Optimizer(const File& optimizerStateFile = File::nonexistent)
+    : optimizerStateFile(optimizerStateFile) {}
+
   /* Optimizer */
   virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction) const = 0;
 
@@ -41,15 +44,25 @@ public:
     {return optimizerStateClass;}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
+
+protected:
+  friend class OptimizerClass;
+
+  File optimizerStateFile;
+
+  /* Optimizer */
+  void saveOptimizerState(ExecutionContext& context, const OptimizerStatePtr& state) const;
+
+  OptimizerStatePtr loadOptimizerState(ExecutionContext& context) const;
 };
 
 typedef ReferenceCountedObjectPtr<Optimizer> OptimizerPtr;
 
-extern OptimizerPtr uniformSampleAndPickBestOptimizer(size_t numSamples, bool verbose = false);  
+//extern OptimizerPtr uniformSampleAndPickBestOptimizer(size_t numSamples, bool verbose = false);  
 extern OptimizerPtr edaOptimizer(const SamplerPtr& sampler, size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr(), double slowingFactor = 0, bool reinjectBest = false, bool verbose = false);
 extern OptimizerPtr asyncEDAOptimizer(const SamplerPtr& sampler, size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr(), double slowingFactor = 0, bool reinjectBest = false, bool verbose = false);
 
-extern OptimizerPtr bestFirstSearchOptimizer(const ObjectPtr& initialState, const std::vector<StreamPtr>& streams);
+extern OptimizerPtr bestFirstSearchOptimizer(const ObjectPtr& initialState, const std::vector<StreamPtr>& streams, const File& optimizerStateFile = File::nonexistent);
 
 }; /* namespace lbcpp */
 
