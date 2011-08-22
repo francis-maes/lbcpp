@@ -71,17 +71,23 @@
   <template name="DoubleStream" base="Stream">
     <parameter name="elementsType" type="Double"/>
     <constructor arguments="TypePtr elementsType, const std::vector&lt;double&gt;&amp; values" parameters="elementsType" returnType="Stream"/>
+    <variable type="Type" name="elementsType"/>
+    <variable type="GenericVector[elementsType]" name="values"/>
   </template>
   
   <template name="IntegerStream" base="Stream">
     <parameter name="elementsType" type="Integer"/>
     <constructor arguments="TypePtr elementsType, const std::vector&lt;int&gt;&amp; values" parameters="elementsType" returnType="Stream"/>
+    <variable type="Type" name="elementsType"/>
+    <variable type="GenericVector[elementsType]" name="values"/>
   </template>
   
   <template name="BooleanStream" base="Stream">
     <parameter name="elementsType" type="Boolean"/>
     <constructor arguments="const std::vector&lt;bool&gt;&amp; values" parameters="booleanType" returnType="Stream"/>
     <constructor arguments="bool values" parameters="booleanType" returnType="Stream"/>
+    <variable type="Type" name="elementsType"/>
+    <variable type="GenericVector[elementsType]" name="values"/>
   </template>
 
  <!-- Consumer -->

@@ -356,6 +356,23 @@ inline void variableToNative(ExecutionContext& context, std::vector<TT>& dest, c
   else
     dest.clear();
 }
+// I duplicated function for bool case because xcode convert bool to std::_Bit_reference Grrrr
+inline void variableToNative(ExecutionContext& context, std::vector<bool>& dest, const Variable& source)
+{
+  jassert(source.isObject());
+  const VectorPtr& sourceVector = source.getObjectAndCast<Vector>(context);
+  if (sourceVector)
+  {
+    dest.resize(sourceVector->getNumElements());
+    for (size_t i = 0; i < dest.size(); ++i)
+    {
+      jassert(source.isBoolean());
+      dest[i] = source.getBoolean();
+    }
+  }
+  else
+    dest.clear();
+}
 
 template<class TT>
 inline void nativeToVariable(Variable& dest, const std::vector<TT>& source, TypePtr expectedType)

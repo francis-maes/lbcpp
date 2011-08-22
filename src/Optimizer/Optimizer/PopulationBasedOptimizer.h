@@ -16,6 +16,40 @@
 namespace lbcpp
 {
 
+class SamplerBasedOptimizerState : public OptimizerState
+{
+public:
+  SamplerBasedOptimizerState(const SamplerPtr& sampler)
+    : sampler(sampler), initialSampler(sampler), numIterations(0) {}
+
+  const SamplerPtr& getSampler() const
+    {return sampler;}
+  
+  void setSampler(const SamplerPtr& newSampler)
+    {sampler = newSampler;}
+
+  SamplerPtr getCloneOfInitialSamplerInstance() const
+    {return initialSampler->cloneAndCast<Sampler>();}
+
+  size_t getNumIterations() const
+    {return numIterations;}
+
+  void incrementNumIterations()
+    {++numIterations;}
+
+protected:
+  friend class SamplerBasedOptimizerStateClass;
+
+  SamplerPtr sampler;
+  SamplerPtr initialSampler;  /**< Prototype design patter. */
+
+  size_t numIterations;
+
+  SamplerBasedOptimizerState() : numIterations(0) {}
+};
+
+typedef ReferenceCountedObjectPtr<SamplerBasedOptimizerState> SamplerBasedOptimizerStatePtr;
+
 class PopulationBasedOptimizer : public Optimizer
 {
 public:

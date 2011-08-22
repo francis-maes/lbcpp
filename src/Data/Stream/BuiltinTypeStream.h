@@ -43,6 +43,10 @@ public:
     {return currentPosition == values.size();}
 
 protected:
+  friend class DoubleStreamClass;
+  friend class IntegerStreamClass;
+  friend class BooleanStreamClass;
+
   TypePtr elementsType;
 
   std::vector<ElementsType> values;

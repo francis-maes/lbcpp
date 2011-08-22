@@ -13,6 +13,12 @@
   
 -->
   <!-- PopulationBasedOptimizer -->
+  <class name="SamplerBasedOptimizerState" base="OptimizerState">
+    <variable type="Sampler" name="sampler"/>
+    <variable type="Sampler" name="initialSampler"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+
   <class name="PopulationBasedOptimizer" base="Optimizer" abstract="yes">
     <variable type="Sampler" name="sampler"/>
     <variable type="PositiveInteger" name="numIterations"/>
@@ -48,7 +54,7 @@
   </class>
 
   <class name="BestFirstSearchOptimizer" base="Optimizer">
-    <constructor arguments="const ObjectPtr&amp; initialState, const std::vector&lt;StreamPtr&gt;&amp; streams"/>
+    <constructor arguments="const ObjectPtr&amp; initialState, const std::vector&lt;StreamPtr&gt;&amp; streams, const File&amp; optimizerStateFile"/>
   </class>
   
 </library>

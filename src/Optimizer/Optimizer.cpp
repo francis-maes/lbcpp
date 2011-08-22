@@ -1,7 +1,7 @@
 /*-----------------------------------------.---------------------------------.
 | Filename: Optimizer.cpp                  | Implementation file of          |
-| Author  : Arnaud Schoofs                 | Optimizer, OptimizerState and   |
-| Started : 11/04/2011                     | OptimizerContext                |
+| Author  : Julien Becker                  | Optimizer, OptimizerState and   |
+| Started : 22/08/2011 13:43               | OptimizerContext                |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
@@ -14,7 +14,9 @@ using namespace lbcpp;
 
 Variable Optimizer::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
-  OptimizerStatePtr state = createOptimizerState(context); // TODO: Load a partially learn state if exists.
+  OptimizerStatePtr state = loadOptimizerState(context);
+  if (!state)
+    state = createOptimizerState(context);
   context.enterScope(T("Optimizing - ") + toString());
   jassert(inputs[0].getObjectAndCast<Function>(context));
   const FunctionPtr objectiveFunction = inputs[0].getObjectAndCast<Function>(context);
@@ -26,17 +28,19 @@ Variable Optimizer::computeFunction(ExecutionContext& context, const Variable* i
   return res;
 }
 
-/*
-void OptimizerState::autoSaveToFile(ExecutionContext& context, bool force)
+void Optimizer::saveOptimizerState(ExecutionContext& context, const OptimizerStatePtr& state) const
 {
-  ScopedLock _(lock);
-  double time = Time::getMillisecondCounter() / 1000.0;
-  if (autoSaveStateFrequency > 0.0 && (force || (time - lastSaveTime >= autoSaveStateFrequency)))
-  {
-    lastSaveTime = time;
-    if (context.getFile(T("optimizerState.xml")).existsAsFile())
-      context.getFile(T("optimizerState.xml")).copyFileTo(context.getFile(T("optimizerState_backup.xml")));
-    saveToFile(context, context.getFile(T("optimizerState.xml")));
-  }
+  if (optimizerStateFile == File::nonexistent)
+    return;
+  const File swapFile = optimizerStateFile.getParentDirectory().getChildFile(T(".") + optimizerStateFile.getFileName());
+  optimizerStateFile.copyFileTo(swapFile);
+  state->saveToFile(context, optimizerStateFile);
+  //swapFile.deleteFile(); // in case of ...
 }
-*/
+
+OptimizerStatePtr Optimizer::loadOptimizerState(ExecutionContext& context) const
+{
+  if (optimizerStateFile == File::nonexistent || !optimizerStateFile.exists())
+    return OptimizerStatePtr();
+  return Object::createFromFile(context, optimizerStateFile).dynamicCast<OptimizerState>();
+}
