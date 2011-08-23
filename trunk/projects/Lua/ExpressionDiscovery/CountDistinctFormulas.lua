@@ -8,10 +8,10 @@ require 'Stochastic'
 problem = DecisionProblem.ReversePolishNotation{
   variables = {"a", "b", "c", "d"},
   constants = {},
-  unaryOperations = {},
+  unaryOperations = {"unm"},
   binaryOperations = {"add", "sub", "mul", "div"},
   objective = | | 0,
-  maxSize = 7
+  maxSize = 4
 }
 
 local dataset = {}
@@ -30,8 +30,13 @@ function makeUniqueKey(formula)
   local res = ""
   for i,example in ipairs(dataset) do
     local y = f(unpack(example))
-    print (y)
-    y = math.floor(y * 10000 + 0.5)
+    assert(not(y == nil))
+    --print (y)
+    if y > -math.huge and y < math.huge then
+      y = math.floor(y * 10000 + 0.5)
+    else
+      y = math.huge
+    end
     res = res .. ";" .. y
   end
   return res
@@ -64,6 +69,7 @@ local function countDistinctFormulas(problem, x)
       simplifiedFinalStates[str2] = true
       numDistinctSimplifiedFinalStates = numDistinctSimplifiedFinalStates + 1
     end
+    print (str1, "-->", str2)
 
     -- num unique formulas
     local str3 = makeUniqueKey(x)
@@ -73,8 +79,11 @@ local function countDistinctFormulas(problem, x)
     end
     uniqueFinalStates[str3][str2] = true
 
+    if not (str3 == makeUniqueKey(x:simplify())) then
+      print (str1, str2, str3, makeUniqueKey(x:simplify()))
+    end
     assert(str3 == makeUniqueKey(x:simplify()))
-    --print (str1, str2, str3)
+    --print ("=>", str3)--str1, str2, str3)
 
   else
     local U = problem.U(x)
