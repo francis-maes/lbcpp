@@ -19,7 +19,11 @@ class Expression : public Node
 public:
   virtual LuaChunkType getType() const
     {return luaExpression;}
+
+  static int simplify(LuaState& state);
 };
+
+extern ClassPtr expressionClass;
 
 // construction function to simplify the tree on the fly 
 extern ExpressionPtr sub(const ExpressionPtr& left, const ExpressionPtr& right);
@@ -85,7 +89,7 @@ public:
 
   virtual void accept(Visitor& visitor);
 
-  double getValue() const
+  const double& getValue() const
     {return value;}
 
 protected:

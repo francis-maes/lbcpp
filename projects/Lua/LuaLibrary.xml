@@ -93,7 +93,9 @@
     </class>
 
     <!-- Expressions -->
-    <class name="Expression" base="lua::Node" abstract="yes"/>
+    <class name="Expression" base="lua::Node" abstract="yes">
+      <function lang="lua" name="simplify"/>
+    </class>
 
     <class name="Nil" base="lua::Expression"/>
     <class name="Dots" base="lua::Expression"/>
