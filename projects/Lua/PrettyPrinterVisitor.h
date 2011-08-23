@@ -210,6 +210,8 @@ public:
       write("math.huge");
     else if (str == T("-1.#INF"))
       write("-math.huge");
+    else if (str == T("nan"))
+      write("(0/0)");
     else
       write(str);
   }
