@@ -35,6 +35,8 @@
     <variable type="Boolean" name="sendInputAsResult"/>
   </class>
 
+  <class name="RessourcesEstimator" base="Object" abstract="yes"/>
+
   <!-- Test Unit -->
   <class name="TestUnit" base="WorkUnit" abstract="yes"/>
 

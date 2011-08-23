@@ -485,7 +485,7 @@ public:
 
   Variable run(ExecutionContext& context)
   {
-    ExecutionContextPtr remoteContext = distributedExecutionContext(context, hostName, hostPort, T("testProject"), T("jbecker@mac"), T("jbecker@nic3"));
+    ExecutionContextPtr remoteContext = distributedExecutionContext(context, hostName, hostPort, T("testProject"), T("jbecker@mac"), T("jbecker@nic3"), fixedRessourcesEstimator(1, 1, 1));
     
     CompositeWorkUnitPtr workUnits = new CompositeWorkUnit(T("Fuck them all"));
     for (size_t i = 0; i < 10; ++i)

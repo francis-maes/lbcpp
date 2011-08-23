@@ -12,15 +12,6 @@
 # include "SubExecutionContext.h"
 # include <lbcpp/Core/Vector.h>
 
-# ifndef LBCPP_NETWORKING
-
-class DistributedExecutionContext : public SubExecutionContext
-{
-public:
-  DistributedExecutionContext(ExecutionContext& parentContext, const String& remoteHostName, size_t remotePort) {}
-};
-
-# else /* LBCPP_NETWORKING */
 #  include <lbcpp/Network/NetworkClient.h>
 #  include <lbcpp/Network/NetworkMessage.h>
 
@@ -128,12 +119,13 @@ public:
   }
 
   bool sendWorkUnit(const WorkUnitPtr& workUnit, const WorkUnitPoolPtr& pool, const ExecutionContextCallbackPtr& callback,
-                    const String& project, const String& from, const String& to)
+                    const String& project, const String& from, const String& to,
+                    size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
   {
     ScopedLock _(lock);
     pool->appendWorkUnit(numSentWorkUnit, workUnit, callback);
     pools[numSentWorkUnit] = pool;
-    bool res = client->sendWorkUnit(numSentWorkUnit++, workUnit, project, from, to, 1, 2, 10);
+    bool res = client->sendWorkUnit(numSentWorkUnit++, workUnit, project, from, to, requiredCpus, requiredMemory, requiredTime);
     return res;
   }
 
@@ -160,17 +152,18 @@ typedef DistributedExecutionContextClientCallback* DistributedExecutionContextCl
 class DistributedExecutionContext : public SubExecutionContext
 {
 public:
-  DistributedExecutionContext(ExecutionContext& parentContext, const String& remoteHostName, size_t remotePort,
-                              const String& project, const String& from, const String& to)
+  DistributedExecutionContext(ExecutionContext& parentContext,
+                              const String& remoteHostName, size_t remotePort,
+                              const String& project, const String& from, const String& to,
+                              const RessourcesEstimatorPtr& ressourcesEstimator)
     : SubExecutionContext(parentContext)
     , client(new DistributedExecutionContextClientCallback(parentContext))
     , defaultPool(new WorkUnitPool(false))
     , project(project), from(from), to(to)
+    , ressourcesEstimator(ressourcesEstimator)
     {
       client->getNetworkClient()->startClient(remoteHostName, remotePort);
     }
-
-  DistributedExecutionContext() {}
 
   virtual ~DistributedExecutionContext()
   {
@@ -193,7 +186,10 @@ public:
   virtual void pushWorkUnit(const WorkUnitPtr& workUnit, ExecutionContextCallbackPtr callback = NULL, bool pushIntoStack = true)
   {
     // TODO: pushIntoStack is not taken into account
-    client->sendWorkUnit(workUnit, defaultPool, callback, project, from, to);
+    client->sendWorkUnit(workUnit, defaultPool, callback, project, from, to
+                         , ressourcesEstimator->getNumRequiredCpus(workUnit)
+                         , ressourcesEstimator->getNumRequiredMemory(workUnit)
+                         , ressourcesEstimator->getNumRequiredTime(workUnit));
   }
   
   virtual void pushWorkUnit(const WorkUnitPtr& workUnit, int* counterToDecrementWhenDone = NULL, bool pushIntoStack = true)
@@ -207,7 +203,10 @@ public:
   virtual Variable run(const WorkUnitPtr& workUnit, bool pushIntoStack)
   {
     WorkUnitPoolPtr pool = new WorkUnitPool(false);
-    client->sendWorkUnit(workUnit, pool, ExecutionContextCallbackPtr(), project, from, to);
+    client->sendWorkUnit(workUnit, pool, ExecutionContextCallbackPtr(), project, from, to
+                         , ressourcesEstimator->getNumRequiredCpus(workUnit)
+                         , ressourcesEstimator->getNumRequiredMemory(workUnit)
+                         , ressourcesEstimator->getNumRequiredTime(workUnit));
     pool->waitUntilAllWorkUnitsAreDone();
     return pool->getResult();
   }
@@ -217,7 +216,10 @@ public:
     WorkUnitPoolPtr pool = new WorkUnitPool(true);
     const size_t n = workUnits->getNumWorkUnits();
     for (size_t i = 0; i < n; ++i)
-      client->sendWorkUnit(workUnits->getWorkUnit(i), pool, ExecutionContextCallbackPtr(), project, from, to);
+      client->sendWorkUnit(workUnits->getWorkUnit(i), pool, ExecutionContextCallbackPtr(), project, from, to
+                           , ressourcesEstimator->getNumRequiredCpus(workUnits->getWorkUnit(i))
+                           , ressourcesEstimator->getNumRequiredMemory(workUnits->getWorkUnit(i))
+                           , ressourcesEstimator->getNumRequiredTime(workUnits->getWorkUnit(i)));
     pool->waitUntilAllWorkUnitsAreDone();
     return pool->getResult();
   }
@@ -225,14 +227,46 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
+  friend class DistributedExecutionContextClass;
+
   DistributedExecutionContextClientCallbackPtr client;
   WorkUnitPoolPtr defaultPool;
 
   String project;
   String from;
   String to;
+
+  RessourcesEstimatorPtr ressourcesEstimator;
+
+  DistributedExecutionContext() {}
+};
+
+/*
+** FixedRessourcesEstimator
+*/
+class FixedRessourcesEstimator : public RessourcesEstimator
+{
+public:
+  FixedRessourcesEstimator(size_t requiredCpus = 1, size_t requiredMemory = 1, size_t requiredTime = 1)
+    : requiredCpus(requiredCpus), requiredMemory(requiredMemory), requiredTime(requiredTime) {}
+
+  virtual size_t getNumRequiredMemory(const WorkUnitPtr& workUnit) const
+    {return requiredCpus;}
+
+  virtual size_t getNumRequiredTime(const WorkUnitPtr& workUnit) const
+    {return requiredMemory;}
+
+  virtual size_t getNumRequiredCpus(const WorkUnitPtr& workUnit) const
+    {return requiredTime;}
+
+protected:
+  friend class FixedRessourcesEstimatorClass;
+
+  size_t requiredCpus;
+  size_t requiredMemory;
+  size_t requiredTime;
 };
 
 }; /* namespace lbcpp */
-# endif /* !LBCPP_NETWORKING */
+
 #endif //!LBCPP_EXECUTION_CONTEXT_DISTRIBUTED_H_
