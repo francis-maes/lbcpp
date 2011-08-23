@@ -9,6 +9,7 @@
 #include "Node.h"
 #include "Visitor.h"
 #include "PrettyPrinterVisitor.h"
+#include "SimplifyExpressionRewriter.h"
 using namespace lbcpp::lua;
 using lbcpp::LuaState;
 
@@ -63,6 +64,14 @@ int Node::print(LuaState& state)
 {
   NodePtr node = state.checkObject(1, nodeClass).staticCast<Node>();
   state.pushString(node->print());
+  return 1;
+}
+
+int Expression::simplify(LuaState& state)
+{
+  ExpressionPtr expr = state.checkObject(1, expressionClass).staticCast<Expression>();
+  SimplifyExpressionRewriter rewriter(&state.getContext());
+  state.pushObject(rewriter.rewrite(expr));
   return 1;
 }
 

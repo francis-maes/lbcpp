@@ -8,7 +8,7 @@ require 'Stochastic'
 problem = DecisionProblem.ReversePolishNotation{
   variables = {"a", "b", "c", "d"},
   constants = {},
-  unaryOperations = {},
+  unaryOperations = {"unm"},
   binaryOperations = {"add", "mul"},
   objective = | | 0,
   maxSize = 5
@@ -58,7 +58,7 @@ local function countDistinctFormulas(problem, x)
     end
 
     -- num distinct simplified final states
-    local str2 = problem.stateToString(simplifyAndMakeFormulaUnique(x))
+    local str2 = problem.stateToString(x:simplify())
     if simplifiedFinalStates[str2] == nil then
       simplifiedFinalStates[str2] = true
       numDistinctSimplifiedFinalStates = numDistinctSimplifiedFinalStates + 1

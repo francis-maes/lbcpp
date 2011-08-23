@@ -34,6 +34,7 @@ SET(INTELUA_REWRITER_SOURCES
   InteluaPreprocessRewriter.h
   DerivableRewriter.h
   SubspecifiedRewriter.h
+  SimplifyExpressionRewriter.h
 )
 
 FILE(GLOB INTELUA_MAIN_SOURCES lib/*.lua)
