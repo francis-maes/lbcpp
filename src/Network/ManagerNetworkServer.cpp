@@ -137,6 +137,7 @@ public:
   {
     juce::Thread::sleep(3000);
     //stopClient();
+    manager->removeNetworkClient(refCountedPointerFromThis(this));
   }
   
   /** Sender **/
@@ -170,7 +171,11 @@ public:
     : NetworkServer(context), manager(manager) {}
 
   virtual NetworkClient* createNetworkClient()
-    {return new ManagerServerNetworkClient(context, manager);}
+  {
+    NetworkClientPtr client = new ManagerServerNetworkClient(context, manager);
+    manager->addNetworkClient(client);
+    return client.get();
+  }
 
   lbcpp_UseDebuggingNewOperator
 

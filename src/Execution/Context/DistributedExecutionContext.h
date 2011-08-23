@@ -118,7 +118,7 @@ public:
     pools.erase(internalId);
   }
 
-  bool sendWorkUnit(const WorkUnitPtr& workUnit, const WorkUnitPoolPtr& pool, const ExecutionContextCallbackPtr& callback,
+  bool sendWorkUnit(const WorkUnitPtr& workUnit, const WorkUnitPoolPtr& pool, ExecutionContextCallbackPtr callback,
                     const String& project, const String& from, const String& to,
                     size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
   {
@@ -131,10 +131,14 @@ public:
 
   virtual void connectionMade()
   {
-    // FIXME: Doesn't work
     ScopedLock _(lock);
     for (std::map<String, size_t>::iterator it = workUnitIds.begin(); it != workUnitIds.end(); ++it)
       client->sendVariable(new GetWorkUnitResultNetworkMessage(it->first));
+  }
+
+  virtual void connectionLost()
+  {
+    client->getContext().informationCallback(T("Connection lost !"));
   }
 
 protected:
@@ -186,10 +190,11 @@ public:
   virtual void pushWorkUnit(const WorkUnitPtr& workUnit, ExecutionContextCallbackPtr callback = NULL, bool pushIntoStack = true)
   {
     // TODO: pushIntoStack is not taken into account
-    client->sendWorkUnit(workUnit, defaultPool, callback, project, from, to
+    if (!client->sendWorkUnit(workUnit, defaultPool, callback, project, from, to
                          , ressourcesEstimator->getNumRequiredCpus(workUnit)
                          , ressourcesEstimator->getNumRequiredMemory(workUnit)
-                         , ressourcesEstimator->getNumRequiredTime(workUnit));
+                         , ressourcesEstimator->getNumRequiredTime(workUnit)))
+      warningCallback(T("DistributedExecutionContext::pushWorkUnit"), T("WorkUnit not sent !"));
   }
   
   virtual void pushWorkUnit(const WorkUnitPtr& workUnit, int* counterToDecrementWhenDone = NULL, bool pushIntoStack = true)

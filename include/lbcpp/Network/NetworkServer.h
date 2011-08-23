@@ -21,8 +21,11 @@ public:
   NetworkServer(ExecutionContext& context)
     : context(context) {}
 
-  bool startServer(int port);
-  void stopServer();
+  bool startServer(int port)
+    {return beginWaitingForSocket(port);}
+
+  void stopServer()
+    {stop();}
 
   virtual NetworkClient* createNetworkClient() = 0;
 
@@ -30,7 +33,8 @@ public:
 
 protected:
   /* InterprocessConnectionServer */
-  virtual InterprocessConnection* createConnectionObject();
+  virtual InterprocessConnection* createConnectionObject()
+    {return createNetworkClient();}
 
 protected:
   enum {magicNumber = 0xdeadface};

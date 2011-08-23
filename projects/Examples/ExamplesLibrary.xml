@@ -162,5 +162,13 @@
     <variable type="Double" name="fopt"/> 
     <variable type="DoubleMatrix[Double]" name="R"/>
   </class>
+  
+  <!-- DistributedExecutionContextExample -->
+  <class name="DumbWorkUnit" base="WorkUnit"/>
+
+  <class name="ClientWorkUnit" base="WorkUnit">
+    <variable type="String" name="hostName" shortName="h"/>
+    <variable type="PositiveInteger" name="hostPort" shortName="p"/>
+  </class>
 
 </library>
