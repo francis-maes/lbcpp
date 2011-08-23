@@ -180,12 +180,22 @@ public:
     routingTable[uniqueIndentifier] = client;
   }
 
+  void addNetworkClient(const NetworkClientPtr& client)
+    {clients[client] = true;}
+
+  void removeNetworkClient(const NetworkClientPtr& client)
+  {
+    if (clients.count(client) == 1)
+      clients.erase(client);
+  }
+
 protected:
   ExecutionContext& context;
   CriticalSection lock;
   std::map<String, WorkUnitNetworkRequestPtr> requests; // id
   std::vector<WorkUnitNetworkRequestPtr> waitingRequests;
   std::map<String, NetworkClientPtr> routingTable; // uniqueIdentifier > network client
+  std::map<NetworkClientPtr, bool> clients; // list of connected client
 
   static File createFullPathOfFile(const File& f)
   {

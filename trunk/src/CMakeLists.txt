@@ -259,7 +259,6 @@ IF(LBCPP_NETWORKING)
     ../include/lbcpp/Network/NetworkClient.h
     Network/NetworkClient.cpp
     ../include/lbcpp/Network/NetworkServer.h
-    Network/NetworkServer.cpp
     Network/ManagerNetworkServer.cpp
     ../include/lbcpp/Network/WorkUnitNetworkRequest.h
     ../include/lbcpp/Network/NetworkMessage.h

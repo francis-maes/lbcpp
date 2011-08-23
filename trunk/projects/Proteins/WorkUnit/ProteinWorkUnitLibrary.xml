@@ -110,14 +110,6 @@
   <class name="BFSTestObjectiveFunction" base="SimpleUnaryFunction"/>
   <class name="BFSTestWorkUnit" base="WorkUnit"/>
   
-  
-  <class name="DumbWorkUnit" base="WorkUnit"/>
-
-  <class name="ClientWorkUnit" base="WorkUnit">
-    <variable type="String" name="hostName" shortName="h"/>
-    <variable type="PositiveInteger" name="hostPort" shortName="p"/>
-  </class>
-  
   <!-- BEGIN CysteinBox -->
 <!-- FIXME: Optimizer
   <class name="CysteinLearnerParameters" base="Object">

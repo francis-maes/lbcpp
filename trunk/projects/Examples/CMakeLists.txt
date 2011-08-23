@@ -15,9 +15,10 @@ SET(LBCPP_EXAMPLES_SOURCES
   XorRegressionExample.h
   TrainTestLearningMachine.h
   GeneticProgrammingExample.h
-  OptimizerExampleWorkUnit.h
+  OptimizerExample.h
   RandomGeneratorExample.h
   OptimizerTestBed.h
+  DistributedExecutionContextExample.h
   ExamplesLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExamplesLibrary.cpp
 )

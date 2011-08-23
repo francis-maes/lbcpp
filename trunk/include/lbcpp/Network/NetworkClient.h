@@ -54,6 +54,9 @@ public:
 
   virtual void workUnitAcknowledgementReceived(size_t sourceIdentifier, const String& uniqueIdentifier) = 0;
   virtual void workUnitResultReceived(const String& uniqueIdentifier, const Variable& result) = 0;
+
+  virtual void connectionMade() {}
+  virtual void connectionLost() {}
 };
 
 typedef ManagerNetworkClientCallback* ManagerNetworkClientCallbackPtr;
@@ -70,6 +73,12 @@ public:
   bool sendWorkUnit(size_t sourceIdentifier, const WorkUnitPtr& workUnit,
                     const String& projectName, const String& source, const String& destination,
                     size_t requiredCpus, size_t requiredMemory, size_t requiredTime);
+
+  virtual void connectionMade()
+    {callback->connectionMade();}
+
+  virtual void connectionLost()
+    {callback->connectionLost();}
 
 protected:
   ManagerNetworkClientCallbackPtr callback;
