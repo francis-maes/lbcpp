@@ -108,7 +108,6 @@ public:
   virtual void askForWorkUnits(const String& gridName) = 0;
   virtual void sendFinishedTraces() = 0;
   virtual void waitResponses(juce::int64 timeout) = 0;
-  virtual void closeCommunication() = 0;
 
 protected:
   GridNetworkClientCallbackPtr callback;

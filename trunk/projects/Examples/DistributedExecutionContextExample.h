@@ -59,18 +59,14 @@ public:
 
     context.informationCallback(T("ClientWorkUnit::run"), T("Use of CompositeWorkUnit"));
     CompositeWorkUnitPtr workUnits = new CompositeWorkUnit(T("A composite work unit (synchronous run)"));
-    for (size_t i = 0; i < 1; ++i)
+    for (size_t i = 0; i < 10; ++i)
       workUnits->addWorkUnit(new DumbWorkUnit());
 
     Variable result = remoteContext->run(workUnits);
     context.informationCallback(result.toString());
-    
-/*    remoteContext = distributedExecutionContext(context, hostName, hostPort,
-                                                                    T("testProject"), T("jbecker@mac"), T("jbecker@nic3"),
-                                                                    fixedRessourcesEstimator(1, 1, 1));
-*/    
+
     context.informationCallback(T("ClientWorkUnit::run"), T("Use of an ExecutionContextCallback (asynchronous run)"));
-    for (size_t i = 0; i < 1; ++i)
+    for (size_t i = 0; i < 10; ++i)
       remoteContext->pushWorkUnit(new DumbWorkUnit(), new TestExecutionContextCallback(context));
     remoteContext->waitUntilAllWorkUnitsAreDone();
 

@@ -127,11 +127,6 @@ public:
     context.waitUntilAllWorkUnitsAreDone();
   }
 
-  virtual void closeCommunication()
-  {
-    sendVariable(new CloseCommunicationNetworkMessage());
-  }
-
 protected:
   CriticalSection lock;
   volatile bool isWaitingWorkUnits;
