@@ -8,10 +8,10 @@ require 'Stochastic'
 problem = DecisionProblem.ReversePolishNotation{
   variables = {"a", "b", "c", "d"},
   constants = {},
-  unaryOperations = {"unm"},
+  unaryOperations = {},
   binaryOperations = {"add", "sub", "mul", "div"},
   objective = | | 0,
-  maxSize = 4
+  maxSize = 7
 }
 
 local dataset = {}
@@ -30,6 +30,7 @@ function makeUniqueKey(formula)
   local res = ""
   for i,example in ipairs(dataset) do
     local y = f(unpack(example))
+    print (y)
     y = math.floor(y * 10000 + 0.5)
     res = res .. ";" .. y
   end

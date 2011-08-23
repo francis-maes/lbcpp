@@ -147,26 +147,26 @@ protected:
   }
 };
 
-class PolynomialFraction
+class RationalFunction
 {
 public:
-  PolynomialFraction(const Polynomial& numerator, const Polynomial& denominator = Polynomial(1.0))
+  RationalFunction(const Polynomial& numerator, const Polynomial& denominator = Polynomial(1.0))
     : numerator(numerator), denominator(denominator) {}
-  PolynomialFraction(const IdentifierPtr& identifier)
+  RationalFunction(const IdentifierPtr& identifier)
     : numerator(identifier), denominator(1.0) {}
-  PolynomialFraction(const LiteralNumberPtr& number)
+  RationalFunction(const LiteralNumberPtr& number)
     : numerator(number), denominator(1.0) {}
-  PolynomialFraction() {}
+  RationalFunction() {}
 
-  static PolynomialFraction fromExpression(const ExpressionPtr& expression)
+  static RationalFunction fromExpression(const ExpressionPtr& expression)
   {
     IdentifierPtr identifier = expression.dynamicCast<Identifier>();
     if (identifier)
-      return PolynomialFraction(identifier);
+      return RationalFunction(identifier);
     
     LiteralNumberPtr literalNumber = expression.dynamicCast<LiteralNumber>();
     if (literalNumber)
-      return PolynomialFraction(literalNumber);
+      return RationalFunction(literalNumber);
     
     UnaryOperationPtr unaryOperation = expression.dynamicCast<UnaryOperation>();
     if (unaryOperation && unaryOperation->getOp() == unmOp)
@@ -175,8 +175,8 @@ public:
     BinaryOperationPtr binaryOperation = expression.dynamicCast<BinaryOperation>();
     if (binaryOperation)
     {
-      PolynomialFraction left = fromExpression(binaryOperation->getLeft());
-      PolynomialFraction right = fromExpression(binaryOperation->getRight());
+      RationalFunction left = fromExpression(binaryOperation->getLeft());
+      RationalFunction right = fromExpression(binaryOperation->getRight());
       
       BinaryOp op = binaryOperation->getOp();
       if (op == addOp)
@@ -189,13 +189,13 @@ public:
         return div(left, right);
     }
 
-    jassert(false); // this kind of expressions cannot be converted into a PolynomialFraction 
-    return PolynomialFraction();
+    jassert(false); // this kind of expressions cannot be converted into a RationalFunction 
+    return RationalFunction();
   }
 
-  static PolynomialFraction add(const PolynomialFraction& left, const PolynomialFraction& right)
+  static RationalFunction add(const RationalFunction& left, const RationalFunction& right)
   {
-    PolynomialFraction res;
+    RationalFunction res;
     res.numerator = Polynomial::add(
       Polynomial::mul(left.numerator, right.denominator),
       Polynomial::mul(left.denominator, right.numerator));
@@ -203,9 +203,9 @@ public:
     return res;
   }
   
-  static PolynomialFraction sub(const PolynomialFraction& left, const PolynomialFraction& right)
+  static RationalFunction sub(const RationalFunction& left, const RationalFunction& right)
   {
-    PolynomialFraction res;
+    RationalFunction res;
     res.numerator = Polynomial::sub(
       Polynomial::mul(left.numerator, right.denominator),
       Polynomial::mul(left.denominator, right.numerator));
@@ -213,152 +213,84 @@ public:
     return res;
   }
 
-  static PolynomialFraction negate(const PolynomialFraction& fraction)
-    {return PolynomialFraction(Polynomial::negate(fraction.numerator), fraction.denominator);}
+  static RationalFunction negate(const RationalFunction& fraction)
+    {return RationalFunction(Polynomial::negate(fraction.numerator), fraction.denominator);}
   
-  static PolynomialFraction mul(const PolynomialFraction& left, const PolynomialFraction& right)
-    {return PolynomialFraction(Polynomial::mul(left.numerator, right.numerator), Polynomial::mul(left.denominator, right.denominator));}
+  static RationalFunction mul(const RationalFunction& left, const RationalFunction& right)
+    {return RationalFunction(Polynomial::mul(left.numerator, right.numerator), Polynomial::mul(left.denominator, right.denominator));}
 
-  static PolynomialFraction div(const PolynomialFraction& left, const PolynomialFraction& right)
-    {return PolynomialFraction(Polynomial::mul(left.numerator, right.denominator), Polynomial::mul(left.denominator, right.numerator));}
+  static RationalFunction div(const RationalFunction& left, const RationalFunction& right)
+    {return RationalFunction(Polynomial::mul(left.numerator, right.denominator), Polynomial::mul(left.denominator, right.numerator));}
 
-  static PolynomialFraction invert(const PolynomialFraction& fraction)
-    {return PolynomialFraction(fraction.denominator, fraction.numerator);}
+  static RationalFunction invert(const RationalFunction& fraction)
+    {return RationalFunction(fraction.denominator, fraction.numerator);}
 
   ExpressionPtr toExpression() const
     {return lua::div(numerator.toExpression(), denominator.toExpression());}
+
+  void simplify()
+  {
+    
+  }
 
 protected:
   Polynomial numerator;
   Polynomial denominator;
 };
 
-#if 0
-class AlgebraTerm
+class SimplifyExpressionRewriter : public DefaultRewriter
 {
 public:
-  AlgebraTerm(bool isNegative, const std::vector<ExpressionPtr>& numerator, const std::vector<ExpressionPtr>& denominator)
-    : isNegative(isNegative), numerator(numerator), denominator(denominator) {}
-  AlgebraTerm(ExpressionPtr numerator)
-    : isNegative(false), numerator(1, numerator) {}
-  AlgebraTerm() : isNegative(false) {}
-  
-  static AlgebraTerm negate(const AlgebraTerm& term)
-    {return AlgebraTerm(!term.isNegative, term.numerator, term.denominator);}
-  
-  static AlgebraTerm invert(const AlgebraTerm& term)
-    {return AlgebraTerm(term.isNegative, term.denominator, term.numerator);}
-  
-  static AlgebraTerm mul(const AlgebraTerm& left, const AlgebraTerm& right)
+  SimplifyExpressionRewriter(ExecutionContextPtr context)
+    : DefaultRewriter(context) {}
+ 
+  virtual void visit(Parenthesis& parenthesis)
+    {setResult(rewrite(parenthesis.getExpr()));}
+
+  virtual void visit(UnaryOperation& operation)
+    {simplifyNumberAlgebra(&operation);}
+
+  virtual void visit(BinaryOperation& operation)
+    {simplifyNumberAlgebra(&operation);}
+
+protected:
+  void simplifyNumberAlgebra(const ExpressionPtr& expression)
   {
-    AlgebraTerm res;
-    res.isNegative = (left.isNegative != right.isNegative);
-    append(res.numerator, left.numerator);
-    append(res.numerator, right.numerator);
-    append(res.denominator, left.denominator);
-    append(res.denominator, right.denominator);
-    return res;
+    if (isNumberAlgebra(expression))
+    {
+      RationalFunction fraction = RationalFunction::fromExpression(expression);
+      fraction.simplify();
+      setResult(fraction.toExpression());
+    }
   }
   
-  static AlgebraTerm div(const AlgebraTerm& left, const AlgebraTerm& right)
-    {return mul(left, invert(right));}
-  
-protected:
-  bool isNegative;
-  std::vector<ExpressionPtr> numerator;    // identifiers or literal numbers
-  std::vector<ExpressionPtr> denominator;
-  
-  static void append(std::vector<ExpressionPtr>& dest, const std::vector<ExpressionPtr>& source)
+  // returns true if the expression only contains literal numbers, identifiers, unm, add, sub, mul and div
+  static bool isNumberAlgebra(const ExpressionPtr& expression)
   {
-    size_t n = source.size();
-    dest.reserve(dest.size() + n);
+    size_t n = expression->getNumSubNodes();
     for (size_t i = 0; i < n; ++i)
-      dest.push_back(source[i]);
+    {
+      ExpressionPtr subNode = expression->getSubNode(i).dynamicCast<Expression>();
+      if (!subNode || !isNumberAlgebra(subNode))
+        return false;
+    }
+    if (expression.isInstanceOf<Identifier>())
+      return true;
+    if (expression.isInstanceOf<LiteralNumber>())
+      return true;
+    UnaryOperationPtr unaryOperation = expression.dynamicCast<UnaryOperation>();
+    if (unaryOperation)
+      return unaryOperation->getOp() == unmOp;
+    BinaryOperationPtr binaryOperation = expression.dynamicCast<BinaryOperation>();
+    if (binaryOperation)
+      return binaryOperation->getOp() == addOp ||
+             binaryOperation->getOp() == subOp ||
+             binaryOperation->getOp() == mulOp ||
+             binaryOperation->getOp() == divOp;
+    return false;
   }
 };
 
-class AlgebraNormalForm
-{
-public:
-  AlgebraNormalForm(const ExpressionPtr& expression)
-  {
-    terms = makeTerms(expression);
-  }
-
-
-protected:
-  std::vector<AlgebraTerm> makeTerms(const ExpressionPtr& expression)
-  {
-    std::vector<AlgebraTerm> res;
-    if (expression.isInstanceOf<Identifier>() || expression.isInstanceOf<LiteralNumber>())
-    {
-      res.push_back(AlgebraTerm(expression));
-    }
-    else if (expression.isInstanceOf<UnaryOperation>())
-    {
-      UnaryOperationPtr operation = expression.staticCast<UnaryOperation>();
-      if (operation->getOp() == unmOp)
-      {
-        res = makeTerms(operation->getExpr());
-        for (size_t i = 0; i < res.size(); ++i)
-          res[i] = AlgebraTerm::negate(res[i]);
-      }
-      else
-        jassert(false);
-    }
-    else if (expression.isInstanceOf<BinaryOperation>())
-    {
-      BinaryOperationPtr operation = expression.staticCast<BinaryOperation>();
-      std::vector<AlgebraTerm> leftTerms = makeTerms(operation->getLeft());
-      std::vector<AlgebraTerm> rightTerms = makeTerms(operation->getRight());
-      
-      if (operation->getOp() == addOp)
-      {
-        res = leftTerms;
-        res.reserve(res.size() + rightTerms.size());
-        for (size_t i = 0; i < rightTerms.size(); ++i)
-          res.push_back(rightTerms[i]);
-      }
-      else if (operation->getOp() == subOp)
-      {
-        res = leftTerms;
-        res.reserve(res.size() + rightTerms.size());
-        for (size_t i = 0; i < rightTerms.size(); ++i)
-          res.push_back(AlgebraTerm::negate(rightTerms[i]));
-      }
-      else if (operation->getOp() == mulOp)
-      {
-        res.reserve(leftTerms.size() * rightTerms.size());
-        for (size_t i = 0; i < leftTerms.size(); ++i)
-          for (size_t j = 0; j < rightTerms.size(); ++j)
-            res.push_back(AlgebraTerm::mul(leftTerms[i], rightTerms[j]));
-      }
-      else if (operation->getOp() == divOp)
-      {
-        if (rightTerms.size() == 1)
-        {
-          res.reserve(leftTerms.size());
-          for (size_t i = 0; i < leftTerms.size(); ++i)
-            res.push_back(AlgebraTerm::div(leftTerms[i], rightTerms[0]));
-        }
-        else
-        {
-          jassert(false);
-          std::cerr << "Prout" << std::endl;
-        }
-      }
-      else
-        jassert(false);
-    }
-    else
-      jassert(false);
-      
-    return res;
-  }
-
-  std::vector<AlgebraTerm> terms;
-};
-#endif // 0
 
 #if 0
 class EvaluateConstantsRewriter : public DefaultRewriter
@@ -413,59 +345,6 @@ protected:
   }
 };
 #endif // 0
-
-class SimplifyExpressionRewriter : public DefaultRewriter
-{
-public:
-  SimplifyExpressionRewriter(ExecutionContextPtr context)
-    : DefaultRewriter(context) {}
- 
-  virtual void visit(Parenthesis& parenthesis)
-    {setResult(rewrite(parenthesis.getExpr()));}
-
-  virtual void visit(UnaryOperation& operation)
-    {simplifyNumberAlgebra(&operation);}
-
-  virtual void visit(BinaryOperation& operation)
-    {simplifyNumberAlgebra(&operation);}
-
-protected:
-  void simplifyNumberAlgebra(const ExpressionPtr& expression)
-  {
-    if (isNumberAlgebra(expression))
-    {
-      PolynomialFraction fraction = PolynomialFraction::fromExpression(expression);
-      // fraction->simplify()
-      setResult(fraction.toExpression());
-    }
-  }
-  
-  // returns true if the expression only contains literal numbers, identifiers, unm, add, sub, mul and div
-  static bool isNumberAlgebra(const ExpressionPtr& expression)
-  {
-    size_t n = expression->getNumSubNodes();
-    for (size_t i = 0; i < n; ++i)
-    {
-      ExpressionPtr subNode = expression->getSubNode(i).dynamicCast<Expression>();
-      if (!subNode || !isNumberAlgebra(subNode))
-        return false;
-    }
-    if (expression.isInstanceOf<Identifier>())
-      return true;
-    if (expression.isInstanceOf<LiteralNumber>())
-      return true;
-    UnaryOperationPtr unaryOperation = expression.dynamicCast<UnaryOperation>();
-    if (unaryOperation)
-      return unaryOperation->getOp() == unmOp;
-    BinaryOperationPtr binaryOperation = expression.dynamicCast<BinaryOperation>();
-    if (binaryOperation)
-      return binaryOperation->getOp() == addOp ||
-             binaryOperation->getOp() == subOp ||
-             binaryOperation->getOp() == mulOp ||
-             binaryOperation->getOp() == divOp;
-    return false;
-  }
-};
 
 }; /* namespace lua */
 }; /* namespace lbcpp */
