@@ -68,7 +68,6 @@ public:
     client->askForWorkUnits(gridName);
     client->sendFinishedTraces();
     client->waitResponses(300000); // 5"
-    client->closeCommunication();
 
     return true;
   }

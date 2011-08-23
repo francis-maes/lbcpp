@@ -55,9 +55,7 @@
   <class name="ExecutionTracesNetworkMessage" base="NetworkMessage">
     <variable type="ObjectVector[Pair[String, XmlElement]]" name="traces"/>
   </class>
-  
-  <class name="CloseCommunicationNetworkMessage" base="NetworkMessage"/>
-  
+
   <!-- WorkUnit -->
   <class name="ServerWorkUnit" base="WorkUnit">
     <variable type="PositiveInteger" name="port" shortName="p"/>

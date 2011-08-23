@@ -49,10 +49,6 @@ public:
       for (size_t i = 0; i < traces.size(); ++i)
         xmlExecutionTracesReceived(traces[i].first, traces[i].second);
     }
-    else if (objClass == closeCommunicationNetworkMessageClass)
-    {
-      closeCommunicationReceived();
-    }
     else
       context.warningCallback(T("ManagerServerNetworkClient::variableReceived")
                               , T("Unknwon object of type: ") + objClass->toString());
@@ -132,13 +128,6 @@ public:
 
     client->sendVariable(new WorkUnitResultNetworkMessage(context, uniqueIdentifier, manager->getXmlResult(request)));
   }
-
-  void closeCommunicationReceived()
-  {
-    juce::Thread::sleep(3000);
-    //stopClient();
-    manager->removeNetworkClient(refCountedPointerFromThis(this));
-  }
   
   /** Sender **/
   bool sendWorkUnitAcknowledgement(size_t sourceIdentifier, const String& uniqueIdentifier)
@@ -171,11 +160,7 @@ public:
     : NetworkServer(context), manager(manager) {}
 
   virtual NetworkClient* createNetworkClient()
-  {
-    NetworkClientPtr client = new ManagerServerNetworkClient(context, manager);
-    manager->addNetworkClient(client);
-    return client.get();
-  }
+    {return  new ManagerServerNetworkClient(context, manager);}
 
   lbcpp_UseDebuggingNewOperator
 

@@ -88,10 +88,11 @@ typedef ReferenceCountedObjectPtr<WorkUnitPool> WorkUnitPoolPtr;
 class DistributedExecutionContextClientCallback : public ManagerNetworkClientCallback
 {
 public:
-  DistributedExecutionContextClientCallback(ExecutionContext& context)
-    : client(new ManagerNetworkClient(context)), numSentWorkUnit(0)
+  DistributedExecutionContextClientCallback(ExecutionContext& context, const String& remoteHostName, size_t remotePort)
+    : client(new ManagerNetworkClient(context)), hostName(remoteHostName), port(remotePort),  numSentWorkUnit(0)
   {
     client->setCallback(this);
+    client->startClient(hostName, port);
   }
   
   NetworkClientPtr getNetworkClient() const
@@ -125,6 +126,10 @@ public:
     ScopedLock _(lock);
     pool->appendWorkUnit(numSentWorkUnit, workUnit, callback);
     pools[numSentWorkUnit] = pool;
+
+    if (!client->isConnected())
+      client->startClient(hostName, port);
+
     bool res = client->sendWorkUnit(numSentWorkUnit++, workUnit, project, from, to, requiredCpus, requiredMemory, requiredTime);
     return res;
   }
@@ -136,15 +141,13 @@ public:
       client->sendVariable(new GetWorkUnitResultNetworkMessage(it->first));
   }
 
-  virtual void connectionLost()
-  {
-    client->getContext().informationCallback(T("Connection lost !"));
-  }
-
 protected:
   CriticalSection lock;
 
   ManagerNetworkClientPtr client;
+
+  String hostName;
+  size_t port;
 
   size_t numSentWorkUnit;
   std::map<String, size_t> workUnitIds; // Manager ID to interne ID
@@ -161,13 +164,11 @@ public:
                               const String& project, const String& from, const String& to,
                               const RessourcesEstimatorPtr& ressourcesEstimator)
     : SubExecutionContext(parentContext)
-    , client(new DistributedExecutionContextClientCallback(parentContext))
+    , client(new DistributedExecutionContextClientCallback(parentContext, remoteHostName, remotePort))
     , defaultPool(new WorkUnitPool(false))
     , project(project), from(from), to(to)
     , ressourcesEstimator(ressourcesEstimator)
-    {
-      client->getNetworkClient()->startClient(remoteHostName, remotePort);
-    }
+    {}
 
   virtual ~DistributedExecutionContext()
   {

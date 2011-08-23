@@ -199,12 +199,6 @@ protected:
 typedef ReferenceCountedObjectPtr<ExecutionTracesNetworkMessage> ExecutionTracesNetworkMessagePtr;
 extern ClassPtr executionTracesNetworkMessageClass;
 
-class CloseCommunicationNetworkMessage : public NetworkMessage
-  {};
-
-typedef ReferenceCountedObjectPtr<CloseCommunicationNetworkMessage> CloseCommunicationNetworkMessagePtr;
-extern ClassPtr closeCommunicationNetworkMessageClass;
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_NETWORK_MESSAGE_H_
