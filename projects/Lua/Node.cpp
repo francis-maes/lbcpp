@@ -69,7 +69,7 @@ int Node::print(LuaState& state)
 
 int Expression::simplify(LuaState& state)
 {
-  ExpressionPtr expr = state.checkObject(1, expressionClass).staticCast<Expression>();
+  ExpressionPtr expr = state.checkObject(1, expressionClass)->cloneAndCast<Expression>();
   SimplifyExpressionRewriter rewriter(&state.getContext());
   state.pushObject(rewriter.rewrite(expr));
   return 1;
@@ -197,7 +197,7 @@ ExpressionPtr lbcpp::lua::add(const ExpressionPtr& left, const ExpressionPtr& ri
   // x + (-y) ==> x - y
   UnaryOperationPtr rightUnaryOp = right.dynamicCast<UnaryOperation>();
   if (rightUnaryOp && rightUnaryOp->getOp() == unmOp)
-    return sub(left, right);
+    return sub(left, rightUnaryOp->getExpr());
 
   return new BinaryOperation(addOp, left, right);
 }
@@ -221,7 +221,7 @@ ExpressionPtr lbcpp::lua::sub(const ExpressionPtr& left, const ExpressionPtr& ri
  // x - (-y) ==> x + y
   UnaryOperationPtr rightUnaryOp = right.dynamicCast<UnaryOperation>();
   if (rightUnaryOp && rightUnaryOp->getOp() == unmOp)
-    return add(left, right);
+    return add(left, rightUnaryOp->getExpr());
 
   return new BinaryOperation(subOp, left, right);
 }

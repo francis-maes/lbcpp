@@ -13,6 +13,10 @@
 namespace lbcpp
 {
 
+class DoubleStreamClass;
+class IntegerStreamClass;
+class BooleanStreamClass;
+
 template <class ElementsType>
 class BuiltinTypeStream : public Stream
 {

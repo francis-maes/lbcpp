@@ -9,9 +9,9 @@ problem = DecisionProblem.ReversePolishNotation{
   variables = {"a", "b", "c", "d"},
   constants = {},
   unaryOperations = {"unm"},
-  binaryOperations = {"add", "mul"},
+  binaryOperations = {"add", "sub", "mul", "div"},
   objective = | | 0,
-  maxSize = 5
+  maxSize = 4
 }
 
 local dataset = {}
@@ -72,6 +72,7 @@ local function countDistinctFormulas(problem, x)
     end
     uniqueFinalStates[str3][str2] = true
 
+    assert(str3 == makeUniqueKey(x:simplify()))
     --print (str1, str2, str3)
 
   else
