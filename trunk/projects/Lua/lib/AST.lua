@@ -6,7 +6,12 @@ AST = {}
 local function makeObjectVector(class, nodes, startIndex)
   local res = lbcpp.Object.create('ObjectVector<' .. class .. '>')
   for i = startIndex or 1, #nodes do
-    res:append(nodes[i])
+    local object = nodes[i]
+    if object == false then
+      res:append(nil)
+    else
+      res:append(nodes[i])
+    end
   end
   return res
 end
@@ -75,5 +80,8 @@ function AST.isBinaryOperationCommutative(node)
   return commutativeOps[node.op + 1]
 end
 
+function AST.call(fun, args)
+  return lbcpp.Object.create("lua::Call", fun, makeObjectVector("lua::Expression", args))
+end
 
 return AST
