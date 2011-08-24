@@ -49,6 +49,14 @@ local function makeObjectVector(class, inputTable, startIndex)
   return res
 end
 
+local function makeSubArray(array, startIndex)
+  local res = {}
+  for i=startIndex,#array do
+    table.insert(res, array[i])
+  end
+  return res
+end
+
 local function createBlock(statements)
 
   local function ensureIsStatement(node)
@@ -184,7 +192,7 @@ local function metaLuaAstToLbcppAstInternal(ast)
   elseif ast.tag == "Paren" then
     return lbcpp.Object.create("lua::Parenthesis", subNodes[1])
   elseif ast.tag == "Call" then
-    return lbcpp.Object.create("lua::Call", subNodes[1], makeObjectVector("lua::Expression", subNodes, 2))
+    return AST.call(subNodes[1], makeSubArray(subNodes, 2))
   elseif ast.tag == "Invoke" then
     return lbcpp.Object.create("lua::Invoke", subNodes[1], subNodes[2], makeObjectVector("lua::Expression", subNodes, 3))
   elseif ast.tag == "Index" then

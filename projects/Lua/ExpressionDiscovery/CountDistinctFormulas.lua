@@ -12,13 +12,19 @@ require 'Stochastic'
 --print (ast:simplify():print())
 ----------------
 
+function math.inverse(x)
+  return 1 / x
+end
+
 problem = DecisionProblem.ReversePolishNotation{
   variables = {"a", "b", "c", "d"},
-  constants = {1, 2, 5, 10},
+  constants = {},
   unaryOperations = {"unm"},
+  unaryFunctions = {"math.exp", "math.log", "math.inverse"},
   binaryOperations = {"add", "sub", "mul", "div"},
+  binaryFunctions = {"math.max", "math.min"},
   objective = | | 0,
-  maxSize = 4
+  maxSize = 3
 }
 
 local dataset = {}
@@ -75,9 +81,9 @@ local function countDistinctFormulas(problem, x)
     if simplifiedFinalStates[str2] == nil then
       simplifiedFinalStates[str2] = true
       numDistinctSimplifiedFinalStates = numDistinctSimplifiedFinalStates + 1
-      --print (str1, "-->", str2)
     end
-
+    --print (str1, "-->", str2)
+ 
     -- num unique formulas
     local str3 = makeUniqueKey(x)
     if uniqueFinalStates[str3] == nil then
@@ -93,10 +99,12 @@ local function countDistinctFormulas(problem, x)
     --print ("=>", str3)--str1, str2, str3)
 
   else
+    --context:enter(problem.stateToString(x))
     local U = problem.U(x)
     for i,u in ipairs(U) do
       countDistinctFormulas(problem, problem.f(x, u))
     end
+    --context:leave()
   end
 end
 
