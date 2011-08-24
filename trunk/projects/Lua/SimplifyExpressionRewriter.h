@@ -155,7 +155,10 @@ public:
       }
     return res;
   }
-  
+
+  static Polynomial square(const Polynomial& polynomial)
+    {return mul(polynomial, polynomial);}
+    
   static Polynomial mul(const Polynomial& left, const Monomial& right, double weight)
   {
     jassert(weight);
@@ -230,6 +233,11 @@ public:
     // a = bq + r
 #ifdef JUCE_DEBUG
     Polynomial dbg = Polynomial::sub(a, Polynomial::add(Polynomial::mul(b, q), r));
+    if (!dbg.isZero())
+    {
+      std::cerr << "Division was wrong!!! A = " << a.toExpression()->print() << " B = " << b.toExpression()->print() << " Q = " << q.toExpression()->print() << " R = " << r.toExpression()->print() << std::endl;
+      jassert(false);
+    }
     jassert(dbg.isZero());
 #endif    
     return std::make_pair(q, r);
@@ -267,6 +275,13 @@ public:
   
   bool isZero() const
     {return monomials.empty();}
+    
+  bool isOne() const
+  {
+    return monomials.size() == 1 &&
+        monomials.begin()->first == Monomial() &&
+        monomials.begin()->second == 1.0;
+  }
    
   bool areConstantsIntegers() const
   {
@@ -351,7 +366,11 @@ public:
     LiteralNumberPtr literalNumber = expression.dynamicCast<LiteralNumber>();
     if (literalNumber)
       return RationalFunction(literalNumber);
-    
+
+    ParenthesisPtr parenthesis = expression.dynamicCast<Parenthesis>();
+    if (parenthesis)
+      return fromExpression(parenthesis->getExpr());
+          
     UnaryOperationPtr unaryOperation = expression.dynamicCast<UnaryOperation>();
     if (unaryOperation && unaryOperation->getOp() == unmOp)
       return negate(fromExpression(unaryOperation->getExpr()));
@@ -371,11 +390,20 @@ public:
         return mul(left, right);
       else if (op == divOp)
         return div(left, right);
+      else if (op == powOp)
+      {
+        LiteralNumberPtr power = binaryOperation->getRight().dynamicCast<LiteralNumber>();
+        jassert(power && power->getValue() == std::floor(power->getValue()));
+        return pow(left, (int)power->getValue());
+      }
     }
-    
-    ParenthesisPtr parenthesis = expression.dynamicCast<Parenthesis>();
-    if (parenthesis)
-      return fromExpression(parenthesis->getExpr());
+      
+    CallPtr call = expression.dynamicCast<Call>();
+    if (call)
+    {
+      if (call->getFunction()->print() == T("math.inverse") && call->getNumArguments() == 1)
+        return invert(fromExpression(call->getArgument(0)));
+    }
 
     jassert(false); // this kind of expressions cannot be converted into a RationalFunction 
     return RationalFunction();
@@ -413,11 +441,40 @@ public:
   static RationalFunction invert(const RationalFunction& fraction)
     {return RationalFunction(fraction.denominator, fraction.numerator);}
 
+  static RationalFunction square(const RationalFunction& fraction)
+    {return RationalFunction(Polynomial::square(fraction.numerator), Polynomial::square(fraction.denominator));}
+
+  static RationalFunction pow(const RationalFunction& expr, size_t power)
+  {
+    jassert(power != 0);
+    if (power == 1)
+      return expr;
+    if (power % 2 == 0)
+      return square(pow(expr, power / 2));
+    else
+      return mul(expr, square(pow(expr, power / 2)));
+  }
+
+  static RationalFunction pow(const RationalFunction& expr, int power)
+  {
+    if (power == 0) // todo: check that this polynomial is not zero
+      return RationalFunction(Polynomial::one(), Polynomial::one());
+    else if (power > 0)
+      return pow(expr, (size_t)power);
+    else
+      return pow(invert(expr), (size_t)(-power));
+  }
+
   ExpressionPtr toExpression() const
     {return lua::div(numerator.toExpression(), denominator.toExpression());}
 
   void simplify()
   {
+    if (denominator.isZero()) // invalid rational function
+      return;
+    if (numerator.isOne() || denominator.isOne()) // already maximally simplified
+      return;
+      
     std::pair<Polynomial, Polynomial> qr = Polynomial::div(numerator, denominator);
     if (qr.second.isZero())
     {
@@ -466,20 +523,109 @@ protected:
   Polynomial denominator;
 };
 
-class SimplifyExpressionRewriter : public DefaultRewriter
+class MaxNormalForm
 {
 public:
-  SimplifyExpressionRewriter(ExecutionContextPtr context)
+  MaxNormalForm(Call& call)
+    {build(&call);}
+  
+  void build(ExpressionPtr expr)
+  {
+    CallPtr call = expr.dynamicCast<Call>();
+    if (call && call->getFunction()->print() == T("math.max"))
+    {
+      jassert(call->getNumArguments() == 2);
+      build(call->getArgument(0));
+      build(call->getArgument(1));      
+    }
+    else
+    {
+      LiteralNumberPtr number = expr.dynamicCast<LiteralNumber>();
+      if (number)
+      {
+        if (this->number)
+          this->number = new LiteralNumber(juce::jmax(number->getValue(), this->number->getValue()));
+        else
+          this->number = number;
+      }
+      else
+        operands.insert(expr);
+    }
+  }
+  
+  ExpressionPtr toExpression() const
+  {
+    std::vector<ExpressionPtr> expressions;
+    expressions.reserve(operands.size() + 1);
+    if (number)
+      expressions.push_back(number);
+    for (OperandsSet::const_iterator it = operands.begin(); it != operands.end(); ++it)
+      expressions.push_back(*it);
+    jassert(expressions.size());
+    ExpressionPtr res = expressions[0];
+    IdentifierPtr id = new Identifier("math.max");
+    for (size_t i = 1; i < expressions.size(); ++i)
+      res = new Call(id, res, expressions[i]);
+    return res;
+  }
+
+protected:
+  struct NodeComparisonOperator
+  {
+    bool operator ()(NodePtr left, NodePtr right)
+      {return left->print() < right->print();}
+  };
+
+  typedef std::set<ExpressionPtr, NodeComparisonOperator> OperandsSet;
+  OperandsSet operands;
+  LiteralNumberPtr number;
+};
+
+class CanonizeExpressionRewriter : public DefaultRewriter
+{
+public:
+  CanonizeExpressionRewriter(ExecutionContextPtr context)
     : DefaultRewriter(context) {}
  
   virtual void visit(Parenthesis& parenthesis)
     {setResult(rewrite(parenthesis.getExpr()));}
 
   virtual void visit(UnaryOperation& operation)
-    {simplifyNumberAlgebra(&operation);}
+  {
+    accept(operation.getSubNode(0));
+    simplifyNumberAlgebra(&operation);
+  }
 
   virtual void visit(BinaryOperation& operation)
-    {simplifyNumberAlgebra(&operation);}
+  {
+    accept(operation.getSubNode(0));
+    accept(operation.getSubNode(1));
+    simplifyNumberAlgebra(&operation);
+  }
+    
+  virtual void visit(Call& call)
+  {
+    for (size_t i = 0; i < call.getNumSubNodes(); ++i)
+      accept(call.getSubNode(i));
+    
+    String function = call.getFunction()->print();
+    if (function == T("math.min"))
+    {
+      jassert(call.getNumArguments() == 2);
+      // min(a,b) = -max(-a,-b)
+      setResult(rewrite(unm(new Call(new Identifier("math.max"), unm(call.getArgument(0)), unm(call.getArgument(1))))));
+      return;
+    }
+    
+    if (function == T("math.max"))
+    {
+      MaxNormalForm normalForm(call);
+      setResult(normalForm.toExpression());
+      return;
+    }
+    
+    simplifyNumberAlgebra(&call);
+  }
 
 protected:
   void simplifyNumberAlgebra(const ExpressionPtr& expression)
@@ -496,88 +642,41 @@ protected:
   // returns true if the expression only contains literal numbers, identifiers, unm, add, sub, mul and div
   static bool isNumberAlgebra(const ExpressionPtr& expression)
   {
-    size_t n = expression->getNumSubNodes();
-    for (size_t i = 0; i < n; ++i)
-    {
-      ExpressionPtr subNode = expression->getSubNode(i).dynamicCast<Expression>();
-      if (!subNode || !isNumberAlgebra(subNode))
-        return false;
-    }
     if (expression.isInstanceOf<Identifier>())
       return true;
     if (expression.isInstanceOf<LiteralNumber>())
       return true;
+    ParenthesisPtr parenthesis = expression.dynamicCast<Parenthesis>();
+    if (parenthesis)
+      return isNumberAlgebra(parenthesis->getExpr());
     UnaryOperationPtr unaryOperation = expression.dynamicCast<UnaryOperation>();
     if (unaryOperation)
       return unaryOperation->getOp() == unmOp && isNumberAlgebra(unaryOperation->getExpr());
     BinaryOperationPtr binaryOperation = expression.dynamicCast<BinaryOperation>();
     if (binaryOperation)
-      return (binaryOperation->getOp() == addOp ||
-              binaryOperation->getOp() == subOp ||
-              binaryOperation->getOp() == mulOp ||
-              binaryOperation->getOp() == divOp) &&
-             isNumberAlgebra(binaryOperation->getLeft()) && isNumberAlgebra(binaryOperation->getRight());
-    ParenthesisPtr parenthesis = expression.dynamicCast<Parenthesis>();
-    if (parenthesis)
-      return isNumberAlgebra(parenthesis->getExpr());
+    {
+      if (binaryOperation->getOp() == addOp ||
+          binaryOperation->getOp() == subOp ||
+          binaryOperation->getOp() == mulOp ||
+          binaryOperation->getOp() == divOp)
+        return isNumberAlgebra(binaryOperation->getLeft()) && isNumberAlgebra(binaryOperation->getRight());
+      if (binaryOperation->getOp() == powOp)
+        return isNumberAlgebra(binaryOperation->getLeft()) && isInteger(binaryOperation->getRight());
+    }
+    CallPtr call = expression.dynamicCast<Call>();
+    if (call)
+      return call->getFunction()->print() == T("math.inverse") &&
+             call->getNumArguments() == 1 &&
+             isNumberAlgebra(call->getArgument(0));
     return false;
   }
-};
-
-
-#if 0
-class EvaluateConstantsRewriter : public DefaultRewriter
-{
-public:
-  EvaluateConstantsRewriter(ExecutionContextPtr context)
-    : DefaultRewriter(context) {}
-
-  virtual void visit(UnaryOperation& operation)
+  
+  static bool isInteger(ExpressionPtr expression)
   {
-    UnaryOp op = operation.getOp();
-    accept(operation.getSubNode(0));
-    const double* subNumber = getLiteralNumber(operation.getSubNode(0));
-
-    if (op == unmOp && subNumber)
-      setResult(new LiteralNumber(-(*subNumber)));
-  }
-
-  virtual void visit(BinaryOperation& operation)
-  {
-    BinaryOp op = operation.getOp();
-    accept(operation.getSubNode(0));
-    accept(operation.getSubNode(1));
-    
-    const double* number1 = getLiteralNumber(operation.getLeft());
-    const double* number2 = getLiteralNumber(operation.getRight());
-
-    switch (op)
-    {
-    case addOp:
-      if (number1 && number2)
-        setResult(new LiteralNumber(*number1 + *number2));
-      else if (number1 && *number1 == 0)
-        setResult(operation.getRight());
-      else if (number2 && *number2 == 0)
-        setResult(operation.getLeft());
-      break;
-      
-    default:
-      break;
-    }
-  }
-
-  virtual void visit(Parenthesis& parenthesis)
-    {setResult(rewrite(parenthesis.getExpr()));}
-
-protected:
-  static const double* getLiteralNumber(const NodePtr& node)
-  {
-    LiteralNumberPtr number = node.dynamicCast<LiteralNumber>();
-    return number ? &number->getValue() : NULL;
+    LiteralNumberPtr number = expression.dynamicCast<LiteralNumber>();
+    return number && number->getValue() == std::floor(number->getValue());
   }
 };
-#endif // 0
 
 }; /* namespace lua */
 }; /* namespace lbcpp */

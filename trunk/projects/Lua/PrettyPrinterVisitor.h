@@ -208,7 +208,7 @@ public:
     String str(expression.getValue());
     if (str == T("1.#INF") || str == T("inf"))
       write("math.huge");
-    else if (str == T("-1.#INF"))
+    else if (str == T("-1.#INF") || str == T("-inf"))
       write("-math.huge");
     else if (str == T("nan"))
       write("(0/0)");
