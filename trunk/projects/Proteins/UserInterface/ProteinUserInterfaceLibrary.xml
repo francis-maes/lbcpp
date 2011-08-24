@@ -4,9 +4,5 @@
 
   <uicomponent name="ProteinComponent" type="Protein"/>
   <uicomponent name="MultiProteinComponent" type="Container[Protein]"/>
-<!--
-  <uicomponent name="ResiduePerceptionComponent" type="Pair[Protein,PositiveInteger]"/>
-  <uicomponent name="ResiduePairPerceptionComponent" type="Pair[Protein,Pair[PositiveInteger,PositiveInteger]]"/>
-  -->
   
 </library>

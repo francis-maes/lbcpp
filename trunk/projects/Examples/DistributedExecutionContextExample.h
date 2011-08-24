@@ -25,7 +25,7 @@ public:
       juce::Thread::sleep(context.getRandomGenerator()->sampleSize(1000, 5000));
     }
 
-    return context.getRandomGenerator()->sampleSize(100);
+    return Variable(context.getRandomGenerator()->sampleSize(100), positiveIntegerType);
   }
 };
 

@@ -11,11 +11,11 @@
 
 # include "MultiProtein1DComponent.h"
 # include "MultiProtein2DComponent.h"
-# include "ProteinPerceptionComponent.h"
 # include <lbcpp/UserInterface/VariableSelector.h>
 # include "../Predictor/ProteinPredictor.h"
 # include "../Predictor/NumericalCysteinPredictorParameters.h"
 # include "../Predictor/Lin09PredictorParameters.h"
+# include "../Predictor/LargeProteinPredictorParameters.h"
 
 namespace lbcpp
 {
@@ -55,10 +55,8 @@ public:
   void initializeTabs()
   {
     if (proteins.size() == 1)
-    {
       addTab(T("Data"), Colours::white);
-      //addTab(T("Perception"), Colours::white);
-    }
+
     addTab(T("Protein 1D"), Colours::white);
     addTab(T("Protein 2D"), Colours::white);
     
@@ -79,8 +77,6 @@ public:
 
     if (tabName == T("Data"))
       return userInterfaceManager().createVariableTreeView(context, proteins[0], names[0]);
-//    else if (tabName == T("Perception"))
-//      return new ProteinPerceptionComponent(proteins[0]);
     else if (tabName == T("Compute Missing"))
     {
       const size_t n = proteinClass->getNumMemberVariables();
@@ -162,9 +158,36 @@ public:
     }
     else if (tabName == T("Residue Features"))
     {
-      NumericalProteinFeaturesParametersPtr featuresParameters = new NumericalProteinFeaturesParameters();
-      ProteinPredictorParametersPtr predictorParameters = numericalProteinPredictorParameters(featuresParameters, new StochasticGDParameters());
+      LargeProteinParametersPtr featureParameters = new LargeProteinParameters();
+      featureParameters->useProteinLength = true;
+      featureParameters->useNumCysteins = true;
 
+      featureParameters->useAminoAcidGlobalHistogram = true;
+      featureParameters->usePSSMGlobalHistogram = true;
+      featureParameters->useSS3GlobalHistogram = true;
+      featureParameters->useSS8GlobalHistogram = true;
+      featureParameters->useSAGlobalHistogram = true;
+      featureParameters->useDRGlobalHistogram = true;
+      featureParameters->useSTALGlobalHistogram = true;
+
+      featureParameters->aminoAcidWindowSize = 10;
+      featureParameters->pssmWindowSize = 10;
+      featureParameters->ss3WindowSize = 10;
+      featureParameters->ss8WindowSize = 10;
+      featureParameters->saWindowSize = 10;
+      featureParameters->drWindowSize = 10;
+      featureParameters->stalWindowSize = 10;
+
+      featureParameters->aminoAcidLocalHistogramSize = 10;
+      featureParameters->pssmLocalHistogramSize = 10;
+      featureParameters->ss3LocalHistogramSize = 10;
+      featureParameters->ss8LocalHistogramSize = 10;
+      featureParameters->saLocalHistogramSize = 10;
+      featureParameters->drLocalHistogramSize = 10;
+      featureParameters->stalLocalHistogramSize = 10;
+
+      LargeProteinPredictorParametersPtr predictorParameters = new LargeProteinPredictorParameters(featureParameters, true);
+      
       FunctionPtr proteinfunction = predictorParameters->createProteinPerception();
       proteinfunction->initialize(context, (TypePtr)proteinClass);
       Variable proteinPerception = proteinfunction->compute(context, proteins[0]);
