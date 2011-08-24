@@ -18,13 +18,20 @@ class Rewriter : public Visitor
 {
 public:
   Rewriter(ExecutionContextPtr context = ExecutionContextPtr())
-    : Visitor(context) {}
+    : Visitor(context), changed(false) {}
 
   NodePtr rewrite(const NodePtr& node)
     {NodePtr res = node; accept(res); return res;}
 
+  bool hasChanged() const
+    {return changed;}
+
+  void clearChangedFlag()
+    {changed = false;}
+
 protected:
   NodePtr result;
+  bool changed;
 
   void setResult(NodePtr result)
     {this->result = result;}
@@ -43,6 +50,8 @@ protected:
     {
       if (!result->getScope() && node->getScope())
         result->setScope(node->getScope()); // forward scope information
+      if (!changed && node->compare(result) != 0)
+        changed = true;
       node = result;
     }
     result = prevResult;

@@ -94,7 +94,7 @@
 
     <!-- Expressions -->
     <class name="Expression" base="lua::Node" abstract="yes">
-      <function lang="lua" name="simplify"/>
+      <function lang="lua" name="canonize"/>
     </class>
 
     <class name="Nil" base="lua::Expression"/>
