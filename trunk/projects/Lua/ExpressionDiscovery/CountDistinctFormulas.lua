@@ -5,16 +5,16 @@ require 'Random'
 require 'Stochastic'
 
 ----------------
-require 'AST'
-require 'Language.LuaChunk'
-ast = AST.parseExpressionFromString("(x * x - 9 * x - 10) / (x + 1)")
-print (ast:print())
-print (ast:simplify():print())
+--require 'AST'
+--require 'Language.LuaChunk'
+--ast = AST.parseExpressionFromString("(x * x * x + y * y * y + z * z * z - 3 * x * y * z) / (x + y + z)")
+--print (ast:print())
+--print (ast:simplify():print())
 ----------------
 
 problem = DecisionProblem.ReversePolishNotation{
   variables = {"a", "b", "c", "d"},
-  constants = {},
+  constants = {1, 2, 5, 10},
   unaryOperations = {"unm"},
   binaryOperations = {"add", "sub", "mul", "div"},
   objective = | | 0,
@@ -75,8 +75,8 @@ local function countDistinctFormulas(problem, x)
     if simplifiedFinalStates[str2] == nil then
       simplifiedFinalStates[str2] = true
       numDistinctSimplifiedFinalStates = numDistinctSimplifiedFinalStates + 1
+      --print (str1, "-->", str2)
     end
-    --print (str1, "-->", str2)
 
     -- num unique formulas
     local str3 = makeUniqueKey(x)

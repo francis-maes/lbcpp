@@ -38,6 +38,30 @@ public:
     return res;
   }
   
+  static bool isDivisible(const Monomial& left, const Monomial& right)
+  {
+    for (const_iterator it = right.m.begin(); it != right.m.end(); ++it)
+      if (it->second > left.getDegree(it->first))
+        return false;
+    return true;
+  }
+  
+  static Monomial div(const Monomial& left, const Monomial& right)
+  {
+    Monomial res;
+    res.m = left.m;
+    for (const_iterator it = right.m.begin(); it != right.m.end(); ++it)
+    {
+      jassert(res.m[it->first] >= it->second);
+      size_t degree = res.m[it->first] - it->second;
+      if (degree > 0)
+        res.m[it->first] = degree;
+      else
+        res.m.erase(it->first);
+    }
+    return res;
+  }
+  
   ExpressionPtr toExpression() const
   {
     std::vector<ExpressionPtr> factors;
@@ -50,6 +74,21 @@ public:
     for (size_t i = 1; i < factors.size(); ++i)
       res = multiply(res, factors[i]);
     return res;
+  }
+  
+  size_t getDegree() const
+  {
+    size_t res = 0;
+    for (const_iterator it = m.begin(); it != m.end(); ++it)
+      if (it->second > res)
+        res = it->second;
+    return res;
+  }
+  
+  size_t getDegree(const String& identifier) const
+  {
+    const_iterator it = m.find(identifier);
+    return it == m.end() ? 0 : it->second;
   }
   
 protected:
@@ -69,12 +108,17 @@ public:
     {if (number) addMonomial(Monomial(), number);}
   Polynomial() {}
 
+  static Polynomial zero()
+    {return Polynomial();}
+    
+  static Polynomial one()
+    {return Polynomial(1.0);}
+
   static Polynomial add(const Polynomial& left, const Polynomial& right)
   {
     Polynomial res = left;
     for (const_iterator it = right.monomials.begin(); it != right.monomials.end(); ++it)
       res.addMonomial(it->first, it->second);
-    res.pruneEmptyMonomials();
     return res;
   }
   
@@ -83,7 +127,6 @@ public:
     Polynomial res = left;
     for (const_iterator it = right.monomials.begin(); it != right.monomials.end(); ++it)
       res.addMonomial(it->first, -it->second);
-    res.pruneEmptyMonomials();
     return res;
   }
   
@@ -104,6 +147,8 @@ public:
     for (const_iterator it1 = left.monomials.begin(); it1 != left.monomials.end(); ++it1)
       for (const_iterator it2 = right.monomials.begin(); it2 != right.monomials.end(); ++it2)
       {
+        jassert(it1->second);
+        jassert(it2->second);
         double weight = it1->second * it2->second;
         jassert(weight);
         res.addMonomial(Monomial::mul(it1->first, it2->first), weight);
@@ -111,12 +156,82 @@ public:
     return res;
   }
   
+  static Polynomial mul(const Polynomial& left, const Monomial& right, double weight)
+  {
+    jassert(weight);
+    Polynomial res;
+    for (const_iterator it = left.monomials.begin(); it != left.monomials.end(); ++it)
+    {
+      jassert(it->second);
+      res.addMonomial(Monomial::mul(it->first, right), it->second * weight);
+    }
+    return res;
+  }
+  
   // returns quotient and remainder of a/b
   static std::pair<Polynomial, Polynomial> div(const Polynomial& a, const Polynomial& b)
   {
-    Polynomial q, r;
+    Polynomial q;
+    Polynomial r = a;
+   
+    //std::cout << "Division: A = " << a.toExpression()->print() << " B = " << b.toExpression()->print() << std::endl;
+    size_t iteration = 1;
+    std::set<String> allValuesOfR;
+    while (true)
+    {
+      if (iteration > 1000)
+      {
+        //std::cout << "Max iterations reached" << std::endl;
+        jassert(false);
+        break;
+      }
+      
+      //std::cout << "Division iteration " << iteration++ << " Q = " << q.toExpression()->print() << " R = " << r.toExpression()->print() << std::endl;
+      
+      Monomial mr;
+      double mrw;
+      if (!r.getHighestDegreeMonomial(mr, mrw))
+      {
+        //std::cout << "Stopping: no more monomes in remainder" << std::endl;
+        break;
+      }
+      //std::cout << " --> MR: " << mr.toExpression()->print() << std::endl;
+      
+      Monomial mb;
+      double mbw;
+      if (!b.getBestDivisorMonomial(mr, mb, mbw))
+      {
+        //std::cout << "Stopping: could not find a divisor monome" << std::endl;
+        break;
+      }
+      jassert(mbw);
     
+      jassert(Monomial::isDivisible(mr, mb));
+      //std::cout << " --> MB: " << mb.toExpression()->print() << std::endl;
+      
+      // mq = mr / mb
+      Monomial mq = Monomial::div(mr, mb);
+      //std::cout << " --> MQ: " << mq.toExpression()->print() << std::endl;
+      double mqw = mrw / mbw;
+      q.addMonomial(mq, mqw);
+      
+      // r <- r - b * mq
+      r = Polynomial::sub(r, Polynomial::mul(b, mq, mqw));
+      String str = r.toExpression()->print();
+      if (allValuesOfR.find(str) == allValuesOfR.end())
+        allValuesOfR.insert(str);
+      else
+      {
+        //std::cout << "Stopping: cycle" << std::endl;
+        break;
+      }
+    }
     
+    // a = bq + r
+#ifdef JUCE_DEBUG
+    Polynomial dbg = Polynomial::sub(a, Polynomial::add(Polynomial::mul(b, q), r));
+    jassert(dbg.isZero());
+#endif    
     return std::make_pair(q, r);
   }
 
@@ -134,6 +249,55 @@ public:
     return res;
   }
   
+  bool getHighestDegreeMonomial(Monomial& res, double& weight) const
+  {
+    size_t highestDegree = (size_t)-1;
+    for (const_iterator it = monomials.begin(); it != monomials.end(); ++it)
+    {
+      size_t degree = it->first.getDegree();
+      if (highestDegree == (size_t)-1 || degree > highestDegree)
+      {
+        highestDegree = degree;
+        res = it->first;
+        weight = it->second;
+      }
+    }
+    return highestDegree != (size_t)-1;
+  }
+  
+  bool isZero() const
+    {return monomials.empty();}
+   
+  bool areConstantsIntegers() const
+  {
+    for (const_iterator it = monomials.begin(); it != monomials.end(); ++it)
+    {
+      double weight = it->second;
+      if (weight != std::floor(weight))
+        return false;
+    }
+    return true;
+  }
+   
+  double getConstantsL2Norm() const
+  {
+    double res = 0.0;
+    for (const_iterator it = monomials.begin(); it != monomials.end(); ++it)
+      res += it->second * it->second;
+    return sqrt(res);
+  }
+    
+  void multiplyByScalar(double scalar)
+  {
+    if (scalar == 0.0)
+      monomials.clear();
+    else if (scalar != 1.0)
+    {
+      for (iterator it = monomials.begin(); it != monomials.end(); ++it)
+        it->second *= scalar;
+    }
+  }
+   
 protected:
   typedef std::map<Monomial, double> MonomialMap;
   typedef MonomialMap::iterator iterator;
@@ -142,18 +306,29 @@ protected:
   MonomialMap monomials;    // a polynomial is a weighted sum of monomials
 
   void addMonomial(const Monomial& monomial, double weight = 1.0)
-    {monomials[monomial] += weight;}
-    
-  void pruneEmptyMonomials()
   {
-    iterator it, nxt;
-    for (it = monomials.begin(); it != monomials.end(); it = nxt)
-    {
-      nxt = it; ++nxt;
-      if (it->second == 0.0)
-        monomials.erase(it);
-    }
+    double& w = monomials[monomial];
+    w += weight;
+    if (!w)
+      monomials.erase(monomial);
   }
+
+  bool getBestDivisorMonomial(Monomial dividend, Monomial& res, double& weight) const
+  {
+    size_t bestDegree = (size_t)-1;
+    for (const_iterator it = monomials.begin(); it != monomials.end(); ++it)
+      if (Monomial::isDivisible(dividend, it->first))
+      {
+        size_t degree = Monomial::div(dividend, it->first).getDegree();
+        if (degree < bestDegree)
+        {
+          bestDegree = degree;
+          res = it->first;
+          weight = it->second;
+        }
+      }
+    return bestDegree != (size_t)-1;
+  }  
 };
 
 class RationalFunction
@@ -197,6 +372,10 @@ public:
       else if (op == divOp)
         return div(left, right);
     }
+    
+    ParenthesisPtr parenthesis = expression.dynamicCast<Parenthesis>();
+    if (parenthesis)
+      return fromExpression(parenthesis->getExpr());
 
     jassert(false); // this kind of expressions cannot be converted into a RationalFunction 
     return RationalFunction();
@@ -240,8 +419,46 @@ public:
   void simplify()
   {
     std::pair<Polynomial, Polynomial> qr = Polynomial::div(numerator, denominator);
-    // todo ...
+    if (qr.second.isZero())
+    {
+      numerator = qr.first;
+      denominator = Polynomial::one();
+      return;
+    }
+    
+    qr = Polynomial::div(denominator, numerator);
+    if (qr.second.isZero())
+    {
+      numerator = Polynomial::one();
+      denominator = qr.first;
+      return;
+    }
+    
+    // todo: factorization
+  }
   
+  void normalizeConstants()
+  {
+    // ensure that the denominator highest degree monomial has a positive constant
+    Monomial monomial;
+    double weight = 1.0;
+    denominator.getHighestDegreeMonomial(monomial, weight);
+    double invZ = (weight >= 0 ? 1.0 : -1.0);
+/*
+    if (numerator.areConstantsIntegers() && denominator.areConstantsIntegers())
+    {
+      // todo: find highest common divisor of all constants
+    }
+    else
+    {    
+      double l2norm = denominator.getConstantsL2Norm();
+      if (!l2norm)
+        return; // invalid rational function
+      invZ /= l2norm;
+    }*/
+
+    numerator.multiplyByScalar(invZ);
+    denominator.multiplyByScalar(invZ);      
   }
 
 protected:
@@ -271,6 +488,7 @@ protected:
     {
       RationalFunction fraction = RationalFunction::fromExpression(expression);
       fraction.simplify();
+      fraction.normalizeConstants();
       setResult(fraction.toExpression());
     }
   }
@@ -291,13 +509,17 @@ protected:
       return true;
     UnaryOperationPtr unaryOperation = expression.dynamicCast<UnaryOperation>();
     if (unaryOperation)
-      return unaryOperation->getOp() == unmOp;
+      return unaryOperation->getOp() == unmOp && isNumberAlgebra(unaryOperation->getExpr());
     BinaryOperationPtr binaryOperation = expression.dynamicCast<BinaryOperation>();
     if (binaryOperation)
-      return binaryOperation->getOp() == addOp ||
-             binaryOperation->getOp() == subOp ||
-             binaryOperation->getOp() == mulOp ||
-             binaryOperation->getOp() == divOp;
+      return (binaryOperation->getOp() == addOp ||
+              binaryOperation->getOp() == subOp ||
+              binaryOperation->getOp() == mulOp ||
+              binaryOperation->getOp() == divOp) &&
+             isNumberAlgebra(binaryOperation->getLeft()) && isNumberAlgebra(binaryOperation->getRight());
+    ParenthesisPtr parenthesis = expression.dynamicCast<Parenthesis>();
+    if (parenthesis)
+      return isNumberAlgebra(parenthesis->getExpr());
     return false;
   }
 };

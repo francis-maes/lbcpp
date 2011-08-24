@@ -420,6 +420,8 @@ protected:
   ExpressionPtr expr;
 };
 
+typedef ReferenceCountedObjectPtr<Parenthesis> ParenthesisPtr;
+
 /*
 ** Apply Expression
 */
