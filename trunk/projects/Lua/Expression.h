@@ -28,7 +28,7 @@ extern ClassPtr expressionClass;
 // construction function to simplify the tree on the fly 
 extern ExpressionPtr sub(const ExpressionPtr& left, const ExpressionPtr& right);
 extern ExpressionPtr add(const ExpressionPtr& left, const ExpressionPtr& right);
-extern ExpressionPtr multiply(const ExpressionPtr& left, const ExpressionPtr& right);
+extern ExpressionPtr mul(const ExpressionPtr& left, const ExpressionPtr& right);
 extern ExpressionPtr div(const ExpressionPtr& left, const ExpressionPtr& right);
 extern ExpressionPtr pow(const ExpressionPtr& left, const ExpressionPtr& right);
 extern ExpressionPtr unm(const ExpressionPtr& expr);

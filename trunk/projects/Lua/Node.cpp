@@ -139,7 +139,7 @@ int BinaryOperation::getPrecendenceRank() const
   return 0;
 }
 
-ExpressionPtr lbcpp::lua::multiply(const ExpressionPtr& left, const ExpressionPtr& right)
+ExpressionPtr lbcpp::lua::mul(const ExpressionPtr& left, const ExpressionPtr& right)
 {
   LiteralNumberPtr leftNumber = left.dynamicCast<LiteralNumber>();
   LiteralNumberPtr rightNumber = right.dynamicCast<LiteralNumber>();

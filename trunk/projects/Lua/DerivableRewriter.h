@@ -87,14 +87,14 @@ public:
       return;
 
     case mulOp: // (uv)' = u'v + uv'
-      setResult(add(multiply(uprime, v), multiply(u, vprime)));
+      setResult(add(mul(uprime, v), mul(u, vprime)));
       return;
 
     case divOp: // (u/v)' = (u'v - uv') / v^2
       {
         // function (_v) return (u'_v - uv') / _v^2 end (v)
         setResult(div(
-            sub(multiply(uprime, v), multiply(u, vprime)),
+            sub(mul(uprime, v), mul(u, vprime)),
             pow(v, new LiteralNumber(2))));
           return;
       }
@@ -105,7 +105,7 @@ public:
         {
           // u ^ n = (n u^{n-1}) u'
           double n = vnumber->getValue();
-          setResult(multiply(multiply(vnumber, pow(u, new LiteralNumber(n - 1.0))), uprime));
+          setResult(mul(mul(vnumber, pow(u, new LiteralNumber(n - 1.0))), uprime));
           return;
         }
         else
@@ -149,7 +149,7 @@ public:
       if (fun == T("math.exp"))
       {
         // (exp(u))' = u' exp(u)
-        setResult(multiply(up, new Call(call.getFunction(), u)));
+        setResult(mul(up, new Call(call.getFunction(), u)));
         return;
       }
 
@@ -163,14 +163,14 @@ public:
       if (fun == T("math.abs"))
       {
         // abs(u)' = u' * (u < 0 ? -1 : 1)
-        setResult(multiply(up, ternaryOperator(lt(u, new LiteralNumber(0)), new LiteralNumber(-1), new LiteralNumber(1))));
+        setResult(mul(up, ternaryOperator(lt(u, new LiteralNumber(0)), new LiteralNumber(-1), new LiteralNumber(1))));
         return;
       }
 
       if (fun == T("math.sqrt"))
       {
         // sqrt(u)' = u' / (2 * sqrt(u))
-        setResult(div(up, multiply(new LiteralNumber(2), new Call(new Index("math", "sqrt"), u))));
+        setResult(div(up, mul(new LiteralNumber(2), new Call(new Index("math", "sqrt"), u))));
         return;
       }
     }
@@ -206,7 +206,7 @@ public:
         ExpressionPtr derivateFunction = new Index(call.getFunction(), new LiteralNumber(i + 1));
         derivateFunction = new BinaryOperation(orOp, derivateFunction, new Identifier("Derivable.returnZeroFunction"));
         ExpressionPtr newCall = new Call(derivateFunction, call.getArguments());
-        ExpressionPtr term = multiply(newCall, rewrite(call.getArgument(i)));
+        ExpressionPtr term = mul(newCall, rewrite(call.getArgument(i)));
         
         LiteralNumberPtr termNumber = term.dynamicCast<LiteralNumber>();
         if (!termNumber || termNumber->getValue() != 0.0)
