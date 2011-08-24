@@ -3,7 +3,6 @@
 
 AST = {}
 
-
 local function makeObjectVector(class, nodes, startIndex)
   local res = lbcpp.Object.create('ObjectVector<' .. class .. '>')
   for i = startIndex or 1, #nodes do

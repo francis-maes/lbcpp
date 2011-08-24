@@ -206,7 +206,7 @@ public:
   virtual void visit(LiteralNumber& expression)
   {
     String str(expression.getValue());
-    if (str == T("1.#INF"))
+    if (str == T("1.#INF") || str == T("inf"))
       write("math.huge");
     else if (str == T("-1.#INF"))
       write("-math.huge");
@@ -223,12 +223,24 @@ public:
     for (int i = 0; i < str.length(); ++i)
     {
       juce::tchar c = str[i];
-      if (c == '\n')
+      if (c == '\a')
+        write("\\a");
+      else if (c == '\b')
+        write("\\b");
+      else if (c == '\f')
+        write("\\f");
+      else if (c == '\n')
         write("\\n");
       else if (c == '\r')
         write("\\r");
       else if (c == '\t')
         write("\\t");
+      else if (c == '\v')
+        write("\\v");
+      else if (c == '\\')
+        write("\\\\");
+      else if (c == '\'')
+        write("'");
       else if (c == '"')
         write("\\\"");
       else

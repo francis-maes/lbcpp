@@ -4,6 +4,13 @@ require '../ExpressionDiscovery/ReversePolishNotationProblem'
 require 'Random'
 require 'Stochastic'
 
+----------------
+require 'AST'
+require 'Language.LuaChunk'
+ast = AST.parseExpressionFromString("(x * x - 9 * x - 10) / (x + 1)")
+print (ast:print())
+print (ast:simplify():print())
+----------------
 
 problem = DecisionProblem.ReversePolishNotation{
   variables = {"a", "b", "c", "d"},
@@ -69,7 +76,7 @@ local function countDistinctFormulas(problem, x)
       simplifiedFinalStates[str2] = true
       numDistinctSimplifiedFinalStates = numDistinctSimplifiedFinalStates + 1
     end
-    print (str1, "-->", str2)
+    --print (str1, "-->", str2)
 
     -- num unique formulas
     local str3 = makeUniqueKey(x)
