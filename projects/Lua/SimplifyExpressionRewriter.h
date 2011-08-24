@@ -110,6 +110,15 @@ public:
       }
     return res;
   }
+  
+  // returns quotient and remainder of a/b
+  static std::pair<Polynomial, Polynomial> div(const Polynomial& a, const Polynomial& b)
+  {
+    Polynomial q, r;
+    
+    
+    return std::make_pair(q, r);
+  }
 
   ExpressionPtr toExpression() const
   {
@@ -230,7 +239,9 @@ public:
 
   void simplify()
   {
-    
+    std::pair<Polynomial, Polynomial> qr = Polynomial::div(numerator, denominator);
+    // todo ...
+  
   }
 
 protected:

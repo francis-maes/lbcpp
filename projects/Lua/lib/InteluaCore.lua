@@ -62,9 +62,10 @@ local function inteluaLoader(name)
   if package.searchpath then
     path = package.searchpath(name, package.path)
   else
+    name = string.gsub(name, "%.", "/")
     path = package.inteluaPath .. "/" .. name .. ".lua"
   end
---  print ("inteluaLoader: " .. name, path)  
+  --print ("inteluaLoader: " .. name, path)  
   return path and interpreter:loadFile(path)
 end
 

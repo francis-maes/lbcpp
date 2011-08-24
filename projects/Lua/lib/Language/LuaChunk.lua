@@ -20,9 +20,11 @@ mlc = {} -- make gg happy
 local mlp = assert(_G.mlp)
 
 -- error handler
-function __errorHandler(msg)
-  context:error(msg)
-  return msg
+if __errorHandler == nil then
+  __errorHandler = function (msg)
+    context:error(msg)
+    return msg
+  end
 end
 
 module ("LuaChunk", package.seeall)
@@ -225,6 +227,13 @@ function _M.parseFromFile(codeType, filename)
   f:close()
   return _M.parseFromString(codeType, code, filename)
 end
+
+----- Extend the AST interface
+function AST.parseExpressionFromString(string, chunkName)
+  return LuaChunk.parseFromString(0, string, chunkName)
+end
+
+-------
 
 -- 'derivable' extension
 mlp.lexer:add{ "derivable" }

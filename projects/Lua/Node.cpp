@@ -165,6 +165,11 @@ ExpressionPtr lbcpp::lua::div(const ExpressionPtr& left, const ExpressionPtr& ri
   LiteralNumberPtr leftNumber = left.dynamicCast<LiteralNumber>();
   LiteralNumberPtr rightNumber = right.dynamicCast<LiteralNumber>();
 
+  // x / 0 = 0/0
+  if (rightNumber && rightNumber->getValue() == 0.0)
+   return new LiteralNumber(0.0 / rightNumber->getValue()); // nan
+
+  // constants division
   if (leftNumber && rightNumber)
     return new LiteralNumber(leftNumber->getValue() / rightNumber->getValue());
   
