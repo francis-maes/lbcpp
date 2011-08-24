@@ -4,27 +4,28 @@ require '../ExpressionDiscovery/ReversePolishNotationProblem'
 require 'Random'
 require 'Stochastic'
 
-----------------
---require 'AST'
---require 'Language.LuaChunk'
---ast = AST.parseExpressionFromString("(x * x * x + y * y * y + z * z * z - 3 * x * y * z) / (x + y + z)")
---print (ast:print())
---print (ast:simplify():print())
-----------------
 
 function math.inverse(x)
   return 1 / x
 end
 
+----------------
+--require 'AST'
+--require 'Language/LuaChunk'
+--ast = AST.parseExpressionFromString("math.inverse(math.inverse(x - x))")
+--print (ast:print())
+--print (ast:simplify():print())
+----------------
+
 problem = DecisionProblem.ReversePolishNotation{
   variables = {"a", "b", "c", "d"},
   constants = {},
   unaryOperations = {"unm"},
-  unaryFunctions = {"math.exp", "math.log", "math.inverse"},
+  unaryFunctions = {"math.inverse"},--"math.exp", "math.log", "math.inverse"},
   binaryOperations = {"add", "sub", "mul", "div"},
   binaryFunctions = {"math.max", "math.min"},
   objective = | | 0,
-  maxSize = 3
+  maxSize = 5
 }
 
 local dataset = {}

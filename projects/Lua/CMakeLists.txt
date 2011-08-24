@@ -34,6 +34,7 @@ SET(INTELUA_REWRITER_SOURCES
   InteluaPreprocessRewriter.h
   DerivableRewriter.h
   SubspecifiedRewriter.h
+  EvaluateConstantsRewriter.h
   SimplifyExpressionRewriter.h
 )
 

@@ -10,6 +10,7 @@
 #include "Visitor.h"
 #include "PrettyPrinterVisitor.h"
 #include "SimplifyExpressionRewriter.h"
+#include "EvaluateConstantsRewriter.h"
 using namespace lbcpp::lua;
 using lbcpp::LuaState;
 
@@ -70,8 +71,9 @@ int Node::print(LuaState& state)
 int Expression::simplify(LuaState& state)
 {
   ExpressionPtr expr = state.checkObject(1, expressionClass)->cloneAndCast<Expression>();
-  SimplifyExpressionRewriter rewriter(&state.getContext());
-  state.pushObject(rewriter.rewrite(expr));
+  expr = EvaluateConstantsRewriter(&state.getContext()).rewrite(expr);
+  expr = CanonizeExpressionRewriter(&state.getContext()).rewrite(expr);
+  state.pushObject(expr);
   return 1;
 }
 
@@ -164,10 +166,6 @@ ExpressionPtr lbcpp::lua::div(const ExpressionPtr& left, const ExpressionPtr& ri
 {
   LiteralNumberPtr leftNumber = left.dynamicCast<LiteralNumber>();
   LiteralNumberPtr rightNumber = right.dynamicCast<LiteralNumber>();
-
-  // x / 0 = 0/0
-  if (rightNumber && rightNumber->getValue() == 0.0)
-   return new LiteralNumber(0.0 / rightNumber->getValue()); // nan
 
   // constants division
   if (leftNumber && rightNumber)
