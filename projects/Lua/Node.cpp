@@ -9,13 +9,22 @@
 #include "Node.h"
 #include "Visitor.h"
 #include "PrettyPrinterVisitor.h"
-#include "SimplifyExpressionRewriter.h"
+#include "CanonizeExpressionRewriter.h"
 #include "EvaluateConstantsRewriter.h"
 using namespace lbcpp::lua;
 using lbcpp::LuaState;
 
 String Node::print() const
   {return PrettyPrinterVisitor::print(*this);}
+
+int Node::compare(const lbcpp::ObjectPtr& o) const
+{
+  // todo: more efficient implementation
+  NodePtr otherNode = o.staticCast<Node>();
+  String a = print();
+  String b = otherNode->print();
+  return a.compare(b);
+}
 
 int Node::setLineInfo(LuaState& state)
 {
@@ -68,11 +77,21 @@ int Node::print(LuaState& state)
   return 1;
 }
 
-int Expression::simplify(LuaState& state)
+int Expression::canonize(LuaState& state)
 {
   ExpressionPtr expr = state.checkObject(1, expressionClass)->cloneAndCast<Expression>();
-  expr = EvaluateConstantsRewriter(&state.getContext()).rewrite(expr);
-  expr = CanonizeExpressionRewriter(&state.getContext()).rewrite(expr);
+  EvaluateConstantsRewriter rewriter1(&state.getContext());
+  CanonizeExpressionRewriter rewriter2(&state.getContext());
+  size_t iteration = 1;
+  do
+  {
+    //std::cerr << "Canonize iteration " << iteration++ << " : " << expr->print() << std::endl;
+    rewriter1.clearChangedFlag();
+    expr = rewriter1.rewrite(expr);
+    rewriter2.clearChangedFlag();
+    expr = rewriter2.rewrite(expr);
+    jassert(iteration < 10);
+  } while (rewriter1.hasChanged() || rewriter2.hasChanged());
   state.pushObject(expr);
   return 1;
 }

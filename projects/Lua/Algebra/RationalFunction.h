@@ -22,7 +22,9 @@ public:
   RationalFunction(const LiteralNumberPtr& number);
   RationalFunction() {}
 
+  static bool isRationalFunctionRoot(const ExpressionPtr& expression);
   static RationalFunction fromExpression(const ExpressionPtr& expression);
+  static ExpressionPtr canonize(const ExpressionPtr& expression);
 
   static RationalFunction add(const RationalFunction& left, const RationalFunction& right);
   static RationalFunction sub(const RationalFunction& left, const RationalFunction& right);

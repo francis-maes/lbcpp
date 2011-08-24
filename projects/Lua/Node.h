@@ -47,7 +47,6 @@ typedef ReferenceCountedObjectPtr<Scope> ScopePtr;
 class LineInfo : public Object
 {
 public:
-
   size_t getLine() const
     {return line;}
 
@@ -117,6 +116,8 @@ public:
   static int getSubNode(LuaState& state);
   static int setSubNode(LuaState& state);
   static int print(LuaState& state);
+
+  virtual int compare(const ObjectPtr& otherObject) const;
 
 protected:
   Scope* scope;

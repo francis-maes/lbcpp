@@ -206,12 +206,14 @@ public:
   virtual void visit(LiteralNumber& expression)
   {
     String str(expression.getValue());
-    if (str == T("1.#INF") || str == T("inf"))
+    if (str == T("1.#INF") || str == T("1.#IND") || str == T("inf"))
       write("math.huge");
-    else if (str == T("-1.#INF") || str == T("-inf"))
+    else if (str == T("-1.#INF") || str == T("-1.#IND") || str == T("-inf"))
       write("-math.huge");
     else if (str == T("nan"))
       write("(0/0)");
+    else if (str == T("-0"))
+      write("0");
     else
       write(str);
   }

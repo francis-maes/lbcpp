@@ -20,7 +20,7 @@ public:
   virtual LuaChunkType getType() const
     {return luaExpression;}
 
-  static int simplify(LuaState& state);
+  static int canonize(LuaState& state);
 };
 
 extern ClassPtr expressionClass;

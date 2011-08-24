@@ -9,23 +9,33 @@ function math.inverse(x)
   return 1 / x
 end
 
+_deflog = math.log
+
+function math.log(x)
+  if x < 0 then
+    return -math.huge
+  else
+    return _deflog(x)
+  end
+end
+
 ----------------
 --require 'AST'
 --require 'Language/LuaChunk'
 --ast = AST.parseExpressionFromString("math.inverse(math.inverse(x - x))")
 --print (ast:print())
---print (ast:simplify():print())
+--print (ast:canonize():print())
 ----------------
 
 problem = DecisionProblem.ReversePolishNotation{
   variables = {"a", "b", "c", "d"},
   constants = {},
   unaryOperations = {"unm"},
-  unaryFunctions = {"math.inverse"},--"math.exp", "math.log", "math.inverse"},
+  unaryFunctions = {"math.inverse","math.exp", "math.log"},
   binaryOperations = {"add", "sub", "mul", "div"},
   binaryFunctions = {"math.max", "math.min"},
   objective = | | 0,
-  maxSize = 5
+  maxSize = 4
 }
 
 local dataset = {}
@@ -38,6 +48,15 @@ for i = 1,10 do
   }
   table.insert(dataset, example)
 end
+for i = 1,10 do
+  local example = {
+    Stochastic.standardGaussian() * 100, 
+    Stochastic.standardGaussian() * 100, 
+    Stochastic.standardGaussian() * 100, 
+    Stochastic.standardGaussian() * 100
+  }
+  table.insert(dataset, example)
+end
 
 function makeUniqueKey(formula)
   local f = buildExpression(problem.__parameters.variables, formula)
@@ -46,7 +65,7 @@ function makeUniqueKey(formula)
     local y = f(unpack(example))
     assert(not(y == nil))
     --print (y)
-    if y > -math.huge and y < math.huge then
+    if y > -1e-10 and y < 1e10 then
       y = math.floor(y * 10000 + 0.5)
     else
       y = math.huge
@@ -78,7 +97,7 @@ local function countDistinctFormulas(problem, x)
     end
 
     -- num distinct simplified final states
-    local str2 = problem.stateToString(x:simplify())
+    local str2 = problem.stateToString(x:canonize())
     if simplifiedFinalStates[str2] == nil then
       simplifiedFinalStates[str2] = true
       numDistinctSimplifiedFinalStates = numDistinctSimplifiedFinalStates + 1
@@ -93,10 +112,11 @@ local function countDistinctFormulas(problem, x)
     end
     uniqueFinalStates[str3][str2] = true
 
-    if not (str3 == makeUniqueKey(x:simplify())) then
-      print (str1, str2, str3, makeUniqueKey(x:simplify()))
+    if not (str3 == makeUniqueKey(x:canonize())) then
+      context:warning("Inexact canonization: " .. str1 .. " ==>" .. str2)
+      print("Key1:", str3)
+      print("Key2:", makeUniqueKey(x:canonize()))
     end
-    assert(str3 == makeUniqueKey(x:simplify()))
     --print ("=>", str3)--str1, str2, str3)
 
   else

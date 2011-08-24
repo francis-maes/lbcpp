@@ -89,6 +89,36 @@ public:
   virtual void visit(Parenthesis& parenthesis)
     {setResult(rewrite(parenthesis.getExpr()));}
 
+  virtual void visit(Call& call)
+  {
+    acceptChildren(call);
+
+    String fun = call.getFunction()->print();
+    if (call.getNumArguments() == 1)
+    {
+      const double* number = getLiteralNumber(call.getArgument(0));
+      if (number)
+      {
+        if (fun == T("math.exp"))
+          setResult(new LiteralNumber(exp(*number)));
+        else if (fun == T("math.log"))
+          setResult(new LiteralNumber(log(*number)));
+      }
+    }
+    else if (call.getNumArguments() == 2)
+    {
+      const double* number1 = getLiteralNumber(call.getArgument(0));
+      const double* number2 = getLiteralNumber(call.getArgument(1));
+      if (number1 && number2)
+      {
+        if (fun == T("math.max"))
+          setResult(new LiteralNumber(juce::jmax(*number1, *number2)));
+        else if (fun == T("math.min"))
+          setResult(new LiteralNumber(juce::jmin(*number1, *number2)));
+      }
+    }
+  }
+
 protected:
   static const double* getLiteralNumber(const NodePtr& node)
   {

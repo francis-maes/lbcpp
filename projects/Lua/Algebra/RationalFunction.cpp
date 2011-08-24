@@ -20,6 +20,37 @@ RationalFunction::RationalFunction(const IdentifierPtr& identifier)
 RationalFunction::RationalFunction(const LiteralNumberPtr& number)
   : numerator(number), denominator(1.0) {}
 
+bool RationalFunction::isRationalFunctionRoot(const ExpressionPtr& expression)
+{
+  if (expression.isInstanceOf<Identifier>() || expression.isInstanceOf<LiteralNumber>())
+    return true;
+  ParenthesisPtr parenthesis = expression.dynamicCast<Parenthesis>();
+  if (parenthesis)
+    return isRationalFunctionRoot(parenthesis->getExpr());
+  UnaryOperationPtr unaryOperation = expression.dynamicCast<UnaryOperation>();
+  if (unaryOperation)
+    return unaryOperation->getOp() == unmOp;
+  BinaryOperationPtr binaryOperation = expression.dynamicCast<BinaryOperation>();
+  if (binaryOperation)
+  {
+    if (binaryOperation->getOp() == addOp ||
+        binaryOperation->getOp() == subOp ||
+        binaryOperation->getOp() == mulOp ||
+        binaryOperation->getOp() == divOp)
+      return true;
+    if (binaryOperation->getOp() == powOp)
+    {
+      LiteralNumberPtr rightNumber = binaryOperation->getRight().dynamicCast<LiteralNumber>();
+      return rightNumber && rightNumber->getValue() == std::floor(rightNumber->getValue());
+    }
+  }
+  CallPtr call = expression.dynamicCast<Call>();
+  if (call)
+    return call->getFunction()->print() == T("math.inverse") &&
+           call->getNumArguments() == 1;
+  return false;
+}
+
 RationalFunction RationalFunction::fromExpression(const ExpressionPtr& expression)
 {
   IdentifierPtr identifier = expression.dynamicCast<Identifier>();
@@ -70,6 +101,14 @@ RationalFunction RationalFunction::fromExpression(const ExpressionPtr& expressio
 
   jassert(false); // this kind of expressions cannot be converted into a RationalFunction 
   return RationalFunction();
+}
+
+ExpressionPtr RationalFunction::canonize(const ExpressionPtr& expression)
+{
+  RationalFunction fraction = fromExpression(expression);
+  fraction.simplify();
+  fraction.normalizeConstants();
+  return fraction.toExpression();
 }
 
 RationalFunction RationalFunction::add(const RationalFunction& left, const RationalFunction& right)

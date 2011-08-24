@@ -230,6 +230,12 @@ protected:
   virtual ObjectPtr computeGeneratedObject(ExecutionContext& context, const String& variableName);
 };
 
+struct ObjectComparator
+{
+  bool operator ()(const ObjectPtr& object1, const ObjectPtr& object2) const
+    {return object1->compare(object2) < 0;}
+};
+
 class NameableObject : public Object
 {
 public:
