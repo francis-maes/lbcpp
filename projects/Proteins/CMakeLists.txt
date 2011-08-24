@@ -85,6 +85,7 @@ SET(LBCPP_PROTEIN_PREDICTOR_SOURCES
   Predictor/NumericalCysteinPredictorParameters.h
   Predictor/Lin09PredictorParameters.h
   Predictor/ConnectivityPatternClassifier.h
+  Predictor/LargeProteinPredictorParameters.h
   Predictor/ProteinPredictorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinPredictorLibrary.cpp
 )
@@ -126,7 +127,6 @@ IF(LBCPP_USER_INTERFACE)
     UserInterface/MultiSequenceComponent.h
     UserInterface/MultiProtein1DComponent.h
     UserInterface/MultiProtein2DComponent.h
-    UserInterface/ProteinPerceptionComponent.h
     UserInterface/MultiProteinComponent.h
     UserInterface/ProteinUserInterfaceLibrary.xml
     ${CMAKE_CURRENT_BINARY_DIR}/ProteinUserInterfaceLibrary.cpp

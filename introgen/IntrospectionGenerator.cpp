@@ -563,18 +563,21 @@ protected:
     String classNameWithFirstLowerCase = replaceFirstLettersByLowerCase(className) + metaClass;
     if (parameters.size() == 0)
       std::cerr << "Error: No parameters in template. Type = " << (const char *)className << std::endl;
-    else if (parameters.size() == 1)
-      writeShortFunction(metaClass + T("Ptr ") + classNameWithFirstLowerCase + T("(TypePtr type)"),
-      T("return lbcpp::getType(T(") + className.quoted() + T("), std::vector<TypePtr>(1, type));"));
-    else if (parameters.size() == 2)
-      writeShortFunction(metaClass + T("Ptr ") + classNameWithFirstLowerCase + T("(TypePtr type1, TypePtr type2)"),
-        T("std::vector<TypePtr> types(2); types[0] = type1; types[1] = type2; return lbcpp::getType(T(") + className.quoted() + T("), types);"));
-    else if (parameters.size() == 3)
-      writeShortFunction(metaClass + T("Ptr ") + classNameWithFirstLowerCase + T("(TypePtr type1, TypePtr type2, TypePtr type3)"),
-        T("std::vector<TypePtr> types(3); types[0] = type1; types[1] = type2; types[2] = type3; return lbcpp::getType(T(") + className.quoted() + T("), types);"));
     else
-      std::cerr << "Error: Class declarator with more than 3 parameters is not implemented yet. Type: "
-		<< (const char* )className << ", NumParams = " << parameters.size() << std::endl;
+    {
+      String arguments;
+      String initialization;
+      for (size_t i = 0; i < parameters.size(); ++i)
+      {
+        arguments += T("TypePtr type") + String((int)i + 1);
+        initialization += T("types[") + String((int)i) + T("] = type") + String((int)i + 1) + T("; ");
+
+        if (i < parameters.size() - 1)
+          arguments += T(", ");
+      }
+      writeShortFunction(metaClass + T("Ptr ") + classNameWithFirstLowerCase + T("(") + arguments + T(")"),
+        T("std::vector<TypePtr> types(") + String((int)parameters.size()) + T("); ") + initialization + T("return lbcpp::getType(T(") + className.quoted() + T("), types);")); 
+    }
 
     // class constructors
     forEachXmlChildElementWithTagName(*xml, elt, T("constructor"))

@@ -14,11 +14,14 @@
 namespace lbcpp
 {
 
+extern ClassPtr concatenateDoubleFeatureGeneratorClass;
+
 class ConcatenateDoubleFeatureGenerator : public FeatureGenerator
 {
 public:
   ConcatenateDoubleFeatureGenerator(bool lazy = true)
-    : FeatureGenerator(lazy) {}
+    : FeatureGenerator(lazy)
+    {setThisClass(concatenateDoubleFeatureGeneratorClass);}
 
   virtual size_t getMinimumNumRequiredInputs() const
     {return 1;}
@@ -73,11 +76,14 @@ private:
   TypePtr elementsType;
 };
 
+extern ClassPtr concatenateDoubleVectorFeatureGeneratorClass;
+
 class ConcatenateDoubleVectorFeatureGenerator : public FeatureGenerator
 {
 public:
   ConcatenateDoubleVectorFeatureGenerator(bool lazy = true)
-    : FeatureGenerator(lazy) {}
+    : FeatureGenerator(lazy)
+    {setThisClass(concatenateDoubleVectorFeatureGeneratorClass);}
 
   virtual ClassPtr getLazyOutputType(EnumerationPtr featuresEnumeration, TypePtr featuresType) const
     {return compositeDoubleVectorClass(featuresEnumeration, featuresType);}
@@ -178,11 +184,14 @@ private:
   TypePtr elementsType;
 };
 
+extern ClassPtr concatenateMixedDoubleDoubleVectorFeatureGeneratorClass;
+
 class ConcatenateMixedDoubleDoubleVectorFeatureGenerator : public ConcatenateDoubleVectorFeatureGenerator
 {
 public:
   ConcatenateMixedDoubleDoubleVectorFeatureGenerator(bool lazy = true)
-    : ConcatenateDoubleVectorFeatureGenerator(lazy) {}
+    : ConcatenateDoubleVectorFeatureGenerator(lazy)
+    {setThisClass(concatenateMixedDoubleDoubleVectorFeatureGeneratorClass);}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
     {return sumType(doubleType, doubleVectorClass());}
@@ -312,6 +321,7 @@ public:
       return new ConcatenateDoubleVectorFeatureGenerator(lazy);
     if (isAllDoubleOrDoubleVector)
       return new ConcatenateMixedDoubleDoubleVectorFeatureGenerator(lazy);
+    jassertfalse;
     return FunctionPtr();
   }
 
