@@ -116,6 +116,7 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/BricoBox.h
   WorkUnit/BricoBox.cpp
   WorkUnit/CysteinBox.h
+  WorkUnit/LargeBox.h
   WorkUnit/ProteinStatisticsWorkUnit.h
   WorkUnit/FabienBox.h
   WorkUnit/ProteinWorkUnitLibrary.xml

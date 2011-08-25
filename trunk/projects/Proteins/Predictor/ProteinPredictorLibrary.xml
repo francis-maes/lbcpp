@@ -274,7 +274,6 @@
     <!-- Global Features -->
     <variable type="Boolean" name="useProteinLength"/>
     <variable type="Boolean" name="useNumCysteins"/>
-    <variable type="Boolean" name="useRelativePosition"/>
 
     <variable type="Boolean" name="useAminoAcidGlobalHistogram"/>
     <variable type="Boolean" name="usePSSMGlobalHistogram"/>
@@ -284,6 +283,9 @@
     <variable type="Boolean" name="useDRGlobalHistogram"/>
     <variable type="Boolean" name="useSTALGlobalHistogram"/>
     <!-- Residue Features -->
+    <variable type="Boolean" name="useRelativePosition"/>
+    <variable type="Boolean" name="useRelativeCysteinIndex"/>
+
     <variable type="PositiveInteger" name="aminoAcidWindowSize"/>
     <variable type="PositiveInteger" name="pssmWindowSize"/>
     <variable type="PositiveInteger" name="ss3WindowSize"/>

@@ -103,10 +103,7 @@ public:
     LargeProteinPerceptionPtr res = new LargeProteinPerception(getOutputType());
     const size_t n = getNumInputs();
     for (size_t i = 0; i < n; ++i)
-    {
       res->setVariable(i, inputs[i]);
-      std::cout << res->getVariableName(i) << ": " << res->getVariableType(i)->toString() << std::endl;
-    }
     return res;
   }
 };
@@ -152,7 +149,6 @@ public:
   /* Global Features */
   bool useProteinLength;
   bool useNumCysteins;
-  bool useRelativePosition; // TODO
   
   bool useAminoAcidGlobalHistogram;
   bool usePSSMGlobalHistogram;
@@ -163,6 +159,9 @@ public:
   bool useSTALGlobalHistogram;
 
   /* Residue Features */
+  bool useRelativePosition;
+  bool useRelativeCysteinIndex;
+
   size_t aminoAcidWindowSize;
   size_t pssmWindowSize;
   size_t ss3WindowSize;
@@ -179,17 +178,18 @@ public:
   size_t drLocalHistogramSize;
   size_t stalLocalHistogramSize;
   
-  size_t separationProfilSize; // TODO
+  size_t separationProfilSize;
   
   LargeProteinParameters() :
     /* Global Features */
-    useProteinLength(false), useNumCysteins(false), useRelativePosition(false),
+    useProteinLength(false), useNumCysteins(false),
 
     useAminoAcidGlobalHistogram(false), usePSSMGlobalHistogram(false),
     useSS3GlobalHistogram(false), useSS8GlobalHistogram(false), useSAGlobalHistogram(false),
     useDRGlobalHistogram(false), useSTALGlobalHistogram(false),
 
     /* Residue Features */
+    useRelativePosition(false), useRelativeCysteinIndex(false),
     aminoAcidWindowSize(0), pssmWindowSize(0),
     ss3WindowSize(0), ss8WindowSize(0), saWindowSize(0),
     drWindowSize(0), stalWindowSize(0),
@@ -201,6 +201,108 @@ public:
     separationProfilSize(0)
   {}
 
+  static std::vector<StreamPtr> createStreams()
+  {
+    const size_t n = largeProteinParametersClass->getNumMemberVariables();
+    std::vector<StreamPtr> res(n);
+    for (size_t i = 0; i < n; ++i)
+    {
+      const TypePtr varType = largeProteinParametersClass->getMemberVariableType(i);
+      const String varName = largeProteinParametersClass->getMemberVariableName(i);
+      if (varType->inheritsFrom(booleanType))
+        res[i] = booleanStream(true);
+      else if (varName.endsWith(T("WindowSize")))
+      {
+        std::vector<int> values;
+        for (int j = 1; j < 20; j += 2)
+          values.push_back(j);
+        for (int j = 21; j < 40; j += 4)
+          values.push_back(j);
+        res[i] = integerStream(positiveIntegerType, values);
+      }
+      else if (varName.endsWith(T("LocalHistogramSize")))
+      {
+        std::vector<int> values;
+        for (int j = 10; j < 100; j += 10)
+          values.push_back(j);
+        res[i] = integerStream(positiveIntegerType, values);
+      }
+      else if (varName == T("separationProfilSize"))
+      {
+        std::vector<int> values;
+        for (int j = 1; j < 20; j += 2)
+          values.push_back(j);
+        res[i] = integerStream(positiveIntegerType, values);
+      }
+      else
+        jassertfalse;
+      
+      return res;
+    }
+  }
+
+  static std::vector<StreamPtr> createSingleTaskStreams(ProteinTarget target)
+  {
+    std::vector<StreamPtr> res = createStreams();
+    if (target != ss3Target)
+    {
+      res[largeProteinParametersClass->findMemberVariable(T("useSS3GlobalHistogram"))] = StreamPtr();
+      res[largeProteinParametersClass->findMemberVariable(T("ss3WindowSize"))] = StreamPtr();
+      res[largeProteinParametersClass->findMemberVariable(T("ss3LocalHistogramSize"))] = StreamPtr();
+    }
+    if (target != ss8Target)
+    {
+      res[largeProteinParametersClass->findMemberVariable(T("useSS8GlobalHistogram"))] = StreamPtr();
+      res[largeProteinParametersClass->findMemberVariable(T("ss8WindowSize"))] = StreamPtr();
+      res[largeProteinParametersClass->findMemberVariable(T("ss8LocalHistogramSize"))] = StreamPtr();
+    }
+    if (target != sa20Target)
+    {
+      res[largeProteinParametersClass->findMemberVariable(T("useSAGlobalHistogram"))] = StreamPtr();
+      res[largeProteinParametersClass->findMemberVariable(T("saWindowSize"))] = StreamPtr();
+      res[largeProteinParametersClass->findMemberVariable(T("saLocalHistogramSize"))] = StreamPtr();
+    }
+    if (target != drTarget)
+    {
+      res[largeProteinParametersClass->findMemberVariable(T("useDRGlobalHistogram"))] = StreamPtr();
+      res[largeProteinParametersClass->findMemberVariable(T("drWindowSize"))] = StreamPtr();
+      res[largeProteinParametersClass->findMemberVariable(T("drLocalHistogramSize"))] = StreamPtr();
+    }
+    if (target != stalTarget)
+    {
+      res[largeProteinParametersClass->findMemberVariable(T("useSTALGlobalHistogram"))] = StreamPtr();
+      res[largeProteinParametersClass->findMemberVariable(T("stalWindowSize"))] = StreamPtr();
+      res[largeProteinParametersClass->findMemberVariable(T("stalLocalHistogramSize"))] = StreamPtr();
+    }
+    return res;
+  }
+
+  static std::vector<StreamPtr> createSingleTaskSingleStageStreams()
+  {
+    std::vector<StreamPtr> res = createStreams();
+
+    res[largeProteinParametersClass->findMemberVariable(T("useSS3GlobalHistogram"))] = StreamPtr();
+    res[largeProteinParametersClass->findMemberVariable(T("ss3WindowSize"))] = StreamPtr();
+    res[largeProteinParametersClass->findMemberVariable(T("ss3LocalHistogramSize"))] = StreamPtr();
+
+    res[largeProteinParametersClass->findMemberVariable(T("useSS8GlobalHistogram"))] = StreamPtr();
+    res[largeProteinParametersClass->findMemberVariable(T("ss8WindowSize"))] = StreamPtr();
+    res[largeProteinParametersClass->findMemberVariable(T("ss8LocalHistogramSize"))] = StreamPtr();
+
+    res[largeProteinParametersClass->findMemberVariable(T("useSAGlobalHistogram"))] = StreamPtr();
+    res[largeProteinParametersClass->findMemberVariable(T("saWindowSize"))] = StreamPtr();
+    res[largeProteinParametersClass->findMemberVariable(T("saLocalHistogramSize"))] = StreamPtr();
+
+    res[largeProteinParametersClass->findMemberVariable(T("useDRGlobalHistogram"))] = StreamPtr();
+    res[largeProteinParametersClass->findMemberVariable(T("drWindowSize"))] = StreamPtr();
+    res[largeProteinParametersClass->findMemberVariable(T("drLocalHistogramSize"))] = StreamPtr();
+
+    res[largeProteinParametersClass->findMemberVariable(T("useSTALGlobalHistogram"))] = StreamPtr();
+    res[largeProteinParametersClass->findMemberVariable(T("stalWindowSize"))] = StreamPtr();
+    res[largeProteinParametersClass->findMemberVariable(T("stalLocalHistogramSize"))] = StreamPtr();
+
+    return res;
+  }
 protected:
   friend class LargeProteinParametersClass;
 };
@@ -350,7 +452,7 @@ public:
       if (fp->useDRGlobalHistogram)
         builder.addFunction(accumulatorGlobalMeanFunction(), drAccumulator, T("h(DR)"));
       if (fp->useSTALGlobalHistogram)
-        builder.addFunction(accumulatorGlobalMeanFunction(), stalAccumulator, T("h(STAL)"));
+        builder.addFunction(accumulatorGlobalMeanFunction(), stalAccumulator, T("h(StAl)"));
 
       // number of cysteins
       if (fp->useNumCysteins)
@@ -408,8 +510,11 @@ public:
     /* Inputs */
     size_t position = builder.addInput(positiveIntegerType, T("position"));
     size_t proteinPerception = builder.addInput(largeProteinPerceptionClass());
-    /* Data */ // TODO: take cysteinProfil into account and residueRelativePosition
-    //size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinPerception, T("protein"));
+    /* Data */
+    size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinPerception, T("protein"));
+    size_t cysteinIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, position);
+    size_t numCysteins = builder.addFunction(getVariableFunction(T("numCysteins")), proteinPerception, T("#Cys"));
+    size_t length = builder.addFunction(getVariableFunction(T("length")), proteinPerception, T("length"));
     size_t aaResidueFeatures = builder.addFunction(getVariableFunction(T("aaResidueFeatures")), proteinPerception, T("pssmRF"));
     size_t aaAccumulator = builder.addFunction(getVariableFunction(T("aaAccumulator")), proteinPerception, T("aaAccu"));
     size_t pssmResidueFeatures = builder.addFunction(getVariableFunction(T("pssmResidueFeatures")), proteinPerception, T("pssmRF"));
@@ -426,6 +531,11 @@ public:
     size_t stalAccumulator = builder.addFunction(getVariableFunction(T("stalAccumulator")), proteinPerception, T("stalAccu"));
     /* Output */
     builder.startSelection();
+      if (fp->useRelativePosition)
+        builder.addFunction(new RelativeValueFeatureGenerator(1), position, length, T("Pos/Len"));
+      if (fp->useRelativeCysteinIndex)
+        builder.addFunction(new RelativeValueFeatureGenerator(1), cysteinIndex, numCysteins, T("Cys/#Cys"));
+
       // window sizes
       if (fp->aminoAcidWindowSize)
         builder.addFunction(centeredContainerWindowFeatureGenerator(fp->aminoAcidWindowSize), aaResidueFeatures, position, T("w(AA,") + String((int)fp->aminoAcidWindowSize) + (")"));
@@ -440,7 +550,7 @@ public:
       if (fp->drWindowSize)
         builder.addFunction(centeredContainerWindowFeatureGenerator(fp->drWindowSize), drResidueFeatures, position, T("w(DR,") + String((int)fp->drWindowSize) + (")"));
       if (fp->stalWindowSize)
-        builder.addFunction(centeredContainerWindowFeatureGenerator(fp->stalWindowSize), stalResidueFeatures, position, T("w(STAL,") + String((int)fp->stalWindowSize) + (")"));
+        builder.addFunction(centeredContainerWindowFeatureGenerator(fp->stalWindowSize), stalResidueFeatures, position, T("w(StAl,") + String((int)fp->stalWindowSize) + (")"));
 
       // local histogram
       if (fp->aminoAcidLocalHistogramSize)
@@ -456,7 +566,11 @@ public:
       if (fp->drLocalHistogramSize)
         builder.addFunction(accumulatorLocalMeanFunction(fp->drLocalHistogramSize), drAccumulator, position, T("h(DR,") + String((int)fp->drLocalHistogramSize) + T(")"));
       if (fp->stalLocalHistogramSize)
-        builder.addFunction(accumulatorLocalMeanFunction(fp->stalLocalHistogramSize), stalAccumulator, position, T("h(STAL,") + String((int)fp->stalLocalHistogramSize) + T(")"));
+        builder.addFunction(accumulatorLocalMeanFunction(fp->stalLocalHistogramSize), stalAccumulator, position, T("h(StAl,") + String((int)fp->stalLocalHistogramSize) + T(")"));
+
+      // cystein profil
+      if (fp->separationProfilSize)
+        builder.addFunction(new CysteinSeparationProfilFeatureGenerator(fp->separationProfilSize, true), protein, position, T("CysProfil(") + String((int)fp->separationProfilSize) + T(")"));
 
       // AntiCrash
       builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 0, 0.0), T("null"));

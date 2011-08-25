@@ -8,9 +8,6 @@
 
 #endif
 
-#include <lbcpp/UserInterface/PieChartComponent.h>
-#include <lbcpp/UserInterface/HistogramComponent.h>
-
 #include <lbcpp/UserInterface/VariableSelector.h>
 
 #include "../Predictor/NumericalCysteinPredictorParameters.h"
