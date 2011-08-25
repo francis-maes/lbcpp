@@ -96,11 +96,11 @@ std::pair<Polynomial, Polynomial> Polynomial::div(const Polynomial& a, const Pol
 {
   Polynomial q;
   Polynomial r = a;
- 
+
   //std::cout << "Division: A = " << a.toExpression()->print() << " B = " << b.toExpression()->print() << std::endl;
   size_t iteration = 1;
   std::set<String> allValuesOfR;
-  while (true)
+  while (r.getDegree() >= b.getDegree())
   {
     if (iteration > 1000)
     {
@@ -191,6 +191,18 @@ bool Polynomial::getHighestDegreeMonomial(Monomial& res, double& weight) const
     }
   }
   return highestDegree != (size_t)-1;
+}
+
+size_t Polynomial::getDegree() const
+{
+  size_t highestDegree = 0;
+  for (const_iterator it = monomials.begin(); it != monomials.end(); ++it)
+  {
+    size_t degree = it->first.getDegree();
+    if (degree > highestDegree)
+      highestDegree = degree;
+  }
+  return highestDegree;
 }
 
 bool Polynomial::isZero() const

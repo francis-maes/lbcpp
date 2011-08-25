@@ -37,14 +37,17 @@ public:
   static std::pair<Polynomial, Polynomial> div(const Polynomial& a, const Polynomial& b);
 
   ExpressionPtr toExpression() const;
-  bool getHighestDegreeMonomial(Monomial& res, double& weight) const;
+
   bool isZero() const;
   bool isOne() const;
 
   bool areConstantsIntegers() const;
   double getConstantsL2Norm() const;
   void multiplyByScalar(double scalar);
-   
+
+  bool getHighestDegreeMonomial(Monomial& res, double& weight) const;
+  size_t getDegree() const;
+
 protected:
   typedef std::map<Monomial, double> MonomialMap;
   typedef MonomialMap::iterator iterator;
