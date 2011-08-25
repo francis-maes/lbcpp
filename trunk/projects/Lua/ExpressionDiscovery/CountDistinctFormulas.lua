@@ -35,7 +35,7 @@ problem = DecisionProblem.ReversePolishNotation{
   binaryOperations = {"add", "sub", "mul", "div"},
   binaryFunctions = {"math.max", "math.min"},
   objective = | | 0,
-  maxSize = 4
+  maxSize = 6
 }
 
 local dataset = {}
@@ -112,7 +112,7 @@ local function countDistinctFormulas(problem, x)
     end
     uniqueFinalStates[str3][str2] = true
 
-    if not (str3 == makeUniqueKey(x:canonize())) then
+    if str3 ~= makeUniqueKey(x:canonize()) and string.find(str3, "inf") == nil then
       context:warning("Inexact canonization: " .. str1 .. " ==>" .. str2)
       print("Key1:", str3)
       print("Key2:", makeUniqueKey(x:canonize()))

@@ -210,12 +210,15 @@ public:
       write("math.huge");
     else if (str == T("-1.#INF") || str == T("-1.#IND") || str == T("-inf"))
       write("-math.huge");
-    else if (str == T("nan"))
+    else if (str == T("nan") || str == T("1.#QNAN"))
       write("(0/0)");
     else if (str == T("-0"))
       write("0");
     else
+    {
+      jassert(str.indexOfChar('#') < 0);
       write(str);
+    }
   }
 
   virtual void visit(LiteralString& expression)

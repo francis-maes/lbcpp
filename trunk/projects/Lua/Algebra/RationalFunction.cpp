@@ -172,8 +172,16 @@ ExpressionPtr RationalFunction::toExpression() const
 
 void RationalFunction::simplify()
 {
-  if (denominator.isZero()) // invalid rational function
+  // invalid rational functions
+  if (denominator.isZero() || 
+      !isNumberValid(numerator.getConstantsL2Norm()) ||
+      !isNumberValid(denominator.getConstantsL2Norm()))
+  {
+    numerator = Polynomial::zero();
+    denominator = Polynomial::zero();
     return;
+  }
+
   if (numerator.isOne() || denominator.isOne()) // already maximally simplified
     return;
     
