@@ -170,6 +170,8 @@ public:
       featureParameters->useDRGlobalHistogram = true;
       featureParameters->useSTALGlobalHistogram = true;
 
+      featureParameters->useRelativePosition = true;
+      featureParameters->useRelativeCysteinIndex = true;
       featureParameters->aminoAcidWindowSize = 10;
       featureParameters->pssmWindowSize = 10;
       featureParameters->ss3WindowSize = 10;
@@ -185,6 +187,8 @@ public:
       featureParameters->saLocalHistogramSize = 10;
       featureParameters->drLocalHistogramSize = 10;
       featureParameters->stalLocalHistogramSize = 10;
+      
+      featureParameters->separationProfilSize = 10;
 
       LargeProteinPredictorParametersPtr predictorParameters = new LargeProteinPredictorParameters(featureParameters, true);
       

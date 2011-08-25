@@ -190,8 +190,7 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     const ProteinPtr& protein = inputs[0].getObjectAndCast<Protein>();
-    if (!protein)
-      return Variable::missingValue(positiveIntegerType);
+    jassert(protein);
     size_t position = inputs[1].getInteger();
     jassert(position < protein->getLength());
     int cysteinIndex = protein->getCysteinInvIndices()[position];
@@ -569,9 +568,9 @@ protected:
 class CreateCysteinSeparationProfil : public Function
 {
 public:
-  CreateCysteinSeparationProfil(bool normalize = true)
-    : normalize(normalize) {}
-  
+  CreateCysteinSeparationProfil(bool normalizeWithProteinLength = false)
+    : normalizeWithProteinLength(normalizeWithProteinLength) {}
+
   virtual size_t getNumRequiredInputs() const
     {return 2;}
 
@@ -593,21 +592,75 @@ public:
     const std::vector<size_t>& cysteinIndices = protein->getCysteinIndices();
     const size_t n = cysteinIndices.size();
     if (!n)
-      return VectorPtr();
-    
-    const size_t z = cysteinIndices[n-1] - cysteinIndices[0];
-    VectorPtr res = vector(doubleType, n);
+      return Variable::missingValue(getOutputType());
 
+    const size_t zFactor = normalizeWithProteinLength ? protein->getLength() -1 : cysteinIndices[n-1] - cysteinIndices[0];
+    VectorPtr res = vector(doubleType, n);
     for (size_t i = 0; i < n; ++i)
-      res->setElement(i, Variable((double)abs((int)cysteinIndices[i] - (int)position) / (z ? (double)z : 1.f), doubleType));
+      res->setElement(i, Variable((double)abs((int)cysteinIndices[i] - (int)position) / (zFactor ? (double)zFactor : 1.f), doubleType));
 
     return res;
   }
-  
-protected:
-  friend class CreateCysteinSeparationProfilClass;
 
-  bool normalize;
+protected:
+  bool normalizeWithProteinLength;
+};
+
+class CysteinSeparationProfilFeatureGenerator : public FeatureGenerator
+{
+public:
+  CysteinSeparationProfilFeatureGenerator(size_t windowSize, bool normalizeWithProteinLength = false)
+    : windowSize(windowSize), normalizeWithProteinLength(normalizeWithProteinLength) {}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : (TypePtr)proteinClass;}
+
+  virtual String getOutputPostFix() const
+    {return T("CysSepProfil");}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration();
+    const int startIndex = -windowSize / 2;
+    for (size_t i = 0; i < windowSize; ++i)
+      res->addElement(context, T("[") + String((int)i + startIndex) + ("]"));
+    return res;
+  }
+  
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    ProteinPtr protein = inputs[0].getObjectAndCast<Protein>();
+    jassert(protein);
+    size_t position = inputs[1].getInteger();
+
+    const std::vector<size_t>& cysteinIndices = protein->getCysteinIndices();
+    const size_t n = cysteinIndices.size();
+    if (!n)
+      return;
+
+    size_t zFactor = normalizeWithProteinLength ? protein->getLength() -1 : cysteinIndices[n-1] - cysteinIndices[0];
+    if (zFactor == 0)
+      zFactor = 1;
+
+    size_t index = n;
+    for (size_t i = 0; i < n; ++i)
+      if (position <= cysteinIndices[i])
+      {
+        index = i;
+        break;
+      }
+
+    const int startCysteinIndex = index - windowSize / 2;
+    for (size_t i = (startCysteinIndex < 0) ? -startCysteinIndex : 0; i < windowSize && startCysteinIndex + i < n; ++i)
+      callback.sense(i, (double)abs(cysteinIndices[startCysteinIndex + i] - position) / (double)zFactor);
+  }
+
+protected:
+  size_t windowSize;
+  bool normalizeWithProteinLength;
 };
 
 class CysteinBondingStateRatio : public SimpleUnaryFunction
@@ -1475,6 +1528,37 @@ protected:
         ++res;
     return res;
   }
+};
+
+class RelativeValueFeatureGenerator : public FeatureGenerator
+{
+public:
+  RelativeValueFeatureGenerator(size_t incrementValue = 0)
+    : incrementValue(incrementValue) {}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return positiveIntegerType;}
+  
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+    {return singletonEnumeration;}
+  
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    if (!inputs[0].exists())
+    {
+      callback.sense(0, 0.0);
+      return;
+    }
+    const size_t value = inputs[0].getInteger() + incrementValue;
+    const size_t zFactor = inputs[1].getInteger();
+    callback.sense(0, value / (double)zFactor);
+  }
+
+protected:
+  size_t incrementValue;
 };
 
 }; /* namespace lbcpp */

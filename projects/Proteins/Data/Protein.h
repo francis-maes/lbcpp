@@ -235,7 +235,7 @@ public:
     {return tertiaryStructure;}
 
   void setTertiaryStructure(const TertiaryStructurePtr& tertiaryStructure)
-    {this->tertiaryStructure = tertiaryStructure;}
+    {jassert(tertiaryStructure->getNumResidues() == getLength()); this->tertiaryStructure = tertiaryStructure;}
 
   /*
   ** Lua

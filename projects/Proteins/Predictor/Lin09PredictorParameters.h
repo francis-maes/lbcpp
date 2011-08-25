@@ -341,7 +341,7 @@ public:
     size_t aaAccumulator = builder.addFunction(getVariableFunction(T("aaAccumulator")), proteinPerception, T("aaAccumulator"));
     size_t pssmAccumulator = builder.addFunction(getVariableFunction(T("pssmAccumulator")), proteinPerception, T("pssmAccumulator"));
 
-    size_t cysteinSeparationProfil = builder.addFunction(new CreateCysteinSeparationProfil(true), protein, position, T("SepProfil"));
+    size_t cysteinSeparationProfil = builder.addFunction(new CreateCysteinSeparationProfil(), protein, position, T("SepProfil"));
     if (fp->hdSeparationProfil)
       cysteinSeparationProfil = builder.addFunction(mapContainerFunction(hardDiscretizedNumberFeatureGenerator(0, 300, 30, true)), cysteinSeparationProfil);
     else
