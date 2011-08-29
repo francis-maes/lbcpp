@@ -44,12 +44,10 @@ public:
     double fopt = 51.0;
     FunctionPtr objective = new SphereFunction(xopt, fopt);
 
-    size_t numIterations = 40;
-    size_t populationSize = 100;
-    size_t numBests = 30;
+    //SamplerPtr sampler = independentDoubleVectorSampler(N, gaussianSampler(0.0, 5.0));
+    //OptimizerPtr optimizer = edaOptimizer(sampler, 100, 50, 10, StoppingCriterionPtr(), 0.0);
 
-    SamplerPtr sampler = independentDoubleVectorSampler(N, gaussianSampler(0.0, 5.0));
-    OptimizerPtr optimizer = edaOptimizer(sampler, numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0);
+    OptimizerPtr optimizer = cmaesOptimizer(new DenseDoubleVector(N, 0.0), 100);
     return optimizer->compute(context, objective);
   }
 };

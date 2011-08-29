@@ -62,6 +62,8 @@ typedef ReferenceCountedObjectPtr<Optimizer> OptimizerPtr;
 extern OptimizerPtr edaOptimizer(const SamplerPtr& sampler, size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr(), double slowingFactor = 0, bool reinjectBest = false, bool verbose = false);
 extern OptimizerPtr asyncEDAOptimizer(const SamplerPtr& sampler, size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr(), double slowingFactor = 0, bool reinjectBest = false, bool verbose = false);
 
+extern OptimizerPtr cmaesOptimizer(DenseDoubleVectorPtr initialGuess, size_t numIterations);
+
 extern OptimizerPtr bestFirstSearchOptimizer(const ObjectPtr& initialState, const std::vector<StreamPtr>& streams, const File& optimizerStateFile = File::nonexistent);
 
 }; /* namespace lbcpp */

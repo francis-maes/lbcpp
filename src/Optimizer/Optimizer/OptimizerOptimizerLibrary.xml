@@ -3,15 +3,7 @@
 <library name="OptimizerOptimizer" directory="Optimizer/Optimizer">
 
   <include file="lbcpp/Optimizer/Optimizer.h"/>
-<!--
-  <class name="UniformSampleAndPickBestOptimizer" base="Optimizer">
-    <constructor arguments="size_t numSamples, bool verbose"/>
-    <variable type="PositiveInteger" name="numSamples"/>
-    <variable type="Boolean" name="verbose"/>
-  </class>
 
-  
--->
   <!-- PopulationBasedOptimizer -->
   <class name="SamplerBasedOptimizerState" base="OptimizerState">
     <variable type="Sampler" name="sampler"/>
@@ -56,5 +48,14 @@
   <class name="BestFirstSearchOptimizer" base="Optimizer">
     <constructor arguments="const ObjectPtr&amp; initialState, const std::vector&lt;StreamPtr&gt;&amp; streams, const File&amp; optimizerStateFile"/>
   </class>
-  
+
+  <!-- CMA/ES -->
+  <class name="CMAOptimizerState" base="OptimizerState"/>
+  <class name="CMAESOptimizer" base="Optimizer">
+    <constructor arguments="DenseDoubleVectorPtr initialGuess, size_t numIterations"/>
+    <variable type="DenseDoubleVector[EnumValue,Double]" name="initialGuess"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+
+
 </library>
