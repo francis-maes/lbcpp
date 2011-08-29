@@ -17,10 +17,6 @@ namespace lbcpp
 class BanditEDAOptimizerState : public SamplerBasedOptimizerState
 {
 public:
-  BanditEDAOptimizerState(const SamplerPtr& sampler)
-    : SamplerBasedOptimizerState(sampler) {}
-  BanditEDAOptimizerState() {}
-
   class BanditInfo : public Object
   {
   public:
@@ -137,13 +133,16 @@ typedef ReferenceCountedObjectPtr<BanditEDAOptimizerState> BanditEDAOptimizerSta
 class BanditEDAOptimizer : public PopulationBasedOptimizer
 {
 public:  
-  BanditEDAOptimizer(const SamplerPtr& sampler, size_t numIterations, size_t populationSize, size_t numBests, size_t maxNumBandits, StoppingCriterionPtr stoppingCriterion, bool verbose = false)
-    : PopulationBasedOptimizer(sampler, numIterations, populationSize, numBests, stoppingCriterion, 0.0, false, verbose), maxNumBandits(maxNumBandits) {}
+  BanditEDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, size_t maxNumBandits, StoppingCriterionPtr stoppingCriterion, bool verbose = false)
+    : PopulationBasedOptimizer(numIterations, populationSize, numBests, stoppingCriterion, 0.0, false, verbose), maxNumBandits(maxNumBandits) {}
 
   BanditEDAOptimizer() : PopulationBasedOptimizer() {}
 
-  virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction) const
+  virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {
+    const FunctionPtr& objectiveFunction = problem->getObjective();
+    const FunctionPtr& validationFunction = problem->getValidation();
+  
     SamplerBasedOptimizerStatePtr state = optimizerState.dynamicCast<SamplerBasedOptimizerState>();
     jassert(state);
     
@@ -159,7 +158,7 @@ public:
       context.enterScope(T("Iteration ") + String((int)i + 1));
       context.resultCallback(T("iteration"), i + 1);
       
-      performEDAIteration(context, state, objectiveFunction, bestIterationParameters, bestIterationScore, worstIterationScore);
+      performEDAIteration(context, state, problem->getSampler(), objectiveFunction, bestIterationParameters, bestIterationScore, worstIterationScore);
       
       // display results & update optimizerState
       handleResultOfIteration(context, state, validationFunction, bestIterationScore, bestIterationParameters);
@@ -190,7 +189,7 @@ protected:
   size_t numberEvaluationsInProgress; /**< Number of evaluations in progress to maintain */ 
   size_t maxNumBandits;
 
-  void performEDAIteration(ExecutionContext& context, const BanditEDAOptimizerStatePtr& state, const FunctionPtr& objectiveFunction, Variable& bestParameters, double& bestScore, double& worstScore) const
+  void performEDAIteration(ExecutionContext& context, const BanditEDAOptimizerStatePtr& state, const SamplerPtr& initialSampler, const FunctionPtr& objectiveFunction, Variable& bestParameters, double& bestScore, double& worstScore) const
   {    
     // generate evaluations requests
     for (size_t i = 0; i < populationSize; i++)
@@ -224,7 +223,7 @@ protected:
     state->getBestParameters(results, parameters, sortedScores);
 
     // build new distribution & update OptimizerState
-    learnDistribution(context, state, sortedScores);
+    learnDistribution(context, initialSampler, state, sortedScores);
 
     // return best score and best parameter of this iteration
     bestParameters = sortedScores.begin()->second;

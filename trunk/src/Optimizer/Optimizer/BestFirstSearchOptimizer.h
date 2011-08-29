@@ -156,9 +156,10 @@ typedef ReferenceCountedObjectPtr<BestFirstSearchIteration> BestFirstSearchItera
 class StreamBasedOptimizerState : public OptimizerState, public ExecutionContextCallback
 {
 public:
-  StreamBasedOptimizerState(ExecutionContext& context, const ObjectPtr& initialState, const std::vector<StreamPtr>& streams)
-    : OptimizerState(initialState), streams(streams)
+  StreamBasedOptimizerState(ExecutionContext& context, const std::vector<StreamPtr>& streams)
+    : OptimizerState(), streams(streams)
   {
+    /*
     // Types checking
     if (initialState->getNumVariables() != streams.size())
       context.errorCallback(T("StreamBasedOptimizerState"), T("Invalid number of streams, Expected ") 
@@ -168,6 +169,7 @@ public:
     for (size_t i = 0; i < streams.size(); ++i)
       if (streams[i])
         context.checkInheritance(streams[i]->getElementsType(), initialState->getVariableType(i));
+      */
   }
 
   const StreamPtr& getStream(size_t index) const
@@ -243,16 +245,23 @@ typedef ReferenceCountedObjectPtr<StreamBasedOptimizerState> StreamBasedOptimize
 class BestFirstSearchOptimizer : public Optimizer
 {
 public:
-  BestFirstSearchOptimizer(const ObjectPtr& initialParameters, const std::vector<StreamPtr>& streams, const File& optimizerStateFile)
-    : Optimizer(optimizerStateFile), initialParameters(initialParameters), streams(streams) {}
+  BestFirstSearchOptimizer(const std::vector<StreamPtr>& streams, const File& optimizerStateFile)
+    : Optimizer(optimizerStateFile), streams(streams) {}
 
   virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context) const
-    {return new StreamBasedOptimizerState(context, initialParameters, streams);}
+    {return new StreamBasedOptimizerState(context, streams);}
 
-  virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction) const
+  virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {
-    StreamBasedOptimizerStatePtr state = optimizerState.dynamicCast<StreamBasedOptimizerState>();
+    const FunctionPtr& objectiveFunction = problem->getObjective();
+    StreamBasedOptimizerStatePtr state = optimizerState.staticCast<StreamBasedOptimizerState>();
     jassert(state);
+    
+    if (!state->getBestParameters().exists())
+    {
+      ObjectPtr initialParameters = problem->getInitialGuess().getObject();
+      state->setBestParameters(initialParameters);
+    }
 
     const double missingValue = Variable::missingValue(doubleType).getDouble();
 
@@ -331,7 +340,6 @@ public:
 protected:
   friend class BestFirstSearchOptimizerClass;
 
-  ObjectPtr initialParameters;
   std::vector<StreamPtr> streams;
 
   BestFirstSearchOptimizer() {}

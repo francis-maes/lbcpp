@@ -19,17 +19,14 @@ namespace lbcpp
 class SamplerBasedOptimizerState : public OptimizerState
 {
 public:
-  SamplerBasedOptimizerState(const SamplerPtr& sampler)
-    : sampler(sampler), initialSampler(sampler), numIterations(0) {}
+  SamplerBasedOptimizerState()
+    : numIterations(0) {}
 
   const SamplerPtr& getSampler() const
     {return sampler;}
   
   void setSampler(const SamplerPtr& newSampler)
     {sampler = newSampler;}
-
-  SamplerPtr getCloneOfInitialSamplerInstance() const
-    {return initialSampler->cloneAndCast<Sampler>();}
 
   size_t getNumIterations() const
     {return numIterations;}
@@ -41,11 +38,8 @@ protected:
   friend class SamplerBasedOptimizerStateClass;
 
   SamplerPtr sampler;
-  SamplerPtr initialSampler;  /**< Prototype design patter. */
 
   size_t numIterations;
-
-  SamplerBasedOptimizerState() : numIterations(0) {}
 };
 
 typedef ReferenceCountedObjectPtr<SamplerBasedOptimizerState> SamplerBasedOptimizerStatePtr;
@@ -53,20 +47,19 @@ typedef ReferenceCountedObjectPtr<SamplerBasedOptimizerState> SamplerBasedOptimi
 class PopulationBasedOptimizer : public Optimizer
 {
 public:
-  PopulationBasedOptimizer(const SamplerPtr& sampler, size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
-    : sampler(sampler), numIterations(numIterations), populationSize(populationSize), numBests(numBests), stoppingCriterion(stoppingCriterion), slowingFactor(slowingFactor), reinjectBest(reinjectBest), verbose(verbose)
-    {
-      jassert(slowingFactor >= 0 && slowingFactor <= 1);
-      jassert(numBests < populationSize);
-    }
+  PopulationBasedOptimizer(size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
+    : numIterations(numIterations), populationSize(populationSize), numBests(numBests), stoppingCriterion(stoppingCriterion), slowingFactor(slowingFactor), reinjectBest(reinjectBest), verbose(verbose)
+  {
+    jassert(slowingFactor >= 0 && slowingFactor <= 1);
+    jassert(numBests < populationSize);
+  }
 
   virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context) const
-    {return new SamplerBasedOptimizerState(sampler);}
+    {return new SamplerBasedOptimizerState();}
   
 protected:
   friend class PopulationBasedOptimizerClass;
   
-  SamplerPtr sampler;
   size_t numIterations;
   size_t populationSize;
   size_t numBests;
@@ -108,7 +101,7 @@ protected:
    * Learn a new distribution from the results in sortedScores.
    * The OptimizerState is updated.
    */
-  void learnDistribution(ExecutionContext& context, const SamplerBasedOptimizerStatePtr& state, const std::multimap<double, Variable>& sortedScores) const
+  void learnDistribution(ExecutionContext& context, const SamplerPtr& initialSampler, const SamplerBasedOptimizerStatePtr& state, const std::multimap<double, Variable>& sortedScores) const
   {
     std::map<Variable, ScalarVariableStatistics> bestVariables;
     std::multimap<double, Variable>::const_iterator it;
@@ -128,7 +121,7 @@ protected:
       context.informationCallback(String((int)sortedScores.size()) + T(" scores, ") + String(juce::jmin((int)numBests, (int)sortedScores.size())) + T(" bests, ")
         + String((int)bestVariables.size()) + T(" unique bests"));
 
-    SamplerPtr newSampler = state->getCloneOfInitialSamplerInstance();  // get instance from prototype
+    SamplerPtr newSampler = initialSampler->cloneAndCast<Sampler>();
     newSampler->learn(context, ContainerPtr(), bestVariablesVector);
     
     if (slowingFactor > 0) 

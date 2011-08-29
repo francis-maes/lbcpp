@@ -527,19 +527,18 @@ protected:
     size_t numBests = numParameters * 3;
     StoppingCriterionPtr stoppingCriterion = maxIterationsWithoutImprovementStoppingCriterion(5);
 
-    // optimizer context
+    // optimization problem
     FunctionPtr objectiveFunction = new EvaluateDiscreteBanditPolicyParameters(policy, trainingProblems[0]->getNumBandits(), maxTimeStep, trainingProblems, numRunsPerEstimation, 51861664);
     objectiveFunction->initialize(context, parametersType);
-
     FunctionPtr validationFunction = new EvaluateDiscreteBanditPolicyParameters(policy, trainingProblems[0]->getNumBandits(), maxTimeStep, trainingProblems, numRunsPerEstimation);
     validationFunction->initialize(context, parametersType);
-
+    OptimizationProblemPtr problem = new OptimizationProblem(objectiveFunction, Variable(), Parameterized::get(policy)->createParametersSampler(), validationFunction);
 
     // optimizer
-    OptimizerPtr optimizer = edaOptimizer(Parameterized::get(policy)->createParametersSampler(), numIterations, populationSize, numBests, stoppingCriterion, 0.0, false);
+    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, stoppingCriterion, 0.0, false);
     //OptimizerPtr optimizer = asyncEDAOptimizer(numIterations*populationSize, populationSize, populationSize/numBests, 1, StoppingCriterionPtr(), 10, populationSize);
 
-    OptimizerStatePtr state = optimizer->compute(context, objectiveFunction, validationFunction).getObjectAndCast<OptimizerState>();
+    OptimizerStatePtr state = optimizer->compute(context, problem).getObjectAndCast<OptimizerState>();
 
     // best parameters
     Variable bestParameters = state->getBestParameters();

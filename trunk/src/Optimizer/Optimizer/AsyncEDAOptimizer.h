@@ -18,9 +18,6 @@ namespace lbcpp
 class AsyncSamplerBasedOptimizerState : public SamplerBasedOptimizerState, public ExecutionContextCallback
 {
 public:
-  AsyncSamplerBasedOptimizerState(const SamplerPtr& sampler)
-    : SamplerBasedOptimizerState(sampler) {}
-
   /* ExecutionContextCallback */
   virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
   {
@@ -62,17 +59,22 @@ typedef ReferenceCountedObjectPtr<AsyncSamplerBasedOptimizerState> AsyncSamplerB
 class AsyncEDAOptimizer : public PopulationBasedOptimizer
 {
 public:  
-  AsyncEDAOptimizer(const SamplerPtr& sampler, size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
-    : PopulationBasedOptimizer(sampler, numIterations, populationSize, numBests, stoppingCriterion, slowingFactor, reinjectBest, verbose)
+  AsyncEDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
+    : PopulationBasedOptimizer(numIterations, populationSize, numBests, stoppingCriterion, slowingFactor, reinjectBest, verbose)
     {}
 
   virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context) const
-    {return new AsyncSamplerBasedOptimizerState(sampler);}
+    {return new AsyncSamplerBasedOptimizerState();}
 
-  virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction) const
+  virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {
-    AsyncSamplerBasedOptimizerStatePtr state = optimizerState.dynamicCast<AsyncSamplerBasedOptimizerState>();
+    const FunctionPtr& objectiveFunction = problem->getObjective();
+    const FunctionPtr& validationFunction = problem->getValidation();
+    const SamplerPtr& initialSampler = problem->getSampler();
+    AsyncSamplerBasedOptimizerStatePtr state = optimizerState.staticCast<AsyncSamplerBasedOptimizerState>();
     jassert(state);
+    if (!state->getSampler())
+      state->setSampler(initialSampler);
 
     bool isInitialized = false;
     for (size_t i = state->getNumIterations(); i < numIterations; ++i)
@@ -98,7 +100,7 @@ public:
           state->getAndResetResult(sortedScores);
           numCurrentResults = sortedScores.size();
           
-          learnDistribution(context, state, sortedScores);
+          learnDistribution(context, initialSampler, state, sortedScores);
 
           Variable bestIterationParameters = sortedScores.begin()->second;
           double bestIterationScore = sortedScores.begin()->first;

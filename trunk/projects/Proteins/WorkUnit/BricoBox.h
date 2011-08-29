@@ -449,9 +449,12 @@ public:
     for (size_t i = 0; i < 3; ++i)
       samplers[i] = gaussianSampler(0.0, 2.0);
     
-    OptimizerPtr optimizer = bestFirstSearchOptimizer(new BFSTestParameter(), streams, context.getFile(T("osTest.xml")));
+    OptimizerPtr optimizer = bestFirstSearchOptimizer(streams, context.getFile(T("osTest.xml")));
     //OptimizerPtr optimizer = edaOptimizer(objectCompositeSampler(bfsTestParameterClass, samplers), 20, 20, 5);
-    return optimizer->compute(context, new BFSTestObjectiveFunction());
+    
+    OptimizationProblemPtr problem = new OptimizationProblem(new BFSTestObjectiveFunction(), new BFSTestParameter());
+    
+    return optimizer->compute(context, problem);
   }
 };
 

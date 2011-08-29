@@ -17,14 +17,20 @@ namespace lbcpp
 class EDAOptimizer : public PopulationBasedOptimizer
 {
 public:
-  EDAOptimizer(const SamplerPtr& sampler, size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
-    : PopulationBasedOptimizer(sampler, numIterations, populationSize, numBests, stoppingCriterion, slowingFactor, reinjectBest, verbose)
+  EDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion, double slowingFactor = 0, bool reinjectBest = false, bool verbose = false)
+    : PopulationBasedOptimizer(numIterations, populationSize, numBests, stoppingCriterion, slowingFactor, reinjectBest, verbose)
     {}
 
-  virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction) const
+  virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {
-    SamplerBasedOptimizerStatePtr state = optimizerState.dynamicCast<SamplerBasedOptimizerState>();
+    const FunctionPtr& objectiveFunction = problem->getObjective();
+    const FunctionPtr& validationFunction = problem->getValidation();
+    const SamplerPtr& initialSampler = problem->getSampler();
+  
+    SamplerBasedOptimizerStatePtr state = optimizerState.staticCast<SamplerBasedOptimizerState>();
     jassert(state);
+    if (!state->getSampler())
+      state->setSampler(initialSampler);
 
     if (stoppingCriterion)
       stoppingCriterion->reset();
@@ -38,7 +44,7 @@ public:
       context.enterScope(T("Iteration ") + String((int)i + 1));
       context.resultCallback(T("iteration"), i + 1);
 
-      performEDAIteration(context, state, objectiveFunction, bestIterationParameters, bestIterationScore, worstIterationScore);
+      performEDAIteration(context, state, initialSampler, objectiveFunction, bestIterationParameters, bestIterationScore, worstIterationScore);
 
       // display results & update optimizerState
       handleResultOfIteration(context, state, validationFunction, bestIterationScore, bestIterationParameters);
@@ -69,7 +75,7 @@ protected:
   EDAOptimizer()
     : PopulationBasedOptimizer() {}
 
-  void performEDAIteration(ExecutionContext& context, const SamplerBasedOptimizerStatePtr& state, const FunctionPtr& objectiveFunction, Variable& bestParameters, double& bestScore, double& worstScore) const
+  void performEDAIteration(ExecutionContext& context, const SamplerBasedOptimizerStatePtr& state, const SamplerPtr& initialSampler, const FunctionPtr& objectiveFunction, Variable& bestParameters, double& bestScore, double& worstScore) const
   {    
     // generate evaluations requests
     CompositeWorkUnitPtr workUnits = new CompositeWorkUnit(T("EDAOptimizer - Iteration ") + String((int)state->getNumIterations()), populationSize);
@@ -92,7 +98,7 @@ protected:
     pushResultsSortedbyScore(context, results, inputs, sortedScores);
 
     // build new distribution & update OptimizerState
-    learnDistribution(context, state, sortedScores);
+    learnDistribution(context, initialSampler, state, sortedScores);
 
     // return best score and best parameter of this iteration
     bestParameters = sortedScores.begin()->second;

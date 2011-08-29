@@ -88,7 +88,7 @@ public:
 
     context.resultCallback("iteration", iteration);
     context.resultCallback("bestScore", bestScore);
-    context.resultCallback("timesCalled", fitness->timesCalled());
+    context.resultCallback("timesCalled", (size_t)fitness->timesCalled());
     return bestScore;
   }
 
@@ -103,12 +103,15 @@ typedef ReferenceCountedObjectPtr<CMAOptimizerState> CMAOptimizerStatePtr;
 class CMAESOptimizer : public Optimizer
 {
 public:
-  CMAESOptimizer(DenseDoubleVectorPtr initialGuess, size_t numIterations)
-    : initialGuess(initialGuess), numIterations(numIterations) {}
+  CMAESOptimizer(size_t numIterations)
+    : numIterations(numIterations) {}
   CMAESOptimizer() : numIterations(0) {}
 
-  virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction) const
+  virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {
+    FunctionPtr objectiveFunction = problem->getObjective();
+    DenseDoubleVectorPtr initialGuess = problem->getInitialGuess().getObjectAndCast<DenseDoubleVector>();
+    
     CMAOptimizerStatePtr cmaState = optimizerState.staticCast<CMAOptimizerState>();
     
     if (!cmaState->isInitialized())
@@ -130,7 +133,6 @@ public:
 protected:
   friend class CMAESOptimizerClass;
 
-  DenseDoubleVectorPtr initialGuess;
   size_t numIterations;
 };
 

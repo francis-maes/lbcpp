@@ -26,10 +26,9 @@ public:
     size_t populationSize = 100;
     size_t numBests = 30;
 
-    SamplerPtr sampler = gaussianSampler(0.0, 5.0);
-    
-    OptimizerPtr optimizer = edaOptimizer(sampler, numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0);
-    return optimizer->compute(context, squareFunction());
+    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0);
+    OptimizationProblemPtr problem = new OptimizationProblem(squareFunction(), Variable(), gaussianSampler(0.0, 5.0));
+    return optimizer->compute(context, problem);
   }
 };
 
@@ -43,12 +42,12 @@ public:
     DenseDoubleVectorPtr xopt = new DenseDoubleVector(N, 1.0);
     double fopt = 51.0;
     FunctionPtr objective = new SphereFunction(xopt, fopt);
+    SamplerPtr sampler = independentDoubleVectorSampler(N, gaussianSampler(0.0, 5.0));
+    OptimizationProblemPtr problem = new OptimizationProblem(objective, new DenseDoubleVector(N, 0.0), sampler);
 
-    //SamplerPtr sampler = independentDoubleVectorSampler(N, gaussianSampler(0.0, 5.0));
-    //OptimizerPtr optimizer = edaOptimizer(sampler, 100, 50, 10, StoppingCriterionPtr(), 0.0);
-
-    OptimizerPtr optimizer = cmaesOptimizer(new DenseDoubleVector(N, 0.0), 100);
-    return optimizer->compute(context, objective);
+    //OptimizerPtr optimizer = edaOptimizer(100, 50, 10, StoppingCriterionPtr(), 0.0);
+    OptimizerPtr optimizer = cmaesOptimizer(100);
+    return optimizer->compute(context, problem);
   }
 };
 
