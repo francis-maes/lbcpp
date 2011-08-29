@@ -1,5 +1,6 @@
 INCLUDE_DIRECTORIES(
   ${LBCpp_SOURCE_DIR}/include
+  ${LBCpp_SOURCE_DIR}/shark/include
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
@@ -589,6 +590,7 @@ SET(LBCPP_OPTIMIZER_OPTIMIZER_SOURCES
   Optimizer/Optimizer/AsyncEDAOptimizer.h
   Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h
   Optimizer/Optimizer/BestFirstSearchOptimizer.h
+  Optimizer/Optimizer/CMAESOptimizer.h
   Optimizer/Optimizer/OptimizerOptimizerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OptimizerOptimizerLibrary.cpp
 )
