@@ -593,7 +593,13 @@ int Object::__newIndex(LuaState& state)
     TypePtr type = getClass();
     int index = type->findMemberVariable(string);
     if (index >= 0)
-      setVariable(index, state.checkVariable(2));
+    {
+      Variable variable = state.checkVariable(2);
+      if (type->getMemberVariableType(index)->inheritsFrom(integerType))
+        setVariable(index, juce::roundDoubleToInt(variable.toDouble()));
+      else
+        setVariable(index, variable);
+    }
     else
       state.error("Could not find variable");
   }
