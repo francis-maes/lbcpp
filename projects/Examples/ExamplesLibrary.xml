@@ -162,6 +162,8 @@
     <variable type="Double" name="fopt"/> 
     <variable type="DoubleMatrix[Double]" name="R"/>
   </class>
+
+  <class name="OptimizerTestBedWorkUnit" base="WorkUnit"/>
   
   <!-- DistributedExecutionContextExample -->
   <class name="DumbWorkUnit" base="WorkUnit"/>

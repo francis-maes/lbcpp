@@ -12,6 +12,7 @@
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Optimizer/Optimizer.h>
 # include <lbcpp/Function/ScalarFunction.h>
+# include "OptimizerTestBed.h"
 
 namespace lbcpp
 {
@@ -19,7 +20,6 @@ namespace lbcpp
 class OptimizerExampleWorkUnit : public WorkUnit 
 {
 public:
-  
   virtual Variable run(ExecutionContext& context)
   {
     size_t numIterations = 40;
@@ -30,6 +30,27 @@ public:
     
     OptimizerPtr optimizer = edaOptimizer(sampler, numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0);
     return optimizer->compute(context, squareFunction());
+  }
+};
+
+class OptimizerTestBedWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    static const size_t N = 10;
+
+    DenseDoubleVectorPtr xopt = new DenseDoubleVector(N, 1.0);
+    double fopt = 51.0;
+    FunctionPtr objective = new SphereFunction(xopt, fopt);
+
+    size_t numIterations = 40;
+    size_t populationSize = 100;
+    size_t numBests = 30;
+
+    SamplerPtr sampler = independentDoubleVectorSampler(N, gaussianSampler(0.0, 5.0));
+    OptimizerPtr optimizer = edaOptimizer(sampler, numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0);
+    return optimizer->compute(context, objective);
   }
 };
 

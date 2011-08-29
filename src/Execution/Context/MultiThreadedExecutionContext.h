@@ -24,25 +24,31 @@ public:
   class WorkUnitBatch : public WorkUnit
   {
   public:
-    WorkUnitBatch(const CompositeWorkUnitPtr& workUnits, size_t begin, size_t end)
-      : workUnits(workUnits), begin(begin), end(end)
+    WorkUnitBatch(const CompositeWorkUnitPtr& workUnits, size_t begin, size_t end, VectorPtr results)
+      : workUnits(workUnits), begin(begin), end(end),results(results)
     {
     }
 
     virtual Variable run(ExecutionContext& context)
     {
+      jassert(results);
+
       bool pushIntoStack = workUnits->hasPushChildrenIntoStackFlag();
       for (size_t i = begin; i < end; ++i)
-        context.run(workUnits->getWorkUnit(i), pushIntoStack);
-      return Variable();
+      {
+        Variable res = context.run(workUnits->getWorkUnit(i), pushIntoStack);
+        results->setElement(i, res);
+      }
+      return true;
     }
     
   private:
     CompositeWorkUnitPtr workUnits;
     size_t begin, end;
+    VectorPtr results;
   };
 
-  GroupedCompositeWorkUnit(const CompositeWorkUnitPtr& workUnits, size_t numBatches)
+  GroupedCompositeWorkUnit(const CompositeWorkUnitPtr& workUnits, size_t numBatches, VectorPtr results)
     : CompositeWorkUnit(workUnits->toString(), numBatches), workUnits(workUnits)
   {
     size_t n = workUnits->getNumWorkUnits();
@@ -52,7 +58,7 @@ public:
       size_t begin = i * n / numBatches;
       size_t end = (i + 1) * n / numBatches;
       jassert(end <= n);
-      setWorkUnit(i, new WorkUnitBatch(workUnits, begin, end));
+      setWorkUnit(i, new WorkUnitBatch(workUnits, begin, end, results));
     }
     setProgressionUnit(workUnits->getProgressionUnit());
     setPushChildrenIntoStackFlag(false);
@@ -90,7 +96,7 @@ public:
   };
 
   void push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int* counterToDecrementWhenDone = NULL, bool pushIntoStack = true, Variable* result = NULL);
-  void push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& stack, int* numRemainingWorkUnitsCounter = NULL, Variable* result = NULL);
+  void push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& stack, int* numRemainingWorkUnitsCounter = NULL, VariableVectorPtr results = VariableVectorPtr());
   void push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, ExecutionContextCallbackPtr callback, bool pushIntoStack = true);
 
   Entry pop();
@@ -123,7 +129,7 @@ void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStac
   entries[priority].push_back(Entry(workUnit, stack->cloneAndCast<ExecutionStack>(), pushIntoStack, counterToDecrementWhenDone, result));
 }
 
-void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& s, int* numRemainingWorkUnitsCounter, Variable* result)
+void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& s, int* numRemainingWorkUnitsCounter, VariableVectorPtr results)
 {
   ExecutionStackPtr stack = s->cloneAndCast<ExecutionStack>();
 
@@ -135,11 +141,8 @@ void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const Exe
   size_t n = workUnits->getNumWorkUnits();
 
   *numRemainingWorkUnitsCounter = (int)n;
-  //*result = true;
-  VariableVectorPtr results = variableVector(n);
   for (size_t i = 0; i < n; ++i)
-    entries[priority].push_back(Entry(workUnits->getWorkUnit(i), stack, workUnits->hasPushChildrenIntoStackFlag(), numRemainingWorkUnitsCounter, results->getPointerElement(i)));
-  *result = results;
+    entries[priority].push_back(Entry(workUnits->getWorkUnit(i), stack, workUnits->hasPushChildrenIntoStackFlag(), numRemainingWorkUnitsCounter, results ? results->getPointerElement(i) : NULL));
 }
 
 void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, ExecutionContextCallbackPtr callback, bool pushIntoStack)
@@ -326,11 +329,23 @@ public:
   
   static void startParallelRun(ExecutionContext& context, CompositeWorkUnitPtr& workUnits, WaitingWorkUnitQueuePtr waitingQueue, int& numRemainingWorkUnits, Variable& result)
   {
+    size_t numWorkUnits = workUnits->getNumWorkUnits();
     size_t numThreads = waitingQueue->getNumThreads();
     size_t maxInParallel = numThreads * 5;
-    if (workUnits->getNumWorkUnits() > maxInParallel)
-      workUnits = new GroupedCompositeWorkUnit(workUnits, maxInParallel);
-    waitingQueue->push(workUnits, context.getStack(), &numRemainingWorkUnits, &result);
+
+    VectorPtr results = variableVector(numWorkUnits);
+    result = Variable(results);
+    if (numWorkUnits > maxInParallel)
+    {
+      // in this case, the GroupedCompositeWorkUnit is responsible for directly filling the results vector
+      workUnits = new GroupedCompositeWorkUnit(workUnits, maxInParallel, results);
+      waitingQueue->push(workUnits, context.getStack(), &numRemainingWorkUnits);
+    }
+    else
+    {
+      // here, it is the execution context that is responsible for filling the results vector
+      waitingQueue->push(workUnits, context.getStack(), &numRemainingWorkUnits, results);
+    }
   }
 
   virtual Variable run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack)

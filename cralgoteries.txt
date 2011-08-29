@@ -1,3 +1,11 @@
+Formula Optimization:
+ * Tester l'Optimizer TestBed avec EDA
+ * Nvl optimizer: CMA-ES
+ * Pouvoir appeler des Optimizer depuis lua avec fonction objectif en Lua
+ * CMA-ES sur une instance des formules de bandits
+ * Generer un fichier avec toutes les formules possibles de bandit de taille <= 5
+ * Lancer un gros DistributedEC avec ces formules 
+
 
 Lua-Misc
  * Move namespace lbcpp::lua into lua (-> introspection generator must be adapted)

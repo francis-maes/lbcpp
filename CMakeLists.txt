@@ -212,10 +212,7 @@ ADD_SUBDIRECTORY(lua)
 ##
 ## Shark
 ##
-OPTION(USE_SHARK "Use Shark" OFF)
-IF (USE_SHARK)
-  ADD_SUBDIRECTORY(shark)
-ENDIF (USE_SHARK)
+ADD_SUBDIRECTORY(shark)
 
 ##
 ## Sub directories
