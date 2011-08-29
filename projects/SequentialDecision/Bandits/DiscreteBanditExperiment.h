@@ -369,18 +369,18 @@ private:
       numBests = 10;
 
 
-    // optimizer context
+    // optimization problem
     FunctionPtr objectiveFunction = new EvaluateDiscreteBanditPolicyParameters(policy, numBandits, horizon, trainingProblems, 0);
     objectiveFunction->initialize(context, parametersType);
-
     FunctionPtr validationFunction = new EvaluateDiscreteBanditPolicyParameters(policy, numBandits, horizon, testingProblems, 10);
     validationFunction->initialize(context, parametersType);
+    OptimizationProblemPtr problem = new OptimizationProblem(objectiveFunction, Variable(), Parameterized::get(policy)->createParametersSampler(), validationFunction);
 
     // optimizer
-    OptimizerPtr optimizer = edaOptimizer(Parameterized::get(policy)->createParametersSampler(), numIterations, populationSize, numBests, StoppingCriterionPtr(), 0, true);
+    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0, true);
     //OptimizerPtr optimizer = banditEDAOptimizer(numIterations, populationSize, numBests, populationSize, StoppingCriterionPtr());
 
-    OptimizerStatePtr state = optimizer->compute(context, objectiveFunction, validationFunction).getObjectAndCast<OptimizerState>();
+    OptimizerStatePtr state = optimizer->compute(context, problem).getObjectAndCast<OptimizerState>();
 
     // best parameters
     Variable bestParameters = state->getBestParameters();

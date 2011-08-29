@@ -157,9 +157,10 @@ public:
     // Sampler de DenseDoubleVector pour les constantes
     SamplerPtr constantsSampler = independentDoubleVectorSampler((EnumerationPtr)constantsEnumeration, gaussianSampler());
 
-    // opmitizer context and state
+    // Optimization problem
     ReferenceCountedObjectPtr<Objective> objective = new Objective(objectiveFunction, expression);
     objective->initialize(context, denseDoubleVectorClass(constantsEnumeration));
+    OptimizationProblemPtr problem = new OptimizationProblem(objective, Variable(), constantsSampler);
 
     // optimizer
     size_t numIterations = 100;
@@ -167,9 +168,9 @@ public:
     size_t numBests = numParameters * 3;
     StoppingCriterionPtr stoppingCriterion = maxIterationsWithoutImprovementStoppingCriterion(5);
 
-    OptimizerPtr optimizer = edaOptimizer(constantsSampler, numIterations, populationSize, numBests, stoppingCriterion, 0.0, false);
+    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, stoppingCriterion, 0.0, false);
     ExecutionContextPtr silentContext = singleThreadedExecutionContext();
-    OptimizerStatePtr state = optimizer->compute(*silentContext, objective).getObjectAndCast<OptimizerState>();
+    OptimizerStatePtr state = optimizer->compute(*silentContext, problem).getObjectAndCast<OptimizerState>();
 
     // retrieve best score and best constants and compute best expression
     double bestScore = state->getBestScore();
@@ -289,9 +290,9 @@ public:
 
   bool optimize(ExecutionContext& context, const SamplerPtr& sampler, const FunctionPtr& objective)
   {
-    OptimizerPtr optimizer = edaOptimizer(sampler, numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0, true, false);
-    optimizer->compute(context, objective);
-
+    OptimizationProblemPtr problem = new OptimizationProblem(objective, Variable(), sampler);
+    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0.0, true, false);
+    optimizer->compute(context, problem);
     return true;
   }
 

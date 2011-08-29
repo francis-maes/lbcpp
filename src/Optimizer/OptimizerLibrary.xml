@@ -6,6 +6,13 @@
   <import name="OptimizerOptimizer"/>
 
   <!-- Optimizer -->
+  <class name="OptimizationProblem" base="Object">
+    <variable type="Function" name="objective"/>
+    <variable type="Variable" name="initialGuess"/>
+    <variable type="Sampler" name="sampler"/>
+    <variable type="Function" name="validation"/>
+  </class>
+
   <class name="Optimizer" base="Function" abstract="yes">
     <variable type="File" name="optimizerStateFile"/>
   </class>

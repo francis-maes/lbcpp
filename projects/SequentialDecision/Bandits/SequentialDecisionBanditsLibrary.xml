@@ -87,7 +87,7 @@
   <class name="BanditEDAOptimizerState" base="SamplerBasedOptimizerState"/>
 
   <class name="BanditEDAOptimizer" base="EDAOptimizer" shortName="beda">
-    <constructor arguments="const SamplerPtr&amp; sampler, size_t numIterations, size_t populationSize, size_t numBests, size_t maxNumBandits, StoppingCriterionPtr stoppingCriterion, bool verbose" returnType="Optimizer"/>
+    <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, size_t maxNumBandits, StoppingCriterionPtr stoppingCriterion, bool verbose" returnType="Optimizer"/>
   </class>
 
   <!-- Discrete Bandit Experiment -->
