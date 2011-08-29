@@ -13,7 +13,7 @@ Interface:
 Random = {}
 
 function Random.new(seed)
-  return lbcpp.RandomGenerator.create(seed)
+  return lbcpp.RandomGenerator.create(seed or 0)
 end
 
 return Random
