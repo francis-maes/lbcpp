@@ -73,6 +73,9 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 
+  /* Object */
+  virtual int __call(LuaState& state);
+
 protected:
   friend class OptimizerClass;
 

@@ -112,7 +112,7 @@ typedef ReferenceCountedObjectPtr<FunctionSignature> FunctionSignaturePtr;
 class LuaFunctionSignature : public FunctionSignature
 {
 public:
-  LuaFunctionSignature(LuaFunction function,
+  LuaFunctionSignature(LuaCFunction function,
                         const String& name,
                         const String& shortName = String::empty,
                         const String& description = String::empty,
@@ -121,16 +121,16 @@ public:
 
   LuaFunctionSignature() : function(NULL) {}
 
-  LuaFunction getFunction() const
+  LuaCFunction getFunction() const
     {return function;}
 
-  void setFunction(LuaFunction function)
+  void setFunction(LuaCFunction function)
     {this->function = function;}
 
 protected:
   friend class LuaFunctionSignatureClass;
 
-  LuaFunction function;
+  LuaCFunction function;
 };
 
 typedef ReferenceCountedObjectPtr<LuaFunctionSignature> LuaFunctionSignaturePtr;

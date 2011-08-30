@@ -19,7 +19,7 @@ typedef struct luaL_Reg luaL_Reg;
 namespace lbcpp
 {
 
-typedef int (*LuaFunction)(lua_State* L);
+typedef int (*LuaCFunction)(lua_State* L);
 
 enum LuaType
 {
@@ -99,8 +99,8 @@ public:
 
   // Function
   bool isFunction(int index) const;
-  LuaFunction toFunction(int index);
-  void pushFunction(LuaFunction function);
+  LuaCFunction toFunction(int index);
+  void pushFunction(LuaCFunction function);
 
   // Object
   ObjectPtr& checkObject(int index, TypePtr expectedType);
@@ -113,7 +113,12 @@ public:
   // Variable
   Variable checkVariable(int index);
   void pushVariable(const Variable& variable);
-  
+
+  // References
+  int toReference(int index);
+  void pushReference(int reference);
+  void freeReference(int reference);
+
   bool newMetaTable(const char* name);
   void openLibrary(const char* name, const luaL_Reg* functions, size_t numUpValues = 0);
 

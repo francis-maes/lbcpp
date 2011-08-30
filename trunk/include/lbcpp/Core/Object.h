@@ -204,6 +204,7 @@ public:
   virtual int __mul(LuaState& state);
   virtual int __div(LuaState& state);
   virtual int __eq(LuaState& state);
+  virtual int __call(LuaState& state);
 
   lbcpp_UseDebuggingNewOperator
 

@@ -88,6 +88,7 @@ public:
 
     context.resultCallback("iteration", iteration);
     context.resultCallback("bestScore", bestScore);
+    context.resultCallback("bestSolution", bestSolution);
     context.resultCallback("timesCalled", (size_t)fitness->timesCalled());
     return bestScore;
   }

@@ -37,6 +37,9 @@ static int objectDiv(lua_State* L)
 static int objectEq(lua_State* L)
   {LuaState state(L); ObjectPtr object = state.checkObject(1); state.remove(1); return object->__eq(state);}
 
+static int objectCall(lua_State* L)
+  {LuaState state(L); ObjectPtr object = state.checkObject(1); state.remove(1); return object->__call(state);}
+
 static int objectToString(lua_State* L)
   {LuaState state(L); return Object::toShortString(state);}
 
@@ -71,6 +74,7 @@ LuaState::LuaState(ExecutionContext& context, bool initializeLuaLibraries, bool 
       {"__mul", objectMul},
       {"__div", objectDiv},
       {"__eq", objectEq},
+      {"__call", objectCall},
       {"__gc", objectGarbageCollect},
       {NULL, NULL}
     };
@@ -278,9 +282,9 @@ void LuaState::pushString(const String& value)
 ** Function
 */
 bool LuaState::isFunction(int index) const
-  {return lua_iscfunction(L, index) != 0;}
+  {return lua_isfunction(L, index) != 0;}
 
-LuaFunction LuaState::toFunction(int index)
+LuaCFunction LuaState::toFunction(int index)
   {return lua_tocfunction(L, index);}
 
 void LuaState::pushFunction(lua_CFunction function)
@@ -360,6 +364,24 @@ void LuaState::pushVariable(const Variable& variable)
   // todo: continue ...
 }
 
+/*
+** References
+*/
+int LuaState::toReference(int index)
+{
+  lua_pushvalue(L, index);
+  return luaL_ref(L, LUA_REGISTRYINDEX);
+}
+
+void LuaState::pushReference(int reference)
+  {lua_rawgeti(L, LUA_REGISTRYINDEX, reference);}
+
+void LuaState::freeReference(int reference)
+  {luaL_unref(L, LUA_REGISTRYINDEX, reference);}
+
+/*
+** General stack operations
+*/
 void LuaState::pop(int count)
   {lua_pop(L, count);}
 
