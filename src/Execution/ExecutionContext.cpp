@@ -160,6 +160,59 @@ int ExecutionContext::call(LuaState& state)
   return 1;
 }
 
+// WorkUnit -> Variable
+int ExecutionContext::run(LuaState& state)
+{
+  ExecutionContextPtr pthis = state.checkObject(1, executionContextClass);
+  WorkUnitPtr workUnit = state.checkObject(2, workUnitClass);
+  Variable res = pthis->run(workUnit, true);
+  if (!res.exists())
+    return 0;
+  state.pushVariable(res);
+  return 1;
+}
+
+class LuaExecutionContextCallback : public ExecutionContextCallback
+{
+public:
+  LuaExecutionContextCallback(LuaState& state, int functionReference)
+    : state(state), functionReference(functionReference) {}
+
+  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
+  {
+    {
+      ScopedLock _(state.lock);
+      state.pushReference(functionReference);
+      state.pushObject(workUnit);
+      state.pushVariable(result);
+      state.call(2, 0);
+      state.freeReference(functionReference);
+    }
+    delete this;
+  }
+
+protected:
+  LuaState& state;
+  int functionReference;
+};
+
+int ExecutionContext::push(LuaState& state)
+{
+  ExecutionContextPtr pthis = state.checkObject(1, executionContextClass);
+  WorkUnitPtr workUnit = state.checkObject(2, workUnitClass);
+  ExecutionContextCallbackPtr callback = new LuaExecutionContextCallback(state, state.toReference(3));
+  pthis->pushWorkUnit(workUnit, callback);
+  return 0;
+}
+
+int ExecutionContext::sleep(LuaState& state)
+{
+  ExecutionContextPtr pthis = state.checkObject(1, executionContextClass);
+  double lengthInSeconds = state.checkNumber(2);
+  Thread::sleep((int)(lengthInSeconds * 1000));
+  return 0;
+}
+
 // forwarder to Context.random(...)
 int ExecutionContext::random(LuaState& state)
 {

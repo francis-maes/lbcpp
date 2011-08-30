@@ -17,7 +17,7 @@ namespace lbcpp
 class ExecutionContextCallback
 {
 public:
-  virtual ~ExecutionContextCallback() {};
+  virtual ~ExecutionContextCallback() {}
 
   virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result) = 0;
 };

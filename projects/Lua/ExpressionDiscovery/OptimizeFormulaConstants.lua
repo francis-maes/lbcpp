@@ -6,8 +6,10 @@ require 'Stochastic'
 require 'Sampler'
 require 'Random'
 require 'Vector'
+require 'Optimizer'
+require 'Language.LuaChunk'
+require '../ExpressionDiscovery/ReversePolishNotationProblem'
 
---[[
 function math.inverse(x)
   return 1 / x
 end
@@ -20,8 +22,6 @@ function math.log(x)
     return _deflog(x)
   end
 end
-
-]]
 
 function makeBanditObjective(minArms, maxArms, numProblems, numEstimationsPerProblem, numTimeSteps)
 
@@ -48,40 +48,34 @@ end
 
 banditObjective = makeBanditObjective(2, 10, 100, 1, 10)
 
---[[
-for C=0,3,0.1 do
-  context:enter("C=" .. C)
-  context:result("C", C)
-  score = banditObjective(|rk,sk,tk,t| math.max(rk, C))
-  context:result("score", score)
-  context:leave()
-end
-]]
-
-
-context:call("KL-UCB(0)", banditObjective, DiscreteBandit.klUcb{c=0})
-context:call("KL-UCB(3)", banditObjective, DiscreteBandit.klUcb{c=3})
-
-context:call("Greedy", banditObjective, DiscreteBandit.greedy)
-context:call("UCB1Tuned", banditObjective, DiscreteBandit.ucb1Tuned)
-context:call("UCB1Tuned", banditObjective, DiscreteBandit.ucb1Tuned)
-context:call("UCB1(2)", banditObjective, DiscreteBandit.ucb1C{C=2.0})
-context:call("UCB1(1)", banditObjective, DiscreteBandit.ucb1C{C=1.0})
-
-
-
-Optimizer = {}
-
-function Optimizer.CMAES(params)
-  local res = lbcpp.Object.create("CMAESOptimizer")
-  for k,v in pairs(params) do
-    res[k] = v
+local function getNumConstants(ast)
+  local res = 0
+  local function f(ast)
+    if ast.className == "lua::Index" then
+      if ast:getSubNode(1):print() == "math" then
+        return
+      end
+      local index = tonumber(ast:getSubNode(2):print())
+      if index > res then res = index end
+    else
+      for i=1,ast:getNumSubNodes() do f(ast:getSubNode(i)) end
+    end
   end
+  f(ast)
   return res
 end
 
-objective = lbcpp.LuaFunction.create(|v| banditObjective(|rk,sk,tk,t|(rk + v[1] / tk)),
+function evaluateBanditFormulaStructure(str)
+  local ast = AST.parseExpressionFromString(str)
+  local f = buildExpression(ast, {"rk", "sk", "tk", "t"}, true)
+  local numConstants = getNumConstants(ast)
+  local objective = lbcpp.LuaFunction.create(|csts| banditObjective(|rk,sk,tk,t| f(csts, rk, sk, tk, t) ),
                 "DenseDoubleVector<EnumValue,Double>", "Double")
-optimizer = Optimizer.CMAES{numIterations=10}
-score,solution = optimizer{objective = objective, initialGuess = Vector.newDense(1)}
-print ("score", score, "solution", solution)
+  if numConstants == 0 then
+    return banditObjective(|rk,sk,tk,t| f(nil, rk, sk, tk, t))
+  else
+    local optimizer = Optimizer.CMAES{numIterations=10}
+    local score,solution = optimizer{objective = objective, initialGuess = Vector.newDense(numConstants)}
+    return score
+  end
+end

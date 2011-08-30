@@ -384,7 +384,7 @@ LuaFunction::LuaFunction(LuaState& state, int functionReference, const std::vect
 
 LuaFunction::~LuaFunction()
 {
-  state.freeReference(functionReference);
+  //state.freeReference(functionReference);
 }
 
 size_t LuaFunction::getNumRequiredInputs() const
