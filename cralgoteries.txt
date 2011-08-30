@@ -1,6 +1,5 @@
+
 Formula Optimization:
- * Parsing du fichier des formules
- * Support du DistributedEC / des WorkUnits dans Lua
  * Lancer un gros DistributedEC avec ces formules 
 
 Lua-Misc

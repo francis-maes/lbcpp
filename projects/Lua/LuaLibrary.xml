@@ -11,6 +11,7 @@
     <variable type="String" name="code"/>
     <variable type="String" name="description"/>
     <variable type="Boolean" name="verbose"/>
+    <variable type="File" name="inteluaDirectory"/>
   </class>
   
   <class name="ExecuteLuaFile" base="WorkUnit">

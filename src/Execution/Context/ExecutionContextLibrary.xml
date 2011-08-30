@@ -14,14 +14,14 @@
   </class>
 
   <class name="DistributedExecutionContext" base="SubExecutionContext">
-    <constructor arguments="ExecutionContext&amp; parentContext, const String&amp; remoteHostName, size_t remotePort, const String&amp; project, const String&amp; from, const String&amp; to, const RessourcesEstimatorPtr&amp; ressourcesEstimator" returnType="ExecutionContext"/>
+    <constructor arguments="ExecutionContext&amp; parentContext, const String&amp; remoteHostName, size_t remotePort, const String&amp; project, const String&amp; from, const String&amp; to, const ResourceEstimatorPtr&amp; resourceEstimator" returnType="ExecutionContext"/>
   </class>
 
-  <class name="FixedRessourcesEstimator" base="RessourcesEstimator">
+  <class name="FixedResourceEstimator" base="ResourceEstimator">
     <constructor arguments="size_t requiredCpus, size_t requiredMemory, size_t requiredTime"/>
-    <variable type="PositiveInteger" name="requiredCpus"/>
     <variable type="PositiveInteger" name="requiredMemory"/>
     <variable type="PositiveInteger" name="requiredTime"/>
+    <variable type="PositiveInteger" name="requiredCpus"/>
   </class>
 
 </library>

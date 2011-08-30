@@ -223,6 +223,20 @@ int ExecutionContext::random(LuaState& state)
   return 1;
 }
 
+int ExecutionContext::connect(LuaState& state)
+{
+  ExecutionContextPtr pthis = state.checkObject(1, executionContextClass);
+  const char* remoteHostName = state.checkString(2);
+  int remotePort = state.checkInteger(3);
+  const char* project = state.checkString(4);
+  const char* from = state.checkString(5);
+  const char* to = state.checkString(6);
+  ResourceEstimatorPtr resourceEstimator = state.checkObject(7, resourceEstimatorClass).staticCast<ResourceEstimator>();
+  ExecutionContextPtr res = distributedExecutionContext(*pthis, remoteHostName, remotePort, project, from, to, resourceEstimator);
+  state.pushObject(res);
+  return 1;
+}
+
 /*
 ** ExecutionStack
 */
