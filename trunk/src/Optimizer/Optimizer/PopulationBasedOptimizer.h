@@ -144,34 +144,6 @@ protected:
 
     context.resultCallback(T("sampler"), state->getSampler());
   }
-  
-  void handleResultOfIteration(ExecutionContext& context, const SamplerBasedOptimizerStatePtr& state, const FunctionPtr& validationFunction, double bestIterationScore, const Variable& bestIterationParameters) const
-  {
-    // update OptimizerState if necessary
-    if (bestIterationScore < state->getBestScore())
-    {
-      state->setBestScore(bestIterationScore);
-      state->setBestParameters(bestIterationParameters);
-    }
-    
-    // give information for execution trace
-    context.resultCallback(T("bestIterationParameters"), bestIterationParameters);
-    context.resultCallback(T("bestIterationScore"), bestIterationScore);
-
-    double validationScore = 0.0;
-    if (validationFunction)
-    {
-      validationScore = validationFunction->compute(context, bestIterationParameters).toDouble();
-      context.resultCallback(T("validationScore"), validationScore);
-    }
-
-    context.resultCallback(T("allTimesBestParameters"), state->getBestParameters());
-    context.resultCallback(T("allTimesBestScore"), state->getBestScore());
-    
-    // bestIterationScore may be diffrent from optimizerState->getBestScore(),
-    // this is the return value of performEDAIteration, not the best score of all time !!!
-    context.leaveScope(validationFunction ? Variable(new Pair(bestIterationScore, validationScore)) : Variable(bestIterationScore)); 
-  }
 };
   
 typedef ReferenceCountedObjectPtr<PopulationBasedOptimizer> PopulationBasedOptimizerPtr;  

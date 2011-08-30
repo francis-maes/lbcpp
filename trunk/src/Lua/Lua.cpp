@@ -291,6 +291,21 @@ void LuaState::pushFunction(lua_CFunction function)
   {lua_pushcfunction(L, function);}
 
 /*
+** Table
+*/
+bool LuaState::isTable(int index) const
+  {return lua_istable(L, index) != 0;}
+
+Variable LuaState::getTableVariable(int index, const char* key)
+{
+  lua_pushstring(L, key);
+  lua_gettable(L, index);
+  Variable res = checkVariable(-1);
+  pop(1);
+  return res;
+}
+
+/*
 ** Object
 */
 ObjectPtr& LuaState::checkObject(int index, TypePtr expectedType)
@@ -401,9 +416,6 @@ File LuaState::checkFile(int index)
     return File::nonexistent;
   return getContext().getFile(name);
 }
-
-void LuaState::createTable()
-  {lua_newtable(L);}
 
 void LuaState::setTableField(const char *name, double value)
   {pushString(name); pushNumber(value); lua_settable(L, -3);}

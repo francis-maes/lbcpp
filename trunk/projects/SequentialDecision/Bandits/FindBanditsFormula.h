@@ -541,7 +541,7 @@ protected:
     OptimizerStatePtr state = optimizer->compute(context, problem).getObjectAndCast<OptimizerState>();
 
     // best parameters
-    Variable bestParameters = state->getBestParameters();
+    Variable bestParameters = state->getBestSolution();
     context.resultCallback(T("optimizedPolicy"), Parameterized::cloneWithNewParameters(policy, bestParameters));
     bestScore = state->getBestScore();
     return bestParameters;

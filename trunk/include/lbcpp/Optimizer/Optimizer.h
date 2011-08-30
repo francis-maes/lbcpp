@@ -15,37 +15,6 @@
 namespace lbcpp
 {
 
-class OptimizationProblem : public Object
-{
-public:
-  OptimizationProblem(const FunctionPtr& objective, const Variable& initialGuess = Variable(), const SamplerPtr& sampler = SamplerPtr(), const FunctionPtr& validation = FunctionPtr())
-    : objective(objective), initialGuess(initialGuess), sampler(sampler), validation(validation) {}
-  OptimizationProblem() {}
-
-  const FunctionPtr& getObjective() const
-    {return objective;}
-    
-  const Variable& getInitialGuess() const
-    {return initialGuess;}
-    
-  const SamplerPtr& getSampler() const
-    {return sampler;}
-
-  const FunctionPtr& getValidation() const
-    {return validation;}
-    
-protected:
-  friend class OptimizationProblemClass;
-  
-  FunctionPtr objective;
-  Variable initialGuess;
-  SamplerPtr sampler;
-  FunctionPtr validation;
-};
-
-extern ClassPtr optimizationProblemClass;
-typedef ReferenceCountedObjectPtr<OptimizationProblem> OptimizationProblemPtr;
-
 // Function, Function -> OptimizerState
 class Optimizer : public Function
 {

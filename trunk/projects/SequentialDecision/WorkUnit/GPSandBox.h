@@ -174,7 +174,7 @@ public:
 
     // retrieve best score and best constants and compute best expression
     double bestScore = state->getBestScore();
-    DenseDoubleVectorPtr bestConstants = state->getBestParameters().getObjectAndCast<DenseDoubleVector>();
+    DenseDoubleVectorPtr bestConstants = state->getBestSolution().getObjectAndCast<DenseDoubleVector>();
     GPExpressionPtr bestExpression = expression->cloneAndCast<GPExpression>();
     size_t index = 0;
     objective->setConstantsRecursively(bestExpression, bestConstants, index);

@@ -1,12 +1,5 @@
 
-
- * Modify LuaState::loadBuffer() so that it returns a reference to the loaded code
- * Implementation of Optimizer::__call() that automatically creates the OptimizationProblem if necessary
-
-
 Formula Optimization:
- * Pouvoir appeler des Optimizer depuis lua avec fonction objectif en Lua
- * CMA-ES sur une instance des formules de bandits
  * Completer le RPNProblem pour gerer les constantes numeriques
  * Script lua: GenerateAllFormulas.lua
  
