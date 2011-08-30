@@ -16,7 +16,9 @@ namespace lbcpp
 
 extern FunctionPtr regressionExtraTree(size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
 extern FunctionPtr binaryClassificationExtraTree(size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
-extern FunctionPtr classificationExtraTree(EnumerationPtr classes, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
+extern FunctionPtr classificationExtraTree(size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
+
+extern FunctionPtr extraTreeLearningMachine(size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
 
 }; /* namespace lbcpp */
 

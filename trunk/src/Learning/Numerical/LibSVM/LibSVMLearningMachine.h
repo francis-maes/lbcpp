@@ -18,16 +18,16 @@ namespace lbcpp
 
 extern ClassPtr libSVMLearningMachineClass;
 
-class LibSVMLearningMachine : public Function
+class LibSVMLearningMachineFunction : public Function
 {
 public:
-  LibSVMLearningMachine(double C = 0.1, LibSVMKernelType kernelType = linearKernel, size_t kernelDegree = 1, double kernelGamma = 0.1, double kernelCoef0 = 0.0)
+  LibSVMLearningMachineFunction(double C = 0.1, LibSVMKernelType kernelType = linearKernel, size_t kernelDegree = 1, double kernelGamma = 0.1, double kernelCoef0 = 0.0)
       : C(C), kernelType(kernelType), kernelDegree(kernelDegree), kernelGamma(kernelGamma), kernelCoef0(kernelCoef0), model(NULL), problem(NULL)
   {
     setBatchLearner(libSVMBatchLearner());
   }
 
-  virtual ~LibSVMLearningMachine()
+  virtual ~LibSVMLearningMachineFunction()
     {destroyModel();}
 
   virtual TypePtr getSupervisionType() const = 0;
@@ -42,7 +42,7 @@ public:
     {return index ? getSupervisionType() : (TypePtr)doubleVectorClass();}
  
 protected:
-  friend class LibSVMLearningMachineClass;
+  friend class LibSVMLearningMachineFunctionClass;
   friend class LibSVMBatchLearner;
 
   double C;
@@ -109,7 +109,7 @@ protected:
   }
 };
 
-typedef ReferenceCountedObjectPtr<LibSVMLearningMachine> LibSVMLearningMachinePtr;
+typedef ReferenceCountedObjectPtr<LibSVMLearningMachineFunction> LibSVMLearningMachinePtr;
 
 class LibSVMBatchLearner : public BatchLearner
 {
@@ -135,7 +135,7 @@ public:
 
   virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
-    LibSVMLearningMachinePtr machine = function.staticCast<LibSVMLearningMachine>();
+    LibSVMLearningMachinePtr machine = function.staticCast<LibSVMLearningMachineFunction>();
 
     machine->destroyModel();
     machine->problem = createProblem(machine, trainingData);
@@ -151,7 +151,50 @@ public:
     return true;
   }
 };
-  
+
+class LibSVMLearningMachine : public ProxyFunction
+{
+public:
+  LibSVMLearningMachine(double C, LibSVMKernelType kernelType, size_t kernelDegree, double kernelGamma, double kernelCoef0)
+    : C(C), kernelType(kernelType), kernelDegree(kernelDegree), kernelGamma(kernelGamma), kernelCoef0(kernelCoef0) {}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+  virtual String getOutputPostFix() const
+    {return T("Prediction");}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index == 0 ? (TypePtr)doubleVectorClass() : anyType;}
+
+  virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const
+  {
+    TypePtr inputsType = inputVariables[0]->getType();
+    TypePtr supervisionType = inputVariables[1]->getType();
+
+    if (supervisionType == probabilityType || supervisionType == booleanType)
+      return libSVMClassifier(C, kernelType, kernelDegree, kernelGamma, kernelCoef0);
+    else if (supervisionType->inheritsFrom(enumValueType) || supervisionType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
+      return libSVMBinaryClassifier(C, kernelType, kernelDegree, kernelGamma, kernelCoef0);
+    else
+    {
+      jassertfalse;
+      return FunctionPtr();
+    }
+  }
+
+protected:
+  friend class LibSVMLearningMachineClass;
+
+  double C;
+  LibSVMKernelType kernelType;
+  size_t kernelDegree;
+  double kernelGamma;
+  double kernelCoef0;
+
+  LibSVMLearningMachine() {}
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_LEARNING_NUMERICAL_LINEAR_REGRESSOR_H_

@@ -280,6 +280,7 @@ bool GenericVector::loadFromXml(XmlImporter& importer)
     String text = importer.getAllSubText().trim();
     StringArray tokens;
     tokens.addTokens(text, T(" \t\r\n"), NULL);
+    tokens.removeEmptyStrings(true);
     if (tokens.size() != size)
     {
       importer.errorMessage(T("Vector::loadFromXml"), T("Size does not match. Expected ") + String(size) + T(", found ") + String(tokens.size()));

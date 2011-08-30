@@ -366,8 +366,8 @@ inline void variableToNative(ExecutionContext& context, std::vector<bool>& dest,
     dest.resize(sourceVector->getNumElements());
     for (size_t i = 0; i < dest.size(); ++i)
     {
-      jassert(source.isBoolean());
-      dest[i] = source.getBoolean();
+      jassert(sourceVector->getElement(i).isBoolean());
+      dest[i] = sourceVector->getElement(i).getBoolean();
     }
   }
   else

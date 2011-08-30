@@ -158,19 +158,10 @@ class StreamBasedOptimizerState : public OptimizerState, public ExecutionContext
 public:
   StreamBasedOptimizerState(ExecutionContext& context, const std::vector<StreamPtr>& streams)
     : OptimizerState(), streams(streams)
-  {
-    /*
-    // Types checking
-    if (initialState->getNumVariables() != streams.size())
-      context.errorCallback(T("StreamBasedOptimizerState"), T("Invalid number of streams, Expected ") 
-                            + String((int)initialState->getNumVariables()) 
-                            + T(" found ") + streams.size());
+    {}
 
-    for (size_t i = 0; i < streams.size(); ++i)
-      if (streams[i])
-        context.checkInheritance(streams[i]->getElementsType(), initialState->getVariableType(i));
-      */
-  }
+  size_t getNumStreams() const
+    {return streams.size();}
 
   const StreamPtr& getStream(size_t index) const
     {jassert(index < streams.size()); return streams[index];}
@@ -256,7 +247,18 @@ public:
     const FunctionPtr& objectiveFunction = problem->getObjective();
     StreamBasedOptimizerStatePtr state = optimizerState.staticCast<StreamBasedOptimizerState>();
     jassert(state);
-    
+
+     // Types checking
+    const ObjectPtr initialGuess = problem->getInitialGuess().getObject();
+    if (initialGuess->getNumVariables() != streams.size())
+      context.errorCallback(T("StreamBasedOptimizerState"), T("Invalid number of streams, Expected ") 
+                            + String((int)initialGuess->getNumVariables()) 
+                            + T(" found ") + streams.size());
+
+    for (size_t i = 0; i < state->getNumStreams(); ++i)
+      if (state->getStream(i))
+        context.checkInheritance(state->getStream(i)->getElementsType(), initialGuess->getVariableType(i));
+
     if (!state->getBestParameters().exists())
     {
       ObjectPtr initialParameters = problem->getInitialGuess().getObject();
@@ -275,8 +277,10 @@ public:
       if (!iteration) // No more parameter to test
         break;
 
-      context.enterScope(T("Iteration ") + String((int)state->getNumIterations()));
-      context.resultCallback(T("Iteration"), state->getNumIterations());
+      context.enterScope(T("Iteration ") + String((int)numIteration));
+      context.resultCallback(T("Iteration"), numIteration);
+      
+      context.enterScope(T("Computing"));
 
       // Generate candidates
       ObjectPtr baseObject = state->getBestParameters().getObject();
@@ -318,6 +322,7 @@ public:
         juce::Thread::sleep(500);
       }
       context.progressCallback(new ProgressionState(numPushedWorkUnit, numPushedWorkUnit, T("Evaluation")));
+      context.leaveScope();
 
       // Update state
       pushIterationIntoStack(context, state, iteration);

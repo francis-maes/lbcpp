@@ -22,7 +22,7 @@ FunctionPtr binaryClassificationExtraTree(size_t numTrees, size_t numAttributeSa
   return new BinaryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
 }
 
-FunctionPtr classificationExtraTree(EnumerationPtr classes, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+FunctionPtr classificationExtraTree(size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
 {
   return new ClassificationRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
 }

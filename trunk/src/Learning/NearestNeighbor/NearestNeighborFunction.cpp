@@ -28,7 +28,7 @@ Variable NearestNeighborFunction::computeFunction(ExecutionContext& context, con
   return computeOuput(scoredIndices);
 }
 
-Variable BinaryNearestNeighborFunction::computeOuput(ScoresMap& scoredIndices) const
+Variable BinaryNearestNeighbor::computeOuput(ScoresMap& scoredIndices) const
 {
   size_t numTrues = 0;
   double sumOfScores = 0.0;
@@ -51,6 +51,32 @@ Variable BinaryNearestNeighborFunction::computeOuput(ScoresMap& scoredIndices) c
   if (useWeightedScore)
     return probability(sumOfScores == 0.0 ? 0.0 : sumOfTrueScores / sumOfScores);
   return probability(numTrues / (double)maxNumNeighbors);
+}
+
+Variable RegressionNearestNeighbor::computeOuput(ScoresMap& scoredIndices) const
+{
+  double sum = 0.0;
+  const size_t maxNumNeighbors = scoredIndices.size() < numNeighbors ? scoredIndices.size() : numNeighbors;
+  ScoresMap::reverse_iterator it = scoredIndices.rbegin();
+  for (size_t i = 0; i < maxNumNeighbors; ++i, it++)
+    sum += supervisionData[it->second].getDouble();
+  return Variable(maxNumNeighbors ? sum / (double)maxNumNeighbors : 0.f, doubleType);
+}
+
+Variable ClassificationNearestNeighbor::computeOuput(ScoresMap& scoredIndices) const
+{
+  std::vector<double> sums(enumeration->getNumElements(), 0.0);
+
+  const size_t maxNumNeighbors = scoredIndices.size() < numNeighbors ? scoredIndices.size() : numNeighbors;
+  ScoresMap::reverse_iterator it = scoredIndices.rbegin();
+  for (size_t i = 0; i < maxNumNeighbors; ++i, it++)
+    for (size_t j = 0; j < sums.size(); ++j)
+      sums[j] += supervisionData[it->second].getObjectAndCast<DoubleVector>()->getElement(j).getDouble();
+  
+  DenseDoubleVectorPtr res = new DenseDoubleVector(enumeration, probabilityType);
+  for (size_t i = 0; i < sums.size(); ++i)
+    res->setValue(i, maxNumNeighbors ? sums[i] / (double)maxNumNeighbors : 0.f);
+  return res;
 }
 
 bool NearestNeighborBatchLearner::train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
@@ -95,11 +121,3 @@ bool NearestNeighborBatchLearner::train(ExecutionContext& context, const Functio
   }
   return true;
 }
-
-namespace lbcpp
-{
-
-FunctionPtr binaryNearestNeighbor(size_t numNeighbors, bool autoNormalizeFeatures, bool useWeightedScore)
-  {return new BinaryNearestNeighborFunction(numNeighbors, autoNormalizeFeatures, useWeightedScore);}
-
-};

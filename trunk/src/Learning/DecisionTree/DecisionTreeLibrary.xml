@@ -16,5 +16,12 @@
   <class name="RTreeBatchLearner" base="BatchLearner">
     <constructor/>
   </class>
+  
+  <class name="ExtraTreeLearningMachine" base="ProxyFunction">
+    <constructor arguments="size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting" returnType="Function"/>
+    <variable type="PositiveInteger" name="numTrees"/>
+    <variable type="PositiveInteger" name="numAttributeSamplesPerSplit"/>
+    <variable type="PositiveInteger" name="minimumSizeForSplitting"/>
+  </class>
 
 </library>

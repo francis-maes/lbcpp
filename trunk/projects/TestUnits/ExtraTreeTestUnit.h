@@ -51,7 +51,7 @@ protected:
     ContainerPtr learningData = loadDataToContainer(context, data, 0, 300, true);
     ContainerPtr testingData = loadDataToContainer(context, data, 300, 2300, true);
 
-    FunctionPtr learner = classificationExtraTree(waveFormTypeEnumeration, numTrees, numAttributes, minSplitSize);
+    FunctionPtr learner = classificationExtraTree(numTrees, numAttributes, minSplitSize);
 
     learner->train(context, learningData, ContainerPtr(), T("Training"));
     

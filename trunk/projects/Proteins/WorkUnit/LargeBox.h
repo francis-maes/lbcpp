@@ -1,4 +1,5 @@
 
+#include <lbcpp/Core/Function.h>
 #include "../Predictor/LargeProteinPredictorParameters.h"
 
 namespace lbcpp
@@ -116,7 +117,6 @@ protected:
     return res;
   }
 };
-
 
 class CompareSPXFromFileAndFromPDB : public WorkUnit
 {
@@ -331,6 +331,102 @@ protected:
     context.errorCallback(T("checkTertiaryStructure"));
     return false;
   }
+};
+
+class ProteinLearnerFunction : public SimpleUnaryFunction
+{
+public:
+  ProteinLearnerFunction(ProteinTarget target, const String& proteinsPath
+                         , const ContainerPtr& trainingProteins, const ContainerPtr& testingProteins
+                         , const LargeProteinPredictorParametersPtr& largePredictor)
+    : SimpleUnaryFunction(largeProteinParametersClass, doubleType, T("ProteinLearner"))
+    , target(target), proteinsPath(proteinsPath)
+    , trainingProteins(trainingProteins), testingProteins(testingProteins)
+    , largePredictor(largePredictor) {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    LargeProteinParametersPtr parameters = input.getObjectAndCast<LargeProteinParameters>(context);
+    if (!parameters)
+      return 101.f;
+
+    ContainerPtr trainData = trainingProteins;
+    if (!trainData)
+      trainData = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinsPath).getChildFile(T("train/")), 0,
+                                             T("Loading training proteins"));
+
+    if (trainData->getNumElements() == 0)
+      return 102.f;
+
+    LargeProteinPredictorParametersPtr clone = largePredictor->cloneAndCast<LargeProteinPredictorParameters>(context);
+    clone->setParameters(parameters);
+
+    ProteinPredictorPtr predictor = new ProteinPredictor(clone);
+    predictor->addTarget(target);
+
+    if (!predictor->train(context, trainData, ContainerPtr(), T("Training")))
+      return 103.f;
+  
+    ContainerPtr testData = testingProteins;
+    if (!testData)
+      testData = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinsPath).getChildFile(T("test/")), 0,
+                                                        T("Loading testing proteins"));
+    if (testData->getNumElements() == 0)
+      return 103.f;
+
+    ProteinEvaluatorPtr testEvaluator = new ProteinEvaluator();
+    CompositeScoreObjectPtr testScores = predictor->evaluate(context, testData, testEvaluator, T("Evaluate on test proteins"));
+    return testEvaluator->getScoreObjectOfTarget(testScores, target)->getScoreToMinimize();
+  }
+
+protected:
+  friend class ProteinLearnerFunctionClass;
+
+  ProteinTarget target;
+
+  String proteinsPath;
+  ContainerPtr trainingProteins;
+  ContainerPtr testingProteins;
+
+  LargeProteinPredictorParametersPtr largePredictor;
+
+  ProteinLearnerFunction() : SimpleUnaryFunction(proteinPredictorParametersClass, doubleType, T("ProteinLearner")) {}
+};
+
+class BestFirstSearchProteinLearner : public WorkUnit
+{
+public:
+  BestFirstSearchProteinLearner() : loadProteins(false), target(noTarget) {}
+
+  Variable run(ExecutionContext& context)
+  {
+    if (target == noTarget)
+      return false;
+    ContainerPtr trainingProteins;
+    ContainerPtr testingProteins;
+    if (loadProteins)
+    {
+      trainingProteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinsPath).getChildFile(T("train/")), 0, T("Loading training proteins"));
+      testingProteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinsPath).getChildFile(T("test/")), 0, T("Loading testing proteins"));
+    }
+
+    LargeProteinPredictorParametersPtr largePredictor = new LargeProteinPredictorParameters();
+    largePredictor->learningMachineName = T("kNN");
+    
+    FunctionPtr toOptimize = new ProteinLearnerFunction(target, proteinsPath, trainingProteins, testingProteins, largePredictor);
+    OptimizationProblemPtr problem = new OptimizationProblem(toOptimize, new LargeProteinParameters());
+    OptimizerPtr optimizer = bestFirstSearchOptimizer(LargeProteinParameters::createSingleTaskSingleStageStreams(), context.getFile(optimizerFile));
+    return optimizer->compute(context, problem);
+  }
+
+protected:
+  friend class BestFirstSearchProteinLearnerClass;
+
+  bool loadProteins;
+  String proteinsPath;
+
+  ProteinTarget target;
+  String optimizerFile;
 };
 
 };

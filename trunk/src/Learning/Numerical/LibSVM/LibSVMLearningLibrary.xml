@@ -9,7 +9,7 @@
     <value name="sigmoid"/>
   </enumeration>
 
-  <class name="LibSVMLearningMachine" base="Function" abstract="yes">
+  <class name="LibSVMLearningMachineFunction" base="Function" abstract="yes">
     <variable type="Double" name="C"/>
     <variable type="LibSVMKernelType" name="kernelType"/>
     <variable type="PositiveInteger" name="kernelDegree"/>
@@ -21,7 +21,7 @@
     <constructor/>
   </class>
 
-  <class name="LibSVMClassifier" base="LibSVMLearningMachine">
+  <class name="LibSVMClassifier" base="LibSVMLearningMachineFunction">
     <constructor arguments="double C, LibSVMKernelType kernelType, size_t kernelDegree, double kernelGamma, double kernelCoef0" returnType="Function"/>
   </class>
 
@@ -29,4 +29,7 @@
     <constructor arguments="double C, LibSVMKernelType kernelType, size_t kernelDegree, double kernelGamma, double kernelCoef0" returnType="Function"/>
   </class>
 
+  <class name="LibSVMLearningMachine" base="ProxyFunction">
+    <constructor arguments="double C, LibSVMKernelType kernelType, size_t kernelDegree, double kernelGamma, double kernelCoef0" returnType="Function"/>
+  </class>
 </library>

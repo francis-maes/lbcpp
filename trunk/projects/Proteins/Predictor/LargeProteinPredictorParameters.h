@@ -236,9 +236,8 @@ public:
       }
       else
         jassertfalse;
-      
-      return res;
     }
+    return res;
   }
 
   static std::vector<StreamPtr> createSingleTaskStreams(ProteinTarget target)
@@ -314,7 +313,15 @@ class LargeProteinPredictorParameters : public ProteinPredictorParameters
 {
 public:
   LargeProteinPredictorParameters(const LargeProteinParametersPtr& fp, bool isGlobalFeaturesLazy = false)
-    : fp(fp), isGlobalFeaturesLazy(isGlobalFeaturesLazy) {}
+    : fp(fp), isGlobalFeaturesLazy(isGlobalFeaturesLazy), learningMachineName(T("SGD"))
+    , svmC(4.0), svmGamma(1.0)
+    , knnNeighbors(5)
+    , x3Trees(1000)
+    , x3Attributes(0)
+    , x3Splits(0)
+    , sgdRate(1.0)
+    , sgdIterations(100)
+    , useAddBias(false) {}
 
   virtual void proteinPerception(CompositeFunctionBuilder& builder) const
   {
@@ -578,14 +585,53 @@ public:
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
 
-  virtual FunctionPtr learningMachine(ProteinTarget target) const
-    {jassertfalse; return FunctionPtr();}
+  virtual FunctionPtr createTargetPredictor(ProteinTarget target) const
+  {
+    if (target == dsbTarget && useAddBias)
+      return new ConnectivityPatternClassifier(learningMachine(target), target == dsbTarget);
+    return ProteinPredictorParameters::createTargetPredictor(target);
+  }
 
-protected:
+  virtual FunctionPtr learningMachine(ProteinTarget target) const
+  {
+    // TODO: incorporate bias in case of binary target
+    if (learningMachineName == T("LibSVM"))
+      return libSVMLearningMachine(pow(2.0, svmC), rbfKernel, 0, pow(2.0, svmGamma), 0.0);
+    else if (learningMachineName == T("kNN"))
+      return nearestNeighborLearningMachine(knnNeighbors, true);
+    else if (learningMachineName == T("ExtraTrees"))
+      return extraTreeLearningMachine(x3Trees, x3Attributes, x3Splits);
+    else if (learningMachineName == T("SGD"))
+    {
+      FunctionPtr res = linearLearningMachine(new StochasticGDParameters(constantIterationFunction(sgdRate), StoppingCriterionPtr(), sgdIterations));
+      res->setEvaluator(defaultSupervisedEvaluator());
+      return res;
+    }
+
+    jassertfalse;
+    return FunctionPtr();
+  }
+
+  void setParameters(LargeProteinParametersPtr parameters)
+    {fp = parameters;}
+
+public:
   friend class LargeProteinPredictorParametersClass;
 
   LargeProteinParametersPtr fp;
   bool isGlobalFeaturesLazy;
+
+  String learningMachineName;
+  double svmC;
+  double svmGamma;
+  size_t knnNeighbors;
+  size_t x3Trees;
+  size_t x3Attributes;
+  size_t x3Splits;
+  double sgdRate;
+  size_t sgdIterations;
+
+  bool useAddBias;
 
   LargeProteinPredictorParameters() {}
 };
