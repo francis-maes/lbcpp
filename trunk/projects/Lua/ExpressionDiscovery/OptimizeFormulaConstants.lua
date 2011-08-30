@@ -46,7 +46,7 @@ function makeBanditObjective(minArms, maxArms, numProblems, numEstimationsPerPro
 
 end
 
-banditObjective = makeBanditObjective(2, 10, 100, 1, 10)
+banditObjective = makeBanditObjective(2, 10, 10, 1, 100)
 
 local function getNumConstants(ast)
   local res = 0
