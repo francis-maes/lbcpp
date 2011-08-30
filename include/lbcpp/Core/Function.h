@@ -182,6 +182,8 @@ public:
   virtual ObjectPtr clone(ExecutionContext& context) const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
+  virtual int __call(LuaState& state);
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -237,6 +239,33 @@ extern FunctionPtr signedScalarToProbabilityFunction();
 
 extern FunctionPtr concatenateScoreObjectFunction();
 extern FunctionPtr concatenateContainerFunction();
+
+/*
+** LuaFunction
+*/
+class LuaFunction : public Function
+{
+public:
+  LuaFunction(LuaState& state, int functionReference, const std::vector<TypePtr>& inputTypes, TypePtr outputType);
+  LuaFunction() : state(*(LuaState* )0) {}
+  virtual ~LuaFunction();
+
+  static int create(LuaState& state);
+
+  virtual size_t getNumRequiredInputs() const;
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
+
+  lbcpp_UseDebuggingNewOperator
+
+protected:
+  LuaState& state;
+  int functionReference;
+  std::vector<TypePtr> inputTypes;
+  TypePtr outputType;
+};
 
 /*
 ** SimpleFunction base classes

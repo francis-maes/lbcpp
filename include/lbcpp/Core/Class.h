@@ -119,7 +119,7 @@ public:
   virtual FunctionSignaturePtr getMemberFunction(size_t index) const;
   virtual int findMemberFunction(const String& name) const;
 
-  size_t addMemberFunction(ExecutionContext& context, LuaFunction function, const String& name, const String& shortName = String::empty, const String& description = String::empty, bool isStatic = false);
+  size_t addMemberFunction(ExecutionContext& context, LuaCFunction function, const String& name, const String& shortName = String::empty, const String& description = String::empty, bool isStatic = false);
 
   lbcpp_UseDebuggingNewOperator
 

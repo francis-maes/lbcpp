@@ -43,3 +43,6 @@ OptimizerStatePtr Optimizer::loadOptimizerState(ExecutionContext& context) const
     return OptimizerStatePtr();
   return Object::createFromFile(context, optimizerStateFile).dynamicCast<OptimizerState>();
 }
+
+int Optimizer::__call(LuaState& state)
+  {return Function::__call(state);} // this might be specialized in the future

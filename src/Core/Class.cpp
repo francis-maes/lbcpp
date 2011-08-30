@@ -257,7 +257,7 @@ int DefaultClass::findMemberFunction(const String& name) const
   return baseType->findMemberFunction(name);
 }
 
-size_t DefaultClass::addMemberFunction(ExecutionContext& context, LuaFunction function, const String& name, const String& shortName, const String& description, bool isStatic)
+size_t DefaultClass::addMemberFunction(ExecutionContext& context, LuaCFunction function, const String& name, const String& shortName, const String& description, bool isStatic)
 {
   if (!function || name.isEmpty())
   {

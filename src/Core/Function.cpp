@@ -357,6 +357,90 @@ void Function::removePostCallback(const FunctionCallbackPtr& callback)
     }
 }
 
+int Function::__call(LuaState& state)
+{
+  std::vector<Variable> inputs;
+  int n = state.getTop();
+  inputs.resize(n);
+  for (int i = 1; i <= n; ++i)
+    inputs[i - 1] = state.checkVariable(i);
+  Variable res = compute(state.getContext(), inputs);
+  if (res.exists())
+  {
+    state.pushVariable(res);
+    return 1;
+  }
+  else
+    return 0;
+}
+
+/*
+** LuaFunction
+*/
+LuaFunction::LuaFunction(LuaState& state, int functionReference, const std::vector<TypePtr>& inputTypes, TypePtr outputType)
+  : state(state), functionReference(functionReference), inputTypes(inputTypes), outputType(outputType)
+{
+}
+
+LuaFunction::~LuaFunction()
+{
+  state.freeReference(functionReference);
+}
+
+size_t LuaFunction::getNumRequiredInputs() const
+  {return inputTypes.size();}
+
+TypePtr LuaFunction::getRequiredInputType(size_t index, size_t numInputs) const
+  {jassert(index < inputTypes.size()); return inputTypes[index];}
+
+TypePtr LuaFunction::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {return outputType;}
+
+// Function, Arg1TypeName, ... ArgNTypeName, ResTypeName
+int LuaFunction::create(LuaState& state)
+{
+  ExecutionContext& context = state.getContext();
+
+  int n = state.getTop();
+  if (n < 2)
+  {
+    state.error("Not enough arguments in LuaFunction::create()");
+    return 0;
+  }
+  int functionReference = state.toReference(1);
+  std::vector<TypePtr> inputTypes(n-1);
+  for (int i = 2; i <= n; ++i)
+  {
+    const char* typeName = state.checkString(i);
+    TypePtr type = typeManager().getType(context, typeName);
+    if (!type)
+    {
+      state.error(String("Could not find type ") + typeName);
+      return 0;
+    }
+    inputTypes[i - 2] = type;
+  }
+  // hack: everything if first filled into the inputTypes vector, and the last argument is then move to the outputType
+  TypePtr outputType = inputTypes.back(); 
+  inputTypes.pop_back();
+
+  state.pushObject(new LuaFunction(state, functionReference, inputTypes, outputType));
+  return 1;
+}
+
+Variable LuaFunction::computeFunction(ExecutionContext& context, const Variable* inputs) const
+{
+  size_t n = getNumInputs();
+  state.pushReference(functionReference);
+  for (size_t i = 0; i < n; ++i)
+    state.pushVariable(inputs[i]);
+  if (!state.call((int)n, 1))
+    return Variable::missingValue(outputType);
+  Variable res = state.checkVariable(-1);
+  state.pop(1);
+  return res;
+}
+
 /*
 ** ProxyFunction
 */

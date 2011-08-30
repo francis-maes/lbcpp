@@ -648,6 +648,12 @@ int Object::__len(LuaState& state) const
   return 1;
 }
 
+int Object::__call(LuaState& state)
+{
+  state.error("Cannot call an object");
+  return 0;
+}
+
 int Object::garbageCollect(LuaState& state)
 {
   ObjectPtr& object = state.checkObject(1);

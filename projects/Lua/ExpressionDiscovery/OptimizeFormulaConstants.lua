@@ -5,6 +5,7 @@ require 'DiscreteBandit'
 require 'Stochastic'
 require 'Sampler'
 require 'Random'
+require 'Vector'
 
 --[[
 function math.inverse(x)
@@ -45,7 +46,7 @@ function makeBanditObjective(minArms, maxArms, numProblems, numEstimationsPerPro
 
 end
 
-banditObjective = makeBanditObjective(2, 10, 1000, 1, 1000)
+banditObjective = makeBanditObjective(2, 10, 10, 1, 10)
 
 --[[
 for C=0,3,0.1 do
@@ -83,7 +84,22 @@ function Optimizer.CMAES(params)
   return res
 end
 
-optimizer = Optimizer.CMAES{numIterations=100}
+function Optimizer.newProblem(objective, initialGuess, sampler, validation)
+  local res = lbcpp.Object.create("OptimizationProblem", objective)
+  if initialGuess then
+    res.initialGuess = initialGuess
+  end
+  if sampler then
+    res.sampler = sampler
+  end
+  if validation then
+    res.validation = validation
+  end
+  return res
+end
 
-problem = {objective=|v| banditObjective(|rk,sk,tk,t| rk + v[1] / tk), initialGuess=Vector.newDense(1)}
+objective = lbcpp.LuaFunction.create(|v| banditObjective(|rk,sk,tk,t| rk + v[1] / tk),
+                "DenseDoubleVector<EnumValue,Double>", "Double")
+optimizer = Optimizer.CMAES{numIterations=100}
+problem = Optimizer.newProblem(objective, Vector.newDense(1))
 score,solution = optimizer(problem)
