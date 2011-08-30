@@ -143,6 +143,9 @@ public:
     else
       acceptChildren(call);
   }
+
+  virtual void visit(Index& index)
+    {setResult(temporaries.makeIdentifier(&index));}
   
 protected:
   TemporaryIdentifierMap& temporaries;
@@ -260,57 +263,6 @@ protected:
       setResult(expr);
     }
   }
-
-#if 0
-  void simplifyNumberAlgebra(const ExpressionPtr& expression)
-  {
-    if (isNumberAlgebra(expression))
-    {
-      algebra::RationalFunction fraction = algebra::RationalFunction::fromExpression(expression);
-      fraction.simplify();
-      fraction.normalizeConstants();
-      setResult(fraction.toExpression());
-    }
-  }
-  
-  // returns true if the expression only contains literal numbers, identifiers, unm, add, sub, mul and div
-  static bool isNumberAlgebra(const ExpressionPtr& expression)
-  {
-    if (expression.isInstanceOf<Identifier>())
-      return true;
-    if (expression.isInstanceOf<LiteralNumber>())
-      return true;
-    ParenthesisPtr parenthesis = expression.dynamicCast<Parenthesis>();
-    if (parenthesis)
-      return isNumberAlgebra(parenthesis->getExpr());
-    UnaryOperationPtr unaryOperation = expression.dynamicCast<UnaryOperation>();
-    if (unaryOperation)
-      return unaryOperation->getOp() == unmOp && isNumberAlgebra(unaryOperation->getExpr());
-    BinaryOperationPtr binaryOperation = expression.dynamicCast<BinaryOperation>();
-    if (binaryOperation)
-    {
-      if (binaryOperation->getOp() == addOp ||
-          binaryOperation->getOp() == subOp ||
-          binaryOperation->getOp() == mulOp ||
-          binaryOperation->getOp() == divOp)
-        return isNumberAlgebra(binaryOperation->getLeft()) && isNumberAlgebra(binaryOperation->getRight());
-      if (binaryOperation->getOp() == powOp)
-        return isNumberAlgebra(binaryOperation->getLeft()) && isInteger(binaryOperation->getRight());
-    }
-    CallPtr call = expression.dynamicCast<Call>();
-    if (call)
-      return call->getFunction()->print() == T("math.inverse") &&
-             call->getNumArguments() == 1 &&
-             isNumberAlgebra(call->getArgument(0));
-    return false;
-  }
-  
-  static bool isInteger(ExpressionPtr expression)
-  {
-    LiteralNumberPtr number = expression.dynamicCast<LiteralNumber>();
-    return number && number->getValue() == std::floor(number->getValue());
-  }
-#endif // 0
 };
 
 }; /* namespace lua */
