@@ -84,4 +84,8 @@ function AST.call(fun, args)
   return lbcpp.Object.create("lua::Call", fun, makeObjectVector("lua::Expression", args))
 end
 
+function AST.index(left, right)
+  return lbcpp.Object.create("lua::Index", left, right)
+end
+
 return AST

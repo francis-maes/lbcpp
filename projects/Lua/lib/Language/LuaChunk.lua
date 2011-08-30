@@ -196,7 +196,7 @@ local function metaLuaAstToLbcppAstInternal(ast)
   elseif ast.tag == "Invoke" then
     return lbcpp.Object.create("lua::Invoke", subNodes[1], subNodes[2], makeObjectVector("lua::Expression", subNodes, 3))
   elseif ast.tag == "Index" then
-    return lbcpp.Object.create("lua::Index", subNodes[1], subNodes[2])
+    return AST.index(subNodes[1], subNodes[2])
   elseif ast.tag == "Subspecified" then
     return lbcpp.Object.create("lua::Subspecified", subNodes[1])
   else

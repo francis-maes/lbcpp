@@ -7,13 +7,19 @@ require 'Vector'
 
 -- Transforms a formula represented through its abstract syntax tree
 --  into an executable function
-function buildExpression(variables, expression)
+function buildExpression(expression, variables, hasNumericalConstants)
   local code = "return function ("
+  local firstArg = true
+  if hasNumericalConstants then
+    code = code .. "__cst"
+    firstArg = false
+  end
   for j,variable in ipairs(variables) do
-    code = code .. variable
-    if j < #variables then
+    if not firstArg then
       code = code .. ","
     end
+    code = code .. variable
+    firstArg = false
   end
   code = code .. ") return " .. expression:print() .. " end"
   --print (code)
@@ -24,12 +30,33 @@ function buildExpression(variables, expression)
   return chunk()
 end
 
+local function getStackNumConstants(stack, lhs)
+  local function getExprNumConstants(expr)
+    if expr.className == "lua::Index" then
+      return expr:getSubNode(1) == lhs and 1 or 0
+    else
+      local res = 0
+      for i=1,expr:getNumSubNodes() do
+        res = res + getExprNumConstants(expr:getSubNode(i))
+      end
+      return res
+    end
+  end
+  local res = 0
+  for i,expr in ipairs(stack) do
+    res = res + getExprNumConstants(expr)
+  end
+  return res
+end
+
 local function expressionSize(expression)
   local res = 1
   local n = expression:getNumSubNodes()
   local firstSubNode = 1
   if expression.className == "lua::Call" then
     firstSubNode = 2
+  elseif expression.className == "lua::Index" then
+    firstSubNode = n+1
   end
   for i=firstSubNode,n do
     res = res + expressionSize(expression:getSubNode(i))
@@ -95,6 +122,7 @@ DecisionProblem.ReversePolishNotation = subspecified {
   parameter unaryFunctions = {default={}},
   parameter binaryOperations = {default={"add", "sub", "mul", "div"}},
   parameter binaryFunctions = {default={}},
+  parameter hasNumericalConstants = {default=false},
   parameter objective = {},
   parameter maxSize = {default = 0, min = 0},
 
@@ -113,13 +141,17 @@ DecisionProblem.ReversePolishNotation = subspecified {
       return stack[#stack]
     end
 
-    local n = ast:getNumSubNodes()
+    local n = ast:getNumSubNodes() -- num arguments
     local firstSubNode = 1
     if ast.className == "lua::Call" then
       n = n - 1
       firstSubNode = 2      
+    elseif ast.className == "lua::Index" then
+      n = 0 -- no arguments for numerical constants
+      local lhs = ast:getSubNode(1)
+      local index = getStackNumConstants(stack, lhs) + 1
+      ast = AST.index(lhs, AST.literalNumber(index))
     end
-    -- n = num arguments
 
     local m = #stack -- stack size
     assert(n <= m)
@@ -155,12 +187,18 @@ DecisionProblem.ReversePolishNotation = subspecified {
     local minArity = 0
     local maxArity = #stack
     if ms > 0 then
-      local s = stackOrExpressionSize(stack)
-      if s >= ms then
-        return {AST.returnStatement()} -- maxSize is reached, must finish now
+      local currentSize = stackOrExpressionSize(stack)
+      local remainingSteps = ms - currentSize
+      if remainingSteps <= 0 then
+        maxArity = -1
       end
-      local remaining = ms - s
-      minArity = #stack + 1 - remaining
+      local MaxArity = 2
+      local maxThatCanBeRemovedAfterThisAction = (remainingSteps - 1) * (MaxArity - 1)
+      minArity = currentSize - maxThatCanBeRemovedAfterThisAction
+    end
+
+    if minArity > maxArity or maxArity == -1 then
+      return {AST.returnStatement()} -- maxSize is reached, must finish now
     end
 
     local res = {}
@@ -187,6 +225,9 @@ DecisionProblem.ReversePolishNotation = subspecified {
       for i,c in ipairs(constants) do
         table.insert(res, AST.literalNumber(c))
       end
+      if hasNumericalConstants then
+        table.insert(res, AST.index(AST.identifier("__cst")))
+      end
     end
     if 1 <= maxArity then
       table.insert(res, AST.returnStatement())
@@ -199,7 +240,7 @@ DecisionProblem.ReversePolishNotation = subspecified {
     if ast.className == "lua::Return" then
       assert (#stack > 0)
       local ast = stack[#stack]
-      local f = buildExpression(variables, ast)
+      local f = buildExpression(ast, variables, hasNumericalConstants)
       local o = objective(f, ast:print(), ast)
       return math.exp(-o)
     else

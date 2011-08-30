@@ -28,14 +28,15 @@ end
 ----------------
 
 problem = DecisionProblem.ReversePolishNotation{
-  variables = {"a", "b", "c", "d"},
+  variables = {"rk", "sk", "tk", "t"},
   constants = {},
   unaryOperations = {"unm"},
   unaryFunctions = {"math.inverse","math.exp", "math.log"},
   binaryOperations = {"add", "sub", "mul", "div"},
   binaryFunctions = {"math.max", "math.min"},
+  hasNumericalConstants = true,
   objective = | | 0,
-  maxSize = 6
+  maxSize = 8
 }
 
 local dataset = {}
@@ -59,10 +60,13 @@ for i = 1,10 do
 end
 
 function makeUniqueKey(formula)
-  local f = buildExpression(problem.__parameters.variables, formula)
+  local f = buildExpression(formula, problem.__parameters.variables, problem.__parameters.hasNumericalConstants)
   local res = ""
+
+  local numericalConstants = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0}
+
   for i,example in ipairs(dataset) do
-    local y = f(unpack(example))
+    local y = f(numericalConstants, unpack(example))
     assert(not(y == nil))
     --print (y)
     if y > -1e-10 and y < 1e10 then
@@ -135,6 +139,7 @@ print ("NumDistinctFinalStates", numDistinctFinalStates)
 print ("NumDistinctSimplifiedFinalStates", numDistinctSimplifiedFinalStates)
 print ("NumUniqueFinalStates", numUniqueFinalStates)
 
+--[[
 for key,tbl in pairs(uniqueFinalStates) do
   local content = {}
   for str,b in pairs(tbl) do table.insert(content, str) end
@@ -142,3 +147,17 @@ for key,tbl in pairs(uniqueFinalStates) do
     print (table.concat(content, " ; "))
   end
 end
+]]
+
+local function saveFormulas(formulas, filename)
+  context:enter("Saving formulas in " .. filename)
+  local f = assert(io.open(filename, "wt"))
+  for str,b in pairs(formulas) do
+    f:write(str)
+    f:write("\n")
+  end
+  f:close()
+  context:leave()
+end
+
+saveFormulas(simplifiedFinalStates, "formulas8.txt")
