@@ -238,7 +238,7 @@ end
 
 ----- Extend the AST interface
 function AST.parseExpressionFromString(string, chunkName)
-  return LuaChunk.parseFromString(0, string, chunkName)
+  return LuaChunk.parseFromString(0, string, chunkName or string)
 end
 
 -------

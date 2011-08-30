@@ -134,6 +134,8 @@ public:
 
   ExecutionContext& getContext();
 
+  CriticalSection lock;
+
 protected:
   lua_State* L;
   bool owned;

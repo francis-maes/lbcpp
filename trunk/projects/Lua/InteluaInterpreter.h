@@ -36,6 +36,9 @@ public:
   static int loadBuffer(LuaState& state);
   static int loadFile(LuaState& state);
 
+  LuaState& getState()
+    {return lua;}
+
 protected:
   LuaState translatorState;
   LuaState lua;
@@ -76,7 +79,13 @@ public:
 
     InteluaInterpreter interpreter(context, inteluaDirectory, verbose);
     interpreter.setStaticAllocationFlag();
-    return interpreter.executeBuffer(code, toShortString());
+    if (!interpreter.executeBuffer(code, toShortString()))
+      return false;
+    LuaState& state = interpreter.getState();
+    state.getGlobal("result");
+    Variable res = state.checkVariable(-1);
+    state.pop();
+    return res.exists() ? res : Variable(true);
   }
 };
 

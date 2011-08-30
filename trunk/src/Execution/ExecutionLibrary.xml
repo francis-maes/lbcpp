@@ -85,6 +85,9 @@
     <function lang="lua" name="enter"/>
     <function lang="lua" name="leave"/>
     <function lang="lua" name="call"/>
+    <function lang="lua" name="push"/>
+    <function lang="lua" name="run"/>
+    <function lang="lua" name="sleep"/>
     <function lang="lua" name="random"/>
   </class>
 

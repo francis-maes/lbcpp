@@ -1,9 +1,6 @@
-
 Formula Optimization:
- * Completer le RPNProblem pour gerer les constantes numeriques
- * Script lua: GenerateAllFormulas.lua
- 
- * Generer un fichier avec toutes les formules possibles de bandit de taille <= 5
+ * Parsing du fichier des formules
+ * Support du DistributedEC / des WorkUnits dans Lua
  * Lancer un gros DistributedEC avec ces formules 
 
 Lua-Misc

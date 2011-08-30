@@ -58,7 +58,7 @@ public:
   virtual Variable run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack = true) = 0;
 
   // multi-thread
-  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, ExecutionContextCallbackPtr callback = NULL, bool pushIntoStack = true)
+  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, ExecutionContextCallbackPtr callback = ExecutionContextCallbackPtr(), bool pushIntoStack = true)
     {pushWorkUnit(workUnit, (int*)NULL);}
   virtual void pushWorkUnit(const WorkUnitPtr& workUnit, int* counterToDecrementWhenDone, bool pushIntoStack = true)
     {jassert(isMultiThread());}
@@ -93,6 +93,10 @@ public:
   static int leave(LuaState& state);
   static int call(LuaState& state);
 
+  static int run(LuaState& state);
+  static int push(LuaState& state);
+
+  static int sleep(LuaState& state);
   static int random(LuaState& state);
 
   lbcpp_UseDebuggingNewOperator

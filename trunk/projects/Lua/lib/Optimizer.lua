@@ -8,6 +8,16 @@ require 'StoppingCriterion'
 
 Optimizer = {}
 
+
+function Optimizer.CMAES(params)
+  local res = lbcpp.Object.create("CMAESOptimizer")
+  for k,v in pairs(params) do
+    res[k] = v
+  end
+  return res
+end
+
+
 --problem = {
 --  initialSolution,
 --  numSamples,
