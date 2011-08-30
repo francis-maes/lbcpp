@@ -9,30 +9,34 @@ local manager = context:connect(managerHostName, managerPort, "Lua", "Francis-PC
 
 local function createWorkUnit(formulaString)
   local workUnit = lbcpp.Object.create("ExecuteLuaString")
---  workUnit.code = "require '../ExpressionDiscovery/OptimizeFormulaConstants'\nresult = evaluateBanditFormulaStructure('" .. formulaString .. "')"
-  workUnit.code = "print ('hello world') result = 51"
+  workUnit.code = "require '../ExpressionDiscovery/OptimizeFormulaConstants'\nresult = evaluateBanditFormulaStructure('" .. formulaString .. "')"
+  --workUnit.code = "print ('hello world') result = 51"
   workUnit.description = formulaString
-  workUnit.inteluaDirectory = "/u/jbecker/LBC++/projects/Lua"
+  workUnit.inteluaDirectory = "/u/jbecker/LBC++/projects/Lua/lib"
   return workUnit
 end
 
+local numWaitingResults = 0
+
 local function workUnitFinished(workUnit, result)
   print ("WorkUnitFinished", workUnit.description, result)
+  numWaitingResults = numWaitingResults - 1
   outputFile = assert(io.open(outputFilename, "at"))
   outputFile:write(tostring(result) .. " " .. workUnit.description .. "\n")
   outputFile:close()
 end
 
---for line in io.lines(filename) do
---  manager:push(createWorkUnit(line), workUnitFinished, false)
---end
+--manager:push(createWorkUnit("hop"), workUnitFinished)
 
-manager:push(createWorkUnit("hop"), workUnitFinished)
+for line in io.lines(filename) do
+  numWaitingResults = numWaitingResults + 1
+  manager:push(createWorkUnit(line), workUnitFinished, false)
+end
 
---while true do
-  context:sleep(120)
---end
-
+while numWaitingResults > 0 do
+  print ("Still waiting for " .. numWaitingResults .. " results")
+  context:sleep(10)
+end
 
 --context:kill()
 
