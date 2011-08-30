@@ -271,6 +271,7 @@ void XmlExporter::leave()
 
 void XmlExporter::addTextElement(const String& text)
 {
+#if 0
   enum {lineLength = 60};
   int n = text.length();
   int b = 0;
@@ -286,6 +287,8 @@ void XmlExporter::addTextElement(const String& text)
     if (b < n)
       getCurrentElement()->addTextElement(T("\n"));
   }
+#endif
+  getCurrentElement()->addTextElement(text);
 }
 
 void XmlExporter::writeName(const String& name)
