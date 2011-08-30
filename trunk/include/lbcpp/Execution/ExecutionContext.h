@@ -99,6 +99,8 @@ public:
   static int sleep(LuaState& state);
   static int random(LuaState& state);
 
+  static int connect(LuaState& state);
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -111,8 +113,8 @@ protected:
 
 extern ClassPtr executionContextClass;
 
-class RessourcesEstimator;
-typedef ReferenceCountedObjectPtr<RessourcesEstimator> RessourcesEstimatorPtr;
+class ResourceEstimator;
+typedef ReferenceCountedObjectPtr<ResourceEstimator> ResourceEstimatorPtr;
 
 extern ExecutionContext& defaultExecutionContext();
 extern void setDefaultExecutionContext(ExecutionContextPtr defaultContext);
@@ -124,20 +126,20 @@ extern ExecutionContextPtr defaultConsoleExecutionContext(bool noMultiThreading 
 
 extern ExecutionContextPtr distributedExecutionContext(ExecutionContext& parentContext, const String& remoteHostName, size_t remotePort,
                                                        const String& project, const String& from, const String& to,
-                                                       const RessourcesEstimatorPtr& ressourcesEstimator);
+                                                       const ResourceEstimatorPtr& resourceEstimator);
 
 /* DistributedExecutionContext */
-class RessourcesEstimator : public Object
+class ResourceEstimator : public Object
 {
 public:
-  virtual size_t getNumRequiredMemory(const WorkUnitPtr& workUnit) const = 0;
-  virtual size_t getNumRequiredTime(const WorkUnitPtr& workUnit) const = 0;
+  virtual size_t getRequiredMemoryInGb(const WorkUnitPtr& workUnit) const = 0;
+  virtual size_t getRequiredTimeInHours(const WorkUnitPtr& workUnit) const = 0;
   virtual size_t getNumRequiredCpus(const WorkUnitPtr& workUnit) const = 0;
 };
 
-extern ClassPtr ressourcesEstimatorClass;
+extern ClassPtr resourceEstimatorClass;
 
-extern RessourcesEstimatorPtr fixedRessourcesEstimator(size_t requiredCpus, size_t requiredMemory, size_t requiredTime);
+extern ResourceEstimatorPtr fixedResourceEstimator(size_t requiredCpus, size_t requiredMemory, size_t requiredTime);
 
 }; /* namespace lbcpp */
 

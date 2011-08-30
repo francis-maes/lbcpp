@@ -35,7 +35,7 @@
     <variable type="Boolean" name="sendInputAsResult"/>
   </class>
 
-  <class name="RessourcesEstimator" base="Object" abstract="yes"/>
+  <class name="ResourceEstimator" base="Object" abstract="yes"/>
 
   <!-- Test Unit -->
   <class name="TestUnit" base="WorkUnit" abstract="yes"/>
@@ -89,6 +89,7 @@
     <function lang="lua" name="run"/>
     <function lang="lua" name="sleep"/>
     <function lang="lua" name="random"/>
+    <function lang="lua" name="connect"/>
   </class>
 
   <!--

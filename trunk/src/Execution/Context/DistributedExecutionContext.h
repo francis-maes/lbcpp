@@ -162,13 +162,14 @@ public:
   DistributedExecutionContext(ExecutionContext& parentContext,
                               const String& remoteHostName, size_t remotePort,
                               const String& project, const String& from, const String& to,
-                              const RessourcesEstimatorPtr& ressourcesEstimator)
+                              const ResourceEstimatorPtr& resourceEstimator)
     : SubExecutionContext(parentContext)
     , client(new DistributedExecutionContextClientCallback(parentContext, remoteHostName, remotePort))
     , defaultPool(new WorkUnitPool(false))
     , project(project), from(from), to(to)
-    , ressourcesEstimator(ressourcesEstimator)
+    , resourceEstimator(resourceEstimator)
     {}
+  DistributedExecutionContext() {}
 
   virtual ~DistributedExecutionContext()
   {
@@ -188,13 +189,10 @@ public:
   virtual bool isPaused() const
     {return false;}
 
-  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, ExecutionContextCallbackPtr callback = NULL, bool pushIntoStack = true)
+  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, ExecutionContextCallbackPtr callback = ExecutionContextCallbackPtr(), bool pushIntoStack = true)
   {
     // TODO: pushIntoStack is not taken into account
-    if (!client->sendWorkUnit(workUnit, defaultPool, callback, project, from, to
-                         , ressourcesEstimator->getNumRequiredCpus(workUnit)
-                         , ressourcesEstimator->getNumRequiredMemory(workUnit)
-                         , ressourcesEstimator->getNumRequiredTime(workUnit)))
+    if (!sendWorkUnit(workUnit, defaultPool, callback))
       warningCallback(T("DistributedExecutionContext::pushWorkUnit"), T("WorkUnit not sent !"));
   }
   
@@ -209,10 +207,7 @@ public:
   virtual Variable run(const WorkUnitPtr& workUnit, bool pushIntoStack)
   {
     WorkUnitPoolPtr pool = new WorkUnitPool(false);
-    client->sendWorkUnit(workUnit, pool, ExecutionContextCallbackPtr(), project, from, to
-                         , ressourcesEstimator->getNumRequiredCpus(workUnit)
-                         , ressourcesEstimator->getNumRequiredMemory(workUnit)
-                         , ressourcesEstimator->getNumRequiredTime(workUnit));
+    sendWorkUnit(workUnit, pool);
     pool->waitUntilAllWorkUnitsAreDone();
     return pool->getResult();
   }
@@ -222,10 +217,7 @@ public:
     WorkUnitPoolPtr pool = new WorkUnitPool(true);
     const size_t n = workUnits->getNumWorkUnits();
     for (size_t i = 0; i < n; ++i)
-      client->sendWorkUnit(workUnits->getWorkUnit(i), pool, ExecutionContextCallbackPtr(), project, from, to
-                           , ressourcesEstimator->getNumRequiredCpus(workUnits->getWorkUnit(i))
-                           , ressourcesEstimator->getNumRequiredMemory(workUnits->getWorkUnit(i))
-                           , ressourcesEstimator->getNumRequiredTime(workUnits->getWorkUnit(i)));
+      sendWorkUnit(workUnits->getWorkUnit(i), pool);
     pool->waitUntilAllWorkUnitsAreDone();
     return pool->getResult();
   }
@@ -242,35 +234,41 @@ protected:
   String from;
   String to;
 
-  RessourcesEstimatorPtr ressourcesEstimator;
+  ResourceEstimatorPtr resourceEstimator;
 
-  DistributedExecutionContext() {}
+  bool sendWorkUnit(const WorkUnitPtr& workUnit, WorkUnitPoolPtr pool, ExecutionContextCallbackPtr callback = ExecutionContextCallbackPtr())
+  {
+    return client->sendWorkUnit(workUnit, pool, callback, project, from, to, 
+              resourceEstimator->getNumRequiredCpus(workUnit),
+              resourceEstimator->getRequiredMemoryInGb(workUnit),
+              resourceEstimator->getRequiredTimeInHours(workUnit));
+  }
 };
 
 /*
-** FixedRessourcesEstimator
+** FixedResourceEstimator
 */
-class FixedRessourcesEstimator : public RessourcesEstimator
+class FixedResourceEstimator : public ResourceEstimator
 {
 public:
-  FixedRessourcesEstimator(size_t requiredCpus = 1, size_t requiredMemory = 1, size_t requiredTime = 1)
+  FixedResourceEstimator(size_t requiredCpus = 1, size_t requiredMemory = 1, size_t requiredTime = 1)
     : requiredCpus(requiredCpus), requiredMemory(requiredMemory), requiredTime(requiredTime) {}
 
-  virtual size_t getNumRequiredMemory(const WorkUnitPtr& workUnit) const
+  virtual size_t getRequiredMemoryInGb(const WorkUnitPtr& workUnit) const
     {return requiredCpus;}
 
-  virtual size_t getNumRequiredTime(const WorkUnitPtr& workUnit) const
+  virtual size_t getRequiredTimeInHours(const WorkUnitPtr& workUnit) const
     {return requiredMemory;}
 
   virtual size_t getNumRequiredCpus(const WorkUnitPtr& workUnit) const
     {return requiredTime;}
 
 protected:
-  friend class FixedRessourcesEstimatorClass;
+  friend class FixedResourceEstimatorClass;
 
-  size_t requiredCpus;
   size_t requiredMemory;
   size_t requiredTime;
+  size_t requiredCpus;
 };
 
 }; /* namespace lbcpp */

@@ -2,13 +2,17 @@
 local filename = "formulas2.txt"
 local outputFilename = "banditScores2.txt"
 
-
+local managerHostName = "monster24.montefiore.ulg.ac.be"
+local managerPort = 1664
+local resourceEstimator = lbcpp.Object.create("FixedResourceEstimator", 1, 5, 1)
+local manager = context:connect(managerHostName, managerPort, "Lua", "Francis-PC", "jbecker@nic3", resourceEstimator)
 
 local function createWorkUnit(formulaString)
   local workUnit = lbcpp.Object.create("ExecuteLuaString")
-  workUnit.code = "require '../ExpressionDiscovery/OptimizeFormulaConstants'\nresult = evaluateBanditFormulaStructure('" .. formulaString .. "')"
---  workUnit.code = "print ('hello world') result = 51"
+--  workUnit.code = "require '../ExpressionDiscovery/OptimizeFormulaConstants'\nresult = evaluateBanditFormulaStructure('" .. formulaString .. "')"
+  workUnit.code = "print ('hello world') result = 51"
   workUnit.description = formulaString
+  workUnit.inteluaDirectory = "/u/jbecker/LBC++/projects/Lua"
   return workUnit
 end
 
@@ -19,13 +23,15 @@ local function workUnitFinished(workUnit, result)
   outputFile:close()
 end
 
-for line in io.lines(filename) do
-  context:push(createWorkUnit(line), workUnitFinished, false)
-end
+--for line in io.lines(filename) do
+--  manager:push(createWorkUnit(line), workUnitFinished, false)
+--end
 
-while true do
-  context:sleep(1)
-end
+manager:push(createWorkUnit("coucou"), workUnitFinished)
+
+--while true do
+  context:sleep(60)
+--end
 
 
 --context:kill()
