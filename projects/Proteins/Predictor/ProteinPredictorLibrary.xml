@@ -308,6 +308,17 @@
   
   <class name="LargeProteinPredictorParameters" base="ProteinPredictorParameters">
     <variable type="LargeProteinParameters" name="fp"/>
+    <variable type="Boolean" name="isGlobalFeaturesLazy"/>
+    <variable type="String" name="learningMachineName"/>
+    <variable type="Double" name="svmC"/>
+    <variable type="Double" name="svmGamma"/>
+    <variable type="PositiveInteger" name="knnNeighbors"/>
+    <variable type="PositiveInteger" name="x3Trees"/>
+    <variable type="PositiveInteger" name="x3Attributes"/>
+    <variable type="PositiveInteger" name="x3Splits"/>
+    <variable type="Double" name="sgdRate"/>
+    <variable type="PositiveInteger" name="sgdIterations"/>
+    <variable type="Boolean" name="useAddBias"/>
   </class>
   <!-- END LargePredictorParameters -->
 </library>

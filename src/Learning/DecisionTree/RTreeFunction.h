@@ -115,6 +115,53 @@ public:
     {return probabilityType;}
 };
 
+class ExtraTreeLearningMachine : public ProxyFunction
+{
+public:
+  ExtraTreeLearningMachine(size_t numTrees,
+                           size_t numAttributeSamplesPerSplit,
+                           size_t minimumSizeForSplitting)
+    : numTrees(numTrees), 
+      numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
+      minimumSizeForSplitting(minimumSizeForSplitting) {}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+  virtual String getOutputPostFix() const
+    {return T("Prediction");}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index == 0 ? (TypePtr)containerClass() : anyType;}
+
+  virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const
+  {
+    TypePtr inputsType = inputVariables[0]->getType();
+    TypePtr supervisionType = inputVariables[1]->getType();
+
+    if (supervisionType == doubleType)
+      return new RegressionRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+    else if (supervisionType == probabilityType || supervisionType == booleanType)
+      return new BinaryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+    else if (supervisionType->inheritsFrom(enumValueType) || supervisionType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
+      return new ClassificationRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+    else
+    {
+      jassertfalse;
+      return FunctionPtr();
+    }
+  }
+
+protected:
+  friend class ExtraTreeLearningMachineClass;
+
+  size_t numTrees;
+  size_t numAttributeSamplesPerSplit;
+  size_t minimumSizeForSplitting;
+
+  ExtraTreeLearningMachine() {}
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_DECISION_TREE_R_TREE_FUNCTION_H_

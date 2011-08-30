@@ -14,11 +14,11 @@
 namespace lbcpp
 {
 
-class LibSVMClassifier : public LibSVMLearningMachine
+class LibSVMClassifier : public LibSVMLearningMachineFunction
 {
 public:
   LibSVMClassifier(double C, LibSVMKernelType kernelType, size_t kernelDegree, double kernelGamma, double kernelCoef0)
-    : LibSVMLearningMachine(C, kernelType, kernelDegree, kernelGamma, kernelCoef0) {}
+    : LibSVMLearningMachineFunction(C, kernelType, kernelDegree, kernelGamma, kernelCoef0) {}
   LibSVMClassifier() {}
 
   virtual TypePtr getSupervisionType() const

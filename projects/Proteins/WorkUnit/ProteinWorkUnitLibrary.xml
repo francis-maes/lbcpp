@@ -164,6 +164,21 @@
     <variable type="File" name="fromPdb"/>
     <variable type="File" name="output"/>
   </class>
+
+  <class name="ProteinLearnerFunction" base="SimpleUnaryFunction">
+    <variable type="VariablesEnumeration[Protein]" name="target"/>
+    <variable type="String" name="proteinsPath"/>
+    <variable type="Container[Protein]" name="trainingProteins"/>
+    <variable type="Container[Protein]" name="testingProteins"/>
+  </class>
+
+  <class name="BestFirstSearchProteinLearner" base="WorkUnit">
+    <variable type="Boolean" name="loadProteins"/>
+    <variable type="String" name="proteinsPath" shortName="in"/>
+    <variable type="VariablesEnumeration[Protein]" name="target" shortName="t"/>
+    <variable type="String" name="optimizerFile" shortName="o"/>
+  </class>
+
   <!-- END LargeBox -->
 
 </library>

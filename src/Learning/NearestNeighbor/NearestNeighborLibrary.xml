@@ -9,12 +9,28 @@
     <variable type="VariableVector" name="supervisionData"/> -->
   </class>
 
-  <class name="BinaryNearestNeighborFunction" base="NearestNeighborFunction">
+  <class name="BinaryNearestNeighbor" base="NearestNeighborFunction">
+    <constructor arguments="size_t numNeighbors, bool autoNormalizeFeatures, bool useWeightedScore" returnType="Function"/>
     <variable type="Boolean" name="useWeightedScore"/>
+  </class>
+
+  <class name="RegressionNearestNeighbor" base="NearestNeighborFunction">
+    <constructor arguments="size_t numNeighbors, bool autoNormalizeFeatures" returnType="Function"/>
+  </class>
+
+  <class name="ClassificationNearestNeighbor" base="NearestNeighborFunction">
+    <constructor arguments="size_t numNeighbors, bool autoNormalizeFeatures" returnType="Function"/>
+    <variable type="Enumeration" name="enumeration"/>
   </class>
 
   <class name="NearestNeighborBatchLearner" base="BatchLearner">
     <constructor arguments="bool autoNormalizeFeatures"/>
+    <variable type="Boolean" name="autoNormalizeFeatures"/>
+  </class>
+
+  <class name="NearestNeighborLearningMachine" base="ProxyFunction">
+    <constructor arguments="size_t numNeighbors, bool autoNormalizeFeatures" returnType="Function"/>
+    <variable type="PositiveInteger" name="numNeighbors"/>
     <variable type="Boolean" name="autoNormalizeFeatures"/>
   </class>
 

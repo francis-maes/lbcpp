@@ -195,8 +195,9 @@ enum LibSVMKernelType
   
 extern FunctionPtr libSVMClassifier(double C = 0.1, LibSVMKernelType kernelType = linearKernel, size_t kernelDegree = 1, double kernelGamma = 0.1, double kernelCoef0 = 0.0);
 extern FunctionPtr libSVMBinaryClassifier(double C = 0.1, LibSVMKernelType kernelType = linearKernel, size_t kernelDegree = 1, double kernelGamma = 0.1, double kernelCoef0 = 0.0);
+extern FunctionPtr libSVMLearningMachine(double C = 0.1, LibSVMKernelType kernelType = linearKernel, size_t kernelDegree = 1, double kernelGamma = 0.1, double kernelCoef0 = 0.0);
 extern BatchLearnerPtr libSVMBatchLearner();
-  
+
 enum LibLinearSolverType
 {
   l2RegularizedLogisticRegression = 0,
