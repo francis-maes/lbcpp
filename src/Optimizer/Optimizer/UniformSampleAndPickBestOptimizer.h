@@ -56,11 +56,7 @@ public:
       size_t i = 1;
       for (it = state->getProcessedRequests().begin(); it < state->getProcessedRequests().end(); it++)
       {
-        if (it->first < state->getBestScore())
-        {
-          state->setBestScore(it->first);
-          state->setBestVariable(it->second);
-        }        
+        state->submitSolution(it->second, it->first);
         if (verbose) 
         {
           context.enterScope(T("Request ") + String((int) i));

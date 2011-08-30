@@ -193,7 +193,7 @@ public:
     {iterations.push_back(iteration);}
 
   ClassPtr getObjectClass() const
-    {return getBestParameters().getObject()->getClass();}
+    {return getBestSolution().getObject()->getClass();}
 
   void mapWorkUnitToResult(const WorkUnitPtr& workUnit, size_t parameterIndex, size_t valueIndex)
   {
@@ -248,6 +248,8 @@ public:
     StreamBasedOptimizerStatePtr state = optimizerState.staticCast<StreamBasedOptimizerState>();
     jassert(state);
 
+    state->submitSolution(problem->getInitialGuess(), DBL_MAX); // default solution
+
      // Types checking
     const ObjectPtr initialGuess = problem->getInitialGuess().getObject();
     if (initialGuess->getNumVariables() != streams.size())
@@ -258,12 +260,6 @@ public:
     for (size_t i = 0; i < state->getNumStreams(); ++i)
       if (state->getStream(i))
         context.checkInheritance(state->getStream(i)->getElementsType(), initialGuess->getVariableType(i));
-
-    if (!state->getBestParameters().exists())
-    {
-      ObjectPtr initialParameters = problem->getInitialGuess().getObject();
-      state->setBestParameters(initialParameters);
-    }
 
     const double missingValue = Variable::missingValue(doubleType).getDouble();
 
@@ -283,7 +279,8 @@ public:
       context.enterScope(T("Computing"));
 
       // Generate candidates
-      ObjectPtr baseObject = state->getBestParameters().getObject();
+      ObjectPtr baseObject = state->getBestSolution().getObject();
+
       size_t numPushedWorkUnit = 0;
       const size_t n = iteration->getNumParameters();
       for (size_t i = 0; i < n; ++i)
@@ -333,8 +330,8 @@ public:
       if (iteration->getBestScore() >= state->getBestScore())
         break;
 
-      state->setBestScore(iteration->getBestScore());
       baseObject->setVariable(iteration->getBestParameter(), getParameterValue(state, iteration->getBestParameter(), iteration->getBestValue()));
+      state->submitSolution(baseObject->clone(context), iteration->getBestScore());
 
       saveOptimizerState(context, state);
     }

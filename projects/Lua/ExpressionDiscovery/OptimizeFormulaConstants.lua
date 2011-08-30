@@ -46,7 +46,7 @@ function makeBanditObjective(minArms, maxArms, numProblems, numEstimationsPerPro
 
 end
 
-banditObjective = makeBanditObjective(2, 10, 10, 1, 10)
+banditObjective = makeBanditObjective(2, 10, 100, 1, 10)
 
 --[[
 for C=0,3,0.1 do
@@ -56,6 +56,7 @@ for C=0,3,0.1 do
   context:result("score", score)
   context:leave()
 end
+]]
 
 
 context:call("KL-UCB(0)", banditObjective, DiscreteBandit.klUcb{c=0})
@@ -68,11 +69,6 @@ context:call("UCB1(2)", banditObjective, DiscreteBandit.ucb1C{C=2.0})
 context:call("UCB1(1)", banditObjective, DiscreteBandit.ucb1C{C=1.0})
 
 
-problem = {objective=|C| banditObjective(|rk,sk,tk,t| rk + C / tk), sampler=Sampler.Gaussian{}}
-optimizer = Optimizer.EDA{numIterations=100, populationSize=100, numBests=10}
-score,solution = optimizer(problem)
-
-]]
 
 Optimizer = {}
 
@@ -84,22 +80,8 @@ function Optimizer.CMAES(params)
   return res
 end
 
-function Optimizer.newProblem(objective, initialGuess, sampler, validation)
-  local res = lbcpp.Object.create("OptimizationProblem", objective)
-  if initialGuess then
-    res.initialGuess = initialGuess
-  end
-  if sampler then
-    res.sampler = sampler
-  end
-  if validation then
-    res.validation = validation
-  end
-  return res
-end
-
-objective = lbcpp.LuaFunction.create(|v| banditObjective(|rk,sk,tk,t| rk + v[1] / tk),
+objective = lbcpp.LuaFunction.create(|v| banditObjective(|rk,sk,tk,t|(rk + v[1] / tk)),
                 "DenseDoubleVector<EnumValue,Double>", "Double")
-optimizer = Optimizer.CMAES{numIterations=100}
-problem = Optimizer.newProblem(objective, Vector.newDense(1))
-score,solution = optimizer(problem)
+optimizer = Optimizer.CMAES{numIterations=10}
+score,solution = optimizer{objective = objective, initialGuess = Vector.newDense(1)}
+print ("score", score, "solution", solution)

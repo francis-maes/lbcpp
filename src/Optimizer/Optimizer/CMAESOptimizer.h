@@ -62,11 +62,12 @@ public:
       delete fitness;
   }
 
-  void initialize(ExecutionContext& context, const FunctionPtr& objective, const DenseDoubleVectorPtr& initialGuess)
+  void initialize(ExecutionContext& context, const OptimizationProblemPtr& problem)
   {
-    this->initialGuess = initialGuess;
+    this->problem = problem;
+    this->initialGuess = problem->getInitialGuess().getObjectAndCast<DenseDoubleVector>();
     jassert(!fitness);
-    fitness = new LbcppToSharkObjectiveFunction(context, objective, initialGuess);
+    fitness = new LbcppToSharkObjectiveFunction(context, problem->getObjective(), initialGuess);
     size_t n = initialGuess->getNumElements();
     Array<double> start(n);
     memcpy(start.elemvec(), initialGuess->getValuePointer(0), sizeof (double) * n);
@@ -76,26 +77,24 @@ public:
   bool isInitialized() const
     {return fitness != NULL;}
 
-  double doIteration(size_t iteration, ExecutionContext& context)
+  Variable doIteration(ExecutionContext& context, size_t iteration)
   {
     jassert(isInitialized());
     cma.run();
 
-    DenseDoubleVectorPtr bestSolution = initialGuess->cloneAndCast<DenseDoubleVector>();
-    memcpy(bestSolution->getValuePointer(0), cma.bestSolution(), sizeof (double) * initialGuess->getNumElements());
-    setBestParameters(bestSolution);
-    setBestScore(cma.bestSolutionFitness());
+    double bestIterationScore = cma.bestSolutionFitness();
+    DenseDoubleVectorPtr bestIterationSolution = initialGuess->cloneAndCast<DenseDoubleVector>();
+    memcpy(bestIterationSolution->getValuePointer(0), cma.bestSolution(), sizeof (double) * initialGuess->getNumElements());
 
-    context.resultCallback("iteration", iteration);
-    context.resultCallback("bestScore", bestScore);
-    context.resultCallback("bestSolution", bestSolution);
+    Variable res = finishIteration(context, problem, iteration, bestIterationScore, bestIterationSolution);
     context.resultCallback("timesCalled", (size_t)fitness->timesCalled());
-    return bestScore;
+    return res;
   }
 
 protected:
   CMASearch cma;
   ObjectiveFunctionVS<double>* fitness;
+  OptimizationProblemPtr problem;
   DenseDoubleVectorPtr initialGuess;
 };
 
@@ -116,12 +115,12 @@ public:
     CMAOptimizerStatePtr cmaState = optimizerState.staticCast<CMAOptimizerState>();
     
     if (!cmaState->isInitialized())
-      cmaState->initialize(context, objectiveFunction, initialGuess);
+      cmaState->initialize(context, problem);
    
     for (size_t i = 0; i < numIterations; ++i)
     {
       context.enterScope("Iteration " + String((int)i+1));
-      double res = cmaState->doIteration(i, context);
+      Variable res = cmaState->doIteration(context, i);
       context.leaveScope(res);
     }
 

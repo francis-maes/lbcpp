@@ -151,17 +151,14 @@ public:
     
     for (size_t i = state->getNumIterations(); i < numIterations; ++i)
     {
-      Variable bestIterationParameters = state->getBestParameters();
+      Variable bestIterationSolution = state->getBestSolution();
       double bestIterationScore;
       double worstIterationScore;
       
       context.enterScope(T("Iteration ") + String((int)i + 1));
-      context.resultCallback(T("iteration"), i + 1);
-      
-      performEDAIteration(context, state, problem->getSampler(), objectiveFunction, bestIterationParameters, bestIterationScore, worstIterationScore);
-      
-      // display results & update optimizerState
-      handleResultOfIteration(context, state, validationFunction, bestIterationScore, bestIterationParameters);
+      performEDAIteration(context, state, problem->getSampler(), objectiveFunction, bestIterationSolution, bestIterationScore, worstIterationScore);
+      Variable res = state->finishIteration(context, problem, i+1, bestIterationScore, bestIterationSolution);
+      context.leaveScope(res);
       
       jassert(bestIterationScore <= worstIterationScore);
       if (worstIterationScore - bestIterationScore < 1e-9) // all scores are nearly identical

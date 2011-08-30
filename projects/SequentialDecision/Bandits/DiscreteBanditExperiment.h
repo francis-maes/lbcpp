@@ -383,7 +383,7 @@ private:
     OptimizerStatePtr state = optimizer->compute(context, problem).getObjectAndCast<OptimizerState>();
 
     // best parameters
-    Variable bestParameters = state->getBestParameters();
+    Variable bestParameters = state->getBestSolution();
     policy = Parameterized::cloneWithNewParameters(policy, bestParameters);
     context.informationCallback(policy->toShortString());
     context.resultCallback(T("optimizedPolicy"), policy);

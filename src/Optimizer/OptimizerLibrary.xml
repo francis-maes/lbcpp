@@ -19,7 +19,7 @@
 
   <!-- OptimizerState -->
   <class name="OptimizerState" base="Object">
-    <variable type="Variable" name="bestParameters"/>
+    <variable type="Variable" name="bestSolution"/>
     <variable type="Double" name="bestScore"/>
   </class>
 

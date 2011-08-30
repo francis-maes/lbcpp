@@ -47,25 +47,17 @@ public:
   operator lua_State*()
     {return L;}
 
+  // Code interpretation
   bool loadBuffer(const char* code, const char* chunkName);
-
   bool execute(const char* code, const char* codeName = "code", bool verbose = false);
   bool execute(const File& luaFile);
 
-  void createTable();
-  void setTableField(const char *name, double value);
-
-  void setGlobal(const char* name);
-  void getGlobal(const char* name);
-  void getGlobal(const char* scopeName, const char* name);
-
+  // General stack operations
+  int getTop() const;
+  LuaType getType(int index) const;
   void pop(int count = 1);
   void remove(int index);
   void insert(int index);
-
-  int getTop() const;
-
-  LuaType getType(int index) const;
 
   // Nil
   bool isNil(int index) const;
@@ -102,6 +94,11 @@ public:
   LuaCFunction toFunction(int index);
   void pushFunction(LuaCFunction function);
 
+  // Table
+  bool isTable(int index) const;
+  Variable getTableVariable(int index, const char* key);
+  void setTableField(const char *name, double value);
+
   // Object
   ObjectPtr& checkObject(int index, TypePtr expectedType);
   ObjectPtr& checkObject(int index);
@@ -119,15 +116,23 @@ public:
   void pushReference(int reference);
   void freeReference(int reference);
 
+  // Global variables
+  void setGlobal(const char* name);
+  void getGlobal(const char* name);
+  void getGlobal(const char* scopeName, const char* name);
+
+  // Function call
+  bool call(int numArguments, int numResults);
+
+  // Errors
+  void error(const char* message);
+  void error(const String& message);
+
+  // misc
   bool newMetaTable(const char* name);
   void openLibrary(const char* name, const luaL_Reg* functions, size_t numUpValues = 0);
 
   ExecutionContext& getContext();
-
-  bool call(int numArguments, int numResults);
-
-  void error(const char* message);
-  void error(const String& message);
 
 protected:
   lua_State* L;

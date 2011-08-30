@@ -80,7 +80,6 @@ public:
     for (size_t i = state->getNumIterations(); i < numIterations; ++i)
     {
       context.enterScope(T("Iteration ") + String((int)i + 1));
-      context.resultCallback(T("iteration"), i + 1);
       
       if (!isInitialized)
       {
@@ -102,9 +101,10 @@ public:
           
           learnDistribution(context, initialSampler, state, sortedScores);
 
-          Variable bestIterationParameters = sortedScores.begin()->second;
+          Variable bestIterationSolution = sortedScores.begin()->second;
           double bestIterationScore = sortedScores.begin()->first;
-          handleResultOfIteration(context, state, validationFunction, bestIterationScore, bestIterationParameters);
+          Variable res = state->finishIteration(context, problem, i+1, bestIterationScore, bestIterationSolution);
+          context.leaveScope(res);
           
           if (stoppingCriterion && stoppingCriterion->shouldStop(bestIterationScore))
           {

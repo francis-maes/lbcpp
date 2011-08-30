@@ -531,16 +531,16 @@ private:
     {
       context.enterScope(T("Iteration ") + String((int)i + 1));
       context.resultCallback(T("iteration"), i);
-      Variable bestIterationParameters = bestParameters;
-      double score = performEDAIteration(context, functionToOptimize, distribution, bestIterationParameters);
-      context.resultCallback(T("bestParameters"), bestIterationParameters);
+      Variable bestIterationSolution = bestParameters;
+      double score = performEDAIteration(context, functionToOptimize, distribution, bestIterationSolution);
+      context.resultCallback(T("bestParameters"), bestIterationSolution);
 
       //context.resultCallback(T("distribution"), distribution);
       context.leaveScope(score);
       if (score < bestScore)
       {
         bestScore = score;
-        bestParameters = bestIterationParameters;
+        bestParameters = bestIterationSolution;
       }
       context.progressCallback(new ProgressionState(i + 1, iterations, T("Iterations")));
     }
