@@ -60,7 +60,7 @@ public:
   String code;
   String description;
   bool verbose;
-  File inteluaDirectory;
+  String inteluaDirectory;
  
   virtual String toShortString() const
   {
@@ -75,13 +75,16 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    if (!inteluaDirectory.exists())
+    File directory;
+    if (inteluaDirectory == String::empty)
     {
       File applicationDirectory = File::getSpecialLocation(File::currentApplicationFile).getParentDirectory();
-      inteluaDirectory = applicationDirectory.getChildFile("../../projects/Lua/lib");
+      directory = applicationDirectory.getChildFile("../../projects/Lua/lib");
     }
+    else
+      directory = File(inteluaDirectory);
 
-    InteluaInterpreter interpreter(context, inteluaDirectory, verbose);
+    InteluaInterpreter interpreter(context, directory, verbose);
     interpreter.setStaticAllocationFlag();
     if (!interpreter.executeBuffer(code, toShortString()))
       return false;
