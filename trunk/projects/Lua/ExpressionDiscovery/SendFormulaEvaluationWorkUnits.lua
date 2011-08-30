@@ -27,10 +27,10 @@ end
 --  manager:push(createWorkUnit(line), workUnitFinished, false)
 --end
 
-manager:push(createWorkUnit("coucou"), workUnitFinished)
+manager:push(createWorkUnit("hop"), workUnitFinished)
 
 --while true do
-  context:sleep(60)
+  context:sleep(120)
 --end
 
 
