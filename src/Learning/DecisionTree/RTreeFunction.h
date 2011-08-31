@@ -73,10 +73,14 @@ public:
   ClassificationRTreeFunction() {}
   
   virtual TypePtr getSupervisionType() const
-    {return enumValueType;}
+    {return sumType(enumValueType, doubleVectorClass(enumValueType, probabilityType));}
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return denseDoubleVectorClass(inputVariables[1]->getType(), probabilityType);}
+  {
+    if (inputVariables[1]->getType()->inheritsFrom(enumValueType))
+      return denseDoubleVectorClass(inputVariables[1]->getType(), probabilityType);
+    return inputVariables[1]->getType();
+  }
 };
   
 class RegressionRTreeFunction : public RTreeFunction

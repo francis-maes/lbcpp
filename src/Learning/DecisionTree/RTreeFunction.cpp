@@ -106,6 +106,13 @@ public:
         resVector->getValueReference(i) = output[i];
       res = resVector;
     }
+    else if (outputType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
+    {
+      DenseDoubleVectorPtr resVector = new DenseDoubleVector(outputType->getTemplateArgument(0).staticCast<Enumeration>(), probabilityType);
+      for (size_t i = 0; i < (size_t)nb_goal_multiregr; ++i)
+        resVector->getValueReference(i) = output[i];
+      res = resVector;
+    }
     else
     {
       jassertfalse;
@@ -334,6 +341,8 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
       value = 0;
     else if (attrType->inheritsFrom(integerType))
       value = 0;
+    else if (attrType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
+      value = attrType->getTemplateArgument(0).dynamicCast<Enumeration>()->getNumElements() + 1;
     else
       jassertfalse;
 
@@ -378,9 +387,10 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
         value = (CORETABLE_TYPE)objVariable.getDouble();
       else if (outputType->inheritsFrom(integerType))
         value = (CORETABLE_TYPE)objVariable.getInteger();
+      else if (outputType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
+        value = (CORETABLE_TYPE)objVariable.getObjectAndCast<DoubleVector>()->getIndexOfMaximumValue();
       else
         jassertfalse;
-
       core_table_y[i] = value;
     }
     else

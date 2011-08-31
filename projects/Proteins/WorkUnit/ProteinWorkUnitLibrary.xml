@@ -177,6 +177,7 @@
     <variable type="String" name="proteinsPath" shortName="in"/>
     <variable type="VariablesEnumeration[Protein]" name="target" shortName="t"/>
     <variable type="String" name="optimizerFile" shortName="o"/>
+    <variable type="String" name="learningMachine" shortName="m"/>
   </class>
 
   <!-- END LargeBox -->
