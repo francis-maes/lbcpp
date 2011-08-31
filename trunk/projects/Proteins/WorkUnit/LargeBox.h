@@ -396,7 +396,7 @@ protected:
 class BestFirstSearchProteinLearner : public WorkUnit
 {
 public:
-  BestFirstSearchProteinLearner() : loadProteins(false), target(noTarget) {}
+  BestFirstSearchProteinLearner() : loadProteins(false), target(noTarget), learningMachine(T("kNN")) {}
 
   Variable run(ExecutionContext& context)
   {
@@ -411,8 +411,8 @@ public:
     }
 
     LargeProteinPredictorParametersPtr largePredictor = new LargeProteinPredictorParameters();
-    largePredictor->learningMachineName = T("kNN");
-    
+    largePredictor->learningMachineName = learningMachine;
+
     FunctionPtr toOptimize = new ProteinLearnerFunction(target, proteinsPath, trainingProteins, testingProteins, largePredictor);
     OptimizationProblemPtr problem = new OptimizationProblem(toOptimize, new LargeProteinParameters());
     OptimizerPtr optimizer = bestFirstSearchOptimizer(LargeProteinParameters::createSingleTaskSingleStageStreams(), context.getFile(optimizerFile));
@@ -427,6 +427,7 @@ protected:
 
   ProteinTarget target;
   String optimizerFile;
+  String learningMachine;
 };
 
 };
