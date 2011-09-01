@@ -212,6 +212,8 @@ public:
       write("-math.huge");
     else if (str == T("nan") || str == T("1.#QNAN"))
       write("(0/0)");
+    else if (str == T("-nan") || str == T("-1.#QNAN"))
+      write("-(0/0)");
     else if (str == T("-0"))
       write("0");
     else
