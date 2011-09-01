@@ -5,21 +5,22 @@
   <!-- NearestNeighborFunction -->
   <class name="NearestNeighborFunction" base="Function" abstract="yes">
     <variable type="PositiveInteger" name="numNeighbors"/>
+    <variable type="Boolean" name="includeTheNearestNeighbor"/>
 <!--    <variable type="GenericVector[SparseDoubleVector]" name="inputData"/>
     <variable type="VariableVector" name="supervisionData"/> -->
   </class>
 
   <class name="BinaryNearestNeighbor" base="NearestNeighborFunction">
-    <constructor arguments="size_t numNeighbors, bool autoNormalizeFeatures, bool useWeightedScore" returnType="Function"/>
+    <constructor arguments="size_t numNeighbors, bool autoNormalizeFeatures, bool includeTheNearestNeighbor, bool useWeightedScore" returnType="Function"/>
     <variable type="Boolean" name="useWeightedScore"/>
   </class>
 
   <class name="RegressionNearestNeighbor" base="NearestNeighborFunction">
-    <constructor arguments="size_t numNeighbors, bool autoNormalizeFeatures" returnType="Function"/>
+    <constructor arguments="size_t numNeighbors, bool autoNormalizeFeatures, bool includeTheNearestNeighbor" returnType="Function"/>
   </class>
 
   <class name="ClassificationNearestNeighbor" base="NearestNeighborFunction">
-    <constructor arguments="size_t numNeighbors, bool autoNormalizeFeatures" returnType="Function"/>
+    <constructor arguments="size_t numNeighbors, bool autoNormalizeFeatures, bool includeTheNearestNeighbor" returnType="Function"/>
     <variable type="Enumeration" name="enumeration"/>
   </class>
 
@@ -29,9 +30,10 @@
   </class>
 
   <class name="NearestNeighborLearningMachine" base="ProxyFunction">
-    <constructor arguments="size_t numNeighbors, bool autoNormalizeFeatures" returnType="Function"/>
+    <constructor arguments="size_t numNeighbors, bool autoNormalizeFeatures, bool includeTheNearestNeighbor" returnType="Function"/>
     <variable type="PositiveInteger" name="numNeighbors"/>
     <variable type="Boolean" name="autoNormalizeFeatures"/>
+    <variable type="Boolean" name="includeTheNearestNeighbor"/>
   </class>
 
 </library>

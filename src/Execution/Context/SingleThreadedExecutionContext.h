@@ -37,6 +37,15 @@ public:
   virtual Variable run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack = true)
     {return ExecutionContext::run((WorkUnitPtr)workUnits, pushIntoStack);}
 
+  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, ExecutionContextCallbackPtr callback = ExecutionContextCallbackPtr(), bool pushIntoStack = true)
+  {
+    Variable res = ExecutionContext::run((WorkUnitPtr)workUnit, pushIntoStack);
+    if (callback)
+      callback->workUnitFinished(workUnit, res);
+  }
+
+  virtual void waitUntilAllWorkUnitsAreDone() {}
+
   lbcpp_UseDebuggingNewOperator
 };
 
