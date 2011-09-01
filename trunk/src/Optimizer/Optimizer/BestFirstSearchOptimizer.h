@@ -294,6 +294,10 @@ public:
           if (parameter->getScore(valueIndex) != missingValue)
             continue;
 
+          OutputStream* o = context.getFile(T("bfs_dsb.bandit")).createOutputStream();
+          *o << "\n" << state->getObjectClass()->getMemberVariableName(parameter->getIndex()) << "[" << value.toString() << "]";
+          delete o;
+
           ObjectPtr candidate = baseObject->clone(context);
           candidate->setVariable(parameter->getIndex(), value);
 
@@ -304,7 +308,7 @@ public:
           ++numPushedWorkUnit;
         }
       }
-
+return state; // FIXME: REMOVE ME !!!!
       // Waiting results
       size_t previousNumWorkUnitInProgress = (size_t)-1;
       while (!state->areAllWorkUnitsDone())

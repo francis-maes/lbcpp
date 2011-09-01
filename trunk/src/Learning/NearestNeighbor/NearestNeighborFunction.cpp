@@ -25,6 +25,9 @@ Variable NearestNeighborFunction::computeFunction(ExecutionContext& context, con
     scoredIndices.insert(std::pair<double, size_t>(-score, i));
   }
 
+  if (!includeTheNearestNeighbor)
+    scoredIndices.erase(scoredIndices.begin());
+
   return computeOuput(scoredIndices);
 }
 
