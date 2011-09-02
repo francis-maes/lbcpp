@@ -161,8 +161,7 @@ public:
 
   virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const
   {
-    TypePtr inputsType = inputVariables[0]->getType();
-    TypePtr supervisionType = inputVariables[1]->getType();
+    const TypePtr supervisionType = inputVariables[1]->getType();
 
     if (supervisionType == doubleType)
       return regressionNearestNeighbor(numNeighbors, autoNormalizeFeatures, includeTheNearestNeighbor);

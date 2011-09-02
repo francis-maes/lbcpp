@@ -430,4 +430,82 @@ protected:
   String learningMachine;
 };
 
+class ExportPredictionWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinDirectory), 0, T("Loading proteins"));
+
+    OutputStream* o = context.getFile(T("bfs_dsb.bandit")).createOutputStream();
+
+    const std::vector<StreamPtr> streams = Lin09Parameters::createStreams();
+    const ObjectPtr baseObject = Lin09Parameters::createInitialObject();
+    for (size_t i = 0; i < streams.size(); ++i)
+    {
+      StreamPtr stream = streams[i];
+      stream->rewind();
+      for (size_t valueIndex = 0; !stream->isExhausted(); ++valueIndex)
+      {
+        const Variable value = stream->next();
+
+        *o << lin09ParametersClass->getMemberVariableName(i) << "[" << value.toString() << "]";
+
+        ObjectPtr candidate = baseObject->clone(context);
+        candidate->setVariable(i, value);
+
+        exportPredictionOfCandidate(context, candidate, proteins, o);
+
+        *o << "\n";
+      }
+    }
+
+    delete o;
+    return true;
+  }
+
+protected:
+  friend class ExportPredictionWorkUnitClass;
+
+  String proteinDirectory;
+
+  void exportPredictionOfCandidate(ExecutionContext& context, const ObjectPtr& obj, const ContainerPtr& proteins, OutputStream* const o) const
+  {
+    Lin09PredictorParametersPtr predictorParameters = new Lin09PredictorParameters(obj.staticCast<Lin09Parameters>());
+    
+    FunctionPtr proteinPerception = predictorParameters->createProteinPerception();
+    FunctionPtr disulfideFunction = predictorParameters->createDisulfideSymmetricResiduePairVectorPerception();
+    
+    VectorPtr examples = vector(pairClass(doubleVectorClass(enumValueType, doubleType), probabilityType)); 
+    
+    const size_t n = proteins->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable perception = proteinPerception->compute(context, proteins->getElement(i).getObjectAndCast<Pair>()->getFirst());
+      SymmetricMatrixPtr featuresVector = disulfideFunction->compute(context, perception).getObjectAndCast<SymmetricMatrix>();
+      SymmetricMatrixPtr supervision = proteins->getElement(i).getObjectAndCast<Pair>()->getSecond().getObjectAndCast<Protein>()->getDisulfideBonds(context);
+      jassert(featuresVector && supervision && featuresVector->getDimension() == supervision->getDimension());
+      const size_t dimension = featuresVector->getDimension();
+      for (size_t j = 0; j < dimension; ++j)
+        for (size_t k = j + 1; k < dimension; ++k)
+          examples->append(new Pair(featuresVector->getElement(j,k), supervision->getElement(j,k)));
+    }
+
+    ContainerPtr randomizedExamples = examples->randomize();
+
+    FunctionPtr knnFunction = binaryNearestNeighbor(5, true, false);
+    if (!knnFunction->train(context, randomizedExamples))
+      jassertfalse;
+
+    const size_t m = randomizedExamples->getNumElements();
+    for (size_t i = 0; i < m; ++i)
+    {
+      Variable prediction = knnFunction->compute(context, randomizedExamples->getElement(i).getObjectAndCast<Pair>()->getFirst(), Variable());
+      bool res = prediction.getDouble() > 0.5
+                  == randomizedExamples->getElement(i).getObjectAndCast<Pair>()->getSecond().getDouble() > 0.5;
+      *o << " " << (res ? 1 : 0);
+    }
+  }
+};
+
 };

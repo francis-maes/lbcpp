@@ -180,6 +180,9 @@
     <variable type="String" name="learningMachine" shortName="m"/>
   </class>
 
+  <class name="ExportPredictionWorkUnit" base="WorkUnit">
+    <variable type="String" name="proteinDirectory" shortName="in"/>
+  </class>
   <!-- END LargeBox -->
 
 </library>
