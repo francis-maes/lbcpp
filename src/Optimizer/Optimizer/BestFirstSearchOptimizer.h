@@ -248,7 +248,8 @@ public:
     StreamBasedOptimizerStatePtr state = optimizerState.staticCast<StreamBasedOptimizerState>();
     jassert(state);
 
-    state->submitSolution(problem->getInitialGuess(), DBL_MAX); // default solution
+    if (!state->getBestSolution().exists())
+      state->submitSolution(problem->getInitialGuess(), DBL_MAX); // default solution
 
      // Types checking
     const ObjectPtr initialGuess = problem->getInitialGuess().getObject();
