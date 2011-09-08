@@ -511,4 +511,97 @@ protected:
   }
 };
 
+class ExportFeaturesWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinDirectory), 0, T("Loading proteins"));
+
+    std::vector<DoubleVectorPtr> features;
+    buildFeatures(context, proteins, features);
+
+    std::vector<size_t> order;
+    context.getRandomGenerator()->sampleOrder(features.size(), order);
+
+    std::vector<double> zFactor;
+    computeVariances(features, zFactor);
+
+    OutputStream* o = context.getFile(T("dsb.features")).createOutputStream();
+    for (size_t i = 0; i < features.size(); ++i)
+    {
+      DenseDoubleVectorPtr v = features[order[i]]->toDenseDoubleVector();
+      const size_t n = v->getNumElements();
+      for (size_t j = 0; j < n; ++j)
+      {
+        Variable value = v->getElement(j);
+        *o << (value.exists() && zFactor[j] != 0.f ? value.getDouble() / sqrt(zFactor[j]) : 0.0) << " ";
+      }
+      *o << "\n";
+    }
+    delete o;
+    return true;
+  }
+
+protected:
+  friend class ExportFeaturesWorkUnitClass;
+
+  String proteinDirectory;
+
+  void buildFeatures(ExecutionContext& context, const ContainerPtr& proteins, std::vector<DoubleVectorPtr>& features) const
+  {
+    Lin09ParametersPtr fp = new Lin09Parameters();
+    fp->useProteinLength= true;
+    fp->pssmWindowSize = 20;
+    fp->separationProfilSize = 9;
+    fp->useCysteinDistance = true;
+    fp->pssmLocalHistogramSize = 70;
+    fp->aminoAcidLocalHistogramSize = 30;
+    Lin09PredictorParametersPtr predictorParameters = new Lin09PredictorParameters(fp);
+    
+    FunctionPtr proteinPerception = predictorParameters->createProteinPerception();
+    FunctionPtr disulfideFunction = predictorParameters->createDisulfideSymmetricResiduePairVectorPerception();
+
+    const size_t n = proteins->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable perception = proteinPerception->compute(context, proteins->getElement(i).getObjectAndCast<Pair>()->getFirst());
+      SymmetricMatrixPtr featuresVector = disulfideFunction->compute(context, perception).getObjectAndCast<SymmetricMatrix>();
+      SymmetricMatrixPtr supervision = proteins->getElement(i).getObjectAndCast<Pair>()->getSecond().getObjectAndCast<Protein>()->getDisulfideBonds(context);
+      jassert(featuresVector && supervision && featuresVector->getDimension() == supervision->getDimension());
+      const size_t dimension = featuresVector->getDimension();
+      for (size_t j = 0; j < dimension; ++j)
+        for (size_t k = j + 1; k < dimension; ++k)
+          features.push_back(featuresVector->getElement(j,k).getObjectAndCast<DoubleVector>());
+    }
+  }
+
+  void computeVariances(const std::vector<DoubleVectorPtr>& examples, std::vector<double>& zFactor) const
+  {
+    if (examples.size() == 0)
+      return;
+
+    const EnumerationPtr enumeration = examples[0]->getElementsEnumeration();
+    const size_t numFeatures = enumeration->getNumElements();
+
+    std::vector<ScalarVariableMeanAndVariancePtr> variances(numFeatures);
+    for (size_t i = 0; i < numFeatures; ++i)
+      variances[i] = new ScalarVariableMeanAndVariance();
+
+    for (size_t i = 0; i < examples.size(); ++i)
+    {
+      SparseDoubleVectorPtr s = examples[i]->toSparseVector();
+      for (size_t j = 0; j < s->getNumValues(); ++j)
+      {
+        const std::pair<size_t, double>& value = s->getValue(j);
+        variances[value.first]->push(value.second);
+      }
+    }
+
+    zFactor.resize(numFeatures);
+    for (size_t i = 0; i < numFeatures; ++i)
+      zFactor[i] = variances[i]->getVariance();
+  }
+};
+
 };

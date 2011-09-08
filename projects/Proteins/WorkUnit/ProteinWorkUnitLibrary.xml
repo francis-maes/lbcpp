@@ -183,6 +183,10 @@
   <class name="ExportPredictionWorkUnit" base="WorkUnit">
     <variable type="String" name="proteinDirectory" shortName="in"/>
   </class>
+
+  <class name="ExportFeaturesWorkUnit" base="WorkUnit">
+    <variable type="String" name="proteinDirectory" shortName="in"/>
+  </class>
   <!-- END LargeBox -->
 
 </library>
