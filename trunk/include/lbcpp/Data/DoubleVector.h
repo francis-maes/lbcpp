@@ -258,6 +258,8 @@ public:
   virtual void addWeightedTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
+  virtual DenseDoubleVectorPtr toDenseDoubleVector() const
+    {return refCountedPointerFromThis(this);}
 
   // Vector
   virtual void clear();
