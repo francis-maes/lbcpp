@@ -413,20 +413,101 @@ public:
   }
 };
 
-class ContainerCurveEditorConfigurationComponent : public Component, public juce::ChangeBroadcaster, public juce::ComboBoxListener, public juce::ChangeListener
+class CurveListBoxModel : public juce::ListBoxModel
+{
+public:
+  CurveListBoxModel(const ContainerCurveEditorConfigurationPtr& configuration, juce::ChangeBroadcaster* callback)
+    : configuration(configuration), callback(callback)
+  {
+    const size_t n = configuration->getNumCurves();
+    for (size_t i = 0; i < n; ++i)
+    {
+      CurveVariableConfigurationPtr curve = configuration->getCurve(i);
+      if (curve)
+        curves.push_back(curve);
+    }
+  }
+
+  virtual int getNumRows()
+    {return curves.size();}
+
+  virtual void paintListBoxItem(int rowNumber, Graphics &g, int width, int height, bool rowIsSelected)
+  {
+    if (curves[rowNumber]->isSelected())
+    {
+      g.setColour(juce::Colours::lightblue);
+      g.fillRect(0, 0, width, height);
+    }
+
+    g.setColour(curves[rowNumber]->getColour());
+    g.drawText(curves[rowNumber]->getLabel(), 0, 0, width, height, juce::Justification(juce::Justification::left), true);
+  }
+
+  virtual void listBoxItemClicked(int row, const juce::MouseEvent& e)
+  {
+    curves[row]->setSelected(!curves[row]->isSelected());
+    listBox->deselectRow(row);
+    callback->sendChangeMessage(this);
+  }
+
+  void setListBox(juce::ListBox* listBox)
+    {this->listBox = listBox;}
+
+protected:
+  ContainerCurveEditorConfigurationPtr configuration;
+  juce::ChangeBroadcaster* callback;
+  juce::ListBox* listBox;
+  std::vector<CurveVariableConfigurationPtr> curves;
+};
+
+class ContainerCurveEditorConfigurationComponent : public Component, public juce::ChangeBroadcaster,
+                                                   public juce::ComboBoxListener, public juce::ChangeListener,
+                                                   public juce::ButtonListener
 {
 public:
   ContainerCurveEditorConfigurationComponent(ContainerCurveEditorConfigurationPtr configuration)
     : configuration(configuration)
   {
+    // TODO: switch select Y-Axis component depending of the number of curves
     addAndMakeVisible(xAxisLabel = new juce::Label(T("xaxis"), T("X-Axis")));
     addAndMakeVisible(keyComboBox = createVariableIndexComboBox(configuration->getKeyVariableIndex()));
-    addAndMakeVisible(selectedCurves = new ContainerCurveSelectorConfigurationComponent(configuration));
-    selectedCurves->addChangeListener(this);
+    addAndMakeVisible(yAxisLabel = new juce::Label(T("yaxis"), T("Y-Axis")));
+    //addAndMakeVisible(selectedCurves = new ContainerCurveSelectorConfigurationComponent(configuration));
+    // FIXME: Who will destroy curveListBox ?
+    CurveListBoxModel* curveListBox = new CurveListBoxModel(configuration, this);
+    addAndMakeVisible(yListBox = new juce::ListBox(T("yListBox"), curveListBox));
+    curveListBox->setListBox(yListBox);
+    yListBox->setOutlineThickness(1);
+    yListBox->setRowHeight(15);
+    yListBox->setMultipleSelectionEnabled(false);
+    //selectedCurves->addChangeListener(this);
+    addAndMakeVisible(selectAllButton = new juce::TextButton(T("Select All")));
+    selectAllButton->addButtonListener(this);
+    addAndMakeVisible(noneButton = new juce::TextButton(T("None")));
+    noneButton->addButtonListener(this);
   }
 
   virtual ~ContainerCurveEditorConfigurationComponent()
     {deleteAllChildren();}
+
+  virtual void buttonClicked(juce::Button* button)
+  {
+    if (button == selectAllButton || button == noneButton)
+    {
+      const size_t n = configuration->getNumCurves();
+      size_t index = 0;
+      for (size_t i = 0; i < n; ++i)
+      {
+        if (configuration->getCurve(i))
+        {
+          configuration->getCurve(i)->setSelected(button == selectAllButton);
+          yListBox->selectRow(index, true);
+          ++index;
+        }
+      }
+      sendChangeMessage(this);
+    }
+  }
 
   virtual void comboBoxChanged(ComboBox* comboBoxThatHasChanged)
   {
@@ -440,11 +521,21 @@ public:
 
   virtual void resized()
   {
-    xAxisLabel->setBoundsRelative(0, 0, 0.4f, 0.5f);
+    xAxisLabel->setBoundsRelative(0, 0, 0.3f, 0.5f);
     xAxisLabel->setSize(xAxisLabel->getWidth(), 20);
-    keyComboBox->setBoundsRelative(0, 0.25f, 0.4f, 0.5f);
+    keyComboBox->setBoundsRelative(0, 0.22f, 0.3f, 0.5f);
     keyComboBox->setSize(keyComboBox->getWidth(), 20);
-    selectedCurves->setBoundsRelative(0.4f, 0, 0.6f, 1.f);
+
+    yAxisLabel->setBoundsRelative(0.35f, 0, 0.3f, 0.5f);
+    yAxisLabel->setSize(yAxisLabel->getWidth(), 20);
+    yListBox->setBoundsRelative(0.35f, 0.22f, 0.3f, 1.f);
+    yListBox->setSize(yListBox->getWidth(), yListBox->getHeight() - 0.22f * getHeight());
+
+    //selectedCurves->setBoundsRelative(0.4f, 0, 0.6f, 1.f);
+    selectAllButton->setBoundsRelative(0.7f, 0.22f, 0.3f, 0.5f);
+    selectAllButton->setSize(selectAllButton->getWidth(), 20);
+    noneButton->setBoundsRelative(0.7f, 0.44f, 0.3f, 0.5f);
+    noneButton->setSize(noneButton->getWidth(), 20);
   }
 
 protected:
@@ -452,7 +543,11 @@ protected:
 
   juce::Label* xAxisLabel;
   ComboBox* keyComboBox;
+  juce::Label* yAxisLabel;
   ContainerCurveSelectorConfigurationComponent* selectedCurves;
+  juce::ListBox* yListBox;
+  juce::Button* selectAllButton;
+  juce::Button* noneButton;
 
   juce::ComboBox* createVariableIndexComboBox(size_t selectedIndex)
   {
