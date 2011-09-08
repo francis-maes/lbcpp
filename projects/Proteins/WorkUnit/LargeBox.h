@@ -448,7 +448,7 @@ public:
       for (size_t valueIndex = 0; !stream->isExhausted(); ++valueIndex)
       {
         const Variable value = stream->next();
-
+        //std::cout << lin09ParametersClass->getMemberVariableName(i) << std::endl;
         *o << lin09ParametersClass->getMemberVariableName(i) << "[" << value.toString() << "]";
 
         ObjectPtr candidate = baseObject->clone(context);
@@ -488,7 +488,10 @@ protected:
       const size_t dimension = featuresVector->getDimension();
       for (size_t j = 0; j < dimension; ++j)
         for (size_t k = j + 1; k < dimension; ++k)
+        {
           examples->append(new Pair(featuresVector->getElement(j,k), supervision->getElement(j,k)));
+          //std::cout << "[" << supervision->getElement(j,k).toString() << "]: " << featuresVector->getElement(j,k).toString() << std::endl;
+        }
     }
 
     ContainerPtr randomizedExamples = examples->randomize();

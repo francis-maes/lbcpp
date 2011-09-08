@@ -67,6 +67,9 @@ public:
   const juce::Colour& getColour() const
     {return colour;}
 
+  String getLabel() const
+    {return label;}
+
 private:
   friend class CurveVariableConfigurationClass;
 
