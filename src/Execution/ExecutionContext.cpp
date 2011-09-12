@@ -210,6 +210,7 @@ int ExecutionContext::sleep(LuaState& state)
   ExecutionContextPtr pthis = state.checkObject(1, executionContextClass);
   double lengthInSeconds = state.checkNumber(2);
   Thread::sleep((int)(lengthInSeconds * 1000));
+  pthis->flushCallbacks();
   return 0;
 }
 
@@ -235,6 +236,13 @@ int ExecutionContext::connect(LuaState& state)
   ExecutionContextPtr res = distributedExecutionContext(*pthis, remoteHostName, remotePort, project, from, to, resourceEstimator);
   state.pushObject(res);
   return 1;
+}
+
+int ExecutionContext::waitUntilAllWorkUnitsAreDone(LuaState& state)
+{
+  ExecutionContextPtr pthis = state.checkObject(1, executionContextClass);
+  pthis->waitUntilAllWorkUnitsAreDone();
+  return 0;
 }
 
 /*

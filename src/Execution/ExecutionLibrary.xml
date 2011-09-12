@@ -90,6 +90,7 @@
     <function lang="lua" name="sleep"/>
     <function lang="lua" name="random"/>
     <function lang="lua" name="connect"/>
+    <function lang="lua" name="waitUntilAllWorkUnitsAreDone"/>
   </class>
 
   <!--

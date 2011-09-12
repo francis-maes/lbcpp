@@ -1,11 +1,13 @@
 
 local filename = "formulas2.txt"
-local outputFilename = "banditScores2.txt"
+local outputFilename = "test.txt" --bandits_hor100_size4.txt"
 
 local managerHostName = "monster24.montefiore.ulg.ac.be"
 local managerPort = 1664
-local resourceEstimator = lbcpp.Object.create("FixedResourceEstimator", 1, 5, 1)
-local manager = context:connect(managerHostName, managerPort, "Lua", "Francis-PC", "jbecker@nic3", resourceEstimator)
+local resourceEstimator = lbcpp.Object.create("FixedResourceEstimator", 1, 48, 1)
+local manager1 = context:connect(managerHostName, managerPort, "Lua", "Monster24", "jbecker@nic3", resourceEstimator)
+local manager2 = context:connect(managerHostName, managerPort, "Lua", "Monster24", "fmaes@nic3", resourceEstimator)
+local manager3 = context:connect(managerHostName, managerPort, "Lua", "Monster24", "amarcos@nic3", resourceEstimator)
 
 local function createWorkUnit(formulaString)
   local workUnit = lbcpp.Object.create("ExecuteLuaString")
@@ -30,12 +32,22 @@ end
 
 for line in io.lines(filename) do
   numWaitingResults = numWaitingResults + 1
+  local manager
+  if numWaitingResults % 3 == 0 then
+    manager = manager1
+  elseif numWaitingResults % 3 == 1 then
+    manager = manager2
+  else
+    manager = manager3
+  end  
   manager:push(createWorkUnit(line), workUnitFinished, false)
 end
 
 while numWaitingResults > 0 do
   print ("Still waiting for " .. numWaitingResults .. " results")
-  context:sleep(10)
+  manager1:sleep(10)
+  manager2:sleep(10)
+  manager3:sleep(10)
 end
 
 --context:kill()

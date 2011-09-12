@@ -25,6 +25,8 @@ public:
   InteluaInterpreter() {}
   virtual ~InteluaInterpreter();
   
+  static bool checkInteluaDirectory(ExecutionContext& context, File& inteluaDirectory);
+
   bool loadBlock(lua::BlockPtr block, const char* chunkName);
   bool loadBuffer(const char* string, const char* chunkName);
   bool loadFile(const File& file);
@@ -83,6 +85,9 @@ public:
     }
     else
       directory = File(inteluaDirectory);
+
+    if (!InteluaInterpreter::checkInteluaDirectory(context, directory))
+      return false;
 
     InteluaInterpreter interpreter(context, directory, verbose);
     interpreter.setStaticAllocationFlag();

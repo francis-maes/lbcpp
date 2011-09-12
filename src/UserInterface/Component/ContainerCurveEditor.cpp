@@ -529,7 +529,7 @@ public:
     yAxisLabel->setBoundsRelative(0.35f, 0, 0.3f, 0.5f);
     yAxisLabel->setSize(yAxisLabel->getWidth(), 20);
     yListBox->setBoundsRelative(0.35f, 0.22f, 0.3f, 1.f);
-    yListBox->setSize(yListBox->getWidth(), yListBox->getHeight() - 0.22f * getHeight());
+    yListBox->setSize(yListBox->getWidth(), (int)(yListBox->getHeight() - 0.22f * getHeight()));
 
     //selectedCurves->setBoundsRelative(0.4f, 0, 0.6f, 1.f);
     selectAllButton->setBoundsRelative(0.7f, 0.22f, 0.3f, 0.5f);

@@ -44,7 +44,8 @@ public:
       callback->workUnitFinished(workUnit, res);
   }
 
-  virtual void waitUntilAllWorkUnitsAreDone() {}
+  virtual void waitUntilAllWorkUnitsAreDone(size_t timeOutInMillisecond)
+    {}
 
   lbcpp_UseDebuggingNewOperator
 };
