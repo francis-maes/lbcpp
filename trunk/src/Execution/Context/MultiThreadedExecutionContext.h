@@ -402,10 +402,16 @@ public:
       Thread::sleep(10);
   }
  
-  void waitUntilAllWorkUnitsAreDone()
+  void waitUntilAllWorkUnitsAreDone(size_t timeOutInMilliseconds)
   {
+    size_t time = 0;
     while (!queue->isEmpty())
+    {
       Thread::sleep(10);
+      time += 10;
+      if (timeOutInMilliseconds && time >= timeOutInMilliseconds)
+        break;
+    }
   }
 
   void stopAndDestroyAllThreads()
@@ -470,8 +476,8 @@ public:
     queue->push(workUnit, stack, counterToDecrementWhenDone, pushIntoStack);
   }
 
-  virtual void waitUntilAllWorkUnitsAreDone()
-    {threadPool->waitUntilAllWorkUnitsAreDone();}
+  virtual void waitUntilAllWorkUnitsAreDone(size_t timeOutInMilliseconds)
+    {threadPool->waitUntilAllWorkUnitsAreDone(timeOutInMilliseconds);}
     
   virtual Variable run(const WorkUnitPtr& workUnit, bool pushIntoStack)
   {

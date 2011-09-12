@@ -13,6 +13,17 @@
 #include "PrettyPrinterVisitor.h"
 using namespace lbcpp;
 
+bool InteluaInterpreter::checkInteluaDirectory(ExecutionContext& context, File& inteluaDirectory)
+{
+  if (!inteluaDirectory.getChildFile("AST.lua").existsAsFile() ||
+      !inteluaDirectory.getChildFile("Language").isDirectory())
+  {
+    context.errorCallback("Intelua initialization", T("Incorrect intelua directory: ") + inteluaDirectory.getFullPathName());
+    return false;
+  }
+  return true;
+}
+
 InteluaInterpreter::InteluaInterpreter(ExecutionContext& context, const File& inteluaDirectory, bool verbose)
   : translatorState(context, true, true), lua(context, true, true, verbose), verbose(verbose)
 {

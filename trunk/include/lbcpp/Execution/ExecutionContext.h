@@ -62,8 +62,10 @@ public:
     {pushWorkUnit(workUnit, (int*)NULL);}
   virtual void pushWorkUnit(const WorkUnitPtr& workUnit, int* counterToDecrementWhenDone, bool pushIntoStack = true)
     {jassert(isMultiThread());}
-  virtual void waitUntilAllWorkUnitsAreDone()
-    {jassert(isMultiThread());}
+  virtual void waitUntilAllWorkUnitsAreDone(size_t timeOutInMilliseconds = 0)
+    {}
+  virtual void flushCallbacks()
+    {}
 
   /*
   ** Access to files
@@ -100,6 +102,7 @@ public:
   static int random(LuaState& state);
 
   static int connect(LuaState& state);
+  static int waitUntilAllWorkUnitsAreDone(LuaState& state);
 
   lbcpp_UseDebuggingNewOperator
 
