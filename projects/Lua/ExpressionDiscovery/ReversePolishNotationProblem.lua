@@ -112,6 +112,23 @@ function formulaToTrajectory(formula)
   return res
 end
 
+local function addIndicesToNumericalConstants(ast)
+  local constantIndex = 0
+  local function f(ast)
+    if ast.className == "lua::Identifier" and ast:print() == "__cst" then
+      constantIndex = constantIndex + 1 
+      return AST.index(ast, AST.literalNumber(constantIndex))
+    else
+      local res = ast:clone()
+      for i=1,ast:getNumSubNodes() do
+        res:setSubNode(i, f(ast:getSubNode(i)))
+      end
+      return res
+    end
+  end
+  return f(ast)
+end
+
 -- Reverse polish notation Sequential Decision Process
 
 DecisionProblem.ReversePolishNotation = subspecified {
@@ -125,6 +142,7 @@ DecisionProblem.ReversePolishNotation = subspecified {
   parameter hasNumericalConstants = {default=false},
   parameter objective = {},
   parameter maxSize = {default = 0, min = 0},
+  parameter testMinArity = {default = false},
 
   x0 = {},
   discount = 1,
@@ -138,7 +156,11 @@ DecisionProblem.ReversePolishNotation = subspecified {
 
     if ast.className == "lua::Return" then
       assert (#stack > 0)
-      return stack[#stack]
+      local res = stack[#stack]
+      if hasNumericalConstants then
+        res = addIndicesToNumericalConstants(res)
+      end
+      return res
     end
 
     local n = ast:getNumSubNodes() -- num arguments
@@ -146,11 +168,11 @@ DecisionProblem.ReversePolishNotation = subspecified {
     if ast.className == "lua::Call" then
       n = n - 1
       firstSubNode = 2      
-    elseif ast.className == "lua::Index" then
-      n = 0 -- no arguments for numerical constants
-      local lhs = ast:getSubNode(1)
-      local index = getStackNumConstants(stack, lhs) + 1
-      ast = AST.index(lhs, AST.literalNumber(index))
+   -- elseif ast.className == "lua::Index" then
+   --   n = 0 -- no arguments for numerical constants
+   --   local lhs = ast:getSubNode(1)
+   --   local index = getStackNumConstants(stack, lhs) + 1
+   --   ast = AST.index(lhs, AST.literalNumber(index))
     end
 
     local m = #stack -- stack size
@@ -184,6 +206,7 @@ DecisionProblem.ReversePolishNotation = subspecified {
       return nil -- this is a final state
     end
     local ms = maxSize -- FIXME: there is a bug in the lua here !!! 
+ 
     local minArity = 0
     local maxArity = #stack
     if ms > 0 then
@@ -191,11 +214,22 @@ DecisionProblem.ReversePolishNotation = subspecified {
       local remainingSteps = ms - currentSize
       if remainingSteps <= 0 then
         maxArity = -1
+      elseif testMinArity then
+        local MaxArity = 2
+        local maxThatCanBeRemovedAfterThisAction = (remainingSteps - 1) * (MaxArity - 1)
+        minArity = #stack - maxThatCanBeRemovedAfterThisAction
+        --print ("cursize", currentSize, "Reamining steps", remainingSteps, "maxThatCanBeRemovedAfter", maxThatCanBeRemovedAfterThisAction, "=>", minArity)
       end
-      local MaxArity = 2
-      local maxThatCanBeRemovedAfterThisAction = (remainingSteps - 1) * (MaxArity - 1)
-      minArity = currentSize - maxThatCanBeRemovedAfterThisAction
-    end
+   end
+
+   --[[
+     local str = "State: "
+     for k,v in ipairs(stack) do
+       str = str .. " " .. v:print()
+     end
+     str = str .. " -> [" .. minArity .. ", " .. maxArity .. "]"
+     print (str)
+   ]]
 
     if minArity > maxArity or maxArity == -1 then
       return {AST.returnStatement()} -- maxSize is reached, must finish now
@@ -226,7 +260,7 @@ DecisionProblem.ReversePolishNotation = subspecified {
         table.insert(res, AST.literalNumber(c))
       end
       if hasNumericalConstants then
-        table.insert(res, AST.index(AST.identifier("__cst")))
+        table.insert(res, AST.identifier("__cst"))
       end
     end
     if 1 <= maxArity then

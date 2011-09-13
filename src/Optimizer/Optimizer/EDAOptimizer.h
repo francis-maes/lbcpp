@@ -24,7 +24,7 @@ public:
   virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {
     const FunctionPtr& objectiveFunction = problem->getObjective();
-    const FunctionPtr& validationFunction = problem->getValidation();
+    //const FunctionPtr& validationFunction = problem->getValidation();
     const SamplerPtr& initialSampler = problem->getSampler();
   
     SamplerBasedOptimizerStatePtr state = optimizerState.staticCast<SamplerBasedOptimizerState>();
