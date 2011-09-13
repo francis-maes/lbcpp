@@ -301,6 +301,7 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<GPStructureScoreObject> GPStructureScoreObjectPtr;
+extern ClassPtr gpStructureScoreObjectClass;
 
 }; /* namespace lbcpp */
 

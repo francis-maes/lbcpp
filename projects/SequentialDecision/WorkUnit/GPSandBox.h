@@ -27,7 +27,7 @@ class GPObjectiveFunction : public SimpleUnaryFunction
 {
 public:
   GPObjectiveFunction(const std::vector<std::pair< std::vector<double> , double> >& examples, double lambda)
-  : SimpleUnaryFunction(gpExpressionClass, doubleType), lambda(lambda), examples(examples) {}
+    : SimpleUnaryFunction(gpExpressionClass, doubleType), lambda(lambda), examples(examples) {}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
@@ -63,7 +63,7 @@ class GPStructureObjectiveFunction : public SimpleUnaryFunction
 {
 public:
   GPStructureObjectiveFunction(FunctionPtr objectiveFunction)
-  : SimpleUnaryFunction(gpExpressionClass, doubleType), objectiveFunction(objectiveFunction)
+    : SimpleUnaryFunction(gpExpressionClass, gpStructureScoreObjectClass), objectiveFunction(objectiveFunction)
   {
     objectiveFunction->initialize(defaultExecutionContext(), gpExpressionClass);
   }
@@ -94,8 +94,7 @@ public:
   struct Objective : public SimpleUnaryFunction
   {
     Objective(FunctionPtr finalObjective, const GPExpressionPtr& structure)
-    : SimpleUnaryFunction(denseDoubleVectorClass(), doubleType),
-      finalObjective(finalObjective), structure(structure)
+      : SimpleUnaryFunction(denseDoubleVectorClass(), doubleType), finalObjective(finalObjective), structure(structure)
     {
     }
 
@@ -182,7 +181,7 @@ public:
   }
 
   protected:
-  FunctionPtr objectiveFunction;
+    FunctionPtr objectiveFunction;
 };
 
 ////////////////////////////////////////////////////////
