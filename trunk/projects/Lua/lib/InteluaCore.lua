@@ -58,18 +58,7 @@ require 'Derivable'
 require 'Stochastic'
 
 local function inteluaLoader(name)
-  -- Todo: reimplement this in C++
-  local path
-  if false then -- package.searchpath then
-    path = package.searchpath(name, package.path)
-  else
-   if string.find(name, "Language") then
-      name = string.gsub(name, "%.", "/")
-   end
-   path = package.inteluaPath .. "/" .. name .. ".lua"
-  end
-  --print ("inteluaLoader: " .. name, path)  
-  return path and interpreter:loadFile(path)
+  return interpreter:loader(name, debug.getinfo(3).source)
 end
 
 package.loaders[2] = inteluaLoader

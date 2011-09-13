@@ -3,8 +3,9 @@
 <library name="Lua" dynamic="yes">
 
   <class name="InteluaInterpreter" base="Object">
+    <function lang="lua" name="loadBuffer"/>
     <function lang="lua" name="loadFile"/>
-    <!-- todo: parse, execute, ...  -->
+    <function lang="lua" name="loader"/>
   </class>
 
   <class name="ExecuteLuaString" base="WorkUnit">

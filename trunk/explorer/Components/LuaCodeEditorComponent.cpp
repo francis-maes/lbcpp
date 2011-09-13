@@ -197,7 +197,10 @@ void LuaCodeEditor::executeCode(bool verbose)
 
   // set current working directory to root directory
   // FIXME: find a better way to fix lua directly to take our root directory
-  ExplorerProject::getCurrentProject()->getRootDirectory().setAsCurrentWorkingDirectory(); 
+  
+  //ExplorerProject::getCurrentProject()->getRootDirectory().setAsCurrentWorkingDirectory(); 
+  luaFile.getParentDirectory().setAsCurrentWorkingDirectory();
+
   ClassPtr workUnitClass = getType("ExecuteLuaString");
   if (workUnitClass)
   {

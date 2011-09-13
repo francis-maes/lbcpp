@@ -25,7 +25,7 @@ bool InteluaInterpreter::checkInteluaDirectory(ExecutionContext& context, File& 
 }
 
 InteluaInterpreter::InteluaInterpreter(ExecutionContext& context, const File& inteluaDirectory, bool verbose)
-  : translatorState(context, true, true), lua(context, true, true, verbose), verbose(verbose)
+  : inteluaDirectory(inteluaDirectory), translatorState(context, true, true), lua(context, true, true, verbose), verbose(verbose)
 {
   String baseDirectory = inteluaDirectory.getFullPathName().replaceCharacter('\\', '/');
   {
@@ -82,10 +82,10 @@ bool InteluaInterpreter::loadFile(const File& file)
   }
 
   if (block)
-    return loadBlock(block, file.getFileName());
+    return loadBlock(block, T("@") + file.getFullPathName());
   else
   {
-    context.errorCallback(file.getFileName(), "Parse error");
+    context.errorCallback(file.getFullPathName(), "Parse error");
     return false;
   }
 }
@@ -168,6 +168,49 @@ int InteluaInterpreter::loadFile(LuaState& state)
   {
     state.pushNil();
     state.pushString("could not load file");
+    return 2;
+  }
+}
+
+// file name => loaded chunk
+int InteluaInterpreter::loader(LuaState& state)
+{
+  InteluaInterpreterPtr interpreter = state.checkObject(1, inteluaInterpreterClass).staticCast<InteluaInterpreter>();
+  String name = state.checkString(2);
+  String where = state.checkString(3);
+
+  int i = 0;
+  while (i < name.length() - 3 && name.substring(i, i + 3) == T("../"))
+    i = i + 3;
+  while (i < name.length())
+  {
+    if (name[i] == '.')
+      name[i] = '/';
+    ++i;
+  }
+  name += ".lua";
+
+  // first try to find the file starting from the current directory
+  // current directory is either the current working directory, or the directory from the calling file
+  File currentDirectory = File::getCurrentWorkingDirectory();
+  if (where.startsWithChar('@'))
+    currentDirectory = File(where.substring(1)).getParentDirectory();
+  File luaFile = currentDirectory.getChildFile(name);
+
+  // if file was not found, start again from intelua directory
+  if (!luaFile.existsAsFile())
+    luaFile = interpreter->inteluaDirectory.getChildFile(name);
+
+  //std::cerr << where << std::endl;
+  //std::cerr << "Intelua Loader: " << state.checkString(2) << " => " << luaFile.getFullPathName() << std::endl;
+  
+  bool ok = interpreter->loadFile(luaFile);
+  if (ok)
+    return 1;
+  else
+  {
+    state.pushNil();
+    state.pushString("could not load file: " + luaFile.getFullPathName());
     return 2;
   }
 }
