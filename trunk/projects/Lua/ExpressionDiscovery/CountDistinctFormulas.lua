@@ -1,21 +1,34 @@
 -- Cound Distinct Formulas Script
 
+-- size 4: 7550 - 2456 - 1936 - 972
+
+
 require '../ExpressionDiscovery/ReversePolishNotationProblem'
 require 'Random'
 require 'Stochastic'
+require 'Statistics'
 
+local maxFormulaSize = 6
+local formulaOutputFile = "formulas6.txt"
 
-function math.inverse(x)
-  return 1 / x
+local _sqrt = math.sqrt
+local _log = math.log
+
+function math.inverse(x) return 1.0 / x end
+
+function math.sqrt(x)
+  if x < 0 then
+    return -math.huge
+  else
+    return _sqrt(x)
+  end
 end
-
-_deflog = math.log
 
 function math.log(x)
   if x < 0 then
     return -math.huge
   else
-    return _deflog(x)
+    return _log(x)
   end
 end
 
@@ -36,7 +49,8 @@ problem = DecisionProblem.ReversePolishNotation{
   binaryFunctions = {"math.max", "math.min"},
   hasNumericalConstants = true,
   objective = | | 0,
-  maxSize = 8
+  maxSize = maxFormulaSize,
+  testMinArity = true
 }
 
 local dataset = {}
@@ -87,8 +101,13 @@ local finalStates = {}
 local simplifiedFinalStates = {}
 local uniqueFinalStates = {}
 
+local formulaSizeStatistics = Statistics.meanVarianceAndBounds()
+
+
 local function countDistinctFormulas(problem, x)
   if problem.isFinal(x) then
+
+    formulaSizeStatistics:observe(stackOrExpressionSize(x))
 
     -- num final states
     numFinalStates = numFinalStates + 1
@@ -105,6 +124,7 @@ local function countDistinctFormulas(problem, x)
     if simplifiedFinalStates[str2] == nil then
       simplifiedFinalStates[str2] = true
       numDistinctSimplifiedFinalStates = numDistinctSimplifiedFinalStates + 1
+      --print (str2)
     end
     --print (str1, "-->", str2)
  
@@ -138,6 +158,9 @@ print ("NumFinalStates", numFinalStates)
 print ("NumDistinctFinalStates", numDistinctFinalStates)
 print ("NumDistinctSimplifiedFinalStates", numDistinctSimplifiedFinalStates)
 print ("NumUniqueFinalStates", numUniqueFinalStates)
+print ("FormulaSizeStats", formulaSizeStatistics)
+
+context:result("formulaSizeStats", formulaSizeStatistics)
 
 --[[
 for key,tbl in pairs(uniqueFinalStates) do
@@ -160,4 +183,4 @@ local function saveFormulas(formulas, filename)
   context:leave()
 end
 
-saveFormulas(simplifiedFinalStates, "formulas8.txt")
+saveFormulas(simplifiedFinalStates, formulaOutputFile)
