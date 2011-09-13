@@ -357,7 +357,7 @@ public:
     CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Evaluating policy"), numProblems);
     for (size_t i = 0; i < numProblems; ++i)
     {
-      DiscreteBanditStatePtr problem = createBanditProblem(i);
+      DiscreteBanditStatePtr problem = createBanditProblem(context, i);
       String problemName = problem->toShortString();
       std::vector<DiscreteBanditStatePtr> problemSingleton(1, problem);
       workUnit->setWorkUnit(i, makeEvaluationWorkUnit(problemSingleton, problemName, policy->cloneAndCast<DiscreteBanditPolicy>(), true));
@@ -371,7 +371,7 @@ public:
   {
     for (size_t i = 0; i < numProblems; ++i)
     {
-      DiscreteBanditStatePtr problem = createBanditProblem(i);
+      DiscreteBanditStatePtr problem = createBanditProblem(context, i);
       String problemName = problem->toShortString();
 
       DiscreteBanditPolicyPtr policyToOptimize = policy->cloneAndCast<DiscreteBanditPolicy>();
@@ -437,16 +437,23 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-//    return tuneAndTestPolicyOnEachProblem(context, new TestDiscreteBanditPolicy());
-  
-    DiscreteBanditStatePtr problem = createBanditProblem(problemIndex);
-    String problemName = problem->toShortString();
- 
-    // evate policies on all problems
-    std::vector<DiscreteBanditStatePtr> problems(12);
-    for (size_t i = 0; i < problems.size(); ++i)
-      problems[i] = createBanditProblem(i);
-    String problemsName = T("Problems 1--12");
+    std::vector<DiscreteBanditStatePtr> problems;
+    String problemsName;
+
+    if (problemIndex < 12)
+    {
+      DiscreteBanditStatePtr problem = createBanditProblem(context, problemIndex);
+      problemsName = problem->toShortString();
+      problems.push_back(problem);
+    }
+    else
+    {
+      // evaluate policies on all problems
+      problems.resize(12);
+      for (size_t i = 0; i < problems.size(); ++i)
+        problems[i] = createBanditProblem(context, i);
+      problemsName = T("Problems 1--12");
+    }
     
 //    makePolicyParameterCurves(context, problems, problemsName);
     
@@ -472,7 +479,7 @@ public:
     policiesToOptimize.push_back(std::make_pair(ucb1DiscreteBanditPolicy(), T("UCB1")));
     policiesToOptimize.push_back(std::make_pair(ucbvDiscreteBanditPolicy(), T("UCBv")));
     policiesToOptimize.push_back(std::make_pair(epsilonGreedyDiscreteBanditPolicy(0.1, 0.1), T("epsilonGreedy")));
-    policiesToOptimize.push_back(std::make_pair(powerDiscreteBanditPolicy(1, false), T("powerFunction1")));
+    //policiesToOptimize.push_back(std::make_pair(powerDiscreteBanditPolicy(1, false), T("powerFunction1")));
 //    policiesToOptimize.push_back(std::make_pair(powerDiscreteBanditPolicy(2, false), T("powerFunction2")));
     for (size_t i = 0; i < policiesToOptimize.size(); ++i)
     {
@@ -607,7 +614,7 @@ protected:
       GPExpressionPtr bestExpression;
       Variable bestFirstAction;
       Variable currentFirstAction;
-      recursiveExhaustiveSearch(context, state, 0, maxDepth, bestScore, bestDepth, bestExpression, bestFirstAction, currentFirstAction);
+      depthLimitedSearch(context, state, 0, maxDepth, bestScore, bestDepth, bestExpression, bestFirstAction, currentFirstAction);
       double bestValidation = validation->compute(context, bestExpression).toDouble();
 
       context.resultCallback(T("timeStep"), timeStep);
@@ -648,7 +655,7 @@ protected:
     return true;
   }
 
-  void recursiveExhaustiveSearch(ExecutionContext& context, GPExpressionBuilderStatePtr state, 
+  void depthLimitedSearch(ExecutionContext& context, GPExpressionBuilderStatePtr state, 
                   size_t depth, size_t maxDepth, double& bestScore, size_t& bestDepth, GPExpressionPtr& bestExpression, Variable& bestFirstAction, Variable& currentFirstAction)
   {
     ContainerPtr actions = state->getAvailableActions();
@@ -681,14 +688,14 @@ protected:
       }
 
       if (!state->isFinalState() && depth < maxDepth - 1)
-        recursiveExhaustiveSearch(context, state, depth + 1, maxDepth, bestScore, bestDepth, bestExpression, bestFirstAction, currentFirstAction);
+        depthLimitedSearch(context, state, depth + 1, maxDepth, bestScore, bestDepth, bestExpression, bestFirstAction, currentFirstAction);
 
       state->undoTransition(context, action);
       //context.leaveScope(true);
     }
   }
 
-  DiscreteBanditStatePtr createBanditProblem(size_t index) const
+  DiscreteBanditStatePtr createBanditProblem(ExecutionContext& context, size_t index) const
   {
     size_t i3 = index % 3;
     double p1 = 0.0, p2 = 0.0;
@@ -731,8 +738,11 @@ protected:
     else
     {
       std::vector<SamplerPtr> samplers(2);
-      samplers[0] = rejectionSampler(gaussianSampler(p1, 0.5), logicalAnd(lessThanOrEqualToPredicate(1.0), greaterThanOrEqualToPredicate(0.0)));
-      samplers[1] = rejectionSampler(gaussianSampler(p2, 0.5), logicalAnd(lessThanOrEqualToPredicate(1.0), greaterThanOrEqualToPredicate(0.0)));
+      FunctionPtr predicate = logicalAnd(lessThanOrEqualToPredicate(1.0), greaterThanOrEqualToPredicate(0.0));
+      if (!predicate->initialize(context, doubleType))
+        return DiscreteBanditStatePtr();
+      samplers[0] = rejectionSampler(gaussianSampler(p1, 0.5), predicate);
+      samplers[1] = rejectionSampler(gaussianSampler(p2, 0.5), predicate);
       DiscreteBanditStatePtr res = new DiscreteBanditState(samplers);
       res->setName(T("clampedGaussian(") + str + T(")"));
       return res;
