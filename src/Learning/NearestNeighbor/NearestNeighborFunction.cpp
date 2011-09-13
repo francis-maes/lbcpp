@@ -1,7 +1,7 @@
 /*-----------------------------------------.---------------------------------.
 | Filename: NearestNeighborFunction.cpp    | Nearest Neighbor                |
 | Author  : Julien Becker                  |                                 |
-| Started : 04/08/2012 15:21               |                                 |
+| Started : 04/08/2011 15:21               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
@@ -28,10 +28,10 @@ Variable NearestNeighborFunction::computeFunction(ExecutionContext& context, con
   if (!includeTheNearestNeighbor)
     scoredIndices.erase(scoredIndices.begin());
 
-  return computeOuput(scoredIndices);
+  return computeOutput(scoredIndices);
 }
 
-Variable BinaryNearestNeighbor::computeOuput(ScoresMap& scoredIndices) const
+Variable BinaryNearestNeighbor::computeOutput(ScoresMap& scoredIndices) const
 {
   size_t numTrues = 0;
   double sumOfScores = 0.0;
@@ -56,7 +56,7 @@ Variable BinaryNearestNeighbor::computeOuput(ScoresMap& scoredIndices) const
   return probability(numTrues / (double)maxNumNeighbors);
 }
 
-Variable RegressionNearestNeighbor::computeOuput(ScoresMap& scoredIndices) const
+Variable RegressionNearestNeighbor::computeOutput(ScoresMap& scoredIndices) const
 {
   double sum = 0.0;
   const size_t maxNumNeighbors = scoredIndices.size() < numNeighbors ? scoredIndices.size() : numNeighbors;
@@ -66,7 +66,7 @@ Variable RegressionNearestNeighbor::computeOuput(ScoresMap& scoredIndices) const
   return Variable(maxNumNeighbors ? sum / (double)maxNumNeighbors : 0.f, doubleType);
 }
 
-Variable ClassificationNearestNeighbor::computeOuput(ScoresMap& scoredIndices) const
+Variable ClassificationNearestNeighbor::computeOutput(ScoresMap& scoredIndices) const
 {
   std::vector<double> sums(enumeration->getNumElements(), 0.0);
 

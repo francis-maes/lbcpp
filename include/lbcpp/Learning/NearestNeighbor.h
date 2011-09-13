@@ -20,6 +20,8 @@ extern FunctionPtr regressionNearestNeighbor(size_t numNeighbors, bool autoNorma
 
 extern FunctionPtr nearestNeighborLearningMachine(size_t numNeighbors, bool autoNormalizeFeatures, bool includeTheNearestNeighbor);
 
+extern FunctionPtr binaryLocalitySensitiveHashing();
+
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_NEAREST_NEIGHBOR_H_

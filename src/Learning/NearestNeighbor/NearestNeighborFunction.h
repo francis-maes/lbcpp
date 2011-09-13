@@ -1,7 +1,7 @@
 /*-----------------------------------------.---------------------------------.
 | Filename: NearestNeighborFunction.h      | Nearest Neighbor                |
 | Author  : Julien Becker                  |                                 |
-| Started : 04/08/2012 15:21               |                                 |
+| Started : 04/08/2011 15:21               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
@@ -54,7 +54,7 @@ protected:
   std::vector<Variable> supervisionData;
   DenseDoubleVectorPtr normalizationFactors;
 
-  virtual Variable computeOuput(ScoresMap& scoredIndices) const = 0;
+  virtual Variable computeOutput(ScoresMap& scoredIndices) const = 0;
 };
 
 extern ClassPtr nearestNeighborFunctionClass;
@@ -77,7 +77,7 @@ protected:
 
   RegressionNearestNeighbor() {}
 
-  virtual Variable computeOuput(ScoresMap& scoredIndices) const;
+  virtual Variable computeOutput(ScoresMap& scoredIndices) const;
 };
 
 class BinaryNearestNeighbor : public NearestNeighborFunction
@@ -99,7 +99,7 @@ protected:
 
   BinaryNearestNeighbor() {}
 
-  virtual Variable computeOuput(ScoresMap& scoredIndices) const;
+  virtual Variable computeOutput(ScoresMap& scoredIndices) const;
 };
 
 class ClassificationNearestNeighbor : public NearestNeighborFunction
@@ -124,7 +124,7 @@ protected:
 
   ClassificationNearestNeighbor() {}
 
-  virtual Variable computeOuput(ScoresMap& scoredIndices) const;
+  virtual Variable computeOutput(ScoresMap& scoredIndices) const;
 };
 
 class NearestNeighborBatchLearner : public BatchLearner

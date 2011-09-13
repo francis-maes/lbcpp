@@ -248,8 +248,7 @@ public:
     StreamBasedOptimizerStatePtr state = optimizerState.staticCast<StreamBasedOptimizerState>();
     jassert(state);
 
-    if (!state->getBestSolution().exists())
-      state->submitSolution(problem->getInitialGuess(), DBL_MAX); // default solution
+    state->submitSolution(problem->getInitialGuess(), DBL_MAX); // default solution
 
      // Types checking
     const ObjectPtr initialGuess = problem->getInitialGuess().getObject();
@@ -325,16 +324,18 @@ public:
       // Update state
       pushIterationIntoStack(context, state, iteration);
 
-      if (numPushedWorkUnit == 0) // No need to update and/or save state
-        continue;
+      if (numIteration + 1 == state->getNumIterations())
+      {
+        std::cout << "current Iteration: " << (numIteration + 1) << " - Total iteration: " << state->getNumIterations()
+        << " - Iteration score: " << iteration->getBestScore() << " - state's score: " << state->getBestScore() << std::endl;
 
-      if (iteration->getBestScore() >= state->getBestScore())
-        break;
+        if(iteration->getBestScore() + 0.0001 >= state->getBestScore())
+          break;
 
-      baseObject->setVariable(iteration->getBestParameter(), getParameterValue(state, iteration->getBestParameter(), iteration->getBestValue()));
-      state->submitSolution(baseObject->clone(context), iteration->getBestScore());
-
-      saveOptimizerState(context, state);
+        baseObject->setVariable(iteration->getBestParameter(), getParameterValue(state, iteration->getBestParameter(), iteration->getBestValue()));
+        state->submitSolution(baseObject->clone(context), iteration->getBestScore());
+        saveOptimizerState(context, state);
+      }
     }
 
     return state;

@@ -12,5 +12,6 @@
   <import name="NumericalLearning"/>
   <import name="DecisionTree"/>
   <import name="NearestNeighbor"/>
+  <import name="LocalitySensitiveHashing"/>
 
 </library>
