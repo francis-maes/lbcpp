@@ -37,11 +37,13 @@ public:
 
   static int loadBuffer(LuaState& state);
   static int loadFile(LuaState& state);
+  static int loader(LuaState& state);
 
   LuaState& getState()
     {return lua;}
 
 protected:
+  File inteluaDirectory;
   LuaState translatorState;
   LuaState lua;
   bool verbose;
