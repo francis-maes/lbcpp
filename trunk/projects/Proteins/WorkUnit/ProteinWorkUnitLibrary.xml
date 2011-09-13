@@ -109,7 +109,9 @@
   </class>
   <class name="BFSTestObjectiveFunction" base="SimpleUnaryFunction"/>
   <class name="BFSTestWorkUnit" base="WorkUnit"/>
-  
+
+  <class name="LSHTestWorkUnit" base="WorkUnit"/>
+
   <!-- BEGIN CysteinBox -->
 <!-- FIXME: Optimizer
   <class name="CysteinLearnerParameters" base="Object">

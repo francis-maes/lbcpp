@@ -51,6 +51,7 @@ GENERATE_INTROSPECTION_CODE(Learning/Numerical/LaRank/LaRankLearningLibrary.xml 
 GENERATE_INTROSPECTION_CODE(Learning/DecisionTree/DecisionTreeLibrary.xml DecisionTreeLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/LossFunction/LearningLossFunctionLibrary.xml LearningLossFunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/NearestNeighbor/NearestNeighborLibrary.xml NearestNeighborLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Learning/LocalitySensitiveHashing/LocalitySensitiveHashingLibrary.xml LocalitySensitiveHashingLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Optimizer/Optimizer/OptimizerOptimizerLibrary.xml OptimizerOptimizerLibrary.cpp)
@@ -573,6 +574,12 @@ SET(LBCPP_LEARNING_NEAREST_NEIGHBOR_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/NearestNeighborLibrary.cpp
 )
 
+SET(LBCPP_LEARNING_LOCALITY_SENSITIVE_HASHING_SOURCES
+  Learning/LocalitySensitiveHashing/LocalitySensitiveHashingFunction.h
+  Learning/LocalitySensitiveHashing/LocalitySensitiveHashingFunction.cpp
+  Learning/LocalitySensitiveHashing/LocalitySensitiveHashingLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/LocalitySensitiveHashingLibrary.cpp
+)
 
 #### Optimizer ####
 
@@ -751,6 +758,8 @@ SET(LBCPP_SOURCES
     
     ${LBCPP_LEARNING_NEAREST_NEIGHBOR_SOURCES}
 
+    ${LBCPP_LEARNING_LOCALITY_SENSITIVE_HASHING_SOURCES}
+
   # Optimizer
   ${LBCPP_OPTIMIZER_SOURCES}
     ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES}
@@ -830,6 +839,7 @@ SOURCE_SUB_GROUP2(Learning Numerical LibLinear FILES ${LBCPP_LEARNING_NUMERICAL_
 SOURCE_SUB_GROUP2(Learning Numerical LaRank FILES ${LBCPP_LEARNING_NUMERICAL_LARANK_SOURCES})
 SOURCE_SUB_GROUP(Learning DecisionTree FILES ${LBCPP_LEARNING_DECISION_TREE_SOURCES})
 SOURCE_SUB_GROUP(Learning NearestNeighbor FILES ${LBCPP_LEARNING_NEAREST_NEIGHBOR_SOURCES})
+SOURCE_SUB_GROUP(Learning LocalitySensitiveHashing FILES ${LBCPP_LEARNING_LOCALITY_SENSITIVE_HASHING_SOURCES})
 
 ## Optimizer
 SOURCE_GROUP(Optimizer FILES ${LBCPP_OPTIMIZER_SOURCES})

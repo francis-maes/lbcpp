@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="LocalitySensitiveHashing" directory="Learning/LocalitySensitiveHashing">
+
+  <!-- LocalitySensitiveHashingFunction -->
+  <class name="LocalitySensitiveHashingFunction" base="Function" abstract="yes">
+  </class>
+
+  <class name="BinaryLocalitySensitiveHashing" base="LocalitySensitiveHashingFunction">
+    <constructor returnType="Function"/>
+  </class>
+
+  <class name="LocalitySensitiveHashingBatchLearner" base="BatchLearner">
+    <constructor/>
+  </class>
+
+</library>

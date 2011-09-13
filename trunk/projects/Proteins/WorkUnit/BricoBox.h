@@ -458,4 +458,23 @@ public:
   }
 };
 
+class LSHTestWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    DefaultEnumerationPtr features = new DefaultEnumeration();
+    ContainerPtr trainingData  = binaryClassificationLibSVMDataParser(context, File::getCurrentWorkingDirectory().getChildFile(T("../../projects/Examples/Data/BinaryClassification/a1a.train")), features)->load();
+
+    FunctionPtr lsh = binaryLocalitySensitiveHashing();
+    if (!lsh->train(context, trainingData, ContainerPtr(), T("Training")))
+      return false;
+    
+    ContainerPtr testingData  = binaryClassificationLibSVMDataParser(context, File::getCurrentWorkingDirectory().getChildFile(T("../../projects/Examples/Data/BinaryClassification/a1a.test")), features)->load();
+    ScoreObjectPtr score = lsh->evaluate(context, testingData, binaryClassificationEvaluator(), T("Evaluation"));
+
+    return score;
+  }
+};
+
 };
