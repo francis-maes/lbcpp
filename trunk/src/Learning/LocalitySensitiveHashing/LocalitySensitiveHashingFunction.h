@@ -130,8 +130,8 @@ public:
     std::vector<Variable> outputs;
     for (size_t i = 0; i < randomIndices.size(); ++i)
     {
-      std::cout << input->getDistanceTo(examples[randomIndices[i]], DenseDoubleVectorPtr()) << " <= " << outerBallRadius << std::endl;
-      //if (input->getDistanceTo(examples[randomIndices[i]], DenseDoubleVectorPtr()) <= outerBallRadius)
+      //std::cout << input->getDistanceTo(examples[randomIndices[i]], DenseDoubleVectorPtr()) << " <= " << outerBallRadius << std::endl;
+      if (input->getDistanceTo(examples[randomIndices[i]], DenseDoubleVectorPtr()) <= outerBallRadius)
         outputs.push_back(supervisions[randomIndices[i]]);
     }
 
@@ -192,7 +192,7 @@ public:
   virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
     const size_t numExamples = trainingData.size();
-    double segmentWidth = 0.5f;
+    double segmentWidth = 4.f;
     double epsilon = 0.9f;
 
     double approximationFactor = 1 + epsilon;

@@ -25,7 +25,7 @@ public:
   virtual double getScoreToMinimize() const
     {return 1.0 - accuracy;}
 
-  void addPrediction(bool isCorrect)
+  virtual void addPrediction(bool isCorrect) // FIXME: remove virtual (used by ExporteDisulfidePatternScoreObject)
     {accuracyVector->push(isCorrect);}
   
   void addValidGraphPrediction(bool isValid)
