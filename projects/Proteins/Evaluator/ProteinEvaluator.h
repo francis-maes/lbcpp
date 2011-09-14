@@ -18,30 +18,6 @@
 namespace lbcpp
 {
 
-class ClassificationWriterEvaluator : public SupervisedEvaluator
-{
-public:
-  virtual TypePtr getRequiredPredictionType() const
-    {return probabilityType;}
-  
-  virtual TypePtr getRequiredSupervisionType() const
-    {return sumType(probabilityType, booleanType);}
-
-protected:
-  friend class BinaryClassificationEvaluatorClass;
-
-  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
-    {return new DummyScoreObject();}
-
-  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, const ScoreObjectPtr& result) const
-  {
-    const bool res = predictedObject.getObjectAndCast<DoubleVector>()->getIndexOfMaximumValue() == correctObject.getObjectAndCast<DoubleVector>()->getIndexOfMaximumValue();
-    OutputStream* o = context.getFile(T("bfs_dsb.bandit")).createOutputStream();        
-    *o << (res ? 1 : 0) << " ";
-    delete o;
-  }
-};
-
 class ProteinScoreObject : public ScoreObject
 {
 public:
@@ -115,7 +91,6 @@ public:
 //    addEvaluator(dsbTarget,  new DisulfidePatternEvaluator(), T("Disulfide Bonds"));
     addEvaluator(fdsbTarget,  new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6)), T("Disulfide Symmetric Bonds (Greedy L=6)"));
     addEvaluator(dsbTarget,  new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)"));
-    addEvaluator(ss3Target,  containerSupervisedEvaluator(new ClassificationWriterEvaluator()), T("Writer"));
 
     //for (double i = 0.0; i < 1.0; i += 0.05)
       //addEvaluator(fdsbTarget,  new MatrixToSymmetricMatrix(new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, i), i)), String(i) + T(" Disulfide Bonds"));

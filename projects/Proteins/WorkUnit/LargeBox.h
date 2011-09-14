@@ -430,12 +430,27 @@ protected:
   String learningMachine;
 };
 
+class ExporteDisulfidePatternScoreObject : public DisulfidePatternScoreObject
+{
+public:
+  ExporteDisulfidePatternScoreObject(OutputStream* o) : o(o) {}
+
+  virtual void addPrediction(bool isCorrect)
+  {
+    DisulfidePatternScoreObject::addPrediction(isCorrect);
+    *o << " " << (isCorrect ? 1 : 0);
+  }
+
+private:
+  OutputStream* o;
+};
+
 class ExportPredictionWorkUnit : public WorkUnit
 {
 public:
   virtual Variable run(ExecutionContext& context)
   {
-    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinDirectory), 0, T("Loading proteins"));
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinDirectory), 0, T("Loading proteins"))->randomize();
 
     OutputStream* o = context.getFile(T("bfs_dsb.bandit")).createOutputStream();
 
@@ -450,7 +465,7 @@ public:
         const Variable value = stream->next();
         //std::cout << lin09ParametersClass->getMemberVariableName(i) << std::endl;
         *o << lin09ParametersClass->getMemberVariableName(i) << "[" << value.toString() << "]";
-
+        std::cout << lin09ParametersClass->getMemberVariableName(i) << "[" << value.toString() << "] - ";
         ObjectPtr candidate = baseObject->clone(context);
         candidate->setVariable(i, value);
 
@@ -468,7 +483,7 @@ protected:
   friend class ExportPredictionWorkUnitClass;
 
   String proteinDirectory;
-
+  
   void exportPredictionOfCandidate(ExecutionContext& context, const ObjectPtr& obj, const ContainerPtr& proteins, OutputStream* const o) const
   {
     Lin09PredictorParametersPtr predictorParameters = new Lin09PredictorParameters(obj.staticCast<Lin09Parameters>());
@@ -488,18 +503,35 @@ protected:
       const size_t dimension = featuresVector->getDimension();
       for (size_t j = 0; j < dimension; ++j)
         for (size_t k = j + 1; k < dimension; ++k)
-        {
           examples->append(new Pair(featuresVector->getElement(j,k), supervision->getElement(j,k)));
-          //std::cout << "[" << supervision->getElement(j,k).toString() << "]: " << featuresVector->getElement(j,k).toString() << std::endl;
-        }
     }
 
-    ContainerPtr randomizedExamples = examples->randomize();
-
     FunctionPtr knnFunction = binaryNearestNeighbor(5, true, false);
-    if (!knnFunction->train(context, randomizedExamples))
+    if (!knnFunction->train(context, examples))
       jassertfalse;
+    
+    EvaluatorPtr eval = new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0);
+    ScoreObjectPtr score = new ExporteDisulfidePatternScoreObject(o);
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable perception = proteinPerception->compute(context, proteins->getElement(i).getObjectAndCast<Pair>()->getFirst());
+      SymmetricMatrixPtr featuresVector = disulfideFunction->compute(context, perception).getObjectAndCast<SymmetricMatrix>();
+      SymmetricMatrixPtr supervision = proteins->getElement(i).getObjectAndCast<Pair>()->getSecond().getObjectAndCast<Protein>()->getDisulfideBonds(context);
 
+      const size_t dimension = featuresVector->getDimension();
+      SymmetricMatrixPtr prediction = symmetricMatrix(probabilityType, dimension);
+      for (size_t j = 0; j < dimension; ++j)
+        for (size_t k = j + 1; k < dimension; ++k)
+        {
+          Variable value = knnFunction->compute(context, featuresVector->getElement(j,k), Variable());
+          prediction->setElement(j, k, value);
+        }
+      eval->updateScoreObject(context, score, new Pair(featuresVector, supervision), prediction);
+    }
+    eval->finalizeScoreObject(score, FunctionPtr());
+    std::cout << "Score: " << score->getScoreToMinimize() << std::endl;
+/*
+    ContainerPtr randomizedExamples = examples->randomize();
     const size_t m = randomizedExamples->getNumElements();
     for (size_t i = 0; i < m; ++i)
     {
@@ -508,6 +540,7 @@ protected:
                   == randomizedExamples->getElement(i).getObjectAndCast<Pair>()->getSecond().getDouble() > 0.5;
       *o << " " << (res ? 1 : 0);
     }
+*/
   }
 };
 
