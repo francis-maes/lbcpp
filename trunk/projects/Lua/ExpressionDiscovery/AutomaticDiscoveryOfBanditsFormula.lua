@@ -12,11 +12,11 @@ require 'Random'
 local minK = 2
 local maxK = 10
 local maxRewardExpectation = 1
-local numBanditProblems = 10
-local horizon = 1000
+local numBanditProblems = 1000
+local horizon = 10
 
-local nestedMCLevel = 1
-local maxFormulaSize = 20
+local nestedMCLevel = 2
+local maxFormulaSize = 12
 
 local bestFormulaScore = math.huge
 local bestFormulaString
@@ -83,11 +83,37 @@ function makeBanditObjective(minArms, maxArms, numProblems, numEstimationsPerPro
 
 end
 
+--------
+local _sqrt = math.sqrt
+local _log = math.log
+
+function math.inverse(x) return 1.0 / x end
+
+function math.sqrt(x)
+  if x < 0 then
+    return -math.huge
+  else
+    return _sqrt(x)
+  end
+end
+
+function math.log(x)
+  if x < 0 then
+    return -math.huge
+  else
+    return _log(x)
+  end
+end
+--------
 
 local banditsScoreCache = {}
 
 local formulaDiscoveryProblem = DecisionProblem.ReversePolishNotation{
   variables = {"rk", "sk", "tk", "t"},
+  unaryOperations = {"unm"},
+  unaryFunctions = {"math.inverse","math.sqrt", "math.log"},
+  binaryOperations = {"add", "sub", "mul", "div"},
+  binaryFunctions = {"math.max", "math.min"},
   constants = {1,2,3,5,7},
   objective = cacheObjectiveFunction(makeBanditObjective(minK, maxK, numBanditProblems, 1, horizon), banditsScoreCache),
   maxSize = maxFormulaSize
