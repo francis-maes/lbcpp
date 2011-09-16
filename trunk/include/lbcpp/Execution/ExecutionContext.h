@@ -135,7 +135,7 @@ extern ExecutionContextPtr distributedExecutionContext(ExecutionContext& parentC
 class ResourceEstimator : public Object
 {
 public:
-  virtual size_t getRequiredMemoryInGb(const WorkUnitPtr& workUnit) const = 0;
+  virtual size_t getRequiredMemoryInMb(const WorkUnitPtr& workUnit) const = 0;
   virtual size_t getRequiredTimeInHours(const WorkUnitPtr& workUnit) const = 0;
   virtual size_t getNumRequiredCpus(const WorkUnitPtr& workUnit) const = 0;
 };
