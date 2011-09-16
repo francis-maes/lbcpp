@@ -246,8 +246,8 @@ extern FunctionPtr concatenateContainerFunction();
 class LuaFunction : public Function
 {
 public:
-  LuaFunction(LuaState& state, int functionReference, const std::vector<TypePtr>& inputTypes, TypePtr outputType);
-  LuaFunction() : state(*(LuaState* )0) {}
+  LuaFunction(lua_State* L, int functionReference, const std::vector<TypePtr>& inputTypes, TypePtr outputType);
+  LuaFunction() : L(NULL) {}
   virtual ~LuaFunction();
 
   static int create(LuaState& state);
@@ -261,7 +261,7 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  LuaState& state;
+  lua_State* L;
   int functionReference;
   std::vector<TypePtr> inputTypes;
   TypePtr outputType;

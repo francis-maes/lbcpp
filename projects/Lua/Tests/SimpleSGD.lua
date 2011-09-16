@@ -15,12 +15,13 @@ require 'Evaluator'
 --  end
 --end
 
+local dataset = "/Users/francis/Desktop/datasets/australian_scale.all.0.5"
 
-local trainFilename = package.inteluaPath .. "/../../Examples/Data/BinaryClassification/a1a.train"
-local testFilename = package.inteluaPath .. "/../../Examples/Data/BinaryClassification/a1a.test"
+local trainFilename = dataset .. ".train"
+local testFilename = dataset .. ".test"
 local labels = Dictionary.new()
-local trainExamples = Data.load(Parser.libSVMClassification, 1000, trainFilename, labels)
-local testExamples = Data.load(Parser.libSVMClassification, 1000, testFilename, labels)
+local trainExamples = Data.load(Parser.libSVMClassification, 0, trainFilename, labels)
+local testExamples = Data.load(Parser.libSVMClassification, 0, testFilename, labels)
 local function makeFolds(examples, numFolds)
   local res = {}
 
@@ -44,7 +45,7 @@ local function makeFolds(examples, numFolds)
 end
 folds = makeFolds(trainExamples, 5)
 
-print (#trainExamples .. " training examples, " .. #testExamples .. " testing examples " .. #labels .. " labels")
+print (#trainExamples .. " training examples, " .. #testExamples .. " testing examples " .. labels:size() .. " labels")
 
 local classifier = Predictor.LinearBinaryClassifier{}
 
@@ -80,7 +81,7 @@ local function evaluateUpdateRuleFold(updateRule, trainExamples, validationExamp
     principalScore = "Validation score"
   }
 
-  sgd = Optimizer.StochasticGradientDescent{maxIterations=1,restoreBestParameters=false}
+  sgd = Optimizer.StochasticGradientDescent{maxIterations=2,restoreBestParameters=false}
 
   solution, score = sgd(problem)
   
@@ -100,8 +101,10 @@ local function evaluateUpdateRule(updateRule, folds, trainExamples, testExamples
   end
   local cvScore = scores:getMean()
   local testScore = context:call("Test", evaluateUpdateRuleFold, updateRule, trainExamples, testExamples)
+  context:result("cvScore", cvScore)
+  context:result("testScore", testScore)
   print ("CVScore: " .. cvScore .. ", Test Score: " .. testScore)
-  return cvScore
+  return cvScore, testScore
 end
 
 local function updateRuleObjective(updateRule)
@@ -115,14 +118,37 @@ end
 
 local function optimizeUpdateRule(numParameters, functor)
 
-  local objective = |parameters| 1.0 - updateRuleObjective(functor(parameters))
+  local evaluations = {}
+
+  local objective = function (parameters)
+    local cvScore, testScore = updateRuleObjective(functor(parameters))
+    table.insert(evaluations, {parameters, cvScore, testScore})
+    return - cvScore
+  end
 
   objective = lbcpp.LuaFunction.create(objective, "DenseDoubleVector<EnumValue,Double>", "Double")
   local optimizer = Optimizer.CMAES{numIterations=10}
   local score,solution = optimizer{objective = objective, initialGuess = Vector.newDense(numParameters)}
   print ("score", score, "solution", solution)
   local updateRule = functor(solution)
-  return context:call("Test", evaluateUpdateRuleFold, updateRule, trainExamples, testExamples)
+  local res = context:call("Test", evaluateUpdateRuleFold, updateRule, trainExamples, testExamples)
+
+  local function makeEvalutionsCurve()
+    for i,e in ipairs(evaluations) do
+      context:enter("Evaluation " .. i)
+      context:result("evaluation", i)
+      local parameters = e[1]
+      for index=1,#parameters do
+        context:result("parameter " .. index, parameters[index])
+      end
+      context:result("cvScore", e[2])
+      context:result("testScore", e[3])
+      context:leave()
+    end
+  end
+  context:call("Evaluations", makeEvalutionsCurve)
+
+  return res
 end
 
 
@@ -154,9 +180,7 @@ subspecified function Simple0(score, epoch, supervision)
   parameter parameters={}
   local a = parameters[1]
   local b = parameters[2]
-  local c = parameters[3]
-  local ds = 2 / (1 + math.exp(-score)) - 1
-  return a * ds * ds + b * ds + c
+  return b / (1 + math.exp(a * score))
 end
 
 
@@ -166,14 +190,12 @@ subspecified function Simple1(score, epoch, supervision)
   local a = parameters[2]
   local b = parameters[3]
   local c = parameters[4]
-  local e = parameters[5]
-  local f = parameters[6]
-  local g = parameters[7]
+  local d = parameters[5]
   local ds = 1 / (1 + math.exp(score - threshold))
   if ds > 0.5 then
-    return a * ds * ds + b * ds + c
+    return a * ds + b
   else
-    return e * ds * ds + f * ds + g
+    return c * ds + d
   end
 end
 
@@ -181,11 +203,31 @@ subspecified function Simple2(score, epoch, supervision)
   parameter parameters={}
   local normalized = 1 / (1 + math.exp(-score))
   --print (score, "=>", math.floor(normalized * 10), "=>", parameters[1 + math.floor(normalized * 10)])
-  return parameters[1 + math.floor(normalized * 10)]
+  return parameters[1 + math.floor(normalized * 5)]
 end
 
-context:call("optimize constant", optimizeUpdateRule, 1, constantRateWithHingeLossFunctor)
-context:call("optimize invlinear", optimizeUpdateRule, 2, invLinearRateWithHingeLossFunctor)
-context:call("optimize simple0", optimizeUpdateRule, 3, |p| Simple0{parameters=p})
-context:call("optimize simple1", optimizeUpdateRule, 7, |p| Simple1{parameters=p})
-context:call("optimize simple2", optimizeUpdateRule, 10, |p| Simple2{parameters=p})
+--context:call("optimize constant", optimizeUpdateRule, 1, constantRateWithHingeLossFunctor)
+--context:call("optimize invlinear", optimizeUpdateRule, 2, invLinearRateWithHingeLossFunctor)
+--context:call("optimize simple0", optimizeUpdateRule, 2, |p| Simple0{parameters=p})
+--context:call("optimize simple1", optimizeUpdateRule, 5, |p| Simple1{parameters=p})
+context:call("optimize simple2", optimizeUpdateRule, 5, |p| Simple2{parameters=p})
+
+----------------
+
+local function makeCurves(numParameters, functor)
+
+
+  local objective = |parameters| 1.0 - updateRuleObjective(functor(parameters))
+
+  local parameters = Vector.newDense(numParameters)
+
+  for k=-5,5,0.1 do
+    context:enter("k=" .. k)
+    context:result("k", k)
+    parameters[1] = k
+    context:result("y", objective(parameters))
+    context:leave()
+  end
+end
+
+--context:call("optimize invlinear", makeCurves, 11, |p| Simple2{parameters=p})

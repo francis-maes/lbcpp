@@ -377,8 +377,8 @@ int Function::__call(LuaState& state)
 /*
 ** LuaFunction
 */
-LuaFunction::LuaFunction(LuaState& state, int functionReference, const std::vector<TypePtr>& inputTypes, TypePtr outputType)
-  : state(state), functionReference(functionReference), inputTypes(inputTypes), outputType(outputType)
+LuaFunction::LuaFunction(lua_State* L, int functionReference, const std::vector<TypePtr>& inputTypes, TypePtr outputType)
+  : L(L), functionReference(functionReference), inputTypes(inputTypes), outputType(outputType)
 {
 }
 
@@ -430,6 +430,8 @@ int LuaFunction::create(LuaState& state)
 
 Variable LuaFunction::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
+  LuaState state(L);
+
   size_t n = getNumInputs();
   state.pushReference(functionReference);
   for (size_t i = 0; i < n; ++i)

@@ -49,6 +49,8 @@ static int objectGarbageCollect(lua_State* L)
 LuaState::LuaState(ExecutionContext& context, bool initializeLuaLibraries, bool initializeLBCppLibrary, bool verbose)
   : owned(true)
 {
+std::cout << "LuaState::create " << this << std::endl;
+
   if (verbose) context.enterScope("Lua Open");
   L = lua_open();
   if (verbose) context.leaveScope(true);
@@ -93,7 +95,9 @@ LuaState::LuaState(ExecutionContext& context, bool initializeLuaLibraries, bool 
 }
 
 LuaState::LuaState(lua_State* L)
-  : L(L), owned(false) {}
+  : L(L), owned(false) 
+  {
+  }
 
 LuaState::~LuaState()
 {
