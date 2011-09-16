@@ -39,7 +39,7 @@ InteluaInterpreter::InteluaInterpreter(ExecutionContext& context, const File& in
     String initializeCode = 
       "package.path = '" + baseDirectory + "/?.lua;' .. package.path\n"
       "require 'InteluaCore'\n"
-      "package.inteluaPath = " + inteluaDirectory.getFullPathName().quoted() + "\n";
+      "package.inteluaPath = " + lua::LiteralString(inteluaDirectory.getFullPathName()).print() + "\n";
     lua.execute(initializeCode, "initializeCode");
 
     lua.pushObject(ObjectPtr(this));

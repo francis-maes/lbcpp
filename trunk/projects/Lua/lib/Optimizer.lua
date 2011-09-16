@@ -5,6 +5,7 @@ require 'Vector'
 require 'Statistics'
 require 'IterationFunction'
 require 'StoppingCriterion'
+require 'Stochastic'
 
 Optimizer = {}
 
@@ -16,6 +17,7 @@ function Optimizer.CMAES(params)
   end
   return res
 end
+
 
 
 --problem = {
@@ -33,23 +35,24 @@ subspecified function Optimizer.StochasticGradientDescent(problem)
   parameter rate = {default = IterationFunction.constant{1}}
   parameter stoppingCriterion = {default = nil}
   parameter maxIterations = {default = 0, min = 0}
-  parameter restoreBestParameters = {default = true}
+  parameter restoreBestParameters = {default = false}
+  parameter randomizeSamples = {default = true}
 
   local parameters = problem.initialSolution
   assert(parameters)
   local iter = 1
   local epoch = 1
 
-  local validationScore = math.huge
-  local bestPrincipalScore = math.huge
+  local principalScore = -math.huge
+  local bestPrincipalScore = -math.huge
   local bestParameters = parameters
 
   local function iteration()
     local scoreStats = Statistics.mean()
+    local order = randomizeSamples and Stochastic.uniformOrder(problem.numSamples)
     for i=1,problem.numSamples do
-      local index = i -- todo: randomize examples
-      
-      local score, gradient = problem.objective(index, parameters)
+      local index = order and order[i] or i
+      local score, gradient = problem.objective(index, parameters, epoch)
       --print (score,gradient)
       scoreStats:observe(score)
       if gradient then
@@ -69,12 +72,12 @@ subspecified function Optimizer.StochasticGradientDescent(problem)
     context:result("rate", rate(epoch))
     context:result("epoch", epoch)
 
-    local principalScore
     for scoreName,scoreFunction in pairs(problem.scores) do
       local score = scoreFunction(parameters)
       context:result(scoreName, score)
       if scoreName == problem.principalScore then
         principalScore = score
+          print ("principal score", principalScore)
       end
     end
     if restoreBestParameters then
@@ -99,9 +102,10 @@ subspecified function Optimizer.StochasticGradientDescent(problem)
 
   if restoreBestParameters then
     parameters = bestParameters
-    validationScore = bestValidationScore
+    principalScore = bestPrincipalScore
+    print ("Restoring best parameters with score ", principalScore)
   end
-  return parameters, validationScore
+  return parameters, principalScore
 end
 
 subspecified function Optimizer.EstimationOfDistributionAlgorithm(objective, sampler)
