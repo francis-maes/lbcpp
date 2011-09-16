@@ -269,7 +269,7 @@ protected:
   bool sendWorkUnit(const WorkUnitPtr& workUnit, const WorkUnitPoolPtr& pool, size_t poolIndex)
   {
     size_t requiredCpus = resourceEstimator->getNumRequiredCpus(workUnit);
-    size_t requiredMemory = resourceEstimator->getRequiredMemoryInGb(workUnit);
+    size_t requiredMemory = resourceEstimator->getRequiredMemoryInMb(workUnit);
     size_t requiredTime = resourceEstimator->getRequiredTimeInHours(workUnit);
 
     ScopedLock _(lock);
@@ -322,7 +322,7 @@ public:
   FixedResourceEstimator(size_t requiredMemory = 1, size_t requiredTime = 1, size_t requiredCpus = 1)
     : requiredMemory(requiredMemory), requiredTime(requiredTime), requiredCpus(requiredCpus) {}
 
-  virtual size_t getRequiredMemoryInGb(const WorkUnitPtr& workUnit) const
+  virtual size_t getRequiredMemoryInMb(const WorkUnitPtr& workUnit) const
     {return requiredMemory;}
 
   virtual size_t getRequiredTimeInHours(const WorkUnitPtr& workUnit) const
