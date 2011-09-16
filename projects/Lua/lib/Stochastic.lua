@@ -111,4 +111,31 @@ function Stochastic.bernoulli:expectation(p)
   return p
 end
 
+--
+-- UniformOrder
+--
+Stochastic.uniformOrder = Stochastic.new({})
+
+function Stochastic.uniformOrder:sample(n)
+  local function shuffle(t)
+    local n = #t
+  
+    while n >= 2 do
+      -- n is now the last pertinent index
+      local k = Stochastic.uniformInteger(1,n)
+      -- Quick swap
+      t[n], t[k] = t[k], t[n]
+      n = n - 1
+    end
+  
+    return t
+  end
+  local res = {}
+  for i=1,n do table.insert(res, i) end
+  return shuffle(res)
+end
+
+--
+--
+--
 return Stochastic
