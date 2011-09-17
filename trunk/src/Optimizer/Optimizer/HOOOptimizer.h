@@ -85,24 +85,27 @@ protected:
 class HOOOptimizerState : public OptimizerState
 {
 public:
-  HOOOptimizerState(OptimizationProblemPtr problem, double nu, double rho, size_t numIterations)
-    : problem(problem), nu(nu), rho(rho), numIterations(numIterations), numIterationsDone(0)
+  HOOOptimizerState(OptimizationProblemPtr problem, double nu, double rho, size_t numIterations, size_t maxDepth)
+    : problem(problem), nu(nu), rho(rho), numIterations(numIterations), maxDepth(maxDepth), numIterationsDone(0)
   {
     MeasurableRegionPtr region;
     TypePtr inputType = problem->getSolutionsType();
     if (inputType->inheritsFrom(doubleType))
-      region = new ScalarMeasurableRegion(-1, 1);
+      region = new ScalarMeasurableRegion(0.0, 1.0);
     else if (inputType->inheritsFrom(denseDoubleVectorClass()))
     {
-      DenseDoubleVectorPtr minValues = new DenseDoubleVector(inputType, (size_t)-1, -1.0);
-      DenseDoubleVectorPtr maxValues = new DenseDoubleVector(inputType, (size_t)-1, 1.0);
+      DenseDoubleVectorPtr initial = problem->getInitialGuess().getObjectAndCast<DenseDoubleVector>();
+      jassert(initial);
+      DenseDoubleVectorPtr minValues = new DenseDoubleVector(inputType, initial->getNumValues(), 0.0);
+      DenseDoubleVectorPtr maxValues = new DenseDoubleVector(inputType, initial->getNumValues(), 1.0);
       region = new VectorialMeasurableRegion(minValues, maxValues);
     }
     jassert(region);
 
     root = new Node(region);
     logNumIterations = log((double)numIterations);
-    maxDepth = ceil((logNumIterations / 2 - log(1.0 / nu)) / log(1 / rho));
+    if (!maxDepth)
+      maxDepth = ceil((logNumIterations / 2 - log(1.0 / nu)) / log(1 / rho));
   }
 
   HOOOptimizerState() {}
@@ -286,7 +289,7 @@ public:
   }
 
   virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, OptimizationProblemPtr problem) const
-    {return new HOOOptimizerState(problem, nu, rho, numIterations);}
+    {return new HOOOptimizerState(problem, nu, rho, numIterations, maxDepth);}
 
 protected:
   friend class HOOOptimizerClass;
@@ -294,6 +297,7 @@ protected:
   size_t numIterations;
   double nu;  // > 0
   double rho; // [0,1]
+  size_t maxDepth;
 };
 
 };/* namespace lbcpp */
