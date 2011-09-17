@@ -66,6 +66,7 @@
     <variable type="PositiveInteger" name="numIterations"/>
     <variable type="Double" name="nu"/>
     <variable type="Double" name="rho"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
   </class>
 
 </library>

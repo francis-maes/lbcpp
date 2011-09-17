@@ -1,3 +1,4 @@
+* LearningUpdateRuleLearning: version bandits et HOO
 
 Formula Optimization:
  * Lancer un gros DistributedEC avec ces formules 
