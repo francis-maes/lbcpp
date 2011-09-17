@@ -219,6 +219,14 @@ int DoubleVector::add(LuaState& state)
   return 0;
 }
 
+int DoubleVector::mul(LuaState& state)
+{
+  DoubleVectorPtr vector = state.checkObject(1, doubleVectorClass()).staticCast<DoubleVector>();
+  double weight = state.checkNumber(2);
+  vector->multiplyByScalar(weight);
+  return 0;
+}
+
 int DoubleVector::l0norm(LuaState& state)
 {
   DoubleVectorPtr vector = state.checkObject(1, doubleVectorClass()).staticCast<DoubleVector>();
