@@ -239,15 +239,9 @@ public:
   BestFirstSearchOptimizer(const std::vector<StreamPtr>& streams, const File& optimizerStateFile)
     : Optimizer(optimizerStateFile), streams(streams) {}
 
-  virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context) const
-    {return new StreamBasedOptimizerState(context, streams);}
-
-  virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
+  virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, OptimizationProblemPtr problem) const
   {
-    const FunctionPtr& objectiveFunction = problem->getObjective();
-    StreamBasedOptimizerStatePtr state = optimizerState.staticCast<StreamBasedOptimizerState>();
-    jassert(state);
-
+    StreamBasedOptimizerStatePtr state = new StreamBasedOptimizerState(context, streams);
     state->submitSolution(problem->getInitialGuess(), DBL_MAX); // default solution
 
      // Types checking
@@ -260,6 +254,15 @@ public:
     for (size_t i = 0; i < state->getNumStreams(); ++i)
       if (state->getStream(i))
         context.checkInheritance(state->getStream(i)->getElementsType(), initialGuess->getVariableType(i));
+
+    return state;
+  }
+
+  virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
+  {
+    const FunctionPtr& objectiveFunction = problem->getObjective();
+    StreamBasedOptimizerStatePtr state = optimizerState.staticCast<StreamBasedOptimizerState>();
+    jassert(state);
 
     const double missingValue = Variable::missingValue(doubleType).getDouble();
 

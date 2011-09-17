@@ -55,14 +55,7 @@ protected:
 class CMAOptimizerState : public OptimizerState
 {
 public:
-  CMAOptimizerState() : fitness(NULL) {}
-  virtual ~CMAOptimizerState()
-  {
-    if (fitness)
-      delete fitness;
-  }
-
-  void initialize(ExecutionContext& context, const OptimizationProblemPtr& problem)
+  CMAOptimizerState(ExecutionContext& context, const OptimizationProblemPtr& problem) : fitness(NULL)
   {
     this->problem = problem;
     this->initialGuess = problem->getInitialGuess().getObjectAndCast<DenseDoubleVector>();
@@ -73,13 +66,16 @@ public:
     memcpy(start.elemvec(), initialGuess->getValuePointer(0), sizeof (double) * n);
     cma.init(*fitness, start, 1.0);
   }
+  CMAOptimizerState() {}
 
-  bool isInitialized() const
-    {return fitness != NULL;}
+  virtual ~CMAOptimizerState()
+  {
+    if (fitness)
+      delete fitness;
+  }
 
   Variable doIteration(ExecutionContext& context, size_t iteration)
   {
-    jassert(isInitialized());
     cma.run();
 
     double bestIterationScore = cma.bestSolutionFitness();
@@ -108,27 +104,19 @@ public:
   CMAESOptimizer() : numIterations(0) {}
 
   virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
-  {
-    FunctionPtr objectiveFunction = problem->getObjective();
-    DenseDoubleVectorPtr initialGuess = problem->getInitialGuess().getObjectAndCast<DenseDoubleVector>();
-    
+  {   
     CMAOptimizerStatePtr cmaState = optimizerState.staticCast<CMAOptimizerState>();
-    
-    if (!cmaState->isInitialized())
-      cmaState->initialize(context, problem);
-   
     for (size_t i = 0; i < numIterations; ++i)
     {
       context.enterScope("Iteration " + String((int)i+1));
       Variable res = cmaState->doIteration(context, i);
       context.leaveScope(res);
     }
-
     return cmaState;
   }
 
-  virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context) const
-    {return new CMAOptimizerState();}
+  virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, OptimizationProblemPtr problem) const
+    {return new CMAOptimizerState(context, problem);}
 
 protected:
   friend class CMAESOptimizerClass;

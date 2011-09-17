@@ -203,8 +203,8 @@ public:
     double innerProb = ballProbability(segmentWidth);
     double outerProb = ballProbability(segmentWidth, approximationFactor);
 
-    size_t numHashFunctions = (size_t)ceil(log(numExamples) / log(1 / outerProb));
-    size_t numBuckets = (size_t)ceil(pow(numExamples, log(1 / innerProb) / log(1 / outerProb)));
+    size_t numHashFunctions = (size_t)ceil(log((double)numExamples) / log(1.0 / outerProb));
+    size_t numBuckets = (size_t)ceil(pow((double)numExamples, log(1.0 / innerProb) / log(1.0 / outerProb)));
 
     if (numExamples == 0)
     {

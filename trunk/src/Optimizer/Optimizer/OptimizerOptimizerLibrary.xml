@@ -53,6 +53,19 @@
     <constructor arguments="size_t numIterations"/>
     <variable type="PositiveInteger" name="numIterations"/>
   </class>
+  
+  <!-- HOO -->
+  <class name="MeasurableRegion" abstract="yes"/>
+  <class name="ScalarMeasurableRegion" base="MeasurableRegion"/>
+  <class name="VectorialMeasurableRegion" base="MeasurableRegion"/>
 
+  <class name="HOOOptimizerState" base="OptimizerState"/>
+
+  <class name="HOOOptimizer" base="Optimizer">
+    <constructor arguments="size_t numIterations, double nu, double rho"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="Double" name="nu"/>
+    <variable type="Double" name="rho"/>
+  </class>
 
 </library>
