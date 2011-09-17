@@ -73,6 +73,47 @@ local function evaluateUpdateRuleFold(updateRule, trainExamples, validationExamp
     return Evaluator.accuracy(Predictor.LinearBinaryClassifier{theta=parameters}, validationExamples)
   end
 
+  local numIterations=100
+  local parameters = Vector.newDense()
+--  local gradients = {}
+
+  local function doIteration(iteration)
+    context:result("iteration", iteration)
+
+    local gradient = Vector.newDense()
+    for i,example in ipairs(trainExamples) do
+      local x = example[1]
+      local supervision = example[2]
+      local prediction = parameters:dot(x)
+      local sign = supervision == 2 and 1 or -1
+      local score = prediction * sign
+      local dloss = updateRule(score, iteration, supervision)
+      gradient:add(x, sign * dloss)
+    end
+   -- table.insert(gradients, gradient, 1)
+    
+    parameters:add(gradient, 1.0)
+    parameters:mul(0.9)
+    --local l2norm = parameters:l2norm()
+    --if l2norm > 1 then
+    --  parameters:mul(1 / l2norm)
+    --end
+    local validationScore = validationAccuracyFunction(parameters)
+    context:result("validation score", validationScore)
+    context:result("parameters l2norm", parameters:l2norm())
+    context:result("gradient l2norm", gradient:l2norm())
+    context:result("gradient", gradient)
+    context:result("parameters", parameters:clone())
+    return validationScore
+  end
+
+  local score
+  for iteration=1,numIterations do
+    score = context:call("Iteration " .. iteration, doIteration, iteration)
+  end    
+  return score
+
+--[[
   local problem = {
     initialSolution = Vector.newDense(),
     numSamples = #trainExamples,
@@ -84,8 +125,8 @@ local function evaluateUpdateRuleFold(updateRule, trainExamples, validationExamp
   sgd = Optimizer.StochasticGradientDescent{maxIterations=2,restoreBestParameters=false}
 
   solution, score = sgd(problem)
-  
   return score
+  ]]
 end
 
 local function evaluateUpdateRule(updateRule, folds, trainExamples, testExamples)
@@ -111,7 +152,6 @@ local function updateRuleObjective(updateRule)
   return evaluateUpdateRule(updateRule, folds, trainExamples, testExamples)
 end
 
---context:call("constant rate 1", evaluateUpdateRule, ConstantRateWithHingeLoss{rate=0.0}, folds, trainExamples, testExamples)
 --context:call("constant rate 10", evaluateUpdateRule, ConstantRateWithHingeLoss{rate=1.0}, folds, trainExamples, testExamples)
 --context:call("constant rate 0.1", evaluateUpdateRule, ConstantRateWithHingeLoss{rate=-1.0}, folds, trainExamples, testExamples)
 --context:call("invlinear", evaluateUpdateRule, InvLinearRateWithHingeLoss{initialValue=0.0, halfPeriod=2}, folds, trainExamples, testExamples)
@@ -206,11 +246,17 @@ subspecified function Simple2(score, epoch, supervision)
   return parameters[1 + math.floor(normalized * 5)]
 end
 
---context:call("optimize constant", optimizeUpdateRule, 1, constantRateWithHingeLossFunctor)
---context:call("optimize invlinear", optimizeUpdateRule, 2, invLinearRateWithHingeLossFunctor)
---context:call("optimize simple0", optimizeUpdateRule, 2, |p| Simple0{parameters=p})
---context:call("optimize simple1", optimizeUpdateRule, 5, |p| Simple1{parameters=p})
-context:call("optimize simple2", optimizeUpdateRule, 5, |p| Simple2{parameters=p})
+context:call("constant rate 0.1", updateRuleObjective, ConstantRateWithHingeLoss{rate=-1})
+context:call("constant rate 0.01", updateRuleObjective, ConstantRateWithHingeLoss{rate=-2})
+context:call("constant rate 0.001", updateRuleObjective, ConstantRateWithHingeLoss{rate=-3})
+
+--[[
+context:call("optimize constant", optimizeUpdateRule, 1, constantRateWithHingeLossFunctor)
+context:call("optimize invlinear", optimizeUpdateRule, 2, invLinearRateWithHingeLossFunctor)
+context:call("optimize simple0", optimizeUpdateRule, 2, |p| Simple0{parameters=p})
+context:call("optimize simple1", optimizeUpdateRule, 5, |p| Simple1{parameters=p})
+context:call("optimize simple2", optimizeUpdateRule, 6, |p| Simple2{parameters=p})
+--]]
 
 ----------------
 

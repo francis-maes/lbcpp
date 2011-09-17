@@ -96,6 +96,7 @@ public:
   */
   static int dot(LuaState& state);
   static int add(LuaState& state);
+  static int mul(LuaState& state);
   static int l0norm(LuaState& state);
   static int l1norm(LuaState& state);
   static int l2norm(LuaState& state);

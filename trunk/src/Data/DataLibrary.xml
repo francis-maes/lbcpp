@@ -61,6 +61,7 @@
     <parameter name="elementsType" type="Double"/>
 
     <function lang="lua" name="add"/>
+    <function lang="lua" name="mul"/>
     <function lang="lua" name="dot"/>
     <function lang="lua" name="l0norm"/>
     <function lang="lua" name="l1norm"/>
