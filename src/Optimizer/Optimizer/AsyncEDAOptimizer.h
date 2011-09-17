@@ -18,6 +18,9 @@ namespace lbcpp
 class AsyncSamplerBasedOptimizerState : public SamplerBasedOptimizerState, public ExecutionContextCallback
 {
 public:
+  AsyncSamplerBasedOptimizerState(OptimizationProblemPtr problem)
+    : SamplerBasedOptimizerState(problem->getSampler()) {}
+
   /* ExecutionContextCallback */
   virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
   {
@@ -63,8 +66,8 @@ public:
     : PopulationBasedOptimizer(numIterations, populationSize, numBests, stoppingCriterion, slowingFactor, reinjectBest, verbose)
     {}
 
-  virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context) const
-    {return new AsyncSamplerBasedOptimizerState();}
+  virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, OptimizationProblemPtr problem) const
+    {return new AsyncSamplerBasedOptimizerState(problem);}
 
   virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {
@@ -72,8 +75,6 @@ public:
     const SamplerPtr& initialSampler = problem->getSampler();
     AsyncSamplerBasedOptimizerStatePtr state = optimizerState.staticCast<AsyncSamplerBasedOptimizerState>();
     jassert(state);
-    if (!state->getSampler())
-      state->setSampler(initialSampler);
 
     bool isInitialized = false;
     for (size_t i = state->getNumIterations(); i < numIterations; ++i)

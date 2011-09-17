@@ -18,6 +18,14 @@ function Optimizer.CMAES(params)
   return res
 end
 
+function Optimizer.HOO(params)
+  local res = lbcpp.Object.create("HOOOptimizer")
+  for k,v in pairs(params) do
+    res[k] = v
+  end
+  return res
+end
+
 
 
 --problem = {

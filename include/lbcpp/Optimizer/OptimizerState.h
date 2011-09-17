@@ -22,6 +22,9 @@ public:
     : objective(objective), initialGuess(initialGuess), sampler(sampler), validation(validation) {}
   OptimizationProblem() {}
 
+  TypePtr getSolutionsType() const
+    {return objective->getRequiredInputType(0, 1);}
+
   const FunctionPtr& getObjective() const
     {return objective;}
     

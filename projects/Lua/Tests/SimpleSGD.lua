@@ -4,10 +4,9 @@ require 'Parser'
 require 'Data'
 require 'Statistics'
 require 'IterationFunction'
-require 'Loss'
 require 'Predictor'
-require 'Optimizer'
 require 'Evaluator'
+require 'Optimizer'
 
 --for k,v in ipairs(examples) do 
 --  for k2,v2 in ipairs(v) do
@@ -15,7 +14,8 @@ require 'Evaluator'
 --  end
 --end
 
-local dataset = "/Users/francis/Desktop/datasets/australian_scale.all.0.5"
+local directory = "C:\\Projets\\lbcpp\\workspace\\ClassificationTests\\datasets"
+local dataset = directory .. "/australian_scale.all.0.5"
 
 local trainFilename = dataset .. ".train"
 local testFilename = dataset .. ".test"
@@ -62,7 +62,6 @@ local function makeObjectiveFunction(updateRule)
   end
 end
 
-
 local function evaluateUpdateRuleFold(updateRule, trainExamples, validationExamples)
 
   local function trainAccuracyFunction(parameters)
@@ -73,9 +72,9 @@ local function evaluateUpdateRuleFold(updateRule, trainExamples, validationExamp
     return Evaluator.accuracy(Predictor.LinearBinaryClassifier{theta=parameters}, validationExamples)
   end
 
-  local numIterations=100
+  local numIterations=25
   local parameters = Vector.newDense()
---  local gradients = {}
+  local gradients = {}
 
   local function doIteration(iteration)
     context:result("iteration", iteration)
@@ -87,13 +86,12 @@ local function evaluateUpdateRuleFold(updateRule, trainExamples, validationExamp
       local prediction = parameters:dot(x)
       local sign = supervision == 2 and 1 or -1
       local score = prediction * sign
-      local dloss = updateRule(score, iteration, supervision)
+      local dloss = updateRule.lossGradient(score, supervision)
       gradient:add(x, sign * dloss)
     end
-   -- table.insert(gradients, gradient, 1)
+    table.insert(gradients, 1, gradient)
+    updateRule.update(parameters, gradients)    
     
-    parameters:add(gradient, 1.0)
-    parameters:mul(0.9)
     --local l2norm = parameters:l2norm()
     --if l2norm > 1 then
     --  parameters:mul(1 / l2norm)
@@ -167,7 +165,7 @@ local function optimizeUpdateRule(numParameters, functor)
   end
 
   objective = lbcpp.LuaFunction.create(objective, "DenseDoubleVector<EnumValue,Double>", "Double")
-  local optimizer = Optimizer.CMAES{numIterations=10}
+  local optimizer = Optimizer.CMAES{numIterations=50}
   local score,solution = optimizer{objective = objective, initialGuess = Vector.newDense(numParameters)}
   print ("score", score, "solution", solution)
   local updateRule = functor(solution)
@@ -194,34 +192,84 @@ end
 
 ------------------------------
 
-subspecified function ConstantRateWithHingeLoss(score, epoch, supervision)
-  parameter rate = {default=0.0}
-  local r = math.pow(10, rate)
-  return score > 1 and 0 or -r
-end
+ConstantRateWithHingeLoss = subspecified {
+  parameter rate = {default = 1},
+  lossGradient = function (score, supervision)
+    return score > 1 and 0 or -1
+  end,
+  update = function (parameters, gradients)
+    parameters:add(gradients[1], -rate)
+    --parameters:mul(0.9)
+  end
+}
 
 local function constantRateWithHingeLossFunctor(parameters)
-  return ConstantRateWithHingeLoss{rate=parameters[1]}
+  return ConstantRateWithHingeLoss{rate=math.pow(10, parameters[1])}
 end
 
-subspecified function InvLinearRateWithHingeLoss(score, epoch, supervision)
-  parameter initialValue={default=0.0}
-  parameter halfPeriod={default=3.0}
-  local hp = math.pow(10.0,halfPeriod)
-  local r = math.pow(10,initialValue) * hp / (hp + epoch)
-  return score > 1 and 0 or -r
-end
+InvLinearRateWithHingeLoss = subspecified {
+  parameter rate = {default=1},
+  parameter halfPeriod = {default=1},
+  lossGradient = function (score, supervision)
+    return score > 1 and 0 or -1
+  end,
+  update = function (parameters, gradients)
+    local iteration = #gradients - 1
+    local r =  rate * halfPeriod / (halfPeriod + iteration)
+    parameters:add(gradients[1], -rate)
+    --parameters:mul(0.9)
+  end
+}
 
 local function invLinearRateWithHingeLossFunctor(parameters)
-  return InvLinearRateWithHingeLoss{initialValue=parameters[1], halfPeriod=parameters[2]}
+  return InvLinearRateWithHingeLoss{rate=math.pow(10, parameters[1]), halfPeriod=math.pow(10, parameters[2])}
 end
 
-subspecified function Simple0(score, epoch, supervision)
-  parameter parameters={}
-  local a = parameters[1]
-  local b = parameters[2]
-  return b / (1 + math.exp(a * score))
-end
+
+RegularizedInvLinearRateWithHingeLoss = subspecified {
+  parameter p = {},
+  lossGradient = function (score, supervision)
+    return score > 1 and 0 or -1
+  end,
+  update = function (parameters, gradients)
+    local iteration = #gradients - 1
+    local rate = math.pow(10, p[1])
+    local halfPeriod = math.pow(10, p[2])
+    local r =  rate * halfPeriod / (halfPeriod + iteration)
+    parameters:add(gradients[1], -rate)
+    parameters:mul(1 - p[3] / 10)
+  end
+}
+
+Simple0 = subspecified {
+  parameter p = {},
+  lossGradient = function (score, supervision)
+    local g = supervision == 2 and p[1] or p[2]
+    return score > p[3] and 0 or -(1 + g)
+  end,
+  update = function (parameters, gradients)
+    local d = math.max(#parameters, #gradients[1])
+    if #parameters < d then parameters:resize(d) end
+    for i=1,d do
+      local g = gradients[1][i]
+      local prevG = #gradients >= 2 and gradients[2][i] or 0.0
+      local param = i < #parameters and parameters[i] or 0.0
+
+      param = param * p[4] + g * p[5] + prevG * p[6] +
+              param * g * p[7] + param * prevG * p[8] + g * prevG * p[9]
+
+      if math.abs(param) < p[10] then
+        param = 0
+      end
+      if param > 1 then
+        param = 1
+      elseif param < -1 then
+        param =-1
+      end
+      parameters[i] = param
+    end
+  end
+}
 
 
 subspecified function Simple1(score, epoch, supervision)
@@ -246,14 +294,21 @@ subspecified function Simple2(score, epoch, supervision)
   return parameters[1 + math.floor(normalized * 5)]
 end
 
-context:call("constant rate 0.1", updateRuleObjective, ConstantRateWithHingeLoss{rate=-1})
-context:call("constant rate 0.01", updateRuleObjective, ConstantRateWithHingeLoss{rate=-2})
-context:call("constant rate 0.001", updateRuleObjective, ConstantRateWithHingeLoss{rate=-3})
+context:call("constant rate 0.1", updateRuleObjective, ConstantRateWithHingeLoss{rate=0.1})
+context:call("constant rate 0.01", updateRuleObjective, ConstantRateWithHingeLoss{rate=0.01})
+context:call("constant rate 0.001", updateRuleObjective, ConstantRateWithHingeLoss{rate=0.001})
+
+context:call("invLinear rate 0.1", updateRuleObjective, InvLinearRateWithHingeLoss{rate=0.1})
+context:call("invLinear rate 0.01", updateRuleObjective, InvLinearRateWithHingeLoss{rate=0.01})
+context:call("invLinear rate 0.001", updateRuleObjective, InvLinearRateWithHingeLoss{rate=0.001})
+
+
+context:call("optimize simple0", optimizeUpdateRule, 10, |p| Simple0{p=p})
+context:call("optimize invlinearreg", optimizeUpdateRule, 3, |p| RegularizedInvLinearRateWithHingeLoss{p=p})
+context:call("optimize invlinear", optimizeUpdateRule, 2, invLinearRateWithHingeLossFunctor)
+context:call("optimize constant", optimizeUpdateRule, 1, constantRateWithHingeLossFunctor)
 
 --[[
-context:call("optimize constant", optimizeUpdateRule, 1, constantRateWithHingeLossFunctor)
-context:call("optimize invlinear", optimizeUpdateRule, 2, invLinearRateWithHingeLossFunctor)
-context:call("optimize simple0", optimizeUpdateRule, 2, |p| Simple0{parameters=p})
 context:call("optimize simple1", optimizeUpdateRule, 5, |p| Simple1{parameters=p})
 context:call("optimize simple2", optimizeUpdateRule, 6, |p| Simple2{parameters=p})
 --]]
