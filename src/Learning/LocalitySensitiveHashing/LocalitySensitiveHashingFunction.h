@@ -47,7 +47,7 @@ typedef ReferenceCountedObjectPtr<LSHFunction> LSHFunctionPtr;
 class LSHBucket : public Object
 {
 public:
-  LSHBucket(const RandomGeneratorPtr& randomGenerator, const EnumerationPtr& enumeration, size_t numHashFunctions, size_t segmentWidth)
+  LSHBucket(const RandomGeneratorPtr& randomGenerator, const EnumerationPtr& enumeration, size_t numHashFunctions, double segmentWidth)
     : lshFunctions(numHashFunctions)
   {
     for (size_t i = 0; i < numHashFunctions; ++i)
@@ -91,8 +91,8 @@ extern BatchLearnerPtr localitySensitiveHashingBatchLearner();
 class LocalitySensitiveHashingFunction : public Function
 {
 public:
-  LocalitySensitiveHashingFunction()
-    : maxNumNeighbors((size_t)-1), outerBallRadius(0.0)
+  LocalitySensitiveHashingFunction(size_t numNeighbors = 1)
+    : numNeighbors(numNeighbors)
     {setBatchLearner(filterUnsupervisedExamplesBatchLearner(localitySensitiveHashingBatchLearner()));}
 
   virtual TypePtr getSupervisionType() const = 0;
@@ -120,36 +120,47 @@ public:
       return Variable::missingValue(getOutputType());
     }
 
-    std::vector<size_t> randomIndices;
-    if (indices.size() > maxNumNeighbors)
-      context.getRandomGenerator()->sampleSubset(indices, maxNumNeighbors, randomIndices);
-    else
-      randomIndices = indices;
-    
-
-    std::vector<Variable> outputs;
-    for (size_t i = 0; i < randomIndices.size(); ++i)
+    // LSH Ball
+    std::vector<bool> isScoreAlreaydComputed(examples.size(), false);
+    ScoresMap scores;
+    for (size_t i = 0; i < indices.size(); ++i)
     {
-      //std::cout << input->getDistanceTo(examples[randomIndices[i]], DenseDoubleVectorPtr()) << " <= " << outerBallRadius << std::endl;
-      if (input->getDistanceTo(examples[randomIndices[i]], DenseDoubleVectorPtr()) <= outerBallRadius)
-        outputs.push_back(supervisions[randomIndices[i]]);
+      if (isScoreAlreaydComputed[indices[i]])
+        continue;
+      scores.insert(std::pair<double, size_t>(indices[i], input->getDistanceTo(examples[indices[i]]->toSparseVector(), DenseDoubleVectorPtr())));
     }
-
-    return computeOutput(outputs);
+    
+#if 0
+    std::cout << "Found indices: " << indices.size() << " - In the ball: " << outputs.size();
+    // Exact Ball
+    const double ballRadius = 1.f;
+    size_t numElementsInExactBall = 0;
+    for (size_t i = 0; i < computedScores.size(); ++i)
+    {
+      if (computedScores[i] == DBL_MAX)
+        computedScores[i] = input->getDistanceTo(examples[i]->toSparseVector(), DenseDoubleVectorPtr());
+      if (computedScores[i] <= ballRadius)
+        ++numElementsInExactBall;
+    }
+    std::cout << " - Exact ball: " << numElementsInExactBall << std::endl;
+    return probability(numElementsInExactBall ? outputs.size() / (double)numElementsInExactBall : 1.f);
+#endif // !0
+    return computeOutput(scores);
   }
 
 protected:
   friend class LocalitySensitiveHashingFunctionClass;
   friend class LocalitySensitiveHashingBatchLearner;
 
+  typedef std::multimap<double, size_t> ScoresMap;
+
+  size_t numNeighbors;
+
   std::vector<LSHBucketPtr> buckets;
   std::vector<DoubleVectorPtr> examples;
   std::vector<Variable> supervisions;
 
-  size_t maxNumNeighbors;
-  double outerBallRadius;
-
-  virtual Variable computeOutput(const std::vector<Variable>& outputs) const = 0;
+  virtual Variable computeOutput(const ScoresMap& outputs) const = 0;
 };
 
 extern ClassPtr localitySensitiveHashingFunctionClass;
@@ -158,7 +169,8 @@ typedef ReferenceCountedObjectPtr<LocalitySensitiveHashingFunction> LocalitySens
 class BinaryLocalitySensitiveHashing : public LocalitySensitiveHashingFunction
 {
 public:
-  BinaryLocalitySensitiveHashing() {}
+  BinaryLocalitySensitiveHashing(size_t numNeighbors = 1)
+    : LocalitySensitiveHashingFunction(numNeighbors) {}
 
   virtual TypePtr getSupervisionType() const
     {return sumType(booleanType, probabilityType);}
@@ -169,14 +181,18 @@ public:
 protected:
   friend class BinaryLocalitySensitiveHashingClass;
 
-  virtual Variable computeOutput(const std::vector<Variable>& outputs) const
+  virtual Variable computeOutput(const ScoresMap& outputs) const
   {
+    const size_t maxNumNeighbors = outputs.size() < numNeighbors ? outputs.size() : numNeighbors;
+    ScoresMap::const_iterator it = outputs.begin();
     size_t numTrues = 0;
-    for (size_t i = 0; i < outputs.size(); ++i)
-      if (outputs[i].isBoolean() && outputs[i].getBoolean()
-          || outputs[i].isDouble() && outputs[i].getDouble() > 0.5)
+    for (size_t i = 0; i < maxNumNeighbors; ++i, it++)
+    {
+      const Variable v = supervisions[it->second];
+      if (v.isBoolean() && v.getBoolean() || v.isDouble() && v.getDouble() > 0.5)
         ++numTrues;
-    return probability(numTrues / (double)outputs.size());
+    }
+    return probability(numTrues / (double)maxNumNeighbors);
   }
 };
 
@@ -192,19 +208,6 @@ public:
   virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
     const size_t numExamples = trainingData.size();
-    double segmentWidth = 4.f;
-    double epsilon = 0.9f;
-
-    double approximationFactor = 1 + epsilon;
-
-    double innerRadius = 1.f;
-    double outerRadius = innerRadius * approximationFactor;
-
-    double innerProb = ballProbability(segmentWidth);
-    double outerProb = ballProbability(segmentWidth, approximationFactor);
-
-    size_t numHashFunctions = (size_t)ceil(log((double)numExamples) / log(1.0 / outerProb));
-    size_t numBuckets = (size_t)ceil(pow((double)numExamples, log(1.0 / innerProb) / log(1.0 / outerProb)));
 
     if (numExamples == 0)
     {
@@ -212,11 +215,27 @@ public:
       return false;
     }
 
+    double segmentWidth = 4.f;
+    double successProbability = 0.999f;
+    double ballRadius = 1.f;
+
     LocalitySensitiveHashingFunctionPtr lshFunction = function.staticCast<LocalitySensitiveHashingFunction>();
+    // Load examples
+    lshFunction->examples.resize(numExamples);
+    lshFunction->supervisions.resize(numExamples);
+    for (size_t i = 0; i < numExamples; ++i)
+    {
+      const DoubleVectorPtr input = trainingData[i]->getVariable(0).getObjectAndCast<DoubleVector>();
+      const Variable supervision = trainingData[i]->getVariable(1);
+      lshFunction->examples[i] = input;
+      lshFunction->supervisions[i] = supervision;
+    }
+
+    const double collisionDensity = p2StableCollisionDensity(segmentWidth);
+    const size_t numHashFunctions = computeNumHashFunctions(context, segmentWidth, successProbability, ballRadius, lshFunction->examples, context.getRandomGenerator(), 100);
+    const size_t numBuckets = computeNumBuckets(collisionDensity, numHashFunctions, successProbability);
+
     EnumerationPtr elementsEnumeration = trainingData[0]->getVariable(0).getObjectAndCast<DoubleVector>()->getElementsEnumeration();
-    // Initialize LSH
-    lshFunction->maxNumNeighbors = 3 * numBuckets;
-    lshFunction->outerBallRadius = outerRadius;
     // Create buckets
     lshFunction->buckets.resize(numBuckets);
     for (size_t i = 0; i < numBuckets; ++i)
@@ -234,27 +253,28 @@ public:
       for (size_t j = 0; j < numBuckets; ++j)
         lshFunction->buckets[j]->addExample(i, input);
     }
+
     return true;
   }
 
 protected:
   friend class LocalitySensitiveHashingBatchLearnerClass;
 
-  double ballProbability(const double segmentWidth, const double approximationFactor = 1.f) const
+  double p2StableCollisionDensity(const double segmentWidth, const double l2Norm = 1.f) const
   {
-    const double div = segmentWidth / approximationFactor;
+    const double div = segmentWidth / l2Norm;
     return 1 - 2 * (
-                    standardNormalCumulativeDistributionFunction(-div)
-                    + (1 - exp(-(segmentWidth * segmentWidth) / (2 * approximationFactor * approximationFactor))) / (sqrt(M_2_TIMES_PI) * div)
+                    standardNormalCumulativeDistribution(-div)
+                    + (1 - exp(-(segmentWidth * segmentWidth) / (2 * l2Norm * l2Norm))) / (sqrt(M_2_TIMES_PI) * div)
                     );
   }
 
-  double standardNormalCumulativeDistributionFunction(double value) const
+  double standardNormalCumulativeDistribution(double value) const
   {
     // http://en.wikipedia.org/wiki/Normal_distribution#Numerical_approximations_for_the_normal_CDF
     // Abramowitz & Stegun (1964)
     if (value < 0.f)
-      return 1.f - standardNormalCumulativeDistributionFunction(-value);
+      return 1.f - standardNormalCumulativeDistribution(-value);
 
     const double firstFactor = exp(-value * value / 2) / sqrt(M_2_TIMES_PI);
     const double t = 1 / (1 + 0.2316419f * value);
@@ -268,6 +288,68 @@ protected:
     nextT *= t; // t^5
     secondFactor += 1.33027442 * nextT;
     return 1.f - firstFactor * secondFactor;
+  }
+
+  size_t reducedNumHashFunctions(const double collisionDensity, const size_t numHashFunctions, const double successProbability) const
+  {
+    const double prob = pow(collisionDensity, numHashFunctions / 2);
+    size_t res = 1;
+    while (pow(1-prob, res) + res * prob * pow(1-prob, res-1) > 1 - successProbability)
+      ++res;
+    return res;
+  }
+
+  size_t computeNumBuckets(const double collisionDensity, const size_t numHashFunctions, const double successProbability) const
+  {
+    return (size_t)ceil(log(1 - successProbability) / log(1 - pow(collisionDensity, numHashFunctions)));
+  }
+
+  double expectedNumCollisionsPerBucket(const double segmentWidth, const size_t numHashFunctions, const double ballRadius,
+                                        const std::vector<DoubleVectorPtr>& data, const RandomGeneratorPtr& rand, const size_t numSamples) const
+  {
+    double res = 0.f;
+    const DenseDoubleVectorPtr ddv = data[rand->sampleSize(data.size())]->toDenseDoubleVector();
+    for (size_t i = 0; i < numSamples; ++i)
+    {
+      const SparseDoubleVectorPtr sdv = data[rand->sampleSize(data.size())]->toSparseVector();
+      const double prob = p2StableCollisionDensity(segmentWidth, ddv->getDistanceTo(sdv, DenseDoubleVectorPtr()) / ballRadius);
+      res += pow(prob, numHashFunctions);
+    }
+    return res;
+  }
+
+  size_t computeNumHashFunctions(ExecutionContext& context, const double segmentWidth, const double successProbability, const double ballRadius,
+                                 const std::vector<DoubleVectorPtr>& data, const RandomGeneratorPtr& rand, const size_t numSamples) const
+  {
+    const double collisionDensity = p2StableCollisionDensity(segmentWidth);
+    context.enterScope(T("Compute Number of Hash Functions"));
+
+    size_t numHashFunctions = 1;
+    double previousScore = DBL_MAX;
+    double score = DBL_MAX;
+    do
+    {
+      const size_t numBuckets = computeNumBuckets(collisionDensity, numHashFunctions, successProbability);
+      const double numCollisions = expectedNumCollisionsPerBucket(segmentWidth, numHashFunctions, ballRadius, data, rand, numSamples);
+      previousScore = score;
+      score = numBuckets * (numHashFunctions + numCollisions);
+  
+      context.enterScope(T("Iteration") + String((int)numHashFunctions));
+      context.resultCallback(T("numHashFunctions"), numHashFunctions);
+      context.resultCallback(T("numBuckets"), numBuckets);
+      context.resultCallback(T("numBuckets * numHashFunctions"), numHashFunctions * numBuckets);
+      context.resultCallback(T("numCollisions/Buckets"), numCollisions);
+      context.resultCallback(T("totalNumCollisions"), numBuckets * numCollisions);
+      context.resultCallback(T("numHashFunctions + numCollisions"), numCollisions + numHashFunctions);
+      context.resultCallback(T("totalHashFunctions + totalCollisions"), score);
+      context.leaveScope();
+      
+      ++numHashFunctions;
+    } while (score < previousScore);
+
+    context.leaveScope(numHashFunctions - 2);
+
+    return numHashFunctions - 2;
   }
 };
 

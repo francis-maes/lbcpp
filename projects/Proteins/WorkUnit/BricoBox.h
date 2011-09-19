@@ -458,22 +458,350 @@ public:
   }
 };
 
+class SpaceSeparateDataParser : public TextParser
+{
+public:
+  SpaceSeparateDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features)
+    : TextParser(context, file), features(features),
+      elementsType(pairClass(sparseDoubleVectorClass(features, doubleType), booleanType)) {}
+
+  SpaceSeparateDataParser() {}
+  
+  virtual bool parseLine(const String& line)
+  {
+    String timmedline = line.trim();
+    if (timmedline == String::empty)
+      return true;
+    std::vector<String> tokens;
+    tokenize(timmedline, tokens);
+
+    if (features->getNumElements() == 0)
+    {
+      for (size_t i = 0; i < tokens.size(); ++i)
+        features->addElement(context, T("feature_") + String((int)i));
+    }
+
+    SparseDoubleVectorPtr ddv = new SparseDoubleVector(features, doubleType);
+    for (size_t i = 0; i < tokens.size(); ++i)
+    {
+      const double value = tokens[i].getDoubleValue();
+      if (value != 0)
+         ddv->appendValue(i, value);
+    }
+     
+    setResult(new Pair(elementsType, ddv, false));
+    return true;
+  }
+
+  virtual TypePtr getElementsType() const
+    {return elementsType;}
+
+protected:
+  DefaultEnumerationPtr features;
+  TypePtr elementsType;
+};
+
+class NormalizeDoubleVectorBatchLearner;
+extern BatchLearnerPtr normalizeDoubleVectorBatchLearner(bool computeVariances, bool computeMeans);
+
+class NormalizeDoubleVector : public Function
+{
+public:
+  NormalizeDoubleVector(bool useVariances = true, bool useMeans = false)
+    {setBatchLearner(normalizeDoubleVectorBatchLearner(useVariances, useMeans));}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return doubleVectorClass(enumValueType, doubleType);}
+
+  virtual String getOutputPostFix() const
+    {return T("Normalize");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return sparseDoubleVectorClass(inputVariables[0]->getType()->getTemplateArgument(0), inputVariables[0]->getType()->getTemplateArgument(1));}
+
+protected:
+  friend class NormalizeDoubleVectorClass;
+  friend class NormalizeDoubleVectorBatchLearner;
+
+  std::vector<double> variances;
+  std::vector<double> means;
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    SparseDoubleVectorPtr sdv = input.getObjectAndCast<DoubleVector>(context)->toSparseVector();
+    const size_t n = sdv->getNumValues();
+    std::pair<size_t, double>* value = sdv->getValues();
+    for (size_t i = 0; i < n; ++i, ++value)
+    {
+      value->second -= means[value->first];
+      value->second /= variances[value->first];
+    }
+    return sdv;
+  }
+};
+
+extern ClassPtr normalizeDoubleVectorClass;
+typedef ReferenceCountedObjectPtr<NormalizeDoubleVector> NormalizeDoubleVectorPtr;
+
+class NormalizeDoubleVectorBatchLearner : public BatchLearner
+{
+public:
+  NormalizeDoubleVectorBatchLearner(bool computeVariances = true, bool computeMeans = false)
+    : computeVariances(computeVariances), computeMeans(computeMeans) {}
+
+  virtual TypePtr getRequiredFunctionType() const
+    {return normalizeDoubleVectorClass;}
+
+  virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
+  {
+    if (trainingData.size() == 0)
+    {
+      context.errorCallback(T("NormalizeDoubleVectorBatchLearner::train"), T("No training data !"));
+      return false;
+    }
+
+    NormalizeDoubleVectorPtr target = function.staticCast<NormalizeDoubleVector>();
+    EnumerationPtr enumeration = trainingData[0]->getVariable(0).getObjectAndCast<DoubleVector>()->getElementsEnumeration();
+    jassert(target && enumeration);
+    // Initialize
+    const size_t dimension = enumeration->getNumElements();
+    target->variances.resize(dimension, 1.f);
+    target->means.resize(dimension, 0.f);
+
+    std::vector<ScalarVariableMeanAndVariancePtr> meansAndVariances(dimension);
+    for (size_t i = 0; i < dimension; ++i)
+      meansAndVariances[i] = new ScalarVariableMeanAndVariance();
+    // Learn
+    const size_t n = trainingData.size();
+    for (size_t i = 0; i < n; ++i)
+    {
+      DoubleVectorPtr data =  trainingData[i]->getVariable(0).getObjectAndCast<DoubleVector>();
+      const size_t numValues = data->getNumElements();
+      for (size_t i = 0; i < numValues; ++i)
+      {
+        Variable v = data->getElement(i);
+        meansAndVariances[i]->push(v.exists() ? v.getDouble() : 0.f);
+      }
+    }
+
+    if (computeMeans)
+      for (size_t i = 0; i < dimension; ++i)
+        target->means[i] = meansAndVariances[i]->getMean();
+
+    if (computeVariances)
+      for (size_t i = 0; i < dimension; ++i)
+      {
+        target->variances[i] = meansAndVariances[i]->getStandardDeviation();
+        if (target->variances[i] < 1e-6) // Numerical unstability
+          target->variances[i] = 1.f;
+      }
+
+    return true;
+  }
+
+protected:
+  friend class NormalizeDoubleVectorBatchLearnerClass;
+
+  bool computeVariances;
+  bool computeMeans;
+};
+
+class NormalizeExampleCompositeFunction : public CompositeFunction
+{
+public:
+  NormalizeExampleCompositeFunction(const FunctionPtr& decorated)
+    : decorated(decorated) {}
+
+  virtual void buildFunction(CompositeFunctionBuilder& builder)
+  {
+    size_t input = builder.addInput(decorated->getRequiredInputType(0, 2));
+    size_t supervision = builder.addInput(decorated->getRequiredInputType(1, 2));
+
+    input = builder.addFunction(new NormalizeDoubleVector(true, true), input);
+    builder.addFunction(decorated, input, supervision);
+  }
+
+protected:
+  friend class NormalizeExampleCompositeFunctionClass;
+
+  FunctionPtr decorated;
+
+  NormalizeExampleCompositeFunction() {}
+};
+
+class PrintFeaturesFunction : public Function
+{
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index == 0 ? (TypePtr)doubleVectorClass() : anyType;}
+  
+  virtual String getOutputPostFix() const
+    {return T("Print");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return booleanType;}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    DenseDoubleVectorPtr input = inputs[0].getObjectAndCast<DoubleVector>()->toDenseDoubleVector();
+    for (size_t i = 0; i < input->getNumValues(); ++i)
+      std::cout << input->getValue(i) << " ";
+    std::cout << std::endl;
+    return true;
+  }
+};
+
+class ExportFeaturesWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinDirectory), 0, T("Loading proteins"));
+
+    std::vector<DoubleVectorPtr> features;
+    buildFeatures(context, proteins, features);
+    
+    std::vector<size_t> order;
+    context.getRandomGenerator()->sampleOrder(features.size(), order);
+
+#if 1
+    VectorPtr data = vector(pairClass(features[0]->getClass(), booleanType), features.size());
+    for (size_t i = 0; i < features.size(); ++i)
+      data->setElement(i, new Pair(features[i], false));
+
+    FunctionPtr printer = new PrintFeaturesFunction();
+    for (size_t i = 0; i < 1; ++i)
+      printer->compute(context, features[order[i]], false);
+
+    std::cout << "Normalization" << std::endl;
+    FunctionPtr norm = new NormalizeExampleCompositeFunction(new PrintFeaturesFunction());
+    if (!norm->train(context, data))
+      return false;
+    for (size_t i = 0; i < 1; ++i)
+      norm->compute(context, features[order[i]], false);
+    return true;
+#endif // !0
+
+    std::vector<double> zFactor;
+    computeVariances(features, zFactor);
+
+    OutputStream* o = context.getFile(T("dsb.features")).createOutputStream();
+    for (size_t i = 0; i < features.size(); ++i)
+    {
+      DenseDoubleVectorPtr v = features[order[i]]->toDenseDoubleVector();
+      const size_t n = v->getNumElements();
+      for (size_t j = 0; j < n; ++j)
+      {
+        Variable value = v->getElement(j);
+        *o << (value.exists() && zFactor[j] != 0.f ? value.getDouble() / sqrt(zFactor[j]) : 0.0) << " ";
+      }
+      *o << "\n";
+    }
+    delete o;
+    return true;
+  }
+
+protected:
+  friend class ExportFeaturesWorkUnitClass;
+
+  String proteinDirectory;
+
+  void buildFeatures(ExecutionContext& context, const ContainerPtr& proteins, std::vector<DoubleVectorPtr>& features) const
+  {
+    Lin09ParametersPtr fp = new Lin09Parameters();
+    fp->useProteinLength= true;
+    fp->pssmWindowSize = 20;
+    fp->separationProfilSize = 9;
+    fp->useCysteinDistance = true;
+    fp->pssmLocalHistogramSize = 70;
+    fp->aminoAcidLocalHistogramSize = 30;
+    Lin09PredictorParametersPtr predictorParameters = new Lin09PredictorParameters(fp);
+    
+    FunctionPtr proteinPerception = predictorParameters->createProteinPerception();
+    FunctionPtr disulfideFunction = predictorParameters->createDisulfideSymmetricResiduePairVectorPerception();
+
+    const size_t n = proteins->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable perception = proteinPerception->compute(context, proteins->getElement(i).getObjectAndCast<Pair>()->getFirst());
+      SymmetricMatrixPtr featuresVector = disulfideFunction->compute(context, perception).getObjectAndCast<SymmetricMatrix>();
+      SymmetricMatrixPtr supervision = proteins->getElement(i).getObjectAndCast<Pair>()->getSecond().getObjectAndCast<Protein>()->getDisulfideBonds(context);
+      jassert(featuresVector && supervision && featuresVector->getDimension() == supervision->getDimension());
+      const size_t dimension = featuresVector->getDimension();
+      for (size_t j = 0; j < dimension; ++j)
+        for (size_t k = j + 1; k < dimension; ++k)
+          features.push_back(featuresVector->getElement(j,k).getObjectAndCast<DoubleVector>());
+    }
+  }
+
+  void computeVariances(const std::vector<DoubleVectorPtr>& examples, std::vector<double>& zFactor) const
+  {
+    if (examples.size() == 0)
+      return;
+
+    const EnumerationPtr enumeration = examples[0]->getElementsEnumeration();
+    const size_t numFeatures = enumeration->getNumElements();
+
+    std::vector<ScalarVariableMeanAndVariancePtr> variances(numFeatures);
+    for (size_t i = 0; i < numFeatures; ++i)
+      variances[i] = new ScalarVariableMeanAndVariance();
+
+    for (size_t i = 0; i < examples.size(); ++i)
+    {
+      SparseDoubleVectorPtr s = examples[i]->toSparseVector();
+      for (size_t j = 0; j < s->getNumValues(); ++j)
+      {
+        const std::pair<size_t, double>& value = s->getValue(j);
+        variances[value.first]->push(value.second);
+      }
+    }
+
+    zFactor.resize(numFeatures);
+    for (size_t i = 0; i < numFeatures; ++i)
+      zFactor[i] = variances[i]->getVariance();
+  }
+};
+
 class LSHTestWorkUnit : public WorkUnit
 {
 public:
   virtual Variable run(ExecutionContext& context)
   {
-    DefaultEnumerationPtr features = new DefaultEnumeration();
-    ContainerPtr trainingData  = binaryClassificationLibSVMDataParser(context, File::getCurrentWorkingDirectory().getChildFile(T("../../projects/Examples/Data/BinaryClassification/a1a.train")), features)->load();
-
-    FunctionPtr lsh = binaryLocalitySensitiveHashing();
-    if (!lsh->train(context, trainingData, ContainerPtr(), T("Training")))
+    DefaultEnumerationPtr features = new DefaultEnumeration(T("a1aEnumeration"));
+    ContainerPtr trainingData;
+    //trainingData = (new SpaceSeparateDataParser(context, context.getFile(T("/Users/jbecker/Desktop/E2LSH-0.1/mnist1k.dts")), features))->load()->randomize();
+    trainingData = binaryClassificationLibSVMDataParser(context, File::getCurrentWorkingDirectory().getChildFile(T("../../projects/Examples/Data/BinaryClassification/a1a.train")), features)->load()->randomize();
+    FunctionPtr lsh = new NormalizeExampleCompositeFunction(binaryLocalitySensitiveHashing(5));
+    if (!lsh->train(context, trainingData, ContainerPtr(), T("Training - Examples: ") + String((int)trainingData->getNumElements())))
       return false;
-    
-    ContainerPtr testingData  = binaryClassificationLibSVMDataParser(context, File::getCurrentWorkingDirectory().getChildFile(T("../../projects/Examples/Data/BinaryClassification/a1a.test")), features)->load();
-    ScoreObjectPtr score = lsh->evaluate(context, testingData, binaryClassificationEvaluator(), T("Evaluation"));
+    //return true;
+    ContainerPtr testingData;
+    //testingData = (new SpaceSeparateDataParser(context, context.getFile(T("/Users/jbecker/Desktop/E2LSH-0.1/mnist1k.q")), features))->load()->randomize();
+    testingData = binaryClassificationLibSVMDataParser(context, File::getCurrentWorkingDirectory().getChildFile(T("../../projects/Examples/Data/BinaryClassification/a1a.test")), features)->load()->randomize();
+    ScoreObjectPtr score = lsh->evaluate(context, testingData, rocAnalysisEvaluator(binaryClassificationAccuracyScore, true), T("Evaluation - Examples: ") + String((int)testingData->getNumElements()));
 
-    return score;
+#if 0
+    double sum = 0.f;
+    size_t numTrues = 0;
+    for (size_t i = 0; i < testingData->getNumElements(); ++i)
+    {
+      numTrues += testingData->getElement(i).getObject()->getVariable(1).getBoolean() ? 1 : 0;
+      Variable v = lsh->compute(context, testingData->getElement(i).getObject()->getVariable(0), Variable());
+      //std::cout << v.toString() << std::endl;
+      sum += v.getDouble();
+    }
+
+    std::cout << "Coverage: " << (sum / (double)testingData->getNumElements()) << std::endl;
+    
+    context.informationCallback(T("% of true: ") + String(numTrues / (double)testingData->getNumElements()));
+    context.informationCallback(T("Coverage: ") + String(sum / (double)testingData->getNumElements()));
+#endif //!0
+    return true;
   }
 };
 

@@ -67,7 +67,7 @@ public:
     core_table = (CORETABLE_TYPE *)MyMalloc((size_t)nb_attributes * sizeof(CORETABLE_TYPE));
     jassert(core_table);
     ContainerPtr obj = input.getObjectAndCast<Container>(context);
-    jassert(obj->getNumElements() == (size_t)nb_attributes);
+    //jassert(obj->getNumElements() == (size_t)nb_attributes);
     for (size_t j = 0; j < (size_t)nb_attributes; ++j)
     {
       Variable objVariable = obj->getElement(j);
