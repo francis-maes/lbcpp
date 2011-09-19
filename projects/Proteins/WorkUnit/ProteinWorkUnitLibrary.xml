@@ -205,6 +205,9 @@
   <class name="ExportFeaturesWorkUnit" base="WorkUnit">
     <variable type="String" name="proteinDirectory" shortName="in"/>
   </class>
+
+  <class name="SamplingFunction" base="SimpleUnaryFunction"/>
+  <class name="TestBanditEDAOptimizer" base="WorkUnit"/>
   <!-- END LargeBox -->
 
 </library>

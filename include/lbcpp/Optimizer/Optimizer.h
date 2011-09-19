@@ -25,7 +25,7 @@ public:
   /* Optimizer */
   virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const = 0;
 
-  virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, OptimizationProblemPtr problem) const = 0;
+  virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, const OptimizationProblemPtr& problem) const = 0;
 
   /* Function */
   virtual size_t getNumRequiredInputs() const
@@ -61,6 +61,7 @@ typedef ReferenceCountedObjectPtr<Optimizer> OptimizerPtr;
 //extern OptimizerPtr uniformSampleAndPickBestOptimizer(size_t numSamples, bool verbose = false);  
 extern OptimizerPtr edaOptimizer(size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr(), double slowingFactor = 0, bool reinjectBest = false, bool verbose = false);
 extern OptimizerPtr asyncEDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr(), double slowingFactor = 0, bool reinjectBest = false, bool verbose = false);
+extern OptimizerPtr banditEDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, double ratioOfBanditToKeep, size_t budget, size_t numSimultaneousPlays);
 
 extern OptimizerPtr cmaesOptimizer(size_t numIterations);
 extern OptimizerPtr hooOptimizer(size_t numIterations, double nu, double rho);

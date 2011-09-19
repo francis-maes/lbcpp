@@ -544,4 +544,27 @@ protected:
   }
 };
 
+class SamplingFunction : public SimpleUnaryFunction
+{
+public:
+  SamplingFunction() : SimpleUnaryFunction(doubleType, doubleType, T("Sampling")) {}
+
+protected:
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    return (double)abs(context.getRandomGenerator()->sampleDoubleFromGaussian(input.getDouble(), input.getDouble()));
+  }
+};
+
+class TestBanditEDAOptimizer : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    OptimizationProblemPtr problem = new OptimizationProblem(new SamplingFunction(), Variable(), uniformScalarSampler(0.f, 1.f));
+    OptimizerPtr optimizer = banditEDAOptimizer(5, 20, 5, 0.5f, 1000, 2);
+    return optimizer->compute(context, problem);
+  }
+};
+
 };

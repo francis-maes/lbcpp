@@ -28,6 +28,20 @@
     <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, StoppingCriterionPtr stoppingCriterion, double slowingFactor, bool reinjectBest, bool verbose" returnType="Optimizer"/>
   </class>
 
+  <class name="BanditInfo" base="Object">
+    <variable type="Variable" name="parameter"/>
+    <variable type="Double" name="rewardSum"/>
+    <variable type="Double" name="squaredRewardSum"/>
+    <variable type="Double" name="objectiveValueSum"/>
+    <variable type="PositiveInteger" name="numSamples"/>
+  </class>
+
+  <class name="BanditEDAOptimizerState" base="SamplerBasedOptimizerState"/>
+
+  <class name="BanditEDAOptimizer" base="EDAOptimizer" shortName="beda">
+    <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, double ratioOfBanditToKeep, size_t budget, size_t numSimultaneousPlays" returnType="Optimizer"/>
+  </class>
+
   <!-- BestFirstSearch -->
   <class name="BestFirstSearchParameter" base="Object">
     <variable type="PositiveInteger" name="index"/>

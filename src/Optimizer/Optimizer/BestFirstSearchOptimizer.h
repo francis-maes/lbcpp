@@ -239,7 +239,7 @@ public:
   BestFirstSearchOptimizer(const std::vector<StreamPtr>& streams, const File& optimizerStateFile)
     : Optimizer(optimizerStateFile), streams(streams) {}
 
-  virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, OptimizationProblemPtr problem) const
+  virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, const OptimizationProblemPtr& problem) const
   {
     StreamBasedOptimizerStatePtr state = new StreamBasedOptimizerState(context, streams);
     state->submitSolution(problem->getInitialGuess(), DBL_MAX); // default solution
