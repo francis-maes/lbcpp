@@ -4,10 +4,11 @@
 
   <!-- LocalitySensitiveHashingFunction -->
   <class name="LocalitySensitiveHashingFunction" base="Function" abstract="yes">
+    <variable type="PositiveInteger" name="numNeighbors"/>
   </class>
 
   <class name="BinaryLocalitySensitiveHashing" base="LocalitySensitiveHashingFunction">
-    <constructor returnType="Function"/>
+    <constructor arguments="size_t numNeighbors" returnType="Function"/>
   </class>
 
   <class name="LocalitySensitiveHashingBatchLearner" base="BatchLearner">

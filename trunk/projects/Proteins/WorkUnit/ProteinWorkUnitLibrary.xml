@@ -112,6 +112,22 @@
 
   <class name="LSHTestWorkUnit" base="WorkUnit"/>
 
+  <class name="NormalizeDoubleVector" base="Function">
+    <variable type="GenericVector[Double]" name="variances"/>
+    <variable type="GenericVector[Double]" name="means"/>
+  </class>
+
+  <class name="NormalizeDoubleVectorBatchLearner" base="BatchLearner">
+    <constructor arguments="bool computeVariances, bool computeMeans" returnType="BatchLearner"/>
+    <variable type="Boolean" name="computeVariances"/>
+    <variable type="Boolean" name="computeMeans"/>
+  </class>
+
+  <class name="PrintFeaturesFunction" base="Function"/>
+  <class name="NormalizeExampleCompositeFunction" base="CompositeFunction">
+    <variable type="Function" name="decorated"/>
+  </class>
+
   <!-- BEGIN CysteinBox -->
 <!-- FIXME: Optimizer
   <class name="CysteinLearnerParameters" base="Object">

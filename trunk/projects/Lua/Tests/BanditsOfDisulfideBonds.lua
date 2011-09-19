@@ -33,32 +33,39 @@ for i,v in ipairs(featureScores) do
 end
 
 local policy = DiscreteBandit.indexBasedPolicy{indexFunction = DiscreteBandit.ucb1Tuned}.__get
-
+policy = DiscreteBandit.indexBasedPolicy{indexFunction = |rk,sk,tk,t| rk + 1.5 / tk}.__get
 
 -- returns the number of times each bandit has been played
 local function playEpisode(policy, bandits, numTimeSteps)
   local res = {}
-  for i=1,#bandits do res[i] = 0 end 
+  local stepRes = {}
+  for i=1,#bandits do
+    res[i] = 0
+    stepRes[i] = 0
+  end 
 
   local co = coroutine.create(policy)
   local info = #bandits
   for i = 1,numTimeSteps do
-    context:enter('Step ' .. i)
-    context:result('Step', i)
-
     local ok, bi = coroutine.resume(co, info)
     if not ok then
       error("coroutine failed: " .. bi)
     end
     res[bi] = res[bi] + 1
+    stepRes[bi] = stepRes[bi] + 1
     local ri = bandits[bi]()  -- sample from bandit distribution
     info = ri
     
-    for j = 1,#bandits do
-      context:result(featureScores[j].featureName, res[j])
-    end
+    if i % 100 == 0 then
+      context:enter('Step ' .. i)
+      context:result('Step', i)
 
-    context:leave()
+      for j = 1,#bandits do
+        context:result(featureScores[j].featureName, stepRes[j])
+        stepRes[j] = 0
+      end
+      context:leave()
+    end
   end
   return res  
 end
@@ -104,7 +111,7 @@ print('Best Parameter: ' .. featureScores[bestParameter].featureName)
 print('Best Bandit: ' .. bestParameter)
 
 context:enter('Play episodes')
-numPlayed = playEpisode(policy, banditProblem, 2500)
+numPlayed = playEpisode(policy, banditProblem, 2900)
 context:leave()
 
 print('Best Found Parameter: ' .. featureScores[getTableMaximum(numPlayed)].featureName)
