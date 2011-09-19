@@ -52,6 +52,8 @@ typedef ReferenceCountedObjectPtr<OptimizationProblem> OptimizationProblemPtr;
 class OptimizerState : public Object
 {
 public:
+  OptimizerState() : bestScore(DBL_MAX) {}
+
   const Variable& getBestSolution() const
     {return bestSolution;}
 

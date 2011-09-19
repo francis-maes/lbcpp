@@ -84,12 +84,6 @@
     <variable type="GPExpression" name="indexFunction"/>
   </class>
 
-  <class name="BanditEDAOptimizerState" base="SamplerBasedOptimizerState"/>
-
-  <class name="BanditEDAOptimizer" base="EDAOptimizer" shortName="beda">
-    <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, size_t maxNumBandits, StoppingCriterionPtr stoppingCriterion, bool verbose" returnType="Optimizer"/>
-  </class>
-
   <!-- Discrete Bandit Experiment -->
   <class name="EvaluateDiscreteBanditPolicyWorkUnit" base="WorkUnit">
     <variable type="PositiveInteger" name="numBandits"/>

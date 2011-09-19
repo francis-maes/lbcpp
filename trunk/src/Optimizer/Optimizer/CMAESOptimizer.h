@@ -115,7 +115,7 @@ public:
     return cmaState;
   }
 
-  virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, OptimizationProblemPtr problem) const
+  virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, const OptimizationProblemPtr& problem) const
     {return new CMAOptimizerState(context, problem);}
 
 protected:

@@ -288,7 +288,7 @@ public:
     return hooState;
   }
 
-  virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, OptimizationProblemPtr problem) const
+  virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, const OptimizationProblemPtr& problem) const
     {return new HOOOptimizerState(problem, nu, rho, numIterations, maxDepth);}
 
 protected:

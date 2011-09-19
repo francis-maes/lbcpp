@@ -599,6 +599,8 @@ public:
       return libSVMLearningMachine(pow(2.0, svmC), rbfKernel, 0, pow(2.0, svmGamma), 0.0);
     else if (learningMachineName == T("kNN"))
       return nearestNeighborLearningMachine(knnNeighbors, true, true);
+    else if (learningMachineName == T("LSH"))
+      return binaryLocalitySensitiveHashing(knnNeighbors);
     else if (learningMachineName == T("ExtraTrees"))
       return extraTreeLearningMachine(x3Trees, x3Attributes, x3Splits);
     else if (learningMachineName == T("SGD"))
