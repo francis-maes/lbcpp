@@ -127,7 +127,7 @@ public:
     {
       if (isScoreAlreaydComputed[indices[i]])
         continue;
-      scores.insert(std::pair<double, size_t>(indices[i], input->getDistanceTo(examples[indices[i]]->toSparseVector(), DenseDoubleVectorPtr())));
+      scores.insert(std::pair<double, size_t>(indices[i], (size_t)input->getDistanceTo(examples[indices[i]]->toSparseVector(), DenseDoubleVectorPtr())));
     }
     
 #if 0
@@ -292,16 +292,16 @@ protected:
 
   size_t reducedNumHashFunctions(const double collisionDensity, const size_t numHashFunctions, const double successProbability) const
   {
-    const double prob = pow(collisionDensity, numHashFunctions / 2);
+    const double prob = pow(collisionDensity, numHashFunctions / 2.0);
     size_t res = 1;
-    while (pow(1-prob, res) + res * prob * pow(1-prob, res-1) > 1 - successProbability)
+    while (pow(1-prob, (double)res) + res * prob * pow(1-prob, res-1.0) > 1 - successProbability)
       ++res;
     return res;
   }
 
   size_t computeNumBuckets(const double collisionDensity, const size_t numHashFunctions, const double successProbability) const
   {
-    return (size_t)ceil(log(1 - successProbability) / log(1 - pow(collisionDensity, numHashFunctions)));
+    return (size_t)ceil(log(1 - successProbability) / log(1 - pow(collisionDensity, (double)numHashFunctions)));
   }
 
   double expectedNumCollisionsPerBucket(const double segmentWidth, const size_t numHashFunctions, const double ballRadius,
@@ -313,7 +313,7 @@ protected:
     {
       const SparseDoubleVectorPtr sdv = data[rand->sampleSize(data.size())]->toSparseVector();
       const double prob = p2StableCollisionDensity(segmentWidth, ddv->getDistanceTo(sdv, DenseDoubleVectorPtr()) / ballRadius);
-      res += pow(prob, numHashFunctions);
+      res += pow(prob, (double)numHashFunctions);
     }
     return res;
   }
