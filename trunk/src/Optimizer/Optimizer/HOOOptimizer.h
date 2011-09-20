@@ -185,32 +185,29 @@ public:
     return Variable::pair(reward, candidate);
   }
 
-  void getBestSolution(ExecutionContext& context, NodePtr node, size_t depth, double& bestSum, double& score, Variable& solution)
+  void getBestSolution(ExecutionContext& context, NodePtr node, size_t depth, size_t& bestDepth, double& bestSum, double& score, Variable& solution)
   {
-    if (depth == maxDepth - 1)
+    if (depth > bestDepth || (depth == bestDepth && node->stats.getSum() > bestSum))
     {
-      if (node->stats.getSum() > bestSum)
-      {
-        bestSum = node->stats.getSum();
-        score = node->stats.getMean();
-        solution = node->getRegion()->getCenter();
-      }
+      bestDepth = depth;
+      bestSum = node->stats.getSum();
+      score = node->stats.getMean();
+      solution = node->getRegion()->getCenter();
     }
-    else
-    {
-      if (node->left)
-        getBestSolution(context, node->left, depth + 1, bestSum, score, solution);
-      if (node->right)
-        getBestSolution(context, node->right, depth + 1, bestSum, score, solution);
-    }
+
+    if (node->left)
+      getBestSolution(context, node->left, depth + 1, bestDepth, bestSum, score, solution);
+    if (node->right)
+      getBestSolution(context, node->right, depth + 1, bestDepth, bestSum, score, solution);
   }
 
   void finishIteration(ExecutionContext& context)
   {
     double bestIterationScore;
     Variable bestIterationSolution;
+    size_t bestDepth = 0;
     double bestSum = 0.0;
-    getBestSolution(context, root, 0, bestSum, bestIterationScore, bestIterationSolution);
+    getBestSolution(context, root, 0, bestDepth, bestSum, bestIterationScore, bestIterationSolution);
     OptimizerState::finishIteration(context, problem, numIterationsDone, -bestIterationScore, bestIterationSolution);
   }
 

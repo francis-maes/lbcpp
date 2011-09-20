@@ -232,7 +232,7 @@ protected:
   
   void performIteration(ExecutionContext& context, const BanditEDAOptimizerStatePtr& state, Variable& bestIterationSolution, double& bestIterationScore) const
   {
-    const size_t numBanditsToRemove = (1 - ratioOfBanditToKeep) * populationSize;
+    const size_t numBanditsToRemove = (size_t)((1 - ratioOfBanditToKeep) * populationSize);
     state->removeBanditsWithWorseRewardMean(numBanditsToRemove);
     
     const size_t numBanditsToCreate = state->getNumBandits() != 0 ? numBanditsToRemove : populationSize;

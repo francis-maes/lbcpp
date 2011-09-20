@@ -8,14 +8,9 @@ require 'Predictor'
 require 'Evaluator'
 require 'Optimizer'
 
---for k,v in ipairs(examples) do 
---  for k2,v2 in ipairs(v) do
---    print (k2,v2)
---  end
---end
-
+-- Load Dataset
 local directory = "C:\\Projets\\lbcpp\\workspace\\ClassificationTests\\datasets"
-local dataset = directory .. "/australian_scale.all.0.5"
+local dataset = directory .. "/ionosphere_scale.all.0.5"
 
 local trainFilename = dataset .. ".train"
 local testFilename = dataset .. ".test"
@@ -25,7 +20,31 @@ local testExamples = Data.load(Parser.libSVMClassification, 0, testFilename, lab
 
 print (#trainExamples .. " training examples, " .. #testExamples .. " testing examples " .. labels:size() .. " labels")
 
+-- Make cross validation folds
+local function makeFolds(examples, numFolds)
+  local res = {}
 
+  local numSamples = #examples
+  local order = Stochastic.uniformOrder(numSamples)
+  local meanFoldSize = numSamples / numFolds;
+  local scores = Statistics.mean()
+  for i=1,numFolds do
+    local foldBegin = 1 + math.floor((i - 1) * meanFoldSize)
+    local foldEnd = 1 + math.floor(i * meanFoldSize)
+    local trainExamples = {}
+    local testExamples = {}
+    for index=1,numSamples do
+      local tbl = (index >= foldBegin and index < foldEnd) and testExamples or trainExamples
+      table.insert(tbl, examples[index])
+    end
+    print ("Fold ", i, "num training:", #trainExamples, "num testing", #testExamples)
+    table.insert(res, {trainExamples, testExamples})
+  end
+  return res
+end
+folds = makeFolds(trainExamples, 5)
+
+-- Batch learning procedure
 local function evaluateUpdateRuleFold(updateRule, trainExamples, validationExamples, returnScoreMean)
 
   local function trainAccuracyFunction(parameters)
@@ -78,7 +97,32 @@ local function evaluateUpdateRuleFold(updateRule, trainExamples, validationExamp
   return returnScoreMean and score / numIterations or lastScore
 end
 
-local function evaluateUpdateRuleOnRandomSplit(updateRule, folds, trainExamples)
+--
+-- Cross Validation
+--
+local function crossValidateUpdateRule(updateRule)
+  local numFolds = #folds
+
+  -- evaluate for each fold
+  local scores = Statistics.mean()
+  for i=1,numFolds do
+    local trainExamples = folds[i][1]
+    local testExamples = folds[i][2]
+    local score = context:call("Fold " .. i .. " / " .. numFolds, evaluateUpdateRuleFold, updateRule, trainExamples, testExamples)
+    scores:observe(score)
+  end
+  local cvScore = scores:getMean()
+  local testScore = context:call("Test", evaluateUpdateRuleFold, updateRule, trainExamples, testExamples)
+  context:result("cvScore", cvScore)
+  context:result("testScore", testScore)
+  print ("CVScore: " .. cvScore .. ", Test Score: " .. testScore)
+  return cvScore, testScore
+end
+
+--
+-- Bandit optimization
+--
+local function evaluateUpdateRuleOnRandomSplit(updateRule, trainExamples)
   -- train and test on a random split
   local train = {}
   local validation = {}
@@ -90,26 +134,18 @@ local function evaluateUpdateRuleOnRandomSplit(updateRule, folds, trainExamples)
   return evaluateUpdateRuleFold(updateRule, train, validation, true)
 end
 
-local function updateRuleObjective(updateRule)
-  return evaluateUpdateRuleOnRandomSplit(updateRule, folds, trainExamples)
-end
-
---context:call("constant rate 10", evaluateUpdateRule, ConstantRateWithHingeLoss{rate=1.0}, folds, trainExamples, testExamples)
---context:call("constant rate 0.1", evaluateUpdateRule, ConstantRateWithHingeLoss{rate=-1.0}, folds, trainExamples, testExamples)
---context:call("invlinear", evaluateUpdateRule, InvLinearRateWithHingeLoss{initialValue=0.0, halfPeriod=2}, folds, trainExamples, testExamples)
-
 local function optimizeUpdateRule(numParameters, functor)
 
   local evaluations = {}
 
   local objective = function (parameters)
-    local score = updateRuleObjective(functor(parameters))
+    local score = evaluateUpdateRuleOnRandomSplit(functor(parameters), trainExamples)
     table.insert(evaluations, {parameters, score})
     return score
   end
 
   objective = lbcpp.LuaFunction.create(objective, "DenseDoubleVector<EnumValue,Double>", "Double")
-  local optimizer = Optimizer.HOO{numIterations=numParameters * 50, nu=1.0, rho=0.5, maxDepth=math.max(5,numParameters * 2)}
+  local optimizer = Optimizer.HOO{numIterations=numParameters * 500, nu=1.0, rho=0.5, maxDepth=math.max(5,numParameters * 2)}
   local score,solution = optimizer{objective = objective, initialGuess = Vector.newDense(numParameters)}
   print ("score", score, "solution", solution)
   local updateRule = functor(solution)
@@ -237,15 +273,31 @@ subspecified function Simple2(score, epoch, supervision)
   return parameters[1 + math.floor(normalized * 5)]
 end
 
+----------------------
+
+context:enter("supercurve")
+
+for p=0,1,0.01 do
+  context:enter("P=" .. p)
+  context:result("p", p)
+  crossValidateUpdateRule(constantRateWithHingeLossFunctor({p}))
+  context:leave()
+end
+context:leave()
+
+
+-------------
+--[[
 context:call("optimize constant", optimizeUpdateRule, 1, constantRateWithHingeLossFunctor)
 context:call("optimize simple0", optimizeUpdateRule, 10, |p| Simple0{p=p})
 context:call("optimize invlinearreg", optimizeUpdateRule, 3, |p| RegularizedInvLinearRateWithHingeLoss{p=p})
 context:call("optimize invlinear", optimizeUpdateRule, 2, invLinearRateWithHingeLossFunctor)
+]]
 
 --[[
 context:call("optimize simple1", optimizeUpdateRule, 5, |p| Simple1{parameters=p})
 context:call("optimize simple2", optimizeUpdateRule, 6, |p| Simple2{parameters=p})
---]]
+]]
 
 ----------------
 
