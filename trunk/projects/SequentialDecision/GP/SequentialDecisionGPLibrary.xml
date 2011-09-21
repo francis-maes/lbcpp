@@ -4,10 +4,10 @@
 
   <!-- GP Expr -->
   <enumeration name="GPOperator">
-    <value name="addition" shortName="+"/>
-    <value name="subtraction" shortName="-"/>
-    <value name="multiplication" shortName="*"/>
-    <value name="division" shortName="/"/>
+    <value name="add" shortName="+"/>
+    <value name="sub" shortName="-"/>
+    <value name="mul" shortName="*"/>
+    <value name="div" shortName="/"/>
     <value name="max"/>
     <value name="min"/>
   </enumeration>
@@ -17,9 +17,9 @@
     <value name="cosinus" shortName="cos"/>
     -->
     <!--<value name="exponential" shortName="exp"/> -->
-    <value name="logarithm" shortName="log"/>
-    <value name="squareRoot" shortName="sqrt"/>
-    <value name="inverse" shortName="inverse"/>
+    <value name="log"/>
+    <value name="sqrt"/>
+    <value name="inverse"/>
   </enumeration>
 
   <enumeration name="GPConstant">
@@ -59,10 +59,10 @@
   </class>
 
   <enumeration name="GPExprLabels">
-    <value name="addition"/>
-    <value name="subtraction"/>
-    <value name="multiplication"/>
-    <value name="division"/>
+    <value name="add"/>
+    <value name="sub"/>
+    <value name="mul"/>
+    <value name="div"/>
     <value name="logarithm"/>
     <value name="squareRoot"/>
     <value name="inverse"/>

@@ -130,7 +130,71 @@ protected:
 class BanditFormulaBanditWorkUnit : public WorkUnit
 {
 public:
-  BanditFormulaBanditWorkUnit() : maxSize(3), orderBasedKey(false), minArms(2), maxArms(10), maxExpectedReward(1.0), horizon(1000) {}
+  BanditFormulaBanditWorkUnit() : minArms(2), maxArms(10), maxExpectedReward(1.0), horizon(1000) {}
+
+  virtual Variable run(ExecutionContext& context)
+  {   
+    std::vector<GPExpressionPtr> formulas;
+    if (!loadFormulasFromFile(context, formulasFile, formulas))
+      return false;
+    context.informationCallback("We have " + String((int)formulas.size()) + " formulas");
+
+    FormulaPool pool(minArms, maxArms, maxExpectedReward, horizon);
+    for (size_t i = 0; i < formulas.size(); ++i)
+      pool.addFormula(formulas[i]);
+    
+    for (size_t i = 0; i < 100; ++i)
+    {
+      context.enterScope(T("Iteration ") + String((int)i));
+      for (size_t j = 0; j < formulas.size(); ++j)
+        pool.playBestFormula(context);
+      pool.displayBestFormulas(context);
+      context.leaveScope();
+    }
+    return true;
+  }
+  
+  
+protected:
+  friend class BanditFormulaBanditWorkUnitClass;
+
+  File formulasFile;
+  size_t minArms;
+  size_t maxArms;
+  double maxExpectedReward;
+  size_t horizon;
+
+  bool loadFormulasFromFile(ExecutionContext& context, const File& formulasFile, std::vector<GPExpressionPtr>& res) const
+  {
+    EnumerationPtr variablesEnumeration = gpExpressionDiscreteBanditPolicyVariablesEnumeration;
+
+    InputStream* istr = formulasFile.createInputStream();
+    if (!istr)
+    {
+      context.errorCallback(T("Could not open file ") + formulasFile.getFullPathName());
+      return false;
+    }
+    while (!istr->isExhausted())
+    {
+      String line = istr->readNextLine();
+      if (!line.isEmpty())
+      {
+        GPExpressionPtr expression = GPExpression::createFromString(context, line, variablesEnumeration);
+        if (expression)
+          res.push_back(expression);
+      }
+    }
+    delete istr;
+    return true;
+  }
+   
+};
+
+
+class GenerateUniqueRankingFormulas : public WorkUnit
+{
+public:
+  GenerateUniqueRankingFormulas() : maxSize(3), orderBasedKey(false) {}
 
   typedef std::vector<int> FormulaKey;
   
@@ -142,22 +206,9 @@ public:
     RPNGPExpressionBuilderStatePtr state = new RPNGPExpressionBuilderState("Coucou", gpExpressionDiscreteBanditPolicyVariablesEnumeration, FunctionPtr(), maxSize);
     std::map<FormulaKey, GPExpressionPtr> formulas;
     enumerateAllFormulas(context, state, inputSamples, formulas);
-    
+
     context.informationCallback("We have " + String((int)formulas.size()) + " formulas");
-    
-    FormulaPool pool(minArms, maxArms, maxExpectedReward, horizon);
-    for (std::map<FormulaKey, GPExpressionPtr>::const_iterator it = formulas.begin(); it != formulas.end(); ++it)
-      pool.addFormula(it->second);
-    
-    for (size_t i = 0; i < 100; ++i)
-    {
-      context.enterScope(T("Iteration ") + String((int)i));
-      for (size_t j = 0; j < formulas.size(); ++j)
-        pool.playBestFormula(context);
-      pool.displayBestFormulas(context);
-      context.leaveScope();
-    }
-    return true;
+    return saveFormulasToFile(context, formulas, formulasFile);
   }
   
   void makeInputSamples(ExecutionContext& context, size_t count, std::vector< std::vector<double> >& res)
@@ -293,16 +344,32 @@ public:
   }
   
 protected:
-  friend class BanditFormulaBanditWorkUnitClass;
+  friend class GenerateUniqueRankingFormulasClass;
 
   size_t maxSize;
   bool orderBasedKey;
-  size_t minArms;
-  size_t maxArms;
-  double maxExpectedReward;
-  size_t horizon;
-};
+  File formulasFile;
 
+  bool saveFormulasToFile(ExecutionContext& context, const std::map<FormulaKey, GPExpressionPtr>& formulas, const File& file) const
+  {
+    if (file.exists())
+      file.deleteFile();
+    OutputStream* ostr = file.createOutputStream();
+    if (!ostr)
+    {
+      context.errorCallback(T("Could not open file ") + file.getFullPathName());
+      return false;
+    }
+
+    for (std::map<FormulaKey, GPExpressionPtr>::const_iterator it = formulas.begin(); it != formulas.end(); ++it)
+    {
+      *ostr << it->second->toString();
+      *ostr << "\n";
+    }
+    delete ostr;
+    return true;
+  }
+};
 
 }; /* namespace lbcpp */
 
