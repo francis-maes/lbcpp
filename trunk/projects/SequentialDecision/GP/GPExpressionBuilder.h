@@ -28,7 +28,7 @@ typedef ReferenceCountedObjectPtr<GPExpressionBuilderAction> GPExpressionBuilder
 class ConstantGPExpressionBuilderAction : public GPExpressionBuilderAction
 {
 public:
-  ConstantGPExpressionBuilderAction(double value, bool isLearnable)
+  ConstantGPExpressionBuilderAction(double value, bool isLearnable = false)
     : value(value), learnable(isLearnable) {}
   ConstantGPExpressionBuilderAction() : value(0.0), learnable(true) {}
 
@@ -97,6 +97,13 @@ protected:
   size_t right;
 };
 
+class FinalizeGPExpressionBuilderAction : public GPExpressionBuilderAction
+{
+public:
+  virtual GPExpressionPtr makeExpression(const std::vector<GPExpressionPtr>& currentExpressions) const
+    {return currentExpressions.back();}
+};
+
 class GPExpressionBuilderState : public DecisionProblemState
 {
 public:
@@ -121,6 +128,162 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<GPExpressionBuilderState> GPExpressionBuilderStatePtr;
+
+class RPNGPExpressionBuilderState : public GPExpressionBuilderState
+{
+public:
+  RPNGPExpressionBuilderState(const String& name, EnumerationPtr inputVariables, FunctionPtr objectiveFunction, size_t maxSize)
+    : GPExpressionBuilderState(name, inputVariables, objectiveFunction), currentSize(0), maxSize(maxSize), isFinal(false) {}
+  RPNGPExpressionBuilderState() {}
+  
+  virtual String toShortString() const
+  {
+    String res;
+    for (size_t i = 0; i < stack.size(); ++i)
+    {
+      res += stack[i]->toShortString();
+      if (i < stack.size() - 1)
+        res += ", ";
+    }
+    return res;
+  }
+  
+  virtual TypePtr getActionType() const
+    {return gpExpressionBuilderActionClass;}
+
+  virtual bool isFinalState() const
+    {return isFinal;}
+  
+  virtual ContainerPtr getAvailableActions() const
+  {
+    if (isFinal)
+      return ContainerPtr();
+      
+    ObjectVectorPtr res = new ObjectVector(gpExpressionBuilderActionClass);
+
+    size_t stackSize = stack.size();
+    size_t minArity = 0;
+    size_t maxArity = stackSize;
+    if (maxSize > 0)
+    {
+      jassert(maxSize >= currentSize);
+      size_t remainingSize = maxSize - currentSize;
+      if (remainingSize == 0)
+        maxArity = (size_t)-1;
+      else
+      {
+        enum {maxOperatorArity = 2};
+        size_t maxThatCanBeRemovedAfterThisAction = (remainingSize - 1) * (maxOperatorArity - 1);
+        minArity = stackSize > maxThatCanBeRemovedAfterThisAction ? stackSize - maxThatCanBeRemovedAfterThisAction : 0;
+      }
+    }
+  
+    if (minArity > maxArity || maxArity == (size_t)-1)
+    {
+      res->append(new FinalizeGPExpressionBuilderAction());
+      return res;
+    }
+    
+    if (minArity <= 2 && 2 <= maxArity)
+    {
+      size_t n = gpOperatorEnumeration->getNumElements();
+      for (size_t i = 0; i < n; ++i)
+        res->append(new BinaryGPExpressionBuilderAction((GPOperator)i, stackSize - 2, stackSize - 1));
+    }
+    if (minArity <= 1 && 1 <= maxArity)
+    {
+      size_t n = gpPreEnumeration->getNumElements();
+      for (size_t i = 0; i < n; ++i)
+        res->append(new UnaryGPExpressionBuilderAction((GPPre)i, stackSize - 1));
+    }
+    if (minArity <= 0 && 0 <= maxArity)
+    {
+      size_t n = inputVariables->getNumElements();
+      for (size_t i = 0; i < n; ++i)
+        res->append(new VariableGPExpressionBuilderAction(Variable(i, inputVariables)));
+      res->append(new ConstantGPExpressionBuilderAction(1));
+      res->append(new ConstantGPExpressionBuilderAction(2));
+      res->append(new ConstantGPExpressionBuilderAction(3));
+      res->append(new ConstantGPExpressionBuilderAction(5));
+      res->append(new ConstantGPExpressionBuilderAction(7));
+    }
+    if (1 <= maxArity)
+      res->append(new FinalizeGPExpressionBuilderAction());
+    return res;
+  }
+
+  virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward, Variable* stateBackup = NULL)
+  {
+    const GPExpressionBuilderActionPtr& builderAction = action.getObjectAndCast<GPExpressionBuilderAction>();
+    jassert(!isFinal);
+
+    if (builderAction.isInstanceOf<FinalizeGPExpressionBuilderAction>())
+    {
+      isFinal = true;
+      return;
+    }
+    
+    size_t arity = 0;
+    if (builderAction.isInstanceOf<BinaryGPExpressionBuilderAction>())
+      arity = 2;
+    else if (builderAction.isInstanceOf<UnaryGPExpressionBuilderAction>())
+      arity = 1;
+    
+    GPExpressionPtr expression = builderAction->makeExpression(stack);
+    for (size_t i = 0; i < arity; ++i)
+      stack.pop_back();
+    stack.push_back(expression);
+    currentSize = currentSize + 1;
+  }
+
+  virtual bool undoTransition(ExecutionContext& context, const Variable& stateBackup)
+  {
+    if (isFinal)
+    {
+      isFinal = false;
+      return true;
+    }
+    jassert(stack.size());
+    
+    GPExpressionPtr last = stack.back();
+    stack.pop_back();
+    --currentSize;
+    
+    BinaryGPExpressionPtr binary = last.dynamicCast<BinaryGPExpression>();
+    if (binary)
+    {
+      stack.push_back(binary->getLeft());
+      stack.push_back(binary->getRight());
+      return true;
+    }
+    
+    UnaryGPExpressionPtr unary = last.dynamicCast<UnaryGPExpression>();
+    if (unary)
+    {
+      stack.push_back(unary->getExpression());
+      return true;
+    }
+    return true;
+  }
+
+  virtual GPExpressionPtr getExpression() const
+    {return stack.size() ? stack.back() : GPExpressionPtr();}
+
+  virtual double getScore() const
+    {jassert(false); return 0.0; /* not implemented yet */}
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+    {jassert(false); /* not implemented yet */}
+   
+protected:
+  friend class RPNGPExpressionBuilderStateClass;
+  std::vector<GPExpressionPtr> stack;
+  size_t currentSize;
+  size_t maxSize;
+  bool isFinal;
+};
+
+typedef ReferenceCountedObjectPtr<RPNGPExpressionBuilderState> RPNGPExpressionBuilderStatePtr;
 
 class CompactGPExpressionBuilderState : public GPExpressionBuilderState
 {

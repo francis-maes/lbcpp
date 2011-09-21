@@ -46,10 +46,10 @@ public:
 //    double varianceUB = bandit->getRewardVariance() + sqrt(2 * lnn / Tj);
 
     double inputs[4];
-    inputs[0] = timeStep;
-    inputs[1] = Tj;
-    inputs[2] = bandit->getRewardMean();
-    inputs[3] = bandit->getRewardStandardDeviation();
+    inputs[0] = bandit->getRewardMean();
+    inputs[1] = bandit->getRewardStandardDeviation();
+    inputs[2] = Tj;
+    inputs[3] = timeStep;
   /*  inputs[4] = bandit->getMinReward();
     inputs[5] = bandit->getMaxReward();
     inputs[6] = sqrt(2 * lnn / Tj);

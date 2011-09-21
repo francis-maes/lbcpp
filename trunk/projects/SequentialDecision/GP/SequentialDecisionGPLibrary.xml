@@ -8,6 +8,8 @@
     <value name="subtraction" shortName="-"/>
     <value name="multiplication" shortName="*"/>
     <value name="division" shortName="/"/>
+    <value name="max"/>
+    <value name="min"/>
   </enumeration>
 
   <enumeration name="GPPre">
@@ -95,6 +97,7 @@
     <variable type="Double" name="value"/>
     <variable type="Boolean" name="learnable"/>
   </class>
+  <class name="FinalizeGPExpressionBuilderAction" base="GPExpressionBuilderAction"/>
 
   <class name="GPExpressionBuilderState" base="DecisionProblemState" abstract="yes"/>
 
@@ -106,6 +109,13 @@
     <variable type="ObjectVector[GPExpression]" name="expressions"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="expressionScores"/>
   </class>
+  
+  <class name="RPNGPExpressionBuilderState" base="GPExpressionBuilderState">
+    <variable type="ObjectVector[GPExpression]" name="stack"/>
+    <variable type="PositiveInteger" name="currentSize"/>
+    <variable type="PositiveInteger" name="maxSize"/>
+    <variable type="Boolean" name="isFinal"/>
+  </class>  
 
   <class name="GPExpressionBuilderProblem" base="DecisionProblem"/>
 

@@ -9,7 +9,9 @@ require 'Evaluator'
 require 'Optimizer'
 
 -- Load Dataset
-local directory = "C:\\Projets\\lbcpp\\workspace\\ClassificationTests\\datasets"
+--local directory = "C:\\Projets\\lbcpp\\workspace\\ClassificationTests\\datasets"
+
+local directory = "/Users/francis/Desktop/datasets"
 local dataset = directory .. "/ionosphere_scale.all.0.5"
 
 local trainFilename = dataset .. ".train"
@@ -212,11 +214,11 @@ RegularizedInvLinearRateWithHingeLoss = subspecified {
   end,
   update = function (parameters, gradients)
     local iteration = #gradients - 1
-    local rate = math.pow(10, p[1])
-    local halfPeriod = math.pow(10, p[2])
+    local rate = math.pow(10, -4 + 8 * p[1])
+    local halfPeriod = math.pow(10, 2 * p[2])
     local r =  rate * halfPeriod / (halfPeriod + iteration)
     parameters:add(gradients[1], -rate)
-    parameters:mul(1 - p[3] / 10)
+    parameters:mul(1 - p[3] / 5)
   end
 }
 
@@ -289,9 +291,9 @@ context:leave()
 -------------
 --[[
 context:call("optimize constant", optimizeUpdateRule, 1, constantRateWithHingeLossFunctor)
-context:call("optimize simple0", optimizeUpdateRule, 10, |p| Simple0{p=p})
-context:call("optimize invlinearreg", optimizeUpdateRule, 3, |p| RegularizedInvLinearRateWithHingeLoss{p=p})
 context:call("optimize invlinear", optimizeUpdateRule, 2, invLinearRateWithHingeLossFunctor)
+context:call("optimize invlinearreg", optimizeUpdateRule, 3, |p| RegularizedInvLinearRateWithHingeLoss{p=p})
+context:call("optimize simple0", optimizeUpdateRule, 10, |p| Simple0{p=p})
 ]]
 
 --[[
