@@ -18,14 +18,14 @@ namespace lbcpp
 {
 
 class NearestNeighborBatchLearner;
-extern BatchLearnerPtr nearestNeighborBatchLearner(bool autoNormalizeFeatures = false);
+extern BatchLearnerPtr nearestNeighborBatchLearner();
 
 class NearestNeighborFunction : public Function
 {
 public:
-  NearestNeighborFunction(size_t numNeighbors = 1, bool autoNormalizeFeatures = false, bool includeTheNearestNeighbor = true)
+  NearestNeighborFunction(size_t numNeighbors = 1, bool includeTheNearestNeighbor = true)
     : numNeighbors(numNeighbors)
-    {setBatchLearner(filterUnsupervisedExamplesBatchLearner(nearestNeighborBatchLearner(autoNormalizeFeatures)));}
+    {setBatchLearner(filterUnsupervisedExamplesBatchLearner(nearestNeighborBatchLearner()));}
 
   virtual TypePtr getSupervisionType() const = 0;
 
@@ -52,7 +52,6 @@ protected:
 
   std::vector<SparseDoubleVectorPtr> inputData;
   std::vector<Variable> supervisionData;
-  DenseDoubleVectorPtr normalizationFactors;
 
   virtual Variable computeOutput(ScoresMap& scoredIndices) const = 0;
 };
@@ -63,8 +62,8 @@ typedef ReferenceCountedObjectPtr<NearestNeighborFunction> NearestNeighborFuncti
 class RegressionNearestNeighbor : public NearestNeighborFunction
 {
 public:
-  RegressionNearestNeighbor(size_t numNeighbors, bool autoNormalizeFeatures, bool includeTheNearestNeighbor)
-    : NearestNeighborFunction(numNeighbors, autoNormalizeFeatures, includeTheNearestNeighbor) {}
+  RegressionNearestNeighbor(size_t numNeighbors, bool includeTheNearestNeighbor)
+    : NearestNeighborFunction(numNeighbors, includeTheNearestNeighbor) {}
 
   virtual TypePtr getSupervisionType() const
     {return doubleType;}
@@ -83,8 +82,8 @@ protected:
 class BinaryNearestNeighbor : public NearestNeighborFunction
 {
 public:
-  BinaryNearestNeighbor(size_t numNeighbors, bool autoNormalizeFeatures, bool includeTheNearestNeighbor, bool useWeightedScore)
-    : NearestNeighborFunction(numNeighbors, autoNormalizeFeatures, includeTheNearestNeighbor), useWeightedScore(useWeightedScore) {}
+  BinaryNearestNeighbor(size_t numNeighbors, bool includeTheNearestNeighbor, bool useWeightedScore)
+    : NearestNeighborFunction(numNeighbors, includeTheNearestNeighbor), useWeightedScore(useWeightedScore) {}
 
   virtual TypePtr getSupervisionType() const
     {return sumType(booleanType, probabilityType);}
@@ -105,8 +104,8 @@ protected:
 class ClassificationNearestNeighbor : public NearestNeighborFunction
 {
 public:
-  ClassificationNearestNeighbor(size_t numNeighbors, bool autoNormalizeFeatures, bool includeTheNearestNeighbor)
-    : NearestNeighborFunction(numNeighbors, autoNormalizeFeatures, includeTheNearestNeighbor) {}
+  ClassificationNearestNeighbor(size_t numNeighbors, bool includeTheNearestNeighbor)
+    : NearestNeighborFunction(numNeighbors, includeTheNearestNeighbor) {}
 
   virtual TypePtr getSupervisionType() const
     {return doubleVectorClass(enumValueType, probabilityType);}
@@ -130,25 +129,17 @@ protected:
 class NearestNeighborBatchLearner : public BatchLearner
 {
 public:
-  NearestNeighborBatchLearner(bool autoNormalizeFeatures = false)
-    : autoNormalizeFeatures(autoNormalizeFeatures) {}
-
   virtual TypePtr getRequiredFunctionType() const
     {return nearestNeighborFunctionClass;}
 
   virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const;
-
-protected:
-  friend class NearestNeighborBatchLearnerClass;
-
-  bool autoNormalizeFeatures;
 };
 
 class NearestNeighborLearningMachine : public ProxyFunction
 {
 public:
-  NearestNeighborLearningMachine(size_t numNeighbors, bool autoNormalizeFeatures, bool includeTheNearestNeighbor)
-    : numNeighbors(numNeighbors), autoNormalizeFeatures(autoNormalizeFeatures), includeTheNearestNeighbor(includeTheNearestNeighbor) {}
+  NearestNeighborLearningMachine(size_t numNeighbors, bool includeTheNearestNeighbor)
+    : numNeighbors(numNeighbors), includeTheNearestNeighbor(includeTheNearestNeighbor) {}
 
   virtual size_t getNumRequiredInputs() const
     {return 2;}
@@ -164,11 +155,11 @@ public:
     const TypePtr supervisionType = inputVariables[1]->getType();
 
     if (supervisionType == doubleType)
-      return regressionNearestNeighbor(numNeighbors, autoNormalizeFeatures, includeTheNearestNeighbor);
+      return regressionNearestNeighbor(numNeighbors, includeTheNearestNeighbor);
     else if (supervisionType == probabilityType || supervisionType == booleanType)
-      return binaryNearestNeighbor(numNeighbors, autoNormalizeFeatures, includeTheNearestNeighbor, false);
+      return binaryNearestNeighbor(numNeighbors, includeTheNearestNeighbor, false);
     else if (supervisionType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
-      return classificationNearestNeighbor(numNeighbors, autoNormalizeFeatures, includeTheNearestNeighbor);
+      return classificationNearestNeighbor(numNeighbors, includeTheNearestNeighbor);
     else
     {
       jassertfalse;
@@ -182,7 +173,6 @@ protected:
   NearestNeighborLearningMachine() {}
 
   size_t numNeighbors;
-  bool autoNormalizeFeatures;
   bool includeTheNearestNeighbor;
 };
 

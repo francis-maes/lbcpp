@@ -210,4 +210,23 @@
   <class name="TestBanditEDAOptimizer" base="WorkUnit"/>
   <!-- END LargeBox -->
 
+  <!-- BEGIN BanditBox -->
+  <class name="BanditCandidate" base="Object">
+    <variable type="Function" name="function"/>
+    <variable type="Stream" name="examples"/>
+    <variable type="Variable" name="parameters"/>
+  </class>
+  <class name="BanditFunction" base="SimpleUnaryFunction"/>
+  <class name="DoubleVectorContainerSet" base="Object"/>
+  <class name="ContainerBasedStream" base="Stream">
+    <variable type="Container[Variable]" name="container"/>
+    <variable type="PositiveInteger" name="nextIndex"/>
+  </class>
+  <class name="ProteinBanditTestFeatures" base="WorkUnit">
+    <variable type="String" name="proteinsDirectory" shortName="in"/>
+  </class>
+  <class name="ProteinBanditTestSampler" base="WorkUnit">
+    <variable type="String" name="proteinsPath" shortName="in"/>
+  </class>
+  <!-- END BanditBox -->
 </library>

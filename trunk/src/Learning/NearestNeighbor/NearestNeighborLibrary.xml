@@ -11,28 +11,26 @@
   </class>
 
   <class name="BinaryNearestNeighbor" base="NearestNeighborFunction">
-    <constructor arguments="size_t numNeighbors, bool autoNormalizeFeatures, bool includeTheNearestNeighbor, bool useWeightedScore" returnType="Function"/>
+    <constructor arguments="size_t numNeighbors, bool includeTheNearestNeighbor, bool useWeightedScore" returnType="Function"/>
     <variable type="Boolean" name="useWeightedScore"/>
   </class>
 
   <class name="RegressionNearestNeighbor" base="NearestNeighborFunction">
-    <constructor arguments="size_t numNeighbors, bool autoNormalizeFeatures, bool includeTheNearestNeighbor" returnType="Function"/>
+    <constructor arguments="size_t numNeighbors, bool includeTheNearestNeighbor" returnType="Function"/>
   </class>
 
   <class name="ClassificationNearestNeighbor" base="NearestNeighborFunction">
-    <constructor arguments="size_t numNeighbors, bool autoNormalizeFeatures, bool includeTheNearestNeighbor" returnType="Function"/>
+    <constructor arguments="size_t numNeighbors, bool includeTheNearestNeighbor" returnType="Function"/>
     <variable type="Enumeration" name="enumeration"/>
   </class>
 
   <class name="NearestNeighborBatchLearner" base="BatchLearner">
-    <constructor arguments="bool autoNormalizeFeatures"/>
-    <variable type="Boolean" name="autoNormalizeFeatures"/>
+    <constructor/>
   </class>
 
   <class name="NearestNeighborLearningMachine" base="ProxyFunction">
-    <constructor arguments="size_t numNeighbors, bool autoNormalizeFeatures, bool includeTheNearestNeighbor" returnType="Function"/>
+    <constructor arguments="size_t numNeighbors, bool includeTheNearestNeighbor" returnType="Function"/>
     <variable type="PositiveInteger" name="numNeighbors"/>
-    <variable type="Boolean" name="autoNormalizeFeatures"/>
     <variable type="Boolean" name="includeTheNearestNeighbor"/>
   </class>
 

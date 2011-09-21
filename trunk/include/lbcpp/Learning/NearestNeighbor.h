@@ -14,11 +14,11 @@
 namespace lbcpp
 {
 
-extern FunctionPtr binaryNearestNeighbor(size_t numNeighbors, bool autoNormalizeFeatures = false, bool includeTheNearestNeighbor = true, bool useWeightedScore = false);
-extern FunctionPtr classificationNearestNeighbor(size_t numNeighbors, bool autoNormalizeFeatures = false, bool includeTheNearestNeighbor = true);
-extern FunctionPtr regressionNearestNeighbor(size_t numNeighbors, bool autoNormalizeFeatures = false, bool includeTheNearestNeighbor = true);
+extern FunctionPtr binaryNearestNeighbor(size_t numNeighbors, bool includeTheNearestNeighbor = true, bool useWeightedScore = false);
+extern FunctionPtr classificationNearestNeighbor(size_t numNeighbors, bool includeTheNearestNeighbor = true);
+extern FunctionPtr regressionNearestNeighbor(size_t numNeighbors, bool includeTheNearestNeighbor = true);
 
-extern FunctionPtr nearestNeighborLearningMachine(size_t numNeighbors, bool autoNormalizeFeatures, bool includeTheNearestNeighbor);
+extern FunctionPtr nearestNeighborLearningMachine(size_t numNeighbors, bool includeTheNearestNeighbor);
 
 extern FunctionPtr binaryLocalitySensitiveHashing(size_t numNeighbors);
 

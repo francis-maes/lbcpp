@@ -1,3 +1,4 @@
+
 #include "Data/Protein.h"
 #include "../Evaluator/ProteinEvaluator.h"
 
@@ -13,6 +14,8 @@
 #include "../Predictor/NumericalCysteinPredictorParameters.h"
 #include "../Predictor/Lin09PredictorParameters.h"
 
+#ifndef _PROTEINS_BRICO_BOX_
+#define _PROTEINS_BRICO_BOX_
 /*
 ** BricoBox - Some non-important test tools
 */
@@ -564,7 +567,8 @@ public:
     }
 
     NormalizeDoubleVectorPtr target = function.staticCast<NormalizeDoubleVector>();
-    EnumerationPtr enumeration = trainingData[0]->getVariable(0).getObjectAndCast<DoubleVector>()->getElementsEnumeration();
+    jassert(trainingData[0].dynamicCast<DoubleVector>());
+    EnumerationPtr enumeration = trainingData[0].dynamicCast<DoubleVector>()->getElementsEnumeration();
     jassert(target && enumeration);
     // Initialize
     const size_t dimension = enumeration->getNumElements();
@@ -578,7 +582,8 @@ public:
     const size_t n = trainingData.size();
     for (size_t i = 0; i < n; ++i)
     {
-      DoubleVectorPtr data =  trainingData[i]->getVariable(0).getObjectAndCast<DoubleVector>();
+      DoubleVectorPtr data =  trainingData[i].dynamicCast<DoubleVector>();
+      jassert(data);
       const size_t numValues = data->getNumElements();
       for (size_t i = 0; i < numValues; ++i)
       {
@@ -806,3 +811,5 @@ public:
 };
 
 };
+
+#endif // !_PROTEINS_BRICO_BOX_
