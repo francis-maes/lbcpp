@@ -140,7 +140,6 @@ protected:
 
   size_t selectMaximumIndexBandit(ExecutionContext& context, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
   {
-    std::set<size_t> argmax;
     double bestScore = -DBL_MAX;
     size_t numBests = 0;
     size_t bestBandit = 0;

@@ -37,15 +37,21 @@ enum GPPre
 extern EnumerationPtr gpPreEnumeration;
 extern EnumerationPtr gpConstantEnumeration;
 
+class GPExpression;
+typedef ReferenceCountedObjectPtr<GPExpression> GPExpressionPtr;
+
 class GPExpression : public Object
 {
 public:
   virtual double compute(const double* x) const = 0;
 
   virtual size_t size() const = 0;
+
+  static GPExpressionPtr createFromString(ExecutionContext& context, const String& str, EnumerationPtr variables)
+    {int position = 0; return createFromString(context, str, variables, position);}
+  static  GPExpressionPtr createFromString(ExecutionContext& context, const String& str, EnumerationPtr variables, int& position);
 };
 
-typedef ReferenceCountedObjectPtr<GPExpression> GPExpressionPtr;
 extern ClassPtr gpExpressionClass;
 
 extern ClassPtr variableGPExpressionClass;
@@ -91,6 +97,9 @@ public:
     default: jassert(false); return 0.0;
     };
   }
+
+  virtual String toString() const
+    {return T("U(") + Variable(pre, gpPreEnumeration).toString() + T(", ") + (expr ? expr->toString() : String("<null>")) + T(")");}
 
   virtual String toShortString() const
     {return Variable(pre, gpPreEnumeration).toShortString() + T("(") + (expr ? expr->toShortString() : String("<null>")) + T(")");}
@@ -155,6 +164,13 @@ public:
     case gpMin: return l < r ? l : r;
     default: jassert(false); return 0.0;
     }
+  }
+
+  virtual String toString() const
+  {
+    return T("B(") + Variable(op, gpOperatorEnumeration).toString() + T(", ") +
+        (left ? left->toString() : String("<null>")) + T(", ") +
+        (right ? right->toString() : String("<null>")) + T(")");
   }
 
   virtual String toShortString() const
@@ -233,6 +249,9 @@ public:
   virtual double compute(const double* x) const
     {return x[index];}
 
+  virtual String toString() const
+    {return T("V(") + Variable(index, enumeration).toString() + T(")");}
+
   virtual String toShortString() const
     {return enumeration ? Variable(index, enumeration).toShortString() : T("v") + String((int)index);}
 
@@ -263,6 +282,9 @@ public:
   virtual double compute(const double* x) const
     {return value;}
 
+  virtual String toString() const
+    {return T("C(") + String(getValue()) + T(")");}
+
   virtual String toShortString() const
   {
     String res(getValue());
@@ -289,6 +311,91 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<ConstantGPExpression> ConstantGPExpressionPtr;
+
+inline GPExpressionPtr GPExpression::createFromString(ExecutionContext& context, const String& str, EnumerationPtr variables, int& position)
+{
+  if (position >= str.length())
+  {
+    context.errorCallback(T("Unexpected end of string in ") + str);
+    return GPExpressionPtr();
+  }
+
+  while (position < str.length() && str[position] == ' ')
+    ++position;
+
+  if (str[position] == 'B')
+  {
+    position += 2;
+    int comma = str.indexOfChar(position, ',');
+    if (comma < 0) {context.errorCallback(T("Syntax error in ") + str); return GPExpressionPtr();}
+    String opString = str.substring(position, comma);
+    int op = gpOperatorEnumeration->findElementByName(opString);
+    if (op < 0)
+    {
+      context.errorCallback(T("Could not parse operator ") + opString);
+      return GPExpressionPtr();
+    }
+    position = comma + 1;
+    GPExpressionPtr left = createFromString(context, str, variables, position);
+    if (!left)
+      return GPExpressionPtr();
+    jassert(str[position] == ','); ++ position;
+    GPExpressionPtr right = createFromString(context, str, variables, position);
+    if (!right)
+      return GPExpressionPtr();
+    jassert(str[position] == ')'); ++position;
+    return new BinaryGPExpression(left, (GPOperator)op, right);
+  }
+  else if (str[position] == 'U')
+  {
+    position += 2;
+    int comma = str.indexOfChar(position, ',');
+    if (comma < 0) {context.errorCallback(T("Syntax error in ") + str); return GPExpressionPtr();}
+    String opString = str.substring(position, comma);
+    int op = gpPreEnumeration->findElementByName(opString);
+    if (op < 0)
+    {
+      context.errorCallback(T("Could not parse operator ") + opString);
+      return GPExpressionPtr();
+    }
+    position = comma + 1;
+    GPExpressionPtr expr = createFromString(context, str, variables, position);
+    if (!expr)
+      return GPExpressionPtr();
+    jassert(str[position] == ')'); ++position;
+    return new UnaryGPExpression((GPPre)op, expr);
+  }
+  else if (str[position] == 'V')
+  {
+    position += 2;
+    int paren = str.indexOfChar(position, ')');
+    if (paren < 0) {context.errorCallback(T("Syntax error in ") + str); return GPExpressionPtr();}
+    String idString = str.substring(position, paren);
+    int id = variables->findElementByName(idString);
+    if (id < 0)
+    {
+      context.errorCallback(T("Could not parse variable ") + idString);
+      return GPExpressionPtr();
+    }
+    position = paren + 1;
+    return new VariableGPExpression(Variable(id, variables));
+  }
+  else if (str[position] == 'C')
+  {
+    position += 2;
+    int paren = str.indexOfChar(position, ')');
+    if (paren < 0) {context.errorCallback(T("Syntax error in ") + str); return GPExpressionPtr();}
+    String cstString = str.substring(position, paren);
+    position = paren + 1;
+    return new ConstantGPExpression(cstString.getDoubleValue());
+  }
+  else
+  {
+    context.errorCallback(T("Could not parse ") + str);
+    return GPExpressionPtr();
+  }
+}
+
 
 class GPStructureScoreObject : public ScoreObject
 {
