@@ -20,6 +20,8 @@ enum GPOperator
   gpSubtraction,
   gpMultiplication,
   gpDivision,
+  gpMax,
+  gpMin
 };
 
 extern EnumerationPtr gpOperatorEnumeration;
@@ -149,16 +151,24 @@ public:
     case gpSubtraction: return l - r;
     case gpMultiplication: return l * r;
     case gpDivision: return r ? l / r : DBL_MAX;
+    case gpMax: return l > r ? l : r;
+    case gpMin: return l < r ? l : r;
     default: jassert(false); return 0.0;
     }
   }
 
   virtual String toShortString() const
   {
+    String l = (left ? left->toShortString() : String("<null>"));
+    String r = (right ? right->toShortString() : String("<null>"));
+  
+    if (op == gpMin || op == gpMax)
+      return (op == gpMin ? T("min(") : T("max(")) + l + T(", ") + r + T(")");
+    
     const char* names[] = {"+", "-", "*", "/"};
-    return T("(") + (left ? left->toShortString() : String("<null>")) + T(")") +
+    return T("(") + l + T(")") +
             names[op] +
-           T("(") + (right ? right->toShortString() : String("<null>")) + T(")");
+           T("(") + r + T(")");
   }
 
   GPOperator getOperator() const

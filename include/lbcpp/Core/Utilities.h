@@ -45,7 +45,7 @@ inline bool isNumberValid(double number)
 #ifdef JUCE_WIN32
     return (number == number) && (number != DBL_MAX) && (number != -DBL_MAX) && (std::fabs(number) != HUGE_VAL);
 #else
-    return !std::isnan(number) && !std::isinf(number);
+    return !std::isnan(number) && !std::isinf(number) && (number != DBL_MAX) && (number != -DBL_MAX);
 #endif
 }
 

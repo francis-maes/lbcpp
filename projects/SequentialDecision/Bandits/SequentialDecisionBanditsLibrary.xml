@@ -69,10 +69,10 @@
   </class>
 
   <enumeration name="GPExpressionDiscreteBanditPolicyVariables" shortName="gp">
-    <value name="T"/>
-    <value name="T_i"/>
-    <value name="mean(R)"/>
-    <value name="stddev(R)"/>
+    <value name="rk"/>
+    <value name="sk"/>
+    <value name="tk"/>
+    <value name="t"/>
     <!--    <value name="min(R)"/>
     <value name="max(R)"/>
     <value name="ucb1-rightterm"/>
@@ -136,6 +136,16 @@
     <variable type="ObjectVector[GPExpression]" name="expressions"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="expressionScores"/>
   </class>
-  
+
+  <!-- Bandit Formula Bandit -->
+  <class name="BanditFormulaBanditWorkUnit" base="WorkUnit">
+    <variable type="PositiveInteger" name="maxSize"/>
+    <variable type="Boolean" name="orderBasedKey"/>
+    <variable type="PositiveInteger" name="minArms"/>
+    <variable type="PositiveInteger" name="maxArms"/>
+    <variable type="Double" name="maxExpectedReward"/>
+    <variable type="PositiveInteger" name="horizon"/>
+  </class>
+
 </library>
 
