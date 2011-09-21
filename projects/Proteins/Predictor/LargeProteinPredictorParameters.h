@@ -12,6 +12,7 @@
 # include "ProteinPredictor.h"
 # include "ProteinPerception.h"
 # include "ProteinPredictorParameters.h"
+# include "ConnectivityPatternClassifier.h"
 # include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 # include <lbcpp/Learning/Numerical.h>
 # include <lbcpp/Learning/NearestNeighbor.h>
@@ -240,6 +241,28 @@ public:
     return res;
   }
 
+  static std::vector<SamplerPtr> createSamplers()
+  {
+    const size_t n = largeProteinParametersClass->getNumMemberVariables();
+    std::vector<SamplerPtr> res(n);
+    for (size_t i = 0; i < n; ++i)
+    {
+      const TypePtr varType = largeProteinParametersClass->getMemberVariableType(i);
+      const String varName = largeProteinParametersClass->getMemberVariableName(i);
+      if (varType->inheritsFrom(booleanType))
+        res[i] = bernoulliSampler(0.5);
+      else if (varName.endsWith(T("WindowSize")))
+        res[i] = discretizeSampler(gaussianSampler(15, 15), 0, 40);
+      else if (varName.endsWith(T("LocalHistogramSize")))
+        res[i] = discretizeSampler(gaussianSampler(50, 50), 0, 100);
+      else if (varName == T("separationProfilSize"))
+        res[i] = discretizeSampler(gaussianSampler(10, 10), 0, 20);
+      else
+        jassertfalse;
+    }
+    return res;
+  }
+
   static std::vector<StreamPtr> createSingleTaskStreams(ProteinTarget target)
   {
     std::vector<StreamPtr> res = createStreams();
@@ -302,6 +325,34 @@ public:
 
     return res;
   }
+
+  static std::vector<SamplerPtr> createSingleTaskSingleStageSamplers()
+  {
+    std::vector<SamplerPtr> res = createSamplers();
+
+    res[largeProteinParametersClass->findMemberVariable(T("useSS3GlobalHistogram"))] = constantSampler(false);
+    res[largeProteinParametersClass->findMemberVariable(T("ss3WindowSize"))] = constantSampler(Variable(0, positiveIntegerType));
+    res[largeProteinParametersClass->findMemberVariable(T("ss3LocalHistogramSize"))] = constantSampler(Variable(0, positiveIntegerType));
+
+    res[largeProteinParametersClass->findMemberVariable(T("useSS8GlobalHistogram"))] = constantSampler(false);
+    res[largeProteinParametersClass->findMemberVariable(T("ss8WindowSize"))] = constantSampler(Variable(0, positiveIntegerType));
+    res[largeProteinParametersClass->findMemberVariable(T("ss8LocalHistogramSize"))] = constantSampler(Variable(0, positiveIntegerType));
+
+    res[largeProteinParametersClass->findMemberVariable(T("useSAGlobalHistogram"))] = constantSampler(false);
+    res[largeProteinParametersClass->findMemberVariable(T("saWindowSize"))] = constantSampler(Variable(0, positiveIntegerType));
+    res[largeProteinParametersClass->findMemberVariable(T("saLocalHistogramSize"))] = constantSampler(Variable(0, positiveIntegerType));
+
+    res[largeProteinParametersClass->findMemberVariable(T("useDRGlobalHistogram"))] = constantSampler(false);
+    res[largeProteinParametersClass->findMemberVariable(T("drWindowSize"))] = constantSampler(Variable(0, positiveIntegerType));
+    res[largeProteinParametersClass->findMemberVariable(T("drLocalHistogramSize"))] = constantSampler(Variable(0, positiveIntegerType));
+
+    res[largeProteinParametersClass->findMemberVariable(T("useSTALGlobalHistogram"))] = constantSampler(false);
+    res[largeProteinParametersClass->findMemberVariable(T("stalWindowSize"))] = constantSampler(Variable(0, positiveIntegerType));
+    res[largeProteinParametersClass->findMemberVariable(T("stalLocalHistogramSize"))] = constantSampler(Variable(0, positiveIntegerType));
+
+    return res;
+  }
+
 protected:
   friend class LargeProteinParametersClass;
 };
@@ -321,7 +372,10 @@ public:
     , x3Splits(0)
     , sgdRate(1.0)
     , sgdIterations(100)
-    , useAddBias(false) {}
+    , useAddBias(false)
+  {
+    initializeFeatureGenerators();
+  }
 
   virtual void proteinPerception(CompositeFunctionBuilder& builder) const
   {
@@ -598,7 +652,7 @@ public:
     if (learningMachineName == T("LibSVM"))
       return libSVMLearningMachine(pow(2.0, svmC), rbfKernel, 0, pow(2.0, svmGamma), 0.0);
     else if (learningMachineName == T("kNN"))
-      return nearestNeighborLearningMachine(knnNeighbors, true, true);
+      return nearestNeighborLearningMachine(knnNeighbors, true);
     else if (learningMachineName == T("LSH"))
       return binaryLocalitySensitiveHashing(knnNeighbors);
     else if (learningMachineName == T("ExtraTrees"))
@@ -617,6 +671,277 @@ public:
   void setParameters(LargeProteinParametersPtr parameters)
     {fp = parameters;}
 
+  class ParameteredCompositeFunction : public CompositeFunction
+  {
+  public:
+    void setParameter(const Variable& v)
+      {parameter = v;}
+
+  protected:
+    Variable parameter;
+  };
+
+  typedef ReferenceCountedObjectPtr<ParameteredCompositeFunction> ParameteredCompositeFunctionPtr;
+  
+  class WindowFunction : public ParameteredCompositeFunction
+  {
+  public:
+    WindowFunction(const FunctionPtr& residueFunction, const String& residueShortName = T("??"))
+      : residueFunction(residueFunction), residueShortName(residueShortName) {}
+
+    virtual void buildFunction(CompositeFunctionBuilder& builder)
+    {
+      size_t protein = builder.addInput(proteinClass, T("protein"));
+      
+      size_t length = builder.addFunction(new ProteinLengthFunction(), protein, T("length"));
+      size_t primaryFeatures = builder.addFunction(createVectorFunction(residueFunction), length, protein);
+      
+      builder.addFunction(createVectorFunction(lbcppMemberCompositeFunction(WindowFunction, perResidue)), length, primaryFeatures);
+    }
+  protected:
+    FunctionPtr residueFunction;
+    String residueShortName;
+
+    void perResidue(CompositeFunctionBuilder& builder) const
+    {
+      size_t position = builder.addInput(positiveIntegerType, T("position"));
+      size_t primaryFeatures = builder.addInput(containerClass(), T("primary"));
+      builder.addFunction(centeredContainerWindowFeatureGenerator(parameter.getInteger()), primaryFeatures, position, T("w(") + residueShortName + T(",") + parameter.getInteger() + T(")"));
+    }
+  };
+
+  class GlobalHistogramFunction : public ParameteredCompositeFunction
+  {
+  public:
+    GlobalHistogramFunction(const FunctionPtr& residueFunction, const String& residueShortName = T("??"))
+      : residueFunction(residueFunction), residueShortName(residueShortName) {}
+
+    virtual void buildFunction(CompositeFunctionBuilder& builder)
+    {
+      size_t protein = builder.addInput(proteinClass, T("protein"));
+
+      size_t length = builder.addFunction(new ProteinLengthFunction(), protein, T("length"));
+      size_t primaryFeatures = builder.addFunction(createVectorFunction(residueFunction), length, protein);
+      size_t primaryFeaturesAcc = builder.addFunction(accumulateContainerFunction(), primaryFeatures);
+      size_t result = builder.addFunction(accumulatorGlobalMeanFunction(), primaryFeaturesAcc, T("h(") + residueShortName + (")"));
+
+      builder.addFunction(new IdentityCreateVector(), length, result);
+    }
+
+  protected:
+    FunctionPtr residueFunction;
+    String residueShortName;
+  };
+
+  class LocalHistogramFunction : public ParameteredCompositeFunction
+  {
+  public:
+    LocalHistogramFunction(const FunctionPtr& residueFunction, const String& residueShortName = T("??"))
+      : residueFunction(residueFunction), residueShortName(residueShortName) {}
+
+    virtual void buildFunction(CompositeFunctionBuilder& builder)
+    {
+      size_t protein = builder.addInput(proteinClass, T("protein"));
+
+      size_t length = builder.addFunction(new ProteinLengthFunction(), protein, T("length"));
+      size_t primaryFeatures = builder.addFunction(createVectorFunction(residueFunction), length, protein);
+      size_t primaryFeaturesAcc = builder.addFunction(accumulateContainerFunction(), primaryFeatures);
+
+      builder.addFunction(createVectorFunction(lbcppMemberCompositeFunction(LocalHistogramFunction, perResidue)), length, primaryFeaturesAcc);
+    }
+
+  protected:
+    FunctionPtr residueFunction;
+    String residueShortName;
+
+    void perResidue(CompositeFunctionBuilder& builder) const
+    {
+      size_t position = builder.addInput(positiveIntegerType, T("position"));
+      size_t primaryFeaturesAcc = builder.addInput(containerClass(), T("accumulator"));
+
+      builder.addFunction(accumulatorLocalMeanFunction(parameter.getInteger()), primaryFeaturesAcc, position, T("h(") + residueShortName + (",") + parameter.getInteger() + T(")"));
+    }
+  };
+
+  class SeperationProfilFunction : public ParameteredCompositeFunction
+  {
+  public:
+    virtual void buildFunction(CompositeFunctionBuilder& builder)
+    {
+      size_t protein = builder.addInput(proteinClass, T("protein"));
+
+      size_t length = builder.addFunction(new ProteinLengthFunction(), protein, T("length"));
+      builder.addFunction(createVectorFunction(lbcppMemberCompositeFunction(SeperationProfilFunction, perResidue)), length, protein, T("residueFeatures"));
+    }
+  
+  protected:
+    void perResidue(CompositeFunctionBuilder& builder) const
+    {
+      size_t position = builder.addInput(positiveIntegerType, T("position"));
+      size_t protein = builder.addInput(proteinClass, T("protein"));
+
+      builder.addFunction(new CysteinSeparationProfilFeatureGenerator(parameter.getInteger(), true), protein, position, T("CysProfil(") + String(parameter.getInteger()) + T(")"));
+    }
+  };
+
+  void proteinLengthFeatures(CompositeFunctionBuilder& builder) const
+  {
+    builder.addInput(positiveIntegerType);
+    size_t protein = builder.addInput(proteinClass, T("protein"));
+
+    size_t length = builder.addFunction(new ProteinLengthFunction(), protein, T("length"));
+    builder.addFunction(integerFeatureGenerator(), length, T("length"));
+  }
+
+  void numCysteinFeatures(CompositeFunctionBuilder& builder) const
+  {
+    builder.addInput(positiveIntegerType);
+    size_t protein = builder.addInput(proteinClass, T("protein"));
+
+    size_t numCys = builder.addFunction(new NumCysteinsFunction(), protein);
+    builder.addFunction(integerFeatureGenerator(), numCys, T("#Cys"));
+  }
+
+  void isNumCysteinEven(CompositeFunctionBuilder& builder) const
+  {
+    builder.addInput(positiveIntegerType);
+    size_t protein = builder.addInput(proteinClass, T("protein"));
+
+    builder.addFunction(new IsNumCysteinPair(), protein, T("(#Cys+1) % 2"));
+  }
+
+  class ProteinDecoratedCreateVector : public CompositeFunction
+  {
+  public:
+    ProteinDecoratedCreateVector(const FunctionPtr& function)
+      : function(function) {}
+
+    virtual void buildFunction(CompositeFunctionBuilder& builder)
+    {
+      size_t protein = builder.addInput(proteinClass, T("protein"));
+      size_t length = builder.addFunction(new ProteinLengthFunction(), protein, T("length"));
+      builder.addFunction(createVectorFunction(function), length, protein);
+    }
+
+  protected:
+    FunctionPtr function;
+  };
+
+  class IdentityCreateVector : public CompositeFunction
+  {
+  public:
+    virtual void buildFunction(CompositeFunctionBuilder& builder)
+    {
+      size_t length = builder.addInput(positiveIntegerType, T("length"));
+      size_t value = builder.addInput(anyType, T("value"));
+      builder.addFunction(createVectorFunction(lbcppMemberCompositeFunction(IdentityCreateVector, identity)), length, value);
+    }
+
+  protected:
+    void identity(CompositeFunctionBuilder& builder) const
+    {
+      builder.addInput(positiveIntegerType);
+      builder.addInput(anyType, T("value"));
+    }
+  };
+
+  void relativePositionFeature(CompositeFunctionBuilder& builder) const
+  {
+    size_t position = builder.addInput(positiveIntegerType, T("position"));
+    size_t protein = builder.addInput(proteinClass, T("protein"));
+
+    size_t length = builder.addFunction(new ProteinLengthFunction(), protein, T("length"));
+
+    builder.addFunction(new RelativeValueFeatureGenerator(1), position, length, T("Pos/Len"));
+  }
+
+  void relativeCysteinIndexFeature(CompositeFunctionBuilder& builder) const
+  {
+    size_t position = builder.addInput(positiveIntegerType, T("position"));
+    size_t protein = builder.addInput(proteinClass, T("protein"));
+
+    size_t cysteinIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, position);
+    size_t numCysteins = builder.addFunction(new NumCysteinsFunction(), protein);
+
+    builder.addFunction(new RelativeValueFeatureGenerator(1), cysteinIndex, numCysteins, T("Cys/#Cys"));
+  }
+
+  void initializeFeatureGenerators()
+  {
+    featureGenerators.resize(largeProteinParametersClass->getNumMemberVariables());
+    addFeatureGenerator(T("useProteinLength"),    new ProteinDecoratedCreateVector(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, proteinLengthFeatures)));
+    addFeatureGenerator(T("useNumCysteins"),      new ProteinDecoratedCreateVector(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, numCysteinFeatures)));
+    addFeatureGenerator(T("useIsNumCysteinEven"), new ProteinDecoratedCreateVector(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, isNumCysteinEven)));
+
+    addFeatureGenerator(T("useAminoAcidGlobalHistogram"), new GlobalHistogramFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, aaResidueFeatures), T("AA")));
+    addFeatureGenerator(T("usePSSMGlobalHistogram"),      new GlobalHistogramFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, pssmResidueFeatures), T("PSSM")));
+    addFeatureGenerator(T("useSS3GlobalHistogram"),       new GlobalHistogramFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, ss3ResidueFeatures), T("SS3")));
+    addFeatureGenerator(T("useSS8GlobalHistogram"),       new GlobalHistogramFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, ss8ResidueFeatures), T("SS8")));
+    addFeatureGenerator(T("useSAGlobalHistogram"),        new GlobalHistogramFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, saResidueFeatures), T("SA")));
+    addFeatureGenerator(T("useDRGlobalHistogram"),        new GlobalHistogramFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, drResidueFeatures), T("DR")));
+    addFeatureGenerator(T("useSTALGlobalHistogram"),      new GlobalHistogramFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, stalResidueFeatures), T("StAl")));
+
+    addFeatureGenerator(T("useRelativePosition"),     new ProteinDecoratedCreateVector(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, relativePositionFeature)));
+    addFeatureGenerator(T("useRelativeCysteinIndex"), new ProteinDecoratedCreateVector(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, relativeCysteinIndexFeature)));
+
+    addFeatureGenerator(T("aminoAcidWindowSize"), new WindowFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, aaResidueFeatures), T("AA")));
+    addFeatureGenerator(T("pssmWindowSize"),      new WindowFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, pssmResidueFeatures), T("PSSM")));
+    addFeatureGenerator(T("ss3WindowSize"),       new WindowFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, ss3ResidueFeatures), T("SS3")));
+    addFeatureGenerator(T("ss8WindowSize"),       new WindowFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, ss8ResidueFeatures), T("SS8")));
+    addFeatureGenerator(T("saWindowSize"),        new WindowFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, saResidueFeatures), T("SA")));
+    addFeatureGenerator(T("drWindowSize"),        new WindowFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, drResidueFeatures), T("DR")));
+    addFeatureGenerator(T("stalWindowSize"),      new WindowFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, stalResidueFeatures), T("StAl")));
+    
+    addFeatureGenerator(T("aminoAcidLocalHistogramSize"), new LocalHistogramFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, aaResidueFeatures), T("AA")));
+    addFeatureGenerator(T("pssmLocalHistogramSize"),      new LocalHistogramFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, pssmResidueFeatures), T("PSSM")));
+    addFeatureGenerator(T("ss3LocalHistogramSize"),       new LocalHistogramFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, ss3ResidueFeatures), T("SS3")));
+    addFeatureGenerator(T("ss8LocalHistogramSize"),       new LocalHistogramFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, ss8ResidueFeatures), T("SS8")));
+    addFeatureGenerator(T("saLocalHistogramSize"),        new LocalHistogramFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, saResidueFeatures), T("SA")));
+    addFeatureGenerator(T("drLocalHistogramSize"),        new LocalHistogramFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, drResidueFeatures), T("DR")));
+    addFeatureGenerator(T("stalLocalHistogramSize"),      new LocalHistogramFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, stalResidueFeatures), T("StAl")));
+
+    addFeatureGenerator(T("separationProfilSize"), new SeperationProfilFunction());
+  }
+
+  ContainerPtr computeFeatures(ExecutionContext& context, size_t variableIndex, Variable value, ContainerPtr proteins) //const
+  {
+    if (featureGenerators[variableIndex] == FunctionPtr())
+    {
+      jassertfalse;
+      return ContainerPtr();
+    }
+
+    if (value.isBoolean() && !value.getBoolean())
+      return ContainerPtr();
+    
+    if (value.isInteger() && value.getInteger() == 0)
+      return ContainerPtr();
+
+    if (featureGenerators[variableIndex].dynamicCast<ParameteredCompositeFunction>())
+      featureGenerators[variableIndex].dynamicCast<ParameteredCompositeFunction>()->setParameter(value);
+    featureGenerators[variableIndex]->initialize(context, proteinClass);
+
+    const size_t n = proteins->getNumElements();
+    VectorPtr res = vector(featureGenerators[variableIndex]->getOutputType()->getTemplateArgument(0));
+    for (size_t i = 0; i < n; ++i)
+    {
+      ContainerPtr features = featureGenerators[variableIndex]->compute(context, proteins->getElement(i).getObject()->getVariable(0)).getObjectAndCast<Container>();
+      const size_t numFeatures = features->getNumElements();
+      //std::cout << "ComputeFeature: " << features->getClass()->toString() << std::endl;
+      for (size_t j = 0; j < numFeatures; ++j)
+        res->append(features->getElement(j));
+    }
+    return res;
+  }
+
+  void addFeatureGenerator(const String& varName, const FunctionPtr& f)
+  {
+    const int index = largeProteinParametersClass->findMemberVariable(varName);
+    if (index < 0)
+      return;
+    featureGenerators[index] = f;
+  }
+
 public:
   friend class LargeProteinPredictorParametersClass;
 
@@ -634,8 +959,13 @@ public:
   size_t sgdIterations;
 
   bool useAddBias;
+  
+  std::vector<FunctionPtr> featureGenerators;
 
-  LargeProteinPredictorParameters() {}
+  LargeProteinPredictorParameters()
+  {
+    initializeFeatureGenerators();
+  }
 };
 
 typedef ReferenceCountedObjectPtr<LargeProteinPredictorParameters> LargeProteinPredictorParametersPtr;

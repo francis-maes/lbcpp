@@ -127,7 +127,7 @@ public:
     {
       if (isScoreAlreaydComputed[indices[i]])
         continue;
-      scores.insert(std::pair<double, size_t>(indices[i], (size_t)input->getDistanceTo(examples[indices[i]]->toSparseVector(), DenseDoubleVectorPtr())));
+      scores.insert(std::pair<double, size_t>((size_t)input->getDistanceTo(examples[indices[i]]->toSparseVector()), indices[i]));
     }
     
 #if 0
@@ -312,7 +312,7 @@ protected:
     for (size_t i = 0; i < numSamples; ++i)
     {
       const SparseDoubleVectorPtr sdv = data[rand->sampleSize(data.size())]->toSparseVector();
-      const double prob = p2StableCollisionDensity(segmentWidth, ddv->getDistanceTo(sdv, DenseDoubleVectorPtr()) / ballRadius);
+      const double prob = p2StableCollisionDensity(segmentWidth, ddv->getDistanceTo(sdv) / ballRadius);
       res += pow(prob, (double)numHashFunctions);
     }
     return res;

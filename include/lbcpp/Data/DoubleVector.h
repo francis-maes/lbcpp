@@ -246,7 +246,7 @@ public:
   // compute log(sum_i(exp(value[i]))) by avoiding numerical errors
   double computeLogSumOfExponentials() const;
 
-  double getDistanceTo(const SparseDoubleVectorPtr& other, const DenseDoubleVectorPtr& weights) const;
+  double getDistanceTo(const SparseDoubleVectorPtr& other) const;
 
   // DoubleVector
   virtual double entropy() const;
@@ -369,6 +369,7 @@ public:
     {vectors.reserve(count);}
 
   void appendSubVector(size_t shift, const DoubleVectorPtr& subVector);
+  void appendSubVector(const DoubleVectorPtr& subVector);
 
   // DoubleVector
   virtual double entropy() const;

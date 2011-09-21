@@ -688,7 +688,7 @@ double DenseDoubleVector::computeLogSumOfExponentials() const
   return log(res) + highestValue;
 }
 
-double DenseDoubleVector::getDistanceTo(const SparseDoubleVectorPtr& other, const DenseDoubleVectorPtr& weights) const
+double DenseDoubleVector::getDistanceTo(const SparseDoubleVectorPtr& other) const
 {
   size_t indexInSparse = 0;
   const size_t denseSize = values->size();
@@ -705,9 +705,6 @@ double DenseDoubleVector::getDistanceTo(const SparseDoubleVectorPtr& other, cons
     }
     else
       value = (*values)[i] * (*values)[i];
-
-    if (weights)
-      value *= (*(weights->values))[i];
 
     res += value;
   }
@@ -1123,6 +1120,13 @@ void CompositeDoubleVector::appendSubVector(size_t shift, const DoubleVectorPtr&
 {
   jassert(subVector);
   jassert(vectors.empty() || shift >= (vectors.back().first + vectors.back().second->getElementsEnumeration()->getNumElements()));
+  vectors.push_back(std::make_pair(shift, subVector));
+}
+
+void CompositeDoubleVector::appendSubVector(const DoubleVectorPtr& subVector)
+{
+  jassert(subVector);
+  const size_t shift = vectors.empty() ? 0 : vectors.back().first + vectors.back().second->getElementsEnumeration()->getNumElements();
   vectors.push_back(std::make_pair(shift, subVector));
 }
 
