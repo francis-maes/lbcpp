@@ -12,11 +12,12 @@ require 'Optimizer'
 
 local directory = "C:\\Projets\\lbcpp\\workspace\\ClassificationTests\\datasets"
 --local directory = "/Users/francis/Desktop/datasets"
-local dataset = "large/news20.binary.0.5"
---local dataset = "australian_scale.all.0.5"
+--local dataset = "large/news20.binary.0.5"
+local dataset = "ionosphere_scale.all.0.5"
 
+local useConfusionDriven = true
 local useStochasticGD = true
-local numGDIterations = 25
+local numGDIterations = 10
 
 
 dataset = directory .. "/" .. dataset
@@ -66,6 +67,7 @@ local function makeSGDObjectiveFunction(updateRule)
   end
 end
 
+
 -- Batch learning procedure
 local function evaluateUpdateRuleFold(updateRule, trainExamples, validationExamples, returnScoreMean)
 
@@ -77,8 +79,80 @@ local function evaluateUpdateRuleFold(updateRule, trainExamples, validationExamp
     return Evaluator.accuracy(Predictor.LinearBinaryClassifier{theta=parameters}, validationExamples)
   end
 
+  if useConfusionDriven then
+  
+    local parameters = Vector.newDense()
 
-  if useStochasticGD then
+    local function incrementCounters(counters, features)
+      counters:add(features)
+    end
+      
+    local function doIteration(iteration)
+      context:result("iteration", iteration)
+  
+      local tp = Vector.newDense()
+      local tpCount = 0
+      local fn = Vector.newDense()
+      local fnCount = 0
+      local fp = Vector.newDense()
+      local fpCount = 0
+      local tn = Vector.newDense()
+      local tnCount = 0
+      
+      for i,example in ipairs(trainExamples) do
+        local x = example[1]
+        local supervision = example[2]
+        local prediction = parameters:dot(x)
+        if supervision == 2 then
+          if prediction > 0 then
+            incrementCounters(tp, x) tpCount = tpCount + 1
+          else
+            incrementCounters(fn, x) fnCount = fnCount + 1
+          end
+        else
+          if prediction > 0 then
+            incrementCounters(fp, x) fpCount = fpCount + 1
+          else
+            incrementCounters(tn, x) tnCount = tnCount + 1
+          end
+        end
+      end
+      local numExamples = #trainExamples
+      tp:mul(1/numExamples)
+      fn:mul(1/numExamples)
+      fp:mul(1/numExamples)
+      tn:mul(1/numExamples)
+      context:result("TP", tp)
+      context:result("TPcount", tpCount)
+      context:result("FN", fn)
+      context:result("FNcount", fnCount)
+      context:result("FP", fp)
+      context:result("FPcount", fpCount)
+      context:result("TN", tn)
+      context:result("TNcount", tnCount)
+      parameters = updateRule:update(parameters, tp, fn, fp, tn, iteration)
+      
+      --local l2norm = parameters:l2norm()
+      --if l2norm > 1 then
+      --  parameters:mul(1 / l2norm)
+      --end
+      local validationScore = validationAccuracyFunction(parameters)
+      context:result("validation score", validationScore)
+      context:result("parameters l2norm", parameters:l2norm())
+      context:result("parameters", parameters:clone())
+      return validationScore
+    end
+  
+    local score = 0.0
+    local lastScore
+    for iteration=1,numGDIterations do
+      lastScore = context:call("Iteration " .. iteration, doIteration, iteration)
+      score = score + lastScore
+    end    
+    return returnScoreMean and score / numGDIterations or lastScore
+  
+
+  elseif useStochasticGD then
     -- Stochastic Gradient Descent
     local problem = {
       initialSolution = Vector.newDense(),
@@ -393,6 +467,39 @@ end
 ]]
 
 
+ConfusionDriven1 = subspecified {
+  parameter p = {},
+  updateParameter = function (self, param, tp, fn, fp, tn, iteration)
+    return param + (p[1]) * tp
+                 + (-p[2]) * fn
+                 + (-p[3]) * fp
+                 + (p[4]) * tn
+                 + (p[5]) * tp/iteration
+                 + (-p[6]) * fn/iteration
+                 + (-p[7]) * fp/iteration
+                 + (p[8]) * tn/iteration
+
+  end,
+  update = function (self, parameters, tp, fn, fp, tn, iteration)
+    local n = math.max(#tp, #fn, #fp, #tn)
+    print ("size", n)
+    parameters:resize(n)
+    for i=1,n do
+      local param = i < #parameters and parameters[i] or 0
+      local pparam = param
+      param = self:updateParameter(param, tp[i], fn[i], fp[i], tn[i], iteration)
+      param = param * p[9]
+      if math.abs(param) < p[10] then
+        param = 0
+      end
+      parameters[i] = param
+    end
+    return parameters
+  end
+}
+
+context:call("test conf", randomOptimizeUpdateRule, 10, |p| ConfusionDriven1{p=p}) 
+
 ----------------------
 --[[
 context:enter("supercurve")
@@ -408,11 +515,12 @@ context:leave()
 
 -------------
 
+--[[
 context:call("Test Constant(1)", evaluateUpdateRuleFold, ConstantRateWithHingeLoss{rate=1.0}.__get, trainExamples, testExamples, false)
 context:call("test simple1", randomOptimizeUpdateRule, 8, |p| Simple1{p=p})
 context:call("test constant", randomOptimizeUpdateRule, 1, constantRateWithHingeLossFunctor)
 context:call("test invlinear", randomOptimizeUpdateRule, 2, invLinearRateWithHingeLossFunctor)
-
+]]
 
 --[[
 context:call("optimize simple1", optimizeUpdateRule, 8, |p| Simple1{p=p})
