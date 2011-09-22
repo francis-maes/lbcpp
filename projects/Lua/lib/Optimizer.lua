@@ -53,6 +53,7 @@ subspecified function Optimizer.StochasticGradientDescent(problem)
 
   local principalScore = -math.huge
   local bestPrincipalScore = -math.huge
+  local bestScore = math.huge
   local bestParameters = parameters
 
   local function iteration()
@@ -76,7 +77,7 @@ subspecified function Optimizer.StochasticGradientDescent(problem)
     context:result("parameters l0norm", parameters:l0norm())
     context:result("parameters l1norm", parameters:l1norm())
     context:result("parameters l2norm", parameters:l2norm())
-    context:result("parameters", parameters:clone())
+   -- context:result("parameters", parameters:clone())
     context:result("rate", rate(epoch))
     context:result("epoch", epoch)
 
@@ -89,8 +90,8 @@ subspecified function Optimizer.StochasticGradientDescent(problem)
       end
     end
     if restoreBestParameters then
-      assert(principalScore)
-      if principalScore > bestPrincipalScore then
+      if scoreStats:getMean() < bestScore then
+        bestScore = scoreStats:getMean()
         bestPrincipalScore = principalScore
         bestParameters = parameters:clone()
       end
@@ -111,7 +112,7 @@ subspecified function Optimizer.StochasticGradientDescent(problem)
   if restoreBestParameters then
     parameters = bestParameters
     principalScore = bestPrincipalScore
-    print ("Restoring best parameters with score ", principalScore)
+    print ("Restoring best parameters with score ", bestScore)
   end
   return parameters, principalScore
 end
