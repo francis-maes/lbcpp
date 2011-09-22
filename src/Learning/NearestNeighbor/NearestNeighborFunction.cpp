@@ -16,9 +16,10 @@ Variable NearestNeighborFunction::computeFunction(ExecutionContext& context, con
   ScoresMap scoredIndices;
   DenseDoubleVectorPtr baseVector = inputs[0].getObjectAndCast<DoubleVector>(context)->toDenseDoubleVector();
   jassert(baseVector);
-  
+
   const size_t n = inputData.size();
   jassert(n && n == supervisionData.size());
+  jassert(inputData[0]->getElementsEnumeration()->getNumElements() == baseVector->getElementsEnumeration()->getNumElements());
   for (size_t i = 0; i < n; ++i)
   {
     const double score = baseVector->getDistanceTo(inputData[i]);

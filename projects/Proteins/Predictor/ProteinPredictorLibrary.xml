@@ -319,6 +319,7 @@
     <variable type="Double" name="sgdRate"/>
     <variable type="PositiveInteger" name="sgdIterations"/>
     <variable type="Boolean" name="useAddBias"/>
+    <variable type="GenericVector[Function]" name="featureGenerators"/>
   </class>
   <!-- END LargePredictorParameters -->
 </library>

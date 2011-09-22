@@ -20,7 +20,6 @@ class OptimizationProblem : public Object
 public:
   OptimizationProblem(const FunctionPtr& objective, const Variable& initialGuess = Variable(), const SamplerPtr& sampler = SamplerPtr(), const FunctionPtr& validation = FunctionPtr())
     : objective(objective), initialGuess(initialGuess), sampler(sampler), validation(validation) {}
-  OptimizationProblem() {}
 
   TypePtr getSolutionsType() const
     {return objective->getRequiredInputType(0, 1);}
@@ -44,6 +43,8 @@ protected:
   Variable initialGuess;
   SamplerPtr sampler;
   FunctionPtr validation;
+
+  OptimizationProblem() {}
 };
 
 extern ClassPtr optimizationProblemClass;

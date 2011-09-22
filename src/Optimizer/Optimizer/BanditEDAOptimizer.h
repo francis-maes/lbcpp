@@ -17,8 +17,9 @@ namespace lbcpp
 class BanditInfo : public Object
 {
 public:
-  BanditInfo(const Variable& parameter = Variable())
-    : parameter(parameter), rewardSum(0.0), squaredRewardSum(0.0), objectiveValueSum(0.0), numSamples(0) {}
+  BanditInfo(const Variable& parameter, size_t identifier)
+    : parameter(parameter), identifier(identifier),
+      rewardSum(0.0), squaredRewardSum(0.0), objectiveValueSum(0.0), numSamples(0) {}
 
   double computeScore() const // this score should be minimized (opposite of the index function)
   {
@@ -52,11 +53,21 @@ public:
   double getObjectiveValueMean() const
     {return numSamples ? objectiveValueSum / numSamples : DBL_MAX;} // FIXME: -DBL_MAX, no ?
 
+  virtual String toString() const
+    {return T("Bandit ") + String((int)identifier);}
+
+protected:
+  friend class BanditInfoClass;
+
   Variable parameter;
+  size_t identifier;
+
   double rewardSum;
   double squaredRewardSum;
   double objectiveValueSum;
   size_t numSamples;
+
+  BanditInfo() {}
 };
 
 typedef ReferenceCountedObjectPtr<BanditInfo> BanditInfoPtr;
@@ -65,36 +76,53 @@ class BanditEDAOptimizerState : public SamplerBasedOptimizerState, public Execut
 {
 public:
   BanditEDAOptimizerState(const OptimizationProblemPtr& problem)
-    : SamplerBasedOptimizerState(problem->getSampler()), problem(problem), context(NULL)
+    : SamplerBasedOptimizerState(problem->getSampler()), problem(problem),
+    numPlayed(0), maxBudget(0), totalNumBandits(0), context(NULL)
   {}
 
   void setExecutionContext(ExecutionContext& context)
     {this->context = &context;}
-  
+
   size_t getNumBandits() const
     {return banditsByParameter.size();}
 
-  void removeBanditsWithWorseRewardMean(size_t numBandits)
+  void removeBanditsWithWorseRewardMean(ExecutionContext& context, size_t numBandits)
   {
-    typedef std::multimap<double, BanditInfoPtr>::iterator Iterator;
-    std::multimap<double, Iterator> banditsByRewardMean;
-    for (Iterator it = banditsByScore.begin(); it != banditsByScore.end(); ++it)
-      banditsByRewardMean.insert(std::make_pair(-it->second->getRewardMean(), it));
+    if (getNumBandits() == 0)
+      return;
 
-    for (std::multimap<double, Iterator>::const_iterator it = banditsByRewardMean.begin(); it != banditsByRewardMean.end() && numBandits != 0; ++it, --numBandits)
+    context.enterScope(T("Remove the ") + String((int)numBandits) + (" worse bandits"));
+    typedef std::multimap<double, BanditInfoPtr> ScoresMap;
+    ScoresMap banditsByRewardMean;
+    for (ScoresMap::iterator it = banditsByScore.begin(); it != banditsByScore.end(); ++it)
+      banditsByRewardMean.insert(std::make_pair(-it->second->getRewardMean(), it->second));
+
+    jassert(banditsByScore.size() == banditsByParameter.size());
+    for (ScoresMap::const_iterator it = banditsByRewardMean.begin(); it != banditsByRewardMean.end() && numBandits != 0; ++it, --numBandits)
     {
-      banditsByParameter.erase(it->second->second->getParameter());
-      banditsByScore.erase(it->second);
+      const double score = it->second->computeScore();
+      context.resultCallback(it->second->toString(), it->first);
+      banditsByParameter.erase(it->second->getParameter());
+      ScoresMap::iterator elem = banditsByScore.find(score);
+      while (elem->second != it->second)
+      {
+        jassert(elem != banditsByScore.end());
+        ++elem;
+      }
+      jassert(elem->first == score);
+      banditsByScore.erase(elem);
     }
     jassert(banditsByScore.size() == banditsByParameter.size());
+    context.leaveScope(numBandits);
   }
 
-  void createBandit(const Variable& parameter)
+  void createBandit(ExecutionContext& context, const Variable& parameter)
   {
-    BanditInfoPtr bandit(new BanditInfo(parameter));
+    BanditInfoPtr bandit(new BanditInfo(parameter, totalNumBandits));
     banditsByScore.insert(std::make_pair(bandit->computeScore(), bandit));
     banditsByParameter[parameter] = bandit;
-
+    context.resultCallback(bandit->toString(), parameter);
+    ++totalNumBandits;
     jassert(banditsByScore.size() == banditsByParameter.size());
   }
 
@@ -113,18 +141,21 @@ public:
     return it->second;
   }
 
-  void setBudget(size_t budget)
-    {this->budget = budget;}
+  void resetBudgetTo(size_t budget)
+  {
+    this->maxBudget = budget;
+    this->numPlayed = 0;
+  }
 
-  size_t getBudget() const
-    {return budget;}
+  size_t getNumPlayed() const
+    {return numPlayed;}
 
   void playBandit(const BanditInfoPtr& bandit)
   {
-    if (budget == 0)
+    if (numPlayed == maxBudget)
       return;
-    --budget;
-    context->pushWorkUnit(new FunctionWorkUnit(problem->getObjective(), bandit->getParameter()), this);
+    ++numPlayed;
+    context->pushWorkUnit(new FunctionWorkUnit(problem->getObjective(), bandit->getParameter()), this, false);
   }
 
   virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
@@ -133,10 +164,10 @@ public:
     processResult(parameter, result.getDouble());
     playBandit(getBestBandit());
 
-    context->enterScope(String((int)budget));
-    context->resultCallback(T("budget"), 1000 - budget);
+    context->enterScope(String((int)numPlayed));
+    context->resultCallback(T("numPlayed"), numPlayed);
     for (std::multimap<double, BanditInfoPtr>::const_iterator it = banditsByScore.begin(); it != banditsByScore.end(); ++it)
-      context->resultCallback(it->second->getParameter().toString(), it->second->getPlayedCount());
+      context->resultCallback(it->second->toString(), it->second->getPlayedCount());
     context->leaveScope();
   }
 
@@ -172,11 +203,19 @@ public:
       res.insert(std::make_pair(it->second->getRewardMean(), it->second->getParameter()));
   }
 
+  void getBandtisSortedByRewardMean(std::multimap<double, BanditInfoPtr>& res) const
+  {
+    for (std::multimap<double, BanditInfoPtr>::const_iterator it = banditsByScore.begin(); it != banditsByScore.end(); ++it)
+      res.insert(std::make_pair(it->second->getRewardMean(), it->second));
+  }
+
 protected:
   friend class BanditEDAOptimizerStateClass;
 
   OptimizationProblemPtr problem;
-  size_t budget;
+  size_t numPlayed;
+  size_t maxBudget;
+  size_t totalNumBandits;
 
   BanditEDAOptimizerState() {}
 
@@ -207,13 +246,8 @@ public:
     for (size_t i = state->getNumIterations(); i < numIterations; ++i)
     {
       context.enterScope(T("Iteration ") + String((int)i));
-
-      Variable bestIterationSolution;
-      double bestIterationScore;
-      performIteration(context, state, bestIterationSolution, bestIterationScore);
-
-      Variable res = state->finishIteration(context, problem, i, state->getBestScore(), state->getBestSolution());
-      context.leaveScope(res);
+      performIteration(context, state);
+      context.leaveScope();
 
       state->incrementNumIterations();
     }
@@ -230,34 +264,59 @@ protected:
 
   BanditEDAOptimizer() {}
   
-  void performIteration(ExecutionContext& context, const BanditEDAOptimizerStatePtr& state, Variable& bestIterationSolution, double& bestIterationScore) const
+  void performIteration(ExecutionContext& context, const BanditEDAOptimizerStatePtr& state) const
   {
     const size_t numBanditsToRemove = (size_t)((1 - ratioOfBanditToKeep) * populationSize);
-    state->removeBanditsWithWorseRewardMean(numBanditsToRemove);
+    state->removeBanditsWithWorseRewardMean(context, numBanditsToRemove);
     
     const size_t numBanditsToCreate = state->getNumBandits() != 0 ? numBanditsToRemove : populationSize;
+    context.enterScope(T("Create ") + String((int)numBanditsToCreate) + (" new bandits"));
     for (size_t i = 0; i < numBanditsToCreate; ++i)
-      state->createBandit(state->getSampler()->sample(context, context.getRandomGenerator()));
+    {
+      context.progressCallback(new ProgressionState(i, numBanditsToCreate, T("Bandits")));
+      state->createBandit(context, state->getSampler()->sample(context, context.getRandomGenerator()));
+    }
+    context.progressCallback(new ProgressionState(numBanditsToCreate, numBanditsToCreate, T("Bandits")));
+    context.leaveScope(numBanditsToCreate);
 
-    state->setBudget(budget);
+    context.informationCallback(T("Set budget to ") + String((int)budget) + T(" plays"));
+    state->resetBudgetTo(budget);
 
+    context.enterScope(T("Playing"));
     for (size_t i = 0; i < numSimultaneousPlays; ++i)
       state->playBandit(state->getRandomBandit(context.getRandomGenerator()));
 
     //context.waitUntilAllWorkUnitsAreDone();
-    while (state->getBudget() != 0)
+    while (state->getNumPlayed() != budget)
     {
+      context.progressCallback(new ProgressionState(state->getNumPlayed(), budget, T("Plays")));
       Thread::sleep(1000);
     }
+    context.progressCallback(new ProgressionState(budget, budget, T("Plays")));
+    context.leaveScope();
 
-    std::multimap<double, Variable> sortedBanditScores;
-    state->getParametersSortedByRewardMean(sortedBanditScores);
+    std::multimap<double, Variable> sortedParameterScores;
+    state->getParametersSortedByRewardMean(sortedParameterScores);
 
-    learnDistribution(context, state->getSampler(), state, sortedBanditScores);
+    context.enterScope(T("Learn distribution"));
+    learnDistribution(context, state->getSampler(), state, sortedParameterScores);
+    context.leaveScope();
 
-    bestIterationSolution = sortedBanditScores.rbegin()->second;
-    bestIterationScore = sortedBanditScores.rbegin()->first;
-    state->submitSolution(bestIterationSolution, bestIterationScore);
+    context.enterScope(T("Result"));
+    std::multimap<double, BanditInfoPtr> sortedBanditScores;
+    state->getBandtisSortedByRewardMean(sortedBanditScores);
+    size_t i = 0;
+    for (std::multimap<double, BanditInfoPtr>::iterator it = sortedBanditScores.begin(); it != sortedBanditScores.end(); ++it, ++i)
+    {
+      context.enterScope(T("Rank ") + String((int)i));
+      context.resultCallback(T("Name"), it->second->toString());
+      context.resultCallback(T("RewardMean"), it->first);
+      context.resultCallback(T("Score"), it->second->computeScore());
+      context.leaveScope();
+    }
+    context.leaveScope();
+
+    state->submitSolution(sortedBanditScores.begin()->second, sortedBanditScores.begin()->first);
   }
 };
 
