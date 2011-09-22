@@ -47,6 +47,8 @@ public:
 
   virtual size_t size() const = 0;
 
+  virtual void getVariableUseCounts(std::map<size_t, size_t>& res) const = 0;
+
   static GPExpressionPtr createFromString(ExecutionContext& context, const String& str, EnumerationPtr variables)
     {int position = 0; return createFromString(context, str, variables, position);}
   static  GPExpressionPtr createFromString(ExecutionContext& context, const String& str, EnumerationPtr variables, int& position);
@@ -80,10 +82,8 @@ public:
   virtual double compute(const double* x) const
   {
     double e = expr->compute(x);
-    if (e == -DBL_MAX)
-      return -DBL_MAX;
-    else if (e == DBL_MAX)
-      return DBL_MAX;
+    if (!isNumberValid(e))
+      return e;
 
     switch (pre)
     {
@@ -91,12 +91,15 @@ public:
     //case gpCos: return cos(e);
     //case gpExp: return exp(e);
     case gpLog: return e <= 0.0 || !isNumberValid(e) ? -DBL_MAX : log(e);
-    case gpSquareRoot: return isNumberValid(e) ? sqrt(e) : e;
+    case gpSquareRoot: return e < 0.0 || !isNumberValid(e) ? -DBL_MAX : sqrt(e);
     //case gpSquare: return e * e;
-    case gpInverse: return isNumberValid(e) ? (e != 0.0 ? 1.0 / e : DBL_MAX) : e;
+    case gpInverse: return e != 0.0 ? 1.0 / e : DBL_MAX;
     default: jassert(false); return 0.0;
     };
   }
+
+  virtual void getVariableUseCounts(std::map<size_t, size_t>& res) const
+    {expr->getVariableUseCounts(res);}
 
   virtual String toString() const
     {return T("U(") + Variable(pre, gpPreEnumeration).toString() + T(", ") + (expr ? expr->toString() : String("<null>")) + T(")");}
@@ -151,8 +154,10 @@ public:
   {
     double l = left->compute(x);
     double r = right->compute(x);
-    if (!isNumberValid(l) || !isNumberValid(r))
+    if (!isNumberValid(l))
       return l;
+    if (!isNumberValid(r))
+      return r;
 
     switch (op)
     {
@@ -164,6 +169,12 @@ public:
     case gpMin: return l < r ? l : r;
     default: jassert(false); return 0.0;
     }
+  }
+
+  virtual void getVariableUseCounts(std::map<size_t, size_t>& res) const
+  {
+    left->getVariableUseCounts(res);
+    right->getVariableUseCounts(res);
   }
 
   virtual String toString() const
@@ -249,6 +260,9 @@ public:
   virtual double compute(const double* x) const
     {return x[index];}
 
+  virtual void getVariableUseCounts(std::map<size_t, size_t>& res) const
+    {res[index]++;}
+
   virtual String toString() const
     {return T("V(") + Variable(index, enumeration).toString() + T(")");}
 
@@ -281,6 +295,9 @@ public:
 
   virtual double compute(const double* x) const
     {return value;}
+
+  virtual void getVariableUseCounts(std::map<size_t, size_t>& res) const
+    {}
 
   virtual String toString() const
     {return T("C(") + String(getValue()) + T(")");}

@@ -55,6 +55,10 @@ SET(LBCPP_SEQUENTIAL_DECISION_GP_SOURCES
   GP/GPExpression.h
   GP/GPExpressionSampler.h
   GP/GPExpressionBuilder.h
+  GP/GenerateUniqueFormulas.h
+  GP/BanditFormulaOptimizer.h
+  GP/BanditFormulaObjective.h
+  GP/LearningRuleFormulaObjective.h
   GP/SequentialDecisionGPLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionGPLibrary.cpp
 )
@@ -71,7 +75,6 @@ SET(LBCPP_SEQUENTIAL_DECISION_BANDITS_SOURCES
   Bandits/PowerDiscreteBanditPolicy.h
   Bandits/GPExpressionDiscreteBanditPolicy.h
 #  Bandits/BanditsMCTSWorkUnit.h
-  Bandits/BanditFormulaBandit.h
   Bandits/SequentialDecisionBanditsLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionBanditsLibrary.cpp
 )

@@ -125,4 +125,48 @@
     <variable type="Double" name="score"/>
   </class>
 
+  <!-- Formulas -->
+  <class name="GenerateUniqueFormulas" base="WorkUnit">
+    <variable type="String" name="problem"/>
+    <variable type="PositiveInteger" name="maxSize"/>
+    <variable type="File" name="formulasFile"/>
+  </class>
+
+  <class name="BanditFormulaWorkUnit" base="WorkUnit">
+    <variable type="File" name="formulasFile"/>
+    <variable type="Function" name="objective"/>
+  </class>
+
+  <enumeration name="GPExpressionDiscreteBanditPolicyVariables" shortName="gp">
+    <value name="rk"/>
+    <value name="sk"/>
+    <value name="tk"/>
+    <value name="t"/>
+    <!--    <value name="min(R)"/>
+    <value name="max(R)"/>
+    <value name="ucb1-rightterm"/>
+    <value name="ucb1tuned-rightterm"/> -->
+  </enumeration>
+
+  <class name="BanditFormulaObjective" base="SimpleUnaryFunction" shortName="multiArmedBanditsObjective">
+    <variable type="PositiveInteger" name="minArms"/>
+    <variable type="PositiveInteger" name="maxArms"/>
+    <variable type="Double" name="maxExpectedReward"/>
+    <variable type="PositiveInteger" name="horizon"/>
+  </class>
+
+  <enumeration name="LearningRuleFormulaVariables" shortName="gp">
+    <value name="parameter"/>
+    <value name="feature"/>
+    <value name="score"/>
+    <value name="epoch"/>
+  </enumeration>
+
+
+  <class name="LearningRuleFormulaObjective" base="Function" shortName="binaryClassificationObjective">
+    <variable type="File" name="dataFile"/>
+    <variable type="Double" name="validationSize"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+
 </library>

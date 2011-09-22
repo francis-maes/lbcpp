@@ -68,17 +68,6 @@
     <variable type="Boolean" name="useSparseSampler"/>
   </class>
 
-  <enumeration name="GPExpressionDiscreteBanditPolicyVariables" shortName="gp">
-    <value name="rk"/>
-    <value name="sk"/>
-    <value name="tk"/>
-    <value name="t"/>
-    <!--    <value name="min(R)"/>
-    <value name="max(R)"/>
-    <value name="ucb1-rightterm"/>
-    <value name="ucb1tuned-rightterm"/> -->
-  </enumeration>
-
   <class name="GPExpressionDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ultimate">
     <constructor arguments="GPExpressionPtr indexFunction"/>
     <variable type="GPExpression" name="indexFunction"/>
@@ -135,21 +124,6 @@
   <class name="MCTSExpressionBuilderState" base="GPExpressionBuilderState">
     <variable type="ObjectVector[GPExpression]" name="expressions"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="expressionScores"/>
-  </class>
-
-  <!-- Bandit Formula Bandit -->
-  <class name="GenerateUniqueRankingFormulas" base="WorkUnit">
-    <variable type="PositiveInteger" name="maxSize"/>
-    <variable type="Boolean" name="orderBasedKey"/>
-    <variable type="File" name="formulasFile"/>
-  </class>
-
-  <class name="BanditFormulaBanditWorkUnit" base="WorkUnit">
-    <variable type="File" name="formulasFile"/>
-    <variable type="PositiveInteger" name="minArms"/>
-    <variable type="PositiveInteger" name="maxArms"/>
-    <variable type="Double" name="maxExpectedReward"/>
-    <variable type="PositiveInteger" name="horizon"/>
   </class>
 
 </library>
