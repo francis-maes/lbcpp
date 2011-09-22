@@ -30,6 +30,7 @@
 
   <class name="BanditInfo" base="Object">
     <variable type="Variable" name="parameter"/>
+    <variable type="PositiveInteger" name="identifier"/>
     <variable type="Double" name="rewardSum"/>
     <variable type="Double" name="squaredRewardSum"/>
     <variable type="Double" name="objectiveValueSum"/>

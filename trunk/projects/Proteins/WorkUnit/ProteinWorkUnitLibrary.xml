@@ -212,20 +212,39 @@
 
   <!-- BEGIN BanditBox -->
   <class name="BanditCandidate" base="Object">
+<!-- No need to appear in trace
     <variable type="Function" name="function"/>
-    <variable type="Stream" name="examples"/>
+    <variable type="Stream" name="examples"/> -->
     <variable type="Variable" name="parameters"/>
   </class>
   <class name="BanditFunction" base="SimpleUnaryFunction"/>
   <class name="DoubleVectorContainerSet" base="Object"/>
+  <class name="NormalizeDoubleVectorSet" base="Object">
+    <variable type="GenericVector[NormalizeDoubleVector]" name="normalizers"/>
+  </class>
   <class name="ContainerBasedStream" base="Stream">
     <variable type="Container[Variable]" name="container"/>
     <variable type="PositiveInteger" name="nextIndex"/>
+  </class>
+  <class name="ProteinBanditSampler" base="Sampler">
+    <variable type="Sampler" name="decorated"/>
+    <variable type="VariablesEnumeration[Protein]" name="target"/>
+    <variable type="LargeProteinPredictorParameters" name="largePredictor"/>
+    <variable type="Container[Protein]" name="trainingProteins"/>
+    <variable type="Container[Protein]" name="testingProteins"/>
+    <variable type="DoubleVectorContainerSet" name="trainingFeaturesSet"/>
+    <variable type="DoubleVectorContainerSet" name="testingFeaturesSet"/>
+    <variable type="NormalizeDoubleVectorSet" name="normalizer"/>
+    <variable type="Container[Variable]" name="trainingSupervisions"/>
+    <variable type="Container[Variable]" name="testingSupervisions"/>
   </class>
   <class name="ProteinBanditTestFeatures" base="WorkUnit">
     <variable type="String" name="proteinsDirectory" shortName="in"/>
   </class>
   <class name="ProteinBanditTestSampler" base="WorkUnit">
+    <variable type="String" name="proteinsPath" shortName="in"/>
+  </class>
+  <class name="ProteinBanditWorkUnit" base="WorkUnit">
     <variable type="String" name="proteinsPath" shortName="in"/>
   </class>
   <!-- END BanditBox -->

@@ -274,7 +274,7 @@ inline bool checkInheritance(TypePtr type, TypePtr baseType)
   jassert(baseType);
   bool res = type && type->inheritsFrom(baseType);
   if (!res)
-    std::cout << "Variable.hpp::checkInheritance: " << type->getClassName() << " -|> " << baseType->getClassName() << std::endl;
+    std::cout << "Variable.hpp::checkInheritance: " << type->toString() << " -|> " << baseType->toString() << std::endl;
   jassert(res);
   return res;
 }

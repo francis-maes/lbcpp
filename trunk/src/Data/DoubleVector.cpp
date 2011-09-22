@@ -145,9 +145,9 @@ SparseDoubleVectorPtr DoubleVector::toSparseVector() const
 
 DenseDoubleVectorPtr DoubleVector::toDenseDoubleVector() const
 {
-  DenseDoubleVectorPtr res(new DenseDoubleVector(getElementsEnumeration(), getElementsType()));
-  const size_t n = getElementsEnumeration()->getNumElements();
-  if (n)
+  const size_t n = getNumElements();
+  DenseDoubleVectorPtr res(new DenseDoubleVector(getElementsEnumeration(), getElementsType(), n));
+  if (n != 0)
   {
     double* ptr = res->getValuePointer(0);
     for (size_t i = 0; i < n; ++i, ++ptr)

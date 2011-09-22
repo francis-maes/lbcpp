@@ -23,6 +23,9 @@ public:
   Variable getParameters() const
     {return parameters;}
 
+  virtual String toString() const
+    {return parameters.toString();}
+
 protected:
   friend class BanditCandidateClass;
 
@@ -52,7 +55,22 @@ protected:
     if (stream->isExhausted())
       stream->rewind();
 
-    return bandit->getFunction()->compute(context, stream->next());
+    PairPtr obj = stream->next().getObjectAndCast<Pair>();
+    Variable result = bandit->getFunction()->compute(context, obj->getFirst(), Variable());
+
+    if (result.inheritsFrom(doubleVectorClass(enumValueType, doubleType)))
+    {
+       return probability(result.getObjectAndCast<DoubleVector>(context)->getIndexOfMaximumValue()
+                              == obj->getSecond().getObjectAndCast<DoubleVector>(context)->getIndexOfMaximumValue() ? 1.f : 0.f);
+    }
+    if (result.inheritsFrom(probabilityType))
+    {
+      const bool prediction = result.isBoolean() ? result.getBoolean() : result.getDouble() > 0.5f;
+      const bool supervision = obj->getSecond().isBoolean() ? obj->getSecond().getBoolean() : obj->getSecond().getDouble() > 0.5;
+      return probability(prediction == supervision ? 1.f : 0.f);
+    }
+    jassertfalse;
+    return Variable();
   }
 };
 
@@ -72,7 +90,6 @@ public:
   {
     jassert(containers.size() == 0 || containers.size() != 0 && containers[0]->getNumElements() == container->getNumElements());
     checkInheritance(container->getElementsType(), doubleVectorClass());
-
     const size_t index = containers.size();
     containers.push_back(container);
     nameToIndex[name] = index;
@@ -102,7 +119,7 @@ public:
 
     ConcatenateEnumerationPtr enumeration = new ConcatenateEnumeration(T("ContainerSet(") + enumName + T(")"));
     for (size_t i = 0; i < indices.size(); ++i)
-      enumeration->addSubEnumeration(T("ContainerSet"), containers[indices[i]]->getElementsEnumeration());
+      enumeration->addSubEnumeration(T("ContainerSet"), containers[indices[i]]->getElementsType()->getTemplateArgument(0));
 
     const size_t n = containers[0]->getNumElements();
     ObjectVectorPtr res = objectVector(compositeDoubleVectorClass(enumeration, doubleType), n);
@@ -151,6 +168,8 @@ public:
   }
 
 protected:
+  friend class NormalizeDoubleVectorSetClass;
+
   std::vector<NormalizeDoubleVectorPtr> normalizers;
 };
 
@@ -203,7 +222,8 @@ public:
   {
     trainingProteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinsPath).getChildFile(T("train/")), 0, T("Loading training proteins"));
     testingProteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinsPath).getChildFile(T("test/")), 0, T("Loading testing proteins"));
-    supervisions = computeSupervisions(context, trainingProteins);
+    trainingSupervisions = computeSupervisions(context, trainingProteins);
+    testingSupervisions = computeSupervisions(context, testingProteins);
   }
 
   virtual Variable computeExpectation(const Variable* inputs = NULL) const
@@ -216,31 +236,49 @@ public:
   {
     LargeProteinParametersPtr parameters = decorated->sample(context, random, inputs).getObjectAndCast<LargeProteinParameters>();
     jassert(parameters);
-    
     jassert(typeOfProteinPerception(target) == residueType);
 
     ContainerPtr trainingFeatures = computeFeatures(context, trainingFeaturesSet, parameters, trainingProteins);
-    ContainerPtr trainingExamples = makeContainerOfPair(trainingFeatures, supervisions);
     FunctionPtr learner = largePredictor->learningMachine(target);
 
-    if (!learner->train(context, trainingExamples, ContainerPtr(), T("Training")))
+    if (!learner->train(context, makeContainerOfPair(trainingFeatures, trainingSupervisions), ContainerPtr(), T("Training")))
     {
       context.errorCallback(T("ProteinBanditSampler::sample"), T("Error during training function !"));
       return Variable();
     }
 
     ContainerPtr testingFeatures = computeFeatures(context, testingFeaturesSet, parameters, testingProteins);
-    return new BanditCandidate(learner, new ContainerBasedStream(testingFeatures), parameters);
+
+    return new BanditCandidate(learner, new ContainerBasedStream(makeContainerOfPair(testingFeatures, testingSupervisions)), parameters);
   }
 
   virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights = DenseDoubleVectorPtr(),
                      const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr(), const DenseDoubleVectorPtr& validationWeights = DenseDoubleVectorPtr())
-    {jassert(false);}
+  {
+    const size_t n = trainingSamples->getNumElements();
+    if (n == 0)
+      return;
+
+    ObjectVectorPtr parameters = objectVector(largeProteinParametersClass, n);
+    for (size_t i = 0; i < n; ++i)
+      parameters->setElement(i, trainingSamples->getElement(i).getObjectAndCast<BanditCandidate>(context)->getParameters());
+    jassert(!validationSamples); // TODO: if any
+    decorated->learn(context, trainingInputs, parameters, trainingWeights, validationInputs, validationSamples, validationWeights);
+  }
 
   virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
-    {jassert(false); return DenseDoubleVectorPtr();}
+  {
+    const size_t n = samples->getNumElements();    
+    ObjectVectorPtr parameters = objectVector(largeProteinParametersClass, n);
+    for (size_t i = 0; i < n; ++i)
+      parameters->setElement(i, samples->getElement(i).getObjectAndCast<BanditCandidate>()->getParameters());
+
+    return decorated->computeProbabilities(inputs, parameters);
+  }
 
 protected:
+  friend class ProteinBanditSamplerClass;
+
   SamplerPtr decorated;
 
   ProteinTarget target;
@@ -253,7 +291,10 @@ protected:
   DoubleVectorContainerSetPtr testingFeaturesSet;
   NormalizeDoubleVectorSetPtr normalizer;
 
-  ContainerPtr supervisions;
+  ContainerPtr trainingSupervisions;
+  ContainerPtr testingSupervisions;
+
+  ProteinBanditSampler() {}
 
   ContainerPtr computeFeatures(ExecutionContext& context, const DoubleVectorContainerSetPtr& featuresSet, const LargeProteinParametersPtr& parameters, const ContainerPtr& proteins) const
   {
@@ -269,23 +310,24 @@ protected:
         continue;
       }
       ContainerPtr features = largePredictor->computeFeatures(context, i, parameters->getVariable(i), proteins);
-      if (features)
-      {
-        if (featuresSet == trainingFeaturesSet)
-        {
-          jassert(normalizer->getNumNormalizers() == featuresSet->getNumContainers())
-          normalizer->createNormalizer(context, features);
-        }
-        const size_t numData = features->getNumElements();
-        jassert(normalizer->getNumNormalizers() != 0);
-        const size_t normalizerIndex = normalizer->getNumNormalizers() - 1;
-        ContainerPtr normalizedFeatures = vector(features->getElementsType(), numData);
-        for (size_t j = 0; j < numData; ++j)
-          normalizedFeatures->setElement(j, normalizer->normalize(context, features->getElement(j).getObjectAndCast<DoubleVector>(), normalizerIndex));
-        index = featuresSet->appendContainer(featureName, normalizedFeatures);
+      if (!features)
+        continue;
 
-        indices.push_back(index);
+      if (featuresSet == trainingFeaturesSet)
+      {
+        jassert(normalizer->getNumNormalizers() == featuresSet->getNumContainers())
+        normalizer->createNormalizer(context, features);
       }
+      const size_t numData = features->getNumElements();
+      jassert(normalizer->getNumNormalizers() != 0);
+      const size_t normalizerIndex = normalizer->getNumNormalizers() - 1;
+      ContainerPtr normalizedFeatures = vector(features->getElementsType(), numData);
+      for (size_t j = 0; j < numData; ++j)
+        normalizedFeatures->setElement(j, normalizer->normalize(context, features->getElement(j).getObjectAndCast<DoubleVector>(), normalizerIndex));
+
+      index = featuresSet->appendContainer(featureName, features);
+
+      indices.push_back(index);
     }
 
     return featuresSet->getCompositeDoubleVectors(indices);
@@ -408,7 +450,7 @@ public:
 
     FunctionPtr objectiveFunction = new BanditFunction();
     
-    for (size_t i = 0; i < 5; ++i)
+    for (size_t i = 0; i < 50; ++i)
     {
       Variable v = objectiveFunction->compute(context, candidate);
       std::cout << "Result " << i << ": " << v.toString() << std::endl;
@@ -418,6 +460,29 @@ public:
 
 protected:
   friend class ProteinBanditTestSamplerClass;
+
+  String proteinsPath;
+};
+
+class ProteinBanditWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    LargeProteinPredictorParametersPtr predictor(new LargeProteinPredictorParameters());
+    predictor->learningMachineName = T("kNN");
+    predictor->knnNeighbors = 5;
+
+    SamplerPtr sampler = new ProteinBanditSampler(context, objectCompositeSampler(largeProteinParametersClass, LargeProteinParameters::createSingleTaskSingleStageSamplers())
+                                              , proteinsPath, ss3Target, predictor);
+    FunctionPtr f(new BanditFunction());
+    OptimizationProblemPtr problem(new OptimizationProblem(f, Variable(), sampler));
+    OptimizerPtr optimizer(banditEDAOptimizer(5, 10, 5, 0.5f, 500, 2));
+    return optimizer->compute(context, problem);
+  }
+
+protected:
+  friend class ProteinBanditWorkUnitClass;
 
   String proteinsPath;
 };

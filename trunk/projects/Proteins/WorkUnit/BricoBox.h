@@ -535,14 +535,12 @@ protected:
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     SparseDoubleVectorPtr sdv = input.getObjectAndCast<DoubleVector>(context)->toSparseVector();
+    SparseDoubleVectorPtr res = new SparseDoubleVector(getOutputType());
     const size_t n = sdv->getNumValues();
     std::pair<size_t, double>* value = sdv->getValues();
     for (size_t i = 0; i < n; ++i, ++value)
-    {
-      value->second -= means[value->first];
-      value->second /= variances[value->first];
-    }
-    return sdv;
+      res->appendValue(value->first, (value->second - means[value->first]) / variances[value->first]);
+    return res;
   }
 };
 
