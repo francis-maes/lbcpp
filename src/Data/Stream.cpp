@@ -25,7 +25,9 @@ VectorPtr Stream::load(size_t maximumCount, bool doProgression)
       juce::uint32 t = Time::getApproximateMillisecondCounter();
       if (!lastTimeProgressionWasSent || (t - lastTimeProgressionWasSent) > 100)
       {
-        context.progressCallback(getCurrentPosition());
+        ProgressionStatePtr progression = getCurrentPosition();
+        if (progression)
+          context.progressCallback(progression);
         lastTimeProgressionWasSent = t;
       }
     }
@@ -37,7 +39,11 @@ VectorPtr Stream::load(size_t maximumCount, bool doProgression)
     if (isExhausted())
     {
       if (doProgression)
-        context.progressCallback(getCurrentPosition());
+      {
+        ProgressionStatePtr progression = getCurrentPosition();
+        if (progression)
+          context.progressCallback(progression);
+      }
       break;
     }
   }
