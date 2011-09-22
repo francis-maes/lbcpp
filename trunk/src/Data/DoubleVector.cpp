@@ -862,10 +862,11 @@ int DenseDoubleVector::__newIndex(LuaState& state)
     return Object::__newIndex(state);
 
   int index = state.toInteger(1);
-  if (index < 1 || index > (int)getNumElements())
+  size_t enumSize = getElementsEnumeration()->getNumElements();
+  if (index < 1 || (enumSize && index > (int)enumSize))
     state.error("Invalid index in Container::set()");
   else
-    (*values)[index - 1] = state.toNumber(2);
+    setValue(index - 1, state.toNumber(2));
   return 0;
 }
 
@@ -875,12 +876,13 @@ int DenseDoubleVector::__index(LuaState& state) const
     return Object::__index(state);
 
   int index = state.toInteger(1);
-  if (index < 1 || index > (int)getNumElements())
+  size_t enumSize = getElementsEnumeration()->getNumElements();
+  if (index < 1 || (enumSize && index > (int)enumSize))
   {
     state.error("Invalid index in Container::get()");
     return 0;
   }
-  state.pushNumber((*values)[index - 1]);
+  state.pushNumber(values ? getValue(index - 1) : 0.0);
   return 1;
 }
 
