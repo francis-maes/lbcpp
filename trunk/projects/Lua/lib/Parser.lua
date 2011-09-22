@@ -1,6 +1,9 @@
 -- Francis Maes, 01/08/2011
 -- Data Parsers
 
+require 'Vector'
+require 'Dictionary'
+
 Parser = {}
 
 function Parser.libSVMClassification(filename, labels)
@@ -17,8 +20,9 @@ function Parser.libSVMClassification(filename, labels)
     if #label == 0 then print("Oops"); return; end
 
     x = Vector.newSparse()
-    for k,v in string.gmatch(line, "(%d+):(%d+)") do
-      x:append(tonumber(k), tonumber(v))
+    local app = x.append
+    for k,v in string.gmatch(line, "(%d+):([%d%.-]+)") do
+      app(x, tonumber(k), tonumber(v))
     end
     coroutine.yield({x, labels:add(label)})
   end

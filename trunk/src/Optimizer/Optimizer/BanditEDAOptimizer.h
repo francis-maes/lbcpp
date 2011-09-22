@@ -51,7 +51,7 @@ public:
   }
 
   double getObjectiveValueMean() const
-    {return numSamples ? objectiveValueSum / numSamples : DBL_MAX;} // FIXME: -DBL_MAX, no ?
+    {return numSamples ? objectiveValueSum / numSamples : DBL_MAX;}
 
   virtual String toString() const
     {return T("Bandit ") + String((int)identifier);}

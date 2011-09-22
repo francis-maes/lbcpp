@@ -15,7 +15,7 @@ require 'Optimizer'
 --end
 
 local directory = "C:\\Projets\\lbcpp\\workspace\\ClassificationTests\\datasets"
-local dataset = directory .. "/australian_scale.all.0.5"
+local dataset = directory .. "/large/news20.binary.0.5"
 
 local trainFilename = dataset .. ".train"
 local testFilename = dataset .. ".test"
