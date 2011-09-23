@@ -14,13 +14,11 @@
   </enumeration>
 
   <enumeration name="GPPre">
-    <!-- <value name="sinus" shortName="sin"/>
-    <value name="cosinus" shortName="cos"/>
-    -->
-    <!--<value name="exponential" shortName="exp"/> -->
     <value name="log"/>
     <value name="sqrt"/>
     <value name="inverse"/>
+    <value name="exp"/>
+    <value name="abs"/>
   </enumeration>
 
   <enumeration name="GPConstant">

@@ -16,6 +16,133 @@ namespace lbcpp
 
 extern EnumerationPtr learningRuleFormulaVariablesEnumeration;
 
+# ifdef JUCE_WIN32
+#  pragma warning(disable:4996)
+# endif // JUCE_WIN32
+
+class FastTextParser : public Stream
+{
+public:
+  FastTextParser(ExecutionContext& context, const File& file, TypePtr elementsType)
+    : Stream(context), elementsType(elementsType)
+  {
+    maxLineLength = 1024;
+	  line = (char* )malloc(sizeof (char) * maxLineLength);
+    lineNumber = 0;
+    f = fopen(file.getFullPathName(), "r");
+    if (!f)
+      context.errorCallback(T("Could not open file ") + file.getFullPathName());
+  }
+
+  FastTextParser() {}
+  virtual ~FastTextParser()
+  {
+    if (f)
+      fclose(f);
+   free(line);
+  }
+
+  virtual TypePtr getElementsType() const
+    {return elementsType;}
+
+  virtual bool rewind()
+  {
+    if (f)
+    {
+      ::rewind(f);
+      return true;
+    }
+    else
+      return false;
+  }
+
+  virtual bool isExhausted() const
+    {return f == NULL;}
+
+  virtual ProgressionStatePtr getCurrentPosition() const
+    {return new ProgressionState(lineNumber, 0, "Lines");}
+
+  virtual Variable parseLine(char* line) = 0;
+
+  virtual Variable next()
+  {
+    if (!f)
+      return Variable();
+    line = readNextLine();
+    if (!line)
+    {
+      fclose(f);
+      f = NULL;
+      return Variable();
+    }
+    ++lineNumber;
+    return parseLine(line);
+  }
+
+protected:
+  TypePtr elementsType;
+  FILE* f;
+
+  char* line;
+  int maxLineLength;
+  size_t lineNumber;
+
+  char* readNextLine()
+  {
+	  if (fgets(line, maxLineLength, f) == NULL)
+		  return NULL;
+
+	  while (strrchr(line, '\n') == NULL)
+	  {
+		  maxLineLength *= 2;
+		  line = (char* )realloc(line, maxLineLength);
+		  int len = (int)strlen(line);
+		  if (fgets(line + len, maxLineLength - len, f) == NULL)
+			  break;
+	  }
+	  return line;
+  }
+};
+
+class BinaryClassificationLibSVMFastParser : public FastTextParser
+{
+public:
+  BinaryClassificationLibSVMFastParser(ExecutionContext& context, const File& file)
+    : FastTextParser(context, file, pairClass(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration), booleanType)) {}
+  BinaryClassificationLibSVMFastParser() {}
+
+  virtual Variable parseLine(char* line)
+  {
+    char* label = strtok(line, " \t\n");
+    if (!label)
+    {
+      context.errorCallback(T("Empty line"));
+      return Variable();
+    }
+
+    char firstLetter = label[0];
+    if (firstLetter >= 'A' && firstLetter <= 'Z') firstLetter += 'a' - 'A';
+    bool supervision = (firstLetter == 'y' || firstLetter == 't' || firstLetter == '+' || firstLetter == '1');
+
+    SparseDoubleVectorPtr features = new SparseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType);   
+		while (true)
+		{
+			char* idx = strtok(NULL, ":");
+			char* val = strtok(NULL, " \t");
+
+			if (val == NULL)
+				break;
+
+      int index = (int)strtol(idx, NULL, 10);
+      double value = strtod(val, NULL);
+      features->appendValue((size_t)index, value);
+		}
+    return new Pair(elementsType, features, supervision);
+  }
+};
+
+
+
 class LearningRuleFormulaObjective : public SimpleUnaryFunction
 {
 public:
@@ -24,10 +151,20 @@ public:
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
-    features = new DefaultEnumeration(trainFile.getFileName() + T(" features"));
-    trainData = binaryClassificationLibSVMDataParser(context, trainFile, features)->load();
-    testData = binaryClassificationLibSVMDataParser(context, testFile, features)->load();
+    trainData = loadData(context, trainFile);
+    testData = loadData(context, testFile);
     return doubleType;
+  }
+
+  ContainerPtr loadData(ExecutionContext& context, const File& file)
+  {
+    // features = new DefaultEnumeration(trainFile.getFileName() + T(" features"));
+    // return binaryClassificationLibSVMDataParser(context, file, features)->load();
+    features = positiveIntegerEnumerationEnumeration;
+    context.enterScope(T("Loading data from ") + file.getFileName());
+    ContainerPtr res = StreamPtr(new BinaryClassificationLibSVMFastParser(context, file))->load();
+    context.leaveScope(res ? res->getNumElements() : 0);
+    return res;
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& expr) const
@@ -56,7 +193,7 @@ protected:
   double validationSize;
   size_t numIterations;
 
-  DefaultEnumerationPtr features;
+  EnumerationPtr features;
   ContainerPtr trainData;
   ContainerPtr testData;
 
@@ -124,7 +261,7 @@ protected:
         double acc = evaluate(context, theta, testData);
         context.resultCallback(T("test accuracy"), acc);
         context.resultCallback(T("train accuracy"), numCorrect / (double)n);
-        context.resultCallback(T("parameters"), theta->cloneAndCast<DoubleVector>());
+        //context.resultCallback(T("parameters"), theta->cloneAndCast<DoubleVector>());
         context.resultCallback(T("parameters l2norm"), theta->l2norm());
         context.resultCallback(T("parameters l1norm"), theta->l1norm());
         context.resultCallback(T("parameters l0norm"), theta->l0norm());
@@ -147,19 +284,41 @@ protected:
 
   void updateParameters(const GPExpressionPtr& expression, DenseDoubleVectorPtr parameters, SparseDoubleVectorPtr x, double score, double sign, size_t epoch) const
   {
-    size_t n = x->getNumValues();
+    size_t n = juce::jmax((int)parameters->getNumValues(), (int)x->getNumValues());
+    parameters->ensureSize(n);
+    double* params = parameters->getValuePointer(0);
+
+    size_t index = 0;
+    size_t ns = x->getNumValues();
+    for (size_t i = 0; i < n; ++i)
+    {
+      double& param = params[i];
+      double feature = 0.0;
+      if (index < ns && x->getValue(index).first == i)
+      {
+        feature = x->getValue(index).second;
+        ++index;
+      }
+      updateParameter(expression, param, feature, score, sign, epoch);
+    }
+
+    /*
     for (size_t i = 0; i < n; ++i)
     {
       const std::pair<size_t, double>& v = x->getValue(i);
       double& param = parameters->getValueReference(v.first);
+      updateParameter(param, v.second, score, sign, epoch);      
+    }*/
+  }
 
-      std::vector<double> inputs(4);
-      inputs[0] = param;
-      inputs[1] = v.second;
-      inputs[2] = score * sign;
-      inputs[3] = epoch;
-      param += sign * expression->compute(&inputs[0]);
-    }
+  void updateParameter(const GPExpressionPtr& expression, double& param, double feature, double score, double sign, size_t epoch) const
+  {
+    std::vector<double> inputs(4);
+    inputs[0] = param;
+    inputs[1] = feature;
+    inputs[2] = score * sign;
+    inputs[3] = epoch;
+    param += sign * expression->compute(&inputs[0]);
   }
 
   double evaluate(ExecutionContext& context, const DenseDoubleVectorPtr& theta, const ContainerPtr& test) const

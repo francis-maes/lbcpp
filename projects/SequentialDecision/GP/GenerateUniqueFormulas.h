@@ -54,7 +54,7 @@ public:
     else if (problem == T("binaryClassification"))
     {
       variables = learningRuleFormulaVariablesEnumeration;
-      for (size_t i = gpLog; i <= gpInverse; ++i)
+      for (size_t i = gpLog; i <= gpAbs; ++i)
         unaryOperators.push_back((GPPre)i);
       for (size_t i = gpAddition; i <= gpLessThan; ++i)
         binaryOperators.push_back((GPOperator)i);

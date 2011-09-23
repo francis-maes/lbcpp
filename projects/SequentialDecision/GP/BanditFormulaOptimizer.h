@@ -192,14 +192,19 @@ public:
     GPExpressionPtr baselineExpression;
     if (baseline.isNotEmpty())
     {
+      context.enterScope(T("Evaluating baseline ") + baseline);
       EnumerationPtr variablesEnumeration = learningRuleFormulaVariablesEnumeration; // FIXME
       baselineExpression = GPExpression::createFromString(context, baseline, variablesEnumeration);
 
       ScalarVariableStatisticsPtr baselineStats = new ScalarVariableStatistics("baseline");
-      for (size_t i = 0; i < 100; ++i)
+      for (size_t i = 0; i < 10; ++i)
+      {
         baselineStats->push(objective->compute(context, baselineExpression).toDouble());
+        context.progressCallback(new ProgressionState(i+1, 10, T("Samples")));
+      }
       context.informationCallback(T("Baseline: ") + baselineStats->toShortString());
       context.resultCallback(T("baseline"), baselineStats);
+      context.leaveScope(baselineStats->getMean());
     }
 
     FormulaPool pool(objective);
