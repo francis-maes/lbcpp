@@ -11,7 +11,7 @@
 
 # include <lbcpp/Execution/WorkUnit.h>
 # include "GPExpressionBuilder.h"
-#include "LearningRuleFormulaObjective.h"
+# include "LearningRuleFormulaObjective.h"
 # include <algorithm>
 
 namespace lbcpp
@@ -39,15 +39,33 @@ public:
   
   GPExpressionBuilderStatePtr makeGPBuilderState() const
   {
+    EnumerationPtr variables;
+    std::vector<GPPre> unaryOperators;
+    std::vector<GPOperator> binaryOperators;
+
     if (problem == T("multiArmedBandits"))
-      return new RPNGPExpressionBuilderState("Coucou", gpExpressionDiscreteBanditPolicyVariablesEnumeration, FunctionPtr(), maxSize);
+    {
+      variables = gpExpressionDiscreteBanditPolicyVariablesEnumeration;
+      for (size_t i = gpLog; i <= gpInverse; ++i)
+        unaryOperators.push_back((GPPre)i);
+      for (size_t i = gpAddition; i <= gpMin; ++i)
+        binaryOperators.push_back((GPOperator)i);
+    }
     else if (problem == T("binaryClassification"))
-      return new RPNGPExpressionBuilderState("Coucou", learningRuleFormulaVariablesEnumeration, FunctionPtr(), maxSize);
+    {
+      variables = learningRuleFormulaVariablesEnumeration;
+      for (size_t i = gpLog; i <= gpInverse; ++i)
+        unaryOperators.push_back((GPPre)i);
+      for (size_t i = gpAddition; i <= gpLessThan; ++i)
+        binaryOperators.push_back((GPOperator)i);
+    }
     else
     {
       jassert(false);
       return GPExpressionBuilderStatePtr();
     }
+
+    return new RPNGPExpressionBuilderState("Coucou", variables, FunctionPtr(), maxSize, unaryOperators, binaryOperators);
   }
 
   void makeInputSamples(ExecutionContext& context, const String& problem, std::vector< std::vector<double> >& res)
@@ -88,7 +106,7 @@ public:
     {
       size_t count = 100;
       res.resize(count);
-      for (size_t i = 0; i < count; ++i)
+      for (size_t i = 0; i < count - 1; ++i)
       {
         std::vector<double> input(4);
         input[0] = random->sampleDoubleFromGaussian(0.0, 10.0); // param
@@ -97,6 +115,10 @@ public:
         input[3] = (size_t)pow(10, random->sampleDouble(0.0, 5.0));
         res[i] = input;
       }
+
+      std::vector<double> zero(4);
+      zero[0] = 1.0; zero[1] = 0.0; zero[2] = 0.0; zero[3] = 1;
+      res[count - 1] = zero;
     }
     else
       jassert(false);
@@ -154,6 +176,8 @@ public:
       expression->getVariableUseCounts(variableUseCounts);
       if (variableUseCounts[1] == 0 || variableUseCounts[2] == 0) // at least feature or score must be used
         return false;
+      if (variableUseCounts[3] > 0) // forbid variable "epoch" for the moment
+        return false; 
 
       for (size_t i = 0; i < res.size(); ++i)
       {

@@ -32,6 +32,9 @@ public:
     ExecutionContext::notificationCallback(notification);
   }
 
+  virtual void flushCallbacks()
+    {if (parent) parent->flushCallbacks();}
+
 protected:
   friend class SubExecutionContextClass;
 

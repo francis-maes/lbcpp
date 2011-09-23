@@ -16,12 +16,13 @@ namespace lbcpp
 
 enum GPOperator
 {
-  gpAddition,
+  gpAddition = 0,
   gpSubtraction,
   gpMultiplication,
   gpDivision,
+  gpMin,
   gpMax,
-  gpMin
+  gpLessThan,
 };
 
 extern EnumerationPtr gpOperatorEnumeration;
@@ -29,7 +30,7 @@ extern EnumerationPtr gpOperatorEnumeration;
 enum GPPre
 {
 //  gpExp,
-  gpLog,
+  gpLog = 0,
   gpSquareRoot,
   gpInverse
 };
@@ -167,6 +168,7 @@ public:
     case gpDivision: return r ? l / r : DBL_MAX;
     case gpMax: return l > r ? l : r;
     case gpMin: return l < r ? l : r;
+    case gpLessThan: return l < r ? 1 : 0;
     default: jassert(false); return 0.0;
     }
   }
@@ -189,13 +191,18 @@ public:
     String l = (left ? left->toShortString() : String("<null>"));
     String r = (right ? right->toShortString() : String("<null>"));
   
-    if (op == gpMin || op == gpMax)
-      return (op == gpMin ? T("min(") : T("max(")) + l + T(", ") + r + T(")");
-    
-    const char* names[] = {"+", "-", "*", "/"};
-    return T("(") + l + T(")") +
-            names[op] +
-           T("(") + r + T(")");
+    if (op >= gpMin)
+    {
+      static const char* names[] = {"min", "max", "lessThan"};
+      return names[op - gpMin] + String("(") + l + T(", ") + r + T(")");
+    }
+    else
+    {
+      const char* names[] = {"+", "-", "*", "/"};
+      return T("(") + l + T(")") +
+              names[op] +
+             T("(") + r + T(")");
+    }
   }
 
   GPOperator getOperator() const
