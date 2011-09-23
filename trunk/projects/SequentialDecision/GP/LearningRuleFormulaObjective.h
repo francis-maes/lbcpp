@@ -142,39 +142,33 @@ public:
 };
 
 
-
 class LearningRuleFormulaObjective : public SimpleUnaryFunction
 {
 public:
-  LearningRuleFormulaObjective(const File& trainFile = File(), const File& testFile = File(), double validationSize = 0.1, size_t numIterations = 20)
-    : SimpleUnaryFunction(gpExpressionClass, doubleType), trainFile(trainFile), testFile(testFile), validationSize(validationSize), numIterations(numIterations) {}
+  LearningRuleFormulaObjective(size_t numIterations = 20)
+    : SimpleUnaryFunction(gpExpressionClass, doubleType), numIterations(numIterations) {}
   
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-  {
-    trainData = loadData(context, trainFile);
-    testData = loadData(context, testFile);
-    return doubleType;
-  }
+  virtual void sampleTrainAndValidationData(ExecutionContext& context, ContainerPtr& train, ContainerPtr& validation) const = 0;
 
-  ContainerPtr loadData(ExecutionContext& context, const File& file)
-  {
-    // features = new DefaultEnumeration(trainFile.getFileName() + T(" features"));
-    // return binaryClassificationLibSVMDataParser(context, file, features)->load();
-    features = positiveIntegerEnumerationEnumeration;
-    context.enterScope(T("Loading data from ") + file.getFileName());
-    ContainerPtr res = StreamPtr(new BinaryClassificationLibSVMFastParser(context, file))->load();
-    context.leaveScope(res ? res->getNumElements() : 0);
-    return res;
-  }
+  virtual ContainerPtr getTrainingData(ExecutionContext& context) const = 0;
+  virtual ContainerPtr getTestingData(ExecutionContext& context) const = 0;
+
+  double testFormula(ExecutionContext& context, const GPExpressionPtr& expression) const
+    {return computeFormulaScore(context, expression, getTrainingData(context), getTestingData(context), true);}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& expr) const
   {
     GPExpressionPtr expression = expr.getObjectAndCast<GPExpression>();
 
-    ContainerPtr train, test;
-    makeRandomSplit(context, trainData, train, test);
-    return computeFormulaScore(context, expression, train, test);    
+    ContainerPtr train, validation;
+    sampleTrainAndValidationData(context, train, validation);
+    return computeFormulaScore(context, expression, train, validation);
   }
+
+protected:
+  friend class LearningRuleFormulaObjectiveClass;
+
+  size_t numIterations;
 
   double computeFormulaScore(ExecutionContext& context, const GPExpressionPtr& expression, const ContainerPtr& train, const ContainerPtr& test, bool verbose = false) const
   {
@@ -182,46 +176,11 @@ public:
     return theta ? evaluate(context, theta, test) : 0.0;
   }
 
-  double testFormula(ExecutionContext& context, const GPExpressionPtr& expression) const
-    {return computeFormulaScore(context, expression, trainData, testData, true);}
-
-protected:
-  friend class LearningRuleFormulaObjectiveClass;
-
-  File trainFile;
-  File testFile;
-  double validationSize;
-  size_t numIterations;
-
-  EnumerationPtr features;
-  ContainerPtr trainData;
-  ContainerPtr testData;
-
-  void makeRandomSplit(ExecutionContext& context, const ContainerPtr& data, ContainerPtr& train, ContainerPtr& test) const
-  {
-    RandomGeneratorPtr random = context.getRandomGenerator();
-    size_t n = data->getNumElements();
-
-    ObjectVectorPtr trainVector = objectVector(data->getElementsType(), 0);
-    trainVector->reserve((size_t)(1.2 * n * (1.0 - validationSize)));
-    ObjectVectorPtr testVector = objectVector(data->getElementsType(), 0);
-    testVector->reserve((size_t)(1.2 * n * validationSize));
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable element = data->getElement(i);
-      if (random->sampleBool(validationSize))
-        testVector->append(element);
-      else
-        trainVector->append(element);
-    }
-
-    train = trainVector;
-    test = testVector;
-  }
-
   DoubleVectorPtr performTraining(ExecutionContext& context, const GPExpressionPtr& expression, const ContainerPtr& train, bool verbose) const
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
+
+    ContainerPtr testData = ContainerPtr(); // this feature is disabled for the moment, getTestingData(context) ;
 
     size_t n = train->getNumElements();
     size_t epoch = 1;
@@ -258,8 +217,12 @@ protected:
 
       if (verbose)
       {
-        double acc = evaluate(context, theta, testData);
-        context.resultCallback(T("test accuracy"), acc);
+        double acc = numCorrect / (double)n;
+        if (testData)
+        {
+          acc = evaluate(context, theta, testData);
+          context.resultCallback(T("test accuracy"), acc);
+        }
         context.resultCallback(T("train accuracy"), numCorrect / (double)n);
         //context.resultCallback(T("parameters"), theta->cloneAndCast<DoubleVector>());
         context.resultCallback(T("parameters l2norm"), theta->l2norm());
@@ -268,8 +231,7 @@ protected:
         context.leaveScope(acc);
       }
 
-      double lowerBound = 0.5;
-
+      double lowerBound = 0.01;// juce::jmin((int)numPositives, (int)numNegatives) / (double)n;
       if (trainAccuracy < lowerBound)
       {
         if (verbose)
@@ -285,6 +247,9 @@ protected:
   void updateParameters(const GPExpressionPtr& expression, DenseDoubleVectorPtr parameters, SparseDoubleVectorPtr x, double score, double sign, size_t epoch) const
   {
     size_t n = juce::jmax((int)parameters->getNumValues(), (int)x->getNumValues());
+    if (!n)
+      return;
+
     parameters->ensureSize(n);
     double* params = parameters->getValuePointer(0);
 
@@ -339,6 +304,154 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<LearningRuleFormulaObjective> LearningRuleFormulaObjectivePtr;
+
+class FileLearningRuleFormulaObjective : public LearningRuleFormulaObjective
+{
+public:
+  FileLearningRuleFormulaObjective(const File& trainFile = File(), const File& testFile = File(), double validationSize = 0.1, size_t numIterations = 20)
+    : LearningRuleFormulaObjective(numIterations), trainFile(trainFile), testFile(testFile), validationSize(validationSize)  {}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    trainData = loadData(context, trainFile);
+    testData = loadData(context, testFile);
+    return doubleType;
+  }
+  
+  virtual ContainerPtr getTrainingData(ExecutionContext& context) const
+    {return trainData;}
+
+  virtual ContainerPtr getTestingData(ExecutionContext& context) const
+    {return testData;}
+
+  ContainerPtr loadData(ExecutionContext& context, const File& file)
+  {
+    // features = new DefaultEnumeration(trainFile.getFileName() + T(" features"));
+    // return binaryClassificationLibSVMDataParser(context, file, features)->load();
+    features = positiveIntegerEnumerationEnumeration;
+    context.enterScope(T("Loading data from ") + file.getFileName());
+    ContainerPtr res = StreamPtr(new BinaryClassificationLibSVMFastParser(context, file))->load();
+    context.leaveScope(res ? res->getNumElements() : 0);
+    return res;
+  }
+
+  virtual void sampleTrainAndValidationData(ExecutionContext& context, ContainerPtr& train, ContainerPtr& validation) const
+  {
+    RandomGeneratorPtr random = context.getRandomGenerator();
+    size_t n = trainData->getNumElements();
+
+    ObjectVectorPtr trainVector = objectVector(trainData->getElementsType(), 0);
+    trainVector->reserve((size_t)(1.2 * n * (1.0 - validationSize)));
+    ObjectVectorPtr validationVector = objectVector(trainData->getElementsType(), 0);
+    validationVector->reserve((size_t)(1.2 * n * validationSize));
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable element = trainData->getElement(i);
+      if (random->sampleBool(validationSize))
+        validationVector->append(element);
+      else
+        trainVector->append(element);
+    }
+
+    train = trainVector;
+    validation = validationVector;
+  }
+
+protected:
+  friend class FileLearningRuleFormulaObjectiveClass;
+
+  File trainFile;
+  File testFile;
+  double validationSize;
+
+  EnumerationPtr features;
+  ContainerPtr trainData;
+  ContainerPtr testData;
+};
+
+class SparseLearningRuleFormulaObjective : public LearningRuleFormulaObjective
+{
+public:
+  SparseLearningRuleFormulaObjective()
+    : numDimensions(1000), numTrainExamples(1000), numValidationExamples(100), separatorSparsity(0.0), examplesSparsity(0.99)
+  {
+  }
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    testTheta = sampleParameters(context);
+    return doubleType;
+  }
+
+  virtual ContainerPtr getTrainingData(ExecutionContext& context) const
+    {return sampleDataset(context, testTheta, numTrainExamples);}
+
+  virtual ContainerPtr getTestingData(ExecutionContext& context) const
+    {return sampleDataset(context, testTheta, numValidationExamples);}
+
+  virtual void sampleTrainAndValidationData(ExecutionContext& context, ContainerPtr& train, ContainerPtr& validation) const
+  {
+    DenseDoubleVectorPtr theta = sampleParameters(context);
+    train = sampleDataset(context, theta, numTrainExamples);
+    validation = sampleDataset(context, theta, numValidationExamples);
+  }
+
+  DenseDoubleVectorPtr sampleParameters(ExecutionContext& context) const
+  {
+    RandomGeneratorPtr random = context.getRandomGenerator();
+    DenseDoubleVectorPtr res = new DenseDoubleVector(numDimensions, 0.0);
+    for (size_t i = 0; i < numDimensions; ++i)
+      if (random->sampleBool(separatorSparsity) == false)
+        res->setValue(i, random->sampleDoubleFromGaussian());
+    return res;
+  }
+   
+  ContainerPtr sampleDataset(ExecutionContext& context, const DenseDoubleVectorPtr& theta, size_t numExamples) const
+  {
+    RandomGeneratorPtr random = context.getRandomGenerator();
+    ClassPtr featuresClass = sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
+    TypePtr pairType = pairClass(featuresClass, booleanType);
+
+    std::vector<size_t> featureIndices(numDimensions);
+    for (size_t i = 0; i < numDimensions; ++i)
+      featureIndices[i] = i;
+
+    ObjectVectorPtr res = objectVector(pairType, numExamples);
+    size_t numPositives = 0;
+    ScalarVariableStatisticsPtr featureSparsityStats = new ScalarVariableStatistics(T("featureSparsity"));
+    for (size_t i = 0; i < numExamples; ++i)
+    {
+      SparseDoubleVectorPtr features = new SparseDoubleVector(featuresClass);
+      features->reserveValues((size_t)(numDimensions * juce::jmin(1.0, (1.0 - examplesSparsity * 0.9))));
+      for (size_t j = 0; j < numDimensions; ++j)
+        if (random->sampleBool(examplesSparsity) == false)
+          features->appendValue(j, 1.0);
+      featureSparsityStats->push(features->getNumValues());
+
+      bool supervision = features->dotProduct(theta, 0) > 0;
+      if (supervision)
+        ++numPositives;
+
+      res->set(i, new Pair(pairType, features, supervision));
+    }
+
+    //context.informationCallback(T("Num params: ") + String(theta->l0norm()) + T(" / ") + String((int)numDimensions));
+    //context.informationCallback(T("Num positive: ") + String((int)numPositives) + T(" / ") + String((int)numExamples));
+    //context.informationCallback(T("Examples Sparsity: ") + featureSparsityStats->toShortString());
+    return res;
+  }
+
+protected:
+  friend class SparseLearningRuleFormulaObjectiveClass;
+
+  size_t numDimensions;
+  size_t numTrainExamples;
+  size_t numValidationExamples;
+  double separatorSparsity; // percentage of null values
+  double examplesSparsity; // percentage of null values
+
+  DenseDoubleVectorPtr testTheta;
+};
 
 }; /* namespace lbcpp */
 
