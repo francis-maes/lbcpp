@@ -22,7 +22,8 @@ Variable NearestNeighborFunction::computeFunction(ExecutionContext& context, con
   jassert(inputData[0]->getElementsEnumeration()->getNumElements() == baseVector->getElementsEnumeration()->getNumElements());
   for (size_t i = 0; i < n; ++i)
   {
-    const double score = baseVector->getDistanceTo(inputData[i]);
+    //const double score = baseVector->getDistanceTo(inputData[i]);
+    const double score = baseVector->getDistanceTo(inputData[i]->toSparseVector());
     scoredIndices.insert(std::pair<double, size_t>(-score, i));
   }
 
@@ -99,8 +100,9 @@ bool NearestNeighborBatchLearner::train(ExecutionContext& context, const Functio
       context.errorCallback(T("NearestNeighborBatchLearner::train"), T("Training example without DoubleVector as input data !"));
       return false;
     }
-    SparseDoubleVectorPtr inputVector = v->toSparseVector();
-    nnFunction->inputData.push_back(inputVector);
+//    SparseDoubleVectorPtr inputVector = v->toSparseVector();
+//    nnFunction->inputData.push_back(inputVector);
+    nnFunction->inputData.push_back(v);
     nnFunction->supervisionData.push_back(trainingData[i]->getVariable(1));
   }
 

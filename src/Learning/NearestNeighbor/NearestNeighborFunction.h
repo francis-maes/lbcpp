@@ -50,7 +50,8 @@ protected:
   size_t numNeighbors;
   bool includeTheNearestNeighbor;
 
-  std::vector<SparseDoubleVectorPtr> inputData;
+//  std::vector<SparseDoubleVectorPtr> inputData;
+  std::vector<DoubleVectorPtr> inputData;
   std::vector<Variable> supervisionData;
 
   virtual Variable computeOutput(ScoresMap& scoredIndices) const = 0;
