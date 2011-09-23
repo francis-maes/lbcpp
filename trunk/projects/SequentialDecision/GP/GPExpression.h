@@ -29,10 +29,11 @@ extern EnumerationPtr gpOperatorEnumeration;
 
 enum GPPre
 {
-//  gpExp,
   gpLog = 0,
   gpSquareRoot,
-  gpInverse
+  gpInverse,
+  gpExp,
+  gpAbs,
 };
 
 extern EnumerationPtr gpPreEnumeration;
@@ -88,13 +89,11 @@ public:
 
     switch (pre)
     {
-    //case gpSin: return sin(e);
-    //case gpCos: return cos(e);
-    //case gpExp: return exp(e);
     case gpLog: return e <= 0.0 || !isNumberValid(e) ? -DBL_MAX : log(e);
     case gpSquareRoot: return e < 0.0 || !isNumberValid(e) ? -DBL_MAX : sqrt(e);
-    //case gpSquare: return e * e;
     case gpInverse: return e != 0.0 ? 1.0 / e : DBL_MAX;
+    case gpExp: return exp(e);
+    case gpAbs: return fabs(e);
     default: jassert(false); return 0.0;
     };
   }
