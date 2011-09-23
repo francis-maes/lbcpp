@@ -468,11 +468,9 @@ public:
   ContainerCurveEditorConfigurationComponent(ContainerCurveEditorConfigurationPtr configuration)
     : configuration(configuration)
   {
-    // TODO: switch select Y-Axis component depending of the number of curves
     addAndMakeVisible(xAxisLabel = new juce::Label(T("xaxis"), T("X-Axis")));
     addAndMakeVisible(keyComboBox = createVariableIndexComboBox(configuration->getKeyVariableIndex()));
     addAndMakeVisible(yAxisLabel = new juce::Label(T("yaxis"), T("Y-Axis")));
-    //addAndMakeVisible(selectedCurves = new ContainerCurveSelectorConfigurationComponent(configuration));
     // FIXME: Who will destroy curveListBox ?
     CurveListBoxModel* curveListBox = new CurveListBoxModel(configuration, this);
     addAndMakeVisible(yListBox = new juce::ListBox(T("yListBox"), curveListBox));
@@ -480,7 +478,7 @@ public:
     yListBox->setOutlineThickness(1);
     yListBox->setRowHeight(15);
     yListBox->setMultipleSelectionEnabled(false);
-    //selectedCurves->addChangeListener(this);
+
     addAndMakeVisible(selectAllButton = new juce::TextButton(T("Select All")));
     selectAllButton->addButtonListener(this);
     addAndMakeVisible(noneButton = new juce::TextButton(T("None")));
@@ -505,6 +503,7 @@ public:
           ++index;
         }
       }
+      configuration->getCurve(configuration->getKeyVariableIndex())->setSelected(false);
       sendChangeMessage(this);
     }
   }
@@ -544,7 +543,6 @@ protected:
   juce::Label* xAxisLabel;
   ComboBox* keyComboBox;
   juce::Label* yAxisLabel;
-  ContainerCurveSelectorConfigurationComponent* selectedCurves;
   juce::ListBox* yListBox;
   juce::Button* selectAllButton;
   juce::Button* noneButton;

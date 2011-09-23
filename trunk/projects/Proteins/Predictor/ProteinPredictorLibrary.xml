@@ -319,7 +319,27 @@
     <variable type="Double" name="sgdRate"/>
     <variable type="PositiveInteger" name="sgdIterations"/>
     <variable type="Boolean" name="useAddBias"/>
-    <variable type="GenericVector[Function]" name="featureGenerators"/>
   </class>
+
+  <class name="ParameteredCompositeFunction" base="CompositeFunction" abstract="yes">
+    <variable type="Variable" name="parameter"/>
+  </class>
+  <class name="WindowFunction" base="ParameteredCompositeFunction">
+    <variable type="Function" name="residueFunction"/>
+    <variable type="String" name="residueShortName"/>
+  </class>
+  <class name="GlobalHistogramFunction" base="ParameteredCompositeFunction">
+    <variable type="Function" name="residueFunction"/>
+    <variable type="String" name="residueShortName"/>
+  </class>
+  <class name="LocalHistogramFunction" base="ParameteredCompositeFunction">
+    <variable type="Function" name="residueFunction"/>
+    <variable type="String" name="residueShortName"/>
+  </class>
+  <class name="SeperationProfilFunction" base="ParameteredCompositeFunction"/>
+  <class name="ProteinDecoratedCreateVector" base="CompositeFunction">
+    <variable type="Function" name="function"/>
+  </class>
+  <class name="IdentityCreateVector" base="CompositeFunction"/>
   <!-- END LargePredictorParameters -->
 </library>

@@ -230,13 +230,13 @@
     <variable type="Sampler" name="decorated"/>
     <variable type="VariablesEnumeration[Protein]" name="target"/>
     <variable type="LargeProteinPredictorParameters" name="largePredictor"/>
-    <variable type="Container[Protein]" name="trainingProteins"/>
-    <variable type="Container[Protein]" name="testingProteins"/>
-    <variable type="DoubleVectorContainerSet" name="trainingFeaturesSet"/>
-    <variable type="DoubleVectorContainerSet" name="testingFeaturesSet"/>
-    <variable type="NormalizeDoubleVectorSet" name="normalizer"/>
-    <variable type="Container[Variable]" name="trainingSupervisions"/>
-    <variable type="Container[Variable]" name="testingSupervisions"/>
+<!--    <variable type="Container[Protein]" name="trainingProteins"/>
+        <variable type="Container[Protein]" name="testingProteins"/>
+        <variable type="DoubleVectorContainerSet" name="trainingFeaturesSet"/>
+        <variable type="DoubleVectorContainerSet" name="testingFeaturesSet"/>
+        <variable type="NormalizeDoubleVectorSet" name="normalizer"/>
+        <variable type="Container[Variable]" name="trainingSupervisions"/>
+        <variable type="Container[Variable]" name="testingSupervisions"/> -->
   </class>
   <class name="ProteinBanditTestFeatures" base="WorkUnit">
     <variable type="String" name="proteinsDirectory" shortName="in"/>

@@ -276,6 +276,20 @@ public:
     return decorated->computeProbabilities(inputs, parameters);
   }
 
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    Sampler::clone(context, target);
+    ReferenceCountedObjectPtr<ProteinBanditSampler> t = target.staticCast<ProteinBanditSampler>();
+    t->decorated = decorated->cloneAndCast<Sampler>(context);
+    t->trainingProteins = trainingProteins;
+    t->testingProteins = testingProteins;
+    t->trainingSupervisions = trainingSupervisions;
+    t->testingSupervisions = testingSupervisions;
+    t->trainingFeaturesSet = trainingFeaturesSet;
+    t->testingFeaturesSet = testingFeaturesSet;
+    t->normalizer = normalizer;
+  }
+
 protected:
   friend class ProteinBanditSamplerClass;
 
@@ -283,16 +297,6 @@ protected:
 
   ProteinTarget target;
   LargeProteinPredictorParametersPtr largePredictor;
-
-  ContainerPtr trainingProteins;
-  ContainerPtr testingProteins;
-
-  DoubleVectorContainerSetPtr trainingFeaturesSet;
-  DoubleVectorContainerSetPtr testingFeaturesSet;
-  NormalizeDoubleVectorSetPtr normalizer;
-
-  ContainerPtr trainingSupervisions;
-  ContainerPtr testingSupervisions;
 
   ProteinBanditSampler() {}
 
@@ -357,6 +361,17 @@ protected:
       res->setElement(i, new Pair(elementsType, features->getElement(i), supervisions->getElement(i)));
     return res;
   }
+
+private:
+  ContainerPtr trainingProteins;
+  ContainerPtr testingProteins;
+  
+  ContainerPtr trainingSupervisions;
+  ContainerPtr testingSupervisions;
+
+  DoubleVectorContainerSetPtr trainingFeaturesSet;
+  DoubleVectorContainerSetPtr testingFeaturesSet;
+  NormalizeDoubleVectorSetPtr normalizer;  
 };
 
 class ProteinBanditTestFeatures : public WorkUnit
@@ -477,7 +492,7 @@ public:
                                               , proteinsPath, ss3Target, predictor);
     FunctionPtr f(new BanditFunction());
     OptimizationProblemPtr problem(new OptimizationProblem(f, Variable(), sampler));
-    OptimizerPtr optimizer(banditEDAOptimizer(5, 10, 5, 0.5f, 500, 2));
+    OptimizerPtr optimizer(banditEDAOptimizer(5, 10, 5, 0.5f, 1000, 2));
     return optimizer->compute(context, problem);
   }
 
