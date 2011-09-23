@@ -257,7 +257,7 @@ ContainerPtr Container::apply(ExecutionContext& context, FunctionPtr function, A
       for (size_t i = 0; i < n; ++i)
         workUnits->setWorkUnit(i, new ApplyFunctionInContainerWorkUnit(refCountedPointerFromThis(this), function, res, i));
       workUnits->setProgressionUnit(function->getOutputType()->getName() + T("s"));
-      context.run(workUnits);
+      context.run(workUnits, false);
     }
     else
       jassert(false);
