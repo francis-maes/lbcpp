@@ -164,11 +164,22 @@
   </enumeration>
 
 
-  <class name="LearningRuleFormulaObjective" base="Function" shortName="binaryClassificationObjective">
-    <variable type="File" name="trainFile"/>
-    <variable type="File" name="testFile"/>
-    <variable type="Double" name="validationSize"/>
+  <class name="LearningRuleFormulaObjective" base="Function" abstract="yes">
     <variable type="PositiveInteger" name="numIterations"/>
   </class>
 
+  <class name="FileLearningRuleFormulaObjective" base="LearningRuleFormulaObjective" shortName="fileBinaryClassificationObjective">
+    <variable type="File" name="trainFile"/>
+    <variable type="File" name="testFile"/>
+    <variable type="Double" name="validationSize"/>
+  </class>
+
+  <class name="SparseLearningRuleFormulaObjective" base="LearningRuleFormulaObjective" shortName="sparseBinaryClassificationObjective">
+    <variable type="PositiveInteger" name="numDimensions"/>
+    <variable type="PositiveInteger" name="numTrainExamples"/>
+    <variable type="PositiveInteger" name="numValidationExamples"/>
+    <variable type="Double" name="separatorSparsity"/>
+    <variable type="Double" name="examplesSparsity"/>
+  </class>
+         
 </library>
