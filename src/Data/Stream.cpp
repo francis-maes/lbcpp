@@ -119,9 +119,9 @@ ProgressionStatePtr TextParser::getCurrentPosition() const
   return progression;
 }
 
-inline int indexOfAnyNotOf(const String& str, const String& characters, int startPosition = 0)
+inline int indexOfAnyNotOf(const String& str, int strLength, const String& characters, int startPosition = 0)
 {
-  for (int i = startPosition; i < str.length(); ++i)
+  for (int i = startPosition; i < strLength; ++i)
     if (characters.indexOfChar(str[i]) < 0)
       return i;
   return -1;
@@ -129,7 +129,8 @@ inline int indexOfAnyNotOf(const String& str, const String& characters, int star
 
 void TextParser::tokenize(const String& line, std::vector<String>& columns, const juce::tchar* separators)
 {
-  int b = indexOfAnyNotOf(line, separators);
+  int lineLength = line.length();
+  int b = indexOfAnyNotOf(line, lineLength, separators);
   while (b >= 0)
   {
     int e = line.indexOfAnyOf(separators, b);
@@ -140,7 +141,7 @@ void TextParser::tokenize(const String& line, std::vector<String>& columns, cons
     }
     else
       columns.push_back(line.substring(b, e));
-    b = indexOfAnyNotOf(line, separators, e);
+    b = indexOfAnyNotOf(line, lineLength, separators, e);
   }
 }
 

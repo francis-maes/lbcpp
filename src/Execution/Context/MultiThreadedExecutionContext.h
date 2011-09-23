@@ -106,6 +106,27 @@ public:
   size_t getNumThreads() const
     {return numThreads;}
 
+  void pushCallbackCall(ExecutionContextCallbackPtr callback, const WorkUnitPtr& workUnit, const Variable& result)
+  {
+    CallbackInfo info;
+    info.callback = callback;
+    info.workUnit = workUnit;
+    info.result = result;
+    ScopedLock _(callbacksLock);
+    callbacks.push_back(info);
+  }
+
+  void flushCallbacks()
+  {
+    std::list<CallbackInfo> callbacks;
+    {
+      ScopedLock _(callbacksLock);
+      this->callbacks.swap(callbacks);
+    }
+    for (std::list<CallbackInfo>::iterator it = callbacks.begin(); it != callbacks.end(); ++it)
+      it->callback->workUnitFinished(it->workUnit, it->result);
+  }
+
   lbcpp_UseDebuggingNewOperator
 
 private:
@@ -113,6 +134,15 @@ private:
   typedef std::list<Entry> EntryList;
   std::vector<EntryList> entries;
   size_t numThreads;
+
+  CriticalSection callbacksLock;
+  struct CallbackInfo
+  {
+    ExecutionContextCallbackPtr callback;
+    WorkUnitPtr workUnit;
+    Variable result;
+  };
+  std::list<CallbackInfo> callbacks;
 };
 
 typedef ReferenceCountedObjectPtr<WaitingWorkUnitQueue> WaitingWorkUnitQueuePtr;
@@ -255,7 +285,7 @@ private:
     if (entry.counterToDecrementWhenDone)
       juce::atomicDecrement(*entry.counterToDecrementWhenDone);
     if (entry.callback)
-      entry.callback->workUnitFinished(entry.workUnit, result);
+      waitingQueue->pushCallbackCall(entry.callback, entry.workUnit, result);
 
     // thread end callback and restore previous stack
     context->threadEndCallback(entryStack);
@@ -408,6 +438,7 @@ public:
     while (!queue->isEmpty())
     {
       Thread::sleep(10);
+      queue->flushCallbacks();
       time += 10;
       if (timeOutInMilliseconds && time >= timeOutInMilliseconds)
         break;
@@ -478,7 +509,11 @@ public:
 
   virtual void waitUntilAllWorkUnitsAreDone(size_t timeOutInMilliseconds)
     {threadPool->waitUntilAllWorkUnitsAreDone(timeOutInMilliseconds);}
+   
+  virtual void flushCallbacks()
+    {threadPool->getWaitingQueue()->flushCallbacks();}
     
+
   virtual Variable run(const WorkUnitPtr& workUnit, bool pushIntoStack)
   {
     int remainingWorkUnits = 1;

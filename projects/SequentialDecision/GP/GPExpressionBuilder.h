@@ -132,8 +132,8 @@ typedef ReferenceCountedObjectPtr<GPExpressionBuilderState> GPExpressionBuilderS
 class RPNGPExpressionBuilderState : public GPExpressionBuilderState
 {
 public:
-  RPNGPExpressionBuilderState(const String& name, EnumerationPtr inputVariables, FunctionPtr objectiveFunction, size_t maxSize)
-    : GPExpressionBuilderState(name, inputVariables, objectiveFunction), currentSize(0), maxSize(maxSize), isFinal(false) {}
+  RPNGPExpressionBuilderState(const String& name, EnumerationPtr inputVariables, FunctionPtr objectiveFunction, size_t maxSize, const std::vector<GPPre>& unaryOperators, const std::vector<GPOperator>& binaryOperators)
+    : GPExpressionBuilderState(name, inputVariables, objectiveFunction), currentSize(0), maxSize(maxSize), unaryOperators(unaryOperators), binaryOperators(binaryOperators), isFinal(false) {}
   RPNGPExpressionBuilderState() {}
   
   virtual String toShortString() const
@@ -186,15 +186,13 @@ public:
     
     if (minArity <= 2 && 2 <= maxArity)
     {
-      size_t n = gpOperatorEnumeration->getNumElements();
-      for (size_t i = 0; i < n; ++i)
-        res->append(new BinaryGPExpressionBuilderAction((GPOperator)i, stackSize - 2, stackSize - 1));
+      for (size_t i = 0; i < binaryOperators.size(); ++i)
+        res->append(new BinaryGPExpressionBuilderAction(binaryOperators[i], stackSize - 2, stackSize - 1));
     }
     if (minArity <= 1 && 1 <= maxArity)
     {
-      size_t n = gpPreEnumeration->getNumElements();
-      for (size_t i = 0; i < n; ++i)
-        res->append(new UnaryGPExpressionBuilderAction((GPPre)i, stackSize - 1));
+      for (size_t i = 0; i < unaryOperators.size(); ++i)
+        res->append(new UnaryGPExpressionBuilderAction(unaryOperators[i], stackSize - 1));
     }
     if (minArity <= 0 && 0 <= maxArity)
     {
@@ -280,6 +278,8 @@ protected:
   std::vector<GPExpressionPtr> stack;
   size_t currentSize;
   size_t maxSize;
+  std::vector<GPPre> unaryOperators;
+  std::vector<GPOperator> binaryOperators;
   bool isFinal;
 };
 

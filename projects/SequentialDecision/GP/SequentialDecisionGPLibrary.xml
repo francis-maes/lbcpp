@@ -10,6 +10,7 @@
     <value name="div" shortName="/"/>
     <value name="max"/>
     <value name="min"/>
+    <value name="lessThan"/>
   </enumeration>
 
   <enumeration name="GPPre">
@@ -135,6 +136,8 @@
   <class name="BanditFormulaWorkUnit" base="WorkUnit">
     <variable type="File" name="formulasFile"/>
     <variable type="Function" name="objective"/>
+    <variable type="String" name="baseline"/>
+    <variable type="PositiveInteger" name="numIterations"/>
   </class>
 
   <enumeration name="GPExpressionDiscreteBanditPolicyVariables" shortName="gp">
@@ -164,7 +167,8 @@
 
 
   <class name="LearningRuleFormulaObjective" base="Function" shortName="binaryClassificationObjective">
-    <variable type="File" name="dataFile"/>
+    <variable type="File" name="trainFile"/>
+    <variable type="File" name="testFile"/>
     <variable type="Double" name="validationSize"/>
     <variable type="PositiveInteger" name="numIterations"/>
   </class>
