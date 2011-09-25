@@ -195,7 +195,10 @@
 
   <class name="FormulaLearnAndSearch" base="WorkUnit">
     <variable type="FormulaSearchProblem" name="problem"/>
+    <variable type="PositiveInteger" name="formulaInitialSize"/>
+    <variable type="PositiveInteger" name="creationFrequency"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="PositiveInteger" name="iterationsLength"/>
   </class>
-
-
+  
 </library>

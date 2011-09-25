@@ -117,18 +117,6 @@ public:
           Thread::sleep(10);
           context.flushCallbacks();
         }
-/*
-        size_t count = 0;
-        while (count < formulas.size())
-        {
-          while (getNumCurrentlyEvaluatedFormulas() < 20 && count < formulas.size())
-          {
-            ++count;
-            playBestFormula(context);
-            context.flushCallbacks();
-          }
-          Thread::sleep(1);
-        }*/
       }
       else
       {
