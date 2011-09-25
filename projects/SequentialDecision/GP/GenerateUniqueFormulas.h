@@ -11,6 +11,7 @@
 
 # include <lbcpp/Execution/WorkUnit.h>
 # include "GPExpressionBuilder.h"
+# include "FormulaSearchProblem.h"
 # include "LearningRuleFormulaObjective.h"
 # include <algorithm>
 
@@ -20,14 +21,14 @@ namespace lbcpp
 class GenerateUniqueFormulas : public WorkUnit
 {
 public:
-  GenerateUniqueFormulas() : problem("multiArmedBandits"), maxSize(3) {}
+  GenerateUniqueFormulas() : maxSize(3) {}
 
   typedef std::vector<int> FormulaKey;
   
   virtual Variable run(ExecutionContext& context)
   {
     std::vector< std::vector<double> > inputSamples;
-    makeInputSamples(context, problem, inputSamples);
+    problem->sampleInputs(context, 100, inputSamples);
     
     GPExpressionBuilderStatePtr state = makeGPBuilderState();
     std::map<FormulaKey, GPExpressionPtr> formulas;
@@ -39,89 +40,11 @@ public:
   
   GPExpressionBuilderStatePtr makeGPBuilderState() const
   {
-    EnumerationPtr variables;
+    EnumerationPtr variables = problem->getVariables();
     std::vector<GPPre> unaryOperators;
     std::vector<GPOperator> binaryOperators;
-
-    if (problem == T("multiArmedBandits"))
-    {
-      variables = gpExpressionDiscreteBanditPolicyVariablesEnumeration;
-      for (size_t i = gpLog; i <= gpInverse; ++i)
-        unaryOperators.push_back((GPPre)i);
-      for (size_t i = gpAddition; i <= gpMin; ++i)
-        binaryOperators.push_back((GPOperator)i);
-    }
-    else if (problem == T("binaryClassification"))
-    {
-      variables = learningRuleFormulaVariablesEnumeration;
-      for (size_t i = gpLog; i <= gpAbs; ++i)
-        unaryOperators.push_back((GPPre)i);
-      for (size_t i = gpAddition; i <= gpLessThan; ++i)
-        binaryOperators.push_back((GPOperator)i);
-    }
-    else
-    {
-      jassert(false);
-      return GPExpressionBuilderStatePtr();
-    }
-
+    problem->getOperators(unaryOperators, binaryOperators);
     return new RPNGPExpressionBuilderState("Coucou", variables, FunctionPtr(), maxSize, unaryOperators, binaryOperators);
-  }
-
-  void makeInputSamples(ExecutionContext& context, const String& problem, std::vector< std::vector<double> >& res)
-  {
-    RandomGeneratorPtr random = context.getRandomGenerator();
-
-    if (problem == T("multiArmedBandits"))
-    {
-      size_t count = 1000;
-      res.resize(count);
-      for (size_t i = 0; i < count - 2; ++i)
-      {
-        std::vector<double> input(7);
-        input[0] = juce::jmax(1, (int)pow(10.0, random->sampleDouble(0, 5))); // t
-        input[1] = random->sampleDouble(0.0, 1.0); // rk1
-        input[2] = random->sampleDouble(0.0, 0.5); // sk1
-        input[3] = juce::jmax(1, (int)(input[0] * random->sampleDouble(0.0, 1.0))); // tk1
-        input[4] = random->sampleDouble(0.0, 1.0); // rk2
-        input[5] = random->sampleDouble(0.0, 0.5); // sk2
-        input[6] = juce::jmax(1, (int)(input[0] * random->sampleDouble(0.0, 1.0))); // tk2
-        res[i] = input;
-      }
-
-      std::vector<double> smallest(7);
-      smallest[0] = 1.0;
-      smallest[1] = smallest[2] = smallest[4] = smallest[5] = 0.0;
-      smallest[3] = smallest[6] = 1.0;
-      res[count - 2] = smallest;
-
-      std::vector<double> highest(7);
-      highest[0] = 100000;
-      highest[1] = highest[4] = 1.0;
-      highest[2] = highest[5] = 0.5;
-      highest[3] = highest[6] = 100000;
-      res[count - 1] = highest;
-    }
-    else if (problem == T("binaryClassification"))
-    {
-      size_t count = 100;
-      res.resize(count);
-      for (size_t i = 0; i < count - 1; ++i)
-      {
-        std::vector<double> input(4);
-        input[0] = random->sampleDoubleFromGaussian(0.0, 10.0); // param
-        input[1] = random->sampleDoubleFromGaussian(0.0, 1.0);  // feature
-        input[2] = random->sampleDoubleFromGaussian(0.0, 10.0); // score
-        input[3] = (size_t)pow(10, random->sampleDouble(0.0, 5.0));
-        res[i] = input;
-      }
-
-      std::vector<double> zero(4);
-      zero[0] = 1.0; zero[1] = 0.0; zero[2] = 0.0; zero[3] = 1;
-      res[count - 1] = zero;
-    }
-    else
-      jassert(false);
   }
   
   struct CompareSecond
@@ -135,63 +58,7 @@ public:
     }
   };
   
-  bool makeFormulaKey(const GPExpressionPtr& expression, const std::vector< std::vector<double> >& inputSamples, FormulaKey& res)
-  {
-    res.resize(inputSamples.size());
 
-    if (problem == T("multiArmedBandits"))
-    {
-      for (size_t i = 0; i < inputSamples.size(); ++i)
-      {
-        std::vector<double> v(4);
-        v[0] = inputSamples[i][1];
-        v[1] = inputSamples[i][2];
-        v[2] = inputSamples[i][3];
-        v[3] = inputSamples[i][0];
-        double value1 = expression->compute(&v[0]);
-        if (!isNumberValid(value1))
-          return false;
-
-        v[0] = inputSamples[i][4];
-        v[1] = inputSamples[i][5];
-        v[2] = inputSamples[i][6];
-        v[3] = inputSamples[i][0];
-        double value2 = expression->compute(&v[0]);
-        if (!isNumberValid(value2))
-          return false;
-
-        if (value1 < value2)
-          res[i] = 0;
-        else if (value1 == value2)
-          res[i] = 1;
-        else if (value1 > value2)
-          res[i] = 2;
-
-        //res[i] = (int)(value1 * 10000) + (int)(value2 * 1000000);
-      }
-    }
-    else if (problem == T("binaryClassification"))
-    {
-      std::map<size_t, size_t> variableUseCounts;
-      expression->getVariableUseCounts(variableUseCounts);
-      if (variableUseCounts[1] == 0 || variableUseCounts[2] == 0) // at least feature or score must be used
-        return false;
-      if (variableUseCounts[3] > 0) // forbid variable "epoch" for the moment
-        return false; 
-
-      for (size_t i = 0; i < res.size(); ++i)
-      {
-        double value = expression->compute(&inputSamples[i][0]);
-        if (!isNumberValid(value))
-          return false;
-        res[i] = (int)(value * 100000);
-      }
-    }
-    else
-      jassert(false);
-    return true;
-  }
-  
   static String formulaKeyToString(const FormulaKey& key)
   {
     String res;
@@ -208,7 +75,7 @@ public:
       jassert(formula);
       
       FormulaKey formulaKey;
-      if (!makeFormulaKey(formula, inputSamples, formulaKey))
+      if (!problem->makeFormulaKey(formula, inputSamples, formulaKey))
       {
         //context.informationCallback("Invalid formula: " + formula->toShortString());
         return; // invalid formula
@@ -245,7 +112,7 @@ public:
 protected:
   friend class GenerateUniqueFormulasClass;
 
-  String problem;
+  FormulaSearchProblemPtr problem;
   size_t maxSize;
   File formulasFile;
 

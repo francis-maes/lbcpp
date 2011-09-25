@@ -177,10 +177,12 @@ protected:
 class BanditFormulaWorkUnit : public WorkUnit
 {
 public:
-  BanditFormulaWorkUnit() : objective(new BanditFormulaObjective(2, 10, 1.0, 1000)), numIterations(10) {}
+  BanditFormulaWorkUnit() : numIterations(10) {}
 
   virtual Variable run(ExecutionContext& context)
   {   
+    FunctionPtr objective = problem->getObjective();
+
     if (!objective->initialize(context, gpExpressionClass))
       return false;
 
@@ -188,13 +190,13 @@ public:
     if (!loadFormulasFromFile(context, formulasFile, formulas))
       return false;
     context.informationCallback("We have " + String((int)formulas.size()) + " formulas");
- 
+
+
     GPExpressionPtr baselineExpression;
     if (baseline.isNotEmpty())
     {
       context.enterScope(T("Evaluating baseline ") + baseline);
-      EnumerationPtr variablesEnumeration = learningRuleFormulaVariablesEnumeration; // FIXME
-      baselineExpression = GPExpression::createFromString(context, baseline, variablesEnumeration);
+      baselineExpression = GPExpression::createFromString(context, baseline, problem->getVariables());
 
       ScalarVariableStatisticsPtr baselineStats = new ScalarVariableStatistics("baseline");
       for (size_t i = 0; i < 10; ++i)
@@ -212,30 +214,30 @@ public:
       pool.addFormula(baselineExpression);
     pool.run(context, formulas, numIterations);
 
-    std::vector<GPExpressionPtr> bestFormulas = pool.getBestFormulas(10);
-    for (size_t i = 0; i < bestFormulas.size(); ++i)
+    if (objective.isInstanceOf<LearningRuleFormulaObjective>())
     {
-      GPExpressionPtr formula = bestFormulas[i];
-      context.enterScope(T("Test ") + formula->toShortString());
-      double testScore = objective.staticCast<LearningRuleFormulaObjective>()->testFormula(context, formula);
-      context.leaveScope(testScore);
+      std::vector<GPExpressionPtr> bestFormulas = pool.getBestFormulas(10);
+      for (size_t i = 0; i < bestFormulas.size(); ++i)
+      {
+        GPExpressionPtr formula = bestFormulas[i];
+        context.enterScope(T("Test ") + formula->toShortString());
+        double testScore = objective.staticCast<LearningRuleFormulaObjective>()->testFormula(context, formula);
+        context.leaveScope(testScore);
+      }
     }
-
     return true;
   }
   
 protected:
   friend class BanditFormulaWorkUnitClass;
 
+  FormulaSearchProblemPtr problem;
   File formulasFile;
-  FunctionPtr objective;
   String baseline;
   size_t numIterations;
 
   bool loadFormulasFromFile(ExecutionContext& context, const File& formulasFile, std::vector<GPExpressionPtr>& res) const
   {
-    //EnumerationPtr variablesEnumeration = gpExpressionDiscreteBanditPolicyVariablesEnumeration;
-    EnumerationPtr variablesEnumeration = learningRuleFormulaVariablesEnumeration; // FIXME
 
     InputStream* istr = formulasFile.createInputStream();
     if (!istr)
@@ -248,7 +250,7 @@ protected:
       String line = istr->readNextLine();
       if (!line.isEmpty())
       {
-        GPExpressionPtr expression = GPExpression::createFromString(context, line, variablesEnumeration);
+        GPExpressionPtr expression = GPExpression::createFromString(context, line, problem->getVariables());
         if (expression)
           res.push_back(expression);
       }
