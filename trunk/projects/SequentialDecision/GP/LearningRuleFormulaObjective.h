@@ -9,6 +9,7 @@
 #ifndef LBCPP_GP_LEARNING_RULE_FORMULA_OBJECTIVE_H_
 # define LBCPP_GP_LEARNING_RULE_FORMULA_OBJECTIVE_H_
 
+# include "FormulaSearchProblem.h"
 # include "../Bandits/DiscreteBanditExperiment.h"
 
 namespace lbcpp
@@ -451,6 +452,69 @@ protected:
   double examplesSparsity; // percentage of null values
 
   DenseDoubleVectorPtr testTheta;
+};
+
+
+class LearningRuleFormulaSearchProblem : public FormulaSearchProblem
+{
+public:
+  virtual FunctionPtr getObjective() const
+    {return objective;}
+
+  virtual EnumerationPtr getVariables() const
+    {return learningRuleFormulaVariablesEnumeration;}
+
+  virtual void getOperators(std::vector<GPPre>& unaryOperators, std::vector<GPOperator>& binaryOperators) const
+  {
+    for (size_t i = gpLog; i <= gpAbs; ++i)
+      unaryOperators.push_back((GPPre)i);
+    for (size_t i = gpAddition; i <= gpLessThan; ++i)
+      binaryOperators.push_back((GPOperator)i);
+  }
+
+  virtual void sampleInputs(ExecutionContext& context, size_t count, std::vector< std::vector<double> >& res) const
+  {
+    RandomGeneratorPtr random = context.getRandomGenerator();
+    res.resize(count);
+    for (size_t i = 0; i < count - 1; ++i)
+    {
+      std::vector<double> input(4);
+      input[0] = random->sampleDoubleFromGaussian(0.0, 10.0); // param
+      input[1] = random->sampleDoubleFromGaussian(0.0, 1.0);  // feature
+      input[2] = random->sampleDoubleFromGaussian(0.0, 10.0); // score
+      input[3] = (size_t)pow(10, random->sampleDouble(0.0, 5.0));
+      res[i] = input;
+    }
+
+    std::vector<double> zero(4);
+    zero[0] = 1.0; zero[1] = 0.0; zero[2] = 0.0; zero[3] = 1;
+    res[count - 1] = zero;
+  }
+
+  virtual bool makeFormulaKey(const GPExpressionPtr& expression, const std::vector< std::vector<double> >& inputSamples, std::vector<int>& res) const
+  {
+    std::map<size_t, size_t> variableUseCounts;
+    expression->getVariableUseCounts(variableUseCounts);
+    if (variableUseCounts[1] == 0 || variableUseCounts[2] == 0) // at least feature or score must be used
+      return false;
+    if (variableUseCounts[3] > 0) // forbid variable "epoch" for the moment
+      return false; 
+
+    res.resize(inputSamples.size());
+    for (size_t i = 0; i < res.size(); ++i)
+    {
+      double value = expression->compute(&inputSamples[i][0]);
+      if (!isNumberValid(value))
+        return false;
+      res[i] = (int)(value * 100000);
+    }
+    return true;
+  }
+
+protected:
+  friend class LearningRuleFormulaSearchProblemClass;
+
+  LearningRuleFormulaObjectivePtr objective;
 };
 
 }; /* namespace lbcpp */

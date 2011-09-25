@@ -55,10 +55,13 @@ SET(LBCPP_SEQUENTIAL_DECISION_GP_SOURCES
   GP/GPExpression.h
   GP/GPExpressionSampler.h
   GP/GPExpressionBuilder.h
+  GP/FormulaSearchProblem.h
   GP/GenerateUniqueFormulas.h
   GP/BanditFormulaOptimizer.h
   GP/BanditFormulaObjective.h
   GP/LearningRuleFormulaObjective.h
+  GP/OrdersFormulaFeatureGenerator.h
+  GP/FormulaLearnAndSearch.h
   GP/SequentialDecisionGPLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionGPLibrary.cpp
 )
