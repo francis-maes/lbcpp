@@ -30,34 +30,13 @@ public:
     std::vector< std::vector<double> > inputSamples;
     problem->sampleInputs(context, 100, inputSamples);
     
-    GPExpressionBuilderStatePtr state = makeGPBuilderState();
+    GPExpressionBuilderStatePtr state = problem->makeGPBuilderState(maxSize);
     std::map<FormulaKey, GPExpressionPtr> formulas;
     enumerateAllFormulas(context, state, inputSamples, formulas);
 
     context.informationCallback("We have " + String((int)formulas.size()) + " formulas");
     return saveFormulasToFile(context, formulas, formulasFile);
   }
-  
-  GPExpressionBuilderStatePtr makeGPBuilderState() const
-  {
-    EnumerationPtr variables = problem->getVariables();
-    std::vector<GPPre> unaryOperators;
-    std::vector<GPOperator> binaryOperators;
-    problem->getOperators(unaryOperators, binaryOperators);
-    return new RPNGPExpressionBuilderState("Coucou", variables, FunctionPtr(), maxSize, unaryOperators, binaryOperators);
-  }
-  
-  struct CompareSecond
-  {
-    bool operator() (const std::pair<size_t, double>& a, const std::pair<size_t, double>& b) const
-    {
-      if (a.second == b.second)
-        return a.first < b.first;
-      else
-        return a.second < b.second;
-    }
-  };
-  
 
   static String formulaKeyToString(const FormulaKey& key)
   {

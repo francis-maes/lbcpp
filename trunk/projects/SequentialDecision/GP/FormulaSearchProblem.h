@@ -10,6 +10,7 @@
 # define LBCPP_SEQUENTIAL_DECISION_GP_FORMULA_SEARCH_PROBLEM_H_
 
 # include "GPExpression.h"
+# include "GPExpressionBuilder.h"
 
 namespace lbcpp
 {
@@ -22,6 +23,14 @@ public:
   virtual EnumerationPtr getVariables() const = 0;
   virtual void getOperators(std::vector<GPPre>& unaryOperators, std::vector<GPOperator>& binaryOperators) const = 0;
 
+  GPExpressionBuilderStatePtr makeGPBuilderState(size_t maxSize) const
+  {
+    std::vector<GPPre> unaryOperators;
+    std::vector<GPOperator> binaryOperators;
+    getOperators(unaryOperators, binaryOperators);
+    return new RPNGPExpressionBuilderState("Coucou", getVariables(), FunctionPtr(), maxSize, unaryOperators, binaryOperators);
+  }
+  
   virtual void sampleInputs(ExecutionContext& context, size_t count, std::vector< std::vector<double> >& res) const = 0;
   virtual bool makeFormulaKey(const GPExpressionPtr& expression, const std::vector< std::vector<double> >& inputSamples, std::vector<int>& res) const = 0;
 };
