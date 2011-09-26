@@ -99,6 +99,29 @@ public:
   bool doFormulaExists(GPExpressionPtr formula) const
     {checkCurrentThreadId(); return formulas.find(formula->toString()) != formulas.end();}
 
+  typedef std::vector<int> FormulaKey;
+
+  size_t getOrUpdateFormulaClass(ExecutionContext& context, const GPExpressionPtr& formula, const FormulaKey& key)
+  {
+    size_t res;
+    KeyToFormulaClassMap::iterator it = keyToFormulaClassMap.find(key);
+    if (it == keyToFormulaClassMap.end())
+    {
+      return (size_t)-1;
+      //std::cout << "Formula: " << formula->toShortString() << " => new class " << info.formulaClass << std::endl;
+    }
+    else
+    {
+      // reuse and update existing formula class
+      res = it->second;
+      FormulaClassInfo& formulaClassInfo = formulaClasses[it->second];
+      //std::cout << "Formula: " << formula->toShortString() << " => existing class " << it->second << " (" << formulaClassInfo.expression->toShortString() << ")" << std::endl;
+      if (formula->size() < formulaClassInfo.expression->size())
+        formulaClassInfo.expression = formula; // keep the smallest formula
+    }
+    return res;
+  }
+
   bool addFormula(ExecutionContext& context, GPExpressionPtr formula)
   {
     checkCurrentThreadId();
@@ -118,8 +141,8 @@ public:
 
     if (isValidFormula)
     {
-      KeyToFormulaClassMap::iterator it = keyToFormulaClassMap.find(key);
-      if (it == keyToFormulaClassMap.end())
+      info.formulaClass = getOrUpdateFormulaClass(context, formula, key);
+      if (info.formulaClass == (size_t)-1)
       {
         // create new formula class
         info.formulaClass = keyToFormulaClassMap[key] = formulaClasses.size();
@@ -129,16 +152,6 @@ public:
 
         // add in bandit pool
         sortedFormulaClasses.insert(std::make_pair(-DBL_MAX, info.formulaClass));
-        //std::cout << "Formula: " << formula->toShortString() << " => new class " << info.formulaClass << std::endl;
-      }
-      else
-      {
-        // reuse and update existing formula class
-        info.formulaClass = it->second;
-        FormulaClassInfo& formulaClassInfo = formulaClasses[it->second];
-        //std::cout << "Formula: " << formula->toShortString() << " => existing class " << it->second << " (" << formulaClassInfo.expression->toShortString() << ")" << std::endl;
-        if (formula->size() < formulaClassInfo.expression->size())
-          formulaClassInfo.expression = formula; // keep the smallest formula
       }
     }
     else
@@ -220,7 +233,16 @@ public:
       const GPExpressionBuilderStatePtr& state = input.getObjectAndCast<GPExpressionBuilderState>();
       GPExpressionPtr expression = state->getExpression();
       if (pthis->doFormulaExists(expression))
-        return DBL_MAX;
+        return DBL_MAX; // already known formula
+
+      FormulaKey key;
+      bool isValidFormula = pthis->problem->makeFormulaKey(expression, pthis->inputSamples, key);
+      if (!isValidFormula)
+        return DBL_MAX; // invalid formula
+
+      size_t formulaClass = pthis->getOrUpdateFormulaClass(context, expression, key);
+      if (formulaClass != (size_t)-1)
+        return DBL_MAX; // already known formula equivalence class
 
       // todo: cache features  (?)
       DoubleVectorPtr features;
@@ -238,11 +260,16 @@ public:
     DecisionProblemStatePtr initialState = problem->makeGPBuilderState(maxFormulaSize);
     OptimizerPtr nestedMC = new NestedMonteCarloOptimizer(initialState, 2, 1); // level 1, one iteration
     
-    OptimizerStatePtr state = nestedMC->compute(context, nestedMCProblem).getObjectAndCast<OptimizerState>();
+    OptimizerStatePtr state = nestedMC->optimize(context, nestedMCProblem);
     GPExpressionBuilderStatePtr bestFinalState = state->getBestSolution().getObjectAndCast<GPExpressionBuilderState>();
-    GPExpressionPtr formula = bestFinalState->getExpression();
-    context.informationCallback(T("New formula: ") + formula->toShortString() + T(" ==> ") + String(state->getBestScore()));
-    addFormula(context, formula);
+    if (bestFinalState)
+    {
+      GPExpressionPtr formula = bestFinalState->getExpression();
+      context.informationCallback(T("New formula: ") + formula->toShortString() + T(" ==> ") + String(state->getBestScore()));
+      addFormula(context, formula);
+    }
+    else
+      context.informationCallback(T("Failed to create new formula"));
   }
 
   void play(ExecutionContext& context, size_t iterationNumber, size_t numTimeSteps, size_t creationFrequency)
@@ -304,6 +331,12 @@ public:
       context.informationCallback(T("[") + String((int)i) + T("] ") + formula.expression->toShortString() + T(" meanReward = ") + String(formula.statistics.getMean())
         + T(" playedCount = ") + String(formula.statistics.getCount()));
     }
+
+    FormulaClassInfo& bestFormula = formulaClasses[formulasByMeanReward.rbegin()->second];
+    context.resultCallback(T("bestFormulaScore"), bestFormula.statistics.getMean());
+    context.resultCallback(T("bestFormulaPlayCount"), bestFormula.statistics.getCount());
+    context.resultCallback(T("bestFormulaSize"), bestFormula.expression->size());
+    context.resultCallback(T("banditPoolSize"), formulasByMeanReward.size());
   }
 
   size_t getNumFormulas() const
@@ -319,8 +352,6 @@ public:
     {jassert(index < formulaClasses.size()); return formulaClasses[index].expression;}
 
 protected:
-  typedef std::vector<int> FormulaKey;
-
   FormulaSearchProblemPtr problem;
   FormulaRegressorPtr regressor;
   size_t maxFormulaSize;

@@ -45,19 +45,22 @@ Variable OptimizerState::finishIteration(ExecutionContext& context, const Optimi
 /*
 ** Optimizer
 */
+OptimizerStatePtr Optimizer::optimize(ExecutionContext& context, const OptimizationProblemPtr& problem) const
+{
+  OptimizerStatePtr state = loadOptimizerState(context);
+  if (!state)
+    state = createOptimizerState(context, problem);
+  return optimize(context, state, problem);
+}
+
 Variable Optimizer::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
   context.enterScope(T("Optimizing - ") + toString());
   jassert(inputs[0].getObjectAndCast<OptimizationProblem>(context));
   OptimizationProblemPtr problem = inputs[0].getObjectAndCast<OptimizationProblem>(context);
-
-  OptimizerStatePtr state = loadOptimizerState(context);
-  if (!state)
-    state = createOptimizerState(context, problem);
-
-  OptimizerStatePtr res = optimize(context, state, problem);
-  context.resultCallback(T("bestSolution"), state->getBestSolution());
-  context.resultCallback(T("bestScore"), state->getBestScore());
+  OptimizerStatePtr res = optimize(context, problem);
+  context.resultCallback(T("bestSolution"), res->getBestSolution());
+  context.resultCallback(T("bestScore"), res->getBestScore());
   context.leaveScope(res);
   return res;
 }
