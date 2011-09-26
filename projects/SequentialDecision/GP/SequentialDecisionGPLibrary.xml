@@ -14,6 +14,7 @@
   </enumeration>
 
   <enumeration name="GPPre">
+    <value name="identity"/>
     <value name="log"/>
     <value name="sqrt"/>
     <value name="inverse"/>
@@ -189,6 +190,7 @@
   </class>
 
   <!-- Formula Feature Generator -->
+  <class name="PathsFormulaFeatureGenerator" base="FeatureGenerator"/>
   <class name="OrdersFormulaFeatureGenerator" base="FeatureGenerator">
     <constructor arguments="const std::vector&lt; std::vector&lt;double&gt; &gt;&amp; inputs"/>
   </class>

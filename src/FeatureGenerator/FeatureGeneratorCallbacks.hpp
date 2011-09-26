@@ -21,7 +21,10 @@ public:
     : target(target) {}
 
   virtual void sense(size_t index, double value)
-    {target->appendValue(index, value);}
+  {
+    //target->setElement(index, value);
+    target->appendValue(index, value); // <-- optimized version when the feature generator generates in the right order
+  }
 
   virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
     {vector->appendTo(target, index, weight);}

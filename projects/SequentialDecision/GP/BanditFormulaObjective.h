@@ -96,15 +96,17 @@ public:
     res.resize(count);
     for (size_t i = 0; i < count - 2; ++i)
     {
+      double t = juce::jmax(1, (int)pow(10.0, random->sampleDouble(0, 5)));
+
       std::vector<double> input(8);
       input[0] = random->sampleDouble(0.0, 1.0); // rk1
       input[1] = random->sampleDouble(0.0, 0.5); // sk1
-      input[2] = juce::jmax(1, (int)(input[0] * random->sampleDouble(0.0, 1.0))); // tk1
-      input[3] = juce::jmax(1, (int)pow(10.0, random->sampleDouble(0, 5))); // t
+      input[2] = juce::jmax(1, (int)(t * random->sampleDouble(0.0, 1.0))); // tk1
+      input[3] = t;
       input[4] = random->sampleDouble(0.0, 1.0); // rk2
       input[5] = random->sampleDouble(0.0, 0.5); // sk2
-      input[6] = juce::jmax(1, (int)(input[0] * random->sampleDouble(0.0, 1.0))); // tk2
-      input[7] = input[3];
+      input[6] = juce::jmax(1, (int)(t * random->sampleDouble(0.0, 1.0))); // tk2
+      input[7] = t;
       res[i] = input;
     }
 

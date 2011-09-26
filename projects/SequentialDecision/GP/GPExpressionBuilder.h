@@ -139,12 +139,17 @@ public:
   virtual String toShortString() const
   {
     String res;
-    for (size_t i = 0; i < stack.size(); ++i)
+    size_t first = isFinal && stack.size() ? stack.size() - 1 : 0;
+    if (isFinal)
+      res += T("[");
+    for (size_t i = first; i < stack.size(); ++i)
     {
       res += stack[i]->toShortString();
       if (i < stack.size() - 1)
         res += ", ";
     }
+    if (isFinal)
+      res += T("]");
     return res;
   }
   

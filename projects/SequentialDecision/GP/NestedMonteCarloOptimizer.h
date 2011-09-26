@@ -78,6 +78,7 @@ protected:
         state->performTransition(context, action, reward);
       }
       res = objective->compute(context, state).toDouble();
+      //context.informationCallback(state->toShortString() + T(" ==> ") + String(res));
       submitSolution(state, res);
     }
     else
@@ -87,7 +88,7 @@ protected:
         ContainerPtr actions = state->getAvailableActions();
         size_t n = actions->getNumElements();
         jassert(n);
-        Variable bestAction;
+        Variable bestAction = actions->getElement(n - 1); // by default: last available action
         double bestScore = DBL_MAX;
         for (size_t i = 0; i < n; ++i)
         {
@@ -128,13 +129,23 @@ public:
   {
     FunctionPtr objective = problem->getObjective();
 
-    CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Nested Monte Carlo runs"), numIterations);
-    for (size_t i = 0; i < numIterations; ++i)
-      workUnit->setWorkUnit(i, new NestedMonteCarloWorkUnit(initialState, objective, level));
-    ContainerPtr results = context.run(workUnit).getObjectAndCast<Container>();
-    for (size_t i = 0; i < numIterations; ++i)
+    if (numIterations > 1)
     {
-      PairPtr best = results->getElement(i).getObjectAndCast<Pair>();
+      CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Nested Monte Carlo runs"), numIterations);
+      for (size_t i = 0; i < numIterations; ++i)
+        workUnit->setWorkUnit(i, new NestedMonteCarloWorkUnit(initialState, objective, level));
+      workUnit->setProgressionUnit(T("Runs"));
+      ContainerPtr results = context.run(workUnit).getObjectAndCast<Container>();
+      for (size_t i = 0; i < numIterations; ++i)
+      {
+        PairPtr best = results->getElement(i).getObjectAndCast<Pair>();
+        optimizerState->submitSolution(best->getFirst(), best->getSecond().toDouble());
+      }
+    }
+    else
+    {
+      WorkUnitPtr workUnit = new NestedMonteCarloWorkUnit(initialState, objective, level);
+      PairPtr best = workUnit->run(context).getObjectAndCast<Pair>();
       optimizerState->submitSolution(best->getFirst(), best->getSecond().toDouble());
     }
     return optimizerState;
