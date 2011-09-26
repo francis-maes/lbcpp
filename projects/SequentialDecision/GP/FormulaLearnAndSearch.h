@@ -10,32 +10,61 @@
 # define LBCPP_SEQUENTIAL_DECISION_FORMULA_LEARN_AND_SEARCH_H_
 
 # include "BanditFormulaOptimizer.h"
-#ifdef JUCE_WIN32
-# include <hash_map>
-# include <hash_set>
-
-# define std_hash_map stdext::hash_map
-# define std_hash_set stdext::hash_set
-
-#else
-# define STDEXT_NAMESPACE __gnu_cxx
-# include <ext/hash_map>
-# include <ext/hash_set>
-# define std_hash_map STDEXT_NAMESPACE::hash_map
-# define std_hash_set STDEXT_NAMESPACE::hash_set
-#endif // JUCE_WIN32
+# include "NestedMonteCarloOptimizer.h"
 
 namespace lbcpp
 {
 
+class FormulaRegressor : public Object
+{
+public:
+  FormulaRegressor() 
+  {
+    parameters = new DenseDoubleVector(); // todo: features enumeration
+  }
+
+  void addExample(ExecutionContext& context, const GPExpressionPtr& formula, const std::vector<int>& formulaKey, DoubleVectorPtr& features, double reward)
+  {
+    getFeaturesIfNecessary(context, formula, formulaKey, features);
+
+    double score = features->dotProduct(parameters, 0);
+    // todo: gradient of the loss / sigmoid
+
+  }
+
+  double predict(ExecutionContext& context, const GPExpressionPtr& formula, const std::vector<int>& formulaKey, DoubleVectorPtr& features) const
+  {
+    getFeaturesIfNecessary(context, formula, formulaKey, features);
+    return 1.0 / (1.0 + exp(-features->dotProduct(parameters, 0)));
+  }
+
+protected:
+  DenseDoubleVectorPtr parameters;
+
+  void getFeaturesIfNecessary(ExecutionContext& context, const GPExpressionPtr& formula, const std::vector<int>& formulaKey, DoubleVectorPtr& features) const
+  {
+    if (!features)
+    {
+      // TODO
+      //features = ...;
+    }
+  }
+};
+
+typedef ReferenceCountedObjectPtr<FormulaRegressor> FormulaRegressorPtr;
+
+
 class SuperFormulaPool : public ExecutionContextCallback
 {
 public:
-  SuperFormulaPool(ExecutionContext& context, FormulaSearchProblemPtr problem, size_t numInputSamples = 100)
-    : problem(problem)
+  SuperFormulaPool(ExecutionContext& context, FormulaSearchProblemPtr problem, size_t maxFormulaSize = 12, size_t numInputSamples = 100)
+    : problem(problem), regressor(new FormulaRegressor()), maxFormulaSize(maxFormulaSize), numInvalidFormulas(0)
   {
     problem->sampleInputs(context, numInputSamples, inputSamples);
   }
+ 
+  bool doFormulaExists(GPExpressionPtr formula) const
+    {return formulas.find(formula->toString()) != formulas.end();}
 
   bool addFormula(ExecutionContext& context, GPExpressionPtr formula)
   {
@@ -54,10 +83,13 @@ public:
       if (it == keyToFormulaClassMap.end())
       {
         // create new formula class
-        info.formulaClass = formulaClasses.size();
+        info.formulaClass = keyToFormulaClassMap[key] = formulaClasses.size();
         formulaClasses.push_back(FormulaClassInfo(formula, key));
         if (formulaClasses.size() % 1000 == 0)
           context.informationCallback(String((int)formulaClasses.size()) + T(" formula classes, last formula: ") + formula->toShortString());
+
+        // add in bandit pool
+        sortedFormulaClasses.insert(std::make_pair(-DBL_MAX, info.formulaClass));
       }
       else
       {
@@ -69,7 +101,10 @@ public:
       }
     }
     else
+    {
       key.clear();
+      ++numInvalidFormulas;
+    }
 
     formulas[str] = info;
     return info.isValidFormula();
@@ -81,16 +116,16 @@ public:
     FunctionWorkUnitPtr wu = workUnit.staticCast<FunctionWorkUnit>();
     GPExpressionPtr formula = wu->getInputs()[0].getObjectAndCast<GPExpression>();
     double reward = result.toDouble();
-    receiveReward(formula, reward);
+    receiveReward(defaultExecutionContext(), formula, reward);
   }
 
-  void receiveReward(GPExpressionPtr formula, double reward)
+  void receiveReward(ExecutionContext& context, GPExpressionPtr formula, double reward)
   {
     std::map<GPExpressionPtr, size_t>::iterator it = currentlyEvaluatedFormulas.find(formula);
     jassert(it != currentlyEvaluatedFormulas.end());
     size_t index = it->second;
     currentlyEvaluatedFormulas.erase(it);
-    receiveReward(index, reward);
+    receiveReward(context, index, reward);
   }
 
   size_t getNumCurrentlyEvaluatedFormulas() const
@@ -117,14 +152,103 @@ public:
     else
     {
       double reward = context.run(workUnit, false).toDouble();
-      receiveReward(index, reward);
+      receiveReward(context, index, reward);
     }
   }
 
-  void play(size_t numTimeSteps, size_t creationFrequency)
+  struct DecoratedObjective : public SimpleUnaryFunction
   {
-    // TODO
+    DecoratedObjective(SuperFormulaPool* pthis, FunctionPtr formulaObjective)
+      : SimpleUnaryFunction(decisionProblemStateClass, doubleType), pthis(pthis), formulaObjective(formulaObjective) {}
+
+    SuperFormulaPool* pthis;
+    FunctionPtr formulaObjective;
+
+    virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+    {
+      const GPExpressionBuilderStatePtr& state = input.getObjectAndCast<GPExpressionBuilderState>();
+      GPExpressionPtr expression = state->getExpression();
+      if (pthis->doFormulaExists(expression))
+        return DBL_MAX;
+      double reward = formulaObjective->compute(context, expression).toDouble();
+      return 1.0 - reward; // transform into score to minimize
+    }
+  };
+
+  void createNewFormula(ExecutionContext& context)
+  {
+    OptimizationProblemPtr nestedMCProblem = new OptimizationProblem(new DecoratedObjective(this, problem->getObjective()));
+    DecisionProblemStatePtr initialState = problem->makeGPBuilderState(maxFormulaSize);
+    OptimizerPtr nestedMC = new NestedMonteCarloOptimizer(initialState, 1, 1); // level 1, one iteration
+    context.enterScope(T("Nested MC"));
+    OptimizerStatePtr state = nestedMC->compute(context, nestedMCProblem).getObjectAndCast<OptimizerState>();
+    context.leaveScope(state->getBestScore());
+    GPExpressionBuilderStatePtr bestFinalState = state->getBestSolution().getObjectAndCast<GPExpressionBuilderState>();
+    GPExpressionPtr formula = bestFinalState->getExpression();
+    context.informationCallback(T("New formula: ") + formula->toShortString());
+    addFormula(context, formula);
   }
+
+  void play(ExecutionContext& context, size_t numTimeSteps, size_t creationFrequency)
+  {
+    context.enterScope(T("Play ") + String((int)numTimeSteps) + T(" with creation frequency = ") + String((int)creationFrequency));
+
+    if (context.isMultiThread())
+    {
+      for (size_t i = 0; i < numTimeSteps; ++i)
+      {
+        context.progressCallback(new ProgressionState(i + 1, numTimeSteps, T("Steps")));
+        playBestFormula(context);
+        context.flushCallbacks();
+        //context.informationCallback(T("Num played: ") + String((int)j + 1) + T(" num currently evaluated: " ) + String((int)getNumCurrentlyEvaluatedFormulas()));
+        
+        while (getNumCurrentlyEvaluatedFormulas() >= 10)
+        {
+          //context.informationCallback(T("Waiting - Num played: ") + String((int)j + 1) + T(" num currently evaluated: " ) + String((int)getNumCurrentlyEvaluatedFormulas()));
+          Thread::sleep(10);
+          context.flushCallbacks();
+        }
+
+        if (creationFrequency && (i % creationFrequency) == 0)
+          createNewFormula(context);
+      }
+      while (getNumCurrentlyEvaluatedFormulas() > 0)
+      {
+        Thread::sleep(10);
+        context.flushCallbacks();
+      }
+    }
+    else
+    {
+      for (size_t j = 0; j < formulas.size(); ++j)
+        playBestFormula(context);
+    }
+
+    displayBestFormulas(context);
+    context.leaveScope();
+  }
+
+  void displayBestFormulas(ExecutionContext& context)
+  {
+    std::multimap<double, size_t> formulasByMeanReward;
+    for (std::multimap<double, size_t>::const_iterator it = sortedFormulaClasses.begin(); it != sortedFormulaClasses.end(); ++it)
+      formulasByMeanReward.insert(std::make_pair(formulaClasses[it->second].statistics.getMean(), it->second));
+
+    size_t n = 10;
+    size_t i = 1;
+    for (std::multimap<double, size_t>::const_reverse_iterator it = formulasByMeanReward.rbegin(); i < n && it != formulasByMeanReward.rend(); ++it, ++i)
+    {
+      FormulaClassInfo& formula = formulaClasses[it->second];
+      context.informationCallback(T("[") + String((int)i) + T("] ") + formula.expression->toShortString() + T(" meanReward = ") + String(formula.statistics.getMean())
+        + T(" playedCount = ") + String(formula.statistics.getCount()));
+    }
+  }
+
+  size_t getNumFormulas() const
+    {return formulas.size();}
+
+  size_t getNumInvalidFormulas() const
+    {return numInvalidFormulas;}
 
   size_t getNumFormulaClasses() const
     {return formulaClasses.size();}
@@ -133,6 +257,9 @@ protected:
   typedef std::vector<int> FormulaKey;
 
   FormulaSearchProblemPtr problem;
+  FormulaRegressorPtr regressor;
+  size_t maxFormulaSize;
+
   std::vector< std::vector<double> > inputSamples;
 
   struct FormulaInfo
@@ -147,10 +274,14 @@ protected:
 
     bool isValidFormula() const
       {return key.size() > 0;}
+
+    bool isAssociatedToClass() const
+      {return formulaClass != (size_t)-1;}
   };
 
   typedef std::map<String, FormulaInfo> FormulaInfoMap;
   FormulaInfoMap formulas;
+  size_t numInvalidFormulas;
 
   struct FormulaClassInfo
   {
@@ -171,10 +302,16 @@ protected:
   std::multimap<double, size_t> sortedFormulaClasses;
   std::map<GPExpressionPtr, size_t> currentlyEvaluatedFormulas;
 
-  void receiveReward(size_t index, double reward)
+  void receiveReward(ExecutionContext& context, size_t index, double reward)
   {
+    // update stats
     FormulaClassInfo& formula = formulaClasses[index];
     formula.statistics.push(reward);
+
+    // add regression example
+    // regressor->addExample(context, formula.expression, formula.key, formula.features, reward);
+
+    // update bandit score (reinsert into bandit pool)
     double newScore = formula.statistics.getMean() + 2.0 / formula.statistics.getCount();
     sortedFormulaClasses.insert(std::make_pair(-newScore, index));
   }
@@ -183,22 +320,27 @@ protected:
 class FormulaLearnAndSearch : public WorkUnit
 {
 public:
-  FormulaLearnAndSearch() : formulaInitialSize(4), creationFrequency(10), numIterations(10), iterationsLength(1000) {}
+  FormulaLearnAndSearch() : formulaInitialSize(4), numInitialIterations(1), creationFrequency(10), numIterations(10), iterationsLength(1000) {}
 
   virtual Variable run(ExecutionContext& context)
   {   
     SuperFormulaPool pool(context, problem);
 
-    if (!generateInitialFormulas(context, pool))
-      return false;
+    if (formulaInitialSize > 0)
+    {
+      if (!generateInitialFormulas(context, pool))
+        return false;
 
-    // initial plays
-    size_t n = pool.getNumFormulaClasses();
-    pool.play(5 * n, 0);
+      // initial plays
+      size_t n = pool.getNumFormulaClasses();
+      for (size_t i = 0; i < numInitialIterations; ++i)
+        pool.play(context, iterationsLength, 0);
+      context.informationCallback(T("End of initial plays"));
+    }
 
-    // other plays
+    // all the rest
     for (size_t i = 0; i < numIterations; ++i)
-      pool.play(iterationsLength, creationFrequency);
+      pool.play(context, iterationsLength, creationFrequency);
 
     return Variable();
   }
@@ -208,17 +350,32 @@ protected:
 
   FormulaSearchProblemPtr problem;
   size_t formulaInitialSize;
+  size_t numInitialIterations;
   size_t creationFrequency;
   size_t numIterations;
   size_t iterationsLength;
 
   bool generateInitialFormulas(ExecutionContext& context, SuperFormulaPool& pool)
-    {enumerateAllFormulas(context, problem->makeGPBuilderState(formulaInitialSize), pool); return true;}
+  {
+    context.enterScope(T("Generating initial formulas up to size ") + String((int)formulaInitialSize));
+    size_t numFinalStates = 0;
+    enumerateAllFormulas(context, problem->makeGPBuilderState(formulaInitialSize), pool, numFinalStates);
+
+    context.informationCallback(String((int)numFinalStates) + T(" final states"));
+    context.informationCallback(String((int)pool.getNumFormulas()) + T(" formulas"));
+    context.informationCallback(String((int)pool.getNumInvalidFormulas()) + T(" invalid formulas"));
+    context.informationCallback(String((int)pool.getNumFormulaClasses()) + T(" valid formula equivalence classes"));
+    context.leaveScope(pool.getNumFormulaClasses());
+    return true;
+  }
   
-  void enumerateAllFormulas(ExecutionContext& context, GPExpressionBuilderStatePtr state, SuperFormulaPool& pool)
+  void enumerateAllFormulas(ExecutionContext& context, GPExpressionBuilderStatePtr state, SuperFormulaPool& pool, size_t& numFinalStates)
   {
     if (state->isFinalState())
+    {
+      ++numFinalStates;
       pool.addFormula(context, state->getExpression());
+    }
     else
     {
       ContainerPtr actions = state->getAvailableActions();
@@ -229,7 +386,7 @@ protected:
         Variable action = actions->getElement(i);
         double reward;
         state->performTransition(context, action, reward, &stateBackup);
-        enumerateAllFormulas(context, state, pool);
+        enumerateAllFormulas(context, state, pool, numFinalStates);
         state->undoTransition(context, stateBackup);
       }
     }
