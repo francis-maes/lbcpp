@@ -29,7 +29,8 @@ extern EnumerationPtr gpOperatorEnumeration;
 
 enum GPPre
 {
-  gpLog = 0,
+  gpIdentity = 0,
+  gpLog,
   gpSquareRoot,
   gpInverse,
   gpExp,
@@ -46,8 +47,11 @@ class GPExpression : public Object
 {
 public:
   virtual double compute(const double* x) const = 0;
-
   virtual size_t size() const = 0;
+  virtual size_t getNumSubExpressions() const
+    {return 0;}
+  virtual GPExpressionPtr getSubExpression(size_t index) const
+    {jassert(false); return GPExpressionPtr();}
 
   virtual void getVariableUseCounts(std::map<size_t, size_t>& res) const = 0;
 
@@ -81,6 +85,12 @@ public:
   virtual size_t size() const
     {return 1 + expr->size();}
 
+  virtual size_t getNumSubExpressions() const
+    {return 1;}
+  
+  virtual GPExpressionPtr getSubExpression(size_t index) const
+    {return expr;}
+
   virtual double compute(const double* x) const
   {
     double e = expr->compute(x);
@@ -89,6 +99,7 @@ public:
 
     switch (pre)
     {
+    case gpIdentity: return e;
     case gpLog: return e <= 0.0 || !isNumberValid(e) ? -DBL_MAX : log(e);
     case gpSquareRoot: return e < 0.0 || !isNumberValid(e) ? -DBL_MAX : sqrt(e);
     case gpInverse: return e != 0.0 ? 1.0 / e : DBL_MAX;
@@ -149,6 +160,12 @@ public:
 
   virtual size_t size() const
     {return left->size() + 1 + right->size();}
+
+  virtual size_t getNumSubExpressions() const
+    {return 2;}
+  
+  virtual GPExpressionPtr getSubExpression(size_t index) const
+    {return index ? right : left;}
 
   virtual double compute(const double* x) const
   {
