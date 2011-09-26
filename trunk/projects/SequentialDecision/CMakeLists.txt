@@ -61,6 +61,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_GP_SOURCES
   GP/BanditFormulaObjective.h
   GP/LearningRuleFormulaObjective.h
   GP/OrdersFormulaFeatureGenerator.h
+  GP/NestedMonteCarloOptimizer.h
   GP/FormulaLearnAndSearch.h
   GP/SequentialDecisionGPLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionGPLibrary.cpp

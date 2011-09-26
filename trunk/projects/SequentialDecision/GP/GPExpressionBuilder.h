@@ -271,7 +271,18 @@ public:
     {jassert(false); return 0.0; /* not implemented yet */}
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
-    {jassert(false); /* not implemented yet */}
+  {
+    ReferenceCountedObjectPtr<RPNGPExpressionBuilderState> target = t.staticCast<RPNGPExpressionBuilderState>();
+    target->stack = stack;
+    target->currentSize = currentSize;
+    target->maxSize = maxSize;
+    target->unaryOperators = unaryOperators;
+    target->binaryOperators = binaryOperators;
+    target->isFinal = isFinal;
+
+    target->inputVariables = inputVariables;
+    target->objectiveFunction = objectiveFunction;
+  }
    
 protected:
   friend class RPNGPExpressionBuilderStateClass;

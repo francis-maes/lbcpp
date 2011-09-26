@@ -193,9 +193,25 @@
     <constructor arguments="const std::vector&lt; std::vector&lt;double&gt; &gt;&amp; inputs"/>
   </class>
 
+  <!-- Nested Monte Carlo -->
+  <class name="NestedMonteCarloWorkUnit" base="WorkUnit">
+    <variable type="DecisionProblemState" name="initialState"/>
+    <variable type="Function" name="objective"/>
+    <variable type="PositiveInteger" name="level"/>
+  </class>
+
+  <class name="NestedMonteCarloOptimizerState" base="OptimizerState"/>
+  <class name="NestedMonteCarloOptimizer" base="Optimizer">
+    <variable type="DecisionProblemState" name="initialState"/>
+    <variable type="PositiveInteger" name="level"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+
+  <!-- Formula Learn And Search -->
   <class name="FormulaLearnAndSearch" base="WorkUnit">
     <variable type="FormulaSearchProblem" name="problem"/>
     <variable type="PositiveInteger" name="formulaInitialSize"/>
+    <variable type="PositiveInteger" name="numInitialIterations"/>
     <variable type="PositiveInteger" name="creationFrequency"/>
     <variable type="PositiveInteger" name="numIterations"/>
     <variable type="PositiveInteger" name="iterationsLength"/>
