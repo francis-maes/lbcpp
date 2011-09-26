@@ -63,6 +63,8 @@ protected:
 
   double nestedMonteCarlo(ExecutionContext& context, DecisionProblemStatePtr state, size_t level)
   {
+    RandomGeneratorPtr random = context.getRandomGenerator();
+
     double res = DBL_MAX;
     state = state->cloneAndCast<DecisionProblemState>();
 
@@ -73,7 +75,7 @@ protected:
         ContainerPtr actions = state->getAvailableActions();
         size_t n = actions->getNumElements();
         jassert(n);
-        Variable action = actions->getElement(context.getRandomGenerator()->sampleSize(n));
+        Variable action = actions->getElement(random->sampleSize(n));
         double reward;
         state->performTransition(context, action, reward);
       }
@@ -88,7 +90,7 @@ protected:
         ContainerPtr actions = state->getAvailableActions();
         size_t n = actions->getNumElements();
         jassert(n);
-        Variable bestAction = actions->getElement(n - 1); // by default: last available action
+        Variable bestAction;
         double bestScore = DBL_MAX;
         for (size_t i = 0; i < n; ++i)
         {
@@ -106,6 +108,9 @@ protected:
             res = score;
           state->undoTransition(context, stateBackup);
         }
+        if (!bestAction.exists())
+          bestAction = actions->getElement(random->sampleSize(n));
+
         double reward;
         state->performTransition(context, bestAction, reward);
       }

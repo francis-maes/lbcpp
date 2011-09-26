@@ -22,6 +22,8 @@ public:
   Optimizer(const File& optimizerStateFile = File::nonexistent)
     : optimizerStateFile(optimizerStateFile) {}
 
+  OptimizerStatePtr optimize(ExecutionContext& context, const OptimizationProblemPtr& problem) const;
+
   /* Optimizer */
   virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const = 0;
 
