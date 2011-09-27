@@ -195,7 +195,7 @@
     <constructor arguments="const std::vector&lt; std::vector&lt;double&gt; &gt;&amp; inputs"/>
   </class>
 
-  <!-- Nested Monte Carlo -->
+  <!-- Nested Monte Carlo & Beam Search Optimizers -->
   <class name="NestedMonteCarloWorkUnit" base="WorkUnit">
     <variable type="DecisionProblemState" name="initialState"/>
     <variable type="Function" name="objective"/>
@@ -207,6 +207,15 @@
     <variable type="DecisionProblemState" name="initialState"/>
     <variable type="PositiveInteger" name="level"/>
     <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+
+  <class name="BeamSearchOptimizerState" base="OptimizerState">
+    <variable type="PositiveInteger" name="beamSize"/>
+  </class>
+  
+  <class name="BeamSearchOptimizer" base="Optimizer">
+    <variable type="DecisionProblemState" name="initialState"/>
+    <variable type="PositiveInteger" name="beamSize"/>
   </class>
 
   <!-- Formula Learn And Search -->

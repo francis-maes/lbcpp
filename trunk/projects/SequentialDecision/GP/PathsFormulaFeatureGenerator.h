@@ -19,7 +19,7 @@ namespace lbcpp
 class PathsFormulaFeatureGenerator : public FeatureGenerator
 {
 public:
-  PathsFormulaFeatureGenerator() : FeatureGenerator(true), dictionaryReadOnly(false) {}
+  PathsFormulaFeatureGenerator() : FeatureGenerator(true), dictionaryReadOnly(false), finalizedFormula(true) {}
 
   virtual size_t getNumRequiredInputs() const
     {return 1;}
@@ -36,7 +36,9 @@ public:
   virtual void computeFeatures(const Variable* in, FeatureGeneratorCallback& callback) const
   {
     GPExpressionPtr formula = in[0].getObjectAndCast<GPExpression>();
-    formula = new UnaryGPExpression(gpIdentity, formula); // add Root Node
+    
+    if (finalizedFormula)
+      formula = new UnaryGPExpression(gpIdentity, formula); // add Root Node
 
     std::vector<GPExpressionPtr> stack(1, formula);
     size_t index = 0;
@@ -186,10 +188,16 @@ public:
   void setDictionaryReadOnly(bool readOnly)
     {dictionaryReadOnly = readOnly;}
 
+  void setIsFinalizedFormula(bool finalized)
+    {finalizedFormula = finalized;}
+
 protected:
   DefaultEnumerationPtr pathsEnumeration;
   bool dictionaryReadOnly;
+  bool finalizedFormula;
 };
+
+typedef ReferenceCountedObjectPtr<PathsFormulaFeatureGenerator> PathsFormulaFeatureGeneratorPtr;
 
 }; /* namespace lbcpp */
 

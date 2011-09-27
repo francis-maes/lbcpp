@@ -275,6 +275,9 @@ public:
   virtual double getScore() const
     {jassert(false); return 0.0; /* not implemented yet */}
 
+  const std::vector<GPExpressionPtr>& getStack() const
+    {return stack;}
+
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
   {
     ReferenceCountedObjectPtr<RPNGPExpressionBuilderState> target = t.staticCast<RPNGPExpressionBuilderState>();
