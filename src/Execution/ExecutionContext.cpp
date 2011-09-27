@@ -176,7 +176,7 @@ class LuaExecutionContextCallback : public ExecutionContextCallback
 {
 public:
   LuaExecutionContextCallback(LuaState& state, int functionReference)
-    : state(state), functionReference(functionReference) {}
+    : state((lua_State* )state), functionReference(functionReference) {}
 
   virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
   {
@@ -192,7 +192,7 @@ public:
   }
 
 protected:
-  LuaState& state;
+  LuaState state;
   int functionReference;
 };
 

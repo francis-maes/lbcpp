@@ -22,6 +22,7 @@ enum GPOperator
   gpDivision,
   gpMin,
   gpMax,
+  gpPow,
   gpLessThan,
 };
 
@@ -30,9 +31,10 @@ extern EnumerationPtr gpOperatorEnumeration;
 enum GPPre
 {
   gpIdentity = 0,
-  gpLog,
-  gpSquareRoot,
+  gpOpposite,
   gpInverse,
+  gpSquareRoot,
+  gpLog,
   gpExp,
   gpAbs,
 };
@@ -102,6 +104,7 @@ public:
     case gpIdentity: return e;
     case gpLog: return e <= 0.0 || !isNumberValid(e) ? -DBL_MAX : log(e);
     case gpSquareRoot: return e < 0.0 || !isNumberValid(e) ? -DBL_MAX : sqrt(e);
+    case gpOpposite: return -e;
     case gpInverse: return e != 0.0 ? 1.0 / e : DBL_MAX;
     case gpExp: return exp(e);
     case gpAbs: return fabs(e);
@@ -182,8 +185,9 @@ public:
     case gpSubtraction: return l - r;
     case gpMultiplication: return l * r;
     case gpDivision: return r ? l / r : DBL_MAX;
-    case gpMax: return l > r ? l : r;
     case gpMin: return l < r ? l : r;
+    case gpMax: return l > r ? l : r;
+    case gpPow: return pow(l, r);
     case gpLessThan: return l < r ? 1 : 0;
     default: jassert(false); return 0.0;
     }
@@ -206,12 +210,9 @@ public:
   {
     String l = (left ? left->toShortString() : String("<null>"));
     String r = (right ? right->toShortString() : String("<null>"));
-  
+
     if (op >= gpMin)
-    {
-      static const char* names[] = {"min", "max", "lessThan"};
-      return names[op - gpMin] + String("(") + l + T(", ") + r + T(")");
-    }
+      return gpOperatorEnumeration->getElementName(op) + String("(") + l + T(", ") + r + T(")");
     else
     {
       const char* names[] = {"+", "-", "*", "/"};

@@ -15,6 +15,30 @@
 namespace lbcpp
 {
 
+class FormulaKey : public Object
+{
+public:
+  FormulaKey(size_t size)
+    : values(size, 0) {}
+  FormulaKey() {}
+
+  virtual int compare(const ObjectPtr& otherObject) const
+  {
+    const std::vector<int>& ovalues = otherObject.staticCast<FormulaKey>()->values;
+    if (ovalues == values)
+      return 0;
+    else
+      return values < ovalues ? -1 : 1;
+  }
+
+  void setValue(size_t index, int value)
+    {jassert(index < values.size()); values[index] = value;}
+
+protected:
+  std::vector<int> values;
+};
+typedef ReferenceCountedObjectPtr<FormulaKey> FormulaKeyPtr;
+
 class FormulaSearchProblem : public Object
 {
 public:
@@ -32,7 +56,7 @@ public:
   }
   
   virtual void sampleInputs(ExecutionContext& context, size_t count, std::vector< std::vector<double> >& res) const = 0;
-  virtual bool makeFormulaKey(const GPExpressionPtr& expression, const std::vector< std::vector<double> >& inputSamples, std::vector<int>& res) const = 0;
+  virtual FormulaKeyPtr makeFormulaKey(const GPExpressionPtr& expression, const std::vector< std::vector<double> >& inputSamples) const = 0;
 };
 
 typedef ReferenceCountedObjectPtr<FormulaSearchProblem> FormulaSearchProblemPtr;

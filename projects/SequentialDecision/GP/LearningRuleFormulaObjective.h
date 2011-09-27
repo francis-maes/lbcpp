@@ -491,24 +491,24 @@ public:
     res[count - 1] = zero;
   }
 
-  virtual bool makeFormulaKey(const GPExpressionPtr& expression, const std::vector< std::vector<double> >& inputSamples, std::vector<int>& res) const
+  virtual FormulaKeyPtr makeFormulaKey(const GPExpressionPtr& expression, const std::vector< std::vector<double> >& inputSamples) const
   {
     std::map<size_t, size_t> variableUseCounts;
     expression->getVariableUseCounts(variableUseCounts);
     if (variableUseCounts[1] == 0 || variableUseCounts[2] == 0) // at least feature or score must be used
-      return false;
+      return FormulaKeyPtr();
     if (variableUseCounts[3] > 0) // forbid variable "epoch" for the moment
-      return false; 
+      return FormulaKeyPtr(); 
 
-    res.resize(inputSamples.size());
-    for (size_t i = 0; i < res.size(); ++i)
+    FormulaKeyPtr res = new FormulaKey(inputSamples.size());
+    for (size_t i = 0; i < inputSamples.size(); ++i)
     {
       double value = expression->compute(&inputSamples[i][0]);
       if (!isNumberValid(value))
-        return false;
-      res[i] = (int)(value * 100000);
+        return FormulaKeyPtr();
+      res->setValue(i, (int)(value * 100000));
     }
-    return true;
+    return res;
   }
 
 protected:

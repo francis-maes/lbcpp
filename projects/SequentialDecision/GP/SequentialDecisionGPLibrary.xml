@@ -8,28 +8,20 @@
     <value name="sub" shortName="-"/>
     <value name="mul" shortName="*"/>
     <value name="div" shortName="/"/>
-    <value name="max"/>
     <value name="min"/>
+    <value name="max"/>
+    <value name="pow"/>
     <value name="lessThan"/>
   </enumeration>
 
   <enumeration name="GPPre">
     <value name="identity"/>
-    <value name="log"/>
-    <value name="sqrt"/>
+    <value name="opposite"/>
     <value name="inverse"/>
+    <value name="sqrt"/>
+    <value name="log"/>
     <value name="exp"/>
     <value name="abs"/>
-  </enumeration>
-
-  <enumeration name="GPConstant">
-    <value name="1"/>
-    <value name="2"/>
-    <value name="5"/>
-    <value name="10"/>
-    <value name="20"/>
-    <value name="50"/>
-    <value name="100"/>
   </enumeration>
 
   <class name="GPExpression" base="Object" abstract="yes"/>
@@ -131,7 +123,14 @@
   <class name="GenerateUniqueFormulas" base="WorkUnit">
     <variable type="FormulaSearchProblem" name="problem"/>
     <variable type="PositiveInteger" name="maxSize"/>
+    <variable type="PositiveInteger" name="numSamples"/>
     <variable type="File" name="formulasFile"/>
+
+    <!-- output variables -->
+    <variable type="PositiveInteger" name="numFinalStates"/>
+    <variable type="PositiveInteger" name="numFormulas"/>
+    <variable type="PositiveInteger" name="numInvalidFormulas"/>
+    <variable type="PositiveInteger" name="numFormulaClasses"/>
   </class>
 
   <class name="BanditFormulaWorkUnit" base="WorkUnit">
@@ -157,6 +156,7 @@
   </class>
   <class name="BanditFormulaSearchProblem" base="FormulaSearchProblem" shortName="multiArmedBandits">
     <variable type="Function" name="objective"/>
+    <variable type="Double" name="boundSampleProbability"/>
   </class>
 
   <!-- Learning Rule Formulas -->
