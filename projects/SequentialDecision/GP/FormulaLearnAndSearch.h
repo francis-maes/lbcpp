@@ -9,8 +9,9 @@
 #ifndef LBCPP_SEQUENTIAL_DECISION_FORMULA_LEARN_AND_SEARCH_H_
 # define LBCPP_SEQUENTIAL_DECISION_FORMULA_LEARN_AND_SEARCH_H_
 
-# include "NestedMonteCarloOptimizer.h"
 # include "PathsFormulaFeatureGenerator.h"
+# include "NestedMonteCarloOptimizer.h"
+# include "BeamSearchOptimizer.h"
 
 namespace lbcpp
 {
@@ -37,12 +38,15 @@ public:
     features->addWeightedTo(parameters, 0, -derivative);
   }
 
-  double predict(ExecutionContext& context, const GPExpressionPtr& formula, const std::vector<int>& formulaKey, DoubleVectorPtr& features) const
+  double predict(ExecutionContext& context, const GPExpressionPtr& formula, const std::vector<int>& formulaKey, DoubleVectorPtr& features, bool isFinalizedFormula = true) const
   {
-    featureGenerator.staticCast<PathsFormulaFeatureGenerator>()->setDictionaryReadOnly(true);
+    PathsFormulaFeatureGeneratorPtr fg = featureGenerator.staticCast<PathsFormulaFeatureGenerator>();
+    fg->setDictionaryReadOnly(true);
+    fg->setIsFinalizedFormula(isFinalizedFormula);
     getFeaturesIfNecessary(context, formula, formulaKey, features);
     double res = 1.0 / (1.0 + exp(-features->dotProduct(parameters, 0)));
-    featureGenerator.staticCast<PathsFormulaFeatureGenerator>()->setDictionaryReadOnly(false);
+    fg->setDictionaryReadOnly(false);
+    fg->setIsFinalizedFormula(true);
     return res;
   }
 
@@ -83,11 +87,10 @@ protected:
 
 typedef ReferenceCountedObjectPtr<FormulaRegressor> FormulaRegressorPtr;
 
-
 class SuperFormulaPool : public ExecutionContextCallback
 {
 public:
-  SuperFormulaPool(ExecutionContext& context, FormulaSearchProblemPtr problem, size_t maxFormulaSize = 12, size_t numInputSamples = 100)
+  SuperFormulaPool(ExecutionContext& context, FormulaSearchProblemPtr problem, size_t maxFormulaSize = 6, size_t numInputSamples = 100)
     : problem(problem), regressor(new FormulaRegressor()), maxFormulaSize(maxFormulaSize), numInvalidFormulas(0), numEvaluations(0), creationFrequency(0), threadId(0)
   {
     FunctionPtr objective = problem->getObjective();
@@ -101,7 +104,7 @@ public:
 
   typedef std::vector<int> FormulaKey;
 
-  size_t getOrUpdateFormulaClass(ExecutionContext& context, const GPExpressionPtr& formula, const FormulaKey& key)
+  size_t getOrUpdateFormulaClass(ExecutionContext& context, const GPExpressionPtr& formula, const FormulaKey& key, bool verbose = false)
   {
     size_t res;
     KeyToFormulaClassMap::iterator it = keyToFormulaClassMap.find(key);
@@ -117,12 +120,16 @@ public:
       FormulaClassInfo& formulaClassInfo = formulaClasses[it->second];
       //std::cout << "Formula: " << formula->toShortString() << " => existing class " << it->second << " (" << formulaClassInfo.expression->toShortString() << ")" << std::endl;
       if (formula->size() < formulaClassInfo.expression->size())
+      {
+        if (verbose)
+          context.informationCallback(T("Update formula class: ") + formulaClassInfo.expression->toShortString() + T(" => ") + formula->toShortString());
         formulaClassInfo.expression = formula; // keep the smallest formula
+      }
     }
     return res;
   }
 
-  bool addFormula(ExecutionContext& context, GPExpressionPtr formula)
+  bool addFormula(ExecutionContext& context, GPExpressionPtr formula, bool verbose = false)
   {
     checkCurrentThreadId();
 
@@ -141,10 +148,12 @@ public:
 
     if (isValidFormula)
     {
-      info.formulaClass = getOrUpdateFormulaClass(context, formula, key);
+      info.formulaClass = getOrUpdateFormulaClass(context, formula, key, verbose);
       if (info.formulaClass == (size_t)-1)
       {
         // create new formula class
+        if (verbose)
+          context.informationCallback(T("New formula class: ") + formula->toShortString());
         info.formulaClass = keyToFormulaClassMap[key] = formulaClasses.size();
         formulaClasses.push_back(FormulaClassInfo(formula, key));
         if (formulaClasses.size() % 1000 == 0)
@@ -218,9 +227,9 @@ public:
     }
   }
 
-  struct DecoratedObjective : public SimpleUnaryFunction
+  struct SurrogateObjective : public SimpleUnaryFunction
   {
-    DecoratedObjective(SuperFormulaPool* pthis, FunctionPtr formulaObjective)
+    SurrogateObjective(SuperFormulaPool* pthis, FunctionPtr formulaObjective)
       : SimpleUnaryFunction(decisionProblemStateClass, doubleType), pthis(pthis), formulaObjective(formulaObjective) {}
 
     SuperFormulaPool* pthis;
@@ -230,25 +239,40 @@ public:
     {
       pthis->checkCurrentThreadId();
 
-      const GPExpressionBuilderStatePtr& state = input.getObjectAndCast<GPExpressionBuilderState>();
-      GPExpressionPtr expression = state->getExpression();
-      if (pthis->doFormulaExists(expression))
-        return DBL_MAX; // already known formula
+      const RPNGPExpressionBuilderStatePtr& state = input.getObjectAndCast<RPNGPExpressionBuilderState>();
 
-      FormulaKey key;
-      bool isValidFormula = pthis->problem->makeFormulaKey(expression, pthis->inputSamples, key);
-      if (!isValidFormula)
-        return DBL_MAX; // invalid formula
+      if (state->isFinalState())
+      {
+        GPExpressionPtr expression = state->getExpression();
+        if (pthis->doFormulaExists(expression))
+          return DBL_MAX; // already known formula
 
-      size_t formulaClass = pthis->getOrUpdateFormulaClass(context, expression, key);
-      if (formulaClass != (size_t)-1)
-        return DBL_MAX; // already known formula equivalence class
+        FormulaKey key;
+        bool isValidFormula = pthis->problem->makeFormulaKey(expression, pthis->inputSamples, key);
+        if (!isValidFormula)
+          return DBL_MAX; // invalid formula
 
-      // todo: cache features  (?)
-      DoubleVectorPtr features;
-      double score = pthis->regressor->predict(context, expression, std::vector<int>(), features);
-      //double reward = formulaObjective->compute(context, expression).toDouble();
-      return 1.0 - score; // transform into score to minimize
+        size_t formulaClass = pthis->getOrUpdateFormulaClass(context, expression, key);
+        if (formulaClass != (size_t)-1)
+          return DBL_MAX; // already known formula equivalence class
+
+        DoubleVectorPtr features;
+        double score = pthis->regressor->predict(context, expression, std::vector<int>(), features);
+        //double reward = formulaObjective->compute(context, expression).toDouble();
+        return 1.0 - score; // transform into score to minimize
+      }
+      else
+      {
+        const std::vector<GPExpressionPtr>& stack = state->getStack();
+        double score = 0.0;
+        for (size_t i = 0; i < stack.size(); ++i)
+        {
+          DoubleVectorPtr features;
+          // todo: there may be a cache here !
+          score += pthis->regressor->predict(context, stack[i], std::vector<int>(), features, false);
+        }
+        return 1.0 - score; // transform into score to minimize
+      }
     }
   };
 
@@ -256,20 +280,47 @@ public:
   {
     checkCurrentThreadId();
 
-    OptimizationProblemPtr nestedMCProblem = new OptimizationProblem(new DecoratedObjective(this, problem->getObjective()));
-    DecisionProblemStatePtr initialState = problem->makeGPBuilderState(maxFormulaSize);
-    OptimizerPtr nestedMC = new NestedMonteCarloOptimizer(initialState, 2, 1); // level 1, one iteration
-    
-    OptimizerStatePtr state = nestedMC->optimize(context, nestedMCProblem);
-    GPExpressionBuilderStatePtr bestFinalState = state->getBestSolution().getObjectAndCast<GPExpressionBuilderState>();
-    if (bestFinalState)
+    OptimizationProblemPtr surrogateProblem = new OptimizationProblem(new SurrogateObjective(this, problem->getObjective()));
+    DecisionProblemStatePtr initialState = problem->makeGPBuilderState(10); // FIXME: max formula size
+
+    static const bool useNestedMonteCarlo = false;
+
+    if (useNestedMonteCarlo)
     {
-      GPExpressionPtr formula = bestFinalState->getExpression();
-      context.informationCallback(T("New formula: ") + formula->toShortString() + T(" ==> ") + String(state->getBestScore()));
-      addFormula(context, formula);
+      // Nested Monte Carlo
+      OptimizerPtr nestedMC = new NestedMonteCarloOptimizer(initialState, 2, 1); // level 1, one iteration
+      OptimizerStatePtr state = nestedMC->optimize(context, surrogateProblem);
+      GPExpressionBuilderStatePtr bestFinalState = state->getBestSolution().getObjectAndCast<GPExpressionBuilderState>();
+      if (bestFinalState)
+      {
+        GPExpressionPtr formula = bestFinalState->getExpression();
+        //context.informationCallback(T("New formula: ") + formula->toShortString() + T(" ==> ") + String(state->getBestScore()));
+        addFormula(context, formula, true);
+      }
+      else
+        context.informationCallback(T("Failed to create new formula"));
     }
     else
-      context.informationCallback(T("Failed to create new formula"));
+    {
+      static const int beamSize = 1000;
+      static const int numBests = 100;
+
+      // Beam Search
+      OptimizerPtr beamSearch = new BeamSearchOptimizer(initialState, beamSize);
+      context.enterScope(T("Beam Search"));
+      BeamSearchOptimizerStatePtr state = beamSearch->optimize(context, surrogateProblem).staticCast<BeamSearchOptimizerState>();
+      context.leaveScope(state->getBestScore());
+      const BeamSearchOptimizerState::SortedStateMap& finalStates = state->getFinalStates();
+      size_t i = 0;
+      for (BeamSearchOptimizerState::SortedStateMap::const_iterator it = finalStates.begin(); it != finalStates.end() && i < numBests; ++it, ++i)
+      {
+        if (it->first == DBL_MAX)
+          break;
+        GPExpressionPtr formula = it->second.staticCast<GPExpressionBuilderState>()->getExpression();
+        //context.informationCallback(T("New formula ") + String((int)i+1) + T(": ") + formula->toShortString() + T(" ==> ") + String(it->first));
+        addFormula(context, formula, true);
+      }
+    }
   }
 
   void play(ExecutionContext& context, size_t iterationNumber, size_t numTimeSteps, size_t creationFrequency)
@@ -410,14 +461,14 @@ protected:
     FormulaClassInfo& formula = formulaClasses[index];
     formula.statistics.push(reward);
 
+    // update bandit score (reinsert into bandit pool)
+    double newScore = formula.statistics.getMean() + 2.0 / formula.statistics.getCount();
+    sortedFormulaClasses.insert(std::make_pair(-newScore, index));
+
     // add regression example, and eventually create new formula
     regressor->addExample(context, formula.expression, formula.key, formula.features, reward);
     if (creationFrequency && (numEvaluations % creationFrequency == 0))
       createNewFormula(context);
-
-    // update bandit score (reinsert into bandit pool)
-    double newScore = formula.statistics.getMean() + 2.0 / formula.statistics.getCount();
-    sortedFormulaClasses.insert(std::make_pair(-newScore, index));
   }
 
   Thread::ThreadID threadId;
@@ -440,7 +491,7 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {   
-    SuperFormulaPool pool(context, problem);
+    SuperFormulaPool pool(context, problem, formulaInitialSize + 1);
 
 /*    
     FunctionPtr featureGenerator = new PathsFormulaFeatureGenerator();
