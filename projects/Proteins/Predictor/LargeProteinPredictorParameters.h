@@ -190,8 +190,7 @@ protected:
 /*
 ** Large Protein Perception
 */
-extern ClassPtr largeProteinPerceptionClass(TypePtr globalType = anyType,
-                                            TypePtr aaType = anyType, TypePtr pssmType = anyType,
+extern ClassPtr largeProteinPerceptionClass(TypePtr aaType = anyType, TypePtr pssmType = anyType,
                                             TypePtr ss3Type = anyType, TypePtr ss8Type = anyType,
                                             TypePtr saType = anyType, TypePtr drType = anyType,
                                             TypePtr stalType = anyType);
@@ -199,8 +198,6 @@ extern ClassPtr largeProteinPerceptionClass(TypePtr globalType = anyType,
 class LargeProteinPerception : public ProteinPrimaryPerception
 {
 public:
-  DoubleVectorPtr globalFeatures;
-
   VectorPtr aaResidueFeatures;
   ContainerPtr aaAccumulator;
 
@@ -222,8 +219,8 @@ public:
   VectorPtr stalResidueFeatures;
   ContainerPtr stalAccumulator;
 
-  LargeProteinPerception(TypePtr globalType, TypePtr aaType, TypePtr pssmType, TypePtr ss3Type, TypePtr ss8Type, TypePtr saType, TypePtr drType, TypePtr stalType)
-    : ProteinPrimaryPerception(largeProteinPerceptionClass(globalType, aaType, pssmType, ss3Type, ss8Type, saType, drType, stalType)) {}
+  LargeProteinPerception(TypePtr aaType, TypePtr pssmType, TypePtr ss3Type, TypePtr ss8Type, TypePtr saType, TypePtr drType, TypePtr stalType)
+    : ProteinPrimaryPerception(largeProteinPerceptionClass(aaType, pssmType, ss3Type, ss8Type, saType, drType, stalType)) {}
   LargeProteinPerception(TypePtr thisClass)
     : ProteinPrimaryPerception(thisClass) {}
 
@@ -247,8 +244,7 @@ public:
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
     size_t index = largeProteinPerceptionClass()->getBaseType()->getNumMemberVariables();
-    TypePtr globalType = inputVariables[index]->getType()->getTemplateArgument(0);
-    index += 2;
+    index += 1;
     TypePtr aaType = inputVariables[index]->getType()->getTemplateArgument(0)->getTemplateArgument(0);
     index += 2;
     TypePtr pssmType = inputVariables[index]->getType()->getTemplateArgument(0)->getTemplateArgument(0);
@@ -262,7 +258,7 @@ public:
     TypePtr drType = inputVariables[index]->getType()->getTemplateArgument(0)->getTemplateArgument(0);
     index += 2;
     TypePtr stalType = inputVariables[index]->getType()->getTemplateArgument(0)->getTemplateArgument(0);
-    return largeProteinPerceptionClass(globalType, aaType, pssmType, ss3Type, ss8Type, saType, drType, stalType);
+    return largeProteinPerceptionClass(aaType, pssmType, ss3Type, ss8Type, saType, drType, stalType);
   }
   
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
@@ -271,34 +267,6 @@ public:
     const size_t n = getNumInputs();
     for (size_t i = 0; i < n; ++i)
       res->setVariable(i, inputs[i]);
-    return res;
-  }
-};
-
-class UpdateLargeProteinPerception : public Function
-{
-public:
-  virtual size_t getNumRequiredInputs() const
-    {return 2;}
-
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index ? (TypePtr)doubleVectorClass(enumValueType, doubleType) : (TypePtr)largeProteinPerceptionClass();}
-  
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-  {
-    TypePtr globalType = inputVariables[1]->getType()->getTemplateArgument(0);
-    const TypePtr inputType = inputVariables[0]->getType();
-    return largeProteinPerceptionClass(globalType, inputType->getTemplateArgument(1), inputType->getTemplateArgument(2)
-                                                 , inputType->getTemplateArgument(3), inputType->getTemplateArgument(4)
-                                                 , inputType->getTemplateArgument(5), inputType->getTemplateArgument(6)
-                                                 , inputType->getTemplateArgument(7));
-  }
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-  {
-    LargeProteinPerceptionPtr res = inputs[0].getObjectAndCast<LargeProteinPerception>(context);
-    res->globalFeatures = inputs[1].getObjectAndCast<DoubleVector>(context);
-    res->setThisClass(getOutputType());
     return res;
   }
 };
@@ -550,7 +518,6 @@ public:
       size_t protein = builder.addInput(proteinClass, T("protein"));
       size_t length = builder.addFunction(new ProteinLengthFunction(), protein);
       builder.addFunction(new NumCysteinsFunction(), protein);
-      builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 0, 0.0));  
       // AA
       size_t primaryFeatures = builder.addFunction(createVectorFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, aaResidueFeatures)), length, protein);
       size_t primaryFeaturesAcc = builder.addFunction(accumulateContainerFunction(), primaryFeatures);
@@ -573,10 +540,7 @@ public:
       primaryFeatures = builder.addFunction(createVectorFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, stalResidueFeatures)), length, protein);
       primaryFeaturesAcc = builder.addFunction(accumulateContainerFunction(), primaryFeatures);
 
-    size_t perception = builder.finishSelectionWithFunction(new CreateLargeProteinPerception());
-    size_t globalFeatures = builder.addFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, globalFeatures), perception, T("globalFeatures"));
-
-    builder.addFunction(new UpdateLargeProteinPerception(), perception, globalFeatures, T("proteinPerception"));
+    builder.finishSelectionWithFunction(new CreateLargeProteinPerception());
   }
 
   void aaResidueFeatures(CompositeFunctionBuilder& builder) const
@@ -715,7 +679,7 @@ public:
     size_t proteinPerception = builder.addInput(largeProteinPerceptionClass());
     /* Output */
     builder.startSelection();
-      builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception, T("globalFeatures"));
+      builder.addFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, globalFeatures), proteinPerception, T("globalFeatures"));
       builder.addFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, residueFeatures), position, proteinPerception, T("residueFeatures"));
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }

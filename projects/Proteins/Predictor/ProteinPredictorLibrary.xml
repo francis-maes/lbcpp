@@ -237,7 +237,6 @@
 
   <!-- BEGIN LargePredictorParameters -->
   <template name="LargeProteinPerception" base="ProteinPrimaryPerception">
-    <parameter name="globalFeaturesEnumeration"/>
     <parameter name="aaFeaturesEnumeration"/>
     <parameter name="pssmFeaturesEnumeration"/>
     <parameter name="ss3FeaturesEnumeration"/>
@@ -245,8 +244,6 @@
     <parameter name="saFeaturesEnumeration"/>
     <parameter name="drFeaturesEnumeration"/>
     <parameter name="stalFeaturesEnumeration"/>
-
-    <variable type="DenseDoubleVector[globalFeaturesEnumeration, Double]" name="globalFeatures"/>
 
     <variable type="Vector[DoubleVector[aaFeaturesEnumeration, Double]]" name="aaResidueFeatures"/>
     <variable type="Container[DenseDoubleVector[AddMissingToEnumeration[aaFeaturesEnumeration], Double]]" name="aaAccumulator"/>
