@@ -32,6 +32,9 @@ public:
     ExecutionContext::notificationCallback(notification);
   }
 
+  virtual void waitUntilAllWorkUnitsAreDone(size_t timeOutInMilliseconds = 0)
+    {if (parent) parent->waitUntilAllWorkUnitsAreDone(timeOutInMilliseconds);}
+
   virtual void flushCallbacks()
     {if (parent) parent->flushCallbacks();}
 

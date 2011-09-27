@@ -9,11 +9,7 @@
 #ifndef LBCPP_SEQUENTIAL_DECISION_GP_GENERATE_UNIQUE_FORMULAS_H_
 # define LBCPP_SEQUENTIAL_DECISION_GP_GENERATE_UNIQUE_FORMULAS_H_
 
-# include <lbcpp/Execution/WorkUnit.h>
-# include "GPExpressionBuilder.h"
-# include "FormulaSearchProblem.h"
-# include "LearningRuleFormulaObjective.h"
-# include <algorithm>
+# include "FormulaLearnAndSearch.h" // SuperFormulaPool
 
 namespace lbcpp
 {
@@ -21,81 +17,38 @@ namespace lbcpp
 class GenerateUniqueFormulas : public WorkUnit
 {
 public:
-  GenerateUniqueFormulas() : maxSize(3) {}
-
-  typedef std::vector<int> FormulaKey;
-  
+  GenerateUniqueFormulas() : maxSize(3), numSamples(100),
+    numFinalStates(0), numFormulas(0), numInvalidFormulas(0), numFormulaClasses(0) {}
+ 
   virtual Variable run(ExecutionContext& context)
   {
-    std::vector< std::vector<double> > inputSamples;
-    problem->sampleInputs(context, 100, inputSamples);
+    SuperFormulaPool pool(context, problem, numSamples);
     
-    GPExpressionBuilderStatePtr state = problem->makeGPBuilderState(maxSize);
-    std::map<FormulaKey, GPExpressionPtr> formulas;
-    enumerateAllFormulas(context, state, inputSamples, formulas);
+    if (!pool.addAllFormulasUpToSize(context, maxSize, numFinalStates))
+      return false;
 
-    context.informationCallback("We have " + String((int)formulas.size()) + " formulas");
-    return saveFormulasToFile(context, formulas, formulasFile);
+    // results
+    numFormulas = pool.getNumFormulas();
+    numInvalidFormulas = pool.getNumInvalidFormulas();
+    numFormulaClasses = pool.getNumFormulaClasses();
+
+    return formulasFile == File() || saveFormulasToFile(context, pool, formulasFile);
   }
 
-  static String formulaKeyToString(const FormulaKey& key)
-  {
-    String res;
-    for (size_t i = 0; i < key.size(); ++i)
-      res += String(key[i]) + T(";");
-    return res;
-  }
-  
-  void enumerateAllFormulas(ExecutionContext& context, GPExpressionBuilderStatePtr state, const std::vector< std::vector<double> >& inputSamples, std::map<FormulaKey, GPExpressionPtr>& res)
-  {
-    if (state->isFinalState())
-    {
-      GPExpressionPtr formula = state->getExpression();
-      jassert(formula);
-      
-      FormulaKey formulaKey;
-      if (!problem->makeFormulaKey(formula, inputSamples, formulaKey))
-      {
-        //context.informationCallback("Invalid formula: " + formula->toShortString());
-        return; // invalid formula
-      }
-      //context.informationCallback("Formula: " + formula->toShortString() + " --> " + formulaKeyToString(formulaKey));
-        
-      std::map<FormulaKey, GPExpressionPtr>::iterator it = res.find(formulaKey);
-      if (it == res.end())
-      {
-        //context.informationCallback("Formula: " + formula->toShortString());
-        res[formulaKey] = formula;
-        if (res.size() % 1000 == 0)
-          context.informationCallback(String((int)res.size()) + T(" formulas, last formula: ") + formula->toShortString());
-      }
-      else if (formula->size() < it->second->size())
-        it->second = formula; // keep the smallest formula
-    }
-    else
-    {
-      ContainerPtr actions = state->getAvailableActions();
-      size_t n = actions->getNumElements();
-      for (size_t i = 0; i < n; ++i)
-      {
-        Variable stateBackup;
-        Variable action = actions->getElement(i);
-        double reward;
-        state->performTransition(context, action, reward, &stateBackup);
-        enumerateAllFormulas(context, state, inputSamples, res);
-        state->undoTransition(context, stateBackup);
-      }
-    }
-  }
-  
 protected:
   friend class GenerateUniqueFormulasClass;
 
   FormulaSearchProblemPtr problem;
   size_t maxSize;
+  size_t numSamples;
   File formulasFile;
 
-  bool saveFormulasToFile(ExecutionContext& context, const std::map<FormulaKey, GPExpressionPtr>& formulas, const File& file) const
+  size_t numFinalStates;
+  size_t numFormulas;
+  size_t numInvalidFormulas;
+  size_t numFormulaClasses;
+
+  bool saveFormulasToFile(ExecutionContext& context, SuperFormulaPool& pool, const File& file) const
   {
     if (file.exists())
       file.deleteFile();
@@ -106,9 +59,10 @@ protected:
       return false;
     }
 
-    for (std::map<FormulaKey, GPExpressionPtr>::const_iterator it = formulas.begin(); it != formulas.end(); ++it)
+    size_t n = pool.getNumFormulaClasses();
+    for (size_t i = 0; i < n; ++i)
     {
-      *ostr << it->second->toString();
+      *ostr << pool.getFormulaClassExpression(i)->toString();
       *ostr << "\n";
     }
     delete ostr;

@@ -27,7 +27,7 @@ public:
     parameters = new DenseDoubleVector(features, doubleType);
   }
 
-  void addExample(ExecutionContext& context, const GPExpressionPtr& formula, const std::vector<int>& formulaKey, DoubleVectorPtr& features, double trueScore)
+  void addExample(ExecutionContext& context, const GPExpressionPtr& formula, const FormulaKeyPtr& formulaKey, DoubleVectorPtr& features, double trueScore)
   {
     getFeaturesIfNecessary(context, formula, formulaKey, features);
 
@@ -38,7 +38,7 @@ public:
     features->addWeightedTo(parameters, 0, -derivative);
   }
 
-  double predict(ExecutionContext& context, const GPExpressionPtr& formula, const std::vector<int>& formulaKey, DoubleVectorPtr& features, bool isFinalizedFormula = true) const
+  double predict(ExecutionContext& context, const GPExpressionPtr& formula, const FormulaKeyPtr& formulaKey, DoubleVectorPtr& features, bool isFinalizedFormula = true) const
   {
     PathsFormulaFeatureGeneratorPtr fg = featureGenerator.staticCast<PathsFormulaFeatureGenerator>();
     fg->setDictionaryReadOnly(true);
@@ -78,7 +78,7 @@ protected:
   DenseDoubleVectorPtr parameters;
   ScalarVariableStatistics errorStats;
 
-  void getFeaturesIfNecessary(ExecutionContext& context, const GPExpressionPtr& formula, const std::vector<int>& formulaKey, DoubleVectorPtr& features) const
+  void getFeaturesIfNecessary(ExecutionContext& context, const GPExpressionPtr& formula, const FormulaKeyPtr& formulaKey, DoubleVectorPtr& features) const
   {
     if (!features)
       features = featureGenerator->compute(context, formula).getObjectAndCast<DoubleVector>();
@@ -90,8 +90,8 @@ typedef ReferenceCountedObjectPtr<FormulaRegressor> FormulaRegressorPtr;
 class SuperFormulaPool : public ExecutionContextCallback
 {
 public:
-  SuperFormulaPool(ExecutionContext& context, FormulaSearchProblemPtr problem, size_t maxFormulaSize = 6, size_t numInputSamples = 100)
-    : problem(problem), regressor(new FormulaRegressor()), maxFormulaSize(maxFormulaSize), numInvalidFormulas(0), numEvaluations(0), creationFrequency(0), threadId(0)
+  SuperFormulaPool(ExecutionContext& context, FormulaSearchProblemPtr problem, size_t numInputSamples = 100)
+    : problem(problem), regressor(new FormulaRegressor()), numInvalidFormulas(0), numEvaluations(0), creationFrequency(0), threadId(0)
   {
     FunctionPtr objective = problem->getObjective();
     objective->initialize(context, gpExpressionClass);
@@ -102,9 +102,8 @@ public:
   bool doFormulaExists(GPExpressionPtr formula) const
     {checkCurrentThreadId(); return formulas.find(formula->toString()) != formulas.end();}
 
-  typedef std::vector<int> FormulaKey;
-
-  size_t getOrUpdateFormulaClass(ExecutionContext& context, const GPExpressionPtr& formula, const FormulaKey& key, bool verbose = false)
+  // key is an input-output parameter
+  size_t getOrUpdateFormulaClass(ExecutionContext& context, const GPExpressionPtr& formula, FormulaKeyPtr& key, bool verbose = false)
   {
     size_t res;
     KeyToFormulaClassMap::iterator it = keyToFormulaClassMap.find(key);
@@ -118,6 +117,7 @@ public:
       // reuse and update existing formula class
       res = it->second;
       FormulaClassInfo& formulaClassInfo = formulaClasses[it->second];
+      key = formulaClassInfo.key; // use shared formula class key
       //std::cout << "Formula: " << formula->toShortString() << " => existing class " << it->second << " (" << formulaClassInfo.expression->toShortString() << ")" << std::endl;
       if (formula->size() < formulaClassInfo.expression->size())
       {
@@ -138,24 +138,22 @@ public:
     if (it != formulas.end())
       return it->second.isValidFormula();
 
-    FormulaKey key;
-    bool isValidFormula = problem->makeFormulaKey(formula, inputSamples, key);
-    FormulaInfo info(formula, key);
+    FormulaInfo info(formula, problem->makeFormulaKey(formula, inputSamples));
 
     //std::cout << "Formula " << formula->toShortString() << " key = ";
     //for (size_t i = 0; i < key.size(); ++i) std::cout << key[i] << " ";
     //std::cout << std::endl;
 
-    if (isValidFormula)
+    if (info.key)
     {
-      info.formulaClass = getOrUpdateFormulaClass(context, formula, key, verbose);
+      info.formulaClass = getOrUpdateFormulaClass(context, formula, info.key, verbose);
       if (info.formulaClass == (size_t)-1)
       {
         // create new formula class
         if (verbose)
           context.informationCallback(T("New formula class: ") + formula->toShortString());
-        info.formulaClass = keyToFormulaClassMap[key] = formulaClasses.size();
-        formulaClasses.push_back(FormulaClassInfo(formula, key));
+        info.formulaClass = keyToFormulaClassMap[info.key] = formulaClasses.size();
+        formulaClasses.push_back(FormulaClassInfo(formula, info.key));
         if (formulaClasses.size() % 1000 == 0)
           context.informationCallback(String((int)formulaClasses.size()) + T(" formula classes, last formula: ") + formula->toShortString());
 
@@ -166,7 +164,6 @@ public:
     else
     {
       //std::cout << "Invalid formula: " << formula->toShortString() << std::endl;
-      key.clear();
       ++numInvalidFormulas;
     }
 
@@ -174,6 +171,23 @@ public:
     return info.isValidFormula();
   }
 
+  bool addAllFormulasUpToSize(ExecutionContext& context, size_t maxSize, size_t& numFinalStates)
+  {
+    numFinalStates = 0;
+    enumerateAllFormulas(context, problem->makeGPBuilderState(maxSize), numFinalStates);
+
+    context.informationCallback(String((int)numFinalStates) + T(" final states"));
+    context.informationCallback(String((int)getNumFormulas()) + T(" formulas"));
+    context.informationCallback(String((int)getNumInvalidFormulas()) + T(" invalid formulas"));
+    
+    size_t n = getNumFormulaClasses();
+    context.enterScope(String((int)n) + T(" valid formula equivalence classes"));
+    if (n < 200)
+      for (size_t i = 0; i < n; ++i)
+        context.informationCallback(getFormulaClassExpression(i)->toShortString());
+    context.leaveScope();
+    return true;
+  }
 
   virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
   {
@@ -247,9 +261,8 @@ public:
         if (pthis->doFormulaExists(expression))
           return DBL_MAX; // already known formula
 
-        FormulaKey key;
-        bool isValidFormula = pthis->problem->makeFormulaKey(expression, pthis->inputSamples, key);
-        if (!isValidFormula)
+        FormulaKeyPtr key = pthis->problem->makeFormulaKey(expression, pthis->inputSamples);
+        if (!key)
           return DBL_MAX; // invalid formula
 
         size_t formulaClass = pthis->getOrUpdateFormulaClass(context, expression, key);
@@ -257,7 +270,7 @@ public:
           return DBL_MAX; // already known formula equivalence class
 
         DoubleVectorPtr features;
-        double score = pthis->regressor->predict(context, expression, std::vector<int>(), features);
+        double score = pthis->regressor->predict(context, expression, FormulaKeyPtr(), features);
         //double reward = formulaObjective->compute(context, expression).toDouble();
         return 1.0 - score; // transform into score to minimize
       }
@@ -269,7 +282,7 @@ public:
         {
           DoubleVectorPtr features;
           // todo: there may be a cache here !
-          score += pthis->regressor->predict(context, stack[i], std::vector<int>(), features, false);
+          score += pthis->regressor->predict(context, stack[i], FormulaKeyPtr(), features, false);
         }
         return 1.0 - score; // transform into score to minimize
       }
@@ -405,7 +418,6 @@ public:
 protected:
   FormulaSearchProblemPtr problem;
   FormulaRegressorPtr regressor;
-  size_t maxFormulaSize;
   size_t creationFrequency;
   ExecutionContextPtr context;
 
@@ -413,16 +425,16 @@ protected:
 
   struct FormulaInfo
   {
-    FormulaInfo(const GPExpressionPtr& expression, const FormulaKey& key)
+    FormulaInfo(const GPExpressionPtr& expression, const FormulaKeyPtr& key)
       : expression(expression), key(key), formulaClass((size_t)-1) {}
     FormulaInfo() : formulaClass((size_t)-1) {}
 
     GPExpressionPtr expression;
-    FormulaKey key;
+    FormulaKeyPtr key;
     size_t formulaClass;
 
     bool isValidFormula() const
-      {return key.size() > 0;}
+      {return key;}
 
     bool isAssociatedToClass() const
       {return formulaClass != (size_t)-1;}
@@ -434,18 +446,18 @@ protected:
 
   struct FormulaClassInfo
   {
-    FormulaClassInfo(GPExpressionPtr expression, const FormulaKey& key)
+    FormulaClassInfo(GPExpressionPtr expression, const FormulaKeyPtr& key)
       : expression(expression), key(key) {}
     FormulaClassInfo() {}
 
     GPExpressionPtr expression;
-    FormulaKey key;
+    FormulaKeyPtr key;
     ScalarVariableStatistics statistics;
     DoubleVectorPtr features;
   };
   std::vector<FormulaClassInfo> formulaClasses;
 
-  typedef std::map<FormulaKey, size_t> KeyToFormulaClassMap;
+  typedef std::map<FormulaKeyPtr, size_t, ObjectComparator> KeyToFormulaClassMap;
   KeyToFormulaClassMap keyToFormulaClassMap;
 
   std::multimap<double, size_t> sortedFormulaClasses;
@@ -482,6 +494,29 @@ protected:
     else
       const_cast<SuperFormulaPool* >(this)->threadId = Thread::getCurrentThreadId();
   }
+
+  void enumerateAllFormulas(ExecutionContext& context, GPExpressionBuilderStatePtr state, size_t& numFinalStates)
+  {
+    if (state->isFinalState())
+    {
+      ++numFinalStates;
+      addFormula(context, state->getExpression());
+    }
+    else
+    {
+      ContainerPtr actions = state->getAvailableActions();
+      size_t n = actions->getNumElements();
+      for (size_t i = 0; i < n; ++i)
+      {
+        Variable stateBackup;
+        Variable action = actions->getElement(i);
+        double reward;
+        state->performTransition(context, action, reward, &stateBackup);
+        enumerateAllFormulas(context, state, numFinalStates);
+        state->undoTransition(context, stateBackup);
+      }
+    }
+  }
 };
 
 class FormulaLearnAndSearch : public WorkUnit
@@ -491,20 +526,15 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {   
-    SuperFormulaPool pool(context, problem, formulaInitialSize + 1);
-
-/*    
-    FunctionPtr featureGenerator = new PathsFormulaFeatureGenerator();
-    featureGenerator->initialize(context, gpExpressionClass);
-    GPExpressionPtr testExpr = GPExpression::createFromString(context, "B(add, V(rk), U(inverse,V(tk)))", problem->getVariables());
-    context.resultCallback(T("Test Features"), featureGenerator->compute(context, testExpr));
-    return true;*/
-
+    SuperFormulaPool pool(context, problem, 100);
     size_t iteration = 0;
     if (formulaInitialSize > 0)
     {
-      if (!generateInitialFormulas(context, pool))
-        return false;
+      // generate initial formula classes
+      context.enterScope(T("Generating initial formulas up to size ") + String((int)formulaInitialSize));
+      size_t numFinalStates;
+      pool.addAllFormulasUpToSize(context, formulaInitialSize, numFinalStates);
+      context.leaveScope(pool.getNumFormulaClasses());
 
       // initial plays
       size_t n = pool.getNumFormulaClasses();
@@ -529,50 +559,6 @@ protected:
   size_t creationFrequency;
   size_t numIterations;
   size_t iterationsLength;
-
-  bool generateInitialFormulas(ExecutionContext& context, SuperFormulaPool& pool)
-  {
-    context.enterScope(T("Generating initial formulas up to size ") + String((int)formulaInitialSize));
-    size_t numFinalStates = 0;
-    enumerateAllFormulas(context, problem->makeGPBuilderState(formulaInitialSize), pool, numFinalStates);
-
-    context.informationCallback(String((int)numFinalStates) + T(" final states"));
-    context.informationCallback(String((int)pool.getNumFormulas()) + T(" formulas"));
-    context.informationCallback(String((int)pool.getNumInvalidFormulas()) + T(" invalid formulas"));
-    
-    size_t n = pool.getNumFormulaClasses();
-    context.enterScope(String((int)n) + T(" valid formula equivalence classes"));
-    if (n < 200)
-      for (size_t i = 0; i < n; ++i)
-        context.informationCallback(pool.getFormulaClassExpression(i)->toShortString());
-    context.leaveScope();
-
-    context.leaveScope(pool.getNumFormulaClasses());
-    return true;
-  }
-  
-  void enumerateAllFormulas(ExecutionContext& context, GPExpressionBuilderStatePtr state, SuperFormulaPool& pool, size_t& numFinalStates)
-  {
-    if (state->isFinalState())
-    {
-      ++numFinalStates;
-      pool.addFormula(context, state->getExpression());
-    }
-    else
-    {
-      ContainerPtr actions = state->getAvailableActions();
-      size_t n = actions->getNumElements();
-      for (size_t i = 0; i < n; ++i)
-      {
-        Variable stateBackup;
-        Variable action = actions->getElement(i);
-        double reward;
-        state->performTransition(context, action, reward, &stateBackup);
-        enumerateAllFormulas(context, state, pool, numFinalStates);
-        state->undoTransition(context, stateBackup);
-      }
-    }
-  }
 };
 
 }; /* namespace lbcpp */
