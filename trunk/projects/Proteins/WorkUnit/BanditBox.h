@@ -396,7 +396,10 @@ public:
     testingProteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinsPath).getChildFile(T("test/")), 0, T("Loading testing proteins"));
 
     jassert(typeOfProteinPerception(target) == residueType);    
-    
+
+    FunctionPtr proteinPerceptionFunction = largePredictor->createProteinPerception();
+    createProteinPerception(context, proteinPerceptionFunction, trainingProteins, trainingProteinPerceptions);
+    createProteinPerception(context, proteinPerceptionFunction, testingProteins, testingProteinPerceptions);
   }
 
   virtual Variable computeExpectation(const Variable* inputs = NULL) const
@@ -413,11 +416,7 @@ public:
     LargeProteinPredictorParametersPtr predictor = largePredictor->cloneAndCast<LargeProteinPredictorParameters>();
     predictor->setParameters(parameters);
 
-    FunctionPtr proteinPerceptionFunction = predictor->createProteinPerception();
     FunctionPtr residuePerceptionFunction = predictor->createResiduePerception();
-
-    std::vector<ProteinPrimaryPerceptionPtr> trainingProteinPerceptions;
-    createProteinPerception(context, proteinPerceptionFunction, trainingProteins, trainingProteinPerceptions);
 
     std::vector<PairPtr> trainingInputPairs;
     std::vector<Variable> trainingOutputs;
@@ -431,9 +430,6 @@ public:
     StreamPtr trainingStream = new PairBinaryFunctionBasedStream(context, normalizedResiduePerception, trainingInputPairs, trainingOutputs);
     FunctionPtr learner = nearestNeighborLearningMachine(trainingStream, 5, false);
     learner->initialize(context, trainingStream->getElementsType()->getTemplateArgument(0), trainingStream->getElementsType()->getTemplateArgument(1));
-
-    std::vector<ProteinPrimaryPerceptionPtr> testingProteinPerceptions;
-    createProteinPerception(context, proteinPerceptionFunction, testingProteins, testingProteinPerceptions);
 
     std::vector<PairPtr> testingInputPairs;    
     std::vector<Variable> testingOutputs;
@@ -475,6 +471,8 @@ public:
     t->decorated = decorated->cloneAndCast<Sampler>(context);
     t->trainingProteins = trainingProteins;
     t->testingProteins = testingProteins;
+    t->trainingProteinPerceptions = trainingProteinPerceptions;
+    t->testingProteinPerceptions = testingProteinPerceptions;
   }
 
 protected:
@@ -526,6 +524,9 @@ protected:
 private:
   ContainerPtr trainingProteins;
   ContainerPtr testingProteins;
+
+  std::vector<ProteinPrimaryPerceptionPtr> trainingProteinPerceptions;
+  std::vector<ProteinPrimaryPerceptionPtr> testingProteinPerceptions;
 };
 
 class ProteinBanditTestFeatures : public WorkUnit
