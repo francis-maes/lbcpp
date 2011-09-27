@@ -156,7 +156,7 @@
   </class>
   <class name="BanditFormulaSearchProblem" base="FormulaSearchProblem" shortName="multiArmedBandits">
     <variable type="Function" name="objective"/>
-    <variable type="Double" name="boundSampleProbability"/>
+    <variable type="PositiveInteger" name="numArmsInSampling"/>
   </class>
 
   <!-- Learning Rule Formulas -->

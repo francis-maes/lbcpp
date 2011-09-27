@@ -500,13 +500,13 @@ public:
     if (variableUseCounts[3] > 0) // forbid variable "epoch" for the moment
       return FormulaKeyPtr(); 
 
-    FormulaKeyPtr res = new FormulaKey(inputSamples.size());
+    FormulaKeyPtr res = new FormulaKey(inputSamples.size() * sizeof (juce::int64));
     for (size_t i = 0; i < inputSamples.size(); ++i)
     {
       double value = expression->compute(&inputSamples[i][0]);
       if (!isNumberValid(value))
         return FormulaKeyPtr();
-      res->setValue(i, (int)(value * 100000));
+      res->pushInteger((juce::int64)(value * 100000));
     }
     return res;
   }

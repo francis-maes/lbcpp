@@ -76,7 +76,7 @@ typedef ReferenceCountedObjectPtr<BanditFormulaObjective> BanditFormulaObjective
 class BanditFormulaSearchProblem : public FormulaSearchProblem
 {
 public:
-  BanditFormulaSearchProblem() : boundSampleProbability(0.0) {}
+  BanditFormulaSearchProblem() : numArmsInSampling(5) {}
 
   virtual FunctionPtr getObjective() const
     {return objective;}
@@ -92,82 +92,70 @@ public:
       binaryOperators.push_back((GPOperator)i);
   }
 
-  static double sampleBound(const RandomGeneratorPtr& random, double minBound, double maxBound = DBL_MAX)
-  {
-    if (maxBound == DBL_MAX)
-      return minBound;
-    return random->sampleBool(0.5) ? minBound : maxBound;
-  }
-
-  double sampleBoundOrValue(const RandomGeneratorPtr& random, double minBound, double maxBound, double value) const
-  {
-    if (boundSampleProbability && random->sampleBool(boundSampleProbability))
-      return sampleBound(random, minBound, maxBound);
-    else
-      return value;
-  }
-
   virtual void sampleInputs(ExecutionContext& context, size_t count, std::vector< std::vector<double> >& res) const
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
     res.resize(count);
     size_t index = 0;
 
-  /*  if (!excludeBoundSamples)
-    {
-      if (count >= 1)
-      {
-        std::vector<double> smallest(8);
-        smallest[0] = smallest[1] = smallest[4] = smallest[5] = 0.0;
-        smallest[2] = smallest[3] = smallest[6] = smallest[7] = 1.0;
-        res[index++] = smallest;
-      }
-      if (count >= 2)
-      {
-        std::vector<double> highest(8);
-        highest[0] = highest[4] = 1.0;
-        highest[1] = highest[5] = 0.5;
-        highest[2] = highest[3] = highest[6] = highest[7] = 100000;
-        res[index++] = highest;
-      }
-    }
-*/
     for (; index < count; ++index)
     {
-      double t = sampleBoundOrValue(random, 1, DBL_MAX, juce::jmax(1, (int)pow(10.0, random->sampleDouble(0, 5))));
-
-      std::vector<double> input(8);
-      input[0] = sampleBoundOrValue(random, 0.0, 1.0, random->sampleDouble(0.0, 1.0)); // rk1
-      input[1] = sampleBoundOrValue(random, 0.0, 1.0, random->sampleDouble(0.0, 0.5)); // sk1
-      input[2] = sampleBoundOrValue(random, 1, DBL_MAX, juce::jmax(1, (int)(t * random->sampleDouble(0.0, 1.0)))); // tk1
-      input[3] = t;
-      input[4] = sampleBoundOrValue(random, 0.0, 1.0, random->sampleDouble(0.0, 1.0)); // rk2
-      input[5] = sampleBoundOrValue(random, 0.0, 1.0, random->sampleDouble(0.0, 0.5)); // sk2
-      input[6] = sampleBoundOrValue(random, 1, DBL_MAX, juce::jmax(1, (int)(t * random->sampleDouble(0.0, 1.0)))); // tk2
-      input[7] = t;
+      double t = juce::jmax(1, (int)pow(10.0, random->sampleDouble(0, 5)));
+      jassert(numArmsInSampling >= 2);
+      std::vector<double> input(4 * numArmsInSampling);
+      size_t i = 0;
+      input[i++] = 0.0;
+      input[i++] = 0.0;
+      input[i++] = 1.0;
+      input[i++] = t;
+      for (size_t j = 0; j < numArmsInSampling - 1; ++j)
+      {
+        input[i++] = random->sampleDouble(0.0, 1.0); // rk1
+        input[i++] = random->sampleDouble(0.0, 0.5); // sk1
+        input[i++] = juce::jmax(1, (int)(t * random->sampleDouble(0.0, 1.0))); // tk1
+        input[i++] = t;
+      }
       res[index] = input;
     }
   }
 
+  struct DoubleThresholdedComparator
+  {
+    bool operator()(double a, double b)
+    {
+      //static const double epsilon = 1e-16;
+      return a < b;// && fabs(a - b) > epsilon;
+    }
+  };
+
   virtual FormulaKeyPtr makeFormulaKey(const GPExpressionPtr& expression, const std::vector< std::vector<double> >& inputSamples) const
   {
-    FormulaKeyPtr res = new FormulaKey(inputSamples.size());
+    typedef std::multimap<double, size_t, DoubleThresholdedComparator> SortedValuesMap;
+
+    FormulaKeyPtr res = new FormulaKey(inputSamples.size() * numArmsInSampling);
     for (size_t i = 0; i < inputSamples.size(); ++i)
     {
       const std::vector<double>& variables = inputSamples[i];
-      double value1 = expression->compute(&variables[0]);
-      if (!isNumberValid(value1))
-        return FormulaKeyPtr();
-      double value2 = expression->compute(&variables[4]);
-      if (!isNumberValid(value2))
-        return FormulaKeyPtr();
-
-      if (value1 < value2)
-        res->setValue(i, 0);
-      else if (value1 == value2)
-        res->setValue(i, 1);
-      else if (value1 > value2)
-        res->setValue(i, 2);
+      
+      SortedValuesMap values;
+      for (size_t j = 0; j < numArmsInSampling; ++j)
+      {
+        double value = expression->compute(&variables[j * 4]);
+        if (!isNumberValid(value))
+          return FormulaKeyPtr();
+        values.insert(std::make_pair(value, j));
+      }
+      jassert(values.size() == numArmsInSampling);
+  
+      jassert(numArmsInSampling < 128);
+      double prevValue = DBL_MAX;
+      for (SortedValuesMap::const_iterator it = values.begin(); it != values.end(); ++it)
+      {
+        double value = it->first;
+        bool isHigherThanPrevious = (it != values.begin() || value > prevValue);
+        prevValue = value;
+        res->pushByte((unsigned char)(it->second + (isHigherThanPrevious ? 128 : 0)));
+      }
     }
     return res;
   }
@@ -176,7 +164,7 @@ protected:
   friend class BanditFormulaSearchProblemClass;
 
   BanditFormulaObjectivePtr objective;
-  double boundSampleProbability;
+  size_t numArmsInSampling;
 };
 
 
