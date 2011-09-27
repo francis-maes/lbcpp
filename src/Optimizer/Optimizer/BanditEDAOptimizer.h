@@ -235,6 +235,23 @@ private:
 
 typedef ReferenceCountedObjectPtr<BanditEDAOptimizerState> BanditEDAOptimizerStatePtr;
 
+class SamplerBasedWorkUnit : public WorkUnit
+{
+public:
+  SamplerBasedWorkUnit(const SamplerPtr& sampler)
+    : sampler(sampler) {}
+
+  virtual Variable run(ExecutionContext& context)
+    {return sampler->sample(context, context.getRandomGenerator());}
+
+protected:
+  friend class SamplerBasedWorkUnitClass;
+
+  SamplerPtr sampler;
+
+  SamplerBasedWorkUnit() {}
+};
+
 class BanditEDAOptimizer : public PopulationBasedOptimizer
 {
 public:  
@@ -274,19 +291,23 @@ protected:
   
   BanditInfoPtr performIteration(ExecutionContext& context, const BanditEDAOptimizerStatePtr& state) const
   {
+    /* Remove worse bandits */
     const size_t numBanditsToRemove = (size_t)((1 - ratioOfBanditToKeep) * populationSize);
     state->removeBanditsWithWorseRewardMean(context, numBanditsToRemove);
     
+    /* Create new bandits (Parallel) */
     const size_t numBanditsToCreate = state->getNumBandits() != 0 ? numBanditsToRemove : populationSize;
     context.enterScope(T("Create ") + String((int)numBanditsToCreate) + (" new bandits"));
+    CompositeWorkUnitPtr workUnits = new CompositeWorkUnit(T("Creating Bandits"), numBanditsToCreate);
     for (size_t i = 0; i < numBanditsToCreate; ++i)
-    {
-      context.progressCallback(new ProgressionState(i, numBanditsToCreate, T("Bandits")));
-      state->createBandit(context, state->getSampler()->sample(context, context.getRandomGenerator()));
-    }
-    context.progressCallback(new ProgressionState(numBanditsToCreate, numBanditsToCreate, T("Bandits")));
+      workUnits->setWorkUnit(i, new SamplerBasedWorkUnit(state->getSampler()));
+    ContainerPtr sampledParameters = context.run(workUnits).getObjectAndCast<Container>();
+    jassert(sampledParameters && sampledParameters->getNumElements() == numBanditsToCreate);
+    for (size_t i = 0; i < numBanditsToCreate; ++i)
+      state->createBandit(context, sampledParameters->getElement(i));
     context.leaveScope(numBanditsToCreate);
 
+    /* Play */
     context.informationCallback(T("Set budget to ") + String((int)budget) + T(" plays"));
     state->resetBudgetTo(budget);
 
@@ -294,7 +315,6 @@ protected:
     for (size_t i = 0; i < numSimultaneousPlays; ++i)
       state->playBandit(state->getRandomBandit(context.getRandomGenerator()));
 
-    //context.waitUntilAllWorkUnitsAreDone();
     while (state->getNumPlayed() != budget)
     {
       context.progressCallback(new ProgressionState(state->getNumPlayed(), budget, T("Plays")));
@@ -304,6 +324,7 @@ protected:
     context.progressCallback(new ProgressionState(budget, budget, T("Plays")));
     context.leaveScope();
 
+    /* Learn */
     std::multimap<double, Variable> sortedParameterScores;
     state->getParametersSortedByRewardMean(sortedParameterScores);
 
