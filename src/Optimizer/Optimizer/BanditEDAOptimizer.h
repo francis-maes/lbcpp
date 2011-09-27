@@ -131,7 +131,7 @@ public:
   BanditInfoPtr getRandomBandit(const RandomGeneratorPtr& rand) const
   {
     jassert(banditsByScore.size());
-    std::map<double, BanditInfoPtr>::const_iterator it = banditsByScore.begin();
+    std::multimap<double, BanditInfoPtr>::const_iterator it = banditsByScore.begin();
     const size_t n = rand->sampleSize(banditsByScore.size());
     for (size_t i = 0; i < n; ++i, ++it);
     return it->second;
