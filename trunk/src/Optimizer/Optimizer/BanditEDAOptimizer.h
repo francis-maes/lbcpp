@@ -84,7 +84,7 @@ public:
     {this->context = &context;}
 
   size_t getNumBandits() const
-    {return banditsByParameter.size();}
+    {return banditsByScore.size();}
 
   void removeBanditsWithWorseRewardMean(ExecutionContext& context, size_t numBanditsToRemove)
   {
@@ -99,7 +99,6 @@ public:
       banditsByRewardMean.insert(std::make_pair(it->second->getRewardMean(), it->second));
 
     banditsByScore.clear();
-    banditsByParameter.clear();
 
     ScoresMap::const_iterator it = banditsByRewardMean.begin();
     for (size_t i = 0; i < numBanditsToRemove; ++i)
@@ -109,10 +108,7 @@ public:
     }
 
     for (; it != banditsByRewardMean.end(); ++it)
-    {
       banditsByScore.insert(std::make_pair(it->second->computeScoreToMinimize(), it->second));
-      banditsByParameter.insert(std::make_pair(it->second->getParameter(), it->second));
-    }
 
     context.leaveScope(numBanditsToRemove);
   }
@@ -121,10 +117,8 @@ public:
   {
     BanditInfoPtr bandit(new BanditInfo(parameter, totalNumBandits));
     banditsByScore.insert(std::make_pair(bandit->computeScoreToMinimize(), bandit));
-    banditsByParameter[parameter] = bandit;
     context.resultCallback(bandit->toString(), parameter);
     ++totalNumBandits;
-    jassert(banditsByScore.size() == banditsByParameter.size());
   }
 
   BanditInfoPtr getBestBandit() const
@@ -136,9 +130,9 @@ public:
 
   BanditInfoPtr getRandomBandit(const RandomGeneratorPtr& rand) const
   {
-    jassert(banditsByParameter.size());
-    std::map<Variable, BanditInfoPtr>::const_iterator it = banditsByParameter.begin();
-    const size_t n = rand->sampleSize(banditsByParameter.size());
+    jassert(banditsByScore.size());
+    std::map<double, BanditInfoPtr>::const_iterator it = banditsByScore.begin();
+    const size_t n = rand->sampleSize(banditsByScore.size());
     for (size_t i = 0; i < n; ++i, ++it);
     return it->second;
   }
@@ -157,35 +151,34 @@ public:
   {
     if (numPlaySent == maxBudget)
       return;
-    context->pushWorkUnit(new FunctionWorkUnit(problem->getObjective(), bandit->getParameter()), this, false);
+    WorkUnitPtr wu = new FunctionWorkUnit(problem->getObjective(), bandit->getParameter());
+    banditsByWorkUnit[wu] = bandit;
+    context->pushWorkUnit(wu, this, false);
     ++numPlaySent;
   }
 
   virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
   {
-    ScopedLock _(lock);
     ++numPlayed;
-    Variable parameter = workUnit.staticCast<FunctionWorkUnit>()->getInputs()[0];
-    processResult(parameter, result.getDouble());
-    playBandit(getBestBandit());
+    jassert(banditsByWorkUnit.count(workUnit) == 1);
+    processResult(banditsByWorkUnit[workUnit], result.getDouble());
+
+    banditsByWorkUnit.erase(workUnit);
 
     context->enterScope(String((int)numPlayed));
     context->resultCallback(T("numPlayed"), numPlayed);
     for (std::multimap<double, BanditInfoPtr>::const_iterator it = banditsByScore.begin(); it != banditsByScore.end(); ++it)
       context->resultCallback(it->second->toString(), it->second->getPlayedCount());
     context->leaveScope();
+
+    playBandit(getBestBandit());
   }
 
-  void processResult(const Variable& parameter, double score)
+  void processResult(const BanditInfoPtr& bandit, double score)
   {
-    std::map<Variable, BanditInfoPtr>::iterator it = banditsByParameter.find(parameter);
-    if (it != banditsByParameter.end())
-    {
-      const BanditInfoPtr& bandit = it->second;
-      double oldScore = bandit->computeScoreToMinimize();
-      it->second->receiveObjectiveValue(score);
-      updateBanditIndex(bandit, oldScore);
-    }
+    double oldScore = bandit->computeScoreToMinimize();
+    bandit->receiveObjectiveValue(score);
+    updateBanditIndex(bandit, oldScore);
   }
 
   void updateBanditIndex(BanditInfoPtr bandit, double previousScore)
@@ -227,10 +220,9 @@ protected:
     : numPlayed(0), numPlaySent(0), maxBudget(0), totalNumBandits(0) {}
 
 private:
-  CriticalSection lock;
   ExecutionContext* context;
   std::multimap<double, BanditInfoPtr> banditsByScore;
-  std::map<Variable, BanditInfoPtr> banditsByParameter;
+  std::map<WorkUnitPtr, BanditInfoPtr> banditsByWorkUnit;
 };
 
 typedef ReferenceCountedObjectPtr<BanditEDAOptimizerState> BanditEDAOptimizerStatePtr;

@@ -44,8 +44,6 @@ protected:
 
   typedef std::multimap<double, Variable> ScoresMap;
 
-  CriticalSection lock;
-
   StreamPtr stream;
   size_t numNeighbors;
   bool includeTheNearestNeighbor;

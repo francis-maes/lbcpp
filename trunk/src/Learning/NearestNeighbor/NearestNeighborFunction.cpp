@@ -112,15 +112,15 @@ bool NearestNeighborBatchLearner::train(ExecutionContext& context, const Functio
 
 Variable StreamBasedNearestNeighbor::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
-  ScopedLock _(lock);
   ScoresMap scoresVariable;
   DenseDoubleVectorPtr baseVector = inputs[0].getObjectAndCast<DoubleVector>(context)->toDenseDoubleVector();
   jassert(baseVector);
 
-  stream->rewind();
-  while (!stream->isExhausted())
+  StreamPtr clonedStream = stream->cloneAndCast<Stream>(context);
+  clonedStream->rewind();
+  while (!clonedStream->isExhausted())
   {
-    ObjectPtr obj = stream->next().getObject();
+    ObjectPtr obj = clonedStream->next().getObject();
     jassert(obj);
     SparseDoubleVectorPtr sdv = obj->getVariable(0).dynamicCast<SparseDoubleVector>();
     jassert(sdv->getElementsEnumeration() == baseVector->getElementsEnumeration());

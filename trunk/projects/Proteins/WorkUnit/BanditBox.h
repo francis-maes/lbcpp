@@ -243,6 +243,16 @@ public:
     return function->compute(*context, inputs[nextIndex++]);
   }
 
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    Stream::clone(context, target);
+    ReferenceCountedObjectPtr<FunctionBasedStream> t = target.staticCast<FunctionBasedStream>();
+    t->context = this->context;
+    t->inputs.resize(inputs.size());
+    for (size_t i = 0; i < inputs.size(); ++i)
+      t->inputs[i] = inputs[t];
+  }
+
 protected:
   friend class FunctionBasedStreamClass;
 
@@ -308,6 +318,15 @@ public:
   {
     const Variable& output = outputs[nextIndex];
     return new Pair(elementsType, BinaryFunctionBasedStream::next(), output);
+  }
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    BinaryFunctionBasedStream::clone(context, target);
+    ReferenceCountedObjectPtr<PairBinaryFunctionBasedStream> t = target.staticCast<PairBinaryFunctionBasedStream>();
+    t->outputs.resize(outputs.size());
+    for (size_t i = 0; i < outputs.size(); ++i)
+      t->outputs[i] = outputs[t];
   }
 
 protected:
