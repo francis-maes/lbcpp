@@ -19,23 +19,30 @@ class FormulaKey : public Object
 {
 public:
   FormulaKey(size_t size)
-    : values(size, 0) {}
+    : values(size, 0), position(0) {}
   FormulaKey() {}
 
   virtual int compare(const ObjectPtr& otherObject) const
   {
-    const std::vector<int>& ovalues = otherObject.staticCast<FormulaKey>()->values;
+    const std::vector<unsigned char>& ovalues = otherObject.staticCast<FormulaKey>()->values;
     if (ovalues == values)
       return 0;
     else
       return values < ovalues ? -1 : 1;
   }
 
-  void setValue(size_t index, int value)
-    {jassert(index < values.size()); values[index] = value;}
+  void pushByte(unsigned char c)
+    {jassert(position < values.size()); values[position++] = c;}
+
+  void pushInteger(juce::int64 value)
+  {
+    memcpy(&values[position], &value, sizeof (juce::int64));
+    position += sizeof (juce::int64);
+  }
 
 protected:
-  std::vector<int> values;
+  std::vector<unsigned char> values;
+  size_t position;
 };
 typedef ReferenceCountedObjectPtr<FormulaKey> FormulaKeyPtr;
 
