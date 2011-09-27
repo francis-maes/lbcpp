@@ -416,7 +416,7 @@ public:
       const TypePtr varType = largeProteinParametersClass->getMemberVariableType(i);
       const String varName = largeProteinParametersClass->getMemberVariableName(i);
       if (varType->inheritsFrom(booleanType))
-        res[i] = bernoulliSampler(0.5);
+        res[i] = bernoulliSampler(0.25, 0.1, 0.9);
       else if (varName.endsWith(T("WindowSize")))
         res[i] = discretizeSampler(gaussianSampler(15, 15), 0, 40);
       else if (varName.endsWith(T("LocalHistogramSize")))
@@ -705,10 +705,10 @@ public:
     builder.startSelection();
       builder.addFunction(getVariableFunction(T("length")), proteinPerception);
       builder.addInSelection(proteinPerception);
-    builder.finishSelectionWithFunction(createVectorFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, residueVectorFeatures)), T("rfVector"));
+    builder.finishSelectionWithFunction(createVectorFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, residuePerception)), T("rfVector"));
   }
 
-  void residueVectorFeatures(CompositeFunctionBuilder& builder) const
+  virtual void residuePerception(CompositeFunctionBuilder& builder) const
   {
     /* Input */
     size_t position = builder.addInput(positiveIntegerType, T("position"));
@@ -800,7 +800,7 @@ public:
         builder.addFunction(new CysteinSeparationProfilFeatureGenerator(fp->separationProfilSize, true), protein, position, T("CysProfil(") + String((int)fp->separationProfilSize) + T(")"));
 
       // AntiCrash
-      builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 0, 0.0), T("null"));
+      builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 1, 0.0), T("null"));
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
@@ -977,6 +977,14 @@ public:
   bool useAddBias;
 
   LargeProteinPredictorParameters()
+  : svmC(4.0), svmGamma(1.0)
+  , knnNeighbors(5)
+  , x3Trees(1000)
+  , x3Attributes(0)
+  , x3Splits(0)
+  , sgdRate(1.0)
+  , sgdIterations(100)
+  , useAddBias(false)
   {
     initializeFeatureGenerators();
   }

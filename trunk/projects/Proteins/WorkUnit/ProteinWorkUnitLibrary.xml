@@ -226,6 +226,20 @@
     <variable type="Container[Variable]" name="container"/>
     <variable type="PositiveInteger" name="nextIndex"/>
   </class>
+  <class name="FunctionBasedStream" base="Stream">
+    <variable type="Function" name="function"/>
+    <variable type="GenericVector[Variable]" name="inputs"/>
+    <variable type="PositiveInteger" name="nextIndex"/>
+  </class>
+  <class name="BinaryFunctionBasedStream" base="FunctionBasedStream"/>
+  <class name="PairBinaryFunctionBasedStream" base="BinaryFunctionBasedStream">
+    <variable type="Type" name="elementsType"/>
+    <variable type="GenericVector[Variable]" name="outputs"/>
+  </class>
+  <class name="StreamBasedStandardDeviationNormalizer" base="Function">
+    <variable type="GenericVector[Double]" name="standardDeviation"/>
+  </class>
+
   <class name="ProteinBanditSampler" base="Sampler">
     <variable type="Sampler" name="decorated"/>
     <variable type="VariablesEnumeration[Protein]" name="target"/>

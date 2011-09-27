@@ -569,6 +569,7 @@ SET(LBCPP_LEARNING_DECISION_TREE_SOURCES
 
 SET(LBCPP_LEARNING_NEAREST_NEIGHBOR_SOURCES
   Learning/NearestNeighbor/NearestNeighborFunction.h
+  Learning/NearestNeighbor/StreamBasedNearestNeighbor.h
   Learning/NearestNeighbor/NearestNeighborFunction.cpp
   Learning/NearestNeighbor/NearestNeighborLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NearestNeighborLibrary.cpp

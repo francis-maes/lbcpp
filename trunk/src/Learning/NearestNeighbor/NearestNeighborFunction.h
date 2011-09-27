@@ -142,6 +142,9 @@ public:
   NearestNeighborLearningMachine(size_t numNeighbors, bool includeTheNearestNeighbor)
     : numNeighbors(numNeighbors), includeTheNearestNeighbor(includeTheNearestNeighbor) {}
 
+  NearestNeighborLearningMachine(const StreamPtr& stream, size_t numNeighbors, bool includeTheNearestNeighbor)
+    : stream(stream), numNeighbors(numNeighbors), includeTheNearestNeighbor(includeTheNearestNeighbor) {}
+
   virtual size_t getNumRequiredInputs() const
     {return 2;}
 
@@ -160,7 +163,8 @@ public:
     else if (supervisionType == probabilityType || supervisionType == booleanType)
       return binaryNearestNeighbor(numNeighbors, includeTheNearestNeighbor, false);
     else if (supervisionType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
-      return classificationNearestNeighbor(numNeighbors, includeTheNearestNeighbor);
+      return stream ? classificationStreamBasedNearestNeighbor(stream, numNeighbors, includeTheNearestNeighbor)
+                    : classificationNearestNeighbor(numNeighbors, includeTheNearestNeighbor);
     else
     {
       jassertfalse;
@@ -173,6 +177,7 @@ protected:
 
   NearestNeighborLearningMachine() {}
 
+  StreamPtr stream;
   size_t numNeighbors;
   bool includeTheNearestNeighbor;
 };

@@ -30,8 +30,22 @@
 
   <class name="NearestNeighborLearningMachine" base="ProxyFunction">
     <constructor arguments="size_t numNeighbors, bool includeTheNearestNeighbor" returnType="Function"/>
+    <constructor arguments="const StreamPtr&amp; stream, size_t numNeighbors, bool includeTheNearestNeighbor" returnType="Function"/>
+    <variable type="Stream" name="stream"/>
     <variable type="PositiveInteger" name="numNeighbors"/>
     <variable type="Boolean" name="includeTheNearestNeighbor"/>
+  </class>
+
+  <!-- Stream Based Nearest Neighbor -->
+  <class name="StreamBasedNearestNeighbor" base="Function" abstract="yes">
+    <variable type="Stream" name="stream"/>
+    <variable type="PositiveInteger" name="numNeighbors"/>
+    <variable type="Boolean" name="includeTheNearestNeighbor"/>
+  </class>
+
+  <class name="ClassificationStreamBasedNearestNeighbor" base="StreamBasedNearestNeighbor">
+    <constructor arguments="const StreamPtr&amp; stream, size_t numNeighbors, bool includeTheNearestNeighbor" returnType="Function"/>
+    <variable type="Enumeration" name="enumeration"/>
   </class>
 
 </library>

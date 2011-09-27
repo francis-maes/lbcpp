@@ -58,6 +58,9 @@ public:
   void setNumCysteins(size_t numCysteins)
     {this->numCysteins = numCysteins;}
 
+  ProteinPtr getProtein() const
+    {return protein;}
+
 protected:
   friend class ProteinPrimaryPerceptionClass;
 
@@ -69,6 +72,8 @@ protected:
     : Object(type) {}
   ProteinPrimaryPerception() {}
 };
+
+typedef ReferenceCountedObjectPtr<ProteinPrimaryPerception> ProteinPrimaryPerceptionPtr;
 
 extern ClassPtr numericalProteinPrimaryFeaturesClass(TypePtr first, TypePtr second);
 
