@@ -29,6 +29,9 @@ public:
   virtual void cysteinSymmetricResiudePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
   virtual void cysteinResiudeVectorPerception(CompositeFunctionBuilder& builder) const = 0;
 
+  virtual void residuePerception(CompositeFunctionBuilder& builder) const 
+    {jassertfalse;}
+
   // Protein -> ProteinPerception
   virtual FunctionPtr createProteinPerception() const
   {
@@ -49,6 +52,14 @@ public:
   virtual FunctionPtr createResidueVectorPerception() const
   {
     FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, residueVectorPerception);
+    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
+    return function;
+  }
+
+  // PositiveInteger(Position), ProteinPerception -> Residue Perception
+  virtual FunctionPtr createResiduePerception() const
+  {
+    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, residuePerception);
     function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
     return function;
   }

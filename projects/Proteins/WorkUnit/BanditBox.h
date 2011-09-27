@@ -212,18 +212,191 @@ protected:
     : nextIndex(0) {}
 };
 
+class FunctionBasedStream : public Stream
+{
+public:
+  FunctionBasedStream(ExecutionContext& context, const FunctionPtr& function, const std::vector<Variable>& inputs)
+    : context(&context), function(function), inputs(inputs), nextIndex(0) {}
+
+  virtual TypePtr getElementsType() const
+  {
+    if (!function->isInitialized() && inputs.size() != 0)
+      function->initialize(*context, inputs[0].getType());
+    return function->getOutputType();
+  }
+
+  virtual bool rewind()
+  {
+    nextIndex = 0;
+    return true;
+  }
+
+  virtual bool isExhausted() const
+    {return nextIndex >= inputs.size();}
+
+  virtual ProgressionStatePtr getCurrentPosition() const
+    {return new ProgressionState(nextIndex, inputs.size(), T("elements"));}
+
+  virtual Variable next()
+  {
+    jassert(nextIndex < inputs.size());
+    return function->compute(*context, inputs[nextIndex++]);
+  }
+
+protected:
+  friend class FunctionBasedStreamClass;
+
+  ExecutionContext* context;
+
+  FunctionPtr function;
+  std::vector<Variable> inputs;
+
+  size_t nextIndex;
+
+  FunctionBasedStream()
+    : context(NULL), nextIndex(0) {}
+};
+
+class BinaryFunctionBasedStream : public FunctionBasedStream
+{
+public:
+  BinaryFunctionBasedStream(ExecutionContext& context, const FunctionPtr& function, const std::vector<PairPtr>& inputPairs)
+    : FunctionBasedStream(context, function, std::vector<Variable>(0))
+  {
+    const size_t n = inputPairs.size();
+    inputs.resize(n);
+    for (size_t i = 0; i < n; ++i)
+      inputs[i] = Variable(inputPairs[i]);
+  }
+
+  virtual TypePtr getElementsType() const
+  {
+    if (!function->isInitialized() && inputs.size() != 0)
+      function->initialize(*context, inputs[0].getType()->getTemplateArgument(0), inputs[0].getType()->getTemplateArgument(1));
+    return function->getOutputType();
+  }
+
+  virtual Variable next()
+  {
+    jassert(nextIndex < inputs.size());
+    const PairPtr pair = inputs[nextIndex++].getObjectAndCast<Pair>();
+    jassert(pair);
+    return function->compute(*context, pair->getFirst(), pair->getSecond());
+  }
+
+protected:
+  friend class BinaryFunctionBasedStreamClass;
+
+  BinaryFunctionBasedStream() {}
+};
+
+class PairBinaryFunctionBasedStream : public BinaryFunctionBasedStream
+{
+public:
+  PairBinaryFunctionBasedStream(ExecutionContext& context, const FunctionPtr& function, const std::vector<PairPtr>& inputPairs, const std::vector<Variable>& outputs)
+    : BinaryFunctionBasedStream(context, function, inputPairs), outputs(outputs)
+  {
+    jassert(inputPairs.size() == outputs.size());
+    jassert(outputs.size() != 0);
+    elementsType = pairClass(BinaryFunctionBasedStream::getElementsType(), outputs[0].getType());
+  }
+
+  virtual TypePtr getElementsType() const
+    {return elementsType;}
+
+  virtual Variable next()
+  {
+    const Variable& output = outputs[nextIndex];
+    return new Pair(elementsType, BinaryFunctionBasedStream::next(), output);
+  }
+
+protected:
+  friend class PairBinaryFunctionBasedStreamClass;
+
+  TypePtr elementsType;
+  std::vector<Variable> outputs;
+
+  PairBinaryFunctionBasedStream() {}
+};
+
+class StreamBasedStandardDeviationNormalizer : public Function
+{
+public:
+  StreamBasedStandardDeviationNormalizer(const StreamPtr& stream)
+  {
+    const TypePtr elementsType = stream->getElementsType();
+    if (!checkInheritance(elementsType, doubleVectorClass(enumValueType, doubleType)))
+      return;
+    const size_t n = elementsType->getTemplateArgument(0).dynamicCast<Enumeration>()->getNumElements();
+    standardDeviation.resize(n);
+
+    std::vector<ScalarVariableMeanAndVariancePtr> meansAndVariances(n);   
+    for (size_t i = 0; i < n; ++i)
+      meansAndVariances[i] = new ScalarVariableMeanAndVariance();
+
+    stream->rewind();
+    while (!stream->isExhausted())
+    {
+      DoubleVectorPtr dv = stream->next().dynamicCast<DoubleVector>();
+      jassert(dv->getNumElements() == n);
+      for (size_t i = 0; i < n; ++i)
+      {
+        const Variable v = dv->getElement(i);
+        meansAndVariances[i]->push(v.exists() ? v.getDouble() : 0.f);
+      }
+    }
+
+    for (size_t i = 0; i < n; ++i)
+    {
+      standardDeviation[i] = meansAndVariances[i]->getStandardDeviation();
+      if (standardDeviation[i] < 1e-6)
+        standardDeviation[i] = 1.f;
+    }
+  }
+
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return doubleVectorClass(enumValueType, doubleType);}
+
+  virtual String getOutputPostFix() const
+    {return T("Normalize");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return sparseDoubleVectorClass(inputVariables[0]->getType()->getTemplateArgument(0), inputVariables[0]->getType()->getTemplateArgument(1));}
+
+protected:
+  friend class StreamBasedStandardDeviationNormalizerClass;
+
+  std::vector<double> standardDeviation;
+
+  StreamBasedStandardDeviationNormalizer() {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    SparseDoubleVectorPtr sdv = input.getObjectAndCast<DoubleVector>(context)->toSparseVector();
+    SparseDoubleVectorPtr res = new SparseDoubleVector(getOutputType());
+    const size_t n = sdv->getNumValues();
+    std::pair<size_t, double>* value = sdv->getValues();
+    for (size_t i = 0; i < n; ++i, ++value)
+      res->appendValue(value->first, value->second / standardDeviation[value->first]);
+    return res;
+  }
+};
+
 class ProteinBanditSampler : public Sampler
 {
 public:
   ProteinBanditSampler(ExecutionContext& context, SamplerPtr decorated, const String& proteinsPath, ProteinTarget target, const LargeProteinPredictorParametersPtr& largePredictor)
     : decorated(decorated)
     , target(target), largePredictor(largePredictor)
-    , trainingFeaturesSet(new DoubleVectorContainerSet()), testingFeaturesSet(new DoubleVectorContainerSet()), normalizer(new NormalizeDoubleVectorSet())
   {
     trainingProteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinsPath).getChildFile(T("train/")), 0, T("Loading training proteins"));
     testingProteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinsPath).getChildFile(T("test/")), 0, T("Loading testing proteins"));
-    trainingSupervisions = computeSupervisions(context, trainingProteins);
-    testingSupervisions = computeSupervisions(context, testingProteins);
+
+    jassert(typeOfProteinPerception(target) == residueType);    
+    
   }
 
   virtual Variable computeExpectation(const Variable* inputs = NULL) const
@@ -236,20 +409,39 @@ public:
   {
     LargeProteinParametersPtr parameters = decorated->sample(context, random, inputs).getObjectAndCast<LargeProteinParameters>();
     jassert(parameters);
-    jassert(typeOfProteinPerception(target) == residueType);
+    
+    LargeProteinPredictorParametersPtr predictor = largePredictor->cloneAndCast<LargeProteinPredictorParameters>();
+    predictor->setParameters(parameters);
 
-    ContainerPtr trainingFeatures = computeFeatures(context, trainingFeaturesSet, parameters, trainingProteins);
-    FunctionPtr learner = largePredictor->learningMachine(target);
+    FunctionPtr proteinPerceptionFunction = predictor->createProteinPerception();
+    FunctionPtr residuePerceptionFunction = predictor->createResiduePerception();
 
-    if (!learner->train(context, makeContainerOfPair(trainingFeatures, trainingSupervisions), ContainerPtr(), T("Training")))
-    {
-      context.errorCallback(T("ProteinBanditSampler::sample"), T("Error during training function !"));
-      return Variable();
-    }
+    std::vector<ProteinPrimaryPerceptionPtr> trainingProteinPerceptions;
+    createProteinPerception(context, proteinPerceptionFunction, trainingProteins, trainingProteinPerceptions);
 
-    ContainerPtr testingFeatures = computeFeatures(context, testingFeaturesSet, parameters, testingProteins);
+    std::vector<PairPtr> trainingInputPairs;
+    std::vector<Variable> trainingOutputs;
+    buildInputPairsAndOutputs(context, trainingProteins, trainingProteinPerceptions, trainingInputPairs, trainingOutputs);
 
-    return new BanditCandidate(learner, new ContainerBasedStream(makeContainerOfPair(testingFeatures, testingSupervisions)), parameters);
+    StreamPtr normalizerStream = new BinaryFunctionBasedStream(context, residuePerceptionFunction, trainingInputPairs);
+    FunctionPtr normalizer = new StreamBasedStandardDeviationNormalizer(normalizerStream);
+
+    FunctionPtr normalizedResiduePerception = composeFunction(residuePerceptionFunction, normalizer);
+
+    StreamPtr trainingStream = new PairBinaryFunctionBasedStream(context, normalizedResiduePerception, trainingInputPairs, trainingOutputs);
+    FunctionPtr learner = nearestNeighborLearningMachine(trainingStream, 5, false);
+    learner->initialize(context, trainingStream->getElementsType()->getTemplateArgument(0), trainingStream->getElementsType()->getTemplateArgument(1));
+
+    std::vector<ProteinPrimaryPerceptionPtr> testingProteinPerceptions;
+    createProteinPerception(context, proteinPerceptionFunction, testingProteins, testingProteinPerceptions);
+
+    std::vector<PairPtr> testingInputPairs;    
+    std::vector<Variable> testingOutputs;
+    buildInputPairsAndOutputs(context, testingProteins, testingProteinPerceptions, testingInputPairs, testingOutputs);
+
+    StreamPtr testingStream = new PairBinaryFunctionBasedStream(context, normalizedResiduePerception, testingInputPairs, testingOutputs);
+    
+    return new BanditCandidate(learner, testingStream, parameters);
   }
 
   virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights = DenseDoubleVectorPtr(),
@@ -283,11 +475,6 @@ public:
     t->decorated = decorated->cloneAndCast<Sampler>(context);
     t->trainingProteins = trainingProteins;
     t->testingProteins = testingProteins;
-    t->trainingSupervisions = trainingSupervisions;
-    t->testingSupervisions = testingSupervisions;
-    t->trainingFeaturesSet = trainingFeaturesSet;
-    t->testingFeaturesSet = testingFeaturesSet;
-    t->normalizer = normalizer;
   }
 
 protected:
@@ -300,78 +487,45 @@ protected:
 
   ProteinBanditSampler() {}
 
-  ContainerPtr computeFeatures(ExecutionContext& context, const DoubleVectorContainerSetPtr& featuresSet, const LargeProteinParametersPtr& parameters, const ContainerPtr& proteins) const
-  {
-    const size_t n = largeProteinParametersClass->getNumMemberVariables();
-    std::vector<size_t> indices;
-    for (size_t i = 0; i < n; ++i)
-    {
-      const String featureName = largeProteinParametersClass->getMemberVariableName(i) + T("[") + parameters->getVariable(i).toString() + T("]");
-      size_t index = featuresSet->getIndex(featureName);
-      if (index != (size_t)-1)
-      {
-        indices.push_back(index);
-        continue;
-      }
-      ContainerPtr features = largePredictor->computeFeatures(context, i, parameters->getVariable(i), proteins);
-      if (!features)
-        continue;
-
-      if (featuresSet == trainingFeaturesSet)
-      {
-        jassert(normalizer->getNumNormalizers() == featuresSet->getNumContainers())
-        normalizer->createNormalizer(context, features);
-      }
-      const size_t numData = features->getNumElements();
-      jassert(normalizer->getNumNormalizers() != 0);
-      const size_t normalizerIndex = normalizer->getNumNormalizers() - 1;
-      ContainerPtr normalizedFeatures = vector(features->getElementsType(), numData);
-      for (size_t j = 0; j < numData; ++j)
-        normalizedFeatures->setElement(j, normalizer->normalize(context, features->getElement(j).getObjectAndCast<DoubleVector>(), normalizerIndex));
-
-      index = featuresSet->appendContainer(featureName, features);
-
-      indices.push_back(index);
-    }
-
-    return featuresSet->getCompositeDoubleVectors(indices);
-  }
-
-  ContainerPtr computeSupervisions(ExecutionContext& context, const ContainerPtr& proteins) const
+  void createProteinPerception(ExecutionContext& context, const FunctionPtr& function, const ContainerPtr& proteins, std::vector<ProteinPrimaryPerceptionPtr>& proteinPerceptions) const
   {
     const size_t n = proteins->getNumElements();
-    VectorPtr res = vector(proteinClass->getMemberVariableType(target)->getTemplateArgument(0));
+    proteinPerceptions.resize(n);
     for (size_t i = 0; i < n; ++i)
     {
-      ContainerPtr supervision = proteins->getElement(i).getObject()->getVariable(1).getObjectAndCast<Protein>()->getTargetOrComputeIfMissing(context, target).getObjectAndCast<Container>();
-      const size_t numSupervisions = supervision->getNumElements();
-      for (size_t j = 0; j < numSupervisions; ++j)
-        res->append(supervision->getElement(j));
+      proteinPerceptions[i] = function->compute(context, proteins->getElement(i).getObject()->getVariable(0)).getObjectAndCast<ProteinPrimaryPerception>();
+      jassert(proteinPerceptions[i]);
     }
-    return res;
   }
 
-  ContainerPtr makeContainerOfPair(const ContainerPtr& features, const ContainerPtr& supervisions) const
+  void buildInputPairsAndOutputs(ExecutionContext& context, const ContainerPtr& proteins, const std::vector<ProteinPrimaryPerceptionPtr>& proteinPerceptions, std::vector<PairPtr>& inputs, std::vector<Variable>& outputs) const
   {
-    jassert(features->getNumElements() == supervisions->getNumElements());
-    const size_t n = features->getNumElements();
-    const ClassPtr elementsType = pairClass(features->getElementsType(), supervisions->getElementsType());
-    VectorPtr res = vector(elementsType, n);
+    const size_t n = proteinPerceptions.size();
+    if (n == 0)
+      return;
+    
+    const TypePtr elementsType = pairClass(positiveIntegerType, proteinPerceptions[0]->getClass());
     for (size_t i = 0; i < n; ++i)
-      res->setElement(i, new Pair(elementsType, features->getElement(i), supervisions->getElement(i)));
-    return res;
+    {
+      const ProteinPtr protein = proteins->getElement(i).getObject()->getVariable(1).getObjectAndCast<Protein>();
+      const ContainerPtr supervisions = protein->getTargetOrComputeIfMissing(context, target).getObjectAndCast<Container>();
+
+      const size_t length = protein->getLength();
+      jassert(length == supervisions->getNumElements());
+      for (size_t j = 0; j < length; ++j)
+      {
+        const Variable output = supervisions->getElement(j);
+        if (!output.exists())
+          continue;
+        inputs.push_back(new Pair(elementsType, j, proteinPerceptions[i]));
+        outputs.push_back(output);
+      }
+    }
   }
 
 private:
   ContainerPtr trainingProteins;
   ContainerPtr testingProteins;
-  
-  ContainerPtr trainingSupervisions;
-  ContainerPtr testingSupervisions;
-
-  DoubleVectorContainerSetPtr trainingFeaturesSet;
-  DoubleVectorContainerSetPtr testingFeaturesSet;
-  NormalizeDoubleVectorSetPtr normalizer;  
 };
 
 class ProteinBanditTestFeatures : public WorkUnit
@@ -492,7 +646,7 @@ public:
                                               , proteinsPath, ss3Target, predictor);
     FunctionPtr f(new BanditFunction());
     OptimizationProblemPtr problem(new OptimizationProblem(f, Variable(), sampler));
-    OptimizerPtr optimizer(banditEDAOptimizer(5, 10, 5, 0.5f, 1000, 2));
+    OptimizerPtr optimizer(banditEDAOptimizer(5, 10, 5, 0.5f, 300, 2));
     return optimizer->compute(context, problem);
   }
 

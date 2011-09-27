@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include "NearestNeighborFunction.h"
+#include "StreamBasedNearestNeighbor.h"
 #include <lbcpp/Data/RandomVariable.h>
 
 using namespace lbcpp;
@@ -108,3 +109,45 @@ bool NearestNeighborBatchLearner::train(ExecutionContext& context, const Functio
 
   return true;
 }
+
+Variable StreamBasedNearestNeighbor::computeFunction(ExecutionContext& context, const Variable* inputs) const
+{
+  ScopedLock _(lock);
+  ScoresMap scoresVariable;
+  DenseDoubleVectorPtr baseVector = inputs[0].getObjectAndCast<DoubleVector>(context)->toDenseDoubleVector();
+  jassert(baseVector);
+
+  stream->rewind();
+  while (!stream->isExhausted())
+  {
+    ObjectPtr obj = stream->next().getObject();
+    jassert(obj);
+    SparseDoubleVectorPtr sdv = obj->getVariable(0).dynamicCast<SparseDoubleVector>();
+    jassert(sdv->getElementsEnumeration() == baseVector->getElementsEnumeration());
+    Variable supervision = obj->getVariable(1);
+    const double score = baseVector->getDistanceTo(sdv);
+    scoresVariable.insert(std::pair<double, Variable>(-score, supervision));
+  }
+
+  if (!includeTheNearestNeighbor)
+    scoresVariable.erase(scoresVariable.begin());
+
+  return computeOutput(scoresVariable);    
+}
+
+Variable ClassificationStreamBasedNearestNeighbor::computeOutput(ScoresMap& scoredIndices) const
+{
+  std::vector<double> sums(enumeration->getNumElements(), 0.0);
+
+  const size_t maxNumNeighbors = scoredIndices.size() < numNeighbors ? scoredIndices.size() : numNeighbors;
+  ScoresMap::reverse_iterator it = scoredIndices.rbegin();
+  for (size_t i = 0; i < maxNumNeighbors; ++i, it++)
+    for (size_t j = 0; j < sums.size(); ++j)
+      sums[j] += it->second.getObjectAndCast<DoubleVector>()->getElement(j).getDouble();
+
+  DenseDoubleVectorPtr res = new DenseDoubleVector(enumeration, probabilityType);
+  for (size_t i = 0; i < sums.size(); ++i)
+    res->setValue(i, maxNumNeighbors ? sums[i] / (double)maxNumNeighbors : 0.f);
+  return res;
+}
+

@@ -299,6 +299,7 @@ protected:
     {
       context.progressCallback(new ProgressionState(state->getNumPlayed(), budget, T("Plays")));
       Thread::sleep(1000);
+      context.flushCallbacks();
     }
     context.progressCallback(new ProgressionState(budget, budget, T("Plays")));
     context.leaveScope();

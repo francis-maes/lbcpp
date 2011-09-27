@@ -18,7 +18,10 @@ extern FunctionPtr binaryNearestNeighbor(size_t numNeighbors, bool includeTheNea
 extern FunctionPtr classificationNearestNeighbor(size_t numNeighbors, bool includeTheNearestNeighbor = true);
 extern FunctionPtr regressionNearestNeighbor(size_t numNeighbors, bool includeTheNearestNeighbor = true);
 
+extern FunctionPtr classificationStreamBasedNearestNeighbor(const StreamPtr& stream, size_t numNeighbors, bool includeTheNearestNeighbor);
+
 extern FunctionPtr nearestNeighborLearningMachine(size_t numNeighbors, bool includeTheNearestNeighbor);
+extern FunctionPtr nearestNeighborLearningMachine(const StreamPtr& stream, size_t numNeighbors, bool includeTheNearestNeighbor);
 
 extern FunctionPtr binaryLocalitySensitiveHashing(size_t numNeighbors);
 
