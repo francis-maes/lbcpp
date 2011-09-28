@@ -115,7 +115,6 @@ Variable StreamBasedNearestNeighbor::computeFunction(ExecutionContext& context, 
   ScoresMap scoresVariable;
   DenseDoubleVectorPtr baseVector = inputs[0].getObjectAndCast<DoubleVector>(context)->toDenseDoubleVector();
   jassert(baseVector);
-
   StreamPtr clonedStream = stream->cloneAndCast<Stream>(context);
   clonedStream->rewind();
   while (!clonedStream->isExhausted())
