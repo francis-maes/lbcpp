@@ -31,7 +31,7 @@ public:
   {
     getFeaturesIfNecessary(context, formula, formulaKey, features);
 
-    double activation = features->dotProduct(parameters, 0);
+    //double activation = features->dotProduct(parameters, 0);
     double score = 1.0 / (1.0 + exp(-features->dotProduct(parameters, 0)));
     errorStats.push(fabs(score - trueScore));
     double derivative = (score - trueScore) * score * (1 - score);
@@ -91,7 +91,7 @@ class SuperFormulaPool : public ExecutionContextCallback
 {
 public:
   SuperFormulaPool(ExecutionContext& context, FormulaSearchProblemPtr problem, size_t numInputSamples = 100)
-    : problem(problem), regressor(new FormulaRegressor()), numInvalidFormulas(0), numEvaluations(0), creationFrequency(0), threadId(0)
+    : problem(problem), regressor(new FormulaRegressor()), creationFrequency(0), numInvalidFormulas(0), numEvaluations(0), threadId(0)
   {
     FunctionPtr objective = problem->getObjective();
     objective->initialize(context, gpExpressionClass);
@@ -315,8 +315,8 @@ public:
     }
     else
     {
-      static const int beamSize = 1000;
-      static const int numBests = 100;
+      static const size_t beamSize = 1000;
+      static const size_t numBests = 100;
 
       // Beam Search
       OptimizerPtr beamSearch = new BeamSearchOptimizer(initialState, beamSize);
@@ -389,7 +389,7 @@ public:
 
     size_t n = 10;
     size_t i = 1;
-    for (std::multimap<double, size_t>::const_reverse_iterator it = formulasByMeanReward.rbegin(); i < n && it != formulasByMeanReward.rend(); ++it, ++i)
+    for (std::multimap<double, size_t>::reverse_iterator it = formulasByMeanReward.rbegin(); i < n && it != formulasByMeanReward.rend(); ++it, ++i)
     {
       FormulaClassInfo& formula = formulaClasses[it->second];
       context.informationCallback(T("[") + String((int)i) + T("] ") + formula.expression->toShortString() + T(" meanReward = ") + String(formula.statistics.getMean())
@@ -537,7 +537,7 @@ public:
       context.leaveScope(pool.getNumFormulaClasses());
 
       // initial plays
-      size_t n = pool.getNumFormulaClasses();
+      //size_t n = pool.getNumFormulaClasses();
       for (size_t i = 0; i < numInitialIterations; ++i)
         pool.play(context, iteration++, iterationsLength, 0);
       context.informationCallback(T("End of initial plays"));

@@ -106,7 +106,7 @@ public:
       startBanditEpisode(target);
     }
 
-    double loss;
+    double loss = 0.0;
     computeAndAddGradient(inputs, output, target, -computeLearningRate() * currentAlpha, &loss); // computeLearningRate() returns the normalization constant
     currentLoss.push(loss);
 

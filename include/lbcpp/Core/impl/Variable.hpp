@@ -239,7 +239,7 @@ inline void variableToNative(ExecutionContext& context, String& dest, const Vari
   {jassert(source.isString()); dest = source.getString();}
 
 inline void variableToNative(ExecutionContext& context, File& dest, const Variable& source)
-  {jassert(source.isString()); dest = File(source.getString());}
+  {jassert(source.isString()); dest = context.getProjectDirectory().getChildFile(source.getString());}
 
 inline void variableToNative(ExecutionContext& context, ObjectPtr& dest, const Variable& source)
   {jassert(source.isObject()); dest = source.getObject();}

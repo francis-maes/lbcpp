@@ -182,7 +182,9 @@ void ScalarVariableRecentMean::push(double value)
 
 void ScalarVariableRecentMean::recomputeCurrentSum()
 {
+#ifdef JUCE_DEBUG
   double previousSum = currentSum;
+#endif // JUCE_DEBUG
   currentSum = 0.0;
   for (std::deque<double>::const_iterator it = values.begin(); it != values.end(); ++it)
     currentSum += *it;

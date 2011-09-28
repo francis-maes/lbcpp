@@ -69,8 +69,8 @@ protected:
       return true;
   
     size_t subFunctionIndex = function->getStepArgument(step);
-    const FunctionPtr& subFunction = function->getSubFunction(subFunctionIndex);
-    jassert(subFunction);
+    //const FunctionPtr& subFunction = function->getSubFunction(subFunctionIndex);
+    //jassert(subFunction);
     
     const std::vector<size_t>& inputs = function->getSubFunctionInputs(subFunctionIndex);
     for (size_t i = 0; i < inputs.size(); ++i)

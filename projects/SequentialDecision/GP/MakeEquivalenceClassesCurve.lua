@@ -1,8 +1,8 @@
 
 require 'Statistics'
 
-local maxSize = 5
-local numTrials = 10
+local maxSize = 3
+local numTrials = 2
 local numArmsInSampling = 2
 
 
@@ -31,6 +31,7 @@ local function myCallback(workUnit, result)
 end
 
 local function pushWorkUnit(maxSize, numSamples, outputFileName)
+  --print ("pushWorkUnit", maxSize, numSamples, numArmsInSampling)
   local workUnit = lbcpp.Object.create("GenerateUniqueFormulas", problem, maxSize, numSamples, outputFileName)
   numWorkUnits = numWorkUnits + 1
   context:push(workUnit, myCallback, true)
@@ -38,10 +39,10 @@ end
 
 context:enter("Processing K=" .. numArmsInSampling)
 for i=1,numTrials do
-  for k,numSamples in ipairs({1,2,5,10,20,50,100,200,500}) do --,2000,5000,10000,20000,50000,100000}) do
-    if numSamples * numArmsInSampling < 5000 then
-      pushWorkUnit(maxSize, numSamples, "formulas/formulas" .. maxSize .. "_" .. numSamples .. ".txt")
-    end
+  numSamples = 1
+  while numSamples * numArmsInSampling <= 1024*128 do 
+    pushWorkUnit(maxSize, numSamples, "formulas/formulas" .. maxSize .. "_" .. numSamples .. "_" .. numArmsInSampling .. ".txt")
+    numSamples = numSamples * 2
   end
 end
 
