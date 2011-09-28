@@ -386,11 +386,11 @@ public:
       if (varType->inheritsFrom(booleanType))
         res[i] = bernoulliSampler(0.25, 0.1, 0.9);
       else if (varName.endsWith(T("WindowSize")))
-        res[i] = discretizeSampler(gaussianSampler(15, 15), 0, 40);
+        res[i] = discretizeSampler(zeroOrScalarContinuousSampler(bernoulliSampler(0.25, 0.1, 0.9), gaussianSampler(15, 15)), 0, 40);
       else if (varName.endsWith(T("LocalHistogramSize")))
-        res[i] = discretizeSampler(gaussianSampler(50, 50), 0, 100);
+        res[i] = discretizeSampler(zeroOrScalarContinuousSampler(bernoulliSampler(0.25, 0.1, 0.9), gaussianSampler(50, 50)), 0, 100);
       else if (varName == T("separationProfilSize"))
-        res[i] = discretizeSampler(gaussianSampler(10, 10), 0, 20);
+        res[i] = discretizeSampler(zeroOrScalarContinuousSampler(bernoulliSampler(0.25, 0.1, 0.9), gaussianSampler(10, 10)), 0, 20);
       else
         jassertfalse;
     }

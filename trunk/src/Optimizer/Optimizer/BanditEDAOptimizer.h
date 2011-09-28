@@ -266,11 +266,13 @@ public:
     {
       context.enterScope(T("Iteration ") + String((int)i));
       BanditInfoPtr bestInterationBandit = performIteration(context, state);
-      context.leaveScope(bestInterationBandit->getObjectiveValueMean());
+      context.leaveScope(bestInterationBandit ? bestInterationBandit->getObjectiveValueMean() : 0.f);
+
+      if (!bestInterationBandit)
+        return state;
 
       state->incrementNumIterations();
     }
-    
     return state;
   }
 
@@ -297,9 +299,23 @@ protected:
       workUnits->setWorkUnit(i, new SamplerBasedWorkUnit(state->getSampler()));
     ContainerPtr sampledParameters = context.run(workUnits).getObjectAndCast<Container>();
     jassert(sampledParameters && sampledParameters->getNumElements() == numBanditsToCreate);
+    size_t numCreatedBandits = 0;
     for (size_t i = 0; i < numBanditsToCreate; ++i)
-      state->createBandit(context, sampledParameters->getElement(i));
-    context.leaveScope(numBanditsToCreate);
+    {
+      const Variable v = sampledParameters->getElement(i);
+      if (v.exists())
+      {
+        state->createBandit(context, v);
+        ++numCreatedBandits;
+      }
+    }
+    context.leaveScope(numCreatedBandits);
+
+    if (numCreatedBandits == 0)
+    {
+      context.informationCallback(T("No new bandit !"));
+      return BanditInfoPtr();
+    }
 
     /* Play */
     context.informationCallback(T("Set budget to ") + String((int)budget) + T(" plays"));
