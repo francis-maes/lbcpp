@@ -17,7 +17,7 @@ namespace lbcpp
 class DiscretizeSampler : public DiscreteSampler
 {
 public:
-  DiscretizeSampler(const ContinuousSamplerPtr& sampler, int minValue, int maxValue)
+  DiscretizeSampler(const SamplerPtr& sampler, int minValue, int maxValue)
     : sampler(sampler), minValue(minValue), maxValue(maxValue)
   {
   }
@@ -47,7 +47,7 @@ public:
 protected:
   friend class DiscretizeSamplerClass;
 
-  ContinuousSamplerPtr sampler;
+  SamplerPtr sampler;
   int minValue;
   int maxValue;
 

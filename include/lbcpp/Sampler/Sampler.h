@@ -80,7 +80,7 @@ extern DiscreteSamplerPtr bernoulliSampler(double probability, double minProbabi
 extern DiscreteSamplerPtr enumerationSampler(EnumerationPtr enumeration);
 extern DiscreteSamplerPtr enumerationSampler(const DenseDoubleVectorPtr& probabilities);
 
-extern DiscreteSamplerPtr discretizeSampler(const ContinuousSamplerPtr& sampler, int minValue = INT_MIN, int maxValue = INT_MAX);
+extern DiscreteSamplerPtr discretizeSampler(const SamplerPtr& sampler, int minValue = INT_MIN, int maxValue = INT_MAX);
 
 extern DiscreteSamplerPtr maximumEntropySampler(TypePtr outputType);
 

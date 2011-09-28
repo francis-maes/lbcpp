@@ -436,16 +436,34 @@ public:
     return decorated->computeExpectation();
   }
 
+  LargeProteinParametersPtr sampleUniqueCandidate(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs) const
+  {
+    ScopedLock _(lock);
+    enum {maxAttempsToSample = 10};
+    for (size_t i = 0; i < maxAttempsToSample; ++i)
+    {
+      LargeProteinParametersPtr res = decorated->sample(context, random, inputs).getObjectAndCast<LargeProteinParameters>();
+      const String key = res->toString();
+      if (wasAlreadySampled.count(key) != 1)
+      {
+        const_cast<ProteinBanditSampler*>(this)->wasAlreadySampled[key] = true;
+        return res;
+      }
+    }
+    return LargeProteinParametersPtr();
+  }
+
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
   {
-    LargeProteinParametersPtr parameters = decorated->sample(context, random, inputs).getObjectAndCast<LargeProteinParameters>();
-    jassert(parameters);
-    
+    LargeProteinParametersPtr parameters = sampleUniqueCandidate(context, random, inputs);
+
+    if (!parameters)
+      return Variable();
+
     LargeProteinPredictorParametersPtr predictor = largePredictor->cloneAndCast<LargeProteinPredictorParameters>();
     predictor->setParameters(parameters);
 
     FunctionPtr residuePerceptionFunction = predictor->createResiduePerception();
-
 
     StreamPtr normalizerStream = new BinaryFunctionBasedStream(context, residuePerceptionFunction, trainingInputPairs);
     FunctionPtr normalizer = new StreamBasedStandardDeviationNormalizer(normalizerStream);
@@ -499,7 +517,7 @@ public:
 
 protected:
   friend class ProteinBanditSamplerClass;
-
+  CriticalSection lock;
   SamplerPtr decorated;
 
   ProteinTarget target;
@@ -570,6 +588,8 @@ private:
 
   std::vector<PairPtr> testingInputPairs;    
   std::vector<Variable> testingOutputs;
+
+  std::map<String, bool> wasAlreadySampled;
 };
 
 class ProteinBanditTestFeatures : public WorkUnit
@@ -692,6 +712,11 @@ protected:
   friend class ProteinBanditWorkUnitClass;
 
   String proteinsPath;
+};
+
+class SubSetSampler : public Sampler
+{
+
 };
 
 };

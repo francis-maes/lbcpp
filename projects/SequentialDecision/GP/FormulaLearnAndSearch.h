@@ -325,7 +325,7 @@ public:
       context.leaveScope(state->getBestScore());
       const BeamSearchOptimizerState::SortedStateMap& finalStates = state->getFinalStates();
       size_t i = 0;
-      for (BeamSearchOptimizerState::SortedStateMap::const_iterator it = finalStates.begin(); it != finalStates.end() && i < numBests; ++it, ++i)
+      for (BeamSearchOptimizerState::SortedStateMap::const_iterator it = finalStates.begin(); it != finalStates.end() && i < (size_t)numBests; ++it, ++i)
       {
         if (it->first == DBL_MAX)
           break;
