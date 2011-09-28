@@ -28,7 +28,7 @@ public:
   }
 
   double getRewardMean() const
-    {return numSamples ? rewardSum / numSamples : -DBL_MAX;}
+    {return numSamples ? rewardSum / numSamples : 0.f;}
 
   size_t getPlayedCount() const
     {return numSamples;}
@@ -165,12 +165,14 @@ public:
 
     banditsByWorkUnit.erase(workUnit);
 
-    context->enterScope(String((int)numPlayed));
-    context->resultCallback(T("numPlayed"), numPlayed);
-    for (std::multimap<double, BanditInfoPtr>::const_iterator it = banditsByScore.begin(); it != banditsByScore.end(); ++it)
-      context->resultCallback(it->second->toString(), it->second->getPlayedCount());
-    context->leaveScope();
-
+    if (numPlayed % 10 == 0)
+    {
+      context->enterScope(String((int)numPlayed));
+      context->resultCallback(T("numPlayed"), numPlayed);
+      for (std::multimap<double, BanditInfoPtr>::const_iterator it = banditsByScore.begin(); it != banditsByScore.end(); ++it)
+        context->resultCallback(it->second->toString(), it->second->getRewardMean());
+      context->leaveScope(banditsByScore.begin()->second->toString());
+    }
     playBandit(getBestBandit());
   }
 
