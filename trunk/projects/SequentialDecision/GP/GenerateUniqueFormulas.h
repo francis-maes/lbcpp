@@ -17,22 +17,26 @@ namespace lbcpp
 class GenerateUniqueFormulas : public WorkUnit
 {
 public:
-  GenerateUniqueFormulas() : maxSize(3), numSamples(100),
-    numFinalStates(0), numFormulas(0), numInvalidFormulas(0), numFormulaClasses(0) {}
+  GenerateUniqueFormulas() : maxSize(3), numSamples(100) {}
  
   virtual Variable run(ExecutionContext& context)
   {
     SuperFormulaPool pool(context, problem, numSamples);
-    
+   
+    size_t numFinalStates = 0;
     if (!pool.addAllFormulasUpToSize(context, maxSize, numFinalStates))
       return false;
 
     // results
-    numFormulas = pool.getNumFormulas();
-    numInvalidFormulas = pool.getNumInvalidFormulas();
-    numFormulaClasses = pool.getNumFormulaClasses();
+    context.resultCallback(T("numFinalStates"), numFinalStates);
+    context.resultCallback(T("numFormulas"), pool.getNumFormulas());
+    context.resultCallback(T("numInvalidFormulas"), pool.getNumInvalidFormulas());
+    context.resultCallback(T("numFormulaClasses"), pool.getNumFormulaClasses());
 
-    return formulasFile == File() || saveFormulasToFile(context, pool, formulasFile);
+    if (formulasFile != File() && !saveFormulasToFile(context, pool, formulasFile))
+      return false;
+    
+    return new Pair(pool.getNumFormulaClasses(), pool.getNumInvalidFormulas());
   }
 
 protected:
@@ -42,11 +46,6 @@ protected:
   size_t maxSize;
   size_t numSamples;
   File formulasFile;
-
-  size_t numFinalStates;
-  size_t numFormulas;
-  size_t numInvalidFormulas;
-  size_t numFormulaClasses;
 
   bool saveFormulasToFile(ExecutionContext& context, SuperFormulaPool& pool, const File& file) const
   {

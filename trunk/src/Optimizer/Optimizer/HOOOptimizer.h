@@ -105,7 +105,7 @@ public:
     root = new Node(region);
     logNumIterations = log((double)numIterations);
     if (!maxDepth)
-      maxDepth = ceil((logNumIterations / 2 - log(1.0 / nu)) / log(1 / rho));
+      maxDepth = (size_t)ceil((logNumIterations / 2 - log(1.0 / nu)) / log(1 / rho));
   }
 
   HOOOptimizerState() {}
@@ -174,7 +174,7 @@ public:
     {
       const NodePtr& node = path[i];
       node->observeReward(reward);
-      size_t count = node->stats.getCount();
+      size_t count = (size_t)node->stats.getCount();
       node->U = node->stats.getMean() + sqrt(2.0 * logNumIterations / (double)count) + nun;
       node->B = juce::jmin(node->U, juce::jmax(node->left ? node->left->B : DBL_MAX, node->right ? node->right->B : DBL_MAX));
       node->meanReward = node->stats.getMean();
