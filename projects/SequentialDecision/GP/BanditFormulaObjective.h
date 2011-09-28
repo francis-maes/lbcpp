@@ -87,8 +87,9 @@ public:
   virtual void getOperators(std::vector<GPPre>& unaryOperators, std::vector<GPOperator>& binaryOperators) const
   {
     for (size_t i = gpOpposite; i <= gpAbs; ++i)
-      unaryOperators.push_back((GPPre)i);
-    for (size_t i = gpAddition; i <= gpPow; ++i)
+      if (i != gpExp)
+        unaryOperators.push_back((GPPre)i);
+    for (size_t i = gpAddition; i <= gpMax; ++i)
       binaryOperators.push_back((GPOperator)i);
   }
 
@@ -100,19 +101,20 @@ public:
 
     for (; index < count; ++index)
     {
-      double t = juce::jmax(1, (int)pow(10.0, random->sampleDouble(0, 5)));
+      double t = juce::jmax(1, (int)pow(10.0, random->sampleDouble(-0.1, 5)));
       jassert(numArmsInSampling >= 2);
       std::vector<double> input(4 * numArmsInSampling);
       size_t i = 0;
-      input[i++] = 0.0;
+      /*input[i++] = 0.0;
       input[i++] = 0.0;
       input[i++] = 1.0;
       input[i++] = t;
-      for (size_t j = 0; j < numArmsInSampling - 1; ++j)
+      */
+      for (size_t j = 0; j < numArmsInSampling; ++j)
       {
-        input[i++] = random->sampleDouble(0.0, 1.0); // rk1
-        input[i++] = random->sampleDouble(0.0, 0.5); // sk1
-        input[i++] = juce::jmax(1, (int)(t * random->sampleDouble(0.0, 1.0))); // tk1
+        input[i++] = juce::jlimit(0.0, 1.0, random->sampleDouble(-0.1, 1.1)); // rk1
+        input[i++] = juce::jlimit(0.0, 1.0, random->sampleDouble(-0.1, 1.1)); // sk1
+        input[i++] = juce::jlimit(1, (int)t, (int)(t * random->sampleDouble(-0.1, 1.1))); // tk1
         input[i++] = t;
       }
       res[index] = input;
@@ -147,7 +149,7 @@ public:
       }
       jassert(values.size() == numArmsInSampling);
   
-      jassert(numArmsInSampling < 128);
+      jassert(numArmsInSampling <= 128);
       double prevValue = DBL_MAX;
       for (SortedValuesMap::const_iterator it = values.begin(); it != values.end(); ++it)
       {
