@@ -129,12 +129,6 @@
     <variable type="PositiveInteger" name="maxSize"/>
     <variable type="PositiveInteger" name="numSamples"/>
     <variable type="File" name="formulasFile"/>
-
-    <!-- output variables -->
-    <variable type="PositiveInteger" name="numFinalStates"/>
-    <variable type="PositiveInteger" name="numFormulas"/>
-    <variable type="PositiveInteger" name="numInvalidFormulas"/>
-    <variable type="PositiveInteger" name="numFormulaClasses"/>
   </class>
 
   <class name="BanditFormulaWorkUnit" base="WorkUnit">
