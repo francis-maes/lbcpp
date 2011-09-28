@@ -411,14 +411,23 @@ public:
     : decorated(decorated)
     , target(target), largePredictor(largePredictor)
   {
-    trainingProteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinsPath).getChildFile(T("train/")), 0, T("Loading training proteins"));
-    testingProteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinsPath).getChildFile(T("test/")), 0, T("Loading testing proteins"));
+    ContainerPtr trainingProteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinsPath).getChildFile(T("train/")), 0, T("Loading training proteins"));
+    ContainerPtr testingProteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinsPath).getChildFile(T("test/")), 0, T("Loading testing proteins"));
 
     jassert(typeOfProteinPerception(target) == residueType);    
 
     FunctionPtr proteinPerceptionFunction = largePredictor->createProteinPerception();
+
+    std::vector<ProteinPrimaryPerceptionPtr> trainingProteinPerceptions;
+    std::vector<ProteinPrimaryPerceptionPtr> testingProteinPerceptions;
     createProteinPerception(context, proteinPerceptionFunction, trainingProteins, trainingProteinPerceptions);
     createProteinPerception(context, proteinPerceptionFunction, testingProteins, testingProteinPerceptions);
+
+    buildInputPairsAndOutputs(context, trainingProteins, trainingProteinPerceptions, trainingInputPairs, trainingOutputs);
+    buildInputPairsAndOutputs(context, testingProteins, testingProteinPerceptions, testingInputPairs, testingOutputs);
+
+    randomizeExamples(context, trainingInputPairs, trainingOutputs);
+    randomizeExamples(context, testingInputPairs, testingOutputs);
   }
 
   virtual Variable computeExpectation(const Variable* inputs = NULL) const
@@ -437,9 +446,6 @@ public:
 
     FunctionPtr residuePerceptionFunction = predictor->createResiduePerception();
 
-    std::vector<PairPtr> trainingInputPairs;
-    std::vector<Variable> trainingOutputs;
-    buildInputPairsAndOutputs(context, trainingProteins, trainingProteinPerceptions, trainingInputPairs, trainingOutputs);
 
     StreamPtr normalizerStream = new BinaryFunctionBasedStream(context, residuePerceptionFunction, trainingInputPairs);
     FunctionPtr normalizer = new StreamBasedStandardDeviationNormalizer(normalizerStream);
@@ -449,10 +455,6 @@ public:
     StreamPtr trainingStream = new PairBinaryFunctionBasedStream(context, normalizedResiduePerception, trainingInputPairs, trainingOutputs);
     FunctionPtr learner = nearestNeighborLearningMachine(trainingStream, 5, false);
     learner->initialize(context, trainingStream->getElementsType()->getTemplateArgument(0), trainingStream->getElementsType()->getTemplateArgument(1));
-
-    std::vector<PairPtr> testingInputPairs;    
-    std::vector<Variable> testingOutputs;
-    buildInputPairsAndOutputs(context, testingProteins, testingProteinPerceptions, testingInputPairs, testingOutputs);
 
     StreamPtr testingStream = new PairBinaryFunctionBasedStream(context, normalizedResiduePerception, testingInputPairs, testingOutputs);
     
@@ -488,10 +490,11 @@ public:
     Sampler::clone(context, target);
     ReferenceCountedObjectPtr<ProteinBanditSampler> t = target.staticCast<ProteinBanditSampler>();
     t->decorated = decorated->cloneAndCast<Sampler>(context);
-    t->trainingProteins = trainingProteins;
-    t->testingProteins = testingProteins;
-    t->trainingProteinPerceptions = trainingProteinPerceptions;
-    t->testingProteinPerceptions = testingProteinPerceptions;
+
+    t->trainingInputPairs = trainingInputPairs;
+    t->trainingOutputs = trainingOutputs;
+    t->testingInputPairs = testingInputPairs;    
+    t->testingOutputs = testingOutputs;
   }
 
 protected:
@@ -540,12 +543,33 @@ protected:
     }
   }
 
-private:
-  ContainerPtr trainingProteins;
-  ContainerPtr testingProteins;
+  void randomizeExamples(ExecutionContext& context, std::vector<PairPtr>& v1, std::vector<Variable>& v2) const
+  {
+    const RandomGeneratorPtr rand = context.getRandomGenerator();
+    jassert(v1.size() == v2.size());
+    for (size_t i = 1; i < v1.size(); ++i)
+    {
+      const size_t newIndex = rand->sampleSize(i + 1);
 
-  std::vector<ProteinPrimaryPerceptionPtr> trainingProteinPerceptions;
-  std::vector<ProteinPrimaryPerceptionPtr> testingProteinPerceptions;
+      PairPtr tmp1 = v1[newIndex];
+      v1[newIndex] = v1[i];
+      v1[i] = tmp1;
+
+      Variable tmp2 = v2[newIndex];
+      v2[newIndex] = v2[i];
+      v2[i] = tmp2;
+    }
+  }
+
+  inline void swap(size_t& a, size_t& b)
+    {size_t tmp = a; a = b; b = tmp;}
+
+private:
+  std::vector<PairPtr> trainingInputPairs;
+  std::vector<Variable> trainingOutputs;
+
+  std::vector<PairPtr> testingInputPairs;    
+  std::vector<Variable> testingOutputs;
 };
 
 class ProteinBanditTestFeatures : public WorkUnit
