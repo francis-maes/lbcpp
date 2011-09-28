@@ -21,6 +21,8 @@ public:
  
   virtual Variable run(ExecutionContext& context)
   {
+    context.getRandomGenerator()->setSeed((juce::uint32)(juce::Time::getMillisecondCounterHiRes() * 100.0));
+
     SuperFormulaPool pool(context, problem, numSamples);
    
     size_t numFinalStates = 0;
