@@ -250,7 +250,7 @@ public:
     t->context = this->context;
     t->inputs.resize(inputs.size());
     for (size_t i = 0; i < inputs.size(); ++i)
-      t->inputs[i] = inputs[t];
+      t->inputs[i] = inputs[i];
   }
 
 protected:
@@ -326,7 +326,7 @@ public:
     ReferenceCountedObjectPtr<PairBinaryFunctionBasedStream> t = target.staticCast<PairBinaryFunctionBasedStream>();
     t->outputs.resize(outputs.size());
     for (size_t i = 0; i < outputs.size(); ++i)
-      t->outputs[i] = outputs[t];
+      t->outputs[i] = outputs[i];
   }
 
 protected:
@@ -560,43 +560,30 @@ public:
       return false;
     }
 
-    LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters();
-    DoubleVectorContainerSetPtr featuresSet = new DoubleVectorContainerSet();
-    NormalizeDoubleVectorSetPtr normalizer = new NormalizeDoubleVectorSet();
-    std::vector<size_t> indices;
+    ProteinPtr protein = proteins->getElement(0).dynamicCast<Pair>()->getSecond().dynamicCast<Protein>();
+    const size_t length = protein->getLength();
+    const size_t increment = length / 10;
+    //LargeProteinParametersPtr parameter = new LargeProteinParameters();
+    ProteinPrimaryPerceptionPtr perception = (new LargeProteinPredictorParameters())->createProteinPerception()->compute(context, protein).dynamicCast<ProteinPrimaryPerception>();
+    jassert(perception);
     for (size_t i = 0; i < largeProteinParametersClass->getNumMemberVariables(); ++i)
     {
       std::cout << largeProteinParametersClass->getMemberVariableName(i) << std::endl;
-      jassert(featuresSet->getIndex(largeProteinParametersClass->getMemberVariableName(i)) == (size_t)-1);
 
       TypePtr type = largeProteinParametersClass->getMemberVariableType(i);
-      ContainerPtr features = predictor->computeFeatures(context, i, type == booleanType ? true : Variable(5, positiveIntegerType), proteins);
-      jassert(features->getNumElements() == proteins->getElement(0).getObject()->getVariable(0).getObjectAndCast<Protein>()->getLength());
-      
-      normalizer->createNormalizer(context, features);
-      const size_t numData = features->getNumElements();
-      const size_t normalizerIndex = normalizer->getNumNormalizers() - 1;
-      ContainerPtr normalizedFeatures = vector(features->getElementsType(), numData);
-      for (size_t j = 0; j < numData; ++j)
-        normalizedFeatures->setElement(j, normalizer->normalize(context, features->getElement(j).getObjectAndCast<DoubleVector>(), normalizerIndex));
+      LargeProteinParametersPtr parameter = new LargeProteinParameters();
+      parameter->setVariable(i, type == booleanType ? true : Variable(5, positiveIntegerType));
+      LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(parameter);
 
-      size_t index = featuresSet->appendContainer(largeProteinParametersClass->getMemberVariableName(i), normalizedFeatures);
-      indices.push_back(index);
-      //printContainer(features);
+      FunctionPtr residueFunction = predictor->createResiduePerception();
+      residueFunction->initialize(context, positiveIntegerType, perception->getClass());
+
+      for (size_t j = 0; j < 3; ++j)
+      {
+        Variable v = residueFunction->compute(context, Variable(j * increment, positiveIntegerType), perception);
+        std::cout << v.toString() << std::endl;
+      }
     }
-
-    for (size_t i = 0; i < indices.size(); ++i)
-      jassert(indices[i] == i);
-
-    ContainerPtr cdvContainer = featuresSet->getCompositeDoubleVectors(indices);
-    printContainer(cdvContainer);
-
-    std::vector<size_t> otherIndices;
-    for (size_t i = 0; i < indices.size(); i += 2)
-      otherIndices.push_back(i);
-
-    cdvContainer = featuresSet->getCompositeDoubleVectors(otherIndices);
-    printContainer(cdvContainer);
 
     return true;
   }
@@ -636,6 +623,13 @@ public:
                                                  objectCompositeSampler(largeProteinParametersClass, LargeProteinParameters::createSingleTaskSingleStageSamplers()),
                                                  proteinsPath, ss3Target, predictor);
     BanditCandidatePtr candidate = sampler->sample(context, context.getRandomGenerator()).getObjectAndCast<BanditCandidate>();
+
+    ObjectPtr obj = candidate->getParameters().getObject();
+    for (size_t i = 0; i < largeProteinParametersClass->getNumMemberVariables(); ++i)
+    {
+      std::cout << largeProteinParametersClass->getMemberVariableName(i)
+                << ": " << obj->getVariable(i).toString() << std::endl;
+    }
 
     FunctionPtr objectiveFunction = new BanditFunction();
     
