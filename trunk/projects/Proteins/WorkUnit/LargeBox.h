@@ -552,7 +552,7 @@ public:
 protected:
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    return (double)abs(context.getRandomGenerator()->sampleDoubleFromGaussian(input.getDouble(), input.getDouble()));
+    return (double)fabs(context.getRandomGenerator()->sampleDoubleFromGaussian(input.getDouble(), input.getDouble()));
   }
 };
 
