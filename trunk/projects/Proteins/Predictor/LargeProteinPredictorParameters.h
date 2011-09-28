@@ -101,7 +101,7 @@ protected:
   {
     size_t position = builder.addInput(positiveIntegerType, T("position"));
     size_t primaryFeatures = builder.addInput(containerClass(), T("primary"));
-    builder.addFunction(centeredContainerWindowFeatureGenerator(parameter.getInteger()), primaryFeatures, position, T("w(") + residueShortName + T(",") + parameter.getInteger() + T(")"));
+    builder.addFunction(centeredContainerWindowFeatureGenerator(parameter.getInteger()), primaryFeatures, position, T("w(") + residueShortName + T(",") + String(parameter.getInteger())+ T(")"));
   }
 };
 
@@ -162,7 +162,7 @@ protected:
     size_t position = builder.addInput(positiveIntegerType, T("position"));
     size_t primaryFeaturesAcc = builder.addInput(containerClass(), T("accumulator"));
     
-    builder.addFunction(accumulatorLocalMeanFunction(parameter.getInteger()), primaryFeaturesAcc, position, T("h(") + residueShortName + (",") + parameter.getInteger() + T(")"));
+    builder.addFunction(accumulatorLocalMeanFunction(parameter.getInteger()), primaryFeaturesAcc, position, T("h(") + residueShortName + T(",") + String(parameter.getInteger()) + T(")"));
   }
 };
 

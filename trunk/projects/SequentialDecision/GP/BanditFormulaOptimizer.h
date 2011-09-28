@@ -80,7 +80,7 @@ public:
 
     size_t n = 10;
     size_t i = 1;
-    for (std::multimap<double, Formula>::const_reverse_iterator it = formulasByMeanReward.rbegin(); i < n && it != formulasByMeanReward.rend(); ++it, ++i)
+    for (std::multimap<double, Formula>::reverse_iterator it = formulasByMeanReward.rbegin(); i < n && it != formulasByMeanReward.rend(); ++it, ++i)
     {
       context.informationCallback(T("[") + String((int)i) + T("] ") + it->second.expression->toShortString() + T(" meanReward = ") + String(it->second.statistics.getMean())
        + T(" playedCount = ") + String(it->second.statistics.getCount()));
@@ -129,13 +129,13 @@ public:
     }
   }
 
-  std::vector<GPExpressionPtr> getBestFormulas(size_t count) const
+  std::vector<GPExpressionPtr> getBestFormulas(size_t count)
   {
     std::multimap<double, Formula> formulasByMeanReward;
     for (std::multimap<double, Formula>::const_iterator it = formulas.begin(); it != formulas.end(); ++it)
       formulasByMeanReward.insert(std::make_pair(it->second.statistics.getMean(), it->second));
     std::vector<GPExpressionPtr> res;
-    for (std::multimap<double, Formula>::const_reverse_iterator it = formulasByMeanReward.rbegin(); res.size() < count && it != formulasByMeanReward.rend(); ++it)
+    for (std::multimap<double, Formula>::reverse_iterator it = formulasByMeanReward.rbegin(); res.size() < count && it != formulasByMeanReward.rend(); ++it)
       res.push_back(it->second.expression);
     return res;
   }
