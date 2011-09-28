@@ -24,7 +24,11 @@
     <value name="abs"/>
   </enumeration>
 
-  <class name="GPExpression" base="Object" abstract="yes"/>
+  <class name="GPExpression" base="Object" abstract="yes">
+    <function name="createFromString" lang="lua" static="yes"/>
+    <function name="compute" lang="lua"/>
+  </class>
+  
   <class name="BinaryGPExpression" base="GPExpression" shortName="binary">
     <variable type="GPExpression" name="left"/>
     <variable type="GPOperator" name="op" enumeration="yes"/>

@@ -44,6 +44,7 @@ extern EnumerationPtr gpConstantEnumeration;
 
 class GPExpression;
 typedef ReferenceCountedObjectPtr<GPExpression> GPExpressionPtr;
+extern ClassPtr gpExpressionClass;
 
 class GPExpression : public Object
 {
@@ -60,9 +61,28 @@ public:
   static GPExpressionPtr createFromString(ExecutionContext& context, const String& str, EnumerationPtr variables)
     {int position = 0; return createFromString(context, str, variables, position);}
   static  GPExpressionPtr createFromString(ExecutionContext& context, const String& str, EnumerationPtr variables, int& position);
-};
 
-extern ClassPtr gpExpressionClass;
+  static int createFromString(LuaState& state)
+  {
+    const char* str = state.checkString(1);
+    GPExpressionPtr expr = createFromString(state.getContext(), str, positiveIntegerEnumerationEnumeration);
+    if (!expr)
+      return 0;
+    state.pushObject(expr);
+    return 1;
+  }
+
+  static int compute(LuaState& state)
+  {
+    GPExpressionPtr expr = state.checkObject(1, gpExpressionClass).staticCast<GPExpression>();
+    std::vector<double> inputs;
+    for (int i = 2; i <= state.getTop(); ++i)
+      inputs.push_back(state.toNumber(i));
+    double res = expr->compute(&inputs[0]);
+    state.pushNumber(res);
+    return 1;
+  }
+};
 
 extern ClassPtr variableGPExpressionClass;
 extern ClassPtr unaryGPExpressionClass;
@@ -412,11 +432,19 @@ inline GPExpressionPtr GPExpression::createFromString(ExecutionContext& context,
     int paren = str.indexOfChar(position, ')');
     if (paren < 0) {context.errorCallback(T("Syntax error in ") + str); return GPExpressionPtr();}
     String idString = str.substring(position, paren);
-    int id = variables->findElementByName(idString);
-    if (id < 0)
+    int id;
+    if (variables == positiveIntegerEnumerationEnumeration)
     {
-      context.errorCallback(T("Could not parse variable ") + idString);
-      return GPExpressionPtr();
+      id = idString.getIntValue();
+    }
+    else
+    {
+      id = variables->findElementByName(idString);
+      if (id < 0)
+      {
+        context.errorCallback(T("Could not parse variable ") + idString);
+        return GPExpressionPtr();
+      }
     }
     position = paren + 1;
     return new VariableGPExpression(Variable(id, variables));
