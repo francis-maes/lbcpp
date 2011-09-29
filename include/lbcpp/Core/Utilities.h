@@ -42,11 +42,11 @@ template<> struct StaticAssert<true> {};
 
 inline bool isNumberValid(double number)
 {
-#ifdef JUCE_WIN32
-    return (number == number) && (number != DBL_MAX) && (number != -DBL_MAX) && (number != HUGE_VAL) && (number != -HUGE_VAL);
-#else
-    return !std::isnan(number) && !std::isinf(number) && (number != DBL_MAX) && (number != -DBL_MAX);
-#endif
+# ifdef JUCE_WIN32
+  return (number == number) && (number != DBL_MAX) && (number != -DBL_MAX) && (number != HUGE_VAL) && (number != -HUGE_VAL);
+# else
+  return (number == number) && !std::isnan(number) && !std::isinf(number) && (number != DBL_MAX) && (number != -DBL_MAX) && (number != HUGE_VAL) && (number != -HUGE_VAL);
+# endif
 }
 
 inline bool isNumberNearlyNull(double value, double epsilon = 0.00001)
