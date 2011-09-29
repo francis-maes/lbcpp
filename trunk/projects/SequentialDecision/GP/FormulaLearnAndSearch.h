@@ -489,8 +489,8 @@ protected:
       {return left->compare(right) < 0;}
   };
 
-  //typedef std::map<FormulaKeyPtr, size_t, ObjectComparator> KeyToFormulaClassMap;
-  typedef std_hash_map<FormulaKeyPtr, size_t, FormulaKeyHashConfiguration> KeyToFormulaClassMap;
+  typedef std::map<FormulaKeyPtr, size_t, ObjectComparator> KeyToFormulaClassMap;
+  //typedef std_hash_map<FormulaKeyPtr, size_t, FormulaKeyHashConfiguration> KeyToFormulaClassMap;
   KeyToFormulaClassMap keyToFormulaClassMap;
 
   std::multimap<double, size_t> sortedFormulaClasses;
