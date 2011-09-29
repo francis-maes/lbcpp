@@ -1,18 +1,4 @@
 
-
-* PathsFormulaFeatureGenerator
-* Test Paths feature generator
-
---
-
-* FormulaLearnAndSearch:
-
-  * top level play count
-  * predictor
-  * surrogate function
-  * nested-mc
-
-
 Apres: 
  * Checker la normalisation du loss des bandits en fonction du regret de la politique uniforme (tester avec 2-10 hor 10000)
  * class ValuesFormulaFeatureGenerator
