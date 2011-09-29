@@ -40,6 +40,16 @@ public:
     position += sizeof (juce::int64);
   }
 
+  size_t computeHashValue() const
+  {
+    size_t res = 0;
+    const unsigned char* ptr = &values[0];
+    const unsigned char* lim = ptr + values.size();
+    while (ptr < lim)
+      res = 31 * res + *ptr++;
+    return res;
+  }
+
 protected:
   std::vector<unsigned char> values;
   size_t position;

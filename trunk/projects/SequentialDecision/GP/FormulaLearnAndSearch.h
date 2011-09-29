@@ -13,6 +13,24 @@
 # include "NestedMonteCarloOptimizer.h"
 # include "BeamSearchOptimizer.h"
 
+
+// hash maps
+#ifdef JUCE_WIN32
+# include <hash_map>
+# include <hash_set>
+
+# define std_hash_map stdext::hash_map
+# define std_hash_set stdext::hash_set
+
+#else
+# define STDEXT_NAMESPACE __gnu_cxx
+# include <ext/hash_map>
+# include <ext/hash_set>
+# define std_hash_map STDEXT_NAMESPACE::hash_map
+# define std_hash_set STDEXT_NAMESPACE::hash_set
+#endif // JUCE_WIN32
+// ---
+
 namespace lbcpp
 {
 
@@ -100,7 +118,7 @@ public:
   }
  
   bool doFormulaExists(GPExpressionPtr formula) const
-    {checkCurrentThreadId(); return formulas.find(formula->toString()) != formulas.end();}
+    {checkCurrentThreadId(); return formulas.find(formula) != formulas.end();}
 
   // key is an input-output parameter
   size_t getOrUpdateFormulaClass(ExecutionContext& context, const GPExpressionPtr& formula, FormulaKeyPtr& key, bool verbose = false)
@@ -133,8 +151,7 @@ public:
   {
     checkCurrentThreadId();
 
-    String str = formula->toString();
-    FormulaInfoMap::iterator it = formulas.find(str);
+    FormulaInfoMap::iterator it = formulas.find(formula);
     if (it != formulas.end())
       return it->second.isValidFormula();
 
@@ -167,7 +184,7 @@ public:
       ++numInvalidFormulas;
     }
 
-    formulas[str] = info;
+    formulas[formula] = info;
     return info.isValidFormula();
   }
 
@@ -440,7 +457,7 @@ protected:
       {return formulaClass != (size_t)-1;}
   };
 
-  typedef std::map<String, FormulaInfo> FormulaInfoMap;
+  typedef std::map<GPExpressionPtr, FormulaInfo, ObjectComparator> FormulaInfoMap;
   FormulaInfoMap formulas;
   size_t numInvalidFormulas;
 
@@ -457,7 +474,23 @@ protected:
   };
   std::vector<FormulaClassInfo> formulaClasses;
 
-  typedef std::map<FormulaKeyPtr, size_t, ObjectComparator> KeyToFormulaClassMap;
+  struct FormulaKeyHashConfiguration
+  {
+    enum
+    {
+     bucket_size = 4,  // 0 < bucket_size
+     min_buckets = 1024
+    }; // min_buckets = 2 ^^ N, 0 < N
+
+    size_t operator()(const FormulaKeyPtr& key) const
+      {return key->computeHashValue();}
+
+    bool operator()(const FormulaKeyPtr& left, const FormulaKeyPtr& right) const
+      {return left->compare(right) < 0;}
+  };
+
+  //typedef std::map<FormulaKeyPtr, size_t, ObjectComparator> KeyToFormulaClassMap;
+  typedef std_hash_map<FormulaKeyPtr, size_t, FormulaKeyHashConfiguration> KeyToFormulaClassMap;
   KeyToFormulaClassMap keyToFormulaClassMap;
 
   std::multimap<double, size_t> sortedFormulaClasses;

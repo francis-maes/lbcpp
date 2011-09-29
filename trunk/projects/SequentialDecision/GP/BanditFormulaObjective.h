@@ -11,6 +11,7 @@
 
 # include "FormulaSearchProblem.h"
 # include "../Bandits/DiscreteBanditExperiment.h"
+# include <algorithm>
 
 namespace lbcpp
 {
@@ -121,42 +122,34 @@ public:
     }
   }
 
-  struct DoubleThresholdedComparator
+  struct ValueComparator
   {
-    bool operator()(double a, double b)
-    {
-      //static const double epsilon = 1e-16;
-      return a < b;// && fabs(a - b) > epsilon;
-    }
+    bool operator() (const std::pair<size_t, double>& left, const std::pair<size_t, double>& right) const
+      {return (left.second != right.second ? left.second < right.second : left.first < right.first);}
   };
 
   virtual FormulaKeyPtr makeFormulaKey(const GPExpressionPtr& expression, const std::vector< std::vector<double> >& inputSamples) const
   {
-    typedef std::multimap<double, size_t, DoubleThresholdedComparator> SortedValuesMap;
-
     FormulaKeyPtr res = new FormulaKey(inputSamples.size() * numArmsInSampling);
     for (size_t i = 0; i < inputSamples.size(); ++i)
     {
       const std::vector<double>& variables = inputSamples[i];
       
-      SortedValuesMap values;
+      std::vector< std::pair<size_t, double> > values(numArmsInSampling);
       for (size_t j = 0; j < numArmsInSampling; ++j)
       {
         double value = expression->compute(&variables[j * 4]);
         if (!isNumberValid(value))
           return FormulaKeyPtr();
-        values.insert(std::make_pair(value, j));
+        values[j] = std::make_pair(j, value);
       }
-      jassert(values.size() == numArmsInSampling);
+      std::sort(values.begin(), values.end(), ValueComparator());
   
       jassert(numArmsInSampling <= 128);
-      double prevValue = DBL_MAX;
-      for (SortedValuesMap::const_iterator it = values.begin(); it != values.end(); ++it)
+      for (size_t j = 0; j < numArmsInSampling; ++j)
       {
-        double value = it->first;
-        bool isHigherThanPrevious = (it != values.begin() || value > prevValue);
-        prevValue = value;
-        res->pushByte((unsigned char)(it->second + (isHigherThanPrevious ? 128 : 0)));
+        bool isHigherThanPrevious = (j > 0 && values[j].second > values[j-1].second);
+        res->pushByte((unsigned char)(values[j].first + (isHigherThanPrevious ? 128 : 0)));
       }
     }
     return res;

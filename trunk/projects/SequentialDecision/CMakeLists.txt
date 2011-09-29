@@ -53,6 +53,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_WORK_UNIT_SOURCES
 
 SET(LBCPP_SEQUENTIAL_DECISION_GP_SOURCES
   GP/GPExpression.h
+  GP/GPExpression.cpp
   GP/GPExpressionSampler.h
   GP/GPExpressionBuilder.h
   GP/FormulaSearchProblem.h
