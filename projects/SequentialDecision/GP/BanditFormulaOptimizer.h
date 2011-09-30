@@ -79,7 +79,7 @@ public:
       GPExpressionPtr expression = formulas[it->second];
       size_t playedCount = policy->getBanditPlayedCount(it->second);
       context.informationCallback(T("[") + String((int)i) + T("] ") + expression->toShortString() + T(" meanReward = ") + String(it->first)
-         + T(" playedCount = ") + String(playedCount));
+         + T(" playedCount = ") + String((int)playedCount));
     }
   }
 
