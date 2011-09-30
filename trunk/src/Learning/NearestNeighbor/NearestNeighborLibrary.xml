@@ -41,6 +41,7 @@
     <variable type="Stream" name="stream"/>
     <variable type="PositiveInteger" name="numNeighbors"/>
     <variable type="Boolean" name="includeTheNearestNeighbor"/>
+    <variable type="GenericVector[Double]" name="standardDeviation"/>
   </class>
 
   <class name="ClassificationStreamBasedNearestNeighbor" base="StreamBasedNearestNeighbor">

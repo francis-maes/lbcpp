@@ -15,6 +15,8 @@
 namespace lbcpp
 {
 
+class FeatureGeneratorCallback;
+
 class FeatureGenerator;
 typedef ReferenceCountedObjectPtr<FeatureGenerator> FeatureGeneratorPtr;
 
@@ -65,6 +67,7 @@ public:
   virtual void addWeightedTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const = 0;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const = 0;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const = 0;
+  virtual void computeFeatures(FeatureGeneratorCallback& callback) const = 0;
 
   double getMaximumValue() const
     {return getExtremumValue(true);}
@@ -161,6 +164,8 @@ public:
   virtual void addWeightedTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
+  virtual void computeFeatures(FeatureGeneratorCallback& callback) const;
+
   virtual SparseDoubleVectorPtr toSparseVector() const
     {return refCountedPointerFromThis(this);}
 
@@ -259,6 +264,8 @@ public:
   virtual void addWeightedTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
+  virtual void computeFeatures(FeatureGeneratorCallback& callback) const;
+
   virtual DenseDoubleVectorPtr toDenseDoubleVector() const
     {return refCountedPointerFromThis(this);}
 
@@ -321,6 +328,8 @@ public:
   virtual void addWeightedTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
+  virtual void computeFeatures(FeatureGeneratorCallback& callback) const;
+
   virtual SparseDoubleVectorPtr toSparseVector() const;
 
   // Vector
@@ -382,6 +391,7 @@ public:
   virtual void addWeightedTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
+  virtual void computeFeatures(FeatureGeneratorCallback& callback) const;
 
   // Vector
   virtual void clear();

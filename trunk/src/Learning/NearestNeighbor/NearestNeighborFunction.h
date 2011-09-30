@@ -163,8 +163,8 @@ public:
     else if (supervisionType == probabilityType || supervisionType == booleanType)
       return binaryNearestNeighbor(numNeighbors, includeTheNearestNeighbor, false);
     else if (supervisionType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
-      return stream ? classificationStreamBasedNearestNeighbor(stream, numNeighbors, includeTheNearestNeighbor)
-                    : classificationNearestNeighbor(numNeighbors, includeTheNearestNeighbor);
+      return //stream ? classificationStreamBasedNearestNeighbor(stream, numNeighbors, includeTheNearestNeighbor)
+                    classificationNearestNeighbor(numNeighbors, includeTheNearestNeighbor);
     else
     {
       jassertfalse;

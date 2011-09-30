@@ -21,8 +21,7 @@ namespace lbcpp
 class StreamBasedNearestNeighbor : public Function
 {
 public:
-  StreamBasedNearestNeighbor(const StreamPtr& stream, size_t numNeighbors = 1, bool includeTheNearestNeighbor = true)
-    : stream(stream), numNeighbors(numNeighbors), includeTheNearestNeighbor(includeTheNearestNeighbor) {}
+  StreamBasedNearestNeighbor(const StreamPtr& stream, size_t numNeighbors, bool includeTheNearestNeighbor);
 
   virtual TypePtr getSupervisionType() const = 0;
 
@@ -47,6 +46,7 @@ protected:
   StreamPtr stream;
   size_t numNeighbors;
   bool includeTheNearestNeighbor;
+  std::vector<double> standardDeviation;
 
   StreamBasedNearestNeighbor() {}
 
