@@ -99,7 +99,7 @@ public:
       // todo: retrieve predicted scores
 
       if (!evaluator->updateScoreObject(context, scores, example, scoreVector))
-        return false;
+        return ScoreObjectPtr();
 
       double reward;
       state->performTransition(context, correctAction, reward);

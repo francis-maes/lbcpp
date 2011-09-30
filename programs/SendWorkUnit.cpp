@@ -173,12 +173,12 @@ WorkUnitPtr getWorkUnitFromArguments(ExecutionContext& context, const String& wo
   // find the work unit class
   TypePtr type = typeManager().getType(context, workUnitClassName);
   if (!type)
-    return false;
+    return WorkUnitPtr();
   
   // create the work unit
   ObjectPtr object = Object::create(type);
   if (!object || !checkIsAWorkUnit(context, object))
-    return false;
+    return WorkUnitPtr();
   
   // look if usage is requested
   const WorkUnitPtr& workUnit = object.staticCast<WorkUnit>();

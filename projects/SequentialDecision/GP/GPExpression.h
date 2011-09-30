@@ -62,6 +62,8 @@ public:
     {int position = 0; return createFromString(context, str, variables, position);}
   static  GPExpressionPtr createFromString(ExecutionContext& context, const String& str, EnumerationPtr variables, int& position);
 
+  static bool loadFormulasFromFile(ExecutionContext& context, const File& formulasFile, EnumerationPtr variables, std::vector<GPExpressionPtr>& res);
+
   virtual int compare(const ObjectPtr& otherObject) const;
 
   static int createFromString(LuaState& state);
