@@ -12,6 +12,8 @@
 # include <lbcpp/Execution/WorkUnit.h>
 # include "LearningRuleFormulaObjective.h"
 # include <algorithm>
+# include "../WorkUnit/GPSandBox.h"
+# include "../Bandits/FindBanditsFormula.h"
 
 namespace lbcpp
 {
@@ -197,6 +199,7 @@ public:
       context.getRandomGenerator()->setSeed(seed);
       FormulaPool pool(policy->cloneAndCast<DiscreteBanditPolicy>(), objective);
       pool.run(context, formulas, numIterations, iterationsLength, bestFormulaIndex, &bestPlayedPercents);
+      hasFoundBestBandit = (pool.getBestFormulas(1)[0] == formulas[bestFormulaIndex]);
       return true;
     }
 
@@ -212,6 +215,7 @@ public:
     size_t bestFormulaIndex;
 
     std::vector<double> bestPlayedPercents;
+    bool hasFoundBestBandit;
   };
 
 
@@ -239,32 +243,53 @@ public:
     if (!iterationsLength)
       iterationsLength = formulas.size();
 
-    size_t numRuns = 10;
-    CompositeWorkUnitPtr workUnit(new CompositeWorkUnit(T("Making ") + String((int)numRuns) + T(" runs"), numRuns));
-    for (size_t i = 0; i < numRuns; ++i)
-      workUnit->setWorkUnit(i, new Run((juce::uint32)(1664 + 51 * i), formulas, policy, objective, numIterations, iterationsLength, bestFormulaIndex));
-    workUnit->setPushChildrenIntoStackFlag(true);
-    context.run(workUnit);
-    
-    std::vector<ScalarVariableStatistics> bestPlayedPercentsStats(numIterations);
-    for (size_t i = 0; i < numRuns; ++i)
-    {
-      std::vector<double>& bestPlayedPercents = workUnit->getWorkUnit(i).staticCast<Run>()->bestPlayedPercents;
-      jassert(bestPlayedPercents.size() == numIterations);
-      for (size_t j = 0; j < numIterations; ++j)
-        bestPlayedPercentsStats[j].push(bestPlayedPercents[j]);
-    }
+    std::vector<DiscreteBanditPolicyPtr> policies;
+    policies.push_back(ucb1DiscreteBanditPolicy(2.0));
+    policies.push_back(ucb1TunedDiscreteBanditPolicy());
+    policies.push_back(klucbDiscreteBanditPolicy(0.0));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(1.0));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(1.5));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(2.0));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(5.0));
 
-    context.enterScope(T("Results"));
-    for (size_t i = 0; i < numIterations; ++i)
+    for (size_t i = 0; i < policies.size(); ++i)
     {
-      context.enterScope(T("Iteration ") + String((int)i));
-      context.resultCallback(T("iteration"), i);
-      context.resultCallback(T("score"), bestPlayedPercentsStats[i].getMean());
-      context.resultCallback(T("score stddev"), bestPlayedPercentsStats[i].getStandardDeviation());
+      DiscreteBanditPolicyPtr policy = policies[i];
+      context.enterScope(T("Policy ") + policy->toShortString());
+
+      size_t numRuns = 10;
+      CompositeWorkUnitPtr workUnit(new CompositeWorkUnit(T("Making ") + String((int)numRuns) + T(" runs"), numRuns));
+      for (size_t i = 0; i < numRuns; ++i)
+        workUnit->setWorkUnit(i, new Run((juce::uint32)(1664 + 51 * i), formulas, policy, objective, numIterations, iterationsLength, bestFormulaIndex));
+      workUnit->setPushChildrenIntoStackFlag(true);
+      context.run(workUnit);
+      
+      std::vector<ScalarVariableStatistics> bestPlayedPercentsStats(numIterations);
+      size_t numSuccess = 0;
+      for (size_t i = 0; i < numRuns; ++i)
+      {
+        std::vector<double>& bestPlayedPercents = workUnit->getWorkUnit(i).staticCast<Run>()->bestPlayedPercents;
+        jassert(bestPlayedPercents.size() == numIterations);
+        for (size_t j = 0; j < numIterations; ++j)
+          bestPlayedPercentsStats[j].push(bestPlayedPercents[j]);
+        if (workUnit->getWorkUnit(i).staticCast<Run>()->hasFoundBestBandit)
+          ++numSuccess;
+      }
+      context.informationCallback(T("Success rate: ") + String((int)numSuccess) + T(" / ") + String((int)numRuns));
+
+      context.enterScope(T("Results"));
+      for (size_t i = 0; i < numIterations; ++i)
+      {
+        context.enterScope(T("Iteration ") + String((int)i));
+        context.resultCallback(T("iteration"), i);
+        context.resultCallback(T("score"), bestPlayedPercentsStats[i].getMean());
+        context.resultCallback(T("score stddev"), bestPlayedPercentsStats[i].getStandardDeviation());
+        context.leaveScope();
+      }
+      context.leaveScope();
+
       context.leaveScope();
     }
-    context.leaveScope();
     return true;
   }
   
@@ -273,7 +298,6 @@ protected:
 
   FormulaSearchProblemPtr problem;
   File formulasFile;
-  DiscreteBanditPolicyPtr policy;
   size_t numIterations;
   size_t iterationsLength;
 };
