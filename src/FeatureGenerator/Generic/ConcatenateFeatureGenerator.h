@@ -85,9 +85,9 @@ public:
     : FeatureGenerator(lazy)
     {setThisClass(concatenateDoubleVectorFeatureGeneratorClass);}
 
-  virtual ClassPtr getLazyOutputType(EnumerationPtr featuresEnumeration, TypePtr featuresType) const
+/*  virtual ClassPtr getLazyOutputType(EnumerationPtr featuresEnumeration, TypePtr featuresType) const
     {return compositeDoubleVectorClass(featuresEnumeration, featuresType);}
-
+*/
   virtual size_t getMinimumNumRequiredInputs() const
     {return 1;}
 
@@ -145,7 +145,7 @@ public:
 
   virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
   {
-    for (size_t i = 0; i < shifts.size(); ++i)
+    for (size_t i = 0; i < shifts.size() && !callback.shouldStop(); ++i)
     {
       const DoubleVectorPtr& input = inputs[i].getObjectAndCast<DoubleVector>();
       if (input)
@@ -153,7 +153,7 @@ public:
     }
   }
 
-  virtual DoubleVectorPtr toLazyVector(const Variable* inputs) const
+/*  virtual DoubleVectorPtr toLazyVector(const Variable* inputs) const
   {
     CompositeDoubleVectorPtr res = new CompositeDoubleVector(getOutputType());
     res->reserve(shifts.size());
@@ -165,7 +165,7 @@ public:
     }
     return res;
   }
-
+*/
   virtual DoubleVectorPtr toComputedVector(const Variable* inputs) const
   {
     SparseDoubleVectorPtr res = createEmptySparseVector();

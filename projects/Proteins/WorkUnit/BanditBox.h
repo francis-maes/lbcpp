@@ -371,6 +371,11 @@ public:
       if (standardDeviation[i] < 1e-6)
         standardDeviation[i] = 1.f;
     }
+
+    std::cout << "StreamBasedStandardDeviationNormalizer" << std::endl;
+    for (size_t i = 0; i < n; ++i)
+      std::cout << standardDeviation[i] << " ";
+    std::cout << std::endl;
   }
 
   virtual size_t getNumRequiredInputs() const
@@ -412,22 +417,22 @@ public:
     , target(target), largePredictor(largePredictor)
   {
     ContainerPtr trainingProteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinsPath).getChildFile(T("train/")), 0, T("Loading training proteins"));
-    ContainerPtr testingProteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinsPath).getChildFile(T("test/")), 0, T("Loading testing proteins"));
+//    ContainerPtr testingProteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinsPath).getChildFile(T("test/")), 0, T("Loading testing proteins"));
 
     jassert(typeOfProteinPerception(target) == residueType);    
 
     FunctionPtr proteinPerceptionFunction = largePredictor->createProteinPerception();
 
     std::vector<ProteinPrimaryPerceptionPtr> trainingProteinPerceptions;
-    std::vector<ProteinPrimaryPerceptionPtr> testingProteinPerceptions;
+//    std::vector<ProteinPrimaryPerceptionPtr> testingProteinPerceptions;
     createProteinPerception(context, proteinPerceptionFunction, trainingProteins, trainingProteinPerceptions);
-    createProteinPerception(context, proteinPerceptionFunction, testingProteins, testingProteinPerceptions);
+//    createProteinPerception(context, proteinPerceptionFunction, testingProteins, testingProteinPerceptions);
 
     buildInputPairsAndOutputs(context, trainingProteins, trainingProteinPerceptions, trainingInputPairs, trainingOutputs);
-    buildInputPairsAndOutputs(context, testingProteins, testingProteinPerceptions, testingInputPairs, testingOutputs);
+//    buildInputPairsAndOutputs(context, testingProteins, testingProteinPerceptions, testingInputPairs, testingOutputs);
 
     randomizeExamples(context, trainingInputPairs, trainingOutputs);
-    randomizeExamples(context, testingInputPairs, testingOutputs);
+//    randomizeExamples(context, testingInputPairs, testingOutputs);
   }
 
   virtual Variable computeExpectation(const Variable* inputs = NULL) const
@@ -439,7 +444,7 @@ public:
   LargeProteinParametersPtr sampleUniqueCandidate(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs) const
   {
     ScopedLock _(lock);
-    enum {maxAttempsToSample = 10};
+    enum {maxAttempsToSample = 50};
     for (size_t i = 0; i < maxAttempsToSample; ++i)
     {
       LargeProteinParametersPtr res = decorated->sample(context, random, inputs).getObjectAndCast<LargeProteinParameters>();
@@ -465,18 +470,14 @@ public:
 
     FunctionPtr residuePerceptionFunction = predictor->createResiduePerception();
 
-    StreamPtr normalizerStream = new BinaryFunctionBasedStream(context, residuePerceptionFunction, trainingInputPairs);
-    FunctionPtr normalizer = new StreamBasedStandardDeviationNormalizer(normalizerStream);
+    StreamPtr trainingStream = new PairBinaryFunctionBasedStream(context, residuePerceptionFunction, trainingInputPairs, trainingOutputs);
 
-    FunctionPtr normalizedResiduePerception = composeFunction(residuePerceptionFunction, normalizer);
-
-    StreamPtr trainingStream = new PairBinaryFunctionBasedStream(context, normalizedResiduePerception, trainingInputPairs, trainingOutputs);
-    FunctionPtr learner = nearestNeighborLearningMachine(trainingStream, 5, false);
+    FunctionPtr learner = classificationStreamBasedNearestNeighbor(trainingStream, 5, false);
     learner->initialize(context, trainingStream->getElementsType()->getTemplateArgument(0), trainingStream->getElementsType()->getTemplateArgument(1));
 
-    StreamPtr testingStream = new PairBinaryFunctionBasedStream(context, normalizedResiduePerception, testingInputPairs, testingOutputs);
+//    StreamPtr testingStream = new PairBinaryFunctionBasedStream(context, residuePerceptionFunction, testingInputPairs, testingOutputs);
     
-    return new BanditCandidate(learner, testingStream, parameters);
+    return new BanditCandidate(learner, trainingStream, parameters);
   }
 
   virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights = DenseDoubleVectorPtr(),

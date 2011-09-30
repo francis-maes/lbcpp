@@ -425,6 +425,12 @@ double SparseDoubleVector::dotProduct(const DenseDoubleVectorPtr& denseVector, s
   return res;
 }
 
+void SparseDoubleVector::computeFeatures(FeatureGeneratorCallback& callback) const
+{
+  for (size_t i = 0; i < values.size() && !callback.shouldStop(); ++i)
+    callback.sense(values[i].first, values[i].second);
+}
+
 // vector
 void SparseDoubleVector::clear()
   {values.clear();}
@@ -786,7 +792,13 @@ double DenseDoubleVector::dotProduct(const DenseDoubleVectorPtr& denseVector, si
   return res;
 }
 
-  // Vector
+void DenseDoubleVector::computeFeatures(FeatureGeneratorCallback& callback) const
+{
+  for (size_t i = 0; i < values->size() && !callback.shouldStop(); ++i)
+    callback.sense(i, (*values)[i]);
+}
+
+// Vector
 void DenseDoubleVector::clear()
 {
   if (values)
@@ -947,6 +959,14 @@ double LazyDoubleVector::dotProduct(const DenseDoubleVectorPtr& denseVector, siz
     return featureGenerator->dotProduct(&inputs[0], denseVector, offsetInDenseVector);
 }
 
+void LazyDoubleVector::computeFeatures(FeatureGeneratorCallback& callback) const
+{
+  if (computedVector)
+    callback.sense(0, computedVector, 1.f);
+  else
+    callback.sense(0, featureGenerator, &inputs[0], 1.f);
+}
+
 SparseDoubleVectorPtr LazyDoubleVector::toSparseVector() const
 {
   const_cast<LazyDoubleVector* >(this)->ensureIsComputed();
@@ -1057,6 +1077,15 @@ double CompositeDoubleVector::dotProduct(const DenseDoubleVectorPtr& denseVector
     res += subVector.second->dotProduct(denseVector, offsetInDenseVector + subVector.first);
   }
   return res;
+}
+
+void CompositeDoubleVector::computeFeatures(FeatureGeneratorCallback& callback) const
+{
+  for (size_t i = 0; i < vectors.size() && !callback.shouldStop(); ++i)
+  {
+    const std::pair<size_t, DoubleVectorPtr>& subVector = vectors[i];
+    callback.sense(subVector.first, subVector.second, 1.f);
+  }
 }
 
 // Container

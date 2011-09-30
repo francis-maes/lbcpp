@@ -288,7 +288,7 @@ protected:
   BanditInfoPtr performIteration(ExecutionContext& context, const BanditEDAOptimizerStatePtr& state) const
   {
     /* Remove worse bandits */
-    const size_t numBanditsToRemove = (size_t)((1 - ratioOfBanditToKeep) * populationSize);
+    const size_t numBanditsToRemove = (size_t)((1 - ratioOfBanditToKeep) * state->getNumBandits());
     state->removeBanditsWithWorseRewardMean(context, numBanditsToRemove);
     
     /* Create new bandits (Parallel) */

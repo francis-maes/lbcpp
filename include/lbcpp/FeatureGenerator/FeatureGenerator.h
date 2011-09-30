@@ -24,6 +24,9 @@ public:
   virtual void sense(size_t index, double value) = 0;
   virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight) = 0;
   virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight) = 0;
+
+  virtual bool shouldStop() const
+    {return false;}
 };
 
 class FeatureGenerator : public Function

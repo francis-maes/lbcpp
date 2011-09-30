@@ -60,7 +60,7 @@ public:
     {
       // fast version
       const std::vector<DoubleVectorPtr>& doubleVectors = objectVector->getObjectsAndCast<DoubleVector>();
-      for (size_t i = 0; i < windowSize; ++i)
+      for (size_t i = 0; i < windowSize && !callback.shouldStop(); ++i)
       {
         int position = startPosition + (int)i;
         if (position >= 0 && position < n)
@@ -73,7 +73,7 @@ public:
     else
     {
       // generic version
-      for (size_t i = 0; i < windowSize; ++i)
+      for (size_t i = 0; i < windowSize && !callback.shouldStop(); ++i)
       {
         int position = startPosition + (int)i;
         if (position >= 0 && position < n)
