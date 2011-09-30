@@ -12,7 +12,7 @@
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Optimizer/Optimizer.h>
 # include <lbcpp/Sampler/Sampler.h>
-# include "../WorkUnit/GPSandBox.h"
+# include "../GP/GPExpressionBuilder.h"
 # include "DiscreteBanditExperiment.h"
 
 namespace lbcpp
