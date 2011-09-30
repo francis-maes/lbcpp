@@ -152,14 +152,14 @@ TypePtr DefaultTemplateType::instantiateTypeName(ExecutionContext& context, cons
     String templateType;
     std::vector<String> templateArguments;
     if (!parseInstanciatedTypeName(context, typeExpr, templateType, templateArguments))
-      return false;
+      return TypePtr();
 
     std::vector<TypePtr> templateArgumentTypes(templateArguments.size());
     for (size_t i = 0; i < templateArgumentTypes.size(); ++i)
     {
       templateArgumentTypes[i] = instantiateTypeName(context, templateArguments[i], arguments);
       if (!templateArgumentTypes[i])
-        return false;
+        return TypePtr();
     }
     return typeManager().getType(context, templateType, templateArgumentTypes);
   }

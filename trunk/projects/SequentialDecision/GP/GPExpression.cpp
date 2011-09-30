@@ -128,6 +128,28 @@ GPExpressionPtr GPExpression::createFromString(ExecutionContext& context, const 
   }
 }
 
+bool GPExpression::loadFormulasFromFile(ExecutionContext& context, const File& formulasFile, EnumerationPtr variables, std::vector<GPExpressionPtr>& res)
+{
+  InputStream* istr = formulasFile.createInputStream();
+  if (!istr)
+  {
+    context.errorCallback(T("Could not open file ") + formulasFile.getFullPathName());
+    return false;
+  }
+  while (!istr->isExhausted())
+  {
+    String line = istr->readNextLine();
+    if (!line.isEmpty())
+    {
+      GPExpressionPtr expression = GPExpression::createFromString(context, line, variables);
+      if (expression)
+        res.push_back(expression);
+    }
+  }
+  delete istr;
+  return true;
+}
+
 /*
 ** ConstantGPExpression
 */

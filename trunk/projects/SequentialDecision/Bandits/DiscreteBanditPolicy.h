@@ -115,6 +115,11 @@ public:
     banditStatistics[banditNumber]->update(reward);
   }
 
+  double getRewardEmpiricalMean(size_t banditNumber) const
+    {return banditStatistics[banditNumber]->getRewardMean();}
+  size_t getBanditPlayedCount(size_t banditNumber) const
+    {return banditStatistics[banditNumber]->getPlayedCount();}
+
 protected:
   friend class DiscreteBanditPolicyClass;
 

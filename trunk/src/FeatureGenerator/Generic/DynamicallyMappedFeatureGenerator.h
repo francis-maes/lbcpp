@@ -83,7 +83,7 @@ public:
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
     if (!baseFeatureGenerator->initialize(context, inputVariables))
-      return false;
+      return EnumerationPtr();
 
     elementsType = baseFeatureGenerator->getFeaturesType();
     outputName = baseFeatureGenerator->getOutputVariable()->getName();

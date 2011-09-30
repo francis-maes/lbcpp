@@ -16,11 +16,19 @@
 namespace lbcpp
 {
 
+enum BanditFormulaObjectiveMode
+{
+  rawRegretMode = 0,
+  meanRegretMode,
+  normalizedMeanRegretMode,
+  worstRegretMode
+};
+  
 class BanditFormulaObjective : public SimpleUnaryFunction
 {
 public:
-  BanditFormulaObjective(size_t minArms = 2, size_t maxArms = 10, double maxExpectedReward = 1.0, size_t horizon = 100)
-    : SimpleUnaryFunction(gpExpressionClass, doubleType), minArms(minArms), maxArms(maxArms), maxExpectedReward(maxExpectedReward), horizon(horizon)  {}
+  BanditFormulaObjective(BanditFormulaObjectiveMode mode = meanRegretMode, size_t minArms = 2, size_t maxArms = 10, double maxExpectedReward = 1.0, size_t horizon = 100)
+    : SimpleUnaryFunction(gpExpressionClass, doubleType), mode(mode), minArms(minArms), maxArms(maxArms), maxExpectedReward(maxExpectedReward), horizon(horizon)  {}
   
   virtual Variable computeFunction(ExecutionContext& context, const Variable& expression) const
   {
@@ -48,15 +56,29 @@ public:
       sumOfRewards += expectedRewards[action];
     }
     double regret = horizon * bestRewardExpectation - sumOfRewards; // regret
-    double uniformPolicyRegret = 0.0;
-    for (size_t i = 0; i < arms.size(); ++i)
-      uniformPolicyRegret += (bestRewardExpectation - expectedRewards[i]) * horizon / (double)arms.size();
-    return exp(-regret / uniformPolicyRegret);
+
+    if (mode == rawRegretMode)
+      return regret;
+    else if (mode == meanRegretMode)
+      return exp(-regret / (0.1 * horizon));
+    else if (mode == normalizedMeanRegretMode)
+    {
+      double uniformPolicyRegret = 0.0;
+      for (size_t i = 0; i < arms.size(); ++i)
+        uniformPolicyRegret += (bestRewardExpectation - expectedRewards[i]) * horizon / (double)arms.size();
+      return exp(-regret / uniformPolicyRegret);
+    }
+    else
+    {
+      jassert(false);
+      return 0.0;
+    }
   }
  
 protected:
   friend class BanditFormulaObjectiveClass;
 
+  BanditFormulaObjectiveMode mode;
   size_t minArms;
   size_t maxArms;
   double maxExpectedReward;

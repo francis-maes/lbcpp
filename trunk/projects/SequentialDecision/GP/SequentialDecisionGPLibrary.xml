@@ -131,11 +131,19 @@
     <variable type="File" name="formulasFile"/>
   </class>
 
+  <class name="PlayFormulasNTimes" base="WorkUnit">
+    <variable type="FormulaSearchProblem" name="problem"/>
+    <variable type="File" name="formulasFile"/>
+    <variable type="PositiveInteger" name="numEstimations"/>
+    <variable type="Boolean" name="isMinimizationProblem"/>
+  </class>
+
   <class name="BanditFormulaWorkUnit" base="WorkUnit">
     <variable type="FormulaSearchProblem" name="problem"/>
     <variable type="File" name="formulasFile"/>
-    <variable type="String" name="baseline"/>
+    <variable type="DiscreteBanditPolicy" name="policy"/>
     <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="PositiveInteger" name="iterationsLength"/>
   </class>
 
   <!-- MultiArmed Bandit Formulas -->
@@ -146,7 +154,15 @@
     <value name="t"/>
   </enumeration>
 
+  <enumeration name="BanditFormulaObjectiveMode">
+    <value name="rawRegret"/>
+    <value name="mean"/>
+    <value name="normalizedMean"/>
+    <value name="worst"/>
+  </enumeration>
+  
   <class name="BanditFormulaObjective" base="SimpleUnaryFunction">
+    <variable type="BanditFormulaObjectiveMode" name="mode" enumeration="yes"/>
     <variable type="PositiveInteger" name="minArms"/>
     <variable type="PositiveInteger" name="maxArms"/>
     <variable type="Double" name="maxExpectedReward"/>
