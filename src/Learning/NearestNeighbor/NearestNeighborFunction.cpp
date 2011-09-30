@@ -187,7 +187,7 @@ class NormalizedSquaredL2NormFeatureGeneratorCallback : public FeatureGeneratorC
 {
 public:
   NormalizedSquaredL2NormFeatureGeneratorCallback(const DenseDoubleVectorPtr& target, const std::vector<double>& standardDeviation)
-    : res(0.0), threshold(DBL_MAX), target(target), standardDeviation(standardDeviation), nextIndex(0), currentIndexOffset(0)
+    : threshold(DBL_MAX), res(0.0), target(target), standardDeviation(standardDeviation), nextIndex(0), currentIndexOffset(0)
   {
     const size_t n = target->getNumElements();
     jassert(standardDeviation.size() == n);
@@ -228,7 +228,7 @@ public:
     currentIndexOffset -= index;
   }
 
-  void finalizeFeatures()
+  void finalizeDistance()
   {
     for (; nextIndex < standardDeviation.size() && !shouldStop(); ++nextIndex)
       res += squareTarget[nextIndex];
@@ -239,10 +239,18 @@ public:
   virtual bool shouldStop() const
     {return res > threshold;}
 
-  double res;
+  double getAndResetDistance()
+  {
+    double toReturn = res;
+    res = 0.f;
+    return toReturn;
+  }
+
   double threshold;
 
 protected:
+  double res;
+
   DenseDoubleVectorPtr target;
   std::vector<double> normalizedTarget;
   std::vector<double> squareTarget;
@@ -291,13 +299,13 @@ Variable StreamBasedNearestNeighbor::computeFunction(ExecutionContext& context, 
     jassert(obj);
     DoubleVectorPtr dv = obj->getVariable(0).dynamicCast<DoubleVector>();
     dv->computeFeatures(featureCallback);
-    featureCallback.finalizeFeatures();
-    std::cout << "Threshold: " << featureCallback.threshold << std::endl;
+    featureCallback.finalizeDistance();
+
     if (featureCallback.shouldStop())
       continue;
 
     Variable supervision = obj->getVariable(1);
-    scoresVariable.insert(std::pair<double, Variable>(-featureCallback.res, supervision));
+    scoresVariable.insert(std::pair<double, Variable>(-featureCallback.getAndResetDistance(), supervision));
 
     if (numToPrecompute > 0)
       --numToPrecompute;

@@ -444,7 +444,7 @@ public:
   LargeProteinParametersPtr sampleUniqueCandidate(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs) const
   {
     ScopedLock _(lock);
-    enum {maxAttempsToSample = 50};
+    enum {maxAttempsToSample = 300};
     for (size_t i = 0; i < maxAttempsToSample; ++i)
     {
       LargeProteinParametersPtr res = decorated->sample(context, random, inputs).getObjectAndCast<LargeProteinParameters>();
