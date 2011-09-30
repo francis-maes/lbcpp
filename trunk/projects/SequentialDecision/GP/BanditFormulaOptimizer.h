@@ -10,9 +10,7 @@
 # define LBCPP_SEQUENTIAL_DECISION_BANDIT_FORMULA_OPTIMIZER_H_
 
 # include <lbcpp/Execution/WorkUnit.h>
-//# include "BanditFormulaObjective.h"
 # include "LearningRuleFormulaObjective.h"
-# include "GPExpressionBuilder.h"
 # include <algorithm>
 
 namespace lbcpp

@@ -9,8 +9,8 @@
 #ifndef LBCPP_SEQUENTIAL_DECISION_GP_PATHS_FORMULA_FEATURE_GENERATOR_H_
 # define LBCPP_SEQUENTIAL_DECISION_GP_PATHS_FORMULA_FEATURE_GENERATOR_H_
 
-# include "GPExpression.h"
 # include <lbcpp/FeatureGenerator/FeatureGenerator.h>
+# include "GPExpression.h"
 
 namespace lbcpp
 {

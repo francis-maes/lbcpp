@@ -11,7 +11,6 @@
 
 # include "DiscreteBanditPolicy.h"
 # include "../GP/GPExpression.h"
-# include "../GP/GPExpressionSampler.h"
 
 namespace lbcpp
 {

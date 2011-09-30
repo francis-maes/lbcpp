@@ -10,7 +10,7 @@
 # define LBCPP_EVALUATE_BANDIT_FORMULA_OBJECTIVE_H_
 
 # include "FormulaSearchProblem.h"
-# include "../Bandits/DiscreteBanditExperiment.h"
+# include "../Bandits/DiscreteBanditPolicy.h"
 # include <algorithm>
 
 namespace lbcpp

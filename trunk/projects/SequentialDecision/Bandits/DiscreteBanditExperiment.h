@@ -10,7 +10,6 @@
 # define LBCPP_BANDITS_DISCRETE_EXPERIMENT_H_
 
 # include "Bandits/DiscreteBanditPolicy.h"
-# include "../GP/GPExpression.h"
 
 namespace lbcpp
 {
