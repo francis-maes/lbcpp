@@ -157,7 +157,8 @@
     <value name="rawRegret"/>
     <value name="mean"/>
     <value name="normalizedMean"/>
-    <value name="worst"/>
+    <value name="worst10"/>
+    <value name="worst100"/>
   </enumeration>
   
   <class name="BanditFormulaObjective" base="SimpleUnaryFunction">
