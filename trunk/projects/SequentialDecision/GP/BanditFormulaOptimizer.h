@@ -89,13 +89,13 @@ public:
     policy->initialize(formulas.size());
     totalReward = 0.0;
 
+    size_t bestPlayedCount = 0;
     if (bestPlayedPercents)
       bestPlayedPercents->resize(numIterations);
 
     for (size_t i = 0; i < numIterations; ++i)
     {
       context.enterScope(T("Iteration ") + String((int)i));
-      size_t bestPlayedCount = 0;
 
       if (false)//context.isMultiThread())
       {
@@ -132,13 +132,13 @@ public:
       context.resultCallback(T("iteration"), i);
       if (bestFormulaIndex != (size_t)-1)
       {
-        double bestPlayedPercent = bestPlayedCount / (double)iterationsLength;
+        double bestPlayedPercent = bestPlayedCount / (double)((i+1)*iterationsLength);
         if (bestPlayedPercents)
           (*bestPlayedPercents)[i] = bestPlayedPercent;
         context.resultCallback(T("bestPlayedPercent"), 100.0 * bestPlayedPercent);
-        context.resultCallback(T("bestPlayedCount"), policy->getBanditPlayedCount(bestFormulaIndex));
+        //context.resultCallback(T("bestPlayedCount"), policy->getBanditPlayedCount(bestFormulaIndex));
       }
-      context.resultCallback(T("totalReward"), totalReward);
+      //context.resultCallback(T("totalReward"), totalReward);
 
       displayBestFormulas(context);
       context.leaveScope();
@@ -295,27 +295,35 @@ public:
     context.informationCallback("We have " + String((int)formulas.size()) + " formulas");
 
     context.enterScope(T("Evaluating formulas ") + String((int)numEstimations) + T(" times"));
-    std::multimap<double, GPExpressionPtr> sortedFormulas;
+
+    typedef std::multimap<double, std::pair<GPExpressionPtr, ScalarVariableStatisticsPtr> > SortedFormulasMap;
+
+    SortedFormulasMap sortedFormulas;
     for (size_t i = 0; i < formulas.size(); ++i)
     {
       GPExpressionPtr formula = formulas[i];
-      double score = 0.0;
+      ScalarVariableStatisticsPtr stats = new ScalarVariableStatistics();
       for (size_t j = 0; j < numEstimations; ++j)
-        score += objective->compute(context, formula).toDouble();
-      score /= numEstimations;
-      sortedFormulas.insert(std::make_pair(isMinimizationProblem ? score : -score, formula));
+        stats->push(objective->compute(context, formula).toDouble());
+      double score = stats->getMean();
+      sortedFormulas.insert(std::make_pair(isMinimizationProblem ? score : -score, std::make_pair(formula, stats)));
       context.progressCallback(new ProgressionState(i, formulas.size(), T("Formulas")));
     }
     context.leaveScope();
 
     size_t i = 1;
     context.enterScope(T("Best formulas"));
-    for (std::multimap<double, GPExpressionPtr>::const_iterator it = sortedFormulas.begin(); it != sortedFormulas.end(); ++it)
+    for (SortedFormulasMap::const_iterator it = sortedFormulas.begin(); it != sortedFormulas.end(); ++it)
     {
-      context.enterScope(T("Formula ") + String((int)i));
+      ScalarVariableStatisticsPtr stats = it->second.second;
+
+      context.enterScope(T("Formula ") + String((int)i) + T(": ") + it->second.first->toShortString());
       context.resultCallback(T("rank"), i);
-      context.resultCallback(T("meanScore"), isMinimizationProblem ? it->first : -it->first);
-      context.resultCallback(T("formula"), it->second);
+      context.resultCallback(T("mean"), stats->getMean());
+      context.resultCallback(T("stddev"), stats->getStandardDeviation());
+      context.resultCallback(T("min"), stats->getMinimum());
+      context.resultCallback(T("max"), stats->getMaximum());
+      context.resultCallback(T("formula"), it->second.first);
       context.leaveScope(it->first);
       ++i;
     }
