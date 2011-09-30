@@ -83,12 +83,15 @@ public:
     }
   }
 
-  void run(ExecutionContext& context, const std::vector<GPExpressionPtr>& formulas, size_t numIterations, size_t iterationsLength, size_t bestFormulaIndex = (size_t)-1)
+  void run(ExecutionContext& context, const std::vector<GPExpressionPtr>& formulas, size_t numIterations, size_t iterationsLength, size_t bestFormulaIndex = (size_t)-1, std::vector<double>* bestPlayedPercents = NULL)
   {
     this->formulas = formulas;
     policy->initialize(formulas.size());
     totalReward = 0.0;
-    
+
+    if (bestPlayedPercents)
+      bestPlayedPercents->resize(numIterations);
+
     for (size_t i = 0; i < numIterations; ++i)
     {
       context.enterScope(T("Iteration ") + String((int)i));
@@ -129,13 +132,17 @@ public:
       context.resultCallback(T("iteration"), i);
       if (bestFormulaIndex != (size_t)-1)
       {
-        context.resultCallback(T("bestPlayedCountPercent"), 100.0 * bestPlayedCount / (double)iterationsLength);
+        double bestPlayedPercent = bestPlayedCount / (double)iterationsLength;
+        if (bestPlayedPercents)
+          (*bestPlayedPercents)[i] = bestPlayedPercent;
+        context.resultCallback(T("bestPlayedPercent"), 100.0 * bestPlayedPercent);
         context.resultCallback(T("bestPlayedCount"), policy->getBanditPlayedCount(bestFormulaIndex));
       }
       context.resultCallback(T("totalReward"), totalReward);
 
       displayBestFormulas(context);
       context.leaveScope();
+      context.progressCallback(new ProgressionState(i+1, numIterations, T("Iterations")));
     }
   }
 
@@ -180,6 +187,34 @@ class BanditFormulaWorkUnit : public WorkUnit
 public:
   BanditFormulaWorkUnit() : numIterations(10), iterationsLength(0) {}
 
+  struct Run : public WorkUnit
+  {
+    Run(juce::uint32 seed, const std::vector<GPExpressionPtr>& formulas, const DiscreteBanditPolicyPtr& policy, const FunctionPtr& objective, size_t numIterations, size_t iterationsLength, size_t bestFormulaIndex)
+      : seed(seed), formulas(formulas), policy(policy), objective(objective), numIterations(numIterations), iterationsLength(iterationsLength), bestFormulaIndex(bestFormulaIndex) {}
+
+    virtual Variable run(ExecutionContext& context)
+    {
+      context.getRandomGenerator()->setSeed(seed);
+      FormulaPool pool(policy->cloneAndCast<DiscreteBanditPolicy>(), objective);
+      pool.run(context, formulas, numIterations, iterationsLength, bestFormulaIndex, &bestPlayedPercents);
+      return true;
+    }
+
+    virtual String toShortString() const
+      {return T("Run with seed ") + String((int)seed);}
+
+    juce::uint32 seed;
+    const std::vector<GPExpressionPtr>& formulas;
+    DiscreteBanditPolicyPtr policy;
+    FunctionPtr objective;
+    size_t numIterations;
+    size_t iterationsLength;
+    size_t bestFormulaIndex;
+
+    std::vector<double> bestPlayedPercents;
+  };
+
+
   virtual Variable run(ExecutionContext& context)
   {   
     FunctionPtr objective = problem->getObjective();
@@ -204,8 +239,32 @@ public:
     if (!iterationsLength)
       iterationsLength = formulas.size();
 
-    FormulaPool pool(policy, objective);
-    pool.run(context, formulas, numIterations, iterationsLength, bestFormulaIndex);
+    size_t numRuns = 10;
+    CompositeWorkUnitPtr workUnit(new CompositeWorkUnit(T("Making ") + String((int)numRuns) + T(" runs"), numRuns));
+    for (size_t i = 0; i < numRuns; ++i)
+      workUnit->setWorkUnit(i, new Run((juce::uint32)(1664 + 51 * i), formulas, policy, objective, numIterations, iterationsLength, bestFormulaIndex));
+    workUnit->setPushChildrenIntoStackFlag(true);
+    context.run(workUnit);
+    
+    std::vector<ScalarVariableStatistics> bestPlayedPercentsStats(numIterations);
+    for (size_t i = 0; i < numRuns; ++i)
+    {
+      std::vector<double>& bestPlayedPercents = workUnit->getWorkUnit(i).staticCast<Run>()->bestPlayedPercents;
+      jassert(bestPlayedPercents.size() == numIterations);
+      for (size_t j = 0; j < numIterations; ++j)
+        bestPlayedPercentsStats[j].push(bestPlayedPercents[j]);
+    }
+
+    context.enterScope(T("Results"));
+    for (size_t i = 0; i < numIterations; ++i)
+    {
+      context.enterScope(T("Iteration ") + String((int)i));
+      context.resultCallback(T("iteration"), i);
+      context.resultCallback(T("score"), bestPlayedPercentsStats[i].getMean());
+      context.resultCallback(T("score stddev"), bestPlayedPercentsStats[i].getStandardDeviation());
+      context.leaveScope();
+    }
+    context.leaveScope();
     return true;
   }
   
