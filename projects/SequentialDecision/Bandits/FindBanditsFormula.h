@@ -300,6 +300,9 @@ public:
 class Formula5IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
 {
 public:
+  Formula5IndexBasedDiscreteBanditPolicy(double C = 1.0)
+    : SingleParameterIndexBasedDiscreteBanditPolicy(C) {}
+
   virtual double getParameterInitialGuess() const
     {return 1.0;}
     

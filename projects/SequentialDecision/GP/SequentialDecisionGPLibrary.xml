@@ -141,7 +141,6 @@
   <class name="BanditFormulaWorkUnit" base="WorkUnit">
     <variable type="FormulaSearchProblem" name="problem"/>
     <variable type="File" name="formulasFile"/>
-    <variable type="DiscreteBanditPolicy" name="policy"/>
     <variable type="PositiveInteger" name="numIterations"/>
     <variable type="PositiveInteger" name="iterationsLength"/>
   </class>
