@@ -21,7 +21,8 @@ enum BanditFormulaObjectiveMode
   rawRegretMode = 0,
   meanRegretMode,
   normalizedMeanRegretMode,
-  worstRegretMode
+  worst10RegretMode,
+  worst100RegretMode,
 };
   
 class BanditFormulaObjective : public SimpleUnaryFunction
@@ -30,11 +31,11 @@ public:
   BanditFormulaObjective(BanditFormulaObjectiveMode mode = meanRegretMode, size_t minArms = 2, size_t maxArms = 10, double maxExpectedReward = 1.0, size_t horizon = 100)
     : SimpleUnaryFunction(gpExpressionClass, doubleType), mode(mode), minArms(minArms), maxArms(maxArms), maxExpectedReward(maxExpectedReward), horizon(horizon)  {}
   
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& expression) const
+  double sampleRegret(ExecutionContext& context, GPExpressionPtr formula, std::vector<SamplerPtr>& arms, double& bestRewardExpectation) const
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
-    double bestRewardExpectation = 0.0;
-    std::vector<SamplerPtr> arms(random->sampleSize(minArms, maxArms));
+    bestRewardExpectation = 0.0;
+    arms.resize(random->sampleSize(minArms, maxArms));
     std::vector<double> expectedRewards(arms.size());
     for (size_t i = 0; i < arms.size(); ++i)
     {
@@ -46,7 +47,7 @@ public:
     }
     DiscreteBanditStatePtr state = new DiscreteBanditState(arms);
     
-    DiscreteBanditPolicyPtr policy = gpExpressionDiscreteBanditPolicy(expression.getObjectAndCast<GPExpression>());
+    DiscreteBanditPolicyPtr policy = gpExpressionDiscreteBanditPolicy(formula);
     policy->initialize(arms.size());
 
     double sumOfRewards = 0.0;
@@ -55,24 +56,46 @@ public:
       size_t action = performBanditStep(context, state, policy);
       sumOfRewards += expectedRewards[action];
     }
-    double regret = horizon * bestRewardExpectation - sumOfRewards; // regret
+    return horizon * bestRewardExpectation - sumOfRewards; // regret
+  }
 
-    if (mode == rawRegretMode)
-      return regret;
-    else if (mode == meanRegretMode)
-      return exp(-regret / (0.1 * horizon));
-    else if (mode == normalizedMeanRegretMode)
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& expression) const
+  {
+    GPExpressionPtr formula = expression.getObjectAndCast<GPExpression>();
+    if (mode == worst10RegretMode || mode == worst100RegretMode)
     {
-      double uniformPolicyRegret = 0.0;
-      for (size_t i = 0; i < arms.size(); ++i)
-        uniformPolicyRegret += (bestRewardExpectation - expectedRewards[i]) * horizon / (double)arms.size();
-      return exp(-regret / uniformPolicyRegret);
+      double worstRegret = 0;
+      size_t count = (mode == worst100RegretMode ? 100 : 10);
+      for (size_t i = 0; i < count; ++i)
+      {
+        std::vector<SamplerPtr> arms;
+        double bestRewardExpectation;
+        double regret = sampleRegret(context, formula, arms, bestRewardExpectation);
+        if (regret > worstRegret)
+          worstRegret = regret;
+      }
+      return worstRegret;// exp(-worstRegret / (0.1 * horizon));
     }
     else
     {
-      jassert(false);
-      return 0.0;
+      std::vector<SamplerPtr> arms;
+      double bestRewardExpectation;
+      double regret = sampleRegret(context, formula, arms, bestRewardExpectation);
+      
+      if (mode == rawRegretMode)
+        return regret;
+      else if (mode == meanRegretMode)
+        return exp(-regret / (0.1 * horizon));
+      else if (mode == normalizedMeanRegretMode)
+      {
+        double uniformPolicyRegret = 0.0;
+        for (size_t i = 0; i < arms.size(); ++i)
+          uniformPolicyRegret += (bestRewardExpectation - arms[i]->computeExpectation().toDouble()) * horizon / (double)arms.size();
+        return exp(-regret / uniformPolicyRegret);
+      }
     }
+    jassert(false);
+    return 0.0;
   }
  
 protected:
