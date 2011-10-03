@@ -1,9 +1,14 @@
 
-Apres: 
- * Checker la normalisation du loss des bandits en fonction du regret de la politique uniforme (tester avec 2-10 hor 10000)
- * class ValuesFormulaFeatureGenerator
- * class PathsFormulaFeatureGenerator 
-
+Bandits:
+ * Launch GenerateUniqueFormulas for everybody
+ * Launch PlayFormulaNTimes for 2 sizes x 4 objectives
+   
+ * Evaluation of formula search policies: simple regret curves
+ 
+ * Bandit problem from PlayFormulaNTimes files => discover best discovery policy
+ 
+ * Final evaluation: algorithm + latex generator
+ 
 
 Lua-Misc
  * Move namespace lbcpp::lua into lua (-> introspection generator must be adapted)

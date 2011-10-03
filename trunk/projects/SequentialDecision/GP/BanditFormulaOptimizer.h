@@ -11,6 +11,7 @@
 
 # include <lbcpp/Execution/WorkUnit.h>
 # include "LearningRuleFormulaObjective.h"
+# include "BanditFormulaObjective.h"
 # include <algorithm>
 # include "../WorkUnit/GPSandBox.h"
 # include "../Bandits/FindBanditsFormula.h"
@@ -28,17 +29,17 @@ public:
   {
     FunctionWorkUnitPtr wu = workUnit.staticCast<FunctionWorkUnit>();
     GPExpressionPtr formula = wu->getInputs()[0].getObjectAndCast<GPExpression>();
-    double reward = result.toDouble();
-    receiveReward(formula, reward);
+    RegretScoreObjectPtr regret = result.getObjectAndCast<RegretScoreObject>();
+    receiveReward(formula, regret->getReward(), regret->getRegret());
   }
 
-  void receiveReward(GPExpressionPtr formula, double reward)
+  void receiveReward(GPExpressionPtr formula, double reward, double regret)
   {
     std::map<GPExpressionPtr, size_t>::iterator it = currentlyEvaluatedFormulas.find(formula);
     jassert(it != currentlyEvaluatedFormulas.end());
     size_t index = it->second;
     currentlyEvaluatedFormulas.erase(it);
-    receiveReward(index, reward);
+    receiveReward(index, reward, regret);
   }
 
   size_t getNumCurrentlyEvaluatedFormulas() const
@@ -61,10 +62,9 @@ public:
     }
     else
     {
-      double reward = context.run(workUnit, false).toDouble();
-      receiveReward(index, reward);
+      RegretScoreObjectPtr regret = context.run(workUnit, false).getObjectAndCast<RegretScoreObject>();
+      receiveReward(index, regret->getReward(), regret->getRegret());
     }
-
     return index;
   }
   
@@ -88,6 +88,9 @@ public:
   void run(ExecutionContext& context, const std::vector<GPExpressionPtr>& formulas, size_t numIterations, size_t iterationsLength, size_t bestFormulaIndex = (size_t)-1, std::vector<double>* bestPlayedPercents = NULL)
   {
     this->formulas = formulas;
+    regrets.clear();
+    regrets.resize(formulas.size());
+
     policy->initialize(formulas.size());
     totalReward = 0.0;
 
@@ -165,21 +168,14 @@ protected:
   std::vector<GPExpressionPtr> formulas;
   double totalReward;
 
-/*  struct Formula
-  {
-    Formula(const GPExpressionPtr& expression = GPExpressionPtr())
-      : expression(expression) {}
-  
-    GPExpressionPtr expression;
-    ScalarVariableStatistics statistics;
-  };
-  std::multimap<double, Formula> formulas;*/
   std::map<GPExpressionPtr, size_t> currentlyEvaluatedFormulas;
+  std::vector<ScalarVariableStatistics> regrets;
 
-  void receiveReward(size_t index, double reward)
+  void receiveReward(size_t index, double reward, double regret)
   {
     totalReward += reward;
     policy->updatePolicy(index, reward);
+    regrets[index].push(regret);
   }
 };
 
@@ -305,7 +301,7 @@ protected:
 class PlayFormulasNTimes : public WorkUnit
 {
 public:
-  PlayFormulasNTimes() : numEstimations(1000), isMinimizationProblem(true) {}
+  PlayFormulasNTimes() : numEstimations(1000) {}
 
   virtual Variable run(ExecutionContext& context)
   {   
@@ -330,7 +326,7 @@ public:
       for (size_t j = 0; j < numEstimations; ++j)
         stats->push(objective->compute(context, formula).toDouble());
       double score = stats->getMean();
-      sortedFormulas.insert(std::make_pair(isMinimizationProblem ? score : -score, std::make_pair(formula, stats)));
+      sortedFormulas.insert(std::make_pair(score, std::make_pair(formula, stats)));
       context.progressCallback(new ProgressionState(i, formulas.size(), T("Formulas")));
     }
     context.leaveScope();
@@ -352,6 +348,23 @@ public:
       ++i;
     }
     context.leaveScope();
+
+    if (outputFile != File::nonexistent)
+    {
+      context.enterScope(T("Saving to file ") + outputFile.getFileName());
+      OutputStream* ostr = outputFile.createOutputStream();
+      if (ostr)
+      {
+        for (SortedFormulasMap::const_iterator it = sortedFormulas.begin(); it != sortedFormulas.end(); ++it)
+        {
+          ScalarVariableStatisticsPtr stats = it->second.second;
+          *ostr << it->second.first->toString() << " " << stats->getMean() << " " << stats->getStandardDeviation() << " " << stats->getMinimum() << " " << stats->getMaximum() << "\n";
+        }
+        delete ostr;
+      }
+      context.leaveScope(true);
+    }
+
     return true;
   }
   
@@ -360,8 +373,8 @@ protected:
 
   FormulaSearchProblemPtr problem;
   File formulasFile;
+  File outputFile;
   size_t numEstimations;
-  bool isMinimizationProblem;
 };
 
 

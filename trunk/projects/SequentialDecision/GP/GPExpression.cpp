@@ -214,6 +214,18 @@ UnaryGPExpression::UnaryGPExpression(GPPre pre, GPExpressionPtr expr)
 
 double UnaryGPExpression::compute(const double* x) const
 {
+  if (pre == gpInverse)
+  {
+    UnaryGPExpressionPtr subUnary = expr.dynamicCast<UnaryGPExpression>();
+    if (subUnary && subUnary->pre == gpInverse)
+    {
+      // inverse(inverse(x)) = x (or nan if x == 0)
+      // avoid errors due to numerical imprecission
+      double e = subUnary->expr->compute(x);
+      return e == 0 ? DBL_MAX : e;
+    }
+  }
+
   double e = expr->compute(x);
   if (!isNumberValid(e))
     return e;
@@ -221,10 +233,10 @@ double UnaryGPExpression::compute(const double* x) const
   switch (pre)
   {
   case gpIdentity: return e;
-  case gpLog: return log(e);// e <= 0.0 ? -DBL_MAX : log(e);
-  case gpSquareRoot: return sqrt(e); //e < 0.0 ? -DBL_MAX : sqrt(e);
+  case gpLog: return log(e);
+  case gpSquareRoot: return sqrt(e);
   case gpOpposite: return -e;
-  case gpInverse: return 1.0/e; //e != 0.0 ? 1.0 / e : DBL_MAX;
+  case gpInverse: return 1.0 / e;
   case gpExp: return exp(e);
   case gpAbs: return fabs(e);
   default: jassert(false); return 0.0;

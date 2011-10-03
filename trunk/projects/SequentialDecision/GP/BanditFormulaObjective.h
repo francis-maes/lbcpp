@@ -16,92 +16,53 @@
 namespace lbcpp
 {
 
-enum BanditFormulaObjectiveMode
+class RegretScoreObject : public ScoreObject
 {
-  rawRegretMode = 0,
-  meanRegretMode,
-  normalizedMeanRegretMode,
-  worst10RegretMode,
-  worst100RegretMode,
+public:
+  RegretScoreObject(double regret = 1.0, double referenceRegret = 1.0)
+    : regret(regret), reward(exp(-regret / referenceRegret)) {}
+
+  virtual double getScoreToMinimize() const
+    {return regret;}
+
+  double getRegret() const
+    {return regret;}
+
+  double getReward() const
+    {return reward;}
+
+protected:
+  friend class RegretScoreObjectClass;
+
+  double regret;
+  double reward;
 };
-  
+
+typedef ReferenceCountedObjectPtr<RegretScoreObject> RegretScoreObjectPtr;
+extern ClassPtr regretScoreObjectClass;
+
 class BanditFormulaObjective : public SimpleUnaryFunction
 {
 public:
-  BanditFormulaObjective(BanditFormulaObjectiveMode mode = meanRegretMode, size_t minArms = 2, size_t maxArms = 10, double maxExpectedReward = 1.0, size_t horizon = 100)
-    : SimpleUnaryFunction(gpExpressionClass, doubleType), mode(mode), minArms(minArms), maxArms(maxArms), maxExpectedReward(maxExpectedReward), horizon(horizon)  {}
-  
-  double sampleRegret(ExecutionContext& context, GPExpressionPtr formula, std::vector<SamplerPtr>& arms, double& bestRewardExpectation) const
-  {
-    RandomGeneratorPtr random = context.getRandomGenerator();
-    bestRewardExpectation = 0.0;
-    arms.resize(random->sampleSize(minArms, maxArms));
-    std::vector<double> expectedRewards(arms.size());
-    for (size_t i = 0; i < arms.size(); ++i)
-    {
-      double p = random->sampleDouble(0.0, maxExpectedReward);
-      if (p > bestRewardExpectation) 
-        bestRewardExpectation = p;
-      arms[i] = bernoulliSampler(p);
-      expectedRewards[i] = p;
-    }
-    DiscreteBanditStatePtr state = new DiscreteBanditState(arms);
-    
-    DiscreteBanditPolicyPtr policy = gpExpressionDiscreteBanditPolicy(formula);
-    policy->initialize(arms.size());
-
-    double sumOfRewards = 0.0;
-    for (size_t timeStep = 1; timeStep <= horizon; ++timeStep)
-    {
-      size_t action = performBanditStep(context, state, policy);
-      sumOfRewards += expectedRewards[action];
-    }
-    return horizon * bestRewardExpectation - sumOfRewards; // regret
-  }
+  BanditFormulaObjective(bool isSimpleRegret = false, size_t worstNumSamples = 1, size_t minArms = 2, size_t maxArms = 10, double maxExpectedReward = 1.0, size_t horizon = 100)
+    : SimpleUnaryFunction(gpExpressionClass, regretScoreObjectClass), isSimpleRegret(isSimpleRegret), worstNumSamples(worstNumSamples), minArms(minArms), maxArms(maxArms), maxExpectedReward(maxExpectedReward), horizon(horizon)
+    {jassert(maxArms >= minArms);}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& expression) const
   {
     GPExpressionPtr formula = expression.getObjectAndCast<GPExpression>();
-    if (mode == worst10RegretMode || mode == worst100RegretMode)
-    {
-      double worstRegret = 0;
-      size_t count = (mode == worst100RegretMode ? 100 : 10);
-      for (size_t i = 0; i < count; ++i)
-      {
-        std::vector<SamplerPtr> arms;
-        double bestRewardExpectation;
-        double regret = sampleRegret(context, formula, arms, bestRewardExpectation);
-        if (regret > worstRegret)
-          worstRegret = regret;
-      }
-      return worstRegret;// exp(-worstRegret / (0.1 * horizon));
-    }
-    else
-    {
-      std::vector<SamplerPtr> arms;
-      double bestRewardExpectation;
-      double regret = sampleRegret(context, formula, arms, bestRewardExpectation);
-      
-      if (mode == rawRegretMode)
-        return regret;
-      else if (mode == meanRegretMode)
-        return exp(-regret / (0.1 * horizon));
-      else if (mode == normalizedMeanRegretMode)
-      {
-        double uniformPolicyRegret = 0.0;
-        for (size_t i = 0; i < arms.size(); ++i)
-          uniformPolicyRegret += (bestRewardExpectation - arms[i]->computeExpectation().toDouble()) * horizon / (double)arms.size();
-        return exp(-regret / uniformPolicyRegret);
-      }
-    }
-    jassert(false);
-    return 0.0;
+    
+    double bestRewardExpectation;
+    double regret = sampleWorstRegret(context, formula, bestRewardExpectation);
+    return new RegretScoreObject(regret, (maxExpectedReward / 10.0) * (isSimpleRegret ? 1 : horizon));
   }
  
 protected:
   friend class BanditFormulaObjectiveClass;
 
-  BanditFormulaObjectiveMode mode;
+  bool isSimpleRegret;
+  size_t worstNumSamples;
+
   size_t minArms;
   size_t maxArms;
   double maxExpectedReward;
@@ -114,6 +75,59 @@ protected:
     state->performTransition(context, action, reward);
     policy->updatePolicy(action, reward);
     return action;
+  }
+
+  double sampleRegret(ExecutionContext& context, GPExpressionPtr formula, const std::vector<SamplerPtr>& arms, const std::vector<double>& expectedRewards, double bestRewardExpectation) const
+  {
+    DiscreteBanditStatePtr state = new DiscreteBanditState(arms);    
+    DiscreteBanditPolicyPtr policy = gpExpressionDiscreteBanditPolicy(formula);
+    policy->initialize(arms.size());
+    double sumOfRewards = 0.0;
+    for (size_t timeStep = 1; timeStep <= horizon; ++timeStep)
+    {
+      size_t action = performBanditStep(context, state, policy);
+      sumOfRewards += expectedRewards[action];
+    }
+
+    if (isSimpleRegret)
+    {
+      double bestReward = 0.0;
+      size_t bestEstimatedArm = 0;
+      for (size_t i = 0; i < arms.size(); ++i)
+      {
+        double reward = policy->getRewardEmpiricalMean(i);
+        if (reward > bestReward)
+          bestReward = reward, bestEstimatedArm = i;
+      }
+      return bestRewardExpectation - expectedRewards[bestEstimatedArm]; // simple regret 
+    }
+    else
+      return horizon * bestRewardExpectation - sumOfRewards; // regret
+  }
+ 
+  double sampleWorstRegret(ExecutionContext& context, GPExpressionPtr formula, double& bestRewardExpectation) const
+  {
+    RandomGeneratorPtr random = context.getRandomGenerator();
+    bestRewardExpectation = 0.0;
+    std::vector<SamplerPtr> arms(random->sampleSize(minArms, maxArms));
+    std::vector<double> expectedRewards(arms.size());
+    for (size_t i = 0; i < arms.size(); ++i)
+    {
+      double p = random->sampleDouble(0.0, maxExpectedReward);
+      if (p > bestRewardExpectation) 
+        bestRewardExpectation = p;
+      arms[i] = bernoulliSampler(p);
+      expectedRewards[i] = p;
+    }
+
+    double worstRegret = -DBL_MAX;
+    for (size_t i = 0; i < worstNumSamples; ++i)
+    {
+      double regret = sampleRegret(context, formula, arms, expectedRewards, bestRewardExpectation);
+      if (regret > worstRegret)
+        worstRegret = regret;
+    }
+    return worstRegret;
   }
 };
 
