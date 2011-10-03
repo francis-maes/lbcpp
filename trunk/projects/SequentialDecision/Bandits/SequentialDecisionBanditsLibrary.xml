@@ -20,6 +20,10 @@
   <class name="DiscreteBanditPolicy" base="Object" abstract="yes"/>
   <class name="IndexBasedDiscreteBanditPolicy" base="DiscreteBanditPolicy" abstract="yes"/>
 
+  <class name="UniformDiscreteBanditPolicy" base="DiscreteBanditPolicy" shortName="uniform">
+    <constructor/>
+  </class>
+
   <class name="GreedyDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="greedy">
     <constructor/>
   </class>
@@ -106,7 +110,9 @@
   <class name="Formula2IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula2"/>
   <class name="Formula3IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula3"/>
   <class name="Formula4IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula4"/>
-  <class name="Formula5IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula5"/>
+  <class name="Formula5IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula5">
+    <variable type="Boolean" name="useSquareRoot"/>
+  </class>
   <class name="Formula6IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula6"/>
   <class name="Formula7IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula7"/>
 

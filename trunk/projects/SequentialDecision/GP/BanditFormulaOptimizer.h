@@ -85,65 +85,48 @@ public:
     }
   }
 
-  void run(ExecutionContext& context, const std::vector<GPExpressionPtr>& formulas, size_t numIterations, size_t iterationsLength, size_t bestFormulaIndex = (size_t)-1, std::vector<double>* bestPlayedPercents = NULL)
+  void run(ExecutionContext& context, const std::vector<GPExpressionPtr>& formulas, size_t numIterations, size_t iterationsLength, const std::vector<double>* expectedRewards = NULL, std::vector<double>* simpleRegrets = NULL)
   {
     this->formulas = formulas;
-    regrets.clear();
-    regrets.resize(formulas.size());
+    formulaRegrets.clear();
+    formulaRegrets.resize(formulas.size());
 
     policy->initialize(formulas.size());
     totalReward = 0.0;
 
-    size_t bestPlayedCount = 0;
-    if (bestPlayedPercents)
-      bestPlayedPercents->resize(numIterations);
+    double bestExpectedReward = -DBL_MAX;
+    if (expectedRewards)
+    {
+      for (size_t i = 0; i < expectedRewards->size(); ++i)
+        if ((*expectedRewards)[i] > bestExpectedReward)
+          bestExpectedReward = (*expectedRewards)[i];
+    }
+
+    if (simpleRegrets)
+      simpleRegrets->resize(numIterations);
+    double cumulativeRegret = 0.0;
 
     for (size_t i = 0; i < numIterations; ++i)
     {
       context.enterScope(T("Iteration ") + String((int)i));
 
-      if (false)//context.isMultiThread())
+      for (size_t j = 0; j < iterationsLength; ++j)
       {
-        for (size_t j = 0; j < iterationsLength; ++j)
-        {
-          context.progressCallback(new ProgressionState(j+1,formulas.size(), T("Turns")));
-          playBestFormula(context);
-          context.flushCallbacks();
-          //context.informationCallback(T("Num played: ") + String((int)j + 1) + T(" num currently evaluated: " ) + String((int)getNumCurrentlyEvaluatedFormulas()));
-          
-          while (getNumCurrentlyEvaluatedFormulas() >= 10)
-          {
-            //context.informationCallback(T("Waiting - Num played: ") + String((int)j + 1) + T(" num currently evaluated: " ) + String((int)getNumCurrentlyEvaluatedFormulas()));
-            Thread::sleep(10);
-            context.flushCallbacks();
-          }
-        }
-        while (getNumCurrentlyEvaluatedFormulas() > 0)
-        {
-          Thread::sleep(10);
-          context.flushCallbacks();
-        }
-      }
-      else
-      {
-        for (size_t j = 0; j < iterationsLength; ++j)
-        {
-          size_t index = playBestFormula(context);
-          if (index == bestFormulaIndex)
-            ++bestPlayedCount;
-        }
+        size_t index = playBestFormula(context);
+        if (expectedRewards)
+          cumulativeRegret += bestExpectedReward - (*expectedRewards)[index];
       }
 
       context.resultCallback(T("iteration"), i);
-      if (bestFormulaIndex != (size_t)-1)
+
+      if (expectedRewards)
       {
-        double bestPlayedPercent = bestPlayedCount / (double)((i+1)*iterationsLength);
-        if (bestPlayedPercents)
-          (*bestPlayedPercents)[i] = bestPlayedPercent;
-        context.resultCallback(T("bestPlayedPercent"), 100.0 * bestPlayedPercent);
-        //context.resultCallback(T("bestPlayedCount"), policy->getBanditPlayedCount(bestFormulaIndex));
+        double simpleRegret = bestExpectedReward - (*expectedRewards)[getBestFormulaIndex()];
+        context.resultCallback(T("simpleRegret"), simpleRegret);
+        context.resultCallback(T("cumulativeRegret"), cumulativeRegret);
+        if (simpleRegrets)
+          (*simpleRegrets)[i] = simpleRegret;
       }
-      //context.resultCallback(T("totalReward"), totalReward);
 
       displayBestFormulas(context);
       context.leaveScope();
@@ -162,6 +145,19 @@ public:
     return res;
   }
 
+  size_t getBestFormulaIndex() const
+  {
+    double highestMean = -DBL_MAX;
+    size_t res = (size_t)-1;
+    for (size_t i = 0; i < formulas.size(); ++i)
+    {
+      double mean = policy->getRewardEmpiricalMean(i);
+      if (mean > highestMean)
+        highestMean = mean, res = i;
+    }
+    return res;
+  }
+
 protected:
   DiscreteBanditPolicyPtr policy;
   FunctionPtr objective;
@@ -169,13 +165,13 @@ protected:
   double totalReward;
 
   std::map<GPExpressionPtr, size_t> currentlyEvaluatedFormulas;
-  std::vector<ScalarVariableStatistics> regrets;
+  std::vector<ScalarVariableStatistics> formulaRegrets;
 
   void receiveReward(size_t index, double reward, double regret)
   {
     totalReward += reward;
     policy->updatePolicy(index, reward);
-    regrets[index].push(regret);
+    formulaRegrets[index].push(regret);
   }
 };
 
@@ -183,19 +179,18 @@ protected:
 class BanditFormulaWorkUnit : public WorkUnit
 {
 public:
-  BanditFormulaWorkUnit() : numIterations(10), iterationsLength(0) {}
+  BanditFormulaWorkUnit() : numRuns(10), numIterations(10), iterationsLength(0) {}
 
   struct Run : public WorkUnit
   {
-    Run(juce::uint32 seed, const std::vector<GPExpressionPtr>& formulas, const DiscreteBanditPolicyPtr& policy, const FunctionPtr& objective, size_t numIterations, size_t iterationsLength, size_t bestFormulaIndex)
-      : seed(seed), formulas(formulas), policy(policy), objective(objective), numIterations(numIterations), iterationsLength(iterationsLength), bestFormulaIndex(bestFormulaIndex) {}
+    Run(juce::uint32 seed, const std::vector<GPExpressionPtr>& formulas, const DiscreteBanditPolicyPtr& policy, const FunctionPtr& objective, size_t numIterations, size_t iterationsLength, const std::vector<double>& formulaRewards)
+      : seed(seed), formulas(formulas), policy(policy), objective(objective), numIterations(numIterations), iterationsLength(iterationsLength), formulaRewards(formulaRewards) {}
 
     virtual Variable run(ExecutionContext& context)
     {
       context.getRandomGenerator()->setSeed(seed);
       FormulaPool pool(policy->cloneAndCast<DiscreteBanditPolicy>(), objective);
-      pool.run(context, formulas, numIterations, iterationsLength, bestFormulaIndex, &bestPlayedPercents);
-      hasFoundBestBandit = (pool.getBestFormulas(1)[0] == formulas[bestFormulaIndex]);
+      pool.run(context, formulas, numIterations, iterationsLength, &formulaRewards, &simpleRegrets);
       return true;
     }
 
@@ -208,10 +203,12 @@ public:
     FunctionPtr objective;
     size_t numIterations;
     size_t iterationsLength;
-    size_t bestFormulaIndex;
+    const std::vector<double>& formulaRewards;
 
-    std::vector<double> bestPlayedPercents;
-    bool hasFoundBestBandit;
+    std::vector<double> simpleRegrets;
+
+    bool hasFoundBestBandit() const
+      {return simpleRegrets.back() == 0.0;}
   };
 
 
@@ -223,52 +220,48 @@ public:
       return false;
 
     std::vector<GPExpressionPtr> formulas;
-    if (!GPExpression::loadFormulasFromFile(context, formulasFile, problem->getVariables(), formulas))
+    std::vector<double> formulaRewards;
+    if (!loadFormulasFromFile(context, formulasFile, problem->getVariables(), formulas, formulaRewards))
       return false;
     context.informationCallback("We have " + String((int)formulas.size()) + " formulas");
-
-    size_t bestFormulaIndex = (size_t)-1;
-    // tmp !
-    for (size_t i = 0; i < formulas.size(); ++i)
-      if (formulas[i]->toShortString() == T("(rk)+(inverse(tk))"))
-      {
-        bestFormulaIndex = i;
-        break;
-      }
 
     if (!iterationsLength)
       iterationsLength = formulas.size();
 
     std::vector<DiscreteBanditPolicyPtr> policies;
+    policies.push_back(uniformDiscreteBanditPolicy());
+    policies.push_back(greedyDiscreteBanditPolicy());
     policies.push_back(ucb1DiscreteBanditPolicy(2.0));
     policies.push_back(ucb1TunedDiscreteBanditPolicy());
     policies.push_back(klucbDiscreteBanditPolicy(0.0));
-    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(1.0));
-    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(1.5));
-    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(2.0));
-    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(5.0));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(1.0, true));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(1.0, false));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(2.0, true));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(2.0, false));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(5.0, true));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(5.0, false));
 
     for (size_t i = 0; i < policies.size(); ++i)
     {
       DiscreteBanditPolicyPtr policy = policies[i];
       context.enterScope(T("Policy ") + policy->toShortString());
 
-      size_t numRuns = 10;
       CompositeWorkUnitPtr workUnit(new CompositeWorkUnit(T("Making ") + String((int)numRuns) + T(" runs"), numRuns));
       for (size_t i = 0; i < numRuns; ++i)
-        workUnit->setWorkUnit(i, new Run((juce::uint32)(1664 + 51 * i), formulas, policy, objective, numIterations, iterationsLength, bestFormulaIndex));
+        workUnit->setWorkUnit(i, new Run((juce::uint32)(1664 + 51 * i), formulas, policy, objective, numIterations, iterationsLength, formulaRewards));
       workUnit->setPushChildrenIntoStackFlag(true);
       context.run(workUnit);
       
-      std::vector<ScalarVariableStatistics> bestPlayedPercentsStats(numIterations);
+      std::vector<ScalarVariableStatistics> simpleRegretStats(numIterations);
       size_t numSuccess = 0;
       for (size_t i = 0; i < numRuns; ++i)
       {
-        std::vector<double>& bestPlayedPercents = workUnit->getWorkUnit(i).staticCast<Run>()->bestPlayedPercents;
-        jassert(bestPlayedPercents.size() == numIterations);
+        ReferenceCountedObjectPtr<Run> run = workUnit->getWorkUnit(i).staticCast<Run>();
+        std::vector<double>& simpleRegrets = run->simpleRegrets;
+        jassert(simpleRegrets.size() == numIterations);
         for (size_t j = 0; j < numIterations; ++j)
-          bestPlayedPercentsStats[j].push(bestPlayedPercents[j]);
-        if (workUnit->getWorkUnit(i).staticCast<Run>()->hasFoundBestBandit)
+          simpleRegretStats[j].push(simpleRegrets[j]);
+        if (run->hasFoundBestBandit())
           ++numSuccess;
       }
       context.informationCallback(T("Success rate: ") + String((int)numSuccess) + T(" / ") + String((int)numRuns));
@@ -278,13 +271,13 @@ public:
       {
         context.enterScope(T("Iteration ") + String((int)i));
         context.resultCallback(T("iteration"), i);
-        context.resultCallback(T("score"), bestPlayedPercentsStats[i].getMean());
-        context.resultCallback(T("score stddev"), bestPlayedPercentsStats[i].getStandardDeviation());
+        context.resultCallback(T("simpleRegret"), simpleRegretStats[i].getMean());
+        context.resultCallback(T("simpleRegret stddev"), simpleRegretStats[i].getStandardDeviation());
         context.leaveScope();
       }
-      context.leaveScope();
+      context.leaveScope(simpleRegretStats.back().getMean());
 
-      context.leaveScope();
+      context.leaveScope(simpleRegretStats.back().getMean());
     }
     return true;
   }
@@ -294,14 +287,52 @@ protected:
 
   FormulaSearchProblemPtr problem;
   File formulasFile;
+  size_t numRuns;
   size_t numIterations;
   size_t iterationsLength;
+
+  bool loadFormulasFromFile(ExecutionContext& context, const File& formulasFile, EnumerationPtr variables, std::vector<GPExpressionPtr>& res, std::vector<double>& rewards)
+  {
+    InputStream* istr = formulasFile.createInputStream();
+    if (!istr)
+    {
+      context.errorCallback(T("Could not open file ") + formulasFile.getFullPathName());
+      return false;
+    }
+    while (!istr->isExhausted())
+    {
+      String line = istr->readNextLine();
+      if (!line.isEmpty())
+      {
+        int position = 0;
+        GPExpressionPtr expression = GPExpression::createFromString(context, line, variables, position);
+        if (expression)
+          res.push_back(expression);
+        String remainder = line.substring(position).trim();
+        int space = remainder.indexOfAnyOf(T(" \t\n\r"));
+        double reward = remainder.substring(0, space).getDoubleValue();
+        rewards.push_back(reward);
+      }
+    }
+    delete istr;
+    return true;
+  }
 };
 
 class PlayFormulasNTimes : public WorkUnit
 {
 public:
   PlayFormulasNTimes() : numEstimations(1000) {}
+
+  struct Result
+  {
+    Result(const GPExpressionPtr& formula)
+      : formula(formula), regretStats(new ScalarVariableStatistics("regret")), rewardStats(new ScalarVariableStatistics("reward")) {}
+
+    GPExpressionPtr formula;
+    ScalarVariableStatisticsPtr regretStats;
+    ScalarVariableStatisticsPtr rewardStats;
+  };
 
   virtual Variable run(ExecutionContext& context)
   {   
@@ -316,18 +347,22 @@ public:
 
     context.enterScope(T("Evaluating formulas ") + String((int)numEstimations) + T(" times"));
 
-    typedef std::multimap<double, std::pair<GPExpressionPtr, ScalarVariableStatisticsPtr> > SortedFormulasMap;
+    typedef std::multimap<double, Result> SortedFormulasMap;
 
     SortedFormulasMap sortedFormulas;
     for (size_t i = 0; i < formulas.size(); ++i)
     {
       GPExpressionPtr formula = formulas[i];
-      ScalarVariableStatisticsPtr stats = new ScalarVariableStatistics();
+      Result res(formula);
       for (size_t j = 0; j < numEstimations; ++j)
-        stats->push(objective->compute(context, formula).toDouble());
-      double score = stats->getMean();
-      sortedFormulas.insert(std::make_pair(score, std::make_pair(formula, stats)));
-      context.progressCallback(new ProgressionState(i, formulas.size(), T("Formulas")));
+      {
+        RegretScoreObjectPtr regret = objective->compute(context, formula).getObjectAndCast<RegretScoreObject>();
+        res.regretStats->push(regret->getRegret());
+        res.rewardStats->push(regret->getReward());
+      }
+      double score = res.regretStats->getMean();
+      sortedFormulas.insert(std::make_pair(score, res));
+      context.progressCallback(new ProgressionState((i+1), formulas.size(), T("Formulas")));
     }
     context.leaveScope();
 
@@ -335,15 +370,15 @@ public:
     context.enterScope(T("Best formulas"));
     for (SortedFormulasMap::const_iterator it = sortedFormulas.begin(); it != sortedFormulas.end(); ++it)
     {
-      ScalarVariableStatisticsPtr stats = it->second.second;
+      const Result& res = it->second;
 
-      context.enterScope(T("Formula ") + String((int)i) + T(": ") + it->second.first->toShortString());
+      context.enterScope(T("Formula ") + String((int)i) + T(": ") + res.formula->toShortString());
       context.resultCallback(T("rank"), i);
-      context.resultCallback(T("mean"), stats->getMean());
-      context.resultCallback(T("stddev"), stats->getStandardDeviation());
-      context.resultCallback(T("min"), stats->getMinimum());
-      context.resultCallback(T("max"), stats->getMaximum());
-      context.resultCallback(T("formula"), it->second.first);
+      context.resultCallback(T("rewardMean"), res.rewardStats->getMean());
+      context.resultCallback(T("rewardStddev"), res.rewardStats->getStandardDeviation());
+      context.resultCallback(T("regretMean"), res.regretStats->getMean());
+      context.resultCallback(T("regretStddev"), res.regretStats->getStandardDeviation());
+      context.resultCallback(T("formula"), res.formula);
       context.leaveScope(it->first);
       ++i;
     }
@@ -352,13 +387,17 @@ public:
     if (outputFile != File::nonexistent)
     {
       context.enterScope(T("Saving to file ") + outputFile.getFileName());
+      if (outputFile.exists())
+        outputFile.deleteFile();
       OutputStream* ostr = outputFile.createOutputStream();
       if (ostr)
       {
         for (SortedFormulasMap::const_iterator it = sortedFormulas.begin(); it != sortedFormulas.end(); ++it)
         {
-          ScalarVariableStatisticsPtr stats = it->second.second;
-          *ostr << it->second.first->toString() << " " << stats->getMean() << " " << stats->getStandardDeviation() << " " << stats->getMinimum() << " " << stats->getMaximum() << "\n";
+          const Result& res = it->second;
+          *ostr << res.formula->toString()
+                << " " << res.rewardStats->getMean() << " " << res.rewardStats->getStandardDeviation()
+                << " " << res.regretStats->getMean() << " " << res.regretStats->getStandardDeviation() << "\n";
         }
         delete ostr;
       }

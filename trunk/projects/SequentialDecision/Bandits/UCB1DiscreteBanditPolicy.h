@@ -14,12 +14,31 @@
 namespace lbcpp
 {
 
+// FIXME: ranger
 class GreedyDiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy
 {
 public:
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
     {return banditStatistics[banditNumber]->getRewardMean();}
 };
+
+class UniformDiscreteBanditPolicy : public DiscreteBanditPolicy
+{
+public:
+  virtual void initialize(size_t numBandits)
+    {nextArm = 0; DiscreteBanditPolicy::initialize(numBandits);}
+ 
+protected:
+  size_t nextArm;
+
+  virtual size_t selectBandit(ExecutionContext& context, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
+  {
+    size_t res = nextArm;
+    nextArm = (nextArm + 1) % banditStatistics.size();
+    return res;
+  }
+};
+// --
 
 class UCB1DiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
 {
