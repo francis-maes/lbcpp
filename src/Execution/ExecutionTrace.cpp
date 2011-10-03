@@ -338,7 +338,11 @@ VectorPtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context)
     std::vector< std::pair<String, Variable> > childResults = childNode->getResults();
     for (size_t j = 0; j < childResults.size(); ++j)
     {
-      std::pair<String, TypePtr> key(childResults[j].first, childResults[j].second.getType());
+      TypePtr type = childResults[j].second.getType();
+      if (type->inheritsFrom(objectClass))
+        type = objectClass; // we distinguish only between atomic types
+      std::pair<String, TypePtr> key(childResults[j].first, type);
+
       SignatureToIndexMap::iterator it = mapping.find(key);
       if (it == mapping.end())
       {
@@ -369,7 +373,11 @@ VectorPtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context)
     std::vector< std::pair<String, Variable> > childResults = childNode->getResults();
     for (size_t j = 0; j < childResults.size(); ++j)
     {
-      std::pair<String, TypePtr> key(childResults[j].first, childResults[j].second.getType());
+      TypePtr type = childResults[j].second.getType();
+      if (type->inheritsFrom(objectClass))
+        type = objectClass; // we distinguish only between atomic types
+      std::pair<String, TypePtr> key(childResults[j].first, type);
+
       SignatureToIndexMap::iterator it = mapping.find(key);
       jassert(it != mapping.end());
       row->setVariable(it->second, childResults[j].second);

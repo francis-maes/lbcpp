@@ -185,12 +185,13 @@ bool ExplorerProject::connectToManager(ExecutionContext& context, const String& 
 {
   managerHostName = hostName;
   managerPort = port;
+  managerClient = new ManagerNetworkClient(context);
   managerConnected = true;
-  jassertfalse;
-  //managerClient = blockingNetworkClient(context);
+  //managerClient->setCallback(this);
   if (!managerClient->startClient(managerHostName, managerPort))
   {
-    context.errorCallback(T("ExplorerProject::connectToManager"), T("Could not connect to manager at ") + managerHostName + T(":") + String(port));
+    managerClient = ManagerNetworkClientPtr();
+    context.errorCallback(T("ExplorerProject::connectToManager"), T("Could not connect to manager at ") + managerHostName + T(":") + String(managerPort));
     return false;
   }
   context.informationCallback(managerHostName, T("Connected !"));
@@ -203,38 +204,29 @@ bool ExplorerProject::connectToManager(ExecutionContext& context, const String& 
 
 void ExplorerProject::disconnectFromManager(ExecutionContext& context)
 {
-  /*
-  managerConnected = false;
   if (managerClient)
   {
-    if (managerInterface)
-      managerInterface = ManagerNetworkInterfacePtr();
-
-    managerClient->sendVariable(new CloseCommunicationNotification());
+    //managerClient->sendVariable(new CloseCommunicationNotification());
     managerClient->stopClient();
-    managerClient = NetworkClientPtr();
+    managerClient = ManagerNetworkClientPtr();
   }
-  */
+  managerConnected = false;
 }
 
 bool ExplorerProject::sendWorkUnitToManager(ExecutionContext& context, const WorkUnitPtr& workUnit, const String& grid, size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
 {
-  jassertfalse;
-  /*
-  if (!managerInterface)
+  if (!managerClient)
   {
-    context.errorCallback(T("Not connected to manager"));
+    context.errorCallback(T("Not connected to the manager"));
     return false;
   }
-  WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(context, getName(), thisNetworkNodeName, grid, workUnit, requiredCpus, requiredMemory, requiredTime);
-  String res = managerInterface->pushWorkUnit(request);
-  if (res == T("Error"))
+  static size_t identifier = 0;
+  if (!managerClient->sendWorkUnit(identifier++, workUnit, getName(), thisNetworkNodeName, grid, requiredCpus, requiredMemory, requiredTime))
   {
     context.errorCallback(T("Error while sending work unit to manager"));
     return false;
   }
-  request->setIdentifier(res);
-  context.informationCallback(T("WorkUnitIdentifier: ") + request->getIdentifier());
-   */
+  //request->setIdentifier(res);
+  //context.informationCallback(T("WorkUnitIdentifier: ") + request->getIdentifier());
   return true;
 }

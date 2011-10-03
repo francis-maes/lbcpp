@@ -138,13 +138,24 @@
     <variable type="File" name="outputFile"/>
   </class>
 
-  <class name="BanditFormulaWorkUnit" base="WorkUnit">
+  <class name="CompareBanditFormulaSearchPolicies" base="WorkUnit">
     <variable type="FormulaSearchProblem" name="problem"/>
     <variable type="File" name="formulasFile"/>
     <variable type="PositiveInteger" name="numRuns"/>
     <variable type="PositiveInteger" name="numIterations"/>
     <variable type="PositiveInteger" name="iterationsLength"/>
   </class>
+
+  <class name="BanditFormulaSearch" base="WorkUnit">
+    <variable type="File" name="formulasFile"/>
+    <variable type="PositiveInteger" name="numTimeSteps"/>
+    <variable type="PositiveInteger" name="minArms"/>
+    <variable type="PositiveInteger" name="maxArms"/>
+    <variable type="Double" name="maxExpectedReward"/>
+    <variable type="PositiveInteger" name="horizon"/>
+  </class>
+
+
 
   <!-- MultiArmed Bandit Formulas -->
   <enumeration name="GPExpressionDiscreteBanditPolicyVariables">
