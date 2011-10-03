@@ -10,7 +10,7 @@ context.randomGenerator = Random.new(1664)
 local minK = 2
 local maxK = 10
 local maxRewardExpectation = 1
-local numBanditProblems = 1000
+local numBanditProblems = 10000
 local horizon = 1000
 
 function makeBanditObjective(minArms, maxArms, numProblems, numEstimationsPerProblem, numTimeSteps)
@@ -28,7 +28,11 @@ function makeBanditObjective(minArms, maxArms, numProblems, numEstimationsPerPro
   return function (policy)
     local prevRandom = context.randomGenerator
     context.randomGenerator = Random.new()
-    local res = DiscreteBandit.estimatePolicyRegretOnProblems(policy, banditProblems, numEstimationsPerProblem, numTimeSteps)
+    local res = 0
+    for i=1,10 do
+      local regret = DiscreteBandit.estimatePolicyRegretOnProblems(policy, banditProblems, numEstimationsPerProblem, numTimeSteps)
+      if regret > res then res = regret end
+    end
     context.randomGenerator = prevRandom
     return res
   end
@@ -47,7 +51,10 @@ local function addIndex(name, indexFunction)
   addPolicy(name, DiscreteBandit.indexBasedPolicy{indexFunction = indexFunction}.__get)
 end
 
+addIndex("rk+1/sqrt(tk)", |rk,sk,tk,t| rk + 1/math.sqrt(tk))
+addIndex("rk+1/tk", |rk,sk,tk,t| rk + 1/tk)
 
+--[[
 addIndex("ucb1", DiscreteBandit.ucb1)
 addIndex("ucb1Tuned", DiscreteBandit.ucb1Tuned)
 addIndex("ucb1Normal", DiscreteBandit.ucb1Normal)
@@ -68,7 +75,7 @@ addIndex("log(1.0986-min(rk,tk,log(rk)/3))", |rk,sk,tk,t| math.log(1.0986 - math
 addIndex("rk.sqrt(tk)", |rk,sk,tk,t| rk * math.sqrt(tk))
 addIndex("rk.(1+sqrt(tk))", |rk,sk,tk,t| rk*(1+math.sqrt(tk)))
 addIndex("max(8rk.sqrt(tk)+7rk,t)", |rk,sk,tk,t| math.max(8*rk*math.sqrt(tk)+7*rk,t))
-
+--]]
 
 -- evaluate policies
 function evaluatePolicy(description, policy)

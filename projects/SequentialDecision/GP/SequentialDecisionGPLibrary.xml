@@ -135,7 +135,7 @@
     <variable type="FormulaSearchProblem" name="problem"/>
     <variable type="File" name="formulasFile"/>
     <variable type="PositiveInteger" name="numEstimations"/>
-    <variable type="Boolean" name="isMinimizationProblem"/>
+    <variable type="File" name="outputFile"/>
   </class>
 
   <class name="BanditFormulaWorkUnit" base="WorkUnit">
@@ -153,16 +153,14 @@
     <value name="t"/>
   </enumeration>
 
-  <enumeration name="BanditFormulaObjectiveMode">
-    <value name="rawRegret"/>
-    <value name="mean"/>
-    <value name="normalizedMean"/>
-    <value name="worst10"/>
-    <value name="worst100"/>
-  </enumeration>
-  
+  <class name="RegretScoreObject" base="ScoreObject">
+    <variable type="Double" name="regret"/>
+    <variable type="Double" name="reward"/>
+  </class>
+
   <class name="BanditFormulaObjective" base="SimpleUnaryFunction">
-    <variable type="BanditFormulaObjectiveMode" name="mode" enumeration="yes"/>
+    <variable type="Boolean" name="isSimpleRegret"/>
+    <variable type="PositiveInteger" name="worstNumSamples"/>
     <variable type="PositiveInteger" name="minArms"/>
     <variable type="PositiveInteger" name="maxArms"/>
     <variable type="Double" name="maxExpectedReward"/>

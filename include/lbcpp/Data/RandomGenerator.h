@@ -178,7 +178,7 @@ public:
   ** @return an size_t type (unsigned) value in range [@a minSize, @a maxSize[
   */
   size_t sampleSize(size_t minSize, size_t maxSize)
-    {jassert(maxSize > minSize); return (size_t)sampleInt((int)minSize, (int)maxSize);}
+    {if (minSize == maxSize) return minSize; jassert(maxSize > minSize); return (size_t)sampleInt((int)minSize, (int)maxSize);}
 
   /** Samples a float value uniformly from range [0, 1[.
   **
