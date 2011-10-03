@@ -19,31 +19,11 @@
 namespace lbcpp
 {
 
-class FormulaPool : public ExecutionContextCallback
+class FormulaPool
 {
 public:
   FormulaPool(DiscreteBanditPolicyPtr policy, FunctionPtr objective)
     : policy(policy), objective(objective) {}
-    
-  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
-  {
-    FunctionWorkUnitPtr wu = workUnit.staticCast<FunctionWorkUnit>();
-    GPExpressionPtr formula = wu->getInputs()[0].getObjectAndCast<GPExpression>();
-    RegretScoreObjectPtr regret = result.getObjectAndCast<RegretScoreObject>();
-    receiveReward(formula, regret->getReward(), regret->getRegret());
-  }
-
-  void receiveReward(GPExpressionPtr formula, double reward, double regret)
-  {
-    std::map<GPExpressionPtr, size_t>::iterator it = currentlyEvaluatedFormulas.find(formula);
-    jassert(it != currentlyEvaluatedFormulas.end());
-    size_t index = it->second;
-    currentlyEvaluatedFormulas.erase(it);
-    receiveReward(index, reward, regret);
-  }
-
-  size_t getNumCurrentlyEvaluatedFormulas() const
-    {return currentlyEvaluatedFormulas.size();}
 
   size_t playBestFormula(ExecutionContext& context)
   {
@@ -54,17 +34,10 @@ public:
 
     GPExpressionPtr formula = formulas[index];
     WorkUnitPtr workUnit = functionWorkUnit(objective, std::vector<Variable>(1, formula));
-    if (false)//context.isMultiThread())
-    {
-      jassert(currentlyEvaluatedFormulas.find(formula) == currentlyEvaluatedFormulas.end());
-      currentlyEvaluatedFormulas[formula] = index;
-      context.pushWorkUnit(workUnit, this, false);
-    }
-    else
-    {
-      RegretScoreObjectPtr regret = context.run(workUnit, false).getObjectAndCast<RegretScoreObject>();
-      receiveReward(index, regret->getReward(), regret->getRegret());
-    }
+   
+    RegretScoreObjectPtr regret = context.run(workUnit, false).getObjectAndCast<RegretScoreObject>();
+    receiveReward(index, regret->getReward(), regret->getRegret());
+    //context.informationCallback(T("reward: ") + String(regret->getReward()) + T(" regret: ") + String(regret->getRegret()));
     return index;
   }
   
@@ -80,8 +53,18 @@ public:
     {
       GPExpressionPtr expression = formulas[it->second];
       size_t playedCount = policy->getBanditPlayedCount(it->second);
-      context.informationCallback(T("[") + String((int)i) + T("] ") + expression->toShortString() + T(" meanReward = ") + String(it->first)
-         + T(" playedCount = ") + String((int)playedCount));
+      String info = T("[") + String((int)i) + T("] ") + expression->toShortString()
+          + T(" meanRegret = ") + String(formulaRegrets[it->second].getMean(), 3)
+          + T(" meanReward = ") + String(it->first, 3)
+          + T(" playedCount = ") + String((int)playedCount);
+
+      context.enterScope(info);
+      context.resultCallback(T("rank"), i);
+      context.resultCallback(T("formula"), expression);
+      context.resultCallback(T("meanRegret"), formulaRegrets[it->second].getMean());
+      context.resultCallback(T("meanReward"), it->first);
+      context.resultCallback(T("playedCount"), playedCount);
+      context.leaveScope();
     }
   }
 
@@ -92,7 +75,6 @@ public:
     formulaRegrets.resize(formulas.size());
 
     policy->initialize(formulas.size());
-    totalReward = 0.0;
 
     double bestExpectedReward = -DBL_MAX;
     if (expectedRewards)
@@ -108,13 +90,17 @@ public:
 
     for (size_t i = 0; i < numIterations; ++i)
     {
-      context.enterScope(T("Iteration ") + String((int)i));
+      if (numIterations > 1)
+        context.enterScope(T("Iteration ") + String((int)i));
 
       for (size_t j = 0; j < iterationsLength; ++j)
       {
         size_t index = playBestFormula(context);
         if (expectedRewards)
           cumulativeRegret += bestExpectedReward - (*expectedRewards)[index];
+
+        if (iterationsLength > 1000 && ((j+1) % 100 == 0))
+          context.progressCallback(new ProgressionState(j + 1, iterationsLength, T("steps")));
       }
 
       context.resultCallback(T("iteration"), i);
@@ -128,10 +114,13 @@ public:
           (*simpleRegrets)[i] = simpleRegret;
       }
 
-      displayBestFormulas(context);
-      context.leaveScope();
-      context.progressCallback(new ProgressionState(i+1, numIterations, T("Iterations")));
+      if (numIterations > 1)
+      {
+        context.leaveScope();
+        context.progressCallback(new ProgressionState(i+1, numIterations, T("Iterations")));
+      }
     }
+    displayBestFormulas(context);
   }
 
   std::vector<GPExpressionPtr> getBestFormulas(size_t count)
@@ -162,24 +151,69 @@ protected:
   DiscreteBanditPolicyPtr policy;
   FunctionPtr objective;
   std::vector<GPExpressionPtr> formulas;
-  double totalReward;
 
-  std::map<GPExpressionPtr, size_t> currentlyEvaluatedFormulas;
   std::vector<ScalarVariableStatistics> formulaRegrets;
 
   void receiveReward(size_t index, double reward, double regret)
   {
-    totalReward += reward;
     policy->updatePolicy(index, reward);
     formulaRegrets[index].push(regret);
   }
 };
 
-
-class BanditFormulaWorkUnit : public WorkUnit
+class BanditFormulaSearch : public WorkUnit
 {
 public:
-  BanditFormulaWorkUnit() : numRuns(10), numIterations(10), iterationsLength(0) {}
+  BanditFormulaSearch() : numTimeSteps(100000), minArms(2), maxArms(10), maxExpectedReward(1.0), horizon(1000) {}
+
+  virtual Variable run(ExecutionContext& context)
+  {
+    size_t worstNumSamples = 10;
+
+    std::vector< std::pair<FunctionPtr, String> > objectives;
+    objectives.push_back(std::make_pair(new BanditFormulaObjective(false, 1, minArms, maxArms, maxExpectedReward, horizon), "Mean cumulative regret"));
+    objectives.push_back(std::make_pair(new BanditFormulaObjective(false, worstNumSamples, minArms, maxArms, maxExpectedReward, horizon), "Worst cumulative regret"));
+    objectives.push_back(std::make_pair(new BanditFormulaObjective(true, 1, minArms, maxArms, maxExpectedReward, horizon), "Mean simple regret"));
+    objectives.push_back(std::make_pair(new BanditFormulaObjective(true, worstNumSamples, minArms, maxArms, maxExpectedReward, horizon), "Worst simple regret"));
+
+    for (size_t i = 0; i < objectives.size(); ++i)
+      if (!objectives[i].first->initialize(context, gpExpressionClass))
+        return false;
+
+    std::vector<GPExpressionPtr> formulas;
+    EnumerationPtr variables = gpExpressionDiscreteBanditPolicyVariablesEnumeration;
+    if (!GPExpression::loadFormulasFromFile(context, formulasFile, variables, formulas))
+      return false;
+    context.informationCallback("We have " + String((int)formulas.size()) + " formulas");
+
+    DiscreteBanditPolicyPtr policy = new Formula5IndexBasedDiscreteBanditPolicy(1.0, true); // rk + 1/sqrt(tk)
+    for (size_t i = 0; i < objectives.size(); ++i)
+    {
+      context.enterScope(objectives[i].second);
+      FormulaPool pool(policy->cloneAndCast<DiscreteBanditPolicy>(), objectives[i].first);
+      size_t n = (i % 2 == 1 ? numTimeSteps / worstNumSamples : numTimeSteps);
+      pool.run(context, formulas, 1, n);
+      context.leaveScope(formulas[pool.getBestFormulaIndex()]->toShortString());
+    }
+    return true;
+  }
+
+protected:
+  friend class BanditFormulaSearchClass;
+
+  File formulasFile;
+  size_t numTimeSteps;
+
+  size_t minArms;
+  size_t maxArms;
+  double maxExpectedReward;
+  size_t horizon;
+};
+
+class CompareBanditFormulaSearchPolicies : public WorkUnit
+{
+public:
+  CompareBanditFormulaSearchPolicies() : numRuns(10), numIterations(10), iterationsLength(0) {}
 
   struct Run : public WorkUnit
   {
@@ -283,7 +317,7 @@ public:
   }
   
 protected:
-  friend class BanditFormulaWorkUnitClass;
+  friend class CompareBanditFormulaSearchPoliciesClass;
 
   FormulaSearchProblemPtr problem;
   File formulasFile;

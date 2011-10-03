@@ -20,7 +20,7 @@ class RegretScoreObject : public ScoreObject
 {
 public:
   RegretScoreObject(double regret = 1.0, double referenceRegret = 1.0)
-    : regret(regret), reward(exp(-regret / referenceRegret)) {}
+    : regret(regret), reward(juce::jmax(0.0, (referenceRegret - regret) / referenceRegret)) {}
 
   virtual double getScoreToMinimize() const
     {return regret;}
@@ -52,9 +52,10 @@ public:
   {
     GPExpressionPtr formula = expression.getObjectAndCast<GPExpression>();
     
-    double bestRewardExpectation;
-    double regret = sampleWorstRegret(context, formula, bestRewardExpectation);
-    return new RegretScoreObject(regret, (maxExpectedReward / 10.0) * (isSimpleRegret ? 1 : horizon));
+    double bestRewardExpectation, meanRewardExpectation;
+    double regret = sampleWorstRegret(context, formula, bestRewardExpectation, meanRewardExpectation);
+    double meanUniformRegret = bestRewardExpectation - meanRewardExpectation;
+    return new RegretScoreObject(regret, isSimpleRegret ? 1 : horizon);
   }
  
 protected:
@@ -105,20 +106,25 @@ protected:
       return horizon * bestRewardExpectation - sumOfRewards; // regret
   }
  
-  double sampleWorstRegret(ExecutionContext& context, GPExpressionPtr formula, double& bestRewardExpectation) const
+  double sampleWorstRegret(ExecutionContext& context, GPExpressionPtr formula, double& bestRewardExpectation, double& meanRewardExpectation) const
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
     bestRewardExpectation = 0.0;
+    meanRewardExpectation = 0.0;
+
     std::vector<SamplerPtr> arms(random->sampleSize(minArms, maxArms));
     std::vector<double> expectedRewards(arms.size());
+    
     for (size_t i = 0; i < arms.size(); ++i)
     {
       double p = random->sampleDouble(0.0, maxExpectedReward);
       if (p > bestRewardExpectation) 
         bestRewardExpectation = p;
+      meanRewardExpectation += p;
       arms[i] = bernoulliSampler(p);
       expectedRewards[i] = p;
     }
+    meanRewardExpectation /= arms.size();
 
     double worstRegret = -DBL_MAX;
     for (size_t i = 0; i < worstNumSamples; ++i)

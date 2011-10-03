@@ -65,7 +65,7 @@ class ManagerNetworkClient : public NetworkClient
 {
 public:
   ManagerNetworkClient(ExecutionContext& context)
-    : NetworkClient(context) {}
+    : NetworkClient(context), callback(NULL) {}
 
   void setCallback(ManagerNetworkClientCallbackPtr callback)
     {this->callback = callback;}
@@ -75,10 +75,10 @@ public:
                     size_t requiredCpus, size_t requiredMemory, size_t requiredTime);
 
   virtual void connectionMade()
-    {callback->connectionMade();}
+    {if (callback) callback->connectionMade();}
 
   virtual void connectionLost()
-    {callback->connectionLost();}
+    {if (callback) callback->connectionLost();}
 
 protected:
   ManagerNetworkClientCallbackPtr callback;

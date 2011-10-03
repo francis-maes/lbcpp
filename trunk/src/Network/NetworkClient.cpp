@@ -85,12 +85,14 @@ void ManagerNetworkClient::variableReceived(const Variable& variable)
   if (objClass == workUnitAcknowledgementNetworkMessageClass)
   {
     WorkUnitAcknowledgementNetworkMessagePtr message = obj.staticCast<WorkUnitAcknowledgementNetworkMessage>();
-    callback->workUnitAcknowledgementReceived(message->getSourceIdentifier(), message->getUniqueIdentifier());
+    if (callback)
+      callback->workUnitAcknowledgementReceived(message->getSourceIdentifier(), message->getUniqueIdentifier());
   }
   else if (objClass == workUnitResultNetworkMessageClass)
   {
     WorkUnitResultNetworkMessagePtr message = obj.staticCast<WorkUnitResultNetworkMessage>();
-    callback->workUnitResultReceived(message->getUniqueIdentifier(), message->getResult(context));
+    if (callback)
+      callback->workUnitResultReceived(message->getUniqueIdentifier(), message->getResult(context));
   }
   else
     context.warningCallback(T("ManagerNetworkClient::variableReceived")

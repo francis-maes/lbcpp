@@ -169,7 +169,7 @@ protected:
   int managerPort;
 
   String thisNetworkNodeName;
-  NetworkClientPtr managerClient;
+  ManagerNetworkClientPtr managerClient;
 };
 
 }; /* namespace lbcpp */
