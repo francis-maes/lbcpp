@@ -1,14 +1,9 @@
 
 Bandits:
- * Launch GenerateUniqueFormulas for everybody
  * Launch PlayFormulaNTimes for 2 sizes x 4 objectives
-   
  * Evaluation of formula search policies: simple regret curves
- 
  * Bandit problem from PlayFormulaNTimes files => discover best discovery policy
- 
  * Final evaluation: algorithm + latex generator
- 
 
 Lua-Misc
  * Move namespace lbcpp::lua into lua (-> introspection generator must be adapted)

@@ -300,8 +300,8 @@ public:
 class Formula5IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
 {
 public:
-  Formula5IndexBasedDiscreteBanditPolicy(double C = 1.0)
-    : SingleParameterIndexBasedDiscreteBanditPolicy(C) {}
+  Formula5IndexBasedDiscreteBanditPolicy(double C = 1.0, bool useSquareRoot = false)
+    : SingleParameterIndexBasedDiscreteBanditPolicy(C), useSquareRoot(useSquareRoot) {}
 
   virtual double getParameterInitialGuess() const
     {return 1.0;}
@@ -309,8 +309,11 @@ public:
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   { 
     const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
-    return statistics->getRewardMean() + C / (double)statistics->getPlayedCount();
+    double tk = (double)statistics->getPlayedCount();
+    return statistics->getRewardMean() + C / (useSquareRoot ? sqrt(tk) : tk);
   }
+
+  bool useSquareRoot;
 };
 
 class Formula6IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy

@@ -182,6 +182,8 @@ protected:
 
 typedef ReferenceCountedObjectPtr<IndexBasedDiscreteBanditPolicy> IndexBasedDiscreteBanditPolicyPtr;
 
+extern DiscreteBanditPolicyPtr uniformDiscreteBanditPolicy();
+
 extern IndexBasedDiscreteBanditPolicyPtr greedyDiscreteBanditPolicy();
 
 extern IndexBasedDiscreteBanditPolicyPtr ucb1DiscreteBanditPolicy(double C = 2.0);
