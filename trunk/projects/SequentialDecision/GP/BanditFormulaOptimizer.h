@@ -273,22 +273,24 @@ public:
     policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(5.0, true));
     policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(5.0, false));
 
+    std::vector< std::vector<ScalarVariableStatistics> > simpleRegretStatistics(policies.size(), std::vector<ScalarVariableStatistics>(numIterations));
+
     for (size_t i = 0; i < policies.size(); ++i)
     {
       DiscreteBanditPolicyPtr policy = policies[i];
       context.enterScope(T("Policy ") + policy->toShortString());
 
       CompositeWorkUnitPtr workUnit(new CompositeWorkUnit(T("Making ") + String((int)numRuns) + T(" runs"), numRuns));
-      for (size_t i = 0; i < numRuns; ++i)
-        workUnit->setWorkUnit(i, new Run((juce::uint32)(1664 + 51 * i), formulas, policy, objective, numIterations, iterationsLength, formulaRewards));
+      for (size_t r = 0; r < numRuns; ++r)
+        workUnit->setWorkUnit(r, new Run((juce::uint32)(1664 + 51 * r), formulas, policy, objective, numIterations, iterationsLength, formulaRewards));
       workUnit->setPushChildrenIntoStackFlag(true);
       context.run(workUnit);
       
-      std::vector<ScalarVariableStatistics> simpleRegretStats(numIterations);
+      std::vector<ScalarVariableStatistics>& simpleRegretStats = simpleRegretStatistics[i];
       size_t numSuccess = 0;
-      for (size_t i = 0; i < numRuns; ++i)
+      for (size_t r = 0; r < numRuns; ++r)
       {
-        ReferenceCountedObjectPtr<Run> run = workUnit->getWorkUnit(i).staticCast<Run>();
+        ReferenceCountedObjectPtr<Run> run = workUnit->getWorkUnit(r).staticCast<Run>();
         std::vector<double>& simpleRegrets = run->simpleRegrets;
         jassert(simpleRegrets.size() == numIterations);
         for (size_t j = 0; j < numIterations; ++j)
@@ -299,18 +301,34 @@ public:
       context.informationCallback(T("Success rate: ") + String((int)numSuccess) + T(" / ") + String((int)numRuns));
 
       context.enterScope(T("Results"));
-      for (size_t i = 0; i < numIterations; ++i)
+      for (size_t j = 0; j < numIterations; ++j)
       {
-        context.enterScope(T("Iteration ") + String((int)i));
-        context.resultCallback(T("iteration"), i);
-        context.resultCallback(T("simpleRegret"), simpleRegretStats[i].getMean());
-        context.resultCallback(T("simpleRegret stddev"), simpleRegretStats[i].getStandardDeviation());
+        context.enterScope(T("Iteration ") + String((int)j));
+        context.resultCallback(T("iteration"), j);
+        context.resultCallback(T("simpleRegret"), simpleRegretStats[j].getMean());
+        context.resultCallback(T("simpleRegret stddev"), simpleRegretStats[j].getStandardDeviation());
         context.leaveScope();
       }
       context.leaveScope(simpleRegretStats.back().getMean());
 
       context.leaveScope(simpleRegretStats.back().getMean());
     }
+    
+    context.enterScope(T("All results"));
+    for (size_t i = 0; i < numIterations; ++i)
+    {
+      context.enterScope(T("Iteration ") + String((int)i));
+      context.resultCallback(T("iteration"), i);
+      for (size_t j = 0; j < policies.size(); ++j)
+      {
+        String name = policies[j]->toShortString();
+        ScalarVariableStatistics& stats = simpleRegretStatistics[j][i];
+        context.resultCallback(name, stats.getMean());
+        context.resultCallback(name + T(" stddev"), stats.getStandardDeviation());
+      }
+      context.leaveScope();
+    }
+    context.leaveScope();    
     return true;
   }
   
