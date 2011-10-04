@@ -629,7 +629,7 @@ public:
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
     DefaultEnumerationPtr res = new DefaultEnumeration();
-    const int startIndex = -windowSize / 2;
+    const int startIndex = -(int)windowSize / 2;
     for (size_t i = 0; i < windowSize; ++i)
       res->addElement(context, T("[") + String((int)i + startIndex) + ("]"));
     return res;
@@ -660,7 +660,7 @@ public:
 
     const int startCysteinIndex = index - windowSize / 2;
     for (size_t i = (startCysteinIndex < 0) ? -startCysteinIndex : 0; i < windowSize && startCysteinIndex + i < n; ++i)
-      callback.sense(i, (double)abs(cysteinIndices[startCysteinIndex + i] - position) / (double)zFactor);
+      callback.sense(i, (double)abs((int)cysteinIndices[startCysteinIndex + i] - (int)position) / (double)zFactor);
   }
 
 protected:
