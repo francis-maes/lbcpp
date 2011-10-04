@@ -54,7 +54,7 @@ public:
     
     double bestRewardExpectation, meanRewardExpectation;
     double regret = sampleWorstRegret(context, formula, bestRewardExpectation, meanRewardExpectation);
-    double meanUniformRegret = bestRewardExpectation - meanRewardExpectation;
+    //double meanUniformRegret = bestRewardExpectation - meanRewardExpectation;
     return new RegretScoreObject(regret, maxExpectedReward * (isSimpleRegret ? 1 : horizon));
   }
  
