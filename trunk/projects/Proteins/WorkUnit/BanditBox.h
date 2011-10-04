@@ -548,6 +548,8 @@ protected:
     {
       const ProteinPtr protein = proteins->getElement(i).getObject()->getVariable(1).getObjectAndCast<Protein>();
       const ContainerPtr supervisions = protein->getTargetOrComputeIfMissing(context, target).getObjectAndCast<Container>();
+      if (!supervisions)
+        continue;
 
       const size_t length = protein->getLength();
       jassert(length == supervisions->getNumElements());

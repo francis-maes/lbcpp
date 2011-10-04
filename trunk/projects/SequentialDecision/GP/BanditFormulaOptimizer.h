@@ -191,8 +191,7 @@ public:
     {
       context.enterScope(objectives[i].second);
       FormulaPool pool(policy->cloneAndCast<DiscreteBanditPolicy>(), objectives[i].first);
-      size_t n = (i % 2 == 1 ? numTimeSteps / worstNumSamples : numTimeSteps);
-      pool.run(context, formulas, 1, n);
+      pool.run(context, formulas, 1, numTimeSteps);
       context.leaveScope(formulas[pool.getBestFormulaIndex()]->toShortString());
     }
     return true;
