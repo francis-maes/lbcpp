@@ -228,22 +228,24 @@ public:
     currentIndexOffset -= index;
   }
 
-  void finalizeDistance()
+  void finalize()
   {
     for (; nextIndex < standardDeviation.size() && !shouldStop(); ++nextIndex)
       res += squareTarget[nextIndex];
-    nextIndex = 0;
     jassert(currentIndexOffset == 0);
   }
 
   virtual bool shouldStop() const
     {return res > threshold;}
 
-  double getAndResetDistance()
+  double getDistance() const
+    {return res;}
+
+  void reset()
   {
-    double toReturn = res;
     res = 0.f;
-    return toReturn;
+    nextIndex = 0;
+    currentIndexOffset = 0;
   }
 
   double threshold;
@@ -273,8 +275,8 @@ StreamBasedNearestNeighbor::StreamBasedNearestNeighbor(const StreamPtr& stream, 
   {
     ObjectPtr obj = stream->next().getObject();
     jassert(obj);
-    jassert(obj->getVariable(0).dynamicCast<LazyDoubleVector>()); // Method is efficient only if the double vector is lazy
-    DoubleVectorPtr dv = obj->getVariable(0).dynamicCast<DoubleVector>();
+    jassert(obj->getVariable(0).getObjectAndCast<LazyDoubleVector>()); // Method is efficient only if the double vector is lazy
+    DoubleVectorPtr dv = obj->getVariable(0).getObjectAndCast<DoubleVector>();
     dv->computeFeatures(callback);
     callback.finalizeFeatures();
   }
@@ -298,14 +300,16 @@ Variable StreamBasedNearestNeighbor::computeFunction(ExecutionContext& context, 
     ObjectPtr obj = clonedStream->next().getObject();
     jassert(obj);
     DoubleVectorPtr dv = obj->getVariable(0).dynamicCast<DoubleVector>();
+    featureCallback.reset();
     dv->computeFeatures(featureCallback);
-    featureCallback.finalizeDistance();
+    featureCallback.finalize();
 
+    //std::cout << "ShouldStop: " << featureCallback.shouldStop() << " - Distance: " << featureCallback.getDistance() << " - Threshold: " << featureCallback.threshold << std::endl;
+    //jassertfalse;
     if (featureCallback.shouldStop())
       continue;
 
-    Variable supervision = obj->getVariable(1);
-    scoresVariable.insert(std::pair<double, Variable>(-featureCallback.getAndResetDistance(), supervision));
+    scoresVariable.insert(std::pair<double, Variable>(-featureCallback.getDistance(), obj->getVariable(1)));
 
     if (numToPrecompute > 0)
       --numToPrecompute;
@@ -325,7 +329,12 @@ Variable ClassificationStreamBasedNearestNeighbor::computeOutput(ScoresMap& scor
 
   const size_t maxNumNeighbors = scoredIndices.size() < numNeighbors ? scoredIndices.size() : numNeighbors;
   ScoresMap::reverse_iterator it = scoredIndices.rbegin();
-
+/*
+  std::cout << "All: " << std::endl;
+  for (; it != scoredIndices.rend(); ++it)
+    std::cout << it->first << " - " << it->second.toString() << std::endl;
+  it = scoredIndices.rbegin();
+*/
   if (!includeTheNearestNeighbor)
     ++it;
 
@@ -337,5 +346,23 @@ Variable ClassificationStreamBasedNearestNeighbor::computeOutput(ScoresMap& scor
   for (size_t i = 0; i < sums.size(); ++i)
     res->setValue(i, maxNumNeighbors ? sums[i] / (double)maxNumNeighbors : 0.f);
   return res;
+}
+
+Variable BinaryClassificationStreamBasedNearestNeighbor::computeOutput(ScoresMap& scoredIndices) const
+{
+  size_t numTrues = 0;
+
+  const size_t maxNumNeighbors = scoredIndices.size() < numNeighbors ? scoredIndices.size() : numNeighbors;
+  ScoresMap::reverse_iterator it = scoredIndices.rbegin();
+
+  if (!includeTheNearestNeighbor)
+    ++it;
+
+  for (size_t i = 0; i < maxNumNeighbors; ++i, it++)
+    if (it->second.isBoolean() && it->second.getBoolean()
+        || it->second.isDouble() && it->second.getDouble() >= 0.5)
+      ++numTrues;
+  
+  return probability(numTrues / (double)maxNumNeighbors);
 }
 

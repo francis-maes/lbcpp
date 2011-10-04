@@ -672,18 +672,6 @@ public:
     builder.finishSelectionWithFunction(createVectorFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, residuePerception)), T("rfVector"));
   }
 
-  virtual void residuePerception(CompositeFunctionBuilder& builder) const
-  {
-    /* Input */
-    size_t position = builder.addInput(positiveIntegerType, T("position"));
-    size_t proteinPerception = builder.addInput(largeProteinPerceptionClass());
-    /* Output */
-    builder.startSelection();
-      builder.addFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, globalFeatures), proteinPerception, T("globalFeatures"));
-      builder.addFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, residueFeatures), position, proteinPerception, T("residueFeatures"));
-    builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
-  }
-
   virtual void residuePairVectorPerception(CompositeFunctionBuilder& builder) const
     {jassertfalse;}
 
@@ -697,6 +685,9 @@ public:
     {jassertfalse;}
 
   void residueFeatures(CompositeFunctionBuilder& builder) const
+    {jassertfalse;}
+  
+  virtual void residuePerception(CompositeFunctionBuilder& builder) const
   {
     /* Inputs */
     size_t position = builder.addInput(positiveIntegerType, T("position"));
@@ -722,6 +713,37 @@ public:
     size_t stalAccumulator = builder.addFunction(getVariableFunction(T("stalAccumulator")), proteinPerception, T("stalAccu"));
     /* Output */
     builder.startSelection();
+      /*** Global Features ***/
+      if (fp->useProteinLength)
+        builder.addFunction(integerFeatureGenerator(), length, T("length"));
+
+      // global histograms
+      if (fp->useAminoAcidGlobalHistogram)
+        builder.addFunction(accumulatorGlobalMeanFunction(), aaAccumulator, T("h(AA)"));
+      if (fp->usePSSMGlobalHistogram)
+        builder.addFunction(accumulatorGlobalMeanFunction(), pssmAccumulator, T("h(PSSM)"));
+      if (fp->useSS3GlobalHistogram)
+        builder.addFunction(accumulatorGlobalMeanFunction(), ss3Accumulator, T("h(SS3)"));
+      if (fp->useSS8GlobalHistogram)
+        builder.addFunction(accumulatorGlobalMeanFunction(), ss8Accumulator, T("h(SS8)"));
+      if (fp->useSAGlobalHistogram)
+        builder.addFunction(accumulatorGlobalMeanFunction(), saAccumulator, T("h(SA)"));
+      if (fp->useDRGlobalHistogram)
+        builder.addFunction(accumulatorGlobalMeanFunction(), drAccumulator, T("h(DR)"));
+      if (fp->useSTALGlobalHistogram)
+        builder.addFunction(accumulatorGlobalMeanFunction(), stalAccumulator, T("h(StAl)"));
+
+      // number of cysteins
+      if (fp->useNumCysteins)
+      {
+        builder.addFunction(integerFeatureGenerator(), numCysteins, T("#Cys"));
+        builder.addFunction(new IsNumCysteinPair(), protein, T("(#Cys+1) % 2"));
+      }
+
+      // bias (and anti-crash)
+      builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 1, 1.0), T("bias"));
+
+      /*** Residue Features ***/
       if (fp->useRelativePosition)
         builder.addFunction(new RelativeValueFeatureGenerator(1), position, length, T("Pos/Len"));
       if (fp->useRelativeCysteinIndex)
@@ -762,9 +784,6 @@ public:
       // cystein profil
       if (fp->separationProfilSize)
         builder.addFunction(new CysteinSeparationProfilFeatureGenerator(fp->separationProfilSize, true), protein, position, T("CysProfil(") + String((int)fp->separationProfilSize) + T(")"));
-
-      // AntiCrash
-      builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 1, 0.0), T("null"));
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
