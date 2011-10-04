@@ -108,7 +108,7 @@ public:
   size_t selectNextBandit(ExecutionContext& context)
     {return selectBandit(context, timeStep, banditStatistics);}
 
-  void updatePolicy(size_t banditNumber, double reward)
+  virtual void updatePolicy(size_t banditNumber, double reward)
   {
     jassert(banditNumber < banditStatistics.size());
     ++timeStep;

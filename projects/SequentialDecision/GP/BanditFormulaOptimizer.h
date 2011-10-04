@@ -151,7 +151,6 @@ protected:
   DiscreteBanditPolicyPtr policy;
   FunctionPtr objective;
   std::vector<GPExpressionPtr> formulas;
-
   std::vector<ScalarVariableStatistics> formulaRegrets;
 
   void receiveReward(size_t index, double reward, double regret)
@@ -186,7 +185,7 @@ public:
       return false;
     context.informationCallback("We have " + String((int)formulas.size()) + " formulas");
 
-    DiscreteBanditPolicyPtr policy = new Formula5IndexBasedDiscreteBanditPolicy(1.0, true); // rk + 1/sqrt(tk)
+    DiscreteBanditPolicyPtr policy = new Formula5IndexBasedDiscreteBanditPolicy(2.5, false); // rk + 1/sqrt(tk)
     for (size_t i = 0; i < objectives.size(); ++i)
     {
       context.enterScope(objectives[i].second);

@@ -14,6 +14,7 @@
 # include <lbcpp/Sampler/Sampler.h>
 # include "../GP/GPExpressionBuilder.h"
 # include "DiscreteBanditExperiment.h"
+# include <queue>
 
 namespace lbcpp
 {
@@ -303,6 +304,12 @@ public:
   Formula5IndexBasedDiscreteBanditPolicy(double C = 1.0, bool useSquareRoot = false)
     : SingleParameterIndexBasedDiscreteBanditPolicy(C), useSquareRoot(useSquareRoot) {}
 
+  virtual void initialize(size_t numBandits)
+  {
+    banditsQueue = BanditsQueue();
+    SingleParameterIndexBasedDiscreteBanditPolicy::initialize(numBandits);
+  }
+
   virtual double getParameterInitialGuess() const
     {return 1.0;}
     
@@ -313,7 +320,40 @@ public:
     return statistics->getRewardMean() + C / (useSquareRoot ? sqrt(tk) : tk);
   }
 
+  virtual size_t selectBandit(ExecutionContext& context, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
+  {
+    if (timeStep < banditStatistics.size())
+      return timeStep; // play each bandit once
+    size_t res = banditsQueue.top().first;
+    banditsQueue.pop();
+    return res;
+  }
+
+  virtual void updatePolicy(size_t banditNumber, double reward)
+  {
+    SingleParameterIndexBasedDiscreteBanditPolicy::updatePolicy(banditNumber, reward);
+    double score = computeBanditScore(banditNumber, timeStep, banditStatistics);    
+    banditsQueue.push(std::make_pair(banditNumber, score));
+  }
+  
+protected:
+  friend class Formula5IndexBasedDiscreteBanditPolicyClass;
+  
   bool useSquareRoot;
+  
+  struct BanditScoresComparator
+  {
+    bool operator()(const std::pair<size_t, double>& left, const std::pair<size_t, double>& right) const
+    {
+      if (left.second != right.second)
+        return left.second < right.second;
+      else
+        return left.first < right.first;
+    }
+  };
+  
+  typedef std::priority_queue<std::pair<size_t, double>, std::vector<std::pair<size_t, double> >, BanditScoresComparator  > BanditsQueue;
+  BanditsQueue banditsQueue;
 };
 
 class Formula6IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
