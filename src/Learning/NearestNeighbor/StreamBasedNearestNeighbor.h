@@ -78,6 +78,26 @@ protected:
   virtual Variable computeOutput(ScoresMap& scoredIndices) const;
 };
 
+class BinaryClassificationStreamBasedNearestNeighbor : public StreamBasedNearestNeighbor
+{
+public:
+  BinaryClassificationStreamBasedNearestNeighbor(const StreamPtr& stream, size_t numNeighbors, bool includeTheNearestNeighbor)
+    : StreamBasedNearestNeighbor(stream, numNeighbors, includeTheNearestNeighbor) {}
+
+  virtual TypePtr getSupervisionType() const
+    {return sumType(booleanType, probabilityType);}
+  
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return probabilityType;}
+
+protected:
+  friend class BinaryClassificationStreamBasedNearestNeighborClass;
+
+  BinaryClassificationStreamBasedNearestNeighbor() {}
+
+  virtual Variable computeOutput(ScoresMap& scoredIndices) const;
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_STREAM_BASED_NEAREST_NEIGHBOR_H_

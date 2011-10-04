@@ -260,6 +260,11 @@
   </class>
   <class name="ProteinBanditWorkUnit" base="WorkUnit">
     <variable type="String" name="proteinsPath" shortName="in"/>
+    <variable type="VariablesEnumeration[Protein]" name="target" shortName="t"/>
+  </class>
+
+  <class name="TestParameterWorkUnit" base="WorkUnit">
+    <variable type="String" name="proteinsPath" shortName="in"/>
   </class>
   <!-- END BanditBox -->
 </library>

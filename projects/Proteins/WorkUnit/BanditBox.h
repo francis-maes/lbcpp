@@ -419,6 +419,10 @@ public:
     ContainerPtr trainingProteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinsPath).getChildFile(T("train/")), 0, T("Loading training proteins"));
 //    ContainerPtr testingProteins = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinsPath).getChildFile(T("test/")), 0, T("Loading testing proteins"));
 
+    context.enterScope(T("Computing missing targets"));
+    computeMissingTargets(context, trainingProteins);
+    context.leaveScope();
+
     jassert(typeOfProteinPerception(target) == residueType);    
 
     FunctionPtr proteinPerceptionFunction = largePredictor->createProteinPerception();
@@ -472,7 +476,7 @@ public:
 
     StreamPtr trainingStream = new PairBinaryFunctionBasedStream(context, residuePerceptionFunction, trainingInputPairs, trainingOutputs);
 
-    FunctionPtr learner = classificationStreamBasedNearestNeighbor(trainingStream, 5, false);
+    FunctionPtr learner = nearestNeighborLearningMachine(trainingStream, 5, false);
     learner->initialize(context, trainingStream->getElementsType()->getTemplateArgument(0), trainingStream->getElementsType()->getTemplateArgument(1));
 
 //    StreamPtr testingStream = new PairBinaryFunctionBasedStream(context, residuePerceptionFunction, testingInputPairs, testingOutputs);
@@ -512,8 +516,8 @@ public:
 
     t->trainingInputPairs = trainingInputPairs;
     t->trainingOutputs = trainingOutputs;
-    t->testingInputPairs = testingInputPairs;    
-    t->testingOutputs = testingOutputs;
+//    t->testingInputPairs = testingInputPairs;    
+//    t->testingOutputs = testingOutputs;
   }
 
 protected:
@@ -525,6 +529,24 @@ protected:
   LargeProteinPredictorParametersPtr largePredictor;
 
   ProteinBanditSampler() {}
+
+  void computeMissingTargets(ExecutionContext& context, const ContainerPtr& proteins) const
+  {
+    const size_t n = proteins->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      ObjectPtr obj = proteins->getElement(i).getObject();
+      computeMissingTargets(context, obj->getVariable(0).getObjectAndCast<Protein>());
+      computeMissingTargets(context, obj->getVariable(1).getObjectAndCast<Protein>());
+    }
+  }
+
+  void computeMissingTargets(ExecutionContext& context, const ProteinPtr& protein) const
+  {
+    const size_t n = proteinClass->getNumMemberVariables();
+    for (size_t i = 0; i < n; ++i)
+      protein->getTargetOrComputeIfMissing(context, i);
+  }
 
   void createProteinPerception(ExecutionContext& context, const FunctionPtr& function, const ContainerPtr& proteins, std::vector<ProteinPrimaryPerceptionPtr>& proteinPerceptions) const
   {
@@ -588,10 +610,10 @@ protected:
 private:
   std::vector<PairPtr> trainingInputPairs;
   std::vector<Variable> trainingOutputs;
-
+/*
   std::vector<PairPtr> testingInputPairs;    
   std::vector<Variable> testingOutputs;
-
+*/
   std::map<String, bool> wasAlreadySampled;
 };
 
@@ -697,6 +719,8 @@ protected:
 class ProteinBanditWorkUnit : public WorkUnit
 {
 public:
+  ProteinBanditWorkUnit() : target(ss3Target) {}
+
   virtual Variable run(ExecutionContext& context)
   {
     LargeProteinPredictorParametersPtr predictor(new LargeProteinPredictorParameters());
@@ -704,10 +728,10 @@ public:
     predictor->knnNeighbors = 5;
 
     SamplerPtr sampler = new ProteinBanditSampler(context, objectCompositeSampler(largeProteinParametersClass, LargeProteinParameters::createSingleTaskSingleStageSamplers())
-                                              , proteinsPath, ss3Target, predictor);
+                                              , proteinsPath, target, predictor);
     FunctionPtr f(new BanditFunction());
     OptimizationProblemPtr problem(new OptimizationProblem(f, Variable(), sampler));
-    OptimizerPtr optimizer(banditEDAOptimizer(5, 10, 5, 0.5f, 300, 2));
+    OptimizerPtr optimizer(banditEDAOptimizer(1, 10, 5, 0.5f, 100, 1));
     return optimizer->compute(context, problem);
   }
 
@@ -715,11 +739,56 @@ protected:
   friend class ProteinBanditWorkUnitClass;
 
   String proteinsPath;
+  ProteinTarget target;
 };
 
-class SubSetSampler : public Sampler
+class TestParameterWorkUnit : public WorkUnit
 {
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    LargeProteinParametersPtr fg = new LargeProteinParameters();
+    fg->useRelativePosition = true;
+    fg->aminoAcidLocalHistogramSize = 34;
+    fg->pssmLocalHistogramSize = 88;
 
+    LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(fg);
+    predictor->learningMachineName = T("SGD");
+    predictor->sgdRate = 1.f;
+    predictor->sgdIterations = 300;
+    predictor->knnNeighbors = 5;
+
+    ContainerPtr trainingData = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinsPath).getChildFile(T("train/")), 0, T("Loading training proteins"));
+    if (!trainingData || !trainingData->getNumElements())
+    {
+      context.errorCallback(T("No training proteins !"));
+      return 101.f;
+    }
+
+    ProteinPredictorPtr stack = new ProteinPredictor(predictor);
+    stack->addTarget(ss3Target);
+
+    if (!stack->train(context, trainingData, ContainerPtr(), T("Training")))
+      return 102.f;
+
+    ContainerPtr testingData = Protein::loadProteinsFromDirectoryPair(context, File(), context.getFile(proteinsPath).getChildFile(T("test/")), 0, T("Loading training proteins"));
+    if (!testingData || !testingData->getNumElements())
+    {
+      context.warningCallback(T("No testing proteins ! Training score is returned !"));
+      return 103.f;
+    }
+
+    ProteinEvaluatorPtr testEvaluator = new ProteinEvaluator();
+    CompositeScoreObjectPtr testScores = stack->evaluate(context, testingData, testEvaluator, T("Evaluate on test proteins"));
+    
+    context.informationCallback(T("Q_ss3: ") + String(testEvaluator->getScoreObjectOfTarget(testScores, ss3Target)->getScoreToMinimize()));
+    return testEvaluator;
+  }
+
+protected:
+  friend class TestParameterWorkUnitClass;
+
+  String proteinsPath;
 };
 
 };

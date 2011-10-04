@@ -23,8 +23,11 @@ public:
 
   double computeScoreToMinimize() const // this score should be minimized (opposite of the index function)
   {
+    return -(numSamples ? getRewardMean() + 1 / sqrt((double)numSamples) : DBL_MAX);
+    /*
     static const double C = 1.5f;
     return -(numSamples ? getRewardMean() + C / (double)numSamples : DBL_MAX);
+    */
   }
 
   double getRewardMean() const
@@ -38,8 +41,10 @@ public:
 
   void receiveObjectiveValue(double value)
   {
-    static const double T = 1.0;
-    receiveReward(1 - exp(-value / T));
+    //static const double T = 1.0;
+    //receiveReward(1 - exp(-value / T));
+    jassert(value >= 0.f && value <= 1.f);
+    receiveReward(value);
     objectiveValueSum += value;
   }
 

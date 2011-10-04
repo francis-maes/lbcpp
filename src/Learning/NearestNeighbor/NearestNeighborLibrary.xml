@@ -49,4 +49,8 @@
     <variable type="Enumeration" name="enumeration"/>
   </class>
 
+  <class name="BinaryClassificationStreamBasedNearestNeighbor" base="StreamBasedNearestNeighbor">
+    <constructor arguments="const StreamPtr&amp; stream, size_t numNeighbors, bool includeTheNearestNeighbor" returnType="Function"/>
+  </class>
+
 </library>

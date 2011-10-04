@@ -19,6 +19,7 @@ extern FunctionPtr classificationNearestNeighbor(size_t numNeighbors, bool inclu
 extern FunctionPtr regressionNearestNeighbor(size_t numNeighbors, bool includeTheNearestNeighbor = true);
 
 extern FunctionPtr classificationStreamBasedNearestNeighbor(const StreamPtr& stream, size_t numNeighbors, bool includeTheNearestNeighbor);
+extern FunctionPtr binaryClassificationStreamBasedNearestNeighbor(const StreamPtr& stream, size_t numNeighbors, bool includeTheNearestNeighbor);
 
 extern FunctionPtr nearestNeighborLearningMachine(size_t numNeighbors, bool includeTheNearestNeighbor);
 extern FunctionPtr nearestNeighborLearningMachine(const StreamPtr& stream, size_t numNeighbors, bool includeTheNearestNeighbor);
