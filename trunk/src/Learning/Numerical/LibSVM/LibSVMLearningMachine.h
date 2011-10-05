@@ -16,7 +16,7 @@
 namespace lbcpp
 {
 
-extern ClassPtr libSVMLearningMachineClass;
+extern ClassPtr libSVMLearningMachineFunctionClass;
 
 class LibSVMLearningMachineFunction : public Function
 {
@@ -109,15 +109,15 @@ protected:
   }
 };
 
-typedef ReferenceCountedObjectPtr<LibSVMLearningMachineFunction> LibSVMLearningMachinePtr;
+typedef ReferenceCountedObjectPtr<LibSVMLearningMachineFunction> LibSVMLearningMachineFunctionPtr;
 
 class LibSVMBatchLearner : public BatchLearner
 {
 public:
   virtual TypePtr getRequiredFunctionType() const
-    {return libSVMLearningMachineClass;}
+    {return libSVMLearningMachineFunctionClass;}
 
-  svm_problem* createProblem(const LibSVMLearningMachinePtr& machine, const std::vector<ObjectPtr>& data) const
+  svm_problem* createProblem(const LibSVMLearningMachineFunctionPtr& machine, const std::vector<ObjectPtr>& data) const
   {
     typedef svm_node* svm_node_ptr;
 
@@ -135,7 +135,7 @@ public:
 
   virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
-    LibSVMLearningMachinePtr machine = function.staticCast<LibSVMLearningMachineFunction>();
+    LibSVMLearningMachineFunctionPtr machine = function.staticCast<LibSVMLearningMachineFunction>();
 
     machine->destroyModel();
     machine->problem = createProblem(machine, trainingData);
