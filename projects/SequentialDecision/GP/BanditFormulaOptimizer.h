@@ -62,6 +62,7 @@ public:
       context.resultCallback(T("rank"), i);
       context.resultCallback(T("formula"), expression);
       context.resultCallback(T("meanRegret"), formulaRegrets[it->second].getMean());
+      context.resultCallback(T("regretStddev"), formulaRegrets[it->second].getStandardDeviation());
       context.resultCallback(T("meanReward"), it->first);
       context.resultCallback(T("playedCount"), playedCount);
       context.leaveScope();
@@ -181,36 +182,87 @@ protected:
 class BanditFormulaSearch : public WorkUnit
 {
 public:
-  BanditFormulaSearch() : numTimeSteps(100000), minArms(2), maxArms(10), maxExpectedReward(1.0), horizon(1000) {}
+  BanditFormulaSearch() : numTimeSteps(100000), minArms(2), maxArms(10), maxExpectedReward(1.0), minHorizon(10), maxHorizon(10000) {}
+
+  struct Run : public WorkUnit
+  {
+    Run(const std::vector<GPExpressionPtr>& formulas, FunctionPtr objective, size_t numTimeSteps, const std::vector<DiscreteBanditPolicyPtr>& baselines, const String& description)
+      : formulas(formulas), objective(objective), numTimeSteps(numTimeSteps), baselines(baselines), description(description) {}
+
+    virtual String toShortString() const
+      {return description;}
+
+    virtual Variable run(ExecutionContext& context)
+    {
+      DiscreteBanditPolicyPtr policy = new Formula5IndexBasedDiscreteBanditPolicy(1, false); // rk + 1/sqrt(tk)
+      FormulaPool pool(policy, objective);
+      pool.run(context, formulas, 1, numTimeSteps);
+      
+      for (size_t i = 0; i < baselines.size(); ++i)
+      {
+        DiscreteBanditPolicyPtr baseline = baselines[i]->cloneAndCast<DiscreteBanditPolicy>();
+        context.enterScope(T("Baseline ") + baseline->toShortString());
+        
+        ScalarVariableStatistics regretStats;
+        for (size_t j = 0; j < 10000; ++j)
+        {
+          RegretScoreObjectPtr regret = objective->compute(context, baseline).getObjectAndCast<RegretScoreObject>();
+          regretStats.push(regret->getRegret());
+        }
+        context.resultCallback(T("baseline"), baseline->toShortString());
+        context.resultCallback(T("meanRegret"), regretStats.getMean());
+        context.resultCallback(T("regretStddev"), regretStats.getStandardDeviation());
+        context.resultCallback(T("playedCount"), (size_t)regretStats.getCount());
+        context.leaveScope(regretStats.getMean());
+      }
+      return true;
+    }
+      
+  protected:
+    const std::vector<GPExpressionPtr>& formulas;
+    FunctionPtr objective;
+    size_t numTimeSteps;
+    const std::vector<DiscreteBanditPolicyPtr>& baselines;
+    String description;
+  };
 
   virtual Variable run(ExecutionContext& context)
   {
-    size_t worstNumSamples = 10;
-
-    std::vector< std::pair<FunctionPtr, String> > objectives;
-    objectives.push_back(std::make_pair(new BanditFormulaObjective(false, 1, minArms, maxArms, maxExpectedReward, horizon), "Mean cumulative regret"));
-    objectives.push_back(std::make_pair(new BanditFormulaObjective(false, worstNumSamples, minArms, maxArms, maxExpectedReward, horizon), "Worst cumulative regret"));
-    objectives.push_back(std::make_pair(new BanditFormulaObjective(true, 1, minArms, maxArms, maxExpectedReward, horizon), "Mean simple regret"));
-    objectives.push_back(std::make_pair(new BanditFormulaObjective(true, worstNumSamples, minArms, maxArms, maxExpectedReward, horizon), "Worst simple regret"));
-
-    for (size_t i = 0; i < objectives.size(); ++i)
-      if (!objectives[i].first->initialize(context, gpExpressionClass))
-        return false;
-
     std::vector<GPExpressionPtr> formulas;
     EnumerationPtr variables = gpExpressionDiscreteBanditPolicyVariablesEnumeration;
     if (!GPExpression::loadFormulasFromFile(context, formulasFile, variables, formulas))
       return false;
     context.informationCallback("We have " + String((int)formulas.size()) + " formulas");
 
-    DiscreteBanditPolicyPtr policy = new Formula5IndexBasedDiscreteBanditPolicy(2.5, false); // rk + 1/sqrt(tk)
-    for (size_t i = 0; i < objectives.size(); ++i)
+
+    std::vector<DiscreteBanditPolicyPtr> baselines;
+    baselines.push_back(uniformDiscreteBanditPolicy());
+    baselines.push_back(greedyDiscreteBanditPolicy());
+    baselines.push_back(ucb1DiscreteBanditPolicy());
+    baselines.push_back(ucb1TunedDiscreteBanditPolicy());
+//    baselines.push_back(ucbvDiscreteBanditPolicy());
+    baselines.push_back(klucbDiscreteBanditPolicy());    
+    baselines.push_back(new Formula5IndexBasedDiscreteBanditPolicy(1, false));
+    baselines.push_back(new Formula5IndexBasedDiscreteBanditPolicy(1, true));
+
+    CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Running"));
+
+    for (size_t horizon = minHorizon; horizon <= maxHorizon; horizon *= 10)
     {
-      context.enterScope(objectives[i].second);
-      FormulaPool pool(policy->cloneAndCast<DiscreteBanditPolicy>(), objectives[i].first);
-      pool.run(context, formulas, 1, numTimeSteps);
-      context.leaveScope();//formulas[pool.sampleBestFormulaIndex(context)]->toShortString());
+      String pre = "Horizon " + String((int)horizon);
+      FunctionPtr objective = new BanditFormulaObjective(false, 1, minArms, maxArms, maxExpectedReward, horizon);
+      objective->initialize(context, gpExpressionClass);
+      workUnit->addWorkUnit(new Run(formulas, objective, numTimeSteps, baselines, pre + T(" Cumulative Regret")));
+      
+      objective = new BanditFormulaObjective(true, 1, minArms, maxArms, maxExpectedReward, horizon);
+      objective->initialize(context, gpExpressionClass);
+      workUnit->addWorkUnit(new Run(formulas, objective, numTimeSteps, baselines, pre + T(" Simple Regret")));
     }
+    
+    workUnit->setPushChildrenIntoStackFlag(true);
+    context.resultCallback(T("minHorizon"), minHorizon);
+    context.resultCallback(T("maxHorizon"), maxHorizon);
+    context.run(workUnit, false);
     return true;
   }
 
@@ -223,7 +275,8 @@ protected:
   size_t minArms;
   size_t maxArms;
   double maxExpectedReward;
-  size_t horizon;
+  size_t minHorizon;
+  size_t maxHorizon;
 };
 
 class CompareBanditFormulaSearchPolicies : public WorkUnit

@@ -129,6 +129,7 @@ protected:
   virtual size_t selectBandit(ExecutionContext& context, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) = 0;
 };
 
+extern ClassPtr discreteBanditPolicyClass;
 typedef ReferenceCountedObjectPtr<DiscreteBanditPolicy> DiscreteBanditPolicyPtr;
 
 class IndexBasedDiscreteBanditPolicy : public DiscreteBanditPolicy
