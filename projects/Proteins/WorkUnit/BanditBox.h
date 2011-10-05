@@ -753,7 +753,7 @@ public:
     fg->pssmLocalHistogramSize = 88;
 
     LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(fg);
-    predictor->learningMachineName = T("SGD");
+    predictor->learningMachineName = T("LibSVM");
     predictor->sgdRate = 1.f;
     predictor->sgdIterations = 300;
     predictor->knnNeighbors = 5;
