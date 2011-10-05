@@ -45,15 +45,20 @@ class BanditFormulaObjective : public SimpleUnaryFunction
 {
 public:
   BanditFormulaObjective(bool isSimpleRegret = false, size_t worstNumSamples = 1, size_t minArms = 2, size_t maxArms = 10, double maxExpectedReward = 1.0, size_t horizon = 100)
-    : SimpleUnaryFunction(gpExpressionClass, regretScoreObjectClass), isSimpleRegret(isSimpleRegret), worstNumSamples(worstNumSamples), minArms(minArms), maxArms(maxArms), maxExpectedReward(maxExpectedReward), horizon(horizon)
+    : SimpleUnaryFunction(sumType(gpExpressionClass, discreteBanditPolicyClass), regretScoreObjectClass), isSimpleRegret(isSimpleRegret), worstNumSamples(worstNumSamples), minArms(minArms), maxArms(maxArms), maxExpectedReward(maxExpectedReward), horizon(horizon)
     {jassert(maxArms >= minArms);}
 
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& expression) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    GPExpressionPtr formula = expression.getObjectAndCast<GPExpression>();
+    DiscreteBanditPolicyPtr policy = input.dynamicCast<DiscreteBanditPolicy>();
+    if (!policy)
+    {
+      GPExpressionPtr formula = input.getObjectAndCast<GPExpression>();
+      policy = gpExpressionDiscreteBanditPolicy(formula);
+    }
     
     double bestRewardExpectation, meanRewardExpectation;
-    double regret = sampleWorstRegret(context, formula, bestRewardExpectation, meanRewardExpectation);
+    double regret = sampleWorstRegret(context, policy, bestRewardExpectation, meanRewardExpectation);
     //double meanUniformRegret = bestRewardExpectation - meanRewardExpectation;
     return new RegretScoreObject(regret, maxExpectedReward * (isSimpleRegret ? 1 : horizon));
   }
@@ -78,10 +83,10 @@ protected:
     return action;
   }
 
-  double sampleRegret(ExecutionContext& context, GPExpressionPtr formula, const std::vector<SamplerPtr>& arms, const std::vector<double>& expectedRewards, double bestRewardExpectation) const
+  double sampleRegret(ExecutionContext& context, DiscreteBanditPolicyPtr pol, const std::vector<SamplerPtr>& arms, const std::vector<double>& expectedRewards, double bestRewardExpectation) const
   {
     DiscreteBanditStatePtr state = new DiscreteBanditState(arms);    
-    DiscreteBanditPolicyPtr policy = gpExpressionDiscreteBanditPolicy(formula);
+    DiscreteBanditPolicyPtr policy = pol->cloneAndCast<DiscreteBanditPolicy>();
     policy->initialize(arms.size());
     double sumOfRewards = 0.0;
     for (size_t timeStep = 1; timeStep <= horizon; ++timeStep)
@@ -106,7 +111,7 @@ protected:
       return horizon * bestRewardExpectation - sumOfRewards; // regret
   }
  
-  double sampleWorstRegret(ExecutionContext& context, GPExpressionPtr formula, double& bestRewardExpectation, double& meanRewardExpectation) const
+  double sampleWorstRegret(ExecutionContext& context, DiscreteBanditPolicyPtr policy, double& bestRewardExpectation, double& meanRewardExpectation) const
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
     bestRewardExpectation = 0.0;
@@ -129,7 +134,7 @@ protected:
     double worstRegret = -DBL_MAX;
     for (size_t i = 0; i < worstNumSamples; ++i)
     {
-      double regret = sampleRegret(context, formula, arms, expectedRewards, bestRewardExpectation);
+      double regret = sampleRegret(context, policy, arms, expectedRewards, bestRewardExpectation);
       if (regret > worstRegret)
         worstRegret = regret;
     }

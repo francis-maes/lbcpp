@@ -152,7 +152,8 @@
     <variable type="PositiveInteger" name="minArms"/>
     <variable type="PositiveInteger" name="maxArms"/>
     <variable type="Double" name="maxExpectedReward"/>
-    <variable type="PositiveInteger" name="horizon"/>
+    <variable type="PositiveInteger" name="minHorizon"/>
+    <variable type="PositiveInteger" name="maxHorizon"/>
   </class>
 
 
