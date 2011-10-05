@@ -173,9 +173,9 @@ public:
     TypePtr supervisionType = inputVariables[1]->getType();
 
     if (supervisionType == probabilityType || supervisionType == booleanType)
-      return libSVMClassifier(C, kernelType, kernelDegree, kernelGamma, kernelCoef0);
-    else if (supervisionType->inheritsFrom(enumValueType) || supervisionType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
       return libSVMBinaryClassifier(C, kernelType, kernelDegree, kernelGamma, kernelCoef0);
+    else if (supervisionType->inheritsFrom(enumValueType) || supervisionType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
+      return libSVMClassifier(C, kernelType, kernelDegree, kernelGamma, kernelCoef0);
     else
     {
       jassertfalse;
