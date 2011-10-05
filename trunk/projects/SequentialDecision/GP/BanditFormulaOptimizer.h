@@ -107,7 +107,18 @@ public:
 
       if (expectedRewards)
       {
-        double simpleRegret = bestExpectedReward - (*expectedRewards)[getBestFormulaIndex()];
+        std::set<size_t> bests = getBestFormulaIndices();
+        double simpleRegret = 0.0;
+        if (bests.size())
+        {
+          size_t index = context.getRandomGenerator()->sampleSize(bests.size());
+          std::set<size_t>::const_iterator it = bests.begin();
+          for (size_t i = 0; i < index; ++i)
+            ++it;
+          simpleRegret = bestExpectedReward - (*expectedRewards)[*it];
+        }
+        else
+          simpleRegret = 1.0;
         context.resultCallback(T("simpleRegret"), simpleRegret);
         context.resultCallback(T("cumulativeRegret"), cumulativeRegret);
         if (simpleRegrets)
@@ -134,17 +145,24 @@ public:
     return res;
   }
 
-  size_t getBestFormulaIndex() const
+  std::set<size_t> getBestFormulaIndices() const
   {
+    std::set<size_t> bestIndices;
     double highestMean = -DBL_MAX;
-    size_t res = (size_t)-1;
     for (size_t i = 0; i < formulas.size(); ++i)
     {
       double mean = policy->getRewardEmpiricalMean(i);
-      if (mean > highestMean)
-        highestMean = mean, res = i;
+      if (mean >= highestMean)
+      {
+        if (mean > highestMean)
+        {
+          bestIndices.clear();
+          highestMean = mean;
+        }
+        bestIndices.insert(i);
+      }
     }
-    return res;
+    return bestIndices;
   }
 
 protected:
@@ -191,7 +209,7 @@ public:
       context.enterScope(objectives[i].second);
       FormulaPool pool(policy->cloneAndCast<DiscreteBanditPolicy>(), objectives[i].first);
       pool.run(context, formulas, 1, numTimeSteps);
-      context.leaveScope(formulas[pool.getBestFormulaIndex()]->toShortString());
+      context.leaveScope();//formulas[pool.sampleBestFormulaIndex(context)]->toShortString());
     }
     return true;
   }
