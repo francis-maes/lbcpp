@@ -943,6 +943,12 @@ public:
     featureGenerators[index] = f;
   }
 
+  virtual FunctionPtr createResidueVectorPerception() const
+  {
+    FunctionPtr res = ProteinPredictorParameters::createResidueVectorPerception();
+    return composeFunction(res, mapContainerFunction(doubleVectorNormalizeFunction(true, false)));
+  }
+
 public:
   LargeProteinParametersPtr fp;
   bool isGlobalFeaturesLazy;

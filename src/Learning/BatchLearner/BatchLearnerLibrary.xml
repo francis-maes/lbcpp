@@ -30,5 +30,16 @@
   <class name="UnaryHigherOrderFunctionBatchLearner" base="BatchLearner">
     <constructor/>
   </class>
-  
+
+  <class name="ComposeBatchLearner" base="BatchLearner">
+    <constructor/>
+  </class>
+
+  <!-- Double Vector Function -->
+  <class name="DoubleVectorNormalizeBatchLearner" base="BatchLearner">
+    <constructor arguments="bool computeVariances, bool computeMeans" returnType="BatchLearner"/>
+    <variable type="Boolean" name="computeVariances"/>
+    <variable type="Boolean" name="computeMeans"/>
+  </class>
+
 </library>

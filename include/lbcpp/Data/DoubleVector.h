@@ -418,6 +418,7 @@ private:
 };
 
 extern FunctionPtr doubleVectorEntropyFunction();
+extern FunctionPtr doubleVectorNormalizeFunction(bool useVariances, bool useMeans);
 
 }; /* namespace lbcpp */
 

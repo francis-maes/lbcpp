@@ -10,6 +10,7 @@
 # define LBCPP_CORE_FUNCTION_COMPOSE_H_
 
 # include <lbcpp/Core/Function.h>
+# include <lbcpp/Learning/BatchLearner.h>
 
 namespace lbcpp
 {
@@ -17,7 +18,8 @@ namespace lbcpp
 class ComposeFunction : public Function
 {
 public:
-  ComposeFunction(const FunctionPtr& f, const FunctionPtr& g) : f(f), g(g) {}
+  ComposeFunction(const FunctionPtr& f, const FunctionPtr& g) : f(f), g(g)
+    {setBatchLearner(composeBatchLearner());}
   ComposeFunction() {}
 
   virtual size_t getMinimumNumRequiredInputs() const
@@ -51,10 +53,15 @@ public:
 
 protected:
   friend class ComposeFunctionClass;
+  friend class ComposeBatchLearner;
 
   FunctionPtr f;
   FunctionPtr g;
 };
+
+typedef ReferenceCountedObjectPtr<ComposeFunction> ComposeFunctionPtr;
+
+extern ClassPtr composeFunctionClass;
 
 }; /* namespace lbcpp */
 

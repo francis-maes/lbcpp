@@ -148,6 +148,7 @@ SET(LBCPP_CORE_FUNCTION_SOURCES
   Core/Function/ConvertToDoubleFunction.h
   Core/Function/SignedScalarToProbabilityFunction.h
   Core/Function/ConcatenateContainerFunction.h
+  Core/Function/DoubleVectorFunction.h
   Core/Function/CoreFunctionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/CoreFunctionLibrary.cpp
 )

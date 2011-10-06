@@ -142,39 +142,6 @@ protected:
 
 typedef ReferenceCountedObjectPtr<DoubleVectorContainerSet> DoubleVectorContainerSetPtr;
 
-class NormalizeDoubleVectorSet : public Object
-{
-public:
-  size_t getNumNormalizers() const
-    {return normalizers.size();}
-
-  DoubleVectorPtr normalize(ExecutionContext& context, const DoubleVectorPtr& input, size_t index) const
-  {
-    jassert(index < normalizers.size());
-    return normalizers[index]->compute(context, input).getObjectAndCast<DoubleVector>();
-  }
-
-  size_t createNormalizer(ExecutionContext& context, const ContainerPtr& data)
-  {
-    const TypePtr elementsType = pairClass(data->getClass(), anyType);
-    NormalizeDoubleVectorPtr res = new NormalizeDoubleVector(true, false);
-    if (!res->train(context, data))
-    {
-      context.errorCallback(T("NormalizeDoubleVectorSet::createNormalizer"));
-      return false;
-    }
-    normalizers.push_back(res);
-    return normalizers.size() - 1;
-  }
-
-protected:
-  friend class NormalizeDoubleVectorSetClass;
-
-  std::vector<NormalizeDoubleVectorPtr> normalizers;
-};
-
-typedef ReferenceCountedObjectPtr<NormalizeDoubleVectorSet> NormalizeDoubleVectorSetPtr;
-
 class ContainerBasedStream : public Stream
 {
 public:
@@ -753,7 +720,7 @@ public:
     fg->pssmLocalHistogramSize = 88;
 
     LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(fg);
-    predictor->learningMachineName = T("LibSVM");
+    predictor->learningMachineName = T("kNN");
     predictor->sgdRate = 1.f;
     predictor->sgdIterations = 300;
     predictor->knnNeighbors = 5;
@@ -781,7 +748,7 @@ public:
     ProteinEvaluatorPtr testEvaluator = new ProteinEvaluator();
     CompositeScoreObjectPtr testScores = stack->evaluate(context, testingData, testEvaluator, T("Evaluate on test proteins"));
     
-    context.informationCallback(T("Q_ss3: ") + String(testEvaluator->getScoreObjectOfTarget(testScores, ss3Target)->getScoreToMinimize()));
+    context.informationCallback(T("1-Q_ss3: ") + String(testEvaluator->getScoreObjectOfTarget(testScores, ss3Target)->getScoreToMinimize()));
     return testEvaluator;
   }
 

@@ -129,8 +129,11 @@ extern BatchLearnerPtr proxyFunctionBatchLearner();
 extern BatchLearnerPtr compositeFunctionBatchLearner();
 extern BatchLearnerPtr stochasticBatchLearner(size_t maxIterations = 100, bool randomizeExamples = true, size_t numExamplesPerIteration = 0);
 extern BatchLearnerPtr unaryHigherOrderFunctionBatchLearner();
+extern BatchLearnerPtr composeBatchLearner();
 
 extern DecoratorBatchLearnerPtr filterUnsupervisedExamplesBatchLearner(BatchLearnerPtr decorated);
+
+extern BatchLearnerPtr doubleVectorNormalizeBatchLearner(bool computeVariances, bool computeMeans);
 
 }; /* namespace lbcpp */
 
