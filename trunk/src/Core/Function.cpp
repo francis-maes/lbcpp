@@ -133,7 +133,7 @@ Variable Function::compute(ExecutionContext& context, const Variable* inputs, si
   }
   if (numInputs != getNumInputs())
   {
-    context.errorCallback(T("Invalid number of inputs"));
+    context.errorCallback(T("Invalid number of inputs (") + String((int)numInputs) + T(" instead of ") + String((int)getNumInputs()) + T(")"));
     return Variable();
   }
 

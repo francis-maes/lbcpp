@@ -504,114 +504,6 @@ protected:
   TypePtr elementsType;
 };
 
-class NormalizeDoubleVectorBatchLearner;
-extern BatchLearnerPtr normalizeDoubleVectorBatchLearner(bool computeVariances, bool computeMeans);
-
-class NormalizeDoubleVector : public Function
-{
-public:
-  NormalizeDoubleVector(bool useVariances = true, bool useMeans = false)
-    {setBatchLearner(normalizeDoubleVectorBatchLearner(useVariances, useMeans));}
-
-  virtual size_t getNumRequiredInputs() const
-    {return 1;}
-
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return doubleVectorClass(enumValueType, doubleType);}
-
-  virtual String getOutputPostFix() const
-    {return T("Normalize");}
-
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return sparseDoubleVectorClass(inputVariables[0]->getType()->getTemplateArgument(0), inputVariables[0]->getType()->getTemplateArgument(1));}
-
-protected:
-  friend class NormalizeDoubleVectorClass;
-  friend class NormalizeDoubleVectorBatchLearner;
-
-  std::vector<double> variances;
-  std::vector<double> means;
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-  {
-    SparseDoubleVectorPtr sdv = input.getObjectAndCast<DoubleVector>(context)->toSparseVector();
-    SparseDoubleVectorPtr res = new SparseDoubleVector(getOutputType());
-    const size_t n = sdv->getNumValues();
-    std::pair<size_t, double>* value = sdv->getValues();
-    for (size_t i = 0; i < n; ++i, ++value)
-      res->appendValue(value->first, (value->second - means[value->first]) / variances[value->first]);
-    return res;
-  }
-};
-
-extern ClassPtr normalizeDoubleVectorClass;
-typedef ReferenceCountedObjectPtr<NormalizeDoubleVector> NormalizeDoubleVectorPtr;
-
-class NormalizeDoubleVectorBatchLearner : public BatchLearner
-{
-public:
-  NormalizeDoubleVectorBatchLearner(bool computeVariances = true, bool computeMeans = false)
-    : computeVariances(computeVariances), computeMeans(computeMeans) {}
-
-  virtual TypePtr getRequiredFunctionType() const
-    {return normalizeDoubleVectorClass;}
-
-  virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
-  {
-    if (trainingData.size() == 0)
-    {
-      context.errorCallback(T("NormalizeDoubleVectorBatchLearner::train"), T("No training data !"));
-      return false;
-    }
-
-    NormalizeDoubleVectorPtr target = function.staticCast<NormalizeDoubleVector>();
-    jassert(trainingData[0].dynamicCast<DoubleVector>());
-    EnumerationPtr enumeration = trainingData[0].dynamicCast<DoubleVector>()->getElementsEnumeration();
-    jassert(target && enumeration);
-    // Initialize
-    const size_t dimension = enumeration->getNumElements();
-    target->variances.resize(dimension, 1.f);
-    target->means.resize(dimension, 0.f);
-
-    std::vector<ScalarVariableMeanAndVariancePtr> meansAndVariances(dimension);
-    for (size_t i = 0; i < dimension; ++i)
-      meansAndVariances[i] = new ScalarVariableMeanAndVariance();
-    // Learn
-    const size_t n = trainingData.size();
-    for (size_t i = 0; i < n; ++i)
-    {
-      DoubleVectorPtr data =  trainingData[i].dynamicCast<DoubleVector>();
-      jassert(data);
-      const size_t numValues = data->getNumElements();
-      for (size_t i = 0; i < numValues; ++i)
-      {
-        Variable v = data->getElement(i);
-        meansAndVariances[i]->push(v.exists() ? v.getDouble() : 0.f);
-      }
-    }
-
-    if (computeMeans)
-      for (size_t i = 0; i < dimension; ++i)
-        target->means[i] = meansAndVariances[i]->getMean();
-
-    if (computeVariances)
-      for (size_t i = 0; i < dimension; ++i)
-      {
-        target->variances[i] = meansAndVariances[i]->getStandardDeviation();
-        if (target->variances[i] < 1e-6) // Numerical unstability
-          target->variances[i] = 1.f;
-      }
-
-    return true;
-  }
-
-protected:
-  friend class NormalizeDoubleVectorBatchLearnerClass;
-
-  bool computeVariances;
-  bool computeMeans;
-};
-
 class NormalizeExampleCompositeFunction : public CompositeFunction
 {
 public:
@@ -623,7 +515,7 @@ public:
     size_t input = builder.addInput(decorated->getRequiredInputType(0, 2));
     size_t supervision = builder.addInput(decorated->getRequiredInputType(1, 2));
 
-    input = builder.addFunction(new NormalizeDoubleVector(true, true), input);
+    input = builder.addFunction(doubleVectorNormalizeFunction(true, true), input);
     builder.addFunction(decorated, input, supervision);
   }
 

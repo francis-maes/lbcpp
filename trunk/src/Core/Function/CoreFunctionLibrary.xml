@@ -117,8 +117,16 @@
   <class name="SignedScalarToProbabilityFunction" base="SimpleUnaryFunction">
     <constructor returnType="Function"/>
   </class>
+
+  <!-- Double Vector Function -->
   <class name="DoubleVectorEntropyFunction" base="Function">
     <constructor/>
+  </class>
+
+  <class name="DoubleVectorNormalizeFunction" base="Function">
+    <constructor arguments="bool computeVariances, bool computeMeans" returnType="Function"/>
+    <variable type="GenericVector[Double]" name="variances"/>
+    <variable type="GenericVector[Double]" name="means"/>
   </class>
 
 </library>
