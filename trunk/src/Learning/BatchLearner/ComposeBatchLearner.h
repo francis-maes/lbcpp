@@ -25,10 +25,6 @@ public:
   virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
     ComposeFunctionPtr composeFunction = function.staticCast<Function>();
-    std::cout << "f: " << composeFunction->f->toString() << std::endl;
-    std::cout << "g: " << composeFunction->g->toString() << std::endl;
-//    std::cout << "Data: " << trainingData[0]->toString() << std::endl;
-
     if (composeFunction->f->hasBatchLearner() && !composeFunction->f->train(context, trainingData, validationData))
     {
       context.errorCallback(T("ComposeBatchLearner::train"), T("Error while training f !"));
@@ -42,7 +38,7 @@ public:
     applyFunctionOnData(context, composeFunction->f, trainingData, trainingDataForG);
     std::vector<ObjectPtr> validationDataForG;
     applyFunctionOnData(context, composeFunction->f, validationData, validationDataForG);
-//    std::cout << "DataForG: " << trainingDataForG[0]->toString() << std::endl;
+
     if (!composeFunction->g->train(context, trainingDataForG, validationDataForG))
     {
       context.errorCallback(T("ComposeBatchLearner::train"), T("Error while training g !"));
