@@ -24,7 +24,7 @@ class NearestNeighborFunction : public Function
 {
 public:
   NearestNeighborFunction(size_t numNeighbors = 1, bool includeTheNearestNeighbor = true)
-    : numNeighbors(numNeighbors)
+    : numNeighbors(numNeighbors), includeTheNearestNeighbor(includeTheNearestNeighbor)
     {setBatchLearner(filterUnsupervisedExamplesBatchLearner(nearestNeighborBatchLearner()));}
 
   virtual TypePtr getSupervisionType() const = 0;
