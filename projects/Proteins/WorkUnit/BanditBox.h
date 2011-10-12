@@ -402,6 +402,9 @@ public:
     buildInputPairsAndOutputs(context, trainingProteins, trainingProteinPerceptions, trainingInputPairs, trainingOutputs);
 //    buildInputPairsAndOutputs(context, testingProteins, testingProteinPerceptions, testingInputPairs, testingOutputs);
 
+    if (target == drTarget)
+      balanceBinaryExamples(context, trainingInputPairs, trainingOutputs);
+
     randomizeExamples(context, trainingInputPairs, trainingOutputs);
 //    randomizeExamples(context, testingInputPairs, testingOutputs);
   }
@@ -496,6 +499,44 @@ protected:
   LargeProteinPredictorParametersPtr largePredictor;
 
   ProteinBanditSampler() {}
+
+  void balanceBinaryExamples(ExecutionContext& context, std::vector<PairPtr>& inputs, std::vector<Variable>& outputs) const
+  {
+    context.enterScope(T("Balancing classes"));
+    jassert(inputs.size() == outputs.size());
+    
+    std::vector<size_t> trueIndices;
+    std::vector<size_t> falseIndices;
+    
+    for (size_t i = 0; i < outputs.size(); ++i)
+    {
+      if (outputs[i].isBoolean() && outputs[i].getBoolean()
+          || outputs[i].isDouble() && outputs[i].getDouble() > 0.5f)
+        trueIndices.push_back(i);
+      else
+        falseIndices.push_back(i);
+    }
+
+    std::vector<size_t>& minority = trueIndices;
+    std::vector<size_t>& majority = falseIndices;
+    if (trueIndices.size() > falseIndices.size())
+    {
+      minority = falseIndices;
+      majority = trueIndices;
+    }
+    jassert(minority.size() != 0);
+
+    size_t currentIndex = 0;
+    for (size_t i = minority.size(); i < majority.size(); ++i)
+    {
+      inputs.push_back(inputs[minority[currentIndex]]);
+      outputs.push_back(outputs[minority[currentIndex]]);
+      ++currentIndex;
+      currentIndex %= minority.size();
+    }
+    context.informationCallback(T("Num. duplicated examples: ") + String((int)(majority.size() - minority.size())));
+    context.leaveScope(majority.size() - minority.size());
+  }
 
   void computeMissingTargets(ExecutionContext& context, const ContainerPtr& proteins) const
   {
