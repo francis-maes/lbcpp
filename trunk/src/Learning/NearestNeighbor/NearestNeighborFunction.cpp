@@ -304,8 +304,9 @@ Variable StreamBasedNearestNeighbor::computeFunction(ExecutionContext& context, 
     dv->computeFeatures(featureCallback);
     featureCallback.finalize();
 
-    //std::cout << "ShouldStop: " << featureCallback.shouldStop() << " - Distance: " << featureCallback.getDistance() << " - Threshold: " << featureCallback.threshold << std::endl;
-    //jassertfalse;
+    if (!includeTheNearestNeighbor && featureCallback.getDistance() < 1e-6) // Skip all neighbor with distance near to 0
+      continue;
+
     if (featureCallback.shouldStop())
       continue;
 
@@ -329,14 +330,6 @@ Variable ClassificationStreamBasedNearestNeighbor::computeOutput(ScoresMap& scor
 
   const size_t maxNumNeighbors = scoredIndices.size() < numNeighbors ? scoredIndices.size() : numNeighbors;
   ScoresMap::reverse_iterator it = scoredIndices.rbegin();
-/*
-  std::cout << "All: " << std::endl;
-  for (; it != scoredIndices.rend(); ++it)
-    std::cout << it->first << " - " << it->second.toString() << std::endl;
-  it = scoredIndices.rbegin();
-*/
-  if (!includeTheNearestNeighbor)
-    ++it;
 
   for (size_t i = 0; i < maxNumNeighbors; ++i, it++)
     for (size_t j = 0; j < sums.size(); ++j)
@@ -351,12 +344,8 @@ Variable ClassificationStreamBasedNearestNeighbor::computeOutput(ScoresMap& scor
 Variable BinaryClassificationStreamBasedNearestNeighbor::computeOutput(ScoresMap& scoredIndices) const
 {
   size_t numTrues = 0;
-
   const size_t maxNumNeighbors = scoredIndices.size() < numNeighbors ? scoredIndices.size() : numNeighbors;
   ScoresMap::reverse_iterator it = scoredIndices.rbegin();
-
-  if (!includeTheNearestNeighbor)
-    ++it;
 
   for (size_t i = 0; i < maxNumNeighbors; ++i, it++)
     if (it->second.isBoolean() && it->second.getBoolean()
