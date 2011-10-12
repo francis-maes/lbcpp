@@ -332,7 +332,21 @@ public:
       iterationsLength = formulas.size();
 
     std::vector<DiscreteBanditPolicyPtr> policies;
-    policies.push_back(uniformDiscreteBanditPolicy());
+    policies.push_back(ucb1TunedDiscreteBanditPolicy());
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(3.0, true));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(3.0, false));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(7.0, true));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(7.0, false));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(10.0, true));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(10.0, false));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(1.0, true, true));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(2.0, true, true));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(5.0, true, true));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(0.5, true, true));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(0.2, true, true));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(0.1, true, true));
+
+  /*  policies.push_back(uniformDiscreteBanditPolicy());
     policies.push_back(greedyDiscreteBanditPolicy());
     policies.push_back(ucb1DiscreteBanditPolicy(2.0));
     policies.push_back(ucb1TunedDiscreteBanditPolicy());
@@ -342,7 +356,8 @@ public:
     policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(2.0, true));
     policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(2.0, false));
     policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(5.0, true));
-    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(5.0, false));
+    policies.push_back(new Formula5IndexBasedDiscreteBanditPolicy(5.0, false));*/
+    
 
     std::vector< std::vector<ScalarVariableStatistics> > simpleRegretStatistics(policies.size(), std::vector<ScalarVariableStatistics>(numIterations));
 

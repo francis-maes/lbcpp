@@ -301,8 +301,8 @@ public:
 class Formula5IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
 {
 public:
-  Formula5IndexBasedDiscreteBanditPolicy(double C = 1.0, bool useSquareRoot = false)
-    : SingleParameterIndexBasedDiscreteBanditPolicy(C), useSquareRoot(useSquareRoot) {}
+  Formula5IndexBasedDiscreteBanditPolicy(double C = 1.0, bool useSquareRoot = false, bool useLogarithm = false)
+    : SingleParameterIndexBasedDiscreteBanditPolicy(C), useSquareRoot(useSquareRoot), useLogarithm(useLogarithm) {}
 
   virtual void initialize(size_t numBandits)
   {
@@ -317,7 +317,14 @@ public:
   { 
     const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
     double tk = (double)statistics->getPlayedCount();
-    return statistics->getRewardMean() + C / (useSquareRoot ? sqrt(tk) : tk);
+    double sign;
+    if (useLogarithm)
+      tk = log(tk), sign = -1;
+    else
+      tk = 1.0 / tk, sign = 1;
+    if (useSquareRoot)
+      tk = sqrt(tk);
+    return statistics->getRewardMean() + sign * C * tk;
   }
 
   virtual size_t selectBandit(ExecutionContext& context, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
@@ -340,6 +347,7 @@ protected:
   friend class Formula5IndexBasedDiscreteBanditPolicyClass;
   
   bool useSquareRoot;
+  bool useLogarithm;
   
   struct BanditScoresComparator
   {

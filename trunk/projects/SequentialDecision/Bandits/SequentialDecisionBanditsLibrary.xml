@@ -112,6 +112,7 @@
   <class name="Formula4IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula4"/>
   <class name="Formula5IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula5">
     <variable type="Boolean" name="useSquareRoot"/>
+    <variable type="Boolean" name="useLogarithm"/>
   </class>
   <class name="Formula6IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula6"/>
   <class name="Formula7IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula7"/>
