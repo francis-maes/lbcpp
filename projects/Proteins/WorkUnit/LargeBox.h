@@ -202,7 +202,7 @@ public:
       
       ContainerPtr dssp = Protein::createEmptyDSSPSecondaryStructure(n, true);
       convertedProtein->setDSSPSecondaryStructure(dssp);
-      const ContainerPtr dsspFromFile = proteinFromFile->getSecondaryStructure();
+      const ContainerPtr dsspFromFile = proteinFromFile->getDSSPSecondaryStructure();
       
       DoubleVectorPtr sa = Protein::createEmptyProbabilitySequence(n);
       convertedProtein->setSolventAccessibilityAt20p(sa);

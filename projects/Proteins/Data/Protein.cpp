@@ -625,10 +625,10 @@ ContainerPtr Protein::createEmptyDSSPSecondaryStructure(size_t length, bool useS
 }
 
 DoubleVectorPtr Protein::createEmptyProbabilitySequence(size_t length)
-  {return new DenseDoubleVector(positiveIntegerEnumerationEnumeration, probabilityType, length);}
+  {return new DenseDoubleVector(positiveIntegerEnumerationEnumeration, probabilityType, length, Variable::missingValue(probabilityType).getDouble());}
 
 DoubleVectorPtr Protein::createEmptyDoubleSequence(size_t length)
-  {return new DenseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType, length);}
+  {return new DenseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType, length, Variable::missingValue(doubleType).getDouble());}
 
 SymmetricMatrixPtr Protein::createEmptyContactMap(size_t length)
   {return new DoubleSymmetricMatrix(probabilityType, length, Variable::missingValue(probabilityType).getDouble());}
