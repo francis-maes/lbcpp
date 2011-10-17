@@ -20,7 +20,7 @@ class RegretScoreObject : public ScoreObject
 {
 public:
   RegretScoreObject(double regret = 1.0, double referenceRegret = 1.0)
-    : regret(regret), reward(juce::jmax(0.0, (referenceRegret - regret) / referenceRegret)) {}
+    : regret(regret), reward(juce::jlimit(0.0, 1.0, (referenceRegret - regret) / referenceRegret)) {}
 
   virtual double getScoreToMinimize() const
     {return regret;}

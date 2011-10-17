@@ -183,6 +183,16 @@
     <variable type="Function" name="objective"/>
     <variable type="PositiveInteger" name="numArmsInSampling"/>
   </class>
+  
+  <!-- MultiArmed Bandit NoParams Formula -->
+  <enumeration name="BanditNoParamVariables">
+    <value name="K"/>
+    <value name="T"/>
+  </enumeration>
+  <class name="BanditNoParamObjective" base="SimpleUnaryFunction"/>
+  <class name="BanditNoParamSearchProblem" base="FormulaSearchProblem" shortName="banditNoParam">
+    <variable type="BanditNoParamObjective" name="objective"/>
+  </class>
 
   <!-- Learning Rule Formulas -->
   <enumeration name="LearningRuleFormulaVariables" shortName="gp">

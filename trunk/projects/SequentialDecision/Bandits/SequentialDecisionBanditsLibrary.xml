@@ -114,6 +114,10 @@
     <variable type="Boolean" name="useSquareRoot"/>
     <variable type="Boolean" name="useLogarithm"/>
   </class>
+  <class name="Formula5TunedDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy">
+    <variable type="GPExpression" name="expression"/>
+    <variable type="PositiveInteger" name="horizon"/>
+  </class>  
   <class name="Formula6IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula6"/>
   <class name="Formula7IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula7"/>
 
