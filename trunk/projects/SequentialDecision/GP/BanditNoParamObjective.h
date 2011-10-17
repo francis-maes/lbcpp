@@ -26,9 +26,9 @@ public:
     
     RandomGeneratorPtr random = context.getRandomGenerator();
     
-    double numArmsRandom = random->sampleDouble(1.0, 10.0);
+    double numArmsRandom = random->sampleDouble(1.0, 7.0);
     size_t numArms = (size_t)pow(2.0, numArmsRandom);
-    size_t horizon = (size_t)(numArms * pow(2.0, random->sampleDouble(1.0, 12.0 - numArmsRandom)));
+    size_t horizon = (size_t)pow(10.0, random->sampleDouble(2.0, 5.0));
     
     DiscreteBanditPolicyPtr policy = new Formula5TunedDiscreteBanditPolicy(formula, horizon);
     
@@ -122,11 +122,12 @@ public:
 
     for (; index < count; ++index)
     {
-      std::vector<double> input(2);
+      std::vector<double> input(3);
 
       double numArmsRandom = random->sampleDouble(1.0, 14.0);
       input[0] = (size_t)pow(2.0, numArmsRandom);
       input[1] = (size_t)(input[0] * pow(2.0, random->sampleDouble(1.0, 20.0 - numArmsRandom)));
+      input[2] = juce::jlimit(0.0, 1.0, random->sampleDouble(-0.1, 1.1));
 
       res[index] = input;
     }
