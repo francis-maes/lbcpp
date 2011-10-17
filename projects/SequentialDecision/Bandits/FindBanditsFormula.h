@@ -375,12 +375,7 @@ public:
   virtual void initialize(size_t numBandits)
   {
     IndexBasedDiscreteBanditPolicy::initialize(numBandits);
-
-    // todo: may become dynamic
-    std::vector<double> inputs(2);
-    inputs[0] = numBandits;
-    inputs[1] = horizon;
-    C = expression->compute(&inputs[0]);
+    updateCValue();
   }
   
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
@@ -392,8 +387,38 @@ public:
   virtual void updatePolicy(size_t banditNumber, double reward)
   {
     IndexBasedDiscreteBanditPolicy::updatePolicy(banditNumber, reward);
+    updateCValue();
   }
-  
+
+  void updateCValue()
+  {
+    size_t bestBanditIndex = 0;
+    double bestBanditReward = -DBL_MAX;
+    for (size_t i = 0; i < banditStatistics.size(); ++i)
+      if (banditStatistics[i]->getRewardMean() > bestBanditReward)
+      {
+        bestBanditReward = banditStatistics[i]->getRewardMean();
+        bestBanditIndex = i;
+      }
+    size_t secondBestBanditIndex = 0;
+    bestBanditReward = -DBL_MAX;
+    for (size_t i = 0; i < banditStatistics.size(); ++i)
+      if (i != bestBanditIndex && banditStatistics[i]->getRewardMean() > bestBanditReward)
+      {
+        bestBanditReward = banditStatistics[i]->getRewardMean();
+        secondBestBanditIndex = i;
+      }
+    
+    double margin = banditStatistics[bestBanditIndex]->getRewardMean() - banditStatistics[secondBestBanditIndex]->getRewardMean();
+
+    // todo: may become dynamic
+    std::vector<double> inputs(3);
+    inputs[0] = banditStatistics.size();
+    inputs[1] = horizon;
+    inputs[2] = margin;
+    C = expression->compute(&inputs[0]);
+  }
+
 protected:
   friend class Formula5TunedDiscreteBanditPolicyClass;
   

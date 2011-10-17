@@ -28,23 +28,23 @@
     <function name="createFromString" lang="lua" static="yes"/>
     <function name="compute" lang="lua"/>
   </class>
-  
-  <class name="BinaryGPExpression" base="GPExpression" shortName="binary">
-    <variable type="GPExpression" name="left"/>
-    <variable type="GPOperator" name="op" enumeration="yes"/>
-    <variable type="GPExpression" name="right"/>
-  </class>
-  <class name="UnaryGPExpression" base="GPExpression" shortName="unary">
-    <variable type="GPPre" name="pre" enumeration="yes"/>
-    <variable type="GPExpression" name="expr"/>
+
+  <class name="ConstantGPExpression" base="GPExpression">
+    <variable type="Double" name="value"/>
+    <variable type="Boolean" name="learnable"/>
   </class>
   <class name="VariableGPExpression" base="GPExpression" shortName="variable">
     <variable type="Integer" name="index"/>
     <variable type="Enumeration" name="enumeration"/>
   </class>
-  <class name="ConstantGPExpression" base="GPExpression">
-    <variable type="Double" name="value"/>
-    <variable type="Boolean" name="learnable"/>
+  <class name="UnaryGPExpression" base="GPExpression" shortName="unary">
+    <variable type="GPPre" name="pre" enumeration="yes"/>
+    <variable type="GPExpression" name="expr"/>
+  </class>
+  <class name="BinaryGPExpression" base="GPExpression" shortName="binary">
+    <variable type="GPExpression" name="left"/>
+    <variable type="GPOperator" name="op" enumeration="yes"/>
+    <variable type="GPExpression" name="right"/>
   </class>
 
   <class name="GPExpressionSamplingContext" base="Object">
@@ -188,10 +188,11 @@
   <enumeration name="BanditNoParamVariables">
     <value name="K"/>
     <value name="T"/>
+    <value name="m"/>
   </enumeration>
   <class name="BanditNoParamObjective" base="SimpleUnaryFunction"/>
   <class name="BanditNoParamSearchProblem" base="FormulaSearchProblem" shortName="banditNoParam">
-    <variable type="BanditNoParamObjective" name="objective"/>
+    <variable type="Function" name="objective"/>
   </class>
 
   <!-- Learning Rule Formulas -->

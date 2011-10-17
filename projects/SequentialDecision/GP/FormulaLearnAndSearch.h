@@ -13,6 +13,8 @@
 # include "NestedMonteCarloOptimizer.h"
 # include "BeamSearchOptimizer.h"
 
+# include "BanditFormulaObjective.h" // for RegretScoreObject
+
 
 // hash maps
 #ifdef JUCE_WIN32
@@ -212,7 +214,13 @@ public:
 
     FunctionWorkUnitPtr wu = workUnit.staticCast<FunctionWorkUnit>();
     GPExpressionPtr formula = wu->getInputs()[0].getObjectAndCast<GPExpression>();
-    double reward = result.toDouble();
+
+    double reward;
+    RegretScoreObjectPtr regret = result.dynamicCast<RegretScoreObject>();
+    if (regret)
+      reward = regret->getReward();
+    else
+      reward = result.toDouble();
     receiveReward(*this->context, formula, reward);
   }
 
