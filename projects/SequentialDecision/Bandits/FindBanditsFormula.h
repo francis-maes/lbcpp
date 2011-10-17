@@ -364,6 +364,45 @@ protected:
   BanditsQueue banditsQueue;
 };
 
+
+class Formula5TunedDiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy
+{
+public:
+  Formula5TunedDiscreteBanditPolicy(GPExpressionPtr expression, size_t horizon)
+    : expression(expression), horizon(horizon) {}
+  Formula5TunedDiscreteBanditPolicy() : horizon(0) {}
+  
+  virtual void initialize(size_t numBandits)
+  {
+    IndexBasedDiscreteBanditPolicy::initialize(numBandits);
+
+    // todo: may become dynamic
+    std::vector<double> inputs(2);
+    inputs[0] = numBandits;
+    inputs[1] = horizon;
+    C = expression->compute(&inputs[0]);
+  }
+  
+  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
+  {
+    const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
+    return statistics->getRewardMean() + C / statistics->getPlayedCount();
+  }
+
+  virtual void updatePolicy(size_t banditNumber, double reward)
+  {
+    IndexBasedDiscreteBanditPolicy::updatePolicy(banditNumber, reward);
+  }
+  
+protected:
+  friend class Formula5TunedDiscreteBanditPolicyClass;
+  
+  GPExpressionPtr expression;
+  size_t horizon;
+
+  double C;
+};
+
 class Formula6IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
 {
 public:
