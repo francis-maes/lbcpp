@@ -141,7 +141,11 @@ extern FeatureGeneratorPtr matrixWindowFeatureGenerator(size_t windowRows, size_
 extern FunctionPtr concatenateFeatureGenerator(bool lazy = true);
 extern FeatureGeneratorPtr concatenateDoubleFeatureGenerator(bool lazy = true);
 extern FeatureGeneratorPtr concatenateDoubleVectorFeatureGenerator(bool lazy = true);
+
 extern FunctionPtr cartesianProductFeatureGenerator(bool lazy = true);
+extern FeatureGeneratorPtr sparseCartesianProductFeatureGenerator(bool lazy = true);
+extern FeatureGeneratorPtr denseCartesianProductFeatureGenerator(bool lazy = true);
+
 extern FeatureGeneratorPtr dynamicallyMappedFeatureGenerator(FeatureGeneratorPtr baseFeatureGenerator, size_t reservedSize, bool lazy = true);
 
 // composite

@@ -7,7 +7,7 @@
   <import name="LaRankLearning"/>
   
   <!-- Learning Parameters -->
-  <class name="StochasticGDParameters" base="LearnerParameters" shortName="sgd">
+  <class name="StochasticGDParameters" base="LearnerParameters">
     <variable type="Function" name="lossFunction"/>
     <variable type="IterationFunction" name="learningRate"/>
     <variable type="StoppingCriterion" name="stoppingCriterion"/>
