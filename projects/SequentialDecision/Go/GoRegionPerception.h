@@ -40,7 +40,7 @@ class MatrixNeighborhoodFeatureGenerator : public SumFeatureGenerator
 {
 public:
   MatrixNeighborhoodFeatureGenerator(FunctionPtr relationFeatures, FunctionPtr valueFeatures)
-    : SumFeatureGenerator(cartesianProductFeatureGenerator()), relationFeatures(relationFeatures), valueFeatures(valueFeatures) {}
+    : SumFeatureGenerator(sparseCartesianProductFeatureGenerator()), relationFeatures(relationFeatures), valueFeatures(valueFeatures) {}
 
   virtual size_t getNumRequiredInputs() const
     {return 4;}
