@@ -39,10 +39,15 @@ class LuaState
 {
 public:
   LuaState(ExecutionContext& context, bool initializeLuaLibraries = true, bool initializeLBCppLibrary = true, bool verbose = false);
+  LuaState(const LuaState& other);
   LuaState(lua_State* L = NULL);
+
   virtual ~LuaState();
 
+  LuaState& operator=(const LuaState& other);
+
   void clear();
+  bool exists() const;
 
   operator lua_State*()
     {return L;}
@@ -54,6 +59,7 @@ public:
 
   // General stack operations
   int getTop() const;
+  void setTop(int size);
   LuaType getType(int index) const;
   void pop(int count = 1);
   void remove(int index);
@@ -130,10 +136,19 @@ public:
   // Errors
   void error(const char* message);
   void error(const String& message);
+  bool processExecuteError(int error);
 
   // misc
   bool newMetaTable(const char* name);
   void openLibrary(const char* name, const luaL_Reg* functions, size_t numUpValues = 0);
+  size_t length(int index) const;
+
+  // threads & coroutines
+  LuaState newThread();
+  int resume(int numArguments);
+
+  void pushValueFrom(LuaState& source, int index);
+
 
   ExecutionContext& getContext();
 
@@ -142,8 +157,6 @@ public:
 protected:
   lua_State* L;
   bool owned;
-
-  bool processExecuteError(int error);
 };
 
 }; /* namespace lbcpp */
