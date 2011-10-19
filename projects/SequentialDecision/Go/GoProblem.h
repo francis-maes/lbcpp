@@ -145,6 +145,9 @@ public:
   virtual String toString() const;
   virtual String toShortString() const;
 
+  virtual void saveToXml(XmlExporter& exporter) const;
+  virtual bool loadFromXml(XmlImporter& importer);
+
   lbcpp_UseDebuggingNewOperator
 
 protected:

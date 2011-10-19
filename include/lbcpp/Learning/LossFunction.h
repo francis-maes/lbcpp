@@ -97,6 +97,10 @@ public:
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const;
 
+  // returns true if all costs are equal to 0 or equal to a shared positive constant
+  static bool areCostsBipartite(const std::vector<double>& costs, bool& zeroIsPositive);
+  static bool isPositiveCost(double cost, bool& zeroIsPositive);
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -104,10 +108,6 @@ protected:
 
   static void multiplyOutputAndGradient(double* output, std::vector<double>* gradient, double k);
   static void sortScores(const std::vector<double>& scores, std::vector<size_t>& res);
-
-  // returns true if all costs are equal to 0 or equal to a shared positive constant
-  static bool areCostsBipartite(const std::vector<double>& costs, bool& zeroIsPositive);
-  static bool isPositiveCost(double cost, bool& zeroIsPositive);
 
   // returns a map from costs to (argmin scores, argmax scores) pairs
   static void getScoreRangePerCost(const std::vector<double>& scores, const std::vector<double>& costs, std::map<double, std::pair<size_t, size_t> >& res);

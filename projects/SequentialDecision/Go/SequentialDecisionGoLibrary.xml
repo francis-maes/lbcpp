@@ -82,7 +82,10 @@
     <variable type="PositiveInteger" name="maxCount" shortName="m"/>
     <variable type="File" name="outputDirectory" shortName="o"/>
   </class>
-
+  <class name="GoBoostingSandBox" base="WorkUnit">
+    <variable type="File" name="examplesDirectory"/>
+    <variable type="PositiveInteger" name="maxCount"/>
+  </class>
 
     <!-- Go Features -->
   <template name="GoStatePreFeatures">
@@ -119,4 +122,33 @@
     <value name="20-"/>
   </enumeration>
   
+  <!-- Boosting -->
+  <class name="BoostingWeakModel" base="Function" abstract="yes"/>
+  <class name="IsFeatureActiveWeakModel" base="BoostingWeakModel">
+    <constructor arguments="EnumerationPtr features, size_t index"/>
+    <variable type="Enumeration" name="features"/>
+    <variable type="PositiveInteger" name="index"/>
+  </class>
+
+  <class name="BoostingStrongModel" base="Function" abstract="yes">
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="weights"/>
+    <variable type="ObjectVector[BoostingWeakModel]" name="weakModels"/>
+    <variable type="Vector[Variable]" name="votes"/>
+  </class>
+
+  <class name="ScalarBoostingStrongModel" base="BoostingStrongModel">
+    <constructor/>
+  </class>
+  <class name="RankingBoostingStrongModel" base="BoostingStrongModel">
+    <constructor/>
+  </class>
+
+  <class name="BoostingLearner" base="BatchLearner" abstract="yes">
+    <variable type="PositiveInteger" name="maxIterations"/>
+  </class>
+
+  <class name="RankBoostLearner" base="BoostingLearner">
+    <constructor arguments="size_t maxIterations"/>
+  </class>
+
 </library>
