@@ -77,8 +77,14 @@
     <variable type="String" name="parameters"/>
     <variable type="File" name="sgfFile"/>
   </class>
+  <class name="SGFToStateSamples" base="WorkUnit">
+    <variable type="File" name="input" shortName="i"/>
+    <variable type="PositiveInteger" name="maxCount" shortName="m"/>
+    <variable type="File" name="outputDirectory" shortName="o"/>
+  </class>
 
-  <!-- Go Features -->
+
+    <!-- Go Features -->
   <template name="GoStatePreFeatures">
     <parameter name="globalFeaturesEnumeration" type="EnumValue"/>
     <parameter name="regionFeaturesEnumeration" type="EnumValue"/>

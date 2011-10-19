@@ -37,30 +37,8 @@ public:
   {
   }
 
-  ContainerPtr loadGames(ExecutionContext& context, const File& directoryOrFile, size_t maxCount)
-  {
-    if (!directoryOrFile.exists())
-    {
-      context.errorCallback(T("File ") + directoryOrFile.getFullPathName() + T(" does not exists"));
-      return ContainerPtr();
-    }
-    if (directoryOrFile.isDirectory())
-      return directoryFileStream(context, directoryOrFile, T("*.sgf"))->load(maxCount, false)
-        ->apply(context, new LoadSGFFileFunction(), Container::parallelApply);
-    else
-    {
-      FunctionPtr loader = new LoadCompositeSGFFileFunction(maxCount);
-      return loader->compute(context, directoryOrFile).getObjectAndCast<Container>();
-    }
-  }
-
   virtual Variable run(ExecutionContext& context)
   {
-    double startTime = Time::getMillisecondCounterHiRes();
-
-    // create problem
-    DecisionProblemPtr problem = new GoProblem(0);
-
     // create ranking machine
     if (!learningParameters)
     {
@@ -89,11 +67,11 @@ public:
 
     // load games
     context.enterScope(T("Loading training games from ") + context.getFilePath(trainingFile));
-    ContainerPtr trainingGames = loadGames(context, trainingFile, maxCount);
+    ContainerPtr trainingGames = loadSGFTrajectories(context, trainingFile, maxCount);
     context.leaveScope((trainingGames ? trainingGames->getNumElements() : 0));
     
     context.enterScope(T("Loading testing games from ") + context.getFilePath(testingFile));
-    ContainerPtr testingGames = loadGames(context, testingFile, maxCount);
+    ContainerPtr testingGames = loadSGFTrajectories(context, testingFile, maxCount);
     context.leaveScope((testingGames ? testingGames->getNumElements() : 0));
 
     ContainerPtr validationGames;
@@ -158,7 +136,7 @@ public:
     }
     */
 
-    return Variable((Time::getMillisecondCounterHiRes() - startTime) / 1000.0, timeType);
+    return true;
 
     /*
     // check validity

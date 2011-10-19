@@ -1,3 +1,11 @@
+BoostingGo:
+
+ * 0) BoostingSandBox with loading of internal representation of the whole training/testing set
+ * 1) RankBoost
+ * 2) Boolean Weak learner
+ * 3) FastBoosting with bandits
+ * 4) BooleanConjunction Weak learner
+
 
 Bandits:
  * Launch PlayFormulaNTimes for 2 sizes x 4 objectives

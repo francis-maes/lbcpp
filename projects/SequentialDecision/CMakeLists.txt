@@ -96,6 +96,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_GO_SOURCES
   Go/GoSupervisedEpisode.h
   Go/GoActionScoringEvaluator.h
   Go/GoSandBox.h
+  Go/GoBoostingSandBox.h
   Go/GoPredictWorkUnit.h
   Go/GoSGFToGTPWorkUnit.h
   Go/GoInterface.h

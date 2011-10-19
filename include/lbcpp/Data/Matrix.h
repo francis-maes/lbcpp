@@ -131,6 +131,9 @@ public:
   virtual void setElement(size_t index, const Variable& value)
     {BuiltinTypeMatrix<char>::setElement(index, value.getInteger());}
 
+  virtual void saveToXml(XmlExporter& exporter) const;
+  virtual bool loadFromXml(XmlImporter& importer);
+
   lbcpp_UseDebuggingNewOperator
 };
 
