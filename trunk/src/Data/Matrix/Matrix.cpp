@@ -16,11 +16,21 @@ using namespace lbcpp;
 */
 String Matrix::toString() const
 {
+  EnumerationPtr enumeration = getElementsType().dynamicCast<Enumeration>();
+  bool isEnumerationWithOneLetterCodes = (enumeration && enumeration->hasOneLetterCodes());
   String res;
   for (size_t i = 0; i < getNumRows(); ++i)
   {
-    for (size_t j = 0; j < getNumColumns(); ++j)
-      res += getElement(i, j).toString() + T(" ");
+    if (isEnumerationWithOneLetterCodes)
+    {
+      for (size_t j = 0; j < getNumColumns(); ++j)
+        res += enumeration->getElement(getElement(i, j).getInteger())->getOneLetterCode();
+    }
+    else
+    {
+      for (size_t j = 0; j < getNumColumns(); ++j)
+        res += getElement(i, j).toString() + T(" ");
+    }
     res += T("\n");
   }
   return res;
@@ -43,6 +53,69 @@ bool Matrix::loadFromXml(XmlImporter& importer)
   setSize(numRows, numColumns);
   return Container::loadFromXml(importer);
 }
+
+/*
+** ShortEnumerationMatrix
+*/
+void ShortEnumerationMatrix::saveToXml(XmlExporter& exporter) const
+{
+  exporter.setAttribute(T("numRows"), getNumRows());
+  exporter.setAttribute(T("numColumns"), getNumColumns());
+
+  // one letter codes -> as text
+  TypePtr type = getElementsType();
+  EnumerationPtr enumeration = type.staticCast<Enumeration>();
+  if (enumeration->hasOneLetterCodes())
+    exporter.addTextElement(toString());
+  else 
+    Container::saveToXml(exporter);
+}
+
+bool ShortEnumerationMatrix::loadFromXml(XmlImporter& importer)
+{
+  size_t numRows = (size_t)importer.getIntAttribute(T("numRows"));
+  size_t numColumns = (size_t)importer.getIntAttribute(T("numColumns"));
+  setSize(numRows, numColumns);
+  TypePtr type = getElementsType();
+  EnumerationPtr enumeration = type.staticCast<Enumeration>();
+  if (enumeration->hasOneLetterCodes())
+  {
+    String text = importer.getAllSubText();
+    int length = text.length();
+    size_t elementIndex = 0;
+    for (int i = 0; i < length; ++i)
+      if (juce::CharacterFunctions::isWhitespace(text[i]))
+        continue;
+      else
+      {
+        if (elementIndex >= elements.size())
+        {
+          importer.errorMessage(T("ShortEnumerationMatrix::loadFromXml"), T("Too much characteres"));
+          return false;
+        }
+        int j = enumeration->findElementByOneLetterCode(text[i]);
+        if (j >= 0)
+          elements[elementIndex] = (unsigned char)j;
+        else
+        {
+          if (text[i] != '_')
+            importer.warningMessage(T("ShortEnumerationMatrix::loadFromXml"), String(T("Could not recognize one letter code '")) + text[i] + T("'"));
+          elements[elementIndex] = (unsigned char)-1;
+        }
+        ++elementIndex;
+      }
+    
+    if (elementIndex < elements.size())
+    {
+      importer.errorMessage(T("ShortEnumerationMatrix::loadFromXml"), T("Too few characteres"));
+      return false;
+    }
+    return true;
+  }
+  else
+    return Container::loadFromXml(importer);
+}
+
 
 /*
 ** MatrixRegion

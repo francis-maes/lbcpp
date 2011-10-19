@@ -138,7 +138,7 @@ class ConvertSGFXmlToStateAndTrajectory : public SimpleUnaryFunction
 {
 public:
   ConvertSGFXmlToStateAndTrajectory()
-    : SimpleUnaryFunction(xmlElementClass, pairClass(goStateClass, objectVectorClass(positiveIntegerPairClass))) {}
+    : SimpleUnaryFunction(xmlElementClass, pairClass(goStateClass, positiveIntegerPairVectorClass)) {}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
@@ -302,6 +302,25 @@ protected:
   size_t maxCount;
   FunctionPtr convertFunction;
 };
+
+
+inline ContainerPtr loadSGFTrajectories(ExecutionContext& context, const File& directoryOrFile, size_t maxCount)
+{
+  if (!directoryOrFile.exists())
+  {
+    context.errorCallback(T("File ") + directoryOrFile.getFullPathName() + T(" does not exists"));
+    return ContainerPtr();
+  }
+  if (directoryOrFile.isDirectory())
+    return directoryFileStream(context, directoryOrFile, T("*.sgf"))->load(maxCount, false)
+      ->apply(context, new LoadSGFFileFunction(), Container::parallelApply);
+  else
+  {
+    FunctionPtr loader = new LoadCompositeSGFFileFunction(maxCount);
+    return loader->compute(context, directoryOrFile).getObjectAndCast<Container>();
+  }
+}
+
 
 }; /* namespace lbcpp */
 
