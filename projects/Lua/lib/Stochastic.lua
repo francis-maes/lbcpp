@@ -46,7 +46,7 @@ Stochastic.uniformInteger = Stochastic.new({})
 
 function Stochastic.uniformInteger:sample(a, b)
   if type(a) ~= "number" or type(b) ~= "number" then
-    error("Invalid arguments in uniformInteger:sample()")
+    error("Invalid arguments in uniformInteger:sample(), type(lower) = " .. type(a) .. " type(upper) = " .. type(b))
   elseif a > b then
     error("min (" .. a .. ") should be lower than max (" .. b .. ")")
   end

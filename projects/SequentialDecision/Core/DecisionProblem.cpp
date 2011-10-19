@@ -57,6 +57,36 @@ bool DecisionProblemState::checkTrajectoryValidity(ExecutionContext& context, co
   return true;
 }
 
+
+int DecisionProblemState::getActions(LuaState& state)
+{
+  DecisionProblemStatePtr dpstate = state.checkObject(1, decisionProblemStateClass).staticCast<DecisionProblemState>();
+  ContainerPtr actions = dpstate->getAvailableActions();
+  state.pushObject(actions);
+  return 1;
+}
+
+int DecisionProblemState::isFinal(LuaState& state)
+{
+  DecisionProblemStatePtr dpstate = state.checkObject(1, decisionProblemStateClass).staticCast<DecisionProblemState>();
+  state.pushBoolean(dpstate->isFinalState());
+  return 1;
+}
+
+int DecisionProblemState::performTransition(LuaState& state)
+{
+  DecisionProblemStatePtr dpstate = state.checkObject(1, decisionProblemStateClass).staticCast<DecisionProblemState>();
+  Variable action = state.checkVariable(2);
+  double reward;
+  dpstate->performTransition(state.getContext(), action, reward);
+  state.pushNumber(reward);
+  return 1;
+}
+
+
+/*
+** DecisionProblem
+*/
 ClassPtr DecisionProblem::getStateClass() const
 {
   if (!initialStateSampler->isInitialized())

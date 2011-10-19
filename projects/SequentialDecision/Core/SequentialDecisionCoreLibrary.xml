@@ -3,7 +3,11 @@
 <library name="SequentialDecisionCore" directory="Core">
 
   <!-- DecisionProblem -->
-  <class name="DecisionProblemState" base="NameableObject" abstract="yes"/>
+  <class name="DecisionProblemState" base="NameableObject" abstract="yes">
+    <function lang="lua" name="isFinal"/>
+    <function lang="lua" name="getActions"/>
+    <function lang="lua" name="performTransition"/>
+  </class>
   <class name="DecisionProblem" base="Object" abstract="yes">
     <variable type="Function" name="initialStateSampler"/>
     <variable type="Double" name="discount"/>

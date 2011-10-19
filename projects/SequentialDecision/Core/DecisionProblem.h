@@ -35,6 +35,11 @@ public:
   void performTrajectory(const ContainerPtr& actions, double& sumOfRewards, size_t maxSteps = 0);
   bool checkTrajectoryValidity(ExecutionContext& context, const ContainerPtr& trajectory) const;
 
+  // lua
+  static int getActions(LuaState& state);
+  static int isFinal(LuaState& state);
+  static int performTransition(LuaState& state);
+
   lbcpp_UseDebuggingNewOperator
 };
 
