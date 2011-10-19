@@ -8,5 +8,6 @@
   <import name="SequentialDecisionGo"/>
   <import name="SequentialDecisionGP"/>
   <import name="SequentialDecisionBandits"/>
+  <import name="Luape"/>
   
 </library>

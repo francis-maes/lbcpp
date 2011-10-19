@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Luape" directory="Luape">
+  
+  <class name="LuapeOperation">
+    <variable type="String" name="name"/>
+    <variable type="ObjectVector[Type]" name="inputTypes"/>
+    <variable type="Type" name="outputType"/>
+  </class>
+  <class name="LuapeProblem">
+    <variable type="ObjectVector[VariableSignature]" name="inputs"/>
+    <variable type="ObjectVector[LuapeOperation]" name="operations"/>
+    <variable type="Boolean" name="failed"/>
+    <function lang="lua" name="input"/>
+    <function lang="lua" name="operation"/>
+  </class>
+  
+</library>

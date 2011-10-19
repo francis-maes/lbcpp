@@ -421,6 +421,17 @@ File LuaState::checkFile(int index)
   return getContext().getFile(name);
 }
 
+TypePtr LuaState::checkType(int index)
+{
+  const char* name = checkString(index);
+  if (!name)
+    return TypePtr();
+  TypePtr res = typeManager().getType(getContext(), name);
+  if (!res)
+    error(String("could not find type ") + name);
+  return res;
+}
+
 void LuaState::setTableField(const char *name, double value)
   {pushString(name); pushNumber(value); lua_settable(L, -3);}
 

@@ -107,6 +107,9 @@ public:
   // File
   File checkFile(int index);
 
+  // Type
+  TypePtr checkType(int index);
+
   // Variable
   Variable checkVariable(int index);
   void pushVariable(const Variable& variable);
