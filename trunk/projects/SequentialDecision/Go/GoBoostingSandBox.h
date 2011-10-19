@@ -129,6 +129,35 @@ protected:
   size_t index;
 };
 
+class IsFeatureGreaterThanWeakModel : public BoostingWeakModel
+{
+public:
+  IsFeatureGreaterThanWeakModel(EnumerationPtr features = EnumerationPtr(), size_t index = 0, double threshold = 0.0)
+    : features(features), index(index), threshold(threshold) {}
+   
+  virtual String toShortString() const
+    {return features->getElementName(index) + " > " + String(threshold);}
+
+  virtual double predict(ExecutionContext& context, const Variable& input) const
+  {
+    DenseDoubleVectorPtr denseVector = input.dynamicCast<DenseDoubleVector>();
+    if (denseVector)
+      return denseVector->getValue(index) > threshold ? 1.0 : 0.0;
+    else
+    {
+      DoubleVectorPtr vector = input.getObjectAndCast<DoubleVector>();
+      return vector->getElement(index).getDouble() > threshold ? 1.0 : 0.0;
+    }
+  }
+
+protected:
+  friend class IsFeatureGreaterThanWeakModelClass;
+
+  EnumerationPtr features;
+  size_t index;
+  double threshold;
+};
+
 
 //////////////////
 ////////////////// BoostingStrongModel
@@ -267,10 +296,11 @@ public:
 
     BoostingWeakModelPtr bestWeakModel;
     double bestScore = 0.0;
-    size_t numCandidates = inputFeatures->getNumElements();
+    size_t numCandidates = inputFeatures->getNumElements() * 10;
+
     for (size_t i = 0; i < numCandidates; ++i)
     {
-      BoostingWeakModelPtr weakModel = new IsFeatureActiveWeakModel(inputFeatures, i);
+      BoostingWeakModelPtr weakModel = new IsFeatureGreaterThanWeakModel(inputFeatures, i / 10, -1.0 + (i % 10) * 2.0 / 9.0);
       double score = computeWeakModelScore(context, weakModel, examples, weights);
       if (fabs(score) > fabs(bestScore))
       {
@@ -503,7 +533,6 @@ private:
     return res;
   }
 };
-
 
 }; /* namespace lbcpp */
 

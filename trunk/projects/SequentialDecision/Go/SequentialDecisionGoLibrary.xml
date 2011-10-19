@@ -129,6 +129,11 @@
     <variable type="Enumeration" name="features"/>
     <variable type="PositiveInteger" name="index"/>
   </class>
+  <class name="IsFeatureGreaterThanWeakModel" base="BoostingWeakModel">
+    <constructor arguments="EnumerationPtr features, size_t index"/>
+    <variable type="Enumeration" name="features"/>
+    <variable type="PositiveInteger" name="index"/>
+  </class>
 
   <class name="BoostingStrongModel" base="Function" abstract="yes">
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="weights"/>
