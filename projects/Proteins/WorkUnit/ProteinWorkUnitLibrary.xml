@@ -254,4 +254,63 @@
     <variable type="String" name="proteinsPath" shortName="in"/>
   </class>
   <!-- END BanditBox -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+                   ESANN 2011 - F.Maes, J.Becker & L.Wehenkel
+ -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -->
+  <template name="ESANN11ProteinPerception" base="ProteinPrimaryPerception">
+    <parameter name="aaFeaturesEnumeration"/>
+    <parameter name="pssmFeaturesEnumeration"/>
+    <parameter name="ss3FeaturesEnumeration"/>
+    <parameter name="ss8FeaturesEnumeration"/>
+    <parameter name="saFeaturesEnumeration"/>
+    <parameter name="drFeaturesEnumeration"/>
+    <parameter name="stalFeaturesEnumeration"/>
+
+    <variable type="Vector[DoubleVector[aaFeaturesEnumeration, Double]]" name="aaResidueFeatures"/>
+    <variable type="Container[DenseDoubleVector[AddMissingToEnumeration[aaFeaturesEnumeration], Double]]" name="aaAccumulator"/>
+
+    <variable type="Vector[DoubleVector[pssmFeaturesEnumeration, Double]]" name="pssmResidueFeatures"/>
+    <variable type="Container[DenseDoubleVector[AddMissingToEnumeration[pssmFeaturesEnumeration], Double]]" name="pssmAccumulator"/>
+
+    <variable type="Vector[DoubleVector[ss3FeaturesEnumeration, Double]]" name="ss3ResidueFeatures"/>
+    <variable type="Container[DenseDoubleVector[AddMissingToEnumeration[ss3FeaturesEnumeration], Double]]" name="ss3Accumulator"/>
+
+    <variable type="Vector[DoubleVector[ss8FeaturesEnumeration, Double]]" name="ss8ResidueFeatures"/>
+    <variable type="Container[DenseDoubleVector[AddMissingToEnumeration[ss8FeaturesEnumeration], Double]]" name="ss8Accumulator"/>
+
+    <variable type="Vector[DoubleVector[saFeaturesEnumeration, Double]]" name="saResidueFeatures"/>
+    <variable type="Container[DenseDoubleVector[AddMissingToEnumeration[saFeaturesEnumeration], Double]]" name="saAccumulator"/>
+
+    <variable type="Vector[DoubleVector[drFeaturesEnumeration, Double]]" name="drResidueFeatures"/>
+    <variable type="Container[DenseDoubleVector[AddMissingToEnumeration[drFeaturesEnumeration], Double]]" name="drAccumulator"/>
+
+    <variable type="Vector[DoubleVector[stalFeaturesEnumeration, Double]]" name="stalResidueFeatures"/>
+    <variable type="Container[DenseDoubleVector[AddMissingToEnumeration[stalFeaturesEnumeration], Double]]" name="stalAccumulator"/>
+  </template>
+
+  <class name="ESANN11PredictorParameters" base="ProteinPredictorParameters"/>
+
+  <class name="ESANN11WorkUnit" base="WorkUnit">
+    <variable type="String" name="proteinsPath" shortName="in"/>
+    <variable type="VariablesEnumeration[Protein]" name="target" shortName="t"/>
+  </class>
+<!-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -->
+
+
+
+
+
 </library>
