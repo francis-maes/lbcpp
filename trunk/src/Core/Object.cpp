@@ -469,7 +469,7 @@ int Object::create(LuaState& state)
   int numArguments = state.getTop();
 
   const char* className = state.checkString(1);
-  TypePtr type = getType(className);
+  TypePtr type = typeManager().getType(state.getContext(), className);
   if (!type)
     return 0;
 

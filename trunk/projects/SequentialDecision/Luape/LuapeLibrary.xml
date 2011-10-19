@@ -7,12 +7,22 @@
     <variable type="ObjectVector[Type]" name="inputTypes"/>
     <variable type="Type" name="outputType"/>
   </class>
+  
   <class name="LuapeProblem">
     <variable type="ObjectVector[VariableSignature]" name="inputs"/>
     <variable type="ObjectVector[LuapeOperation]" name="operations"/>
     <variable type="Boolean" name="failed"/>
     <function lang="lua" name="input"/>
     <function lang="lua" name="operation"/>
+  </class>
+
+  <class name="LuaWrapperValue"/>
+  <class name="LuaWrapperVector"/>
+
+  <class name="LuapeAction"/>
+  
+  <class name="LuapeState" base="DecisionProblemState">
+    <function lang="lua" name="create" static="yes"/>
   </class>
   
 </library>

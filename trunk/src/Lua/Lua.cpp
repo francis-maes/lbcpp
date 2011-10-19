@@ -97,10 +97,25 @@ LuaState::LuaState(lua_State* L)
 {
 }
 
+LuaState::LuaState(const LuaState& other)
+  : L(other.L), owned(false)
+{
+}
+
 LuaState::~LuaState()
 {
   clear();
 }
+
+LuaState& LuaState::operator=(const LuaState& other)
+{
+  L = other.L;
+  owned = false;
+  return *this;
+}
+
+bool LuaState::exists() const
+  {return L != NULL;}
 
 void LuaState::clear()
 {
@@ -315,11 +330,16 @@ ObjectPtr& LuaState::checkObject(int index, TypePtr expectedType)
   ObjectPtr* p = (ObjectPtr* )luaL_checkudata(L, index, "LBCppObject");
   if (p)
   {
-    TypePtr type = (*p)->getClass();
-    if (type->inheritsFrom(expectedType))
-      return *p;
+    if (!*p)
+      luaL_error(L, "object is nil");
     else
-      luaL_error(L, "%s does not inherit from %s", (const char* )type->getName(), (const char* )expectedType->getName());
+    {
+      TypePtr type = (*p)->getClass();
+      if (type->inheritsFrom(expectedType))
+        return *p;
+      else
+        luaL_error(L, "%s does not inherit from %s", (const char* )type->getName(), (const char* )expectedType->getName());
+    }
   }
   else
     // value is not a userdata or does not have meta-table
@@ -410,6 +430,9 @@ void LuaState::remove(int index)
 int LuaState::getTop() const
   {return lua_gettop(L);}
 
+void LuaState::setTop(int size)
+  {lua_settop(L, size);}
+
 LuaType LuaState::getType(int index) const
   {return (LuaType)lua_type(L, index);}
 
@@ -468,6 +491,25 @@ void LuaState::error(const String& message)
 void LuaState::insert(int index)
 {
   lua_insert(L, index);
+}
+
+LuaState LuaState::newThread()
+{
+  lua_State* res = lua_newthread(L);
+  pop(1);
+  return LuaState(res);
+}
+
+int LuaState::resume(int numArguments)
+  {return lua_resume(L, numArguments);}
+
+size_t LuaState::length(int index) const
+  {return lua_objlen(L, index);}
+
+void LuaState::pushValueFrom(LuaState& source, int index)
+{
+  lua_pushvalue(source, index);
+  lua_xmove(source, L, 1);
 }
 
 void Type::luaRegister(LuaState& state) const
