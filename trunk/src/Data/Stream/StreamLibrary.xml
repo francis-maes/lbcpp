@@ -55,7 +55,7 @@
 
   <!-- Apply Function Modifier -->
   <class name="ApplyFunctionStream" base="Stream">
-    <constructor arguments="StreamPtr stream, FunctionPtr function"/>
+    <constructor arguments="ExecutionContext&amp; context, StreamPtr stream, FunctionPtr function"/>
 
     <variable type="Stream" name="stream"/>
     <variable type="Function" name="function"/>

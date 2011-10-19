@@ -277,3 +277,40 @@ String GoState::toString() const
 
 String GoState::toShortString() const
   {return getName() + T(" ") + String((int)time);}
+
+void GoState::saveToXml(XmlExporter& exporter) const
+{
+  DecisionProblemState::saveToXml(exporter);
+
+  PositiveIntegerPairVectorPtr vector = new PositiveIntegerPairVector();
+  vector->reserve(capturedAtPreviousTurn.size());
+  for (PositionSet::const_iterator it = capturedAtPreviousTurn.begin(); it != capturedAtPreviousTurn.end(); ++it)
+    vector->append(*it);
+  exporter.enter("capturedAtPreviousTurn");
+  exporter.writeVariable(vector, positiveIntegerPairVectorClass);
+  exporter.leave();
+}
+
+bool GoState::loadFromXml(XmlImporter& importer)
+{
+  if (!DecisionProblemState::loadFromXml(importer))
+    return false;
+
+  juce::XmlElement* elt = importer.getCurrentElement()->getChildByName(T("capturedAtPreviousTurn"));
+  if (!elt)
+  {
+    importer.errorMessage("GoState::loadFromXml", "Could not find capturedAtPreviousTurn variable");
+    return false;
+  }
+  PositiveIntegerPairVectorPtr captured = importer.loadVariable(elt, positiveIntegerPairVectorClass).getObjectAndCast<PositiveIntegerPairVector>();
+  if (!captured)
+  {
+    importer.errorMessage("GoState::loadFromXml", "Could not load capturedAtPreviousTurn variable");
+    return false;
+  }
+  capturedAtPreviousTurn.clear();
+  for (size_t i = 0; i < captured->getNumElements(); ++i)
+    capturedAtPreviousTurn.insert(captured->get(i));
+  recomputeAvailableActions();
+  return true;
+}

@@ -18,8 +18,8 @@ namespace lbcpp
 class ApplyFunctionStream : public Stream
 {
 public:
-  ApplyFunctionStream(StreamPtr stream, FunctionPtr function)
-    : stream(stream), function(function), outputType(function->getOutputType()) {jassert(outputType);}
+  ApplyFunctionStream(ExecutionContext& context, StreamPtr stream, FunctionPtr function)
+    : Stream(context), stream(stream), function(function), outputType(function->getOutputType()) {jassert(outputType);}
   ApplyFunctionStream() {}
 
   virtual TypePtr getElementsType() const
