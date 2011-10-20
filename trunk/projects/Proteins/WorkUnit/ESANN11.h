@@ -172,10 +172,12 @@ public:
     size_t drAccumulator       = builder.addFunction(getVariableFunction(T("drAccumulator")),       proteinPerception, T("drAccu"));
     size_t stalResidueFeatures = builder.addFunction(getVariableFunction(T("stalResidueFeatures")), proteinPerception, T("stalRF"));
     size_t stalAccumulator     = builder.addFunction(getVariableFunction(T("stalAccumulator")),     proteinPerception, T("stalAccu"));
+    /* Precompute */
+    size_t relativePosition = builder.addFunction(new RelativeValueFeatureGenerator(1), position, length, T("Pos/Len"));
     /* Output */
     builder.startSelection();
       /*** Global Features ***/
-      builder.addFunction(integerFeatureGenerator(), length, T("length"));
+      builder.addFunction(defaultPositiveIntegerFeatureGenerator(), length, T("length"));
 
     /*
      extern PerceptionPtr defaultPositiveIntegerFeatures(size_t numIntervals = 20, double maxPowerOfTen = 10.0);
@@ -210,7 +212,8 @@ public:
       builder.addFunction(accumulatorGlobalMeanFunction(), stalAccumulator, T("h(StAl)"));
 
       /*** Residue Features ***/
-      builder.addFunction(new RelativeValueFeatureGenerator(1), position, length, T("Pos/Len"));
+      //builder.addFunction(mapContainerFunction(defaultProbabilityFeatureGenerator()), relativePosition);
+      builder.addInSelection(relativePosition);
       // TODO: use distance from begin
       // TODO: use distance to end
 
@@ -254,7 +257,8 @@ public:
     size_t position = builder.addInput(positiveIntegerType, T("position"));
     size_t protein = builder.addInput(proteinClass, T("protein"));
     
-    builder.addFunction(getElementInVariableFunction(T("positionSpecificScoringMatrix")), protein, position, T("pssm"));
+    size_t elements = builder.addFunction(getElementInVariableFunction(T("positionSpecificScoringMatrix")), protein, position, T("pssm"));
+    builder.addFunction(mapContainerFunction(defaultProbabilityFeatureGenerator()), elements);
   }
   
   void ss3ResidueFeatures(CompositeFunctionBuilder& builder) const
@@ -263,7 +267,8 @@ public:
     size_t position = builder.addInput(positiveIntegerType, T("position"));
     size_t protein = builder.addInput(proteinClass, T("protein"));
     
-    builder.addFunction(getElementInVariableFunction(T("secondaryStructure")), protein, position, T("ss3"));
+    size_t elements = builder.addFunction(getElementInVariableFunction(T("secondaryStructure")), protein, position, T("ss3"));
+    builder.addFunction(mapContainerFunction(defaultProbabilityFeatureGenerator()), elements);
   }
   
   void ss8ResidueFeatures(CompositeFunctionBuilder& builder) const
@@ -272,7 +277,8 @@ public:
     size_t position = builder.addInput(positiveIntegerType, T("position"));
     size_t protein = builder.addInput(proteinClass, T("protein"));
     
-    builder.addFunction(getElementInVariableFunction(T("dsspSecondaryStructure")), protein, position, T("ss8"));
+    size_t elements = builder.addFunction(getElementInVariableFunction(T("dsspSecondaryStructure")), protein, position, T("ss8"));
+    builder.addFunction(mapContainerFunction(defaultProbabilityFeatureGenerator()), elements);
   }
   
   void saResidueFeatures(CompositeFunctionBuilder& builder) const
@@ -282,7 +288,7 @@ public:
     size_t protein = builder.addInput(proteinClass, T("protein"));
     
     size_t sa = builder.addFunction(getElementInVariableFunction(T("solventAccessibilityAt20p")), protein, position, T("sa"));
-    builder.addFunction(doubleFeatureGenerator(), sa, T("sa"));
+    builder.addFunction(defaultProbabilityFeatureGenerator(), sa, T("sa"));
   }
   
   void drResidueFeatures(CompositeFunctionBuilder& builder) const
@@ -292,7 +298,7 @@ public:
     size_t protein = builder.addInput(proteinClass, T("protein"));
     
     size_t dr = builder.addFunction(getElementInVariableFunction(T("disorderRegions")), protein, position, T("dr"));
-    builder.addFunction(doubleFeatureGenerator(), dr, T("dr"));
+    builder.addFunction(defaultProbabilityFeatureGenerator(), dr, T("dr"));
   }
   
   void stalResidueFeatures(CompositeFunctionBuilder& builder) const
@@ -301,7 +307,8 @@ public:
     size_t position = builder.addInput(positiveIntegerType, T("position"));
     size_t protein = builder.addInput(proteinClass, T("protein"));
     
-    builder.addFunction(getElementInVariableFunction(T("structuralAlphabetSequence")), protein, position, T("stal"));
+    size_t elements = builder.addFunction(getElementInVariableFunction(T("structuralAlphabetSequence")), protein, position, T("stal"));
+    builder.addFunction(mapContainerFunction(defaultProbabilityFeatureGenerator()), elements);
   }
 
   virtual FunctionPtr createResidueVectorPerception() const
