@@ -356,6 +356,8 @@ typedef ReferenceCountedObjectPtr<ESANN11PredictorParameters> ESANN11PredictorPa
 class ESANN11WorkUnit : public WorkUnit
 {
 public:
+  ESANN11WorkUnit() : numStages(1) {}
+
   virtual Variable run(ExecutionContext& context)
   {
     ESANN11PredictorParametersPtr predictor = new ESANN11PredictorParameters();
@@ -367,8 +369,18 @@ public:
       return 101.f;
     }
 
-    ProteinPredictorPtr stack = new ProteinPredictor(predictor);
-    stack->addTarget(target);
+    ProteinSequentialPredictorPtr stack = new ProteinSequentialPredictor();
+    for (size_t i = 0; i < numStages; ++i)
+    {
+      ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
+      iteration->addTarget(ss3Target);
+      iteration->addTarget(ss8Target);
+      iteration->addTarget(sa20Target);
+      iteration->addTarget(drTarget);
+      iteration->addTarget(stalTarget);
+
+      stack->addPredictor(iteration);
+    }
 
     if (!stack->train(context, trainingData, ContainerPtr(), T("Training")))
       return 102.f;
@@ -386,14 +398,14 @@ public:
     ProteinEvaluatorPtr testEvaluator = new ProteinEvaluator();
     CompositeScoreObjectPtr testScores = stack->evaluate(context, testingData, testEvaluator, T("Evaluate on test proteins"));
 
-    return testEvaluator->getScoreObjectOfTarget(testScores, target)->getScoreToMinimize();
+    return true;
   }
 
 protected:
   friend class ESANN11WorkUnitClass;
 
   String proteinsPath;
-  ProteinTarget target;
+  size_t numStages;
 };
 
 };
