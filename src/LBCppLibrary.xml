@@ -15,4 +15,6 @@
   <import name="Optimizer"/>
   <import name="UserInterfaceComponent" ifdef="LBCPP_USER_INTERFACE"/>
 
+  <import name="Lua"/>
+  
 </library>

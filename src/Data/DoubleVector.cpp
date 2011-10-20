@@ -8,6 +8,7 @@
 #include "precompiled.h"
 #include <lbcpp/Data/DoubleVector.h>
 #include <lbcpp/FeatureGenerator/FeatureGenerator.h>
+#include <lbcpp/Lua/Lua.h>
 #include "../Core/Object/SparseVectorHelper.h"
 #include "../FeatureGenerator/FeatureGeneratorCallbacks.hpp"
 using namespace lbcpp;

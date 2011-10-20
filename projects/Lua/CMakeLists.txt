@@ -3,15 +3,15 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-GENERATE_INTROSPECTION_CODE(LuaLibrary.xml LuaLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(InteluaLibrary.xml InteluaLibrary.cpp)
 
 SET(INTELUA_INTERPRETER_SOURCES
   precompiled.h
   precompiled.cpp
   InteluaInterpreter.h
   InteluaInterpreter.cpp
-  LuaLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/LuaLibrary.cpp
+  InteluaLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/InteluaLibrary.cpp
 )
 
 SET(INTELUA_AST_SOURCES

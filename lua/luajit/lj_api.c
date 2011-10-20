@@ -685,6 +685,13 @@ LUA_API lua_State *lua_newthread(lua_State *L)
   return L1;
 }
 
+LUA_API lua_State *lua_clonethread(lua_State *L, lua_State *from)
+{
+  // FIXME !
+  return NULL;
+}
+
+
 LUA_API void *lua_newuserdata(lua_State *L, size_t size)
 {
   GCudata *ud;

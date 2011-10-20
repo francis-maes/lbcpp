@@ -11,7 +11,6 @@
 
 # include "predeclarations.h"
 # include "../Core/Object.h"
-# include "../Lua/Lua.h"
 
 namespace lbcpp
 {

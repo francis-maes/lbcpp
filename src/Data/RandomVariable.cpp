@@ -8,6 +8,7 @@
 #include "precompiled.h"
 #include <lbcpp/Data/RandomVariable.h>
 #include <lbcpp/Core/Variable.h>
+#include <lbcpp/Lua/Lua.h>
 using namespace lbcpp;
 
 /*

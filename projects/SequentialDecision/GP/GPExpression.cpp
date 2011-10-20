@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include "GPExpression.h"
+#include <lbcpp/Lua/Lua.h>
 using namespace lbcpp;
 
 int GPExpression::compare(const ObjectPtr& otherObject) const

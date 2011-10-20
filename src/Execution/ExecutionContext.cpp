@@ -12,6 +12,7 @@
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Core/Function.h>
 #include <lbcpp/Data/RandomGenerator.h>
+#include <lbcpp/Lua/Lua.h>
 #include <lbcpp/library.h>
 using namespace lbcpp;
 

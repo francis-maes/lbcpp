@@ -15,11 +15,6 @@
     <function lang="lua" name="input"/>
     <function lang="lua" name="operation"/>
   </class>
-
-  <class name="LuaWrapperValue"/>
-  <class name="LuaWrapperVector"/>
-
-  <class name="LuapeAction"/>
   
   <class name="LuapeState" base="DecisionProblemState">
     <function lang="lua" name="create" static="yes"/>

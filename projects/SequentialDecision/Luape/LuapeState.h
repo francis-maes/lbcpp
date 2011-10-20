@@ -15,62 +15,6 @@
 namespace lbcpp
 {
 
-class LuaWrapperValue : public Object
-{
-public:
-  LuaWrapperValue(const LuaState& state, int reference)
-    : state(state), reference(reference) {}
-  LuaWrapperValue() : reference(-1) {}
-
-  virtual ~LuaWrapperValue()
-    {state.freeReference(reference);}
-
-  int getReference() const
-    {return reference;}
-
-protected:
-  LuaState state;
-  int reference;
-};
-
-typedef ReferenceCountedObjectPtr<LuaWrapperValue> LuaWrapperValuePtr;
-
-class LuaWrapperVector : public Container
-{
-public:
-  LuaWrapperVector(const LuaState& state, int index)
-    : state(state), index(index) {}
-  LuaWrapperVector() : index(-1) {}
-
-  virtual size_t getNumElements() const
-    {return state.length(index);}
-
-  virtual Variable getElement(size_t index) const
-  {
-    LuaState& state = const_cast<LuaWrapperVector* >(this)->state;
-    state.pushInteger(index + 1);
-    lua_gettable(state, this->index);
-    int reference = state.toReference(-1);
-    return new LuaWrapperValue(state, reference);
-  }
-
-  virtual void setElement(size_t index, const Variable& value)
-    {jassert(false);} // not implemented yet
-
-protected:
-  LuaState state;
-  int index;
-};
-
-
-class LuapeAction : public Object
-{
-public:
-
-};
-
-extern ClassPtr luapeActionClass;
-
 class LuapeState;
 typedef ReferenceCountedObjectPtr<LuapeState> LuapeStatePtr;
 
@@ -85,14 +29,17 @@ typedef ReferenceCountedObjectPtr<LuapeState> LuapeStatePtr;
 class LuapeState : public DecisionProblemState
 {
 public:
-  LuapeState(LuaState& coroutine, const String& name = "Unnamed")
-    : DecisionProblemState(name), coroutine(coroutine), rewards(0.0)
+  LuapeState(const LuaState& state, const String& name = "Unnamed")
+    : DecisionProblemState(name), coroutine(state.newThread()), rewards(0.0)
   {
+    int n = state.getTop();
+    for (int i = 1; i <= n; ++i)
+      coroutine.pushValueFrom(state, i);
   }
   LuapeState() {}
 
   virtual TypePtr getActionType() const
-    {return luapeActionClass;}
+    {return variableType;}
 
   virtual bool isFinalState() const
     {return !coroutine.exists();}
@@ -100,11 +47,33 @@ public:
   virtual ContainerPtr getAvailableActions() const
     {return actions;}
 
+  virtual String toShortString() const
+  {
+    LuaState coroutine(this->coroutine);
+    lua_Debug ar;
+    memset(&ar, 0, sizeof (lua_Debug));
+    if (lua_getstack(coroutine, 2, &ar) == 0)
+      return "error, could not getstack";
+    lua_getinfo(coroutine, "Sl", &ar);
+    String res;
+    if (ar.currentline > 0)
+      res += "Line " + String(ar.currentline) + "\n";
+    for (int i = 1; true; ++i)
+    {
+      const char* name = lua_getlocal(coroutine, &ar, i);
+      if (!name)
+        break;
+      Variable value = coroutine.checkVariable(-1);
+      coroutine.pop();
+      res += String(name) + " = " + value.toShortString() + "\n";
+    }
+    return res;
+  }
+
   virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward, Variable* stateBackup = NULL)
   {
-    LuaWrapperValuePtr value = action.getObjectAndCast<LuaWrapperValue>();
     coroutine.setTop(0);
-    coroutine.pushReference(value->getReference());
+    coroutine.pushVariable(action);
 
     actions = ContainerPtr();
     this->rewards = 0.0;
@@ -118,8 +87,7 @@ public:
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
   {
     const LuapeStatePtr& target = t.staticCast<LuapeState>();
-    lua_State* L = const_cast<LuapeState* >(this)->coroutine;
-    target->coroutine = LuaState(lua_clonethread(L, L));
+    target->coroutine = coroutine.cloneThread();
     if (target->coroutine.isTable(2))
       target->actions = new LuaWrapperVector(target->coroutine, 2);
     target->returnValues = returnValues;
@@ -128,13 +96,7 @@ public:
   
   static int create(LuaState& state)
   {
-    LuaState coroutine = state.newThread();
-
-    int n = state.getTop();
-    for (int i = 1; i <= n; ++i)
-      coroutine.pushValueFrom(state, i);
-
-    LuapeStatePtr res(new LuapeState(coroutine));
+    LuapeStatePtr res(new LuapeState(state));
     res->resume(state.getContext(), true);
     state.pushObject(res);
     return 1;
@@ -151,7 +113,7 @@ protected:
     int n = coroutine.getTop();
     for (int i = 1; i <= n; ++i)
       returnValues.append(coroutine.checkVariable(i));
-    coroutine = LuaState(); // FIXME: is this enough to clear the object ??
+    coroutine.clear();
   }
 
   void processYield()

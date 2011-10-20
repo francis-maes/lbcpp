@@ -10,6 +10,7 @@
 #include <lbcpp/Core/Frame.h>
 #include <lbcpp/Learning/BatchLearner.h>
 #include <lbcpp/Function/Evaluator.h>
+#include <lbcpp/Lua/Lua.h>
 using namespace lbcpp;
 
 bool Function::initialize(ExecutionContext& context, TypePtr inputType)

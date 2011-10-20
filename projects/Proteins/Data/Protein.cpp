@@ -11,7 +11,7 @@
 #include "Formats/PDBFileGenerator.h"
 #include "Formats/FASTAFileParser.h"
 #include "Formats/FASTAFileGenerator.h"
-
+#include <lbcpp/Lua/Lua.h>
 using namespace lbcpp;
 
 ProteinPtr Protein::createFromPDB(ExecutionContext& context, const File& pdbFile, bool beTolerant)
