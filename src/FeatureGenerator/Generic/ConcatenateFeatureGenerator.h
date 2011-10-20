@@ -314,6 +314,7 @@ public:
       isAllDouble &= isDouble;
       isAllDoubleVector &= isDoubleVector;
       isAllDoubleOrDoubleVector &= (isDouble | isDoubleVector);
+      jassert(isDouble || isDoubleVector);
     }
     if (isAllDouble)
       return new ConcatenateDoubleFeatureGenerator(lazy);
