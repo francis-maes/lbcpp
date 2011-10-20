@@ -127,6 +127,19 @@ void LuaState::clear()
   L = NULL;
 }
 
+LuaState LuaState::newThread() const
+{
+  lua_State* res = lua_newthread(L);
+  const_cast<LuaState* >(this)->pop(1);
+  return LuaState(res, false); // sub-states are subject to garbage collection, no need to free them
+}
+
+LuaState LuaState::cloneThread() const
+{
+  lua_State* res = lua_clonethread(L, L);
+  return LuaState(res, false); // sub-states are subject to garbage collection, no need to free them
+}
+
 bool LuaState::call(int numArguments, int numResults)
 {
   getGlobal("__errorHandler");
@@ -379,8 +392,7 @@ Variable LuaState::checkVariable(int index)
   case luaTypeFunction:
   case luaTypeThread:
   default:
-    jassert(false); // not implemented
-    return Variable();
+    return Variable(new LuaWrapperValue(*this, index));
   }
 }
 
@@ -397,7 +409,13 @@ void LuaState::pushVariable(const Variable& variable)
   else if (variable.isString())
     pushString(variable.getString());
   else if (variable.isObject())
-    pushObject(variable.getObject());
+  {
+    LuaWrapperValuePtr wrapper = variable.dynamicCast<LuaWrapperValue>();
+    if (wrapper)
+      pushReference(wrapper->getReference());
+    else
+      pushObject(variable.getObject());
+  }
   else
     jassert(false);
   // todo: continue ...
@@ -493,23 +511,16 @@ void LuaState::insert(int index)
   lua_insert(L, index);
 }
 
-LuaState LuaState::newThread()
-{
-  lua_State* res = lua_newthread(L);
-  pop(1);
-  return LuaState(res);
-}
-
 int LuaState::resume(int numArguments)
   {return lua_resume(L, numArguments);}
 
 size_t LuaState::length(int index) const
   {return lua_objlen(L, index);}
 
-void LuaState::pushValueFrom(LuaState& source, int index)
+void LuaState::pushValueFrom(const LuaState& source, int index)
 {
-  lua_pushvalue(source, index);
-  lua_xmove(source, L, 1);
+  lua_pushvalue(source.L, index);
+  lua_xmove(source.L, L, 1);
 }
 
 void Type::luaRegister(LuaState& state) const
@@ -538,3 +549,48 @@ void Type::luaRegister(LuaState& state) const
   String libraryName = "lbcpp." + name;
   state.openLibrary(libraryName, &functions[0]);
 }
+
+/*
+** LuaWrapperValue
+*/
+LuaWrapperValue::LuaWrapperValue(const LuaState& state, int reference)
+  : state(state), reference(reference)
+{
+}
+
+LuaWrapperValue::LuaWrapperValue() : reference(-1)
+{
+}
+
+LuaWrapperValue::~LuaWrapperValue()
+  {state.freeReference(reference);}
+
+int LuaWrapperValue::getReference() const
+  {return reference;}
+
+/*
+** LuaWrapperVector
+*/
+LuaWrapperVector::LuaWrapperVector(const LuaState& state, int index)
+  : state(state), index(index)
+{
+}
+
+LuaWrapperVector::LuaWrapperVector() : index(-1)
+{
+}
+
+size_t LuaWrapperVector::getNumElements() const
+  {return state.length(index);}
+
+Variable LuaWrapperVector::getElement(size_t index) const
+{
+  LuaState& state = const_cast<LuaWrapperVector* >(this)->state;
+  state.pushInteger(index + 1);
+  lua_gettable(state, this->index);
+  int reference = state.toReference(-1);
+  return new LuaWrapperValue(state, reference);
+}
+
+void LuaWrapperVector::setElement(size_t index, const Variable& value)
+  {jassert(false);} // not implemented yet

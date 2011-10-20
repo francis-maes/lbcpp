@@ -29,8 +29,15 @@
 
 # include "ReferenceCountedObject.h"
 
+struct lua_State;
+typedef struct lua_State lua_State;
+typedef int (*lua_CFunction)(lua_State* L);
+typedef struct luaL_Reg luaL_Reg;
+
 namespace lbcpp
 {
+
+typedef int (*LuaCFunction)(lua_State* L);
 
 struct ApplicationContext;
 
@@ -99,6 +106,9 @@ typedef ReferenceCountedObjectPtr<CompositeFunction> CompositeFunctionPtr;
 
 class Sampler;
 typedef ReferenceCountedObjectPtr<Sampler> SamplerPtr;
+
+class LuaState;
+typedef ReferenceCountedObjectPtr<LuaState> LuaStatePtr;
 
 }; /* namespace lbcpp */
 

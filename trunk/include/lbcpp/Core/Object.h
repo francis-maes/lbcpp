@@ -28,7 +28,6 @@
 # define LBCPP_CORE_OBJECT_H_
 
 # include "predeclarations.h"
-# include "../Lua/Lua.h"
 
 namespace lbcpp
 {

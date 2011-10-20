@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include "DecisionProblem.h"
+#include <lbcpp/Lua/Lua.h>
 using namespace lbcpp;
 
 void DecisionProblemState::performTrajectory(const ContainerPtr& actions, double& sumOfRewards, size_t maxSteps)

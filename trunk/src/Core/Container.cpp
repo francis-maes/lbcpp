@@ -14,6 +14,7 @@
 #include <lbcpp/Data/SymmetricMatrix.h>
 #include <lbcpp/Core/Function.h>
 #include <lbcpp/Execution/WorkUnit.h>
+#include <lbcpp/Lua/Lua.h>
 #include <algorithm>
 using namespace lbcpp;
 

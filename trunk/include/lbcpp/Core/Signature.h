@@ -28,7 +28,6 @@
 # define LBCPP_CORE_SIGNATURE_H_
 
 # include "Object.h"
-# include "../Lua/Lua.h"
 
 namespace lbcpp
 {

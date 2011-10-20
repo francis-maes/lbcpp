@@ -9,6 +9,8 @@
 #ifndef LBCPP_LUAPE_PROBLEM_H_
 # define LBCPP_LUAPE_PROBLEM_H_
 
+# include <lbcpp/Lua/Lua.h>
+
 namespace lbcpp
 {
 

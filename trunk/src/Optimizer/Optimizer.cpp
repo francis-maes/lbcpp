@@ -9,6 +9,7 @@
 #include "precompiled.h"
 #include <lbcpp/Optimizer/OptimizerState.h>
 #include <lbcpp/Optimizer/Optimizer.h>
+#include <lbcpp/Lua/Lua.h>
 using namespace lbcpp;
 
 /*

@@ -60,6 +60,8 @@ IF(LBCPP_USER_INTERFACE)
   GENERATE_INTROSPECTION_CODE(UserInterface/Component/UserInterfaceComponentLibrary.xml UserInterfaceComponentLibrary.cpp)
 ENDIF(LBCPP_USER_INTERFACE)
 
+GENERATE_INTROSPECTION_CODE(Lua/LuaLibrary.xml LuaLibrary.cpp)
+
 #### Core ####
 
 SET(LBCPP_CORE_SOURCES
@@ -679,6 +681,8 @@ ENDIF(LBCPP_USER_INTERFACE)
 SET(LBCPP_LUA_SOURCES
   ../include/lbcpp/Lua/Lua.h
   Lua/Lua.cpp
+  Lua/LuaLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/LuaLibrary.cpp
 )
 
 ##### MAIN ####

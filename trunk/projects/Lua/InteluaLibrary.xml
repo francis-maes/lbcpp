@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<library name="Lua" dynamic="yes">
+<library name="Intelua" dynamic="yes">
 
   <class name="InteluaInterpreter" base="Object">
     <function lang="lua" name="loadBuffer"/>

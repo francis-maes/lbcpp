@@ -1,8 +1,12 @@
 
+LuaDP:
+ * Voir si on peut implementer le clone dans luajit... mail autrement
+ * LuapeState: introspection
+ * Write (and test) a DP to build perception graphs
+
+
 I) Finir LuapeState wrapper
 
- * LuapeState: clone()
- * LuapeState: introspection
  * LuaWrapper integration into lbcpp-core (?)
      => appeler performTransition avec une variable lua plutot qu'un element du "available actions" container
 
@@ -10,12 +14,6 @@ II) Ecrire le DP pour la construction de graphes de features
 
 III) Premier objectif: exploration alŽatoire de ce DP pour trouver le meilleur weak-learner pour une tache de classification binaire simple
 
-
-Bandits:
- * Launch PlayFormulaNTimes for 2 sizes x 4 objectives
- * Evaluation of formula search policies: simple regret curves
- * Bandit problem from PlayFormulaNTimes files => discover best discovery policy
- * Final evaluation: algorithm + latex generator
 
 Lua-Misc
  * Move namespace lbcpp::lua into lua (-> introspection generator must be adapted)

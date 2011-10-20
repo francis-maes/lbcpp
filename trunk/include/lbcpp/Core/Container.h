@@ -9,7 +9,9 @@
 #ifndef LBCPP_CORE_CONTAINER_H_
 # define LBCPP_CORE_CONTAINER_H_
 
+# include "../Core/Class.h"
 # include "../Core/Variable.h"
+# include "../Core/Enumeration.h"
 
 namespace lbcpp
 {

@@ -164,6 +164,9 @@ ERRDEF(FFI_NYIPACKBIT,	"NYI: packed bit fields")
 ERRDEF(FFI_NYICALL,	"NYI: cannot call this C function (yet)")
 #endif
 
+// francis
+ERRDEF(COCLONE, "attempt to clone uncloneable coroutine")
+
 #undef ERRDEF
 
 /* Detecting unused error messages:

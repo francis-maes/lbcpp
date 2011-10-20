@@ -9,17 +9,11 @@
 #ifndef LBCPP_LUA_H_
 # define LBCPP_LUA_H_
 
-# include "../Core/predeclarations.h"
-
-struct lua_State;
-typedef struct lua_State lua_State;
-typedef int (*lua_CFunction)(lua_State* L);
-typedef struct luaL_Reg luaL_Reg;
+# include "../Core/Object.h"
+# include "../Core/Container.h"
 
 namespace lbcpp
 {
-
-typedef int (*LuaCFunction)(lua_State* L);
 
 enum LuaType
 {
@@ -41,10 +35,12 @@ public:
   LuaState(ExecutionContext& context, bool initializeLuaLibraries = true, bool initializeLBCppLibrary = true, bool verbose = false);
   LuaState(const LuaState& other);
   LuaState(lua_State* L = NULL);
-
   virtual ~LuaState();
 
   LuaState& operator=(const LuaState& other);
+
+  LuaState newThread() const;
+  LuaState cloneThread() const;
 
   void clear();
   bool exists() const;
@@ -144,10 +140,9 @@ public:
   size_t length(int index) const;
 
   // threads & coroutines
-  LuaState newThread();
   int resume(int numArguments);
 
-  void pushValueFrom(LuaState& source, int index);
+  void pushValueFrom(const LuaState& source, int index);
 
 
   ExecutionContext& getContext();
@@ -157,6 +152,40 @@ public:
 protected:
   lua_State* L;
   bool owned;
+
+  LuaState(lua_State* L, bool owned)
+    : L(L), owned(owned) {}
+};
+
+class LuaWrapperValue : public Object
+{
+public:
+  LuaWrapperValue(const LuaState& state, int reference);
+  LuaWrapperValue();
+  virtual ~LuaWrapperValue();
+
+  int getReference() const;
+
+protected:
+  LuaState state;
+  int reference;
+};
+
+typedef ReferenceCountedObjectPtr<LuaWrapperValue> LuaWrapperValuePtr;
+
+class LuaWrapperVector : public Container
+{
+public:
+  LuaWrapperVector(const LuaState& state, int index);
+  LuaWrapperVector();
+
+  virtual size_t getNumElements() const;
+  virtual Variable getElement(size_t index) const;
+  virtual void setElement(size_t index, const Variable& value);
+
+protected:
+  LuaState state;
+  int index;
 };
 
 }; /* namespace lbcpp */

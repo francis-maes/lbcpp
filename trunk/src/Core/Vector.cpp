@@ -9,6 +9,7 @@
 #include <lbcpp/Core/Vector.h>
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Data/DoubleVector.h>
+#include <lbcpp/Lua/Lua.h>
 using namespace lbcpp;
 
 /*

@@ -11,6 +11,7 @@
 #include <lbcpp/Core/Container.h>
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Execution/ExecutionContext.h>
+#include <lbcpp/Lua/Lua.h>
 #include <fstream>
 using namespace lbcpp;
 
