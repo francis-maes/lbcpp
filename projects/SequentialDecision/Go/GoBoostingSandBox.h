@@ -247,7 +247,7 @@ class RankingBoostingStrongModel : public BoostingStrongModel
 {
 public:
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index ? (TypePtr)denseDoubleVectorClass() : containerClass();}
+    {return index ? denseDoubleVectorClass() : containerClass();}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType);}
