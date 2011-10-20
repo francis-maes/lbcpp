@@ -1,8 +1,14 @@
- * StumbWeakLearner
 
-BoostingGo:
- * 3) FastBoosting with bandits
- * 4) BooleanConjunction Weak learner
+I) Finir LuapeState wrapper
+
+ * LuapeState: clone()
+ * LuapeState: introspection
+ * LuaWrapper integration into lbcpp-core (?)
+     => appeler performTransition avec une variable lua plutot qu'un element du "available actions" container
+
+II) Ecrire le DP pour la construction de graphes de features
+
+III) Premier objectif: exploration aléatoire de ce DP pour trouver le meilleur weak-learner pour une tache de classification binaire simple
 
 
 Bandits:

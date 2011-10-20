@@ -114,7 +114,18 @@ public:
     reward = this->rewards;
     jassert(actions || isFinalState());
   }
-
+  
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    const LuapeStatePtr& target = t.staticCast<LuapeState>();
+    lua_State* L = const_cast<LuapeState* >(this)->coroutine;
+    target->coroutine = LuaState(lua_clonethread(L, L));
+    if (target->coroutine.isTable(2))
+      target->actions = new LuaWrapperVector(target->coroutine, 2);
+    target->returnValues = returnValues;
+    target->rewards = rewards;
+  }
+  
   static int create(LuaState& state)
   {
     LuaState coroutine = state.newThread();

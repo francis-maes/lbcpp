@@ -602,6 +602,12 @@ static int luaB_corunning (lua_State *L) {
   return 1;
 }
 
+static int luaB_clone (lua_State *L) {
+  lua_State *co = lua_tothread(L, 1);
+  luaL_argcheck(L, co, 1, "coroutine expected");
+  lua_clonethread(L, co);
+  return 1;
+}
 
 static const luaL_Reg co_funcs[] = {
   {"create", luaB_cocreate},
@@ -610,6 +616,7 @@ static const luaL_Reg co_funcs[] = {
   {"status", luaB_costatus},
   {"wrap", luaB_cowrap},
   {"yield", luaB_yield},
+  {"clone", luaB_clone},
   {NULL, NULL}
 };
 
