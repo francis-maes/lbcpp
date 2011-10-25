@@ -23,6 +23,7 @@
   <class name="LuapeGraph" base="Object">
     <variable type="ObjectVector[LuapeNode]" name="nodes"/>
     <variable type="PositiveInteger" name="numExamples"/>
+    <variable type="LuapeGraphCache" name="cache"/>
   </class>
   <class name="LuapeGraphCache"/>
 
@@ -47,16 +48,22 @@
   <class name="LuapeGraphBuilderState" base="DecisionProblemState">
     <variable type="LuapeProblem" name="problem"/>
     <variable type="LuapeGraph" name="graph"/>
-    <variable type="LuapeGraphCache" name="cache"/>
     <variable type="PositiveInteger" name="maxSteps"/>
     <variable type="PositiveInteger" name="numSteps"/>
   </class>
 
+  <class name="LuapeRPNGraphBuilderState" base="DecisionProblemState">
+    <variable type="LuapeProblem" name="problem"/>
+    <variable type="LuapeGraph" name="graph"/>
+    <variable type="PositiveInteger" name="maxSteps"/>
+    <variable type="PositiveInteger" name="numSteps"/>
+  </class>
+  
   <!-- Sand Box -->
   <class name="ProductFunction" base="Function"/>
   <class name="LogFunction" base="Function"/>
   <class name="StumpFunction" base="Function">
-    <variable type="Double" name="threshold"/>
+<!--    <variable type="Double" name="threshold"/> -->
   </class>
   <class name="GreaterThanFunction" base="Function"/>
   <class name="BooleanAndFunction" base="Function"/>

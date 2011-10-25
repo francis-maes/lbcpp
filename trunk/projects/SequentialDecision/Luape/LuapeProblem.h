@@ -33,9 +33,9 @@ public:
 
   LuapeGraphPtr createInitialGraph(ExecutionContext& context) const
   {
-    LuapeGraphPtr res = new LuapeGraph();
+    LuapeGraphPtr res = new LuapeGraph(true);
     for (size_t i = 0; i < inputs.size(); ++i)
-      res->pushNode(context, new LuapeInputNode(inputs[i]->getType(), inputs[i]->getName()));
+      res->pushNode(context, new LuapeInputNode(inputs[i]->getType(), inputs[i]->getName(), i));
     return res;
   }
 

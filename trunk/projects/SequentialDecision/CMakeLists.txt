@@ -111,6 +111,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
   Luape/LuapeProblem.h
   Luape/LuapeProblem.cpp
   Luape/LuapeGraph.h
+  Luape/LuapeGraph.cpp
   Luape/LuapeGraphBuilder.h
   Luape/LuapeFunction.h
   Luape/LuapeBatchLearner.h
