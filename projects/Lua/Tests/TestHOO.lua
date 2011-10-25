@@ -19,7 +19,7 @@ function testFunction(x)
   return Stochastic.bernoulli(p)
 end
 
-local objective = lbcpp.LuaFunction.create(testFunction, "DenseDoubleVector<EnumValue,Double>", "Double")
+local objective = lbcpp.LuaWrapperFunction.create(testFunction, "DenseDoubleVector<EnumValue,Double>", "Double")
 local optimizer = Optimizer.HOO{numIterations=10000,nu=1,rho=0.5}
 local score,solution = optimizer{objective = objective, initialGuess=Vector.newDense(2)}
 print ("score", score, "solution", solution)

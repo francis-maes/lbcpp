@@ -241,33 +241,6 @@ extern FunctionPtr concatenateScoreObjectFunction();
 extern FunctionPtr concatenateContainerFunction();
 
 /*
-** LuaFunction
-*/
-class LuaFunction : public Function
-{
-public:
-  LuaFunction(lua_State* L, int functionReference, const std::vector<TypePtr>& inputTypes, TypePtr outputType);
-  LuaFunction() : L(NULL) {}
-  virtual ~LuaFunction();
-
-  static int create(LuaState& state);
-
-  virtual size_t getNumRequiredInputs() const;
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
-
-  lbcpp_UseDebuggingNewOperator
-
-protected:
-  lua_State* L;
-  int functionReference;
-  std::vector<TypePtr> inputTypes;
-  TypePtr outputType;
-};
-
-/*
 ** SimpleFunction base classes
 */
 class SimpleFunction : public Function
@@ -322,6 +295,9 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
     {return (pthis.*impl)(context, input);}
 
+  virtual ObjectPtr clone(ExecutionContext& context) const
+    {return new MethodBasedUnaryFunction(pthis, impl, inputType, outputType);}
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -366,6 +342,9 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
     {return (pthis.*impl)(context, inputs[0], inputs[1]);}
+
+  virtual ObjectPtr clone(ExecutionContext& context) const
+    {return new MethodBasedBinaryFunction(pthis, impl, inputType1, inputType2, outputType);}
 
   lbcpp_UseDebuggingNewOperator
 

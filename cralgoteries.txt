@@ -1,18 +1,7 @@
 
-LuaDP:
- * Voir si on peut implementer le clone dans luajit... mail autrement
- * LuapeState: introspection
- * Write (and test) a DP to build perception graphs
-
-
-I) Finir LuapeState wrapper
-
- * LuaWrapper integration into lbcpp-core (?)
-     => appeler performTransition avec une variable lua plutot qu'un element du "available actions" container
-
-II) Ecrire le DP pour la construction de graphes de features
-
-III) Premier objectif: exploration aléatoire de ce DP pour trouver le meilleur weak-learner pour une tache de classification binaire simple
+* AdaBoost, evaluation score; compare with linear machine scores
+* Stump: auto-parameters
+* Stack-based decision problem
 
 
 Lua-Misc

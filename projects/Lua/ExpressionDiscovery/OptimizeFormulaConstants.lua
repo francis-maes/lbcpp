@@ -69,7 +69,7 @@ function evaluateBanditFormulaStructure(str)
   local ast = AST.parseExpressionFromString(str)
   local f = buildExpression(ast, {"rk", "sk", "tk", "t"}, true)
   local numConstants = getNumConstants(ast)
-  local objective = lbcpp.LuaFunction.create(|csts| banditObjective(|rk,sk,tk,t| f(csts, rk, sk, tk, t) ),
+  local objective = lbcpp.LuaWrapperFunction.create(|csts| banditObjective(|rk,sk,tk,t| f(csts, rk, sk, tk, t) ),
                 "DenseDoubleVector<EnumValue,Double>", "Double")
   if numConstants == 0 then
     return banditObjective(|rk,sk,tk,t| f(nil, rk, sk, tk, t))

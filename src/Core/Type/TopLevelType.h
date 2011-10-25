@@ -38,6 +38,9 @@ public:
   TopLevelType(const String& name)
     : Type(name, TypePtr()) {}
 
+  virtual bool isConvertibleToDouble() const
+    {return false;}
+
   virtual Variable create(ExecutionContext& context) const
     {context.errorCallback(T("Type::create"), getName() + T(" has no default constructor")); return Variable();}
 

@@ -19,25 +19,33 @@ int LuapeProblem::input(LuaState& state)
   return 0;
 }
 
-int LuapeProblem::operation(LuaState& state)
+int LuapeProblem::function(LuaState& state)
 {
   LuapeProblemPtr problem = state.checkObject(1, luapeProblemClass).staticCast<LuapeProblem>();
-  
-  String name = state.checkString(2);
-  int functionReference = state.toReference(3);
-  int n = state.getTop();
-  std::vector<TypePtr> inputTypes;
 
-  for (int i = 4; i < n; ++i)
+  FunctionPtr function;
+  Variable variable = state.checkVariable(2);
+  if (variable.getType() == functionClass)
+    function = variable.getObjectAndCast<Function>();
+  else
   {
-    inputTypes.push_back(state.checkType(i));
-    if (!inputTypes.back())
+    String name = state.checkString(2);
+    int functionReference = state.toReference(3);
+    int n = state.getTop();
+    std::vector<TypePtr> inputTypes;
+
+    for (int i = 4; i < n; ++i)
+    {
+      inputTypes.push_back(state.checkType(i));
+      if (!inputTypes.back())
+        return 0;
+    }
+    TypePtr outputType = state.checkType(n);
+    if (!outputType)
       return 0;
+   
+    function = new LuaWrapperFunction(state, functionReference, inputTypes, outputType);
   }
-  TypePtr outputType = state.checkType(n);
-  if (!outputType)
-    return 0;
-  
-  problem->operations.push_back(new LuapeOperation(name, functionReference, inputTypes, outputType));
+  problem->functions.push_back(function);
   return 0;
 }

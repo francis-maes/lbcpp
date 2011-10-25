@@ -247,9 +247,6 @@
   <class name="UnaryHigherOrderFunction" base="Function" abstract="yes">
     <variable type="Function" name="baseFunction"/>
   </class>
-  <class name="LuaFunction" base="Function">
-    <function name="create" lang="lua" static="yes"/>
-  </class>
 
   <!-- Frame -->
   <class name="FrameOperatorSignature" base="VariableSignature">

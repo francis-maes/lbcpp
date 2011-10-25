@@ -1,23 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <library name="Luape" directory="Luape">
-  
-  <class name="LuapeOperation">
-    <variable type="String" name="name"/>
-    <variable type="ObjectVector[Type]" name="inputTypes"/>
-    <variable type="Type" name="outputType"/>
+
+  <class name="LuapeNodeCache"/>
+
+  <!-- Nodes -->
+  <class name="LuapeNode" base="NameableObject" abstract="yes">
+    <variable type="Type" name="type"/>
+    <variable type="LuapeNodeCache" name="cache"/>
   </class>
-  
+  <class name="LuapeInputNode" base="LuapeNode"/>
+  <class name="LuapeFunctionNode" base="LuapeNode">
+    <variable type="Function" name="function"/>
+    <variable type="GenericVector[PositiveInteger]" name="arguments"/>
+  </class>
+  <class name="LuapeYieldNode" base="LuapeNode">
+    <variable type="PositiveInteger" name="argument"/>
+  </class>
+
+
+  <!-- Graph -->
+  <class name="LuapeGraph" base="Object">
+    <variable type="ObjectVector[LuapeNode]" name="nodes"/>
+    <variable type="PositiveInteger" name="numExamples"/>
+  </class>
+  <class name="LuapeGraphCache"/>
+
+  <!-- Problem -->
   <class name="LuapeProblem">
     <variable type="ObjectVector[VariableSignature]" name="inputs"/>
-    <variable type="ObjectVector[LuapeOperation]" name="operations"/>
+    <variable type="ObjectVector[Function]" name="functions"/>
     <variable type="Boolean" name="failed"/>
     <function lang="lua" name="input"/>
-    <function lang="lua" name="operation"/>
+    <function lang="lua" name="function"/>
   </class>
-  
-  <class name="LuapeState" base="DecisionProblemState">
-    <function lang="lua" name="create" static="yes"/>
+
+  <class name="LuapeGraphBuilderState" base="DecisionProblemState">
+    <variable type="LuapeProblem" name="problem"/>
+    <variable type="LuapeGraph" name="graph"/>
+    <variable type="LuapeGraphCache" name="cache"/>
+    <variable type="PositiveInteger" name="maxSteps"/>
+    <variable type="PositiveInteger" name="numSteps"/>
   </class>
-  
+
+  <!-- Sand Box -->
+  <class name="ProductFunction" base="Function"/>
+  <class name="LogFunction" base="Function"/>
+  <class name="StumpFunction" base="Function">
+    <variable type="Double" name="threshold"/>
+  </class>
+
+
+  <class name="LuapeSandBox" base="WorkUnit">
+    <variable type="File" name="trainFile"/>
+    <variable type="File" name="testFile"/>
+    <variable type="PositiveInteger" name="maxSteps"/>
+  </class>
+
 </library>

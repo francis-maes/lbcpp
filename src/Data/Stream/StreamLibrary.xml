@@ -24,7 +24,13 @@
   <class name="MultiLabelClassificationLibSVMDataParser" base="TextParser">
     <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels"/>
   </class>
-  
+
+  <class name="FastTextParser" base="Stream" abstract="yes"/>
+  <class name="BinaryClassificationLibSVMFastParser" base="FastTextParser">
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DefaultEnumerationPtr features" returnType="Stream"/>
+  </class>
+
+
   <!-- ARFF Data Parsers -->
   <class name="ARFFDataParser" base="TextParser" abstract="yes"/>
   

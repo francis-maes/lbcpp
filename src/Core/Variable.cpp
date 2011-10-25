@@ -257,15 +257,7 @@ bool Variable::printDifferencesRecursively(std::ostream& ostr, const Variable& o
   {return ::printDifferencesRecursively(ostr, *this, otherVariable, theseVariablesName);}
 
 bool Variable::isConvertibleToDouble() const
-{
-  if (isNil())
-    return false;
-  if (isString())
-    return false;
-  if (isObject())
-    return dynamicCast<ScoreObject>();
-  return true;
-}
+  {return type->isConvertibleToDouble();}
 
 double Variable::toDouble() const
 {

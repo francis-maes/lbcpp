@@ -594,3 +594,67 @@ Variable LuaWrapperVector::getElement(size_t index) const
 
 void LuaWrapperVector::setElement(size_t index, const Variable& value)
   {jassert(false);} // not implemented yet
+
+/*
+** LuaWrapperFunction
+*/
+LuaWrapperFunction::LuaWrapperFunction(const LuaState& state, int functionReference, const std::vector<TypePtr>& inputTypes, TypePtr outputType)
+  : state(state), functionReference(functionReference), inputTypes(inputTypes), outputType(outputType)
+{
+}
+
+size_t LuaWrapperFunction::getNumRequiredInputs() const
+  {return inputTypes.size();}
+
+TypePtr LuaWrapperFunction::getRequiredInputType(size_t index, size_t numInputs) const
+  {jassert(index < inputTypes.size()); return inputTypes[index];}
+
+TypePtr LuaWrapperFunction::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {return outputType;}
+
+// Function, Arg1TypeName, ... ArgNTypeName, ResTypeName
+int LuaWrapperFunction::create(LuaState& state)
+{
+  ExecutionContext& context = state.getContext();
+
+  int n = state.getTop();
+  if (n < 2)
+  {
+    state.error("Not enough arguments in LuaWrapperFunction::create()");
+    return 0;
+  }
+  int functionReference = state.toReference(1);
+  std::vector<TypePtr> inputTypes(n-1);
+  for (int i = 2; i <= n; ++i)
+  {
+    const char* typeName = state.checkString(i);
+    TypePtr type = typeManager().getType(context, typeName);
+    if (!type)
+    {
+      state.error(String("Could not find type ") + typeName);
+      return 0;
+    }
+    inputTypes[i - 2] = type;
+  }
+  // hack: everything if first filled into the inputTypes vector, and the last argument is then move to the outputType
+  TypePtr outputType = inputTypes.back(); 
+  inputTypes.pop_back();
+
+  state.pushObject(new LuaWrapperFunction(state, functionReference, inputTypes, outputType));
+  return 1;
+}
+
+Variable LuaWrapperFunction::computeFunction(ExecutionContext& context, const Variable* inputs) const
+{
+  LuaState& state = const_cast<LuaWrapperFunction* >(this)->state;
+
+  size_t n = getNumInputs();
+  state.pushReference(functionReference);
+  for (size_t i = 0; i < n; ++i)
+    state.pushVariable(inputs[i]);
+  if (!state.call((int)n, 1))
+    return Variable::missingValue(outputType);
+  Variable res = state.checkVariable(-1);
+  state.pop(1);
+  return res;
+}
