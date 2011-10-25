@@ -1,12 +1,6 @@
 
- * Implement LuapeGraph cloning
-    -> todo: verify cloning of function nodes and node caches
-
-
-* AdaBoost, evaluation score; compare with linear machine scores
-* Stump: auto-parameters
 * Stack-based decision problem
-
+* Stump: auto-parameters
 
 Lua-Misc
  * Move namespace lbcpp::lua into lua (-> introspection generator must be adapted)
