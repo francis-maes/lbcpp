@@ -50,11 +50,10 @@
     <variable type="Double" name="threshold"/>
   </class>
 
-
   <class name="LuapeSandBox" base="WorkUnit">
     <variable type="File" name="trainFile"/>
     <variable type="File" name="testFile"/>
+    <variable type="PositiveInteger" name="maxExamples"/>
     <variable type="PositiveInteger" name="maxSteps"/>
   </class>
-
 </library>
