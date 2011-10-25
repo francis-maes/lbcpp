@@ -1,5 +1,10 @@
 
-* Stump: auto-parameters
+Luape
+ * Objective function: incorporate a complexity term to give preference to smaller trajectories in case of ties
+ * MCTS
+ * Cumutativity
+ 
+
 
 Lua-Misc
  * Move namespace lbcpp::lua into lua (-> introspection generator must be adapted)

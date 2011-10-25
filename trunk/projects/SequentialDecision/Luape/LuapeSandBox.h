@@ -79,6 +79,7 @@ protected:
   double threshold;
 };
 
+
 class LuapeSandBox : public WorkUnit
 {
 public:
@@ -136,9 +137,8 @@ protected:
       res->addInput(doubleType, features->getElementName(i));
 
     res->addFunction(new LogFunction());
-    //res->addFunction(new ProductFunction());
-    for (double k = -1.0; k <= 1.0; k += 0.2)
-      res->addFunction(new StumpFunction(k));
+    res->addFunction(new ProductFunction());
+    res->addFunction(new StumpFunction());
     res->addFunction(new BooleanAndFunction());
     res->addFunction(new GreaterThanFunction());
     return res;

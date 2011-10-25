@@ -63,7 +63,7 @@
   <class name="ProductFunction" base="Function"/>
   <class name="LogFunction" base="Function"/>
   <class name="StumpFunction" base="Function">
-<!--    <variable type="Double" name="threshold"/> -->
+    <variable type="Double" name="threshold"/>
   </class>
   <class name="GreaterThanFunction" base="Function"/>
   <class name="BooleanAndFunction" base="Function"/>
