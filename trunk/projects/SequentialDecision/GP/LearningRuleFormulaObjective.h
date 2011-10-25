@@ -17,132 +17,6 @@ namespace lbcpp
 
 extern EnumerationPtr learningRuleFormulaVariablesEnumeration;
 
-# ifdef JUCE_WIN32
-#  pragma warning(disable:4996)
-# endif // JUCE_WIN32
-
-class FastTextParser : public Stream
-{
-public:
-  FastTextParser(ExecutionContext& context, const File& file, TypePtr elementsType)
-    : Stream(context), elementsType(elementsType)
-  {
-    maxLineLength = 1024;
-	  line = (char* )malloc(sizeof (char) * maxLineLength);
-    lineNumber = 0;
-    f = fopen(file.getFullPathName(), "r");
-    if (!f)
-      context.errorCallback(T("Could not open file ") + file.getFullPathName());
-  }
-
-  FastTextParser() {}
-  virtual ~FastTextParser()
-  {
-    if (f)
-      fclose(f);
-   free(line);
-  }
-
-  virtual TypePtr getElementsType() const
-    {return elementsType;}
-
-  virtual bool rewind()
-  {
-    if (f)
-    {
-      ::rewind(f);
-      return true;
-    }
-    else
-      return false;
-  }
-
-  virtual bool isExhausted() const
-    {return f == NULL;}
-
-  virtual ProgressionStatePtr getCurrentPosition() const
-    {return new ProgressionState(lineNumber, 0, "Lines");}
-
-  virtual Variable parseLine(char* line) = 0;
-
-  virtual Variable next()
-  {
-    if (!f)
-      return Variable();
-    line = readNextLine();
-    if (!line)
-    {
-      fclose(f);
-      f = NULL;
-      return Variable();
-    }
-    ++lineNumber;
-    return parseLine(line);
-  }
-
-protected:
-  TypePtr elementsType;
-  FILE* f;
-
-  char* line;
-  int maxLineLength;
-  size_t lineNumber;
-
-  char* readNextLine()
-  {
-	  if (fgets(line, maxLineLength, f) == NULL)
-		  return NULL;
-
-	  while (strrchr(line, '\n') == NULL)
-	  {
-		  maxLineLength *= 2;
-		  line = (char* )realloc(line, maxLineLength);
-		  int len = (int)strlen(line);
-		  if (fgets(line + len, maxLineLength - len, f) == NULL)
-			  break;
-	  }
-	  return line;
-  }
-};
-
-class BinaryClassificationLibSVMFastParser : public FastTextParser
-{
-public:
-  BinaryClassificationLibSVMFastParser(ExecutionContext& context, const File& file)
-    : FastTextParser(context, file, pairClass(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration), booleanType)) {}
-  BinaryClassificationLibSVMFastParser() {}
-
-  virtual Variable parseLine(char* line)
-  {
-    char* label = strtok(line, " \t\n");
-    if (!label)
-    {
-      context.errorCallback(T("Empty line"));
-      return Variable();
-    }
-
-    char firstLetter = label[0];
-    if (firstLetter >= 'A' && firstLetter <= 'Z') firstLetter += 'a' - 'A';
-    bool supervision = (firstLetter == 'y' || firstLetter == 't' || firstLetter == '+' || firstLetter == '1');
-
-    SparseDoubleVectorPtr features = new SparseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType);   
-		while (true)
-		{
-			char* idx = strtok(NULL, ":");
-			char* val = strtok(NULL, " \t");
-
-			if (val == NULL)
-				break;
-
-      int index = (int)strtol(idx, NULL, 10);
-      double value = strtod(val, NULL);
-      features->appendValue((size_t)index, value);
-		}
-    return new Pair(elementsType, features, supervision);
-  }
-};
-
-
 class LearningRuleFormulaObjective : public SimpleUnaryFunction
 {
 public:
@@ -310,7 +184,10 @@ class FileLearningRuleFormulaObjective : public LearningRuleFormulaObjective
 {
 public:
   FileLearningRuleFormulaObjective(const File& trainFile = File(), const File& testFile = File(), double validationSize = 0.1, size_t numIterations = 20)
-    : LearningRuleFormulaObjective(numIterations), trainFile(trainFile), testFile(testFile), validationSize(validationSize)  {}
+    : LearningRuleFormulaObjective(numIterations), trainFile(trainFile), testFile(testFile), validationSize(validationSize)
+  {
+    features = new DefaultEnumeration("features");
+  }
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
@@ -327,11 +204,8 @@ public:
 
   ContainerPtr loadData(ExecutionContext& context, const File& file)
   {
-    // features = new DefaultEnumeration(trainFile.getFileName() + T(" features"));
-    // return binaryClassificationLibSVMDataParser(context, file, features)->load();
-    features = positiveIntegerEnumerationEnumeration;
     context.enterScope(T("Loading data from ") + file.getFileName());
-    ContainerPtr res = StreamPtr(new BinaryClassificationLibSVMFastParser(context, file))->load();
+    ContainerPtr res = binaryClassificationLibSVMFastParser(context, file, features)->load();
     context.leaveScope(res ? res->getNumElements() : 0);
     return res;
   }

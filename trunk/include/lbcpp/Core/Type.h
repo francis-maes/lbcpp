@@ -73,6 +73,8 @@ public:
 
   bool inheritsFrom(TypePtr baseType) const;
   bool canBeCastedTo(TypePtr targetType) const;
+  
+  virtual bool isConvertibleToDouble() const;
 
   static TypePtr findCommonBaseType(TypePtr type1, TypePtr type2);
 

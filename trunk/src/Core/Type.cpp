@@ -148,6 +148,9 @@ TypePtr Type::findBaseTypeFromTemplateName(const String& templateName) const
 bool Type::canBeCastedTo(TypePtr targetType) const
   {return inheritsFrom(targetType);}
 
+bool Type::isConvertibleToDouble() const
+  {jassert(baseType); return baseType->isConvertibleToDouble();}
+
 /*
 ** Instance basic operations
 */

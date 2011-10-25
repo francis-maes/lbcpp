@@ -282,6 +282,8 @@ extern TextParserPtr binaryClassificationLibSVMDataParser(ExecutionContext& cont
 extern TextParserPtr classificationLibSVMDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels);
 extern TextParserPtr multiLabelClassificationLibSVMDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels);
 
+extern StreamPtr binaryClassificationLibSVMFastParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features);
+
 /* ARFF Data Parser */
 extern TextParserPtr regressionARFFDataParser(ExecutionContext& context, const File& file, DynamicClassPtr features);
 extern TextParserPtr binaryClassificationARFFDataParser(ExecutionContext& context, const File& file, DynamicClassPtr features);

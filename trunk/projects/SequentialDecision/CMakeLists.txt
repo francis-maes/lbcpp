@@ -32,6 +32,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_CORE_SOURCES
 SET(LBCPP_SEQUENTIAL_DECISION_PROBLEM_SOURCES
   Problem/LinearPointPhysicProblem.h
   Problem/DamienDecisionProblem.h
+  Problem/LuaDecisionProblemState.h
   Problem/SequentialDecisionProblemLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionProblemLibrary.cpp
 )
@@ -110,7 +111,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
   Luape/LuapeProblem.h
   Luape/LuapeProblem.cpp
   Luape/LuapeFunction.h
-  Luape/LuapeState.h
+  Luape/LuapeSandBox.h
   Luape/LuapeLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeLibrary.cpp
 )

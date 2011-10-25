@@ -11,6 +11,11 @@
   <class name="LinearPointPhysicProblem" base="DecisionProblem" shortName="lpp">
     <constructor arguments="double discount"/>
   </class>
+
+  <!-- Lua wrapper -->
+  <class name="LuaDecisionProblemState" base="DecisionProblemState">
+    <function lang="lua" name="create" static="yes"/>
+  </class>
   
   <!-- Damien's code wrapper -->
   <class name="DamienState" base="DecisionProblemState" abstract="yes"/>

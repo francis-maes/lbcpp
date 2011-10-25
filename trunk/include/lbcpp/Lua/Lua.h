@@ -11,6 +11,7 @@
 
 # include "../Core/Object.h"
 # include "../Core/Container.h"
+# include "../Core/Function.h"
 
 namespace lbcpp
 {
@@ -186,6 +187,29 @@ public:
 protected:
   LuaState state;
   int index;
+};
+
+class LuaWrapperFunction : public Function
+{
+public:
+  LuaWrapperFunction(const LuaState& state, int functionReference, const std::vector<TypePtr>& inputTypes, TypePtr outputType);
+  LuaWrapperFunction() {}
+
+  static int create(LuaState& state);
+
+  virtual size_t getNumRequiredInputs() const;
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
+
+  lbcpp_UseDebuggingNewOperator
+
+protected:
+  LuaState state;
+  int functionReference;
+  std::vector<TypePtr> inputTypes;
+  TypePtr outputType;
 };
 
 }; /* namespace lbcpp */

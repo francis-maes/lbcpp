@@ -5,4 +5,9 @@
 
   <class name="LuaWrapperValue"/>
   <class name="LuaWrapperVector"/>
+
+  <class name="LuaWrapperFunction" base="Function">
+    <function name="create" lang="lua" static="yes"/>
+  </class>
+  
 </library>

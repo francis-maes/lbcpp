@@ -39,6 +39,9 @@ public:
     : BuiltinType(className, baseType) {}
   IntegerType() : BuiltinType(T("Integer")) {}
 
+  virtual bool isConvertibleToDouble() const
+    {return true;}
+
   virtual Variable create(ExecutionContext& context) const
     {return Variable(0, refCountedPointerFromThis(this));}
 

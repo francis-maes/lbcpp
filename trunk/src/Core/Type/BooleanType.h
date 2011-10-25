@@ -37,6 +37,9 @@ public:
   BooleanType(const String& name, TypePtr baseType)
     : BuiltinType(name, baseType) {}
 
+  virtual bool isConvertibleToDouble() const
+    {return true;}
+
   virtual Variable createFromString(ExecutionContext& context, const String& value) const
   {
     String v = value.trim().toLowerCase();

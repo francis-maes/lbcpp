@@ -269,6 +269,136 @@ private:
   TypePtr elementsType;
 };
 
+
+# ifdef JUCE_WIN32
+#  pragma warning(disable:4996)
+# endif // JUCE_WIN32
+
+class FastTextParser : public Stream
+{
+public:
+  FastTextParser(ExecutionContext& context, const File& file, TypePtr elementsType)
+    : Stream(context), elementsType(elementsType)
+  {
+    maxLineLength = 1024;
+	  line = (char* )malloc(sizeof (char) * maxLineLength);
+    lineNumber = 0;
+    f = fopen(file.getFullPathName(), "r");
+    if (!f)
+      context.errorCallback(T("Could not open file ") + file.getFullPathName());
+  }
+
+  FastTextParser() {}
+  virtual ~FastTextParser()
+  {
+    if (f)
+      fclose(f);
+   free(line);
+  }
+
+  virtual TypePtr getElementsType() const
+    {return elementsType;}
+
+  virtual bool rewind()
+  {
+    if (f)
+    {
+      ::rewind(f);
+      return true;
+    }
+    else
+      return false;
+  }
+
+  virtual bool isExhausted() const
+    {return f == NULL;}
+
+  virtual ProgressionStatePtr getCurrentPosition() const
+    {return new ProgressionState(lineNumber, 0, "Lines");}
+
+  virtual Variable parseLine(char* line) = 0;
+
+  virtual Variable next()
+  {
+    if (!f)
+      return Variable();
+    line = readNextLine();
+    if (!line)
+    {
+      fclose(f);
+      f = NULL;
+      return Variable();
+    }
+    ++lineNumber;
+    return parseLine(line);
+  }
+
+protected:
+  TypePtr elementsType;
+  FILE* f;
+
+  char* line;
+  int maxLineLength;
+  size_t lineNumber;
+
+  char* readNextLine()
+  {
+	  if (fgets(line, maxLineLength, f) == NULL)
+		  return NULL;
+
+	  while (strrchr(line, '\n') == NULL)
+	  {
+		  maxLineLength *= 2;
+		  line = (char* )realloc(line, maxLineLength);
+		  int len = (int)strlen(line);
+		  if (fgets(line + len, maxLineLength - len, f) == NULL)
+			  break;
+	  }
+	  return line;
+  }
 };
+
+class BinaryClassificationLibSVMFastParser : public FastTextParser
+{
+public:
+  BinaryClassificationLibSVMFastParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features)
+    : FastTextParser(context, file, pairClass(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration), booleanType)), features(features) {}
+  BinaryClassificationLibSVMFastParser() {}
+
+  virtual Variable parseLine(char* line)
+  {
+    char* label = strtok(line, " \t\n");
+    if (!label)
+    {
+      context.errorCallback(T("Empty line"));
+      return Variable();
+    }
+
+    char firstLetter = label[0];
+    if (firstLetter >= 'A' && firstLetter <= 'Z') firstLetter += 'a' - 'A';
+    bool supervision = (firstLetter == 'y' || firstLetter == 't' || firstLetter == '+' || firstLetter == '1');
+
+    SparseDoubleVectorPtr features = new SparseDoubleVector(this->features, doubleType);   
+		while (true)
+		{
+			char* idx = strtok(NULL, ":");
+			char* val = strtok(NULL, " \t");
+
+			if (val == NULL)
+				break;
+
+      size_t index = this->features->findOrAddElement(context, idx);
+      double value = strtod(val, NULL);
+      features->setElement(index, value);
+		}
+    return new Pair(elementsType, features, supervision);
+  }
+
+protected:
+  DefaultEnumerationPtr features;
+};
+
+
+}; /* namespace lbcpp */
 
 #endif // !LBCPP_VARIABLE_STREAM_LIBSVM_DATA_PARSER_H_

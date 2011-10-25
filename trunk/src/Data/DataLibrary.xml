@@ -20,6 +20,11 @@
   
   <!-- Random Variable -->
   <class name="ScalarVariableMean" base="NameableObject">
+    <code>
+      virtual bool isConvertibleToDouble() const
+        {return true;}
+    </code>
+
     <variable type="Double" name="samplesSum"/>
     <variable type="Double" name="samplesCount"/>
 

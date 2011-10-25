@@ -39,6 +39,9 @@ public:
   DoubleType(const String& name, TypePtr baseType)
     : BuiltinType(name, baseType) {}
 
+  virtual bool isConvertibleToDouble() const
+    {return true;}
+
   virtual Variable create(ExecutionContext& context) const
     {return Variable(0.0, refCountedPointerFromThis(this));}
 

@@ -164,7 +164,7 @@ local function optimizeUpdateRule(numParameters, functor)
     return - cvScore
   end
 
-  objective = lbcpp.LuaFunction.create(objective, "DenseDoubleVector<EnumValue,Double>", "Double")
+  objective = lbcpp.LuaWrapperFunction.create(objective, "DenseDoubleVector<EnumValue,Double>", "Double")
   local optimizer = Optimizer.CMAES{numIterations=50}
   local score,solution = optimizer{objective = objective, initialGuess = Vector.newDense(numParameters)}
   print ("score", score, "solution", solution)

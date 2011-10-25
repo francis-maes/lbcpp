@@ -4,7 +4,12 @@
   <include file="lbcpp/Function/Evaluator.h"/>
 
   <!-- ScoreObject Base Classes -->
-  <class name="ScoreObject" base="NameableObject" abstract="yes"/>
+  <class name="ScoreObject" base="NameableObject" abstract="yes">
+    <code>
+      virtual bool isConvertibleToDouble() const
+        {return true;}
+    </code>
+  </class>
   <class name="DummyScoreObject" base="ScoreObject"/>
   <class name="CompositeScoreObject" base="ScoreObject">
     <variable type="ObjectVector[ScoreObject]" name="scores"/>

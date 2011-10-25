@@ -1,22 +1,22 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuapeState.h                   | Lua Program Evolution State     |
+| Filename: LuaDecisionProblemState.h      | Lua Decision Problem State      |
 | Author  : Francis Maes                   |                                 |
 | Started : 19/10/2011 18:52               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_STATE_H_
-# define LBCPP_LUAPE_STATE_H_
+#ifndef LBCPP_DECISION_PROBLEM_LUA_STATE_H_
+# define LBCPP_DECISION_PROBLEM_LUA_STATE_H_
 
 # include "../Core/DecisionProblem.h"
-# include "../../lua/lua.h" // tmp
+# include "../../lua/lua.h"
 
 namespace lbcpp
 {
 
-class LuapeState;
-typedef ReferenceCountedObjectPtr<LuapeState> LuapeStatePtr;
+class LuaDecisionProblemState;
+typedef ReferenceCountedObjectPtr<LuaDecisionProblemState> LuaDecisionProblemStatePtr;
 
 
 /* thread status; 0 is OK */
@@ -26,17 +26,17 @@ typedef ReferenceCountedObjectPtr<LuapeState> LuapeStatePtr;
 #define LUA_ERRMEM	4
 #define LUA_ERRERR	5
 
-class LuapeState : public DecisionProblemState
+class LuaDecisionProblemState : public DecisionProblemState
 {
 public:
-  LuapeState(const LuaState& state, const String& name = "Unnamed")
+  LuaDecisionProblemState(const LuaState& state, const String& name = "Unnamed")
     : DecisionProblemState(name), coroutine(state.newThread()), rewards(0.0)
   {
     int n = state.getTop();
     for (int i = 1; i <= n; ++i)
       coroutine.pushValueFrom(state, i);
   }
-  LuapeState() {}
+  LuaDecisionProblemState() {}
 
   virtual TypePtr getActionType() const
     {return variableType;}
@@ -86,7 +86,7 @@ public:
   
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
   {
-    const LuapeStatePtr& target = t.staticCast<LuapeState>();
+    const LuaDecisionProblemStatePtr& target = t.staticCast<LuaDecisionProblemState>();
     target->coroutine = coroutine.cloneThread();
     if (target->coroutine.isTable(2))
       target->actions = new LuaWrapperVector(target->coroutine, 2);
@@ -96,7 +96,7 @@ public:
   
   static int create(LuaState& state)
   {
-    LuapeStatePtr res(new LuapeState(state));
+    LuaDecisionProblemStatePtr res(new LuaDecisionProblemState(state));
     res->resume(state.getContext(), true);
     state.pushObject(res);
     return 1;
@@ -160,4 +160,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_STATE_H_
+#endif // !LBCPP_DECISION_PROBLEM_LUA_STATE_H_
