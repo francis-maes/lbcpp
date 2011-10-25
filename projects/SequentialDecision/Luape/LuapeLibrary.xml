@@ -26,6 +26,15 @@
   </class>
   <class name="LuapeGraphCache"/>
 
+
+  <!-- Function -->
+  <class name="LuapeFunction" base="Function" abstract="yes">
+    <variable type="LuapeGraph" name="graph"/>
+    <variable type="Vector[Variable]" name="votes"/>
+  </class>
+  <class name="LuapeBinaryClassifier" base="LuapeFunction"/>
+  
+  
   <!-- Problem -->
   <class name="LuapeProblem">
     <variable type="ObjectVector[VariableSignature]" name="inputs"/>
@@ -55,5 +64,6 @@
     <variable type="File" name="testFile"/>
     <variable type="PositiveInteger" name="maxExamples"/>
     <variable type="PositiveInteger" name="maxSteps"/>
+    <variable type="PositiveInteger" name="maxIterations"/>
   </class>
 </library>

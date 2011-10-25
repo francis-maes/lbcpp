@@ -8,6 +8,7 @@
 
 #include "precompiled.h"
 #include "LuapeProblem.h"
+#include <lbcpp/Lua/Lua.h>
 using namespace lbcpp;
 
 int LuapeProblem::input(LuaState& state)

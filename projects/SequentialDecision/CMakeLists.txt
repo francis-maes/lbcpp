@@ -110,7 +110,10 @@ SET(LBCPP_SEQUENTIAL_DECISION_GO_SOURCES
 SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
   Luape/LuapeProblem.h
   Luape/LuapeProblem.cpp
+  Luape/LuapeGraph.h
+  Luape/LuapeGraphBuilder.h
   Luape/LuapeFunction.h
+  Luape/LuapeBatchLearner.h
   Luape/LuapeSandBox.h
   Luape/LuapeLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeLibrary.cpp
