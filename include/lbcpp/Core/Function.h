@@ -85,8 +85,7 @@ public:
   const VariableSignaturePtr& getInputVariable(size_t index) const
     {jassert(index < inputVariables.size()); return inputVariables[index];}
 
-  const DynamicClassPtr& getInputsClass() const
-    {return inputsClass;}
+  const DynamicClassPtr& getInputsClass() const;
 
   const VariableSignaturePtr& getOutputVariable() const
     {return outputVariable;}
