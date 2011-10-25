@@ -13,6 +13,7 @@
 # include "LuapeFunction.h"
 # include "LuapeGraphBuilder.h"
 # include <lbcpp/Learning/BatchLearner.h>
+# include "../GP/NestedMonteCarloOptimizer.h"
 
 namespace lbcpp
 {
@@ -94,7 +95,7 @@ public:
         {
           DenseDoubleVectorPtr w = weights->cloneAndCast<DenseDoubleVector>();
           w->multiplyByScalar(weightsSum);
-          context.resultCallback("loss", w->l1norm() / w->getNumElements());
+          context.resultCallback("loss", w->l1norm());
         }
 
         context.resultCallback("score", score);
@@ -146,7 +147,7 @@ protected:
     return sum;
   }
 
-  void exhaustiveSearch(ExecutionContext& context, LuapeGraphBuilderStatePtr state, const FunctionPtr& objective, double& bestScore, LuapeGraphPtr& bestGraph) const
+  void exhaustiveSearch(ExecutionContext& context, LuapeRPNGraphBuilderStatePtr state, const FunctionPtr& objective, double& bestScore, LuapeGraphPtr& bestGraph) const
   {
     ContainerPtr actions = state->getAvailableActions();
     size_t n = actions->getNumElements();
@@ -155,7 +156,8 @@ protected:
       Variable action = actions->getElement(i);
       double reward;
       //context.enterScope(action.toShortString());
-      state->performTransition(context, action, reward);
+      Variable stateBackup;
+      state->performTransition(context, action, reward, &stateBackup);
 
       if (!state->isFinalState())
         exhaustiveSearch(context, state, objective, bestScore, bestGraph);
@@ -173,7 +175,7 @@ protected:
           }
         }
       }
-      state->undoTransition(context, action);
+      state->undoTransition(context, stateBackup);
       //context.leaveScope(true);
     }
   }
@@ -182,19 +184,26 @@ protected:
   struct Objective : public SimpleUnaryFunction
   {
     Objective(const BoostingLuapeLearner* pthis, ContainerPtr supervisions, DenseDoubleVectorPtr weights)
-      : SimpleUnaryFunction(luapeGraphClass, doubleType), pthis(pthis), supervisions(supervisions), weights(weights) {}
+      : SimpleUnaryFunction(decisionProblemStateClass, doubleType), pthis(pthis), supervisions(supervisions), weights(weights) {}
 
     virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
     {
-      const LuapeGraphPtr& graph = input.getObjectAndCast<LuapeGraph>();
+      LuapeRPNGraphBuilderStatePtr state = input.getObjectAndCast<LuapeRPNGraphBuilderState>();
+      const LuapeGraphPtr& graph = state->getGraph();
       LuapeYieldNodePtr yieldNode = graph->getLastNode().dynamicCast<LuapeYieldNode>();
       if (!yieldNode)
         return DBL_MAX; // non-terminal state
+      LuapeNodeCachePtr yieldNodeCache = yieldNode->getCache();
 
       LuapeNodePtr valueNode = graph->getNode(yieldNode->getArgument());
-      LuapeNodeCachePtr cache = valueNode->getCache();
-      double score = pthis->computeWeakObjective(cache->getExamples(), supervisions, weights);
-      yieldNode->getCache()->setScore(score);
+      double score;
+      if (yieldNodeCache->isScoreComputed())
+        score = yieldNodeCache->getScore();
+      else
+      {
+        score = pthis->computeWeakObjective(valueNode->getCache()->getExamples(), supervisions, weights);
+        yieldNodeCache->setScore(score);
+      }
       return -fabs(score);
     }
 
@@ -206,13 +215,19 @@ protected:
 
   LuapeGraphPtr learnWeakModel(ExecutionContext& context, LuapeGraphPtr graph, const DenseDoubleVectorPtr& weights, const ContainerPtr& supervisions) const
   {
+    graph->getCache()->clearScores();
     FunctionPtr objective = new Objective(this, supervisions, weights);
-    LuapeGraphCachePtr cache = new LuapeGraphCache();
-    LuapeGraphBuilderStatePtr state = new LuapeGraphBuilderState(problem, graph, cache, maxSteps);
+
+    LuapeRPNGraphBuilderStatePtr state = new LuapeRPNGraphBuilderState(problem, graph, maxSteps);
     double bestScore = DBL_MAX;
 
-    LuapeGraphPtr bestGraph;
-    exhaustiveSearch(context, state, objective, bestScore, bestGraph);
+    OptimizerPtr optimizer = new NestedMonteCarloOptimizer(state, 3, 1);
+    OptimizerStatePtr optimizerState = optimizer->optimize(context, new OptimizationProblem(objective));
+
+    LuapeGraphPtr bestGraph = optimizerState->getBestSolution().getObjectAndCast<LuapeRPNGraphBuilderState>()->getGraph();
+    //exhaustiveSearch(context, state, objective, bestScore, bestGraph);
+    context.informationCallback(String("Best Graph: ") + bestGraph->toShortString() + T(" [") + String(optimizerState->getBestScore()) + T("]"));
+    context.informationCallback(String("Num cached nodes: ") + String((int)graph->getCache()->getNumCachedNodes()));
     return bestGraph;
   }
 };

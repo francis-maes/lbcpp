@@ -74,7 +74,8 @@ protected:
       {
         ContainerPtr actions = state->getAvailableActions();
         size_t n = actions->getNumElements();
-        jassert(n);
+        if (!n)
+          break;
         Variable action = actions->getElement(random->sampleSize(n));
         double reward;
         state->performTransition(context, action, reward);
@@ -89,7 +90,9 @@ protected:
       {
         ContainerPtr actions = state->getAvailableActions();
         size_t n = actions->getNumElements();
-        jassert(n);
+        if (!n)
+          break;
+
         Variable bestAction;
         double bestScore = DBL_MAX;
         for (size_t i = 0; i < n; ++i)
