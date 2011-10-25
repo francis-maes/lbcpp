@@ -34,6 +34,9 @@ public:
 
   void initialize(TypePtr type);
   
+  /*
+  ** Examples
+  */
   void reserveExamples(size_t count)
     {examples->reserve(count);}
 
@@ -48,6 +51,18 @@ public:
   const VectorPtr& getExamples() const
     {return examples;}
 
+  /*
+  ** Double values
+  */
+  bool isConvertibleToDouble() const
+    {return convertibleToDouble;}
+
+  const std::set<double>& getDoubleValues() const
+    {return doubleValues;}
+
+  /*
+  ** Score
+  */
   bool isScoreComputed() const
     {return scoreComputed;}
 

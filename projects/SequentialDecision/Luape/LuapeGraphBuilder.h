@@ -158,12 +158,31 @@ public:
 
     if (state.function)
     {
-      if (state.function->getClassName() == T("GetVariableFunction"))
+      String className = state.function->getClassName();
+      if (className == T("GetVariableFunction"))
       {
         jassert(state.stack.size());
         TypePtr objectClass = graph->getNodeType(state.stack.back());
         for (size_t i = 0; i < objectClass->getNumMemberVariables(); ++i)
           res->append(i);
+      }
+      else if (className == T("StumpFunction"))
+      {
+        jassert(state.stack.size());
+        LuapeNodeCachePtr cache = graph->getNode(state.stack.back())->getCache();
+        jassert(cache->isConvertibleToDouble());
+        const std::set<double>& doubleValues = cache->getDoubleValues();
+        if (doubleValues.size())
+        {
+          std::set<double>::const_iterator it = doubleValues.begin();
+          double previousThreshold = *it;
+          for (++it; it != doubleValues.end(); ++it)
+          {
+            double threshold = previousThreshold;
+            res->append((threshold + previousThreshold) / 2.0);
+            previousThreshold = threshold;
+          }
+        }
       }
       else
       {
