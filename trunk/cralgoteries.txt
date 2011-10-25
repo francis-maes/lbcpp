@@ -1,4 +1,8 @@
 
+ * Implement LuapeGraph cloning
+    -> todo: verify cloning of function nodes and node caches
+
+
 * AdaBoost, evaluation score; compare with linear machine scores
 * Stump: auto-parameters
 * Stack-based decision problem

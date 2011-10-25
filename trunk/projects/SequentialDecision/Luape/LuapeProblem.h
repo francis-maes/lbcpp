@@ -18,7 +18,7 @@ namespace lbcpp
 class LuapeNodeCache : public Object
 {
 public:
-  LuapeNodeCache() : convertibleToDouble(false) {}
+  LuapeNodeCache() : convertibleToDouble(false), score(0.0) {}
 
   void initialize(TypePtr type)
   {
@@ -45,11 +45,20 @@ public:
   Variable getExample(size_t index) const
     {return examples->getElement(index);}
 
+  const VectorPtr& getExamples() const
+    {return examples;}
+
+  void setScore(double score)
+    {this->score = score;}
+
+  double getScore() const
+    {return score;}
+
 protected:
   VectorPtr examples;
   bool convertibleToDouble;
   std::set<double> doubleValues; // only if isConvertibleToDouble
-  Variable objectiveToMinimize;
+  double score; // only for 'yield' nodes
 };
 
 typedef ReferenceCountedObjectPtr<LuapeNodeCache> LuapeNodeCachePtr;
@@ -82,6 +91,8 @@ public:
     return true;
   }
 
+  virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state) const = 0;
+
   VariableSignaturePtr getSignature() const
     {return new VariableSignature(type, name);}
 
@@ -97,6 +108,14 @@ public:
 
   const LuapeNodeCachePtr& getCache() const
     {return cache;}
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    const LuapeNodePtr& target = t.staticCast<LuapeNode>();
+    target->name = name;
+    target->type = type;
+    target->cache = cache;
+  }
 
 protected:
   friend class LuapeNodeClass;
@@ -116,9 +135,15 @@ public:
 
   virtual String toShortString() const
     {return T("input ") + getName() + T(" (type = ") + type->getName() + T(")");}
+
+  virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state) const
+    {jassert(false); return Variable();}
 };
 
 typedef ReferenceCountedObjectPtr<LuapeInputNode> LuapeInputNodePtr;
+
+class LuapeFunctionNode;
+typedef ReferenceCountedObjectPtr<LuapeFunctionNode> LuapeFunctionNodePtr;
 
 class LuapeFunctionNode : public LuapeNode
 {
@@ -158,6 +183,32 @@ public:
     return true;
   }
 
+  virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state) const
+  {
+    size_t n = arguments.size();
+    std::vector<Variable> inputs(n);
+    for (size_t i = 0; i < n; ++i)
+      inputs[i] = state[arguments[i]];
+    return function->compute(context, inputs);
+  }
+
+  
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    LuapeNode::clone(context, t);
+    const LuapeFunctionNodePtr& target = t.staticCast<LuapeNode>();
+    target->function = function;
+    target->arguments = arguments;
+  }
+
+protected:
+  friend class LuapeFunctionNodeClass;
+
+  FunctionPtr function;
+  std::vector<size_t> arguments;
+
+  std::vector<LuapeNodePtr> inputNodes;
+
   void propagateCache(ExecutionContext& context)
   {
     jassert(inputNodes.size());
@@ -169,26 +220,20 @@ public:
         minCacheSize = cacheSize;
     }
 
-    cache->reserveExamples(minCacheSize);    
-    for (size_t i = 0; i < minCacheSize; ++i)
+    size_t currentSize = cache->getNumExamples();
+    if (minCacheSize > currentSize)
     {
-      std::vector<Variable> inputs(inputNodes.size());
-      for (size_t j = 0; j < inputs.size(); ++j)
-        inputs[j] = inputNodes[j]->getCache()->getExample(i);
-      cache->addExample(function->compute(context, inputs));
+      cache->reserveExamples(minCacheSize);    
+      for (size_t i = currentSize; i < minCacheSize; ++i)
+      {
+        std::vector<Variable> inputs(inputNodes.size());
+        for (size_t j = 0; j < inputs.size(); ++j)
+          inputs[j] = inputNodes[j]->getCache()->getExample(i);
+        cache->addExample(function->compute(context, inputs));
+      }
     }
   }
-
-protected:
-  friend class LuapeFunctionNodeClass;
-
-  FunctionPtr function;
-  std::vector<size_t> arguments;
-
-  std::vector<LuapeNodePtr> inputNodes;
 };
-
-typedef ReferenceCountedObjectPtr<LuapeFunctionNode> LuapeFunctionNodePtr;
 
 class LuapeYieldNode : public LuapeNode
 {
@@ -202,13 +247,22 @@ public:
   virtual bool initialize(ExecutionContext& context, const std::vector<LuapeNodePtr>& allNodes)
   {
     inputNode = allNodes[argument];
-    type = inputNode->getType();
+    type = nilType;
     name = inputNode->getName();
     return LuapeNode::initialize(context, allNodes);
   }
 
   size_t getArgument() const
     {return argument;}
+
+  virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state) const
+    {return state[argument];}
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    LuapeNode::clone(context, t);
+    t.staticCast<LuapeYieldNode>()->argument = argument;
+  }
 
 protected:
   friend class LuapeYieldNodeClass;
@@ -220,6 +274,9 @@ protected:
 typedef ReferenceCountedObjectPtr<LuapeYieldNode> LuapeYieldNodePtr;
 
 //////  GRAPH
+
+class LuapeGraph;
+typedef ReferenceCountedObjectPtr<LuapeGraph> LuapeGraphPtr;
 
 class LuapeGraph : public Object
 {
@@ -278,6 +335,35 @@ public:
     ++numExamples;
   }
 
+  void addExample(const ContainerPtr& example)
+  {
+    size_t n = example->getNumElements();
+    jassert(n <= nodes.size());
+    for (size_t i = 0; i < n; ++i)
+    {
+      LuapeInputNodePtr node = nodes[i].dynamicCast<LuapeInputNode>();
+      jassert(node);
+      node->addExample(example->getElement(i));
+    }
+    ++numExamples;
+  }
+
+  void compute(ExecutionContext& context, std::vector<Variable>& state, size_t firstNodeIndex) const
+  {
+    for (size_t i = firstNodeIndex; i < nodes.size(); ++i)
+      state[i] = nodes[i]->compute(context, state);
+  }
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    const LuapeGraphPtr& target = t.staticCast<LuapeGraph>();
+    target->numExamples = numExamples;
+    size_t n = nodes.size();
+    target->nodes.reserve(n);
+    for (size_t i = 0; i < n; ++i)
+      target->pushNode(context, nodes[i]->cloneAndCast<LuapeNode>());      
+  }
+
 protected:
   friend class LuapeGraphClass;
 
@@ -285,7 +371,6 @@ protected:
   size_t numExamples;
 };
 
-typedef ReferenceCountedObjectPtr<LuapeGraph> LuapeGraphPtr;
 extern ClassPtr luapeGraphClass;
 
 ////////// CACHE
