@@ -146,7 +146,7 @@ public:
   LuapeInputNode() {}
 
   virtual String toShortString() const
-    {return T("input ") + getName() + T(" (type = ") + type->getName() + T(")");}
+    {return T("input ") + getName();}
 
   virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const
     {jassert(false); return Variable();}
@@ -169,7 +169,10 @@ public:
     String res = function->toShortString() + T("(");
     for (size_t i = 0; i < arguments.size(); ++i)
     {
-      res += String((int)arguments[i]);
+      if (inputNodes.size())
+        res += inputNodes[i]->toShortString();
+      else
+        res += T("node ") + String((int)arguments[i]);
       if (i < arguments.size() - 1)
         res += T(", ");
     }
@@ -254,7 +257,7 @@ public:
     : argument(argument) {}
 
   virtual String toShortString() const
-    {return T("yield(") + String((int)argument) + T(")");}
+    {return T("yield(") + (inputNode ? inputNode->toShortString() : String((int)argument)) + T(")");}
 
   virtual bool initialize(ExecutionContext& context, const std::vector<LuapeNodePtr>& allNodes)
   {

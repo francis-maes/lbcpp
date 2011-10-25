@@ -96,12 +96,6 @@ bool Function::initialize(ExecutionContext& context, const std::vector<VariableS
     if (!context.checkInheritance(inputVariables[i]->getType(), requiredInputType))
       return false;
   }
-
-  // make inputs class
-  inputsClass = new DynamicClass(getClassName() + T("Inputs"));
-  inputsClass->reserveMemberVariables(inputVariables.size() + 1);
-  for (size_t i = 0; i < inputVariables.size(); ++i)
-    inputsClass->addMemberVariable(context, inputVariables[i]);
   
   // compute output type
   String outputPostFix = getOutputPostFix();
@@ -112,6 +106,20 @@ bool Function::initialize(ExecutionContext& context, const std::vector<VariableS
     return false;
   outputVariable = new VariableSignature(outputType, outputName, outputShortName);
   return true;
+}
+
+const DynamicClassPtr& Function::getInputsClass() const
+{
+  if (!inputsClass)
+  {
+    // make inputs class
+    DynamicClassPtr cl = new DynamicClass(getClassName() + T("Inputs"));
+    cl->reserveMemberVariables(inputVariables.size() + 1);
+    for (size_t i = 0; i < inputVariables.size(); ++i)
+      cl->addMemberVariable(defaultExecutionContext(), inputVariables[i]);
+    const_cast<Function* >(this)->inputsClass = cl;
+  }
+  return inputsClass;
 }
 
 void Function::setBatchLearner(const FunctionPtr& batchLearner)

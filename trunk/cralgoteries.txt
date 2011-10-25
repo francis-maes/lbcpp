@@ -1,5 +1,6 @@
-
 * Stack-based decision problem
+* Nested-MC / MCTS
+* True cache -> Need to abstract valuekeys
 * Stump: auto-parameters
 
 Lua-Misc

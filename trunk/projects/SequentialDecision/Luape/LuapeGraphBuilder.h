@@ -24,7 +24,7 @@ public:
   LuapeGraphBuilderState() : maxSteps(0), numSteps(0) {}
 
   virtual String toShortString() const
-    {return graph->graphToString(graph->getNumNodes() - numSteps);}
+    {return graph->getLastNode()->toShortString();}
 
   virtual TypePtr getActionType() const
     {return luapeNodeClass;}
