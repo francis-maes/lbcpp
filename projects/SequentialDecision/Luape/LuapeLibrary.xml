@@ -18,7 +18,6 @@
     <variable type="PositiveInteger" name="argument"/>
   </class>
 
-
   <!-- Graph -->
   <class name="LuapeGraph" base="Object">
     <variable type="ObjectVector[LuapeNode]" name="nodes"/>
@@ -27,14 +26,17 @@
   </class>
   <class name="LuapeGraphCache"/>
 
-
   <!-- Function -->
   <class name="LuapeFunction" base="Function" abstract="yes">
     <variable type="LuapeGraph" name="graph"/>
     <variable type="Vector[Variable]" name="votes"/>
   </class>
-  <class name="LuapeBinaryClassifier" base="LuapeFunction"/>
-  
+  <class name="LuapeBinaryClassifier" base="LuapeFunction">
+    <constructor/>
+  </class>
+  <class name="LuapeClassifier" base="LuapeFunction">
+    <constructor/>
+  </class>
   
   <!-- Problem -->
   <class name="LuapeProblem">
@@ -45,6 +47,7 @@
     <function lang="lua" name="function"/>
   </class>
 
+  <!-- Builder Decision Problem -->
   <class name="LuapeGraphBuilderState" base="DecisionProblemState">
     <variable type="LuapeProblem" name="problem"/>
     <variable type="LuapeGraph" name="graph"/>
@@ -57,6 +60,21 @@
     <variable type="LuapeGraph" name="graph"/>
     <variable type="PositiveInteger" name="maxSteps"/>
     <variable type="PositiveInteger" name="numSteps"/>
+  </class>
+  
+  <!-- Learners -->
+  <class name="LuapeBatchLearner" base="BatchLearner" abstract="yes">
+    <variable type="LuapeProblem" name="problem"/>
+  </class>
+  <class name="BoostingLuapeLearner" base="LuapeBatchLearner" abstract="yes">
+    <variable type="PositiveInteger" name="maxSteps"/>
+    <variable type="PositiveInteger" name="maxIterations"/>
+  </class>
+  <class name="AdaBoostLuapeLearner" base="BoostingLuapeLearner">
+    <constructor arguments="LuapeProblemPtr problem, size_t maxSteps, size_t maxIterations" returnType="BatchLearner"/>
+  </class>
+  <class name="AdaBoostMHLuapeLearner" base="BoostingLuapeLearner">
+    <constructor arguments="LuapeProblemPtr problem, size_t maxSteps, size_t maxIterations" returnType="BatchLearner"/>
   </class>
   
   <!-- Sand Box -->

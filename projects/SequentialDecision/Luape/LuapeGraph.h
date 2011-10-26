@@ -244,7 +244,7 @@ public:
 
   void reserveExamples(size_t count);
   void addExample(const std::vector<Variable>& example);
-  void addExample(const ContainerPtr& example);
+  void addExample(const ObjectPtr& example);
 
   void compute(ExecutionContext& context, std::vector<Variable>& state, size_t firstNodeIndex = 0, LuapeGraphCallbackPtr callback = 0) const;
 

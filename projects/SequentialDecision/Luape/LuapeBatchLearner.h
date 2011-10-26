@@ -42,25 +42,25 @@ public:
     : LuapeBatchLearner(problem), maxSteps(maxSteps), maxIterations(maxIterations) {}
   BoostingLuapeLearner() : maxIterations(0) {}
 
-  virtual DenseDoubleVectorPtr makeInitialWeights(const std::vector<ObjectPtr>& examples) const = 0;
+  virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeFunctionPtr& function, const std::vector<PairPtr>& examples) const = 0;
 
   // the absolute value of this quantity should be maximized
-  virtual double computeWeakObjective(const ContainerPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const = 0;
+  virtual double computeWeakObjective(const LuapeFunctionPtr& function, const ContainerPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const = 0;
   virtual bool shouldStop(double weakObjectiveValue) const = 0;
-  virtual double updateWeight(const Variable& prediction, const Variable& supervision, double currentWeight, const Variable& vote) const = 0;
+  virtual double updateWeight(const LuapeFunctionPtr& function, size_t index, double currentWeight, const ContainerPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const = 0;
 
-  virtual VectorPtr createVoteVector() const = 0;
-  virtual Variable computeVote(double weakObjectiveValue) const = 0;
+  virtual VectorPtr createVoteVector(const LuapeFunctionPtr& function) const = 0;
+  virtual Variable computeVote(const LuapeFunctionPtr& function, const ContainerPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, double weakObjectiveValue) const = 0;
 
   virtual bool train(ExecutionContext& context, const FunctionPtr& f, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
     const LuapeFunctionPtr& function = f.staticCast<LuapeFunction>();
     LuapeGraphPtr initialGraph = problem->createInitialGraph(context);
-    DenseDoubleVectorPtr weights = makeInitialWeights(trainingData);
+    DenseDoubleVectorPtr weights = makeInitialWeights(function, *(std::vector<PairPtr>* )&trainingData);
     function->setGraph(initialGraph->cloneAndCast<LuapeGraph>());
     VectorPtr supervisions;
     addExamplesToGraph(trainingData, function->getGraph(), supervisions);
-    function->setVotes(createVoteVector());
+    function->setVotes(createVoteVector(function));
 
     bool stopped = false;
     double weightsSum = 1.0;
@@ -70,7 +70,7 @@ public:
       context.resultCallback(T("iteration"), i + 1);
 
       // weak graph completion
-      LuapeGraphPtr newGraph = learnWeakModel(context, function->getGraph(), weights, supervisions);
+      LuapeGraphPtr newGraph = learnWeakModel(context, function, weights, supervisions);
       LuapeYieldNodePtr yieldNode = newGraph->getLastNode().dynamicCast<LuapeYieldNode>();
       jassert(yieldNode);
       double score = yieldNode->getCache()->getScore();
@@ -87,11 +87,11 @@ public:
         function->setGraph(newGraph);
 
         // compute vote
-        Variable vote = computeVote(score);
+        Variable vote = computeVote(function, cache->getExamples(), supervisions, weights, score);
         function->getVotes()->append(vote);
 
         // update weights
-        weightsSum *= updateWeights(cache->getExamples(), supervisions, weights, vote);
+        weightsSum *= updateWeights(function, cache->getExamples(), supervisions, weights, vote);
         {
           DenseDoubleVectorPtr w = weights->cloneAndCast<DenseDoubleVector>();
           w->multiplyByScalar(weightsSum);
@@ -113,6 +113,8 @@ public:
   }
 
 protected:
+  friend class BoostingLuapeLearnerClass;
+
   size_t maxSteps;
   size_t maxIterations;
 
@@ -124,23 +126,21 @@ protected:
     for (size_t i = 0; i < n; ++i)
     {
       const PairPtr& example = examples[i].staticCast<Pair>();
-      graph->addExample(example->getFirst().getObjectAndCast<Container>());
+      graph->addExample(example->getFirst().getObject());
       supervisions->setElement(i, example->getSecond());
     }
   }
 
-  double updateWeights(const ContainerPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const Variable& vote) const
+  double updateWeights(const LuapeFunctionPtr& function, const ContainerPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const Variable& vote) const
   {
-    size_t n = predictions->getNumElements();
-    jassert(n == supervisions->getNumElements());
-    jassert(n == weights->getNumElements());
+    jassert(predictions->getNumElements() == supervisions->getNumElements());
+    size_t n = weights->getNumValues();
 
-    double alpha = vote.toDouble();
     double* values = weights->getValuePointer(0);
     double sum = 0.0;
     for (size_t i = 0; i < n; ++i)
     {
-      values[i] = updateWeight(predictions->getElement(i), supervisions->getElement(i), values[i], alpha);
+      values[i] = updateWeight(function, i, values[i], predictions, supervisions, vote);
       sum += values[i];
     }
     weights->multiplyByScalar(1.0 / sum);
@@ -183,8 +183,8 @@ protected:
 
   struct Objective : public SimpleUnaryFunction
   {
-    Objective(const BoostingLuapeLearner* pthis, ContainerPtr supervisions, DenseDoubleVectorPtr weights)
-      : SimpleUnaryFunction(decisionProblemStateClass, doubleType), pthis(pthis), supervisions(supervisions), weights(weights) {}
+    Objective(const BoostingLuapeLearner* pthis, const LuapeFunctionPtr& function, ContainerPtr supervisions, DenseDoubleVectorPtr weights)
+      : SimpleUnaryFunction(decisionProblemStateClass, doubleType), pthis(pthis), function(function), supervisions(supervisions), weights(weights) {}
 
     virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
     {
@@ -201,7 +201,7 @@ protected:
         score = yieldNodeCache->getScore();
       else
       {
-        score = pthis->computeWeakObjective(valueNode->getCache()->getExamples(), supervisions, weights);
+        score = pthis->computeWeakObjective(function, valueNode->getCache()->getExamples(), supervisions, weights);
         yieldNodeCache->setScore(score);
       }
       return -fabs(score);
@@ -209,14 +209,16 @@ protected:
 
   protected:
     const BoostingLuapeLearner* pthis;
+    const LuapeFunctionPtr& function;
     ContainerPtr supervisions;
     DenseDoubleVectorPtr weights;
   };
 
-  LuapeGraphPtr learnWeakModel(ExecutionContext& context, LuapeGraphPtr graph, const DenseDoubleVectorPtr& weights, const ContainerPtr& supervisions) const
+  LuapeGraphPtr learnWeakModel(ExecutionContext& context, const LuapeFunctionPtr& function, const DenseDoubleVectorPtr& weights, const ContainerPtr& supervisions) const
   {
+    LuapeGraphPtr graph = function->getGraph();
     graph->getCache()->clearScores();
-    FunctionPtr objective = new Objective(this, supervisions, weights);
+    FunctionPtr objective = new Objective(this, function, supervisions, weights);
 
     LuapeRPNGraphBuilderStatePtr state = new LuapeRPNGraphBuilderState(problem, graph, maxSteps);
     double bestScore = DBL_MAX;
@@ -242,10 +244,10 @@ public:
   virtual TypePtr getRequiredFunctionType() const
     {return luapeBinaryClassifierClass;}
 
-  virtual VectorPtr createVoteVector() const
+  virtual VectorPtr createVoteVector(const LuapeFunctionPtr& function) const
     {return new DenseDoubleVector(0, 0.0);}
 
-  virtual Variable computeVote(double weakObjectiveValue) const
+  virtual Variable computeVote(const LuapeFunctionPtr& function, const ContainerPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, double weakObjectiveValue) const
   {
     double accuracy = weakObjectiveValue + 0.5;
     if (accuracy == 0.0)
@@ -256,10 +258,10 @@ public:
       return 0.5 * log(accuracy / (1.0 - accuracy));
   }
 
-  virtual DenseDoubleVectorPtr makeInitialWeights(const std::vector<ObjectPtr>& examples) const
+  virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeFunctionPtr& function, const std::vector<PairPtr>& examples) const
     {size_t n = examples.size(); return new DenseDoubleVector(n, 1.0 / n);}
 
-  virtual double computeWeakObjective(const ContainerPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
+  virtual double computeWeakObjective(const LuapeFunctionPtr& function, const ContainerPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
   {
     size_t numExamples = predictions->getNumElements();
     jassert(numExamples == supervisions->getNumElements());
@@ -275,10 +277,143 @@ public:
   virtual bool shouldStop(double weakObjectiveValue) const
     {return weakObjectiveValue == 0.0 || weakObjectiveValue == 0.5;}
 
-  virtual double updateWeight(const Variable& prediction, const Variable& supervision, double currentWeight, const Variable& vote) const
+
+  virtual double updateWeight(const LuapeFunctionPtr& function, size_t index, double currentWeight, const ContainerPtr& predictions, const ContainerPtr& supervisions, const Variable& vote) const
   {
     double alpha = vote.toDouble();
-    return currentWeight * exp(-alpha * (supervision.getBoolean() == prediction.getBoolean() ? 1.0 : -1.0));
+    bool isPredictionCorrect = (supervisions->getElement(index).getBoolean() == predictions->getElement(index).getBoolean());
+    return currentWeight * exp(-alpha * (isPredictionCorrect ? 1.0 : -1.0));
+  }
+};
+
+class AdaBoostMHLuapeLearner : public BoostingLuapeLearner
+{
+public:
+  AdaBoostMHLuapeLearner(LuapeProblemPtr problem, size_t maxSteps, size_t maxIterations)
+    : BoostingLuapeLearner(problem, maxSteps, maxIterations) {}
+  AdaBoostMHLuapeLearner() {}
+
+  virtual TypePtr getRequiredFunctionType() const
+    {return luapeClassifierClass;}
+
+  virtual VectorPtr createVoteVector(const LuapeFunctionPtr& function) const
+  {
+    const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
+    return new ObjectVector(classifier->getDoubleVectorClass());
+  }
+
+  virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeFunctionPtr& function, const std::vector<PairPtr>& examples) const
+  {
+    const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
+    EnumerationPtr labels = classifier->getLabels();
+    size_t K = labels->getNumElements();
+    size_t n = examples.size();
+    DenseDoubleVectorPtr res(new DenseDoubleVector(n * K, 1.0 / (2 * n * (K - 1))));
+    double invZ = 1.0 / (2 * n);
+    for (size_t i = 0; i < n; ++i)
+    {
+      size_t k = (size_t)examples[i]->getSecond().getInteger();
+      jassert(k >= 0 && k < K);
+      res->setValue(i * K + k, invZ);
+    }
+    return res;
+  }
+
+  // the absolute value of this should be maximized
+  virtual double computeWeakObjective(const LuapeFunctionPtr& function, const ContainerPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
+  {
+    const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
+    size_t numLabels = classifier->getLabels()->getNumElements();
+    size_t numExamples = predictions->getNumElements();
+    jassert(numExamples == supervisions->getNumElements());
+
+    // compute mu_l-, mu_l+ and v_l values
+    DenseDoubleVectorPtr muNegatives, muPositives, votes;
+    computeMuAndVoteValues(function, predictions, supervisions, weights, muNegatives, muPositives, votes);
+
+    // compute edge
+    double edge = 0.0;
+    double* weightsPtr = weights->getValuePointer(0);
+    for (size_t i = 0; i < numExamples; ++i)
+    {
+      bool prediction = predictions->getElement(i).getBoolean();
+      size_t correct = (size_t)supervisions->getElement(i).getInteger();
+      for (size_t j = 0; j < numLabels; ++j)
+      {
+        bool isPredictionCorrect = (prediction == (j == correct));
+        double wij = *weightsPtr++;
+        double vl = votes->getValue(j);
+        edge += wij * vl * (isPredictionCorrect ? 1.0 : -1.0);
+      }
+    }
+    return edge;
+  }
+
+  virtual Variable computeVote(const LuapeFunctionPtr& function, const ContainerPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, double weakObjectiveValue) const
+  {
+    DenseDoubleVectorPtr muNegatives, muPositives, votes;
+    computeMuAndVoteValues(function, predictions, supervisions, weights, muNegatives, muPositives, votes);
+    double correctWeight = 0.0;
+    double errorWeight = 0.0;
+    size_t n = votes->getNumValues();
+    for (size_t i = 0; i < n; ++i)
+    {
+      if (votes->getValue(i) > 0)
+      {
+        correctWeight += muPositives->getValue(i);
+        errorWeight += muNegatives->getValue(i);
+      }
+      else
+      {
+        correctWeight += muNegatives->getValue(i);
+        errorWeight += muPositives->getValue(i);
+      }
+    }
+    double alpha = 0.5 * log(correctWeight / errorWeight);
+    votes->multiplyByScalar(alpha);
+    return votes;
+  }
+
+  virtual bool shouldStop(double weakObjectiveValue) const
+    {return weakObjectiveValue == 0.0;}
+
+  virtual double updateWeight(const LuapeFunctionPtr& function, size_t index, double currentWeight, const ContainerPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const
+  {
+    size_t numLabels = function.staticCast<LuapeClassifier>()->getLabels()->getNumElements();
+    size_t example = index / numLabels;
+    size_t k = index % numLabels;
+    double alpha = vote.getObjectAndCast<DenseDoubleVector>()->getValue(k);
+    bool isCorrectClass = (k == (size_t)supervision->getElement(example).getInteger());
+    bool isPredictionCorrect = (prediction->getElement(example).getBoolean() == isCorrectClass);
+    return currentWeight * exp(-alpha * (isPredictionCorrect ? 1.0 : -1.0));
+  }
+
+protected:
+  void computeMuAndVoteValues(const LuapeFunctionPtr& function, const ContainerPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, DenseDoubleVectorPtr& muNegatives, DenseDoubleVectorPtr& muPositives, DenseDoubleVectorPtr& votes) const
+  {
+    const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
+    size_t numLabels = classifier->getLabels()->getNumElements();
+    size_t numExamples = predictions->getNumElements();
+    jassert(numExamples == supervisions->getNumElements());
+
+    muNegatives = new DenseDoubleVector(classifier->getDoubleVectorClass());
+    muPositives = new DenseDoubleVector(classifier->getDoubleVectorClass());
+    double* weightsPtr = weights->getValuePointer(0);
+    for (size_t i = 0; i < numExamples; ++i)
+    {
+      bool prediction = predictions->getElement(i).getBoolean();
+      size_t correct = (size_t)supervisions->getElement(i).getInteger();
+      for (size_t j = 0; j < numLabels; ++j)
+      {
+        bool isPredictionCorrect = (prediction == (j == correct));
+        (isPredictionCorrect ? muPositives : muNegatives)->incrementValue(j, *weightsPtr++);
+      }
+    }
+
+    // compute v_l values
+    votes = new DenseDoubleVector(classifier->getDoubleVectorClass());
+    for (size_t i = 0; i < numLabels; ++i)
+      votes->setValue(i, muPositives->getValue(i) > muNegatives->getValue(i) ? 1.0 : -1.0);
   }
 };
 

@@ -301,15 +301,30 @@ void LuapeGraph::addExample(const std::vector<Variable>& example)
   ++numExamples;
 }
 
-void LuapeGraph::addExample(const ContainerPtr& example)
+void LuapeGraph::addExample(const ObjectPtr& example)
 {
-  size_t n = example->getNumElements();
-  jassert(n <= nodes.size());
-  for (size_t i = 0; i < n; ++i)
+  ContainerPtr container = example.dynamicCast<Container>();
+  if (container)
   {
-    LuapeInputNodePtr node = nodes[i].dynamicCast<LuapeInputNode>();
-    jassert(node);
-    node->addExample(example->getElement(i));
+    size_t n = container->getNumElements();
+    jassert(n <= nodes.size());
+    for (size_t i = 0; i < n; ++i)
+    {
+      LuapeInputNodePtr node = nodes[i].dynamicCast<LuapeInputNode>();
+      jassert(node);
+      node->addExample(container->getElement(i));
+    }
+  }
+  else
+  {
+    size_t n = example->getNumVariables();
+    jassert(n <= nodes.size());
+    for (size_t i = 0; i < n; ++i)
+    {
+      LuapeInputNodePtr node = nodes[i].dynamicCast<LuapeInputNode>();
+      jassert(node);
+      node->addExample(example->getVariable(i));
+    }
   }
   ++numExamples;
 }
