@@ -149,12 +149,19 @@ public:
   virtual TypePtr getActionType() const
     {return variableType;}
 
+  size_t getMinNumStepsToFinalState() const
+  {
+    if (state.function)
+      return state.function->getNumVariables() + state.stack.size();
+    else
+      return state.stack.size();
+  }
+
   virtual ContainerPtr getAvailableActions() const
   {
-    if (numSteps >= maxSteps)
-      return ContainerPtr();
-
     VariableVectorPtr res = new VariableVector();
+    if (numSteps >= maxSteps)
+      return res;
 
     if (state.function)
     {
@@ -191,19 +198,20 @@ public:
     }
     else
     {
-      if (numSteps < maxSteps - 2)
+      size_t numRemainingSteps = maxSteps - numSteps;
+      if (numRemainingSteps > state.stack.size())
       {
         size_t n = graph->getNumNodes();
         for (size_t i = 0; i < n; ++i)
           res->append(Variable(i)); // push node action
       }
 
-      if (numSteps < maxSteps - 1)
+      if (numRemainingSteps > 1)
       {
         for (size_t i = 0; i < problem->getNumFunctions(); ++i)
         {
           FunctionPtr function = problem->getFunction(i);
-          if (isFunctionAvailable(function))
+          if (isFunctionAvailable(function) && numRemainingSteps >= 1 + function->getNumVariables() + (state.stack.size() - function->getNumRequiredInputs() + 1))
             res->append(function);
         }
       }

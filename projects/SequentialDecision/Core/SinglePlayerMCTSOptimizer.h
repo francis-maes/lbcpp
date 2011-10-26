@@ -202,7 +202,7 @@ public:
     const SinglePlayerMCTSOptimizerStatePtr& state = optimizerState.staticCast<SinglePlayerMCTSOptimizerState>();
     for (size_t i = 0; i < budget; ++i)
       state->doEpisode(context);
-    context.resultCallback("mctsTree", state->getRootNode());
+   // context.resultCallback("mctsTree", state->getRootNode());
     return state;
   }
 

@@ -254,6 +254,8 @@ public:
   void setCache(LuapeGraphCachePtr cache)
     {this->cache = cache;}
 
+  void clearScores();
+
 protected:
   friend class LuapeGraphClass;
 

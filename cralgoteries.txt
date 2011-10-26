@@ -1,12 +1,11 @@
-Luape
- * Objective function: incorporate a complexity term to give preference to smaller trajectories in case of ties
- * Try with MCTS / other bandit based techniques...
- * Cumutativity
+Luape:
+ * builder: Disable actions to remove comutativity
  * Cache max size, and automatic cleaning
+ * Objective function: incorporate a complexity term to give preference to smaller trajectories in case of ties
  * Computes votes in the same time as objective, and store them somewhere
  * Perform on game of go
 
-Lua-Misc
+Lua-Misc:
  * Move namespace lbcpp::lua into lua (-> introspection generator must be adapted)
  * Metamethods for ipairs() and pairs()
  * Serialisation of subspecified expressions
