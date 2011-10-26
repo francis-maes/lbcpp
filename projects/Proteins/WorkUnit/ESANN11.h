@@ -310,13 +310,13 @@ public:
     size_t elements = builder.addFunction(getElementInVariableFunction(T("structuralAlphabetSequence")), protein, position, T("stal"));
     builder.addFunction(mapContainerFunction(defaultProbabilityFeatureGenerator()), elements);
   }
-
+/*
   virtual FunctionPtr createResidueVectorPerception() const
   {
     FunctionPtr res = ProteinPredictorParameters::createResidueVectorPerception();
     return composeFunction(res, mapContainerFunction(doubleVectorNormalizeFunction(true, false)));
   }
-
+*/
   virtual FunctionPtr learningMachine(ProteinTarget target) const
   {
     double sgdRate = 1.f;
@@ -344,9 +344,32 @@ public:
     }
     else
       jassertfalse;
+
+    LearnerParametersPtr learningParameters = new StochasticGDParameters(constantIterationFunction(sgdRate), StoppingCriterionPtr(), sgdIterations);
+    FunctionPtr res;
+
+    switch (target)
+    {
+      case drTarget:
+      {
+        res = linearBinaryClassifier(learningParameters, true, binaryClassificationMCCScore);
+        res->setEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore));
+        break;
+      }
+      case sa20Target:
+      {
+        res = linearBinaryClassifier(learningParameters, true, binaryClassificationAccuracyScore);
+        res->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
+        break;
+      }
+      default:
+      {
+        res = linearLearningMachine(learningParameters);
+        res->setEvaluator(defaultSupervisedEvaluator());
+        break;
+      }
+    }
     
-    FunctionPtr res = linearLearningMachine(new StochasticGDParameters(constantIterationFunction(sgdRate), StoppingCriterionPtr(), sgdIterations));
-    res->setEvaluator(defaultSupervisedEvaluator());
     return res;
   }
 };
@@ -373,11 +396,11 @@ public:
     for (size_t i = 0; i < numStages; ++i)
     {
       ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
-      iteration->addTarget(ss3Target);
+      //iteration->addTarget(ss3Target);
       iteration->addTarget(ss8Target);
-      iteration->addTarget(sa20Target);
-      iteration->addTarget(drTarget);
-      iteration->addTarget(stalTarget);
+      //iteration->addTarget(sa20Target);
+      //iteration->addTarget(drTarget);
+      //iteration->addTarget(stalTarget);
 
       iteration->setEvaluator(new ProteinEvaluator());
       stack->addPredictor(iteration);
@@ -399,6 +422,12 @@ public:
     ProteinEvaluatorPtr testEvaluator = new ProteinEvaluator();
     CompositeScoreObjectPtr testScores = stack->evaluate(context, testingData, testEvaluator, T("Evaluate on test proteins"));
 
+    if (predictionPath != String::empty)
+    {
+      savePredictionsToDirectory(context, stack, trainingData, File(predictionPath).getChildFile(T("train")));
+      savePredictionsToDirectory(context, stack, testingData, File(predictionPath).getChildFile(T("test")));
+    }
+
     return true;
   }
 
@@ -406,7 +435,14 @@ protected:
   friend class ESANN11WorkUnitClass;
 
   String proteinsPath;
+  String predictionPath;
   size_t numStages;
+
+  bool savePredictionsToDirectory(ExecutionContext& context, FunctionPtr predictor, ContainerPtr proteinPairs, const File& predictionDirectory) const
+  {
+    return predictor->evaluate(context, proteinPairs, saveToDirectoryEvaluator(predictionDirectory, T(".xml")),
+                               T("Saving predictions to directory ") + predictionDirectory.getFileName());
+  }
 };
 
 };

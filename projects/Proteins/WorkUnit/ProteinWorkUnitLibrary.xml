@@ -305,6 +305,7 @@
 
   <class name="ESANN11WorkUnit" base="WorkUnit">
     <variable type="String" name="proteinsPath" shortName="in"/>
+    <variable type="String" name="predictionPath" shortName="o"/>
     <!-- <variable type="VariablesEnumeration[Protein]" name="target" shortName="t"/> -->
     <variable type="PositiveInteger" name="numStages" shortName="n"/>
   </class>
