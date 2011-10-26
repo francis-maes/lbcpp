@@ -67,14 +67,15 @@
     <variable type="LuapeProblem" name="problem"/>
   </class>
   <class name="BoostingLuapeLearner" base="LuapeBatchLearner" abstract="yes">
+    <variable type="Optimizer" name="optimizer"/>
     <variable type="PositiveInteger" name="maxSteps"/>
     <variable type="PositiveInteger" name="maxIterations"/>
   </class>
   <class name="AdaBoostLuapeLearner" base="BoostingLuapeLearner">
-    <constructor arguments="LuapeProblemPtr problem, size_t maxSteps, size_t maxIterations" returnType="BatchLearner"/>
+    <constructor arguments="LuapeProblemPtr problem, OptimizerPtr optimizer, size_t maxSteps, size_t maxIterations" returnType="BatchLearner"/>
   </class>
   <class name="AdaBoostMHLuapeLearner" base="BoostingLuapeLearner">
-    <constructor arguments="LuapeProblemPtr problem, size_t maxSteps, size_t maxIterations" returnType="BatchLearner"/>
+    <constructor arguments="LuapeProblemPtr problem, OptimizerPtr optimizer, size_t maxSteps, size_t maxIterations" returnType="BatchLearner"/>
   </class>
   
   <!-- Sand Box -->
@@ -93,6 +94,7 @@
     <variable type="File" name="testFile"/>
     <variable type="PositiveInteger" name="maxExamples"/>
     <variable type="PositiveInteger" name="maxSteps"/>
+    <variable type="PositiveInteger" name="budgetPerIteration"/>
     <variable type="PositiveInteger" name="maxIterations"/>
   </class>
 </library>

@@ -115,4 +115,42 @@
   </class>
   <class name="SearchTreeEvaluator" base="Evaluator"/>
 
+  <!-- MCTS Optimizer -->
+  <class name="SinglePlayerMCTSNode" base="Object">
+    <variable type="DecisionProblemState" name="state"/>
+    <variable type="Container[Variable]" name="actions"/>
+    <variable type="ObjectVector[SinglePlayerMCTSNode]" name="subNodes"/>
+    <variable type="PositiveInteger" name="indexInParent"/>
+    <variable type="ScalarVariableStatistics" name="rewards"/>
+  </class>
+
+  <class name="SinglePlayerMCTSOptimizerState" base="OptimizerState">
+    <variable type="SinglePlayerMCTSNode" name="rootNode"/>
+    <variable type="Function" name="objective"/>
+  </class>
+
+  <class name="SinglePlayerMCTSOptimizer" base="Optimizer">
+    <variable type="PositiveInteger" name="budget"/>
+  </class>
+
+  <!-- Nested Monte Carlo Optimizer -->
+  <class name="NestedMonteCarloWorkUnit" base="WorkUnit">
+    <variable type="Function" name="objective"/>
+    <variable type="PositiveInteger" name="level"/>
+  </class>
+
+  <class name="NestedMonteCarloOptimizer" base="Optimizer">
+    <variable type="PositiveInteger" name="level"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+
+  <!-- Beam Search Optimizer -->
+  <class name="BeamSearchOptimizerState" base="OptimizerState">
+    <variable type="PositiveInteger" name="beamSize"/>
+  </class>
+
+  <class name="BeamSearchOptimizer" base="Optimizer">
+    <variable type="PositiveInteger" name="beamSize"/>
+  </class>
+  
 </library>

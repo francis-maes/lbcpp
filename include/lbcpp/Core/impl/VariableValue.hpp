@@ -107,9 +107,6 @@ struct VariableValue
   void setString(const String& str)
     {jassert(!u.stringValue); u.stringValue = new String(str);}
 
-  void copyString()
-    {if (u.stringValue) u.stringValue = new String(*u.stringValue);}
-
   const ObjectPtr& getObject() const
     {return *(const ObjectPtr* )this;}
 

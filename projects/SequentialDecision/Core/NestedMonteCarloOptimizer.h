@@ -10,16 +10,10 @@
 # define LBCPP_OPTIMIZER_NESTED_MONTE_CARLO_H_
 
 # include <lbcpp/Optimizer/Optimizer.h>
+# include "DecisionProblem.h"
 
 namespace lbcpp
 {
-
-class NestedMonteCarloOptimizerState : public OptimizerState
-{
-public:
-};
-
-typedef ReferenceCountedObjectPtr<NestedMonteCarloOptimizerState> NestedMonteCarloOptimizerStatePtr;
 
 class NestedMonteCarloWorkUnit : public WorkUnit
 {
@@ -129,13 +123,14 @@ protected:
 class NestedMonteCarloOptimizer : public Optimizer
 {
 public:
-  NestedMonteCarloOptimizer(DecisionProblemStatePtr initialState, size_t level, size_t numIterations)
-    : initialState(initialState), level(level), numIterations(numIterations) {}
+  NestedMonteCarloOptimizer(size_t level, size_t numIterations)
+    : level(level), numIterations(numIterations) {}
   NestedMonteCarloOptimizer() : level(0), numIterations(0) {}
 
   virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {
     FunctionPtr objective = problem->getObjective();
+    DecisionProblemStatePtr initialState = problem->getInitialState();
 
     if (numIterations > 1)
     {
@@ -160,12 +155,11 @@ public:
   }
 
   virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, const OptimizationProblemPtr& problem) const
-    {return new NestedMonteCarloOptimizerState();}
+    {return new OptimizerState();}
 
 protected:
   friend class NestedMonteCarloOptimizerClass;
 
-  DecisionProblemStatePtr initialState;
   size_t level;
   size_t numIterations;
 };

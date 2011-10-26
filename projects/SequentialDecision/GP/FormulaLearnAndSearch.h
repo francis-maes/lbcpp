@@ -10,8 +10,8 @@
 # define LBCPP_SEQUENTIAL_DECISION_FORMULA_LEARN_AND_SEARCH_H_
 
 # include "PathsFormulaFeatureGenerator.h"
-# include "NestedMonteCarloOptimizer.h"
-# include "BeamSearchOptimizer.h"
+# include "../Core/NestedMonteCarloOptimizer.h"
+# include "../Core/BeamSearchOptimizer.h"
 
 # include "BanditFormulaObjective.h" // for RegretScoreObject
 
@@ -319,14 +319,14 @@ public:
     checkCurrentThreadId();
 
     OptimizationProblemPtr surrogateProblem = new OptimizationProblem(new SurrogateObjective(this, problem->getObjective()));
-    DecisionProblemStatePtr initialState = problem->makeGPBuilderState(10); // FIXME: max formula size
+    surrogateProblem->setInitialState(problem->makeGPBuilderState(10)); // FIXME: max formula size
 
     static const bool useNestedMonteCarlo = false;
 
     if (useNestedMonteCarlo)
     {
       // Nested Monte Carlo
-      OptimizerPtr nestedMC = new NestedMonteCarloOptimizer(initialState, 2, 1); // level 1, one iteration
+      OptimizerPtr nestedMC = new NestedMonteCarloOptimizer(2, 1); // level 1, one iteration
       OptimizerStatePtr state = nestedMC->optimize(context, surrogateProblem);
       GPExpressionBuilderStatePtr bestFinalState = state->getBestSolution().getObjectAndCast<GPExpressionBuilderState>();
       if (bestFinalState)
@@ -344,7 +344,7 @@ public:
       static const size_t numBests = 100;
 
       // Beam Search
-      OptimizerPtr beamSearch = new BeamSearchOptimizer(initialState, beamSize);
+      OptimizerPtr beamSearch = new BeamSearchOptimizer(beamSize);
       context.enterScope(T("Beam Search"));
       BeamSearchOptimizerStatePtr state = beamSearch->optimize(context, surrogateProblem).staticCast<BeamSearchOptimizerState>();
       context.leaveScope(state->getBestScore());

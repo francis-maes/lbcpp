@@ -25,6 +25,9 @@ SET(LBCPP_SEQUENTIAL_DECISION_CORE_SOURCES
   Core/SearchFunction.h
   Core/SearchFunctionOnlineLearner.h
   Core/SearchTreeEvaluator.h
+  Core/BeamSearchOptimizer.h
+  Core/NestedMonteCarloOptimizer.h  
+  Core/SinglePlayerMCTSOptimizer.h
   Core/SequentialDecisionCoreLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionCoreLibrary.cpp
 )
@@ -66,8 +69,6 @@ SET(LBCPP_SEQUENTIAL_DECISION_GP_SOURCES
   GP/LearningRuleFormulaObjective.h
   GP/PathsFormulaFeatureGenerator.h
   GP/OrdersFormulaFeatureGenerator.h
-  GP/BeamSearchOptimizer.h
-  GP/NestedMonteCarloOptimizer.h
   GP/FormulaLearnAndSearch.h
   GP/SequentialDecisionGPLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionGPLibrary.cpp
