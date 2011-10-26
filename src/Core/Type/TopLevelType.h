@@ -38,9 +38,6 @@ public:
   TopLevelType(const String& name)
     : Type(name, TypePtr()) {}
 
-  virtual bool isConvertibleToDouble() const
-    {return false;}
-
   virtual Variable create(ExecutionContext& context) const
     {context.errorCallback(T("Type::create"), getName() + T(" has no default constructor")); return Variable();}
 
@@ -58,6 +55,12 @@ public:
 
   virtual String toString(const VariableValue& value) const
     {jassert(false); return String::empty;}
+
+  virtual bool isConvertibleToDouble() const
+    {return false;}
+
+  virtual double toDouble(const VariableValue& value) const
+    {jassert(false); return 0.0;}
 
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const
     {exporter.getContext().errorCallback(T("Type::saveToXml()"), T("Not implemented"));}

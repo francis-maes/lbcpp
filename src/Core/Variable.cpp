@@ -256,32 +256,3 @@ static bool printDifferencesRecursively(std::ostream& ostr, const Variable& vari
 bool Variable::printDifferencesRecursively(std::ostream& ostr, const Variable& otherVariable, const String& theseVariablesName) const
   {return ::printDifferencesRecursively(ostr, *this, otherVariable, theseVariablesName);}
 
-bool Variable::isConvertibleToDouble() const
-  {return type->isConvertibleToDouble();}
-
-double Variable::toDouble() const
-{
-  if (!exists())
-    return 0.0;
-
-  if (isDouble())
-    return getDouble();
-
-  if (isInteger())
-    return (double)getInteger();
-
-  if (isBoolean())
-    return getBoolean() ? 1.0 : 0.0;
-
-  ScoreObjectPtr scoreObject = dynamicCast<ScoreObject>();
-  if (scoreObject)
-    return scoreObject->getScoreToMinimize();
-
-  ScalarVariableMeanPtr mean = dynamicCast<ScalarVariableMean>();
-  if (mean)
-    return mean->getMean();
-
-  defaultExecutionContext().errorCallback(T("Variable ") + toShortString() + T(" is not convertible to double"));
-  jassert(false); // not convertible to double
-  return 0.0;
-}

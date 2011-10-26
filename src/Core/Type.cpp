@@ -148,9 +148,6 @@ TypePtr Type::findBaseTypeFromTemplateName(const String& templateName) const
 bool Type::canBeCastedTo(TypePtr targetType) const
   {return inheritsFrom(targetType);}
 
-bool Type::isConvertibleToDouble() const
-  {jassert(baseType); return baseType->isConvertibleToDouble();}
-
 /*
 ** Instance basic operations
 */
@@ -178,6 +175,12 @@ Variable Type::createFromXml(XmlImporter& importer) const
 
 String Type::toString(const VariableValue& value) const
   {jassert(baseType); return baseType->toString(value);}
+
+bool Type::isConvertibleToDouble() const
+  {jassert(baseType); return baseType->isConvertibleToDouble();}
+
+double Type::toDouble(const VariableValue& value) const
+  {jassert(baseType); return baseType->toDouble(value);}
 
 void Type::destroy(VariableValue& value) const
   {jassert(baseType); baseType->destroy(value);}

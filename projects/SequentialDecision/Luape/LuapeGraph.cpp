@@ -23,12 +23,12 @@ void LuapeNodeCache::initialize(TypePtr type)
   convertibleToDouble = type->isConvertibleToDouble();
 }
  
-void LuapeNodeCache::addExample(const Variable& value)
+void LuapeNodeCache::setExample(size_t index, const Variable& value)
 {
   jassert(examples);
   jassert(value.exists());
 
-  examples->append(value);
+  examples->setElement(index, value);
   if (convertibleToDouble)
     doubleValues.insert(value.toDouble());
 }
@@ -81,13 +81,6 @@ bool LuapeNode::initialize(ExecutionContext& context, const std::vector<LuapeNod
     }
   }
   return true;
-}
-
-void LuapeNode::addExample(const Variable& value)
-{
-  jassert(cache);
-  jassert(value.getType()->inheritsFrom(type));
-  cache->addExample(value);
 }
 
 void LuapeNode::clone(ExecutionContext& context, const ObjectPtr& t) const
@@ -207,13 +200,13 @@ void LuapeFunctionNode::propagateCache(ExecutionContext& context)
   size_t currentSize = cache->getNumExamples();
   if (minCacheSize > currentSize)
   {
-    cache->reserveExamples(minCacheSize);    
+    cache->resizeExamples(minCacheSize);    
+    std::vector<Variable> inputs(inputNodes.size());
     for (size_t i = currentSize; i < minCacheSize; ++i)
     {
-      std::vector<Variable> inputs(inputNodes.size());
       for (size_t j = 0; j < inputs.size(); ++j)
         inputs[j] = inputNodes[j]->getCache()->getExample(i);
-      cache->addExample(function->compute(context, inputs));
+      cache->setExample(i, function->compute(context, inputs));
     }
   }
 }
@@ -283,25 +276,25 @@ bool LuapeGraph::pushNode(ExecutionContext& context, const LuapeNodePtr& node)
 void LuapeGraph::popNode()
   {jassert(nodes.size()); nodes.pop_back();}
 
-void LuapeGraph::reserveExamples(size_t count)
+void LuapeGraph::resizeExamples(size_t count)
 {
   for (size_t i = 0; i < nodes.size(); ++i)
-    nodes[i]->reserveExamples(count);
+    nodes[i]->getCache()->resizeExamples(count);
 }
 
-void LuapeGraph::addExample(const std::vector<Variable>& example)
+void LuapeGraph::setExample(size_t index, const std::vector<Variable>& example)
 {
   jassert(example.size() <= nodes.size());
   for (size_t i = 0; i < example.size(); ++i)
   {
     LuapeInputNodePtr node = nodes[i].dynamicCast<LuapeInputNode>();
     jassert(node);
-    node->addExample(example[i]);
+    node->getCache()->setExample(index, example[i]);
   }
   ++numExamples;
 }
 
-void LuapeGraph::addExample(const ObjectPtr& example)
+void LuapeGraph::setExample(size_t index, const ObjectPtr& example)
 {
   ContainerPtr container = example.dynamicCast<Container>();
   if (container)
@@ -312,7 +305,7 @@ void LuapeGraph::addExample(const ObjectPtr& example)
     {
       LuapeInputNodePtr node = nodes[i].dynamicCast<LuapeInputNode>();
       jassert(node);
-      node->addExample(container->getElement(i));
+      node->getCache()->setExample(index, container->getElement(i));
     }
   }
   else
@@ -323,7 +316,7 @@ void LuapeGraph::addExample(const ObjectPtr& example)
     {
       LuapeInputNodePtr node = nodes[i].dynamicCast<LuapeInputNode>();
       jassert(node);
-      node->addExample(example->getVariable(i));
+      node->getCache()->setExample(index, example->getVariable(i));
     }
   }
   ++numExamples;
