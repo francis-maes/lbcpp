@@ -265,6 +265,17 @@ String LuapeGraph::graphToString(size_t firstNodeIndex) const
   return res;
 }
 
+void LuapeGraph::clearScores()
+{
+  if (cache)
+    cache->clearScores();
+  else
+  {
+    for (size_t i = 0; i < nodes.size(); ++i)
+      nodes[i]->getCache()->clearScore();
+  }
+}
+
 bool LuapeGraph::pushNode(ExecutionContext& context, const LuapeNodePtr& node)
 {
   if (!node->initialize(context, nodes, cache))

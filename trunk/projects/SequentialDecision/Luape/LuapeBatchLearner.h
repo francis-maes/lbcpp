@@ -229,7 +229,8 @@ protected:
   LuapeGraphPtr learnWeakModel(ExecutionContext& context, const LuapeFunctionPtr& function, const DenseDoubleVectorPtr& weights, const ContainerPtr& supervisions) const
   {
     LuapeGraphPtr graph = function->getGraph();
-    graph->getCache()->clearScores();
+    graph->clearScores();
+    LuapeGraphCachePtr graphCache = graph->getCache();
     FunctionPtr objective = new Objective(this, function, supervisions, weights);
 
     OptimizationProblemPtr optimizationProblem(new OptimizationProblem(objective));
@@ -240,8 +241,8 @@ protected:
       return LuapeGraphPtr();
 
     LuapeGraphPtr bestGraph = bestFinalState->getGraph();
-    context.informationCallback(String("Best Graph: ") + bestGraph->toShortString() + T(" [") + String(optimizerState->getBestScore()) + T("]"));
-    context.informationCallback(String("Num cached nodes: ") + String((int)graph->getCache()->getNumCachedNodes()));
+    context.informationCallback(String("Best Graph: ") + bestGraph->getLastNode()->toShortString() + T(" [") + String(optimizerState->getBestScore()) + T("]"));
+    context.informationCallback(String("Num cached nodes: ") + String((int)graphCache ? graphCache->getNumCachedNodes() : 0));
     return bestGraph;
   }
 };
