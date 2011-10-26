@@ -45,12 +45,12 @@ public:
   virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeFunctionPtr& function, const std::vector<PairPtr>& examples) const = 0;
 
   // the absolute value of this quantity should be maximized
-  virtual double computeWeakObjective(const LuapeFunctionPtr& function, const ContainerPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const = 0;
+  virtual double computeWeakObjective(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const = 0;
   virtual bool shouldStop(double weakObjectiveValue) const = 0;
-  virtual double updateWeight(const LuapeFunctionPtr& function, size_t index, double currentWeight, const ContainerPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const = 0;
+  virtual double updateWeight(const LuapeFunctionPtr& function, size_t index, double currentWeight, const BooleanVectorPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const = 0;
 
   virtual VectorPtr createVoteVector(const LuapeFunctionPtr& function) const = 0;
-  virtual Variable computeVote(const LuapeFunctionPtr& function, const ContainerPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, double weakObjectiveValue) const = 0;
+  virtual Variable computeVote(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, double weakObjectiveValue) const = 0;
 
   virtual bool train(ExecutionContext& context, const FunctionPtr& f, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
@@ -64,6 +64,11 @@ public:
 
     bool stopped = false;
     double weightsSum = 1.0;
+
+    double lastLoss = 0.0;
+    double lastTrain = 0.0;
+    double lastValidation = 0.0;
+
     for (size_t i = 0; i < maxIterations && !stopped; ++i)
     {
       context.enterScope(T("Iteration ") + String((int)i+1));
@@ -71,44 +76,50 @@ public:
 
       // weak graph completion
       LuapeGraphPtr newGraph = learnWeakModel(context, function, weights, supervisions);
-      LuapeYieldNodePtr yieldNode = newGraph->getLastNode().dynamicCast<LuapeYieldNode>();
-      jassert(yieldNode);
-      double score = yieldNode->getCache()->getScore();
-      LuapeNodeCachePtr cache = newGraph->getNode(yieldNode->getArgument())->getCache();
-
-      // stop test
-      if (shouldStop(score))
+      if (newGraph)
       {
-        context.informationCallback(T("Stopping, score = ") + String(score));
-        stopped = true;
+        LuapeYieldNodePtr yieldNode = newGraph->getLastNode().dynamicCast<LuapeYieldNode>();
+        jassert(yieldNode);
+        double score = yieldNode->getCache()->getScore();
+        LuapeNodeCachePtr cache = newGraph->getNode(yieldNode->getArgument())->getCache();
+
+        // stop test
+        if (shouldStop(score))
+        {
+          context.informationCallback(T("Stopping, score = ") + String(score));
+          stopped = true;
+        }
+        else
+        {
+          function->setGraph(newGraph);
+
+          // compute vote
+          Variable vote = computeVote(function, cache->getExamples(), supervisions, weights, score);
+          function->getVotes()->append(vote);
+
+          // update weights
+          weightsSum *= updateWeights(function, cache->getExamples(), supervisions, weights, vote);
+          {
+            DenseDoubleVectorPtr w = weights->cloneAndCast<DenseDoubleVector>();
+            w->multiplyByScalar(weightsSum);
+            context.resultCallback("loss", lastLoss = w->l1norm());
+          }
+
+          context.resultCallback("score", score);
+          context.resultCallback("vote", vote);
+          context.resultCallback("weights", weights->cloneAndCast<DoubleVector>());
+
+          context.resultCallback(T("trainScore"), lastTrain = function->evaluate(context, trainingData, EvaluatorPtr(), "Train evaluation")->getScoreToMinimize());
+          context.resultCallback(T("validationScore"), lastValidation = function->evaluate(context, validationData, EvaluatorPtr(), "Validation evaluation")->getScoreToMinimize());
+        }
       }
       else
-      {
-        function->setGraph(newGraph);
-
-        // compute vote
-        Variable vote = computeVote(function, cache->getExamples(), supervisions, weights, score);
-        function->getVotes()->append(vote);
-
-        // update weights
-        weightsSum *= updateWeights(function, cache->getExamples(), supervisions, weights, vote);
-        {
-          DenseDoubleVectorPtr w = weights->cloneAndCast<DenseDoubleVector>();
-          w->multiplyByScalar(weightsSum);
-          context.resultCallback("loss", w->l1norm());
-        }
-
-        context.resultCallback("score", score);
-        context.resultCallback("vote", vote);
-        context.resultCallback("weights", weights->cloneAndCast<DoubleVector>());
-
-        context.resultCallback(T("trainScore"), function->evaluate(context, trainingData, EvaluatorPtr(), "Train evaluation")->getScoreToMinimize());
-        context.resultCallback(T("validationScore"), function->evaluate(context, validationData, EvaluatorPtr(), "Validation evaluation")->getScoreToMinimize());
-      }
+        context.informationCallback("Failed to find a weak learner");
 
       context.leaveScope();
       context.progressCallback(new ProgressionState(i+1, maxIterations, T("Iterations")));
     }
+    context.informationCallback(T("Loss: ") + String(lastLoss) + T(" train: ") + String(lastTrain) + T(" validation: ") + String(lastValidation));
     return true;
   }
 
@@ -121,17 +132,17 @@ protected:
   void addExamplesToGraph(const std::vector<ObjectPtr>& examples, LuapeGraphPtr graph, VectorPtr& supervisions) const
   {
     size_t n = examples.size();
-    graph->reserveExamples(n);
+    graph->resizeExamples(n);
     supervisions = vector(examples[0]->getClass()->getTemplateArgument(1), n);
     for (size_t i = 0; i < n; ++i)
     {
       const PairPtr& example = examples[i].staticCast<Pair>();
-      graph->addExample(example->getFirst().getObject());
+      graph->setExample(i, example->getFirst().getObject());
       supervisions->setElement(i, example->getSecond());
     }
   }
 
-  double updateWeights(const LuapeFunctionPtr& function, const ContainerPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const Variable& vote) const
+  double updateWeights(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const Variable& vote) const
   {
     jassert(predictions->getNumElements() == supervisions->getNumElements());
     size_t n = weights->getNumValues();
@@ -146,7 +157,7 @@ protected:
     weights->multiplyByScalar(1.0 / sum);
     return sum;
   }
-
+/*
   void exhaustiveSearch(ExecutionContext& context, LuapeRPNGraphBuilderStatePtr state, const FunctionPtr& objective, double& bestScore, LuapeGraphPtr& bestGraph) const
   {
     ContainerPtr actions = state->getAvailableActions();
@@ -179,7 +190,7 @@ protected:
       //context.leaveScope(true);
     }
   }
-
+*/
 
   struct Objective : public SimpleUnaryFunction
   {
@@ -201,7 +212,7 @@ protected:
         score = yieldNodeCache->getScore();
       else
       {
-        score = pthis->computeWeakObjective(function, valueNode->getCache()->getExamples(), supervisions, weights);
+        score = pthis->computeWeakObjective(function, valueNode->getCache()->getExamples().staticCast<BooleanVector>(), supervisions, weights);
         yieldNodeCache->setScore(score);
       }
       return -fabs(score);
@@ -221,13 +232,13 @@ protected:
     FunctionPtr objective = new Objective(this, function, supervisions, weights);
 
     LuapeRPNGraphBuilderStatePtr state = new LuapeRPNGraphBuilderState(problem, graph, maxSteps);
-    double bestScore = DBL_MAX;
-
-    OptimizerPtr optimizer = new NestedMonteCarloOptimizer(state, 3, 1);
+    OptimizerPtr optimizer = new NestedMonteCarloOptimizer(state, 2, 1);
     OptimizerStatePtr optimizerState = optimizer->optimize(context, new OptimizationProblem(objective));
+    LuapeRPNGraphBuilderStatePtr bestFinalState = optimizerState->getBestSolution().getObjectAndCast<LuapeRPNGraphBuilderState>();
+    if (!bestFinalState)
+      return LuapeGraphPtr();
 
-    LuapeGraphPtr bestGraph = optimizerState->getBestSolution().getObjectAndCast<LuapeRPNGraphBuilderState>()->getGraph();
-    //exhaustiveSearch(context, state, objective, bestScore, bestGraph);
+    LuapeGraphPtr bestGraph = bestFinalState->getGraph();
     context.informationCallback(String("Best Graph: ") + bestGraph->toShortString() + T(" [") + String(optimizerState->getBestScore()) + T("]"));
     context.informationCallback(String("Num cached nodes: ") + String((int)graph->getCache()->getNumCachedNodes()));
     return bestGraph;
@@ -247,7 +258,7 @@ public:
   virtual VectorPtr createVoteVector(const LuapeFunctionPtr& function) const
     {return new DenseDoubleVector(0, 0.0);}
 
-  virtual Variable computeVote(const LuapeFunctionPtr& function, const ContainerPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, double weakObjectiveValue) const
+  virtual Variable computeVote(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, double weakObjectiveValue) const
   {
     double accuracy = weakObjectiveValue + 0.5;
     if (accuracy == 0.0)
@@ -261,7 +272,7 @@ public:
   virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeFunctionPtr& function, const std::vector<PairPtr>& examples) const
     {size_t n = examples.size(); return new DenseDoubleVector(n, 1.0 / n);}
 
-  virtual double computeWeakObjective(const LuapeFunctionPtr& function, const ContainerPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
+  virtual double computeWeakObjective(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
   {
     size_t numExamples = predictions->getNumElements();
     jassert(numExamples == supervisions->getNumElements());
@@ -269,7 +280,7 @@ public:
 
     double accuracy = 0.0;
     for (size_t i = 0; i < numExamples; ++i)
-      if (predictions->getElement(i) == supervisions->getElement(i))
+      if (predictions->get(i) == supervisions->getElement(i).getBoolean())
         accuracy += weights->getValue(i);
     return accuracy - 0.5;
   }
@@ -278,10 +289,10 @@ public:
     {return weakObjectiveValue == 0.0 || weakObjectiveValue == 0.5;}
 
 
-  virtual double updateWeight(const LuapeFunctionPtr& function, size_t index, double currentWeight, const ContainerPtr& predictions, const ContainerPtr& supervisions, const Variable& vote) const
+  virtual double updateWeight(const LuapeFunctionPtr& function, size_t index, double currentWeight, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const Variable& vote) const
   {
     double alpha = vote.toDouble();
-    bool isPredictionCorrect = (supervisions->getElement(index).getBoolean() == predictions->getElement(index).getBoolean());
+    bool isPredictionCorrect = (supervisions->getElement(index).getBoolean() == predictions->get(index));
     return currentWeight * exp(-alpha * (isPredictionCorrect ? 1.0 : -1.0));
   }
 };
@@ -319,9 +330,14 @@ public:
     return res;
   }
 
+  const std::vector<juce::int64>& getSupervisions(const ContainerPtr& sup) const
+    {return *(const std::vector<juce::int64>* )&sup.staticCast<GenericVector>()->getValues();}
+
   // the absolute value of this should be maximized
-  virtual double computeWeakObjective(const LuapeFunctionPtr& function, const ContainerPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
+  virtual double computeWeakObjective(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& sup, const DenseDoubleVectorPtr& weights) const
   {
+    const std::vector<juce::int64>& supervisions = getSupervisions(sup);
+
     const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
     size_t numLabels = classifier->getLabels()->getNumElements();
     size_t numExamples = predictions->getNumElements();
@@ -336,8 +352,8 @@ public:
     double* weightsPtr = weights->getValuePointer(0);
     for (size_t i = 0; i < numExamples; ++i)
     {
-      bool prediction = predictions->getElement(i).getBoolean();
-      size_t correct = (size_t)supervisions->getElement(i).getInteger();
+      bool prediction = predictions->get(i);
+      size_t correct = (size_t)supervisions[i];
       for (size_t j = 0; j < numLabels; ++j)
       {
         bool isPredictionCorrect = (prediction == (j == correct));
@@ -349,24 +365,29 @@ public:
     return edge;
   }
 
-  virtual Variable computeVote(const LuapeFunctionPtr& function, const ContainerPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, double weakObjectiveValue) const
+  virtual Variable computeVote(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& sup, const DenseDoubleVectorPtr& weights, double weakObjectiveValue) const
   {
+    const std::vector<juce::int64>& supervisions = getSupervisions(sup);
+
     DenseDoubleVectorPtr muNegatives, muPositives, votes;
     computeMuAndVoteValues(function, predictions, supervisions, weights, muNegatives, muPositives, votes);
     double correctWeight = 0.0;
     double errorWeight = 0.0;
     size_t n = votes->getNumValues();
+    const double* votesPtr = votes->getValuePointer(0);
+    const double* muNegativesPtr = muNegatives->getValuePointer(0);
+    const double* muPositivesPtr = muPositives->getValuePointer(0);
     for (size_t i = 0; i < n; ++i)
     {
-      if (votes->getValue(i) > 0)
+      if (*votesPtr++ > 0)
       {
-        correctWeight += muPositives->getValue(i);
-        errorWeight += muNegatives->getValue(i);
+        correctWeight += *muPositivesPtr++;
+        errorWeight += *muNegativesPtr++;
       }
       else
       {
-        correctWeight += muNegatives->getValue(i);
-        errorWeight += muPositives->getValue(i);
+        correctWeight += *muNegativesPtr++;
+        errorWeight += *muPositivesPtr++;
       }
     }
     double alpha = 0.5 * log(correctWeight / errorWeight);
@@ -377,7 +398,7 @@ public:
   virtual bool shouldStop(double weakObjectiveValue) const
     {return weakObjectiveValue == 0.0;}
 
-  virtual double updateWeight(const LuapeFunctionPtr& function, size_t index, double currentWeight, const ContainerPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const
+  virtual double updateWeight(const LuapeFunctionPtr& function, size_t index, double currentWeight, const BooleanVectorPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const
   {
     size_t numLabels = function.staticCast<LuapeClassifier>()->getLabels()->getNumElements();
     size_t example = index / numLabels;
@@ -389,20 +410,20 @@ public:
   }
 
 protected:
-  void computeMuAndVoteValues(const LuapeFunctionPtr& function, const ContainerPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, DenseDoubleVectorPtr& muNegatives, DenseDoubleVectorPtr& muPositives, DenseDoubleVectorPtr& votes) const
+  void computeMuAndVoteValues(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const std::vector<juce::int64>& supervisions, const DenseDoubleVectorPtr& weights, DenseDoubleVectorPtr& muNegatives, DenseDoubleVectorPtr& muPositives, DenseDoubleVectorPtr& votes) const
   {
     const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
     size_t numLabels = classifier->getLabels()->getNumElements();
     size_t numExamples = predictions->getNumElements();
-    jassert(numExamples == supervisions->getNumElements());
+    jassert(numExamples == supervisions.size());
 
     muNegatives = new DenseDoubleVector(classifier->getDoubleVectorClass());
     muPositives = new DenseDoubleVector(classifier->getDoubleVectorClass());
     double* weightsPtr = weights->getValuePointer(0);
     for (size_t i = 0; i < numExamples; ++i)
     {
-      bool prediction = predictions->getElement(i).getBoolean();
-      size_t correct = (size_t)supervisions->getElement(i).getInteger();
+      bool prediction = predictions->get(i);
+      size_t correct = (size_t)supervisions[i];
       for (size_t j = 0; j < numLabels; ++j)
       {
         bool isPredictionCorrect = (prediction == (j == correct));

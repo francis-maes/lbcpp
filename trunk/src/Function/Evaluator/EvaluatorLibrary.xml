@@ -8,6 +8,11 @@
     <code>
       virtual bool isConvertibleToDouble() const
         {return true;}
+      virtual double toDouble(const VariableValue&amp; value) const
+      {
+        ScoreObjectPtr object = value.getObjectAndCast&lt;ScoreObject&gt;();
+        return object ? object->getScoreToMinimize() : 0.0;
+      }        
     </code>
   </class>
   <class name="DummyScoreObject" base="ScoreObject"/>

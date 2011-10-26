@@ -199,6 +199,12 @@ inline String Variable::toString() const
 inline String Variable::toShortString() const
   {return type->isMissingValue(value) ? T("Missing") : type->toShortString(value);}
 
+inline bool Variable::isConvertibleToDouble() const
+  {return type->isConvertibleToDouble();}
+
+inline double Variable::toDouble() const
+  {return type->toDouble(value);}
+
 inline bool Variable::equals(const Variable& otherValue) const
 {
   TypePtr type2 = otherValue.type;

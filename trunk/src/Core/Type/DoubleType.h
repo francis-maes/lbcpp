@@ -39,9 +39,6 @@ public:
   DoubleType(const String& name, TypePtr baseType)
     : BuiltinType(name, baseType) {}
 
-  virtual bool isConvertibleToDouble() const
-    {return true;}
-
   virtual Variable create(ExecutionContext& context) const
     {return Variable(0.0, refCountedPointerFromThis(this));}
 
@@ -70,6 +67,12 @@ public:
 
   virtual String toString(const VariableValue& value) const
     {jassert(!isMissingValue(value)); return String(value.getDouble(), 4);}
+
+  virtual bool isConvertibleToDouble() const
+    {return true;}
+
+  virtual double toDouble(const VariableValue& value) const
+    {return isMissingValue(value) ? 0.0 : value.getDouble();}
 
   static String positiveNumberToShortString(double d)
   {

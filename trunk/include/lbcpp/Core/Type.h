@@ -74,8 +74,6 @@ public:
   bool inheritsFrom(TypePtr baseType) const;
   bool canBeCastedTo(TypePtr targetType) const;
   
-  virtual bool isConvertibleToDouble() const;
-
   static TypePtr findCommonBaseType(TypePtr type1, TypePtr type2);
 
   /*
@@ -110,6 +108,9 @@ public:
   virtual String toShortString(const VariableValue& value) const
     {return toString(value);}
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const;
+
+  virtual bool isConvertibleToDouble() const;
+  virtual double toDouble(const VariableValue& value) const;
 
   /*
   ** Member Variables

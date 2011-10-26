@@ -178,7 +178,7 @@ public:
           double previousThreshold = *it;
           for (++it; it != doubleValues.end(); ++it)
           {
-            double threshold = previousThreshold;
+            double threshold = *it;
             res->append((threshold + previousThreshold) / 2.0);
             previousThreshold = threshold;
           }
@@ -186,7 +186,6 @@ public:
       }
       else
       {
-        // todo: stump
         jassert(false);
       }
     }

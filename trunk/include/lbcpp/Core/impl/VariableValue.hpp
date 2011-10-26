@@ -69,9 +69,6 @@ struct VariableValue
   VariableValue(Object* objectValue)
     {setObject(objectValue);}
   
-  VariableValue(char* rawData)
-    {u.rawDataValue = rawData;}
-
   VariableValue(const VariableValue& other)
     {jassert(sizeof (*this) == sizeof (u.intValue)); u.intValue = other.u.intValue;}
 
@@ -110,6 +107,9 @@ struct VariableValue
   void setString(const String& str)
     {jassert(!u.stringValue); u.stringValue = new String(str);}
 
+  void copyString()
+    {if (u.stringValue) u.stringValue = new String(*u.stringValue);}
+
   const ObjectPtr& getObject() const
     {return *(const ObjectPtr* )this;}
 
@@ -145,22 +145,19 @@ struct VariableValue
     {return u.objectValue;}
 
   void setObject(Object* pointer)
-    {u.objectValue = pointer; if (pointer && !pointer->hasStaticAllocationFlag()) pointer->incrementReferenceCounter();}
+    {u.objectValue = pointer; incrementObjectReferenceCounter();}
   
+  void incrementObjectReferenceCounter()
+  {
+    if (u.objectValue && !u.objectValue->hasStaticAllocationFlag())
+      u.objectValue->incrementReferenceCounter();
+  }
+
   void setObject(const ObjectPtr& pointer)
     {setObject(pointer.get());}
 
   void moveObject(const ObjectPtr& pointer)
     {u.objectValue = pointer.get();}
-
-  const char* getRawData() const
-    {return u.rawDataValue;}
-  
-  char* getRawData()
-    {return u.rawDataValue;}
-
-  void setRawData(char* data)
-    {jassert(!u.rawDataValue); u.rawDataValue = data;}
 
 private:
   union
@@ -169,7 +166,6 @@ private:
     double doubleValue;
     String* stringValue;
     Object* objectValue;
-    char* rawDataValue;
   } u;
 };
 
@@ -194,16 +190,6 @@ inline void VariableValue::clearString()
     u.stringValue = NULL;
   }
 }
-
-inline void VariableValue::clearRawData()
-{
-  if (u.rawDataValue)
-  {
-    delete [] u.rawDataValue;
-    u.rawDataValue = NULL;
-  }
-}
-
 
 }; /* namespace lbcpp */
 

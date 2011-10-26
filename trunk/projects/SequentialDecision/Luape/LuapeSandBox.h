@@ -113,8 +113,8 @@ public:
     classifier->setEvaluator(defaultSupervisedEvaluator());
 
     classifier->train(context, trainData, testData, T("Training"), true);
-    classifier->evaluate(context, trainData, EvaluatorPtr(), T("Evaluating on training data"));
-    classifier->evaluate(context, testData, EvaluatorPtr(), T("Evaluating on testing data"));
+    //classifier->evaluate(context, trainData, EvaluatorPtr(), T("Evaluating on training data"));
+    //classifier->evaluate(context, testData, EvaluatorPtr(), T("Evaluating on testing data"));
     return true;
   }
 

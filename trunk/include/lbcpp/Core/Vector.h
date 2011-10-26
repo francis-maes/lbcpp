@@ -82,6 +82,9 @@ public:
   virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlImporter& importer);
 
+  const std::vector<VariableValue>& getValues() const
+    {return values;}
+
   lbcpp_UseDebuggingNewOperator
 
 protected:

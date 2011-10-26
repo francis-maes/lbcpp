@@ -37,10 +37,10 @@ public:
   /*
   ** Examples
   */
-  void reserveExamples(size_t count)
-    {examples->reserve(count);}
+  void resizeExamples(size_t count)
+    {examples->resize(count);}
 
-  void addExample(const Variable& value);
+  void setExample(size_t index, const Variable& value);
 
   size_t getNumExamples() const
     {return examples->getNumElements();}
@@ -127,11 +127,6 @@ public:
 
   VariableSignaturePtr getSignature() const
     {return new VariableSignature(type, name);}
-
-  void reserveExamples(size_t count)
-    {jassert(cache); cache->reserveExamples(count);}
-
-  void addExample(const Variable& value);
 
   const LuapeNodeCachePtr& getCache() const
     {return cache;}
@@ -242,9 +237,9 @@ public:
   bool pushNode(ExecutionContext& context, const LuapeNodePtr& node);
   void popNode();
 
-  void reserveExamples(size_t count);
-  void addExample(const std::vector<Variable>& example);
-  void addExample(const ObjectPtr& example);
+  void resizeExamples(size_t count);
+  void setExample(size_t index, const std::vector<Variable>& example);
+  void setExample(size_t index, const ObjectPtr& example);
 
   void compute(ExecutionContext& context, std::vector<Variable>& state, size_t firstNodeIndex = 0, LuapeGraphCallbackPtr callback = 0) const;
 

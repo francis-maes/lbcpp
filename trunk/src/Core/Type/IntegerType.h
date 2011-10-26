@@ -39,9 +39,6 @@ public:
     : BuiltinType(className, baseType) {}
   IntegerType() : BuiltinType(T("Integer")) {}
 
-  virtual bool isConvertibleToDouble() const
-    {return true;}
-
   virtual Variable create(ExecutionContext& context) const
     {return Variable(0, refCountedPointerFromThis(this));}
 
@@ -63,6 +60,12 @@ public:
 
   virtual String toString(const VariableValue& value) const
     {return String(value.getInteger());}
+
+  virtual bool isConvertibleToDouble() const
+    {return true;}
+
+  virtual double toDouble(const VariableValue& value) const
+    {return (double)value.getInteger();}
 
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
     {return (int)(value1.getInteger() - value2.getInteger());}
