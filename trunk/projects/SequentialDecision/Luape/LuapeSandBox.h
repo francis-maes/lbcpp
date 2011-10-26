@@ -87,22 +87,30 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    DefaultEnumerationPtr features = new DefaultEnumeration("features");
-    ContainerPtr trainData = loadData(context, trainFile, features);
-    ContainerPtr testData = loadData(context, testFile, features);
+    DynamicClassPtr inputClass = new DynamicClass("inputs");
+    DefaultEnumerationPtr labels = new DefaultEnumeration("labels");
+    ContainerPtr trainData = loadData(context, trainFile, inputClass, labels);
+    ContainerPtr testData = loadData(context, testFile, inputClass, labels);
     if (!trainData || !testData)
       return false;
+
+    context.resultCallback("train", trainData);
+    context.resultCallback("test", testData);
 
     context.informationCallback(
       String((int)trainData->getNumElements()) + T(" training examples, ") +
       String((int)testData->getNumElements()) + T(" testing examples, ") + 
-      String((int)features->getNumElements()) + T(" features"));
+      String((int)inputClass->getNumMemberVariables()) + T(" input variables,") +
+      String((int)labels->getNumElements()) + T(" labels"));
 
-    LuapeProblemPtr problem = createProblem(features);
+    LuapeProblemPtr problem = createProblem(inputClass);
 
-    LuapeFunctionPtr classifier = new LuapeBinaryClassifier();
-    classifier->setBatchLearner(new AdaBoostLuapeLearner(problem, maxSteps, maxIterations));
-    classifier->setEvaluator(binaryClassificationEvaluator());
+    LuapeFunctionPtr classifier = new LuapeClassifier();
+    if (!classifier->initialize(context, inputClass, labels))
+      return false;
+
+    classifier->setBatchLearner(new AdaBoostMHLuapeLearner(problem, maxSteps, maxIterations));
+    classifier->setEvaluator(defaultSupervisedEvaluator());
 
     classifier->train(context, trainData, testData, T("Training"), true);
     classifier->evaluate(context, trainData, EvaluatorPtr(), T("Evaluating on training data"));
@@ -119,22 +127,25 @@ protected:
   size_t maxSteps;
   size_t maxIterations;
 
-  ContainerPtr loadData(ExecutionContext& context, const File& file, DefaultEnumerationPtr features) const
+  ContainerPtr loadData(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, DefaultEnumerationPtr labels) const
   {
     context.enterScope(T("Loading ") + file.getFileName());
-    ContainerPtr res = binaryClassificationLibSVMFastParser(context, file, features)->load(maxExamples);
+    ContainerPtr res = classificationARFFDataParser(context, file, inputClass, labels)->load(maxExamples);
     if (res && !res->getNumElements())
       res = ContainerPtr();
     context.leaveScope(res ? res->getNumElements() : 0);
     return res;
   }
 
-  LuapeProblemPtr createProblem(const EnumerationPtr& features)
+  LuapeProblemPtr createProblem(DynamicClassPtr inputClass)
   {
     LuapeProblemPtr res = new LuapeProblem();
-    size_t n = features->getNumElements();
+    size_t n = inputClass->getNumMemberVariables();
     for (size_t i = 0; i < n; ++i)
-      res->addInput(doubleType, features->getElementName(i));
+    {
+      VariableSignaturePtr variable = inputClass->getMemberVariable(i);
+      res->addInput(variable->getType(), variable->getName());
+    }
 
     res->addFunction(new LogFunction());
     res->addFunction(new ProductFunction());

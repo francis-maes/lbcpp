@@ -1,9 +1,13 @@
 
+ * Computes votes in the same time as objective, and store them somewhere
+ * Try with MCTS / Compare different weak optimizers
+ 
 Luape
  * Objective function: incorporate a complexity term to give preference to smaller trajectories in case of ties
- * MCTS
+ * Try with MCTS / other bandit based techniques...
  * Cumutativity
- 
+ * Cache max size, and automatic cleaning
+ * Perform on game of go
 
 
 Lua-Misc
