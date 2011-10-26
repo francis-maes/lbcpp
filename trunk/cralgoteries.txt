@@ -1,15 +1,10 @@
- 
-
- * Computes votes in the same time as objective, and store them somewhere
- * Try with MCTS / Compare different weak optimizers
- 
 Luape
  * Objective function: incorporate a complexity term to give preference to smaller trajectories in case of ties
  * Try with MCTS / other bandit based techniques...
  * Cumutativity
  * Cache max size, and automatic cleaning
+ * Computes votes in the same time as objective, and store them somewhere
  * Perform on game of go
-
 
 Lua-Misc
  * Move namespace lbcpp::lua into lua (-> introspection generator must be adapted)

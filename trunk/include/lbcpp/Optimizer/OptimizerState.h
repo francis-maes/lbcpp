@@ -15,6 +15,9 @@
 namespace lbcpp
 {
 
+class DecisionProblemState;
+typedef ReferenceCountedObjectPtr<DecisionProblemState> DecisionProblemStatePtr;
+
 class OptimizationProblem : public Object
 {
 public:
@@ -35,6 +38,12 @@ public:
 
   const FunctionPtr& getValidation() const
     {return validation;}
+
+  const DecisionProblemStatePtr& getInitialState() const
+    {return initialState;}
+
+  void setInitialState(const DecisionProblemStatePtr& state)
+    {initialState = state;}
     
 protected:
   friend class OptimizationProblemClass;
@@ -42,6 +51,7 @@ protected:
   FunctionPtr objective;
   Variable initialGuess;
   SamplerPtr sampler;
+  DecisionProblemStatePtr initialState;
   FunctionPtr validation;
 
   OptimizationProblem() {}

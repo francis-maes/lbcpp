@@ -13,7 +13,7 @@
 # include "LuapeFunction.h"
 # include "LuapeGraphBuilder.h"
 # include <lbcpp/Learning/BatchLearner.h>
-# include "../GP/NestedMonteCarloOptimizer.h"
+# include "../Core/NestedMonteCarloOptimizer.h"
 
 namespace lbcpp
 {
@@ -38,8 +38,8 @@ typedef ReferenceCountedObjectPtr<LuapeBatchLearner> LuapeBatchLearnerPtr;
 class BoostingLuapeLearner : public LuapeBatchLearner
 {
 public:
-  BoostingLuapeLearner(LuapeProblemPtr problem, size_t maxSteps, size_t maxIterations)
-    : LuapeBatchLearner(problem), maxSteps(maxSteps), maxIterations(maxIterations) {}
+  BoostingLuapeLearner(LuapeProblemPtr problem, OptimizerPtr optimizer, size_t maxSteps, size_t maxIterations)
+    : LuapeBatchLearner(problem), optimizer(optimizer), maxSteps(maxSteps), maxIterations(maxIterations) {}
   BoostingLuapeLearner() : maxIterations(0) {}
 
   virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeFunctionPtr& function, const std::vector<PairPtr>& examples) const = 0;
@@ -126,6 +126,7 @@ public:
 protected:
   friend class BoostingLuapeLearnerClass;
 
+  OptimizerPtr optimizer;
   size_t maxSteps;
   size_t maxIterations;
 
@@ -203,7 +204,7 @@ protected:
       const LuapeGraphPtr& graph = state->getGraph();
       LuapeYieldNodePtr yieldNode = graph->getLastNode().dynamicCast<LuapeYieldNode>();
       if (!yieldNode)
-        return DBL_MAX; // non-terminal state
+        return 0.0; // non-terminal state
       LuapeNodeCachePtr yieldNodeCache = yieldNode->getCache();
 
       LuapeNodePtr valueNode = graph->getNode(yieldNode->getArgument());
@@ -215,7 +216,7 @@ protected:
         score = pthis->computeWeakObjective(function, valueNode->getCache()->getExamples().staticCast<BooleanVector>(), supervisions, weights);
         yieldNodeCache->setScore(score);
       }
-      return -fabs(score);
+      return fabs(score);
     }
 
   protected:
@@ -231,9 +232,9 @@ protected:
     graph->getCache()->clearScores();
     FunctionPtr objective = new Objective(this, function, supervisions, weights);
 
-    LuapeRPNGraphBuilderStatePtr state = new LuapeRPNGraphBuilderState(problem, graph, maxSteps);
-    OptimizerPtr optimizer = new NestedMonteCarloOptimizer(state, 2, 1);
-    OptimizerStatePtr optimizerState = optimizer->optimize(context, new OptimizationProblem(objective));
+    OptimizationProblemPtr optimizationProblem(new OptimizationProblem(objective));
+    optimizationProblem->setInitialState(new LuapeRPNGraphBuilderState(problem, graph, maxSteps));
+    OptimizerStatePtr optimizerState = optimizer->optimize(context, optimizationProblem);
     LuapeRPNGraphBuilderStatePtr bestFinalState = optimizerState->getBestSolution().getObjectAndCast<LuapeRPNGraphBuilderState>();
     if (!bestFinalState)
       return LuapeGraphPtr();
@@ -248,8 +249,8 @@ protected:
 class AdaBoostLuapeLearner : public BoostingLuapeLearner
 {
 public:
-  AdaBoostLuapeLearner(LuapeProblemPtr problem, size_t maxSteps, size_t maxIterations)
-    : BoostingLuapeLearner(problem, maxSteps, maxIterations) {}
+  AdaBoostLuapeLearner(LuapeProblemPtr problem, OptimizerPtr optimizer, size_t maxSteps, size_t maxIterations)
+    : BoostingLuapeLearner(problem, optimizer, maxSteps, maxIterations) {}
   AdaBoostLuapeLearner() {}
 
   virtual TypePtr getRequiredFunctionType() const
@@ -300,8 +301,8 @@ public:
 class AdaBoostMHLuapeLearner : public BoostingLuapeLearner
 {
 public:
-  AdaBoostMHLuapeLearner(LuapeProblemPtr problem, size_t maxSteps, size_t maxIterations)
-    : BoostingLuapeLearner(problem, maxSteps, maxIterations) {}
+  AdaBoostMHLuapeLearner(LuapeProblemPtr problem, OptimizerPtr optimizer, size_t maxSteps, size_t maxIterations)
+    : BoostingLuapeLearner(problem, optimizer, maxSteps, maxIterations) {}
   AdaBoostMHLuapeLearner() {}
 
   virtual TypePtr getRequiredFunctionType() const
@@ -341,7 +342,7 @@ public:
     const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
     size_t numLabels = classifier->getLabels()->getNumElements();
     size_t numExamples = predictions->getNumElements();
-    jassert(numExamples == supervisions->getNumElements());
+    jassert(numExamples == supervisions.size());
 
     // compute mu_l-, mu_l+ and v_l values
     DenseDoubleVectorPtr muNegatives, muPositives, votes;

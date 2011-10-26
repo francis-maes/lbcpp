@@ -10,7 +10,7 @@
 # define LBCPP_SEQUENTIAL_DECISION_BEAM_SEARCH_OPTIMIZER_H_
 
 # include <lbcpp/Optimizer/Optimizer.h>
-# include "../Core/DecisionProblem.h"
+# include "DecisionProblem.h"
 
 namespace lbcpp
 {
@@ -96,9 +96,8 @@ typedef ReferenceCountedObjectPtr<BeamSearchOptimizerState> BeamSearchOptimizerS
 class BeamSearchOptimizer : public Optimizer
 {
 public:
-  BeamSearchOptimizer(DecisionProblemStatePtr initialState, size_t beamSize = 100)
-    : initialState(initialState), beamSize(beamSize) {}
-  BeamSearchOptimizer() : beamSize(0) {}
+  BeamSearchOptimizer(size_t beamSize = 0)
+    : beamSize(beamSize) {}
 
   virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {
@@ -116,12 +115,11 @@ public:
   }
 
   virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, const OptimizationProblemPtr& problem) const
-    {return new BeamSearchOptimizerState(initialState, beamSize);}
+    {return new BeamSearchOptimizerState(problem->getInitialState(), beamSize);}
 
 protected:
   friend class BeamSearchOptimizerClass;
 
-  DecisionProblemStatePtr initialState;
   size_t beamSize;
 };
 

@@ -12,6 +12,7 @@
 # include <lbcpp/Data/Stream.h>
 # include "LuapeProblem.h"
 # include "LuapeBatchLearner.h"
+# include "../Core/SinglePlayerMCTSOptimizer.h"
 
 namespace lbcpp
 {
@@ -83,7 +84,7 @@ protected:
 class LuapeSandBox : public WorkUnit
 {
 public:
-  LuapeSandBox() : maxExamples(0), maxSteps(3), maxIterations(10) {}
+  LuapeSandBox() : maxExamples(0), maxSteps(3), budgetPerIteration(1000), maxIterations(10) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -109,7 +110,11 @@ public:
     if (!classifier->initialize(context, inputClass, labels))
       return false;
 
-    classifier->setBatchLearner(new AdaBoostMHLuapeLearner(problem, maxSteps, maxIterations));
+    //OptimizerPtr optimizer = new NestedMonteCarloOptimizer(2, 1);
+
+    OptimizerPtr optimizer = new SinglePlayerMCTSOptimizer(budgetPerIteration);
+
+    classifier->setBatchLearner(new AdaBoostMHLuapeLearner(problem, optimizer, maxSteps, maxIterations));
     classifier->setEvaluator(defaultSupervisedEvaluator());
 
     classifier->train(context, trainData, testData, T("Training"), true);
@@ -125,6 +130,7 @@ protected:
   File testFile;
   size_t maxExamples;
   size_t maxSteps;
+  size_t budgetPerIteration;
   size_t maxIterations;
 
   ContainerPtr loadData(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, DefaultEnumerationPtr labels) const
