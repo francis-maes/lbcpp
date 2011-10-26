@@ -43,7 +43,7 @@ public:
     int position = inputs[1].getInteger();
     jassert(position >= 0 && position < (int)n);
     int startPosition = position - (int)(windowSize / 2);
-    int endPosition = startPosition + windowSize;
+    int endPosition = startPosition + windowSize - 1;
     int numMissingBegin = 0, numMissingEnd = 0;
 
     DenseDoubleVectorPtr begin, end;
@@ -56,7 +56,7 @@ public:
     else
     {
       end = accumulator->getElement(n - 1).getObjectAndCast<DenseDoubleVector>();
-      numMissingEnd = endPosition - (int)n + 1;
+      numMissingEnd = endPosition - (int)n;
     }
 
     double Z = 1.0 / (double)windowSize;
