@@ -68,10 +68,12 @@ protected:
         score = yieldNodeCache->getScore();
       else
       {
-        score = batchLearner->computeWeakObjective(function, valueNode->getCache()->getExamples().staticCast<BooleanVector>(), supervisions, weights);
+        BoostingEdgeCalculatorPtr edgeCalculator = batchLearner->createEdgeCalculator();
+        edgeCalculator->initialize(function, valueNode->getCache()->getExamples().staticCast<BooleanVector>(), supervisions, weights);
+        score = edgeCalculator->computeEdge();
         yieldNodeCache->setScore(score);
       }
-      return fabs(score);
+      return score;
     }
 
   protected:

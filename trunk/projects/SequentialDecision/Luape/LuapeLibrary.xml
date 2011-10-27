@@ -69,6 +69,9 @@
     <variable type="Optimizer" name="optimizer"/>
     <variable type="PositiveInteger" name="maxSteps"/>
   </class>
+  <class name="SingleStumpWeakLearner" base="LuapeWeakLearner">
+    <constructor/>
+  </class>
 
   <!-- Batch Learners -->
   <class name="LuapeBatchLearner" base="BatchLearner" abstract="yes">
