@@ -107,8 +107,8 @@ protected:
     votes = new DenseDoubleVector(doubleVectorClass);
 
     size_t numLabels = labels->getNumElements();
-    size_t numExamples = predictions->getNumElements();
-    jassert(numExamples == supervisions->size());
+    size_t numExamples = supervisions->size();
+    jassert(predictions->getNumElements()>= numExamples);
 
     double* weightsPtr = weights->getValuePointer(0);
     for (size_t i = 0; i < numExamples; ++i)
@@ -141,12 +141,6 @@ public:
   virtual BoostingEdgeCalculatorPtr createEdgeCalculator() const
     {return new AdaBoostMHEdgeCalculator();}
 
-  virtual VectorPtr createVoteVector(const LuapeFunctionPtr& function) const
-  {
-    const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
-    return new ObjectVector(classifier->getDoubleVectorClass());
-  }
-
   virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeFunctionPtr& function, const std::vector<PairPtr>& examples) const
   {
     const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
@@ -174,8 +168,23 @@ public:
     size_t k = index % numLabels;
     double alpha = vote.getObjectAndCast<DenseDoubleVector>()->getValue(k);
     bool isCorrectClass = (k == (size_t)supervision->getElement(example).getInteger());
-    bool isPredictionCorrect = (prediction->getElement(example).getBoolean() == isCorrectClass);
+    bool isPredictionCorrect = (prediction->get(example) == isCorrectClass);
     return currentWeight * exp(-alpha * (isPredictionCorrect ? 1.0 : -1.0));
+  }
+
+  virtual double computeError(const ContainerPtr& predictions, const ContainerPtr& supervisions) const
+  {
+    ObjectVectorPtr pred = predictions.staticCast<ObjectVector>();
+    const std::vector<juce::int64>& sup = *(const std::vector<juce::int64>* )&supervisions.staticCast<GenericVector>()->getValues();
+ 
+    size_t numErrors = 0;
+    size_t n = supervisions->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      if (pred->getAndCast<DenseDoubleVector>(i)->getIndexOfMaximumValue() != sup[i])
+        ++numErrors;
+    }
+    return numErrors / (double)n;
   }
 };
 

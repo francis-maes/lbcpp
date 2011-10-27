@@ -69,7 +69,7 @@ protected:
       else
       {
         BoostingEdgeCalculatorPtr edgeCalculator = batchLearner->createEdgeCalculator();
-        edgeCalculator->initialize(function, valueNode->getCache()->getExamples().staticCast<BooleanVector>(), supervisions, weights);
+        edgeCalculator->initialize(function, valueNode->getCache()->getTrainingSamples().staticCast<BooleanVector>(), supervisions, weights);
         score = edgeCalculator->computeEdge();
         yieldNodeCache->setScore(score);
       }

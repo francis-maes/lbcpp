@@ -60,10 +60,13 @@ public:
 
   double findBestThreshold(ExecutionContext& context, BoostingEdgeCalculatorPtr edgeCalculator, LuapeNodePtr node, double& edge) const
   {
+    static const bool verbose = false;
+
     edge = -DBL_MAX;
     double res = 0.0;
 
-    context.enterScope("Find best threshold for node " + node->toShortString());
+    if (verbose)
+      context.enterScope("Find best threshold for node " + node->toShortString());
 
     const std::vector< std::pair<size_t, double> >& sortedDoubleValues = node->getCache()->getSortedDoubleValues();
     jassert(sortedDoubleValues.size());
@@ -77,10 +80,13 @@ public:
       {
         double e = edgeCalculator->computeEdge();
 
-      context.enterScope("Iteration " + String((int)i));
-      context.resultCallback("threshold", (threshold + previousThreshold) / 2.0);
-      context.resultCallback("edge", e);
-      context.leaveScope();
+        if (verbose)
+        {
+          context.enterScope("Iteration " + String((int)i));
+          context.resultCallback("threshold", (threshold + previousThreshold) / 2.0);
+          context.resultCallback("edge", e);
+          context.leaveScope();
+        }
 
         if (e > edge)
           edge = e, res = (threshold + previousThreshold) / 2.0;
@@ -89,7 +95,8 @@ public:
       edgeCalculator->flipPrediction(sortedDoubleValues[i].first);
     }
 
-    context.leaveScope();
+    if (verbose)
+      context.leaveScope();
     return res;
   }
 };

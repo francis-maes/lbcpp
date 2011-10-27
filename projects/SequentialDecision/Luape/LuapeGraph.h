@@ -37,19 +37,30 @@ public:
   /*
   ** Examples
   */
-  void resizeExamples(size_t count)
-    {examples->resize(count);}
+  void resizeSamples(bool isTrainingSamples, size_t size);
+  void resizeSamples(size_t numTrainingSamples, size_t numValidationSamples);
+  void setSample(bool isTrainingSample, size_t index, const Variable& value);
 
-  void setExample(size_t index, const Variable& value);
+  size_t getNumTrainingSamples() const
+    {return trainingSamples->getNumElements();}
 
-  size_t getNumExamples() const
-    {return examples->getNumElements();}
+  size_t getNumValidationSamples() const
+    {return validationSamples->getNumElements();}
 
-  Variable getExample(size_t index) const
-    {return examples->getElement(index);}
+  size_t getNumSamples(bool isTrainingSamples) const
+    {return (isTrainingSamples ? trainingSamples : validationSamples)->getNumElements();}
 
-  const VectorPtr& getExamples() const
-    {return examples;}
+  Variable getTrainingSample(size_t index) const
+    {return trainingSamples->getElement(index);}
+
+  Variable getSample(bool isTrainingSample, size_t index) const
+    {return (isTrainingSample ? trainingSamples : validationSamples)->getElement(index);}
+
+  const VectorPtr& getTrainingSamples() const
+    {return trainingSamples;}
+
+  const VectorPtr& getValidationSamples() const
+    {return validationSamples;}
 
   /*
   ** Double values
@@ -75,7 +86,9 @@ public:
     {scoreComputed = false; score = 0.0;}
 
 protected:
-  VectorPtr examples;
+  VectorPtr trainingSamples;
+  VectorPtr validationSamples;
+
   bool convertibleToDouble;
   std::vector< std::pair<size_t, double> > sortedDoubleValues; // only if isConvertibleToDouble
 
@@ -183,7 +196,7 @@ protected:
 
   std::vector<LuapeNodePtr> inputNodes;
 
-  void propagateCache(ExecutionContext& context);
+  void propagateCache(ExecutionContext& context, bool isTrainingSamples);
 };
 
 class LuapeYieldNode : public LuapeNode
@@ -236,9 +249,11 @@ public:
   bool pushNode(ExecutionContext& context, const LuapeNodePtr& node);
   void popNode();
 
-  void resizeExamples(size_t count);
-  void setExample(size_t index, const std::vector<Variable>& example);
-  void setExample(size_t index, const ObjectPtr& example);
+  size_t getNumTrainingSamples() const;
+  size_t getNumValidationSamples() const;
+  void resizeSamples(size_t numTrainingSamples, size_t numValidationSamples);
+  void setSample(bool isTrainingSample, size_t index, const std::vector<Variable>& example);
+  void setSample(bool isTrainingSample, size_t index, const ObjectPtr& example);
 
   void compute(ExecutionContext& context, std::vector<Variable>& state, size_t firstNodeIndex = 0, LuapeGraphCallbackPtr callback = 0) const;
 

@@ -29,6 +29,9 @@ public:
   void setVotes(const VectorPtr& votes)
     {this->votes = votes;}
 
+  virtual VectorPtr createVoteVector(size_t initialSize) const = 0;
+  virtual void aggregateVote(Variable& targetVote, const Variable& vote, bool positive) const = 0;
+
 protected:
   friend class LuapeFunctionClass;
 
@@ -97,6 +100,13 @@ public:
     return callback.res > 0;
   }
 
+  virtual VectorPtr createVoteVector(size_t initialSize) const
+    {return new DenseDoubleVector(initialSize, 0.0);}
+
+  // targetVote += vote * (positive ? 1 : -1)
+  virtual void aggregateVote(Variable& targetVote, const Variable& vote, bool positive) const
+    {targetVote = vote.getDouble() * (positive ? 1 : -1.0);}
+
   // votes are scalars (alpha values)
 };
 
@@ -144,7 +154,17 @@ public:
     return Variable(callback.res->getIndexOfMaximumValue(), getOutputType());
   }
 
-  // votes are vectors (alpha value . vote vector)
+  virtual VectorPtr createVoteVector(size_t initialSize) const
+  {
+    ObjectVectorPtr res = new ObjectVector(doubleVectorClass, initialSize);
+    for (size_t i = 0; i < initialSize; ++i)
+      res->set(i, new DenseDoubleVector(doubleVectorClass));
+    return res;
+  }
+
+  // targetVote += vote * (positive ? 1 : -1)
+  virtual void aggregateVote(Variable& targetVote, const Variable& vote, bool positive) const
+    {vote.getObjectAndCast<DenseDoubleVector>()->addWeightedTo(targetVote.getObjectAndCast<DenseDoubleVector>(), 0, positive ? 1.0 : -1.0);}
 
   EnumerationPtr getLabels() const
     {return getOutputType().staticCast<Enumeration>();}
