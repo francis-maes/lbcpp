@@ -22,7 +22,7 @@ public:
     : optimizer(optimizer), maxSteps(maxSteps) {}
   LuapeGraphBuilderWeakLearner() {}
 
-  virtual LuapeGraphPtr learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function, const DenseDoubleVectorPtr& weights, const ContainerPtr& supervisions) const
+  virtual LuapeGraphPtr learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
   {
     LuapeGraphPtr graph = function->getGraph();
     graph->clearScores();

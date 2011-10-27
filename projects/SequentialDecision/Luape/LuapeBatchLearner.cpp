@@ -41,7 +41,7 @@ bool BoostingLuapeLearner::train(ExecutionContext& context, const FunctionPtr& f
     context.resultCallback(T("iteration"), i + 1);
 
     // weak graph completion
-    LuapeGraphPtr newGraph = weakLearner->learn(context, refCountedPointerFromThis(this), function, weights, supervisions);
+    LuapeGraphPtr newGraph = weakLearner->learn(context, refCountedPointerFromThis(this), function, supervisions, weights);
     if (newGraph)
     {
       LuapeYieldNodePtr yieldNode = newGraph->getLastNode().dynamicCast<LuapeYieldNode>();

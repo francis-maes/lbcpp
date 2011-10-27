@@ -19,26 +19,78 @@ class SingleStumpWeakLearner : public LuapeWeakLearner
 public:
   SingleStumpWeakLearner() {}
 
-  virtual LuapeGraphPtr learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function, const DenseDoubleVectorPtr& weights, const ContainerPtr& supervisions) const
+  virtual LuapeGraphPtr learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
   {
-    /*
     LuapeGraphPtr graph = function->getGraph();
     graph->clearScores();
-    LuapeGraphCachePtr graphCache = graph->getCache();
-    FunctionPtr objective = new Objective(batchLearner, function, supervisions, weights);
+    size_t numExamples = supervisions->getNumElements();
 
-    OptimizationProblemPtr optimizationProblem(new OptimizationProblem(objective));
-    optimizationProblem->setInitialState(new LuapeRPNGraphBuilderState(batchLearner->getProblem(), graph, maxSteps));
-    OptimizerStatePtr optimizerState = optimizer->optimize(context, optimizationProblem);
-    LuapeRPNGraphBuilderStatePtr bestFinalState = optimizerState->getBestSolution().getObjectAndCast<LuapeRPNGraphBuilderState>();
-    if (!bestFinalState)
-      return LuapeGraphPtr();
+    size_t bestVariable = (size_t)-1;
+    double bestThreshold = 0.0;
+    double bestEdge = -DBL_MAX;
 
-    LuapeGraphPtr bestGraph = bestFinalState->getGraph();
-    context.informationCallback(String("Best Graph: ") + bestGraph->getLastNode()->toShortString() + T(" [") + String(optimizerState->getBestScore()) + T("]"));
-    context.informationCallback(String("Num cached nodes: ") + String((int)graphCache ? graphCache->getNumCachedNodes() : 0));
-    return bestGraph;*/
-    return LuapeGraphPtr();
+    size_t n = graph->getNumNodes();
+    for (size_t i = 0; i < n; ++i)
+    {
+      LuapeNodePtr node = graph->getNode(i);
+      if (node->getType() == doubleType)
+      {
+        double edge;
+        BoostingEdgeCalculatorPtr edgeCalculator = batchLearner->createEdgeCalculator();
+        BooleanVectorPtr predictions = new BooleanVector(numExamples, true);
+        edgeCalculator->initialize(function, predictions, supervisions, weights);
+        double threshold = findBestThreshold(context, edgeCalculator, node, edge);
+        if (edge > bestEdge)
+        {
+          bestEdge = edge;
+          bestVariable = i;
+          bestThreshold = threshold;
+        }
+      }
+    }
+
+    context.informationCallback("Best stump: " + graph->getNode(bestVariable)->toShortString() + " >= " + String(bestThreshold));
+    context.informationCallback("Edge: " + String(bestEdge));
+
+    graph->pushNode(context, new LuapeFunctionNode(new StumpFunction(bestThreshold), std::vector<size_t>(1, bestVariable))); // node index == n
+    graph->pushNode(context, new LuapeYieldNode(n));
+    graph->getLastNode()->getCache()->setScore(bestEdge);
+    return graph;
+  }
+
+  double findBestThreshold(ExecutionContext& context, BoostingEdgeCalculatorPtr edgeCalculator, LuapeNodePtr node, double& edge) const
+  {
+    edge = -DBL_MAX;
+    double res = 0.0;
+
+    context.enterScope("Find best threshold for node " + node->toShortString());
+
+    const std::vector< std::pair<size_t, double> >& sortedDoubleValues = node->getCache()->getSortedDoubleValues();
+    jassert(sortedDoubleValues.size());
+    double previousThreshold = sortedDoubleValues[0].second;
+    for (size_t i = 0; i < sortedDoubleValues.size(); ++i)
+    {
+      double threshold = sortedDoubleValues[i].second;
+
+      jassert(threshold >= previousThreshold);
+      if (threshold > previousThreshold)
+      {
+        double e = edgeCalculator->computeEdge();
+
+      context.enterScope("Iteration " + String((int)i));
+      context.resultCallback("threshold", (threshold + previousThreshold) / 2.0);
+      context.resultCallback("edge", e);
+      context.leaveScope();
+
+        if (e > edge)
+          edge = e, res = (threshold + previousThreshold) / 2.0;
+        previousThreshold = threshold;
+      }
+      edgeCalculator->flipPrediction(sortedDoubleValues[i].first);
+    }
+
+    context.leaveScope();
+    return res;
   }
 };
 
