@@ -305,11 +305,11 @@ bool GenericVector::loadFromXml(XmlImporter& importer)
 /*
 ** BooleanVector
 */
-BooleanVector::BooleanVector(size_t initialSize)
+BooleanVector::BooleanVector(size_t initialSize, bool initialValue)
   : Vector(booleanVectorClass)
 {
   if (initialSize)
-    v.resize(initialSize, false);
+    v.resize(initialSize, initialValue);
 }
 
 String BooleanVector::toString() const

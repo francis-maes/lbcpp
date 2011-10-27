@@ -25,7 +25,7 @@ typedef ReferenceCountedObjectPtr<BoostingLuapeLearner> BoostingLuapeLearnerPtr;
 class LuapeWeakLearner : public Object
 {
 public:
-  virtual LuapeGraphPtr learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function, const DenseDoubleVectorPtr& weights, const ContainerPtr& supervisions) const = 0;
+  virtual LuapeGraphPtr learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const = 0;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeWeakLearner> LuapeWeakLearnerPtr;

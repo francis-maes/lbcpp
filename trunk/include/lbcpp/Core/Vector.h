@@ -94,7 +94,7 @@ protected:
 class BooleanVector : public Vector
 {
 public:
-  BooleanVector(size_t initialSize);
+  BooleanVector(size_t initialSize, bool initialValue = false);
   BooleanVector() {}
 
   void set(size_t index, bool value)

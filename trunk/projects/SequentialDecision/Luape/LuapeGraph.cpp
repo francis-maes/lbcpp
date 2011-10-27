@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include "LuapeGraph.h"
+#include <algorithm>
 using namespace lbcpp;
 
 /*
@@ -27,10 +28,27 @@ void LuapeNodeCache::setExample(size_t index, const Variable& value)
 {
   jassert(examples);
   jassert(value.exists());
-
   examples->setElement(index, value);
-  if (convertibleToDouble)
-    doubleValues.insert(value.toDouble());
+}
+
+struct SortDoubleValuesOperator
+{
+  bool operator()(const std::pair<size_t, double>& a, const std::pair<size_t, double>& b) const
+    {return a.second == b.second ? a.first < b.first : a.second < b.second;}
+};
+
+const std::vector< std::pair<size_t, double> >& LuapeNodeCache::getSortedDoubleValues() const
+{
+  size_t n = examples->getNumElements();
+  if (sortedDoubleValues.size() < n)
+  {
+    std::vector< std::pair<size_t, double> >& v = const_cast<LuapeNodeCache* >(this)->sortedDoubleValues;
+    v.resize(n);
+    for (size_t i = 0; i < n; ++i)
+      v[i] = std::make_pair(i, examples->getElement(i).toDouble());
+    std::sort(v.begin(), v.end(), SortDoubleValuesOperator());
+  }
+  return sortedDoubleValues;
 }
 
 /*

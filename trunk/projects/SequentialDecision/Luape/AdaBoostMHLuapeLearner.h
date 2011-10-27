@@ -21,6 +21,7 @@ public:
   {
     const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
     labels = classifier->getLabels();
+    doubleVectorClass = classifier->getDoubleVectorClass();
     
     this->predictions = predictions;
     this->supervisions = (const std::vector<juce::int64>* )&sup.staticCast<GenericVector>()->getValues();
@@ -28,9 +29,6 @@ public:
     jassert(supervisions);
 
     ClassPtr doubleVectorClass = classifier->getDoubleVectorClass();
-    muNegatives = new DenseDoubleVector(doubleVectorClass);
-    muPositives = new DenseDoubleVector(doubleVectorClass);
-    votes = new DenseDoubleVector(doubleVectorClass);
     computeMuAndVoteValues();
   }
 
@@ -46,9 +44,9 @@ public:
       double& muNegative = muNegatives->getValueReference(i);
       double& muPositive = muPositives->getValueReference(i);
       if (newPrediction == (i == correct))
-        muNegative -= weight, muPositive += weight;
+        {muNegative -= weight; muPositive += weight;}
       else
-        muPositive -= weight, muNegative += weight;
+        {muPositive -= weight; muNegative += weight;}
       votes->setValue(i, muPositive > muNegative ? 1.0 : -1.0);
     }
   }
@@ -93,6 +91,7 @@ public:
 
 protected:
   EnumerationPtr labels;
+  ClassPtr doubleVectorClass;
   BooleanVectorPtr predictions;
   const std::vector<juce::int64>* supervisions;
   DenseDoubleVectorPtr weights;
@@ -103,6 +102,10 @@ protected:
 
   void computeMuAndVoteValues()
   {
+    muNegatives = new DenseDoubleVector(doubleVectorClass);
+    muPositives = new DenseDoubleVector(doubleVectorClass);
+    votes = new DenseDoubleVector(doubleVectorClass);
+
     size_t numLabels = labels->getNumElements();
     size_t numExamples = predictions->getNumElements();
     jassert(numExamples == supervisions->size());
@@ -148,15 +151,15 @@ public:
   {
     const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
     EnumerationPtr labels = classifier->getLabels();
-    size_t K = labels->getNumElements();
+    size_t numLabels = labels->getNumElements();
     size_t n = examples.size();
-    DenseDoubleVectorPtr res(new DenseDoubleVector(n * K, 1.0 / (2 * n * (K - 1))));
+    DenseDoubleVectorPtr res(new DenseDoubleVector(n * numLabels, 1.0 / (2 * n * (numLabels - 1))));
     double invZ = 1.0 / (2 * n);
     for (size_t i = 0; i < n; ++i)
     {
       size_t k = (size_t)examples[i]->getSecond().getInteger();
-      jassert(k >= 0 && k < K);
-      res->setValue(i * K + k, invZ);
+      jassert(k >= 0 && k < numLabels);
+      res->setValue(i * numLabels + k, invZ);
     }
     return res;
   }

@@ -57,8 +57,7 @@ public:
   bool isConvertibleToDouble() const
     {return convertibleToDouble;}
 
-  const std::set<double>& getDoubleValues() const
-    {return doubleValues;}
+  const std::vector< std::pair<size_t, double> >& getSortedDoubleValues() const;
 
   /*
   ** Score
@@ -78,7 +77,7 @@ public:
 protected:
   VectorPtr examples;
   bool convertibleToDouble;
-  std::set<double> doubleValues; // only if isConvertibleToDouble
+  std::vector< std::pair<size_t, double> > sortedDoubleValues; // only if isConvertibleToDouble
 
   bool scoreComputed;
   double score; // only for 'yield' nodes
