@@ -20,16 +20,22 @@ LuapeNodeCache::LuapeNodeCache()
 
 void LuapeNodeCache::initialize(TypePtr type)
 {
-  examples = vector(type, 0);
+  trainingSamples = vector(type, 0);
+  validationSamples = vector(type, 0);
   convertibleToDouble = type->isConvertibleToDouble();
 }
- 
-void LuapeNodeCache::setExample(size_t index, const Variable& value)
+
+void LuapeNodeCache::resizeSamples(bool isTrainingSamples, size_t size)
+  {(isTrainingSamples ? trainingSamples : validationSamples)->resize(size);}
+
+void LuapeNodeCache::resizeSamples(size_t numTrainingSamples, size_t numValidationSamples)
 {
-  jassert(examples);
-  jassert(value.exists());
-  examples->setElement(index, value);
+  trainingSamples->resize(numTrainingSamples);
+  validationSamples->resize(numValidationSamples);
 }
+
+void LuapeNodeCache::setSample(bool isTrainingSample, size_t index, const Variable& value)
+  {(isTrainingSample ? trainingSamples : validationSamples)->setElement(index, value);}
 
 struct SortDoubleValuesOperator
 {
@@ -39,13 +45,13 @@ struct SortDoubleValuesOperator
 
 const std::vector< std::pair<size_t, double> >& LuapeNodeCache::getSortedDoubleValues() const
 {
-  size_t n = examples->getNumElements();
+  size_t n = trainingSamples->getNumElements();
   if (sortedDoubleValues.size() < n)
   {
     std::vector< std::pair<size_t, double> >& v = const_cast<LuapeNodeCache* >(this)->sortedDoubleValues;
     v.resize(n);
     for (size_t i = 0; i < n; ++i)
-      v[i] = std::make_pair(i, examples->getElement(i).toDouble());
+      v[i] = std::make_pair(i, trainingSamples->getElement(i).toDouble());
     std::sort(v.begin(), v.end(), SortDoubleValuesOperator());
   }
   return sortedDoubleValues;
@@ -166,7 +172,8 @@ bool LuapeFunctionNode::initialize(ExecutionContext& context, const std::vector<
   name = function->getOutputVariable()->getName();
   if (!LuapeNode::initialize(context, allNodes, graphCache))
     return false;
-  propagateCache(context);
+  propagateCache(context, true); // propagate train data
+  propagateCache(context, false); // propagate validation data
   return true;
 }
 
@@ -204,27 +211,27 @@ void LuapeFunctionNode::clone(ExecutionContext& context, const ObjectPtr& t) con
   target->arguments = arguments;
 }
 
-void LuapeFunctionNode::propagateCache(ExecutionContext& context)
+void LuapeFunctionNode::propagateCache(ExecutionContext& context, bool isTrainingSamples)
 {
   jassert(inputNodes.size());
-  size_t minCacheSize = inputNodes[0]->getCache()->getNumExamples();
+  size_t minCacheSize = inputNodes[0]->getCache()->getNumSamples(isTrainingSamples);
   for (size_t i = 1; i < inputNodes.size(); ++i)
   {
-    size_t cacheSize = inputNodes[i]->getCache()->getNumExamples();
+    size_t cacheSize = inputNodes[i]->getCache()->getNumSamples(isTrainingSamples);
     if (cacheSize < minCacheSize)
       minCacheSize = cacheSize;
   }
 
-  size_t currentSize = cache->getNumExamples();
+  size_t currentSize = cache->getNumSamples(isTrainingSamples);
   if (minCacheSize > currentSize)
   {
-    cache->resizeExamples(minCacheSize);    
+    cache->resizeSamples(isTrainingSamples, minCacheSize);    
     std::vector<Variable> inputs(inputNodes.size());
     for (size_t i = currentSize; i < minCacheSize; ++i)
     {
       for (size_t j = 0; j < inputs.size(); ++j)
-        inputs[j] = inputNodes[j]->getCache()->getExample(i);
-      cache->setExample(i, function->compute(context, inputs));
+        inputs[j] = inputNodes[j]->getCache()->getSample(isTrainingSamples, i);
+      cache->setSample(isTrainingSamples, i, function->compute(context, inputs));
     }
   }
 }
@@ -305,25 +312,31 @@ bool LuapeGraph::pushNode(ExecutionContext& context, const LuapeNodePtr& node)
 void LuapeGraph::popNode()
   {jassert(nodes.size()); nodes.pop_back();}
 
-void LuapeGraph::resizeExamples(size_t count)
+size_t LuapeGraph::getNumTrainingSamples() const
+  {return nodes.size() ? nodes[0]->getCache()->getNumTrainingSamples() : 0;}
+
+size_t LuapeGraph::getNumValidationSamples() const
+  {return nodes.size() ? nodes[0]->getCache()->getNumValidationSamples() : 0;}
+
+void LuapeGraph::resizeSamples(size_t numTrainingSamples, size_t numValidationSamples)
 {
   for (size_t i = 0; i < nodes.size(); ++i)
-    nodes[i]->getCache()->resizeExamples(count);
+    nodes[i]->getCache()->resizeSamples(numTrainingSamples, numValidationSamples);
 }
 
-void LuapeGraph::setExample(size_t index, const std::vector<Variable>& example)
+void LuapeGraph::setSample(bool isTrainingSample, size_t index, const std::vector<Variable>& example)
 {
   jassert(example.size() <= nodes.size());
   for (size_t i = 0; i < example.size(); ++i)
   {
     LuapeInputNodePtr node = nodes[i].dynamicCast<LuapeInputNode>();
     jassert(node);
-    node->getCache()->setExample(index, example[i]);
+    node->getCache()->setSample(isTrainingSample, index, example[i]);
   }
   ++numExamples;
 }
 
-void LuapeGraph::setExample(size_t index, const ObjectPtr& example)
+void LuapeGraph::setSample(bool isTrainingSample, size_t index, const ObjectPtr& example)
 {
   ContainerPtr container = example.dynamicCast<Container>();
   if (container)
@@ -334,7 +347,7 @@ void LuapeGraph::setExample(size_t index, const ObjectPtr& example)
     {
       LuapeInputNodePtr node = nodes[i].dynamicCast<LuapeInputNode>();
       jassert(node);
-      node->getCache()->setExample(index, container->getElement(i));
+      node->getCache()->setSample(isTrainingSample, index, container->getElement(i));
     }
   }
   else
@@ -345,7 +358,7 @@ void LuapeGraph::setExample(size_t index, const ObjectPtr& example)
     {
       LuapeInputNodePtr node = nodes[i].dynamicCast<LuapeInputNode>();
       jassert(node);
-      node->getCache()->setExample(index, example->getVariable(i));
+      node->getCache()->setSample(isTrainingSample, index, example->getVariable(i));
     }
   }
   ++numExamples;

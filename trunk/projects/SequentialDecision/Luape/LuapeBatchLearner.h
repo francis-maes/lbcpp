@@ -84,8 +84,7 @@ public:
   // the absolute value of this quantity should be maximized
   virtual bool shouldStop(double weakObjectiveValue) const = 0;
   virtual double updateWeight(const LuapeFunctionPtr& function, size_t index, double currentWeight, const BooleanVectorPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const = 0;
-
-  virtual VectorPtr createVoteVector(const LuapeFunctionPtr& function) const = 0;
+  virtual double computeError(const ContainerPtr& predictions, const ContainerPtr& supervisions) const = 0;
 
   virtual bool train(ExecutionContext& context, const FunctionPtr& f, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const;
 
@@ -95,8 +94,9 @@ protected:
   LuapeWeakLearnerPtr weakLearner;
   size_t maxIterations;
 
-  void addExamplesToGraph(const std::vector<ObjectPtr>& examples, LuapeGraphPtr graph, VectorPtr& supervisions) const;
+  void addExamplesToGraph(bool areTrainingSamples, const std::vector<ObjectPtr>& examples, LuapeGraphPtr graph, VectorPtr& supervisions) const;
   double updateWeights(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const Variable& vote) const;
+  void updatePredictions(const LuapeFunctionPtr& function, VectorPtr predictions, const BooleanVectorPtr& weakPredictions, const Variable& vote) const;
 };
 
 extern BatchLearnerPtr adaBoostLuapeLearner(LuapeProblemPtr problem, LuapeWeakLearnerPtr weakLearner, size_t maxIterations);

@@ -25,8 +25,8 @@ public:
     jassert(supervisions);
 
     size_t n = weights->getNumElements();
-    jassert(n == supervisions->getNumElements());
-    jassert(n == predictions->getNumElements());
+    jassert(supervisions->getNumElements() == n);
+    jassert(predictions->getNumElements() >= n);
 
     accuracy = 0.0;
     double* weightsPtr = weights->getValuePointer(0);
@@ -76,9 +76,6 @@ public:
   virtual BoostingEdgeCalculatorPtr createEdgeCalculator() const
     {return new AdaBoostEdgeCalculator();}
 
-  virtual VectorPtr createVoteVector(const LuapeFunctionPtr& function) const
-    {return new DenseDoubleVector(0, 0.0);}
-
   virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeFunctionPtr& function, const std::vector<PairPtr>& examples) const
     {size_t n = examples.size(); return new DenseDoubleVector(n, 1.0 / n);}
 
@@ -90,6 +87,18 @@ public:
     double alpha = vote.toDouble();
     bool isPredictionCorrect = (supervisions->getElement(index).getBoolean() == predictions->get(index));
     return currentWeight * exp(-alpha * (isPredictionCorrect ? 1.0 : -1.0));
+  }
+
+  virtual double computeError(const ContainerPtr& predictions, const ContainerPtr& supervisions) const
+  {
+    BooleanVectorPtr pred = predictions.staticCast<BooleanVector>();
+    BooleanVectorPtr sup = supervisions.staticCast<BooleanVector>();
+    size_t numErrors = 0;
+    size_t n = supervisions->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+      if (pred->get(i) != sup->get(i))
+        ++numErrors;
+    return numErrors / (double)n;
   }
 };
 
