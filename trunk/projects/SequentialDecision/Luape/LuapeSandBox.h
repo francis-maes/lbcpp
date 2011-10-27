@@ -113,8 +113,9 @@ public:
     //OptimizerPtr optimizer = new NestedMonteCarloOptimizer(2, 1);
 
     OptimizerPtr optimizer = new SinglePlayerMCTSOptimizer(budgetPerIteration);
-
-    classifier->setBatchLearner(new AdaBoostMHLuapeLearner(problem, optimizer, maxSteps, maxIterations));
+  
+    LuapeWeakLearnerPtr weakLearner = luapeGraphBuilderWeakLearner(optimizer, maxSteps);
+    classifier->setBatchLearner(adaBoostMHLuapeLearner(problem, weakLearner, maxIterations));
     classifier->setEvaluator(defaultSupervisedEvaluator());
 
     classifier->train(context, trainData, testData, T("Training"), true);
@@ -153,11 +154,11 @@ protected:
       res->addInput(variable->getType(), variable->getName());
     }
 
-    res->addFunction(new LogFunction());
-    res->addFunction(new ProductFunction());
+    //res->addFunction(new LogFunction());
+    //res->addFunction(new ProductFunction());
     res->addFunction(new StumpFunction());
-    res->addFunction(new BooleanAndFunction());
-    res->addFunction(new GreaterThanFunction());
+    //res->addFunction(new BooleanAndFunction());
+    //res->addFunction(new GreaterThanFunction());
     return res;
   }
 };

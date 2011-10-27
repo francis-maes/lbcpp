@@ -61,21 +61,28 @@
     <variable type="PositiveInteger" name="maxSteps"/>
     <variable type="PositiveInteger" name="numSteps"/>
   </class>
-  
-  <!-- Learners -->
+
+  <!-- Weak Learners -->
+  <class name="LuapeWeakLearner" base="Object" abstract="yes"/>
+  <class name="LuapeGraphBuilderWeakLearner" base="LuapeWeakLearner">
+    <constructor arguments="OptimizerPtr optimizer, size_t maxSteps"/>
+    <variable type="Optimizer" name="optimizer"/>
+    <variable type="PositiveInteger" name="maxSteps"/>
+  </class>
+
+  <!-- Batch Learners -->
   <class name="LuapeBatchLearner" base="BatchLearner" abstract="yes">
     <variable type="LuapeProblem" name="problem"/>
   </class>
   <class name="BoostingLuapeLearner" base="LuapeBatchLearner" abstract="yes">
-    <variable type="Optimizer" name="optimizer"/>
-    <variable type="PositiveInteger" name="maxSteps"/>
+    <variable type="LuapeWeakLearner" name="weakLearner"/>
     <variable type="PositiveInteger" name="maxIterations"/>
   </class>
   <class name="AdaBoostLuapeLearner" base="BoostingLuapeLearner">
-    <constructor arguments="LuapeProblemPtr problem, OptimizerPtr optimizer, size_t maxSteps, size_t maxIterations" returnType="BatchLearner"/>
+    <constructor arguments="LuapeProblemPtr problem, LuapeWeakLearnerPtr weakLearner, size_t maxIterations" returnType="BatchLearner"/>
   </class>
   <class name="AdaBoostMHLuapeLearner" base="BoostingLuapeLearner">
-    <constructor arguments="LuapeProblemPtr problem, OptimizerPtr optimizer, size_t maxSteps, size_t maxIterations" returnType="BatchLearner"/>
+    <constructor arguments="LuapeProblemPtr problem, LuapeWeakLearnerPtr weakLearner, size_t maxIterations" returnType="BatchLearner"/>
   </class>
   
   <!-- Sand Box -->
