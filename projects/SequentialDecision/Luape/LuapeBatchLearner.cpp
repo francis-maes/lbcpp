@@ -60,7 +60,9 @@ bool BoostingLuapeLearner::train(ExecutionContext& context, const FunctionPtr& f
         function->setGraph(newGraph);
 
         // compute vote
-        Variable vote = computeVote(function, cache->getExamples(), supervisions, weights, score);
+        BoostingEdgeCalculatorPtr edgeCalculator = createEdgeCalculator();
+        edgeCalculator->initialize(function,  cache->getExamples(), supervisions, weights);
+        Variable vote = edgeCalculator->computeVote();
         function->getVotes()->append(vote);
 
         // update weights

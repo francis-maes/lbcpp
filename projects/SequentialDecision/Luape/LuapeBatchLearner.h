@@ -30,7 +30,23 @@ public:
 
 typedef ReferenceCountedObjectPtr<LuapeWeakLearner> LuapeWeakLearnerPtr;
 
+extern LuapeWeakLearnerPtr singleStumpWeakLearner();
 extern LuapeWeakLearnerPtr luapeGraphBuilderWeakLearner(OptimizerPtr optimizer, size_t maxSteps);
+
+/*
+** BoostingEdgeCalculator
+*/
+class BoostingEdgeCalculator : public Object
+{
+public:
+  virtual void initialize(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) = 0;
+  virtual void flipPrediction(size_t index) = 0;
+  virtual double computeEdge() const = 0;
+  virtual Variable computeVote() const = 0;
+};
+
+typedef ReferenceCountedObjectPtr<BoostingEdgeCalculator> BoostingEdgeCalculatorPtr;
+
 
 /*
 ** Boosting learner
@@ -61,15 +77,15 @@ public:
   BoostingLuapeLearner(LuapeProblemPtr problem, LuapeWeakLearnerPtr weakLearner, size_t maxIterations);
   BoostingLuapeLearner();
 
+  virtual BoostingEdgeCalculatorPtr createEdgeCalculator() const = 0;
+
   virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeFunctionPtr& function, const std::vector<PairPtr>& examples) const = 0;
 
   // the absolute value of this quantity should be maximized
-  virtual double computeWeakObjective(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const = 0;
   virtual bool shouldStop(double weakObjectiveValue) const = 0;
   virtual double updateWeight(const LuapeFunctionPtr& function, size_t index, double currentWeight, const BooleanVectorPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const = 0;
 
   virtual VectorPtr createVoteVector(const LuapeFunctionPtr& function) const = 0;
-  virtual Variable computeVote(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, double weakObjectiveValue) const = 0;
 
   virtual bool train(ExecutionContext& context, const FunctionPtr& f, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const;
 

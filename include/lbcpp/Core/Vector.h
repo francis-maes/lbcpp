@@ -103,6 +103,9 @@ public:
   bool get(size_t index) const
     {jassert(index < v.size()); return v[index];}
 
+  bool flip(size_t index)
+    {jassert(index < v.size()); return (v[index] = !v[index]);}
+
   /*
   ** Vector
   */
