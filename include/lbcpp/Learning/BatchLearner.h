@@ -132,6 +132,7 @@ extern BatchLearnerPtr unaryHigherOrderFunctionBatchLearner();
 extern BatchLearnerPtr composeBatchLearner();
 
 extern DecoratorBatchLearnerPtr filterUnsupervisedExamplesBatchLearner(BatchLearnerPtr decorated);
+extern DecoratorBatchLearnerPtr balanceBinaryExamplesBatchLearner(BatchLearnerPtr decorated);
 
 extern BatchLearnerPtr doubleVectorNormalizeBatchLearner(bool computeVariances, bool computeMeans);
 
