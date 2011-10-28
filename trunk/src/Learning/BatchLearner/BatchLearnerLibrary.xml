@@ -27,6 +27,10 @@
     <constructor arguments="BatchLearnerPtr decorated"/>
   </class>
 
+  <class name="BalanceBinaryExamplesBatchLearner" base="DecoratorBatchLearner">
+    <constructor arguments="BatchLearnerPtr decorated"/>
+  </class>
+
   <class name="UnaryHigherOrderFunctionBatchLearner" base="BatchLearner">
     <constructor/>
   </class>

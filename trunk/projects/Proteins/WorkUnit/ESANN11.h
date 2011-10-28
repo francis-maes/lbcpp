@@ -354,12 +354,14 @@ public:
       {
         res = linearBinaryClassifier(learningParameters, true, binaryClassificationMCCScore);
         res->setEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore));
+        res->setBatchLearner(balanceBinaryExamplesBatchLearner(res->getBatchLearner()));
         break;
       }
       case sa20Target:
       {
         res = linearBinaryClassifier(learningParameters, true, binaryClassificationAccuracyScore);
         res->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
+        res->setBatchLearner(balanceBinaryExamplesBatchLearner(res->getBatchLearner()));
         break;
       }
       default:
@@ -397,9 +399,9 @@ public:
     {
       ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
       //iteration->addTarget(ss3Target);
-      iteration->addTarget(ss8Target);
+      //iteration->addTarget(ss8Target);
       //iteration->addTarget(sa20Target);
-      //iteration->addTarget(drTarget);
+      iteration->addTarget(drTarget);
       //iteration->addTarget(stalTarget);
 
       iteration->setEvaluator(new ProteinEvaluator());
