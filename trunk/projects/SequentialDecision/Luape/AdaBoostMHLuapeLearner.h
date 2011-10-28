@@ -38,16 +38,19 @@ public:
     size_t correct = (size_t)(*supervisions)[index];
     size_t numLabels = labels->getNumElements();
     double* weightsPtr = weights->getValuePointer(index * numLabels);
+    double* muNegativesPtr = muNegatives->getValuePointer(0);
+    double* muPositivesPtr = muPositives->getValuePointer(0);
+    double* votesPtr = votes->getValuePointer(0);
     for (size_t i = 0; i < numLabels; ++i)
     {
       double weight = *weightsPtr++;
-      double& muNegative = muNegatives->getValueReference(i);
-      double& muPositive = muPositives->getValueReference(i);
+      double& muNegative = *muNegativesPtr++;
+      double& muPositive = *muPositivesPtr++;
       if (newPrediction == (i == correct))
         {muNegative -= weight; muPositive += weight;}
       else
         {muPositive -= weight; muNegative += weight;}
-      votes->setValue(i, muPositive > muNegative ? 1.0 : -1.0);
+      *votesPtr++ = muPositive > muNegative ? 1.0 : -1.0;
     }
   }
 
@@ -109,11 +112,12 @@ protected:
     size_t numLabels = labels->getNumElements();
     size_t numExamples = supervisions->size();
     jassert(predictions->getNumElements()>= numExamples);
+    std::vector<bool>::const_iterator itpred = predictions->getElements().begin();
 
     double* weightsPtr = weights->getValuePointer(0);
     for (size_t i = 0; i < numExamples; ++i)
     {
-      bool prediction = predictions->get(i);
+      bool prediction = *itpred++;
       size_t correct = (size_t)(*supervisions)[i];
       for (size_t j = 0; j < numLabels; ++j)
       {
@@ -167,7 +171,9 @@ public:
     size_t example = index / numLabels;
     size_t k = index % numLabels;
     double alpha = vote.getObjectAndCast<DenseDoubleVector>()->getValue(k);
-    bool isCorrectClass = (k == (size_t)supervision->getElement(example).getInteger());
+    
+    size_t correctLabel = (size_t)(*(const std::vector<juce::int64>* )&supervision.staticCast<GenericVector>()->getValues())[example]; // faster access than getElement()
+    bool isCorrectClass = (k == correctLabel);
     bool isPredictionCorrect = (prediction->get(example) == isCorrectClass);
     return currentWeight * exp(-alpha * (isPredictionCorrect ? 1.0 : -1.0));
   }
