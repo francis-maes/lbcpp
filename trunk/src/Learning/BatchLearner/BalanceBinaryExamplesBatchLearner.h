@@ -28,6 +28,8 @@ public:
     balanceBinaryExamples(context, trainingData, balancedTrainingData);
     randomizeExamples(context, balancedTrainingData);
 
+    context.informationCallback(T("Num. duplicated examples: ") + String((int)(balancedTrainingData.size() - trainingData.size())));
+
     return decorated->train(context, function, balancedTrainingData, validationData);
   }
 
