@@ -104,7 +104,10 @@ public:
     {jassert(index < v.size()); return v[index];}
 
   bool flip(size_t index)
-    {jassert(index < v.size()); return (v[index] = !v[index]);}
+    {jassert(index < v.size()); std::vector<bool>::reference r = v[index]; r.flip(); return r;}
+
+  const std::vector<bool>& getElements() const
+    {return v;}
 
   /*
   ** Vector

@@ -166,7 +166,7 @@ public:
   virtual void aggregateVote(Variable& targetVote, const Variable& vote, bool positive) const
     {vote.getObjectAndCast<DenseDoubleVector>()->addWeightedTo(targetVote.getObjectAndCast<DenseDoubleVector>(), 0, positive ? 1.0 : -1.0);}
 
-  EnumerationPtr getLabels() const
+  const EnumerationPtr& getLabels() const
     {return getOutputType().staticCast<Enumeration>();}
 
   const ClassPtr& getDoubleVectorClass() const

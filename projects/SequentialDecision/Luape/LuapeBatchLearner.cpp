@@ -82,7 +82,7 @@ bool BoostingLuapeLearner::train(ExecutionContext& context, const FunctionPtr& f
 
         context.resultCallback("score", score);
         context.resultCallback("vote", vote);
-        context.resultCallback("weights", weights->cloneAndCast<DoubleVector>());
+        //context.resultCallback("weights", weights->cloneAndCast<DoubleVector>());
 
         // update predictions and compute train/test score
         updatePredictions(function, trainingPredictions, cache->getTrainingSamples(), vote);
