@@ -38,7 +38,7 @@ public:
 
     LuapeGraphPtr bestGraph = bestFinalState->getGraph();
     context.informationCallback(String("Best Graph: ") + bestGraph->getLastNode()->toShortString() + T(" [") + String(optimizerState->getBestScore()) + T("]"));
-    context.informationCallback(String("Num cached nodes: ") + String((int)graphCache ? graphCache->getNumCachedNodes() : 0));
+    context.informationCallback(String("Num cached nodes: ") + String(graphCache ? (int)graphCache->getNumCachedNodes() : 0));
     return bestGraph;
   }
 
