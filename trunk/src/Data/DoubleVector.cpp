@@ -847,7 +847,7 @@ size_t DenseDoubleVector::getNumElements() const
   {return values ? values->size() : 0;}
 
 Variable DenseDoubleVector::getElement(size_t index) const
-  {return Variable(values && index < values->size() ? (*values)[index] : 0.0);}//, getElementsType());}
+  {return Variable(values && index < values->size() ? (*values)[index] : 0.0/*);}//*/, getElementsType());}
 
 void DenseDoubleVector::setElement(size_t index, const Variable& value)
   {jassert(index < values->size() && value.isDouble()); (*values)[index] = value.getDouble();}
