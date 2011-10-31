@@ -17,23 +17,24 @@ namespace lbcpp
 class BalanceBinaryExamplesBatchLearner : public DecoratorBatchLearner
 {
 public:
- BalanceBinaryExamplesBatchLearner(BatchLearnerPtr decorated)
+  BalanceBinaryExamplesBatchLearner(BatchLearnerPtr decorated)
     : DecoratorBatchLearner(decorated) {}
 
- BalanceBinaryExamplesBatchLearner() {}
-  
   virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
     std::vector<ObjectPtr> balancedTrainingData;
     balanceBinaryExamples(context, trainingData, balancedTrainingData);
     randomizeExamples(context, balancedTrainingData);
-
     context.informationCallback(T("Num. duplicated examples: ") + String((int)(balancedTrainingData.size() - trainingData.size())));
 
     return decorated->train(context, function, balancedTrainingData, validationData);
   }
 
 protected:
+  friend class BalanceBinaryExamplesBatchLearnerClass;
+
+  BalanceBinaryExamplesBatchLearner() {}
+
   void balanceBinaryExamples(ExecutionContext& context, const std::vector<ObjectPtr>& fromData, std::vector<ObjectPtr>& toData) const
   {
     if (fromData.size() == 0)

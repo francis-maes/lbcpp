@@ -98,12 +98,13 @@ public:
     {return decorated->initializeFunction(context, inputVariables, outputName, outputShortName);}
 
   /* Function - Dynamic computation */
+  /*
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
     {return decorated->computeFunction(context, input);}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
     {return decorated->computeFunction(context, inputs);}
-  
+  */
   virtual String getDescription(ExecutionContext& context, const Variable* inputs) const
     {return decorated->getDescription(context, inputs);}
   
