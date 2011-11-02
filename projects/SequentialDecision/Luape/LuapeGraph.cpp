@@ -25,6 +25,14 @@ void LuapeNodeCache::initialize(TypePtr type)
   convertibleToDouble = type->isConvertibleToDouble();
 }
 
+void LuapeNodeCache::clear()
+{
+  scoreComputed = false;
+  score = 0.0;
+  TypePtr type = trainingSamples->getElementsType();
+  initialize(type);
+}
+
 void LuapeNodeCache::resizeSamples(bool isTrainingSamples, size_t size)
   {(isTrainingSamples ? trainingSamples : validationSamples)->resize(size);}
 

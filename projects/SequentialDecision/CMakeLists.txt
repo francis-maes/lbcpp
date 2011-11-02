@@ -126,6 +126,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_LEARNER_SOURCES
   Luape/AdaBoostLuapeLearner.h
   Luape/AdaBoostMHLuapeLearner.h
   Luape/SingleStumpWeakLearner.h
+  Luape/ProductWeakLearner.h
   Luape/LuapeGraphBuilderWeakLearner.h
 )
 
