@@ -17,7 +17,7 @@ namespace lbcpp
 class AdaBoostEdgeCalculator : public BoostingEdgeCalculator
 {
 public:
-  virtual void initialize(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& sup, const DenseDoubleVectorPtr& weights, const BooleanVectorPtr& labelCorrections)
+  virtual void initialize(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& sup, const DenseDoubleVectorPtr& weights)
   {
     this->predictions = predictions;
     this->supervisions = sup.dynamicCast<BooleanVector>();
