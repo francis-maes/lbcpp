@@ -47,31 +47,36 @@ bool BoostingLuapeLearner::train(ExecutionContext& context, const FunctionPtr& f
     context.resultCallback(T("iteration"), i + 1);
 
     // weak graph completion
-    LuapeGraphPtr newGraph = weakLearner->learn(context, refCountedPointerFromThis(this), function, trainingSupervisions, weights);
-    if (newGraph)
+    std::vector<LuapeNodePtr> newNodes = weakLearner->learn(context, refCountedPointerFromThis(this), function, trainingSupervisions, weights, BooleanVectorPtr());
+    if (newNodes.size())
     {
-      LuapeYieldNodePtr yieldNode = newGraph->getLastNode().dynamicCast<LuapeYieldNode>();
-      jassert(yieldNode);
-      double score = yieldNode->getCache()->getScore();
-      LuapeNodeCachePtr cache = newGraph->getNode(yieldNode->getArgument())->getCache();
+      for (size_t i = 0; i < newNodes.size(); ++i)
+        graph->pushNode(context, newNodes[i]);
+      
+      LuapeYieldNodePtr yieldNode = new LuapeYieldNode(graph->getNumNodes() - 1);
+      graph->pushNode(context, yieldNode);
+
+      LuapeNodeCachePtr cache = newNodes.back()->getCache();
       BooleanVectorPtr weakPredictions = cache->getTrainingSamples();
       
+      // compute vote
+      BoostingEdgeCalculatorPtr edgeCalculator = createEdgeCalculator();
+      edgeCalculator->initialize(function, weakPredictions, trainingSupervisions, weights, BooleanVectorPtr());
+      Variable vote = edgeCalculator->computeVote();
+      function->getVotes()->append(vote);
+      
+      double edge = edgeCalculator->computeEdge();
+      context.resultCallback("edge", edge);
+      context.resultCallback("vote", vote);
+      
       // stop test
-      if (shouldStop(score))
+      if (shouldStop(edge))
       {
-        context.informationCallback(T("Stopping, score = ") + String(score));
+        context.informationCallback(T("Stopping, edge = ") + String(edge));
         stopped = true;
       }
       else
       {
-        function->setGraph(newGraph);
-
-        // compute vote
-        BoostingEdgeCalculatorPtr edgeCalculator = createEdgeCalculator();
-        edgeCalculator->initialize(function, weakPredictions, trainingSupervisions, weights);
-        Variable vote = edgeCalculator->computeVote();
-        function->getVotes()->append(vote);
-
         // update weights
         weightsSum *= updateWeights(function, weakPredictions, trainingSupervisions, weights, vote);
         {
@@ -79,18 +84,15 @@ bool BoostingLuapeLearner::train(ExecutionContext& context, const FunctionPtr& f
           w->multiplyByScalar(weightsSum);
           context.resultCallback("loss", lastLoss = w->l1norm());
         }
-
-        context.resultCallback("score", score);
-        context.resultCallback("vote", vote);
-        //context.resultCallback("weights", weights->cloneAndCast<DoubleVector>());
-
-        // update predictions and compute train/test score
-        updatePredictions(function, trainingPredictions, cache->getTrainingSamples(), vote);
-        updatePredictions(function, validationPredictions, cache->getValidationSamples(), vote);
-
-        context.resultCallback(T("train error"), lastTrain = computeError(trainingPredictions, trainingSupervisions));
-        context.resultCallback(T("validation error"), lastValidation = computeError(validationPredictions, validationSupervisions));
       }
+      //context.resultCallback("weights", weights->cloneAndCast<DoubleVector>());
+
+      // update predictions and compute train/test score
+      updatePredictions(function, trainingPredictions, cache->getTrainingSamples(), vote);
+      updatePredictions(function, validationPredictions, cache->getValidationSamples(), vote);
+
+      context.resultCallback(T("train error"), lastTrain = computeError(trainingPredictions, trainingSupervisions));
+      context.resultCallback(T("validation error"), lastValidation = computeError(validationPredictions, validationSupervisions));
     }
     else
       context.informationCallback("Failed to find a weak learner");

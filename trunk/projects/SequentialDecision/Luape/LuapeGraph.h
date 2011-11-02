@@ -33,6 +33,7 @@ public:
   LuapeNodeCache();
 
   void initialize(TypePtr type);
+  void clear();
   
   /*
   ** Examples
@@ -236,6 +237,9 @@ public:
 
   LuapeNodePtr getNode(size_t index) const
     {jassert(index < nodes.size()); return nodes[index];}
+
+  const std::vector<LuapeNodePtr>& getNodes() const
+    {return nodes;}
 
   TypePtr getNodeType(size_t index) const
     {return getNode(index)->getType();}

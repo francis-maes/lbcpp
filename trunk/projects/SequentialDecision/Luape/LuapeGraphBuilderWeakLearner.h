@@ -22,7 +22,8 @@ public:
     : optimizer(optimizer), maxSteps(maxSteps) {}
   LuapeGraphBuilderWeakLearner() {}
 
-  virtual LuapeGraphPtr learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
+  virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function,
+                                          const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const BooleanVectorPtr& labelCorrections) const
   {
     LuapeGraphPtr graph = function->getGraph();
     graph->clearScores();
@@ -34,12 +35,16 @@ public:
     OptimizerStatePtr optimizerState = optimizer->optimize(context, optimizationProblem);
     LuapeRPNGraphBuilderStatePtr bestFinalState = optimizerState->getBestSolution().getObjectAndCast<LuapeRPNGraphBuilderState>();
     if (!bestFinalState)
-      return LuapeGraphPtr();
+      return std::vector<LuapeNodePtr>();
 
     LuapeGraphPtr bestGraph = bestFinalState->getGraph();
     context.informationCallback(String("Best Graph: ") + bestGraph->getLastNode()->toShortString() + T(" [") + String(optimizerState->getBestScore()) + T("]"));
     context.informationCallback(String("Num cached nodes: ") + String(graphCache ? (int)graphCache->getNumCachedNodes() : 0));
-    return bestGraph;
+    
+    std::vector<LuapeNodePtr> res(bestGraph->getNumNodes() - 1 - graph->getNumNodes());
+    for (size_t i = 0; i < res.size(); ++i)
+      res[i] = bestGraph->getNode(graph->getNumNodes() + i);
+    return res;
   }
 
 protected:
@@ -69,7 +74,7 @@ protected:
       else
       {
         BoostingEdgeCalculatorPtr edgeCalculator = batchLearner->createEdgeCalculator();
-        edgeCalculator->initialize(function, valueNode->getCache()->getTrainingSamples().staticCast<BooleanVector>(), supervisions, weights);
+        edgeCalculator->initialize(function, valueNode->getCache()->getTrainingSamples().staticCast<BooleanVector>(), supervisions, weights, BooleanVectorPtr());
         score = edgeCalculator->computeEdge();
         yieldNodeCache->setScore(score);
       }

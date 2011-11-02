@@ -19,7 +19,8 @@ class SingleStumpWeakLearner : public LuapeWeakLearner
 public:
   SingleStumpWeakLearner() {}
 
-  virtual LuapeGraphPtr learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
+  virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function,
+                                          const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const BooleanVectorPtr& labelCorrections) const
   {
     LuapeGraphPtr graph = function->getGraph();
     graph->clearScores();
@@ -38,7 +39,7 @@ public:
         double edge;
         BoostingEdgeCalculatorPtr edgeCalculator = batchLearner->createEdgeCalculator();
         BooleanVectorPtr predictions = new BooleanVector(numExamples, true);
-        edgeCalculator->initialize(function, predictions, supervisions, weights);
+        edgeCalculator->initialize(function, predictions, supervisions, weights, labelCorrections);
         double threshold = findBestThreshold(context, edgeCalculator, node, edge);
         if (edge > bestEdge)
         {
@@ -52,10 +53,8 @@ public:
     context.informationCallback("Best stump: " + graph->getNode(bestVariable)->toShortString() + " >= " + String(bestThreshold));
     context.informationCallback("Edge: " + String(bestEdge));
 
-    graph->pushNode(context, new LuapeFunctionNode(new StumpFunction(bestThreshold), std::vector<size_t>(1, bestVariable))); // node index == n
-    graph->pushNode(context, new LuapeYieldNode(n));
-    graph->getLastNode()->getCache()->setScore(bestEdge);
-    return graph;
+    LuapeNodePtr res = new LuapeFunctionNode(new StumpFunction(bestThreshold), std::vector<size_t>(1, bestVariable));
+    return std::vector<LuapeNodePtr>(1, res);
   }
 
   double findBestThreshold(ExecutionContext& context, BoostingEdgeCalculatorPtr edgeCalculator, LuapeNodePtr node, double& edge) const

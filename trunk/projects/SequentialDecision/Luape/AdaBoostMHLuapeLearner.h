@@ -17,7 +17,7 @@ namespace lbcpp
 class AdaBoostMHEdgeCalculator : public BoostingEdgeCalculator
 {
 public:
-  virtual void initialize(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& sup, const DenseDoubleVectorPtr& weights)
+  virtual void initialize(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& sup, const DenseDoubleVectorPtr& weights, const BooleanVectorPtr& labelCorrections)
   {
     const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
     labels = classifier->getLabels();
@@ -26,6 +26,7 @@ public:
     this->predictions = predictions;
     this->supervisions = (const std::vector<juce::int64>* )&sup.staticCast<GenericVector>()->getValues();
     this->weights = weights;
+    this->labelCorrections = labelCorrections;
     jassert(supervisions);
 
     ClassPtr doubleVectorClass = classifier->getDoubleVectorClass();
@@ -35,7 +36,6 @@ public:
   virtual void flipPrediction(size_t index)
   {
     bool newPrediction = predictions->flip(index);
-    size_t correct = (size_t)(*supervisions)[index];
     size_t numLabels = labels->getNumElements();
     double* weightsPtr = weights->getValuePointer(index * numLabels);
     double* muNegativesPtr = muNegatives->getValuePointer(0);
@@ -46,7 +46,7 @@ public:
       double weight = *weightsPtr++;
       double& muNegative = *muNegativesPtr++;
       double& muPositive = *muPositivesPtr++;
-      if (newPrediction == (i == correct))
+      if (newPrediction == getLabel(index, i))
         {muNegative -= weight; muPositive += weight;}
       else
         {muPositive -= weight; muNegative += weight;}
@@ -98,10 +98,20 @@ protected:
   BooleanVectorPtr predictions;
   const std::vector<juce::int64>* supervisions;
   DenseDoubleVectorPtr weights;
-
+  BooleanVectorPtr labelCorrections;
+  
   DenseDoubleVectorPtr muNegatives;
   DenseDoubleVectorPtr muPositives;
   DenseDoubleVectorPtr votes;
+
+  bool getLabel(size_t exampleIndex, size_t classIndex) const
+  {
+    size_t correct = (size_t)(*supervisions)[exampleIndex];
+    bool res = (correct == classIndex);
+    if (labelCorrections && labelCorrections->get(exampleIndex * labels->getNumElements() + classIndex))
+      res = !res;
+    return res;
+  }
 
   void computeMuAndVoteValues()
   {
@@ -118,10 +128,9 @@ protected:
     for (size_t i = 0; i < numExamples; ++i)
     {
       bool prediction = *itpred++;
-      size_t correct = (size_t)(*supervisions)[i];
       for (size_t j = 0; j < numLabels; ++j)
       {
-        bool isPredictionCorrect = (prediction == (j == correct));
+        bool isPredictionCorrect = (prediction == getLabel(i, j));
         (isPredictionCorrect ? muPositives : muNegatives)->incrementValue(j, *weightsPtr++);
       }
     }

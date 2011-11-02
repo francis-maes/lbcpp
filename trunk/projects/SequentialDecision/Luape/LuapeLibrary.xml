@@ -72,6 +72,11 @@
   <class name="SingleStumpWeakLearner" base="LuapeWeakLearner">
     <constructor/>
   </class>
+  <class name="ProductWeakLearner" base="LuapeWeakLearner">
+    <constructor arguments="LuapeWeakLearnerPtr baseLearner, size_t numBaseClassifiers"/>
+    <variable type="LuapeWeakLearner" name="baseLearner"/>
+    <variable type="PositiveInteger" name="numBaseClassifiers"/>
+  </class>
 
   <!-- Batch Learners -->
   <class name="LuapeBatchLearner" base="BatchLearner" abstract="yes">

@@ -25,12 +25,14 @@ typedef ReferenceCountedObjectPtr<BoostingLuapeLearner> BoostingLuapeLearnerPtr;
 class LuapeWeakLearner : public Object
 {
 public:
-  virtual LuapeGraphPtr learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const = 0;
+  virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function,
+                                          const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const BooleanVectorPtr& labelCorrections) const = 0;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeWeakLearner> LuapeWeakLearnerPtr;
 
 extern LuapeWeakLearnerPtr singleStumpWeakLearner();
+extern LuapeWeakLearnerPtr productWeakLearner(LuapeWeakLearnerPtr baseLearner, size_t numBaseClassifiers);
 extern LuapeWeakLearnerPtr luapeGraphBuilderWeakLearner(OptimizerPtr optimizer, size_t maxSteps);
 
 /*
@@ -39,7 +41,7 @@ extern LuapeWeakLearnerPtr luapeGraphBuilderWeakLearner(OptimizerPtr optimizer, 
 class BoostingEdgeCalculator : public Object
 {
 public:
-  virtual void initialize(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) = 0;
+  virtual void initialize(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const BooleanVectorPtr& labelCorrections) = 0;
   virtual void flipPrediction(size_t index) = 0;
   virtual double computeEdge() const = 0;
   virtual Variable computeVote() const = 0;

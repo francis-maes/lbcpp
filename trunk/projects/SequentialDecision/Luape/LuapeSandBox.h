@@ -114,7 +114,7 @@ public:
 
     OptimizerPtr optimizer = new SinglePlayerMCTSOptimizer(budgetPerIteration);
   
-    LuapeWeakLearnerPtr weakLearner = singleStumpWeakLearner();
+    LuapeWeakLearnerPtr weakLearner = productWeakLearner(singleStumpWeakLearner(), 2);
       //luapeGraphBuilderWeakLearner(optimizer, maxSteps);
     classifier->setBatchLearner(adaBoostMHLuapeLearner(problem, weakLearner, maxIterations));
     classifier->setEvaluator(defaultSupervisedEvaluator());
