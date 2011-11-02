@@ -9,6 +9,52 @@
 #include "LuapeBatchLearner.h"
 using namespace lbcpp;
 
+/*
+** BoostingEdgeCalculator
+*/
+double BoostingEdgeCalculator::findBestThreshold(ExecutionContext& context, LuapeNodePtr node, double& edge, bool verbose)
+{
+  edge = -DBL_MAX;
+  double res = 0.0;
+
+  if (verbose)
+    context.enterScope("Find best threshold for node " + node->toShortString());
+
+  const std::vector< std::pair<size_t, double> >& sortedDoubleValues = node->getCache()->getSortedDoubleValues();
+  jassert(sortedDoubleValues.size());
+  double previousThreshold = sortedDoubleValues[0].second;
+  for (size_t i = 0; i < sortedDoubleValues.size(); ++i)
+  {
+    double threshold = sortedDoubleValues[i].second;
+
+    jassert(threshold >= previousThreshold);
+    if (threshold > previousThreshold)
+    {
+      double e = computeEdge();
+
+      if (verbose)
+      {
+        context.enterScope("Iteration " + String((int)i));
+        context.resultCallback("threshold", (threshold + previousThreshold) / 2.0);
+        context.resultCallback("edge", e);
+        context.leaveScope();
+      }
+
+      if (e > edge)
+        edge = e, res = (threshold + previousThreshold) / 2.0;
+      previousThreshold = threshold;
+    }
+    flipPrediction(sortedDoubleValues[i].first);
+  }
+
+  if (verbose)
+    context.leaveScope();
+  return res;
+}
+
+/*
+** BoostingLuapeLearner
+*/
 BoostingLuapeLearner::BoostingLuapeLearner(LuapeProblemPtr problem, LuapeWeakLearnerPtr weakLearner, size_t maxIterations)
   : LuapeBatchLearner(problem), weakLearner(weakLearner), maxIterations(maxIterations)
 {
@@ -23,12 +69,12 @@ bool BoostingLuapeLearner::train(ExecutionContext& context, const FunctionPtr& f
   const LuapeFunctionPtr& function = f.staticCast<LuapeFunction>();
   LuapeGraphPtr graph = problem->createInitialGraph(context);
   DenseDoubleVectorPtr weights = makeInitialWeights(function, *(std::vector<PairPtr>* )&trainingData);
-  function->setGraph(graph->cloneAndCast<LuapeGraph>());
+  function->setGraph(graph);
   function->setVotes(function->createVoteVector(0));
 
   graph->resizeSamples(trainingData.size(), validationData.size());
-  addExamplesToGraph(true, trainingData, function->getGraph());
-  addExamplesToGraph(false, validationData, function->getGraph());
+  addExamplesToGraph(true, trainingData, graph);
+  addExamplesToGraph(false, validationData, graph);
 
   VectorPtr trainingSupervisions = makeSupervisions(trainingData);
   VectorPtr validationSupervisions = makeSupervisions(validationData);

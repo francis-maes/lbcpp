@@ -72,6 +72,9 @@
   <class name="SingleStumpWeakLearner" base="LuapeWeakLearner">
     <constructor/>
   </class>
+  <class name="CombinedStumpWeakLearner" base="LuapeWeakLearner">
+    <constructor/>
+  </class>
   <class name="ProductWeakLearner" base="LuapeWeakLearner">
     <constructor arguments="LuapeWeakLearnerPtr baseLearner, size_t numBaseClassifiers"/>
     <variable type="LuapeWeakLearner" name="baseLearner"/>
@@ -95,6 +98,7 @@
   
   <!-- Sand Box -->
   <class name="ProductFunction" base="Function"/>
+  <class name="DivideFunction" base="Function"/>
   <class name="LogFunction" base="Function"/>
   <class name="StumpFunction" base="Function">
     <variable type="Double" name="threshold"/>
