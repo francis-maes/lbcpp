@@ -26,6 +26,7 @@ public:
                                           const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
   {
     LuapeGraphPtr graph = function->getGraph();
+    size_t numInitialNodes = graph->getNumNodes();
     graph->clearScores();
     LuapeGraphCachePtr graphCache = graph->getCache();
     FunctionPtr objective = new Objective(batchLearner, function, supervisions, weights);
@@ -40,6 +41,10 @@ public:
     LuapeGraphPtr bestGraph = bestFinalState->getGraph();
     context.informationCallback(String("Best Graph: ") + bestGraph->getLastNode()->toShortString() + T(" [") + String(optimizerState->getBestScore()) + T("]"));
     context.informationCallback(String("Num cached nodes: ") + String(graphCache ? (int)graphCache->getNumCachedNodes() : 0));
+    
+    jassert(graph->getNumNodes() == numInitialNodes);
+    jassert(bestGraph->getNumNodes() > numInitialNodes);
+    jassert(bestGraph->getLastNode().isInstanceOf<LuapeYieldNode>());
     
     std::vector<LuapeNodePtr> res(bestGraph->getNumNodes() - 1 - graph->getNumNodes());
     for (size_t i = 0; i < res.size(); ++i)

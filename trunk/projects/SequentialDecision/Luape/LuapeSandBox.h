@@ -26,6 +26,19 @@ public:
     {return inputs[0].toDouble() * inputs[1].toDouble();}
 };
 
+class DivideFunction : public SimpleBinaryFunction
+{
+public:
+  DivideFunction() : SimpleBinaryFunction(doubleType, doubleType, doubleType, "prod") {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    double a = inputs[0].toDouble();
+    double b = inputs[1].toDouble();
+    return b ? a / b : DBL_MAX;
+  }
+};
+
 class GreaterThanFunction : public SimpleBinaryFunction
 {
 public:
@@ -114,7 +127,8 @@ public:
 
     OptimizerPtr optimizer = new SinglePlayerMCTSOptimizer(budgetPerIteration);
   
-    LuapeWeakLearnerPtr weakLearner = productWeakLearner(singleStumpWeakLearner(), 2);
+    LuapeWeakLearnerPtr weakLearner = combinedStumpWeakLearner();
+    //productWeakLearner(singleStumpWeakLearner(), 2);
       //luapeGraphBuilderWeakLearner(optimizer, maxSteps);
     classifier->setBatchLearner(adaBoostMHLuapeLearner(problem, weakLearner, maxIterations));
     classifier->setEvaluator(defaultSupervisedEvaluator());
@@ -155,11 +169,12 @@ protected:
       res->addInput(variable->getType(), variable->getName());
     }
 
-    //res->addFunction(new LogFunction());
-    //res->addFunction(new ProductFunction());
+//    res->addFunction(new LogFunction());
+    res->addFunction(new DivideFunction());
+//    res->addFunction(new ProductFunction());
     res->addFunction(new StumpFunction());
-    //res->addFunction(new BooleanAndFunction());
-    //res->addFunction(new GreaterThanFunction());
+    res->addFunction(new BooleanAndFunction());
+//    res->addFunction(new GreaterThanFunction());
     return res;
   }
 };

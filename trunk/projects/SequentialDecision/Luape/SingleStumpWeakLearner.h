@@ -38,9 +38,8 @@ public:
       {
         double edge;
         BoostingEdgeCalculatorPtr edgeCalculator = batchLearner->createEdgeCalculator();
-        BooleanVectorPtr predictions = new BooleanVector(numExamples, true);
-        edgeCalculator->initialize(function, predictions, supervisions, weights);
-        double threshold = findBestThreshold(context, edgeCalculator, node, edge);
+        edgeCalculator->initialize(function, new BooleanVector(numExamples, true), supervisions, weights);
+        double threshold = edgeCalculator->findBestThreshold(context, node, edge, false);
         if (edge > bestEdge)
         {
           bestEdge = edge;
@@ -56,49 +55,109 @@ public:
     LuapeNodePtr res = new LuapeFunctionNode(new StumpFunction(bestThreshold), std::vector<size_t>(1, bestVariable));
     return std::vector<LuapeNodePtr>(1, res);
   }
+};
 
-  double findBestThreshold(ExecutionContext& context, BoostingEdgeCalculatorPtr edgeCalculator, LuapeNodePtr node, double& edge) const
+
+class CombinedStumpWeakLearner : public LuapeWeakLearner
+{
+public:
+  virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function,
+                                          const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
   {
-    static const bool verbose = false;
+    LuapeGraphPtr graph = function->getGraph();
+    graph->clearScores();
 
-    edge = -DBL_MAX;
-    double res = 0.0;
+    LuapeNodePtr bestIntermediateNode;
+    size_t bestVariable = (size_t)-1;
+    double bestThreshold = 0.0;
+    double bestEdge = -DBL_MAX;
 
-    if (verbose)
-      context.enterScope("Find best threshold for node " + node->toShortString());
-
-    const std::vector< std::pair<size_t, double> >& sortedDoubleValues = node->getCache()->getSortedDoubleValues();
-    jassert(sortedDoubleValues.size());
-    double previousThreshold = sortedDoubleValues[0].second;
-    for (size_t i = 0; i < sortedDoubleValues.size(); ++i)
+    size_t n = graph->getNumNodes();
+    std::vector<size_t> doubleNodes;
+    for (size_t i = 0; i < n; ++i)
     {
-      double threshold = sortedDoubleValues[i].second;
-
-      jassert(threshold >= previousThreshold);
-      if (threshold > previousThreshold)
-      {
-        double e = edgeCalculator->computeEdge();
-
-        if (verbose)
-        {
-          context.enterScope("Iteration " + String((int)i));
-          context.resultCallback("threshold", (threshold + previousThreshold) / 2.0);
-          context.resultCallback("edge", e);
-          context.leaveScope();
-        }
-
-        if (e > edge)
-          edge = e, res = (threshold + previousThreshold) / 2.0;
-        previousThreshold = threshold;
-      }
-      edgeCalculator->flipPrediction(sortedDoubleValues[i].first);
+      LuapeNodePtr node = graph->getNode(i);
+      if (node->getType() == doubleType)
+        doubleNodes.push_back(i);
     }
+    
+    context.enterScope("Single stump");
+    String bestSingleStump;
+    double bestSingleStumpEdge = -DBL_MAX;
+    for (size_t i = 0; i < doubleNodes.size(); ++i)
+    {
+      LuapeNodePtr node = graph->getNode(doubleNodes[i]);
+      double edge;
+      double threshold = findBestThreshold(context, batchLearner, function, node, supervisions, weights, edge);
+      if (edge > bestEdge)
+      {
+        bestEdge = edge;
+        bestIntermediateNode = LuapeNodePtr();
+        bestVariable = doubleNodes[i];
+        bestThreshold = threshold;
+      }
+      if (edge > bestSingleStumpEdge)
+      {
+        bestSingleStumpEdge = edge;
+        bestSingleStump = node->toShortString() + " >= " + String(threshold);
+      }
+    }
+    context.informationCallback("Best: " + bestSingleStump + " [" + String(bestSingleStumpEdge) + "]");
+    context.leaveScope(bestSingleStumpEdge);
 
-    if (verbose)
-      context.leaveScope();
+    context.enterScope("products");
+    String bestProductStump;
+    double bestProductStumpEdge = -DBL_MAX;
+    for (size_t i = 0; i < doubleNodes.size(); ++i)
+      for (size_t j = 0; j < i; ++j)
+      {
+        std::vector<size_t> arguments(2);
+        arguments[0] = i;
+        arguments[1] = j;
+        LuapeNodePtr node = new LuapeFunctionNode(new ProductFunction(), arguments);
+        graph->pushNode(context, node);
+        
+        double edge;
+        double threshold = findBestThreshold(context, batchLearner, function, node, supervisions, weights, edge);
+        if (edge > bestEdge)
+        {
+          bestEdge = edge;
+          bestIntermediateNode = node;
+          bestVariable = (size_t)-1;
+          bestThreshold = threshold;
+        }
+        if (edge > bestProductStumpEdge)
+        {
+          bestProductStumpEdge = edge;
+          bestProductStump = node->toShortString() + " >= " + String(threshold);
+        }
+        
+        graph->popNode();
+      }
+    context.informationCallback("Best: " + bestProductStump + " [" + String(bestProductStumpEdge) + "]");
+    context.leaveScope(bestProductStumpEdge);
+    
+    std::vector<LuapeNodePtr> res;
+    if (bestIntermediateNode)
+    {
+      res.push_back(bestIntermediateNode);
+      res.push_back(new LuapeFunctionNode(new StumpFunction(bestThreshold), std::vector<size_t>(1, graph->getNumNodes()))); 
+    }
+    else
+      res.push_back(new LuapeFunctionNode(new StumpFunction(bestThreshold), std::vector<size_t>(1, bestVariable))); 
     return res;
   }
+  
+protected:
+  double findBestThreshold(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function, const LuapeNodePtr& node, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, double& edge) const
+  {
+    size_t numExamples = function->getGraph()->getNumTrainingSamples();
+    BoostingEdgeCalculatorPtr edgeCalculator = batchLearner->createEdgeCalculator();
+    edgeCalculator->initialize(function, new BooleanVector(numExamples, true), supervisions, weights);
+    return edgeCalculator->findBestThreshold(context, node, edge, true);
+  }
 };
+
 
 }; /* namespace lbcpp */
 

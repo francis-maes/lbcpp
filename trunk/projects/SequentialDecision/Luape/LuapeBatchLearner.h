@@ -35,6 +35,8 @@ extern LuapeWeakLearnerPtr singleStumpWeakLearner();
 extern LuapeWeakLearnerPtr productWeakLearner(LuapeWeakLearnerPtr baseLearner, size_t numBaseClassifiers);
 extern LuapeWeakLearnerPtr luapeGraphBuilderWeakLearner(OptimizerPtr optimizer, size_t maxSteps);
 
+extern LuapeWeakLearnerPtr combinedStumpWeakLearner();
+
 /*
 ** BoostingEdgeCalculator
 */
@@ -45,6 +47,8 @@ public:
   virtual void flipPrediction(size_t index) = 0;
   virtual double computeEdge() const = 0;
   virtual Variable computeVote() const = 0;
+  
+  double findBestThreshold(ExecutionContext& context, LuapeNodePtr node, double& edge, bool verbose = false); // this modifies the prediction vector
 };
 
 typedef ReferenceCountedObjectPtr<BoostingEdgeCalculator> BoostingEdgeCalculatorPtr;
