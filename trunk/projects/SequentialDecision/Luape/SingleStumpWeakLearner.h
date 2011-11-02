@@ -20,11 +20,11 @@ public:
   SingleStumpWeakLearner() {}
 
   virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function,
-                                          const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const BooleanVectorPtr& labelCorrections) const
+                                          const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
   {
     LuapeGraphPtr graph = function->getGraph();
     graph->clearScores();
-    size_t numExamples = supervisions->getNumElements();
+    size_t numExamples = graph->getNumTrainingSamples();
 
     size_t bestVariable = (size_t)-1;
     double bestThreshold = 0.0;
@@ -39,7 +39,7 @@ public:
         double edge;
         BoostingEdgeCalculatorPtr edgeCalculator = batchLearner->createEdgeCalculator();
         BooleanVectorPtr predictions = new BooleanVector(numExamples, true);
-        edgeCalculator->initialize(function, predictions, supervisions, weights, labelCorrections);
+        edgeCalculator->initialize(function, predictions, supervisions, weights);
         double threshold = findBestThreshold(context, edgeCalculator, node, edge);
         if (edge > bestEdge)
         {

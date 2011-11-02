@@ -26,10 +26,12 @@ bool BoostingLuapeLearner::train(ExecutionContext& context, const FunctionPtr& f
   function->setGraph(graph->cloneAndCast<LuapeGraph>());
   function->setVotes(function->createVoteVector(0));
 
-  VectorPtr trainingSupervisions, validationSupervisions;
   graph->resizeSamples(trainingData.size(), validationData.size());
-  addExamplesToGraph(true, trainingData, function->getGraph(), trainingSupervisions);
-  addExamplesToGraph(false, validationData, function->getGraph(), validationSupervisions);
+  addExamplesToGraph(true, trainingData, function->getGraph());
+  addExamplesToGraph(false, validationData, function->getGraph());
+
+  VectorPtr trainingSupervisions = makeSupervisions(trainingData);
+  VectorPtr validationSupervisions = makeSupervisions(validationData);
 
   VectorPtr trainingPredictions = function->createVoteVector(trainingData.size());
   VectorPtr validationPredictions = function->createVoteVector(validationData.size());
@@ -47,7 +49,7 @@ bool BoostingLuapeLearner::train(ExecutionContext& context, const FunctionPtr& f
     context.resultCallback(T("iteration"), i + 1);
 
     // weak graph completion
-    std::vector<LuapeNodePtr> newNodes = weakLearner->learn(context, refCountedPointerFromThis(this), function, trainingSupervisions, weights, BooleanVectorPtr());
+    std::vector<LuapeNodePtr> newNodes = weakLearner->learn(context, refCountedPointerFromThis(this), function, trainingSupervisions, weights);
     if (newNodes.size())
     {
       for (size_t i = 0; i < newNodes.size(); ++i)
@@ -61,7 +63,7 @@ bool BoostingLuapeLearner::train(ExecutionContext& context, const FunctionPtr& f
       
       // compute vote
       BoostingEdgeCalculatorPtr edgeCalculator = createEdgeCalculator();
-      edgeCalculator->initialize(function, weakPredictions, trainingSupervisions, weights, BooleanVectorPtr());
+      edgeCalculator->initialize(function, weakPredictions, trainingSupervisions, weights);
       Variable vote = edgeCalculator->computeVote();
       function->getVotes()->append(vote);
       
@@ -104,21 +106,30 @@ bool BoostingLuapeLearner::train(ExecutionContext& context, const FunctionPtr& f
   return true;
 }
 
-void BoostingLuapeLearner::addExamplesToGraph(bool areTrainingSamples, const std::vector<ObjectPtr>& examples, LuapeGraphPtr graph, VectorPtr& supervisions) const
+void BoostingLuapeLearner::addExamplesToGraph(bool areTrainingSamples, const std::vector<ObjectPtr>& examples, LuapeGraphPtr graph) const
 {
   size_t n = examples.size();
-  supervisions = vector(examples[0]->getClass()->getTemplateArgument(1), n);
   for (size_t i = 0; i < n; ++i)
   {
     const PairPtr& example = examples[i].staticCast<Pair>();
     graph->setSample(areTrainingSamples, i, example->getFirst().getObject());
-    supervisions->setElement(i, example->getSecond());
   }
+}
+
+VectorPtr BoostingLuapeLearner::makeSupervisions(const std::vector<ObjectPtr>& examples) const
+{
+  size_t n = examples.size();
+  VectorPtr res = vector(examples[0]->getClass()->getTemplateArgument(1), n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    const PairPtr& example = examples[i].staticCast<Pair>();
+    res->setElement(i, example->getSecond());
+  }
+  return res;
 }
 
 double BoostingLuapeLearner::updateWeights(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const Variable& vote) const
 {
-  jassert(predictions->getNumElements() == supervisions->getNumElements());
   size_t n = weights->getNumValues();
 
   double* values = weights->getValuePointer(0);

@@ -157,8 +157,9 @@ public:
     return res;
   }
   
-  BooleanVectorPtr computeLabelCorrections(const Variable& voteProduct, const BooleanVectorPtr& predictionsProduct,
-                                             const Variable& baseVote, const BooleanVectorPtr& basePredictions) const
+  ContainerPtr computeVirtualSupervision(const Variable& voteProduct, const BooleanVectorPtr& predictionsProduct,
+                                             const Variable& baseVote, const BooleanVectorPtr& basePredictions,
+                                             const ContainerPtr& sup) const
   {
     DenseDoubleVectorPtr voteProductDV = voteProduct.dynamicCast<DenseDoubleVector>();
     DenseDoubleVectorPtr baseVoteDV = baseVote.dynamicCast<DenseDoubleVector>();
@@ -166,6 +167,8 @@ public:
     DenseDoubleVectorPtr voteSigns = new DenseDoubleVector(voteProductDV->getClass());
     for (size_t i = 0; i < voteSigns->getNumValues(); ++i)
       voteSigns->setValue(i, voteProductDV->getValue(i) / baseVoteDV->getValue(i));
+    
+    BooleanVectorPtr supervisions = sup.staticCast<BooleanVector>();
     
     size_t n = predictionsProduct->getNumElements();
     size_t m = voteProductDV->getNumElements();
@@ -175,13 +178,13 @@ public:
     {
       double sign = (predictionsProduct->get(i) ? 1.0 : -1.0) / (basePredictions->get(i) ? 1.0 : -1.0);
       for (size_t j = 0; j < m; ++j, ++index)
-        res->set(index, sign > 0.0);
+        res->set(index, (sign > 0.0) == supervisions->get(index));
     }
     return res;
   }
   
   virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function,
-                                          const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const BooleanVectorPtr& labelCorrections) const
+                                          const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
   {
     std::vector<BooleanVectorPtr> predictions(numBaseClassifiers, createInitialPredictions(function));
     BooleanVectorPtr predictionsProduct = computePredictionsProduct(predictions);
@@ -201,8 +204,8 @@ public:
       size_t index = i % numBaseClassifiers;
       
       // compute base learner
-      BooleanVectorPtr labelCorrections = computeLabelCorrections(voteProduct, predictionsProduct, votes[index], predictions[index]);
-      std::vector<LuapeNodePtr> weak = baseLearner->learn(context, batchLearner, function, supervisions, weights, labelCorrections);
+      ContainerPtr virtualSupervisions = computeVirtualSupervision(voteProduct, predictionsProduct, votes[index], predictions[index], supervisions);
+      std::vector<LuapeNodePtr> weak = baseLearner->learn(context, batchLearner, function, virtualSupervisions, weights);
       jassert(weak.size() == 1);
       context.resultCallback("baseNode", weak[0]);
       
@@ -216,13 +219,13 @@ public:
       LuapeNodePtr baseNodeBackup = res->getBaseNode(index);
       res->setBaseNode(index, weak[0]);
       BoostingEdgeCalculatorPtr edgeCalculator = batchLearner->createEdgeCalculator();
-      edgeCalculator->initialize(function, predictions[index], supervisions, weights, labelCorrections);
+      edgeCalculator->initialize(function, predictions[index], virtualSupervisions, weights);
       votes[index] = edgeCalculator->computeVote();
       voteProduct = computeVoteProduct(votes);
 
       // stopping criterion
       edgeCalculator = batchLearner->createEdgeCalculator();
-      edgeCalculator->initialize(function, predictionsProduct, supervisions, weights, BooleanVectorPtr());
+      edgeCalculator->initialize(function, predictionsProduct, supervisions, weights);
       double newEdge = edgeCalculator->computeEdge();
       context.resultCallback("edge", newEdge);
       if (newEdge <= bestEdge)

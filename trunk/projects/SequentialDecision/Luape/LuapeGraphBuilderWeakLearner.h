@@ -23,7 +23,7 @@ public:
   LuapeGraphBuilderWeakLearner() {}
 
   virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function,
-                                          const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const BooleanVectorPtr& labelCorrections) const
+                                          const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
   {
     LuapeGraphPtr graph = function->getGraph();
     graph->clearScores();
@@ -74,7 +74,7 @@ protected:
       else
       {
         BoostingEdgeCalculatorPtr edgeCalculator = batchLearner->createEdgeCalculator();
-        edgeCalculator->initialize(function, valueNode->getCache()->getTrainingSamples().staticCast<BooleanVector>(), supervisions, weights, BooleanVectorPtr());
+        edgeCalculator->initialize(function, valueNode->getCache()->getTrainingSamples().staticCast<BooleanVector>(), supervisions, weights);
         score = edgeCalculator->computeEdge();
         yieldNodeCache->setScore(score);
       }

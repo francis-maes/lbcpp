@@ -17,17 +17,15 @@ namespace lbcpp
 class AdaBoostMHEdgeCalculator : public BoostingEdgeCalculator
 {
 public:
-  virtual void initialize(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& sup, const DenseDoubleVectorPtr& weights, const BooleanVectorPtr& labelCorrections)
+  virtual void initialize(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& sup, const DenseDoubleVectorPtr& weights)
   {
     const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
     labels = classifier->getLabels();
     doubleVectorClass = classifier->getDoubleVectorClass();
     
     this->predictions = predictions;
-    this->supervisions = (const std::vector<juce::int64>* )&sup.staticCast<GenericVector>()->getValues();
+    this->supervisions = sup.staticCast<BooleanVector>();
     this->weights = weights;
-    this->labelCorrections = labelCorrections;
-    jassert(supervisions);
 
     ClassPtr doubleVectorClass = classifier->getDoubleVectorClass();
     computeMuAndVoteValues();
@@ -46,7 +44,7 @@ public:
       double weight = *weightsPtr++;
       double& muNegative = *muNegativesPtr++;
       double& muPositive = *muPositivesPtr++;
-      if (newPrediction == getLabel(index, i))
+      if (newPrediction == supervisions->get(index * numLabels + i))
         {muNegative -= weight; muPositive += weight;}
       else
         {muPositive -= weight; muNegative += weight;}
@@ -95,23 +93,13 @@ public:
 protected:
   EnumerationPtr labels;
   ClassPtr doubleVectorClass;
-  BooleanVectorPtr predictions;
-  const std::vector<juce::int64>* supervisions;
-  DenseDoubleVectorPtr weights;
-  BooleanVectorPtr labelCorrections;
+  BooleanVectorPtr predictions;   // size = numExamples
+  BooleanVectorPtr supervisions;  // size = numExamples * numLabels
+  DenseDoubleVectorPtr weights;   // size = numExamples * numLabels
   
-  DenseDoubleVectorPtr muNegatives;
-  DenseDoubleVectorPtr muPositives;
-  DenseDoubleVectorPtr votes;
-
-  bool getLabel(size_t exampleIndex, size_t classIndex) const
-  {
-    size_t correct = (size_t)(*supervisions)[exampleIndex];
-    bool res = (correct == classIndex);
-    if (labelCorrections && labelCorrections->get(exampleIndex * labels->getNumElements() + classIndex))
-      res = !res;
-    return res;
-  }
+  DenseDoubleVectorPtr muNegatives; // size = numLabels
+  DenseDoubleVectorPtr muPositives; // size = numLabels
+  DenseDoubleVectorPtr votes;       // size = numLabels
 
   void computeMuAndVoteValues()
   {
@@ -120,8 +108,8 @@ protected:
     votes = new DenseDoubleVector(doubleVectorClass);
 
     size_t numLabels = labels->getNumElements();
-    size_t numExamples = supervisions->size();
-    jassert(predictions->getNumElements()>= numExamples);
+    size_t numExamples = predictions->getNumElements();
+    jassert(supervisions->getNumElements() == numExamples * numLabels);
     std::vector<bool>::const_iterator itpred = predictions->getElements().begin();
 
     double* weightsPtr = weights->getValuePointer(0);
@@ -130,7 +118,7 @@ protected:
       bool prediction = *itpred++;
       for (size_t j = 0; j < numLabels; ++j)
       {
-        bool isPredictionCorrect = (prediction == getLabel(i, j));
+        bool isPredictionCorrect = (prediction == supervisions->get(i * numLabels + j));
         (isPredictionCorrect ? muPositives : muNegatives)->incrementValue(j, *weightsPtr++);
       }
     }
@@ -171,6 +159,23 @@ public:
     return res;
   }
 
+  virtual VectorPtr makeSupervisions(const std::vector<ObjectPtr>& examples) const
+  {
+    EnumerationPtr labels = examples[0]->getClass()->getTemplateArgument(1).staticCast<Enumeration>();
+    size_t n = examples.size();
+    size_t m = labels->getNumElements();
+    BooleanVectorPtr res = new BooleanVector(n * m);
+    size_t index = 0;
+    for (size_t i = 0; i < n; ++i)
+    {
+      const PairPtr& example = examples[i].staticCast<Pair>();
+      size_t label = (size_t)example->getSecond().getInteger();
+      for (size_t j = 0; j < m; ++j, ++index)
+        res->set(index, j == label);
+    }
+    return res;
+  }
+
   virtual bool shouldStop(double weakObjectiveValue) const
     {return weakObjectiveValue == 0.0;}
 
@@ -181,8 +186,7 @@ public:
     size_t k = index % numLabels;
     double alpha = vote.getObjectAndCast<DenseDoubleVector>()->getValue(k);
     
-    size_t correctLabel = (size_t)(*(const std::vector<juce::int64>* )&supervision.staticCast<GenericVector>()->getValues())[example]; // faster access than getElement()
-    bool isCorrectClass = (k == correctLabel);
+    bool isCorrectClass = supervision.staticCast<BooleanVector>()->get(index);
     bool isPredictionCorrect = (prediction->get(example) == isCorrectClass);
     return currentWeight * exp(-alpha * (isPredictionCorrect ? 1.0 : -1.0));
   }
@@ -190,13 +194,15 @@ public:
   virtual double computeError(const ContainerPtr& predictions, const ContainerPtr& supervisions) const
   {
     ObjectVectorPtr pred = predictions.staticCast<ObjectVector>();
-    const std::vector<juce::int64>& sup = *(const std::vector<juce::int64>* )&supervisions.staticCast<GenericVector>()->getValues();
+    BooleanVectorPtr sup = supervisions.staticCast<BooleanVector>();
  
     size_t numErrors = 0;
-    size_t n = supervisions->getNumElements();
+    size_t n = pred->getNumElements();
+    size_t m = sup->getNumElements() / n;
     for (size_t i = 0; i < n; ++i)
     {
-      if (pred->getAndCast<DenseDoubleVector>(i)->getIndexOfMaximumValue() != sup[i])
+      size_t j = pred->getAndCast<DenseDoubleVector>(i)->getIndexOfMaximumValue();
+      if (!sup->get(i * m + j))
         ++numErrors;
     }
     return numErrors / (double)n;

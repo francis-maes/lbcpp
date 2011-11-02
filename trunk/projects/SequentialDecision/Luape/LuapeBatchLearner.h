@@ -26,7 +26,7 @@ class LuapeWeakLearner : public Object
 {
 public:
   virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function,
-                                          const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const BooleanVectorPtr& labelCorrections) const = 0;
+                                          const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const = 0;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeWeakLearner> LuapeWeakLearnerPtr;
@@ -41,7 +41,7 @@ extern LuapeWeakLearnerPtr luapeGraphBuilderWeakLearner(OptimizerPtr optimizer, 
 class BoostingEdgeCalculator : public Object
 {
 public:
-  virtual void initialize(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const BooleanVectorPtr& labelCorrections) = 0;
+  virtual void initialize(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) = 0;
   virtual void flipPrediction(size_t index) = 0;
   virtual double computeEdge() const = 0;
   virtual Variable computeVote() const = 0;
@@ -82,6 +82,7 @@ public:
   virtual BoostingEdgeCalculatorPtr createEdgeCalculator() const = 0;
 
   virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeFunctionPtr& function, const std::vector<PairPtr>& examples) const = 0;
+  virtual VectorPtr makeSupervisions(const std::vector<ObjectPtr>& examples) const;
 
   // the absolute value of this quantity should be maximized
   virtual bool shouldStop(double weakObjectiveValue) const = 0;
@@ -96,7 +97,7 @@ protected:
   LuapeWeakLearnerPtr weakLearner;
   size_t maxIterations;
 
-  void addExamplesToGraph(bool areTrainingSamples, const std::vector<ObjectPtr>& examples, LuapeGraphPtr graph, VectorPtr& supervisions) const;
+  void addExamplesToGraph(bool areTrainingSamples, const std::vector<ObjectPtr>& examples, LuapeGraphPtr graph) const;
   double updateWeights(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const Variable& vote) const;
   void updatePredictions(const LuapeFunctionPtr& function, VectorPtr predictions, const BooleanVectorPtr& weakPredictions, const Variable& vote) const;
 };

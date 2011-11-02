@@ -1,5 +1,5 @@
 
- * createVoteVector() is now a virtual function in LuapeFunction instead of in Boosting learners
+ - Fast exact version of the LuapeLearner
 
 Luape:
  * builder: Disable actions to remove comutativity
