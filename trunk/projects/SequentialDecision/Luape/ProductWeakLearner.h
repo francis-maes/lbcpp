@@ -53,6 +53,18 @@ public:
     }
   }
 
+  virtual size_t getDepth() const
+  {
+    size_t maxBaseDepth = 0;
+    for (size_t i = 0; i < baseNodes.size(); ++i)
+    {
+      size_t d = baseNodes[i]->getDepth();
+      if (d > maxBaseDepth)
+        maxBaseDepth = d;
+    }
+    return maxBaseDepth + 1;
+  }
+
   virtual String toShortString() const
   {
     String res(T("Product("));

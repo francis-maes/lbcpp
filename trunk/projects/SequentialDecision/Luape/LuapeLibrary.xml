@@ -97,6 +97,8 @@
   </class>
   
   <!-- Sand Box -->
+  <class name="AddFunction" base="Function"/>
+  <class name="SubFunction" base="Function"/>
   <class name="ProductFunction" base="Function"/>
   <class name="DivideFunction" base="Function"/>
   <class name="LogFunction" base="Function"/>

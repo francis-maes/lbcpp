@@ -17,6 +17,24 @@
 namespace lbcpp
 {
 
+class AddFunction : public SimpleBinaryFunction
+{
+public:
+  AddFunction() : SimpleBinaryFunction(doubleType, doubleType, doubleType, "add") {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+    {return inputs[0].toDouble() + inputs[1].toDouble();}
+};
+
+class SubFunction : public SimpleBinaryFunction
+{
+public:
+  SubFunction() : SimpleBinaryFunction(doubleType, doubleType, doubleType, "sub") {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+    {return inputs[0].toDouble() - inputs[1].toDouble();}
+};
+
 class ProductFunction : public SimpleBinaryFunction
 {
 public:
@@ -29,7 +47,7 @@ public:
 class DivideFunction : public SimpleBinaryFunction
 {
 public:
-  DivideFunction() : SimpleBinaryFunction(doubleType, doubleType, doubleType, "prod") {}
+  DivideFunction() : SimpleBinaryFunction(doubleType, doubleType, doubleType, "div") {}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
