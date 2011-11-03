@@ -72,13 +72,21 @@ public:
     double bestThreshold = 0.0;
     double bestEdge = -DBL_MAX;
 
+    static const size_t maxDepth = 3;
+
     size_t n = graph->getNumNodes();
     std::vector<size_t> doubleNodes;
+    std::vector<size_t> booleanNodes;
     for (size_t i = 0; i < n; ++i)
     {
       LuapeNodePtr node = graph->getNode(i);
-      if (node->getType() == doubleType)
-        doubleNodes.push_back(i);
+      if (node->getDepth() < maxDepth)
+      {
+        if (node->getType() == doubleType)
+          doubleNodes.push_back(i);
+        else if (node->getType() == booleanType)
+          booleanNodes.push_back(i);
+      }
     }
     
     context.enterScope("Single stump");
@@ -105,46 +113,44 @@ public:
     context.informationCallback("Best: " + bestSingleStump + " [" + String(bestSingleStumpEdge) + "]");
     context.leaveScope(bestSingleStumpEdge);
 
-    context.enterScope("products");
-    String bestProductStump;
-    double bestProductStumpEdge = -DBL_MAX;
-    for (size_t i = 0; i < doubleNodes.size(); ++i)
-      for (size_t j = 0; j < i; ++j)
-      {
-        std::vector<size_t> arguments(2);
-        arguments[0] = i;
-        arguments[1] = j;
-        LuapeNodePtr node = new LuapeFunctionNode(new ProductFunction(), arguments);
-        graph->pushNode(context, node);
-        
-        double edge;
-        double threshold = findBestThreshold(context, batchLearner, function, node, supervisions, weights, edge);
-        if (edge > bestEdge)
-        {
-          bestEdge = edge;
-          bestIntermediateNode = node;
-          bestVariable = (size_t)-1;
-          bestThreshold = threshold;
-        }
-        if (edge > bestProductStumpEdge)
-        {
-          bestProductStumpEdge = edge;
-          bestProductStump = node->toShortString() + " >= " + String(threshold);
-        }
-        
-        graph->popNode();
-      }
-    context.informationCallback("Best: " + bestProductStump + " [" + String(bestProductStumpEdge) + "]");
-    context.leaveScope(bestProductStumpEdge);
-    
+    processBinaryFunction(context, getType("AddFunction"), true,
+                          batchLearner, function, doubleNodes, supervisions, weights,
+                          bestIntermediateNode, bestVariable, bestThreshold, bestEdge);
+    processBinaryFunction(context, getType("SubFunction"), true,
+                          batchLearner, function, doubleNodes, supervisions, weights,
+                          bestIntermediateNode, bestVariable, bestThreshold, bestEdge);
+    processBinaryFunction(context, getType("ProductFunction"), true,
+                          batchLearner, function, doubleNodes, supervisions, weights,
+                          bestIntermediateNode, bestVariable, bestThreshold, bestEdge);
+    processBinaryFunction(context, getType("DivideFunction"), true,
+                          batchLearner, function, doubleNodes, supervisions, weights,
+                          bestIntermediateNode, bestVariable, bestThreshold, bestEdge);
+    processBinaryFunction(context, getType("BooleanAndFunction"), true,
+                          batchLearner, function, booleanNodes, supervisions, weights,
+                          bestIntermediateNode, bestVariable, bestThreshold, bestEdge);
+    processBinaryFunction(context, getType("BooleanXorFunction"), true,
+                          batchLearner, function, booleanNodes, supervisions, weights,
+                          bestIntermediateNode, bestVariable, bestThreshold, bestEdge);
+
+    String desc;
     std::vector<LuapeNodePtr> res;
     if (bestIntermediateNode)
     {
       res.push_back(bestIntermediateNode);
-      res.push_back(new LuapeFunctionNode(new StumpFunction(bestThreshold), std::vector<size_t>(1, graph->getNumNodes()))); 
+      if (bestIntermediateNode->getType() == doubleType)
+      {
+        res.push_back(new LuapeFunctionNode(new StumpFunction(bestThreshold), std::vector<size_t>(1, graph->getNumNodes()))); 
+        desc = bestIntermediateNode->toShortString() + " >= " + String(bestThreshold);
+      }
+      else
+        desc = bestIntermediateNode->toShortString();
     }
     else
+    {
       res.push_back(new LuapeFunctionNode(new StumpFunction(bestThreshold), std::vector<size_t>(1, bestVariable))); 
+      desc = String("node ") + String((int)bestVariable) + " >= " + String(bestThreshold);
+    }
+    context.informationCallback(desc + " [" + String(bestEdge) + "]");
     return res;
   }
   
@@ -154,7 +160,63 @@ protected:
     size_t numExamples = function->getGraph()->getNumTrainingSamples();
     BoostingEdgeCalculatorPtr edgeCalculator = batchLearner->createEdgeCalculator();
     edgeCalculator->initialize(function, new BooleanVector(numExamples, true), supervisions, weights);
-    return edgeCalculator->findBestThreshold(context, node, edge, true);
+    return edgeCalculator->findBestThreshold(context, node, edge, false);
+  }
+
+  void processBinaryFunction(ExecutionContext& context, ClassPtr functionClass, bool isCommutative,
+                                const BoostingLuapeLearnerPtr& batchLearner,
+                                const LuapeFunctionPtr& function, const std::vector<size_t>& nodeIndices,
+                                const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, 
+                                LuapeNodePtr& bestIntermediateNode, size_t& bestVariable, double& bestThreshold, double& bestEdge) const
+  {
+    context.enterScope(functionClass->getName());
+    LuapeGraphPtr graph = function->getGraph();
+    String localBest;
+    double localBestEdge = -DBL_MAX;
+    for (size_t i = 0; i < nodeIndices.size(); ++i)
+      for (size_t j = 0; j < (isCommutative ? i : nodeIndices.size()); ++j)
+      {
+        std::vector<size_t> arguments(2);
+        arguments[0] = nodeIndices[i];
+        arguments[1] = nodeIndices[j];
+        LuapeNodePtr node = new LuapeFunctionNode(Function::create(functionClass), arguments);
+        bool ok = graph->pushNode(context, node);
+        jassert(ok);
+        jassert(node->getCache());
+        
+        double edge;
+        double threshold;
+        if (node->getType() == doubleType)
+        {
+          threshold = findBestThreshold(context, batchLearner, function, node, supervisions, weights, edge);
+        }
+        else
+        {
+          jassert(node->getType() == booleanType);
+          BoostingEdgeCalculatorPtr edgeCalculator = batchLearner->createEdgeCalculator();
+          edgeCalculator->initialize(function, node->getCache()->getTrainingSamples().staticCast<BooleanVector>(), supervisions, weights);
+          threshold = 0.0;
+          edge = edgeCalculator->computeEdge();
+        }
+
+        if (edge > localBestEdge)
+        {
+          localBestEdge = edge;
+          localBest = node->toShortString() + " >= " + String(threshold);
+        }
+
+        if (edge > bestEdge) // all times best edge
+        {
+          bestEdge = edge;
+          bestIntermediateNode = node;
+          bestVariable = (size_t)-1;
+          bestThreshold = threshold;
+        }
+        
+        graph->popNode();
+      }
+    context.informationCallback("Best: " + localBest + " [" + String(localBestEdge) + "]");
+    context.leaveScope(localBestEdge);
   }
 };
 

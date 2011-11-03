@@ -57,6 +57,9 @@ public:
   Variable getSample(bool isTrainingSample, size_t index) const
     {return (isTrainingSample ? trainingSamples : validationSamples)->getElement(index);}
 
+  VectorPtr getSamples(bool isTrainingSample) const
+    {return isTrainingSample ? trainingSamples : validationSamples;}
+
   const VectorPtr& getTrainingSamples() const
     {return trainingSamples;}
 
@@ -137,6 +140,7 @@ public:
   virtual bool initialize(ExecutionContext& context, const std::vector<LuapeNodePtr>& allNodes, const LuapeGraphCachePtr& cache);
   virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const = 0;
   virtual void fillKey(const std::vector<LuapeNodePtr>& allNodes, LuapeNodeKey& res) const = 0;
+  virtual size_t getDepth() const = 0;
 
   VariableSignaturePtr getSignature() const
     {return new VariableSignature(type, name);}
@@ -163,6 +167,8 @@ public:
 
   virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const;
   virtual void fillKey(const std::vector<LuapeNodePtr>& allNodes, LuapeNodeKey& res) const;
+  virtual size_t getDepth() const
+    {return 0;}
 
   virtual String toShortString() const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
@@ -185,6 +191,7 @@ public:
   virtual bool initialize(ExecutionContext& context, const std::vector<LuapeNodePtr>& allNodes, const LuapeGraphCachePtr& cache);
   virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const;
   virtual void fillKey(const std::vector<LuapeNodePtr>& allNodes, LuapeNodeKey& res) const;
+  virtual size_t getDepth() const;
 
   virtual String toShortString() const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const;
@@ -208,6 +215,7 @@ public:
   virtual bool initialize(ExecutionContext& context, const std::vector<LuapeNodePtr>& allNodes, const LuapeGraphCachePtr& cache);
   virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const;
   virtual void fillKey(const std::vector<LuapeNodePtr>& allNodes, LuapeNodeKey& res) const;
+  virtual size_t getDepth() const;
 
   virtual String toShortString() const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const;

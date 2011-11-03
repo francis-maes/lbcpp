@@ -219,27 +219,70 @@ void LuapeFunctionNode::clone(ExecutionContext& context, const ObjectPtr& t) con
   target->arguments = arguments;
 }
 
+
+size_t LuapeFunctionNode::getDepth() const
+{
+  size_t maxInputDepth = 0;
+  for (size_t i = 0; i < inputNodes.size(); ++i)
+  {
+    size_t d = inputNodes[i]->getDepth();
+    if (d > maxInputDepth)
+      maxInputDepth = d;
+  }
+  return maxInputDepth + 1;
+}
+
 void LuapeFunctionNode::propagateCache(ExecutionContext& context, bool isTrainingSamples)
 {
   jassert(inputNodes.size());
+  TypePtr inputBaseType = inputNodes[0]->getType();
   size_t minCacheSize = inputNodes[0]->getCache()->getNumSamples(isTrainingSamples);
   for (size_t i = 1; i < inputNodes.size(); ++i)
   {
     size_t cacheSize = inputNodes[i]->getCache()->getNumSamples(isTrainingSamples);
     if (cacheSize < minCacheSize)
       minCacheSize = cacheSize;
+    inputBaseType = Type::findCommonBaseType(inputBaseType, inputNodes[i]->getType());
   }
 
   size_t currentSize = cache->getNumSamples(isTrainingSamples);
   if (minCacheSize > currentSize)
   {
-    cache->resizeSamples(isTrainingSamples, minCacheSize);    
+    cache->resizeSamples(isTrainingSamples, minCacheSize);
     std::vector<Variable> inputs(inputNodes.size());
-    for (size_t i = currentSize; i < minCacheSize; ++i)
+
+    if (inputBaseType == doubleType)
     {
-      for (size_t j = 0; j < inputs.size(); ++j)
-        inputs[j] = inputNodes[j]->getCache()->getSample(isTrainingSamples, i);
-      cache->setSample(isTrainingSamples, i, function->compute(context, inputs));
+      std::vector<DenseDoubleVectorPtr> inputCaches(inputNodes.size());
+      for (size_t i = 0; i < inputCaches.size(); ++i)
+        inputCaches[i] = inputNodes[i]->getCache()->getSamples(isTrainingSamples).staticCast<DenseDoubleVector>();
+      for (size_t i = currentSize; i < minCacheSize; ++i)
+      {
+        for (size_t j = 0; j < inputs.size(); ++j)
+          inputs[j] = inputCaches[j]->getValue(i);
+        cache->setSample(isTrainingSamples, i, function->compute(context, inputs));
+      }
+    }
+    else if (inputBaseType == booleanType)
+    {
+      std::vector<BooleanVectorPtr> inputCaches(inputNodes.size());
+      for (size_t i = 0; i < inputCaches.size(); ++i)
+        inputCaches[i] = inputNodes[i]->getCache()->getSamples(isTrainingSamples).staticCast<BooleanVector>();
+      for (size_t i = currentSize; i < minCacheSize; ++i)
+      {
+        for (size_t j = 0; j < inputs.size(); ++j)
+          inputs[j] = inputCaches[j]->get(i);
+        cache->setSample(isTrainingSamples, i, function->compute(context, inputs));
+      }
+    }
+    else
+    {
+      for (size_t i = currentSize; i < minCacheSize; ++i)
+      {
+        for (size_t j = 0; j < inputs.size(); ++j)
+          inputs[j] = inputNodes[j]->getCache()->getSample(isTrainingSamples, i);
+        cache->setSample(isTrainingSamples, i, function->compute(context, inputs));
+      }
     }
   }
 }
@@ -270,6 +313,9 @@ Variable LuapeYieldNode::compute(ExecutionContext& context, const std::vector<Va
 
 void LuapeYieldNode::fillKey(const std::vector<LuapeNodePtr>& allNodes, LuapeNodeKey& res) const
   {res.push_back(0); allNodes[argument]->fillKey(allNodes, res);}
+
+size_t LuapeYieldNode::getDepth() const
+  {return inputNode->getDepth() + 1;}
 
 void LuapeYieldNode::clone(ExecutionContext& context, const ObjectPtr& t) const
 {

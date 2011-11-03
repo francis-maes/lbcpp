@@ -150,7 +150,9 @@ Variable Function::compute(ExecutionContext& context, const Variable* inputs, si
     preCallbacks[i]->functionCalled(context, refCountedPointerFromThis(this), inputs);
 
   Variable res = computeFunction(context, inputs);
+#ifdef JUCE_DEBUG
   checkInheritance(res.getType(), getOutputType());
+#endif // JUCE_DEBUG
 
   for (size_t i = 0; i < postCallbacks.size(); ++i)
     postCallbacks[i]->functionReturned(context, refCountedPointerFromThis(this), inputs, res);
