@@ -118,6 +118,27 @@
   </class>
 
   <!-- BEGIN CysteinBox -->
+  <class name="StreamBasedOptimizationProblem" base="OptimizationProblem">
+    <variable type="Stream" name="stream"/>
+  </class>
+  <class name="SimpleStreamBasedOptimizerState" base="OptimizerState">
+    <variable type="GenericVector[Double]" name="results"/>
+  </class>
+  <class name="StreamBasedOptimizer" base="Optimizer"/>
+
+  <class name="TestStreamBasedOptimizerFunction" base="Function"/>
+  <class name="TestStreamBasedOptimizer" base="WorkUnit"/>
+
+  <class name="DisulfideBondLearner" base="Function">
+    <variable type="Container[Variable]" name="trainingProteins"/>
+    <variable type="Container[Variable]" name="testingProteins"/>
+    <variable type="LargeProteinPredictorParameters" name="predictor"/>
+  </class>
+  <class name="DisulfideBondByGreedyLeaveOneOut" base="WorkUnit">
+    <variable type="File" name="proteinsDirectory" shortName="in"/>
+    <variable type="File" name="optimizerStateFile" shortName="opt"/>
+  </class>
+
 <!-- FIXME: Optimizer
   <class name="CysteinLearnerParameters" base="Object">
     <variable type="ProteinPredictorParameters" name="predictorParameters"/>

@@ -46,11 +46,17 @@
 
   <class name="ClassificationStreamBasedNearestNeighbor" base="StreamBasedNearestNeighbor">
     <constructor arguments="const StreamPtr&amp; stream, size_t numNeighbors, bool includeTheNearestNeighbor" returnType="Function"/>
+    <constructor arguments="size_t numNeighbors, bool includeTheNearestNeighbor" returnType="Function"/>
     <variable type="Enumeration" name="enumeration"/>
   </class>
 
   <class name="BinaryClassificationStreamBasedNearestNeighbor" base="StreamBasedNearestNeighbor">
     <constructor arguments="const StreamPtr&amp; stream, size_t numNeighbors, bool includeTheNearestNeighbor" returnType="Function"/>
+    <constructor arguments="size_t numNeighbors, bool includeTheNearestNeighbor" returnType="Function"/>
+  </class>
+
+  <class name="StreamBasedNearestNeighborBatchLearner" base="BatchLearner">
+    <constructor/>
   </class>
 
 </library>
