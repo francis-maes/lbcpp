@@ -96,6 +96,13 @@
     <variable type="GenericVector[elementsType]" name="values"/>
   </template>
 
+  <template name="ObjectStream" base="Stream">
+    <parameter name="elementsType" type="Object"/>
+    <constructor arguments="TypePtr elementsType, const std::vector&lt;ObjectPtr&gt;&amp; values" parameters="elementsType" returnType="Stream"/>
+    <variable type="Type" name="elementsType"/>
+    <variable type="GenericVector[elementsType]" name="values"/>
+  </class>
+
  <!-- Consumer -->
   <class name="SaveToFileConsumer" base="Consumer">
     <constructor arguments="const File&amp; outputDirectory"/>

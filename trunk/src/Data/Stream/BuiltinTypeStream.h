@@ -50,6 +50,7 @@ protected:
   friend class DoubleStreamClass;
   friend class IntegerStreamClass;
   friend class BooleanStreamClass;
+  friend class ObjectStreamClass;
 
   TypePtr elementsType;
 
@@ -90,6 +91,17 @@ public:
   BooleanStream(bool value = true)
     : BuiltinTypeStream<bool>(booleanType, std::vector<bool>(1, value))
     {setThisClass(booleanStreamClass(booleanType));}
+};
+
+extern ClassPtr objectStreamClass(TypePtr elementsType);
+
+class ObjectStream : public BuiltinTypeStream<ObjectPtr>
+{
+public:
+  ObjectStream(TypePtr elementsType, const std::vector<ObjectPtr>& values)
+    : BuiltinTypeStream<ObjectPtr>(elementsType, values)
+    {setThisClass(objectStreamClass(elementsType));}
+  ObjectStream() {}
 };
 
 }; /* namespace lbcpp */

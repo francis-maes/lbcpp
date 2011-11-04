@@ -6,6 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
+/*******************************************************************************
+** DO NOT MODIFY THIS FILE. IT CONTAINS FEATURES USED IN OUR ESANN PAPER.
+** 
+** Nevertheless, some small details are differents. Hyper-parameters of models
+** were not as well tuned.
+*******************************************************************************/
+
 namespace lbcpp
 {
 
@@ -87,6 +94,30 @@ public:
     for (size_t i = 0; i < n; ++i)
       res->setVariable(i, inputs[i]);
     return res;
+  }
+};
+
+class BinaryBalancedStochasticGDParameters : public StochasticGDParameters
+{
+public:
+  BinaryBalancedStochasticGDParameters( IterationFunctionPtr learningRate = constantIterationFunction(0.1),
+                         StoppingCriterionPtr stoppingCriterion = maxIterationsWithoutImprovementStoppingCriterion(20),
+                         size_t maxIterations = 100,
+                         bool doPerEpisodeUpdates = false,
+                         bool normalizeLearningRate = true,
+                         bool restoreBestParameters = true,
+                         bool randomizeExamples = true,
+                         bool evaluateAtEachIteration = true,
+                         size_t numExamplesPerIteration = 0)
+  : StochasticGDParameters(learningRate, stoppingCriterion, maxIterations
+                           , doPerEpisodeUpdates, normalizeLearningRate
+                           , restoreBestParameters, randomizeExamples
+                           , evaluateAtEachIteration, numExamplesPerIteration)
+  {}
+
+  virtual BatchLearnerPtr createBatchLearner(ExecutionContext& context) const
+  {
+    return balanceBinaryExamplesBatchLearner(StochasticGDParameters::createBatchLearner(context));
   }
 };
 
@@ -179,7 +210,7 @@ public:
       /*** Global Features ***/
       builder.addFunction(defaultPositiveIntegerFeatureGenerator(), length, T("length"));
 
-    /*
+    /********** Discretization used in ESANN version and almost fully replicated here **********
      extern PerceptionPtr defaultPositiveIntegerFeatures(size_t numIntervals = 20, double maxPowerOfTen = 10.0);
      softDiscretizedLogNumberFeatures(positiveIntegerType, 0.0, maxPowerOfTen, numIntervals, true)
      
@@ -345,7 +376,9 @@ public:
     else
       jassertfalse;
 
-    LearnerParametersPtr learningParameters = new StochasticGDParameters(constantIterationFunction(sgdRate), StoppingCriterionPtr(), sgdIterations);
+    LearnerParametersPtr learningParameters = (target == drTarget || target == sa20Target)
+                                            ? new BinaryBalancedStochasticGDParameters(constantIterationFunction(sgdRate), StoppingCriterionPtr(), sgdIterations)
+                                            : new StochasticGDParameters(constantIterationFunction(sgdRate), StoppingCriterionPtr(), sgdIterations);
     FunctionPtr res;
 
     switch (target)
@@ -354,14 +387,12 @@ public:
       {
         res = linearBinaryClassifier(learningParameters, true, binaryClassificationMCCScore);
         res->setEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore));
-        res->setBatchLearner(balanceBinaryExamplesBatchLearner(res->getBatchLearner()));
         break;
       }
       case sa20Target:
       {
         res = linearBinaryClassifier(learningParameters, true, binaryClassificationAccuracyScore);
         res->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
-        res->setBatchLearner(balanceBinaryExamplesBatchLearner(res->getBatchLearner()));
         break;
       }
       default:
@@ -398,11 +429,11 @@ public:
     for (size_t i = 0; i < numStages; ++i)
     {
       ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
-      //iteration->addTarget(ss3Target);
-      //iteration->addTarget(ss8Target);
-      //iteration->addTarget(sa20Target);
+      iteration->addTarget(ss3Target);
+      iteration->addTarget(ss8Target);
+      iteration->addTarget(sa20Target);
       iteration->addTarget(drTarget);
-      //iteration->addTarget(stalTarget);
+      iteration->addTarget(stalTarget);
 
       iteration->setEvaluator(new ProteinEvaluator());
       stack->addPredictor(iteration);

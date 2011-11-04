@@ -18,10 +18,13 @@
 namespace lbcpp
 {
 
+extern BatchLearnerPtr streamBasedNearestNeighborBatchLearner();
+
 class StreamBasedNearestNeighbor : public Function
 {
 public:
   StreamBasedNearestNeighbor(const StreamPtr& stream, size_t numNeighbors, bool includeTheNearestNeighbor);
+  StreamBasedNearestNeighbor(size_t numNeighbors, bool includeTheNearestNeighbor);
 
   virtual TypePtr getSupervisionType() const = 0;
 
@@ -53,11 +56,17 @@ protected:
   virtual Variable computeOutput(ScoresMap& scoredIndices) const = 0;
 };
 
+typedef ReferenceCountedObjectPtr<StreamBasedNearestNeighbor> StreamBasedNearestNeighborPtr;
+extern ClassPtr streamBasedNearestNeighborClass;
+
 class ClassificationStreamBasedNearestNeighbor : public StreamBasedNearestNeighbor
 {
 public:
   ClassificationStreamBasedNearestNeighbor(const StreamPtr& stream, size_t numNeighbors, bool includeTheNearestNeighbor)
     : StreamBasedNearestNeighbor(stream, numNeighbors, includeTheNearestNeighbor) {}
+
+  ClassificationStreamBasedNearestNeighbor(size_t numNeighbors, bool includeTheNearestNeighbor)
+    : StreamBasedNearestNeighbor(numNeighbors, includeTheNearestNeighbor) {}
 
   virtual TypePtr getSupervisionType() const
     {return doubleVectorClass(enumValueType, probabilityType);}
@@ -84,6 +93,9 @@ public:
   BinaryClassificationStreamBasedNearestNeighbor(const StreamPtr& stream, size_t numNeighbors, bool includeTheNearestNeighbor)
     : StreamBasedNearestNeighbor(stream, numNeighbors, includeTheNearestNeighbor) {}
 
+  BinaryClassificationStreamBasedNearestNeighbor(size_t numNeighbors, bool includeTheNearestNeighbor)
+    : StreamBasedNearestNeighbor(numNeighbors, includeTheNearestNeighbor) {}
+
   virtual TypePtr getSupervisionType() const
     {return sumType(booleanType, probabilityType);}
   
@@ -96,6 +108,15 @@ protected:
   BinaryClassificationStreamBasedNearestNeighbor() {}
 
   virtual Variable computeOutput(ScoresMap& scoredIndices) const;
+};
+
+class StreamBasedNearestNeighborBatchLearner : public BatchLearner
+{
+public:
+  virtual TypePtr getRequiredFunctionType() const
+    {return streamBasedNearestNeighborClass;}
+  
+  virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const;
 };
 
 }; /* namespace lbcpp */

@@ -143,6 +143,7 @@ extern StreamPtr doubleStream(TypePtr elementsType, const std::vector<double>& v
 extern StreamPtr integerStream(TypePtr elementsType, const std::vector<int>& values);
 extern StreamPtr booleanStream(const std::vector<bool>& values);
 extern StreamPtr booleanStream(bool value);
+extern StreamPtr objectStream(TypePtr elementsType, const std::vector<ObjectPtr>& values);
 
 StreamPtr directoryFileStream(ExecutionContext& context, const File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
 StreamPtr directoryPairFileStream(ExecutionContext& context, const File& mainDirectory, const File& secondDirectory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);

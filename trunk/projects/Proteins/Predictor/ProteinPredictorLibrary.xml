@@ -301,6 +301,18 @@
 
     <variable type="PositiveInteger" name="separationProfilSize"/>
     <!-- Residue Pair Features -->
+    <variable type="Boolean" name="usePositionDifference"/>
+    <variable type="Boolean" name="useIndexDifference"/>
+    <variable type="Boolean" name="useCysteinDistance"/>
+    <variable type="Boolean" name="useAADistance"/>
+
+    <variable type="Boolean" name="useAminoAcidIntervalHistogram"/>
+    <variable type="Boolean" name="usePSSMIntervalHistogram"/>
+    <variable type="Boolean" name="useSS3IntervalHistogram"/>
+    <variable type="Boolean" name="useSS8IntervalHistogram"/>
+    <variable type="Boolean" name="useSAIntervalHistogram"/>
+    <variable type="Boolean" name="useDRIntervalHistogram"/>
+    <variable type="Boolean" name="useSTALIntervalHistogram"/>
   </class>
   
   <class name="LargeProteinPredictorParameters" base="ProteinPredictorParameters">
@@ -317,26 +329,5 @@
     <variable type="PositiveInteger" name="sgdIterations"/>
     <variable type="Boolean" name="useAddBias"/>
   </class>
-
-  <class name="ParameteredCompositeFunction" base="CompositeFunction" abstract="yes">
-    <variable type="Variable" name="parameter"/>
-  </class>
-  <class name="WindowFunction" base="ParameteredCompositeFunction">
-    <variable type="Function" name="residueFunction"/>
-    <variable type="String" name="residueShortName"/>
-  </class>
-  <class name="GlobalHistogramFunction" base="ParameteredCompositeFunction">
-    <variable type="Function" name="residueFunction"/>
-    <variable type="String" name="residueShortName"/>
-  </class>
-  <class name="LocalHistogramFunction" base="ParameteredCompositeFunction">
-    <variable type="Function" name="residueFunction"/>
-    <variable type="String" name="residueShortName"/>
-  </class>
-  <class name="SeperationProfilFunction" base="ParameteredCompositeFunction"/>
-  <class name="ProteinDecoratedCreateVector" base="CompositeFunction">
-    <variable type="Function" name="function"/>
-  </class>
-  <class name="IdentityCreateVector" base="CompositeFunction"/>
   <!-- END LargePredictorParameters -->
 </library>

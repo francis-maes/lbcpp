@@ -284,6 +284,10 @@ StreamBasedNearestNeighbor::StreamBasedNearestNeighbor(const StreamPtr& stream, 
   callback.computeStandardDeviation(standardDeviation);
 }
 
+StreamBasedNearestNeighbor::StreamBasedNearestNeighbor(size_t numNeighbors, bool includeTheNearestNeighbor)
+  : numNeighbors(numNeighbors), includeTheNearestNeighbor(includeTheNearestNeighbor)
+  {setBatchLearner(streamBasedNearestNeighborBatchLearner());}
+
 Variable StreamBasedNearestNeighbor::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
   ScoresMap scoresVariable;
@@ -353,5 +357,33 @@ Variable BinaryClassificationStreamBasedNearestNeighbor::computeOutput(ScoresMap
       ++numTrues;
   
   return probability(numTrues / (double)maxNumNeighbors);
+}
+
+bool StreamBasedNearestNeighborBatchLearner::train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
+{
+  if (trainingData.size() == 0)
+  {
+    context.errorCallback(T("StreamBasedNearestNeighborBatchLearner::train"), T("No training data !"));
+    return false;
+  }
+
+  StreamBasedNearestNeighborPtr target = function.staticCast<StreamBasedNearestNeighbor>();
+  target->stream = objectStream(trainingData[0]->getClass(), trainingData);
+
+  StandardDeviationFeatureGeneratorCallback callback(trainingData[0]->getVariable(0).getType()->getTemplateArgument(0).dynamicCast<Enumeration>());
+
+  target->stream->rewind();
+  while (!target->stream->isExhausted())
+  {
+    ObjectPtr obj = target->stream->next().getObject();
+    jassert(obj);
+    jassert(obj->getVariable(0).getObjectAndCast<LazyDoubleVector>()); // Method is efficient only if the double vector is lazy
+    DoubleVectorPtr dv = obj->getVariable(0).getObjectAndCast<DoubleVector>();
+    dv->computeFeatures(callback);
+    callback.finalizeFeatures();
+  }
+
+  callback.computeStandardDeviation(target->standardDeviation);
+  return true;
 }
 
