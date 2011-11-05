@@ -231,13 +231,13 @@ class DisulfideBondByGreedyLeaveOneOut : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
-    if (proteinsDirectory == File::nonexistent)
+    if (supervisionDirectory == File::nonexistent)
     {
       context.errorCallback(T("No directory specified"));
       return false;
     }
 
-    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, File(), proteinsDirectory, 0, T("Loading proteins"));
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, 0, T("Loading proteins"));
     if (!proteins || proteins->getNumElements() == 0)
     {
       context.errorCallback(T("No protein found !"));
@@ -257,7 +257,8 @@ public:
 protected:
   friend class DisulfideBondByGreedyLeaveOneOutClass;
 
-  File proteinsDirectory;
+  File inputDirectory;
+  File supervisionDirectory;
   File optimizerStateFile;
 };
 
