@@ -135,7 +135,8 @@
     <variable type="LargeProteinPredictorParameters" name="predictor"/>
   </class>
   <class name="DisulfideBondByGreedyLeaveOneOut" base="WorkUnit">
-    <variable type="File" name="proteinsDirectory" shortName="in"/>
+    <variable type="File" name="inputDirectory" shortName="in"/>
+    <variable type="File" name="supervisionDirectory" shortName="sup"/>
     <variable type="File" name="optimizerStateFile" shortName="opt"/>
   </class>
 
