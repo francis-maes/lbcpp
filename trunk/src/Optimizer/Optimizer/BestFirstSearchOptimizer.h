@@ -320,6 +320,7 @@ public:
           previousNumWorkUnitInProgress = currentNumWorkUnitInProgress;
         }
         juce::Thread::sleep(500);
+        context.flushCallbacks();
       }
       context.progressCallback(new ProgressionState(numPushedWorkUnit, numPushedWorkUnit, T("Evaluation")));
       context.leaveScope();
