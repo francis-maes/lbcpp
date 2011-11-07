@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="SmallMDP" directory="SmallMDP">
+
+
+  <class name="SmallMDP" base="Object"/>
+
+  <class name="SmallMDPSandBox" base="WorkUnit">
+    <variable type="PositiveInteger" name="numStates"/>
+    <variable type="PositiveInteger" name="numActions"/>
+    <variable type="Double" name="discount"/>
+    <variable type="PositiveInteger" name="numSuccessorsPerState"/>
+  </class>
+  
+</library>

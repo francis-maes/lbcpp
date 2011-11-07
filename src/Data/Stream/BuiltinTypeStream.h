@@ -16,6 +16,7 @@ namespace lbcpp
 class DoubleStreamClass;
 class IntegerStreamClass;
 class BooleanStreamClass;
+class ObjectStreamClass;
 
 template <class ElementsType>
 class BuiltinTypeStream : public Stream
