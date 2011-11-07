@@ -9,5 +9,6 @@
   <import name="SequentialDecisionGP"/>
   <import name="SequentialDecisionBandits"/>
   <import name="Luape"/>
+  <import name="SmallMDP"/>
   
 </library>
