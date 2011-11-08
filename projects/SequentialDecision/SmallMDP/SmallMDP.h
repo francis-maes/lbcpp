@@ -17,18 +17,56 @@ namespace lbcpp
 class SmallMDP : public Object
 {
 public:
-  SmallMDP(size_t numStates, size_t numActions, double discount)
+  virtual size_t getNumStates() const = 0;
+  virtual size_t getNumActions() const = 0;
+  virtual double getDiscount() const = 0;
+
+  virtual size_t getInitialState() const
+    {return 0;}
+
+  virtual SparseDoubleVectorPtr getTransitionProbabilities(size_t state, size_t action, double& Z) const = 0; 
+
+  virtual double sampleReward(ExecutionContext& context, size_t state, size_t action, size_t newState) const = 0;
+  virtual double getRewardExpectation(size_t state, size_t action, size_t nextState) const = 0;
+
+  size_t sampleTransition(ExecutionContext& context, size_t state, size_t action, double& reward) const
+  {
+    RandomGeneratorPtr random = context.getRandomGenerator();
+
+    double Z;
+    SparseDoubleVectorPtr transitions = getTransitionProbabilities(state, action, Z);
+    
+    size_t newState = (size_t)-1;
+    double p = random->sampleDouble(Z);
+    for (size_t i = 0; i < transitions->getNumValues(); ++i)
+    {
+      std::pair<size_t, double> tr = transitions->getValue(i);
+      if (p <= tr.second)
+      {
+        newState = tr.first;
+        break;
+      }
+      p -= tr.second;
+    }
+    jassert(newState != (size_t)-1);
+    reward = sampleReward(context, state, action, newState);
+    return newState;
+  }
+
+
+};
+
+typedef ReferenceCountedObjectPtr<SmallMDP> SmallMDPPtr;
+
+class SimpleSmallMDP : public SmallMDP
+{
+public:
+  SimpleSmallMDP(size_t numStates, size_t numActions, double discount)
     : model(numStates, std::vector<StateActionInfo>(numActions)), discount(discount)
   {
   }
-  SmallMDP() {}
+  SimpleSmallMDP() {}
 
-  size_t getNumStates() const
-    {return model.size();}
-    
-  size_t getNumActions() const
-    {return model[0].size();}
-  
   void setInfo(size_t state, size_t action, const SamplerPtr& reward, const SparseDoubleVectorPtr& nextStates)
   {
     jassert(state < getNumStates() && action < getNumActions());
@@ -36,34 +74,25 @@ public:
     info.reward = reward;
     info.nextStates = nextStates;
   }
+
+  virtual size_t getNumStates() const
+    {return model.size();}
+    
+  virtual size_t getNumActions() const
+    {return model[0].size();}
   
-  const SparseDoubleVectorPtr& getTransitions(size_t state, size_t action) const
-    {return model[state][action].nextStates;}
+  virtual double getDiscount() const
+    {return discount;}
   
-  double getRewardExpectation(size_t state, size_t action, size_t nextState) const
+  virtual SparseDoubleVectorPtr getTransitionProbabilities(size_t state, size_t action, double& Z) const
+    {Z = 1.0; return model[state][action].nextStates;}
+  
+  virtual double getRewardExpectation(size_t state, size_t action, size_t nextState) const
     {return model[state][action].reward->computeExpectation().getDouble();}
   
-  size_t sampleTransition(ExecutionContext& context, size_t state, size_t action, double& reward) const
-  {
-    RandomGeneratorPtr random = context.getRandomGenerator();
+  virtual double sampleReward(ExecutionContext& context, size_t state, size_t action, size_t newState) const
+    {return model[state][action].reward->sample(context, context.getRandomGenerator()).toDouble();}
 
-    const StateActionInfo& info = model[state][action];
-    reward = info.reward->sample(context, random).toDouble();
-    
-    double p = random->sampleDouble();
-    for (size_t i = 0; i < info.nextStates->getNumValues(); ++i)
-    {
-      std::pair<size_t, double> tr = info.nextStates->getValue(i);
-      if (p <= tr.second)
-        return tr.first;
-      p -= tr.second;
-    }
-    jassert(false);
-    return (size_t)-1;
-  }
-
-  double getDiscount() const
-    {return discount;}
   
 protected:  
   struct StateActionInfo
@@ -76,7 +105,190 @@ protected:
   double discount;
 };
 
-typedef ReferenceCountedObjectPtr<SmallMDP> SmallMDPPtr;
+class GeneratedSparseSmallMDP : public SimpleSmallMDP
+{
+public:
+  GeneratedSparseSmallMDP(RandomGeneratorPtr random, size_t numStates, size_t numActions, double discount, size_t numSuccessorsPerState, double nonNullRewardProbability)
+    : SimpleSmallMDP(numStates, numActions, discount)
+  {
+    for (size_t i = 0; i < numStates; ++i)
+      for (size_t j = 0; j < numActions; ++j)
+      {
+        SamplerPtr reward = bernoulliSampler(random->sampleBool(nonNullRewardProbability) ? random->sampleDouble() : 0.0);
+        SparseDoubleVectorPtr transitions = new SparseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType);
+        
+        std::vector<size_t> order;
+        random->sampleOrder(numStates, order);
+        double Z = 0.0;
+        for (size_t k = 0; k < numSuccessorsPerState; ++k)
+        {
+          double p = random->sampleDouble();
+          transitions->setElement(order[k], p);
+          Z += p;
+        }
+        transitions->multiplyByScalar(1.0 / Z);
+        setInfo(i, j, reward, transitions);
+      }
+  }
+};
+
+class HallwaysMDP : public SmallMDP
+{
+public:
+  virtual size_t getNumStates() const
+    {return 47;}
+
+  virtual size_t getNumActions() const
+    {return 2;}
+
+  virtual double getDiscount() const
+    {return 0.95;}
+
+  virtual SparseDoubleVectorPtr getTransitionProbabilities(size_t state, size_t action, double& Z) const
+  {
+    SparseDoubleVectorPtr res = new SparseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType);
+    Z = 1.0;
+
+    if (state <= 2) // initial states
+      res->setElement(state * 2 + action + 1, 1.0);
+    else if (state <= 42) // inside hallways
+      res->setElement(action == 0 ? state + 4 : state, 1.0);
+    else if (state <= 46) // terminal states
+      res->setElement(action == 0 ? 0 : state, 1.0);
+    else
+      jassert(false);
+    return res;
+  }
+
+  virtual double sampleReward(ExecutionContext& context, size_t state, size_t action, size_t nextState) const
+  {
+    if (action == 0 && (state >= 43 && state <= 46))
+    {
+      size_t i = state - 42;
+      if (context.getRandomGenerator()->sampleBool(1.0 / i))
+        return pow(1.5, i + 5.0);
+    }
+    return 0.0;
+  }
+
+  virtual double getRewardExpectation(size_t state, size_t action, size_t nextState) const
+  {
+    if (action == 0 && (state >= 43 && state <= 46))
+    {
+      size_t i = state - 42;
+      return pow(1.5, i + 5.0) * (1.0 / i);
+    }
+    else
+      return 0.0;
+  }
+};
+
+class BanditMDP : public SmallMDP
+{
+public:
+  virtual size_t getNumStates() const
+    {return 7;}
+
+  virtual size_t getNumActions() const
+    {return 6;}
+
+  virtual double getDiscount() const
+    {return 0.95;}
+
+  virtual SparseDoubleVectorPtr getTransitionProbabilities(size_t state, size_t action, double& Z) const
+  {
+    SparseDoubleVectorPtr res = new SparseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType);
+    Z = 1.0;
+
+    if (state == 0)
+    {
+      size_t j = action + 1;
+      res->setElement(j, 1.0 / j);
+      res->setElement(0, 1.0 - 1.0 / j);
+    }
+    else
+      res->setElement(0, 1.0);
+    return res;
+  }
+
+  virtual double sampleReward(ExecutionContext& context, size_t state, size_t action, size_t nextState) const
+    {return getRewardExpectation(state, action, nextState);}
+
+  virtual double getRewardExpectation(size_t state, size_t action, size_t nextState) const
+    {return action == 0 && state > 0 ? pow(1.5, (double)state) : 0.0;}
+};
+
+class LongChainMDP : public SmallMDP
+{
+public:
+  virtual size_t getNumStates() const
+    {return 20;}
+
+  virtual size_t getNumActions() const
+    {return 2;}
+
+  virtual double getDiscount() const
+    {return pow(0.5, 1.0 / (getNumStates() - 2));}
+
+  virtual size_t getInitialState() const
+    {return 1;}
+
+  virtual SparseDoubleVectorPtr getTransitionProbabilities(size_t state, size_t action, double& Z) const
+  {
+    SparseDoubleVectorPtr res = new SparseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType);
+    Z = 1.0;
+
+    if (state >= 1 && state < getNumStates() - 1)
+    {
+      if (action == 0)
+        res->setElement(state + 1, 1.0);
+      else
+        res->setElement(0, 1.0);
+    }
+    else if (state == getNumStates() - 1)
+      res->setElement(0, 1.0);
+    else if (state == 0)
+    {
+      res->setElement(getInitialState(), 0.025);
+      res->setElement(state, 0.975);
+    }
+    return res;
+  }
+
+  virtual double sampleReward(ExecutionContext& context, size_t state, size_t action, size_t nextState) const
+  {
+    if (state >= 1 && state < getNumStates() - 1)
+    {
+      if (action == 0)
+        return 0.0;
+      else
+        return 0.25;
+    }
+    else if (state == getNumStates() - 1)
+      return context.getRandomGenerator()->sampleBool(0.75) ? 1.0 : 0.0;
+    else if (state == 0)
+      return 0.0;
+    else
+      return 0.0;
+  }
+
+  virtual double getRewardExpectation(size_t state, size_t action, size_t nextState) const
+  {
+    if (state >= 1 && state < getNumStates() - 1)
+    {
+      if (action == 0)
+        return 0.0;
+      else
+        return 0.25;
+    }
+    else if (state == getNumStates() - 1)
+      return 0.75;
+    else if (state == 0)
+      return 0.0;
+    else
+      return 0.0;
+  }
+};
 
 }; /* namespace lbcpp */
 

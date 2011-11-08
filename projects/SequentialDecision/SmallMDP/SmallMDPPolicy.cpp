@@ -93,11 +93,12 @@ DoubleMatrixPtr SmallMDPPolicy::bellmanOperator(const SmallMDPPtr& mdp, const Do
       // Q_{t+1}(s,a) = sum_{s'} [ P(s'|s,a) (r(s,a,s') + discount * V(s')) ]
       // with V(s) = max_a Q(s,a)
       double newValue = 0.0;
-      SparseDoubleVectorPtr transitions = mdp->getTransitions(i, j);
+      double Z;
+      SparseDoubleVectorPtr transitions = mdp->getTransitionProbabilities(i, j, Z);
       for (size_t k = 0; k < transitions->getNumValues(); ++k)
       {
         size_t nextState = transitions->getValue(k).first;
-        double transitionProbability = transitions->getValue(k).second;
+        double transitionProbability = transitions->getValue(k).second / Z;
         
         double r = mdp->getRewardExpectation(i, j, nextState);
         newValue += transitionProbability * (r + mdp->getDiscount() * v->getValue(nextState));
