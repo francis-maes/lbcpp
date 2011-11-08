@@ -110,6 +110,97 @@ protected:
     {return q->getNumColumns();}
 };
 
+class ModelBasedSmallMDPPolicy : public SmallMDPPolicy
+{
+public:
+  virtual void initialize(ExecutionContext& context, const SmallMDPPtr& mdp)
+  {
+    size_t numStates = mdp->getNumStates();
+    size_t numActions = mdp->getNumActions();
+
+    model = new EmpiricalSmallMDP(numStates, numActions, mdp->getDiscount());
+    q = new DoubleMatrix(numStates, numActions, 1.0 / (1.0 - mdp->getDiscount()));
+  }
+
+  virtual size_t selectAction(ExecutionContext& context, size_t state)
+    {return sampleBestAction(context, q, state);}
+
+  virtual void observeTransition(ExecutionContext& context, size_t state, size_t action, size_t nextState, double reward)
+    {model->observeTransition(state, action, nextState, reward);}
+
+protected:
+  EmpiricalSmallMDPPtr model;
+  DoubleMatrixPtr q;
+};
+
+typedef ReferenceCountedObjectPtr<ModelBasedSmallMDPPolicy> ModelBasedSmallMDPPolicyPtr;
+
+class RMaxSmallMDPPolicy : public ModelBasedSmallMDPPolicy
+{
+public:
+  RMaxSmallMDPPolicy(size_t m = 0)
+    : m(m) {}
+
+  virtual void observeTransition(ExecutionContext& context, size_t state, size_t action, size_t nextState, double reward)
+  {
+    if (model->getNumObservations(state, action) < m)
+    {
+      model->observeTransition(state, action, nextState, reward);
+      if (model->getNumObservations(state, action) == m)
+      {
+        while (true)
+        {
+          static const double epsilon = 1e-9;
+          double residual = updateActionValues();
+          if (residual < epsilon)
+            break;
+        }
+      }
+    }
+  }
+
+  double updateActionValues()
+  {
+    size_t ns = model->getNumStates();
+    size_t na = model->getNumActions();
+    
+    DenseDoubleVectorPtr v = computeStateValuesFromActionValues(q);
+    
+    double residual = 0.0;
+    DoubleMatrixPtr res(new DoubleMatrix(ns, na));
+    for (size_t i = 0; i < ns; ++i)
+      for (size_t j = 0; j < na; ++j)
+        if (model->getNumObservations(i, j) == m)
+        {
+          // Q_{t+1}(s,a) = sum_{s'} [ P(s'|s,a) (r(s,a,s') + discount * V(s')) ]
+          // with V(s) = max_a Q(s,a)
+          double newValue = 0.0;
+          double Z;
+          SparseDoubleVectorPtr transitions = model->getTransitionProbabilities(i, j, Z);
+          for (size_t k = 0; k < transitions->getNumValues(); ++k)
+          {
+            size_t nextState = transitions->getValue(k).first;
+            double transitionProbability = transitions->getValue(k).second / Z;
+            double r = model->getRewardExpectation(i, j, nextState);
+            newValue += transitionProbability * (r + model->getDiscount() * v->getValue(nextState));
+          }
+          double previousValue = q->getValue(i, j);
+          residual = juce::jmax(residual, fabs(newValue - previousValue));
+          res->setValue(i, j, newValue);
+        }
+        else
+          res->setValue(i, j, q->getValue(i, j));
+
+    q = res;
+    return residual;
+  }
+
+protected:
+  friend class RMaxSmallMDPPolicyClass;
+
+  size_t m;
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_SMALL_MDP_POLICY_H_

@@ -52,11 +52,77 @@ public:
     reward = sampleReward(context, state, action, newState);
     return newState;
   }
-
-
 };
 
 typedef ReferenceCountedObjectPtr<SmallMDP> SmallMDPPtr;
+
+class EmpiricalSmallMDP : public SmallMDP
+{
+public:
+  EmpiricalSmallMDP(size_t numStates, size_t numActions, double discount)
+    : model(numStates, std::vector<StateActionInfo>(numActions)), discount(discount)
+  {
+    for (size_t i = 0; i < numStates; ++i)
+      for (size_t j = 0; j < numActions; ++j)
+        model[i][j].initialize();
+  }
+  EmpiricalSmallMDP() {}
+
+  virtual size_t getNumStates() const
+    {return model.size();}
+    
+  virtual size_t getNumActions() const
+    {return model[0].size();}
+  
+  virtual double getDiscount() const
+    {return discount;}
+  
+  virtual SparseDoubleVectorPtr getTransitionProbabilities(size_t state, size_t action, double& Z) const
+  {
+    const StateActionInfo& info = model[state][action];
+    Z = (double)info.getNumObservations();
+    return info.nextStates;
+  }
+  
+  virtual double getRewardExpectation(size_t state, size_t action, size_t nextState) const
+    {return model[state][action].rewards->getMean();}
+  
+  virtual double sampleReward(ExecutionContext& context, size_t state, size_t action, size_t nextState) const
+    {jassert(false); return 0.0;}
+
+  size_t getNumObservations(size_t state, size_t action) const
+    {return model[state][action].getNumObservations();}
+
+  void observeTransition(size_t state, size_t action, size_t nextState, double reward)
+    {model[state][action].observe(nextState, reward);}
+
+protected:
+  struct StateActionInfo
+  {
+    void initialize()
+    {
+      rewards = new ScalarVariableStatistics("rewards");
+      nextStates = new SparseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType);
+    }
+
+    void observe(size_t nextState, double reward)
+    {
+      rewards->push(reward);
+      nextStates->incrementValue(nextState, 1.0);
+    }
+
+    size_t getNumObservations() const
+      {return (size_t)rewards->getCount();}
+
+    ScalarVariableStatisticsPtr rewards;
+    SparseDoubleVectorPtr nextStates;
+  };
+
+  std::vector< std::vector< StateActionInfo > > model; // s -> a -> model
+  double discount;
+};
+
+typedef ReferenceCountedObjectPtr<EmpiricalSmallMDP> EmpiricalSmallMDPPtr;
 
 class SimpleSmallMDP : public SmallMDP
 {
@@ -93,7 +159,6 @@ public:
   virtual double sampleReward(ExecutionContext& context, size_t state, size_t action, size_t newState) const
     {return model[state][action].reward->sample(context, context.getRandomGenerator()).toDouble();}
 
-  
 protected:  
   struct StateActionInfo
   {
