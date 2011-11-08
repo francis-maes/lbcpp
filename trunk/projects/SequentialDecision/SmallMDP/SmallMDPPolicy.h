@@ -35,7 +35,10 @@ class OptimalSmallMDPPolicy : public SmallMDPPolicy
 {
 public:
   virtual void initialize(ExecutionContext& context, const SmallMDPPtr& mdp)
-    {qStar = computeOptimalQFunction(context, mdp);}
+  {
+    qStar = computeOptimalQFunction(context, mdp);
+    context.resultCallback(T("qstar"), qStar);
+  }
 
   virtual size_t selectAction(ExecutionContext& context, size_t state)
     {return sampleBestAction(context, qStar, state);}

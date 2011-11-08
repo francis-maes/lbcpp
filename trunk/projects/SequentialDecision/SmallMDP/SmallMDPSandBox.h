@@ -19,19 +19,24 @@ namespace lbcpp
 class SmallMDPSandBox : public WorkUnit
 {
 public:
-  SmallMDPSandBox() : numStates(20), numActions(4), discount(0.9), numSuccessorsPerState(5) {}
+  SmallMDPSandBox() : numStates(20), numActions(4), discount(0.9), numSuccessorsPerState(5), nonNullRewardProbability(0.1) {}
   
   virtual Variable run(ExecutionContext& context)
   {
-    SmallMDPPtr mdp = sampleMDP(context.getRandomGenerator());
-  
-    testPolicy(context, "random", new RandomSmallMDPPolicy(), mdp);
-    testPolicy(context, "optimal", new OptimalSmallMDPPolicy(), mdp);
-    testPolicy(context, "qlearning", new QLearningSmallMDPPolicy(constantIterationFunction(0.1), 0.5), mdp);   
+    //SmallMDPPtr mdp = new GeneratedSparseSmallMDP(context.getRandomGenerator(), numStates, numActions, discount, numSuccessorsPerState, nonNullRewardProbability);
 
-    testPolicy(context, "random", new RandomSmallMDPPolicy(), mdp);
+    //SmallMDPPtr mdp = new LongChainMDP();
+    SmallMDPPtr mdp = new BanditMDP();
     testPolicy(context, "optimal", new OptimalSmallMDPPolicy(), mdp);
-    testPolicy(context, "qlearning", new QLearningSmallMDPPolicy(constantIterationFunction(0.1), 0.5), mdp);   
+    testPolicy(context, "optimal", new OptimalSmallMDPPolicy(), mdp);
+    testPolicy(context, "optimal", new OptimalSmallMDPPolicy(), mdp);
+    testPolicy(context, "qlearning w=1", new QLearningSmallMDPPolicy(constantIterationFunction(0.0), 1.0), mdp);   
+    testPolicy(context, "qlearning w=1", new QLearningSmallMDPPolicy(constantIterationFunction(0.0), 1.0), mdp);   
+    testPolicy(context, "qlearning w=1", new QLearningSmallMDPPolicy(constantIterationFunction(0.0), 1.0), mdp);   
+    testPolicy(context, "qlearning w=0.5", new QLearningSmallMDPPolicy(constantIterationFunction(0.0), 0.5), mdp);   
+    testPolicy(context, "qlearning w=0.5", new QLearningSmallMDPPolicy(constantIterationFunction(0.0), 0.5), mdp);   
+    testPolicy(context, "qlearning w=0.5", new QLearningSmallMDPPolicy(constantIterationFunction(0.0), 0.5), mdp);   
+    testPolicy(context, "random", new RandomSmallMDPPolicy(), mdp);
     return true;
   }
 
@@ -43,7 +48,7 @@ public:
 
     policy->initialize(context, mdp);
     double rewardSum = 0.0;
-    size_t state = 0;
+    size_t state = mdp->getInitialState();
     for (size_t i = 0; i < numTimeSteps; ++i)
     {
       size_t action = policy->selectAction(context, state);
@@ -64,31 +69,7 @@ protected:
   size_t numActions;
   double discount;
   size_t numSuccessorsPerState;
-  
-  SmallMDPPtr sampleMDP(RandomGeneratorPtr randomGenerator) const
-  {
-    SmallMDPPtr res(new SmallMDP(numStates, numActions, discount));
-    for (size_t i = 0; i < numStates; ++i)
-      for (size_t j = 0; j < numActions; ++j)
-      {
-        SamplerPtr reward = bernoulliSampler(randomGenerator->sampleDouble());
-        SparseDoubleVectorPtr transitions = new SparseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType);
-        
-        std::vector<size_t> order;
-        randomGenerator->sampleOrder(numStates, order);
-        double Z = 0.0;
-        for (size_t k = 0; k < numSuccessorsPerState; ++k)
-        {
-          double p = randomGenerator->sampleDouble();
-          transitions->setElement(order[k], p);
-          Z += p;
-        }
-        transitions->multiplyByScalar(1.0 / Z);
-        res->setInfo(i, j, reward, transitions);
-      }
-    return res;
-  }
-  
+  double nonNullRewardProbability;
 };
 
 }; /* namespace lbcpp */
