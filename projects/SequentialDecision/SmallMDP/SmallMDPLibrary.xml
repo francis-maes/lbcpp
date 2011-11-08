@@ -13,7 +13,12 @@
     <variable type="IterationFunction" name="epsilon"/>
     <variable type="Double" name="w"/>
   </class>
-  
+  <class name="ModelBasedSmallMDPPolicy" base="SmallMDPPolicy" abstract="yes"/>
+  <class name="RMaxSmallMDPPolicy" base="ModelBasedSmallMDPPolicy">
+    <constructor arguments="size_t m"/>
+    <variable type="PositiveInteger" name="m"/>
+  </class>
+
   <class name="SmallMDPSandBox" base="WorkUnit">
     <variable type="PositiveInteger" name="numStates"/>
     <variable type="PositiveInteger" name="numActions"/>

@@ -25,8 +25,12 @@ public:
   {
     //SmallMDPPtr mdp = new GeneratedSparseSmallMDP(context.getRandomGenerator(), numStates, numActions, discount, numSuccessorsPerState, nonNullRewardProbability);
 
-    //SmallMDPPtr mdp = new LongChainMDP();
-    SmallMDPPtr mdp = new BanditMDP();
+    SmallMDPPtr mdp = new LongChainMDP();
+    //SmallMDPPtr mdp = new BanditMDP();
+    testPolicy(context, "rmax(2)", new RMaxSmallMDPPolicy(2), mdp);
+    testPolicy(context, "rmax(2)", new RMaxSmallMDPPolicy(2), mdp); 
+    testPolicy(context, "rmax(2)", new RMaxSmallMDPPolicy(2), mdp); 
+
     testPolicy(context, "optimal", new OptimalSmallMDPPolicy(), mdp);
     testPolicy(context, "optimal", new OptimalSmallMDPPolicy(), mdp);
     testPolicy(context, "optimal", new OptimalSmallMDPPolicy(), mdp);
