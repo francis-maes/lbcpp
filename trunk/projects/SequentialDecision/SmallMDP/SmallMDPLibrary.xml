@@ -2,9 +2,17 @@
 
 <library name="SmallMDP" directory="SmallMDP">
 
-
   <class name="SmallMDP" base="Object"/>
 
+  <class name="SmallMDPPolicy" base="Object" abstract="yes"/>
+  <class name="OptimalSmallMDPPolicy" base="SmallMDPPolicy"/>
+  <class name="RandomSmallMDPPolicy" base="SmallMDPPolicy"/>
+  <class name="QLearningSmallMDPPolicy" base="SmallMDPPolicy">
+    <constructor arguments="IterationFunctionPtr epsilon, IterationFunctionPtr alpha"/>
+    <variable type="IterationFunction" name="epsilon"/>
+    <variable type="Double" name="w"/>
+  </class>
+  
   <class name="SmallMDPSandBox" base="WorkUnit">
     <variable type="PositiveInteger" name="numStates"/>
     <variable type="PositiveInteger" name="numActions"/>
