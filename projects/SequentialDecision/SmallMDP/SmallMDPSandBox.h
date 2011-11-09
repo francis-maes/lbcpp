@@ -60,19 +60,7 @@ public:
       policies.push_back(new QLearningSmallMDPPolicy(constantIterationFunction(0.0), beta));
     findBestPolicy(context, "QLearning", policies);
 
-    /*
-    //SmallMDPPtr mdp = new LongChainMDP();
-    //SmallMDPPtr mdp = new BanditMDP();
-    //testPolicy(context, "MBIE-EB(10000, 0.16)", new MBIEEBSmallMDPPolicy(10000, 0.16), mdp);
-    
-    testPolicy(context, "rmax(2)", new RMaxSmallMDPPolicy(2));
-    testPolicy(context, "RTDP-rmax(2)", new RTDPRMaxSmallMDPPolicy(2));
-//    testPolicy(context, "rmax(5)", new RMaxSmallMDPPolicy(5), mdp);
-    //testPolicy(context, "rmax(10)", new RMaxSmallMDPPolicy(10), mdp);
-    testPolicy(context, "qlearning w=1", new QLearningSmallMDPPolicy(constantIterationFunction(0.0), 1.0));   
-    //testPolicy(context, "qlearning w=0.5", new QLearningSmallMDPPolicy(constantIterationFunction(0.0), 0.5), mdp);   
-    testPolicy(context, "random", new RandomSmallMDPPolicy());
-    */
+
     return true;
   }
 
