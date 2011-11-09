@@ -201,6 +201,45 @@ protected:
   size_t m;
 };
 
+class RTDPRMaxSmallMDPPolicy : public ModelBasedSmallMDPPolicy
+{
+public:
+  RTDPRMaxSmallMDPPolicy(size_t m = 0)
+    : m(m) {}
+
+  virtual void observeTransition(ExecutionContext& context, size_t state, size_t action, size_t nextState, double reward)
+  {
+    static const double epsilon = 1e-9;
+
+    if (model->getNumObservations(state, action) < m)
+    {
+      model->observeTransition(state, action, nextState, reward);
+      if (model->getNumObservations(state, action) == m)
+      {
+        DenseDoubleVectorPtr v = computeStateValuesFromActionValues(q);
+ 
+        double newValue = 0.0;
+        double Z;
+        SparseDoubleVectorPtr transitions = model->getTransitionProbabilities(state, action, Z);
+        for (size_t k = 0; k < transitions->getNumValues(); ++k)
+        {
+          size_t nextState = transitions->getValue(k).first;
+          double transitionProbability = transitions->getValue(k).second / Z;
+          double r = model->getRewardExpectation(state, action, nextState);
+          newValue += transitionProbability * (r + model->getDiscount() * v->getValue(nextState));
+        }
+        if (fabs(newValue - q->getValue(state, action)) > epsilon)
+          q->setValue(state, action, newValue);
+      }
+    }
+  }
+
+protected:
+  friend class RTDPRMaxSmallMDPPolicyClass;
+
+  size_t m;
+};
+
 class MBIEEBSmallMDPPolicy : public ModelBasedSmallMDPPolicy
 {
 public:

@@ -195,6 +195,7 @@ public:
         setInfo(i, j, reward, transitions);
       }
   }
+  GeneratedSparseSmallMDP() {}
 };
 
 class HallwaysMDP : public SmallMDP

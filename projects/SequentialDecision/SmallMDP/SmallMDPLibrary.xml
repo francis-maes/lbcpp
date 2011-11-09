@@ -2,9 +2,22 @@
 
 <library name="SmallMDP" directory="SmallMDP">
 
+  <!-- SmallMDP -->
   <class name="SmallMDP" base="Object" abstract="yes"/>
+  <class name="EmpiricalSmallMDP" base="SmallMDP"/>
   <class name="SimpleSmallMDP" base="SmallMDP"/>
+  <class name="GeneratedSparseSmallMDP" base="SimpleSmallMDP"/>
 
+  <!-- SmallMDP Sampler -->
+  <class name="SparseSmallMDPSampler" base="Sampler">
+    <variable type="PositiveInteger" name="numStates"/>
+    <variable type="PositiveInteger" name="numActions"/>
+    <variable type="Double" name="discount"/>
+    <variable type="PositiveInteger" name="numSuccessorsPerState"/>
+    <variable type="Double" name="nonNullRewardProbability"/>
+  </class>
+  
+  <!-- SmallMDP Policy -->  
   <class name="SmallMDPPolicy" base="Object" abstract="yes"/>
   <class name="OptimalSmallMDPPolicy" base="SmallMDPPolicy"/>
   <class name="RandomSmallMDPPolicy" base="SmallMDPPolicy"/>
@@ -13,23 +26,29 @@
     <variable type="IterationFunction" name="epsilon"/>
     <variable type="Double" name="w"/>
   </class>
+  
   <class name="ModelBasedSmallMDPPolicy" base="SmallMDPPolicy" abstract="yes"/>
+  
   <class name="RMaxSmallMDPPolicy" base="ModelBasedSmallMDPPolicy">
     <constructor arguments="size_t m"/>
     <variable type="PositiveInteger" name="m"/>
   </class>
+  <class name="RTDPRMaxSmallMDPPolicy" base="ModelBasedSmallMDPPolicy">
+    <constructor arguments="size_t m"/>
+    <variable type="PositiveInteger" name="m"/>
+  </class>
+  
   <class name="MBIEEBSmallMDPPolicy" base="ModelBasedSmallMDPPolicy">
     <constructor arguments="size_t m, double beta"/>
     <variable type="PositiveInteger" name="m"/>
     <variable type="Double" name="beta"/>
   </class>
 
+  <!-- SmallMDP Sand box -->
   <class name="SmallMDPSandBox" base="WorkUnit">
-    <variable type="PositiveInteger" name="numStates"/>
-    <variable type="PositiveInteger" name="numActions"/>
-    <variable type="Double" name="discount"/>
-    <variable type="PositiveInteger" name="numSuccessorsPerState"/>
-    <variable type="Double" name="nonNullRewardProbability"/>
+    <variable type="Sampler" name="mdpSampler"/>
+    <variable type="PositiveInteger" name="numTimeSteps"/>
+    <variable type="PositiveInteger" name="numRuns"/>
   </class>
   
 </library>
