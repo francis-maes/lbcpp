@@ -36,6 +36,21 @@ protected:
   double nonNullRewardProbability;
 };
 
+class ConstantMDPSampler : public Sampler
+{
+public:
+  ConstantMDPSampler(const SmallMDPPtr& mdp = SmallMDPPtr())
+    : mdp(mdp) {}
+
+  virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
+    {return mdp;}
+ 
+protected:
+  friend class ConstantMDPSamplerClass;
+  
+  SmallMDPPtr mdp;
+};
+
 class EvaluateSmallMDPPolicy : public WorkUnit
 {
 public:
@@ -94,7 +109,7 @@ public:
     ScalarVariableStatisticsPtr stats = new ScalarVariableStatistics("toto");
     for (size_t i = 0; i < numRuns; ++i)
       stats->push(results->getElement(i).getDouble());
-    return stats->getMean();
+    return -stats->getMean();
   }
   
 protected:
@@ -111,23 +126,25 @@ public:
   
   virtual Variable run(ExecutionContext& context)
   {
+    std::vector<SmallMDPPolicyPtr> policies;
+
     testPolicy(context, "optimal", new OptimalSmallMDPPolicy());
     testPolicy(context, "random", new RandomSmallMDPPolicy());
 
-    std::vector<SmallMDPPolicyPtr> policies;
-    for (size_t m = 1; m < 50; ++m)
+    policies.clear();
+    for (double beta = 0.0; beta <= 5.0; beta += 0.2)
+      policies.push_back(new QLearningSmallMDPPolicy(constantIterationFunction(0.0), beta));
+    findBestPolicy(context, "QLearning", policies);
+
+    policies.clear();
+    for (size_t m = 1; m < 50; m += 2)
       policies.push_back(new RMaxSmallMDPPolicy(m));
     findBestPolicy(context, "rmax", policies);
 
     policies.clear();
-    for (size_t m = 1; m < 50; ++m)
+    for (size_t m = 1; m < 50; m += 2)
       policies.push_back(new RTDPRMaxSmallMDPPolicy(m));
     findBestPolicy(context, "RTDP-rmax", policies);
-    
-    policies.clear();
-    for (double beta = 0.0; beta <= 2.0; beta += 0.1)
-      policies.push_back(new QLearningSmallMDPPolicy(constantIterationFunction(0.0), beta));
-    findBestPolicy(context, "QLearning", policies);
 
     context.enterScope("parameterized Q-Learning(1)");
     SmallMDPPolicyPtr optimizedPolicy = optimizePolicy(context, new ParameterizedQLearningSmallMDPPolicy(1));
@@ -136,6 +153,15 @@ public:
     context.enterScope("parameterized Q-Learning(2)");
     SmallMDPPolicyPtr optimizedPolicy2 = optimizePolicy(context, new ParameterizedQLearningSmallMDPPolicy(2));
     context.leaveScope();
+
+    context.enterScope("parameterized RTDP-RMax(1)");
+    SmallMDPPolicyPtr optimizedPolicy3 = optimizePolicy(context, new ParameterizedRTDPRMaxSmallMDPPolicy(1));
+    context.leaveScope();
+    
+    context.enterScope("parameterized RTDP-RMax(2)");
+    SmallMDPPolicyPtr optimizedPolicy4 = optimizePolicy(context, new ParameterizedRTDPRMaxSmallMDPPolicy(2));
+    context.leaveScope();
+
     return true;
   }
 
@@ -206,7 +232,7 @@ public:
     context.resultCallback(T("numParameters"), numParameters);
 
     // eda parameters
-    size_t numIterations = 100;
+    size_t numIterations = 10;
     size_t populationSize = numParameters * 8;
     size_t numBests = numParameters * 2;
 
