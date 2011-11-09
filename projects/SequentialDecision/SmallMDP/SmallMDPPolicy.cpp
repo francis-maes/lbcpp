@@ -37,22 +37,21 @@ size_t SmallMDPPolicy::sampleBestAction(ExecutionContext& context, const DoubleM
 
 DoubleMatrixPtr SmallMDPPolicy::computeOptimalQFunction(ExecutionContext& context, const SmallMDPPtr& mdp) const
 {
-  static const double epsilon = 1e-12;
-  size_t maxIterations = mdp->getNumStates() * mdp->getNumActions() * 100;
+  static const double epsilon = 1e-9;
 
   DoubleMatrixPtr res(new DoubleMatrix(mdp->getNumStates(), mdp->getNumActions()));
-  for (size_t i = 0; i < maxIterations; ++i)
+  while (true)
   {
-    context.enterScope(T("Iteration ") + String((int)i));
+   // context.enterScope(T("Iteration ") + String((int)i));
     double differenceSumOfSquares, maxDifference;
     res = bellmanOperator(mdp, res, differenceSumOfSquares, maxDifference);
-    context.resultCallback(T("Iteration"), i);
+   /* context.resultCallback(T("Iteration"), i);
     context.resultCallback(T("differenceSumOfSquares"), differenceSumOfSquares);
     context.resultCallback(T("maxDifference"), maxDifference);
     //context.resultCallback(T("Qfunction"), res->cloneAndCast<DoubleMatrix>());
-    context.leaveScope();
+    context.leaveScope();*/
     
-    if (differenceSumOfSquares < epsilon)
+    if (maxDifference < epsilon)
       break;
   }
   return res;

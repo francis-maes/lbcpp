@@ -27,19 +27,13 @@ public:
 
     SmallMDPPtr mdp = new LongChainMDP();
     //SmallMDPPtr mdp = new BanditMDP();
+    testPolicy(context, "MBIE-EB(10000, 0.16)", new MBIEEBSmallMDPPolicy(10000, 0.16), mdp);
+    testPolicy(context, "optimal", new OptimalSmallMDPPolicy(), mdp);
     testPolicy(context, "rmax(2)", new RMaxSmallMDPPolicy(2), mdp);
-    testPolicy(context, "rmax(2)", new RMaxSmallMDPPolicy(2), mdp); 
-    testPolicy(context, "rmax(2)", new RMaxSmallMDPPolicy(2), mdp); 
-
-    testPolicy(context, "optimal", new OptimalSmallMDPPolicy(), mdp);
-    testPolicy(context, "optimal", new OptimalSmallMDPPolicy(), mdp);
-    testPolicy(context, "optimal", new OptimalSmallMDPPolicy(), mdp);
+//    testPolicy(context, "rmax(5)", new RMaxSmallMDPPolicy(5), mdp);
+    //testPolicy(context, "rmax(10)", new RMaxSmallMDPPolicy(10), mdp);
     testPolicy(context, "qlearning w=1", new QLearningSmallMDPPolicy(constantIterationFunction(0.0), 1.0), mdp);   
-    testPolicy(context, "qlearning w=1", new QLearningSmallMDPPolicy(constantIterationFunction(0.0), 1.0), mdp);   
-    testPolicy(context, "qlearning w=1", new QLearningSmallMDPPolicy(constantIterationFunction(0.0), 1.0), mdp);   
-    testPolicy(context, "qlearning w=0.5", new QLearningSmallMDPPolicy(constantIterationFunction(0.0), 0.5), mdp);   
-    testPolicy(context, "qlearning w=0.5", new QLearningSmallMDPPolicy(constantIterationFunction(0.0), 0.5), mdp);   
-    testPolicy(context, "qlearning w=0.5", new QLearningSmallMDPPolicy(constantIterationFunction(0.0), 0.5), mdp);   
+    //testPolicy(context, "qlearning w=0.5", new QLearningSmallMDPPolicy(constantIterationFunction(0.0), 0.5), mdp);   
     testPolicy(context, "random", new RandomSmallMDPPolicy(), mdp);
     return true;
   }
@@ -47,9 +41,22 @@ public:
   void testPolicy(ExecutionContext& context, const String& name, const SmallMDPPolicyPtr& policy, const SmallMDPPtr& mdp) const
   {
     static const size_t numTimeSteps = 100000;
+    static const size_t numRuns = 10;
 
     context.enterScope(name);
-
+    ScalarVariableStatisticsPtr stats = new ScalarVariableStatistics("toto");
+    for (size_t i = 0; i < numRuns; ++i)
+    {
+      double score = runPolicy(context, policy->cloneAndCast<SmallMDPPolicy>(), mdp, numTimeSteps);
+      stats->push(score);
+      context.progressCallback(new ProgressionState(i+1, numRuns, T("Runs")));
+      context.informationCallback("Score: " + String(score));
+    }
+    context.leaveScope(stats);
+  }
+  
+  double runPolicy(ExecutionContext& context, const SmallMDPPolicyPtr& policy, const SmallMDPPtr& mdp, size_t numTimeSteps) const
+  {
     policy->initialize(context, mdp);
     double rewardSum = 0.0;
     size_t state = mdp->getInitialState();
@@ -62,10 +69,9 @@ public:
       state = newState;
       rewardSum += reward;
     }
-    
-    context.leaveScope(rewardSum);
+    return rewardSum;
   }
-  
+
 protected:
   friend class SmallMDPSandBoxClass;
   

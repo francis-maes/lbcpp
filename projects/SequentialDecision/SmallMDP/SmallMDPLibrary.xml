@@ -18,6 +18,11 @@
     <constructor arguments="size_t m"/>
     <variable type="PositiveInteger" name="m"/>
   </class>
+  <class name="MBIEEBSmallMDPPolicy" base="ModelBasedSmallMDPPolicy">
+    <constructor arguments="size_t m, double beta"/>
+    <variable type="PositiveInteger" name="m"/>
+    <variable type="Double" name="beta"/>
+  </class>
 
   <class name="SmallMDPSandBox" base="WorkUnit">
     <variable type="PositiveInteger" name="numStates"/>
