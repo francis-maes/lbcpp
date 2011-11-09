@@ -27,6 +27,8 @@ size_t SmallMDPPolicy::sampleBestAction(ExecutionContext& context, const DoubleM
       bestActions.insert(i);
     }
   }
+  if (bestActions.empty())
+    return context.getRandomGenerator()->sampleSize(n); // random action
   jassert(bestActions.size());
   n = context.getRandomGenerator()->sampleSize(bestActions.size());
   std::set<size_t>::const_iterator it = bestActions.begin();
