@@ -250,7 +250,6 @@ public:
   {
     if (model->getNumObservations(state, action) < m)
     {
-      size_t i = 0;
       model->observeTransition(state, action, nextState, reward);
       while (true)
       {

@@ -48,7 +48,7 @@ protected:
 class ParameterizedQLearningSmallMDPPolicy : public SmallMDPPolicy, public DoubleVectorParameterized
 {
 public:
-  ParameterizedQLearningSmallMDPPolicy(size_t numTerms)
+  ParameterizedQLearningSmallMDPPolicy(size_t numTerms = 0)
     : numTerms(numTerms)
   {
     initializeParameters(createParametersEnumeration());
@@ -108,7 +108,7 @@ public:
     for (size_t i = 0; i < numTerms; ++i)
     {
       double term = parameters->getValue(index++);
-      for (size_t j = 0; j < numVariables; ++j)
+      for (size_t j = 0; j < variables.size(); ++j)
         term *= pow(variables[j], parameters->getValue(index++));
       newValue += term;
     }

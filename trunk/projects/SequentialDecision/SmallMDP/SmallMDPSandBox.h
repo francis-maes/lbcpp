@@ -12,6 +12,7 @@
 # include <lbcpp/Execution/WorkUnit.h>
 # include "SmallMDP.h"
 # include "SmallMDPPolicy.h"
+# include "ParameterizedSmallMDPPolicy.h"
 
 namespace lbcpp
 {
@@ -33,6 +34,74 @@ protected:
   double discount;
   size_t numSuccessorsPerState;
   double nonNullRewardProbability;
+};
+
+class EvaluateSmallMDPPolicy : public WorkUnit
+{
+public:
+  EvaluateSmallMDPPolicy(const SmallMDPPolicyPtr& policy, const SmallMDPPtr& mdp, size_t numTimeSteps)
+    : policy(policy), mdp(mdp), numTimeSteps(numTimeSteps) {}
+  EvaluateSmallMDPPolicy() : numTimeSteps(0) {}
+    
+  virtual Variable run(ExecutionContext& context)
+  {
+    SmallMDPPolicyPtr policy = this->policy->cloneAndCast<SmallMDPPolicy>();
+    
+    policy->initialize(context, mdp);
+    double rewardSum = 0.0;
+    size_t state = mdp->getInitialState();
+    for (size_t i = 0; i < numTimeSteps; ++i)
+    {
+      size_t action = policy->selectAction(context, state);
+      double reward;
+      size_t newState = mdp->sampleTransition(context, state, action, reward);
+      policy->observeTransition(context, state, action, newState, reward);
+      state = newState;
+      rewardSum += reward;
+    }
+    return rewardSum;
+  }
+  
+protected:
+  SmallMDPPolicyPtr policy;
+  SmallMDPPtr mdp;
+  size_t numTimeSteps;
+};
+
+class EvaluateSmallMDPPolicyCompositeWorkUnit : public CompositeWorkUnit
+{
+public:
+  EvaluateSmallMDPPolicyCompositeWorkUnit(const SmallMDPPolicyPtr& policy, const SamplerPtr& mdpSampler, size_t numTimeSteps, size_t numRuns)
+    : CompositeWorkUnit("Evaluate " + policy->toShortString(), numRuns)
+  {
+    ExecutionContext& context = defaultExecutionContext();
+    for (size_t i = 0; i < numRuns; ++i)
+      setWorkUnit(i, new EvaluateSmallMDPPolicy(policy, mdpSampler->sample(context, context.getRandomGenerator()).getObjectAndCast<SmallMDP>(), numTimeSteps));
+    setProgressionUnit("Runs");
+  }
+};
+
+class EvaluateSmallMDPPolicyParameters : public SimpleUnaryFunction
+{
+public:
+  EvaluateSmallMDPPolicyParameters(const SmallMDPPolicyPtr& policy, const SamplerPtr& mdpSampler, size_t numTimeSteps, size_t numRuns)
+    : SimpleUnaryFunction(Parameterized::getParametersType(policy), doubleType), policy(policy), mdpSampler(mdpSampler), numTimeSteps(numTimeSteps), numRuns(numRuns) {}
+  
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    SmallMDPPolicyPtr policy = Parameterized::cloneWithNewParameters(this->policy, input);
+    VariableVectorPtr results = context.run(CompositeWorkUnitPtr(new EvaluateSmallMDPPolicyCompositeWorkUnit(policy, mdpSampler, numTimeSteps, numRuns)), false).getObjectAndCast<VariableVector>();
+    ScalarVariableStatisticsPtr stats = new ScalarVariableStatistics("toto");
+    for (size_t i = 0; i < numRuns; ++i)
+      stats->push(results->getElement(i).getDouble());
+    return stats->getMean();
+  }
+  
+protected:
+  SmallMDPPolicyPtr policy;
+  SamplerPtr mdpSampler;
+  size_t numTimeSteps;
+  size_t numRuns;
 };
 
 class SmallMDPSandBox : public WorkUnit
@@ -60,7 +129,13 @@ public:
       policies.push_back(new QLearningSmallMDPPolicy(constantIterationFunction(0.0), beta));
     findBestPolicy(context, "QLearning", policies);
 
-
+    context.enterScope("parameterized Q-Learning(1)");
+    SmallMDPPolicyPtr optimizedPolicy = optimizePolicy(context, new ParameterizedQLearningSmallMDPPolicy(1));
+    context.leaveScope();
+    
+    context.enterScope("parameterized Q-Learning(2)");
+    SmallMDPPolicyPtr optimizedPolicy2 = optimizePolicy(context, new ParameterizedQLearningSmallMDPPolicy(2));
+    context.leaveScope();
     return true;
   }
 
@@ -87,21 +162,16 @@ public:
   double testPolicy(ExecutionContext& context, const String& name, const SmallMDPPolicyPtr& policy) const
   {
     context.enterScope(name);
-
     for (size_t i = 0; i < policy->getNumVariables(); ++i)
       if (policy->getVariableType(i)->isConvertibleToDouble())
         context.resultCallback(policy->getVariableName(i), policy->getVariable(i));
+    
+    CompositeWorkUnitPtr workUnit = new EvaluateSmallMDPPolicyCompositeWorkUnit(policy, mdpSampler, numTimeSteps, numRuns);//const SmallMDPPolicyPtr& policy, const SamplerPtr& mdpSampler, size_t numTimeSteps, size_t numRuns)
+    VariableVectorPtr results = context.run(workUnit, false).getObjectAndCast<VariableVector>();
 
     ScalarVariableStatisticsPtr stats = new ScalarVariableStatistics("toto");
     for (size_t i = 0; i < numRuns; ++i)
-    {
-      SmallMDPPtr mdp = mdpSampler->sample(context, context.getRandomGenerator()).getObjectAndCast<SmallMDP>();
-      double score = runPolicy(context, policy->cloneAndCast<SmallMDPPolicy>(), mdp, numTimeSteps);
-      stats->push(score);
-      context.progressCallback(new ProgressionState(i+1, numRuns, T("Runs")));
-      context.informationCallback("Score: " + String(score));
-    }
-
+      stats->push(results->getElement(i).getDouble());
     context.resultCallback("mean cumulative reward", stats->getMean());
     context.leaveScope(stats);
     return stats->getMean();
@@ -123,6 +193,40 @@ public:
     }
     return rewardSum;
   }
+  
+  SmallMDPPolicyPtr optimizePolicy(ExecutionContext& context, const SmallMDPPolicyPtr& policy) const
+  {
+    TypePtr parametersType = Parameterized::getParametersType(policy);
+    jassert(parametersType);
+    size_t numParameters = 0;
+    EnumerationPtr enumeration = DoubleVector::getElementsEnumeration(parametersType);
+    if (enumeration)
+      numParameters = enumeration->getNumElements();
+    jassert(numParameters);
+    context.resultCallback(T("numParameters"), numParameters);
+
+    // eda parameters
+    size_t numIterations = 100;
+    size_t populationSize = numParameters * 8;
+    size_t numBests = numParameters * 2;
+
+    // optimization problem
+    FunctionPtr objectiveFunction = new EvaluateSmallMDPPolicyParameters(policy, mdpSampler, numTimeSteps, numRuns);
+    objectiveFunction->initialize(context, parametersType);
+    OptimizationProblemPtr problem = new OptimizationProblem(objectiveFunction, Variable(), Parameterized::get(policy)->createParametersSampler());
+
+    // optimizer
+    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0, true);
+    OptimizerStatePtr state = optimizer->compute(context, problem).getObjectAndCast<OptimizerState>();
+
+    // best parameters
+    Variable bestParameters = state->getBestSolution();
+    SmallMDPPolicyPtr optimizedPolicy = Parameterized::cloneWithNewParameters(policy, bestParameters);
+    context.informationCallback(optimizedPolicy->toShortString());
+    context.resultCallback(T("optimizedPolicy"), optimizedPolicy);
+    return optimizedPolicy;
+  }
+  
 
 protected:
   friend class SmallMDPSandBoxClass;
