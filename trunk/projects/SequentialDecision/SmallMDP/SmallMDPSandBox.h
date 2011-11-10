@@ -151,7 +151,7 @@ public:
       policies.push_back(new RTDPRMaxSmallMDPPolicy(m));
     findBestPolicy(context, "RTDP-rmax", policies);
 
-    for (size_t i = 2; i <= 5; ++i)
+    for (size_t i = 3; i <= 5; ++i)
     {
       optimizePolicy(context, "WithModel" + String((int)i), new ParameterizedSmallMDPPolicy(i*2, true));
       optimizePolicy(context, "WithoutModel" + String((int)i), new ParameterizedSmallMDPPolicy(i*2, false));

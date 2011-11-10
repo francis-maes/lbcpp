@@ -41,9 +41,7 @@ public:
   double evaluatePolicy(ExecutionContext& context, const String& name, const SmallMDPPolicyPtr& policy) const
   {
     context.enterScope(name);
-    for (size_t i = 0; i < policy->getNumVariables(); ++i)
-      if (policy->getVariableType(i)->isConvertibleToDouble())
-        context.resultCallback(policy->getVariableName(i), policy->getVariable(i));
+    context.resultCallback("policy", policy);
     
     CompositeWorkUnitPtr workUnit = new EvaluateSmallMDPPolicyCompositeWorkUnit(policy, mdpSampler, numTimeSteps, numRuns);
     VariableVectorPtr results = context.run(workUnit, false).getObjectAndCast<VariableVector>();
