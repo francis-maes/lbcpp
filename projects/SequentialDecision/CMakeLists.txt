@@ -67,6 +67,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_GP_SOURCES
   GP/BanditFormulaOptimizer.h
   GP/BanditFormulaObjective.h
   GP/BanditNoParamObjective.h
+  GP/SmallMDPFormulaObjective.h
   GP/LearningRuleFormulaObjective.h
   GP/PathsFormulaFeatureGenerator.h
   GP/OrdersFormulaFeatureGenerator.h
