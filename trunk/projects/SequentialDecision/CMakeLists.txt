@@ -138,6 +138,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_SMALL_MDP_SOURCES
   SmallMDP/SmallMDPPolicy.cpp
   SmallMDP/ParameterizedSmallMDPPolicy.h
   SmallMDP/SmallMDPSandBox.h
+  SmallMDP/EvaluateSmallMDPPolicies.h
   SmallMDP/SmallMDPLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SmallMDPLibrary.cpp
 )

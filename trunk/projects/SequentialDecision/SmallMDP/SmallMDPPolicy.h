@@ -25,6 +25,7 @@ protected:
   size_t sampleBestAction(ExecutionContext& context, const DoubleMatrixPtr& qValues, size_t state) const;
   DoubleMatrixPtr computeOptimalQFunction(ExecutionContext& context, const SmallMDPPtr& mdp) const;
   double getBestQValue(const DoubleMatrixPtr& q, size_t state) const;
+  double getBestQValueExpectation(const DoubleMatrixPtr& q, const SparseDoubleVectorPtr& stateProbabilities) const;
   DenseDoubleVectorPtr computeStateValuesFromActionValues(const DoubleMatrixPtr& q) const;
   DoubleMatrixPtr bellmanOperator(const SmallMDPPtr& mdp, const DoubleMatrixPtr& q, double& differenceSumOfSquares, double& maxDifference) const;
 };

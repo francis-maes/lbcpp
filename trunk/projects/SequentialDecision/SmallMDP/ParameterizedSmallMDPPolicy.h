@@ -16,267 +16,6 @@
 namespace lbcpp
 {
 
-// todo: use this in PowerDiscreteBanditPolicy
-class DoubleVectorParameterized : public Parameterized
-{
-public:
-  virtual SamplerPtr createParametersSampler() const
-  {
-    SamplerPtr scalarSampler = gaussianSampler(0.0, 1.0);
-    return independentDoubleVectorSampler(parametersEnumeration, scalarSampler);
-  }
-
-  virtual void setParameters(const Variable& parameters)
-    {this->parameters = parameters.getObjectAndCast<DenseDoubleVector>();}
-
-  virtual Variable getParameters() const
-    {return parameters;}
-
-  virtual TypePtr getParametersType() const
-    {return getParameters().getType();}
-
-protected:
-  EnumerationPtr parametersEnumeration;
-  DenseDoubleVectorPtr parameters;
-
-  void initializeParameters(EnumerationPtr parametersEnumeration)
-  {
-    this->parametersEnumeration = parametersEnumeration;
-    parameters = new DenseDoubleVector(parametersEnumeration, doubleType);
-  }
-};
-
-class ParameterizedQLearningSmallMDPPolicy : public SmallMDPPolicy, public DoubleVectorParameterized
-{
-public:
-  ParameterizedQLearningSmallMDPPolicy(size_t numTerms)
-    : numTerms(numTerms)
-    {initializeParameters(createParametersEnumeration());}
-  ParameterizedQLearningSmallMDPPolicy() {}
-
-  virtual ObjectPtr computeGeneratedObject(ExecutionContext& context, const String& variableName)
-    {return createParametersEnumeration();}
-
-  EnumerationPtr createParametersEnumeration()
-  {
-    ExecutionContext& context = defaultExecutionContext();
-
-    DefaultEnumerationPtr parametersEnumeration = new DefaultEnumeration(T("parameters"));
-    for (size_t i = 0; i < 10; ++i)
-      parametersEnumeration->addElement(context, "param" + String((int)i));
-
-
-/*    static const size_t numVariables = 5;
-    static const char* names[numVariables] = {"Q^t(s,a)", "r + lambda.V(s')", "r_{emp}(s,a)", "s_{emp}(s,a)", "n(s,a)"};
-
-    for (size_t i = 0; i < numTerms; ++i)
-    {
-      String prefix = T("term(") + String((int)i) + T(", ");
-      parametersEnumeration->addElement(context, prefix + T("weight)"));
-      for (size_t j = 0; j < numVariables; ++j)
-        parametersEnumeration->addElement(context, prefix + T("pow ") + names[j] + T(")"));
-    }*/
-
-    return parametersEnumeration;
-  }
-
-  virtual void initialize(ExecutionContext& context, const SmallMDPPtr& mdp)
-  {
-    size_t numStates = mdp->getNumStates();
-    size_t numActions = mdp->getNumActions();
-
-    q = new DoubleMatrix(numStates, numActions, 1.0 / (1.0 - mdp->getDiscount()));
-    rewards = std::vector<std::vector<ScalarVariableStatistics> >(numStates, std::vector<ScalarVariableStatistics>(numActions));
-    epoch = 1;
-    discount = mdp->getDiscount();
-  }
-
-  virtual size_t selectAction(ExecutionContext& context, size_t state)
-    {return sampleBestAction(context, q, state);}
-
-  virtual void observeTransition(ExecutionContext& context, size_t state, size_t action, size_t newState, double reward)
-  {
-    ++epoch;
-    rewards[state][action].push(reward);
-
-    
-    std::vector<double> variables(5);
-    variables[0] = q->getValue(state, action);
-    variables[1] = reward + discount * getBestQValue(q, newState);
-    variables[2] = rewards[state][action].getCount();
-    variables[3] = rewards[state][action].getMean();
-    variables[4] = rewards[state][action].getStandardDeviation();
-    // todo: add epoch ?
-    
-    /*double newValue = 0.0;
-    size_t index = 0;
-    for (size_t i = 0; i < numTerms; ++i)
-    {
-      double term = parameters->getValue(index++);
-      for (size_t j = 0; j < 3; ++j)
-        term *= myPow(variables[j], parameters->getValue(index++));
-      newValue += term;
-    }
-    //for (size_t i = 0; i < variables.size(); ++i)
-    //  newValue += parameters->getValue(i*2) * myPow(variables[i], parameters->getValue(i*2+1));
-    */
-
-    double alpha = 0.0;
-    for (size_t i = 0; i < variables.size(); ++i)
-      alpha += parameters->getValue(i*2) * myPow(variables[i], parameters->getValue(i*2+1));
-    double newValue = (1.0 - alpha) * q->getValue(state, action) + 
-                       alpha * (reward + discount * getBestQValue(q, newState));
-
-    q->setValue(state, action, newValue);
-  }
-
-  static double myPow(double a, double b)
-    {return a == 0.0 ? 0.0 : pow(a, b);}
-
-protected:
-  friend class ParameterizedQLearningSmallMDPPolicyClass;
-
-  size_t numTerms;
-
-  std::vector<std::vector<ScalarVariableStatistics> > rewards;
-  DoubleMatrixPtr q;
-  size_t epoch;
-  double discount;
-};
-
-
-class ParameterizedQLearning2SmallMDPPolicy : public SmallMDPPolicy, public DoubleVectorParameterized
-{
-public:
-  ParameterizedQLearning2SmallMDPPolicy(bool dummy)
-    {initializeParameters(createParametersEnumeration());}
-  ParameterizedQLearning2SmallMDPPolicy() {}
-
-  virtual ObjectPtr computeGeneratedObject(ExecutionContext& context, const String& variableName)
-    {return createParametersEnumeration();}
-
-  EnumerationPtr createParametersEnumeration()
-  {
-    ExecutionContext& context = defaultExecutionContext();
-
-    DefaultEnumerationPtr parametersEnumeration = new DefaultEnumeration(T("parameters"));
-    parametersEnumeration->addElement(context, "init");
-    parametersEnumeration->addElement(context, "alpha");
-    parametersEnumeration->addElement(context, "beta");
-    parametersEnumeration->addElement(context, "w");
-    parametersEnumeration->addElement(context, "useRewardMean");
-    return parametersEnumeration;
-  }
-
-  virtual void initialize(ExecutionContext& context, const SmallMDPPtr& mdp)
-  {
-    size_t numStates = mdp->getNumStates();
-    size_t numActions = mdp->getNumActions();
-
-    q = new DoubleMatrix(numStates, numActions, parameters->getValue(0) / (1.0 - mdp->getDiscount()));
-    rewards = std::vector<std::vector<ScalarVariableStatistics> >(numStates, std::vector<ScalarVariableStatistics>(numActions));
-    discount = mdp->getDiscount();
-  }
-
-  virtual size_t selectAction(ExecutionContext& context, size_t state)
-  {
-    double bestScore = -DBL_MAX;
-    size_t numActions = q->getNumColumns();
-    size_t res = context.getRandomGenerator()->sampleSize(numActions);
-    for (size_t i = 0; i < numActions; ++i)
-    {
-      size_t count = (size_t)rewards[state][i].getCount();
-      if (count == 0)
-        return i;
-      double score = q->getValue(state, i) + parameters->getValue(1) * pow((double)count, parameters->getValue(2));
-      if (score > bestScore)
-        bestScore = score, res = i;
-    }
-    return res;
-  }
-
-  virtual void observeTransition(ExecutionContext& context, size_t state, size_t action, size_t newState, double reward)
-  {
-    rewards[state][action].push(reward);
-    double alpha = pow(rewards[state][action].getCount(), parameters->getValue(3));
-
-    if (parameters->getValue(4) > 0)
-      reward = rewards[state][action].getMean();
-    double newValue = (1.0 - alpha) * q->getValue(state, action) + 
-                       alpha * (reward + discount * getBestQValue(q, newState));
-    q->setValue(state, action, newValue);
-  }
-
-protected:
-  friend class ParameterizedQLearning2SmallMDPPolicyClass;
-
-  std::vector<std::vector<ScalarVariableStatistics> > rewards;
-  DoubleMatrixPtr q;
-  double discount;
-};
-
-
-class ParameterizedRTDPRMaxSmallMDPPolicy : public ModelBasedSmallMDPPolicy, public DoubleVectorParameterized
-{
-public:
-  ParameterizedRTDPRMaxSmallMDPPolicy(size_t numTerms)
-    : numTerms(numTerms)
-    {initializeParameters(createParametersEnumeration());}
-  ParameterizedRTDPRMaxSmallMDPPolicy() {}
-
-  virtual ObjectPtr computeGeneratedObject(ExecutionContext& context, const String& variableName)
-    {return createParametersEnumeration();}
-
-  EnumerationPtr createParametersEnumeration()
-  {
-    ExecutionContext& context = defaultExecutionContext();
-
-    DefaultEnumerationPtr parametersEnumeration = new DefaultEnumeration(T("parameters"));
-    for (size_t i = 0; i < 10; ++i)
-      parametersEnumeration->addElement(context, "param" + String((int)i));
-    return parametersEnumeration;
-  }
-
-  virtual void observeTransition(ExecutionContext& context, size_t state, size_t action, size_t nextState, double reward)
-  {
-    static const double epsilon = 1e-9;
-    model->observeTransition(state, action, nextState, reward);
-    DenseDoubleVectorPtr v = computeStateValuesFromActionValues(q);
-
-    double newValue = 0.0;
-    double Z;
-    SparseDoubleVectorPtr transitions = model->getTransitionProbabilities(state, action, Z);
-    for (size_t k = 0; k < transitions->getNumValues(); ++k)
-    {
-      size_t nextState = transitions->getValue(k).first;
-      double transitionProbability = transitions->getValue(k).second / Z;
-      double r = model->getRewardExpectation(state, action, nextState);
-      newValue += transitionProbability * (r + model->getDiscount() * v->getValue(nextState));
-    }
-    
-    std::vector<double> variables(3);
-    variables[0] = q->getValue(state, action);
-    variables[1] = newValue;
-    variables[2] = model->getNumObservations(state, action);
-
-    double newQ = 0.0;
-    size_t index = 0;
-    for (size_t i = 0; i < numTerms; ++i)
-    {
-      double term = parameters->getValue(index++);
-      for (size_t j = 0; j < variables.size(); ++j)
-        term *= pow(variables[j], parameters->getValue(index++));
-      newQ += term;
-    }
-    q->setValue(state, action, newQ);
-  }
-
-protected:
-  friend class ParameterizedRTDPRMaxSmallMDPPolicyClass;
-
-  size_t numTerms;
-};
-
 class GPExpressionSmallMDPPolicy : public ModelBasedSmallMDPPolicy
 {
 public:
@@ -293,16 +32,9 @@ public:
     if (useModel)
     {
       variables[1] = model->getRewardExpectation(state, action, nextState);
-      variables[2] = 0.0; // discount * sum_{s'} (p(s'|s,a) * V(s'))
       double Z;
       SparseDoubleVectorPtr transitions = model->getTransitionProbabilities(state, action, Z);
-      for (size_t i = 0; i < transitions->getNumValues(); ++i)
-      {
-        size_t nextState = transitions->getValue(i).first;
-        double transitionProbability = transitions->getValue(i).second / Z;
-        variables[2] += transitionProbability * getBestQValue(q, nextState);
-      }
-      variables[2] *= model->getDiscount(); 
+      variables[2] = model->getDiscount() * getBestQValueExpectation(q, transitions) / Z;
     }
     else
     {
@@ -321,7 +53,89 @@ protected:
   bool useModel;
 };
 
+class ParameterizedSmallMDPPolicy : public ModelBasedSmallMDPPolicy, public DoubleVectorParameterized
+{
+public:
+  ParameterizedSmallMDPPolicy(size_t numParameters, bool useModel)
+    : numParameters(numParameters), useModel(useModel)
+  {
+    initializeParameters(createParametersEnumeration());
+  }
+  ParameterizedSmallMDPPolicy() {}
 
+  virtual ObjectPtr computeGeneratedObject(ExecutionContext& context, const String& variableName)
+    {return createParametersEnumeration();}
+
+  EnumerationPtr createParametersEnumeration()
+  {
+    ExecutionContext& context = defaultExecutionContext();
+
+    DefaultEnumerationPtr parametersEnumeration = new DefaultEnumeration(T("parameters"));
+    parametersEnumeration->addElement(context, "init");
+    parametersEnumeration->addElement(context, "offset");
+    parametersEnumeration->addElement(context, "r_weight");
+    parametersEnumeration->addElement(context, "r_pow");
+    parametersEnumeration->addElement(context, "next_weight");
+    parametersEnumeration->addElement(context, "next_pow");
+    parametersEnumeration->addElement(context, "qt_weight");
+    parametersEnumeration->addElement(context, "qt_pow");
+    parametersEnumeration->addElement(context, "n_weight");
+    parametersEnumeration->addElement(context, "n_pow");
+    return parametersEnumeration;
+  }
+
+  double getParameter(size_t index) const
+    {return index < numParameters ? parameters->getValue(index) : 0.0;}
+
+  virtual void initialize(ExecutionContext& context, const SmallMDPPtr& mdp)
+  {
+    size_t numStates = mdp->getNumStates();
+    size_t numActions = mdp->getNumActions();
+
+    model = new EmpiricalSmallMDP(numStates, numActions, mdp->getDiscount());
+    q = new DoubleMatrix(numStates, numActions, getParameter(0) / (1.0 - mdp->getDiscount()));
+  }
+
+  virtual void observeTransition(ExecutionContext& context, size_t state, size_t action, size_t nextState, double reward)
+  {
+    model->observeTransition(state, action, nextState, reward);
+    
+    double variables[4];
+    if (useModel)
+    {
+      variables[0] = model->getRewardExpectation(state, action, nextState);
+      double Z;
+      SparseDoubleVectorPtr transitions = model->getTransitionProbabilities(state, action, Z);
+      variables[1] = model->getDiscount() * getBestQValueExpectation(q, transitions) / Z;
+    }
+    else
+    {
+      variables[0] = reward;
+      variables[1] = model->getDiscount() * getBestQValue(q, nextState);
+    }
+    variables[2] = q->getValue(state, action);
+    variables[3] = model->getNumObservations(state, action);
+
+    double newValue = getParameter(1);
+    for (size_t i = 0; i < 4; ++i)
+    {
+      double weight = getParameter(i*2+2);
+      if (weight)
+        newValue += weight * myPow(variables[i], getParameter(i*2+3));
+    }
+
+    q->setValue(state, action, newValue);
+  }
+
+  static double myPow(double a, double b)
+    {return a == 0.0 ? 0.0 : pow(a, b);}
+
+protected:
+  friend class ParameterizedSmallMDPPolicyClass;
+
+  size_t numParameters;
+  bool useModel;
+};
 
 }; /* namespace lbcpp */
 

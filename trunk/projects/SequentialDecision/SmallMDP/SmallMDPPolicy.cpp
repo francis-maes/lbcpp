@@ -68,6 +68,18 @@ double SmallMDPPolicy::getBestQValue(const DoubleMatrixPtr& q, size_t state) con
   return res;
 }
 
+double SmallMDPPolicy::getBestQValueExpectation(const DoubleMatrixPtr& q, const SparseDoubleVectorPtr& stateProbabilities) const
+{
+  double res = 0.0;
+  for (size_t i = 0; i < stateProbabilities->getNumValues(); ++i)
+  {
+    size_t state = stateProbabilities->getValue(i).first;
+    double probability = stateProbabilities->getValue(i).second;
+    res += probability * getBestQValue(q, state);
+  }
+  return res;
+}
+
 DenseDoubleVectorPtr SmallMDPPolicy::computeStateValuesFromActionValues(const DoubleMatrixPtr& q) const
 {
   size_t numStates = q->getNumRows();
