@@ -225,6 +225,22 @@
     <variable type="LearningRuleFormulaObjective" name="objective"/>
   </class>
 
+  <!-- SmallMDP Formula Search Problem -->
+  <class name="SmallMDPFormulaObjective" base="Function">
+    <variable type="Sampler" name="mdpSampler"/>
+    <variable type="PositiveInteger" name="numTimeSteps"/>
+    <variable type="Boolean" name="useModel"/>
+  </class>
+  <enumeration name="SmallMDPFormulaVariables" shortName="gp">
+    <value name="oldValue"/>
+    <value name="reward"/>
+    <value name="nextStateValue"/>
+    <value name="numObservations"/>
+  </enumeration>
+  <class name="SmallMDPFormulaSearchProblem" base="FormulaSearchProblem" shortName="smallMDP">
+    <variable type="Function" name="objective"/>
+  </class>
+
   <!-- Formula Feature Generator -->
   <class name="PathsFormulaFeatureGenerator" base="FeatureGenerator"/>
   <class name="OrdersFormulaFeatureGenerator" base="FeatureGenerator">

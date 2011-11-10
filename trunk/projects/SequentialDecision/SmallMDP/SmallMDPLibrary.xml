@@ -58,10 +58,20 @@
     <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
   </class>
 
+  <class name="ParameterizedQLearning2SmallMDPPolicy" base="SmallMDPPolicy">
+    <variable type="Enumeration" name="parametersEnumeration" generated="yes"/>
+    <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
+  </class>
+
   <class name="ParameterizedRTDPRMaxSmallMDPPolicy" base="SmallMDPPolicy">
     <variable type="PositiveInteger" name="numTerms"/>
     <variable type="Enumeration" name="parametersEnumeration" generated="yes"/>
     <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
+  </class>
+
+  <class name="GPExpressionSmallMDPPolicy" base="ModelBasedSmallMDPPolicy">
+    <variable type="GPExpression" name="expression"/>
+    <variable type="Boolean" name="useModel"/>
   </class>
 
   <!-- SmallMDP Sand box -->

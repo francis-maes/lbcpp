@@ -11,6 +11,7 @@
 
 # include "SmallMDPPolicy.h"
 # include "../Bandits/DiscreteBanditPolicy.h" // for Parameterized
+# include "../GP/GPExpression.h"
 
 namespace lbcpp
 {
@@ -144,6 +145,77 @@ protected:
 };
 
 
+class ParameterizedQLearning2SmallMDPPolicy : public SmallMDPPolicy, public DoubleVectorParameterized
+{
+public:
+  ParameterizedQLearning2SmallMDPPolicy(bool dummy)
+    {initializeParameters(createParametersEnumeration());}
+  ParameterizedQLearning2SmallMDPPolicy() {}
+
+  virtual ObjectPtr computeGeneratedObject(ExecutionContext& context, const String& variableName)
+    {return createParametersEnumeration();}
+
+  EnumerationPtr createParametersEnumeration()
+  {
+    ExecutionContext& context = defaultExecutionContext();
+
+    DefaultEnumerationPtr parametersEnumeration = new DefaultEnumeration(T("parameters"));
+    parametersEnumeration->addElement(context, "init");
+    parametersEnumeration->addElement(context, "alpha");
+    parametersEnumeration->addElement(context, "beta");
+    parametersEnumeration->addElement(context, "w");
+    parametersEnumeration->addElement(context, "useRewardMean");
+    return parametersEnumeration;
+  }
+
+  virtual void initialize(ExecutionContext& context, const SmallMDPPtr& mdp)
+  {
+    size_t numStates = mdp->getNumStates();
+    size_t numActions = mdp->getNumActions();
+
+    q = new DoubleMatrix(numStates, numActions, parameters->getValue(0) / (1.0 - mdp->getDiscount()));
+    rewards = std::vector<std::vector<ScalarVariableStatistics> >(numStates, std::vector<ScalarVariableStatistics>(numActions));
+    discount = mdp->getDiscount();
+  }
+
+  virtual size_t selectAction(ExecutionContext& context, size_t state)
+  {
+    double bestScore = -DBL_MAX;
+    size_t numActions = q->getNumColumns();
+    size_t res = context.getRandomGenerator()->sampleSize(numActions);
+    for (size_t i = 0; i < numActions; ++i)
+    {
+      size_t count = (size_t)rewards[state][i].getCount();
+      if (count == 0)
+        return i;
+      double score = q->getValue(state, i) + parameters->getValue(1) * pow((double)count, parameters->getValue(2));
+      if (score > bestScore)
+        bestScore = score, res = i;
+    }
+    return res;
+  }
+
+  virtual void observeTransition(ExecutionContext& context, size_t state, size_t action, size_t newState, double reward)
+  {
+    rewards[state][action].push(reward);
+    double alpha = pow(rewards[state][action].getCount(), parameters->getValue(3));
+
+    if (parameters->getValue(4) > 0)
+      reward = rewards[state][action].getMean();
+    double newValue = (1.0 - alpha) * q->getValue(state, action) + 
+                       alpha * (reward + discount * getBestQValue(q, newState));
+    q->setValue(state, action, newValue);
+  }
+
+protected:
+  friend class ParameterizedQLearning2SmallMDPPolicyClass;
+
+  std::vector<std::vector<ScalarVariableStatistics> > rewards;
+  DoubleMatrixPtr q;
+  double discount;
+};
+
+
 class ParameterizedRTDPRMaxSmallMDPPolicy : public ModelBasedSmallMDPPolicy, public DoubleVectorParameterized
 {
 public:
@@ -204,6 +276,51 @@ protected:
 
   size_t numTerms;
 };
+
+class GPExpressionSmallMDPPolicy : public ModelBasedSmallMDPPolicy
+{
+public:
+  GPExpressionSmallMDPPolicy(GPExpressionPtr expression, bool useModel)
+    : expression(expression), useModel(useModel) {}
+  GPExpressionSmallMDPPolicy() {}
+
+  virtual void observeTransition(ExecutionContext& context, size_t state, size_t action, size_t nextState, double reward)
+  {
+    model->observeTransition(state, action, nextState, reward);
+    
+    double variables[4];
+    variables[0] = q->getValue(state, action);
+    if (useModel)
+    {
+      variables[1] = model->getRewardExpectation(state, action, nextState);
+      variables[2] = 0.0; // discount * sum_{s'} (p(s'|s,a) * V(s'))
+      double Z;
+      SparseDoubleVectorPtr transitions = model->getTransitionProbabilities(state, action, Z);
+      for (size_t i = 0; i < transitions->getNumValues(); ++i)
+      {
+        size_t nextState = transitions->getValue(i).first;
+        double transitionProbability = transitions->getValue(i).second / Z;
+        variables[2] += transitionProbability * getBestQValue(q, nextState);
+      }
+      variables[2] *= model->getDiscount(); 
+    }
+    else
+    {
+      variables[1] = reward;
+      variables[2] = model->getDiscount() * getBestQValue(q, nextState);
+    }
+    variables[3] = model->getNumObservations(state, action);
+
+    q->setValue(state, action, expression->compute(variables));
+  }
+
+protected:
+  friend class GPExpressionSmallMDPPolicyClass;
+
+  GPExpressionPtr expression;
+  bool useModel;
+};
+
 
 
 }; /* namespace lbcpp */
