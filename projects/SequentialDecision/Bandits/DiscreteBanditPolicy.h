@@ -43,6 +43,35 @@ public:
   }
 };
 
+class DoubleVectorParameterized : public Parameterized
+{
+public:
+  virtual SamplerPtr createParametersSampler() const
+  {
+    SamplerPtr scalarSampler = gaussianSampler(0.0, 1.0);
+    return independentDoubleVectorSampler(parametersEnumeration, scalarSampler);
+  }
+
+  virtual void setParameters(const Variable& parameters)
+    {this->parameters = parameters.getObjectAndCast<DenseDoubleVector>();}
+
+  virtual Variable getParameters() const
+    {return parameters;}
+
+  virtual TypePtr getParametersType() const
+    {return getParameters().getType();}
+
+protected:
+  EnumerationPtr parametersEnumeration;
+  DenseDoubleVectorPtr parameters;
+
+  void initializeParameters(EnumerationPtr parametersEnumeration)
+  {
+    this->parametersEnumeration = parametersEnumeration;
+    parameters = new DenseDoubleVector(parametersEnumeration, doubleType);
+  }
+};
+
 class GPExpression;
 typedef ReferenceCountedObjectPtr<GPExpression> GPExpressionPtr;
 

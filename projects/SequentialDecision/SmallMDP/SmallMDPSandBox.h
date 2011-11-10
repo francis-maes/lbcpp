@@ -128,64 +128,35 @@ public:
   {
     std::vector<SmallMDPPolicyPtr> policies;
 
-    testPolicy(context, "optimal", new OptimalSmallMDPPolicy());
-    testPolicy(context, "random", new RandomSmallMDPPolicy());
+    SmallMDPPolicyPtr policy = new OptimalSmallMDPPolicy();
+    testPolicy(context, "optimal", policy);
+    savePolicy(context, "optimal", policy);
+
+    policy = new RandomSmallMDPPolicy();
+    testPolicy(context, "random", policy);
+    savePolicy(context, "random", policy);
 
     policies.clear();
-    for (double beta = -5.0; beta <= 5.0; beta += 0.5)
+    for (double beta = 0.0; beta <= 3.0; beta += 0.1)
       policies.push_back(new QLearningSmallMDPPolicy(constantIterationFunction(0.0), beta));
     findBestPolicy(context, "QLearning", policies);
 
     policies.clear();
-    for (size_t m = 1; m < 50; m += 2)
+    for (size_t m = 1; m < 50; ++m)
       policies.push_back(new RMaxSmallMDPPolicy(m));
     findBestPolicy(context, "rmax", policies);
 
     policies.clear();
-    for (size_t m = 1; m < 50; m += 2)
+    for (size_t m = 1; m < 50; ++m)
       policies.push_back(new RTDPRMaxSmallMDPPolicy(m));
     findBestPolicy(context, "RTDP-rmax", policies);
 
-    context.enterScope("parameterized Q-Learning 2");
-    optimizePolicy(context, new ParameterizedQLearning2SmallMDPPolicy(true));
-    context.leaveScope();
-
-    context.enterScope("parameterized Q-Learning(1)");
-    SmallMDPPolicyPtr optimizedPolicy = optimizePolicy(context, new ParameterizedQLearningSmallMDPPolicy(1));
-    context.leaveScope();
-    
-/*    context.enterScope("parameterized Q-Learning(2)");
-    SmallMDPPolicyPtr optimizedPolicy2 = optimizePolicy(context, new ParameterizedQLearningSmallMDPPolicy(2));
-    context.leaveScope();*/
-
-    context.enterScope("parameterized RTDP-RMax(1)");
-    SmallMDPPolicyPtr optimizedPolicy3 = optimizePolicy(context, new ParameterizedRTDPRMaxSmallMDPPolicy(1));
-    context.leaveScope();
-    
-/*    context.enterScope("parameterized RTDP-RMax(2)");
-    SmallMDPPolicyPtr optimizedPolicy4 = optimizePolicy(context, new ParameterizedRTDPRMaxSmallMDPPolicy(2));
-    context.leaveScope();*/
-    return true;
-  }
-
-  SmallMDPPolicyPtr findBestPolicy(ExecutionContext& context, const String& name, const std::vector<SmallMDPPolicyPtr>& policies) const
-  {
-    double bestScore = -DBL_MAX;
-    SmallMDPPolicyPtr bestPolicy;
-
-    context.enterScope(name);
-    for (size_t i = 0; i < policies.size(); ++i)
+    for (size_t i = 2; i <= 5; ++i)
     {
-      SmallMDPPolicyPtr policy = policies[i];
-      double score = testPolicy(context, policy->toShortString(), policy);
-      if (score > bestScore)
-      {
-        bestScore = score;
-        bestPolicy = policy;
-      }
+      optimizePolicy(context, "WithModel" + String((int)i), new ParameterizedSmallMDPPolicy(i*2, true));
+      optimizePolicy(context, "WithoutModel" + String((int)i), new ParameterizedSmallMDPPolicy(i*2, false));
     }
-    context.leaveScope(bestScore);
-    return bestPolicy;
+    return true;
   }
 
   double testPolicy(ExecutionContext& context, const String& name, const SmallMDPPolicyPtr& policy) const
@@ -206,25 +177,31 @@ public:
     return stats->getMean();
   }
   
-  double runPolicy(ExecutionContext& context, const SmallMDPPolicyPtr& policy, const SmallMDPPtr& mdp, size_t numTimeSteps) const
+  SmallMDPPolicyPtr findBestPolicy(ExecutionContext& context, const String& name, const std::vector<SmallMDPPolicyPtr>& policies) const
   {
-    policy->initialize(context, mdp);
-    double rewardSum = 0.0;
-    size_t state = mdp->getInitialState();
-    for (size_t i = 0; i < numTimeSteps; ++i)
+    double bestScore = -DBL_MAX;
+    SmallMDPPolicyPtr bestPolicy;
+
+    context.enterScope(name);
+    for (size_t i = 0; i < policies.size(); ++i)
     {
-      size_t action = policy->selectAction(context, state);
-      double reward;
-      size_t newState = mdp->sampleTransition(context, state, action, reward);
-      policy->observeTransition(context, state, action, newState, reward);
-      state = newState;
-      rewardSum += reward;
+      SmallMDPPolicyPtr policy = policies[i];
+      double score = testPolicy(context, policy->toShortString(), policy);
+      if (score > bestScore)
+      {
+        bestScore = score;
+        bestPolicy = policy;
+      }
     }
-    return rewardSum;
+    context.leaveScope(bestScore);
+    savePolicy(context, name, bestPolicy);
+    return bestPolicy;
   }
-  
-  SmallMDPPolicyPtr optimizePolicy(ExecutionContext& context, const SmallMDPPolicyPtr& policy) const
+
+  SmallMDPPolicyPtr optimizePolicy(ExecutionContext& context, const String& name, const SmallMDPPolicyPtr& policy) const
   {
+    context.enterScope(name);
+
     TypePtr parametersType = Parameterized::getParametersType(policy);
     jassert(parametersType);
     size_t numParameters = 0;
@@ -235,7 +212,7 @@ public:
     context.resultCallback(T("numParameters"), numParameters);
 
     // eda parameters
-    size_t numIterations = 5;
+    size_t numIterations = 20;
     size_t populationSize = numParameters * 8;
     size_t numBests = numParameters * 2;
 
@@ -253,9 +230,21 @@ public:
     SmallMDPPolicyPtr optimizedPolicy = Parameterized::cloneWithNewParameters(policy, bestParameters);
     context.informationCallback(optimizedPolicy->toShortString());
     context.resultCallback(T("optimizedPolicy"), optimizedPolicy);
+
+    savePolicy(context, name, optimizedPolicy);
+    context.leaveScope(-state->getBestScore());
     return optimizedPolicy;
   }
   
+  void savePolicy(ExecutionContext& context, const String& name, const SmallMDPPolicyPtr& policy) const
+  {
+    if (outputDirectory != File::nonexistent)
+    {
+      if (!outputDirectory.exists())
+        outputDirectory.createDirectory();
+      policy->saveToFile(context, outputDirectory.getChildFile(name + T(".policy")));
+    }
+  }
 
 protected:
   friend class SmallMDPSandBoxClass;
@@ -263,6 +252,7 @@ protected:
   SamplerPtr mdpSampler;
   size_t numTimeSteps;
   size_t numRuns;
+  File outputDirectory;
 };
 
 }; /* namespace lbcpp */
