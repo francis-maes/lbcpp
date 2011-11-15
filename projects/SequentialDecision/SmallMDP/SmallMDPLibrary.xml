@@ -64,6 +64,12 @@
     <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
   </class>
 
+  <class name="ParameterizedModelBasedSmallMDPPolicy" base="ModelBasedSmallMDPPolicy">
+    <variable type="PositiveInteger" name="numParameters"/>
+    <variable type="Enumeration" name="parametersEnumeration" generated="yes"/>
+    <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
+  </class>
+
   <!-- SmallMDP Sand box -->
   <class name="SmallMDPSandBox" base="WorkUnit">
     <variable type="Sampler" name="mdpSampler"/>
