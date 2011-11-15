@@ -17,17 +17,22 @@ namespace lbcpp
 class SmallMDPPolicy : public Object
 {
 public:
-  virtual void initialize(ExecutionContext& context, const SmallMDPPtr& mdp) {}
+	// all of these three functions are called from the outside
+  virtual void initialize(ExecutionContext& context, const SmallMDPPtr& mdp) {} // beginning of the episode (how many steps to run managed from the main program)
   virtual size_t selectAction(ExecutionContext& context, size_t state) = 0;
-  virtual void observeTransition(ExecutionContext& context, size_t state, size_t action, size_t newState, double reward) {}
+  virtual void observeTransition(ExecutionContext& context, size_t state, size_t action, size_t newState, double reward) {} // called after transition has been sampled
 
 protected:
+	// get best action, and if there is more than one optimal action, choose one at random (hence "sample" best action)
   size_t sampleBestAction(ExecutionContext& context, const DoubleMatrixPtr& qValues, size_t state) const;
-  DoubleMatrixPtr computeOptimalQFunction(ExecutionContext& context, const SmallMDPPtr& mdp) const;
   double getBestQValue(const DoubleMatrixPtr& q, size_t state) const;
   double getBestQValueExpectation(const DoubleMatrixPtr& q, const SparseDoubleVectorPtr& stateProbabilities) const;
   DenseDoubleVectorPtr computeStateValuesFromActionValues(const DoubleMatrixPtr& q) const;
+ 
+  // applies Bellman operator (is only used in OptimalSmallMDP)
   DoubleMatrixPtr bellmanOperator(const SmallMDPPtr& mdp, const DoubleMatrixPtr& q, double& differenceSumOfSquares, double& maxDifference) const;
+  // computes Qstar (and calls bellmanOperator)
+  DoubleMatrixPtr computeOptimalQFunction(ExecutionContext& context, const SmallMDPPtr& mdp) const;
 };
 
 typedef ReferenceCountedObjectPtr<SmallMDPPolicy> SmallMDPPolicyPtr;
@@ -64,6 +69,7 @@ protected:
 class QLearningSmallMDPPolicy : public SmallMDPPolicy
 {
 public:
+  // IterationFunctionPtr represents a function that goes from positive integers (being the time index t) to real numbers (the eps_t), this specifies how epsilon should vary over time
   QLearningSmallMDPPolicy(IterationFunctionPtr epsilon, double w)
     : epsilon(epsilon), w(w) {}
   QLearningSmallMDPPolicy() {}
@@ -73,12 +79,12 @@ public:
     // optimistic initialization
     q = new DoubleMatrix(mdp->getNumStates(), mdp->getNumActions(), 1.0 / (1.0 - mdp->getDiscount()));
     experienceCounts = new DoubleMatrix(mdp->getNumStates(), mdp->getNumActions(), 0.0);
-    epoch = 1;
+    epoch = 1; // epoch is the current time step t
     discount = mdp->getDiscount();
   }
 
   virtual size_t selectAction(ExecutionContext& context, size_t state)
-  {
+  {// eps greedy
     RandomGeneratorPtr random = context.getRandomGenerator();
     if (random->sampleBool(epsilon->computeIterationFunction(epoch)))
       return random->sampleSize(getNumActions()); // exploration step
@@ -88,12 +94,12 @@ public:
 
   virtual void observeTransition(ExecutionContext& context, size_t state, size_t action, size_t newState, double reward)
   {
-    double n = experienceCounts->getValue(state, action);
+    double n = experienceCounts->getValue(state, action); //getValue extracts one value from the matrix
     double alpha = pow(n + 1.0, -w);
     q->setValue(state, action, (1.0 - alpha) * q->getValue(state, action) + 
                                        alpha * (reward + discount * getBestQValue(q, newState)));
     ++epoch;
-    experienceCounts->setValue(state, action, n + 1);
+    experienceCounts->setValue(state, action, n + 1); // setValue sets one value in matrix (indices are from 0..nElements-1)
   }
 
 protected:

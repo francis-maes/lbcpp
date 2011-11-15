@@ -31,6 +31,7 @@ size_t SmallMDPPolicy::sampleBestAction(ExecutionContext& context, const DoubleM
     return context.getRandomGenerator()->sampleSize(n); // random action
   jassert(bestActions.size());
   n = context.getRandomGenerator()->sampleSize(bestActions.size());
+  //this just gets element at location index n (set is implemented as a list, so we cannot access elements at random)
   std::set<size_t>::const_iterator it = bestActions.begin();
   for (size_t i = 0; i < n; ++i)
     ++it;
