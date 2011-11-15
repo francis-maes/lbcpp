@@ -8,6 +8,7 @@
 #include "precompiled.h"
 #include "GoProblem.h"
 #include <algorithm>
+#include <iterator>
 using namespace lbcpp;
 
 /*

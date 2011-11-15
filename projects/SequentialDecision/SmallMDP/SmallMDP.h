@@ -56,6 +56,7 @@ public:
 
 typedef ReferenceCountedObjectPtr<SmallMDP> SmallMDPPtr;
 
+// this is the empirical mdp, where transition probs and ex
 class EmpiricalSmallMDP : public SmallMDP
 {
 public:
@@ -87,12 +88,15 @@ public:
   virtual double getRewardExpectation(size_t state, size_t action, size_t nextState) const
     {return model[state][action].rewards->getMean();}
   
+  // basically disabled, because it makes no sense for empriacal reward
   virtual double sampleReward(ExecutionContext& context, size_t state, size_t action, size_t nextState) const
     {jassert(false); return 0.0;}
 
+  // returns number of observations we have for a given state, action pair
   size_t getNumObservations(size_t state, size_t action) const
     {return model[state][action].getNumObservations();}
 
+  // given transition (s,a,r,s' sample) , update the model 
   void observeTransition(size_t state, size_t action, size_t nextState, double reward)
     {model[state][action].observe(nextState, reward);}
 
@@ -124,6 +128,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<EmpiricalSmallMDP> EmpiricalSmallMDPPtr;
 
+// Base class to make the writing of GeneratedSparseSmallMDP simpler
 class SimpleSmallMDP : public SmallMDP
 {
 public:
@@ -170,6 +175,8 @@ protected:
   double discount;
 };
 
+
+// Example for randomly drawn MDP
 class GeneratedSparseSmallMDP : public SimpleSmallMDP
 {
 public:
@@ -179,21 +186,29 @@ public:
     for (size_t i = 0; i < numStates; ++i)
       for (size_t j = 0; j < numActions; ++j)
       {
-        SamplerPtr reward = bernoulliSampler(random->sampleBool(nonNullRewardProbability) ? random->sampleDouble() : 0.0);
+        // this creates a random variable called reward (from which we can sample) with distribution bernoulli whose expectation is either a uniform number between 0 and 1 (with prob nonNullRewardProbability) or zero)
+		    SamplerPtr reward = bernoulliSampler(random->sampleBool(nonNullRewardProbability) ? random->sampleDouble() : 0.0);
         SparseDoubleVectorPtr transitions = new SparseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType);
         
         std::vector<size_t> order;
+		    // sample a permutation of the numbers (0..numStates-1) ...
         random->sampleOrder(numStates, order);
         double Z = 0.0;
+		    // ... and take the numSuccessors first ones of this permutation 
         for (size_t k = 0; k < numSuccessorsPerState; ++k)
         {
-          double p = random->sampleDouble();
+          double p = random->sampleDouble(); // uniformly random between 0 and 1 [0,1]
           transitions->setElement(order[k], p);
           Z += p;
         }
+        // this normalizes the transition vector (one transition vector for each state,action)
         transitions->multiplyByScalar(1.0 / Z);
-        setInfo(i, j, reward, transitions);
+      
+		    //this fills the MDP
+		    setInfo(i, j, reward, transitions); //setInfo is specific to problems of the type SimpleSmallMDP and doesnt appear in the other examples, so we don't have to implement the functions that we did in the other examples, such as samplefromtransition, samplereward, rewardexpectation
       }
+
+
   }
   GeneratedSparseSmallMDP() {}
 };
@@ -210,28 +225,35 @@ public:
   virtual double getDiscount() const
     {return 0.95;}
 
+  // Z is the sum of values inside the resulting (returned) vector (no checking if Z is really the sum of the vector, so careful)
   virtual SparseDoubleVectorPtr getTransitionProbabilities(size_t state, size_t action, double& Z) const
   {
-    SparseDoubleVectorPtr res = new SparseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType);
+    // Here we allocate mem for the return vector. 
+	  //    positiveIntegerEnumerationEnumeration = type of indices (positive integers starting from 0)
+	  //   doubleType = vector contains double values
+	SparseDoubleVectorPtr res = new SparseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType);
     Z = 1.0;
 
     if (state <= 2) // initial states
-      res->setElement(state * 2 + action + 1, 1.0);
+      res->setElement(state * 2 + action + 1, 1.0); // setElement(index,value)
     else if (state <= 42) // inside hallways
       res->setElement(action == 0 ? state + 4 : state, 1.0);
     else if (state <= 46) // terminal states
       res->setElement(action == 0 ? 0 : state, 1.0);
     else
-      jassert(false);
+      jassert(false); // we should not reach this point. If we do, execution will stop.
+	// Z = res->l1norm(); computes sum of absolute values of vector res (l1 norm)
     return res;
   }
 
+  // Execution context encapsulates environment, things like single-thread, multi-thread, GUI, ...
+  // the context provides the random generator
   virtual double sampleReward(ExecutionContext& context, size_t state, size_t action, size_t nextState) const
   {
     if (action == 0 && (state >= 43 && state <= 46))
     {
       size_t i = state - 42;
-      if (context.getRandomGenerator()->sampleBool(1.0 / i))
+      if (context.getRandomGenerator()->sampleBool(1.0 / i)) // returns 1 with prob 1/i
         return pow(1.5, i + 5.0);
     }
     return 0.0;
