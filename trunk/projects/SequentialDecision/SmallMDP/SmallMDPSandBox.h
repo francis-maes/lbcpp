@@ -136,6 +136,11 @@ public:
     testPolicy(context, "random", policy);
     savePolicy(context, "random", policy);
 
+    policy = new ParameterizedModelBasedSmallMDPPolicy(true);
+    testPolicy(context, "new", policy);
+    savePolicy(context, "new", policy);
+
+
     policies.clear();
     for (double beta = 0.0; beta <= 3.0; beta += 0.1)
       policies.push_back(new QLearningSmallMDPPolicy(constantIterationFunction(0.0), beta));
@@ -150,6 +155,9 @@ public:
     for (size_t m = 1; m < 50; ++m)
       policies.push_back(new RTDPRMaxSmallMDPPolicy(m));
     findBestPolicy(context, "RTDP-rmax", policies);
+
+    for (size_t i = 1; i <= 4; ++i)
+      optimizePolicy(context, "FullModel" + String((int)i), new ParameterizedModelBasedSmallMDPPolicy(i));
 
     for (size_t i = 3; i <= 5; ++i)
     {
@@ -212,7 +220,7 @@ public:
     context.resultCallback(T("numParameters"), numParameters);
 
     // eda parameters
-    size_t numIterations = 20;
+    size_t numIterations = 10;
     size_t populationSize = numParameters * 8;
     size_t numBests = numParameters * 2;
 
