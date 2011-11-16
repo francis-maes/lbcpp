@@ -37,7 +37,10 @@
   <class name="LuapeClassifier" base="LuapeFunction">
     <constructor/>
   </class>
-  
+  <class name="LuapeRanker" base="LuapeFunction">
+    <constructor/>
+  </class>
+
   <!-- Problem -->
   <class name="LuapeProblem">
     <variable type="ObjectVector[VariableSignature]" name="inputs"/>

@@ -17,7 +17,7 @@
     <constructor arguments="const String&amp; variableName"/>
     <constructor arguments="size_t variableIndex"/>
     <variable type="PositiveInteger" name="variableIndex"/>
-    <variable type="String" name="variableName"/>
+    <!-- <variable type="String" name="variableName"/> -->
   </class>
   
   <class name="SetVariableFunction" base="Function">

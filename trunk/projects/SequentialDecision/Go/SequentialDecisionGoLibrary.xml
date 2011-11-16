@@ -184,4 +184,11 @@
     <variable type="GoBoardPerception" name="board"/>
     <variable type="GoBoardPositionPerception" name="lastAction"/>
   </class>
+
+  <class name="GoBoostingSandBox2" base="WorkUnit">
+    <variable type="File" name="trainingFile" shortName="train"/>
+    <variable type="File" name="testingFile" shortName="test"/>
+    <variable type="PositiveInteger" name="maxCount"/>
+  </class>
+
 </library>

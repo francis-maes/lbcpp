@@ -40,6 +40,12 @@ public:
         res += T(", ");
     }
     res += T("}");
+    if (state.function)
+    {
+      res += T(" ") + state.function->toShortString();
+      for (size_t i = 0; i < state.functionNumArguments; ++i)
+        res += T(" ") + state.stack[state.stack.size() - state.functionNumArguments + i];
+    }
     return res;
   }
 
@@ -77,18 +83,23 @@ public:
         jassert(cache->isConvertibleToDouble());
         
         const std::vector< std::pair<size_t, double> >& sortedDoubleValues = cache->getSortedDoubleValues();
-        jassert(sortedDoubleValues.size());
-        double previousThreshold = sortedDoubleValues[0].second;
-        for (size_t i = 0; i < sortedDoubleValues.size(); ++i)
+        if (sortedDoubleValues.size())
         {
-          double threshold = sortedDoubleValues[i].second;
-          jassert(threshold >= previousThreshold);
-          if (threshold > previousThreshold)
+          jassert(sortedDoubleValues.size());
+          double previousThreshold = sortedDoubleValues[0].second;
+          for (size_t i = 0; i < sortedDoubleValues.size(); ++i)
           {
-            res->append((threshold + previousThreshold) / 2.0);
-            previousThreshold = threshold;
+            double threshold = sortedDoubleValues[i].second;
+            jassert(threshold >= previousThreshold);
+            if (threshold > previousThreshold)
+            {
+              res->append((threshold + previousThreshold) / 2.0);
+              previousThreshold = threshold;
+            }
           }
         }
+        else
+          jassert(false); // no training data, cannot choose thresholds
       }
       else
       {
@@ -208,6 +219,13 @@ protected:
     size_t n = function->getNumRequiredInputs();
     if (n > state.stack.size())
       return false;
+
+    if (function->getClassName() == T("StumpFunction"))
+    {
+      TypePtr inputType = graph->getNodeType(state.stack.back());
+      return inputType->inheritsFrom(doubleType) || inputType->inheritsFrom(integerType);
+    }
+
     size_t firstStackIndex = state.stack.size() - n;
     for (size_t i = 0; i < n; ++i)
       if (!graph->getNodeType(state.stack[firstStackIndex + i])->inheritsFrom(function->getRequiredInputType(i, n)))

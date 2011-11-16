@@ -67,7 +67,10 @@ BoostingLuapeLearner::BoostingLuapeLearner() : maxIterations(0)
 bool BoostingLuapeLearner::train(ExecutionContext& context, const FunctionPtr& f, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
 {
   const LuapeFunctionPtr& function = f.staticCast<LuapeFunction>();
-  LuapeGraphPtr graph = problem->createInitialGraph(context);
+  LuapeGraphPtr graph = function->getGraph();
+  if (!graph)
+    function->setGraph(graph = problem->createInitialGraph(context));
+
   DenseDoubleVectorPtr weights = makeInitialWeights(function, *(std::vector<PairPtr>* )&trainingData);
   function->setGraph(graph);
   function->setVotes(function->createVoteVector(0));
