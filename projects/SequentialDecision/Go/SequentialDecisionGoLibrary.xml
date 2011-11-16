@@ -156,4 +156,32 @@
     <constructor arguments="size_t maxIterations"/>
   </class>
 
+  <!-- Go Perception -->
+  <enumeration name="GoBoardPositionState">
+    <value name="empty" oneLetterCode=" "/>
+    <value name="myStone" oneLetterCode="b"/>
+    <value name="opponentStone" oneLetterCode="w"/>
+    <value name="outside" oneLetterCode="X"/>
+  </enumeration>
+
+  <class name="GoBoardPositionPerception">
+    <variable type="GoBoardPerception" name="board"/>
+    <variable type="GoBoardPositionState" name="positionState" enumeration="yes"/>
+    <variable type="GoBoardPositionPerception" name="previous"/>
+    <variable type="Boolean" name="capturedAtPreviousTurn"/>
+  </class>
+  <class name="GoBoardPerception">
+    <variable type="GoStatePerception" name="state"/>
+    <variable type="PositiveInteger" name="boardSize"/>
+    <variable type="Container[GoBoardPositionPerception]" name="positions"/>
+    <variable type="GoBoardPositionPerception" name="passPosition"/>
+  </class>
+  <class name="GoStatePerception">
+    <variable type="Boolean" name="isCurrentPlayerBlack"/>
+    <variable type="PositiveInteger" name="time"/>
+    <variable type="PositiveInteger" name="myPrisonerCount"/>
+    <variable type="PositiveInteger" name="opponentPrisonerCount"/>
+    <variable type="GoBoardPerception" name="board"/>
+    <variable type="GoBoardPositionPerception" name="lastAction"/>
+  </class>
 </library>

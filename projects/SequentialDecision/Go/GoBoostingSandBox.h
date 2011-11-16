@@ -19,6 +19,9 @@
 // for boosting
 # include <lbcpp/Learning/LossFunction.h>
 
+# include "Perception/GoStatePerception.h"
+# include "Perception/GoBoardPositionPerception.h"
+
 namespace lbcpp
 {
 
@@ -448,6 +451,36 @@ class GoBoostingSandBox : public WorkUnit
 public:
   GoBoostingSandBox() : maxCount(0) {}
 
+  PairPtr makeRankingPerception(ExecutionContext& context, const GoStatePtr& state, const Variable& correctAction) const
+  {
+    GoStatePerceptionPtr statePerception = new GoStatePerception(state);
+    GoBoardPerceptionPtr boardPerception = statePerception->getBoard();
+
+    ContainerPtr availableActions = state->getAvailableActions();
+    size_t n = availableActions->getNumElements();
+
+    ObjectVectorPtr alternatives = new ObjectVector(goBoardPositionPerceptionClass, n);
+    DenseDoubleVectorPtr costs(new DenseDoubleVector(n, 0.0));
+
+    bool actionFound = false;
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable action = availableActions->getElement(i);
+      GoState::Position position = action.getObjectAndCast<PositiveIntegerPair>()->getValue();
+
+      alternatives->set(i, boardPerception->getPosition(position));
+      if (!actionFound && action == correctAction)
+      {
+        costs->setValue(i, -1);
+        actionFound = true;
+      }
+    }
+    if (!actionFound)
+      context.warningCallback("Could not find correct action in available actions");
+  
+    return new Pair(alternatives, costs);
+  }
+
   virtual Variable run(ExecutionContext& context)
   {
     context.enterScope(T("Loading examples"));
@@ -456,6 +489,13 @@ public:
     if (!examples)
       return false;
     
+    {
+      PairPtr example = examples->getElement(0).getObjectAndCast<Pair>();
+      PairPtr rankingExample = makeRankingPerception(context, example->getFirst().getObjectAndCast<GoState>(), example->getSecond());
+      context.resultCallback("example", rankingExample);
+      return true;
+    }
+
     ContainerPtr rankingExamples = makeRankingExamples(context, examples);
 
     // make train/test split
@@ -498,6 +538,7 @@ private:
       Variable correctAction = stateActionPair->getSecond();
 
       ContainerPtr availableActions = state->getAvailableActions();
+      
       ContainerPtr actionFeatures = perception->compute(context, state, availableActions).getObjectAndCast<Container>();
       ContainerPtr rankingCosts = computeRankingCosts(context, availableActions, correctAction);
       
