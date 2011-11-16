@@ -59,12 +59,17 @@ public:
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {return input.getObject()->getVariable(variableIndex);}
+  {
+    const ObjectPtr& object = input.getObject();
+    return object ? object->getVariable(variableIndex) : Variable::missingValue(getOutputType());
+  }
 
 protected:
   friend class GetVariableFunctionClass;
 
   size_t variableIndex;
+
+private:
   String variableName;
 };
 

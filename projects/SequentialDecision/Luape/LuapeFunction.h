@@ -179,6 +179,77 @@ protected:
 extern ClassPtr luapeClassifierClass;
 typedef ReferenceCountedObjectPtr<LuapeClassifier> LuapeClassifierPtr;
 
+class LuapeRanker : public LuapeFunction
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType) : vectorClass();}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType);}
+
+  struct ComputeCallback : public LuapeGraphCallback
+  {
+    ComputeCallback(DenseDoubleVectorPtr votes) 
+      : votes(votes), index(0), res(0.0) {}
+
+    DenseDoubleVectorPtr votes;
+    size_t index;
+    double res;
+
+    virtual void valueYielded(const Variable& value)
+      {res += votes->getValue(index++) * (value.getBoolean() ? 1.0 : -1.0);}
+  };
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    // supervision = inputs[1]
+    ObjectVectorPtr alternatives = inputs[0].getObjectAndCast<ObjectVector>();
+    size_t n = alternatives->getNumElements();
+    DenseDoubleVectorPtr scores = new DenseDoubleVector(n, 0.0);
+    for (size_t i = 0; i < n; ++i)
+    {
+      ComputeCallback callback(votes);   
+      std::vector<Variable> state;
+      computeGraph(context, alternatives->get(i), state, &callback);
+      scores->setValue(i, callback.res);
+    }
+    return scores;
+  }
+
+  DenseDoubleVectorPtr computeSamplePredictions(ExecutionContext& context, bool isTrainingSamples) const
+  {
+    size_t yieldIndex = 0;
+    size_t numSamples = graph->getNumSamples(isTrainingSamples);
+    DenseDoubleVectorPtr predictions = new DenseDoubleVector(numSamples, 0.0);
+    for (size_t i = 0; i < graph->getNumNodes(); ++i)
+    {
+      LuapeYieldNodePtr yieldNode = graph->getNode(i).dynamicCast<LuapeYieldNode>();
+      if (yieldNode)
+      {
+        BooleanVectorPtr weakPredictions = graph->getNode(yieldNode->getArgument())->getCache()->getSamples(isTrainingSamples);
+        double vote = votes.staticCast<DenseDoubleVector>()->getValue(yieldIndex++);
+        for (size_t j = 0; j < numSamples; ++j)
+          predictions->incrementValue(j, vote * (weakPredictions->get(j) ? 1.0 : -1.0));
+      }
+    }
+    return predictions;
+  }
+
+  // votes are scalars (alpha values)
+  virtual VectorPtr createVoteVector(size_t initialSize) const
+    {return new DenseDoubleVector(initialSize, 0.0);}
+
+  // targetVote += vote * (positive ? 1 : -1)
+  virtual void aggregateVote(Variable& targetVote, const Variable& vote, bool positive) const
+    {targetVote = vote.getDouble() * (positive ? 1 : -1.0);}
+};
+
+typedef ReferenceCountedObjectPtr<LuapeRanker> LuapeRankerPtr;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_LUAPE_FUNCTION_H_

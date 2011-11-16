@@ -97,7 +97,7 @@ class StumpFunction : public SimpleUnaryFunction
 {
 public:
   StumpFunction(double threshold = 0.0) 
-    : SimpleUnaryFunction(doubleType, booleanType, "stump"), threshold(threshold) {}
+    : SimpleUnaryFunction(sumType(integerType, doubleType), booleanType, "stump"), threshold(threshold) {}
 
   virtual String toShortString() const
     {return T("Stump(") + String(threshold) + T(")");}
@@ -110,7 +110,6 @@ protected:
 
   double threshold;
 };
-
 
 class LuapeSandBox : public WorkUnit
 {

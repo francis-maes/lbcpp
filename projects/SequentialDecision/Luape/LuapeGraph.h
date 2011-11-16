@@ -66,6 +66,8 @@ public:
   const VectorPtr& getValidationSamples() const
     {return validationSamples;}
 
+  void clearSamples(bool clearTrainingSamples = true, bool clearValidationSamples = true);
+
   /*
   ** Double values
   */
@@ -186,6 +188,7 @@ class LuapeFunctionNode : public LuapeNode
 {
 public:
   LuapeFunctionNode(const FunctionPtr& function, const std::vector<size_t>& arguments);
+  LuapeFunctionNode(const FunctionPtr& function, size_t argument);
   LuapeFunctionNode() {}
 
   virtual bool initialize(ExecutionContext& context, const std::vector<LuapeNodePtr>& allNodes, const LuapeGraphCachePtr& cache);
@@ -259,13 +262,16 @@ public:
     {return nodes.back();}
 
   bool pushNode(ExecutionContext& context, const LuapeNodePtr& node);
+  size_t pushNodes(ExecutionContext& context, const LuapeNodeKey& key, size_t& keyPosition, size_t keyEnd);
   void popNode();
 
   size_t getNumTrainingSamples() const;
   size_t getNumValidationSamples() const;
+  size_t getNumSamples(bool isTrainingSamples) const;
   void resizeSamples(size_t numTrainingSamples, size_t numValidationSamples);
   void setSample(bool isTrainingSample, size_t index, const std::vector<Variable>& example);
   void setSample(bool isTrainingSample, size_t index, const ObjectPtr& example);
+  void clearSamples(bool clearTrainingSamples = true, bool clearValidationSamples = true);
 
   void compute(ExecutionContext& context, std::vector<Variable>& state, size_t firstNodeIndex = 0, LuapeGraphCallbackPtr callback = 0) const;
 
@@ -285,7 +291,10 @@ public:
 protected:
   friend class LuapeGraphClass;
 
+  typedef std::map<LuapeNodeKey, size_t> NodeKeyToIndexMap;
+
   std::vector<LuapeNodePtr> nodes;
+  NodeKeyToIndexMap nodeKeyToIndex;
   size_t numExamples;
   LuapeGraphCachePtr cache;
 };
