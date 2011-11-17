@@ -35,7 +35,7 @@ public:
     String res = T("{");
     for (size_t i = 0; i < state.stack.size(); ++i)
     {
-      res += graph->getNode(state.stack[i])->toShortString();
+      res += state.stack[i]->toShortString();
       if (i < state.stack.size() - 1)
         res += T(", ");
     }
@@ -44,7 +44,7 @@ public:
     {
       res += T(" ") + state.function->toShortString();
       for (size_t i = 0; i < state.functionNumArguments; ++i)
-        res += T(" ") + state.stack[state.stack.size() - state.functionNumArguments + i];
+        res += T(" ") + state.stack[state.stack.size() - state.functionNumArguments + i]->toShortString();
     }
     return res;
   }
@@ -72,14 +72,14 @@ public:
       if (className == T("GetVariableFunction"))
       {
         jassert(state.stack.size());
-        TypePtr objectClass = graph->getNodeType(state.stack.back());
+        TypePtr objectClass = state.stack.back()->getType();
         for (size_t i = 0; i < objectClass->getNumMemberVariables(); ++i)
           res->append(i);
       }
       else if (className == T("StumpFunction"))
       {
         jassert(state.stack.size());
-        LuapeNodeCachePtr cache = graph->getNode(state.stack.back())->getCache();
+        LuapeNodeCachePtr cache = state.stack.back()->getCache();
         jassert(cache->isConvertibleToDouble());
         
         const std::vector< std::pair<size_t, double> >& sortedDoubleValues = cache->getSortedDoubleValues();
@@ -113,7 +113,7 @@ public:
       {
         size_t n = graph->getNumNodes();
         for (size_t i = 0; i < n; ++i)
-          res->append(Variable(i)); // push node action
+          res->append(graph->getNode(i)); // push node action
       }
 
       if (numRemainingSteps > 1)
@@ -127,7 +127,7 @@ public:
       }
 
       if (isYieldAvailable())
-        res->append(new LuapeYieldNode(graph->getNode(state.stack.back())));
+        res->append(new LuapeYieldNode(state.stack.back()));
     }
     return res;
   }
@@ -144,10 +144,16 @@ public:
       tryToResolveFunction(context);
     }
     else
-    {
-      if (action.getType() == positiveIntegerType)
+    { 
+      if (action.getType() == luapeYieldNodeClass)
       {
-        state.stack.push_back((size_t)action.getInteger());
+        const LuapeNodePtr& node = action.getObjectAndCast<LuapeNode>();
+        graph->pushNode(context, node);
+        state.stack.pop_back();
+      }
+      else if (action.getType()->inheritsFrom(luapeNodeClass))
+      {
+        state.stack.push_back(action.getObjectAndCast<LuapeNode>());
       }
       else if (action.getType()->inheritsFrom(functionClass))
       {
@@ -155,12 +161,8 @@ public:
         state.functionNumArguments = 0;
         tryToResolveFunction(context);
       }
-      else if (action.getType() == luapeYieldNodeClass)
-      {
-        const LuapeNodePtr& node = action.getObjectAndCast<LuapeNode>();
-        graph->pushNode(context, node);
-        state.stack.pop_back();
-      }
+      else
+        jassert(false);
     }
 
     state.numNodes = graph->getNumNodes();
@@ -207,7 +209,7 @@ protected:
   {
     State() : functionNumArguments(0), numNodes(0) {}
 
-    std::vector<size_t> stack;
+    std::vector<LuapeNodePtr> stack;
     FunctionPtr function;
     size_t functionNumArguments;
     size_t numNodes;
@@ -222,19 +224,19 @@ protected:
 
     if (function->getClassName() == T("StumpFunction"))
     {
-      TypePtr inputType = graph->getNodeType(state.stack.back());
+      TypePtr inputType = state.stack.back()->getType();
       return inputType->inheritsFrom(doubleType) || inputType->inheritsFrom(integerType);
     }
 
     size_t firstStackIndex = state.stack.size() - n;
     for (size_t i = 0; i < n; ++i)
-      if (!graph->getNodeType(state.stack[firstStackIndex + i])->inheritsFrom(function->getRequiredInputType(i, n)))
+      if (!state.stack[firstStackIndex + i]->getType()->inheritsFrom(function->getRequiredInputType(i, n)))
         return false;
     return true;
   }
 
   bool isYieldAvailable() const
-    {return state.stack.size() && graph->getNodeType(state.stack.back())->inheritsFrom(booleanType);}
+    {return state.stack.size() && state.stack.back()->getType()->inheritsFrom(booleanType);}
 
   void tryToResolveFunction(ExecutionContext& context)
   {
@@ -244,8 +246,8 @@ protected:
       size_t numInputs = state.function->getNumRequiredInputs();
       std::vector<LuapeNodePtr> inputs(numInputs);
       for (size_t i = 0; i < numInputs; ++i)
-        inputs[i] = graph->getNode(state.stack[state.stack.size() - numInputs + i]);
-      LuapeNodePtr node = new LuapeFunctionNode(state.function, inputs);
+        inputs[i] = state.stack[state.stack.size() - numInputs + i];
+      LuapeNodePtr node = graph->getUniverse()->makeFunctionNode(state.function, inputs);
       bool ok = graph->pushNode(context, node);
       jassert(ok);
 
@@ -255,7 +257,7 @@ protected:
       state.functionNumArguments = 0;
 
       // push result onto stack
-      state.stack.push_back(graph->getNumNodes() - 1);
+      state.stack.push_back(graph->getLastNode());
     }
   }
 };
@@ -290,10 +292,9 @@ public:
       TypePtr nodeType = graph->getNodeType(i);
       if (nodeType->inheritsFrom(objectClass))
       {
-        std::vector<LuapeNodePtr> arguments(1, graph->getNode(i));
         size_t nv = nodeType->getNumMemberVariables();
         for (size_t j = 0; j < nv; ++j)
-          res->append(new LuapeFunctionNode(getVariableFunction(j), arguments));
+          res->append(graph->getUniverse()->makeFunctionNode(getVariableFunction(j), graph->getNode(i)));
       }
     }
     
@@ -347,7 +348,7 @@ protected:
   {
     size_t expectedNumArguments = function->getNumRequiredInputs();
     if (arguments.size() == expectedNumArguments)
-      res->append(new LuapeFunctionNode(function, arguments));
+      res->append(graph->getUniverse()->makeFunctionNode(function, arguments));
     else
     {
       jassert(arguments.size() < expectedNumArguments);

@@ -76,54 +76,14 @@ const std::vector< std::pair<size_t, double> >& LuapeNodeCache::getSortedDoubleV
   return sortedDoubleValues;
 }
 
-/*
-** LuapeGraphCache
-*/
-LuapeNodeCachePtr LuapeGraphCache::getNodeCache(const LuapeNodeKey& key, const TypePtr& nodeType)
-{
-  ScopedLock _(lock);
-  CacheMap::iterator it = m.find(key);
-  if (it == m.end())
-  {
-    LuapeNodeCachePtr res(new LuapeNodeCache());
-    res->initialize(nodeType);
-    m[key] = res;
-    return res;
-  }
-  else
-    return it->second;
-}
-
-void LuapeGraphCache::clearScores()
-{
-  ScopedLock _(lock);
-  for (CacheMap::const_iterator it = m.begin(); it != m.end(); ++it)
-    it->second->clearScore();
-}
 
 /*
 ** LuapeNode
 */
 LuapeNode::LuapeNode(const TypePtr& type, const String& name)
-  : NameableObject(name), type(type) {}
-
-bool LuapeNode::initialize(ExecutionContext& context, const LuapeGraphCachePtr& graphCache)
+  : NameableObject(name), type(type), cache(new LuapeNodeCache())
 {
-  if (!type)
-    return false;
-  if (!cache)
-  {
-    LuapeNodeKey key;
-    fillKey(key);
-    if (graphCache)
-      cache = graphCache->getNodeCache(key, type);
-    else
-    {
-      cache = new LuapeNodeCache();
-      cache->initialize(type);
-    }
-  }
-  return true;
+  cache->initialize(type);
 }
 
 void LuapeNode::clone(ExecutionContext& context, const ObjectPtr& t) const
@@ -146,12 +106,6 @@ String LuapeInputNode::toShortString() const
 Variable LuapeInputNode::compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const
   {jassert(false); return Variable();}
 
-void LuapeInputNode::fillKey(LuapeNodeKey& res) const
-{
-  res.push_back(0); // input
-  res.push_back((juce::int64)inputIndex);
-}
-
 void LuapeInputNode::clone(ExecutionContext& context, const ObjectPtr& target) const
 {
   target.staticCast<LuapeInputNode>()->inputIndex = inputIndex;
@@ -162,10 +116,16 @@ void LuapeInputNode::clone(ExecutionContext& context, const ObjectPtr& target) c
 ** LuapeFunctionNode
 */
 LuapeFunctionNode::LuapeFunctionNode(const FunctionPtr& function, const std::vector<LuapeNodePtr>& arguments)
-  : function(function->cloneAndCast<Function>()), arguments(arguments) {}
+  : function(function->cloneAndCast<Function>()), arguments(arguments)
+{
+  initializeFunction(defaultExecutionContext());
+}
 
 LuapeFunctionNode::LuapeFunctionNode(const FunctionPtr& function, LuapeNodePtr argument)
-  : function(function->cloneAndCast<Function>()), arguments(1, argument) {}
+  : function(function->cloneAndCast<Function>()), arguments(1, argument)
+{
+  initializeFunction(defaultExecutionContext());
+}
 
 String LuapeFunctionNode::toShortString() const
 {
@@ -184,7 +144,7 @@ String LuapeFunctionNode::toShortString() const
   }
 }
 
-bool LuapeFunctionNode::initialize(ExecutionContext& context, const LuapeGraphCachePtr& graphCache)
+bool LuapeFunctionNode::initializeFunction(ExecutionContext& context)
 {
   std::vector<VariableSignaturePtr> inputs(arguments.size());
   for (size_t i = 0; i < inputs.size(); ++i)
@@ -193,10 +153,8 @@ bool LuapeFunctionNode::initialize(ExecutionContext& context, const LuapeGraphCa
     return false;
   type = function->getOutputType();
   name = function->getOutputVariable()->getName();
-  if (!LuapeNode::initialize(context, graphCache))
-    return false;
-  updateCache(context, true); // propagate train data
-  updateCache(context, false); // propagate validation data
+  cache = new LuapeNodeCache();
+  cache->initialize(type);
   return true;
 }
 
@@ -209,30 +167,6 @@ Variable LuapeFunctionNode::compute(ExecutionContext& context, const std::vector
   return function->compute(context, inputs);
 }
 
-void LuapeFunctionNode::fillKey(LuapeNodeKey& res) const
-{
-  res.push_back(1); // function
-
-  res.push_back((juce::int64)function->getClass().get());
-  for (size_t i = 0; i < function->getNumVariables(); ++i)
-  {
-    Variable value = function->getVariable(i);
-    if (value.isInteger())
-      res.push_back((juce::int64)value.getInteger());
-    else if (value.isConvertibleToDouble())
-      res.push_back((juce::int64)(value.toDouble() * 1e6));
-    else
-      jassert(false);
-  }
-  for (size_t i = 0; i < arguments.size(); ++i)
-  {
-    size_t lengthPosition = res.size();
-    res.push_back(0);
-    arguments[i]->fillKey(res);
-    res[lengthPosition] = res.size() - lengthPosition - 1; // fill length
-  }
-}
-
 void LuapeFunctionNode::clone(ExecutionContext& context, const ObjectPtr& t) const
 {
   LuapeNode::clone(context, t);
@@ -240,7 +174,6 @@ void LuapeFunctionNode::clone(ExecutionContext& context, const ObjectPtr& t) con
   target->function = function;
   target->arguments = arguments;
 }
-
 
 size_t LuapeFunctionNode::getDepth() const
 {
@@ -258,9 +191,11 @@ void LuapeFunctionNode::updateCache(ExecutionContext& context, bool isTrainingSa
 {
   jassert(arguments.size());
   TypePtr inputBaseType = arguments[0]->getType();
+  arguments[0]->updateCache(context, isTrainingSamples);
   size_t minCacheSize = arguments[0]->getCache()->getNumSamples(isTrainingSamples);
   for (size_t i = 1; i < arguments.size(); ++i)
   {
+    arguments[i]->updateCache(context, isTrainingSamples);
     size_t cacheSize = arguments[i]->getCache()->getNumSamples(isTrainingSamples);
     if (cacheSize < minCacheSize)
       minCacheSize = cacheSize;
@@ -313,29 +248,18 @@ void LuapeFunctionNode::updateCache(ExecutionContext& context, bool isTrainingSa
 ** LuapeYieldNode
 */
 LuapeYieldNode::LuapeYieldNode(const LuapeNodePtr& argument)
-  : argument(argument) {}
+  : LuapeNode(nilType, argument->getName()), argument(argument)
+{
+}
 
 String LuapeYieldNode::toShortString() const
   {return T("yield(") + argument->toShortString() + T(")");}
-
-bool LuapeYieldNode::initialize(ExecutionContext& context, const LuapeGraphCachePtr& graphCache)
-{
-  type = nilType;
-  name = argument->getName();
-  return LuapeNode::initialize(context, graphCache);
-}
 
 Variable LuapeYieldNode::compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const
 {
   if (callback)
     callback->valueYielded(state[argument]);
   return state[argument];
-}
-
-void LuapeYieldNode::fillKey(LuapeNodeKey& res) const
-{
-  res.push_back(2); // yield
-  argument->fillKey(res);
 }
 
 size_t LuapeYieldNode::getDepth() const
@@ -348,15 +272,55 @@ void LuapeYieldNode::clone(ExecutionContext& context, const ObjectPtr& t) const
 }
 
 /*
-** LuapeGraph
+** LuapeGraphUniverse
 */
-LuapeGraph::LuapeGraph(bool useCache)
-  : numExamples(0)
+static void clearNode(const LuapeNodePtr& node, bool clearTrainingSamples, bool clearValidationSamples, bool clearScores)
 {
-  if (useCache)
-    cache = new LuapeGraphCache();
+  const LuapeNodeCachePtr& cache = node->getCache();
+  cache->clearSamples(clearTrainingSamples, clearValidationSamples);
+  if (clearScores)
+    cache->clearScore();
 }
 
+void LuapeGraphUniverse::clear(bool clearTrainingSamples, bool clearValidationSamples, bool clearScores)
+{
+  for (size_t i = 0; i < inputNodes.size(); ++i)
+    clearNode(inputNodes[i], clearTrainingSamples, clearValidationSamples, clearScores);
+  for (FunctionNodesMap::const_iterator it = functionNodes.begin(); it != functionNodes.end(); ++it)
+    clearNode(it->second, clearTrainingSamples, clearValidationSamples, clearScores);
+}
+
+LuapeFunctionNodePtr LuapeGraphUniverse::makeFunctionNode(ClassPtr functionClass, const std::vector<Variable>& arguments, const std::vector<LuapeNodePtr>& inputs)
+{
+  FunctionKey key;
+  key.functionClass = functionClass;
+  key.arguments = arguments;
+  key.inputs = inputs;
+  FunctionNodesMap::const_iterator it = functionNodes.find(key);
+  if (it == functionNodes.end())
+  {
+    FunctionPtr function = Function::create(functionClass);
+    for (size_t i = 0; i < arguments.size(); ++i)
+      function->setVariable(i, arguments[i]);
+    LuapeFunctionNodePtr res = new LuapeFunctionNode(function, inputs);
+    functionNodes[key] = res;
+    return res;
+  }
+  else
+    return it->second;
+}
+
+LuapeFunctionNodePtr LuapeGraphUniverse::makeFunctionNode(const FunctionPtr& function, const std::vector<LuapeNodePtr>& inputs)
+{
+  std::vector<Variable> arguments(function->getNumVariables());
+  for (size_t i = 0; i < arguments.size(); ++i)
+    arguments[i] = function->getVariable(i);
+  return makeFunctionNode(function->getClass(), arguments, inputs);
+}
+
+/*
+** LuapeGraph
+*/
 String LuapeGraph::toShortString() const
   {return graphToString(0);}
 
@@ -370,24 +334,50 @@ String LuapeGraph::graphToString(size_t firstNodeIndex) const
 
 void LuapeGraph::clearScores()
 {
-  if (cache)
-    cache->clearScores();
-  else
+  universe->clearScores();
+}
+
+LuapeNodePtr LuapeGraph::pushMissingNodes(ExecutionContext& context, const LuapeNodePtr& node)
+{
+  NodesMap::const_iterator it = nodesMap.find(node);
+  if (it != nodesMap.end())
+    return node;
+
+  LuapeFunctionNodePtr functionNode = node.dynamicCast<LuapeFunctionNode>();
+  if (functionNode)
   {
-    for (size_t i = 0; i < nodes.size(); ++i)
-      nodes[i]->getCache()->clearScore();
+    size_t n = functionNode->getNumArguments();
+    for (size_t i = 0; i < n; ++i)
+      pushMissingNodes(context, functionNode->getArgument(i));
   }
+
+  LuapeYieldNodePtr yieldNode = node.dynamicCast<LuapeYieldNode>();
+  if (yieldNode)
+    pushMissingNodes(context, yieldNode->getArgument());
+ 
+  nodesMap[node] = nodes.size();
+  nodes.push_back(node);
+  return node;
+}
+
+LuapeNodePtr LuapeGraph::pushFunctionNode(ExecutionContext& context, const FunctionPtr& function, const LuapeNodePtr& input)
+{
+  LuapeNodePtr node = universe->makeFunctionNode(function, std::vector<LuapeNodePtr>(1, input));
+  pushNode(context, node);
+  return node;
 }
 
 LuapeNodePtr LuapeGraph::pushNode(ExecutionContext& context, const LuapeNodePtr& node)
 {
-  if (!node->initialize(context, cache))
-    return LuapeNodePtr();
-  
-  LuapeNodeKey key;
-  node->fillKey(key);
-  nodeKeyToIndex[key] = nodes.size();
+  NodesMap::const_iterator it = nodesMap.find(node);
+  if (it != nodesMap.end())
+    return node;
 
+  LuapeInputNodePtr inputNode = node.dynamicCast<LuapeInputNode>();
+  if (inputNode)
+    universe->addInputNode(inputNode);
+
+  nodesMap[node] = nodes.size();
   nodes.push_back(node);
   return node;
 }
@@ -395,9 +385,8 @@ LuapeNodePtr LuapeGraph::pushNode(ExecutionContext& context, const LuapeNodePtr&
 void LuapeGraph::popNode()
 {
   jassert(nodes.size());
-  LuapeNodeKey key;
-  nodes.back()->fillKey(key);
-  nodeKeyToIndex.erase(key);
+  LuapeNodePtr node = nodes.back();
+  nodesMap.erase(node);
   nodes.pop_back();
 }
 
@@ -431,7 +420,6 @@ void LuapeGraph::setSample(bool isTrainingSample, size_t index, const std::vecto
     jassert(node);
     node->getCache()->setSample(isTrainingSample, index, example[i]);
   }
-  ++numExamples;
 }
 
 void LuapeGraph::setSample(bool isTrainingSample, size_t index, const ObjectPtr& example)
@@ -459,13 +447,11 @@ void LuapeGraph::setSample(bool isTrainingSample, size_t index, const ObjectPtr&
       node->getCache()->setSample(isTrainingSample, index, example->getVariable(i));
     }
   }
-  ++numExamples;
 }
 
 void LuapeGraph::clearSamples(bool clearTrainingSamples, bool clearValidationSamples)
 {
-  for (size_t i = 0; i < nodes.size(); ++i)
-    nodes[i]->getCache()->clearSamples(clearTrainingSamples, clearValidationSamples);
+  getUniverse()->clearSamples(clearTrainingSamples, clearValidationSamples);
 }
 
 void LuapeGraph::compute(ExecutionContext& context, std::vector<Variable>& state, size_t firstNodeIndex, LuapeGraphCallbackPtr callback) const
@@ -474,64 +460,9 @@ void LuapeGraph::compute(ExecutionContext& context, std::vector<Variable>& state
     state[i] = nodes[i]->compute(context, state, callback);
 }
 
-LuapeNodePtr LuapeGraph::pushNodes(ExecutionContext& context, const LuapeNodeKey& key, size_t& keyPosition, size_t keyEnd)
-{
-  jassert(keyPosition < key.size());
-
-  LuapeNodeKey subKey(keyEnd - keyPosition);
-  memcpy(&subKey[0], &key[keyPosition], sizeof (juce::int64) * subKey.size());
-  NodeKeyToIndexMap::const_iterator it = nodeKeyToIndex.find(subKey);
-  if (it != nodeKeyToIndex.end())
-    return getNode(it->second);
-
-  switch (key[keyPosition++])
-  {
-  case 0: // input
-    jassert(false); // inputs should already been in cache
-    //pushNode(context, new LuapeInputNode(key[keyPosition++]));
-    return LuapeNodePtr();
-
-  case 1: // function
-    {
-      ClassPtr functionClass(reinterpret_cast<Class* >(key[keyPosition++]));
-      FunctionPtr function = Object::create(functionClass);
-      for (size_t i = 0; i < function->getNumVariables(); ++i)
-      {
-        TypePtr variableType = function->getVariableType(i);
-        if (variableType->inheritsFrom(integerType))
-          function->setVariable(i, (int)key[keyPosition++]);
-        else if (variableType->isConvertibleToDouble())
-          function->setVariable(i, (double)key[keyPosition++] / 1e6);
-        else
-          jassert(false);
-      }
-      
-      std::vector<LuapeNodePtr> inputs(function->getNumRequiredInputs());
-      for (size_t i = 0; i < inputs.size(); ++i)
-      {
-        size_t keyLength = (size_t)key[keyPosition++];
-        inputs[i] = getNode(pushNodes(context, key, keyPosition, keyPosition + keyLength));
-      }
-      return pushNode(context, new LuapeFunctionNode(function, inputs));
-    }
-
-  case 2: // yield
-    {
-      size_t argument = pushNodes(context, key, keyPosition, keyEnd);
-      return pushNode(context, new LuapeYieldNode(getNode(argument)));
-    }
-
-  default:
-    jassert(false);
-    return LuapeNodePtr();
-  }
-}
-
 void LuapeGraph::clone(ExecutionContext& context, const ObjectPtr& t) const
 {
   const LuapeGraphPtr& target = t.staticCast<LuapeGraph>();
-  target->numExamples = numExamples;
   target->nodes = nodes;
-  target->cache = cache;
-  target->nodeKeyToIndex = nodeKeyToIndex;
+  target->universe = universe;
 }

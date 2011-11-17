@@ -28,7 +28,6 @@ public:
     LuapeGraphPtr graph = function->getGraph();
     size_t numInitialNodes = graph->getNumNodes();
     graph->clearScores();
-    LuapeGraphCachePtr graphCache = graph->getCache();
     FunctionPtr objective = new Objective(batchLearner, function, supervisions, weights);
 
     OptimizationProblemPtr optimizationProblem(new OptimizationProblem(objective));
@@ -40,7 +39,7 @@ public:
 
     LuapeGraphPtr bestGraph = bestFinalState->getGraph();
     context.informationCallback(String("Best Graph: ") + bestGraph->getLastNode()->toShortString() + T(" [") + String(optimizerState->getBestScore()) + T("]"));
-    context.informationCallback(String("Num cached nodes: ") + String(graphCache ? (int)graphCache->getNumCachedNodes() : 0));
+    //context.informationCallback(String("Num cached nodes: ") + String(graphCache ? (int)graphCache->getNumCachedNodes() : 0));
     
     jassert(graph->getNumNodes() == numInitialNodes);
     jassert(bestGraph->getNumNodes() > numInitialNodes);

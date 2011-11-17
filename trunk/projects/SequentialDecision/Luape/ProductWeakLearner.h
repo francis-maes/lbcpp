@@ -21,14 +21,14 @@ public:
     : LuapeNode(booleanType, name), baseNodes(numBaseNodes) {}
   LuapeProductNode() {}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeGraphCachePtr& cache)
+/*  virtual bool initialize(ExecutionContext& context, const LuapeGraphCachePtr& cache)
   {
     if (!LuapeNode::initialize(context, cache))
       return false;
     computeCache(getCache(), true);
     computeCache(getCache(), false);
     return true;
-  }
+  }*/
 
   virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const
   {
@@ -41,18 +41,6 @@ public:
     return res;
   }
   
-  virtual void fillKey(LuapeNodeKey& res) const
-  {
-    for (size_t i = 0; i < baseNodes.size(); ++i)
-    {
-      LuapeNodePtr baseNode = baseNodes[i];
-      if (baseNode)
-        baseNode->fillKey(res);
-      else
-        res.push_back(0);
-    }
-  }
-
   virtual size_t getDepth() const
   {
     size_t maxBaseDepth = 0;
@@ -222,7 +210,7 @@ public:
       context.resultCallback("baseNode", weak[0]);
       
       // update predictions
-      weak[0]->initialize(context, function->getGraph()->getCache());
+      //weak[0]->initialize(context, function->getGraph()->getCache());
       LuapeNodeCachePtr weakCache = weak[0]->getCache();
       predictions[index] = weakCache->getTrainingSamples().staticCast<BooleanVector>();
       predictionsProduct = computePredictionsProduct(predictions);
