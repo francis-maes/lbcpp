@@ -257,6 +257,54 @@ public:
 
 typedef ReferenceCountedObjectPtr<LuapeRanker> LuapeRankerPtr;
 
+
+class LuapeRegressor : public LuapeFunction
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? doubleType : objectClass;}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return doubleType;}
+
+  struct ComputeCallback : public LuapeGraphCallback
+  {
+    ComputeCallback(DenseDoubleVectorPtr votes) 
+      : votes(votes), index(0), res(0.0) {}
+
+    DenseDoubleVectorPtr votes;
+    size_t index;
+    double res;
+
+    virtual void valueYielded(const Variable& value)
+    {
+      if (value.getBoolean())
+        res += votes->getValue(index++);
+    }
+  };
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    ComputeCallback callback(votes);   
+    std::vector<Variable> state;
+    computeGraph(context, inputs[0].getObject(), state, &callback);
+    return callback.res;
+  }
+
+  // votes are scalars (alpha values)
+  virtual VectorPtr createVoteVector(size_t initialSize) const
+    {return new DenseDoubleVector(initialSize, 0.0);}
+
+  // targetVote += vote * (positive ? 1 : -1)
+  virtual void aggregateVote(Variable& targetVote, const Variable& vote, bool positive) const
+    {targetVote = vote.getDouble() * (positive ? 1 : -1.0);}
+};
+
+typedef ReferenceCountedObjectPtr<LuapeRegressor> LuapeRegressorPtr;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_LUAPE_FUNCTION_H_
