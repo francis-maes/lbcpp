@@ -424,6 +424,12 @@ size_t LuapeGraph::getNumValidationSamples() const
 size_t LuapeGraph::getNumSamples(bool isTrainingSamples) const
   {return nodes.size() ? nodes[0]->getCache()->getNumSamples(isTrainingSamples) : 0;}
 
+void LuapeGraph::resizeSamples(bool isTrainingSamples, size_t numSamples)
+{
+  for (size_t i = 0; i < nodes.size(); ++i)
+    nodes[i]->getCache()->resizeSamples(isTrainingSamples, numSamples);
+}
+
 void LuapeGraph::resizeSamples(size_t numTrainingSamples, size_t numValidationSamples)
 {
   for (size_t i = 0; i < nodes.size(); ++i)
