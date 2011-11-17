@@ -61,7 +61,7 @@ public:
     // configure gradient boosting
     //LuapeGradientBoostingLossPtr gbmLoss = new RankingGradientBoostingLoss(allPairsRankingLossFunction(hingeDiscriminativeLossFunction()));
     LuapeGradientBoostingLossPtr gbmLoss = new L2GradientBoostingLoss();
-    LuapeGradientBoostingLearnerPtr learner = new LuapeGradientBoostingLearner(gbmLoss, 0.1, 1000, 6);
+    LuapeGradientBoostingLearnerPtr learner = new LuapeGradientBoostingLearner(gbmLoss, 0.5, 1000, 8);
     if (!learner->initialize(context, problem, learningMachine))
       return false;
     
@@ -100,18 +100,37 @@ public:
   bool learn(ExecutionContext& context, const LuapeGradientBoostingLearnerPtr& learner, const ContainerPtr& trainingGames, const ContainerPtr& testingGames) const
   {
     context.enterScope(T("Gradient Boosting"));
-    size_t n = trainingGames->getNumElements();
+/*    size_t n = trainingGames->getNumElements();
     for (size_t i = 0; i < n; ++i)
     {
       context.enterScope("Iteration " + String((int)i + 1));
       context.resultCallback(T("iteration"), i+1);
       std::vector<PairPtr> rankingExamples;
       makeRankingExamples(context, trainingGames->getElement(i), rankingExamples);
+      bool ok = true;
+      if (!rankingExamples.size())
+        context.warningCallback(T("No ranking examples"));
+      else
+        ok = learner->doLearningEpisode(context, *(std::vector<ObjectPtr>* )&rankingExamples);
+      context.leaveScope(ok);
+      if (!ok)
+        break;
+    }*/
+    std::vector<PairPtr> rankingExamples;
+    size_t n = trainingGames->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+      makeRankingExamples(context, trainingGames->getElement(i), rankingExamples);
+
+    for (size_t i = 0; i < 100; ++i)
+    {
+      context.enterScope("Iteration " + String((int)i + 1));
+      context.resultCallback(T("iteration"), i+1);
       bool ok = learner->doLearningEpisode(context, *(std::vector<ObjectPtr>* )&rankingExamples);
       context.leaveScope(ok);
       if (!ok)
         break;
     }
+
     context.leaveScope();
     return true;
   }
@@ -126,7 +145,9 @@ private:
   void makeRankingExamples(ExecutionContext& context, const Variable& stateAndTrajectory, std::vector<PairPtr>& res) const
   {
     PairPtr stateAndTrajectoryPair = stateAndTrajectory.getObjectAndCast<Pair>();
-    jassert(stateAndTrajectoryPair);
+    if (!stateAndTrajectoryPair)
+      return;
+
     GoStatePtr state = stateAndTrajectoryPair->getFirst().getObjectAndCast<GoState>();
     ContainerPtr trajectory = stateAndTrajectoryPair->getSecond().getObjectAndCast<Container>();
     
@@ -208,8 +229,8 @@ private:
     for (size_t i = 0; i < n; ++i)
     {
       PairPtr stateAndTrajectory = games->getElement(i).getObjectAndCast<Pair>();
-      jassert(stateAndTrajectory);
-      moves += stateAndTrajectory->getSecond().getObjectAndCast<Container>()->getNumElements();
+      if (stateAndTrajectory)
+        moves += stateAndTrajectory->getSecond().getObjectAndCast<Container>()->getNumElements();
     }
     context.informationCallback(String((int)n) + T(" ") + name + T(" games and ") + String((int)moves) + T(" ") + name + T(" moves"));
     return true;

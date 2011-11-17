@@ -235,6 +235,13 @@ protected:
       return inputType->inheritsFrom(doubleType) || inputType->inheritsFrom(integerType);
     }
 
+    if (function->getClassName() == T("BooleanAndFunction"))
+    {
+       size_t firstStackIndex = state.stack.size() - 2;
+       if (state.stack[firstStackIndex] == state.stack[firstStackIndex + 1])
+         return false; // remove x && x
+    }
+
     size_t firstStackIndex = state.stack.size() - n;
     for (size_t i = 0; i < n; ++i)
       if (!state.stack[firstStackIndex + i]->getType()->inheritsFrom(function->getRequiredInputType(i, n)))

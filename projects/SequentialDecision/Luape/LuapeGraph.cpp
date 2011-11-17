@@ -76,6 +76,55 @@ const std::vector< std::pair<size_t, double> >& LuapeNodeCache::getSortedDoubleV
   return sortedDoubleValues;
 }
 
+BinaryKeyPtr LuapeNodeCache::makeKeyFromSamples(bool useTrainingSamples) const
+{
+  ContainerPtr samples = getSamples(useTrainingSamples);
+  size_t n = samples->getNumElements();
+  
+  BooleanVectorPtr booleanVector = samples.dynamicCast<BooleanVector>();
+  if (booleanVector)
+  {
+    BinaryKeyPtr res = new BinaryKey(1 + n / 8);
+    for (size_t i = 0; i < n; ++i)
+      res->pushBit(booleanVector->get(i));
+    res->fillBits();
+    return res;
+  }
+
+  DenseDoubleVectorPtr doubleVector = samples.dynamicCast<DenseDoubleVector>();
+  if (doubleVector)
+  {
+    BinaryKeyPtr res = new BinaryKey(n * 4);
+    for (size_t i = 0; i < n; ++i)
+      res->push32BitInteger((int)(doubleVector->getValue(i) * 10e6));
+    return res;
+  }
+
+  ObjectVectorPtr objectVector = samples.dynamicCast<ObjectVector>();
+  if (objectVector)
+  {
+    BinaryKeyPtr res = new BinaryKey(n * sizeof (void* ));
+    for (size_t i = 0; i < n; ++i)
+      res->pushPointer(objectVector->get(i));
+    return res;
+  }
+
+  GenericVectorPtr genericVector = samples.dynamicCast<GenericVector>();
+  if (genericVector)
+  {
+    if (genericVector->getElementsType()->inheritsFrom(integerType))
+    {
+      BinaryKeyPtr res = new BinaryKey(n * sizeof (VariableValue));
+      res->pushBytes((unsigned char* )&genericVector->getValues()[0], n * sizeof (VariableValue));
+      return res;
+    }
+
+    jassert(false);
+  }
+
+  jassert(false);
+  return BinaryKeyPtr();
+}
 
 /*
 ** LuapeNode

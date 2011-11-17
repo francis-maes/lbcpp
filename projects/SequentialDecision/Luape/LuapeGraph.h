@@ -25,6 +25,86 @@ public:
 
 typedef LuapeGraphCallback* LuapeGraphCallbackPtr;
 
+class BinaryKey : public Object
+{
+public:
+  BinaryKey(size_t size)
+    : values(size, 0), position(0), bitShift(1) {}
+  BinaryKey() {}
+
+  virtual int compare(const ObjectPtr& otherObject) const
+  {
+    const std::vector<unsigned char>& ovalues = otherObject.staticCast<BinaryKey>()->values;
+    if (ovalues == values)
+      return 0;
+    else
+      return values < ovalues ? -1 : 1;
+  }
+
+  void pushBit(bool value)
+  {
+    jassert(position < values.size());
+    if (value)
+      values[position] |= bitShift;
+    bitShift <<= 1;
+    if (bitShift == 256)
+    {
+      ++position;
+      bitShift = 1;
+    }
+  }
+  void fillBits()
+  {
+    if (bitShift > 1)
+      bitShift = 1, ++position;
+  }
+
+  void pushByte(unsigned char c)
+    {jassert(position < values.size()); values[position++] = c;}
+
+  void pushBytes(unsigned char* data, size_t length)
+  {
+    jassert(position + length <= values.size());
+    memcpy(&values[position], data, length);
+    position += length;
+  }
+
+  void push32BitInteger(int value)
+  {
+    memcpy(&values[position], &value, 4);
+    position += 4;
+  }
+
+  void pushInteger(juce::int64 value)
+  {
+    memcpy(&values[position], &value, sizeof (juce::int64));
+    position += sizeof (juce::int64);
+  }
+
+  void pushPointer(const ObjectPtr& object)
+  {
+    void* pointer = object.get();
+    memcpy(&values[position], &pointer, sizeof (void* ));
+    position += sizeof (void* );
+  }
+
+  size_t computeHashValue() const
+  {
+    size_t res = 0;
+    const unsigned char* ptr = &values[0];
+    const unsigned char* lim = ptr + values.size();
+    while (ptr < lim)
+      res = 31 * res + *ptr++;
+    return res;
+  }
+
+protected:
+  std::vector<unsigned char> values;
+  size_t position;
+  size_t bitShift;
+};
+typedef ReferenceCountedObjectPtr<BinaryKey> BinaryKeyPtr;
+
 //// CACHE
 
 class LuapeNodeCache : public Object
@@ -67,6 +147,8 @@ public:
     {return validationSamples;}
 
   void clearSamples(bool clearTrainingSamples = true, bool clearValidationSamples = true);
+
+  BinaryKeyPtr makeKeyFromSamples(bool useTrainingSamples = true) const;
 
   /*
   ** Double values
@@ -167,6 +249,18 @@ typedef ReferenceCountedObjectPtr<LuapeInputNode> LuapeInputNodePtr;
 
 class LuapeFunctionNode;
 typedef ReferenceCountedObjectPtr<LuapeFunctionNode> LuapeFunctionNodePtr;
+/*
+class LuapeOperator : public Object
+{
+public:
+  virtual size_t getNumInputs() const = 0;
+  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const = 0; 
+
+  enum Flags
+  {
+    isCommutative = 0x01,  // f(x1..xn) = f(x_p_1 .. x_p_n) for any permutation p
+  };
+};*/
 
 class LuapeFunctionNode : public LuapeNode
 {
@@ -287,6 +381,9 @@ public:
 
   LuapeNodePtr getLastNode() const
     {return nodes.back();}
+
+  bool containsNode(const LuapeNodePtr& node) const
+    {return nodesMap.find(node) != nodesMap.end();}
 
   LuapeNodePtr pushNode(ExecutionContext& context, const LuapeNodePtr& node);
   LuapeNodePtr pushMissingNodes(ExecutionContext& context, const LuapeNodePtr& node);
