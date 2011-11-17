@@ -236,6 +236,11 @@
 
 
   <!-- BEGIN LargePredictorParameters -->
+  <class name="PreProcessInputCompositeFunction" base="CompositeFunction">
+    <variable type="Function" name="f"/>
+    <variable type="Function" name="g"/>
+  </class>
+
   <template name="LargeProteinPerception" base="ProteinPrimaryPerception">
     <parameter name="aaFeaturesEnumeration"/>
     <parameter name="pssmFeaturesEnumeration"/>
@@ -328,6 +333,8 @@
     <variable type="Double" name="sgdRate"/>
     <variable type="PositiveInteger" name="sgdIterations"/>
     <variable type="Boolean" name="useAddBias"/>
+    <variable type="Boolean" name="useFisherFilter"/>
+    <variable type="PositiveInteger" name="numFisherFeatures"/>
   </class>
   <!-- END LargePredictorParameters -->
 </library>

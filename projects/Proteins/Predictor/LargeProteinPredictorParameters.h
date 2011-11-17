@@ -21,6 +21,30 @@
 namespace lbcpp
 {
 
+class PreProcessInputCompositeFunction : public CompositeFunction
+{
+public:
+  PreProcessInputCompositeFunction(const FunctionPtr& f, const FunctionPtr& g)
+    : f(f), g(g) {}
+
+  virtual void buildFunction(CompositeFunctionBuilder& builder)
+  {
+    size_t input = builder.addInput(anyType, T("input"));
+    size_t supervision = builder.addInput(anyType, T("supervision"));
+
+    size_t res = builder.addFunction(f, input, supervision);
+    builder.addFunction(g, res, supervision);
+  }
+
+protected:
+  friend class PreProcessInputCompositeFunctionClass;
+
+  FunctionPtr f;
+  FunctionPtr g;
+
+  PreProcessInputCompositeFunction() {}
+};
+
 /*
 ** Large Protein Perception
 */
@@ -344,7 +368,7 @@ public:
     return res;
   }
 
-  static LargeProteinParametersPtr createTestObject()
+  static LargeProteinParametersPtr createTestObject(size_t windowSizes = 3)
   {
     LargeProteinParametersPtr res = new LargeProteinParameters();
     const size_t n = largeProteinParametersClass->getNumMemberVariables();
@@ -355,7 +379,7 @@ public:
       if (varType->inheritsFrom(booleanType))
         res->setVariable(i, Variable(true, booleanType));
       else
-        res->setVariable(i, Variable(3, positiveIntegerType));
+        res->setVariable(i, Variable(windowSizes, positiveIntegerType));
     }
     return res;
   }
@@ -677,9 +701,16 @@ public:
 
   virtual FunctionPtr createTargetPredictor(ProteinTarget target) const
   {
+    FunctionPtr res;
+    
     if (target == dsbTarget)
-      return new ConnectivityPatternClassifier(learningMachine(target), target == dsbTarget);
-    return ProteinPredictorParameters::createTargetPredictor(target);
+      res = new ConnectivityPatternClassifier(learningMachine(target), target == dsbTarget);
+    else
+      res = ProteinPredictorParameters::createTargetPredictor(target);
+
+    if (useFisherFilter)
+      return new PreProcessInputCompositeFunction(fisherFilterLearnableFunction(numFisherFeatures), res);
+    return res;
   }
 
   virtual FunctionPtr learningMachine(ProteinTarget target) const
@@ -735,6 +766,8 @@ public:
   size_t sgdIterations;
 
   bool useAddBias;
+  bool useFisherFilter;
+  size_t numFisherFeatures;
 
   LargeProteinPredictorParameters()
   : svmC(4.0), svmGamma(1.0)
@@ -745,6 +778,8 @@ public:
   , sgdRate(1.0)
   , sgdIterations(100)
   , useAddBias(false)
+  , useFisherFilter(false)
+  , numFisherFeatures(100)
   {}
 
 protected:

@@ -160,12 +160,14 @@ typedef ReferenceCountedObjectPtr<StochasticGDParameters> StochasticGDParameters
 
 // atomic learnable functions
 extern FunctionPtr addBiasLearnableFunction(BinaryClassificationScore scoreToOptimize, double initialBias = 0.0);
+extern FunctionPtr fisherFilterLearnableFunction(size_t numSelectedFeature);
 extern NumericalLearnableFunctionPtr linearLearnableFunction();
 extern NumericalLearnableFunctionPtr multiLinearLearnableFunction(EnumerationPtr outputsEnumeration = EnumerationPtr());
 extern NumericalLearnableFunctionPtr rankingLearnableFunction(NumericalLearnableFunctionPtr scoringFunction);
 
 // batch learners
 extern BatchLearnerPtr addBiasBatchLearner(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore);
+extern BatchLearnerPtr fisherFilterBatchLearner();
 
 // online learners
 extern OnlineLearnerPtr stochasticGDOnlineLearner(FunctionPtr lossFunction, IterationFunctionPtr learningRate, bool normalizeLearningRate = true);

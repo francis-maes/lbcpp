@@ -512,6 +512,7 @@ SET(LBCPP_LEARNING_NUMERICAL_LEARNABLE_FUNCTION_SOURCES
   Learning/Numerical/LinearLearnableFunction.h
   Learning/Numerical/MultiLinearLearnableFunction.h
   Learning/Numerical/RankingLearnableFunction.h
+  Learning/Numerical/FisherFilterLearnableFunction.h
 )
 
 SET(LBCPP_LEARNING_NUMERICAL_ONLINE_SOURCES
@@ -522,6 +523,7 @@ SET(LBCPP_LEARNING_NUMERICAL_ONLINE_SOURCES
 
 SET(LBCPP_LEARNING_NUMERICAL_BATCH_SOURCES
   Learning/Numerical/AddBiasBatchLearner.h
+  Learning/Numerical/FisherFilterBatchLearner.h
 )
 
 SET(LBCPP_LEARNING_NUMERICAL_LIBSVM_SOURCES

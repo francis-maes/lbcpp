@@ -51,6 +51,9 @@ public:
 
   virtual String toShortString() const;
 
+  void setName(const String& name)
+    {this->name = name;}
+
 private:
   friend class EnumerationElementClass;
 

@@ -140,51 +140,10 @@
     <variable type="File" name="optimizerStateFile" shortName="opt"/>
   </class>
 
-<!-- FIXME: Optimizer
-  <class name="CysteinLearnerParameters" base="Object">
-    <variable type="ProteinPredictorParameters" name="predictorParameters"/>
-    <variable type="String" name="foldDirectory"/>
+  <class name="DisulfideBondTestWorkUnit" base="WorkUnit">
+    <variable type="File" name="inputDirectory" shortName="in"/>
+    <variable type="File" name="supervisionDirectory" shortName="sup"/>
   </class>
-  
-  <class name="CysteinLearnerFunction" base="SimpleUnaryFunction"/>
-
-  <class name="CysteinCrossValidationOptimizer" base="Optimizer">
-    <variable type="ProteinPredictorParameters" name="parameters"/>
-    <variable type="String" name="path"/>
-  </class>
-
-  <class name="CysteinCrossValidationFunction" base="SimpleUnaryFunction">
-    <variable type="String" name="path"/>
-  </class>
-
-  <class name="CParameterOptimizer" base="Optimizer">
-    <variable type="Lin09Parameters" name="parameters"/>
-  </class>
-
-  <class name="COptimizerFunction" base="SimpleUnaryFunction">
-    <variable type="String" name="inputDirectory"/>
-  </class>
-
-  <class name="BFSCysteinProteinLearner" base="WorkUnit">
-    <variable type="String" name="inputDirectory"/>
-  </class>
-
-  <class name="CysteinLearnerWorkUnit" base="WorkUnit">
-    <variable type="File" name="inputDirectory"/>
-    <variable type="Double" name="kernelGamma" shortName="g"/>
-    <variable type="Double" name="learningRate" shortName="lr"/>
-    <variable type="PositiveInteger" name="numNeighbors" shortName="kNN"/>
-  </class>
-
-  <class name="GaussianKernelParameters" base="Object">
-    <variable type="Double" name="gamma"/>
-    <variable type="Double" name="C"/>
-  </class>
-  
-  <class name="CysteinCrossValidationWorkUnit" base="WorkUnit">
-    <variable type="String" name="inputPath"/>
-  </class>
--->
   <!-- END CysteinBox -->
 
   <!-- BEGIN LargeBox -->
