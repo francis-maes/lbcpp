@@ -77,19 +77,19 @@ public:
     }
   }
 
-  virtual FormulaKeyPtr makeFormulaKey(const GPExpressionPtr& expression, const std::vector< std::vector<double> >& inputSamples) const
+  virtual BinaryKeyPtr makeBinaryKey(const GPExpressionPtr& expression, const std::vector< std::vector<double> >& inputSamples) const
   {
     std::map<size_t, size_t> variableUseCounts;
     expression->getVariableUseCounts(variableUseCounts);
     if (variableUseCounts[1] == 0 || variableUseCounts[2] == 0) // at least the reward and the next state value must be used
-      return FormulaKeyPtr();
+      return BinaryKeyPtr();
 
-    FormulaKeyPtr res = new FormulaKey(inputSamples.size() * sizeof (juce::int64));
+    BinaryKeyPtr res = new BinaryKey(inputSamples.size() * sizeof (juce::int64));
     for (size_t i = 0; i < inputSamples.size(); ++i)
     {
       double value = expression->compute(&inputSamples[i][0]);
       if (!isNumberValid(value))
-        return FormulaKeyPtr();
+        return BinaryKeyPtr();
       res->pushInteger((juce::int64)(value * 100000));
     }
     return res;

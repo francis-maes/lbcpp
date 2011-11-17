@@ -19,8 +19,10 @@ LuapeGraphBuilderBanditPool::LuapeGraphBuilderBanditPool(size_t maxSize, size_t 
 
 void LuapeGraphBuilderBanditPool::initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph)
 {
-  LuapeRPNGraphBuilderStatePtr builder = new LuapeRPNGraphBuilderState(problem, graph, maxDepth);
-  createNewArms(context, builder);
+  LuapeRPNGraphBuilderStatePtr builder = new LuapeRPNGraphBuilderState(problem, graph->cloneAndCast<LuapeGraph>(), maxDepth);
+  KeyToArmMap keyToArms;
+  computeArmKeys(graph, keyToArms);
+  createNewArms(context, graph, builder, keyToArms);
   createBanditsQueue();
 }
 
@@ -29,11 +31,16 @@ void LuapeGraphBuilderBanditPool::executeArm(ExecutionContext& context, size_t a
   // update arms
   destroyArm(context, armIndex);
 
-  LuapeRPNGraphBuilderStatePtr builder = new LuapeRPNGraphBuilderState(problem, graph, maxDepth);
+  LuapeRPNGraphBuilderStatePtr builder = new LuapeRPNGraphBuilderState(problem, graph->cloneAndCast<LuapeGraph>(), maxDepth);
   double reward;
   builder->performTransition(context, newNode, reward); // push last created node
-  createNewArms(context, builder);
+
+  context.enterScope(T("Update arms"));
+  KeyToArmMap keyToArms;
+  computeArmKeys(graph, keyToArms);
+  createNewArms(context, graph, builder, keyToArms);
   createBanditsQueue();
+  context.leaveScope();
 
   context.informationCallback(String((int)arms.size()) + T(" arms"));
 }
@@ -72,11 +79,12 @@ double LuapeGraphBuilderBanditPool::sampleReward(ExecutionContext& context, cons
       bool isPositive = booleans->get(i);
 
       double value = pseudoResiduals->getValue(i);
+      double weight = 1.0; // fabs(value)
 
       //if (random->sampleBool(p))
-        (isPositive ? trainPositive : trainNegative).push(value, fabs(value));
+        (isPositive ? trainPositive : trainNegative).push(value, weight);
       //else
-        (isPositive ? validationPositive : validationNegative).push(value, fabs(value));
+        (isPositive ? validationPositive : validationNegative).push(value, weight);
     }
     
     double meanSquareError = 0.0;
@@ -95,14 +103,17 @@ double LuapeGraphBuilderBanditPool::sampleReward(ExecutionContext& context, cons
 
 void LuapeGraphBuilderBanditPool::playArmWithHighestIndex(ExecutionContext& context, const DenseDoubleVectorPtr& pseudoResiduals)
 {
-  size_t armIndex = banditsQueue.top().first;
-  banditsQueue.pop();
-  
-  Arm& arm = arms[armIndex];
-  ++arm.playedCount;
-  arm.rewardSum += sampleReward(context, pseudoResiduals, armIndex);
+  if (banditsQueue.size())
+  {
+    size_t armIndex = banditsQueue.top().first;
+    banditsQueue.pop();
+    
+    Arm& arm = arms[armIndex];
+    ++arm.playedCount;
+    arm.rewardSum += sampleReward(context, pseudoResiduals, armIndex);
 
-  banditsQueue.push(std::make_pair(armIndex, arm.getIndexScore()));
+    banditsQueue.push(std::make_pair(armIndex, arm.getIndexScore()));
+  }
 }
 
 size_t LuapeGraphBuilderBanditPool::getArmWithHighestReward() const
@@ -175,30 +186,56 @@ size_t LuapeGraphBuilderBanditPool::createArm(ExecutionContext& context, const L
   }
   Arm& arm = arms[index];
   arm.node = node;
-  nodeToArmIndex[node] = index;
   return index;
 }
 
 void LuapeGraphBuilderBanditPool::destroyArm(ExecutionContext& context, size_t index)
 {
   context.informationCallback(T("Destroy arm ") + arms[index].node->toShortString());
-  nodeToArmIndex[arms[index].node] = (size_t)-1;
   arms[index] = Arm();
   destroyedArmIndices.push_back(index);
   banditsQueue = BanditsQueue();
 }
 
-void LuapeGraphBuilderBanditPool::createNewArms(ExecutionContext& context, LuapeRPNGraphBuilderStatePtr state)
+void LuapeGraphBuilderBanditPool::computeArmKeys(const LuapeGraphPtr& graph, KeyToArmMap& res)
+{
+  for (size_t i = 0; i < graph->getNumNodes(); ++i)
+  {
+    LuapeNodePtr node = graph->getNode(i);
+    if (!node.isInstanceOf<LuapeYieldNode>())
+      res[node->getCache()->makeKeyFromSamples()] = (size_t)-1;
+  }
+
+  for (size_t i = 0; i < arms.size(); ++i)
+  {
+    Arm& arm = arms[i];
+    if (arm.node)
+      res[arms[i].getCache()->makeKeyFromSamples()] = i;
+  }
+}
+
+void LuapeGraphBuilderBanditPool::createNewArms(ExecutionContext& context, const LuapeGraphPtr& graph, LuapeRPNGraphBuilderStatePtr state, KeyToArmMap& keyToArms)
 {
   if (state->isFinalState())
   {
-    LuapeGraphPtr graph = state->getGraph();
-    LuapeYieldNodePtr yield = graph->getLastNode().dynamicCast<LuapeYieldNode>();
+    LuapeYieldNodePtr yield = state->getGraph()->getLastNode().dynamicCast<LuapeYieldNode>();
     if (yield)
     {
       LuapeNodePtr node = yield->getArgument();
-      if (nodeToArmIndex.find(node) == nodeToArmIndex.end())
-        createArm(context, node);
+      if (!graph->containsNode(node))
+      {
+        node->updateCache(context, true);
+        BinaryKeyPtr key = node->getCache()->makeKeyFromSamples();
+        if (keyToArms.find(key) == keyToArms.end())
+        {
+          createArm(context, node);
+          keyToArms[key] = node;
+        }
+        else
+        {
+          // FIXME: replacement by the shortest length node
+        }
+      }
     }
   }
   else
@@ -210,8 +247,8 @@ void LuapeGraphBuilderBanditPool::createNewArms(ExecutionContext& context, Luape
       Variable stateBackup;
       double reward;
       state->performTransition(context, actions->getElement(i), reward, &stateBackup);
-     // context.enterScope(state->toShortString());
-      createNewArms(context, state);
+      //context.enterScope(state->toShortString());
+      createNewArms(context, graph, state, keyToArms);
       //context.leaveScope();
       state->undoTransition(context, stateBackup);
     }
@@ -234,9 +271,6 @@ bool LuapeGradientBoostingLearner::initialize(ExecutionContext& context, const L
   this->function = function;
   pool = new LuapeGraphBuilderBanditPool(maxBandits, maxDepth);
   graph = function->getGraph();
-  context.enterScope(T("Creating initial arms"));
-  pool->initialize(context, problem, graph);
-  context.leaveScope(pool->getNumArms());
   return true;
 }
 
@@ -247,6 +281,12 @@ bool LuapeGradientBoostingLearner::doLearningEpisode(ExecutionContext& context, 
   
   // 1- fill graph
   loss->setExamples(true, examples);
+  if (!pool->getNumArms())
+  {
+    context.enterScope(T("Creating initial arms"));
+    pool->initialize(context, problem, graph);
+    context.leaveScope(pool->getNumArms());
+  }
 
   // 2- compute graph outputs and compute loss derivatives
   context.enterScope(T("Computing predictions"));
@@ -279,7 +319,13 @@ bool LuapeGradientBoostingLearner::doLearningEpisode(ExecutionContext& context, 
   }
 
   // 4- select weak learner and find optimal weight
-  LuapeNodePtr weakLearnerNode = pool->getArmNode(pool->getArmWithHighestReward());
+  size_t armIndex = pool->getArmWithHighestReward();
+  if (armIndex == (size_t)-1)
+  {
+    context.errorCallback(T("Could not select best arm"));
+    return false;
+  }
+  LuapeNodePtr weakLearnerNode = pool->getArmNode(armIndex);
   context.informationCallback(T("Weak learner: ") + weakLearnerNode->toShortString());
   LuapeNodeCachePtr weakLearnerCache = weakLearnerNode->getCache();
   BooleanVectorPtr weakPredictions = weakLearnerCache->getSamples(true).staticCast<BooleanVector>();
@@ -308,7 +354,6 @@ bool LuapeGradientBoostingLearner::doLearningEpisode(ExecutionContext& context, 
   context.resultCallback(T("numArms"), pool->getNumArms());
   return true;
 }
-
 
 /*
 class LuapeGraphBuilderBanditEnumerator

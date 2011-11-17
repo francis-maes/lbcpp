@@ -47,7 +47,7 @@ public:
     parameters = new DenseDoubleVector(features, doubleType);
   }
 
-  void addExample(ExecutionContext& context, const GPExpressionPtr& formula, const FormulaKeyPtr& formulaKey, DoubleVectorPtr& features, double trueScore)
+  void addExample(ExecutionContext& context, const GPExpressionPtr& formula, const BinaryKeyPtr& formulaKey, DoubleVectorPtr& features, double trueScore)
   {
     getFeaturesIfNecessary(context, formula, formulaKey, features);
 
@@ -58,7 +58,7 @@ public:
     features->addWeightedTo(parameters, 0, -derivative);
   }
 
-  double predict(ExecutionContext& context, const GPExpressionPtr& formula, const FormulaKeyPtr& formulaKey, DoubleVectorPtr& features, bool isFinalizedFormula = true) const
+  double predict(ExecutionContext& context, const GPExpressionPtr& formula, const BinaryKeyPtr& formulaKey, DoubleVectorPtr& features, bool isFinalizedFormula = true) const
   {
     PathsFormulaFeatureGeneratorPtr fg = featureGenerator.staticCast<PathsFormulaFeatureGenerator>();
     fg->setDictionaryReadOnly(true);
@@ -98,7 +98,7 @@ protected:
   DenseDoubleVectorPtr parameters;
   ScalarVariableStatistics errorStats;
 
-  void getFeaturesIfNecessary(ExecutionContext& context, const GPExpressionPtr& formula, const FormulaKeyPtr& formulaKey, DoubleVectorPtr& features) const
+  void getFeaturesIfNecessary(ExecutionContext& context, const GPExpressionPtr& formula, const BinaryKeyPtr& formulaKey, DoubleVectorPtr& features) const
   {
     if (!features)
       features = featureGenerator->compute(context, formula).getObjectAndCast<DoubleVector>();
@@ -123,7 +123,7 @@ public:
     {checkCurrentThreadId(); return formulas.find(formula) != formulas.end();}
 
   // key is an input-output parameter
-  size_t getOrUpdateFormulaClass(ExecutionContext& context, const GPExpressionPtr& formula, FormulaKeyPtr& key, bool verbose = false)
+  size_t getOrUpdateFormulaClass(ExecutionContext& context, const GPExpressionPtr& formula, BinaryKeyPtr& key, bool verbose = false)
   {
     size_t res;
     KeyToFormulaClassMap::iterator it = keyToFormulaClassMap.find(key);
@@ -157,7 +157,7 @@ public:
     if (it != formulas.end())
       return it->second.isValidFormula();
 
-    FormulaInfo info(formula, problem->makeFormulaKey(formula, inputSamples));
+    FormulaInfo info(formula, problem->makeBinaryKey(formula, inputSamples));
 
     //std::cout << "Formula " << formula->toShortString() << " key = ";
     //for (size_t i = 0; i < key.size(); ++i) std::cout << key[i] << " ";
@@ -286,7 +286,7 @@ public:
         if (pthis->doFormulaExists(expression))
           return DBL_MAX; // already known formula
 
-        FormulaKeyPtr key = pthis->problem->makeFormulaKey(expression, pthis->inputSamples);
+        BinaryKeyPtr key = pthis->problem->makeBinaryKey(expression, pthis->inputSamples);
         if (!key)
           return DBL_MAX; // invalid formula
 
@@ -295,7 +295,7 @@ public:
           return DBL_MAX; // already known formula equivalence class
 
         DoubleVectorPtr features;
-        double score = pthis->regressor->predict(context, expression, FormulaKeyPtr(), features);
+        double score = pthis->regressor->predict(context, expression, BinaryKeyPtr(), features);
         //double reward = formulaObjective->compute(context, expression).toDouble();
         return 1.0 - score; // transform into score to minimize
       }
@@ -307,7 +307,7 @@ public:
         {
           DoubleVectorPtr features;
           // todo: there may be a cache here !
-          score += pthis->regressor->predict(context, stack[i], FormulaKeyPtr(), features, false);
+          score += pthis->regressor->predict(context, stack[i], BinaryKeyPtr(), features, false);
         }
         return 1.0 - score; // transform into score to minimize
       }
@@ -450,12 +450,12 @@ protected:
 
   struct FormulaInfo
   {
-    FormulaInfo(const GPExpressionPtr& expression, const FormulaKeyPtr& key)
+    FormulaInfo(const GPExpressionPtr& expression, const BinaryKeyPtr& key)
       : expression(expression), key(key), formulaClass((size_t)-1) {}
     FormulaInfo() : formulaClass((size_t)-1) {}
 
     GPExpressionPtr expression;
-    FormulaKeyPtr key;
+    BinaryKeyPtr key;
     size_t formulaClass;
 
     bool isValidFormula() const
@@ -471,18 +471,18 @@ protected:
 
   struct FormulaClassInfo
   {
-    FormulaClassInfo(GPExpressionPtr expression, const FormulaKeyPtr& key)
+    FormulaClassInfo(GPExpressionPtr expression, const BinaryKeyPtr& key)
       : expression(expression), key(key) {}
     FormulaClassInfo() {}
 
     GPExpressionPtr expression;
-    FormulaKeyPtr key;
+    BinaryKeyPtr key;
     ScalarVariableStatistics statistics;
     DoubleVectorPtr features;
   };
   std::vector<FormulaClassInfo> formulaClasses;
 
-  struct FormulaKeyHashConfiguration
+  struct BinaryKeyHashConfiguration
   {
     enum
     {
@@ -490,15 +490,15 @@ protected:
      min_buckets = 1024
     }; // min_buckets = 2 ^^ N, 0 < N
 
-    size_t operator()(const FormulaKeyPtr& key) const
+    size_t operator()(const BinaryKeyPtr& key) const
       {return key->computeHashValue();}
 
-    bool operator()(const FormulaKeyPtr& left, const FormulaKeyPtr& right) const
+    bool operator()(const BinaryKeyPtr& left, const BinaryKeyPtr& right) const
       {return left->compare(right) < 0;}
   };
 
-  typedef std::map<FormulaKeyPtr, size_t, ObjectComparator> KeyToFormulaClassMap;
-  //typedef std_hash_map<FormulaKeyPtr, size_t, FormulaKeyHashConfiguration> KeyToFormulaClassMap;
+  typedef std::map<BinaryKeyPtr, size_t, ObjectComparator> KeyToFormulaClassMap;
+  //typedef std_hash_map<BinaryKeyPtr, size_t, BinaryKeyHashConfiguration> KeyToFormulaClassMap;
   KeyToFormulaClassMap keyToFormulaClassMap;
 
   std::multimap<double, size_t> sortedFormulaClasses;

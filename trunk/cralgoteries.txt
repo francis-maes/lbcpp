@@ -1,5 +1,4 @@
 
-
 * Objectif2: refactoring des LuapeFunction au lieu de Function
    - Pruner l'espace de recherche avec des flags bien sentis
 * Objectif3: calcul incrémental des actions possibles + autres optimisation pour tendre vers l'apprentissage en O(1)

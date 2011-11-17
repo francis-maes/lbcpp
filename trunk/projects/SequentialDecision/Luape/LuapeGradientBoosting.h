@@ -71,9 +71,6 @@ protected:
   std::vector<Arm> arms;
   std::vector<size_t> destroyedArmIndices;
 
-  typedef std::map<LuapeNodePtr, size_t> NodeToArmIndexMap;
-  NodeToArmIndexMap nodeToArmIndex;
-
   struct BanditScoresComparator
   {
     bool operator()(const std::pair<size_t, double>& left, const std::pair<size_t, double>& right) const
@@ -91,7 +88,10 @@ protected:
   void createBanditsQueue();
   size_t createArm(ExecutionContext& context, const LuapeNodePtr& node);
   void destroyArm(ExecutionContext& context, size_t index);
-  void createNewArms(ExecutionContext& context, LuapeRPNGraphBuilderStatePtr state);
+
+  typedef std::map<BinaryKeyPtr, size_t, ObjectComparator> KeyToArmMap;
+  void computeArmKeys(const LuapeGraphPtr& graph, KeyToArmMap& res);
+  void createNewArms(ExecutionContext& context, const LuapeGraphPtr& graph, LuapeRPNGraphBuilderStatePtr state, KeyToArmMap& keyToArms);
 };
 
 typedef ReferenceCountedObjectPtr<LuapeGraphBuilderBanditPool> LuapeGraphBuilderBanditPoolPtr;

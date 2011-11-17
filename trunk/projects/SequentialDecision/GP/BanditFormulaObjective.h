@@ -198,9 +198,9 @@ public:
       {return (left.second != right.second ? left.second < right.second : left.first < right.first);}
   };
 
-  virtual FormulaKeyPtr makeFormulaKey(const GPExpressionPtr& expression, const std::vector< std::vector<double> >& inputSamples) const
+  virtual BinaryKeyPtr makeBinaryKey(const GPExpressionPtr& expression, const std::vector< std::vector<double> >& inputSamples) const
   {
-    FormulaKeyPtr res = new FormulaKey(inputSamples.size() * numArmsInSampling);
+    BinaryKeyPtr res = new BinaryKey(inputSamples.size() * numArmsInSampling);
     for (size_t i = 0; i < inputSamples.size(); ++i)
     {
       const std::vector<double>& variables = inputSamples[i];
@@ -210,7 +210,7 @@ public:
       {
         double value = expression->compute(&variables[j * 4]);
         if (!isNumberValid(value))
-          return FormulaKeyPtr();
+          return BinaryKeyPtr();
         values[j] = std::make_pair(j, value);
       }
       std::sort(values.begin(), values.end(), ValueComparator());

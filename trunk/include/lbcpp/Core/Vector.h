@@ -91,6 +91,8 @@ protected:
   std::vector<VariableValue> values;
 };
 
+typedef ReferenceCountedObjectPtr<GenericVector> GenericVectorPtr;
+
 class BooleanVector : public Vector
 {
 public:
