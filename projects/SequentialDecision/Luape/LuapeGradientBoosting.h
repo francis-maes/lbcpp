@@ -55,8 +55,6 @@ protected:
     size_t playedCount;
     double rewardSum;
     LuapeNodePtr node;
-    LuapeNodeKey key;
-    String description;
 
     const LuapeNodeCachePtr& getCache() const
       {return node->getCache();}
@@ -71,8 +69,8 @@ protected:
   std::vector<Arm> arms;
   std::vector<size_t> destroyedArmIndices;
 
-  typedef std::map<LuapeNodeKey, size_t> KeyToArmIndexMap;
-  KeyToArmIndexMap keyToArmIndex;
+  typedef std::map<LuapeNodePtr, size_t> NodeToArmIndexMap;
+  NodeToArmIndexMap nodeToArmIndex;
 
   struct BanditScoresComparator
   {
@@ -89,7 +87,7 @@ protected:
   BanditsQueue banditsQueue;
 
   void createBanditsQueue();
-  size_t createArm(ExecutionContext& context, const LuapeNodeKey& key, const LuapeNodePtr& node, const String& description);
+  size_t createArm(ExecutionContext& context, const LuapeNodePtr& node);
   void destroyArm(ExecutionContext& context, size_t index);
   void createNewArms(ExecutionContext& context, LuapeRPNGraphBuilderStatePtr state);
 };

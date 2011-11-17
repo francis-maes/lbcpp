@@ -52,7 +52,7 @@ public:
     context.informationCallback("Best stump: " + graph->getNode(bestVariable)->toShortString() + " >= " + String(bestThreshold));
     context.informationCallback("Edge: " + String(bestEdge));
 
-    LuapeNodePtr res = new LuapeFunctionNode(new StumpFunction(bestThreshold), std::vector<LuapeNodePtr>(1,  graph->getNode(bestVariable)));
+    LuapeNodePtr res = graph->getUniverse()->makeFunctionNode(new StumpFunction(bestThreshold), graph->getNode(bestVariable));
     return std::vector<LuapeNodePtr>(1, res);
   }
 };
@@ -139,7 +139,7 @@ public:
       res.push_back(bestIntermediateNode);
       if (bestIntermediateNode->getType() == doubleType)
       {
-        res.push_back(new LuapeFunctionNode(new StumpFunction(bestThreshold), std::vector<LuapeNodePtr>(1, bestIntermediateNode))); 
+        res.push_back(graph->getUniverse()->makeFunctionNode(new StumpFunction(bestThreshold), bestIntermediateNode)); 
         desc = bestIntermediateNode->toShortString() + " >= " + String(bestThreshold);
       }
       else
@@ -147,7 +147,7 @@ public:
     }
     else
     {
-      res.push_back(new LuapeFunctionNode(new StumpFunction(bestThreshold), std::vector<LuapeNodePtr>(1, graph->getNode(bestVariable)))); 
+      res.push_back(graph->getUniverse()->makeFunctionNode(new StumpFunction(bestThreshold), graph->getNode(bestVariable))); 
       desc = String("node ") + String((int)bestVariable) + " >= " + String(bestThreshold);
     }
     context.informationCallback(desc + " [" + String(bestEdge) + "]");
@@ -179,7 +179,7 @@ protected:
         std::vector<LuapeNodePtr> arguments(2);
         arguments[0] = graph->getNode(nodeIndices[i]);
         arguments[1] = graph->getNode(nodeIndices[j]);
-        LuapeNodePtr node = new LuapeFunctionNode(Function::create(functionClass), arguments);
+        LuapeNodePtr node = graph->getUniverse()->makeFunctionNode(functionClass, std::vector<Variable>(), arguments);
         bool ok = graph->pushNode(context, node);
         jassert(ok);
         jassert(node->getCache());

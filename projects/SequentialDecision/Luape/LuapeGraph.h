@@ -104,27 +104,6 @@ protected:
 
 typedef ReferenceCountedObjectPtr<LuapeNodeCache> LuapeNodeCachePtr;
 
-typedef std::vector<juce::int64> LuapeNodeKey;
-
-class LuapeGraphCache : public Object
-{
-public:
-  LuapeNodeCachePtr getNodeCache(const LuapeNodeKey& key, const TypePtr& nodeType);
-  
-  size_t getNumCachedNodes() const
-    {ScopedLock _(lock); return m.size();}
-
-  void clearScores();
-
-protected:
-  typedef std::map<LuapeNodeKey, LuapeNodeCachePtr> CacheMap;
-
-  CriticalSection lock;
-  CacheMap m; 
-};
-typedef ReferenceCountedObjectPtr<LuapeGraphCache> LuapeGraphCachePtr;
-
-
 //////  GRAPH NODES
 
 class LuapeNode;
@@ -139,9 +118,7 @@ public:
   const TypePtr& getType() const
     {return type;}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeGraphCachePtr& cache);
   virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const = 0;
-  virtual void fillKey(LuapeNodeKey& res) const = 0;
   virtual size_t getDepth() const = 0;
 
   virtual void updateCache(ExecutionContext& context, bool isTrainingSamples)
@@ -171,7 +148,6 @@ public:
   LuapeInputNode() {}
 
   virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const;
-  virtual void fillKey(LuapeNodeKey& res) const;
   virtual size_t getDepth() const
     {return 0;}
 
@@ -194,20 +170,26 @@ public:
   LuapeFunctionNode(const FunctionPtr& function, LuapeNodePtr argument);
   LuapeFunctionNode() {}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeGraphCachePtr& cache);
   virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const;
-  virtual void fillKey(LuapeNodeKey& res) const;
   virtual size_t getDepth() const;
   virtual void updateCache(ExecutionContext& context, bool isTrainingSamples);
 
   virtual String toShortString() const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const;
 
+  size_t getNumArguments() const
+    {return arguments.size();}
+
+  const LuapeNodePtr& getArgument(size_t index) const
+    {jassert(index < arguments.size()); return arguments[index];}
+
 protected:
   friend class LuapeFunctionNodeClass;
 
   FunctionPtr function;
   std::vector<LuapeNodePtr> arguments;
+
+  bool initializeFunction(ExecutionContext& context);
 };
 
 class LuapeYieldNode : public LuapeNode
@@ -215,9 +197,7 @@ class LuapeYieldNode : public LuapeNode
 public:
   LuapeYieldNode(const LuapeNodePtr& argument = LuapeNodePtr());
 
-  virtual bool initialize(ExecutionContext& context, const LuapeGraphCachePtr& cache);
   virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const;
-  virtual void fillKey(LuapeNodeKey& res) const;
   virtual size_t getDepth() const;
 
   virtual String toShortString() const;
@@ -235,12 +215,58 @@ protected:
 typedef ReferenceCountedObjectPtr<LuapeYieldNode> LuapeYieldNodePtr;
 extern ClassPtr luapeYieldNodeClass;
 
+//////  Graph Universe
+
+class LuapeGraphUniverse : public Object
+{
+public:
+  void clear(bool clearTrainingSamples = true, bool clearValidationSamples = true, bool clearScores = true);
+
+  void clearSamples(bool clearTrainingSamples = true, bool clearValidationSamples = true)
+    {clear(clearTrainingSamples, clearValidationSamples, false);}
+
+  void clearScores()
+    {clear(false, false, true);}
+
+  void addInputNode(const LuapeInputNodePtr& inputNode)
+    {inputNodes.push_back(inputNode);}
+
+  LuapeFunctionNodePtr makeFunctionNode(ClassPtr functionClass, const std::vector<Variable>& arguments, const std::vector<LuapeNodePtr>& inputs);
+  LuapeFunctionNodePtr makeFunctionNode(const FunctionPtr& function, const std::vector<LuapeNodePtr>& inputs);
+
+  LuapeFunctionNodePtr makeFunctionNode(const FunctionPtr& function, const LuapeNodePtr& input)
+    {return makeFunctionNode(function, std::vector<LuapeNodePtr>(1, input));}
+
+private:
+  struct FunctionKey
+  {
+    ClassPtr functionClass;
+    std::vector<Variable> arguments;
+    std::vector<LuapeNodePtr> inputs;
+
+    bool operator <(const FunctionKey& other) const
+    {
+      if (functionClass != other.functionClass)
+        return functionClass < other.functionClass;
+      if (arguments != other.arguments)
+        return arguments < other.arguments;
+      return inputs < other.inputs;
+    }
+  };
+  typedef std::map<FunctionKey, LuapeFunctionNodePtr> FunctionNodesMap;
+  FunctionNodesMap functionNodes;
+
+  std::vector<LuapeInputNodePtr> inputNodes;
+};
+
+typedef ReferenceCountedObjectPtr<LuapeGraphUniverse> LuapeGraphUniversePtr;
+
 //////  GRAPH
 
 class LuapeGraph : public Object
 {
 public:
-  LuapeGraph(bool useCache = false);
+  LuapeGraph() : universe(new LuapeGraphUniverse()) {}
 
   size_t getNumNodes() const
     {return nodes.size();}
@@ -254,14 +280,12 @@ public:
   TypePtr getNodeType(size_t index) const
     {return getNode(index)->getType();}
 
-  LuapeNodeKey getNodeKey(size_t nodeIndex) const
-    {jassert(nodeIndex < nodes.size()); LuapeNodeKey key; nodes[nodeIndex]->fillKey(key); return key;}
-
   LuapeNodePtr getLastNode() const
     {return nodes.back();}
 
   LuapeNodePtr pushNode(ExecutionContext& context, const LuapeNodePtr& node);
-  LuapeNodePtr pushNodes(ExecutionContext& context, const LuapeNodeKey& key, size_t& keyPosition, size_t keyEnd);
+  LuapeNodePtr pushMissingNodes(ExecutionContext& context, const LuapeNodePtr& node);
+  LuapeNodePtr pushFunctionNode(ExecutionContext& context, const FunctionPtr& function, const LuapeNodePtr& input);
   void popNode();
 
   size_t getNumTrainingSamples() const;
@@ -272,6 +296,7 @@ public:
   void setSample(bool isTrainingSample, size_t index, const std::vector<Variable>& example);
   void setSample(bool isTrainingSample, size_t index, const ObjectPtr& example);
   void clearSamples(bool clearTrainingSamples = true, bool clearValidationSamples = true);
+  void clearScores();
 
   void compute(ExecutionContext& context, std::vector<Variable>& state, size_t firstNodeIndex = 0, LuapeGraphCallbackPtr callback = 0) const;
 
@@ -280,23 +305,18 @@ public:
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const;
 
-  const LuapeGraphCachePtr& getCache() const
-    {return cache;}
-
-  void setCache(LuapeGraphCachePtr cache)
-    {this->cache = cache;}
-
-  void clearScores();
+  const LuapeGraphUniversePtr& getUniverse() const
+    {return universe;}
 
 protected:
   friend class LuapeGraphClass;
 
-  typedef std::map<LuapeNodeKey, size_t> NodeKeyToIndexMap;
+  typedef std::map<LuapeNodePtr, size_t> NodesMap;
 
   std::vector<LuapeNodePtr> nodes;
-  NodeKeyToIndexMap nodeKeyToIndex;
-  size_t numExamples;
-  LuapeGraphCachePtr cache;
+  NodesMap nodesMap;
+
+  LuapeGraphUniversePtr universe;
 };
 
 extern ClassPtr luapeGraphClass;

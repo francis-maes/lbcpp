@@ -77,8 +77,8 @@ public:
     // initialize graph
     LuapeGraphPtr graph = problem->createInitialGraph(context);
     LuapeNodePtr positionNode = graph->getNode(0);
-    LuapeNodePtr boardNode = graph->pushNode(context, new LuapeFunctionNode(getVariableFunction(0), positionNode)); // retrieve board from position
-    graph->pushNode(context, new LuapeFunctionNode(getVariableFunction(0), boardNode)); // retrieve state from board
+    LuapeNodePtr boardNode = graph->pushFunctionNode(context, getVariableFunction(0), positionNode); // retrieve board from position
+    LuapeNodePtr stateNode = graph->pushFunctionNode(context, getVariableFunction(0), boardNode); // retrieve state from board
     ranker->setGraph(graph);    
     ranker->setVotes(ranker->createVoteVector(0));
    

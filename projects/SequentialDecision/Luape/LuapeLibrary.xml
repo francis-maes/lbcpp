@@ -19,12 +19,11 @@
   </class>
 
   <!-- Graph -->
+  <class name="LuapeGraphUniverse" base="Object"/>
   <class name="LuapeGraph" base="Object">
     <variable type="ObjectVector[LuapeNode]" name="nodes"/>
-    <variable type="PositiveInteger" name="numExamples"/>
-    <variable type="LuapeGraphCache" name="cache"/>
+    <variable type="LuapeGraphUniverse" name="universe"/>
   </class>
-  <class name="LuapeGraphCache"/>
 
   <!-- Function -->
   <class name="LuapeFunction" base="Function" abstract="yes">
