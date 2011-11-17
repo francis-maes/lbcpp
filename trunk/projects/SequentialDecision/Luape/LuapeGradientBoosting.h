@@ -27,6 +27,9 @@ public:
   size_t getNumArms() const
     {return arms.size();}
 
+  const LuapeNodeCachePtr& getArmCache(size_t index) const
+    {jassert(index < arms.size()); return arms[index].getCache();}
+
   void initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph);
   void executeArm(ExecutionContext& context, size_t armIndex,  const LuapeProblemPtr& problem, const LuapeGraphPtr& graph);
 
@@ -46,14 +49,17 @@ protected:
 
   struct Arm
   {
-    Arm(LuapeNodeCachePtr cache = LuapeNodeCachePtr())
-      : playedCount(0), rewardSum(0.0), cache(cache) {}
+    Arm(LuapeNodePtr node = LuapeNodePtr())
+      : playedCount(0), rewardSum(0.0), node(node) {}
 
     size_t playedCount;
     double rewardSum;
-    LuapeNodeCachePtr cache;
+    LuapeNodePtr node;
     LuapeNodeKey key;
     String description;
+
+    const LuapeNodeCachePtr& getCache() const
+      {return node->getCache();}
 
     double getIndexScore() const
       {return playedCount ? rewardSum + 2.0 / (double)playedCount : DBL_MAX;}
@@ -83,7 +89,7 @@ protected:
   BanditsQueue banditsQueue;
 
   void createBanditsQueue();
-  size_t createArm(ExecutionContext& context, const LuapeNodeKey& key, const LuapeNodeCachePtr& cache, const String& description);
+  size_t createArm(ExecutionContext& context, const LuapeNodeKey& key, const LuapeNodePtr& node, const String& description);
   void destroyArm(ExecutionContext& context, size_t index);
   void createNewArms(ExecutionContext& context, LuapeRPNGraphBuilderStatePtr state);
 };
@@ -96,6 +102,7 @@ public:
   virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeFunctionPtr& function) = 0;
   virtual void setExamples(bool isTrainingData, const std::vector<ObjectPtr>& data) = 0;
   virtual DenseDoubleVectorPtr computePseudoResiduals(const DenseDoubleVectorPtr& predictions) const = 0;
+  virtual double optimizeWeightOfWeakLearner(const DenseDoubleVectorPtr& predictions, const BooleanVectorPtr& weakPredictions) const = 0;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeGradientBoostingLoss> LuapeGradientBoostingLossPtr;
@@ -103,13 +110,14 @@ typedef ReferenceCountedObjectPtr<LuapeGradientBoostingLoss> LuapeGradientBoosti
 class LuapeGradientBoostingLearner : public Object
 {
 public:
-  LuapeGradientBoostingLearner(LuapeGradientBoostingLossPtr loss, size_t maxBandits, size_t maxDepth);
+  LuapeGradientBoostingLearner(LuapeGradientBoostingLossPtr loss, double learningRate, size_t maxBandits, size_t maxDepth);
 
   bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeFunctionPtr& function);
   bool doLearningEpisode(ExecutionContext& context, const std::vector<ObjectPtr>& examples) const;
 
 protected:
   LuapeGradientBoostingLossPtr loss;
+  double learningRate;
   size_t maxBandits;
   size_t maxDepth;
 
@@ -187,6 +195,11 @@ public:
 
     res->multiplyByScalar(-1.0);
     return res;
+  }
+
+  virtual double optimizeWeightOfWeakLearner(const DenseDoubleVectorPtr& predictions, const BooleanVectorPtr& weakPredictions) const
+  {
+    return 1.0; // FIXME !! 
   }
 
 protected:

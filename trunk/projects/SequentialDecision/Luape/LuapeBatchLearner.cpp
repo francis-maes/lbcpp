@@ -104,7 +104,7 @@ bool BoostingLuapeLearner::train(ExecutionContext& context, const FunctionPtr& f
       for (size_t i = 0; i < newNodes.size(); ++i)
         graph->pushNode(context, newNodes[i]);
       
-      LuapeYieldNodePtr yieldNode = new LuapeYieldNode(graph->getNumNodes() - 1);
+      LuapeYieldNodePtr yieldNode = new LuapeYieldNode(newNodes.back());
       graph->pushNode(context, yieldNode);
 
       LuapeNodeCachePtr cache = newNodes.back()->getCache();

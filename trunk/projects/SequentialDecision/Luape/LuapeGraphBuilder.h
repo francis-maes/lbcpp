@@ -127,7 +127,7 @@ public:
       }
 
       if (isYieldAvailable())
-        res->append(new LuapeYieldNode(state.stack.back()));
+        res->append(new LuapeYieldNode(graph->getNode(state.stack.back())));
     }
     return res;
   }
@@ -242,9 +242,9 @@ protected:
     {
       // add function node into graph
       size_t numInputs = state.function->getNumRequiredInputs();
-      std::vector<size_t> inputs(numInputs);
-      if (numInputs)
-        memcpy(&inputs[0], &state.stack[state.stack.size() - numInputs], sizeof (size_t) * numInputs);
+      std::vector<LuapeNodePtr> inputs(numInputs);
+      for (size_t i = 0; i < numInputs; ++i)
+        inputs[i] = graph->getNode(state.stack[state.stack.size() - numInputs + i]);
       LuapeNodePtr node = new LuapeFunctionNode(state.function, inputs);
       bool ok = graph->pushNode(context, node);
       jassert(ok);
@@ -290,7 +290,7 @@ public:
       TypePtr nodeType = graph->getNodeType(i);
       if (nodeType->inheritsFrom(objectClass))
       {
-        std::vector<size_t> arguments(1, i);
+        std::vector<LuapeNodePtr> arguments(1, graph->getNode(i));
         size_t nv = nodeType->getNumMemberVariables();
         for (size_t j = 0; j < nv; ++j)
           res->append(new LuapeFunctionNode(getVariableFunction(j), arguments));
@@ -301,14 +301,14 @@ public:
     for (size_t i = 0; i < problem->getNumFunctions(); ++i)
     {
       FunctionPtr function = problem->getFunction(i);
-      std::vector<size_t> arguments;
+      std::vector<LuapeNodePtr> arguments;
       enumerateFunctionActionsRecursively(function, arguments, res);
     }
 
     // yield actions
     for (size_t i = 0; i < n; ++i)
       if (graph->getNodeType(i) == booleanType)
-        res->append(new LuapeYieldNode(i));
+        res->append(new LuapeYieldNode(graph->getNode(i)));
     return res;
   }
 
@@ -343,7 +343,7 @@ protected:
 
   size_t numSteps;
 
-  void enumerateFunctionActionsRecursively(const FunctionPtr& function, std::vector<size_t>& arguments, const ObjectVectorPtr& res) const
+  void enumerateFunctionActionsRecursively(const FunctionPtr& function, std::vector<LuapeNodePtr>& arguments, const ObjectVectorPtr& res) const
   {
     size_t expectedNumArguments = function->getNumRequiredInputs();
     if (arguments.size() == expectedNumArguments)
@@ -356,7 +356,7 @@ protected:
       for (size_t i = 0; i < n; ++i)
         if (graph->getNodeType(i)->inheritsFrom(expectedType))
         {
-          arguments.push_back(i);
+          arguments.push_back(graph->getNode(i));
           enumerateFunctionActionsRecursively(function, arguments, res);
           arguments.pop_back();
         }

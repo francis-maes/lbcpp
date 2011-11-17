@@ -139,10 +139,13 @@ public:
   const TypePtr& getType() const
     {return type;}
 
-  virtual bool initialize(ExecutionContext& context, const std::vector<LuapeNodePtr>& allNodes, const LuapeGraphCachePtr& cache);
+  virtual bool initialize(ExecutionContext& context, const LuapeGraphCachePtr& cache);
   virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const = 0;
-  virtual void fillKey(const std::vector<LuapeNodePtr>& allNodes, LuapeNodeKey& res) const = 0;
+  virtual void fillKey(LuapeNodeKey& res) const = 0;
   virtual size_t getDepth() const = 0;
+
+  virtual void updateCache(ExecutionContext& context, bool isTrainingSamples)
+    {}
 
   VariableSignaturePtr getSignature() const
     {return new VariableSignature(type, name);}
@@ -168,7 +171,7 @@ public:
   LuapeInputNode() {}
 
   virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const;
-  virtual void fillKey(const std::vector<LuapeNodePtr>& allNodes, LuapeNodeKey& res) const;
+  virtual void fillKey(LuapeNodeKey& res) const;
   virtual size_t getDepth() const
     {return 0;}
 
@@ -187,14 +190,15 @@ typedef ReferenceCountedObjectPtr<LuapeFunctionNode> LuapeFunctionNodePtr;
 class LuapeFunctionNode : public LuapeNode
 {
 public:
-  LuapeFunctionNode(const FunctionPtr& function, const std::vector<size_t>& arguments);
-  LuapeFunctionNode(const FunctionPtr& function, size_t argument);
+  LuapeFunctionNode(const FunctionPtr& function, const std::vector<LuapeNodePtr>& arguments);
+  LuapeFunctionNode(const FunctionPtr& function, LuapeNodePtr argument);
   LuapeFunctionNode() {}
 
-  virtual bool initialize(ExecutionContext& context, const std::vector<LuapeNodePtr>& allNodes, const LuapeGraphCachePtr& cache);
+  virtual bool initialize(ExecutionContext& context, const LuapeGraphCachePtr& cache);
   virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const;
-  virtual void fillKey(const std::vector<LuapeNodePtr>& allNodes, LuapeNodeKey& res) const;
+  virtual void fillKey(LuapeNodeKey& res) const;
   virtual size_t getDepth() const;
+  virtual void updateCache(ExecutionContext& context, bool isTrainingSamples);
 
   virtual String toShortString() const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const;
@@ -203,34 +207,29 @@ protected:
   friend class LuapeFunctionNodeClass;
 
   FunctionPtr function;
-  std::vector<size_t> arguments;
-
-  std::vector<LuapeNodePtr> inputNodes;
-
-  void propagateCache(ExecutionContext& context, bool isTrainingSamples);
+  std::vector<LuapeNodePtr> arguments;
 };
 
 class LuapeYieldNode : public LuapeNode
 {
 public:
-  LuapeYieldNode(size_t argument = 0);
+  LuapeYieldNode(const LuapeNodePtr& argument = LuapeNodePtr());
 
-  virtual bool initialize(ExecutionContext& context, const std::vector<LuapeNodePtr>& allNodes, const LuapeGraphCachePtr& cache);
+  virtual bool initialize(ExecutionContext& context, const LuapeGraphCachePtr& cache);
   virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const;
-  virtual void fillKey(const std::vector<LuapeNodePtr>& allNodes, LuapeNodeKey& res) const;
+  virtual void fillKey(LuapeNodeKey& res) const;
   virtual size_t getDepth() const;
 
   virtual String toShortString() const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const;
 
-  size_t getArgument() const
+  const LuapeNodePtr& getArgument() const
     {return argument;}
 
 protected:
   friend class LuapeYieldNodeClass;
 
-  size_t argument;
-  LuapeNodePtr inputNode;
+  LuapeNodePtr argument;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeYieldNode> LuapeYieldNodePtr;
@@ -256,13 +255,13 @@ public:
     {return getNode(index)->getType();}
 
   LuapeNodeKey getNodeKey(size_t nodeIndex) const
-    {jassert(nodeIndex < nodes.size()); LuapeNodeKey key; nodes[nodeIndex]->fillKey(nodes, key); return key;}
+    {jassert(nodeIndex < nodes.size()); LuapeNodeKey key; nodes[nodeIndex]->fillKey(key); return key;}
 
   LuapeNodePtr getLastNode() const
     {return nodes.back();}
 
-  bool pushNode(ExecutionContext& context, const LuapeNodePtr& node);
-  size_t pushNodes(ExecutionContext& context, const LuapeNodeKey& key, size_t& keyPosition, size_t keyEnd);
+  LuapeNodePtr pushNode(ExecutionContext& context, const LuapeNodePtr& node);
+  LuapeNodePtr pushNodes(ExecutionContext& context, const LuapeNodeKey& key, size_t& keyPosition, size_t keyEnd);
   void popNode();
 
   size_t getNumTrainingSamples() const;
