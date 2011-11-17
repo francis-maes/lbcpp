@@ -76,6 +76,12 @@ public:
         for (size_t i = 0; i < objectClass->getNumMemberVariables(); ++i)
           res->append(i);
       }
+      else if (className == T("EqualsEnumValueFunction"))
+      {
+        EnumerationPtr enumeration = state.stack.back()->getType().staticCast<Enumeration>();
+        for (size_t i = 0; i < enumeration->getNumElements(); ++i)
+          res->append(Variable(i, enumeration));
+      }
       else if (className == T("StumpFunction"))
       {
         jassert(state.stack.size());
@@ -113,7 +119,8 @@ public:
       {
         size_t n = graph->getNumNodes();
         for (size_t i = 0; i < n; ++i)
-          res->append(graph->getNode(i)); // push node action
+          if (!graph->getNode(i).isInstanceOf<LuapeYieldNode>())
+            res->append(graph->getNode(i)); // push node action
       }
 
       if (numRemainingSteps > 1)

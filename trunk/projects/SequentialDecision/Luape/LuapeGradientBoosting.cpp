@@ -24,20 +24,18 @@ void LuapeGraphBuilderBanditPool::initialize(ExecutionContext& context, const Lu
   createBanditsQueue();
 }
 
-void LuapeGraphBuilderBanditPool::executeArm(ExecutionContext& context, size_t armIndex,  const LuapeProblemPtr& problem, const LuapeGraphPtr& graph)
+void LuapeGraphBuilderBanditPool::executeArm(ExecutionContext& context, size_t armIndex,  const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode)
 {
-  // add nodes into graph
-  size_t keyPosition = 0;
-  LuapeNodePtr weakLearner = graph->pushMissingNodes(context, arms[armIndex].node);
-
   // update arms
   destroyArm(context, armIndex);
 
   LuapeRPNGraphBuilderStatePtr builder = new LuapeRPNGraphBuilderState(problem, graph, maxDepth);
   double reward;
-  builder->performTransition(context, weakLearner, reward); // push last created node
+  builder->performTransition(context, newNode, reward); // push last created node
   createNewArms(context, builder);
   createBanditsQueue();
+
+  context.informationCallback(String((int)arms.size()) + T(" arms"));
 }
 
 // train the weak learner on 50% of data and evaluate on the other 50% of data
@@ -73,10 +71,12 @@ double LuapeGraphBuilderBanditPool::sampleReward(ExecutionContext& context, cons
     {
       bool isPositive = booleans->get(i);
 
+      double value = pseudoResiduals->getValue(i);
+
       if (random->sampleBool(p))
-        (isPositive ? trainPositive : trainNegative).push(pseudoResiduals->getValue(i));
+        (isPositive ? trainPositive : trainNegative).push(value, fabs(value));
       else
-        (isPositive ? validationPositive : validationNegative).push(pseudoResiduals->getValue(i));
+        (isPositive ? validationPositive : validationNegative).push(value, fabs(value));
     }
     
     double meanSquareError = 0.0;
@@ -160,6 +160,7 @@ void LuapeGraphBuilderBanditPool::createBanditsQueue()
 
 size_t LuapeGraphBuilderBanditPool::createArm(ExecutionContext& context, const LuapeNodePtr& node)
 {
+  context.informationCallback(T("Create Arm ") + node->toShortString());
   jassert(node);
   size_t index;
   if (destroyedArmIndices.size())
@@ -180,6 +181,7 @@ size_t LuapeGraphBuilderBanditPool::createArm(ExecutionContext& context, const L
 
 void LuapeGraphBuilderBanditPool::destroyArm(ExecutionContext& context, size_t index)
 {
+  context.informationCallback(T("Destroy arm ") + arms[index].node->toShortString());
   nodeToArmIndex[arms[index].node] = (size_t)-1;
   arms[index] = Arm();
   destroyedArmIndices.push_back(index);
@@ -208,9 +210,9 @@ void LuapeGraphBuilderBanditPool::createNewArms(ExecutionContext& context, Luape
       Variable stateBackup;
       double reward;
       state->performTransition(context, actions->getElement(i), reward, &stateBackup);
-      context.enterScope(state->toShortString());
+     // context.enterScope(state->toShortString());
       createNewArms(context, state);
-      context.leaveScope();
+      //context.leaveScope();
       state->undoTransition(context, stateBackup);
     }
   }
@@ -232,6 +234,9 @@ bool LuapeGradientBoostingLearner::initialize(ExecutionContext& context, const L
   this->function = function;
   pool = new LuapeGraphBuilderBanditPool(maxBandits, maxDepth);
   graph = function->getGraph();
+  context.enterScope(T("Creating initial arms"));
+  pool->initialize(context, problem, graph);
+  context.leaveScope(pool->getNumArms());
   return true;
 }
 
@@ -248,16 +253,15 @@ bool LuapeGradientBoostingLearner::doLearningEpisode(ExecutionContext& context, 
   DenseDoubleVectorPtr predictions = function->computeSamplePredictions(context, true);
   context.leaveScope();
   context.enterScope(T("Computing pseudo-residuals"));
-  DenseDoubleVectorPtr pseudoResiduals = loss->computePseudoResiduals(predictions);
+  double lossValue;
+  DenseDoubleVectorPtr pseudoResiduals = loss->computePseudoResiduals(predictions, lossValue);
   context.leaveScope();
+  context.resultCallback(T("loss"), lossValue);
+
+  context.resultCallback(T("predictions"), predictions);
+  context.resultCallback(T("pseudoResiduals"), pseudoResiduals);
 
   // 3- play bandits
-  if (pool->getNumArms() == 0)
-  {
-    context.enterScope(T("Create arms"));
-    pool->initialize(context, problem, graph);
-    context.leaveScope();
-  }
   if (pool->getNumArms() == 0)
   {
     context.errorCallback(T("No arms"));
@@ -274,13 +278,33 @@ bool LuapeGradientBoostingLearner::doLearningEpisode(ExecutionContext& context, 
   }
 
   // 4- select weak learner and find optimal weight
-  LuapeNodeCachePtr weakLearnerCache = pool->getArmCache(pool->getArmWithHighestReward());
+  LuapeNodePtr weakLearnerNode = pool->getArmNode(pool->getArmWithHighestReward());
+  context.informationCallback(T("Weak learner: ") + weakLearnerNode->toShortString());
+  LuapeNodeCachePtr weakLearnerCache = weakLearnerNode->getCache();
   BooleanVectorPtr weakPredictions = weakLearnerCache->getSamples(true).staticCast<BooleanVector>();
   double optimalWeight = loss->optimizeWeightOfWeakLearner(predictions, weakPredictions);
+  context.informationCallback(T("Optimal weight: ") + String(optimalWeight));
+  
+  // 5- add weak learner and associated weight to graph 
+  graph->pushMissingNodes(context, weakLearnerNode);
+  if (weakLearnerNode->getType() == booleanType)
+  {
+    // booleans are yielded directory
+    graph->pushNode(context, new LuapeYieldNode(weakLearnerNode));
+  }
+  else
+  {
+    jassert(weakLearnerNode->getType()->isConvertibleToDouble());
+    
+    jassert(false); // todo: create stump
+  }
   function->getVotes()->append(optimalWeight * learningRate);
   
-  // 5- add weak learner to graph and update arms
-  pool->executeArm(context, pool->getArmWithHighestReward(), problem, graph);
+  // 6- update arms
+  pool->executeArm(context, pool->getArmWithHighestReward(), problem, graph, weakLearnerNode);
+
+  context.informationCallback(T("Graph: ") + graph->toShortString());
+  context.resultCallback(T("numArms"), pool->getNumArms());
   return true;
 }
 

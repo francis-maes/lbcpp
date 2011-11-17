@@ -1,10 +1,20 @@
 
-Luape:
- * builder: Disable actions to remove comutativity
- * Cache max size, and automatic cleaning
- * Objective function: incorporate a complexity term to give preference to smaller trajectories in case of ties
- * Computes votes in the same time as objective, and store them somewhere
- * Perform on game of go
+Luape-Go: 
+ * Finir le gradient based boosting
+ * Boosting sur le game of go
+
+Luape-Optimisation:
+ * Tester sur un exemple très simple (que des booléens et une opération boolénne par exemple)
+ * Gerer la commutativité
+ * Calcul incrémental des actions possibles
+ * Checker que ca ne prend pas trop de mémoire (il faut tendre vers l'apprentissage en O(1))
+
+Luape-Appli:
+ * Classification: tester sur mnist et pendigit
+ * Apprentissage d'une gaussienne conditionelle => boosting joint de la moyenne et de l'ecart-type
+    ==> application dans les continuous bandits
+    ==> application dans le formula discovery
+ * Proteines: mega-boosting joint + re-entrant + filtre
 
 Lua-Misc:
  * Move namespace lbcpp::lua into lua (-> introspection generator must be adapted)

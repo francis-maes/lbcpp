@@ -27,9 +27,9 @@ public:
       for (size_t j = 0; j < boardSize; ++j)
       {
         GoBoard::Position position(i, j);
-        positions->set(index++, new GoBoardPositionPerception(this, position, (GoBoardPositionState)board->get(position)));
+        positions->set(index++, new GoBoardPositionPerception(this, board, position));
       }
-    passPosition = new GoBoardPositionPerception(this, GoBoard::Position(boardSize, boardSize), goOutside);
+    passPosition = new GoBoardPositionPerception(this, board, GoBoard::Position(boardSize, boardSize));
   }
   GoBoardPerception() : boardSize(0) {}
 
