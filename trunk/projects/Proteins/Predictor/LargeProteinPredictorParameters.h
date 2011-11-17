@@ -701,13 +701,15 @@ public:
 
   virtual FunctionPtr createTargetPredictor(ProteinTarget target) const
   {
-    FunctionPtr res;
-    
     if (target == dsbTarget)
-      res = new ConnectivityPatternClassifier(learningMachine(target), target == dsbTarget);
-    else
-      res = ProteinPredictorParameters::createTargetPredictor(target);
+    {
+      FunctionPtr res = learningMachine(target);
+      if (useFisherFilter)
+        res = new PreProcessInputCompositeFunction(fisherFilterLearnableFunction(numFisherFeatures), res);
+      return new ConnectivityPatternClassifier(res, target == dsbTarget);
+    }
 
+    FunctionPtr res = ProteinPredictorParameters::createTargetPredictor(target);
     if (useFisherFilter)
       return new PreProcessInputCompositeFunction(fisherFilterLearnableFunction(numFisherFeatures), res);
     return res;
