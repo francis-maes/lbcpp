@@ -330,9 +330,6 @@ public:
 
       if (numIteration + 1 == state->getNumIterations())
       {
-        std::cout << "current Iteration: " << (numIteration + 1) << " - Total iteration: " << state->getNumIterations()
-        << " - Iteration score: " << iteration->getBestScore() << " - state's score: " << state->getBestScore() << std::endl;
-
         if(iteration->getBestScore() + 0.0001 >= state->getBestScore())
           break;
 

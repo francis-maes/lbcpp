@@ -57,6 +57,15 @@
     <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
   </class>
 
+  <class name="FisherFilterLearnableFunction" base="Function">
+    <constructor arguments="size_t numSelectedFeatures"/>
+    <variable type="PositiveInteger" name="numSelectedFeatures"/>
+    <variable type="GenericVector[Double]" name="featuresMap"/>
+  </class>
+  <class name="FisherFilterBatchLearner" base="BatchLearner">
+    <constructor/>
+  </class>
+
   <class name="NumericalLearnableFunction" base="Function" abstract="yes">
     <variable type="Enumeration" name="parametersEnumeration"/>
   </class>
