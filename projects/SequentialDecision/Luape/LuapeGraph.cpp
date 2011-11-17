@@ -81,7 +81,7 @@ const std::vector< std::pair<size_t, double> >& LuapeNodeCache::getSortedDoubleV
 ** LuapeNode
 */
 LuapeNode::LuapeNode(const TypePtr& type, const String& name)
-  : NameableObject(name), type(type), cache(new LuapeNodeCache())
+  : NameableObject(name), type(type), cache(new LuapeNodeCache()), indexInGraph((size_t)-1)
 {
   cache->initialize(type);
 }
@@ -129,8 +129,13 @@ LuapeFunctionNode::LuapeFunctionNode(const FunctionPtr& function, LuapeNodePtr a
 
 String LuapeFunctionNode::toShortString() const
 {
-  if (function->getClassName() == T("GetVariableFunction"))
+  String className = function->getClassName();
+  if (className == T("GetVariableFunction"))
     return arguments[0]->toShortString() + "." + arguments[0]->getType()->getMemberVariableName(function->getVariable(0).getInteger());
+  else if (className == T("BooleanAndFunction"))
+    return arguments[0]->toShortString() + T(" && ") + arguments[1]->toShortString();
+  else if (className == T("EqualsEnumValueFunction"))
+    return arguments[0]->toShortString() + T(" == ") + function->getVariable(0).toShortString();
   else
   {
     String res = function->toShortString() + T("(");
@@ -163,7 +168,7 @@ Variable LuapeFunctionNode::compute(ExecutionContext& context, const std::vector
   size_t n = arguments.size();
   std::vector<Variable> inputs(n);
   for (size_t i = 0; i < n; ++i)
-    inputs[i] = state[arguments[i]];
+    inputs[i] = state[arguments[i]->getIndexInGraph()];
   return function->compute(context, inputs);
 }
 
@@ -377,6 +382,7 @@ LuapeNodePtr LuapeGraph::pushNode(ExecutionContext& context, const LuapeNodePtr&
   if (inputNode)
     universe->addInputNode(inputNode);
 
+  node->indexInGraph = nodes.size();
   nodesMap[node] = nodes.size();
   nodes.push_back(node);
   return node;

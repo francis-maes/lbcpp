@@ -44,7 +44,9 @@ public:
       LuapeYieldNodePtr yieldNode = graph->getNode(i).dynamicCast<LuapeYieldNode>();
       if (yieldNode)
       {
-        BooleanVectorPtr weakPredictions = yieldNode->getArgument()->getCache()->getSamples(isTrainingSamples);
+        LuapeNodePtr weakPredictor = yieldNode->getArgument();
+        weakPredictor->updateCache(context, isTrainingSamples);
+        BooleanVectorPtr weakPredictions = weakPredictor->getCache()->getSamples(isTrainingSamples);
         double vote = votes.staticCast<DenseDoubleVector>()->getValue(yieldIndex++);
         for (size_t j = 0; j < numSamples; ++j)
           if (weakPredictions->get(j))

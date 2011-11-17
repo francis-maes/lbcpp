@@ -107,6 +107,9 @@
   <class name="StumpFunction" base="Function">
     <variable type="Double" name="threshold"/>
   </class>
+  <class name="EqualsEnumValueFunction" base="Function">
+    <variable type="Variable" name="value"/>
+  </class>
   <class name="GreaterThanFunction" base="Function"/>
   <class name="BooleanAndFunction" base="Function"/>
   <class name="BooleanXorFunction" base="Function"/>

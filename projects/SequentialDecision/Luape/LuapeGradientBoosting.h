@@ -27,11 +27,14 @@ public:
   size_t getNumArms() const
     {return arms.size();}
 
+  const LuapeNodePtr& getArmNode(size_t index) const
+    {jassert(index < arms.size()); return arms[index].node;}
+
   const LuapeNodeCachePtr& getArmCache(size_t index) const
     {jassert(index < arms.size()); return arms[index].getCache();}
 
   void initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph);
-  void executeArm(ExecutionContext& context, size_t armIndex,  const LuapeProblemPtr& problem, const LuapeGraphPtr& graph);
+  void executeArm(ExecutionContext& context, size_t armIndex,  const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode);
 
   // train the weak learner on 50% of data and evaluate on the other 50% of data
   double sampleReward(ExecutionContext& context, const DenseDoubleVectorPtr& pseudoResiduals, size_t armIndex) const;
@@ -40,7 +43,6 @@ public:
   size_t getArmWithHighestReward() const;
 
   void displayInformation(ExecutionContext& context);
-
   void clearSamples(bool clearTrainingSamples = true, bool clearValidationSamples = true);
 
 protected:
@@ -60,7 +62,7 @@ protected:
       {return node->getCache();}
 
     double getIndexScore() const
-      {return playedCount ? rewardSum + 2.0 / (double)playedCount : DBL_MAX;}
+      {return playedCount ? (rewardSum + 2.0) / (double)playedCount : DBL_MAX;}
 
     double getMeanReward() const
       {return playedCount ? rewardSum / (double)playedCount : 0.0;}
@@ -99,7 +101,7 @@ class LuapeGradientBoostingLoss : public Object
 public:
   virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeFunctionPtr& function) = 0;
   virtual void setExamples(bool isTrainingData, const std::vector<ObjectPtr>& data) = 0;
-  virtual DenseDoubleVectorPtr computePseudoResiduals(const DenseDoubleVectorPtr& predictions) const = 0;
+  virtual DenseDoubleVectorPtr computePseudoResiduals(const DenseDoubleVectorPtr& predictions, double& lossValue) const = 0;
   virtual double optimizeWeightOfWeakLearner(const DenseDoubleVectorPtr& predictions, const BooleanVectorPtr& weakPredictions) const = 0;
 };
 
@@ -160,19 +162,19 @@ public:
   {
     const ContainerPtr& alternatives = rankingExample->getFirst().getObjectAndCast<Container>();
     size_t n = alternatives->getNumElements();
-    size_t firstIndex = graph->getNumSamples(isTrainingData);
-    graph->resizeSamples(isTrainingData, firstIndex + n);
+
+    LuapeNodeCachePtr inputNodeCache = graph->getNode(0)->getCache();
+    size_t firstIndex = inputNodeCache->getNumSamples(isTrainingData);
+    inputNodeCache->resizeSamples(isTrainingData, firstIndex + n);
     for (size_t i = 0; i < n; ++i)
-    {
-      std::vector<Variable> sample(1, alternatives->getElement(i));
-      graph->setSample(true, firstIndex + i, sample);
-    }
+      inputNodeCache->setSample(true, firstIndex + 1, alternatives->getElement(i));
   }
 
-  virtual DenseDoubleVectorPtr computePseudoResiduals(const DenseDoubleVectorPtr& predictions) const
+  virtual DenseDoubleVectorPtr computePseudoResiduals(const DenseDoubleVectorPtr& predictions, double& lossValue) const
   {
     DenseDoubleVectorPtr res = new DenseDoubleVector(predictions->getNumValues(), 0.0);
 
+    lossValue = 0.0;
     size_t index = 0;
     for (size_t i = 0; i < trainingData.size(); ++i)
     {
@@ -182,14 +184,16 @@ public:
       DenseDoubleVectorPtr scores = new DenseDoubleVector(n, 0.0);
       memcpy(scores->getValuePointer(0), predictions->getValuePointer(index), sizeof (double) * n);
 
-      double lossValue = 0.0;
+      double loss = 0.0;
       DenseDoubleVectorPtr lossGradient = new DenseDoubleVector(n, 0.0);
-      rankingLoss->computeRankingLoss(scores, costs, &lossValue, &lossGradient, 1.0);
+      rankingLoss->computeRankingLoss(scores, costs, &loss, &lossGradient, 1.0);
       jassert(lossGradient);
+      lossValue += loss;
       
       memcpy(res->getValuePointer(index), lossGradient->getValuePointer(0), sizeof (double) * n);
       index += n;
     }
+    lossValue /= trainingData.size();
 
     res->multiplyByScalar(-1.0);
     return res;

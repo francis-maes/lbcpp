@@ -25,6 +25,9 @@ public:
   {
     addInput(goBoardPositionPerceptionClass, "position");
     addFunction(getVariableFunction(0));
+    addFunction(Function::create(getType("BooleanAndFunction")));
+    addFunction(Function::create(getType("EqualsEnumValueFunction")));
+
     //addFunction(Function::create(getType("StumpFunction")));
     //addFunction( FunctionPtr())
   }
@@ -77,8 +80,8 @@ public:
     // initialize graph
     LuapeGraphPtr graph = problem->createInitialGraph(context);
     LuapeNodePtr positionNode = graph->getNode(0);
-    LuapeNodePtr boardNode = graph->pushFunctionNode(context, getVariableFunction(0), positionNode); // retrieve board from position
-    LuapeNodePtr stateNode = graph->pushFunctionNode(context, getVariableFunction(0), boardNode); // retrieve state from board
+    //LuapeNodePtr boardNode = graph->pushFunctionNode(context, getVariableFunction(0), positionNode); // retrieve board from position
+    //LuapeNodePtr stateNode = graph->pushFunctionNode(context, getVariableFunction(0), boardNode); // retrieve state from board
     ranker->setGraph(graph);    
     ranker->setVotes(ranker->createVoteVector(0));
    
@@ -91,17 +94,20 @@ public:
 
   bool learnRanker(ExecutionContext& context, const LuapeGradientBoostingLearnerPtr& learner, const ContainerPtr& trainingGames, const ContainerPtr& testingGames) const
   {
+    context.enterScope(T("Gradient Boosting"));
     size_t n = trainingGames->getNumElements();
     for (size_t i = 0; i < n; ++i)
     {
+      context.enterScope("Iteration " + String((int)i + 1));
+      context.resultCallback(T("iteration"), i+1);
       std::vector<PairPtr> rankingExamples;
       makeRankingExamples(context, trainingGames->getElement(i), rankingExamples);
-      context.enterScope("Iteration " + String((int)i + 1));
       bool ok = learner->doLearningEpisode(context, *(std::vector<ObjectPtr>* )&rankingExamples);
       context.leaveScope(ok);
       if (!ok)
-        return false;
+        break;
     }
+    context.leaveScope();
     return true;
   }
 

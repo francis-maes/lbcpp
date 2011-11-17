@@ -165,11 +165,21 @@
   </enumeration>
 
   <class name="GoBoardPositionPerception">
-    <variable type="GoBoardPerception" name="board"/>
+<!--    <variable type="GoBoardPerception" name="board"/>
     <variable type="GoBoardPositionState" name="positionState" enumeration="yes"/>
     <variable type="GoBoardPositionPerception" name="previous"/>
-    <variable type="Boolean" name="capturedAtPreviousTurn"/>
+    <variable type="Boolean" name="capturedAtPreviousTurn"/> -->
+    <variable type="GoBoardPositionState" name="c11" enumeration="yes"/>
+    <variable type="GoBoardPositionState" name="c12" enumeration="yes"/>
+    <variable type="GoBoardPositionState" name="c13" enumeration="yes"/>
+    <variable type="GoBoardPositionState" name="c21" enumeration="yes"/>
+    <variable type="GoBoardPositionState" name="c22" enumeration="yes"/>
+    <variable type="GoBoardPositionState" name="c23" enumeration="yes"/>
+    <variable type="GoBoardPositionState" name="c31" enumeration="yes"/>
+    <variable type="GoBoardPositionState" name="c32" enumeration="yes"/>
+    <variable type="GoBoardPositionState" name="c33" enumeration="yes"/>
   </class>
+  
   <class name="GoBoardPerception">
     <variable type="GoStatePerception" name="state"/>
     <variable type="PositiveInteger" name="boardSize"/>

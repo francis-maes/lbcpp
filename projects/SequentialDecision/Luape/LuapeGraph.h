@@ -132,11 +132,16 @@ public:
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const;
 
+  size_t getIndexInGraph() const
+    {return indexInGraph;}
+
 protected:
+  friend class LuapeGraph;
   friend class LuapeNodeClass;
 
   TypePtr type;
   LuapeNodeCachePtr cache;
+  size_t indexInGraph;
 };
 
 extern ClassPtr luapeNodeClass;

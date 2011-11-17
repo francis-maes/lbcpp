@@ -111,6 +111,25 @@ protected:
   double threshold;
 };
 
+class EqualsEnumValueFunction : public SimpleUnaryFunction
+{
+public:
+  EqualsEnumValueFunction(const Variable& value = Variable()) 
+    : SimpleUnaryFunction(enumValueType, booleanType, "equalsEnum"), value(value) {}
+
+  virtual String toShortString() const
+    {return T("Equals(") + value.toShortString() + T(")");}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+    {return input == value;}
+
+protected:
+  friend class EqualsEnumValueFunctionClass;
+
+  Variable value;
+};
+
+
 class LuapeSandBox : public WorkUnit
 {
 public:
