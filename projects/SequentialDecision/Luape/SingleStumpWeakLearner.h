@@ -52,7 +52,7 @@ public:
     context.informationCallback("Best stump: " + graph->getNode(bestVariable)->toShortString() + " >= " + String(bestThreshold));
     context.informationCallback("Edge: " + String(bestEdge));
 
-    LuapeNodePtr res = new LuapeFunctionNode(new StumpFunction(bestThreshold), std::vector<size_t>(1, bestVariable));
+    LuapeNodePtr res = new LuapeFunctionNode(new StumpFunction(bestThreshold), std::vector<LuapeNodePtr>(1,  graph->getNode(bestVariable)));
     return std::vector<LuapeNodePtr>(1, res);
   }
 };
@@ -139,7 +139,7 @@ public:
       res.push_back(bestIntermediateNode);
       if (bestIntermediateNode->getType() == doubleType)
       {
-        res.push_back(new LuapeFunctionNode(new StumpFunction(bestThreshold), std::vector<size_t>(1, graph->getNumNodes()))); 
+        res.push_back(new LuapeFunctionNode(new StumpFunction(bestThreshold), std::vector<LuapeNodePtr>(1, bestIntermediateNode))); 
         desc = bestIntermediateNode->toShortString() + " >= " + String(bestThreshold);
       }
       else
@@ -147,7 +147,7 @@ public:
     }
     else
     {
-      res.push_back(new LuapeFunctionNode(new StumpFunction(bestThreshold), std::vector<size_t>(1, bestVariable))); 
+      res.push_back(new LuapeFunctionNode(new StumpFunction(bestThreshold), std::vector<LuapeNodePtr>(1, graph->getNode(bestVariable)))); 
       desc = String("node ") + String((int)bestVariable) + " >= " + String(bestThreshold);
     }
     context.informationCallback(desc + " [" + String(bestEdge) + "]");
@@ -176,9 +176,9 @@ protected:
     for (size_t i = 0; i < nodeIndices.size(); ++i)
       for (size_t j = 0; j < (isCommutative ? i : nodeIndices.size()); ++j)
       {
-        std::vector<size_t> arguments(2);
-        arguments[0] = nodeIndices[i];
-        arguments[1] = nodeIndices[j];
+        std::vector<LuapeNodePtr> arguments(2);
+        arguments[0] = graph->getNode(nodeIndices[i]);
+        arguments[1] = graph->getNode(nodeIndices[j]);
         LuapeNodePtr node = new LuapeFunctionNode(Function::create(functionClass), arguments);
         bool ok = graph->pushNode(context, node);
         jassert(ok);

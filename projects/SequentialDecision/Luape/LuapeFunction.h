@@ -44,21 +44,11 @@ public:
       LuapeYieldNodePtr yieldNode = graph->getNode(i).dynamicCast<LuapeYieldNode>();
       if (yieldNode)
       {
-        ContainerPtr weakPredictions = graph->getNode(yieldNode->getArgument())->getCache()->getSamples(isTrainingSamples);
+        BooleanVectorPtr weakPredictions = yieldNode->getArgument()->getCache()->getSamples(isTrainingSamples);
         double vote = votes.staticCast<DenseDoubleVector>()->getValue(yieldIndex++);
-
-        BooleanVectorPtr weakBooleans = weakPredictions.dynamicCast<BooleanVector>();
-        if (weakBooleans)
-        {
-          for (size_t j = 0; j < numSamples; ++j)
-            predictions->incrementValue(j, vote * (weakBooleans->get(j) ? 1.0 : -1.0));
-        }
-        else
-        {
-          DenseDoubleVectorPtr weakScores = weakPredictions.staticCast<DenseDoubleVector>();
-          for (size_t j = 0; j < numSamples; ++j)
-            predictions->incrementValue(j, vote * weakScores->getValue(j));
-        }
+        for (size_t j = 0; j < numSamples; ++j)
+          if (weakPredictions->get(j))
+            predictions->incrementValue(j, vote);
       }
     }
     return predictions;
@@ -233,10 +223,8 @@ public:
 
     virtual void valueYielded(const Variable& value)
     {
-      if (value.isBoolean())
-        res += votes->getValue(index++) * (value.getBoolean() ? 1.0 : -1.0);
-      else
-        res += votes->getValue(index++) * value.getDouble();
+      if (value.getBoolean())
+        res += votes->getValue(index++);
     }
   };
 

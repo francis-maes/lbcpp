@@ -57,7 +57,7 @@ public:
 
     // configure gradient boosting
     LuapeGradientBoostingLossPtr gbmLoss = new RankingGradientBoostingLoss(allPairsRankingLossFunction(hingeDiscriminativeLossFunction()));
-    LuapeGradientBoostingLearnerPtr learner = new LuapeGradientBoostingLearner(gbmLoss, 1000, 6);
+    LuapeGradientBoostingLearnerPtr learner = new LuapeGradientBoostingLearner(gbmLoss, 0.1, 1000, 6);
     if (!learner->initialize(context, problem, ranker))
       return false;
     
@@ -76,9 +76,11 @@ public:
 
     // initialize graph
     LuapeGraphPtr graph = problem->createInitialGraph(context);
-    graph->pushNode(context, new LuapeFunctionNode(getVariableFunction(0), 0)); // retrieve board from position
-    graph->pushNode(context, new LuapeFunctionNode(getVariableFunction(0), 1)); // retrieve state from board
+    LuapeNodePtr positionNode = graph->getNode(0);
+    LuapeNodePtr boardNode = graph->pushNode(context, new LuapeFunctionNode(getVariableFunction(0), positionNode)); // retrieve board from position
+    graph->pushNode(context, new LuapeFunctionNode(getVariableFunction(0), boardNode)); // retrieve state from board
     ranker->setGraph(graph);    
+    ranker->setVotes(ranker->createVoteVector(0));
    
     // initialize evaluator
     EvaluatorPtr evaluator = new GoActionScoringEvaluator();

@@ -72,7 +72,7 @@ protected:
         return 0.0; // non-terminal state
       LuapeNodeCachePtr yieldNodeCache = yieldNode->getCache();
 
-      LuapeNodePtr valueNode = graph->getNode(yieldNode->getArgument());
+      LuapeNodePtr valueNode = yieldNode->getArgument();
       double score;
       if (yieldNodeCache->isScoreComputed())
         score = yieldNodeCache->getScore();
