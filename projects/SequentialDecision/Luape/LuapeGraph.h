@@ -268,6 +268,7 @@ public:
   size_t getNumTrainingSamples() const;
   size_t getNumValidationSamples() const;
   size_t getNumSamples(bool isTrainingSamples) const;
+  void resizeSamples(bool isTrainingSamples, size_t numSamples);
   void resizeSamples(size_t numTrainingSamples, size_t numValidationSamples);
   void setSample(bool isTrainingSample, size_t index, const std::vector<Variable>& example);
   void setSample(bool isTrainingSample, size_t index, const ObjectPtr& example);

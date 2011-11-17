@@ -127,6 +127,8 @@ SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
   Luape/LuapeFunction.h
   Luape/LuapeBatchLearner.h
   Luape/LuapeBatchLearner.cpp
+  Luape/LuapeGradientBoosting.h
+  Luape/LuapeGradientBoosting.cpp
   Luape/LuapeSandBox.h
   Luape/LuapeLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeLibrary.cpp

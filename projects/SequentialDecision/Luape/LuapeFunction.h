@@ -32,6 +32,37 @@ public:
   virtual VectorPtr createVoteVector(size_t initialSize) const = 0;
   virtual void aggregateVote(Variable& targetVote, const Variable& vote, bool positive) const = 0;
 
+  DenseDoubleVectorPtr computeSamplePredictions(ExecutionContext& context, bool isTrainingSamples) const
+  {
+    jassert(votes.isInstanceOf<DenseDoubleVector>());
+
+    size_t yieldIndex = 0;
+    size_t numSamples = graph->getNumSamples(isTrainingSamples);
+    DenseDoubleVectorPtr predictions = new DenseDoubleVector(numSamples, 0.0);
+    for (size_t i = 0; i < graph->getNumNodes(); ++i)
+    {
+      LuapeYieldNodePtr yieldNode = graph->getNode(i).dynamicCast<LuapeYieldNode>();
+      if (yieldNode)
+      {
+        ContainerPtr weakPredictions = graph->getNode(yieldNode->getArgument())->getCache()->getSamples(isTrainingSamples);
+        double vote = votes.staticCast<DenseDoubleVector>()->getValue(yieldIndex++);
+
+        BooleanVectorPtr weakBooleans = weakPredictions.dynamicCast<BooleanVector>();
+        if (weakBooleans)
+        {
+          for (size_t j = 0; j < numSamples; ++j)
+            predictions->incrementValue(j, vote * (weakBooleans->get(j) ? 1.0 : -1.0));
+        }
+        else
+        {
+          DenseDoubleVectorPtr weakScores = weakPredictions.staticCast<DenseDoubleVector>();
+          for (size_t j = 0; j < numSamples; ++j)
+            predictions->incrementValue(j, vote * weakScores->getValue(j));
+        }
+      }
+    }
+    return predictions;
+  }
 protected:
   friend class LuapeFunctionClass;
 
@@ -201,7 +232,12 @@ public:
     double res;
 
     virtual void valueYielded(const Variable& value)
-      {res += votes->getValue(index++) * (value.getBoolean() ? 1.0 : -1.0);}
+    {
+      if (value.isBoolean())
+        res += votes->getValue(index++) * (value.getBoolean() ? 1.0 : -1.0);
+      else
+        res += votes->getValue(index++) * value.getDouble();
+    }
   };
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
@@ -218,25 +254,6 @@ public:
       scores->setValue(i, callback.res);
     }
     return scores;
-  }
-
-  DenseDoubleVectorPtr computeSamplePredictions(ExecutionContext& context, bool isTrainingSamples) const
-  {
-    size_t yieldIndex = 0;
-    size_t numSamples = graph->getNumSamples(isTrainingSamples);
-    DenseDoubleVectorPtr predictions = new DenseDoubleVector(numSamples, 0.0);
-    for (size_t i = 0; i < graph->getNumNodes(); ++i)
-    {
-      LuapeYieldNodePtr yieldNode = graph->getNode(i).dynamicCast<LuapeYieldNode>();
-      if (yieldNode)
-      {
-        BooleanVectorPtr weakPredictions = graph->getNode(yieldNode->getArgument())->getCache()->getSamples(isTrainingSamples);
-        double vote = votes.staticCast<DenseDoubleVector>()->getValue(yieldIndex++);
-        for (size_t j = 0; j < numSamples; ++j)
-          predictions->incrementValue(j, vote * (weakPredictions->get(j) ? 1.0 : -1.0));
-      }
-    }
-    return predictions;
   }
 
   // votes are scalars (alpha values)
