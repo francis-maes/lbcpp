@@ -39,6 +39,9 @@
   <class name="LuapeRanker" base="LuapeFunction">
     <constructor/>
   </class>
+  <class name="LuapeRegressor" base="LuapeFunction">
+    <constructor/>
+  </class>
 
   <!-- Problem -->
   <class name="LuapeProblem">

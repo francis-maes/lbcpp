@@ -101,8 +101,40 @@ class LuapeGradientBoostingLoss : public Object
 public:
   virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeFunctionPtr& function) = 0;
   virtual void setExamples(bool isTrainingData, const std::vector<ObjectPtr>& data) = 0;
-  virtual DenseDoubleVectorPtr computePseudoResiduals(const DenseDoubleVectorPtr& predictions, double& lossValue) const = 0;
-  virtual double optimizeWeightOfWeakLearner(const DenseDoubleVectorPtr& predictions, const BooleanVectorPtr& weakPredictions) const = 0;
+  virtual void computeLoss(const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const = 0;
+
+  virtual double optimizeWeightOfWeakLearner(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const BooleanVectorPtr& weakPredictions) const
+  {
+    context.enterScope(T("Optimize weight"));
+
+    double bestLoss = DBL_MAX;
+    double bestWeight = 0.0;
+
+    for (double K = -2.5; K <= 2.5; K += 0.02)
+    {
+      context.enterScope(T("K = ") + String(K));
+      context.resultCallback(T("K"), K);
+
+      DenseDoubleVectorPtr newPredictions = predictions->cloneAndCast<DenseDoubleVector>();
+      for (size_t i = 0; i < weakPredictions->getNumElements(); ++i)
+        if (weakPredictions->get(i))
+          newPredictions->incrementValue(i, K);
+      double lossValue;
+      computeLoss(newPredictions, &lossValue, NULL);
+
+      if (lossValue < bestLoss)
+      {
+        bestLoss = lossValue;
+        bestWeight = K;
+      }
+
+      context.resultCallback(T("loss"), lossValue);
+      context.leaveScope(lossValue);
+    }
+
+    context.leaveScope(bestLoss);
+    return bestWeight;
+  }
 };
 
 typedef ReferenceCountedObjectPtr<LuapeGradientBoostingLoss> LuapeGradientBoostingLossPtr;
@@ -129,7 +161,6 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<LuapeGradientBoostingLearner> LuapeGradientBoostingLearnerPtr;
-
 
 ///////////////////////////////////////////
 
@@ -170,11 +201,13 @@ public:
       inputNodeCache->setSample(true, firstIndex + 1, alternatives->getElement(i));
   }
 
-  virtual DenseDoubleVectorPtr computePseudoResiduals(const DenseDoubleVectorPtr& predictions, double& lossValue) const
+  virtual void computeLoss(const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const
   {
-    DenseDoubleVectorPtr res = new DenseDoubleVector(predictions->getNumValues(), 0.0);
-
-    lossValue = 0.0;
+    if (lossValue)
+      *lossValue = 0.0;
+    if (lossGradient)
+      *lossGradient = new DenseDoubleVector(predictions->getNumValues(), 0.0);
+  
     size_t index = 0;
     for (size_t i = 0; i < trainingData.size(); ++i)
     {
@@ -184,24 +217,19 @@ public:
       DenseDoubleVectorPtr scores = new DenseDoubleVector(n, 0.0);
       memcpy(scores->getValuePointer(0), predictions->getValuePointer(index), sizeof (double) * n);
 
-      double loss = 0.0;
-      DenseDoubleVectorPtr lossGradient = new DenseDoubleVector(n, 0.0);
-      rankingLoss->computeRankingLoss(scores, costs, &loss, &lossGradient, 1.0);
-      jassert(lossGradient);
-      lossValue += loss;
-      
-      memcpy(res->getValuePointer(index), lossGradient->getValuePointer(0), sizeof (double) * n);
+      double v = 0.0;
+      DenseDoubleVectorPtr g = lossGradient ? new DenseDoubleVector(n, 0.0) : DenseDoubleVectorPtr();
+      rankingLoss->computeRankingLoss(scores, costs, lossValue ? &v : NULL, lossGradient ? &g : NULL, 1.0);
+      if (lossValue)
+        *lossValue += v;
+      if (g)      
+        memcpy((*lossGradient)->getValuePointer(index), g->getValuePointer(0), sizeof (double) * n);
       index += n;
     }
-    lossValue /= trainingData.size();
-
-    res->multiplyByScalar(-1.0);
-    return res;
-  }
-
-  virtual double optimizeWeightOfWeakLearner(const DenseDoubleVectorPtr& predictions, const BooleanVectorPtr& weakPredictions) const
-  {
-    return 1.0; // FIXME !! 
+    if (lossValue)
+      *lossValue /= trainingData.size();
+    if (lossGradient)
+      (*lossGradient)->multiplyByScalar(-1.0);
   }
 
 protected:
@@ -215,6 +243,70 @@ protected:
   std::vector<PairPtr> validationData;
 };
 
+class L2GradientBoostingLoss : public LuapeGradientBoostingLoss
+{
+public:
+ virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeFunctionPtr& function)
+  {
+    this->problem = problem;
+    this->function = function;
+    this->graph = function->getGraph();
+    return true;
+  }
+
+  virtual void setExamples(bool isTrainingData, const std::vector<ObjectPtr>& data)
+  {
+    graph->clearSamples(isTrainingData, !isTrainingData);
+    LuapeNodeCachePtr inputNodeCache = graph->getNode(0)->getCache();
+    inputNodeCache->resizeSamples(isTrainingData, data.size());
+    DenseDoubleVectorPtr supervisions = new DenseDoubleVector(data.size(), 0.0);
+    for (size_t i = 0; i < data.size(); ++i)
+    {
+      const PairPtr& example = data[i].staticCast<Pair>();
+      inputNodeCache->setSample(isTrainingData, i, example->getFirst());
+      supervisions->setValue(i, example->getSecond().getDouble());
+    }
+
+    if (isTrainingData)
+      trainingSupervisions = supervisions;
+    else
+      validationSupervisions = supervisions;
+  }
+
+  virtual void computeLoss(const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const
+  {
+    if (lossValue)
+      *lossValue = 0.0;
+    if (lossGradient)
+      *lossGradient = new DenseDoubleVector(predictions->getNumValues(), 0.0);
+  
+    size_t n = trainingSupervisions->getNumValues();
+    jassert(n == predictions->getNumValues());
+    size_t index = 0;
+    for (size_t i = 0; i < n; ++i)
+    {
+      double predicted = predictions->getValue(i);
+      double correct = trainingSupervisions->getValue(i);
+
+      if (lossValue)
+        *lossValue += (predicted - correct) * (predicted - correct);
+      if (lossGradient)
+        (*lossGradient)->setValue(i, correct - predicted);
+    }
+    if (lossValue)
+      *lossValue /= n;
+    if (lossGradient)
+      (*lossGradient)->multiplyByScalar(-1.0);
+  }
+
+protected:
+  LuapeProblemPtr problem;
+  LuapeFunctionPtr function;
+  LuapeGraphPtr graph;
+
+  DenseDoubleVectorPtr trainingSupervisions;
+  DenseDoubleVectorPtr validationSupervisions;
+};
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_LUAPE_GRADIENT_BOOSTING_H_

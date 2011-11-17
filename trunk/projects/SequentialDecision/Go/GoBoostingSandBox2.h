@@ -54,45 +54,50 @@ public:
 
     // create problem and ranker
     LuapeProblemPtr problem = new GoRankLuapeProblem();
-    LuapeRankerPtr ranker = createRanker(context, problem);
-    if (!ranker)
+    LuapeFunctionPtr learningMachine = createLearningMachine(context, problem);
+    if (!learningMachine)
       return false;
 
     // configure gradient boosting
-    LuapeGradientBoostingLossPtr gbmLoss = new RankingGradientBoostingLoss(allPairsRankingLossFunction(hingeDiscriminativeLossFunction()));
+    //LuapeGradientBoostingLossPtr gbmLoss = new RankingGradientBoostingLoss(allPairsRankingLossFunction(hingeDiscriminativeLossFunction()));
+    LuapeGradientBoostingLossPtr gbmLoss = new L2GradientBoostingLoss();
     LuapeGradientBoostingLearnerPtr learner = new LuapeGradientBoostingLearner(gbmLoss, 0.1, 1000, 6);
-    if (!learner->initialize(context, problem, ranker))
+    if (!learner->initialize(context, problem, learningMachine))
       return false;
     
     // learn
-    if (!learnRanker(context, learner, trainingGames, testingGames))
+    if (!learn(context, learner, trainingGames, testingGames))
       return false;
 
     return true;
   }
 
-  LuapeRankerPtr createRanker(ExecutionContext& context, const LuapeProblemPtr& problem) const
+  LuapeFunctionPtr createLearningMachine(ExecutionContext& context, const LuapeProblemPtr& problem) const
   {
-    LuapeRankerPtr ranker = new LuapeRanker();
-    if (!ranker->initialize(context, objectVectorClass(goBoardPositionPerceptionClass), denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType)))
-      return LuapeRankerPtr();
+    //LuapeFunctionPtr res = new LuapeRanker();
+    //if (!res->initialize(context, objectVectorClass(goBoardPositionPerceptionClass), denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType)))
+    //  return LuapeFunctionPtr();
+
+    LuapeFunctionPtr res = new LuapeRegressor();
+    if (!res->initialize(context, goBoardPositionPerceptionClass, doubleType))
+      return LuapeFunctionPtr();
 
     // initialize graph
     LuapeGraphPtr graph = problem->createInitialGraph(context);
     LuapeNodePtr positionNode = graph->getNode(0);
     //LuapeNodePtr boardNode = graph->pushFunctionNode(context, getVariableFunction(0), positionNode); // retrieve board from position
     //LuapeNodePtr stateNode = graph->pushFunctionNode(context, getVariableFunction(0), boardNode); // retrieve state from board
-    ranker->setGraph(graph);    
-    ranker->setVotes(ranker->createVoteVector(0));
+    res->setGraph(graph);    
+    res->setVotes(res->createVoteVector(0));
    
     // initialize evaluator
     EvaluatorPtr evaluator = new GoActionScoringEvaluator();
     //evaluator->setUseMultiThreading(true);
-    ranker->setEvaluator(evaluator);
-    return ranker;
+    res->setEvaluator(evaluator);
+    return res;
   }
 
-  bool learnRanker(ExecutionContext& context, const LuapeGradientBoostingLearnerPtr& learner, const ContainerPtr& trainingGames, const ContainerPtr& testingGames) const
+  bool learn(ExecutionContext& context, const LuapeGradientBoostingLearnerPtr& learner, const ContainerPtr& trainingGames, const ContainerPtr& testingGames) const
   {
     context.enterScope(T("Gradient Boosting"));
     size_t n = trainingGames->getNumElements();
@@ -133,9 +138,19 @@ private:
       jassert(!state->isFinalState());
       Variable correctAction = trajectory->getElement(i);
       PairPtr rankingExample = makeRankingExample(context, state, correctAction);
-      res.push_back(rankingExample);
+      
+      // res.push_back(rankingExample);
 
-      res[i] = rankingExample;
+      // regression data
+      ContainerPtr alternatives = rankingExample->getFirst().getObjectAndCast<Container>();
+      DenseDoubleVectorPtr costs = rankingExample->getSecond().getObjectAndCast<DenseDoubleVector>();
+      for (size_t j = 0; j < alternatives->getNumElements(); ++j)
+      {
+        if (costs->getValue(j) == -1.0)
+          res.push_back(new Pair(alternatives->getElement(j), 1.0));
+        else if (context.getRandomGenerator()->sampleBool(0.01))
+          res.push_back(new Pair(alternatives->getElement(j), -1.0));
+      }
   
       double reward;
       state->performTransition(context, correctAction, reward);

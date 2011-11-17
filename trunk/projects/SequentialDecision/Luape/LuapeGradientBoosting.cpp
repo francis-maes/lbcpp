@@ -73,9 +73,9 @@ double LuapeGraphBuilderBanditPool::sampleReward(ExecutionContext& context, cons
 
       double value = pseudoResiduals->getValue(i);
 
-      if (random->sampleBool(p))
+      //if (random->sampleBool(p))
         (isPositive ? trainPositive : trainNegative).push(value, fabs(value));
-      else
+      //else
         (isPositive ? validationPositive : validationNegative).push(value, fabs(value));
     }
     
@@ -254,7 +254,8 @@ bool LuapeGradientBoostingLearner::doLearningEpisode(ExecutionContext& context, 
   context.leaveScope();
   context.enterScope(T("Computing pseudo-residuals"));
   double lossValue;
-  DenseDoubleVectorPtr pseudoResiduals = loss->computePseudoResiduals(predictions, lossValue);
+  DenseDoubleVectorPtr pseudoResiduals;
+  loss->computeLoss(predictions, &lossValue, &pseudoResiduals);
   context.leaveScope();
   context.resultCallback(T("loss"), lossValue);
 
@@ -282,7 +283,7 @@ bool LuapeGradientBoostingLearner::doLearningEpisode(ExecutionContext& context, 
   context.informationCallback(T("Weak learner: ") + weakLearnerNode->toShortString());
   LuapeNodeCachePtr weakLearnerCache = weakLearnerNode->getCache();
   BooleanVectorPtr weakPredictions = weakLearnerCache->getSamples(true).staticCast<BooleanVector>();
-  double optimalWeight = loss->optimizeWeightOfWeakLearner(predictions, weakPredictions);
+  double optimalWeight = loss->optimizeWeightOfWeakLearner(context, predictions, weakPredictions);
   context.informationCallback(T("Optimal weight: ") + String(optimalWeight));
   
   // 5- add weak learner and associated weight to graph 
