@@ -222,6 +222,18 @@ String LuapeNodeCache::toShortString() const
         ++countOfTrue;
     return String(countOfTrue) + T(" / ") + String((int)n);
   }
+  else if (elementsType.isInstanceOf<Enumeration>())
+  {
+    DenseDoubleVectorPtr probabilities = new DenseDoubleVector(elementsType.staticCast<Enumeration>(), doubleType);
+    double invZ = 1.0 / (double)n;
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable v = trainingSamples->getElement(i);
+      if (!v.isMissingValue())
+        probabilities->incrementValue(v.getInteger(), invZ);
+    }
+    return probabilities->toShortString();
+  }
   else if (elementsType->isConvertibleToDouble())
   {
     ScalarVariableStatistics stats;
@@ -343,6 +355,7 @@ void LuapeFunctionNode::updateCache(ExecutionContext& context, bool isTrainingSa
     for (size_t i = 0; i < inputs.size(); ++i)
       inputs[i] = arguments[i]->getCache()->getSamples(isTrainingSamples);
     cache->setSamples(isTrainingSamples, function->compute(context, inputs, type));
+    //context.informationCallback(T("Compute ") + toShortString() + T(" => ") + cache->toShortString());
   }
 }
 

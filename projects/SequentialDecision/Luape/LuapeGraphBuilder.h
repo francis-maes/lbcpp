@@ -272,6 +272,7 @@ public:
   virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward, Variable* stateBackup = NULL)
   {
     const LuapeNodePtr& node = action.getObjectAndCast<LuapeNode>();
+    jassert(!graph->containsNode(node));
     bool ok = graph->pushNode(context, node);
     nodeToUseStack.push_back(node);
     jassert(ok);
@@ -320,7 +321,10 @@ protected:
       LuapeFunctionPtr f = function->cloneAndCast<LuapeFunction>();
       for (size_t i = 0; i < variables.size(); ++i)
         f->setVariable(i, variables[i]);
-      res->append(graph->getUniverse()->makeFunctionNode(f, inputs));
+
+      LuapeNodePtr node = graph->getUniverse()->makeFunctionNode(f, inputs);
+      if (!graph->containsNode(node))
+        res->append(node);
     }
     else
     {
@@ -339,6 +343,16 @@ protected:
   {
     if (inputIndex == inputs.size())
     {
+      if ((function->getFlags() & LuapeFunction::allSameArgIrrelevantFlag) != 0 && inputs.size() > 1)
+      {
+        bool ok = false;
+        for (size_t i = 1; i < inputs.size(); ++i)
+          if (inputs[i] != inputs[0])
+            ok = true;
+        if (!ok)
+          return;
+      }
+
       std::vector<Variable> variables(function->getNumVariables());
       addFunctionNodesGivenInputs(function, inputs, variables, 0, res);
     }
@@ -348,7 +362,11 @@ protected:
         addFunctionNodes(function, inputs, inputIndex + 1, res);
       else
       {
-        for (size_t i = 0; i < graph->getNumNodes(); ++i)
+        size_t firstIndex = 0;
+        if ((function->getFlags() & LuapeFunction::commutativeFlag) != 0 && inputIndex > 0)
+          firstIndex = inputs[inputIndex - 1]->getIndexInGraph();
+
+        for (size_t i = firstIndex; i < graph->getNumNodes(); ++i)
           if (function->doAcceptInputType(inputIndex, graph->getNodeType(i)))
           {
             inputs[inputIndex] = graph->getNode(i);
@@ -360,9 +378,14 @@ protected:
 
   void addFunctionNodes(const LuapeFunctionPtr& function, ObjectVectorPtr res) const
   {
+    size_t numInputs = function->getNumInputs();
+
+    std::vector<LuapeNodePtr> inputs(numInputs);
+    addFunctionNodes(function, inputs, 0, res);
+
+    /*
     LuapeNodePtr nodeToUse = nodeToUseStack.back();
     TypePtr nodeType = nodeToUse->getType();
-    size_t numInputs = function->getNumInputs();
     if (numInputs == 1)
     {
       if (function->doAcceptInputType(0, nodeType))
@@ -376,7 +399,7 @@ protected:
         std::vector<LuapeNodePtr> inputs(2);
         inputs[0] = nodeToUse;
         for (size_t i = 0; i < graph->getNumNodes(); ++i)
-          if (function->doAcceptInputType(1, graph->getNodeType(i)))
+          if (function->doAcceptInputType(1, graph->getNodeType(i)) && graph->getNode(i) != nodeToUse)
           {
             inputs[1] = graph->getNode(i);
             addFunctionNodesGivenInputs(function, inputs, res);
@@ -400,7 +423,7 @@ protected:
           addFunctionNodes(function, inputs, 0, res);
           inputs[i] = LuapeNodePtr();
         }
-    }
+    }*/
   }
 
 };
