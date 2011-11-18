@@ -97,30 +97,6 @@ public:
   }
 };
 
-class BinaryBalancedStochasticGDParameters : public StochasticGDParameters
-{
-public:
-  BinaryBalancedStochasticGDParameters( IterationFunctionPtr learningRate = constantIterationFunction(0.1),
-                         StoppingCriterionPtr stoppingCriterion = maxIterationsWithoutImprovementStoppingCriterion(20),
-                         size_t maxIterations = 100,
-                         bool doPerEpisodeUpdates = false,
-                         bool normalizeLearningRate = true,
-                         bool restoreBestParameters = true,
-                         bool randomizeExamples = true,
-                         bool evaluateAtEachIteration = true,
-                         size_t numExamplesPerIteration = 0)
-  : StochasticGDParameters(learningRate, stoppingCriterion, maxIterations
-                           , doPerEpisodeUpdates, normalizeLearningRate
-                           , restoreBestParameters, randomizeExamples
-                           , evaluateAtEachIteration, numExamplesPerIteration)
-  {}
-
-  virtual BatchLearnerPtr createBatchLearner(ExecutionContext& context) const
-  {
-    return balanceBinaryExamplesBatchLearner(StochasticGDParameters::createBatchLearner(context));
-  }
-};
-
 class ESANN11PredictorParameters : public ProteinPredictorParameters
 {
 public:

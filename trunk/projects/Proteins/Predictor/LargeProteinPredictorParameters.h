@@ -728,7 +728,7 @@ public:
       return extraTreeLearningMachine(x3Trees, x3Attributes, x3Splits);
     else if (learningMachineName == T("SGD"))
     {
-      FunctionPtr res = linearLearningMachine(new StochasticGDParameters(constantIterationFunction(sgdRate), StoppingCriterionPtr(), sgdIterations));
+      FunctionPtr res = linearLearningMachine(new BinaryBalancedStochasticGDParameters(constantIterationFunction(sgdRate), StoppingCriterionPtr(), sgdIterations));
       res->setEvaluator(defaultSupervisedEvaluator());
       return res;
     }
