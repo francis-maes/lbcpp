@@ -19,7 +19,7 @@ class SingleStumpWeakLearner : public LuapeWeakLearner
 public:
   SingleStumpWeakLearner() {}
 
-  virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function,
+  virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeInferencePtr& function,
                                           const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
   {
     LuapeGraphPtr graph = function->getGraph();
@@ -52,7 +52,7 @@ public:
     context.informationCallback("Best stump: " + graph->getNode(bestVariable)->toShortString() + " >= " + String(bestThreshold));
     context.informationCallback("Edge: " + String(bestEdge));
 
-    LuapeNodePtr res = graph->getUniverse()->makeFunctionNode(new StumpFunction(bestThreshold), graph->getNode(bestVariable));
+    LuapeNodePtr res = graph->getUniverse()->makeFunctionNode(stumpLuapeFunction(bestThreshold), graph->getNode(bestVariable));
     return std::vector<LuapeNodePtr>(1, res);
   }
 };
@@ -61,7 +61,7 @@ public:
 class CombinedStumpWeakLearner : public LuapeWeakLearner
 {
 public:
-  virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function,
+  virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeInferencePtr& function,
                                           const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
   {
     LuapeGraphPtr graph = function->getGraph();
@@ -139,7 +139,7 @@ public:
       res.push_back(bestIntermediateNode);
       if (bestIntermediateNode->getType() == doubleType)
       {
-        res.push_back(graph->getUniverse()->makeFunctionNode(new StumpFunction(bestThreshold), bestIntermediateNode)); 
+        res.push_back(graph->getUniverse()->makeFunctionNode(stumpLuapeFunction(bestThreshold), bestIntermediateNode)); 
         desc = bestIntermediateNode->toShortString() + " >= " + String(bestThreshold);
       }
       else
@@ -147,7 +147,7 @@ public:
     }
     else
     {
-      res.push_back(graph->getUniverse()->makeFunctionNode(new StumpFunction(bestThreshold), graph->getNode(bestVariable))); 
+      res.push_back(graph->getUniverse()->makeFunctionNode(stumpLuapeFunction(bestThreshold), graph->getNode(bestVariable))); 
       desc = String("node ") + String((int)bestVariable) + " >= " + String(bestThreshold);
     }
     context.informationCallback(desc + " [" + String(bestEdge) + "]");
@@ -155,7 +155,7 @@ public:
   }
   
 protected:
-  double findBestThreshold(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function, const LuapeNodePtr& node, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, double& edge) const
+  double findBestThreshold(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeInferencePtr& function, const LuapeNodePtr& node, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, double& edge) const
   {
     size_t numExamples = function->getGraph()->getNumTrainingSamples();
     BoostingEdgeCalculatorPtr edgeCalculator = batchLearner->createEdgeCalculator();
@@ -165,7 +165,7 @@ protected:
 
   void processBinaryFunction(ExecutionContext& context, ClassPtr functionClass, bool isCommutative,
                                 const BoostingLuapeLearnerPtr& batchLearner,
-                                const LuapeFunctionPtr& function, const std::vector<size_t>& nodeIndices,
+                                const LuapeInferencePtr& function, const std::vector<size_t>& nodeIndices,
                                 const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, 
                                 LuapeNodePtr& bestIntermediateNode, size_t& bestVariable, double& bestThreshold, double& bestEdge) const
   {

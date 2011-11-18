@@ -22,9 +22,14 @@ int LuapeProblem::input(LuaState& state)
 
 int LuapeProblem::function(LuaState& state)
 {
+  // broken
+
+  jassert(false);
+  return 0;
+#if 0
   LuapeProblemPtr problem = state.checkObject(1, luapeProblemClass).staticCast<LuapeProblem>();
 
-  FunctionPtr function;
+  LuapeFunctionPtr function;
   Variable variable = state.checkVariable(2);
   if (variable.getType() == functionClass)
     function = variable.getObjectAndCast<Function>();
@@ -48,5 +53,6 @@ int LuapeProblem::function(LuaState& state)
     function = new LuaWrapperFunction(state, functionReference, inputTypes, outputType);
   }
   problem->functions.push_back(function);
+#endif // 0
   return 0;
 }

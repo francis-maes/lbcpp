@@ -22,13 +22,13 @@ public:
   void addInput(const TypePtr& type, const String& name)
     {inputs.push_back(new VariableSignature(type, name));}
 
-  void addFunction(const FunctionPtr& function)
+  void addFunction(const LuapeFunctionPtr& function)
     {functions.push_back(function);}
 
   size_t getNumFunctions() const
     {return functions.size();}
 
-  FunctionPtr getFunction(size_t index) const
+  LuapeFunctionPtr getFunction(size_t index) const
     {jassert(index < functions.size()); return functions[index];}
 
   LuapeGraphPtr createInitialGraph(ExecutionContext& context) const
@@ -47,7 +47,7 @@ protected:
   friend class LuapeProblemClass;
 
   std::vector<VariableSignaturePtr> inputs;
-  std::vector<FunctionPtr> functions;
+  std::vector<LuapeFunctionPtr> functions;
   bool failed;
 };
 

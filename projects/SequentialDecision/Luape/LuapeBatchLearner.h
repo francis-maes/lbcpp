@@ -10,7 +10,7 @@
 # define LBCPP_LUAPE_BATCH_LEARNER_H_
 
 # include "LuapeProblem.h"
-# include "LuapeFunction.h"
+# include "LuapeInference.h"
 # include <lbcpp/Learning/BatchLearner.h>
 
 namespace lbcpp
@@ -25,7 +25,7 @@ typedef ReferenceCountedObjectPtr<BoostingLuapeLearner> BoostingLuapeLearnerPtr;
 class LuapeWeakLearner : public Object
 {
 public:
-  virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function,
+  virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeInferencePtr& function,
                                           const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const = 0;
 };
 
@@ -43,7 +43,7 @@ extern LuapeWeakLearnerPtr combinedStumpWeakLearner();
 class BoostingEdgeCalculator : public Object
 {
 public:
-  virtual void initialize(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) = 0;
+  virtual void initialize(const LuapeInferencePtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) = 0;
   virtual void flipPrediction(size_t index) = 0;
   virtual double computeEdge() const = 0;
   virtual Variable computeVote() const = 0;
@@ -85,12 +85,12 @@ public:
 
   virtual BoostingEdgeCalculatorPtr createEdgeCalculator() const = 0;
 
-  virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeFunctionPtr& function, const std::vector<PairPtr>& examples) const = 0;
+  virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeInferencePtr& function, const std::vector<PairPtr>& examples) const = 0;
   virtual VectorPtr makeSupervisions(const std::vector<ObjectPtr>& examples) const;
 
   // the absolute value of this quantity should be maximized
   virtual bool shouldStop(double weakObjectiveValue) const = 0;
-  virtual double updateWeight(const LuapeFunctionPtr& function, size_t index, double currentWeight, const BooleanVectorPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const = 0;
+  virtual double updateWeight(const LuapeInferencePtr& function, size_t index, double currentWeight, const BooleanVectorPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const = 0;
   virtual double computeError(const ContainerPtr& predictions, const ContainerPtr& supervisions) const = 0;
 
   virtual bool train(ExecutionContext& context, const FunctionPtr& f, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const;
@@ -102,8 +102,8 @@ protected:
   size_t maxIterations;
 
   void addExamplesToGraph(bool areTrainingSamples, const std::vector<ObjectPtr>& examples, LuapeGraphPtr graph) const;
-  double updateWeights(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const Variable& vote) const;
-  void updatePredictions(const LuapeFunctionPtr& function, VectorPtr predictions, const BooleanVectorPtr& weakPredictions, const Variable& vote) const;
+  double updateWeights(const LuapeInferencePtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const Variable& vote) const;
+  void updatePredictions(const LuapeInferencePtr& function, VectorPtr predictions, const BooleanVectorPtr& weakPredictions, const Variable& vote) const;
 };
 
 extern BatchLearnerPtr adaBoostLuapeLearner(LuapeProblemPtr problem, LuapeWeakLearnerPtr weakLearner, size_t maxIterations);

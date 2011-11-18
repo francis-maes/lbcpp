@@ -1,9 +1,10 @@
 
-* Objectif2: refactoring des LuapeFunction au lieu de Function
    - Pruner l'espace de recherche avec des flags bien sentis
-* Objectif3: calcul incrémental des actions possibles + autres optimisation pour tendre vers l'apprentissage en O(1)
+ * Calcul incrémental des actions possibles, intégrer avec le calcul des BinaryKey
+ * Autres optimisation pour tendre vers l'apprentissage en O(1)
 
 Luape-Appli:
+ * Avancer sur la Perception du Go
  * Classification: tester sur mnist et pendigit
  * Apprentissage d'une gaussienne conditionelle => boosting joint de la moyenne et de l'ecart-type
     ==> application dans les continuous bandits

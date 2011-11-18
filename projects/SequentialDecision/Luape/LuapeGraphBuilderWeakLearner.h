@@ -22,7 +22,7 @@ public:
     : optimizer(optimizer), maxSteps(maxSteps) {}
   LuapeGraphBuilderWeakLearner() {}
 
-  virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function,
+  virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeInferencePtr& function,
                                           const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
   {
     LuapeGraphPtr graph = function->getGraph();
@@ -59,7 +59,7 @@ protected:
 
   struct Objective : public SimpleUnaryFunction
   {
-    Objective(const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function, ContainerPtr supervisions, DenseDoubleVectorPtr weights)
+    Objective(const BoostingLuapeLearnerPtr& batchLearner, const LuapeInferencePtr& function, ContainerPtr supervisions, DenseDoubleVectorPtr weights)
       : SimpleUnaryFunction(decisionProblemStateClass, doubleType), batchLearner(batchLearner), function(function), supervisions(supervisions), weights(weights) {}
 
     virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
@@ -87,7 +87,7 @@ protected:
 
   protected:
     const BoostingLuapeLearnerPtr batchLearner;
-    const LuapeFunctionPtr& function;
+    const LuapeInferencePtr& function;
     ContainerPtr supervisions;
     DenseDoubleVectorPtr weights;
   };

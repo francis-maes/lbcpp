@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_GRADIENT_BOOSTING_H_
 # define LBCPP_LUAPE_GRADIENT_BOOSTING_H_
 
-# include "LuapeFunction.h"
+# include "LuapeInference.h"
 # include "LuapeGraphBuilder.h"
 # include "LuapeProblem.h"
 
@@ -99,7 +99,7 @@ typedef ReferenceCountedObjectPtr<LuapeGraphBuilderBanditPool> LuapeGraphBuilder
 class LuapeGradientBoostingLoss : public Object
 {
 public:
-  virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeFunctionPtr& function) = 0;
+  virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function) = 0;
   virtual void setExamples(bool isTrainingData, const std::vector<ObjectPtr>& data) = 0;
   virtual void computeLoss(const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const = 0;
 
@@ -144,7 +144,7 @@ class LuapeGradientBoostingLearner : public Object
 public:
   LuapeGradientBoostingLearner(LuapeGradientBoostingLossPtr loss, double learningRate, size_t maxBandits, size_t maxDepth);
 
-  bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeFunctionPtr& function);
+  bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function);
   bool doLearningEpisode(ExecutionContext& context, const std::vector<ObjectPtr>& examples) const;
 
 protected:
@@ -156,7 +156,7 @@ protected:
   LuapeGraphBuilderBanditPoolPtr pool;
 
   LuapeProblemPtr problem;
-  LuapeFunctionPtr function;
+  LuapeInferencePtr function;
   LuapeGraphPtr graph;
 };
 
@@ -170,7 +170,7 @@ public:
   RankingGradientBoostingLoss(RankingLossFunctionPtr rankingLoss = RankingLossFunctionPtr())
     : rankingLoss(rankingLoss) {}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeFunctionPtr& function)
+  virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function)
   {
     this->problem = problem;
     this->function = function;
@@ -236,7 +236,7 @@ protected:
   RankingLossFunctionPtr rankingLoss;
 
   LuapeProblemPtr problem;
-  LuapeFunctionPtr function;
+  LuapeInferencePtr function;
   LuapeGraphPtr graph;
 
   std::vector<PairPtr> trainingData;
@@ -246,7 +246,7 @@ protected:
 class L2GradientBoostingLoss : public LuapeGradientBoostingLoss
 {
 public:
- virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeFunctionPtr& function)
+ virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function)
   {
     this->problem = problem;
     this->function = function;
@@ -301,7 +301,7 @@ public:
 
 protected:
   LuapeProblemPtr problem;
-  LuapeFunctionPtr function;
+  LuapeInferencePtr function;
   LuapeGraphPtr graph;
 
   DenseDoubleVectorPtr trainingSupervisions;

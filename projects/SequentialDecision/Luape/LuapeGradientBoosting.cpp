@@ -263,7 +263,7 @@ LuapeGradientBoostingLearner::LuapeGradientBoostingLearner(LuapeGradientBoosting
 {
 }
 
-bool LuapeGradientBoostingLearner::initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeFunctionPtr& function)
+bool LuapeGradientBoostingLearner::initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function)
 {
   if (!loss->initialize(context, problem, function))
     return false;

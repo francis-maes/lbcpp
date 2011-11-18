@@ -17,7 +17,7 @@ namespace lbcpp
 class AdaBoostEdgeCalculator : public BoostingEdgeCalculator
 {
 public:
-  virtual void initialize(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& sup, const DenseDoubleVectorPtr& weights)
+  virtual void initialize(const LuapeInferencePtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& sup, const DenseDoubleVectorPtr& weights)
   {
     this->predictions = predictions;
     this->supervisions = sup.dynamicCast<BooleanVector>();
@@ -76,13 +76,13 @@ public:
   virtual BoostingEdgeCalculatorPtr createEdgeCalculator() const
     {return new AdaBoostEdgeCalculator();}
 
-  virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeFunctionPtr& function, const std::vector<PairPtr>& examples) const
+  virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeInferencePtr& function, const std::vector<PairPtr>& examples) const
     {size_t n = examples.size(); return new DenseDoubleVector(n, 1.0 / n);}
 
   virtual bool shouldStop(double accuracy) const
     {return accuracy == 0.0 || accuracy == 1.0;}
 
-  virtual double updateWeight(const LuapeFunctionPtr& function, size_t index, double currentWeight, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const Variable& vote) const
+  virtual double updateWeight(const LuapeInferencePtr& function, size_t index, double currentWeight, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const Variable& vote) const
   {
     double alpha = vote.toDouble();
     bool isPredictionCorrect = (supervisions->getElement(index).getBoolean() == predictions->get(index));
