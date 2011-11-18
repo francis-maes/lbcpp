@@ -32,7 +32,7 @@
     </class>
   <class name="EqualsConstantEnumLuapeFunction" base="LuapeFunction">
     <constructor arguments="const Variable&amp; value"/>
-    <variable type="EnumValue" name="value"/>
+    <variable type="Variable" name="value"/>
   </class>
   <class name="GetVariableLuapeFunction" base="LuapeFunction">
     <constructor arguments="size_t variableIndex"/>

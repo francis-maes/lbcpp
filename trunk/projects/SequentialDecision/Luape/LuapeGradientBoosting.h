@@ -30,7 +30,10 @@ public:
   const LuapeNodePtr& getArmNode(size_t index) const
     {jassert(index < arms.size()); return arms[index].node;}
 
-  const LuapeNodeCachePtr& getArmCache(size_t index) const
+  void setArmNode(size_t index, const LuapeNodePtr& node)
+    {jassert(index < arms.size()); arms[index].node = node;}
+
+  LuapeNodeCachePtr getArmCache(size_t index) const
     {jassert(index < arms.size()); return arms[index].getCache();}
 
   void initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph);
@@ -45,6 +48,9 @@ public:
   void displayInformation(ExecutionContext& context);
   void clearSamples(bool clearTrainingSamples = true, bool clearValidationSamples = true);
 
+  size_t createArm(ExecutionContext& context, const LuapeNodePtr& node);
+  void destroyArm(ExecutionContext& context, size_t index);
+
 protected:
   size_t maxSize;
   size_t maxDepth;
@@ -58,8 +64,8 @@ protected:
     double rewardSum;
     LuapeNodePtr node;
 
-    const LuapeNodeCachePtr& getCache() const
-      {return node->getCache();}
+    LuapeNodeCachePtr getCache() const
+      {return node ? node->getCache() : LuapeNodeCachePtr();}
 
     double getIndexScore() const
       {return playedCount ? (rewardSum + 2.0) / (double)playedCount : DBL_MAX;}
@@ -86,12 +92,6 @@ protected:
   BanditsQueue banditsQueue;
 
   void createBanditsQueue();
-  size_t createArm(ExecutionContext& context, const LuapeNodePtr& node);
-  void destroyArm(ExecutionContext& context, size_t index);
-
-  typedef std::map<BinaryKeyPtr, size_t, ObjectComparator> KeyToArmMap;
-  void computeArmKeys(const LuapeGraphPtr& graph, KeyToArmMap& res);
-  void createNewArms(ExecutionContext& context, const LuapeGraphPtr& graph, LuapeRPNGraphBuilderStatePtr state, KeyToArmMap& keyToArms);
 };
 
 typedef ReferenceCountedObjectPtr<LuapeGraphBuilderBanditPool> LuapeGraphBuilderBanditPoolPtr;

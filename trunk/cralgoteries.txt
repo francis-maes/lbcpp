@@ -1,6 +1,5 @@
 
-   - Pruner l'espace de recherche avec des flags bien sentis
- * Calcul incrémental des actions possibles, intégrer avec le calcul des BinaryKey
+ * Fixer la construction incrémentale des actions
  * Autres optimisation pour tendre vers l'apprentissage en O(1)
 
 Luape-Appli:
