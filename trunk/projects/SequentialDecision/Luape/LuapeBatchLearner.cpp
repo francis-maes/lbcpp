@@ -66,7 +66,7 @@ BoostingLuapeLearner::BoostingLuapeLearner() : maxIterations(0)
 
 bool BoostingLuapeLearner::train(ExecutionContext& context, const FunctionPtr& f, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
 {
-  const LuapeFunctionPtr& function = f.staticCast<LuapeFunction>();
+  const LuapeInferencePtr& function = f.staticCast<LuapeInference>();
   LuapeGraphPtr graph = function->getGraph();
   if (!graph)
     function->setGraph(graph = problem->createInitialGraph(context));
@@ -177,7 +177,7 @@ VectorPtr BoostingLuapeLearner::makeSupervisions(const std::vector<ObjectPtr>& e
   return res;
 }
 
-double BoostingLuapeLearner::updateWeights(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const Variable& vote) const
+double BoostingLuapeLearner::updateWeights(const LuapeInferencePtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const Variable& vote) const
 {
   size_t n = weights->getNumValues();
 
@@ -192,7 +192,7 @@ double BoostingLuapeLearner::updateWeights(const LuapeFunctionPtr& function, con
   return sum;
 }
 
-void BoostingLuapeLearner::updatePredictions(const LuapeFunctionPtr& function, VectorPtr predictions, const BooleanVectorPtr& weakPredictions, const Variable& vote) const
+void BoostingLuapeLearner::updatePredictions(const LuapeInferencePtr& function, VectorPtr predictions, const BooleanVectorPtr& weakPredictions, const Variable& vote) const
 {
   size_t n = predictions->getNumElements();
   jassert(n == weakPredictions->getNumElements());

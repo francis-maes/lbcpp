@@ -17,7 +17,7 @@ namespace lbcpp
 class AdaBoostMHEdgeCalculator : public BoostingEdgeCalculator
 {
 public:
-  virtual void initialize(const LuapeFunctionPtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& sup, const DenseDoubleVectorPtr& weights)
+  virtual void initialize(const LuapeInferencePtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& sup, const DenseDoubleVectorPtr& weights)
   {
     const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
     labels = classifier->getLabels();
@@ -142,7 +142,7 @@ public:
   virtual BoostingEdgeCalculatorPtr createEdgeCalculator() const
     {return new AdaBoostMHEdgeCalculator();}
 
-  virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeFunctionPtr& function, const std::vector<PairPtr>& examples) const
+  virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeInferencePtr& function, const std::vector<PairPtr>& examples) const
   {
     const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
     EnumerationPtr labels = classifier->getLabels();
@@ -179,7 +179,7 @@ public:
   virtual bool shouldStop(double weakObjectiveValue) const
     {return weakObjectiveValue == 0.0;}
 
-  virtual double updateWeight(const LuapeFunctionPtr& function, size_t index, double currentWeight, const BooleanVectorPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const
+  virtual double updateWeight(const LuapeInferencePtr& function, size_t index, double currentWeight, const BooleanVectorPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const
   {
     size_t numLabels = function.staticCast<LuapeClassifier>()->getLabels()->getNumElements();
     size_t example = index / numLabels;

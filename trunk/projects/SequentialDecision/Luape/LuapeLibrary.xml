@@ -4,6 +4,45 @@
 
   <class name="LuapeNodeCache"/>
 
+  <!-- Luape Function -->
+  <class name="LuapeFunction" abstract="yes"/>
+  <class name="HomogeneousBinaryLuapeFunction" base="LuapeFunction" abstract="yes"/>
+  <class name="BinaryBooleanLuapeFunction" base="HomogeneousBinaryLuapeFunction" abstract="yes"/>
+    <class name="AndBooleanLuapeFunction" base="BinaryBooleanLuapeFunction">
+      <constructor returnType="LuapeFunction"/>
+    </class>
+    <class name="EqualBooleanLuapeFunction" base="BinaryBooleanLuapeFunction">
+      <constructor returnType="LuapeFunction"/>
+    </class>
+  <class name="BinaryDoubleLuapeFunction" base="HomogeneousBinaryLuapeFunction" abstract="yes"/>
+    <class name="AddDoubleLuapeFunction" base="BinaryDoubleLuapeFunction">
+      <constructor returnType="LuapeFunction"/>
+    </class>
+    <class name="SubDoubleLuapeFunction" base="BinaryDoubleLuapeFunction">
+      <constructor returnType="LuapeFunction"/>
+    </class>
+    <class name="MulDoubleLuapeFunction" base="BinaryDoubleLuapeFunction">
+      <constructor returnType="LuapeFunction"/>
+    </class>
+    <class name="DivDoubleLuapeFunction" base="BinaryDoubleLuapeFunction">
+      <constructor returnType="LuapeFunction"/>
+    </class>
+    <class name="GreaterThanDoubleLuapeFunction" base="LuapeFunction">
+      <constructor returnType="LuapeFunction"/>
+    </class>
+  <class name="EqualsConstantEnumLuapeFunction" base="LuapeFunction">
+    <constructor arguments="const Variable&amp; value"/>
+    <variable type="EnumValue" name="value"/>
+  </class>
+  <class name="GetVariableLuapeFunction" base="LuapeFunction">
+    <constructor arguments="size_t variableIndex"/>
+    <variable type="PositiveInteger" name="variableIndex"/>
+  </class>
+  <class name="StumpLuapeFunction" base="LuapeFunction">
+    <constructor arguments="double threshold"/>
+    <variable type="Double" name="threshold"/>
+  </class>
+  
   <!-- Nodes -->
   <class name="LuapeNode" base="NameableObject" abstract="yes">
     <variable type="Type" name="type"/>
@@ -11,7 +50,7 @@
   </class>
   <class name="LuapeInputNode" base="LuapeNode"/>
   <class name="LuapeFunctionNode" base="LuapeNode">
-    <variable type="Function" name="function"/>
+    <variable type="LuapeFunction" name="function"/>
     <variable type="GenericVector[PositiveInteger]" name="arguments"/>
   </class>
   <class name="LuapeYieldNode" base="LuapeNode">
@@ -26,20 +65,20 @@
   </class>
 
   <!-- Function -->
-  <class name="LuapeFunction" base="Function" abstract="yes">
+  <class name="LuapeInference" base="Function" abstract="yes">
     <variable type="LuapeGraph" name="graph"/>
     <variable type="Vector[Variable]" name="votes"/>
   </class>
-  <class name="LuapeBinaryClassifier" base="LuapeFunction">
+  <class name="LuapeBinaryClassifier" base="LuapeInference">
     <constructor/>
   </class>
-  <class name="LuapeClassifier" base="LuapeFunction">
+  <class name="LuapeClassifier" base="LuapeInference">
     <constructor/>
   </class>
-  <class name="LuapeRanker" base="LuapeFunction">
+  <class name="LuapeRanker" base="LuapeInference">
     <constructor/>
   </class>
-  <class name="LuapeRegressor" base="LuapeFunction">
+  <class name="LuapeRegressor" base="LuapeInference">
     <constructor/>
   </class>
 
@@ -102,22 +141,6 @@
   </class>
   
   <!-- Sand Box -->
-  <class name="AddFunction" base="Function"/>
-  <class name="SubFunction" base="Function"/>
-  <class name="ProductFunction" base="Function"/>
-  <class name="DivideFunction" base="Function"/>
-  <class name="LogFunction" base="Function"/>
-  <class name="StumpFunction" base="Function">
-    <variable type="Double" name="threshold"/>
-  </class>
-  <class name="EqualsEnumValueFunction" base="Function">
-    <variable type="Variable" name="value"/>
-  </class>
-  <class name="GreaterThanFunction" base="Function"/>
-  <class name="BooleanAndFunction" base="Function"/>
-  <class name="BooleanXorFunction" base="Function"/>
-
-
   <class name="LuapeSandBox" base="WorkUnit">
     <variable type="File" name="trainFile"/>
     <variable type="File" name="testFile"/>

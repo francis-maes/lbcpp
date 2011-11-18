@@ -24,12 +24,11 @@ public:
   GoRankLuapeProblem()
   {
     addInput(goBoardPositionPerceptionClass, "position");
-    addFunction(getVariableFunction(0));
-    addFunction(Function::create(getType("BooleanAndFunction")));
-    addFunction(Function::create(getType("EqualsEnumValueFunction")));
+    addFunction(getVariableLuapeFunction());
+    addFunction(andBooleanLuapeFunction());
+    addFunction(equalsConstantEnumLuapeFunction());
 
-    //addFunction(Function::create(getType("StumpFunction")));
-    //addFunction( FunctionPtr())
+    // addFunction(stumpLuapeFunction())
   }
 };
 
@@ -54,7 +53,7 @@ public:
 
     // create problem and ranker
     LuapeProblemPtr problem = new GoRankLuapeProblem();
-    LuapeFunctionPtr learningMachine = createLearningMachine(context, problem);
+    LuapeInferencePtr learningMachine = createLearningMachine(context, problem);
     if (!learningMachine)
       return false;
 
@@ -72,15 +71,15 @@ public:
     return true;
   }
 
-  LuapeFunctionPtr createLearningMachine(ExecutionContext& context, const LuapeProblemPtr& problem) const
+  LuapeInferencePtr createLearningMachine(ExecutionContext& context, const LuapeProblemPtr& problem) const
   {
-    //LuapeFunctionPtr res = new LuapeRanker();
+    //LuapeInferencePtr res = new LuapeRanker();
     //if (!res->initialize(context, objectVectorClass(goBoardPositionPerceptionClass), denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType)))
-    //  return LuapeFunctionPtr();
+    //  return LuapeInferencePtr();
 
-    LuapeFunctionPtr res = new LuapeRegressor();
+    LuapeInferencePtr res = new LuapeRegressor();
     if (!res->initialize(context, goBoardPositionPerceptionClass, doubleType))
-      return LuapeFunctionPtr();
+      return LuapeInferencePtr();
 
     // initialize graph
     LuapeGraphPtr graph = problem->createInitialGraph(context);

@@ -17,6 +17,7 @@
 namespace lbcpp
 {
 
+  /*
 class AddFunction : public SimpleBinaryFunction
 {
 public:
@@ -128,7 +129,7 @@ protected:
 
   Variable value;
 };
-
+*/
 
 class LuapeSandBox : public WorkUnit
 {
@@ -155,7 +156,7 @@ public:
 
     LuapeProblemPtr problem = createProblem(inputClass);
 
-    LuapeFunctionPtr classifier = new LuapeClassifier();
+    LuapeInferencePtr classifier = new LuapeClassifier();
     if (!classifier->initialize(context, inputClass, labels))
       return false;
 
@@ -205,12 +206,11 @@ protected:
       res->addInput(variable->getType(), variable->getName());
     }
 
-//    res->addFunction(new LogFunction());
-    res->addFunction(new DivideFunction());
-//    res->addFunction(new ProductFunction());
-    res->addFunction(new StumpFunction());
-    res->addFunction(new BooleanAndFunction());
-//    res->addFunction(new GreaterThanFunction());
+    res->addFunction(divDoubleLuapeFunction());
+//    res->addFunction(mulDoubleLuapeFunction());
+    res->addFunction(stumpLuapeFunction());
+    res->addFunction(andBooleanLuapeFunction());
+//    res->addFunction(greaterThanDoubleLuapeFunction());
     return res;
   }
 };

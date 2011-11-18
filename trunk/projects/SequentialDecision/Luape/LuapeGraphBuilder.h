@@ -42,9 +42,10 @@ public:
     res += T("}");
     if (state.function)
     {
-      res += T(" ") + state.function->toShortString();
+      std::vector<LuapeNodePtr> arguments(state.functionNumArguments);
       for (size_t i = 0; i < state.functionNumArguments; ++i)
-        res += T(" ") + state.stack[state.stack.size() - state.functionNumArguments + i]->toShortString();
+        arguments[i] = state.stack[state.stack.size() - state.functionNumArguments + i];
+      res += T(" ") + state.function->toShortString(arguments);
     }
     return res;
   }
@@ -68,49 +69,13 @@ public:
 
     if (state.function)
     {
-      String className = state.function->getClassName();
-      if (className == T("GetVariableFunction"))
-      {
-        jassert(state.stack.size());
-        TypePtr objectClass = state.stack.back()->getType();
-        for (size_t i = 0; i < objectClass->getNumMemberVariables(); ++i)
-          res->append(i);
-      }
-      else if (className == T("EqualsEnumValueFunction"))
-      {
-        EnumerationPtr enumeration = state.stack.back()->getType().staticCast<Enumeration>();
-        for (size_t i = 0; i < enumeration->getNumElements(); ++i)
-          res->append(Variable(i, enumeration));
-      }
-      else if (className == T("StumpFunction"))
-      {
-        jassert(state.stack.size());
-        LuapeNodeCachePtr cache = state.stack.back()->getCache();
-        jassert(cache->isConvertibleToDouble());
-        
-        const std::vector< std::pair<size_t, double> >& sortedDoubleValues = cache->getSortedDoubleValues();
-        if (sortedDoubleValues.size())
-        {
-          jassert(sortedDoubleValues.size());
-          double previousThreshold = sortedDoubleValues[0].second;
-          for (size_t i = 0; i < sortedDoubleValues.size(); ++i)
-          {
-            double threshold = sortedDoubleValues[i].second;
-            jassert(threshold >= previousThreshold);
-            if (threshold > previousThreshold)
-            {
-              res->append((threshold + previousThreshold) / 2.0);
-              previousThreshold = threshold;
-            }
-          }
-        }
-        else
-          jassert(false); // no training data, cannot choose thresholds
-      }
-      else
-      {
-        jassert(false);
-      }
+      std::vector<LuapeNodePtr> functionInputs(state.function->getNumInputs());
+      for (size_t i = 0; i < functionInputs.size(); ++i)
+        functionInputs[i] = state.stack[state.stack.size() - state.function->getNumInputs() + i];
+      ContainerPtr candidateValues = state.function->getVariableCandidateValues(state.functionNumArguments, functionInputs);
+      size_t n = candidateValues->getNumElements();
+      for (size_t i = 0; i < n; ++i)
+        res->append(candidateValues->getElement(i));
     }
     else
     {
@@ -127,8 +92,8 @@ public:
       {
         for (size_t i = 0; i < problem->getNumFunctions(); ++i)
         {
-          FunctionPtr function = problem->getFunction(i);
-          if (isFunctionAvailable(function) && numRemainingSteps >= 1 + function->getNumVariables() + (state.stack.size() - function->getNumRequiredInputs() + 1))
+          LuapeFunctionPtr function = problem->getFunction(i);
+          if (isFunctionAvailable(function) && numRemainingSteps >= 1 + function->getNumVariables() + (state.stack.size() - function->getNumInputs() + 1))
             res->append(function);
         }
       }
@@ -162,9 +127,9 @@ public:
       {
         state.stack.push_back(action.getObjectAndCast<LuapeNode>());
       }
-      else if (action.getType()->inheritsFrom(functionClass))
+      else if (action.getType()->inheritsFrom(luapeFunctionClass))
       {
-        state.function = action.getObjectAndCast<Function>();
+        state.function = action.getObjectAndCast<LuapeFunction>();
         state.functionNumArguments = 0;
         tryToResolveFunction(context);
       }
@@ -217,15 +182,15 @@ protected:
     State() : functionNumArguments(0), numNodes(0) {}
 
     std::vector<LuapeNodePtr> stack;
-    FunctionPtr function;
+    LuapeFunctionPtr function;
     size_t functionNumArguments;
     size_t numNodes;
   };
   State state;
 
-  bool isFunctionAvailable(const FunctionPtr& function) const
+  bool isFunctionAvailable(const LuapeFunctionPtr& function) const
   {
-    size_t n = function->getNumRequiredInputs();
+    size_t n = function->getNumInputs();
     if (n > state.stack.size())
       return false;
 
@@ -244,7 +209,7 @@ protected:
 
     size_t firstStackIndex = state.stack.size() - n;
     for (size_t i = 0; i < n; ++i)
-      if (!state.stack[firstStackIndex + i]->getType()->inheritsFrom(function->getRequiredInputType(i, n)))
+      if (!function->doAcceptInputType(i, state.stack[firstStackIndex + i]->getType()))
         return false;
     return true;
   }
@@ -257,7 +222,7 @@ protected:
     if (state.functionNumArguments >= state.function->getClass()->getNumMemberVariables())
     {
       // add function node into graph
-      size_t numInputs = state.function->getNumRequiredInputs();
+      size_t numInputs = state.function->getNumInputs();
       std::vector<LuapeNodePtr> inputs(numInputs);
       for (size_t i = 0; i < numInputs; ++i)
         inputs[i] = state.stack[state.stack.size() - numInputs + i];
@@ -267,7 +232,7 @@ protected:
 
       // remove arguments from stack
       state.stack.erase(state.stack.begin() + state.stack.size() - numInputs, state.stack.end());
-      state.function = FunctionPtr();
+      state.function = LuapeFunctionPtr();
       state.functionNumArguments = 0;
 
       // push result onto stack
@@ -308,14 +273,14 @@ public:
       {
         size_t nv = nodeType->getNumMemberVariables();
         for (size_t j = 0; j < nv; ++j)
-          res->append(graph->getUniverse()->makeFunctionNode(getVariableFunction(j), graph->getNode(i)));
+          res->append(graph->getUniverse()->makeFunctionNode(getVariableLuapeFunction(j), graph->getNode(i)));
       }
     }
     
     // function actions
     for (size_t i = 0; i < problem->getNumFunctions(); ++i)
     {
-      FunctionPtr function = problem->getFunction(i);
+      LuapeFunctionPtr function = problem->getFunction(i);
       std::vector<LuapeNodePtr> arguments;
       enumerateFunctionActionsRecursively(function, arguments, res);
     }
@@ -358,18 +323,17 @@ protected:
 
   size_t numSteps;
 
-  void enumerateFunctionActionsRecursively(const FunctionPtr& function, std::vector<LuapeNodePtr>& arguments, const ObjectVectorPtr& res) const
+  void enumerateFunctionActionsRecursively(const LuapeFunctionPtr& function, std::vector<LuapeNodePtr>& arguments, const ObjectVectorPtr& res) const
   {
-    size_t expectedNumArguments = function->getNumRequiredInputs();
+    size_t expectedNumArguments = function->getNumInputs();
     if (arguments.size() == expectedNumArguments)
       res->append(graph->getUniverse()->makeFunctionNode(function, arguments));
     else
     {
       jassert(arguments.size() < expectedNumArguments);
-      TypePtr expectedType = function->getRequiredInputType(arguments.size(), expectedNumArguments);
       size_t n = graph->getNumNodes();
       for (size_t i = 0; i < n; ++i)
-        if (graph->getNodeType(i)->inheritsFrom(expectedType))
+        if (function->doAcceptInputType(arguments.size(), graph->getNodeType(i)))
         {
           arguments.push_back(graph->getNode(i));
           enumerateFunctionActionsRecursively(function, arguments, res);

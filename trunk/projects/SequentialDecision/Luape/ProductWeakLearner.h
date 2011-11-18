@@ -113,7 +113,7 @@ public:
     : baseLearner(baseLearner), numBaseClassifiers(numBaseClassifiers) {}
   ProductWeakLearner() {}
   
-  Variable createInitialVote(const LuapeFunctionPtr& function) const
+  Variable createInitialVote(const LuapeInferencePtr& function) const
   {
     LuapeClassifierPtr classifier = function.dynamicCast<LuapeClassifier>();
     if (classifier)
@@ -137,7 +137,7 @@ public:
     return res;
   }
   
-  BooleanVectorPtr createInitialPredictions(const LuapeFunctionPtr& function) const
+  BooleanVectorPtr createInitialPredictions(const LuapeInferencePtr& function) const
   {
     size_t n = function->getGraph()->getNumTrainingSamples();
     return new BooleanVector(n, true);
@@ -183,7 +183,7 @@ public:
     return res;
   }
   
-  virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeFunctionPtr& function,
+  virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeInferencePtr& function,
                                           const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
   {
     std::vector<BooleanVectorPtr> predictions(numBaseClassifiers, createInitialPredictions(function));
