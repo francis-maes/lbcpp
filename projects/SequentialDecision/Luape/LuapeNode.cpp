@@ -206,6 +206,33 @@ BinaryKeyPtr LuapeNodeCache::makeKeyFromSamples(bool useTrainingSamples) const
   return BinaryKeyPtr();
 }
 
+String LuapeNodeCache::toShortString() const
+{
+  size_t n = trainingSamples->getNumElements();
+  if (n == 0)
+    return "<no examples>";
+
+  TypePtr elementsType = trainingSamples->getElementsType();
+  if (elementsType == booleanType)
+  {
+    BooleanVectorPtr booleans = trainingSamples.staticCast<BooleanVector>();
+    size_t countOfTrue = 0;
+    for (size_t i = 0; i < n; ++i)
+      if (booleans->get(i))
+        ++countOfTrue;
+    return String(countOfTrue) + T(" / ") + String((int)n);
+  }
+  else if (elementsType->isConvertibleToDouble())
+  {
+    ScalarVariableStatistics stats;
+    for (size_t i = 0; i < n; ++i)
+      stats.push(trainingSamples->getElement(i).toDouble());
+    return stats.toShortString();
+  }
+  else
+    return String((int)n);
+}
+
 /*
 ** LuapeNode
 */
@@ -328,7 +355,9 @@ LuapeYieldNode::LuapeYieldNode(const LuapeNodePtr& argument)
 }
 
 String LuapeYieldNode::toShortString() const
-  {return T("yield(") + argument->toShortString() + T(")");}
+{
+  return T("yield(") + argument->toShortString() + T(") [") + argument->getCache()->toShortString() + T("]");
+}
 
 Variable LuapeYieldNode::compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const
 {

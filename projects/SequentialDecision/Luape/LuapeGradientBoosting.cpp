@@ -9,6 +9,137 @@
 #include "LuapeGradientBoosting.h"
 using namespace lbcpp;
 
+
+class LuapeGraphBuilderEnumerator
+{
+public:
+  LuapeGraphBuilderEnumerator(LuapeGraphBuilderBanditPoolPtr pool, size_t maxDepth)
+    : pool(pool), maxDepth(maxDepth) {}
+  virtual ~LuapeGraphBuilderEnumerator() {}
+
+  void clearCache()
+  {
+    keyToNodes.clear();
+    nodeToKeys.clear();
+  }
+
+  void addSubNodesToCache(ExecutionContext& context, const LuapeNodePtr& node)
+  {
+    LuapeFunctionNodePtr functionNode = node.dynamicCast<LuapeFunctionNode>();
+    if (functionNode)
+    {
+      size_t n = functionNode->getNumArguments();
+      for (size_t i = 0; i < n; ++i)
+        addNodeToCache(context, functionNode->getArgument(i));
+    }
+  }
+
+  // return true if it is a new node
+  bool addNodeToCache(ExecutionContext& context, const LuapeNodePtr& node)
+  {
+    NodeToKeyMap::const_iterator it = nodeToKeys.find(node);
+    if (it != nodeToKeys.end())
+      return false; // we already know about this node
+
+    // compute node key
+    node->updateCache(context, true);
+    BinaryKeyPtr key = node->getCache()->makeKeyFromSamples();
+
+    KeyToNodeMap::iterator it2 = keyToNodes.find(key);
+    if (it2 == keyToNodes.end())
+    {
+      // this is a new node equivalence class
+      nodeToKeys[node] = key;
+      keyToNodes[key] = node;
+      addSubNodesToCache(context, node);
+      return true;
+    }
+    else
+    {
+      // existing node equivalence class
+      //  see if new node is better than previous one to represent the class
+      LuapeNodePtr previousNode = it2->second;
+      if (node->getDepth() < previousNode->getDepth())
+      {
+        it2->second = node;
+        context.informationCallback(T("Change computation of ") + previousNode->toShortString() + T(" into ") + node->toShortString());
+        LuapeFunctionNodePtr sourceFunctionNode = node.dynamicCast<LuapeFunctionNode>();
+        LuapeFunctionNodePtr targetFunctionNode = previousNode.dynamicCast<LuapeFunctionNode>();
+        if (sourceFunctionNode && targetFunctionNode)
+          sourceFunctionNode->clone(context, targetFunctionNode);
+        addSubNodesToCache(context, node);
+      }
+      nodeToKeys[node] = it2->first;
+      return false;
+    }
+  }
+
+  void updateArms(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode)
+  {
+    clearCache();
+   
+    // fill map with keys of already existing nodes
+    for (size_t i = 0; i < graph->getNumNodes(); ++i)
+    {
+      LuapeNodePtr node = graph->getNode(i);
+      if (!node.isInstanceOf<LuapeYieldNode>())
+        addNodeToCache(context, node);
+    }
+
+    // fill map with existing arms
+    for (size_t i = 0; i < pool->getNumArms(); ++i)
+    {
+      LuapeNodePtr node = pool->getArmNode(i);
+      if (node)
+        addNodeToCache(context, node);
+    }
+    
+    enumerateNewArms(context, problem, graph, newNode);
+  }
+
+  void enumerateNewArms(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode)
+  {
+    LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(problem, graph->cloneAndCast<LuapeGraph>(), newNode, maxDepth);
+    enumerateNewArmsRecursively(context, builder);
+  }
+
+  void enumerateNewArmsRecursively(ExecutionContext& context, const LuapeGraphBuilderStatePtr& state)
+  {
+    LuapeNodePtr node = state->getGraph()->getLastNode();
+    if (state->getCurrentStep() > 0 && !addNodeToCache(context, node))
+      return; // this node already exists somewhere 
+
+    if (node->getType()->inheritsFrom(booleanType))
+      pool->createArm(context, node); // todo: stumps (doubleType)
+
+    if (!state->isFinalState())
+    {
+      ContainerPtr actions = state->getAvailableActions();
+      size_t n = actions->getNumElements();
+      for (size_t i = 0; i < n; ++i)
+      {
+        Variable stateBackup;
+        double reward;
+        state->performTransition(context, actions->getElement(i), reward, &stateBackup);
+        //context.enterScope(state->toShortString());
+        enumerateNewArmsRecursively(context, state);
+        //context.leaveScope();
+        state->undoTransition(context, stateBackup);
+      }
+    }
+  }
+
+protected:
+  LuapeGraphBuilderBanditPoolPtr pool;
+  size_t maxDepth;
+
+  typedef std::map<BinaryKeyPtr, LuapeNodePtr, ObjectComparator> KeyToNodeMap;
+  typedef std::map<LuapeNodePtr, BinaryKeyPtr> NodeToKeyMap;
+
+  KeyToNodeMap keyToNodes;
+  NodeToKeyMap nodeToKeys;
+};
+
 /*
 ** LuapeGraphBuilderBanditPool
 */
@@ -19,26 +150,22 @@ LuapeGraphBuilderBanditPool::LuapeGraphBuilderBanditPool(size_t maxSize, size_t 
 
 void LuapeGraphBuilderBanditPool::initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph)
 {
-  LuapeRPNGraphBuilderStatePtr builder = new LuapeRPNGraphBuilderState(problem, graph->cloneAndCast<LuapeGraph>(), maxDepth);
-  KeyToArmMap keyToArms;
-  computeArmKeys(graph, keyToArms);
-  createNewArms(context, graph, builder, keyToArms);
+  LuapeGraphBuilderEnumerator enumerator(this, maxDepth);
+  context.enterScope(T("Initialize arms"));
+  for (size_t i = 0; i < graph->getNumNodes(); ++i)
+    enumerator.updateArms(context, problem, graph, graph->getNode(i));
   createBanditsQueue();
+  context.leaveScope();
 }
 
 void LuapeGraphBuilderBanditPool::executeArm(ExecutionContext& context, size_t armIndex,  const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode)
 {
   // update arms
-  destroyArm(context, armIndex);
+//  destroyArm(context, armIndex);
 
-  LuapeRPNGraphBuilderStatePtr builder = new LuapeRPNGraphBuilderState(problem, graph->cloneAndCast<LuapeGraph>(), maxDepth);
-  double reward;
-  builder->performTransition(context, newNode, reward); // push last created node
-
+  LuapeGraphBuilderEnumerator enumerator(this, maxDepth);
   context.enterScope(T("Update arms"));
-  KeyToArmMap keyToArms;
-  computeArmKeys(graph, keyToArms);
-  createNewArms(context, graph, builder, keyToArms);
+  enumerator.updateArms(context, problem, graph, newNode);
   createBanditsQueue();
   context.leaveScope();
 
@@ -197,64 +324,6 @@ void LuapeGraphBuilderBanditPool::destroyArm(ExecutionContext& context, size_t i
   banditsQueue = BanditsQueue();
 }
 
-void LuapeGraphBuilderBanditPool::computeArmKeys(const LuapeGraphPtr& graph, KeyToArmMap& res)
-{
-  for (size_t i = 0; i < graph->getNumNodes(); ++i)
-  {
-    LuapeNodePtr node = graph->getNode(i);
-    if (!node.isInstanceOf<LuapeYieldNode>())
-      res[node->getCache()->makeKeyFromSamples()] = (size_t)-1;
-  }
-
-  for (size_t i = 0; i < arms.size(); ++i)
-  {
-    Arm& arm = arms[i];
-    if (arm.node)
-      res[arms[i].getCache()->makeKeyFromSamples()] = i;
-  }
-}
-
-void LuapeGraphBuilderBanditPool::createNewArms(ExecutionContext& context, const LuapeGraphPtr& graph, LuapeRPNGraphBuilderStatePtr state, KeyToArmMap& keyToArms)
-{
-  if (state->isFinalState())
-  {
-    LuapeYieldNodePtr yield = state->getGraph()->getLastNode().dynamicCast<LuapeYieldNode>();
-    if (yield)
-    {
-      LuapeNodePtr node = yield->getArgument();
-      if (!graph->containsNode(node))
-      {
-        node->updateCache(context, true);
-        BinaryKeyPtr key = node->getCache()->makeKeyFromSamples();
-        if (keyToArms.find(key) == keyToArms.end())
-        {
-          createArm(context, node);
-          keyToArms[key] = node;
-        }
-        else
-        {
-          // FIXME: replacement by the shortest length node
-        }
-      }
-    }
-  }
-  else
-  {
-    ContainerPtr actions = state->getAvailableActions();
-    size_t n = actions->getNumElements();
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable stateBackup;
-      double reward;
-      state->performTransition(context, actions->getElement(i), reward, &stateBackup);
-      //context.enterScope(state->toShortString());
-      createNewArms(context, graph, state, keyToArms);
-      //context.leaveScope();
-      state->undoTransition(context, stateBackup);
-    }
-  }
-}
-
 /*
 ** LuapeGradientBoostingLearner
 */
@@ -282,11 +351,7 @@ bool LuapeGradientBoostingLearner::doLearningEpisode(ExecutionContext& context, 
   // 1- fill graph
   loss->setExamples(true, examples);
   if (!pool->getNumArms())
-  {
-    context.enterScope(T("Creating initial arms"));
     pool->initialize(context, problem, graph);
-    context.leaveScope(pool->getNumArms());
-  }
 
   // 2- compute graph outputs and compute loss derivatives
   context.enterScope(T("Computing predictions"));
@@ -354,44 +419,3 @@ bool LuapeGradientBoostingLearner::doLearningEpisode(ExecutionContext& context, 
   context.resultCallback(T("numArms"), pool->getNumArms());
   return true;
 }
-
-/*
-class LuapeGraphBuilderBanditEnumerator
-{
-public:
-  LuapeGraphBuilderBanditEnumerator(size_t maxDepth)
-    : maxDepth(maxDepth) {}
-  virtual ~LuapeGraphBuilderBanditEnumerator() {}
-
-  void addNode(ExecutionContext& context, const LuapeGraphPtr& graph, size_t nodeIndex)
-  {
-    TypePtr nodeType = graph->getNodeType(nodeIndex);
-
-    // accessor actions
-    if (nodeType->inheritsFrom(objectClass))
-    {
-      std::vector<size_t> arguments(1, nodeIndex);
-      size_t nv = nodeType->getNumMemberVariables();
-      for (size_t j = 0; j < nv; ++j)
-        res->append(new LuapeFunctionNode(getVariableFunction(j), arguments));
-    }
-    
-    // function actions
-    for (size_t i = 0; i < problem->getNumFunctions(); ++i)
-    {
-      FunctionPtr function = problem->getFunction(i);
-      std::vector<size_t> arguments;
-      enumerateFunctionActionsRecursively(function, arguments, res);
-    }
-
-    // yield actions
-    for (size_t i = 0; i < n; ++i)
-      if (graph->getNodeType(i) == booleanType)
-        res->append(new LuapeYieldNode(i));
-    return res;
-  }
-
-protected:
-  std::map<LuapeNodeKey, LuapeNodeCachePtr> cache;
-};
-*/

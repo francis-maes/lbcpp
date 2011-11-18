@@ -114,6 +114,8 @@ class LuapeNodeCache : public Object
 public:
   LuapeNodeCache();
 
+  virtual String toShortString() const;
+
   void initialize(TypePtr type);
   void clear();
   
