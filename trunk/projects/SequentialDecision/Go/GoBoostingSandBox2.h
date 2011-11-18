@@ -60,7 +60,7 @@ public:
     // configure gradient boosting
     //LuapeGradientBoostingLossPtr gbmLoss = new RankingGradientBoostingLoss(allPairsRankingLossFunction(hingeDiscriminativeLossFunction()));
     LuapeGradientBoostingLossPtr gbmLoss = new L2GradientBoostingLoss();
-    LuapeGradientBoostingLearnerPtr learner = new LuapeGradientBoostingLearner(gbmLoss, 0.5, 1000, 8);
+    LuapeGradientBoostingLearnerPtr learner = new LuapeGradientBoostingLearner(gbmLoss, 1.0, 1000, 3);
     if (!learner->initialize(context, problem, learningMachine))
       return false;
     

@@ -1,5 +1,4 @@
 
- * Fixer la construction incrémentale des actions
  * Autres optimisation pour tendre vers l'apprentissage en O(1)
 
 Luape-Appli:

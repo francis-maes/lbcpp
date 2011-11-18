@@ -43,7 +43,7 @@ public:
   double sampleReward(ExecutionContext& context, const DenseDoubleVectorPtr& pseudoResiduals, size_t armIndex) const;
   void playArmWithHighestIndex(ExecutionContext& context, const DenseDoubleVectorPtr& pseudoResiduals);
 
-  size_t getArmWithHighestReward() const;
+  size_t sampleArmWithHighestReward(ExecutionContext& context) const;
 
   void displayInformation(ExecutionContext& context);
   void clearSamples(bool clearTrainingSamples = true, bool clearValidationSamples = true);
@@ -62,6 +62,10 @@ protected:
 
     size_t playedCount;
     double rewardSum;
+
+    void reset()
+      {playedCount = 0; rewardSum = 0.0;}
+
     LuapeNodePtr node;
 
     LuapeNodeCachePtr getCache() const

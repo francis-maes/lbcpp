@@ -106,10 +106,7 @@ public:
   void enumerateNewArmsRecursively(ExecutionContext& context, const LuapeGraphBuilderStatePtr& state)
   {
     LuapeNodePtr node = state->getGraph()->getLastNode();
-    if (state->getCurrentStep() > 0 && !addNodeToCache(context, node))
-      return; // this node already exists somewhere 
-
-    if (node->getType()->inheritsFrom(booleanType))
+    if (state->getCurrentStep() > 0 && addNodeToCache(context, node) && node->getType()->inheritsFrom(booleanType))
       pool->createArm(context, node); // todo: stumps (doubleType)
 
     if (!state->isFinalState())
@@ -161,7 +158,7 @@ void LuapeGraphBuilderBanditPool::initialize(ExecutionContext& context, const Lu
 void LuapeGraphBuilderBanditPool::executeArm(ExecutionContext& context, size_t armIndex,  const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode)
 {
   // update arms
-//  destroyArm(context, armIndex);
+  arms[armIndex].reset();
 
   LuapeGraphBuilderEnumerator enumerator(this, maxDepth);
   context.enterScope(T("Update arms"));
@@ -243,17 +240,29 @@ void LuapeGraphBuilderBanditPool::playArmWithHighestIndex(ExecutionContext& cont
   }
 }
 
-size_t LuapeGraphBuilderBanditPool::getArmWithHighestReward() const
+size_t LuapeGraphBuilderBanditPool::sampleArmWithHighestReward(ExecutionContext& context) const
 {
   double bestReward = -DBL_MAX;
   size_t bestArm = (size_t)-1;
+  std::vector<size_t> bests;
   for (size_t i = 0; i < arms.size(); ++i)
   {
     double reward = arms[i].getMeanReward();
-    if (reward > bestReward)
-      bestReward = reward, bestArm = i;
+    if (reward >= bestReward)
+    {
+      if (reward > bestReward)
+      {
+        bestReward = reward;
+        bests.clear();
+      }
+      bests.push_back(i);
+    }
   }
-  return bestArm;
+  RandomGeneratorPtr random = context.getRandomGenerator();
+  if (bests.empty())
+    return random->sampleSize(arms.size());
+  else
+    return bests[random->sampleSize(bests.size())];
 }
 
 void LuapeGraphBuilderBanditPool::displayInformation(ExecutionContext& context)
@@ -384,7 +393,7 @@ bool LuapeGradientBoostingLearner::doLearningEpisode(ExecutionContext& context, 
   }
 
   // 4- select weak learner and find optimal weight
-  size_t armIndex = pool->getArmWithHighestReward();
+  size_t armIndex = pool->sampleArmWithHighestReward(context);
   if (armIndex == (size_t)-1)
   {
     context.errorCallback(T("Could not select best arm"));
@@ -413,7 +422,7 @@ bool LuapeGradientBoostingLearner::doLearningEpisode(ExecutionContext& context, 
   function->getVotes()->append(optimalWeight * learningRate);
   
   // 6- update arms
-  pool->executeArm(context, pool->getArmWithHighestReward(), problem, graph, weakLearnerNode);
+  pool->executeArm(context, armIndex, problem, graph, weakLearnerNode);
 
   context.informationCallback(T("Graph: ") + graph->toShortString());
   context.resultCallback(T("numArms"), pool->getNumArms());
