@@ -295,8 +295,14 @@ class LuapeGraphBuilderState : public DecisionProblemState
 {
 public:
   LuapeGraphBuilderState(const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, size_t maxSteps)
-    : problem(problem), graph(graph), maxSteps(maxSteps), numSteps(0), isYielded(false) {}
-  LuapeGraphBuilderState() : maxSteps(0), numSteps(0), isYielded(false) {}
+    : problem(problem), graph(graph), maxSteps(maxSteps), numSteps(0), isAborted(false), isYielded(false)
+  {
+    nodeKeys = new LuapeNodeKeysMap();
+    for (size_t i = 0; i < graph->getNumNodes(); ++i)
+      if (!graph->getNode(i).isInstanceOf<LuapeYieldNode>())
+        nodeKeys->addNodeToCache(defaultExecutionContext(), graph->getNode(i));
+  }
+  LuapeGraphBuilderState() : maxSteps(0), numSteps(0), isAborted(false), isYielded(false) {}
 
   virtual String toShortString() const
   {
@@ -359,6 +365,17 @@ public:
     if (stateBackup)
       *stateBackup = action;
     action->perform(stack, graph);
+    if (action->isNewNode)
+    {
+      action->nodeToAdd->updateCache(context, true);
+      if (action->nodeToAdd.isInstanceOf<LuapeFunction>() && !nodeKeys->isNodeKeyNew(action->nodeToAdd))
+      {
+        context.informationCallback(T("Aborded: ") + action->nodeToAdd->toShortString());
+        isAborted = true; // create a node that has the same key as an already existing node in the graph is forbidden 
+        // note that in the current implementation, we only compare to the nodes existing in the current initial graph
+        //  (not intermediary nodes created along the builder trajectory)
+      }
+    }
     reward = 0.0;
     ++numSteps;
     if (action->nodeToAdd && action->nodeToAdd.isInstanceOf<LuapeYieldNode>())
@@ -368,15 +385,14 @@ public:
   virtual bool undoTransition(ExecutionContext& context, const Variable& stateBackup)
   {
     const LuapeGraphBuilderActionPtr& action = stateBackup.getObjectAndCast<LuapeGraphBuilderAction>();
-    if (isYielded)
-      isYielded = false;
+    isAborted = isYielded = false;
     --numSteps;
     action->undo(stack, graph);
     return true;
   }
 
   virtual bool isFinalState() const
-    {return isYielded || numSteps >= maxSteps;}
+    {return isAborted || isYielded || numSteps >= maxSteps;}
 
   LuapeGraphPtr getGraph() const
     {return graph;}
@@ -390,9 +406,11 @@ protected:
   LuapeProblemPtr problem;
   LuapeGraphPtr graph;
   size_t maxSteps;
+  LuapeNodeKeysMapPtr nodeKeys;
 
   std::vector<LuapeNodePtr> stack;
   size_t numSteps;
+  bool isAborted;
   bool isYielded;
 
   bool isYieldAvailable() const

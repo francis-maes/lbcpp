@@ -57,6 +57,28 @@ private:
 
 typedef ReferenceCountedObjectPtr<LuapeGraphUniverse> LuapeGraphUniversePtr;
 
+class LuapeNodeKeysMap : public Object
+{
+public:
+  void clear();
+
+  // return true if it is a new node
+  bool addNodeToCache(ExecutionContext& context, const LuapeNodePtr& node);
+
+  bool isNodeKeyNew(const LuapeNodePtr& node) const;
+
+private:
+  typedef std::map<BinaryKeyPtr, LuapeNodePtr, ObjectComparator> KeyToNodeMap;
+  typedef std::map<LuapeNodePtr, BinaryKeyPtr> NodeToKeyMap;
+
+  KeyToNodeMap keyToNodes;
+  NodeToKeyMap nodeToKeys;
+
+  void addSubNodesToCache(ExecutionContext& context, const LuapeNodePtr& node);
+};
+
+typedef ReferenceCountedObjectPtr<LuapeNodeKeysMap> LuapeNodeKeysMapPtr;
+
 class LuapeGraph : public Object
 {
 public:

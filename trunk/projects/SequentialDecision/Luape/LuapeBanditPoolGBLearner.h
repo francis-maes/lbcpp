@@ -1,20 +1,16 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuapeGradientBoosting.h        | Luape Gradient Boosting         |
-| Author  : Francis Maes                   |                                 |
-| Started : 17/11/2011 11:24               |                                 |
+| Filename: LuapeBanditPoolGBLearner.h     | Luape Bandit based Gradient     |
+| Author  : Francis Maes                   |  Boosting learner               |
+| Started : 19/11/2011 15:57               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_GRADIENT_BOOSTING_H_
-# define LBCPP_LUAPE_GRADIENT_BOOSTING_H_
+#ifndef LBCPP_LUAPE_LEARNER_BANDIT_POOL_GRADIENT_BOOSTING_H_
+# define LBCPP_LUAPE_LEARNER_BANDIT_POOL_GRADIENT_BOOSTING_H_
 
-# include "LuapeInference.h"
-# include "LuapeGraphBuilder.h"
-# include "LuapeProblem.h"
-
+# include "LuapeGraphLearner.h"
 # include <queue> // for priority queue in bandits pool
-# include <lbcpp/Learning/LossFunction.h> // for ranking loss
 
 namespace lbcpp
 {
@@ -37,7 +33,7 @@ public:
     {jassert(index < arms.size()); return arms[index].getCache();}
 
   void initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph);
-  void executeArm(ExecutionContext& context, size_t armIndex,  const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode);
+  void executeArm(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode);
 
   // train the weak learner on 50% of data and evaluate on the other 50% of data
   double sampleReward(ExecutionContext& context, const DenseDoubleVectorPtr& pseudoResiduals, size_t armIndex) const;
@@ -79,7 +75,6 @@ protected:
   };
 
   std::vector<Arm> arms;
-  std::vector<size_t> destroyedArmIndices;
 
   struct BanditScoresComparator
   {
@@ -100,29 +95,23 @@ protected:
 
 typedef ReferenceCountedObjectPtr<LuapeGraphBuilderBanditPool> LuapeGraphBuilderBanditPoolPtr;
 
-class LuapeGradientBoostingLearner : public Object
+class LuapeBanditPoolGBLearner : public LuapeGradientBoostingLearner
 {
 public:
-  LuapeGradientBoostingLearner(LuapeProblemPtr problem, double learningRate, size_t maxBandits, size_t maxDepth);
-  LuapeGradientBoostingLearner() : learningRate(0.0), maxBandits(0), maxDepth(maxDepth) {}
+  LuapeBanditPoolGBLearner(double learningRate, size_t maxBandits, size_t maxDepth);
 
-  bool initialize(ExecutionContext& context, const LuapeInferencePtr& function);
-  bool doLearningEpisode(ExecutionContext& context, const std::vector<ObjectPtr>& examples) const;
+  virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function);
+  virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data);
+
+  // gradient boosting
+  virtual LuapeNodePtr doWeakLearning(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const DenseDoubleVectorPtr& pseudoResiduals) const;
+  virtual bool addWeakLearnerToGraph(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const DenseDoubleVectorPtr& pseudoResiduals, LuapeNodePtr completion);
 
 protected:
-  LuapeProblemPtr problem;
-  double learningRate;
   size_t maxBandits;
-  size_t maxDepth;
-
   LuapeGraphBuilderBanditPoolPtr pool;
-
-  LuapeInferencePtr function;
-  LuapeGraphPtr graph;
 };
-
-typedef ReferenceCountedObjectPtr<LuapeGradientBoostingLearner> LuapeGradientBoostingLearnerPtr;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_GRADIENT_BOOSTING_H_
+#endif // !LBCPP_LUAPE_LEARNER_BANDIT_POOL_GRADIENT_BOOSTING_H_

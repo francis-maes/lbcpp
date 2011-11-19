@@ -10,7 +10,7 @@
 # define LBCPP_SEQUENTIAL_DECISION_WORK_UNIT_GO_BOOSTING_SAND_BOX_2_H_
 
 # include "GoProblem.h"
-# include "../Luape/LuapeGradientBoosting.h"
+# include "../Luape/LuapeBanditPoolGBLearner.h"
 
 # include "Perception/GoStatePerception.h"
 # include "Perception/GoBoardPositionPerception.h"
@@ -58,9 +58,8 @@ public:
       return false;
 
     // configure gradient boosting
-    //LuapeObjectivePtr gbmLoss = new RankingLuapeObjective(allPairsRankingLossFunction(hingeDiscriminativeLossFunction()));
-    LuapeGradientBoostingLearnerPtr learner = new LuapeGradientBoostingLearner(problem, 1.0, 1000, maxDepth);
-    if (!learner->initialize(context, learningMachine))
+    LuapeGraphLearnerPtr learner = new LuapeBanditPoolGBLearner(1.0, 1000, maxDepth);
+    if (!learner->initialize(context, problem, learningMachine))
       return false;
     
     // learn
@@ -95,7 +94,7 @@ public:
     return res;
   }
 
-  bool learn(ExecutionContext& context, const LuapeGradientBoostingLearnerPtr& learner, const ContainerPtr& trainingGames, const ContainerPtr& testingGames) const
+  bool learn(ExecutionContext& context, const LuapeGraphLearnerPtr& learner, const ContainerPtr& trainingGames, const ContainerPtr& testingGames) const
   {
     context.enterScope(T("Gradient Boosting"));
 /*    size_t n = trainingGames->getNumElements();
@@ -119,11 +118,12 @@ public:
     for (size_t i = 0; i < n; ++i)
       makeRankingExamples(context, trainingGames->getElement(i), rankingExamples);
 
+    learner->setExamples(context, true, *(std::vector<ObjectPtr>* )&rankingExamples);
     for (size_t i = 0; i < 100; ++i)
     {
       context.enterScope("Iteration " + String((int)i + 1));
       context.resultCallback(T("iteration"), i+1);
-      bool ok = learner->doLearningEpisode(context, *(std::vector<ObjectPtr>* )&rankingExamples);
+      bool ok = learner->doLearningIteration(context);
       context.leaveScope(ok);
       if (!ok)
         break;
