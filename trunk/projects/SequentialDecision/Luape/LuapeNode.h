@@ -270,6 +270,9 @@ public:
   virtual String toShortString() const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const;
 
+  const LuapeFunctionPtr& getFunction() const
+    {return function;}
+
   size_t getNumArguments() const
     {return arguments.size();}
 

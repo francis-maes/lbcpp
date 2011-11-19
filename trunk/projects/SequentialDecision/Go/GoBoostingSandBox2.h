@@ -40,6 +40,9 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
+    static const double learningRate = 1.0;
+
+
     // loading games
     context.enterScope(T("Loading training games from ") + context.getFilePath(trainingFile));
     ContainerPtr trainingGames = loadSGFTrajectories(context, trainingFile, maxCount);
@@ -60,7 +63,9 @@ public:
 
     // configure gradient boosting
     //LuapeGraphLearnerPtr learner = new LuapeBanditPoolGBLearner(1.0, 1000, maxDepth);
-    LuapeGraphLearnerPtr learner = new LuapePolicyBasedGBLearner(new RandomPolicy(), 1.0, maxDepth, budget);
+    //PolicyPtr policy = new RandomPolicy();
+    PolicyPtr policy = new LuapeRewardStorageBasedPolicy();
+    LuapeGraphLearnerPtr learner = new LuapePolicyBasedGBLearner(policy, learningRate, maxDepth, budget);
     if (!learner->initialize(context, problem, learningMachine))
       return false;
     

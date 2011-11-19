@@ -402,6 +402,12 @@ public:
   size_t getCurrentStep() const
     {return numSteps;}
 
+  size_t getStackSize() const
+    {return stack.size();}
+
+  const LuapeNodePtr& getStackElement(size_t index) const
+    {jassert(index < stack.size()); return stack[index];}
+
 protected:
   friend class LuapeGraphBuilderStateClass;
 
