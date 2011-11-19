@@ -9,7 +9,6 @@
 #include "LuapeGradientBoosting.h"
 using namespace lbcpp;
 
-
 class LuapeGraphBuilderEnumerator
 {
 public:
@@ -28,9 +27,9 @@ public:
     LuapeFunctionNodePtr functionNode = node.dynamicCast<LuapeFunctionNode>();
     if (functionNode)
     {
-      size_t n = functionNode->getNumArguments();
-      for (size_t i = 0; i < n; ++i)
-        addNodeToCache(context, functionNode->getArgument(i));
+      std::vector<LuapeNodePtr> arguments = functionNode->getArguments();
+      for (size_t i = 0; i < arguments.size(); ++i)
+        addNodeToCache(context, arguments[i]);
     }
   }
 
@@ -99,17 +98,24 @@ public:
 
   void enumerateNewArms(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode)
   {
-    LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(problem, graph->cloneAndCast<LuapeGraph>(), newNode, maxDepth);
+    LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(problem, graph->cloneAndCast<LuapeGraph>(), maxDepth);
+    //builder->performTransition(context, LuapeGraphBuilderAction::push(newNode));
     enumerateNewArmsRecursively(context, builder);
   }
 
   void enumerateNewArmsRecursively(ExecutionContext& context, const LuapeGraphBuilderStatePtr& state)
   {
-    LuapeNodePtr node = state->getGraph()->getLastNode();
-    if (state->getCurrentStep() > 0 && addNodeToCache(context, node) && node->getType()->inheritsFrom(booleanType))
-      pool->createArm(context, node); // todo: stumps (doubleType)
-
-    if (!state->isFinalState())
+    if (state->isFinalState())
+    {
+      LuapeYieldNodePtr yieldNode = state->getGraph()->getLastNode().dynamicCast<LuapeYieldNode>();
+      if (yieldNode)
+      {
+        LuapeNodePtr node = yieldNode->getArgument();
+        if (addNodeToCache(context, node))
+          pool->createArm(context, node);
+      }
+    }
+    else
     {
       ContainerPtr actions = state->getAvailableActions();
       size_t n = actions->getNumElements();
@@ -336,14 +342,14 @@ void LuapeGraphBuilderBanditPool::destroyArm(ExecutionContext& context, size_t i
 /*
 ** LuapeGradientBoostingLearner
 */
-LuapeGradientBoostingLearner::LuapeGradientBoostingLearner(LuapeGradientBoostingLossPtr loss, double learningRate, size_t maxBandits, size_t maxDepth)
-  : loss(loss), learningRate(learningRate), maxBandits(maxBandits), maxDepth(maxDepth)
+LuapeGradientBoostingLearner::LuapeGradientBoostingLearner(LuapeProblemPtr problem, double learningRate, size_t maxBandits, size_t maxDepth)
+  : problem(problem), learningRate(learningRate), maxBandits(maxBandits), maxDepth(maxDepth)
 {
 }
 
-bool LuapeGradientBoostingLearner::initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function)
+bool LuapeGradientBoostingLearner::initialize(ExecutionContext& context, const LuapeInferencePtr& function)
 {
-  if (!loss->initialize(context, problem, function))
+  if (!problem->getObjective()->initialize(context, problem, function))
     return false;
   this->problem = problem;
   this->function = function;
@@ -358,7 +364,8 @@ bool LuapeGradientBoostingLearner::doLearningEpisode(ExecutionContext& context, 
   pool->clearSamples(true, false);
   
   // 1- fill graph
-  loss->setExamples(true, examples);
+  LuapeObjectivePtr objective = problem->getObjective();
+  objective->setExamples(true, examples);
   if (!pool->getNumArms())
     pool->initialize(context, problem, graph);
 
@@ -369,7 +376,7 @@ bool LuapeGradientBoostingLearner::doLearningEpisode(ExecutionContext& context, 
   context.enterScope(T("Computing pseudo-residuals"));
   double lossValue;
   DenseDoubleVectorPtr pseudoResiduals;
-  loss->computeLoss(predictions, &lossValue, &pseudoResiduals);
+  objective->computeLoss(predictions, &lossValue, &pseudoResiduals);
   context.leaveScope();
   context.resultCallback(T("loss"), lossValue);
 
@@ -403,7 +410,7 @@ bool LuapeGradientBoostingLearner::doLearningEpisode(ExecutionContext& context, 
   context.informationCallback(T("Weak learner: ") + weakLearnerNode->toShortString());
   LuapeNodeCachePtr weakLearnerCache = weakLearnerNode->getCache();
   BooleanVectorPtr weakPredictions = weakLearnerCache->getSamples(true).staticCast<BooleanVector>();
-  double optimalWeight = loss->optimizeWeightOfWeakLearner(context, predictions, weakPredictions);
+  double optimalWeight = objective->optimizeWeightOfWeakLearner(context, predictions, weakPredictions);
   context.informationCallback(T("Optimal weight: ") + String(optimalWeight));
   
   // 5- add weak learner and associated weight to graph 

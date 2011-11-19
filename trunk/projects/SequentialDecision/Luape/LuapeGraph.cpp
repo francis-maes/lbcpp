@@ -204,5 +204,6 @@ void LuapeGraph::clone(ExecutionContext& context, const ObjectPtr& t) const
 {
   const LuapeGraphPtr& target = t.staticCast<LuapeGraph>();
   target->nodes = nodes;
+  target->nodesMap = nodesMap;
   target->universe = universe;
 }

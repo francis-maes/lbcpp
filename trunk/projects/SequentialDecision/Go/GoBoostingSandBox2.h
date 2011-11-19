@@ -21,7 +21,7 @@ namespace lbcpp
 class GoRankLuapeProblem : public LuapeProblem
 {
 public:
-  GoRankLuapeProblem()
+  GoRankLuapeProblem() : LuapeProblem(l2RegressionLuapeObjective())
   {
     addInput(goBoardPositionPerceptionClass, "position");
     addFunction(getVariableLuapeFunction());
@@ -35,7 +35,7 @@ public:
 class GoBoostingSandBox2 : public WorkUnit
 {
 public:
-  GoBoostingSandBox2() : maxCount(0) {}
+  GoBoostingSandBox2() : maxCount(0), maxDepth(6) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -58,10 +58,9 @@ public:
       return false;
 
     // configure gradient boosting
-    //LuapeGradientBoostingLossPtr gbmLoss = new RankingGradientBoostingLoss(allPairsRankingLossFunction(hingeDiscriminativeLossFunction()));
-    LuapeGradientBoostingLossPtr gbmLoss = new L2GradientBoostingLoss();
-    LuapeGradientBoostingLearnerPtr learner = new LuapeGradientBoostingLearner(gbmLoss, 1.0, 1000, 3);
-    if (!learner->initialize(context, problem, learningMachine))
+    //LuapeObjectivePtr gbmLoss = new RankingLuapeObjective(allPairsRankingLossFunction(hingeDiscriminativeLossFunction()));
+    LuapeGradientBoostingLearnerPtr learner = new LuapeGradientBoostingLearner(problem, 1.0, 1000, maxDepth);
+    if (!learner->initialize(context, learningMachine))
       return false;
     
     // learn
@@ -140,6 +139,7 @@ private:
   File trainingFile;
   File testingFile;
   size_t maxCount;
+  size_t maxDepth;
 
   void makeRankingExamples(ExecutionContext& context, const Variable& stateAndTrajectory, std::vector<PairPtr>& res) const
   {
