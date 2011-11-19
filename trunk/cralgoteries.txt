@@ -1,6 +1,10 @@
 
+ 1- Nouvelle structure de données pour la collecte de résultats
+ 2- Fonction indicatrice de paires état-action
+ 3- Politique en dur qui utilise la structure de données et la fonction indicatrice
 
-Objectif: LuapeGradientBoosting à base de Best-first-search
+
+Objectif: LuapeGradientBoosting à base de Meta-Learning
 
 Luape-Appli:
  * Avancer sur la Perception du Go

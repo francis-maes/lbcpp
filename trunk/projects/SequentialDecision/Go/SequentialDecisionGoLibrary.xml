@@ -200,6 +200,8 @@
     <variable type="File" name="testingFile" shortName="test"/>
     <variable type="PositiveInteger" name="maxCount"/>
     <variable type="PositiveInteger" name="maxDepth"/>
+    <variable type="PositiveInteger" name="budget"/>
+    <variable type="PositiveInteger" name="numIterations"/>
   </class>
 
 </library>

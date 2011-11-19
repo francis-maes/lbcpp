@@ -11,6 +11,7 @@
 
 # include "GoProblem.h"
 # include "../Luape/LuapeBanditPoolGBLearner.h"
+# include "../Luape/LuapePolicyBasedGBLearner.h"
 
 # include "Perception/GoStatePerception.h"
 # include "Perception/GoBoardPositionPerception.h"
@@ -35,7 +36,7 @@ public:
 class GoBoostingSandBox2 : public WorkUnit
 {
 public:
-  GoBoostingSandBox2() : maxCount(0), maxDepth(6) {}
+  GoBoostingSandBox2() : maxCount(0), maxDepth(6), budget(1000), numIterations(100) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -58,7 +59,8 @@ public:
       return false;
 
     // configure gradient boosting
-    LuapeGraphLearnerPtr learner = new LuapeBanditPoolGBLearner(1.0, 1000, maxDepth);
+    //LuapeGraphLearnerPtr learner = new LuapeBanditPoolGBLearner(1.0, 1000, maxDepth);
+    LuapeGraphLearnerPtr learner = new LuapePolicyBasedGBLearner(new RandomPolicy(), 1.0, maxDepth, budget);
     if (!learner->initialize(context, problem, learningMachine))
       return false;
     
@@ -96,7 +98,6 @@ public:
 
   bool learn(ExecutionContext& context, const LuapeGraphLearnerPtr& learner, const ContainerPtr& trainingGames, const ContainerPtr& testingGames) const
   {
-    context.enterScope(T("Gradient Boosting"));
 /*    size_t n = trainingGames->getNumElements();
     for (size_t i = 0; i < n; ++i)
     {
@@ -119,7 +120,8 @@ public:
       makeRankingExamples(context, trainingGames->getElement(i), rankingExamples);
 
     learner->setExamples(context, true, *(std::vector<ObjectPtr>* )&rankingExamples);
-    for (size_t i = 0; i < 100; ++i)
+    context.enterScope(T("Gradient Boosting"));
+    for (size_t i = 0; i < numIterations; ++i)
     {
       context.enterScope("Iteration " + String((int)i + 1));
       context.resultCallback(T("iteration"), i+1);
@@ -128,7 +130,6 @@ public:
       if (!ok)
         break;
     }
-
     context.leaveScope();
     return true;
   }
@@ -140,6 +141,8 @@ private:
   File testingFile;
   size_t maxCount;
   size_t maxDepth;
+  size_t budget;
+  size_t numIterations;
 
   void makeRankingExamples(ExecutionContext& context, const Variable& stateAndTrajectory, std::vector<PairPtr>& res) const
   {

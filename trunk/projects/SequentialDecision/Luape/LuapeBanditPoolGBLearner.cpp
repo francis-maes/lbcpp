@@ -113,65 +113,7 @@ void LuapeGraphBuilderBanditPool::executeArm(ExecutionContext& context, const Lu
   context.informationCallback(String((int)arms.size()) + T(" arms"));
 }
 
-// train the weak learner on 50% of data and evaluate on the other 50% of data
-double LuapeGraphBuilderBanditPool::sampleReward(ExecutionContext& context, const DenseDoubleVectorPtr& pseudoResiduals, size_t armIndex) const
-{
-  static const double p = 0.5;
-  
-  RandomGeneratorPtr random = context.getRandomGenerator();
-
-  // FIXME: this should be outsourced
-  LuapeNodePtr node = arms[armIndex].node;
-
-  node->updateCache(context, true);
-
-  ContainerPtr samples = node->getCache()->getTrainingSamples();
-  DenseDoubleVectorPtr scalars = samples.dynamicCast<DenseDoubleVector>();
-  if (scalars)
-  {
-    jassert(false); // not implemented yet: todo: random split or heuristic split
-    return 0.0;
-  }
-  else
-  {
-    BooleanVectorPtr booleans = samples.dynamicCast<BooleanVector>();
-    jassert(booleans);
-    size_t n = booleans->getNumElements();
-    jassert(n == pseudoResiduals->getNumValues());
-
-    ScalarVariableMeanAndVariance trainPositive;
-    ScalarVariableMeanAndVariance validationPositive;
-    ScalarVariableMeanAndVariance trainNegative;
-    ScalarVariableMeanAndVariance validationNegative;
-
-    for (size_t i = 0; i < n; ++i)
-    {
-      bool isPositive = booleans->get(i);
-
-      double value = pseudoResiduals->getValue(i);
-      double weight = 1.0; // fabs(value)
-
-      //if (random->sampleBool(p))
-        (isPositive ? trainPositive : trainNegative).push(value, weight);
-      //else
-        (isPositive ? validationPositive : validationNegative).push(value, weight);
-    }
-    
-    double meanSquareError = 0.0;
-    if (validationPositive.getCount())
-      meanSquareError += validationPositive.getCount() * (trainPositive.getSquaresMean() + validationPositive.getSquaresMean() 
-                                                            - 2 * trainPositive.getMean() * validationPositive.getMean());
-    if (validationNegative.getCount())
-      meanSquareError += validationNegative.getCount() * validationNegative.getSquaresMean(); // when negative, we always predict 0
-
-    if (validationPositive.getCount() || validationNegative.getCount())
-      meanSquareError /= validationPositive.getCount() + validationNegative.getCount();
-    
-    return 1.0 - meanSquareError;
-  }
-}
-
-void LuapeGraphBuilderBanditPool::playArmWithHighestIndex(ExecutionContext& context, const DenseDoubleVectorPtr& pseudoResiduals)
+void LuapeGraphBuilderBanditPool::playArmWithHighestIndex(ExecutionContext& context, const LuapeGraphLearnerPtr& graphLearner)
 {
   if (banditsQueue.size())
   {
@@ -180,8 +122,7 @@ void LuapeGraphBuilderBanditPool::playArmWithHighestIndex(ExecutionContext& cont
     
     Arm& arm = arms[armIndex];
     ++arm.playedCount;
-    arm.rewardSum += sampleReward(context, pseudoResiduals, armIndex);
-
+    arm.rewardSum += graphLearner->computeCompletionReward(context, arms[armIndex].node);
     banditsQueue.push(std::make_pair(armIndex, arm.getIndexScore()));
   }
 }
@@ -292,7 +233,7 @@ bool LuapeBanditPoolGBLearner::setExamples(ExecutionContext& context, bool isTra
   return true;
 }
 
-LuapeNodePtr LuapeBanditPoolGBLearner::doWeakLearning(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const DenseDoubleVectorPtr& pseudoResiduals) const
+LuapeNodePtr LuapeBanditPoolGBLearner::doWeakLearning(ExecutionContext& context, const DenseDoubleVectorPtr& predictions) const
 {
   if (pool->getNumArms() == 0)
   {
@@ -305,7 +246,7 @@ LuapeNodePtr LuapeBanditPoolGBLearner::doWeakLearning(ExecutionContext& context,
   {
     context.enterScope(T("Playing bandits iteration ") + String((int)t));
     for (size_t i = 0; i < pool->getNumArms(); ++i)
-      pool->playArmWithHighestIndex(context, pseudoResiduals);
+      pool->playArmWithHighestIndex(context, refCountedPointerFromThis(this));
     pool->displayInformation(context);
     context.leaveScope();
   }
@@ -321,9 +262,9 @@ LuapeNodePtr LuapeBanditPoolGBLearner::doWeakLearning(ExecutionContext& context,
   return pool->getArmNode(armIndex);
 }
 
-bool LuapeBanditPoolGBLearner::addWeakLearnerToGraph(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const DenseDoubleVectorPtr& pseudoResiduals, LuapeNodePtr completion)
+bool LuapeBanditPoolGBLearner::addWeakLearnerToGraph(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, LuapeNodePtr completion)
 {
-  if (!LuapeGradientBoostingLearner::addWeakLearnerToGraph(context, predictions, pseudoResiduals, completion))
+  if (!LuapeGradientBoostingLearner::addWeakLearnerToGraph(context, predictions, completion))
     return false;
 
   // update arms
