@@ -64,7 +64,7 @@
     <variable type="LuapeGraphUniverse" name="universe"/>
   </class>
 
-  <!-- Function -->
+  <!-- Inference -->
   <class name="LuapeInference" base="Function" abstract="yes">
     <variable type="LuapeGraph" name="graph"/>
     <variable type="Vector[Variable]" name="votes"/>
@@ -82,8 +82,17 @@
     <constructor/>
   </class>
 
-  <!-- Problem -->
+  <!-- Objective and Problem -->
+  <class name="LuapeObjective" abstract="yes"/>
+  <class name="L2RegressionLuapeObjective" base="LuapeObjective">
+    <constructor/>
+  </class>
+  <class name="RankingLuapeObjective" base="LuapeObjective">
+    <constructor arguments="RankingLossFunctionPtr rankingLoss"/>
+  </class>
+  
   <class name="LuapeProblem">
+    <variable type="LuapeObjective" name="objective"/>
     <variable type="ObjectVector[VariableSignature]" name="inputs"/>
     <variable type="ObjectVector[Function]" name="functions"/>
     <variable type="Boolean" name="failed"/>
@@ -92,10 +101,13 @@
   </class>
 
   <!-- Builder Decision Problem -->
+  <class name="LuapeGraphBuilderAction"/>
+  
   <class name="LuapeGraphBuilderState" base="DecisionProblemState">
     <variable type="LuapeProblem" name="problem"/>
     <variable type="LuapeGraph" name="graph"/>
     <variable type="PositiveInteger" name="maxSteps"/>
+    <variable type="ObjectVector[LuapeNode]" name="stack"/>
     <variable type="PositiveInteger" name="numSteps"/>
   </class>
 

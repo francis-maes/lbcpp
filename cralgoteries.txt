@@ -1,5 +1,5 @@
 
- * Autres optimisation pour tendre vers l'apprentissage en O(1)
+Objectif: LuapeGradientBoosting à base de Best-first-search
 
 Luape-Appli:
  * Avancer sur la Perception du Go

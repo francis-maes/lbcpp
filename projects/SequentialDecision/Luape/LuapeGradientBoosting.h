@@ -100,217 +100,29 @@ protected:
 
 typedef ReferenceCountedObjectPtr<LuapeGraphBuilderBanditPool> LuapeGraphBuilderBanditPoolPtr;
 
-class LuapeGradientBoostingLoss : public Object
-{
-public:
-  virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function) = 0;
-  virtual void setExamples(bool isTrainingData, const std::vector<ObjectPtr>& data) = 0;
-  virtual void computeLoss(const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const = 0;
-
-  virtual double optimizeWeightOfWeakLearner(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const BooleanVectorPtr& weakPredictions) const
-  {
-    context.enterScope(T("Optimize weight"));
-
-    double bestLoss = DBL_MAX;
-    double bestWeight = 0.0;
-
-    for (double K = -2.5; K <= 2.5; K += 0.02)
-    {
-      context.enterScope(T("K = ") + String(K));
-      context.resultCallback(T("K"), K);
-
-      DenseDoubleVectorPtr newPredictions = predictions->cloneAndCast<DenseDoubleVector>();
-      for (size_t i = 0; i < weakPredictions->getNumElements(); ++i)
-        if (weakPredictions->get(i))
-          newPredictions->incrementValue(i, K);
-      double lossValue;
-      computeLoss(newPredictions, &lossValue, NULL);
-
-      if (lossValue < bestLoss)
-      {
-        bestLoss = lossValue;
-        bestWeight = K;
-      }
-
-      context.resultCallback(T("loss"), lossValue);
-      context.leaveScope(lossValue);
-    }
-
-    context.leaveScope(bestLoss);
-    return bestWeight;
-  }
-};
-
-typedef ReferenceCountedObjectPtr<LuapeGradientBoostingLoss> LuapeGradientBoostingLossPtr;
-
 class LuapeGradientBoostingLearner : public Object
 {
 public:
-  LuapeGradientBoostingLearner(LuapeGradientBoostingLossPtr loss, double learningRate, size_t maxBandits, size_t maxDepth);
+  LuapeGradientBoostingLearner(LuapeProblemPtr problem, double learningRate, size_t maxBandits, size_t maxDepth);
+  LuapeGradientBoostingLearner() : learningRate(0.0), maxBandits(0), maxDepth(maxDepth) {}
 
-  bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function);
+  bool initialize(ExecutionContext& context, const LuapeInferencePtr& function);
   bool doLearningEpisode(ExecutionContext& context, const std::vector<ObjectPtr>& examples) const;
 
 protected:
-  LuapeGradientBoostingLossPtr loss;
+  LuapeProblemPtr problem;
   double learningRate;
   size_t maxBandits;
   size_t maxDepth;
 
   LuapeGraphBuilderBanditPoolPtr pool;
 
-  LuapeProblemPtr problem;
   LuapeInferencePtr function;
   LuapeGraphPtr graph;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeGradientBoostingLearner> LuapeGradientBoostingLearnerPtr;
 
-///////////////////////////////////////////
-
-class RankingGradientBoostingLoss : public LuapeGradientBoostingLoss
-{
-public:
-  RankingGradientBoostingLoss(RankingLossFunctionPtr rankingLoss = RankingLossFunctionPtr())
-    : rankingLoss(rankingLoss) {}
-
-  virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function)
-  {
-    this->problem = problem;
-    this->function = function;
-    this->graph = function->getGraph();
-    return true;
-  }
-
-  virtual void setExamples(bool isTrainingData, const std::vector<ObjectPtr>& data)
-  {
-    graph->clearSamples(isTrainingData, !isTrainingData);
-    for (size_t i = 0; i < data.size(); ++i)
-      addRankingExampleToGraph(isTrainingData, data[i].staticCast<Pair>());
-    if (isTrainingData)
-      trainingData = *(std::vector<PairPtr>* )&data;
-    else
-      validationData = *(std::vector<PairPtr>* )&data;
-  }
-
-  void addRankingExampleToGraph(bool isTrainingData, const PairPtr& rankingExample) const
-  {
-    const ContainerPtr& alternatives = rankingExample->getFirst().getObjectAndCast<Container>();
-    size_t n = alternatives->getNumElements();
-
-    LuapeNodeCachePtr inputNodeCache = graph->getNode(0)->getCache();
-    size_t firstIndex = inputNodeCache->getNumSamples(isTrainingData);
-    inputNodeCache->resizeSamples(isTrainingData, firstIndex + n);
-    for (size_t i = 0; i < n; ++i)
-      inputNodeCache->setSample(true, firstIndex + 1, alternatives->getElement(i));
-  }
-
-  virtual void computeLoss(const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const
-  {
-    if (lossValue)
-      *lossValue = 0.0;
-    if (lossGradient)
-      *lossGradient = new DenseDoubleVector(predictions->getNumValues(), 0.0);
-  
-    size_t index = 0;
-    for (size_t i = 0; i < trainingData.size(); ++i)
-    {
-      size_t n = trainingData[i]->getFirst().getObjectAndCast<Container>()->getNumElements();
-      DenseDoubleVectorPtr costs = trainingData[i]->getSecond().getObjectAndCast<DenseDoubleVector>();
-
-      DenseDoubleVectorPtr scores = new DenseDoubleVector(n, 0.0);
-      memcpy(scores->getValuePointer(0), predictions->getValuePointer(index), sizeof (double) * n);
-
-      double v = 0.0;
-      DenseDoubleVectorPtr g = lossGradient ? new DenseDoubleVector(n, 0.0) : DenseDoubleVectorPtr();
-      rankingLoss->computeRankingLoss(scores, costs, lossValue ? &v : NULL, lossGradient ? &g : NULL, 1.0);
-      if (lossValue)
-        *lossValue += v;
-      if (g)      
-        memcpy((*lossGradient)->getValuePointer(index), g->getValuePointer(0), sizeof (double) * n);
-      index += n;
-    }
-    if (lossValue)
-      *lossValue /= trainingData.size();
-    if (lossGradient)
-      (*lossGradient)->multiplyByScalar(-1.0);
-  }
-
-protected:
-  RankingLossFunctionPtr rankingLoss;
-
-  LuapeProblemPtr problem;
-  LuapeInferencePtr function;
-  LuapeGraphPtr graph;
-
-  std::vector<PairPtr> trainingData;
-  std::vector<PairPtr> validationData;
-};
-
-class L2GradientBoostingLoss : public LuapeGradientBoostingLoss
-{
-public:
- virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function)
-  {
-    this->problem = problem;
-    this->function = function;
-    this->graph = function->getGraph();
-    return true;
-  }
-
-  virtual void setExamples(bool isTrainingData, const std::vector<ObjectPtr>& data)
-  {
-    graph->clearSamples(isTrainingData, !isTrainingData);
-    LuapeNodeCachePtr inputNodeCache = graph->getNode(0)->getCache();
-    inputNodeCache->resizeSamples(isTrainingData, data.size());
-    DenseDoubleVectorPtr supervisions = new DenseDoubleVector(data.size(), 0.0);
-    for (size_t i = 0; i < data.size(); ++i)
-    {
-      const PairPtr& example = data[i].staticCast<Pair>();
-      inputNodeCache->setSample(isTrainingData, i, example->getFirst());
-      supervisions->setValue(i, example->getSecond().getDouble());
-    }
-
-    if (isTrainingData)
-      trainingSupervisions = supervisions;
-    else
-      validationSupervisions = supervisions;
-  }
-
-  virtual void computeLoss(const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const
-  {
-    if (lossValue)
-      *lossValue = 0.0;
-    if (lossGradient)
-      *lossGradient = new DenseDoubleVector(predictions->getNumValues(), 0.0);
-  
-    size_t n = trainingSupervisions->getNumValues();
-    jassert(n == predictions->getNumValues());
-    size_t index = 0;
-    for (size_t i = 0; i < n; ++i)
-    {
-      double predicted = predictions->getValue(i);
-      double correct = trainingSupervisions->getValue(i);
-
-      if (lossValue)
-        *lossValue += (predicted - correct) * (predicted - correct);
-      if (lossGradient)
-        (*lossGradient)->setValue(i, correct - predicted);
-    }
-    if (lossValue)
-      *lossValue /= n;
-    if (lossGradient)
-      (*lossGradient)->multiplyByScalar(-1.0);
-  }
-
-protected:
-  LuapeProblemPtr problem;
-  LuapeInferencePtr function;
-  LuapeGraphPtr graph;
-
-  DenseDoubleVectorPtr trainingSupervisions;
-  DenseDoubleVectorPtr validationSupervisions;
-};
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_LUAPE_GRADIENT_BOOSTING_H_

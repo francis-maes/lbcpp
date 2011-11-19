@@ -276,6 +276,9 @@ public:
   const LuapeNodePtr& getArgument(size_t index) const
     {jassert(index < arguments.size()); return arguments[index];}
 
+  const std::vector<LuapeNodePtr>& getArguments() const
+    {return arguments;}
+
 protected:
   friend class LuapeFunctionNodeClass;
 

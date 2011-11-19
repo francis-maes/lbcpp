@@ -28,9 +28,14 @@ public:
   virtual Flags getFlags() const
     {return noFlags;}
 
+  bool hasFlags(const Flags& flags) const
+    {return (getFlags()& flags) == flags;}
+
   virtual size_t getNumInputs() const = 0;
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const = 0; 
   virtual TypePtr getOutputType(const std::vector<LuapeNodePtr>& inputs) const = 0;
+
+  bool acceptInputsStack(const std::vector<LuapeNodePtr>& stack) const;
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const;
 

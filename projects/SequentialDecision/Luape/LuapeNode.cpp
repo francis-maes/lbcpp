@@ -90,6 +90,45 @@ VectorPtr LuapeFunction::compute(ExecutionContext& context, const std::vector<Ve
   return res;
 }
 
+bool LuapeFunction::acceptInputsStack(const std::vector<LuapeNodePtr>& stack) const
+{
+  size_t n = getNumInputs();
+  if (n > stack.size())
+    return false;
+  size_t stackFirstIndex = stack.size() - n;
+  for (size_t i = 0; i < n; ++i)
+    if (!doAcceptInputType(i, stack[stackFirstIndex + i]->getType()))
+      return false;
+
+  if (n)
+  {
+    if (hasFlags(commutativeFlag))
+    {
+      LuapeNodePtr node = stack[stackFirstIndex];
+      for (size_t i = 1; i < n; ++i)
+      {
+        LuapeNodePtr newNode = stack[stackFirstIndex + i];
+        if (newNode < node)
+          return false;
+        node = newNode;
+      }
+    }
+    if (hasFlags(allSameArgIrrelevantFlag))
+    {
+      bool ok = false;
+      for (size_t i = 1; i < n; ++i)
+        if (stack[stackFirstIndex + i] != stack[stackFirstIndex])
+        {
+          ok = true;
+          break;
+        }
+      if (!ok)
+        return false;
+    }
+  }
+  return true;
+}
+
 /*
 ** LuapeNodeCache
 */
@@ -314,7 +353,6 @@ Variable LuapeFunctionNode::compute(ExecutionContext& context, const std::vector
 
 void LuapeFunctionNode::clone(ExecutionContext& context, const ObjectPtr& t) const
 {
-  jassert(false);
   LuapeNode::clone(context, t);
   const LuapeFunctionNodePtr& target = t.staticCast<LuapeNode>();
   target->function = function;

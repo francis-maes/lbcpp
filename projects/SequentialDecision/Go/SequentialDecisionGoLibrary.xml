@@ -199,6 +199,7 @@
     <variable type="File" name="trainingFile" shortName="train"/>
     <variable type="File" name="testingFile" shortName="test"/>
     <variable type="PositiveInteger" name="maxCount"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
   </class>
 
 </library>
