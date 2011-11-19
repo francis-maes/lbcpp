@@ -58,6 +58,73 @@ LuapeFunctionNodePtr LuapeGraphUniverse::makeFunctionNode(const LuapeFunctionPtr
 }
 
 /*
+** LuapeNodeKeysMap
+*/
+void LuapeNodeKeysMap::clear()
+{
+  keyToNodes.clear();
+  nodeToKeys.clear();
+}
+
+// return true if it is a new node
+bool LuapeNodeKeysMap::addNodeToCache(ExecutionContext& context, const LuapeNodePtr& node)
+{
+  NodeToKeyMap::const_iterator it = nodeToKeys.find(node);
+  if (it != nodeToKeys.end())
+    return false; // we already know about this node
+
+  // compute node key
+  node->updateCache(context, true);
+  BinaryKeyPtr key = node->getCache()->makeKeyFromSamples();
+
+  KeyToNodeMap::iterator it2 = keyToNodes.find(key);
+  if (it2 == keyToNodes.end())
+  {
+    // this is a new node equivalence class
+    nodeToKeys[node] = key;
+    keyToNodes[key] = node;
+    addSubNodesToCache(context, node);
+    return true;
+  }
+  else
+  {
+    // existing node equivalence class
+    //  see if new node is better than previous one to represent the class
+    LuapeNodePtr previousNode = it2->second;
+    if (node->getDepth() < previousNode->getDepth())
+    {
+      it2->second = node;
+      context.informationCallback(T("Change computation of ") + previousNode->toShortString() + T(" into ") + node->toShortString());
+      LuapeFunctionNodePtr sourceFunctionNode = node.dynamicCast<LuapeFunctionNode>();
+      LuapeFunctionNodePtr targetFunctionNode = previousNode.dynamicCast<LuapeFunctionNode>();
+      if (sourceFunctionNode && targetFunctionNode)
+        sourceFunctionNode->clone(context, targetFunctionNode);
+      addSubNodesToCache(context, node);
+    }
+    nodeToKeys[node] = it2->first;
+    return false;
+  }
+}
+
+void LuapeNodeKeysMap::addSubNodesToCache(ExecutionContext& context, const LuapeNodePtr& node)
+{
+  LuapeFunctionNodePtr functionNode = node.dynamicCast<LuapeFunctionNode>();
+  if (functionNode)
+  {
+    std::vector<LuapeNodePtr> arguments = functionNode->getArguments();
+    for (size_t i = 0; i < arguments.size(); ++i)
+      addNodeToCache(context, arguments[i]);
+  }
+}
+
+bool LuapeNodeKeysMap::isNodeKeyNew(const LuapeNodePtr& node) const
+{
+  BinaryKeyPtr key = node->getCache()->makeKeyFromSamples();
+  return keyToNodes.find(key) == keyToNodes.end();
+}
+
+
+/*
 ** LuapeGraph
 */
 String LuapeGraph::toShortString() const

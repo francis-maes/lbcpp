@@ -129,10 +129,10 @@ SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
   Luape/LuapeSimpleFunctions.h
   Luape/LuapeGraphBuilder.h
   Luape/LuapeInference.h
-  Luape/LuapeBatchLearner.h
-  Luape/LuapeBatchLearner.cpp
-  Luape/LuapeGradientBoosting.h
-  Luape/LuapeGradientBoosting.cpp
+  Luape/LuapeGraphLearner.h
+  Luape/LuapeGraphLearner.cpp
+  Luape/LuapeBanditPoolGBLearner.h
+  Luape/LuapeBanditPoolGBLearner.cpp
   Luape/LuapeSandBox.h
   Luape/LuapeLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeLibrary.cpp
@@ -143,7 +143,9 @@ SET(LBCPP_LUAPE_OBJECTIVE_SOURCES
   Luape/RankingLuapeObjective.h
 )
 
-SET(LBCPP_LUAPE_LEARNER_SOURCES
+SET(LBCPP_LUAPE_OLD_SOURCES
+  Luape/LuapeBatchLearner.h
+  Luape/LuapeBatchLearner.cpp
   Luape/AdaBoostLuapeLearner.h
   Luape/AdaBoostMHLuapeLearner.h
   Luape/SingleStumpWeakLearner.h
@@ -177,7 +179,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_SOURCES
   ${LBCPP_SEQUENTIAL_DECISION_BANDITS_SOURCES}
   ${LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES}
     ${LBCPP_LUAPE_OBJECTIVE_SOURCES}
-    ${LBCPP_LUAPE_LEARNER_SOURCES}
+    ${LBCPP_LUAPE_OLD_SOURCES}
   ${LBCPP_SEQUENTIAL_DECISION_SMALL_MDP_SOURCES}
 
   SequentialDecisionLibrary.xml
@@ -196,7 +198,7 @@ SOURCE_GROUP(GP FILES ${LBCPP_SEQUENTIAL_DECISION_GP_SOURCES})
 SOURCE_GROUP(Bandits FILES ${LBCPP_SEQUENTIAL_DECISION_BANDITS_SOURCES})
 SOURCE_GROUP(Luape FILES ${LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES})
 SOURCE_SUB_GROUP(Luape Objective FILES ${LBCPP_LUAPE_OBJECTIVE_SOURCES})
-SOURCE_SUB_GROUP(Luape Learner FILES ${LBCPP_LUAPE_LEARNER_SOURCES})
+SOURCE_SUB_GROUP(Luape Old FILES ${LBCPP_LUAPE_OLD_SOURCES})
 
 SOURCE_GROUP(SmallMDP FILES ${LBCPP_SEQUENTIAL_DECISION_SMALL_MDP_SOURCES})
 
