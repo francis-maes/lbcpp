@@ -23,6 +23,8 @@ public:
   virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data);
   virtual bool doLearningIteration(ExecutionContext& context) = 0;
 
+  virtual double computeCompletionReward(ExecutionContext& context, const LuapeNodePtr& completion) const = 0;
+
 protected:
   LuapeProblemPtr problem;
   LuapeInferencePtr function;
@@ -38,16 +40,21 @@ public:
   LuapeGradientBoostingLearner() : learningRate(0.0), maxDepth(maxDepth) {}
 
   // gradient boosting
-  virtual LuapeNodePtr doWeakLearning(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const DenseDoubleVectorPtr& pseudoResiduals) const = 0;
-  virtual bool addWeakLearnerToGraph(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const DenseDoubleVectorPtr& pseudoResiduals, LuapeNodePtr completion);
+  virtual LuapeNodePtr doWeakLearning(ExecutionContext& context, const DenseDoubleVectorPtr& predictions) const = 0;
+  virtual bool addWeakLearnerToGraph(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, LuapeNodePtr completion);
 
   // LuapeGraphLearner
   virtual bool doLearningIteration(ExecutionContext& context);
+  virtual double computeCompletionReward(ExecutionContext& context, const LuapeNodePtr& completion) const;
 
 protected:
   double learningRate;
   size_t maxDepth;
+
+  DenseDoubleVectorPtr pseudoResiduals;
 };
+
+typedef ReferenceCountedObjectPtr<LuapeGradientBoostingLearner> LuapeGradientBoostingLearnerPtr;
 
 }; /* namespace lbcpp */
 

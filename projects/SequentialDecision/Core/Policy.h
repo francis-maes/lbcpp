@@ -26,6 +26,25 @@ public:
 
 typedef ReferenceCountedObjectPtr<Policy> PolicyPtr;
 
+class RandomPolicy : public Policy
+{
+public:
+  virtual Variable policyStart(ExecutionContext& context, const Variable& state, const ContainerPtr& actions)
+    {return sampleAction(context, actions);}
+
+  virtual Variable policyStep(ExecutionContext& context, double reward, const Variable& state, const ContainerPtr& actions)
+    {return sampleAction(context, actions);}
+
+  Variable sampleAction(ExecutionContext& context, const ContainerPtr& actions)
+  {
+    size_t n = actions->getNumElements();
+    jassert(n != 0);
+    return actions->getElement(context.getRandomGenerator()->sampleSize(n));
+  }
+
+  lbcpp_UseDebuggingNewOperator
+};
+
 extern PolicyPtr mixturePolicy(const PolicyPtr& policy1, const PolicyPtr& policy2, double k);
 
 class MixturePolicy : public Policy

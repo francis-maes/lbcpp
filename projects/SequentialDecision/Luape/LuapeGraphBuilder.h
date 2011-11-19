@@ -309,6 +309,8 @@ public:
     String seps = isFinalState() ? T("[]") : T("{}");
 
     String res;
+    if (isAborted)
+      res += T("canceled - ");
     res += seps[0];
     for (size_t i = 0; i < stack.size(); ++i)
     {
