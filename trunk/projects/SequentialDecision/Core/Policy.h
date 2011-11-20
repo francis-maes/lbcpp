@@ -17,9 +17,13 @@ namespace lbcpp
 class Policy : public Object
 {
 public:
-  virtual Variable policyStart(ExecutionContext& context, const Variable& state, const ContainerPtr& actions) = 0;
-  virtual Variable policyStep(ExecutionContext& context, double reward, const Variable& state, const ContainerPtr& actions) = 0;
-  virtual void policyEnd(ExecutionContext& context, double reward, const Variable& finalState) {}
+  virtual void startEpisodes(ExecutionContext& context) {}
+  virtual void startEpisode(ExecutionContext& context, const DecisionProblemStatePtr& initialState) = 0;
+
+  virtual Variable selectAction(ExecutionContext& context, const DecisionProblemStatePtr& state) = 0;
+
+  virtual void observeTransition(ExecutionContext& context, const Variable& action, double reward, const DecisionProblemStatePtr& newState)
+    {}
 
   lbcpp_UseDebuggingNewOperator
 };
@@ -29,14 +33,11 @@ typedef ReferenceCountedObjectPtr<Policy> PolicyPtr;
 class RandomPolicy : public Policy
 {
 public:
-  virtual Variable policyStart(ExecutionContext& context, const Variable& state, const ContainerPtr& actions)
-    {return sampleAction(context, actions);}
-
-  virtual Variable policyStep(ExecutionContext& context, double reward, const Variable& state, const ContainerPtr& actions)
-    {return sampleAction(context, actions);}
-
-  Variable sampleAction(ExecutionContext& context, const ContainerPtr& actions)
+  virtual void startEpisode(ExecutionContext& context, const DecisionProblemStatePtr& initialState)
+    {}
+  virtual Variable selectAction(ExecutionContext& context, const DecisionProblemStatePtr& state)
   {
+    ContainerPtr actions = state->getAvailableActions();
     size_t n = actions->getNumElements();
     jassert(n != 0);
     return actions->getElement(context.getRandomGenerator()->sampleSize(n));
@@ -51,27 +52,22 @@ class MixturePolicy : public Policy
 {
 public:
   MixturePolicy(const PolicyPtr& policy1, const PolicyPtr& policy2, double k)
-    : policy1(policy1), policy2(policy2), k(k), random(new RandomGenerator()) {}
+    : policy1(policy1), policy2(policy2), k(k) {}
   MixturePolicy() : k(0.0) {}
 
-  virtual Variable policyStart(ExecutionContext& context, const Variable& state, const ContainerPtr& actions)
+  virtual void startEpisode(ExecutionContext& context, const DecisionProblemStatePtr& initialState)
   {
-    Variable a1 = policy1->policyStart(context, state, actions);
-    Variable a2 = policy2->policyStart(context, state, actions);
-    return sampleAction(a1, a2);
+    policy1->startEpisode(context, initialState);
+    policy2->startEpisode(context, initialState);
   }
 
-  virtual Variable policyStep(ExecutionContext& context, double reward, const Variable& state, const ContainerPtr& actions)
-  {
-    Variable a1 = policy1->policyStep(context, reward, state, actions);
-    Variable a2 = policy2->policyStep(context, reward, state, actions);
-    return sampleAction(a1, a2);
-  }
+  virtual Variable selectAction(ExecutionContext& context, const DecisionProblemStatePtr& state)
+    {return context.getRandomGenerator()->sampleBool(k) ? policy1->selectAction(context, state) : policy2->selectAction(context, state);}
 
-  virtual void policyEnd(ExecutionContext& context, double reward, const Variable& finalState)
+  virtual void observeTransition(ExecutionContext& context, const Variable& action, double reward, const DecisionProblemStatePtr& newState)
   {
-    policy1->policyEnd(context, reward, finalState);
-    policy2->policyEnd(context, reward, finalState);
+    policy1->observeTransition(context, action, reward, newState);
+    policy2->observeTransition(context, action, reward, newState);
   }
 
 protected:
@@ -80,46 +76,7 @@ protected:
   PolicyPtr policy1;
   PolicyPtr policy2;
   double k;
-  RandomGeneratorPtr random;
-
-  Variable sampleAction(const Variable& a1, const Variable& a2)
-    {return random->sampleBool(k) ? a2 : a1;}
 };
-
-#if 0
-class ReproduceTrajectoryPolicy : public Policy
-{
-public:
-  ReproduceTrajectoryPolicy(const ContainerPtr& trajectory = ContainerPtr())
-    : trajectory(trajectory) {}
-
-  virtual Variable policyStart(ExecutionContext& context, const Variable& state, const ContainerPtr& actions)
-  {
-    timeStep = 0;
-    return getTrajectoryAction(timeStep);
-  }
-
-  virtual Variable policyStep(ExecutionContext& context, double reward, const Variable& state, const ContainerPtr& actions)
-  {
-    ++timeStep;
-    return getTrajectoryAction(timeStep);
-  }
-
-protected:
-  friend class ReproduceTrajectoryPolicyClass;
-
-  ContainerPtr trajectory;
-  size_t timeStep;
-
-  Variable getTrajectoryAction(size_t timeStep) const
-  {
-    if (timeStep < trajectory->getNumElements())
-      return trajectory->getElement(timeStep);
-    else
-      return Variable();
-  }
-};
-#endif // 0
 
 }; /* namespace lbcpp */
 

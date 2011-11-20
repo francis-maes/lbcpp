@@ -334,6 +334,9 @@ public:
 
   virtual ContainerPtr getAvailableActions() const
   {
+    if (!typeState)
+      return ContainerPtr();
+
     ObjectVectorPtr res = new ObjectVector(luapeGraphBuilderActionClass, 0);
 
     if (typeState->hasPushActions())

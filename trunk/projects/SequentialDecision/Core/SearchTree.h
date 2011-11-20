@@ -40,9 +40,8 @@ FunctionPtr linearInterpolatedSearchHeuristic(FunctionPtr heuristic1, FunctionPt
 class SearchTree;
 typedef ReferenceCountedObjectPtr<SearchTree> SearchTreePtr;
 
-class Policy;
-typedef ReferenceCountedObjectPtr<Policy> PolicyPtr;
-
+class SearchPolicy;
+typedef ReferenceCountedObjectPtr<SearchPolicy> SearchPolicyPtr;
 
 class SearchTreeCallback
 {
@@ -63,7 +62,7 @@ public:
   /*
   ** High level
   */
-  void doSearchEpisode(ExecutionContext& context, const PolicyPtr& policy, size_t maxSearchNodes);
+  void doSearchEpisode(ExecutionContext& context, const SearchPolicyPtr& policy, size_t maxSearchNodes);
 
   /*
   ** Explore

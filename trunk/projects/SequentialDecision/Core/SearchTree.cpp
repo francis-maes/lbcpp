@@ -138,7 +138,7 @@ ContainerPtr SearchTree::getBestNodeTrajectory() const
   return res;
 }
 
-void SearchTree::doSearchEpisode(ExecutionContext& context, const PolicyPtr& policy, size_t maxSearchNodes)
+void SearchTree::doSearchEpisode(ExecutionContext& context, const SearchPolicyPtr& policy, size_t maxSearchNodes)
 {
   double lastReward = 0.0;
   double bestReturn = -DBL_MAX;

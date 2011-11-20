@@ -63,7 +63,8 @@ public:
 
     // configure gradient boosting
     //LuapeGraphLearnerPtr learner = new LuapeBanditPoolGBLearner(1.0, 1000, maxDepth);
-    PolicyPtr policy = new RandomPolicy();
+    PolicyPtr policy = new TreeBasedRandomPolicy();
+    //PolicyPtr policy = new RandomPolicy();
     //PolicyPtr policy = new LuapeRewardStorageBasedPolicy();
     LuapeGraphLearnerPtr learner = new LuapePolicyBasedGBLearner(policy, learningRate, maxDepth, budget);
     if (!learner->initialize(context, problem, learningMachine))

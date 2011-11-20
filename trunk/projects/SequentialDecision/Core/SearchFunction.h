@@ -11,7 +11,7 @@
 
 # include "SearchTree.h"
 # include "SearchHeuristic.h"
-# include "Policy.h"
+# include "SearchPolicy.h"
 # include <lbcpp/Learning/LossFunction.h>
 
 namespace lbcpp
@@ -23,11 +23,11 @@ extern OnlineLearnerPtr searchFunctionOnlineLearner(RankingLossFunctionPtr lossF
 class SearchFunction : public SimpleUnaryFunction
 {
 public:
-  SearchFunction(DecisionProblemPtr problem, PolicyPtr searchPolicy, StochasticGDParametersPtr learnerParameters, PolicyPtr explorationPolicy, size_t maxSearchNodes)
+  SearchFunction(DecisionProblemPtr problem, SearchPolicyPtr searchPolicy, StochasticGDParametersPtr learnerParameters, SearchPolicyPtr explorationPolicy, size_t maxSearchNodes)
     : SimpleUnaryFunction(anyType, anyType), problem(problem), searchPolicy(searchPolicy), learnerParameters(learnerParameters), explorationPolicy(explorationPolicy), maxSearchNodes(maxSearchNodes)
     {}
 
-  SearchFunction(DecisionProblemPtr problem, PolicyPtr searchPolicy, size_t maxSearchNodes)
+  SearchFunction(DecisionProblemPtr problem, SearchPolicyPtr searchPolicy, size_t maxSearchNodes)
     : SimpleUnaryFunction(anyType, anyType), problem(problem), searchPolicy(searchPolicy), maxSearchNodes(maxSearchNodes)
     {}
 
@@ -69,16 +69,16 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& initialState) const
   {
-    PolicyPtr policy = isCurrentlyLearning() ? explorationPolicy : searchPolicy;
+    SearchPolicyPtr policy = isCurrentlyLearning() ? explorationPolicy : searchPolicy;
     SearchTreePtr searchTree = new SearchTree(problem, initialState.getObjectAndCast<DecisionProblemState>(), maxSearchNodes);
     searchTree->doSearchEpisode(context, policy, maxSearchNodes);
     return searchTree;
   }
    
-  void setSearchPolicy(const PolicyPtr& searchPolicy)
+  void setSearchPolicy(const SearchPolicyPtr& searchPolicy)
     {this->searchPolicy = searchPolicy;}
 
-  const PolicyPtr& getSearchPolicy() const
+  const SearchPolicyPtr& getSearchPolicy() const
     {return searchPolicy;}
 
   size_t getMaxSearchNodes() const
@@ -95,9 +95,9 @@ protected:
   friend class SearchFunctionClass;
 
   DecisionProblemPtr problem;
-  PolicyPtr searchPolicy;
+  SearchPolicyPtr searchPolicy;
   StochasticGDParametersPtr learnerParameters;
-  PolicyPtr explorationPolicy;
+  SearchPolicyPtr explorationPolicy;
   size_t maxSearchNodes;
 };
 

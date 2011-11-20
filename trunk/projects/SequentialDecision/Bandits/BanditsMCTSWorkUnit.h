@@ -661,7 +661,7 @@ private:
 
       SearchTreePtr searchTree = new SearchTree(problem, state, maxSearchNodes);
 
-      PolicyPtr searchPolicy = bestFirstSearchPolicy(new MinDepthSearchHeuristic());
+      SearchPolicyPtr searchPolicy = bestFirstSearchPolicy(new MinDepthSearchHeuristic());
 
       searchTree->doSearchEpisode(context, searchPolicy, maxSearchNodes);
 
