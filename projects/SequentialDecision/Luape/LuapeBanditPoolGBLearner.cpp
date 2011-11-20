@@ -43,7 +43,7 @@ public:
 
   void enumerateNewArms(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode)
   {
-    LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(problem, graph->cloneAndCast<LuapeGraph>(), maxDepth);
+    LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(graph->cloneAndCast<LuapeGraph>(), new LuapeGraphBuilderTypeSearchSpace(problem, maxDepth));
     //builder->performTransition(context, LuapeGraphBuilderAction::push(newNode));
     enumerateNewArmsRecursively(context, builder);
   }

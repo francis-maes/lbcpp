@@ -40,6 +40,7 @@ public:
   GoBoardPositionPerception(GoBoardPerceptionPtr boardPerception, const GoBoardPtr& board, const GoBoard::Position& position)
     : board(boardPerception), capturedAtPreviousTurn(false), position(position)
   {
+    bTrue = true, bFalse = false;
     if (position.first == board->getSize() && position.second == board->getSize())
       c11 = c12 = c13 = c21 = c22 = c23 = c31 = c32 = c33 = goOutside;
     else
@@ -56,7 +57,7 @@ public:
     }
   }
 
-  GoBoardPositionPerception() : capturedAtPreviousTurn(false), position(0, 0) {}
+  GoBoardPositionPerception() : capturedAtPreviousTurn(false), position(0, 0), bTrue(true), bFalse(false) {}
 
   void setPrevious(GoBoardPositionPerceptionPtr previous)
     {this->previous = previous;}
@@ -74,6 +75,8 @@ protected:
   //GoBoardPositionState positionState;
   GoBoardPositionPerceptionPtr previous;
   bool capturedAtPreviousTurn;
+
+  bool bTrue, bFalse;
 
   GoBoardPositionState c11, c12, c13;
   GoBoardPositionState c21, c22, c23;

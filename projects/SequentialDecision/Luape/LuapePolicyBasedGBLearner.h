@@ -128,15 +128,16 @@ public:
     predicates.push_back("step=" + String(state->getCurrentStep()));
     predicates.push_back("stacksize=" + String(state->getStackSize()));
 
-    if (action->isNewNode)
+    LuapeNodePtr nodeToAdd = action->getNodeToAdd();
+    if (action->isNewNode())
     {
-      if (action->nodeToAdd.isInstanceOf<LuapeYieldNode>())
+      if (nodeToAdd.isInstanceOf<LuapeYieldNode>())
       {
         predicates.push_back("kind=yield");
       }
       else
       {
-        LuapeFunctionNodePtr functionNode = action->nodeToAdd.staticCast<LuapeFunctionNode>();
+        LuapeFunctionNodePtr functionNode = nodeToAdd.staticCast<LuapeFunctionNode>();
 
         predicates.push_back("kind=apply");
         predicates.push_back("fun=" + functionNode->getFunction()->getClassName());
@@ -146,10 +147,10 @@ public:
     }
     else
     {
-      jassert(action->nodeToAdd);
+      jassert(nodeToAdd);
 
       predicates.push_back("kind=push");
-      predicates.push_back("argtype=" + action->nodeToAdd->getType()->getName());
+      predicates.push_back("argtype=" + nodeToAdd->getType()->getName());
       if (state->getStackSize() > 0)
         predicates.push_back("prevargtype=" + state->getStackElement(state->getStackSize() - 1)->getType()->getName());
       else
@@ -249,15 +250,32 @@ class LuapePolicyBasedGBLearner : public LuapeGradientBoostingLearner
 {
 public:
   LuapePolicyBasedGBLearner(const PolicyPtr& policy, double learningRate, size_t maxDepth, size_t budget)
-    : LuapeGradientBoostingLearner(learningRate, maxDepth), policy(policy), budget(budget) {}
+    : LuapeGradientBoostingLearner(learningRate, maxDepth), policy(policy), budget(budget)
+  {
+  }
+
+  virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function)
+  {
+    if (!LuapeGradientBoostingLearner::initialize(context, problem, function))
+      return false;
+    typeSearchSpace = new LuapeGraphBuilderTypeSearchSpace(problem, maxDepth);
+    typeSearchSpace->pruneStates(context);
+    return true;
+  }
+
 
   virtual LuapeNodePtr doWeakLearning(ExecutionContext& context, const DenseDoubleVectorPtr& predictions) const
   {
-    context.enterScope(T("Computing optimal weak learner"));
+    static const bool computeOptimalLearner = true;
+
     double optimalReward = -DBL_MAX;
     LuapeNodePtr optimalWeakLearner;
-    findOptimalWeakLearner(context, new LuapeGraphBuilderState(problem, graph->cloneAndCast<LuapeGraph>(), maxDepth), optimalReward, optimalWeakLearner);
-    context.leaveScope(optimalReward);
+    if (computeOptimalLearner)
+    {
+      context.enterScope(T("Computing optimal weak learner"));
+      findOptimalWeakLearner(context, new LuapeGraphBuilderState(graph->cloneAndCast<LuapeGraph>(), typeSearchSpace), optimalReward, optimalWeakLearner);
+      context.leaveScope(optimalReward);
+    }
 
     // FIXME !
     if (policy.dynamicCast<LuapeRewardStorageBasedPolicy>())
@@ -281,18 +299,20 @@ public:
     else
       context.errorCallback(T("Failed to find a weak learner"));
 
-    context.informationCallback(T("Optimal weak learner: ") + optimalWeakLearner->toShortString() + T(" [") + String(optimalReward) + T("]"));
-    context.resultCallback(T("regret"), optimalReward - bestReward);
-    const_cast<LuapePolicyBasedGBLearner* >(this)->regret.push(optimalReward - bestReward);
-    context.resultCallback(T("averageRegret"), regret.getMean());
-
-    context.informationCallback(T("Average Regret: ") + String(regret.getMean()));
+    if (computeOptimalLearner)
+    {
+      context.informationCallback(T("Optimal weak learner: ") + optimalWeakLearner->toShortString() + T(" [") + String(optimalReward) + T("]"));
+      context.resultCallback(T("regret"), optimalReward - bestReward);
+      const_cast<LuapePolicyBasedGBLearner* >(this)->regret.push(optimalReward - bestReward);
+      context.resultCallback(T("averageRegret"), regret.getMean());
+      context.informationCallback(T("Average Regret: ") + String(regret.getMean()));
+    }
     return bestWeakLearner;
   }
 
   LuapeYieldNodePtr sampleTrajectory(ExecutionContext& context, double& reward) const
   {
-    LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(problem, graph->cloneAndCast<LuapeGraph>(), maxDepth);
+    LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(graph->cloneAndCast<LuapeGraph>(), typeSearchSpace);
 
     bool isFirstStep = true;
     bool noMoreActions = false;
@@ -361,6 +381,7 @@ protected:
   size_t budget;
   PolicyPtr policy;
   ScalarVariableStatistics regret;
+  LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
 };
 
 }; /* namespace lbcpp */

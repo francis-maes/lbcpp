@@ -127,7 +127,6 @@ SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
   Luape/LuapeGraph.h
   Luape/LuapeGraph.cpp
   Luape/LuapeSimpleFunctions.h
-  Luape/LuapeGraphBuilder.h
   Luape/LuapeInference.h
   Luape/LuapeSandBox.h
   Luape/LuapeLibrary.xml
@@ -140,6 +139,8 @@ SET(LBCPP_LUAPE_OBJECTIVE_SOURCES
 )
 
 SET(LBCPP_LUAPE_GRAPH_LEARNER_SOURCES
+  Luape/LuapeGraphBuilder.h
+  Luape/LuapeGraphBuilderTypeSearchSpace.h
   Luape/LuapeGraphLearner.h
   Luape/LuapeGraphLearner.cpp
   Luape/LuapeBanditPoolGBLearner.h

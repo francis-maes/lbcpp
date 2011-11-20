@@ -74,13 +74,19 @@ public:
   void addInput(const TypePtr& type, const String& name)
     {inputs.push_back(new VariableSignature(type, name));}
 
+  size_t getNumInputs() const
+    {return inputs.size();}
+
+  const VariableSignaturePtr& getInput(size_t index) const
+    {jassert(index < inputs.size()); return inputs[index];}
+
   void addFunction(const LuapeFunctionPtr& function)
     {functions.push_back(function);}
 
   size_t getNumFunctions() const
     {return functions.size();}
 
-  LuapeFunctionPtr getFunction(size_t index) const
+  const LuapeFunctionPtr& getFunction(size_t index) const
     {jassert(index < functions.size()); return functions[index];}
 
   LuapeGraphPtr createInitialGraph(ExecutionContext& context) const

@@ -100,13 +100,20 @@
     <function lang="lua" name="function"/>
   </class>
 
+  <!-- Builder Type Search Space -->
+  <class name="LuapeGraphBuilderTypeState">
+    <variable type="PositiveInteger" name="depth"/>
+    <variable type="ObjectVector[Type]" name="stack"/>
+  </class>
+  <class name="LuapeGraphBuilderTypeSearchSpace"/>
+
   <!-- Builder Decision Problem -->
   <class name="LuapeGraphBuilderAction"/>
   
   <class name="LuapeGraphBuilderState" base="DecisionProblemState">
-    <variable type="LuapeProblem" name="problem"/>
     <variable type="LuapeGraph" name="graph"/>
-    <variable type="PositiveInteger" name="maxSteps"/>
+    <variable type="LuapeGraphBuilderTypeSearchSpace" name="typeSearchSpace"/>
+    <variable type="LuapeGraphBuilderTypeState" name="typeState"/>
     <variable type="ObjectVector[LuapeNode]" name="stack"/>
     <variable type="PositiveInteger" name="numSteps"/>
   </class>

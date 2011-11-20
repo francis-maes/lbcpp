@@ -30,7 +30,7 @@ public:
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
     {return type->inheritsFrom(this->type);}
 
-  virtual TypePtr getOutputType(const std::vector<LuapeNodePtr>& inputs) const
+  virtual TypePtr getOutputType(const std::vector<TypePtr>& inputTypes) const
     {return type;}
 
 private:
@@ -154,7 +154,7 @@ public:
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
     {return type->inheritsFrom(doubleType);}
 
-  virtual TypePtr getOutputType(const std::vector<LuapeNodePtr>& inputs) const
+  virtual TypePtr getOutputType(const std::vector<TypePtr>& ) const
     {return booleanType;}
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
@@ -182,7 +182,7 @@ public:
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
     {return type.isInstanceOf<Enumeration>();}
 
-  virtual TypePtr getOutputType(const std::vector<LuapeNodePtr>& inputs) const
+  virtual TypePtr getOutputType(const std::vector<TypePtr>& ) const
     {return booleanType;}
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
@@ -191,9 +191,9 @@ public:
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
     {return inputs[0] == value;}
 
-  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<LuapeNodePtr>& inputs) const
+  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
   {
-    const EnumerationPtr& enumeration = inputs[0]->getType().staticCast<Enumeration>();
+    const EnumerationPtr& enumeration = inputTypes[0].staticCast<Enumeration>();
     size_t n = enumeration->getNumElements();
     VectorPtr res = vector(enumeration, n);
     for (size_t i = 0; i < n; ++i)
@@ -222,10 +222,10 @@ public:
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
     {return type->inheritsFrom(objectClass);}
 
-  virtual TypePtr getOutputType(const std::vector<LuapeNodePtr>& inputs) const
+  virtual TypePtr getOutputType(const std::vector<TypePtr>& inputTypes) const
   {
-    jassert(inputs.size() == 1);
-    return inputs[0]->getType()->getMemberVariableType(variableIndex);
+    jassert(inputTypes.size() == 1);
+    return inputTypes[0]->getMemberVariableType(variableIndex);
   }
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
@@ -237,9 +237,9 @@ public:
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
     {return inputs[0].getObject()->getVariable(variableIndex);}
 
-  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<LuapeNodePtr>& inputs) const
+  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
   {
-    TypePtr objectClass = inputs[0]->getType();
+    TypePtr objectClass = inputTypes[0];
     size_t n = objectClass->getNumMemberVariables();
     VectorPtr res = vector(positiveIntegerType, n);
     for (size_t i = 0; i < n; ++i)
@@ -267,7 +267,7 @@ public:
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
     {return type->inheritsFrom(doubleType) || type->inheritsFrom(integerType);}
   
-  virtual TypePtr getOutputType(const std::vector<LuapeNodePtr>& inputs) const
+  virtual TypePtr getOutputType(const std::vector<TypePtr>& ) const
     {return booleanType;}
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
@@ -276,8 +276,9 @@ public:
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
     {return inputs[0].toDouble() >= threshold;}
 
-  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<LuapeNodePtr>& inputs) const
+  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
   {
+    /*
     DenseDoubleVectorPtr res = new DenseDoubleVector(0, 0.0);
 
     LuapeNodeCachePtr cache = inputs[0]->getCache();
@@ -302,7 +303,8 @@ public:
     else
       jassert(false); // no training data, cannot choose thresholds
 
-    return res;
+    return res;*/
+    return ContainerPtr();
   }
 protected:
   friend class StumpLuapeFunctionClass;

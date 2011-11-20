@@ -339,10 +339,16 @@ String LuapeFunctionNode::toShortString() const
 
 void LuapeFunctionNode::initialize()
 {
-  jassert(arguments.size() == function->getNumInputs());
-  for (size_t i = 0; i < arguments.size(); ++i)
-    jassert(function->doAcceptInputType(i, arguments[i]->getType()));
-  type = function->getOutputType(arguments);
+  size_t numInputs = function->getNumInputs();
+  jassert(arguments.size() == numInputs);
+  std::vector<TypePtr> inputTypes(numInputs);
+  for (size_t i = 0; i < numInputs; ++i)
+  {
+    inputTypes[i] = arguments[i]->getType();
+    jassert(function->doAcceptInputType(i, inputTypes[i]));
+  }
+
+  type = function->getOutputType(inputTypes);
   name = function->toShortString(arguments);
   cache = new LuapeNodeCache();
   cache->initialize(type);
