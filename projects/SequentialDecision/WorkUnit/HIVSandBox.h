@@ -230,7 +230,7 @@ public:
   {
     const DenseDoubleVectorPtr& parameters = input.getObjectAndCast<DenseDoubleVector>();
     FunctionPtr heuristic = new HIVSearchHeuristic(featuresFunction, parameters);
-    PolicyPtr searchPolicy = new BestFirstSearchPolicy(heuristic);
+    SearchPolicyPtr searchPolicy = new BestFirstSearchPolicy(heuristic);
 
     double res = 0.0;
     size_t n = initialStates->getNumElements();
@@ -710,7 +710,7 @@ private:
 
   double computeTrajectory(ExecutionContext& context, const DecisionProblemPtr& problem, const ContainerPtr& initialStates, const FunctionPtr& heuristic, const String& name, size_t maxSearchNodes) const
   {
-    PolicyPtr searchPolicy = new BestFirstSearchPolicy(heuristic);
+    SearchPolicyPtr searchPolicy = new BestFirstSearchPolicy(heuristic);
     
     //ReferenceCountedObjectPtr<UnderstandHIVBudget2Policy> searchPolicy = new UnderstandHIVBudget2Policy(searchPolicy);
 

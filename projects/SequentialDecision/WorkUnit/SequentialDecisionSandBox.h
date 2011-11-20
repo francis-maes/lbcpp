@@ -151,7 +151,7 @@ public:
     }*/
 
     FunctionPtr href = optimisticPlanningSearchHeuristic(problem->getDiscount());
-    PolicyPtr currentSearchPolicy = beamSearchPolicy(href, beamSize);
+    SearchPolicyPtr currentSearchPolicy = beamSearchPolicy(href, beamSize);
 
     evaluate(context, T("href-train"), currentSearchPolicy, trainingStates);
     evaluate(context, T("href-test"), currentSearchPolicy, testingStates);
@@ -166,16 +166,17 @@ public:
         parameters->setLossFunction(rankingLoss);
       //parameters->setStoppingCriterion(averageImprovementStoppingCriterion(10e-6));
 
-      PolicyPtr newSearchPolicy = train(context, T("iter-") + String((int)i), parameters, currentSearchPolicy, trainingStates, testingStates);
+      SearchPolicyPtr newSearchPolicy = train(context, T("iter-") + String((int)i), parameters, currentSearchPolicy, trainingStates, testingStates);
 
       context.enterScope(T("Evaluating candidate mixtures"));
       double bestMixtureScore = -DBL_MAX;
       double bestMixtureCoefficient;
-      PolicyPtr bestMixturePolicy;
+      SearchPolicyPtr bestMixturePolicy;
 
       for (double k = 0.0; k <= 1.005; k += 0.01)
       {
-        PolicyPtr policy = mixturePolicy(currentSearchPolicy, newSearchPolicy, k);
+        jassert(false); // FIXME broken : must reimplemt mixtureSearchPolicy
+        SearchPolicyPtr policy;// = mixturePolicy(currentSearchPolicy, newSearchPolicy, k);
         double score = evaluate(context, T("mixt(") + String(k) + T(")"), policy, testingStates, k);
         if (score > bestMixtureScore)
         {
@@ -201,7 +202,7 @@ public:
     LearnableSearchHeuristicPtr learnedHeuristic = new LinearLearnableSearchHeuristic();
     learnedHeuristic->initialize(context, (TypePtr)searchTreeNodeClass());
     NumericalLearnableFunctionPtr linearFunction = learnedHeuristic->getScoringFunction().dynamicCast<NumericalLearnableFunction>();
-    PolicyPtr learnedSearchPolicy = beamSearchPolicy(learnedHeuristic, beamSize);
+    SearchPolicyPtr learnedSearchPolicy = beamSearchPolicy(learnedHeuristic, beamSize);
 
     EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(learnedHeuristic->getPerceptionFunction()->getOutputType());
     DenseDoubleVectorPtr parameters = linearFunction->createParameters();
@@ -240,7 +241,7 @@ public:
   }
 
 protected:
-  double evaluate(ExecutionContext& context, const String& heuristicName, PolicyPtr searchPolicy, ContainerPtr initialStates, const Variable& argument = Variable()) const
+  double evaluate(ExecutionContext& context, const String& heuristicName, SearchPolicyPtr searchPolicy, ContainerPtr initialStates, const Variable& argument = Variable()) const
   {
     FunctionPtr searchFunction = new SearchFunction(problem, searchPolicy, maxSearchNodes);
     if (!searchFunction->initialize(context, problem->getStateClass()))
@@ -260,16 +261,16 @@ protected:
     return bestReturn;
   }
 
-  PolicyPtr train(ExecutionContext& context, const String& name, StochasticGDParametersPtr parameters, PolicyPtr explorationPolicy, const ContainerPtr& trainingStates, const ContainerPtr& testingStates) const
+  SearchPolicyPtr train(ExecutionContext& context, const String& name, StochasticGDParametersPtr parameters, SearchPolicyPtr explorationPolicy, const ContainerPtr& trainingStates, const ContainerPtr& testingStates) const
   {
     LearnableSearchHeuristicPtr learnedHeuristic = new LinearLearnableSearchHeuristic();
     learnedHeuristic->initialize(context, (TypePtr)searchTreeNodeClass());
-    PolicyPtr learnedSearchPolicy = beamSearchPolicy(learnedHeuristic, beamSize);
+    SearchPolicyPtr learnedSearchPolicy = beamSearchPolicy(learnedHeuristic, beamSize);
 
     SearchFunctionPtr lookAHeadSearch = new SearchFunction(problem, learnedSearchPolicy, parameters, explorationPolicy, maxSearchNodes);
     lookAHeadSearch->setEvaluator(new SearchTreeEvaluator());
     if (!lookAHeadSearch->train(context, trainingStates, testingStates, T("Training ") + name, true))
-      return PolicyPtr();
+      return SearchPolicyPtr();
     return learnedSearchPolicy;
   }
 

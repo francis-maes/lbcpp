@@ -1,9 +1,10 @@
-
- * Use type-states to define features for the adaptative weak learning policy
- * Support of Stumps
+ * Implement the Policy with a tree => forbid already known nodes
  * GradientBoosting: allows two votes per yielded boolean 
+
+ * Support of Stumps
  * More relations in Go
 
+ * Use type-states to define features for the adaptative weak learning policy
 
 Luape-Appli:
  * Avancer sur la Perception du Go

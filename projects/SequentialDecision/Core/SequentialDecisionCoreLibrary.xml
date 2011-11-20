@@ -48,8 +48,8 @@
     <variable type="GenericVector[PositiveInteger]" name="openedNodes"/>
   </class>
 
-        <!-- Search Policy -->
-  <class name="SearchPolicy" base="Policy" abstract="yes"/>
+  <!-- Search Policy -->
+  <class name="SearchPolicy" abstract="yes"/>
 
   <class name="RandomSearchPolicy" base="SearchPolicy">
     <constructor/>

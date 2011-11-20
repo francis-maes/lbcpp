@@ -15,7 +15,7 @@
 namespace lbcpp
 {
 
-class SearchPolicy : public Policy, public SearchTreeCallback
+class SearchPolicy : public Object, public SearchTreeCallback
 {
 public:
   virtual void searchStart(ExecutionContext& context, const SearchTreePtr& searchTree) {}
@@ -42,11 +42,11 @@ public:
     return searchNext(context, tree);
   }
 
-   virtual void policyEnd(ExecutionContext& context, double reward, const Variable& finalState)
-   {
-     const SearchTreePtr& tree = finalState.getObjectAndCast<SearchTree>();
-     tree->removeCallback(this);
-   }
+  virtual void policyEnd(ExecutionContext& context, double reward, const Variable& finalState)
+  {
+    const SearchTreePtr& tree = finalState.getObjectAndCast<SearchTree>();
+    tree->removeCallback(this);
+  }
 };
 
 typedef ReferenceCountedObjectPtr<SearchPolicy> SearchPolicyPtr;

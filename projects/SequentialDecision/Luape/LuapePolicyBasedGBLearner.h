@@ -16,6 +16,109 @@
 namespace lbcpp
 {
 
+class TreeBasedRandomPolicy : public Policy
+{
+public:
+  TreeBasedRandomPolicy() : rootNode(NULL) {}
+  virtual ~TreeBasedRandomPolicy() {if (rootNode) delete rootNode;}
+
+  struct Node
+  {
+    Node(Node* parent, const DecisionProblemStatePtr& state)
+      : parent(parent), actions(state->getAvailableActions())
+    {
+      if (actions && actions->getNumElements())
+      {
+        successors.resize(actions->getNumElements(), NULL);
+        isFullyVisited = false;
+      }
+      else
+        isFullyVisited = true;
+    }
+    ~Node()
+    {
+      for (size_t i = 0; i < successors.size(); ++i)
+        if (successors[i])
+          delete successors[i];
+    }
+
+    ContainerPtr actions;
+    std::vector<Node* > successors;
+    Node* parent;
+    bool isFullyVisited;
+
+    size_t sampleActionIndex(RandomGeneratorPtr random) const
+    {
+      std::vector<size_t> candidates;
+      for (size_t i = 0; i < successors.size(); ++i)
+        if (!successors[i] || !successors[i]->isFullyVisited)
+          candidates.push_back(i);
+      if (candidates.size())
+        return candidates[random->sampleSize(candidates.size())];
+      else
+        return random->sampleSize(successors.size()); // warning: the whole decision problem has been explored !
+    }
+
+    void updateIsFullyVisited()
+    {
+      bool previousValue = isFullyVisited;
+      isFullyVisited = true;
+      for (size_t i = 0; i < successors.size(); ++i)
+        if (!successors[i] || !successors[i]->isFullyVisited)
+        {
+          isFullyVisited = false;
+          break;
+        }
+      if (parent && previousValue != isFullyVisited)
+        parent->updateIsFullyVisited();
+    }
+  };
+  Node* rootNode;
+
+  Node* previousNode;
+  Node** currentNode;
+
+  virtual void startEpisodes(ExecutionContext& context)
+  {
+    if (rootNode)
+    {
+      delete rootNode;
+      rootNode = NULL;
+    }
+  }
+
+  virtual void startEpisode(ExecutionContext& context, const DecisionProblemStatePtr& state)
+  {
+    if (!rootNode)
+      rootNode = new Node(NULL, state);
+    previousNode = NULL;
+    currentNode = &rootNode;
+  }
+
+  virtual Variable selectAction(ExecutionContext& context, const DecisionProblemStatePtr& state)
+  {
+    size_t actionIndex = (*currentNode)->sampleActionIndex(context.getRandomGenerator());
+    Variable res = (*currentNode)->actions->getElement(actionIndex);
+    previousNode = *currentNode;
+    currentNode = &(previousNode->successors[actionIndex]);
+    return res;
+  }
+
+  virtual void observeTransition(ExecutionContext& context, const Variable& action, double reward, const DecisionProblemStatePtr& newState)
+  {
+    if (!*currentNode)
+    {
+      *currentNode = new Node(previousNode, newState);
+      previousNode->updateIsFullyVisited();
+    }
+  }
+
+  lbcpp_UseDebuggingNewOperator
+};
+
+  
+///////////////////////////////////////////////////////////////////////////
+
 class LuapeRewardStorage : public Object
 {
 public:
@@ -165,30 +268,29 @@ public:
     return res;
   }
 
-  void beginEpisode()
+  /////// POLICY //////////
+  virtual void startEpisodes(ExecutionContext& context)
   {
     rewards->startNewEpisode();
   }
 
-  /////// POLICY //////////
-  virtual Variable policyStart(ExecutionContext& context, const Variable& state, const ContainerPtr& actions)
+  virtual void startEpisode(ExecutionContext& context, const DecisionProblemStatePtr& initialState)
   {
     trajectoryFeatures = new DenseDoubleVector(features, doubleType);
-    return selectAction(context, state.getObjectAndCast<DecisionProblemState>(), actions);
   }
 
-  virtual Variable policyStep(ExecutionContext& context, double reward, const Variable& state, const ContainerPtr& actions)
-    {return selectAction(context, state.getObjectAndCast<DecisionProblemState>(), actions);}
-
-  virtual void policyEnd(ExecutionContext& context, double reward, const Variable& finalState)
-    {rewards->observe(trajectoryFeatures, reward);}
-
-  Variable selectAction(ExecutionContext& context, const DecisionProblemStatePtr& state, const ContainerPtr& actions)
+  virtual Variable selectAction(ExecutionContext& context, const DecisionProblemStatePtr& state)
   {
-    Variable action = sampleAction(context, state, actions);
+    Variable action = sampleAction(context, state, state->getAvailableActions());
     SparseDoubleVectorPtr features = makeFeatures(context, state, action);
     features->addTo(trajectoryFeatures);
     return action;
+  }
+
+  virtual void observeTransition(ExecutionContext& context, const Variable& action, double reward, const DecisionProblemStatePtr& newState)
+  {
+    if (newState->isFinalState())
+      rewards->observe(trajectoryFeatures, reward);
   }
 
   Variable sampleAction(ExecutionContext& context, const DecisionProblemStatePtr& state, const ContainerPtr& actions)
@@ -246,6 +348,8 @@ protected:
   LuapeRewardStoragePtr rewards;
 };
 
+///////////////////////////////////////////////////////////////////////////
+
 class LuapePolicyBasedGBLearner : public LuapeGradientBoostingLearner
 {
 public:
@@ -277,14 +381,10 @@ public:
       context.leaveScope(optimalReward);
     }
 
-    // FIXME !
-    if (policy.dynamicCast<LuapeRewardStorageBasedPolicy>())
-      policy.staticCast<LuapeRewardStorageBasedPolicy>()->beginEpisode();
-    // -
-
     context.enterScope(T("Weak Learning"));
     double bestReward = -DBL_MAX;
     LuapeNodePtr bestWeakLearner;
+    policy->startEpisodes(context);
     for (size_t i = 0; i < budget; ++i)
     {
       double reward;
@@ -314,8 +414,8 @@ public:
   {
     LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(graph->cloneAndCast<LuapeGraph>(), typeSearchSpace);
 
-    bool isFirstStep = true;
     bool noMoreActions = false;
+    policy->startEpisode(context, builder);
     while (!builder->isFinalState())
     {
       ContainerPtr actions = builder->getAvailableActions();
@@ -325,22 +425,15 @@ public:
         break;
       }
 
-      Variable action;
-      if (isFirstStep)
-      {
-        action = policy->policyStart(context, builder, builder->getAvailableActions());
-        isFirstStep = false;
-      }
-      else
-        action = policy->policyStep(context, 0.0, builder, builder->getAvailableActions());
+      Variable action = policy->selectAction(context, builder);
       double reward;
       builder->performTransition(context, action, reward);
+      policy->observeTransition(context, action, reward, builder);
     }
 
     LuapeYieldNodePtr yieldNode = builder->getGraph()->getLastNode().dynamicCast<LuapeYieldNode>();
     reward = yieldNode ? computeCompletionReward(context, yieldNode->getArgument()) : 0.0;
 
-    policy->policyEnd(context, reward, builder);
     if (noMoreActions)
       context.informationCallback(T("Out-of-actions: ") + builder->toShortString());
     else
