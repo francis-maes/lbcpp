@@ -9,8 +9,7 @@
 #ifndef LBCPP_LUAPE_GRAPH_BUILDER_H_
 # define LBCPP_LUAPE_GRAPH_BUILDER_H_
 
-# include "LuapeGraph.h"
-# include "LuapeProblem.h"
+# include "LuapeGraphBuilderTypeSearchSpace.h"
 # include "../Core/DecisionProblem.h"
 
 namespace lbcpp
@@ -69,10 +68,10 @@ public:
 
     if (state.function)
     {
-      std::vector<LuapeNodePtr> functionInputs(state.function->getNumInputs());
-      for (size_t i = 0; i < functionInputs.size(); ++i)
-        functionInputs[i] = state.stack[state.stack.size() - state.function->getNumInputs() + i];
-      ContainerPtr candidateValues = state.function->getVariableCandidateValues(state.functionNumArguments, functionInputs);
+      std::vector<TypePtr> inputTypes(state.function->getNumInputs());
+      for (size_t i = 0; i < inputTypes.size(); ++i)
+        inputTypes[i] = state.stack[state.stack.size() - state.function->getNumInputs() + i]->getType();
+      ContainerPtr candidateValues = state.function->getVariableCandidateValues(state.functionNumArguments, inputTypes);
       size_t n = candidateValues->getNumElements();
       for (size_t i = 0; i < n; ++i)
         res->append(candidateValues->getElement(i));
@@ -227,8 +226,8 @@ class LuapeGraphBuilderAction : public Object
 {
 public:
   LuapeGraphBuilderAction(size_t numNodesToRemove, const LuapeNodePtr& nodeToAdd, bool isNewNode)
-    : numNodesToRemove(numNodesToRemove), nodeToAdd(nodeToAdd), isNewNode(isNewNode), hasAddedNodeToGraph(false) {}
-  LuapeGraphBuilderAction() : numNodesToRemove(0), isNewNode(false), hasAddedNodeToGraph(false) {}
+    : numNodesToRemove(numNodesToRemove), nodeToAdd(nodeToAdd), newNode(isNewNode), hasAddedNodeToGraph(false) {}
+  LuapeGraphBuilderAction() : numNodesToRemove(0), newNode(false), hasAddedNodeToGraph(false) {}
 
   static LuapeGraphBuilderActionPtr push(const LuapeNodePtr& node)
     {return new LuapeGraphBuilderAction(0, node, false);}
@@ -239,15 +238,14 @@ public:
   static LuapeGraphBuilderActionPtr yield(const LuapeNodePtr& node)
     {return new LuapeGraphBuilderAction(1, new LuapeYieldNode(node), true);}
 
-  size_t numNodesToRemove;
-  LuapeNodePtr nodeToAdd;
-  bool isNewNode;
+  bool isNewNode() const
+    {return newNode;}
+
+  const LuapeNodePtr& getNodeToAdd() const
+    {return nodeToAdd;}
 
   bool isUseless(const LuapeGraphPtr& graph) const
-    {return nodeToAdd && isNewNode && graph->containsNode(nodeToAdd);}
-
-  std::vector<LuapeNodePtr> removedNodes; // use in state backup only
-  bool hasAddedNodeToGraph;
+    {return nodeToAdd && isNewNode() && graph->containsNode(nodeToAdd);}
 
   void perform(std::vector<LuapeNodePtr>& stack, const LuapeGraphPtr& graph)
   {
@@ -263,7 +261,7 @@ public:
     if (nodeToAdd)
     {
       stack.push_back(nodeToAdd);
-      if (isNewNode && !graph->containsNode(nodeToAdd))
+      if (isNewNode() && !graph->containsNode(nodeToAdd))
       {
         graph->pushNode(defaultExecutionContext(), nodeToAdd);
         hasAddedNodeToGraph = true;
@@ -287,6 +285,14 @@ public:
         stack.push_back(removedNodes[i]);
     }
   }
+
+private:
+  size_t numNodesToRemove;
+  LuapeNodePtr nodeToAdd;
+  bool newNode;
+
+  std::vector<LuapeNodePtr> removedNodes; // use in state backup only
+  bool hasAddedNodeToGraph;
 };
 
 extern ClassPtr luapeGraphBuilderActionClass;
@@ -294,15 +300,16 @@ extern ClassPtr luapeGraphBuilderActionClass;
 class LuapeGraphBuilderState : public DecisionProblemState
 {
 public:
-  LuapeGraphBuilderState(const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, size_t maxSteps)
-    : problem(problem), graph(graph), maxSteps(maxSteps), numSteps(0), isAborted(false), isYielded(false)
+  LuapeGraphBuilderState(const LuapeGraphPtr& graph, LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace)
+    : graph(graph), typeSearchSpace(typeSearchSpace), typeState(typeSearchSpace->getInitialState()), numSteps(0), isAborted(false), isYielded(false)
   {
     nodeKeys = new LuapeNodeKeysMap();
     for (size_t i = 0; i < graph->getNumNodes(); ++i)
       if (!graph->getNode(i).isInstanceOf<LuapeYieldNode>())
         nodeKeys->addNodeToCache(defaultExecutionContext(), graph->getNode(i));
+
   }
-  LuapeGraphBuilderState() : maxSteps(0), numSteps(0), isAborted(false), isYielded(false) {}
+  LuapeGraphBuilderState() : numSteps(0), isAborted(false), isYielded(false) {}
 
   virtual String toShortString() const
   {
@@ -327,36 +334,39 @@ public:
 
   virtual ContainerPtr getAvailableActions() const
   {
-    if (numSteps >= maxSteps)
-      return ContainerPtr();
-
     ObjectVectorPtr res = new ObjectVector(luapeGraphBuilderActionClass, 0);
 
-    size_t numRemainingSteps = maxSteps - numSteps;
-    if (numRemainingSteps > stack.size())
+    if (typeState->hasPushActions())
     {
       size_t n = graph->getNumNodes();
       for (size_t i = 0; i < n; ++i)
-        if (!graph->getNode(i).isInstanceOf<LuapeYieldNode>())
-          res->append(LuapeGraphBuilderAction::push(graph->getNode(i)));
-    }
-
-    if (numRemainingSteps > 1)
-    {
-      for (size_t i = 0; i < problem->getNumFunctions(); ++i)
       {
-        LuapeFunctionPtr function = problem->getFunction(i);
-        if (function->acceptInputsStack(stack) && numRemainingSteps >= 1 + (stack.size() - function->getNumInputs() + 1))
+        LuapeNodePtr node = graph->getNode(i);
+        if (!node.isInstanceOf<LuapeYieldNode>() && typeState->canTypeBePushed(node->getType()))
+          res->append(LuapeGraphBuilderAction::push(graph->getNode(i)));
+      }
+    }
+    if (typeState->hasApplyActions())
+    {
+      const std::map<LuapeFunctionPtr, LuapeGraphBuilderTypeStatePtr>& apply = typeState->getApplyActions();
+      for (std::map<LuapeFunctionPtr, LuapeGraphBuilderTypeStatePtr>::const_iterator it = apply.begin(); it != apply.end(); ++it)
+      {
+        LuapeFunctionPtr function = it->first;
+        if (function->acceptInputsStack(stack))
         {
-          std::vector<LuapeNodePtr> inputs(function->getNumInputs());
-          for (size_t i = 0; i < inputs.size(); ++i)
-            inputs[i] = stack[stack.size() - inputs.size() + i];
-          enumerateFunctionVariables(function, inputs, res);
+          size_t numInputs = function->getNumInputs();
+          std::vector<LuapeNodePtr> inputs(numInputs);
+          for (size_t i = 0; i < numInputs; ++i)
+            inputs[i] = stack[stack.size() - numInputs + i];
+
+          LuapeGraphBuilderActionPtr action = LuapeGraphBuilderAction::apply(graph, function, inputs);
+          if (!action->isUseless(graph)) // useless == the created node already exists in the graph
+            res->append(action);
         }
       }
     }
 
-    if (isYieldAvailable())
+    if (typeState->hasYieldAction())
       res->append(LuapeGraphBuilderAction::yield(stack.back()));
     return res;
   }
@@ -367,12 +377,13 @@ public:
     if (stateBackup)
       *stateBackup = action;
     action->perform(stack, graph);
-    if (action->isNewNode)
+    LuapeNodePtr nodeToAdd = action->getNodeToAdd();
+    if (action->isNewNode())
     {
-      action->nodeToAdd->updateCache(context, true);
-      if (action->nodeToAdd.isInstanceOf<LuapeFunction>() && !nodeKeys->isNodeKeyNew(action->nodeToAdd))
+      nodeToAdd->updateCache(context, true);
+      if (nodeToAdd.isInstanceOf<LuapeFunctionNode>() && !nodeKeys->isNodeKeyNew(nodeToAdd))
       {
-        context.informationCallback(T("Aborded: ") + action->nodeToAdd->toShortString());
+        context.informationCallback(T("Aborded: ") + nodeToAdd->toShortString());
         isAborted = true; // create a node that has the same key as an already existing node in the graph is forbidden 
         // note that in the current implementation, we only compare to the nodes existing in the current initial graph
         //  (not intermediary nodes created along the builder trajectory)
@@ -380,8 +391,13 @@ public:
     }
     reward = 0.0;
     ++numSteps;
-    if (action->nodeToAdd && action->nodeToAdd.isInstanceOf<LuapeYieldNode>())
+    if (nodeToAdd && nodeToAdd.isInstanceOf<LuapeYieldNode>())
+    {
       isYielded = true;
+      typeState = LuapeGraphBuilderTypeStatePtr();
+    }
+    else
+      updateTypeState();
   }
 
   virtual bool undoTransition(ExecutionContext& context, const Variable& stateBackup)
@@ -390,11 +406,12 @@ public:
     isAborted = isYielded = false;
     --numSteps;
     action->undo(stack, graph);
+    updateTypeState();
     return true;
   }
 
   virtual bool isFinalState() const
-    {return isAborted || isYielded || numSteps >= maxSteps;}
+    {return isAborted || isYielded || !typeState->hasAnyAction();}
 
   LuapeGraphPtr getGraph() const
     {return graph;}
@@ -411,9 +428,9 @@ public:
 protected:
   friend class LuapeGraphBuilderStateClass;
 
-  LuapeProblemPtr problem;
   LuapeGraphPtr graph;
-  size_t maxSteps;
+  LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
+  LuapeGraphBuilderTypeStatePtr typeState;
   LuapeNodeKeysMapPtr nodeKeys;
 
   std::vector<LuapeNodePtr> stack;
@@ -421,17 +438,32 @@ protected:
   bool isAborted;
   bool isYielded;
 
+  void updateTypeState()
+  {
+    std::vector<TypePtr> types(stack.size());
+    for (size_t i = 0; i < types.size(); ++i)
+      types[i] = stack[i]->getType();
+    typeState = typeSearchSpace->getState(numSteps, types);
+    jassert(typeState);
+  }
+
+/*
   bool isYieldAvailable() const
     {return stack.size() == 1 && stack[0]->getType()->inheritsFrom(booleanType);}
 
   void enumerateFunctionVariables(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs, ObjectVectorPtr res) const
   {
+    std::vector<TypePtr> inputTypes(inputs.size());
+    for (size_t i = 0; i < inputTypes.size(); ++i)
+      inputTypes[i] = inputs[i]->getType();
+
     std::vector<Variable> variables(function->getNumVariables());
-    enumerateFunctionVariables(function, inputs, variables, 0, res);
+    enumerateFunctionVariables(function, inputs, inputTypes, variables, 0, res);
   }
 
   // enumerate function parameters recursively
-  void enumerateFunctionVariables(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs, std::vector<Variable>& variables, size_t variableIndex, ObjectVectorPtr res) const
+  void enumerateFunctionVariables(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs, const std::vector<TypePtr>& inputTypes,
+                                  std::vector<Variable>& variables, size_t variableIndex, ObjectVectorPtr res) const
   {
     if (variableIndex == variables.size())
     {
@@ -445,105 +477,15 @@ protected:
     }
     else
     {
-      ContainerPtr values = function->getVariableCandidateValues(variableIndex, inputs);
+      ContainerPtr values = function->getVariableCandidateValues(variableIndex, inputTypes);
       size_t n = values->getNumElements();
       for (size_t i = 0; i < n; ++i)
       {
         variables[variableIndex] = values->getElement(i);
-        enumerateFunctionVariables(function, inputs, variables, variableIndex + 1, res);
+        enumerateFunctionVariables(function, inputs, inputTypes, variables, variableIndex + 1, res);
       }
     }
-  }   
-  
-#if 0
-  // enumerate input candidates recursively
-  void addFunctionNodes(const LuapeFunctionPtr& function, std::vector<LuapeNodePtr>& inputs, size_t inputIndex, ContainerPtr res) const
-  {
-    if (inputIndex == inputs.size())
-    {
-      if ((function->getFlags() & LuapeFunction::allSameArgIrrelevantFlag) != 0 && inputs.size() > 1)
-      {
-        bool ok = false;
-        for (size_t i = 1; i < inputs.size(); ++i)
-          if (inputs[i] != inputs[0])
-            ok = true;
-        if (!ok)
-          return;
-      }
-
-      std::vector<Variable> variables(function->getNumVariables());
-      addFunctionNodesGivenInputs(function, inputs, variables, 0, res);
-    }
-    else
-    {
-      if (inputs[inputIndex])
-        addFunctionNodes(function, inputs, inputIndex + 1, res);
-      else
-      {
-        size_t firstIndex = 0;
-        if ((function->getFlags() & LuapeFunction::commutativeFlag) != 0 && inputIndex > 0)
-          firstIndex = inputs[inputIndex - 1]->getIndexInGraph();
-
-        for (size_t i = firstIndex; i < graph->getNumNodes(); ++i)
-          if (function->doAcceptInputType(inputIndex, graph->getNodeType(i)))
-          {
-            inputs[inputIndex] = graph->getNode(i);
-            addFunctionNodes(function, inputs, inputIndex + 1, res);
-          }
-      }
-    }
-  }
-
-  void addFunctionNodes(const LuapeFunctionPtr& function, ObjectVectorPtr res) const
-  {
-    size_t numInputs = function->getNumInputs();
-
-    std::vector<LuapeNodePtr> inputs(numInputs);
-    addFunctionNodes(function, inputs, 0, res);
-
-    /*
-    LuapeNodePtr nodeToUse = nodeToUseStack.back();
-    TypePtr nodeType = nodeToUse->getType();
-    if (numInputs == 1)
-    {
-      if (function->doAcceptInputType(0, nodeType))
-        addFunctionNodesGivenInputs(function, std::vector<LuapeNodePtr>(1, nodeToUse), res);
-    }
-    else if ((numInputs == 2) && (function->getFlags() & LuapeFunction::commutativeFlag) != 0)
-    {
-      // commutative function
-      if (function->doAcceptInputType(0, nodeType))
-      {
-        std::vector<LuapeNodePtr> inputs(2);
-        inputs[0] = nodeToUse;
-        for (size_t i = 0; i < graph->getNumNodes(); ++i)
-          if (function->doAcceptInputType(1, graph->getNodeType(i)) && graph->getNode(i) != nodeToUse)
-          {
-            inputs[1] = graph->getNode(i);
-            addFunctionNodesGivenInputs(function, inputs, res);
-          }
-        if ((function->getFlags() & LuapeFunction::allSameArgIrrelevantFlag) == 0)
-        {
-          inputs[1] = nodeToUse;
-          addFunctionNodesGivenInputs(function, inputs, res);
-        }
-      }
-    }
-    else
-    {
-      // default implementation: try to plug nodeToUse in each possible input and enumerate all completions for each case
-      std::vector<LuapeNodePtr> inputs(numInputs);
-
-      for (size_t i = 0; i < numInputs; ++i)
-        if (function->doAcceptInputType(i, nodeType))
-        {
-          inputs[i] = nodeToUse;
-          addFunctionNodes(function, inputs, 0, res);
-          inputs[i] = LuapeNodePtr();
-        }
-    }*/
-  }
-#endif // 0
+  }*/
 };
 
 typedef ReferenceCountedObjectPtr<LuapeGraphBuilderState> LuapeGraphBuilderStatePtr;

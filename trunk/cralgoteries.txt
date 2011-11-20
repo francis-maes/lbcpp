@@ -1,3 +1,10 @@
+
+ * Use type-states to define features for the adaptative weak learning policy
+ * Support of Stumps
+ * GradientBoosting: allows two votes per yielded boolean 
+ * More relations in Go
+
+
 Luape-Appli:
  * Avancer sur la Perception du Go
  * Classification: tester sur mnist et pendigit
