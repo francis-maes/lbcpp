@@ -53,6 +53,23 @@ public:
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
     {return computeBoolean(inputs[0].getBoolean(), inputs[1].getBoolean());}
+
+  virtual VectorPtr compute(ExecutionContext& context, const std::vector<VectorPtr>& inputs, TypePtr outputType) const
+  {
+    const std::vector<bool>& inputs1 = inputs[0].staticCast<BooleanVector>()->getElements();
+    const std::vector<bool>& inputs2 = inputs[1].staticCast<BooleanVector>()->getElements();
+    jassert(inputs1.size() == inputs2.size());
+
+    BooleanVectorPtr res = new BooleanVector(inputs1.size());
+    std::vector<bool>& dest = res->getElements();
+
+    std::vector<bool>::const_iterator it1 = inputs1.begin();
+    std::vector<bool>::const_iterator it2 = inputs2.begin();
+    std::vector<bool>::iterator itd = dest.begin();
+    while (it1 != inputs1.end())
+      *itd++ = computeBoolean(*it1++, *it2++);
+    return res;
+  }
 };
 
 class AndBooleanLuapeFunction : public BinaryBooleanLuapeFunction
@@ -88,6 +105,23 @@ public:
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
     {return computeDouble(inputs[0].getDouble(), inputs[1].getDouble());}
+
+  virtual VectorPtr compute(ExecutionContext& context, const std::vector<VectorPtr>& inputs, TypePtr outputType) const
+  {
+    const DenseDoubleVectorPtr& inputs1 = inputs[0].staticCast<DenseDoubleVector>();
+    const DenseDoubleVectorPtr& inputs2 = inputs[1].staticCast<DenseDoubleVector>();
+    jassert(inputs1->getNumValues() == inputs2->getNumValues());
+
+    DenseDoubleVectorPtr res = new DenseDoubleVector(inputs1->getNumValues(), 0.0);
+    const double* ptr1 = inputs1->getValuePointer(0);
+    const double* lim = ptr1 + inputs1->getNumValues();
+    const double* ptr2 = inputs2->getValuePointer(0);
+    double* target = res->getValuePointer(0);
+    while (ptr1 != lim)
+      *target++ = computeDouble(*ptr1++, *ptr2++);
+    return res;
+  }
+
 };
 
 class AddDoubleLuapeFunction : public BinaryDoubleLuapeFunction

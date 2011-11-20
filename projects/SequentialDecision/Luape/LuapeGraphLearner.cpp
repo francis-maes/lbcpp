@@ -52,19 +52,16 @@ double LuapeGradientBoostingLearner::computeCompletionReward(ExecutionContext& c
   }
   else
   {
-    BooleanVectorPtr booleans = samples.dynamicCast<BooleanVector>();
-    jassert(booleans);
-    size_t n = booleans->getNumElements();
-    jassert(n == pseudoResiduals->getNumValues());
+    std::vector<bool>::const_iterator it = samples.staticCast<BooleanVector>()->getElements().begin();
 
     ScalarVariableMeanAndVariance trainPositive;
     ScalarVariableMeanAndVariance validationPositive;
     ScalarVariableMeanAndVariance trainNegative;
     ScalarVariableMeanAndVariance validationNegative;
 
-    for (size_t i = 0; i < n; ++i)
+    for (size_t i = 0; i < pseudoResiduals->getNumValues(); ++i)
     {
-      bool isPositive = booleans->get(i);
+      bool isPositive = *it++;
 
       double value = pseudoResiduals->getValue(i);
       double weight = 1.0; // fabs(value)
@@ -95,6 +92,8 @@ bool LuapeGradientBoostingLearner::doLearningIteration(ExecutionContext& context
 {
   LuapeObjectivePtr objective = problem->getObjective();
 
+  double time = juce::Time::getMillisecondCounterHiRes();
+
   // 1- compute graph outputs and compute loss derivatives
   context.enterScope(T("Computing predictions"));
   DenseDoubleVectorPtr predictions = function->computeSamplePredictions(context, true);
@@ -108,14 +107,25 @@ bool LuapeGradientBoostingLearner::doLearningIteration(ExecutionContext& context
   context.resultCallback(T("predictions"), predictions);
   context.resultCallback(T("pseudoResiduals"), pseudoResiduals);
 
+  double newTime = juce::Time::getMillisecondCounterHiRes();
+  context.resultCallback(T("compute predictions and residuals time"), (newTime - time) / 1000.0);
+  time = newTime;
+
   // 2- find best weak learner
   LuapeNodePtr weakLearner = doWeakLearning(context, predictions);
   if (!weakLearner)
     return false;
 
+  newTime = juce::Time::getMillisecondCounterHiRes();
+  context.resultCallback(T("learn weak time"), (newTime - time) / 1000.0);
+  time = newTime;
+
   // 3- add weak learner to graph
   if (!addWeakLearnerToGraph(context, predictions, weakLearner))
     return false;
+
+  newTime = juce::Time::getMillisecondCounterHiRes();
+  context.resultCallback(T("add weak to graph time"), (newTime - time) / 1000.0);
 
   // ok
   return true;
@@ -143,6 +153,7 @@ bool LuapeGradientBoostingLearner::addWeakLearnerToGraph(ExecutionContext& conte
     jassert(false); // todo: create stump
   }
   function->getVotes()->append(optimalWeight * learningRate);
-  context.informationCallback(T("Graph: ") + graph->toShortString());
+  if ((graph->getNumNodes() % 100) == 0)
+    context.informationCallback(T("Graph: ") + graph->toShortString());
   return true;
 }
