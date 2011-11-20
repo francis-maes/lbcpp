@@ -367,10 +367,9 @@ public:
     return true;
   }
 
-
   virtual LuapeNodePtr doWeakLearning(ExecutionContext& context, const DenseDoubleVectorPtr& predictions) const
   {
-    static const bool computeOptimalLearner = true;
+    static const bool computeOptimalLearner = false;
 
     double optimalReward = -DBL_MAX;
     LuapeNodePtr optimalWeakLearner;
@@ -433,11 +432,11 @@ public:
 
     LuapeYieldNodePtr yieldNode = builder->getGraph()->getLastNode().dynamicCast<LuapeYieldNode>();
     reward = yieldNode ? computeCompletionReward(context, yieldNode->getArgument()) : 0.0;
-
+/*
     if (noMoreActions)
       context.informationCallback(T("Out-of-actions: ") + builder->toShortString());
     else
-      context.informationCallback(T("Final State: ") + builder->toShortString() + T(" => ") + String(reward));
+      context.informationCallback(T("Final State: ") + builder->toShortString() + T(" => ") + String(reward));*/
     return builder->getGraph()->getLastNode().dynamicCast<LuapeYieldNode>();
   }
 

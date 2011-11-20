@@ -111,6 +111,9 @@ public:
   const std::vector<bool>& getElements() const
     {return v;}
 
+  std::vector<bool>& getElements()
+    {return v;}
+
   /*
   ** Vector
   */

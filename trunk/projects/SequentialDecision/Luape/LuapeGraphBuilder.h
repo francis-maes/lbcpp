@@ -303,10 +303,11 @@ public:
   LuapeGraphBuilderState(const LuapeGraphPtr& graph, LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace)
     : graph(graph), typeSearchSpace(typeSearchSpace), typeState(typeSearchSpace->getInitialState()), numSteps(0), isAborted(false), isYielded(false)
   {
-    nodeKeys = new LuapeNodeKeysMap();
+    /*nodeKeys = new LuapeNodeKeysMap();
     for (size_t i = 0; i < graph->getNumNodes(); ++i)
       if (!graph->getNode(i).isInstanceOf<LuapeYieldNode>())
         nodeKeys->addNodeToCache(defaultExecutionContext(), graph->getNode(i));
+        */
 
   }
   LuapeGraphBuilderState() : numSteps(0), isAborted(false), isYielded(false) {}
@@ -334,10 +335,14 @@ public:
 
   virtual ContainerPtr getAvailableActions() const
   {
+    if (availableActions)
+      return availableActions;
+
     if (!typeState)
       return ContainerPtr();
 
     ObjectVectorPtr res = new ObjectVector(luapeGraphBuilderActionClass, 0);
+    const_cast<LuapeGraphBuilderState* >(this)->availableActions = res;
 
     if (typeState->hasPushActions())
     {
@@ -383,17 +388,18 @@ public:
     LuapeNodePtr nodeToAdd = action->getNodeToAdd();
     if (action->isNewNode())
     {
-      nodeToAdd->updateCache(context, true);
+      /*nodeToAdd->updateCache(context, true);
       if (nodeToAdd.isInstanceOf<LuapeFunctionNode>() && !nodeKeys->isNodeKeyNew(nodeToAdd))
       {
         context.informationCallback(T("Aborded: ") + nodeToAdd->toShortString());
         isAborted = true; // create a node that has the same key as an already existing node in the graph is forbidden 
         // note that in the current implementation, we only compare to the nodes existing in the current initial graph
         //  (not intermediary nodes created along the builder trajectory)
-      }
+      }*/
     }
     reward = 0.0;
     ++numSteps;
+    availableActions = ContainerPtr();
     if (nodeToAdd && nodeToAdd.isInstanceOf<LuapeYieldNode>())
     {
       isYielded = true;
@@ -409,6 +415,7 @@ public:
     isAborted = isYielded = false;
     --numSteps;
     action->undo(stack, graph);
+    availableActions = ContainerPtr();
     updateTypeState();
     return true;
   }
@@ -434,7 +441,8 @@ protected:
   LuapeGraphPtr graph;
   LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
   LuapeGraphBuilderTypeStatePtr typeState;
-  LuapeNodeKeysMapPtr nodeKeys;
+  ContainerPtr availableActions;
+  //LuapeNodeKeysMapPtr nodeKeys;
 
   std::vector<LuapeNodePtr> stack;
   size_t numSteps;

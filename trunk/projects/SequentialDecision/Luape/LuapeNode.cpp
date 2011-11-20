@@ -204,8 +204,9 @@ BinaryKeyPtr LuapeNodeCache::makeKeyFromSamples(bool useTrainingSamples) const
   if (booleanVector)
   {
     BinaryKeyPtr res = new BinaryKey(1 + n / 8);
+    std::vector<bool>::const_iterator it = booleanVector->getElements().begin();
     for (size_t i = 0; i < n; ++i)
-      res->pushBit(booleanVector->get(i));
+      res->pushBit(*it++);
     res->fillBits();
     return res;
   }
