@@ -99,7 +99,7 @@ class BinaryDoubleLuapeFunction : public HomogeneousBinaryLuapeFunction
 {
 public:
   BinaryDoubleLuapeFunction()
-    : HomogeneousBinaryLuapeFunction(booleanType) {}
+    : HomogeneousBinaryLuapeFunction(doubleType) {}
 
   virtual double computeDouble(double first, double second) const = 0;
 
@@ -170,7 +170,7 @@ public:
     {return "(" + inputs[0]->toShortString() + " / " + inputs[1]->toShortString() + ")";}
 
   virtual double computeDouble(double first, double second) const
-    {return first / second;}
+    {return second ? first / second : 0.0;}
 
   virtual Flags getFlags() const
     {return (Flags)allSameArgIrrelevantFlag;}

@@ -177,8 +177,15 @@ void LuapeNodeCache::clearSamples(bool clearTrainingSamples, bool clearValidatio
 
 struct SortDoubleValuesOperator
 {
+  static double transformIntoValidNumber(double input)
+    {return input;}
+
   bool operator()(const std::pair<size_t, double>& a, const std::pair<size_t, double>& b) const
-    {return a.second == b.second ? a.first < b.first : a.second < b.second;}
+  {
+    double aa = transformIntoValidNumber(a.second);
+    double bb = transformIntoValidNumber(b.second);
+    return aa == bb ? a.first < b.first : aa < bb;
+  }
 };
 
 const std::vector< std::pair<size_t, double> >& LuapeNodeCache::getSortedDoubleValues() const
