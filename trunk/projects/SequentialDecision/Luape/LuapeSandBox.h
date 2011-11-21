@@ -45,7 +45,7 @@ public:
     LuapeInferencePtr classifier = new LuapeClassifier();
     if (!classifier->initialize(context, inputClass, labels))
       return false;
-    classifier->setBatchLearner(new LuapeBatchLearner(new LuapeAdaBoostMHLearner(), problem, maxIterations));
+    classifier->setBatchLearner(new LuapeBatchLearner(new LuapeAdaBoostMHLearner(singleStumpWeakLearner()), problem, maxIterations));
     classifier->setEvaluator(defaultSupervisedEvaluator());
 
     classifier->train(context, trainData, testData, T("Training"), true);
@@ -53,7 +53,7 @@ public:
     classifier->evaluate(context, testData, EvaluatorPtr(), T("Evaluating on testing data"));
       
 #if 0      
-    LuapeGraphLearnerPtr learner = new LuapeAdaBoostMHLearner();
+    LuapeLearnerPtr learner = new LuapeAdaBoostMHLearner();
     if (!learner->initialize(context, problem, classifier))
       return false;
       

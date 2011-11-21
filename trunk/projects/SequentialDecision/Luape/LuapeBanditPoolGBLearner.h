@@ -35,7 +35,7 @@ public:
   void initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph);
   void executeArm(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode);
 
-  void playArmWithHighestIndex(ExecutionContext& context, const LuapeGraphLearnerPtr& graphLearner);
+  void playArmWithHighestIndex(ExecutionContext& context, const LuapeGreedyStructureLearnerPtr& graphLearner);
 
   size_t sampleArmWithHighestReward(ExecutionContext& context) const;
 
@@ -93,20 +93,63 @@ protected:
 
 typedef ReferenceCountedObjectPtr<LuapeGraphBuilderBanditPool> LuapeGraphBuilderBanditPoolPtr;
 
-class LuapeBanditPoolGBLearner : public LuapeGradientBoostingLearner
+
+/*
+** LuapeBanditPoolWeakLearner
+*/
+class LuapeBanditPoolWeakLearner : public LuapeWeakLearner
 {
 public:
-  LuapeBanditPoolGBLearner(double learningRate, size_t maxBandits, size_t maxDepth);
+  LuapeBanditPoolWeakLearner(size_t maxBandits, size_t maxDepth)
+    : maxBandits(maxBandits), maxDepth(maxDepth) {}  
 
-  virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function);
-  virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data);
+  virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function)
+  {
+    pool = new LuapeGraphBuilderBanditPool(maxBandits, maxDepth);
+    pool->clearSamples(true, true);
+    pool->initialize(context, problem, function->getGraph());
+    return true;
+  }
 
   // gradient boosting
-  virtual LuapeNodePtr doWeakLearning(ExecutionContext& context, const DenseDoubleVectorPtr& predictions) const;
-  virtual bool addWeakLearnerToGraph(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, LuapeNodePtr completion);
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeGreedyStructureLearnerPtr& structureLearner) const
+  {
+    if (pool->getNumArms() == 0)
+    {
+      context.errorCallback(T("No arms"));
+      return LuapeNodePtr();
+    }
+    
+    // play arms
+    for (size_t t = 0; t < 10; ++t)
+    {
+      context.enterScope(T("Playing bandits iteration ") + String((int)t));
+      for (size_t i = 0; i < pool->getNumArms(); ++i)
+        pool->playArmWithHighestIndex(context, structureLearner);
+      pool->displayInformation(context);
+      context.leaveScope();
+    }
+
+    // select best arm
+    size_t armIndex = pool->sampleArmWithHighestReward(context);
+    if (armIndex == (size_t)-1)
+    {
+      context.errorCallback(T("Could not select best arm"));
+      return LuapeNodePtr();
+    }
+
+    return pool->getArmNode(armIndex);
+  }
+  
+  virtual void update(ExecutionContext& context, const LuapeGreedyStructureLearnerPtr& structureLearner, LuapeNodePtr weakLearner)
+  {
+    pool->executeArm(context, structureLearner->getProblem(), structureLearner->getGraph(), weakLearner);
+    context.resultCallback(T("numArms"), pool->getNumArms());
+  }
 
 protected:
   size_t maxBandits;
+  size_t maxDepth;
   LuapeGraphBuilderBanditPoolPtr pool;
 };
 

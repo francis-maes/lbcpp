@@ -62,11 +62,12 @@ public:
       return false;
 
     // configure gradient boosting
-    //LuapeGraphLearnerPtr learner = new LuapeBanditPoolGBLearner(1.0, 1000, maxDepth);
+    //LuapeLearnerPtr learner = new LuapeBanditPoolGBLearner(1.0, 1000, maxDepth);
     PolicyPtr policy = new TreeBasedRandomPolicy();
     //PolicyPtr policy = new RandomPolicy();
     //PolicyPtr policy = new LuapeRewardStorageBasedPolicy();
-    LuapeGraphLearnerPtr learner = new LuapePolicyBasedGBLearner(policy, learningRate, maxDepth, budget);
+    
+    LuapeLearnerPtr learner = new LuapeGradientBoostingLearner(new LuapePolicyBasedWeakLearner(policy, budget, maxDepth), learningRate);
     if (!learner->initialize(context, problem, learningMachine))
       return false;
     
@@ -101,7 +102,7 @@ public:
     return res;
   }
 
-  bool learn(ExecutionContext& context, const LuapeGraphLearnerPtr& learner, const ContainerPtr& trainingGames, const ContainerPtr& testingGames) const
+  bool learn(ExecutionContext& context, const LuapeLearnerPtr& learner, const ContainerPtr& trainingGames, const ContainerPtr& testingGames) const
   {
 /*    size_t n = trainingGames->getNumElements();
     for (size_t i = 0; i < n; ++i)

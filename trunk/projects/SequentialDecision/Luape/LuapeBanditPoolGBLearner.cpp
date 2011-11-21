@@ -113,7 +113,7 @@ void LuapeGraphBuilderBanditPool::executeArm(ExecutionContext& context, const Lu
   context.informationCallback(String((int)arms.size()) + T(" arms"));
 }
 
-void LuapeGraphBuilderBanditPool::playArmWithHighestIndex(ExecutionContext& context, const LuapeGraphLearnerPtr& graphLearner)
+void LuapeGraphBuilderBanditPool::playArmWithHighestIndex(ExecutionContext& context, const LuapeGreedyStructureLearnerPtr& graphLearner)
 {
   if (banditsQueue.size())
   {
@@ -122,7 +122,7 @@ void LuapeGraphBuilderBanditPool::playArmWithHighestIndex(ExecutionContext& cont
     
     Arm& arm = arms[armIndex];
     ++arm.playedCount;
-    arm.rewardSum += graphLearner->computeCompletionReward(context, arms[armIndex].node);
+    arm.rewardSum += graphLearner->computeWeakObjective(context, arms[armIndex].node);
     banditsQueue.push(std::make_pair(armIndex, arm.getIndexScore()));
   }
 }
@@ -207,67 +207,4 @@ void LuapeGraphBuilderBanditPool::destroyArm(ExecutionContext& context, size_t i
   context.informationCallback(T("Destroy arm ") + arms[index].node->toShortString());
   arms[index] = Arm();
   banditsQueue = BanditsQueue();
-}
-
-/*
-** LuapeBanditPoolGBLearner
-*/
-LuapeBanditPoolGBLearner::LuapeBanditPoolGBLearner(double learningRate, size_t maxBandits, size_t maxDepth)
-  : LuapeGradientBoostingLearner(learningRate, maxDepth), maxBandits(maxBandits) {}
-
-bool LuapeBanditPoolGBLearner::initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function)
-{
-  if (!LuapeGradientBoostingLearner::initialize(context, problem, function))
-    return false;
-  pool = new LuapeGraphBuilderBanditPool(maxBandits, maxDepth);
-  return true;
-}
-
-bool LuapeBanditPoolGBLearner::setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
-{
-  LuapeGradientBoostingLearner::setExamples(context, isTrainingData, data);
-  pool->clearSamples(isTrainingData, !isTrainingData);
-  if (!pool->getNumArms())
-    pool->initialize(context, problem, graph);
-  return true;
-}
-
-LuapeNodePtr LuapeBanditPoolGBLearner::doWeakLearning(ExecutionContext& context, const DenseDoubleVectorPtr& predictions) const
-{
-  if (pool->getNumArms() == 0)
-  {
-    context.errorCallback(T("No arms"));
-    return LuapeNodePtr();
-  }
-  
-  // play arms
-  for (size_t t = 0; t < 10; ++t)
-  {
-    context.enterScope(T("Playing bandits iteration ") + String((int)t));
-    for (size_t i = 0; i < pool->getNumArms(); ++i)
-      pool->playArmWithHighestIndex(context, refCountedPointerFromThis(this));
-    pool->displayInformation(context);
-    context.leaveScope();
-  }
-
-  // select best arm
-  size_t armIndex = pool->sampleArmWithHighestReward(context);
-  if (armIndex == (size_t)-1)
-  {
-    context.errorCallback(T("Could not select best arm"));
-    return LuapeNodePtr();
-  }
-
-  return pool->getArmNode(armIndex);
-}
-
-bool LuapeBanditPoolGBLearner::addWeakLearnerToGraph(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, LuapeNodePtr completion)
-{
-  if (!LuapeGradientBoostingLearner::addWeakLearnerToGraph(context, predictions, completion))
-    return false;
-
-  // update arms
-  pool->executeArm(context, problem, graph, completion);
-  context.resultCallback(T("numArms"), pool->getNumArms());
-  return true;
 }

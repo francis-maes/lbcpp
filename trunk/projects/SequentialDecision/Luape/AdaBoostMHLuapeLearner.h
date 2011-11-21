@@ -132,6 +132,10 @@ protected:
 class LuapeAdaBoostMHLearner : public LuapeBoostingLearner
 {
 public:
+  LuapeAdaBoostMHLearner(LuapeWeakLearnerPtr weakLearner)
+    : LuapeBoostingLearner(weakLearner) {}
+  LuapeAdaBoostMHLearner() {}
+
   virtual BoostingEdgeCalculatorPtr createEdgeCalculator() const
     {return new AdaBoostMHEdgeCalculator();}
 

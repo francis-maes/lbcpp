@@ -9,24 +9,23 @@
 #ifndef LBCPP_LUAPE_GRAPH_LEARNER_GRADIENT_BOOSTING_H_
 # define LBCPP_LUAPE_GRAPH_LEARNER_GRADIENT_BOOSTING_H_
 
-# include "LuapeGraphLearner.h"
+# include "LuapeLearner.h"
 
 namespace lbcpp
 {
 
-class LuapeGradientBoostingLearner : public LuapeGraphLearner
+class LuapeGradientBoostingLearner : public LuapeGreedyStructureLearner
 {
 public:
-  LuapeGradientBoostingLearner(double learningRate, size_t maxDepth)
-    : learningRate(learningRate), maxDepth(maxDepth)
+  LuapeGradientBoostingLearner(LuapeWeakLearnerPtr weakLearner, double learningRate)
+    : LuapeGreedyStructureLearner(weakLearner), learningRate(learningRate)
   {
   }  
-  LuapeGradientBoostingLearner() : learningRate(0.0), maxDepth(maxDepth) {}
+  LuapeGradientBoostingLearner() : learningRate(0.0) {}
 
   /*
   ** Gradient boosting
   */
-  virtual LuapeNodePtr doWeakLearning(ExecutionContext& context, const DenseDoubleVectorPtr& predictions) const = 0;
   virtual bool addWeakLearnerToGraph(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, LuapeNodePtr completion)
   {
     // 1- compute optimal weight
@@ -51,11 +50,14 @@ public:
     function->getVotes()->append(optimalWeight * learningRate);
     if ((graph->getNumNodes() % 100) == 0)
       context.informationCallback(T("Graph: ") + graph->toShortString());
+      
+    // 3- update weak learner
+    weakLearner->update(context, refCountedPointerFromThis(this), completion);
     return true;
   }
 
   /*
-  ** LuapeGraphLearner
+  ** LuapeLearner
   */
   virtual bool doLearningIteration(ExecutionContext& context)
   {
@@ -81,7 +83,7 @@ public:
     time = newTime;
 
     // 2- find best weak learner
-    LuapeNodePtr weakLearner = doWeakLearning(context, predictions);
+    LuapeNodePtr weakLearner = doWeakLearning(context);
     if (!weakLearner)
       return false;
 
@@ -100,7 +102,7 @@ public:
     return true;
   }
   
-  virtual double computeCompletionReward(ExecutionContext& context, const LuapeNodePtr& completion) const
+  virtual double computeWeakObjective(ExecutionContext& context, const LuapeNodePtr& completion) const
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
 
@@ -153,7 +155,6 @@ public:
 
 protected:
   double learningRate;
-  size_t maxDepth;
 
   DenseDoubleVectorPtr pseudoResiduals;
 };
