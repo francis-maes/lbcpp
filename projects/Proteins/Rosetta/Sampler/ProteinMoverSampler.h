@@ -31,7 +31,7 @@ public:
   ProteinMoverSampler(size_t numResidues)
   {
     createObjectSamplers(numResidues);
-    samplers.push_back(new SmoothEnumerationSampler(proteinMoverEnumerationEnumeration, 0.1, 0.1));
+    samplers.push_back(enumerationSampler(proteinMoverEnumerationEnumeration));
   }
 
   ProteinMoverSampler() {}
@@ -91,8 +91,10 @@ protected:
   {
     DenseDoubleVectorPtr r1 = new DenseDoubleVector(numResidues, 1.0 / (double)numResidues);
     DenseDoubleVectorPtr r2 = new DenseDoubleVector(numResidues, 1.0 / (double)numResidues);
-    DiscreteSamplerPtr res1 = new SmoothEnumerationSampler(r1, 0.1, 1.0 / (5 * (double)numResidues), 0, numResidues - 1);
-    DiscreteSamplerPtr res2 = new SmoothEnumerationSampler(r2, 0.1, 1.0 / (5 * (double)numResidues), 0, numResidues - 1);
+//    DiscreteSamplerPtr res1 = new SmoothEnumerationSampler(r1, 0.1, 1.0 / (5 * (double)numResidues), 0, numResidues - 1);
+//    DiscreteSamplerPtr res2 = new SmoothEnumerationSampler(r2, 0.1, 1.0 / (5 * (double)numResidues), 0, numResidues - 1);
+    DiscreteSamplerPtr res1 = enumerationSampler(r1);
+    DiscreteSamplerPtr res2 = enumerationSampler(r2);
 
     size_t num = 3;
     std::vector<SamplerPtr> mixtsamp1Phi = generateGaussian(num);
