@@ -45,9 +45,14 @@ public:
     LuapeInferencePtr classifier = new LuapeClassifier();
     if (!classifier->initialize(context, inputClass, labels))
       return false;
+    classifier->setBatchLearner(new LuapeBatchLearner(new LuapeAdaBoostMHLearner(), problem, maxIterations));
     classifier->setEvaluator(defaultSupervisedEvaluator());
+
+    classifier->train(context, trainData, testData, T("Training"), true);
+    classifier->evaluate(context, trainData, EvaluatorPtr(), T("Evaluating on training data"));
+    classifier->evaluate(context, testData, EvaluatorPtr(), T("Evaluating on testing data"));
       
-      
+#if 0      
     LuapeGraphLearnerPtr learner = new LuapeAdaBoostMHLearner();
     if (!learner->initialize(context, problem, classifier))
       return false;
@@ -66,6 +71,7 @@ public:
       context.leaveScope();
     }
     return true;
+#endif // 0
 
 #if 0
     //OptimizerPtr optimizer = new NestedMonteCarloOptimizer(2, 1);

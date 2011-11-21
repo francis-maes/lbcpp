@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_BATCH_LEARNER_ADA_BOOST_H_
 # define LBCPP_LUAPE_BATCH_LEARNER_ADA_BOOST_H_
 
-# include "LuapeBatchLearner.h"
+# include "LuapeBoostingLearner.h"
 
 namespace lbcpp
 {
@@ -63,6 +63,8 @@ protected:
   double accuracy;
 };
 
+// FIXME: convert this
+#if 0 
 class AdaBoostLuapeLearner : public BoostingLuapeLearner
 {
 public:
@@ -101,6 +103,7 @@ public:
     return numErrors / (double)n;
   }
 };
+#endif // 0
 
 }; /* namespace lbcpp */
 

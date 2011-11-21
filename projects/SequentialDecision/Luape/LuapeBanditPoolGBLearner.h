@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_LEARNER_BANDIT_POOL_GRADIENT_BOOSTING_H_
 # define LBCPP_LUAPE_LEARNER_BANDIT_POOL_GRADIENT_BOOSTING_H_
 
-# include "LuapeGraphLearner.h"
+# include "LuapeGradientBoostingLearner.h"
 # include <queue> // for priority queue in bandits pool
 
 namespace lbcpp

@@ -128,6 +128,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
   Luape/LuapeGraph.cpp
   Luape/LuapeSimpleFunctions.h
   Luape/LuapeInference.h
+  Luape/LuapeBatchLearner.h
   Luape/LuapeSandBox.h
   Luape/LuapeLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeLibrary.cpp
@@ -139,20 +140,22 @@ SET(LBCPP_LUAPE_OBJECTIVE_SOURCES
 )
 
 SET(LBCPP_LUAPE_GRAPH_LEARNER_SOURCES
-  Luape/LuapeGraphBuilder.h
-  Luape/LuapeGraphBuilderTypeSearchSpace.h
   Luape/LuapeGraphLearner.h
   Luape/LuapeGraphLearner.cpp
+  Luape/LuapeBoostingLearner.h
+  Luape/AdaBoostMHLuapeLearner.h
+  Luape/LuapeGradientBoostingLearner.h
+
+  Luape/LuapeGraphBuilder.h
+  Luape/LuapeGraphBuilderTypeSearchSpace.h
   Luape/LuapeBanditPoolGBLearner.h
   Luape/LuapeBanditPoolGBLearner.cpp
   Luape/LuapePolicyBasedGBLearner.h
 )
 
 SET(LBCPP_LUAPE_OLD_SOURCES
-  Luape/LuapeBatchLearner.h
   Luape/LuapeBatchLearner.cpp
   Luape/AdaBoostLuapeLearner.h
-  Luape/AdaBoostMHLuapeLearner.h
   Luape/SingleStumpWeakLearner.h
   Luape/ProductWeakLearner.h
   Luape/LuapeGraphBuilderWeakLearner.h

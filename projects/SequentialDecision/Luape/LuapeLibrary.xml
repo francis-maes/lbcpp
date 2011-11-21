@@ -125,7 +125,7 @@
     <variable type="PositiveInteger" name="numSteps"/>
   </class>
 
-  <!-- Weak Learners -->
+  <!-- 
   <class name="LuapeWeakLearner" base="Object" abstract="yes"/>
   <class name="LuapeGraphBuilderWeakLearner" base="LuapeWeakLearner">
     <constructor arguments="OptimizerPtr optimizer, size_t maxSteps"/>
@@ -144,7 +144,6 @@
     <variable type="PositiveInteger" name="numBaseClassifiers"/>
   </class>
 
-  <!-- Batch Learners -->
   <class name="LuapeBatchLearner" base="BatchLearner" abstract="yes">
     <variable type="LuapeProblem" name="problem"/>
   </class>
@@ -158,6 +157,16 @@
   <class name="AdaBoostMHLuapeLearner" base="BoostingLuapeLearner">
     <constructor arguments="LuapeProblemPtr problem, LuapeWeakLearnerPtr weakLearner, size_t maxIterations" returnType="BatchLearner"/>
   </class>
+  -->
+  
+  <class name="LuapeGraphLearner" abstract="yes"/>
+
+  <class name="LuapeBatchLearner" base="BatchLearner">
+    <variable type="LuapeGraphLearner" name="graphLearner"/>
+    <variable type="LuapeProblem" name="problem"/>
+    <variable type="PositiveInteger" name="maxIterations"/>
+  </class>
+
   
   <!-- Sand Box -->
   <class name="LuapeSandBox" base="WorkUnit">

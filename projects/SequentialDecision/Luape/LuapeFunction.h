@@ -48,6 +48,7 @@ public:
 };
 
 typedef ReferenceCountedObjectPtr<LuapeFunction> LuapeFunctionPtr;
+extern ClassPtr luapeFunctionClass;
 
 extern LuapeFunctionPtr andBooleanLuapeFunction();
 extern LuapeFunctionPtr equalBooleanLuapeFunction();

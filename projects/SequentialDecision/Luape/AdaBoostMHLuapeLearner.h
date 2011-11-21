@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_BATCH_LEARNER_ADA_BOOST_MH_H_
-# define LBCPP_LUAPE_BATCH_LEARNER_ADA_BOOST_MH_H_
+#ifndef LBCPP_LUAPE_GRAPH_LEARNER_ADA_BOOST_MH_H_
+# define LBCPP_LUAPE_GRAPH_LEARNER_ADA_BOOST_MH_H_
 
-# include "LuapeBatchLearner.h"
+# include "LuapeBoostingLearner.h"
 
 namespace lbcpp
 {
@@ -129,16 +129,9 @@ protected:
   }
 };
 
-class AdaBoostMHLuapeLearner : public BoostingLuapeLearner
+class LuapeAdaBoostMHLearner : public LuapeBoostingLearner
 {
 public:
-  AdaBoostMHLuapeLearner(LuapeProblemPtr problem, LuapeWeakLearnerPtr weakLearner, size_t maxIterations)
-    : BoostingLuapeLearner(problem, weakLearner, maxIterations) {}
-  AdaBoostMHLuapeLearner() {}
-
-  virtual TypePtr getRequiredFunctionType() const
-    {return luapeClassifierClass;}
-
   virtual BoostingEdgeCalculatorPtr createEdgeCalculator() const
     {return new AdaBoostMHEdgeCalculator();}
 
@@ -211,4 +204,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_BATCH_LEARNER_ADA_BOOST_MH_H_
+#endif // !LBCPP_LUAPE_GRAPH_LEARNER_ADA_BOOST_MH_H_

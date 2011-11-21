@@ -15,6 +15,7 @@
 namespace lbcpp
 {
 
+#if 0 // FIXME
 class LuapeGraphBuilderWeakLearner : public LuapeWeakLearner
 {
 public:
@@ -92,6 +93,7 @@ protected:
     DenseDoubleVectorPtr weights;
   };
 };
+#endif // 0
 
 }; /* namespace lbcpp */
 
