@@ -10,6 +10,7 @@
 # define LBCPP_LUAPE_LEARNER_GRADIENT_BOOSTING_H_
 
 # include "LuapeLearner.h"
+# include <lbcpp/Learning/LossFunction.h>
 
 namespace lbcpp
 {
@@ -23,12 +24,20 @@ public:
   }  
   GradientBoostingLearner() : learningRate(0.0) {}
 
+  virtual void computeLoss(const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const = 0;
+
   virtual bool doLearningIteration(ExecutionContext& context)
   {
-    // TODO: update predictions incrementally 
+    // 1- compute pseudo residuals 
+    {
+      TimedScope _(context, "compute residuals");
 
-    // 1- compute predictions and pseudo residuals 
-    computePredictionsAndPseudoResiduals(context);
+      double lossValue;
+      computeLoss(predictions.staticCast<DenseDoubleVector>(), &lossValue, &pseudoResiduals);
+      context.resultCallback(T("loss"), lossValue);
+      context.resultCallback(T("predictions"), predictions);
+      context.resultCallback(T("pseudoResiduals"), pseudoResiduals);
+    }
 
     // 2- find best weak learner
     BooleanVectorPtr weakPredictions;
@@ -39,9 +48,12 @@ public:
     // 3- add weak learner to graph
     {
       TimedScope _(context, "optimize weight");
-      double optimalWeight = problem->getObjective()->optimizeWeightOfWeakLearner(context, predictions, weakPredictions);
+      double optimalWeight = optimizeWeightOfWeakLearner(context, predictions, weakPredictions);
       function->getVotes()->append(optimalWeight * learningRate);
     }
+
+    // 4- update predictions and evaluate
+    updatePredictionsAndEvaluate(context, function->getNumYields() - 1, weakNode);
     return true;
   }
 
@@ -102,31 +114,132 @@ public:
     return 0.0;
   }
 
+  virtual double optimizeWeightOfWeakLearner(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const BooleanVectorPtr& weakPredictions) const
+  {
+    context.enterScope(T("Optimize weight"));
+
+    double bestLoss = DBL_MAX;
+    double bestWeight = 0.0;
+
+    for (double K = -2.5; K <= 2.5; K += 0.02)
+    {
+      context.enterScope(T("K = ") + String(K));
+      context.resultCallback(T("K"), K);
+
+      DenseDoubleVectorPtr newPredictions = predictions->cloneAndCast<DenseDoubleVector>();
+      for (size_t i = 0; i < weakPredictions->getNumElements(); ++i)
+        if (weakPredictions->get(i))
+          newPredictions->incrementValue(i, K);
+      double lossValue;
+      computeLoss(newPredictions, &lossValue, NULL);
+
+      if (lossValue < bestLoss)
+      {
+        bestLoss = lossValue;
+        bestWeight = K;
+      }
+
+      context.resultCallback(T("loss"), lossValue);
+      context.leaveScope(lossValue);
+    }
+
+    context.leaveScope(bestLoss);
+    return bestWeight;
+  }
 protected:
   double learningRate;
-
-  DenseDoubleVectorPtr predictions;
   DenseDoubleVectorPtr pseudoResiduals;
-
-  void computePredictionsAndPseudoResiduals(ExecutionContext& context)
-  {
-    TimedScope _(context, "compute predictions and residuals");
-
-    context.enterScope(T("Computing predictions"));
-    predictions = function->computeSamplePredictions(context, true);
-    context.leaveScope();
-    context.enterScope(T("Computing pseudo-residuals"));
-    double lossValue;
-    problem->getObjective()->computeLoss(predictions, &lossValue, &pseudoResiduals);
-    context.leaveScope();
-    context.resultCallback(T("loss"), lossValue);
-
-    context.resultCallback(T("predictions"), predictions);
-    context.resultCallback(T("pseudoResiduals"), pseudoResiduals);
-  }
 };
 
 typedef ReferenceCountedObjectPtr<GradientBoostingLearner> GradientBoostingLearnerPtr;
+
+extern GradientBoostingLearnerPtr l2BoostingLearner(BoostingWeakLearnerPtr weakLearner, double learningRate);
+extern GradientBoostingLearnerPtr rankingGradientBoostingLearner(BoostingWeakLearnerPtr weakLearner, double learningRate, RankingLossFunctionPtr rankingLoss);
+
+class L2BoostingLearner : public GradientBoostingLearner
+{
+public:
+  L2BoostingLearner(BoostingWeakLearnerPtr weakLearner, double learningRate)
+    : GradientBoostingLearner(weakLearner, learningRate) {}
+  L2BoostingLearner() {}
+
+  virtual void computeLoss(const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const
+  { 
+    if (lossValue)
+      *lossValue = 0.0;
+    if (lossGradient)
+      *lossGradient = new DenseDoubleVector(predictions->getNumValues(), 0.0);
+  
+    size_t n = trainData.size();
+    jassert(n == predictions->getNumValues());
+    for (size_t i = 0; i < n; ++i)
+    {
+      double predicted = predictions->getValue(i);
+      double correct = trainData[i].staticCast<Pair>()->getSecond().getDouble();
+
+      if (lossValue)
+        *lossValue += (predicted - correct) * (predicted - correct);
+      if (lossGradient)
+        (*lossGradient)->setValue(i, correct - predicted);
+    }
+    if (lossValue)
+      *lossValue /= n;
+    if (lossGradient)
+      (*lossGradient)->multiplyByScalar(-1.0);
+  }
+
+  virtual double optimizeWeightOfWeakLearner(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const BooleanVectorPtr& weakPredictions) const
+  {
+    // todo: specialized version
+    return GradientBoostingLearner::optimizeWeightOfWeakLearner(context, predictions, weakPredictions);
+  }
+};
+
+class RankingGradientBoostingLearner : public GradientBoostingLearner
+{
+public:
+  RankingGradientBoostingLearner(BoostingWeakLearnerPtr weakLearner, double learningRate, RankingLossFunctionPtr rankingLoss)
+    : GradientBoostingLearner(weakLearner, learningRate), rankingLoss(rankingLoss) {}
+  RankingGradientBoostingLearner() {}
+
+  virtual void computeLoss(const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const
+  {
+    if (lossValue)
+      *lossValue = 0.0;
+    if (lossGradient)
+      *lossGradient = new DenseDoubleVector(predictions->getNumValues(), 0.0);
+  
+    size_t index = 0;
+    for (size_t i = 0; i < trainData.size(); ++i)
+    {
+      const PairPtr& example = trainData[i].staticCast<Pair>();
+
+      size_t n = example->getFirst().getObjectAndCast<Container>()->getNumElements();
+      DenseDoubleVectorPtr costs = example->getSecond().getObjectAndCast<DenseDoubleVector>();
+
+      DenseDoubleVectorPtr scores = new DenseDoubleVector(n, 0.0);
+      memcpy(scores->getValuePointer(0), predictions->getValuePointer(index), sizeof (double) * n);
+
+      double v = 0.0;
+      DenseDoubleVectorPtr g = lossGradient ? new DenseDoubleVector(n, 0.0) : DenseDoubleVectorPtr();
+      rankingLoss->computeRankingLoss(scores, costs, lossValue ? &v : NULL, lossGradient ? &g : NULL, 1.0);
+      if (lossValue)
+        *lossValue += v;
+      if (g)      
+        memcpy((*lossGradient)->getValuePointer(index), g->getValuePointer(0), sizeof (double) * n);
+      index += n;
+    }
+    if (lossValue)
+      *lossValue /= trainData.size();
+    if (lossGradient)
+      (*lossGradient)->multiplyByScalar(-1.0);
+  }
+
+protected:
+  friend class RankingGradientBoostingLearnerClass;
+
+  RankingLossFunctionPtr rankingLoss;
+};
 
 }; /* namespace lbcpp */
 

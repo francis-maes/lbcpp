@@ -23,7 +23,7 @@ namespace lbcpp
 class GoRankLuapeProblem : public LuapeProblem
 {
 public:
-  GoRankLuapeProblem() : LuapeProblem(l2RegressionLuapeObjective())
+  GoRankLuapeProblem()
   {
     addInput(goBoardPositionPerceptionClass, "position");
     addFunction(getVariableLuapeFunction());
@@ -68,7 +68,7 @@ public:
     //PolicyPtr policy = new RandomPolicy();
     //PolicyPtr policy = new LuapeRewardStorageBasedPolicy();
     
-    LuapeLearnerPtr learner = new GradientBoostingLearner(policyBasedWeakLearner(policy, budget, maxDepth), learningRate);
+    LuapeLearnerPtr learner = l2BoostingLearner(policyBasedWeakLearner(policy, budget, maxDepth), learningRate);
     if (!learner->initialize(context, problem, learningMachine))
       return false;
     

@@ -17,18 +17,21 @@ bool LuapeLearner::initialize(ExecutionContext& context, const LuapeProblemPtr& 
   this->problem = problem;
   this->function = function;
   if (!function->getVotes())
-    function->setVotes(function->createVoteVector(0));
+    function->setVotes(function->createVoteVector());
   if (!function->getGraph())
     function->setGraph(problem->createInitialGraph(context));
   this->graph = function->getGraph();
-  return !problem->getObjective() || problem->getObjective()->initialize(context, problem, function);
+  return true;
 }
 
 bool LuapeLearner::setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
 {
-  graph->clearSamples(isTrainingData, !isTrainingData);
-  if (problem->getObjective())
-    problem->getObjective()->setExamples(isTrainingData, data);
+  // we store a local copy to perform (fast) evaluation at each iteration
+  if (isTrainingData)
+    trainData = data;
+  else
+    validationData = data;
+  function->setGraphSamples(context, isTrainingData, data);
   return true;
 }
 

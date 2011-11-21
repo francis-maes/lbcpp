@@ -187,23 +187,6 @@ public:
     bool isPredictionCorrect = (prediction->get(example) == isCorrectClass);
     return currentWeight * exp(-alpha * (isPredictionCorrect ? 1.0 : -1.0));
   }
-
-  virtual double computeError(const ContainerPtr& predictions, const ContainerPtr& supervisions) const
-  {
-    ObjectVectorPtr pred = predictions.staticCast<ObjectVector>();
-    BooleanVectorPtr sup = supervisions.staticCast<BooleanVector>();
- 
-    size_t numErrors = 0;
-    size_t n = pred->getNumElements();
-    size_t m = sup->getNumElements() / n;
-    for (size_t i = 0; i < n; ++i)
-    {
-      size_t j = pred->getAndCast<DenseDoubleVector>(i)->getIndexOfMaximumValue();
-      if (!sup->get(i * m + j))
-        ++numErrors;
-    }
-    return numErrors / (double)n;
-  }
 };
 
 }; /* namespace lbcpp */

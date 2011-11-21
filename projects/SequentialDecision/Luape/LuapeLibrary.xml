@@ -82,17 +82,8 @@
     <constructor/>
   </class>
 
-  <!-- Objective and Problem -->
-  <class name="LuapeObjective" abstract="yes"/>
-  <class name="L2RegressionLuapeObjective" base="LuapeObjective">
-    <constructor/>
-  </class>
-  <class name="RankingLuapeObjective" base="LuapeObjective">
-    <constructor arguments="RankingLossFunctionPtr rankingLoss"/>
-  </class>
-  
+  <!-- Problem --> 
   <class name="LuapeProblem">
-    <variable type="LuapeObjective" name="objective"/>
     <variable type="ObjectVector[VariableSignature]" name="inputs"/>
     <variable type="ObjectVector[Function]" name="functions"/>
     <variable type="Boolean" name="failed"/>
@@ -125,42 +116,24 @@
     <variable type="PositiveInteger" name="numSteps"/>
   </class>
 
-  <!-- 
-  <class name="LuapeGraphBuilderWeakLearner" base="BoostingWeakLearner">
-    <constructor arguments="OptimizerPtr optimizer, size_t maxSteps"/>
-    <variable type="Optimizer" name="optimizer"/>
-    <variable type="PositiveInteger" name="maxSteps"/>
-  </class>
-  <class name="CombinedStumpWeakLearner" base="BoostingWeakLearner">
-    <constructor/>
-  </class>
-  <class name="ProductWeakLearner" base="BoostingWeakLearner">
-    <constructor arguments="BoostingWeakLearnerPtr baseLearner, size_t numBaseClassifiers"/>
-    <variable type="BoostingWeakLearner" name="baseLearner"/>
-    <variable type="PositiveInteger" name="numBaseClassifiers"/>
-  </class>
-
-  <class name="LuapeBatchLearner" base="BatchLearner" abstract="yes">
-    <variable type="LuapeProblem" name="problem"/>
-  </class>
-  <class name="BoostingLuapeLearner" base="LuapeBatchLearner" abstract="yes">
-    <variable type="BoostingWeakLearner" name="weakLearner"/>
-    <variable type="PositiveInteger" name="maxIterations"/>
-  </class>
-  <class name="AdaBoostLuapeLearner" base="BoostingLuapeLearner">
-    <constructor arguments="LuapeProblemPtr problem, BoostingWeakLearnerPtr weakLearner, size_t maxIterations" returnType="BatchLearner"/>
-  </class>
-  <class name="AdaBoostMHLuapeLearner" base="BoostingLuapeLearner">
-    <constructor arguments="LuapeProblemPtr problem, BoostingWeakLearnerPtr weakLearner, size_t maxIterations" returnType="BatchLearner"/>
-  </class>
-  -->
-
   <!-- Strong Learners -->
   <class name="LuapeLearner" abstract="yes"/>
   <class name="BoostingLearner" base="LuapeLearner" abstract="yes">
     <variable type="BoostingWeakLearner" name="weakLearner"/>
   </class>
 
+  <class name="WeightBoostingLearner" base="BoostingLearner" abstract="yes"/>
+  <class name="GradientBoostingLearner" base="BoostingLearner" abstract="yes"/>
+  
+  <class name="L2BoostingLearner" base="GradientBoostingLearner">
+    <constructor arguments="BoostingWeakLearnerPtr weakLearner, double learningRate"/>
+  </class>
+  
+  <class name="RankingGradientBoostingLearner" base="GradientBoostingLearner">
+    <constructor arguments="BoostingWeakLearnerPtr weakLearner, double learningRate, RankingLossFunctionPtr rankingLoss"/>
+    <variable type="RankingLossFunction" name="rankingLoss"/>
+  </class>
+  
   <!-- Weak Learners -->
   <class name="BoostingWeakLearner" base="Object" abstract="yes"/>
   <class name="SingleStumpWeakLearner" base="BoostingWeakLearner">
