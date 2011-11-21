@@ -165,7 +165,7 @@ void LuapeGraphBuilderBanditPool::displayInformation(ExecutionContext& context)
   {
     Arm& arm = arms[it->second];
     context.informationCallback(T("[") + String((int)i) + T("] r = ") + String(arm.getMeanReward())
-      + T(" t = ") + String(arm.playedCount) + T(" -- ") + arm.node->toShortString());
+      + T(" t = ") + String((int)arm.playedCount) + T(" -- ") + arm.node->toShortString());
   }
 
   if (armsByMeanReward.size())

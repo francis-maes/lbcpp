@@ -260,7 +260,7 @@ String LuapeNodeCache::toShortString() const
     for (size_t i = 0; i < n; ++i)
       if (booleans->get(i))
         ++countOfTrue;
-    return String(countOfTrue) + T(" / ") + String((int)n);
+    return String((int)countOfTrue) + T(" / ") + String((int)n);
   }
   else if (elementsType.isInstanceOf<Enumeration>())
   {
