@@ -130,7 +130,6 @@ void LuapeGraphBuilderBanditPool::playArmWithHighestIndex(ExecutionContext& cont
 size_t LuapeGraphBuilderBanditPool::sampleArmWithHighestReward(ExecutionContext& context) const
 {
   double bestReward = -DBL_MAX;
-  size_t bestArm = (size_t)-1;
   std::vector<size_t> bests;
   for (size_t i = 0; i < arms.size(); ++i)
   {

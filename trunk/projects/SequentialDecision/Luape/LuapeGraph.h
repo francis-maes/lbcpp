@@ -136,6 +136,8 @@ protected:
   NodesMap nodesMap;
 
   LuapeGraphUniversePtr universe;
+  
+  void addNode(const LuapeNodePtr& node);  
 };
 
 extern ClassPtr luapeGraphClass;

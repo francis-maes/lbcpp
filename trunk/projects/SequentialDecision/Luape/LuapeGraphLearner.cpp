@@ -16,14 +16,19 @@ bool LuapeGraphLearner::initialize(ExecutionContext& context, const LuapeProblem
 {
   this->problem = problem;
   this->function = function;
+  if (!function->getVotes())
+    function->setVotes(function->createVoteVector(0));
+  if (!function->getGraph())
+    function->setGraph(problem->createInitialGraph(context));
   this->graph = function->getGraph();
-  return problem->getObjective()->initialize(context, problem, function);
+  return !problem->getObjective() || problem->getObjective()->initialize(context, problem, function);
 }
 
 bool LuapeGraphLearner::setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
 {
   graph->clearSamples(isTrainingData, !isTrainingData);
-  problem->getObjective()->setExamples(isTrainingData, data);
+  if (problem->getObjective())
+    problem->getObjective()->setExamples(isTrainingData, data);
   return true;
 }
 
@@ -37,8 +42,6 @@ LuapeGradientBoostingLearner::LuapeGradientBoostingLearner(double learningRate, 
 
 double LuapeGradientBoostingLearner::computeCompletionReward(ExecutionContext& context, const LuapeNodePtr& completion) const
 {
-  static const double p = 0.5;
-  
   RandomGeneratorPtr random = context.getRandomGenerator();
 
   completion->updateCache(context, true);

@@ -42,9 +42,9 @@ public:
           delete successors[i];
     }
 
-    ContainerPtr actions;
-    std::vector<Node* > successors;
     Node* parent;
+    std::vector<Node* > successors;
+    ContainerPtr actions;
     bool isFullyVisited;
 
     size_t sampleActionIndex(RandomGeneratorPtr random) const
@@ -470,8 +470,8 @@ public:
     }
   }
 protected:
-  size_t budget;
   PolicyPtr policy;
+  size_t budget;
   ScalarVariableStatistics regret;
   LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
 };

@@ -419,9 +419,10 @@ String LuapeYieldNode::toShortString() const
 
 Variable LuapeYieldNode::compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const
 {
+  const Variable& res = state[argument->getIndexInGraph()];
   if (callback)
-    callback->valueYielded(state[argument]);
-  return state[argument];
+    callback->valueYielded(res);
+  return res;
 }
 
 size_t LuapeYieldNode::getDepth() const

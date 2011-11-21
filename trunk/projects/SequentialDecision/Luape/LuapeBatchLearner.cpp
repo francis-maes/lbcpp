@@ -72,7 +72,6 @@ bool BoostingLuapeLearner::train(ExecutionContext& context, const FunctionPtr& f
     function->setGraph(graph = problem->createInitialGraph(context));
 
   DenseDoubleVectorPtr weights = makeInitialWeights(function, *(std::vector<PairPtr>* )&trainingData);
-  function->setGraph(graph);
   function->setVotes(function->createVoteVector(0));
 
   graph->resizeSamples(trainingData.size(), validationData.size());
