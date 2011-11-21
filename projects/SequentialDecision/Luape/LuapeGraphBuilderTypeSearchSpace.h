@@ -59,7 +59,10 @@ public:
     {return apply;}
 
   bool hasYieldAction() const
-    {return stack.size() == 1 && (stack[0]->inheritsFrom(booleanType) || stack[0]->inheritsFrom(integerType) || stack[0]->inheritsFrom(doubleType));}
+    {return stack.size() == 1 && (
+      stack[0]->inheritsFrom(booleanType) ||
+      stack[0]->inheritsFrom(doubleType) ||
+      (!stack[0].isInstanceOf<Enumeration>() && stack[0]->inheritsFrom(integerType)));}
 
   bool hasAnyAction() const
     {return hasPushActions() || hasApplyActions() || hasYieldAction();}

@@ -93,12 +93,14 @@ protected:
   {
     weakNode->updateCache(context, true);
     function->updatePredictions(predictions, yieldIndex, weakNode->getCache()->getTrainingSamples());
-
-    weakNode->updateCache(context, false);
-    function->updatePredictions(validationPredictions, yieldIndex, weakNode->getCache()->getValidationSamples());
-
     context.resultCallback(T("train error"), function->evaluatePredictions(context, predictions, trainData));
-    context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
+
+    if (validationPredictions)
+    {
+      weakNode->updateCache(context, false);
+      function->updatePredictions(validationPredictions, yieldIndex, weakNode->getCache()->getValidationSamples());
+      context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
+    }
 
     context.informationCallback(T("Graph: ") + graph->toShortString());
   }

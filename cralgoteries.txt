@@ -1,13 +1,11 @@
 
- - Cache intelligent + expe large-scale
- - Gestion des stump sur le gradient boosting -> factoriser EdgeCalculator (?)
-
-
---
+ * Fix L2Boosting (loss is not minimized for the moment...)
+ * Smart Cache => Large scale experiments on classification
+ * Come back to go
+   - Support stumps on gradient boosting => factorize EdgeCalculator
+   - more perceptions and operators
  * GradientBoosting: allows two votes per yielded boolean 
- * GradientBoosting: Support of Stumps
- * More relations in Go
- * Use type-states to define features for the adaptative weak learning policy
+ * Work on adaptative weak learning policy
 
 Luape-Appli:
  * Apprentissage d'une gaussienne conditionelle => boosting joint de la moyenne et de l'ecart-type

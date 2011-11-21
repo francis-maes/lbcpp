@@ -19,9 +19,7 @@ class GradientBoostingLearner : public BoostingLearner
 {
 public:
   GradientBoostingLearner(BoostingWeakLearnerPtr weakLearner, double learningRate)
-    : BoostingLearner(weakLearner), learningRate(learningRate)
-  {
-  }  
+    : BoostingLearner(weakLearner), learningRate(learningRate) {}
   GradientBoostingLearner() : learningRate(0.0) {}
 
   virtual void computeLoss(const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const = 0;
@@ -49,6 +47,7 @@ public:
     {
       TimedScope _(context, "optimize weight");
       double optimalWeight = optimizeWeightOfWeakLearner(context, predictions, weakPredictions);
+      context.resultCallback("weight", optimalWeight);
       function->getVotes()->append(optimalWeight * learningRate);
     }
 
