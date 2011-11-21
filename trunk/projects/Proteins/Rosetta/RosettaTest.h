@@ -121,62 +121,109 @@ public:
 # ifdef LBCPP_PROTEIN_ROSETTA
     rosettaInitialization(context, false);
 
-    core::pose::PoseOP pose = new core::pose::Pose("/Users/alex/Documents/Ulg/2M/tfe/structs/final_struct_lo_100mil.pdb");
+    File referenceFile = context.getFile(T("GoodDataset/0-100/dataset0-100"));
+    File targetFile = context.getFile(T("GoodDataset/0-100/phipsi"));
 
-    for (size_t i = 1; i < pose->n_residue(); i++)
-      std::cout << "i : " << i << " phi : " << pose->phi(i) << ", psi : " << pose->psi(i) << std::endl;
+    juce::OwnedArray<File> references;
+    referenceFile.findChildFiles(references, File::findFiles, false, T("*.xml"));
+    ScalarVariableMeanAndVariancePtr qsMeans = new ScalarVariableMeanAndVariance();
 
-    ShearMoverPtr shear = shearMover(3, 10, -10);
-    shear->move(pose);
-    core::io::pdb::dump_pdb(*pose, "/Users/alex/Desktop/shear.pdb");
+    for (size_t j = 0; j < references.size(); j++)
+    {
+      ProteinPtr proteinRef = Protein::createFromXml(context, *references[j]);
+      core::pose::PoseOP referencePose;
+      convertProteinToPose(context, proteinRef, referencePose);
 
-    for (size_t i = 1; i < pose->n_residue(); i++)
-      std::cout << "i : " << i << " phi : " << pose->phi(i) << ", psi : " << pose->psi(i) << std::endl;
+      std::cout << "=============================================" << std::endl;
+      std::cout << "======== protein : "
+          << (const char*)(*references[j]).getFileNameWithoutExtension() << " ==============="
+          << std::endl;
+
+      juce::OwnedArray<File> targets;
+      targetFile.findChildFiles(targets, File::findFiles, false,
+          (*references[j]).getFileNameWithoutExtension() + T("*.xml"));
+
+      RandomGeneratorPtr random = new RandomGenerator();
+      bool cont = true;
+      for (int i = 0; cont && (i < targets.size()); i++)
+      {
+        ProteinPtr proteinTarget = Protein::createFromXml(context, *targets[i]);
+        core::pose::PoseOP targetPose;
+        convertProteinToPose(context, proteinTarget, targetPose);
+
+        std::cout << "---------- structure : "
+            << (const char*)(*targets[i]).getFileNameWithoutExtension() << " ---------"
+            << std::endl;
+        int minDist = juce::jlimit(1, (int)targetPose->n_residue(), juce::jmin(20,
+            targetPose->n_residue() / 2));
+        int maxDist = -1;
+        // pose Qscore
+        QScoreObjectPtr scoresPose = QScoreSingleEvaluator(targetPose, referencePose, minDist,
+            maxDist);
+        double QScorePose = scoresPose->getMean();
+        std::cout << "tertiary structure score pose : " << QScorePose << std::endl;
+        qsMeans->push(QScorePose);
+      }
+    }
+
+    std::cout << "mean of everything : " << qsMeans->getMean() << std::endl;
+    std::cout << "std of everything : " << qsMeans->getStandardDeviation() << std::endl;
+
+    //    core::pose::PoseOP pose = new core::pose::Pose("/Users/alex/Documents/Ulg/2M/tfe/structs/final_struct_lo_100mil.pdb");
+    //
+    //    for (size_t i = 1; i < pose->n_residue(); i++)
+    //      std::cout << "i : " << i << " phi : " << pose->phi(i) << ", psi : " << pose->psi(i) << std::endl;
+    //
+    //    ShearMoverPtr shear = shearMover(3, 10, -10);
+    //    shear->move(pose);
+    //    core::io::pdb::dump_pdb(*pose, "/Users/alex/Desktop/shear.pdb");
+    //
+    //    for (size_t i = 1; i < pose->n_residue(); i++)
+    //      std::cout << "i : " << i << " phi : " << pose->phi(i) << ", psi : " << pose->psi(i) << std::endl;
 
     // -------------- rosetta protein features
     //    core::pose::PoseOP pose = new core::pose::Pose();
-//    core::pose::PoseOP initialized;
-//    FunctionPtr features = new RosettaProteinFeatures(0, 0, 0, 1);
-//    features->initialize(context, rosettaProteinClass);
-//    String acc;
-//
-//    VectorPtr inputWorker = new VariableVector(0);
-//    VectorPtr inputMover = vector(proteinMoverClass, 0);
-//
-//    ClassPtr inputClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
-//    VectorPtr inputTest = vector(inputClass, 0);
-//    VectorPtr samples = vector(proteinMoverClass);
-//
-//    generateMoversDataset(inputWorker, inputMover);
+    //    core::pose::PoseOP initialized;
+    //    FunctionPtr features = new RosettaProteinFeatures(0, 0, 0, 1);
+    //    features->initialize(context, rosettaProteinClass);
+    //    String acc;
+    //
+    //    VectorPtr inputWorker = new VariableVector(0);
+    //    VectorPtr inputMover = vector(proteinMoverClass, 0);
+    //
+    //    ClassPtr inputClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
+    //    VectorPtr inputTest = vector(inputClass, 0);
+    //    VectorPtr samples = vector(proteinMoverClass);
+    //
+    //    generateMoversDataset(inputWorker, inputMover);
 
-//    for (size_t i = 0; i < inputMover->getNumElements(); i++)
-//      cout << inputWorker->getElement(i).getObjectAndCast<RosettaWorker>()->getFeatures(context).getObjectAndCast<DoubleVector>()->toString() << " : " << (const char*)inputMover->getElement(i).getObjectAndCast<ProteinMover>()->toString() << endl;
+    //    for (size_t i = 0; i < inputMover->getNumElements(); i++)
+    //      cout << inputWorker->getElement(i).getObjectAndCast<RosettaWorker>()->getFeatures(context).getObjectAndCast<DoubleVector>()->toString() << " : " << (const char*)inputMover->getElement(i).getObjectAndCast<ProteinMover>()->toString() << endl;
 
     //SamplerPtr maxent = maximumEntropySampler(proteinMoverEnumerationEnumeration);
 
     ObjectVectorPtr featureVectors = new ObjectVector(doubleVectorClass(), 0);
 
-//    for (size_t i = 0; i < inputWorker->getNumElements(); i++)
-//    {
-//      RosettaWorkerPtr klWorker = inputWorker->getElement(i).getObjectAndCast<RosettaWorker>();
-//      Variable klFeature = klWorker->getFeatures(context);
-//      //featureVectors->append(klFeature);
-//
-//
-//      // TEST
-//      DenseDoubleVectorPtr input = new DenseDoubleVector(inputClass);
-//      input->setValue(0, 1.0); // first distribution
-//      inputTest->append(input);
-//      samples->append(inputMover->getElement(i));
-//    }
+    //    for (size_t i = 0; i < inputWorker->getNumElements(); i++)
+    //    {
+    //      RosettaWorkerPtr klWorker = inputWorker->getElement(i).getObjectAndCast<RosettaWorker>();
+    //      Variable klFeature = klWorker->getFeatures(context);
+    //      //featureVectors->append(klFeature);
+    //
+    //
+    //      // TEST
+    //      DenseDoubleVectorPtr input = new DenseDoubleVector(inputClass);
+    //      input->setValue(0, 1.0); // first distribution
+    //      inputTest->append(input);
+    //      samples->append(inputMover->getElement(i));
+    //    }
 
-//    maxent->learn(context, inputTest, inputMover, DenseDoubleVectorPtr(),
-//        ContainerPtr(), ContainerPtr(), DenseDoubleVectorPtr());
+    //    maxent->learn(context, inputTest, inputMover, DenseDoubleVectorPtr(),
+    //        ContainerPtr(), ContainerPtr(), DenseDoubleVectorPtr());
 
 
-
-//    Variable result2 = worker->getFeatures(context);
-//    cout << worker->getNumResidues() << ": " << (const char*)result2.toString() << endl;
+    //    Variable result2 = worker->getFeatures(context);
+    //    cout << worker->getNumResidues() << ": " << (const char*)result2.toString() << endl;
 
     //    EnumerationPtr kl = aminoAcidTypeEnumeration;
     //    for (size_t i = 0; i < kl->getNumElements(); i++)
@@ -825,7 +872,53 @@ void generateMoversDataSet(VectorPtr& inputs, VectorPtr& samples)
     inputs->append(input);
     samples->append(rigidBodyMover(0, 3, 21.01, -4));
   }
-}
+};
+
+class ProteinTestWorkUnit : public CompositeWorkUnit
+{
+public:
+  // returnPose must be already instantiated
+  ProteinTestWorkUnit()
+    : CompositeWorkUnit(T("ProteinOptimizerWorkUnit"))
+  {
+  }
+
+  virtual Variable run(ExecutionContext& context)
+  {
+#ifdef LBCPP_PROTEIN_ROSETTA
+    context.informationCallback(T("Protein : ") + proteinName + T(" loaded succesfully."));
+    context.resultCallback(T("Initial energy"),
+        Variable(getConformationScore(pose, fullAtomEnergy)));
+    core::pose::PoseOP returnPose = new core::pose::Pose(*pose);
+
+    RosettaWorkerPtr worker = new RosettaWorker(pose, 0, 0, 0, 0, 0);
+
+    RandomGeneratorPtr random = new RandomGenerator();
+    DenseDoubleVectorPtr energiesAtIteration;
+
+    optimizer->apply(context, worker, random, energiesAtIteration);
+
+    context.informationCallback(T("Optimization done."));
+    double score = getConformationScore(returnPose, fullAtomEnergy);
+    context.resultCallback(T("Final energy"), Variable(score));
+
+    return Variable(proteinName);
+#else
+    jassert(false);
+    return false;
+#endif // LBCPP_PROTEIN_ROSETTA
+  }
+
+protected:
+  friend class ProteinOptimizerWorkUnitClass;
+  String proteinName;
+#ifdef LBCPP_PROTEIN_ROSETTA
+  core::pose::PoseOP pose;
+#endif // LBCPP_PROTEIN_ROSETTA
+  ProteinOptimizerPtr optimizer;
+  SamplerPtr sampler;
+  RandomGeneratorPtr random;
+};
 
 }; /* namespace lbcpp */
 

@@ -129,7 +129,6 @@ public:
     {
       context.progressCallback(new ProgressionState(i, maxIterations, T("Iterations")));
       std::list<MoverAndScore> tempList;
-      double energyBeforeMove = getTotalEnergy(workingPose, fullAtomEnergy);
       ScalarVariableMeanAndVariance scoreRandomVariable;
       ScalarVariableMeanAndVariance deltaEnergyRandomVariable;
       ScalarVariableMeanAndVariance energyRandomVariable;
@@ -229,7 +228,8 @@ public:
       ObjectVectorPtr dataset = new ObjectVector(proteinMoverClass, 0);
       for (size_t j = 0; j < moversVector.size(); j++)
         dataset->append(moversVector[j].mover);
-      workingSampler->learn(context, ContainerPtr(), dataset);
+      if (dataset->getNumElements() >= numGoodSamples)
+        workingSampler->learn(context, ContainerPtr(), dataset);
     }
 
     movers = std::vector<ProteinMoverPtr>(numMoversToKeep);

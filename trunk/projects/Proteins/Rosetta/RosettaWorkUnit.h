@@ -118,10 +118,8 @@ public:
 
       RandomGeneratorPtr random = new RandomGenerator();
       DenseDoubleVectorPtr energiesAtIteration;
-//      ProteinSimulatedAnnealingOptimizerPtr optimizer = new ProteinSimulatedAnnealingOptimizer(4.0,
-      //          0.01, 50, 500000, 5, currentName, frequenceVerbosity, 10, outputFile);
       ProteinSimulatedAnnealingOptimizerPtr optimizer = new ProteinSimulatedAnnealingOptimizer(4.0,
-          0.01, 50, 1000, 5, currentName, frequenceVerbosity, 2, outputFile);
+          0.01, 50, 250000, 5, currentName, frequenceVerbosity, 5, outputFile);
 
       optimizer->apply(context, worker, random, energiesAtIteration);
 
