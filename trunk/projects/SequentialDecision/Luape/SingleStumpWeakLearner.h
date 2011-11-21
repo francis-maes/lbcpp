@@ -17,7 +17,7 @@ namespace lbcpp
 class SingleStumpWeakLearner : public LuapeWeakLearner
 {
 public:
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeGreedyStructureLearnerPtr& structureLearner) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeBoostingLearnerPtr& structureLearner) const
   {
     const LuapeGraphPtr& graph = structureLearner->getGraph();
 

@@ -35,7 +35,7 @@ public:
   void initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph);
   void executeArm(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode);
 
-  void playArmWithHighestIndex(ExecutionContext& context, const LuapeGreedyStructureLearnerPtr& graphLearner);
+  void playArmWithHighestIndex(ExecutionContext& context, const LuapeBoostingLearnerPtr& graphLearner);
 
   size_t sampleArmWithHighestReward(ExecutionContext& context) const;
 
@@ -112,7 +112,7 @@ public:
   }
 
   // gradient boosting
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeGreedyStructureLearnerPtr& structureLearner) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeBoostingLearnerPtr& structureLearner) const
   {
     if (pool->getNumArms() == 0)
     {
@@ -141,7 +141,7 @@ public:
     return pool->getArmNode(armIndex);
   }
   
-  virtual void update(ExecutionContext& context, const LuapeGreedyStructureLearnerPtr& structureLearner, LuapeNodePtr weakLearner)
+  virtual void update(ExecutionContext& context, const LuapeBoostingLearnerPtr& structureLearner, LuapeNodePtr weakLearner)
   {
     pool->executeArm(context, structureLearner->getProblem(), structureLearner->getGraph(), weakLearner);
     context.resultCallback(T("numArms"), pool->getNumArms());

@@ -157,7 +157,7 @@
 
   <!-- Strong Learners -->
   <class name="LuapeLearner" abstract="yes"/>
-  <class name="LuapeGreedyStructureLearner" base="LuapeLearner" abstract="yes">
+  <class name="LuapeBoostingLearner" base="LuapeLearner" abstract="yes">
     <variable type="LuapeWeakLearner" name="weakLearner"/>
   </class>
 

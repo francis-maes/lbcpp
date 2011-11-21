@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_BATCH_LEARNER_ADA_BOOST_H_
 # define LBCPP_LUAPE_BATCH_LEARNER_ADA_BOOST_H_
 
-# include "LuapeBoostingLearner.h"
+# include "LuapeWeightBoostingLearner.h"
 
 namespace lbcpp
 {
