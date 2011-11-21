@@ -1,18 +1,18 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuapeGraphLearner.cpp          | Luape Graph Learner             |
+| Filename: LuapeLearner.cpp          | Luape Graph Learner             |
 | Author  : Francis Maes                   |                                 |
 | Started : 17/11/2011 11:26               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include "LuapeGraphLearner.h"
+#include "LuapeLearner.h"
 using namespace lbcpp;
 
 /*
-** LuapeGraphLearner
+** LuapeLearner
 */
-bool LuapeGraphLearner::initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function)
+bool LuapeLearner::initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function)
 {
   this->problem = problem;
   this->function = function;
@@ -24,7 +24,7 @@ bool LuapeGraphLearner::initialize(ExecutionContext& context, const LuapeProblem
   return !problem->getObjective() || problem->getObjective()->initialize(context, problem, function);
 }
 
-bool LuapeGraphLearner::setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
+bool LuapeLearner::setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
 {
   graph->clearSamples(isTrainingData, !isTrainingData);
   if (problem->getObjective())

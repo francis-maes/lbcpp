@@ -350,33 +350,31 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////////
 
-class LuapePolicyBasedGBLearner : public LuapeGradientBoostingLearner
+class LuapePolicyBasedWeakLearner : public LuapeWeakLearner
 {
 public:
-  LuapePolicyBasedGBLearner(const PolicyPtr& policy, double learningRate, size_t maxDepth, size_t budget)
-    : LuapeGradientBoostingLearner(learningRate, maxDepth), policy(policy), budget(budget)
-  {
-  }
-
+  LuapePolicyBasedWeakLearner(const PolicyPtr& policy, size_t budget, size_t maxDepth)
+    : policy(policy), budget(budget), maxDepth(maxDepth) {}
+  LuapePolicyBasedWeakLearner() : budget(0), maxDepth(0) {}
+   
   virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function)
   {
-    if (!LuapeGradientBoostingLearner::initialize(context, problem, function))
-      return false;
     typeSearchSpace = new LuapeGraphBuilderTypeSearchSpace(problem, maxDepth);
     typeSearchSpace->pruneStates(context);
     return true;
   }
-
-  virtual LuapeNodePtr doWeakLearning(ExecutionContext& context, const DenseDoubleVectorPtr& predictions) const
+     
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeGreedyStructureLearnerPtr& structureLearner) const
   {
     static const bool computeOptimalLearner = false;
 
+    LuapeGraphPtr graph = structureLearner->getGraph();
     double optimalReward = -DBL_MAX;
     LuapeNodePtr optimalWeakLearner;
     if (computeOptimalLearner)
     {
       context.enterScope(T("Computing optimal weak learner"));
-      findOptimalWeakLearner(context, new LuapeGraphBuilderState(graph->cloneAndCast<LuapeGraph>(), typeSearchSpace), optimalReward, optimalWeakLearner);
+      findOptimalWeakLearner(context, structureLearner, new LuapeGraphBuilderState(graph->cloneAndCast<LuapeGraph>(), typeSearchSpace), optimalReward, optimalWeakLearner);
       context.leaveScope(optimalReward);
     }
 
@@ -387,7 +385,7 @@ public:
     for (size_t i = 0; i < budget; ++i)
     {
       double reward;
-      LuapeYieldNodePtr yieldNode = sampleTrajectory(context, reward);
+      LuapeYieldNodePtr yieldNode = sampleTrajectory(context, structureLearner, reward);
       if (yieldNode && reward > bestReward)
         bestWeakLearner = yieldNode->getArgument(), bestReward = reward;
       context.progressCallback(new ProgressionState(i+1, budget, T("Trajectories")));
@@ -402,15 +400,16 @@ public:
     {
       context.informationCallback(T("Optimal weak learner: ") + optimalWeakLearner->toShortString() + T(" [") + String(optimalReward) + T("]"));
       context.resultCallback(T("regret"), optimalReward - bestReward);
-      const_cast<LuapePolicyBasedGBLearner* >(this)->regret.push(optimalReward - bestReward);
+      const_cast<LuapePolicyBasedWeakLearner* >(this)->regret.push(optimalReward - bestReward);
       context.resultCallback(T("averageRegret"), regret.getMean());
       context.informationCallback(T("Average Regret: ") + String(regret.getMean()));
     }
     return bestWeakLearner;
   }
 
-  LuapeYieldNodePtr sampleTrajectory(ExecutionContext& context, double& reward) const
+  LuapeYieldNodePtr sampleTrajectory(ExecutionContext& context, const LuapeGreedyStructureLearnerPtr& structureLearner, double& reward) const
   {
+    const LuapeGraphPtr& graph = structureLearner->getGraph();
     LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(graph->cloneAndCast<LuapeGraph>(), typeSearchSpace);
 
     bool noMoreActions = false;
@@ -431,7 +430,7 @@ public:
     }
 
     LuapeYieldNodePtr yieldNode = builder->getGraph()->getLastNode().dynamicCast<LuapeYieldNode>();
-    reward = yieldNode ? computeCompletionReward(context, yieldNode->getArgument()) : 0.0;
+    reward = yieldNode ? structureLearner->computeWeakObjective(context, yieldNode->getArgument()) : 0.0;
 /*
     if (noMoreActions)
       context.informationCallback(T("Out-of-actions: ") + builder->toShortString());
@@ -440,7 +439,7 @@ public:
     return builder->getGraph()->getLastNode().dynamicCast<LuapeYieldNode>();
   }
 
-  void findOptimalWeakLearner(ExecutionContext& context, const LuapeGraphBuilderStatePtr& state, double& bestReward, LuapeNodePtr& bestWeakLearner) const
+  void findOptimalWeakLearner(ExecutionContext& context, const LuapeGreedyStructureLearnerPtr& structureLearner, const LuapeGraphBuilderStatePtr& state, double& bestReward, LuapeNodePtr& bestWeakLearner) const
   {
     if (state->isFinalState())
     {
@@ -448,7 +447,7 @@ public:
       if (yieldNode)
       {
         LuapeNodePtr node = yieldNode->getArgument();
-        double reward = computeCompletionReward(context, node);
+        double reward = structureLearner->computeWeakObjective(context, node);
         if (reward > bestReward)
           bestReward = reward, bestWeakLearner = node;
       }
@@ -463,17 +462,22 @@ public:
         double reward;
         state->performTransition(context, actions->getElement(i), reward, &stateBackup);
         //context.enterScope(state->toShortString());
-        findOptimalWeakLearner(context, state, bestReward, bestWeakLearner);
+        findOptimalWeakLearner(context, structureLearner, state, bestReward, bestWeakLearner);
         //context.leaveScope();
         state->undoTransition(context, stateBackup);
       }
     }
   }
+  
 protected:
+  friend class LuapePolicyBasedWeakLearnerClass;
+  
   PolicyPtr policy;
   size_t budget;
-  ScalarVariableStatistics regret;
+  size_t maxDepth;
+  
   LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
+  ScalarVariableStatistics regret;
 };
 
 }; /* namespace lbcpp */

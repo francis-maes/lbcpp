@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_GRAPH_LEARNER_BOOSTING_H_
 # define LBCPP_LUAPE_GRAPH_LEARNER_BOOSTING_H_
 
-# include "LuapeGraphLearner.h"
+# include "LuapeLearner.h"
 
 namespace lbcpp
 {
@@ -65,9 +65,13 @@ public:
 
 typedef ReferenceCountedObjectPtr<BoostingEdgeCalculator> BoostingEdgeCalculatorPtr;
 
-class LuapeBoostingLearner : public LuapeGraphLearner
+class LuapeBoostingLearner : public LuapeGreedyStructureLearner
 {
 public:
+  LuapeBoostingLearner(LuapeWeakLearnerPtr weakLearner)
+   : LuapeGreedyStructureLearner(weakLearner) {}
+  LuapeBoostingLearner() {}
+
   virtual BoostingEdgeCalculatorPtr createEdgeCalculator() const = 0;
 
   virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeInferencePtr& function, const std::vector<PairPtr>& examples) const = 0;
@@ -76,28 +80,9 @@ public:
   virtual bool shouldStop(double weakObjectiveValue) const = 0;
   virtual double updateWeight(const LuapeInferencePtr& function, size_t index, double currentWeight, const BooleanVectorPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const = 0;
 
-  virtual LuapeNodePtr doWeakLearning(ExecutionContext& context) const
-  {
-    // todo: externalize weak learner
-    
-    LuapeNodePtr res;
-    double bestEdge = -DBL_MAX;
-    for (size_t i = 0; i < graph->getNumNodes(); ++i)
-    {
-      TypePtr type = graph->getNodeType(i);
-      if (type == booleanType || type == doubleType)
-      {
-        double edge = computeCompletionReward(context, graph->getNode(i));
-        if (edge > bestEdge)
-          bestEdge = edge, res = graph->getNode(i);
-      }
-    }
-    return res;
-  }
-
   virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
   {
-    if (!LuapeGraphLearner::setExamples(context, isTrainingData, data))
+    if (!LuapeLearner::setExamples(context, isTrainingData, data))
       return false;
       
     size_t n = data.size();
@@ -176,7 +161,7 @@ public:
     return !stopped;
   }
   
-  virtual double computeCompletionReward(ExecutionContext& context, const LuapeNodePtr& completion) const
+  virtual double computeWeakObjective(ExecutionContext& context, const LuapeNodePtr& completion) const
   {
     BoostingEdgeCalculatorPtr edgeCalculator = createEdgeCalculator();
     

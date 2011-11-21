@@ -14,50 +14,38 @@
 namespace lbcpp
 {
 
-#if 0 // FIXME
 class SingleStumpWeakLearner : public LuapeWeakLearner
 {
 public:
-  SingleStumpWeakLearner() {}
-
-  virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeInferencePtr& function,
-                                          const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeGreedyStructureLearnerPtr& structureLearner) const
   {
-    LuapeGraphPtr graph = function->getGraph();
-    graph->clearScores();
-    size_t numExamples = graph->getNumTrainingSamples();
+    const LuapeGraphPtr& graph = structureLearner->getGraph();
 
-    size_t bestVariable = (size_t)-1;
-    double bestThreshold = 0.0;
-    double bestEdge = -DBL_MAX;
+    double bestScore = -DBL_MAX;
+    LuapeNodePtr bestNode;
 
     size_t n = graph->getNumNodes();
     for (size_t i = 0; i < n; ++i)
     {
       LuapeNodePtr node = graph->getNode(i);
-      if (node->getType() == doubleType)
+      if (!node.isInstanceOf<LuapeYieldNode>())
       {
-        double edge;
-        BoostingEdgeCalculatorPtr edgeCalculator = batchLearner->createEdgeCalculator();
-        edgeCalculator->initialize(function, new BooleanVector(numExamples, true), supervisions, weights);
-        double threshold = edgeCalculator->findBestThreshold(context, node, edge, false);
-        if (edge > bestEdge)
+        double score = structureLearner->computeWeakObjective(context, node);
+        if (score > bestScore)
         {
-          bestEdge = edge;
-          bestVariable = i;
-          bestThreshold = threshold;
+          bestScore = score;
+          bestNode = node;
         }
       }
     }
 
-    context.informationCallback("Best stump: " + graph->getNode(bestVariable)->toShortString() + " >= " + String(bestThreshold));
-    context.informationCallback("Edge: " + String(bestEdge));
-
-    LuapeNodePtr res = graph->getUniverse()->makeFunctionNode(stumpLuapeFunction(bestThreshold), graph->getNode(bestVariable));
-    return std::vector<LuapeNodePtr>(1, res);
+    context.informationCallback("Best node: " + bestNode->toShortString());
+    context.informationCallback("Score: " + String(bestScore));
+    return bestNode;
   }
 };
 
+#if 0 // FIXME
 
 class CombinedStumpWeakLearner : public LuapeWeakLearner
 {

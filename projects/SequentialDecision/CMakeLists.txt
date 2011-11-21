@@ -140,11 +140,13 @@ SET(LBCPP_LUAPE_OBJECTIVE_SOURCES
 )
 
 SET(LBCPP_LUAPE_GRAPH_LEARNER_SOURCES
-  Luape/LuapeGraphLearner.h
-  Luape/LuapeGraphLearner.cpp
+  Luape/LuapeLearner.h
+  Luape/LuapeLearner.cpp
   Luape/LuapeBoostingLearner.h
   Luape/AdaBoostMHLuapeLearner.h
   Luape/LuapeGradientBoostingLearner.h
+
+  Luape/SingleStumpWeakLearner.h
 
   Luape/LuapeGraphBuilder.h
   Luape/LuapeGraphBuilderTypeSearchSpace.h
@@ -156,7 +158,6 @@ SET(LBCPP_LUAPE_GRAPH_LEARNER_SOURCES
 SET(LBCPP_LUAPE_OLD_SOURCES
   Luape/LuapeBatchLearner.cpp
   Luape/AdaBoostLuapeLearner.h
-  Luape/SingleStumpWeakLearner.h
   Luape/ProductWeakLearner.h
   Luape/LuapeGraphBuilderWeakLearner.h
 )

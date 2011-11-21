@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_BATCH_LEARNER_H_
 # define LBCPP_LUAPE_BATCH_LEARNER_H_
 
-# include "LuapeGraphLearner.h"
+# include "LuapeLearner.h"
 # include <lbcpp/Learning/BatchLearner.h>
 
 namespace lbcpp
@@ -18,7 +18,7 @@ namespace lbcpp
 class LuapeBatchLearner : public BatchLearner
 {
 public:
-  LuapeBatchLearner(LuapeGraphLearnerPtr graphLearner, LuapeProblemPtr problem, size_t maxIterations)
+  LuapeBatchLearner(LuapeLearnerPtr graphLearner, LuapeProblemPtr problem, size_t maxIterations)
     : graphLearner(graphLearner), problem(problem), maxIterations(maxIterations) {}
   LuapeBatchLearner() {}
 
@@ -51,7 +51,7 @@ public:
 protected:
   friend class LuapeBatchLearnerClass;
 
-  LuapeGraphLearnerPtr graphLearner;
+  LuapeLearnerPtr graphLearner;
   LuapeProblemPtr problem;
   size_t maxIterations;
 };

@@ -126,14 +126,10 @@
   </class>
 
   <!-- 
-  <class name="LuapeWeakLearner" base="Object" abstract="yes"/>
   <class name="LuapeGraphBuilderWeakLearner" base="LuapeWeakLearner">
     <constructor arguments="OptimizerPtr optimizer, size_t maxSteps"/>
     <variable type="Optimizer" name="optimizer"/>
     <variable type="PositiveInteger" name="maxSteps"/>
-  </class>
-  <class name="SingleStumpWeakLearner" base="LuapeWeakLearner">
-    <constructor/>
   </class>
   <class name="CombinedStumpWeakLearner" base="LuapeWeakLearner">
     <constructor/>
@@ -158,15 +154,30 @@
     <constructor arguments="LuapeProblemPtr problem, LuapeWeakLearnerPtr weakLearner, size_t maxIterations" returnType="BatchLearner"/>
   </class>
   -->
-  
-  <class name="LuapeGraphLearner" abstract="yes"/>
 
+  <!-- Strong Learners -->
+  <class name="LuapeLearner" abstract="yes"/>
+  <class name="LuapeGreedyStructureLearner" base="LuapeLearner" abstract="yes">
+    <variable type="LuapeWeakLearner" name="weakLearner"/>
+  </class>
+
+  <!-- Weak Learners -->
+  <class name="LuapeWeakLearner" base="Object" abstract="yes"/>
+  <class name="SingleStumpWeakLearner" base="LuapeWeakLearner">
+    <constructor/>
+  </class>
+  <class name="LuapePolicyBasedWeakLearner" base="LuapeWeakLearner">
+    <variable type="Policy" name="policy"/>
+    <variable type="PositiveInteger" name="budget"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
+  </class>
+
+  <!-- Wrapper to classical LBC++ learner -->
   <class name="LuapeBatchLearner" base="BatchLearner">
-    <variable type="LuapeGraphLearner" name="graphLearner"/>
+    <variable type="LuapeLearner" name="graphLearner"/>
     <variable type="LuapeProblem" name="problem"/>
     <variable type="PositiveInteger" name="maxIterations"/>
   </class>
-
   
   <!-- Sand Box -->
   <class name="LuapeSandBox" base="WorkUnit">
