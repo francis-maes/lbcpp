@@ -142,7 +142,7 @@ SET(LBCPP_LUAPE_OBJECTIVE_SOURCES
 SET(LBCPP_LUAPE_GRAPH_LEARNER_SOURCES
   Luape/LuapeLearner.h
   Luape/LuapeLearner.cpp
-  Luape/LuapeBoostingLearner.h
+  Luape/LuapeWeightBoostingLearner.h
   Luape/AdaBoostMHLuapeLearner.h
   Luape/LuapeGradientBoostingLearner.h
 

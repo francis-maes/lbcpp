@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuapeBoostingLearner.h         | Boosting Learner base class     |
-| Author  : Francis Maes                   |                                 |
+| Filename: LuapeWeightBoostingLearner.h   | Base class AdaBoost style       |
+| Author  : Francis Maes                   |  algorithms                     |
 | Started : 21/11/2011 15:41               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_GRAPH_LEARNER_BOOSTING_H_
-# define LBCPP_LUAPE_GRAPH_LEARNER_BOOSTING_H_
+#ifndef LBCPP_LUAPE_GRAPH_LEARNER_WEIGHT_BOOSTING_H_
+# define LBCPP_LUAPE_GRAPH_LEARNER_WEIGHT_BOOSTING_H_
 
 # include "LuapeLearner.h"
 
@@ -65,12 +65,12 @@ public:
 
 typedef ReferenceCountedObjectPtr<BoostingEdgeCalculator> BoostingEdgeCalculatorPtr;
 
-class LuapeBoostingLearner : public LuapeGreedyStructureLearner
+class LuapeWeightBoostingLearner : public LuapeBoostingLearner
 {
 public:
-  LuapeBoostingLearner(LuapeWeakLearnerPtr weakLearner)
-   : LuapeGreedyStructureLearner(weakLearner) {}
-  LuapeBoostingLearner() {}
+  LuapeWeightBoostingLearner(LuapeWeakLearnerPtr weakLearner)
+   : LuapeBoostingLearner(weakLearner) {}
+  LuapeWeightBoostingLearner() {}
 
   virtual BoostingEdgeCalculatorPtr createEdgeCalculator() const = 0;
 
@@ -101,26 +101,13 @@ public:
     }
     return true;
   }
-  
+
   virtual bool doLearningIteration(ExecutionContext& context)
   {
-    LuapeNodePtr weakNode = doWeakLearning(context);
+    BooleanVectorPtr weakPredictions;
+    LuapeNodePtr weakNode = doWeakLearningAndAddToGraph(context, weakPredictions);
     if (!weakNode)
-    {
-      context.errorCallback(T("Failed to find a weak learner"));
       return false;
-    }
-    
-    if (weakNode->getType() != booleanType)
-      weakNode = createDecisionStump(context, weakNode);
-    
-    jassert(weakNode->getType() == booleanType);
-    LuapeYieldNodePtr yieldNode = new LuapeYieldNode(weakNode);
-    graph->pushMissingNodes(context, yieldNode);
-
-    weakNode->updateCache(context, true);
-    LuapeNodeCachePtr cache = weakNode->getCache();
-    BooleanVectorPtr weakPredictions = cache->getTrainingSamples();
     
     // compute vote
     BoostingEdgeCalculatorPtr edgeCalculator = createEdgeCalculator();
@@ -183,21 +170,19 @@ public:
     }
   }
   
-  
+  virtual double computeBestStumpThreshold(ExecutionContext& context, const LuapeNodePtr& numberNode) const
+  {
+    BoostingEdgeCalculatorPtr edgeCalculator = createEdgeCalculator();
+    double edge;
+    edgeCalculator->initialize(function, new BooleanVector(graph->getNumTrainingSamples(), true), supervisions, weights);
+    return edgeCalculator->findBestThreshold(context, numberNode, edge, false);
+  }
+
 protected:
   DenseDoubleVectorPtr weights;
   VectorPtr supervisions;
   double weightsSum;
 
-  LuapeNodePtr createDecisionStump(ExecutionContext& context, const LuapeNodePtr& inputNode) const
-  {
-    BoostingEdgeCalculatorPtr edgeCalculator = createEdgeCalculator();
-    double edge;
-    edgeCalculator->initialize(function, new BooleanVector(graph->getNumTrainingSamples(), true), supervisions, weights);
-    double threshold = edgeCalculator->findBestThreshold(context, inputNode, edge, false);
-    return graph->getUniverse()->makeFunctionNode(stumpLuapeFunction(threshold), inputNode);
-  }
-      
   double updateWeights(const LuapeInferencePtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const Variable& vote) const
   {
     size_t n = weights->getNumValues();
@@ -228,4 +213,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_GRAPH_LEARNER_BOOSTING_H_
+#endif // !LBCPP_LUAPE_GRAPH_LEARNER_WEIGHT_BOOSTING_H_

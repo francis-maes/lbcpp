@@ -1,17 +1,15 @@
-
-
 Objectif: finir refactoring
 
  - Uniformiser les noms
- - Factoriser entre Boosting et Gradient Boosting
- - Remettre les scores train/test à chaque itération
  
- => objectif: expe large-scale sur la classif
+ - Remettre les scores train/test à chaque itération
+ - Factoriser EdgeCalculator vs LuapeObjective
+ - Cache intelligent + expe large-scale
+ 
 
-
+--
  * GradientBoosting: allows two votes per yielded boolean 
- * Support of Stumps
- * Run on classification data (mnist & pendigit)
+ * GradientBoosting: Support of Stumps
  * More relations in Go
  * Use type-states to define features for the adaptative weak learning policy
 

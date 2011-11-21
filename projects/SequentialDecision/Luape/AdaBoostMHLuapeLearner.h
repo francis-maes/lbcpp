@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_GRAPH_LEARNER_ADA_BOOST_MH_H_
 # define LBCPP_LUAPE_GRAPH_LEARNER_ADA_BOOST_MH_H_
 
-# include "LuapeBoostingLearner.h"
+# include "LuapeWeightBoostingLearner.h"
 
 namespace lbcpp
 {
@@ -129,11 +129,11 @@ protected:
   }
 };
 
-class LuapeAdaBoostMHLearner : public LuapeBoostingLearner
+class LuapeAdaBoostMHLearner : public LuapeWeightBoostingLearner
 {
 public:
   LuapeAdaBoostMHLearner(LuapeWeakLearnerPtr weakLearner)
-    : LuapeBoostingLearner(weakLearner) {}
+    : LuapeWeightBoostingLearner(weakLearner) {}
   LuapeAdaBoostMHLearner() {}
 
   virtual BoostingEdgeCalculatorPtr createEdgeCalculator() const

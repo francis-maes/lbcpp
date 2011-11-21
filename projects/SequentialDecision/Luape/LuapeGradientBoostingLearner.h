@@ -14,94 +14,37 @@
 namespace lbcpp
 {
 
-class LuapeGradientBoostingLearner : public LuapeGreedyStructureLearner
+class LuapeGradientBoostingLearner : public LuapeBoostingLearner
 {
 public:
   LuapeGradientBoostingLearner(LuapeWeakLearnerPtr weakLearner, double learningRate)
-    : LuapeGreedyStructureLearner(weakLearner), learningRate(learningRate)
+    : LuapeBoostingLearner(weakLearner), learningRate(learningRate)
   {
   }  
   LuapeGradientBoostingLearner() : learningRate(0.0) {}
 
-  /*
-  ** Gradient boosting
-  */
-  virtual bool addWeakLearnerToGraph(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, LuapeNodePtr completion)
-  {
-    // 1- compute optimal weight
-    LuapeNodeCachePtr weakLearnerCache = completion->getCache();
-    BooleanVectorPtr weakPredictions = weakLearnerCache->getSamples(true).staticCast<BooleanVector>();
-    double optimalWeight = problem->getObjective()->optimizeWeightOfWeakLearner(context, predictions, weakPredictions);
-    context.informationCallback(T("Optimal weight: ") + String(optimalWeight));
-    
-    // 2- add weak learner and associated weight to graph 
-    graph->pushMissingNodes(context, completion);
-    if (completion->getType() == booleanType)
-    {
-      // booleans are yielded directory
-      graph->pushNode(context, new LuapeYieldNode(completion));
-    }
-    else
-    {
-      jassert(completion->getType()->isConvertibleToDouble());
-      
-      jassert(false); // todo: create stump
-    }
-    function->getVotes()->append(optimalWeight * learningRate);
-    if ((graph->getNumNodes() % 100) == 0)
-      context.informationCallback(T("Graph: ") + graph->toShortString());
-      
-    // 3- update weak learner
-    weakLearner->update(context, refCountedPointerFromThis(this), completion);
-    return true;
-  }
-
-  /*
-  ** LuapeLearner
-  */
   virtual bool doLearningIteration(ExecutionContext& context)
   {
-    LuapeObjectivePtr objective = problem->getObjective();
+    // TODO: update predictions incrementally 
 
-    double time = juce::Time::getMillisecondCounterHiRes();
-
-    // 1- compute graph outputs and compute loss derivatives
-    context.enterScope(T("Computing predictions"));
-    DenseDoubleVectorPtr predictions = function->computeSamplePredictions(context, true);
-    context.leaveScope();
-    context.enterScope(T("Computing pseudo-residuals"));
-    double lossValue;
-    objective->computeLoss(predictions, &lossValue, &pseudoResiduals);
-    context.leaveScope();
-    context.resultCallback(T("loss"), lossValue);
-
-    context.resultCallback(T("predictions"), predictions);
-    context.resultCallback(T("pseudoResiduals"), pseudoResiduals);
-
-    double newTime = juce::Time::getMillisecondCounterHiRes();
-    context.resultCallback(T("compute predictions and residuals time"), (newTime - time) / 1000.0);
-    time = newTime;
+    // 1- compute predictions and pseudo residuals 
+    computePredictionsAndPseudoResiduals(context);
 
     // 2- find best weak learner
-    LuapeNodePtr weakLearner = doWeakLearning(context);
-    if (!weakLearner)
+    BooleanVectorPtr weakPredictions;
+    LuapeNodePtr weakNode = doWeakLearningAndAddToGraph(context, weakPredictions);
+    if (!weakNode)
       return false;
-
-    newTime = juce::Time::getMillisecondCounterHiRes();
-    context.resultCallback(T("learn weak time"), (newTime - time) / 1000.0);
-    time = newTime;
 
     // 3- add weak learner to graph
-    if (!addWeakLearnerToGraph(context, predictions, weakLearner))
-      return false;
-
-    newTime = juce::Time::getMillisecondCounterHiRes();
-    context.resultCallback(T("add weak to graph time"), (newTime - time) / 1000.0);
-
-    // ok
+    {
+      TimedScope _(context, "optimize weight");
+      double optimalWeight = problem->getObjective()->optimizeWeightOfWeakLearner(context, predictions, weakPredictions);
+      function->getVotes()->append(optimalWeight * learningRate);
+    }
     return true;
   }
-  
+
   virtual double computeWeakObjective(ExecutionContext& context, const LuapeNodePtr& completion) const
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
@@ -153,10 +96,34 @@ public:
     }
   }
 
+  virtual double computeBestStumpThreshold(ExecutionContext& context, const LuapeNodePtr& numberNode) const
+  {
+    jassert(false); // todo: implement
+    return 0.0;
+  }
+
 protected:
   double learningRate;
 
+  DenseDoubleVectorPtr predictions;
   DenseDoubleVectorPtr pseudoResiduals;
+
+  void computePredictionsAndPseudoResiduals(ExecutionContext& context)
+  {
+    TimedScope _(context, "compute predictions and residuals");
+
+    context.enterScope(T("Computing predictions"));
+    predictions = function->computeSamplePredictions(context, true);
+    context.leaveScope();
+    context.enterScope(T("Computing pseudo-residuals"));
+    double lossValue;
+    problem->getObjective()->computeLoss(predictions, &lossValue, &pseudoResiduals);
+    context.leaveScope();
+    context.resultCallback(T("loss"), lossValue);
+
+    context.resultCallback(T("predictions"), predictions);
+    context.resultCallback(T("pseudoResiduals"), pseudoResiduals);
+  }
 };
 
 typedef ReferenceCountedObjectPtr<LuapeGradientBoostingLearner> LuapeGradientBoostingLearnerPtr;

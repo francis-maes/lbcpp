@@ -364,7 +364,7 @@ public:
     return true;
   }
      
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeGreedyStructureLearnerPtr& structureLearner) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeBoostingLearnerPtr& structureLearner) const
   {
     static const bool computeOptimalLearner = false;
 
@@ -407,7 +407,7 @@ public:
     return bestWeakLearner;
   }
 
-  LuapeYieldNodePtr sampleTrajectory(ExecutionContext& context, const LuapeGreedyStructureLearnerPtr& structureLearner, double& reward) const
+  LuapeYieldNodePtr sampleTrajectory(ExecutionContext& context, const LuapeBoostingLearnerPtr& structureLearner, double& reward) const
   {
     const LuapeGraphPtr& graph = structureLearner->getGraph();
     LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(graph->cloneAndCast<LuapeGraph>(), typeSearchSpace);
@@ -439,7 +439,7 @@ public:
     return builder->getGraph()->getLastNode().dynamicCast<LuapeYieldNode>();
   }
 
-  void findOptimalWeakLearner(ExecutionContext& context, const LuapeGreedyStructureLearnerPtr& structureLearner, const LuapeGraphBuilderStatePtr& state, double& bestReward, LuapeNodePtr& bestWeakLearner) const
+  void findOptimalWeakLearner(ExecutionContext& context, const LuapeBoostingLearnerPtr& structureLearner, const LuapeGraphBuilderStatePtr& state, double& bestReward, LuapeNodePtr& bestWeakLearner) const
   {
     if (state->isFinalState())
     {

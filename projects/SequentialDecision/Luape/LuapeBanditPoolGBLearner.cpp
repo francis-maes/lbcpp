@@ -113,7 +113,7 @@ void LuapeGraphBuilderBanditPool::executeArm(ExecutionContext& context, const Lu
   context.informationCallback(String((int)arms.size()) + T(" arms"));
 }
 
-void LuapeGraphBuilderBanditPool::playArmWithHighestIndex(ExecutionContext& context, const LuapeGreedyStructureLearnerPtr& graphLearner)
+void LuapeGraphBuilderBanditPool::playArmWithHighestIndex(ExecutionContext& context, const LuapeBoostingLearnerPtr& graphLearner)
 {
   if (banditsQueue.size())
   {
