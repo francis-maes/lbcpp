@@ -398,8 +398,16 @@ public:
 
   virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const
   {
-    jassert(false);
-    return 0; // not yet implemented
+    const DenseDoubleVectorPtr& pred = predictions.staticCast<DenseDoubleVector>();
+    size_t n = pred->getNumValues();
+    jassert(n == data.size());
+    double res = 0.0;
+    for (size_t i = 0; i < n; ++i)
+    {
+      double delta = pred->getValue(i) - data[i].staticCast<Pair>()->getSecond().getDouble();
+      res += delta * delta;
+    }
+    return sqrt(res / (double)n);
   }
 };
 

@@ -75,10 +75,11 @@ public:
   virtual BoostingEdgeCalculatorPtr createEdgeCalculator() const = 0;
 
   virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeInferencePtr& function, const std::vector<PairPtr>& examples) const = 0;
+  virtual double updateWeight(const LuapeInferencePtr& function, size_t index, double currentWeight, const BooleanVectorPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const = 0;
+
   virtual VectorPtr makeSupervisions(const std::vector<ObjectPtr>& examples) const = 0;
 
   virtual bool shouldStop(double weakObjectiveValue) const = 0;
-  virtual double updateWeight(const LuapeInferencePtr& function, size_t index, double currentWeight, const BooleanVectorPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const = 0;
 
   virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
   {
