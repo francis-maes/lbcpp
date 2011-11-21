@@ -1,16 +1,15 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuapePolicyBasedGBLearner.h    | Luape Policy Based Gradient     |
-| Author  : Francis Maes                   |  Boosting Learner               |
+| Filename: PolicyBasedWeakLearner.h       | Policy Based Weak Learner       |
+| Author  : Francis Maes                   |                                 |
 | Started : 19/11/2011 16:24               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_LEARNER_POLICY_BASED_GRADIENT_BOOSTING_H_
-# define LBCPP_LUAPE_LEARNER_POLICY_BASED_GRADIENT_BOOSTING_H_
+#ifndef LBCPP_LUAPE_LEARNER_POLICY_BASED_WEAK_H_
+# define LBCPP_LUAPE_LEARNER_POLICY_BASED_WEAK_H_
 
-# include "LuapeGradientBoostingLearner.h"
-# include "../Core/Policy.h"
+# include "LuapeLearner.h"
 # include <list>
 
 namespace lbcpp
@@ -350,12 +349,12 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////////
 
-class LuapePolicyBasedWeakLearner : public LuapeWeakLearner
+class PolicyBasedWeakLearner : public BoostingWeakLearner
 {
 public:
-  LuapePolicyBasedWeakLearner(const PolicyPtr& policy, size_t budget, size_t maxDepth)
+  PolicyBasedWeakLearner(const PolicyPtr& policy, size_t budget, size_t maxDepth)
     : policy(policy), budget(budget), maxDepth(maxDepth) {}
-  LuapePolicyBasedWeakLearner() : budget(0), maxDepth(0) {}
+  PolicyBasedWeakLearner() : budget(0), maxDepth(0) {}
    
   virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function)
   {
@@ -364,7 +363,7 @@ public:
     return true;
   }
      
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeBoostingLearnerPtr& structureLearner) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const
   {
     static const bool computeOptimalLearner = false;
 
@@ -400,14 +399,14 @@ public:
     {
       context.informationCallback(T("Optimal weak learner: ") + optimalWeakLearner->toShortString() + T(" [") + String(optimalReward) + T("]"));
       context.resultCallback(T("regret"), optimalReward - bestReward);
-      const_cast<LuapePolicyBasedWeakLearner* >(this)->regret.push(optimalReward - bestReward);
+      const_cast<PolicyBasedWeakLearner* >(this)->regret.push(optimalReward - bestReward);
       context.resultCallback(T("averageRegret"), regret.getMean());
       context.informationCallback(T("Average Regret: ") + String(regret.getMean()));
     }
     return bestWeakLearner;
   }
 
-  LuapeYieldNodePtr sampleTrajectory(ExecutionContext& context, const LuapeBoostingLearnerPtr& structureLearner, double& reward) const
+  LuapeYieldNodePtr sampleTrajectory(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, double& reward) const
   {
     const LuapeGraphPtr& graph = structureLearner->getGraph();
     LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(graph->cloneAndCast<LuapeGraph>(), typeSearchSpace);
@@ -439,7 +438,7 @@ public:
     return builder->getGraph()->getLastNode().dynamicCast<LuapeYieldNode>();
   }
 
-  void findOptimalWeakLearner(ExecutionContext& context, const LuapeBoostingLearnerPtr& structureLearner, const LuapeGraphBuilderStatePtr& state, double& bestReward, LuapeNodePtr& bestWeakLearner) const
+  void findOptimalWeakLearner(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeGraphBuilderStatePtr& state, double& bestReward, LuapeNodePtr& bestWeakLearner) const
   {
     if (state->isFinalState())
     {
@@ -470,7 +469,7 @@ public:
   }
   
 protected:
-  friend class LuapePolicyBasedWeakLearnerClass;
+  friend class PolicyBasedWeakLearnerClass;
   
   PolicyPtr policy;
   size_t budget;
@@ -482,4 +481,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_LEARNER_POLICY_BASED_GRADIENT_BOOSTING_H_
+#endif // !LBCPP_LUAPE_LEARNER_POLICY_BASED_WEAK_H_

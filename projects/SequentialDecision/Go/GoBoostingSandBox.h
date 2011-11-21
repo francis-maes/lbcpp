@@ -81,6 +81,7 @@ private:
     return new Pair(res, actions->getElement(l));
   }
 };
+# if 0
 
 //////////////////
 ////////////////// BoostingWeakModel
@@ -534,6 +535,8 @@ private:
     return res;
   }
 };
+
+#endif // 0
 
 }; /* namespace lbcpp */
 

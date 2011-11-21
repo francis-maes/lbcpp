@@ -142,6 +142,19 @@ public:
 
 extern ClassPtr resourceEstimatorClass;
 
+class TimedScope
+{
+public:
+  TimedScope(ExecutionContext& context, const String& name);
+  ~TimedScope();
+  
+private:
+  ExecutionContext& context;
+  String name;
+  double startTime;
+};
+
+
 extern ResourceEstimatorPtr fixedResourceEstimator(size_t requiredCpus, size_t requiredMemory, size_t requiredTime);
 
 }; /* namespace lbcpp */

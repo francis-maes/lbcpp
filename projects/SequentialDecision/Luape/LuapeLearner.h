@@ -12,27 +12,10 @@
 # include "LuapeInference.h"
 # include "LuapeGraphBuilder.h"
 # include "LuapeProblem.h"
+# include "../Core/Policy.h"
 
 namespace lbcpp
 {
-
-class TimedScope
-{
-public:
-  TimedScope(ExecutionContext& context, const String& name)
-    : context(context), name(name), startTime(juce::Time::getMillisecondCounterHiRes()) {}
-
-  ~TimedScope()
-  {
-    double endTime = juce::Time::getMillisecondCounterHiRes();
-    context.resultCallback(name + T(" time"), endTime);
-  }
-
-private:
-  ExecutionContext& context;
-  String name;
-  double startTime;
-};
 
 class LuapeLearner : public Object
 {
@@ -58,91 +41,42 @@ protected:
 
 typedef ReferenceCountedObjectPtr<LuapeLearner> LuapeLearnerPtr;
 
-class LuapeBoostingLearner;
-typedef ReferenceCountedObjectPtr<LuapeBoostingLearner> LuapeBoostingLearnerPtr;
+class BoostingLearner;
+typedef ReferenceCountedObjectPtr<BoostingLearner> BoostingLearnerPtr;
 
-class LuapeWeakLearner : public Object
+class BoostingWeakLearner : public Object
 {
 public:
   virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function) {return true;}
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeBoostingLearnerPtr& structureLearner) const = 0;
-  virtual void update(ExecutionContext& context, const LuapeBoostingLearnerPtr& structureLearner, LuapeNodePtr weakLearner) {}
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const = 0;
+  virtual void update(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, LuapeNodePtr weakLearner) {}
 };
 
-typedef ReferenceCountedObjectPtr<LuapeWeakLearner> LuapeWeakLearnerPtr;
+typedef ReferenceCountedObjectPtr<BoostingWeakLearner> BoostingWeakLearnerPtr;
 
-extern LuapeWeakLearnerPtr singleStumpWeakLearner();
+extern BoostingWeakLearnerPtr singleStumpWeakLearner();
+extern BoostingWeakLearnerPtr policyBasedWeakLearner(const PolicyPtr& policy, size_t budget, size_t maxDepth);
 
-class LuapeBoostingLearner : public LuapeLearner
+class BoostingLearner : public LuapeLearner
 {
 public:
-  LuapeBoostingLearner(LuapeWeakLearnerPtr weakLearner)
-    : weakLearner(weakLearner) {}
-  LuapeBoostingLearner() {}
+  BoostingLearner(BoostingWeakLearnerPtr weakLearner);
+  BoostingLearner() {}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function)
-  {
-    if (!LuapeLearner::initialize(context, problem, function))
-      return false;
-    jassert(weakLearner);
-    return weakLearner->initialize(context, problem, function);
-  }
+  virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function);
 
   virtual double computeWeakObjective(ExecutionContext& context, const LuapeNodePtr& weakNode) const = 0;
   virtual double computeBestStumpThreshold(ExecutionContext& context, const LuapeNodePtr& numberNode) const = 0;
   
 protected:
-  friend class LuapeBoostingLearnerClass;
+  friend class BoostingLearnerClass;
   
-  LuapeWeakLearnerPtr weakLearner;
+  BoostingWeakLearnerPtr weakLearner;
 
-  LuapeNodePtr createDecisionStump(ExecutionContext& context, const LuapeNodePtr& numberNode) const
-  {
-    double threshold = computeBestStumpThreshold(context, numberNode);
-    return graph->getUniverse()->makeFunctionNode(stumpLuapeFunction(threshold), numberNode);
-  }
-
-  LuapeNodePtr doWeakLearning(ExecutionContext& context) const
-  {
-    LuapeNodePtr weakNode = weakLearner->learn(context, refCountedPointerFromThis(this));
-    if (!weakNode)
-      context.errorCallback(T("Failed to find a weak learner"));
-    if (weakNode->getType() != booleanType)
-      weakNode = createDecisionStump(context, weakNode); // transforms doubles into decision stumps
-    return weakNode;
-  }
-
-  LuapeNodePtr doWeakLearningAndAddToGraph(ExecutionContext& context, BooleanVectorPtr& weakPredictions)
-  {
-    LuapeNodePtr weakNode;
-
-    // do weak learning
-    {
-      TimedScope _(context, "weak learning");
-      weakNode = doWeakLearning(context);
-      if (!weakNode)
-        return LuapeNodePtr();
-    }
-   
-    {
-      TimedScope _(context, "add to graph");
-
-      // add missing nodes to graph
-      jassert(weakNode->getType() == booleanType);
-      graph->pushMissingNodes(context, new LuapeYieldNode(weakNode));
-
-      // update the weak learner
-      weakLearner->update(context, refCountedPointerFromThis(this), weakNode);
-
-      // retrieve weak predictions
-      weakNode->updateCache(context, true);
-      jassert(weakNode->getCache()->getNumTrainingSamples() > 0);
-      weakPredictions = weakNode->getCache()->getSamples(true).staticCast<BooleanVector>();
-    }
-    return weakNode;
-  }
+  LuapeNodePtr createDecisionStump(ExecutionContext& context, const LuapeNodePtr& numberNode) const;
+  LuapeNodePtr doWeakLearning(ExecutionContext& context) const;
+  LuapeNodePtr doWeakLearningAndAddToGraph(ExecutionContext& context, BooleanVectorPtr& weakPredictions);
 };
-
 
 }; /* namespace lbcpp */
 

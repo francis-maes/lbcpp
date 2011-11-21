@@ -281,6 +281,15 @@ bool ExecutionStack::equals(const ExecutionStackPtr& otherStack) const
 }
 
 /*
+** TimedScope
+*/
+TimedScope::TimedScope(ExecutionContext& context, const String& name)
+  : context(context), name(name), startTime(juce::Time::getMillisecondCounterHiRes()) {}
+
+TimedScope::~TimedScope()
+  {context.resultCallback(name + T(" time"), Variable((juce::Time::getMillisecondCounterHiRes() - startTime) / 1000.0));}
+
+/*
 ** Execution Context constructor functions
 */
 ExecutionContextPtr lbcpp::defaultConsoleExecutionContext(bool noMultiThreading)

@@ -126,9 +126,11 @@ SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
   Luape/LuapeNode.cpp
   Luape/LuapeGraph.h
   Luape/LuapeGraph.cpp
-  Luape/LuapeSimpleFunctions.h
+  Luape/LuapeGraphBuilder.h
+  Luape/LuapeGraphBuilderTypeSearchSpace.h
   Luape/LuapeInference.h
   Luape/LuapeBatchLearner.h
+  Luape/LuapeSimpleFunctions.h
   Luape/LuapeSandBox.h
   Luape/LuapeLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeLibrary.cpp
@@ -142,24 +144,20 @@ SET(LBCPP_LUAPE_OBJECTIVE_SOURCES
 SET(LBCPP_LUAPE_GRAPH_LEARNER_SOURCES
   Luape/LuapeLearner.h
   Luape/LuapeLearner.cpp
-  Luape/LuapeWeightBoostingLearner.h
-  Luape/AdaBoostMHLuapeLearner.h
-  Luape/LuapeGradientBoostingLearner.h
+  Luape/WeightBoostingLearner.h
+  Luape/AdaBoostMHLearner.h
+  Luape/GradientBoostingLearner.h
 
+  Luape/BanditPoolWeakLearner.h
+  Luape/BanditPoolWeakLearner.cpp
+  Luape/PolicyBasedWeakLearner.h
   Luape/SingleStumpWeakLearner.h
-
-  Luape/LuapeGraphBuilder.h
-  Luape/LuapeGraphBuilderTypeSearchSpace.h
-  Luape/LuapeBanditPoolGBLearner.h
-  Luape/LuapeBanditPoolGBLearner.cpp
-  Luape/LuapePolicyBasedGBLearner.h
 )
 
 SET(LBCPP_LUAPE_OLD_SOURCES
   Luape/LuapeBatchLearner.cpp
   Luape/AdaBoostLuapeLearner.h
   Luape/ProductWeakLearner.h
-  Luape/LuapeGraphBuilderWeakLearner.h
 )
 
 SET(LBCPP_SEQUENTIAL_DECISION_SMALL_MDP_SOURCES
@@ -207,8 +205,8 @@ SOURCE_SUB_GROUP(Go Perception FILES ${LBCPP_SEQUENTIAL_DECISION_GO_PERCEPTION_S
 SOURCE_GROUP(GP FILES ${LBCPP_SEQUENTIAL_DECISION_GP_SOURCES})
 SOURCE_GROUP(Bandits FILES ${LBCPP_SEQUENTIAL_DECISION_BANDITS_SOURCES})
 SOURCE_GROUP(Luape FILES ${LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES})
+SOURCE_SUB_GROUP(Luape Learner FILES ${LBCPP_LUAPE_GRAPH_LEARNER_SOURCES})
 SOURCE_SUB_GROUP(Luape Objective FILES ${LBCPP_LUAPE_OBJECTIVE_SOURCES})
-SOURCE_SUB_GROUP(Luape GraphLearner FILES ${LBCPP_LUAPE_GRAPH_LEARNER_SOURCES})
 SOURCE_SUB_GROUP(Luape Old FILES ${LBCPP_LUAPE_OLD_SOURCES})
 
 SOURCE_GROUP(SmallMDP FILES ${LBCPP_SEQUENTIAL_DECISION_SMALL_MDP_SOURCES})

@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuapeWeightBoostingLearner.h   | Base class AdaBoost style       |
+| Filename: WeightBoostingLearner.h        | Base class AdaBoost style       |
 | Author  : Francis Maes                   |  algorithms                     |
 | Started : 21/11/2011 15:41               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_GRAPH_LEARNER_WEIGHT_BOOSTING_H_
-# define LBCPP_LUAPE_GRAPH_LEARNER_WEIGHT_BOOSTING_H_
+#ifndef LBCPP_LUAPE_LEARNER_WEIGHT_BOOSTING_H_
+# define LBCPP_LUAPE_LEARNER_WEIGHT_BOOSTING_H_
 
 # include "LuapeLearner.h"
 
@@ -65,12 +65,12 @@ public:
 
 typedef ReferenceCountedObjectPtr<BoostingEdgeCalculator> BoostingEdgeCalculatorPtr;
 
-class LuapeWeightBoostingLearner : public LuapeBoostingLearner
+class WeightBoostingLearner : public BoostingLearner
 {
 public:
-  LuapeWeightBoostingLearner(LuapeWeakLearnerPtr weakLearner)
-   : LuapeBoostingLearner(weakLearner) {}
-  LuapeWeightBoostingLearner() {}
+  WeightBoostingLearner(BoostingWeakLearnerPtr weakLearner)
+   : BoostingLearner(weakLearner) {}
+  WeightBoostingLearner() {}
 
   virtual BoostingEdgeCalculatorPtr createEdgeCalculator() const = 0;
 
@@ -213,4 +213,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_GRAPH_LEARNER_WEIGHT_BOOSTING_H_
+#endif // !LBCPP_LUAPE_LEARNER_WEIGHT_BOOSTING_H_

@@ -11,7 +11,8 @@
 
 # include <lbcpp/Data/Stream.h>
 # include "LuapeProblem.h"
-# include "LuapeBatchLearner.h"
+# include "LuapeLearner.h"
+# include "PolicyBasedWeakLearner.h"
 # include "../Core/SinglePlayerMCTSOptimizer.h"
 
 namespace lbcpp
@@ -46,9 +47,9 @@ public:
     if (!classifier->initialize(context, inputClass, labels))
       return false;
 
-    //LuapeWeakLearnerPtr weakLearner = singleStumpWeakLearner();
-    LuapeWeakLearnerPtr weakLearner = new LuapePolicyBasedWeakLearner(new TreeBasedRandomPolicy(), budgetPerIteration, maxSteps);
-    classifier->setBatchLearner(new LuapeBatchLearner(new LuapeAdaBoostMHLearner(weakLearner), problem, maxIterations));
+    //BoostingWeakLearnerPtr weakLearner = singleStumpWeakLearner();
+    BoostingWeakLearnerPtr weakLearner = policyBasedWeakLearner(new TreeBasedRandomPolicy(), budgetPerIteration, maxSteps);
+    classifier->setBatchLearner(new LuapeBatchLearner(new AdaBoostMHLearner(weakLearner), problem, maxIterations));
     classifier->setEvaluator(defaultSupervisedEvaluator());
 
     classifier->train(context, trainData, testData, T("Training"), true);

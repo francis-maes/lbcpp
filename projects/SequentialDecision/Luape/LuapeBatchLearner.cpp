@@ -13,7 +13,7 @@ using namespace lbcpp;
 /*
 ** BoostingLuapeLearner
 */
-BoostingLuapeLearner::BoostingLuapeLearner(LuapeProblemPtr problem, LuapeWeakLearnerPtr weakLearner, size_t maxIterations)
+BoostingLuapeLearner::BoostingLuapeLearner(LuapeProblemPtr problem, BoostingWeakLearnerPtr weakLearner, size_t maxIterations)
   : LuapeBatchLearner(problem), weakLearner(weakLearner), maxIterations(maxIterations)
 {
 }

@@ -1,27 +1,27 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuapeGradientBoostingLearner.h | Luape Gradient Boosting Learner |
+| Filename: GradientBoostingLearner.h      | Luape Gradient Boosting Learner |
 | Author  : Francis Maes                   |  base class                     |
 | Started : 21/11/2011 15:43               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_GRAPH_LEARNER_GRADIENT_BOOSTING_H_
-# define LBCPP_LUAPE_GRAPH_LEARNER_GRADIENT_BOOSTING_H_
+#ifndef LBCPP_LUAPE_LEARNER_GRADIENT_BOOSTING_H_
+# define LBCPP_LUAPE_LEARNER_GRADIENT_BOOSTING_H_
 
 # include "LuapeLearner.h"
 
 namespace lbcpp
 {
 
-class LuapeGradientBoostingLearner : public LuapeBoostingLearner
+class GradientBoostingLearner : public BoostingLearner
 {
 public:
-  LuapeGradientBoostingLearner(LuapeWeakLearnerPtr weakLearner, double learningRate)
-    : LuapeBoostingLearner(weakLearner), learningRate(learningRate)
+  GradientBoostingLearner(BoostingWeakLearnerPtr weakLearner, double learningRate)
+    : BoostingLearner(weakLearner), learningRate(learningRate)
   {
   }  
-  LuapeGradientBoostingLearner() : learningRate(0.0) {}
+  GradientBoostingLearner() : learningRate(0.0) {}
 
   virtual bool doLearningIteration(ExecutionContext& context)
   {
@@ -126,8 +126,8 @@ protected:
   }
 };
 
-typedef ReferenceCountedObjectPtr<LuapeGradientBoostingLearner> LuapeGradientBoostingLearnerPtr;
+typedef ReferenceCountedObjectPtr<GradientBoostingLearner> GradientBoostingLearnerPtr;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_GRAPH_LEARNER_GRADIENT_BOOSTING_H_
+#endif // !LBCPP_LUAPE_LEARNER_GRADIENT_BOOSTING_H_

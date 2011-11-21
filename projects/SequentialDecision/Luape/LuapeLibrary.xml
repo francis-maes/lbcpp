@@ -126,17 +126,17 @@
   </class>
 
   <!-- 
-  <class name="LuapeGraphBuilderWeakLearner" base="LuapeWeakLearner">
+  <class name="LuapeGraphBuilderWeakLearner" base="BoostingWeakLearner">
     <constructor arguments="OptimizerPtr optimizer, size_t maxSteps"/>
     <variable type="Optimizer" name="optimizer"/>
     <variable type="PositiveInteger" name="maxSteps"/>
   </class>
-  <class name="CombinedStumpWeakLearner" base="LuapeWeakLearner">
+  <class name="CombinedStumpWeakLearner" base="BoostingWeakLearner">
     <constructor/>
   </class>
-  <class name="ProductWeakLearner" base="LuapeWeakLearner">
-    <constructor arguments="LuapeWeakLearnerPtr baseLearner, size_t numBaseClassifiers"/>
-    <variable type="LuapeWeakLearner" name="baseLearner"/>
+  <class name="ProductWeakLearner" base="BoostingWeakLearner">
+    <constructor arguments="BoostingWeakLearnerPtr baseLearner, size_t numBaseClassifiers"/>
+    <variable type="BoostingWeakLearner" name="baseLearner"/>
     <variable type="PositiveInteger" name="numBaseClassifiers"/>
   </class>
 
@@ -144,31 +144,37 @@
     <variable type="LuapeProblem" name="problem"/>
   </class>
   <class name="BoostingLuapeLearner" base="LuapeBatchLearner" abstract="yes">
-    <variable type="LuapeWeakLearner" name="weakLearner"/>
+    <variable type="BoostingWeakLearner" name="weakLearner"/>
     <variable type="PositiveInteger" name="maxIterations"/>
   </class>
   <class name="AdaBoostLuapeLearner" base="BoostingLuapeLearner">
-    <constructor arguments="LuapeProblemPtr problem, LuapeWeakLearnerPtr weakLearner, size_t maxIterations" returnType="BatchLearner"/>
+    <constructor arguments="LuapeProblemPtr problem, BoostingWeakLearnerPtr weakLearner, size_t maxIterations" returnType="BatchLearner"/>
   </class>
   <class name="AdaBoostMHLuapeLearner" base="BoostingLuapeLearner">
-    <constructor arguments="LuapeProblemPtr problem, LuapeWeakLearnerPtr weakLearner, size_t maxIterations" returnType="BatchLearner"/>
+    <constructor arguments="LuapeProblemPtr problem, BoostingWeakLearnerPtr weakLearner, size_t maxIterations" returnType="BatchLearner"/>
   </class>
   -->
 
   <!-- Strong Learners -->
   <class name="LuapeLearner" abstract="yes"/>
-  <class name="LuapeBoostingLearner" base="LuapeLearner" abstract="yes">
-    <variable type="LuapeWeakLearner" name="weakLearner"/>
+  <class name="BoostingLearner" base="LuapeLearner" abstract="yes">
+    <variable type="BoostingWeakLearner" name="weakLearner"/>
   </class>
 
   <!-- Weak Learners -->
-  <class name="LuapeWeakLearner" base="Object" abstract="yes"/>
-  <class name="SingleStumpWeakLearner" base="LuapeWeakLearner">
+  <class name="BoostingWeakLearner" base="Object" abstract="yes"/>
+  <class name="SingleStumpWeakLearner" base="BoostingWeakLearner">
     <constructor/>
   </class>
-  <class name="LuapePolicyBasedWeakLearner" base="LuapeWeakLearner">
+  <class name="PolicyBasedWeakLearner" base="BoostingWeakLearner">
+    <constructor arguments="const PolicyPtr&amp; policy, size_t budget, size_t maxDepth"/>
     <variable type="Policy" name="policy"/>
     <variable type="PositiveInteger" name="budget"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
+  </class>
+  <class name="BanditPoolWeakLearner" base="BoostingWeakLearner">
+    <constructor arguments="size_t maxBandits, size_t maxDepth"/>
+    <variable type="PositiveInteger" name="maxBandits"/>
     <variable type="PositiveInteger" name="maxDepth"/>
   </class>
 

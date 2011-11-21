@@ -10,8 +10,9 @@
 # define LBCPP_SEQUENTIAL_DECISION_WORK_UNIT_GO_BOOSTING_SAND_BOX_2_H_
 
 # include "GoProblem.h"
-# include "../Luape/LuapeBanditPoolGBLearner.h"
-# include "../Luape/LuapePolicyBasedGBLearner.h"
+# include "../Luape/BanditPoolWeakLearner.h"
+# include "../Luape/PolicyBasedWeakLearner.h"
+# include "../Luape/GradientBoostingLearner.h"
 
 # include "Perception/GoStatePerception.h"
 # include "Perception/GoBoardPositionPerception.h"
@@ -67,7 +68,7 @@ public:
     //PolicyPtr policy = new RandomPolicy();
     //PolicyPtr policy = new LuapeRewardStorageBasedPolicy();
     
-    LuapeLearnerPtr learner = new LuapeGradientBoostingLearner(new LuapePolicyBasedWeakLearner(policy, budget, maxDepth), learningRate);
+    LuapeLearnerPtr learner = new GradientBoostingLearner(policyBasedWeakLearner(policy, budget, maxDepth), learningRate);
     if (!learner->initialize(context, problem, learningMachine))
       return false;
     

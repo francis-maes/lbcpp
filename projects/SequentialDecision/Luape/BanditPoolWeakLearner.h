@@ -1,15 +1,15 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuapeBanditPoolGBLearner.h     | Luape Bandit based Gradient     |
-| Author  : Francis Maes                   |  Boosting learner               |
+| Filename: BanditPoolWeakLearner.h        | Luape Bandit based weak learner |
+| Author  : Francis Maes                   |                                 |
 | Started : 19/11/2011 15:57               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_LEARNER_BANDIT_POOL_GRADIENT_BOOSTING_H_
-# define LBCPP_LUAPE_LEARNER_BANDIT_POOL_GRADIENT_BOOSTING_H_
+#ifndef LBCPP_LUAPE_LEARNER_BANDIT_POOL_WEAK_H_
+# define LBCPP_LUAPE_LEARNER_BANDIT_POOL_WEAK_H_
 
-# include "LuapeGradientBoostingLearner.h"
+# include "LuapeLearner.h"
 # include <queue> // for priority queue in bandits pool
 
 namespace lbcpp
@@ -35,7 +35,7 @@ public:
   void initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph);
   void executeArm(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode);
 
-  void playArmWithHighestIndex(ExecutionContext& context, const LuapeBoostingLearnerPtr& graphLearner);
+  void playArmWithHighestIndex(ExecutionContext& context, const BoostingLearnerPtr& graphLearner);
 
   size_t sampleArmWithHighestReward(ExecutionContext& context) const;
 
@@ -95,12 +95,12 @@ typedef ReferenceCountedObjectPtr<LuapeGraphBuilderBanditPool> LuapeGraphBuilder
 
 
 /*
-** LuapeBanditPoolWeakLearner
+** BanditPoolWeakLearner
 */
-class LuapeBanditPoolWeakLearner : public LuapeWeakLearner
+class BanditPoolWeakLearner : public BoostingWeakLearner
 {
 public:
-  LuapeBanditPoolWeakLearner(size_t maxBandits, size_t maxDepth)
+  BanditPoolWeakLearner(size_t maxBandits = 0, size_t maxDepth = 0)
     : maxBandits(maxBandits), maxDepth(maxDepth) {}  
 
   virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function)
@@ -112,7 +112,7 @@ public:
   }
 
   // gradient boosting
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeBoostingLearnerPtr& structureLearner) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const
   {
     if (pool->getNumArms() == 0)
     {
@@ -141,13 +141,15 @@ public:
     return pool->getArmNode(armIndex);
   }
   
-  virtual void update(ExecutionContext& context, const LuapeBoostingLearnerPtr& structureLearner, LuapeNodePtr weakLearner)
+  virtual void update(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, LuapeNodePtr weakLearner)
   {
     pool->executeArm(context, structureLearner->getProblem(), structureLearner->getGraph(), weakLearner);
     context.resultCallback(T("numArms"), pool->getNumArms());
   }
 
 protected:
+  friend class BanditPoolWeakLearnerClass;
+
   size_t maxBandits;
   size_t maxDepth;
   LuapeGraphBuilderBanditPoolPtr pool;
@@ -155,4 +157,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_LEARNER_BANDIT_POOL_GRADIENT_BOOSTING_H_
+#endif // !LBCPP_LUAPE_LEARNER_BANDIT_POOL_WEAK_H_
