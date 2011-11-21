@@ -160,9 +160,8 @@ LuapeNodePtr LuapeGraph::pushMissingNodes(ExecutionContext& context, const Luape
   LuapeYieldNodePtr yieldNode = node.dynamicCast<LuapeYieldNode>();
   if (yieldNode)
     pushMissingNodes(context, yieldNode->getArgument());
- 
-  nodesMap[node] = nodes.size();
-  nodes.push_back(node);
+
+  addNode(node);
   return node;
 }
 
@@ -183,10 +182,15 @@ LuapeNodePtr LuapeGraph::pushNode(ExecutionContext& context, const LuapeNodePtr&
   if (inputNode)
     universe->addInputNode(inputNode);
 
+  addNode(node);
+  return node;
+}
+
+void LuapeGraph::addNode(const LuapeNodePtr& node)
+{
   node->indexInGraph = nodes.size();
   nodesMap[node] = nodes.size();
   nodes.push_back(node);
-  return node;
 }
 
 void LuapeGraph::popNode()

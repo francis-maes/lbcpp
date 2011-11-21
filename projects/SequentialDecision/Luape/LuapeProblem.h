@@ -24,6 +24,8 @@ class LuapeObjective : public Object
 public:
   virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function) = 0;
   virtual void setExamples(bool isTrainingData, const std::vector<ObjectPtr>& data) = 0;
+  
+  // specific to gradient boosting
   virtual void computeLoss(const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const = 0;
 
   virtual double optimizeWeightOfWeakLearner(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const BooleanVectorPtr& weakPredictions) const

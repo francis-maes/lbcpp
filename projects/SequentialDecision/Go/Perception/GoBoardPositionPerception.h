@@ -57,7 +57,7 @@ public:
     }
   }
 
-  GoBoardPositionPerception() : capturedAtPreviousTurn(false), position(0, 0), bTrue(true), bFalse(false) {}
+  GoBoardPositionPerception() : capturedAtPreviousTurn(false), bTrue(true), bFalse(false), position(0, 0) {}
 
   void setPrevious(GoBoardPositionPerceptionPtr previous)
     {this->previous = previous;}

@@ -53,7 +53,6 @@ public:
   
     size_t n = trainingSupervisions->getNumValues();
     jassert(n == predictions->getNumValues());
-    size_t index = 0;
     for (size_t i = 0; i < n; ++i)
     {
       double predicted = predictions->getValue(i);

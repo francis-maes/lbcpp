@@ -17,120 +17,6 @@
 namespace lbcpp
 {
 
-  /*
-class AddFunction : public SimpleBinaryFunction
-{
-public:
-  AddFunction() : SimpleBinaryFunction(doubleType, doubleType, doubleType, "add") {}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-    {return inputs[0].toDouble() + inputs[1].toDouble();}
-};
-
-class SubFunction : public SimpleBinaryFunction
-{
-public:
-  SubFunction() : SimpleBinaryFunction(doubleType, doubleType, doubleType, "sub") {}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-    {return inputs[0].toDouble() - inputs[1].toDouble();}
-};
-
-class ProductFunction : public SimpleBinaryFunction
-{
-public:
-  ProductFunction() : SimpleBinaryFunction(doubleType, doubleType, doubleType, "prod") {}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-    {return inputs[0].toDouble() * inputs[1].toDouble();}
-};
-
-class DivideFunction : public SimpleBinaryFunction
-{
-public:
-  DivideFunction() : SimpleBinaryFunction(doubleType, doubleType, doubleType, "div") {}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-  {
-    double a = inputs[0].toDouble();
-    double b = inputs[1].toDouble();
-    return b ? a / b : DBL_MAX;
-  }
-};
-
-class GreaterThanFunction : public SimpleBinaryFunction
-{
-public:
-  GreaterThanFunction() : SimpleBinaryFunction(doubleType, doubleType, booleanType, "gt") {}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-    {return inputs[0].toDouble() > inputs[1].toDouble();}
-};
-
-class BooleanAndFunction : public SimpleBinaryFunction
-{
-public:
-  BooleanAndFunction() : SimpleBinaryFunction(booleanType, booleanType, booleanType, "and") {}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-    {return inputs[0].getBoolean() && inputs[1].getBoolean();}
-};
-
-class BooleanXorFunction : public SimpleBinaryFunction
-{
-public:
-  BooleanXorFunction() : SimpleBinaryFunction(booleanType, booleanType, booleanType, "xor") {}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-    {return inputs[0].getBoolean() != inputs[1].getBoolean();}
-};
-
-class LogFunction : public SimpleUnaryFunction
-{
-public:
-  LogFunction() : SimpleUnaryFunction(doubleType, doubleType, "log") {}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {return log(input.toDouble());}
-};
-
-class StumpFunction : public SimpleUnaryFunction
-{
-public:
-  StumpFunction(double threshold = 0.0) 
-    : SimpleUnaryFunction(sumType(integerType, doubleType), booleanType, "stump"), threshold(threshold) {}
-
-  virtual String toShortString() const
-    {return T("Stump(") + String(threshold) + T(")");}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {return input.toDouble() >= threshold;}
-
-protected:
-  friend class StumpFunctionClass;
-
-  double threshold;
-};
-
-class EqualsEnumValueFunction : public SimpleUnaryFunction
-{
-public:
-  EqualsEnumValueFunction(const Variable& value = Variable()) 
-    : SimpleUnaryFunction(enumValueType, booleanType, "equalsEnum"), value(value) {}
-
-  virtual String toShortString() const
-    {return T("Equals(") + value.toShortString() + T(")");}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {return input == value;}
-
-protected:
-  friend class EqualsEnumValueFunctionClass;
-
-  Variable value;
-};
-*/
-
 class LuapeSandBox : public WorkUnit
 {
 public:
@@ -159,7 +45,29 @@ public:
     LuapeInferencePtr classifier = new LuapeClassifier();
     if (!classifier->initialize(context, inputClass, labels))
       return false;
+    classifier->setEvaluator(defaultSupervisedEvaluator());
+      
+      
+    LuapeGraphLearnerPtr learner = new LuapeAdaBoostMHLearner();
+    if (!learner->initialize(context, problem, classifier))
+      return false;
+      
+    std::vector<ObjectPtr> data(trainData->getNumElements());
+    for (size_t i = 0; i < data.size(); ++i)
+      data[i] = trainData->getElement(i).getObject();
+    learner->setExamples(context, true, data);
+    for (size_t i = 0; i < maxIterations; ++i)
+    {
+      context.enterScope(T("Iteration ") + String((int)i));
+      context.resultCallback(T("iteration"), i);
+      learner->doLearningIteration(context);
+      classifier->evaluate(context, trainData, EvaluatorPtr(), T("Evaluating on training data"));
+      classifier->evaluate(context, testData, EvaluatorPtr(), T("Evaluating on testing data"));
+      context.leaveScope();
+    }
+    return true;
 
+#if 0
     //OptimizerPtr optimizer = new NestedMonteCarloOptimizer(2, 1);
 
     OptimizerPtr optimizer = new SinglePlayerMCTSOptimizer(budgetPerIteration);
@@ -168,11 +76,11 @@ public:
     //productWeakLearner(singleStumpWeakLearner(), 2);
       //luapeGraphBuilderWeakLearner(optimizer, maxSteps);
     classifier->setBatchLearner(adaBoostMHLuapeLearner(problem, weakLearner, maxIterations));
-    classifier->setEvaluator(defaultSupervisedEvaluator());
 
     classifier->train(context, trainData, testData, T("Training"), true);
     //classifier->evaluate(context, trainData, EvaluatorPtr(), T("Evaluating on training data"));
     //classifier->evaluate(context, testData, EvaluatorPtr(), T("Evaluating on testing data"));
+#endif
     return true;
   }
 

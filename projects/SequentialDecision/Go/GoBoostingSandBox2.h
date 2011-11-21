@@ -87,13 +87,12 @@ public:
     if (!res->initialize(context, goBoardPositionPerceptionClass, doubleType))
       return LuapeInferencePtr();
 
-    // initialize graph
+    /* initialize graph
     LuapeGraphPtr graph = problem->createInitialGraph(context);
     LuapeNodePtr positionNode = graph->getNode(0);
     //LuapeNodePtr boardNode = graph->pushFunctionNode(context, getVariableFunction(0), positionNode); // retrieve board from position
     //LuapeNodePtr stateNode = graph->pushFunctionNode(context, getVariableFunction(0), boardNode); // retrieve state from board
-    res->setGraph(graph);    
-    res->setVotes(res->createVoteVector(0));
+    res->setGraph(graph);    */
    
     // initialize evaluator
     EvaluatorPtr evaluator = new GoActionScoringEvaluator();
