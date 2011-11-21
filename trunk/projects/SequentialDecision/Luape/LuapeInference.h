@@ -29,32 +29,47 @@ public:
   void setVotes(const VectorPtr& votes)
     {this->votes = votes;}
 
-  virtual VectorPtr createVoteVector(size_t initialSize) const = 0;
-  virtual void aggregateVote(Variable& targetVote, const Variable& vote, bool positive) const = 0;
+  size_t getNumYields() const
+    {return votes->getNumElements();}
 
-  DenseDoubleVectorPtr computeSamplePredictions(ExecutionContext& context, bool isTrainingSamples) const
+  virtual VectorPtr createVoteVector() const = 0;
+  virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const BooleanVectorPtr& yieldOutputs) const = 0;
+
+  virtual TypePtr getPredictionsInternalType() const
+    {return getOutputType();}
+
+  VectorPtr makeCachedPredictions(ExecutionContext& context, bool isTrainingSamples) const
   {
-    jassert(votes.isInstanceOf<DenseDoubleVector>());
+    size_t numSamples = graph->getNumSamples(isTrainingSamples);
+    VectorPtr predictions = vector(getPredictionsInternalType(), numSamples);
 
     size_t yieldIndex = 0;
-    size_t numSamples = graph->getNumSamples(isTrainingSamples);
-    DenseDoubleVectorPtr predictions = new DenseDoubleVector(numSamples, 0.0);
     for (size_t i = 0; i < graph->getNumNodes(); ++i)
     {
       LuapeYieldNodePtr yieldNode = graph->getNode(i).dynamicCast<LuapeYieldNode>();
       if (yieldNode)
       {
-        LuapeNodePtr weakPredictor = yieldNode->getArgument();
-        weakPredictor->updateCache(context, isTrainingSamples);
-        BooleanVectorPtr weakPredictions = weakPredictor->getCache()->getSamples(isTrainingSamples);
-        double vote = votes.staticCast<DenseDoubleVector>()->getValue(yieldIndex++);
-        for (size_t j = 0; j < numSamples; ++j)
-          if (weakPredictions->get(j))
-            predictions->incrementValue(j, vote);
+        LuapeNodePtr weakNode = yieldNode->getArgument();
+        weakNode->updateCache(context, isTrainingSamples);
+        updatePredictions(predictions, yieldIndex, weakNode->getCache()->getSamples(isTrainingSamples));
       }
     }
     return predictions;
   }
+
+  virtual void setGraphSamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
+  {
+    size_t n = data.size();
+    graph->resizeSamples(isTrainingData, n);
+    for (size_t i = 0; i < n; ++i)
+    {
+      const PairPtr& example = data[i].staticCast<Pair>();
+      graph->setSample(isTrainingData, i, example->getFirst().getObject());
+    }
+  }
+
+  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const = 0;
+
 protected:
   friend class LuapeInferenceClass;
 
@@ -123,14 +138,25 @@ public:
     return callback.res > 0;
   }
 
-  virtual VectorPtr createVoteVector(size_t initialSize) const
-    {return new DenseDoubleVector(initialSize, 0.0);}
+  virtual VectorPtr createVoteVector() const
+    {return new DenseDoubleVector(0, 0.0);}
 
-  // targetVote += vote * (positive ? 1 : -1)
-  virtual void aggregateVote(Variable& targetVote, const Variable& vote, bool positive) const
-    {targetVote = vote.getDouble() * (positive ? 1 : -1.0);}
+  virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const BooleanVectorPtr& yieldOutputs) const
+  {
+    double vote = votes.staticCast<DenseDoubleVector>()->getValue(yieldIndex);
+    const DenseDoubleVectorPtr& pred = predictions.staticCast<DenseDoubleVector>();
+    size_t n = pred->getNumValues();
+    std::vector<bool>::const_iterator it = yieldOutputs->getElements().begin();
+    for (size_t i = 0; i < n; ++i)
+      pred->incrementValue(i, vote * (*it++ ? 1.0 : -1.0));
+  }
 
-  // votes are scalars (alpha values)
+  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const
+  {
+    jassert(false); // not yet implemented
+    return 0.0;
+  }
+
 };
 
 extern ClassPtr luapeBinaryClassifierClass;
@@ -177,17 +203,43 @@ public:
     return Variable(callback.res->getIndexOfMaximumValue(), getOutputType());
   }
 
-  virtual VectorPtr createVoteVector(size_t initialSize) const
+  virtual VectorPtr createVoteVector() const
+    {return new ObjectVector(doubleVectorClass, 0);}
+
+  virtual TypePtr getPredictionsInternalType() const
+    {return doubleVectorClass;}
+
+  virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const BooleanVectorPtr& yieldOutputs) const
   {
-    ObjectVectorPtr res = new ObjectVector(doubleVectorClass, initialSize);
-    for (size_t i = 0; i < initialSize; ++i)
-      res->set(i, new DenseDoubleVector(doubleVectorClass));
-    return res;
+    DenseDoubleVectorPtr vote = votes->getElement(yieldIndex).getObjectAndCast<DenseDoubleVector>();
+    const ObjectVectorPtr& pred = predictions.staticCast<ObjectVector>();
+    std::vector<bool>::const_iterator it = yieldOutputs->getElements().begin();
+    size_t n = pred->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      DenseDoubleVectorPtr p = pred->getAndCast<DenseDoubleVector>(i);
+      if (!p)
+      {
+        p = new DenseDoubleVector(doubleVectorClass);
+        pred->set(i, p);
+      }
+      vote->addWeightedTo(p, 0, *it++ ? 1.0 : -1.0);
+    }
   }
 
-  // targetVote += vote * (positive ? 1 : -1)
-  virtual void aggregateVote(Variable& targetVote, const Variable& vote, bool positive) const
-    {vote.getObjectAndCast<DenseDoubleVector>()->addWeightedTo(targetVote.getObjectAndCast<DenseDoubleVector>(), 0, positive ? 1.0 : -1.0);}
+  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const
+  {
+    ObjectVectorPtr pred = predictions.staticCast<ObjectVector>();
+    size_t numErrors = 0;
+    size_t n = pred->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      size_t j = pred->getAndCast<DenseDoubleVector>(i)->getIndexOfMaximumValue();
+      if (j != data[i].staticCast<Pair>()->getSecond().getInteger())
+        ++numErrors;
+    }
+    return numErrors / (double)n;
+  }
 
   const EnumerationPtr& getLabels() const
     {return getOutputType().staticCast<Enumeration>();}
@@ -247,12 +299,36 @@ public:
   }
 
   // votes are scalars (alpha values)
-  virtual VectorPtr createVoteVector(size_t initialSize) const
-    {return new DenseDoubleVector(initialSize, 0.0);}
+  virtual VectorPtr createVoteVector() const
+    {return new DenseDoubleVector(0, 0.0);}
 
-  // targetVote += vote * (positive ? 1 : -1)
-  virtual void aggregateVote(Variable& targetVote, const Variable& vote, bool positive) const
-    {targetVote = vote.getDouble() * (positive ? 1 : -1.0);}
+  virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const BooleanVectorPtr& yieldOutputs) const
+  {
+    jassert(false); // not yet implemented
+  }
+
+  virtual void setGraphSamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
+  {
+    graph->clearSamples(isTrainingData, !isTrainingData);
+    for (size_t i = 0; i < data.size(); ++i)
+    {
+      const PairPtr& rankingExample = data[i].staticCast<Pair>();
+      const ContainerPtr& alternatives = rankingExample->getFirst().getObjectAndCast<Container>();
+      size_t n = alternatives->getNumElements();
+
+      LuapeNodeCachePtr inputNodeCache = graph->getNode(0)->getCache();
+      size_t firstIndex = inputNodeCache->getNumSamples(isTrainingData);
+      inputNodeCache->resizeSamples(isTrainingData, firstIndex + n);
+      for (size_t i = 0; i < n; ++i)
+        inputNodeCache->setSample(true, firstIndex + 1, alternatives->getElement(i));
+    }
+  }
+
+  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const
+  {
+    jassert(false); // not yet implemented
+    return 0.0;
+  }
 };
 
 typedef ReferenceCountedObjectPtr<LuapeRanker> LuapeRankerPtr;
@@ -293,13 +369,38 @@ public:
     return callback.res;
   }
 
-  // votes are scalars (alpha values)
-  virtual VectorPtr createVoteVector(size_t initialSize) const
-    {return new DenseDoubleVector(initialSize, 0.0);}
+  virtual VectorPtr createVoteVector() const
+    {return new DenseDoubleVector(0, 0.0);}
 
-  // targetVote += vote * (positive ? 1 : -1)
-  virtual void aggregateVote(Variable& targetVote, const Variable& vote, bool positive) const
-    {targetVote = vote.getDouble() * (positive ? 1 : -1.0);}
+  virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const BooleanVectorPtr& yieldOutputs) const
+  {
+    double vote = votes.staticCast<DenseDoubleVector>()->getValue(yieldIndex);
+    const DenseDoubleVectorPtr& pred = predictions.staticCast<DenseDoubleVector>();
+    size_t n = pred->getNumValues();
+    std::vector<bool>::const_iterator it = yieldOutputs->getElements().begin();
+    for (size_t i = 0; i < n; ++i)
+      pred->incrementValue(i, vote * (*it++ ? 1.0 : -1.0));
+  }
+
+  virtual void setGraphSamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
+  {
+    graph->clearSamples(isTrainingData, !isTrainingData);
+    LuapeNodeCachePtr inputNodeCache = graph->getNode(0)->getCache();
+    inputNodeCache->resizeSamples(isTrainingData, data.size());
+    DenseDoubleVectorPtr supervisions = new DenseDoubleVector(data.size(), 0.0);
+    for (size_t i = 0; i < data.size(); ++i)
+    {
+      const PairPtr& example = data[i].staticCast<Pair>();
+      inputNodeCache->setSample(isTrainingData, i, example->getFirst());
+      supervisions->setValue(i, example->getSecond().getDouble());
+    }
+  }
+
+  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const
+  {
+    jassert(false);
+    return 0; // not yet implemented
+  }
 };
 
 typedef ReferenceCountedObjectPtr<LuapeRegressor> LuapeRegressorPtr;

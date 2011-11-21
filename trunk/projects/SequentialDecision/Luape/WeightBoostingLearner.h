@@ -82,17 +82,9 @@ public:
 
   virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
   {
-    if (!LuapeLearner::setExamples(context, isTrainingData, data))
+    if (!BoostingLearner::setExamples(context, isTrainingData, data))
       return false;
-      
-    size_t n = data.size();
-    graph->resizeSamples(isTrainingData, n);
-    for (size_t i = 0; i < n; ++i)
-    {
-      const PairPtr& example = data[i].staticCast<Pair>();
-      graph->setSample(isTrainingData, i, example->getFirst().getObject());
-    }
-
+     
     if (isTrainingData)
     {
       weights = makeInitialWeights(function, *(std::vector<PairPtr>* )&data);
@@ -136,18 +128,13 @@ public:
         context.resultCallback("loss", w->l1norm());
       }
     }
-    context.informationCallback(T("Graph: ") + graph->toShortString());
     //context.resultCallback("weights", weights->cloneAndCast<DoubleVector>());
 
     // update predictions and compute train/test score
-//    updatePredictions(function, predictions, cache->getTrainingSamples(), vote);
-//    updatePredictions(function, validationPredictions, cache->getValidationSamples(), vote);
-
-//    context.resultCallback(T("train error"), computeError(trainingPredictions, trainingSupervisions));
-  //  context.resultCallback(T("validation error"), lastValidation = computeError(validationPredictions, validationSupervisions));
+    updatePredictionsAndEvaluate(context, function->getNumYields() - 1, weakNode);
     return !stopped;
   }
-  
+
   virtual double computeWeakObjective(ExecutionContext& context, const LuapeNodePtr& weakNode) const
   {
     BoostingEdgeCalculatorPtr edgeCalculator = createEdgeCalculator();
@@ -196,18 +183,6 @@ protected:
     }
     weights->multiplyByScalar(1.0 / sum);
     return sum;
-  }
-
-  void updatePredictions(const LuapeInferencePtr& function, VectorPtr predictions, const BooleanVectorPtr& weakPredictions, const Variable& vote) const
-  {
-    size_t n = predictions->getNumElements();
-    jassert(n == weakPredictions->getNumElements());
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable target = predictions->getElement(i);
-      function->aggregateVote(target, vote, weakPredictions->get(i));
-      predictions->setElement(i, target);
-    }
   }
 };
 

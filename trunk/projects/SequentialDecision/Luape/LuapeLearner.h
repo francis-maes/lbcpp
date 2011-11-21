@@ -37,6 +37,9 @@ protected:
   LuapeProblemPtr problem;
   LuapeInferencePtr function;
   LuapeGraphPtr graph;
+
+  std::vector<ObjectPtr> trainData;
+  std::vector<ObjectPtr> validationData;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeLearner> LuapeLearnerPtr;
@@ -64,6 +67,13 @@ public:
   BoostingLearner() {}
 
   virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function);
+  virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
+  {
+    if (!LuapeLearner::setExamples(context, isTrainingData, data))
+      return false;
+    (isTrainingData ? predictions : validationPredictions) = function->makeCachedPredictions(context, isTrainingData);
+    return true;
+  }
 
   virtual double computeWeakObjective(ExecutionContext& context, const LuapeNodePtr& weakNode) const = 0;
   virtual double computeBestStumpThreshold(ExecutionContext& context, const LuapeNodePtr& numberNode) const = 0;
@@ -72,10 +82,26 @@ protected:
   friend class BoostingLearnerClass;
   
   BoostingWeakLearnerPtr weakLearner;
+  VectorPtr predictions;
+  VectorPtr validationPredictions;
 
   LuapeNodePtr createDecisionStump(ExecutionContext& context, const LuapeNodePtr& numberNode) const;
   LuapeNodePtr doWeakLearning(ExecutionContext& context) const;
   LuapeNodePtr doWeakLearningAndAddToGraph(ExecutionContext& context, BooleanVectorPtr& weakPredictions);
+
+  void updatePredictionsAndEvaluate(ExecutionContext& context, size_t yieldIndex, const LuapeNodePtr& weakNode) const
+  {
+    weakNode->updateCache(context, true);
+    function->updatePredictions(predictions, yieldIndex, weakNode->getCache()->getTrainingSamples());
+
+    weakNode->updateCache(context, false);
+    function->updatePredictions(validationPredictions, yieldIndex, weakNode->getCache()->getValidationSamples());
+
+    context.resultCallback(T("train error"), function->evaluatePredictions(context, predictions, trainData));
+    context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
+
+    context.informationCallback(T("Graph: ") + graph->toShortString());
+  }
 };
 
 }; /* namespace lbcpp */
