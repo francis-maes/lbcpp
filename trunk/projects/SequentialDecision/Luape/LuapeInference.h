@@ -86,7 +86,7 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<LuapeInference> LuapeInferencePtr;
-extern ClassPtr luapeFunctionClass;
+extern ClassPtr luapeInferenceClass;
 
 class LuapeBinaryClassifier : public LuapeInference
 {
@@ -256,7 +256,6 @@ public:
 };
 
 typedef ReferenceCountedObjectPtr<LuapeRanker> LuapeRankerPtr;
-
 
 class LuapeRegressor : public LuapeInference
 {

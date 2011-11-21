@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_LEARNER_POLICY_BASED_GRADIENT_BOOSTING_H_
 # define LBCPP_LUAPE_LEARNER_POLICY_BASED_GRADIENT_BOOSTING_H_
 
-# include "LuapeGraphLearner.h"
+# include "LuapeGradientBoostingLearner.h"
 # include "../Core/Policy.h"
 # include <list>
 

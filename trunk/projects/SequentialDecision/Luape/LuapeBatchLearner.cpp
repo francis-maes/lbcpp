@@ -9,49 +9,7 @@
 #include "LuapeBatchLearner.h"
 using namespace lbcpp;
 
-/*
-** BoostingEdgeCalculator
-*/
-double BoostingEdgeCalculator::findBestThreshold(ExecutionContext& context, LuapeNodePtr node, double& edge, bool verbose)
-{
-  edge = -DBL_MAX;
-  double res = 0.0;
-
-  if (verbose)
-    context.enterScope("Find best threshold for node " + node->toShortString());
-
-  const std::vector< std::pair<size_t, double> >& sortedDoubleValues = node->getCache()->getSortedDoubleValues();
-  jassert(sortedDoubleValues.size());
-  double previousThreshold = sortedDoubleValues[0].second;
-  for (size_t i = 0; i < sortedDoubleValues.size(); ++i)
-  {
-    double threshold = sortedDoubleValues[i].second;
-
-    jassert(threshold >= previousThreshold);
-    if (threshold > previousThreshold)
-    {
-      double e = computeEdge();
-
-      if (verbose)
-      {
-        context.enterScope("Iteration " + String((int)i));
-        context.resultCallback("threshold", (threshold + previousThreshold) / 2.0);
-        context.resultCallback("edge", e);
-        context.leaveScope();
-      }
-
-      if (e > edge)
-        edge = e, res = (threshold + previousThreshold) / 2.0;
-      previousThreshold = threshold;
-    }
-    flipPrediction(sortedDoubleValues[i].first);
-  }
-
-  if (verbose)
-    context.leaveScope();
-  return res;
-}
-
+#if 0
 /*
 ** BoostingLuapeLearner
 */
@@ -202,3 +160,6 @@ void BoostingLuapeLearner::updatePredictions(const LuapeInferencePtr& function, 
     predictions->setElement(i, target);
   }
 }
+
+#endif // 0
+

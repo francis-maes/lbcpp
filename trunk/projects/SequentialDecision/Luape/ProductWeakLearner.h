@@ -106,6 +106,8 @@ protected:
 
 typedef ReferenceCountedObjectPtr<LuapeProductNode> LuapeProductNodePtr;
 
+#if 0 // FIXME
+
 class ProductWeakLearner : public LuapeWeakLearner
 {
 public:
@@ -253,6 +255,8 @@ protected:
   LuapeWeakLearnerPtr baseLearner;
   size_t numBaseClassifiers;
 };
+
+#endif // 0
 
 }; /* namespace lbcpp */
 

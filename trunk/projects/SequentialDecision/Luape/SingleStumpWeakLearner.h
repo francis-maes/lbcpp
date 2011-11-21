@@ -14,6 +14,7 @@
 namespace lbcpp
 {
 
+#if 0 // FIXME
 class SingleStumpWeakLearner : public LuapeWeakLearner
 {
 public:
@@ -219,7 +220,7 @@ protected:
     context.leaveScope(localBestEdge);
   }
 };
-
+#endif // 0
 
 }; /* namespace lbcpp */
 
