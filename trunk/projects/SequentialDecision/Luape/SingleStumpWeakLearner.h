@@ -28,7 +28,7 @@ public:
     for (size_t i = 0; i < n; ++i)
     {
       LuapeNodePtr node = graph->getNode(i);
-      if (!node.isInstanceOf<LuapeYieldNode>())
+      if (!node.isInstanceOf<LuapeYieldNode>() && node->getType() == doubleType)
       {
         double score = structureLearner->computeWeakObjective(context, node);
         if (score > bestScore)

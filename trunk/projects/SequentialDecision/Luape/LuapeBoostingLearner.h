@@ -161,23 +161,24 @@ public:
     return !stopped;
   }
   
-  virtual double computeWeakObjective(ExecutionContext& context, const LuapeNodePtr& completion) const
+  virtual double computeWeakObjective(ExecutionContext& context, const LuapeNodePtr& weakNode) const
   {
     BoostingEdgeCalculatorPtr edgeCalculator = createEdgeCalculator();
+    weakNode->updateCache(context, true);
     
-    if (completion->getType() == booleanType)
+    if (weakNode->getType() == booleanType)
     {
-      BooleanVectorPtr weakPredictions = completion->getCache()->getTrainingSamples().staticCast<BooleanVector>();
+      BooleanVectorPtr weakPredictions = weakNode->getCache()->getTrainingSamples().staticCast<BooleanVector>();
       edgeCalculator->initialize(function, weakPredictions, supervisions, weights);
       return edgeCalculator->computeEdge();
       
     }
     else
     {
-      jassert(completion->getType()->isConvertibleToDouble());
+      jassert(weakNode->getType()->isConvertibleToDouble());
       double edge;
       edgeCalculator->initialize(function, new BooleanVector(graph->getNumTrainingSamples(), true), supervisions, weights);
-      edgeCalculator->findBestThreshold(context, completion, edge, false);
+      edgeCalculator->findBestThreshold(context, weakNode, edge, false);
       return edge;
     }
   }

@@ -45,48 +45,15 @@ public:
     LuapeInferencePtr classifier = new LuapeClassifier();
     if (!classifier->initialize(context, inputClass, labels))
       return false;
-    classifier->setBatchLearner(new LuapeBatchLearner(new LuapeAdaBoostMHLearner(singleStumpWeakLearner()), problem, maxIterations));
+
+    //LuapeWeakLearnerPtr weakLearner = singleStumpWeakLearner();
+    LuapeWeakLearnerPtr weakLearner = new LuapePolicyBasedWeakLearner(new TreeBasedRandomPolicy(), budgetPerIteration, maxSteps);
+    classifier->setBatchLearner(new LuapeBatchLearner(new LuapeAdaBoostMHLearner(weakLearner), problem, maxIterations));
     classifier->setEvaluator(defaultSupervisedEvaluator());
 
     classifier->train(context, trainData, testData, T("Training"), true);
     classifier->evaluate(context, trainData, EvaluatorPtr(), T("Evaluating on training data"));
     classifier->evaluate(context, testData, EvaluatorPtr(), T("Evaluating on testing data"));
-      
-#if 0      
-    LuapeLearnerPtr learner = new LuapeAdaBoostMHLearner();
-    if (!learner->initialize(context, problem, classifier))
-      return false;
-      
-    std::vector<ObjectPtr> data(trainData->getNumElements());
-    for (size_t i = 0; i < data.size(); ++i)
-      data[i] = trainData->getElement(i).getObject();
-    learner->setExamples(context, true, data);
-    for (size_t i = 0; i < maxIterations; ++i)
-    {
-      context.enterScope(T("Iteration ") + String((int)i));
-      context.resultCallback(T("iteration"), i);
-      learner->doLearningIteration(context);
-      classifier->evaluate(context, trainData, EvaluatorPtr(), T("Evaluating on training data"));
-      classifier->evaluate(context, testData, EvaluatorPtr(), T("Evaluating on testing data"));
-      context.leaveScope();
-    }
-    return true;
-#endif // 0
-
-#if 0
-    //OptimizerPtr optimizer = new NestedMonteCarloOptimizer(2, 1);
-
-    OptimizerPtr optimizer = new SinglePlayerMCTSOptimizer(budgetPerIteration);
-  
-    LuapeWeakLearnerPtr weakLearner = combinedStumpWeakLearner();
-    //productWeakLearner(singleStumpWeakLearner(), 2);
-      //luapeGraphBuilderWeakLearner(optimizer, maxSteps);
-    classifier->setBatchLearner(adaBoostMHLuapeLearner(problem, weakLearner, maxIterations));
-
-    classifier->train(context, trainData, testData, T("Training"), true);
-    //classifier->evaluate(context, trainData, EvaluatorPtr(), T("Evaluating on training data"));
-    //classifier->evaluate(context, testData, EvaluatorPtr(), T("Evaluating on testing data"));
-#endif
     return true;
   }
 
@@ -101,7 +68,7 @@ protected:
   size_t maxIterations;
 
   ContainerPtr loadData(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, DefaultEnumerationPtr labels) const
-  {
+  { 
     context.enterScope(T("Loading ") + file.getFileName());
     ContainerPtr res = classificationARFFDataParser(context, file, inputClass, labels)->load(maxExamples);
     if (res && !res->getNumElements())
@@ -120,11 +87,12 @@ protected:
       res->addInput(variable->getType(), variable->getName());
     }
 
+    res->addFunction(addDoubleLuapeFunction());
+    res->addFunction(subDoubleLuapeFunction());
+    res->addFunction(mulDoubleLuapeFunction());
     res->addFunction(divDoubleLuapeFunction());
-//    res->addFunction(mulDoubleLuapeFunction());
-    res->addFunction(stumpLuapeFunction());
     res->addFunction(andBooleanLuapeFunction());
-//    res->addFunction(greaterThanDoubleLuapeFunction());
+    res->addFunction(equalBooleanLuapeFunction());
     return res;
   }
 };

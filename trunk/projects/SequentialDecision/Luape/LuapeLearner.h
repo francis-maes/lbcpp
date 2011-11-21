@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuapeLearner.h            | Luape Graph Learners            |
+| Filename: LuapeLearner.h                 | Luape Graph Learners            |
 | Author  : Francis Maes                   |                                 |
 | Started : 17/11/2011 11:24               |                                 |
 `------------------------------------------/                                 |

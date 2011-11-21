@@ -25,6 +25,18 @@ public:
     : depth(depth), stack(stack), numNodeTypesWhenBuilt(0), canBePruned(false), canBePrunedComputed(false) {}
   LuapeGraphBuilderTypeState() : depth(0), numNodeTypesWhenBuilt(0), canBePruned(false), canBePrunedComputed(false) {}
 
+  virtual String toShortString() const
+  {
+    String res = T("[") + String((int)depth) + T("] {");
+    for (size_t i = 0; i < stack.size(); ++i)
+    {
+      res += stack[i]->getName();
+      if (i < stack.size() - 1)
+        res += T(", ");
+    }
+    return res + T("}");
+  }
+
   size_t getDepth() const
     {return depth;}
 
@@ -47,7 +59,7 @@ public:
     {return apply;}
 
   bool hasYieldAction() const
-    {return stack.size() == 1 && stack[0]->inheritsFrom(booleanType);} // todo: stumps
+    {return stack.size() == 1 && (stack[0]->inheritsFrom(booleanType) || stack[0]->inheritsFrom(integerType) || stack[0]->inheritsFrom(doubleType));}
 
   bool hasAnyAction() const
     {return hasPushActions() || hasApplyActions() || hasYieldAction();}
@@ -75,6 +87,7 @@ public:
     std::set<TypePtr> nodeTypes;
     for (size_t i = 0; i < problem->getNumInputs(); ++i)
       nodeTypes.insert(problem->getInput(i)->getType());
+    nodeTypes.insert(booleanType); // automatically included since boosting methods may create stump nodes that output booleans
 
     LuapeGraphBuilderTypeStatePtr root = getOrCreateState(0, std::vector<TypePtr>());
     size_t numTypes = nodeTypes.size();
@@ -98,7 +111,7 @@ public:
 
   void pruneStates(ExecutionContext& context)
   {
-    context.informationCallback(T("Num states before pruning: ") + String((int)states.size()));
+//    context.informationCallback(T("Num states before pruning: ") + String((int)states.size()));
     bool isRootPrunable = prune(getInitialState());
     jassert(!isRootPrunable);
 
@@ -110,7 +123,10 @@ public:
       if (it->second->canBePruned)
         states.erase(it);
     }
-    context.informationCallback(T("Num states after pruning: ") + String((int)states.size()));
+    context.enterScope(T("Type states"));
+    for (it = states.begin(); it != states.end(); ++it)
+      context.informationCallback(it->second->toShortString());
+    context.leaveScope(states.size());
   }
 
   LuapeGraphBuilderTypeStatePtr getInitialState() const
@@ -193,13 +209,6 @@ private:
           applyFunctionAndBuildSuccessor(problem, state, functions[j], nodeTypes, maxDepth);
       }
     }
-/*
-    if (state->getStackSize() == 1 && (state->stack[0]->inheritsFrom(booleanType) ||
-                                       state->stack[0]->inheritsFrom(integerType) ||
-                                       state->stack[0]->inheritsFrom(doubleType)))
-    {
-      //state->yield = new State() ...
-    }*/
   }
 
   void enumerateFunctionVariables(const LuapeFunctionPtr& function, const std::vector<TypePtr>& inputTypes, std::vector<Variable>& variables, size_t variableIndex, std::vector<LuapeFunctionPtr>& res)
@@ -214,11 +223,14 @@ private:
     else
     {
       ContainerPtr values = function->getVariableCandidateValues(variableIndex, inputTypes);
-      size_t n = values->getNumElements();
-      for (size_t i = 0; i < n; ++i)
+      if (values)
       {
-        variables[variableIndex] = values->getElement(i);
-        enumerateFunctionVariables(function, inputTypes, variables, variableIndex + 1, res);
+        size_t n = values->getNumElements();
+        for (size_t i = 0; i < n; ++i)
+        {
+          variables[variableIndex] = values->getElement(i);
+          enumerateFunctionVariables(function, inputTypes, variables, variableIndex + 1, res);
+        }
       }
     }
   }

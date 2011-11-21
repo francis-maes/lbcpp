@@ -1,11 +1,21 @@
+
+
+Objectif: finir refactoring
+
+ - Uniformiser les noms
+ - Factoriser entre Boosting et Gradient Boosting
+ - Remettre les scores train/test à chaque itération
+ 
+ => objectif: expe large-scale sur la classif
+
+
  * GradientBoosting: allows two votes per yielded boolean 
  * Support of Stumps
+ * Run on classification data (mnist & pendigit)
  * More relations in Go
  * Use type-states to define features for the adaptative weak learning policy
 
 Luape-Appli:
- * Avancer sur la Perception du Go
- * Classification: tester sur mnist et pendigit
  * Apprentissage d'une gaussienne conditionelle => boosting joint de la moyenne et de l'ecart-type
     ==> application dans les continuous bandits
     ==> application dans le formula discovery
