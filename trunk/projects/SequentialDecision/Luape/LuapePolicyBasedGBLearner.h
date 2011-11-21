@@ -228,8 +228,8 @@ public:
     SparseDoubleVectorPtr res(new SparseDoubleVector(features, doubleType));
 
     std::vector<String> predicates;
-    predicates.push_back("step=" + String(state->getCurrentStep()));
-    predicates.push_back("stacksize=" + String(state->getStackSize()));
+    predicates.push_back("step=" + String((int)state->getCurrentStep()));
+    predicates.push_back("stacksize=" + String((int)state->getStackSize()));
 
     LuapeNodePtr nodeToAdd = action->getNodeToAdd();
     if (action->isNewNode())

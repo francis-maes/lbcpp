@@ -136,7 +136,7 @@ public:
     testPolicy(context, "random", policy);
     savePolicy(context, "random", policy);
 
-    policy = new ParameterizedModelBasedSmallMDPPolicy(true);
+    policy = new ParameterizedModelBasedSmallMDPPolicy(0);
     testPolicy(context, "new", policy);
     savePolicy(context, "new", policy);
 

@@ -144,7 +144,6 @@ public:
   ParameterizedModelBasedSmallMDPPolicy(size_t numParameters) : numParameters(numParameters)
   {
     initializeParameters(createParametersEnumeration());
-    parameters->setValue(0, 1.0);
   }
   ParameterizedModelBasedSmallMDPPolicy() {}
 
@@ -166,7 +165,9 @@ public:
     double qScore = q->getValue(state, action);
     double reward = model->getRewardExpectation(state, action, (size_t)-1);
 
-    double res = pow((double)tk, parameters->getValue(0));
+    double res = 0.0;
+    if (numParameters >= 1)
+      res += pow((double)tk, parameters->getValue(0));
     if (numParameters >= 2)
     {
       res *= parameters->getValue(1);
