@@ -64,25 +64,25 @@ typedef ReferenceCountedObjectPtr<LuapeBatchLearner> LuapeBatchLearnerPtr;
 class BoostingLuapeLearner;
 typedef ReferenceCountedObjectPtr<BoostingLuapeLearner> BoostingLuapeLearnerPtr;
 
-class LuapeWeakLearner : public Object
+class BoostingWeakLearner : public Object
 {
 public:
   virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeInferencePtr& function,
                                           const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const = 0;
 };
 
-typedef ReferenceCountedObjectPtr<LuapeWeakLearner> LuapeWeakLearnerPtr;
+typedef ReferenceCountedObjectPtr<BoostingWeakLearner> BoostingWeakLearnerPtr;
 
-extern LuapeWeakLearnerPtr singleStumpWeakLearner();
-extern LuapeWeakLearnerPtr productWeakLearner(LuapeWeakLearnerPtr baseLearner, size_t numBaseClassifiers);
-extern LuapeWeakLearnerPtr luapeGraphBuilderWeakLearner(OptimizerPtr optimizer, size_t maxSteps);
+extern BoostingWeakLearnerPtr singleStumpWeakLearner();
+extern BoostingWeakLearnerPtr productWeakLearner(BoostingWeakLearnerPtr baseLearner, size_t numBaseClassifiers);
+extern BoostingWeakLearnerPtr luapeGraphBuilderWeakLearner(OptimizerPtr optimizer, size_t maxSteps);
 
-extern LuapeWeakLearnerPtr combinedStumpWeakLearner();
+extern BoostingWeakLearnerPtr combinedStumpWeakLearner();
 
 class BoostingLuapeLearner : public LuapeBatchLearner
 {
 public:
-  BoostingLuapeLearner(LuapeProblemPtr problem, LuapeWeakLearnerPtr weakLearner, size_t maxIterations);
+  BoostingLuapeLearner(LuapeProblemPtr problem, BoostingWeakLearnerPtr weakLearner, size_t maxIterations);
   BoostingLuapeLearner();
 
   virtual BoostingEdgeCalculatorPtr createEdgeCalculator() const = 0;
@@ -100,7 +100,7 @@ public:
 protected:
   friend class BoostingLuapeLearnerClass;
 
-  LuapeWeakLearnerPtr weakLearner;
+  BoostingWeakLearnerPtr weakLearner;
   size_t maxIterations;
 
   void addExamplesToGraph(bool areTrainingSamples, const std::vector<ObjectPtr>& examples, LuapeGraphPtr graph) const;
@@ -108,8 +108,8 @@ protected:
   void updatePredictions(const LuapeInferencePtr& function, VectorPtr predictions, const BooleanVectorPtr& weakPredictions, const Variable& vote) const;
 };
 
-extern BatchLearnerPtr adaBoostLuapeLearner(LuapeProblemPtr problem, LuapeWeakLearnerPtr weakLearner, size_t maxIterations);
-extern BatchLearnerPtr adaBoostMHLuapeLearner(LuapeProblemPtr problem, LuapeWeakLearnerPtr weakLearner, size_t maxIterations);
+extern BatchLearnerPtr adaBoostLuapeLearner(LuapeProblemPtr problem, BoostingWeakLearnerPtr weakLearner, size_t maxIterations);
+extern BatchLearnerPtr adaBoostMHLuapeLearner(LuapeProblemPtr problem, BoostingWeakLearnerPtr weakLearner, size_t maxIterations);
 #endif // 0
 
 }; /* namespace lbcpp */

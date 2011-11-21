@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuapeBanditPoolGBLearner.cpp   | Luape Bandit based Gradient     |
+| Filename: BanditPoolWeakLearner.cpp      | Luape Bandit based Gradient     |
 | Author  : Francis Maes                   |  Boosting learner               |
 | Started : 19/11/2011 15:58               |                                 |
 `------------------------------------------/                                 |
@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include "precompiled.h"
-#include "LuapeBanditPoolGBLearner.h"
+#include "BanditPoolWeakLearner.h"
 using namespace lbcpp;
 
 // FIXME: there are two redundant node keys maps: one in the enumerator and the other inside the graph builder
@@ -113,7 +113,7 @@ void LuapeGraphBuilderBanditPool::executeArm(ExecutionContext& context, const Lu
   context.informationCallback(String((int)arms.size()) + T(" arms"));
 }
 
-void LuapeGraphBuilderBanditPool::playArmWithHighestIndex(ExecutionContext& context, const LuapeBoostingLearnerPtr& graphLearner)
+void LuapeGraphBuilderBanditPool::playArmWithHighestIndex(ExecutionContext& context, const BoostingLearnerPtr& graphLearner)
 {
   if (banditsQueue.size())
   {

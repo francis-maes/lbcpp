@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_BATCH_LEARNER_ADA_BOOST_H_
 # define LBCPP_LUAPE_BATCH_LEARNER_ADA_BOOST_H_
 
-# include "LuapeWeightBoostingLearner.h"
+# include "WeightBoostingLearner.h"
 
 namespace lbcpp
 {
@@ -68,7 +68,7 @@ protected:
 class AdaBoostLuapeLearner : public BoostingLuapeLearner
 {
 public:
-  AdaBoostLuapeLearner(LuapeProblemPtr problem, LuapeWeakLearnerPtr weakLearner, size_t maxIterations)
+  AdaBoostLuapeLearner(LuapeProblemPtr problem, BoostingWeakLearnerPtr weakLearner, size_t maxIterations)
     : BoostingLuapeLearner(problem, weakLearner, maxIterations) {}
   AdaBoostLuapeLearner() {}
 

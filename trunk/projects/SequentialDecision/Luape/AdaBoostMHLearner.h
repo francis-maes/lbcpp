@@ -1,15 +1,15 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: AdaBoostMHLuapeLearner.h       | AdaBoost.MH learner             |
+| Filename: AdaBoostMHLearner.h            | AdaBoost.MH learner             |
 | Author  : Francis Maes                   |                                 |
 | Started : 27/10/2011 15:57               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_GRAPH_LEARNER_ADA_BOOST_MH_H_
-# define LBCPP_LUAPE_GRAPH_LEARNER_ADA_BOOST_MH_H_
+#ifndef LBCPP_LUAPE_LEARNER_ADA_BOOST_MH_H_
+# define LBCPP_LUAPE_LEARNER_ADA_BOOST_MH_H_
 
-# include "LuapeWeightBoostingLearner.h"
+# include "WeightBoostingLearner.h"
 
 namespace lbcpp
 {
@@ -129,12 +129,12 @@ protected:
   }
 };
 
-class LuapeAdaBoostMHLearner : public LuapeWeightBoostingLearner
+class AdaBoostMHLearner : public WeightBoostingLearner
 {
 public:
-  LuapeAdaBoostMHLearner(LuapeWeakLearnerPtr weakLearner)
-    : LuapeWeightBoostingLearner(weakLearner) {}
-  LuapeAdaBoostMHLearner() {}
+  AdaBoostMHLearner(BoostingWeakLearnerPtr weakLearner)
+    : WeightBoostingLearner(weakLearner) {}
+  AdaBoostMHLearner() {}
 
   virtual BoostingEdgeCalculatorPtr createEdgeCalculator() const
     {return new AdaBoostMHEdgeCalculator();}
@@ -208,4 +208,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_GRAPH_LEARNER_ADA_BOOST_MH_H_
+#endif // !LBCPP_LUAPE_LEARNER_ADA_BOOST_MH_H_
