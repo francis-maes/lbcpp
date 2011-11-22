@@ -97,7 +97,7 @@ public:
   BoostingLuapeLearner(LuapeProblemPtr problem, BoostingWeakLearnerPtr weakLearner, size_t maxIterations);
   BoostingLuapeLearner();
 
-  virtual BoostingEdgeCalculatorPtr createEdgeCalculator() const = 0;
+  virtual BoostingWeakObjectivePtr createWeakObjective() const = 0;
 
   virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeInferencePtr& function, const std::vector<PairPtr>& examples) const = 0;
   virtual VectorPtr makeSupervisions(const std::vector<ObjectPtr>& examples) const;

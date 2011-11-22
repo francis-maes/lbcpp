@@ -1,11 +1,6 @@
-
- * Support stumps on gradient boosting => factorize EdgeCalculator
-    - integrer le updateNodeCache dans EdgeCalculator::findBestThreshold (?)
-    
  * Come back to go
    - more perceptions and operators
-    => pb: qu'est-ce qu'on fait pour la propagation des erreurs (Object null ...) ?
-    
+    => pb: qu'est-ce qu'on fait pour la propagation des erreurs (Object null ...) ?   
  * Work on adaptative weak learning policy
 
 Luape-Appli:

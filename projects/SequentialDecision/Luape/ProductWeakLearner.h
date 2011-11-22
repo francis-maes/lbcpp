@@ -21,15 +21,6 @@ public:
     : LuapeNode(booleanType, name), baseNodes(numBaseNodes) {}
   LuapeProductNode() {}
 
-/*  virtual bool initialize(ExecutionContext& context, const LuapeGraphCachePtr& cache)
-  {
-    if (!LuapeNode::initialize(context, cache))
-      return false;
-    computeCache(getCache(), true);
-    computeCache(getCache(), false);
-    return true;
-  }*/
-
   virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const
   {
     bool res = true;
@@ -220,15 +211,15 @@ public:
       // update votes
       LuapeNodePtr baseNodeBackup = res->getBaseNode(index);
       res->setBaseNode(index, weak[0]);
-      BoostingEdgeCalculatorPtr edgeCalculator = batchLearner->createEdgeCalculator();
+      BoostingWeakObjectivePtr edgeCalculator = batchLearner->createWeakObjective();
       edgeCalculator->initialize(function, predictions[index], virtualSupervisions, weights);
       votes[index] = edgeCalculator->computeVote();
       voteProduct = computeVoteProduct(votes);
 
       // stopping criterion
-      edgeCalculator = batchLearner->createEdgeCalculator();
+      edgeCalculator = batchLearner->createWeakObjective();
       edgeCalculator->initialize(function, predictionsProduct, supervisions, weights);
-      double newEdge = edgeCalculator->computeEdge();
+      double newEdge = edgeCalculator->computeObjective();
       context.resultCallback("edge", newEdge);
       if (newEdge <= bestEdge)
       {

@@ -14,15 +14,17 @@
 namespace lbcpp
 {
   
-class AdaBoostEdgeCalculator : public BoostingEdgeCalculator
+class AdaBoostWeakObjective : public BoostingWeakObjective
 {
 public:
-  virtual void initialize(const LuapeInferencePtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& sup, const DenseDoubleVectorPtr& weights)
+  AdaBoostWeakObjective(const LuapeInferencePtr& classifier, const BooleanVectorPtr& supervisions, const DenseDoubleVectorPtr& weights)
+    : supervisions(supervisions), weights(weights)
+  {
+  }
+
+  virtual void setPredictions(const BooleanVectorPtr& predictions)
   {
     this->predictions = predictions;
-    this->supervisions = sup.dynamicCast<BooleanVector>();
-    this->weights = weights;
-    jassert(supervisions);
 
     size_t n = weights->getNumElements();
     jassert(supervisions->getNumElements() == n);
@@ -43,18 +45,11 @@ public:
       accuracy -= weights->getValue(index);
   }
 
-  virtual double computeEdge() const
+  virtual double computeObjective() const
     {return juce::jmax(accuracy, 1.0 - accuracy);}
 
-  virtual Variable computeVote() const
-  {
-    if (accuracy == 0.0)
-      return -1.0;
-    else if (accuracy == 1.0)
-      return 1.0;
-    else
-      return 0.5 * log(accuracy / (1.0 - accuracy));
-  }
+  double getAccuracy() const
+    {return accuracy;}
 
 protected:
   BooleanVectorPtr predictions;
@@ -72,11 +67,21 @@ public:
     : BoostingLuapeLearner(problem, weakLearner, maxIterations) {}
   AdaBoostLuapeLearner() {}
 
+  virtual Variable computeVote() const
+  {
+    if (accuracy == 0.0)
+      return -1.0;
+    else if (accuracy == 1.0)
+      return 1.0;
+    else
+      return 0.5 * log(accuracy / (1.0 - accuracy));
+  }
+
   virtual TypePtr getRequiredFunctionType() const
     {return luapeBinaryClassifierClass;}
 
-  virtual BoostingEdgeCalculatorPtr createEdgeCalculator() const
-    {return new AdaBoostEdgeCalculator();}
+  virtual BoostingWeakObjectivePtr createWeakObjective() const
+    {return new AdaBoostWeakObjective();}
 
   virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeInferencePtr& function, const std::vector<PairPtr>& examples) const
     {size_t n = examples.size(); return new DenseDoubleVector(n, 1.0 / n);}

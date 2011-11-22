@@ -15,6 +15,75 @@
 namespace lbcpp
 {
 
+class L2BoostingWeakObjective : public BoostingWeakObjective
+{
+public:
+  L2BoostingWeakObjective(const DenseDoubleVectorPtr& targets)
+    : targets(targets) {}
+
+  virtual void setPredictions(const BooleanVectorPtr& predictions)
+  {
+    this->predictions = predictions;
+    positives.clear();
+    negatives.clear();
+
+    std::vector<bool>::const_iterator it = predictions->getElements().begin();
+    size_t n = predictions->getNumElements();
+    jassert(n == targets->getNumValues());
+    for (size_t i = 0; i < n; ++i)
+    {
+      double value = targets->getValue(i);
+      if (*it++)
+        positives.push(value);
+      else
+        negatives.push(value);
+    }
+  }
+
+  virtual void flipPrediction(size_t index)
+  {
+    bool newPrediction = predictions->flip(index);
+    double value = targets->getValue(index);
+    if (newPrediction)
+    {
+      negatives.push(value, -1.0);
+      positives.push(value);
+    }
+    else
+    {
+      positives.push(value, -1.0);
+      negatives.push(value);
+    }
+  }
+
+  virtual double computeObjective() const
+  {
+    double res = 0.0;
+    if (positives.getCount())
+      res += positives.getCount() * positives.getVariance();
+    if (negatives.getCount())
+      res += negatives.getCount() * negatives.getVariance();
+    if (positives.getCount() || negatives.getCount())
+      res /= positives.getCount() + negatives.getCount();
+    return -res;
+  }
+
+  double getPositivesMean() const
+    {return positives.getMean();}
+
+  double getNegativesMean() const
+    {return negatives.getMean();}
+
+protected:
+  DenseDoubleVectorPtr targets;
+  BooleanVectorPtr predictions;
+
+  ScalarVariableMeanAndVariance positives;
+  ScalarVariableMeanAndVariance negatives;
+};
+
+typedef ReferenceCountedObjectPtr<L2BoostingWeakObjective> L2BoostingWeakObjectivePtr;
+
 class GradientBoostingLearner : public BoostingLearner
 {
 public:
@@ -59,59 +128,8 @@ public:
     return true;
   }
 
-  virtual double computeWeakObjective(ExecutionContext& context, const LuapeNodePtr& completion) const
-  {
-    RandomGeneratorPtr random = context.getRandomGenerator();
-
-    VectorPtr samples = graph->updateNodeCache(context, completion, true);
-    DenseDoubleVectorPtr scalars = samples.dynamicCast<DenseDoubleVector>();
-    if (scalars)
-    {
-      jassert(false); // FIXME: evaluate quality of decision stump
-      return 0.0;
-    }
-    else
-    {
-      std::vector<bool>::const_iterator it = samples.staticCast<BooleanVector>()->getElements().begin();
-
-      ScalarVariableMeanAndVariance trainPositive;
-      ScalarVariableMeanAndVariance validationPositive;
-      ScalarVariableMeanAndVariance trainNegative;
-      ScalarVariableMeanAndVariance validationNegative;
-
-      for (size_t i = 0; i < pseudoResiduals->getNumValues(); ++i)
-      {
-        bool isPositive = *it++;
-
-        double value = pseudoResiduals->getValue(i);
-        double weight = 1.0; // fabs(value)
-
-        //if (random->sampleBool(p))
-          (isPositive ? trainPositive : trainNegative).push(value, weight);
-        //else
-          (isPositive ? validationPositive : validationNegative).push(value, weight);
-      }
-      
-      double meanSquareError = 0.0;
-      if (validationPositive.getCount())
-        meanSquareError += validationPositive.getCount() * (trainPositive.getSquaresMean() + validationPositive.getSquaresMean() 
-                                                              - 2 * trainPositive.getMean() * validationPositive.getMean());
-      if (validationNegative.getCount())
-        meanSquareError += validationNegative.getCount() * (trainNegative.getSquaresMean() + validationNegative.getSquaresMean() 
-                                                              - 2 * trainNegative.getMean() * validationNegative.getMean());
-
-      if (validationPositive.getCount() || validationNegative.getCount())
-        meanSquareError /= validationPositive.getCount() + validationNegative.getCount();
-      
-      return 1.0 - sqrt(meanSquareError) / 2.0; // ... bring into [0,1]
-    }
-  }
-
-  virtual double computeBestStumpThreshold(ExecutionContext& context, const LuapeNodePtr& numberNode) const
-  {
-    jassert(false); // todo: implement
-    return 0.0;
-  }
+  virtual BoostingWeakObjectivePtr createWeakObjective() const
+    {return new L2BoostingWeakObjective(pseudoResiduals);}
 
   virtual std::pair<double, double> optimizeWeightOfWeakLearner(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const BooleanVectorPtr& weakPredictions) const
   {
@@ -120,6 +138,7 @@ public:
     double bestLoss = DBL_MAX;
     double bestWeight = 0.0;
 
+    // FIXME: improve this !
     for (double K = -2.5; K <= 2.5; K += 0.02)
     {
       context.enterScope(T("K = ") + String(K));
@@ -131,6 +150,7 @@ public:
           newPredictions->incrementValue(i, K);
         else
           newPredictions->incrementValue(i, -K);
+
       double lossValue;
       computeLoss(newPredictions, &lossValue, NULL);
 
@@ -192,20 +212,9 @@ public:
 
   virtual std::pair<double, double> optimizeWeightOfWeakLearner(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const BooleanVectorPtr& weakPredictions) const
   {
-    std::vector<bool>::iterator it = weakPredictions->getElements().begin();
-    double* residuals = pseudoResiduals->getValuePointer(0);
-    size_t n = weakPredictions->getNumElements();
-    jassert(n == pseudoResiduals->getNumValues());
-
-    ScalarVariableMean negativeMean, positiveMean;
-    for (size_t i = 0; i < n; ++i)
-    {
-      if (*it++)
-        positiveMean.push(residuals[i]);
-      else
-        negativeMean.push(residuals[i]);
-    }
-    return std::make_pair(negativeMean.getMean(), positiveMean.getMean());
+    L2BoostingWeakObjectivePtr objective(new L2BoostingWeakObjective(pseudoResiduals));
+    objective->setPredictions(weakPredictions);
+    return std::make_pair(objective->getNegativesMean(), objective->getPositivesMean());
   }
 };
 
