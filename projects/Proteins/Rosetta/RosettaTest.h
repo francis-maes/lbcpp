@@ -879,6 +879,8 @@ class ProteinSubWorkUnitExample : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
+#ifdef LBCPP_PROTEIN_ROSETTA
+  
     context.informationCallback(T("Before"));
     rosettaInitialization(context);
     makePoseFromSequence(pose, T("AAAAAAAAAAAAAAAAAAAA"));
@@ -891,6 +893,7 @@ public:
       context.progressCallback(new ProgressionState(i + 1.0, 1000.0, T("%")));
     }
     context.informationCallback(T("After"));
+#endif // LBCPP_PROTEIN_ROSETTA
     return T("Hello");
   }
 protected:
