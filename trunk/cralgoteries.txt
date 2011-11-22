@@ -1,15 +1,3 @@
-'''Luape: smart cache and large scale experiments on classification'''
-
- * GraphUniverse now implements a cache that automatically frees old elements to limit memory consumption
- * New function: LuapeGraph::updateNodeCache()
- * Remove LuapeNode::updateCache()
- * Learners: use LuapeGraph::updateNodeCache()
- * Large-scale experiments on classification
- 
-
-
---
-
  * Come back to go
    - Support stumps on gradient boosting => factorize EdgeCalculator
       - integrer le updateNodeCache dans EdgeCalculator::findBestThreshold

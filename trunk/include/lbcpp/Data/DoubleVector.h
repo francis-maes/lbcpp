@@ -147,6 +147,9 @@ public:
   std::pair<size_t, double>* getValues()
     {return &values[0];}
 
+  std::vector< std::pair<size_t, double> >& getValuesVector()
+    {return values;}
+
   int getLastIndex() const
     {return lastIndex;}
 

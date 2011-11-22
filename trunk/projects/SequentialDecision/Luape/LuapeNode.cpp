@@ -93,22 +93,8 @@ bool LuapeFunction::acceptInputsStack(const std::vector<LuapeNodePtr>& stack) co
 /*
 ** LuapeNodeCache
 */
-LuapeNodeCache::LuapeNodeCache() 
+LuapeNodeCache::LuapeNodeCache(TypePtr elementsType) : elementsType(elementsType)
 {
-}
-
-void LuapeNodeCache::initialize(TypePtr type)
-{
-  elementsType = type;
-  trainingSamples = VectorPtr();
-  sortedDoubleValues.clear();
-  validationSamples = VectorPtr();
-}
-
-void LuapeNodeCache::clear()
-{
-  TypePtr type = trainingSamples->getElementsType();
-  initialize(type);
 }
 
 void LuapeNodeCache::resizeSamples(bool isTrainingSamples, size_t size)
@@ -138,7 +124,7 @@ void LuapeNodeCache::clearSamples(bool clearTrainingSamples, bool clearValidatio
   if (clearTrainingSamples)
   {
     trainingSamples = VectorPtr();
-    sortedDoubleValues.clear();
+    sortedDoubleValues = SparseDoubleVectorPtr();
   }
   if (clearValidationSamples)
     validationSamples = VectorPtr();
@@ -157,14 +143,15 @@ struct SortDoubleValuesOperator
   }
 };
 
-const std::vector< std::pair<size_t, double> >& LuapeNodeCache::getSortedDoubleValues()
+SparseDoubleVectorPtr LuapeNodeCache::getSortedDoubleValues()
 {
   jassert(elementsType->isConvertibleToDouble());
 
   size_t n = trainingSamples->getNumElements();
-  if (sortedDoubleValues.size() < n)
+  if (!sortedDoubleValues)
   {
-    std::vector< std::pair<size_t, double> >& v = sortedDoubleValues;
+    sortedDoubleValues = new SparseDoubleVector();
+    std::vector< std::pair<size_t, double> >& v = sortedDoubleValues->getValuesVector();
     v.resize(n);
     for (size_t i = 0; i < n; ++i)
       v[i] = std::make_pair(i, trainingSamples->getElement(i).toDouble());
@@ -267,9 +254,10 @@ String LuapeNodeCache::toShortString() const
 ** LuapeNode
 */
 LuapeNode::LuapeNode(const TypePtr& type, const String& name)
-  : NameableObject(name), type(type), cache(new LuapeNodeCache()), indexInGraph((size_t)-1)
+  : NameableObject(name), type(type), indexInGraph((size_t)-1)
 {
-  cache->initialize(type);
+  if (type != nilType)
+    cache = new LuapeNodeCache(type);
 }
 
 void LuapeNode::clone(ExecutionContext& context, const ObjectPtr& t) const
@@ -329,8 +317,7 @@ void LuapeFunctionNode::initialize()
 
   type = function->getOutputType(inputTypes);
   name = function->toShortString(arguments);
-  cache = new LuapeNodeCache();
-  cache->initialize(type);
+  cache = new LuapeNodeCache(type);
 }
 
 Variable LuapeFunctionNode::compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const

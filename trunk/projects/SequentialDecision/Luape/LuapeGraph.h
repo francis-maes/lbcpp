@@ -128,7 +128,7 @@ public:
   LuapeNodePtr pushFunctionNode(ExecutionContext& context, const LuapeFunctionPtr& function, const LuapeNodePtr& input);
   void popNode();
 
-  VectorPtr updateNodeCache(ExecutionContext& context, const LuapeNodePtr& node, bool isTrainingSamples);
+  VectorPtr updateNodeCache(ExecutionContext& context, const LuapeNodePtr& node, bool isTrainingSamples, SparseDoubleVectorPtr* sortedDoubleValues = NULL);
 
   size_t getNumTrainingSamples() const;
   size_t getNumValidationSamples() const;
