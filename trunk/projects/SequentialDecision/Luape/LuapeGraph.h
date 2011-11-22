@@ -82,10 +82,13 @@ typedef ReferenceCountedObjectPtr<LuapeNodeKeysMap> LuapeNodeKeysMapPtr;
 class LuapeGraph : public Object
 {
 public:
-  LuapeGraph() : universe(new LuapeGraphUniverse()) {}
+  LuapeGraph();
 
   size_t getNumNodes() const
     {return nodes.size();}
+
+  size_t getNumYieldNodes() const
+    {return numYields;}
 
   LuapeNodePtr getNode(size_t index) const
     {jassert(index < nodes.size()); return nodes[index];}
@@ -134,6 +137,7 @@ protected:
 
   std::vector<LuapeNodePtr> nodes;
   NodesMap nodesMap;
+  size_t numYields;
 
   LuapeGraphUniversePtr universe;
   

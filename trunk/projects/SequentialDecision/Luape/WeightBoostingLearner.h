@@ -132,7 +132,7 @@ public:
     //context.resultCallback("weights", weights->cloneAndCast<DoubleVector>());
 
     // update predictions and compute train/test score
-    updatePredictionsAndEvaluate(context, function->getNumYields() - 1, weakNode);
+    updatePredictionsAndEvaluate(context, graph->getNumYieldNodes() - 1, weakNode);
     return !stopped;
   }
 

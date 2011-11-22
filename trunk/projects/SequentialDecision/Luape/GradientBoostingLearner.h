@@ -46,13 +46,16 @@ public:
     // 3- add weak learner to graph
     {
       TimedScope _(context, "optimize weight");
-      double optimalWeight = optimizeWeightOfWeakLearner(context, predictions, weakPredictions);
-      context.resultCallback("weight", optimalWeight);
-      function->getVotes()->append(optimalWeight * learningRate);
+      std::pair<double, double> optimalWeights = optimizeWeightOfWeakLearner(context, predictions, weakPredictions);
+      context.resultCallback("negative weight", optimalWeights.first);
+      context.resultCallback("positive weight", optimalWeights.second);
+      DenseDoubleVectorPtr votes = function->getVotes().staticCast<DenseDoubleVector>();
+      votes->append(optimalWeights.first * learningRate);
+      votes->append(optimalWeights.second * learningRate);
     }
 
     // 4- update predictions and evaluate
-    updatePredictionsAndEvaluate(context, function->getNumYields() - 1, weakNode);
+    updatePredictionsAndEvaluate(context, graph->getNumYieldNodes() - 1, weakNode);
     return true;
   }
 
@@ -96,9 +99,8 @@ public:
         meanSquareError += validationPositive.getCount() * (trainPositive.getSquaresMean() + validationPositive.getSquaresMean() 
                                                               - 2 * trainPositive.getMean() * validationPositive.getMean());
       if (validationNegative.getCount())
-        meanSquareError += validationNegative.getCount() * validationNegative.getSquaresMean(); // when negative, we always predict 0
-  //      meanSquareError += validationNegative.getCount() * (trainNegative.getSquaresMean() + validationNegative.getSquaresMean() 
-  //                                                            - 2 * trainNegative.getMean() * validationNegative.getMean());
+        meanSquareError += validationNegative.getCount() * (trainNegative.getSquaresMean() + validationNegative.getSquaresMean() 
+                                                              - 2 * trainNegative.getMean() * validationNegative.getMean());
 
       if (validationPositive.getCount() || validationNegative.getCount())
         meanSquareError /= validationPositive.getCount() + validationNegative.getCount();
@@ -113,7 +115,7 @@ public:
     return 0.0;
   }
 
-  virtual double optimizeWeightOfWeakLearner(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const BooleanVectorPtr& weakPredictions) const
+  virtual std::pair<double, double> optimizeWeightOfWeakLearner(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const BooleanVectorPtr& weakPredictions) const
   {
     context.enterScope(T("Optimize weight"));
 
@@ -129,6 +131,8 @@ public:
       for (size_t i = 0; i < weakPredictions->getNumElements(); ++i)
         if (weakPredictions->get(i))
           newPredictions->incrementValue(i, K);
+        else
+          newPredictions->incrementValue(i, -K);
       double lossValue;
       computeLoss(newPredictions, &lossValue, NULL);
 
@@ -143,7 +147,7 @@ public:
     }
 
     context.leaveScope(bestLoss);
-    return bestWeight;
+    return std::make_pair(-bestWeight, bestWeight); // symmetric
   }
 protected:
   double learningRate;
@@ -175,11 +179,12 @@ public:
     {
       double predicted = predictions->getValue(i);
       double correct = trainData[i].staticCast<Pair>()->getSecond().getDouble();
+      double delta = predicted - correct;
 
       if (lossValue)
-        *lossValue += (predicted - correct) * (predicted - correct);
+        *lossValue += delta * delta; 
       if (lossGradient)
-        (*lossGradient)->setValue(i, correct - predicted);
+        (*lossGradient)->setValue(i, delta);
     }
     if (lossValue)
       *lossValue /= n;
@@ -187,10 +192,22 @@ public:
       (*lossGradient)->multiplyByScalar(-1.0);
   }
 
-  virtual double optimizeWeightOfWeakLearner(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const BooleanVectorPtr& weakPredictions) const
+  virtual std::pair<double, double> optimizeWeightOfWeakLearner(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const BooleanVectorPtr& weakPredictions) const
   {
-    // todo: specialized version
-    return GradientBoostingLearner::optimizeWeightOfWeakLearner(context, predictions, weakPredictions);
+    std::vector<bool>::iterator it = weakPredictions->getElements().begin();
+    double* residuals = pseudoResiduals->getValuePointer(0);
+    size_t n = weakPredictions->getNumElements();
+    jassert(n == pseudoResiduals->getNumValues());
+
+    ScalarVariableMean negativeMean, positiveMean;
+    for (size_t i = 0; i < n; ++i)
+    {
+      if (*it++)
+        positiveMean.push(residuals[i]);
+      else
+        negativeMean.push(residuals[i]);
+    }
+    return std::make_pair(negativeMean.getMean(), positiveMean.getMean());
   }
 };
 
