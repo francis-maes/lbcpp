@@ -433,9 +433,10 @@ public:
     {
       subInputs[0] = Variable(i, positiveIntegerType);
       WorkUnitPtr wu = new FunctionWorkUnit(objectiveFunction, subInputs);
+      wu->saveToFile(context, context.getFile(generateName(subInputs)));
       workUnits->setWorkUnit(i, wu);
     }
-
+    return Variable(0.f, doubleType);
     ContainerPtr results = foldContext ? foldContext->run(workUnits).getObjectAndCast<Container>()
                                        : context.run(workUnits).getObjectAndCast<Container>();
     double sum = 0.f;
@@ -452,6 +453,15 @@ protected:
   ExecutionContextPtr foldContext;
 
   CrossValidationFunction() {}
+
+  String generateName(const std::vector<Variable>& inputs) const
+  {
+    String res;
+    for (size_t i = 1; i < inputs.size(); ++i)
+      res += T("#") + inputs[i].toString();
+    res += T("#Fold") + inputs[0].toString();
+    return res;
+  }
 };
 
 class DisulfideBondGaussianSVM : public Function
