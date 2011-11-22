@@ -40,7 +40,7 @@ public:
     return positions->getAndCast<GoBoardPositionPerception>(position.first * boardSize + position.second);
   }
 
-  GoBoardPositionPerceptionPtr getPassPosition() const
+  const GoBoardPositionPerceptionPtr& getPassPosition() const
     {return passPosition;}
 
   virtual String toShortString() const

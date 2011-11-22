@@ -173,23 +173,27 @@ private:
       return;
     state->numNodeTypesWhenBuilt = nodeTypes.size();
 
-    for (std::set<TypePtr>::const_iterator it = nodeTypes.begin(); it != nodeTypes.end(); ++it)
+    size_t numRemainingSteps = maxDepth - state->getDepth();
+    if (numRemainingSteps > state->getStackSize())
     {
-      TypePtr type = *it;
-      std::map<TypePtr, LuapeGraphBuilderTypeStatePtr>::const_iterator it2 = state->push.find(type);
-      if (it2 == state->push.end())
+      for (std::set<TypePtr>::const_iterator it = nodeTypes.begin(); it != nodeTypes.end(); ++it)
       {
-        // compute new stack
-        std::vector<TypePtr> newStack = state->getStack();
-        newStack.push_back(type);
+        TypePtr type = *it;
+        std::map<TypePtr, LuapeGraphBuilderTypeStatePtr>::const_iterator it2 = state->push.find(type);
+        if (it2 == state->push.end())
+        {
+          // compute new stack
+          std::vector<TypePtr> newStack = state->getStack();
+          newStack.push_back(type);
 
-        // create successor state and call recursively
-        LuapeGraphBuilderTypeStatePtr newState = getOrCreateState(state->getDepth() + 1, newStack);
-        state->push[type] = newState;
-        buildSuccessors(problem, newState, nodeTypes, maxDepth);
+          // create successor state and call recursively
+          LuapeGraphBuilderTypeStatePtr newState = getOrCreateState(state->getDepth() + 1, newStack);
+          state->push[type] = newState;
+          buildSuccessors(problem, newState, nodeTypes, maxDepth);
+        }
+        else
+          buildSuccessors(problem, it2->second, nodeTypes, maxDepth);
       }
-      else
-        buildSuccessors(problem, it2->second, nodeTypes, maxDepth);
     }
 
     for (size_t i = 0; i < problem->getNumFunctions(); ++i)

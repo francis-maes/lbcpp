@@ -10,6 +10,7 @@
 # define LBCPP_GO_PERCEPTION_BOARD_POSITION_H_
 
 # include "../GoProblem.h"
+# include "../Luape/LuapeFunction.h"
 
 namespace lbcpp
 {
@@ -68,11 +69,20 @@ public:
   virtual String toShortString() const
     {return "position";}
 
+  const GoBoard::Position& getPosition() const
+    {return position;}
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target)
+  {
+    Object::clone(context, target);
+    target.staticCast<GoBoardPositionPerception>()->position = position;
+  }
+
 protected:
   friend class GoBoardPositionPerceptionClass;
 
   GoBoardPerceptionPtr board;
-  //GoBoardPositionState positionState;
+  GoBoardPositionState positionState;
   GoBoardPositionPerceptionPtr previous;
   bool capturedAtPreviousTurn;
 
@@ -95,6 +105,48 @@ protected:
 
 private:
   GoBoard::Position position;
+};
+
+extern ClassPtr goBoardPositionPerceptionClass;
+
+class GoBoardPositionRelationPerception : public Object
+{
+public:
+  GoBoardPositionRelationPerception(const GoBoard::Position& a, const GoBoard::Position& b)
+  {
+    double delta1 = fabs((double)a.first - (double)b.first);
+    double delta2 = fabs((double)a.second - (double)b.second);
+    smallDelta = juce::jmin(delta1, delta2);
+    largeDelta = juce::jmax(delta1, delta2);
+  }
+  GoBoardPositionRelationPerception() : smallDelta(0.0), largeDelta(0.0) {}
+
+  double smallDelta;
+  double largeDelta;
+};
+
+extern ClassPtr goBoardPositionRelationPerceptionClass;
+
+class GoBoardPositionRelationLuapeFunction : public LuapeFunction
+{
+public:
+  virtual size_t getNumInputs() const
+    {return 2;}
+
+  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
+    {return type->inheritsFrom(goBoardPositionPerceptionClass);}
+
+  virtual TypePtr getOutputType(const std::vector<TypePtr>& inputTypes) const
+    {return goBoardPositionRelationPerceptionClass;}
+
+  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+  {
+    const GoBoardPositionPerceptionPtr& first = inputs[0].getObjectAndCast<GoBoardPositionPerception>();
+    const GoBoardPositionPerceptionPtr& second = inputs[1].getObjectAndCast<GoBoardPositionPerception>();
+    if (!first || !second)
+      return Variable::missingValue(goBoardPositionRelationPerceptionClass);
+    return new GoBoardPositionRelationPerception(first->getPosition(), second->getPosition());
+  }
 };
 
 }; /* namespace lbcpp */

@@ -30,6 +30,8 @@ public:
     addFunction(andBooleanLuapeFunction());
     addFunction(equalsConstantEnumLuapeFunction());
 
+    addFunction(new GoBoardPositionRelationLuapeFunction());
+
     // addFunction(stumpLuapeFunction())
   }
 };
@@ -206,7 +208,10 @@ private:
       Variable action = availableActions->getElement(i);
       GoState::Position position = action.getObjectAndCast<PositiveIntegerPair>()->getValue();
 
-      alternatives->set(i, boardPerception->getPosition(position));
+      GoBoardPositionPerceptionPtr positionPerception = boardPerception->getPosition(position)->cloneAndCast<GoBoardPositionPerception>();
+      positionPerception->setPrevious(statePerception->getLastAction());
+      
+      alternatives->set(i, positionPerception);
       if (!actionFound && action == correctAction)
       {
         costs->setValue(i, -1);
