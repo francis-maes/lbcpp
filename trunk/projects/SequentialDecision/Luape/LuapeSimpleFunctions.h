@@ -344,6 +344,7 @@ public:
     return res;*/
     return ContainerPtr();
   }
+
 protected:
   friend class StumpLuapeFunctionClass;
 

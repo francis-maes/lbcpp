@@ -14,56 +14,6 @@
 namespace lbcpp
 {
 
-class BoostingEdgeCalculator : public Object
-{
-public:
-  virtual void initialize(const LuapeInferencePtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) = 0;
-  virtual void flipPrediction(size_t index) = 0;
-  virtual double computeEdge() const = 0;
-  virtual Variable computeVote() const = 0;
-  
-  double findBestThreshold(ExecutionContext& context, const SparseDoubleVectorPtr& sortedDoubleValues, double& edge, bool verbose = false) // this modifies the prediction vector
-  {
-    edge = -DBL_MAX;
-    double res = 0.0;
-
-    if (verbose)
-      context.enterScope("Find best threshold for node");
-
-    jassert(sortedDoubleValues->getNumValues());
-    double previousThreshold = sortedDoubleValues->getValue(0).second;
-    for (size_t i = 0; i < sortedDoubleValues->getNumValues(); ++i)
-    {
-      double threshold = sortedDoubleValues->getValue(i).second;
-
-      jassert(threshold >= previousThreshold);
-      if (threshold > previousThreshold)
-      {
-        double e = computeEdge();
-
-        if (verbose)
-        {
-          context.enterScope("Iteration " + String((int)i));
-          context.resultCallback("threshold", (threshold + previousThreshold) / 2.0);
-          context.resultCallback("edge", e);
-          context.leaveScope();
-        }
-
-        if (e > edge)
-          edge = e, res = (threshold + previousThreshold) / 2.0;
-        previousThreshold = threshold;
-      }
-      flipPrediction(sortedDoubleValues->getValue(i).first);
-    }
-
-    if (verbose)
-      context.leaveScope();
-    return res;
-  }
-};
-
-typedef ReferenceCountedObjectPtr<BoostingEdgeCalculator> BoostingEdgeCalculatorPtr;
-
 class WeightBoostingLearner : public BoostingLearner
 {
 public:
@@ -71,14 +21,11 @@ public:
    : BoostingLearner(weakLearner) {}
   WeightBoostingLearner() {}
 
-  virtual BoostingEdgeCalculatorPtr createEdgeCalculator() const = 0;
-
   virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeInferencePtr& function, const std::vector<PairPtr>& examples) const = 0;
   virtual double updateWeight(const LuapeInferencePtr& function, size_t index, double currentWeight, const BooleanVectorPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const = 0;
-
   virtual VectorPtr makeSupervisions(const std::vector<ObjectPtr>& examples) const = 0;
-
   virtual bool shouldStop(double weakObjectiveValue) const = 0;
+  virtual Variable computeVote(BoostingWeakObjectivePtr edgeCalculator) const = 0;
 
   virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
   {
@@ -102,12 +49,12 @@ public:
       return false;
     
     // compute vote
-    BoostingEdgeCalculatorPtr edgeCalculator = createEdgeCalculator();
-    edgeCalculator->initialize(function, weakPredictions, supervisions, weights);
-    Variable vote = edgeCalculator->computeVote();
+    BoostingWeakObjectivePtr edgeCalculator = createWeakObjective();
+    edgeCalculator->setPredictions(weakPredictions);
+    Variable vote = computeVote(edgeCalculator);
     function->getVotes()->append(vote);
     
-    double edge = edgeCalculator->computeEdge();
+    double edge = edgeCalculator->computeObjective();
     context.resultCallback("edge", edge);
     context.resultCallback("vote", vote);
     
@@ -129,38 +76,6 @@ public:
     // update predictions and compute train/test score
     updatePredictionsAndEvaluate(context, graph->getNumYieldNodes() - 1, weakNode);
     return !stopped;
-  }
-
-  virtual double computeWeakObjective(ExecutionContext& context, const LuapeNodePtr& weakNode) const
-  {
-    BoostingEdgeCalculatorPtr edgeCalculator = createEdgeCalculator();
-    SparseDoubleVectorPtr sortedDoubleValues;
-    VectorPtr weakPredictions = graph->updateNodeCache(context, weakNode, true, &sortedDoubleValues);
-    
-    if (weakNode->getType() == booleanType)
-    {
-      edgeCalculator->initialize(function, weakPredictions.staticCast<BooleanVector>(), supervisions, weights);
-      return edgeCalculator->computeEdge();
-      
-    }
-    else
-    {
-      jassert(weakNode->getType()->isConvertibleToDouble());
-      double edge;
-      edgeCalculator->initialize(function, new BooleanVector(graph->getNumTrainingSamples(), true), supervisions, weights);
-      edgeCalculator->findBestThreshold(context, sortedDoubleValues, edge, false);
-      return edge;
-    }
-  }
-  
-  virtual double computeBestStumpThreshold(ExecutionContext& context, const LuapeNodePtr& numberNode) const
-  {
-    BoostingEdgeCalculatorPtr edgeCalculator = createEdgeCalculator();
-    double edge;
-    edgeCalculator->initialize(function, new BooleanVector(graph->getNumTrainingSamples(), true), supervisions, weights);
-    SparseDoubleVectorPtr sortedDoubleValues;
-    graph->updateNodeCache(context, numberNode, true, &sortedDoubleValues);
-    return edgeCalculator->findBestThreshold(context, sortedDoubleValues, edge, false);
   }
 
 protected:

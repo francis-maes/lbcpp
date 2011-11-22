@@ -63,6 +63,33 @@ LuapeNodePtr BoostingLearner::createDecisionStump(ExecutionContext& context, con
   return graph->getUniverse()->makeFunctionNode(stumpLuapeFunction(threshold), numberNode);
 }
 
+double BoostingLearner::computeWeakObjective(ExecutionContext& context, const LuapeNodePtr& weakNode) const
+{
+  BoostingWeakObjectivePtr edgeCalculator = createWeakObjective();
+  SparseDoubleVectorPtr sortedDoubleValues;
+  VectorPtr weakPredictions = graph->updateNodeCache(context, weakNode, true, &sortedDoubleValues);
+  
+  if (weakNode->getType() == booleanType)
+    return edgeCalculator->compute(weakPredictions.staticCast<BooleanVector>());
+  else
+  {
+    jassert(weakNode->getType()->isConvertibleToDouble());
+    double edge;
+    edgeCalculator->findBestThreshold(context, sortedDoubleValues, edge, false);
+    return edge;
+  }
+}
+
+double BoostingLearner::computeBestStumpThreshold(ExecutionContext& context, const LuapeNodePtr& numberNode) const
+{
+  SparseDoubleVectorPtr sortedDoubleValues;
+  graph->updateNodeCache(context, numberNode, true, &sortedDoubleValues);
+
+  BoostingWeakObjectivePtr edgeCalculator = createWeakObjective();
+  double edge;
+  return edgeCalculator->findBestThreshold(context, sortedDoubleValues, edge, false);
+}
+
 LuapeNodePtr BoostingLearner::doWeakLearning(ExecutionContext& context) const
 {
   LuapeNodePtr weakNode = weakLearner->learn(context, refCountedPointerFromThis(this));
@@ -114,4 +141,54 @@ void BoostingLearner::updatePredictionsAndEvaluate(ExecutionContext& context, si
     function->updatePredictions(validationPredictions, yieldIndex, validationSamples);
     context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
   }
+}
+
+/*
+** BoostingWeakObjective
+*/
+double BoostingWeakObjective::compute(const BooleanVectorPtr& predictions)
+{
+  setPredictions(predictions);
+  return computeObjective();
+}
+
+double BoostingWeakObjective::findBestThreshold(ExecutionContext& context, const SparseDoubleVectorPtr& sortedDoubleValues, double& edge, bool verbose)
+{
+  setPredictions(new BooleanVector(sortedDoubleValues->getNumValues(), true));
+
+  edge = -DBL_MAX;
+  double res = 0.0;
+
+  if (verbose)
+    context.enterScope("Find best threshold for node");
+
+  jassert(sortedDoubleValues->getNumValues());
+  double previousThreshold = sortedDoubleValues->getValue(0).second;
+  for (size_t i = 0; i < sortedDoubleValues->getNumValues(); ++i)
+  {
+    double threshold = sortedDoubleValues->getValue(i).second;
+
+    jassert(threshold >= previousThreshold);
+    if (threshold > previousThreshold)
+    {
+      double e = computeObjective();
+
+      if (verbose)
+      {
+        context.enterScope("Iteration " + String((int)i));
+        context.resultCallback("threshold", (threshold + previousThreshold) / 2.0);
+        context.resultCallback("edge", e);
+        context.leaveScope();
+      }
+
+      if (e > edge)
+        edge = e, res = (threshold + previousThreshold) / 2.0;
+      previousThreshold = threshold;
+    }
+    flipPrediction(sortedDoubleValues->getValue(i).first);
+  }
+
+  if (verbose)
+    context.leaveScope();
+  return res;
 }
