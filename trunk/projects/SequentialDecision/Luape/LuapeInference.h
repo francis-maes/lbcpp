@@ -235,7 +235,7 @@ public:
     for (size_t i = 0; i < n; ++i)
     {
       size_t j = pred->getAndCast<DenseDoubleVector>(i)->getIndexOfMaximumValue();
-      if (j != data[i].staticCast<Pair>()->getSecond().getInteger())
+      if (j != (size_t)data[i].staticCast<Pair>()->getSecond().getInteger())
         ++numErrors;
     }
     return numErrors / (double)n;
