@@ -63,9 +63,7 @@ public:
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
 
-    completion->updateCache(context, true);
-
-    ContainerPtr samples = completion->getCache()->getTrainingSamples();
+    VectorPtr samples = graph->updateNodeCache(context, completion, true);
     DenseDoubleVectorPtr scalars = samples.dynamicCast<DenseDoubleVector>();
     if (scalars)
     {

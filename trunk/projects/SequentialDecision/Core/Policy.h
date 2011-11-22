@@ -25,6 +25,8 @@ public:
   virtual void observeTransition(ExecutionContext& context, const Variable& action, double reward, const DecisionProblemStatePtr& newState)
     {}
 
+  virtual void finishEpisodes(ExecutionContext& context) {}
+
   lbcpp_UseDebuggingNewOperator
 };
 

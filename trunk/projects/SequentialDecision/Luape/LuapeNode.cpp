@@ -48,45 +48,6 @@ VectorPtr LuapeFunction::compute(ExecutionContext& context, const std::vector<Ve
       inputValues[j] = inputs[j]->getElement(i);
     res->setElement(i, compute(context, &inputValues[0]));
   }
-  
-  /*
-    cache->resizeSamples(isTrainingSamples, minCacheSize);
-    std::vector<Variable> inputs(arguments.size());
-
-    if (inputBaseType == doubleType)
-    {
-      std::vector<DenseDoubleVectorPtr> inputCaches(arguments.size());
-      for (size_t i = 0; i < inputCaches.size(); ++i)
-        inputCaches[i] = arguments[i]->getCache()->getSamples(isTrainingSamples).staticCast<DenseDoubleVector>();
-      for (size_t i = currentSize; i < minCacheSize; ++i)
-      {
-        for (size_t j = 0; j < inputs.size(); ++j)
-          inputs[j] = inputCaches[j]->getValue(i);
-        cache->setSample(isTrainingSamples, i, function->compute(context, inputs));
-      }
-    }
-    else if (inputBaseType == booleanType)
-    {
-      std::vector<BooleanVectorPtr> inputCaches(arguments.size());
-      for (size_t i = 0; i < inputCaches.size(); ++i)
-        inputCaches[i] = arguments[i]->getCache()->getSamples(isTrainingSamples).staticCast<BooleanVector>();
-      for (size_t i = currentSize; i < minCacheSize; ++i)
-      {
-        for (size_t j = 0; j < inputs.size(); ++j)
-          inputs[j] = inputCaches[j]->get(i);
-        cache->setSample(isTrainingSamples, i, function->compute(context, inputs));
-      }
-    }
-    else
-    {
-      for (size_t i = currentSize; i < minCacheSize; ++i)
-      {
-        for (size_t j = 0; j < inputs.size(); ++j)
-          inputs[j] = arguments[j]->getCache()->getSample(isTrainingSamples, i);
-        cache->setSample(isTrainingSamples, i, function->compute(context, inputs));
-      }
-    }
-    */
   return res;
 }
 
@@ -133,46 +94,54 @@ bool LuapeFunction::acceptInputsStack(const std::vector<LuapeNodePtr>& stack) co
 ** LuapeNodeCache
 */
 LuapeNodeCache::LuapeNodeCache() 
-  : convertibleToDouble(false), scoreComputed(false), score(0.0)
 {
 }
 
 void LuapeNodeCache::initialize(TypePtr type)
 {
-  trainingSamples = vector(type, 0);
-  validationSamples = vector(type, 0);
-  convertibleToDouble = type->isConvertibleToDouble();
+  elementsType = type;
+  trainingSamples = VectorPtr();
+  sortedDoubleValues.clear();
+  validationSamples = VectorPtr();
 }
 
 void LuapeNodeCache::clear()
 {
-  scoreComputed = false;
-  score = 0.0;
   TypePtr type = trainingSamples->getElementsType();
   initialize(type);
 }
 
 void LuapeNodeCache::resizeSamples(bool isTrainingSamples, size_t size)
-  {(isTrainingSamples ? trainingSamples : validationSamples)->resize(size);}
+{
+  VectorPtr& samples = isTrainingSamples ? trainingSamples : validationSamples;
+  if (!samples)
+    samples = vector(elementsType, size);
+  else
+    samples->resize(size);
+}
 
 void LuapeNodeCache::resizeSamples(size_t numTrainingSamples, size_t numValidationSamples)
 {
-  trainingSamples->resize(numTrainingSamples);
-  validationSamples->resize(numValidationSamples);
+  resizeSamples(true, numTrainingSamples);
+  resizeSamples(false, numValidationSamples);
 }
 
 void LuapeNodeCache::setSample(bool isTrainingSample, size_t index, const Variable& value)
-  {(isTrainingSample ? trainingSamples : validationSamples)->setElement(index, value);}
+{
+  const VectorPtr& samples = isTrainingSample ? trainingSamples : validationSamples;
+  jassert(samples);
+  samples->setElement(index, value);
+}
 
 void LuapeNodeCache::clearSamples(bool clearTrainingSamples, bool clearValidationSamples)
 {
   if (clearTrainingSamples)
   {
-    trainingSamples->clear();
+    trainingSamples = VectorPtr();
     sortedDoubleValues.clear();
   }
   if (clearValidationSamples)
-    validationSamples->clear();
+    validationSamples = VectorPtr();
 }
 
 struct SortDoubleValuesOperator
@@ -188,12 +157,14 @@ struct SortDoubleValuesOperator
   }
 };
 
-const std::vector< std::pair<size_t, double> >& LuapeNodeCache::getSortedDoubleValues() const
+const std::vector< std::pair<size_t, double> >& LuapeNodeCache::getSortedDoubleValues()
 {
+  jassert(elementsType->isConvertibleToDouble());
+
   size_t n = trainingSamples->getNumElements();
   if (sortedDoubleValues.size() < n)
   {
-    std::vector< std::pair<size_t, double> >& v = const_cast<LuapeNodeCache* >(this)->sortedDoubleValues;
+    std::vector< std::pair<size_t, double> >& v = sortedDoubleValues;
     v.resize(n);
     for (size_t i = 0; i < n; ++i)
       v[i] = std::make_pair(i, trainingSamples->getElement(i).toDouble());
@@ -383,32 +354,6 @@ size_t LuapeFunctionNode::getDepth() const
       maxInputDepth = d;
   }
   return maxInputDepth + 1;
-}
-
-void LuapeFunctionNode::updateCache(ExecutionContext& context, bool isTrainingSamples)
-{
-  jassert(arguments.size());
-  TypePtr inputBaseType = arguments[0]->getType();
-  arguments[0]->updateCache(context, isTrainingSamples);
-  size_t minCacheSize = arguments[0]->getCache()->getNumSamples(isTrainingSamples);
-  for (size_t i = 1; i < arguments.size(); ++i)
-  {
-    arguments[i]->updateCache(context, isTrainingSamples);
-    size_t cacheSize = arguments[i]->getCache()->getNumSamples(isTrainingSamples);
-    if (cacheSize < minCacheSize)
-      minCacheSize = cacheSize;
-    inputBaseType = Type::findCommonBaseType(inputBaseType, arguments[i]->getType());
-  }
-
-  size_t currentSize = cache->getNumSamples(isTrainingSamples);
-  if (minCacheSize > currentSize)
-  {
-    std::vector<VectorPtr> inputs(arguments.size());
-    for (size_t i = 0; i < inputs.size(); ++i)
-      inputs[i] = arguments[i]->getCache()->getSamples(isTrainingSamples);
-    cache->setSamples(isTrainingSamples, function->compute(context, inputs, type));
-    //context.informationCallback(T("Compute ") + toShortString() + T(" => ") + cache->toShortString());
-  }
 }
 
 /*

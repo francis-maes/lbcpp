@@ -10,6 +10,7 @@
 # define LBCPP_LUAPE_GRAPH_H_
 
 # include "LuapeNode.h"
+# include <deque>
 
 namespace lbcpp
 {
@@ -17,13 +18,10 @@ namespace lbcpp
 class LuapeGraphUniverse : public Object
 {
 public:
-  void clear(bool clearTrainingSamples = true, bool clearValidationSamples = true, bool clearScores = true);
+  LuapeGraphUniverse(size_t maxCacheSize = 0)
+    : maxCacheSize(maxCacheSize) {}
 
-  void clearSamples(bool clearTrainingSamples = true, bool clearValidationSamples = true)
-    {clear(clearTrainingSamples, clearValidationSamples, false);}
-
-  void clearScores()
-    {clear(false, false, true);}
+  void clearSamples(bool clearTrainingSamples = true, bool clearValidationSamples = true);
 
   void addInputNode(const LuapeInputNodePtr& inputNode)
     {inputNodes.push_back(inputNode);}
@@ -33,7 +31,17 @@ public:
   LuapeFunctionNodePtr makeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& input)
     {return makeFunctionNode(function, std::vector<LuapeNodePtr>(1, input));}
 
+  void cacheUpdated(ExecutionContext& context, const LuapeNodePtr& node, bool isTrainingSamples);
+
+  void displayCacheInformation(ExecutionContext& context);
+
+  lbcpp_UseDebuggingNewOperator
+
 private:
+  friend class LuapeGraphUniverseClass;
+
+  size_t maxCacheSize;
+
   struct FunctionKey
   {
     ClassPtr functionClass;
@@ -53,6 +61,9 @@ private:
   FunctionNodesMap functionNodes;
 
   std::vector<LuapeInputNodePtr> inputNodes;
+
+  std::deque<LuapeNodePtr> trainingCacheSequence;
+  std::deque<LuapeNodePtr> validationCacheSequence;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeGraphUniverse> LuapeGraphUniversePtr;
@@ -60,6 +71,9 @@ typedef ReferenceCountedObjectPtr<LuapeGraphUniverse> LuapeGraphUniversePtr;
 class LuapeNodeKeysMap : public Object
 {
 public:
+  LuapeNodeKeysMap(LuapeGraphPtr graph = LuapeGraphPtr())
+    : graph(graph) {}
+
   void clear();
 
   // return true if it is a new node
@@ -67,10 +81,13 @@ public:
 
   bool isNodeKeyNew(const LuapeNodePtr& node) const;
 
+  lbcpp_UseDebuggingNewOperator
+
 private:
   typedef std::map<BinaryKeyPtr, LuapeNodePtr, ObjectComparator> KeyToNodeMap;
   typedef std::map<LuapeNodePtr, BinaryKeyPtr> NodeToKeyMap;
 
+  LuapeGraphPtr graph;
   KeyToNodeMap keyToNodes;
   NodeToKeyMap nodeToKeys;
 
@@ -82,7 +99,8 @@ typedef ReferenceCountedObjectPtr<LuapeNodeKeysMap> LuapeNodeKeysMapPtr;
 class LuapeGraph : public Object
 {
 public:
-  LuapeGraph();
+  LuapeGraph(size_t maxCacheSize);
+  LuapeGraph() : numYields(0) {}
 
   size_t getNumNodes() const
     {return nodes.size();}
@@ -110,6 +128,8 @@ public:
   LuapeNodePtr pushFunctionNode(ExecutionContext& context, const LuapeFunctionPtr& function, const LuapeNodePtr& input);
   void popNode();
 
+  VectorPtr updateNodeCache(ExecutionContext& context, const LuapeNodePtr& node, bool isTrainingSamples);
+
   size_t getNumTrainingSamples() const;
   size_t getNumValidationSamples() const;
   size_t getNumSamples(bool isTrainingSamples) const;
@@ -118,7 +138,6 @@ public:
   void setSample(bool isTrainingSample, size_t index, const std::vector<Variable>& example);
   void setSample(bool isTrainingSample, size_t index, const ObjectPtr& example);
   void clearSamples(bool clearTrainingSamples = true, bool clearValidationSamples = true);
-  void clearScores();
 
   void compute(ExecutionContext& context, std::vector<Variable>& state, size_t firstNodeIndex = 0, LuapeGraphCallbackPtr callback = 0) const;
 
@@ -129,6 +148,8 @@ public:
 
   const LuapeGraphUniversePtr& getUniverse() const
     {return universe;}
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class LuapeGraphClass;

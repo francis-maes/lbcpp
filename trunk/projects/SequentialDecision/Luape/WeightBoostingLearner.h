@@ -123,11 +123,7 @@ public:
     {
       // update weights
       weightsSum *= updateWeights(function, weakPredictions, supervisions, weights, vote);
-      {
-        DenseDoubleVectorPtr w = weights->cloneAndCast<DenseDoubleVector>();
-        w->multiplyByScalar(weightsSum);
-        context.resultCallback("loss", w->l1norm());
-      }
+      context.resultCallback("loss", weights->l1norm() * weightsSum);
     }
     //context.resultCallback("weights", weights->cloneAndCast<DoubleVector>());
 
@@ -139,12 +135,11 @@ public:
   virtual double computeWeakObjective(ExecutionContext& context, const LuapeNodePtr& weakNode) const
   {
     BoostingEdgeCalculatorPtr edgeCalculator = createEdgeCalculator();
-    weakNode->updateCache(context, true);
+    VectorPtr weakPredictions = graph->updateNodeCache(context, weakNode, true);
     
     if (weakNode->getType() == booleanType)
     {
-      BooleanVectorPtr weakPredictions = weakNode->getCache()->getTrainingSamples().staticCast<BooleanVector>();
-      edgeCalculator->initialize(function, weakPredictions, supervisions, weights);
+      edgeCalculator->initialize(function, weakPredictions.staticCast<BooleanVector>(), supervisions, weights);
       return edgeCalculator->computeEdge();
       
     }
@@ -163,6 +158,7 @@ public:
     BoostingEdgeCalculatorPtr edgeCalculator = createEdgeCalculator();
     double edge;
     edgeCalculator->initialize(function, new BooleanVector(graph->getNumTrainingSamples(), true), supervisions, weights);
+    graph->updateNodeCache(context, numberNode, true);
     return edgeCalculator->findBestThreshold(context, numberNode, edge, false);
   }
 
@@ -186,6 +182,10 @@ protected:
     return sum;
   }
 };
+
+typedef ReferenceCountedObjectPtr<WeightBoostingLearner> WeightBoostingLearnerPtr;
+
+extern WeightBoostingLearnerPtr adaBoostMHLearner(BoostingWeakLearnerPtr weakLearner);
 
 }; /* namespace lbcpp */
 
