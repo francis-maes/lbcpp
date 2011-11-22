@@ -78,6 +78,11 @@
     <variable type="String" name="proteinsDir" shortName="d" description="Directory of proteins to load"/>
     <variable type="ProteinMover" name="moverEnter"/>
   </class>
+  
+  <class name="ProteinTestParallelWorkUnit" base="WorkUnit">
+    <variable type="Integer" name="arg" shortName="a" description="An input argument to RosettaTest"/>
+  </class>
+  <class name="ProteinSubWorkUnitExample" base="WorkUnit"/>
 
   <class name="ProteinFeaturesGeneratorWorkUnit" base="WorkUnit">
     <variable type="String" name="proteinsDirectory" shortName="i" description="Directory of input proteins to load"/>
