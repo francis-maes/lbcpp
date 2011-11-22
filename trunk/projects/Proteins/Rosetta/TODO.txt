@@ -1,25 +1,10 @@
-Pending error
-=============
-
-
 TODO
 ====
 
-- sampler maximum entropy (+ref)
-
-Rapport
-=======
-- ajout derniere phrase page 507 du structural bioinformatics.
-- ajouter reference Main-chain Bond Lengths and Bond Angles in Protein Structures 
-(Roman A. Laskowski, David S. Moss and Janet M. Thornton) pour longueurs de liens peptides.
-- ajouter references maximum entropy
-- sampler gaussian (+ references : )
-- sampler kde (voir hastie + ref)
-
-Citer:
-- bishop
-- article MonteCarlo framework de Martin Haugh
-- book Theory and use of the EM algo, Gupta, chen
+- depliement proteines
+- corriger rosetta parallele (ProteinTestParallelWorkUnit)
+- retirer les ifdef LBCPP_PROTEIN_ROSETTA ?
+- corriger probleme hbond tripped
 
 DONE
 =====

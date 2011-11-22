@@ -874,35 +874,46 @@ void generateMoversDataSet(VectorPtr& inputs, VectorPtr& samples)
   }
 };
 
-class ProteinTestWorkUnit : public CompositeWorkUnit
+class ProteinSubWorkUnitExample : public WorkUnit
 {
 public:
-  // returnPose must be already instantiated
-  ProteinTestWorkUnit()
-    : CompositeWorkUnit(T("ProteinOptimizerWorkUnit"))
+  virtual Variable run(ExecutionContext& context)
   {
-  }
+    context.informationCallback(T("Before"));
+    rosettaInitialization(context);
+    makePoseFromSequence(pose, T("AAAAAAAAAAAAAAAAAAAA"));
+    RandomGeneratorPtr gen = new RandomGenerator();
 
+    for (size_t i = 0; i < 1000; ++i)
+    {
+//      PhiPsiMover::move(pose, gen->sampleInt(0, 19), gen->sampleDouble(-50.0, 50.0),
+//          gen->sampleDouble(-50.0, 50.0));
+      context.progressCallback(new ProgressionState(i + 1.0, 1000.0, T("%")));
+    }
+    context.informationCallback(T("After"));
+    return T("Hello");
+  }
+protected:
+#ifdef LBCPP_PROTEIN_ROSETTA
+  core::pose::PoseOP pose;
+#endif // LBCPP_PROTEIN_ROSETTA
+};
+
+class ProteinTestParallelWorkUnit : public WorkUnit
+{
+public:
   virtual Variable run(ExecutionContext& context)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
-    context.informationCallback(T("Protein : ") + proteinName + T(" loaded succesfully."));
-    context.resultCallback(T("Initial energy"),
-        Variable(getConformationScore(pose, fullAtomEnergy)));
-    core::pose::PoseOP returnPose = new core::pose::Pose(*pose);
+    context.informationCallback(T("test parallel WU : ") + arg);
 
-    RosettaWorkerPtr worker = new RosettaWorker(pose, 0, 0, 0, 0, 0);
+    CompositeWorkUnitPtr subWorkUnits(new CompositeWorkUnit(T("Parallel protein workUnit"), 8));
+    for (size_t i = 0; i < subWorkUnits->getNumWorkUnits(); ++i)
+      subWorkUnits->setWorkUnit(i, new ProteinSubWorkUnitExample());
+    subWorkUnits->setPushChildrenIntoStackFlag(true);
+    context.run(subWorkUnits);
 
-    RandomGeneratorPtr random = new RandomGenerator();
-    DenseDoubleVectorPtr energiesAtIteration;
-
-    optimizer->apply(context, worker, random, energiesAtIteration);
-
-    context.informationCallback(T("Optimization done."));
-    double score = getConformationScore(returnPose, fullAtomEnergy);
-    context.resultCallback(T("Final energy"), Variable(score));
-
-    return Variable(proteinName);
+    return Variable();
 #else
     jassert(false);
     return false;
@@ -910,14 +921,8 @@ public:
   }
 
 protected:
-  friend class ProteinOptimizerWorkUnitClass;
-  String proteinName;
-#ifdef LBCPP_PROTEIN_ROSETTA
-  core::pose::PoseOP pose;
-#endif // LBCPP_PROTEIN_ROSETTA
-  ProteinOptimizerPtr optimizer;
-  SamplerPtr sampler;
-  RandomGeneratorPtr random;
+  friend class ProteinTestParallelWorkUnitClass;
+  size_t arg;
 };
 
 }; /* namespace lbcpp */
