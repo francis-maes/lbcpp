@@ -154,13 +154,26 @@ class DistributedExecutionContext : public SubExecutionContext, public ManagerNe
 public:
   DistributedExecutionContext(ExecutionContext& parentContext,
                               const String& remoteHostName, size_t remotePort,
-                              const String& project, const String& from, const String& to,
+                              const String& project, const String& from, const std::vector<String>& to,
                               const ResourceEstimatorPtr& resourceEstimator)
     : SubExecutionContext(parentContext), client(new ManagerNetworkClient(parentContext)),
       remoteHostName(remoteHostName), remotePort(remotePort),
       project(project), from(from), to(to), resourceEstimator(resourceEstimator),
       asynchroneousWorkUnitPool(new AsynchroneousWorkUnitPool()),
-      numSentWorkUnits(0)
+      numSentWorkUnits(0), currentTo(0)
+  {
+    client->setCallback(this);
+    client->startClient(remoteHostName, remotePort);
+  }
+  DistributedExecutionContext(ExecutionContext& parentContext,
+                              const String& remoteHostName, size_t remotePort,
+                              const String& project, const String& from, const String& to,
+                              const ResourceEstimatorPtr& resourceEstimator)
+  : SubExecutionContext(parentContext), client(new ManagerNetworkClient(parentContext)),
+  remoteHostName(remoteHostName), remotePort(remotePort),
+  project(project), from(from), to(std::vector<String>(1, to)), resourceEstimator(resourceEstimator),
+  asynchroneousWorkUnitPool(new AsynchroneousWorkUnitPool()),
+  numSentWorkUnits(0), currentTo(0)
   {
     client->setCallback(this);
     client->startClient(remoteHostName, remotePort);
@@ -261,7 +274,7 @@ protected:
   size_t remotePort;
   String project;
   String from;
-  String to;
+  std::vector<String> to;
   ResourceEstimatorPtr resourceEstimator;
 
   AsynchroneousWorkUnitPoolPtr asynchroneousWorkUnitPool;
@@ -279,8 +292,9 @@ protected:
     if (!client->isConnected() && !client->startClient(remoteHostName, remotePort))
       return false;
 
-    bool res = client->sendWorkUnit(internalId, workUnit, project, from, to, requiredCpus, requiredMemory, requiredTime);
+    bool res = client->sendWorkUnit(internalId, workUnit, project, from, to[currentTo++], requiredCpus, requiredMemory, requiredTime);
     ++numSentWorkUnits;
+    currentTo %= to.size();
     return res;
   }
 
@@ -310,7 +324,7 @@ protected:
   size_t numSentWorkUnits;
   std::map<String, size_t> workUnitIds; // manager ID -> internal ID
   std::map<size_t, std::pair<WorkUnitPoolPtr, size_t> > pools; // internal id -> (pool, pool id)
-
+  size_t currentTo;
 };
 
 /*

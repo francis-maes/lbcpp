@@ -149,6 +149,9 @@ public:
     : function(function), inputs(inputs), description(description), output(output), sendInputAsResult(sendInputAsResult) {}
   FunctionWorkUnit(const FunctionPtr& function, const Variable& input1, const String& description = String::empty, Variable* output = NULL, bool sendInputAsResult = false)
     : function(function), inputs(1, input1), description(description), output(output), sendInputAsResult(sendInputAsResult) {}
+  FunctionWorkUnit(const FunctionPtr& function, const Variable& input1, const Variable& input2, const String& description = String::empty, Variable* output = NULL, bool sendInputAsResult = false)
+    : function(function), inputs(2), description(description), output(output), sendInputAsResult(sendInputAsResult)
+    {inputs[0] = input1; inputs[1] = input2;}
   FunctionWorkUnit() : output(NULL) {}
 
   virtual String toString() const
