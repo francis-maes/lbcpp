@@ -29,9 +29,6 @@ public:
   void setVotes(const VectorPtr& votes)
     {this->votes = votes;}
 
-  size_t getNumYields() const
-    {return votes->getNumElements();}
-
   virtual VectorPtr createVoteVector() const = 0;
   virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const BooleanVectorPtr& yieldOutputs) const = 0;
 
@@ -189,6 +186,7 @@ public:
 
     virtual void valueYielded(const Variable& value)
     {
+      jassert(value.isBoolean());
       DenseDoubleVectorPtr vote = votes->getElement(index++).getObjectAndCast<DenseDoubleVector>();
       vote->addWeightedTo(res, 0, value.getBoolean() ? 1.0 : -1.0);
     }
@@ -277,8 +275,8 @@ public:
 
     virtual void valueYielded(const Variable& value)
     {
-      if (value.getBoolean())
-        res += votes->getValue(index++);
+      jassert(value.isBoolean());
+      res += votes->getValue(index++);
     }
   };
 
@@ -356,8 +354,8 @@ public:
 
     virtual void valueYielded(const Variable& value)
     {
-      if (value.getBoolean())
-        res += votes->getValue(index++);
+      jassert(value.isBoolean());
+      res += votes->getValue(value.getBoolean() ? index + 1 : index);
     }
   };
 
@@ -374,12 +372,13 @@ public:
 
   virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const BooleanVectorPtr& yieldOutputs) const
   {
-    double vote = votes.staticCast<DenseDoubleVector>()->getValue(yieldIndex);
+    double negativeVote = votes.staticCast<DenseDoubleVector>()->getValue(yieldIndex * 2);
+    double positiveVote = votes.staticCast<DenseDoubleVector>()->getValue(yieldIndex * 2 + 1);
     const DenseDoubleVectorPtr& pred = predictions.staticCast<DenseDoubleVector>();
     size_t n = pred->getNumValues();
     std::vector<bool>::const_iterator it = yieldOutputs->getElements().begin();
     for (size_t i = 0; i < n; ++i)
-      pred->incrementValue(i, vote * (*it++ ? 1.0 : -1.0));
+      pred->incrementValue(i, *it++ ? positiveVote : negativeVote);
   }
 
   virtual void setGraphSamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)

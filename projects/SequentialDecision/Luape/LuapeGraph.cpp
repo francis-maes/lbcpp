@@ -127,6 +127,10 @@ bool LuapeNodeKeysMap::isNodeKeyNew(const LuapeNodePtr& node) const
 /*
 ** LuapeGraph
 */
+LuapeGraph::LuapeGraph() : numYields(0), universe(new LuapeGraphUniverse())
+{
+}
+
 String LuapeGraph::toShortString() const
   {return graphToString(0);}
 
@@ -188,6 +192,8 @@ LuapeNodePtr LuapeGraph::pushNode(ExecutionContext& context, const LuapeNodePtr&
 
 void LuapeGraph::addNode(const LuapeNodePtr& node)
 {
+  if (node.isInstanceOf<LuapeYieldNode>())
+    ++numYields;
   node->indexInGraph = nodes.size();
   nodesMap[node] = nodes.size();
   nodes.push_back(node);
@@ -197,6 +203,8 @@ void LuapeGraph::popNode()
 {
   jassert(nodes.size());
   LuapeNodePtr node = nodes.back();
+  if (node.isInstanceOf<LuapeYieldNode>())
+    --numYields;
   nodesMap.erase(node);
   nodes.pop_back();
 }
