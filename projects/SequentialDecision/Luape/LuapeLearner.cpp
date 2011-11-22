@@ -49,6 +49,14 @@ bool BoostingLearner::initialize(ExecutionContext& context, const LuapeProblemPt
   return weakLearner->initialize(context, problem, function);
 }
 
+bool BoostingLearner::setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
+{
+  if (!LuapeLearner::setExamples(context, isTrainingData, data))
+    return false;
+  (isTrainingData ? predictions : validationPredictions) = function->makeCachedPredictions(context, isTrainingData);
+  return true;
+}
+
 LuapeNodePtr BoostingLearner::createDecisionStump(ExecutionContext& context, const LuapeNodePtr& numberNode) const
 {
   double threshold = computeBestStumpThreshold(context, numberNode);
@@ -88,9 +96,22 @@ LuapeNodePtr BoostingLearner::doWeakLearningAndAddToGraph(ExecutionContext& cont
     weakLearner->update(context, refCountedPointerFromThis(this), weakNode);
 
     // retrieve weak predictions
-    weakNode->updateCache(context, true);
-    jassert(weakNode->getCache()->getNumTrainingSamples() > 0);
-    weakPredictions = weakNode->getCache()->getSamples(true).staticCast<BooleanVector>();
+    weakPredictions = graph->updateNodeCache(context, weakNode, true).staticCast<BooleanVector>();
+    jassert(weakPredictions);
   }
   return weakNode;
+}
+
+void BoostingLearner::updatePredictionsAndEvaluate(ExecutionContext& context, size_t yieldIndex, const LuapeNodePtr& weakNode) const
+{
+  VectorPtr trainSamples = graph->updateNodeCache(context, weakNode, true);
+  function->updatePredictions(predictions, yieldIndex, trainSamples);
+  context.resultCallback(T("train error"), function->evaluatePredictions(context, predictions, trainData));
+
+  if (validationPredictions)
+  {
+    VectorPtr validationSamples = graph->updateNodeCache(context, weakNode, false);
+    function->updatePredictions(validationPredictions, yieldIndex, validationSamples);
+    context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
+  }
 }

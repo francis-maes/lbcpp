@@ -13,20 +13,18 @@ using namespace lbcpp;
 /*
 ** LuapeGraphUniverse
 */
-static void clearNode(const LuapeNodePtr& node, bool clearTrainingSamples, bool clearValidationSamples, bool clearScores)
+static void clearNode(const LuapeNodePtr& node, bool clearTrainingSamples, bool clearValidationSamples)
 {
   const LuapeNodeCachePtr& cache = node->getCache();
   cache->clearSamples(clearTrainingSamples, clearValidationSamples);
-  if (clearScores)
-    cache->clearScore();
 }
 
-void LuapeGraphUniverse::clear(bool clearTrainingSamples, bool clearValidationSamples, bool clearScores)
+void LuapeGraphUniverse::clearSamples(bool clearTrainingSamples, bool clearValidationSamples)
 {
   for (size_t i = 0; i < inputNodes.size(); ++i)
-    clearNode(inputNodes[i], clearTrainingSamples, clearValidationSamples, clearScores);
+    clearNode(inputNodes[i], clearTrainingSamples, clearValidationSamples);
   for (FunctionNodesMap::const_iterator it = functionNodes.begin(); it != functionNodes.end(); ++it)
-    clearNode(it->second, clearTrainingSamples, clearValidationSamples, clearScores);
+    clearNode(it->second, clearTrainingSamples, clearValidationSamples);
 }
 
 LuapeFunctionNodePtr LuapeGraphUniverse::makeFunctionNode(ClassPtr functionClass, const std::vector<Variable>& arguments, const std::vector<LuapeNodePtr>& inputs)
@@ -57,6 +55,35 @@ LuapeFunctionNodePtr LuapeGraphUniverse::makeFunctionNode(const LuapeFunctionPtr
   return makeFunctionNode(function->getClass(), arguments, inputs);
 }
 
+void LuapeGraphUniverse::cacheUpdated(ExecutionContext& context, const LuapeNodePtr& node, bool isTrainingSamples)
+{
+  std::deque<LuapeNodePtr>& cacheSequence = isTrainingSamples ? trainingCacheSequence : validationCacheSequence;
+
+  cacheSequence.push_back(node);
+  if (cacheSequence.size() >= maxCacheSize)
+  {
+    cacheSequence.front()->getCache()->clearSamples(isTrainingSamples, !isTrainingSamples);
+    cacheSequence.pop_front();
+  }
+}
+
+void LuapeGraphUniverse::displayCacheInformation(ExecutionContext& context)
+{
+  size_t numTrainingCached = 0;
+  size_t numValidationCached = 0;
+  size_t numFunctionNodes = functionNodes.size();
+  for (FunctionNodesMap::const_iterator it = functionNodes.begin(); it != functionNodes.end(); ++it)
+  {
+    const LuapeNodeCachePtr& cache = it->second->getCache();
+    if (cache->getNumSamples(true) > 0)
+      ++numTrainingCached;
+    if (cache->getNumSamples(false) > 0)
+      ++numValidationCached;
+  }
+  context.informationCallback(T("Train cache: ") + String((int)numTrainingCached) + T(" / ") + String((int)numFunctionNodes) +
+    T(" Validation cache: ") + String((int)numValidationCached) + T(" / ") + String((int)numFunctionNodes));
+}
+
 /*
 ** LuapeNodeKeysMap
 */
@@ -74,7 +101,7 @@ bool LuapeNodeKeysMap::addNodeToCache(ExecutionContext& context, const LuapeNode
     return false; // we already know about this node
 
   // compute node key
-  node->updateCache(context, true);
+  graph->updateNodeCache(context, node, true);
   BinaryKeyPtr key = node->getCache()->makeKeyFromSamples();
 
   KeyToNodeMap::iterator it2 = keyToNodes.find(key);
@@ -127,7 +154,8 @@ bool LuapeNodeKeysMap::isNodeKeyNew(const LuapeNodePtr& node) const
 /*
 ** LuapeGraph
 */
-LuapeGraph::LuapeGraph() : numYields(0), universe(new LuapeGraphUniverse())
+LuapeGraph::LuapeGraph(size_t maxCacheSize)
+  : numYields(0), universe(new LuapeGraphUniverse(maxCacheSize))
 {
 }
 
@@ -140,11 +168,6 @@ String LuapeGraph::graphToString(size_t firstNodeIndex) const
   for (size_t i = firstNodeIndex; i < nodes.size(); ++i)
     res += String((int)i) + T(" ") + nodes[i]->toShortString() + T("\n");
   return res;
-}
-
-void LuapeGraph::clearScores()
-{
-  universe->clearScores();
 }
 
 LuapeNodePtr LuapeGraph::pushMissingNodes(ExecutionContext& context, const LuapeNodePtr& node)
@@ -271,6 +294,31 @@ void LuapeGraph::setSample(bool isTrainingSample, size_t index, const ObjectPtr&
 void LuapeGraph::clearSamples(bool clearTrainingSamples, bool clearValidationSamples)
 {
   getUniverse()->clearSamples(clearTrainingSamples, clearValidationSamples);
+}
+
+VectorPtr LuapeGraph::updateNodeCache(ExecutionContext& context, const LuapeNodePtr& node, bool isTrainingSamples)
+{
+  LuapeFunctionNodePtr functionNode = node.dynamicCast<LuapeFunctionNode>();
+  if (!functionNode)
+    return node->getCache()->getSamples(isTrainingSamples); // only function nodes are subject to caching
+
+  std::vector<VectorPtr> inputs(functionNode->getNumArguments());
+  size_t inputCacheSize = 0x7FFFFFFF;
+  for (size_t i = 0; i < inputs.size(); ++i)
+  {
+    inputs[i] = updateNodeCache(context, functionNode->getArgument(i), isTrainingSamples);
+    size_t cacheSize = inputs[i]->getNumElements();
+    if (cacheSize < inputCacheSize)
+      inputCacheSize = cacheSize;
+  }
+  VectorPtr res = functionNode->getCache()->getSamples(isTrainingSamples);
+  if (!res || inputCacheSize > res->getNumElements())
+  {
+    res = functionNode->getFunction()->compute(context, inputs, functionNode->getType());
+    functionNode->getCache()->setSamples(isTrainingSamples, res);
+    getUniverse()->cacheUpdated(context, node, isTrainingSamples);
+  }
+  return res;   
 }
 
 void LuapeGraph::compute(ExecutionContext& context, std::vector<Variable>& state, size_t firstNodeIndex, LuapeGraphCallbackPtr callback) const

@@ -41,7 +41,8 @@ public:
 
   LuapeGraphPtr createInitialGraph(ExecutionContext& context) const
   {
-    LuapeGraphPtr res = new LuapeGraph();
+    static const size_t maxCacheSize = 10;
+    LuapeGraphPtr res = new LuapeGraph(maxCacheSize);
     for (size_t i = 0; i < inputs.size(); ++i)
       res->pushNode(context, new LuapeInputNode(inputs[i]->getType(), inputs[i]->getName(), i));
     return res;

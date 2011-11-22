@@ -47,8 +47,8 @@ public:
       if (yieldNode)
       {
         LuapeNodePtr weakNode = yieldNode->getArgument();
-        weakNode->updateCache(context, isTrainingSamples);
-        updatePredictions(predictions, yieldIndex, weakNode->getCache()->getSamples(isTrainingSamples));
+        VectorPtr weakPredictions = graph->updateNodeCache(context, weakNode, isTrainingSamples);
+        updatePredictions(predictions, yieldIndex, weakPredictions);
       }
     }
     return predictions;

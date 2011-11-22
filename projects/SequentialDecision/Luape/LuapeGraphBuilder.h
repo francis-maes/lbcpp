@@ -435,6 +435,8 @@ public:
   const LuapeNodePtr& getStackElement(size_t index) const
     {jassert(index < stack.size()); return stack[index];}
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   friend class LuapeGraphBuilderStateClass;
 

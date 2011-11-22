@@ -58,7 +58,9 @@
   </class>
 
   <!-- Graph -->
-  <class name="LuapeGraphUniverse" base="Object"/>
+  <class name="LuapeGraphUniverse" base="Object">
+    <variable type="PositiveInteger" name="maxCacheSize"/>
+  </class>
   <class name="LuapeGraph" base="Object">
     <variable type="ObjectVector[LuapeNode]" name="nodes"/>
     <variable type="LuapeGraphUniverse" name="universe"/>
@@ -123,8 +125,11 @@
   </class>
 
   <class name="WeightBoostingLearner" base="BoostingLearner" abstract="yes"/>
+  <class name="AdaBoostMHLearner" base="WeightBoostingLearner">
+    <constructor arguments="BoostingWeakLearnerPtr weakLearner"/>
+  </class>
+
   <class name="GradientBoostingLearner" base="BoostingLearner" abstract="yes"/>
-  
   <class name="L2BoostingLearner" base="GradientBoostingLearner">
     <constructor arguments="BoostingWeakLearnerPtr weakLearner, double learningRate"/>
   </class>
@@ -151,13 +156,14 @@
     <variable type="PositiveInteger" name="maxDepth"/>
   </class>
 
+
   <!-- Wrapper to classical LBC++ learner -->
   <class name="LuapeBatchLearner" base="BatchLearner">
-    <variable type="LuapeLearner" name="graphLearner"/>
+    <variable type="LuapeLearner" name="learner"/>
     <variable type="LuapeProblem" name="problem"/>
     <variable type="PositiveInteger" name="maxIterations"/>
   </class>
-  
+
   <!-- Sand Box -->
   <class name="LuapeSandBox" base="WorkUnit">
     <variable type="File" name="trainFile"/>

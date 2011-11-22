@@ -129,16 +129,19 @@ public:
     {if (isTrainingSamples) trainingSamples = samples; else validationSamples = samples;}
 
   size_t getNumTrainingSamples() const
-    {return trainingSamples->getNumElements();}
+    {return trainingSamples ? trainingSamples->getNumElements() : 0;}
 
   size_t getNumValidationSamples() const
-    {return validationSamples->getNumElements();}
+    {return validationSamples ? validationSamples->getNumElements() : 0;}
 
   size_t getNumSamples(bool isTrainingSamples) const
-    {return (isTrainingSamples ? trainingSamples : validationSamples)->getNumElements();}
+  {
+    VectorPtr samples = getSamples(isTrainingSamples);
+    return samples ? samples->getNumElements() : 0;
+  }
 
   Variable getTrainingSample(size_t index) const
-    {return trainingSamples->getElement(index);}
+    {jassert(trainingSamples); return trainingSamples->getElement(index);}
 
   Variable getSample(bool isTrainingSample, size_t index) const
     {return (isTrainingSample ? trainingSamples : validationSamples)->getElement(index);}
@@ -160,34 +163,17 @@ public:
   ** Double values
   */
   bool isConvertibleToDouble() const
-    {return convertibleToDouble;}
+    {return elementsType->isConvertibleToDouble();}
 
-  const std::vector< std::pair<size_t, double> >& getSortedDoubleValues() const;
+  const std::vector< std::pair<size_t, double> >& getSortedDoubleValues();
 
-  /*
-  ** Score
-  */
-  bool isScoreComputed() const
-    {return scoreComputed;}
-
-  double getScore() const
-    {return score;}
-
-  void setScore(double score)
-    {this->score = score; scoreComputed = true;}
-
-  void clearScore()
-    {scoreComputed = false; score = 0.0;}
+  lbcpp_UseDebuggingNewOperator
 
 protected:
+  TypePtr elementsType;
   VectorPtr trainingSamples;
   VectorPtr validationSamples;
-
-  bool convertibleToDouble;
-  std::vector< std::pair<size_t, double> > sortedDoubleValues; // only if isConvertibleToDouble
-
-  bool scoreComputed;
-  double score; // only for 'yield' nodes
+  std::vector< std::pair<size_t, double> > sortedDoubleValues;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeNodeCache> LuapeNodeCachePtr;
@@ -209,12 +195,6 @@ public:
   virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const = 0;
   virtual size_t getDepth() const = 0;
 
-  virtual void updateCache(ExecutionContext& context, bool isTrainingSamples)
-    {}
-
-  VariableSignaturePtr getSignature() const
-    {return new VariableSignature(type, name);}
-
   const LuapeNodeCachePtr& getCache() const
     {return cache;}
 
@@ -222,6 +202,8 @@ public:
 
   size_t getIndexInGraph() const
     {return indexInGraph;}
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class LuapeGraph;
@@ -247,6 +229,8 @@ public:
   virtual String toShortString() const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   size_t inputIndex;
 };
@@ -265,7 +249,6 @@ public:
 
   virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const;
   virtual size_t getDepth() const;
-  virtual void updateCache(ExecutionContext& context, bool isTrainingSamples);
 
   virtual String toShortString() const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const;
@@ -281,6 +264,8 @@ public:
 
   const std::vector<LuapeNodePtr>& getArguments() const
     {return arguments;}
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class LuapeFunctionNodeClass;
@@ -304,6 +289,8 @@ public:
 
   const LuapeNodePtr& getArgument() const
     {return argument;}
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class LuapeYieldNodeClass;
