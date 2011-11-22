@@ -269,7 +269,11 @@ public:
   }
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
-    {return inputs[0].getObject()->getVariable(variableIndex);}
+  {
+    const ObjectPtr& input = inputs[0].getObject();
+    jassert(input); // FIXME
+    return input->getVariable(variableIndex);
+  }
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
   {

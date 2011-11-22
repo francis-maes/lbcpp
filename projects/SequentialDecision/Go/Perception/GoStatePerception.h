@@ -31,7 +31,7 @@ public:
 
     // previous actions
     PositiveIntegerPairVectorPtr previousActions = state->getPreviousActions();
-    lastAction = GoBoardPositionPerceptionPtr();
+    lastAction = board->getPassPosition();
     for (size_t i = 0; i < previousActions->size(); ++i)
     {
       GoBoardPositionPerceptionPtr positionPerception = board->getPosition(previousActions->get(i));
@@ -56,6 +56,9 @@ public:
 
   const GoBoardPerceptionPtr& getBoard() const
     {return board;}
+
+  const GoBoardPositionPerceptionPtr& getLastAction() const
+    {return lastAction;}
 
 protected:
   friend class GoStatePerceptionClass;
