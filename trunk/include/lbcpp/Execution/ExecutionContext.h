@@ -128,6 +128,10 @@ extern ExecutionContextPtr multiThreadedExecutionContext(size_t numThreads, cons
 extern ExecutionContextPtr defaultConsoleExecutionContext(bool noMultiThreading = false);
 
 extern ExecutionContextPtr distributedExecutionContext(ExecutionContext& parentContext, const String& remoteHostName, size_t remotePort,
+                                                       const String& project, const String& from, const std::vector<String>& to,
+                                                       const ResourceEstimatorPtr& resourceEstimator);
+
+extern ExecutionContextPtr distributedExecutionContext(ExecutionContext& parentContext, const String& remoteHostName, size_t remotePort,
                                                        const String& project, const String& from, const String& to,
                                                        const ResourceEstimatorPtr& resourceEstimator);
 

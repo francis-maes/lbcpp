@@ -144,6 +144,26 @@
     <variable type="File" name="inputDirectory" shortName="in"/>
     <variable type="File" name="supervisionDirectory" shortName="sup"/>
   </class>
+
+  <class name="GaussianSVMOptimizerState" base="OptimizerState">
+    <variable type="GenericVector[Double]" name="results"/>
+  </class>
+  <class name="GaussianSVMOptimizer" base="Optimizer"/>
+  <class name="CrossValidationFunction" base="Function">
+    <variable type="Function" name="objectiveFunction"/>
+    <variable type="PositiveInteger" name="numFolds"/>
+    <variable type="ExecutionContext" name="foldContext"/>
+  </class>
+  <class name="DisulfideBondGaussianSVM" base="Function">
+    <variable type="String" name="inputDirectory"/>
+    <variable type="String" name="supervisionDirectory"/>
+    <variable type="PositiveInteger" name="numFolds"/>
+  </class>
+  <class name="GaussianSVMWorkUnit" base="WorkUnit">
+    <variable type="File" name="optimizerStateFile" shortName="opt"/>
+    <variable type="String" name="inputDirectory" shortName="in"/>
+    <variable type="String" name="supervisionDirectory" shortName="sup"/>
+  </class>
   <!-- END CysteinBox -->
 
   <!-- BEGIN LargeBox -->
