@@ -22,20 +22,19 @@ public:
   virtual double computeEdge() const = 0;
   virtual Variable computeVote() const = 0;
   
-  double findBestThreshold(ExecutionContext& context, LuapeNodePtr node, double& edge, bool verbose = false) // this modifies the prediction vector
+  double findBestThreshold(ExecutionContext& context, const SparseDoubleVectorPtr& sortedDoubleValues, double& edge, bool verbose = false) // this modifies the prediction vector
   {
     edge = -DBL_MAX;
     double res = 0.0;
 
     if (verbose)
-      context.enterScope("Find best threshold for node " + node->toShortString());
+      context.enterScope("Find best threshold for node");
 
-    const std::vector< std::pair<size_t, double> >& sortedDoubleValues = node->getCache()->getSortedDoubleValues();
-    jassert(sortedDoubleValues.size());
-    double previousThreshold = sortedDoubleValues[0].second;
-    for (size_t i = 0; i < sortedDoubleValues.size(); ++i)
+    jassert(sortedDoubleValues->getNumValues());
+    double previousThreshold = sortedDoubleValues->getValue(0).second;
+    for (size_t i = 0; i < sortedDoubleValues->getNumValues(); ++i)
     {
-      double threshold = sortedDoubleValues[i].second;
+      double threshold = sortedDoubleValues->getValue(i).second;
 
       jassert(threshold >= previousThreshold);
       if (threshold > previousThreshold)
@@ -54,7 +53,7 @@ public:
           edge = e, res = (threshold + previousThreshold) / 2.0;
         previousThreshold = threshold;
       }
-      flipPrediction(sortedDoubleValues[i].first);
+      flipPrediction(sortedDoubleValues->getValue(i).first);
     }
 
     if (verbose)
@@ -135,7 +134,8 @@ public:
   virtual double computeWeakObjective(ExecutionContext& context, const LuapeNodePtr& weakNode) const
   {
     BoostingEdgeCalculatorPtr edgeCalculator = createEdgeCalculator();
-    VectorPtr weakPredictions = graph->updateNodeCache(context, weakNode, true);
+    SparseDoubleVectorPtr sortedDoubleValues;
+    VectorPtr weakPredictions = graph->updateNodeCache(context, weakNode, true, &sortedDoubleValues);
     
     if (weakNode->getType() == booleanType)
     {
@@ -148,7 +148,7 @@ public:
       jassert(weakNode->getType()->isConvertibleToDouble());
       double edge;
       edgeCalculator->initialize(function, new BooleanVector(graph->getNumTrainingSamples(), true), supervisions, weights);
-      edgeCalculator->findBestThreshold(context, weakNode, edge, false);
+      edgeCalculator->findBestThreshold(context, sortedDoubleValues, edge, false);
       return edge;
     }
   }
@@ -158,8 +158,9 @@ public:
     BoostingEdgeCalculatorPtr edgeCalculator = createEdgeCalculator();
     double edge;
     edgeCalculator->initialize(function, new BooleanVector(graph->getNumTrainingSamples(), true), supervisions, weights);
-    graph->updateNodeCache(context, numberNode, true);
-    return edgeCalculator->findBestThreshold(context, numberNode, edge, false);
+    SparseDoubleVectorPtr sortedDoubleValues;
+    graph->updateNodeCache(context, numberNode, true, &sortedDoubleValues);
+    return edgeCalculator->findBestThreshold(context, sortedDoubleValues, edge, false);
   }
 
 protected:

@@ -71,6 +71,8 @@ public:
       if (parent && previousValue != isFullyVisited)
         parent->updateIsFullyVisited();
     }
+
+    lbcpp_UseDebuggingNewOperator
   };
   Node* rootNode;
 

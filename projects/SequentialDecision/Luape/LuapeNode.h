@@ -112,12 +112,10 @@ typedef ReferenceCountedObjectPtr<BinaryKey> BinaryKeyPtr;
 class LuapeNodeCache : public Object
 {
 public:
-  LuapeNodeCache();
+  LuapeNodeCache(TypePtr elementsType);
+  LuapeNodeCache() {}
 
   virtual String toShortString() const;
-
-  void initialize(TypePtr type);
-  void clear();
   
   /*
   ** Examples
@@ -165,7 +163,7 @@ public:
   bool isConvertibleToDouble() const
     {return elementsType->isConvertibleToDouble();}
 
-  const std::vector< std::pair<size_t, double> >& getSortedDoubleValues();
+  SparseDoubleVectorPtr getSortedDoubleValues();
 
   lbcpp_UseDebuggingNewOperator
 
@@ -173,7 +171,7 @@ protected:
   TypePtr elementsType;
   VectorPtr trainingSamples;
   VectorPtr validationSamples;
-  std::vector< std::pair<size_t, double> > sortedDoubleValues;
+  SparseDoubleVectorPtr sortedDoubleValues;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeNodeCache> LuapeNodeCachePtr;

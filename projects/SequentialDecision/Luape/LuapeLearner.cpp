@@ -68,7 +68,7 @@ LuapeNodePtr BoostingLearner::doWeakLearning(ExecutionContext& context) const
   LuapeNodePtr weakNode = weakLearner->learn(context, refCountedPointerFromThis(this));
   if (!weakNode)
     context.errorCallback(T("Failed to find a weak learner"));
-  if (weakNode->getType() != booleanType)
+  else if (weakNode->getType() != booleanType)
     weakNode = createDecisionStump(context, weakNode); // transforms doubles into decision stumps
   return weakNode;
 }

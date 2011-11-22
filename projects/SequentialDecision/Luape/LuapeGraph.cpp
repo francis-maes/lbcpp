@@ -296,26 +296,35 @@ void LuapeGraph::clearSamples(bool clearTrainingSamples, bool clearValidationSam
   getUniverse()->clearSamples(clearTrainingSamples, clearValidationSamples);
 }
 
-VectorPtr LuapeGraph::updateNodeCache(ExecutionContext& context, const LuapeNodePtr& node, bool isTrainingSamples)
+VectorPtr LuapeGraph::updateNodeCache(ExecutionContext& context, const LuapeNodePtr& node, bool isTrainingSamples, SparseDoubleVectorPtr* sortedDoubleValues)
 {
   LuapeFunctionNodePtr functionNode = node.dynamicCast<LuapeFunctionNode>();
   if (!functionNode)
+  {
+    if (sortedDoubleValues)
+      *sortedDoubleValues = node->getCache()->getSortedDoubleValues();
     return node->getCache()->getSamples(isTrainingSamples); // only function nodes are subject to caching
-
-  std::vector<VectorPtr> inputs(functionNode->getNumArguments());
-  size_t inputCacheSize = 0x7FFFFFFF;
-  for (size_t i = 0; i < inputs.size(); ++i)
-  {
-    inputs[i] = updateNodeCache(context, functionNode->getArgument(i), isTrainingSamples);
-    size_t cacheSize = inputs[i]->getNumElements();
-    if (cacheSize < inputCacheSize)
-      inputCacheSize = cacheSize;
   }
-  VectorPtr res = functionNode->getCache()->getSamples(isTrainingSamples);
-  if (!res || inputCacheSize > res->getNumElements())
+
+  LuapeNodeCachePtr cache = functionNode->getCache();
+  VectorPtr res = cache->getSamples(isTrainingSamples);
+  if (res)
   {
+    if (sortedDoubleValues)
+      *sortedDoubleValues = cache->getSortedDoubleValues();
+  }
+  else
+  {
+    size_t numSamples = getNumSamples(isTrainingSamples);
+    std::vector<VectorPtr> inputs(functionNode->getNumArguments());
+    for (size_t i = 0; i < inputs.size(); ++i)
+      inputs[i] = updateNodeCache(context, functionNode->getArgument(i), isTrainingSamples);
+
     res = functionNode->getFunction()->compute(context, inputs, functionNode->getType());
-    functionNode->getCache()->setSamples(isTrainingSamples, res);
+    cache->setSamples(isTrainingSamples, res);
+    if (sortedDoubleValues)
+      *sortedDoubleValues = cache->getSortedDoubleValues();
+
     getUniverse()->cacheUpdated(context, node, isTrainingSamples);
   }
   return res;   

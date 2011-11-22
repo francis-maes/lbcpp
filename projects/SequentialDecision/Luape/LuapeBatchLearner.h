@@ -38,12 +38,13 @@ public:
       return false;
 
     learner->setExamples(context, true, trainingData);
-    learner->setExamples(context, false, validationData);
+    if (validationData.size())
+      learner->setExamples(context, false, validationData);
     
     LuapeGraphUniversePtr universe = learner->getGraph()->getUniverse();
     for (size_t i = 0; i < maxIterations; ++i)
     {
-      Object::displayObjectAllocationInfo(std::cerr);
+      //Object::displayObjectAllocationInfo(std::cerr);
       universe->displayCacheInformation(context);
 
       context.enterScope(T("Iteration ") + String((int)i + 1));
@@ -54,7 +55,7 @@ public:
       //  context.informationCallback(T("Graph: ") + learner->getGraph()->toShortString());
       context.progressCallback(new ProgressionState(i+1, maxIterations, T("Iterations")));
     }
-    Object::displayObjectAllocationInfo(std::cerr);
+    //Object::displayObjectAllocationInfo(std::cerr);
     universe->displayCacheInformation(context);
     return true;
   }

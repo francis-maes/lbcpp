@@ -32,8 +32,8 @@ public:
     if (!trainData || !testData)
       return false;
 
-    context.resultCallback("train", trainData);
-    context.resultCallback("test", testData);
+    //context.resultCallback("train", trainData);
+    //context.resultCallback("test", testData);
 
     context.informationCallback(
       String((int)trainData->getNumElements()) + T(" training examples, ") +
@@ -48,7 +48,8 @@ public:
       return false;
 
     //BoostingWeakLearnerPtr weakLearner = singleStumpWeakLearner();
-    BoostingWeakLearnerPtr weakLearner = policyBasedWeakLearner(new TreeBasedRandomPolicy(), budgetPerIteration, maxSteps);
+    // FIXME: reset TreeBasedRandomPolicy
+    BoostingWeakLearnerPtr weakLearner = policyBasedWeakLearner(new RandomPolicy(), budgetPerIteration, maxSteps);
     classifier->setBatchLearner(new LuapeBatchLearner(adaBoostMHLearner(weakLearner), problem, maxIterations));
     classifier->setEvaluator(defaultSupervisedEvaluator());
 
