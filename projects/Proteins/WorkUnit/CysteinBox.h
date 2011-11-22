@@ -389,8 +389,11 @@ public:
       context.enterScope(T("Regularizer ") + String(regularizer[i]));
       for (size_t j = 0; j < gamma.size(); ++j)
       {
+        context.enterScope(T("Gamma ") + String(gamma[j]));
         context.resultCallback(T("Gamma"), Variable(gamma[j], doubleType));
         context.resultCallback(T("Result"), Variable(state->getResult(index), doubleType));
+        context.leaveScope(state->getResult(index));
+
         state->submitSolution(new Pair(Variable(regularizer[i], doubleType), Variable(gamma[j], doubleType)), state->getResult(index));
         ++index;
       }
@@ -426,7 +429,7 @@ public:
       subInputs[i + 1] = inputs[i];
 
     CompositeWorkUnitPtr workUnits = new CompositeWorkUnit(T("Folds"), numFolds);
-    for (size_t i = 0; i < 10; ++i)
+    for (size_t i = 0; i < numFolds; ++i)
     {
       subInputs[0] = Variable(i, positiveIntegerType);
       WorkUnitPtr wu = new FunctionWorkUnit(objectiveFunction, subInputs);
@@ -436,7 +439,7 @@ public:
     ContainerPtr results = foldContext ? foldContext->run(workUnits).getObjectAndCast<Container>()
                                        : context.run(workUnits).getObjectAndCast<Container>();
     double sum = 0.f;
-    for (size_t i = 0; i < results->getNumElements(); ++i)
+    for (size_t i = 0; i < numFolds; ++i)
       sum += results->getElement(i).getDouble();
     return Variable(sum / (double)numFolds, doubleType);
   }
@@ -518,7 +521,7 @@ public:
     to[2] = T("amarcos@nic3");
     ExecutionContextPtr ctx = distributedExecutionContext(context, T("monster24.montefiore.ulg.ac.be"), 1664,
                                                           T("ESANN12"), T("jbecker@monster24"), to,
-                                                          fixedResourceEstimator(1, 4 * 1024, 5 * 24));
+                                                          fixedResourceEstimator(1, 4 * 1024, 7 * 24));
 
     OptimizationProblemPtr problem = new OptimizationProblem(new CrossValidationFunction(new DisulfideBondGaussianSVM(inputDirectory, supervisionDirectory, numFolds), numFolds, ctx)); 
 

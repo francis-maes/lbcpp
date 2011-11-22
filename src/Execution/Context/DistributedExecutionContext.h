@@ -219,7 +219,7 @@ public:
   {
     SingleWorkUnitPoolPtr pool = new SingleWorkUnitPool();
     sendWorkUnit(workUnit, pool, 0);
-    waitUntilAllWorkUnitsAreDone(pool);
+    waitUntilAllWorkUnitsAreDone(pool, 0);
     return pool->getResult();
   }
 
@@ -229,7 +229,7 @@ public:
     const size_t n = workUnits->getNumWorkUnits();
     for (size_t i = 0; i < n; ++i)
       sendWorkUnit(workUnits->getWorkUnit(i), pool, i);
-    waitUntilAllWorkUnitsAreDone(pool);
+    waitUntilAllWorkUnitsAreDone(pool, 0);
     return pool->getResults();
   }
 
@@ -333,8 +333,8 @@ protected:
 class FixedResourceEstimator : public ResourceEstimator
 {
 public:
-  FixedResourceEstimator(size_t requiredMemory = 1, size_t requiredTime = 1, size_t requiredCpus = 1)
-    : requiredMemory(requiredMemory), requiredTime(requiredTime), requiredCpus(requiredCpus) {}
+  FixedResourceEstimator(size_t requiredCpus = 1, size_t requiredMemory = 1, size_t requiredTime = 1)
+    : requiredCpus(requiredCpus), requiredMemory(requiredMemory), requiredTime(requiredTime) {}
 
   virtual size_t getRequiredMemoryInMb(const WorkUnitPtr& workUnit) const
     {return requiredMemory;}
@@ -348,9 +348,9 @@ public:
 protected:
   friend class FixedResourceEstimatorClass;
 
+  size_t requiredCpus;
   size_t requiredMemory;
   size_t requiredTime;
-  size_t requiredCpus;
 };
 
 }; /* namespace lbcpp */
