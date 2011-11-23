@@ -30,7 +30,7 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
 # ifdef LBCPP_PROTEIN_ROSETTA
-    rosettaInitialization(context, false);
+    rosettaInitialization(context, true);
 
     File inputFile = context.getFile(inputDirectory);
     if (!inputFile.exists())
@@ -119,7 +119,7 @@ public:
       RandomGeneratorPtr random = new RandomGenerator();
       DenseDoubleVectorPtr energiesAtIteration;
       ProteinSimulatedAnnealingOptimizerPtr optimizer = new ProteinSimulatedAnnealingOptimizer(4.0,
-          0.01, 50, 250000, 5, currentName, frequenceVerbosity, 5, outputFile);
+          0.01, 50, 250000, 5, currentName, frequenceVerbosity, 10, outputFile);
 
       optimizer->apply(context, worker, random, energiesAtIteration);
 

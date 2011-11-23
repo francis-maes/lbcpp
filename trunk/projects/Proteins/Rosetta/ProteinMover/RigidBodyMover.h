@@ -90,9 +90,9 @@ public:
   static void move(core::pose::PoseOP& pose, size_t indexResidueOne, size_t indexResidueTwo,
       double magnitudeTranslation, double amplitudeRotation)
   {
-    if (amplitudeRotation != 0)
+    if (std::isfinite(amplitudeRotation) && (amplitudeRotation != 0))
       applyRotation(pose, indexResidueOne, indexResidueTwo, amplitudeRotation);
-    if (magnitudeTranslation != 0)
+    if (std::isfinite(magnitudeTranslation) && (magnitudeTranslation != 0))
       applyTranslation(pose, indexResidueOne, indexResidueTwo, magnitudeTranslation);
   }
 
