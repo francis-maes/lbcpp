@@ -9,9 +9,9 @@
 #include "ARFFDataParser.h"
 using namespace lbcpp;
 
-bool ARFFDataParser::parseLine(const String& line)
+bool ARFFDataParser::parseLine(const String& fullLine)
 {
-  line.trim();
+  String line = fullLine.trim();
   if (line.startsWith(T("%")))                              // Skip comment line
     return true;
   if (line == String::empty)
@@ -117,29 +117,6 @@ static bool shouldBeABooleanType(const StringArray& tokens)
   return false;
 }
 
-static Variable createBooleanFromString(ExecutionContext& context, const String& str)
-{
-  String value = str.unquoted().toLowerCase();
-  if (value == T("yes"))
-    return true;
-  if (value == T("no"))
-    return false;
-  if (value == T("true"))
-    return true;
-  if (value == T("false"))
-    return false;
-  if (value == T("+"))
-    return true;
-  if (value == T("-"))
-    return false;
-  if (value == T("0"))
-    return false;
-  if (value == T("1"))
-    return true;
-  context.errorCallback(T("ARFFDataParser::createBooleanFromString"), T("The value is not a boolean: ") + str.quoted());
-  return Variable::missingValue(booleanType);
-}
-
 bool ARFFDataParser::parseEnumerationAttributeLine(const String& line)
 {
   // get enumeration name
@@ -219,18 +196,85 @@ bool ARFFDataParser::checkOrAddAttributesTypeToFeatures()
   return true;
 }
 
-static Variable createFromString(ExecutionContext& context, const TypePtr& type, const String& str)
+static bool areStringEqualsCaseInsensitive(const char* ptr1, const char* ptr2)
 {
-  if (str.length() == 1 && str == T("?"))
+  while (*ptr1 && *ptr2)
+  {
+    if (tolower(*ptr1) != tolower(*ptr2))
+      return false;
+    ++ptr1;
+    ++ptr2;
+  }
+  return *ptr1 == *ptr2;
+}
+
+static Variable createBooleanFromString(ExecutionContext& context, const char* str)
+{
+  if (*str && str[1] == 0)
+  {
+    if (*str == '+' || *str == '1')
+      return true;
+    if (*str == '-' || *str == '0')
+      return false;
+  }
+  if (areStringEqualsCaseInsensitive(str, "yes") || areStringEqualsCaseInsensitive(str, "true"))
+    return true;
+    
+  if (areStringEqualsCaseInsensitive(str, "no") || areStringEqualsCaseInsensitive(str, "false"))
+    return false;
+    
+  context.errorCallback(T("ARFFDataParser::createBooleanFromString"), T("The value is not a boolean: ") + String(str).quoted());
+  return Variable::missingValue(booleanType);
+}
+
+static Variable createFromString(ExecutionContext& context, const TypePtr& type, const char* str)
+{
+  if (str[0] == '?' && str[1] == 0)
     return Variable::missingValue(type);
   if (type == booleanType)
     return createBooleanFromString(context, str);
-  return type->createFromString(context, str.unquoted());
+  else if (type == doubleType)
+    return strtod(str, NULL);
+  else
+    return type->createFromString(context, str);
 }
 
 bool ARFFDataParser::parseDataLine(const String& line)
 {
+  bool ok = true;
+  
   size_t n = attributesType.size();
+  
+  size_t lineLength = line.length();
+  char* str = new char[lineLength + 1];
+  memcpy(str, (const char* )line, lineLength + 1);
+
+  DenseGenericObjectPtr inputs = new DenseGenericObject(features);
+  for (size_t i = 0; i < n; ++i)
+  {
+    char* token = strtok(i == 0 ? str : NULL, ", \t");
+    if (!token)
+    {
+      context.errorCallback(T("ARFFDataParser::parseDataLine"), T("Invalid number of values in: ") + line.quoted());
+      ok = false;
+      break;
+    }
+    inputs->setVariable(i, createFromString(context, attributesType[i], token));    
+  }
+  if (ok)
+  {
+    char* token = strtok(NULL, ", \t");
+    if (token)
+    {
+      Variable output = createFromString(context, supervisionType, token);
+      setResult(finalizeData(Variable::pair(inputs, output, getElementsType())));
+      return true;
+    }
+    else
+      context.errorCallback(T("ARFFDataParser::parseDataLine"), T("Invalid number of values in: ") + line.quoted());
+  }
+  return false;
+/*
   StringArray tokens;
   tokens.addTokens(line, T(", \t"), T("'\""));
   if ((size_t)tokens.size() != n + 1) // attributes + supervision
@@ -241,9 +285,11 @@ bool ARFFDataParser::parseDataLine(const String& line)
   // get attributes
   DenseGenericObjectPtr inputs = new DenseGenericObject(features);
   for (size_t i = 0; i < n; ++i)
+  {
     inputs->setVariable(i, createFromString(context, attributesType[i], tokens[i]));
+  }
 
-  setResult(finalizeData(Variable::pair(inputs, createFromString(context, supervisionType, tokens[n]), getElementsType())));
+  setResult(finalizeData(Variable::pair(inputs, createFromString(context, supervisionType, tokens[n]), getElementsType())));*/
   return true;
 }
 

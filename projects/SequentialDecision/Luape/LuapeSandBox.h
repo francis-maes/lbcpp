@@ -47,9 +47,8 @@ public:
     if (!classifier->initialize(context, inputClass, labels))
       return false;
 
-    //BoostingWeakLearnerPtr weakLearner = singleStumpWeakLearner();
-    // FIXME: reset TreeBasedRandomPolicy
-    BoostingWeakLearnerPtr weakLearner = policyBasedWeakLearner(new RandomPolicy(), budgetPerIteration, maxSteps);
+    BoostingWeakLearnerPtr weakLearner = singleStumpWeakLearner();
+    //BoostingWeakLearnerPtr weakLearner = policyBasedWeakLearner(new TreeBasedRandomPolicy(), budgetPerIteration, maxSteps);
     classifier->setBatchLearner(new LuapeBatchLearner(adaBoostMHLearner(weakLearner), problem, maxIterations));
     classifier->setEvaluator(defaultSupervisedEvaluator());
 

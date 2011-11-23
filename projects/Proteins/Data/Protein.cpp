@@ -46,6 +46,10 @@ ProteinPtr Protein::createFromPDB(ExecutionContext& context, const File& pdbFile
 ProteinPtr Protein::createFromPDB(ExecutionContext& context, const String& pdbString,
 		bool beTolerant)
 {
+  // sorry, this is broken. If you need it, tell me (francis).
+  jassert(false);
+  return ProteinPtr();
+#if 0
 	const char* tab0 = pdbString.toUTF8();
 	juce::MemoryInputStream* mb = new juce::MemoryInputStream((const void*) tab0,
 			pdbString.length(), true);
@@ -79,6 +83,7 @@ ProteinPtr Protein::createFromPDB(ExecutionContext& context, const String& pdbSt
 	TertiaryStructurePtr tertiaryStructure = res->getTertiaryStructure();
 	jassert(tertiaryStructure && tertiaryStructure->getNumResidues() == primaryStructure->getNumElements());
 	return res;
+#endif // 0
 }
 
 ProteinPtr Protein::createFromXml(ExecutionContext& context, const File& file)

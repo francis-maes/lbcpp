@@ -25,20 +25,8 @@ class LibSVMDataParser : public TextParser
 public:
   LibSVMDataParser(ExecutionContext& context, const File& file)
     : TextParser(context, file) {}
-  
-  /**
-   ** Constructor
-   **
-   ** @param newInputStream : new input stream. This object is
-   ** responsible for deleting the input stream, when no longer used.
-   ** @param features : feature dictionary.
-   **
-   ** @return a @a LearningDataObjectParser.
-   */
-  LibSVMDataParser(ExecutionContext& context, InputStream* newInputStream)
-    : TextParser(context, newInputStream) {}
-  
   LibSVMDataParser() {}
+  
   /**
    ** This function is called to parse an empty line.
    **
@@ -269,109 +257,23 @@ private:
   TypePtr elementsType;
 };
 
-
-# ifdef JUCE_WIN32
-#  pragma warning(disable:4996)
-# endif // JUCE_WIN32
-
-class FastTextParser : public Stream
+class BinaryClassificationLibSVMFastParser : public TextParser
 {
 public:
-  FastTextParser(ExecutionContext& context, const File& file, TypePtr elementsType)
-    : Stream(context), elementsType(elementsType)
-  {
-    maxLineLength = 1024;
-	  line = (char* )malloc(sizeof (char) * maxLineLength);
-    lineNumber = 0;
-    f = fopen(file.getFullPathName(), "r");
-    if (!f)
-      context.errorCallback(T("Could not open file ") + file.getFullPathName());
-  }
-
-  FastTextParser() {}
-  virtual ~FastTextParser()
-  {
-    if (f)
-      fclose(f);
-   free(line);
-  }
+  BinaryClassificationLibSVMFastParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features)
+    : TextParser(context, file), features(features), elementsType(pairClass(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration), booleanType)) {}
+  BinaryClassificationLibSVMFastParser() {}
 
   virtual TypePtr getElementsType() const
     {return elementsType;}
 
-  virtual bool rewind()
-  {
-    if (f)
-    {
-      ::rewind(f);
-      return true;
-    }
-    else
-      return false;
-  }
-
-  virtual bool isExhausted() const
-    {return f == NULL;}
-
-  virtual ProgressionStatePtr getCurrentPosition() const
-    {return new ProgressionState(lineNumber, 0, "Lines");}
-
-  virtual Variable parseLine(char* line) = 0;
-
-  virtual Variable next()
-  {
-    if (!f)
-      return Variable();
-    line = readNextLine();
-    if (!line)
-    {
-      fclose(f);
-      f = NULL;
-      return Variable();
-    }
-    ++lineNumber;
-    return parseLine(line);
-  }
-
-protected:
-  TypePtr elementsType;
-  FILE* f;
-
-  char* line;
-  int maxLineLength;
-  size_t lineNumber;
-
-  char* readNextLine()
-  {
-	  if (fgets(line, maxLineLength, f) == NULL)
-		  return NULL;
-
-	  while (strrchr(line, '\n') == NULL)
-	  {
-		  maxLineLength *= 2;
-		  line = (char* )realloc(line, maxLineLength);
-		  int len = (int)strlen(line);
-		  if (fgets(line + len, maxLineLength - len, f) == NULL)
-			  break;
-	  }
-	  return line;
-  }
-};
-
-class BinaryClassificationLibSVMFastParser : public FastTextParser
-{
-public:
-  BinaryClassificationLibSVMFastParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features)
-    : FastTextParser(context, file, pairClass(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration), booleanType)), features(features) {}
-  BinaryClassificationLibSVMFastParser() {}
-
-  virtual Variable parseLine(char* line)
+  virtual bool parseLine(char* line)
   {
     char* label = strtok(line, " \t\n");
     if (!label)
     {
       context.errorCallback(T("Empty line"));
-      return Variable();
+      return false;
     }
 
     char firstLetter = label[0];
@@ -391,11 +293,13 @@ public:
       double value = strtod(val, NULL);
       features->setElement(index, value);
 		}
-    return new Pair(elementsType, features, supervision);
+    setResult(new Pair(elementsType, features, supervision));
+    return true;
   }
 
 protected:
   DefaultEnumerationPtr features;
+  TypePtr elementsType;
 };
 
 
