@@ -77,8 +77,10 @@ public:
   static void move(core::pose::PoseOP& pose, int residue, double deltaPhi, double deltaPsi)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
-    pose->set_phi(residue + 1, pose->phi(residue + 1) + deltaPhi);
-    pose->set_psi(residue + 1, pose->psi(residue + 1) + deltaPsi);
+    if (std::isfinite(deltaPhi))
+      pose->set_phi(residue + 1, pose->phi(residue + 1) + deltaPhi);
+    if (std::isfinite(deltaPsi))
+      pose->set_psi(residue + 1, pose->psi(residue + 1) + deltaPsi);
 #else
     jassert(false);
 #endif // LBCPP_PROTEIN_ROSETTA

@@ -119,8 +119,33 @@ public:
     RandomGeneratorPtr random = new RandomGenerator();
 
 # ifdef LBCPP_PROTEIN_ROSETTA
-    rosettaInitialization(context, false);
+    rosettaInitialization(context, true);
 
+    std::cout << "test : =============================================" << std::endl;
+    core::pose::PoseOP testPose = new core::pose::Pose();
+    makePoseFromSequence(testPose, T("AAAAAAAAAAAA"));
+    std::cout << "energy : " << fullAtomEnergy(testPose) << std::endl;
+    double valuePhi = sqrt(-1.0);
+    double valuePsi = -23.0 / 0.0;
+    double valuePmi = 23.0;
+
+    core::conformation::Conformation conf = testPose->conformation();
+    core::id::AtomID atom1(2, 2);
+    numeric::xyzVector < core::Real > vec3 = conf.xyz(atom1);
+    cout << "x : " << vec3.x() << " y : " << vec3.y() << " z : " << vec3.z() << endl;
+
+    vec3.z(valuePhi);
+    conf.set_xyz(atom1, vec3);
+
+    vec3 = conf.xyz(atom1);
+    cout << "x : " << vec3.x() << " y : " << vec3.y() << " z : " << vec3.z() << endl;
+    testPose->set_new_conformation(conf.clone());
+
+    std::cout << "energy : " << fullAtomEnergy(testPose) << std::endl;
+
+
+
+# if 0
     File referenceFile = context.getFile(T("GoodDataset/0-100/dataset0-100"));
     File targetFile = context.getFile(T("GoodDataset/0-100/phipsi"));
 
@@ -233,6 +258,9 @@ public:
     //        cout << (const char*)l->getVariable(j).toString() << endl;
     //      cout << (const char*)kl->getElement(i)->getVariable(1).toString() << endl;
     //    }
+
+# endif
+
 # endif // LBCPP_PROTEIN_ROSETTA
 # if 0
     // -------------- max ent
