@@ -394,7 +394,7 @@ protected:
 class LargeProteinPredictorParameters : public ProteinPredictorParameters
 {
 public:
-  LargeProteinPredictorParameters(const LargeProteinParametersPtr& fp, bool isGlobalFeaturesLazy = false)
+  LargeProteinPredictorParameters(const LargeProteinParametersPtr& fp = LargeProteinParametersPtr(), bool isGlobalFeaturesLazy = false)
     : fp(fp), isGlobalFeaturesLazy(isGlobalFeaturesLazy), learningMachineName(T("SGD"))
     , svmC(4.0), svmGamma(1.0)
     , knnNeighbors(5)
@@ -404,6 +404,8 @@ public:
     , sgdRate(1.0)
     , sgdIterations(100)
     , useAddBias(false)
+    , useFisherFilter(false)
+    , numFisherFeatures(100)
   {}
 
   virtual void proteinPerception(CompositeFunctionBuilder& builder) const
@@ -770,19 +772,6 @@ public:
   bool useAddBias;
   bool useFisherFilter;
   size_t numFisherFeatures;
-
-  LargeProteinPredictorParameters()
-  : svmC(4.0), svmGamma(1.0)
-  , knnNeighbors(5)
-  , x3Trees(1000)
-  , x3Attributes(0)
-  , x3Splits(0)
-  , sgdRate(1.0)
-  , sgdIterations(100)
-  , useAddBias(false)
-  , useFisherFilter(false)
-  , numFisherFeatures(100)
-  {}
 
 protected:
   friend class LargeProteinPredictorParametersClass;
