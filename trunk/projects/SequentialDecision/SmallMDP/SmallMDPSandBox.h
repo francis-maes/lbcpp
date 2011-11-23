@@ -82,7 +82,6 @@ public:
       discountedCumulativeReward += discount * reward;
       discount *= discountFactor;
     }
-    context.informationCallback(String(discountedCumulativeReward));
     return discountedCumulativeReward;
   }
   
