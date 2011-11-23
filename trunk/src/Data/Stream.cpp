@@ -11,6 +11,10 @@
 #include <lbcpp/Core/DynamicObject.h>
 using namespace lbcpp;
 
+# ifdef JUCE_WIN32
+#  pragma warning(disable:4996)
+# endif // JUCE_WIN32
+
 /*
 ** Stream
 */
@@ -79,45 +83,43 @@ StreamPtr Stream::apply(FunctionPtr function) const
 /*
 ** TextParser
 */
-TextParser::TextParser(ExecutionContext& context, InputStream* newInputStream)
-  : Stream(context), istr(NULL) {initialize(newInputStream);}
-
 TextParser::TextParser(ExecutionContext& context, const File& file)
-  : Stream(context), istr(NULL)
+  : Stream(context), f(NULL), maxLineLength(1024), lineNumber(0)
 {
   if (file == File::nonexistent)
   {
     context.errorCallback(T("TextParser::parseFile"), T("No filename specified"));
     return;
   }
-  InputStream* inputStream = file.createInputStream();
-  if (!inputStream)
-  {
-    context.errorCallback(T("TextParser::parseFile"), T("Could not open file ") + file.getFullPathName());
-    return;
-  }
-  
-  initialize(inputStream);
-}
-
-void TextParser::initialize(InputStream* istr)
-{
-  this->istr = istr;
-  progression = new ProgressionState(0, (size_t)(istr->getTotalLength() / 1024), T("kb"));
+  line = (char* )malloc(sizeof (char) * maxLineLength);
+  f = fopen(file.getFullPathName(), "r");
+  if (!f)
+    context.errorCallback(T("Could not open file ") + file.getFullPathName());
 }
 
 TextParser::~TextParser()
 {
-  if (istr)
-    delete istr;
+  if (f)
+  {
+    fclose(f);
+    f = NULL;
+  }
+  free(line);
+}
+
+bool TextParser::rewind()
+{
+  if (f)
+  {
+    ::rewind(f);
+    return true;
+  }
+  else
+    return false;
 }
 
 ProgressionStatePtr TextParser::getCurrentPosition() const
-{
-  if (progression)
-    const_cast<TextParser* >(this)->progression->setValue(istr ? (double)(istr->getPosition() / 1024) : progression->getTotal());
-  return progression;
-}
+  {return new ProgressionState(lineNumber, 0, "Lines");}
 
 inline int indexOfAnyNotOf(const String& str, int strLength, const String& characters, int startPosition = 0)
 {
@@ -144,10 +146,10 @@ void TextParser::tokenize(const String& line, std::vector<String>& columns, cons
     b = indexOfAnyNotOf(line, lineLength, separators, e);
   }
 }
-
+  
 Variable TextParser::next()
 {
-  if (!istr)
+  if (!f)
     return Variable();
   if (!currentResult.exists())
   {
@@ -156,16 +158,21 @@ Variable TextParser::next()
   }
   currentResult = Variable();
   
-  size_t lineNumber = 0;
-  while (!istr->isExhausted()/* && !parsingBreaked*/)
+  while (f)
   {
-    String line = istr->readNextLine();
+    line = readNextLine();
+    if (!line)
+    {
+      fclose(f); f = NULL;
+      return Variable();
+    }
+    
     ++lineNumber;
     if (!parseLine(line))
     {
-      context.errorCallback(T("-> Could not parse line ") + String((int)lineNumber) + T(": ") + (line.length() > 10 ? line.substring(0, 10) + T("...") : line));
-      delete istr;
-      istr = NULL;
+      String lineString(line);
+      context.errorCallback(T("-> Could not parse line ") + String((int)lineNumber) + T(": ") + (lineString.length() > 10 ? lineString.substring(0, 10) + T("...") : lineString));
+      if (f) {fclose(f); f = NULL;}
       return Variable();
     }
     if (currentResult.exists())
@@ -174,7 +181,24 @@ Variable TextParser::next()
   
   if (!parseEnd())
     context.errorCallback(T("TextParser::next"), T("Error in parse end"));
-  delete istr;
-  istr = NULL;
+  if (f) {fclose(f); f = NULL;}
   return currentResult;
+}
+
+char* TextParser::readNextLine()
+{
+  if (fgets(line, maxLineLength, f) == NULL)
+    return NULL;
+
+  char* ptr;
+  while ((ptr = strrchr(line, '\n')) == NULL)
+  {
+    maxLineLength *= 2;
+    line = (char* )realloc(line, maxLineLength);
+    int len = (int)strlen(line);
+    if (fgets(line + len, maxLineLength - len, f) == NULL)
+      break;
+  }
+  *ptr = 0; // remove '\n' character
+  return line;
 }

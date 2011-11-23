@@ -165,18 +165,6 @@ public:
    ** @return a TextObjectParser.
    */
   TextParser(ExecutionContext& context, const File& file);
-  
-  /**
-   ** Constructor.
-   **
-   ** @param newInputStream : an input stream.
-   ** The TextObjectParser is responsible for deleting this
-   ** stream, when no more used.
-   **
-   ** @return a TextObjectParser.
-   */
-  TextParser(ExecutionContext& context, InputStream* newInputStream);
-  
   TextParser() {}
 
   /**
@@ -184,11 +172,9 @@ public:
    */
   virtual ~TextParser();
   
-  virtual bool rewind()
-    {return istr->setPosition(0);}
-  
+  virtual bool rewind();
   virtual bool isExhausted() const
-    {return istr == NULL;}
+    {return f == NULL;}
 
   virtual ProgressionStatePtr getCurrentPosition() const;
   
@@ -212,7 +198,11 @@ public:
    **  to the ErrorManager.
    ** @see setResult
    */
-  virtual bool parseLine(const String& line) = 0;
+  virtual bool parseLine(const String& line)
+    {jassert(false); return false;}
+
+  virtual bool parseLine(char* line)
+    {return parseLine(String(line));}
   
   /**
    ** This function is called at the end of the parsing.
@@ -269,8 +259,16 @@ protected:
   
 private:
   Variable currentResult;      /*!< The current Variable. */
-  InputStream* istr;           /*!< A pointer to the current stream. */
+//  InputStream* istr;           /*!< A pointer to the current stream. */
   ProgressionStatePtr progression;
+
+  FILE* f;
+
+  char* line;
+  int maxLineLength;
+  size_t lineNumber;
+
+  char* readNextLine();
 
   void initialize(InputStream* istr);
 };

@@ -20,9 +20,6 @@ public:
   ARFFDataParser(ExecutionContext& context, const File& file, DynamicClassPtr features)
     : TextParser(context, file), features(features), shouldReadData(false) {}
 
-  ARFFDataParser(ExecutionContext& context, InputStream* newInputStream, DynamicClassPtr features)
-    : TextParser(context, newInputStream), features(features), shouldReadData(false) {}
-
   ARFFDataParser() {}
   
   virtual bool parseLine(const String& line);
