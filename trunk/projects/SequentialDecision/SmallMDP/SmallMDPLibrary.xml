@@ -73,7 +73,6 @@
   <!-- SmallMDP Sand box -->
   <class name="SmallMDPSandBox" base="WorkUnit">
     <variable type="Sampler" name="mdpSampler"/>
-    <variable type="PositiveInteger" name="numTimeSteps"/>
     <variable type="PositiveInteger" name="numRuns"/>
     <variable type="File" name="outputDirectory"/>
   </class>
@@ -81,7 +80,6 @@
   <class name="EvaluateSmallMDPPolicies" base="WorkUnit">
     <variable type="File" name="inputDirectory"/>
     <variable type="Sampler" name="mdpSampler"/>
-    <variable type="PositiveInteger" name="numTimeSteps"/>
     <variable type="PositiveInteger" name="numRuns"/>
   </class>
 
