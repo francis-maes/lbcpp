@@ -10,7 +10,7 @@
 # define LBCPP_GO_PERCEPTION_BOARD_POSITION_H_
 
 # include "../GoProblem.h"
-# include "../Luape/LuapeFunction.h"
+# include "../../Luape/LuapeFunction.h"
 
 namespace lbcpp
 {

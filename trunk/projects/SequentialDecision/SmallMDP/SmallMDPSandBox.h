@@ -55,7 +55,15 @@ class EvaluateSmallMDPPolicy : public WorkUnit
 {
 public:
   EvaluateSmallMDPPolicy(const SmallMDPPolicyPtr& policy, const SmallMDPPtr& mdp, size_t numTimeSteps)
-    : policy(policy), mdp(mdp), numTimeSteps(numTimeSteps) {}
+    : policy(policy), mdp(mdp), numTimeSteps(numTimeSteps)
+  {
+    if (!numTimeSteps)
+    {
+      double discount = mdp->getDiscount();
+      numTimeSteps = (size_t)ceil(log(0.01 * (1 - discount)) / log(discount));
+      std::cerr << "Auto num time steps: " << numTimeSteps << " (discount = " << discount << ")" << std::endl;
+    }
+  }
   EvaluateSmallMDPPolicy() : numTimeSteps(0) {}
     
   virtual Variable run(ExecutionContext& context)
@@ -63,8 +71,9 @@ public:
     SmallMDPPolicyPtr policy = this->policy->cloneAndCast<SmallMDPPolicy>();
     
     policy->initialize(context, mdp);
-    double rewardSum = 0.0;
+    double discountedCumulativeReward = 0.0;
     size_t state = mdp->getInitialState();
+    double discount = 1.0;
     for (size_t i = 0; i < numTimeSteps; ++i)
     {
       size_t action = policy->selectAction(context, state);
@@ -72,9 +81,10 @@ public:
       size_t newState = mdp->sampleTransition(context, state, action, reward);
       policy->observeTransition(context, state, action, newState, reward);
       state = newState;
-      rewardSum += reward;
+      discountedCumulativeReward += discount * reward;
+      discount *= mdp->getDiscount();
     }
-    return rewardSum;
+    return discountedCumulativeReward;
   }
   
 protected:
@@ -91,7 +101,10 @@ public:
   {
     ExecutionContext& context = defaultExecutionContext();
     for (size_t i = 0; i < numRuns; ++i)
-      setWorkUnit(i, new EvaluateSmallMDPPolicy(policy, mdpSampler->sample(context, context.getRandomGenerator()).getObjectAndCast<SmallMDP>(), numTimeSteps));
+    {
+      SmallMDPPtr mdp = mdpSampler->sample(context, context.getRandomGenerator()).getObjectAndCast<SmallMDP>();
+      setWorkUnit(i, new EvaluateSmallMDPPolicy(policy, mdp, numTimeSteps));
+    }
     setProgressionUnit("Runs");
   }
 };
@@ -137,8 +150,8 @@ public:
     savePolicy(context, "random", policy);
 
     policy = new ParameterizedModelBasedSmallMDPPolicy(0);
-    testPolicy(context, "new", policy);
-    savePolicy(context, "new", policy);
+    testPolicy(context, "FullMB-base1", policy);
+    savePolicy(context, "FullMB-base1", policy);
 
 
     policies.clear();
@@ -156,14 +169,14 @@ public:
       policies.push_back(new RTDPRMaxSmallMDPPolicy(m));
     findBestPolicy(context, "RTDP-rmax", policies);
 
-    for (size_t i = 1; i <= 4; ++i)
-      optimizePolicy(context, "FullModel" + String((int)i), new ParameterizedModelBasedSmallMDPPolicy(i));
-
     for (size_t i = 3; i <= 5; ++i)
     {
       optimizePolicy(context, "WithModel" + String((int)i), new ParameterizedSmallMDPPolicy(i*2, true));
       optimizePolicy(context, "WithoutModel" + String((int)i), new ParameterizedSmallMDPPolicy(i*2, false));
     }
+    for (size_t i = 1; i <= 4; ++i)
+      optimizePolicy(context, "FullModel" + String((int)i), new ParameterizedModelBasedSmallMDPPolicy(i));
+
     return true;
   }
 
@@ -258,6 +271,7 @@ protected:
   friend class SmallMDPSandBoxClass;
   
   SamplerPtr mdpSampler;
+  double discount;
   size_t numTimeSteps;
   size_t numRuns;
   File outputDirectory;
