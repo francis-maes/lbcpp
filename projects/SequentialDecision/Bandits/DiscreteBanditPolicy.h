@@ -61,6 +61,9 @@ public:
   virtual TypePtr getParametersType() const
     {return getParameters().getType();}
 
+  void setParameter(size_t index, double value)
+    {parameters->setValue(index, value);}
+
 protected:
   EnumerationPtr parametersEnumeration;
   DenseDoubleVectorPtr parameters;

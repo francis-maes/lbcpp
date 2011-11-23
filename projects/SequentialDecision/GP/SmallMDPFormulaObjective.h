@@ -20,15 +20,15 @@ namespace lbcpp
 class SmallMDPFormulaObjective : public SimpleUnaryFunction
 {
 public:
-  SmallMDPFormulaObjective(const SamplerPtr& mdpSampler = SamplerPtr(), size_t numTimeSteps = 0, bool useModel = false)
-    : SimpleUnaryFunction(gpExpressionClass, doubleType), mdpSampler(mdpSampler), numTimeSteps(numTimeSteps), useModel(useModel) {}
+  SmallMDPFormulaObjective(const SamplerPtr& mdpSampler = SamplerPtr(), bool useModel = false)
+    : SimpleUnaryFunction(gpExpressionClass, doubleType), mdpSampler(mdpSampler), useModel(useModel) {}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     GPExpressionPtr formula = input.getObjectAndCast<GPExpression>();
     SmallMDPPolicyPtr policy = new GPExpressionSmallMDPPolicy(formula, useModel);
     SmallMDPPtr mdp = mdpSampler->sample(context, context.getRandomGenerator()).getObjectAndCast<SmallMDP>();
-    WorkUnitPtr workUnit = new EvaluateSmallMDPPolicy(policy, mdp, numTimeSteps);
+    WorkUnitPtr workUnit = new EvaluateSmallMDPPolicy(policy, mdp);
     return context.run(workUnit, false).getDouble() / 273.0;
   }
  
@@ -36,7 +36,6 @@ protected:
   friend class SmallMDPFormulaObjectiveClass;
 
   SamplerPtr mdpSampler;
-  size_t numTimeSteps;
   bool useModel;
 };
 

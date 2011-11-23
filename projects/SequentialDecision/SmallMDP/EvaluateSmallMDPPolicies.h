@@ -17,7 +17,7 @@ namespace lbcpp
 class EvaluateSmallMDPPolicies : public WorkUnit
 {
 public:
-  EvaluateSmallMDPPolicies() : mdpSampler(new SparseSmallMDPSampler()), numTimeSteps(100000), numRuns(1000) {}
+  EvaluateSmallMDPPolicies() : mdpSampler(new SparseSmallMDPSampler()), numRuns(1000) {}
   
   virtual Variable run(ExecutionContext& context)
   {
@@ -43,7 +43,7 @@ public:
     context.enterScope(name);
     context.resultCallback("policy", policy);
     
-    CompositeWorkUnitPtr workUnit = new EvaluateSmallMDPPolicyCompositeWorkUnit(policy, mdpSampler, numTimeSteps, numRuns);
+    CompositeWorkUnitPtr workUnit = new EvaluateSmallMDPPolicyCompositeWorkUnit(policy, mdpSampler, numRuns);
     VariableVectorPtr results = context.run(workUnit, false).getObjectAndCast<VariableVector>();
 
     ScalarVariableStatisticsPtr stats = new ScalarVariableStatistics("toto");
@@ -59,7 +59,6 @@ protected:
   
   File inputDirectory;
   SamplerPtr mdpSampler;
-  size_t numTimeSteps;
   size_t numRuns;
 };
 
