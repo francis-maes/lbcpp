@@ -9,6 +9,18 @@
 #include "SmallMDPPolicy.h"
 using namespace lbcpp;
 
+DenseDoubleVectorPtr SmallMDPPolicy::createVector(size_t numElements, double initialValue) const
+{
+  static ClassPtr vectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType);
+  return new DenseDoubleVector(vectorClass, numElements, initialValue);
+}
+
+DoubleMatrixPtr SmallMDPPolicy::createMatrix(size_t numRows, size_t numColumns, double initialValue) const
+{
+  static ClassPtr matrixClass = doubleMatrixClass(doubleType);
+  return new DoubleMatrix(matrixClass, numRows, numColumns, initialValue);
+}
+
 size_t SmallMDPPolicy::sampleBestAction(ExecutionContext& context, const DoubleMatrixPtr& qValues, size_t state) const
 {
   std::set<size_t> bestActions;
@@ -84,7 +96,7 @@ double SmallMDPPolicy::getBestQValueExpectation(const DoubleMatrixPtr& q, const 
 DenseDoubleVectorPtr SmallMDPPolicy::computeStateValuesFromActionValues(const DoubleMatrixPtr& q) const
 {
   size_t numStates = q->getNumRows();
-  DenseDoubleVectorPtr res(new DenseDoubleVector(numStates, 0.0));
+  DenseDoubleVectorPtr res = createVector(numStates);
   for (size_t i = 0; i < numStates; ++i)
     res->setValue(i, getBestQValue(q, i)); // V(s) = max_a Q(s,a)
   return res;
@@ -100,7 +112,7 @@ DoubleMatrixPtr SmallMDPPolicy::bellmanOperator(const SmallMDPPtr& mdp, const Do
   
   DenseDoubleVectorPtr v = computeStateValuesFromActionValues(q);
   
-  DoubleMatrixPtr res(new DoubleMatrix(ns, na));
+  DoubleMatrixPtr res = createMatrix(ns, na);
   for (size_t i = 0; i < ns; ++i)
     for (size_t j = 0; j < na; ++j)
     {

@@ -93,7 +93,7 @@ public:
     size_t numActions = mdp->getNumActions();
 
     model = new EmpiricalSmallMDP(numStates, numActions, mdp->getDiscount());
-    q = new DoubleMatrix(numStates, numActions, getParameter(0) / (1.0 - mdp->getDiscount()));
+    q = createMatrix(numStates, numActions, getParameter(0) / (1.0 - mdp->getDiscount()));
   }
 
   virtual void observeTransition(ExecutionContext& context, size_t state, size_t action, size_t nextState, double reward)
@@ -215,7 +215,7 @@ public:
     DenseDoubleVectorPtr v = computeStateValuesFromActionValues(q);
     
     double residual = 0.0;
-    DoubleMatrixPtr res(new DoubleMatrix(ns, na));
+    DoubleMatrixPtr res = createMatrix(ns, na);
     for (size_t i = 0; i < ns; ++i)
       for (size_t j = 0; j < na; ++j)
         if (model->getNumObservations(i, j))

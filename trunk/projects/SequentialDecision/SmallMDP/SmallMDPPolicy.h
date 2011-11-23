@@ -33,6 +33,9 @@ protected:
   DoubleMatrixPtr bellmanOperator(const SmallMDPPtr& mdp, const DoubleMatrixPtr& q, double& differenceSumOfSquares, double& maxDifference) const;
   // computes Qstar (and calls bellmanOperator)
   DoubleMatrixPtr computeOptimalQFunction(ExecutionContext& context, const SmallMDPPtr& mdp) const;
+  
+  DenseDoubleVectorPtr createVector(size_t numElements, double initialValue = 0.0) const;
+  DoubleMatrixPtr createMatrix(size_t numRows, size_t numColumns, double initialValue = 0.0) const;
 };
 
 typedef ReferenceCountedObjectPtr<SmallMDPPolicy> SmallMDPPolicyPtr;
@@ -77,8 +80,8 @@ public:
   virtual void initialize(ExecutionContext& context, const SmallMDPPtr& mdp)
   {
     // optimistic initialization
-    q = new DoubleMatrix(mdp->getNumStates(), mdp->getNumActions(), 1.0 / (1.0 - mdp->getDiscount()));
-    experienceCounts = new DoubleMatrix(mdp->getNumStates(), mdp->getNumActions(), 0.0);
+    q = createMatrix(mdp->getNumStates(), mdp->getNumActions(), 1.0 / (1.0 - mdp->getDiscount()));
+    experienceCounts = createMatrix(mdp->getNumStates(), mdp->getNumActions(), 0.0);
     epoch = 1; // epoch is the current time step t
     discount = mdp->getDiscount();
   }
@@ -126,7 +129,7 @@ public:
     size_t numActions = mdp->getNumActions();
 
     model = new EmpiricalSmallMDP(numStates, numActions, mdp->getDiscount());
-    q = new DoubleMatrix(numStates, numActions, 1.0 / (1.0 - mdp->getDiscount()));
+    q = createMatrix(numStates, numActions, 1.0 / (1.0 - mdp->getDiscount()));
   }
 
   virtual size_t selectAction(ExecutionContext& context, size_t state)
@@ -174,7 +177,7 @@ public:
     DenseDoubleVectorPtr v = computeStateValuesFromActionValues(q);
     
     double residual = 0.0;
-    DoubleMatrixPtr res(new DoubleMatrix(ns, na));
+    DoubleMatrixPtr res = createMatrix(ns, na);
     for (size_t i = 0; i < ns; ++i)
       for (size_t j = 0; j < na; ++j)
         if (model->getNumObservations(i, j) == m)
@@ -276,7 +279,7 @@ public:
     DenseDoubleVectorPtr v = computeStateValuesFromActionValues(q);
     
     double residual = 0.0;
-    DoubleMatrixPtr res(new DoubleMatrix(ns, na));
+    DoubleMatrixPtr res = createMatrix(ns, na);
     for (size_t i = 0; i < ns; ++i)
       for (size_t j = 0; j < na; ++j)
         if (model->getNumObservations(i, j) > 0)
