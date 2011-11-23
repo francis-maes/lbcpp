@@ -29,7 +29,7 @@ public:
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
   {
-    DoubleMatrixPtr res = new DoubleMatrix(doubleType, numRows, numColumns);
+    DoubleMatrixPtr res = new DoubleMatrix(numRows, numColumns);
     size_t index = 0;
     for (size_t i = 0; i < numRows; ++i)
       for (size_t j = 0; j < numColumns; ++j, ++index)

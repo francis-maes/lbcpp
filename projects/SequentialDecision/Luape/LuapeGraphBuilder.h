@@ -203,8 +203,7 @@ protected:
       for (size_t i = 0; i < numInputs; ++i)
         inputs[i] = state.stack[state.stack.size() - numInputs + i];
       LuapeNodePtr node = graph->getUniverse()->makeFunctionNode(state.function, inputs);
-      bool ok = graph->pushNode(context, node);
-      jassert(ok);
+      graph->pushNode(context, node);
 
       // remove arguments from stack
       state.stack.erase(state.stack.begin() + state.stack.size() - numInputs, state.stack.end());

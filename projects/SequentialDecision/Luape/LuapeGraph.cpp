@@ -315,7 +315,6 @@ VectorPtr LuapeGraph::updateNodeCache(ExecutionContext& context, const LuapeNode
   }
   else
   {
-    size_t numSamples = getNumSamples(isTrainingSamples);
     std::vector<VectorPtr> inputs(functionNode->getNumArguments());
     for (size_t i = 0; i < inputs.size(); ++i)
       inputs[i] = updateNodeCache(context, functionNode->getArgument(i), isTrainingSamples);

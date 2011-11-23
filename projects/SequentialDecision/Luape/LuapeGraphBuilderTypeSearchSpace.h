@@ -115,8 +115,8 @@ public:
   void pruneStates(ExecutionContext& context)
   {
 //    context.informationCallback(T("Num states before pruning: ") + String((int)states.size()));
-    bool isRootPrunable = prune(getInitialState());
-    jassert(!isRootPrunable);
+    prune(getInitialState());
+    //jassert(!isRootPrunable);
 
     StateMap::iterator it, nxt;
     for (it = states.begin(); it != states.end(); it = nxt)

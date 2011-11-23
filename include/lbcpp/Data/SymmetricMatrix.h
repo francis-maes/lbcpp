@@ -134,7 +134,7 @@ public:
 
   virtual MatrixPtr toMatrix() const
   {
-    DoubleMatrixPtr res = new DoubleMatrix(getElementsType(), getDimension(), getDimension());
+    DoubleMatrixPtr res = new DoubleMatrix(doubleMatrixClass(getElementsType()), getDimension(), getDimension());
     
     for (size_t i = 0; i < getDimension(); ++i)
       for (size_t j = i; j < getDimension(); ++j)

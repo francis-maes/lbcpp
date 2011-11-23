@@ -182,8 +182,8 @@ class DoubleMatrix : public BuiltinTypeMatrix<double>
 public:
   typedef BuiltinTypeMatrix<double> BaseClass;
 
-  DoubleMatrix(TypePtr elementsType, size_t numRows, size_t numColumns, double initialValue = 0.0)
-    : BaseClass(doubleMatrixClass(elementsType), numRows, numColumns, initialValue) {}
+  DoubleMatrix(ClassPtr thisClass, size_t numRows, size_t numColumns, double initialValue = 0.0)
+    : BaseClass(thisClass, numRows, numColumns, initialValue) {}
   DoubleMatrix(size_t numRows, size_t numColumns, double initialValue = 0.0)
     : BaseClass(doubleMatrixClass(), numRows, numColumns, initialValue) {}
   DoubleMatrix() {}
