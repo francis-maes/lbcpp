@@ -125,6 +125,9 @@ LuapeNodePtr BoostingLearner::doWeakLearningAndAddToGraph(ExecutionContext& cont
     // retrieve weak predictions
     weakPredictions = graph->updateNodeCache(context, weakNode, true).staticCast<BooleanVector>();
     jassert(weakPredictions);
+
+    context.resultCallback(T("numNodes"), graph->getNumNodes());
+    context.resultCallback(T("numYields"), graph->getNumYieldNodes());
   }
   return weakNode;
 }
@@ -141,6 +144,14 @@ void BoostingLearner::updatePredictionsAndEvaluate(ExecutionContext& context, si
     function->updatePredictions(validationPredictions, yieldIndex, validationSamples);
     context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
   }
+}
+
+void BoostingLearner::recomputePredictions(ExecutionContext& context)
+{
+  if (graph->getNumTrainingSamples() > 0)
+    predictions = function->makeCachedPredictions(context, true);
+  if (graph->getNumValidationSamples() > 0)
+    validationPredictions = function->makeCachedPredictions(context, false);
 }
 
 /*

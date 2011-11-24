@@ -126,7 +126,11 @@ public:
   LuapeNodePtr pushNode(ExecutionContext& context, const LuapeNodePtr& node);
   LuapeNodePtr pushMissingNodes(ExecutionContext& context, const LuapeNodePtr& node);
   LuapeNodePtr pushFunctionNode(ExecutionContext& context, const LuapeFunctionPtr& function, const LuapeNodePtr& input);
-  void popNode();
+  void popNode(ExecutionContext& context);
+  void removeNode(ExecutionContext& context, size_t nodeIndex, bool alsoRemoveNewUselessNodes = false, bool verbose = false);
+  void removeYieldNode(ExecutionContext& context, size_t yieldIndex);
+
+  void computeNodeUseCounts(std::vector<size_t>& res) const;
 
   VectorPtr updateNodeCache(ExecutionContext& context, const LuapeNodePtr& node, bool isTrainingSamples, SparseDoubleVectorPtr* sortedDoubleValues = NULL);
 

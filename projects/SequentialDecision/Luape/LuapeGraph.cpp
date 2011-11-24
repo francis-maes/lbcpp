@@ -222,14 +222,93 @@ void LuapeGraph::addNode(const LuapeNodePtr& node)
   nodes.push_back(node);
 }
 
-void LuapeGraph::popNode()
+void LuapeGraph::popNode(ExecutionContext& context)
 {
   jassert(nodes.size());
-  LuapeNodePtr node = nodes.back();
+  removeNode(context, nodes.size() - 1);
+}
+
+static bool isNodeUseless(const LuapeNodePtr& node)
+{
+  return false;// !node.isInstanceOf<LuapeInputNode>() && node->getReferenceCount() <= 6; // only referenced by the graph and the universe, the local variables, ..
+}
+
+void LuapeGraph::computeNodeUseCounts(std::vector<size_t>& res) const
+{
+  res.clear();
+  res.resize(nodes.size(), 0);
+  for (size_t i = 0; i < nodes.size(); ++i)
+  {
+    LuapeYieldNodePtr yieldNode = nodes[i].dynamicCast<LuapeYieldNode>();
+    if (yieldNode)
+    {
+      ++res[yieldNode->getArgument()->getIndexInGraph()];
+    }
+    else
+    {
+      LuapeFunctionNodePtr functionNode = nodes[i].dynamicCast<LuapeFunctionNode>();
+      if (functionNode)
+      {
+        for (size_t i = 0; i < functionNode->getNumArguments(); ++i)
+          ++res[functionNode->getArgument(i)->getIndexInGraph()];
+      }
+    }
+  }
+}
+
+void LuapeGraph::removeNode(ExecutionContext& context, size_t nodeIndex, bool alsoRemoveNewUselessNodes, bool verbose)
+{
+  jassert(nodeIndex < nodes.size());
+  LuapeNodePtr node = nodes[nodeIndex];
+  if (verbose)
+    context.informationCallback(T("Remove node: ") + node->toShortString());
+
   if (node.isInstanceOf<LuapeYieldNode>())
     --numYields;
+  nodes.erase(nodes.begin() + nodeIndex);
   nodesMap.erase(node);
-  nodes.pop_back();
+  for (size_t i = nodeIndex; i < nodes.size(); ++i)
+    nodes[i]->indexInGraph = i;
+
+  if (alsoRemoveNewUselessNodes)
+  {
+    std::vector<size_t> useCounts;
+
+    size_t numNodes = nodes.size();
+    while (true)
+    {
+      computeNodeUseCounts(useCounts);
+      size_t offset = 0;
+      for (size_t i = 0; i < useCounts.size(); ++i)
+        if (useCounts[i] == 0 && nodes[i - offset].isInstanceOf<LuapeFunctionNode>())
+        {
+          removeNode(context, i - offset, false, verbose);
+          ++offset;
+        }
+      if (numNodes == nodes.size())
+        break;
+      numNodes = nodes.size();
+    }
+  }
+}
+
+void LuapeGraph::removeYieldNode(ExecutionContext& context, size_t yieldIndex)
+{
+  size_t index = 0;
+  for (size_t i = 0; i < nodes.size(); ++i)
+  {
+    const LuapeNodePtr& node = nodes[i];
+    if (node.isInstanceOf<LuapeYieldNode>())
+    {
+      if (index == yieldIndex)
+      {
+        removeNode(context, i, true, true);
+        return;
+      }
+      ++index;
+    }
+  }
+  jassert(false);
 }
 
 size_t LuapeGraph::getNumTrainingSamples() const

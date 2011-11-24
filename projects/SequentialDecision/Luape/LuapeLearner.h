@@ -102,6 +102,7 @@ protected:
   LuapeNodePtr doWeakLearning(ExecutionContext& context) const;
   LuapeNodePtr doWeakLearningAndAddToGraph(ExecutionContext& context, BooleanVectorPtr& weakPredictions);
   void updatePredictionsAndEvaluate(ExecutionContext& context, size_t yieldIndex, const LuapeNodePtr& weakNode) const;
+  void recomputePredictions(ExecutionContext& context);
 };
 
 }; /* namespace lbcpp */
