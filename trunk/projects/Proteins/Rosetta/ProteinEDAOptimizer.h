@@ -178,7 +178,7 @@ public:
       context.resultCallback(T("Std Dev qScore"), Variable(qScoreRandomVariable.getStandardDeviation()));
       context.leaveScope(Variable(meanDeltaEnergy));
 
-      // best samplers ever seen
+      // best samples ever seen
       moversToKeep.sort(compareMovers);
       while (moversToKeep.size() > juce::jmax((int)numGoodSamples, (int)numMoversToKeep))
         moversToKeep.pop_back();
