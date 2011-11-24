@@ -209,6 +209,11 @@ protected:
   friend class RosettaProteinResidueHistogramFeatureGeneratorClass;
 };
 
+// Number of features :
+//  Number of residues : 12
+//  Energy : 10
+//  Distance : 20 (10 + 10)
+//  Histogram : 23
 class RosettaProteinFeatures : public CompositeFunction
 {
 public:

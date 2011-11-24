@@ -910,7 +910,6 @@ public:
 #ifdef LBCPP_PROTEIN_ROSETTA
   
     context.informationCallback(T("Before"));
-    rosettaInitialization(context);
     makePoseFromSequence(pose, T("AAAAAAAAAAAAAAAAAAAA"));
     RandomGeneratorPtr gen = new RandomGenerator();
 
@@ -937,6 +936,7 @@ public:
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
     context.informationCallback(T("test parallel WU : ") + arg);
+    rosettaInitialization(context, true);
 
     CompositeWorkUnitPtr subWorkUnits(new CompositeWorkUnit(T("Parallel protein workUnit"), 8));
     for (size_t i = 0; i < subWorkUnits->getNumWorkUnits(); ++i)
