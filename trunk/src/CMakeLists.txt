@@ -485,6 +485,7 @@ SET(LBCPP_LEARNING_LOSS_FUNCTION_REGRESSION_SOURCES
 SET(LBCPP_LEARNING_LOSS_FUNCTION_DISCRIMINATIVE_SOURCES
   Learning/LossFunction/HingeDiscriminativeLossFunction.h
   Learning/LossFunction/LogBinomialDiscriminativeLossFunction.h
+  Learning/LossFunction/ExponentialDiscriminativeLossFunction.h
 )
 
 SET(LBCPP_LEARNING_LOSS_FUNCTION_MULTI_CLASS_SOURCES

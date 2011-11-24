@@ -54,6 +54,7 @@ public:
 typedef ReferenceCountedObjectPtr<DiscriminativeLossFunction> DiscriminativeLossFunctionPtr;
 
 extern DiscriminativeLossFunctionPtr hingeDiscriminativeLossFunction(double margin = 1);
+extern DiscriminativeLossFunctionPtr exponentialDiscriminativeLossFunction();
 extern DiscriminativeLossFunctionPtr logBinomialDiscriminativeLossFunction();
 
 /*

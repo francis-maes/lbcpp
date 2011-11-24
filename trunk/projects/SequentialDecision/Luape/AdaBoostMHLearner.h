@@ -11,6 +11,8 @@
 
 # include "WeightBoostingLearner.h"
 
+# include <lbcpp/Learning/LossFunction.h> // for SGD
+
 namespace lbcpp
 {
 
@@ -200,6 +202,229 @@ public:
     DenseDoubleVectorPtr res = votes->cloneAndCast<DenseDoubleVector>();
     res->multiplyByScalar(alpha);
     return res;
+  }
+
+  virtual bool doLearningIteration(ExecutionContext& context)
+  {
+    if (!WeightBoostingLearner::doLearningIteration(context))
+      return false;
+    return true;
+
+    static int counter = 0;
+    ++counter;
+
+    if ((counter % 10) == 0)
+    {
+      static const size_t numIterations = 10;
+
+      context.enterScope(T("SGD"));
+
+      context.enterScope(T("Before"));
+      context.resultCallback(T("iteration"), (size_t)0);
+      context.resultCallback(T("loss"), weightsSum);
+      context.resultCallback(T("train error"), function->evaluatePredictions(context, predictions, trainData));
+      context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
+      context.leaveScope();
+
+      for (size_t i = 0; i < numIterations; ++i)
+      {
+        context.enterScope(T("Iteration ") + String((int)i+1));
+        context.resultCallback(T("iteration"), i+1);
+        doSGDIteration(context);
+        recomputePredictions(context);
+        recomputeWeights(context);
+        context.resultCallback(T("loss"), weightsSum);
+        context.resultCallback(T("train error"), function->evaluatePredictions(context, predictions, trainData));
+        context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
+
+       /* applyRegularizer(context);
+        recomputePredictions(context);
+        recomputeWeights(context);
+        context.resultCallback(T("loss 2"), weightsSum);
+        context.resultCallback(T("train error 2"), function->evaluatePredictions(context, predictions, trainData));
+        context.resultCallback(T("validation error 2"), function->evaluatePredictions(context, validationPredictions, validationData));*/
+
+        context.leaveScope();
+      }
+      context.leaveScope();
+    }
+    if (counter > 100)
+    {
+      context.enterScope(T("Pruning"));
+      size_t yieldIndex = pruneSmallestVote(context);
+
+      recomputePredictions(context);
+      recomputeWeights(context);
+
+      context.resultCallback(T("yield index"), yieldIndex);
+      context.resultCallback(T("train error"), function->evaluatePredictions(context, predictions, trainData));
+      context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
+      context.resultCallback(T("loss"), weightsSum);
+      context.leaveScope();
+      context.resultCallback(T("yield index"), yieldIndex);
+    }
+    return true;
+  }
+
+  size_t pruneSmallestVote(ExecutionContext& context)
+  {
+    const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
+    EnumerationPtr labels = classifier->getLabels();
+    size_t numLabels = labels->getNumElements();
+
+    ObjectVectorPtr votes = classifier->getVotes().staticCast<ObjectVector>();
+    size_t numVotes = votes->getNumElements();
+    
+    double smallestVoteNorm = DBL_MAX;
+    size_t smallestVoteIndex = (size_t)-1;
+
+    size_t voteIndex = 0;
+    for (size_t i = 0; i < graph->getNumNodes(); ++i)
+    {
+      LuapeYieldNodePtr yieldNode = graph->getNode(i).dynamicCast<LuapeYieldNode>();
+      if (yieldNode)
+      {
+        context.enterScope(T("Vote ") + String((int)voteIndex+1));
+        DenseDoubleVectorPtr vote = votes->getAndCast<DenseDoubleVector>(voteIndex);
+        context.resultCallback(T("index"), voteIndex);
+        context.resultCallback(T("l2norm"), vote->l2norm());
+        context.resultCallback(T("l1norm"), vote->l1norm());
+        context.resultCallback(T("l0norm"), vote->l0norm());
+
+        double weightSum = 0.0;
+        BooleanVectorPtr predictions = graph->updateNodeCache(context, yieldNode->getArgument(), true);
+        DenseDoubleVectorPtr weights = makeInitialWeights(classifier, *(const std::vector<PairPtr>* )&trainData);
+        for (size_t j = 0; j < supervisions->getNumElements(); ++j)
+        {
+          bool isPredictionCorrect = (predictions->get(j / numLabels) == supervisions.staticCast<BooleanVector>()->get(j));
+          double v = vote->getValue(j % numLabels);
+          weightSum += weights->getValue(j) * exp(-v * (isPredictionCorrect ? 1.0 : -1.0));
+        }
+        context.resultCallback(T("weight"), weightSum);
+
+        double voteNorm = weightSum;//vote->l2norm();
+        if (voteNorm < smallestVoteNorm)
+          smallestVoteNorm = voteNorm, smallestVoteIndex = voteIndex;
+        ++voteIndex;
+        context.leaveScope();
+      }
+    }
+
+    jassert(smallestVoteIndex != (size_t)-1);
+    context.informationCallback(T("Pruning weak predictor # ") + String((int)smallestVoteIndex));
+    context.resultCallback(T("pruned yield index"), smallestVoteIndex);
+    votes->getObjects().erase(votes->getObjects().begin() + smallestVoteIndex);
+    graph->removeYieldNode(context, smallestVoteIndex);
+
+    return smallestVoteIndex;
+  }
+
+  void applyRegularizer(ExecutionContext& context)
+  {
+    const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
+    VectorPtr votes = classifier->getVotes();
+    size_t numVotes = votes->getNumElements();
+
+    for (size_t i = 0; i < numVotes; ++i)
+    {
+      DenseDoubleVectorPtr vote = votes->getElement(i).getObjectAndCast<DenseDoubleVector>();
+      vote->multiplyByScalar(0.5);
+    }
+  }
+
+  void doSGDIteration(ExecutionContext& context)
+  {
+    static const double learningRate = 0.001;// / (1.0 + sqrt((double)graph->getNumYieldNodes()));
+
+    //MultiClassLossFunctionPtr lossFunction = logBinomialMultiClassLossFunction();
+    //MultiClassLossFunctionPtr lossFunction = oneAgainstAllMultiClassLossFunction(exponentialDiscriminativeLossFunction());
+
+    const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
+    EnumerationPtr labels = classifier->getLabels();
+    size_t numLabels = labels->getNumElements();
+
+    std::vector<size_t> order;
+    context.getRandomGenerator()->sampleOrder(graph->getNumTrainingSamples(), order);
+
+    DenseDoubleVectorPtr parameters = new DenseDoubleVector();
+
+    ScalarVariableStatistics loss;
+
+    VectorPtr votes = classifier->getVotes();
+    size_t numVotes = votes->getNumElements();
+
+    for (size_t i = 0; i < order.size(); ++i)
+    {
+      const PairPtr& example = trainData[order[i]].staticCast<Pair>();
+
+      // compute weak predictions
+      BooleanVectorPtr weakPredictions = classifier->computeBooleanWeakPredictions(context, example->getFirst().getObject());
+      jassert(numVotes == weakPredictions->getNumElements());
+
+      // compute activation
+      DenseDoubleVectorPtr activations = new DenseDoubleVector(classifier->getDoubleVectorClass());
+      for (size_t j = 0; j < numVotes; ++j)
+      {
+        double sign = weakPredictions->get(j) ? 1.0 : -1.0;
+        votes->getElement(j).getObjectAndCast<DoubleVector>()->addWeightedTo(activations, 0, sign);
+      }
+
+      // compute loss value and gradient
+      size_t correctClass = (size_t)example->getSecond().getInteger();
+      double lossValue = 0.0;
+      DenseDoubleVectorPtr lossGradient = new DenseDoubleVector(classifier->getDoubleVectorClass());
+      for (size_t j = 0; j < numLabels; ++j)
+      {
+        bool isCorrectClass = (j == correctClass);
+        double weight = 1.0 / (2.0 * (isCorrectClass ? 1.0 : (numLabels - 1)));
+        double sign = isCorrectClass ? 1.0 : -1.0;
+        double e = exp(-sign * activations->getValue(j));
+        lossValue += e * weight;
+        lossGradient->setValue(j, -sign * e * weight);
+      }
+      //lossFunction->computeMultiClassLoss(activations, correctClass, numLabels, &lossValue, &lossGradient, 1.0);
+      loss.push(lossValue);
+
+      // update
+      for (size_t j = 0; j < numVotes; ++j)
+      {
+        DenseDoubleVectorPtr v = votes->getElement(j).getObjectAndCast<DenseDoubleVector>();
+        double sign = weakPredictions->get(j) ? 1.0 : -1.0;
+        lossGradient->addWeightedTo(v, 0, -learningRate * sign);
+      }
+    }
+    
+    context.resultCallback(T("meanLoss"), loss.getMean());
+  }
+
+  void recomputeWeights(ExecutionContext& context)
+  {
+    const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
+    EnumerationPtr labels = classifier->getLabels();
+    size_t numLabels = labels->getNumElements();
+    size_t n = trainData.size();
+    weights = new DenseDoubleVector(n * numLabels, 0.0);
+
+    double positiveWeight =  1.0 / (2 * n);
+    double negativeWeight = 1.0 / (2 * n * (numLabels - 1));
+    weightsSum = 0.0;
+
+    for (size_t i = 0; i < n; ++i)
+    {
+      DenseDoubleVectorPtr activations = predictions->getElement(i).getObjectAndCast<DenseDoubleVector>();
+      size_t correctLabel = (size_t)trainData[i].staticCast<Pair>()->getSecond().getInteger();
+      jassert(correctLabel >= 0 && correctLabel < numLabels);
+      for (size_t j = 0; j < numLabels; ++j)
+      {
+        bool isCorrectLabel = (j == correctLabel);
+        double w0 = isCorrectLabel ? positiveWeight : negativeWeight;
+        double sign = isCorrectLabel ? 1.0 : -1.0;
+        double weight = w0 * exp(-sign * activations->getValue(j));
+        weights->setValue(i * numLabels + j, weight);
+        weightsSum += weight;
+      }
+    }
+    weights->multiplyByScalar(1.0 / weightsSum);
   }
 };
 

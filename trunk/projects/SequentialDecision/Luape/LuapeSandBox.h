@@ -45,12 +45,12 @@ public:
 
     LuapeProblemPtr problem = createProblem(inputClass);
 
-    LuapeInferencePtr classifier = new LuapeClassifier();
+    LuapeClassifierPtr classifier = new LuapeClassifier();
     if (!classifier->initialize(context, inputClass, labels))
       return false;
 
-    //BoostingWeakLearnerPtr weakLearner = singleStumpWeakLearner();
-    BoostingWeakLearnerPtr weakLearner = policyBasedWeakLearner(new TreeBasedRandomPolicy(), budgetPerIteration, maxSteps);
+    BoostingWeakLearnerPtr weakLearner = singleStumpWeakLearner();
+    //BoostingWeakLearnerPtr weakLearner = policyBasedWeakLearner(new TreeBasedRandomPolicy(), budgetPerIteration, maxSteps);
     classifier->setBatchLearner(new LuapeBatchLearner(adaBoostMHLearner(weakLearner), problem, maxIterations));
     classifier->setEvaluator(defaultSupervisedEvaluator());
 
@@ -59,7 +59,29 @@ public:
     //classifier->evaluate(context, testData, EvaluatorPtr(), T("Evaluating on testing data"));*/
 
     classifier->getGraph()->saveToGraphML(context, context.getFile(trainFile.getFileNameWithoutExtension() + ".graphml"));
+
+    testClassifier(context, classifier, inputClass);
     return true;
+  }
+
+  void testClassifier(ExecutionContext& context, const LuapeClassifierPtr& classifier, ClassPtr inputsClass)
+  {
+    for (size_t i = 0; i < inputsClass->getNumMemberVariables(); ++i)
+    {
+      context.enterScope(inputsClass->getMemberVariableName(i));
+      ObjectPtr object = Object::create(inputsClass);
+      for (size_t j = 0; j < 100; ++j)
+      {
+        context.enterScope(String((int)j));
+        context.resultCallback("value", j);
+        object->setVariable(i, (double)j);
+        DenseDoubleVectorPtr activations = classifier->computeActivations(context, object);
+        for (size_t k = 0; k < activations->getNumValues(); ++k)
+          context.resultCallback(activations->getElementName(k), activations->getValue(k));
+        context.leaveScope();
+      }
+      context.leaveScope();
+    }
   }
 
 protected:

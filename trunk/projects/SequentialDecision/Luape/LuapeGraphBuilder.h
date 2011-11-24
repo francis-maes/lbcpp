@@ -146,7 +146,7 @@ public:
     --numSteps;
     state = *stateBackup.getObjectAndCast<State>();
     while (graph->getNumNodes() > state.numNodes)
-      graph->popNode();
+      graph->popNode(context);
     return true;
   }
 
@@ -268,12 +268,12 @@ public:
     }
   }
 
-  void undo(std::vector<LuapeNodePtr>& stack, const LuapeGraphPtr& graph)
+  void undo(ExecutionContext& context, std::vector<LuapeNodePtr>& stack, const LuapeGraphPtr& graph)
   {
     if (nodeToAdd)
     {
       if (hasAddedNodeToGraph)
-        graph->popNode();
+        graph->popNode(context);
       jassert(stack.size() && stack.back() == nodeToAdd);
       stack.pop_back();
     }
@@ -413,7 +413,7 @@ public:
     const LuapeGraphBuilderActionPtr& action = stateBackup.getObjectAndCast<LuapeGraphBuilderAction>();
     isAborted = isYielded = false;
     --numSteps;
-    action->undo(stack, graph);
+    action->undo(context, stack, graph);
     availableActions = ContainerPtr();
     updateTypeState();
     return true;

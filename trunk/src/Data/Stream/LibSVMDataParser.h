@@ -257,6 +257,10 @@ private:
   TypePtr elementsType;
 };
 
+#ifdef JUCE_WIN32
+# pragma warning(disable:4996)
+#endif // JUCE_WIN32
+
 class BinaryClassificationLibSVMFastParser : public TextParser
 {
 public:

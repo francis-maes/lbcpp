@@ -69,7 +69,7 @@ public:
     {
       // update weights
       weightsSum *= updateWeights(function, weakPredictions, supervisions, weights, vote);
-      context.resultCallback("loss", weights->l1norm() * weightsSum);
+      context.resultCallback("loss", weightsSum);
     }
     //context.resultCallback("weights", weights->cloneAndCast<DoubleVector>());
 
