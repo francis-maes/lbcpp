@@ -438,10 +438,10 @@ public:
     LuapeYieldNodePtr yieldNode = builder->getGraph()->getLastNode().dynamicCast<LuapeYieldNode>();
     reward = yieldNode ? structureLearner->computeWeakObjective(context, yieldNode->getArgument()) : 0.0;
 
-/*    if (noMoreActions)
+    if (noMoreActions)
       context.informationCallback(T("Out-of-actions: ") + builder->toShortString());
     else
-      context.informationCallback(T("Final State: ") + builder->toShortString() + T(" => ") + String(reward));*/
+      context.informationCallback(T("Final State: ") + builder->toShortString() + T(" => ") + String(reward));
     return builder->getGraph()->getLastNode().dynamicCast<LuapeYieldNode>();
   }
 

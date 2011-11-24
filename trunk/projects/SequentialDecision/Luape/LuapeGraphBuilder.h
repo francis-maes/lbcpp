@@ -355,10 +355,10 @@ public:
     }
     if (typeState->hasApplyActions())
     {
-      const std::map<LuapeFunctionPtr, LuapeGraphBuilderTypeStatePtr>& apply = typeState->getApplyActions();
-      for (std::map<LuapeFunctionPtr, LuapeGraphBuilderTypeStatePtr>::const_iterator it = apply.begin(); it != apply.end(); ++it)
+      const std::vector<std::pair<LuapeFunctionPtr, LuapeGraphBuilderTypeStatePtr> >& apply = typeState->getApplyActions();
+      for (size_t i = 0; i < apply.size(); ++i)
       {
-        LuapeFunctionPtr function = it->first;
+        LuapeFunctionPtr function = apply[i].first;
         if (function->acceptInputsStack(stack))
         {
           size_t numInputs = function->getNumInputs();

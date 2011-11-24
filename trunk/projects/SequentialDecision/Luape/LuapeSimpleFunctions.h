@@ -75,6 +75,9 @@ public:
 class AndBooleanLuapeFunction : public BinaryBooleanLuapeFunction
 {
 public:
+  virtual String toShortString() const
+    {return "&&";}
+
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
     {return inputs[0]->toShortString() + " && " + inputs[1]->toShortString();}
 
@@ -85,6 +88,9 @@ public:
 class EqualBooleanLuapeFunction : public BinaryBooleanLuapeFunction
 {
 public:
+  virtual String toShortString() const
+    {return "==";}
+
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
     {return inputs[0]->toShortString() + " == " + inputs[1]->toShortString();}
 
@@ -127,6 +133,9 @@ public:
 class AddDoubleLuapeFunction : public BinaryDoubleLuapeFunction
 {
 public:
+  virtual String toShortString() const
+    {return "+";}
+
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " + " + inputs[1]->toShortString() + ")";}
 
@@ -140,6 +149,9 @@ public:
 class SubDoubleLuapeFunction : public BinaryDoubleLuapeFunction
 {
 public:
+  virtual String toShortString() const
+    {return "-";}
+
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " - " + inputs[1]->toShortString() + ")";}
 
@@ -153,6 +165,9 @@ public:
 class MulDoubleLuapeFunction : public BinaryDoubleLuapeFunction
 {
 public:
+  virtual String toShortString() const
+    {return "*";}
+
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " x " + inputs[1]->toShortString() + ")";}
 
@@ -166,6 +181,9 @@ public:
 class DivDoubleLuapeFunction : public BinaryDoubleLuapeFunction
 {
 public:
+  virtual String toShortString() const
+    {return "/";}
+
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " / " + inputs[1]->toShortString() + ")";}
 
@@ -182,6 +200,9 @@ public:
 class GreaterThanDoubleLuapeFunction : public LuapeFunction
 {
 public:
+  virtual String toShortString() const
+    {return ">";}
+
   virtual size_t getNumInputs() const
     {return 2;}
 
@@ -209,6 +230,9 @@ class EqualsConstantEnumLuapeFunction : public LuapeFunction
 public:
   EqualsConstantEnumLuapeFunction(const Variable& value = Variable())
     : value(value) {}
+
+  virtual String toShortString() const
+    {return "= " + value.toShortString();}
 
   virtual size_t getNumInputs() const
     {return 1;}
@@ -249,6 +273,9 @@ class GetVariableLuapeFunction : public LuapeFunction
 public:
   GetVariableLuapeFunction(size_t variableIndex = 0)
     : variableIndex(variableIndex) {}
+
+  virtual String toShortString() const
+    {return ".var[" + String((int)variableIndex) + "]";}
 
   virtual size_t getNumInputs() const
     {return 1;}
@@ -298,6 +325,9 @@ class StumpLuapeFunction : public LuapeFunction
 public:
   StumpLuapeFunction(double threshold = 0.0) 
     : threshold(threshold) {}
+
+  virtual String toShortString() const
+    {return "> " + String(threshold);}
 
   virtual size_t getNumInputs() const
     {return 1;}
