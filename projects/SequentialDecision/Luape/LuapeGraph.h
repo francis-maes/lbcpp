@@ -149,6 +149,8 @@ public:
   const LuapeGraphUniversePtr& getUniverse() const
     {return universe;}
 
+  bool saveToGraphML(ExecutionContext& context, const File& file) const;
+
   lbcpp_UseDebuggingNewOperator
 
 protected:

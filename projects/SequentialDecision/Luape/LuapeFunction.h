@@ -37,6 +37,9 @@ public:
 
   bool acceptInputsStack(const std::vector<LuapeNodePtr>& stack) const;
 
+  virtual String toShortString() const
+    {return getClassName();}
+    
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const;
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const

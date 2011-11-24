@@ -69,7 +69,7 @@ bool LuapeFunction::acceptInputsStack(const std::vector<LuapeNodePtr>& stack) co
       for (size_t i = 1; i < n; ++i)
       {
         LuapeNodePtr newNode = stack[stackFirstIndex + i];
-        if (newNode < node)
+        if (newNode->getAllocationIndex() < node->getAllocationIndex())
           return false;
         node = newNode;
       }
@@ -253,11 +253,23 @@ String LuapeNodeCache::toShortString() const
 /*
 ** LuapeNode
 */
+
+static size_t makeLuapeNodeAllocationIndex()
+{
+  static size_t res = 0;
+  return res++; // warning: not safe for multi-threading ...
+}
+
 LuapeNode::LuapeNode(const TypePtr& type, const String& name)
-  : NameableObject(name), type(type), indexInGraph((size_t)-1)
+  : NameableObject(name), type(type), indexInGraph((size_t)-1), allocationIndex(makeLuapeNodeAllocationIndex())
 {
   if (type != nilType)
     cache = new LuapeNodeCache(type);
+}
+
+LuapeNode::LuapeNode() : allocationIndex(makeLuapeNodeAllocationIndex())
+{
+  
 }
 
 void LuapeNode::clone(ExecutionContext& context, const ObjectPtr& t) const

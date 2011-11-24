@@ -25,6 +25,8 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
+    context.setRandomGenerator(new RandomGenerator()); // make the program deterministic
+    
     DynamicClassPtr inputClass = new DynamicClass("inputs");
     DefaultEnumerationPtr labels = new DefaultEnumeration("labels");
     ContainerPtr trainData = loadData(context, trainFile, inputClass, labels);
@@ -55,6 +57,8 @@ public:
     classifier->train(context, trainData, testData, T("Training"), true);
     //classifier->evaluate(context, trainData, EvaluatorPtr(), T("Evaluating on training data"));
     //classifier->evaluate(context, testData, EvaluatorPtr(), T("Evaluating on testing data"));*/
+
+    classifier->getGraph()->saveToGraphML(context, context.getFile(trainFile.getFileNameWithoutExtension() + ".graphml"));
     return true;
   }
 

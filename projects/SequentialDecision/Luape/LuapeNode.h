@@ -185,7 +185,7 @@ class LuapeNode : public NameableObject
 {
 public:
   LuapeNode(const TypePtr& type, const String& name);
-  LuapeNode() {}
+  LuapeNode();
 
   const TypePtr& getType() const
     {return type;}
@@ -201,6 +201,9 @@ public:
   size_t getIndexInGraph() const
     {return indexInGraph;}
 
+  size_t getAllocationIndex() const
+    {return allocationIndex;}
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -210,6 +213,7 @@ protected:
   TypePtr type;
   LuapeNodeCachePtr cache;
   size_t indexInGraph;
+  size_t allocationIndex;
 };
 
 extern ClassPtr luapeNodeClass;

@@ -342,3 +342,87 @@ void LuapeGraph::clone(ExecutionContext& context, const ObjectPtr& t) const
   target->nodesMap = nodesMap;
   target->universe = universe;
 }
+
+static String textToXmlText(const String& str)
+{
+  String res;
+  for (int i = 0; i < str.length(); ++i)
+  {
+    if (str[i] == '>')
+      res += "&gt;";
+    else if (str[i] == '<')
+      res += "&lt;";
+    else if (str[i] == '&')
+      res += "&amp;";
+    else if (str[i] == '\'')
+      res += "&apos;";
+    else if (str[i] == '"')
+      res += "&quot;";
+    else
+      res += str[i];
+  }
+  return res;
+}
+
+static void writeGraphMLEdge(OutputStream* ostr, size_t sourceIndex, size_t destIndex, const String& text)
+{
+  *ostr << "<edge source=\"node" << String((int)sourceIndex) << "\" target=\"node" << String((int)destIndex) << "\">\n";
+  if (text.isNotEmpty())
+    *ostr <<"  <data key=\"d2\"><y:PolyLineEdge><y:EdgeLabel>" << textToXmlText(text) << "</y:EdgeLabel></y:PolyLineEdge></data>\n";
+  *ostr << "</edge>\n";
+}
+
+bool LuapeGraph::saveToGraphML(ExecutionContext& context, const File& file) const
+{
+  if (file.exists())
+    file.deleteFile();
+  OutputStream* ostr = file.createOutputStream();
+  if (!ostr)
+  {
+    context.errorCallback(T("Could not write to file ") + file.getFullPathName());
+    return false;
+  }
+
+  *ostr << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+  *ostr << "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:y=\"http://www.yworks.com/xml/graphml\" xmlns:yed=\"http://www.yworks.com/xml/yed/3\" xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd\">\n";
+  *ostr << "  <key id=\"d1\" for=\"node\" yfiles.type=\"nodegraphics\"/>\n";
+  *ostr << "  <key id=\"d2\" for=\"edge\" yfiles.type=\"edgegraphics\"/>\n";
+  *ostr << "  <graph id=\"G\" edgedefault=\"directed\">\n";
+  
+  size_t yieldIndex = 0;
+  for (size_t i = 0; i < nodes.size(); ++i)
+  {
+    const LuapeNodePtr& node = nodes[i];
+    String id = "node" + String((int)i);
+    String text;
+    LuapeInputNodePtr inputNode = node.dynamicCast<LuapeInputNode>();
+    LuapeFunctionNodePtr functionNode = node.dynamicCast<LuapeFunctionNode>();
+    LuapeYieldNodePtr yieldNode = node.dynamicCast<LuapeYieldNode>();
+    jassert(inputNode || functionNode || yieldNode);
+    
+    if (inputNode)
+      text = "input " + inputNode->getName();
+    else
+      text = functionNode ? functionNode->getFunction()->toShortString() : ("yield " + String((int)yieldIndex++));
+    
+    *ostr << "<node id=\"" << id << "\">\n";
+    *ostr << "  <data key=\"d1\"><y:ShapeNode>";
+    *ostr << "<y:Geometry height=\"30.0\" width=\"75\"/>";
+    *ostr << "<y:NodeLabel>" << textToXmlText(text) << "</y:NodeLabel>";
+    *ostr << "</y:ShapeNode></data>\n";
+    *ostr << "</node>\n";
+
+    if (functionNode)
+    {
+      for (size_t j = 0; j < functionNode->getNumArguments(); ++j)
+        writeGraphMLEdge(ostr, functionNode->getArgument(j)->getIndexInGraph(), i, String::empty);
+    }
+    else if (yieldNode)
+    writeGraphMLEdge(ostr, yieldNode->getArgument()->getIndexInGraph(), i, String::empty);
+  }
+
+  *ostr << "  </graph>\n";
+  *ostr << "</graphml>\n";
+  delete ostr;
+  return true;
+}
