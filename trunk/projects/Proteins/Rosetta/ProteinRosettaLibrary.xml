@@ -6,6 +6,7 @@
   <import name="ProteinRosettaMover"/>
   <import name="ProteinRosettaOptimizer"/>
   <import name="ProteinRosettaSampler"/>
+  <import name="ProteinRosettaWorkUnit"/>
   
   <class name="RosettaWorker" base="Object">
     <variable type="RosettaProtein" name="protein"/> 
