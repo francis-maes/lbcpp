@@ -22,6 +22,7 @@ class MeasurableRegion : public Object
 public:
   virtual std::pair<MeasurableRegionPtr, MeasurableRegionPtr> makeBinarySplit() const = 0;
   virtual Variable getCenter() const = 0;
+  virtual Variable samplePosition(const RandomGeneratorPtr& random) const = 0;
 };
 
 class ScalarMeasurableRegion : public MeasurableRegion
@@ -33,6 +34,9 @@ public:
 
   virtual Variable getCenter() const
     {return (minValue + maxValue) / 2.0;}
+
+  virtual Variable samplePosition(const RandomGeneratorPtr& random) const
+    {return random->sampleDouble(minValue, maxValue);}
 
   virtual std::pair<MeasurableRegionPtr, MeasurableRegionPtr> makeBinarySplit() const
   {
@@ -62,6 +66,15 @@ public:
     return res;
   }
 
+  virtual Variable samplePosition(const RandomGeneratorPtr& random) const
+  {
+    size_t n = minValues->getNumValues();
+    DenseDoubleVectorPtr res = new DenseDoubleVector(minValues->getClass(), n);
+    for (size_t i = 0; i < n; ++i)
+      res->setValue(i, random->sampleDouble(minValues->getValue(i), maxValues->getValue(i)));
+    return res;
+  }
+
   virtual std::pair<MeasurableRegionPtr, MeasurableRegionPtr> makeBinarySplit() const
   {
     double middleValue = (minValues->getValue(axisToSplit) + maxValues->getValue(axisToSplit)) / 2.0;
@@ -85,8 +98,8 @@ protected:
 class HOOOptimizerState : public OptimizerState
 {
 public:
-  HOOOptimizerState(OptimizationProblemPtr problem, double nu, double rho, size_t numIterations, size_t maxDepth, double C)
-    : problem(problem), nu(nu), rho(rho), numIterations(numIterations), maxDepth(maxDepth), C(C), numIterationsDone(0)
+  HOOOptimizerState(OptimizationProblemPtr problem, double nu, double rho, size_t numIterations, size_t maxDepth, double C, bool playCenteredArms)
+    : problem(problem), nu(nu), rho(rho), numIterations(numIterations), maxDepth(maxDepth), C(C), playCenteredArms(playCenteredArms), numIterationsDone(0)
   {
     MeasurableRegionPtr region;
     TypePtr inputType = problem->getSolutionsType();
@@ -163,7 +176,7 @@ public:
     // play bandit
     MeasurableRegionPtr region = path.back()->getRegion();
     jassert(region);
-    Variable candidate = region->getCenter();
+    Variable candidate = playCenteredArms ? region->getCenter() : region->samplePosition(context.getRandomGenerator());
     double reward = problem->getObjective()->compute(context, candidate).toDouble();
         
     // update scores recursively
@@ -214,7 +227,7 @@ public:
   {
   public:
     Node(const MeasurableRegionPtr& region)
-      : region(region), U(DBL_MAX), B(DBL_MAX), meanReward(meanReward), expectedReward(expectedReward) {}
+      : region(region), U(DBL_MAX), B(DBL_MAX), meanReward(0.0), expectedReward(0.0) {}
 
     const MeasurableRegionPtr& getRegion() const
       {return region;}
@@ -245,6 +258,7 @@ protected:
   double logNumIterations;
   size_t maxDepth;
   double C;
+  bool playCenteredArms;
   size_t numIterationsDone;
   
   double getRegionAndBValue(const NodePtr& parentNode, NodePtr& node, MeasurableRegionPtr& region) const
@@ -269,8 +283,8 @@ class HOOOptimizer : public Optimizer
 {
 public:
   HOOOptimizer(size_t numIterations, double nu, double rho)
-    : numIterations(numIterations), nu(nu), rho(rho), maxDepth(0), C(2.0) {}
-  HOOOptimizer() : numIterations(0), maxDepth(0), C(2.0) {}
+    : numIterations(numIterations), nu(nu), rho(rho), maxDepth(0), C(2.0), playCenteredArms(true) {}
+  HOOOptimizer() : numIterations(0), maxDepth(0), C(2.0), playCenteredArms(true) {}
 
   virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {
@@ -294,7 +308,7 @@ public:
       maxDepth = (size_t)ceil((logNumIterations / 2 - log(1.0 / nu)) / log(1 / rho));
     }
     context.resultCallback(T("maxDepth"), maxDepth);
-    return new HOOOptimizerState(problem, nu, rho, numIterations, maxDepth, C);
+    return new HOOOptimizerState(problem, nu, rho, numIterations, maxDepth, C, playCenteredArms);
   }
 
 protected:
@@ -305,6 +319,7 @@ protected:
   double rho; // [0,1]
   size_t maxDepth;
   double C;
+  bool playCenteredArms;
 };
 
 };/* namespace lbcpp */

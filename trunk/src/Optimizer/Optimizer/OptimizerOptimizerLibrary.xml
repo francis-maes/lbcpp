@@ -83,6 +83,7 @@
     <variable type="Double" name="rho"/>
     <variable type="PositiveInteger" name="maxDepth"/>
     <variable type="Double" name="C"/>
+    <variable type="Boolean" name="playCenteredArms"/>
   </class>
 
 </library>

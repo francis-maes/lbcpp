@@ -49,7 +49,7 @@ for maxDepth=1,100 do
   local regretStats = Statistics.mean()
   for i=1,10 do
 
-    local optimizer = Optimizer.HOO{numIterations=horizon,nu=1,rho=0.5,maxDepth=maxDepth, C=C}
+    local optimizer = Optimizer.HOO{numIterations=horizon,nu=1,rho=0.5,maxDepth=maxDepth, C=C, playCenteredArms=false}
     local score,solution = optimizer{objective = objective, initialGuess=Vector.newDense(dimension)}
     print ("score", score, "solution", solution)
     if solution then
