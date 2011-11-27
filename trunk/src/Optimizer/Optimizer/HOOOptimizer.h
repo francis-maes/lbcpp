@@ -20,9 +20,14 @@ typedef ReferenceCountedObjectPtr<MeasurableRegion> MeasurableRegionPtr;
 class MeasurableRegion : public Object
 {
 public:
-  virtual std::pair<MeasurableRegionPtr, MeasurableRegionPtr> makeBinarySplit() const = 0;
   virtual Variable getCenter() const = 0;
   virtual Variable samplePosition(const RandomGeneratorPtr& random) const = 0;
+
+  virtual Variable getDefaultSplit() const = 0;
+  virtual ContainerPtr sampleSplits(const RandomGeneratorPtr& random, size_t count) const = 0;
+  virtual bool testSplit(const Variable& split, const Variable& candidate) const = 0;
+
+  virtual std::pair<MeasurableRegionPtr, MeasurableRegionPtr> makeBinarySplit(const Variable& split) const = 0;
 };
 
 class ScalarMeasurableRegion : public MeasurableRegion
@@ -38,9 +43,23 @@ public:
   virtual Variable samplePosition(const RandomGeneratorPtr& random) const
     {return random->sampleDouble(minValue, maxValue);}
 
-  virtual std::pair<MeasurableRegionPtr, MeasurableRegionPtr> makeBinarySplit() const
+  virtual Variable getDefaultSplit() const
+    {return (maxValue + minValue) / 2.0;}
+
+  virtual ContainerPtr sampleSplits(const RandomGeneratorPtr& random, size_t count) const
   {
-    double middleValue = (maxValue + minValue) / 2.0;
+    DenseDoubleVectorPtr res(new DenseDoubleVector(count, 0.0));
+    for (size_t i = 0; i < count; ++i)
+      res->setValue(i, random->sampleDouble(minValue, maxValue));
+    return res;
+  }
+
+  virtual bool testSplit(const Variable& split, const Variable& candidate) const
+    {return candidate.getDouble() > split.getDouble();}
+
+  virtual std::pair<MeasurableRegionPtr, MeasurableRegionPtr> makeBinarySplit(const Variable& split) const
+  {
+    double middleValue = split.getDouble();
     return std::make_pair(
       MeasurableRegionPtr(new ScalarMeasurableRegion(minValue, middleValue)),
       MeasurableRegionPtr(new ScalarMeasurableRegion(middleValue, maxValue)));
@@ -54,9 +73,9 @@ protected:
 class VectorialMeasurableRegion : public MeasurableRegion
 {
 public:
-  VectorialMeasurableRegion(const DenseDoubleVectorPtr& minValues, const DenseDoubleVectorPtr& maxValues, size_t axisToSplit = 0)
-    : minValues(minValues), maxValues(maxValues), axisToSplit(axisToSplit) {}
-  VectorialMeasurableRegion() : axisToSplit(0) {}
+  VectorialMeasurableRegion(const DenseDoubleVectorPtr& minValues, const DenseDoubleVectorPtr& maxValues, size_t defaultAxisToSplit = 0)
+    : minValues(minValues), maxValues(maxValues), defaultAxisToSplit(defaultAxisToSplit) {}
+  VectorialMeasurableRegion() : defaultAxisToSplit(0) {}
 
   virtual Variable getCenter() const
   {
@@ -75,24 +94,57 @@ public:
     return res;
   }
 
-  virtual std::pair<MeasurableRegionPtr, MeasurableRegionPtr> makeBinarySplit() const
+  virtual Variable getDefaultSplit() const
   {
+    size_t axisToSplit = defaultAxisToSplit;
     double middleValue = (minValues->getValue(axisToSplit) + maxValues->getValue(axisToSplit)) / 2.0;
-    DenseDoubleVectorPtr splitMaxValues = maxValues->cloneAndCast<DenseDoubleVector>();
-    splitMaxValues->setValue(axisToSplit, middleValue);
-    DenseDoubleVectorPtr splitMinValues = minValues->cloneAndCast<DenseDoubleVector>();
-    splitMinValues->setValue(axisToSplit, middleValue);
+    return new Pair(axisToSplit, middleValue);
+  }
 
-    size_t newAxisToSplit = (axisToSplit + 1) % minValues->getNumValues();
+  virtual ContainerPtr sampleSplits(const RandomGeneratorPtr& random, size_t count) const
+  {
+    size_t n = minValues->getNumValues(); // dimensionality
+    ObjectVectorPtr res = new ObjectVector(pairClass(positiveIntegerType, doubleType), count);
+
+    std::vector<size_t> attributes;
+    random->sampleOrder(n, attributes);
+    for (size_t i = 0; i < count; ++i)
+    {
+      size_t axisToSplit = attributes[i % n];
+      double splitValue = random->sampleDouble(minValues->getValue(axisToSplit), maxValues->getValue(axisToSplit));
+      res->set(i, new Pair(axisToSplit, splitValue));
+    }
+    return res;
+  }
+
+  virtual bool testSplit(const Variable& split, const Variable& candidate) const
+  {
+    const PairPtr& splitPair = split.getObjectAndCast<Pair>();
+    size_t axisToSplit = (size_t)splitPair->getFirst().getInteger();
+    double splitValue = splitPair->getSecond().getDouble();
+    return candidate.getObjectAndCast<DenseDoubleVector>()->getValue(axisToSplit) > splitValue;
+  }
+
+  virtual std::pair<MeasurableRegionPtr, MeasurableRegionPtr> makeBinarySplit(const Variable& split) const
+  {
+    size_t axisToSplit = (size_t)split.getObjectAndCast<Pair>()->getFirst().getInteger();
+    double splitValue = split.getObjectAndCast<Pair>()->getSecond().getDouble();
+
+    DenseDoubleVectorPtr splitMaxValues = maxValues->cloneAndCast<DenseDoubleVector>();
+    splitMaxValues->setValue(axisToSplit, splitValue);
+    DenseDoubleVectorPtr splitMinValues = minValues->cloneAndCast<DenseDoubleVector>();
+    splitMinValues->setValue(axisToSplit, splitValue);
+
+    size_t newDefaultAxisToSplit = (defaultAxisToSplit + 1) % minValues->getNumValues();
     return std::make_pair(
-      MeasurableRegionPtr(new VectorialMeasurableRegion(minValues, splitMaxValues, newAxisToSplit)),
-      MeasurableRegionPtr(new VectorialMeasurableRegion(splitMinValues, maxValues, newAxisToSplit)));
+      MeasurableRegionPtr(new VectorialMeasurableRegion(minValues, splitMaxValues, newDefaultAxisToSplit)),
+      MeasurableRegionPtr(new VectorialMeasurableRegion(splitMinValues, maxValues, newDefaultAxisToSplit)));
   }
 
 protected:
   DenseDoubleVectorPtr minValues;
   DenseDoubleVectorPtr maxValues;
-  size_t axisToSplit;
+  size_t defaultAxisToSplit;
 };
 
 class HOOOptimizerState : public OptimizerState
@@ -180,18 +232,16 @@ public:
     double reward = problem->getObjective()->compute(context, candidate).toDouble();
         
     // update scores recursively
-    double nun = nu;
     for (int i = path.size() - 1; i >= 0; --i)
     {
       const NodePtr& node = path[i];
       node->observeReward(reward);
       size_t count = (size_t)node->stats.getCount();
-      node->U = node->stats.getMean() + sqrt(C * logNumIterations / (double)count) + nun;
-//      node->U = node->stats.getMean() + C / (double)count + nun;
+      node->U = node->stats.getMean() + sqrt(C * logNumIterations / (double)count) + nu * pow(rho, i);
+//      node->U = node->stats.getMean() + C / (double)count + nu * pow(rho, i);
       node->B = juce::jmin(node->U, juce::jmax(node->left ? node->left->B : DBL_MAX, node->right ? node->right->B : DBL_MAX));
       node->meanReward = node->stats.getMean();
       node->expectedReward = juce::jmin(node->meanReward, juce::jmax(node->left ? node->left->expectedReward : DBL_MAX, node->right ? node->right->expectedReward : DBL_MAX));
-
     }
     ++numIterationsDone;
     return Variable::pair(reward, candidate);
@@ -265,7 +315,8 @@ protected:
   {
     if (node == NodePtr())
     {
-      std::pair<MeasurableRegionPtr, MeasurableRegionPtr> subRegions = parentNode->getRegion()->makeBinarySplit(); // parentRegion
+      MeasurableRegionPtr parentRegion = parentNode->region;
+      std::pair<MeasurableRegionPtr, MeasurableRegionPtr> subRegions = parentRegion->makeBinarySplit(parentRegion->getDefaultSplit());
       region = &node == &parentNode->left ? subRegions.first : subRegions.second;
       return DBL_MAX;
     }
