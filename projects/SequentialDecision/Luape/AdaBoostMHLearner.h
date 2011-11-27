@@ -273,7 +273,7 @@ public:
     size_t numLabels = labels->getNumElements();
 
     ObjectVectorPtr votes = classifier->getVotes().staticCast<ObjectVector>();
-    size_t numVotes = votes->getNumElements();
+    //size_t numVotes = votes->getNumElements();
     
     double smallestVoteNorm = DBL_MAX;
     size_t smallestVoteIndex = (size_t)-1;
