@@ -228,11 +228,6 @@ void LuapeGraph::popNode(ExecutionContext& context)
   removeNode(context, nodes.size() - 1);
 }
 
-static bool isNodeUseless(const LuapeNodePtr& node)
-{
-  return false;// !node.isInstanceOf<LuapeInputNode>() && node->getReferenceCount() <= 6; // only referenced by the graph and the universe, the local variables, ..
-}
-
 void LuapeGraph::computeNodeUseCounts(std::vector<size_t>& res) const
 {
   res.clear();
