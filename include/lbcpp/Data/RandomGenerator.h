@@ -281,7 +281,7 @@ public:
 
   inline void sampleSubset(const std::vector<size_t>& elements, size_t subsetSize, std::vector<size_t>& res)
   {
-    jassert(subsetSize < elements.size());
+    jassert(subsetSize <= elements.size());
     std::vector<size_t> order;
     sampleOrder(elements.size(), order);
     res.resize(subsetSize);
@@ -291,7 +291,7 @@ public:
 
   inline void sampleSubset(const std::vector<size_t>& elements, size_t subsetSize, std::set<size_t>& res)
   {
-    jassert(subsetSize < elements.size());
+    jassert(subsetSize <= elements.size());
     std::vector<size_t> order;
     sampleOrder(elements.size(), order);
     for (size_t i = 0; i < subsetSize; ++i)

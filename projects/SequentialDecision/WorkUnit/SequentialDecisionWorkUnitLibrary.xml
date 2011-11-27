@@ -105,4 +105,18 @@
     <variable type="PositiveInteger" name="numFolds"/>
   </class>
 
+  <!-- Random Forest HOO -->
+  <class name="RFHOOOptimizerState" base="OptimizerState"/>
+
+  <class name="RFHOOOptimizer" base="Optimizer">
+    <variable type="PositiveInteger" name="numTrees"/>
+    <variable type="PositiveInteger" name="K"/>
+    <variable type="PositiveInteger" name="nMin"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="Double" name="nu"/>
+    <variable type="Double" name="rho"/>
+    <variable type="Double" name="C"/>
+  </class>
+  
 </library>

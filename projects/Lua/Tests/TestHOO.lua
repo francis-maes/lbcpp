@@ -39,17 +39,20 @@ end
 local objectiveExpectation = testFunction
 local objective = makeBernoulliFunction(objectiveExpectation)
 
-for maxDepth=1,100 do
+for numTrees=1,100 do
+  local maxDepth = 8
   local C = 0.5
   local horizon = 2048 -- math.pow(2, hpow)
-  context:enter("maxdepth = " .. maxDepth)
+  context:enter("numTrees = " .. numTrees)
+  context:result("numTrees", numTrees)
   context:result("maxDepth", maxDepth)
-  --context:result("log2(horizon)", hpow)
+  context:result("log2(horizon)", hpow)
 
   local regretStats = Statistics.mean()
   for i=1,10 do
 
-    local optimizer = Optimizer.HOO{numIterations=horizon,nu=1,rho=0.5,maxDepth=maxDepth, C=C, playCenteredArms=false}
+    --local optimizer = Optimizer.HOO{numIterations=horizon,nu=1,rho=0.5,maxDepth=maxDepth, C=C, playCenteredArms=false}
+    local optimizer =Optimizer.RFHOO{numTrees=numTrees, K=5, nMin=10, maxDepth=maxDepth, numIterations=horizon,nu=1,rho=0.5,C=C}
     local score,solution = optimizer{objective = objective, initialGuess=Vector.newDense(dimension)}
     print ("score", score, "solution", solution)
     if solution then

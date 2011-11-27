@@ -26,6 +26,13 @@ function Optimizer.HOO(params)
   return res
 end
 
+function Optimizer.RFHOO(params)
+  local res = lbcpp.Object.create("RFHOOOptimizer")
+  for k,v in pairs(params) do
+    res[k] = v
+  end
+  return res
+end
 
 
 --problem = {

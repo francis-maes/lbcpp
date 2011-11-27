@@ -239,6 +239,10 @@ static Variable createFromString(ExecutionContext& context, const TypePtr& type,
     return type->createFromString(context, str);
 }
 
+#ifdef JUCE_WIN32
+# pragma warning(disable:4996)
+#endif // JUCE_WIN32
+
 bool ARFFDataParser::parseDataLine(const String& line)
 {
   bool ok = true;
