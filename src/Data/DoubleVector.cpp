@@ -269,14 +269,36 @@ int DoubleVector::argmax(LuaState& state)
   return 1;
 }
 
+// returns a + weight * b
+static DoubleVectorPtr addWeighted(const DoubleVectorPtr& a, const DoubleVectorPtr& b, double weight)
+{
+  DoubleVectorPtr res = a->cloneAndCast<DoubleVector>();
+  DenseDoubleVectorPtr denseRes = res.dynamicCast<DenseDoubleVector>();
+  if (denseRes)
+    b->addWeightedTo(denseRes, 0, weight);
+  else
+  {
+    SparseDoubleVectorPtr sparseRes = res.dynamicCast<SparseDoubleVector>();
+    if (sparseRes)
+      b->addWeightedTo(sparseRes, 0, weight);
+    else
+      jassert(false);
+  }
+  return res;
+}
+
 int DoubleVector::__add(LuaState& state)
 {
-  return Object::__add(state); // not yet implemented
+  DoubleVectorPtr other = state.checkObject(1, doubleVectorClass()).staticCast<DoubleVector>();
+  state.pushObject(addWeighted(this, other, 1.0));
+  return 1;
 }
 
 int DoubleVector::__sub(LuaState& state)
 {
-  return Object::__sub(state); // not yet implemented
+  DoubleVectorPtr other = state.checkObject(1, doubleVectorClass()).staticCast<DoubleVector>();
+  state.pushObject(addWeighted(this, other, -1.0));
+  return 1;
 }
 
 int DoubleVector::__mul(LuaState& state)

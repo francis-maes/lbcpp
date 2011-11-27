@@ -82,6 +82,7 @@
     <variable type="Double" name="nu"/>
     <variable type="Double" name="rho"/>
     <variable type="PositiveInteger" name="maxDepth"/>
+    <variable type="Double" name="C"/>
   </class>
 
 </library>

@@ -85,8 +85,8 @@ protected:
 class HOOOptimizerState : public OptimizerState
 {
 public:
-  HOOOptimizerState(OptimizationProblemPtr problem, double nu, double rho, size_t numIterations, size_t maxDepth)
-    : problem(problem), nu(nu), rho(rho), numIterations(numIterations), maxDepth(maxDepth), numIterationsDone(0)
+  HOOOptimizerState(OptimizationProblemPtr problem, double nu, double rho, size_t numIterations, size_t maxDepth, double C)
+    : problem(problem), nu(nu), rho(rho), numIterations(numIterations), maxDepth(maxDepth), C(C), numIterationsDone(0)
   {
     MeasurableRegionPtr region;
     TypePtr inputType = problem->getSolutionsType();
@@ -104,8 +104,6 @@ public:
 
     root = new Node(region);
     logNumIterations = log((double)numIterations);
-    if (!maxDepth)
-      maxDepth = (size_t)ceil((logNumIterations / 2 - log(1.0 / nu)) / log(1 / rho));
   }
 
   HOOOptimizerState() {}
@@ -175,7 +173,8 @@ public:
       const NodePtr& node = path[i];
       node->observeReward(reward);
       size_t count = (size_t)node->stats.getCount();
-      node->U = node->stats.getMean() + sqrt(2.0 * logNumIterations / (double)count) + nun;
+      node->U = node->stats.getMean() + sqrt(C * logNumIterations / (double)count) + nun;
+//      node->U = node->stats.getMean() + C / (double)count + nun;
       node->B = juce::jmin(node->U, juce::jmax(node->left ? node->left->B : DBL_MAX, node->right ? node->right->B : DBL_MAX));
       node->meanReward = node->stats.getMean();
       node->expectedReward = juce::jmin(node->meanReward, juce::jmax(node->left ? node->left->expectedReward : DBL_MAX, node->right ? node->right->expectedReward : DBL_MAX));
@@ -245,6 +244,7 @@ protected:
   NodePtr root;
   double logNumIterations;
   size_t maxDepth;
+  double C;
   size_t numIterationsDone;
   
   double getRegionAndBValue(const NodePtr& parentNode, NodePtr& node, MeasurableRegionPtr& region) const
@@ -269,8 +269,8 @@ class HOOOptimizer : public Optimizer
 {
 public:
   HOOOptimizer(size_t numIterations, double nu, double rho)
-    : numIterations(numIterations), nu(nu), rho(rho) {}
-  HOOOptimizer() : numIterations(0) {}
+    : numIterations(numIterations), nu(nu), rho(rho), maxDepth(0), C(2.0) {}
+  HOOOptimizer() : numIterations(0), maxDepth(0), C(2.0) {}
 
   virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {
@@ -286,7 +286,16 @@ public:
   }
 
   virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, const OptimizationProblemPtr& problem) const
-    {return new HOOOptimizerState(problem, nu, rho, numIterations, maxDepth);}
+  {
+    size_t maxDepth = this->maxDepth;
+    if (!maxDepth)
+    {
+      double logNumIterations = log((double)numIterations);
+      maxDepth = (size_t)ceil((logNumIterations / 2 - log(1.0 / nu)) / log(1 / rho));
+    }
+    context.resultCallback(T("maxDepth"), maxDepth);
+    return new HOOOptimizerState(problem, nu, rho, numIterations, maxDepth, C);
+  }
 
 protected:
   friend class HOOOptimizerClass;
@@ -295,6 +304,7 @@ protected:
   double nu;  // > 0
   double rho; // [0,1]
   size_t maxDepth;
+  double C;
 };
 
 };/* namespace lbcpp */
