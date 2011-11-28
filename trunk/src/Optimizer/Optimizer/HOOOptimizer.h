@@ -26,6 +26,7 @@ public:
   virtual Variable getDefaultSplit() const = 0;
   virtual ContainerPtr sampleSplits(const RandomGeneratorPtr& random, size_t count) const = 0;
   virtual bool testSplit(const Variable& split, const Variable& candidate) const = 0;
+  virtual double getTrueRatio(const Variable& split) const = 0;
 
   virtual std::pair<MeasurableRegionPtr, MeasurableRegionPtr> makeBinarySplit(const Variable& split) const = 0;
 };
@@ -56,6 +57,8 @@ public:
 
   virtual bool testSplit(const Variable& split, const Variable& candidate) const
     {return candidate.getDouble() > split.getDouble();}
+  virtual double getTrueRatio(const Variable& split) const
+    {return (maxValue - split.getDouble()) / (maxValue - minValue);}
 
   virtual std::pair<MeasurableRegionPtr, MeasurableRegionPtr> makeBinarySplit(const Variable& split) const
   {
@@ -123,6 +126,15 @@ public:
     size_t axisToSplit = (size_t)splitPair->getFirst().getInteger();
     double splitValue = splitPair->getSecond().getDouble();
     return candidate.getObjectAndCast<DenseDoubleVector>()->getValue(axisToSplit) > splitValue;
+  }
+
+  virtual double getTrueRatio(const Variable& split) const
+  {
+    const PairPtr& splitPair = split.getObjectAndCast<Pair>();
+    size_t axisToSplit = (size_t)splitPair->getFirst().getInteger();
+    double splitValue = splitPair->getSecond().getDouble();
+    return (maxValues->getValue(axisToSplit) - splitValue) 
+            / (maxValues->getValue(axisToSplit) - minValues->getValue(axisToSplit));
   }
 
   virtual std::pair<MeasurableRegionPtr, MeasurableRegionPtr> makeBinarySplit(const Variable& split) const
@@ -273,11 +285,27 @@ public:
     OptimizerState::finishIteration(context, problem, numIterationsDone, -bestIterationScore, bestIterationSolution);
   }
 
+  void predict(ExecutionContext& context, const Variable& candidate, double& expectation, double& upperBound)
+  {
+    jassert(root);
+    NodePtr node = root;
+    upperBound = node->B;
+    while (node->isInternal())
+    {
+      node = node->getSubNode(candidate);
+      upperBound = juce::jmin(upperBound, node->B);
+    }
+    expectation = node->stats.getMean();
+  }
+
+  void clearTree()
+    {root = NodePtr();}
+
   class Node : public Object
   {
   public:
     Node(const MeasurableRegionPtr& region)
-      : region(region), U(DBL_MAX), B(DBL_MAX), meanReward(0.0), expectedReward(0.0) {}
+      : region(region), U(DBL_MAX), B(DBL_MAX), meanReward(0.0), expectedReward(0.0), split(region->getDefaultSplit()) {}
 
     const MeasurableRegionPtr& getRegion() const
       {return region;}
@@ -292,8 +320,15 @@ public:
     double meanReward;
     double expectedReward;
 
+    Variable split;
     NodePtr left;
     NodePtr right;
+
+    bool isInternal() const
+      {return left && right;}
+
+    NodePtr getSubNode(const Variable& candidate) const
+      {return region->testSplit(split, candidate) ? right : left;}
   };
 
 protected:
@@ -316,7 +351,7 @@ protected:
     if (node == NodePtr())
     {
       MeasurableRegionPtr parentRegion = parentNode->region;
-      std::pair<MeasurableRegionPtr, MeasurableRegionPtr> subRegions = parentRegion->makeBinarySplit(parentRegion->getDefaultSplit());
+      std::pair<MeasurableRegionPtr, MeasurableRegionPtr> subRegions = parentRegion->makeBinarySplit(parentNode->split);
       region = &node == &parentNode->left ? subRegions.first : subRegions.second;
       return DBL_MAX;
     }
@@ -333,18 +368,17 @@ typedef ReferenceCountedObjectPtr<HOOOptimizerState> HOOOptimizerStatePtr;
 class HOOOptimizer : public Optimizer
 {
 public:
-  HOOOptimizer(size_t numIterations, double nu, double rho)
-    : numIterations(numIterations), nu(nu), rho(rho), maxDepth(0), C(2.0), playCenteredArms(true) {}
-  HOOOptimizer() : numIterations(0), maxDepth(0), C(2.0), playCenteredArms(true) {}
+  HOOOptimizer(size_t numIterations = 10000, double nu = 1.0, double rho = 0.5, double C = 2.0)
+    : numIterations(numIterations), nu(nu), rho(rho), maxDepth(0), C(C), playCenteredArms(true) {}
 
   virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {
     HOOOptimizerStatePtr hooState = optimizerState.staticCast<HOOOptimizerState>();
     while (hooState->getNumIterationsDone() < numIterations)
     {
-      context.enterScope("Iteration " + String((int)hooState->getNumIterationsDone()+1));
-      Variable res = hooState->doIteration(context);
-      context.leaveScope(res);
+      //context.enterScope("Iteration " + String((int)hooState->getNumIterationsDone()+1));
+      /*Variable res = */hooState->doIteration(context);
+      //context.leaveScope(res);
     }
     hooState->finishIteration(context);
     return hooState;
