@@ -72,44 +72,14 @@ public:
 # ifdef LBCPP_PROTEIN_ROSETTA
     rosettaInitialization(context, false);
 
-    juce::File refDir = context.getFile(T("data/psipred"));
+    core::pose::PoseOP testPose = new core::pose::Pose();
+    core::pose::PoseOP resultPose = new core::pose::Pose();
+    makePoseFromSequence(testPose, T("AAAAAAAAAAAA"));
+    initializeProteinStructure(testPose, resultPose);
 
-    juce::OwnedArray<File> references;
-    refDir.findChildFiles(references, File::findFiles, false, T("*.xml"));
+    std::cout << "collisions before : " << computeCorrectionFactorForCollisions(testPose) << std::endl;
+    std::cout << "collisions after: " << computeCorrectionFactorForCollisions(resultPose) << std::endl;
 
-    SymmetricMatrixPtr mat1;
-    ProteinPtr protein;
-    core::pose::PoseOP pose;
-
-    ScalarVariableMeanAndVariancePtr vals = new ScalarVariableMeanAndVariance();
-
-    int count = 0;
-
-    for (size_t i = 0; i < references.size(); i++)
-    {
-      protein = Protein::createFromFile(context, (*references[i]));
-      convertProteinToPose(context, protein, pose);
-      std::cout << "Iteration : " << i << std::endl;
-
-      if (protein->getLength() == (size_t)pose->n_residue())
-      {
-        mat1 = createBackboneMatrixDistance(pose);
-        double min = 10000;
-        for (size_t i = 0; i < mat1->getNumRows(); i++)
-          for (size_t j = i + 2; j < mat1->getNumColumns(); j++)
-            min = (mat1->getElement(i, j).getDouble() < min) ? mat1->getElement(i, j).getDouble()
-                : min;
-        vals->push(min);
-        count++;
-      }
-    }
-
-    std::cout << "Count : " << count << std::endl;
-    std::cout << "Mean : " << vals->getMean() << std::endl;
-    std::cout << "Variance : " << vals->getVariance() << std::endl;
-    Variable(count).saveToFile(context, File(context.getFile(T("Count.xml"))));
-    Variable(vals->getMean()).saveToFile(context, File(context.getFile(T("Mean.xml"))));
-    Variable(vals->getVariance()).saveToFile(context, File(context.getFile(T("Variance.xml"))));
 
 # if 0
     File referenceFile = context.getFile(T("GoodDataset/0-100/dataset0-100"));
