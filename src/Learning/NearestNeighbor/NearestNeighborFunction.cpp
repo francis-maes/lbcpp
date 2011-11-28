@@ -118,71 +118,6 @@ bool NearestNeighborBatchLearner::train(ExecutionContext& context, const Functio
 namespace lbcpp
 {
 
-class StandardDeviationFeatureGeneratorCallback : public FeatureGeneratorCallback
-{
-public:
-  StandardDeviationFeatureGeneratorCallback(const EnumerationPtr& enumeration)
-    : nextIndex(0), currentIndexOffset(0)
-  {
-    jassert(enumeration);
-    meansAndVariances.resize(enumeration->getNumElements());
-    for (size_t i = 0; i < meansAndVariances.size(); ++i)
-      meansAndVariances[i] = new ScalarVariableMeanAndVariance();
-  }
-
-  virtual void sense(size_t index, double value)
-  {
-    const size_t currentIndex = currentIndexOffset + index;
-    jassert(nextIndex <= currentIndex && currentIndex < meansAndVariances.size());
-    for (; nextIndex < currentIndex; ++nextIndex)
-      meansAndVariances[nextIndex]->push(0.f);
-    meansAndVariances[currentIndex]->push(value);
-    ++nextIndex;
-  }
-
-  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
-  {
-    jassert(weight == 1.f);
-    currentIndexOffset += index;
-    vector->computeFeatures(*this);
-    currentIndexOffset -= index;
-  }
-
-  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-  {
-    jassert(weight == 1.f);
-    currentIndexOffset += index;
-    featureGenerator->computeFeatures(inputs, *this);
-    currentIndexOffset -= index;
-  }
-
-  void computeStandardDeviation(std::vector<double>& results) const
-  {
-    results.resize(meansAndVariances.size());
-    for (size_t i = 0; i < meansAndVariances.size(); ++i)
-    {
-      jassert(i == 0 || meansAndVariances[i-1]->getCount() == meansAndVariances[i]->getCount());
-      results[i] = meansAndVariances[i]->getStandardDeviation();
-      if (results[i] < 1e-6)
-        results[i] = 1.f;
-    }
-  }
-
-  void finalizeFeatures()
-  {
-    for (; nextIndex < meansAndVariances.size(); ++nextIndex)
-      meansAndVariances[nextIndex]->push(0.f);
-    nextIndex = 0;
-    jassert(currentIndexOffset == 0);
-  }
-
-protected:
-  std::vector<ScalarVariableMeanAndVariancePtr> meansAndVariances;
-
-  size_t nextIndex;
-  size_t currentIndexOffset;
-};
-
 class NormalizedSquaredL2NormFeatureGeneratorCallback : public FeatureGeneratorCallback
 {
 public:
@@ -268,7 +203,7 @@ protected:
 StreamBasedNearestNeighbor::StreamBasedNearestNeighbor(const StreamPtr& stream, size_t numNeighbors, bool includeTheNearestNeighbor)
   : stream(stream), numNeighbors(numNeighbors), includeTheNearestNeighbor(includeTheNearestNeighbor)
 {
-  StandardDeviationFeatureGeneratorCallback callback(stream->getElementsType()->getTemplateArgument(0)->getTemplateArgument(0).dynamicCast<Enumeration>());
+  ComputeMeanAndVarianceFeatureGeneratorCallback callback(stream->getElementsType()->getTemplateArgument(0)->getTemplateArgument(0).dynamicCast<Enumeration>());
 
   stream->rewind();
   while (!stream->isExhausted())
@@ -278,7 +213,7 @@ StreamBasedNearestNeighbor::StreamBasedNearestNeighbor(const StreamPtr& stream, 
     jassert(obj->getVariable(0).getObjectAndCast<LazyDoubleVector>()); // Method is efficient only if the double vector is lazy
     DoubleVectorPtr dv = obj->getVariable(0).getObjectAndCast<DoubleVector>();
     dv->computeFeatures(callback);
-    callback.finalizeFeatures();
+    callback.finalizeSense();
   }
 
   callback.computeStandardDeviation(standardDeviation);
@@ -370,7 +305,7 @@ bool StreamBasedNearestNeighborBatchLearner::train(ExecutionContext& context, co
   StreamBasedNearestNeighborPtr target = function.staticCast<StreamBasedNearestNeighbor>();
   target->stream = objectStream(trainingData[0]->getClass(), trainingData);
 
-  StandardDeviationFeatureGeneratorCallback callback(trainingData[0]->getVariable(0).getType()->getTemplateArgument(0).dynamicCast<Enumeration>());
+  ComputeMeanAndVarianceFeatureGeneratorCallback callback(trainingData[0]->getVariable(0).getType()->getTemplateArgument(0).dynamicCast<Enumeration>());
 
   target->stream->rewind();
   while (!target->stream->isExhausted())
@@ -380,7 +315,7 @@ bool StreamBasedNearestNeighborBatchLearner::train(ExecutionContext& context, co
     jassert(obj->getVariable(0).getObjectAndCast<LazyDoubleVector>()); // Method is efficient only if the double vector is lazy
     DoubleVectorPtr dv = obj->getVariable(0).getObjectAndCast<DoubleVector>();
     dv->computeFeatures(callback);
-    callback.finalizeFeatures();
+    callback.finalizeSense();
   }
 
   callback.computeStandardDeviation(target->standardDeviation);

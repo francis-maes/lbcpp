@@ -345,10 +345,10 @@ public:
     GaussianSVMOptimizerStatePtr state = optimizerState.staticCast<GaussianSVMOptimizerState>();
 
     std::vector<double> regularizer;
-    for (double i = 1.f; i <= 7.f; i += 2.f)
+    for (double i = 0.f; i <= 7.f; i += 1.f)
       regularizer.push_back(i);
     std::vector<double> gamma;
-    for (double i = -5.f; i <= 5; i += 2.f)
+    for (double i = 0.f; i <= 5; i += 1.f)
       gamma.push_back(i);
 
     // Send
@@ -545,6 +545,73 @@ protected:
   File optimizerStateFile;
   String inputDirectory;
   String supervisionDirectory;
+};
+
+class AverageDisulfideBondResults : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    juce::OwnedArray<File> files;
+    directory.findChildFiles(files, File::findFiles, false, T("*#Fold0.trace"));
+
+    std::map<double, std::map<double, double> > scores;
+    for (size_t i = 0; i < (size_t)files.size(); ++i)
+    {
+      const String prefix = files[i]->getFileName().replace(T("#Fold0.trace"), T(""));
+      const String regularizerString = prefix.substring(1, prefix.lastIndexOfChar(T('#')));
+      const String gammaString = prefix.substring(prefix.lastIndexOfChar(T('#')) + 1, prefix.length());
+
+      double regularizer = Variable::createFromString(context, doubleType, regularizerString).getDouble();
+      double gamma = Variable::createFromString(context, doubleType, gammaString).getDouble();
+
+      scores[regularizer][gamma] = getAverageOverFolds(context, prefix);
+    }
+
+    for (std::map<double, std::map<double, double> >::iterator it = scores.begin(); it != scores.end(); ++it)
+    {
+      context.enterScope(T("Regularizer ") + String(it->first));
+      context.resultCallback(T("Regularizer"), it->first);
+      double bestScore = DBL_MAX;
+      for (std::map<double, double>::iterator itt = it->second.begin(); itt != it->second.end(); ++itt)
+      {
+        context.enterScope(T("Gamma") + String(itt->first));
+        context.resultCallback(T("Gamma"), itt->first);
+        context.resultCallback(T("Score"), itt->second);
+        if (itt->second < bestScore)
+          bestScore = itt->second;
+        context.leaveScope(itt->second);
+      }
+      context.resultCallback(T("BestScore"), bestScore);
+      context.leaveScope(bestScore);
+    }
+
+    return true;
+  }
+
+  double getAverageOverFolds(ExecutionContext& context, const String& prefix) const
+  {
+    double sum = 0.f;
+    size_t numFolds = 0;
+    for (size_t j = 0; j < 10; ++j)
+    {
+      File f = directory.getChildFile(prefix + T("#Fold") + String((int)j) + T(".trace"));
+      ExecutionTracePtr trace = ExecutionTrace::createFromFile(context, f).staticCast<ExecutionTrace>();
+      if (trace)
+      {
+        sum += trace->getRootNode()->findFirstNode()->getReturnValue().getDouble();
+        ++numFolds;
+      }
+      else
+        context.warningCallback(T("No trace : ") + f.getFileName());
+    }
+    return  sum / (double)numFolds;
+  }
+
+protected:
+  friend class AverageDisulfideBondResultsClass;
+
+  File directory;
 };
 
 };
