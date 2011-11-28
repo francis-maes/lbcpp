@@ -70,26 +70,45 @@ public:
     RandomGeneratorPtr random = new RandomGenerator();
 
 # ifdef LBCPP_PROTEIN_ROSETTA
-    rosettaInitialization(context, true);
+    rosettaInitialization(context, false);
 
-    std::cout << "test : =============================================" << std::endl;
-    core::pose::PoseOP testPose = new core::pose::Pose();
-    core::pose::PoseOP resultPose = new core::pose::Pose();
-    makePoseFromSequence(testPose, T("AAAAAAAAAAAA"));
-    initializeProteinStructure(testPose, resultPose);
-    std::cout << "energy before init : " << fullAtomEnergy(testPose) << std::endl;
-    std::cout << "energy before : " << fullAtomEnergy(resultPose) << std::endl;
+    juce::File refDir = context.getFile(T("data/psipred"));
 
-    core::io::pdb::dump_pdb(*resultPose, "/Users/alex/Desktop/initial.pdb");
+    juce::OwnedArray<File> references;
+    refDir.findChildFiles(references, File::findFiles, false, T("*.xml"));
 
-    ProteinMoverPtr rgbm = rigidBodyMover(2, 5, -4.0, 0.0);
-    rgbm->move(resultPose);
+    SymmetricMatrixPtr mat1;
+    ProteinPtr protein;
+    core::pose::PoseOP pose;
 
-    core::io::pdb::dump_pdb(*resultPose, "/Users/alex/Desktop/modified.pdb");
+    ScalarVariableMeanAndVariancePtr vals = new ScalarVariableMeanAndVariance();
 
-    std::cout << "energy after : " << fullAtomEnergy(resultPose) << std::endl;
+    int count = 0;
 
+    for (size_t i = 0; (i < references.size()) && (i < 10); i++)
+    {
+      protein = Protein::createFromFile(context, (*references[i]));
+      convertProteinToPose(context, protein, pose);
 
+      if (protein->getLength() == (size_t)pose->n_residue())
+      {
+        mat1 = createBackboneMatrixDistance(pose);
+        double min = 10000;
+        for (size_t i = 0; i < mat1->getNumRows(); i++)
+          for (size_t j = i + 2; j < mat1->getNumColumns(); j++)
+            min = (mat1->getElement(i, j).getDouble() < min) ? mat1->getElement(i, j).getDouble()
+                : min;
+        vals->push(min);
+        count++;
+      }
+    }
+
+    std::cout << "Count : " << count << std::endl;
+    std::cout << "Mean : " << vals->getMean() << std::endl;
+    std::cout << "Variance : " << vals->getVariance() << std::endl;
+    Variable(count).saveToFile(context, File(context.getFile(T("Count.xml"))));
+    Variable(vals->getMean()).saveToFile(context, File(context.getFile(T("Mean.xml"))));
+    Variable(vals->getVariance()).saveToFile(context, File(context.getFile(T("Variance.xml"))));
 
 # if 0
     File referenceFile = context.getFile(T("GoodDataset/0-100/dataset0-100"));

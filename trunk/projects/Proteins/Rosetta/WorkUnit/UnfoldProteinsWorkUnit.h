@@ -24,6 +24,7 @@ double evaluateQualityUnfold(const core::pose::PoseOP& pose)
   double quality = getTotalEnergy(pose, fullAtomEnergy);
   quality -= computeCorrectionFactorForDistances(pose);
   quality -= computeCorrectionFactorForCollisions(pose);
+  // so far, makes no real sense because dimensions do not match...
   quality += computeCompactness(pose);
   return quality;
 
