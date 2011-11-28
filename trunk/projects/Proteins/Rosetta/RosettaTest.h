@@ -85,10 +85,11 @@ public:
 
     int count = 0;
 
-    for (size_t i = 0; (i < references.size()) && (i < 10); i++)
+    for (size_t i = 0; i < references.size(); i++)
     {
       protein = Protein::createFromFile(context, (*references[i]));
       convertProteinToPose(context, protein, pose);
+      std::cout << "Iteration : " << i << std::endl;
 
       if (protein->getLength() == (size_t)pose->n_residue())
       {
