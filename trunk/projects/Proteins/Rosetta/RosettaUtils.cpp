@@ -163,8 +163,9 @@ double lbcpp::computeCorrectionFactorForCollisions(const core::pose::PoseOP& pos
 
   // determined by inspecting all proteins, computing minimum distance for each
   // of them and then taking mean and variance of these values.
-  double averageMinimumDistance = 1.3;
-  double varianceMinimumDistance = 0.5;
+  // true value for average = 2.28, true value for variance = 0.0133
+  double averageMinimumDistance = 1.5;
+  double varianceMinimumDistance = 0.13;
 
   double inverseVarianceMinimumDistance = 1.0 / varianceMinimumDistance;
 
@@ -186,9 +187,14 @@ double lbcpp::computeCorrectionFactorForCollisions(const core::pose::PoseOP& pos
 double lbcpp::computeCompactness(const core::pose::PoseOP& pose)
 {
 #ifdef LBCPP_PROTEIN_ROSETTA
-  double compactness = 0.0;
 
-  return compactness;
+  double* mean;
+  double* min;
+  double* max;
+  SymmetricMatrixPtr distMat = createCalphaMatrixDistance(pose, mean, min, max);
+
+  // returns 1 if the structure is a sphere, less than 1 if not.
+  return *mean / *max;
 
 #else
   jassert(false);
@@ -292,23 +298,50 @@ void lbcpp::initializeProteinStructure(const core::pose::PoseOP& pose, core::pos
 #endif // LBCPP_PROTEIN_ROSETTA
 }
 
-SymmetricMatrixPtr lbcpp::createCalphaMatrixDistance(const core::pose::PoseOP& pose)
+SymmetricMatrixPtr lbcpp::createCalphaMatrixDistance(const core::pose::PoseOP& pose,
+    double* meanDistance, double* minimalDistance, double* maximalDistance)
 {
   SymmetricMatrixPtr matrix;
+
 #ifdef LBCPP_PROTEIN_ROSETTA
   matrix = new DoubleSymmetricMatrix(doubleType, (int)pose->n_residue(), 0.0);
 
+  if (meanDistance != NULL)
+    *meanDistance = 0.0;
+  if (minimalDistance != NULL)
+    *minimalDistance = 2 * (double)pose->n_residue();
+  if (maximalDistance != NULL)
+    *maximalDistance = -1.0;
+
+  double dist;
+  int count = 0;
+
   for (size_t i = 0; i < matrix->getNumRows(); i++)
   {
-    for (size_t j = i; j < matrix->getNumColumns(); j++)
+    for (size_t j = i + 1; j < matrix->getNumColumns(); j++)
     {
       // Get coordinates
       numeric::xyzVector<double> coordinatesCAi = (pose->residue(i + 1)).xyz("CA");
       numeric::xyzVector<double> coordinatesCAj = (pose->residue(j + 1)).xyz("CA");
+      dist = coordinatesCAi.distance(coordinatesCAj);
 
-      matrix->setElement(i, j, coordinatesCAi.distance(coordinatesCAj));
+      if (meanDistance != NULL)
+      {
+        *meanDistance += dist;
+        count++;
+      }
+      if ((minimalDistance != NULL) && (dist < *minimalDistance))
+        *minimalDistance = dist;
+      else if ((maximalDistance != NULL) && (dist > *maximalDistance))
+        *maximalDistance = dist;
+
+      matrix->setElement(i, j, dist);
     }
   }
+
+  if (meanDistance != NULL)
+    *meanDistance /= (double)count;
+
 #else
   jassert(false);
 #endif // LBCPP_PROTEIN_ROSETTA

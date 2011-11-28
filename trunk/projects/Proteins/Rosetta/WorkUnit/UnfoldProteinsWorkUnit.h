@@ -22,10 +22,10 @@ double evaluateQualityUnfold(const core::pose::PoseOP& pose)
 #ifdef LBCPP_PROTEIN_ROSETTA
 
   double quality = getTotalEnergy(pose, fullAtomEnergy);
+  // so far, these factors make no real sense because dimensions do not match...
   quality -= computeCorrectionFactorForDistances(pose);
   quality -= computeCorrectionFactorForCollisions(pose);
-  // so far, makes no real sense because dimensions do not match...
-  quality += computeCompactness(pose);
+  quality += 1.0 / computeCompactness(pose);
   return quality;
 
 #else
