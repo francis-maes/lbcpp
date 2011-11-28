@@ -65,55 +65,6 @@ private:
   ProteinMoverPtr moverEnter;
 
 public:
-  void generateMoversDataset(VectorPtr& inputWorker, VectorPtr& inputMover)
-  {
-# ifdef LBCPP_PROTEIN_ROSETTA
-    String acc;
-    for (size_t i = 0; i < 20; i++)
-    {
-      core::pose::PoseOP pose = new core::pose::Pose();
-      acc = T("AAAAAAAAAPSHHH");
-      makePoseFromSequence(pose, acc);
-      RosettaWorkerPtr worker1 = new RosettaWorker(pose, 2, 1, 0, 0, 0);
-      ProteinMoverPtr m1 = new PhiPsiMover(3, 23.2, -23.2);
-      inputWorker->append(worker1);
-      inputMover->append(m1);
-
-      core::pose::PoseOP pose2 = new core::pose::Pose();
-      acc = T("AAAAAAAAAAAAAPSHHHAAAAAAAA");
-      makePoseFromSequence(pose2, acc);
-      RosettaWorkerPtr worker2 = new RosettaWorker(pose2, 2, 1, 0, 0, 0);
-      ProteinMoverPtr m2 = new PhiPsiMover(15, 2.2, 53.2);
-      inputWorker->append(worker2);
-      inputMover->append(m2);
-
-      core::pose::PoseOP pose3 = new core::pose::Pose();
-      acc = T("AAAAAPSHHH");
-      makePoseFromSequence(pose3, acc);
-      RosettaWorkerPtr worker3 = new RosettaWorker(pose3, 2, 1, 0, 0, 0);
-      ProteinMoverPtr m3 = new ShearMover(2, -53.2, -23.2);
-      inputWorker->append(worker3);
-      inputMover->append(m3);
-
-      core::pose::PoseOP pose4 = new core::pose::Pose();
-      acc = T("HHHHHHAAAAAAAAAPSHHHHHHHHHHHHHHHHHH");
-      makePoseFromSequence(pose4, acc);
-      RosettaWorkerPtr worker4 = new RosettaWorker(pose4, 2, 1, 0, 0, 0);
-      ProteinMoverPtr m4 = new PhiPsiMover(23, -23.2, -23.2);
-      inputWorker->append(worker4);
-      inputMover->append(m4);
-
-      core::pose::PoseOP pose5 = new core::pose::Pose();
-      acc = T("HHHHHHAAAPSHHHHHHHHHHHHHAAAPSHHHHHHHHHHHHHHHHHH");
-      makePoseFromSequence(pose5, acc);
-      RosettaWorkerPtr worker5 = new RosettaWorker(pose5, 2, 1, 0, 0, 0);
-      ProteinMoverPtr m5 = new RigidBodyMover(10, 15, -23.2, -23.2);
-      inputWorker->append(worker5);
-      inputMover->append(m5);
-    }
-# endif
-  }
-
   virtual Variable run(ExecutionContext& context)
   {
     RandomGeneratorPtr random = new RandomGenerator();
@@ -123,25 +74,20 @@ public:
 
     std::cout << "test : =============================================" << std::endl;
     core::pose::PoseOP testPose = new core::pose::Pose();
+    core::pose::PoseOP resultPose = new core::pose::Pose();
     makePoseFromSequence(testPose, T("AAAAAAAAAAAA"));
-    std::cout << "energy : " << fullAtomEnergy(testPose) << std::endl;
-    double valuePhi = sqrt(-1.0);
-    double valuePsi = -23.0 / 0.0;
-    double valuePmi = 23.0;
+    initializeProteinStructure(testPose, resultPose);
+    std::cout << "energy before init : " << fullAtomEnergy(testPose) << std::endl;
+    std::cout << "energy before : " << fullAtomEnergy(resultPose) << std::endl;
 
-    core::conformation::Conformation conf = testPose->conformation();
-    core::id::AtomID atom1(2, 2);
-    numeric::xyzVector < core::Real > vec3 = conf.xyz(atom1);
-    cout << "x : " << vec3.x() << " y : " << vec3.y() << " z : " << vec3.z() << endl;
+    core::io::pdb::dump_pdb(*resultPose, "/Users/alex/Desktop/initial.pdb");
 
-    vec3.z(valuePhi);
-    conf.set_xyz(atom1, vec3);
+    ProteinMoverPtr rgbm = rigidBodyMover(2, 5, -4.0, 0.0);
+    rgbm->move(resultPose);
 
-    vec3 = conf.xyz(atom1);
-    cout << "x : " << vec3.x() << " y : " << vec3.y() << " z : " << vec3.z() << endl;
-    testPose->set_new_conformation(conf.clone());
+    core::io::pdb::dump_pdb(*resultPose, "/Users/alex/Desktop/modified.pdb");
 
-    std::cout << "energy : " << fullAtomEnergy(testPose) << std::endl;
+    std::cout << "energy after : " << fullAtomEnergy(resultPose) << std::endl;
 
 
 

@@ -91,6 +91,10 @@ double getNormalizedEnergy(const core::pose::PoseOP& pose, double(*scoreFunction
 double getNormalizedScore(const core::pose::PoseOP& pose, double(*scoreFunction)(
     const core::pose::PoseOP&));
 
+double computeCorrectionFactorForDistances(const core::pose::PoseOP& pose);
+double computeCorrectionFactorForCollisions(const core::pose::PoseOP& pose);
+double computeCompactness(const core::pose::PoseOP& pose);
+
 /**
  * Returns the total energy of a Protein object.
  * @param protein a pointer to the Protein object

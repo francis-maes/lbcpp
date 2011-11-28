@@ -39,64 +39,7 @@ ProteinPtr lbcpp::convertPoseToProtein(ExecutionContext& context, const core::po
 
   ProteinPtr prot = Protein::createFromPDB(context, pdbString, true);
   return prot;
-  /*
-   // Number of residues
-   int numres = pose->n_residue();
-   ProteinPtr protein = new Protein();
 
-   // Primary structure
-   protein->setPrimaryStructure((String) (pose->sequence()).c_str());
-
-   // Tertiary structure
-   TertiaryStructurePtr ts = new TertiaryStructure(numres);
-   for (int i = 0; i < numres; i++)
-   {
-   // rosetta : get residue information
-   core::conformation::Residue tempResRos = pose->residue(i + 1);
-   core::chemical::ResidueType tempResRosType = pose->residue_type(i + 1);
-   int nbatoms = tempResRos.natoms();
-
-   // lbcpp : create residue
-   ResiduePtr temp = new Residue((AminoAcidType) AminoAcid::fromOneLetterCode(
-   (juce::tchar) tempResRosType.name1()).getInteger());
-
-   // fill residue with atoms
-   for (size_t j = 0; j < nbatoms; j++)
-   {
-   // get atoms information
-   numeric::xyzVector < core::Real > positionAtomRos = tempResRos.xyz(j + 1);
-   std::string atomTypeRos = (tempResRos.atom_type(j + 1)).element();
-   std::string atomNameRos = tempResRos.atom_name(j + 1);
-
-   // create atom and set position and occupancy
-   impl::Vector3 v3(0.0, 0.0, 0.0);
-   Vector3Ptr v3p = new Vector3(v3);
-   AtomPtr tempAtom = new Atom((String) (atomNameRos.c_str()),
-   (String) (atomTypeRos.c_str()), v3p);
-
-   // Probleme, si pose cree par makePoseFromSequence, energie
-   //sensiblement differente... (du a occupancy de toute evidence)
-   if ((pose->pdb_info()).get() != NULL)
-   tempAtom->setOccupancy((pose->pdb_info())->occupancy(i + 1, j + 1));
-   else
-   tempAtom->setOccupancy(1.0);
-
-   tempAtom->setX(positionAtomRos.x());
-   tempAtom->setY(positionAtomRos.y());
-   tempAtom->setZ(positionAtomRos.z());
-
-   // add atom to residue
-   temp->addAtom(tempAtom);
-   }
-   // add residue to tertiary structure
-   ts->setResidue(i, temp);
-   }
-
-   // add tertiary structure to protein
-   protein->setTertiaryStructure(ts);
-
-   return protein;
-   */
 #else
   jassert(false);
   return ProteinPtr();
@@ -165,8 +108,7 @@ double formattingCorrectionFactor(double value, double mean, double std)
   return std::exp(std::pow((value - mean) / std, 2));
 }
 
-double lbcpp::getConformationScore(const core::pose::PoseOP& pose, double(*scoreFunction)(
-    const core::pose::PoseOP&), double* energy)
+double lbcpp::computeCorrectionFactorForDistances(const core::pose::PoseOP& pose)
 {
 #ifdef LBCPP_PROTEIN_ROSETTA
   // Correct the energy function
@@ -206,11 +148,48 @@ double lbcpp::getConformationScore(const core::pose::PoseOP& pose, double(*score
   correctionFactor += formattingCorrectionFactor(coordinatesCA.distance(coordinatesC), meanCAC,
       stdCAC);
 
+  return juce::jmax(0.0, correctionFactor - (double)3 * numberResidues + 1);
+
+#else
+  jassert(false);
+  return 0.0;
+#endif // LBCPP_PROTEIN_ROSETTA
+}
+
+double lbcpp::computeCorrectionFactorForCollisions(const core::pose::PoseOP& pose)
+{
+#ifdef LBCPP_PROTEIN_ROSETTA
+  double correctionFactor = 0.0;
+
+  return correctionFactor;
+
+#else
+  jassert(false);
+  return 0.0;
+#endif // LBCPP_PROTEIN_ROSETTA
+}
+
+double lbcpp::computeCompactness(const core::pose::PoseOP& pose)
+{
+#ifdef LBCPP_PROTEIN_ROSETTA
+  double compactness = 0.0;
+
+  return compactness;
+
+#else
+  jassert(false);
+  return 0.0;
+#endif // LBCPP_PROTEIN_ROSETTA
+}
+
+double lbcpp::getConformationScore(const core::pose::PoseOP& pose, double(*scoreFunction)(
+    const core::pose::PoseOP&), double* energy)
+{
+#ifdef LBCPP_PROTEIN_ROSETTA
   double tempEn = (*scoreFunction)(pose);
   if (energy != NULL)
     *energy = tempEn;
-  double score = tempEn + juce::jmax(0.0, correctionFactor - (double)3 * numberResidues + 1);
-  return score;
+  return tempEn + computeCorrectionFactorForDistances(pose);
 #else
   jassert(false);
   return 0.0;
@@ -321,8 +300,3 @@ SymmetricMatrixPtr lbcpp::createCalphaMatrixDistance(const core::pose::PoseOP& p
 #endif // LBCPP_PROTEIN_ROSETTA
   return matrix;
 }
-
-//double lbcpp::getConformationScoreCentroid(const core::pose::PoseOP& pose)
-//{
-//
-//}

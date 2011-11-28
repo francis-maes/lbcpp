@@ -38,9 +38,7 @@ class RigidBodyMover : public ProteinMover
 {
 public:
   RigidBodyMover()
-    : ProteinMover()
-  {
-  }
+    : ProteinMover() {}
 
   /**
    * Instantiates a mover object that performs a rotation around the axis formed by the
@@ -57,15 +55,11 @@ public:
    */
   RigidBodyMover(size_t indexResidueOne, size_t indexResidueTwo, double magnitude, double amplitude)
     : ProteinMover(), residues(new Pair(indexResidueOne, indexResidueTwo)),
-      magnitude(magnitude), amplitude(amplitude)
-  {
-  }
+      magnitude(magnitude), amplitude(amplitude) {}
 
   RigidBodyMover(const RigidBodyMover& mover)
     : ProteinMover(), residues(new Pair(mover.residues->getFirst(), mover.residues->getSecond())),
-      magnitude(mover.magnitude), amplitude(mover.amplitude)
-  {
-  }
+      magnitude(mover.magnitude), amplitude(mover.amplitude) {}
 
   /**
    * Performs the rotation on the pose specified by the parameters of the mover.
@@ -199,36 +193,28 @@ public:
    * @param index the new index of the first residue to modify.
    */
   void setIndexResidueOne(size_t index)
-  {
-    residues->setFirst(index);
-  }
+    {residues->setFirst(index);}
 
   /**
    * Gets the current index of the first residue to modify.
    * @return the index of the current first residue.
    */
   size_t getIndexResidueOne()
-  {
-    return residues->getFirst().getInteger();
-  }
+    {return residues->getFirst().getInteger();}
 
   /**
    * Sets the new second residue to modify.
    * @param index the new index of the second residue to modify.
    */
   void setIndexResidueTwo(size_t index)
-  {
-    residues->setSecond(index);
-  }
+    {residues->setSecond(index);}
 
   /**
    * Gets the current index of the second residue to modify.
    * @return the index of the current second residue.
    */
   size_t getIndexResidueTwo()
-  {
-    return residues->getSecond().getInteger();
-  }
+    {return residues->getSecond().getInteger();}
 
   virtual bool isEqual(const ProteinMoverPtr& mover, double tolerance)
   {
