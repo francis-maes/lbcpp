@@ -38,9 +38,7 @@ class PhiPsiMover : public ProteinMover
 {
 public:
   PhiPsiMover()
-    : ProteinMover()
-  {
-  }
+    : ProteinMover() {}
 
   /**
    * Instantiates a mover object that performs a modification on the Phi and Psi
@@ -51,18 +49,14 @@ public:
    * @param deltaPsi the increment of the Psi angle
    */
   PhiPsiMover(size_t residue, double deltaPhi, double deltaPsi)
-    : ProteinMover(), residue(residue), deltaPhi(deltaPhi), deltaPsi(deltaPsi)
-  {
-  }
+    : ProteinMover(), residue(residue), deltaPhi(deltaPhi), deltaPsi(deltaPsi) {}
 
   /**
    * Performs the move on the pose specified by the parameters of the mover.
    * @param pose the pose to modify.
    */
   virtual void move(core::pose::PoseOP& pose)
-  {
-    move(pose, residue, deltaPhi, deltaPsi);
-  }
+    {move(pose, residue, deltaPhi, deltaPsi);}
 
   /**
    * Moves the angles Phi and Psi of the residue specified by an amount specified.
@@ -91,54 +85,42 @@ public:
    * @param newResidueNumber the new index of the residue to modify.
    */
   void setResidueIndex(size_t index)
-  {
-    residue = index;
-  }
+    {residue = index;}
 
   /**
    * Gets the current index of the residue to modify.
    * @return the index of the current residue.
    */
   size_t getResidueIndex()
-  {
-    return residue;
-  }
+    {return residue;}
 
   /**
    * Sets the new increment for the PHI angle.
    * @param delta the new value for the PHI increment.
    */
   void setDeltaPhi(double delta)
-  {
-    deltaPhi = delta;
-  }
+    {deltaPhi = delta;}
 
   /**
    * Gets the current value for the PHI increment.
    * @return the current PHI increment.
    */
   double getDeltaPhi()
-  {
-    return deltaPhi;
-  }
+    {return deltaPhi;}
 
   /**
    * Sets the new increment for the PSI angle.
    * @param delta the new value for the PSI increment.
    */
   void setDeltaPsi(double delta)
-  {
-    deltaPsi = delta;
-  }
+    {deltaPsi = delta;}
 
   /**
    * Gets the current value for the PSI increment.
    * @return the current PSI increment.
    */
   double getDeltaPsi()
-  {
-    return deltaPsi;
-  }
+    {return deltaPsi;}
 
   virtual bool isEqual(const ProteinMoverPtr& mover, double tolerance)
   {
