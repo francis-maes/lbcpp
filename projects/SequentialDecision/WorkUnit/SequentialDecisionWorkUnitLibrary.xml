@@ -118,5 +118,26 @@
     <variable type="Double" name="rho"/>
     <variable type="Double" name="C"/>
   </class>
+
+  <class name="RFHOOO1DSandBox" base="WorkUnit">
+    <variable type="PositiveInteger" name="maxHorizon"/>
+    <variable type="PositiveInteger" name="K"/>
+    <variable type="PositiveInteger" name="nMin"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
+    <variable type="Double" name="nu"/>
+    <variable type="Double" name="rho"/>
+    <variable type="Double" name="C"/>
+  </class>
   
+  <class name="RFHOOOSandBox" base="WorkUnit">
+    <variable type="PositiveInteger" name="dimension"/>
+    <variable type="PositiveInteger" name="maxHorizon"/>
+    <variable type="PositiveInteger" name="K"/>
+    <variable type="PositiveInteger" name="nMin"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
+    <variable type="Double" name="nu"/>
+    <variable type="Double" name="rho"/>
+    <variable type="Double" name="C"/>
+  </class>
+
 </library>
