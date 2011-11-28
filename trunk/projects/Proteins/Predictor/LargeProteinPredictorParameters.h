@@ -721,7 +721,8 @@ public:
   {
     // TODO: incorporate bias in case of binary target
     if (learningMachineName == T("LibSVM"))
-      return libSVMLearningMachine(pow(2.0, svmC), rbfKernel, 0, pow(2.0, svmGamma), 0.0);
+      return new PreProcessInputCompositeFunction(meanAndVarianceLearnableFunction(false, true)
+                                                  , libSVMLearningMachine(pow(2.0, svmC), rbfKernel, 0, pow(2.0, svmGamma), 0.0));
     else if (learningMachineName == T("kNN"))
       return nearestNeighborLearningMachine(knnNeighbors, false);
     else if (learningMachineName == T("LSH"))

@@ -164,6 +164,9 @@
     <variable type="String" name="inputDirectory" shortName="in"/>
     <variable type="String" name="supervisionDirectory" shortName="sup"/>
   </class>
+  <class name="AverageDisulfideBondResults" base="WorkUnit">
+    <variable type="File" name="directory" shortName="in"/>
+  </class>
   <!-- END CysteinBox -->
 
   <!-- BEGIN LargeBox -->

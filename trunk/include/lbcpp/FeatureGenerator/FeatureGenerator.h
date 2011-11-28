@@ -29,6 +29,8 @@ public:
     {return false;}
 };
 
+typedef FeatureGeneratorCallback* FeatureGeneratorCallbackPtr;
+
 class FeatureGenerator : public Function
 {
 public:
@@ -150,6 +152,24 @@ extern FeatureGeneratorPtr dynamicallyMappedFeatureGenerator(FeatureGeneratorPtr
 
 // composite
 extern CompositeFunctionPtr enumerationDistributionFeatureGenerator(size_t probabilityDiscretization = 1, size_t entropyDiscretization = 10, double minEntropy = -1.0, double maxEntropy = 4.0);
+
+// callback
+class ComputeMeanAndVarianceFeatureGeneratorCallback : public FeatureGeneratorCallback
+{
+public:
+  ComputeMeanAndVarianceFeatureGeneratorCallback(const EnumerationPtr& enumeration);
+  virtual void sense(size_t index, double value);
+  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight);
+  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight);
+  void finalizeSense();
+  void computeStandardDeviation(std::vector<double>& results) const;
+  void computeMean(std::vector<double>& results) const;
+protected:
+  std::vector<ScalarVariableMeanAndVariancePtr> meansAndVariances;
+
+  size_t nextIndex;
+  size_t currentIndexOffset;
+};
 
 }; /* namespace lbcpp */
 

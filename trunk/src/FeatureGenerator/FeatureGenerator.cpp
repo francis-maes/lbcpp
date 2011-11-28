@@ -161,3 +161,73 @@ FeatureGeneratorPtr lbcpp::defaultPositiveDoubleFeatureGenerator(size_t numInter
 
 FeatureGeneratorPtr lbcpp::defaultDoubleFeatureGenerator(size_t numIntervals, double minPowerOfTen, double maxPowerOfTen)
   {return signedNumberFeatureGenerator(defaultPositiveDoubleFeatureGenerator(numIntervals, minPowerOfTen, maxPowerOfTen));}
+
+namespace lbcpp
+{
+
+ComputeMeanAndVarianceFeatureGeneratorCallback::ComputeMeanAndVarianceFeatureGeneratorCallback(const EnumerationPtr& enumeration)
+  : nextIndex(0), currentIndexOffset(0)
+{
+  jassert(enumeration);
+  meansAndVariances.resize(enumeration->getNumElements());
+  for (size_t i = 0; i < meansAndVariances.size(); ++i)
+    meansAndVariances[i] = new ScalarVariableMeanAndVariance();
+}
+
+void ComputeMeanAndVarianceFeatureGeneratorCallback::sense(size_t index, double value)
+{
+  const size_t currentIndex = currentIndexOffset + index;
+  jassert(nextIndex <= currentIndex && currentIndex < meansAndVariances.size());
+  for (; nextIndex < currentIndex; ++nextIndex)
+    meansAndVariances[nextIndex]->push(0.f);
+  meansAndVariances[currentIndex]->push(value);
+  ++nextIndex;
+}
+
+void ComputeMeanAndVarianceFeatureGeneratorCallback::sense(size_t index, const DoubleVectorPtr& vector, double weight)
+{
+  jassert(weight == 1.f);
+  currentIndexOffset += index;
+  vector->computeFeatures(*this);
+  currentIndexOffset -= index;
+}
+
+void ComputeMeanAndVarianceFeatureGeneratorCallback::sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
+{
+  jassert(weight == 1.f);
+  currentIndexOffset += index;
+  featureGenerator->computeFeatures(inputs, *this);
+  currentIndexOffset -= index;
+}
+
+void ComputeMeanAndVarianceFeatureGeneratorCallback::finalizeSense()
+{
+  for (; nextIndex < meansAndVariances.size(); ++nextIndex)
+    meansAndVariances[nextIndex]->push(0.f);
+  nextIndex = 0;
+  jassert(currentIndexOffset == 0);
+}
+
+void ComputeMeanAndVarianceFeatureGeneratorCallback::computeStandardDeviation(std::vector<double>& results) const
+{
+  results.resize(meansAndVariances.size());
+  for (size_t i = 0; i < meansAndVariances.size(); ++i)
+  {
+    jassert(i == 0 || meansAndVariances[i-1]->getCount() == meansAndVariances[i]->getCount());
+    results[i] = meansAndVariances[i]->getStandardDeviation();
+    if (results[i] < 1e-6)
+      results[i] = 1.f;
+  }
+}
+
+void ComputeMeanAndVarianceFeatureGeneratorCallback::computeMean(std::vector<double>& results) const
+{
+  results.resize(meansAndVariances.size());
+  for (size_t i = 0; i < meansAndVariances.size(); ++i)
+  {
+    jassert(i == 0 || meansAndVariances[i-1]->getCount() == meansAndVariances[i]->getCount());
+    results[i] = meansAndVariances[i]->getMean();
+  }
+}
+
+};
