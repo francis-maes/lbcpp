@@ -152,6 +152,7 @@ void rosettaInitialization(ExecutionContext& context);
 void initializeProteinStructure(const core::pose::PoseOP& pose, core::pose::PoseOP& res);
 
 SymmetricMatrixPtr createCalphaMatrixDistance(const core::pose::PoseOP& pose);
+SymmetricMatrixPtr createBackboneMatrixDistance(const core::pose::PoseOP& pose);
 
 }; /* namespace lbcpp */
 

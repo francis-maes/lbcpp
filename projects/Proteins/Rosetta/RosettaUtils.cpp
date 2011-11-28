@@ -161,6 +161,20 @@ double lbcpp::computeCorrectionFactorForCollisions(const core::pose::PoseOP& pos
 #ifdef LBCPP_PROTEIN_ROSETTA
   double correctionFactor = 0.0;
 
+  // determined by inspecting all proteins, computing minimum distance for each
+  // of them and then taking mean and variance of these values.
+  double averageMinimumDistance = 1.3;
+  double varianceMinimumDistance = 0.5;
+
+  double inverseVarianceMinimumDistance = 1.0 / varianceMinimumDistance;
+
+  SymmetricMatrixPtr bbDistances = createBackboneMatrixDistance(pose);
+
+  for (size_t i = 0; i < bbDistances->getNumRows(); i++)
+    for (size_t j = i + 2; j < bbDistances->getNumColumns(); j++)
+      correctionFactor += juce::jmax(0.0, exp(inverseVarianceMinimumDistance
+          * (averageMinimumDistance - bbDistances->getElement(i, j).getDouble())) - 1);
+
   return correctionFactor;
 
 #else
@@ -293,6 +307,43 @@ SymmetricMatrixPtr lbcpp::createCalphaMatrixDistance(const core::pose::PoseOP& p
       numeric::xyzVector<double> coordinatesCAj = (pose->residue(j + 1)).xyz("CA");
 
       matrix->setElement(i, j, coordinatesCAi.distance(coordinatesCAj));
+    }
+  }
+#else
+  jassert(false);
+#endif // LBCPP_PROTEIN_ROSETTA
+  return matrix;
+}
+
+SymmetricMatrixPtr lbcpp::createBackboneMatrixDistance(const core::pose::PoseOP& pose)
+{
+  SymmetricMatrixPtr matrix;
+#ifdef LBCPP_PROTEIN_ROSETTA
+  matrix = new DoubleSymmetricMatrix(doubleType, 3 * (int)pose->n_residue(), 0.0);
+
+  numeric::xyzVector<double> coordinatesAtomi;
+  numeric::xyzVector<double> coordinatesAtomj;
+
+  for (size_t i = 0; i < matrix->getNumRows(); i++)
+  {
+    for (size_t j = i; j < matrix->getNumColumns(); j++)
+    {
+      // Get coordinates
+      if (i % 3 == 0)
+        coordinatesAtomi = (pose->residue((i / 3) + 1)).xyz("N");
+      else if (i % 3 == 1)
+        coordinatesAtomi = (pose->residue((i / 3) + 1)).xyz("CA");
+      else
+        coordinatesAtomi = (pose->residue((i / 3) + 1)).xyz("C");
+
+      if (j % 3 == 0)
+        coordinatesAtomj = (pose->residue((j / 3) + 1)).xyz("N");
+      else if (j % 3 == 1)
+        coordinatesAtomj = (pose->residue((j / 3) + 1)).xyz("CA");
+      else
+        coordinatesAtomj = (pose->residue((j / 3) + 1)).xyz("C");
+
+      matrix->setElement(i, j, coordinatesAtomi.distance(coordinatesAtomj));
     }
   }
 #else
