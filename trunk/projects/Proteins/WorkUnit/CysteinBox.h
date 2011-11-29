@@ -614,4 +614,40 @@ protected:
   File directory;
 };
 
+class DisulfideBondWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    enum {numFolds = 10};
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory), context.getFile(supervisionDirectory), 0, T("Loading proteins"));
+    ContainerPtr train = proteins->invFold(0, numFolds);
+    ContainerPtr test = proteins->fold(0, numFolds);
+
+    LargeProteinParametersPtr parameter = LargeProteinParameters::createTestObject(20);
+
+    LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(parameter);
+    predictor->learningMachineName = T("ExtraTrees");
+    predictor->x3Trees = 100;
+    predictor->x3Attributes = 0;
+    predictor->x3Splits = 1;
+
+    ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
+    iteration->addTarget(dsbTarget);
+
+    if (!iteration->train(context, train, ContainerPtr(), T("Training")))
+      return Variable::missingValue(doubleType);
+
+    ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+    CompositeScoreObjectPtr scores = iteration->evaluate(context, test, evaluator, T("Evaluate on test proteins"));
+    return evaluator->getScoreObjectOfTarget(scores, dsbTarget)->getScoreToMinimize();
+  }
+
+protected:
+  friend class DisulfideBondWorkUnitClass;
+
+  String inputDirectory;
+  String supervisionDirectory;
+};
+
 };
