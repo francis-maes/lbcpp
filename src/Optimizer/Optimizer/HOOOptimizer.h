@@ -231,7 +231,7 @@ public:
 
   Variable doIteration(ExecutionContext& context)
   {
-    jassert((double)numIterations > 1.0 / (nu * nu));
+  //  jassert((double)numIterations > 1.0 / (nu * nu));
 
     // select node (and expand tree)
     std::vector<NodePtr> path;

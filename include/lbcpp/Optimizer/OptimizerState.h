@@ -22,7 +22,7 @@ class OptimizationProblem : public Object
 {
 public:
   OptimizationProblem(const FunctionPtr& objective, const Variable& initialGuess = Variable(), const SamplerPtr& sampler = SamplerPtr(), const FunctionPtr& validation = FunctionPtr())
-    : objective(objective), initialGuess(initialGuess), sampler(sampler), validation(validation) {}
+    : objective(objective), initialGuess(initialGuess), sampler(sampler), validation(validation), maximisationProblem(false) {}
 
   TypePtr getSolutionsType() const
     {return objective->getRequiredInputType(0, 1);}
@@ -45,6 +45,12 @@ public:
   void setInitialState(const DecisionProblemStatePtr& state)
     {initialState = state;}
     
+  bool isMaximisationProblem() const
+    {return maximisationProblem;}
+    
+  void setMaximisationProblem(bool isMaximisationProblem)
+    {maximisationProblem = isMaximisationProblem;}
+    
 protected:
   friend class OptimizationProblemClass;
   
@@ -53,6 +59,7 @@ protected:
   SamplerPtr sampler;
   DecisionProblemStatePtr initialState;
   FunctionPtr validation;
+  bool maximisationProblem;
 
   OptimizationProblem() {}
 };

@@ -136,7 +136,7 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     std::vector<SmallMDPPolicyPtr> policies;
-
+#if 0
     SmallMDPPolicyPtr policy = new OptimalSmallMDPPolicy();
     testPolicy(context, "optimal", policy);
     savePolicy(context, "optimal", policy);
@@ -173,7 +173,7 @@ public:
     policy.staticCast<ParameterizedModelBasedSmallMDPPolicy>()->setParameter(0, -0.5);
     testPolicy(context, "FullMB-base3", policy);
     savePolicy(context, "FullMB-base3", policy);
-
+#endif // 0
     for (size_t i = 3; i <= 5; ++i)
       optimizePolicy(context, "parameterized-RTDP" + String((int)i), new ParameterizedSmallMDPPolicy(i*2, true));
       
@@ -238,14 +238,16 @@ public:
     context.resultCallback(T("numParameters"), numParameters);
 
     // eda parameters
-    size_t numIterations = 10;
+    size_t numIterations = 100;
     size_t populationSize = numParameters * 8;
-    size_t numBests = numParameters * 2;
+    size_t numBests = populationSize / 4;
 
     // optimization problem
     FunctionPtr objectiveFunction = new EvaluateSmallMDPPolicyParameters(policy, mdpSampler, numRuns);
+    FunctionPtr validationFunction = new EvaluateSmallMDPPolicyParameters(policy, mdpSampler, 1000);
     objectiveFunction->initialize(context, parametersType);
-    OptimizationProblemPtr problem = new OptimizationProblem(objectiveFunction, Variable(), Parameterized::get(policy)->createParametersSampler());
+    validationFunction->initialize(context, parametersType);
+    OptimizationProblemPtr problem = new OptimizationProblem(objectiveFunction, Variable(), Parameterized::get(policy)->createParametersSampler(), validationFunction);
 
     // optimizer
     OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, StoppingCriterionPtr(), 0, true);
