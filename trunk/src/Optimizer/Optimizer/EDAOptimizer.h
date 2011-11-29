@@ -23,14 +23,10 @@ public:
 
   virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {
-    const FunctionPtr& objectiveFunction = problem->getObjective();
-    //const FunctionPtr& validationFunction = problem->getValidation();
-    const SamplerPtr& initialSampler = problem->getSampler();
-  
     SamplerBasedOptimizerStatePtr state = optimizerState.staticCast<SamplerBasedOptimizerState>();
     jassert(state);
     if (!state->getSampler())
-      state->setSampler(initialSampler);
+      state->setSampler(problem->getSampler());
 
     if (stoppingCriterion)
       stoppingCriterion->reset();
@@ -42,7 +38,7 @@ public:
       double worstIterationScore;
       
       context.enterScope(T("Iteration ") + String((int)i + 1));
-      performEDAIteration(context, state, initialSampler, objectiveFunction, bestIterationSolution, bestIterationScore, worstIterationScore);
+      performEDAIteration(context, state, problem, bestIterationSolution, bestIterationScore, worstIterationScore);
       Variable res = state->finishIteration(context, problem, i+1, bestIterationScore, bestIterationSolution);
       context.leaveScope(res);
 
@@ -72,8 +68,11 @@ protected:
   EDAOptimizer()
     : PopulationBasedOptimizer() {}
 
-  void performEDAIteration(ExecutionContext& context, const SamplerBasedOptimizerStatePtr& state, const SamplerPtr& initialSampler, const FunctionPtr& objectiveFunction, Variable& bestParameters, double& bestScore, double& worstScore) const
+  void performEDAIteration(ExecutionContext& context, const SamplerBasedOptimizerStatePtr& state, const OptimizationProblemPtr& problem, Variable& bestParameters, double& bestScore, double& worstScore) const
   {    
+    const FunctionPtr& objectiveFunction = problem->getObjective();
+    const SamplerPtr& initialSampler = problem->getSampler();
+
     // generate evaluations requests
     CompositeWorkUnitPtr workUnits = new CompositeWorkUnit(T("EDAOptimizer - Iteration ") + String((int)state->getNumIterations()), populationSize);
     std::vector<Variable> inputs(populationSize);
@@ -92,7 +91,7 @@ protected:
 
     // sort results
     std::multimap<double, Variable> sortedScores;
-    pushResultsSortedbyScore(context, results, inputs, sortedScores);
+    pushResultsSortedbyScore(context, results, inputs, problem->isMaximisationProblem(), sortedScores);
 
     // build new distribution & update OptimizerState
     learnDistribution(context, initialSampler, state, sortedScores);

@@ -25,8 +25,9 @@ public:
                       size_t numTrees, size_t K, size_t nMin, size_t maxDepth,
                       size_t numIterations,
                       double nu, double rho, double C)
-    : problem(problem), forest(numTrees), forestStats(numTrees), K(K), nMin(nMin), maxDepth(maxDepth),
-      numIterations(numIterations), nu(nu), rho(rho), C(C), numIterationsDone(0)
+    : problem(problem), K(K), nMin(nMin), maxDepth(maxDepth),
+      numIterations(numIterations), nu(nu), rho(rho), C(C), 
+      forest(numTrees), forestStats(numTrees), numIterationsDone(0)
   {
     MeasurableRegionPtr region;
     TypePtr inputType = problem->getSolutionsType();
@@ -439,7 +440,7 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    double x = input.getDouble();
+    double x = juce::jlimit(0.0, 1.0, input.getDouble());
     return (sin(13.0 * x) * sin(27.0 * x) + 1.0) / 2.0;
   }
 };
@@ -490,8 +491,8 @@ public:
     if (powerOfTwoIndex >= 0)
       regretCurve->setValue(powerOfTwoIndex, regret.getSum());
 
-    jassert(x >= 0.0 && x <= 1.0);
-    playHistogram->incrementValue((int)(x * 100.0), 1.0);
+    if (x >= 0.0 && x <= 1.0)
+      playHistogram->incrementValue((int)(x * 100.0), 1.0);
   }
 
   double getCumulativeRegret() const
@@ -516,7 +517,7 @@ typedef ReferenceCountedObjectPtr<FunctionToBernoulliArms> FunctionToBernoulliAr
 class RFHOOO1DSandBox : public WorkUnit
 {
 public:
-  RFHOOO1DSandBox() : maxHorizon(10000), K(1), nMin(10), maxDepth(7), nu(2.0), rho(0.5), C(2.0) {}
+  RFHOOO1DSandBox() : K(1), nMin(10), maxDepth(7), maxHorizon(10000), nu(2.0), rho(0.5), C(2.0) {}
 
   struct RunInfo
   {
@@ -649,7 +650,7 @@ protected:
 class RFHOOOSandBox : public WorkUnit
 {
 public:
-  RFHOOOSandBox() : dimension(5), maxHorizon(10000), K(1), nMin(10), maxDepth(7), nu(2.0), rho(0.5), C(2.0) {}
+  RFHOOOSandBox() : dimension(5), K(1), nMin(10), maxDepth(7), maxHorizon(10000), nu(2.0), rho(0.5), C(2.0) {}
 
   void createObjectiveFunctions(const RandomGeneratorPtr& random, std::vector<FunctionPtr>& res)
   {
@@ -669,10 +670,18 @@ public:
     for (size_t i = 0; i < objectives.size(); ++i)
     {
       FunctionPtr objective = objectives[i];
-      context.enterScope(objective->toShortString());
+      context.enterScope(String((int)i+1) + T(" - ") + objective->toShortString());
 
       FunctionToBernoulliArmsPtr bernoulliObjective = new FunctionToBernoulliArms(context, objective, dimension);
-      OptimizationProblemPtr problem = new OptimizationProblem(bernoulliObjective, new DenseDoubleVector(dimension, 0.5));
+      
+      SamplerPtr sampler;
+      if (objective->getRequiredInputType(0, 1) == doubleType)
+        sampler = gaussianSampler(0.5);
+      else
+        sampler = independentDoubleVectorSampler(dimension, gaussianSampler(0.5));
+      
+      OptimizationProblemPtr problem = new OptimizationProblem(bernoulliObjective, new DenseDoubleVector(dimension, 0.5), sampler);
+      problem->setMaximisationProblem(true);
       OptimizerStatePtr finalState = optimizer->optimize(context, problem);
 
       context.leaveScope(bernoulliObjective->getCumulativeRegret());
@@ -715,11 +724,10 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     std::vector<FunctionPtr> objectives;
-    //createObjectiveFunctions(context.getRandomGenerator(), objectives);
+    createObjectiveFunctions(context.getRandomGenerator(), objectives);
 
     //FunctionPtr objectiveExpectation = new Simple1DTestFunction();
-
-    objectives.push_back(new Simple1DTestFunction());
+    //objectives.push_back(new Simple1DTestFunction());
 
     size_t numIterations = maxHorizon;
 
@@ -731,17 +739,34 @@ public:
     {
       runOptimizer(context, "rfhoo-10 C = " + String(C), new RFHOOOptimizer(10, K, nMin, maxDepth, numIterations, 0.2, rho, 0.1), objectives);
     }*/
-/*
-    OptimizerPtr optimizer = new HOOOptimizer(numIterations, nu, rho, C);
-    tuneOptimizerVariable(context, optimizer, "C", 0.0, 2.0, objectives);
-    tuneOptimizerVariable(context, optimizer, "nu", 0.0, 2.0, objectives);
-    tuneOptimizerVariable(context, optimizer, "rho", 0.0, 1.0, objectives);
-    tuneOptimizerVariable(context, optimizer, "C", 0.0, 2.0, objectives);
-    tuneOptimizerVariable(context, optimizer, "nu", 0.0, 2.0, objectives);
-    tuneOptimizerVariable(context, optimizer, "rho", 0.0, 1.0, objectives);
-    runOptimizer(context, "HOO", optimizer, objectives);*/
 
-    OptimizerPtr optimizer = new RFHOOOptimizer(20, K, nMin, maxDepth, numIterations, nu, rho, C);
+    OptimizerPtr optimizer;
+
+    size_t populationSize = 10;
+    optimizer = edaOptimizer(numIterations / populationSize, populationSize, populationSize / 10, StoppingCriterionPtr(), 0);
+    runOptimizer(context, "EDA(10)", optimizer, objectives);
+
+    populationSize = 100;
+    optimizer = edaOptimizer(numIterations / populationSize, populationSize, populationSize / 10, StoppingCriterionPtr(), 0);
+    runOptimizer(context, "EDA(100)", optimizer, objectives);
+    
+    populationSize = 1000;
+    optimizer = edaOptimizer(numIterations / populationSize, populationSize, populationSize / 10, StoppingCriterionPtr(), 0);
+    runOptimizer(context, "EDA(1000)", optimizer, objectives);
+
+    optimizer = new HOOOptimizer(numIterations, nu, rho, C);
+    runOptimizer(context, "HOO", optimizer, objectives);
+
+    optimizer = new HOOOptimizer(numIterations, nu, rho, C);
+    tuneOptimizerVariable(context, optimizer, "C", 0.0, 2.0, objectives);
+    tuneOptimizerVariable(context, optimizer, "nu", 0.0, 2.0, objectives);
+    tuneOptimizerVariable(context, optimizer, "rho", 0.0, 1.0, objectives);
+    tuneOptimizerVariable(context, optimizer, "C", 0.0, 2.0, objectives);
+    tuneOptimizerVariable(context, optimizer, "nu", 0.0, 2.0, objectives);
+    tuneOptimizerVariable(context, optimizer, "rho", 0.0, 1.0, objectives);
+    runOptimizer(context, "HOO", optimizer, objectives);
+
+    optimizer = new RFHOOOptimizer(20, K, nMin, maxDepth, numIterations, nu, rho, C);
     tuneOptimizerVariable(context, optimizer, "C", 0.0, 2.0, objectives);
     tuneOptimizerVariable(context, optimizer, "nu", 0.0, 2.0, objectives);
     tuneOptimizerVariable(context, optimizer, "nMin", 0.0, 16.0, objectives);
@@ -750,6 +775,8 @@ public:
     tuneOptimizerVariable(context, optimizer, "nMin", 0.0, 16.0, objectives);
     runOptimizer(context, "RF(10) HOO", optimizer, objectives);
 
+    
+  
     /*runOptimizer(context, "hoo", new HOOOptimizer(numIterations, nu, rho, C), objectives);
     runOptimizer(context, "rfhoo-1", new RFHOOOptimizer(1, K, nMin, maxDepth, numIterations, nu, rho, C), objectives);
     runOptimizer(context, "rfhoo-5", new RFHOOOptimizer(5, K, nMin, maxDepth, numIterations, nu, rho, C), objectives);

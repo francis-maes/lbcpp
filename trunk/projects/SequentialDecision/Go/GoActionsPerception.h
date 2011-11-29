@@ -237,11 +237,11 @@ public:
     size_t preFeatures = builder.addInput(goStatePreFeaturesClass(enumValueType, enumValueType, enumValueType), T("preFeatures"));
 
     size_t previousActions = builder.addFunction(getVariableFunction(T("previousActions")), preFeatures);
-    size_t globalPrimaryFeatures = builder.addFunction(getVariableFunction(T("globalPrimaryFeatures")), preFeatures, T("globals"));
+    /*size_t globalPrimaryFeatures =*/ builder.addFunction(getVariableFunction(T("globalPrimaryFeatures")), preFeatures, T("globals"));
 
     // matrices:
-    size_t region4 = builder.addFunction(getVariableFunction(T("fourConnexityGraph")), preFeatures);
-    size_t region4Features = builder.addFunction(getVariableFunction(T("fourConnexityGraphFeatures")), preFeatures);
+    /*size_t region4 =*/ builder.addFunction(getVariableFunction(T("fourConnexityGraph")), preFeatures);
+    /*size_t region4Features =*/ builder.addFunction(getVariableFunction(T("fourConnexityGraphFeatures")), preFeatures);
     //size_t region8 = builder.addFunction(getVariableFunction(T("eightConnexityGraph")), preFeatures);
     //size_t region8Features = builder.addFunction(getVariableFunction(T("eightConnexityGraphFeatures")), preFeatures);
     size_t actionPrimaryFeatures = builder.addFunction(getVariableFunction(T("actionPrimaryFeatures")), preFeatures);
@@ -255,12 +255,12 @@ public:
     
     builder.startSelection();
 
-      size_t i1 = builder.addFunction(matrixWindowFeatureGenerator(5, 5), actionPrimaryFeatures, row, column, T("window"));
+      /*size_t i1 = */builder.addFunction(matrixWindowFeatureGenerator(5, 5), actionPrimaryFeatures, row, column, T("window"));
 
       //fun = lbcppMemberUnaryFunction(GoActionsPerception, getPositionFeatures, positiveIntegerPairClass, positionFeatures->getElementsType());
       //size_t i2 = builder.addFunction(fun, action, T("position"));
 
-      size_t i3 = builder.addFunction(fixedContainerWindowFeatureGenerator(0, 2), previousActionRelationFeatures, T("previousAction"));
+      /*size_t i3 = */builder.addFunction(fixedContainerWindowFeatureGenerator(0, 2), previousActionRelationFeatures, T("previousAction"));
       //size_t i32 = builder.addFunction(cartesianProductFeatureGenerator(), i3, i3, T("prev2"));
 
       //FunctionPtr fun2 = new MatrixNeighborhoodFeatureGenerator(new MatrixConnectivityFeatureGenerator(), getElementFunction());
@@ -268,7 +268,7 @@ public:
       
       //size_t i42 = builder.addFunction(dynamicallyMappedFeatureGenerator(cartesianProductFeatureGenerator(), 1000000, true), i4, i4, T("neighbors2"));
 
-    size_t features = builder.finishSelectionWithFunction(concatenateFeatureGenerator(true), T("f"));
+    /*size_t features = */builder.finishSelectionWithFunction(concatenateFeatureGenerator(true), T("f"));
 
     //size_t featuresAndTime = builder.addFunction(cartesianProductFeatureGenerator(true), features, globalPrimaryFeatures, T("wt"));
     //builder.addFunction(concatenateFeatureGenerator(true), features, featuresAndTime);

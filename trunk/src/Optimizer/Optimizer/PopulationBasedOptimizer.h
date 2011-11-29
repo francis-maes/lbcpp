@@ -81,13 +81,14 @@ protected:
   /**
    * Push the results of the OptimizerState buffer in the sorted map "sortedScore"
    */
-  void pushResultsSortedbyScore(ExecutionContext& context, const ContainerPtr results, const std::vector<Variable>& parameters, std::multimap<double, Variable>& sortedScores) const
+  void pushResultsSortedbyScore(ExecutionContext& context, const ContainerPtr results, const std::vector<Variable>& parameters, bool isMaximisationProblem, std::multimap<double, Variable>& sortedScores) const
   {
     const size_t n = results->getNumElements();
     for (size_t i = 0; i < n; ++i)
     {
       const double score = results->getElement(i).getDouble();
-      sortedScores.insert(std::pair<double, Variable>(score, parameters[i]));
+      // todo: support maximisation problems as well 
+      sortedScores.insert(std::pair<double, Variable>(isMaximisationProblem ? -score : score, parameters[i]));
       if (verbose) 
       {
         context.enterScope(T("Request ") + String((int) (i+1)));

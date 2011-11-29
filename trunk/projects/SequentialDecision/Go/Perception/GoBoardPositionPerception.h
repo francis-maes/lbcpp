@@ -99,8 +99,7 @@ protected:
     int col = (int)position.second + deltaCol;
     if (row >= 0 && row < s && col >= 0 && col < s)
       return (GoBoardPositionState)board->get(GoBoard::Position(row, col));
-    else
-      return goOutside;
+    return goOutside;
   }
 
 private:
