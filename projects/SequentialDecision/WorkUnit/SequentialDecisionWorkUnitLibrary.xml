@@ -119,6 +119,8 @@
     <variable type="Double" name="C"/>
   </class>
 
+  <class name="Simple1DTestFunction" base="Function"/>
+  
   <class name="RFHOOO1DSandBox" base="WorkUnit">
     <variable type="PositiveInteger" name="maxHorizon"/>
     <variable type="PositiveInteger" name="K"/>
