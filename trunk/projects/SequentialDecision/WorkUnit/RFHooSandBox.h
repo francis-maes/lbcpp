@@ -199,7 +199,7 @@ public:
 
       double expectation, meanUpperBound, minUpperBound, simpleUpperBound;
       predict(context, candidate, expectation, meanUpperBound, minUpperBound, simpleUpperBound);
-      double score = minUpperBound;
+      double score = simpleUpperBound;
       if (score >= bestScore)
       {
         if (score > bestScore)
@@ -330,7 +330,7 @@ public:
     double count = 0.0;
     meanUpperBound = 0.0;
     minUpperBound = DBL_MAX;
-    simpleUpperBound = DBL_MAX;
+    simpleUpperBound = 0.0;
     for (size_t i = 0; i < forest.size(); ++i)
     {
       NodePtr node = forest[i];
@@ -343,13 +343,13 @@ public:
       expectation += node->stats.getMean();
       sum += node->stats.getSum();
       count += node->stats.getCount();
-      simpleUpperBound = juce::jmin(simpleUpperBound, node->stats.getMean() + C / node->stats.getCount());
+      simpleUpperBound += node->stats.getMean() + C / (1.0 + node->stats.getCount());
       meanUpperBound += B;
       minUpperBound = juce::jmin(minUpperBound, B);
     }
     expectation /= forest.size();
     meanUpperBound /= forest.size();
-    //simpleUpperBound /= forest.size();
+    simpleUpperBound /= forest.size();
    // simpleUpperBound = count ? (sum + 5.0) / count : DBL_MAX;
   }
 
@@ -448,26 +448,26 @@ class FunctionToBernoulliArms : public SimpleUnaryFunction
 {
 public:
   FunctionToBernoulliArms(ExecutionContext& context, FunctionPtr expectationFunction, size_t dimension)
-    : SimpleUnaryFunction(denseDoubleVectorClass(), doubleType), expectationFunction(expectationFunction),
+    : SimpleUnaryFunction(expectationFunction->getRequiredInputType(0, 1), doubleType), expectationFunction(expectationFunction),
       regretCurve(new DenseDoubleVector(20, 0.0)),
       playHistogram(new DenseDoubleVector(101, 0.0))
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
-    maxValue = 100.0 * (dimension - 1);
-    /*for (size_t i = 0; i < 100; ++i)
-    {
-      DenseDoubleVectorPtr input = new DenseDoubleVector(expectationFunction->getRequiredInputType(0, 1), dimension);
-      for (size_t j = 0; j < dimension; ++j)
-        input->setValue(j, random->sampleDouble());
-      double value = expectationFunction->compute(context, input).getDouble();
-      maxValue = juce::jmax(value, maxValue);
-    }*/
+    maxValue = 1.0;
+    if (expectationFunction->getClassName() == T("RosenbrockFunction"))
+      maxValue = 100.0 * (dimension - 1);
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     double energy = expectationFunction->compute(context, input).getDouble();
-    double probability = juce::jlimit(0.0, 1.0, (maxValue - energy) / maxValue);
+    double probability = energy;
+    if (expectationFunction->getClassName() == T("RosenbrockFunction"))
+      probability = juce::jlimit(0.0, 1.0, (maxValue - energy) / maxValue);
+    else
+    {
+      jassert(probability >= 0.0 && probability <= 1.0);
+    }
     const_cast<FunctionToBernoulliArms* >(this)->regret.push(1.0 - probability);
     if (input.isDouble())
       const_cast<FunctionToBernoulliArms* >(this)->updateRegret(input.getDouble(), probability);
@@ -550,9 +550,11 @@ public:
     HOOOptimizerStatePtr hooState = finalState.dynamicCast<HOOOptimizerState>();
     RFHOOOptimizerStatePtr rfHooState = finalState.dynamicCast<RFHOOOptimizerState>();
 
+    double predictionError = 0.0;
     for (size_t i = 0; i < 100; ++i)
     {
       double x = (i + 0.5) / 100.0;
+      double trueY = objectiveExpectation->compute(context, x).getDouble();
       double expectation = 0.0, meanUpperBound = 0.0, minUpperBound = 0.0, simpleUpperBound = 0.0;
       
       if (rfHooState)
@@ -566,7 +568,10 @@ public:
       runInfo.meanUpperBound->setValue(i, meanUpperBound);
       runInfo.minUpperBound->setValue(i, minUpperBound);
       runInfo.simpleUpperBound->setValue(i, simpleUpperBound);
+      predictionError += (trueY - expectation) * (trueY - expectation);
     }
+    predictionError = sqrt(predictionError / 100.0);
+    context.informationCallback(T("Prediction error: ") + String(predictionError));
 
     if (rfHooState)
       rfHooState->clearForest();
@@ -587,13 +592,13 @@ public:
     runOptimizer(context, "rfhoo-5", new RFHOOOptimizer(5, K, nMin, maxDepth, numIterations, nu, rho, C), objectiveExpectation, runInfos);
     runOptimizer(context, "rfhoo-10", new RFHOOOptimizer(10, K, nMin, maxDepth, numIterations, nu, rho, C), objectiveExpectation, runInfos);
     runOptimizer(context, "rfhoo-20", new RFHOOOptimizer(20, K, nMin, maxDepth, numIterations, nu, rho, C), objectiveExpectation, runInfos);
-    runOptimizer(context, "rfhoo-50", new RFHOOOptimizer(50, K, nMin, maxDepth, numIterations, nu, rho, C), objectiveExpectation, runInfos);
+    /*runOptimizer(context, "rfhoo-50", new RFHOOOptimizer(50, K, nMin, maxDepth, numIterations, nu, rho, C), objectiveExpectation, runInfos);
     runOptimizer(context, "rfhoo-100", new RFHOOOptimizer(100, K, nMin, maxDepth, numIterations, nu, rho, C), objectiveExpectation, runInfos);
 
     runOptimizer(context, "hoo bis", new HOOOptimizer(numIterations, nu, rho, C), objectiveExpectation, runInfos);
     runOptimizer(context, "rfhoo-1 bis", new RFHOOOptimizer(1, K, nMin, maxDepth, numIterations, nu, rho, C), objectiveExpectation, runInfos);
     runOptimizer(context, "rfhoo-5 bis", new RFHOOOptimizer(5, K, nMin, maxDepth, numIterations, nu, rho, C), objectiveExpectation, runInfos);
-    runOptimizer(context, "rfhoo-10 bis", new RFHOOOptimizer(10, K, nMin, maxDepth, numIterations, nu, rho, C), objectiveExpectation, runInfos);
+    runOptimizer(context, "rfhoo-10 bis", new RFHOOOptimizer(10, K, nMin, maxDepth, numIterations, nu, rho, C), objectiveExpectation, runInfos);*/
 
     context.enterScope(T("Cumulative Regrets"));
     for (size_t i = 0; i < 14; ++i)
@@ -710,9 +715,12 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     std::vector<FunctionPtr> objectives;
-    createObjectiveFunctions(context.getRandomGenerator(), objectives);
+    //createObjectiveFunctions(context.getRandomGenerator(), objectives);
 
-    FunctionPtr objectiveExpectation = new Simple1DTestFunction();
+    //FunctionPtr objectiveExpectation = new Simple1DTestFunction();
+
+    objectives.push_back(new Simple1DTestFunction());
+
     size_t numIterations = maxHorizon;
 
    /* for (double C = 0.0; C <= 2.0; C += 0.1)
@@ -723,7 +731,7 @@ public:
     {
       runOptimizer(context, "rfhoo-10 C = " + String(C), new RFHOOOptimizer(10, K, nMin, maxDepth, numIterations, 0.2, rho, 0.1), objectives);
     }*/
-
+/*
     OptimizerPtr optimizer = new HOOOptimizer(numIterations, nu, rho, C);
     tuneOptimizerVariable(context, optimizer, "C", 0.0, 2.0, objectives);
     tuneOptimizerVariable(context, optimizer, "nu", 0.0, 2.0, objectives);
@@ -731,9 +739,9 @@ public:
     tuneOptimizerVariable(context, optimizer, "C", 0.0, 2.0, objectives);
     tuneOptimizerVariable(context, optimizer, "nu", 0.0, 2.0, objectives);
     tuneOptimizerVariable(context, optimizer, "rho", 0.0, 1.0, objectives);
-    runOptimizer(context, "HOO", optimizer, objectives);
+    runOptimizer(context, "HOO", optimizer, objectives);*/
 
-    optimizer = new RFHOOOptimizer(20, K, nMin, maxDepth, numIterations, nu, rho, C);
+    OptimizerPtr optimizer = new RFHOOOptimizer(20, K, nMin, maxDepth, numIterations, nu, rho, C);
     tuneOptimizerVariable(context, optimizer, "C", 0.0, 2.0, objectives);
     tuneOptimizerVariable(context, optimizer, "nu", 0.0, 2.0, objectives);
     tuneOptimizerVariable(context, optimizer, "nMin", 0.0, 16.0, objectives);
