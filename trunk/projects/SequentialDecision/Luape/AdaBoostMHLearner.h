@@ -16,11 +16,12 @@
 namespace lbcpp
 {
 
+  // FIXME: do support of example indices 
 class AdaBoostMHWeakObjective : public BoostingWeakObjective
 {
 public:
-  AdaBoostMHWeakObjective(const LuapeClassifierPtr& classifier, const BooleanVectorPtr& supervisions, const DenseDoubleVectorPtr& weights)
-    : labels(classifier->getLabels()), doubleVectorClass(classifier->getDoubleVectorClass()), supervisions(supervisions), weights(weights)
+  AdaBoostMHWeakObjective(const LuapeClassifierPtr& classifier, const BooleanVectorPtr& supervisions, const DenseDoubleVectorPtr& weights, const std::vector<size_t>& examples)
+    : labels(classifier->getLabels()), doubleVectorClass(classifier->getDoubleVectorClass()), supervisions(supervisions), weights(weights), examples(examples)
   {
   }
 
@@ -76,7 +77,8 @@ protected:
   VectorPtr predictions;   // size = numExamples
   BooleanVectorPtr supervisions;  // size = numExamples * numLabels
   DenseDoubleVectorPtr weights;   // size = numExamples * numLabels
-  
+  const std::vector<size_t>& examples; // size = numExamples
+
   DenseDoubleVectorPtr muNegatives; // size = numLabels
   DenseDoubleVectorPtr muPositives; // size = numLabels
   DenseDoubleVectorPtr votes;       // size = numLabels
@@ -94,14 +96,14 @@ protected:
     BooleanVectorPtr booleanPredictions = predictions.dynamicCast<BooleanVector>();
     if (booleanPredictions)
     {
-      std::vector<bool>::const_iterator itpred = booleanPredictions->getElements().begin();
       double* weightsPtr = weights->getValuePointer(0);
-      for (size_t i = 0; i < numExamples; ++i)
+      for (size_t i = 0; i < examples.size(); ++i)
       {
-        bool prediction = *itpred++;
+        size_t example = examples[i];
+        bool prediction = booleanPredictions->get(example);
         for (size_t j = 0; j < numLabels; ++j)
         {
-          bool isPredictionCorrect = (prediction == supervisions->get(i * numLabels + j));
+          bool isPredictionCorrect = (prediction == supervisions->get(example * numLabels + j));
           (isPredictionCorrect ? muPositives : muNegatives)->incrementValue(j, *weightsPtr++);
         }
       }
@@ -110,14 +112,15 @@ protected:
     {
       DenseDoubleVectorPtr scalarPredictions = predictions.dynamicCast<DenseDoubleVector>();
       double* weightsPtr = weights->getValuePointer(0);
-      for (size_t i = 0; i < numExamples; ++i)
+      for (size_t i = 0; i < examples.size(); ++i)
       {
-        double prediction = scalarPredictions->getValue(i) * 2 - 1;
+        size_t example = examples[i];
+        double prediction = scalarPredictions->getValue(example) * 2 - 1;
         for (size_t j = 0; j < numLabels; ++j)
         {
-          double sup = supervisions->get(i * numLabels + j) ? 1.0 : -1.0;
+          double sup = supervisions->get(example * numLabels + j) ? 1.0 : -1.0;
           bool isPredictionCorrect = (prediction * sup > 0);
-          double k = fabs(prediction);
+          //double k = fabs(prediction);
           (isPredictionCorrect ? muPositives : muNegatives)->incrementValue(j, *weightsPtr++);
         }
       }
@@ -138,8 +141,8 @@ public:
     : WeightBoostingLearner(weakLearner) {}
   AdaBoostMHLearner() {}
 
-  virtual BoostingWeakObjectivePtr createWeakObjective() const
-    {return new AdaBoostMHWeakObjective(function.staticCast<LuapeClassifier>(), supervisions, weights);}
+  virtual BoostingWeakObjectivePtr createWeakObjective(const std::vector<size_t>& examples) const
+    {return new AdaBoostMHWeakObjective(function.staticCast<LuapeClassifier>(), supervisions, weights, examples);}
 
   virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeInferencePtr& function, const std::vector<PairPtr>& examples) const
   {
@@ -228,14 +231,14 @@ public:
   {
     if (!WeightBoostingLearner::doLearningIteration(context))
       return false;
-    return true;
+    //return true;
 
     static int counter = 0;
     ++counter;
 
-    if ((counter % 10) == 0)
+    if (true)//(counter % 10) == 0)
     {
-      static const size_t numIterations = 10;
+      static const size_t maxIterations = 100;
 
       context.enterScope(T("SGD"));
 
@@ -246,7 +249,9 @@ public:
       context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
       context.leaveScope();
 
-      for (size_t i = 0; i < numIterations; ++i)
+      StoppingCriterionPtr stoppingCriterion = maxIterationsWithoutImprovementStoppingCriterion(2);
+      
+      for (size_t i = 0; i < maxIterations; ++i)
       {
         context.enterScope(T("Iteration ") + String((int)i+1));
         context.resultCallback(T("iteration"), i+1);
@@ -254,7 +259,8 @@ public:
         recomputePredictions(context);
         recomputeWeights(context);
         context.resultCallback(T("loss"), weightsSum);
-        context.resultCallback(T("train error"), function->evaluatePredictions(context, predictions, trainData));
+        double trainError = function->evaluatePredictions(context, predictions, trainData);
+        context.resultCallback(T("train error"), trainError);
         context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
 
        /* applyRegularizer(context);
@@ -265,10 +271,12 @@ public:
         context.resultCallback(T("validation error 2"), function->evaluatePredictions(context, validationPredictions, validationData));*/
 
         context.leaveScope();
+        if (stoppingCriterion->shouldStop(trainError))
+          break;
       }
       context.leaveScope();
     }
-    if (counter > 100)
+    if (false)//counter > 100)
     {
       context.enterScope(T("Pruning"));
       size_t yieldIndex = pruneSmallestVote(context);
@@ -311,6 +319,7 @@ public:
         context.resultCallback(T("l1norm"), vote->l1norm());
         context.resultCallback(T("l0norm"), vote->l0norm());
 
+        // FIXME: do not work with continuous weak learners
         double weightSum = 0.0;
         BooleanVectorPtr predictions = graph->updateNodeCache(context, yieldNode->getArgument(), true);
         DenseDoubleVectorPtr weights = makeInitialWeights(classifier, *(const std::vector<PairPtr>* )&trainData);
@@ -354,7 +363,7 @@ public:
 
   void doSGDIteration(ExecutionContext& context)
   {
-    static const double learningRate = 0.001;// / (1.0 + sqrt((double)graph->getNumYieldNodes()));
+    static const double learningRate = 0.01;// / (1.0 + sqrt((double)graph->getNumYieldNodes()));
 
     //MultiClassLossFunctionPtr lossFunction = logBinomialMultiClassLossFunction();
     //MultiClassLossFunctionPtr lossFunction = oneAgainstAllMultiClassLossFunction(exponentialDiscriminativeLossFunction());
@@ -378,16 +387,13 @@ public:
       const PairPtr& example = trainData[order[i]].staticCast<Pair>();
 
       // compute weak predictions
-      BooleanVectorPtr weakPredictions = classifier->computeBooleanWeakPredictions(context, example->getFirst().getObject());
+      DenseDoubleVectorPtr weakPredictions = classifier->computeSignedWeakPredictions(context, example->getFirst().getObject());
       jassert(numVotes == weakPredictions->getNumElements());
 
       // compute activation
       DenseDoubleVectorPtr activations = new DenseDoubleVector(classifier->getDoubleVectorClass());
       for (size_t j = 0; j < numVotes; ++j)
-      {
-        double sign = weakPredictions->get(j) ? 1.0 : -1.0;
-        votes->getElement(j).getObjectAndCast<DoubleVector>()->addWeightedTo(activations, 0, sign);
-      }
+        votes->getElement(j).getObjectAndCast<DoubleVector>()->addWeightedTo(activations, 0, weakPredictions->getValue(j));
 
       // compute loss value and gradient
       size_t correctClass = (size_t)example->getSecond().getInteger();
@@ -409,8 +415,7 @@ public:
       for (size_t j = 0; j < numVotes; ++j)
       {
         DenseDoubleVectorPtr v = votes->getElement(j).getObjectAndCast<DenseDoubleVector>();
-        double sign = weakPredictions->get(j) ? 1.0 : -1.0;
-        lossGradient->addWeightedTo(v, 0, -learningRate * sign);
+        lossGradient->addWeightedTo(v, 0, -learningRate * weakPredictions->getValue(j));
       }
     }
     

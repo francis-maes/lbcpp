@@ -18,7 +18,30 @@ namespace lbcpp
 class NormalizedValueWeakLearner : public BoostingWeakLearner
 {
 public:
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const
+ /* void countUseCount(const LuapeNodePtr& node, std::vector<size_t>& useCounts)
+  {
+    useCounts[node->getIndexInGraph()]++;
+    if (node.isInstanceOf<LuapeFunctionNode>())
+    {
+      LuapeFunctionNodePtr functionNode = node.staticCast<LuapeFunctionNode>();
+      for (size_t i = 0; i < functionNode->getNumArguments(); ++i)
+        countUseCounts(functionNode->getArgument(i), useCounts);
+    }
+  }
+
+  void countUseCounts(const LuapeGraphPtr& graph, std::vector<size_t>& useCounts)
+  {
+    useCounts.clear();
+    useCounts.resize(graph->getNumNodes(), 0);
+    for (size_t i = 0; i < graph->getNumNodes(); ++i)
+    {
+      LuapeYieldNodePtr yieldNode = graph->getNode(i).dynamicCast<LuapeYieldNode>();
+      if (yieldNode)
+        countUseCount(yieldNode->getArgument(), useCounts);
+    }
+  }*/
+
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples) const
   {
     const LuapeGraphPtr& graph = structureLearner->getGraph();
 
@@ -37,24 +60,34 @@ public:
     std::vector<LuapeNodePtr> candidates;
     candidates.reserve(doubleNodes.size() + doubleNodes.size() * (doubleNodes.size() - 1) / 2);
     for (size_t i = 0; i < doubleNodes.size(); ++i)
-    {
-      candidates.push_back(doubleNodes[i]);
-      for (size_t j = i; j < doubleNodes.size(); ++j)
+      if (doubleNodes[i].isInstanceOf<LuapeInputNode>())
       {
-        std::vector<LuapeNodePtr> inputs(2);
-        inputs[0] = doubleNodes[i];
-        inputs[1] = doubleNodes[j];
-        candidates.push_back(graph->getUniverse()->makeFunctionNode(mulDoubleLuapeFunction(), inputs));
+        candidates.push_back(doubleNodes[i]);
+        for (size_t j = i; j < doubleNodes.size(); ++j)
+          if (doubleNodes[j].isInstanceOf<LuapeInputNode>())
+          {
+            std::vector<LuapeNodePtr> inputs(2);
+            inputs[0] = doubleNodes[i];
+            inputs[1] = doubleNodes[j];
+            LuapeNodePtr node = graph->getUniverse()->makeFunctionNode(mulDoubleLuapeFunction(), inputs);
+            if (!graph->containsNode(node))
+              candidates.push_back(node);
+          }
       }
-    }
 
+    if (!candidates.size())
+      return LuapeNodePtr();
     for (size_t i = 0; i < candidates.size(); ++i)
     {
       LuapeNodePtr node = candidates[i];
       LuapeFunctionNodePtr normalizer = graph->getUniverse()->makeFunctionNode(normalizerLuapeFunction(), node);
+      if (graph->containsNode(normalizer))
+        continue;
+
       normalizer->getFunction().staticCast<NormalizerLuapeFunction>()->initialize(graph->updateNodeCache(context, node, true).staticCast<DenseDoubleVector>());
-      double score = structureLearner->computeWeakObjective(context, normalizer);
-      context.informationCallback(node->toShortString() + T(" ==> ") + String(score));
+      double score = structureLearner->computeWeakObjective(context, normalizer, examples);
+      //double score = context.getRandomGenerator()->sampleDouble();
+      //context.informationCallback(node->toShortString() + T(" ==> ") + String(score));
       if (score > bestScore)
       {
         bestScore = score;
@@ -62,9 +95,12 @@ public:
       }
     }
 
-    context.informationCallback("Best node: " + bestNode->toShortString());
-    context.informationCallback("Score: " + String(bestScore));
-    context.informationCallback("Graph: " + graph->toShortString());
+    if (bestNode)
+    {
+      context.informationCallback("Best node: " + bestNode->toShortString());
+      context.informationCallback("Score: " + String(bestScore));
+      context.informationCallback("Graph: " + graph->toShortString());
+    }
     return bestNode;
   }
 };
@@ -72,7 +108,7 @@ public:
 class SingleStumpWeakLearner : public BoostingWeakLearner
 {
 public:
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples) const
   {
     const LuapeGraphPtr& graph = structureLearner->getGraph();
 
@@ -85,7 +121,7 @@ public:
       LuapeNodePtr node = graph->getNode(i);
       if (!node.isInstanceOf<LuapeYieldNode>() && node->getType() == doubleType)
       {
-        double score = structureLearner->computeWeakObjective(context, node);
+        double score = structureLearner->computeWeakObjective(context, node, examples);
         if (score > bestScore)
         {
           bestScore = score;

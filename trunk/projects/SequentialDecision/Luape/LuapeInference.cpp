@@ -45,21 +45,27 @@ void LuapeInference::setGraphSamples(ExecutionContext& context, bool isTrainingD
 
 struct ComputeWeakPredictionsCallback : public LuapeGraphCallback
 {
-  ComputeWeakPredictionsCallback(BooleanVectorPtr res) : res(res), index(0) {}
+  ComputeWeakPredictionsCallback(DenseDoubleVectorPtr res) : res(res), index(0) {}
 
-  BooleanVectorPtr res;
+  DenseDoubleVectorPtr res;
   size_t index;
 
   virtual void valueYielded(const Variable& value)
   {
-    jassert(value.isBoolean());
-    res->set(index++, value.getBoolean());
+    double v;
+    if (value.isBoolean())
+      v = value.getBoolean() ? 1.0 : -1.0;
+    else if (value.getType() == probabilityType)
+      v = value.getDouble() * 2.0 - 1.0;
+    else
+      jassert(false);
+    res->setValue(index++, v);
   }
 };
 
-BooleanVectorPtr LuapeInference::computeBooleanWeakPredictions(ExecutionContext& context, const ObjectPtr& input) const
+DenseDoubleVectorPtr LuapeInference::computeSignedWeakPredictions(ExecutionContext& context, const ObjectPtr& input) const
 {
-  BooleanVectorPtr res = new BooleanVector(graph->getNumYieldNodes());
+  DenseDoubleVectorPtr res = new DenseDoubleVector(graph->getNumYieldNodes(), 0.0);
   ComputeWeakPredictionsCallback callback(res);
   std::vector<Variable> state;
   computeGraph(context, input, state, &callback);

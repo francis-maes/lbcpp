@@ -213,7 +213,7 @@ BinaryKeyPtr LuapeNodeCache::makeKeyFromSamples(bool useTrainingSamples) const
 
 String LuapeNodeCache::toShortString() const
 {
-  size_t n = trainingSamples->getNumElements();
+  size_t n = trainingSamples ? trainingSamples->getNumElements() : 0;
   if (n == 0)
     return "<no examples>";
 
@@ -360,6 +360,11 @@ size_t LuapeFunctionNode::getDepth() const
 */
 LuapeYieldNode::LuapeYieldNode(const LuapeNodePtr& argument)
   : LuapeNode(nilType, argument->getName()), argument(argument)
+{
+}
+
+LuapeYieldNode::LuapeYieldNode()
+  : LuapeNode(nilType, "terminal")
 {
 }
 

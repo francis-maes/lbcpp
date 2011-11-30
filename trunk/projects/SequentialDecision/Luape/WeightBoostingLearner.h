@@ -49,7 +49,7 @@ public:
       return false;
     
     // compute vote
-    BoostingWeakObjectivePtr edgeCalculator = createWeakObjective();
+    BoostingWeakObjectivePtr edgeCalculator = createWeakObjective(allExamples);
     edgeCalculator->setPredictions(weakPredictions);
     Variable vote = computeVote(edgeCalculator);
     function->getVotes()->append(vote);

@@ -18,12 +18,13 @@
 
 namespace lbcpp
 {
-/*
+
 class LuapeTestNode : public LuapeNode
 {
 public:
   LuapeTestNode(const LuapeNodePtr& testNode, const LuapeNodePtr& successNode, const LuapeNodePtr& failureNode)
-    : LuapeNode(successNode->getType()), testNode(testNode), successNode(successNode), failureNode(failureNode) {}
+    : LuapeNode(successNode->getType(), "if(" + testNode->toShortString() + ")"),
+      testNode(testNode), successNode(successNode), failureNode(failureNode) {}
   LuapeTestNode() {}
 
   virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const
@@ -35,7 +36,7 @@ public:
   virtual size_t getDepth() const
   {
     size_t res = testNode->getDepth();
-    if (succcessNode->getDepth() > res)
+    if (successNode->getDepth() > res)
       res = successNode->getDepth();
     if (failureNode->getDepth() > res)
       res = failureNode->getDepth();
@@ -50,32 +51,63 @@ protected:
   LuapeNodePtr failureNode;
 };
 
-class TreeBoostingWeakLearner : public Object
+class TreeBoostingWeakLearner : public BoostingWeakLearner
 {
 public:
-  TreeBoostingWeakLearner(BoostingWeakLearnerPtr baseLearner)
-    : baseLearner(baseLearner) {}
+  TreeBoostingWeakLearner(BoostingWeakLearnerPtr testLearner, BoostingWeakLearnerPtr subLearner = BoostingWeakLearnerPtr())
+    : testLearner(testLearner), subLearner(subLearner) {}
 
   virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function)
   {
-    if (!baseLearner->initialize(context, problem, function))
+    if (!testLearner->initialize(context, problem, function))
+      return false;
+    if (subLearner && !subLearner->initialize(context, problem, function))
       return false;
     return true;
   }
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples) const
   {
-    return LuapeNodePtr();
+    LuapeGraphPtr graph = structureLearner->getGraph();
+
+    LuapeNodePtr testNode = structureLearner->doWeakLearning(context, testLearner, examples);
+    BooleanVectorPtr testValues = graph->updateNodeCache(context, testNode, true).staticCast<BooleanVector>();
+    
+    std::vector<size_t> successExamples;
+    successExamples.reserve(examples.size());
+    std::vector<size_t> failureExamples;
+    failureExamples.reserve(examples.size());
+    for (size_t i = 0; i < examples.size(); ++i)
+    {
+      size_t example = examples[i];
+      if (testValues->get(example))
+        successExamples.push_back(example);
+      else
+        failureExamples.push_back(example);
+    }
+
+    LuapeNodePtr successNode, failureNode;
+    if (subLearner)
+    {
+      successNode = structureLearner->doWeakLearning(context, subLearner, successExamples);
+      failureNode = structureLearner->doWeakLearning(context, subLearner, failureExamples);
+    }
+    else
+    {
+      successNode = new LuapeYieldNode();
+      failureNode = new LuapeYieldNode();
+    }
+    return new LuapeTestNode(testNode, successNode, failureNode);
   }
 
   virtual void update(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, LuapeNodePtr weakLearner)
   {
-    
   }
 
 protected:
-  BoostingWeakLearnerPtr baseLearner;
-};*/
+  BoostingWeakLearnerPtr testLearner;
+  BoostingWeakLearnerPtr subLearner;
+};
 
 class LuapeSandBox : public WorkUnit
 {
@@ -108,9 +140,10 @@ public:
     if (!classifier->initialize(context, inputClass, labels))
       return false;
 
-    //BoostingWeakLearnerPtr weakLearner = singleStumpWeakLearner();
+    BoostingWeakLearnerPtr weakLearner = singleStumpWeakLearner();
     //BoostingWeakLearnerPtr weakLearner = policyBasedWeakLearner(new TreeBasedRandomPolicy(), budgetPerIteration, maxSteps);
-    BoostingWeakLearnerPtr weakLearner = new NormalizedValueWeakLearner();
+    //BoostingWeakLearnerPtr weakLearner = new NormalizedValueWeakLearner();
+    weakLearner = new TreeBoostingWeakLearner(weakLearner, new TreeBoostingWeakLearner(weakLearner));
 
     classifier->setBatchLearner(new LuapeBatchLearner(adaBoostMHLearner(weakLearner), problem, maxIterations));
     classifier->setEvaluator(defaultSupervisedEvaluator());

@@ -88,8 +88,8 @@ public:
   virtual TypePtr getRequiredFunctionType() const
     {return luapeBinaryClassifierClass;}
 
-  virtual BoostingWeakObjectivePtr createWeakObjective() const
-    {return new AdaBoostWeakObjective();}
+  virtual BoostingWeakObjectivePtr createWeakObjective(const std::vector<size_t>& examples) const
+    {return new AdaBoostWeakObjective(examples);}
 
   virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeInferencePtr& function, const std::vector<PairPtr>& examples) const
     {size_t n = examples.size(); return new DenseDoubleVector(n, 1.0 / n);}

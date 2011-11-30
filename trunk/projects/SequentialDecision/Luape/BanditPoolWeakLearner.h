@@ -35,7 +35,7 @@ public:
   void initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph);
   void executeArm(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode);
 
-  void playArmWithHighestIndex(ExecutionContext& context, const BoostingLearnerPtr& graphLearner);
+  void playArmWithHighestIndex(ExecutionContext& context, const BoostingLearnerPtr& graphLearner, const std::vector<size_t>& examples);
 
   size_t sampleArmWithHighestReward(ExecutionContext& context) const;
 
@@ -111,9 +111,10 @@ public:
     return true;
   }
 
-  // gradient boosting
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples) const
   {
+    // FIXME: example subsets is not implemented
+
     if (pool->getNumArms() == 0)
     {
       context.errorCallback(T("No arms"));
@@ -125,7 +126,7 @@ public:
     {
       context.enterScope(T("Playing bandits iteration ") + String((int)t));
       for (size_t i = 0; i < pool->getNumArms(); ++i)
-        pool->playArmWithHighestIndex(context, structureLearner);
+        pool->playArmWithHighestIndex(context, structureLearner, examples);
       pool->displayInformation(context);
       context.leaveScope();
     }

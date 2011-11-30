@@ -51,7 +51,7 @@ class BoostingWeakLearner : public Object
 {
 public:
   virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function) {return true;}
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const = 0;
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples) const = 0;
   virtual void update(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, LuapeNodePtr weakLearner) {}
 };
 
@@ -80,7 +80,7 @@ public:
   BoostingLearner(BoostingWeakLearnerPtr weakLearner);
   BoostingLearner() {}
 
-  virtual BoostingWeakObjectivePtr createWeakObjective() const = 0;
+  virtual BoostingWeakObjectivePtr createWeakObjective(const std::vector<size_t>& examples) const = 0;
 
   virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function);
   virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data);
@@ -88,8 +88,10 @@ public:
   const BoostingWeakLearnerPtr& getWeakLearner() const
     {return weakLearner;}
 
-  double computeWeakObjective(ExecutionContext& context, const LuapeNodePtr& weakNode) const;
-  double computeBestStumpThreshold(ExecutionContext& context, const LuapeNodePtr& numberNode) const;
+  double computeWeakObjective(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples) const;
+  double computeBestStumpThreshold(ExecutionContext& context, const LuapeNodePtr& numberNode, const std::vector<size_t>& examples) const;
+
+  LuapeNodePtr doWeakLearning(ExecutionContext& context, const BoostingWeakLearnerPtr& weakLearner, const std::vector<size_t>& examples) const;
 
 protected:
   friend class BoostingLearnerClass;
@@ -97,9 +99,9 @@ protected:
   BoostingWeakLearnerPtr weakLearner;
   VectorPtr predictions;
   VectorPtr validationPredictions;
+  std::vector<size_t> allExamples;
 
-  LuapeNodePtr createDecisionStump(ExecutionContext& context, const LuapeNodePtr& numberNode) const;
-  LuapeNodePtr doWeakLearning(ExecutionContext& context) const;
+  LuapeNodePtr createDecisionStump(ExecutionContext& context, const LuapeNodePtr& numberNode, const std::vector<size_t>& examples) const;
   LuapeNodePtr doWeakLearningAndAddToGraph(ExecutionContext& context, VectorPtr& weakPredictions);
   void updatePredictionsAndEvaluate(ExecutionContext& context, size_t yieldIndex, const LuapeNodePtr& weakNode) const;
   void recomputePredictions(ExecutionContext& context);
