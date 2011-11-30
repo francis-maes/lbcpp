@@ -13,7 +13,8 @@
 
 namespace lbcpp
 {
-  
+
+// FIXME: implement with real-valued weak predictions
 class AdaBoostWeakObjective : public BoostingWeakObjective
 {
 public:
@@ -22,7 +23,7 @@ public:
   {
   }
 
-  virtual void setPredictions(const BooleanVectorPtr& predictions)
+  virtual void setPredictions(const VectorPtr& predictions)
   {
     this->predictions = predictions;
 
@@ -31,15 +32,22 @@ public:
     jassert(predictions->getNumElements() >= n);
 
     accuracy = 0.0;
-    double* weightsPtr = weights->getValuePointer(0);
-    for (size_t i = 0; i < n; ++i, ++weightsPtr)
-      if (predictions->get(i) == supervisions->get(i))
-        accuracy += *weightsPtr;
+
+    BooleanVectorPtr booleanPredictions = predictions.dynamicCast<BooleanVector>();
+    if (booleanPredictions)
+    {
+      double* weightsPtr = weights->getValuePointer(0);
+      for (size_t i = 0; i < n; ++i, ++weightsPtr)
+        if (booleanPredictions->get(i) == supervisions->get(i))
+          accuracy += *weightsPtr;
+    }
+    else
+      jassert(false);
   }
 
   virtual void flipPrediction(size_t index)
   {
-    if (predictions->flip(index) == supervisions->get(index))
+    if (predictions.staticCast<BooleanVector>()->flip(index) == supervisions->get(index))
       accuracy += weights->getValue(index);
     else
       accuracy -= weights->getValue(index);
@@ -52,7 +60,7 @@ public:
     {return accuracy;}
 
 protected:
-  BooleanVectorPtr predictions;
+  VectorPtr predictions;
   BooleanVectorPtr supervisions;
   DenseDoubleVectorPtr weights;
   double accuracy;
@@ -89,7 +97,7 @@ public:
   virtual bool shouldStop(double accuracy) const
     {return accuracy == 0.0 || accuracy == 1.0;}
 
-  virtual double updateWeight(const LuapeInferencePtr& function, size_t index, double currentWeight, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const Variable& vote) const
+  virtual double updateWeight(const LuapeInferencePtr& function, size_t index, double currentWeight, const VectorPtr& predictions, const ContainerPtr& supervisions, const Variable& vote) const
   {
     double alpha = vote.toDouble();
     bool isPredictionCorrect = (supervisions->getElement(index).getBoolean() == predictions->get(index));

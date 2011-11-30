@@ -13,10 +13,69 @@
 # include "LuapeProblem.h"
 # include "LuapeLearner.h"
 # include "PolicyBasedWeakLearner.h"
+# include "SingleStumpWeakLearner.h"
 # include "../Core/SinglePlayerMCTSOptimizer.h"
 
 namespace lbcpp
 {
+/*
+class LuapeTestNode : public LuapeNode
+{
+public:
+  LuapeTestNode(const LuapeNodePtr& testNode, const LuapeNodePtr& successNode, const LuapeNodePtr& failureNode)
+    : LuapeNode(successNode->getType()), testNode(testNode), successNode(successNode), failureNode(failureNode) {}
+  LuapeTestNode() {}
+
+  virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const
+  {
+    bool test = testNode->compute(context, state, callback).getBoolean();
+    return (test ? successNode : failureNode)->compute(context, state, callback);
+  }
+
+  virtual size_t getDepth() const
+  {
+    size_t res = testNode->getDepth();
+    if (succcessNode->getDepth() > res)
+      res = successNode->getDepth();
+    if (failureNode->getDepth() > res)
+      res = failureNode->getDepth();
+    return res + 1;
+  }
+
+  lbcpp_UseDebuggingNewOperator
+
+protected:
+  LuapeNodePtr testNode;
+  LuapeNodePtr successNode;
+  LuapeNodePtr failureNode;
+};
+
+class TreeBoostingWeakLearner : public Object
+{
+public:
+  TreeBoostingWeakLearner(BoostingWeakLearnerPtr baseLearner)
+    : baseLearner(baseLearner) {}
+
+  virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function)
+  {
+    if (!baseLearner->initialize(context, problem, function))
+      return false;
+    return true;
+  }
+
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const
+  {
+    return LuapeNodePtr();
+  }
+
+  virtual void update(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, LuapeNodePtr weakLearner)
+  {
+    
+  }
+
+protected:
+  BoostingWeakLearnerPtr baseLearner;
+};*/
 
 class LuapeSandBox : public WorkUnit
 {
@@ -49,8 +108,10 @@ public:
     if (!classifier->initialize(context, inputClass, labels))
       return false;
 
-    BoostingWeakLearnerPtr weakLearner = singleStumpWeakLearner();
+    //BoostingWeakLearnerPtr weakLearner = singleStumpWeakLearner();
     //BoostingWeakLearnerPtr weakLearner = policyBasedWeakLearner(new TreeBasedRandomPolicy(), budgetPerIteration, maxSteps);
+    BoostingWeakLearnerPtr weakLearner = new NormalizedValueWeakLearner();
+
     classifier->setBatchLearner(new LuapeBatchLearner(adaBoostMHLearner(weakLearner), problem, maxIterations));
     classifier->setEvaluator(defaultSupervisedEvaluator());
 
@@ -70,6 +131,8 @@ public:
     {
       context.enterScope(inputsClass->getMemberVariableName(i));
       ObjectPtr object = Object::create(inputsClass);
+      for (size_t j = 0; j < object->getNumVariables(); ++j)
+        object->setVariable(j, (double)1.0);
       for (size_t j = 0; j < 100; ++j)
       {
         context.enterScope(String((int)j));

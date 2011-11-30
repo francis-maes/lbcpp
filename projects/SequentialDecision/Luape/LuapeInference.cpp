@@ -128,15 +128,30 @@ Variable LuapeRegressor::computeFunction(ExecutionContext& context, const Variab
 VectorPtr LuapeRegressor::createVoteVector() const
   {return new DenseDoubleVector(0, 0.0);}
 
-void LuapeRegressor::updatePredictions(VectorPtr predictions, size_t yieldIndex, const BooleanVectorPtr& yieldOutputs) const
+void LuapeRegressor::updatePredictions(VectorPtr predictions, size_t yieldIndex, const VectorPtr& yieldOutputs) const
 {
   double negativeVote = votes.staticCast<DenseDoubleVector>()->getValue(yieldIndex * 2);
   double positiveVote = votes.staticCast<DenseDoubleVector>()->getValue(yieldIndex * 2 + 1);
   const DenseDoubleVectorPtr& pred = predictions.staticCast<DenseDoubleVector>();
   size_t n = pred->getNumValues();
-  std::vector<bool>::const_iterator it = yieldOutputs->getElements().begin();
-  for (size_t i = 0; i < n; ++i)
-    pred->incrementValue(i, *it++ ? positiveVote : negativeVote);
+
+  BooleanVectorPtr yieldBooleans = yieldOutputs.dynamicCast<BooleanVector>();
+  if (yieldBooleans)
+  {
+    std::vector<bool>::const_iterator it = yieldBooleans->getElements().begin();
+    for (size_t i = 0; i < n; ++i)
+      pred->incrementValue(i, *it++ ? positiveVote : negativeVote);
+  }
+  else
+  {
+    DenseDoubleVectorPtr yieldScalars = yieldOutputs.dynamicCast<DenseDoubleVector>();
+    jassert(yieldScalars);
+    for (size_t i = 0; i < n; ++i)
+    {
+      double weak = yieldScalars->getValue(i) * 2.0 - 1.0;
+      pred->incrementValue(i, (weak > 0 ? positiveVote : negativeVote) * weak); // !!
+    }
+  }
 }
 
 void LuapeRegressor::setGraphSamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
@@ -205,14 +220,26 @@ Variable LuapeBinaryClassifier::computeFunction(ExecutionContext& context, const
 VectorPtr LuapeBinaryClassifier::createVoteVector() const
   {return new DenseDoubleVector(0, 0.0);}
 
-void LuapeBinaryClassifier::updatePredictions(VectorPtr predictions, size_t yieldIndex, const BooleanVectorPtr& yieldOutputs) const
+void LuapeBinaryClassifier::updatePredictions(VectorPtr predictions, size_t yieldIndex, const VectorPtr& yieldOutputs) const
 {
   double vote = votes.staticCast<DenseDoubleVector>()->getValue(yieldIndex);
   const DenseDoubleVectorPtr& pred = predictions.staticCast<DenseDoubleVector>();
   size_t n = pred->getNumValues();
-  std::vector<bool>::const_iterator it = yieldOutputs->getElements().begin();
-  for (size_t i = 0; i < n; ++i)
-    pred->incrementValue(i, vote * (*it++ ? 1.0 : -1.0));
+
+  BooleanVectorPtr yieldBooleans = yieldOutputs.dynamicCast<BooleanVector>();
+  if (yieldBooleans)
+  {
+    std::vector<bool>::const_iterator it = yieldBooleans->getElements().begin();
+    for (size_t i = 0; i < n; ++i)
+      pred->incrementValue(i, vote * (*it++ ? 1.0 : -1.0));
+  }
+  else
+  {
+    DenseDoubleVectorPtr yieldScalars = yieldOutputs.dynamicCast<DenseDoubleVector>();
+    jassert(yieldScalars);
+    for (size_t i = 0; i < n; ++i)
+      pred->incrementValue(i, vote * (yieldScalars->getValue(i) * 2.0 - 1.0));
+  }
 }
 
 double LuapeBinaryClassifier::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const
@@ -249,9 +276,13 @@ struct LuapeClassifierComputeCallback : public LuapeGraphCallback
 
   virtual void valueYielded(const Variable& value)
   {
-    jassert(value.isBoolean());
     DenseDoubleVectorPtr vote = votes->getElement(index++).getObjectAndCast<DenseDoubleVector>();
-    vote->addWeightedTo(res, 0, value.getBoolean() ? 1.0 : -1.0);
+    if (value.isBoolean())
+      vote->addWeightedTo(res, 0, value.getBoolean() ? 1.0 : -1.0);
+    else if (value.getType() == probabilityType)
+      vote->addWeightedTo(res, 0, value.getDouble() * 2.0 - 1.0);
+    else
+      jassert(false);
   }
 };
 
@@ -276,21 +307,30 @@ VectorPtr LuapeClassifier::createVoteVector() const
 TypePtr LuapeClassifier::getPredictionsInternalType() const
   {return doubleVectorClass;}
 
-void LuapeClassifier::updatePredictions(VectorPtr predictions, size_t yieldIndex, const BooleanVectorPtr& yieldOutputs) const
+void LuapeClassifier::updatePredictions(VectorPtr predictions, size_t yieldIndex, const VectorPtr& yieldOutputs) const
 {
   DenseDoubleVectorPtr vote = votes->getElement(yieldIndex).getObjectAndCast<DenseDoubleVector>();
   const ObjectVectorPtr& pred = predictions.staticCast<ObjectVector>();
-  std::vector<bool>::const_iterator it = yieldOutputs->getElements().begin();
   size_t n = pred->getNumElements();
   for (size_t i = 0; i < n; ++i)
   {
-    DenseDoubleVectorPtr p = pred->getAndCast<DenseDoubleVector>(i);
-    if (!p)
-    {
-      p = new DenseDoubleVector(doubleVectorClass);
-      pred->set(i, p);
-    }
-    vote->addWeightedTo(p, 0, *it++ ? 1.0 : -1.0);
+    if (!pred->get(i))
+      pred->set(i, new DenseDoubleVector(doubleVectorClass));
+  }
+
+  BooleanVectorPtr yieldBooleans = yieldOutputs.dynamicCast<BooleanVector>();
+  if (yieldBooleans)
+  {
+    std::vector<bool>::const_iterator it = yieldBooleans->getElements().begin();
+    for (size_t i = 0; i < n; ++i)
+      vote->addWeightedTo(pred->getAndCast<DenseDoubleVector>(i), 0, *it++ ? 1.0 : -1.0);
+  }
+  else
+  {
+    DenseDoubleVectorPtr yieldScalars = yieldOutputs.dynamicCast<DenseDoubleVector>();
+    jassert(yieldScalars);
+    for (size_t i = 0; i < n; ++i)
+      vote->addWeightedTo(pred->getAndCast<DenseDoubleVector>(i), 0, yieldScalars->getValue(i) * 2.0 - 1.0);
   }
 }
 
@@ -356,7 +396,7 @@ Variable LuapeRanker::computeFunction(ExecutionContext& context, const Variable*
 VectorPtr LuapeRanker::createVoteVector() const
   {return new DenseDoubleVector(0, 0.0);}
 
-void LuapeRanker::updatePredictions(VectorPtr predictions, size_t yieldIndex, const BooleanVectorPtr& yieldOutputs) const
+void LuapeRanker::updatePredictions(VectorPtr predictions, size_t yieldIndex, const VectorPtr& yieldOutputs) const
 {
   jassert(false); // not yet implemented
 }

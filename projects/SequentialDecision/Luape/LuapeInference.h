@@ -30,7 +30,7 @@ public:
     {this->votes = votes;}
 
   virtual VectorPtr createVoteVector() const = 0;
-  virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const BooleanVectorPtr& yieldOutputs) const = 0;
+  virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const VectorPtr& yieldOutputs) const = 0;
   virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const = 0;
 
   virtual TypePtr getPredictionsInternalType() const
@@ -63,7 +63,7 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 
   virtual VectorPtr createVoteVector() const;
-  virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const BooleanVectorPtr& yieldOutputs) const;
+  virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const VectorPtr& yieldOutputs) const;
   virtual void setGraphSamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data);
   virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const;
 };
@@ -79,7 +79,7 @@ public:
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
   virtual VectorPtr createVoteVector() const;
-  virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const BooleanVectorPtr& yieldOutputs) const;
+  virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const VectorPtr& yieldOutputs) const;
   virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const;
 };
 
@@ -103,7 +103,7 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
   virtual VectorPtr createVoteVector() const;
   virtual TypePtr getPredictionsInternalType() const;
-  virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const BooleanVectorPtr& yieldOutputs) const;
+  virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const VectorPtr& yieldOutputs) const;
   virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const;
 
 protected:
@@ -124,7 +124,7 @@ public:
 
   // votes are scalars (alpha values)
   virtual VectorPtr createVoteVector() const;
-  virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const BooleanVectorPtr& yieldOutputs) const;
+  virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const VectorPtr& yieldOutputs) const;
   virtual void setGraphSamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data);
   virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const;
 };

@@ -6,6 +6,7 @@
 
   <!-- Luape Function -->
   <class name="LuapeFunction" abstract="yes"/>
+  <class name="HomogeneousUnaryLuapeFunction" base="LuapeFunction" abstract="yes"/>
   <class name="HomogeneousBinaryLuapeFunction" base="LuapeFunction" abstract="yes"/>
   <class name="BinaryBooleanLuapeFunction" base="HomogeneousBinaryLuapeFunction" abstract="yes"/>
     <class name="AndBooleanLuapeFunction" base="BinaryBooleanLuapeFunction">
@@ -14,6 +15,12 @@
     <class name="EqualBooleanLuapeFunction" base="BinaryBooleanLuapeFunction">
       <constructor returnType="LuapeFunction"/>
     </class>
+
+  <class name="UnaryDoubleLuapeFunction" base="HomogeneousBinaryLuapeFunction" abstract="yes"/>
+  <class name="NormalizerLuapeFunction" base="HomogeneousUnaryLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  
   <class name="BinaryDoubleLuapeFunction" base="HomogeneousBinaryLuapeFunction" abstract="yes"/>
     <class name="AddDoubleLuapeFunction" base="BinaryDoubleLuapeFunction">
       <constructor returnType="LuapeFunction"/>

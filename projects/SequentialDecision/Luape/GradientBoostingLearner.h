@@ -15,34 +15,41 @@
 namespace lbcpp
 {
 
+// FIXME: implement with real-valued weak predictions
 class L2BoostingWeakObjective : public BoostingWeakObjective
 {
 public:
   L2BoostingWeakObjective(const DenseDoubleVectorPtr& targets)
     : targets(targets) {}
 
-  virtual void setPredictions(const BooleanVectorPtr& predictions)
+  virtual void setPredictions(const VectorPtr& predictions)
   {
     this->predictions = predictions;
     positives.clear();
     negatives.clear();
 
-    std::vector<bool>::const_iterator it = predictions->getElements().begin();
-    size_t n = predictions->getNumElements();
-    jassert(n == targets->getNumValues());
-    for (size_t i = 0; i < n; ++i)
+    BooleanVectorPtr booleanPredictions = predictions.dynamicCast<BooleanVector>();
+    if (booleanPredictions)
     {
-      double value = targets->getValue(i);
-      if (*it++)
-        positives.push(value);
-      else
-        negatives.push(value);
+      std::vector<bool>::const_iterator it = booleanPredictions->getElements().begin();
+      size_t n = booleanPredictions->getNumElements();
+      jassert(n == targets->getNumValues());
+      for (size_t i = 0; i < n; ++i)
+      {
+        double value = targets->getValue(i);
+        if (*it++)
+          positives.push(value);
+        else
+          negatives.push(value);
+      }
     }
+    else
+      jassert(false);
   }
 
   virtual void flipPrediction(size_t index)
   {
-    bool newPrediction = predictions->flip(index);
+    bool newPrediction = predictions.staticCast<BooleanVector>()->flip(index);
     double value = targets->getValue(index);
     if (newPrediction)
     {
@@ -76,7 +83,7 @@ public:
 
 protected:
   DenseDoubleVectorPtr targets;
-  BooleanVectorPtr predictions;
+  VectorPtr predictions;
 
   ScalarVariableMeanAndVariance positives;
   ScalarVariableMeanAndVariance negatives;
@@ -107,7 +114,7 @@ public:
     }
 
     // 2- find best weak learner
-    BooleanVectorPtr weakPredictions;
+    VectorPtr weakPredictions;
     LuapeNodePtr weakNode = doWeakLearningAndAddToGraph(context, weakPredictions);
     if (!weakNode)
       return false;
@@ -131,7 +138,7 @@ public:
   virtual BoostingWeakObjectivePtr createWeakObjective() const
     {return new L2BoostingWeakObjective(pseudoResiduals);}
 
-  virtual std::pair<double, double> optimizeWeightOfWeakLearner(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const BooleanVectorPtr& weakPredictions) const
+  virtual std::pair<double, double> optimizeWeightOfWeakLearner(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const VectorPtr& weakPredictions) const
   {
     context.enterScope(T("Optimize weight"));
 
@@ -145,11 +152,9 @@ public:
       context.resultCallback(T("K"), K);
 
       DenseDoubleVectorPtr newPredictions = predictions->cloneAndCast<DenseDoubleVector>();
-      for (size_t i = 0; i < weakPredictions->getNumElements(); ++i)
-        if (weakPredictions->get(i))
-          newPredictions->incrementValue(i, K);
-        else
-          newPredictions->incrementValue(i, -K);
+      size_t n = weakPredictions->getNumElements();
+      for (size_t i = 0; i < n; ++i)
+        newPredictions->incrementValue(i, K * getSignedScalarPrediction(weakPredictions, i));
 
       double lossValue;
       computeLoss(newPredictions, &lossValue, NULL);
@@ -210,7 +215,7 @@ public:
       (*lossGradient)->multiplyByScalar(-1.0);
   }
 
-  virtual std::pair<double, double> optimizeWeightOfWeakLearner(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const BooleanVectorPtr& weakPredictions) const
+  virtual std::pair<double, double> optimizeWeightOfWeakLearner(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const VectorPtr& weakPredictions) const
   {
     L2BoostingWeakObjectivePtr objective(new L2BoostingWeakObjective(pseudoResiduals));
     objective->setPredictions(weakPredictions);

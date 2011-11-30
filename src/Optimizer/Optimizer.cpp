@@ -78,7 +78,7 @@ void Optimizer::saveOptimizerState(ExecutionContext& context, const OptimizerSta
 
 OptimizerStatePtr Optimizer::loadOptimizerState(ExecutionContext& context) const
 {
-  if (optimizerStateFile == File::nonexistent || !optimizerStateFile.exists())
+  if (optimizerStateFile == File::nonexistent || !optimizerStateFile.exists() || optimizerStateFile.isDirectory())
     return OptimizerStatePtr();
   return Object::createFromFile(context, optimizerStateFile).dynamicCast<OptimizerState>();
 }

@@ -71,6 +71,8 @@ double BoostingLearner::computeWeakObjective(ExecutionContext& context, const Lu
   
   if (weakNode->getType() == booleanType)
     return edgeCalculator->compute(weakPredictions.staticCast<BooleanVector>());
+  else if (weakNode->getType() == probabilityType)
+    return edgeCalculator->compute(weakPredictions.staticCast<DenseDoubleVector>());
   else
   {
     jassert(weakNode->getType()->isConvertibleToDouble());
@@ -95,12 +97,12 @@ LuapeNodePtr BoostingLearner::doWeakLearning(ExecutionContext& context) const
   LuapeNodePtr weakNode = weakLearner->learn(context, refCountedPointerFromThis(this));
   if (!weakNode)
     context.errorCallback(T("Failed to find a weak learner"));
-  else if (weakNode->getType() != booleanType)
+  else if (weakNode->getType() != booleanType && weakNode->getType() != probabilityType)
     weakNode = createDecisionStump(context, weakNode); // transforms doubles into decision stumps
   return weakNode;
 }
 
-LuapeNodePtr BoostingLearner::doWeakLearningAndAddToGraph(ExecutionContext& context, BooleanVectorPtr& weakPredictions)
+LuapeNodePtr BoostingLearner::doWeakLearningAndAddToGraph(ExecutionContext& context, VectorPtr& weakPredictions)
 {
   LuapeNodePtr weakNode;
 
@@ -116,14 +118,14 @@ LuapeNodePtr BoostingLearner::doWeakLearningAndAddToGraph(ExecutionContext& cont
     TimedScope _(context, "add to graph");
 
     // add missing nodes to graph
-    jassert(weakNode->getType() == booleanType);
+    jassert(weakNode->getType() == booleanType || weakNode->getType() == probabilityType);
     graph->pushMissingNodes(context, new LuapeYieldNode(weakNode));
 
     // update the weak learner
     weakLearner->update(context, refCountedPointerFromThis(this), weakNode);
 
     // retrieve weak predictions
-    weakPredictions = graph->updateNodeCache(context, weakNode, true).staticCast<BooleanVector>();
+    weakPredictions = graph->updateNodeCache(context, weakNode, true);
     jassert(weakPredictions);
 
     context.resultCallback(T("numNodes"), graph->getNumNodes());
@@ -134,14 +136,14 @@ LuapeNodePtr BoostingLearner::doWeakLearningAndAddToGraph(ExecutionContext& cont
 
 void BoostingLearner::updatePredictionsAndEvaluate(ExecutionContext& context, size_t yieldIndex, const LuapeNodePtr& weakNode) const
 {
-  VectorPtr trainSamples = graph->updateNodeCache(context, weakNode, true);
-  function->updatePredictions(predictions, yieldIndex, trainSamples);
+  VectorPtr trainYields = graph->updateNodeCache(context, weakNode, true);
+  function->updatePredictions(predictions, yieldIndex, trainYields);
   context.resultCallback(T("train error"), function->evaluatePredictions(context, predictions, trainData));
 
   if (validationPredictions)
   {
-    VectorPtr validationSamples = graph->updateNodeCache(context, weakNode, false);
-    function->updatePredictions(validationPredictions, yieldIndex, validationSamples);
+    VectorPtr validationYields = graph->updateNodeCache(context, weakNode, false);
+    function->updatePredictions(validationPredictions, yieldIndex, validationYields);
     context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
   }
 }
@@ -154,10 +156,19 @@ void BoostingLearner::recomputePredictions(ExecutionContext& context)
     validationPredictions = function->makeCachedPredictions(context, false);
 }
 
+double BoostingLearner::getSignedScalarPrediction(const VectorPtr& predictions, size_t index) const
+{
+  BooleanVectorPtr booleanPredictions = predictions.dynamicCast<BooleanVector>();
+  if (booleanPredictions)
+    return booleanPredictions->get(index) ? 1.0 : -1.0;
+  else
+    return predictions.staticCast<DenseDoubleVector>()->getValue(index) * 2.0 - 1.0;
+}
+
 /*
 ** BoostingWeakObjective
 */
-double BoostingWeakObjective::compute(const BooleanVectorPtr& predictions)
+double BoostingWeakObjective::compute(const VectorPtr& predictions)
 {
   setPredictions(predictions);
   return computeObjective();

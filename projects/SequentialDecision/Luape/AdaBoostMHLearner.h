@@ -24,7 +24,7 @@ public:
   {
   }
 
-  virtual void setPredictions(const BooleanVectorPtr& predictions)
+  virtual void setPredictions(const VectorPtr& predictions)
   {
     this->predictions = predictions;
     computeMuAndVoteValues();
@@ -32,7 +32,8 @@ public:
 
   virtual void flipPrediction(size_t index)
   {
-    bool newPrediction = predictions->flip(index);
+    jassert(predictions.isInstanceOf<BooleanVector>());
+    bool newPrediction = predictions.staticCast<BooleanVector>()->flip(index);
     size_t numLabels = labels->getNumElements();
     double* weightsPtr = weights->getValuePointer(index * numLabels);
     double* muNegativesPtr = muNegatives->getValuePointer(0);
@@ -72,7 +73,7 @@ public:
 protected:
   EnumerationPtr labels;
   ClassPtr doubleVectorClass;
-  BooleanVectorPtr predictions;   // size = numExamples
+  VectorPtr predictions;   // size = numExamples
   BooleanVectorPtr supervisions;  // size = numExamples * numLabels
   DenseDoubleVectorPtr weights;   // size = numExamples * numLabels
   
@@ -89,16 +90,36 @@ protected:
     size_t numLabels = labels->getNumElements();
     size_t numExamples = predictions->getNumElements();
     jassert(supervisions->getNumElements() == numExamples * numLabels);
-    std::vector<bool>::const_iterator itpred = predictions->getElements().begin();
 
-    double* weightsPtr = weights->getValuePointer(0);
-    for (size_t i = 0; i < numExamples; ++i)
+    BooleanVectorPtr booleanPredictions = predictions.dynamicCast<BooleanVector>();
+    if (booleanPredictions)
     {
-      bool prediction = *itpred++;
-      for (size_t j = 0; j < numLabels; ++j)
+      std::vector<bool>::const_iterator itpred = booleanPredictions->getElements().begin();
+      double* weightsPtr = weights->getValuePointer(0);
+      for (size_t i = 0; i < numExamples; ++i)
       {
-        bool isPredictionCorrect = (prediction == supervisions->get(i * numLabels + j));
-        (isPredictionCorrect ? muPositives : muNegatives)->incrementValue(j, *weightsPtr++);
+        bool prediction = *itpred++;
+        for (size_t j = 0; j < numLabels; ++j)
+        {
+          bool isPredictionCorrect = (prediction == supervisions->get(i * numLabels + j));
+          (isPredictionCorrect ? muPositives : muNegatives)->incrementValue(j, *weightsPtr++);
+        }
+      }
+    }
+    else
+    {
+      DenseDoubleVectorPtr scalarPredictions = predictions.dynamicCast<DenseDoubleVector>();
+      double* weightsPtr = weights->getValuePointer(0);
+      for (size_t i = 0; i < numExamples; ++i)
+      {
+        double prediction = scalarPredictions->getValue(i) * 2 - 1;
+        for (size_t j = 0; j < numLabels; ++j)
+        {
+          double sup = supervisions->get(i * numLabels + j) ? 1.0 : -1.0;
+          bool isPredictionCorrect = (prediction * sup > 0);
+          double k = fabs(prediction);
+          (isPredictionCorrect ? muPositives : muNegatives)->incrementValue(j, *weightsPtr++);
+        }
       }
     }
 
@@ -157,16 +178,15 @@ public:
   virtual bool shouldStop(double weakObjectiveValue) const
     {return weakObjectiveValue == 0.0;}
 
-  virtual double updateWeight(const LuapeInferencePtr& function, size_t index, double currentWeight, const BooleanVectorPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const
+  virtual double updateWeight(const LuapeInferencePtr& function, size_t index, double currentWeight, const VectorPtr& predictions, const ContainerPtr& supervision, const Variable& vote) const
   {
     size_t numLabels = function.staticCast<LuapeClassifier>()->getLabels()->getNumElements();
     size_t example = index / numLabels;
     size_t k = index % numLabels;
     double alpha = vote.getObjectAndCast<DenseDoubleVector>()->getValue(k);
-    
-    bool isCorrectClass = supervision.staticCast<BooleanVector>()->get(index);
-    bool isPredictionCorrect = (prediction->get(example) == isCorrectClass);
-    return currentWeight * exp(-alpha * (isPredictionCorrect ? 1.0 : -1.0));
+    double pred = getSignedScalarPrediction(predictions, index);
+    double sup = supervision.staticCast<BooleanVector>()->get(index) ? 1.0 : -1.0;
+    return currentWeight * exp(-alpha * pred * sup);
   }
 
   virtual Variable computeVote(BoostingWeakObjectivePtr edgeCalculator) const

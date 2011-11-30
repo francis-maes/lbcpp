@@ -63,12 +63,12 @@ extern BoostingWeakLearnerPtr policyBasedWeakLearner(const PolicyPtr& policy, si
 class BoostingWeakObjective : public Object
 {
 public:
-  virtual void setPredictions(const BooleanVectorPtr& predictions) = 0;
-  virtual void flipPrediction(size_t index) = 0;
+  virtual void setPredictions(const VectorPtr& predictions) = 0;
+  virtual void flipPrediction(size_t index) = 0; // only valid if predictions are booleans
   virtual double computeObjective() const = 0;
 
   // these two functions have side effects on the currently stored predictions
-  double compute(const BooleanVectorPtr& predictions);
+  double compute(const VectorPtr& predictions);
   double findBestThreshold(ExecutionContext& context, const SparseDoubleVectorPtr& sortedDoubleValues, double& edge, bool verbose = false);
 };
 
@@ -100,9 +100,10 @@ protected:
 
   LuapeNodePtr createDecisionStump(ExecutionContext& context, const LuapeNodePtr& numberNode) const;
   LuapeNodePtr doWeakLearning(ExecutionContext& context) const;
-  LuapeNodePtr doWeakLearningAndAddToGraph(ExecutionContext& context, BooleanVectorPtr& weakPredictions);
+  LuapeNodePtr doWeakLearningAndAddToGraph(ExecutionContext& context, VectorPtr& weakPredictions);
   void updatePredictionsAndEvaluate(ExecutionContext& context, size_t yieldIndex, const LuapeNodePtr& weakNode) const;
   void recomputePredictions(ExecutionContext& context);
+  double getSignedScalarPrediction(const VectorPtr& predictions, size_t index) const;
 };
 
 }; /* namespace lbcpp */
