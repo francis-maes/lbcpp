@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: Sampler.h                      | Sampler                         |
+| Filename: ProteinSampler.h               | ProteinSampler                  |
 | Author  : Alejandro Marcos Alvarez       |                                 |
 | Started : 30 avr. 2011  10:41:07         |                                 |
 `------------------------------------------/                                 |

@@ -10,7 +10,7 @@
 # define LBCPP_SAMPLER_GENERAL_PROTEIN_MOVER_SAMPLER_H_
 
 # include "precompiled.h"
-# include "../Sampler.h"
+# include "../ProteinSampler.h"
 # include "../ProteinMover/ProteinMover.h"
 
 namespace lbcpp

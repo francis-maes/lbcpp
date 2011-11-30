@@ -10,7 +10,7 @@
 # define LBCPP_PROTEINS_ROSETTA_PARZEN_CONTINUOUS_SAMPLER_H_
 
 # include "precompiled.h"
-# include "../Sampler.h"
+# include "../ProteinSampler.h"
 
 namespace lbcpp
 {

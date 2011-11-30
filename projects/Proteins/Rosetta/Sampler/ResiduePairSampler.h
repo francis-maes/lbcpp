@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEINS_ROSETTA_RESIDUE_PAIR_SAMPLER_H_
 # define LBCPP_PROTEINS_ROSETTA_RESIDUE_PAIR_SAMPLER_H_
 
-# include "../Sampler.h"
+# include "../ProteinSampler.h"
 
 namespace lbcpp
 {

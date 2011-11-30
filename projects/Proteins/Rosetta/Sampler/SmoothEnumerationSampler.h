@@ -10,7 +10,7 @@
 # define LBCPP_SAMPLER_SMOOTH_ENUMERATION_SAMPLER_H_
 
 # include "precompiled.h"
-# include "../Sampler.h"
+# include "../ProteinSampler.h"
 
 namespace lbcpp
 {
