@@ -2,6 +2,15 @@
 
 <library name="ProteinRosettaMover" directory="Rosetta/ProteinMover">
 
+  <class name="ProteinMover" base="Object" abstract="yes">
+  </class>
+  
+  <enumeration name="ProteinMoverEnumeration">
+    <value name="phipsi"/>
+    <value name="shear"/>
+    <value name="rigidbody"/>
+  </enumeration>
+  
   <class name="PhiPsiMover" base="ProteinMover">
     <constructor arguments="size_t residue, double deltaPhi, double deltaPsi"/>
     <variable type="PositiveInteger" name="residue" shortName="r" description="Index of the residue"/>

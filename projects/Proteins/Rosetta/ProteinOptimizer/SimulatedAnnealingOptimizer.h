@@ -10,9 +10,9 @@
 # define LBCPP_PROTEINS_ROSETTA_PROTEIN_SIMULATED_ANNEALING_OPTIMIZER_H_
 
 # include "precompiled.h"
-# include "../ProteinOptimizer.h"
+# include "ProteinOptimizer.h"
 # include "../Sampler.h"
-# include "../ProteinMover.h"
+# include "../ProteinMover/ProteinMover.h"
 
 namespace lbcpp
 {
