@@ -1,14 +1,15 @@
-TODO
-====
+TODO LBCPP
+==========
 
 - depliement proteines
 - corriger rosetta parallele (ProteinTestParallelWorkUnit)
 - retirer les ifdef LBCPP_PROTEIN_ROSETTA ?
 - corriger probleme hbond tripped
 
-DONE
-=====
+TODO NIC3
+=========
 
+- lancer EDA sur optim_new_learn_all_it1
 
 
 

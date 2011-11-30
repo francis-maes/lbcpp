@@ -338,7 +338,7 @@ public:
     Variable input;
     if (learningPolicy > 1)
       input = getFeatures(context);
-    context.resultCallback(T("toto"), input);
+    //context.resultCallback(T("toto"), input);
     return sampler->sample(context, random, &input);
   }
 

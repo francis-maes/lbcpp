@@ -15,7 +15,7 @@
 # include "../Data/Formats/PDBFileGenerator.h"
 # include "../Evaluator/QScoreEvaluator.h"
 # include "RosettaUtils.h"
-# include "ProteinMover.h"
+# include "ProteinMover/ProteinMover.h"
 # include "ProteinMover/PhiPsiMover.h"
 # include "ProteinMover/ShearMover.h"
 # include "ProteinMover/RigidBodyMover.h"

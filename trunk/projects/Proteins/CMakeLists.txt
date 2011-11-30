@@ -143,9 +143,7 @@ SET(LBCPP_PROTEIN_ROSETTA_SOURCES
   Rosetta/RosettaSandBox.h
   Rosetta/RosettaUtils.h
   Rosetta/RosettaUtils.cpp
-  Rosetta/ProteinMover.h
   Rosetta/Sampler.h
-  Rosetta/ProteinOptimizer.h
   Rosetta/RosettaWorkUnit.h
   Rosetta/ProteinEDAOptimizer.h
   Rosetta/ProteinRosettaLibrary.xml
@@ -153,6 +151,7 @@ SET(LBCPP_PROTEIN_ROSETTA_SOURCES
 )
 
 SET(LBCPP_PROTEIN_ROSETTA_MOVER_SOURCES
+  Rosetta/ProteinMover/ProteinMover.h
   Rosetta/ProteinMover/PhiPsiMover.h
   Rosetta/ProteinMover/ShearMover.h
   Rosetta/ProteinMover/RigidBodyMover.h
@@ -161,6 +160,7 @@ SET(LBCPP_PROTEIN_ROSETTA_MOVER_SOURCES
 )
 
 SET(LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES
+  Rosetta/ProteinOptimizer/ProteinOptimizer.h
   Rosetta/ProteinOptimizer/GreedyOptimizer.h
   Rosetta/ProteinOptimizer/MonteCarloOptimizer.h
   Rosetta/ProteinOptimizer/SimulatedAnnealingOptimizer.h

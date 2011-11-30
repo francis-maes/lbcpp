@@ -11,15 +11,14 @@
 
 # include "precompiled.h"
 
-# include "RosettaUtils.h"
-# include "ProteinMover.h"
+# include "../RosettaUtils.h"
+# include "../ProteinMover/ProteinMover.h"
 # include <iostream>
 # include <cmath>
 # include <algorithm>
 # include <vector>
-# include "Sampler.h"
-# include "ProteinMover.h"
-# include "RosettaProtein.h"
+# include "../Sampler.h"
+# include "../RosettaProtein.h"
 
 namespace lbcpp
 {

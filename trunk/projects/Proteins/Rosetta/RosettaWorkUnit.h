@@ -14,8 +14,8 @@
 # include "../Data/Protein.h"
 # include "../Data/Formats/PDBFileGenerator.h"
 # include "RosettaUtils.h"
-# include "ProteinOptimizer.h"
-# include "ProteinMover.h"
+# include "ProteinOptimizer/ProteinOptimizer.h"
+# include "ProteinMover/ProteinMover.h"
 # include "ProteinOptimizer/SimulatedAnnealingOptimizer.h"
 # include "Sampler.h"
 # include "Sampler/ProteinMoverSampler.h"
@@ -89,7 +89,7 @@ public:
     juce::OwnedArray<File> results;
     inputFile.findChildFiles(results, File::findFiles, false, T("*.xml"));
 
-    double frequenceVerbosity = 0.001;
+    double frequenceVerbosity = 0.005;
     std::vector<ScalarVariableMeanAndVariancePtr> meansAndVariances;
 
     for (size_t i = 0; i < results.size(); i++)
@@ -119,7 +119,7 @@ public:
       RandomGeneratorPtr random = new RandomGenerator();
       DenseDoubleVectorPtr energiesAtIteration;
       ProteinSimulatedAnnealingOptimizerPtr optimizer = new ProteinSimulatedAnnealingOptimizer(4.0,
-          0.01, 50, 250000, 5, currentName, frequenceVerbosity, 10, outputFile);
+          0.01, 50, 1000000, 5, currentName, frequenceVerbosity, 10, outputFile);
 
       optimizer->apply(context, worker, random, energiesAtIteration);
 

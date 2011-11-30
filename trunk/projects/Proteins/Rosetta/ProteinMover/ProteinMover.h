@@ -10,7 +10,7 @@
 # define LBCPP_PROTEINS_ROSETTA_PROTEIN_MOVER_H_
 
 # include "precompiled.h"
-# include "RosettaUtils.h"
+# include "../RosettaUtils.h"
 
 namespace lbcpp
 {

@@ -30,12 +30,6 @@
     <variable type="Boolean" name="fixedAbscissa" shortName="f" description="Indicates if the abscissa must be evaluated dynamically or not."/>  
   </class>
   
-  <enumeration name="ProteinMoverEnumeration">
-    <value name="phipsi"/>
-    <value name="shear"/>
-    <value name="rigidbody"/>
-  </enumeration>
-  
   <class name="ProteinMoverSampler" base="CompositeSampler">
     <constructor arguments="DiscreteSamplerPtr classSampler, size_t numResidues"/>
     <constructor arguments="size_t numResidues"/>

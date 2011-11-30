@@ -11,7 +11,7 @@
 
 # include "precompiled.h"
 # include "../RosettaUtils.h"
-# include "../Sampler/ProteinMoverSampler.h"
+# include "../Sampler/GeneralProteinMoverSampler.h"
 
 namespace lbcpp
 {
@@ -33,7 +33,6 @@ double evaluateQualityUnfold(const core::pose::PoseOP& pose)
   return 0.0;
 #endif //LBCPP_PROTEIN_ROSETTA
 }
-
 
 class UnfoldProteinsWorkUnit : public WorkUnit
 {
@@ -72,7 +71,7 @@ public:
 
       // create sampler
       SamplerPtr moverSampler;
-      moverSampler = new ProteinMoverSampler(workingPose->n_residue());
+      moverSampler = new GeneralProteinMoverSampler(workingPose->n_residue(), 0);
 
       // verbosity
       context.enterScope((*references[j]).getFileNameWithoutExtension() + T(" discovering movers."));
