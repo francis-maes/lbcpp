@@ -143,7 +143,7 @@ SET(LBCPP_PROTEIN_ROSETTA_SOURCES
   Rosetta/RosettaSandBox.h
   Rosetta/RosettaUtils.h
   Rosetta/RosettaUtils.cpp
-  Rosetta/Sampler.h
+  Rosetta/ProteinSampler.h
   Rosetta/RosettaWorkUnit.h
   Rosetta/ProteinEDAOptimizer.h
   Rosetta/ProteinRosettaLibrary.xml

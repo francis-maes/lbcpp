@@ -22,7 +22,7 @@
 # include "Sampler/SimpleResidueSampler.h"
 # include "Sampler/ResiduePairSampler.h"
 # include "Sampler/ProteinMoverSampler.h"
-# include "Sampler.h"
+# include "ProteinSampler.h"
 # include "Sampler/GeneralProteinMoverSampler.h"
 # include "RosettaProtein.h"
 //using namespace std;

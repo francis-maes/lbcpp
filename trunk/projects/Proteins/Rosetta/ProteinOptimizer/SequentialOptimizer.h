@@ -12,7 +12,6 @@
 # include "precompiled.h"
 # include "ProteinOptimizer.h"
 # include "SimulatedAnnealingOptimizer.h"
-# include "../Sampler.h"
 # include "../ProteinMover/ProteinMover.h"
 # include "../Sampler/ProteinMoverSampler.h"
 

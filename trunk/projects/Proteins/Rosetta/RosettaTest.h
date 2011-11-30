@@ -28,7 +28,7 @@
 # include <vector>
 # include <cmath>
 # include <time.h>
-# include "Sampler.h"
+# include "ProteinSampler.h"
 # include "Sampler/ParzenContinuousSampler.h"
 # include "Sampler/SimpleResidueSampler.h"
 # include "Sampler/ResiduePairSampler.h"
