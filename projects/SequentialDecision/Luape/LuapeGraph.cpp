@@ -375,7 +375,7 @@ VectorPtr LuapeGraph::updateNodeCache(ExecutionContext& context, const LuapeNode
   LuapeFunctionNodePtr functionNode = node.dynamicCast<LuapeFunctionNode>();
   if (!functionNode)
   {
-    if (sortedDoubleValues)
+    if (sortedDoubleValues && node->getCache())
       *sortedDoubleValues = node->getCache()->getSortedDoubleValues();
     return node->getCache()->getSamples(isTrainingSamples); // only function nodes are subject to caching
   }

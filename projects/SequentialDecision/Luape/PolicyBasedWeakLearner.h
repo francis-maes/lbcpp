@@ -369,7 +369,7 @@ public:
     return true;
   }
      
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples) const
   {
     static const bool computeOptimalLearner = false;
 
@@ -379,7 +379,7 @@ public:
     if (computeOptimalLearner)
     {
       context.enterScope(T("Computing optimal weak learner"));
-      findOptimalWeakLearner(context, structureLearner, new LuapeGraphBuilderState(graph->cloneAndCast<LuapeGraph>(), typeSearchSpace), optimalReward, optimalWeakLearner);
+      findOptimalWeakLearner(context, structureLearner, new LuapeGraphBuilderState(graph->cloneAndCast<LuapeGraph>(), typeSearchSpace), examples, optimalReward, optimalWeakLearner);
       context.leaveScope(optimalReward);
     }
 
@@ -390,7 +390,7 @@ public:
     for (size_t i = 0; i < budget; ++i)
     {
       double reward;
-      LuapeYieldNodePtr yieldNode = sampleTrajectory(context, structureLearner, reward);
+      LuapeYieldNodePtr yieldNode = sampleTrajectory(context, structureLearner, reward, examples);
       if (yieldNode && reward > bestReward)
         bestWeakLearner = yieldNode->getArgument(), bestReward = reward;
       context.progressCallback(new ProgressionState(i+1, budget, T("Trajectories")));
@@ -413,7 +413,7 @@ public:
     return bestWeakLearner;
   }
 
-  LuapeYieldNodePtr sampleTrajectory(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, double& reward) const
+  LuapeYieldNodePtr sampleTrajectory(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, double& reward, const std::vector<size_t>& examples) const
   {
     const LuapeGraphPtr& graph = structureLearner->getGraph();
     LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(graph->cloneAndCast<LuapeGraph>(), typeSearchSpace);
@@ -436,7 +436,7 @@ public:
     }
 
     LuapeYieldNodePtr yieldNode = builder->getGraph()->getLastNode().dynamicCast<LuapeYieldNode>();
-    reward = yieldNode ? structureLearner->computeWeakObjective(context, yieldNode->getArgument()) : 0.0;
+    reward = yieldNode ? structureLearner->computeWeakObjective(context, yieldNode->getArgument(), examples) : 0.0;
 
     if (noMoreActions)
       context.informationCallback(T("Out-of-actions: ") + builder->toShortString());
@@ -445,7 +445,7 @@ public:
     return builder->getGraph()->getLastNode().dynamicCast<LuapeYieldNode>();
   }
 
-  void findOptimalWeakLearner(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeGraphBuilderStatePtr& state, double& bestReward, LuapeNodePtr& bestWeakLearner) const
+  void findOptimalWeakLearner(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeGraphBuilderStatePtr& state, const std::vector<size_t>& examples, double& bestReward, LuapeNodePtr& bestWeakLearner) const
   {
     if (state->isFinalState())
     {
@@ -453,7 +453,7 @@ public:
       if (yieldNode)
       {
         LuapeNodePtr node = yieldNode->getArgument();
-        double reward = structureLearner->computeWeakObjective(context, node);
+        double reward = structureLearner->computeWeakObjective(context, node, examples);
         if (reward > bestReward)
           bestReward = reward, bestWeakLearner = node;
       }
@@ -468,7 +468,7 @@ public:
         double reward;
         state->performTransition(context, actions->getElement(i), reward, &stateBackup);
         //context.enterScope(state->toShortString());
-        findOptimalWeakLearner(context, structureLearner, state, bestReward, bestWeakLearner);
+        findOptimalWeakLearner(context, structureLearner, state, examples, bestReward, bestWeakLearner);
         //context.leaveScope();
         state->undoTransition(context, stateBackup);
       }

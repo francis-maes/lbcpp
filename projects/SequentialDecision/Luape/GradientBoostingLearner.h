@@ -19,8 +19,8 @@ namespace lbcpp
 class L2BoostingWeakObjective : public BoostingWeakObjective
 {
 public:
-  L2BoostingWeakObjective(const DenseDoubleVectorPtr& targets)
-    : targets(targets) {}
+  L2BoostingWeakObjective(const DenseDoubleVectorPtr& targets, const std::vector<size_t>& examples)
+    : targets(targets), examples(examples) {}
 
   virtual void setPredictions(const VectorPtr& predictions)
   {
@@ -31,6 +31,15 @@ public:
     BooleanVectorPtr booleanPredictions = predictions.dynamicCast<BooleanVector>();
     if (booleanPredictions)
     {
+      for (size_t i = 0; i < examples.size(); ++i)
+      {
+        double value = targets->getValue(examples[i]);
+        if (booleanPredictions->get(examples[i]))
+          positives.push(value);
+        else
+          negatives.push(value);
+      }
+/*
       std::vector<bool>::const_iterator it = booleanPredictions->getElements().begin();
       size_t n = booleanPredictions->getNumElements();
       jassert(n == targets->getNumValues());
@@ -41,7 +50,7 @@ public:
           positives.push(value);
         else
           negatives.push(value);
-      }
+      }*/
     }
     else
       jassert(false);
@@ -84,6 +93,7 @@ public:
 protected:
   DenseDoubleVectorPtr targets;
   VectorPtr predictions;
+  const std::vector<size_t>& examples;
 
   ScalarVariableMeanAndVariance positives;
   ScalarVariableMeanAndVariance negatives;
@@ -135,8 +145,8 @@ public:
     return true;
   }
 
-  virtual BoostingWeakObjectivePtr createWeakObjective() const
-    {return new L2BoostingWeakObjective(pseudoResiduals);}
+  virtual BoostingWeakObjectivePtr createWeakObjective(const std::vector<size_t>& examples) const
+    {return new L2BoostingWeakObjective(pseudoResiduals, examples);}
 
   virtual std::pair<double, double> optimizeWeightOfWeakLearner(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const VectorPtr& weakPredictions) const
   {
@@ -217,7 +227,7 @@ public:
 
   virtual std::pair<double, double> optimizeWeightOfWeakLearner(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const VectorPtr& weakPredictions) const
   {
-    L2BoostingWeakObjectivePtr objective(new L2BoostingWeakObjective(pseudoResiduals));
+    L2BoostingWeakObjectivePtr objective(new L2BoostingWeakObjective(pseudoResiduals, allExamples));
     objective->setPredictions(weakPredictions);
     return std::make_pair(objective->getNegativesMean(), objective->getPositivesMean());
   }

@@ -54,18 +54,24 @@ bool BoostingLearner::setExamples(ExecutionContext& context, bool isTrainingData
   if (!LuapeLearner::setExamples(context, isTrainingData, data))
     return false;
   (isTrainingData ? predictions : validationPredictions) = function->makeCachedPredictions(context, isTrainingData);
+  if (isTrainingData)
+  {
+    allExamples.resize(data.size());
+    for (size_t i = 0; i < allExamples.size(); ++i)
+      allExamples[i] = i;
+  }
   return true;
 }
 
-LuapeNodePtr BoostingLearner::createDecisionStump(ExecutionContext& context, const LuapeNodePtr& numberNode) const
+LuapeNodePtr BoostingLearner::createDecisionStump(ExecutionContext& context, const LuapeNodePtr& numberNode, const std::vector<size_t>& examples) const
 {
-  double threshold = computeBestStumpThreshold(context, numberNode);
+  double threshold = computeBestStumpThreshold(context, numberNode, examples);
   return graph->getUniverse()->makeFunctionNode(stumpLuapeFunction(threshold), numberNode);
 }
 
-double BoostingLearner::computeWeakObjective(ExecutionContext& context, const LuapeNodePtr& weakNode) const
+double BoostingLearner::computeWeakObjective(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples) const
 {
-  BoostingWeakObjectivePtr edgeCalculator = createWeakObjective();
+  BoostingWeakObjectivePtr edgeCalculator = createWeakObjective(examples);
   SparseDoubleVectorPtr sortedDoubleValues;
   VectorPtr weakPredictions = graph->updateNodeCache(context, weakNode, true, &sortedDoubleValues);
   
@@ -82,23 +88,23 @@ double BoostingLearner::computeWeakObjective(ExecutionContext& context, const Lu
   }
 }
 
-double BoostingLearner::computeBestStumpThreshold(ExecutionContext& context, const LuapeNodePtr& numberNode) const
+double BoostingLearner::computeBestStumpThreshold(ExecutionContext& context, const LuapeNodePtr& numberNode, const std::vector<size_t>& examples) const
 {
   SparseDoubleVectorPtr sortedDoubleValues;
   graph->updateNodeCache(context, numberNode, true, &sortedDoubleValues);
 
-  BoostingWeakObjectivePtr edgeCalculator = createWeakObjective();
+  BoostingWeakObjectivePtr edgeCalculator = createWeakObjective(examples);
   double edge;
   return edgeCalculator->findBestThreshold(context, sortedDoubleValues, edge, false);
 }
 
-LuapeNodePtr BoostingLearner::doWeakLearning(ExecutionContext& context) const
+LuapeNodePtr BoostingLearner::doWeakLearning(ExecutionContext& context, const BoostingWeakLearnerPtr& weakLearner, const std::vector<size_t>& examples) const
 {
-  LuapeNodePtr weakNode = weakLearner->learn(context, refCountedPointerFromThis(this));
+  LuapeNodePtr weakNode = weakLearner->learn(context, refCountedPointerFromThis(this), examples);
   if (!weakNode)
     context.errorCallback(T("Failed to find a weak learner"));
-  else if (weakNode->getType() != booleanType && weakNode->getType() != probabilityType)
-    weakNode = createDecisionStump(context, weakNode); // transforms doubles into decision stumps
+  else if (weakNode->getType() != nilType && weakNode->getType() != booleanType && weakNode->getType() != probabilityType)
+    weakNode = createDecisionStump(context, weakNode, allExamples); // transforms doubles into decision stumps
   return weakNode;
 }
 
@@ -109,7 +115,7 @@ LuapeNodePtr BoostingLearner::doWeakLearningAndAddToGraph(ExecutionContext& cont
   // do weak learning
   {
     TimedScope _(context, "weak learning");
-    weakNode = doWeakLearning(context);
+    weakNode = doWeakLearning(context, weakLearner, allExamples);
     if (!weakNode)
       return LuapeNodePtr();
   }
@@ -118,8 +124,11 @@ LuapeNodePtr BoostingLearner::doWeakLearningAndAddToGraph(ExecutionContext& cont
     TimedScope _(context, "add to graph");
 
     // add missing nodes to graph
-    jassert(weakNode->getType() == booleanType || weakNode->getType() == probabilityType);
-    graph->pushMissingNodes(context, new LuapeYieldNode(weakNode));
+    if (weakNode->getType() != nilType)
+    {
+      jassert(weakNode->getType() == booleanType || weakNode->getType() == probabilityType);
+      graph->pushMissingNodes(context, new LuapeYieldNode(weakNode));
+    }
 
     // update the weak learner
     weakLearner->update(context, refCountedPointerFromThis(this), weakNode);

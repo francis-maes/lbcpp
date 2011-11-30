@@ -39,7 +39,7 @@ public:
   virtual void setGraphSamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data);
 
   VectorPtr makeCachedPredictions(ExecutionContext& context, bool isTrainingSamples) const;
-  BooleanVectorPtr computeBooleanWeakPredictions(ExecutionContext& context, const ObjectPtr& input) const;
+  DenseDoubleVectorPtr computeSignedWeakPredictions(ExecutionContext& context, const ObjectPtr& input) const;
 
 protected:
   friend class LuapeInferenceClass;

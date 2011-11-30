@@ -281,7 +281,8 @@ protected:
 class LuapeYieldNode : public LuapeNode
 {
 public:
-  LuapeYieldNode(const LuapeNodePtr& argument = LuapeNodePtr());
+  LuapeYieldNode(const LuapeNodePtr& argument);
+  LuapeYieldNode();
 
   virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const;
   virtual size_t getDepth() const;

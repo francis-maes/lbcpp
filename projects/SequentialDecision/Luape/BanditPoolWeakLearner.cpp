@@ -113,7 +113,7 @@ void LuapeGraphBuilderBanditPool::executeArm(ExecutionContext& context, const Lu
   context.informationCallback(String((int)arms.size()) + T(" arms"));
 }
 
-void LuapeGraphBuilderBanditPool::playArmWithHighestIndex(ExecutionContext& context, const BoostingLearnerPtr& graphLearner)
+void LuapeGraphBuilderBanditPool::playArmWithHighestIndex(ExecutionContext& context, const BoostingLearnerPtr& graphLearner, const std::vector<size_t>& examples)
 {
   if (banditsQueue.size())
   {
@@ -122,7 +122,7 @@ void LuapeGraphBuilderBanditPool::playArmWithHighestIndex(ExecutionContext& cont
     
     Arm& arm = arms[armIndex];
     ++arm.playedCount;
-    arm.rewardSum += graphLearner->computeWeakObjective(context, arms[armIndex].node);
+    arm.rewardSum += graphLearner->computeWeakObjective(context, arms[armIndex].node, examples);
     banditsQueue.push(std::make_pair(armIndex, arm.getIndexScore()));
   }
 }

@@ -170,6 +170,10 @@ public:
   {
     size_t n = percentiles.size();
     jassert(n);
+
+    // tmp !
+    return juce::jlimit(0.0, 1.0, (value - percentiles.front()) / (percentiles.back() - percentiles.front()));
+
     if (value <= percentiles[0])
       return 0.0;
     for (size_t i = 1; i < percentiles.size(); ++i)

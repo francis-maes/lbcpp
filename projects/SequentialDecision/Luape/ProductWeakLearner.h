@@ -211,13 +211,13 @@ public:
       // update votes
       LuapeNodePtr baseNodeBackup = res->getBaseNode(index);
       res->setBaseNode(index, weak[0]);
-      BoostingWeakObjectivePtr edgeCalculator = batchLearner->createWeakObjective();
+      BoostingWeakObjectivePtr edgeCalculator = batchLearner->createWeakObjective(examples);
       edgeCalculator->initialize(function, predictions[index], virtualSupervisions, weights);
       votes[index] = edgeCalculator->computeVote();
       voteProduct = computeVoteProduct(votes);
 
       // stopping criterion
-      edgeCalculator = batchLearner->createWeakObjective();
+      edgeCalculator = batchLearner->createWeakObjective(examples);
       edgeCalculator->initialize(function, predictionsProduct, supervisions, weights);
       double newEdge = edgeCalculator->computeObjective();
       context.resultCallback("edge", newEdge);
