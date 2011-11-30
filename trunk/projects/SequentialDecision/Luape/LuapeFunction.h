@@ -68,6 +68,8 @@ extern LuapeFunctionPtr equalsConstantEnumLuapeFunction(const Variable& value = 
 extern LuapeFunctionPtr stumpLuapeFunction(double threshold = 0.0);
 extern LuapeFunctionPtr getVariableLuapeFunction(size_t variableIndex = 0);
 
+extern LuapeFunctionPtr normalizerLuapeFunction();
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_LUAPE_FUNCTION_H_

@@ -52,7 +52,7 @@ public:
     for (size_t i = 0; i < numTrees; ++i)
       forest[i] = new Node(region, 1.0, 0);
 
-    jassert((double)numIterations > 1.0 / (nu * nu));
+    //jassert((double)numIterations > 1.0 / (nu * nu));
   }
 
   RFHOOOptimizerState() {}
@@ -191,16 +191,16 @@ public:
   {
     double bestScore = -DBL_MAX;
     std::vector<Variable> bestCandidates;
-    for (size_t i = 0; i < forest.size(); ++i)
-    //for (double x = 0.0; x <= 1.0; x += 0.01)
+    //for (size_t i = 0; i < forest.size(); ++i)
+    for (double x = 0.0; x <= 1.0; x += 0.005)
     {
-      NodePtr node = selectNode(context, forest[i]);
-      Variable candidate = node->region->samplePosition(context.getRandomGenerator());
-      //Variable candidate(x);
+      //NodePtr node = selectNode(context, forest[i]);
+      //Variable candidate = node->region->samplePosition(context.getRandomGenerator());
+      Variable candidate(x);
 
       double expectation, meanUpperBound, minUpperBound, simpleUpperBound;
       predict(context, candidate, expectation, meanUpperBound, minUpperBound, simpleUpperBound);
-      double score = simpleUpperBound;
+      double score = minUpperBound;
       if (score >= bestScore)
       {
         if (score > bestScore)
@@ -386,20 +386,34 @@ public:
 
   virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {
+    static const bool verbose = false;
+
+    size_t episodeLength = numIterations / 100;
     RFHOOOptimizerStatePtr hooState = optimizerState.staticCast<RFHOOOptimizerState>();
     while (hooState->getNumIterationsDone() < numIterations)
     {
-      context.enterScope("Iteration " + String((int)hooState->getNumIterationsDone()+1));
-      context.resultCallback(T("iteration"), hooState->getNumIterationsDone());
-      ScalarVariableStatisticsPtr rewardStats = new ScalarVariableStatistics("reward");
-      for (size_t i = 0; i < numIterations / 100; ++i)
+      ScalarVariableStatisticsPtr rewardStats;
+      if (verbose)
+      {
+        context.enterScope("Iteration " + String((int)hooState->getNumIterationsDone()+1));
+        context.resultCallback(T("iteration"), hooState->getNumIterationsDone());
+        rewardStats = new ScalarVariableStatistics("reward");
+      }
+
+      size_t numRemainingIterations = numIterations - hooState->getNumIterationsDone();
+      size_t limit = episodeLength && numRemainingIterations > episodeLength ? episodeLength : numRemainingIterations;
+      for (size_t i = 0; i < limit; ++i)
       {
         PairPtr res = hooState->doIteration(context).getObjectAndCast<Pair>();
-        rewardStats->push(res->getFirst().getDouble());
+        if (verbose)
+          rewardStats->push(res->getFirst().getDouble());
       }
-      context.resultCallback(T("rewards mean"), rewardStats->getMean());
-      context.resultCallback(T("rewards"), rewardStats);
-      context.leaveScope();
+      if (verbose)
+      {
+        context.resultCallback(T("rewards mean"), rewardStats->getMean());
+        context.resultCallback(T("rewards"), rewardStats);
+        context.leaveScope();
+      }
     }
     hooState->finishIteration(context);
     return hooState;
@@ -647,6 +661,39 @@ protected:
   double C;
 };
 
+class HOOOptimizeWorkUnit : public WorkUnit
+{
+public:
+  HOOOptimizeWorkUnit(const OptimizerPtr& optimizer, const FunctionPtr& objective, size_t dimension, const String& description)
+    : WorkUnit(), optimizer(optimizer), objective(objective), dimension(dimension), description(description) {}
+  HOOOptimizeWorkUnit() : dimension(0) {}
+
+  virtual Variable run(ExecutionContext& context)
+  {
+    FunctionToBernoulliArmsPtr bernoulliObjective = new FunctionToBernoulliArms(context, objective, dimension);
+    
+    SamplerPtr sampler;
+    if (objective->getRequiredInputType(0, 1) == doubleType)
+      sampler = gaussianSampler(0.5);
+    else
+      sampler = independentDoubleVectorSampler(dimension, gaussianSampler(0.5));
+    
+    OptimizationProblemPtr problem = new OptimizationProblem(bernoulliObjective, new DenseDoubleVector(dimension, 0.5), sampler);
+    problem->setMaximisationProblem(true);
+    /*OptimizerStatePtr finalState =*/ optimizer->optimize(context, problem);
+    return bernoulliObjective->getCumulativeRegret();
+  }
+
+  virtual String toShortString() const
+    {return description;}
+
+protected:
+  OptimizerPtr optimizer;
+  FunctionPtr objective;
+  size_t dimension;
+  String description;
+};
+
 class RFHOOOSandBox : public WorkUnit
 {
 public:
@@ -663,13 +710,30 @@ public:
     }
   }
 
-  double runOptimizer(ExecutionContext& context, const String& name, const OptimizerPtr& optimizer, const std::vector<FunctionPtr>& objectives) const
+  double runOptimizer(ExecutionContext& context, const String& name, const OptimizerPtr& optimizer, const std::vector<FunctionPtr>& objectives, size_t numRuns = 1) const
   {
+    context.informationCallback(T("Optimizer: ") + optimizer->toShortString());
+    CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(name, objectives.size() * numRuns);
+    for (size_t i = 0; i < workUnit->getNumWorkUnits(); ++i)
+    {
+      FunctionPtr objective = objectives[i % objectives.size()];
+      workUnit->setWorkUnit(i, new HOOOptimizeWorkUnit(optimizer->cloneAndCast<Optimizer>(), objective, dimension, String((int)i+1) + T(" - ") + objective->toShortString()));
+    }
+    workUnit->setPushChildrenIntoStackFlag(true);
+    workUnit->setProgressionUnit(T("Runs"));
+
+    ScalarVariableStatistics regretStats;
+    VariableVectorPtr res = context.run(workUnit, false).getObjectAndCast<VariableVector>();
+    for (size_t i = 0; i < res->getNumElements(); ++i)
+      regretStats.push(res->getElement(i).getDouble());
+    return regretStats.getMean();
+/*
+
     context.enterScope(name);
     ScalarVariableStatistics regretStats;
-    for (size_t i = 0; i < objectives.size(); ++i)
+    for (size_t i = 0; i < objectives.size() * numRuns; ++i)
     {
-      FunctionPtr objective = objectives[i];
+      FunctionPtr objective = objectives[i % objectives.size()];
       context.enterScope(String((int)i+1) + T(" - ") + objective->toShortString());
 
       FunctionToBernoulliArmsPtr bernoulliObjective = new FunctionToBernoulliArms(context, objective, dimension);
@@ -688,46 +752,50 @@ public:
       regretStats.push(bernoulliObjective->getCumulativeRegret());
     }
     context.leaveScope(regretStats.getMean());
-    return regretStats.getMean();
+    return regretStats.getMean();*/
+  }
+
+  void setOptimizerVariable(OptimizerPtr optimizer, const String& variableName, double value)
+  {
+    size_t variableIndex = (size_t)optimizer->getClass()->findMemberVariable(variableName);
+    if (variableName == T("nMin"))
+      optimizer->setVariable(variableIndex, (size_t)pow(2.0, value));
+    else if (variableName == T("maxDepth"))
+      optimizer->setVariable(variableIndex, (size_t)value);
+    else
+      optimizer->setVariable(variableIndex, value);
   }
 
   void tuneOptimizerVariable(ExecutionContext& context, OptimizerPtr optimizer, const String& variableName, double minValue, double maxValue, const std::vector<FunctionPtr>& objectives)
   {
-    size_t variableIndex = (size_t)optimizer->getClass()->findMemberVariable(variableName);
-
     double bestRegret = DBL_MAX;
     double bestValue = 0.0;
-    context.enterScope(T("Tune ") + variableName);
-    double step = (maxValue - minValue) / 50.0;
+    context.enterScope(T("Tune ") + variableName + T(" in ") + optimizer->toShortString());
+    double step = (maxValue - minValue) / 20.0;
     for (double value = minValue; value <= maxValue; value += step)
     {
       context.enterScope(T("Value = ") + String(value));
       context.resultCallback(T("value"), value);
 
-      if (variableName == T("nMin"))
-        optimizer->setVariable(variableIndex, (size_t)pow(2.0, value));
-      else
-        optimizer->setVariable(variableIndex, value);
-      double regret = runOptimizer(context, T("bla"), optimizer, objectives);
+      setOptimizerVariable(optimizer, variableName, value);
+      double regret = runOptimizer(context, variableName + T(" = ") + String(value), optimizer, objectives);
       if (regret < bestRegret)
         bestRegret = regret, bestValue = value;
       context.resultCallback("regret", regret);
       context.leaveScope(regret);
     }
-    if (variableName == T("nMin"))
-      optimizer->setVariable(variableIndex, (size_t)pow(2.0, bestValue));
-    else
-      optimizer->setVariable(variableIndex, bestValue);
+    setOptimizerVariable(optimizer, variableName, bestValue);
     context.leaveScope(new Pair(bestValue, bestRegret));
   }
 
   virtual Variable run(ExecutionContext& context)
   {
     std::vector<FunctionPtr> objectives;
-    createObjectiveFunctions(context.getRandomGenerator(), objectives);
+    //createObjectiveFunctions(context.getRandomGenerator(), objectives);
 
     //FunctionPtr objectiveExpectation = new Simple1DTestFunction();
-    //objectives.push_back(new Simple1DTestFunction());
+    for (size_t i = 0; i < 10; ++i)
+      objectives.push_back(new Simple1DTestFunction());
 
     size_t numIterations = maxHorizon;
 
@@ -741,7 +809,8 @@ public:
     }*/
 
     OptimizerPtr optimizer;
-
+    double meanCumulativeRegret;
+/*
     size_t populationSize = 10;
     optimizer = edaOptimizer(numIterations / populationSize, populationSize, populationSize / 10, StoppingCriterionPtr(), 0);
     runOptimizer(context, "EDA(10)", optimizer, objectives);
@@ -756,25 +825,37 @@ public:
 
     optimizer = new HOOOptimizer(numIterations, nu, rho, C);
     runOptimizer(context, "HOO", optimizer, objectives);
-
+*/
+    /*
+    context.enterScope(T("HOO"));
     optimizer = new HOOOptimizer(numIterations, nu, rho, C);
     tuneOptimizerVariable(context, optimizer, "C", 0.0, 2.0, objectives);
     tuneOptimizerVariable(context, optimizer, "nu", 0.0, 2.0, objectives);
     tuneOptimizerVariable(context, optimizer, "rho", 0.0, 1.0, objectives);
+    tuneOptimizerVariable(context, optimizer, "maxDepth", 1.0, 30.0, objectives);
     tuneOptimizerVariable(context, optimizer, "C", 0.0, 2.0, objectives);
     tuneOptimizerVariable(context, optimizer, "nu", 0.0, 2.0, objectives);
     tuneOptimizerVariable(context, optimizer, "rho", 0.0, 1.0, objectives);
-    runOptimizer(context, "HOO", optimizer, objectives);
+    tuneOptimizerVariable(context, optimizer, "maxDepth", 1.0, 30.0, objectives);
+    context.enterScope(T("evaluate"));
+    meanCumulativeRegret = runOptimizer(context, "HOO", optimizer, objectives, 10);
+    context.leaveScope();
+    context.leaveScope(meanCumulativeRegret);*/
 
-    optimizer = new RFHOOOptimizer(20, K, nMin, maxDepth, numIterations, nu, rho, C);
+    context.enterScope("RF(10) HOO");
+    optimizer = new RFHOOOptimizer(10, K, nMin, maxDepth, numIterations, nu, rho, C);
     tuneOptimizerVariable(context, optimizer, "C", 0.0, 2.0, objectives);
     tuneOptimizerVariable(context, optimizer, "nu", 0.0, 2.0, objectives);
     tuneOptimizerVariable(context, optimizer, "nMin", 0.0, 16.0, objectives);
+    tuneOptimizerVariable(context, optimizer, "maxDepth", 1.0, 30.0, objectives);
     tuneOptimizerVariable(context, optimizer, "C", 0.0, 2.0, objectives);
     tuneOptimizerVariable(context, optimizer, "nu", 0.0, 2.0, objectives);
     tuneOptimizerVariable(context, optimizer, "nMin", 0.0, 16.0, objectives);
-    runOptimizer(context, "RF(10) HOO", optimizer, objectives);
-
+    tuneOptimizerVariable(context, optimizer, "maxDepth", 1.0, 30.0, objectives);
+    context.enterScope(T("evaluate"));
+    meanCumulativeRegret = runOptimizer(context, "RF(10) HOO", optimizer, objectives, 10);
+    context.leaveScope();
+    context.leaveScope(meanCumulativeRegret);
     
   
     /*runOptimizer(context, "hoo", new HOOOptimizer(numIterations, nu, rho, C), objectives);

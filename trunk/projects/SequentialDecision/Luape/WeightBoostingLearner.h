@@ -22,7 +22,7 @@ public:
   WeightBoostingLearner() {}
 
   virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeInferencePtr& function, const std::vector<PairPtr>& examples) const = 0;
-  virtual double updateWeight(const LuapeInferencePtr& function, size_t index, double currentWeight, const BooleanVectorPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const = 0;
+  virtual double updateWeight(const LuapeInferencePtr& function, size_t index, double currentWeight, const VectorPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const = 0;
   virtual VectorPtr makeSupervisions(const std::vector<ObjectPtr>& examples) const = 0;
   virtual bool shouldStop(double weakObjectiveValue) const = 0;
   virtual Variable computeVote(BoostingWeakObjectivePtr edgeCalculator) const = 0;
@@ -43,7 +43,7 @@ public:
 
   virtual bool doLearningIteration(ExecutionContext& context)
   {
-    BooleanVectorPtr weakPredictions;
+    VectorPtr weakPredictions;
     LuapeNodePtr weakNode = doWeakLearningAndAddToGraph(context, weakPredictions);
     if (!weakNode)
       return false;
@@ -83,7 +83,7 @@ protected:
   VectorPtr supervisions;
   double weightsSum;
 
-  double updateWeights(const LuapeInferencePtr& function, const BooleanVectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const Variable& vote) const
+  double updateWeights(const LuapeInferencePtr& function, const VectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const Variable& vote) const
   {
     size_t n = weights->getNumValues();
 

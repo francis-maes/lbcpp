@@ -16,8 +16,27 @@ namespace lbcpp
 {
 
 /*
-** Binary base class
+** Base classes
 */
+class HomogeneousUnaryLuapeFunction : public LuapeFunction
+{
+public:
+  HomogeneousUnaryLuapeFunction(TypePtr type = anyType)
+    : type(type) {}
+
+  virtual size_t getNumInputs() const
+    {return 1;}
+
+  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
+    {return type->inheritsFrom(this->type);}
+
+  virtual TypePtr getOutputType(const std::vector<TypePtr>& inputTypes) const
+    {return type;}
+
+private:
+  TypePtr type;
+};
+
 class HomogeneousBinaryLuapeFunction : public LuapeFunction
 {
 public:
@@ -99,6 +118,104 @@ public:
 };
 
 /*
+** Unary Double
+*/
+class UnaryDoubleLuapeFuntion : public HomogeneousUnaryLuapeFunction
+{
+public:
+  UnaryDoubleLuapeFuntion()
+    : HomogeneousUnaryLuapeFunction(doubleType), vectorClass(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType)) {}
+
+  virtual double computeDouble(double value) const = 0;
+
+  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+    {return computeDouble(inputs[0].getDouble());}
+
+  virtual VectorPtr compute(ExecutionContext& context, const std::vector<VectorPtr>& in, TypePtr outputType) const
+  {
+    const DenseDoubleVectorPtr& inputs = in[0].staticCast<DenseDoubleVector>();
+
+    DenseDoubleVectorPtr res = new DenseDoubleVector(vectorClass, inputs->getNumValues(), 0.0);
+    const double* ptr = inputs->getValuePointer(0);
+    const double* lim = ptr + inputs->getNumValues();
+    double* target = res->getValuePointer(0);
+    while (ptr != lim)
+      *target++ = computeDouble(*ptr++);
+    return res;
+  }
+
+protected:
+  ClassPtr vectorClass;
+};
+
+class NormalizerLuapeFunction : public UnaryDoubleLuapeFuntion
+{
+public:
+  NormalizerLuapeFunction()
+    {vectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, probabilityType);}
+
+  virtual TypePtr getOutputType(const std::vector<TypePtr>& inputTypes) const
+    {return probabilityType;}
+
+  void initialize(const DenseDoubleVectorPtr& inputValues, size_t numPercentiles = 10)
+    {computePercentiles(inputValues, numPercentiles, percentiles);}
+
+  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+    {return "normalize(" + inputs[0]->toShortString() + ")";}
+
+  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+    {return Variable(computeDouble(inputs[0].getDouble()), probabilityType);}
+
+  virtual double computeDouble(double value) const
+  {
+    size_t n = percentiles.size();
+    jassert(n);
+    if (value <= percentiles[0])
+      return 0.0;
+    for (size_t i = 1; i < percentiles.size(); ++i)
+      if (value < percentiles[i])
+      {
+        double k = (value - percentiles[i - 1]) / (percentiles[i] - percentiles[i - 1]);
+        return ((double)i - 1 + k) / (double)(percentiles.size() - 1.0);
+      }
+    return 1.0;
+  }
+
+  lbcpp_UseDebuggingNewOperator
+
+private:
+  std::vector<double> percentiles;
+
+  struct CompareValues
+  {
+    bool operator ()(const std::pair<size_t, double>& a, const std::pair<size_t, double>& b) const
+      {return a.second != b.second ? a.second < b.second : a.first < b.first;}
+  };
+
+  void computePercentiles(const DenseDoubleVectorPtr& values, size_t numPercentiles, std::vector<double>& res)
+  {
+    size_t n = values->getNumValues();
+    std::vector< std::pair<size_t, double> > sortedValues(n);
+    for (size_t i = 0; i < n; ++i)
+      sortedValues[i] = std::make_pair(i, values->getValue(i));
+    std::sort(sortedValues.begin(), sortedValues.end(), CompareValues());
+
+    if (numPercentiles > n)
+      numPercentiles = n;
+    
+    res.resize(numPercentiles);
+
+    double samplesPerPercentile = numPercentiles > 1 ? (n - 1.0) / (numPercentiles - 1.0) : 0.0;
+    for (size_t i = 0; i < numPercentiles; ++i)
+    {
+      size_t index = (size_t)(samplesPerPercentile * i);
+      jassert(index < sortedValues.size());
+      res[i] = sortedValues[index].second;
+    }
+  }
+};
+
+/*
 ** Binary Double
 */
 class BinaryDoubleLuapeFunction : public HomogeneousBinaryLuapeFunction
@@ -127,7 +244,6 @@ public:
       *target++ = computeDouble(*ptr1++, *ptr2++);
     return res;
   }
-
 };
 
 class AddDoubleLuapeFunction : public BinaryDoubleLuapeFunction

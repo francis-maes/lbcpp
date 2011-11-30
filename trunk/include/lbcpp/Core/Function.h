@@ -176,7 +176,7 @@ public:
   /*
   ** Object
   */
-  virtual String toShortString() const;
+  //virtual String toShortString() const;
   
   virtual ObjectPtr clone(ExecutionContext& context) const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
