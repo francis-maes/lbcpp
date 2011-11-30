@@ -1,10 +1,10 @@
-BoostingLearner::doWeakLearning(): tout ce qui est DecisionStump doit aller dans les WeakLearner
- => Objectif: un weak learner produit un ensemble de yields
-
- * Come back to go
-   - more perceptions and operators
-    => pb: qu'est-ce qu'on fait pour la propagation des erreurs (Object null ...) ?   
- * Work on adaptative weak learning policy
+Luape-DecisionTrees:
+ - BoostingLearner::doWeakLearning(): tout ce qui est DecisionStump doit aller dans les WeakLearner
+   => Objectif: un weak learner produit un ensemble de yields
+ - Utiliser une std::map<LuapeNodePtr,...> pour stoquer l'état courant dans le compute()
+ 
+Luape-Go:
+ - Support des valeurs manquantes
 
 Luape-Appli:
  * Apprentissage d'une gaussienne conditionelle => boosting joint de la moyenne et de l'ecart-type
