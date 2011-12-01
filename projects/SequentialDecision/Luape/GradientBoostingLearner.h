@@ -152,11 +152,10 @@ public:
   virtual BoostingWeakObjectivePtr createWeakObjective(const std::vector<size_t>& examples) const
     {return new L2BoostingWeakObjective(pseudoResiduals, examples);}
 
-  virtual void computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, Variable& successVote, Variable& failureVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples, Variable& successVote, Variable& failureVote) const
   {
     LuapeSequenceNodePtr sequence = function->getRootNode().staticCast<LuapeSequenceNode>();
     VectorPtr predictions = getTrainingPredictions();
-    
 
     context.enterScope(T("Optimize weight"));
 
@@ -192,6 +191,7 @@ public:
     context.leaveScope(bestLoss);
     successVote = bestWeight;
     failureVote = -bestWeight;
+    return true;
   }
 
 protected:
@@ -237,11 +237,13 @@ public:
       (*lossGradient)->multiplyByScalar(-1.0);
   }
 
-  virtual std::pair<double, double> optimizeWeightOfWeakLearner(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const VectorPtr& weakPredictions) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples, Variable& successVote, Variable& failureVote) const
   {
-    L2BoostingWeakObjectivePtr objective(new L2BoostingWeakObjective(pseudoResiduals, allExamples));
-    objective->setPredictions(weakPredictions);
-    return std::make_pair(objective->getNegativesMean(), objective->getPositivesMean());
+    L2BoostingWeakObjectivePtr objective(new L2BoostingWeakObjective(pseudoResiduals, examples));
+    objective->setPredictions(trainingSamples->compute(context, weakNode));
+    successVote = objective->getPositivesMean();
+    failureVote = objective->getNegativesMean();
+    return true;
   }
 };
 

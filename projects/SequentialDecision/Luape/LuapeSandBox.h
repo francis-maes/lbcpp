@@ -48,8 +48,8 @@ public:
     if (!classifier->initialize(context, inputClass, labels))
       return false;
 
-    BoostingWeakLearnerPtr conditionLearner = singleStumpWeakLearner();
-    //BoostingWeakLearnerPtr weakLearner = policyBasedWeakLearner(new TreeBasedRandomPolicy(), budgetPerIteration, maxSteps);
+    //BoostingWeakLearnerPtr conditionLearner = singleStumpWeakLearner();
+    BoostingWeakLearnerPtr conditionLearner = policyBasedWeakLearner(new TreeBasedRandomPolicy(), budgetPerIteration, maxSteps);
     //BoostingWeakLearnerPtr weakLearner = new NormalizedValueWeakLearner();
 
     BoostingWeakLearnerPtr weakLearner = conditionLearner;

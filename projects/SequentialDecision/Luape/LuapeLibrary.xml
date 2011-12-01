@@ -150,7 +150,7 @@
   <class name="AdaBoostMHLearner" base="WeightBoostingLearner">
     <constructor arguments="BoostingWeakLearnerPtr weakLearner"/>
   </class>
-  <!--
+  
   <class name="GradientBoostingLearner" base="BoostingLearner" abstract="yes"/>
   <class name="L2BoostingLearner" base="GradientBoostingLearner">
     <constructor arguments="BoostingWeakLearnerPtr weakLearner, double learningRate"/>
@@ -160,7 +160,6 @@
     <constructor arguments="BoostingWeakLearnerPtr weakLearner, double learningRate, RankingLossFunctionPtr rankingLoss"/>
     <variable type="RankingLossFunction" name="rankingLoss"/>
   </class>
-  -->
   
   <!-- Weak Learners -->
   <class name="BoostingWeakLearner" base="Object" abstract="yes"/>
@@ -172,14 +171,13 @@
     <variable type="BoostingWeakLearner" name="conditionLearner"/>
     <variable type="BoostingWeakLearner" name="subLearner"/>
   </class>
-
-  <!--
   <class name="PolicyBasedWeakLearner" base="BoostingWeakLearner">
     <constructor arguments="const PolicyPtr&amp; policy, size_t budget, size_t maxDepth"/>
     <variable type="Policy" name="policy"/>
     <variable type="PositiveInteger" name="budget"/>
     <variable type="PositiveInteger" name="maxDepth"/>
   </class>
+  <!--
   <class name="BanditPoolWeakLearner" base="BoostingWeakLearner">
     <constructor arguments="size_t maxBandits, size_t maxDepth"/>
     <variable type="PositiveInteger" name="maxBandits"/>

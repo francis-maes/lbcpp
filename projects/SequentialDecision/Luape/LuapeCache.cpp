@@ -114,6 +114,7 @@ VectorPtr LuapeSamplesCache::compute(ExecutionContext& context, const LuapeNodeP
 
 std::pair<VectorPtr, SparseDoubleVectorPtr>& LuapeSamplesCache::internalCompute(ExecutionContext& context, const LuapeNodePtr& node, bool isRemoveable)
 {
+  jassert(node);
   NodeToSamplesMap::iterator it = m.find(node);
   if (it == m.end())
   {

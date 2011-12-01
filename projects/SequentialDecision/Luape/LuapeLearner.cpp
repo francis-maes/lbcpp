@@ -76,6 +76,7 @@ bool BoostingLearner::setExamples(ExecutionContext& context, bool isTrainingData
 
 LuapeNodePtr BoostingLearner::turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples) const
 {
+  jassert(weakNode);
   Variable successVote, failureVote;
   if (!computeVotes(context, weakNode, examples, successVote, failureVote))
     return LuapeNodePtr();
