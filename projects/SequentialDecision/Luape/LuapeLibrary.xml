@@ -63,7 +63,7 @@
   </class>
   <class name="LuapeFunctionNode" base="LuapeNode">
     <variable type="LuapeFunction" name="function"/>
-    <variable type="GenericVector[PositiveInteger]" name="arguments"/>
+    <variable type="ObjectVector[LuapeNode]" name="arguments"/>
   </class>
   <class name="LuapeSequenceNode" base="LuapeNode" abstract="yes">
     <variable type="ObjectVector[LuapeNode]" name="nodes"/>
@@ -202,5 +202,6 @@
     <variable type="PositiveInteger" name="maxSteps"/>
     <variable type="PositiveInteger" name="budgetPerIteration"/>
     <variable type="PositiveInteger" name="maxIterations"/>
+    <variable type="PositiveInteger" name="treeDepth"/>
   </class>
 </library>

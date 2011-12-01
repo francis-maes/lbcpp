@@ -44,13 +44,21 @@ public:
         failureExamples.push_back(example);
     }
 
-    LuapeNodePtr successNode = subLearner->learn(context, structureLearner, successExamples, weakObjective);
+    weakObjective = 0.0;
+    double objective;
+    LuapeNodePtr successNode = subLearner->learn(context, structureLearner, successExamples, objective);
     if (successNode)
+    {
       res->setSuccess(successNode);
+      weakObjective += objective;
+    }
 
-    LuapeNodePtr failureNode = subLearner->learn(context, structureLearner, failureExamples, weakObjective);
+    LuapeNodePtr failureNode = subLearner->learn(context, structureLearner, failureExamples, objective);
     if (failureNode)
+    {
       res->setFailure(failureNode);
+      weakObjective += objective;
+    }
     return res;
   }
 

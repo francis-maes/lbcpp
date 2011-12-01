@@ -31,42 +31,26 @@ public:
     computeMuAndVoteValues();
   }
 
-  bool hasExample(size_t index) const
-  {
-    if (examples.size() == predictions->getNumElements())
-      return true;
-    for (size_t i = 0; i < examples.size(); ++i)
-    {
-      if (examples[i] == index)
-        return true;
-      else if (examples[i] > index)
-        return false;
-    }
-    return false;
-  }
-
   virtual void flipPrediction(size_t index)
   {
     jassert(predictions.isInstanceOf<BooleanVector>());
     bool newPrediction = predictions.staticCast<BooleanVector>()->flip(index);
-    if (hasExample(index))
+    size_t numLabels = labels->getNumElements();
+    double* weightsPtr = weights->getValuePointer(index * numLabels);
+    double* muNegativesPtr = muNegatives->getValuePointer(0);
+    double* muPositivesPtr = muPositives->getValuePointer(0);
+    double* votesPtr = votes->getValuePointer(0);
+    std::vector<bool>::iterator it = supervisions->getElements().begin() + index * numLabels;
+    for (size_t i = 0; i < numLabels; ++i)
     {
-      size_t numLabels = labels->getNumElements();
-      double* weightsPtr = weights->getValuePointer(index * numLabels);
-      double* muNegativesPtr = muNegatives->getValuePointer(0);
-      double* muPositivesPtr = muPositives->getValuePointer(0);
-      double* votesPtr = votes->getValuePointer(0);
-      for (size_t i = 0; i < numLabels; ++i)
-      {
-        double weight = *weightsPtr++;
-        double& muNegative = *muNegativesPtr++;
-        double& muPositive = *muPositivesPtr++;
-        if (newPrediction == supervisions->get(index * numLabels + i))
-          {muNegative -= weight; muPositive += weight;}
-        else
-          {muPositive -= weight; muNegative += weight;}
-        *votesPtr++ = muPositive > muNegative ? 1.0 : -1.0;
-      }
+      double weight = *weightsPtr++;
+      double& muNegative = *muNegativesPtr++;
+      double& muPositive = *muPositivesPtr++;
+      if (newPrediction == *it++)
+        {muNegative -= weight; muPositive += weight;}
+      else
+        {muPositive -= weight; muNegative += weight;}
+      *votesPtr++ = muPositive > (muNegative + 1e-09) ? 1.0 : -1.0;
     }
   }
 
@@ -145,7 +129,7 @@ protected:
     //jassert(muPositives->l1norm() > 0 || muNegatives->l1norm() > 0);
     // compute v_l values
     for (size_t i = 0; i < numLabels; ++i)
-      votes->setValue(i, muPositives->getValue(i) > muNegatives->getValue(i) ? 1.0 : -1.0);
+      votes->setValue(i, muPositives->getValue(i) > (muNegatives->getValue(i) + 1e-9) ? 1.0 : -1.0);
   }
 };
 
@@ -214,6 +198,7 @@ public:
       return false;
 
     double alpha = 0.5 * log(correctWeight / errorWeight);
+    context.resultCallback(T("alpha"), alpha);
     // correctWeight + errorWeight = weight of selected examples (1 if all the examples are selected)
     //jassert(fabs(correctWeight + errorWeight - 1.0) < 1e-9);
     jassert(alpha > 0.0);

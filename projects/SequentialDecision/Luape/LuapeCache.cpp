@@ -96,6 +96,45 @@ VectorPtr LuapeSamplesCache::get(const LuapeNodePtr& node) const
   return it == m.end() ? VectorPtr() : it->second.first;
 }
 
+SparseDoubleVectorPtr LuapeSamplesCache::getSortedDoubleValues(ExecutionContext& context, const LuapeNodePtr& node, const std::vector<size_t>& examples)
+{
+  std::pair<VectorPtr, SparseDoubleVectorPtr>& c = internalCompute(context, node, true);
+  if (examples.size() == getNumSamples()) // we only perform caching if all examples are selected
+  {
+    if (!c.second)
+      c.second = computeSortedDoubleValues(context, c.first, examples);
+    return c.second;
+  }
+  else
+    return computeSortedDoubleValues(context, c.first, examples);
+}
+
+VectorPtr LuapeSamplesCache::compute(ExecutionContext& context, const LuapeNodePtr& node, bool isRemoveable)
+  {return internalCompute(context, node, isRemoveable).first;}
+
+std::pair<VectorPtr, SparseDoubleVectorPtr>& LuapeSamplesCache::internalCompute(ExecutionContext& context, const LuapeNodePtr& node, bool isRemoveable)
+{
+  NodeToSamplesMap::iterator it = m.find(node);
+  if (it == m.end())
+  {
+    std::pair<VectorPtr, SparseDoubleVectorPtr>& res = m[node];
+    res.first = node->compute(context, LuapeSamplesCachePtr(this));
+    if (maxCacheSize)
+    {
+      if (isRemoveable)
+        cacheSequence.push_back(node);
+      if (m.size() >= maxCacheSize && cacheSequence.size() && cacheSequence.front() != node)
+      {
+        m.erase(cacheSequence.front());
+        cacheSequence.pop_front();
+      }
+    }
+    return res;
+  }
+  else
+    return it->second;
+}
+
 struct SortDoubleValuesOperator
 {
   static double transformIntoValidNumber(double input)
@@ -109,52 +148,14 @@ struct SortDoubleValuesOperator
   }
 };
 
-void LuapeSamplesCache::ensureSortedDoubleValuesAreComputed(const VectorPtr& samples, SparseDoubleVectorPtr& sortedDoubleValues)
+SparseDoubleVectorPtr LuapeSamplesCache::computeSortedDoubleValues(ExecutionContext& context, const VectorPtr& samples, const std::vector<size_t>& examples) const
 {
-  if (!sortedDoubleValues)
-  {
-    size_t n = samples->getNumElements();
-    sortedDoubleValues = new SparseDoubleVector();
-    std::vector< std::pair<size_t, double> >& v = sortedDoubleValues->getValuesVector();
-    v.resize(n);
-    for (size_t i = 0; i < n; ++i)
-      v[i] = std::make_pair(i, samples->getElement(i).toDouble());
-    std::sort(v.begin(), v.end(), SortDoubleValuesOperator());
-  }
-}
-
-VectorPtr LuapeSamplesCache::compute(ExecutionContext& context, const LuapeNodePtr& node, SparseDoubleVectorPtr* sortedDoubleValues, bool isRemoveable)
-{
-  NodeToSamplesMap::iterator it = m.find(node);
-  if (it == m.end())
-  {
-    std::pair<VectorPtr, SparseDoubleVectorPtr>& res = m[node];
-    VectorPtr samples = res.first = node->compute(context, LuapeSamplesCachePtr(this));
-    if (sortedDoubleValues)
-    {
-      ensureSortedDoubleValuesAreComputed(res.first, res.second);
-      *sortedDoubleValues = res.second;
-    }
-
-    if (maxCacheSize)
-    {
-      if (isRemoveable)
-        cacheSequence.push_back(node);
-      if (m.size() >= maxCacheSize && cacheSequence.size())
-      {
-        m.erase(cacheSequence.front());
-        cacheSequence.pop_front();
-      }
-    }
-    return samples;
-  }
-  else
-  {
-    if (sortedDoubleValues)
-    {
-      ensureSortedDoubleValuesAreComputed(it->second.first, it->second.second);
-      *sortedDoubleValues = it->second.second;
-    }
-    return it->second.first;
-  }
+  SparseDoubleVectorPtr res = new SparseDoubleVector();
+  std::vector< std::pair<size_t, double> >& v = res->getValuesVector();
+  size_t n = examples.size();
+  v.resize(n);
+  for (size_t i = 0; i < n; ++i)
+    v[i] = std::make_pair(examples[i], samples->getElement(examples[i]).toDouble());
+  std::sort(v.begin(), v.end(), SortDoubleValuesOperator());
+  return res;
 }

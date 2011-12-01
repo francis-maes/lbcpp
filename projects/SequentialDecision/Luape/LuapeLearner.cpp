@@ -36,13 +36,13 @@ bool LuapeLearner::setExamples(ExecutionContext& context, bool isTrainingData, c
 
 VectorPtr LuapeLearner::getTrainingPredictions() const
 {
-  return trainingSamples->compute(defaultExecutionContext(), function->getRootNode(), NULL, false);
+  return trainingSamples->compute(defaultExecutionContext(), function->getRootNode(), false);
 }
 
 VectorPtr LuapeLearner::getValidationPredictions() const
 {
   if (validationSamples)
-    return validationSamples->compute(defaultExecutionContext(), function->getRootNode(), NULL, false);
+    return validationSamples->compute(defaultExecutionContext(), function->getRootNode(), false);
   else
     return VectorPtr();
 }
@@ -65,9 +65,6 @@ bool BoostingLearner::setExamples(ExecutionContext& context, bool isTrainingData
 {
   if (!LuapeLearner::setExamples(context, isTrainingData, data))
     return false;
-
-
-  //(isTrainingData ? predictions : validationPredictions) = function->makeCachedPredictions(context, isTrainingData);
   if (isTrainingData)
   {
     allExamples.resize(data.size());
@@ -137,9 +134,9 @@ double BoostingWeakObjective::compute(const VectorPtr& predictions)
   return computeObjective();
 }
 
-double BoostingWeakObjective::findBestThreshold(ExecutionContext& context, const SparseDoubleVectorPtr& sortedDoubleValues, double& edge, bool verbose)
+double BoostingWeakObjective::findBestThreshold(ExecutionContext& context, size_t numSamples, const SparseDoubleVectorPtr& sortedDoubleValues, double& edge, bool verbose)
 {
-  setPredictions(new BooleanVector(sortedDoubleValues->getNumValues(), true));
+  setPredictions(new BooleanVector(numSamples, true));
 
   edge = -DBL_MAX;
   double res = 0.0;
@@ -166,7 +163,7 @@ double BoostingWeakObjective::findBestThreshold(ExecutionContext& context, const
         context.leaveScope();
       }
 
-      if (e > edge)
+      if (e >= edge)
         edge = e, res = (threshold + previousThreshold) / 2.0;
       previousThreshold = threshold;
     }
@@ -205,11 +202,11 @@ double BoostingWeakLearner::computeWeakObjective(ExecutionContext& context, cons
 
 double BoostingWeakLearner::computeWeakObjectiveWithStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, const std::vector<size_t>& examples, double& bestThreshold) const
 {
-  SparseDoubleVectorPtr sortedDoubleValues;
-  structureLearner->getTrainingSamples()->compute(context, numberNode, &sortedDoubleValues);
+  LuapeSamplesCachePtr trainingSamples = structureLearner->getTrainingSamples();
+  SparseDoubleVectorPtr sortedDoubleValues = trainingSamples->getSortedDoubleValues(context, numberNode, examples);
   BoostingWeakObjectivePtr edgeCalculator = structureLearner->createWeakObjective(examples);
   double edge;
-  bestThreshold = edgeCalculator->findBestThreshold(context, sortedDoubleValues, edge, false);
+  bestThreshold = edgeCalculator->findBestThreshold(context, trainingSamples->getNumSamples(), sortedDoubleValues, edge, false);
   return edge;
 }
 

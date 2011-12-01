@@ -22,7 +22,7 @@ namespace lbcpp
 class LuapeSandBox : public WorkUnit
 {
 public:
-  LuapeSandBox() : maxExamples(0), maxSteps(3), budgetPerIteration(1000), maxIterations(10) {}
+  LuapeSandBox() : maxExamples(0), maxSteps(3), budgetPerIteration(1000), maxIterations(10), treeDepth(3) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -48,12 +48,13 @@ public:
     if (!classifier->initialize(context, inputClass, labels))
       return false;
 
-    //BoostingWeakLearnerPtr weakLearner = singleStumpWeakLearner();
+    BoostingWeakLearnerPtr conditionLearner = singleStumpWeakLearner();
     //BoostingWeakLearnerPtr weakLearner = policyBasedWeakLearner(new TreeBasedRandomPolicy(), budgetPerIteration, maxSteps);
     //BoostingWeakLearnerPtr weakLearner = new NormalizedValueWeakLearner();
-    //weakLearner = new TreeBoostingWeakLearner(weakLearner, new TreeBoostingWeakLearner(weakLearner));
 
-    BoostingWeakLearnerPtr weakLearner = binaryTreeWeakLearner(singleStumpWeakLearner(), binaryTreeWeakLearner(singleStumpWeakLearner(), singleStumpWeakLearner()));
+    BoostingWeakLearnerPtr weakLearner = conditionLearner;
+    for (size_t i = 1; i < treeDepth; ++i)
+      weakLearner = binaryTreeWeakLearner(conditionLearner, weakLearner);
 
     classifier->setBatchLearner(new LuapeBatchLearner(adaBoostMHLearner(weakLearner), maxIterations));
     classifier->setEvaluator(defaultSupervisedEvaluator());
@@ -99,6 +100,7 @@ protected:
   size_t maxSteps;
   size_t budgetPerIteration;
   size_t maxIterations;
+  size_t treeDepth;
 
   ContainerPtr loadData(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, DefaultEnumerationPtr labels) const
   { 

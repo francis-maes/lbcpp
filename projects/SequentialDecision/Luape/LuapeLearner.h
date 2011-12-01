@@ -87,7 +87,7 @@ public:
 
   // these two functions have side effects on the currently stored predictions
   double compute(const VectorPtr& predictions);
-  double findBestThreshold(ExecutionContext& context, const SparseDoubleVectorPtr& sortedDoubleValues, double& edge, bool verbose = false);
+  double findBestThreshold(ExecutionContext& context, size_t numSamples, const SparseDoubleVectorPtr& sortedDoubleValues, double& edge, bool verbose = false);
 };
 
 typedef ReferenceCountedObjectPtr<BoostingWeakObjective> BoostingWeakObjectivePtr;
