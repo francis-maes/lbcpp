@@ -183,12 +183,8 @@ static size_t makeLuapeNodeAllocationIndex()
   return res++; // warning: not safe for multi-threading ...
 }
 
-LuapeNode::LuapeNode(const TypePtr& type, const String& name)
-  : NameableObject(name), type(type), allocationIndex(makeLuapeNodeAllocationIndex())
-{
-}
-
-LuapeNode::LuapeNode() : allocationIndex(makeLuapeNodeAllocationIndex())
+LuapeNode::LuapeNode(const TypePtr& type)
+  : type(type), allocationIndex(makeLuapeNodeAllocationIndex())
 {
 }
 
@@ -196,7 +192,10 @@ LuapeNode::LuapeNode() : allocationIndex(makeLuapeNodeAllocationIndex())
 ** LuapeInputNode
 */
 LuapeInputNode::LuapeInputNode(const TypePtr& type, const String& name)
-  : LuapeNode(type, name) {}
+  : LuapeNode(type), name(name) {}
+
+String LuapeInputNode::toShortString() const
+  {return name;}
 
 Variable LuapeInputNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
 {
@@ -207,6 +206,26 @@ Variable LuapeInputNode::compute(ExecutionContext& context, const LuapeInstanceC
 VectorPtr LuapeInputNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const
 {
   jassert(false); // the value should already have been cached
+  return VectorPtr();
+}
+
+/*
+** LuapeConstantNode
+*/
+LuapeConstantNode::LuapeConstantNode(const Variable& value)
+  : LuapeNode(value.getType()), value(value)
+{
+}
+
+String LuapeConstantNode::toShortString() const
+  {return value.toShortString();}
+
+Variable LuapeConstantNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
+  {return value;}
+
+VectorPtr LuapeConstantNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const
+{
+  jassert(false);
   return VectorPtr();
 }
 
@@ -240,7 +259,6 @@ void LuapeFunctionNode::initialize()
   }
 
   type = function->getOutputType(inputTypes);
-  name = function->toShortString(arguments);
 }
 
 Variable LuapeFunctionNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
@@ -263,9 +281,14 @@ VectorPtr LuapeFunctionNode::compute(ExecutionContext& context, const LuapeSampl
 ** LuapeTestNode
 */
 LuapeTestNode::LuapeTestNode(const LuapeNodePtr& conditionNode, const LuapeNodePtr& successNode, const LuapeNodePtr& failureNode)
-  : LuapeNode(successNode->getType(), "if(" + conditionNode->toShortString() + ")"),
+  : LuapeNode(successNode->getType()),
     conditionNode(conditionNode), successNode(successNode), failureNode(failureNode)
 {
+}
+
+String LuapeTestNode::toShortString() const
+{
+  return "(" + conditionNode->toShortString() + " ? " + successNode->toShortString() + T(" : ") + failureNode->toShortString() + T(")");
 }
 
 Variable LuapeTestNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
@@ -276,30 +299,57 @@ Variable LuapeTestNode::compute(ExecutionContext& context, const LuapeInstanceCa
 
 VectorPtr LuapeTestNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const
 {
-/*  BooleanVectorPtr tests = conditionNode->compute(context, cache).staticCast<BooleanVector>();
+  BooleanVectorPtr tests = conditionNode->compute(context, cache).staticCast<BooleanVector>();
   size_t n = tests->getNumElements();
-  std::vector<bool>::const_iterator it = tests->getElements().begin()
-  for (size_t i = 0; i < n; ++i)
+  std::vector<bool>::const_iterator it = tests->getElements().begin();
+
+  if (successNode.isInstanceOf<LuapeConstantNode>() && failureNode.isInstanceOf<LuapeConstantNode>())
   {
-    if (*it++)
+    Variable successValue = successNode.staticCast<LuapeConstantNode>()->getValue();
+    Variable failureValue = failureNode.staticCast<LuapeConstantNode>()->getValue();
+
+    if (successValue.isDouble() && failureValue.isDouble())
     {
+      double v1 = successValue.getDouble();
+      double v2 = failureValue.getDouble();
+      DenseDoubleVectorPtr res = new DenseDoubleVector(n, 0.0);
+      for (size_t i = 0; i < n; ++i)
+        res->setValue(i, *it++ ? v1 : v2);
+      return res;
     }
-  */
-  jassert(false);
+    else
+    {
+      VectorPtr res = vector(successValue.getType(), n);
+      for (size_t i = 0; i < n; ++i)
+        res->setElement(i, *it++ ? successValue : failureValue);
+      return res;
+    }
+  }
+  else
+  {
+    jassert(false); // FIXME, not implemented yet
+    /*
+    for (size_t i = 0; i < n; ++i)
+    {
+      if (*it++)
+      {
+      }
+    }*/
+  }
   return VectorPtr();
 }
 
 /*
 ** LuapeSequenceNode
 */
-LuapeSequenceNode::LuapeSequenceNode(const std::vector<LuapeNodePtr>& nodes)
-  : nodes(nodes)
+LuapeSequenceNode::LuapeSequenceNode(TypePtr type, const std::vector<LuapeNodePtr>& nodes)
+  : LuapeNode(type), nodes(nodes)
 {
 }
 
 String LuapeSequenceNode::toShortString() const
 {
-  String res;
+  String res = getClass()->getShortName() + "\n";
   for (size_t i = 0; i < nodes.size(); ++i)
     res += nodes[i]->toShortString() + T("\n");
   return res;
@@ -319,44 +369,83 @@ Variable LuapeSequenceNode::compute(ExecutionContext& context, const LuapeInstan
 
 VectorPtr LuapeSequenceNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const
 {
-  jassert(false);
-  return VectorPtr();
+  size_t n = cache->getNumSamples();
+  VectorPtr outputs = createEmptyOutputs(n);
+  for (size_t i = 0; i < nodes.size(); ++i)
+    updateOutputs(outputs, cache->compute(context, nodes[i]));
+  return outputs;
 }
 
-void LuapeSequenceNode::pushNode(const LuapeNodePtr& node)
+void LuapeSequenceNode::pushNode(const LuapeNodePtr& node, const std::vector<LuapeSamplesCachePtr>& cachesToUpdate)
 {
   nodes.push_back(node);
-  type = node->getType();
+
+  // update caches
+  for (size_t i = 0; i < cachesToUpdate.size(); ++i)
+  {
+    LuapeSamplesCachePtr cache = cachesToUpdate[i];
+    size_t n = cache->getNumSamples();
+    VectorPtr outputs = cache->get(this);
+    if (!outputs)
+    {
+      outputs = createEmptyOutputs(n);
+      cache->set(this, outputs);
+    }
+    updateOutputs(outputs, cache->compute(defaultExecutionContext(), node));
+  }
 }
 
 /*
-** LuapeYieldNode
+** LuapeScalarSumNode
 */
-LuapeYieldNode::LuapeYieldNode(const Variable& value)
-  : LuapeNode(nilType, T("yield(") + value.toShortString() + T(")")), value(value)
+LuapeScalarSumNode::LuapeScalarSumNode(const std::vector<LuapeNodePtr>& nodes)
+  : LuapeSequenceNode(doubleType, nodes)
 {
 }
 
-LuapeYieldNode::LuapeYieldNode()
-  : LuapeNode(nilType, String::empty)
+LuapeScalarSumNode::LuapeScalarSumNode() 
+  : LuapeSequenceNode(doubleType)
 {
 }
 
-String LuapeYieldNode::toShortString() const
+VectorPtr LuapeScalarSumNode::createEmptyOutputs(size_t numSamples) const
+  {return new DenseDoubleVector(numSamples, 0.0);}
+
+void LuapeScalarSumNode::updateOutputs(const VectorPtr& outputs, const VectorPtr& newNodeValues) const
 {
-  return name;
+  const DenseDoubleVectorPtr& a = outputs.staticCast<DenseDoubleVector>();
+  const DenseDoubleVectorPtr& b = newNodeValues.staticCast<DenseDoubleVector>();
+  b->addTo(a);
 }
 
-Variable LuapeYieldNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
+/*
+** LuapeVectorSumNode
+*/
+LuapeVectorSumNode::LuapeVectorSumNode(EnumerationPtr enumeration, const std::vector<LuapeNodePtr>& nodes)
+  : LuapeSequenceNode(denseDoubleVectorClass(enumeration, doubleType), nodes)
 {
-  const LuapeGraphCallbackPtr& callback = cache->getCallback();
-  if (callback)
-    callback->graphYielded(refCountedPointerFromThis(this), value);
-  return Variable();
 }
 
-VectorPtr LuapeYieldNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const
+LuapeVectorSumNode::LuapeVectorSumNode(EnumerationPtr enumeration) 
+  : LuapeSequenceNode(denseDoubleVectorClass(enumeration, doubleType))
 {
-  jassert(false);
-  return VectorPtr();
+}
+
+VectorPtr LuapeVectorSumNode::createEmptyOutputs(size_t numSamples) const
+{
+  ClassPtr doubleVectorClass = type;
+  ObjectVectorPtr res = new ObjectVector(doubleVectorClass, numSamples);
+  for (size_t i = 0; i < numSamples; ++i)
+    res->set(i, new DenseDoubleVector(doubleVectorClass));
+  return res;
+}
+ 
+void LuapeVectorSumNode::updateOutputs(const VectorPtr& outputs, const VectorPtr& newNodeValues) const
+{
+  const ObjectVectorPtr& a = outputs.staticCast<ObjectVector>();
+  const ObjectVectorPtr& b = newNodeValues.staticCast<ObjectVector>();
+  size_t n = a->getNumElements();
+  jassert(n == b->getNumElements());
+  for (size_t i = 0; i < n; ++i)
+    b->getAndCast<DenseDoubleVector>(i)->addTo(a->getAndCast<DenseDoubleVector>(i));
 }

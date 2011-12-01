@@ -97,18 +97,20 @@ typedef ReferenceCountedObjectPtr<LuapeNodeCache> LuapeNodeCachePtr;
 
 class LuapeNode;
 typedef ReferenceCountedObjectPtr<LuapeNode> LuapeNodePtr;
+class LuapeInputNode;
+typedef ReferenceCountedObjectPtr<LuapeInputNode> LuapeInputNodePtr;
+class LuapeConstantNode;
+typedef ReferenceCountedObjectPtr<LuapeConstantNode> LuapeConstantNodePtr;
+class LuapeFunctionNode;
+typedef ReferenceCountedObjectPtr<LuapeFunctionNode> LuapeFunctionNodePtr;
 
-class LuapeNode : public NameableObject
+class LuapeNode : public Object
 {
 public:
-  LuapeNode(const TypePtr& type, const String& name);
-  LuapeNode();
+  LuapeNode(const TypePtr& type = nilType);
 
   const TypePtr& getType() const
     {return type;}
-
-  virtual String toShortString() const
-    {return name;}
 
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const = 0;
   virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const = 0;
@@ -128,23 +130,54 @@ protected:
 
 extern ClassPtr luapeNodeClass;
 
+/*
+** Input
+*/
 class LuapeInputNode : public LuapeNode
 {
 public:
   LuapeInputNode(const TypePtr& type, const String& name);
   LuapeInputNode() {}
 
+  virtual String toShortString() const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
   virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const;
 
   lbcpp_UseDebuggingNewOperator
+
+protected:
+  friend class LuapeInputNodeClass;
+
+  String name;
 };
 
-typedef ReferenceCountedObjectPtr<LuapeInputNode> LuapeInputNodePtr;
+/*
+** Constant
+*/
+class LuapeConstantNode : public LuapeNode
+{
+public:
+  LuapeConstantNode(const Variable& value);
+  LuapeConstantNode() {}
 
-class LuapeFunctionNode;
-typedef ReferenceCountedObjectPtr<LuapeFunctionNode> LuapeFunctionNodePtr;
+  virtual String toShortString() const;
+  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
+  virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const;
 
+  const Variable& getValue() const
+    {return value;}
+
+  lbcpp_UseDebuggingNewOperator
+
+protected:
+  friend class LuapeConstantNodeClass;
+
+  Variable value;
+};
+
+/*
+** Function
+*/
 class LuapeFunctionNode : public LuapeNode
 {
 public:
@@ -189,6 +222,7 @@ public:
   LuapeTestNode(const LuapeNodePtr& conditionNode, const LuapeNodePtr& successNode, const LuapeNodePtr& failureNode);
   LuapeTestNode() {}
 
+  virtual String toShortString() const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
   virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const;
 
@@ -203,12 +237,13 @@ protected:
 };
 
 /*
-** Sequential
+** Sequence
 */
 class LuapeSequenceNode : public LuapeNode
 {
 public:
-  LuapeSequenceNode(const std::vector<LuapeNodePtr>& nodes);
+  LuapeSequenceNode(TypePtr type, const std::vector<LuapeNodePtr>& nodes);
+  LuapeSequenceNode(TypePtr type) : LuapeNode(type) {}
   LuapeSequenceNode() {}
 
   virtual String toShortString() const;
@@ -221,42 +256,44 @@ public:
   const LuapeNodePtr& getNode(size_t index) const
     {return nodes[index];}
 
-  void pushNode(const LuapeNodePtr& node);
+  void pushNode(const LuapeNodePtr& node, const std::vector<LuapeSamplesCachePtr>& cachesToUpdate);
 
 protected:
   friend class LuapeSequenceNodeClass;
 
   std::vector<LuapeNodePtr> nodes;
+
+  virtual VectorPtr createEmptyOutputs(size_t numSamples) const = 0;
+  virtual void updateOutputs(const VectorPtr& outputs, const VectorPtr& newNodeValues) const = 0;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeSequenceNode> LuapeSequenceNodePtr;
 
 /*
-** Yield
+** Sum
 */
-class LuapeYieldNode : public LuapeNode
+class LuapeScalarSumNode : public LuapeSequenceNode
 {
 public:
-  LuapeYieldNode(const Variable& value);
-  LuapeYieldNode();
-
-  virtual String toShortString() const;
-  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
-  virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const;
-
-  const Variable& getValue() const
-    {return value;}
-
-  lbcpp_UseDebuggingNewOperator
+  LuapeScalarSumNode(const std::vector<LuapeNodePtr>& nodes);
+  LuapeScalarSumNode();
 
 protected:
-  friend class LuapeYieldNodeClass;
-
-  Variable value;
+  virtual VectorPtr createEmptyOutputs(size_t numSamples) const;
+  virtual void updateOutputs(const VectorPtr& outputs, const VectorPtr& newNodeValues) const;
 };
 
-typedef ReferenceCountedObjectPtr<LuapeYieldNode> LuapeYieldNodePtr;
-extern ClassPtr luapeYieldNodeClass;
+class LuapeVectorSumNode : public LuapeSequenceNode
+{
+public:
+  LuapeVectorSumNode(EnumerationPtr enumeration, const std::vector<LuapeNodePtr>& nodes);
+  LuapeVectorSumNode(EnumerationPtr enumeration);
+  LuapeVectorSumNode() {}
+
+protected:
+  virtual VectorPtr createEmptyOutputs(size_t numSamples) const;
+  virtual void updateOutputs(const VectorPtr& outputs, const VectorPtr& newNodeValues) const;
+};
 
 }; /* namespace lbcpp */
 

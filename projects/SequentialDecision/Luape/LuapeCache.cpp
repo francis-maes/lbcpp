@@ -14,9 +14,6 @@ using namespace lbcpp;
 /*
 ** LuapeInstanceCache
 */
-LuapeInstanceCache::LuapeInstanceCache(LuapeGraphCallbackPtr callback)
-  : callback(callback) {}
-
 void LuapeInstanceCache::setInputObject(const std::vector<LuapeInputNodePtr>& inputs, const ObjectPtr& object)
 {
   if (object->getClass().isInstanceOf<DynamicClass>())
@@ -93,6 +90,12 @@ void LuapeSamplesCache::set(const LuapeNodePtr& node, const VectorPtr& samples)
   m[node] = std::make_pair(samples, SparseDoubleVectorPtr());
 }
 
+VectorPtr LuapeSamplesCache::get(const LuapeNodePtr& node) const
+{
+  NodeToSamplesMap::const_iterator it = m.find(node);
+  return it == m.end() ? VectorPtr() : it->second.first;
+}
+
 struct SortDoubleValuesOperator
 {
   static double transformIntoValidNumber(double input)
@@ -120,7 +123,7 @@ void LuapeSamplesCache::ensureSortedDoubleValuesAreComputed(const VectorPtr& sam
   }
 }
 
-VectorPtr LuapeSamplesCache::compute(ExecutionContext& context, const LuapeNodePtr& node, SparseDoubleVectorPtr* sortedDoubleValues)
+VectorPtr LuapeSamplesCache::compute(ExecutionContext& context, const LuapeNodePtr& node, SparseDoubleVectorPtr* sortedDoubleValues, bool isRemoveable)
 {
   NodeToSamplesMap::iterator it = m.find(node);
   if (it == m.end())
@@ -135,8 +138,9 @@ VectorPtr LuapeSamplesCache::compute(ExecutionContext& context, const LuapeNodeP
 
     if (maxCacheSize)
     {
-      cacheSequence.push_back(node);
-      if (cacheSequence.size() >= maxCacheSize)
+      if (isRemoveable)
+        cacheSequence.push_back(node);
+      if (m.size() >= maxCacheSize && cacheSequence.size())
       {
         m.erase(cacheSequence.front());
         cacheSequence.pop_front();

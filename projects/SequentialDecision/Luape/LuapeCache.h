@@ -16,35 +16,16 @@ class LuapeNode;
 typedef ReferenceCountedObjectPtr<LuapeNode> LuapeNodePtr;
 class LuapeInputNode;
 typedef ReferenceCountedObjectPtr<LuapeInputNode> LuapeInputNodePtr;
-class LuapeYieldNode;
-typedef ReferenceCountedObjectPtr<LuapeYieldNode> LuapeYieldNodePtr;
-
-class LuapeGraphCallback
-{
-public:
-  virtual ~LuapeGraphCallback() {}
-
-  virtual void graphYielded(const LuapeYieldNodePtr& yieldNode, const Variable& value) {}
-};
-
-typedef LuapeGraphCallback* LuapeGraphCallbackPtr;
 
 class LuapeInstanceCache : public Object
 {
 public:
-  LuapeInstanceCache(LuapeGraphCallbackPtr callback);
-
   void setInputObject(const std::vector<LuapeInputNodePtr>& inputs, const ObjectPtr& object);
   void set(const LuapeNodePtr& node, const Variable& value);
   Variable compute(ExecutionContext& context, const LuapeNodePtr& node);
 
-  const LuapeGraphCallbackPtr& getCallback() const
-    {return callback;}
-
 protected:
   typedef std::map<LuapeNodePtr, Variable> NodeToValueMap;
-
-  LuapeGraphCallbackPtr callback;
   NodeToValueMap m;
 };
 
@@ -58,10 +39,15 @@ public:
 
   void set(const LuapeNodePtr& node, const VectorPtr& samples);
   void setInputObject(const std::vector<LuapeInputNodePtr>& inputs, size_t index, const ObjectPtr& object);
-  VectorPtr compute(ExecutionContext& context, const LuapeNodePtr& node, SparseDoubleVectorPtr* sortedDoubleValues = NULL);
+  VectorPtr get(const LuapeNodePtr& node) const;
 
-  size_t getSize() const
+  VectorPtr compute(ExecutionContext& context, const LuapeNodePtr& node, SparseDoubleVectorPtr* sortedDoubleValues = NULL, bool isRemoveable = true);
+
+  size_t getNumberOfCachedNodes() const
     {return m.size();}
+
+  size_t getNumSamples() const
+    {return inputCaches.size() ? inputCaches[0]->getNumElements() : 0;}
 
 protected:
   // node -> (samples, sorted double values)

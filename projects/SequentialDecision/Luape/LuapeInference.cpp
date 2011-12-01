@@ -9,6 +9,7 @@
 #include "LuapeInference.h"
 using namespace lbcpp;
 
+/*
 // graph callbacks
 struct MakeSumOfDoublesGraphCallback : public LuapeGraphCallback
 {
@@ -24,7 +25,7 @@ struct MakeSumOfDoubleVectorsGraphCallback : public LuapeGraphCallback
   DenseDoubleVectorPtr res;
   virtual void graphYielded(const LuapeYieldNodePtr& yieldNode, const Variable& value)
     {value.getObjectAndCast<DenseDoubleVector>()->addTo(res);}
-};
+};*/
 
 
 /*
@@ -52,7 +53,7 @@ VectorPtr LuapeInference::makeCachedPredictions(ExecutionContext& context, bool 
 */
 
 LuapeInference::LuapeInference()
-  : universe(new LuapeGraphUniverse()), sequence(new LuapeSequenceNode())
+  : universe(new LuapeGraphUniverse())
 {
 }
 
@@ -66,6 +67,11 @@ LuapeSamplesCachePtr LuapeInference::createSamplesCache(ExecutionContext& contex
     res->setInputObject(inputs, i, example->getFirst().getObject());
   }
   return res;
+}
+
+Variable LuapeInference::computeFunction(ExecutionContext& context, const Variable* inputs) const
+{
+  return computeNode(context, inputs[0].getObject());
 }
 
 /*
@@ -91,11 +97,12 @@ DenseDoubleVectorPtr LuapeInference::computeSignedWeakPredictions(ExecutionConte
   return res;
 }*/
 
-void LuapeInference::computeSequence(ExecutionContext& context, const ObjectPtr& inputObject, LuapeGraphCallbackPtr callback) const
+
+Variable LuapeInference::computeNode(ExecutionContext& context, const ObjectPtr& inputObject) const
 {
-  LuapeInstanceCachePtr cache = new LuapeInstanceCache(callback);
+  LuapeInstanceCachePtr cache = new LuapeInstanceCache();
   cache->setInputObject(inputs, inputObject);
-  sequence->compute(context, cache);
+  return cache->compute(context, node);
 }
 
 /*
@@ -108,13 +115,9 @@ TypePtr LuapeRegressor::getRequiredInputType(size_t index, size_t numInputs) con
   {return index ? doubleType : (TypePtr)objectClass;}
 
 TypePtr LuapeRegressor::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-  {return doubleType;}
-
-Variable LuapeRegressor::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
-  MakeSumOfDoublesGraphCallback callback;   
-  computeSequence(context, inputs[0].getObject(), &callback);
-  return callback.res;
+  node = new LuapeScalarSumNode();
+  return doubleType;
 }
 /*
 VectorPtr LuapeRegressor::createVoteVector() const
@@ -145,7 +148,7 @@ void LuapeRegressor::updatePredictions(VectorPtr predictions, size_t yieldIndex,
     }
   }
 }
-
+*/
 double LuapeRegressor::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const
 {
   const DenseDoubleVectorPtr& pred = predictions.staticCast<DenseDoubleVector>();
@@ -158,7 +161,7 @@ double LuapeRegressor::evaluatePredictions(ExecutionContext& context, const Vect
     res += delta * delta;
   }
   return sqrt(res / (double)n);
-}*/
+}
 
 /*
 ** LuapeBinaryClassifier
@@ -170,13 +173,15 @@ TypePtr LuapeBinaryClassifier::getRequiredInputType(size_t index, size_t numInpu
   {return index ? booleanType : (TypePtr)objectClass;}
 
 TypePtr LuapeBinaryClassifier::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-  {return booleanType;}
+{
+  node = new LuapeScalarSumNode();
+  return booleanType;
+}
 
 Variable LuapeBinaryClassifier::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
-  MakeSumOfDoublesGraphCallback callback;   
-  computeSequence(context, inputs[0].getObject(), &callback);
-  return callback.res > 0;
+  double activation = computeNode(context, inputs[0].getObject()).getDouble();
+  return activation > 0;
 }
 /*
 VectorPtr LuapeBinaryClassifier::createVoteVector() const
@@ -203,13 +208,13 @@ void LuapeBinaryClassifier::updatePredictions(VectorPtr predictions, size_t yiel
       pred->incrementValue(i, vote * (yieldScalars->getValue(i) * 2.0 - 1.0));
   }
 }
+*/
 
 double LuapeBinaryClassifier::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const
 {
   jassert(false); // not yet implemented
   return 0.0;
 }
-*/
 
 /*
 ** LuapeClassifier
@@ -225,15 +230,12 @@ TypePtr LuapeClassifier::initializeFunction(ExecutionContext& context, const std
   EnumerationPtr enumeration = inputVariables[1]->getType().dynamicCast<Enumeration>();
   jassert(enumeration);
   doubleVectorClass = denseDoubleVectorClass(enumeration, doubleType);
+  node = new LuapeVectorSumNode(enumeration);
   return enumeration;
 }
 
 DenseDoubleVectorPtr LuapeClassifier::computeActivations(ExecutionContext& context, const ObjectPtr& input) const
-{
-  MakeSumOfDoubleVectorsGraphCallback callback(new DenseDoubleVector(doubleVectorClass));
-  computeSequence(context, input, &callback);
-  return callback.res;
-}
+  {return computeNode(context, input).getObjectAndCast<DenseDoubleVector>();}
 
 Variable LuapeClassifier::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
@@ -274,6 +276,7 @@ void LuapeClassifier::updatePredictions(VectorPtr predictions, size_t yieldIndex
       vote->addWeightedTo(pred->getAndCast<DenseDoubleVector>(i), 0, yieldScalars->getValue(i) * 2.0 - 1.0);
   }
 }
+*/
 
 double LuapeClassifier::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const
 {
@@ -288,7 +291,6 @@ double LuapeClassifier::evaluatePredictions(ExecutionContext& context, const Vec
   }
   return numErrors / (double)n;
 }
-*/
 
 /*
 ** LuapeRanker
@@ -300,7 +302,10 @@ TypePtr LuapeRanker::getRequiredInputType(size_t index, size_t numInputs) const
   {return index ? denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType) : vectorClass();}
 
 TypePtr LuapeRanker::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-  {return denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType);}
+{
+  node = new LuapeScalarSumNode();
+  return denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType);
+}
 
 Variable LuapeRanker::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
@@ -310,9 +315,9 @@ Variable LuapeRanker::computeFunction(ExecutionContext& context, const Variable*
   DenseDoubleVectorPtr scores = new DenseDoubleVector(n, 0.0);
   for (size_t i = 0; i < n; ++i)
   {
-    MakeSumOfDoublesGraphCallback callback;   
-    computeSequence(context, inputs[0].getObject(), &callback);
-    scores->setValue(i, callback.res);
+    ObjectPtr alternative = alternatives->getElement(i).getObject();
+    double score = computeNode(context, alternative).getDouble();
+    scores->setValue(i, score);
   }
   return scores;
 }
@@ -349,10 +354,9 @@ void LuapeRanker::updatePredictions(VectorPtr predictions, size_t yieldIndex, co
 {
   jassert(false); // not yet implemented
 }
-
+*/
 double LuapeRanker::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const
 {
   jassert(false); // not yet implemented
   return 0.0;
 }
-*/

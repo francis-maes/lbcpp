@@ -23,14 +23,14 @@ public:
 
   // new 
   virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const VectorPtr& predictions, double& loss) const = 0;
-
+  virtual VectorPtr makeSupervisions(const std::vector<ObjectPtr>& examples) const = 0;
+  
   // old
   //virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeInferencePtr& function, const std::vector<PairPtr>& examples) const = 0;
   //virtual double updateWeight(const LuapeInferencePtr& function, size_t index, double currentWeight, const VectorPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const = 0;
-  //virtual VectorPtr makeSupervisions(const std::vector<ObjectPtr>& examples) const = 0;
   //virtual bool shouldStop(double weakObjectiveValue) const = 0;
   //virtual Variable computeVote(BoostingWeakObjectivePtr edgeCalculator) const = 0;
-/*
+
   virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
   {
     if (!BoostingLearner::setExamples(context, isTrainingData, data))
@@ -38,20 +38,20 @@ public:
      
     if (isTrainingData)
     {
-      weights = makeInitialWeights(function, *(std::vector<PairPtr>* )&data);
-      weightsSum = 1.0;
+      //weights = makeInitialWeights(function, *(std::vector<PairPtr>* )&data);
+      //weightsSum = 1.0;
       supervisions = makeSupervisions(data);
     }
     return true;
-  }*/
+  }
 
   virtual bool doLearningIteration(ExecutionContext& context)
   {
     double loss;
-    weights = computeSampleWeights(context, trainingPredictions, loss);
+    weights = computeSampleWeights(context, getTrainingPredictions(), loss);
     context.resultCallback(T("loss"), loss);
     return BoostingLearner::doLearningIteration(context);
-  }    
+  }
 #if 0
   virtual bool doLearningIteration(ExecutionContext& context)
   {
@@ -94,7 +94,7 @@ public:
 protected:
   DenseDoubleVectorPtr weights;
   VectorPtr supervisions;
-  double weightsSum;
+  //double weightsSum;
 /*
   double updateWeights(const LuapeInferencePtr& function, const VectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const Variable& vote) const
   {

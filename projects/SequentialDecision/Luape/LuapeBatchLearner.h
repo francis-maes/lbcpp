@@ -43,8 +43,8 @@ public:
     for (size_t i = 0; i < maxIterations; ++i)
     {
       //Object::displayObjectAllocationInfo(std::cerr);
-      context.informationCallback(T("Train cache size: ") + String((int)learner->getTrainingSamples()->getSize()) +
-                                  T("Validation cache size: ") + String((int)learner->getValidationSamples()->getSize()));
+      context.informationCallback(T("Train cache size: ") + String((int)learner->getTrainingSamples()->getNumberOfCachedNodes()) +
+                                  T(" Validation cache size: ") + String((int)learner->getValidationSamples()->getNumberOfCachedNodes()));
 
       context.enterScope(T("Iteration ") + String((int)i + 1));
       context.resultCallback(T("iteration"), i);

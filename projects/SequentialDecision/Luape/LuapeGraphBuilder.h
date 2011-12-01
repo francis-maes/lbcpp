@@ -31,11 +31,14 @@ public:
   static LuapeGraphBuilderActionPtr apply(const LuapeGraphUniversePtr& universe, const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs)
     {return new LuapeGraphBuilderAction(inputs.size(), universe->makeFunctionNode(function, inputs));}
 
-  static LuapeGraphBuilderActionPtr yield(const LuapeNodePtr& node)
-    {return new LuapeGraphBuilderAction(1, new LuapeYieldNode(node));}
+  static LuapeGraphBuilderActionPtr yield()
+    {return new LuapeGraphBuilderAction(0, LuapeNodePtr());}
 
   const LuapeNodePtr& getNodeToAdd() const
     {return nodeToAdd;}
+
+  bool isYield() const
+    {return numNodesToRemove == 0 && !nodeToAdd;}
 
   //bool isUseless(const LuapeGraphPtr& graph) const
   //  {return nodeToAdd && isNewNode() && graph->containsNode(nodeToAdd);}
@@ -155,7 +158,7 @@ public:
     }
 
     if (typeState->hasYieldAction())
-      res->append(LuapeGraphBuilderAction::yield(stack.back()));
+      res->append(LuapeGraphBuilderAction::yield());
     return res;
   }
 
@@ -181,7 +184,7 @@ public:
     reward = 0.0;
     ++numSteps;
     availableActions = ContainerPtr();
-    if (nodeToAdd && nodeToAdd.isInstanceOf<LuapeYieldNode>())
+    if (action->isYield())
     {
       isYielded = true;
       typeState = LuapeGraphBuilderTypeStatePtr();

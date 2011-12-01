@@ -29,14 +29,17 @@ public:
   const LuapeGraphUniversePtr& getUniverse() const
     {return function->getUniverse();}
 
-  const LuapeSequenceNodePtr& getSequence() const
-    {return function->getSequence();}
+  const LuapeNodePtr& getRootNode() const
+    {return function->getRootNode();}
 
   const LuapeSamplesCachePtr& getTrainingSamples() const
     {return trainingSamples;}
 
   const LuapeSamplesCachePtr& getValidationSamples() const
     {return validationSamples;}
+
+  VectorPtr getTrainingPredictions() const;
+  VectorPtr getValidationPredictions() const;
 
 protected:
   LuapeInferencePtr function;
@@ -110,8 +113,8 @@ protected:
   friend class BoostingLearnerClass;
   
   BoostingWeakLearnerPtr weakLearner;
-  VectorPtr trainingPredictions;
-  VectorPtr validationPredictions;
+  //VectorPtr trainingPredictions;
+  //VectorPtr validationPredictions;
   std::vector<size_t> allExamples;
 
   // old
