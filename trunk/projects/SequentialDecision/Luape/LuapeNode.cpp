@@ -225,8 +225,16 @@ Variable LuapeConstantNode::compute(ExecutionContext& context, const LuapeInstan
 
 VectorPtr LuapeConstantNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const
 {
-  jassert(false);
-  return VectorPtr();
+  size_t n = cache->getNumSamples();
+  if (type == doubleType)
+    return new DenseDoubleVector(n, value.getDouble());
+  else
+  {
+    VectorPtr res = vector(type, n);
+    for (size_t i = 0; i < n; ++i)
+      res->setElement(i, value);
+    return res;
+  }
 }
 
 /*
@@ -254,6 +262,7 @@ void LuapeFunctionNode::initialize()
   std::vector<TypePtr> inputTypes(numInputs);
   for (size_t i = 0; i < numInputs; ++i)
   {
+    jassert(arguments[i]);
     inputTypes[i] = arguments[i]->getType();
     jassert(function->doAcceptInputType(i, inputTypes[i]));
   }
@@ -319,7 +328,7 @@ VectorPtr LuapeTestNode::compute(ExecutionContext& context, const LuapeSamplesCa
     }
     else
     {
-      VectorPtr res = vector(successValue.getType(), n);
+      VectorPtr res = vector(type, n);
       for (size_t i = 0; i < n; ++i)
         res->setElement(i, *it++ ? successValue : failureValue);
       return res;
@@ -327,14 +336,30 @@ VectorPtr LuapeTestNode::compute(ExecutionContext& context, const LuapeSamplesCa
   }
   else
   {
-    jassert(false); // FIXME, not implemented yet
-    /*
-    for (size_t i = 0; i < n; ++i)
+    VectorPtr successValues = cache->compute(context, successNode);
+    VectorPtr failureValues = cache->compute(context, failureNode);
+    jassert(successValues->getNumElements() == n && failureValues->getNumElements() == n);
+
+    if (successValues.isInstanceOf<DenseDoubleVector>() && failureValues.isInstanceOf<DenseDoubleVector>())
     {
-      if (*it++)
+      DenseDoubleVectorPtr s = successValues.staticCast<DenseDoubleVector>();
+      DenseDoubleVectorPtr f = failureValues.staticCast<DenseDoubleVector>();
+
+      DenseDoubleVectorPtr res = new DenseDoubleVector(n, 0.0);
+      for (size_t i = 0; i < n; ++i)
+        res->setValue(i, (*it++ ? s : f)->getValue(i));
+      return res;
+    }
+    else
+    {
+      VectorPtr res = vector(type, n);
+      for (size_t i = 0; i < n; ++i)
       {
+        Variable v = (*it++ ? successValues : failureValues)->getElement(i);
+        res->setElement(i, v);
       }
-    }*/
+      return res;
+    }
   }
   return VectorPtr();
 }

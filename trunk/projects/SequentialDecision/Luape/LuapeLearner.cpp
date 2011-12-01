@@ -77,44 +77,35 @@ bool BoostingLearner::setExamples(ExecutionContext& context, bool isTrainingData
   return true;
 }
 
-LuapeNodePtr BoostingLearner::turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode) const
+LuapeNodePtr BoostingLearner::turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples) const
 {
   Variable successVote, failureVote;
-  computeVotes(context, weakNode, successVote, failureVote);
+  if (!computeVotes(context, weakNode, examples, successVote, failureVote))
+    return LuapeNodePtr();
   jassert(weakNode->getType() == booleanType || weakNode->getType() == probabilityType);
   return new LuapeTestNode(weakNode, new LuapeConstantNode(successVote), new LuapeConstantNode(failureVote));
 }
 
 bool BoostingLearner::doLearningIteration(ExecutionContext& context)
 {
-  LuapeNodePtr weakNode;
+  LuapeNodePtr contribution;
   double weakObjective;
  
   // do weak learning
   {
     TimedScope _(context, "weak learning");
-    weakNode = weakLearner->learn(context, refCountedPointerFromThis(this), allExamples, weakObjective);
-    if (!weakNode)
+    contribution = weakLearner->learn(context, refCountedPointerFromThis(this), allExamples, weakObjective);
+    if (!contribution)
     {
       context.errorCallback(T("Failed to find a weak learner"));
       return false;
     }
-    context.resultCallback(T("weakNode"), weakNode);
-    context.resultCallback(T("weakObjective"), weakObjective);
+    context.resultCallback(T("edge"), weakObjective);
   }
 
-  // turn into contribution
+  // add into node and caches
   {
-    TimedScope _(context, "turn into contribution");
-    LuapeNodePtr contribution = turnWeakNodeIntoContribution(context, weakNode);
-    if (!contribution)
-    {
-      context.errorCallback(T("Failed to turn into contribution"));
-      return false;
-    }
-    context.resultCallback(T("contribution"), contribution);
-
-    // add contribution to sequence node
+    TimedScope _(context, "add into node");
     std::vector<LuapeSamplesCachePtr> caches;
     caches.push_back(trainingSamples);
     if (validationSamples)
@@ -132,111 +123,10 @@ bool BoostingLearner::doLearningIteration(ExecutionContext& context)
     if (validationPredictions)
       context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
   }
+
+  context.resultCallback(T("contribution"), contribution);
   return true;
 }
-#if 0
-LuapeNodePtr BoostingLearner::doWeakLearningAndAddToGraph(ExecutionContext& context)
-{
-  LuapeNodePtr weakNode;
-  double weakObjective;
-
-  // do weak learning
-  {
-    TimedScope _(context, "weak learning");
-    weakNode = weakLearner->learn(context, refCountedPointerFromThis(this), allExamples, weakObjective);
-    if (!weakNode)
-    {
-      context.errorCallback(T("Failed to find a weak learner"));
-      return LuapeNodePtr();
-    }
-  }
- 
-  {
-    TimedScope _(context, "add to graph");
-
-    // add missing nodes to graph
-    if (weakNode->getType() == booleanType || weakNode->getType() == probabilityType)
-    {
-      //jassert(weakNode->getType() == booleanType || weakNode->getType() == probabilityType);
-      LuapeNodePtr yieldSuccess = graph->makeYieldNode();
-      LuapeNodePtr yieldFailure = graph->makeYieldNode();
-      weakNode = new LuapeTestNode(weakNode, yieldSuccess, yieldFailure);
-    }
-
-    graph->pushMissingNodes(context, weakNode); // simple pushNode ?
-
-    // update the weak learner
-    //weakLearner->update(context, refCountedPointerFromThis(this), weakNode);
-
-    context.resultCallback(T("numNodes"), graph->getNumNodes());
-    context.resultCallback(T("numYields"), graph->getNumYieldNodes());
-  }
-  return weakNode;
-}
-
-class FillLuapeWeakPredictionVectorCallback : public LuapeGraphCallback
-{
-public:
-  FillLuapeWeakPredictionVectorCallback(LuapeWeakPredictionVectorPtr res)
-    : res(res), exampleIndex(0) {}
-
-  LuapeWeakPredictionVectorPtr res;
-  size_t exampleIndex;
-
-  virtual void graphYielded(const LuapeYieldNodePtr& yieldNode, const Variable& value)
-  {
-    //graphYielded(index, 1.0);
-  }
-
-  ///virtual void graphYielded(size_t index, double value)
-  //  {res->yield(exampleIndex, index, value);}
-};
-
-LuapeWeakPredictionVectorPtr BoostingLearner::makeWeakPredictions(ExecutionContext& context, const LuapeNodePtr& weakNode, bool useTrainingSamples) const
-{
-  size_t n = graph->getNumSamples(useTrainingSamples);
-  LuapeWeakPredictionVectorPtr res = new LuapeWeakPredictionVector(n);
-  FillLuapeWeakPredictionVectorCallback callback(res);
-  for (size_t i = 0; i < n; ++i)
-  {
-    callback.exampleIndex = i;
-    std::vector<Variable> state(graph->getNumNodes()); // tmp
-    weakNode->compute(context, state, &callback);
-  }
-  return res;
-}
-
-void BoostingLearner::updatePredictionsAndEvaluate(ExecutionContext& context, size_t yieldIndex, const LuapeNodePtr& weakNode) const
-{
-  VectorPtr trainYields = graph->updateNodeCache(context, weakNode, true);
-  function->updatePredictions(predictions, yieldIndex, trainYields);
-  context.resultCallback(T("train error"), function->evaluatePredictions(context, predictions, trainingData));
-
-  if (validationPredictions)
-  {
-    VectorPtr validationYields = graph->updateNodeCache(context, weakNode, false);
-    function->updatePredictions(validationPredictions, yieldIndex, validationYields);
-    context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
-  }
-}
-
-void BoostingLearner::recomputePredictions(ExecutionContext& context)
-{
-  if (graph->getNumTrainingSamples() > 0)
-    predictions = function->makeCachedPredictions(context, true);
-  if (graph->getNumValidationSamples() > 0)
-    validationPredictions = function->makeCachedPredictions(context, false);
-}
-
-double BoostingLearner::getSignedScalarPrediction(const VectorPtr& predictions, size_t index) const
-{
-  BooleanVectorPtr booleanPredictions = predictions.dynamicCast<BooleanVector>();
-  if (booleanPredictions)
-    return booleanPredictions->get(index) ? 1.0 : -1.0;
-  else
-    return predictions.staticCast<DenseDoubleVector>()->getValue(index) * 2.0 - 1.0;
-}
-#endif // 0
 
 /*
 ** BoostingWeakObjective
@@ -325,3 +215,6 @@ double BoostingWeakLearner::computeWeakObjectiveWithStump(ExecutionContext& cont
 
 LuapeNodePtr BoostingWeakLearner::makeStump(const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, double threshold) const
   {return structureLearner->getUniverse()->makeFunctionNode(stumpLuapeFunction(threshold), numberNode);}
+
+LuapeNodePtr BoostingWeakLearner::makeContribution(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples) const
+  {return structureLearner->turnWeakNodeIntoContribution(context, weakNode, examples);}

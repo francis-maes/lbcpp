@@ -19,66 +19,6 @@
 namespace lbcpp
 {
 
-#if 0
-class TreeBoostingWeakLearner : public BoostingWeakLearner
-{
-public:
-  TreeBoostingWeakLearner(BoostingWeakLearnerPtr testLearner, BoostingWeakLearnerPtr subLearner = BoostingWeakLearnerPtr())
-    : testLearner(testLearner), subLearner(subLearner) {}
-
-  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
-  {
-    if (!testLearner->initialize(context, function))
-      return false;
-    if (subLearner && !subLearner->initialize(context, function))
-      return false;
-    return true;
-  }
-
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples) const
-  {
-    LuapeGraphPtr graph = structureLearner->getGraph();
-
-    LuapeNodePtr testNode = testLearner->learn(context, structureLearner, examples);
-    BooleanVectorPtr testValues = graph->updateNodeCache(context, testNode, true).staticCast<BooleanVector>();
-    
-    std::vector<size_t> successExamples;
-    successExamples.reserve(examples.size());
-    std::vector<size_t> failureExamples;
-    failureExamples.reserve(examples.size());
-    for (size_t i = 0; i < examples.size(); ++i)
-    {
-      size_t example = examples[i];
-      if (testValues->get(example))
-        successExamples.push_back(example);
-      else
-        failureExamples.push_back(example);
-    }
-
-    LuapeNodePtr successNode, failureNode;
-    if (subLearner)
-    {
-      successNode = subLearner->learn(context, structureLearner, successExamples);
-      failureNode = subLearner->learn(context, structureLearner, failureExamples);
-    }
-    else
-    {
-      successNode = new LuapeYieldNode();
-      failureNode = new LuapeYieldNode();
-    }
-    return new LuapeTestNode(testNode, successNode, failureNode);
-  }
-
-  virtual void update(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, LuapeNodePtr weakLearner)
-  {
-  }
-
-protected:
-  BoostingWeakLearnerPtr testLearner;
-  BoostingWeakLearnerPtr subLearner;
-};
-#endif // 0
-
 class LuapeSandBox : public WorkUnit
 {
 public:
@@ -108,10 +48,12 @@ public:
     if (!classifier->initialize(context, inputClass, labels))
       return false;
 
-    BoostingWeakLearnerPtr weakLearner = singleStumpWeakLearner();
+    //BoostingWeakLearnerPtr weakLearner = singleStumpWeakLearner();
     //BoostingWeakLearnerPtr weakLearner = policyBasedWeakLearner(new TreeBasedRandomPolicy(), budgetPerIteration, maxSteps);
     //BoostingWeakLearnerPtr weakLearner = new NormalizedValueWeakLearner();
     //weakLearner = new TreeBoostingWeakLearner(weakLearner, new TreeBoostingWeakLearner(weakLearner));
+
+    BoostingWeakLearnerPtr weakLearner = binaryTreeWeakLearner(singleStumpWeakLearner(), binaryTreeWeakLearner(singleStumpWeakLearner(), singleStumpWeakLearner()));
 
     classifier->setBatchLearner(new LuapeBatchLearner(adaBoostMHLearner(weakLearner), maxIterations));
     classifier->setEvaluator(defaultSupervisedEvaluator());

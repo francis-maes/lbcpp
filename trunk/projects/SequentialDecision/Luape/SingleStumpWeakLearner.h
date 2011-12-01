@@ -41,7 +41,10 @@ public:
         }
       }
     }
-    return makeStump(structureLearner, bestNode, bestThreshold);
+    if (!bestNode)
+      return LuapeNodePtr();
+
+    return makeContribution(context, structureLearner, makeStump(structureLearner, bestNode, bestThreshold), examples);
   }
 };
 
