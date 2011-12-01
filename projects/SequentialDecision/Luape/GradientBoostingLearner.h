@@ -101,6 +101,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<L2BoostingWeakObjective> L2BoostingWeakObjectivePtr;
 
+#if 0
 class GradientBoostingLearner : public BoostingLearner
 {
 public:
@@ -124,10 +125,11 @@ public:
     }
 
     // 2- find best weak learner
-    VectorPtr weakPredictions;
-    LuapeNodePtr weakNode = doWeakLearningAndAddToGraph(context, weakPredictions);
+    LuapeNodePtr weakNode = doWeakLearningAndAddToGraph(context);
     if (!weakNode)
       return false;
+
+    LuapeWeakPredictionVectorPtr weakPredictions = makeWeakPredictions(context, weakNode);
 
     // 3- add weak learner to graph
     {
@@ -206,12 +208,12 @@ public:
     if (lossGradient)
       *lossGradient = new DenseDoubleVector(predictions->getNumValues(), 0.0);
   
-    size_t n = trainData.size();
+    size_t n = trainingData.size();
     jassert(n == predictions->getNumValues());
     for (size_t i = 0; i < n; ++i)
     {
       double predicted = predictions->getValue(i);
-      double correct = trainData[i].staticCast<Pair>()->getSecond().getDouble();
+      double correct = trainingData[i].staticCast<Pair>()->getSecond().getDouble();
       double delta = predicted - correct;
 
       if (lossValue)
@@ -248,9 +250,9 @@ public:
       *lossGradient = new DenseDoubleVector(predictions->getNumValues(), 0.0);
   
     size_t index = 0;
-    for (size_t i = 0; i < trainData.size(); ++i)
+    for (size_t i = 0; i < trainingData.size(); ++i)
     {
-      const PairPtr& example = trainData[i].staticCast<Pair>();
+      const PairPtr& example = trainingData[i].staticCast<Pair>();
 
       size_t n = example->getFirst().getObjectAndCast<Container>()->getNumElements();
       DenseDoubleVectorPtr costs = example->getSecond().getObjectAndCast<DenseDoubleVector>();
@@ -278,6 +280,8 @@ protected:
 
   RankingLossFunctionPtr rankingLoss;
 };
+
+#endif // 0
 
 }; /* namespace lbcpp */
 

@@ -174,6 +174,7 @@ SET(LBCPP_DATA_SOURCES
   Data/Consumer.cpp
   ../include/lbcpp/Data/Cache.h
   Data/Cache.cpp
+  ../include/lbcpp/Data/BinaryKey.h
   Data/DataLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DataLibrary.cpp
 )

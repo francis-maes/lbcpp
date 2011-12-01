@@ -10,6 +10,8 @@
 # define LBCPP_LUAPE_NODE_H_
 
 # include "LuapeFunction.h"
+# include "LuapeCache.h"
+//# include <lbcpp/Data/BinaryKey.h>
 
 namespace lbcpp
 {
@@ -17,95 +19,9 @@ namespace lbcpp
 class LuapeGraph;
 typedef ReferenceCountedObjectPtr<LuapeGraph> LuapeGraphPtr;
 
-class LuapeGraphCallback
-{
-public:
-  virtual ~LuapeGraphCallback() {}
-
-  virtual void valueYielded(const Variable& value) {}
-};
-
-typedef LuapeGraphCallback* LuapeGraphCallbackPtr;
-
-class BinaryKey : public Object
-{
-public:
-  BinaryKey(size_t size)
-    : values(size, 0), position(0), bitShift(1) {}
-  BinaryKey() {}
-
-  virtual int compare(const ObjectPtr& otherObject) const
-  {
-    const std::vector<unsigned char>& ovalues = otherObject.staticCast<BinaryKey>()->values;
-    if (ovalues == values)
-      return 0;
-    else
-      return values < ovalues ? -1 : 1;
-  }
-
-  void pushBit(bool value)
-  {
-    jassert(position < values.size());
-    if (value)
-      values[position] |= bitShift;
-    bitShift <<= 1;
-    if (bitShift == 256)
-    {
-      ++position;
-      bitShift = 1;
-    }
-  }
-  void fillBits()
-  {
-    if (bitShift > 1)
-      bitShift = 1, ++position;
-  }
-
-  void pushByte(unsigned char c)
-    {jassert(position < values.size()); values[position++] = c;}
-
-  void pushBytes(unsigned char* data, size_t length)
-  {
-    jassert(position + length <= values.size());
-    memcpy(&values[position], data, length);
-    position += length;
-  }
-
-  void push32BitInteger(int value)
-  {
-    memcpy(&values[position], &value, 4);
-    position += 4;
-  }
-
-  void pushInteger(juce::int64 value)
-  {
-    memcpy(&values[position], &value, sizeof (juce::int64));
-    position += sizeof (juce::int64);
-  }
-
-  void pushPointer(const ObjectPtr& object)
-  {
-    void* pointer = object.get();
-    memcpy(&values[position], &pointer, sizeof (void* ));
-    position += sizeof (void* );
-  }
-
-  size_t computeHashValue() const
-  {
-    size_t res = 0;
-    const unsigned char* ptr = &values[0];
-    const unsigned char* lim = ptr + values.size();
-    while (ptr < lim)
-      res = 31 * res + *ptr++;
-    return res;
-  }
-
-protected:
-  std::vector<unsigned char> values;
-  size_t position;
-  size_t bitShift;
-};
-typedef ReferenceCountedObjectPtr<BinaryKey> BinaryKeyPtr;
+#if 0
+class LuapeYieldNode;
+typedef ReferenceCountedObjectPtr<LuapeYieldNode> LuapeYieldNodePtr;
 
 //// CACHE
 
@@ -153,7 +69,7 @@ public:
   const VectorPtr& getValidationSamples() const
     {return validationSamples;}
 
-  void clearSamples(bool clearTrainingSamples = true, bool clearValidationSamples = true);
+  void clearSamples(bool isTrainingSamples);
 
   BinaryKeyPtr makeKeyFromSamples(bool useTrainingSamples = true) const;
 
@@ -175,6 +91,7 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<LuapeNodeCache> LuapeNodeCachePtr;
+#endif // 0
 
 //////  GRAPH NODES
 
@@ -190,16 +107,11 @@ public:
   const TypePtr& getType() const
     {return type;}
 
-  virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const = 0;
-  virtual size_t getDepth() const = 0;
+  virtual String toShortString() const
+    {return name;}
 
-  const LuapeNodeCachePtr& getCache() const
-    {return cache;}
-
-  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const;
-
-  size_t getIndexInGraph() const
-    {return indexInGraph;}
+  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const = 0;
+  virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const = 0;
 
   size_t getAllocationIndex() const
     {return allocationIndex;}
@@ -211,8 +123,6 @@ protected:
   friend class LuapeNodeClass;
 
   TypePtr type;
-  LuapeNodeCachePtr cache;
-  size_t indexInGraph;
   size_t allocationIndex;
 };
 
@@ -221,20 +131,13 @@ extern ClassPtr luapeNodeClass;
 class LuapeInputNode : public LuapeNode
 {
 public:
-  LuapeInputNode(const TypePtr& type, const String& name, size_t inputIndex);
+  LuapeInputNode(const TypePtr& type, const String& name);
   LuapeInputNode() {}
 
-  virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const;
-  virtual size_t getDepth() const
-    {return 0;}
-
-  virtual String toShortString() const;
-  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
+  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
+  virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const;
 
   lbcpp_UseDebuggingNewOperator
-
-protected:
-  size_t inputIndex;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeInputNode> LuapeInputNodePtr;
@@ -249,11 +152,10 @@ public:
   LuapeFunctionNode(const LuapeFunctionPtr& function, LuapeNodePtr argument);
   LuapeFunctionNode() {}
 
-  virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const;
-  virtual size_t getDepth() const;
-
   virtual String toShortString() const;
-  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const;
+
+  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
+  virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const;
 
   const LuapeFunctionPtr& getFunction() const
     {return function;}
@@ -278,27 +180,79 @@ protected:
   void initialize();
 };
 
+/*
+** Test
+*/
+class LuapeTestNode : public LuapeNode
+{
+public:
+  LuapeTestNode(const LuapeNodePtr& conditionNode, const LuapeNodePtr& successNode, const LuapeNodePtr& failureNode);
+  LuapeTestNode() {}
+
+  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
+  virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const;
+
+  lbcpp_UseDebuggingNewOperator
+
+protected:
+  friend class LuapeTestNodeClass;
+
+  LuapeNodePtr conditionNode;
+  LuapeNodePtr successNode;
+  LuapeNodePtr failureNode;
+};
+
+/*
+** Sequential
+*/
+class LuapeSequenceNode : public LuapeNode
+{
+public:
+  LuapeSequenceNode(const std::vector<LuapeNodePtr>& nodes);
+  LuapeSequenceNode() {}
+
+  virtual String toShortString() const;
+  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
+  virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const;
+
+  size_t getNumNodes() const
+    {return nodes.size();}
+
+  const LuapeNodePtr& getNode(size_t index) const
+    {return nodes[index];}
+
+  void pushNode(const LuapeNodePtr& node);
+
+protected:
+  friend class LuapeSequenceNodeClass;
+
+  std::vector<LuapeNodePtr> nodes;
+};
+
+typedef ReferenceCountedObjectPtr<LuapeSequenceNode> LuapeSequenceNodePtr;
+
+/*
+** Yield
+*/
 class LuapeYieldNode : public LuapeNode
 {
 public:
-  LuapeYieldNode(const LuapeNodePtr& argument);
+  LuapeYieldNode(const Variable& value);
   LuapeYieldNode();
 
-  virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const;
-  virtual size_t getDepth() const;
-
   virtual String toShortString() const;
-  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const;
+  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
+  virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const;
 
-  const LuapeNodePtr& getArgument() const
-    {return argument;}
+  const Variable& getValue() const
+    {return value;}
 
   lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class LuapeYieldNodeClass;
 
-  LuapeNodePtr argument;
+  Variable value;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeYieldNode> LuapeYieldNodePtr;

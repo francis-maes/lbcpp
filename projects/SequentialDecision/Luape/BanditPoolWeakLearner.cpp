@@ -10,6 +10,8 @@
 #include "BanditPoolWeakLearner.h"
 using namespace lbcpp;
 
+#if 0
+
 // FIXME: there are two redundant node keys maps: one in the enumerator and the other inside the graph builder
 class LuapeGraphBuilderEnumerator
 {
@@ -92,14 +94,15 @@ LuapeGraphBuilderBanditPool::LuapeGraphBuilderBanditPool(size_t maxSize, size_t 
 {
 }
 
-void LuapeGraphBuilderBanditPool::initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph)
+void LuapeGraphBuilderBanditPool::initialize(ExecutionContext& context, const LuapeInferencePtr& function)
 {
-  LuapeGraphBuilderEnumerator enumerator(this, maxDepth);
+  jassert(false); // broken
+/*  LuapeGraphBuilderEnumerator enumerator(this, maxDepth);
   context.enterScope(T("Initialize arms"));
   for (size_t i = 0; i < graph->getNumNodes(); ++i)
     enumerator.updateArms(context, problem, graph, graph->getNode(i));
   createBanditsQueue();
-  context.leaveScope();
+  context.leaveScope();*/
 }
 
 void LuapeGraphBuilderBanditPool::executeArm(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode)
@@ -122,7 +125,9 @@ void LuapeGraphBuilderBanditPool::playArmWithHighestIndex(ExecutionContext& cont
     
     Arm& arm = arms[armIndex];
     ++arm.playedCount;
-    arm.rewardSum += graphLearner->computeWeakObjective(context, arms[armIndex].node, examples);
+    LuapeNodePtr node = arms[armIndex].node;
+    jassert(false); // FIXME
+    //arm.rewardSum += computeWeakObjectiveWithEventualStump(context, graphLearner, node, examples);
     banditsQueue.push(std::make_pair(armIndex, arm.getIndexScore()));
   }
 }
@@ -208,3 +213,5 @@ void LuapeGraphBuilderBanditPool::destroyArm(ExecutionContext& context, size_t i
   arms[index] = Arm();
   banditsQueue = BanditsQueue();
 }
+
+#endif // 0

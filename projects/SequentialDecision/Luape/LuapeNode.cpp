@@ -11,85 +11,7 @@
 #include <algorithm>
 using namespace lbcpp;
 
-/*
-** LuapeFunction
-*/
-String LuapeFunction::toShortString(const std::vector<LuapeNodePtr>& inputs) const
-{
-  String res = getClass()->getShortName() + T("(");
-  for (size_t i = 0; i < inputs.size(); ++i)
-  {
-    res += inputs[i]->toShortString();
-    if (i < inputs.size() - 1)
-      res += T(", ");
-  }
-  return res + T(")");
-}
-
-Variable LuapeFunction::compute(ExecutionContext& context, const std::vector<LuapeNodePtr>& inputs, const std::vector<Variable>& state) const
-{
-  std::vector<Variable> inputValues(inputs.size());
-  for (size_t i = 0; i < inputValues.size(); ++i)
-    inputValues[i] = state[inputs[i]->getIndexInGraph()];
-  return compute(context, &inputValues[0]);
-}
-
-VectorPtr LuapeFunction::compute(ExecutionContext& context, const std::vector<VectorPtr>& inputs, TypePtr outputType) const
-{
-  jassert(inputs.size() == getNumInputs());
-  jassert(inputs.size());
-
-  size_t n = inputs[0]->getNumElements();
-  VectorPtr res = vector(outputType, n);
-  for (size_t i = 0; i < n; ++i)
-  {
-    std::vector<Variable> inputValues(inputs.size());
-    for (size_t j = 0; j < inputValues.size(); ++j)
-      inputValues[j] = inputs[j]->getElement(i);
-    res->setElement(i, compute(context, &inputValues[0]));
-  }
-  return res;
-}
-
-bool LuapeFunction::acceptInputsStack(const std::vector<LuapeNodePtr>& stack) const
-{
-  size_t n = getNumInputs();
-  if (n > stack.size())
-    return false;
-  size_t stackFirstIndex = stack.size() - n;
-  for (size_t i = 0; i < n; ++i)
-    if (!doAcceptInputType(i, stack[stackFirstIndex + i]->getType()))
-      return false;
-
-  if (n)
-  {
-    if (hasFlags(commutativeFlag))
-    {
-      LuapeNodePtr node = stack[stackFirstIndex];
-      for (size_t i = 1; i < n; ++i)
-      {
-        LuapeNodePtr newNode = stack[stackFirstIndex + i];
-        if (newNode->getAllocationIndex() < node->getAllocationIndex())
-          return false;
-        node = newNode;
-      }
-    }
-    if (hasFlags(allSameArgIrrelevantFlag))
-    {
-      bool ok = false;
-      for (size_t i = 1; i < n; ++i)
-        if (stack[stackFirstIndex + i] != stack[stackFirstIndex])
-        {
-          ok = true;
-          break;
-        }
-      if (!ok)
-        return false;
-    }
-  }
-  return true;
-}
-
+#if 0
 /*
 ** LuapeNodeCache
 */
@@ -119,14 +41,14 @@ void LuapeNodeCache::setSample(bool isTrainingSample, size_t index, const Variab
   samples->setElement(index, value);
 }
 
-void LuapeNodeCache::clearSamples(bool clearTrainingSamples, bool clearValidationSamples)
+void LuapeNodeCache::clearSamples(bool isTrainingSamples)
 {
-  if (clearTrainingSamples)
+  if (isTrainingSamples)
   {
     trainingSamples = VectorPtr();
     sortedDoubleValues = SparseDoubleVectorPtr();
   }
-  if (clearValidationSamples)
+  else
     validationSamples = VectorPtr();
 }
 
@@ -250,10 +172,11 @@ String LuapeNodeCache::toShortString() const
     return String((int)n);
 }
 
+#endif // 0
+
 /*
 ** LuapeNode
 */
-
 static size_t makeLuapeNodeAllocationIndex()
 {
   static size_t res = 0;
@@ -261,41 +184,30 @@ static size_t makeLuapeNodeAllocationIndex()
 }
 
 LuapeNode::LuapeNode(const TypePtr& type, const String& name)
-  : NameableObject(name), type(type), indexInGraph((size_t)-1), allocationIndex(makeLuapeNodeAllocationIndex())
+  : NameableObject(name), type(type), allocationIndex(makeLuapeNodeAllocationIndex())
 {
-  if (type != nilType)
-    cache = new LuapeNodeCache(type);
 }
 
 LuapeNode::LuapeNode() : allocationIndex(makeLuapeNodeAllocationIndex())
 {
-  
-}
-
-void LuapeNode::clone(ExecutionContext& context, const ObjectPtr& t) const
-{
-  const LuapeNodePtr& target = t.staticCast<LuapeNode>();
-  target->name = name;
-  target->type = type;
-  target->cache = cache;
 }
 
 /*
 ** LuapeInputNode
 */
-LuapeInputNode::LuapeInputNode(const TypePtr& type, const String& name, size_t inputIndex)
-  : LuapeNode(type, name), inputIndex(inputIndex) {}
+LuapeInputNode::LuapeInputNode(const TypePtr& type, const String& name)
+  : LuapeNode(type, name) {}
 
-String LuapeInputNode::toShortString() const
-  {return getName();}
-
-Variable LuapeInputNode::compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const
-  {jassert(false); return Variable();}
-
-void LuapeInputNode::clone(ExecutionContext& context, const ObjectPtr& target) const
+Variable LuapeInputNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
 {
-  target.staticCast<LuapeInputNode>()->inputIndex = inputIndex;
-  LuapeNode::clone(context, target);
+  jassert(false); // the value should already have been cached
+  return Variable();
+}
+
+VectorPtr LuapeInputNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const
+{
+  jassert(false); // the value should already have been cached
+  return VectorPtr();
 }
 
 /*
@@ -329,63 +241,122 @@ void LuapeFunctionNode::initialize()
 
   type = function->getOutputType(inputTypes);
   name = function->toShortString(arguments);
-  cache = new LuapeNodeCache(type);
 }
 
-Variable LuapeFunctionNode::compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const
-  {return function->compute(context, arguments, state);}
-
-void LuapeFunctionNode::clone(ExecutionContext& context, const ObjectPtr& t) const
+Variable LuapeFunctionNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
 {
-  LuapeNode::clone(context, t);
-  const LuapeFunctionNodePtr& target = t.staticCast<LuapeNode>();
-  target->function = function;
-  target->arguments = arguments;
+  std::vector<Variable> inputValues(arguments.size());
+  for (size_t i = 0; i < inputValues.size(); ++i)
+    inputValues[i] = cache->compute(context, arguments[i]);
+  return function->compute(context, &inputValues[0]);
 }
 
-size_t LuapeFunctionNode::getDepth() const
+VectorPtr LuapeFunctionNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const
 {
-  size_t maxInputDepth = 0;
-  for (size_t i = 0; i < arguments.size(); ++i)
+  std::vector<VectorPtr> inputs(arguments.size());
+  for (size_t i = 0; i < inputs.size(); ++i)
+    inputs[i] = cache->compute(context, arguments[i]);
+  return function->compute(context, inputs, type);
+}
+
+/*
+** LuapeTestNode
+*/
+LuapeTestNode::LuapeTestNode(const LuapeNodePtr& conditionNode, const LuapeNodePtr& successNode, const LuapeNodePtr& failureNode)
+  : LuapeNode(successNode->getType(), "if(" + conditionNode->toShortString() + ")"),
+    conditionNode(conditionNode), successNode(successNode), failureNode(failureNode)
+{
+}
+
+Variable LuapeTestNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
+{
+  bool test = conditionNode->compute(context, cache).getBoolean();
+  return (test ? successNode : failureNode)->compute(context, cache);
+}
+
+VectorPtr LuapeTestNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const
+{
+/*  BooleanVectorPtr tests = conditionNode->compute(context, cache).staticCast<BooleanVector>();
+  size_t n = tests->getNumElements();
+  std::vector<bool>::const_iterator it = tests->getElements().begin()
+  for (size_t i = 0; i < n; ++i)
   {
-    size_t d = arguments[i]->getDepth();
-    if (d > maxInputDepth)
-      maxInputDepth = d;
+    if (*it++)
+    {
+    }
+  */
+  jassert(false);
+  return VectorPtr();
+}
+
+/*
+** LuapeSequenceNode
+*/
+LuapeSequenceNode::LuapeSequenceNode(const std::vector<LuapeNodePtr>& nodes)
+  : nodes(nodes)
+{
+}
+
+String LuapeSequenceNode::toShortString() const
+{
+  String res;
+  for (size_t i = 0; i < nodes.size(); ++i)
+    res += nodes[i]->toShortString() + T("\n");
+  return res;
+}
+
+Variable LuapeSequenceNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
+{
+  for (size_t i = 0; i < nodes.size(); ++i)
+  {
+    if (i < nodes.size() - 1)
+      cache->compute(context, nodes[i]);
+    else
+      return cache->compute(context, nodes[i]);
   }
-  return maxInputDepth + 1;
+  return Variable();
+}
+
+VectorPtr LuapeSequenceNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const
+{
+  jassert(false);
+  return VectorPtr();
+}
+
+void LuapeSequenceNode::pushNode(const LuapeNodePtr& node)
+{
+  nodes.push_back(node);
+  type = node->getType();
 }
 
 /*
 ** LuapeYieldNode
 */
-LuapeYieldNode::LuapeYieldNode(const LuapeNodePtr& argument)
-  : LuapeNode(nilType, argument->getName()), argument(argument)
+LuapeYieldNode::LuapeYieldNode(const Variable& value)
+  : LuapeNode(nilType, T("yield(") + value.toShortString() + T(")")), value(value)
 {
 }
 
 LuapeYieldNode::LuapeYieldNode()
-  : LuapeNode(nilType, "terminal")
+  : LuapeNode(nilType, String::empty)
 {
 }
 
 String LuapeYieldNode::toShortString() const
 {
-  return T("yield(") + argument->toShortString() + T(") [") + argument->getCache()->toShortString() + T("]");
+  return name;
 }
 
-Variable LuapeYieldNode::compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const
+Variable LuapeYieldNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
 {
-  const Variable& res = state[argument->getIndexInGraph()];
+  const LuapeGraphCallbackPtr& callback = cache->getCallback();
   if (callback)
-    callback->valueYielded(res);
-  return res;
+    callback->graphYielded(refCountedPointerFromThis(this), value);
+  return Variable();
 }
 
-size_t LuapeYieldNode::getDepth() const
-  {return argument->getDepth() + 1;}
-
-void LuapeYieldNode::clone(ExecutionContext& context, const ObjectPtr& t) const
+VectorPtr LuapeYieldNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const
 {
-  LuapeNode::clone(context, t);
-  t.staticCast<LuapeYieldNode>()->argument = argument;
+  jassert(false);
+  return VectorPtr();
 }

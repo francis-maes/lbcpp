@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include "precompiled.h"
+#if 0
 #include "LuapeProblem.h"
 #include <lbcpp/Lua/Lua.h>
 using namespace lbcpp;
@@ -56,3 +57,5 @@ int LuapeProblem::function(LuaState& state)
 #endif // 0
   return 0;
 }
+
+#endif // 0

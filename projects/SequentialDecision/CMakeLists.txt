@@ -121,12 +121,11 @@ SET(LBCPP_SEQUENTIAL_DECISION_GO_PERCEPTION_SOURCES
 
 SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
   Luape/LuapeFunction.h
-  Luape/LuapeProblem.h
-  Luape/LuapeProblem.cpp
+  Luape/LuapeFunction.cpp
+  Luape/LuapeCache.h
+  Luape/LuapeCache.cpp
   Luape/LuapeNode.h
   Luape/LuapeNode.cpp
-  Luape/LuapeGraph.h
-  Luape/LuapeGraph.cpp
   Luape/LuapeGraphBuilder.h
   Luape/LuapeGraphBuilderTypeSearchSpace.h
   Luape/LuapeInference.h
@@ -152,6 +151,11 @@ SET(LBCPP_LUAPE_LEARNER_SOURCES
 )
 
 SET(LBCPP_LUAPE_OLD_SOURCES
+  Luape/LuapeProblem.h
+  Luape/LuapeProblem.cpp
+  Luape/LuapeGraph.h
+  Luape/LuapeGraph.cpp
+
   Luape/AdaBoostLuapeLearner.h
   Luape/ProductWeakLearner.h
 )

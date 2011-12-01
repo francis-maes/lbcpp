@@ -15,6 +15,37 @@
 namespace lbcpp
 {
 
+class SingleStumpWeakLearner : public BoostingWeakLearner
+{
+public:
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples, double& weakObjective) const
+  {
+    const LuapeInferencePtr& function = structureLearner->getFunction();
+
+    weakObjective = -DBL_MAX;
+    double bestThreshold = 0.0;
+    LuapeNodePtr bestNode;
+
+    for (size_t i = 0; i < function->getNumInputs(); ++i)
+    {
+      LuapeNodePtr node = function->getInput(i);
+      if (node->getType() == doubleType)
+      {
+        double threshold;
+        double score = computeWeakObjectiveWithStump(context, structureLearner, node, examples, threshold);
+        if (score > weakObjective)
+        {
+          weakObjective = score;
+          bestNode = node;
+          bestThreshold = threshold;
+        }
+      }
+    }
+    return makeStump(structureLearner, bestNode, bestThreshold);
+  }
+};
+
+#if 0
 class NormalizedValueWeakLearner : public BoostingWeakLearner
 {
 public:
@@ -85,7 +116,7 @@ public:
         continue;
 
       normalizer->getFunction().staticCast<NormalizerLuapeFunction>()->initialize(graph->updateNodeCache(context, node, true).staticCast<DenseDoubleVector>());
-      double score = structureLearner->computeWeakObjective(context, normalizer, examples);
+      double score = computeWeakObjective(context, structureLearner, normalizer, examples);
       //double score = context.getRandomGenerator()->sampleDouble();
       //context.informationCallback(node->toShortString() + T(" ==> ") + String(score));
       if (score > bestScore)
@@ -104,37 +135,8 @@ public:
     return bestNode;
   }
 };
+#endif // 0
 
-class SingleStumpWeakLearner : public BoostingWeakLearner
-{
-public:
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples) const
-  {
-    const LuapeGraphPtr& graph = structureLearner->getGraph();
-
-    double bestScore = -DBL_MAX;
-    LuapeNodePtr bestNode;
-
-    size_t n = graph->getNumNodes();
-    for (size_t i = 0; i < n; ++i)
-    {
-      LuapeNodePtr node = graph->getNode(i);
-      if (!node.isInstanceOf<LuapeYieldNode>() && node->getType() == doubleType)
-      {
-        double score = structureLearner->computeWeakObjective(context, node, examples);
-        if (score > bestScore)
-        {
-          bestScore = score;
-          bestNode = node;
-        }
-      }
-    }
-
-    context.informationCallback("Best node: " + bestNode->toShortString());
-    context.informationCallback("Score: " + String(bestScore));
-    return bestNode;
-  }
-};
 
 }; /* namespace lbcpp */
 

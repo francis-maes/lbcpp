@@ -18,15 +18,13 @@ namespace lbcpp
 class LuapeBatchLearner : public BatchLearner
 {
 public:
-  LuapeBatchLearner(LuapeLearnerPtr learner, LuapeProblemPtr problem, size_t maxIterations)
-    : learner(learner), problem(problem), maxIterations(maxIterations) {}
+  LuapeBatchLearner(LuapeLearnerPtr learner, size_t maxIterations)
+    : learner(learner), maxIterations(maxIterations) {}
   LuapeBatchLearner() {}
 
   virtual TypePtr getRequiredFunctionType() const
     {return luapeInferenceClass;}
 
-  const LuapeProblemPtr& getProblem() const
-    {return problem;}
 
   virtual bool train(ExecutionContext& context, const FunctionPtr& f, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
@@ -34,18 +32,19 @@ public:
 
     LuapeLearnerPtr learner = this->learner->cloneAndCast<LuapeLearner>(); // avoid cycle between LuapeInference -> LuapeBatchLearner -> LuapeLearner -> LuapeInference
 
-    if (!learner->initialize(context, problem, function))
+    if (!learner->initialize(context, function))
       return false;
 
     learner->setExamples(context, true, trainingData);
     if (validationData.size())
       learner->setExamples(context, false, validationData);
     
-    LuapeGraphUniversePtr universe = learner->getGraph()->getUniverse();
+    LuapeGraphUniversePtr universe = function->getUniverse();
     for (size_t i = 0; i < maxIterations; ++i)
     {
       //Object::displayObjectAllocationInfo(std::cerr);
-      universe->displayCacheInformation(context);
+      context.informationCallback(T("Train cache size: ") + String((int)learner->getTrainingSamples()->getSize()) +
+                                  T("Validation cache size: ") + String((int)learner->getValidationSamples()->getSize()));
 
       context.enterScope(T("Iteration ") + String((int)i + 1));
       context.resultCallback(T("iteration"), i);
@@ -57,8 +56,7 @@ public:
       context.progressCallback(new ProgressionState(i+1, maxIterations, T("Iterations")));
     }
     //Object::displayObjectAllocationInfo(std::cerr);
-    universe->displayCacheInformation(context);
-    context.resultCallback("votes", function->getVotes());
+    //context.resultCallback("votes", function->getVotes());
     return true;
   }
 
@@ -66,7 +64,6 @@ protected:
   friend class LuapeBatchLearnerClass;
 
   LuapeLearnerPtr learner;
-  LuapeProblemPtr problem;
   size_t maxIterations;
 };
 

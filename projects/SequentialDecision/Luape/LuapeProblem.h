@@ -14,7 +14,7 @@
 
 namespace lbcpp
 {
-
+#if 0
 class LuapeProblem : public Object
 {
 public:
@@ -44,7 +44,7 @@ public:
     static const size_t maxCacheSize = 10000;
     LuapeGraphPtr res = new LuapeGraph(maxCacheSize);
     for (size_t i = 0; i < inputs.size(); ++i)
-      res->pushNode(context, new LuapeInputNode(inputs[i]->getType(), inputs[i]->getName(), i));
+      res->pushNode(context, new LuapeInputNode(inputs[i]->getType(), inputs[i]->getName()));
     return res;
   }
 
@@ -62,6 +62,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<LuapeProblem> LuapeProblemPtr;
 extern ClassPtr luapeProblemClass;
+#endif // 0
 
 }; /* namespace lbcpp */
 

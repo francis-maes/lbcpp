@@ -21,12 +21,16 @@ public:
    : BoostingLearner(weakLearner) {}
   WeightBoostingLearner() {}
 
-  virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeInferencePtr& function, const std::vector<PairPtr>& examples) const = 0;
-  virtual double updateWeight(const LuapeInferencePtr& function, size_t index, double currentWeight, const VectorPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const = 0;
-  virtual VectorPtr makeSupervisions(const std::vector<ObjectPtr>& examples) const = 0;
-  virtual bool shouldStop(double weakObjectiveValue) const = 0;
-  virtual Variable computeVote(BoostingWeakObjectivePtr edgeCalculator) const = 0;
+  // new 
+  virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const VectorPtr& predictions, double& loss) const = 0;
 
+  // old
+  //virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeInferencePtr& function, const std::vector<PairPtr>& examples) const = 0;
+  //virtual double updateWeight(const LuapeInferencePtr& function, size_t index, double currentWeight, const VectorPtr& prediction, const ContainerPtr& supervision, const Variable& vote) const = 0;
+  //virtual VectorPtr makeSupervisions(const std::vector<ObjectPtr>& examples) const = 0;
+  //virtual bool shouldStop(double weakObjectiveValue) const = 0;
+  //virtual Variable computeVote(BoostingWeakObjectivePtr edgeCalculator) const = 0;
+/*
   virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
   {
     if (!BoostingLearner::setExamples(context, isTrainingData, data))
@@ -39,16 +43,24 @@ public:
       supervisions = makeSupervisions(data);
     }
     return true;
-  }
+  }*/
 
   virtual bool doLearningIteration(ExecutionContext& context)
   {
-    VectorPtr weakPredictions;
-    LuapeNodePtr weakNode = doWeakLearningAndAddToGraph(context, weakPredictions);
+    double loss;
+    weights = computeSampleWeights(context, trainingPredictions, loss);
+    context.resultCallback(T("loss"), loss);
+    return BoostingLearner::doLearningIteration(context);
+  }    
+#if 0
+  virtual bool doLearningIteration(ExecutionContext& context)
+  {
+    LuapeNodePtr weakNode = doWeakLearningAndAddToGraph(context);
     if (!weakNode)
       return false;
     
     // compute vote
+    LuapeWeakPredictionVectorPtr weakPredictions = makeWeakPredictions(context, weakNode);
     BoostingWeakObjectivePtr edgeCalculator = createWeakObjective(allExamples);
     edgeCalculator->setPredictions(weakPredictions);
     Variable vote = computeVote(edgeCalculator);
@@ -77,12 +89,13 @@ public:
     updatePredictionsAndEvaluate(context, graph->getNumYieldNodes() - 1, weakNode);
     return !stopped;
   }
+#endif // 0
 
 protected:
   DenseDoubleVectorPtr weights;
   VectorPtr supervisions;
   double weightsSum;
-
+/*
   double updateWeights(const LuapeInferencePtr& function, const VectorPtr& predictions, const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights, const Variable& vote) const
   {
     size_t n = weights->getNumValues();
@@ -96,7 +109,7 @@ protected:
     }
     weights->multiplyByScalar(1.0 / sum);
     return sum;
-  }
+  }*/
 };
 
 typedef ReferenceCountedObjectPtr<WeightBoostingLearner> WeightBoostingLearnerPtr;

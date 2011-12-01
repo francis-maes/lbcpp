@@ -14,6 +14,7 @@
 namespace lbcpp
 {
 
+#if 0
 class LuapeProductNode : public LuapeNode
 {
 public:
@@ -96,6 +97,7 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<LuapeProductNode> LuapeProductNodePtr;
+#endif // 0
 
 #if 0 // FIXME
 

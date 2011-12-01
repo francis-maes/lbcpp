@@ -20,22 +20,6 @@
 namespace lbcpp
 {
 
-class GoRankLuapeProblem : public LuapeProblem
-{
-public:
-  GoRankLuapeProblem()
-  {
-    addInput(goBoardPositionPerceptionClass, "position");
-    addFunction(getVariableLuapeFunction());
-    addFunction(andBooleanLuapeFunction());
-    addFunction(equalsConstantEnumLuapeFunction());
-
-    addFunction(new GoBoardPositionRelationLuapeFunction());
-
-    // addFunction(stumpLuapeFunction())
-  }
-};
-
 class GoBoostingSandBox2 : public WorkUnit
 {
 public:
@@ -59,19 +43,20 @@ public:
       return false;
 
     // create problem and ranker
-    LuapeProblemPtr problem = new GoRankLuapeProblem();
-    LuapeInferencePtr learningMachine = createLearningMachine(context, problem);
+    LuapeInferencePtr learningMachine = createLearningMachine(context);
     if (!learningMachine)
       return false;
 
     // configure gradient boosting
+    jassert(false);
     //LuapeLearnerPtr learner = new LuapeBanditPoolGBLearner(1.0, 1000, maxDepth);
-    PolicyPtr policy = new TreeBasedRandomPolicy();
+//    PolicyPtr policy = new TreeBasedRandomPolicy();
     //PolicyPtr policy = new RandomPolicy();
     //PolicyPtr policy = new LuapeRewardStorageBasedPolicy();
     
-    LuapeLearnerPtr learner = l2BoostingLearner(policyBasedWeakLearner(policy, budget, maxDepth), learningRate);
-    if (!learner->initialize(context, problem, learningMachine))
+    LuapeLearnerPtr learner; // FIXME
+    //LuapeLearnerPtr learner = l2BoostingLearner(policyBasedWeakLearner(policy, budget, maxDepth), learningRate);
+    if (!learner->initialize(context, learningMachine))
       return false;
     
     // learn
@@ -81,13 +66,20 @@ public:
     return true;
   }
 
-  LuapeInferencePtr createLearningMachine(ExecutionContext& context, const LuapeProblemPtr& problem) const
+  LuapeInferencePtr createLearningMachine(ExecutionContext& context) const
   {
     //LuapeInferencePtr res = new LuapeRanker();
     //if (!res->initialize(context, objectVectorClass(goBoardPositionPerceptionClass), denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType)))
     //  return LuapeInferencePtr();
 
     LuapeInferencePtr res = new LuapeRegressor();
+
+    res->addInput(goBoardPositionPerceptionClass, "position");
+    res->addFunction(getVariableLuapeFunction());
+    res->addFunction(andBooleanLuapeFunction());
+    res->addFunction(equalsConstantEnumLuapeFunction());
+    res->addFunction(new GoBoardPositionRelationLuapeFunction());
+
     if (!res->initialize(context, goBoardPositionPerceptionClass, doubleType))
       return LuapeInferencePtr();
 

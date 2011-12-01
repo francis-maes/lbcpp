@@ -19,49 +19,18 @@
 namespace lbcpp
 {
 
-class LuapeTestNode : public LuapeNode
-{
-public:
-  LuapeTestNode(const LuapeNodePtr& testNode, const LuapeNodePtr& successNode, const LuapeNodePtr& failureNode)
-    : LuapeNode(successNode->getType(), "if(" + testNode->toShortString() + ")"),
-      testNode(testNode), successNode(successNode), failureNode(failureNode) {}
-  LuapeTestNode() {}
-
-  virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const
-  {
-    bool test = testNode->compute(context, state, callback).getBoolean();
-    return (test ? successNode : failureNode)->compute(context, state, callback);
-  }
-
-  virtual size_t getDepth() const
-  {
-    size_t res = testNode->getDepth();
-    if (successNode->getDepth() > res)
-      res = successNode->getDepth();
-    if (failureNode->getDepth() > res)
-      res = failureNode->getDepth();
-    return res + 1;
-  }
-
-  lbcpp_UseDebuggingNewOperator
-
-protected:
-  LuapeNodePtr testNode;
-  LuapeNodePtr successNode;
-  LuapeNodePtr failureNode;
-};
-
+#if 0
 class TreeBoostingWeakLearner : public BoostingWeakLearner
 {
 public:
   TreeBoostingWeakLearner(BoostingWeakLearnerPtr testLearner, BoostingWeakLearnerPtr subLearner = BoostingWeakLearnerPtr())
     : testLearner(testLearner), subLearner(subLearner) {}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function)
+  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
   {
-    if (!testLearner->initialize(context, problem, function))
+    if (!testLearner->initialize(context, function))
       return false;
-    if (subLearner && !subLearner->initialize(context, problem, function))
+    if (subLearner && !subLearner->initialize(context, function))
       return false;
     return true;
   }
@@ -70,7 +39,7 @@ public:
   {
     LuapeGraphPtr graph = structureLearner->getGraph();
 
-    LuapeNodePtr testNode = structureLearner->doWeakLearning(context, testLearner, examples);
+    LuapeNodePtr testNode = testLearner->learn(context, structureLearner, examples);
     BooleanVectorPtr testValues = graph->updateNodeCache(context, testNode, true).staticCast<BooleanVector>();
     
     std::vector<size_t> successExamples;
@@ -89,8 +58,8 @@ public:
     LuapeNodePtr successNode, failureNode;
     if (subLearner)
     {
-      successNode = structureLearner->doWeakLearning(context, subLearner, successExamples);
-      failureNode = structureLearner->doWeakLearning(context, subLearner, failureExamples);
+      successNode = subLearner->learn(context, structureLearner, successExamples);
+      failureNode = subLearner->learn(context, structureLearner, failureExamples);
     }
     else
     {
@@ -108,6 +77,7 @@ protected:
   BoostingWeakLearnerPtr testLearner;
   BoostingWeakLearnerPtr subLearner;
 };
+#endif // 0
 
 class LuapeSandBox : public WorkUnit
 {
@@ -134,25 +104,23 @@ public:
       String((int)inputClass->getNumMemberVariables()) + T(" input variables,") +
       String((int)labels->getNumElements()) + T(" labels"));
 
-    LuapeProblemPtr problem = createProblem(inputClass);
-
-    LuapeClassifierPtr classifier = new LuapeClassifier();
+    LuapeClassifierPtr classifier = createClassifier(inputClass);
     if (!classifier->initialize(context, inputClass, labels))
       return false;
 
     BoostingWeakLearnerPtr weakLearner = singleStumpWeakLearner();
     //BoostingWeakLearnerPtr weakLearner = policyBasedWeakLearner(new TreeBasedRandomPolicy(), budgetPerIteration, maxSteps);
     //BoostingWeakLearnerPtr weakLearner = new NormalizedValueWeakLearner();
-    weakLearner = new TreeBoostingWeakLearner(weakLearner, new TreeBoostingWeakLearner(weakLearner));
+    //weakLearner = new TreeBoostingWeakLearner(weakLearner, new TreeBoostingWeakLearner(weakLearner));
 
-    classifier->setBatchLearner(new LuapeBatchLearner(adaBoostMHLearner(weakLearner), problem, maxIterations));
+    classifier->setBatchLearner(new LuapeBatchLearner(adaBoostMHLearner(weakLearner), maxIterations));
     classifier->setEvaluator(defaultSupervisedEvaluator());
 
     classifier->train(context, trainData, testData, T("Training"), true);
     //classifier->evaluate(context, trainData, EvaluatorPtr(), T("Evaluating on training data"));
     //classifier->evaluate(context, testData, EvaluatorPtr(), T("Evaluating on testing data"));*/
 
-    classifier->getGraph()->saveToGraphML(context, context.getFile(trainFile.getFileNameWithoutExtension() + ".graphml"));
+//    classifier->getGraph()->saveToGraphML(context, context.getFile(trainFile.getFileNameWithoutExtension() + ".graphml"));
 
     testClassifier(context, classifier, inputClass);
     return true;
@@ -200,9 +168,9 @@ protected:
     return res;
   }
 
-  LuapeProblemPtr createProblem(DynamicClassPtr inputClass)
+  LuapeInferencePtr createClassifier(DynamicClassPtr inputClass)
   {
-    LuapeProblemPtr res = new LuapeProblem();
+    LuapeInferencePtr res = new LuapeClassifier();
     size_t n = inputClass->getNumMemberVariables();
     for (size_t i = 0; i < n; ++i)
     {

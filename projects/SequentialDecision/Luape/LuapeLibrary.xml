@@ -2,7 +2,7 @@
 
 <library name="Luape" directory="Luape">
 
-  <class name="LuapeNodeCache"/>
+  <!-- <class name="LuapeNodeCache"/>--> 
 
   <!-- Luape Function -->
   <class name="LuapeFunction" abstract="yes"/>
@@ -53,30 +53,40 @@
   <!-- Nodes -->
   <class name="LuapeNode" base="NameableObject" abstract="yes">
     <variable type="Type" name="type"/>
-    <variable type="LuapeNodeCache" name="cache"/>
+    <variable type="PositiveInteger" name="allocationIndex"/>
   </class>
   <class name="LuapeInputNode" base="LuapeNode"/>
   <class name="LuapeFunctionNode" base="LuapeNode">
     <variable type="LuapeFunction" name="function"/>
     <variable type="GenericVector[PositiveInteger]" name="arguments"/>
   </class>
+  <class name="LuapeSequenceNode" base="LuapeNode">
+    <variable type="ObjectVector[LuapeNode]" name="nodes"/>
+  </class>
+  <class name="LuapeTestNode" base="LuapeNode">
+    <variable type="LuapeNode" name="conditionNode"/>
+    <variable type="LuapeNode" name="successNode"/>
+    <variable type="LuapeNode" name="failureNode"/>
+  </class>
   <class name="LuapeYieldNode" base="LuapeNode">
-    <variable type="PositiveInteger" name="argument"/>
+    <variable type="Variable" name="value"/>
   </class>
 
   <!-- Graph -->
-  <class name="LuapeGraphUniverse" base="Object">
-    <variable type="PositiveInteger" name="maxCacheSize"/>
-  </class>
+  <class name="LuapeGraphUniverse" base="Object"/>
+  <!--
   <class name="LuapeGraph" base="Object">
     <variable type="ObjectVector[LuapeNode]" name="nodes"/>
     <variable type="LuapeGraphUniverse" name="universe"/>
   </class>
+  -->
 
   <!-- Inference -->
   <class name="LuapeInference" base="Function" abstract="yes">
-    <variable type="LuapeGraph" name="graph"/>
-    <variable type="Vector[Variable]" name="votes"/>
+    <variable type="LuapeGraphUniverse" name="universe"/>
+    <variable type="ObjectVector[LuapeInputNode]" name="inputs"/>
+    <variable type="ObjectVector[Function]" name="functions"/>
+    <variable type="LuapeSequenceNode" name="sequence"/>
   </class>
   <class name="LuapeBinaryClassifier" base="LuapeInference">
     <constructor/>
@@ -91,7 +101,7 @@
     <constructor/>
   </class>
 
-  <!-- Problem --> 
+  <!-- Problem 
   <class name="LuapeProblem">
     <variable type="ObjectVector[VariableSignature]" name="inputs"/>
     <variable type="ObjectVector[Function]" name="functions"/>
@@ -99,6 +109,7 @@
     <function lang="lua" name="input"/>
     <function lang="lua" name="function"/>
   </class>
+  -->
 
   <!-- Builder Type Search Space -->
   <class name="LuapeGraphBuilderTypeState">
@@ -111,19 +122,19 @@
   <class name="LuapeGraphBuilderAction"/>
   
   <class name="LuapeGraphBuilderState" base="DecisionProblemState">
-    <variable type="LuapeGraph" name="graph"/>
+    <variable type="LuapeInference" name="function"/>
     <variable type="LuapeGraphBuilderTypeSearchSpace" name="typeSearchSpace"/>
     <variable type="LuapeGraphBuilderTypeState" name="typeState"/>
     <variable type="ObjectVector[LuapeNode]" name="stack"/>
     <variable type="PositiveInteger" name="numSteps"/>
   </class>
-
+<!--
   <class name="LuapeRPNGraphBuilderState" base="DecisionProblemState">
     <variable type="LuapeProblem" name="problem"/>
     <variable type="LuapeGraph" name="graph"/>
     <variable type="PositiveInteger" name="maxSteps"/>
     <variable type="PositiveInteger" name="numSteps"/>
-  </class>
+  </class> -->
 
   <!-- Strong Learners -->
   <class name="LuapeLearner" abstract="yes"/>
@@ -135,7 +146,7 @@
   <class name="AdaBoostMHLearner" base="WeightBoostingLearner">
     <constructor arguments="BoostingWeakLearnerPtr weakLearner"/>
   </class>
-
+  <!--
   <class name="GradientBoostingLearner" base="BoostingLearner" abstract="yes"/>
   <class name="L2BoostingLearner" base="GradientBoostingLearner">
     <constructor arguments="BoostingWeakLearnerPtr weakLearner, double learningRate"/>
@@ -145,12 +156,14 @@
     <constructor arguments="BoostingWeakLearnerPtr weakLearner, double learningRate, RankingLossFunctionPtr rankingLoss"/>
     <variable type="RankingLossFunction" name="rankingLoss"/>
   </class>
+  -->
   
   <!-- Weak Learners -->
   <class name="BoostingWeakLearner" base="Object" abstract="yes"/>
   <class name="SingleStumpWeakLearner" base="BoostingWeakLearner">
     <constructor/>
   </class>
+  <!--
   <class name="PolicyBasedWeakLearner" base="BoostingWeakLearner">
     <constructor arguments="const PolicyPtr&amp; policy, size_t budget, size_t maxDepth"/>
     <variable type="Policy" name="policy"/>
@@ -162,12 +175,12 @@
     <variable type="PositiveInteger" name="maxBandits"/>
     <variable type="PositiveInteger" name="maxDepth"/>
   </class>
+  -->
 
 
   <!-- Wrapper to classical LBC++ learner -->
   <class name="LuapeBatchLearner" base="BatchLearner">
     <variable type="LuapeLearner" name="learner"/>
-    <variable type="LuapeProblem" name="problem"/>
     <variable type="PositiveInteger" name="maxIterations"/>
   </class>
 

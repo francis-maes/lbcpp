@@ -13,10 +13,14 @@ using namespace lbcpp;
 /*
 ** LuapeGraphUniverse
 */
+/*
 static void clearNode(const LuapeNodePtr& node, bool clearTrainingSamples, bool clearValidationSamples)
 {
   const LuapeNodeCachePtr& cache = node->getCache();
-  cache->clearSamples(clearTrainingSamples, clearValidationSamples);
+  if (clearTrainingSamples)
+    cache->clearSamples(true);
+  if (clearValidationSamples)
+    cache->clearSamples(false);
 }
 
 void LuapeGraphUniverse::clearSamples(bool clearTrainingSamples, bool clearValidationSamples)
@@ -26,7 +30,7 @@ void LuapeGraphUniverse::clearSamples(bool clearTrainingSamples, bool clearValid
   for (FunctionNodesMap::const_iterator it = functionNodes.begin(); it != functionNodes.end(); ++it)
     clearNode(it->second, clearTrainingSamples, clearValidationSamples);
 }
-
+*/
 LuapeFunctionNodePtr LuapeGraphUniverse::makeFunctionNode(ClassPtr functionClass, const std::vector<Variable>& arguments, const std::vector<LuapeNodePtr>& inputs)
 {
   FunctionKey key;
@@ -54,7 +58,7 @@ LuapeFunctionNodePtr LuapeGraphUniverse::makeFunctionNode(const LuapeFunctionPtr
     arguments[i] = function->getVariable(i);
   return makeFunctionNode(function->getClass(), arguments, inputs);
 }
-
+/*
 void LuapeGraphUniverse::cacheUpdated(ExecutionContext& context, const LuapeNodePtr& node, bool isTrainingSamples)
 {
   std::deque<LuapeNodePtr>& cacheSequence = isTrainingSamples ? trainingCacheSequence : validationCacheSequence;
@@ -62,7 +66,7 @@ void LuapeGraphUniverse::cacheUpdated(ExecutionContext& context, const LuapeNode
   cacheSequence.push_back(node);
   if (cacheSequence.size() >= maxCacheSize)
   {
-    cacheSequence.front()->getCache()->clearSamples(isTrainingSamples, !isTrainingSamples);
+    cacheSequence.front()->getCache()->clearSamples(isTrainingSamples);
     cacheSequence.pop_front();
   }
 }
@@ -83,6 +87,8 @@ void LuapeGraphUniverse::displayCacheInformation(ExecutionContext& context)
   context.informationCallback(T("Train cache: ") + String((int)numTrainingCached) + T(" / ") + String((int)numFunctionNodes) +
     T(" Validation cache: ") + String((int)numValidationCached) + T(" / ") + String((int)numFunctionNodes));
 }
+*/
+#if 0
 
 /*
 ** LuapeNodeKeysMap
@@ -403,10 +409,16 @@ VectorPtr LuapeGraph::updateNodeCache(ExecutionContext& context, const LuapeNode
   return res;   
 }
 
-void LuapeGraph::compute(ExecutionContext& context, std::vector<Variable>& state, size_t firstNodeIndex, LuapeGraphCallbackPtr callback) const
+Variable LuapeGraph::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
 {
-  for (size_t i = firstNodeIndex; i < nodes.size(); ++i)
-    state[i] = nodes[i]->compute(context, state, callback);
+  for (size_t i = 0; i < nodes.size(); ++i)
+  {
+    if (i < nodes.size() - 1)
+      cache->computeNode(context, nodes[i]);
+    else
+      return cache->computeNode(context, nodes[i]);
+  }
+  return Variable();
 }
 
 void LuapeGraph::clone(ExecutionContext& context, const ObjectPtr& t) const
@@ -500,3 +512,5 @@ bool LuapeGraph::saveToGraphML(ExecutionContext& context, const File& file) cons
   delete ostr;
   return true;
 }
+
+#endif // 0
