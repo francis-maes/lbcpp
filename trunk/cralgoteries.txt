@@ -1,3 +1,6 @@
+ok Objectif 1: refaire marcher AdaBoost.MH avec single-stump
+* Objectif 2: faire marcher AdaBoost.MH avec decision tree
+* Objectif 3: refaire marcher PolicyBasedWeakLearner
 
 --- 
  * Remove LuapeGraph

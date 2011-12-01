@@ -161,6 +161,22 @@ public:
     return res;
   }
 
+
+  virtual bool shouldStop(double weakObjectiveValue) const
+    {return weakObjectiveValue == 0.0;}
+
+  virtual double updateWeight(const LuapeInferencePtr& function, size_t index, double currentWeight, const VectorPtr& predictions, const ContainerPtr& supervision, const Variable& vote) const
+  {
+    size_t numLabels = function.staticCast<LuapeClassifier>()->getLabels()->getNumElements();
+    size_t example = index / numLabels;
+    size_t k = index % numLabels;
+    double alpha = vote.getObjectAndCast<DenseDoubleVector>()->getValue(k);
+    double pred = getSignedScalarPrediction(predictions, example);
+    double sup = supervision.staticCast<BooleanVector>()->get(index) ? 1.0 : -1.0;
+    return currentWeight * exp(-alpha * pred * sup);
+  }
+*/
+
   virtual VectorPtr makeSupervisions(const std::vector<ObjectPtr>& examples) const
   {
     EnumerationPtr labels = examples[0]->getClass()->getTemplateArgument(1).staticCast<Enumeration>();
@@ -178,20 +194,6 @@ public:
     return res;
   }
 
-  virtual bool shouldStop(double weakObjectiveValue) const
-    {return weakObjectiveValue == 0.0;}
-
-  virtual double updateWeight(const LuapeInferencePtr& function, size_t index, double currentWeight, const VectorPtr& predictions, const ContainerPtr& supervision, const Variable& vote) const
-  {
-    size_t numLabels = function.staticCast<LuapeClassifier>()->getLabels()->getNumElements();
-    size_t example = index / numLabels;
-    size_t k = index % numLabels;
-    double alpha = vote.getObjectAndCast<DenseDoubleVector>()->getValue(k);
-    double pred = getSignedScalarPrediction(predictions, example);
-    double sup = supervision.staticCast<BooleanVector>()->get(index) ? 1.0 : -1.0;
-    return currentWeight * exp(-alpha * pred * sup);
-  }
-*/
   virtual void computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, Variable& successVote, Variable& failureVote) const
   {
     AdaBoostMHWeakObjectivePtr objective = new AdaBoostMHWeakObjective(function.staticCast<LuapeClassifier>(), supervisions, weights, allExamples);

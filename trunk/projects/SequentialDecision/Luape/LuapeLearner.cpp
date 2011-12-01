@@ -34,6 +34,19 @@ bool LuapeLearner::setExamples(ExecutionContext& context, bool isTrainingData, c
   return true;
 }
 
+VectorPtr LuapeLearner::getTrainingPredictions() const
+{
+  return trainingSamples->compute(defaultExecutionContext(), function->getRootNode(), NULL, false);
+}
+
+VectorPtr LuapeLearner::getValidationPredictions() const
+{
+  if (validationSamples)
+    return validationSamples->compute(defaultExecutionContext(), function->getRootNode(), NULL, false);
+  else
+    return VectorPtr();
+}
+
 /*
 ** BoostingLearner
 */
@@ -52,6 +65,8 @@ bool BoostingLearner::setExamples(ExecutionContext& context, bool isTrainingData
 {
   if (!LuapeLearner::setExamples(context, isTrainingData, data))
     return false;
+
+
   //(isTrainingData ? predictions : validationPredictions) = function->makeCachedPredictions(context, isTrainingData);
   if (isTrainingData)
   {
@@ -67,7 +82,7 @@ LuapeNodePtr BoostingLearner::turnWeakNodeIntoContribution(ExecutionContext& con
   Variable successVote, failureVote;
   computeVotes(context, weakNode, successVote, failureVote);
   jassert(weakNode->getType() == booleanType || weakNode->getType() == probabilityType);
-  return new LuapeTestNode(weakNode, new LuapeYieldNode(successVote), new LuapeYieldNode(failureVote));
+  return new LuapeTestNode(weakNode, new LuapeConstantNode(successVote), new LuapeConstantNode(failureVote));
 }
 
 bool BoostingLearner::doLearningIteration(ExecutionContext& context)
@@ -88,6 +103,7 @@ bool BoostingLearner::doLearningIteration(ExecutionContext& context)
     context.resultCallback(T("weakObjective"), weakObjective);
   }
 
+  // turn into contribution
   {
     TimedScope _(context, "turn into contribution");
     LuapeNodePtr contribution = turnWeakNodeIntoContribution(context, weakNode);
@@ -97,7 +113,24 @@ bool BoostingLearner::doLearningIteration(ExecutionContext& context)
       return false;
     }
     context.resultCallback(T("contribution"), contribution);
-    function->getSequence()->pushNode(contribution);
+
+    // add contribution to sequence node
+    std::vector<LuapeSamplesCachePtr> caches;
+    caches.push_back(trainingSamples);
+    if (validationSamples)
+      caches.push_back(validationSamples);
+    function->getRootNode().staticCast<LuapeSequenceNode>()->pushNode(contribution, caches);
+  }
+
+  // evaluate
+  {
+    TimedScope _(context, "evaluate");
+    VectorPtr trainingPredictions = getTrainingPredictions();
+    context.resultCallback(T("train error"), function->evaluatePredictions(context, trainingPredictions, trainingData));
+
+    VectorPtr validationPredictions = getValidationPredictions();
+    if (validationPredictions)
+      context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
   }
   return true;
 }
