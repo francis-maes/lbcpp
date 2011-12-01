@@ -167,6 +167,12 @@
   <class name="SingleStumpWeakLearner" base="BoostingWeakLearner">
     <constructor/>
   </class>
+  <class name="BinaryTreeWeakLearner" base="BoostingWeakLearner">
+    <constructor arguments="BoostingWeakLearnerPtr conditionLearner, BoostingWeakLearnerPtr subLearner"/>
+    <variable type="BoostingWeakLearner" name="conditionLearner"/>
+    <variable type="BoostingWeakLearner" name="subLearner"/>
+  </class>
+
   <!--
   <class name="PolicyBasedWeakLearner" base="BoostingWeakLearner">
     <constructor arguments="const PolicyPtr&amp; policy, size_t budget, size_t maxDepth"/>

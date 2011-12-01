@@ -16,10 +16,22 @@
 namespace lbcpp
 {
 
+ 
+class LuapeNode;
+typedef ReferenceCountedObjectPtr<LuapeNode> LuapeNodePtr;
+class LuapeInputNode;
+typedef ReferenceCountedObjectPtr<LuapeInputNode> LuapeInputNodePtr;
+class LuapeConstantNode;
+typedef ReferenceCountedObjectPtr<LuapeConstantNode> LuapeConstantNodePtr;
+class LuapeFunctionNode;
+typedef ReferenceCountedObjectPtr<LuapeFunctionNode> LuapeFunctionNodePtr;
+class LuapeTestNode;
+typedef ReferenceCountedObjectPtr<LuapeTestNode> LuapeTestNodePtr;
+
+#if 0
 class LuapeGraph;
 typedef ReferenceCountedObjectPtr<LuapeGraph> LuapeGraphPtr;
 
-#if 0
 class LuapeYieldNode;
 typedef ReferenceCountedObjectPtr<LuapeYieldNode> LuapeYieldNodePtr;
 
@@ -94,15 +106,6 @@ typedef ReferenceCountedObjectPtr<LuapeNodeCache> LuapeNodeCachePtr;
 #endif // 0
 
 //////  GRAPH NODES
-
-class LuapeNode;
-typedef ReferenceCountedObjectPtr<LuapeNode> LuapeNodePtr;
-class LuapeInputNode;
-typedef ReferenceCountedObjectPtr<LuapeInputNode> LuapeInputNodePtr;
-class LuapeConstantNode;
-typedef ReferenceCountedObjectPtr<LuapeConstantNode> LuapeConstantNodePtr;
-class LuapeFunctionNode;
-typedef ReferenceCountedObjectPtr<LuapeFunctionNode> LuapeFunctionNodePtr;
 
 class LuapeNode : public Object
 {
@@ -225,6 +228,21 @@ public:
   virtual String toShortString() const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
   virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const;
+
+  const LuapeNodePtr& getCondition() const
+    {return conditionNode;}
+
+  const LuapeNodePtr& getSuccess() const
+    {return successNode;}
+
+  void setSuccess(const LuapeNodePtr& node)
+    {successNode = node;}
+
+  const LuapeNodePtr& getFailure() const
+    {return failureNode;}
+
+  void setFailure(const LuapeNodePtr& node)
+    {failureNode = node;}
 
   lbcpp_UseDebuggingNewOperator
 

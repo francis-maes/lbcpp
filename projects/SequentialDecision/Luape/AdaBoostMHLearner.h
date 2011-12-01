@@ -16,13 +16,13 @@
 namespace lbcpp
 {
 
-  // FIXME: do support of example indices 
 class AdaBoostMHWeakObjective : public BoostingWeakObjective
 {
 public:
   AdaBoostMHWeakObjective(const LuapeClassifierPtr& classifier, const BooleanVectorPtr& supervisions, const DenseDoubleVectorPtr& weights, const std::vector<size_t>& examples)
     : labels(classifier->getLabels()), doubleVectorClass(classifier->getDoubleVectorClass()), supervisions(supervisions), weights(weights), examples(examples)
   {
+    jassert(examples.size());
   }
 
   virtual void setPredictions(const VectorPtr& predictions)
@@ -31,25 +31,42 @@ public:
     computeMuAndVoteValues();
   }
 
+  bool hasExample(size_t index) const
+  {
+    if (examples.size() == predictions->getNumElements())
+      return true;
+    for (size_t i = 0; i < examples.size(); ++i)
+    {
+      if (examples[i] == index)
+        return true;
+      else if (examples[i] > index)
+        return false;
+    }
+    return false;
+  }
+
   virtual void flipPrediction(size_t index)
   {
     jassert(predictions.isInstanceOf<BooleanVector>());
     bool newPrediction = predictions.staticCast<BooleanVector>()->flip(index);
-    size_t numLabels = labels->getNumElements();
-    double* weightsPtr = weights->getValuePointer(index * numLabels);
-    double* muNegativesPtr = muNegatives->getValuePointer(0);
-    double* muPositivesPtr = muPositives->getValuePointer(0);
-    double* votesPtr = votes->getValuePointer(0);
-    for (size_t i = 0; i < numLabels; ++i)
+    if (hasExample(index))
     {
-      double weight = *weightsPtr++;
-      double& muNegative = *muNegativesPtr++;
-      double& muPositive = *muPositivesPtr++;
-      if (newPrediction == supervisions->get(index * numLabels + i))
-        {muNegative -= weight; muPositive += weight;}
-      else
-        {muPositive -= weight; muNegative += weight;}
-      *votesPtr++ = muPositive > muNegative ? 1.0 : -1.0;
+      size_t numLabels = labels->getNumElements();
+      double* weightsPtr = weights->getValuePointer(index * numLabels);
+      double* muNegativesPtr = muNegatives->getValuePointer(0);
+      double* muPositivesPtr = muPositives->getValuePointer(0);
+      double* votesPtr = votes->getValuePointer(0);
+      for (size_t i = 0; i < numLabels; ++i)
+      {
+        double weight = *weightsPtr++;
+        double& muNegative = *muNegativesPtr++;
+        double& muPositive = *muPositivesPtr++;
+        if (newPrediction == supervisions->get(index * numLabels + i))
+          {muNegative -= weight; muPositive += weight;}
+        else
+          {muPositive -= weight; muNegative += weight;}
+        *votesPtr++ = muPositive > muNegative ? 1.0 : -1.0;
+      }
     }
   }
 
@@ -96,11 +113,11 @@ protected:
     BooleanVectorPtr booleanPredictions = predictions.dynamicCast<BooleanVector>();
     if (booleanPredictions)
     {
-      double* weightsPtr = weights->getValuePointer(0);
       for (size_t i = 0; i < examples.size(); ++i)
       {
         size_t example = examples[i];
         bool prediction = booleanPredictions->get(example);
+        double* weightsPtr = weights->getValuePointer(numLabels * example);
         for (size_t j = 0; j < numLabels; ++j)
         {
           bool isPredictionCorrect = (prediction == supervisions->get(example * numLabels + j));
@@ -111,11 +128,11 @@ protected:
     else
     {
       DenseDoubleVectorPtr scalarPredictions = predictions.dynamicCast<DenseDoubleVector>();
-      double* weightsPtr = weights->getValuePointer(0);
       for (size_t i = 0; i < examples.size(); ++i)
       {
         size_t example = examples[i];
         double prediction = scalarPredictions->getValue(example) * 2 - 1;
+        double* weightsPtr = weights->getValuePointer(numLabels * example);
         for (size_t j = 0; j < numLabels; ++j)
         {
           double sup = supervisions->get(example * numLabels + j) ? 1.0 : -1.0;
@@ -125,7 +142,7 @@ protected:
         }
       }
     }
-
+    //jassert(muPositives->l1norm() > 0 || muNegatives->l1norm() > 0);
     // compute v_l values
     for (size_t i = 0; i < numLabels; ++i)
       votes->setValue(i, muPositives->getValue(i) > muNegatives->getValue(i) ? 1.0 : -1.0);
@@ -143,39 +160,9 @@ public:
 
   virtual BoostingWeakObjectivePtr createWeakObjective(const std::vector<size_t>& examples) const
     {return new AdaBoostMHWeakObjective(function.staticCast<LuapeClassifier>(), supervisions, weights, examples);}
-/*
-  virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeInferencePtr& function, const std::vector<PairPtr>& examples) const
-  {
-    const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
-    EnumerationPtr labels = classifier->getLabels();
-    size_t numLabels = labels->getNumElements();
-    size_t n = examples.size();
-    DenseDoubleVectorPtr res(new DenseDoubleVector(n * numLabels, 1.0 / (2 * n * (numLabels - 1))));
-    double invZ = 1.0 / (2 * n);
-    for (size_t i = 0; i < n; ++i)
-    {
-      size_t k = (size_t)examples[i]->getSecond().getInteger();
-      jassert(k >= 0 && k < numLabels);
-      res->setValue(i * numLabels + k, invZ);
-    }
-    return res;
-  }
 
-
-  virtual bool shouldStop(double weakObjectiveValue) const
-    {return weakObjectiveValue == 0.0;}
-
-  virtual double updateWeight(const LuapeInferencePtr& function, size_t index, double currentWeight, const VectorPtr& predictions, const ContainerPtr& supervision, const Variable& vote) const
-  {
-    size_t numLabels = function.staticCast<LuapeClassifier>()->getLabels()->getNumElements();
-    size_t example = index / numLabels;
-    size_t k = index % numLabels;
-    double alpha = vote.getObjectAndCast<DenseDoubleVector>()->getValue(k);
-    double pred = getSignedScalarPrediction(predictions, example);
-    double sup = supervision.staticCast<BooleanVector>()->get(index) ? 1.0 : -1.0;
-    return currentWeight * exp(-alpha * pred * sup);
-  }
-*/
+//  virtual bool shouldStop(double weakObjectiveValue) const
+//    {return weakObjectiveValue == 0.0;}
 
   virtual VectorPtr makeSupervisions(const std::vector<ObjectPtr>& examples) const
   {
@@ -194,9 +181,9 @@ public:
     return res;
   }
 
-  virtual void computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, Variable& successVote, Variable& failureVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples, Variable& successVote, Variable& failureVote) const
   {
-    AdaBoostMHWeakObjectivePtr objective = new AdaBoostMHWeakObjective(function.staticCast<LuapeClassifier>(), supervisions, weights, allExamples);
+    AdaBoostMHWeakObjectivePtr objective = new AdaBoostMHWeakObjective(function.staticCast<LuapeClassifier>(), supervisions, weights, examples);
     objective->setPredictions(trainingSamples->compute(context, weakNode));
 
     const DenseDoubleVectorPtr& votes = objective->getVotes();
@@ -222,8 +209,14 @@ public:
         errorWeight += *muPositivesPtr++;
       }
     }
+
+    if (!errorWeight && !correctWeight)
+      return false;
+
     double alpha = 0.5 * log(correctWeight / errorWeight);
-    jassert(fabs(correctWeight + errorWeight - 1.0) < 1e-9 && alpha > 0.0);
+    // correctWeight + errorWeight = weight of selected examples (1 if all the examples are selected)
+    //jassert(fabs(correctWeight + errorWeight - 1.0) < 1e-9);
+    jassert(alpha > 0.0);
 
     // make symmetric votes
     DenseDoubleVectorPtr res = votes->cloneAndCast<DenseDoubleVector>();
@@ -233,6 +226,7 @@ public:
     res = res->cloneAndCast<DenseDoubleVector>();
     res->multiplyByScalar(-1.0);
     failureVote = res;
+    return true;
   }
 
   virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const VectorPtr& predictions, double& loss) const
@@ -461,10 +455,7 @@ public:
     
     context.resultCallback(T("meanLoss"), loss.getMean());
   }
-
 #endif // 0
-
-
 };
 
 }; /* namespace lbcpp */

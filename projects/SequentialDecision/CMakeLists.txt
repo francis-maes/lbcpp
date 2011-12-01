@@ -144,13 +144,15 @@ SET(LBCPP_LUAPE_LEARNER_SOURCES
   Luape/AdaBoostMHLearner.h
   Luape/GradientBoostingLearner.h
 
-  Luape/BanditPoolWeakLearner.h
-  Luape/BanditPoolWeakLearner.cpp
-  Luape/PolicyBasedWeakLearner.h
   Luape/SingleStumpWeakLearner.h
+  Luape/BinaryTreeWeakLearner.h
 )
 
 SET(LBCPP_LUAPE_OLD_SOURCES
+  Luape/BanditPoolWeakLearner.h
+  Luape/BanditPoolWeakLearner.cpp
+  Luape/PolicyBasedWeakLearner.h
+
   Luape/LuapeProblem.h
   Luape/LuapeProblem.cpp
   Luape/LuapeGraph.h

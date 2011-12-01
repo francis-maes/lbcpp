@@ -412,7 +412,7 @@ public:
       context.resultCallback(T("averageRegret"), regret.getMean());
       context.informationCallback(T("Average Regret: ") + String(regret.getMean()));
     }
-    return bestWeakLearner;
+    return makeContribution(context, structureLearner, bestWeakLearner);
   }
 
   LuapeNodePtr sampleTrajectory(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, double& reward, const std::vector<size_t>& examples) const

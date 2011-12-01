@@ -101,7 +101,6 @@ protected:
 
 typedef ReferenceCountedObjectPtr<L2BoostingWeakObjective> L2BoostingWeakObjectivePtr;
 
-#if 0
 class GradientBoostingLearner : public BoostingLearner
 {
 public:
@@ -118,12 +117,15 @@ public:
       TimedScope _(context, "compute residuals");
 
       double lossValue;
-      computeLoss(predictions.staticCast<DenseDoubleVector>(), &lossValue, &pseudoResiduals);
+      DenseDoubleVectorPtr predictions = getTrainingPredictions().staticCast<DenseDoubleVector>();
+      computeLoss(predictions, &lossValue, &pseudoResiduals);
       context.resultCallback(T("loss"), lossValue);
       context.resultCallback(T("predictions"), predictions);
       context.resultCallback(T("pseudoResiduals"), pseudoResiduals);
     }
-
+    return BoostingLearner::doLearningIteration(context);
+  }
+  /*
     // 2- find best weak learner
     LuapeNodePtr weakNode = doWeakLearningAndAddToGraph(context);
     if (!weakNode)
@@ -146,12 +148,16 @@ public:
     updatePredictionsAndEvaluate(context, graph->getNumYieldNodes() - 1, weakNode);
     return true;
   }
-
+*/
   virtual BoostingWeakObjectivePtr createWeakObjective(const std::vector<size_t>& examples) const
     {return new L2BoostingWeakObjective(pseudoResiduals, examples);}
 
-  virtual std::pair<double, double> optimizeWeightOfWeakLearner(ExecutionContext& context, const DenseDoubleVectorPtr& predictions, const VectorPtr& weakPredictions) const
+  virtual void computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, Variable& successVote, Variable& failureVote) const
   {
+    LuapeSequenceNodePtr sequence = function->getRootNode().staticCast<LuapeSequenceNode>();
+    VectorPtr predictions = getTrainingPredictions();
+    
+
     context.enterScope(T("Optimize weight"));
 
     double bestLoss = DBL_MAX;
@@ -164,9 +170,11 @@ public:
       context.resultCallback(T("K"), K);
 
       DenseDoubleVectorPtr newPredictions = predictions->cloneAndCast<DenseDoubleVector>();
-      size_t n = weakPredictions->getNumElements();
-      for (size_t i = 0; i < n; ++i)
-        newPredictions->incrementValue(i, K * getSignedScalarPrediction(weakPredictions, i));
+
+      jassert(false); // FIXME
+      //size_t n = weakPredictions->getNumElements();
+      //for (size_t i = 0; i < n; ++i)
+      //  newPredictions->incrementValue(i, K * getSignedScalarPrediction(weakPredictions, i));
 
       double lossValue;
       computeLoss(newPredictions, &lossValue, NULL);
@@ -182,8 +190,10 @@ public:
     }
 
     context.leaveScope(bestLoss);
-    return std::make_pair(-bestWeight, bestWeight); // symmetric
+    successVote = bestWeight;
+    failureVote = -bestWeight;
   }
+
 protected:
   double learningRate;
   DenseDoubleVectorPtr pseudoResiduals;
@@ -270,7 +280,7 @@ public:
       index += n;
     }
     if (lossValue)
-      *lossValue /= trainData.size();
+      *lossValue /= trainingData.size();
     if (lossGradient)
       (*lossGradient)->multiplyByScalar(-1.0);
   }
@@ -280,8 +290,6 @@ protected:
 
   RankingLossFunctionPtr rankingLoss;
 };
-
-#endif // 0
 
 }; /* namespace lbcpp */
 

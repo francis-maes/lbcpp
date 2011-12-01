@@ -69,12 +69,14 @@ protected:
   double computeWeakObjectiveWithStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, const std::vector<size_t>& examples, double& bestThreshold) const;
 
   LuapeNodePtr makeStump(const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, double threshold) const;
+  LuapeNodePtr makeContribution(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples) const;
 };
 
 typedef ReferenceCountedObjectPtr<BoostingWeakLearner> BoostingWeakLearnerPtr;
 
 extern BoostingWeakLearnerPtr singleStumpWeakLearner();
 extern BoostingWeakLearnerPtr policyBasedWeakLearner(const PolicyPtr& policy, size_t budget, size_t maxDepth);
+extern BoostingWeakLearnerPtr binaryTreeWeakLearner(BoostingWeakLearnerPtr conditionLearner, BoostingWeakLearnerPtr subLearner);
 
 class BoostingWeakObjective : public Object
 {
@@ -104,26 +106,16 @@ public:
   const BoostingWeakLearnerPtr& getWeakLearner() const
     {return weakLearner;}
 
-  // new
   virtual bool doLearningIteration(ExecutionContext& context);
-  virtual void computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, Variable& successVote, Variable& failureVote) const = 0;
-  LuapeNodePtr turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode) const;
+  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples, Variable& successVote, Variable& failureVote) const = 0;
+
+  LuapeNodePtr turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples) const;
 
 protected:
   friend class BoostingLearnerClass;
   
   BoostingWeakLearnerPtr weakLearner;
-  //VectorPtr trainingPredictions;
-  //VectorPtr validationPredictions;
   std::vector<size_t> allExamples;
-
-  // old
-  /*
-  LuapeWeakPredictionVectorPtr makeWeakPredictions(ExecutionContext& context, const LuapeNodePtr& weakNode, bool useTrainingSamples = true) const;
-  LuapeNodePtr doWeakLearningAndAddToGraph(ExecutionContext& context);
-  void updatePredictionsAndEvaluate(ExecutionContext& context, size_t yieldIndex, const LuapeNodePtr& weakNode) const;
-  void recomputePredictions(ExecutionContext& context);
-  double getSignedScalarPrediction(const VectorPtr& predictions, size_t index) const;*/
 };
 
 }; /* namespace lbcpp */
