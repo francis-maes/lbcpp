@@ -38,7 +38,7 @@ public:
       learner->setExamples(context, false, validationData);
     
     context.enterScope(T("Boosting"));
-    LuapeGraphUniversePtr universe = function->getUniverse();
+    LuapeNodeUniversePtr universe = function->getUniverse();
     for (size_t i = 0; i < maxIterations; ++i)
     {
       //Object::displayObjectAllocationInfo(std::cerr);

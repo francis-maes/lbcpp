@@ -1,21 +1,4 @@
-ok Objectif 1: refaire marcher AdaBoost.MH avec single-stump
-ok Objectif 2a: faire marcher AdaBoost.MH avec decision tree
-ok Objectif 2b: large-scale AdaBoost.MH avec decision tree / comparaison avec multiboost
 
-* Objectif 3: refaire marcher PolicyBasedWeakLearner
-
---- 
- * Remove LuapeGraph
- * Remove LuapeProblem
- * Remove LuapeNodeCache
- * Rename LuapeGraphUniverse into LuapeNodeUniverse
-
-
-Luape-DecisionTrees:
- - BoostingLearner::doWeakLearning(): tout ce qui est DecisionStump doit aller dans les WeakLearner
-   => Objectif: un weak learner produit un ensemble de yields
- - Utiliser une std::map<LuapeNodePtr,...> pour stoquer l'état courant dans le compute()
- 
 Luape-Go:
  - Support des valeurs manquantes
 

@@ -11,7 +11,6 @@
 
 # include "LuapeFunction.h"
 # include "LuapeCache.h"
-//# include <lbcpp/Data/BinaryKey.h>
 
 namespace lbcpp
 {
@@ -27,85 +26,6 @@ class LuapeFunctionNode;
 typedef ReferenceCountedObjectPtr<LuapeFunctionNode> LuapeFunctionNodePtr;
 class LuapeTestNode;
 typedef ReferenceCountedObjectPtr<LuapeTestNode> LuapeTestNodePtr;
-
-#if 0
-class LuapeGraph;
-typedef ReferenceCountedObjectPtr<LuapeGraph> LuapeGraphPtr;
-
-class LuapeYieldNode;
-typedef ReferenceCountedObjectPtr<LuapeYieldNode> LuapeYieldNodePtr;
-
-//// CACHE
-
-class LuapeNodeCache : public Object
-{
-public:
-  LuapeNodeCache(TypePtr elementsType);
-  LuapeNodeCache() {}
-
-  virtual String toShortString() const;
-  
-  /*
-  ** Examples
-  */
-  void resizeSamples(bool isTrainingSamples, size_t size);
-  void resizeSamples(size_t numTrainingSamples, size_t numValidationSamples);
-  void setSample(bool isTrainingSample, size_t index, const Variable& value);
-  void setSamples(bool isTrainingSamples, const VectorPtr& samples)
-    {if (isTrainingSamples) trainingSamples = samples; else validationSamples = samples;}
-
-  size_t getNumTrainingSamples() const
-    {return trainingSamples ? trainingSamples->getNumElements() : 0;}
-
-  size_t getNumValidationSamples() const
-    {return validationSamples ? validationSamples->getNumElements() : 0;}
-
-  size_t getNumSamples(bool isTrainingSamples) const
-  {
-    VectorPtr samples = getSamples(isTrainingSamples);
-    return samples ? samples->getNumElements() : 0;
-  }
-
-  Variable getTrainingSample(size_t index) const
-    {jassert(trainingSamples); return trainingSamples->getElement(index);}
-
-  Variable getSample(bool isTrainingSample, size_t index) const
-    {return (isTrainingSample ? trainingSamples : validationSamples)->getElement(index);}
-
-  VectorPtr getSamples(bool isTrainingSample) const
-    {return isTrainingSample ? trainingSamples : validationSamples;}
-
-  const VectorPtr& getTrainingSamples() const
-    {return trainingSamples;}
-
-  const VectorPtr& getValidationSamples() const
-    {return validationSamples;}
-
-  void clearSamples(bool isTrainingSamples);
-
-  BinaryKeyPtr makeKeyFromSamples(bool useTrainingSamples = true) const;
-
-  /*
-  ** Double values
-  */
-  bool isConvertibleToDouble() const
-    {return elementsType->isConvertibleToDouble();}
-
-  SparseDoubleVectorPtr getSortedDoubleValues();
-
-  lbcpp_UseDebuggingNewOperator
-
-protected:
-  TypePtr elementsType;
-  VectorPtr trainingSamples;
-  VectorPtr validationSamples;
-  SparseDoubleVectorPtr sortedDoubleValues;
-};
-
-typedef ReferenceCountedObjectPtr<LuapeNodeCache> LuapeNodeCachePtr;
-#endif // 0
-
-//////  GRAPH NODES
 
 class LuapeNode : public Object
 {
