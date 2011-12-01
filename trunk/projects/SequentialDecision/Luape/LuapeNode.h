@@ -265,7 +265,6 @@ public:
   LuapeSequenceNode() {}
 
   virtual String toShortString() const;
-  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
   virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const;
 
   size_t getNumNodes() const
@@ -296,6 +295,8 @@ public:
   LuapeScalarSumNode(const std::vector<LuapeNodePtr>& nodes);
   LuapeScalarSumNode();
 
+  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
+
 protected:
   virtual VectorPtr createEmptyOutputs(size_t numSamples) const;
   virtual void updateOutputs(const VectorPtr& outputs, const VectorPtr& newNodeValues) const;
@@ -307,6 +308,8 @@ public:
   LuapeVectorSumNode(EnumerationPtr enumeration, const std::vector<LuapeNodePtr>& nodes);
   LuapeVectorSumNode(EnumerationPtr enumeration);
   LuapeVectorSumNode() {}
+
+  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
 
 protected:
   virtual VectorPtr createEmptyOutputs(size_t numSamples) const;

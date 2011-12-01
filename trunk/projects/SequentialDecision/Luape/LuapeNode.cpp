@@ -380,18 +380,6 @@ String LuapeSequenceNode::toShortString() const
   return res;
 }
 
-Variable LuapeSequenceNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
-{
-  for (size_t i = 0; i < nodes.size(); ++i)
-  {
-    if (i < nodes.size() - 1)
-      cache->compute(context, nodes[i]);
-    else
-      return cache->compute(context, nodes[i]);
-  }
-  return Variable();
-}
-
 VectorPtr LuapeSequenceNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const
 {
   size_t n = cache->getNumSamples();
@@ -433,6 +421,14 @@ LuapeScalarSumNode::LuapeScalarSumNode()
 {
 }
 
+Variable LuapeScalarSumNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
+{
+  double res = 0.0;
+  for (size_t i = 0; i < nodes.size(); ++i)
+    res += cache->compute(context, nodes[i]).getDouble();
+  return res;
+}
+
 VectorPtr LuapeScalarSumNode::createEmptyOutputs(size_t numSamples) const
   {return new DenseDoubleVector(numSamples, 0.0);}
 
@@ -454,6 +450,15 @@ LuapeVectorSumNode::LuapeVectorSumNode(EnumerationPtr enumeration, const std::ve
 LuapeVectorSumNode::LuapeVectorSumNode(EnumerationPtr enumeration) 
   : LuapeSequenceNode(denseDoubleVectorClass(enumeration, doubleType))
 {
+}
+
+Variable LuapeVectorSumNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
+{
+  ClassPtr doubleVectorClass = type;
+  DenseDoubleVectorPtr res = new DenseDoubleVector(doubleVectorClass);
+  for (size_t i = 0; i < nodes.size(); ++i)
+    cache->compute(context, nodes[i]).getObjectAndCast<DenseDoubleVector>()->addTo(res);
+  return res;
 }
 
 VectorPtr LuapeVectorSumNode::createEmptyOutputs(size_t numSamples) const

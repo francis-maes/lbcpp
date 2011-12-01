@@ -41,7 +41,8 @@ public:
   void setInputObject(const std::vector<LuapeInputNodePtr>& inputs, size_t index, const ObjectPtr& object);
   VectorPtr get(const LuapeNodePtr& node) const;
 
-  VectorPtr compute(ExecutionContext& context, const LuapeNodePtr& node, SparseDoubleVectorPtr* sortedDoubleValues = NULL, bool isRemoveable = true);
+  VectorPtr compute(ExecutionContext& context, const LuapeNodePtr& node, bool isRemoveable = true);
+  SparseDoubleVectorPtr getSortedDoubleValues(ExecutionContext& context, const LuapeNodePtr& node, const std::vector<size_t>& examples);
 
   size_t getNumberOfCachedNodes() const
     {return m.size();}
@@ -58,7 +59,9 @@ protected:
   std::deque<LuapeNodePtr> cacheSequence;
   size_t maxCacheSize;
 
-  void ensureSortedDoubleValuesAreComputed(const VectorPtr& samples, SparseDoubleVectorPtr& sortedDoubleValues);
+  SparseDoubleVectorPtr computeSortedDoubleValues(ExecutionContext& context, const VectorPtr& values, const std::vector<size_t>& examples) const;
+
+  std::pair<VectorPtr, SparseDoubleVectorPtr>& internalCompute(ExecutionContext& context, const LuapeNodePtr& node, bool isRemoveable);
 };
 
 typedef ReferenceCountedObjectPtr<LuapeSamplesCache> LuapeSamplesCachePtr;
