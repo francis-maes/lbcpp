@@ -9,45 +9,124 @@
 #ifndef LBCPP_LUAPE_INFERENCE_H_
 # define LBCPP_LUAPE_INFERENCE_H_
 
-# include "LuapeGraph.h"
+# include "LuapeNode.h"
+# include "LuapeGraph.h" // for LuapeGraphUniverse
 
 namespace lbcpp
 {
+/*
+class LuapeWeakPredictionVector : public Vector
+{
+public:
+  LuapeWeakPredictionVector(size_t count)
+    : weakPredictions(count, std::pair<int, double>(-1, 0.0)) {}
 
+  virtual TypePtr getElementsType() const
+    {return pairClass(integerType, doubleType);}
+
+  virtual size_t getNumElements() const
+    {return weakPredictions.size();}
+
+  virtual Variable getElement(size_t index) const
+    {return new Pair(weakPredictions[index].first, weakPredictions[index].second);}
+
+  virtual void setElement(size_t index, const Variable& value)
+    {jassert(false);}
+  
+  virtual void clear()
+    {weakPredictions.clear();}
+
+  virtual void reserve(size_t size)
+    {weakPredictions.reserve(size);}
+
+  virtual void resize(size_t size)
+    {weakPredictions.resize(size, std::pair<int, double>(-1, 0.0));}
+
+  virtual void prepend(const Variable& value)
+    {jassert(false);}
+
+  virtual void append(const Variable& value)
+    {jassert(false);}
+
+  virtual void remove(size_t index)
+    {jassert(false);}
+
+  void yield(size_t exampleIndex, size_t yieldIndex, double value)
+  {
+    jassert(weakPredictions[exampleIndex].first < 0);
+    weakPredictions[exampleIndex] = std::make_pair(yieldIndex, value);
+  }
+
+protected:
+  std::vector< std::pair<int, double> > weakPredictions;
+};
+
+typedef ReferenceCountedObjectPtr<LuapeWeakPredictionVector> LuapeWeakPredictionVectorPtr;
+*/
 class LuapeInference : public Function
 {
 public:
-  const LuapeGraphPtr& getGraph() const
-    {return graph;}
+  LuapeInference();
 
-  void setGraph(const LuapeGraphPtr& graph)
-    {this->graph = graph;}
+  const LuapeGraphUniversePtr& getUniverse() const
+    {return universe;}
 
-  const VectorPtr& getVotes() const
-    {return votes;}
+  /*
+  ** Inputs
+  */
+  size_t getNumInputs() const
+    {return inputs.size();}
 
-  void setVotes(const VectorPtr& votes)
-    {this->votes = votes;}
+  const LuapeInputNodePtr& getInput(size_t index) const
+    {jassert(index < inputs.size()); return inputs[index];}
+  
+  void addInput(const TypePtr& type, const String& name)
+    {inputs.push_back(new LuapeInputNode(type, name));}
 
-  virtual VectorPtr createVoteVector() const = 0;
+  /*
+  ** Available Functions
+  */
+  size_t getNumFunctions() const
+    {return functions.size();}
+
+  const LuapeFunctionPtr& getFunction(size_t index) const
+    {jassert(index < functions.size()); return functions[index];}
+
+  void addFunction(const LuapeFunctionPtr& function)
+    {functions.push_back(function);}
+
+  /*
+  ** Node sequence
+  */
+  const LuapeSequenceNodePtr& getSequence() const
+    {return sequence;}
+
+  // new 
+  virtual LuapeSamplesCachePtr createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data) const;
+
+
+/*  virtual VectorPtr createVoteVector() const = 0;
   virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const VectorPtr& yieldOutputs) const = 0;
   virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const = 0;
 
   virtual TypePtr getPredictionsInternalType() const
     {return getOutputType();}
+*/
+//  virtual void setCachedSamples(ExecutionContext& context, bool isTrainingSamples, const std::vector<ObjectPtr>& data);
+//  void setCachedSample(ExecutionContext& context, bool isTrainingSample, size_t index, const ObjectPtr& example);
 
-  virtual void setGraphSamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data);
-
-  VectorPtr makeCachedPredictions(ExecutionContext& context, bool isTrainingSamples) const;
-  DenseDoubleVectorPtr computeSignedWeakPredictions(ExecutionContext& context, const ObjectPtr& input) const;
+  //VectorPtr makeCachedPredictions(ExecutionContext& context, bool isTrainingSamples) const;
+  //DenseDoubleVectorPtr computeSignedWeakPredictions(ExecutionContext& context, const ObjectPtr& input) const;
 
 protected:
   friend class LuapeInferenceClass;
 
-  LuapeGraphPtr graph;
-  VectorPtr votes;
+  LuapeGraphUniversePtr universe;
+  std::vector<LuapeInputNodePtr> inputs;
+  std::vector<LuapeFunctionPtr> functions;
+  LuapeSequenceNodePtr sequence;
 
-  void computeGraph(ExecutionContext& context, const ObjectPtr& inputs, std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const;
+  void computeSequence(ExecutionContext& context, const ObjectPtr& inputs, LuapeGraphCallbackPtr callback) const;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeInference> LuapeInferencePtr;
@@ -62,10 +141,9 @@ public:
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 
-  virtual VectorPtr createVoteVector() const;
+  /*virtual VectorPtr createVoteVector() const;
   virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const VectorPtr& yieldOutputs) const;
-  virtual void setGraphSamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data);
-  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const;
+  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const;*/
 };
 
 typedef ReferenceCountedObjectPtr<LuapeRegressor> LuapeRegressorPtr;
@@ -78,9 +156,9 @@ public:
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
-  virtual VectorPtr createVoteVector() const;
+/*  virtual VectorPtr createVoteVector() const;
   virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const VectorPtr& yieldOutputs) const;
-  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const;
+  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const;*/
 };
 
 extern ClassPtr luapeBinaryClassifierClass;
@@ -101,10 +179,10 @@ public:
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
-  virtual VectorPtr createVoteVector() const;
+/*  virtual VectorPtr createVoteVector() const;
   virtual TypePtr getPredictionsInternalType() const;
   virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const VectorPtr& yieldOutputs) const;
-  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const;
+  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const;*/
 
 protected:
   ClassPtr doubleVectorClass;
@@ -122,11 +200,12 @@ public:
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 
+  virtual LuapeSamplesCachePtr createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data) const;
+
   // votes are scalars (alpha values)
-  virtual VectorPtr createVoteVector() const;
+/*  virtual VectorPtr createVoteVector() const;
   virtual void updatePredictions(VectorPtr predictions, size_t yieldIndex, const VectorPtr& yieldOutputs) const;
-  virtual void setGraphSamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data);
-  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const;
+  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const;*/
 };
 
 typedef ReferenceCountedObjectPtr<LuapeRanker> LuapeRankerPtr;

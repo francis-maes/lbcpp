@@ -10,11 +10,13 @@
 # define LBCPP_LUAPE_LEARNER_BANDIT_POOL_WEAK_H_
 
 # include "LuapeLearner.h"
+# include "LuapeGraphBuilder.h"
 # include <queue> // for priority queue in bandits pool
 
 namespace lbcpp
 {
 
+#if 0
 class LuapeGraphBuilderBanditPool : public Object
 {
 public:
@@ -32,7 +34,7 @@ public:
   LuapeNodeCachePtr getArmCache(size_t index) const
     {jassert(index < arms.size()); return arms[index].getCache();}
 
-  void initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph);
+  void initialize(ExecutionContext& context, const LuapeInferencePtr& function);
   void executeArm(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode);
 
   void playArmWithHighestIndex(ExecutionContext& context, const BoostingLearnerPtr& graphLearner, const std::vector<size_t>& examples);
@@ -62,8 +64,8 @@ protected:
 
     LuapeNodePtr node;
 
-    LuapeNodeCachePtr getCache() const
-      {return node ? node->getCache() : LuapeNodeCachePtr();}
+    //LuapeNodeCachePtr getCache() const
+    //  {return node ? node->getCache() : LuapeNodeCachePtr();}
 
     double getIndexScore() const
       {return playedCount ? (rewardSum + 2.0) / (double)playedCount : DBL_MAX;}
@@ -103,11 +105,11 @@ public:
   BanditPoolWeakLearner(size_t maxBandits = 0, size_t maxDepth = 0)
     : maxBandits(maxBandits), maxDepth(maxDepth) {}  
 
-  virtual bool initialize(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeInferencePtr& function)
+  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
   {
     pool = new LuapeGraphBuilderBanditPool(maxBandits, maxDepth);
     pool->clearSamples(true, true);
-    pool->initialize(context, problem, function->getGraph());
+    pool->initialize(context, function);
     return true;
   }
 
@@ -142,11 +144,13 @@ public:
     return pool->getArmNode(armIndex);
   }
   
+  // FIXME: broken
+  /*
   virtual void update(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, LuapeNodePtr weakLearner)
   {
     pool->executeArm(context, structureLearner->getProblem(), structureLearner->getGraph(), weakLearner);
     context.resultCallback(T("numArms"), pool->getNumArms());
-  }
+  }*/
 
 protected:
   friend class BanditPoolWeakLearnerClass;
@@ -155,6 +159,8 @@ protected:
   size_t maxDepth;
   LuapeGraphBuilderBanditPoolPtr pool;
 };
+
+#endif // 0
 
 }; /* namespace lbcpp */
 

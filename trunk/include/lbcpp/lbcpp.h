@@ -51,6 +51,7 @@
 # include "Data/Cache.h"
 # include "Data/DoubleVector.h"
 # include "Data/Matrix.h"
+# include "Data/BinaryKey.h"
 
 #ifdef LBCPP_NETWORKING
 # include "Network/NetworkClient.h"

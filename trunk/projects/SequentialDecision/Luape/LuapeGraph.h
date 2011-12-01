@@ -18,10 +18,10 @@ namespace lbcpp
 class LuapeGraphUniverse : public Object
 {
 public:
-  LuapeGraphUniverse(size_t maxCacheSize = 0)
-    : maxCacheSize(maxCacheSize) {}
+  //LuapeGraphUniverse(size_t maxCacheSize = 0)
+  //  : maxCacheSize(maxCacheSize) {}
 
-  void clearSamples(bool clearTrainingSamples = true, bool clearValidationSamples = true);
+  //void clearSamples(bool clearTrainingSamples = true, bool clearValidationSamples = true);
 
   void addInputNode(const LuapeInputNodePtr& inputNode)
     {inputNodes.push_back(inputNode);}
@@ -31,16 +31,16 @@ public:
   LuapeFunctionNodePtr makeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& input)
     {return makeFunctionNode(function, std::vector<LuapeNodePtr>(1, input));}
 
-  void cacheUpdated(ExecutionContext& context, const LuapeNodePtr& node, bool isTrainingSamples);
+  //void cacheUpdated(ExecutionContext& context, const LuapeNodePtr& node, bool isTrainingSamples);
 
-  void displayCacheInformation(ExecutionContext& context);
+  //void displayCacheInformation(ExecutionContext& context);
 
   lbcpp_UseDebuggingNewOperator
 
 private:
   friend class LuapeGraphUniverseClass;
 
-  size_t maxCacheSize;
+  //size_t maxCacheSize;
 
   struct FunctionKey
   {
@@ -62,11 +62,13 @@ private:
 
   std::vector<LuapeInputNodePtr> inputNodes;
 
-  std::deque<LuapeNodePtr> trainingCacheSequence;
-  std::deque<LuapeNodePtr> validationCacheSequence;
+  //std::deque<LuapeNodePtr> trainingCacheSequence;
+  //std::deque<LuapeNodePtr> validationCacheSequence;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeGraphUniverse> LuapeGraphUniversePtr;
+
+#if 0
 
 class LuapeNodeKeysMap : public Object
 {
@@ -123,6 +125,9 @@ public:
   bool containsNode(const LuapeNodePtr& node) const
     {return nodesMap.find(node) != nodesMap.end();}
 
+  LuapeNodePtr makeYieldNode()
+    {return new LuapeYieldNode(numYields++);}
+
   LuapeNodePtr pushNode(ExecutionContext& context, const LuapeNodePtr& node);
   LuapeNodePtr pushMissingNodes(ExecutionContext& context, const LuapeNodePtr& node);
   LuapeNodePtr pushFunctionNode(ExecutionContext& context, const LuapeFunctionPtr& function, const LuapeNodePtr& input);
@@ -143,7 +148,7 @@ public:
   void setSample(bool isTrainingSample, size_t index, const ObjectPtr& example);
   void clearSamples(bool clearTrainingSamples = true, bool clearValidationSamples = true);
 
-  void compute(ExecutionContext& context, std::vector<Variable>& state, size_t firstNodeIndex = 0, LuapeGraphCallbackPtr callback = 0) const;
+  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
 
   virtual String toShortString() const;
   String graphToString(size_t firstNodeIndex = 0) const;
@@ -172,6 +177,8 @@ protected:
 };
 
 extern ClassPtr luapeGraphClass;
+
+#endif // 0
 
 }; /* namespace lbcpp */
 

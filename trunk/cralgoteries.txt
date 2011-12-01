@@ -1,3 +1,11 @@
+
+--- 
+ * Remove LuapeGraph
+ * Remove LuapeProblem
+ * Remove LuapeNodeCache
+ * Rename LuapeGraphUniverse into LuapeNodeUniverse
+
+
 Luape-DecisionTrees:
  - BoostingLearner::doWeakLearning(): tout ce qui est DecisionStump doit aller dans les WeakLearner
    => Objectif: un weak learner produit un ensemble de yields

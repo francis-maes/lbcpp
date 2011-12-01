@@ -143,7 +143,7 @@ public:
 
   virtual BoostingWeakObjectivePtr createWeakObjective(const std::vector<size_t>& examples) const
     {return new AdaBoostMHWeakObjective(function.staticCast<LuapeClassifier>(), supervisions, weights, examples);}
-
+/*
   virtual DenseDoubleVectorPtr makeInitialWeights(const LuapeInferencePtr& function, const std::vector<PairPtr>& examples) const
   {
     const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
@@ -187,14 +187,15 @@ public:
     size_t example = index / numLabels;
     size_t k = index % numLabels;
     double alpha = vote.getObjectAndCast<DenseDoubleVector>()->getValue(k);
-    double pred = getSignedScalarPrediction(predictions, index);
+    double pred = getSignedScalarPrediction(predictions, example);
     double sup = supervision.staticCast<BooleanVector>()->get(index) ? 1.0 : -1.0;
     return currentWeight * exp(-alpha * pred * sup);
   }
-
-  virtual Variable computeVote(BoostingWeakObjectivePtr edgeCalculator) const
+*/
+  virtual void computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, Variable& successVote, Variable& failureVote) const
   {
-    const AdaBoostMHWeakObjectivePtr& objective = edgeCalculator.staticCast<AdaBoostMHWeakObjective>();
+    AdaBoostMHWeakObjectivePtr objective = new AdaBoostMHWeakObjective(function.staticCast<LuapeClassifier>(), supervisions, weights, allExamples);
+    objective->setPredictions(trainingSamples->compute(context, weakNode));
 
     const DenseDoubleVectorPtr& votes = objective->getVotes();
     const DenseDoubleVectorPtr& muNegatives = objective->getMuNegatives();
@@ -222,16 +223,53 @@ public:
     double alpha = 0.5 * log(correctWeight / errorWeight);
     jassert(fabs(correctWeight + errorWeight - 1.0) < 1e-9 && alpha > 0.0);
 
+    // make symmetric votes
     DenseDoubleVectorPtr res = votes->cloneAndCast<DenseDoubleVector>();
     res->multiplyByScalar(alpha);
+    successVote = res;
+
+    res = res->cloneAndCast<DenseDoubleVector>();
+    res->multiplyByScalar(-1.0);
+    failureVote = res;
+  }
+
+  virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const VectorPtr& predictions, double& loss) const
+  {
+    const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
+    EnumerationPtr labels = classifier->getLabels();
+    size_t numLabels = labels->getNumElements();
+    size_t n = trainingData.size();
+    DenseDoubleVectorPtr res = new DenseDoubleVector(n * numLabels, 0.0);
+
+    double positiveWeight =  1.0 / (2 * n);
+    double negativeWeight = 1.0 / (2 * n * (numLabels - 1));
+    loss = 0.0;
+
+    for (size_t i = 0; i < n; ++i)
+    {
+      DenseDoubleVectorPtr activations = predictions->getElement(i).getObjectAndCast<DenseDoubleVector>();
+      size_t correctLabel = (size_t)trainingData[i].staticCast<Pair>()->getSecond().getInteger();
+      jassert(correctLabel >= 0 && correctLabel < numLabels);
+      for (size_t j = 0; j < numLabels; ++j)
+      {
+        bool isCorrectLabel = (j == correctLabel);
+        double w0 = isCorrectLabel ? positiveWeight : negativeWeight;
+        double sign = isCorrectLabel ? 1.0 : -1.0;
+        double weight = w0 * exp(-sign * activations->getValue(j));
+        res->setValue(i * numLabels + j, weight);
+        loss += weight;
+      }
+    }
+    res->multiplyByScalar(1.0 / loss);
     return res;
   }
 
+#if 0
   virtual bool doLearningIteration(ExecutionContext& context)
   {
     if (!WeightBoostingLearner::doLearningIteration(context))
       return false;
-    //return true;
+    return true;
 
     static int counter = 0;
     ++counter;
@@ -245,7 +283,7 @@ public:
       context.enterScope(T("Before"));
       context.resultCallback(T("iteration"), (size_t)0);
       context.resultCallback(T("loss"), weightsSum);
-      context.resultCallback(T("train error"), function->evaluatePredictions(context, predictions, trainData));
+      context.resultCallback(T("train error"), function->evaluatePredictions(context, predictions, trainingData));
       context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
       context.leaveScope();
 
@@ -259,7 +297,7 @@ public:
         recomputePredictions(context);
         recomputeWeights(context);
         context.resultCallback(T("loss"), weightsSum);
-        double trainError = function->evaluatePredictions(context, predictions, trainData);
+        double trainError = function->evaluatePredictions(context, predictions, trainingData);
         context.resultCallback(T("train error"), trainError);
         context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
 
@@ -267,7 +305,7 @@ public:
         recomputePredictions(context);
         recomputeWeights(context);
         context.resultCallback(T("loss 2"), weightsSum);
-        context.resultCallback(T("train error 2"), function->evaluatePredictions(context, predictions, trainData));
+        context.resultCallback(T("train error 2"), function->evaluatePredictions(context, predictions, trainingData));
         context.resultCallback(T("validation error 2"), function->evaluatePredictions(context, validationPredictions, validationData));*/
 
         context.leaveScope();
@@ -285,7 +323,7 @@ public:
       recomputeWeights(context);
 
       context.resultCallback(T("yield index"), yieldIndex);
-      context.resultCallback(T("train error"), function->evaluatePredictions(context, predictions, trainData));
+      context.resultCallback(T("train error"), function->evaluatePredictions(context, predictions, trainingData));
       context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
       context.resultCallback(T("loss"), weightsSum);
       context.leaveScope();
@@ -322,7 +360,7 @@ public:
         // FIXME: do not work with continuous weak learners
         double weightSum = 0.0;
         BooleanVectorPtr predictions = graph->updateNodeCache(context, yieldNode->getArgument(), true);
-        DenseDoubleVectorPtr weights = makeInitialWeights(classifier, *(const std::vector<PairPtr>* )&trainData);
+        DenseDoubleVectorPtr weights = makeInitialWeights(classifier, *(const std::vector<PairPtr>* )&trainingData);
         for (size_t j = 0; j < supervisions->getNumElements(); ++j)
         {
           bool isPredictionCorrect = (predictions->get(j / numLabels) == supervisions.staticCast<BooleanVector>()->get(j));
@@ -384,7 +422,7 @@ public:
 
     for (size_t i = 0; i < order.size(); ++i)
     {
-      const PairPtr& example = trainData[order[i]].staticCast<Pair>();
+      const PairPtr& example = trainingData[order[i]].staticCast<Pair>();
 
       // compute weak predictions
       DenseDoubleVectorPtr weakPredictions = classifier->computeSignedWeakPredictions(context, example->getFirst().getObject());
@@ -422,35 +460,9 @@ public:
     context.resultCallback(T("meanLoss"), loss.getMean());
   }
 
-  void recomputeWeights(ExecutionContext& context)
-  {
-    const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
-    EnumerationPtr labels = classifier->getLabels();
-    size_t numLabels = labels->getNumElements();
-    size_t n = trainData.size();
-    weights = new DenseDoubleVector(n * numLabels, 0.0);
+#endif // 0
 
-    double positiveWeight =  1.0 / (2 * n);
-    double negativeWeight = 1.0 / (2 * n * (numLabels - 1));
-    weightsSum = 0.0;
 
-    for (size_t i = 0; i < n; ++i)
-    {
-      DenseDoubleVectorPtr activations = predictions->getElement(i).getObjectAndCast<DenseDoubleVector>();
-      size_t correctLabel = (size_t)trainData[i].staticCast<Pair>()->getSecond().getInteger();
-      jassert(correctLabel >= 0 && correctLabel < numLabels);
-      for (size_t j = 0; j < numLabels; ++j)
-      {
-        bool isCorrectLabel = (j == correctLabel);
-        double w0 = isCorrectLabel ? positiveWeight : negativeWeight;
-        double sign = isCorrectLabel ? 1.0 : -1.0;
-        double weight = w0 * exp(-sign * activations->getValue(j));
-        weights->setValue(i * numLabels + j, weight);
-        weightsSum += weight;
-      }
-    }
-    weights->multiplyByScalar(1.0 / weightsSum);
-  }
 };
 
 }; /* namespace lbcpp */
