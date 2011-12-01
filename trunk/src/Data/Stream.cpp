@@ -164,7 +164,9 @@ Variable TextParser::next()
     if (!line)
     {
       fclose(f); f = NULL;
-      return Variable();
+      if (!parseEnd())
+        context.errorCallback(T("TextParser::next"), T("Error in parse end"));
+      return currentResult;
     }
     
     ++lineNumber;
@@ -178,11 +180,7 @@ Variable TextParser::next()
     if (currentResult.exists())
       return currentResult;
   }
-  
-  if (!parseEnd())
-    context.errorCallback(T("TextParser::next"), T("Error in parse end"));
-  if (f) {fclose(f); f = NULL;}
-  return currentResult;
+  return Variable();
 }
 
 char* TextParser::readNextLine()
