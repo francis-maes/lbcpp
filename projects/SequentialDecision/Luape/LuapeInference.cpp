@@ -53,7 +53,7 @@ VectorPtr LuapeInference::makeCachedPredictions(ExecutionContext& context, bool 
 */
 
 LuapeInference::LuapeInference()
-  : universe(new LuapeGraphUniverse())
+  : universe(new LuapeNodeUniverse())
 {
 }
 

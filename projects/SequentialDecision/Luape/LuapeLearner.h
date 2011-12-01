@@ -10,7 +10,6 @@
 # define LBCPP_LUAPE_GRAPH_LEARNER_H_
 
 # include "LuapeInference.h"
-# include "LuapeProblem.h"
 # include "../Core/Policy.h"
 
 namespace lbcpp
@@ -26,7 +25,7 @@ public:
   const LuapeInferencePtr& getFunction() const
     {return function;}
   
-  const LuapeGraphUniversePtr& getUniverse() const
+  const LuapeNodeUniversePtr& getUniverse() const
     {return function->getUniverse();}
 
   const LuapeNodePtr& getRootNode() const

@@ -2,8 +2,6 @@
 
 <library name="Luape" directory="Luape">
 
-  <!-- <class name="LuapeNodeCache"/>--> 
-
   <!-- Luape Function -->
   <class name="LuapeFunction" abstract="yes"/>
   <class name="HomogeneousUnaryLuapeFunction" base="LuapeFunction" abstract="yes"/>
@@ -76,18 +74,13 @@
     <variable type="LuapeNode" name="failureNode"/>
   </class>
 
-  <!-- Graph -->
-  <class name="LuapeGraphUniverse" base="Object"/>
-  <!--
-  <class name="LuapeGraph" base="Object">
-    <variable type="ObjectVector[LuapeNode]" name="nodes"/>
-    <variable type="LuapeGraphUniverse" name="universe"/>
-  </class>
-  -->
+  <!-- Cache -->
+  <class name="LuapeNodeUniverse" base="Object"/>
+
 
   <!-- Inference -->
   <class name="LuapeInference" base="Function" abstract="yes">
-    <variable type="LuapeGraphUniverse" name="universe"/>
+    <variable type="LuapeNodeUniverse" name="universe"/>
     <variable type="ObjectVector[LuapeInputNode]" name="inputs"/>
     <variable type="ObjectVector[Function]" name="functions"/>
     <variable type="LuapeNode" name="node"/>
@@ -104,16 +97,6 @@
   <class name="LuapeRegressor" base="LuapeInference">
     <constructor/>
   </class>
-
-  <!-- Problem 
-  <class name="LuapeProblem">
-    <variable type="ObjectVector[VariableSignature]" name="inputs"/>
-    <variable type="ObjectVector[Function]" name="functions"/>
-    <variable type="Boolean" name="failed"/>
-    <function lang="lua" name="input"/>
-    <function lang="lua" name="function"/>
-  </class>
-  -->
 
   <!-- Builder Type Search Space -->
   <class name="LuapeGraphBuilderTypeState">
@@ -132,13 +115,6 @@
     <variable type="ObjectVector[LuapeNode]" name="stack"/>
     <variable type="PositiveInteger" name="numSteps"/>
   </class>
-<!--
-  <class name="LuapeRPNGraphBuilderState" base="DecisionProblemState">
-    <variable type="LuapeProblem" name="problem"/>
-    <variable type="LuapeGraph" name="graph"/>
-    <variable type="PositiveInteger" name="maxSteps"/>
-    <variable type="PositiveInteger" name="numSteps"/>
-  </class> -->
 
   <!-- Strong Learners -->
   <class name="LuapeLearner" abstract="yes"/>

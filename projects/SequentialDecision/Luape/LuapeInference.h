@@ -10,7 +10,6 @@
 # define LBCPP_LUAPE_INFERENCE_H_
 
 # include "LuapeNode.h"
-# include "LuapeGraph.h" // for LuapeGraphUniverse
 
 namespace lbcpp
 {
@@ -68,7 +67,7 @@ class LuapeInference : public Function
 public:
   LuapeInference();
 
-  const LuapeGraphUniversePtr& getUniverse() const
+  const LuapeNodeUniversePtr& getUniverse() const
     {return universe;}
 
   /*
@@ -123,7 +122,7 @@ public:
 protected:
   friend class LuapeInferenceClass;
 
-  LuapeGraphUniversePtr universe;
+  LuapeNodeUniversePtr universe;
   std::vector<LuapeInputNodePtr> inputs;
   std::vector<LuapeFunctionPtr> functions;
   LuapeNodePtr node;

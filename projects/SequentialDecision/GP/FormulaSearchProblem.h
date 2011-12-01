@@ -11,7 +11,7 @@
 
 # include "GPExpression.h"
 # include "GPExpressionBuilder.h"
-# include "../Luape/LuapeGraph.h" // for BinaryKey
+# include <lbcpp/Data/BinaryKey.h>
 
 namespace lbcpp
 {

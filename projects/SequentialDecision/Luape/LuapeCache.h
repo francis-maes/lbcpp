@@ -9,6 +9,8 @@
 #ifndef LBCPP_LUAPE_CACHE_H_
 # define LBCPP_LUAPE_CACHE_H_
 
+# include "LuapeFunction.h"
+
 namespace lbcpp
 {
 
@@ -16,7 +18,12 @@ class LuapeNode;
 typedef ReferenceCountedObjectPtr<LuapeNode> LuapeNodePtr;
 class LuapeInputNode;
 typedef ReferenceCountedObjectPtr<LuapeInputNode> LuapeInputNodePtr;
+class LuapeFunctionNode;
+typedef ReferenceCountedObjectPtr<LuapeFunctionNode> LuapeFunctionNodePtr;
 
+/*
+** LuapeInstanceCache
+*/
 class LuapeInstanceCache : public Object
 {
 public:
@@ -31,6 +38,9 @@ protected:
 
 typedef ReferenceCountedObjectPtr<LuapeInstanceCache> LuapeInstanceCachePtr;
 
+/*
+** LuapeSamplesCache
+*/
 class LuapeSamplesCache : public Object
 {
 public:
@@ -65,6 +75,77 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<LuapeSamplesCache> LuapeSamplesCachePtr;
+
+/*
+** LuapeNodeUniverse
+*/
+class LuapeNodeUniverse : public Object
+{
+public:
+  void addInputNode(const LuapeInputNodePtr& inputNode)
+    {inputNodes.push_back(inputNode);}
+
+  LuapeFunctionNodePtr makeFunctionNode(ClassPtr functionClass, const std::vector<Variable>& arguments, const std::vector<LuapeNodePtr>& inputs);
+  LuapeFunctionNodePtr makeFunctionNode(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs);
+  LuapeFunctionNodePtr makeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& input)
+    {return makeFunctionNode(function, std::vector<LuapeNodePtr>(1, input));}
+
+  lbcpp_UseDebuggingNewOperator
+
+private:
+  friend class LuapeNodeUniverseClass;
+
+  struct FunctionKey
+  {
+    ClassPtr functionClass;
+    std::vector<Variable> arguments;
+    std::vector<LuapeNodePtr> inputs;
+
+    bool operator <(const FunctionKey& other) const
+    {
+      if (functionClass != other.functionClass)
+        return functionClass < other.functionClass;
+      if (arguments != other.arguments)
+        return arguments < other.arguments;
+      return inputs < other.inputs;
+    }
+  };
+  typedef std::map<FunctionKey, LuapeFunctionNodePtr> FunctionNodesMap;
+  FunctionNodesMap functionNodes;
+
+  std::vector<LuapeInputNodePtr> inputNodes;
+};
+
+typedef ReferenceCountedObjectPtr<LuapeNodeUniverse> LuapeNodeUniversePtr;
+/*
+class LuapeNodeKeysMap : public Object
+{
+public:
+  LuapeNodeKeysMap(LuapeGraphPtr graph = LuapeGraphPtr())
+    : graph(graph) {}
+
+  void clear();
+
+  // return true if it is a new node
+  bool addNodeToCache(ExecutionContext& context, const LuapeNodePtr& node);
+
+  bool isNodeKeyNew(const LuapeNodePtr& node) const;
+
+  lbcpp_UseDebuggingNewOperator
+
+private:
+  typedef std::map<BinaryKeyPtr, LuapeNodePtr, ObjectComparator> KeyToNodeMap;
+  typedef std::map<LuapeNodePtr, BinaryKeyPtr> NodeToKeyMap;
+
+  LuapeGraphPtr graph;
+  KeyToNodeMap keyToNodes;
+  NodeToKeyMap nodeToKeys;
+
+  void addSubNodesToCache(ExecutionContext& context, const LuapeNodePtr& node);
+};
+
+typedef ReferenceCountedObjectPtr<LuapeNodeKeysMap> LuapeNodeKeysMapPtr;
+*/
 
 }; /* namespace lbcpp */
 
