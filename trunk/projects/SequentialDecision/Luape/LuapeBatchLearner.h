@@ -25,13 +25,11 @@ public:
   virtual TypePtr getRequiredFunctionType() const
     {return luapeInferenceClass;}
 
-
   virtual bool train(ExecutionContext& context, const FunctionPtr& f, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
     const LuapeInferencePtr& function = f.staticCast<LuapeInference>();
 
     LuapeLearnerPtr learner = this->learner->cloneAndCast<LuapeLearner>(); // avoid cycle between LuapeInference -> LuapeBatchLearner -> LuapeLearner -> LuapeInference
-
     if (!learner->initialize(context, function))
       return false;
 
@@ -39,6 +37,7 @@ public:
     if (validationData.size())
       learner->setExamples(context, false, validationData);
     
+    context.enterScope(T("Boosting"));
     LuapeGraphUniversePtr universe = function->getUniverse();
     for (size_t i = 0; i < maxIterations; ++i)
     {
@@ -55,6 +54,7 @@ public:
       //  context.informationCallback(T("Graph: ") + learner->getGraph()->toShortString());
       context.progressCallback(new ProgressionState(i+1, maxIterations, T("Iterations")));
     }
+    context.leaveScope();
     //Object::displayObjectAllocationInfo(std::cerr);
     //context.resultCallback("votes", function->getVotes());
     return true;
