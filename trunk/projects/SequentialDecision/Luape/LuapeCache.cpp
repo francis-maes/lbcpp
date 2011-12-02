@@ -54,8 +54,8 @@ Variable LuapeInstanceCache::compute(ExecutionContext& context, const LuapeNodeP
 /*
 ** LuapeSamplesCache
 */
-LuapeSamplesCache::LuapeSamplesCache(const std::vector<LuapeInputNodePtr>& inputs, size_t size, size_t maxCacheSize)
-  : maxCacheSize(maxCacheSize)
+LuapeSamplesCache::LuapeSamplesCache(const std::vector<LuapeInputNodePtr>& inputs, size_t size, size_t maxCacheSizeInMb)
+  : maxCacheSize(maxCacheSizeInMb * 1024), actualCacheSize(0)
 {
   inputCaches.resize(inputs.size());
   for (size_t i = 0; i < inputs.size(); ++i)
@@ -75,6 +75,13 @@ void LuapeSamplesCache::setInputObject(const std::vector<LuapeInputNodePtr>& inp
     for (size_t i = 0; i < n; ++i)
       inputCaches[i]->setElement(index, container->getElement(i));
   }
+  else if (object.isInstanceOf<SparseDoubleObject>())
+  {
+    SparseDoubleObjectPtr sparseObject = object.staticCast<SparseDoubleObject>();
+    const std::vector< std::pair<size_t, double> >& values = sparseObject->getValues();
+    for (size_t i = 0; i < values.size(); ++i)
+      inputCaches[values[i].first]->setElement(index, values[i].second);
+  }
   else
   {
     size_t n = object->getNumVariables();
@@ -84,10 +91,29 @@ void LuapeSamplesCache::setInputObject(const std::vector<LuapeInputNodePtr>& inp
   }
 }
 
+size_t LuapeSamplesCache::getSizeInBytes(const VectorPtr& samples) const
+{
+  if (!samples)
+    return 0;
+  SparseDoubleVectorPtr sparseVector = samples.dynamicCast<SparseDoubleVector>();
+  if (sparseVector)
+    return sparseVector->getNumValues() * 16;
+  else
+  {
+    TypePtr elementsType = samples->getElementsType();
+    size_t n = samples->getNumElements();
+    if (elementsType == booleanType)
+      return n / 8;
+    else
+      return n * 8;
+  }
+}
+
 void LuapeSamplesCache::set(const LuapeNodePtr& node, const VectorPtr& samples)
 {
   jassert(m.find(node) == m.end());
   m[node] = std::make_pair(samples, SparseDoubleVectorPtr());
+  actualCacheSize += getSizeInBytes(samples);
 }
 
 VectorPtr LuapeSamplesCache::get(const LuapeNodePtr& node) const
@@ -102,7 +128,10 @@ SparseDoubleVectorPtr LuapeSamplesCache::getSortedDoubleValues(ExecutionContext&
   if (examples.size() == getNumSamples()) // we only perform caching if all examples are selected
   {
     if (!c.second)
+    {
       c.second = computeSortedDoubleValues(context, c.first, examples);
+      actualCacheSize += getSizeInBytes(c.second);
+    }
     return c.second;
   }
   else
@@ -120,12 +149,14 @@ std::pair<VectorPtr, SparseDoubleVectorPtr>& LuapeSamplesCache::internalCompute(
   {
     std::pair<VectorPtr, SparseDoubleVectorPtr>& res = m[node];
     res.first = node->compute(context, LuapeSamplesCachePtr(this));
+    actualCacheSize += getSizeInBytes(res.first);
     if (maxCacheSize)
     {
       if (isRemoveable)
         cacheSequence.push_back(node);
-      if (m.size() >= maxCacheSize && cacheSequence.size() && cacheSequence.front() != node)
+      while (actualCacheSize > maxCacheSize && cacheSequence.size() && cacheSequence.front() != node)
       {
+        actualCacheSize -= getSizeInBytes(res.first) + getSizeInBytes(res.second);
         m.erase(cacheSequence.front());
         cacheSequence.pop_front();
       }

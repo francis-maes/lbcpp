@@ -17,8 +17,8 @@ namespace lbcpp
 class ARFFDataParser : public TextParser
 {
 public:
-  ARFFDataParser(ExecutionContext& context, const File& file, DynamicClassPtr features)
-    : TextParser(context, file), features(features), shouldReadData(false) {}
+  ARFFDataParser(ExecutionContext& context, const File& file, DynamicClassPtr features, bool sparseData = false)
+    : TextParser(context, file), features(features), sparseData(sparseData), shouldReadData(false) {}
 
   ARFFDataParser() {}
   
@@ -29,6 +29,7 @@ protected:
   std::vector<String> attributesName;
   TypePtr supervisionType;
   DynamicClassPtr features;
+  bool sparseData;
   bool shouldReadData;
 
   bool parseAttributeLine(const String& line);
@@ -100,8 +101,8 @@ protected:
 class ClassificationARFFDataParser : public ARFFDataParser
 {
 public:
-  ClassificationARFFDataParser(ExecutionContext& context, const File& file, DynamicClassPtr features, DefaultEnumerationPtr labels)
-    : ARFFDataParser(context, file, features), labels(labels)
+  ClassificationARFFDataParser(ExecutionContext& context, const File& file, DynamicClassPtr features, DefaultEnumerationPtr labels, bool sparseData = false)
+    : ARFFDataParser(context, file, features, sparseData), labels(labels)
     {elementsType = pairClass(features, labels);}
 
   ClassificationARFFDataParser() {}
