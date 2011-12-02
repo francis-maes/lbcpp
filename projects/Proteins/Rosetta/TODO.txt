@@ -2,10 +2,8 @@ TODO LBCPP
 ==========
 
 - depliement proteines
-- checker createFromPDB
 
-- regarder depliement proteines
-- corriger probleme import pdb
+- corriger probleme import pdb (Rosetta)
 - corriger rosetta parallele (ProteinTestParallelWorkUnit)
 
 - retirer les ifdef LBCPP_PROTEIN_ROSETTA ?
