@@ -205,7 +205,7 @@ public:
   }
 
   virtual bool isFinalState() const
-    {return isAborted || isYielded || !typeState->hasAnyAction();}
+    {return isAborted || isYielded || !typeState || !typeState->hasAnyAction();}
 
   LuapeInferencePtr getFunction() const
     {return function;}
@@ -218,6 +218,9 @@ public:
 
   const LuapeNodePtr& getStackElement(size_t index) const
     {jassert(index < stack.size()); return stack[index];}
+
+  void setStackElement(size_t index, const LuapeNodePtr& node)
+    {jassert(index < stack.size()); stack[index] = node;}
 
   lbcpp_UseDebuggingNewOperator
 
@@ -243,49 +246,10 @@ protected:
     typeState = typeSearchSpace->getState(numSteps, types);
     jassert(typeState);
   }
-
-/*
-  bool isYieldAvailable() const
-    {return stack.size() == 1 && stack[0]->getType()->inheritsFrom(booleanType);}
-
-  void enumerateFunctionVariables(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs, ObjectVectorPtr res) const
-  {
-    std::vector<TypePtr> inputTypes(inputs.size());
-    for (size_t i = 0; i < inputTypes.size(); ++i)
-      inputTypes[i] = inputs[i]->getType();
-
-    std::vector<Variable> variables(function->getNumVariables());
-    enumerateFunctionVariables(function, inputs, inputTypes, variables, 0, res);
-  }
-
-  // enumerate function parameters recursively
-  void enumerateFunctionVariables(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs, const std::vector<TypePtr>& inputTypes,
-                                  std::vector<Variable>& variables, size_t variableIndex, ObjectVectorPtr res) const
-  {
-    if (variableIndex == variables.size())
-    {
-      LuapeFunctionPtr f = function->cloneAndCast<LuapeFunction>();
-      for (size_t i = 0; i < variables.size(); ++i)
-        f->setVariable(i, variables[i]);
-
-      LuapeGraphBuilderActionPtr action = LuapeGraphBuilderAction::apply(graph, f, inputs);
-      if (!action->isUseless(graph))
-        res->append(action);
-    }
-    else
-    {
-      ContainerPtr values = function->getVariableCandidateValues(variableIndex, inputTypes);
-      size_t n = values->getNumElements();
-      for (size_t i = 0; i < n; ++i)
-      {
-        variables[variableIndex] = values->getElement(i);
-        enumerateFunctionVariables(function, inputs, inputTypes, variables, variableIndex + 1, res);
-      }
-    }
-  }*/
 };
 
 typedef ReferenceCountedObjectPtr<LuapeGraphBuilderState> LuapeGraphBuilderStatePtr;
+extern ClassPtr luapeGraphBuilderStateClass;
 
 }; /* namespace lbcpp */
 

@@ -19,8 +19,8 @@ namespace lbcpp
 class SamplerBasedOptimizerState : public OptimizerState
 {
 public:
-  SamplerBasedOptimizerState(SamplerPtr sampler)
-    : sampler(sampler), numIterations(0) {}
+  SamplerBasedOptimizerState(const OptimizationProblemPtr& problem, SamplerPtr sampler)
+    : OptimizerState(problem), sampler(sampler), numIterations(0) {}
 
   const SamplerPtr& getSampler() const
     {return sampler;}
@@ -56,7 +56,7 @@ public:
   }
 
   virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, const OptimizationProblemPtr& problem) const
-    {return new SamplerBasedOptimizerState(problem->getSampler());}
+    {return new SamplerBasedOptimizerState(problem, problem->getSampler());}
   
 protected:
   friend class PopulationBasedOptimizerClass;

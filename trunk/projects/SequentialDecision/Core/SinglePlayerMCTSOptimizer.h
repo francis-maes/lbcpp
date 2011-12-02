@@ -108,8 +108,8 @@ protected:
 class SinglePlayerMCTSOptimizerState : public OptimizerState
 {
 public:
-  SinglePlayerMCTSOptimizerState(const DecisionProblemStatePtr& initialState, const FunctionPtr& objective)
-    : rootNode(new SinglePlayerMCTSNode(initialState)), objective(objective) {}
+  SinglePlayerMCTSOptimizerState(const OptimizationProblemPtr& problem, const DecisionProblemStatePtr& initialState, const FunctionPtr& objective)
+    : OptimizerState(problem), rootNode(new SinglePlayerMCTSNode(initialState)), objective(objective) {}
   SinglePlayerMCTSOptimizerState() {}
 
   double doEpisode(ExecutionContext& context)
@@ -207,7 +207,7 @@ public:
   }
 
   virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, const OptimizationProblemPtr& problem) const
-    {return new SinglePlayerMCTSOptimizerState(problem->getInitialState(), problem->getObjective());}
+    {return new SinglePlayerMCTSOptimizerState(problem, problem->getInitialState(), problem->getObjective());}
 
 protected:
   friend class SinglePlayerMCTSOptimizerClass;

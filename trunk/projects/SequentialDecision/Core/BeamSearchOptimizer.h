@@ -18,8 +18,8 @@ namespace lbcpp
 class BeamSearchOptimizerState : public OptimizerState
 {
 public:
-  BeamSearchOptimizerState(DecisionProblemStatePtr initialState, size_t beamSize)
-    : beamSize(beamSize)
+  BeamSearchOptimizerState(const OptimizationProblemPtr& problem, DecisionProblemStatePtr initialState, size_t beamSize)
+    : OptimizerState(problem), beamSize(beamSize)
     {currentStates.insert(initialState);}
   BeamSearchOptimizerState() {}
 
@@ -71,7 +71,7 @@ public:
       }
     }
 
-    return finishIteration(context, problem, iteration, bestIterationScore, bestIterationSolution);
+    return finishIteration(context, iteration, bestIterationScore, bestIterationSolution);
   }
 
   typedef std::multimap<double, DecisionProblemStatePtr> SortedStateMap;
@@ -115,7 +115,7 @@ public:
   }
 
   virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, const OptimizationProblemPtr& problem) const
-    {return new BeamSearchOptimizerState(problem->getInitialState(), beamSize);}
+    {return new BeamSearchOptimizerState(problem, problem->getInitialState(), beamSize);}
 
 protected:
   friend class BeamSearchOptimizerClass;

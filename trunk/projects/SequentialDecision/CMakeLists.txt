@@ -126,10 +126,12 @@ SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
   Luape/LuapeCache.cpp
   Luape/LuapeNode.h
   Luape/LuapeNode.cpp
-  Luape/LuapeGraphBuilder.h
-  Luape/LuapeGraphBuilderTypeSearchSpace.h
   Luape/LuapeInference.h
   Luape/LuapeInference.cpp
+  Luape/LuapeGraphBuilder.h
+  Luape/LuapeGraphBuilderTypeSearchSpace.h
+  Luape/LuapeLearner.h
+  Luape/LuapeLearner.cpp
   Luape/LuapeBatchLearner.h
   Luape/LuapeSimpleFunctions.h
   Luape/LuapeSandBox.h
@@ -138,8 +140,6 @@ SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
 )
 
 SET(LBCPP_LUAPE_LEARNER_SOURCES
-  Luape/LuapeLearner.h
-  Luape/LuapeLearner.cpp
   Luape/WeightBoostingLearner.h
   Luape/AdaBoostMHLearner.h
   Luape/GradientBoostingLearner.h
@@ -147,6 +147,7 @@ SET(LBCPP_LUAPE_LEARNER_SOURCES
   Luape/SingleStumpWeakLearner.h
   Luape/BinaryTreeWeakLearner.h
   Luape/PolicyBasedWeakLearner.h
+  Luape/NestedMCWeakLearner.h
 )
 
 SET(LBCPP_LUAPE_OLD_SOURCES

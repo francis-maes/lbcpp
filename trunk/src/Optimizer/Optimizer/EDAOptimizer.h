@@ -39,7 +39,7 @@ public:
       
       context.enterScope(T("Iteration ") + String((int)i + 1));
       performEDAIteration(context, state, problem, bestIterationSolution, bestIterationScore, worstIterationScore);
-      Variable res = state->finishIteration(context, problem, i+1, bestIterationScore, bestIterationSolution);
+      Variable res = state->finishIteration(context, i+1, bestIterationScore, bestIterationSolution);
       context.leaveScope(res);
 
       jassert(bestIterationScore <= worstIterationScore);

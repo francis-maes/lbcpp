@@ -112,9 +112,46 @@
     <variable type="LuapeInference" name="function"/>
     <variable type="LuapeGraphBuilderTypeSearchSpace" name="typeSearchSpace"/>
     <variable type="LuapeGraphBuilderTypeState" name="typeState"/>
+    <variable type="ObjectVector[LuapeGraphBuilderAction]" name="availableActions"/>
     <variable type="ObjectVector[LuapeNode]" name="stack"/>
     <variable type="PositiveInteger" name="numSteps"/>
+    <variable type="Boolean" name="isAborted"/>
+    <variable type="Boolean" name="isYielded"/>
   </class>
+
+  <!-- Weak Learners -->
+  <class name="BoostingWeakLearner" base="Object" abstract="yes"/>
+  <class name="SingleStumpWeakLearner" base="BoostingWeakLearner">
+    <constructor/>
+  </class>
+  <class name="BinaryTreeWeakLearner" base="BoostingWeakLearner">
+    <constructor arguments="BoostingWeakLearnerPtr conditionLearner, BoostingWeakLearnerPtr subLearner"/>
+    <variable type="BoostingWeakLearner" name="conditionLearner"/>
+    <variable type="BoostingWeakLearner" name="subLearner"/>
+  </class>
+  <class name="PolicyBasedWeakLearner" base="BoostingWeakLearner">
+    <constructor arguments="const PolicyPtr&amp; policy, size_t budget, size_t maxDepth"/>
+    <variable type="Policy" name="policy"/>
+    <variable type="PositiveInteger" name="budget"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
+  </class>
+
+  <class name="DPOptimizerBasedWeakLearner" base="BoostingWeakLearner">
+    <variable type="Optimizer" name="optimizer"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
+    <variable type="LuapeGraphBuilderTypeSearchSpace" name="typeSearchSpace"/>
+  </class>
+  <class name="NestedMCWeakLearner" base="DPOptimizerBasedWeakLearner">
+    <constructor arguments="size_t level, size_t iterations, size_t maxDepth" returnType="BoostingWeakLearner"/>
+  </class>
+
+  <!--
+  <class name="BanditPoolWeakLearner" base="BoostingWeakLearner">
+    <constructor arguments="size_t maxBandits, size_t maxDepth"/>
+    <variable type="PositiveInteger" name="maxBandits"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
+  </class>
+  -->
 
   <!-- Strong Learners -->
   <class name="LuapeLearner" abstract="yes"/>
@@ -137,30 +174,6 @@
     <variable type="RankingLossFunction" name="rankingLoss"/>
   </class>
   
-  <!-- Weak Learners -->
-  <class name="BoostingWeakLearner" base="Object" abstract="yes"/>
-  <class name="SingleStumpWeakLearner" base="BoostingWeakLearner">
-    <constructor/>
-  </class>
-  <class name="BinaryTreeWeakLearner" base="BoostingWeakLearner">
-    <constructor arguments="BoostingWeakLearnerPtr conditionLearner, BoostingWeakLearnerPtr subLearner"/>
-    <variable type="BoostingWeakLearner" name="conditionLearner"/>
-    <variable type="BoostingWeakLearner" name="subLearner"/>
-  </class>
-  <class name="PolicyBasedWeakLearner" base="BoostingWeakLearner">
-    <constructor arguments="const PolicyPtr&amp; policy, size_t budget, size_t maxDepth"/>
-    <variable type="Policy" name="policy"/>
-    <variable type="PositiveInteger" name="budget"/>
-    <variable type="PositiveInteger" name="maxDepth"/>
-  </class>
-  <!--
-  <class name="BanditPoolWeakLearner" base="BoostingWeakLearner">
-    <constructor arguments="size_t maxBandits, size_t maxDepth"/>
-    <variable type="PositiveInteger" name="maxBandits"/>
-    <variable type="PositiveInteger" name="maxDepth"/>
-  </class>
-  -->
-
 
   <!-- Wrapper to classical LBC++ learner -->
   <class name="LuapeBatchLearner" base="BatchLearner">

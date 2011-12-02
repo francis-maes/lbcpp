@@ -70,7 +70,9 @@ typedef ReferenceCountedObjectPtr<OptimizationProblem> OptimizationProblemPtr;
 class OptimizerState : public Object
 {
 public:
-  OptimizerState() : bestScore(DBL_MAX) {}
+  OptimizerState(const OptimizationProblemPtr& problem) 
+    : problem(problem), bestScore(getWorstScore()) {}
+  OptimizerState() : bestScore(0.0) {}
 
   const Variable& getBestSolution() const
     {return bestSolution;}
@@ -79,11 +81,24 @@ public:
     {return bestScore;}
 
   void submitSolution(const Variable& solution, double score);
-  Variable finishIteration(ExecutionContext& context, const OptimizationProblemPtr& problem, size_t iteration, double bestIterationScore, const Variable& bestIterationSolution);
+  Variable finishIteration(ExecutionContext& context, size_t iteration, double bestIterationScore, const Variable& bestIterationSolution);
+
+  double getWorstScore() const
+    {return problem->isMaximisationProblem() ? -DBL_MAX : DBL_MAX;}
+
+  bool isScoreBetterThan(double newScore, double previousScore)
+    {return problem->isMaximisationProblem() ? (newScore > previousScore) : (newScore < previousScore);}
+
+  const OptimizationProblemPtr& getProblem() const
+    {return problem;}
+
+  const FunctionPtr& getObjective() const
+    {return problem->getObjective();}
 
 protected:
   friend class OptimizerStateClass;
 
+  OptimizationProblemPtr problem;
   Variable bestSolution;
   double bestScore;
 };

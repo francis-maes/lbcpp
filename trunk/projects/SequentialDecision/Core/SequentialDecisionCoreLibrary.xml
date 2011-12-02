@@ -135,7 +135,6 @@
 
   <!-- Nested Monte Carlo Optimizer -->
   <class name="NestedMonteCarloWorkUnit" base="WorkUnit">
-    <variable type="Function" name="objective"/>
     <variable type="PositiveInteger" name="level"/>
   </class>
 

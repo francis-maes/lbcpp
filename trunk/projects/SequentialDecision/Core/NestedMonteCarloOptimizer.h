@@ -18,15 +18,15 @@ namespace lbcpp
 class NestedMonteCarloWorkUnit : public WorkUnit
 {
 public:
-  NestedMonteCarloWorkUnit(DecisionProblemStatePtr initialState, FunctionPtr objective, size_t level)
-    : initialState(initialState), objective(objective), level(level) {}
+  NestedMonteCarloWorkUnit(const OptimizerStatePtr& optimizerState, size_t level)
+    : optimizerState(optimizerState), level(level) {}
   NestedMonteCarloWorkUnit() {}
 
   virtual Variable run(ExecutionContext& context)
   {
-    bestScore = DBL_MAX;
+    bestScore = optimizerState->getWorstScore();
     bestFinalState = DecisionProblemStatePtr();
-    nestedMonteCarlo(context, initialState, level);
+    nestedMonteCarlo(context, optimizerState->getProblem()->getInitialState(), level);
     return new Pair(bestFinalState, bestScore);
   }
 
@@ -39,8 +39,7 @@ public:
 protected:
   friend class NestedMonteCarloWorkUnitClass;
 
-  DecisionProblemStatePtr initialState;
-  FunctionPtr objective;
+  OptimizerStatePtr optimizerState;
   size_t level;
 
   double bestScore;
@@ -48,7 +47,7 @@ protected:
 
   void submitSolution(const DecisionProblemStatePtr& finalState, double score)
   {
-    if (score < bestScore)
+    if (optimizerState->isScoreBetterThan(score, bestScore))
     {
       bestScore = score;
       bestFinalState = finalState;
@@ -58,8 +57,9 @@ protected:
   double nestedMonteCarlo(ExecutionContext& context, DecisionProblemStatePtr state, size_t level)
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
+    FunctionPtr objective = optimizerState->getObjective();
 
-    double res = DBL_MAX;
+    double res = optimizerState->getWorstScore();
     state = state->cloneAndCast<DecisionProblemState>();
 
     if (level == 0)
@@ -88,7 +88,7 @@ protected:
           break;
 
         Variable bestAction;
-        double bestScore = DBL_MAX;
+        double bestScore = optimizerState->getWorstScore();
         for (size_t i = 0; i < n; ++i)
         {
           Variable action = actions->getElement(i);
@@ -96,12 +96,12 @@ protected:
           Variable stateBackup;
           state->performTransition(context, action, reward, &stateBackup);
           double score = nestedMonteCarlo(context, state, level - 1);
-          if (score < bestScore)
+          if (optimizerState->isScoreBetterThan(score, bestScore))
           {
             bestScore = score;
             bestAction = action;
           }
-          if (score < res)
+          if (optimizerState->isScoreBetterThan(score, res))
             res = score;
           state->undoTransition(context, stateBackup);
         }
@@ -113,7 +113,7 @@ protected:
       }
       double score = objective->compute(context, state).toDouble();
       submitSolution(state, res);
-      if (score < res)
+      if (optimizerState->isScoreBetterThan(score, res))
         res = score;
     }
     return res;
@@ -129,14 +129,11 @@ public:
 
   virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {
-    FunctionPtr objective = problem->getObjective();
-    DecisionProblemStatePtr initialState = problem->getInitialState();
-
     if (numIterations > 1)
     {
       CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Nested Monte Carlo runs"), numIterations);
       for (size_t i = 0; i < numIterations; ++i)
-        workUnit->setWorkUnit(i, new NestedMonteCarloWorkUnit(initialState, objective, level));
+        workUnit->setWorkUnit(i, new NestedMonteCarloWorkUnit(optimizerState, level));
       workUnit->setProgressionUnit(T("Runs"));
       ContainerPtr results = context.run(workUnit).getObjectAndCast<Container>();
       for (size_t i = 0; i < numIterations; ++i)
@@ -147,7 +144,7 @@ public:
     }
     else
     {
-      WorkUnitPtr workUnit = new NestedMonteCarloWorkUnit(initialState, objective, level);
+      WorkUnitPtr workUnit = new NestedMonteCarloWorkUnit(optimizerState, level);
       PairPtr best = workUnit->run(context).getObjectAndCast<Pair>();
       optimizerState->submitSolution(best->getFirst(), best->getSecond().toDouble());
     }
@@ -155,7 +152,7 @@ public:
   }
 
   virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, const OptimizationProblemPtr& problem) const
-    {return new OptimizerState();}
+    {return new OptimizerState(problem);}
 
 protected:
   friend class NestedMonteCarloOptimizerClass;

@@ -156,8 +156,8 @@ typedef ReferenceCountedObjectPtr<BestFirstSearchIteration> BestFirstSearchItera
 class StreamBasedOptimizerState : public OptimizerState, public ExecutionContextCallback
 {
 public:
-  StreamBasedOptimizerState(ExecutionContext& context, const std::vector<StreamPtr>& streams)
-    : OptimizerState(), streams(streams)
+  StreamBasedOptimizerState(const OptimizationProblemPtr& problem, const std::vector<StreamPtr>& streams)
+    : OptimizerState(problem), streams(streams)
     {}
 
   size_t getNumStreams() const
@@ -241,7 +241,7 @@ public:
 
   virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, const OptimizationProblemPtr& problem) const
   {
-    StreamBasedOptimizerStatePtr state = new StreamBasedOptimizerState(context, streams);
+    StreamBasedOptimizerStatePtr state = new StreamBasedOptimizerState(problem, streams);
     state->submitSolution(problem->getInitialGuess(), DBL_MAX); // default solution
 
      // Types checking

@@ -19,7 +19,7 @@ class AsyncSamplerBasedOptimizerState : public SamplerBasedOptimizerState, publi
 {
 public:
   AsyncSamplerBasedOptimizerState(OptimizationProblemPtr problem)
-    : SamplerBasedOptimizerState(problem->getSampler()) {}
+    : SamplerBasedOptimizerState(problem, problem->getSampler()) {}
 
   /* ExecutionContextCallback */
   virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
@@ -103,7 +103,7 @@ public:
 
           Variable bestIterationSolution = sortedScores.begin()->second;
           double bestIterationScore = sortedScores.begin()->first;
-          Variable res = state->finishIteration(context, problem, i+1, bestIterationScore, bestIterationSolution);
+          Variable res = state->finishIteration(context, i+1, bestIterationScore, bestIterationSolution);
           context.leaveScope(res);
           
           if (stoppingCriterion && stoppingCriterion->shouldStop(bestIterationScore))
