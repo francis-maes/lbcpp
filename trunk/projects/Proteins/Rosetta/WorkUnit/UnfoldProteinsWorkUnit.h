@@ -26,10 +26,15 @@ double evaluateQualityUnfold(const core::pose::PoseOP& pose, double* energy = NU
   if (energy != NULL)
     *energy = quality;
 
+  quality = 0;
   // so far, these factors make no real sense because dimensions do not match...
   quality -= computeCorrectionFactorForDistances(pose);
   quality -= computeCorrectionFactorForCollisions(pose);
-  //quality += 1.0 / computeCompactness(pose);
+  double mean;
+  double min;
+  double max;
+  SymmetricMatrixPtr distMatrix = createCalphaMatrixDistance(pose, &mean, &min, &max);
+  quality += mean * max;
   return quality;
 
 #else
@@ -78,6 +83,13 @@ public:
       core::pose::PoseOP tempPose = new core::pose::Pose();
 
       convertProteinToPose(context, proteinRef, workingPose);
+      if (proteinRef->getLength() != (size_t)workingPose->n_residue())
+      {
+        context.informationCallback((*references[j]).getFileNameWithoutExtension()
+            + T(" non convertible to Rosetta."));
+        break;
+      }
+
       double energy = 0.0;
       double qual = evaluateQualityUnfold(workingPose, &energy);
       double tempQual = 0.0;
@@ -123,13 +135,9 @@ public:
           // save to disk
           File pdbFile(outputFileStructures.getFullPathName() + T("/")
               + (*references[j]).getFileNameWithoutExtension() + T("_") + String(i) + T(".pdb"));
-          core::io::pdb::dump_pdb(*workingPose, (const char*)pdbFile.getFullPathName());
-
-          //workingProtein = convertPoseToProtein(context, workingPose);
-          //context.informationCallback(T("Size pose : ") + String((int)tempPose->n_residue()));
-          //context.informationCallback(T("Size protein : ") + String((int)workingProtein->getLength()));
-          //workingProtein->saveToXmlFile(context, File(outputFileStructures.getFullPathName() + T("/")
-          //              + (*references[j]).getFileNameWithoutExtension() + T("_") + String(i) + T(".xml")));
+          workingProtein = convertPoseToProtein(context, workingPose);
+          workingProtein->saveToXmlFile(context, File(outputFileStructures.getFullPathName() + T("/")
+                        + (*references[j]).getFileNameWithoutExtension() + T("_") + String(i) + T(".xml")));
 
           mover->saveToFile(context, File(outputFileMovers.getFullPathName() + T("/")
               + (*references[j]).getFileNameWithoutExtension() + T("_") + String(i) + T("_mover")
