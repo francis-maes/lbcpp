@@ -3,17 +3,22 @@ TODO LBCPP
 
 - depliement proteines
 
-- corriger probleme import pdb (Rosetta)
-- corriger rosetta parallele (ProteinTestParallelWorkUnit)
+- retirer les ifdef LBCPP_PROTEIN_ROSETTA
 
-- retirer les ifdef LBCPP_PROTEIN_ROSETTA ?
-- corriger probleme hbond tripped
 
 TODO NIC3
 =========
 
+- relancer optim sur test avec resultats unfold 
 - lancer EDA sur optim_new_learn_all_it1
 
+
+TODO Rosetta
+============
+
+- corriger probleme import pdb (Rosetta)
+- corriger rosetta parallele (ProteinTestParallelWorkUnit)
+- corriger probleme hbond tripped
 
 
 
