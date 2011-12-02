@@ -11,6 +11,7 @@
 
 # include "LuapeFunction.h"
 # include "LuapeNode.h"
+# include <algorithm>
 
 namespace lbcpp
 {

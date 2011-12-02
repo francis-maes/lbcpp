@@ -61,17 +61,19 @@ public:
 
     classifier->train(context, trainData, testData, T("Training"), true);
     //classifier->evaluate(context, trainData, EvaluatorPtr(), T("Evaluating on training data"));
-    //classifier->evaluate(context, testData, EvaluatorPtr(), T("Evaluating on testing data"));*/
+    double error = classifier->evaluate(context, testData, EvaluatorPtr(), T("Evaluating on testing data"))->getScoreToMinimize();
 
 //    classifier->getGraph()->saveToGraphML(context, context.getFile(trainFile.getFileNameWithoutExtension() + ".graphml"));
 
     testClassifier(context, classifier, inputClass);
-    return true;
+    return error;
   }
 
   void testClassifier(ExecutionContext& context, const LuapeClassifierPtr& classifier, ClassPtr inputsClass)
   {
-    for (size_t i = 0; i < inputsClass->getNumMemberVariables(); ++i)
+    size_t count = inputsClass->getNumMemberVariables();
+    if (count > 10) count = 10;
+    for (size_t i = 0; i < count; ++i)
     {
       context.enterScope(inputsClass->getMemberVariableName(i));
       ObjectPtr object = Object::create(inputsClass);
