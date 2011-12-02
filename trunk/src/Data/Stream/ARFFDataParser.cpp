@@ -272,10 +272,14 @@ bool ARFFDataParser::parseDataLine(const String& line)
     {
       Variable output = createFromString(context, supervisionType, token);
       setResult(finalizeData(Variable::pair(inputs, output, getElementsType())));
+      delete [] str;
       return true;
     }
     else
+    {
+      delete [] str;
       context.errorCallback(T("ARFFDataParser::parseDataLine"), T("Invalid number of values in: ") + line.quoted());
+    }
   }
   return false;
 /*
