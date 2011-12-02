@@ -13,7 +13,7 @@
 # include "../ProteinSampler.h"
 # include "SimpleResidueSampler.h"
 # include "ResiduePairSampler.h"
-# include "../ProteinMover/ProteinMover.h"
+# include "../Data/ProteinMover.h"
 # include "SmoothEnumerationSampler.h"
 
 namespace lbcpp

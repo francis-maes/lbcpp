@@ -1,40 +1,37 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ShearMover.h                   | ShearMover                      |
+| Filename: PhiPsiMover.h                  | PhiPsiMover                     |
 | Author  : Alejandro Marcos Alvarez       |                                 |
-| Started : 29 avr. 2011  16:29:53         |                                 |
+| Started : 29 avr. 2011  16:28:24         |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_PROTEINS_ROSETTA_SHEAR_MOVER_H_
-# define LBCPP_PROTEINS_ROSETTA_SHEAR_MOVER_H_
+#ifndef LBCPP_PROTEINS_ROSETTA_DATA_MOVER_PHI_PSI_MOVER_H_
+# define LBCPP_PROTEINS_ROSETTA_DATA_MOVER_PHI_PSI_MOVER_H_
 
-# include "precompiled.h"
-# include "ProteinMover.h"
+# include "../ProteinMover.h"
 
 namespace lbcpp
 {
 
-class ShearMover;
-typedef ReferenceCountedObjectPtr<ShearMover> ShearMoverPtr;
+class PhiPsiMover;
+typedef ReferenceCountedObjectPtr<PhiPsiMover> PhiPsiMoverPtr;
 
-class ShearMover : public ProteinMover
+class PhiPsiMover : public ProteinMover
 {
 public:
-  ShearMover()
+  PhiPsiMover()
     : ProteinMover() {}
 
   /**
-   * Instantiates a mover object that performs a modification on the Phi angle of the
-   * specified residue and on the Psi of the preceding residue.
+   * Instantiates a mover object that performs a modification on the Phi and Psi
    * angles of the specified residue.
    *
-   * @param residue the index of the residue to modify (starting from 0 but if 0, one
-   * angle will not change)
+   * @param residue the index of the residue to modify (starting from 0)
    * @param deltaPhi the increment of the Phi angle
    * @param deltaPsi the increment of the Psi angle
    */
-  ShearMover(size_t residue, double deltaPhi, double deltaPsi)
+  PhiPsiMover(size_t residue, double deltaPhi, double deltaPsi)
     : ProteinMover(), residue(residue), deltaPhi(deltaPhi), deltaPsi(deltaPsi) {}
 
   /**
@@ -45,13 +42,13 @@ public:
     {move(pose, residue, deltaPhi, deltaPsi);}
 
   /**
-   * Moves the angle Phi of the specified residue and the Psi angle of its predecessor.
+   * Moves the angles Phi and Psi of the residue specified by an amount specified.
    *
    * @param pose the pose object to modify.
-   * @param residue the residue whose Phi angle is to be modified (starting form 0)
+   * @param residue the residue whose angles are to be modified.
    * @parm deltaPhi the amount by which the Phi angle of the specified residue has
    * to be modified.
-   * @parm deltaPsi the amount by which the Psi angle of the predecessor residue has
+   * @parm deltaPsi the amount by which the Psi angle of the specified residue has
    * to be modified.
    */
   static void move(core::pose::PoseOP& pose, int residue, double deltaPhi, double deltaPsi)
@@ -59,8 +56,8 @@ public:
 #ifdef LBCPP_PROTEIN_ROSETTA
     if (std::isfinite(deltaPhi))
       pose->set_phi(residue + 1, pose->phi(residue + 1) + deltaPhi);
-    if (std::isfinite(deltaPsi) && (residue != 0))
-      pose->set_psi(residue, pose->psi(residue) + deltaPsi);
+    if (std::isfinite(deltaPsi))
+      pose->set_psi(residue + 1, pose->psi(residue + 1) + deltaPsi);
 #else
     jassert(false);
 #endif // LBCPP_PROTEIN_ROSETTA
@@ -110,14 +107,14 @@ public:
 
   virtual bool isEqual(const ProteinMoverPtr& mover, double tolerance)
   {
-    if (mover.isInstanceOf<ShearMover> ())
+    if (mover.isInstanceOf<PhiPsiMover> ())
     {
       double errorResidue = std::abs((double)residue
-          - (double)mover.staticCast<ShearMover> ()->residue) / (double)residue;
+          - (double)mover.staticCast<PhiPsiMover> ()->residue) / (double)residue;
       double errorPhi = std::abs((double)deltaPhi
-          - (double)mover.staticCast<ShearMover> ()->deltaPhi) / (double)deltaPhi;
+          - (double)mover.staticCast<PhiPsiMover> ()->deltaPhi) / (double)deltaPhi;
       double errorPsi = std::abs((double)deltaPsi
-          - (double)mover.staticCast<ShearMover> ()->deltaPsi) / (double)deltaPsi;
+          - (double)mover.staticCast<PhiPsiMover> ()->deltaPsi) / (double)deltaPsi;
       return ((errorResidue < tolerance) && (errorPhi < tolerance) && (errorPsi < tolerance));
     }
     else
@@ -125,7 +122,7 @@ public:
   }
 
 protected:
-  friend class ShearMoverClass;
+  friend class PhiPsiMoverClass;
 
   size_t residue;
   double deltaPhi;
@@ -134,4 +131,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif //! LBCPP_PROTEINS_ROSETTA_SHEAR_MOVER_H_
+#endif //! LBCPP_PROTEINS_ROSETTA_PHI_PSI_MOVER_H_

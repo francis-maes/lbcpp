@@ -11,7 +11,7 @@
 
 # include "precompiled.h"
 # include "ProteinOptimizer.h"
-# include "../ProteinMover/ProteinMover.h"
+# include "../Data/ProteinMover.h"
 
 namespace lbcpp
 {

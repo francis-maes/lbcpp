@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_PROTEINS_ROSETTA_PROTEIN_MOVER_H_
-# define LBCPP_PROTEINS_ROSETTA_PROTEIN_MOVER_H_
+#ifndef LBCPP_PROTEINS_ROSETTA_DATA_PROTEIN_MOVER_H_
+# define LBCPP_PROTEINS_ROSETTA_DATA_PROTEIN_MOVER_H_
 
 # include "precompiled.h"
 # include "../RosettaUtils.h"
