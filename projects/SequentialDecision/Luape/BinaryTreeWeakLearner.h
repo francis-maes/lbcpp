@@ -26,6 +26,7 @@ public:
   
   virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples, double& weakObjective) const
   {
+    jassert(examples.size());
     LuapeTestNodePtr res = conditionLearner->learn(context, structureLearner, examples, weakObjective).staticCast<LuapeTestNode>();
     if (!res)
       return LuapeNodePtr();
@@ -46,18 +47,26 @@ public:
 
     weakObjective = 0.0;
     double objective;
-    LuapeNodePtr successNode = subLearner->learn(context, structureLearner, successExamples, objective);
-    if (successNode)
+    LuapeNodePtr successNode;
+    if (successExamples.size())
     {
-      res->setSuccess(successNode);
-      weakObjective += objective;
+      successNode = subLearner->learn(context, structureLearner, successExamples, objective);
+      if (successNode)
+      {
+        res->setSuccess(successNode);
+        weakObjective += objective;
+      }
     }
 
-    LuapeNodePtr failureNode = subLearner->learn(context, structureLearner, failureExamples, objective);
-    if (failureNode)
+    LuapeNodePtr failureNode;
+    if (failureExamples.size())
     {
-      res->setFailure(failureNode);
-      weakObjective += objective;
+      failureNode = subLearner->learn(context, structureLearner, failureExamples, objective);
+      if (failureNode)
+      {
+        res->setFailure(failureNode);
+        weakObjective += objective;
+      }
     }
     return res;
   }

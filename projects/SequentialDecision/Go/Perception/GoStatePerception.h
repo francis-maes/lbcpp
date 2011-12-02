@@ -31,7 +31,7 @@ public:
 
     // previous actions
     PositiveIntegerPairVectorPtr previousActions = state->getPreviousActions();
-    lastAction = board->getPassPosition();
+    lastAction = GoBoardPositionPerceptionPtr();
     for (size_t i = 0; i < previousActions->size(); ++i)
     {
       GoBoardPositionPerceptionPtr positionPerception = board->getPosition(previousActions->get(i));

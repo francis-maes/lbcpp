@@ -181,6 +181,7 @@ double BoostingWeakObjective::findBestThreshold(ExecutionContext& context, size_
 */
 double BoostingWeakLearner::computeWeakObjectiveWithEventualStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, LuapeNodePtr& weakNode, const std::vector<size_t>& examples) const
 {
+  jassert(examples.size());
   if (weakNode->getType() == booleanType)
     return computeWeakObjective(context, structureLearner, weakNode, examples);
   else
@@ -203,6 +204,7 @@ double BoostingWeakLearner::computeWeakObjective(ExecutionContext& context, cons
 
 double BoostingWeakLearner::computeWeakObjectiveWithStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, const std::vector<size_t>& examples, double& bestThreshold) const
 {
+  jassert(examples.size());
   LuapeSamplesCachePtr trainingSamples = structureLearner->getTrainingSamples();
   SparseDoubleVectorPtr sortedDoubleValues = trainingSamples->getSortedDoubleValues(context, numberNode, examples);
   BoostingWeakObjectivePtr edgeCalculator = structureLearner->createWeakObjective(examples);

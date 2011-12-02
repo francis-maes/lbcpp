@@ -13,7 +13,8 @@ using namespace lbcpp;
 
 String LuapeFunction::toShortString(const std::vector<LuapeNodePtr>& inputs) const
 {
-  String res = getClass()->getShortName() + T("(");
+  ClassPtr thisClass = getClass();
+  String res = (thisClass->getShortName().isNotEmpty() ? thisClass->getShortName() : thisClass->getName()) + T("(");
   for (size_t i = 0; i < inputs.size(); ++i)
   {
     res += inputs[i]->toShortString();

@@ -23,7 +23,7 @@ namespace lbcpp
 class GoBoostingSandBox2 : public WorkUnit
 {
 public:
-  GoBoostingSandBox2() : maxCount(0), maxDepth(6), budget(1000), numIterations(100) {}
+  GoBoostingSandBox2() : maxCount(0), maxDepth(6), budget(1000), numIterations(100), treeDepth(2) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -48,14 +48,12 @@ public:
       return false;
 
     // configure gradient boosting
-    jassert(false);
-    //LuapeLearnerPtr learner = new LuapeBanditPoolGBLearner(1.0, 1000, maxDepth);
-//    PolicyPtr policy = new TreeBasedRandomPolicy();
-    //PolicyPtr policy = new RandomPolicy();
-    //PolicyPtr policy = new LuapeRewardStorageBasedPolicy();
-    
-    LuapeLearnerPtr learner; // FIXME
-    //LuapeLearnerPtr learner = l2BoostingLearner(policyBasedWeakLearner(policy, budget, maxDepth), learningRate);
+    BoostingWeakLearnerPtr conditionLearner = policyBasedWeakLearner(new TreeBasedRandomPolicy(), budget, maxDepth);
+    BoostingWeakLearnerPtr weakLearner = conditionLearner;
+    for (size_t i = 1; i < treeDepth; ++i)
+      weakLearner = binaryTreeWeakLearner(conditionLearner, weakLearner);
+
+    LuapeLearnerPtr learner = l2BoostingLearner(weakLearner, learningRate);
     if (!learner->initialize(context, learningMachine))
       return false;
     
@@ -144,6 +142,7 @@ private:
   size_t maxDepth;
   size_t budget;
   size_t numIterations;
+  size_t treeDepth;
 
   void makeRankingExamples(ExecutionContext& context, const Variable& stateAndTrajectory, std::vector<PairPtr>& res) const
   {

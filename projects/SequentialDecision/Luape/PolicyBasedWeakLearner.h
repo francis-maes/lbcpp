@@ -139,6 +139,7 @@ public:
   virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples, double& weakObjective) const
   {
     static const bool computeOptimalLearner = false;
+    jassert(examples.size());
 
     const LuapeInferencePtr& function = structureLearner->getFunction();
 

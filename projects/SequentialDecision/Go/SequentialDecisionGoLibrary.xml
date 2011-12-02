@@ -185,10 +185,10 @@
   </class>
   
   <class name="GoBoardPositionRelationPerception" base="Object">
-    <variable type="Double" name="smallDelta"/>
-    <variable type="Double" name="largeDelta"/>
+    <variable type="PositiveInteger" name="smallDelta"/>
+    <variable type="PositiveInteger" name="largeDelta"/>
   </class>
-  <class name="GoBoardPositionRelationLuapeFunction" base="LuapeFunction"/>
+  <class name="GoBoardPositionRelationLuapeFunction" base="LuapeFunction" shortName="posrel"/>
 
   <class name="GoBoardPerception">
     <variable type="GoStatePerception" name="state"/>
@@ -212,6 +212,7 @@
     <variable type="PositiveInteger" name="maxDepth"/>
     <variable type="PositiveInteger" name="budget"/>
     <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="PositiveInteger" name="treeDepth"/>
   </class>
 
 </library>
