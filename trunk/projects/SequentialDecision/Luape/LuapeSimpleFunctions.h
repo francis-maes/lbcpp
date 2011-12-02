@@ -72,22 +72,33 @@ public:
     {return (Flags)(commutativeFlag | allSameArgIrrelevantFlag);}
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
-    {return computeBoolean(inputs[0].getBoolean(), inputs[1].getBoolean());}
+  {
+    if (inputs[0].isMissingValue() || inputs[1].isMissingValue())
+      return Variable::missingValue(booleanType);
+    return computeBoolean(inputs[0].getBoolean(), inputs[1].getBoolean());
+  }
 
   virtual VectorPtr compute(ExecutionContext& context, const std::vector<VectorPtr>& inputs, TypePtr outputType) const
   {
-    const std::vector<bool>& inputs1 = inputs[0].staticCast<BooleanVector>()->getElements();
-    const std::vector<bool>& inputs2 = inputs[1].staticCast<BooleanVector>()->getElements();
-    jassert(inputs1.size() == inputs2.size());
-
-    BooleanVectorPtr res = new BooleanVector(inputs1.size());
-    std::vector<bool>& dest = res->getElements();
-
-    std::vector<bool>::const_iterator it1 = inputs1.begin();
-    std::vector<bool>::const_iterator it2 = inputs2.begin();
-    std::vector<bool>::iterator itd = dest.begin();
-    while (it1 != inputs1.end())
-      *itd++ = computeBoolean(*it1++, *it2++);
+    const BooleanVectorPtr& inputs1 = inputs[0].staticCast<BooleanVector>();
+    const BooleanVectorPtr& inputs2 = inputs[1].staticCast<BooleanVector>();
+    jassert(inputs1->getNumElements() == inputs2->getNumElements());
+    size_t n = inputs1->getNumElements();
+    
+    BooleanVectorPtr res = new BooleanVector(n);
+    
+    const unsigned char* ptr1 = inputs1->getData();
+    const unsigned char* ptr2 = inputs2->getData();
+    unsigned char* dest = res->getData();
+    const unsigned char* lim = ptr1 + n;
+    while (ptr1 < lim)
+    {
+      if (*ptr1 < 2 && *ptr2 < 2)
+        *dest = computeBoolean(*ptr1 == 1, *ptr2 == 1);
+      ptr1++;
+      ptr2++;
+      dest++;
+    }
     return res;
   }
 };
@@ -130,7 +141,10 @@ public:
   virtual double computeDouble(double value) const = 0;
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
-    {return computeDouble(inputs[0].getDouble());}
+  {
+    double value = inputs[0].getDouble();
+    return (value == doubleMissingValue ? value : computeDouble(value));
+  }
 
   virtual VectorPtr compute(ExecutionContext& context, const std::vector<VectorPtr>& in, TypePtr outputType) const
   {
@@ -165,15 +179,15 @@ public:
     {return "normalize(" + inputs[0]->toShortString() + ")";}
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
-    {return Variable(computeDouble(inputs[0].getDouble()), probabilityType);}
+  {
+    double value = inputs[0].getDouble();
+    return Variable(value == doubleMissingValue ? value : computeDouble(value), probabilityType);
+  }
 
   virtual double computeDouble(double value) const
   {
     size_t n = percentiles.size();
     jassert(n);
-
-    // tmp !
-    return juce::jlimit(0.0, 1.0, (value - percentiles.front()) / (percentiles.back() - percentiles.front()));
 
     if (value <= percentiles[0])
       return 0.0;
@@ -232,7 +246,11 @@ public:
   virtual double computeDouble(double first, double second) const = 0;
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
-    {return computeDouble(inputs[0].getDouble(), inputs[1].getDouble());}
+  {
+    double v1 = inputs[0].getDouble();
+    double v2 = inputs[1].getDouble();
+    return v1 == doubleMissingValue || v2 == doubleMissingValue ? doubleMissingValue : computeDouble(v1, v2);
+  }
 
   virtual VectorPtr compute(ExecutionContext& context, const std::vector<VectorPtr>& inputs, TypePtr outputType) const
   {
@@ -246,7 +264,14 @@ public:
     const double* ptr2 = inputs2->getValuePointer(0);
     double* target = res->getValuePointer(0);
     while (ptr1 != lim)
-      *target++ = computeDouble(*ptr1++, *ptr2++);
+    {
+      if (*ptr1 == doubleMissingValue || *ptr2 == doubleMissingValue)
+        *target++ = doubleMissingValue;
+      else
+        *target++ = computeDouble(*ptr1, *ptr2);
+      ptr1++;
+      ptr2++;
+    }
     return res;
   }
 };
@@ -309,7 +334,7 @@ public:
     {return "(" + inputs[0]->toShortString() + " / " + inputs[1]->toShortString() + ")";}
 
   virtual double computeDouble(double first, double second) const
-    {return second ? first / second : 0.0;}
+    {return second ? first / second : doubleMissingValue;}
 
   virtual Flags getFlags() const
     {return (Flags)allSameArgIrrelevantFlag;}
@@ -337,7 +362,11 @@ public:
     {return inputs[0]->toShortString() + T(" > ") + inputs[1]->toShortString();}
   
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
-    {return inputs[0].getDouble() > inputs[1].getDouble();}
+  {
+    double v1 = inputs[0].getDouble();
+    double v2 = inputs[1].getDouble();
+    return v1 == doubleMissingValue || v2 == doubleMissingValue ? Variable::missingValue(booleanType) :  Variable(inputs[0].getDouble() > inputs[1].getDouble(), booleanType);
+  }
 
   virtual Flags getFlags() const
     {return (Flags)allSameArgIrrelevantFlag;}
@@ -368,7 +397,11 @@ public:
     {return inputs[0]->toShortString() + T(" == ") + value.toShortString();}
   
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
-    {return inputs[0] == value;}
+  {
+    if (inputs[0].isMissingValue())
+      return Variable::missingValue(booleanType);
+    return inputs[0] == value;
+  }
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
   {
@@ -465,7 +498,10 @@ public:
     {return inputs[0]->toShortString() + " >= " + String(threshold);}
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
-    {return inputs[0].toDouble() >= threshold;}
+  {
+    double v = inputs[0].toDouble();
+    return v == doubleMissingValue ? Variable::missingValue(booleanType) : Variable(v >= threshold, booleanType);
+  }
 
   virtual VectorPtr compute(ExecutionContext& context, const std::vector<VectorPtr>& inputs, TypePtr outputType) const
   {
@@ -474,8 +510,15 @@ public:
       size_t n =  inputs[0]->getNumElements();
       double* scalars = inputs[0].staticCast<DenseDoubleVector>()->getValuePointer(0);
       BooleanVectorPtr res = new BooleanVector(n);
-      for (std::vector<bool>::iterator it = res->getElements().begin(); it != res->getElements().end(); ++it)
-        *it = ((*scalars++) >= threshold);
+      unsigned char* dst = res->getData();
+      for (size_t i = 0; i < n; ++i)
+      {
+        if (*scalars == doubleMissingValue)
+          *dst++ = 2;
+        else
+          *dst++ = (*scalars >= threshold ? 1 : 0);
+        ++scalars;
+      }
       return res;
     }
     else

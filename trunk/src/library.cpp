@@ -298,6 +298,7 @@ void lbcpp::initialize(const char* executableName)
   importLibrary(lbCppLibrary());
   topLevelType = anyType = variableType;
   simpleDenseDoubleVectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType);
+  doubleMissingValue = doubleType->getMissingValue().getDouble();
 }
 
 void lbcpp::deinitialize()
@@ -433,6 +434,7 @@ void lbcpp::initializeDynamicLibrary(lbcpp::ApplicationContext& applicationConte
   lbCppLibraryCacheTypes(context);
   topLevelType = anyType = variableType;
   simpleDenseDoubleVectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType);
+  doubleMissingValue = doubleType->getMissingValue().getDouble();
 #else
   jassert(lbcpp::applicationContext == &applicationContext);
 #endif

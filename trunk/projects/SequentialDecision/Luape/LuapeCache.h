@@ -45,7 +45,7 @@ class LuapeSamplesCache : public Object
 {
 public:
   LuapeSamplesCache(const std::vector<LuapeInputNodePtr>& inputs, size_t size, size_t maxCacheSizeInMb = 1024);
-  LuapeSamplesCache() : actualCacheSize(0), maxCacheSize(0) {}
+  LuapeSamplesCache() : maxCacheSize(0), actualCacheSize(0) {}
 
   void set(const LuapeNodePtr& node, const VectorPtr& samples);
   void setInputObject(const std::vector<LuapeInputNodePtr>& inputs, size_t index, const ObjectPtr& object);

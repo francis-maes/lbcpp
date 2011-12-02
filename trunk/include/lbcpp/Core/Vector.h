@@ -96,23 +96,28 @@ typedef ReferenceCountedObjectPtr<GenericVector> GenericVectorPtr;
 class BooleanVector : public Vector
 {
 public:
-  BooleanVector(size_t initialSize, bool initialValue = false);
+  BooleanVector(size_t initialSize, bool initialValue);
+  BooleanVector(size_t initialSize);
   BooleanVector() {}
 
   void set(size_t index, bool value)
-    {jassert(index < v.size()); v[index] = value;}
+    {jassert(index < v.size()); v[index] = value ? 1 : 0;}
 
   bool get(size_t index) const
-    {jassert(index < v.size()); return v[index];}
+    {jassert(index < v.size() && v[index] != 2); return v[index] == 1;}
 
   bool flip(size_t index)
-    {jassert(index < v.size()); std::vector<bool>::reference r = v[index]; r.flip(); return r;}
+  {
+    jassert(index < v.size() && v[index] != 2);
+    v[index] = 1 - v[index];
+    return v[index] == 1;
+  }
+  
+  const unsigned char* getData() const
+    {return &v[0];}
 
-  const std::vector<bool>& getElements() const
-    {return v;}
-
-  std::vector<bool>& getElements()
-    {return v;}
+  unsigned char* getData()
+    {return &v[0];}
 
   /*
   ** Vector
@@ -143,7 +148,7 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  std::vector<bool> v;
+  std::vector<unsigned char> v; // 0 = false, 1 = true, 2 = missing
 };
 
 typedef ReferenceCountedObjectPtr<BooleanVector> BooleanVectorPtr;

@@ -199,6 +199,8 @@ extern TypePtr sumType(const std::vector<TypePtr>& types);
 
 extern ClassPtr objectClass;
 
+extern double doubleMissingValue;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_CORE_TYPE_H_

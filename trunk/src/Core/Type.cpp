@@ -15,6 +15,7 @@ using namespace lbcpp;
 
 TypePtr lbcpp::topLevelType;
 TypePtr lbcpp::anyType;
+double lbcpp::doubleMissingValue = 0.0;
 
 /*
 ** Type
