@@ -299,12 +299,12 @@ size_t LuapeRanker::getNumRequiredInputs() const
   {return 2;}
 
 TypePtr LuapeRanker::getRequiredInputType(size_t index, size_t numInputs) const
-  {return index ? denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType) : vectorClass();}
+  {return index ? simpleDenseDoubleVectorClass : vectorClass();}
 
 TypePtr LuapeRanker::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
 {
   node = new LuapeScalarSumNode();
-  return denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType);
+  return simpleDenseDoubleVectorClass;
 }
 
 Variable LuapeRanker::computeFunction(ExecutionContext& context, const Variable* inputs) const

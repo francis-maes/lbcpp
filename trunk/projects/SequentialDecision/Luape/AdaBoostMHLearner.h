@@ -10,7 +10,6 @@
 # define LBCPP_LUAPE_LEARNER_ADA_BOOST_MH_H_
 
 # include "WeightBoostingLearner.h"
-
 # include <lbcpp/Learning/LossFunction.h> // for SGD
 
 namespace lbcpp
@@ -19,9 +18,10 @@ namespace lbcpp
 class AdaBoostMHWeakObjective : public BoostingWeakObjective
 {
 public:
-  AdaBoostMHWeakObjective(const LuapeClassifierPtr& classifier, const BooleanVectorPtr& supervisions, const DenseDoubleVectorPtr& weights, const std::vector<size_t>& examples)
+  AdaBoostMHWeakObjective(const LuapeClassifierPtr& classifier, const DenseDoubleVectorPtr& supervisions, const DenseDoubleVectorPtr& weights, const std::vector<size_t>& examples)
     : labels(classifier->getLabels()), doubleVectorClass(classifier->getDoubleVectorClass()), supervisions(supervisions), weights(weights), examples(examples)
   {
+    numLabels = labels->getNumElements();
     jassert(examples.size());
   }
 
@@ -33,20 +33,22 @@ public:
 
   virtual void flipPrediction(size_t index)
   {
-    jassert(predictions.isInstanceOf<BooleanVector>());
-    bool newPrediction = predictions.staticCast<BooleanVector>()->flip(index);
-    size_t numLabels = labels->getNumElements();
+    jassert(predictions.isInstanceOf<DenseDoubleVector>());
+    double& prediction = predictions.staticCast<DenseDoubleVector>()->getValuePointer(0)[index]; // fast unprotected access
+    prediction = -prediction;
+
     double* weightsPtr = weights->getValuePointer(index * numLabels);
     double* muNegativesPtr = muNegatives->getValuePointer(0);
     double* muPositivesPtr = muPositives->getValuePointer(0);
     double* votesPtr = votes->getValuePointer(0);
-    std::vector<bool>::iterator it = supervisions->getElements().begin() + index * numLabels;
+    double* supervisionsPtr = supervisions->getValuePointer(index * numLabels);
     for (size_t i = 0; i < numLabels; ++i)
     {
       double weight = *weightsPtr++;
       double& muNegative = *muNegativesPtr++;
       double& muPositive = *muPositivesPtr++;
-      if (newPrediction == *it++)
+      double supervision = *supervisionsPtr++;
+      if ((prediction * supervision) > 0)
         {muNegative -= weight; muPositive += weight;}
       else
         {muPositive -= weight; muNegative += weight;}
@@ -74,9 +76,10 @@ public:
 
 protected:
   EnumerationPtr labels;
+  size_t numLabels;
   ClassPtr doubleVectorClass;
   VectorPtr predictions;   // size = numExamples
-  BooleanVectorPtr supervisions;  // size = numExamples * numLabels
+  DenseDoubleVectorPtr supervisions;  // size = numExamples * numLabels
   DenseDoubleVectorPtr weights;   // size = numExamples * numLabels
   const std::vector<size_t>& examples; // size = numExamples
 
@@ -86,13 +89,12 @@ protected:
 
   void computeMuAndVoteValues()
   {
-    muNegatives = new DenseDoubleVector(doubleVectorClass);
-    muPositives = new DenseDoubleVector(doubleVectorClass);
-    votes = new DenseDoubleVector(doubleVectorClass);
-
-    size_t numLabels = labels->getNumElements();
     size_t numExamples = predictions->getNumElements();
-    jassert(supervisions->getNumElements() == numExamples * numLabels);
+    jassert(supervisions->getNumValues() == numExamples * numLabels);
+
+    muNegatives = new DenseDoubleVector(doubleVectorClass, numLabels);
+    muPositives = new DenseDoubleVector(doubleVectorClass, numLabels);
+    votes = new DenseDoubleVector(doubleVectorClass, numLabels);
 
     BooleanVectorPtr booleanPredictions = predictions.dynamicCast<BooleanVector>();
     if (booleanPredictions)
@@ -100,11 +102,13 @@ protected:
       for (size_t i = 0; i < examples.size(); ++i)
       {
         size_t example = examples[i];
-        bool prediction = booleanPredictions->get(example);
+        double prediction = (booleanPredictions->get(example) ? 1.0 : -1.0);
         double* weightsPtr = weights->getValuePointer(numLabels * example);
+        double* supervisionsPtr = supervisions->getValuePointer(numLabels * example);
         for (size_t j = 0; j < numLabels; ++j)
         {
-          bool isPredictionCorrect = (prediction == supervisions->get(example * numLabels + j));
+          double supervision = *supervisionsPtr++;
+          bool isPredictionCorrect = (prediction * supervision > 0);
           (isPredictionCorrect ? muPositives : muNegatives)->incrementValue(j, *weightsPtr++);
         }
       }
@@ -117,16 +121,16 @@ protected:
         size_t example = examples[i];
         double prediction = scalarPredictions->getValue(example) * 2 - 1;
         double* weightsPtr = weights->getValuePointer(numLabels * example);
+        double* supervisionsPtr = supervisions->getValuePointer(numLabels * example);
         for (size_t j = 0; j < numLabels; ++j)
         {
-          double sup = supervisions->get(example * numLabels + j) ? 1.0 : -1.0;
-          bool isPredictionCorrect = (prediction * sup > 0);
-          //double k = fabs(prediction);
+          double supervision = *supervisionsPtr++;
+          bool isPredictionCorrect = (prediction * supervision > 0);
           (isPredictionCorrect ? muPositives : muNegatives)->incrementValue(j, *weightsPtr++);
         }
       }
     }
-    //jassert(muPositives->l1norm() > 0 || muNegatives->l1norm() > 0);
+
     // compute v_l values
     for (size_t i = 0; i < numLabels; ++i)
       votes->setValue(i, muPositives->getValue(i) > (muNegatives->getValue(i) + 1e-9) ? 1.0 : -1.0);
@@ -153,14 +157,14 @@ public:
     EnumerationPtr labels = examples[0]->getClass()->getTemplateArgument(1).staticCast<Enumeration>();
     size_t n = examples.size();
     size_t m = labels->getNumElements();
-    BooleanVectorPtr res = new BooleanVector(n * m);
+    DenseDoubleVectorPtr res = new DenseDoubleVector(n * m, 0.0);
     size_t index = 0;
     for (size_t i = 0; i < n; ++i)
     {
       const PairPtr& example = examples[i].staticCast<Pair>();
       size_t label = (size_t)example->getSecond().getInteger();
       for (size_t j = 0; j < m; ++j, ++index)
-        res->set(index, j == label);
+        res->setValue(index, j == label ? 1.0 : -1.0);
     }
     return res;
   }
@@ -220,24 +224,25 @@ public:
     EnumerationPtr labels = classifier->getLabels();
     size_t numLabels = labels->getNumElements();
     size_t n = trainingData.size();
-    DenseDoubleVectorPtr res = new DenseDoubleVector(n * numLabels, 0.0);
+    jassert(supervisions->getNumElements() == n * numLabels);
+    DenseDoubleVectorPtr res = new DenseDoubleVector(supervisions->getNumElements(), 0.0);
+    double* weightsPtr = res->getValuePointer(0);
+    double* supervisionsPtr = this->supervisions.staticCast<DenseDoubleVector>()->getValuePointer(0);
 
     double positiveWeight =  1.0 / (2 * n);
     double negativeWeight = 1.0 / (2 * n * (numLabels - 1));
+    const ObjectVectorPtr& predictedActivations = predictions.staticCast<ObjectVector>();
     loss = 0.0;
-
     for (size_t i = 0; i < n; ++i)
     {
-      DenseDoubleVectorPtr activations = predictions->getElement(i).getObjectAndCast<DenseDoubleVector>();
-      size_t correctLabel = (size_t)trainingData[i].staticCast<Pair>()->getSecond().getInteger();
-      jassert(correctLabel >= 0 && correctLabel < numLabels);
+      const DenseDoubleVectorPtr& activations = predictedActivations->getAndCast<DenseDoubleVector>(i);
+      double* activationsPtr = activations->getValuePointer(0);
       for (size_t j = 0; j < numLabels; ++j)
       {
-        bool isCorrectLabel = (j == correctLabel);
-        double w0 = isCorrectLabel ? positiveWeight : negativeWeight;
-        double sign = isCorrectLabel ? 1.0 : -1.0;
-        double weight = w0 * exp(-sign * activations->getValue(j));
-        res->setValue(i * numLabels + j, weight);
+        double supervision = *supervisionsPtr++;
+        double w0 = supervision > 0 ? positiveWeight : negativeWeight;
+        double weight = w0 * exp(-supervision * (*activationsPtr++));
+        *weightsPtr++ = weight;
         loss += weight;
       }
     }

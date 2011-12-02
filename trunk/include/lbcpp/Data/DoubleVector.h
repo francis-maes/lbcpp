@@ -302,6 +302,8 @@ private:
   bool ownValues;
 };
 
+extern ClassPtr simpleDenseDoubleVectorClass;
+
 class LazyDoubleVector : public DoubleVector
 {
 public:

@@ -11,8 +11,7 @@ using namespace lbcpp;
 
 DenseDoubleVectorPtr SmallMDPPolicy::createVector(size_t numElements, double initialValue) const
 {
-  static ClassPtr vectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType);
-  return new DenseDoubleVector(vectorClass, numElements, initialValue);
+  return new DenseDoubleVector(numElements, initialValue);
 }
 
 DoubleMatrixPtr SmallMDPPolicy::createMatrix(size_t numRows, size_t numColumns, double initialValue) const

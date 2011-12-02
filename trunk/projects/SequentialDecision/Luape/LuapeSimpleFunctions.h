@@ -124,7 +124,7 @@ class UnaryDoubleLuapeFuntion : public HomogeneousUnaryLuapeFunction
 {
 public:
   UnaryDoubleLuapeFuntion()
-    : HomogeneousUnaryLuapeFunction(doubleType), vectorClass(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType)) {}
+    : HomogeneousUnaryLuapeFunction(doubleType), vectorClass(simpleDenseDoubleVectorClass) {}
 
   virtual double computeDouble(double value) const = 0;
 
@@ -463,6 +463,21 @@ public:
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
     {return inputs[0].toDouble() >= threshold;}
+
+  virtual VectorPtr compute(ExecutionContext& context, const std::vector<VectorPtr>& inputs, TypePtr outputType) const
+  {
+    if (inputs[0].isInstanceOf<DenseDoubleVector>())
+    {
+      size_t n =  inputs[0]->getNumElements();
+      double* scalars = inputs[0].staticCast<DenseDoubleVector>()->getValuePointer(0);
+      BooleanVectorPtr res = new BooleanVector(n);
+      for (std::vector<bool>::iterator it = res->getElements().begin(); it != res->getElements().end(); ++it)
+        *it = ((*scalars++) >= threshold);
+      return res;
+    }
+    else
+      return LuapeFunction::compute(context, inputs, outputType);
+  }
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
   {

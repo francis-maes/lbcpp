@@ -69,7 +69,7 @@ public:
   LuapeInferencePtr createLearningMachine(ExecutionContext& context) const
   {
     //LuapeInferencePtr res = new LuapeRanker();
-    //if (!res->initialize(context, objectVectorClass(goBoardPositionPerceptionClass), denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType)))
+    //if (!res->initialize(context, objectVectorClass(goBoardPositionPerceptionClass), simpleDenseDoubleVectorClass))
     //  return LuapeInferencePtr();
 
     LuapeInferencePtr res = new LuapeRegressor();

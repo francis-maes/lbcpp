@@ -13,6 +13,8 @@
 #include "../FeatureGenerator/FeatureGeneratorCallbacks.hpp"
 using namespace lbcpp;
 
+ClassPtr lbcpp::simpleDenseDoubleVectorClass;
+
 /*
 ** Default implementations
 */
@@ -611,7 +613,7 @@ DenseDoubleVector::DenseDoubleVector(EnumerationPtr enumeration, TypePtr element
 }
 
 DenseDoubleVector::DenseDoubleVector(size_t initialSize, double initialValue)
-  : DoubleVector(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType)), ownValues(true)
+  : DoubleVector(simpleDenseDoubleVectorClass), ownValues(true)
 {
   values = new std::vector<double>(initialSize, initialValue);
 }
