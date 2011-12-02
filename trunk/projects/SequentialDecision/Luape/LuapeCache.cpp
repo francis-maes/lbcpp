@@ -16,19 +16,26 @@ using namespace lbcpp;
 */
 void LuapeInstanceCache::setInputObject(const std::vector<LuapeInputNodePtr>& inputs, const ObjectPtr& object)
 {
-  if (object->getClass().isInstanceOf<DynamicClass>())
+  ContainerPtr container = object.dynamicCast<Container>();
+  if (container)
   {
-    size_t n = object->getNumVariables();
-    for (size_t i = 0; i < n; ++i)
-      set(inputs[i], object->getVariable(i));
-  }
-  else
-  {
-    ContainerPtr container = object.dynamicCast<Container>();
-    jassert(container);
     size_t n = container->getNumElements();
     for (size_t i = 0; i < n; ++i)
       set(inputs[i], container->getElement(i));
+  }
+  else
+  {
+    size_t n = object->getNumVariables();
+    if (n == inputs.size())
+    {
+      for (size_t i = 0; i < n; ++i)
+        set(inputs[i], object->getVariable(i));
+    }
+    else
+    {
+      jassert(inputs.size() == 1 && inputs[0]->getType() == object->getClass());
+      set(inputs[0], object);
+    }
   }
 }
 
@@ -85,9 +92,16 @@ void LuapeSamplesCache::setInputObject(const std::vector<LuapeInputNodePtr>& inp
   else
   {
     size_t n = object->getNumVariables();
-    jassert(n <= inputs.size());
-    for (size_t i = 0; i < n; ++i)
-      inputCaches[i]->setElement(index, object->getVariable(i));
+    if (n == inputs.size())
+    {
+      for (size_t i = 0; i < n; ++i)
+        inputCaches[i]->setElement(index, object->getVariable(i));
+    }
+    else
+    {
+      jassert(inputs.size() == 1 && inputs[0]->getType() == object->getClass());
+      inputCaches[0]->setElement(index, object);
+    }
   }
 }
 

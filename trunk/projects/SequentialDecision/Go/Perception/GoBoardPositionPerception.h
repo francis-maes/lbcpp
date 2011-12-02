@@ -113,15 +113,15 @@ class GoBoardPositionRelationPerception : public Object
 public:
   GoBoardPositionRelationPerception(const GoBoard::Position& a, const GoBoard::Position& b)
   {
-    double delta1 = fabs((double)a.first - (double)b.first);
-    double delta2 = fabs((double)a.second - (double)b.second);
-    smallDelta = juce::jmin(delta1, delta2);
-    largeDelta = juce::jmax(delta1, delta2);
+    int delta1 = abs((int)a.first - (int)b.first);
+    int delta2 = abs((int)a.second - (int)b.second);
+    smallDelta = (size_t)juce::jmin(delta1, delta2);
+    largeDelta = (size_t)juce::jmax(delta1, delta2);
   }
-  GoBoardPositionRelationPerception() : smallDelta(0.0), largeDelta(0.0) {}
+  GoBoardPositionRelationPerception() : smallDelta(0), largeDelta(0) {}
 
-  double smallDelta;
-  double largeDelta;
+  size_t smallDelta;
+  size_t largeDelta;
 };
 
 extern ClassPtr goBoardPositionRelationPerceptionClass;

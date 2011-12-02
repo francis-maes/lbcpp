@@ -15,7 +15,6 @@
 namespace lbcpp
 {
 
-// FIXME: implement with real-valued weak predictions
 class L2BoostingWeakObjective : public BoostingWeakObjective
 {
 public:
@@ -39,28 +38,29 @@ public:
         else
           negatives.push(value);
       }
-/*
-      std::vector<bool>::const_iterator it = booleanPredictions->getElements().begin();
-      size_t n = booleanPredictions->getNumElements();
-      jassert(n == targets->getNumValues());
-      for (size_t i = 0; i < n; ++i)
+    }
+    else
+    {
+      DenseDoubleVectorPtr scalarPredictions = predictions.dynamicCast<DenseDoubleVector>();
+      for (size_t i = 0; i < examples.size(); ++i)
       {
-        double value = targets->getValue(i);
-        if (*it++)
+        double value = targets->getValue(examples[i]);
+        if (scalarPredictions->getValue(examples[i]) > 0)
           positives.push(value);
         else
           negatives.push(value);
-      }*/
+      }
     }
-    else
-      jassert(false);
   }
 
   virtual void flipPrediction(size_t index)
   {
-    bool newPrediction = predictions.staticCast<BooleanVector>()->flip(index);
+    jassert(predictions.isInstanceOf<DenseDoubleVector>());
+    double& prediction = predictions.staticCast<DenseDoubleVector>()->getValuePointer(0)[index]; // fast unprotected access
+    prediction = -prediction;
+    
     double value = targets->getValue(index);
-    if (newPrediction)
+    if (prediction > 0)
     {
       negatives.push(value, -1.0);
       positives.push(value);
@@ -112,7 +112,6 @@ public:
 
   virtual bool doLearningIteration(ExecutionContext& context)
   {
-    // 1- compute pseudo residuals 
     {
       TimedScope _(context, "compute residuals");
 
@@ -120,35 +119,12 @@ public:
       DenseDoubleVectorPtr predictions = getTrainingPredictions().staticCast<DenseDoubleVector>();
       computeLoss(predictions, &lossValue, &pseudoResiduals);
       context.resultCallback(T("loss"), lossValue);
-      context.resultCallback(T("predictions"), predictions);
-      context.resultCallback(T("pseudoResiduals"), pseudoResiduals);
+      //context.resultCallback(T("predictions"), predictions);
+      //context.resultCallback(T("pseudoResiduals"), pseudoResiduals);
     }
     return BoostingLearner::doLearningIteration(context);
   }
-  /*
-    // 2- find best weak learner
-    LuapeNodePtr weakNode = doWeakLearningAndAddToGraph(context);
-    if (!weakNode)
-      return false;
 
-    LuapeWeakPredictionVectorPtr weakPredictions = makeWeakPredictions(context, weakNode);
-
-    // 3- add weak learner to graph
-    {
-      TimedScope _(context, "optimize weight");
-      std::pair<double, double> optimalWeights = optimizeWeightOfWeakLearner(context, predictions, weakPredictions);
-      context.resultCallback("negative weight", optimalWeights.first);
-      context.resultCallback("positive weight", optimalWeights.second);
-      DenseDoubleVectorPtr votes = function->getVotes().staticCast<DenseDoubleVector>();
-      votes->append(optimalWeights.first * learningRate);
-      votes->append(optimalWeights.second * learningRate);
-    }
-
-    // 4- update predictions and evaluate
-    updatePredictionsAndEvaluate(context, graph->getNumYieldNodes() - 1, weakNode);
-    return true;
-  }
-*/
   virtual BoostingWeakObjectivePtr createWeakObjective(const std::vector<size_t>& examples) const
     {return new L2BoostingWeakObjective(pseudoResiduals, examples);}
 
