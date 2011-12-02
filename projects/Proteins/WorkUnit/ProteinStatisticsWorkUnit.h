@@ -116,7 +116,7 @@ protected:
       res = computeMultiClassStatistics(context, allProteins, target, T("Global"));
       context.resultCallback(T("All"), res);
     }
-    else if (targetType->inheritsFrom(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType)))
+    else if (targetType->inheritsFrom(simpleDenseDoubleVectorClass))
     {
       PieChartConfigurationPtr res;
       res = computeBinaryStatistics(context, trainingProteins, target, T("Training"));

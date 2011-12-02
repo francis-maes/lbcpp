@@ -155,8 +155,19 @@ SparseDoubleVectorPtr LuapeSamplesCache::computeSortedDoubleValues(ExecutionCont
   std::vector< std::pair<size_t, double> >& v = res->getValuesVector();
   size_t n = examples.size();
   v.resize(n);
-  for (size_t i = 0; i < n; ++i)
-    v[i] = std::make_pair(examples[i], samples->getElement(examples[i]).toDouble());
+  DenseDoubleVectorPtr scalarSamples = samples.dynamicCast<DenseDoubleVector>();
+  if (scalarSamples)
+  {
+    // optimized versions if double samples
+    double* ptr = scalarSamples->getValuePointer(0);
+    for (size_t i = 0; i < n; ++i)
+      v[i] = std::make_pair(examples[i], ptr[examples[i]]);
+  }
+  else
+  {
+    for (size_t i = 0; i < n; ++i)
+      v[i] = std::make_pair(examples[i], samples->getElement(examples[i]).toDouble());
+  }
   std::sort(v.begin(), v.end(), SortDoubleValuesOperator());
   return res;
 }

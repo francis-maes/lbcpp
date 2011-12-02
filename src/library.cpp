@@ -28,6 +28,7 @@
 #include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Core/Library.h>
 #include <lbcpp/Data/RandomGenerator.h>
+#include <lbcpp/Data/DoubleVector.h>
 #include <lbcpp/Core/Class.h>
 
 #ifdef LBCPP_USER_INTERFACE
@@ -429,6 +430,7 @@ void lbcpp::initializeDynamicLibrary(lbcpp::ApplicationContext& applicationConte
   coreLibraryCacheTypes(context);
   lbCppLibraryCacheTypes(context);
   topLevelType = anyType = variableType;
+  simpleDenseDoubleVectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType);
 #else
   jassert(lbcpp::applicationContext == &applicationContext);
 #endif
@@ -440,6 +442,7 @@ void lbcpp::deinitializeDynamicLibrary()
   coreLibraryUnCacheTypes();
   lbCppLibraryUnCacheTypes();
   topLevelType = anyType = TypePtr();
+  simpleDenseDoubleVectorClass = ClassPtr();
   jassert(lbcpp::applicationContext);
   //lbcpp::applicationContext = NULL;
 #endif // JUCE_WIN32

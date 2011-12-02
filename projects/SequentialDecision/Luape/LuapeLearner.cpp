@@ -137,7 +137,7 @@ double BoostingWeakObjective::compute(const VectorPtr& predictions)
 
 double BoostingWeakObjective::findBestThreshold(ExecutionContext& context, size_t numSamples, const SparseDoubleVectorPtr& sortedDoubleValues, double& edge, bool verbose)
 {
-  setPredictions(new BooleanVector(numSamples, true));
+  setPredictions(new DenseDoubleVector(numSamples, 1.0));
 
   edge = -DBL_MAX;
   double res = 0.0;

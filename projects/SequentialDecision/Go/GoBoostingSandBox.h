@@ -251,7 +251,7 @@ public:
     {return index ? denseDoubleVectorClass() : containerClass();}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType);}
+    {return simpleDenseDoubleVectorClass;}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
@@ -491,7 +491,7 @@ private:
 
     context.enterScope("Make ranking examples");
     size_t n = stateActionPairs->getNumElements();
-    ObjectVectorPtr rankingExamples = new ObjectVector(pairClass(doubleVectorClass(), denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType)), n);
+    ObjectVectorPtr rankingExamples = new ObjectVector(pairClass(doubleVectorClass(), simpleDenseDoubleVectorClass), n);
     for (size_t i = 0; i < n; ++i)
     {
       PairPtr stateActionPair = stateActionPairs->getElement(i).getObjectAndCast<Pair>();

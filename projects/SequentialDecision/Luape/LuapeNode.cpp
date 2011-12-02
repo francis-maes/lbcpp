@@ -163,6 +163,15 @@ VectorPtr LuapeTestNode::compute(ExecutionContext& context, const LuapeSamplesCa
         res->setValue(i, *it++ ? v1 : v2);
       return res;
     }
+    else if (successValue.isObject() && failureValue.isObject())
+    {
+      const ObjectPtr& o1 = successValue.getObject();
+      const ObjectPtr& o2 = failureValue.getObject();
+      ObjectVectorPtr res = new ObjectVector(type, n);
+      for (size_t i = 0; i < n; ++i)
+        res->set(i, *it++ ? o1 : o2);
+      return res;
+    }
     else
     {
       VectorPtr res = vector(type, n);
@@ -179,12 +188,21 @@ VectorPtr LuapeTestNode::compute(ExecutionContext& context, const LuapeSamplesCa
 
     if (successValues.isInstanceOf<DenseDoubleVector>() && failureValues.isInstanceOf<DenseDoubleVector>())
     {
-      DenseDoubleVectorPtr s = successValues.staticCast<DenseDoubleVector>();
-      DenseDoubleVectorPtr f = failureValues.staticCast<DenseDoubleVector>();
+      const DenseDoubleVectorPtr& s = successValues.staticCast<DenseDoubleVector>();
+      const DenseDoubleVectorPtr& f = failureValues.staticCast<DenseDoubleVector>();
 
       DenseDoubleVectorPtr res = new DenseDoubleVector(n, 0.0);
       for (size_t i = 0; i < n; ++i)
         res->setValue(i, (*it++ ? s : f)->getValue(i));
+      return res;
+    }
+    else if (successValues.isInstanceOf<ObjectVector>() && failureValues.isInstanceOf<ObjectVector>())
+    {
+      const ObjectVectorPtr& s = successValues.staticCast<ObjectVector>();
+      const ObjectVectorPtr& f = failureValues.staticCast<ObjectVector>();
+      ObjectVectorPtr res = new ObjectVector(type, n);
+      for (size_t i = 0; i < n; ++i)
+        res->set(i, (*it++ ? s : f)->get(i));
       return res;
     }
     else
