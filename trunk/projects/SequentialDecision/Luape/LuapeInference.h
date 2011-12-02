@@ -167,7 +167,7 @@ extern ClassPtr luapeBinaryClassifierClass;
 class LuapeClassifier : public LuapeInference
 {
 public:
-  const EnumerationPtr& getLabels() const
+  EnumerationPtr getLabels() const
     {return getOutputType().staticCast<Enumeration>();}
 
   const ClassPtr& getDoubleVectorClass() const
