@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<library name="ProteinRosettaMover" directory="Rosetta/ProteinMover">
-
-  <class name="ProteinMover" base="Object" abstract="yes">
-  </class>
-  
-  <enumeration name="ProteinMoverEnumeration">
-    <value name="phipsi"/>
-    <value name="shear"/>
-    <value name="rigidbody"/>
-  </enumeration>
+<library name="ProteinRosettaDataMover" directory="Rosetta/Data/Mover">
   
   <class name="PhiPsiMover" base="ProteinMover">
     <constructor arguments="size_t residue, double deltaPhi, double deltaPsi"/>

@@ -2,6 +2,17 @@
 
 <library name="ProteinRosettaData" directory="Rosetta/Data">
 
+  <import name="ProteinRosettaDataMover"/>
+  
   <class name="Rosetta" base="Object" />
+  
+  <enumeration name="ProteinMoverEnumeration">
+    <value name="phipsi"/>
+    <value name="shear"/>
+    <value name="rigidbody"/>
+  </enumeration>
+  
+  <class name="ProteinMover" base="Object" abstract="yes">
+  </class>
     
 </library>

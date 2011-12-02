@@ -3,7 +3,6 @@
 <library name="ProteinRosetta" directory="Rosetta">
 
   <!-- Imports -->
-  <import name="ProteinRosettaMover"/>
   <import name="ProteinRosettaOptimizer"/>
   <import name="ProteinRosettaSampler"/>
   <import name="ProteinRosettaWorkUnit"/>
