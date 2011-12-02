@@ -37,6 +37,8 @@
 # include "RosettaSandBox.h"
 # include "RosettaProtein.h"
 
+# include "Data/Rosetta.h"
+
 # ifdef LBCPP_PROTEIN_ROSETTA
 #  undef T
 #  include <core/pose/Pose.hh>
@@ -854,33 +856,46 @@ class ProteinSubWorkUnitExample : public WorkUnit
 public:
   ProteinSubWorkUnitExample() : WorkUnit() {}
 
-  ProteinSubWorkUnitExample(size_t i) : WorkUnit() {arg = i;}
+  ProteinSubWorkUnitExample(size_t num, double* val1, double* val2, Rosetta& rosetta)
+    : WorkUnit(), num(num), val1(val1), val2(val2), rosetta(rosetta) {}
 
   virtual Variable run(ExecutionContext& context)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
-  
-    context.enterScope(T("Optimization protein : ") + String((int)arg));
-    context.informationCallback(T("Before"));
-    core::pose::PoseOP pose = new core::pose::Pose();
-    makePoseFromSequence(
-        pose,
-        T("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-    RandomGeneratorPtr gen = new RandomGenerator(arg);
 
-    for (size_t i = 0; i < 2000; ++i)
+    for (size_t i = 0; i < 10000; i++)
     {
-      PhiPsiMover::move(pose, gen->sampleInt(0, 19), gen->sampleDouble(-50.0, 50.0),
-          gen->sampleDouble(-50.0, 50.0));
-      //context.progressCallback(new ProgressionState(i + 1.0, 1000.0, T("%")));
+      rosetta.getLock();
+      *val2 = *val1 + (double)num;
+      std::cout << "num : " << num << " val2 : " << *val2 << std::endl;
+      rosetta.releaseLock();
     }
-    context.informationCallback(T("After"));
-    context.leaveScope(Variable(fullAtomEnergy(pose)));
+
+    //    context.enterScope(T("Optimization protein : ") + String((int)arg));
+    //    context.informationCallback(T("Before"));
+    //    core::pose::PoseOP pose = new core::pose::Pose();
+    //    makePoseFromSequence(
+    //        pose,
+    //        T("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+    //    RandomGeneratorPtr gen = new RandomGenerator(arg);
+    //
+    //    for (size_t i = 0; i < 2000; ++i)
+    //    {
+    //      PhiPsiMover::move(pose, gen->sampleInt(0, 19), gen->sampleDouble(-50.0, 50.0),
+    //          gen->sampleDouble(-50.0, 50.0));
+    //      //context.progressCallback(new ProgressionState(i + 1.0, 1000.0, T("%")));
+    //    }
+    //    context.informationCallback(T("After"));
+    //    context.leaveScope(Variable(fullAtomEnergy(pose)));
+
 #endif // LBCPP_PROTEIN_ROSETTA
     return T("Hello");
   }
 protected:
-  size_t arg;
+  size_t num;
+  double* val1;
+  double* val2;
+  Rosetta rosetta;
 };
 
 class ProteinTestParallelWorkUnit : public WorkUnit
@@ -893,9 +908,14 @@ public:
 
     rosettaInitialization(context, true);
 
+    double a = 2;
+    double b = 3;
+
+    Rosetta lock(context);
+
     CompositeWorkUnitPtr subWorkUnits(new CompositeWorkUnit(T("Parallel protein workUnit"), 8));
     for (size_t i = 0; i < subWorkUnits->getNumWorkUnits(); ++i)
-      subWorkUnits->setWorkUnit(i, new ProteinSubWorkUnitExample(i));
+     subWorkUnits->setWorkUnit(i, new ProteinSubWorkUnitExample(i, &a, &b, lock));
     subWorkUnits->setPushChildrenIntoStackFlag(true);
     context.run(subWorkUnits);
 
