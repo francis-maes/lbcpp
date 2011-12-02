@@ -253,7 +253,7 @@ bool ARFFDataParser::parseDataLine(const String& line)
   char* str = new char[lineLength + 1];
   memcpy(str, (const char* )line, lineLength + 1);
 
-  DenseGenericObjectPtr inputs = new DenseGenericObject(features);
+  ObjectPtr inputs = sparseData ? features->createSparseObject() : features->createDenseObject();
   for (size_t i = 0; i < n; ++i)
   {
     char* token = strtok(i == 0 ? str : NULL, ", \t");
@@ -263,7 +263,17 @@ bool ARFFDataParser::parseDataLine(const String& line)
       ok = false;
       break;
     }
-    inputs->setVariable(i, createFromString(context, attributesType[i], token));    
+    if (attributesType[i] == doubleType)
+    {
+      double value = strtod(token, NULL);
+      if (!sparseData || value != 0.0)
+        inputs->setVariable(i, value);
+    }
+    else
+    {
+      Variable value = createFromString(context, attributesType[i], token);
+      inputs->setVariable(i, value);
+    }
   }
   if (ok)
   {

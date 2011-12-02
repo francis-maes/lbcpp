@@ -36,14 +36,14 @@ public:
     learner->setExamples(context, true, trainingData);
     if (validationData.size())
       learner->setExamples(context, false, validationData);
-    
+
     context.enterScope(T("Boosting"));
     LuapeNodeUniversePtr universe = function->getUniverse();
     for (size_t i = 0; i < maxIterations; ++i)
     {
       //Object::displayObjectAllocationInfo(std::cerr);
-      context.informationCallback(T("Train cache size: ") + String((int)learner->getTrainingSamples()->getNumberOfCachedNodes()) +
-                                  T(" Validation cache size: ") + String((int)learner->getValidationSamples()->getNumberOfCachedNodes()));
+      context.informationCallback(T("Train cache size: ") + String((int)learner->getTrainingSamples()->getCacheSizeInBytes() / (1024 * 1024)) + T(" Mb ") +
+                                  T("Validation cache size: ") + String((int)learner->getValidationSamples()->getCacheSizeInBytes() / (1024 * 1024)) + T(" Mb"));
 
       context.enterScope(T("Iteration ") + String((int)i + 1));
       context.resultCallback(T("iteration"), i);

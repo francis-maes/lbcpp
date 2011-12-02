@@ -104,8 +104,10 @@ protected:
 
   ContainerPtr loadData(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, DefaultEnumerationPtr labels) const
   { 
+    static const bool sparseData = true;
+
     context.enterScope(T("Loading ") + file.getFileName());
-    ContainerPtr res = classificationARFFDataParser(context, file, inputClass, labels)->load(maxExamples);
+    ContainerPtr res = classificationARFFDataParser(context, file, inputClass, labels, sparseData)->load(maxExamples);
     if (res && !res->getNumElements())
       res = ContainerPtr();
     context.leaveScope(res ? res->getNumElements() : 0);

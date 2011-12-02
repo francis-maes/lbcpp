@@ -42,7 +42,7 @@
   </class>
   
   <class name="ClassificationARFFDataParser" base="TextParser">
-    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DynamicClassPtr features, DefaultEnumerationPtr labels"/>
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DynamicClassPtr features, DefaultEnumerationPtr labels, bool sparseData"/>
   </class>
   
   <class name="MultiLabelClassificationARFFDataParser" base="TextParser">
