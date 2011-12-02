@@ -81,7 +81,7 @@ class BanditEDAOptimizerState : public SamplerBasedOptimizerState, public Execut
 {
 public:
   BanditEDAOptimizerState(const OptimizationProblemPtr& problem)
-    : SamplerBasedOptimizerState(problem->getSampler()), problem(problem),
+    : SamplerBasedOptimizerState(problem, problem->getSampler()),
     numPlayed(0), numPlaySent(0), maxBudget(0), totalNumBandits(0), context(NULL)
   {}
 
@@ -217,7 +217,6 @@ public:
 protected:
   friend class BanditEDAOptimizerStateClass;
   
-  OptimizationProblemPtr problem;
   size_t numPlayed;
   size_t numPlaySent;
   size_t maxBudget;

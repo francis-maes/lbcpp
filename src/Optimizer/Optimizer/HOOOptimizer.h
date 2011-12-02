@@ -162,8 +162,8 @@ protected:
 class HOOOptimizerState : public OptimizerState
 {
 public:
-  HOOOptimizerState(OptimizationProblemPtr problem, double nu, double rho, size_t numIterations, size_t maxDepth, double C, bool playCenteredArms)
-    : problem(problem), nu(nu), rho(rho), numIterations(numIterations), maxDepth(maxDepth), C(C), playCenteredArms(playCenteredArms), numIterationsDone(0)
+  HOOOptimizerState(const OptimizationProblemPtr& problem, double nu, double rho, size_t numIterations, size_t maxDepth, double C, bool playCenteredArms)
+    : OptimizerState(problem), nu(nu), rho(rho), numIterations(numIterations), maxDepth(maxDepth), C(C), playCenteredArms(playCenteredArms), numIterationsDone(0)
   {
     MeasurableRegionPtr region;
     TypePtr inputType = problem->getSolutionsType();
@@ -282,7 +282,7 @@ public:
     size_t bestDepth = 0;
     double bestSum = 0.0;
     getBestSolution(context, root, 0, bestDepth, bestSum, bestIterationScore, bestIterationSolution);
-    OptimizerState::finishIteration(context, problem, numIterationsDone, -bestIterationScore, bestIterationSolution);
+    OptimizerState::finishIteration(context, numIterationsDone, -bestIterationScore, bestIterationSolution);
   }
 
   void predict(ExecutionContext& context, const Variable& candidate, double& expectation, double& upperBound)
@@ -334,7 +334,6 @@ public:
 protected:
   friend class HOOOptimizerStateClass;
 
-  OptimizationProblemPtr problem;
   double nu;
   double rho;
   size_t numIterations;

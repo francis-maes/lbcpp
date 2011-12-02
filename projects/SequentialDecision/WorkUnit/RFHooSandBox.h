@@ -21,11 +21,11 @@ namespace lbcpp
 class RFHOOOptimizerState : public OptimizerState
 {
 public:
-  RFHOOOptimizerState(OptimizationProblemPtr problem,
+  RFHOOOptimizerState(const OptimizationProblemPtr& problem,
                       size_t numTrees, size_t K, size_t nMin, size_t maxDepth,
                       size_t numIterations,
                       double nu, double rho, double C)
-    : problem(problem), K(K), nMin(nMin), maxDepth(maxDepth),
+    : OptimizerState(problem), K(K), nMin(nMin), maxDepth(maxDepth),
       numIterations(numIterations), nu(nu), rho(rho), C(C), 
       forest(numTrees), forestStats(numTrees), numIterationsDone(0)
   {
@@ -262,7 +262,7 @@ public:
       size_t bestDepth = 0;
       double bestSum = 0.0;
       getBestSolution(context, forest[i], 0, bestDepth, bestSum, bestIterationScore, bestIterationSolution);
-      OptimizerState::finishIteration(context, problem, numIterationsDone, -bestIterationScore, bestIterationSolution);
+      OptimizerState::finishIteration(context, numIterationsDone, -bestIterationScore, bestIterationSolution);
     }
   }
 
@@ -359,8 +359,6 @@ public:
 
 protected:
   friend class RFHOOOptimizerStateClass;
-
-  OptimizationProblemPtr problem;
 
   size_t K;
   size_t nMin;

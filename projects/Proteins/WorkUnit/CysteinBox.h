@@ -29,6 +29,9 @@ extern ClassPtr streamBasedOptimizationProblemClass;
 class SimpleStreamBasedOptimizerState : public OptimizerState, public ExecutionContextCallback
 {
 public:
+  SimpleStreamBasedOptimizerState(const OptimizationProblemPtr& problem = OptimizationProblemPtr())
+    : OptimizerState(problem) {}
+
   void setResult(size_t index, double value)
   {
     if (results.size() <= index)
@@ -85,7 +88,7 @@ public:
     : Optimizer(optimizerStateFile) {}
 
   virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, const OptimizationProblemPtr& problem) const
-    {return new SimpleStreamBasedOptimizerState();}
+    {return new SimpleStreamBasedOptimizerState(problem);}
 
   virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {
@@ -293,6 +296,9 @@ protected:
 class GaussianSVMOptimizerState : public OptimizerState, public ExecutionContextCallback
 {
 public:
+  GaussianSVMOptimizerState(const OptimizationProblemPtr& problem = OptimizationProblemPtr())
+    : OptimizerState(problem) {}
+
   void appendWorkUnit(const WorkUnitPtr& workUnit)
   {
     results.push_back(Variable::missingValue(doubleType).toDouble());
@@ -336,9 +342,7 @@ public:
     : Optimizer(optimizerStateFile) {}
 
   virtual OptimizerStatePtr createOptimizerState(ExecutionContext& context, const OptimizationProblemPtr& problem) const
-  {
-    return new GaussianSVMOptimizerState();
-  }  
+    {return new GaussianSVMOptimizerState(problem);}
 
   virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {

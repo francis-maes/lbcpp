@@ -47,9 +47,10 @@ public:
     if (!classifier->initialize(context, inputClass, labels))
       return false;
 
-    //BoostingWeakLearnerPtr conditionLearner = singleStumpWeakLearner();
-    BoostingWeakLearnerPtr conditionLearner = policyBasedWeakLearner(new TreeBasedRandomPolicy(), budgetPerIteration, maxSteps);
+    BoostingWeakLearnerPtr conditionLearner = singleStumpWeakLearner();
+    //BoostingWeakLearnerPtr conditionLearner = policyBasedWeakLearner(new TreeBasedRandomPolicy(), budgetPerIteration, maxSteps);
     //BoostingWeakLearnerPtr weakLearner = new NormalizedValueWeakLearner();
+    //BoostingWeakLearnerPtr conditionLearner = nestedMCWeakLearner(0, budgetPerIteration, maxSteps);
 
     BoostingWeakLearnerPtr weakLearner = conditionLearner;
     for (size_t i = 1; i < treeDepth; ++i)

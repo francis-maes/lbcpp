@@ -17,14 +17,14 @@ using namespace lbcpp;
 */
 void OptimizerState::submitSolution(const Variable& solution, double score)
 {
-  if (score < bestScore || !bestSolution.exists())
+  if (isScoreBetterThan(score, bestScore) || !bestSolution.exists())
   {
     bestScore = score;
     bestSolution = solution;
   }
 }
 
-Variable OptimizerState::finishIteration(ExecutionContext& context, const OptimizationProblemPtr& problem, size_t iteration, double bestIterationScore, const Variable& bestIterationSolution)
+Variable OptimizerState::finishIteration(ExecutionContext& context, size_t iteration, double bestIterationScore, const Variable& bestIterationSolution)
 {
   submitSolution(bestIterationSolution, bestIterationScore);
   context.resultCallback("iteration", iteration);

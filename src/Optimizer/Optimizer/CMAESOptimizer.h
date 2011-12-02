@@ -55,7 +55,8 @@ protected:
 class CMAOptimizerState : public OptimizerState
 {
 public:
-  CMAOptimizerState(ExecutionContext& context, const OptimizationProblemPtr& problem) : fitness(NULL)
+  CMAOptimizerState(ExecutionContext& context, const OptimizationProblemPtr& problem)
+    : OptimizerState(problem), fitness(NULL)
   {
     this->problem = problem;
     this->initialGuess = problem->getInitialGuess().getObjectAndCast<DenseDoubleVector>();
@@ -82,7 +83,7 @@ public:
     DenseDoubleVectorPtr bestIterationSolution = initialGuess->cloneAndCast<DenseDoubleVector>();
     memcpy(bestIterationSolution->getValuePointer(0), cma.bestSolution(), sizeof (double) * initialGuess->getNumElements());
 
-    Variable res = finishIteration(context, problem, iteration, bestIterationScore, bestIterationSolution);
+    Variable res = finishIteration(context, iteration, bestIterationScore, bestIterationSolution);
     context.resultCallback("timesCalled", (size_t)fitness->timesCalled());
     return res;
   }
@@ -90,7 +91,6 @@ public:
 protected:
   CMASearch cma;
   ObjectiveFunctionVS<double>* fitness;
-  OptimizationProblemPtr problem;
   DenseDoubleVectorPtr initialGuess;
 };
 

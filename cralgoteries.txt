@@ -1,6 +1,11 @@
 
 Luape-Go:
- - Support des valeurs manquantes
+ * 1) Regression with advanced condition nodes
+    - support for missing values, support for polymorphism
+    - support for previous positions, computation of relations between positions
+    - neighborhood
+    - regions
+ * 2) RankBoost
 
 Luape-Appli:
  * Apprentissage d'une gaussienne conditionelle => boosting joint de la moyenne et de l'ecart-type
