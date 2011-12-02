@@ -17,15 +17,19 @@ namespace lbcpp
 {
 
 // define function to evaluate "quality" of the unfolded protein
-double evaluateQualityUnfold(const core::pose::PoseOP& pose)
+double evaluateQualityUnfold(const core::pose::PoseOP& pose, double* energy = NULL)
 {
 #ifdef LBCPP_PROTEIN_ROSETTA
 
-  double quality = getTotalEnergy(pose, fullAtomEnergy);
+  double quality = 0.0;
+  quality = getTotalEnergy(pose, fullAtomEnergy);
+  if (energy != NULL)
+    *energy = quality;
+
   // so far, these factors make no real sense because dimensions do not match...
   quality -= computeCorrectionFactorForDistances(pose);
   quality -= computeCorrectionFactorForCollisions(pose);
-  quality += 1.0 / computeCompactness(pose);
+  //quality += 1.0 / computeCompactness(pose);
   return quality;
 
 #else
@@ -49,10 +53,16 @@ public:
       context.errorCallback(T("References' directory not found."));
       return Variable();
     }
-    File outputFile = context.getFile(outputDirectory);
-    if (!outputFile.exists())
+    File outputFileStructures = context.getFile(outputDirectoryStructures);
+    if (!outputFileStructures.exists())
     {
-      outputFile.createDirectory();
+      outputFileStructures.createDirectory();
+    }
+
+    File outputFileMovers = context.getFile(outputDirectoryMovers);
+    if (!outputFileMovers.exists())
+    {
+      outputFileMovers.createDirectory();
     }
 
     juce::OwnedArray<File> references;
@@ -65,13 +75,16 @@ public:
       // load protein
       ProteinPtr proteinRef = Protein::createFromXml(context, *references[j]);
       core::pose::PoseOP workingPose;
+      core::pose::PoseOP tempPose = new core::pose::Pose();
+
       convertProteinToPose(context, proteinRef, workingPose);
-      double qual = evaluateQualityUnfold(workingPose);
+      double energy = 0.0;
+      double qual = evaluateQualityUnfold(workingPose, &energy);
       double tempQual = 0.0;
+      int numberSelected = 0;
 
       // create sampler
-      SamplerPtr moverSampler;
-      moverSampler = new GeneralProteinMoverSampler(workingPose->n_residue(), 0);
+      SamplerPtr moverSampler = new GeneralProteinMoverSampler(workingPose->n_residue(), 0);
 
       // verbosity
       context.enterScope((*references[j]).getFileNameWithoutExtension() + T(" discovering movers."));
@@ -86,39 +99,46 @@ public:
         context.progressCallback(new ProgressionState((double)i, (double)numIterations,
             T("Iterations")));
 
-        core::pose::PoseOP tempPose = new core::pose::Pose();
         *tempPose = *workingPose;
 
         // sample mover, apply it to the structure and evaluate mover
         mover = moverSampler->sample(context, random).getObjectAndCast<ProteinMover> ();
         mover->move(tempPose);
-        tempQual = evaluateQualityUnfold(tempPose);
+        tempQual = evaluateQualityUnfold(tempPose, &energy);
 
         // if good, modify structure, qual, save to trace and to disk
         if (tempQual > qual)
         {
           qual = tempQual;
           *workingPose = *tempPose;
+          numberSelected++;
 
           // save to trace
-          context.enterScope(T("iteration"));
+          context.enterScope(T("Iteration"));
           context.resultCallback(T("Iteration number"), Variable((int)i));
-          context.resultCallback(T("Quality"), Variable(qual));
+          context.resultCallback(T("Energy"), Variable(energy));
           context.resultCallback(T("Mover"), mover);
-          context.leaveScope();
+          context.leaveScope(Variable(qual));
 
           // save to disk
-          workingProtein = convertPoseToProtein(context, workingPose);
-          workingProtein->saveToXmlFile(context, File(outputFile.getFullPathName() + T("/")
-              + (*references[j]).getFileNameWithoutExtension() + T("_") + String(i) + T(".xml")));
-          mover->saveToFile(context, File(outputFile.getFullPathName() + T("/")
-              + (*references[i]).getFileNameWithoutExtension() + T("_") + String(i) + T("_mover")
+          File pdbFile(outputFileStructures.getFullPathName() + T("/")
+              + (*references[j]).getFileNameWithoutExtension() + T("_") + String(i) + T(".pdb"));
+          core::io::pdb::dump_pdb(*workingPose, (const char*)pdbFile.getFullPathName());
+
+          //workingProtein = convertPoseToProtein(context, workingPose);
+          //context.informationCallback(T("Size pose : ") + String((int)tempPose->n_residue()));
+          //context.informationCallback(T("Size protein : ") + String((int)workingProtein->getLength()));
+          //workingProtein->saveToXmlFile(context, File(outputFileStructures.getFullPathName() + T("/")
+          //              + (*references[j]).getFileNameWithoutExtension() + T("_") + String(i) + T(".xml")));
+
+          mover->saveToFile(context, File(outputFileMovers.getFullPathName() + T("/")
+              + (*references[j]).getFileNameWithoutExtension() + T("_") + String(i) + T("_mover")
               + T(".xml")));
         }
       }
       context.progressCallback(new ProgressionState((double)numIterations, (double)numIterations,
           T("Interations")));
-      context.leaveScope();
+      context.leaveScope(Variable(numberSelected));
     }
 
     context.leaveScope();
@@ -134,7 +154,8 @@ protected:
   friend class UnfoldProteinsWorkUnitClass;
 
   String referenceDirectory;
-  String outputDirectory;
+  String outputDirectoryStructures;
+  String outputDirectoryMovers;
   int numIterations;
 };
 

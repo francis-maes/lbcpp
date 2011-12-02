@@ -31,14 +31,27 @@ void lbcpp::convertProteinToPose(ExecutionContext& context, const ProteinPtr& pr
 ProteinPtr lbcpp::convertPoseToProtein(ExecutionContext& context, const core::pose::PoseOP& pose)
 {
 #ifdef LBCPP_PROTEIN_ROSETTA
-  std::ostringstream oss;
-  core::io::pdb::FileData::dump_pdb((*pose), oss);
-  oss.flush();
-  std::string poseString = oss.str();
-  String pdbString(poseString.c_str());
 
-  ProteinPtr prot = Protein::createFromPDB(context, pdbString, true);
+  File tempFile = context.getFile(T("tempFileConversionPoseToProtein.pdb"));
+  core::io::pdb::dump_pdb(*pose, (const char*)tempFile.getFullPathName());
+
+  std::cout << "name : " << (const char*)tempFile.getFullPathName() << std::endl;
+
+  ProteinPtr prot = Protein::createFromPDB(context, tempFile, true);
+
+  std::cout << "length protein : " << prot->getLength() << std::endl;
+
+  //tempFile.deleteFile();
   return prot;
+
+  //  std::ostringstream oss;
+  //  core::io::pdb::FileData::dump_pdb((*pose), oss);
+  //  oss.flush();
+  //  std::string poseString = oss.str();
+  //  String pdbString(poseString.c_str());
+  //
+  //  ProteinPtr prot = Protein::createFromPDB(context, pdbString, true);
+  //  return prot;
 
 #else
   jassert(false);
@@ -176,7 +189,7 @@ double lbcpp::computeCorrectionFactorForCollisions(const core::pose::PoseOP& pos
       correctionFactor += juce::jmax(0.0, exp(inverseVarianceMinimumDistance
           * (averageMinimumDistance - bbDistances->getElement(i, j).getDouble())) - 1);
 
-  return correctionFactor;
+  return juce::jmax(0.0, correctionFactor);
 
 #else
   jassert(false);
@@ -188,13 +201,13 @@ double lbcpp::computeCompactness(const core::pose::PoseOP& pose)
 {
 #ifdef LBCPP_PROTEIN_ROSETTA
 
-  double* mean;
-  double* min;
-  double* max;
-  SymmetricMatrixPtr distMat = createCalphaMatrixDistance(pose, mean, min, max);
+  double mean;
+  double min;
+  double max;
+  SymmetricMatrixPtr distMat = createCalphaMatrixDistance(pose, &mean, &min, &max);
 
   // returns 1 if the structure is a sphere, less than 1 if not.
-  return *mean / *max;
+  return mean / max;
 
 #else
   jassert(false);
@@ -217,26 +230,18 @@ double lbcpp::getConformationScore(const core::pose::PoseOP& pose, double(*score
 }
 
 double lbcpp::sigmoid(double k, double x)
-{
-  return 1 / (1 + std::exp(-k * x));
-}
+  {return 1 / (1 + std::exp(-k * x));}
 
 double lbcpp::getNormalizedEnergy(const core::pose::PoseOP& pose, double(*scoreFunction)(
     const core::pose::PoseOP&))
-{
-  return sigmoid(0.0005, getTotalEnergy(pose, scoreFunction));
-}
+  {return sigmoid(0.0005, getTotalEnergy(pose, scoreFunction));}
 
 double lbcpp::getNormalizedScore(const core::pose::PoseOP& pose, double(*scoreFunction)(
     const core::pose::PoseOP&))
-{
-  return sigmoid(0.0005, getConformationScore(pose, scoreFunction));
-}
+  {return sigmoid(0.0005, getConformationScore(pose, scoreFunction));}
 
 void lbcpp::rosettaInitialization(ExecutionContext& context)
-{
-  rosettaInitialization(context, true);
-}
+  {rosettaInitialization(context, true);}
 
 void lbcpp::rosettaInitialization(ExecutionContext& context, bool verbose)
 {

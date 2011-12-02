@@ -72,13 +72,24 @@ public:
 # ifdef LBCPP_PROTEIN_ROSETTA
     rosettaInitialization(context, false);
 
-    core::pose::PoseOP testPose = new core::pose::Pose();
-    core::pose::PoseOP resultPose = new core::pose::Pose();
-    makePoseFromSequence(testPose, T("AAAAAAAAAAAA"));
-    initializeProteinStructure(testPose, resultPose);
+    std::cout << "loading file" << std::endl;
 
-    std::cout << "collisions before : " << computeCorrectionFactorForCollisions(testPose) << std::endl;
-    std::cout << "collisions after: " << computeCorrectionFactorForCollisions(resultPose) << std::endl;
+    std::cout << "creating prot..." << std::endl;
+    File tempFile("/Users/alex/Desktop/1BH0.pdb");
+    ProteinPtr prot = Protein::createFromPDB(context, tempFile);
+    size_t size = prot->getLength();
+    std::cout << "protein created" << std::endl;
+
+    std::cout << "length : " << std::flush;
+    std::cout << prot->getLength() << std::endl;
+
+//    core::pose::PoseOP testPose = new core::pose::Pose();
+//    core::pose::PoseOP resultPose = new core::pose::Pose();
+//    makePoseFromSequence(testPose, T("AAAAAAAAAAAA"));
+//    initializeProteinStructure(testPose, resultPose);
+//
+//    std::cout << "collisions before : " << computeCorrectionFactorForCollisions(testPose) << std::endl;
+//    std::cout << "collisions after: " << computeCorrectionFactorForCollisions(resultPose) << std::endl;
 
 
 # if 0
@@ -841,28 +852,35 @@ void generateMoversDataSet(VectorPtr& inputs, VectorPtr& samples)
 class ProteinSubWorkUnitExample : public WorkUnit
 {
 public:
+  ProteinSubWorkUnitExample() : WorkUnit() {}
+
+  ProteinSubWorkUnitExample(size_t i) : WorkUnit() {arg = i;}
+
   virtual Variable run(ExecutionContext& context)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
   
+    context.enterScope(T("Optimization protein : ") + String((int)arg));
     context.informationCallback(T("Before"));
-    makePoseFromSequence(pose, T("AAAAAAAAAAAAAAAAAAAA"));
-    RandomGeneratorPtr gen = new RandomGenerator();
+    core::pose::PoseOP pose = new core::pose::Pose();
+    makePoseFromSequence(
+        pose,
+        T("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+    RandomGeneratorPtr gen = new RandomGenerator(arg);
 
-    for (size_t i = 0; i < 1000; ++i)
+    for (size_t i = 0; i < 2000; ++i)
     {
-//      PhiPsiMover::move(pose, gen->sampleInt(0, 19), gen->sampleDouble(-50.0, 50.0),
-//          gen->sampleDouble(-50.0, 50.0));
-      context.progressCallback(new ProgressionState(i + 1.0, 1000.0, T("%")));
+      PhiPsiMover::move(pose, gen->sampleInt(0, 19), gen->sampleDouble(-50.0, 50.0),
+          gen->sampleDouble(-50.0, 50.0));
+      //context.progressCallback(new ProgressionState(i + 1.0, 1000.0, T("%")));
     }
     context.informationCallback(T("After"));
+    context.leaveScope(Variable(fullAtomEnergy(pose)));
 #endif // LBCPP_PROTEIN_ROSETTA
     return T("Hello");
   }
 protected:
-#ifdef LBCPP_PROTEIN_ROSETTA
-  core::pose::PoseOP pose;
-#endif // LBCPP_PROTEIN_ROSETTA
+  size_t arg;
 };
 
 class ProteinTestParallelWorkUnit : public WorkUnit
@@ -871,12 +889,13 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
-    context.informationCallback(T("test parallel WU : ") + arg);
+    context.informationCallback(T("test parallel WU : "));
+
     rosettaInitialization(context, true);
 
     CompositeWorkUnitPtr subWorkUnits(new CompositeWorkUnit(T("Parallel protein workUnit"), 8));
     for (size_t i = 0; i < subWorkUnits->getNumWorkUnits(); ++i)
-      subWorkUnits->setWorkUnit(i, new ProteinSubWorkUnitExample());
+      subWorkUnits->setWorkUnit(i, new ProteinSubWorkUnitExample(i));
     subWorkUnits->setPushChildrenIntoStackFlag(true);
     context.run(subWorkUnits);
 
@@ -895,3 +914,4 @@ protected:
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEINS_ROSETTA_TEST_H_
+

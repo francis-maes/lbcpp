@@ -4,7 +4,8 @@
 
   <class name="UnfoldProteinsWorkUnit" base="WorkUnit">
     <variable type="String" name="referenceDirectory" description="Directory where one can find the real proteins"/>
-    <variable type="String" name="outputDirectory" description="Directory where to store the samplers created for each intermediate protein"/>
+    <variable type="String" name="outputDirectoryStructures" description="Directory where to store the intermediate structures"/>
+    <variable type="String" name="outputDirectoryMovers" description="Directory where to store the intermediate movers"/>
     <variable type="Integer" name="numIterations" description="Maximum number of iterations performed by the EDA optimizer"/>
   </class>
     
