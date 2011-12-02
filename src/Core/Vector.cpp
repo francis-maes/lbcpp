@@ -306,17 +306,28 @@ bool GenericVector::loadFromXml(XmlImporter& importer)
 ** BooleanVector
 */
 BooleanVector::BooleanVector(size_t initialSize, bool initialValue)
-  : Vector(booleanVectorClass)
+  : Vector(booleanVectorClass), v(initialSize, initialValue ? 1 : 0)
 {
-  if (initialSize)
-    v.resize(initialSize, initialValue);
+}
+
+BooleanVector::BooleanVector(size_t initialSize)
+  : Vector(booleanVectorClass), v(initialSize, 2)
+{
 }
 
 String BooleanVector::toString() const
 {
   String res = T("[");
   for (size_t i = 0; i < v.size(); ++i)
-    res += v[i] ? '+' : '-';
+  {
+    switch (v[i])
+    {
+    case 0: res += '-'; break;
+    case 1: res += '+'; break;
+    case 2: res += '?'; break;
+    default: res += ' '; break;
+    };
+  }
   res += T("]");
   return res;
 }
@@ -324,13 +335,19 @@ String BooleanVector::toString() const
 size_t BooleanVector::getNumElements() const
   {return v.size();}
 
+static inline Variable byteToBooleanVariable(unsigned char b)
+  {return b < 2 ? Variable(b == 1, booleanType) : Variable::missingValue(booleanType);}
+
+static inline unsigned char booleanVariableToByte(const Variable& v)
+  {jassert(v.isBoolean()); return v.isMissingValue() ? 2 : (v.getBoolean() ? 1 : 0);}
+
 Variable BooleanVector::getElement(size_t index) const
-  {jassert(index < v.size()); return v[index];}
+  {jassert(index < v.size()); return byteToBooleanVariable(v[index]);}
 
 void BooleanVector::setElement(size_t index, const Variable& value)
 {
   if (checkInheritance(value, booleanType))
-    v[index] = value.getBoolean();
+    v[index] = booleanVariableToByte(value);
 }
 
 void BooleanVector::reserve(size_t size)
@@ -343,10 +360,10 @@ void BooleanVector::clear()
   {v.clear();}
 
 void BooleanVector::prepend(const Variable& value)
-  {v.insert(v.begin(), value.getBoolean());}
+  {v.insert(v.begin(), booleanVariableToByte(value));}
 
 void BooleanVector::append(const Variable& value)
-  {v.push_back(value.getBoolean());}
+  {v.push_back(booleanVariableToByte(value));}
 
 void BooleanVector::remove(size_t index)
   {v.erase(v.begin() + index);}
