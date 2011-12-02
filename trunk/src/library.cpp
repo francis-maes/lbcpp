@@ -297,6 +297,7 @@ void lbcpp::initialize(const char* executableName)
   importLibrary(coreLibrary());
   importLibrary(lbCppLibrary());
   topLevelType = anyType = variableType;
+  simpleDenseDoubleVectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType);
 }
 
 void lbcpp::deinitialize()
@@ -314,6 +315,7 @@ void lbcpp::deinitialize()
     coreLibraryUnCacheTypes();
     lbCppLibraryUnCacheTypes();
     topLevelType = anyType = TypePtr();
+    simpleDenseDoubleVectorClass = ClassPtr();
 
     // shutdown types
     applicationContext->typeManager.shutdown();
