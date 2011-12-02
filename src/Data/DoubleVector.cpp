@@ -615,6 +615,7 @@ DenseDoubleVector::DenseDoubleVector(EnumerationPtr enumeration, TypePtr element
 DenseDoubleVector::DenseDoubleVector(size_t initialSize, double initialValue)
   : DoubleVector(simpleDenseDoubleVectorClass), ownValues(true)
 {
+  jassert(thisClass);
   values = new std::vector<double>(initialSize, initialValue);
 }
 
