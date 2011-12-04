@@ -37,6 +37,12 @@ public:
 
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const = 0;
   virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const = 0;
+  
+  virtual size_t getNumSubNodes() const
+    {return 0;}
+    
+  virtual const LuapeNodePtr& getSubNode(size_t index) const
+    {jassert(false); static LuapeNodePtr empty; return empty;} 
 
   size_t getAllocationIndex() const
     {return allocationIndex;}
@@ -113,6 +119,11 @@ public:
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
   virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const;
 
+  virtual size_t getNumSubNodes() const
+    {return arguments.size();}
+  virtual const LuapeNodePtr& getSubNode(size_t index) const
+    {jassert(index < arguments.size()); return arguments[index];}
+
   const LuapeFunctionPtr& getFunction() const
     {return function;}
 
@@ -148,6 +159,12 @@ public:
   virtual String toShortString() const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
   virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const;
+
+  virtual size_t getNumSubNodes() const
+    {return 3;}
+    
+  virtual const LuapeNodePtr& getSubNode(size_t index) const
+    {return (index == 0 ? conditionNode : (index == 1 ? successNode : failureNode));}
 
   const LuapeNodePtr& getCondition() const
     {return conditionNode;}
@@ -187,12 +204,12 @@ public:
   virtual String toShortString() const;
   virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const;
 
-  size_t getNumNodes() const
+  virtual size_t getNumSubNodes() const
     {return nodes.size();}
-
-  const LuapeNodePtr& getNode(size_t index) const
+    
+  virtual const LuapeNodePtr& getSubNode(size_t index) const
     {return nodes[index];}
-
+  
   void pushNode(const LuapeNodePtr& node, const std::vector<LuapeSamplesCachePtr>& cachesToUpdate);
 
 protected:

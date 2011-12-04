@@ -98,6 +98,9 @@ public:
   double getSquaresMean() const
     {return samplesSumOfSquares / samplesCount;}
 
+  double getSumOfSquares() const
+    {return samplesSumOfSquares;}
+  
   double getVariance() const // mean(sqr(x)) - sqr(mean(x))
     {return samplesCount ? getSquaresMean() - sqr(getMean()) : 0.0;}
 

@@ -356,5 +356,9 @@ void LuapeVectorSumNode::updateOutputs(const VectorPtr& outputs, const VectorPtr
   size_t n = a->getNumElements();
   jassert(n == b->getNumElements());
   for (size_t i = 0; i < n; ++i)
-    b->getAndCast<DenseDoubleVector>(i)->addTo(a->getAndCast<DenseDoubleVector>(i));
+  {
+    const DenseDoubleVectorPtr& newNodeValue = b->getAndCast<DenseDoubleVector>(i);
+    if (newNodeValue)
+      newNodeValue->addTo(a->getAndCast<DenseDoubleVector>(i));
+  }
 }

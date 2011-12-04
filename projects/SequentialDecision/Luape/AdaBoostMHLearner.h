@@ -33,26 +33,29 @@ public:
 
   virtual void flipPrediction(size_t index)
   {
-    jassert(predictions.isInstanceOf<DenseDoubleVector>());
-    double& prediction = predictions.staticCast<DenseDoubleVector>()->getValuePointer(0)[index]; // fast unprotected access
-    prediction = -prediction;
-
-    double* weightsPtr = weights->getValuePointer(index * numLabels);
-    double* muNegativesPtr = muNegatives->getValuePointer(0);
-    double* muPositivesPtr = muPositives->getValuePointer(0);
-    double* votesPtr = votes->getValuePointer(0);
-    double* supervisionsPtr = supervisions->getValuePointer(index * numLabels);
-    for (size_t i = 0; i < numLabels; ++i)
+    jassert(predictions.isInstanceOf<BooleanVector>());
+    unsigned char& prediction = predictions.staticCast<BooleanVector>()->getData()[index]; // fast unprotected access
+    if (prediction < 2)
     {
-      double weight = *weightsPtr++;
-      double& muNegative = *muNegativesPtr++;
-      double& muPositive = *muPositivesPtr++;
-      double supervision = *supervisionsPtr++;
-      if ((prediction * supervision) > 0)
-        {muNegative -= weight; muPositive += weight;}
-      else
-        {muPositive -= weight; muNegative += weight;}
-      *votesPtr++ = muPositive > (muNegative + 1e-09) ? 1.0 : -1.0;
+      prediction = 1 - prediction;
+
+      double* weightsPtr = weights->getValuePointer(index * numLabels);
+      double* muNegativesPtr = muNegatives->getValuePointer(0);
+      double* muPositivesPtr = muPositives->getValuePointer(0);
+      double* votesPtr = votes->getValuePointer(0);
+      double* supervisionsPtr = supervisions->getValuePointer(index * numLabels);
+      for (size_t i = 0; i < numLabels; ++i)
+      {
+        double weight = *weightsPtr++;
+        double& muNegative = *muNegativesPtr++;
+        double& muPositive = *muPositivesPtr++;
+        double supervision = *supervisionsPtr++;
+        if ((prediction == 1 && supervision > 0) || (prediction == 0 && supervision < 0))
+          {muNegative -= weight; muPositive += weight;}
+        else
+          {muPositive -= weight; muNegative += weight;}
+        *votesPtr++ = muPositive > (muNegative + 1e-09) ? 1.0 : -1.0;
+      }
     }
   }
 
@@ -89,8 +92,7 @@ protected:
 
   void computeMuAndVoteValues()
   {
-    size_t numExamples = predictions->getNumElements();
-    jassert(supervisions->getNumValues() == numExamples * numLabels);
+    jassert(supervisions->getNumValues() == predictions->getNumElements() * numLabels);
 
     muNegatives = new DenseDoubleVector(doubleVectorClass, numLabels);
     muPositives = new DenseDoubleVector(doubleVectorClass, numLabels);
@@ -99,17 +101,21 @@ protected:
     BooleanVectorPtr booleanPredictions = predictions.dynamicCast<BooleanVector>();
     if (booleanPredictions)
     {
+      const unsigned char* predictionsPtr = booleanPredictions->getData();
       for (size_t i = 0; i < examples.size(); ++i)
       {
         size_t example = examples[i];
-        double prediction = (booleanPredictions->get(example) ? 1.0 : -1.0);
-        double* weightsPtr = weights->getValuePointer(numLabels * example);
-        double* supervisionsPtr = supervisions->getValuePointer(numLabels * example);
-        for (size_t j = 0; j < numLabels; ++j)
+        unsigned char prediction = predictionsPtr[example];
+        if (prediction < 2)
         {
-          double supervision = *supervisionsPtr++;
-          bool isPredictionCorrect = (prediction * supervision > 0);
-          (isPredictionCorrect ? muPositives : muNegatives)->incrementValue(j, *weightsPtr++);
+          double* weightsPtr = weights->getValuePointer(numLabels * example);
+          double* supervisionsPtr = supervisions->getValuePointer(numLabels * example);
+          for (size_t j = 0; j < numLabels; ++j)
+          {
+            double supervision = *supervisionsPtr++;
+            bool isPredictionCorrect = (prediction == 0 && supervision < 0) || (prediction == 1 && supervision > 0);
+            (isPredictionCorrect ? muPositives : muNegatives)->incrementValue(j, *weightsPtr++);
+          }
         }
       }
     }

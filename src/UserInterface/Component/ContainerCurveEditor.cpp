@@ -255,7 +255,7 @@ protected:
   bool getPointPosition(size_t row, size_t columnX, size_t columnY, const AffineTransform& transform, float& x, float& y) const
   {
     ObjectPtr rowObject = table->getElement(order[row]).getObject();
-    double dx, dy;
+    double dx = 0.0, dy = 0.0;
     if (!getTableScalarValue(rowObject, columnX, dx) || !getTableScalarValue(rowObject, columnY, dy))
       return false;
 
@@ -276,7 +276,7 @@ protected:
 
   void getTableValueRange(size_t column, double& minValue, double& maxValue) const
   {
-    double value;
+    double value = 0.0;
     for (size_t i = 0; i < table->getNumElements(); ++i)
       if (getTableScalarValue(table->getElement(i).getObject(), column, value))
       {

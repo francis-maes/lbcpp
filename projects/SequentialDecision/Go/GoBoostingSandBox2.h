@@ -13,6 +13,7 @@
 # include "../Luape/BanditPoolWeakLearner.h"
 # include "../Luape/PolicyBasedWeakLearner.h"
 # include "../Luape/GradientBoostingLearner.h"
+# include "../Luape/LuapeBatchLearner.h"
 
 # include "Perception/GoStatePerception.h"
 # include "Perception/GoBoardPositionPerception.h"
@@ -42,6 +43,16 @@ public:
         !printGamesInfo(context, testingGames, T("testing")))
       return false;
 
+    // convert games to examples
+    std::vector<PairPtr> trainingExamples;
+    std::vector<PairPtr> validationExamples;
+    size_t n = trainingGames->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+      makeRankingExamples(context, trainingGames->getElement(i), trainingExamples);
+    n = testingGames->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+      makeRankingExamples(context, testingGames->getElement(i), validationExamples);
+
     // create problem and ranker
     LuapeInferencePtr learningMachine = createLearningMachine(context);
     if (!learningMachine)
@@ -52,15 +63,20 @@ public:
     BoostingWeakLearnerPtr weakLearner = conditionLearner;
     for (size_t i = 1; i < treeDepth; ++i)
       weakLearner = binaryTreeWeakLearner(conditionLearner, weakLearner);
+    learningMachine->setBatchLearner(new LuapeBatchLearner(l2BoostingLearner(weakLearner, learningRate), numIterations));
 
-    LuapeLearnerPtr learner = l2BoostingLearner(weakLearner, learningRate);
+    // learn
+    learningMachine->train(context, *(const std::vector<ObjectPtr>* )&trainingExamples, *(const std::vector<ObjectPtr>* )&validationExamples, T("Training"), true);
+/*
+    
+    
     if (!learner->initialize(context, learningMachine))
       return false;
-    
+      
     // learn
     if (!learn(context, learner, trainingGames, testingGames))
       return false;
-
+*/
     return true;
   }
 
@@ -89,14 +105,17 @@ public:
     res->setGraph(graph);    */
    
     // initialize evaluator
-    EvaluatorPtr evaluator = new GoActionScoringEvaluator();
+    //EvaluatorPtr evaluator = new GoActionScoringEvaluator();
     //evaluator->setUseMultiThreading(true);
-    res->setEvaluator(evaluator);
+    //res->setEvaluator(evaluator);
     return res;
   }
+  
+#if 0
 
   bool learn(ExecutionContext& context, const LuapeLearnerPtr& learner, const ContainerPtr& trainingGames, const ContainerPtr& testingGames) const
   {
+
 /*    size_t n = trainingGames->getNumElements();
     for (size_t i = 0; i < n; ++i)
     {
@@ -132,6 +151,7 @@ public:
     context.leaveScope();
     return true;
   }
+#endif // 0
 
 private:
   friend class GoBoostingSandBox2Class;
