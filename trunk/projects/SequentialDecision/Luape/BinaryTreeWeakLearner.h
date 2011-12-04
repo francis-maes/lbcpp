@@ -31,18 +31,24 @@ public:
     if (!res)
       return LuapeNodePtr();
 
-    BooleanVectorPtr testValues = structureLearner->getTrainingSamples()->compute(context, res->getCondition()).staticCast<BooleanVector>();
+    const unsigned char* testValues = structureLearner->getTrainingSamples()->compute(context, res->getCondition()).staticCast<BooleanVector>()->getData();
     std::vector<size_t> successExamples;
-    successExamples.reserve(examples.size());
+    successExamples.reserve(examples.size() / 3);
     std::vector<size_t> failureExamples;
-    failureExamples.reserve(examples.size());
+    failureExamples.reserve(examples.size() / 3);
+    std::vector<size_t> missingExamples;
+    missingExamples.reserve(examples.size() / 3);
+    
     for (size_t i = 0; i < examples.size(); ++i)
     {
       size_t example = examples[i];
-      if (testValues->get(example))
-        successExamples.push_back(example);
-      else
-        failureExamples.push_back(example);
+      switch (testValues[i])
+      {
+      case 0: failureExamples.push_back(example); break;
+      case 1: successExamples.push_back(example); break;
+      case 2: missingExamples.push_back(example); break;
+      default: jassert(false);
+      }
     }
 
     weakObjective = 0.0;

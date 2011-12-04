@@ -26,17 +26,23 @@ public:
     this->predictions = predictions;
     positives.clear();
     negatives.clear();
+    missings.clear();
 
     BooleanVectorPtr booleanPredictions = predictions.dynamicCast<BooleanVector>();
     if (booleanPredictions)
     {
+      const unsigned char* predictionsPtr = booleanPredictions->getData();
       for (size_t i = 0; i < examples.size(); ++i)
       {
         double value = targets->getValue(examples[i]);
-        if (booleanPredictions->get(examples[i]))
-          positives.push(value);
-        else
-          negatives.push(value);
+        unsigned char prediction = predictionsPtr[examples[i]];
+        switch (prediction)
+        {
+        case 0: negatives.push(value); break;
+        case 1: positives.push(value); break;
+        case 2: missings.push(value); break;
+        default: jassert(false);
+        }
       }
     }
     else
@@ -45,7 +51,10 @@ public:
       for (size_t i = 0; i < examples.size(); ++i)
       {
         double value = targets->getValue(examples[i]);
-        if (scalarPredictions->getValue(examples[i]) > 0)
+        double prediction = scalarPredictions->getValue(examples[i]);
+        if (prediction == doubleMissingValue)
+          missings.push(value);
+        else if (prediction > 0)
           positives.push(value);
         else
           negatives.push(value);
@@ -55,20 +64,23 @@ public:
 
   virtual void flipPrediction(size_t index)
   {
-    jassert(predictions.isInstanceOf<DenseDoubleVector>());
-    double& prediction = predictions.staticCast<DenseDoubleVector>()->getValuePointer(0)[index]; // fast unprotected access
-    prediction = -prediction;
+    jassert(predictions.isInstanceOf<BooleanVector>());
+    unsigned char& prediction = predictions.staticCast<BooleanVector>()->getData()[index]; // fast unprotected access
+    if (prediction < 2)
+    {
+      prediction = 1 - prediction;
     
-    double value = targets->getValue(index);
-    if (prediction > 0)
-    {
-      negatives.push(value, -1.0);
-      positives.push(value);
-    }
-    else
-    {
-      positives.push(value, -1.0);
-      negatives.push(value);
+      double value = targets->getValue(index);
+      if (prediction > 0)
+      {
+        negatives.push(value, -1.0);
+        positives.push(value);
+      }
+      else
+      {
+        positives.push(value, -1.0);
+        negatives.push(value);
+      }
     }
   }
 
@@ -79,8 +91,11 @@ public:
       res += positives.getCount() * positives.getVariance();
     if (negatives.getCount())
       res += negatives.getCount() * negatives.getVariance();
-    if (positives.getCount() || negatives.getCount())
-      res /= positives.getCount() + negatives.getCount();
+    if (missings.getCount())
+      res += missings.getSumOfSquares();
+    jassert(examples.size() == (size_t)(positives.getCount() + negatives.getCount() + missings.getCount()));
+    if (examples.size())
+      res /= (double)examples.size();
     return -res;
   }
 
@@ -97,6 +112,7 @@ protected:
 
   ScalarVariableMeanAndVariance positives;
   ScalarVariableMeanAndVariance negatives;
+  ScalarVariableMeanAndVariance missings;
 };
 
 typedef ReferenceCountedObjectPtr<L2BoostingWeakObjective> L2BoostingWeakObjectivePtr;

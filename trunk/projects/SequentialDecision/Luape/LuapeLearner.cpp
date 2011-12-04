@@ -137,7 +137,17 @@ double BoostingWeakObjective::compute(const VectorPtr& predictions)
 
 double BoostingWeakObjective::findBestThreshold(ExecutionContext& context, size_t numSamples, const SparseDoubleVectorPtr& sortedDoubleValues, double& edge, bool verbose)
 {
-  setPredictions(new DenseDoubleVector(numSamples, 1.0));
+  // initialize with "true" or "missing value"
+  BooleanVectorPtr predictions = new BooleanVector(numSamples);
+  for (size_t i = 0; i < sortedDoubleValues->getNumValues(); ++i)
+    predictions->set(sortedDoubleValues->getValue(i).first, true);
+  setPredictions(predictions);
+
+  if (sortedDoubleValues->getNumValues() == 0)
+  {
+    edge = computeObjective();
+    return 0.0;
+  }
 
   edge = -DBL_MAX;
   double res = 0.0;
@@ -145,7 +155,6 @@ double BoostingWeakObjective::findBestThreshold(ExecutionContext& context, size_
   if (verbose)
     context.enterScope("Find best threshold for node");
 
-  jassert(sortedDoubleValues->getNumValues());
   double previousThreshold = sortedDoubleValues->getValue(0).second;
   for (size_t i = 0; i < sortedDoubleValues->getNumValues(); ++i)
   {

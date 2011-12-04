@@ -53,11 +53,39 @@ public:
       //if ((i+1) % 100 == 0)
       //  context.informationCallback(T("Graph: ") + learner->getGraph()->toShortString());
       context.progressCallback(new ProgressionState(i+1, maxIterations, T("Iterations")));
+      
+      if ((i + 1) % 100 == 0)
+        analyseGraph(context, function->getRootNode());
     }
     context.leaveScope();
     //Object::displayObjectAllocationInfo(std::cerr);
     //context.resultCallback("votes", function->getVotes());
     return true;
+  }
+  
+  void fillUsageStats(const LuapeNodePtr& node, std::map<LuapeNodePtr, double>& res) const
+  {
+    if (node)
+    {
+      res[node] += 1.0;
+      size_t n = node->getNumSubNodes();
+      for (size_t i = 0; i < n; ++i)
+        fillUsageStats(node->getSubNode(i), res);
+    }
+  }
+  
+  void analyseGraph(ExecutionContext& context, const LuapeNodePtr& rootNode) const
+  {
+    std::map<LuapeNodePtr, double> usageStats;
+    fillUsageStats(rootNode, usageStats);
+    
+    std::multimap<double, LuapeNodePtr> nodesByUsage;
+    for (std::map<LuapeNodePtr, double>::const_iterator it = usageStats.begin(); it != usageStats.end(); ++it)
+      nodesByUsage.insert(std::make_pair(it->second, it->first));
+    
+    size_t i = 0;
+    for (std::multimap<double, LuapeNodePtr>::reverse_iterator it = nodesByUsage.rbegin(); it != nodesByUsage.rend() && i < 100; ++it, ++i)
+      context.informationCallback(T("# ") + String((int)i + 1) + T(": ") + it->second->toShortString() + T(" [") + String(it->first) + T("]"));
   }
 
 protected:

@@ -129,6 +129,9 @@ extern ClassPtr goBoardPositionRelationPerceptionClass;
 class GoBoardPositionRelationLuapeFunction : public LuapeFunction
 {
 public:
+  virtual Flags getFlags() const
+    {return commutativeFlag;}
+    
   virtual size_t getNumInputs() const
     {return 2;}
 

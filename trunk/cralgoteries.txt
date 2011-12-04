@@ -1,16 +1,18 @@
-Luape-Go:
- * 1) Regression with advanced condition nodes
-    - support for missing values, support for polymorphism
-    - support for previous positions, computation of relations between positions
-    - neighborhood
-    - regions
- * 2) RankBoost
+Luape-Missing Values: 
+  - explicitly support the three possible outcomes in WeakObjectives
+    - TestNode with 3 outcomes (or 2 if no training data is missing)
+
+Luape-Go Perception:
+  - support for polymorphism, neighborhood, regions
 
 Luape-Appli:
+ * Go: rankboost + large-scale boosting
+ * Proteins-DSB: representation + re-entrant
+ * Proteins-MT: multi-task
+ * Proteins-CM: cascade
  * Apprentissage d'une gaussienne conditionelle => boosting joint de la moyenne et de l'ecart-type
     ==> application dans les continuous bandits
     ==> application dans le formula discovery
- * Proteines: mega-boosting joint + re-entrant + filtre
 
 Lua-Misc:
  * Move namespace lbcpp::lua into lua (-> introspection generator must be adapted)
