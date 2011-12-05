@@ -153,7 +153,10 @@ SparseDoubleVectorPtr LuapeSamplesCache::getSortedDoubleValues(ExecutionContext&
 }
 
 VectorPtr LuapeSamplesCache::compute(ExecutionContext& context, const LuapeNodePtr& node, bool isRemoveable)
-  {return internalCompute(context, node, isRemoveable).first;}
+{
+  jassert(node);
+  return internalCompute(context, node, isRemoveable).first;
+}
 
 std::pair<VectorPtr, SparseDoubleVectorPtr>& LuapeSamplesCache::internalCompute(ExecutionContext& context, const LuapeNodePtr& node, bool isRemoveable)
 {

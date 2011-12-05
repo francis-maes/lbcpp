@@ -373,6 +373,13 @@ void LuapeVectorSumNode::updateOutputs(const VectorPtr& outputs, const VectorPtr
   {
     const DenseDoubleVectorPtr& newNodeValue = b->getAndCast<DenseDoubleVector>(i);
     if (newNodeValue)
-      newNodeValue->addTo(a->getAndCast<DenseDoubleVector>(i));
+    {
+      DenseDoubleVectorPtr target = a->getAndCast<DenseDoubleVector>(i);
+      newNodeValue->addTo(target);
+#ifdef JUCE_DEBUG
+      for (size_t j = 0; j < target->getNumValues(); ++j)
+        jassert(isNumberValid(target->getValue(j)));
+#endif // JUCE_DBEUG
+    }
   }
 }

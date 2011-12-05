@@ -247,15 +247,19 @@ public:
 
       if (errorWeight || correctWeight)
       {
-        double alpha = 0.5 * log(correctWeight / errorWeight);
+        double alpha = errorWeight ? 0.5 * log(correctWeight / errorWeight) : 1.0; // FIXME: what should we do if everything is correct ?
   //      context.resultCallback(T("alpha"), alpha);
 
         res[i] = votes[i]->cloneAndCast<DenseDoubleVector>();
         res[i]->multiplyByScalar(alpha);
         // correctWeight + errorWeight = weight of selected examples (1 if all the examples are selected)
         //jassert(fabs(correctWeight + errorWeight - 1.0) < 1e-9);
+        jassert(isNumberValid(res[i]->l1norm()));
+        jassert(isNumberValid(alpha));
         jassert(alpha > -1e-9);
       }
+      else
+        res[i] = new DenseDoubleVector(votes[i]->getClass(), votes[i]->getNumValues(), 0.0);
     }
     
     failureVote = res[0];
@@ -288,10 +292,12 @@ public:
         double supervision = *supervisionsPtr++;
         double w0 = supervision > 0 ? positiveWeight : negativeWeight;
         double weight = w0 * exp(-supervision * (*activationsPtr++));
+        jassert(isNumberValid(weight));
         *weightsPtr++ = weight;
         loss += weight;
       }
     }
+    jassert(isNumberValid(loss));
     res->multiplyByScalar(1.0 / loss);
     return res;
   }
