@@ -72,27 +72,28 @@ public:
     RandomGeneratorPtr random = new RandomGenerator();
 
 # ifdef LBCPP_PROTEIN_ROSETTA
-    rosettaInitialization(context, false);
+    rosettaInitialization(context, true);
 
-    std::cout << "loading file" << std::endl;
+    ProteinMoverPtr mov1 = new PhiPsiMover(2, 23.4, -21.2);
+    ProteinMoverPtr mov2 = new ShearMover(1, -73.4, 123);
+    ProteinMoverPtr mov3 = new RigidBodyMover(6, 3, 0.02, -12.4);
 
-    std::cout << "creating prot..." << std::endl;
-    File tempFile("/Users/alex/Desktop/1BH0.pdb");
-    ProteinPtr prot = Protein::createFromPDB(context, tempFile);
-    size_t size = prot->getLength();
-    std::cout << "protein created" << std::endl;
+    mov1->saveToFile(context, context.getFile(T("mov1_norm.xml")));
+    mov2->saveToFile(context, context.getFile(T("mov2_norm.xml")));
+    mov3->saveToFile(context, context.getFile(T("mov3_norm.xml")));
 
-    std::cout << "length : " << std::flush;
-    std::cout << prot->getLength() << std::endl;
+    mov1 = mov1->getOpposite();
+    mov2 = mov2->getOpposite();
+    mov3 = mov3->getOpposite();
 
-//    core::pose::PoseOP testPose = new core::pose::Pose();
-//    core::pose::PoseOP resultPose = new core::pose::Pose();
-//    makePoseFromSequence(testPose, T("AAAAAAAAAAAA"));
-//    initializeProteinStructure(testPose, resultPose);
-//
-//    std::cout << "collisions before : " << computeCorrectionFactorForCollisions(testPose) << std::endl;
-//    std::cout << "collisions after: " << computeCorrectionFactorForCollisions(resultPose) << std::endl;
+    mov1->saveToFile(context, context.getFile(T("mov1_opp.xml")));
+    mov2->saveToFile(context, context.getFile(T("mov2_opp.xml")));
+    mov3->saveToFile(context, context.getFile(T("mov3_opp.xml")));
 
+    //    core::pose::PoseOP referencePose = new core::pose::Pose((const char*)context.getFile("1ABO.pdb").getFullPathName());
+//    ProteinPtr prot = Protein::createFromPDB(context, context.getFile("1ABO.pdb"));
+//    std::cout << "length pose : " << referencePose->n_residue() << std::endl;
+//    std::cout << "length protein : " << prot->getLength() << std::endl;
 
 # if 0
     File referenceFile = context.getFile(T("GoodDataset/0-100/dataset0-100"));

@@ -232,6 +232,12 @@ public:
       return false;
   }
 
+  virtual ProteinMoverPtr getOpposite()
+  {
+    return new RigidBodyMover(residues->getFirst().getInteger(),
+        residues->getSecond().getInteger(), -1.0 * magnitude, -1.0 * amplitude);
+  }
+
 protected:
   friend class RigidBodyMoverClass;
 

@@ -30,6 +30,8 @@ public:
 
   virtual bool isEqual(const ProteinMoverPtr& mover, double tolerance) = 0;
 
+  virtual ProteinMoverPtr getOpposite() = 0;
+
 protected:
   friend class ProteinMoverClass;
 };

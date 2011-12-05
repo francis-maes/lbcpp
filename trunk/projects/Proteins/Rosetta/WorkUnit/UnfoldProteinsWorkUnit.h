@@ -139,7 +139,8 @@ public:
           workingProtein->saveToXmlFile(context, File(outputFileStructures.getFullPathName() + T("/")
                         + (*references[j]).getFileNameWithoutExtension() + T("_") + String(i) + T(".xml")));
 
-          mover->saveToFile(context, File(outputFileMovers.getFullPathName() + T("/")
+          ProteinMoverPtr toSave = mover->getOpposite();
+          toSave->saveToFile(context, File(outputFileMovers.getFullPathName() + T("/")
               + (*references[j]).getFileNameWithoutExtension() + T("_") + String(i) + T("_mover")
               + T(".xml")));
         }

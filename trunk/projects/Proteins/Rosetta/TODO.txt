@@ -16,10 +16,13 @@ TODO NIC3
 TODO Rosetta
 ============
 
+- corriger conversion pose to protein (patche, --> plus dutilisation du DD) 
 - corriger probleme import pdb (Rosetta)
 - corriger rosetta parallele (ProteinTestParallelWorkUnit)
 - corriger probleme hbond tripped
 
+- demander pq modification du pdb + fournir fichier exemple
+- demander pq creation de core....
 
 
 
