@@ -123,6 +123,9 @@ public:
       return false;
   }
 
+  virtual ProteinMoverPtr getOpposite()
+    {return new ShearMover(residue, -1.0 * deltaPhi, -1.0 * deltaPsi);}
+
 protected:
   friend class ShearMoverClass;
 

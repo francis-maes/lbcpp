@@ -121,6 +121,9 @@ public:
       return false;
   }
 
+  virtual ProteinMoverPtr getOpposite()
+    {return new PhiPsiMover(residue, -1.0 * deltaPhi, -1.0 * deltaPsi);}
+
 protected:
   friend class PhiPsiMoverClass;
 

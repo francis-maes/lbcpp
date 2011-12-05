@@ -32,16 +32,26 @@ ProteinPtr lbcpp::convertPoseToProtein(ExecutionContext& context, const core::po
 {
 #ifdef LBCPP_PROTEIN_ROSETTA
 
-  File tempFile = context.getFile(T("tempFileConversionPoseToProtein.pdb"));
+  RandomGenerator rg;
+  File tempFile = context.getFile(T("tempFileConversionPoseToProtein") + String(
+      Time::currentTimeMillis()) + T(".pdb"));
+  int i = 0;
+  while (tempFile.exists())
+  {
+    tempFile = context.getFile(T("tempFileConversionPoseToProtein") + String(
+        Time::currentTimeMillis()) + String(rg.sampleInt(0, INT_MAX)) + T(".pdb"));
+    i++;
+    if (i >= 100)
+    {
+      jassert(false);
+      return ProteinPtr();
+    }
+  }
+
   core::io::pdb::dump_pdb(*pose, (const char*)tempFile.getFullPathName());
-
-  std::cout << "name : " << (const char*)tempFile.getFullPathName() << std::endl;
-
   ProteinPtr prot = Protein::createFromPDB(context, tempFile, true);
 
-  std::cout << "length protein : " << prot->getLength() << std::endl;
-
-  //tempFile.deleteFile();
+  tempFile.deleteFile();
   return prot;
 
   //  std::ostringstream oss;
