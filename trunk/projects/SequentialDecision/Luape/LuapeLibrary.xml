@@ -72,6 +72,7 @@
     <variable type="LuapeNode" name="conditionNode"/>
     <variable type="LuapeNode" name="successNode"/>
     <variable type="LuapeNode" name="failureNode"/>
+    <variable type="LuapeNode" name="missingNode"/>
   </class>
 
   <!-- Cache -->

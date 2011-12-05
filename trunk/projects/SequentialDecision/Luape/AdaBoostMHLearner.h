@@ -15,14 +15,22 @@
 namespace lbcpp
 {
 
+// FIXME: implement missings vote
 class AdaBoostMHWeakObjective : public BoostingWeakObjective
 {
 public:
   AdaBoostMHWeakObjective(const LuapeClassifierPtr& classifier, const DenseDoubleVectorPtr& supervisions, const DenseDoubleVectorPtr& weights, const std::vector<size_t>& examples)
-    : labels(classifier->getLabels()), doubleVectorClass(classifier->getDoubleVectorClass()), supervisions(supervisions), weights(weights), examples(examples)
+    : labels(classifier->getLabels()), doubleVectorClass(classifier->getDoubleVectorClass()), supervisions(supervisions), weights(weights), examples(examples), votesUpToDate(false)
   {
     numLabels = labels->getNumElements();
     jassert(examples.size());
+    for (size_t i = 0; i < 3; ++i)
+      for (size_t j = 0; j < 2; ++j)
+      {
+        mu[i][j] = new DenseDoubleVector(doubleVectorClass, numLabels);
+        votes[i] = new DenseDoubleVector(doubleVectorClass, numLabels);
+      }
+    votesUpToDate = false;
   }
 
   virtual void setPredictions(const VectorPtr& predictions)
@@ -35,47 +43,66 @@ public:
   {
     jassert(predictions.isInstanceOf<BooleanVector>());
     unsigned char& prediction = predictions.staticCast<BooleanVector>()->getData()[index]; // fast unprotected access
-    if (prediction < 2)
-    {
-      prediction = 1 - prediction;
+    jassert(prediction < 2);
+    prediction = 1 - prediction;
 
-      double* weightsPtr = weights->getValuePointer(index * numLabels);
-      double* muNegativesPtr = muNegatives->getValuePointer(0);
-      double* muPositivesPtr = muPositives->getValuePointer(0);
-      double* votesPtr = votes->getValuePointer(0);
-      double* supervisionsPtr = supervisions->getValuePointer(index * numLabels);
-      for (size_t i = 0; i < numLabels; ++i)
+    double* weightsPtr = weights->getValuePointer(index * numLabels);
+    double* muNegNegPtr = mu[0][0]->getValuePointer(0);
+    double* muNegPosPtr = mu[0][1]->getValuePointer(0);
+    double* muPosNegPtr = mu[1][0]->getValuePointer(0);
+    double* muPosPosPtr = mu[1][1]->getValuePointer(0);
+    double* supervisionsPtr = supervisions->getValuePointer(index * numLabels);
+    for (size_t i = 0; i < numLabels; ++i)
+    {
+      double weight = *weightsPtr++;
+      
+      double& muNegNeg = *muNegNegPtr++;
+      double& muNegPos = *muNegPosPtr++;
+      double& muPosNeg = *muPosNegPtr++;
+      double& muPosPos = *muPosPosPtr++;
+      double supervision = *supervisionsPtr++;
+      
+      if (supervision < 0)
       {
-        double weight = *weightsPtr++;
-        double& muNegative = *muNegativesPtr++;
-        double& muPositive = *muPositivesPtr++;
-        double supervision = *supervisionsPtr++;
-        if ((prediction == 1 && supervision > 0) || (prediction == 0 && supervision < 0))
-          {muNegative -= weight; muPositive += weight;}
+        if (prediction == 1)
+          muNegNeg -= weight, muPosNeg += weight;
         else
-          {muPositive -= weight; muNegative += weight;}
-        *votesPtr++ = muPositive > (muNegative + 1e-09) ? 1.0 : -1.0;
+          muPosNeg -= weight, muNegNeg += weight;
+      }
+      else
+      {
+        if (prediction == 1)
+          muNegPos -= weight, muPosPos += weight;
+        else
+          muPosPos -= weight, muNegPos += weight;
       }
     }
+    votesUpToDate = false;
   }
 
   virtual double computeObjective() const
   {
+    const_cast<AdaBoostMHWeakObjective* >(this)->ensureVotesAreComputed();
     size_t n = labels->getNumElements();
     double edge = 0.0;
     for (size_t i = 0; i < n; ++i)
-      edge += votes->getValue(i) * (muPositives->getValue(i) - muNegatives->getValue(i));
+    {
+      edge += votes[0]->getValue(i) * (mu[0][1]->getValue(i) - mu[0][0]->getValue(i))
+            + votes[1]->getValue(i) * (mu[1][1]->getValue(i) - mu[1][0]->getValue(i))
+            + votes[2]->getValue(i) * (mu[2][1]->getValue(i) - mu[2][0]->getValue(i));
+      //edge += votes->getValue(i) * (muPositives->getValue(i) - muNegatives->getValue(i));
+    }
     return edge;
   }
-
-  const DenseDoubleVectorPtr& getVotes() const
-    {return votes;}
-
-  const DenseDoubleVectorPtr& getMuNegatives() const
-    {return muNegatives;}
-
-  const DenseDoubleVectorPtr& getMuPositives() const
-    {return muPositives;}
+  
+  const DenseDoubleVectorPtr* getVotes() const
+  {
+    const_cast<AdaBoostMHWeakObjective* >(this)->ensureVotesAreComputed();
+    return votes;
+  }
+  
+  const DenseDoubleVectorPtr getMu(unsigned char prediction, bool supervision) const
+    {return mu[prediction][supervision ? 1 : 0];}
 
 protected:
   EnumerationPtr labels;
@@ -86,17 +113,17 @@ protected:
   DenseDoubleVectorPtr weights;   // size = numExamples * numLabels
   const std::vector<size_t>& examples; // size = numExamples
 
-  DenseDoubleVectorPtr muNegatives; // size = numLabels
-  DenseDoubleVectorPtr muPositives; // size = numLabels
-  DenseDoubleVectorPtr votes;       // size = numLabels
+  DenseDoubleVectorPtr mu[3][2]; // prediction -> supervision -> label -> weight
+  DenseDoubleVectorPtr votes[3]; // prediction -> label -> {-1, 1}
+  bool votesUpToDate;
 
   void computeMuAndVoteValues()
   {
     jassert(supervisions->getNumValues() == predictions->getNumElements() * numLabels);
 
-    muNegatives = new DenseDoubleVector(doubleVectorClass, numLabels);
-    muPositives = new DenseDoubleVector(doubleVectorClass, numLabels);
-    votes = new DenseDoubleVector(doubleVectorClass, numLabels);
+    for (size_t i = 0; i < 3; ++i)
+      for (size_t j = 0; j < 2; ++j)
+        mu[i][j]->multiplyByScalar(0.0);
 
     BooleanVectorPtr booleanPredictions = predictions.dynamicCast<BooleanVector>();
     if (booleanPredictions)
@@ -106,16 +133,12 @@ protected:
       {
         size_t example = examples[i];
         unsigned char prediction = predictionsPtr[example];
-        if (prediction < 2)
+        double* weightsPtr = weights->getValuePointer(numLabels * example);
+        double* supervisionsPtr = supervisions->getValuePointer(numLabels * example);
+        for (size_t j = 0; j < numLabels; ++j)
         {
-          double* weightsPtr = weights->getValuePointer(numLabels * example);
-          double* supervisionsPtr = supervisions->getValuePointer(numLabels * example);
-          for (size_t j = 0; j < numLabels; ++j)
-          {
-            double supervision = *supervisionsPtr++;
-            bool isPredictionCorrect = (prediction == 0 && supervision < 0) || (prediction == 1 && supervision > 0);
-            (isPredictionCorrect ? muPositives : muNegatives)->incrementValue(j, *weightsPtr++);
-          }
+          double supervision = *supervisionsPtr++;
+          mu[prediction][supervision > 0 ? 1 : 0]->incrementValue(j, *weightsPtr++);
         }
       }
     }
@@ -126,21 +149,34 @@ protected:
       {
         size_t example = examples[i];
         double prediction = scalarPredictions->getValue(example) * 2 - 1;
+        size_t pred = (prediction > 0 ? 1 : (prediction < 0 ? 0 : 2));
         double* weightsPtr = weights->getValuePointer(numLabels * example);
         double* supervisionsPtr = supervisions->getValuePointer(numLabels * example);
         for (size_t j = 0; j < numLabels; ++j)
         {
           double supervision = *supervisionsPtr++;
-          bool isPredictionCorrect = (prediction * supervision > 0);
-          (isPredictionCorrect ? muPositives : muNegatives)->incrementValue(j, *weightsPtr++);
+          mu[pred][supervision > 0 ? 1 : 0]->incrementValue(j, *weightsPtr++);
         }
       }
     }
-
-    // compute v_l values
-    for (size_t i = 0; i < numLabels; ++i)
-      votes->setValue(i, muPositives->getValue(i) > (muNegatives->getValue(i) + 1e-9) ? 1.0 : -1.0);
+    votesUpToDate = false;
   }
+  
+  void ensureVotesAreComputed()
+  {
+    if (!votesUpToDate)
+    {
+      for (size_t i = 0; i < 3; ++i)
+      {
+        double* votesPtr = votes[i]->getValuePointer(0);
+        double* muNegativesPtr = mu[i][0]->getValuePointer(0);
+        double* muPositivesPtr = mu[i][1]->getValuePointer(0);
+        for (size_t j = 0; j < numLabels; ++j)
+          *votesPtr++ = *muPositivesPtr++ > (*muNegativesPtr++ + 1e-09) ? 1.0 : -1.0;
+      }
+      votesUpToDate = true;
+    }
+  }  
 };
 
 typedef ReferenceCountedObjectPtr<AdaBoostMHWeakObjective> AdaBoostMHWeakObjectivePtr;
@@ -175,52 +211,56 @@ public:
     return res;
   }
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples, Variable& successVote, Variable& failureVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
     AdaBoostMHWeakObjectivePtr objective = new AdaBoostMHWeakObjective(function.staticCast<LuapeClassifier>(), supervisions, weights, examples);
     objective->setPredictions(trainingSamples->compute(context, weakNode));
 
-    const DenseDoubleVectorPtr& votes = objective->getVotes();
-    const DenseDoubleVectorPtr& muNegatives = objective->getMuNegatives();
-    const DenseDoubleVectorPtr& muPositives = objective->getMuPositives();
-
-    double correctWeight = 0.0;
-    double errorWeight = 0.0;
-    size_t n = votes->getNumValues();
-    const double* votesPtr = votes->getValuePointer(0);
-    const double* muNegativesPtr = muNegatives->getValuePointer(0);
-    const double* muPositivesPtr = muPositives->getValuePointer(0);
-    for (size_t i = 0; i < n; ++i)
+    const DenseDoubleVectorPtr* votes = objective->getVotes();
+    DenseDoubleVectorPtr res[3];
+    
+    for (size_t i = 0; i < 3; ++i)
     {
-      if (*votesPtr++ > 0)
+      const double* votesPtr = votes[i]->getValuePointer(0);
+      const double* muNegativesPtr = objective->getMu(i, false)->getValuePointer(0);
+      const double* muPositivesPtr = objective->getMu(i, true)->getValuePointer(0);
+
+      double correctWeight = 0.0;
+      double errorWeight = 0.0;
+      size_t n = votes[i]->getNumValues();
+    
+      for (size_t j = 0; j < n; ++j)
       {
-        correctWeight += *muPositivesPtr++;
-        errorWeight += *muNegativesPtr++;
+        if (*votesPtr++ > 0)
+        {
+          jassert(*muPositivesPtr > *muNegativesPtr + 1e-9);
+          correctWeight += *muPositivesPtr++;
+          errorWeight += *muNegativesPtr++;
+        }
+        else
+        {
+          jassert(*muPositivesPtr <= *muNegativesPtr + 1e-9);
+          correctWeight += *muNegativesPtr++;
+          errorWeight += *muPositivesPtr++;
+        }
       }
-      else
+
+      if (errorWeight || correctWeight)
       {
-        correctWeight += *muNegativesPtr++;
-        errorWeight += *muPositivesPtr++;
+        double alpha = 0.5 * log(correctWeight / errorWeight);
+  //      context.resultCallback(T("alpha"), alpha);
+
+        res[i] = votes[i]->cloneAndCast<DenseDoubleVector>();
+        res[i]->multiplyByScalar(alpha);
+        // correctWeight + errorWeight = weight of selected examples (1 if all the examples are selected)
+        //jassert(fabs(correctWeight + errorWeight - 1.0) < 1e-9);
+        jassert(alpha > -1e-9);
       }
     }
-
-    if (!errorWeight && !correctWeight)
-      return false;
-
-    double alpha = 0.5 * log(correctWeight / errorWeight);
-    context.resultCallback(T("alpha"), alpha);
-    // correctWeight + errorWeight = weight of selected examples (1 if all the examples are selected)
-    //jassert(fabs(correctWeight + errorWeight - 1.0) < 1e-9);
-    jassert(alpha > 0.0);
-
-    // make symmetric votes
-    DenseDoubleVectorPtr res = votes->cloneAndCast<DenseDoubleVector>();
-    res->multiplyByScalar(alpha);
-    successVote = res;
-
-    res = res->cloneAndCast<DenseDoubleVector>();
-    res->multiplyByScalar(-1.0);
-    failureVote = res;
+    
+    failureVote = res[0];
+    successVote = res[1];
+    missingVote = res[2];
     return true;
   }
 
