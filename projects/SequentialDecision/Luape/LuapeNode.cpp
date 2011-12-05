@@ -126,21 +126,42 @@ VectorPtr LuapeFunctionNode::compute(ExecutionContext& context, const LuapeSampl
 /*
 ** LuapeTestNode
 */
-LuapeTestNode::LuapeTestNode(const LuapeNodePtr& conditionNode, const LuapeNodePtr& successNode, const LuapeNodePtr& failureNode)
-  : LuapeNode(successNode->getType()),
-    conditionNode(conditionNode), successNode(successNode), failureNode(failureNode)
+LuapeTestNode::LuapeTestNode(const LuapeNodePtr& conditionNode, const LuapeNodePtr& successNode, const LuapeNodePtr& failureNode, const LuapeNodePtr& missingNode)
+  : LuapeNode(successNode->getType()), conditionNode(conditionNode), successNode(successNode), failureNode(failureNode), missingNode(missingNode)
 {
+}
+
+size_t LuapeTestNode::getNumSubNodes() const
+  {return 4;}
+  
+const LuapeNodePtr& LuapeTestNode::getSubNode(size_t index) const
+{
+  switch (index)
+  {
+  case 0: return conditionNode;
+  case 1: return successNode;
+  case 2: return failureNode;
+  case 3: return missingNode;
+  };
+  jassert(false);
+  return conditionNode;
 }
 
 String LuapeTestNode::toShortString() const
 {
-  return "(" + conditionNode->toShortString() + " ? " + successNode->toShortString() + T(" : ") + failureNode->toShortString() + T(")");
+  return "(" + conditionNode->toShortString() + " ? " + 
+          successNode->toShortString() + T(" : ") + 
+          failureNode->toShortString() + T(" : ") + 
+          missingNode->toShortString() + T(")");
 }
 
 Variable LuapeTestNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
 {
-  bool test = conditionNode->compute(context, cache).getBoolean();
-  return (test ? successNode : failureNode)->compute(context, cache);
+  Variable condition = conditionNode->compute(context, cache);
+  if (condition.isMissingValue())
+    return missingNode->compute(context, cache);
+  else
+    return (condition.getBoolean() ? successNode : failureNode)->compute(context, cache);
 }
 
 VectorPtr LuapeTestNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const
@@ -149,46 +170,43 @@ VectorPtr LuapeTestNode::compute(ExecutionContext& context, const LuapeSamplesCa
   size_t n = conditions->getNumElements();
   const unsigned char* conditionsPtr = conditions->getData();
 
-  if (successNode.isInstanceOf<LuapeConstantNode>() && failureNode.isInstanceOf<LuapeConstantNode>())
+  if (successNode.isInstanceOf<LuapeConstantNode>() && failureNode.isInstanceOf<LuapeConstantNode>() && missingNode.isInstanceOf<LuapeConstantNode>())
   {
     Variable successValue = successNode.staticCast<LuapeConstantNode>()->getValue();
     Variable failureValue = failureNode.staticCast<LuapeConstantNode>()->getValue();
+    Variable missingValue = failureNode.staticCast<LuapeConstantNode>()->getValue();
 
-    if (successValue.isDouble() && failureValue.isDouble())
+    if (successValue.isDouble() && failureValue.isDouble() && missingValue.isDouble())
     {
-      double v1 = successValue.getDouble();
-      double v2 = failureValue.getDouble();
+      double v[3];
+      v[0] = failureValue.getDouble();
+      v[1] = successValue.getDouble();
+      v[2] = missingValue.getDouble();
       DenseDoubleVectorPtr res = new DenseDoubleVector(n, 0.0);
       for (size_t i = 0; i < n; ++i)
-      {
-        unsigned char c = *conditionsPtr++;
-        if (c < 2)
-          res->setValue(i, c == 1 ? v1 : v2);
-      }
+        res->setValue(i, v[*conditionsPtr++]);
       return res;
     }
-    else if (successValue.isObject() && failureValue.isObject())
+    else if (successValue.isObject() && failureValue.isObject() && missingValue.isObject())
     {
-      const ObjectPtr& o1 = successValue.getObject();
-      const ObjectPtr& o2 = failureValue.getObject();
+      ObjectPtr o[3];
+      o[0] = failureValue.getObject();
+      o[1] = successValue.getObject();
+      o[2] = missingValue.getObject();      
       ObjectVectorPtr res = new ObjectVector(type, n);
       for (size_t i = 0; i < n; ++i)
-      {
-        unsigned char c = *conditionsPtr++;
-        if (c < 2)
-          res->set(i, c == 1 ? o1 : o2);
-      }
+        res->set(i, o[*conditionsPtr++]);
       return res;
     }
     else
     {
+      Variable v[3];
+      v[0] = failureValue;
+      v[1] = successValue;
+      v[2] = missingValue;
       VectorPtr res = vector(type, n);
       for (size_t i = 0; i < n; ++i)
-      {
-        unsigned char c = *conditionsPtr++;
-        if (c < 2)
-          res->setElement(i, c == 1 ? successValue : failureValue);
-      }
+        res->setElement(i, v[*conditionsPtr++]);
       return res;
     }
   }
@@ -196,46 +214,42 @@ VectorPtr LuapeTestNode::compute(ExecutionContext& context, const LuapeSamplesCa
   {
     VectorPtr successValues = cache->compute(context, successNode);
     VectorPtr failureValues = cache->compute(context, failureNode);
-    jassert(successValues->getNumElements() == n && failureValues->getNumElements() == n);
+    VectorPtr missingValues = cache->compute(context, missingNode);
+    jassert(successValues->getNumElements() == n && failureValues->getNumElements() == n && missingValues->getNumElements() == n);
 
-    if (successValues.isInstanceOf<DenseDoubleVector>() && failureValues.isInstanceOf<DenseDoubleVector>())
+    if (successValues.isInstanceOf<DenseDoubleVector>() && failureValues.isInstanceOf<DenseDoubleVector>() && missingValues.isInstanceOf<DenseDoubleVector>())
     {
-      const DenseDoubleVectorPtr& s = successValues.staticCast<DenseDoubleVector>();
-      const DenseDoubleVectorPtr& f = failureValues.staticCast<DenseDoubleVector>();
-
+      DenseDoubleVectorPtr v[3];
+      v[0] = failureValues.staticCast<DenseDoubleVector>();
+      v[1] = successValues.staticCast<DenseDoubleVector>();
+      v[2] = missingValues.staticCast<DenseDoubleVector>();
       DenseDoubleVectorPtr res = new DenseDoubleVector(n, 0.0);
       for (size_t i = 0; i < n; ++i)
-      {
-        unsigned char c = *conditionsPtr++;
-        if (c < 2)
-          res->setValue(i, (c == 1 ? s : f)->getValue(i));
-      }
+        res->setValue(i, v[*conditionsPtr++]->getValue(i));
       return res;
     }
-    else if (successValues.isInstanceOf<ObjectVector>() && failureValues.isInstanceOf<ObjectVector>())
+    else if (successValues.isInstanceOf<ObjectVector>() && failureValues.isInstanceOf<ObjectVector>() && missingValues.isInstanceOf<ObjectVector>())
     {
-      const ObjectVectorPtr& s = successValues.staticCast<ObjectVector>();
-      const ObjectVectorPtr& f = failureValues.staticCast<ObjectVector>();
+      ObjectVectorPtr o[3];
+      o[0] = failureValues.staticCast<ObjectVector>();
+      o[1] = successValues.staticCast<ObjectVector>();
+      o[2] = missingValues.staticCast<ObjectVector>();
       ObjectVectorPtr res = new ObjectVector(type, n);
       for (size_t i = 0; i < n; ++i)
-      {
-        unsigned char c = *conditionsPtr++;
-        if (c < 2)
-          res->set(i, (c == 1 ? s : f)->get(i));
-      }
+        res->set(i, o[*conditionsPtr++]->get(i));
       return res;
     }
     else
     {
+      VectorPtr v[3];
+      v[0] = failureValues;
+      v[1] = successValues;
+      v[2] = missingValues;
       VectorPtr res = vector(type, n);
       for (size_t i = 0; i < n; ++i)
       {
-        unsigned char c = *conditionsPtr++;
-        if (c < 2)
-        {
-          Variable v = (c == 1 ? successValues : failureValues)->getElement(i);
-          res->setElement(i, v);
-        }
+        Variable value = v[*conditionsPtr++]->getElement(i);
+        res->setElement(i, value);
       }
       return res;
     }

@@ -92,7 +92,7 @@ public:
     if (negatives.getCount())
       res += negatives.getCount() * negatives.getVariance();
     if (missings.getCount())
-      res += missings.getSumOfSquares();
+      res += missings.getCount() * missings.getVariance();
     jassert(examples.size() == (size_t)(positives.getCount() + negatives.getCount() + missings.getCount()));
     if (examples.size())
       res /= (double)examples.size();
@@ -104,6 +104,9 @@ public:
 
   double getNegativesMean() const
     {return negatives.getMean();}
+    
+  double getMissingsMean() const
+    {return missings.getMean();}
 
 protected:
   DenseDoubleVectorPtr targets;
@@ -144,8 +147,9 @@ public:
   virtual BoostingWeakObjectivePtr createWeakObjective(const std::vector<size_t>& examples) const
     {return new L2BoostingWeakObjective(pseudoResiduals, examples);}
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples, Variable& successVote, Variable& failureVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
+    jassert(false); // broken
     LuapeSequenceNodePtr sequence = function->getRootNode().staticCast<LuapeSequenceNode>();
     VectorPtr predictions = getTrainingPredictions();
 
@@ -229,12 +233,13 @@ public:
       (*lossGradient)->multiplyByScalar(-1.0);
   }
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples, Variable& successVote, Variable& failureVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
     L2BoostingWeakObjectivePtr objective(new L2BoostingWeakObjective(pseudoResiduals, examples));
     objective->setPredictions(trainingSamples->compute(context, weakNode));
     successVote = objective->getPositivesMean();
     failureVote = objective->getNegativesMean();
+    missingVote = objective->getMissingsMean();
     return true;
   }
 };

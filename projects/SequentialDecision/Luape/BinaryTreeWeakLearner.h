@@ -52,28 +52,17 @@ public:
     }
 
     weakObjective = 0.0;
-    double objective;
-    LuapeNodePtr successNode;
-    if (successExamples.size())
-    {
-      successNode = subLearner->learn(context, structureLearner, successExamples, objective);
-      if (successNode)
-      {
-        res->setSuccess(successNode);
-        weakObjective += objective;
-      }
-    }
+    LuapeNodePtr successNode = subLearn(context, structureLearner, successExamples, weakObjective);
+    if (successNode)
+      res->setSuccess(successNode);
 
-    LuapeNodePtr failureNode;
-    if (failureExamples.size())
-    {
-      failureNode = subLearner->learn(context, structureLearner, failureExamples, objective);
-      if (failureNode)
-      {
-        res->setFailure(failureNode);
-        weakObjective += objective;
-      }
-    }
+    LuapeNodePtr failureNode = subLearn(context, structureLearner, failureExamples, weakObjective);
+    if (failureNode)
+      res->setFailure(failureNode);
+
+    LuapeNodePtr missingNode = subLearn(context, structureLearner, missingExamples, weakObjective);
+    if (missingNode)
+      res->setMissing(missingNode);
     return res;
   }
 
@@ -82,6 +71,17 @@ protected:
 
   BoostingWeakLearnerPtr conditionLearner;
   BoostingWeakLearnerPtr subLearner;
+  
+  LuapeNodePtr subLearn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& subExamples, double& weakObjective) const
+  {
+    if (subExamples.size() == 0)
+      return LuapeNodePtr();    
+    double objective;
+    LuapeNodePtr node = subLearner->learn(context, structureLearner, subExamples, objective);
+    if (node)
+      weakObjective += objective;
+    return node;
+  }
 };
 
 }; /* namespace lbcpp */

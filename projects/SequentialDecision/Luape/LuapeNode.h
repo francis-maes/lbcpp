@@ -153,18 +153,15 @@ protected:
 class LuapeTestNode : public LuapeNode
 {
 public:
-  LuapeTestNode(const LuapeNodePtr& conditionNode, const LuapeNodePtr& successNode, const LuapeNodePtr& failureNode);
+  LuapeTestNode(const LuapeNodePtr& conditionNode, const LuapeNodePtr& successNode, const LuapeNodePtr& failureNode, const LuapeNodePtr& missingNode);
   LuapeTestNode() {}
 
   virtual String toShortString() const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
   virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const;
 
-  virtual size_t getNumSubNodes() const
-    {return 3;}
-    
-  virtual const LuapeNodePtr& getSubNode(size_t index) const
-    {return (index == 0 ? conditionNode : (index == 1 ? successNode : failureNode));}
+  virtual size_t getNumSubNodes() const;
+  virtual const LuapeNodePtr& getSubNode(size_t index) const;
 
   const LuapeNodePtr& getCondition() const
     {return conditionNode;}
@@ -181,6 +178,12 @@ public:
   void setFailure(const LuapeNodePtr& node)
     {failureNode = node;}
 
+  const LuapeNodePtr& getMissing() const
+    {return missingNode;}
+    
+  void setMissing(const LuapeNodePtr& node)
+    {missingNode = node;}
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -189,6 +192,7 @@ protected:
   LuapeNodePtr conditionNode;
   LuapeNodePtr successNode;
   LuapeNodePtr failureNode;
+  LuapeNodePtr missingNode;
 };
 
 /*

@@ -77,11 +77,11 @@ bool BoostingLearner::setExamples(ExecutionContext& context, bool isTrainingData
 LuapeNodePtr BoostingLearner::turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples) const
 {
   jassert(weakNode);
-  Variable successVote, failureVote;
-  if (!computeVotes(context, weakNode, examples, successVote, failureVote))
+  Variable successVote, failureVote, missingVote;
+  if (!computeVotes(context, weakNode, examples, successVote, failureVote, missingVote))
     return LuapeNodePtr();
   jassert(weakNode->getType() == booleanType || weakNode->getType() == probabilityType);
-  return new LuapeTestNode(weakNode, new LuapeConstantNode(successVote), new LuapeConstantNode(failureVote));
+  return new LuapeTestNode(weakNode, new LuapeConstantNode(successVote), new LuapeConstantNode(failureVote), new LuapeConstantNode(missingVote));
 }
 
 bool BoostingLearner::doLearningIteration(ExecutionContext& context)
