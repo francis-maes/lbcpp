@@ -654,4 +654,138 @@ protected:
   String supervisionDirectory;
 };
 
+class AverageDirectoryScoresWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    juce::OwnedArray<File> files;
+    directory.findChildFiles(files, File::findFiles, false, T("*.trace"));
+
+    ScalarVariableMeanAndVariance res;
+    for (size_t i = 0; i < (size_t)files.size(); ++i)
+    {
+      ExecutionTracePtr trace = ExecutionTrace::createFromFile(context, *files[i]).staticCast<ExecutionTrace>();
+      if (trace)
+      {
+        const double value = trace->getRootNode()->findFirstNode()->getReturnValue().getDouble();
+        context.informationCallback(files[i]->getFileName(), String(value));
+        res.push(value);
+      }
+      else
+        context.warningCallback(files[i]->getFileName(), T("Not a trace"));
+    }
+    context.informationCallback(T("Average: ") + String(res.getMean()));
+    context.informationCallback(T("Standard Deviation: ") + String(res.getStandardDeviation()));
+
+    return res.getMean();
+  }
+
+protected:
+  friend class AverageDirectoryScoresWorkUnitClass;
+
+  File directory;
+};
+
+class CreateProteinFromPDBTestUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    ProteinPtr protein = Protein::createFromPDB(context, pdbFile, true);
+    if (!protein)
+    {
+      context.errorCallback(T("No protein !"));
+      return false;
+    }
+    context.informationCallback(T("Protein's name: ") + protein->getName());
+    context.informationCallback(T("Protein's length: ") + String((int)protein->getLength()));
+
+    return protein;
+  }
+
+protected:
+  friend class CreateProteinFromPDBTestUnitClass;
+
+  File pdbFile;
+};
+
+class ExportDisulfideBondFeaturesWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, 0, T("Loading proteins"));
+    if (!proteins)
+    {
+      context.errorCallback(T("ExportDisulfideBondFeaturesWorkUnit::run"), T("No proteins"));
+      return false;
+    }
+
+    if (output == File::nonexistent)
+      output = context.getFile(T("disulfideBonds.arff"));
+    context.informationCallback(T("Output file: ") + output.getFileName());
+
+    LargeProteinParametersPtr parameter = LargeProteinParameters::createTestObject(40);
+    LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(parameter);
+
+    OutputStream* o = output.createOutputStream();
+
+    writeHeader(context, o);
+    writeData(context, proteins, predictor, o);
+
+    delete o;
+    return true;
+  }
+
+protected:
+  friend class ExportDisulfideBondFeaturesWorkUnitClass;
+
+  File inputDirectory;
+  File supervisionDirectory;
+  File output;
+
+  void writeHeader(ExecutionContext& context, OutputStream* const o) const
+  {
+    *o << "@RELATION \"Features of disulfide bonds\"\n"; 
+    const size_t n = largeProteinParametersClass->getNumMemberVariables();
+    for (size_t i = 0; i < n; ++i)
+      *o << "@ATTRIBUTE " << largeProteinParametersClass->getMemberVariableName(i) << " NUMERIC\n";
+    *o << "@ATTRIBUTE class {0,1}\n";
+  }
+
+  void writeData(ExecutionContext& context, const ContainerPtr& proteins, const LargeProteinPredictorParametersPtr& predictor, OutputStream* const o) const
+  {
+    *o << "@DATA\n";
+
+    FunctionPtr proteinPerception = predictor->createProteinPerception();
+    FunctionPtr disulfideFunction = predictor->createDisulfideSymmetricResiduePairVectorPerception();
+    
+    VectorPtr examples = vector(pairClass(doubleVectorClass(enumValueType, doubleType), probabilityType)); 
+
+    const size_t n = proteins->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable perception = proteinPerception->compute(context, proteins->getElement(i).getObjectAndCast<Pair>()->getFirst());
+      SymmetricMatrixPtr featuresVector = disulfideFunction->compute(context, perception).getObjectAndCast<SymmetricMatrix>();
+      SymmetricMatrixPtr supervision = proteins->getElement(i).getObjectAndCast<Pair>()->getSecond().getObjectAndCast<Protein>()->getDisulfideBonds(context);
+      jassert(featuresVector && supervision && featuresVector->getDimension() == supervision->getDimension());
+      const size_t dimension = featuresVector->getDimension();
+      for (size_t j = 0; j < dimension; ++j)
+        for (size_t k = j + 1; k < dimension; ++k)
+        {
+          writeFeatures(featuresVector->getElement(j,k).getObjectAndCast<DoubleVector>(), o);
+          *o << (supervision->getElement(j,k).getDouble() > 0.5f ? "1" : "0");
+        }
+    }
+  }
+
+  void writeFeatures(const DoubleVectorPtr& features, OutputStream* const o) const
+  {
+    DenseDoubleVectorPtr ddv = features->toDenseDoubleVector();
+    for (size_t i = 0; i < ddv->getNumValues(); ++i)
+      *o << ddv->getValue(i) << ",";
+  }
+};
+
 };

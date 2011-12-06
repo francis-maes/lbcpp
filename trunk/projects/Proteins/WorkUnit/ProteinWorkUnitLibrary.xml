@@ -171,6 +171,17 @@
     <variable type="String" name="inputDirectory" shortName="in"/>
     <variable type="String" name="supervisionDirectory" shortName="sup"/>
   </class>
+  <class name="AverageDirectoryScoresWorkUnit" base="WorkUnit">
+    <variable type="File" name="directory" shortName="in"/>
+  </class>
+  <class name="CreateProteinFromPDBTestUnit" base="WorkUnit">
+    <variable type="File" name="pdbFile" shortName="in"/>
+  </class>
+  <class name="ExportDisulfideBondFeaturesWorkUnit" base="WorkUnit">
+    <variable type="File" name="inputDirectory" shortName="in"/>
+    <variable type="File" name="supervisionDirectory" shortName="sup"/>
+    <variable type="File" name="output" shortName="o"/>
+  </class>
   <!-- END CysteinBox -->
 
   <!-- BEGIN LargeBox -->

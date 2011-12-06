@@ -32,8 +32,8 @@ public:
   void releaseLock();
 
 protected:
-  CriticalSection* lock;
   ExecutionContextPtr context;
+  CriticalSection* lock;
 };
 
 }; /* namespace lbcpp */
