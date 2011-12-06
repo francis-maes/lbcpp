@@ -180,7 +180,7 @@
   <class name="ExportDisulfideBondFeaturesWorkUnit" base="WorkUnit">
     <variable type="File" name="inputDirectory" shortName="in"/>
     <variable type="File" name="supervisionDirectory" shortName="sup"/>
-    <variable type="File" name="output" shortName="o"/>
+    <variable type="String" name="outputPrefix" shortName="o"/>
   </class>
   <!-- END CysteinBox -->
 
