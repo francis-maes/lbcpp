@@ -722,19 +722,25 @@ public:
       return false;
     }
 
-    if (output == File::nonexistent)
-      output = context.getFile(T("disulfideBonds.arff"));
-    context.informationCallback(T("Output file: ") + output.getFileName());
+    if (outputPrefix == String::empty)
+      outputPrefix = T("disulfideBonds");
 
     LargeProteinParametersPtr parameter = LargeProteinParameters::createTestObject(40);
     LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(parameter);
 
-    OutputStream* o = output.createOutputStream();
-
+    OutputStream* o = context.getFile(outputPrefix + T(".train.arff")).createOutputStream();
     writeHeader(context, o);
-    writeData(context, proteins, predictor, o);
-
+    writeData(context, proteins->invFold(0,10), predictor, o);
     delete o;
+
+    o = context.getFile(outputPrefix + T(".test.arff")).createOutputStream();
+    writeHeader(context, o);
+    writeData(context, proteins->fold(0,10), predictor, o);
+    delete o;
+
+    context.informationCallback(T("Output train file: ") + outputPrefix + T(".train.arff"));
+    context.informationCallback(T("Output test file : ") + outputPrefix + T(".test.arff"));
+    
     return true;
   }
 
@@ -743,7 +749,7 @@ protected:
 
   File inputDirectory;
   File supervisionDirectory;
-  File output;
+  String outputPrefix;
 
   void writeHeader(ExecutionContext& context, OutputStream* const o) const
   {
