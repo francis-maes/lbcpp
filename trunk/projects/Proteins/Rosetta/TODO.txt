@@ -11,20 +11,23 @@ v depliement proteines
   v relancer mtm
   v relancer en
   v relancer mtm et en
-- relancer optim sur test avec resultats unfold 
+v relancer optim sur test avec resultats unfold 
 - lancer EDA sur optim_new_learn_all_it1
 
 
 TODO Rosetta
 ============
 
-- corriger conversion pose to protein (patche, --> plus dutilisation du DD) 
+- corriger conversion pose to protein (patche, --> plus dutilisation du DD)
+  - ajouter des verifications avant deffectuer les transformations ou apres lapplication de movers?
+  - pose to protein
+  - protein to pose 
 - corriger probleme import pdb (Rosetta)
 - corriger rosetta parallele (ProteinTestParallelWorkUnit)
 - corriger probleme hbond tripped
 
 - demander pq modification du pdb + fournir fichier exemple
-- demander pq creation de core....
+v demander pq creation de core....
 
 
 

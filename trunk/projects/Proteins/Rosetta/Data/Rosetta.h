@@ -11,6 +11,13 @@
 
 # include <lbcpp/lbcpp.h>
 
+# ifdef LBCPP_PROTEIN_ROSETTA
+#  undef T
+#  include <core/init.hh>
+#  include <utility/vector0.hh>
+#  define T JUCE_T
+# endif //! LBCPP_PROTEIN_ROSETTA
+
 namespace lbcpp
 {
 
@@ -21,20 +28,31 @@ class Rosetta : public Object
 {
 public:
   Rosetta();
-  Rosetta(ExecutionContext& context);
-  Rosetta(Rosetta& rosetta);
+  ~Rosetta();
 
-  void setContext(ExecutionContext& context);
-
-  void init();
+  void init(ExecutionContext& context, bool verbose = false, int seed = -1);
+  static VariableVectorPtr createRosettaPool(ExecutionContext& context, size_t size);
 
   void getLock();
   void releaseLock();
 
 protected:
+  void setContext(ExecutionContext& context);
+
+  void getPoolLock();
+  void releasePoolLock();
+
+  friend class RosettaClass;
+
   ExecutionContextPtr context;
-  CriticalSection* lock;
+  CriticalSection* ownLock;
+  CriticalSection* poolLock;
+  size_t nProc;
+  size_t id;
+  bool isInPool;
 };
+
+extern ClassPtr rosettaClass;
 
 }; /* namespace lbcpp */
 
