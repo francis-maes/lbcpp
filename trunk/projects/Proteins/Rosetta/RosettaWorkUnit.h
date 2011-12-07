@@ -62,6 +62,7 @@ public:
             T("Intermediate conformations")));
         juce::OwnedArray<File> movers;
         String nameToSearch = (*references[i]).getFileNameWithoutExtension();
+        context.informationCallback(T("Name structure : ") + nameToSearch);
 
         ProteinPtr protein = Protein::createFromFile(context, (*references[i]));
         core::pose::PoseOP pose;

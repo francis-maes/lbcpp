@@ -1,14 +1,16 @@
 TODO LBCPP
 ==========
 
-- depliement proteines
-
 - retirer les ifdef LBCPP_PROTEIN_ROSETTA
 
 
 TODO NIC3
 =========
 
+v depliement proteines
+  v relancer mtm
+  v relancer en
+  v relancer mtm et en
 - relancer optim sur test avec resultats unfold 
 - lancer EDA sur optim_new_learn_all_it1
 
