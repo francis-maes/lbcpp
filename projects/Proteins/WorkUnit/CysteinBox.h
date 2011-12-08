@@ -729,18 +729,18 @@ public:
     LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(parameter);
 
     OutputStream* o = context.getFile(outputPrefix + T(".train.arff")).createOutputStream();
-    writeHeader(context, o);
+    writeHeader(context, predictor, o);
     writeData(context, proteins->invFold(0,10), predictor, o);
     delete o;
 
     o = context.getFile(outputPrefix + T(".test.arff")).createOutputStream();
-    writeHeader(context, o);
+    writeHeader(context, predictor, o);
     writeData(context, proteins->fold(0,10), predictor, o);
     delete o;
 
     context.informationCallback(T("Output train file: ") + outputPrefix + T(".train.arff"));
     context.informationCallback(T("Output test file : ") + outputPrefix + T(".test.arff"));
-    
+
     return true;
   }
 
@@ -751,12 +751,21 @@ protected:
   File supervisionDirectory;
   String outputPrefix;
 
-  void writeHeader(ExecutionContext& context, OutputStream* const o) const
+  void writeHeader(ExecutionContext& context, const LargeProteinPredictorParametersPtr& predictor, OutputStream* const o) const
   {
-    *o << "@RELATION \"Features of disulfide bonds\"\n"; 
-    const size_t n = largeProteinParametersClass->getNumMemberVariables();
+    *o << "@RELATION FeaturesOfDisulfideBonds\n"; 
+
+    FunctionPtr proteinPerception = predictor->createProteinPerception();
+    proteinPerception->initialize(context, proteinClass);
+    TypePtr perceptionType = proteinPerception->getOutputType();
+
+    FunctionPtr disulfideFunction = predictor->createDisulfideSymmetricResiduePairVectorPerception();
+    disulfideFunction->initialize(context, perceptionType);
+    TypePtr disulfideType = disulfideFunction->getOutputType();
+    EnumerationPtr enumeration = disulfideType->getTemplateArgument(0)->getTemplateArgument(0).staticCast<Enumeration>();
+    const size_t n = enumeration->getNumElements();
     for (size_t i = 0; i < n; ++i)
-      *o << "@ATTRIBUTE " << largeProteinParametersClass->getMemberVariableName(i) << " NUMERIC\n";
+      *o << "@ATTRIBUTE " << enumeration->getElement(i)->getName() << " NUMERIC\n";
     *o << "@ATTRIBUTE class {0,1}\n";
   }
 
@@ -766,7 +775,7 @@ protected:
 
     FunctionPtr proteinPerception = predictor->createProteinPerception();
     FunctionPtr disulfideFunction = predictor->createDisulfideSymmetricResiduePairVectorPerception();
-    
+
     VectorPtr examples = vector(pairClass(doubleVectorClass(enumValueType, doubleType), probabilityType)); 
 
     const size_t n = proteins->getNumElements();
