@@ -55,14 +55,19 @@ public:
       context.enterScope(T("Loading learning examples..."));
       juce::OwnedArray<File> references;
       referencesFile.findChildFiles(references, File::findFiles, false, T("*.xml"));
+      size_t maxCount = 10000;
+      std::vector<size_t> res;
+      RandomGeneratorPtr rand = new RandomGenerator();
+      rand->sampleOrder(references.size(), res);
 
-      for (size_t i = 0; i < references.size(); i++)
+      for (size_t i = 0; (i < references.size()) && (i < maxCount); i++)
       {
+        size_t index = res[i];
         juce::OwnedArray<File> movers;
-        String nameToSearch = (*references[i]).getFileNameWithoutExtension();
+        String nameToSearch = (*references[index]).getFileNameWithoutExtension();
         context.informationCallback(T("Name structure : ") + nameToSearch);
 
-        ProteinPtr protein = Protein::createFromFile(context, (*references[i]));
+        ProteinPtr protein = Protein::createFromFile(context, (*references[index]));
         core::pose::PoseOP pose;
         convertProteinToPose(context, protein, pose);
 
@@ -76,12 +81,10 @@ public:
               Variable::createFromFile(context, (*movers[j])).getObjectAndCast<ProteinMover> ();
           inputWorkers->append(inWorker);
           inputMovers->append(inMover);
-          context.progressCallback(new ProgressionState((size_t)i, (size_t)0,
-              T("Intermediate conformations")));
+          context.progressCallback(new ProgressionState((size_t)(i + 1), (size_t)juce::jmin(
+              (int)maxCount, (int)references.size()), T("Intermediate conformations")));
         }
       }
-      context.progressCallback(new ProgressionState((size_t)references.size(), (size_t)references.size(),
-          T("Intermediate conformations")));
       context.leaveScope();
     }
 

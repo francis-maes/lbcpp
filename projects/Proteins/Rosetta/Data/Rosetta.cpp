@@ -116,8 +116,6 @@ void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed)
   }
 
   // initialize rosetta
-
-
   core::init(args);
   context->informationCallback(T("Rosetta initialized. Id : ") + String((int)id));
 
