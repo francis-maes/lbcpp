@@ -58,8 +58,6 @@ public:
 
       for (size_t i = 0; i < references.size(); i++)
       {
-        context.progressCallback(new ProgressionState((size_t)i, (size_t)references.size(),
-            T("Intermediate conformations")));
         juce::OwnedArray<File> movers;
         String nameToSearch = (*references[i]).getFileNameWithoutExtension();
         context.informationCallback(T("Name structure : ") + nameToSearch);
@@ -68,7 +66,7 @@ public:
         core::pose::PoseOP pose;
         convertProteinToPose(context, protein, pose);
 
-        nameToSearch += T("_mover_*.xml");
+        nameToSearch += T("_mover.xml");
         moversFile.findChildFiles(movers, File::findFiles, false, nameToSearch);
         for (size_t j = 0; (j < movers.size()) && (j < numMoversToLearn); j++)
         {
@@ -78,6 +76,8 @@ public:
               Variable::createFromFile(context, (*movers[j])).getObjectAndCast<ProteinMover> ();
           inputWorkers->append(inWorker);
           inputMovers->append(inMover);
+          context.progressCallback(new ProgressionState((size_t)i, (size_t)0,
+              T("Intermediate conformations")));
         }
       }
       context.progressCallback(new ProgressionState((size_t)references.size(), (size_t)references.size(),
@@ -90,7 +90,7 @@ public:
     juce::OwnedArray<File> results;
     inputFile.findChildFiles(results, File::findFiles, false, T("*.xml"));
 
-    double frequenceVerbosity = 0.005;
+    double frequenceVerbosity = 0.01;
     std::vector<ScalarVariableMeanAndVariancePtr> meansAndVariances;
 
     for (size_t i = 0; i < results.size(); i++)
@@ -120,7 +120,7 @@ public:
       RandomGeneratorPtr random = new RandomGenerator();
       DenseDoubleVectorPtr energiesAtIteration;
       ProteinSimulatedAnnealingOptimizerPtr optimizer = new ProteinSimulatedAnnealingOptimizer(4.0,
-          0.01, 50, 1000000, 5, currentName, frequenceVerbosity, 10, outputFile);
+          0.01, 50, 250000, 5, currentName, frequenceVerbosity, 10, outputFile);
 
       optimizer->apply(context, worker, random, energiesAtIteration);
 
