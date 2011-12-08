@@ -13,7 +13,7 @@ namespace lbcpp
 {
 
 Rosetta::Rosetta()
-  : context(NULL), ownLock(new CriticalSection()), poolLock(NULL), id(0), nProc(1), isInPool(false) {}
+  : context(NULL), ownLock(new CriticalSection()), poolLock(NULL), nProc(1), id(0), isInPool(false) {}
 Rosetta::~Rosetta()
 {
   delete ownLock;
@@ -58,6 +58,7 @@ VariableVectorPtr Rosetta::createRosettaPool(ExecutionContext& context, size_t s
 
 void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed)
 {
+  # ifdef LBCPP_PROTEIN_ROSETTA
   if (isInPool)
     getPoolLock();
 
@@ -125,6 +126,7 @@ void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed)
 
   if (isInPool)
     releasePoolLock();
+  # endif //! LBCPP_PROTEIN_ROSETTA
 }
 
 }; /* namespace lbcpp */
