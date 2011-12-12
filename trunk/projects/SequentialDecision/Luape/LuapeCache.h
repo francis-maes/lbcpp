@@ -63,6 +63,8 @@ public:
   size_t getCacheSizeInBytes() const
     {return actualCacheSize;}
 
+  bool checkCacheIsCorrect(ExecutionContext& context, const std::vector<LuapeInputNodePtr>& inputs, const LuapeNodePtr& node);
+
 protected:
   // node -> (samples, sorted double values)
   typedef std::map<LuapeNodePtr, std::pair<VectorPtr, SparseDoubleVectorPtr> > NodeToSamplesMap;

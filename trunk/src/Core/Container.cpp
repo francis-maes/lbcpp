@@ -91,6 +91,28 @@ void Container::clone(ExecutionContext& context, const ObjectPtr& target) const
     targetContainer->setElement(i, getElement(i));
 }
 
+int Container::compare(const ObjectPtr& otherObject) const
+{
+  if (otherObject.get() == this)
+    return 0;
+  if (otherObject.isInstanceOf<Container>())
+  {
+    const ContainerPtr& other = otherObject.staticCast<Container>();
+    size_t n = getNumElements();
+    if (n != other->getNumElements())
+      return (int)n - (int)other->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      int c = getElement(i).compare(other->getElement(i));
+      if (c != 0)
+        return c;
+    }
+    return 0;
+  }
+  else
+    return Object::compare(otherObject);
+}
+
 String Container::getElementName(size_t index) const
   {return getElementsEnumeration()->getElementName(index);}
 

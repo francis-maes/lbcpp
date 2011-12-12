@@ -1,6 +1,3 @@
-Luape-Missing Values: 
-  - explicitly support the three possible outcomes in WeakObjectives
-    - TestNode with 3 outcomes (or 2 if no training data is missing)
 
 Luape-Go Perception:
   - support for polymorphism, neighborhood, regions

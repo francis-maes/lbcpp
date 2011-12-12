@@ -228,6 +228,35 @@ SparseDoubleVectorPtr LuapeSamplesCache::computeSortedDoubleValues(ExecutionCont
   return res;
 }
 
+bool LuapeSamplesCache::checkCacheIsCorrect(ExecutionContext& context, const std::vector<LuapeInputNodePtr>& inputs, const LuapeNodePtr& node)
+{
+  size_t n = node->getNumSubNodes();
+  for (size_t i = 0; i < n; ++i)
+    if (!checkCacheIsCorrect(context, inputs, node->getSubNode(i)))
+      return false;
+
+  VectorPtr outputs = compute(context, node);
+  n = outputs->getNumElements();
+  for (size_t i = 0; i < n; ++i)
+  {
+    LuapeInstanceCachePtr instanceCache(new LuapeInstanceCache());
+    jassert(inputs.size() == inputCaches.size());
+    for (size_t j = 0; j < inputs.size(); ++j)
+    {
+      jassert(inputCaches[j]->getNumElements() == n);
+      instanceCache->set(inputs[j], inputCaches[j]->getElement(i));
+    }
+    Variable sampleCacheOutput = outputs->getElement(i);
+    Variable instanceCacheOutput = instanceCache->compute(context, node);
+    if (sampleCacheOutput != instanceCacheOutput)
+    {
+      jassert(false);
+      return false;
+    }
+  }
+  return true;
+}
+
 /*
 ** LuapeNodeUniverse
 */

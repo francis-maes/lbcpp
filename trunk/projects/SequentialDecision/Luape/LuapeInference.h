@@ -31,6 +31,9 @@ public:
   const LuapeInputNodePtr& getInput(size_t index) const
     {jassert(index < inputs.size()); return inputs[index];}
   
+  const std::vector<LuapeInputNodePtr>& getInputs() const
+    {return inputs;}
+
   void addInput(const TypePtr& type, const String& name)
     {inputs.push_back(new LuapeInputNode(type, name));}
 
