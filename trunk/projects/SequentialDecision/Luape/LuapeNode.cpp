@@ -159,7 +159,7 @@ Variable LuapeTestNode::compute(ExecutionContext& context, const LuapeInstanceCa
 {
   Variable condition = conditionNode->compute(context, cache);
   if (condition.isMissingValue())
-    return missingNode->compute(context, cache);
+    return missingNode ? missingNode->compute(context, cache) : Variable::missingValue(type);
   else
     return (condition.getBoolean() ? successNode : failureNode)->compute(context, cache);
 }
@@ -350,7 +350,11 @@ Variable LuapeVectorSumNode::compute(ExecutionContext& context, const LuapeInsta
   ClassPtr doubleVectorClass = type;
   DenseDoubleVectorPtr res = new DenseDoubleVector(doubleVectorClass);
   for (size_t i = 0; i < nodes.size(); ++i)
-    cache->compute(context, nodes[i]).getObjectAndCast<DenseDoubleVector>()->addTo(res);
+  {
+    DenseDoubleVectorPtr value = cache->compute(context, nodes[i]).getObjectAndCast<DenseDoubleVector>();
+    if (value)
+      value->addTo(res);
+  }
   return res;
 }
 

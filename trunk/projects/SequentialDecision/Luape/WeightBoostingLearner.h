@@ -49,7 +49,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<WeightBoostingLearner> WeightBoostingLearnerPtr;
 
-extern WeightBoostingLearnerPtr adaBoostMHLearner(BoostingWeakLearnerPtr weakLearner);
+extern WeightBoostingLearnerPtr adaBoostMHLearner(BoostingWeakLearnerPtr weakLearner, bool useSymmetricVotes);
 
 }; /* namespace lbcpp */
 
