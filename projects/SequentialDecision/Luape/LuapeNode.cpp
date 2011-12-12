@@ -174,7 +174,7 @@ VectorPtr LuapeTestNode::compute(ExecutionContext& context, const LuapeSamplesCa
   {
     Variable successValue = successNode.staticCast<LuapeConstantNode>()->getValue();
     Variable failureValue = failureNode.staticCast<LuapeConstantNode>()->getValue();
-    Variable missingValue = failureNode.staticCast<LuapeConstantNode>()->getValue();
+    Variable missingValue = missingNode.staticCast<LuapeConstantNode>()->getValue();
 
     if (successValue.isDouble() && failureValue.isDouble() && missingValue.isDouble())
     {
@@ -212,8 +212,8 @@ VectorPtr LuapeTestNode::compute(ExecutionContext& context, const LuapeSamplesCa
   }
   else
   {
-    VectorPtr successValues = cache->compute(context, successNode);
     VectorPtr failureValues = cache->compute(context, failureNode);
+    VectorPtr successValues = cache->compute(context, successNode);
     VectorPtr missingValues = cache->compute(context, missingNode);
     jassert(successValues->getNumElements() == n && failureValues->getNumElements() == n && missingValues->getNumElements() == n);
 

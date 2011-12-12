@@ -143,39 +143,39 @@ public:
 
     const LuapeInferencePtr& function = structureLearner->getFunction();
 
-    double optimalReward = -DBL_MAX;
+    double optimalWeakObjective = -DBL_MAX;
     LuapeNodePtr optimalWeakLearner;
     if (computeOptimalLearner)
     {
       context.enterScope(T("Computing optimal weak learner"));
-      findOptimalWeakLearner(context, structureLearner, new LuapeGraphBuilderState(function, typeSearchSpace), examples, optimalReward, optimalWeakLearner);
-      context.leaveScope(optimalReward);
+      findOptimalWeakLearner(context, structureLearner, new LuapeGraphBuilderState(function, typeSearchSpace), examples, optimalWeakObjective, optimalWeakLearner);
+      context.leaveScope(optimalWeakObjective);
     }
 
     context.enterScope(T("Weak Learning"));
-    double bestReward = -DBL_MAX;
+    weakObjective = -DBL_MAX;
     LuapeNodePtr bestWeakLearner;
     policy->startEpisodes(context);
     for (size_t i = 0; i < budget; ++i)
     {
       double reward;
       LuapeNodePtr weakNode = sampleTrajectory(context, structureLearner, reward, examples);
-      if (weakNode && reward > bestReward)
-        bestWeakLearner = weakNode, bestReward = reward;
+      if (weakNode && reward > weakObjective)
+        bestWeakLearner = weakNode, weakObjective = reward;
       context.progressCallback(new ProgressionState(i+1, budget, T("Trajectories")));
     }
     policy->finishEpisodes(context);
-    context.leaveScope(bestReward);
+    context.leaveScope(weakObjective);
     if (bestWeakLearner)
-      context.informationCallback(T("Weak learner: ") + bestWeakLearner->toShortString() + T(" [") + String(bestReward) + T("]"));
+      context.informationCallback(T("Weak learner: ") + bestWeakLearner->toShortString() + T(" [") + String(weakObjective) + T("]"));
     else
       context.errorCallback(T("Failed to find a weak learner"));
 
     if (computeOptimalLearner)
     {
-      context.informationCallback(T("Optimal weak learner: ") + optimalWeakLearner->toShortString() + T(" [") + String(optimalReward) + T("]"));
-      context.resultCallback(T("regret"), optimalReward - bestReward);
-      const_cast<PolicyBasedWeakLearner* >(this)->regret.push(optimalReward - bestReward);
+      context.informationCallback(T("Optimal weak learner: ") + optimalWeakLearner->toShortString() + T(" [") + String(optimalWeakObjective) + T("]"));
+      context.resultCallback(T("regret"), optimalWeakObjective - weakObjective);
+      const_cast<PolicyBasedWeakLearner* >(this)->regret.push(optimalWeakObjective - weakObjective);
       context.resultCallback(T("averageRegret"), regret.getMean());
       context.informationCallback(T("Average Regret: ") + String(regret.getMean()));
     }
@@ -184,7 +184,7 @@ public:
     return makeContribution(context, structureLearner, bestWeakLearner, examples);
   }
 
-  LuapeNodePtr sampleTrajectory(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, double& reward, const std::vector<size_t>& examples) const
+  LuapeNodePtr sampleTrajectory(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, double& weakObjective, const std::vector<size_t>& examples) const
   {
     const LuapeInferencePtr& function = structureLearner->getFunction();
     LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(function, typeSearchSpace);
@@ -210,10 +210,10 @@ public:
     if (builder->getStackSize() == 1)
     {
       node = builder->getStackElement(0);
-      reward = computeWeakObjectiveWithEventualStump(context, structureLearner, node, examples);
+      weakObjective = computeWeakObjectiveWithEventualStump(context, structureLearner, node, examples);
     }
     else
-      reward = 0.0;
+      weakObjective = 0.0;
 
    /* if (noMoreActions)
       context.informationCallback(T("Out-of-actions: ") + builder->toShortString());

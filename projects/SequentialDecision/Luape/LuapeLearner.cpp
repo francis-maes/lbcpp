@@ -122,6 +122,8 @@ bool BoostingLearner::doLearningIteration(ExecutionContext& context)
       context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
   }
 
+  //trainingSamples->checkCacheIsCorrect(context, function->getInputs(), function->getRootNode());
+
   context.resultCallback(T("contribution"), contribution);
   return true;
 }

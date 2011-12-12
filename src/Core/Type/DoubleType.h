@@ -72,7 +72,7 @@ public:
     {return true;}
 
   virtual double toDouble(const VariableValue& value) const
-    {return isMissingValue(value) ? 0.0 : value.getDouble();}
+    {return value.getDouble();}
 
   static String positiveNumberToShortString(double d)
   {
