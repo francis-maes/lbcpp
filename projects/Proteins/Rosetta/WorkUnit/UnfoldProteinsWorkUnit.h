@@ -119,7 +119,7 @@ public:
         tempQual = evaluateQualityUnfold(tempPose, &energy);
 
         // if good, modify structure, qual, save to trace and to disk
-        if (tempQual > qual)
+        if (tempQual > averageIncrease * qual)
         {
           qual = tempQual;
           *workingPose = *tempPose;
@@ -166,6 +166,7 @@ protected:
   String outputDirectoryStructures;
   String outputDirectoryMovers;
   int numIterations;
+  double averageIncrease;
 };
 
 }; /* namespace lbcpp */

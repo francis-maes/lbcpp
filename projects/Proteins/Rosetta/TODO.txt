@@ -14,6 +14,12 @@ v depliement proteines
 v relancer optim sur test avec resultats unfold 
 - lancer EDA sur optim_new_learn_all_it1
 
+- depliement
+  - mettre un facteur de depliement 1.1 ou 1.2 + plus diterations
+    - essayer sur energie (facteur ne change pas grand chose)
+    - essayer sur mtm (facteur changera)
+    - laisser tomber enmtm 
+
 
 TODO Rosetta
 ============
