@@ -30,7 +30,6 @@ Core:
 Explorer:
  * LogScale dans les curves
  * Systeme d'export/import de fichiers general
- * Export as GnuPlot Data File
  * Export as CSV
  * ExecutionTrace: refermer les noeuds au fur et à mesure
  * ExecutionTrace: Améliorer le système de colonnes

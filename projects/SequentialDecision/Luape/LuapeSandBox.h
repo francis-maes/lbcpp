@@ -56,7 +56,7 @@ public:
     for (size_t i = 1; i < treeDepth; ++i)
       weakLearner = binaryTreeWeakLearner(conditionLearner, weakLearner);
 
-    classifier->setBatchLearner(new LuapeBatchLearner(adaBoostMHLearner(weakLearner), maxIterations));
+    classifier->setBatchLearner(new LuapeBatchLearner(adaBoostMHLearner(weakLearner, false), maxIterations));
     classifier->setEvaluator(defaultSupervisedEvaluator());
 
     classifier->train(context, trainData, testData, T("Training"), true);

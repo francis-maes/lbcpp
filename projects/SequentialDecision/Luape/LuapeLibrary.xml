@@ -162,7 +162,8 @@
 
   <class name="WeightBoostingLearner" base="BoostingLearner" abstract="yes"/>
   <class name="AdaBoostMHLearner" base="WeightBoostingLearner">
-    <constructor arguments="BoostingWeakLearnerPtr weakLearner"/>
+    <constructor arguments="BoostingWeakLearnerPtr weakLearner, bool useSymmetricVotes"/>
+    <variable type="Boolean" name="useSymmetricVotes"/>
   </class>
   
   <class name="GradientBoostingLearner" base="BoostingLearner" abstract="yes"/>
