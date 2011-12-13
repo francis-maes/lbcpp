@@ -106,7 +106,9 @@ double LuapeBinaryClassifier::evaluatePredictions(ExecutionContext& context, con
     bool predicted = (pred->getValue(i) > 0);
     Variable supervision = data[i]->getVariable(1);
     bool correct;
-    if (!lbcpp::convertSupervisionVariableToBoolean(supervision, correct) || predicted != correct)
+    if (!lbcpp::convertSupervisionVariableToBoolean(supervision, correct))
+      jassert(false);
+    if (predicted != correct)
       ++numErrors;
   }
   return numErrors / (double)n;

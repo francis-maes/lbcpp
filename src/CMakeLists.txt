@@ -61,6 +61,7 @@ GENERATE_INTROSPECTION_CODE(Optimizer/Optimizer/OptimizerOptimizerLibrary.xml Op
 GENERATE_INTROSPECTION_CODE(Luape/LuapeLibrary.xml LuapeLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/BoostingLearner/LuapeBoostingLearnerLibrary.xml LuapeBoostingLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/BoostingWeakLearner/LuapeBoostingWeakLearnerLibrary.xml LuapeBoostingWeakLearnerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Luape/Function/LuapeFunctionLibrary.xml LuapeFunctionLibrary.cpp)
 
 IF(LBCPP_USER_INTERFACE)
   GENERATE_INTROSPECTION_CODE(UserInterface/Component/UserInterfaceComponentLibrary.xml UserInterfaceComponentLibrary.cpp)
@@ -647,9 +648,19 @@ SET(LBCPP_LUAPE_SOURCES
   ../include/lbcpp/Luape/LuapeLearner.h
   Luape/LuapeLearner.cpp
   ../include/lbcpp/Luape/LuapeBatchLearner.h
-  Luape/LuapeSimpleFunctions.h
   Luape/LuapeLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeLibrary.cpp
+)
+
+SET(LBCPP_LUAPE_FUNCTION_SOURCES
+  Luape/Function/BooleanLuapeFunctions.h
+  Luape/Function/IntegerLuapeFunctions.h
+  Luape/Function/DoubleLuapeFunctions.h
+  Luape/Function/EnumerationLuapeFunctions.h
+  Luape/Function/ObjectLuapeFunctions.h
+  Luape/Function/SpecialLuapeFunctions.h
+  Luape/Function/LuapeFunctionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/LuapeFunctionLibrary.cpp
 )
 
 SET(LBCPP_LUAPE_BOOSTING_LEARNER_SOURCES
@@ -840,6 +851,7 @@ SET(LBCPP_SOURCES
  
   # Luape
   ${LBCPP_LUAPE_SOURCES}
+    ${LBCPP_LUAPE_FUNCTION_SOURCES}
 	  ${LBCPP_LUAPE_BOOSTING_LEARNER_SOURCES}
 	  ${LBCPP_LUAPE_BOOSTING_WEAK_LEARNER_SOURCES}
  
@@ -929,6 +941,7 @@ SOURCE_SUB_GROUP(Optimizer Optimizer FILES ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES})
 
 ## Luape
 SOURCE_GROUP(Luape FILES ${LBCPP_LUAPE_SOURCES})
+SOURCE_SUB_GROUP(Luape Function FILES ${LBCPP_LUAPE_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(Luape BoostingLearner FILES ${LBCPP_LUAPE_BOOSTING_LEARNER_SOURCES})
 SOURCE_SUB_GROUP(Luape BoostingWeakLearner FILES ${LBCPP_LUAPE_BOOSTING_WEAK_LEARNER_SOURCES})
 

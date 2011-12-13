@@ -33,7 +33,7 @@ class ProteinResiduePerception : public Object
 {
 public:
   ProteinResiduePerception(const ProteinPerceptionPtr& proteinPerception, const ProteinPtr& protein, size_t index)
-    : protein(proteinPerception), position(index)
+    : protein(proteinPerception), position(index), positionOfType((size_t)-1)
   {
     aminoAcidType = (AminoAcidType)protein->getPrimaryStructure()->getElement(index).getInteger();
     pssmRow = getDenseDoubleVector(protein->getPositionSpecificScoringMatrix(), index);
@@ -43,13 +43,25 @@ public:
     solventAccessibilityAt20p = getProbability(protein->getSolventAccessibilityAt20p(), index);
     disordered = getProbability(protein->getDisorderRegions(), index);
   }
-  ProteinResiduePerception() : position((size_t)-1), aminoAcidType(totalNumAminoAcids), solventAccessibilityAt20p(doubleMissingValue), disordered(doubleMissingValue) {}
+  ProteinResiduePerception() : position((size_t)-1), positionOfType((size_t)-1), aminoAcidType(totalNumAminoAcids), solventAccessibilityAt20p(doubleMissingValue), disordered(doubleMissingValue) {}
 
   void setPrevious(const ProteinResiduePerceptionPtr& previous)
   {
     this->previous = previous;
     previous->next = this;
   }
+
+  void setPreviousOfType(const ProteinResiduePerceptionPtr& previous)
+  {
+    this->previousOfType = previous;
+    previous->nextOfType = this;
+  }
+  
+  void setPositionOfType(size_t position)
+    {positionOfType = position;}
+
+  AminoAcidType getAminoAcidType() const
+    {return aminoAcidType;}
 
 protected:
   friend class ProteinResiduePerceptionClass;
@@ -59,6 +71,10 @@ protected:
 
   ProteinResiduePerceptionPtr previous;
   ProteinResiduePerceptionPtr next;
+
+  ProteinResiduePerceptionPtr previousOfType;
+  ProteinResiduePerceptionPtr nextOfType;
+  size_t positionOfType;
 
   AminoAcidType aminoAcidType;
   DenseDoubleVectorPtr pssmRow;
@@ -115,12 +131,24 @@ public:
     // create residues
     size_t n = protein->getLength();
     residues = new ObjectVector(proteinResiduePerceptionClass, n);
+
+    std::vector<ProteinResiduePerceptionPtr> lastResiduesByType(totalNumAminoAcids);
+    std::vector<size_t> countByType(totalNumAminoAcids, 0);
     for (size_t i = 0; i < n; ++i)
     {
       ProteinResiduePerceptionPtr residue = new ProteinResiduePerception(this, protein, i);
       residues->set(i, residue);
       if (i > 0)
         residue->setPrevious(residues->getAndCast<ProteinResiduePerception>(i - 1));
+      
+      ProteinResiduePerceptionPtr& last = lastResiduesByType[residue->getAminoAcidType()];
+      if (last)
+        residue->setPreviousOfType(last);
+      last = residue;
+
+      size_t& positionByType = countByType[residue->getAminoAcidType()];
+      positionByType++;
+      residue->setPositionOfType(positionByType);
     }
 
     // cysteins
@@ -213,6 +241,12 @@ public:
     machine->addFunction(andBooleanLuapeFunction());
     machine->addFunction(equalBooleanLuapeFunction());
 
+    // integer operations
+    machine->addFunction(addIntegerLuapeFunction());
+    machine->addFunction(subIntegerLuapeFunction());
+    machine->addFunction(mulIntegerLuapeFunction());
+    machine->addFunction(divIntegerLuapeFunction());
+
     // double operations
     machine->addFunction(addDoubleLuapeFunction());
     machine->addFunction(subDoubleLuapeFunction());
@@ -301,7 +335,7 @@ public:
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
     iteration->addTarget(dsbTarget);
 
-    if (!iteration->train(context, trainingProteins, ContainerPtr(), T("Training")))
+    if (!iteration->train(context, trainingProteins, testingProteins, T("Training")))
       return Variable::missingValue(doubleType);
 
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();

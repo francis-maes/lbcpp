@@ -217,10 +217,10 @@ public:
     else
       weakObjective = 0.0;
 
-   /* if (noMoreActions)
+    if (noMoreActions)
       context.informationCallback(T("Out-of-actions: ") + builder->toShortString());
     else
-      context.informationCallback(T("Final State: ") + builder->toShortString() + T(" => ") + String(reward));*/
+      context.informationCallback(T("Final State: ") + builder->toShortString() + T(" => ") + String(weakObjective));
     return node;
   }
 
