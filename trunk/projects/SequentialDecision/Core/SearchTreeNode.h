@@ -9,7 +9,7 @@
 #ifndef LBCPP_SEQUENTIAL_DECISION_CORE_SEARCH_TREE_NODE_H_
 # define LBCPP_SEQUENTIAL_DECISION_CORE_SEARCH_TREE_NODE_H_
 
-# include "DecisionProblem.h"
+# include <lbcpp/DecisionProblem/DecisionProblem.h>
 
 namespace lbcpp
 {

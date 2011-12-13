@@ -9,7 +9,7 @@
 #ifndef LBCPP_BANDITS_DISCRETE_DECISION_PROBLEM_H_
 # define LBCPP_BANDITS_DISCRETE_DECISION_PROBLEM_H_
 
-# include "../Core/DecisionProblem.h"
+# include <lbcpp/DecisionProblem/DecisionProblem.h>
 
 namespace lbcpp
 {

@@ -9,7 +9,7 @@
 #ifndef LBCPP_DECISION_PROBLEM_LUA_STATE_H_
 # define LBCPP_DECISION_PROBLEM_LUA_STATE_H_
 
-# include "../Core/DecisionProblem.h"
+# include <lbcpp/DecisionProblem/DecisionProblem.h>
 # include "../../lua/lua.h"
 
 namespace lbcpp

@@ -10,7 +10,7 @@
 # define LBCPP_LUAPE_GRAPH_BUILDER_H_
 
 # include "LuapeGraphBuilderTypeSearchSpace.h"
-# include "../Core/DecisionProblem.h"
+# include <lbcpp/DecisionProblem/DecisionProblem.h>
 
 namespace lbcpp
 {

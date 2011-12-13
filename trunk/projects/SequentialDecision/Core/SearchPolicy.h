@@ -9,7 +9,6 @@
 #ifndef LBCPP_SEQUENTIAL_DECISION_CORE_SEARCH_POLICY_H_
 # define LBCPP_SEQUENTIAL_DECISION_CORE_SEARCH_POLICY_H_
 
-# include "Policy.h"
 # include "SearchTree.h"
 
 namespace lbcpp

@@ -1,3 +1,9 @@
+* Move DecisionProblem things to lbcpp-core
+
+ Add functions and attributes:
+   - Container length  (=> length of protein)
+   - Residue: {previous|next}ResidueOfSameType
+   - Residue: residuePerTypeIndex
 
 Luape-Other:
  * Go: rankboost + large-scale boosting

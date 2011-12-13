@@ -10,7 +10,7 @@
 # define LBCPP_SEQUENTIAL_DECISION_BEAM_SEARCH_OPTIMIZER_H_
 
 # include <lbcpp/Optimizer/Optimizer.h>
-# include "DecisionProblem.h"
+# include <lbcpp/DecisionProblem/DecisionProblem.h>
 
 namespace lbcpp
 {

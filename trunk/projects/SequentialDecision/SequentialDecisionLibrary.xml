@@ -3,7 +3,7 @@
 <library name="SequentialDecision" dynamic="yes">
 
   <import name="SequentialDecisionCore"/>
-  <import name="DecisionProblem"/>
+  <import name="SequentialDecisionProblem"/>
   <import name="SequentialDecisionWorkUnit"/>
   <import name="LuapeSandBox"/>
   <import name="SequentialDecisionGo"/>

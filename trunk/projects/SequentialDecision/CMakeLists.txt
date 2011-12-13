@@ -14,11 +14,7 @@ GENERATE_INTROSPECTION_CODE(SmallMDP/SmallMDPLibrary.xml SmallMDPLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/LuapeSandBoxLibrary.xml LuapeSandBoxLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(SequentialDecisionLibrary.xml SequentialDecisionLibrary.cpp)
 
-
 SET(LBCPP_SEQUENTIAL_DECISION_CORE_SOURCES
-  Core/DecisionProblem.h
-  Core/DecisionProblem.cpp
-  Core/Policy.h
   Core/SearchTree.h
   Core/SearchTreeNode.h
   Core/SearchTree.cpp
