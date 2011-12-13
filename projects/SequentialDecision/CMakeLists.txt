@@ -10,9 +10,10 @@ GENERATE_INTROSPECTION_CODE(WorkUnit/SequentialDecisionWorkUnitLibrary.xml Seque
 GENERATE_INTROSPECTION_CODE(Go/SequentialDecisionGoLibrary.xml SequentialDecisionGoLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Bandits/SequentialDecisionBanditsLibrary.xml SequentialDecisionBanditsLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(GP/SequentialDecisionGPLibrary.xml SequentialDecisionGPLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Luape/LuapeLibrary.xml LuapeLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(SmallMDP/SmallMDPLibrary.xml SmallMDPLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Luape/LuapeSandBoxLibrary.xml LuapeSandBoxLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(SequentialDecisionLibrary.xml SequentialDecisionLibrary.cpp)
+
 
 SET(LBCPP_SEQUENTIAL_DECISION_CORE_SOURCES
   Core/DecisionProblem.h
@@ -120,23 +121,11 @@ SET(LBCPP_SEQUENTIAL_DECISION_GO_PERCEPTION_SOURCES
 )
 
 SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
-  Luape/LuapeFunction.h
-  Luape/LuapeFunction.cpp
-  Luape/LuapeCache.h
-  Luape/LuapeCache.cpp
-  Luape/LuapeNode.h
-  Luape/LuapeNode.cpp
-  Luape/LuapeInference.h
-  Luape/LuapeInference.cpp
   Luape/LuapeGraphBuilder.h
   Luape/LuapeGraphBuilderTypeSearchSpace.h
-  Luape/LuapeLearner.h
-  Luape/LuapeLearner.cpp
-  Luape/LuapeBatchLearner.h
-  Luape/LuapeSimpleFunctions.h
   Luape/LuapeSandBox.h
-  Luape/LuapeLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/LuapeLibrary.cpp
+  Luape/LuapeSandBoxLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/LuapeSandBoxLibrary.cpp
 )
 
 SET(LBCPP_LUAPE_LEARNER_SOURCES

@@ -10,13 +10,20 @@
 # define LBCPP_LUAPE_SAND_BOX_H_
 
 # include <lbcpp/Data/Stream.h>
-# include "LuapeLearner.h"
+# include <lbcpp/Luape/LuapeBatchLearner.h>
+# include <lbcpp/Luape/LuapeLearner.h>
 # include "PolicyBasedWeakLearner.h"
 # include "SingleStumpWeakLearner.h"
 # include "../Core/SinglePlayerMCTSOptimizer.h"
 
 namespace lbcpp
 {
+
+// tmp, todo: move
+extern BoostingWeakLearnerPtr policyBasedWeakLearner(const PolicyPtr& policy, size_t budget, size_t maxDepth);
+extern BoostingWeakLearnerPtr nestedMCWeakLearner(size_t level, size_t iterations, size_t maxDepth);
+extern BoostingWeakLearnerPtr binaryTreeWeakLearner(BoostingWeakLearnerPtr conditionLearner, BoostingWeakLearnerPtr subLearner);
+// --
 
 class LuapeSandBox : public WorkUnit
 {

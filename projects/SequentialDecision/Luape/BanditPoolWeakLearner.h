@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_LEARNER_BANDIT_POOL_WEAK_H_
 # define LBCPP_LUAPE_LEARNER_BANDIT_POOL_WEAK_H_
 
-# include "LuapeLearner.h"
+# include <lbcpp/Luape/LuapeLearner.h>
 # include "LuapeGraphBuilder.h"
 # include <queue> // for priority queue in bandits pool
 

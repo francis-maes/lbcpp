@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_LEARNER_GRADIENT_BOOSTING_H_
 # define LBCPP_LUAPE_LEARNER_GRADIENT_BOOSTING_H_
 
-# include "LuapeLearner.h"
+# include <lbcpp/Luape/LuapeLearner.h>
 # include <lbcpp/Learning/LossFunction.h>
 
 namespace lbcpp

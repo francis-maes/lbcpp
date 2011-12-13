@@ -7,8 +7,8 @@
                                `--------------------------------------------*/
 
 #include "precompiled.h"
-#include "LuapeFunction.h"
-#include "LuapeNode.h"
+#include <lbcpp/Luape/LuapeFunction.h>
+#include <lbcpp/Luape/LuapeNode.h>
 using namespace lbcpp;
 
 String LuapeFunction::toShortString(const std::vector<LuapeNodePtr>& inputs) const

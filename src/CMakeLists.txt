@@ -56,6 +56,8 @@ GENERATE_INTROSPECTION_CODE(Learning/LocalitySensitiveHashing/LocalitySensitiveH
 GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Optimizer/Optimizer/OptimizerOptimizerLibrary.xml OptimizerOptimizerLibrary.cpp)
 
+GENERATE_INTROSPECTION_CODE(Luape/LuapeLibrary.xml LuapeLibrary.cpp)
+
 IF(LBCPP_USER_INTERFACE)
   GENERATE_INTROSPECTION_CODE(UserInterface/Component/UserInterfaceComponentLibrary.xml UserInterfaceComponentLibrary.cpp)
 ENDIF(LBCPP_USER_INTERFACE)
@@ -616,6 +618,26 @@ SET(LBCPP_OPTIMIZER_OPTIMIZER_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/OptimizerOptimizerLibrary.cpp
 )
 
+#### Luape ####
+
+SET(LBCPP_LUAPE_SOURCES
+  ../include/lbcpp/Luape/predeclarations.h
+  ../include/lbcpp/Luape/LuapeFunction.h
+  Luape/LuapeFunction.cpp
+  ../include/lbcpp/Luape/LuapeCache.h
+  Luape/LuapeCache.cpp
+  ../include/lbcpp/Luape/LuapeNode.h
+  Luape/LuapeNode.cpp
+  ../include/lbcpp/Luape/LuapeInference.h
+  Luape/LuapeInference.cpp
+  ../include/lbcpp/Luape/LuapeLearner.h
+  Luape/LuapeLearner.cpp
+  ../include/lbcpp/Luape/LuapeBatchLearner.h
+  Luape/LuapeSimpleFunctions.h
+  Luape/LuapeLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/LuapeLibrary.cpp
+)
+
 #### UserInterface ####
 IF(LBCPP_USER_INTERFACE)
 
@@ -779,7 +801,10 @@ SET(LBCPP_SOURCES
   # Optimizer
   ${LBCPP_OPTIMIZER_SOURCES}
     ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES}
-    
+ 
+  # Luape
+  ${LBCPP_LUAPE_SOURCES}
+ 
   # Lua
   ${LBCPP_LUA_SOURCES}
     
@@ -860,6 +885,9 @@ SOURCE_SUB_GROUP(Learning LocalitySensitiveHashing FILES ${LBCPP_LEARNING_LOCALI
 ## Optimizer
 SOURCE_GROUP(Optimizer FILES ${LBCPP_OPTIMIZER_SOURCES})
 SOURCE_SUB_GROUP(Optimizer Optimizer FILES ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES})
+
+## Luape
+SOURCE_GROUP(Luape FILES ${LBCPP_LUAPE_SOURCES})
 
 ## Lua
 SOURCE_GROUP(Lua FILES ${LBCPP_LUA_SOURCES})

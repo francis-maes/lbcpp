@@ -9,17 +9,13 @@
 #ifndef LBCPP_LUAPE_CACHE_H_
 # define LBCPP_LUAPE_CACHE_H_
 
+# include "../Core/Vector.h"
+# include "../Data/DoubleVector.h"
 # include "LuapeFunction.h"
+# include <deque>
 
 namespace lbcpp
 {
-
-class LuapeNode;
-typedef ReferenceCountedObjectPtr<LuapeNode> LuapeNodePtr;
-class LuapeInputNode;
-typedef ReferenceCountedObjectPtr<LuapeInputNode> LuapeInputNodePtr;
-class LuapeFunctionNode;
-typedef ReferenceCountedObjectPtr<LuapeFunctionNode> LuapeFunctionNodePtr;
 
 /*
 ** LuapeInstanceCache

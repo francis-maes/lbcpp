@@ -1,4 +1,11 @@
 
+
+
+ - Luape: Application on proteins: move things to lbcpp-core, write Perceptions for proteins
+ - Luape: More language features (polymorphism, first-order functions, count/mean/max/min/stddev)
+ - Luape: Re-entrant
+ 
+
 Luape-Go Perception:
   - support for polymorphism, neighborhood, regions
 

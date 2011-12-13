@@ -13,8 +13,10 @@
   <import name="FeatureGenerator"/>
   <import name="Learning"/>
   <import name="Optimizer"/>
+  <import name="Luape"/>
+  
   <import name="UserInterfaceComponent" ifdef="LBCPP_USER_INTERFACE"/>
-
+  
   <import name="Lua"/>
   
 </library>

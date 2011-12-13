@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_LEARNER_BINARY_TREE_WEAK_H_
 # define LBCPP_LUAPE_LEARNER_BINARY_TREE_WEAK_H_
 
-# include "LuapeLearner.h"
+# include <lbcpp/Luape/LuapeLearner.h>
 
 namespace lbcpp
 {

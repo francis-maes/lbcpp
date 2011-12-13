@@ -10,6 +10,7 @@
 # define LBCPP_LUAPE_INFERENCE_H_
 
 # include "LuapeNode.h"
+# include "../Core/Function.h"
 
 namespace lbcpp
 {

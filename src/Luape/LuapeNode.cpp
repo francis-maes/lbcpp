@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include "precompiled.h"
-#include "LuapeNode.h"
+#include <lbcpp/Luape/LuapeNode.h>
 #include <algorithm>
 using namespace lbcpp;
 

@@ -9,8 +9,8 @@
 #ifndef LBCPP_LUAPE_LEARNER_SINGLE_STUMP_WEAK_H_
 # define LBCPP_LUAPE_LEARNER_SINGLE_STUMP_WEAK_H_
 
-# include "LuapeLearner.h"
-# include "LuapeSimpleFunctions.h"
+# include <lbcpp/Luape/LuapeLearner.h>
+# include "../../../src/Luape/LuapeSimpleFunctions.h"
 
 namespace lbcpp
 {

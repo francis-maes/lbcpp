@@ -50,6 +50,15 @@ typedef ReferenceCountedObjectPtr<Cache> CachePtr;
 class AverageValuesCache;
 typedef ReferenceCountedObjectPtr<AverageValuesCache> AverageValuesCachePtr;
 
+class DoubleVector;
+typedef ReferenceCountedObjectPtr<DoubleVector> DoubleVectorPtr;
+
+class SparseDoubleVector;
+typedef ReferenceCountedObjectPtr<SparseDoubleVector> SparseDoubleVectorPtr;
+
+class DenseDoubleVector;
+typedef ReferenceCountedObjectPtr<DenseDoubleVector> DenseDoubleVectorPtr;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_DATA_PREDECLARATIONS_H_

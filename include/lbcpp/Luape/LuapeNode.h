@@ -15,18 +15,6 @@
 namespace lbcpp
 {
 
- 
-class LuapeNode;
-typedef ReferenceCountedObjectPtr<LuapeNode> LuapeNodePtr;
-class LuapeInputNode;
-typedef ReferenceCountedObjectPtr<LuapeInputNode> LuapeInputNodePtr;
-class LuapeConstantNode;
-typedef ReferenceCountedObjectPtr<LuapeConstantNode> LuapeConstantNodePtr;
-class LuapeFunctionNode;
-typedef ReferenceCountedObjectPtr<LuapeFunctionNode> LuapeFunctionNodePtr;
-class LuapeTestNode;
-typedef ReferenceCountedObjectPtr<LuapeTestNode> LuapeTestNodePtr;
-
 class LuapeNode : public Object
 {
 public:

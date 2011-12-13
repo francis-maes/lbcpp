@@ -9,11 +9,11 @@
 #ifndef LBCPP_LUAPE_FUNCTION_H_
 # define LBCPP_LUAPE_FUNCTION_H_
 
+# include "predeclarations.h"
+# include "../Core/Variable.h"
+
 namespace lbcpp
 {
-
-class LuapeNode;
-typedef ReferenceCountedObjectPtr<LuapeNode> LuapeNodePtr;
 
 class LuapeFunction : public Object
 {

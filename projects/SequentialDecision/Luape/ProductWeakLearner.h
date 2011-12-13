@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_WEAK_LEARNER_PRODUCT_H_
 # define LBCPP_LUAPE_WEAK_LEARNER_PRODUCT_H_
 
-# include "LuapeBatchLearner.h"
+# include <lbcpp/Luape/LuapeLearner.h>
 
 namespace lbcpp
 {

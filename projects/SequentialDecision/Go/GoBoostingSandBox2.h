@@ -13,13 +13,19 @@
 # include "../Luape/BanditPoolWeakLearner.h"
 # include "../Luape/PolicyBasedWeakLearner.h"
 # include "../Luape/GradientBoostingLearner.h"
-# include "../Luape/LuapeBatchLearner.h"
+# include <lbcpp/Luape/LuapeBatchLearner.h>
 
 # include "Perception/GoStatePerception.h"
 # include "Perception/GoBoardPositionPerception.h"
 
 namespace lbcpp
 {
+
+// tmp, todo: move
+extern BoostingWeakLearnerPtr policyBasedWeakLearner(const PolicyPtr& policy, size_t budget, size_t maxDepth);
+extern BoostingWeakLearnerPtr nestedMCWeakLearner(size_t level, size_t iterations, size_t maxDepth);
+extern BoostingWeakLearnerPtr binaryTreeWeakLearner(BoostingWeakLearnerPtr conditionLearner, BoostingWeakLearnerPtr subLearner);
+// --
 
 class GoBoostingSandBox2 : public WorkUnit
 {

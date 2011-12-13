@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include "LuapeInference.h"
+#include <lbcpp/Luape/LuapeInference.h>
 using namespace lbcpp;
 
 LuapeInference::LuapeInference()
