@@ -3,7 +3,7 @@ TODO LBCPP
 
 - retirer les ifdef LBCPP_PROTEIN_ROSETTA
 - apprentissage online
-
+- tuner les parameters SA
 
 
 TODO NIC3
@@ -24,6 +24,8 @@ v relancer optim sur test avec resultats unfold
     v essayer sur mtm (facteur changera quelque chose)
     v laisser tomber enmtm
   - relancer optimisation avec nouveaux couples struct/movers
+    - 1.2
+    - 1.5
 
 
 TODO Rosetta
@@ -33,11 +35,12 @@ TODO Rosetta
   - ajouter des verifications avant deffectuer les transformations ou apres lapplication de movers?
   v pose to protein
   v protein to pose
-- corriger probleme import pdb (Rosetta)
+
+v corriger probleme import pdb (Rosetta)
+
 - corriger rosetta parallele (ProteinTestParallelWorkUnit)
 - corriger probleme hbond tripped
 
-- demander pq modification du pdb + fournir fichier exemple
 
 
 
