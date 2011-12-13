@@ -72,22 +72,68 @@ public:
     RandomGeneratorPtr random = new RandomGenerator();
 
 # ifdef LBCPP_PROTEIN_ROSETTA
-    //rosettaInitialization(context, true);
+    rosettaInitialization(context, true);
 
-//    Rosetta ros(context);
+    //    Rosetta ros(context);
+    //
+    //    ros.init(true, 1, 2);
+    File referenceFile = context.getFile(T("bugpdb"));
+
+    File singleFile = context.getFile(T("bugpdb/1a0b_0.xml"));
+
+    ProteinPtr prot = Protein::createFromXml(context, singleFile);
+    core::pose::PoseOP tPose;
+
+    std::cout << "num residues : " << prot->getTertiaryStructure()->getNumResidues() << std::endl;
+    std::cout << "num specified residues : "
+        << prot->getTertiaryStructure()->getNumSpecifiedResidues() << std::endl;
+
+    VectorPtr prim = prot->getPrimaryStructure();
+    String seq = prim->toString();
+
+    std::cout << "primary : " << (const char*)seq << std::endl;
 //
-//    ros.init(true, 1, 2);
-//    core::pose::PoseOP pose = new core::pose::Pose();
-//    makePoseFromSequence(pose, T("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-//    context.informationCallback(String(fullAtomEnergy(pose)));
+//    ResiduePtr res = prot->getTertiaryStructure()->getResidue(1);
+//
+//    if (res.get() != NULL)
+//      std::cout << res->getThreeLettersCodeName() << std::endl;
 
-    VariableVectorPtr pool = Rosetta::createRosettaPool(context, 5);
+    //      convertProteinToPose(context, prot, tPose);
+    //
+    //      if (tPose() == NULL)
+    //        context.informationCallback(T("Ca plante!"));
 
-    for (size_t j = 0; j < 5; j++)
-    {
-      RosettaPtr r = pool->getElement(j).getObjectAndCast<Rosetta> ();
-      r->init(context, true);
-    }
+    //    juce::OwnedArray<File> references;
+    //    referenceFile.findChildFiles(references, File::findFiles, false, T("*.xml"));
+    //
+    //    for (size_t j = 0; (j < references.size()) && (j < 1); j++)
+    //    {
+    //      ProteinPtr prot = Protein::createFromXml(context, *references[j]);
+    //      core::pose::PoseOP tPose;
+    //
+    //      std::cout << "num residues : " << prot->getTertiaryStructure()->getNumResidues() << std::endl;
+    //      std::cout << "num specified residues : " << prot->getTertiaryStructure()->getNumSpecifiedResidues() << std::endl;
+    //
+    //      ResiduePtr res = prot->getTertiaryStructure()->getResidue(161);
+    //
+    //      std::cout << res->getThreeLettersCodeName() << std::endl;
+    //
+    ////      convertProteinToPose(context, prot, tPose);
+    ////
+    ////      if (tPose() == NULL)
+////        context.informationCallback(T("Ca plante!"));
+//
+//    }
+
+    //    core::pose::PoseOP pose = new core::pose::Pose();
+    //    makePoseFromSequence(pose, T("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+    //    context.informationCallback(String(fullAtomEnergy(pose)));
+    //    ProteinPtr prot = convertPoseToProtein(context, pose);
+    //
+    //    core::pose::PoseOP tPose = new core::pose::Pose();
+    //    convertProteinToPose(context, prot, tPose);
+    //    context.informationCallback(String(fullAtomEnergy(tPose)));
+
 
 # if 0
     File referenceFile = context.getFile(T("GoodDataset/0-100/dataset0-100"));
@@ -862,6 +908,7 @@ public:
 
     context.enterScope(T("Optimization protein : ") + String((int)num));
     context.informationCallback(T("Before"));
+
     rosetta->getLock();
     core::pose::PoseOP pose = new core::pose::Pose();
     makePoseFromSequence(
@@ -880,7 +927,8 @@ public:
     }
     context.informationCallback(T("After"));
     rosetta->getLock();
-    context.leaveScope(Variable(fullAtomEnergy(pose)));
+    context.informationCallback(String(T("Energie : ")) + String(fullAtomEnergy(pose)));
+    context.leaveScope();
     rosetta->releaseLock();
 
 #endif // LBCPP_PROTEIN_ROSETTA
@@ -903,11 +951,15 @@ public:
 
     VariableVectorPtr pool = Rosetta::createRosettaPool(context, size);
 
+    //    RosettaPtr rosetta = new Rosetta();
+    //    rosetta->init(context, true);
+
     CompositeWorkUnitPtr subWorkUnits(new CompositeWorkUnit(T("Parallel protein workUnit"), size));
     for (size_t i = 0; i < subWorkUnits->getNumWorkUnits(); ++i)
     {
       RosettaPtr r = pool->getElement(i).getObjectAndCast<Rosetta> ();
       subWorkUnits->setWorkUnit(i, new ProteinSubWorkUnitExample(i, r));
+      //      subWorkUnits->setWorkUnit(i, new ProteinSubWorkUnitExample(i, rosetta));
     }
     subWorkUnits->setPushChildrenIntoStackFlag(true);
     context.run(subWorkUnits);

@@ -70,6 +70,8 @@ public:
       outputFileMovers.createDirectory();
     }
 
+    File pdbFile = context.getFile(outputPdb);
+
     juce::OwnedArray<File> references;
     referenceFile.findChildFiles(references, File::findFiles, false, T("*.xml"));
 
@@ -83,12 +85,8 @@ public:
       core::pose::PoseOP tempPose = new core::pose::Pose();
 
       convertProteinToPose(context, proteinRef, workingPose);
-      if (proteinRef->getLength() != (size_t)workingPose->n_residue())
-      {
-        context.informationCallback((*references[j]).getFileNameWithoutExtension()
-            + T(" non convertible to Rosetta."));
-        break;
-      }
+      if (workingPose() == NULL)
+        continue;
 
       double energy = 0.0;
       double qual = evaluateQualityUnfold(workingPose, &energy);
@@ -105,7 +103,7 @@ public:
       ProteinMoverPtr mover;
       ProteinPtr workingProtein;
 
-      for (int i = 0; i < numIterations; i++)
+      for (int i = 0; (i < numIterations) && (numberSelected < maxPairs); i++)
       {
         // verbosity
         context.progressCallback(new ProgressionState((double)i, (double)numIterations,
@@ -133,11 +131,13 @@ public:
           context.leaveScope(Variable(qual));
 
           // save to disk
-          File pdbFile(outputFileStructures.getFullPathName() + T("/")
-              + (*references[j]).getFileNameWithoutExtension() + T("_") + String(i) + T(".pdb"));
           workingProtein = convertPoseToProtein(context, workingPose);
-          workingProtein->saveToXmlFile(context, File(outputFileStructures.getFullPathName() + T("/")
-                        + (*references[j]).getFileNameWithoutExtension() + T("_") + String(i) + T(".xml")));
+          workingProtein->saveToXmlFile(context, File(outputFileStructures.getFullPathName()
+              + T("/") + (*references[j]).getFileNameWithoutExtension() + T("_") + String(i)
+              + T(".xml")));
+          if (pdbFile != File::nonexistent)
+            workingProtein->saveToPDBFile(context, File(pdbFile.getFullPathName() + T("/")
+                + (*references[j]).getFileNameWithoutExtension() + T("_") + String(i) + T(".pdb")));
 
           ProteinMoverPtr toSave = mover->getOpposite();
           toSave->saveToFile(context, File(outputFileMovers.getFullPathName() + T("/")
@@ -165,7 +165,9 @@ protected:
   String referenceDirectory;
   String outputDirectoryStructures;
   String outputDirectoryMovers;
+  String outputPdb;
   int numIterations;
+  int maxPairs;
   double averageIncrease;
 };
 

@@ -9,6 +9,8 @@
 #include "Rosetta.h"
 #include "precompiled.h"
 
+#include "../RosettaUtils.h"
+
 namespace lbcpp
 {
 
@@ -58,11 +60,13 @@ VariableVectorPtr Rosetta::createRosettaPool(ExecutionContext& context, size_t s
 
 void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed)
 {
-  # ifdef LBCPP_PROTEIN_ROSETTA
+#ifdef LBCPP_PROTEIN_ROSETTA
   if (isInPool)
     getPoolLock();
 
   setContext(eContext);
+
+  context->informationCallback(T("Rosetta Id : ") + String((int)id) + T(" initializing..."));
 
   jassert(context.get() != NULL);
   jassert((id >= 0) && (id < nProc));
@@ -99,14 +103,28 @@ void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed)
   // out paths
   args.add_back(std::string("-out:file"));
   args.add_back(std::string("true"));
+  args.add_back(std::string("-out:path:all"));
+  args.add_back(std::string((const char*)String(T("/r_o_")
+      + String(juce::Time::currentTimeMillis()) + T("_") + String((int)id))));
   args.add_back(std::string("-out:file:o"));
-  args.add_back(std::string((const char*)String(T("tmpRos_o_") + String(
+  args.add_back(std::string((const char*)String(T("/ros_o_") + String(
       juce::Time::currentTimeMillis()) + T("_") + String((int)id))));
+  args.add_back(std::string("-out:sf"));
+  args.add_back(std::string((const char*)String(T("r_score") + String((int)id) + T("-") + String(
+      (int)nProc) + T("_") + String(juce::Time::currentTimeMillis()) + T(".fsc"))));
+  args.add_back(std::string("-out:prefix"));
+  args.add_back(std::string((const char*)String(T("r_pre") + String((int)id) + T("-") + String(
+      (int)nProc) + T("_") + String(juce::Time::currentTimeMillis()))));
+  args.add_back(std::string("-out:nooutput"));
+  args.add_back(std::string("true"));
+  args.add_back(std::string("-score:output_etables"));
+  args.add_back(std::string((const char*)String(T("r_et") + String((int)id) + T("-") + String(
+      (int)nProc) + T("_") + String(juce::Time::currentTimeMillis()))));
 
   // in paths
-  args.add_back(std::string("-in:path"));
-  args.add_back(std::string((const char*)String(T("tmpRos_i_") + String(
-      juce::Time::currentTimeMillis()) + T("_") + String((int)id))));
+  //  args.add_back(std::string("-in:path"));
+  //  args.add_back(std::string((const char*)String(T("tmpRos_i_") + String(
+  //      juce::Time::currentTimeMillis()) + T("_") + String((int)id))));
 
   // verbosity
   if (!verbose)
@@ -117,14 +135,17 @@ void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed)
 
   // initialize rosetta
   core::init(args);
-  context->informationCallback(T("Rosetta initialized. Id : ") + String((int)id));
 
-//  for (size_t i = 0; i <= args.u(); i++)
-//    std::cout << args[i] << std::endl;
+  // ensures initialization of database
+  core::pose::PoseOP pose = new core::pose::Pose();
+  makePoseFromSequence(pose, T("A"));
+
+  context->informationCallback(T("Rosetta Id : ") + String((int)id) + T(" initialized."));
 
   if (isInPool)
     releasePoolLock();
-  # endif //! LBCPP_PROTEIN_ROSETTA
+
+#endif //! LBCPP_PROTEIN_ROSETTA
 }
 
 }; /* namespace lbcpp */
