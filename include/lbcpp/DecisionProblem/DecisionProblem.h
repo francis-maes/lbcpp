@@ -6,12 +6,12 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_SEQUENTIAL_DECISION_SYSTEM_H_
-# define LBCPP_SEQUENTIAL_DECISION_SYSTEM_H_
+#ifndef LBCPP_DECISION_PROBLEM_PROBLEM_H_
+# define LBCPP_DECISION_PROBLEM_PROBLEM_H_
 
-# include <lbcpp/Core/Function.h>
-# include <lbcpp/Data/RandomGenerator.h>
-# include <lbcpp/Sampler/Sampler.h>
+# include "../Core/Function.h"
+# include "../Data/RandomGenerator.h"
+# include "../Sampler/Sampler.h"
 
 namespace lbcpp
 {
@@ -116,4 +116,4 @@ extern FunctionPtr getAvailableActionsFunction(TypePtr actionType);
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_SEQUENTIAL_DECISION_SYSTEM_LINEAR_POINT_PHYSIC_H_
+#endif // !LBCPP_DECISION_PROBLEM_PROBLEM_H_

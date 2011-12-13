@@ -9,7 +9,7 @@
 #ifndef LBCPP_SEQUENTIAL_DECISION_PROBLEM_GO_H_
 # define LBCPP_SEQUENTIAL_DECISION_PROBLEM_GO_H_
 
-# include "../Core/DecisionProblem.h"
+# include <lbcpp/DecisionProblem/DecisionProblem.h>
 # include <lbcpp/Data/Matrix.h>
 # include <lbcpp/Data/RandomGenerator.h>
 # include <list>

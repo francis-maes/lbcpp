@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include "DecisionProblem.h"
+#include <lbcpp/DecisionProblem/DecisionProblem.h>
 #include <lbcpp/Lua/Lua.h>
 using namespace lbcpp;
 

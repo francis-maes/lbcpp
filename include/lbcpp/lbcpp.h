@@ -82,6 +82,7 @@
 # include "Learning/BatchLearner.h"
 # include "Learning/Numerical.h"
 
+# include "DecisionProblem/DecisionProblem.h"
 # include "Optimizer/Optimizer.h"
 
 # include "Luape/LuapeFunction.h"

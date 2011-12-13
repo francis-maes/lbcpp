@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_SEQUENTIAL_DECISION_CORE_POLICY_H_
-# define LBCPP_SEQUENTIAL_DECISION_CORE_POLICY_H_
+#ifndef LBCPP_DECISION_PROBLEM_POLICY_H_
+# define LBCPP_DECISION_PROBLEM_POLICY_H_
 
-# include "SearchTree.h"
+# include "DecisionProblem.h"
 
 namespace lbcpp
 {
@@ -82,4 +82,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_SEQUENTIAL_DECISION_CORE_POLICY_H_
+#endif // !LBCPP_DECISION_PROBLEM_POLICY_H_

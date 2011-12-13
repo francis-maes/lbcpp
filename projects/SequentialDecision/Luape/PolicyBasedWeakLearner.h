@@ -11,7 +11,7 @@
 
 # include <lbcpp/Luape/LuapeLearner.h>
 # include "LuapeGraphBuilder.h"
-# include "../Core/Policy.h"
+# include <lbcpp/DecisionProblem/Policy.h>
 # include <list>
 
 namespace lbcpp

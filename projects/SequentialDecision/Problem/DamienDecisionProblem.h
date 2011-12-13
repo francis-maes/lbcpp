@@ -9,7 +9,7 @@
 #ifndef LBCPP_SEQUENTIAL_DECISION_PROBLEM_DAMIEN_H_
 # define LBCPP_SEQUENTIAL_DECISION_PROBLEM_DAMIEN_H_
 
-# include "../Core/DecisionProblem.h"
+# include <lbcpp/DecisionProblem/DecisionProblem.h>
 # include <lbcpp/Data/RandomGenerator.h>
 # include "Damien/HIV.hpp"
 # include "Damien/invertedPendulum.hpp"

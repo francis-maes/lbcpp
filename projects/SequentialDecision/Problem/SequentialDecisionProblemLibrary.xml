@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<library name="DecisionProblem" directory="Problem">
+<library name="SequentialDecisionProblem" directory="Problem">
 
   <!-- LinearPointPhysic System -->
   <class name="LinearPointPhysicState" base="DecisionProblemState">

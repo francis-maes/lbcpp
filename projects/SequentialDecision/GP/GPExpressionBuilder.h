@@ -10,7 +10,7 @@
 # define LBCPP_GENETIC_PROGRAMMING_EXPRESSION_BUILDER_H_
 
 # include "GPExpression.h"
-# include "../Core/DecisionProblem.h"
+# include <lbcpp/DecisionProblem/DecisionProblem.h>
 
 namespace lbcpp
 {

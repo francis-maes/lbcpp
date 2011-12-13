@@ -53,6 +53,8 @@ GENERATE_INTROSPECTION_CODE(Learning/LossFunction/LearningLossFunctionLibrary.xm
 GENERATE_INTROSPECTION_CODE(Learning/NearestNeighbor/NearestNeighborLibrary.xml NearestNeighborLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/LocalitySensitiveHashing/LocalitySensitiveHashingLibrary.xml LocalitySensitiveHashingLibrary.cpp)
 
+GENERATE_INTROSPECTION_CODE(DecisionProblem/DecisionProblemLibrary.xml DecisionProblemLibrary.cpp)
+
 GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Optimizer/Optimizer/OptimizerOptimizerLibrary.xml OptimizerOptimizerLibrary.cpp)
 
@@ -597,6 +599,16 @@ SET(LBCPP_LEARNING_LOCALITY_SENSITIVE_HASHING_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/LocalitySensitiveHashingLibrary.cpp
 )
 
+#### Decision Problem ####
+
+SET(LBCPP_DECISION_PROBLEM_SOURCES
+  ../include/lbcpp/DecisionProblem/DecisionProblem.h
+  DecisionProblem/DecisionProblem.cpp
+  ../include/lbcpp/DecisionProblem/Policy.h
+  DecisionProblem/DecisionProblemLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/DecisionProblemLibrary.cpp
+)
+
 #### Optimizer ####
 
 SET(LBCPP_OPTIMIZER_SOURCES
@@ -816,6 +828,9 @@ SET(LBCPP_SOURCES
 
     ${LBCPP_LEARNING_LOCALITY_SENSITIVE_HASHING_SOURCES}
 
+  # Decision Problem
+  ${LBCPP_DECISION_PROBLEM_SOURCES}
+ 
   # Optimizer
   ${LBCPP_OPTIMIZER_SOURCES}
     ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES}
@@ -901,6 +916,9 @@ SOURCE_SUB_GROUP2(Learning Numerical LaRank FILES ${LBCPP_LEARNING_NUMERICAL_LAR
 SOURCE_SUB_GROUP(Learning DecisionTree FILES ${LBCPP_LEARNING_DECISION_TREE_SOURCES})
 SOURCE_SUB_GROUP(Learning NearestNeighbor FILES ${LBCPP_LEARNING_NEAREST_NEIGHBOR_SOURCES})
 SOURCE_SUB_GROUP(Learning LocalitySensitiveHashing FILES ${LBCPP_LEARNING_LOCALITY_SENSITIVE_HASHING_SOURCES})
+
+## DecisionProblem
+SOURCE_GROUP(DecisionProblem FILES ${LBCPP_DECISION_PROBLEM_SOURCES})
 
 ## Optimizer
 SOURCE_GROUP(Optimizer FILES ${LBCPP_OPTIMIZER_SOURCES})

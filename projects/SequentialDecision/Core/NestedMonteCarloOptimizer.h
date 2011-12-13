@@ -10,7 +10,7 @@
 # define LBCPP_OPTIMIZER_NESTED_MONTE_CARLO_H_
 
 # include <lbcpp/Optimizer/Optimizer.h>
-# include "DecisionProblem.h"
+# include <lbcpp/DecisionProblem/DecisionProblem.h>
 
 namespace lbcpp
 {
