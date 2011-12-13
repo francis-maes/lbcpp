@@ -5,6 +5,9 @@
 
   <!-- Boosting with weights -->
   <class name="WeightBoostingLearner" base="BoostingLearner" abstract="yes"/>
+  <class name="AdaBoostLearner" base="WeightBoostingLearner">
+    <constructor arguments="BoostingWeakLearnerPtr weakLearner" returnType="BoostingLearner"/>
+  </class>
   <class name="AdaBoostMHLearner" base="WeightBoostingLearner">
     <constructor arguments="BoostingWeakLearnerPtr weakLearner, bool useSymmetricVotes" returnType="BoostingLearner"/>
     <variable type="Boolean" name="useSymmetricVotes"/>

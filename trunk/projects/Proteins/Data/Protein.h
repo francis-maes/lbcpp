@@ -124,7 +124,7 @@ public:
   /*
   ** Primary Structure
   */
-  VectorPtr getPrimaryStructure() const
+  const VectorPtr& getPrimaryStructure() const
     {return primaryStructure;}
 
   const std::vector<size_t>& getCysteinIndices() const
@@ -136,7 +136,7 @@ public:
   void setPrimaryStructure(VectorPtr primaryStructure);
   void setPrimaryStructure(const String& primaryStructure);
 
-  ContainerPtr getPositionSpecificScoringMatrix() const
+  const ContainerPtr& getPositionSpecificScoringMatrix() const
     {return positionSpecificScoringMatrix;}
 
   void setPositionSpecificScoringMatrix(ContainerPtr pssm)
@@ -163,7 +163,7 @@ public:
   void setDSSPSecondaryStructure(ContainerPtr dsspSecondaryStructure)
     {this->dsspSecondaryStructure = dsspSecondaryStructure;}
 
-  ContainerPtr getDSSPSecondaryStructure() const
+  const ContainerPtr& getDSSPSecondaryStructure() const
     {return dsspSecondaryStructure;}
 
   static ContainerPtr createEmptyDSSPSecondaryStructure(size_t length, bool useSparseVectors);
@@ -176,20 +176,19 @@ public:
   /*
   ** Solvent Accesibility
   */
-  void setSolventAccessibility(VectorPtr solventAccessibility)
+  void setSolventAccessibility(DenseDoubleVectorPtr solventAccessibility)
     {this->solventAccessibility = solventAccessibility;}
 
-  DoubleVectorPtr getSolventAccessibility() const
+  const DenseDoubleVectorPtr& getSolventAccessibility() const
     {return solventAccessibility;}
 
-  void setSolventAccessibilityAt20p(DoubleVectorPtr solventAccessibilityAt20p)
+  void setSolventAccessibilityAt20p(DenseDoubleVectorPtr solventAccessibilityAt20p)
     {this->solventAccessibilityAt20p = solventAccessibilityAt20p;}
 
-  DoubleVectorPtr getSolventAccessibilityAt20p() const;
+  DenseDoubleVectorPtr getSolventAccessibilityAt20p() const;
 
-  static DoubleVectorPtr createEmptyProbabilitySequence(size_t length);
-
-  static DoubleVectorPtr createEmptyDoubleSequence(size_t length);
+  static DenseDoubleVectorPtr createEmptyProbabilitySequence(size_t length);
+  static DenseDoubleVectorPtr createEmptyDoubleSequence(size_t length);
   
   /*
   ** Disorder regions
@@ -197,7 +196,7 @@ public:
   void setDisorderRegions(DoubleVectorPtr disorderRegions)
     {jassert(disorderRegions->getElementsType() == probabilityType); this->disorderRegions = disorderRegions;}
 
-  DoubleVectorPtr getDisorderRegions() const;
+  DenseDoubleVectorPtr getDisorderRegions() const;
   
   /*
   ** Contact maps / Distance maps
@@ -219,7 +218,7 @@ public:
   void setDisulfideBonds(const SymmetricMatrixPtr& disulfideBonds)
     {jassert(disulfideBonds->getDimension() == cysteinIndices.size()); this->disulfideBonds = disulfideBonds;}
 
-  const DoubleVectorPtr& getCysteinBondingStates(ExecutionContext& context) const;
+  const DenseDoubleVectorPtr& getCysteinBondingStates(ExecutionContext& context) const;
   
   size_t getNumBondedCysteins() const;
   
@@ -264,11 +263,11 @@ protected:
   ContainerPtr dsspSecondaryStructure;
   ContainerPtr structuralAlphabetSequence;
 
-  DoubleVectorPtr solventAccessibility;
-  DoubleVectorPtr solventAccessibilityAt20p;
+  DenseDoubleVectorPtr solventAccessibility;
+  DenseDoubleVectorPtr solventAccessibilityAt20p;
 
-  DoubleVectorPtr disorderRegions;
-  DoubleVectorPtr cysteinBondingStates;
+  DenseDoubleVectorPtr disorderRegions;
+  DenseDoubleVectorPtr cysteinBondingStates;
 
   // 2D
   SymmetricMatrixPtr contactMap8Ca;
@@ -284,9 +283,9 @@ protected:
   TertiaryStructurePtr tertiaryStructure;
 
   static DoubleVectorPtr computeCysteinBondingProperty(DoubleVectorPtr cysteinBondingStates);
-  static DoubleVectorPtr computeDisorderRegionsFromTertiaryStructure(TertiaryStructurePtr tertiaryStructure);
+  static DenseDoubleVectorPtr computeDisorderRegionsFromTertiaryStructure(TertiaryStructurePtr tertiaryStructure);
   static ContainerPtr computeSecondaryStructureFromDSSPSecondaryStructure(ContainerPtr dsspSecondaryStructure);
-  static DoubleVectorPtr computeBinarySolventAccessibilityFromSolventAccessibility(DoubleVectorPtr solventAccessibility, double threshold);
+  static DenseDoubleVectorPtr computeBinarySolventAccessibilityFromSolventAccessibility(DoubleVectorPtr solventAccessibility, double threshold);
   static SymmetricMatrixPtr computeContactMapFromDistanceMap(SymmetricMatrixPtr distanceMap, double threshold);
   static ContainerPtr computeStructuralAlphabetSequenceFromCAlphaTrace(CartesianPositionVectorPtr calphaTrace);
   static SymmetricMatrixPtr computeDisulfideBondsFromTertiaryStructure(SymmetricMatrixPtr distanceMap);

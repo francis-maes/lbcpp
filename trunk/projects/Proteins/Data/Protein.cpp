@@ -239,14 +239,14 @@ ContainerPtr Protein::getSecondaryStructure() const
   return secondaryStructure;
 }
 
-DoubleVectorPtr Protein::getSolventAccessibilityAt20p() const
+DenseDoubleVectorPtr Protein::getSolventAccessibilityAt20p() const
 {
   if (!solventAccessibilityAt20p && solventAccessibility)
     const_cast<Protein* >(this)->solventAccessibilityAt20p = computeBinarySolventAccessibilityFromSolventAccessibility(solventAccessibility, 0.2);
   return solventAccessibilityAt20p;
 }
 
-DoubleVectorPtr Protein::getDisorderRegions() const
+DenseDoubleVectorPtr Protein::getDisorderRegions() const
 {
   if (!disorderRegions && tertiaryStructure)
     const_cast<Protein* >(this)->disorderRegions = computeDisorderRegionsFromTertiaryStructure(tertiaryStructure);
@@ -316,7 +316,7 @@ const MatrixPtr& Protein::getFullDisulfideBonds(ExecutionContext& context) const
   return fullDisulfideBonds;
 }
 
-const DoubleVectorPtr& Protein::getCysteinBondingStates(ExecutionContext& context) const
+const DenseDoubleVectorPtr& Protein::getCysteinBondingStates(ExecutionContext& context) const
 {
   const double threshold = 0.5;
   if (cysteinBondingStates)
@@ -394,12 +394,12 @@ DoubleVectorPtr Protein::computeCysteinBondingProperty(DoubleVectorPtr bondingSt
   return res;
 }
 
-DoubleVectorPtr Protein::computeDisorderRegionsFromTertiaryStructure(TertiaryStructurePtr tertiaryStructure)
+DenseDoubleVectorPtr Protein::computeDisorderRegionsFromTertiaryStructure(TertiaryStructurePtr tertiaryStructure)
 {
   if (!tertiaryStructure)
   {
     jassert(false);
-    return DoubleVectorPtr();
+    return DenseDoubleVectorPtr();
   }
 
   size_t n = tertiaryStructure->getNumResidues();
@@ -422,7 +422,6 @@ DoubleVectorPtr Protein::computeDisorderRegionsFromTertiaryStructure(TertiaryStr
     else
       ++i;
   }
-  
   return res;
 }
 
@@ -444,7 +443,7 @@ ContainerPtr Protein::computeSecondaryStructureFromDSSPSecondaryStructure(Contai
   return res;
 }
 
-DoubleVectorPtr Protein::computeBinarySolventAccessibilityFromSolventAccessibility(DoubleVectorPtr solventAccessibility, double threshold)
+DenseDoubleVectorPtr Protein::computeBinarySolventAccessibilityFromSolventAccessibility(DoubleVectorPtr solventAccessibility, double threshold)
 {
   size_t n = solventAccessibility->getNumElements();
   DenseDoubleVectorPtr res = createEmptyProbabilitySequence(n);
@@ -629,10 +628,10 @@ ContainerPtr Protein::createEmptyDSSPSecondaryStructure(size_t length, bool useS
   return objectVector(elementsType, length);
 }
 
-DoubleVectorPtr Protein::createEmptyProbabilitySequence(size_t length)
+DenseDoubleVectorPtr Protein::createEmptyProbabilitySequence(size_t length)
   {return new DenseDoubleVector(positiveIntegerEnumerationEnumeration, probabilityType, length, Variable::missingValue(probabilityType).getDouble());}
 
-DoubleVectorPtr Protein::createEmptyDoubleSequence(size_t length)
+DenseDoubleVectorPtr Protein::createEmptyDoubleSequence(size_t length)
   {return new DenseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType, length, Variable::missingValue(doubleType).getDouble());}
 
 SymmetricMatrixPtr Protein::createEmptyContactMap(size_t length)

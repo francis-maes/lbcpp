@@ -287,7 +287,7 @@ typedef Variable (Object::*UnaryMemberFunctionPointer)(ExecutionContext&, const 
 class MethodBasedUnaryFunction : public SimpleUnaryFunction
 {
 public:
-  MethodBasedUnaryFunction(Object& pthis, UnaryMemberFunctionPointer impl,
+  MethodBasedUnaryFunction(const Object& pthis, UnaryMemberFunctionPointer impl,
                                 TypePtr inputType, TypePtr outputType)
     : SimpleUnaryFunction(inputType, outputType), pthis(pthis), impl(impl) {}
 
@@ -300,7 +300,7 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  Object& pthis;
+  const Object& pthis;
   UnaryMemberFunctionPointer impl;
 };
 

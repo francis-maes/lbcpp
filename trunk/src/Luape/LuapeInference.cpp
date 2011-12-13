@@ -8,6 +8,7 @@
 #include "precompiled.h"
 #include <lbcpp/Luape/LuapeInference.h>
 #include <lbcpp/Luape/LuapeBatchLearner.h>
+#include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
 using namespace lbcpp;
 
 /*
@@ -23,10 +24,7 @@ LuapeSamplesCachePtr LuapeInference::createSamplesCache(ExecutionContext& contex
   size_t n = data.size();
   LuapeSamplesCachePtr res = new LuapeSamplesCache(inputs, n);
   for (size_t i = 0; i < n; ++i)
-  {
-    const PairPtr& example = data[i].staticCast<Pair>();
-    res->setInputObject(inputs, i, example->getFirst().getObject());
-  }
+    res->setInputObject(inputs, i, data[i]->getVariable(0).getObject());
   return res;
 }
 
@@ -82,19 +80,19 @@ size_t LuapeBinaryClassifier::getNumRequiredInputs() const
   {return 2;}
 
 TypePtr LuapeBinaryClassifier::getRequiredInputType(size_t index, size_t numInputs) const
-  {return index ? booleanType : (TypePtr)objectClass;}
+  {return index ? sumType(booleanType, probabilityType) : (TypePtr)objectClass;}
 
 TypePtr LuapeBinaryClassifier::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
 {
   node = new LuapeScalarSumNode();
-  return booleanType;
+  return probabilityType;
 }
 
 Variable LuapeBinaryClassifier::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
   double activation = computeNode(context, inputs[0].getObject()).getDouble();
   jassert(activation != doubleMissingValue);
-  return activation > 0;
+  return Variable(1.0 / (1.0 + exp(-activation)), probabilityType);
 }
 
 double LuapeBinaryClassifier::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const
@@ -106,8 +104,9 @@ double LuapeBinaryClassifier::evaluatePredictions(ExecutionContext& context, con
   for (size_t i = 0; i < n; ++i)
   {
     bool predicted = (pred->getValue(i) > 0);
-    bool correct = data[i].staticCast<Pair>()->getSecond().getBoolean();
-    if (predicted != correct)
+    Variable supervision = data[i].staticCast<Pair>()->getSecond();
+    bool correct;
+    if (!lbcpp::convertSupervisionVariableToBoolean(supervision, correct) || predicted != correct)
       ++numErrors;
   }
   return numErrors / (double)n;

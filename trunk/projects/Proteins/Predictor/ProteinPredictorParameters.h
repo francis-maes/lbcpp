@@ -43,6 +43,7 @@ public:
   virtual FunctionPtr createResiduePairVectorPerception() const
     {jassert(false); return FunctionPtr();}
 
+  // ProteinPerception -> SymmetricMatrix[Cystein Pair Perception]
   virtual FunctionPtr createDisulfideSymmetricResiduePairVectorPerception() const
     {jassert(false); return FunctionPtr();}
 
