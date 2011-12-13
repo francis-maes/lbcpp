@@ -2,35 +2,7 @@
 
 <library name="LuapeSandBox" directory="Luape">
   
-  <!-- Builder Type Search Space -->
-  <class name="LuapeGraphBuilderTypeState">
-    <variable type="PositiveInteger" name="depth"/>
-    <variable type="ObjectVector[Type]" name="stack"/>
-  </class>
-  <class name="LuapeGraphBuilderTypeSearchSpace"/>
-
-  <!-- Builder Decision Problem -->
-  <class name="LuapeGraphBuilderAction"/>
-  
-  <class name="LuapeGraphBuilderState" base="DecisionProblemState">
-    <variable type="LuapeInference" name="function"/>
-    <variable type="LuapeGraphBuilderTypeSearchSpace" name="typeSearchSpace"/>
-    <variable type="LuapeGraphBuilderTypeState" name="typeState"/>
-    <variable type="ObjectVector[LuapeGraphBuilderAction]" name="availableActions"/>
-    <variable type="ObjectVector[LuapeNode]" name="stack"/>
-    <variable type="PositiveInteger" name="numSteps"/>
-    <variable type="Boolean" name="isAborted"/>
-    <variable type="Boolean" name="isYielded"/>
-  </class>
-
   <!-- Weak Learners -->
-  <class name="PolicyBasedWeakLearner" base="BoostingWeakLearner">
-    <constructor arguments="const PolicyPtr&amp; policy, size_t budget, size_t maxDepth"/>
-    <variable type="Policy" name="policy"/>
-    <variable type="PositiveInteger" name="budget"/>
-    <variable type="PositiveInteger" name="maxDepth"/>
-  </class>
-
   <class name="DPOptimizerBasedWeakLearner" base="BoostingWeakLearner">
     <variable type="Optimizer" name="optimizer"/>
     <variable type="PositiveInteger" name="maxDepth"/>

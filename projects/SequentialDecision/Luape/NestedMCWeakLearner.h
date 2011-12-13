@@ -10,7 +10,7 @@
 # define LBCPP_LUAPE_LEARNER_NESTED_MC_WEAK_H_
 
 # include <lbcpp/Luape/LuapeLearner.h>
-# include "LuapeGraphBuilder.h"
+# include "../../../src/Luape/BoostingWeakLearner/LuapeGraphBuilder.h"
 # include "../Core/NestedMonteCarloOptimizer.h"
 
 namespace lbcpp

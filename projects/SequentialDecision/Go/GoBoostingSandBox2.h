@@ -11,7 +11,6 @@
 
 # include "GoProblem.h"
 # include "../Luape/BanditPoolWeakLearner.h"
-# include "../Luape/PolicyBasedWeakLearner.h"
 # include <lbcpp/Luape/LuapeBatchLearner.h>
 
 # include "Perception/GoStatePerception.h"
@@ -19,11 +18,6 @@
 
 namespace lbcpp
 {
-
-// tmp, todo: move
-extern BoostingWeakLearnerPtr policyBasedWeakLearner(const PolicyPtr& policy, size_t budget, size_t maxDepth);
-extern BoostingWeakLearnerPtr nestedMCWeakLearner(size_t level, size_t iterations, size_t maxDepth);
-// --
 
 class GoBoostingSandBox2 : public WorkUnit
 {
@@ -63,7 +57,7 @@ public:
       return false;
 
     // configure gradient boosting
-    BoostingWeakLearnerPtr conditionLearner = policyBasedWeakLearner(new TreeBasedRandomPolicy(), budget, maxDepth);
+    BoostingWeakLearnerPtr conditionLearner = policyBasedWeakLearner(treeBasedRandomPolicy(), budget, maxDepth);
     BoostingWeakLearnerPtr weakLearner = conditionLearner;
     for (size_t i = 1; i < treeDepth; ++i)
       weakLearner = binaryTreeWeakLearner(conditionLearner, weakLearner);

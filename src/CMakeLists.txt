@@ -664,6 +664,9 @@ SET(LBCPP_LUAPE_BOOSTING_LEARNER_SOURCES
 SET(LBCPP_LUAPE_BOOSTING_WEAK_LEARNER_SOURCES
   Luape/BoostingWeakLearner/SingleStumpWeakLearner.h
   Luape/BoostingWeakLearner/BinaryTreeWeakLearner.h
+  Luape/BoostingWeakLearner/LuapeGraphBuilder.h
+  Luape/BoostingWeakLearner/LuapeGraphBuilderTypeSearchSpace.h
+  Luape/BoostingWeakLearner/PolicyBasedWeakLearner.h  
   Luape/BoostingWeakLearner/LuapeBoostingWeakLearnerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeBoostingWeakLearnerLibrary.cpp
 )
