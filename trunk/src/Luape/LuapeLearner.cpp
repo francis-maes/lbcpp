@@ -1,12 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuapeLearner.cpp          | Luape Graph Learner             |
+| Filename: LuapeLearner.cpp               | Luape Graph Learner             |
 | Author  : Francis Maes                   |                                 |
 | Started : 17/11/2011 11:26               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include "LuapeLearner.h"
+#include <lbcpp/Luape/LuapeLearner.h>
+#include <lbcpp/Data/DoubleVector.h>
 using namespace lbcpp;
 
 /*

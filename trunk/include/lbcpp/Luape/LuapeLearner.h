@@ -6,11 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_GRAPH_LEARNER_H_
-# define LBCPP_LUAPE_GRAPH_LEARNER_H_
+#ifndef LBCPP_LUAPE_LEARNER_H_
+# define LBCPP_LUAPE_LEARNER_H_
 
 # include "LuapeInference.h"
-# include "../Core/Policy.h"
 
 namespace lbcpp
 {
@@ -73,9 +72,6 @@ public:
 typedef ReferenceCountedObjectPtr<BoostingWeakLearner> BoostingWeakLearnerPtr;
 
 extern BoostingWeakLearnerPtr singleStumpWeakLearner();
-extern BoostingWeakLearnerPtr policyBasedWeakLearner(const PolicyPtr& policy, size_t budget, size_t maxDepth);
-extern BoostingWeakLearnerPtr nestedMCWeakLearner(size_t level, size_t iterations, size_t maxDepth);
-extern BoostingWeakLearnerPtr binaryTreeWeakLearner(BoostingWeakLearnerPtr conditionLearner, BoostingWeakLearnerPtr subLearner);
 
 class BoostingWeakObjective : public Object
 {
@@ -119,4 +115,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_GRAPH_LEARNER_H_
+#endif // !LBCPP_LUAPE_LEARNER_H_

@@ -5,7 +5,7 @@
   <import name="SequentialDecisionCore"/>
   <import name="DecisionProblem"/>
   <import name="SequentialDecisionWorkUnit"/>
-  <import name="Luape"/>
+  <import name="LuapeSandBox"/>
   <import name="SequentialDecisionGo"/>
   <import name="SequentialDecisionGP"/>
   <import name="SequentialDecisionBandits"/>

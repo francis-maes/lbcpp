@@ -84,6 +84,11 @@
 
 # include "Optimizer/Optimizer.h"
 
+# include "Luape/LuapeFunction.h"
+# include "Luape/LuapeNode.h"
+# include "Luape/LuapeInference.h"
+# include "Luape/LuapeLearner.h"
+
 #ifdef LBCPP_USER_INTERFACE
 # include "UserInterface/UserInterfaceManager.h"
 #endif

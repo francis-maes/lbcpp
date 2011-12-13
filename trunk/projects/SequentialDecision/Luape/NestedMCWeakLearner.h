@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_LEARNER_NESTED_MC_WEAK_H_
 # define LBCPP_LUAPE_LEARNER_NESTED_MC_WEAK_H_
 
-# include "LuapeLearner.h"
+# include <lbcpp/Luape/LuapeLearner.h>
 # include "LuapeGraphBuilder.h"
 # include "../Core/NestedMonteCarloOptimizer.h"
 

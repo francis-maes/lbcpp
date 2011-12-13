@@ -6,8 +6,9 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include "LuapeCache.h"
-#include "LuapeNode.h"
+#include <lbcpp/Luape/LuapeCache.h>
+#include <lbcpp/Luape/LuapeNode.h>
+#include <lbcpp/Core/DynamicObject.h>
 #include <algorithm>
 using namespace lbcpp;
 

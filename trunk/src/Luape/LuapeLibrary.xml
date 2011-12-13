@@ -2,6 +2,12 @@
 
 <library name="Luape" directory="Luape">
 
+  <include file="lbcpp/Luape/LuapeFunction.h"/>
+  <include file="lbcpp/Luape/LuapeNode.h"/>
+  <include file="lbcpp/Luape/LuapeInference.h"/>
+  <include file="lbcpp/Luape/LuapeLearner.h"/>
+  <include file="lbcpp/Luape/LuapeBatchLearner.h"/>
+    
   <!-- Luape Function -->
   <class name="LuapeFunction" abstract="yes"/>
   <class name="HomogeneousUnaryLuapeFunction" base="LuapeFunction" abstract="yes"/>
@@ -99,60 +105,8 @@
     <constructor/>
   </class>
 
-  <!-- Builder Type Search Space -->
-  <class name="LuapeGraphBuilderTypeState">
-    <variable type="PositiveInteger" name="depth"/>
-    <variable type="ObjectVector[Type]" name="stack"/>
-  </class>
-  <class name="LuapeGraphBuilderTypeSearchSpace"/>
-
-  <!-- Builder Decision Problem -->
-  <class name="LuapeGraphBuilderAction"/>
-  
-  <class name="LuapeGraphBuilderState" base="DecisionProblemState">
-    <variable type="LuapeInference" name="function"/>
-    <variable type="LuapeGraphBuilderTypeSearchSpace" name="typeSearchSpace"/>
-    <variable type="LuapeGraphBuilderTypeState" name="typeState"/>
-    <variable type="ObjectVector[LuapeGraphBuilderAction]" name="availableActions"/>
-    <variable type="ObjectVector[LuapeNode]" name="stack"/>
-    <variable type="PositiveInteger" name="numSteps"/>
-    <variable type="Boolean" name="isAborted"/>
-    <variable type="Boolean" name="isYielded"/>
-  </class>
-
-  <!-- Weak Learners -->
   <class name="BoostingWeakLearner" base="Object" abstract="yes"/>
-  <class name="SingleStumpWeakLearner" base="BoostingWeakLearner">
-    <constructor/>
-  </class>
-  <class name="BinaryTreeWeakLearner" base="BoostingWeakLearner">
-    <constructor arguments="BoostingWeakLearnerPtr conditionLearner, BoostingWeakLearnerPtr subLearner"/>
-    <variable type="BoostingWeakLearner" name="conditionLearner"/>
-    <variable type="BoostingWeakLearner" name="subLearner"/>
-  </class>
-  <class name="PolicyBasedWeakLearner" base="BoostingWeakLearner">
-    <constructor arguments="const PolicyPtr&amp; policy, size_t budget, size_t maxDepth"/>
-    <variable type="Policy" name="policy"/>
-    <variable type="PositiveInteger" name="budget"/>
-    <variable type="PositiveInteger" name="maxDepth"/>
-  </class>
 
-  <class name="DPOptimizerBasedWeakLearner" base="BoostingWeakLearner">
-    <variable type="Optimizer" name="optimizer"/>
-    <variable type="PositiveInteger" name="maxDepth"/>
-    <variable type="LuapeGraphBuilderTypeSearchSpace" name="typeSearchSpace"/>
-  </class>
-  <class name="NestedMCWeakLearner" base="DPOptimizerBasedWeakLearner">
-    <constructor arguments="size_t level, size_t iterations, size_t maxDepth" returnType="BoostingWeakLearner"/>
-  </class>
-
-  <!--
-  <class name="BanditPoolWeakLearner" base="BoostingWeakLearner">
-    <constructor arguments="size_t maxBandits, size_t maxDepth"/>
-    <variable type="PositiveInteger" name="maxBandits"/>
-    <variable type="PositiveInteger" name="maxDepth"/>
-  </class>
-  -->
 
   <!-- Strong Learners -->
   <class name="LuapeLearner" abstract="yes"/>
@@ -160,37 +114,10 @@
     <variable type="BoostingWeakLearner" name="weakLearner"/>
   </class>
 
-  <class name="WeightBoostingLearner" base="BoostingLearner" abstract="yes"/>
-  <class name="AdaBoostMHLearner" base="WeightBoostingLearner">
-    <constructor arguments="BoostingWeakLearnerPtr weakLearner, bool useSymmetricVotes"/>
-    <variable type="Boolean" name="useSymmetricVotes"/>
-  </class>
-  
-  <class name="GradientBoostingLearner" base="BoostingLearner" abstract="yes"/>
-  <class name="L2BoostingLearner" base="GradientBoostingLearner">
-    <constructor arguments="BoostingWeakLearnerPtr weakLearner, double learningRate"/>
-  </class>
-  
-  <class name="RankingGradientBoostingLearner" base="GradientBoostingLearner">
-    <constructor arguments="BoostingWeakLearnerPtr weakLearner, double learningRate, RankingLossFunctionPtr rankingLoss"/>
-    <variable type="RankingLossFunction" name="rankingLoss"/>
-  </class>
-  
-
   <!-- Wrapper to classical LBC++ learner -->
   <class name="LuapeBatchLearner" base="BatchLearner">
     <variable type="LuapeLearner" name="learner"/>
     <variable type="PositiveInteger" name="maxIterations"/>
   </class>
-
-  <!-- Sand Box -->
-  <class name="LuapeSandBox" base="WorkUnit">
-    <variable type="File" name="trainFile"/>
-    <variable type="File" name="testFile"/>
-    <variable type="PositiveInteger" name="maxExamples"/>
-    <variable type="PositiveInteger" name="maxSteps"/>
-    <variable type="PositiveInteger" name="budgetPerIteration"/>
-    <variable type="PositiveInteger" name="maxIterations"/>
-    <variable type="PositiveInteger" name="treeDepth"/>
-  </class>
+  
 </library>

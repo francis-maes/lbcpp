@@ -9,8 +9,8 @@
 #ifndef LBCPP_LUAPE_GRAPH_BUILDER_TYPE_SEARCH_SPACE_H_
 # define LBCPP_LUAPE_GRAPH_BUILDER_TYPE_SEARCH_SPACE_H_
 
-# include "LuapeNode.h"
-# include "LuapeInference.h"
+# include <lbcpp/Luape/LuapeNode.h>
+# include <lbcpp/Luape/LuapeInference.h>
 
 namespace lbcpp
 {
