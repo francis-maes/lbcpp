@@ -209,9 +209,23 @@ public:
 
   void addFunctions(const LuapeInferencePtr& machine, ProteinTarget target) const
   {
-    machine->addFunction(getVariableLuapeFunction());
+    // boolean operations
     machine->addFunction(andBooleanLuapeFunction());
+    machine->addFunction(equalBooleanLuapeFunction());
+
+    // double operations
+    machine->addFunction(addDoubleLuapeFunction());
+    machine->addFunction(subDoubleLuapeFunction());
+    machine->addFunction(mulDoubleLuapeFunction());
+    machine->addFunction(divDoubleLuapeFunction());
+
+    // enumeration operations
     machine->addFunction(equalsConstantEnumLuapeFunction());
+
+    // object operations
+    machine->addFunction(getVariableLuapeFunction());
+    machine->addFunction(getContainerLengthLuapeFunction());
+    machine->addFunction(getDoubleVectorElementLuapeFunction());
   }
 
   virtual FunctionPtr learningMachine(ProteinTarget target) const

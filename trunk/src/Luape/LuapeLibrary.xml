@@ -15,6 +15,8 @@
   <class name="LuapeFunction" abstract="yes"/>
   <class name="HomogeneousUnaryLuapeFunction" base="LuapeFunction" abstract="yes"/>
   <class name="HomogeneousBinaryLuapeFunction" base="LuapeFunction" abstract="yes"/>
+
+  <!-- Luape Functions - Booleans -->
   <class name="BinaryBooleanLuapeFunction" base="HomogeneousBinaryLuapeFunction" abstract="yes"/>
     <class name="AndBooleanLuapeFunction" base="BinaryBooleanLuapeFunction">
       <constructor returnType="LuapeFunction"/>
@@ -23,6 +25,7 @@
       <constructor returnType="LuapeFunction"/>
     </class>
 
+  <!-- Luape Functions - Doubles -->
   <class name="UnaryDoubleLuapeFunction" base="HomogeneousBinaryLuapeFunction" abstract="yes"/>
   <class name="NormalizerLuapeFunction" base="HomogeneousUnaryLuapeFunction">
     <constructor returnType="LuapeFunction"/>
@@ -44,14 +47,27 @@
     <class name="GreaterThanDoubleLuapeFunction" base="LuapeFunction">
       <constructor returnType="LuapeFunction"/>
     </class>
+  
+  <!-- Luape Functions - Enumerations -->  
   <class name="EqualsConstantEnumLuapeFunction" base="LuapeFunction">
     <constructor arguments="const Variable&amp; value"/>
     <variable type="Variable" name="value"/>
   </class>
+  
+  <!-- Luape Functions - Objects -->
   <class name="GetVariableLuapeFunction" base="LuapeFunction">
     <constructor arguments="size_t variableIndex"/>
     <variable type="PositiveInteger" name="variableIndex"/>
   </class>
+  <class name="GetContainerLengthLuapeFunction" base="LuapeFunction">
+    <constructor/>
+  </class>
+  <class name="GetDoubleVectorElementLuapeFunction" base="LuapeFunction">
+    <constructor arguments="size_t index"/>
+    <variable type="PositiveInteger" name="index"/>
+  </class>
+
+  <!-- Luape Functions - Special -->
   <class name="StumpLuapeFunction" base="LuapeFunction">
     <constructor arguments="double threshold"/>
     <variable type="Double" name="threshold"/>

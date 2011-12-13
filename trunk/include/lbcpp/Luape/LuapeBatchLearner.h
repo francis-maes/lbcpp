@@ -38,6 +38,11 @@ public:
       learner->setExamples(context, false, validationData);
 
     context.enterScope(T("Boosting"));
+
+    context.informationCallback(String((int)trainingData.size()) + T(" training examples"));
+    if (validationData.size())
+      context.informationCallback(String((int)validationData.size()) + T(" validation examples"));
+
     LuapeNodeUniversePtr universe = function->getUniverse();
     for (size_t i = 0; i < maxIterations; ++i)
     {
