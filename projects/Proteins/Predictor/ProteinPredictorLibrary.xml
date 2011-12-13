@@ -72,6 +72,7 @@
   </class>
 
   <class name="ProteinPredictorParameters" base="Object" abstract="yes"/>
+  <class name="CFProteinPredictorParameters" base="ProteinPredictorParameters" abstract="yes"/>
 
   <class name="NumericalProteinFeaturesParameters" shortName="features">
     <variable type="PositiveInteger" name="pssmDiscretization"/>
@@ -96,7 +97,7 @@
 <!--    <variable type="PositiveInteger" name="residueMediumMeanSize" description="The size of the second residue local mean"/> -->
   </class>
   
-  <class name="NumericalProteinPredictorParameters" base="ProteinPredictorParameters" shortName="numerical">
+  <class name="NumericalProteinPredictorParameters" base="CFProteinPredictorParameters" shortName="numerical">
     <constructor arguments="NumericalProteinFeaturesParametersPtr featuresParameters, LearnerParametersPtr learningParameters"/>
     <constructor/>
     <variable type="NumericalProteinFeaturesParameters" name="featuresParameters" shortName="f"/>
@@ -140,7 +141,7 @@
     <variable type="Boolean" name="useAttachement"/>
   </class>
   
-  <class name="NumericalCysteinPredictorParameters" base="ProteinPredictorParameters" shortName="numericalCystein">
+  <class name="NumericalCysteinPredictorParameters" base="CFProteinPredictorParameters" shortName="numericalCystein">
     <constructor/>
     <variable type="Boolean" name="useAddBiasLearner"/>
     <variable type="NumericalCysteinFeaturesParameters" name="fp"/>
@@ -201,7 +202,7 @@
     <variable type="Boolean" name="useIndexDifference"/>
   </class>
   
-  <class name="Lin09PredictorParameters" base="ProteinPredictorParameters" shortName="lin09">
+  <class name="Lin09PredictorParameters" base="CFProteinPredictorParameters" shortName="lin09">
     <variable type="Lin09Parameters" name="fp"/>
     <variable type="Double" name="C"/>
     <variable type="Double" name="kernelGamma"/>
@@ -219,8 +220,8 @@
 
 
   <!-- BEGIN GaussianKernel -->
-  <class name="DecoratorProteinPredictorParameters" base="ProteinPredictorParameters">
-    <variable type="ProteinPredictorParameters" name="decorated"/>
+  <class name="DecoratorProteinPredictorParameters" base="CFProteinPredictorParameters">
+    <variable type="CFProteinPredictorParameters" name="decorated"/>
   </class>
 
   <class name="GaussianKernelFeatureGenerator" base="FeatureGenerator">
@@ -320,7 +321,7 @@
     <variable type="Boolean" name="useSTALIntervalHistogram"/>
   </class>
   
-  <class name="LargeProteinPredictorParameters" base="ProteinPredictorParameters">
+  <class name="LargeProteinPredictorParameters" base="CFProteinPredictorParameters">
     <variable type="LargeProteinParameters" name="fp"/>
     <variable type="Boolean" name="isGlobalFeaturesLazy"/>
     <variable type="String" name="learningMachineName"/>

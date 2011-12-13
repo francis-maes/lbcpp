@@ -7,8 +7,12 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Luape/LuapeInference.h>
+#include <lbcpp/Luape/LuapeBatchLearner.h>
 using namespace lbcpp;
 
+/*
+** LuapeInference
+*/
 LuapeInference::LuapeInference()
   : universe(new LuapeNodeUniverse())
 {
@@ -38,6 +42,9 @@ Variable LuapeInference::computeNode(ExecutionContext& context, const ObjectPtr&
   return cache->compute(context, node);
 }
 
+void LuapeInference::setLearner(const LuapeLearnerPtr& learner, size_t maxIterations)
+  {setBatchLearner(new LuapeBatchLearner(learner, maxIterations));}
+
 /*
 ** LuapeRegressor
 */
@@ -55,6 +62,7 @@ TypePtr LuapeRegressor::initializeFunction(ExecutionContext& context, const std:
 
 double LuapeRegressor::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const
 {
+  // compute RMSE
   const DenseDoubleVectorPtr& pred = predictions.staticCast<DenseDoubleVector>();
   size_t n = pred->getNumValues();
   jassert(n == data.size());
@@ -85,13 +93,24 @@ TypePtr LuapeBinaryClassifier::initializeFunction(ExecutionContext& context, con
 Variable LuapeBinaryClassifier::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
   double activation = computeNode(context, inputs[0].getObject()).getDouble();
+  jassert(activation != doubleMissingValue);
   return activation > 0;
 }
 
 double LuapeBinaryClassifier::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const
 {
-  jassert(false); // not yet implemented
-  return 0.0;
+  const DenseDoubleVectorPtr& pred = predictions.staticCast<DenseDoubleVector>();
+  size_t n = pred->getNumValues();
+  jassert(n == data.size());
+  size_t numErrors = 0;
+  for (size_t i = 0; i < n; ++i)
+  {
+    bool predicted = (pred->getValue(i) > 0);
+    bool correct = data[i].staticCast<Pair>()->getSecond().getBoolean();
+    if (predicted != correct)
+      ++numErrors;
+  }
+  return numErrors / (double)n;
 }
 
 /*

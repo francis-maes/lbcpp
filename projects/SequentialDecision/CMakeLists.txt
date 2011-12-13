@@ -121,14 +121,14 @@ SET(LBCPP_SEQUENTIAL_DECISION_GO_PERCEPTION_SOURCES
 )
 
 SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
-  Luape/LuapeGraphBuilder.h
-  Luape/LuapeGraphBuilderTypeSearchSpace.h
   Luape/LuapeSandBox.h
   Luape/LuapeSandBoxLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeSandBoxLibrary.cpp
 )
 
 SET(LBCPP_LUAPE_LEARNER_SOURCES
+  Luape/LuapeGraphBuilder.h
+  Luape/LuapeGraphBuilderTypeSearchSpace.h
   Luape/PolicyBasedWeakLearner.h
   Luape/NestedMCWeakLearner.h
 )

@@ -56,10 +56,18 @@ public:
   const LuapeNodePtr& getRootNode() const
     {return node;}
 
+  /*
+  ** Compute
+  */
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 
   virtual LuapeSamplesCachePtr createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data) const;
   virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const = 0;
+
+  /*
+  ** Learner
+  */
+  void setLearner(const LuapeLearnerPtr& learner, size_t maxIterations = 1000);
 
 protected:
   friend class LuapeInferenceClass;

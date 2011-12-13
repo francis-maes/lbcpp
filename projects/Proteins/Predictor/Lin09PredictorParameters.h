@@ -12,6 +12,7 @@
 # include "ProteinPredictor.h"
 # include "ProteinPerception.h"
 # include "ProteinPredictorParameters.h"
+# include "ConnectivityPatternClassifier.h"
 # include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 # include <lbcpp/Learning/Numerical.h>
 # include <lbcpp/Learning/NearestNeighbor.h>
@@ -199,7 +200,7 @@ public:
   }
 };
 
-class Lin09PredictorParameters : public ProteinPredictorParameters
+class Lin09PredictorParameters : public CFProteinPredictorParameters
 {
 public:
   Lin09PredictorParameters(Lin09ParametersPtr fp = new Lin09Parameters())

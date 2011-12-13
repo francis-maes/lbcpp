@@ -225,7 +225,7 @@ protected:
   friend class NumericalCysteinFeaturesParametersClass;
 };
 
-class NumericalCysteinPredictorParameters : public ProteinPredictorParameters
+class NumericalCysteinPredictorParameters : public CFProteinPredictorParameters
 {
 public:
   bool useAddBiasLearner;

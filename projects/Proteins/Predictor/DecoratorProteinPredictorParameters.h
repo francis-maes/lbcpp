@@ -17,10 +17,10 @@ namespace lbcpp
 
 extern ClassPtr decoratorProteinPredictorParametersClass;
 
-class DecoratorProteinPredictorParameters : public ProteinPredictorParameters
+class DecoratorProteinPredictorParameters : public CFProteinPredictorParameters
 {
 public:
-  DecoratorProteinPredictorParameters(ProteinPredictorParametersPtr decorated)
+  DecoratorProteinPredictorParameters(CFProteinPredictorParametersPtr decorated)
     : decorated(decorated) {setThisClass(decoratorProteinPredictorParametersClass);}
   DecoratorProteinPredictorParameters() {}
   
@@ -54,7 +54,7 @@ public:
 protected:
   friend class DecoratorProteinPredictorParametersClass;
   
-  ProteinPredictorParametersPtr decorated;
+  CFProteinPredictorParametersPtr decorated;
 };
 
 class GaussianKernelFeatureGenerator : public FeatureGenerator
@@ -153,7 +153,7 @@ public:
   {
     context.enterScope(T("Initialisation of Gaussian Kernel"));
     //FunctionPtr f = lbcppMemberCompositeFunction(DecoratorProteinPredictorParameters, cysteinSymmetricResiudePairVectorPerception);
-    FunctionPtr f = CompositeFunctionPtr(new MethodBasedCompositeFunction(refCountedPointerFromThis(decorated.get()),  (CompositeFunctionBuilderFunction)(&ProteinPredictorParameters::cysteinSymmetricResiudePairVectorPerception)));
+    FunctionPtr f = CompositeFunctionPtr(new MethodBasedCompositeFunction(refCountedPointerFromThis(decorated.get()),  (CompositeFunctionBuilderFunction)(&CFProteinPredictorParameters::cysteinSymmetricResiudePairVectorPerception)));
     std::vector<DoubleVectorPtr> supportVectors;
     const size_t numProteins = supportProteins->getNumElements();
     FunctionPtr proteinPerceptionFunction = lbcppMemberCompositeFunction(DecoratorProteinPredictorParameters, proteinPerception);

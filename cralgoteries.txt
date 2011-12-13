@@ -1,16 +1,10 @@
 
+ * Test with 500 proteins with kNN
 
 
- - Luape: Application on proteins: move things to lbcpp-core, write Perceptions for proteins
- - Luape: More language features (polymorphism, first-order functions, count/mean/max/min/stddev)
- - Luape: Re-entrant
- 
-
-Luape-Go Perception:
-  - support for polymorphism, neighborhood, regions
-
-Luape-Appli:
+Luape-Other:
  * Go: rankboost + large-scale boosting
+ * Go: support for polymorphism, neighborhood, regions
  * Proteins-DSB: representation + re-entrant
  * Proteins-MT: multi-task
  * Proteins-CM: cascade

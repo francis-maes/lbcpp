@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "Rosetta.h"
 #include "precompiled.h"
 

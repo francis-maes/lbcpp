@@ -391,7 +391,7 @@ protected:
 /*
 ** Large Protein Predictor Parameters
 */
-class LargeProteinPredictorParameters : public ProteinPredictorParameters
+class LargeProteinPredictorParameters : public CFProteinPredictorParameters
 {
 public:
   LargeProteinPredictorParameters(const LargeProteinParametersPtr& fp = LargeProteinParametersPtr(), bool isGlobalFeaturesLazy = false)

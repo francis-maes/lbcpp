@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ProteinLuape" directory="Luape">
+
+  <class name="ProteinLuapeSandBox" base="WorkUnit">
+    <variable type="File" name="trainingInputDirectory"/>
+    <variable type="File" name="trainingSupervisionDirectory"/>
+    <variable type="File" name="testingInputDirectory"/>
+    <variable type="File" name="testingSupervisionDirectory"/>
+    <variable type="PositiveInteger" name="maxProteinCount"/>
+  </class>
+
+</library>

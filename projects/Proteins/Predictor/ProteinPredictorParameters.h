@@ -21,77 +21,40 @@ namespace lbcpp
 class ProteinPredictorParameters : public Object
 {
 public:
-  virtual void proteinPerception(CompositeFunctionBuilder& builder) const = 0;
-  virtual void propertyPerception(CompositeFunctionBuilder& builder) const = 0;
-  virtual void residueVectorPerception(CompositeFunctionBuilder& builder) const = 0;
-  virtual void residuePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
-  virtual void cysteinResiudePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
-  virtual void cysteinSymmetricResiudePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
-  virtual void cysteinResiudeVectorPerception(CompositeFunctionBuilder& builder) const = 0;
-
-  virtual void residuePerception(CompositeFunctionBuilder& builder) const 
-    {jassertfalse;}
-
+  /*
+  ** Perception functions
+  */
   // Protein -> ProteinPerception
   virtual FunctionPtr createProteinPerception() const
-  {
-    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, proteinPerception);
-    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
-    return function;
-  }
-  
+    {jassert(false); return FunctionPtr();}
+
   // ProteinPerception -> DoubleVector
   virtual FunctionPtr createGlobalPerception() const
-  {
-    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, propertyPerception);
-    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
-    return function;
-  }
+    {jassert(false); return FunctionPtr();}
 
   // ProteinPerception -> Vector[Residue Perception]
   virtual FunctionPtr createResidueVectorPerception() const
-  {
-    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, residueVectorPerception);
-    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
-    return function;
-  }
+    {jassert(false); return FunctionPtr();}
 
   // PositiveInteger(Position), ProteinPerception -> Residue Perception
   virtual FunctionPtr createResiduePerception() const
-  {
-    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, residuePerception);
-    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
-    return function;
-  }
+    {jassert(false); return FunctionPtr();}
 
   virtual FunctionPtr createResiduePairVectorPerception() const
-  {
-    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, residuePairVectorPerception);
-    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
-    return function;
-  }
-  
+    {jassert(false); return FunctionPtr();}
+
   virtual FunctionPtr createDisulfideSymmetricResiduePairVectorPerception() const
-  {
-    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, cysteinSymmetricResiudePairVectorPerception);
-    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
-    return function;
-  }
+    {jassert(false); return FunctionPtr();}
 
   virtual FunctionPtr createDisulfideResiduePairVectorPerception() const
-  {
-    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, cysteinResiudePairVectorPerception);
-    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
-    return function;
-  }
+    {jassert(false); return FunctionPtr();}
 
   virtual FunctionPtr createCysteinBondingStateVectorPerception() const
-  {
-    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, cysteinResiudeVectorPerception);
-    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
-    return function;
-  }
+    {jassert(false); return FunctionPtr();}
 
+  /*
+  ** Learning machines
+  */
   virtual FunctionPtr learningMachine(ProteinTarget target) const = 0;
   virtual FunctionPtr binaryClassifier(ProteinTarget target) const
     {return learningMachine(target);}
@@ -148,6 +111,83 @@ public:
 
 extern ClassPtr proteinPredictorParametersClass;
 typedef ReferenceCountedObjectPtr<ProteinPredictorParameters> ProteinPredictorParametersPtr;
+
+class CFProteinPredictorParameters : public ProteinPredictorParameters
+{
+public:
+  virtual void proteinPerception(CompositeFunctionBuilder& builder) const = 0;
+  virtual void propertyPerception(CompositeFunctionBuilder& builder) const = 0;
+  virtual void residueVectorPerception(CompositeFunctionBuilder& builder) const = 0;
+  virtual void residuePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
+  virtual void cysteinResiudePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
+  virtual void cysteinSymmetricResiudePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
+  virtual void cysteinResiudeVectorPerception(CompositeFunctionBuilder& builder) const = 0;
+
+  virtual void residuePerception(CompositeFunctionBuilder& builder) const 
+    {jassertfalse;}
+
+  // Protein -> ProteinPerception
+  virtual FunctionPtr createProteinPerception() const
+  {
+    FunctionPtr function = lbcppMemberCompositeFunction(CFProteinPredictorParameters, proteinPerception);
+    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
+    return function;
+  }
+  
+  // ProteinPerception -> DoubleVector
+  virtual FunctionPtr createGlobalPerception() const
+  {
+    FunctionPtr function = lbcppMemberCompositeFunction(CFProteinPredictorParameters, propertyPerception);
+    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
+    return function;
+  }
+
+  // ProteinPerception -> Vector[Residue Perception]
+  virtual FunctionPtr createResidueVectorPerception() const
+  {
+    FunctionPtr function = lbcppMemberCompositeFunction(CFProteinPredictorParameters, residueVectorPerception);
+    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
+    return function;
+  }
+
+  // PositiveInteger(Position), ProteinPerception -> Residue Perception
+  virtual FunctionPtr createResiduePerception() const
+  {
+    FunctionPtr function = lbcppMemberCompositeFunction(CFProteinPredictorParameters, residuePerception);
+    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
+    return function;
+  }
+
+  virtual FunctionPtr createResiduePairVectorPerception() const
+  {
+    FunctionPtr function = lbcppMemberCompositeFunction(CFProteinPredictorParameters, residuePairVectorPerception);
+    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
+    return function;
+  }
+  
+  virtual FunctionPtr createDisulfideSymmetricResiduePairVectorPerception() const
+  {
+    FunctionPtr function = lbcppMemberCompositeFunction(CFProteinPredictorParameters, cysteinSymmetricResiudePairVectorPerception);
+    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
+    return function;
+  }
+
+  virtual FunctionPtr createDisulfideResiduePairVectorPerception() const
+  {
+    FunctionPtr function = lbcppMemberCompositeFunction(CFProteinPredictorParameters, cysteinResiudePairVectorPerception);
+    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
+    return function;
+  }
+
+  virtual FunctionPtr createCysteinBondingStateVectorPerception() const
+  {
+    FunctionPtr function = lbcppMemberCompositeFunction(CFProteinPredictorParameters, cysteinResiudeVectorPerception);
+    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
+    return function;
+  }
+};
+
+typedef ReferenceCountedObjectPtr<CFProteinPredictorParameters> CFProteinPredictorParametersPtr;
 
 class NumericalProteinFeaturesParameters : public Object
 {
@@ -257,10 +297,10 @@ typedef ReferenceCountedObjectPtr<NumericalProteinFeaturesParameters> NumericalP
 
 extern ClassPtr numericalProteinFeaturesParametersClass;
 
-ProteinPredictorParametersPtr numericalProteinPredictorParameters(NumericalProteinFeaturesParametersPtr featuresParameters, LearnerParametersPtr learningParameters);
-ProteinPredictorParametersPtr numericalProteinPredictorParameters();
+extern CFProteinPredictorParametersPtr numericalProteinPredictorParameters(NumericalProteinFeaturesParametersPtr featuresParameters, LearnerParametersPtr learningParameters);
+extern CFProteinPredictorParametersPtr numericalProteinPredictorParameters();
 
-ProteinPredictorParametersPtr numericalCysteinPredictorParameters();
+extern CFProteinPredictorParametersPtr numericalCysteinPredictorParameters();
 
 class BinaryBalancedStochasticGDParameters : public StochasticGDParameters
 {
