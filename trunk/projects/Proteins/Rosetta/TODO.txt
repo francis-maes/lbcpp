@@ -2,8 +2,6 @@ TODO LBCPP
 ==========
 
 - retirer les ifdef LBCPP_PROTEIN_ROSETTA
-- sortir directement pdb facultatif
-- ajouter pourcentage de movers refuse
 - apprentissage online
 
 
