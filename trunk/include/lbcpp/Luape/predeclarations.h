@@ -29,6 +29,10 @@ typedef ReferenceCountedObjectPtr<LuapeFunctionNode> LuapeFunctionNodePtr;
 class LuapeTestNode;
 typedef ReferenceCountedObjectPtr<LuapeTestNode> LuapeTestNodePtr;
 
+
+class LuapeLearner;
+typedef ReferenceCountedObjectPtr<LuapeLearner> LuapeLearnerPtr;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_LUAPE_PREDECLARATIONS_H_

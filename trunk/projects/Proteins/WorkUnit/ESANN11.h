@@ -97,7 +97,7 @@ public:
   }
 };
 
-class ESANN11PredictorParameters : public ProteinPredictorParameters
+class ESANN11PredictorParameters : public CFProteinPredictorParameters
 {
 public:
   virtual void proteinPerception(CompositeFunctionBuilder& builder) const

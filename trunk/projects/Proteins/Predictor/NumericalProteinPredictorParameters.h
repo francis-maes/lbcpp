@@ -18,7 +18,7 @@
 namespace lbcpp
 {
 
-class NumericalProteinPredictorParameters : public ProteinPredictorParameters
+class NumericalProteinPredictorParameters : public CFProteinPredictorParameters
 {
 public:
   NumericalProteinPredictorParameters(NumericalProteinFeaturesParametersPtr featuresParameters, LearnerParametersPtr learningParameters)
