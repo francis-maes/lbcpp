@@ -170,6 +170,10 @@
   <class name="DisulfideBondWorkUnit" base="WorkUnit">
     <variable type="String" name="inputDirectory" shortName="in"/>
     <variable type="String" name="supervisionDirectory" shortName="sup"/>
+    <variable type="File" name="parameterFile" shortName="p"/>
+    <variable type="String" name="learningMachineName" shortName="m"/>
+    <variable type="Double" name="svmC"/>
+    <variable type="Double" name="svmGamma"/>
   </class>
   <class name="AverageDirectoryScoresWorkUnit" base="WorkUnit">
     <variable type="File" name="directory" shortName="in"/>
@@ -181,6 +185,10 @@
     <variable type="File" name="inputDirectory" shortName="in"/>
     <variable type="File" name="supervisionDirectory" shortName="sup"/>
     <variable type="String" name="outputPrefix" shortName="o"/>
+  </class>
+  <class name="GenerateLargeProteinExperimentsWorkUnit" base="WorkUnit">
+    <variable type="PositiveInteger" name="numParameters" shortName="p"/>
+    <variable type="PositiveInteger" name="numExperiments" shortName="n"/>
   </class>
   <!-- END CysteinBox -->
 
