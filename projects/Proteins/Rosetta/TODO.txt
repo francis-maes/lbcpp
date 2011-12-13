@@ -2,6 +2,10 @@ TODO LBCPP
 ==========
 
 - retirer les ifdef LBCPP_PROTEIN_ROSETTA
+- sortir directement pdb facultatif
+- ajouter pourcentage de movers refuse
+- apprentissage online
+
 
 
 TODO NIC3
@@ -11,14 +15,17 @@ v depliement proteines
   v relancer mtm
   v relancer en
   v relancer mtm et en
-v relancer optim sur test avec resultats unfold 
+
+v relancer optim sur test avec resultats unfold
+
 - lancer EDA sur optim_new_learn_all_it1
 
 - depliement
-  - mettre un facteur de depliement 1.1 ou 1.2 + plus diterations
-    - essayer sur energie (facteur ne change pas grand chose)
-    - essayer sur mtm (facteur changera)
-    - laisser tomber enmtm 
+  v mettre un facteur de depliement 1.1 ou 1.2 + plus diterations
+    v essayer sur energie (facteur ne change pas grand chose)
+    v essayer sur mtm (facteur changera quelque chose)
+    v laisser tomber enmtm
+  - relancer optimisation avec nouveaux couples struct/movers
 
 
 TODO Rosetta
@@ -26,14 +33,13 @@ TODO Rosetta
 
 - corriger conversion pose to protein (patche, --> plus dutilisation du DD)
   - ajouter des verifications avant deffectuer les transformations ou apres lapplication de movers?
-  - pose to protein
-  - protein to pose 
+  v pose to protein
+  v protein to pose
 - corriger probleme import pdb (Rosetta)
 - corriger rosetta parallele (ProteinTestParallelWorkUnit)
 - corriger probleme hbond tripped
 
 - demander pq modification du pdb + fournir fichier exemple
-v demander pq creation de core....
 
 
 
