@@ -153,6 +153,9 @@ extern ClassPtr proteinPerceptionClass;
 class LuapeProteinPredictorParameters : public ProteinPredictorParameters
 {
 public:
+  LuapeProteinPredictorParameters(size_t treeDepth, size_t numSteps, size_t budget)
+    : treeDepth(treeDepth), numSteps(numSteps), budget(budget) {}
+
   Variable createProteinPerceptionFunction(ExecutionContext& context, const Variable& input) const
     {return new ProteinPerception(input.getObjectAndCast<Protein>());}
 
@@ -192,6 +195,25 @@ public:
   /*
   ** Learning machines
   */
+  BoostingWeakLearnerPtr createWeakLearner(ProteinTarget target) const
+  {
+    BoostingWeakLearnerPtr conditionLearner = policyBasedWeakLearner(treeBasedRandomPolicy(), budget, numSteps);
+    //BoostingWeakLearnerPtr weakLearner = new NormalizedValueWeakLearner();
+    //BoostingWeakLearnerPtr conditionLearner = nestedMCWeakLearner(0, budgetPerIteration, maxSteps);
+
+    BoostingWeakLearnerPtr res = conditionLearner;
+    for (size_t i = 1; i < treeDepth; ++i)
+      res = binaryTreeWeakLearner(conditionLearner, res);
+    return res;
+  }
+
+  void addFunctions(const LuapeInferencePtr& machine, ProteinTarget target) const
+  {
+    machine->addFunction(getVariableLuapeFunction());
+    machine->addFunction(andBooleanLuapeFunction());
+    machine->addFunction(equalsConstantEnumLuapeFunction());
+  }
+
   virtual FunctionPtr learningMachine(ProteinTarget target) const
   {
     jassert(false);
@@ -201,23 +223,23 @@ public:
   virtual FunctionPtr disulfideBondPredictor(ProteinTarget target) const
   {
     LuapeInferencePtr classifier = binaryClassifier(target).staticCast<LuapeInference>();
-    classifier->addInput(proteinResiduePairPerceptionClass, "residuePair");
+    classifier->addInput(proteinResiduePairPerceptionClass, "bond");
     return mapNSymmetricMatrixFunction(classifier, 1);
   }
 
   virtual FunctionPtr binaryClassifier(ProteinTarget target) const
   {
     LuapeInferencePtr learningMachine = new LuapeBinaryClassifier();
-
-    
-    learningMachine->setLearner(adaBoostLearner(binaryTreeWeakLearner(singleStumpWeakLearner(), singleStumpWeakLearner())), 100);
+    addFunctions(learningMachine, target);
+    learningMachine->setLearner(adaBoostLearner(createWeakLearner(target)), 100);
     return learningMachine;
   }
 
   virtual FunctionPtr multiClassClassifier(ProteinTarget target) const
   {
     LuapeInferencePtr learningMachine =  new LuapeClassifier();
-    learningMachine->setLearner(adaBoostMHLearner(binaryTreeWeakLearner(singleStumpWeakLearner(), singleStumpWeakLearner()), true), 100);
+    addFunctions(learningMachine, target);
+    learningMachine->setLearner(adaBoostMHLearner(createWeakLearner(target), true), 100);
     return learningMachine;
   }
 
@@ -226,6 +248,11 @@ public:
     jassert(false);
     return FunctionPtr();
   }
+
+protected:
+  size_t treeDepth;
+  size_t numSteps;
+  size_t budget;
 };
 
 //////////////////////////////////////////////
@@ -235,7 +262,7 @@ public:
 class ProteinLuapeSandBox : public WorkUnit
 {
 public:
-  ProteinLuapeSandBox() : maxProteinCount(0) {}
+  ProteinLuapeSandBox() : maxProteinCount(0), treeDepth(2), numSteps(6), budget(100) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -244,9 +271,8 @@ public:
     if (!trainingProteins || !testingProteins)
       return false;
 
-    LargeProteinParametersPtr parameter = LargeProteinParameters::createTestObject(20);
-
 #if 0
+    LargeProteinParametersPtr parameter = LargeProteinParameters::createTestObject(20);
     LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(parameter);
     /*predictor->learningMachineName = T("ExtraTrees");
     predictor->x3Trees = 100;
@@ -256,7 +282,7 @@ public:
     predictor->knnNeighbors = 5;
 #endif
      
-    ProteinPredictorParametersPtr predictor = new LuapeProteinPredictorParameters();
+    ProteinPredictorParametersPtr predictor = new LuapeProteinPredictorParameters(treeDepth, numSteps, budget);
 
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
     iteration->addTarget(dsbTarget);
@@ -277,6 +303,10 @@ protected:
   File testingInputDirectory;
   File testingSupervisionDirectory;
   size_t maxProteinCount;
+
+  size_t treeDepth;
+  size_t numSteps;
+  size_t budget;
 
   ContainerPtr loadProteinPairs(ExecutionContext& context, const File& inputDirectory, const File& supervisionDirectory, const String& description)
   {

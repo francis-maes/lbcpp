@@ -6,7 +6,7 @@
   <class name="ProteinResiduePerception" base="Object">
     <variable type="ProteinPerception" name="protein"/>
     <variable type="PositiveInteger" name="position"/>
-    <variable type="ProteinResiduePerception" name="previous"/>
+    <variable type="ProteinResiduePerception" name="previous" shortName="prev"/>
     <variable type="ProteinResiduePerception" name="next"/>
 
     <variable type="AminoAcidType" name="aminoAcidType" enumeration="yes"/>
@@ -20,8 +20,8 @@
   
   <class name="ProteinResiduePairPerception" base="Object">
     <variable type="ProteinPerception" name="protein"/>
-    <variable type="ProteinResiduePerception" name="firstResidue"/>
-    <variable type="ProteinResiduePerception" name="secondResidue"/>
+    <variable type="ProteinResiduePerception" name="firstResidue" shortName="r1"/>
+    <variable type="ProteinResiduePerception" name="secondResidue" shortName="r2"/>
   </class>
 
   <class name="ProteinPerception" base="Object">
@@ -36,6 +36,10 @@
     <variable type="File" name="testingInputDirectory"/>
     <variable type="File" name="testingSupervisionDirectory"/>
     <variable type="PositiveInteger" name="maxProteinCount"/>
+
+    <variable type="PositiveInteger" name="treeDepth"/>
+    <variable type="PositiveInteger" name="numSteps"/>
+    <variable type="PositiveInteger" name="budget"/>
   </class>
 
 </library>

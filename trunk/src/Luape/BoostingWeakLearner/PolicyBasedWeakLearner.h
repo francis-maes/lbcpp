@@ -12,6 +12,7 @@
 # include <lbcpp/Luape/LuapeLearner.h>
 # include "LuapeGraphBuilder.h"
 # include <lbcpp/DecisionProblem/Policy.h>
+# include <lbcpp/Data/RandomVariable.h>
 # include <list>
 
 namespace lbcpp

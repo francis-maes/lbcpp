@@ -11,6 +11,7 @@
 
 # include "LuapeInference.h"
 # include <lbcpp/Learning/LossFunction.h>
+# include <lbcpp/DecisionProblem/Policy.h>
 
 namespace lbcpp
 {
@@ -74,6 +75,9 @@ typedef ReferenceCountedObjectPtr<BoostingWeakLearner> BoostingWeakLearnerPtr;
 
 extern BoostingWeakLearnerPtr singleStumpWeakLearner();
 extern BoostingWeakLearnerPtr binaryTreeWeakLearner(BoostingWeakLearnerPtr conditionLearner, BoostingWeakLearnerPtr subLearner);
+extern BoostingWeakLearnerPtr policyBasedWeakLearner(const PolicyPtr& policy, size_t budget, size_t maxDepth);
+
+extern PolicyPtr treeBasedRandomPolicy();
 
 class BoostingWeakObjective : public Object
 {

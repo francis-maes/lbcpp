@@ -445,7 +445,8 @@ public:
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
   {
     jassert(inputs.size() == 1);
-    return inputs[0]->toShortString() + "." + inputs[0]->getType()->getMemberVariableName(variableIndex);
+    VariableSignaturePtr member = inputs[0]->getType()->getMemberVariable(variableIndex);
+    return inputs[0]->toShortString() + "." + (member->getShortName().isNotEmpty() ? member->getShortName() : member->getName());
   }
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
