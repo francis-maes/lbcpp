@@ -44,20 +44,7 @@
     <variable type="Double" name="energyWeight" description="The ponderation factor between energy and structure score"/>
   </class>
   
-  <!-- WorkUnits -->
-  <class name="ProteinOptimizationWithLearningWorkUnit" base="WorkUnit">
-    <variable type="String" name="inputDirectory"/>
-    <variable type="String" name="outputDirectory"/>
-    <variable type="String" name="referencesDirectory"/>
-    <variable type="String" name="moversDirectory"/>
-    <variable type="PositiveInteger" name="learningPolicy"/>
-    <variable type="PositiveInteger" name="residueFeatures"/>
-    <variable type="PositiveInteger" name="energyFeatures"/>
-    <variable type="PositiveInteger" name="histogramFeatures"/>
-    <variable type="PositiveInteger" name="distanceFeatures"/>
-    <variable type="PositiveInteger" name="numMoversToLearn"/>
-  </class>
-  
+  <!-- WorkUnits -->  
   <class name="RosettaTest" base="WorkUnit">
     <variable type="Double" name="value"/>
     <variable type="Integer" name="arg" shortName="a" description="An input argument to RosettaTest"/>

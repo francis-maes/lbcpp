@@ -13,8 +13,41 @@
   </class>
   
   <class name="TuningSAParametersWorkUnit" base="WorkUnit">
-    <variable type="String" name="referenceDirectory" description="Directory where one can find the real proteins"/>
-    <variable type="Integer" name="numIterations" description="Maximum number of iterations performed by the defolder"/>
+    <variable type="String" name="inputDirectory" description="Directory where one can find the real proteins"/>
+    <variable type="String" name="referencesDirectory" description="Directory of the intermediate structures"/>
+    <variable type="String" name="moversDirectory" description="Directory of the associated movers"/>
+    <variable type="PositiveInteger" name="numIterations"/>
   </class>
     
+  <class name="ProteinOptimizationWorkUnit" base="WorkUnit">
+    <!-- 0 -->
+    <variable type="String" name="inputDirectory"/>
+    <!-- 1 -->
+    <variable type="String" name="outputDirectory"/>
+    <!-- 2 -->
+    <variable type="String" name="referencesDirectory"/>
+    <!-- 3 -->
+    <variable type="String" name="moversDirectory"/>
+    <!-- 4 -->
+    <variable type="PositiveInteger" name="learningPolicy"/>
+    <!-- 5 -->
+    <variable type="PositiveInteger" name="residueFeatures"/>
+    <!-- 6 -->
+    <variable type="PositiveInteger" name="energyFeatures"/>
+    <!-- 7 -->
+    <variable type="PositiveInteger" name="histogramFeatures"/>
+    <!-- 8 -->
+    <variable type="PositiveInteger" name="distanceFeatures"/>
+    <!-- 9 -->
+    <variable type="PositiveInteger" name="numMoversToLearn"/>
+    <!-- 10 -->
+    <variable type="Double" name="initialTemperature"/>
+    <!-- 11 -->
+    <variable type="Double" name="finalTemperature"/>
+    <!-- 12 -->
+    <variable type="Integer" name="numOutputFiles"/>
+    <!-- 13 -->
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+  
 </library>

@@ -98,6 +98,11 @@ public:
 
       // verbosity
       context.enterScope((*references[j]).getFileNameWithoutExtension() + T(" discovering movers."));
+      context.enterScope(T("Iteration"));
+      context.resultCallback(T("Iteration number"), Variable((int)0));
+      context.resultCallback(T("Energy"), Variable(getTotalEnergy(workingPose, fullAtomEnergy)));
+      context.resultCallback(T("Mover"), ProteinMoverPtr());
+      context.leaveScope(Variable(qual));
 
       RandomGeneratorPtr random = new RandomGenerator();
       ProteinMoverPtr mover;
