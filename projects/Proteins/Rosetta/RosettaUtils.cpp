@@ -30,10 +30,6 @@ void lbcpp::convertProteinToPose(ExecutionContext& context, const ProteinPtr& pr
   if ((int)res->n_residue() != (int)protein->getLength())
   {
     context.errorCallback(T("convertProteinToPose"), protein->getName());
-    File pdbfile = context.getFile(T("119.pdb"));
-    protein->saveToPDBFile(context, pdbfile);
-    std::cout << "size pose : " << (int)res->n_residue() << std::endl;
-    std::cout << "size protein : " << (int)protein->getLength() << std::endl;
     res.reset_to_null();
   }
 
@@ -46,25 +42,30 @@ ProteinPtr lbcpp::convertPoseToProtein(ExecutionContext& context, const core::po
 
   RandomGenerator rg;
   bool error = false;
+  ProteinPtr prot;
 
-  File tempFile = context.getFile(T("tempFileConversionPoseToProtein") + String(
-      Time::currentTimeMillis()) + String(rg.sampleInt(0, INT_MAX)) + T(".pdb"));
+  File tempFile = context.getFile(T("tmpFileConvPoseToProtein") + String(Time::currentTimeMillis())
+      + String(rg.sampleInt(0, INT_MAX)) + T(".pdb"));
   int i = 0;
-  while (tempFile.exists())
+  while ((tempFile.exists()) && !error)
   {
-    tempFile = context.getFile(T("tempFileConversionPoseToProtein") + String(
-        Time::currentTimeMillis()) + String(rg.sampleInt(0, INT_MAX)) + T(".pdb"));
+    tempFile = context.getFile(T("tmpFileConvPoseToProtein") + String(Time::currentTimeMillis())
+        + String(rg.sampleInt(0, INT_MAX)) + T(".pdb"));
     i++;
     if (i >= 100)
       error = true;
   }
 
-  core::io::pdb::dump_pdb(*pose, (const char*)tempFile.getFullPathName());
-  ProteinPtr prot = Protein::createFromPDB(context, tempFile, true);
+  if (!error)
+  {
+    core::io::pdb::dump_pdb(*pose, (const char*)tempFile.getFullPathName());
+    prot = Protein::createFromPDB(context, tempFile, true);
+    tempFile.deleteFile();
+  }
+  else
+    return NULL;
 
-  tempFile.deleteFile();
-
-  error = (int)pose->n_residue() != (int)prot->getLength();
+  error = error ? true : (int)pose->n_residue() != (int)prot->getLength();
 
   if (error)
   {
@@ -72,6 +73,7 @@ ProteinPtr lbcpp::convertPoseToProtein(ExecutionContext& context, const core::po
     context.errorCallback(T("convertPoseToProtein"), String(name.c_str()));
     return NULL;
   }
+
   return prot;
 
   //  std::ostringstream oss;
