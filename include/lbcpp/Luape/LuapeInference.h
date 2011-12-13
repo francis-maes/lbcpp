@@ -107,6 +107,7 @@ public:
 };
 
 extern ClassPtr luapeBinaryClassifierClass;
+typedef ReferenceCountedObjectPtr<LuapeBinaryClassifier> LuapeBinaryClassifierPtr;
 
 // votes = ObjectVector of size numYields, containing DenseDoubleVector of size numLabels (symmetric weak predictor)
 class LuapeClassifier : public LuapeInference

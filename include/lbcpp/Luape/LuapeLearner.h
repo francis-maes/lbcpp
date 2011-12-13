@@ -115,6 +115,7 @@ protected:
   std::vector<size_t> allExamples;
 };
 
+extern BoostingLearnerPtr adaBoostLearner(BoostingWeakLearnerPtr weakLearner);
 extern BoostingLearnerPtr adaBoostMHLearner(BoostingWeakLearnerPtr weakLearner, bool useSymmetricVotes);
 extern BoostingLearnerPtr l2BoostingLearner(BoostingWeakLearnerPtr weakLearner, double learningRate);
 extern BoostingLearnerPtr rankingGradientBoostingLearner(BoostingWeakLearnerPtr weakLearner, double learningRate, RankingLossFunctionPtr rankingLoss);

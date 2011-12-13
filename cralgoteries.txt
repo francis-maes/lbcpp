@@ -1,7 +1,4 @@
 
- * Test with 500 proteins with kNN
-
-
 Luape-Other:
  * Go: rankboost + large-scale boosting
  * Go: support for polymorphism, neighborhood, regions

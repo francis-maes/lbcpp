@@ -9,7 +9,7 @@
 #include "Utilities.h"
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Core/XmlSerialisation.h>
-
+#include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
 using namespace lbcpp;
 
 /*
@@ -63,14 +63,7 @@ bool BinaryClassificationConfusionMatrix::convertToBoolean(ExecutionContext& con
 {
   if (!variable.exists())
     return false;
-  
-  if (variable.isBoolean())
-    res = variable.getBoolean();
-  else if (variable.inheritsFrom(probabilityType))
-    res = variable.getDouble() > 0.5;
-  else if (variable.inheritsFrom(doubleType))
-    res = variable.getDouble() > 0.0; // sign
-  else
+  if (!lbcpp::convertSupervisionVariableToBoolean(variable, res))
   {
     context.errorCallback(T("BinaryClassificationConfusionMatrix::convertToBoolean"), T("Given type: ") + variable.getType()->toString());
     jassert(false);
