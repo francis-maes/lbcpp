@@ -621,20 +621,47 @@ protected:
 class DisulfideBondWorkUnit : public WorkUnit
 {
 public:
+  DisulfideBondWorkUnit()
+    : learningMachineName(T("ExtraTrees")), svmC(4.0), svmGamma(1.0) {}
+
+  DisulfideBondWorkUnit(double svmC, double svmGamma)
+    : learningMachineName(T("LibSVM")), svmC(svmC), svmGamma(svmGamma) {}
+
   virtual Variable run(ExecutionContext& context)
   {
-    enum {numFolds = 10};
-    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory), context.getFile(supervisionDirectory), 0, T("Loading proteins"));
-    ContainerPtr train = proteins->invFold(0, numFolds);
-    ContainerPtr test = proteins->fold(0, numFolds);
+    ContainerPtr train = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("inv_fold_0")), context.getFile(supervisionDirectory).getChildFile(T("inv_fold_0")), 0, T("Loading training proteins"));
+    ContainerPtr test = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("fold_0")), context.getFile(supervisionDirectory).getChildFile(T("fold_0")), 0, T("Loading testing proteins"));
 
-    LargeProteinParametersPtr parameter = LargeProteinParameters::createTestObject(20);
+    if (!train || !test || train->getNumElements() == 0 || test->getNumElements() == 0)
+    {
+      context.errorCallback(T("No training or testing proteins !"));
+      return 100;
+    }
+
+    LargeProteinParametersPtr parameter;
+    if (parameterFile == File::nonexistent)
+      parameter = LargeProteinParameters::createTestObject(20);
+    else
+    {
+      parameter = LargeProteinParameters::createFromFile(context, parameterFile).dynamicCast<LargeProteinParameters>();
+      if (!parameter)
+      {
+        context.errorCallback(T("Invalid LargeProteinParameters file !"));
+        return 101;
+      }
+    }
 
     LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(parameter);
-    predictor->learningMachineName = T("ExtraTrees");
-    predictor->x3Trees = 100;
+    predictor->learningMachineName = learningMachineName;
+    // Config ExtraTrees
+    predictor->x3Trees = 1500;
     predictor->x3Attributes = 0;
     predictor->x3Splits = 1;
+    // Config kNN
+    predictor->knnNeighbors = 5;
+    // Config LibSVM
+    predictor->svmC = svmC;
+    predictor->svmGamma = svmGamma;
 
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
     iteration->addTarget(dsbTarget);
@@ -652,6 +679,10 @@ protected:
 
   String inputDirectory;
   String supervisionDirectory;
+  File parameterFile;
+  String learningMachineName;
+  double svmC;
+  double svmGamma;
 };
 
 class AverageDirectoryScoresWorkUnit : public WorkUnit
@@ -764,6 +795,7 @@ protected:
     TypePtr disulfideType = disulfideFunction->getOutputType();
     EnumerationPtr enumeration = disulfideType->getTemplateArgument(0)->getTemplateArgument(0).staticCast<Enumeration>();
     const size_t n = enumeration->getNumElements();
+    std::cout << "Num. Features: " << n << std::endl;
     for (size_t i = 0; i < n; ++i)
       *o << "@ATTRIBUTE " << enumeration->getElement(i)->getName() << " NUMERIC\n";
     *o << "@ATTRIBUTE class {0,1}\n";
@@ -776,9 +808,8 @@ protected:
     FunctionPtr proteinPerception = predictor->createProteinPerception();
     FunctionPtr disulfideFunction = predictor->createDisulfideSymmetricResiduePairVectorPerception();
 
-    VectorPtr examples = vector(pairClass(doubleVectorClass(enumValueType, doubleType), probabilityType)); 
-
     const size_t n = proteins->getNumElements();
+    std::cout << "Num. Proteins: " << n << std::endl;
     for (size_t i = 0; i < n; ++i)
     {
       Variable perception = proteinPerception->compute(context, proteins->getElement(i).getObjectAndCast<Pair>()->getFirst());
@@ -797,9 +828,85 @@ protected:
 
   void writeFeatures(const DoubleVectorPtr& features, OutputStream* const o) const
   {
+    static bool firstVisit = true;
     DenseDoubleVectorPtr ddv = features->toDenseDoubleVector();
+    if (firstVisit)
+      std::cout << "Data's size: " << ddv->getNumValues() << std::endl;
+    firstVisit = false;
     for (size_t i = 0; i < ddv->getNumValues(); ++i)
       *o << ddv->getValue(i) << ",";
+  }
+};
+
+class GenerateLargeProteinExperimentsWorkUnit : public WorkUnit
+{
+public:
+  GenerateLargeProteinExperimentsWorkUnit()
+    : numParameters(0), numExperiments(0) {}
+
+  virtual Variable run(ExecutionContext& context)
+  {
+    std::map<String, LargeProteinParametersPtr> uniqueExperiments;
+    for (size_t i = 0; i < numExperiments; ++i)
+    {
+      LargeProteinParametersPtr res = generateExperiment(context);
+      if (uniqueExperiments.count(res->toString()) == 1)
+      {
+        --i;
+        continue;
+      }
+
+      String fileName = T("Param-") + String((int)numParameters) + T("_Exp-") + String((int)i) + T(".xml");
+      res->saveToFile(context, context.getFile(fileName));
+      context.enterScope(fileName);
+      context.leaveScope(res);
+
+      uniqueExperiments[res->toString()] = res;
+    }
+    return true;
+  }
+
+protected:
+  friend class GenerateLargeProteinExperimentsWorkUnitClass;
+
+  size_t numParameters;
+  size_t numExperiments;
+
+  LargeProteinParametersPtr generateExperiment(ExecutionContext& context) const
+  {
+    LargeProteinParametersPtr res = new LargeProteinParameters();
+    const size_t n = largeProteinParametersClass->getNumMemberVariables();
+    std::vector<bool> notUsedParameters(n, true);
+    for (size_t i = 0; i < numParameters; ++i)
+    {
+      size_t index;
+      do
+      {
+        index = context.getRandomGenerator()->sampleSize(n);
+      } while (!notUsedParameters[index]);
+      
+      Variable value = sampleValue(context, index);
+      res->setVariable(index, value);
+      notUsedParameters[index] = false;
+    }
+    return res;
+  }
+
+  Variable sampleValue(ExecutionContext& context, size_t index) const
+  {
+    const TypePtr varType = largeProteinParametersClass->getMemberVariableType(index);
+    const String varName = largeProteinParametersClass->getMemberVariableName(index);
+    if (varType->inheritsFrom(booleanType))
+      return true;
+    if (varName.endsWith(T("WindowSize")))
+      return discretizeSampler(gaussianSampler(15, 15), 1, 40)->sample(context, context.getRandomGenerator());
+    if (varName.endsWith(T("LocalHistogramSize")))
+      return discretizeSampler(gaussianSampler(51, 50), 1, 100)->sample(context, context.getRandomGenerator());
+    if (varName == T("separationProfilSize"))
+      return discretizeSampler(gaussianSampler(7, 11), 1, 15)->sample(context, context.getRandomGenerator());
+
+    jassertfalse;
+    return Variable();
   }
 };
 
