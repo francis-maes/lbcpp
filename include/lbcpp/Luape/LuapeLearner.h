@@ -10,6 +10,7 @@
 # define LBCPP_LUAPE_LEARNER_H_
 
 # include "LuapeInference.h"
+# include <lbcpp/Learning/LossFunction.h>
 
 namespace lbcpp
 {
@@ -72,6 +73,7 @@ public:
 typedef ReferenceCountedObjectPtr<BoostingWeakLearner> BoostingWeakLearnerPtr;
 
 extern BoostingWeakLearnerPtr singleStumpWeakLearner();
+extern BoostingWeakLearnerPtr binaryTreeWeakLearner(BoostingWeakLearnerPtr conditionLearner, BoostingWeakLearnerPtr subLearner);
 
 class BoostingWeakObjective : public Object
 {
@@ -112,6 +114,10 @@ protected:
   BoostingWeakLearnerPtr weakLearner;
   std::vector<size_t> allExamples;
 };
+
+extern BoostingLearnerPtr adaBoostMHLearner(BoostingWeakLearnerPtr weakLearner, bool useSymmetricVotes);
+extern BoostingLearnerPtr l2BoostingLearner(BoostingWeakLearnerPtr weakLearner, double learningRate);
+extern BoostingLearnerPtr rankingGradientBoostingLearner(BoostingWeakLearnerPtr weakLearner, double learningRate, RankingLossFunctionPtr rankingLoss);
 
 }; /* namespace lbcpp */
 

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="LuapeBoostingWeakLearner" directory="Luape/BoostingWeakLearner">
+  <include file="lbcpp/Luape/LuapeLearner.h"/>
+  
+  <class name="SingleStumpWeakLearner" base="BoostingWeakLearner">
+    <constructor/>
+  </class>
+  
+  <class name="BinaryTreeWeakLearner" base="BoostingWeakLearner">
+    <constructor arguments="BoostingWeakLearnerPtr conditionLearner, BoostingWeakLearnerPtr subLearner"/>
+    <variable type="BoostingWeakLearner" name="conditionLearner"/>
+    <variable type="BoostingWeakLearner" name="subLearner"/>
+  </class>
+</library>

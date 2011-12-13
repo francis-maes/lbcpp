@@ -2,6 +2,9 @@
 
 <library name="Luape" directory="Luape">
 
+  <import name="LuapeBoostingLearner"/>
+  <import name="LuapeBoostingWeakLearner"/>
+  
   <include file="lbcpp/Luape/LuapeFunction.h"/>
   <include file="lbcpp/Luape/LuapeNode.h"/>
   <include file="lbcpp/Luape/LuapeInference.h"/>

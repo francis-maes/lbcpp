@@ -10,7 +10,7 @@
 # define LBCPP_LUAPE_LEARNER_SINGLE_STUMP_WEAK_H_
 
 # include <lbcpp/Luape/LuapeLearner.h>
-# include "../../../src/Luape/LuapeSimpleFunctions.h"
+# include "../LuapeSimpleFunctions.h"
 
 namespace lbcpp
 {

@@ -10,7 +10,7 @@
 # define LBCPP_LUAPE_LEARNER_GRADIENT_BOOSTING_H_
 
 # include <lbcpp/Luape/LuapeLearner.h>
-# include <lbcpp/Learning/LossFunction.h>
+# include <lbcpp/Data/RandomVariable.h>
 
 namespace lbcpp
 {
@@ -196,9 +196,6 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<GradientBoostingLearner> GradientBoostingLearnerPtr;
-
-extern GradientBoostingLearnerPtr l2BoostingLearner(BoostingWeakLearnerPtr weakLearner, double learningRate);
-extern GradientBoostingLearnerPtr rankingGradientBoostingLearner(BoostingWeakLearnerPtr weakLearner, double learningRate, RankingLossFunctionPtr rankingLoss);
 
 class L2BoostingLearner : public GradientBoostingLearner
 {

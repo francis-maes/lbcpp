@@ -129,12 +129,6 @@ SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
 )
 
 SET(LBCPP_LUAPE_LEARNER_SOURCES
-  Luape/WeightBoostingLearner.h
-  Luape/AdaBoostMHLearner.h
-  Luape/GradientBoostingLearner.h
-
-  Luape/SingleStumpWeakLearner.h
-  Luape/BinaryTreeWeakLearner.h
   Luape/PolicyBasedWeakLearner.h
   Luape/NestedMCWeakLearner.h
 )
@@ -143,7 +137,6 @@ SET(LBCPP_LUAPE_OLD_SOURCES
   Luape/BanditPoolWeakLearner.h
   Luape/BanditPoolWeakLearner.cpp
 
-  Luape/AdaBoostLuapeLearner.h
   Luape/ProductWeakLearner.h
 )
 
