@@ -21,13 +21,13 @@ int WorkUnit::main(ExecutionContext& context, WorkUnitPtr workUnit, int argc, ch
   {
     String arg = argv[i];
     arguments[i - 1] = arg;
-    if (arg == T("--help"))
+    if (arg == T("--help") || arg == T("-h"))
     {
       context.informationCallback(workUnit->getUsageString());
       return 0;
     }
   }
-  
+
   std::vector< std::pair<size_t, Variable> > parsedArguments;
   if (!workUnit->parseArguments(context, arguments, parsedArguments))
   {
@@ -54,6 +54,9 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const String& arguments
   }
   return parseArguments(context, toks, res);
 }
+
+inline bool isNegativeNumber(const String& str)
+  {return str.containsOnly(T("-+e0123456789"));}
 
 bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<String>& arguments, std::vector< std::pair<size_t, Variable> >& res)
 {
@@ -105,7 +108,7 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<Strin
     }
 
     size_t variableIndex = it->second;
-    for (++i ; i < arguments.size() && !arguments[i].startsWith(T("-")); ++i)
+    for (++i ; i < arguments.size() && (!arguments[i].startsWith(T("-")) || isNegativeNumber(arguments[i])); ++i)
       argumentValue += T(" ") + arguments[i];
     argumentValue = argumentValue.trim();
 
@@ -171,7 +174,7 @@ String WorkUnit::getUsageString() const
   for (size_t i = 0; i < getNumVariables(); ++i)
   {
     
-    argumentDescriptions += T("-") + thisClass->getMemberVariableShortName(i)
+    argumentDescriptions += (thisClass->getMemberVariableShortName(i).isNotEmpty() ? T("-") + thisClass->getMemberVariableShortName(i) : T(" "))
                         + String::repeatedString(T(" "), longestShortName - thisClass->getMemberVariableShortName(i).length())
                         + T(" --") + thisClass->getMemberVariableName(i)
                         + String::repeatedString(T(" "), longestName - thisClass->getMemberVariableName(i).length())
