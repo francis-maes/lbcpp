@@ -57,6 +57,8 @@ GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Optimizer/Optimizer/OptimizerOptimizerLibrary.xml OptimizerOptimizerLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Luape/LuapeLibrary.xml LuapeLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Luape/BoostingLearner/LuapeBoostingLearnerLibrary.xml LuapeBoostingLearnerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Luape/BoostingWeakLearner/LuapeBoostingWeakLearnerLibrary.xml LuapeBoostingWeakLearnerLibrary.cpp)
 
 IF(LBCPP_USER_INTERFACE)
   GENERATE_INTROSPECTION_CODE(UserInterface/Component/UserInterfaceComponentLibrary.xml UserInterfaceComponentLibrary.cpp)
@@ -638,6 +640,22 @@ SET(LBCPP_LUAPE_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeLibrary.cpp
 )
 
+SET(LBCPP_LUAPE_BOOSTING_LEARNER_SOURCES
+  Luape/BoostingLearner/WeightBoostingLearner.h
+  Luape/BoostingLearner/AdaBoostLearner.h
+  Luape/BoostingLearner/AdaBoostMHLearner.h
+  Luape/BoostingLearner/GradientBoostingLearner.h
+  Luape/BoostingLearner/LuapeBoostingLearnerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/LuapeBoostingLearnerLibrary.cpp
+)
+
+SET(LBCPP_LUAPE_BOOSTING_WEAK_LEARNER_SOURCES
+  Luape/BoostingWeakLearner/SingleStumpWeakLearner.h
+  Luape/BoostingWeakLearner/BinaryTreeWeakLearner.h
+  Luape/BoostingWeakLearner/LuapeBoostingWeakLearnerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/LuapeBoostingWeakLearnerLibrary.cpp
+)
+
 #### UserInterface ####
 IF(LBCPP_USER_INTERFACE)
 
@@ -804,6 +822,8 @@ SET(LBCPP_SOURCES
  
   # Luape
   ${LBCPP_LUAPE_SOURCES}
+	  ${LBCPP_LUAPE_BOOSTING_LEARNER_SOURCES}
+	  ${LBCPP_LUAPE_BOOSTING_WEAK_LEARNER_SOURCES}
  
   # Lua
   ${LBCPP_LUA_SOURCES}
@@ -888,10 +908,12 @@ SOURCE_SUB_GROUP(Optimizer Optimizer FILES ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES})
 
 ## Luape
 SOURCE_GROUP(Luape FILES ${LBCPP_LUAPE_SOURCES})
+SOURCE_SUB_GROUP(Luape BoostingLearner FILES ${LBCPP_LUAPE_BOOSTING_LEARNER_SOURCES})
+SOURCE_SUB_GROUP(Luape BoostingWeakLearner FILES ${LBCPP_LUAPE_BOOSTING_WEAK_LEARNER_SOURCES})
 
 ## Lua
 SOURCE_GROUP(Lua FILES ${LBCPP_LUA_SOURCES})
-
+	  
 ## UserInterface
 SOURCE_GROUP(UserInterface FILES ${LBCPP_USER_INTERFACE_SOURCES})
 SOURCE_SUB_GROUP(UserInterface Component FILES ${LBCPP_USER_INTERFACE_COMPONENT_SOURCES})

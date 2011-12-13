@@ -49,8 +49,6 @@ protected:
 
 typedef ReferenceCountedObjectPtr<WeightBoostingLearner> WeightBoostingLearnerPtr;
 
-extern WeightBoostingLearnerPtr adaBoostMHLearner(BoostingWeakLearnerPtr weakLearner, bool useSymmetricVotes);
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_LUAPE_LEARNER_WEIGHT_BOOSTING_H_
