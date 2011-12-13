@@ -58,6 +58,12 @@ extern ClassPtr luapeFunctionClass;
 extern LuapeFunctionPtr andBooleanLuapeFunction();
 extern LuapeFunctionPtr equalBooleanLuapeFunction();
 
+// Integer
+extern LuapeFunctionPtr addIntegerLuapeFunction();
+extern LuapeFunctionPtr subIntegerLuapeFunction();
+extern LuapeFunctionPtr mulIntegerLuapeFunction();
+extern LuapeFunctionPtr divIntegerLuapeFunction();
+
 // Double
 extern LuapeFunctionPtr addDoubleLuapeFunction();
 extern LuapeFunctionPtr subDoubleLuapeFunction();
@@ -77,6 +83,46 @@ extern LuapeFunctionPtr getVariableLuapeFunction(size_t variableIndex = 0);
 extern LuapeFunctionPtr getContainerLengthLuapeFunction();
 extern LuapeFunctionPtr getDoubleVectorElementLuapeFunction(size_t index = 0);
 
+/*
+** Base classes
+*/
+class HomogeneousUnaryLuapeFunction : public LuapeFunction
+{
+public:
+  HomogeneousUnaryLuapeFunction(TypePtr type = anyType)
+    : type(type) {}
+
+  virtual size_t getNumInputs() const
+    {return 1;}
+
+  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
+    {return type->inheritsFrom(this->type);}
+
+  virtual TypePtr getOutputType(const std::vector<TypePtr>& inputTypes) const
+    {return type;}
+
+private:
+  TypePtr type;
+};
+
+class HomogeneousBinaryLuapeFunction : public LuapeFunction
+{
+public:
+  HomogeneousBinaryLuapeFunction(TypePtr type = anyType)
+    : type(type) {}
+
+  virtual size_t getNumInputs() const
+    {return 2;}
+
+  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
+    {return type->inheritsFrom(this->type);}
+
+  virtual TypePtr getOutputType(const std::vector<TypePtr>& inputTypes) const
+    {return type;}
+
+private:
+  TypePtr type;
+};
 
 }; /* namespace lbcpp */
 

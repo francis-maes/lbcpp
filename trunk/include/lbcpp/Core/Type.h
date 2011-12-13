@@ -199,6 +199,7 @@ extern TypePtr sumType(const std::vector<TypePtr>& types);
 
 extern ClassPtr objectClass;
 
+extern int integerMissingValue;
 extern double doubleMissingValue;
 
 }; /* namespace lbcpp */

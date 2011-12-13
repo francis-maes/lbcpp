@@ -1,13 +1,8 @@
 
- Add functions and attributes:
-   - Operations on integers
-   - Residue: {previous|next}ResidueOfSameType
-   - Residue: residuePerTypeIndex
-
 Luape-Other:
  * Go: rankboost + large-scale boosting
  * Go: support for polymorphism, neighborhood, regions
- * Proteins-DSB: representation + re-entrant
+ * Proteins-DSB: re-entrant
  * Proteins-MT: multi-task
  * Proteins-CM: cascade
  * Apprentissage d'une gaussienne conditionelle => boosting joint de la moyenne et de l'ecart-type
