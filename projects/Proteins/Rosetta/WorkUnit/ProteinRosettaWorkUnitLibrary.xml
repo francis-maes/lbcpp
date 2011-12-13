@@ -11,5 +11,10 @@
     <variable type="Integer" name="maxPairs" description="Maximum number of pairs generated for a protein"/>
     <variable type="Double" name="averageIncrease" description="Average increase needed to accept a new structure"/>
   </class>
+  
+  <class name="TuningSAParametersWorkUnit" base="WorkUnit">
+    <variable type="String" name="referenceDirectory" description="Directory where one can find the real proteins"/>
+    <variable type="Integer" name="numIterations" description="Maximum number of iterations performed by the defolder"/>
+  </class>
     
 </library>

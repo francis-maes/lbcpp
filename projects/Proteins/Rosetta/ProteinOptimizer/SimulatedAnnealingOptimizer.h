@@ -94,6 +94,11 @@ public:
     core::pose::PoseOP workingPose = new core::pose::Pose((*pose));
     worker->setPose(workingPose);
 
+    // ratio decreasing and accepted movers
+    int numMoversSinceLastCheck = 0;
+    int numAcceptedMovers = 0;
+    int numDecreasingMovers = 0;
+
     // Init verbosity
     String nameEnglobingScope("Simulated annealing optimization : ");
     int intervalVerbosity =
@@ -111,6 +116,8 @@ public:
       englobingScopesNames.push_back(T("Temperature"));
       englobingScopesNames.push_back(T("Minimal energy (log10)"));
       englobingScopesNames.push_back(T("Temporary energy (log10)"));
+      englobingScopesNames.push_back(T("Ratio accepted movers"));
+      englobingScopesNames.push_back(T("Ratio energy decreasing movers"));
       initializeCallbacks(context, englobingScopesNames, minimumEnergy);
       resultCallbackValues.push_back(Variable((int)0));
       resultCallbackValues.push_back(Variable(minimumEnergy));
@@ -120,6 +127,8 @@ public:
       double logTemporaryEnergy = temporaryEnergy >= 1 ? log10(temporaryEnergy) : -log10(std::abs(temporaryEnergy - 2));
       resultCallbackValues.push_back(Variable(logMinimumEnergy));
       resultCallbackValues.push_back(Variable(logTemporaryEnergy));
+      resultCallbackValues.push_back(Variable((double)1.0));
+      resultCallbackValues.push_back(Variable((double)1.0));
       callback(context, resultCallbackValues, Variable(minimumEnergy), maxSteps);
     }
     int intervalSaveToFile = juce::jlimit(1, maxSteps, maxSteps / numOutputFiles);
@@ -129,9 +138,9 @@ public:
     if (saveToFile)
     {
       ProteinPtr protein = convertPoseToProtein(context, optimizedPose);
-      String temporaryOutputFileName = nameOutputFile + String(indexOutputFile) + T(".xml");
+      String temporaryOutputFileName = nameOutputFile + String(indexOutputFile) + T(".pdb");
       File temporaryFile(temporaryOutputFileName);
-      protein->saveToXmlFile(context, temporaryFile);
+      protein->saveToPDBFile(context, temporaryFile);
       indexOutputFile++;
     }
 
@@ -143,10 +152,15 @@ public:
       mover->move(workingPose);
       worker->energies(NULL, &temporaryEnergy, NULL);
 
+      numMoversSinceLastCheck++;
+
       if (keepConformation(random, temporaryEnergy - currentEnergy, currentTemperature))
       {
         (*temporaryOptimizedPose) = (*workingPose);
+        if (temporaryEnergy < currentEnergy)
+          numDecreasingMovers++;
         currentEnergy = temporaryEnergy;
+        numAcceptedMovers++;
       }
       else
       {
@@ -181,15 +195,28 @@ public:
         resultCallbackValues.at(3) = Variable(currentTemperature);
         resultCallbackValues.at(4) = Variable(log10(minimumEnergy));
         resultCallbackValues.at(5) = Variable(log10(currentEnergy));
+        if (numMoversSinceLastCheck == 0)
+          resultCallbackValues.at(6) = Variable((double)0.0);
+        else
+          resultCallbackValues.at(6) = Variable((double)numAcceptedMovers
+              / (double)numMoversSinceLastCheck);
+        if (numAcceptedMovers == 0)
+          resultCallbackValues.at(7) = Variable((double)0.0);
+        else
+          resultCallbackValues.at(7) = Variable((double)numDecreasingMovers
+              / (double)numAcceptedMovers);
         callback(context, resultCallbackValues, Variable(minimumEnergy), maxSteps);
+        numMoversSinceLastCheck = 0;
+        numDecreasingMovers = 0;
+        numAcceptedMovers = 0;
       }
 
       if (saveToFile && (((i % intervalSaveToFile) == 0) || (i == maxSteps)))
       {
         ProteinPtr protein = convertPoseToProtein(context, optimizedPose);
-        String temporaryOutputFileName = nameOutputFile + String(indexOutputFile) + T(".xml");
+        String temporaryOutputFileName = nameOutputFile + String(indexOutputFile) + T(".pdb");
         File temporaryFile(temporaryOutputFileName);
-        protein->saveToXmlFile(context, temporaryFile);
+        protein->saveToPDBFile(context, temporaryFile);
         indexOutputFile++;
       }
     }
