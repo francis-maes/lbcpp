@@ -629,8 +629,8 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    ContainerPtr train = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("train")), context.getFile(supervisionDirectory).getChildFile(T("inv_fold_0")), 0, T("Loading training proteins"));
-    ContainerPtr test = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("test")), context.getFile(supervisionDirectory).getChildFile(T("fold_0")), 0, T("Loading testing proteins"));
+    ContainerPtr train = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("train")), context.getFile(supervisionDirectory).getChildFile(T("train")), 0, T("Loading training proteins"));
+    ContainerPtr test = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("test")), context.getFile(supervisionDirectory).getChildFile(T("test")), 0, T("Loading testing proteins"));
 
     if (!train || !test || train->getNumElements() == 0 || test->getNumElements() == 0)
     {
