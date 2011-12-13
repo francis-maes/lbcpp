@@ -1,7 +1,6 @@
-* Move DecisionProblem things to lbcpp-core
 
  Add functions and attributes:
-   - Container length  (=> length of protein)
+   - Operations on integers
    - Residue: {previous|next}ResidueOfSameType
    - Residue: residuePerTypeIndex
 

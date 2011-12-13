@@ -54,20 +54,29 @@ public:
 typedef ReferenceCountedObjectPtr<LuapeFunction> LuapeFunctionPtr;
 extern ClassPtr luapeFunctionClass;
 
+// Boolean
 extern LuapeFunctionPtr andBooleanLuapeFunction();
 extern LuapeFunctionPtr equalBooleanLuapeFunction();
 
+// Double
 extern LuapeFunctionPtr addDoubleLuapeFunction();
 extern LuapeFunctionPtr subDoubleLuapeFunction();
 extern LuapeFunctionPtr mulDoubleLuapeFunction();
 extern LuapeFunctionPtr divDoubleLuapeFunction();
 
-extern LuapeFunctionPtr greaterThanDoubleLuapeFunction();
+// Enumeration
 extern LuapeFunctionPtr equalsConstantEnumLuapeFunction(const Variable& value = Variable());
-extern LuapeFunctionPtr stumpLuapeFunction(double threshold = 0.0);
-extern LuapeFunctionPtr getVariableLuapeFunction(size_t variableIndex = 0);
 
+// Special
 extern LuapeFunctionPtr normalizerLuapeFunction();
+extern LuapeFunctionPtr stumpLuapeFunction(double threshold = 0.0);
+extern LuapeFunctionPtr greaterThanDoubleLuapeFunction();
+
+// Object
+extern LuapeFunctionPtr getVariableLuapeFunction(size_t variableIndex = 0);
+extern LuapeFunctionPtr getContainerLengthLuapeFunction();
+extern LuapeFunctionPtr getDoubleVectorElementLuapeFunction(size_t index = 0);
+
 
 }; /* namespace lbcpp */
 

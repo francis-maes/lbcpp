@@ -218,8 +218,8 @@ public:
     {
       float x1, y1;
       bool isP1Valid = getPointPosition(i, keyVariableIndex, index, transform, x1, y1) && isNumberValid(x1) && isNumberValid(y1);
-      if (isP0Valid && isP1Valid)
-        g.drawLine(x0, y0, x1, y1);
+      if (isP0Valid && isP1Valid && fabs(y0) < 1e16 && fabs(y1) < 1e16)
+        g.drawLine(x0, y0, x1, y1); // juce has a problem with very very large values, so we restrict y-values to 1e16
       x0 = x1;
       y0 = y1;
       isP0Valid = isP1Valid;

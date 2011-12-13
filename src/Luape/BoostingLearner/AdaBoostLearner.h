@@ -41,7 +41,7 @@ public:
       for (size_t i = 0; i < examples.size(); ++i)
       {
         size_t example = examples[i];
-        unsigned char pred = booleanPredictions->get(example);
+        unsigned char pred = booleanPredictions->getData()[example]; // fast unprotected access
         bool sup = (supervisions->getValue(example) > 0);
         double weight = weights->getValue(example);
         if (pred == 2)
@@ -167,10 +167,10 @@ public:
     double vote;
     if (correctWeight == 0.0)
       vote = -1.0;
-    else if (missingWeight == 0.0)
+    else if (errorWeight == 0.0)
       vote = 1.0;
     else
-      vote = 0.5 * log(correctWeight / missingWeight);
+      vote = 0.5 * log(correctWeight / errorWeight);
 
     successVote = vote;
     failureVote = -vote;
