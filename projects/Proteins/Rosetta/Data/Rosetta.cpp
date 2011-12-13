@@ -120,11 +120,12 @@ void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed)
   args.add_back(std::string("-score:output_etables"));
   args.add_back(std::string((const char*)String(T("r_et") + String((int)id) + T("-") + String(
       (int)nProc) + T("_") + String(juce::Time::currentTimeMillis()))));
-
-  // in paths
-  //  args.add_back(std::string("-in:path"));
-  //  args.add_back(std::string((const char*)String(T("tmpRos_i_") + String(
-  //      juce::Time::currentTimeMillis()) + T("_") + String((int)id))));
+  args.add_back(std::string("-score:output_etables"));
+  std::string prefix_et((const char*)String(T("r_et") + String((int)id) + T("-") + String(
+      (int)nProc) + T("_") + String(juce::Time::currentTimeMillis())));
+  args.add_back(prefix_et);
+  args.add_back(std::string("-score:input_etables"));
+  args.add_back(prefix_et);
 
   // verbosity
   if (!verbose)
