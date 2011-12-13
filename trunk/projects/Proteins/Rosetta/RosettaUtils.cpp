@@ -40,17 +40,19 @@ ProteinPtr lbcpp::convertPoseToProtein(ExecutionContext& context, const core::po
 {
 #ifdef LBCPP_PROTEIN_ROSETTA
 
-  RandomGenerator rg;
+  RandomGeneratorPtr rg = context.getRandomGenerator();
   bool error = false;
   ProteinPtr prot;
+  String name = String(pose->pdb_info()->name().c_str());
 
-  File tempFile = context.getFile(T("tmpFileConvPoseToProtein") + String(Time::currentTimeMillis())
-      + String(rg.sampleInt(0, INT_MAX)) + T(".pdb"));
+  File tempFile = context.getFile(T("tmpConv") +name+ String(Time::currentTimeMillis())
+      + String(rg->sampleInt(0, INT_MAX)) + T(".pdb"));
+
   int i = 0;
   while ((tempFile.exists()) && !error)
   {
     tempFile = context.getFile(T("tmpFileConvPoseToProtein") + String(Time::currentTimeMillis())
-        + String(rg.sampleInt(0, INT_MAX)) + T(".pdb"));
+        + String(rg->sampleInt(0, INT_MAX)) + T(".pdb"));
     i++;
     if (i >= 100)
       error = true;
@@ -69,8 +71,7 @@ ProteinPtr lbcpp::convertPoseToProtein(ExecutionContext& context, const core::po
 
   if (error)
   {
-    std::string name = pose->pdb_info()->name();
-    context.errorCallback(T("convertPoseToProtein"), String(name.c_str()));
+    context.errorCallback(T("convertPoseToProtein"), name);
     return NULL;
   }
 
