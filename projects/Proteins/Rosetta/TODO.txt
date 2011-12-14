@@ -2,6 +2,11 @@ TODO LBCPP
 ==========
 
 - retirer les ifdef LBCPP_PROTEIN_ROSETTA
+  - MoverSampler
+    - reorganiser (passer ProteinMoverSampler dans Data/ProteinMoverSampler)
+    - creer dossier dans Data pour accueillir les samplers
+  - creer Pose.h et Pose.cpp
+- reecrire ProteinOptimizationWorkUnit
 - apprentissage online
 v tuner les parameters SA
 
