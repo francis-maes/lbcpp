@@ -13,7 +13,6 @@
 
 namespace lbcpp
 {
-
 Rosetta::Rosetta()
   : context(NULL), ownLock(new CriticalSection()), poolLock(NULL), nProc(1), id(0), isInPool(false) {}
 Rosetta::~Rosetta()
@@ -37,6 +36,7 @@ void Rosetta::releasePoolLock()
 
 VariableVectorPtr Rosetta::createRosettaPool(ExecutionContext& context, size_t size)
 {
+# if 0
   VariableVectorPtr pool = new VariableVector(size);
   CriticalSection* pl = new CriticalSection();
 
@@ -56,13 +56,17 @@ VariableVectorPtr Rosetta::createRosettaPool(ExecutionContext& context, size_t s
   context.leaveScope();
 
   return pool;
+# else
+  jassert(false);
+  return VariableVectorPtr();
+# endif //! 0
 }
 
 void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed)
 {
-#ifdef LBCPP_PROTEIN_ROSETTA
-  if (isInPool)
-    getPoolLock();
+# ifdef LBCPP_PROTEIN_ROSETTA
+  //  if (isInPool)
+  //    getPoolLock();
 
   setContext(eContext);
 
@@ -101,31 +105,31 @@ void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed)
   args.add_back(std::string((const char*)String((int)id)));
 
   // out paths
-  args.add_back(std::string("-out:file"));
-  args.add_back(std::string("true"));
-  args.add_back(std::string("-out:path:all"));
-  args.add_back(std::string((const char*)String(T("/r_o_")
-      + String(juce::Time::currentTimeMillis()) + T("_") + String((int)id))));
-  args.add_back(std::string("-out:file:o"));
-  args.add_back(std::string((const char*)String(T("/ros_o_") + String(
-      juce::Time::currentTimeMillis()) + T("_") + String((int)id))));
-  args.add_back(std::string("-out:sf"));
-  args.add_back(std::string((const char*)String(T("r_score") + String((int)id) + T("-") + String(
-      (int)nProc) + T("_") + String(juce::Time::currentTimeMillis()) + T(".fsc"))));
-  args.add_back(std::string("-out:prefix"));
-  args.add_back(std::string((const char*)String(T("r_pre") + String((int)id) + T("-") + String(
-      (int)nProc) + T("_") + String(juce::Time::currentTimeMillis()))));
-  args.add_back(std::string("-out:nooutput"));
-  args.add_back(std::string("true"));
-  args.add_back(std::string("-score:output_etables"));
-  args.add_back(std::string((const char*)String(T("r_et") + String((int)id) + T("-") + String(
-      (int)nProc) + T("_") + String(juce::Time::currentTimeMillis()))));
-  args.add_back(std::string("-score:output_etables"));
-  std::string prefix_et((const char*)String(T("r_et") + String((int)id) + T("-") + String(
-      (int)nProc) + T("_") + String(juce::Time::currentTimeMillis())));
-  args.add_back(prefix_et);
-  args.add_back(std::string("-score:input_etables"));
-  args.add_back(prefix_et);
+  //  args.add_back(std::string("-out:file"));
+  //  args.add_back(std::string("true"));
+  //  args.add_back(std::string("-out:path:all"));
+  //  args.add_back(std::string((const char*)String(T("/r_o_")
+  //      + String(juce::Time::currentTimeMillis()) + T("_") + String((int)id))));
+  //  args.add_back(std::string("-out:file:o"));
+  //  args.add_back(std::string((const char*)String(T("/ros_o_") + String(
+  //      juce::Time::currentTimeMillis()) + T("_") + String((int)id))));
+  //  args.add_back(std::string("-out:sf"));
+  //  args.add_back(std::string((const char*)String(T("r_score") + String((int)id) + T("-") + String(
+  //      (int)nProc) + T("_") + String(juce::Time::currentTimeMillis()) + T(".fsc"))));
+  //  args.add_back(std::string("-out:prefix"));
+  //  args.add_back(std::string((const char*)String(T("r_pre") + String((int)id) + T("-") + String(
+  //      (int)nProc) + T("_") + String(juce::Time::currentTimeMillis()))));
+  //  args.add_back(std::string("-out:nooutput"));
+  //  args.add_back(std::string("true"));
+  //  args.add_back(std::string("-score:output_etables"));
+  //  args.add_back(std::string((const char*)String(T("r_et") + String((int)id) + T("-") + String(
+  //      (int)nProc) + T("_") + String(juce::Time::currentTimeMillis()))));
+  //  args.add_back(std::string("-score:output_etables"));
+  //  std::string prefix_et((const char*)String(T("r_et") + String((int)id) + T("-") + String(
+  //      (int)nProc) + T("_") + String(juce::Time::currentTimeMillis())));
+  //  args.add_back(prefix_et);
+  //  args.add_back(std::string("-score:input_etables"));
+  //  args.add_back(prefix_et);
 
   // verbosity
   if (!verbose)
@@ -143,10 +147,12 @@ void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed)
 
   context->informationCallback(T("Rosetta Id : ") + String((int)id) + T(" initialized."));
 
-  if (isInPool)
-    releasePoolLock();
+  //  if (isInPool)
+  //    releasePoolLock();
 
-#endif //! LBCPP_PROTEIN_ROSETTA
+# else
+  jassert(false);
+# endif //! LBCPP_PROTEIN_ROSETTA
 }
 
 }; /* namespace lbcpp */

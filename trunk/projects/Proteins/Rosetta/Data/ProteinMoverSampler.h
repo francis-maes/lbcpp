@@ -1,15 +1,14 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ProteinSampler.h               | ProteinSampler                  |
+| Filename: ProteinMoverSampler.h          | ProteinMoverSampler             |
 | Author  : Alejandro Marcos Alvarez       |                                 |
-| Started : 30 avr. 2011  10:41:07         |                                 |
+| Started : Dec 14, 2011  9:12:04 AM       |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_PROTEINS_ROSETTA_SAMPLER_H_
-# define LBCPP_PROTEINS_ROSETTA_SAMPLER_H_
+#ifndef LBCPP_PROTEINS_ROSETTA_DATA_PROTEINMOVERSAMPLER_H_
+# define LBCPP_PROTEINS_ROSETTA_DATA_PROTEINMOVERSAMPLER_H_
 
-# include "precompiled.h"
 # include <lbcpp/Sampler/Sampler.h>
 
 namespace lbcpp
@@ -21,10 +20,9 @@ extern CompositeSamplerPtr simpleResidueSampler(size_t numResidues);
 extern CompositeSamplerPtr proteinMoverSampler(size_t numResidues);
 extern CompositeSamplerPtr proteinMoverSampler(DiscreteSamplerPtr classSampler, size_t numResidues);
 
-extern SamplerPtr parzenContinuousSampler();
 extern SamplerPtr gaussianMultivariateSampler();
 
 
 }; /* namespace lbcpp */
 
-#endif //! LBCPP_PROTEINS_ROSETTA_SAMPLER_H_
+#endif //! LBCPP_PROTEINS_ROSETTA_DATA_PROTEINMOVERSAMPLER_H_
