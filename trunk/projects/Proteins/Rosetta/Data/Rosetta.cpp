@@ -62,9 +62,10 @@ VariableVectorPtr Rosetta::createRosettaPool(ExecutionContext& context, size_t s
 # endif //! 0
 }
 
+# ifdef LBCPP_PROTEIN_ROSETTA
+
 void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed)
 {
-# ifdef LBCPP_PROTEIN_ROSETTA
   //  if (isInPool)
   //    getPoolLock();
 
@@ -149,10 +150,13 @@ void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed)
 
   //  if (isInPool)
   //    releasePoolLock();
+}
 
 # else
-  jassert(false);
+
+void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed)
+  {jassert(false);}
+
 # endif //! LBCPP_PROTEIN_ROSETTA
-}
 
 }; /* namespace lbcpp */

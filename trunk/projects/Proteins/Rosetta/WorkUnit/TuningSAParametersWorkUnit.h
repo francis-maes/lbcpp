@@ -81,6 +81,7 @@ public:
     for (size_t i = 0; i < allEnergies[0]->getNumElements(); i++)
     {
       context.enterScope(T("Energy"));
+      context.resultCallback(T("Iteration"), Variable((int)i));
       for (size_t j = 0; j < allEnergies.size(); j++)
       {
         context.resultCallback(String(T("It: ") + String(allInitialTemperatures[j]) + T(", Ft: ")
@@ -116,6 +117,7 @@ public:
     for (size_t i = 0; i < allEnergies[indexMinEnergy]->getNumElements(); i++)
     {
       context.enterScope(T("Energy"));
+      context.resultCallback(T("Iteration"), Variable((int)i));
       context.resultCallback(String(T("It: ") + String(allInitialTemperatures[indexMinEnergy])
           + T(", Ft: ") + String(allFinalTemperatures[indexMinEnergy])), Variable(
           allEnergies[indexMinEnergy]->getValue(i)));
