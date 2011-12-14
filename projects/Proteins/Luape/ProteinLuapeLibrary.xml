@@ -43,6 +43,7 @@
     <variable type="PositiveInteger" name="treeDepth"/>
     <variable type="PositiveInteger" name="numSteps"/>
     <variable type="PositiveInteger" name="budget"/>
+    <variable type="PositiveInteger" name="numIterations"/>
   </class>
 
 </library>

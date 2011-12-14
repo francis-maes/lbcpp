@@ -181,8 +181,8 @@ extern ClassPtr proteinPerceptionClass;
 class LuapeProteinPredictorParameters : public ProteinPredictorParameters
 {
 public:
-  LuapeProteinPredictorParameters(size_t treeDepth, size_t numSteps, size_t budget)
-    : treeDepth(treeDepth), numSteps(numSteps), budget(budget) {}
+  LuapeProteinPredictorParameters(size_t treeDepth, size_t numSteps, size_t budget, size_t numIterations)
+    : treeDepth(treeDepth), numSteps(numSteps), budget(budget), numIterations(numIterations) {}
 
   Variable createProteinPerceptionFunction(ExecutionContext& context, const Variable& input) const
     {return new ProteinPerception(input.getObjectAndCast<Protein>());}
@@ -279,7 +279,7 @@ public:
   {
     LuapeInferencePtr learningMachine = new LuapeBinaryClassifier();
     addFunctions(learningMachine, target);
-    learningMachine->setLearner(adaBoostLearner(createWeakLearner(target)), 100);
+    learningMachine->setLearner(adaBoostLearner(createWeakLearner(target)), numIterations);
     return learningMachine;
   }
 
@@ -287,7 +287,7 @@ public:
   {
     LuapeInferencePtr learningMachine =  new LuapeClassifier();
     addFunctions(learningMachine, target);
-    learningMachine->setLearner(adaBoostMHLearner(createWeakLearner(target), true), 100);
+    learningMachine->setLearner(adaBoostMHLearner(createWeakLearner(target), true), numIterations);
     return learningMachine;
   }
 
@@ -301,6 +301,7 @@ protected:
   size_t treeDepth;
   size_t numSteps;
   size_t budget;
+  size_t numIterations;
 };
 
 //////////////////////////////////////////////
@@ -310,7 +311,7 @@ protected:
 class ProteinLuapeSandBox : public WorkUnit
 {
 public:
-  ProteinLuapeSandBox() : maxProteinCount(0), treeDepth(2), numSteps(6), budget(100) {}
+  ProteinLuapeSandBox() : maxProteinCount(0), treeDepth(2), numSteps(6), budget(100), numIterations(100) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -330,7 +331,7 @@ public:
     predictor->knnNeighbors = 5;
 #endif
      
-    ProteinPredictorParametersPtr predictor = new LuapeProteinPredictorParameters(treeDepth, numSteps, budget);
+    ProteinPredictorParametersPtr predictor = new LuapeProteinPredictorParameters(treeDepth, numSteps, budget, numIterations);
 
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
     iteration->addTarget(dsbTarget);
@@ -338,7 +339,10 @@ public:
     if (!iteration->train(context, trainingProteins, testingProteins, T("Training")))
       return Variable::missingValue(doubleType);
 
-    ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+    ProteinEvaluatorPtr evaluator = new ProteinEvaluator(true);
+    iteration->evaluate(context, trainingProteins, evaluator, T("Evaluate on training proteins"));
+
+    evaluator = new ProteinEvaluator(true);
     CompositeScoreObjectPtr scores = iteration->evaluate(context, testingProteins, evaluator, T("Evaluate on test proteins"));
     return evaluator->getScoreObjectOfTarget(scores, dsbTarget)->getScoreToMinimize();
   }
@@ -355,6 +359,7 @@ protected:
   size_t treeDepth;
   size_t numSteps;
   size_t budget;
+  size_t numIterations;
 
   ContainerPtr loadProteinPairs(ExecutionContext& context, const File& inputDirectory, const File& supervisionDirectory, const String& description)
   {
