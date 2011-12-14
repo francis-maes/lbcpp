@@ -359,7 +359,7 @@ SymmetricMatrixPtr symmetricMatrix(TypePtr elementsType, size_t dimension)
 {
   jassert(elementsType);
   if (elementsType->inheritsFrom(doubleType))
-    return new DoubleSymmetricMatrix(elementsType, dimension, Variable::missingValue(elementsType).getDouble());
+    return new DoubleSymmetricMatrix(elementsType, dimension, doubleMissingValue);
   else if (elementsType->inheritsFrom(objectClass))
     return new ObjectSymmetricMatrix(elementsType, dimension, ObjectPtr());
   else
