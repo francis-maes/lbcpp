@@ -151,7 +151,6 @@ SET(LBCPP_PROTEIN_ROSETTA_SOURCES
   Rosetta/RosettaSandBox.h
   Rosetta/RosettaUtils.h
   Rosetta/RosettaUtils.cpp
-  Rosetta/ProteinSampler.h
   Rosetta/RosettaWorkUnit.h
   Rosetta/ProteinEDAOptimizer.h
   Rosetta/ProteinRosettaLibrary.xml
@@ -162,6 +161,7 @@ SET(LBCPP_PROTEIN_ROSETTA_DATA_SOURCES
   Rosetta/Data/Rosetta.h
   Rosetta/Data/Rosetta.cpp
   Rosetta/Data/ProteinMover.h
+  Rosetta/Data/ProteinMoverSampler.h
   Rosetta/Data/ProteinRosettaDataLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaDataLibrary.cpp
 )
@@ -187,8 +187,6 @@ SET(LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES
 SET(LBCPP_PROTEIN_ROSETTA_SAMPLER_SOURCES
   Rosetta/Sampler/ConditionalProteinMoverSampler.h
   Rosetta/Sampler/GeneralProteinMoverSampler.h
-  Rosetta/Sampler/SmoothEnumerationSampler.h
-  Rosetta/Sampler/ParzenContinuousSampler.h
   Rosetta/Sampler/SimpleResidueSampler.h
   Rosetta/Sampler/ResiduePairSampler.h
   Rosetta/Sampler/ProteinMoverSampler.h

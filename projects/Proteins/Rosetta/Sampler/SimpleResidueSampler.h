@@ -10,8 +10,7 @@
 # define LBCPP_PROTEINS_ROSETTA_SIMPLE_RESIDUE_SAMPLER_H_
 
 # include "precompiled.h"
-# include "../ProteinSampler.h"
-# include "ParzenContinuousSampler.h"
+# include "../Data/ProteinMoverSampler.h"
 
 namespace lbcpp
 {
@@ -25,9 +24,6 @@ public:
   SimpleResidueSampler(size_t numResidues)
     : CompositeSampler(1), numResidues(numResidues)
   {
-//    ContinuousSamplerPtr temp = new ParzenContinuousSampler(0.0001,
-//        (double)(-1 * numResidues), (double)(2 * numResidues), 1.0 / 2.0, 0.5 * numResidues, 0.25
-//            * numResidues);
     ContinuousSamplerPtr temp = gaussianSampler(0.5 * numResidues, 0.25 * numResidues);
     samplers[0] = discretizeSampler(temp, 0, (int)(numResidues - 1));
   }

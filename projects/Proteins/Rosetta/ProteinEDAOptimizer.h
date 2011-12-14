@@ -13,7 +13,7 @@
 
 # include "RosettaUtils.h"
 # include "Data/ProteinMover.h"
-# include "ProteinSampler.h"
+# include "Data/ProteinMoverSampler.h"
 # include "Sampler/ProteinMoverSampler.h"
 # include "../Evaluator/QScoreEvaluator.h"
 

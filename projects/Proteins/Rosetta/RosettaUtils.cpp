@@ -40,42 +40,28 @@ ProteinPtr lbcpp::convertPoseToProtein(ExecutionContext& context, const core::po
 {
 #ifdef LBCPP_PROTEIN_ROSETTA
 
-  RandomGeneratorPtr rg = context.getRandomGenerator();
-  bool error = false;
   ProteinPtr prot;
+  bool error = false;
   String name = String(pose->pdb_info()->name().c_str());
+  File tempFile = File::createTempFile(T("tmp") + name + String(Time::currentTimeMillis()));
 
-  File tempFile = context.getFile(T("tmpConv") +name+ String(Time::currentTimeMillis())
-      + String(rg->sampleInt(0, INT_MAX)) + T(".pdb"));
-
-  int i = 0;
-  while ((tempFile.exists()) && !error)
-  {
-    tempFile = context.getFile(T("tmpFileConvPoseToProtein") + String(Time::currentTimeMillis())
-        + String(rg->sampleInt(0, INT_MAX)) + T(".pdb"));
-    i++;
-    if (i >= 100)
-      error = true;
-  }
-
-  if (!error)
+  if (tempFile != File::nonexistent)
   {
     core::io::pdb::dump_pdb(*pose, (const char*)tempFile.getFullPathName());
     prot = Protein::createFromPDB(context, tempFile, true);
     tempFile.deleteFile();
+    error = (int)pose->n_residue() != (int)prot->getLength();
   }
   else
-    return NULL;
-
-  error = error ? true : (int)pose->n_residue() != (int)prot->getLength();
+    error = true;
 
   if (error)
   {
     context.errorCallback(T("convertPoseToProtein"), name);
     return NULL;
   }
-
-  return prot;
+  else
+    return prot;
 
   //  std::ostringstream oss;
   //  core::io::pdb::FileData::dump_pdb((*pose), oss);

@@ -9,12 +9,10 @@
 #ifndef LBCPP_SAMPLER_PROTEIN_MOVER_SAMPLER_H_
 # define LBCPP_SAMPLER_PROTEIN_MOVER_SAMPLER_H_
 
-# include "precompiled.h"
-# include "../ProteinSampler.h"
 # include "SimpleResidueSampler.h"
 # include "ResiduePairSampler.h"
 # include "../Data/ProteinMover.h"
-# include "SmoothEnumerationSampler.h"
+# include "../Data/ProteinMoverSampler.h"
 
 namespace lbcpp
 {
