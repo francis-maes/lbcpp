@@ -26,10 +26,8 @@ public:
   virtual void setPredictions(const VectorPtr& predictions)
   {
     this->predictions = predictions;
-  
-    size_t n = weights->getNumElements();
-    jassert(supervisions->getNumElements() == n);
-    jassert(predictions->getNumElements() >= n);
+    jassert(supervisions->getNumElements() == weights->getNumElements());
+    jassert(predictions->getNumElements() == weights->getNumElements());
 
     correctWeight = 0.0;
     errorWeight = 0.0;
@@ -158,11 +156,42 @@ public:
   virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
     AdaBoostWeakObjectivePtr objective = new AdaBoostWeakObjective(supervisions, weights, examples);
-    objective->setPredictions(trainingSamples->compute(context, weakNode));
+    VectorPtr weakPredictions = trainingSamples->compute(context, weakNode);
+    objective->setPredictions(weakPredictions);
 
     double correctWeight = objective->getCorrectWeight();
     double errorWeight = objective->getErrorWeight();
     double missingWeight = objective->getMissingWeight();
+
+    BooleanVectorPtr weakBooleans = weakPredictions.dynamicCast<BooleanVector>();
+    if (weakBooleans)
+    {
+      size_t correctCount = 0, errorCount = 0, missingCount = 0, falseCount = 0, trueCount = 0;
+      for (size_t i = 0; i < examples.size(); ++i)
+      {
+        size_t example = examples[i];
+        unsigned char c = weakBooleans->getData()[example];
+        double sup = supervisions.staticCast<DenseDoubleVector>()->getValue(example);
+        if (c == 2)
+          ++missingCount;
+        else
+        {
+          if ((c == 0 && sup < 0) || (c == 1 && sup > 0))
+            ++correctCount;
+          else
+            ++errorCount;
+          if (c == 0)
+            ++falseCount;
+          else
+            ++trueCount;
+        }
+      }
+      context.informationCallback(T("False: ") + String((int)falseCount) +
+                                  T(" True: ") + String((int)trueCount) + 
+                                  T(" Missing: ") + String((int)missingCount) + T(" (") + String(missingWeight) + T(")") +
+                                  T(" Diff: ") + String((int)errorCount) + T(" (") + String(errorWeight) + T(")") +
+                                  T(" Same: ") + String((int)correctCount) + T(" (") + String(correctWeight) + T(")"));
+    }
 
     double vote;
     if (correctWeight == 0.0)
@@ -180,7 +209,6 @@ public:
 
   virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const VectorPtr& predictions, double& loss) const
   {
-    const LuapeBinaryClassifierPtr& classifier = function.staticCast<LuapeBinaryClassifier>();
     size_t n = trainingData.size();
     jassert(supervisions->getNumElements() == n);
     double invZ = 1.0 / (double)n;
