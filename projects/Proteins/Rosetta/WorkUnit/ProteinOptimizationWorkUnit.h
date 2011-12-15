@@ -26,7 +26,10 @@ public:
 
     File inputFile = context.getFile(inputDirectory);
     if (!inputFile.exists())
+    {
       context.errorCallback(T("Proteins' directory not found."));
+      return Variable();
+    }
 
     juce::File outputFile = context.getFile(outputDirectory);
     if (!outputFile.exists())
@@ -34,11 +37,17 @@ public:
 
     File referencesFile = context.getFile(referencesDirectory);
     if (!referencesFile.exists() && (learningPolicy > 0))
+    {
       context.errorCallback(T("References' directory not found."));
+      return Variable();
+    }
 
     File moversFile = context.getFile(moversDirectory);
     if (!moversFile.exists() && (learningPolicy > 0))
+    {
       context.errorCallback(T("Movers' directory not found."));
+      return Variable();
+    }
 
     VariableVectorPtr inputWorkers = new VariableVector(0);
     VariableVectorPtr inputMovers = new VariableVector(0);
@@ -57,16 +66,18 @@ public:
         size_t index = res[i];
         juce::OwnedArray<File> movers;
         String nameToSearch = (*references[index]).getFileNameWithoutExtension();
-        context.informationCallback(T("Name structure : ") + nameToSearch);
 
         ProteinPtr protein = Protein::createFromFile(context, (*references[index]));
         core::pose::PoseOP pose;
         convertProteinToPose(context, protein, pose);
+        if (pose() == NULL)
+          continue;
 
         nameToSearch += T("_mover.xml");
         moversFile.findChildFiles(movers, File::findFiles, false, nameToSearch);
         for (size_t j = 0; (j < movers.size()) && (j < numMoversToLearn); j++)
         {
+          context.informationCallback(T("Name structure : ") + nameToSearch);
           RosettaProteinPtr inWorker = new RosettaProtein(pose, residueFeatures, energyFeatures,
               histogramFeatures, distanceFeatures);
           ProteinMoverPtr inMover =
@@ -94,12 +105,8 @@ public:
       String currentName = currentProtein->getName();
 
       convertProteinToPose(context, currentProtein, currentPose);
-
-      if ((int)currentProtein->getLength() != (int)currentPose->n_residue())
-      {
-        context.warningCallback(T("Conversion from protein to pose incorrect, skipping : ") + currentName);
+      if (currentPose() == NULL)
         continue;
-      }
 
       core::pose::PoseOP initialPose;
       initializeProteinStructure(currentPose, initialPose);
