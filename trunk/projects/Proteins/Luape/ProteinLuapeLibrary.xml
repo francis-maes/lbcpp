@@ -32,8 +32,11 @@
   <class name="ProteinPerception" base="Object">
     <variable type="ObjectVector[ProteinResiduePerception]" name="residues"/>
   </class>
-  
-  
+
+  <class name="ProteinGetRelativeResidueLuapeFunction" base="LuapeFunction">
+    <variable type="Integer" name="delta"/>
+  </class>
+
   <!-- Sand Box -->
   <class name="ProteinLuapeSandBox" base="WorkUnit">
     <variable type="File" name="trainingInputDirectory"/>
