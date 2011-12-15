@@ -5,22 +5,21 @@
   <!-- Protein Perception -->
   <class name="ProteinResiduePerception" base="Object">
     <variable type="ProteinPerception" name="protein"/>
-    <variable type="PositiveInteger" name="position"/>
+    <!-- <variable type="PositiveInteger" name="position"/> -->
     <variable type="ProteinResiduePerception" name="previous" shortName="prev"/>
     <variable type="ProteinResiduePerception" name="next"/>
 
     <variable type="ProteinResiduePerception" name="previousOfType" shortName="prevT"/>
     <variable type="ProteinResiduePerception" name="nextOfType" shortName="nextT"/>
+    <variable type="PositiveInteger" name="positionOfType"/>
 
     <variable type="AminoAcidType" name="aminoAcidType" enumeration="yes"/>
     <variable type="DenseDoubleVector[PositionSpecificScoringMatrix, Probability]" name="pssmRow"/>
-    <!--
     <variable type="DenseDoubleVector[SecondaryStructureElement, Probability]" name="secondaryStructure"/>
     <variable type="DenseDoubleVector[DSSPSecondaryStructureElement, Probability]" name="dsspSecondaryStructure"/>
     <variable type="DenseDoubleVector[StructuralAlphabetElement, Probability]" name="structuralAlphabet"/>
     <variable type="Probability" name="solventAccessibilityAt20p"/>
     <variable type="Probability" name="disordered"/>
-    -->
   </class>
   
   <class name="ProteinResiduePairPerception" base="Object">

@@ -215,15 +215,20 @@ public:
 
   virtual VectorPtr makeSupervisions(const std::vector<ObjectPtr>& examples) const
   {
-    EnumerationPtr labels = examples[0]->getClass()->getTemplateArgument(1).staticCast<Enumeration>();
+    TypePtr supervisionType = examples[0]->getVariable(1).getType();
+    EnumerationPtr labels = LuapeClassifier::getLabelsFromSupervision(supervisionType);
     size_t n = examples.size();
     size_t m = labels->getNumElements();
     DenseDoubleVectorPtr res = new DenseDoubleVector(n * m, 0.0);
     size_t index = 0;
     for (size_t i = 0; i < n; ++i)
     {
-      const PairPtr& example = examples[i].staticCast<Pair>();
-      size_t label = (size_t)example->getSecond().getInteger();
+      Variable supervision = examples[i]->getVariable(1);
+      size_t label;
+      if (supervision.isInteger())
+        label = (size_t)supervision.getInteger();
+      else
+        label = (size_t)supervision.getObjectAndCast<DoubleVector>()->getIndexOfMaximumValue();
       for (size_t j = 0; j < m; ++j, ++index)
         res->setValue(index, j == label ? 1.0 : -1.0);
     }

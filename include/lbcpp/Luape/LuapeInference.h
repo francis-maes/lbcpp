@@ -113,6 +113,8 @@ typedef ReferenceCountedObjectPtr<LuapeBinaryClassifier> LuapeBinaryClassifierPt
 class LuapeClassifier : public LuapeInference
 {
 public:
+  static EnumerationPtr getLabelsFromSupervision(TypePtr supervisionType);
+
   EnumerationPtr getLabels() const
     {return getOutputType().staticCast<Enumeration>();}
 

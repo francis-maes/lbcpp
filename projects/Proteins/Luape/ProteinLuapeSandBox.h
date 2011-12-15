@@ -165,6 +165,9 @@ public:
   size_t getNumResidues() const
     {return residues->getNumElements();}
 
+  const ObjectVectorPtr& getResidues() const
+    {return residues;}
+
   const ProteinResiduePerceptionPtr& getResidue(size_t index) const
     {return residues->getAndCast<ProteinResiduePerception>(index);}
 
@@ -241,6 +244,9 @@ public:
 
   Variable createProteinPerceptionFunction(ExecutionContext& context, const Variable& input) const
     {return new ProteinPerception(input.getObjectAndCast<Protein>());}
+  
+  Variable createResidueVectorPerceptionFunction(ExecutionContext& context, const Variable& input) const
+    {return input.getObjectAndCast<ProteinPerception>()->getResidues();}
 
   Variable createCysteinPairPerceptionFunction(ExecutionContext& context, const Variable& input) const
   {
@@ -268,7 +274,8 @@ public:
 
   // ProteinPerception -> Vector[Residue Perception]
   virtual FunctionPtr createResidueVectorPerception() const
-    {jassert(false); return FunctionPtr();}
+    {return lbcppMemberUnaryFunction(LuapeProteinPredictorParameters, createResidueVectorPerceptionFunction,
+                                      proteinPerceptionClass, objectVectorClass(proteinResiduePerceptionClass));}
 
   // ProteinPerception -> SymmetricMatrix[Cystein Pair Perception]
   virtual FunctionPtr createDisulfideSymmetricResiduePairVectorPerception() const
@@ -319,12 +326,7 @@ public:
     machine->addFunction(new ProteinGetRelativeResidueLuapeFunction());
   }
 
-  virtual FunctionPtr learningMachine(ProteinTarget target) const
-  {
-    jassert(false);
-    return FunctionPtr();
-  }
-
+  // task level
   virtual FunctionPtr disulfideBondPredictor(ProteinTarget target) const
   {
     LuapeInferencePtr classifier = binaryClassifier(target).staticCast<LuapeInference>();
@@ -332,6 +334,14 @@ public:
     return mapNSymmetricMatrixFunction(classifier, 1);
   }
 
+  virtual FunctionPtr labelVectorPredictor(ProteinTarget target) const
+  {
+    LuapeInferencePtr classifier = multiClassClassifier(target).staticCast<LuapeInference>();
+    classifier->addInput(proteinResiduePerceptionClass, "r");
+    return mapNContainerFunction(classifier);
+  }
+
+  // atomic level
   virtual FunctionPtr binaryClassifier(ProteinTarget target) const
   {
     LuapeInferencePtr learningMachine = new LuapeBinaryClassifier();
@@ -345,10 +355,18 @@ public:
     LuapeInferencePtr learningMachine =  new LuapeClassifier();
     addFunctions(learningMachine, target);
     learningMachine->setLearner(adaBoostMHLearner(createWeakLearner(target), true), numIterations);
+    learningMachine->setBatchLearner(filterUnsupervisedExamplesBatchLearner(learningMachine->getBatchLearner()));
     return learningMachine;
   }
 
   virtual FunctionPtr regressor(ProteinTarget target) const
+  {
+    jassert(false);
+    return FunctionPtr();
+  }
+
+  // not used
+  virtual FunctionPtr learningMachine(ProteinTarget target) const
   {
     jassert(false);
     return FunctionPtr();
@@ -391,7 +409,8 @@ public:
     ProteinPredictorParametersPtr predictor = new LuapeProteinPredictorParameters(treeDepth, numSteps, budget, numIterations);
 
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
-    iteration->addTarget(dsbTarget);
+    //iteration->addTarget(dsbTarget);
+    iteration->addTarget(ss3Target);
 
     if (!iteration->train(context, trainingProteins, testingProteins, T("Training")))
       return Variable::missingValue(doubleType);
