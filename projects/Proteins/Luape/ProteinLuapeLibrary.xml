@@ -14,11 +14,13 @@
 
     <variable type="AminoAcidType" name="aminoAcidType" enumeration="yes"/>
     <variable type="DenseDoubleVector[PositionSpecificScoringMatrix, Probability]" name="pssmRow"/>
+    <!--
     <variable type="DenseDoubleVector[SecondaryStructureElement, Probability]" name="secondaryStructure"/>
     <variable type="DenseDoubleVector[DSSPSecondaryStructureElement, Probability]" name="dsspSecondaryStructure"/>
     <variable type="DenseDoubleVector[StructuralAlphabetElement, Probability]" name="structuralAlphabet"/>
     <variable type="Probability" name="solventAccessibilityAt20p"/>
     <variable type="Probability" name="disordered"/>
+    -->
   </class>
   
   <class name="ProteinResiduePairPerception" base="Object">
