@@ -81,8 +81,22 @@ LuapeNodePtr BoostingLearner::turnWeakNodeIntoContribution(ExecutionContext& con
   Variable successVote, failureVote, missingVote;
   if (!computeVotes(context, weakNode, examples, successVote, failureVote, missingVote))
     return LuapeNodePtr();
+
   jassert(weakNode->getType() == booleanType || weakNode->getType() == probabilityType);
-  return new LuapeTestNode(weakNode, new LuapeConstantNode(successVote), new LuapeConstantNode(failureVote), new LuapeConstantNode(missingVote));
+  if (weakNode.isInstanceOf<LuapeConstantNode>())
+  {
+    LuapeConstantNodePtr constantNode = weakNode.staticCast<LuapeConstantNode>();
+    Variable constantValue = constantNode->getValue();
+    jassert(constantValue.isBoolean());
+    if (constantValue.isMissingValue())
+      return new LuapeConstantNode(missingVote);
+    else if (constantValue.getBoolean())
+      return new LuapeConstantNode(successVote);
+    else
+      return new LuapeConstantNode(failureVote);
+  }
+  else
+    return new LuapeTestNode(weakNode, new LuapeConstantNode(successVote), new LuapeConstantNode(failureVote), new LuapeConstantNode(missingVote));
 }
 
 bool BoostingLearner::doLearningIteration(ExecutionContext& context)

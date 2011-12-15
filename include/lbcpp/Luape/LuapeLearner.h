@@ -73,9 +73,12 @@ public:
 
 typedef ReferenceCountedObjectPtr<BoostingWeakLearner> BoostingWeakLearnerPtr;
 
+extern BoostingWeakLearnerPtr constantWeakLearner();
 extern BoostingWeakLearnerPtr singleStumpWeakLearner();
-extern BoostingWeakLearnerPtr binaryTreeWeakLearner(BoostingWeakLearnerPtr conditionLearner, BoostingWeakLearnerPtr subLearner);
 extern BoostingWeakLearnerPtr policyBasedWeakLearner(const PolicyPtr& policy, size_t budget, size_t maxDepth);
+extern BoostingWeakLearnerPtr binaryTreeWeakLearner(BoostingWeakLearnerPtr conditionLearner, BoostingWeakLearnerPtr subLearner);
+extern BoostingWeakLearnerPtr compositeWeakLearner(const std::vector<BoostingWeakLearnerPtr>& weakLearners);
+extern BoostingWeakLearnerPtr compositeWeakLearner(BoostingWeakLearnerPtr weakLearner1, BoostingWeakLearnerPtr weakLearner2);
 
 extern PolicyPtr treeBasedRandomPolicy();
 

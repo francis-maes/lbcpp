@@ -1,7 +1,7 @@
 /*-----------------------------------------.---------------------------------.
 | Filename: BinaryTreeWeakLearner.h        | Binary Tree Weak Learner        |
 | Author  : Francis Maes                   |                                 |
-| Started : 01/12/2012 17:38               |                                 |
+| Started : 01/12/2011 17:38               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
@@ -27,9 +27,10 @@ public:
   virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples, double& weakObjective) const
   {
     jassert(examples.size());
-    LuapeTestNodePtr res = conditionLearner->learn(context, structureLearner, examples, weakObjective).staticCast<LuapeTestNode>();
+    LuapeNodePtr conditionNode = conditionLearner->learn(context, structureLearner, examples, weakObjective);
+    LuapeTestNodePtr res = conditionNode.dynamicCast<LuapeTestNode>();
     if (!res)
-      return LuapeNodePtr();
+      return conditionNode; // probably a constant node
 
     const unsigned char* testValues = structureLearner->getTrainingSamples()->compute(context, res->getCondition()).staticCast<BooleanVector>()->getData();
     std::vector<size_t> successExamples;

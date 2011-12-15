@@ -60,6 +60,12 @@ public:
   void setPositionOfType(size_t position)
     {positionOfType = position;}
 
+  const ProteinPerceptionPtr& getProtein() const
+    {return protein;}
+
+  size_t getPosition() const
+    {return position;}
+
   AminoAcidType getAminoAcidType() const
     {return aminoAcidType;}
 
@@ -174,6 +180,55 @@ protected:
 
 extern ClassPtr proteinPerceptionClass;
 
+class ProteinGetRelativeResidueLuapeFunction : public LuapeFunction
+{
+public:
+  ProteinGetRelativeResidueLuapeFunction(int delta = 0)
+    : delta(delta) {}
+
+  virtual String toShortString() const
+    {return "[" + String(delta) + "]";}
+
+  virtual size_t getNumInputs() const
+    {return 1;}
+
+  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
+    {return type == proteinResiduePerceptionClass;}
+
+  virtual TypePtr getOutputType(const std::vector<TypePtr>& ) const
+    {return proteinResiduePerceptionClass;}
+
+  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+    {return inputs[0]->toShortString() + T(".neighbor[") + String(delta) + T("]");}
+  
+  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+  {
+    ProteinResiduePerceptionPtr residue = inputs[0].getObjectAndCast<ProteinResiduePerception>();
+    if (!residue)
+      return Variable::missingValue(proteinResiduePerceptionClass);
+    ProteinPerceptionPtr protein = residue->getProtein();
+    int position = (int)residue->getPosition() + delta;
+    if (position < 0 || position >= (int)protein->getNumResidues())
+      return Variable::missingValue(proteinResiduePerceptionClass);
+    return protein->getResidue((size_t)position);
+  }
+
+  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
+  {
+    enum {windowHalfSize = 4};
+
+    VectorPtr res = vector(integerType, windowHalfSize * 2 + 1);
+    for (int i = -windowHalfSize; i <= windowHalfSize; ++i)
+      res->setElement((size_t)(i + windowHalfSize), i);
+    return res;
+  }
+
+protected:
+  friend class ProteinGetRelativeResidueLuapeFunctionClass;
+
+  int delta; 
+};
+
 //////////////////////////////////////////////
 ////////// Protein Predictor Parameters //////
 //////////////////////////////////////////////
@@ -226,8 +281,7 @@ public:
   BoostingWeakLearnerPtr createWeakLearner(ProteinTarget target) const
   {
     BoostingWeakLearnerPtr conditionLearner = policyBasedWeakLearner(treeBasedRandomPolicy(), budget, numSteps);
-    //BoostingWeakLearnerPtr weakLearner = new NormalizedValueWeakLearner();
-    //BoostingWeakLearnerPtr conditionLearner = nestedMCWeakLearner(0, budgetPerIteration, maxSteps);
+    conditionLearner = compositeWeakLearner(constantWeakLearner(), conditionLearner);
 
     BoostingWeakLearnerPtr res = conditionLearner;
     for (size_t i = 1; i < treeDepth; ++i)
@@ -260,6 +314,9 @@ public:
     machine->addFunction(getVariableLuapeFunction());
     machine->addFunction(getContainerLengthLuapeFunction());
     machine->addFunction(getDoubleVectorElementLuapeFunction());
+
+    // protein-specific operations
+    machine->addFunction(new ProteinGetRelativeResidueLuapeFunction());
   }
 
   virtual FunctionPtr learningMachine(ProteinTarget target) const
