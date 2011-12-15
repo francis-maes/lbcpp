@@ -121,11 +121,17 @@ size_t LuapeClassifier::getNumRequiredInputs() const
   {return 2;}
 
 TypePtr LuapeClassifier::getRequiredInputType(size_t index, size_t numInputs) const
-  {return index ? enumValueType : (TypePtr)objectClass;}
+  {return index ? sumType(enumValueType, lbcpp::doubleVectorClass()) : (TypePtr)objectClass;}
+
+EnumerationPtr LuapeClassifier::getLabelsFromSupervision(TypePtr supervisionType)
+{
+  return supervisionType.isInstanceOf<Enumeration>()
+    ? supervisionType.staticCast<Enumeration>() : DoubleVector::getElementsEnumeration(supervisionType);
+}
 
 TypePtr LuapeClassifier::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
 {
-  EnumerationPtr enumeration = inputVariables[1]->getType().dynamicCast<Enumeration>();
+  EnumerationPtr enumeration = getLabelsFromSupervision(inputVariables[1]->getType());
   jassert(enumeration);
   doubleVectorClass = denseDoubleVectorClass(enumeration, doubleType);
   node = new LuapeVectorSumNode(enumeration);
@@ -150,7 +156,13 @@ double LuapeClassifier::evaluatePredictions(ExecutionContext& context, const Vec
   for (size_t i = 0; i < n; ++i)
   {
     size_t j = pred->getAndCast<DenseDoubleVector>(i)->getIndexOfMaximumValue();
-    if (j != (size_t)data[i].staticCast<Pair>()->getSecond().getInteger())
+    Variable supervision = data[i]->getVariable(1);
+    size_t correctClass;
+    if (supervision.isInteger())
+      correctClass = (size_t)supervision.getInteger();
+    else
+      correctClass = (size_t)supervision.getObjectAndCast<DoubleVector>()->getIndexOfMaximumValue();
+    if (j != correctClass)
       ++numErrors;
   }
   return numErrors / (double)n;
