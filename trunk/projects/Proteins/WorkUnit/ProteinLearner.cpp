@@ -54,9 +54,10 @@ Variable ProteinLearner::run(ExecutionContext& context)
 
 
   // evaluate
-  EvaluatorPtr trainEvaluator = new ProteinEvaluator(true);
+  jassertfalse; // TODO update evaluator by adding sub-evaluator
+  EvaluatorPtr trainEvaluator = new ProteinEvaluator();
   ScoreObjectPtr trainScore = selectScoresFromTargets(trainEvaluator, predictor->evaluate(context, trainProteins, trainEvaluator, T("Evaluate on train proteins")));
-  EvaluatorPtr validationEvaluator = new ProteinEvaluator(true);
+  EvaluatorPtr validationEvaluator = new ProteinEvaluator();
   ScoreObjectPtr validationScore = selectScoresFromTargets(validationEvaluator, predictor->evaluate(context, validationProteins, validationEvaluator, T("Evaluate on validation proteins")));
   if (!trainScore || !validationScore)
     return false;
@@ -76,7 +77,8 @@ Variable ProteinLearner::run(ExecutionContext& context)
   if (testProteins)
   {
     context.informationCallback(String((int)testProteins->getNumElements()) + T(" test proteins"));
-    EvaluatorPtr testEvaluator = new ProteinEvaluator(true);
+    jassertfalse; // TODO update evaluator by adding sub-evaluator
+    EvaluatorPtr testEvaluator = new ProteinEvaluator();
     testScore = selectScoresFromTargets(testEvaluator, predictor->evaluate(context, testProteins, testEvaluator, T("Evaluate on test proteins")));
     if (!testScore)
       return false;

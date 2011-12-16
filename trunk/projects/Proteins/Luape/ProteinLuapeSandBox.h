@@ -446,7 +446,7 @@ protected:
 
   ProteinEvaluatorPtr createEvaluator(bool isFinalEvaluation) const
   {
-    ProteinEvaluatorPtr evaluator = new ProteinEvaluator(isFinalEvaluation);
+    ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
     evaluator->addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation), 1), T("Disulfide Bonds (Sens. and Spec)"));
     evaluator->addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, isFinalEvaluation), 1), T("Disulfide Bonds (MCC)"));
     evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore), 1), T("Disulfide Bonds (Raw)"));
