@@ -415,10 +415,10 @@ public:
     if (!iteration->train(context, trainingProteins, testingProteins, T("Training")))
       return Variable::missingValue(doubleType);
 
-    ProteinEvaluatorPtr evaluator = new ProteinEvaluator(true);
+    ProteinEvaluatorPtr evaluator = createEvaluator(true);    
     iteration->evaluate(context, trainingProteins, evaluator, T("Evaluate on training proteins"));
 
-    evaluator = new ProteinEvaluator(true);
+    evaluator = createEvaluator(true);
     CompositeScoreObjectPtr scores = iteration->evaluate(context, testingProteins, evaluator, T("Evaluate on test proteins"));
     return evaluator->getScoreObjectOfTarget(scores, dsbTarget)->getScoreToMinimize();
   }
@@ -442,6 +442,16 @@ protected:
     ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, maxProteinCount, T("Loading ") + description + T(" proteins"));
     context.informationCallback(String(proteins ? (int)proteins->getNumElements() : 0) + T(" ") + description + T(" proteins"));
     return proteins;
+  }
+
+  ProteinEvaluatorPtr createEvaluator(bool isFinalEvaluation) const
+  {
+    ProteinEvaluatorPtr evaluator = new ProteinEvaluator(isFinalEvaluation);
+    evaluator->addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation), 1), T("Disulfide Bonds (Sens. and Spec)"));
+    evaluator->addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, isFinalEvaluation), 1), T("Disulfide Bonds (MCC)"));
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore), 1), T("Disulfide Bonds (Raw)"));
+    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)"));    
+    return evaluator;
   }
 };
 

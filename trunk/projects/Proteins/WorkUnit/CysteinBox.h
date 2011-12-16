@@ -670,6 +670,7 @@ public:
       return Variable::missingValue(doubleType);
 
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+    evaluator->addEvaluator(dsbTarget,  new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)")); 
     CompositeScoreObjectPtr scores = iteration->evaluate(context, test, evaluator, T("Evaluate on test proteins"));
     return evaluator->getScoreObjectOfTarget(scores, dsbTarget)->getScoreToMinimize();
   }
@@ -908,6 +909,198 @@ protected:
     jassertfalse;
     return Variable();
   }
+};
+
+class PlotDisulfideBondResultsWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    juce::OwnedArray<File> files;
+    directory.findChildFiles(files, File::findFiles, false, T("Param-*_Exp-*.SVM_G-*_C-*.trace"));
+    parseSVMFiles(context, files);
+    
+    files.clear();
+    directory.findChildFiles(files, File::findFiles, false, T("Param-*_Exp-*.kNN.trace"));
+    parseKNNFiles(context, files);
+
+    return true;
+  }
+
+protected:
+  friend class PlotDisulfideBondResultsWorkUnitClass;
+
+  File directory;
+
+  size_t parseNumParameters(ExecutionContext& context, const String& str) const
+  {
+    static const size_t prefixLength = String(T("Param-")).length();
+    const int end = str.indexOf(T("_Exp-"));
+    jassert(end != -1);
+    return Variable::createFromString(context, positiveIntegerType, str.substring(prefixLength, end)).getInteger();
+  }
+
+  size_t parseExperimentId(ExecutionContext& context, const String& str) const
+  {
+    static const size_t prefixLength = String(T("_Exp-")).length();
+    const int start = str.indexOf(T("_Exp-")) + prefixLength;
+    const int end = str.indexOfChar(start, T('.'));
+    jassert(start != -1 && end != -1);
+    return Variable::createFromString(context, positiveIntegerType, str.substring(start, end)).getInteger();
+  }
+
+  double getReturnValueOfTraceFile(ExecutionContext& context, File f) const
+  {
+    ExecutionTracePtr trace = ExecutionTrace::createFromFile(context, f).staticCast<ExecutionTrace>();
+    jassert(trace);
+    return trace->getRootNode()->findFirstNode()->getReturnValue().getDouble();
+  }
+
+  void parseKNNFiles(ExecutionContext& context, const juce::OwnedArray<File>& files) const
+  {
+    if (files.size() == 0)
+      return;
+    // Read files
+    typedef std::map<size_t, std::vector<std::pair<size_t, double> > > ScoresMap;
+    ScoresMap results;
+    for (size_t i = 0; i < (size_t)files.size(); ++i)
+    {
+      const String fileName = files[i]->getFileName();
+      const size_t numParameters = parseNumParameters(context, fileName);      
+      const size_t experimentId = parseExperimentId(context, fileName);
+      const double result = getReturnValueOfTraceFile(context, *files[i]);
+
+      results[numParameters].push_back(std::make_pair(experimentId, result));
+    }
+
+    // Print results
+    OutputStream* o = context.getFile(T("result_kNN.plot")).createOutputStream();
+    for (ScoresMap::iterator it = results.begin(); it != results.end(); ++it)
+    {
+      context.enterScope(T("Num. Parameters: ") + String((int)it->first));
+      double sum = 0;
+      std::vector<std::pair<size_t, double> > subResults = it->second;
+      context.resultCallback(T("Num. Experiments"), subResults.size());
+      for (size_t i = 0; i < subResults.size(); ++i)
+      {
+        context.enterScope(T("Experiment: ") + String((int)subResults[i].first));
+        context.resultCallback(T("Experiment"), subResults[i].first);
+        context.resultCallback(T("Result"), subResults[i].second);
+        sum += subResults[i].second;
+        context.leaveScope(subResults[i].second);
+        *o << (int)it->first << "\t" << (int)subResults[i].first << "\t" << subResults[i].second << "\n";
+      }
+      context.leaveScope(sum / ((double)subResults.size()));
+    }
+    delete o;
+  }
+
+  double parseGamma(ExecutionContext& context, const String& str) const
+  {
+    static const size_t prefixLength = String(T(".SVM_G-")).length();
+    const int start = str.indexOf(T(".SVM_G-")) + prefixLength;
+    const int end = str.indexOfChar(start, T('_'));
+    jassert(start != -1 && end != -1);
+    return Variable::createFromString(context, doubleType, str.substring(start, end)).getDouble();
+  }
+
+  double parseRegularizer(ExecutionContext& context, const String& str) const
+  {
+    static const size_t prefixLength = String(T("_C-")).length();
+    const int start = str.indexOf(T("_C-")) + prefixLength;
+    const int end = str.indexOfChar(start, T('.'));
+    return Variable::createFromString(context, doubleType, str.substring(start, end)).getDouble();
+  }
+
+  void parseSVMFiles(ExecutionContext& context, const juce::OwnedArray<File>& files) const
+  {
+    if (files.size() == 0)
+      return;
+    // Param -> Exp -> Gamma -> Reg -> Result
+    typedef std::map<size_t, std::map<size_t, std::map<double, std::map<double, double> > > > ScoresMap;
+    ScoresMap results;
+    for (size_t i = 0; i < (size_t)files.size(); ++i)
+    {
+      const String fileName = files[i]->getFileName();
+      const size_t numParameters = parseNumParameters(context, fileName);      
+      const size_t experimentId = parseExperimentId(context, fileName);
+      const double gamma = parseGamma(context, fileName);
+      const double regularizer = parseRegularizer(context, fileName);
+      const double result = getReturnValueOfTraceFile(context, *files[i]);
+
+      results[numParameters][experimentId][gamma][regularizer] = result;
+    }
+
+    // Print results
+    OutputStream* o = context.getFile(T("result_SVM.plot")).createOutputStream();
+
+    typedef std::map<size_t, std::map<double, std::map<double, double> > > SubScoresMap;
+    typedef std::map<double, std::map<double, double> > GammaScoresMap;
+    typedef std::map<double, double> RegularizerScoresMap;
+    for (ScoresMap::iterator it = results.begin(); it != results.end(); ++it)
+    {
+      for (SubScoresMap::iterator sit = it->second.begin(); sit != it->second.end(); ++sit)
+      {
+        context.enterScope(T("Param: ") + String((int)it->first) + T(" & Exp: ") + String((int)sit->first));
+        double bestGamma = DBL_MAX;
+        double bestGammaScore = DBL_MAX;
+        for (GammaScoresMap::iterator git = sit->second.begin(); git != sit->second.end(); ++git)
+        {
+          context.enterScope(T("Gamma: ") + String(git->first));
+          context.resultCallback(T("Gamma"), git->first);
+          double bestReg = DBL_MAX;
+          double bestRegScore = DBL_MAX;
+          for (RegularizerScoresMap::iterator rit = git->second.begin(); rit != git->second.end(); ++rit)
+          {
+            context.enterScope(T("Regularizer: ") + String(rit->first));
+            context.resultCallback(T("Regularizer"), rit->first);
+            context.resultCallback(T("Result"), rit->second);
+            if (rit->second < bestRegScore)
+            {
+              bestReg = rit->first;
+              bestRegScore = rit->second;
+            }
+            context.leaveScope(rit->first);
+          }
+          context.resultCallback(T("Best Regularizer Score"), bestRegScore);
+          context.resultCallback(T("Best Regularizer"), bestReg);
+          if (bestRegScore < bestGammaScore)
+          {
+            bestGammaScore = bestRegScore;
+            bestGamma = git->first;
+          }
+          context.leaveScope(bestRegScore);
+        }
+        context.resultCallback(T("Best Gamma"), bestGamma);
+        context.resultCallback(T("Best Gamma Score"), bestGammaScore);
+        context.leaveScope(bestGammaScore);
+        *o << (int)it->first << "\t" << (int)sit->first << "\t" << bestGammaScore << "\n";
+      }
+    }
+    delete o;
+  }
+};
+
+class CountNumDisulfideBridgePerProtein : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    juce::OwnedArray<File> files;
+    directory.findChildFiles(files, File::findFiles, false, T("*.xml"));
+
+    for (size_t i = 0; i < (size_t)files.size(); ++i)
+    {
+      ProteinPtr protein = Protein::createFromXml(context, *files[i]);
+      std::cout << protein->getNumBondedCysteins() << " " << files[i]->getFileName() << std::endl;
+    }
+    return true;
+  }
+
+protected:
+  friend class CountNumDisulfideBridgePerProteinClass;
+
+  File directory;
 };
 
 };
