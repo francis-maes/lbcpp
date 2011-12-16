@@ -166,8 +166,18 @@ std::pair<VectorPtr, SparseDoubleVectorPtr>& LuapeSamplesCache::internalCompute(
   if (it == m.end())
   {
     std::pair<VectorPtr, SparseDoubleVectorPtr>& res = m[node];
+
+    double startTime = Time::getMillisecondCounterHiRes();
     res.first = node->compute(context, LuapeSamplesCachePtr(this));
     actualCacheSize += getSizeInBytes(res.first);
+
+    LuapeFunctionNodePtr functionNode = node.dynamicCast<LuapeFunctionNode>();
+    if (functionNode)
+    {
+      double endTime = Time::getMillisecondCounterHiRes();
+      computingTimeByLuapeFunctionClass[functionNode->getFunction()->getClass()].push((endTime - startTime) / 1000.0);
+    }
+
     if (maxCacheSize)
     {
       if (isRemoveable)
@@ -183,6 +193,13 @@ std::pair<VectorPtr, SparseDoubleVectorPtr>& LuapeSamplesCache::internalCompute(
   }
   else
     return it->second;
+}
+
+void LuapeSamplesCache::getComputeTimeStatistics(ExecutionContext& context) const
+{
+  for (std::map<ClassPtr, ScalarVariableStatistics>::const_iterator it = computingTimeByLuapeFunctionClass.begin();
+        it != computingTimeByLuapeFunctionClass.end(); ++it)
+    context.resultCallback(it->first->getName(), it->second.clone(context));
 }
 
 struct SortDoubleValuesOperator

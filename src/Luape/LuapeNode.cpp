@@ -104,7 +104,7 @@ void LuapeFunctionNode::initialize()
     jassert(function->doAcceptInputType(i, inputTypes[i]));
   }
 
-  type = function->getOutputType(inputTypes);
+  type = function->initialize(inputTypes);
 }
 
 Variable LuapeFunctionNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const

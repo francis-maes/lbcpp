@@ -394,21 +394,19 @@ inline void variableToNative(ExecutionContext& context, std::vector<bool>& dest,
 }
 
 template<class TT>
-inline void nativeToVariable(Variable& dest, const std::vector<TT>& source, TypePtr expectedType)
+inline Variable nativeToVariable(const std::vector<TT>& source, const TypePtr& expectedType)
 {
-  dest = Variable::create(expectedType);
-  const ObjectPtr& destObject = dest.getObject();
-  const VectorPtr& destVector = destObject.staticCast<Vector>();
-  jassert(destVector);
-  destVector->resize(source.size());
-  TypePtr elementsType = destVector->getElementsType();
+  VectorPtr res = Vector::create(expectedType.staticCast<Class>()).staticCast<Vector>();
+
+  res->resize(source.size());
+  TypePtr elementsType = res->getElementsType();
   for (size_t i = 0; i < source.size(); ++i)
   {
-    Variable variable;
-    nativeToVariable(variable, source[i], elementsType);
+    Variable variable = nativeToVariable(source[i], elementsType);
     if (variable.exists())
-      destVector->setElement(i, variable);
+      res->setElement(i, variable);
   }
+  return Variable(res, expectedType);
 }
 
 template<class TT>
@@ -431,23 +429,21 @@ inline void variableToNative(ExecutionContext& context, std::set<TT>& dest, cons
 }
 
 template<class TT>
-inline void nativeToVariable(Variable& dest, const std::set<TT>& source, TypePtr expectedType)
+inline Variable nativeToVariable(const std::set<TT>& source, const TypePtr& expectedType)
 {
-  dest = Variable::create(expectedType);
-  const ObjectPtr& destObject = dest.getObject();
-  const VectorPtr& destVector = destObject.staticCast<Vector>();
-  jassert(destVector);
-  destVector->resize(source.size());
-  TypePtr elementsType = destVector->getElementsType();
+  VectorPtr res = Vector::create(expectedType.staticCast<Class>()).staticCast<Vector>();
+
+  res->resize(source.size());
+  TypePtr elementsType = res->getElementsType();
   size_t i = 0;
   typedef typename std::set<TT>::const_iterator iterator;
   for (iterator it = source.begin(); it != source.end(); ++it, ++i)
   {
-    Variable variable;
-    nativeToVariable(variable, *it, elementsType);
+    Variable variable = nativeToVariable(*it, elementsType);
     if (variable.exists())
-      destVector->setElement(i, variable);
+      res->setElement(i, variable);
   }
+  return Variable(res, expectedType);
 }
 
 }; /* namespace lbcpp */

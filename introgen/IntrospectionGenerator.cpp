@@ -343,13 +343,15 @@ protected:
     {
       // getMemberVariableValue
       openScope(T("virtual lbcpp::Variable getMemberVariableValue(const Object* __thisbase__, size_t __index__) const"));
-        writeLine(T("static size_t numBaseMemberVariables = baseType->getNumMemberVariables();"));
-        writeLine(T("if (__index__ < numBaseMemberVariables)"));
-        writeLine(T("return baseType->getMemberVariableValue(__thisbase__, __index__);"), 1);
-        writeLine(T("__index__ -= numBaseMemberVariables;"));
+        if (baseClassName != T("Object"))
+        {
+          writeLine(T("static size_t numBaseMemberVariables = baseType->getNumMemberVariables();"));
+          writeLine(T("if (__index__ < numBaseMemberVariables)"));
+          writeLine(T("return baseType->getMemberVariableValue(__thisbase__, __index__);"), 1);
+          writeLine(T("__index__ -= numBaseMemberVariables;"));
+        }
         writeLine(T("const ") + className + T("* __this__ = static_cast<const ") + className + T("* >(__thisbase__);"));
-        writeLine(T("const TypePtr& expectedType = variables[__index__]->getType();"));
-        writeLine(T("lbcpp::Variable __res__;"));
+        //writeLine(T("const TypePtr& expectedType = variables[__index__]->getType();"));
         newLine();
         openScope(T("switch (__index__)"));
           for (size_t i = 0; i < variables.size(); ++i)
@@ -358,20 +360,18 @@ protected:
             if (name.isEmpty())
               name = variables[i]->getStringAttribute(T("name"), T("???"));
 
-            String code = T("case ") + String((int)i) + T(": lbcpp::nativeToVariable(__res__, ");
+            String code = T("case ") + String((int)i) + T(": return lbcpp::nativeToVariable(");
             bool isEnumeration = variables[i]->getBoolAttribute(T("enumeration"), false);
             if (isEnumeration)
               code += T("(int)(__this__->") + name + T(")");
             else
               code += T("__this__->") + name;
 
-            code += T(", expectedType); break;");
+            code += T(", variables[__index__]->getType());");
             writeLine(code, -1);
           }
           writeLine(T("default: jassert(false); return lbcpp::Variable();"), -1);
         closeScope();
-        writeLine(T("jassert(__res__.getType()->inheritsFrom(expectedType));"));
-        writeLine(T("return __res__;"));
       closeScope();
       newLine();
 

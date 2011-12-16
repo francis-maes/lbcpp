@@ -32,38 +32,38 @@
 namespace lbcpp
 {
 
-inline Variable::Variable(bool boolValue, TypePtr type)
+inline Variable::Variable(bool boolValue, const TypePtr& type)
   : type(type), value(boolValue) {jassert(isBoolean());}
 
-inline Variable::Variable(juce::int64 intValue, TypePtr type)
+inline Variable::Variable(juce::int64 intValue, const TypePtr& type)
   : type(type), value((int)intValue) {jassert(isInteger());}
 
-inline Variable::Variable(int intValue, TypePtr type)
+inline Variable::Variable(int intValue, const TypePtr& type)
   : type(type), value(intValue) {jassert(isInteger());} 
 
-inline Variable::Variable(size_t intValue, TypePtr type)
+inline Variable::Variable(size_t intValue, const TypePtr& type)
   : type(type), value((int)intValue) {jassert(isInteger());} 
 
-inline Variable::Variable(double doubleValue, TypePtr type)
+inline Variable::Variable(double doubleValue, const TypePtr& type)
   : type(type), value(doubleValue) {jassert(isDouble());}
 
-inline Variable::Variable(const juce::tchar* stringValue, TypePtr type)
+inline Variable::Variable(const juce::tchar* stringValue, const TypePtr& type)
   : type(type), value(stringValue) {jassert(isString());}
 
-inline Variable::Variable(const String& stringValue, TypePtr type)
+inline Variable::Variable(const String& stringValue, const TypePtr& type)
   : type(type), value(stringValue) {jassert(isString());}
 
-inline Variable::Variable(const File& fileValue, TypePtr type)
+inline Variable::Variable(const File& fileValue, const TypePtr& type)
   : type(type), value(fileValue.getFullPathName()) {jassert(isString());}
 
-inline Variable::Variable(Object* object, TypePtr type)
+inline Variable::Variable(Object* object, const TypePtr& type)
   : type(type), value(object) {jassert(type);}
 
 inline Variable::Variable(Object* object)
   : type(object ? (TypePtr)object->getClass() : nilType), value(object) {jassert(type || !object);}
 
 template<class T>
-inline Variable::Variable(const ReferenceCountedObjectPtr<T>& object, TypePtr type)
+inline Variable::Variable(const ReferenceCountedObjectPtr<T>& object, const TypePtr& type)
   : type(type), value(object) {}
 
 template<class T> 
@@ -260,16 +260,16 @@ inline void variableToNative(ExecutionContext& context, Variable& dest, const Va
 /*
 ** C++ Native => Variable
 */
-inline void nativeToVariable(Variable& dest, const Variable& source, TypePtr )
-  {dest = source;}
+inline Variable nativeToVariable(const Variable& source, const TypePtr& )
+  {return source;}
 
 template<class TT>
-inline void nativeToVariable(Variable& dest, const ReferenceCountedObjectPtr<TT>& source, TypePtr expectedType)
-  {dest = Variable(source, expectedType);}
+inline Variable nativeToVariable(const ReferenceCountedObjectPtr<TT>& source, const TypePtr& expectedType)
+  {return Variable(source, expectedType);}
 
 template<class TT>
-inline void nativeToVariable(Variable& dest, const TT& source, TypePtr expectedType)
-  {dest = Variable(source, expectedType);}
+inline Variable nativeToVariable(const TT& source, const TypePtr& expectedType)
+  {return Variable(source, expectedType);}
 
 /*
 ** Inheritance check

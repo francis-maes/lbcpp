@@ -15,11 +15,15 @@
 namespace lbcpp
 {
 
+template<class ExactType>
 class UnaryObjectLuapeFuntion : public LuapeFunction
 {
 public:
   UnaryObjectLuapeFuntion(ClassPtr inputClass = objectClass)
     : inputClass(inputClass) {}
+
+  Variable computeObject(const ObjectPtr& object) const
+    {jassert(false); return Variable();} // must be implemented
 
   virtual size_t getNumInputs() const
     {return 1;}
@@ -27,12 +31,10 @@ public:
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
     {return type->inheritsFrom(inputClass);}
 
-  virtual Variable computeObject(const ObjectPtr& object) const = 0;
-
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
   {
     const ObjectPtr& object = inputs[0].getObject();
-    return object ? computeObject(object) : Variable();
+    return object ? pthis().computeObject(object) : Variable();
   }
 
   virtual VectorPtr compute(ExecutionContext& context, const std::vector<VectorPtr>& inputs, TypePtr outputType) const
@@ -46,7 +48,7 @@ public:
       {
         const ObjectPtr& object = objects->get(i);
         if (object)
-          res->set(i, computeObject(object).getObject());
+          res->set(i, pthis().computeObject(object).getObject());
       }
       return res;
     }
@@ -57,7 +59,7 @@ public:
       {
         const ObjectPtr& object = objects->get(i);
         if (object)
-          res->setValue(i, computeObject(object).getDouble());
+          res->setValue(i, pthis().computeObject(object).getDouble());
       }
       return res;
     }
@@ -69,7 +71,7 @@ public:
         const ObjectPtr& object = objects->get(i);
         if (object)
         {
-          Variable v = computeObject(object);
+          Variable v = pthis().computeObject(object);
           res->getData()[i] = v.isMissingValue() ? 2 : (v.getBoolean() ? 1 : 0);
         }
       }
@@ -82,7 +84,7 @@ public:
       {
         const ObjectPtr& object = objects->get(i);
         if (object)
-          res->setElement(i, computeObject(object));
+          res->setElement(i, pthis().computeObject(object));
       }
       return res;
     }
@@ -90,21 +92,26 @@ public:
 
 protected:
   ClassPtr inputClass;
+
+  const ExactType& pthis() const
+    {return *(const ExactType* )this;}
 };
 
-class GetVariableLuapeFunction : public UnaryObjectLuapeFuntion
+class GetVariableLuapeFunction : public UnaryObjectLuapeFuntion<GetVariableLuapeFunction>
 {
 public:
   GetVariableLuapeFunction(size_t variableIndex = 0)
-    : UnaryObjectLuapeFuntion(objectClass), variableIndex(variableIndex) {}
+    : UnaryObjectLuapeFuntion<GetVariableLuapeFunction>(objectClass), variableIndex(variableIndex) {}
 
   virtual String toShortString() const
     {return ".var[" + String((int)variableIndex) + "]";}
 
-  virtual TypePtr getOutputType(const std::vector<TypePtr>& inputTypes) const
+  virtual TypePtr initialize(const std::vector<TypePtr>& inputTypes)
   {
     jassert(inputTypes.size() == 1);
-    return inputTypes[0]->getMemberVariableType(variableIndex);
+    inputClass = inputTypes[0].staticCast<Class>();
+    outputType = inputTypes[0]->getMemberVariableType(variableIndex);
+    return outputType;
   }
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
@@ -114,13 +121,13 @@ public:
     return inputs[0]->toShortString() + "." + (member->getShortName().isNotEmpty() ? member->getShortName() : member->getName());
   }
 
-  virtual Variable computeObject(const ObjectPtr& object) const
-    {return object->getVariable(variableIndex);}
+  Variable computeObject(const ObjectPtr& object) const
+    {return inputClass->getMemberVariableValue(object.get(), variableIndex);}
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
   {
     const ObjectPtr& object = inputs[0].getObject();
-    return object ? computeObject(object) : Variable::missingValue(inputs[0].getType()->getMemberVariableType(variableIndex));
+    return object ? computeObject(object) : Variable::missingValue(outputType);
   }
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
@@ -136,23 +143,26 @@ public:
 protected:
   friend class GetVariableLuapeFunctionClass;
   size_t variableIndex;
+
+  ClassPtr inputClass;
+  TypePtr outputType;
 };
 
-class GetContainerLengthLuapeFunction : public UnaryObjectLuapeFuntion
+class GetContainerLengthLuapeFunction : public UnaryObjectLuapeFuntion<GetContainerLengthLuapeFunction>
 {
 public:
-  GetContainerLengthLuapeFunction() : UnaryObjectLuapeFuntion(containerClass()) {}
+  GetContainerLengthLuapeFunction() : UnaryObjectLuapeFuntion<GetContainerLengthLuapeFunction>(containerClass()) {}
 
   virtual String toShortString() const
     {return "length(.)";}
 
-  virtual TypePtr getOutputType(const std::vector<TypePtr>& inputTypes) const
+  virtual TypePtr initialize(const std::vector<TypePtr>& inputTypes)
     {return positiveIntegerType;}
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
     {jassert(inputs.size() == 1); return "length(" + inputs[0]->toShortString() + ")";}
 
-  virtual Variable computeObject(const ObjectPtr& object) const
+  Variable computeObject(const ObjectPtr& object) const
     {return Variable(object.staticCast<Container>()->getNumElements(), positiveIntegerType);} 
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
@@ -162,11 +172,11 @@ public:
   }
 };
 
-class GetDoubleVectorElementLuapeFunction : public UnaryObjectLuapeFuntion
+class GetDoubleVectorElementLuapeFunction : public UnaryObjectLuapeFuntion<GetDoubleVectorElementLuapeFunction>
 {
 public:
   GetDoubleVectorElementLuapeFunction(size_t index = 0)
-    : UnaryObjectLuapeFuntion(doubleVectorClass()), index(index) {}
+    : UnaryObjectLuapeFuntion<GetDoubleVectorElementLuapeFunction>(doubleVectorClass()), index(index) {}
 
   virtual String toShortString() const
     {return "[" + String((int)index) + "]";}
@@ -177,12 +187,11 @@ public:
     return features && features->getNumElements() > 0;
   }
 
-  virtual TypePtr getOutputType(const std::vector<TypePtr>& inputTypes) const
+  virtual TypePtr initialize(const std::vector<TypePtr>& inputTypes)
   {
     EnumerationPtr features;
-    TypePtr elementsType;
-    DoubleVector::getTemplateParameters(defaultExecutionContext(), inputTypes[0], features, elementsType);
-    return elementsType;
+    DoubleVector::getTemplateParameters(defaultExecutionContext(), inputTypes[0], features, outputType);
+    return outputType;
   }
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
@@ -193,7 +202,7 @@ public:
     return inputs[0]->toShortString() + "." + features->getElementName(index);
   }
 
-  virtual Variable computeObject(const ObjectPtr& input) const
+  Variable computeObject(const ObjectPtr& input) const
   {
     DenseDoubleVectorPtr denseInput = input.dynamicCast<DenseDoubleVector>();
     if (denseInput)
@@ -205,7 +214,7 @@ public:
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
   {
     const ObjectPtr& object = inputs[0].getObject();
-    return object ? computeObject(object) : Variable::missingValue(doubleType);
+    return object ? computeObject(object) : Variable::missingValue(outputType);
   }
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
@@ -224,6 +233,8 @@ public:
 protected:
   friend class GetDoubleVectorElementLuapeFunctionClass;
   size_t index;
+
+  TypePtr outputType;
 };
 
 }; /* namespace lbcpp */
