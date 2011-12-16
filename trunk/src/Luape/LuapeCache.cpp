@@ -63,7 +63,7 @@ Variable LuapeInstanceCache::compute(ExecutionContext& context, const LuapeNodeP
 ** LuapeSamplesCache
 */
 LuapeSamplesCache::LuapeSamplesCache(const std::vector<LuapeInputNodePtr>& inputs, size_t size, size_t maxCacheSizeInMb)
-  : maxCacheSize(maxCacheSizeInMb * 1024), actualCacheSize(0)
+  : maxCacheSize(maxCacheSizeInMb * 1024 * 1024), actualCacheSize(0)
 {
   inputCaches.resize(inputs.size());
   for (size_t i = 0; i < inputs.size(); ++i)

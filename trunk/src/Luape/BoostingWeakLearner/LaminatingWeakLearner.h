@@ -74,20 +74,22 @@ public:
       context.resultCallback(T("numExamples"), examplesSubset.size());
       context.resultCallback(T("bestWeakNode"), weakNodesByScore[0].first);
       context.resultCallback(T("bestWeakObjective"), weakNodesByScore[0].second);
+      context.leaveScope();
 
       // update num weak learners
       numWeakLearners = numWeakLearners / 2;
 
       // grow examples subset
       size_t previousNumExamples = examplesSubset.size();
+      if (previousNumExamples == examples.size())
+        break; // all examples have been included in the last evaluation, so the current best weak node is the final best weak node
+      
       size_t numExamples = previousNumExamples * 2;
       if (numExamples > examples.size())
         numExamples = examples.size();
       examplesSubset.resize(numExamples);
       for (size_t i = previousNumExamples; i < numExamples; ++i)
         examplesSubset[i] = examples[examplesOrder[i]];
-
-      context.leaveScope();
     }
     LuapeNodePtr weakNode = weakNodesByScore[0].first;
     weakObjective = computeWeakObjectiveWithEventualStump(context, structureLearner, weakNode, examples); // side effect on weakNode

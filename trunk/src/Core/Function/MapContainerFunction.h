@@ -135,8 +135,10 @@ protected:
         enumeration = positiveIntegerEnumerationEnumeration;
       return denseDoubleVectorClass(enumeration, outputElementType);
     }
+    else if (outputElementType->inheritsFrom(booleanType))
+      return booleanVectorClass;
     else
-      return vectorClass(outputElementType);
+      return genericVectorClass(outputElementType);
   }
 
   ContainerPtr createOutputContainer(const ContainerPtr& input) const

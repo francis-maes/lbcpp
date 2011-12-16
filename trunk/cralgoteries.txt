@@ -1,4 +1,4 @@
-
+* Normalement le temps des iterations de laminating devrait à peu près etre constant => comprendre pourquoi ce n'est pas le cas
 
 Luape-Other:
  * Go: rankboost + large-scale boosting
