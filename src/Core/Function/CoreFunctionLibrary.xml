@@ -129,4 +129,9 @@
     <variable type="GenericVector[Double]" name="means"/>
   </class>
 
+  <class name="ConcatenatedDoubleVectorNormalizeFunction" base="Function">
+    <constructor/>
+    <variable type="GenericVector[Double]" name="zFactors"/>
+  </class>
+
 </library>

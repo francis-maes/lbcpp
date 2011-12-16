@@ -68,8 +68,11 @@ public:
     {return T("Normalize");}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return sparseDoubleVectorClass(inputVariables[0]->getType()->getTemplateArgument(0), inputVariables[0]->getType()->getTemplateArgument(1));}
-
+  {
+    outputName = T("dvNorm");
+    outputShortName = T("dvNorm");
+    return denseDoubleVectorClass(inputVariables[0]->getType()->getTemplateArgument(0), inputVariables[0]->getType()->getTemplateArgument(1));
+  }
 protected:
   friend class DoubleVectorNormalizeFunctionClass;
   friend class DoubleVectorNormalizeBatchLearner;
@@ -79,18 +82,61 @@ protected:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    SparseDoubleVectorPtr sdv = input.getObjectAndCast<DoubleVector>(context)->toSparseVector();
-    SparseDoubleVectorPtr res = new SparseDoubleVector(getOutputType());
-    const size_t n = sdv->getNumValues();
-    std::pair<size_t, double>* value = sdv->getValues();
-    for (size_t i = 0; i < n; ++i, ++value)
-      res->appendValue(value->first, (value->second - means[value->first]) / variances[value->first]);
+    DenseDoubleVectorPtr res = input.getObjectAndCast<DoubleVector>()->toDenseDoubleVector();
+    const size_t n = res->getNumValues();
+    for (size_t i = 0; i < n; ++i)
+      res->setValue(i, (res->getValue(i) - means[i]) / variances[i]);
     return res;
   }
 };
 
 extern ClassPtr doubleVectorNormalizeFunctionClass;
 typedef ReferenceCountedObjectPtr<DoubleVectorNormalizeFunction> DoubleVectorNormalizeFunctionPtr;
+
+/*
+** Concatenated Double Vector Normalize Function
+*/
+class ConcatenatedDoubleVectorNormalizeBatchLearner;
+
+class ConcatenatedDoubleVectorNormalizeFunction : public Function
+{
+public:
+  ConcatenatedDoubleVectorNormalizeFunction()
+    {setBatchLearner(concatenatedDoubleVectorNormalizeBatchLearner());}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return doubleVectorClass(enumValueType, doubleType);}
+  
+  virtual String getOutputPostFix() const
+    {return T("ConcatenatedNormalize");}
+  
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    outputName = T("cdvNorm");
+    outputShortName = T("cdvNorm");
+    return denseDoubleVectorClass(inputVariables[0]->getType()->getTemplateArgument(0), inputVariables[0]->getType()->getTemplateArgument(1));
+  }
+protected:
+  friend class ConcatenatedDoubleVectorNormalizeFunctionClass;
+  friend class ConcatenatedDoubleVectorNormalizeBatchLearner;
+
+  std::vector<double> zFactors;
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    DenseDoubleVectorPtr res = input.getObjectAndCast<DoubleVector>()->toDenseDoubleVector();
+    const size_t n = res->getNumValues();
+    for (size_t i = 0; i < n; ++i)
+      res->setValue(i, res->getValue(i) / zFactors[i]);
+    return res;
+  }
+};
+
+extern ClassPtr concatenatedDoubleVectorNormalizeFunctionClass;
+typedef ReferenceCountedObjectPtr<ConcatenatedDoubleVectorNormalizeFunction> ConcatenatedDoubleVectorNormalizeFunctionPtr;
 
 }; /* namespace lbcpp */
 

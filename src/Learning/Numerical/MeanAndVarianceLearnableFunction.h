@@ -31,18 +31,12 @@ public:
   {
     outputName = T("meanAndVariance");
     outputShortName = T("m&v");
-
     return denseDoubleVectorClass(inputVariables[0]->getType()->getTemplateArgument(0), inputVariables[0]->getType()->getTemplateArgument(1));
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     DenseDoubleVectorPtr res = inputs[0].getObjectAndCast<DoubleVector>()->toDenseDoubleVector();
-    std::cout << "MeanAndVarianceLearnableFunction: " << std::endl;
-    EnumerationPtr enumeration = res->getElementsEnumeration();
-    for (size_t i = 0; i < enumeration->getNumElements(); ++i)
-      std::cout << enumeration->getElement(i)->toString() << std::endl;
-    jassertfalse;
     if (useMean)
       for (size_t i = 0; i < res->getNumValues(); ++i)
         res->setValue(i, res->getValue(i) - means[i]);

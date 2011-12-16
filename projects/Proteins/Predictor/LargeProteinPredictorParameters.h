@@ -32,7 +32,7 @@ public:
     size_t input = builder.addInput(anyType, T("input"));
     size_t supervision = builder.addInput(anyType, T("supervision"));
 
-    size_t res = builder.addFunction(f, input, supervision);
+    size_t res = builder.addFunction(f, input);
     builder.addFunction(g, res, supervision);
   }
 
@@ -726,7 +726,7 @@ public:
 
   virtual FunctionPtr createTargetPredictor(ProteinTarget target) const
   {
-    if (target == dsbTarget)
+    if (target == dsbTarget && useAddBias)
     {
       FunctionPtr res = learningMachine(target);
       if (useFisherFilter)
@@ -744,10 +744,12 @@ public:
   {
     // TODO: incorporate bias in case of binary target
     if (learningMachineName == T("LibSVM"))
-      return new PreProcessInputCompositeFunction(meanAndVarianceLearnableFunction(false, true)
+      return new PreProcessInputCompositeFunction(doubleVectorNormalizeFunction(false, true)
                                                   , libSVMLearningMachine(pow(2.0, svmC), rbfKernel, 0, pow(2.0, svmGamma), 0.0));
     else if (learningMachineName == T("kNN"))
-      return nearestNeighborLearningMachine(knnNeighbors, false);
+      return new PreProcessInputCompositeFunction(composeFunction(doubleVectorNormalizeFunction(true, true),
+                                                                  concatenatedDoubleVectorNormalizeFunction()),
+                                                  nearestNeighborLearningMachine(knnNeighbors, true));
     else if (learningMachineName == T("LSH"))
       return binaryLocalitySensitiveHashing(knnNeighbors);
     else if (learningMachineName == T("ExtraTrees"))

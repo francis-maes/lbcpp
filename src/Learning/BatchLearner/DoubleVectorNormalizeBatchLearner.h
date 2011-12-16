@@ -71,7 +71,17 @@ public:
         if (target->variances[i] < 1e-6) // Numerical unstability
           target->variances[i] = 1.f;
       }
+#if JUCE_DEBUG && 0
+    std::cout << "DoubleVectorNormalizeBatchLearner::Means : ";
+    for (size_t i = 0; i < dimension; ++i)
+      std::cout << target->means[i] << ", ";
+    std::cout << std::endl;
 
+    std::cout << "DoubleVectorNormalizeBatchLearner::StdDev: ";
+    for (size_t i = 0; i < dimension; ++i)
+      std::cout << target->variances[i] << ", ";
+    std::cout << std::endl;
+#endif // !JUCE_DEBUG
     return true;
   }
 
@@ -80,6 +90,57 @@ protected:
 
   bool computeVariances;
   bool computeMeans;
+};
+
+class ConcatenatedDoubleVectorNormalizeBatchLearner : public BatchLearner
+{
+public:
+  virtual TypePtr getRequiredFunctionType() const
+    {return concatenatedDoubleVectorNormalizeFunctionClass;}
+  
+  virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
+  {
+    if (!checkHasAtLeastOneExemples(trainingData))
+    {
+      context.errorCallback(T("DoubleVectorNormalizeBatchLearner::train"), T("No training data !"));
+      return false;
+    }
+
+    ConcatenatedDoubleVectorNormalizeFunctionPtr target = function.staticCast<ConcatenatedDoubleVectorNormalizeFunction>();
+    jassert(trainingData[0]->getVariable(0).dynamicCast<DoubleVector>());
+    EnumerationPtr enumeration = trainingData[0]->getVariable(0).dynamicCast<DoubleVector>()->getElementsEnumeration();
+    jassert(target && enumeration);
+
+    size_t index = 0;
+    target->zFactors.resize(enumeration->getNumElements(), 1.f);
+    recursivelyAssignFactors(enumeration, index, target->zFactors);
+
+#if JUCE_DEBUG && 0
+    std::cout << "ConcatenatedDoubleVectorNormalizeBatchLearner::zFactors : ";
+    for (size_t i = 0; i < target->zFactors.size(); ++i)
+      std::cout << target->zFactors[i] << ", ";
+    std::cout << std::endl;
+#endif // !JUCE_DEBUG
+
+    return true;
+  }
+
+private:
+  void recursivelyAssignFactors(const EnumerationPtr& enumeration, size_t& index, std::vector<double>& results) const
+  {
+    ConcatenateEnumerationPtr concatenateEnumeration = enumeration.dynamicCast<ConcatenateEnumeration>();
+    if (concatenateEnumeration)
+    {
+      for (size_t i = 0; i < concatenateEnumeration->getNumSubEnumerations(); ++i)
+        recursivelyAssignFactors(concatenateEnumeration->getSubEnumeration(i), index, results);
+    }
+    else
+    {
+      const size_t n = enumeration->getNumElements();
+      for (size_t i = 0; i < n; ++i, ++index)
+        results[index] = (double)n;
+    }
+  }
 };
 
 }; /* namespace lbcpp */
