@@ -337,5 +337,7 @@
     <variable type="Boolean" name="useFisherFilter"/>
     <variable type="PositiveInteger" name="numFisherFeatures"/>
   </class>
+
+  <class name="DumbBinaryClassifierFunction" base="Function"/>
   <!-- END LargePredictorParameters -->
 </library>
