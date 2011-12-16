@@ -190,6 +190,13 @@
     <variable type="PositiveInteger" name="numParameters" shortName="p"/>
     <variable type="PositiveInteger" name="numExperiments" shortName="n"/>
   </class>
+  <class name="PlotDisulfideBondResultsWorkUnit" base="WorkUnit">
+    <variable type="File" name="directory"/>
+  </class>
+  <class name="CountNumDisulfideBridgePerProtein" base="WorkUnit">
+    <variable type="File" name="directory"/>
+  </class>
+
   <!-- END CysteinBox -->
 
   <!-- BEGIN LargeBox -->

@@ -74,36 +74,31 @@ typedef ReferenceCountedObjectPtr<ProteinLearnerScoreObject> ProteinLearnerScore
 class ProteinEvaluator : public CompositeEvaluator
 {
 public:
-  ProteinEvaluator(bool isFinalEvaluation = false)
+  ProteinEvaluator()
   {
 #if 0
-    addEvaluator(cbpTarget,  classificationEvaluator(), T("Cystein Bonding Property"));
-    addEvaluator(ss3Target,  containerSupervisedEvaluator(classificationEvaluator()), T("Secondary Structure"));
-    addEvaluator(ss8Target,  containerSupervisedEvaluator(classificationEvaluator()), T("DSSP Secondary Structure"));
-    addEvaluator(sa20Target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("Solvent Accessibility (@20)"));
-    addEvaluator(drTarget,   containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("Disorder regions"));
-    addEvaluator(stalTarget, containerSupervisedEvaluator(classificationEvaluator()), T("Structural Alphabet"));
+/* Exemples */
+//    addEvaluator(cbpTarget,  classificationEvaluator(), T("Cystein Bonding Property"));
+//    addEvaluator(ss3Target,  containerSupervisedEvaluator(classificationEvaluator()), T("Secondary Structure"));
+//    addEvaluator(ss8Target,  containerSupervisedEvaluator(classificationEvaluator()), T("DSSP Secondary Structure"));
+//    addEvaluator(sa20Target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("Solvent Accessibility (@20)"));
+//    addEvaluator(drTarget,   containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("Disorder regions"));
+//    addEvaluator(stalTarget, containerSupervisedEvaluator(classificationEvaluator()), T("Structural Alphabet"));
 //    addEvaluator(cma8Target, containerSupervisedEvaluator(new ContactMapEvaluator(8)));
 //    addEvaluator(cmb8Target, containerSupervisedEvaluator(new ContactMapEvaluator(8)));
-    addEvaluator(cbsTarget,  containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation)), T("Cystein Bonding States (Sens. & Spec.)"));
-    //addEvaluator(cbsTarget,  containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, isFinalEvaluation)), T("Cystein Bonding States (Accuracy)"));
-
+//    addEvaluator(cbsTarget,  containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation)), T("Cystein Bonding States (Sens. & Spec.)"));
 //    addEvaluator(dsbTarget,  new DisulfidePatternEvaluator(), T("Disulfide Bonds"));
-    addEvaluator(fdsbTarget,  new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6)), T("Disulfide Symmetric Bonds (Greedy L=6)"));
+//    addEvaluator(fdsbTarget,  new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6)), T("Disulfide Symmetric Bonds (Greedy L=6)"));
+//    addEvaluator(dsbTarget, new DoNotApplyOnDimensionGreaterThan(new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6)), 10), T("Disulfide Bonds (Greedy L=6 & # <= 10)"));
+//    addEvaluator(dsbTarget, new DoNotApplyOnDimensionGreaterThan(new DisulfidePatternEvaluator(new ExhaustiveDisulfidePatternBuilder()), 10), T("Disulfide Bonds (Exhaustive & # <= 10)"));
 #endif // 0
-    
+/* Use ProteinEvaluator::addEvaluator outside of default constructor
     addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation), 1), T("Disulfide Bonds (Sens. and Spec)"));
     addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, isFinalEvaluation), 1), T("Disulfide Bonds (MCC)"));
     addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore), 1), T("Disulfide Bonds (Raw)"));
     addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)"));
-
-    //for (double i = 0.0; i < 1.0; i += 0.05)
-      //addEvaluator(fdsbTarget,  new MatrixToSymmetricMatrix(new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, i), i)), String(i) + T(" Disulfide Bonds"));
-      //addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, i), i), String(i) + T(" Disulfide Bonds"));
-
-//    addEvaluator(dsbTarget, new DoNotApplyOnDimensionGreaterThan(new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6)), 10), T("Disulfide Bonds (Greedy L=6 & # <= 10)"));
-//    addEvaluator(dsbTarget, new DoNotApplyOnDimensionGreaterThan(new DisulfidePatternEvaluator(new ExhaustiveDisulfidePatternBuilder()), 10), T("Disulfide Bonds (Exhaustive & # <= 10)"));
-  }
+*/
+ }
 
   /* CompositeEvaluator */
   virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scoreObject, const ObjectPtr& example, const Variable& output) const
@@ -152,16 +147,16 @@ public:
     return res;
   }
 
-protected:
-  std::vector<ProteinTarget> targets;
-  std::vector<String> descriptions;
-  
   void addEvaluator(ProteinTarget target, EvaluatorPtr evaluator, const String& description)
   {
     targets.push_back(target);
     descriptions.push_back(description);
     CompositeEvaluator::addEvaluator(evaluator);
-  }
+  }  
+
+protected:
+  std::vector<ProteinTarget> targets;
+  std::vector<String> descriptions;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinEvaluator> ProteinEvaluatorPtr;
