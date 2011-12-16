@@ -124,7 +124,7 @@ public:
   lbcpp_UseDebuggingNewOperator
 };
 
-class PolicyBasedWeakLearner : public BoostingWeakLearner
+class PolicyBasedWeakLearner : public FiniteBoostingWeakLearner
 {
 public:
   PolicyBasedWeakLearner(const PolicyPtr& policy, size_t budget, size_t maxDepth)
@@ -137,7 +137,24 @@ public:
     typeSearchSpace->pruneStates(context);
     return true;
   }
-     
+
+  virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& res) const
+  {
+    res.reserve(res.size() + budget);
+    size_t i = 0;
+    while (i < budget)
+    {
+      LuapeNodePtr weakNode = sampleTrajectory(context, structureLearner);
+      if (weakNode)
+      {
+        res.push_back(weakNode);
+        ++i;
+      }
+    }
+    return true;
+  }
+
+#if 0
   virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples, double& weakObjective) const
   {
     static const bool computeOptimalLearner = false;
@@ -186,44 +203,6 @@ public:
     return makeContribution(context, structureLearner, bestWeakLearner, examples);
   }
 
-  LuapeNodePtr sampleTrajectory(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, double& weakObjective, const std::vector<size_t>& examples) const
-  {
-    const LuapeInferencePtr& function = structureLearner->getFunction();
-    LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(function, typeSearchSpace);
-
-    bool noMoreActions = false;
-    policy->startEpisode(context, builder);
-    while (!builder->isFinalState())
-    {
-      ContainerPtr actions = builder->getAvailableActions();
-      if (!actions->getNumElements())
-      {
-        noMoreActions = true;
-        break;
-      }
-
-      Variable action = policy->selectAction(context, builder);
-      double reward;
-      builder->performTransition(context, action, reward);
-      policy->observeTransition(context, action, reward, builder);
-    }
-
-    LuapeNodePtr node;
-    if (builder->getStackSize() == 1)
-    {
-      node = builder->getStackElement(0);
-      weakObjective = computeWeakObjectiveWithEventualStump(context, structureLearner, node, examples);
-    }
-    else
-      weakObjective = 0.0;
-
-    if (noMoreActions)
-      context.informationCallback(T("Out-of-actions: ") + builder->toShortString());
-    else
-      context.informationCallback(T("Final State: ") + builder->toShortString() + T(" => ") + String(weakObjective));
-    return node;
-  }
-
   void findOptimalWeakLearner(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeGraphBuilderStatePtr& state, const std::vector<size_t>& examples, double& bestReward, LuapeNodePtr& bestWeakLearner) const
   {
     if (state->isFinalState())
@@ -252,7 +231,44 @@ public:
       }
     }
   }
+#endif // 0
   
+  LuapeNodePtr sampleTrajectory(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const // double& weakObjective, const std::vector<size_t>& examples) const
+  {
+    const LuapeInferencePtr& function = structureLearner->getFunction();
+    LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(function, typeSearchSpace);
+
+    bool noMoreActions = false;
+    policy->startEpisode(context, builder);
+    while (!builder->isFinalState())
+    {
+      ContainerPtr actions = builder->getAvailableActions();
+      if (!actions->getNumElements())
+      {
+        noMoreActions = true;
+        break;
+      }
+
+      Variable action = policy->selectAction(context, builder);
+      double reward;
+      builder->performTransition(context, action, reward);
+      policy->observeTransition(context, action, reward, builder);
+    }
+    LuapeNodePtr node;
+    if (builder->getStackSize() == 1)
+    {
+      node = builder->getStackElement(0);
+//      weakObjective = computeWeakObjectiveWithEventualStump(context, structureLearner, node, examples);
+    }
+//    else
+//      weakObjective = 0.0;
+    if (noMoreActions)
+      context.informationCallback(T("Out-of-actions: ") + builder->toShortString());
+    else
+      context.informationCallback(T("Final State: ") + builder->toShortString());// + T(" => ") + String(weakObjective));
+    return node;
+  }
+
 protected:
   friend class PolicyBasedWeakLearnerClass;
   

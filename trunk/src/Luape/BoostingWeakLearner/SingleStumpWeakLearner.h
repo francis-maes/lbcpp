@@ -15,9 +15,21 @@
 namespace lbcpp
 {
 
-class SingleStumpWeakLearner : public BoostingWeakLearner
+class SingleStumpWeakLearner : public FiniteBoostingWeakLearner
 {
 public:
+  virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& res) const
+  {
+    const LuapeInferencePtr& function = structureLearner->getFunction();
+    for (size_t i = 0; i < function->getNumInputs(); ++i)
+    {
+      LuapeNodePtr node = function->getInput(i);
+      if (node->getType() == doubleType)
+        res.push_back(node);
+    }
+    return true;
+  }
+#if 0
   virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples, double& weakObjective) const
   {
     const LuapeInferencePtr& function = structureLearner->getFunction();
@@ -46,6 +58,7 @@ public:
 
     return makeContribution(context, structureLearner, makeStump(structureLearner, bestNode, bestThreshold), examples);
   }
+#endif // 0
 };
 
 #if 0
