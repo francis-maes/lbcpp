@@ -56,8 +56,9 @@
   </class>
 
   <!-- Luape Functions - Objects -->
-  <class name="GetVariableLuapeFunction" base="LuapeFunction">
-    <constructor arguments="size_t variableIndex"/>
+  <class name="UnaryObjectLuapeFuntion" base="LuapeFunction" abstract="yes"/>
+  <class name="GetVariableLuapeFunction" base="UnaryObjectLuapeFuntion">
+    <constructor arguments="size_t variableIndex" returnType="LuapeFunction"/>
     <variable type="PositiveInteger" name="variableIndex"/>
   </class>
   <class name="GetContainerLengthLuapeFunction" base="LuapeFunction">

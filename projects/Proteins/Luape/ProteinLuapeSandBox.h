@@ -203,17 +203,21 @@ public:
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
     {return inputs[0]->toShortString() + T(".neighbor[") + String(delta) + T("]");}
-  
+
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
   {
-    ProteinResiduePerceptionPtr residue = inputs[0].getObjectAndCast<ProteinResiduePerception>();
-    if (!residue)
-      return Variable::missingValue(proteinResiduePerceptionClass);
-    ProteinPerceptionPtr protein = residue->getProtein();
-    int position = (int)residue->getPosition() + delta;
-    if (position < 0 || position >= (int)protein->getNumResidues())
-      return Variable::missingValue(proteinResiduePerceptionClass);
-    return protein->getResidue((size_t)position);
+    ProteinResiduePerceptionPtr res = compute(inputs[0].getObjectAndCast<ProteinResiduePerception>());
+    return Variable(res, proteinResiduePerceptionClass);
+  }
+
+  virtual VectorPtr compute(ExecutionContext& context, const std::vector<VectorPtr>& inputs, TypePtr outputType) const
+  {
+    ObjectVectorPtr objects = inputs[0].staticCast<ObjectVector>();
+    size_t n = objects->getNumElements();
+    ObjectVectorPtr res = new ObjectVector(outputType, n);
+    for (size_t i = 0; i < n; ++i)
+      res->set(i, compute(objects->getAndCast<ProteinResiduePerception>(i)));
+    return res;
   }
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
@@ -229,7 +233,18 @@ public:
 protected:
   friend class ProteinGetRelativeResidueLuapeFunctionClass;
 
-  int delta; 
+  int delta;
+
+  ProteinResiduePerceptionPtr compute(const ProteinResiduePerceptionPtr& residue) const
+  {
+    if (!residue)
+      return ProteinResiduePerceptionPtr();
+    const ProteinPerceptionPtr& protein = residue->getProtein();
+    int position = (int)residue->getPosition() + delta;
+    if (position < 0 || position >= (int)protein->getNumResidues())
+      return ProteinResiduePerceptionPtr();
+    return protein->getResidue((size_t)position);
+  }
 };
 
 //////////////////////////////////////////////
