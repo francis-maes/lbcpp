@@ -675,6 +675,7 @@ SET(LBCPP_LUAPE_BOOSTING_WEAK_LEARNER_SOURCES
   Luape/BoostingWeakLearner/SingleStumpWeakLearner.h
   Luape/BoostingWeakLearner/BinaryTreeWeakLearner.h
   Luape/BoostingWeakLearner/CompositeWeakLearner.h
+  Luape/BoostingWeakLearner/LaminatingWeakLearner.h
   Luape/BoostingWeakLearner/LuapeGraphBuilder.h
   Luape/BoostingWeakLearner/LuapeGraphBuilderTypeSearchSpace.h
   Luape/BoostingWeakLearner/PolicyBasedWeakLearner.h  

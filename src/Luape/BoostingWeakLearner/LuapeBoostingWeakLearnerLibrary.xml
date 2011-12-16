@@ -25,18 +25,20 @@
   </class>
 
   <!-- Weak Learners -->
-  <class name="ConstantWeakLearner" base="BoostingWeakLearner">
+  <class name="FiniteBoostingWeakLearner" base="BoostingWeakLearner" abstract="yes"/>
+
+  <class name="ConstantWeakLearner" base="FiniteBoostingWeakLearner">
     <constructor/>
   </class>
 
-  <class name="SingleStumpWeakLearner" base="BoostingWeakLearner">
+  <class name="SingleStumpWeakLearner" base="FiniteBoostingWeakLearner">
     <constructor/>
   </class>
 
   <class name="TreeBasedRandomPolicy" base="Policy">
     <constructor/>
   </class>
-  <class name="PolicyBasedWeakLearner" base="BoostingWeakLearner">
+  <class name="PolicyBasedWeakLearner" base="FiniteBoostingWeakLearner">
     <constructor arguments="const PolicyPtr&amp; policy, size_t budget, size_t maxDepth"/>
     <variable type="Policy" name="policy"/>
     <variable type="PositiveInteger" name="budget"/>
@@ -54,5 +56,11 @@
     <constructor arguments="BoostingWeakLearnerPtr weakLearner1, BoostingWeakLearnerPtr weakLearner2"/>
     <variable type="ObjectVector[BoostingWeakLearner]" name="weakLearners"/>
   </class>
-  
+
+  <class name="LaminatingWeakLearner" base="BoostingWeakLearner">
+    <constructor arguments="BoostingWeakLearnerPtr weakLearner, size_t numInitialExamples"/>
+    <variable type="BoostingWeakLearner" name="weakLearner"/>
+    <variable type="PositiveInteger" name="numInitialExamples"/>
+  </class>
+
 </library>

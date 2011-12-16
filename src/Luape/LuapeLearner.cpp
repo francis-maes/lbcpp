@@ -244,3 +244,32 @@ LuapeNodePtr BoostingWeakLearner::makeStump(const BoostingLearnerPtr& structureL
 
 LuapeNodePtr BoostingWeakLearner::makeContribution(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples) const
   {return structureLearner->turnWeakNodeIntoContribution(context, weakNode, examples);}
+
+/*
+** FiniteBoostingWeakLearner
+*/
+LuapeNodePtr FiniteBoostingWeakLearner::learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples, double& weakObjective) const
+{
+  const LuapeInferencePtr& function = structureLearner->getFunction();
+
+  std::vector<LuapeNodePtr> weakNodes;
+  if (!getCandidateWeakNodes(context, structureLearner, weakNodes))
+  {
+    context.errorCallback(T("Could not get finite set of candidate weak nodes"));
+    return LuapeNodePtr();
+  }
+
+  weakObjective = -DBL_MAX;
+  LuapeNodePtr bestWeakNode;
+  for (size_t i = 0; i < weakNodes.size(); ++i)
+  {
+    double objective = computeWeakObjectiveWithEventualStump(context, structureLearner, weakNodes[i], examples); // side effect of weakNodes[i]
+    if (objective > weakObjective)
+      weakObjective = objective, bestWeakNode = weakNodes[i];
+  }
+
+  if (!bestWeakNode)
+    return LuapeNodePtr();
+
+  return makeContribution(context, structureLearner, bestWeakNode, examples);
+}

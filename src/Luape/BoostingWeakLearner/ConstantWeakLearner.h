@@ -14,10 +14,13 @@
 namespace lbcpp
 {
 
-class ConstantWeakLearner : public BoostingWeakLearner
+class ConstantWeakLearner : public FiniteBoostingWeakLearner
 {
 public:
   ConstantWeakLearner() : weakNode(new LuapeConstantNode(true)) {}
+ 
+  virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& res) const
+    {res.push_back(weakNode); return true;}
 
   virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples, double& weakObjective) const
   {

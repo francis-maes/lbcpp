@@ -22,7 +22,7 @@ public:
   CompositeWeakLearner(BoostingWeakLearnerPtr weakLearner1, BoostingWeakLearnerPtr weakLearner2)
     : weakLearners(2) {weakLearners[0] = weakLearner1; weakLearners[1] = weakLearner2;}
   CompositeWeakLearner() {}
-
+ 
   virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
   {
     for (size_t i = 0; i < weakLearners.size(); ++i)
@@ -30,7 +30,15 @@ public:
         return false;
     return true;
   }
-  
+ 
+  virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& res) const
+  {
+    for (size_t i = 0; i < weakLearners.size(); ++i)
+      if (!weakLearners[i]->getCandidateWeakNodes(context, structureLearner, res))
+        return false;
+    return true;
+  }
+
   virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples, double& weakObjective) const
   {
     weakObjective = -DBL_MAX;

@@ -289,6 +289,7 @@ public:
   {
     BoostingWeakLearnerPtr conditionLearner = policyBasedWeakLearner(treeBasedRandomPolicy(), budget, numSteps);
     conditionLearner = compositeWeakLearner(constantWeakLearner(), conditionLearner);
+    conditionLearner = laminatingWeakLearner(conditionLearner, 100);
 
     BoostingWeakLearnerPtr res = conditionLearner;
     for (size_t i = 1; i < treeDepth; ++i)
@@ -447,8 +448,9 @@ protected:
   ProteinEvaluatorPtr createEvaluator(bool isFinalEvaluation) const
   {
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-    evaluator->addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation), 1), T("Disulfide Bonds (Sens. and Spec)"));
-    evaluator->addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, isFinalEvaluation), 1), T("Disulfide Bonds (MCC)"));
+    evaluator->addEvaluator(ss3Target, containerSupervisedEvaluator(classificationEvaluator()), T("Secondary Structure"));
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation), 1), T("Disulfide Bonds (Sens. and Spec)"));
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, isFinalEvaluation), 1), T("Disulfide Bonds (MCC)"));
     evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore), 1), T("Disulfide Bonds (Raw)"));
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)"));    
     return evaluator;
