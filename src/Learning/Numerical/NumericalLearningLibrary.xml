@@ -66,17 +66,6 @@
     <constructor/>
   </class>
 
-  <class name="MeanAndVarianceLearnableFunction" base="Function">
-    <constructor arguments="bool useMean, bool useVariance"/>
-    <variable type="Boolean" name="useMean"/>
-    <variable type="Boolean" name="useVariance"/>
-    <variable type="GenericVector[Double]" name="means"/>
-    <variable type="GenericVector[Double]" name="standardDeviations"/>
-  </class>
-  <class name="MeanAndVarianceBatchLearner" base="BatchLearner">
-    <constructor/>
-  </class>
-
   <class name="NumericalLearnableFunction" base="Function" abstract="yes">
     <variable type="Enumeration" name="parametersEnumeration"/>
   </class>
