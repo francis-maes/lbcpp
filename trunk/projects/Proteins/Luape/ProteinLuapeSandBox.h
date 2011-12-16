@@ -198,7 +198,7 @@ public:
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
     {return type == proteinResiduePerceptionClass;}
 
-  virtual TypePtr getOutputType(const std::vector<TypePtr>& ) const
+  virtual TypePtr initialize(const std::vector<TypePtr>& )
     {return proteinResiduePerceptionClass;}
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const

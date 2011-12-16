@@ -11,6 +11,7 @@
 
 # include "../Core/Vector.h"
 # include "../Data/DoubleVector.h"
+# include "../Data/RandomVariable.h"
 # include "LuapeFunction.h"
 # include <deque>
 
@@ -61,9 +62,13 @@ public:
 
   bool checkCacheIsCorrect(ExecutionContext& context, const std::vector<LuapeInputNodePtr>& inputs, const LuapeNodePtr& node);
 
+  void getComputeTimeStatistics(ExecutionContext& context) const;
+
 protected:
   // node -> (samples, sorted double values)
   typedef std::map<LuapeNodePtr, std::pair<VectorPtr, SparseDoubleVectorPtr> > NodeToSamplesMap;
+
+  std::map<ClassPtr, ScalarVariableStatistics> computingTimeByLuapeFunctionClass;
 
   NodeToSamplesMap m;
   std::vector<VectorPtr> inputCaches;

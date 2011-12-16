@@ -164,15 +164,11 @@ inline void variableToNative(ExecutionContext& context, std::pair<T1, T2>& dest,
 }
 
 template<class T1, class T2>
-inline void nativeToVariable(Variable& dest, const std::pair<T1, T2>& source, TypePtr expectedType)
+inline Variable nativeToVariable(const std::pair<T1, T2>& source, const TypePtr& expectedType)
 {
   jassert(expectedType->getNumTemplateArguments() == 2);
-  dest = Variable::create(expectedType);
-  const ObjectPtr& destObject = dest.getObject();
-  const PairPtr& destPair = destObject.staticCast<Pair>();
-  jassert(destPair);
-  nativeToVariable(destPair->getFirst(), source.first, expectedType->getTemplateArgument(0));
-  nativeToVariable(destPair->getSecond(), source.second, expectedType->getTemplateArgument(1));
+  return Variable::pair(nativeToVariable(source.first, expectedType->getTemplateArgument(0)),
+                        nativeToVariable(source.second, expectedType->getTemplateArgument(1)), expectedType);
 }
 
 }; /* namespace lbcpp */

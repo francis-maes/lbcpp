@@ -139,11 +139,9 @@ Variable GenericVector::getElement(size_t index) const
 
 void GenericVector::setElement(size_t index, const Variable& value)
 {
-  if (checkType(value))
-  {
-    jassert(index < values.size());
-    value.copyTo(values[index]);
-  }
+  jassert(value.getType()->inheritsFrom(getElementsType()));
+  jassert(index < values.size());
+  value.copyTo(values[index]);
 }
 
 void GenericVector::clear()

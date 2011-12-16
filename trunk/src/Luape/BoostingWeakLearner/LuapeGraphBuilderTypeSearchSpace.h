@@ -292,7 +292,7 @@ private:
     for (size_t i = 0; i < numInputs; ++i)
       inputs[i] = state->stack[state->getStackSize() - numInputs + i];
 
-    TypePtr outputType = function->getOutputType(inputs);
+    TypePtr outputType = function->initialize(inputs);
     insertType(nodeTypes, outputType); // the function output type can become a graph node in later episodes
 
     // compute new stack and new graph node types

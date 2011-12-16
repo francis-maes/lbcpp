@@ -41,17 +41,17 @@ namespace lbcpp
 class Variable
 {
 public:
-  Variable(bool boolValue, TypePtr type = booleanType);
-  Variable(int intValue, TypePtr type = integerType);
-  Variable(juce::int64 intValue, TypePtr type = integerType);
-  Variable(size_t intValue, TypePtr type = positiveIntegerType);
-  Variable(double doubleValue, TypePtr type = doubleType);
-  Variable(const juce::tchar* stringValue, TypePtr type = stringType);
-  Variable(const String& stringValue, TypePtr type = stringType);
-  Variable(const File& fileValue, TypePtr type = fileType);
+  Variable(bool boolValue, const TypePtr& type = booleanType);
+  Variable(int intValue, const TypePtr& type = integerType);
+  Variable(juce::int64 intValue, const TypePtr& type = integerType);
+  Variable(size_t intValue, const TypePtr& type = positiveIntegerType);
+  Variable(double doubleValue, const TypePtr& type = doubleType);
+  Variable(const juce::tchar* stringValue, const TypePtr& type = stringType);
+  Variable(const String& stringValue, const TypePtr& type = stringType);
+  Variable(const File& fileValue, const TypePtr& type = fileType);
   template<class T> Variable(const ReferenceCountedObjectPtr<T>& object);
-  template<class T> Variable(const ReferenceCountedObjectPtr<T>& object, TypePtr type);
-  Variable(Object* object, TypePtr type);
+  template<class T> Variable(const ReferenceCountedObjectPtr<T>& object, const TypePtr& type);
+  Variable(Object* object, const TypePtr& type);
   Variable(Object* object);
   Variable(const Variable& other);
   Variable();
