@@ -388,6 +388,29 @@ protected:
   friend class LargeProteinParametersClass;
 };
 
+class DumbBinaryClassifierFunction : public Function
+{
+public:
+  virtual TypePtr getSupervisionType() const
+    {return sumType(booleanType, probabilityType);}
+
+  /* Function */
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index == 0 ? anyType : getSupervisionType();}
+
+  virtual String getOutputPostFix() const
+    {return T("Dumb");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return probabilityType;}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+    {return probability(0.f);}
+};
+
 /*
 ** Large Protein Predictor Parameters
 */
@@ -742,6 +765,8 @@ public:
       res->setBatchLearner(balanceBinaryExamplesBatchLearner(res->getBatchLearner()));
       return res;
     }
+    else if (learningMachineName == T("Dumb"))
+      return new DumbBinaryClassifierFunction();
 
     jassertfalse;
     return FunctionPtr();

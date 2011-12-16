@@ -1092,6 +1092,7 @@ public:
     for (size_t i = 0; i < (size_t)files.size(); ++i)
     {
       ProteinPtr protein = Protein::createFromXml(context, *files[i]);
+      protein->getCysteinBondingStates(context);
       std::cout << protein->getNumBondedCysteins() << " " << files[i]->getFileName() << std::endl;
     }
     return true;
