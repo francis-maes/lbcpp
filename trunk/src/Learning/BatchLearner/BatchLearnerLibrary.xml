@@ -46,4 +46,8 @@
     <variable type="Boolean" name="computeMeans"/>
   </class>
 
+  <class name="ConcatenatedDoubleVectorNormalizeBatchLearner" base="BatchLearner">
+    <constructor/>
+  </class>
+
 </library>

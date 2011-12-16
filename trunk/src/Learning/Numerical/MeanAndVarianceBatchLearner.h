@@ -41,7 +41,7 @@ public:
     }
 
     callback.computeMean(function->means);
-    callback.computeStandardDeviation(function->standardDeviations  );
+    callback.computeStandardDeviation(function->standardDeviations);
 
     return true;
   }

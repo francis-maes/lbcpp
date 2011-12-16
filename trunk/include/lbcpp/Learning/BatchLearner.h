@@ -136,6 +136,7 @@ extern DecoratorBatchLearnerPtr filterUnsupervisedExamplesBatchLearner(BatchLear
 extern DecoratorBatchLearnerPtr balanceBinaryExamplesBatchLearner(BatchLearnerPtr decorated);
 
 extern BatchLearnerPtr doubleVectorNormalizeBatchLearner(bool computeVariances, bool computeMeans);
+extern BatchLearnerPtr concatenatedDoubleVectorNormalizeBatchLearner();
 
 }; /* namespace lbcpp */
 
