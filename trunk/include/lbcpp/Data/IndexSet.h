@@ -95,8 +95,14 @@ public:
   size_t getNumChunks() const
     {return chunks.size();}
 
-  size_t getChunkSize(size_t index) const
+  size_t getChunkBegin(size_t index) const
+    {jassert(index < chunks.size()); return chunks[index].front();}
+
+  size_t getChunkNumElements(size_t index) const
     {jassert(index < chunks.size()); return chunks[index].size();}
+
+  size_t getChunkElement(size_t chunkIndex, size_t indexInChunk) const
+    {jassert(chunkIndex < chunks.size() && indexInChunk < chunks[chunkIndex].size()); return chunks[chunkIndex][indexInChunk];}
 
   size_t getIndexOfFirstChunkAfter(size_t position) const;
 

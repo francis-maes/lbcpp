@@ -9,8 +9,6 @@
 #ifndef LBCPP_PROTEINS_COMPILE_PROTEINS_WORK_UNIT_H_
 # define LBCPP_PROTEINS_COMPILE_PROTEINS_WORK_UNIT_H_
 
-# include <lbcpp/lbcpp.h>
-
 namespace lbcpp
 {
   

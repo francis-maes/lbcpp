@@ -34,7 +34,8 @@ public:
     LuapeTestNodePtr res = conditionNode.dynamicCast<LuapeTestNode>();
     if (!res)
       return conditionNode; // probably a constant node
-    const unsigned char* testValues = structureLearner->getTrainingSamples()->compute(context, res->getCondition()).staticCast<BooleanVector>()->getData();
+
+    LuapeSampleVectorPtr testValues = structureLearner->getTrainingSamples()->getSamples(context, res->getCondition(), examples);
 
     /*
     ** Dispatch examples
@@ -42,14 +43,13 @@ public:
     IndexSetPtr successExamples = new IndexSet();
     IndexSetPtr failureExamples = new IndexSet();
     IndexSetPtr missingExamples = new IndexSet();
-    for (IndexSet::const_iterator it = examples->begin(); it != examples->end(); ++it)
+    for (LuapeSampleVector::const_iterator it = testValues->begin(); it != testValues->end(); ++it)
     {
-      size_t example = *it;
-      switch (testValues[example])
+      switch (it.getRawBoolean())
       {
-      case 0: failureExamples->append(example); break;
-      case 1: successExamples->append(example); break;
-      case 2: missingExamples->append(example); break;
+      case 0: failureExamples->append(it.getIndex()); break;
+      case 1: successExamples->append(it.getIndex()); break;
+      case 2: missingExamples->append(it.getIndex()); break;
       default: jassert(false);
       }
     }

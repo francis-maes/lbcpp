@@ -11,7 +11,6 @@
 
 # define DONT_SET_USING_JUCE_NAMESPACE
 # include "../../juce/juce_amalgamated.h"
-# include <lbcpp/lbcpp.h>
 
 using juce::Component;
 using juce::TabbedComponent;

@@ -11,7 +11,6 @@
 
 # include "../Protein.h"
 # include <lbcpp/Data/Stream.h>
-# include <lbcpp/lbcpp.h>
 
 namespace lbcpp
 {

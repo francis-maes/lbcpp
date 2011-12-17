@@ -9,8 +9,6 @@
 #ifndef LBCPP_EXPLORER_CONFIGURATION_H_
 # define LBCPP_EXPLORER_CONFIGURATION_H_
 
-# include <lbcpp/lbcpp.h>
-
 namespace lbcpp
 {
 

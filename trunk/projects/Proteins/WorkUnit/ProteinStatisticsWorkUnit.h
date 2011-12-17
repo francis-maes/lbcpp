@@ -6,7 +6,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/lbcpp.h>
 #include "Data/Protein.h"
 
 #include <lbcpp/UserInterface/PieChartComponent.h>

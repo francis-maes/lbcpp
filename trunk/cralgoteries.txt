@@ -1,20 +1,16 @@
 
-
 Plan:
- o 1) utiliser IndexSet partout au lieu de std::vector<size_t>
-   - arranger les proprietes statistiques du randomlyExpandUsingSource
- 2) nouvelle classe SampleSet, utiliser partout SampleSet au lieu des accès bruts aux VectorPtr
+ ok 1) utiliser IndexSet partout au lieu de std::vector<size_t>
+ 2) nouvelle classe LuapeSampleVector, utiliser partout LuapeSampleVector au lieu des accès bruts aux VectorPtr
  3) Utiliser SampleSet dans le cache
- 
+ 4) checker compilation linux
  
 
 Utilisation du cache:
 
  * cache lui-meme en recursif
  * LuapeLearner::getTrainingPredictions() => tous les exemples sur le rootNode
- * BoostingWeakLearner::computeWeakObjectiveWithStump() => subset d'exemples, sortedDoubleValues
  * BoostingWeakLearner::computeWeakObjective(), AdaBoostMHLearner::computeVote() => subset d'exemples, transmis aux BoostingWeakObjective
- * BinaryTreeWeakLearner::learn() => subset d'exemples (valeures de la condition), creation de nouveaux subsets
 
 
 Luape-Other:
