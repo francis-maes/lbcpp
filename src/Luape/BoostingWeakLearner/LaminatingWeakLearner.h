@@ -25,7 +25,7 @@ public:
   virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
     {return weakLearner->initialize(context, function);}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples, double& weakObjective) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective) const
   {
     context.enterScope(T("Generating candidate weak learners"));
     // make initial weak learners
@@ -45,19 +45,23 @@ public:
       weakNodesByScore[i] = std::make_pair(weakNodes[i], 0.0);
 
     // make initial examples subset
+    IndexSetPtr examplesSubset = new IndexSet();
+    for (size_t i = 1; i <= 5; ++i) // expand in 5 pieces to add some stochasticity
+      examplesSubset->randomlyExpandUsingSource(context, (numInitialExamples * i) / 5, examples, false);
+/*
     std::vector<size_t> examplesOrder;
-    context.getRandomGenerator()->sampleOrder(examples.size(), examplesOrder);
+    context.getRandomGenerator()->sampleOrder(examples->size(), examplesOrder);
     std::vector<size_t> examplesSubset;
-    examplesSubset.reserve(examples.size());
+    examplesSubset.reserve(examples->size());
     examplesSubset.resize(numInitialExamples);
     for (size_t i = 0; i < examplesSubset.size(); ++i)
-      examplesSubset[i] = examples[examplesOrder[i]];
+      examplesSubset[i] = examples[examplesOrder[i]];*/
 
     // laminating main loop
     size_t numWeakLearners = weakNodes.size();
     for (size_t iteration = 1; numWeakLearners > 1; ++iteration)
     {
-      context.enterScope(String((int)numWeakLearners) + T(" weak learners, ") + String((int)examplesSubset.size()) + T(" examples"));
+      context.enterScope(String((int)numWeakLearners) + T(" weak learners, ") + String((int)examplesSubset->size()) + T(" examples"));
 
       // evaluate weak nodes
       for (size_t i = 0; i < numWeakLearners; ++i)
@@ -71,7 +75,7 @@ public:
       // results
       context.resultCallback(T("iteration"), iteration);
       context.resultCallback(T("numWeakLearners"), numWeakLearners);
-      context.resultCallback(T("numExamples"), examplesSubset.size());
+      context.resultCallback(T("numExamples"), examplesSubset->size());
       context.resultCallback(T("bestWeakNode"), weakNodesByScore[0].first);
       context.resultCallback(T("bestWeakObjective"), weakNodesByScore[0].second);
       context.leaveScope();
@@ -80,16 +84,20 @@ public:
       numWeakLearners = numWeakLearners / 2;
 
       // grow examples subset
-      size_t previousNumExamples = examplesSubset.size();
-      if (previousNumExamples == examples.size())
+      size_t previousNumExamples = examplesSubset->size();
+      if (previousNumExamples == examples->size())
         break; // all examples have been included in the last evaluation, so the current best weak node is the final best weak node
       
       size_t numExamples = previousNumExamples * 2;
-      if (numExamples > examples.size())
-        numExamples = examples.size();
-      examplesSubset.resize(numExamples);
-      for (size_t i = previousNumExamples; i < numExamples; ++i)
-        examplesSubset[i] = examples[examplesOrder[i]];
+      if (numExamples > examples->size())
+      {
+        numExamples = examples->size();
+        examplesSubset = examples;
+      }
+      else
+        examplesSubset->randomlyExpandUsingSource(context, numExamples, examples);
+        //for (size_t i = previousNumExamples; i < numExamples; ++i)
+        //examplesSubset[i] = examples[examplesOrder[i]];
     }
     LuapeNodePtr weakNode = weakNodesByScore[0].first;
     weakObjective = computeWeakObjectiveWithEventualStump(context, structureLearner, weakNode, examples); // side effect on weakNode

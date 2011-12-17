@@ -11,6 +11,7 @@
   <include file="lbcpp/Data/DoubleVector.h"/>
   <include file="lbcpp/Data/Matrix.h"/>
   <include file="lbcpp/Data/SymmetricMatrix.h"/>
+  <include file="lbcpp/Data/IndexSet.h"/>
   
   <!-- Random Generator -->
   <class name="RandomGenerator">
@@ -132,4 +133,9 @@
     <parameter name="elementsType" type="Variable"/>
   </template>
 
+  <!-- IndexSet -->
+  <class name="IndexSet" base="Object">
+    <variable type="ObjectVector[GenericVector[PositiveInteger]]" name="chunks"/>
+  </class>
+  
 </library>

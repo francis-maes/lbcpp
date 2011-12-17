@@ -155,7 +155,7 @@ public:
   }
 
 #if 0
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples, double& weakObjective) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective) const
   {
     static const bool computeOptimalLearner = false;
     jassert(examples.size());
@@ -203,7 +203,7 @@ public:
     return makeContribution(context, structureLearner, bestWeakLearner, examples);
   }
 
-  void findOptimalWeakLearner(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeGraphBuilderStatePtr& state, const std::vector<size_t>& examples, double& bestReward, LuapeNodePtr& bestWeakLearner) const
+  void findOptimalWeakLearner(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeGraphBuilderStatePtr& state, const IndexSetPtr& examples, double& bestReward, LuapeNodePtr& bestWeakLearner) const
   {
     if (state->isFinalState())
     {
@@ -233,7 +233,7 @@ public:
   }
 #endif // 0
   
-  LuapeNodePtr sampleTrajectory(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const // double& weakObjective, const std::vector<size_t>& examples) const
+  LuapeNodePtr sampleTrajectory(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const // double& weakObjective, const IndexSetPtr& examples) const
   {
     const LuapeInferencePtr& function = structureLearner->getFunction();
     LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(function, typeSearchSpace);

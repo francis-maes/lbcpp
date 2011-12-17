@@ -137,10 +137,10 @@ VectorPtr LuapeSamplesCache::get(const LuapeNodePtr& node) const
   return it == m.end() ? VectorPtr() : it->second.first;
 }
 
-SparseDoubleVectorPtr LuapeSamplesCache::getSortedDoubleValues(ExecutionContext& context, const LuapeNodePtr& node, const std::vector<size_t>& examples)
+SparseDoubleVectorPtr LuapeSamplesCache::getSortedDoubleValues(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& examples)
 {
   std::pair<VectorPtr, SparseDoubleVectorPtr>& c = internalCompute(context, node, true);
-  if (examples.size() == getNumSamples()) // we only perform caching if all examples are selected
+  if (examples->size() == getNumSamples()) // we only perform caching if all examples are selected
   {
     if (!c.second)
     {
@@ -215,31 +215,33 @@ struct SortDoubleValuesOperator
   }
 };
 
-SparseDoubleVectorPtr LuapeSamplesCache::computeSortedDoubleValues(ExecutionContext& context, const VectorPtr& samples, const std::vector<size_t>& examples) const
+SparseDoubleVectorPtr LuapeSamplesCache::computeSortedDoubleValues(ExecutionContext& context, const VectorPtr& samples, const IndexSetPtr& examples) const
 {
   SparseDoubleVectorPtr res = new SparseDoubleVector();
   std::vector< std::pair<size_t, double> >& v = res->getValuesVector();
-  size_t n = examples.size();
+  size_t n = examples->size();
   v.reserve(n);
   DenseDoubleVectorPtr scalarSamples = samples.dynamicCast<DenseDoubleVector>();
   if (scalarSamples)
   {
     // optimized versions if double samples
     double* ptr = scalarSamples->getValuePointer(0);
-    for (size_t i = 0; i < n; ++i)
+    for (IndexSet::const_iterator it = examples->begin(); it != examples->end(); ++it)
     {
-      double value = ptr[examples[i]];
+      size_t example = *it;
+      double value = ptr[example];
       if (value != doubleMissingValue)
-        v.push_back(std::make_pair(examples[i], value));
+        v.push_back(std::make_pair(example, value));
     }
   }
   else
   {
-    for (size_t i = 0; i < n; ++i)
+    for (IndexSet::const_iterator it = examples->begin(); it != examples->end(); ++it)
     {
-      Variable value = samples->getElement(examples[i]);
+      size_t example = *it;
+      Variable value = samples->getElement(example);
       if (value.exists())
-        v.push_back(std::make_pair(examples[i], value.toDouble()));
+        v.push_back(std::make_pair(example, value.toDouble()));
     }
   }
   std::sort(v.begin(), v.end(), SortDoubleValuesOperator());

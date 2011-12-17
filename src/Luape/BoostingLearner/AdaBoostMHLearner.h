@@ -18,11 +18,11 @@ namespace lbcpp
 class AdaBoostMHWeakObjective : public BoostingWeakObjective
 {
 public:
-  AdaBoostMHWeakObjective(const LuapeClassifierPtr& classifier, const DenseDoubleVectorPtr& supervisions, const DenseDoubleVectorPtr& weights, const std::vector<size_t>& examples, bool useSymmetricVotes)
+  AdaBoostMHWeakObjective(const LuapeClassifierPtr& classifier, const DenseDoubleVectorPtr& supervisions, const DenseDoubleVectorPtr& weights, const IndexSetPtr& examples, bool useSymmetricVotes)
     : labels(classifier->getLabels()), doubleVectorClass(classifier->getDoubleVectorClass()), supervisions(supervisions), weights(weights), examples(examples), votesUpToDate(false), useSymmetricVotes(useSymmetricVotes)
   {
     numLabels = labels->getNumElements();
-    jassert(examples.size());
+    jassert(examples->size());
     for (size_t i = 0; i < 3; ++i)
       for (size_t j = 0; j < 2; ++j)
       {
@@ -128,7 +128,7 @@ protected:
   VectorPtr predictions;   // size = numExamples
   DenseDoubleVectorPtr supervisions;  // size = numExamples * numLabels
   DenseDoubleVectorPtr weights;   // size = numExamples * numLabels
-  const std::vector<size_t>& examples; // size = numExamples
+  IndexSetPtr examples; // size = numExamples
 
   DenseDoubleVectorPtr mu[3][2]; // prediction -> supervision -> label -> weight
   DenseDoubleVectorPtr votes[3]; // prediction -> label -> {-1, 1}
@@ -148,9 +148,9 @@ protected:
     if (booleanPredictions)
     {
       const unsigned char* predictionsPtr = booleanPredictions->getData();
-      for (size_t i = 0; i < examples.size(); ++i)
+      for (IndexSet::const_iterator it = examples->begin(); it != examples->end(); ++it)
       {
-        size_t example = examples[i];
+        size_t example = *it;
         unsigned char prediction = predictionsPtr[example];
         double* weightsPtr = weights->getValuePointer(numLabels * example);
         double* supervisionsPtr = supervisions->getValuePointer(numLabels * example);
@@ -164,11 +164,11 @@ protected:
     else
     {
       DenseDoubleVectorPtr scalarPredictions = predictions.dynamicCast<DenseDoubleVector>();
-      for (size_t i = 0; i < examples.size(); ++i)
+      for (IndexSet::const_iterator it = examples->begin(); it != examples->end(); ++it)
       {
-        size_t example = examples[i];
+        size_t example = *it;
         double prediction = scalarPredictions->getValue(example) * 2 - 1;
-        size_t pred = (prediction > 0 ? 1 : (prediction < 0 ? 0 : 2));
+        size_t pred = (prediction == doubleMissingValue ? 2 : (prediction > 0 ? 1 : 0));
         double* weightsPtr = weights->getValuePointer(numLabels * example);
         double* supervisionsPtr = supervisions->getValuePointer(numLabels * example);
         for (size_t j = 0; j < numLabels; ++j)
@@ -207,7 +207,7 @@ public:
     : WeightBoostingLearner(weakLearner), useSymmetricVotes(useSymmetricVotes) {}
   AdaBoostMHLearner() {}
 
-  virtual BoostingWeakObjectivePtr createWeakObjective(const std::vector<size_t>& examples) const
+  virtual BoostingWeakObjectivePtr createWeakObjective(const IndexSetPtr& examples) const
     {return new AdaBoostMHWeakObjective(function.staticCast<LuapeClassifier>(), supervisions, weights, examples, useSymmetricVotes);}
 
 //  virtual bool shouldStop(double weakObjectiveValue) const
@@ -235,7 +235,7 @@ public:
     return res;
   }
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
     AdaBoostMHWeakObjectivePtr objective = new AdaBoostMHWeakObjective(function.staticCast<LuapeClassifier>(), supervisions, weights, examples, useSymmetricVotes);
     objective->setPredictions(trainingSamples->compute(context, weakNode));

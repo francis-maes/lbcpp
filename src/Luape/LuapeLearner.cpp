@@ -67,15 +67,11 @@ bool BoostingLearner::setExamples(ExecutionContext& context, bool isTrainingData
   if (!LuapeLearner::setExamples(context, isTrainingData, data))
     return false;
   if (isTrainingData)
-  {
-    allExamples.resize(data.size());
-    for (size_t i = 0; i < allExamples.size(); ++i)
-      allExamples[i] = i;
-  }
+    allExamples = new IndexSet(0, data.size());
   return true;
 }
 
-LuapeNodePtr BoostingLearner::turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples) const
+LuapeNodePtr BoostingLearner::turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& examples) const
 {
   jassert(weakNode);
   Variable successVote, failureVote, missingVote;
@@ -205,9 +201,9 @@ double BoostingWeakObjective::findBestThreshold(ExecutionContext& context, size_
 /*
 ** BoostingWeakLearner
 */
-double BoostingWeakLearner::computeWeakObjectiveWithEventualStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, LuapeNodePtr& weakNode, const std::vector<size_t>& examples) const
+double BoostingWeakLearner::computeWeakObjectiveWithEventualStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, LuapeNodePtr& weakNode, const IndexSetPtr& examples) const
 {
-  jassert(examples.size());
+  jassert(examples->size());
   if (weakNode->getType() == booleanType)
     return computeWeakObjective(context, structureLearner, weakNode, examples);
   else
@@ -220,7 +216,7 @@ double BoostingWeakLearner::computeWeakObjectiveWithEventualStump(ExecutionConte
   }
 }
 
-double BoostingWeakLearner::computeWeakObjective(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples) const
+double BoostingWeakLearner::computeWeakObjective(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples) const
 {
   BoostingWeakObjectivePtr edgeCalculator = structureLearner->createWeakObjective(examples);
   VectorPtr weakPredictions = structureLearner->getTrainingSamples()->compute(context, weakNode);
@@ -228,9 +224,9 @@ double BoostingWeakLearner::computeWeakObjective(ExecutionContext& context, cons
   return edgeCalculator->compute(weakPredictions);
 }
 
-double BoostingWeakLearner::computeWeakObjectiveWithStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, const std::vector<size_t>& examples, double& bestThreshold) const
+double BoostingWeakLearner::computeWeakObjectiveWithStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, const IndexSetPtr& examples, double& bestThreshold) const
 {
-  jassert(examples.size());
+  jassert(examples->size());
   LuapeSamplesCachePtr trainingSamples = structureLearner->getTrainingSamples();
   SparseDoubleVectorPtr sortedDoubleValues = trainingSamples->getSortedDoubleValues(context, numberNode, examples);
   BoostingWeakObjectivePtr edgeCalculator = structureLearner->createWeakObjective(examples);
@@ -242,13 +238,13 @@ double BoostingWeakLearner::computeWeakObjectiveWithStump(ExecutionContext& cont
 LuapeNodePtr BoostingWeakLearner::makeStump(const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, double threshold) const
   {return structureLearner->getUniverse()->makeFunctionNode(stumpLuapeFunction(threshold), numberNode);}
 
-LuapeNodePtr BoostingWeakLearner::makeContribution(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples) const
+LuapeNodePtr BoostingWeakLearner::makeContribution(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples) const
   {return structureLearner->turnWeakNodeIntoContribution(context, weakNode, examples);}
 
 /*
 ** FiniteBoostingWeakLearner
 */
-LuapeNodePtr FiniteBoostingWeakLearner::learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples, double& weakObjective) const
+LuapeNodePtr FiniteBoostingWeakLearner::learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective) const
 {
   const LuapeInferencePtr& function = structureLearner->getFunction();
 

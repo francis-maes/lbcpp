@@ -18,7 +18,7 @@ namespace lbcpp
 class L2BoostingWeakObjective : public BoostingWeakObjective
 {
 public:
-  L2BoostingWeakObjective(const DenseDoubleVectorPtr& targets, const std::vector<size_t>& examples)
+  L2BoostingWeakObjective(const DenseDoubleVectorPtr& targets, const IndexSetPtr& examples)
     : targets(targets), examples(examples) {}
 
   virtual void setPredictions(const VectorPtr& predictions)
@@ -32,10 +32,11 @@ public:
     if (booleanPredictions)
     {
       const unsigned char* predictionsPtr = booleanPredictions->getData();
-      for (size_t i = 0; i < examples.size(); ++i)
+      for (IndexSet::const_iterator it = examples->begin(); it != examples->end(); ++it)
       {
-        double value = targets->getValue(examples[i]);
-        unsigned char prediction = predictionsPtr[examples[i]];
+        size_t example = *it;
+        double value = targets->getValue(example);
+        unsigned char prediction = predictionsPtr[example];
         switch (prediction)
         {
         case 0: negatives.push(value); break;
@@ -48,10 +49,11 @@ public:
     else
     {
       DenseDoubleVectorPtr scalarPredictions = predictions.dynamicCast<DenseDoubleVector>();
-      for (size_t i = 0; i < examples.size(); ++i)
+      for (IndexSet::const_iterator it = examples->begin(); it != examples->end(); ++it)
       {
-        double value = targets->getValue(examples[i]);
-        double prediction = scalarPredictions->getValue(examples[i]);
+        size_t example = *it;
+        double value = targets->getValue(example);
+        double prediction = scalarPredictions->getValue(example);
         if (prediction == doubleMissingValue)
           missings.push(value);
         else if (prediction > 0)
@@ -93,9 +95,9 @@ public:
       res += negatives.getCount() * negatives.getVariance();
     if (missings.getCount())
       res += missings.getCount() * missings.getVariance();
-    jassert(examples.size() == (size_t)(positives.getCount() + negatives.getCount() + missings.getCount()));
-    if (examples.size())
-      res /= (double)examples.size();
+    jassert(examples->size() == (size_t)(positives.getCount() + negatives.getCount() + missings.getCount()));
+    if (examples->size())
+      res /= (double)examples->size();
     return -res;
   }
 
@@ -111,7 +113,7 @@ public:
 protected:
   DenseDoubleVectorPtr targets;
   VectorPtr predictions;
-  const std::vector<size_t>& examples;
+  IndexSetPtr examples;
 
   ScalarVariableMeanAndVariance positives;
   ScalarVariableMeanAndVariance negatives;
@@ -144,10 +146,10 @@ public:
     return BoostingLearner::doLearningIteration(context);
   }
 
-  virtual BoostingWeakObjectivePtr createWeakObjective(const std::vector<size_t>& examples) const
+  virtual BoostingWeakObjectivePtr createWeakObjective(const IndexSetPtr& examples) const
     {return new L2BoostingWeakObjective(pseudoResiduals, examples);}
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
     jassert(false); // broken
     LuapeSequenceNodePtr sequence = function->getRootNode().staticCast<LuapeSequenceNode>();
@@ -230,7 +232,7 @@ public:
       (*lossGradient)->multiplyByScalar(-1.0);
   }
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
     L2BoostingWeakObjectivePtr objective(new L2BoostingWeakObjective(pseudoResiduals, examples));
     objective->setPredictions(trainingSamples->compute(context, weakNode));

@@ -39,7 +39,7 @@ public:
     return true;
   }
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples, double& weakObjective) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective) const
   {
     weakObjective = -DBL_MAX;
     LuapeNodePtr res;

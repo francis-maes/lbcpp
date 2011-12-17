@@ -12,6 +12,7 @@
 # include "../Core/Vector.h"
 # include "../Data/DoubleVector.h"
 # include "../Data/RandomVariable.h"
+# include "../Data/IndexSet.h"
 # include "LuapeFunction.h"
 # include <deque>
 
@@ -49,7 +50,7 @@ public:
   VectorPtr get(const LuapeNodePtr& node) const;
 
   VectorPtr compute(ExecutionContext& context, const LuapeNodePtr& node, bool isRemoveable = true);
-  SparseDoubleVectorPtr getSortedDoubleValues(ExecutionContext& context, const LuapeNodePtr& node, const std::vector<size_t>& examples);
+  SparseDoubleVectorPtr getSortedDoubleValues(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& examples);
 
   size_t getNumberOfCachedNodes() const
     {return m.size();}
@@ -76,7 +77,7 @@ protected:
   size_t maxCacheSize; // in bytes
   size_t actualCacheSize; // in bytes
 
-  SparseDoubleVectorPtr computeSortedDoubleValues(ExecutionContext& context, const VectorPtr& values, const std::vector<size_t>& examples) const;
+  SparseDoubleVectorPtr computeSortedDoubleValues(ExecutionContext& context, const VectorPtr& values, const IndexSetPtr& examples) const;
 
   std::pair<VectorPtr, SparseDoubleVectorPtr>& internalCompute(ExecutionContext& context, const LuapeNodePtr& node, bool isRemoveable);
   size_t getSizeInBytes(const VectorPtr& samples) const;

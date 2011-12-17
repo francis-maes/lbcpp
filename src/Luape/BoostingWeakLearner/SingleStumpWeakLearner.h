@@ -30,7 +30,7 @@ public:
     return true;
   }
 #if 0
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples, double& weakObjective) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective) const
   {
     const LuapeInferencePtr& function = structureLearner->getFunction();
 
@@ -88,7 +88,7 @@ public:
     }
   }*/
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples) const
   {
     const LuapeGraphPtr& graph = structureLearner->getGraph();
 

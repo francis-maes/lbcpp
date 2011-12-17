@@ -46,13 +46,13 @@ public:
     LuapeNodeUniversePtr universe = function->getUniverse();
     for (size_t i = 0; i < maxIterations; ++i)
     {
-      context.enterScope(T("Cache information"));
+     /* context.enterScope(T("Cache information"));
       String info = T("Train cache size: ") + String((int)learner->getTrainingSamples()->getCacheSizeInBytes() / (1024 * 1024)) + T(" Mb");
       if (learner->getValidationSamples())
         info += T(" Validation cache size: ") + String((int)learner->getValidationSamples()->getCacheSizeInBytes() / (1024 * 1024)) + T(" Mb");
       context.informationCallback(info);
       learner->getTrainingSamples()->getComputeTimeStatistics(context);
-      context.leaveScope();
+      context.leaveScope();*/
 
       context.enterScope(T("Iteration ") + String((int)i + 1));
       context.resultCallback(T("iteration"), i);

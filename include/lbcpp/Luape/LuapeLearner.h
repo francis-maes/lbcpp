@@ -12,6 +12,7 @@
 # include "LuapeInference.h"
 # include <lbcpp/Learning/LossFunction.h>
 # include <lbcpp/DecisionProblem/Policy.h>
+# include <lbcpp/Luape/LuapeCache.h> // tmp, for IndexSet
 
 namespace lbcpp
 {
@@ -64,15 +65,15 @@ public:
   virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
     {return false;}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples, double& weakObjective) const = 0;
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective) const = 0;
   //virtual void update(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, LuapeNodePtr weakLearner) {}
 
-  double computeWeakObjectiveWithEventualStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, LuapeNodePtr& weakNode, const std::vector<size_t>& examples) const;
-  double computeWeakObjective(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples) const;
-  double computeWeakObjectiveWithStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, const std::vector<size_t>& examples, double& bestThreshold) const;
+  double computeWeakObjectiveWithEventualStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, LuapeNodePtr& weakNode, const IndexSetPtr& examples) const;
+  double computeWeakObjective(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples) const;
+  double computeWeakObjectiveWithStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, const IndexSetPtr& examples, double& bestThreshold) const;
 
   LuapeNodePtr makeStump(const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, double threshold) const;
-  LuapeNodePtr makeContribution(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples) const;
+  LuapeNodePtr makeContribution(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples) const;
 };
 
 typedef ReferenceCountedObjectPtr<BoostingWeakLearner> BoostingWeakLearnerPtr;
@@ -82,7 +83,7 @@ class FiniteBoostingWeakLearner : public BoostingWeakLearner
 public:
   virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
     {jassert(false); return false;} // this must be implemented
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples, double& weakObjective) const;
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective) const;
 };
 
 typedef ReferenceCountedObjectPtr<FiniteBoostingWeakLearner> FiniteBoostingWeakLearnerPtr;
@@ -117,7 +118,7 @@ public:
   BoostingLearner(BoostingWeakLearnerPtr weakLearner);
   BoostingLearner() {}
 
-  virtual BoostingWeakObjectivePtr createWeakObjective(const std::vector<size_t>& examples) const = 0;
+  virtual BoostingWeakObjectivePtr createWeakObjective(const IndexSetPtr& examples) const = 0;
 
   virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function);
   virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data);
@@ -126,15 +127,15 @@ public:
     {return weakLearner;}
 
   virtual bool doLearningIteration(ExecutionContext& context);
-  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const = 0;
+  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const = 0;
 
-  LuapeNodePtr turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples) const;
+  LuapeNodePtr turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& examples) const;
 
 protected:
   friend class BoostingLearnerClass;
   
   BoostingWeakLearnerPtr weakLearner;
-  std::vector<size_t> allExamples;
+  IndexSetPtr allExamples;
 };
 
 extern BoostingLearnerPtr adaBoostLearner(BoostingWeakLearnerPtr weakLearner);
