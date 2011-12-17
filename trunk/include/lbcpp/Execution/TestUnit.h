@@ -21,6 +21,9 @@ public:
   void checkEgality(ExecutionContext& context, int a, int b) const
     {if (a != b) context.errorCallback(T("WorkUnit::checkEgality"), String(a) + T(" is not equal to ") + String(b));}
 
+  void checkEgality(ExecutionContext& context, size_t a, size_t b) const
+    {if (a != b) context.errorCallback(T("WorkUnit::checkEgality"), String((int)a) + T(" is not equal to ") + String((int)b));}
+
   void checkEgality(ExecutionContext& context, double a, double b) const
     {if (a != b) context.errorCallback(T("WorkUnit::checkEgality"), String(a) + T(" is not equal to ") + String(b));}
 

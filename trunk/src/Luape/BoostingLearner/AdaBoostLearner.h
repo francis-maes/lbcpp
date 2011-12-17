@@ -18,7 +18,7 @@ namespace lbcpp
 class AdaBoostWeakObjective : public BoostingWeakObjective
 {
 public:
-  AdaBoostWeakObjective(const DenseDoubleVectorPtr& supervisions, const DenseDoubleVectorPtr& weights, const std::vector<size_t>& examples)
+  AdaBoostWeakObjective(const DenseDoubleVectorPtr& supervisions, const DenseDoubleVectorPtr& weights, const IndexSetPtr& examples)
     : supervisions(supervisions), weights(weights), examples(examples), correctWeight(0.0), errorWeight(0.0), missingWeight(0.0)
   {
   }
@@ -36,9 +36,9 @@ public:
     BooleanVectorPtr booleanPredictions = predictions.dynamicCast<BooleanVector>();
     if (booleanPredictions)
     {
-      for (size_t i = 0; i < examples.size(); ++i)
+      for (IndexSet::const_iterator it = examples->begin(); it != examples->end(); ++it)
       {
-        size_t example = examples[i];
+        size_t example = *it;
         unsigned char pred = booleanPredictions->getData()[example]; // fast unprotected access
         bool sup = (supervisions->getValue(example) > 0);
         double weight = weights->getValue(example);
@@ -53,9 +53,9 @@ public:
     else
     {
       DenseDoubleVectorPtr scalarPredictions = predictions.staticCast<DenseDoubleVector>();
-      for (size_t i = 0; i < examples.size(); ++i)
+      for (IndexSet::const_iterator it = examples->begin(); it != examples->end(); ++it)
       {
-        size_t example = examples[i];
+        size_t example = *it;
         double pred = scalarPredictions->getValue(example);
         bool sup = (supervisions->getValue(example) > 0);
         double weight = weights->getValue(example);
@@ -118,7 +118,7 @@ protected:
   VectorPtr predictions;
   DenseDoubleVectorPtr supervisions;
   DenseDoubleVectorPtr weights;
-  const std::vector<size_t>& examples;
+  IndexSetPtr examples;
   double correctWeight;
   double errorWeight;
   double missingWeight;
@@ -133,7 +133,7 @@ public:
     : WeightBoostingLearner(weakLearner) {}
   AdaBoostLearner() {}
 
-  virtual BoostingWeakObjectivePtr createWeakObjective(const std::vector<size_t>& examples) const
+  virtual BoostingWeakObjectivePtr createWeakObjective(const IndexSetPtr& examples) const
     {return new AdaBoostWeakObjective(supervisions, weights, examples);}
 
 //  virtual bool shouldStop(double accuracy) const
@@ -153,7 +153,7 @@ public:
     return res;
   }
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const std::vector<size_t>& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
     AdaBoostWeakObjectivePtr objective = new AdaBoostWeakObjective(supervisions, weights, examples);
     VectorPtr weakPredictions = trainingSamples->compute(context, weakNode);
@@ -167,9 +167,9 @@ public:
     if (weakBooleans)
     {
       size_t correctCount = 0, errorCount = 0, missingCount = 0, falseCount = 0, trueCount = 0;
-      for (size_t i = 0; i < examples.size(); ++i)
+      for (IndexSet::const_iterator it = examples->begin(); it != examples->end(); ++it)
       {
-        size_t example = examples[i];
+        size_t example = *it;
         unsigned char c = weakBooleans->getData()[example];
         double sup = supervisions.staticCast<DenseDoubleVector>()->getValue(example);
         if (c == 2)

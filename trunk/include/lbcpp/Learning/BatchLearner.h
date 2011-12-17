@@ -132,7 +132,7 @@ extern BatchLearnerPtr stochasticBatchLearner(size_t maxIterations = 100, bool r
 extern BatchLearnerPtr unaryHigherOrderFunctionBatchLearner();
 extern BatchLearnerPtr composeBatchLearner();
 
-extern DecoratorBatchLearnerPtr filterUnsupervisedExamplesBatchLearner(BatchLearnerPtr decorated);
+extern DecoratorBatchLearnerPtr filterUnsupervisedExamplesBatchLearner(BatchLearnerPtr decorated, bool randomizeOrder = false);
 extern DecoratorBatchLearnerPtr balanceBinaryExamplesBatchLearner(BatchLearnerPtr decorated);
 
 extern BatchLearnerPtr doubleVectorNormalizeBatchLearner(bool computeVariances, bool computeMeans);

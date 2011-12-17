@@ -24,43 +24,46 @@ public:
   virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
     {return conditionLearner->initialize(context, function) && subLearner->initialize(context, function);}
   
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples, double& weakObjective) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective) const
   {
-    jassert(examples.size());
+    /*
+    ** Learn condition and retrieve condition values
+    */
+    jassert(examples->size());
     LuapeNodePtr conditionNode = conditionLearner->learn(context, structureLearner, examples, weakObjective);
     LuapeTestNodePtr res = conditionNode.dynamicCast<LuapeTestNode>();
     if (!res)
       return conditionNode; // probably a constant node
-
     const unsigned char* testValues = structureLearner->getTrainingSamples()->compute(context, res->getCondition()).staticCast<BooleanVector>()->getData();
-    std::vector<size_t> successExamples;
-    successExamples.reserve(examples.size() / 3);
-    std::vector<size_t> failureExamples;
-    failureExamples.reserve(examples.size() / 3);
-    std::vector<size_t> missingExamples;
-    missingExamples.reserve(examples.size() / 3);
-    
-    for (size_t i = 0; i < examples.size(); ++i)
+
+    /*
+    ** Dispatch examples
+    */
+    IndexSetPtr successExamples = new IndexSet();
+    IndexSetPtr failureExamples = new IndexSet();
+    IndexSetPtr missingExamples = new IndexSet();
+    for (IndexSet::const_iterator it = examples->begin(); it != examples->end(); ++it)
     {
-      size_t example = examples[i];
+      size_t example = *it;
       switch (testValues[example])
       {
-      case 0: failureExamples.push_back(example); break;
-      case 1: successExamples.push_back(example); break;
-      case 2: missingExamples.push_back(example); break;
+      case 0: failureExamples->append(example); break;
+      case 1: successExamples->append(example); break;
+      case 2: missingExamples->append(example); break;
       default: jassert(false);
       }
     }
 
+    /*
+    ** Call sub-learners on sub-examples
+    */
     weakObjective = 0.0;
     LuapeNodePtr successNode = subLearn(context, structureLearner, successExamples, weakObjective);
     if (successNode)
       res->setSuccess(successNode);
-
     LuapeNodePtr failureNode = subLearn(context, structureLearner, failureExamples, weakObjective);
     if (failureNode)
       res->setFailure(failureNode);
-
     LuapeNodePtr missingNode = subLearn(context, structureLearner, missingExamples, weakObjective);
     if (missingNode)
       res->setMissing(missingNode);
@@ -73,9 +76,9 @@ protected:
   BoostingWeakLearnerPtr conditionLearner;
   BoostingWeakLearnerPtr subLearner;
   
-  LuapeNodePtr subLearn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& subExamples, double& weakObjective) const
+  LuapeNodePtr subLearn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& subExamples, double& weakObjective) const
   {
-    if (subExamples.size() == 0)
+    if (subExamples->size() == 0)
       return LuapeNodePtr();    
     double objective;
     LuapeNodePtr node = subLearner->learn(context, structureLearner, subExamples, objective);

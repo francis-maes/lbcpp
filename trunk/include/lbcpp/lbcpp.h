@@ -52,6 +52,7 @@
 # include "Data/DoubleVector.h"
 # include "Data/Matrix.h"
 # include "Data/BinaryKey.h"
+# include "Data/IndexSet.h"
 
 #ifdef LBCPP_NETWORKING
 # include "Network/NetworkClient.h"

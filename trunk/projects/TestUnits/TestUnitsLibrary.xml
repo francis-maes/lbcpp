@@ -15,6 +15,9 @@
     <variable type="PositiveInteger" name="minSplitSize" shortName="nmin"/>
   </class>
 
+  <!-- IndexSet -->
+  <class name="IndexSetTestUnit" base="TestUnit"/>
+  
   <!-- All Test Units -->
   <class name="AllTestUnits" base="CompositeWorkUnit"/>
 

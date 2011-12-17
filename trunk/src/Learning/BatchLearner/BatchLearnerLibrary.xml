@@ -24,7 +24,8 @@
   </class>
 
   <class name="FilterUnsupervisedExamplesBatchLearner" base="DecoratorBatchLearner">
-    <constructor arguments="BatchLearnerPtr decorated"/>
+    <constructor arguments="BatchLearnerPtr decorated, bool randomizeOrder"/>
+    <variable type="Boolean" name="randomizeOrder"/>
   </class>
 
   <class name="BalanceBinaryExamplesBatchLearner" base="DecoratorBatchLearner">

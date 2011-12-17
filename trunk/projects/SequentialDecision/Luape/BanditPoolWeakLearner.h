@@ -37,7 +37,7 @@ public:
   void initialize(ExecutionContext& context, const LuapeInferencePtr& function);
   void executeArm(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode);
 
-  void playArmWithHighestIndex(ExecutionContext& context, const BoostingLearnerPtr& graphLearner, const std::vector<size_t>& examples);
+  void playArmWithHighestIndex(ExecutionContext& context, const BoostingLearnerPtr& graphLearner, const IndexSetPtr& examples);
 
   size_t sampleArmWithHighestReward(ExecutionContext& context) const;
 
@@ -113,7 +113,7 @@ public:
     return true;
   }
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const std::vector<size_t>& examples) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples) const
   {
     // FIXME: example subsets is not implemented
 

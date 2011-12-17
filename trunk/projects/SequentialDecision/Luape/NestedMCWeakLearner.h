@@ -27,7 +27,7 @@ public:
   {
     Objective(BoostingWeakLearnerPtr weakLearner,
               BoostingLearnerPtr strongLearner,
-              const std::vector<size_t>& examples)
+              const IndexSetPtr& examples)
        : SimpleUnaryFunction(luapeGraphBuilderStateClass, doubleType),
         weakLearner(weakLearner), strongLearner(strongLearner), examples(examples) {}
 
@@ -46,7 +46,7 @@ public:
   private:
     BoostingWeakLearnerPtr weakLearner;
     BoostingLearnerPtr strongLearner;
-    std::vector<size_t> examples;
+    IndexSetPtr examples;
   };
 
   virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
@@ -56,7 +56,7 @@ public:
     return true;
   }
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& strongLearner, const std::vector<size_t>& examples, double& weakObjective) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& strongLearner, const IndexSetPtr& examples, double& weakObjective) const
   {
     OptimizationProblemPtr problem = new OptimizationProblem(new Objective(refCountedPointerFromThis(this), strongLearner, examples));
     problem->setMaximisationProblem(true);
