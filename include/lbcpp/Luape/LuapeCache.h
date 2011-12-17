@@ -40,11 +40,14 @@ class LuapeSampleVector : public Object
 {
 public:
   LuapeSampleVector(VectorPtr data, IndexSetPtr indices)
-    : elementsType(data->getElementsType()), indices(indices)
+    : elementsType(data->getElementsType()), indices(indices), dataChunks(indices->getNumChunks())
   {
-    dataChunks.resize(indices->getNumChunks());
     for (size_t i = 0; i < dataChunks.size(); ++i)
       dataChunks[i] = std::make_pair(data, indices->getChunkBegin(i));
+  }
+  LuapeSampleVector(TypePtr elementsType, IndexSetPtr indices)
+    : elementsType(elementsType), indices(indices), dataChunks(indices->getNumChunks(), std::make_pair(VectorPtr(), (size_t)-1))
+  {
   }
   LuapeSampleVector() {}
   
@@ -83,7 +86,18 @@ public:
     unsigned char getRawBoolean() const
     {
       std::pair<VectorPtr, size_t> vectorAndElement = getCurrentVectorAndElement();
-      return vectorAndElement.first.staticCast<BooleanVector>()->getData()[vectorAndElement.second];
+      if (owner->elementsType == booleanType)
+      {
+        return vectorAndElement.first 
+          ? vectorAndElement.first.staticCast<BooleanVector>()->getData()[vectorAndElement.second]
+          : 0; // default value for booleans is false
+      }
+      else
+      {
+        jassert(owner->elementsType == doubleType);
+        double value = vectorAndElement.first.staticCast<DenseDoubleVector>()->getValue(vectorAndElement.second);
+        return value == doubleMissingValue ? 2 : (value > 0 ? 1 : 0);
+      }
     }
 
     double getRawDouble() const
@@ -125,6 +139,15 @@ public:
   size_t size() const
     {return indices->size();}
 
+  const IndexSetPtr& getIndices() const
+    {return indices;}
+
+  size_t getNumChunks() const
+    {return dataChunks.size();}
+
+  VectorPtr getChunkData(size_t index) const
+    {jassert(index < dataChunks.size()); return dataChunks[index].first;}
+
 protected:
   TypePtr elementsType;
   IndexSetPtr indices;
@@ -148,7 +171,6 @@ public:
 
   // new
   LuapeSampleVectorPtr getSamples(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices, bool isRemoveable = true);
-  SparseDoubleVectorPtr getSortedDoubleValues(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices);
 
   // old
   VectorPtr compute(ExecutionContext& context, const LuapeNodePtr& node, bool isRemoveable = true);
@@ -180,8 +202,6 @@ protected:
   std::deque<LuapeNodePtr> cacheSequence;
   size_t maxCacheSize; // in bytes
   size_t actualCacheSize; // in bytes
-
-  SparseDoubleVectorPtr computeSortedDoubleValues(ExecutionContext& context, const LuapeSampleVectorPtr& samples) const;
 
   std::pair<VectorPtr, SparseDoubleVectorPtr>& internalCompute(ExecutionContext& context, const LuapeNodePtr& node, bool isRemoveable);
   size_t getSizeInBytes(const VectorPtr& samples) const;

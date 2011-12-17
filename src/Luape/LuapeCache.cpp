@@ -9,7 +9,6 @@
 #include <lbcpp/Luape/LuapeCache.h>
 #include <lbcpp/Luape/LuapeNode.h>
 #include <lbcpp/Core/DynamicObject.h>
-#include <algorithm>
 using namespace lbcpp;
 
 /*
@@ -137,22 +136,6 @@ VectorPtr LuapeSamplesCache::get(const LuapeNodePtr& node) const
   return it == m.end() ? VectorPtr() : it->second.first;
 }
 
-SparseDoubleVectorPtr LuapeSamplesCache::getSortedDoubleValues(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices)
-{
-  /*std::pair<VectorPtr, SparseDoubleVectorPtr>& c = internalCompute(context, node, true);
-  if (indices->size() == getNumSamples()) // we only perform caching if all examples are selected
-  {
-    if (!c.second)
-    {
-      c.second = computeSortedDoubleValues(context, getSamples(context, node, indices));
-      actualCacheSize += getSizeInBytes(c.second);
-    }
-    return c.second;
-  }
-  else*/
-    return computeSortedDoubleValues(context, getSamples(context, node, indices));
-}
-
 LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices, bool isRemoveable)
 {
   /*typedef std::map<LuapeNodePtr, LuapeSampleVectorPtr> NodeToSampleVectorMap;
@@ -165,14 +148,18 @@ LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, co
   {
     // merge LuapeSampleVectors
   }*/
-  return new LuapeSampleVector(compute(context, node, isRemoveable), indices);
+  jassert(node);
+  VectorPtr data = internalCompute(context, node, isRemoveable).first;
+  return new LuapeSampleVector(data, indices);
 }
 
+// tmp
 VectorPtr LuapeSamplesCache::compute(ExecutionContext& context, const LuapeNodePtr& node, bool isRemoveable)
 {
   jassert(node);
   return internalCompute(context, node, isRemoveable).first;
 }
+// -
 
 std::pair<VectorPtr, SparseDoubleVectorPtr>& LuapeSamplesCache::internalCompute(ExecutionContext& context, const LuapeNodePtr& node, bool isRemoveable)
 {
@@ -215,37 +202,6 @@ void LuapeSamplesCache::getComputeTimeStatistics(ExecutionContext& context) cons
   for (std::map<ClassPtr, ScalarVariableStatistics>::const_iterator it = computingTimeByLuapeFunctionClass.begin();
         it != computingTimeByLuapeFunctionClass.end(); ++it)
     context.resultCallback(it->first->getName(), it->second.clone(context));
-}
-
-struct SortDoubleValuesOperator
-{
-  static double transformIntoValidNumber(double input)
-    {return input;}
-
-  bool operator()(const std::pair<size_t, double>& a, const std::pair<size_t, double>& b) const
-  {
-    double aa = transformIntoValidNumber(a.second);
-    double bb = transformIntoValidNumber(b.second);
-    return aa == bb ? a.first < b.first : aa < bb;
-  }
-};
-
-SparseDoubleVectorPtr LuapeSamplesCache::computeSortedDoubleValues(ExecutionContext& context, const LuapeSampleVectorPtr& samples) const
-{
-  SparseDoubleVectorPtr res = new SparseDoubleVector();
-  std::vector< std::pair<size_t, double> >& v = res->getValuesVector();
-  size_t n = samples->size();
-  v.reserve(n);
-
-  bool isDouble = (samples->getElementsType() == doubleType);
-  for (LuapeSampleVector::const_iterator it = samples->begin(); it != samples->end(); ++it)
-  {
-    double value = isDouble ? it.getRawDouble() : (*it).toDouble();
-    if (value != doubleMissingValue)
-      v.push_back(std::make_pair(it.getIndex(), value));
-  }
-  std::sort(v.begin(), v.end(), SortDoubleValuesOperator());
-  return res;
 }
 
 bool LuapeSamplesCache::checkCacheIsCorrect(ExecutionContext& context, const std::vector<LuapeInputNodePtr>& inputs, const LuapeNodePtr& node)

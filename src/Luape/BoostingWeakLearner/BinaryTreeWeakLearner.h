@@ -35,7 +35,7 @@ public:
     if (!res)
       return conditionNode; // probably a constant node
 
-    LuapeSampleVectorPtr testValues = structureLearner->getTrainingSamples()->getSamples(context, res->getCondition(), examples);
+    LuapeSampleVectorPtr testValues = structureLearner->getTrainingCache()->getSamples(context, res->getCondition(), examples);
 
     /*
     ** Dispatch examples

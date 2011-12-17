@@ -8,6 +8,7 @@
 #include "precompiled.h"
 #include <lbcpp/Luape/LuapeLearner.h>
 #include <lbcpp/Data/DoubleVector.h>
+#include <algorithm>
 using namespace lbcpp;
 
 /*
@@ -21,29 +22,35 @@ bool LuapeLearner::initialize(ExecutionContext& context, const LuapeInferencePtr
 
 bool LuapeLearner::setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
 {
-  // we store a local copy to perform (fast) evaluation at each iteration
   if (isTrainingData)
   {
     trainingData = data;
-    trainingSamples = function->createSamplesCache(context, data);
+    trainingCache = function->createSamplesCache(context, data);
+    allExamples = new IndexSet(0, data.size());
   }
   else
   {
     validationData = data;
-    validationSamples = function->createSamplesCache(context, data);
+    validationCache = function->createSamplesCache(context, data);
   }
   return true;
 }
 
 VectorPtr LuapeLearner::getTrainingPredictions() const
 {
-  return trainingSamples->compute(defaultExecutionContext(), function->getRootNode(), false);
+  LuapeSampleVectorPtr samples = trainingCache->getSamples(defaultExecutionContext(), function->getRootNode(), allExamples);
+  jassert(samples->getNumChunks() == 1);
+  return samples->getChunkData(0);
 }
 
 VectorPtr LuapeLearner::getValidationPredictions() const
 {
-  if (validationSamples)
-    return validationSamples->compute(defaultExecutionContext(), function->getRootNode(), false);
+  if (validationCache)
+  {
+    LuapeSampleVectorPtr samples = validationCache->getSamples(defaultExecutionContext(), function->getRootNode(), allExamples);
+    jassert(samples->getNumChunks() == 1);
+    return samples->getChunkData(0);
+  }
   else
     return VectorPtr();
 }
@@ -60,15 +67,6 @@ bool BoostingLearner::initialize(ExecutionContext& context, const LuapeInference
     return false;
   jassert(weakLearner);
   return weakLearner->initialize(context, function);
-}
-
-bool BoostingLearner::setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
-{
-  if (!LuapeLearner::setExamples(context, isTrainingData, data))
-    return false;
-  if (isTrainingData)
-    allExamples = new IndexSet(0, data.size());
-  return true;
 }
 
 LuapeNodePtr BoostingLearner::turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& examples) const
@@ -116,9 +114,9 @@ bool BoostingLearner::doLearningIteration(ExecutionContext& context)
   {
     TimedScope _(context, "add into node");
     std::vector<LuapeSamplesCachePtr> caches;
-    caches.push_back(trainingSamples);
-    if (validationSamples)
-      caches.push_back(validationSamples);
+    caches.push_back(trainingCache);
+    if (validationCache)
+      caches.push_back(validationCache);
     function->getRootNode().staticCast<LuapeSequenceNode>()->pushNode(contribution, caches);
   }
 
@@ -142,39 +140,71 @@ bool BoostingLearner::doLearningIteration(ExecutionContext& context)
 /*
 ** BoostingWeakObjective
 */
-double BoostingWeakObjective::compute(const VectorPtr& predictions)
+double BoostingWeakObjective::compute(const LuapeSampleVectorPtr& predictions)
 {
   setPredictions(predictions);
   return computeObjective();
 }
 
-double BoostingWeakObjective::findBestThreshold(ExecutionContext& context, size_t numSamples, const SparseDoubleVectorPtr& sortedDoubleValues, double& edge, bool verbose)
+struct SortDoubleValuesOperator
 {
-  // initialize with "true" or "missing value"
-  BooleanVectorPtr predictions = new BooleanVector(numSamples);
-  for (size_t i = 0; i < sortedDoubleValues->getNumValues(); ++i)
-    predictions->set(sortedDoubleValues->getValue(i).first, true);
-  setPredictions(predictions);
+  static double transformIntoValidNumber(double input)
+    {return input;}
 
+  bool operator()(const std::pair<size_t, double>& a, const std::pair<size_t, double>& b) const
+  {
+    double aa = transformIntoValidNumber(a.second);
+    double bb = transformIntoValidNumber(b.second);
+    return aa == bb ? a.first < b.first : aa < bb;
+  }
+};
+
+SparseDoubleVectorPtr BoostingWeakObjective::computeSortedDoubleValues(ExecutionContext& context, const LuapeSampleVectorPtr& samples) const
+{
+  SparseDoubleVectorPtr res = new SparseDoubleVector();
+  std::vector< std::pair<size_t, double> >& v = res->getValuesVector();
+  size_t n = samples->size();
+  v.reserve(n);
+
+  bool isDouble = (samples->getElementsType() == doubleType);
+  for (LuapeSampleVector::const_iterator it = samples->begin(); it != samples->end(); ++it)
+  {
+    double value = isDouble ? it.getRawDouble() : (*it).toDouble();
+    if (value != doubleMissingValue)
+      v.push_back(std::make_pair(it.getIndex(), value));
+  }
+  std::sort(v.begin(), v.end(), SortDoubleValuesOperator());
+  return res;
+}
+
+double BoostingWeakObjective::findBestThreshold(ExecutionContext& context, const LuapeSampleVectorPtr& predictions, double& bestScore, bool verbose)
+{
+  // todo: compute sortedDoubleValues here
+
+  setPredictions(new LuapeSampleVector(booleanType, predictions->getIndices())); // all predictions to false
+
+  SparseDoubleVectorPtr sortedDoubleValues = computeSortedDoubleValues(context, predictions);
   if (sortedDoubleValues->getNumValues() == 0)
   {
-    edge = computeObjective();
+    bestScore = computeObjective();
     return 0.0;
   }
 
-  edge = -DBL_MAX;
+  bestScore = -DBL_MAX;
   double res = 0.0;
 
   if (verbose)
     context.enterScope("Find best threshold for node");
 
-  double previousThreshold = sortedDoubleValues->getValue(0).second;
-  for (size_t i = 0; i < sortedDoubleValues->getNumValues(); ++i)
+  size_t n = sortedDoubleValues->getNumValues();
+  double previousThreshold = sortedDoubleValues->getValue(n - 1).second;
+  for (int i = (int)n - 1; i >= 0; --i)
   {
+    size_t index = sortedDoubleValues->getValue(i).first;
     double threshold = sortedDoubleValues->getValue(i).second;
 
-    jassert(threshold >= previousThreshold);
-    if (threshold > previousThreshold)
+    jassert(threshold <= previousThreshold);
+    if (threshold < previousThreshold)
     {
       double e = computeObjective();
 
@@ -186,11 +216,11 @@ double BoostingWeakObjective::findBestThreshold(ExecutionContext& context, size_
         context.leaveScope();
       }
 
-      if (e >= edge)
-        edge = e, res = (threshold + previousThreshold) / 2.0;
+      if (e >= bestScore)
+        bestScore = e, res = (threshold + previousThreshold) / 2.0;
       previousThreshold = threshold;
     }
-    flipPrediction(sortedDoubleValues->getValue(i).first);
+    flipPrediction(index);
   }
 
   if (verbose)
@@ -216,22 +246,23 @@ double BoostingWeakLearner::computeWeakObjectiveWithEventualStump(ExecutionConte
   }
 }
 
-double BoostingWeakLearner::computeWeakObjective(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples) const
+double BoostingWeakLearner::computeWeakObjective(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& indices) const
 {
-  BoostingWeakObjectivePtr edgeCalculator = structureLearner->createWeakObjective(examples);
-  VectorPtr weakPredictions = structureLearner->getTrainingSamples()->compute(context, weakNode);
+  BoostingWeakObjectivePtr edgeCalculator = structureLearner->createWeakObjective();
+  LuapeSampleVectorPtr weakPredictions = structureLearner->getTrainingCache()->getSamples(context, weakNode, indices);
   jassert(weakNode->getType() == booleanType || weakNode->getType() == probabilityType);
   return edgeCalculator->compute(weakPredictions);
 }
 
-double BoostingWeakLearner::computeWeakObjectiveWithStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, const IndexSetPtr& examples, double& bestThreshold) const
+double BoostingWeakLearner::computeWeakObjectiveWithStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, const IndexSetPtr& indices, double& bestThreshold) const
 {
-  jassert(examples->size());
-  SparseDoubleVectorPtr sortedDoubleValues = trainingSamples->getSortedDoubleValues(context, numberNode, examples);
-  BoostingWeakObjectivePtr edgeCalculator = structureLearner->createWeakObjective(examples);
-  double edge;
-  bestThreshold = edgeCalculator->findBestThreshold(context, trainingSamples->getNumSamples(), sortedDoubleValues, edge, false);
-  return edge;
+  jassert(indices->size());
+  LuapeSampleVectorPtr numberPredictions = structureLearner->getTrainingCache()->getSamples(context, numberNode, indices);
+  jassert(numberPredictions->size() == indices->size());
+  BoostingWeakObjectivePtr weakObjective = structureLearner->createWeakObjective();
+  double bestScore;
+  bestThreshold = weakObjective->findBestThreshold(context, numberPredictions, bestScore, false);
+  return bestScore;
 }
 
 LuapeNodePtr BoostingWeakLearner::makeStump(const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, double threshold) const

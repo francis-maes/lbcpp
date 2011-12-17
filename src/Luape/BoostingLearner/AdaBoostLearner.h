@@ -18,73 +18,40 @@ namespace lbcpp
 class AdaBoostWeakObjective : public BoostingWeakObjective
 {
 public:
-  AdaBoostWeakObjective(const DenseDoubleVectorPtr& supervisions, const DenseDoubleVectorPtr& weights, const IndexSetPtr& examples)
-    : supervisions(supervisions), weights(weights), examples(examples), correctWeight(0.0), errorWeight(0.0), missingWeight(0.0)
+  AdaBoostWeakObjective(const DenseDoubleVectorPtr& supervisions, const DenseDoubleVectorPtr& weights)
+    : supervisions(supervisions), weights(weights), correctWeight(0.0), errorWeight(0.0), missingWeight(0.0)
   {
+    jassert(supervisions->getNumElements() == weights->getNumElements());
   }
 
-  virtual void setPredictions(const VectorPtr& predictions)
+  virtual void setPredictions(const LuapeSampleVectorPtr& predictions)
   {
     this->predictions = predictions;
-    jassert(supervisions->getNumElements() == weights->getNumElements());
-    jassert(predictions->getNumElements() == weights->getNumElements());
 
     correctWeight = 0.0;
     errorWeight = 0.0;
     missingWeight = 0.0;
 
-    BooleanVectorPtr booleanPredictions = predictions.dynamicCast<BooleanVector>();
-    if (booleanPredictions)
+    for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
     {
-      for (IndexSet::const_iterator it = examples->begin(); it != examples->end(); ++it)
-      {
-        size_t example = *it;
-        unsigned char pred = booleanPredictions->getData()[example]; // fast unprotected access
-        bool sup = (supervisions->getValue(example) > 0);
-        double weight = weights->getValue(example);
-        if (pred == 2)
-          missingWeight += weight;
-        else if ((pred == 0 && !sup) || (pred == 1 && sup))
-          correctWeight += weight;
-        else
-          errorWeight += weight;
-      }
-    }
-    else
-    {
-      DenseDoubleVectorPtr scalarPredictions = predictions.staticCast<DenseDoubleVector>();
-      for (IndexSet::const_iterator it = examples->begin(); it != examples->end(); ++it)
-      {
-        size_t example = *it;
-        double pred = scalarPredictions->getValue(example);
-        bool sup = (supervisions->getValue(example) > 0);
-        double weight = weights->getValue(example);
-        if (pred == doubleMissingValue)
-          missingWeight += weight;
-        else
-        {
-          bool prediction = (pred > 0);
-          if (prediction == sup)
-            correctWeight += weight;
-          else
-            errorWeight += weight;
-        }
-      }
+      size_t example = it.getIndex();
+      bool sup = (supervisions->getValue(example) > 0);
+      double weight = weights->getValue(example);
+      unsigned char pred = it.getRawBoolean();
+      if (pred == 2)
+        missingWeight += weight;
+      else if ((pred == 0 && !sup) || (pred == 1 && sup))
+        correctWeight += weight;
+      else
+        errorWeight += weight;
     }
   }
 
-
   virtual void flipPrediction(size_t index)
   {
-    jassert(predictions.isInstanceOf<BooleanVector>());
-    unsigned char& prediction = predictions.staticCast<BooleanVector>()->getData()[index]; // fast unprotected access
-    jassert(prediction < 2);
-    prediction = 1 - prediction;
-
-    bool pred = (prediction == 1);
     bool sup = supervisions->getValue(index) > 0;
     double weight = weights->getValue(index);
-    if (pred == sup)
+    if (sup)
     {
       correctWeight += weight;
       errorWeight -= weight;
@@ -115,10 +82,10 @@ public:
 protected:
   friend class AdaBoostWeakObjectiveClass;
 
-  VectorPtr predictions;
+  LuapeSampleVectorPtr predictions;
   DenseDoubleVectorPtr supervisions;
   DenseDoubleVectorPtr weights;
-  IndexSetPtr examples;
+
   double correctWeight;
   double errorWeight;
   double missingWeight;
@@ -133,8 +100,8 @@ public:
     : WeightBoostingLearner(weakLearner) {}
   AdaBoostLearner() {}
 
-  virtual BoostingWeakObjectivePtr createWeakObjective(const IndexSetPtr& examples) const
-    {return new AdaBoostWeakObjective(supervisions, weights, examples);}
+  virtual BoostingWeakObjectivePtr createWeakObjective() const
+    {return new AdaBoostWeakObjective(supervisions, weights);}
 
 //  virtual bool shouldStop(double accuracy) const
 //    {return accuracy == 0.0 || accuracy == 1.0;}
@@ -153,16 +120,17 @@ public:
     return res;
   }
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& indices, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
-    AdaBoostWeakObjectivePtr objective = new AdaBoostWeakObjective(supervisions, weights, examples);
-    VectorPtr weakPredictions = trainingSamples->compute(context, weakNode);
+    AdaBoostWeakObjectivePtr objective = new AdaBoostWeakObjective(supervisions, weights);
+    LuapeSampleVectorPtr weakPredictions = trainingCache->getSamples(context, weakNode, indices);
     objective->setPredictions(weakPredictions);
 
     double correctWeight = objective->getCorrectWeight();
     double errorWeight = objective->getErrorWeight();
     double missingWeight = objective->getMissingWeight();
 
+#if 0
     BooleanVectorPtr weakBooleans = weakPredictions.dynamicCast<BooleanVector>();
     if (weakBooleans)
     {
@@ -192,6 +160,7 @@ public:
                                   T(" Diff: ") + String((int)errorCount) + T(" (") + String(errorWeight) + T(")") +
                                   T(" Same: ") + String((int)correctCount) + T(" (") + String(correctWeight) + T(")"));
     }
+#endif // 0
 
     double vote;
     if (correctWeight == 0.0)
