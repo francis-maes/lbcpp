@@ -1,16 +1,11 @@
 
 Plan:
  ok 1) utiliser IndexSet partout au lieu de std::vector<size_t>
- 2) nouvelle classe LuapeSampleVector, utiliser partout LuapeSampleVector au lieu des accès bruts aux VectorPtr
+ o 2) nouvelle classe LuapeSampleVector, utiliser partout LuapeSampleVector au lieu des accès bruts aux VectorPtr
+ 
  3) Utiliser SampleSet dans le cache
  4) checker compilation linux
  
-
-Utilisation du cache:
-
- * cache lui-meme en recursif
- * LuapeLearner::getTrainingPredictions() => tous les exemples sur le rootNode
- * BoostingWeakLearner::computeWeakObjective(), AdaBoostMHLearner::computeVote() => subset d'exemples, transmis aux BoostingWeakObjective
 
 
 Luape-Other:
