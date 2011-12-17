@@ -9,8 +9,6 @@
 #ifndef LBCPP_PROTEIN_ROSETTA_DATA_ROSETTA_H_
 # define LBCPP_PROTEIN_ROSETTA_DATA_ROSETTA_H_
 
-# include <lbcpp/lbcpp.h>
-
 # ifdef LBCPP_PROTEIN_ROSETTA
 #  undef T
 #  include <core/init.hh>

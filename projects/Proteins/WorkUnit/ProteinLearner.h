@@ -9,7 +9,6 @@
 #ifndef LBCPP_PROTEINS_WORK_UNIT_SAND_BOX_H_
 # define LBCPP_PROTEINS_WORK_UNIT_SAND_BOX_H_
 
-# include <lbcpp/lbcpp.h>
 # include "../Data/Protein.h"
 # include "../Data/ProteinFunctions.h"
 # include "../Predictor/ProteinPredictor.h"

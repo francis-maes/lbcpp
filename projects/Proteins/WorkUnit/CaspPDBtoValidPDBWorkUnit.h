@@ -9,8 +9,6 @@
 #ifndef LBCPP_PROTEINS_CASP_PDB_TO_VALID_PDB_WORK_UNIT_H_
 # define LBCPP_PROTEINS_CASP_PDB_TO_VALID_PDB_WORK_UNIT_H_
 
-# include <lbcpp/lbcpp.h>
-
 namespace lbcpp
 {
   

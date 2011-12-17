@@ -227,7 +227,6 @@ double BoostingWeakLearner::computeWeakObjective(ExecutionContext& context, cons
 double BoostingWeakLearner::computeWeakObjectiveWithStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, const IndexSetPtr& examples, double& bestThreshold) const
 {
   jassert(examples->size());
-  LuapeSamplesCachePtr trainingSamples = structureLearner->getTrainingSamples();
   SparseDoubleVectorPtr sortedDoubleValues = trainingSamples->getSortedDoubleValues(context, numberNode, examples);
   BoostingWeakObjectivePtr edgeCalculator = structureLearner->createWeakObjective(examples);
   double edge;

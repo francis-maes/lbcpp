@@ -6,7 +6,6 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp/lbcpp.h>
 #include "ProteinInferenceEvaluatorWorkUnit.h"
 
 using namespace lbcpp;

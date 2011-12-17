@@ -44,10 +44,16 @@ public:
     for (size_t i = 0; i < weakNodes.size(); ++i)
       weakNodesByScore[i] = std::make_pair(weakNodes[i], 0.0);
 
-    // make initial examples subset
-    IndexSetPtr examplesSubset = new IndexSet();
-    for (size_t i = 1; i <= 5; ++i) // expand in 5 pieces to add some stochasticity
-      examplesSubset->randomlyExpandUsingSource(context, (numInitialExamples * i) / 5, examples, false);
+    IndexSetPtr examplesSubset;
+    if (numInitialExamples > examples->size())
+      examplesSubset = examples;
+    else
+    {
+      // make initial examples subset
+      examplesSubset = new IndexSet();
+      for (size_t i = 1; i <= 3; ++i) // expand in 3 pieces to add some stochasticity
+        examplesSubset->randomlyExpandUsingSource(context, (numInitialExamples * i) / 3, examples, false);
+    }
 /*
     std::vector<size_t> examplesOrder;
     context.getRandomGenerator()->sampleOrder(examples->size(), examplesOrder);
@@ -84,11 +90,10 @@ public:
       numWeakLearners = numWeakLearners / 2;
 
       // grow examples subset
-      size_t previousNumExamples = examplesSubset->size();
-      if (previousNumExamples == examples->size())
+      if (examplesSubset == examples)
         break; // all examples have been included in the last evaluation, so the current best weak node is the final best weak node
       
-      size_t numExamples = previousNumExamples * 2;
+      size_t numExamples = examplesSubset->size() * 2;
       if (numExamples > examples->size())
       {
         numExamples = examples->size();

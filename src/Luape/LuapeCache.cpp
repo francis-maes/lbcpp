@@ -137,20 +137,35 @@ VectorPtr LuapeSamplesCache::get(const LuapeNodePtr& node) const
   return it == m.end() ? VectorPtr() : it->second.first;
 }
 
-SparseDoubleVectorPtr LuapeSamplesCache::getSortedDoubleValues(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& examples)
+SparseDoubleVectorPtr LuapeSamplesCache::getSortedDoubleValues(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices)
 {
-  std::pair<VectorPtr, SparseDoubleVectorPtr>& c = internalCompute(context, node, true);
-  if (examples->size() == getNumSamples()) // we only perform caching if all examples are selected
+  /*std::pair<VectorPtr, SparseDoubleVectorPtr>& c = internalCompute(context, node, true);
+  if (indices->size() == getNumSamples()) // we only perform caching if all examples are selected
   {
     if (!c.second)
     {
-      c.second = computeSortedDoubleValues(context, c.first, examples);
+      c.second = computeSortedDoubleValues(context, getSamples(context, node, indices));
       actualCacheSize += getSizeInBytes(c.second);
     }
     return c.second;
   }
+  else*/
+    return computeSortedDoubleValues(context, getSamples(context, node, indices));
+}
+
+LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices, bool isRemoveable)
+{
+  /*typedef std::map<LuapeNodePtr, LuapeSampleVectorPtr> NodeToSampleVectorMap;
+  NodeToSampleVectorMap::const_iterator it = cache.find(node);
+  if (it == cache.end())
+  {
+    // create new LuapeSampleVectorPtr
+  }
   else
-    return computeSortedDoubleValues(context, c.first, examples);
+  {
+    // merge LuapeSampleVectors
+  }*/
+  return new LuapeSampleVector(compute(context, node, isRemoveable), indices);
 }
 
 VectorPtr LuapeSamplesCache::compute(ExecutionContext& context, const LuapeNodePtr& node, bool isRemoveable)
@@ -215,34 +230,19 @@ struct SortDoubleValuesOperator
   }
 };
 
-SparseDoubleVectorPtr LuapeSamplesCache::computeSortedDoubleValues(ExecutionContext& context, const VectorPtr& samples, const IndexSetPtr& examples) const
+SparseDoubleVectorPtr LuapeSamplesCache::computeSortedDoubleValues(ExecutionContext& context, const LuapeSampleVectorPtr& samples) const
 {
   SparseDoubleVectorPtr res = new SparseDoubleVector();
   std::vector< std::pair<size_t, double> >& v = res->getValuesVector();
-  size_t n = examples->size();
+  size_t n = samples->size();
   v.reserve(n);
-  DenseDoubleVectorPtr scalarSamples = samples.dynamicCast<DenseDoubleVector>();
-  if (scalarSamples)
+
+  bool isDouble = (samples->getElementsType() == doubleType);
+  for (LuapeSampleVector::const_iterator it = samples->begin(); it != samples->end(); ++it)
   {
-    // optimized versions if double samples
-    double* ptr = scalarSamples->getValuePointer(0);
-    for (IndexSet::const_iterator it = examples->begin(); it != examples->end(); ++it)
-    {
-      size_t example = *it;
-      double value = ptr[example];
-      if (value != doubleMissingValue)
-        v.push_back(std::make_pair(example, value));
-    }
-  }
-  else
-  {
-    for (IndexSet::const_iterator it = examples->begin(); it != examples->end(); ++it)
-    {
-      size_t example = *it;
-      Variable value = samples->getElement(example);
-      if (value.exists())
-        v.push_back(std::make_pair(example, value.toDouble()));
-    }
+    double value = isDouble ? it.getRawDouble() : (*it).toDouble();
+    if (value != doubleMissingValue)
+      v.push_back(std::make_pair(it.getIndex(), value));
   }
   std::sort(v.begin(), v.end(), SortDoubleValuesOperator());
   return res;

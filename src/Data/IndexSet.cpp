@@ -172,17 +172,27 @@ void IndexSet::randomlyExpandUsingSource(ExecutionContext& context, size_t newSi
   std::vector<size_t> candidateRegions;
   std::vector<double> candidateProbabilities;
   double Z = 0.0;
+  const IntersectionRegion* prevRegion = NULL;
+  for (int i = regions.size() - 1; i >= 0; --i)
+    if (regions[i].hasFirst())
+    {
+      prevRegion = &regions[i];
+      break;
+    }
+
   for (size_t i = 0; i < regions.size(); ++i)
   {
     const IntersectionRegion& region = regions[i];
-    const IntersectionRegion* prevRegion = i > 0 ? &regions[i - 1] : (regions.size() ? &regions.back() : NULL);
-    if (region.hasFirst() && region.firstCount && !region.hasSecond() &&
-        (!contiguous || chunks.empty() || (prevRegion && prevRegion->hasSecond())))  // if contiguous, we search for a chunk that is expandable
+    if (region.hasFirst() && region.firstCount)
     {
-      candidateRegions.push_back(i); // source contains elements, we do not
-      double p = (double)region.firstCount;
-      candidateProbabilities.push_back(p);
-      Z += p;
+      if (!region.hasSecond() && (!contiguous || chunks.empty() || (prevRegion && prevRegion->hasSecond())))  // if contiguous, we search for a chunk that is expandable
+      {
+        candidateRegions.push_back(i); // source contains elements, we do not
+        double p = (double)region.firstCount;
+        candidateProbabilities.push_back(p);
+        Z += p;
+      }
+      prevRegion = &regions[i];
     }
   }
 

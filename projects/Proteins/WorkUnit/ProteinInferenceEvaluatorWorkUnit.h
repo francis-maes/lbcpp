@@ -8,7 +8,6 @@
 
 #ifndef LBCPP_PROTEINS_PROTEIN_INFERENCE_EVALUATOR_WORK_UNIT_H_
 # define LBCPP_PROTEINS_PROTEIN_INFERENCE_EVALUATOR_WORK_UNIT_H_
-# include <lbcpp/lbcpp.h>
 
 namespace lbcpp
 {

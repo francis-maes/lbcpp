@@ -9,7 +9,6 @@
 #include "GoInterface.h"
 #include "GoProblem.h"
 #include "GoPredictWorkUnit.h"
-#include <lbcpp/lbcpp.h>
 using namespace lbcpp;
 
 static CompositeFunctionPtr goDecisionMaker;
