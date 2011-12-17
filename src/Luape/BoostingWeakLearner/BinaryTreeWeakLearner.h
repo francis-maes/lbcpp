@@ -43,7 +43,7 @@ public:
     for (size_t i = 0; i < examples.size(); ++i)
     {
       size_t example = examples[i];
-      switch (testValues[i])
+      switch (testValues[example])
       {
       case 0: failureExamples.push_back(example); break;
       case 1: successExamples.push_back(example); break;
