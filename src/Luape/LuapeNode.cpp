@@ -157,7 +157,9 @@ Variable LuapeTestNode::compute(ExecutionContext& context, const LuapeInstanceCa
 void LuapeTestNode::dispatchIndices(const LuapeSampleVectorPtr& conditionValues, IndexSetPtr& failureIndices, IndexSetPtr& successIndices, IndexSetPtr& missingIndices) const
 {
   failureIndices = new IndexSet();
+  failureIndices->reserve(conditionValues->size() / 4);
   successIndices = new IndexSet();
+  successIndices->reserve(conditionValues->size() / 4);
   missingIndices = new IndexSet();
   for (LuapeSampleVector::const_iterator it = conditionValues->begin(); it != conditionValues->end(); ++it)
   {
@@ -179,8 +181,8 @@ LuapeSampleVectorPtr LuapeTestNode::compute(ExecutionContext& context, const Lua
   if (successNode.isInstanceOf<LuapeConstantNode>() && failureNode.isInstanceOf<LuapeConstantNode>() && missingNode.isInstanceOf<LuapeConstantNode>())
   {
     Variable v[3];
-    v[0] = successNode.staticCast<LuapeConstantNode>()->getValue();
-    v[1] = failureNode.staticCast<LuapeConstantNode>()->getValue();
+    v[0] = failureNode.staticCast<LuapeConstantNode>()->getValue();
+    v[1] = successNode.staticCast<LuapeConstantNode>()->getValue();
     v[2] = missingNode.staticCast<LuapeConstantNode>()->getValue();
 
     if (v[0].isDouble() && v[1].isDouble() && v[2].isDouble())
@@ -199,8 +201,8 @@ LuapeSampleVectorPtr LuapeTestNode::compute(ExecutionContext& context, const Lua
     {
       ObjectPtr ov[3];
       ov[0] = v[0].getObject();
-      ov[1] = v[0].getObject();
-      ov[2] = v[0].getObject();      
+      ov[1] = v[1].getObject();
+      ov[2] = v[2].getObject();      
       ObjectVectorPtr res = new ObjectVector(type, n);
       size_t i = 0;
       for (LuapeSampleVector::const_iterator it = conditions->begin(); it != conditions->end(); ++it, ++i)
@@ -299,7 +301,7 @@ LuapeSampleVectorPtr LuapeSequenceNode::compute(ExecutionContext& context, const
   return new LuapeSampleVector(indices, outputs);
 }
 
-void LuapeSequenceNode::pushNode(const LuapeNodePtr& node, const std::vector<LuapeSamplesCachePtr>& cachesToUpdate)
+void LuapeSequenceNode::pushNode(ExecutionContext& context, const LuapeNodePtr& node, const std::vector<LuapeSamplesCachePtr>& cachesToUpdate)
 {
   nodes.push_back(node);
 
@@ -308,13 +310,9 @@ void LuapeSequenceNode::pushNode(const LuapeNodePtr& node, const std::vector<Lua
   {
     LuapeSamplesCachePtr cache = cachesToUpdate[i];
     size_t n = cache->getNumSamples();
-    VectorPtr outputs = cache->get(this);
-    if (!outputs)
-    {
-      outputs = createEmptyOutputs(n);
-      cache->set(this, outputs);
-    }
-    updateOutputs(outputs, cache->getSamples(defaultExecutionContext(), node, cache->getAllIndices()));
+    VectorPtr outputs = cache->getNodeCache(this);
+    jassert(outputs);
+    updateOutputs(outputs, cache->getSamples(context, node, cache->getAllIndices()));
   }
 }
 

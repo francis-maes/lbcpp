@@ -26,30 +26,31 @@ bool LuapeLearner::setExamples(ExecutionContext& context, bool isTrainingData, c
   {
     trainingData = data;
     trainingCache = function->createSamplesCache(context, data);
-    allExamples = new IndexSet(0, data.size());
+    trainingCache->cacheNode(context, function->getRootNode());
   }
   else
   {
     validationData = data;
     validationCache = function->createSamplesCache(context, data);
+    validationCache->cacheNode(context, function->getRootNode());
   }
   return true;
 }
 
 VectorPtr LuapeLearner::getTrainingPredictions() const
 {
-  LuapeSampleVectorPtr samples = trainingCache->getSamples(defaultExecutionContext(), function->getRootNode(), allExamples, false);
-  jassert(samples->getNumChunks() == 1);
-  return samples->getChunkData(0);
+  LuapeSampleVectorPtr samples = trainingCache->getSamples(defaultExecutionContext(), function->getRootNode(), trainingCache->getAllIndices(), false);
+  jassert(samples->getImplementation() == LuapeSampleVector::cachedVectorImpl);
+  return samples->getVector();
 }
 
 VectorPtr LuapeLearner::getValidationPredictions() const
 {
   if (validationCache)
   {
-    LuapeSampleVectorPtr samples = validationCache->getSamples(defaultExecutionContext(), function->getRootNode(), allExamples, false);
-    jassert(samples->getNumChunks() == 1);
-    return samples->getChunkData(0);
+    LuapeSampleVectorPtr samples = validationCache->getSamples(defaultExecutionContext(), function->getRootNode(), validationCache->getAllIndices(), false);
+    jassert(samples->getImplementation() == LuapeSampleVector::cachedVectorImpl);
+    return samples->getVector();
   }
   else
     return VectorPtr();
@@ -101,7 +102,7 @@ bool BoostingLearner::doLearningIteration(ExecutionContext& context)
   // do weak learning
   {
     TimedScope _(context, "weak learning");
-    contribution = weakLearner->learn(context, refCountedPointerFromThis(this), allExamples, weakObjective);
+    contribution = weakLearner->learn(context, refCountedPointerFromThis(this), trainingCache->getAllIndices(), weakObjective);
     if (!contribution)
     {
       context.errorCallback(T("Failed to find a weak learner"));
@@ -117,7 +118,7 @@ bool BoostingLearner::doLearningIteration(ExecutionContext& context)
     caches.push_back(trainingCache);
     if (validationCache)
       caches.push_back(validationCache);
-    function->getRootNode().staticCast<LuapeSequenceNode>()->pushNode(contribution, caches);
+    function->getRootNode().staticCast<LuapeSequenceNode>()->pushNode(context, contribution, caches);
   }
 
   // evaluate
