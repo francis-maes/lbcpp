@@ -63,11 +63,11 @@ String IndexSet::IntersectionRegion::toString() const
   String res = T("[");
   res += String((int)begin) + T(", ") + String((int)end) + T("[");
   if (hasFirst())
-    res += T(" first = ") + String(firstChunkNumber) + T(":") + String(firstIndexInChunk) + T(" (size = ") + String((int)firstCount) + T(")");
+    res += T(" first = ") + String(firstChunkNumber) + T(":") + String((int)firstIndexInChunk) + T(" (size = ") + String((int)firstCount) + T(")");
   else
     res += T(" no first");
   if (hasSecond())
-    res += T(" second = ") + String(secondChunkNumber) + T(":") + String(secondIndexInChunk) + T(" (size = ") + String((int)secondCount) + T(")");
+    res += T(" second = ") + String(secondChunkNumber) + T(":") + String((int)secondIndexInChunk) + T(" (size = ") + String((int)secondCount) + T(")");
   else
     res += T(" no second");
   return res;
