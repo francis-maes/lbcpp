@@ -39,16 +39,19 @@ typedef ReferenceCountedObjectPtr<LuapeInstanceCache> LuapeInstanceCachePtr;
 class LuapeSampleVector : public Object
 {
 public:
-  LuapeSampleVector(VectorPtr data, IndexSetPtr indices)
-    : elementsType(data->getElementsType()), indices(indices), dataChunks(indices->getNumChunks())
+  LuapeSampleVector(IndexSetPtr indices, VectorPtr data, bool useIndexToAccessData = false)
+    : indices(indices), elementsType(data->getElementsType()), dataChunks(indices->getNumChunks())
   {
     for (size_t i = 0; i < dataChunks.size(); ++i)
       dataChunks[i] = std::make_pair(data, indices->getChunkBegin(i));
   }
-  LuapeSampleVector(TypePtr elementsType, IndexSetPtr indices)
-    : elementsType(elementsType), indices(indices), dataChunks(indices->getNumChunks(), std::make_pair(VectorPtr(), (size_t)-1))
+
+  static LuapeSampleVectorPtr createConstant(IndexSetPtr indices, const Variable& constantValue)
   {
+    jassert(false);
+    return LuapeSampleVectorPtr();
   }
+  
   LuapeSampleVector() {}
   
   const TypePtr& getElementsType() const
@@ -106,6 +109,12 @@ public:
       return vectorAndElement.first.staticCast<DenseDoubleVector>()->getValue(vectorAndElement.second);
     }
 
+    const ObjectPtr& getRawObject() const
+    {
+      std::pair<VectorPtr, size_t> vectorAndElement = getCurrentVectorAndElement();
+      return vectorAndElement.first.staticCast<ObjectVector>()->get(vectorAndElement.second);
+    }
+
     bool operator ==(const const_iterator& other) const
       {return owner == other.owner && chunkNumber == other.chunkNumber && indexInChunk == other.indexInChunk;}
     bool operator !=(const const_iterator& other) const
@@ -152,6 +161,7 @@ protected:
   TypePtr elementsType;
   IndexSetPtr indices;
   std::vector< std::pair<VectorPtr, size_t> > dataChunks;
+  Variable constantValue;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeSampleVector> LuapeSampleVectorPtr;
@@ -188,6 +198,9 @@ public:
 
   void getComputeTimeStatistics(ExecutionContext& context) const;
 
+  const IndexSetPtr& getAllIndices() const
+    {return allIndices;}
+
 protected:
   // node -> (samples, sorted double values)
   typedef std::map<LuapeNodePtr, std::pair<VectorPtr, SparseDoubleVectorPtr> > NodeToSamplesMap;
@@ -203,6 +216,8 @@ protected:
   std::deque<LuapeNodePtr> cacheSequence;
   size_t maxCacheSize; // in bytes
   size_t actualCacheSize; // in bytes
+
+  IndexSetPtr allIndices;
 
   std::pair<VectorPtr, SparseDoubleVectorPtr>& internalCompute(ExecutionContext& context, const LuapeNodePtr& node, bool isRemoveable);
   size_t getSizeInBytes(const VectorPtr& samples) const;

@@ -24,7 +24,7 @@ public:
     {return type;}
 
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const = 0;
-  virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const = 0;
+  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const = 0;
   
   virtual size_t getNumSubNodes() const
     {return 0;}
@@ -58,7 +58,7 @@ public:
 
   virtual String toShortString() const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
-  virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const;
+  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const;
 
   lbcpp_UseDebuggingNewOperator
 
@@ -79,7 +79,7 @@ public:
 
   virtual String toShortString() const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
-  virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const;
+  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const;
 
   const Variable& getValue() const
     {return value;}
@@ -105,7 +105,7 @@ public:
   virtual String toShortString() const;
 
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
-  virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const;
+  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const;
 
   virtual size_t getNumSubNodes() const
     {return arguments.size();}
@@ -146,10 +146,12 @@ public:
 
   virtual String toShortString() const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
-  virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const;
+  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const;
 
   virtual size_t getNumSubNodes() const;
   virtual const LuapeNodePtr& getSubNode(size_t index) const;
+
+  void dispatchIndices(const LuapeSampleVectorPtr& conditionValues, IndexSetPtr& failureIndices, IndexSetPtr& successIndices, IndexSetPtr& missingIndices) const;
 
   const LuapeNodePtr& getCondition() const
     {return conditionNode;}
@@ -194,7 +196,7 @@ public:
   LuapeSequenceNode() {}
 
   virtual String toShortString() const;
-  virtual VectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const;
+  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const;
 
   virtual size_t getNumSubNodes() const
     {return nodes.size();}
@@ -210,7 +212,7 @@ protected:
   std::vector<LuapeNodePtr> nodes;
 
   virtual VectorPtr createEmptyOutputs(size_t numSamples) const = 0;
-  virtual void updateOutputs(const VectorPtr& outputs, const VectorPtr& newNodeValues) const = 0;
+  virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues) const = 0;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeSequenceNode> LuapeSequenceNodePtr;
@@ -228,7 +230,7 @@ public:
 
 protected:
   virtual VectorPtr createEmptyOutputs(size_t numSamples) const;
-  virtual void updateOutputs(const VectorPtr& outputs, const VectorPtr& newNodeValues) const;
+  virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues) const;
 };
 
 class LuapeVectorSumNode : public LuapeSequenceNode
@@ -242,7 +244,7 @@ public:
 
 protected:
   virtual VectorPtr createEmptyOutputs(size_t numSamples) const;
-  virtual void updateOutputs(const VectorPtr& outputs, const VectorPtr& newNodeValues) const;
+  virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues) const;
 };
 
 }; /* namespace lbcpp */

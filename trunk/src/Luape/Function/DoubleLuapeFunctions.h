@@ -61,27 +61,28 @@ public:
     return v1 == doubleMissingValue || v2 == doubleMissingValue ? doubleMissingValue : computeDouble(v1, v2);
   }
 
-  virtual VectorPtr compute(ExecutionContext& context, const std::vector<VectorPtr>& inputs, TypePtr outputType) const
+  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
   {
-    const DenseDoubleVectorPtr& inputs1 = inputs[0].staticCast<DenseDoubleVector>();
-    const DenseDoubleVectorPtr& inputs2 = inputs[1].staticCast<DenseDoubleVector>();
-    jassert(inputs1->getNumValues() == inputs2->getNumValues());
+    LuapeSampleVector::const_iterator it1 = inputs[0]->begin();
+    LuapeSampleVector::const_iterator it2 = inputs[1]->begin();
+    size_t n = inputs[0]->size();
+    jassert(n == inputs[1]->size());
 
-    DenseDoubleVectorPtr res = new DenseDoubleVector(inputs1->getNumValues(), 0.0);
-    const double* ptr1 = inputs1->getValuePointer(0);
-    const double* lim = ptr1 + inputs1->getNumValues();
-    const double* ptr2 = inputs2->getValuePointer(0);
-    double* target = res->getValuePointer(0);
-    while (ptr1 != lim)
+    DenseDoubleVectorPtr res = new DenseDoubleVector(n, 0.0);
+    double* dest = res->getValuePointer(0);
+    double* lim = dest + n;
+    while (dest < lim)
     {
-      if (*ptr1 == doubleMissingValue || *ptr2 == doubleMissingValue)
-        *target++ = doubleMissingValue;
+      double d1 = it1.getRawDouble();
+      double d2 = it2.getRawDouble();
+      if (d1 == doubleMissingValue || d2 == doubleMissingValue)
+        *dest++ = doubleMissingValue;
       else
-        *target++ = computeDouble(*ptr1, *ptr2);
-      ptr1++;
-      ptr2++;
+        *dest++ = computeDouble(d1, d2);
+      ++it1;
+      ++it2;
     }
-    return res;
+    return new LuapeSampleVector(inputs[0]->getIndices(), res);
   }
 };
 

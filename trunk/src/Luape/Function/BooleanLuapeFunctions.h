@@ -33,28 +33,28 @@ public:
     return computeBoolean(inputs[0].getBoolean(), inputs[1].getBoolean());
   }
 
-  virtual VectorPtr compute(ExecutionContext& context, const std::vector<VectorPtr>& inputs, TypePtr outputType) const
+  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
   {
-    const BooleanVectorPtr& inputs1 = inputs[0].staticCast<BooleanVector>();
-    const BooleanVectorPtr& inputs2 = inputs[1].staticCast<BooleanVector>();
-    jassert(inputs1->getNumElements() == inputs2->getNumElements());
-    size_t n = inputs1->getNumElements();
-    
+    LuapeSampleVector::const_iterator it1 = inputs[0]->begin();
+    LuapeSampleVector::const_iterator it2 = inputs[1]->begin();
+    size_t n = inputs[0]->size();
+    jassert(n == inputs[1]->size());
+
     BooleanVectorPtr res = new BooleanVector(n);
-    
-    const unsigned char* ptr1 = inputs1->getData();
-    const unsigned char* ptr2 = inputs2->getData();
     unsigned char* dest = res->getData();
-    const unsigned char* lim = ptr1 + n;
-    while (ptr1 < lim)
+    const unsigned char* lim = dest + n;
+    while (dest < lim)
     {
-      if (*ptr1 < 2 && *ptr2 < 2)
-        *dest = computeBoolean(*ptr1 == 1, *ptr2 == 1);
-      ptr1++;
-      ptr2++;
-      dest++;
+      unsigned char b1 = it1.getRawBoolean();
+      unsigned char b2 = it2.getRawBoolean();
+      if (b1 == 2 || b2 == 2)
+        *dest++ = 2;
+      else
+        *dest++ = computeBoolean(b1 == 1, b2 == 1);
+      ++it1;
+      ++it2;
     }
-    return res;
+    return new LuapeSampleVector(inputs[0]->getIndices(), res);
   }
 };
 

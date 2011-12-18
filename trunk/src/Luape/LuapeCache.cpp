@@ -151,7 +151,7 @@ LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, co
         instanceCache->set(inputNodes[i], inputCaches[i]->getElement(index));
       data->setElement(index, node->compute(context, instanceCache));
     }
-    return new LuapeSampleVector(data, indices);
+    return new LuapeSampleVector(indices, data);
   }
 #endif // 0
 
@@ -159,7 +159,7 @@ LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, co
   NodeToSampleVectorMap::const_iterator it = cache.find(node);
   if (it == cache.end())
   {
-    // create new LuapeSampleVectorPtr
+    // create new LuapeSampleVector
   }
   else
   {
@@ -167,7 +167,7 @@ LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, co
   }*/
   jassert(node);
   VectorPtr data = internalCompute(context, node, isRemoveable).first;
-  return new LuapeSampleVector(data, indices);
+  return new LuapeSampleVector(indices, data, true);
 }
 
 // tmp
@@ -187,7 +187,9 @@ std::pair<VectorPtr, SparseDoubleVectorPtr>& LuapeSamplesCache::internalCompute(
     std::pair<VectorPtr, SparseDoubleVectorPtr>& res = m[node];
 
     double startTime = Time::getMillisecondCounterHiRes();
-    res.first = node->compute(context, LuapeSamplesCachePtr(this));
+    LuapeSampleVectorPtr samples = node->compute(context, LuapeSamplesCachePtr(this), allIndices);
+    jassert(false); // samples->getVectorData()
+    res.first = VectorPtr();
     actualCacheSize += getSizeInBytes(res.first);
 
     LuapeFunctionNodePtr functionNode = node.dynamicCast<LuapeFunctionNode>();

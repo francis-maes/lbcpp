@@ -44,23 +44,22 @@ public:
     return v == doubleMissingValue ? Variable::missingValue(booleanType) : Variable(v >= threshold, booleanType);
   }
 
-  virtual VectorPtr compute(ExecutionContext& context, const std::vector<VectorPtr>& inputs, TypePtr outputType) const
+  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
   {
-    if (inputs[0].isInstanceOf<DenseDoubleVector>())
+    const LuapeSampleVectorPtr& scalars = inputs[0];
+    if (scalars->getElementsType() == doubleType)
     {
-      size_t n =  inputs[0]->getNumElements();
-      double* scalars = inputs[0].staticCast<DenseDoubleVector>()->getValuePointer(0);
-      BooleanVectorPtr res = new BooleanVector(n);
-      unsigned char* dst = res->getData();
-      for (size_t i = 0; i < n; ++i)
+      BooleanVectorPtr res = new BooleanVector(scalars->size());
+      unsigned char* dest = res->getData();
+      for (LuapeSampleVector::const_iterator it = inputs[0]->begin(); it != inputs[0]->end(); ++it)
       {
-        if (*scalars == doubleMissingValue)
-          *dst++ = 2;
+        double value = it.getRawDouble();
+        if (value == doubleMissingValue)
+          *dest++ = 2;
         else
-          *dst++ = (*scalars >= threshold ? 1 : 0);
-        ++scalars;
+          *dest++ = (value >= threshold ? 1 : 0);
       }
-      return res;
+      return new LuapeSampleVector(scalars->getIndices(), res);
     }
     else
       return LuapeFunction::compute(context, inputs, outputType);

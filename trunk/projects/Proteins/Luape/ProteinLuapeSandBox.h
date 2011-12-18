@@ -210,14 +210,15 @@ public:
     return Variable(res, proteinResiduePerceptionClass);
   }
 
-  virtual VectorPtr compute(ExecutionContext& context, const std::vector<VectorPtr>& inputs, TypePtr outputType) const
+  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
   {
-    ObjectVectorPtr objects = inputs[0].staticCast<ObjectVector>();
-    size_t n = objects->getNumElements();
+    const LuapeSampleVectorPtr& objects = inputs[0];
+    size_t n = objects->size();
     ObjectVectorPtr res = new ObjectVector(outputType, n);
-    for (size_t i = 0; i < n; ++i)
-      res->set(i, compute(objects->getAndCast<ProteinResiduePerception>(i)));
-    return res;
+    size_t i = 0;
+    for (LuapeSampleVector::const_iterator it = objects->begin(); it != objects->end(); ++it, ++i)
+      res->set(i, compute(it.getRawObject()));
+    return new LuapeSampleVector(objects->getIndices(), res);
   }
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
