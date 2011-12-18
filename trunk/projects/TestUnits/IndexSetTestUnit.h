@@ -75,7 +75,7 @@ public:
     context.enterScope(T("Curve"));
     for (size_t i = 0; i < stats.size(); ++i)
     {
-      context.enterScope(String(i));
+      context.enterScope(String((int)i));
       context.resultCallback(T("index"), i);
       context.resultCallback(T("mean"), stats[i].getMean());
       context.leaveScope();
