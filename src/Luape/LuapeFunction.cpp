@@ -24,21 +24,25 @@ String LuapeFunction::toShortString(const std::vector<LuapeNodePtr>& inputs) con
   return res + T(")");
 }
 
-VectorPtr LuapeFunction::compute(ExecutionContext& context, const std::vector<VectorPtr>& inputs, TypePtr outputType) const
+LuapeSampleVectorPtr LuapeFunction::compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
 {
-  jassert(inputs.size() == getNumInputs());
-  jassert(inputs.size());
+  jassert(inputs.size() && inputs.size() == getNumInputs());
 
-  size_t n = inputs[0]->getNumElements();
+  size_t n = inputs[0]->size();
   VectorPtr res = vector(outputType, n);
+
+  std::vector<LuapeSampleVector::const_iterator> it(inputs.size());
+  for (size_t i = 0; it.size(); ++i)
+    it[i] = inputs[i]->begin();
+
   for (size_t i = 0; i < n; ++i)
   {
     std::vector<Variable> inputValues(inputs.size());
-    for (size_t j = 0; j < inputValues.size(); ++j)
-      inputValues[j] = inputs[j]->getElement(i);
+    for (size_t j = 0; j < inputValues.size(); ++j, ++it[j])
+      inputValues[j] = *it[j];
     res->setElement(i, compute(context, &inputValues[0]));
   }
-  return res;
+  return new LuapeSampleVector(inputs[0]->getIndices(), res);
 }
 
 bool LuapeFunction::acceptInputsStack(const std::vector<LuapeNodePtr>& stack) const

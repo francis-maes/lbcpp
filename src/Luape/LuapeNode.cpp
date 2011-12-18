@@ -40,10 +40,10 @@ Variable LuapeInputNode::compute(ExecutionContext& context, const LuapeInstanceC
   return Variable();
 }
 
-VectorPtr LuapeInputNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const
+LuapeSampleVectorPtr LuapeInputNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
 {
   jassert(false); // the value should already have been cached
-  return VectorPtr();
+  return LuapeSampleVectorPtr();
 }
 
 /*
@@ -60,19 +60,8 @@ String LuapeConstantNode::toShortString() const
 Variable LuapeConstantNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
   {return value;}
 
-VectorPtr LuapeConstantNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const
-{
-  size_t n = cache->getNumSamples();
-  if (type == doubleType)
-    return new DenseDoubleVector(n, value.getDouble());
-  else
-  {
-    VectorPtr res = vector(type, n);
-    for (size_t i = 0; i < n; ++i)
-      res->setElement(i, value);
-    return res;
-  }
-}
+LuapeSampleVectorPtr LuapeConstantNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
+  {return LuapeSampleVector::createConstant(indices, value);}
 
 /*
 ** LuapeFunctionNode
@@ -115,11 +104,11 @@ Variable LuapeFunctionNode::compute(ExecutionContext& context, const LuapeInstan
   return function->compute(context, &inputValues[0]);
 }
 
-VectorPtr LuapeFunctionNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const
+LuapeSampleVectorPtr LuapeFunctionNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
 {
-  std::vector<VectorPtr> inputs(arguments.size());
+  std::vector<LuapeSampleVectorPtr> inputs(arguments.size());
   for (size_t i = 0; i < inputs.size(); ++i)
-    inputs[i] = cache->compute(context, arguments[i]);
+    inputs[i] = cache->getSamples(context, arguments[i], indices);
   return function->compute(context, inputs, type);
 }
 
@@ -165,97 +154,125 @@ Variable LuapeTestNode::compute(ExecutionContext& context, const LuapeInstanceCa
     return (condition.getBoolean() ? successNode : failureNode)->compute(context, cache);
 }
 
-VectorPtr LuapeTestNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const
+void LuapeTestNode::dispatchIndices(const LuapeSampleVectorPtr& conditionValues, IndexSetPtr& failureIndices, IndexSetPtr& successIndices, IndexSetPtr& missingIndices) const
 {
-  BooleanVectorPtr conditions = conditionNode->compute(context, cache).staticCast<BooleanVector>();
-  size_t n = conditions->getNumElements();
-  const unsigned char* conditionsPtr = conditions->getData();
+  failureIndices = new IndexSet();
+  successIndices = new IndexSet();
+  missingIndices = new IndexSet();
+  for (LuapeSampleVector::const_iterator it = conditionValues->begin(); it != conditionValues->end(); ++it)
+  {
+    switch (it.getRawBoolean())
+    {
+    case 0: failureIndices->append(it.getIndex()); break;
+    case 1: successIndices->append(it.getIndex()); break;
+    case 2: missingIndices->append(it.getIndex()); break;
+    default: jassert(false);
+    }
+  }
+}
+
+LuapeSampleVectorPtr LuapeTestNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
+{
+  LuapeSampleVectorPtr conditions = cache->getSamples(context, conditionNode, indices);
+  size_t n = conditions->size();
 
   if (successNode.isInstanceOf<LuapeConstantNode>() && failureNode.isInstanceOf<LuapeConstantNode>() && missingNode.isInstanceOf<LuapeConstantNode>())
   {
-    Variable successValue = successNode.staticCast<LuapeConstantNode>()->getValue();
-    Variable failureValue = failureNode.staticCast<LuapeConstantNode>()->getValue();
-    Variable missingValue = missingNode.staticCast<LuapeConstantNode>()->getValue();
+    Variable v[3];
+    v[0] = successNode.staticCast<LuapeConstantNode>()->getValue();
+    v[1] = failureNode.staticCast<LuapeConstantNode>()->getValue();
+    v[2] = missingNode.staticCast<LuapeConstantNode>()->getValue();
 
-    if (successValue.isDouble() && failureValue.isDouble() && missingValue.isDouble())
+    if (v[0].isDouble() && v[1].isDouble() && v[2].isDouble())
     {
-      double v[3];
-      v[0] = failureValue.getDouble();
-      v[1] = successValue.getDouble();
-      v[2] = missingValue.getDouble();
+      double dv[3];
+      dv[0] = v[0].getDouble();
+      dv[1] = v[1].getDouble();
+      dv[2] = v[2].getDouble();
       DenseDoubleVectorPtr res = new DenseDoubleVector(n, 0.0);
-      for (size_t i = 0; i < n; ++i)
-        res->setValue(i, v[*conditionsPtr++]);
-      return res;
+      double* ptr = res->getValuePointer(0);
+      for (LuapeSampleVector::const_iterator it = conditions->begin(); it != conditions->end(); ++it)
+        *ptr++ = dv[it.getRawBoolean()];
+      return new LuapeSampleVector(indices, res);
     }
-    else if (successValue.isObject() && failureValue.isObject() && missingValue.isObject())
+    else if (v[0].isObject() && v[1].isObject() && v[2].isObject())
     {
-      ObjectPtr o[3];
-      o[0] = failureValue.getObject();
-      o[1] = successValue.getObject();
-      o[2] = missingValue.getObject();      
+      ObjectPtr ov[3];
+      ov[0] = v[0].getObject();
+      ov[1] = v[0].getObject();
+      ov[2] = v[0].getObject();      
       ObjectVectorPtr res = new ObjectVector(type, n);
-      for (size_t i = 0; i < n; ++i)
-        res->set(i, o[*conditionsPtr++]);
-      return res;
+      size_t i = 0;
+      for (LuapeSampleVector::const_iterator it = conditions->begin(); it != conditions->end(); ++it, ++i)
+        res->set(i, ov[it.getRawBoolean()]);
+      return new LuapeSampleVector(indices, res);
     }
     else
     {
-      Variable v[3];
-      v[0] = failureValue;
-      v[1] = successValue;
-      v[2] = missingValue;
       VectorPtr res = vector(type, n);
-      for (size_t i = 0; i < n; ++i)
-        res->setElement(i, v[*conditionsPtr++]);
-      return res;
+      size_t i = 0;
+      for (LuapeSampleVector::const_iterator it = conditions->begin(); it != conditions->end(); ++it, ++i)
+        res->setElement(i, v[it.getRawBoolean()]);
+      return new LuapeSampleVector(indices, res);
     }
   }
   else
   {
-    VectorPtr failureValues = cache->compute(context, failureNode);
-    VectorPtr successValues = cache->compute(context, successNode);
-    VectorPtr missingValues = cache->compute(context, missingNode);
-    jassert(successValues->getNumElements() == n && failureValues->getNumElements() == n && missingValues->getNumElements() == n);
+    IndexSetPtr failureIndices, successIndices, missingIndices;
+    dispatchIndices(conditions, failureIndices, successIndices, missingIndices);
 
-    if (successValues.isInstanceOf<DenseDoubleVector>() && failureValues.isInstanceOf<DenseDoubleVector>() && missingValues.isInstanceOf<DenseDoubleVector>())
+    LuapeSampleVectorPtr subValues[3];
+    subValues[0] = cache->getSamples(context, failureNode, failureIndices);
+    subValues[1] = cache->getSamples(context, successNode, successIndices);
+    subValues[2] = cache->getSamples(context, missingNode, missingIndices);
+
+    TypePtr elementsType = subValues[0]->getElementsType();
+    jassert(subValues[1]->getElementsType() == elementsType);
+    jassert(subValues[2]->getElementsType() == elementsType);
+
+    LuapeSampleVector::const_iterator it[3];
+    it[0] = subValues[0]->begin();
+    it[1] = subValues[1]->begin();
+    it[2] = subValues[2]->begin();
+
+    if (elementsType == doubleType)
     {
-      DenseDoubleVectorPtr v[3];
-      v[0] = failureValues.staticCast<DenseDoubleVector>();
-      v[1] = successValues.staticCast<DenseDoubleVector>();
-      v[2] = missingValues.staticCast<DenseDoubleVector>();
       DenseDoubleVectorPtr res = new DenseDoubleVector(n, 0.0);
-      for (size_t i = 0; i < n; ++i)
-        res->setValue(i, v[*conditionsPtr++]->getValue(i));
-      return res;
+      double* ptr = res->getValuePointer(0);
+      for (LuapeSampleVector::const_iterator conditionIt = conditions->begin(); conditionIt != conditions->end(); ++conditionIt)
+      {
+        LuapeSampleVector::const_iterator& currentIt = it[conditionIt.getRawBoolean()];
+        *ptr++ = currentIt.getRawDouble();
+        ++currentIt;
+      }
+      return new LuapeSampleVector(indices, res);
     }
-    else if (successValues.isInstanceOf<ObjectVector>() && failureValues.isInstanceOf<ObjectVector>() && missingValues.isInstanceOf<ObjectVector>())
+    else if (elementsType->inheritsFrom(objectClass))
     {
-      ObjectVectorPtr o[3];
-      o[0] = failureValues.staticCast<ObjectVector>();
-      o[1] = successValues.staticCast<ObjectVector>();
-      o[2] = missingValues.staticCast<ObjectVector>();
       ObjectVectorPtr res = new ObjectVector(type, n);
-      for (size_t i = 0; i < n; ++i)
-        res->set(i, o[*conditionsPtr++]->get(i));
-      return res;
+      size_t i = 0;
+      for (LuapeSampleVector::const_iterator conditionIt = conditions->begin(); conditionIt != conditions->end(); ++conditionIt, ++i)
+      {
+        LuapeSampleVector::const_iterator& currentIt = it[conditionIt.getRawBoolean()];
+        res->set(i, currentIt.getRawObject());
+        ++currentIt;
+      }
+      return new LuapeSampleVector(indices, res);
     }
     else
     {
-      VectorPtr v[3];
-      v[0] = failureValues;
-      v[1] = successValues;
-      v[2] = missingValues;
       VectorPtr res = vector(type, n);
-      for (size_t i = 0; i < n; ++i)
+      size_t i = 0;
+      for (LuapeSampleVector::const_iterator conditionIt = conditions->begin(); conditionIt != conditions->end(); ++conditionIt, ++i)
       {
-        Variable value = v[*conditionsPtr++]->getElement(i);
-        res->setElement(i, value);
+        LuapeSampleVector::const_iterator& currentIt = it[conditionIt.getRawBoolean()];
+        res->setElement(i, *currentIt);
+        ++currentIt;
       }
-      return res;
+      return new LuapeSampleVector(indices, res);
     }
   }
-  return VectorPtr();
+  return LuapeSampleVectorPtr();
 }
 
 /*
@@ -274,13 +291,12 @@ String LuapeSequenceNode::toShortString() const
   return res;
 }
 
-VectorPtr LuapeSequenceNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache) const
+LuapeSampleVectorPtr LuapeSequenceNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
 {
-  size_t n = cache->getNumSamples();
-  VectorPtr outputs = createEmptyOutputs(n);
+  VectorPtr outputs = createEmptyOutputs(indices->size());
   for (size_t i = 0; i < nodes.size(); ++i)
-    updateOutputs(outputs, cache->compute(context, nodes[i]));
-  return outputs;
+    updateOutputs(outputs, cache->getSamples(context, nodes[i], indices));
+  return new LuapeSampleVector(indices, outputs);
 }
 
 void LuapeSequenceNode::pushNode(const LuapeNodePtr& node, const std::vector<LuapeSamplesCachePtr>& cachesToUpdate)
@@ -298,7 +314,7 @@ void LuapeSequenceNode::pushNode(const LuapeNodePtr& node, const std::vector<Lua
       outputs = createEmptyOutputs(n);
       cache->set(this, outputs);
     }
-    updateOutputs(outputs, cache->compute(defaultExecutionContext(), node));
+    updateOutputs(outputs, cache->getSamples(defaultExecutionContext(), node, cache->getAllIndices()));
   }
 }
 
@@ -326,11 +342,15 @@ Variable LuapeScalarSumNode::compute(ExecutionContext& context, const LuapeInsta
 VectorPtr LuapeScalarSumNode::createEmptyOutputs(size_t numSamples) const
   {return new DenseDoubleVector(numSamples, 0.0);}
 
-void LuapeScalarSumNode::updateOutputs(const VectorPtr& outputs, const VectorPtr& newNodeValues) const
+void LuapeScalarSumNode::updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues) const
 {
   const DenseDoubleVectorPtr& a = outputs.staticCast<DenseDoubleVector>();
-  const DenseDoubleVectorPtr& b = newNodeValues.staticCast<DenseDoubleVector>();
-  b->addTo(a);
+  double* dest = a->getValuePointer(0);
+  for (LuapeSampleVector::const_iterator it = newNodeValues->begin(); it != newNodeValues->end(); ++it)
+  {
+    double value = it.getRawDouble();
+    *dest++ += (value == doubleMissingValue ? 0.0 : value);
+  }
 }
 
 /*
@@ -368,15 +388,15 @@ VectorPtr LuapeVectorSumNode::createEmptyOutputs(size_t numSamples) const
   return res;
 }
  
-void LuapeVectorSumNode::updateOutputs(const VectorPtr& outputs, const VectorPtr& newNodeValues) const
+void LuapeVectorSumNode::updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues) const
 {
   const ObjectVectorPtr& a = outputs.staticCast<ObjectVector>();
-  const ObjectVectorPtr& b = newNodeValues.staticCast<ObjectVector>();
   size_t n = a->getNumElements();
-  jassert(n == b->getNumElements());
-  for (size_t i = 0; i < n; ++i)
+  jassert(newNodeValues->size() == n);
+  size_t i = 0;
+  for (LuapeSampleVector::const_iterator it = newNodeValues->begin(); it != newNodeValues->end(); ++it, ++i)
   {
-    const DenseDoubleVectorPtr& newNodeValue = b->getAndCast<DenseDoubleVector>(i);
+    const DenseDoubleVectorPtr& newNodeValue = it.getRawObject().staticCast<DenseDoubleVector>();
     if (newNodeValue)
     {
       DenseDoubleVectorPtr target = a->getAndCast<DenseDoubleVector>(i);

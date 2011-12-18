@@ -40,19 +40,8 @@ public:
     /*
     ** Dispatch examples
     */
-    IndexSetPtr successExamples = new IndexSet();
-    IndexSetPtr failureExamples = new IndexSet();
-    IndexSetPtr missingExamples = new IndexSet();
-    for (LuapeSampleVector::const_iterator it = testValues->begin(); it != testValues->end(); ++it)
-    {
-      switch (it.getRawBoolean())
-      {
-      case 0: failureExamples->append(it.getIndex()); break;
-      case 1: successExamples->append(it.getIndex()); break;
-      case 2: missingExamples->append(it.getIndex()); break;
-      default: jassert(false);
-      }
-    }
+    IndexSetPtr failureExamples, successExamples, missingExamples;
+    res->dispatchIndices(testValues, failureExamples, successExamples, missingExamples);
 
     /*
     ** Call sub-learners on sub-examples

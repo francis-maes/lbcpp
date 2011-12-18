@@ -37,56 +37,60 @@ public:
     return object ? pthis().computeObject(object) : Variable();
   }
 
-  virtual VectorPtr compute(ExecutionContext& context, const std::vector<VectorPtr>& inputs, TypePtr outputType) const
+  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
   {
-    ObjectVectorPtr objects = inputs[0].staticCast<ObjectVector>();
-    size_t n = objects->getNumElements();
+    LuapeSampleVectorPtr objects = inputs[0];
+    size_t n = objects->size();
     if (outputType->inheritsFrom(objectClass))
     {
       ObjectVectorPtr res = new ObjectVector(outputType, n);
-      for (size_t i = 0; i < n; ++i)
+      size_t i = 0;
+      for (LuapeSampleVector::const_iterator it = objects->begin(); it != objects->end(); ++it, ++i)
       {
-        const ObjectPtr& object = objects->get(i);
+        const ObjectPtr& object = it.getRawObject();
         if (object)
           res->set(i, pthis().computeObject(object).getObject());
       }
-      return res;
+      return new LuapeSampleVector(objects->getIndices(), res);
     }
     else if (outputType->inheritsFrom(doubleType))
     {
       DenseDoubleVectorPtr res = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, outputType, n, doubleMissingValue);
-      for (size_t i = 0; i < n; ++i)
+      size_t i = 0;
+      for (LuapeSampleVector::const_iterator it = objects->begin(); it != objects->end(); ++it, ++i)
       {
-        const ObjectPtr& object = objects->get(i);
+        const ObjectPtr& object = it.getRawObject();
         if (object)
           res->setValue(i, pthis().computeObject(object).getDouble());
       }
-      return res;
+      return new LuapeSampleVector(objects->getIndices(), res);
     }
     else if (outputType->inheritsFrom(booleanType))
     {
       BooleanVectorPtr res = new BooleanVector(n);
-      for (size_t i = 0; i < n; ++i)
+      size_t i = 0;
+      for (LuapeSampleVector::const_iterator it = objects->begin(); it != objects->end(); ++it, ++i)
       {
-        const ObjectPtr& object = objects->get(i);
+        const ObjectPtr& object = it.getRawObject();
         if (object)
         {
           Variable v = pthis().computeObject(object);
           res->getData()[i] = v.isMissingValue() ? 2 : (v.getBoolean() ? 1 : 0);
         }
       }
-      return res;
+      return new LuapeSampleVector(objects->getIndices(), res);
     }
     else
     {
       VectorPtr res = vector(outputType, n);
-      for (size_t i = 0; i < n; ++i)
+      size_t i = 0;
+      for (LuapeSampleVector::const_iterator it = objects->begin(); it != objects->end(); ++it, ++i)
       {
-        const ObjectPtr& object = objects->get(i);
+        const ObjectPtr& object = it.getRawObject();
         if (object)
           res->setElement(i, pthis().computeObject(object));
       }
-      return res;
+      return new LuapeSampleVector(objects->getIndices(), res);
     }
   }
 

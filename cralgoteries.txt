@@ -1,9 +1,6 @@
 
-Finir refactoring Cache:
- * LuapeNode::compute(LuapeSamplesCachePtr): utiliser LuapeSampleVector
- * LuapeFunction::compute(VectorPtr): utiliser LuapeSampleVector
  * IndexSet: implementation simple à base de std::vector<size_t>
- * 2 types: de LuapeSampleVector: subset d'un Vector, Vector dédié
+ * 3 types: de LuapeSampleVector: subset d'un Vector, Vector dédié, constant
  * Cache: timing pour cacher les calculs les plus couteux
 
 Luape-Other:

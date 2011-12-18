@@ -179,9 +179,7 @@ SparseDoubleVectorPtr BoostingWeakObjective::computeSortedDoubleValues(Execution
 
 double BoostingWeakObjective::findBestThreshold(ExecutionContext& context, const LuapeSampleVectorPtr& predictions, double& bestScore, bool verbose)
 {
-  // todo: compute sortedDoubleValues here
-
-  setPredictions(new LuapeSampleVector(booleanType, predictions->getIndices())); // all predictions to false
+  setPredictions(LuapeSampleVector::createConstant(predictions->getIndices(), Variable(false, booleanType)));
 
   SparseDoubleVectorPtr sortedDoubleValues = computeSortedDoubleValues(context, predictions);
   if (sortedDoubleValues->getNumValues() == 0)
