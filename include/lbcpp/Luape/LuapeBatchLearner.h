@@ -46,17 +46,21 @@ public:
     LuapeNodeUniversePtr universe = function->getUniverse();
     for (size_t i = 0; i < maxIterations; ++i)
     {
-     /* context.enterScope(T("Cache information"));
-      String info = T("Train cache size: ") + String((int)learner->getTrainingSamples()->getCacheSizeInBytes() / (1024 * 1024)) + T(" Mb");
-      if (learner->getValidationSamples())
-        info += T(" Validation cache size: ") + String((int)learner->getValidationSamples()->getCacheSizeInBytes() / (1024 * 1024)) + T(" Mb");
+/*      context.enterScope(T("Cache information"));
+      String info = T("Train cache size: ") + String((int)learner->getTrainingCache()->getCacheSizeInBytes() / (1024 * 1024)) + T(" Mb");
+      if (learner->getValidationCache())
+        info += T(" Validation cache size: ") + String((int)learner->getValidationCache()->getCacheSizeInBytes() / (1024 * 1024)) + T(" Mb");
       context.informationCallback(info);
-      learner->getTrainingSamples()->getComputeTimeStatistics(context);
+      learner->getTrainingCache()->getComputeTimeStatistics(context);
       context.leaveScope();*/
 
       context.enterScope(T("Iteration ") + String((int)i + 1));
       context.resultCallback(T("iteration"), i);
+      
       learner->doLearningIteration(context);
+      context.resultCallback("trainCacheSizeInMb", learner->getTrainingCache()->getCacheSizeInBytes() / (1024.0 * 1024.0));
+      if (learner->getValidationCache())
+        context.resultCallback("validationCacheSizeInMb", learner->getValidationCache()->getCacheSizeInBytes() / (1024.0 * 1024.0));
       context.leaveScope();
 
       //if ((i+1) % 100 == 0)

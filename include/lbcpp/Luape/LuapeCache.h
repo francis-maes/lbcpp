@@ -184,7 +184,7 @@ public:
   size_t getCacheSizeInBytes() const
     {return actualCacheSize;}
 
-  bool checkCacheIsCorrect(ExecutionContext& context, const std::vector<LuapeInputNodePtr>& inputs, const LuapeNodePtr& node);
+  bool checkCacheIsCorrect(ExecutionContext& context, const LuapeNodePtr& node);
 
   void getComputeTimeStatistics(ExecutionContext& context) const;
 
@@ -198,6 +198,7 @@ protected:
   std::map<ClassPtr, ScalarVariableStatistics> computingTimeByLuapeFunctionClass;
 
   NodeToSamplesMap m;
+  std::vector<LuapeInputNodePtr> inputNodes;
   std::vector<VectorPtr> inputCaches;
   std::deque<LuapeNodePtr> cacheSequence;
   size_t maxCacheSize; // in bytes

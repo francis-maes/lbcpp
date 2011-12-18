@@ -150,6 +150,7 @@ public:
     context.leaveScope(bestLoss);
     successVote = bestWeight;
     failureVote = -bestWeight;
+    missingVote = 0.0;
     return true;
   }
 

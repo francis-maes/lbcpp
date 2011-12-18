@@ -1,7 +1,7 @@
 
 Plan:
  ok 1) utiliser IndexSet partout au lieu de std::vector<size_t>
- o 2) nouvelle classe LuapeSampleVector, utiliser partout LuapeSampleVector au lieu des accès bruts aux VectorPtr
+ ok 2) nouvelle classe LuapeSampleVector, utiliser partout LuapeSampleVector au lieu des accès bruts aux VectorPtr
  
  3) Utiliser SampleSet dans le cache
  4) checker compilation linux

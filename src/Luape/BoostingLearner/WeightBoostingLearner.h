@@ -36,8 +36,9 @@ public:
 
   virtual bool doLearningIteration(ExecutionContext& context)
   {
+    VectorPtr predictions = getTrainingPredictions();
     double loss;
-    weights = computeSampleWeights(context, getTrainingPredictions(), loss);
+    weights = computeSampleWeights(context, predictions, loss);
     context.resultCallback(T("loss"), loss);
     return BoostingLearner::doLearningIteration(context);
   }
