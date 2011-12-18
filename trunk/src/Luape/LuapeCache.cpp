@@ -62,7 +62,7 @@ Variable LuapeInstanceCache::compute(ExecutionContext& context, const LuapeNodeP
 ** LuapeSamplesCache
 */
 LuapeSamplesCache::LuapeSamplesCache(const std::vector<LuapeInputNodePtr>& inputs, size_t size, size_t maxCacheSizeInMb)
-  : maxCacheSize(maxCacheSizeInMb * 1024 * 1024), actualCacheSize(0)
+  : inputNodes(inputs), maxCacheSize(maxCacheSizeInMb * 1024 * 1024), actualCacheSize(0)
 {
   inputCaches.resize(inputs.size());
   for (size_t i = 0; i < inputs.size(); ++i)
@@ -138,6 +138,23 @@ VectorPtr LuapeSamplesCache::get(const LuapeNodePtr& node) const
 
 LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices, bool isRemoveable)
 {
+#if 0
+  // TMP: bypass cache
+  if (indices->size() < getNumSamples() && !node.isInstanceOf<LuapeInputNode>())
+  {
+    VectorPtr data = vector(node->getType(), indices->back() + 1);
+    for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
+    {
+      size_t index = *it;
+      LuapeInstanceCachePtr instanceCache(new LuapeInstanceCache());
+      for (size_t i = 0; i < inputCaches.size(); ++i)
+        instanceCache->set(inputNodes[i], inputCaches[i]->getElement(index));
+      data->setElement(index, node->compute(context, instanceCache));
+    }
+    return new LuapeSampleVector(data, indices);
+  }
+#endif // 0
+
   /*typedef std::map<LuapeNodePtr, LuapeSampleVectorPtr> NodeToSampleVectorMap;
   NodeToSampleVectorMap::const_iterator it = cache.find(node);
   if (it == cache.end())
@@ -204,11 +221,11 @@ void LuapeSamplesCache::getComputeTimeStatistics(ExecutionContext& context) cons
     context.resultCallback(it->first->getName(), it->second.clone(context));
 }
 
-bool LuapeSamplesCache::checkCacheIsCorrect(ExecutionContext& context, const std::vector<LuapeInputNodePtr>& inputs, const LuapeNodePtr& node)
+bool LuapeSamplesCache::checkCacheIsCorrect(ExecutionContext& context, const LuapeNodePtr& node)
 {
   size_t n = node->getNumSubNodes();
   for (size_t i = 0; i < n; ++i)
-    if (!checkCacheIsCorrect(context, inputs, node->getSubNode(i)))
+    if (!checkCacheIsCorrect(context, node->getSubNode(i)))
       return false;
 
   VectorPtr outputs = compute(context, node);
@@ -216,16 +233,19 @@ bool LuapeSamplesCache::checkCacheIsCorrect(ExecutionContext& context, const std
   for (size_t i = 0; i < n; ++i)
   {
     LuapeInstanceCachePtr instanceCache(new LuapeInstanceCache());
-    jassert(inputs.size() == inputCaches.size());
-    for (size_t j = 0; j < inputs.size(); ++j)
+    jassert(inputNodes.size() == inputCaches.size());
+    for (size_t j = 0; j < inputNodes.size(); ++j)
     {
       jassert(inputCaches[j]->getNumElements() == n);
-      instanceCache->set(inputs[j], inputCaches[j]->getElement(i));
+      instanceCache->set(inputNodes[j], inputCaches[j]->getElement(i));
     }
     Variable sampleCacheOutput = outputs->getElement(i);
     Variable instanceCacheOutput = instanceCache->compute(context, node);
     if (sampleCacheOutput != instanceCacheOutput)
     {
+      context.errorCallback(T("Invalid cache for node ") + node->toShortString());
+      context.resultCallback(T("sampleCacheOutput"), sampleCacheOutput);
+      context.resultCallback(T("instanceCacheOutput"), instanceCacheOutput);
       jassert(false);
       return false;
     }

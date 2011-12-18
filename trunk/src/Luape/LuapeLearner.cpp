@@ -38,7 +38,7 @@ bool LuapeLearner::setExamples(ExecutionContext& context, bool isTrainingData, c
 
 VectorPtr LuapeLearner::getTrainingPredictions() const
 {
-  LuapeSampleVectorPtr samples = trainingCache->getSamples(defaultExecutionContext(), function->getRootNode(), allExamples);
+  LuapeSampleVectorPtr samples = trainingCache->getSamples(defaultExecutionContext(), function->getRootNode(), allExamples, false);
   jassert(samples->getNumChunks() == 1);
   return samples->getChunkData(0);
 }
@@ -47,7 +47,7 @@ VectorPtr LuapeLearner::getValidationPredictions() const
 {
   if (validationCache)
   {
-    LuapeSampleVectorPtr samples = validationCache->getSamples(defaultExecutionContext(), function->getRootNode(), allExamples);
+    LuapeSampleVectorPtr samples = validationCache->getSamples(defaultExecutionContext(), function->getRootNode(), allExamples, false);
     jassert(samples->getNumChunks() == 1);
     return samples->getChunkData(0);
   }
@@ -131,7 +131,7 @@ bool BoostingLearner::doLearningIteration(ExecutionContext& context)
       context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
   }
 
-  //trainingSamples->checkCacheIsCorrect(context, function->getInputs(), function->getRootNode());
+  // trainingCache->checkCacheIsCorrect(context, function->getRootNode());
 
   context.resultCallback(T("contribution"), contribution);
   return true;
@@ -248,8 +248,8 @@ double BoostingWeakLearner::computeWeakObjectiveWithEventualStump(ExecutionConte
 
 double BoostingWeakLearner::computeWeakObjective(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& indices) const
 {
-  BoostingWeakObjectivePtr edgeCalculator = structureLearner->createWeakObjective();
   LuapeSampleVectorPtr weakPredictions = structureLearner->getTrainingCache()->getSamples(context, weakNode, indices);
+  BoostingWeakObjectivePtr edgeCalculator = structureLearner->createWeakObjective();
   jassert(weakNode->getType() == booleanType || weakNode->getType() == probabilityType);
   return edgeCalculator->compute(weakPredictions);
 }
@@ -257,11 +257,11 @@ double BoostingWeakLearner::computeWeakObjective(ExecutionContext& context, cons
 double BoostingWeakLearner::computeWeakObjectiveWithStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, const IndexSetPtr& indices, double& bestThreshold) const
 {
   jassert(indices->size());
-  LuapeSampleVectorPtr numberPredictions = structureLearner->getTrainingCache()->getSamples(context, numberNode, indices);
-  jassert(numberPredictions->size() == indices->size());
+  LuapeSampleVectorPtr weakPredictions = structureLearner->getTrainingCache()->getSamples(context, numberNode, indices);
+  jassert(weakPredictions->size() == indices->size());
   BoostingWeakObjectivePtr weakObjective = structureLearner->createWeakObjective();
   double bestScore;
-  bestThreshold = weakObjective->findBestThreshold(context, numberPredictions, bestScore, false);
+  bestThreshold = weakObjective->findBestThreshold(context, weakPredictions, bestScore, false);
   return bestScore;
 }
 

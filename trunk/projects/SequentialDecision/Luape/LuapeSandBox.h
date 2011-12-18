@@ -48,14 +48,16 @@ public:
 
     //BoostingWeakLearnerPtr conditionLearner = singleStumpWeakLearner();
     BoostingWeakLearnerPtr conditionLearner = policyBasedWeakLearner(treeBasedRandomPolicy(), budgetPerIteration, maxSteps);
+    //conditionLearner = laminatingWeakLearner(conditionLearner, 100);
     //BoostingWeakLearnerPtr weakLearner = new NormalizedValueWeakLearner();
     //BoostingWeakLearnerPtr conditionLearner = nestedMCWeakLearner(0, budgetPerIteration, maxSteps);
 
+    conditionLearner = compositeWeakLearner(constantWeakLearner(), conditionLearner);
     BoostingWeakLearnerPtr weakLearner = conditionLearner;
     for (size_t i = 1; i < treeDepth; ++i)
       weakLearner = binaryTreeWeakLearner(conditionLearner, weakLearner);
 
-    classifier->setBatchLearner(new LuapeBatchLearner(adaBoostMHLearner(weakLearner, false), maxIterations));
+    classifier->setLearner(adaBoostMHLearner(weakLearner, true), maxIterations);
     classifier->setEvaluator(defaultSupervisedEvaluator());
 
     classifier->train(context, trainData, testData, T("Training"), true);

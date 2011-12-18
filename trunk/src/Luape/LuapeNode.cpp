@@ -149,10 +149,11 @@ const LuapeNodePtr& LuapeTestNode::getSubNode(size_t index) const
 
 String LuapeTestNode::toShortString() const
 {
-  return "(" + conditionNode->toShortString() + " ? " + 
-          successNode->toShortString() + T(" : ") + 
-          failureNode->toShortString() + T(" : ") + 
-          missingNode->toShortString() + T(")");
+  String res = "(" + conditionNode->toShortString() + " ? " + 
+          successNode->toShortString() + T(" : ") + failureNode->toShortString();
+  if (missingNode && missingNode.isInstanceOf<LuapeConstantNode>() && missingNode.staticCast<LuapeConstantNode>()->getValue().exists())
+    res += T(" : ") + missingNode->toShortString();
+  return res + T(")");
 }
 
 Variable LuapeTestNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
