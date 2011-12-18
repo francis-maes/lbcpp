@@ -156,16 +156,9 @@ size_t LuapeSamplesCache::getSizeInBytes(const VectorPtr& samples) const
 void LuapeSamplesCache::cacheNode(ExecutionContext& context, const LuapeNodePtr& node, const VectorPtr& values)
 {
   jassert(m.find(node) == m.end());
-  //context.informationCallback(T("Cache node ") + node->toShortString());
-  if (values)
-    m[node] = std::make_pair(values, SparseDoubleVectorPtr());
-  else
-  {
-    VectorPtr samples = computeOnAllExamples(context, node);
-    m[node] = std::make_pair(samples, SparseDoubleVectorPtr());
-    actualCacheSize += getSizeInBytes(samples);
-
-  }
+  VectorPtr samples = values ? values : computeOnAllExamples(context, node);
+  m[node] = std::make_pair(samples, SparseDoubleVectorPtr());
+  actualCacheSize += getSizeInBytes(values);
 }
 
 bool LuapeSamplesCache::isNodeCached(const LuapeNodePtr& node) const
@@ -179,6 +172,9 @@ VectorPtr LuapeSamplesCache::getNodeCache(const LuapeNodePtr& node) const
 
 LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices, bool isRemoveable)
 {
+  if (indices->empty())
+    return LuapeSampleVector::createConstant(indices, Variable::missingValue(node->getType()));
+
   NodeToSamplesMap::const_iterator it = m.find(node);
   if (it != m.end())
     return LuapeSampleVector::createCached(indices, it->second.first);

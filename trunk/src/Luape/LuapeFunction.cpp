@@ -32,14 +32,17 @@ LuapeSampleVectorPtr LuapeFunction::compute(ExecutionContext& context, const std
   VectorPtr res = vector(outputType, n);
 
   std::vector<LuapeSampleVector::const_iterator> it(inputs.size());
-  for (size_t i = 0; it.size(); ++i)
+  for (size_t i = 0; i < it.size(); ++i)
     it[i] = inputs[i]->begin();
 
   for (size_t i = 0; i < n; ++i)
   {
     std::vector<Variable> inputValues(inputs.size());
-    for (size_t j = 0; j < inputValues.size(); ++j, ++it[j])
+    for (size_t j = 0; j < inputValues.size(); ++j)
+    {
       inputValues[j] = *it[j];
+      ++(it[j]);
+    }
     res->setElement(i, compute(context, &inputValues[0]));
   }
   return new LuapeSampleVector(inputs[0]->getIndices(), res);

@@ -175,6 +175,7 @@ void LuapeTestNode::dispatchIndices(const LuapeSampleVectorPtr& conditionValues,
 
 LuapeSampleVectorPtr LuapeTestNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
 {
+  jassert(indices->size());
   LuapeSampleVectorPtr conditions = cache->getSamples(context, conditionNode, indices);
   size_t n = conditions->size();
 

@@ -1,9 +1,4 @@
 
- * IndexSet: radically simplify the implementation and use only one std::vector<size_t>
- * LuapeSampleVector: Implementation enumeration, three modes: "constantValue", "ownedVector" and "cachedVector"
- * LuapeSampleVector: re-implement using new IndexSet implementation and the three Implementation modes
- * Refactor LuapeSamplesCache
- 
  * Smart-Cache: evaluer le temps de calcul des differents noeuds, cacher de maniere adaptative
 
 Luape-Other:
