@@ -47,7 +47,6 @@ protected:
 
   std::vector<ObjectPtr> trainingData;
   LuapeSamplesCachePtr trainingCache;
-  IndexSetPtr allExamples;
 
   std::vector<ObjectPtr> validationData;
   LuapeSamplesCachePtr validationCache;

@@ -135,7 +135,7 @@
 
   <!-- IndexSet -->
   <class name="IndexSet" base="Object">
-    <variable type="ObjectVector[GenericVector[PositiveInteger]]" name="chunks"/>
+    <variable type="GenericVector[PositiveInteger]" name="v"/>
   </class>
   
 </library>

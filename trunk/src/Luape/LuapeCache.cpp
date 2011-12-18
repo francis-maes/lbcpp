@@ -59,16 +59,46 @@ Variable LuapeInstanceCache::compute(ExecutionContext& context, const LuapeNodeP
 }
 
 /*
+** LuapeSampleVector
+*/
+LuapeSampleVector::LuapeSampleVector(Implementation implementation, const IndexSetPtr& indices, const TypePtr& elementsType)
+  : implementation(implementation), indices(indices), elementsType(elementsType), constantRawBoolean(2) {}
+
+LuapeSampleVector::LuapeSampleVector(const IndexSetPtr& indices, const VectorPtr& ownedVector)
+  : implementation(ownedVectorImpl), indices(indices), elementsType(ownedVector->getElementsType()), constantRawBoolean(2), vector(ownedVector) {}
+
+LuapeSampleVector::LuapeSampleVector() : implementation(noImpl), constantRawBoolean(2)
+{
+}
+
+LuapeSampleVectorPtr LuapeSampleVector::createConstant(IndexSetPtr indices, const Variable& constantValue)
+{
+  LuapeSampleVectorPtr res(new LuapeSampleVector(constantValueImpl, indices, constantValue.getType()));
+  res->constantValue = constantValue;
+  res->constantRawBoolean = (constantValue.exists() && constantValue.isBoolean() ? (constantValue.getBoolean() ? 1 : 0) : 2);
+  res->constantRawDouble = constantValue.isConvertibleToDouble() ? constantValue.toDouble() : 0.0;
+  res->constantRawObject = constantValue.isObject() ? constantValue.getObject() : ObjectPtr();
+  return res;
+}
+
+LuapeSampleVectorPtr LuapeSampleVector::createCached(IndexSetPtr indices, const VectorPtr& cachedVector)
+{
+  LuapeSampleVectorPtr res(new LuapeSampleVector(cachedVectorImpl, indices, cachedVector->getElementsType()));
+  res->vector = cachedVector;
+  return res;
+}
+
+/*
 ** LuapeSamplesCache
 */
 LuapeSamplesCache::LuapeSamplesCache(const std::vector<LuapeInputNodePtr>& inputs, size_t size, size_t maxCacheSizeInMb)
-  : inputNodes(inputs), maxCacheSize(maxCacheSizeInMb * 1024 * 1024), actualCacheSize(0)
+  : inputNodes(inputs), maxCacheSize(maxCacheSizeInMb * 1024 * 1024), actualCacheSize(0), allIndices(new IndexSet(0, size))
 {
   inputCaches.resize(inputs.size());
   for (size_t i = 0; i < inputs.size(); ++i)
   {
     inputCaches[i] = vector(inputs[i]->getType(), size);
-    set(inputs[i], inputCaches[i]);
+    cacheNode(defaultExecutionContext(), inputs[i], inputCaches[i]);
   }
 }
 
@@ -123,14 +153,25 @@ size_t LuapeSamplesCache::getSizeInBytes(const VectorPtr& samples) const
   }
 }
 
-void LuapeSamplesCache::set(const LuapeNodePtr& node, const VectorPtr& samples)
+void LuapeSamplesCache::cacheNode(ExecutionContext& context, const LuapeNodePtr& node, const VectorPtr& values)
 {
   jassert(m.find(node) == m.end());
-  m[node] = std::make_pair(samples, SparseDoubleVectorPtr());
-  actualCacheSize += getSizeInBytes(samples);
+  //context.informationCallback(T("Cache node ") + node->toShortString());
+  if (values)
+    m[node] = std::make_pair(values, SparseDoubleVectorPtr());
+  else
+  {
+    VectorPtr samples = computeOnAllExamples(context, node);
+    m[node] = std::make_pair(samples, SparseDoubleVectorPtr());
+    actualCacheSize += getSizeInBytes(samples);
+
+  }
 }
 
-VectorPtr LuapeSamplesCache::get(const LuapeNodePtr& node) const
+bool LuapeSamplesCache::isNodeCached(const LuapeNodePtr& node) const
+  {return m.find(node) != m.end();}
+
+VectorPtr LuapeSamplesCache::getNodeCache(const LuapeNodePtr& node) const
 {
   NodeToSamplesMap::const_iterator it = m.find(node);
   return it == m.end() ? VectorPtr() : it->second.first;
@@ -138,83 +179,51 @@ VectorPtr LuapeSamplesCache::get(const LuapeNodePtr& node) const
 
 LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices, bool isRemoveable)
 {
-#if 0
-  // TMP: bypass cache
-  if (indices->size() < getNumSamples() && !node.isInstanceOf<LuapeInputNode>())
-  {
-    VectorPtr data = vector(node->getType(), indices->back() + 1);
-    for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
-    {
-      size_t index = *it;
-      LuapeInstanceCachePtr instanceCache(new LuapeInstanceCache());
-      for (size_t i = 0; i < inputCaches.size(); ++i)
-        instanceCache->set(inputNodes[i], inputCaches[i]->getElement(index));
-      data->setElement(index, node->compute(context, instanceCache));
-    }
-    return new LuapeSampleVector(indices, data);
-  }
-#endif // 0
-
-  /*typedef std::map<LuapeNodePtr, LuapeSampleVectorPtr> NodeToSampleVectorMap;
-  NodeToSampleVectorMap::const_iterator it = cache.find(node);
-  if (it == cache.end())
-  {
-    // create new LuapeSampleVector
-  }
+  NodeToSamplesMap::const_iterator it = m.find(node);
+  if (it != m.end())
+    return LuapeSampleVector::createCached(indices, it->second.first);
   else
   {
-    // merge LuapeSampleVectors
-  }*/
-  jassert(node);
-  VectorPtr data = internalCompute(context, node, isRemoveable).first;
-  return new LuapeSampleVector(indices, data, true);
-}
-
-// tmp
-VectorPtr LuapeSamplesCache::compute(ExecutionContext& context, const LuapeNodePtr& node, bool isRemoveable)
-{
-  jassert(node);
-  return internalCompute(context, node, isRemoveable).first;
-}
-// -
-
-std::pair<VectorPtr, SparseDoubleVectorPtr>& LuapeSamplesCache::internalCompute(ExecutionContext& context, const LuapeNodePtr& node, bool isRemoveable)
-{
-  jassert(node);
-  NodeToSamplesMap::iterator it = m.find(node);
-  if (it == m.end())
-  {
-    std::pair<VectorPtr, SparseDoubleVectorPtr>& res = m[node];
-
-    double startTime = Time::getMillisecondCounterHiRes();
-    LuapeSampleVectorPtr samples = node->compute(context, LuapeSamplesCachePtr(this), allIndices);
-    jassert(false); // samples->getVectorData()
-    res.first = VectorPtr();
-    actualCacheSize += getSizeInBytes(res.first);
-
-    LuapeFunctionNodePtr functionNode = node.dynamicCast<LuapeFunctionNode>();
-    if (functionNode)
-    {
-      double endTime = Time::getMillisecondCounterHiRes();
-      computingTimeByLuapeFunctionClass[functionNode->getFunction()->getClass()].push((endTime - startTime) / 1000.0);
-    }
-
-    if (maxCacheSize)
-    {
-      if (isRemoveable)
-        cacheSequence.push_back(node);
-      while (actualCacheSize > maxCacheSize && cacheSequence.size() && cacheSequence.front() != node)
-      {
-        actualCacheSize -= getSizeInBytes(res.first) + getSizeInBytes(res.second);
-        m.erase(cacheSequence.front());
-        cacheSequence.pop_front();
-      }
-    }
+    LuapeSampleVectorPtr res = node->compute(context, refCountedPointerFromThis(this), indices);
+    jassert((indices == allIndices) == (indices->size() == allIndices->size()));
+    if (indices == allIndices && res->getVector())
+      cacheNode(context, node, res->getVector()); // cache node if possible
     return res;
   }
-  else
-    return it->second;
 }
+
+VectorPtr LuapeSamplesCache::computeOnAllExamples(ExecutionContext& context, const LuapeNodePtr& node) const
+{
+  double startTime = Time::getMillisecondCounterHiRes();
+  LuapeSampleVectorPtr samples = node->compute(context, refCountedPointerFromThis(this), allIndices);
+  VectorPtr res = samples->getVector();
+  jassert(res);
+      
+  LuapeFunctionNodePtr functionNode = node.dynamicCast<LuapeFunctionNode>();
+  if (functionNode)
+  {
+    double endTime = Time::getMillisecondCounterHiRes();
+    ClassPtr functionClass = functionNode->getFunction()->getClass();
+    const_cast<LuapeSamplesCache* >(this)->computingTimeByLuapeFunctionClass[functionClass].push((endTime - startTime) / 1000.0);
+  }
+  return res;
+}
+
+/*
+
+  if (maxCacheSize)
+  {
+    if (isRemoveable)
+      cacheSequence.push_back(node);
+    while (actualCacheSize > maxCacheSize && cacheSequence.size() && cacheSequence.front() != node)
+    {
+      actualCacheSize -= getSizeInBytes(res.first) + getSizeInBytes(res.second);
+      m.erase(cacheSequence.front());
+      cacheSequence.pop_front();
+    }
+  }
+  return res;
+*/
 
 void LuapeSamplesCache::getComputeTimeStatistics(ExecutionContext& context) const
 {
@@ -230,22 +239,22 @@ bool LuapeSamplesCache::checkCacheIsCorrect(ExecutionContext& context, const Lua
     if (!checkCacheIsCorrect(context, node->getSubNode(i)))
       return false;
 
-  VectorPtr outputs = compute(context, node);
-  n = outputs->getNumElements();
-  for (size_t i = 0; i < n; ++i)
+  LuapeSampleVectorPtr outputs = getSamples(context, node, allIndices);
+  for (LuapeSampleVector::const_iterator it = outputs->begin(); it != outputs->end(); ++it)
   {
+    size_t index = it.getIndex();
     LuapeInstanceCachePtr instanceCache(new LuapeInstanceCache());
     jassert(inputNodes.size() == inputCaches.size());
     for (size_t j = 0; j < inputNodes.size(); ++j)
     {
       jassert(inputCaches[j]->getNumElements() == n);
-      instanceCache->set(inputNodes[j], inputCaches[j]->getElement(i));
+      instanceCache->set(inputNodes[j], inputCaches[j]->getElement(index));
     }
-    Variable sampleCacheOutput = outputs->getElement(i);
+    Variable sampleCacheOutput = *it;
     Variable instanceCacheOutput = instanceCache->compute(context, node);
     if (sampleCacheOutput != instanceCacheOutput)
     {
-      context.errorCallback(T("Invalid cache for node ") + node->toShortString());
+      context.errorCallback(T("Invalid cache for node ") + node->toShortString() + T(" at index ") + String((int)index));
       context.resultCallback(T("sampleCacheOutput"), sampleCacheOutput);
       context.resultCallback(T("instanceCacheOutput"), instanceCacheOutput);
       jassert(false);

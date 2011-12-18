@@ -1,7 +1,10 @@
 
- * IndexSet: implementation simple à base de std::vector<size_t>
- * 3 types: de LuapeSampleVector: subset d'un Vector, Vector dédié, constant
- * Cache: timing pour cacher les calculs les plus couteux
+ * IndexSet: radically simplify the implementation and use only one std::vector<size_t>
+ * LuapeSampleVector: Implementation enumeration, three modes: "constantValue", "ownedVector" and "cachedVector"
+ * LuapeSampleVector: re-implement using new IndexSet implementation and the three Implementation modes
+ * Refactor LuapeSamplesCache
+ 
+ * Smart-Cache: evaluer le temps de calcul des differents noeuds, cacher de maniere adaptative
 
 Luape-Other:
  * Go: rankboost + large-scale boosting
