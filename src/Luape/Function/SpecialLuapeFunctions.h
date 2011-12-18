@@ -47,6 +47,7 @@ public:
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
   {
     const LuapeSampleVectorPtr& scalars = inputs[0];
+    jassert(scalars->size());
     if (scalars->getElementsType() == doubleType)
     {
       BooleanVectorPtr res = new BooleanVector(scalars->size());

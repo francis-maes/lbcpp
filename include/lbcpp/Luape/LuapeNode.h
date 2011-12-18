@@ -156,21 +156,21 @@ public:
   const LuapeNodePtr& getCondition() const
     {return conditionNode;}
 
-  const LuapeNodePtr& getSuccess() const
-    {return successNode;}
-
-  void setSuccess(const LuapeNodePtr& node)
-    {successNode = node;}
-
   const LuapeNodePtr& getFailure() const
     {return failureNode;}
 
   void setFailure(const LuapeNodePtr& node)
     {failureNode = node;}
 
+  const LuapeNodePtr& getSuccess() const
+    {return successNode;}
+
+  void setSuccess(const LuapeNodePtr& node)
+    {successNode = node;}
+
   const LuapeNodePtr& getMissing() const
     {return missingNode;}
-    
+
   void setMissing(const LuapeNodePtr& node)
     {missingNode = node;}
 
@@ -180,8 +180,8 @@ protected:
   friend class LuapeTestNodeClass;
 
   LuapeNodePtr conditionNode;
-  LuapeNodePtr successNode;
   LuapeNodePtr failureNode;
+  LuapeNodePtr successNode;
   LuapeNodePtr missingNode;
 };
 

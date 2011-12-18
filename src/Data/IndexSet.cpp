@@ -60,9 +60,9 @@ void IndexSet::randomlyExpandUsingSource(ExecutionContext& context, size_t newSi
   {
     std::vector<size_t> order;
     random->sampleOrder(source->v.size(), order);
-    for (size_t i = 0; i < numRequired; ++i)
-      while (thisIndices.size() < newSize)
-        thisIndices.insert(source->v[order[i]]);
+    size_t i = 0;
+    while (thisIndices.size() < newSize)
+      thisIndices.insert(source->v[order[i++]]);
   }
 
   v.resize(thisIndices.size());
