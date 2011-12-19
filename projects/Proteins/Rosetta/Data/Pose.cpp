@@ -208,7 +208,7 @@ void Pose::setPsi(size_t residue, double psi)
 SymmetricMatrixPtr Pose::createBackboneDistanceMatrix()
 {
   jassert(false);
-  return SymmetricMatrixptr();
+  return SymmetricMatrixPtr();
 }
 
 double Pose::getEnergy()
