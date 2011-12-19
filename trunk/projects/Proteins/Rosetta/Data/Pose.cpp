@@ -28,8 +28,8 @@ void Pose::createFromPDB(const File& pdbFile)
 
 
 # else
-void Pose::createFromSequence(String& sequence)
-  {jasser(false);}
+void Pose::createFromSequence(const String& sequence)
+  {jassert(false);}
 
 void Pose::createFromPDB(const File& pdbFile)
   {jassert(false);}

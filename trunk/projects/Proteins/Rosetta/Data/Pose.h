@@ -45,8 +45,9 @@ public:
   //getCollisionCorrectionFactor
 protected:
   friend class PoseClass;
-
+# ifdef LBCPP_PROTEIN_ROSETTA
   core::pose::PoseOP pose;
+# endif //! LBCPP_PROTEIN_ROSETTA
 };
 
 }; /* namespace lbcpp */
