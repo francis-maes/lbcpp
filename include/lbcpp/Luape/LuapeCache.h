@@ -211,8 +211,7 @@ public:
   size_t getNumSamples() const
     {return allIndices->size();}
 
-  size_t getCacheSizeInBytes() const
-    {return actualCacheSize;}
+  size_t getCacheSizeInBytes() const;
 
   void displayCacheInformation(ExecutionContext& context);
   bool checkCacheIsCorrect(ExecutionContext& context, const LuapeNodePtr& node);
@@ -250,7 +249,10 @@ protected:
     void observeComputingTime(double timeInMilliseconds)
     {
       if (timeSpentInComputingSamples >= 0)
+      {
+        jassert(isNumberValid(timeInMilliseconds));
         timeSpentInComputingSamples += timeInMilliseconds;
+      }
     }
 
     static size_t getSizeInBytes(VectorPtr vector);

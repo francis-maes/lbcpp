@@ -22,7 +22,7 @@ LuapeInference::LuapeInference()
 LuapeSamplesCachePtr LuapeInference::createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data) const
 {
   size_t n = data.size();
-  LuapeSamplesCachePtr res = new LuapeSamplesCache(universe, inputs, n);
+  LuapeSamplesCachePtr res = new LuapeSamplesCache(universe, inputs, n, 1024);
   for (size_t i = 0; i < n; ++i)
     res->setInputObject(inputs, i, data[i]->getVariable(0).getObject());
   return res;
