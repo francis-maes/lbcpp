@@ -183,7 +183,6 @@ void Pose::saveToPDB(const File& pdbFile)
 
 Pose& Pose::operator=(const Pose& copy)
 {
-  pose = new core::pose::Pose();
   jassert(false);
   return *this;
 }
