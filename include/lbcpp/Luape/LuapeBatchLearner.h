@@ -47,7 +47,8 @@ public:
     for (size_t i = 0; i < maxIterations; ++i)
     {
       context.enterScope(T("Iteration ") + String((int)i + 1));
-      context.resultCallback(T("iteration"), i);
+      context.resultCallback(T("iteration"), i+1);
+      context.resultCallback(T("log10(iteration)"), log10((double)i+1.0));
       
       learner->doLearningIteration(context);
       if (learner->getVerbose())
@@ -55,6 +56,7 @@ public:
         context.resultCallback("trainCacheSizeInMb", learner->getTrainingCache()->getCacheSizeInBytes() / (1024.0 * 1024.0));
         if (learner->getValidationCache())
           context.resultCallback("validationCacheSizeInMb", learner->getValidationCache()->getCacheSizeInBytes() / (1024.0 * 1024.0));
+        //learner->getTrainingCache()->displayCacheInformation(context);
         //       learner->getTrainingCache()->getComputeTimeStatistics(context);
       }
       context.leaveScope();
