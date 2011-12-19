@@ -17,6 +17,8 @@
 # include <lbcpp/Learning/Numerical.h>
 # include <lbcpp/Learning/NearestNeighbor.h>
 # include <lbcpp/Learning/DecisionTree.h>
+# include <lbcpp/Data/Stream.h>
+# include <lbcpp/Sampler/Sampler.h>
 
 namespace lbcpp
 {

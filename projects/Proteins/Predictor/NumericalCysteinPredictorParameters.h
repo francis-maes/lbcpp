@@ -9,11 +9,14 @@
 #ifndef LBCPP_PROTEINS_PREDICTOR_NUMERICAL_CYSTEIN_PARAMETERS_H_
 # define LBCPP_PROTEINS_PREDICTOR_NUMERICAL_CYSTEIN_PARAMETERS_H_
 
+# include <lbcpp/FeatureGenerator/FeatureGenerator.h>
+# include <lbcpp/Learning/Numerical.h>
+# include <lbcpp/Data/Stream.h>
+# include <lbcpp/Sampler/Sampler.h>
+
 # include "ProteinPredictor.h"
 # include "ProteinPerception.h"
 # include "ProteinPredictorParameters.h"
-# include <lbcpp/FeatureGenerator/FeatureGenerator.h>
-# include <lbcpp/Learning/Numerical.h>
 # include "ConnectivityPatternClassifier.h"
 
 namespace lbcpp

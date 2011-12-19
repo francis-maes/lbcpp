@@ -9,7 +9,10 @@
 #ifndef LBCPP_LUAPE_SAND_BOX_H_
 # define LBCPP_LUAPE_SAND_BOX_H_
 
+# include <lbcpp/Execution/WorkUnit.h>
+# include <lbcpp/Core/DynamicObject.h>
 # include <lbcpp/Data/Stream.h>
+# include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Luape/LuapeBatchLearner.h>
 # include <lbcpp/Luape/LuapeLearner.h>
 # include "../Core/SinglePlayerMCTSOptimizer.h"

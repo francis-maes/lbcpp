@@ -639,6 +639,8 @@ SET(LBCPP_LUAPE_SOURCES
   ../include/lbcpp/Luape/predeclarations.h
   ../include/lbcpp/Luape/LuapeFunction.h
   Luape/LuapeFunction.cpp
+  ../include/lbcpp/Luape/LuapeUniverse.h
+  Luape/LuapeUniverse.cpp
   ../include/lbcpp/Luape/LuapeCache.h
   Luape/LuapeCache.cpp
   ../include/lbcpp/Luape/LuapeNode.h

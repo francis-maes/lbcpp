@@ -9,6 +9,8 @@
 #ifndef LBCPP_PROTEIN_PERCEPTION_H_
 # define LBCPP_PROTEIN_PERCEPTION_H_
 
+# include <lbcpp/FeatureGenerator/FeatureGenerator.h>
+
 namespace lbcpp
 {
 

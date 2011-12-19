@@ -10,7 +10,10 @@
 # define LBCPP_PROTEINS_LUAPE_SAND_BOX_H_
 
 #include <lbcpp/Core/Function.h>
+#include <lbcpp/Execution/WorkUnit.h>
 #include <lbcpp/Luape/LuapeInference.h>
+#include <lbcpp/Luape/LuapeCache.h>
+#include <lbcpp/Luape/LuapeLearner.h>
 #include "../Predictor/DecoratorProteinPredictorParameters.h"
 #include "../Predictor/LargeProteinPredictorParameters.h"
 #include "../Evaluator/ProteinEvaluator.h"

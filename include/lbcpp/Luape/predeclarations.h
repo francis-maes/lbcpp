@@ -32,6 +32,12 @@ typedef ReferenceCountedObjectPtr<LuapeTestNode> LuapeTestNodePtr;
 class LuapeSampleVector;
 typedef ReferenceCountedObjectPtr<LuapeSampleVector> LuapeSampleVectorPtr;
 
+class LuapeInstanceCache;
+typedef ReferenceCountedObjectPtr<LuapeInstanceCache> LuapeInstanceCachePtr;
+
+class LuapeSamplesCache;
+typedef ReferenceCountedObjectPtr<LuapeSamplesCache> LuapeSamplesCachePtr;
+
 class LuapeLearner;
 typedef ReferenceCountedObjectPtr<LuapeLearner> LuapeLearnerPtr;
 

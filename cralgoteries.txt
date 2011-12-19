@@ -1,5 +1,16 @@
 
+ * LuapeUniverse: store statistics on node computing times
+ * New files: LuapeUniverse.h and LuapeUniverse.cpp
+ * LuapeNode::compute() functions: compute computing time statistics
+ * LuapeCache: struct NodeCache
+ * LuapeCache: store stats on computing times
+ * Remove global "lbcpp/lbcpp.h" includes, and replace by lots of small includes everywhere in projects
+
 2) Smart-cache
+
+ - pour chaque type de LuapeNode, LuapeGraphUniverse stoque les temps de calculs moyens
+ - LuapeCache
+
 3) Lancer expés sur Nic3
 
 

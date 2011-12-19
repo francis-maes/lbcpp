@@ -10,6 +10,8 @@
 # define LBCPP_GENETIC_PROGRAMMING_EXPRESSION_SAMPLER_H_
 
 # include <lbcpp/Sampler/Sampler.h>
+# include <lbcpp/Core/CompositeFunction.h>
+# include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 # include "GPExpression.h"
 
 namespace lbcpp

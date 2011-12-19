@@ -9,6 +9,7 @@
 #include "precompiled.h"
 #include <lbcpp/Luape/LuapeFunction.h>
 #include <lbcpp/Luape/LuapeNode.h>
+#include <lbcpp/Luape/LuapeCache.h>
 using namespace lbcpp;
 
 String LuapeFunction::toShortString(const std::vector<LuapeNodePtr>& inputs) const

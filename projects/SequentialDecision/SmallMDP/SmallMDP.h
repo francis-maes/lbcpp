@@ -10,6 +10,7 @@
 # define LBCPP_SMALL_MDP_H_
 
 # include <lbcpp/Execution/WorkUnit.h>
+# include <lbcpp/Sampler/Sampler.h>
 
 namespace lbcpp
 {

@@ -12,6 +12,7 @@
 # include "GoProblem.h"
 # include <lbcpp/Core/CompositeFunction.h>
 # include <lbcpp/Data/Matrix.h>
+# include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 
 namespace lbcpp
 {

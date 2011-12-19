@@ -9,8 +9,9 @@
 #ifndef LBCPP_PROTEINS_ROSETTA_PROTEIN_H_
 # define LBCPP_PROTEINS_ROSETTA_PROTEIN_H_
 
-# include "RosettaUtils.h"
+# include <lbcpp/Core/CompositeFunction.h>
 # include <lbcpp/FeatureGenerator/FeatureGenerator.h>
+# include "RosettaUtils.h"
 # include "Sampler/GeneralProteinMoverSampler.h"
 
 namespace lbcpp

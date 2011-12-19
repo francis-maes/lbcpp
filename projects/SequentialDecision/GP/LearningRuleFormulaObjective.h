@@ -11,6 +11,7 @@
 
 # include "FormulaSearchProblem.h"
 # include "../Bandits/DiscreteBanditExperiment.h"
+# include <lbcpp/Data/Stream.h>
 
 namespace lbcpp
 {

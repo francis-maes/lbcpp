@@ -9,6 +9,7 @@
 #ifndef LBCPP_OPTIMIZER_NESTED_MONTE_CARLO_H_
 # define LBCPP_OPTIMIZER_NESTED_MONTE_CARLO_H_
 
+# include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Optimizer/Optimizer.h>
 # include <lbcpp/DecisionProblem/DecisionProblem.h>
 

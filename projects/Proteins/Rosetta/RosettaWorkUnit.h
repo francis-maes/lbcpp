@@ -9,6 +9,7 @@
 #ifndef LBCPP_PROTEINS_ROSETTA_WORKUNIT_H_
 # define LBCPP_PROTEINS_ROSETTA_WORKUNIT_H_
 
+# include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Data/RandomVariable.h>
 # include "../Data/Protein.h"
 # include "../Data/Formats/PDBFileGenerator.h"

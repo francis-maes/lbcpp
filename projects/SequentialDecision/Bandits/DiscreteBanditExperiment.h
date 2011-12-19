@@ -10,6 +10,8 @@
 # define LBCPP_BANDITS_DISCRETE_EXPERIMENT_H_
 
 # include "Bandits/DiscreteBanditPolicy.h"
+# include <lbcpp/Function/Predicate.h>
+# include <lbcpp/Optimizer/Optimizer.h>
 
 namespace lbcpp
 {

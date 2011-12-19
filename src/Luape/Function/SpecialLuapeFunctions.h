@@ -11,6 +11,7 @@
 
 # include <lbcpp/Luape/LuapeFunction.h>
 # include <lbcpp/Luape/LuapeNode.h>
+# include <lbcpp/Luape/LuapeCache.h> // for LuapeSampleVector
 # include "DoubleLuapeFunctions.h"
 # include <algorithm>
 

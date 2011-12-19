@@ -8,4 +8,7 @@
 
 // This file is necessary for Visual Studio to support precompiled headers
 #include "../../src/precompiled.h"
-#include <lbcpp/lbcpp.h>
+#include <lbcpp/Core/Variable.h>
+#include <lbcpp/Core/Vector.h>
+#include <lbcpp/Data/DoubleVector.h>
+#include <lbcpp/Data/RandomVariable.h>

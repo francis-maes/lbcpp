@@ -10,6 +10,9 @@
 # define LBCPP_SEQUENTIAL_DECISION_WORK_UNIT_AUTO_SGD_SAND_BOX_H_
 
 # include <lbcpp/Core/Container.h>
+# include <lbcpp/Data/Stream.h>
+# include <lbcpp/Execution/WorkUnit.h>
+# include <lbcpp/Execution/ExecutionTrace.h>
 # include <lbcpp/Learning/Numerical.h>
 # include <lbcpp/Learning/LossFunction.h>
 

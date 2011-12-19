@@ -10,6 +10,8 @@
 # define LBCPP_SEQUENTIAL_DECISION_GO_SUPERVISED_EPISODE_FUNCTION_H_
 
 # include "GoProblem.h"
+# include <lbcpp/Core/CompositeFunction.h>
+# include <lbcpp/Learning/Numerical.h>
 
 namespace lbcpp
 {

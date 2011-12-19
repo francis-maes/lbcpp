@@ -8,6 +8,7 @@
 
 #include "precompiled.h"
 #include <lbcpp/Luape/LuapeNode.h>
+#include <lbcpp/Luape/LuapeCache.h>
 #include <algorithm>
 using namespace lbcpp;
 
@@ -109,7 +110,12 @@ LuapeSampleVectorPtr LuapeFunctionNode::compute(ExecutionContext& context, const
   std::vector<LuapeSampleVectorPtr> inputs(arguments.size());
   for (size_t i = 0; i < inputs.size(); ++i)
     inputs[i] = cache->getSamples(context, arguments[i], indices);
-  return function->compute(context, inputs, type);
+
+  double startTime = Time::getMillisecondCounterHiRes();
+  LuapeSampleVectorPtr res = function->compute(context, inputs, type);
+  double endTime = Time::getMillisecondCounterHiRes();
+  cache->observeNodeComputingTime(refCountedPointerFromThis(this), indices->size(), endTime - startTime);
+  return res;
 }
 
 /*
@@ -179,12 +185,16 @@ LuapeSampleVectorPtr LuapeTestNode::compute(ExecutionContext& context, const Lua
   LuapeSampleVectorPtr conditions = cache->getSamples(context, conditionNode, indices);
   size_t n = conditions->size();
 
+  double startTime;
+  VectorPtr resultVector;
+
   if (successNode.isInstanceOf<LuapeConstantNode>() && failureNode.isInstanceOf<LuapeConstantNode>() && missingNode.isInstanceOf<LuapeConstantNode>())
   {
     Variable v[3];
     v[0] = failureNode.staticCast<LuapeConstantNode>()->getValue();
     v[1] = successNode.staticCast<LuapeConstantNode>()->getValue();
     v[2] = missingNode.staticCast<LuapeConstantNode>()->getValue();
+    startTime = Time::getMillisecondCounterHiRes();
 
     if (v[0].isDouble() && v[1].isDouble() && v[2].isDouble())
     {
@@ -196,7 +206,7 @@ LuapeSampleVectorPtr LuapeTestNode::compute(ExecutionContext& context, const Lua
       double* ptr = res->getValuePointer(0);
       for (LuapeSampleVector::const_iterator it = conditions->begin(); it != conditions->end(); ++it)
         *ptr++ = dv[it.getRawBoolean()];
-      return new LuapeSampleVector(indices, res);
+      resultVector = res;
     }
     else if (v[0].isObject() && v[1].isObject() && v[2].isObject())
     {
@@ -208,7 +218,7 @@ LuapeSampleVectorPtr LuapeTestNode::compute(ExecutionContext& context, const Lua
       size_t i = 0;
       for (LuapeSampleVector::const_iterator it = conditions->begin(); it != conditions->end(); ++it, ++i)
         res->set(i, ov[it.getRawBoolean()]);
-      return new LuapeSampleVector(indices, res);
+      resultVector = res;
     }
     else
     {
@@ -216,7 +226,7 @@ LuapeSampleVectorPtr LuapeTestNode::compute(ExecutionContext& context, const Lua
       size_t i = 0;
       for (LuapeSampleVector::const_iterator it = conditions->begin(); it != conditions->end(); ++it, ++i)
         res->setElement(i, v[it.getRawBoolean()]);
-      return new LuapeSampleVector(indices, res);
+      resultVector = res;
     }
   }
   else
@@ -228,6 +238,7 @@ LuapeSampleVectorPtr LuapeTestNode::compute(ExecutionContext& context, const Lua
     subValues[0] = cache->getSamples(context, failureNode, failureIndices);
     subValues[1] = cache->getSamples(context, successNode, successIndices);
     subValues[2] = cache->getSamples(context, missingNode, missingIndices);
+    startTime = Time::getMillisecondCounterHiRes();
 
     TypePtr elementsType = subValues[0]->getElementsType();
     jassert(subValues[1]->getElementsType() == elementsType);
@@ -248,7 +259,7 @@ LuapeSampleVectorPtr LuapeTestNode::compute(ExecutionContext& context, const Lua
         *ptr++ = currentIt.getRawDouble();
         ++currentIt;
       }
-      return new LuapeSampleVector(indices, res);
+      resultVector = res;
     }
     else if (elementsType->inheritsFrom(objectClass))
     {
@@ -260,7 +271,7 @@ LuapeSampleVectorPtr LuapeTestNode::compute(ExecutionContext& context, const Lua
         res->set(i, currentIt.getRawObject());
         ++currentIt;
       }
-      return new LuapeSampleVector(indices, res);
+      resultVector = res;
     }
     else
     {
@@ -272,10 +283,12 @@ LuapeSampleVectorPtr LuapeTestNode::compute(ExecutionContext& context, const Lua
         res->setElement(i, *currentIt);
         ++currentIt;
       }
-      return new LuapeSampleVector(indices, res);
+      resultVector = res;
     }
   }
-  return LuapeSampleVectorPtr();
+  double endTime = Time::getMillisecondCounterHiRes();
+  cache->observeNodeComputingTime(refCountedPointerFromThis(this), indices->size(), endTime - startTime);
+  return new LuapeSampleVector(indices, resultVector);
 }
 
 /*
@@ -296,9 +309,17 @@ String LuapeSequenceNode::toShortString() const
 
 LuapeSampleVectorPtr LuapeSequenceNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
 {
+  std::vector<LuapeSampleVectorPtr> nodeValues(nodes.size());
+  for (size_t i = 0; i < nodeValues.size(); ++i)
+    nodeValues[i] = cache->getSamples(context, nodes[i], indices);
+
+  double startTime = Time::getMillisecondCounterHiRes();
   VectorPtr outputs = createEmptyOutputs(indices->size());
-  for (size_t i = 0; i < nodes.size(); ++i)
-    updateOutputs(outputs, cache->getSamples(context, nodes[i], indices));
+  for (size_t i = 0; i < nodeValues.size(); ++i)
+    updateOutputs(outputs, nodeValues[i]);
+  double endTime = Time::getMillisecondCounterHiRes();
+  cache->observeNodeComputingTime(refCountedPointerFromThis(this), indices->size(), endTime - startTime);
+
   return new LuapeSampleVector(indices, outputs);
 }
 

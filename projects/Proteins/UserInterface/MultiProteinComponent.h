@@ -11,6 +11,7 @@
 
 # include "MultiProtein1DComponent.h"
 # include "MultiProtein2DComponent.h"
+# include <lbcpp/UserInterface/UserInterfaceManager.h>
 # include <lbcpp/UserInterface/VariableSelector.h>
 # include "../Predictor/ProteinPredictor.h"
 # include "../Predictor/NumericalCysteinPredictorParameters.h"
