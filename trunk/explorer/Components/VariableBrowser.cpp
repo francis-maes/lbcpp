@@ -8,6 +8,7 @@
 #include "precompiled.h"
 #include "VariableBrowser.h"
 #include "../ExplorerProject.h"
+#include <lbcpp/UserInterface/UserInterfaceManager.h>
 using namespace lbcpp;
 
 extern void flushErrorAndWarningMessages(const String& title);

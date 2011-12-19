@@ -10,6 +10,7 @@
 # define LBCPP_SMALL_MDP_SANDBOX_H_
 
 # include <lbcpp/Execution/WorkUnit.h>
+# include <lbcpp/Optimizer/Optimizer.h>
 # include "SmallMDP.h"
 # include "SmallMDPPolicy.h"
 # include "ParameterizedSmallMDPPolicy.h"

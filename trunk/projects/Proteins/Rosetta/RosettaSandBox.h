@@ -9,6 +9,7 @@
 #ifndef LBCPP_PROTEINS_ROSETTA_SAND_BOX
 # define LBCPP_PROTEINS_ROSETTA_SAND_BOX
 
+# include <lbcpp/Execution/WorkUnit.h>
 # include "../Data/Protein.h"
 # include "../Data/AminoAcid.h"
 # include "../Data/Residue.h"

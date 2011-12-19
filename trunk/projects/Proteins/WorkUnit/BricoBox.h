@@ -4,6 +4,10 @@
 
 #include "Data/Formats/SPXFileParser.h"
 #include <lbcpp/Data/Stream.h>
+#include <lbcpp/Data/Consumer.h>
+#include <lbcpp/Execution/WorkUnit.h>
+#include <lbcpp/Execution/ExecutionTrace.h>
+#include <lbcpp/Optimizer/Optimizer.h>
 
 #ifdef LBCPP_NETWORKING
 

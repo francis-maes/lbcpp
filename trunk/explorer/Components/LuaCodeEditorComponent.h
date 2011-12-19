@@ -13,6 +13,7 @@
 
 # include <lbcpp/UserInterface/VariableSelector.h>
 # include <lbcpp/UserInterface/ObjectEditor.h>
+# include <lbcpp/UserInterface/UserInterfaceManager.h>
 # include <lbcpp/Lua/Lua.h>
 # include "../../juce/juce_CodeEditorComponent.h"
 # include "../../juce/juce_LuaCodeTokeniser.h"

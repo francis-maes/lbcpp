@@ -11,6 +11,7 @@
 
 # include "GoProblem.h"
 # include <lbcpp/Core/CompositeFunction.h>
+# include <lbcpp/Data/SymmetricMatrix.h>
 # include "GoRegionPerception.h"
 
 namespace lbcpp

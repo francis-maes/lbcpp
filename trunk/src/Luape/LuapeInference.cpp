@@ -22,7 +22,7 @@ LuapeInference::LuapeInference()
 LuapeSamplesCachePtr LuapeInference::createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data) const
 {
   size_t n = data.size();
-  LuapeSamplesCachePtr res = new LuapeSamplesCache(inputs, n);
+  LuapeSamplesCachePtr res = new LuapeSamplesCache(universe, inputs, n);
   for (size_t i = 0; i < n; ++i)
     res->setInputObject(inputs, i, data[i]->getVariable(0).getObject());
   return res;
@@ -211,7 +211,7 @@ LuapeSamplesCachePtr LuapeRanker::createSamplesCache(ExecutionContext& context, 
     numSamples += alternatives->getNumElements();
   }
   
-  LuapeSamplesCachePtr res = new LuapeSamplesCache(inputs, numSamples);
+  LuapeSamplesCachePtr res = new LuapeSamplesCache(universe, inputs, numSamples);
   size_t index = 0;
   for (size_t i = 0; i < data.size(); ++i)
   {

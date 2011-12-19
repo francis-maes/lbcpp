@@ -10,6 +10,7 @@
 # define LBCPP_GENETIC_PROGRAMMING_EXPRESSION_H_
 
 # include <lbcpp/Core/Object.h>
+# include <lbcpp/Function/Evaluator.h>
 
 namespace lbcpp
 {

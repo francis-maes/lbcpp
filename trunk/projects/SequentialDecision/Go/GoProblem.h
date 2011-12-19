@@ -14,6 +14,7 @@
 # include <lbcpp/Data/RandomGenerator.h>
 # include <list>
 # include <lbcpp/UserInterface/MatrixComponent.h>
+# include <lbcpp/UserInterface/UserInterfaceManager.h>
 
 namespace lbcpp
 {

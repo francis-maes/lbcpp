@@ -10,6 +10,8 @@
 # define LBCPP_SMALL_MDP_POLICY_H_
 
 # include "SmallMDP.h"
+# include <lbcpp/Data/Matrix.h>
+# include <lbcpp/Function/IterationFunction.h>
 
 namespace lbcpp
 {

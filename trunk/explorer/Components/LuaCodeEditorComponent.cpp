@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include "LuaCodeEditorComponent.h"
+#include <lbcpp/Execution/ExecutionTrace.h>
 using namespace lbcpp;
 
 class LuaCodeEditorComponent : public juce::CodeEditorComponent

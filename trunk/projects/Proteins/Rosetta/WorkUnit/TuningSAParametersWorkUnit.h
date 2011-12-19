@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEINS_ROSETTA_WORKUNIT_TUNINGSAPARAMETERSWORKUNIT_H_
 # define LBCPP_PROTEINS_ROSETTA_WORKUNIT_TUNINGSAPARAMETERSWORKUNIT_H_
 
-# include "precompiled.h"
+# include <lbcpp/Execution/WorkUnit.h>
 # include "../RosettaUtils.h"
 # include "ProteinOptimizationWorkUnit.h"
 

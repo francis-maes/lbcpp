@@ -10,7 +10,7 @@
 # define LBCPP_LUAPE_NODE_H_
 
 # include "LuapeFunction.h"
-# include "LuapeCache.h"
+# include "../Data/IndexSet.h"
 
 namespace lbcpp
 {
@@ -134,6 +134,8 @@ protected:
 
   void initialize();
 };
+
+extern ClassPtr luapeFunctionNodeClass;
 
 /*
 ** Test

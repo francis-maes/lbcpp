@@ -26,13 +26,13 @@ bool LuapeLearner::setExamples(ExecutionContext& context, bool isTrainingData, c
   {
     trainingData = data;
     trainingCache = function->createSamplesCache(context, data);
-    trainingCache->cacheNode(context, function->getRootNode());
+    trainingCache->cacheNode(context, function->getRootNode(), VectorPtr(), "Prediction node");
   }
   else
   {
     validationData = data;
     validationCache = function->createSamplesCache(context, data);
-    validationCache->cacheNode(context, function->getRootNode());
+    validationCache->cacheNode(context, function->getRootNode(), VectorPtr(), "Prediction node");
   }
   return true;
 }

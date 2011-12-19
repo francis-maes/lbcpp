@@ -9,12 +9,10 @@
 #ifndef LBCPP_LUAPE_CACHE_H_
 # define LBCPP_LUAPE_CACHE_H_
 
+# include "LuapeUniverse.h"
 # include "../Core/Vector.h"
 # include "../Data/DoubleVector.h"
-# include "../Data/RandomVariable.h"
 # include "../Data/IndexSet.h"
-# include "LuapeFunction.h"
-# include <deque>
 
 namespace lbcpp
 {
@@ -36,6 +34,9 @@ protected:
 
 typedef ReferenceCountedObjectPtr<LuapeInstanceCache> LuapeInstanceCachePtr;
 
+/*
+** LuapeSampleVector
+*/
 class LuapeSampleVector : public Object
 {
 public:
@@ -187,7 +188,7 @@ public:
   /*
   ** Construction
   */
-  LuapeSamplesCache(const std::vector<LuapeInputNodePtr>& inputs, size_t size, size_t maxCacheSizeInMb = 1024);
+  LuapeSamplesCache(LuapeNodeUniversePtr universe, const std::vector<LuapeInputNodePtr>& inputs, size_t size, size_t maxCacheSizeInMb = 1024);
   LuapeSamplesCache() : maxCacheSize(0), actualCacheSize(0) {}
 
   void setInputObject(const std::vector<LuapeInputNodePtr>& inputs, size_t index, const ObjectPtr& object);
@@ -196,7 +197,7 @@ public:
   /*
   ** Cache methods
   */
-  void cacheNode(ExecutionContext& context, const LuapeNodePtr& node, const VectorPtr& values = VectorPtr());
+  void cacheNode(ExecutionContext& context, const LuapeNodePtr& node, const VectorPtr& values = VectorPtr(), const String& reason = String::empty);
   bool isNodeCached(const LuapeNodePtr& node) const;
   VectorPtr getNodeCache(const LuapeNodePtr& node) const;
 
@@ -222,99 +223,48 @@ public:
   const IndexSetPtr& getAllIndices() const
     {return allIndices;}
 
-  void getComputeTimeStatistics(ExecutionContext& context) const;
+  void observeNodeComputingTime(const LuapeNodePtr& node, size_t numInstances, double timeInMilliseconds);
 
 protected:
-  // node -> (samples, sorted double values)
-  typedef std::map<LuapeNodePtr, std::pair<VectorPtr, SparseDoubleVectorPtr> > NodeToSamplesMap;
+  LuapeNodeUniversePtr universe;
 
-  std::map<ClassPtr, ScalarVariableStatistics> computingTimeByLuapeFunctionClass;
+  struct NodeCache
+  {
+    NodeCache(const VectorPtr& samples) : samples(samples), timeSpentInComputingSamples(0) {}
+    NodeCache() : timeSpentInComputingSamples(0.0) {}
 
-  NodeToSamplesMap m;
+    VectorPtr samples;
+    SparseDoubleVectorPtr sortedDoubleValues;
+
+    // in ms; when cached, this is an expected value w.r.t. the current caching state, if this node was not cached
+    // if not cached, this is an observed value
+    // -1 if the node cannot be uncached
+    double timeSpentInComputingSamples;
+
+    void observeComputingTime(double timeInMilliseconds)
+    {
+      if (timeSpentInComputingSamples >= 0)
+        timeSpentInComputingSamples += timeInMilliseconds;
+    }
+
+    static size_t getSizeInBytes(VectorPtr vector);
+    size_t getSizeInBytes() const;
+  };
+
+  typedef std::map<LuapeNodePtr, NodeCache> NodeCacheMap;
+  NodeCacheMap m;
+  
   std::vector<LuapeInputNodePtr> inputNodes;
   std::vector<VectorPtr> inputCaches;
-  std::deque<LuapeNodePtr> cacheSequence;
   size_t maxCacheSize; // in bytes
   size_t actualCacheSize; // in bytes
 
   IndexSetPtr allIndices;
 
-  VectorPtr computeOnAllExamples(ExecutionContext& context, const LuapeNodePtr& node) const;
-  size_t getSizeInBytes(const VectorPtr& samples) const;
+  double computeExpectedComputingTimePerSample(const LuapeNodePtr& node) const;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeSamplesCache> LuapeSamplesCachePtr;
-
-/*
-** LuapeNodeUniverse
-*/
-class LuapeNodeUniverse : public Object
-{
-public:
-  void addInputNode(const LuapeInputNodePtr& inputNode)
-    {inputNodes.push_back(inputNode);}
-
-  LuapeFunctionNodePtr makeFunctionNode(ClassPtr functionClass, const std::vector<Variable>& arguments, const std::vector<LuapeNodePtr>& inputs);
-  LuapeFunctionNodePtr makeFunctionNode(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs);
-  LuapeFunctionNodePtr makeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& input)
-    {return makeFunctionNode(function, std::vector<LuapeNodePtr>(1, input));}
-
-  lbcpp_UseDebuggingNewOperator
-
-private:
-  friend class LuapeNodeUniverseClass;
-
-  struct FunctionKey
-  {
-    ClassPtr functionClass;
-    std::vector<Variable> arguments;
-    std::vector<LuapeNodePtr> inputs;
-
-    bool operator <(const FunctionKey& other) const
-    {
-      if (functionClass != other.functionClass)
-        return functionClass < other.functionClass;
-      if (arguments != other.arguments)
-        return arguments < other.arguments;
-      return inputs < other.inputs;
-    }
-  };
-  typedef std::map<FunctionKey, LuapeFunctionNodePtr> FunctionNodesMap;
-  FunctionNodesMap functionNodes;
-
-  std::vector<LuapeInputNodePtr> inputNodes;
-};
-
-typedef ReferenceCountedObjectPtr<LuapeNodeUniverse> LuapeNodeUniversePtr;
-/*
-class LuapeNodeKeysMap : public Object
-{
-public:
-  LuapeNodeKeysMap(LuapeGraphPtr graph = LuapeGraphPtr())
-    : graph(graph) {}
-
-  void clear();
-
-  // return true if it is a new node
-  bool addNodeToCache(ExecutionContext& context, const LuapeNodePtr& node);
-
-  bool isNodeKeyNew(const LuapeNodePtr& node) const;
-
-  lbcpp_UseDebuggingNewOperator
-
-private:
-  typedef std::map<BinaryKeyPtr, LuapeNodePtr, ObjectComparator> KeyToNodeMap;
-  typedef std::map<LuapeNodePtr, BinaryKeyPtr> NodeToKeyMap;
-
-  LuapeGraphPtr graph;
-  KeyToNodeMap keyToNodes;
-  NodeToKeyMap nodeToKeys;
-
-  void addSubNodesToCache(ExecutionContext& context, const LuapeNodePtr& node);
-};
-
-typedef ReferenceCountedObjectPtr<LuapeNodeKeysMap> LuapeNodeKeysMapPtr;
-*/
 
 }; /* namespace lbcpp */
 
