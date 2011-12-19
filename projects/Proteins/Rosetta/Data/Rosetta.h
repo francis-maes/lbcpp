@@ -9,12 +9,23 @@
 #ifndef LBCPP_PROTEIN_ROSETTA_DATA_ROSETTA_H_
 # define LBCPP_PROTEIN_ROSETTA_DATA_ROSETTA_H_
 
+# define LBCPP_PROTEIN_ROSETTA
+
 # ifdef LBCPP_PROTEIN_ROSETTA
 #  undef T
 #  include <core/init.hh>
 #  include <utility/vector0.hh>
 #  define T JUCE_T
-# endif //! LBCPP_PROTEIN_ROSETTA
+# else // predeclare rosetta
+namespace utility {namespace pointer{
+  template< typename T > class owning_ptr;
+}; };
+
+namespace core { namespace pose {
+  class Pose;
+  typedef utility::pointer::owning_ptr< Pose > PoseOP;
+}; };
+# endif // LBCPP_PROTEIN_ROSETTA
 
 namespace lbcpp
 {

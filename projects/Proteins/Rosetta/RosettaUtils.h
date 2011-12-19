@@ -43,7 +43,6 @@
 #  define T JUCE_T
 
 # else // predeclare rosetta
-
 namespace utility {namespace pointer{
   template< typename T > class owning_ptr;
 }; };
@@ -52,7 +51,6 @@ namespace core { namespace pose {
   class Pose;
   typedef utility::pointer::owning_ptr< Pose > PoseOP;
 }; };
-
 #endif // LBCPP_PROTEIN_ROSETTA
 
 namespace lbcpp

@@ -160,6 +160,8 @@ SET(LBCPP_PROTEIN_ROSETTA_SOURCES
 SET(LBCPP_PROTEIN_ROSETTA_DATA_SOURCES
   Rosetta/Data/Rosetta.h
   Rosetta/Data/Rosetta.cpp
+  Rosetta/Data/Pose.h
+  Rosetta/Data/Pose.cpp
   Rosetta/Data/ProteinMover.h
   Rosetta/Data/ProteinMoverSampler.h
   Rosetta/Data/ProteinRosettaDataLibrary.xml
