@@ -40,6 +40,21 @@ public:
     {inputs.push_back(new LuapeInputNode(type, name));}
 
   /*
+  ** Active variables
+  */
+  size_t getNumActiveVariables() const
+    {return activeVariables.size();}
+
+  const std::set<LuapeNodePtr>& getActiveVariables() const
+    {return activeVariables;}
+
+  void addActiveVariable(const LuapeNodePtr& node)
+    {activeVariables.insert(node);}
+
+  void clearActiveVariables()
+    {activeVariables.clear();}
+
+  /*
   ** Available Functions
   */
   size_t getNumFunctions() const
@@ -76,6 +91,7 @@ protected:
   LuapeNodeUniversePtr universe;
   std::vector<LuapeInputNodePtr> inputs;
   std::vector<LuapeFunctionPtr> functions;
+  std::set<LuapeNodePtr> activeVariables;
   LuapeNodePtr node;
 
   Variable computeNode(ExecutionContext& context, const ObjectPtr& inputs) const;

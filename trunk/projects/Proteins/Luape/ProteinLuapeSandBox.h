@@ -201,6 +201,16 @@ public:
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
     {return type == proteinResiduePerceptionClass;}
 
+  virtual bool acceptInputsStack(const std::vector<LuapeNodePtr>& stack) const
+  {
+    if (!LuapeFunction::acceptInputsStack(stack))
+      return false;
+    LuapeFunctionNodePtr functionNode = stack[0].dynamicCast<LuapeFunctionNode>();
+    if (functionNode && functionNode->getFunction().isInstanceOf<ProteinGetRelativeResidueLuapeFunction>())
+      return false; // cannot chain two calls to this function
+    return true;
+  }
+
   virtual TypePtr initialize(const std::vector<TypePtr>& )
     {return proteinResiduePerceptionClass;}
 
@@ -228,9 +238,9 @@ public:
   {
     enum {windowHalfSize = 4};
 
-    VectorPtr res = vector(integerType, windowHalfSize * 2 + 1);
-    for (int i = -windowHalfSize; i <= windowHalfSize; ++i)
-      res->setElement((size_t)(i + windowHalfSize), i);
+    VectorPtr res = vector(integerType, windowHalfSize * 2);
+    for (int i = -windowHalfSize; i < windowHalfSize; ++i)
+      res->setElement((size_t)(i + windowHalfSize), i < 0 ? i : i + 1);
     return res;
   }
 
@@ -306,9 +316,9 @@ public:
   */
   BoostingWeakLearnerPtr createWeakLearner(ProteinTarget target) const
   {
-    BoostingWeakLearnerPtr conditionLearner = policyBasedWeakLearner(treeBasedRandomPolicy(), budget, numSteps);
+    BoostingWeakLearnerPtr conditionLearner = policyBasedWeakLearner(new RandomPolicy(), budget, numSteps);
     conditionLearner = compositeWeakLearner(constantWeakLearner(), conditionLearner);
-    //conditionLearner = laminatingWeakLearner(conditionLearner, 100);
+    conditionLearner = laminatingWeakLearner(conditionLearner, 1000);
 
     BoostingWeakLearnerPtr res = conditionLearner;
     for (size_t i = 1; i < treeDepth; ++i)
@@ -366,7 +376,7 @@ public:
   {
     LuapeInferencePtr learningMachine = new LuapeBinaryClassifier();
     addFunctions(learningMachine, target);
-    learningMachine->setLearner(adaBoostLearner(createWeakLearner(target)), numIterations);
+    learningMachine->setLearner(adaBoostLearner(createWeakLearner(target)), numIterations, true); // verbose 
     return learningMachine;
   }
 
@@ -374,7 +384,7 @@ public:
   {
     LuapeInferencePtr learningMachine =  new LuapeClassifier();
     addFunctions(learningMachine, target);
-    learningMachine->setLearner(adaBoostMHLearner(createWeakLearner(target), true), numIterations);
+    learningMachine->setLearner(adaBoostMHLearner(createWeakLearner(target), true), numIterations, true);// verbose 
     learningMachine->setBatchLearner(filterUnsupervisedExamplesBatchLearner(learningMachine->getBatchLearner(), true));
     return learningMachine;
   }

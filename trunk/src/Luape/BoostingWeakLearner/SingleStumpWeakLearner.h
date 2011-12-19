@@ -56,7 +56,7 @@ public:
     if (!bestNode)
       return LuapeNodePtr();
 
-    return makeContribution(context, structureLearner, makeStump(structureLearner, bestNode, bestThreshold), examples);
+    return makeContribution(context, structureLearner, makeStump(structureLearner, bestNode, bestThreshold), weakObjective, examples);
   }
 #endif // 0
 };

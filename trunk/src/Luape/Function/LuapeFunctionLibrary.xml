@@ -28,6 +28,11 @@
   
   <!-- Luape Functions - Doubles -->
   <class name="UnaryDoubleLuapeFunction" base="HomogeneousBinaryLuapeFunction" abstract="yes"/>
+  
+  <class name="LogDoubleLuapeFunction" base="UnaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+
   <class name="NormalizerLuapeFunction" base="HomogeneousUnaryLuapeFunction">
     <constructor returnType="LuapeFunction"/>
   </class>

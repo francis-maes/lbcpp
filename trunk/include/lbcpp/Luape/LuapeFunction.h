@@ -35,7 +35,7 @@ public:
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const = 0; 
   virtual TypePtr initialize(const std::vector<TypePtr>& inputTypes) = 0; // returns the output type
 
-  bool acceptInputsStack(const std::vector<LuapeNodePtr>& stack) const;
+  virtual bool acceptInputsStack(const std::vector<LuapeNodePtr>& stack) const;
 
   virtual String toShortString() const
     {return getClassName();}
@@ -65,6 +65,8 @@ extern LuapeFunctionPtr mulIntegerLuapeFunction();
 extern LuapeFunctionPtr divIntegerLuapeFunction();
 
 // Double
+extern LuapeFunctionPtr logDoubleLuapeFunction();
+
 extern LuapeFunctionPtr addDoubleLuapeFunction();
 extern LuapeFunctionPtr subDoubleLuapeFunction();
 extern LuapeFunctionPtr mulDoubleLuapeFunction();

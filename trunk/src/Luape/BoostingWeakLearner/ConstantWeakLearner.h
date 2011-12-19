@@ -25,7 +25,7 @@ public:
   virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective) const
   {
     weakObjective = computeWeakObjective(context, structureLearner, weakNode, examples);
-    return makeContribution(context, structureLearner, weakNode, examples);
+    return makeContribution(context, structureLearner, weakNode, weakObjective, examples);
   }
 
 protected:

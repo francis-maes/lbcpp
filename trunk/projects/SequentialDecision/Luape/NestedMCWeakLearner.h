@@ -68,7 +68,7 @@ public:
       return LuapeNodePtr();
     LuapeNodePtr weakNode = finalState->getStackElement(0);
     weakObjective = state->getBestScore();
-    return makeContribution(context, strongLearner, weakNode, examples);
+    return makeContribution(context, strongLearner, weakNode, weakObjective, examples);
   }
  
 protected:

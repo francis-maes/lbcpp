@@ -61,12 +61,15 @@ public:
       }
       context.leaveScope();
 
-      //if ((i+1) % 100 == 0)
       //  context.informationCallback(T("Graph: ") + learner->getGraph()->toShortString());
       context.progressCallback(new ProgressionState(i+1, maxIterations, T("Iterations")));
       
-   //   if ((i + 1) % 100 == 0)
-   //     analyseGraph(context, function->getRootNode());
+      if ((i+1) % 10 == 0)
+      {
+        context.enterScope(T("Most important nodes"));
+        displayMostImportantNodes(context, function);
+        context.leaveScope();
+      }
     }
     context.leaveScope();
     //Object::displayObjectAllocationInfo(std::cerr);
@@ -74,29 +77,49 @@ public:
     return true;
   }
   
-  void fillUsageStats(const LuapeNodePtr& node, std::map<LuapeNodePtr, double>& res) const
+  void getImportances(const LuapeNodePtr& node, std::map<LuapeNodePtr, double>& res) const
   {
     if (node)
     {
-      res[node] += 1.0;
+      res[node] = node->getImportance();
       size_t n = node->getNumSubNodes();
       for (size_t i = 0; i < n; ++i)
-        fillUsageStats(node->getSubNode(i), res);
+        getImportances(node->getSubNode(i), res);
     }
   }
   
-  void analyseGraph(ExecutionContext& context, const LuapeNodePtr& rootNode) const
+  void displayMostImportantNodes(ExecutionContext& context, const LuapeInferencePtr& function) const
   {
-    std::map<LuapeNodePtr, double> usageStats;
-    fillUsageStats(rootNode, usageStats);
+    const LuapeNodePtr& rootNode = function->getRootNode();
+
+    std::map<LuapeNodePtr, double> importances;
+    getImportances(rootNode, importances);
     
-    std::multimap<double, LuapeNodePtr> nodesByUsage;
-    for (std::map<LuapeNodePtr, double>::const_iterator it = usageStats.begin(); it != usageStats.end(); ++it)
-      nodesByUsage.insert(std::make_pair(it->second, it->first));
+    std::multimap<double, LuapeNodePtr> nodeImportanceMap;
+    double importanceSum = 0.0;
+    for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it)
+    {
+      nodeImportanceMap.insert(std::make_pair(it->second, it->first));
+      importanceSum += it->second;
+    }
     
     size_t i = 0;
-    for (std::multimap<double, LuapeNodePtr>::reverse_iterator it = nodesByUsage.rbegin(); it != nodesByUsage.rend() && i < 100; ++it, ++i)
-      context.informationCallback(T("# ") + String((int)i + 1) + T(": ") + it->second->toShortString() + T(" [") + String(it->first) + T("]"));
+    function->clearActiveVariables();
+    for (std::multimap<double, LuapeNodePtr>::reverse_iterator it = nodeImportanceMap.rbegin(); it != nodeImportanceMap.rend(); ++it, ++i)
+    {
+      const LuapeNodePtr& node = it->second;
+      if (i < 20)
+        context.informationCallback(T("# ") + String((int)i + 1) + T(": ") + node->toShortString() + T(" [") + String(it->first * 100.0 / importanceSum, 2) + T("%]"));
+
+      /// !!! TEST
+      /// !!!
+      if (!node.isInstanceOf<LuapeInputNode>())
+      {
+        function->addActiveVariable(node);
+        if (function->getNumActiveVariables() >= 10)
+          break;
+      }
+    }
   }
 
 protected:

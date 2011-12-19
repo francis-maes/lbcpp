@@ -22,8 +22,16 @@ static size_t makeLuapeNodeAllocationIndex()
 }
 
 LuapeNode::LuapeNode(const TypePtr& type)
-  : type(type), allocationIndex(makeLuapeNodeAllocationIndex())
+  : type(type), allocationIndex(makeLuapeNodeAllocationIndex()), importance(0.0)
 {
+}
+
+void LuapeNode::addImportance(double delta)
+{
+  importance += delta;
+  size_t n = getNumSubNodes();
+  for (size_t i = 0; i < n; ++i)
+    getSubNode(i)->addImportance(delta);
 }
 
 /*
