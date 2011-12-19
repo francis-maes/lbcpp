@@ -22,7 +22,7 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
 # ifdef LBCPP_PROTEIN_ROSETTA
-    rosettaInitialization(context, true);
+    rosettaInitialization(context, false);
 
     File inputFile = context.getFile(inputDirectory);
     if (!inputFile.exists())

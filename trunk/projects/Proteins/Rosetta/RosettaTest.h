@@ -37,6 +37,7 @@
 # include "RosettaProtein.h"
 
 # include "Data/Rosetta.h"
+# include "Data/Pose.h"
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 #  undef T
@@ -71,29 +72,24 @@ public:
     RandomGeneratorPtr random = new RandomGenerator();
 
 # ifdef LBCPP_PROTEIN_ROSETTA
-    rosettaInitialization(context, true);
+    Rosetta ros;
+    ros.init(context, false);
 
-    //    Rosetta ros(context);
+    PosePtr p = new Pose(context.getFile(T("2K47.pdb")));
+    PosePtr p2 = new Pose(p);
+
+    std::cout << "energy : " << p->getEnergy() << std::endl;
+
+    p->setPhi(2, p->getPhi(2) + 15);
+    p2->setPhi(2, p2->getPhi(2) - 15);
+
+    std::cout << "mov energy p : " << p->getCorrectedEnergy() << std::endl;
+    std::cout << "mov energy p2 : " << p2->getCorrectedEnergy() << std::endl;
+
+    std::cout << "length p : " << p->getLength() << std::endl;
     //
-    //    ros.init(true, 1, 2);
-    File referenceFile = context.getFile(T("bugpdb"));
-
-    File singleFile = context.getFile(T("bugpdb/1a0b_0.xml"));
-
-    ProteinPtr prot = Protein::createFromXml(context, singleFile);
-    core::pose::PoseOP tPose;
-
-    std::cout << "num residues : " << prot->getTertiaryStructure()->getNumResidues() << std::endl;
-    std::cout << "num specified residues : "
-        << prot->getTertiaryStructure()->getNumSpecifiedResidues() << std::endl;
-
-    VectorPtr prim = prot->getPrimaryStructure();
-    String seq = prim->toString();
-
-    std::cout << "primary : " << (const char*)seq << std::endl;
-//
-//    ResiduePtr res = prot->getTertiaryStructure()->getResidue(1);
-//
+    //    ResiduePtr res = prot->getTertiaryStructure()->getResidue(1);
+    //
 //    if (res.get() != NULL)
 //      std::cout << res->getThreeLettersCodeName() << std::endl;
 

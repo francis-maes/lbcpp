@@ -8,7 +8,9 @@ TODO LBCPP
   - creer Pose.h et Pose.cpp
 - reecrire ProteinOptimizationWorkUnit
 - apprentissage online
+
 v tuner les parameters SA
+- essayer SA avec plusieurs noeuds ouverts
 
 - changer noms ProteinMover et ProteinMoverSampler en PoseMover et PoseMoverSampler
 

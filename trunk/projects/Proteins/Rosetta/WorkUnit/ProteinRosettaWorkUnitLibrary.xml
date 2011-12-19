@@ -50,4 +50,9 @@
     <variable type="PositiveInteger" name="numIterations"/>
   </class>
   
+  <class name="ProteinEDAOptimizationWorkUnit" base="WorkUnit">
+    <variable type="PositiveInteger" name="numSamplesPerIteration"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+  
 </library>

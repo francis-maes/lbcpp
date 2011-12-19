@@ -84,6 +84,8 @@ void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed)
   juce::File dbDirectory = context->getFile(T("rosetta_database"));
   jassert(dbDirectory != File::nonexistent);
   args.add_back(std::string((const char*)dbDirectory.getFullPathName()));
+  args.add_back(std::string("-in::file::obey_ENDMDL"));
+  args.add_back(std::string("true"));
 
   // seeds of random devices
   args.add_back(std::string("-run:use_time_as_seed"));
