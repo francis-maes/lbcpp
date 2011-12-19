@@ -61,7 +61,7 @@ public:
     for (size_t i = 1; i < treeDepth; ++i)
       weakLearner = binaryTreeWeakLearner(conditionLearner, weakLearner);
 
-    classifier->setLearner(adaBoostMHLearner(weakLearner, true), maxIterations, true);
+    classifier->setLearner(adaBoostMHLearner(weakLearner, true), maxIterations, false);
     classifier->setEvaluator(defaultSupervisedEvaluator());
 
     classifier->train(context, trainData, testData, T("Training"), false);
