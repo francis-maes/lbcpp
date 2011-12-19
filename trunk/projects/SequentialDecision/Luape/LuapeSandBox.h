@@ -49,11 +49,12 @@ public:
     if (!classifier->initialize(context, inputClass, labels))
       return false;
 
-    BoostingWeakLearnerPtr conditionLearner = singleStumpWeakLearner();
-    //BoostingWeakLearnerPtr conditionLearner = policyBasedWeakLearner(treeBasedRandomPolicy(), budgetPerIteration, maxSteps);
+    BoostingWeakLearnerPtr conditionLearner;
+    if (maxSteps == 0)
+      conditionLearner = singleStumpWeakLearner();
+    else
+      conditionLearner = policyBasedWeakLearner(treeBasedRandomPolicy(), budgetPerIteration, maxSteps);
     //conditionLearner = laminatingWeakLearner(conditionLearner, 100);
-    //BoostingWeakLearnerPtr weakLearner = new NormalizedValueWeakLearner();
-    //BoostingWeakLearnerPtr conditionLearner = nestedMCWeakLearner(0, budgetPerIteration, maxSteps);
 
     conditionLearner = compositeWeakLearner(constantWeakLearner(), conditionLearner);
     BoostingWeakLearnerPtr weakLearner = conditionLearner;

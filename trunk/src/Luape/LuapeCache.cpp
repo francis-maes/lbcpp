@@ -184,8 +184,18 @@ void LuapeSamplesCache::ensureSizeInLowerThanMaxSize(ExecutionContext& context)
   if (maxCacheSize)
   {
     // un-cache nodes if the cache is full
-    while (getCacheSizeInBytes() > maxCacheSize)
-      uncacheNodes(context, 10);
+    size_t size = getCacheSizeInBytes();
+    if (size > maxCacheSize)
+    {
+      size_t prevSize;
+      do
+      {
+        uncacheNodes(context, 10);
+        prevSize = size;
+        size = getCacheSizeInBytes();
+      }
+      while (size > maxCacheSize && size != prevSize);
+    }
   }
 }
 
@@ -204,8 +214,6 @@ void LuapeSamplesCache::uncacheNode(ExecutionContext& context, const LuapeNodePt
 void LuapeSamplesCache::uncacheNodes(ExecutionContext& context, size_t count)
 {
   std::multimap<double, LuapeNodePtr> sortedNodes;
-  computingTimeThresholdToCache = DBL_MAX;
-
   for (NodeCacheMap::const_iterator it = m.begin(); it != m.end(); ++it)
   {
     double score = it->second.timeSpentInComputingSamples;
@@ -222,10 +230,16 @@ void LuapeSamplesCache::uncacheNodes(ExecutionContext& context, size_t count)
     }
   }
   
-  for (std::multimap<double, LuapeNodePtr>::const_iterator it = sortedNodes.begin(); it != sortedNodes.end(); ++it)
-    uncacheNode(context, it->second);
-  jassert(isNumberValid(computingTimeThresholdToCache));
-  std::cout << "New threshold: " << computingTimeThresholdToCache / 1000.0 << "s" << std::endl;
+  // if the cache it not big enough to store all inputs and their sorted double values, 
+  // it may happen that no nodes can be uncached
+  // in this case, the cache will big bigger than the maximum limit ...
+  if (sortedNodes.size())
+  {
+    for (std::multimap<double, LuapeNodePtr>::const_iterator it = sortedNodes.begin(); it != sortedNodes.end(); ++it)
+      uncacheNode(context, it->second);
+    jassert(isNumberValid(computingTimeThresholdToCache));
+    std::cout << "New threshold: " << computingTimeThresholdToCache / 1000.0 << "s" << std::endl;
+  }
 }
 
 bool LuapeSamplesCache::isNodeCached(const LuapeNodePtr& node) const
@@ -333,8 +347,10 @@ LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, co
     res = node->compute(context, refCountedPointerFromThis(this), indices);
 
     // see if we can cache by opportunism
-    if (indices == allIndices && res->getVector() && nodeCache.timeSpentInComputingSamples > computingTimeThresholdToCache)
-      cacheNode(context, node, res->getVector(), "Cache by opportunism"); // when the cache usage is low, we add everything that is fully computed into the cache
+    if (indices == allIndices && res->getVector() &&
+        (!maxCacheSize || getCacheSizeInBytes() < maxCacheSize) &&
+        nodeCache.timeSpentInComputingSamples > computingTimeThresholdToCache)
+      cacheNode(context, node, res->getVector(), "Cache by opportunism");
   }
   nodeCache.observeComputingTime(computeExpectedComputingTimePerSample(node) * indices->size());
   ensureSizeInLowerThanMaxSize(context);
