@@ -10,6 +10,7 @@ TODO LBCPP
 - apprentissage online
 v tuner les parameters SA
 
+- changer noms ProteinMover et ProteinMoverSampler en PoseMover et PoseMoverSampler
 
 TODO NIC3
 =========
