@@ -53,7 +53,7 @@ public:
     if (maxSteps == 0)
       conditionLearner = singleStumpWeakLearner();
     else
-      conditionLearner = policyBasedWeakLearner(treeBasedRandomPolicy(), budgetPerIteration, maxSteps);
+      conditionLearner = policyBasedWeakLearner(new RandomPolicy(), budgetPerIteration, maxSteps);
     //conditionLearner = laminatingWeakLearner(conditionLearner, 100);
 
     conditionLearner = compositeWeakLearner(constantWeakLearner(), conditionLearner);
@@ -61,7 +61,7 @@ public:
     for (size_t i = 1; i < treeDepth; ++i)
       weakLearner = binaryTreeWeakLearner(conditionLearner, weakLearner);
 
-    classifier->setLearner(adaBoostMHLearner(weakLearner, true), maxIterations, false);
+    classifier->setLearner(adaBoostMHLearner(weakLearner, true), maxIterations, true);
     classifier->setEvaluator(defaultSupervisedEvaluator());
 
     classifier->train(context, trainData, testData, T("Training"), false);
@@ -135,6 +135,7 @@ protected:
     res->addFunction(subDoubleLuapeFunction());
     res->addFunction(mulDoubleLuapeFunction());
     res->addFunction(divDoubleLuapeFunction());
+    //res->addFunction(logDoubleLuapeFunction());
     res->addFunction(andBooleanLuapeFunction());
     res->addFunction(equalBooleanLuapeFunction());
     return res;

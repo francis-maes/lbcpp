@@ -107,7 +107,7 @@ public:
     LuapeNodePtr weakNode = weakNodesByScore[0].first;
     weakObjective = computeWeakObjectiveWithEventualStump(context, structureLearner, weakNode, examples); // side effect on weakNode
     context.leaveScope(weakObjective);
-    return makeContribution(context, structureLearner, weakNode, examples);
+    return makeContribution(context, structureLearner, weakNode, weakObjective, examples);
   }
 
 protected:

@@ -30,21 +30,31 @@ public:
     return (value == doubleMissingValue ? value : computeDouble(value));
   }
 
-  virtual VectorPtr compute(ExecutionContext& context, const std::vector<VectorPtr>& in, TypePtr outputType) const
+  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& in, TypePtr outputType) const
   {
-    const DenseDoubleVectorPtr& inputs = in[0].staticCast<DenseDoubleVector>();
-
-    DenseDoubleVectorPtr res = new DenseDoubleVector(vectorClass, inputs->getNumValues(), 0.0);
-    const double* ptr = inputs->getValuePointer(0);
-    const double* lim = ptr + inputs->getNumValues();
-    double* target = res->getValuePointer(0);
-    while (ptr != lim)
-      *target++ = computeDouble(*ptr++);
-    return res;
+    const LuapeSampleVectorPtr& inputs = in[0];
+    DenseDoubleVectorPtr res = new DenseDoubleVector(vectorClass, inputs->size(), 0.0);
+    double* dest = res->getValuePointer(0);
+    for (LuapeSampleVector::const_iterator it = inputs->begin(); it != inputs->end(); ++it)
+    {
+      double value = it.getRawDouble();
+      *dest++ = value == doubleMissingValue ? doubleMissingValue : computeDouble(value);
+    }
+    return new LuapeSampleVector(inputs->getIndices(), res);
   }
 
 protected:
   ClassPtr vectorClass;
+};
+
+class LogDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
+{
+public:
+  virtual double computeDouble(double value) const
+    {return value <= 0.0 ? doubleMissingValue : log(value);}
+
+  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+    {return "log(" + inputs[0]->toShortString() + ")";}
 };
 
 class BinaryDoubleLuapeFunction : public HomogeneousBinaryLuapeFunction

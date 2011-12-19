@@ -69,12 +69,14 @@ bool BoostingLearner::initialize(ExecutionContext& context, const LuapeInference
   return weakLearner->initialize(context, function);
 }
 
-LuapeNodePtr BoostingLearner::turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& indices) const
+LuapeNodePtr BoostingLearner::turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, double weakObjective, const IndexSetPtr& indices) const
 {
   jassert(weakNode);
   Variable successVote, failureVote, missingVote;
   if (!computeVotes(context, weakNode, indices, successVote, failureVote, missingVote))
     return LuapeNodePtr();
+
+  weakNode->addImportance(weakObjective);
 
   LuapeNodePtr res;
   jassert(weakNode->getType() == booleanType || weakNode->getType() == probabilityType);
@@ -238,8 +240,8 @@ double BoostingWeakLearner::computeWeakObjectiveWithStump(ExecutionContext& cont
 LuapeNodePtr BoostingWeakLearner::makeStump(const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, double threshold) const
   {return structureLearner->getUniverse()->makeFunctionNode(stumpLuapeFunction(threshold), numberNode);}
 
-LuapeNodePtr BoostingWeakLearner::makeContribution(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples) const
-  {return structureLearner->turnWeakNodeIntoContribution(context, weakNode, examples);}
+LuapeNodePtr BoostingWeakLearner::makeContribution(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, double weakObjective, const IndexSetPtr& examples) const
+  {return structureLearner->turnWeakNodeIntoContribution(context, weakNode, weakObjective, examples);}
 
 /*
 ** FiniteBoostingWeakLearner
@@ -267,5 +269,5 @@ LuapeNodePtr FiniteBoostingWeakLearner::learn(ExecutionContext& context, const B
   if (!bestWeakNode)
     return LuapeNodePtr();
 
-  return makeContribution(context, structureLearner, bestWeakNode, examples);
+  return makeContribution(context, structureLearner, bestWeakNode, weakObjective, examples);
 }

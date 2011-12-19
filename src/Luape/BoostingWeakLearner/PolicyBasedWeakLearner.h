@@ -140,16 +140,23 @@ public:
 
   virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& res) const
   {
-    res.reserve(res.size() + budget);
-    size_t i = 0;
-    while (i < budget)
+    size_t numFailuresAllowed = 10 * budget;
+    std::set<LuapeNodePtr> weakNodes;
+    while (weakNodes.size() < budget && numFailuresAllowed > 0)
     {
       LuapeNodePtr weakNode = sampleTrajectory(context, structureLearner);
-      if (weakNode)
-      {
-        res.push_back(weakNode);
-        ++i;
-      }
+      if (weakNode && weakNodes.find(weakNode) == weakNodes.end())
+        weakNodes.insert(weakNode);
+      else
+        --numFailuresAllowed;
+    }
+
+    size_t index = res.size();
+    res.resize(index + weakNodes.size());
+    for (std::set<LuapeNodePtr>::const_iterator it = weakNodes.begin(); it != weakNodes.end(); ++it)
+    {
+      context.informationCallback(T("Candidate: ") + (*it)->toShortString());
+      res[index++] = *it;
     }
     return true;
   }
@@ -200,7 +207,7 @@ public:
     }
     if (!bestWeakLearner)
       return LuapeNodePtr();
-    return makeContribution(context, structureLearner, bestWeakLearner, examples);
+    return makeContribution(context, structureLearner, bestWeakLearner, weakObjective, examples);
   }
 
   void findOptimalWeakLearner(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeGraphBuilderStatePtr& state, const IndexSetPtr& examples, double& bestReward, LuapeNodePtr& bestWeakLearner) const
@@ -239,6 +246,7 @@ public:
     LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(function, typeSearchSpace);
 
     bool noMoreActions = false;
+    //String episode = "";
     policy->startEpisode(context, builder);
     while (!builder->isFinalState())
     {
@@ -250,6 +258,7 @@ public:
       }
 
       Variable action = policy->selectAction(context, builder);
+      //episode += action.toShortString() + T(" ");
       double reward;
       builder->performTransition(context, action, reward);
       policy->observeTransition(context, action, reward, builder);
@@ -258,16 +267,19 @@ public:
     if (builder->getStackSize() == 1)
     {
       node = builder->getStackElement(0);
+//      episode  += T(" => ") + node->toShortString();
 //      weakObjective = computeWeakObjectiveWithEventualStump(context, structureLearner, node, examples);
     }
 //    else
 //      weakObjective = 0.0;
+    //context.informationCallback(episode);
+    
     /*
     if (noMoreActions)
       context.informationCallback(T("Out-of-actions: ") + builder->toShortString());
     else
-      context.informationCallback(T("Final State: ") + builder->toShortString());// + T(" => ") + String(weakObjective));*/
-
+      context.informationCallback(T("Final State: ") + builder->toShortString());// + T(" => ") + String(weakObjective));
+    */
     return node;
   }
 

@@ -39,6 +39,14 @@ public:
 
   bool isYield() const
     {return numNodesToRemove == 0 && !nodeToAdd;}
+  
+  virtual String toShortString() const
+  {
+    if (numNodesToRemove == 0)
+      return nodeToAdd ? T("push(") + nodeToAdd->toShortString() + T(")") : T("yield");
+    else
+      return T("apply(") + nodeToAdd.staticCast<LuapeFunctionNode>()->getFunction()->toShortString() + T(")");
+  }
 
   //bool isUseless(const LuapeGraphPtr& graph) const
   //  {return nodeToAdd && isNewNode() && graph->containsNode(nodeToAdd);}
@@ -133,6 +141,13 @@ public:
       for (size_t i = 0; i < function->getNumInputs(); ++i)
       {
         LuapeNodePtr node = function->getInput(i);
+        if (typeState->canTypeBePushed(node->getType()))
+          res->append(LuapeGraphBuilderAction::push(node));
+      }
+      const std::set<LuapeNodePtr>& activeVariables = function->getActiveVariables();
+      for (std::set<LuapeNodePtr>::const_iterator it = activeVariables.begin(); it != activeVariables.end(); ++it)
+      {
+        LuapeNodePtr node = *it;
         if (typeState->canTypeBePushed(node->getType()))
           res->append(LuapeGraphBuilderAction::push(node));
       }

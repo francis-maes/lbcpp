@@ -35,6 +35,11 @@ public:
   size_t getAllocationIndex() const
     {return allocationIndex;}
 
+  void addImportance(double delta);
+
+  double getImportance() const
+    {return importance;}
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -43,6 +48,7 @@ protected:
 
   TypePtr type;
   size_t allocationIndex;
+  double importance;
 };
 
 extern ClassPtr luapeNodeClass;

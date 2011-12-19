@@ -1,6 +1,8 @@
 
--> Lancer expés sur Nic3
--> Revenir sur SS3
+Importance des variables dynamiques
+ - LuapeNode::incrementImportance()
+ - Call incrementImportance in LuapeLearner and store sum of importances
+ - LuapeGraphBuilder: sample nodes from importance distribution
 
 Luape-Other:
  * Go: rankboost + large-scale boosting
