@@ -20,6 +20,8 @@ namespace lbcpp
 class LuapeLearner : public Object
 {
 public:
+  LuapeLearner() : verbose(false) {}
+
   virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function);
   virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data);
   virtual bool doLearningIteration(ExecutionContext& context) = 0;
@@ -42,12 +44,20 @@ public:
   VectorPtr getTrainingPredictions() const;
   VectorPtr getValidationPredictions() const;
 
-protected:
-  LuapeInferencePtr function;
+  void setVerbose(bool v)
+    {verbose = v;}
 
+  bool getVerbose() const
+    {return verbose;}
+
+protected:
+  friend class LuapeLearnerClass;
+
+  bool verbose;
+
+  LuapeInferencePtr function;
   std::vector<ObjectPtr> trainingData;
   LuapeSamplesCachePtr trainingCache;
-
   std::vector<ObjectPtr> validationData;
   LuapeSamplesCachePtr validationCache;
 };

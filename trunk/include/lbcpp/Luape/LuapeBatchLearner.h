@@ -46,29 +46,25 @@ public:
     LuapeNodeUniversePtr universe = function->getUniverse();
     for (size_t i = 0; i < maxIterations; ++i)
     {
-/*      context.enterScope(T("Cache information"));
-      String info = T("Train cache size: ") + String((int)learner->getTrainingCache()->getCacheSizeInBytes() / (1024 * 1024)) + T(" Mb");
-      if (learner->getValidationCache())
-        info += T(" Validation cache size: ") + String((int)learner->getValidationCache()->getCacheSizeInBytes() / (1024 * 1024)) + T(" Mb");
-      context.informationCallback(info);
-      learner->getTrainingCache()->getComputeTimeStatistics(context);
-      context.leaveScope();*/
-
       context.enterScope(T("Iteration ") + String((int)i + 1));
       context.resultCallback(T("iteration"), i);
       
       learner->doLearningIteration(context);
-      context.resultCallback("trainCacheSizeInMb", learner->getTrainingCache()->getCacheSizeInBytes() / (1024.0 * 1024.0));
-      if (learner->getValidationCache())
-        context.resultCallback("validationCacheSizeInMb", learner->getValidationCache()->getCacheSizeInBytes() / (1024.0 * 1024.0));
+      if (learner->getVerbose())
+      {
+        context.resultCallback("trainCacheSizeInMb", learner->getTrainingCache()->getCacheSizeInBytes() / (1024.0 * 1024.0));
+        if (learner->getValidationCache())
+          context.resultCallback("validationCacheSizeInMb", learner->getValidationCache()->getCacheSizeInBytes() / (1024.0 * 1024.0));
+        //       learner->getTrainingCache()->getComputeTimeStatistics(context);
+      }
       context.leaveScope();
 
       //if ((i+1) % 100 == 0)
       //  context.informationCallback(T("Graph: ") + learner->getGraph()->toShortString());
       context.progressCallback(new ProgressionState(i+1, maxIterations, T("Iterations")));
       
-      if ((i + 1) % 100 == 0)
-        analyseGraph(context, function->getRootNode());
+   //   if ((i + 1) % 100 == 0)
+   //     analyseGraph(context, function->getRootNode());
     }
     context.leaveScope();
     //Object::displayObjectAllocationInfo(std::cerr);

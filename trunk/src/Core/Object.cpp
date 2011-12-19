@@ -354,14 +354,14 @@ bool Object::loadFromXml(XmlImporter& importer)
     String name = child->getStringAttribute(T("name"));
     if (name.isEmpty())
     {
-      importer.errorMessage(T("Object::loadFromXml"), T("Could not find variable name"));
+      importer.errorMessage(T("Object::loadFromXml"), T("Missing name attribute in variable"));
       ok = false;
       continue;
     }
     int variableNumber = thisClass->findMemberVariable(name);
     if (variableNumber < 0)
     {
-      importer.warningMessage(T("Object::loadFromXml"), T("Could not find variable ") + name.quoted() + T(" in class ") + thisClass->getName());
+      importer.unknownVariableWarning(thisClass, name);
       continue;
     }
     TypePtr expectedType = thisClass->getMemberVariableType((size_t)variableNumber);

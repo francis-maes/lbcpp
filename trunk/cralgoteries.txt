@@ -1,5 +1,7 @@
 
- * Smart-Cache: evaluer le temps de calcul des differents noeuds, cacher de maniere adaptative
+2) Smart-cache
+3) Lancer expés sur Nic3
+
 
 Luape-Other:
  * Go: rankboost + large-scale boosting

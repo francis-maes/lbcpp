@@ -465,6 +465,16 @@ void XmlImporter::errorMessage(const String& where, const String& what) const
 void XmlImporter::warningMessage(const String& where, const String& what) const
   {context.warningCallback(where, what);}
 
+void XmlImporter::unknownVariableWarning(ClassPtr type, const String& variableName) const
+{
+  std::pair<ClassPtr, String> key = std::make_pair(type, variableName);
+  if (unknownVariables.find(key) == unknownVariables.end())
+  {
+    warningMessage(T("Load from xml"), T("Unknown variable ") + type->getName() + T("::") + variableName);
+    const_cast<XmlImporter* >(this)->unknownVariables.insert(key);
+  }
+}
+
 Variable XmlImporter::load()
 {
   if (root->getTagName() == T("lbcpp"))
@@ -510,7 +520,7 @@ Variable XmlImporter::loadVariable(TypePtr expectedType)
   else
   {
     TypePtr type = loadType(expectedType);
-    if (!type)
+    if (!type || !type->getBaseType())
       return Variable();
     
     if (getStringAttribute(T("missing")) == T("true"))
@@ -566,6 +576,11 @@ bool XmlImporter::addSharedObject(const String& name, ObjectPtr object)
   if (sharedObjects.find(name) != sharedObjects.end())
   {
     context.errorCallback(T("Could not add shared object ") + name.quoted() + T(": this identifier is already used by another object"));
+    return false;
+  }
+  if (!object->getClass() || !object->getClass()->getBaseType())
+  {
+    context.errorCallback(T("Could not add shared object ") + name.quoted() + T(": invalid class"));
     return false;
   }
   sharedObjects[name] = object;

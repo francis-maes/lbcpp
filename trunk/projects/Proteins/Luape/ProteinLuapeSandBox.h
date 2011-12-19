@@ -305,7 +305,7 @@ public:
   {
     BoostingWeakLearnerPtr conditionLearner = policyBasedWeakLearner(treeBasedRandomPolicy(), budget, numSteps);
     conditionLearner = compositeWeakLearner(constantWeakLearner(), conditionLearner);
-    conditionLearner = laminatingWeakLearner(conditionLearner, 100);
+    //conditionLearner = laminatingWeakLearner(conditionLearner, 100);
 
     BoostingWeakLearnerPtr res = conditionLearner;
     for (size_t i = 1; i < treeDepth; ++i)

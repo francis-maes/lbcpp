@@ -103,19 +103,20 @@ bool BoostingLearner::doLearningIteration(ExecutionContext& context)
  
   // do weak learning
   {
-    TimedScope _(context, "weak learning");
+    TimedScope _(context, "weak learning", verbose);
     contribution = weakLearner->learn(context, refCountedPointerFromThis(this), trainingCache->getAllIndices(), weakObjective);
     if (!contribution)
     {
       context.errorCallback(T("Failed to find a weak learner"));
       return false;
     }
-    context.resultCallback(T("edge"), weakObjective);
+    if (verbose)
+      context.resultCallback(T("edge"), weakObjective);
   }
 
   // add into node and caches
   {
-    TimedScope _(context, "add into node");
+    TimedScope _(context, "add into node", verbose);
     std::vector<LuapeSamplesCachePtr> caches;
     caches.push_back(trainingCache);
     if (validationCache)
@@ -125,7 +126,7 @@ bool BoostingLearner::doLearningIteration(ExecutionContext& context)
 
   // evaluate
   {
-    TimedScope _(context, "evaluate");
+    TimedScope _(context, "evaluate", verbose);
     VectorPtr trainingPredictions = getTrainingPredictions();
     context.resultCallback(T("train error"), function->evaluatePredictions(context, trainingPredictions, trainingData));
 
@@ -136,7 +137,9 @@ bool BoostingLearner::doLearningIteration(ExecutionContext& context)
 
   // trainingCache->checkCacheIsCorrect(context, function->getRootNode());
 
-  context.resultCallback(T("contribution"), contribution);
+  context.informationCallback(contribution->toShortString());
+  if (verbose)
+    context.resultCallback(T("contribution"), contribution);
   return true;
 }
 

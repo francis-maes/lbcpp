@@ -20,13 +20,18 @@ String Class::toString() const
 {
   String res = getName();
   res += T(" = {");
-  size_t n = getNumMemberVariables();
-  for (size_t i = 0; i < n; ++i)
+  if (baseType)
   {
-    res += getMemberVariableType(i)->getName() + T(" ") + getMemberVariableName(i);
-    if (i < n - 1)
-      res += T(", ");
+    size_t n = getNumMemberVariables();
+    for (size_t i = 0; i < n; ++i)
+    {
+      res += getMemberVariableType(i)->getName() + T(" ") + getMemberVariableName(i);
+      if (i < n - 1)
+        res += T(", ");
+    }
   }
+  else
+    res += T("!!missing base type!!");
   res += T("}");
   return res;
 }
