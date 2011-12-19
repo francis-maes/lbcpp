@@ -7,29 +7,33 @@
                                `--------------------------------------------*/
 
 #include "precompiled.h"
+#include <lbcpp/Data/SymmetricMatrix.h>
 #include "Pose.h"
 
 namespace lbcpp
 {
 #ifdef LBCPP_PROTEIN_ROSETTA
 
-Pose::Pose()
-  {pose = new core::pose::Pose();}
-
-Pose::Pose(const PosePtr& copy)
-  {*pose = *copy->pose;}
-
-void Pose::createFromSequence(const String& sequence)
+Pose::Pose(const String& sequence)
 {
+  jassert(sequence.length() != 0);
+  pose = new core::pose::Pose();
   core::chemical::make_pose_from_sequence(*pose, (const char*)sequence,
       core::chemical::ChemicalManager::get_instance()->nonconst_residue_type_set("fa_standard"));
 }
 
-void Pose::createFromPDB(const File& pdbFile)
+Pose::Pose(const File& pdbFile)
 {
+  jassert(pdbFile != File::nonexistent);
   pose = new core::pose::Pose((const char*)pdbFile.getFullPathName());
   if (pose() == NULL)
     jassert(false);
+}
+
+Pose::Pose(const PosePtr& copy)
+{
+  pose = new core::pose::Pose();
+  *pose = *copy->pose;
 }
 
 void Pose::saveToPDB(const File& pdbFile)
@@ -44,6 +48,9 @@ Pose& Pose::operator=(const Pose& copy)
   return *this;
 }
 
+size_t Pose::getLength()
+  {return pose->n_residue();}
+
 double Pose::getPhi(size_t residue)
   {return pose->phi(residue + 1);}
 
@@ -56,7 +63,7 @@ void Pose::setPhi(size_t residue, double phi)
 void Pose::setPsi(size_t residue, double psi)
   {pose->set_psi(residue + 1, psi);}
 
-SymmetricMatrixPtr Pose::createBackboneDistanceMatrix()
+SymmetricMatrixPtr Pose::getBackboneDistanceMatrix()
 {
   SymmetricMatrixPtr matrix;
   matrix = new DoubleSymmetricMatrix(doubleType, 3 * (int)pose->n_residue(), 0.0);
@@ -155,7 +162,7 @@ double Pose::getCollisionCorrectionFactor()
   double varianceMinimumDistance = 0.13;
   double inverseVarianceMinimumDistance = 1.0 / varianceMinimumDistance;
 
-  SymmetricMatrixPtr bbDistances = createBackboneDistanceMatrix();
+  SymmetricMatrixPtr bbDistances = getBackboneDistanceMatrix();
 
   for (size_t i = 0; i < bbDistances->getNumRows(); i++)
     for (size_t j = i + 2; j < bbDistances->getNumColumns(); j++)
@@ -166,16 +173,13 @@ double Pose::getCollisionCorrectionFactor()
 }
 
 # else
-Pose::Pose()
+Pose::Pose(const String& sequence)
+  {jassert(false);}
+
+Pose::Pose(const File& pdbFile)
   {jassert(false);}
 
 Pose::Pose(const PosePtr& copy)
-  {jassert(false);}
-
-void Pose::createFromSequence(const String& sequence)
-  {jassert(false);}
-
-void Pose::createFromPDB(const File& pdbFile)
   {jassert(false);}
 
 void Pose::saveToPDB(const File& pdbFile)
@@ -185,6 +189,12 @@ Pose& Pose::operator=(const Pose& copy)
 {
   jassert(false);
   return *this;
+}
+
+size_t Pose::getLength()
+{
+  jassert(false);
+  return 0;
 }
 
 double Pose::getPhi(size_t residue)
@@ -205,7 +215,7 @@ void Pose::setPhi(size_t residue, double phi)
 void Pose::setPsi(size_t residue, double psi)
   {jassert(false);}
 
-SymmetricMatrixPtr Pose::createBackboneDistanceMatrix()
+SymmetricMatrixPtr Pose::getBackboneDistanceMatrix()
 {
   jassert(false);
   return SymmetricMatrixPtr();

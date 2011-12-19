@@ -26,27 +26,28 @@
 
 namespace lbcpp
 {
+
 class Pose;
 typedef ReferenceCountedObjectPtr<Pose> PosePtr;
 
 class Pose : public Object
 {
 public:
-  Pose();
+  Pose() {}
+  Pose(const String& sequence);
+  Pose(const File& pdbFile);
   Pose(const PosePtr& copy);
-
-  void createFromSequence(const String& sequence);
-  void createFromPDB(const File& pdbFile);
 
   void saveToPDB(const File& pdbFile);
 
   Pose& operator=(const Pose& copy);
 
+  size_t getLength();
   double getPhi(size_t residue);
   double getPsi(size_t residue);
   void setPhi(size_t residue, double phi);
   void setPsi(size_t residue, double psi);
-  SymmetricMatrixPtr createBackboneDistanceMatrix();
+  SymmetricMatrixPtr getBackboneDistanceMatrix();
 
   double getEnergy();
   double getCorrectedEnergy();
