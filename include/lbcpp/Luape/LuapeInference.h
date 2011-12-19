@@ -67,7 +67,7 @@ public:
   /*
   ** Learner
   */
-  void setLearner(const LuapeLearnerPtr& learner, size_t maxIterations = 1000);
+  void setLearner(const LuapeLearnerPtr& learner, size_t maxIterations = 1000, bool verbose = false);
 
 protected:
   friend class LuapeInferenceClass;

@@ -149,7 +149,7 @@ extern ClassPtr resourceEstimatorClass;
 class TimedScope
 {
 public:
-  TimedScope(ExecutionContext& context, const String& name);
+  TimedScope(ExecutionContext& context, const String& name, bool enable = true);
   ~TimedScope();
   
 private:

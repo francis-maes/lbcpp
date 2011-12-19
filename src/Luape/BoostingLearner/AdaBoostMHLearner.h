@@ -231,22 +231,12 @@ public:
           errorWeight += muPositive;
         }
       }
-/*
-      context.resultCallback(T("mu_false_false"), objective->getMu(0, false));
-      context.resultCallback(T("mu_false_true"), objective->getMu(0, true));
-      context.resultCallback(T("mu_true_false"), objective->getMu(1, false));
-      context.resultCallback(T("mu_true_true"), objective->getMu(1, true));
-      context.resultCallback(T("mu_missing_false"), objective->getMu(2, false));
-      context.resultCallback(T("mu_missing_true"), objective->getMu(2, true));
-      context.resultCallback(T("votes"), votes);
-      context.resultCallback(T("correctWeight"), correctWeight);
-      context.resultCallback(T("errorWeight"), errorWeight);*/
 
       if (errorWeight || correctWeight)
       {
         double alpha = errorWeight ? 0.5 * log(correctWeight / errorWeight) : 1.0; // FIXME: what should we do if everything is correct ?
         jassert(alpha > -1e-9);
-        context.resultCallback(T("alpha"), alpha);
+        //context.resultCallback(T("alpha"), alpha);
         res[0] = votes->cloneAndCast<DenseDoubleVector>();
         res[0]->multiplyByScalar(-alpha);
         res[1] = votes->cloneAndCast<DenseDoubleVector>();

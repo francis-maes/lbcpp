@@ -283,11 +283,21 @@ bool ExecutionStack::equals(const ExecutionStackPtr& otherStack) const
 /*
 ** TimedScope
 */
-TimedScope::TimedScope(ExecutionContext& context, const String& name)
-  : context(context), name(name), startTime(juce::Time::getMillisecondCounterHiRes()) {}
+TimedScope::TimedScope(ExecutionContext& context, const String& name, bool enable)
+  : context(context), startTime(0.0)
+{
+  if (enable)
+  {
+    this->name = name;
+    startTime = juce::Time::getMillisecondCounterHiRes();
+  }
+}
 
 TimedScope::~TimedScope()
-  {context.resultCallback(name + T(" time"), Variable((juce::Time::getMillisecondCounterHiRes() - startTime) / 1000.0));}
+{
+  if (name.isNotEmpty())
+    context.resultCallback(name + T(" time"), Variable((juce::Time::getMillisecondCounterHiRes() - startTime) / 1000.0));
+}
 
 /*
 ** Execution Context constructor functions

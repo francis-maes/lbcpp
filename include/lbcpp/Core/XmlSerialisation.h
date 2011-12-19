@@ -228,6 +228,7 @@ public:
 
   void errorMessage(const String& where, const String& what) const;
   void warningMessage(const String& where, const String& what) const;
+  void unknownVariableWarning(ClassPtr type, const String& variableName) const;
 
   typedef std::map<String, ObjectPtr> SharedObjectMap;
 
@@ -281,6 +282,8 @@ private:
 
   bool addSharedObject(const String& name, ObjectPtr object);
   ObjectPtr getSharedObject(const String& name) const;
+
+  std::set<std::pair<ClassPtr, String> > unknownVariables; // store unknown variables to produce warnings only once
 };
 
 }; /* namespace lbcpp */

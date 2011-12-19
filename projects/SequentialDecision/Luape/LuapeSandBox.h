@@ -57,16 +57,16 @@ public:
     for (size_t i = 1; i < treeDepth; ++i)
       weakLearner = binaryTreeWeakLearner(conditionLearner, weakLearner);
 
-    classifier->setLearner(adaBoostMHLearner(weakLearner, true), maxIterations);
+    classifier->setLearner(adaBoostMHLearner(weakLearner, true), maxIterations, true);
     classifier->setEvaluator(defaultSupervisedEvaluator());
 
-    classifier->train(context, trainData, testData, T("Training"), true);
+    classifier->train(context, trainData, testData, T("Training"), false);
     //classifier->evaluate(context, trainData, EvaluatorPtr(), T("Evaluating on training data"));
     double error = classifier->evaluate(context, testData, EvaluatorPtr(), T("Evaluating on testing data"))->getScoreToMinimize();
 
 //    classifier->getGraph()->saveToGraphML(context, context.getFile(trainFile.getFileNameWithoutExtension() + ".graphml"));
 
-    testClassifier(context, classifier, inputClass);
+    //testClassifier(context, classifier, inputClass);
     return error;
   }
 

@@ -40,8 +40,11 @@ Variable LuapeInference::computeNode(ExecutionContext& context, const ObjectPtr&
   return cache->compute(context, node);
 }
 
-void LuapeInference::setLearner(const LuapeLearnerPtr& learner, size_t maxIterations)
-  {setBatchLearner(new LuapeBatchLearner(learner, maxIterations));}
+void LuapeInference::setLearner(const LuapeLearnerPtr& learner, size_t maxIterations, bool verbose)
+{
+  learner->setVerbose(verbose);
+  setBatchLearner(new LuapeBatchLearner(learner, maxIterations));
+}
 
 /*
 ** LuapeRegressor

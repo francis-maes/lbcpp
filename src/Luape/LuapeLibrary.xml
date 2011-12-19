@@ -20,7 +20,7 @@
   <!-- Nodes -->
   <class name="LuapeNode" base="Object" abstract="yes">
     <variable type="Type" name="type"/>
-    <variable type="PositiveInteger" name="allocationIndex"/>
+    <!-- <variable type="PositiveInteger" name="allocationIndex"/> -->
   </class>
   <class name="LuapeInputNode" base="LuapeNode">
     <variable type="String" name="name"/>
@@ -72,7 +72,9 @@
 
 
   <!-- Strong Learners -->
-  <class name="LuapeLearner" abstract="yes"/>
+  <class name="LuapeLearner" abstract="yes">
+    <variable type="Boolean" name="verbose"/>
+  </class>
   <class name="BoostingLearner" base="LuapeLearner" abstract="yes">
     <variable type="BoostingWeakLearner" name="weakLearner"/>
   </class>
