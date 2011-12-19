@@ -29,6 +29,10 @@ public:
   void observeNodeComputingTime(const LuapeNodePtr& node, size_t numInstances, double timeInMilliseconds);
   double getExpectedComputingTime(const LuapeNodePtr& node) const; // in milliseconds
 
+  typedef std::pair<ClassPtr, ClassPtr> NodeTypeKey;
+
+  static NodeTypeKey makeNodeStatisticsKey(const LuapeNodePtr& node);
+
   lbcpp_UseDebuggingNewOperator
 
 private:
@@ -58,8 +62,6 @@ private:
   // keys for LuapeFunctionNode: (luapeFunctionNodeClass, luapeFunctionClass)
   // keys for the others: (luapeNodeClass, ClassPtr())
   std::map<std::pair<ClassPtr, ClassPtr>, ScalarVariableStatistics> nodesComputingTimeStatistics;
-
-  static std::pair<ClassPtr, ClassPtr> makeNodeStatisticsKey(const LuapeNodePtr& node);
 };
 
 typedef ReferenceCountedObjectPtr<LuapeNodeUniverse> LuapeNodeUniversePtr;

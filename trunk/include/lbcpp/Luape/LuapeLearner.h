@@ -117,7 +117,7 @@ public:
 
   // these two functions have side effects on the currently stored predictions
   double compute(const LuapeSampleVectorPtr& predictions);
-  double findBestThreshold(ExecutionContext& context, const LuapeSampleVectorPtr& predictions, double& bestScore, bool verbose = false);
+  double findBestThreshold(ExecutionContext& context, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose = false);
 
 private:
   SparseDoubleVectorPtr computeSortedDoubleValues(ExecutionContext& context, const LuapeSampleVectorPtr& samples) const;

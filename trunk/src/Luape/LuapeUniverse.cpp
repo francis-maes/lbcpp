@@ -40,7 +40,7 @@ LuapeFunctionNodePtr LuapeNodeUniverse::makeFunctionNode(const LuapeFunctionPtr&
 
 void LuapeNodeUniverse::observeNodeComputingTime(const LuapeNodePtr& node, size_t numInstances, double timeInMilliseconds)
 {
-  nodesComputingTimeStatistics[makeNodeStatisticsKey(node)].push(timeInMilliseconds, (double)numInstances);
+  nodesComputingTimeStatistics[makeNodeStatisticsKey(node)].push(timeInMilliseconds / (double)numInstances, (double)numInstances);
 }
 
 double LuapeNodeUniverse::getExpectedComputingTime(const LuapeNodePtr& node) const // in milliseconds

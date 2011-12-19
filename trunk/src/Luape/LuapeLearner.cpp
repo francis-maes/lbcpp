@@ -8,7 +8,6 @@
 #include "precompiled.h"
 #include <lbcpp/Luape/LuapeLearner.h>
 #include <lbcpp/Data/DoubleVector.h>
-#include <algorithm>
 using namespace lbcpp;
 
 /*
@@ -26,13 +25,13 @@ bool LuapeLearner::setExamples(ExecutionContext& context, bool isTrainingData, c
   {
     trainingData = data;
     trainingCache = function->createSamplesCache(context, data);
-    trainingCache->cacheNode(context, function->getRootNode(), VectorPtr(), "Prediction node");
+    trainingCache->cacheNode(context, function->getRootNode(), VectorPtr(), "Prediction node", false);
   }
   else
   {
     validationData = data;
     validationCache = function->createSamplesCache(context, data);
-    validationCache->cacheNode(context, function->getRootNode(), VectorPtr(), "Prediction node");
+    validationCache->cacheNode(context, function->getRootNode(), VectorPtr(), "Prediction node", false);
   }
   return true;
 }
@@ -152,42 +151,10 @@ double BoostingWeakObjective::compute(const LuapeSampleVectorPtr& predictions)
   return computeObjective();
 }
 
-struct SortDoubleValuesOperator
+double BoostingWeakObjective::findBestThreshold(ExecutionContext& context, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose)
 {
-  static double transformIntoValidNumber(double input)
-    {return input;}
+  setPredictions(LuapeSampleVector::createConstant(indices, Variable(false, booleanType)));
 
-  bool operator()(const std::pair<size_t, double>& a, const std::pair<size_t, double>& b) const
-  {
-    double aa = transformIntoValidNumber(a.second);
-    double bb = transformIntoValidNumber(b.second);
-    return aa == bb ? a.first < b.first : aa < bb;
-  }
-};
-
-SparseDoubleVectorPtr BoostingWeakObjective::computeSortedDoubleValues(ExecutionContext& context, const LuapeSampleVectorPtr& samples) const
-{
-  SparseDoubleVectorPtr res = new SparseDoubleVector();
-  std::vector< std::pair<size_t, double> >& v = res->getValuesVector();
-  size_t n = samples->size();
-  v.reserve(n);
-
-  bool isDouble = (samples->getElementsType() == doubleType);
-  for (LuapeSampleVector::const_iterator it = samples->begin(); it != samples->end(); ++it)
-  {
-    double value = isDouble ? it.getRawDouble() : (*it).toDouble();
-    if (value != doubleMissingValue)
-      v.push_back(std::make_pair(it.getIndex(), value));
-  }
-  std::sort(v.begin(), v.end(), SortDoubleValuesOperator());
-  return res;
-}
-
-double BoostingWeakObjective::findBestThreshold(ExecutionContext& context, const LuapeSampleVectorPtr& predictions, double& bestScore, bool verbose)
-{
-  setPredictions(LuapeSampleVector::createConstant(predictions->getIndices(), Variable(false, booleanType)));
-
-  SparseDoubleVectorPtr sortedDoubleValues = computeSortedDoubleValues(context, predictions);
   if (sortedDoubleValues->getNumValues() == 0)
   {
     bestScore = computeObjective();
@@ -261,11 +228,10 @@ double BoostingWeakLearner::computeWeakObjective(ExecutionContext& context, cons
 double BoostingWeakLearner::computeWeakObjectiveWithStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, const IndexSetPtr& indices, double& bestThreshold) const
 {
   jassert(indices->size());
-  LuapeSampleVectorPtr weakPredictions = structureLearner->getTrainingCache()->getSamples(context, numberNode, indices);
-  jassert(weakPredictions->size() == indices->size());
   BoostingWeakObjectivePtr weakObjective = structureLearner->createWeakObjective();
   double bestScore;
-  bestThreshold = weakObjective->findBestThreshold(context, weakPredictions, bestScore, false);
+  SparseDoubleVectorPtr sortedDoubleValues = structureLearner->getTrainingCache()->getSortedDoubleValues(context, numberNode, indices);
+  bestThreshold = weakObjective->findBestThreshold(context, indices, sortedDoubleValues, bestScore, false);
   return bestScore;
 }
 
