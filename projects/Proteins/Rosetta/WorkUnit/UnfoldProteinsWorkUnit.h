@@ -11,7 +11,7 @@
 
 # include <lbcpp/Execution/WorkUnit.h>
 # include "../RosettaUtils.h"
-# include "../Sampler/GeneralProteinMoverSampler.h"
+# include "../Sampler/GeneralPoseMoverSampler.h"
 
 namespace lbcpp
 {
@@ -94,7 +94,7 @@ public:
       int numberSelected = 0;
 
       // create sampler
-      SamplerPtr moverSampler = new GeneralProteinMoverSampler(workingPose->n_residue(), 0);
+      SamplerPtr moverSampler = new GeneralPoseMoverSampler(workingPose->n_residue(), 0);
 
       // verbosity
       context.enterScope((*references[j]).getFileNameWithoutExtension() + T(" discovering movers."));

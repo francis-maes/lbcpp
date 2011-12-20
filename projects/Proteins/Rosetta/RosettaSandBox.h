@@ -20,11 +20,10 @@
 # include "Data/Mover/PhiPsiMover.h"
 # include "Data/Mover/ShearMover.h"
 # include "Data/Mover/RigidBodyMover.h"
-# include "Sampler/SimpleResidueSampler.h"
-# include "Sampler/ResiduePairSampler.h"
-# include "Sampler/ProteinMoverSampler.h"
+# include "Data/MoverSampler/SimpleResidueSampler.h"
+# include "Data/MoverSampler/PairResidueSampler.h"
 # include "Data/ProteinMoverSampler.h"
-# include "Sampler/GeneralProteinMoverSampler.h"
+# include "Sampler/GeneralPoseMoverSampler.h"
 # include "RosettaProtein.h"
 //using namespace std;
 

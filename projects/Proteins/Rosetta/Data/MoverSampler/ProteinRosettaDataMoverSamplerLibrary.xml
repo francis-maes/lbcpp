@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ProteinRosettaDataMoverSampler" directory="Rosetta/Data/MoverSampler">
+  
+  <class name="PairResidueSampler" base="CompositeSampler">
+    <constructor arguments="size_t numResidues"/>
+    <variable type="PositiveInteger" name="numResidues" shortName="n" description="The number of residues to sample from."/>
+  </class>
+  
+  <class name="SimpleResidueSampler" base="CompositeSampler">
+    <constructor arguments="size_t numResidues"/>
+    <variable type="PositiveInteger" name="numResidues" shortName="n" description="The number of residues to sample from."/>
+  </class>
+    
+</library>

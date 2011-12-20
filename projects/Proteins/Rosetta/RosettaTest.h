@@ -29,10 +29,10 @@
 # include <cmath>
 # include <time.h>
 # include "Data/ProteinMoverSampler.h"
-# include "Sampler/SimpleResidueSampler.h"
-# include "Sampler/ResiduePairSampler.h"
-# include "Sampler/GeneralProteinMoverSampler.h"
-# include "Sampler/ConditionalProteinMoverSampler.h"
+# include "Data/MoverSampler/SimpleResidueSampler.h"
+# include "Data/MoverSampler/PairResidueSampler.h"
+# include "Sampler/GeneralPoseMoverSampler.h"
+# include "Sampler/ConditionalPoseMoverSampler.h"
 # include "RosettaSandBox.h"
 # include "RosettaProtein.h"
 
@@ -253,7 +253,7 @@ public:
     VectorPtr samples;
     generateMoversDataSet(inputs, samples);
 
-    ConditionalProteinMoverSamplerPtr MEsampler = new ConditionalProteinMoverSampler(0);
+    ConditionalPoseMoverSamplerPtr MEsampler = new ConditionalPoseMoverSampler(0);
 
     MEsampler->learn(context, inputs, samples, DenseDoubleVectorPtr(), ContainerPtr(),
         ContainerPtr(), DenseDoubleVectorPtr());
@@ -288,7 +288,7 @@ public:
 
 # if 0
     // --------------- Conditional sampler
-    ConditionalProteinMoverSamplerPtr gen = new ConditionalProteinMoverSampler(0);
+    ConditionalPoseMoverSamplerPtr gen = new ConditionalPoseMoverSampler(0);
     ConditionalSimpleResidueSamplerPtr simple = new ConditionalSimpleResidueSampler();
     ConditionalResiduePairSamplerPtr pair = new ConditionalResiduePairSampler();
 
@@ -440,7 +440,7 @@ public:
     // --------------- residuepair sampler
     cout << "======================= dual residue sampler ===================" << endl;
     ofstream ofsdual("/Users/alex/Documents/MATLAB/residuepair_init.data");
-    ResiduePairSamplerPtr dual = new ResiduePairSampler(50);
+    PairResidueSamplerPtr dual = new PairResidueSampler(50);
     random = new RandomGenerator(0);
     for (double i = 0; i < 20; i++)
     {
@@ -476,8 +476,8 @@ public:
     //====================================================
 
     dual->saveToFile(context, context.getFile(T("dualresidue_afterlearn.xml")));
-    ResiduePairSamplerPtr dual2 = Variable::createFromFile(context, context.getFile(
-            T("dualresidue_afterlearn.xml"))).getObjectAndCast<ResiduePairSampler> ();
+    PairResidueSamplerPtr dual2 = Variable::createFromFile(context, context.getFile(
+            T("dualresidue_afterlearn.xml"))).getObjectAndCast<PairResidueSampler> ();
     ofstream ofsduallearned("/Users/alex/Documents/MATLAB/residuepair_learned.data");
     random = new RandomGenerator(0);
     RandomGeneratorPtr random2 = new RandomGenerator(0);
