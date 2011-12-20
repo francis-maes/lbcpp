@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ProteinMoverSampler.h          | ProteinMoverSampler             |
+| Filename: PoseMoverSampler.h             | PoseMoverSampler                |
 | Author  : Alejandro Marcos Alvarez       |                                 |
 | Started : Dec 14, 2011  9:12:04 AM       |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_PROTEINS_ROSETTA_DATA_PROTEINMOVERSAMPLER_H_
-# define LBCPP_PROTEINS_ROSETTA_DATA_PROTEINMOVERSAMPLER_H_
+#ifndef LBCPP_PROTEINS_ROSETTA_DATA_POSEMOVERSAMPLER_H_
+# define LBCPP_PROTEINS_ROSETTA_DATA_POSEMOVERSAMPLER_H_
 
 # include <lbcpp/Sampler/Sampler.h>
 # include "MoverSampler/SimpleResidueSampler.h"
@@ -17,22 +17,22 @@
 namespace lbcpp
 {
 
-class ProteinMoverSampler : public CompositeSampler
+class PoseMoverSampler : public CompositeSampler
 {
 public:
-  ProteinMoverSampler(DiscreteSamplerPtr classSampler, size_t numResidues)
+  PoseMoverSampler(DiscreteSamplerPtr classSampler, size_t numResidues)
   {
     createObjectSamplers(numResidues);
     samplers.push_back(classSampler);
   }
 
-  ProteinMoverSampler(size_t numResidues)
+  PoseMoverSampler(size_t numResidues)
   {
     createObjectSamplers(numResidues);
     samplers.push_back(enumerationSampler(poseMoverEnumerationEnumeration));
   }
 
-  ProteinMoverSampler() {}
+  PoseMoverSampler() {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
   {
@@ -83,7 +83,7 @@ public:
   }
 
 protected:
-  friend class ProteinMoverSamplerClass;
+  friend class PoseMoverSamplerClass;
 
   void createObjectSamplers(size_t numResidues)
   {
@@ -132,18 +132,18 @@ protected:
   }
 };
 
-typedef ReferenceCountedObjectPtr<ProteinMoverSampler> ProteinMoverSamplerPtr;
+typedef ReferenceCountedObjectPtr<PoseMoverSampler> PoseMoverSamplerPtr;
 
 
 extern CompositeSamplerPtr pairResidueSampler(size_t numResidues);
 extern CompositeSamplerPtr simpleResidueSampler(size_t numResidues);
 
-extern CompositeSamplerPtr proteinMoverSampler(size_t numResidues);
-extern CompositeSamplerPtr proteinMoverSampler(DiscreteSamplerPtr classSampler, size_t numResidues);
+extern CompositeSamplerPtr poseMoverSampler(size_t numResidues);
+extern CompositeSamplerPtr poseMoverSampler(DiscreteSamplerPtr classSampler, size_t numResidues);
 
 extern SamplerPtr gaussianMultivariateSampler();
 
 
 }; /* namespace lbcpp */
 
-#endif //! LBCPP_PROTEINS_ROSETTA_DATA_PROTEINMOVERSAMPLER_H_
+#endif //! LBCPP_PROTEINS_ROSETTA_DATA_POSEMOVERSAMPLER_H_

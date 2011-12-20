@@ -13,7 +13,7 @@
 # include "ProteinOptimizer.h"
 # include "SimulatedAnnealingOptimizer.h"
 # include "../Data/PoseMover.h"
-# include "../Data/ProteinMoverSampler.h"
+# include "../Data/PoseMoverSampler.h"
 
 namespace lbcpp
 {
@@ -90,7 +90,7 @@ public:
 
       acc->append_residue_by_bond(pose->residue(i), true);
 
-      SamplerPtr samp = new ProteinMoverSampler(acc->n_residue());
+      SamplerPtr samp = new PoseMoverSampler(acc->n_residue());
 
       core::pose::PoseOP tempPose;
 //      core::pose::PoseOP tempPose = optimizer->simulatedAnnealingOptimization(acc, samp.staticCast<

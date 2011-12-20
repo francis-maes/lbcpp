@@ -11,7 +11,7 @@
 
 # include "precompiled.h"
 # include "../Data/PoseMover.h"
-# include "../Data/ProteinMoverSampler.h"
+# include "../Data/PoseMoverSampler.h"
 
 namespace lbcpp
 {

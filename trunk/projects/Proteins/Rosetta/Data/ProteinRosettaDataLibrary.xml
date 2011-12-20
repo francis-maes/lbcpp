@@ -11,7 +11,7 @@
   <class name="Pose" base="Object" />  
   <class name="PoseMover" base="Object" abstract="yes" />
   
-  <class name="ProteinMoverSampler" base="CompositeSampler">
+  <class name="PoseMoverSampler" base="CompositeSampler">
     <constructor arguments="DiscreteSamplerPtr classSampler, size_t numResidues"/>
     <constructor arguments="size_t numResidues"/>
   </class>

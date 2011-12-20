@@ -28,7 +28,7 @@
 # include <vector>
 # include <cmath>
 # include <time.h>
-# include "Data/ProteinMoverSampler.h"
+# include "Data/PoseMoverSampler.h"
 # include "Data/MoverSampler/SimpleResidueSampler.h"
 # include "Data/MoverSampler/PairResidueSampler.h"
 # include "Sampler/GeneralPoseMoverSampler.h"
@@ -694,7 +694,7 @@ public:
 
 #  if 0
     // --------------- Samplers
-    SamplerPtr samp = new ProteinMoverSampler(5);
+    SamplerPtr samp = new PoseMoverSampler(5);
     ObjectVectorPtr learning = new ObjectVector(poseMoverClass, 0);
 
     // phipsi

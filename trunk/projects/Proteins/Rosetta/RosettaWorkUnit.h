@@ -17,7 +17,7 @@
 # include "ProteinOptimizer/ProteinOptimizer.h"
 # include "Data/PoseMover.h"
 # include "ProteinOptimizer/SimulatedAnnealingOptimizer.h"
-# include "Data/ProteinMoverSampler.h"
+# include "Data/PoseMoverSampler.h"
 # include "../Data/TertiaryStructure.h"
 # include "ProteinEDAOptimizer.h"
 
@@ -122,7 +122,7 @@ public:
           outputDirectory.createDirectory();
       }
 
-      SamplerPtr moverSampler = new ProteinMoverSampler(currentProtein->getLength());
+      SamplerPtr moverSampler = new PoseMoverSampler(currentProtein->getLength());
 
       ProteinOptimizerPtr o = new ProteinSimulatedAnnealingOptimizer(4.0, 0.01, 50,
           maxNumberIterations, 5, currentProtein->getName(), 0.0001, timesFeatureGeneration,
@@ -357,7 +357,7 @@ public:
           moverSampler = objectCompositeSampler(phiPsiMoverClass, new SimpleResidueSampler(
               targetPose->n_residue()), gaussianSampler(0, 25), gaussianSampler(0, 25));
         else
-          moverSampler = new ProteinMoverSampler(targetPose->n_residue());
+          moverSampler = new PoseMoverSampler(targetPose->n_residue());
 
         bool bestLearning = true;
         if (includeBestMoversInLearning == 0)
