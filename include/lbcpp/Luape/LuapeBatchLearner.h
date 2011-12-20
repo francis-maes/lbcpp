@@ -59,6 +59,7 @@ public:
     LuapeNodeUniversePtr universe = function->getUniverse();
 
     ScalarVariableMean lastIterationsValidationScore;
+    double bestValidationScore = DBL_MAX;
     for (size_t i = 0; i < maxIterations; ++i)
     {
       context.enterScope(T("Iteration ") + String((int)i + 1));
@@ -76,9 +77,11 @@ public:
         //       learner->getTrainingCache()->getComputeTimeStatistics(context);
       }
 
+      if (validationScore < bestValidationScore)
+        bestValidationScore = validationScore;
       if (plotOutputStream)
       {
-        *plotOutputStream << String((int)i+1) << " " << String(trainingScore) << " " << String(validationScore) << "\n";
+        *plotOutputStream << String((int)i+1) << " " << String(trainingScore) << " " << String(validationScore) << " " << String(bestValidationScore) << "\n";
         plotOutputStream->flush();
       }
       if (i >= 4 * maxIterations / 5)
@@ -89,17 +92,18 @@ public:
       //  context.informationCallback(T("Graph: ") + learner->getGraph()->toShortString());
       context.progressCallback(new ProgressionState(i+1, maxIterations, T("Iterations")));
       
-      if ((i+1) % 10 == 0)
+    /*  if ((i+1) % 10 == 0)
       {
         context.enterScope(T("Most important nodes"));
         displayMostImportantNodes(context, function);
         context.leaveScope();
-      }
+      }*/
     }
     context.leaveScope();
 
     if (plotOutputStream)
     {
+      *plotOutputStream << "\n# best evaluation score: " << String(bestValidationScore * 100.0, 3) << "%\n";
       *plotOutputStream << "# last 20% iteration evaluation: " << String(lastIterationsValidationScore.getMean() * 100, 3) << "%\n\n";
       plotOutputStream->flush();
     }
