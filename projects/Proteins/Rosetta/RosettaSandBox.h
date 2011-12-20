@@ -22,7 +22,7 @@
 # include "Data/Mover/RigidBodyMover.h"
 # include "Data/MoverSampler/SimpleResidueSampler.h"
 # include "Data/MoverSampler/PairResidueSampler.h"
-# include "Data/ProteinMoverSampler.h"
+# include "Data/PoseMoverSampler.h"
 # include "Sampler/GeneralPoseMoverSampler.h"
 # include "RosettaProtein.h"
 //using namespace std;
@@ -252,7 +252,7 @@ public:
 #if 0
     generateMoversDataSet(inputs, samples);
     SamplerPtr moverClassSampler = maximumEntropySampler(poseMoverEnumerationEnumeration);
-    SamplerPtr MEsampler = proteinMoverSampler(moverClassSampler, 1000);
+    SamplerPtr MEsampler = poseMoverSampler(moverClassSampler, 1000);
 
     MEsampler->learn(context, inputs, samples);
   
@@ -314,7 +314,7 @@ public:
     learning.push_back(rigidBodyMover(0, 2, -2.1, 0.0));
     learning.push_back(rigidBodyMover(0, 3, -1.3, 0.0));
 
-    SamplerPtr sampler = new ProteinMoverSampler(5);
+    SamplerPtr sampler = new PoseMoverSampler(5);
     sampler->learn(context, learning);
     context.resultCallback(T("sampler"), sampler);
 #endif 

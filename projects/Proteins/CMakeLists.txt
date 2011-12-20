@@ -164,7 +164,7 @@ SET(LBCPP_PROTEIN_ROSETTA_DATA_SOURCES
   Rosetta/Data/Pose.h
   Rosetta/Data/Pose.cpp
   Rosetta/Data/PoseMover.h
-  Rosetta/Data/ProteinMoverSampler.h
+  Rosetta/Data/PoseMoverSampler.h
   Rosetta/Data/ProteinRosettaDataLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaDataLibrary.cpp
 )

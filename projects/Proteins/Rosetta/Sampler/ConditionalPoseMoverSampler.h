@@ -10,7 +10,7 @@
 # define LBCPP_SAMPLER_CONDITIONAL_PROTEIN_MOVER_SAMPLER_H_
 
 # include "precompiled.h"
-# include "../Data/ProteinMoverSampler.h"
+# include "../Data/PoseMoverSampler.h"
 # include "../Data/PoseMover.h"
 # include "../RosettaSandBox.h"
 # include "GeneralPoseMoverSampler.h"

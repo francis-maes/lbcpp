@@ -17,7 +17,7 @@
 # include <cmath>
 # include <algorithm>
 # include <vector>
-# include "../Data/ProteinMoverSampler.h"
+# include "../Data/PoseMoverSampler.h"
 # include "../RosettaProtein.h"
 
 namespace lbcpp
