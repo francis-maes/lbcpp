@@ -200,6 +200,20 @@ String Object::variablesToString(const String& separator, bool includeTypes) con
   return res;
 }
 
+size_t Object::getSizeInBytes() const
+{
+  size_t res = sizeof (*this);
+  ClassPtr thisClass = getClass();
+  size_t n = getNumVariables();
+  for (size_t i = 0; i < n; ++i)
+  {
+    Variable v = getVariable(i);
+    if (v.isObject() && v.exists())
+      res += v.getObject()->getSizeInBytes();
+  }
+  return res;
+}
+
 int Object::compareVariables(const ObjectPtr& otherObject) const
 {
   ClassPtr c1 = getClass();

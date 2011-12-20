@@ -300,6 +300,12 @@ bool GenericVector::loadFromXml(XmlImporter& importer)
   return Container::loadFromXml(importer);
 }
 
+size_t GenericVector::getSizeInBytes() const
+{
+  size_t res = Container::getSizeInBytes();
+  return res + getNumElements() * sizeof (VariableValue);
+}
+
 /*
 ** BooleanVector
 */
@@ -328,7 +334,10 @@ String BooleanVector::toString() const
   }
   res += T("]");
   return res;
-}
+}  
+
+size_t BooleanVector::getSizeInBytes() const
+  {return Object::getSizeInBytes() + sizeof (v) + v.size() * sizeof (unsigned char);}
 
 size_t BooleanVector::getNumElements() const
   {return v.size();}
@@ -455,6 +464,23 @@ Variable ObjectVector::getElement(size_t index) const
 void ObjectVector::setElement(size_t index, const Variable& value)
   {jassert(index < objects->size()); (*objects)[index] = value.getObject();}
 
+size_t ObjectVector::getSizeInBytes() const
+{
+  size_t res = Object::getSizeInBytes();
+  if (objects && ownObjects)
+  {
+    // all the objects are assumed to have the same size
+    size_t sizePerObject = 0;
+    for (size_t i = 0; i < objects->size(); ++i)
+      if ((*objects)[i])
+      {
+        sizePerObject = (*objects)[i]->getSizeInBytes();
+        break;
+      }
+    res += sizeof (*objects) + objects->size() + sizePerObject;
+  }
+  return res;
+}
 
 /*
 ** VariableVector
@@ -500,6 +526,13 @@ void VariableVector::saveToXml(XmlExporter& exporter) const
   exporter.setAttribute(T("size"), (int)n);
   for (size_t i = 0; i < n; ++i)
     exporter.saveElement(i, getElement(i), anyType);
+}
+
+size_t VariableVector::getSizeInBytes() const
+{
+  size_t res = Object::getSizeInBytes();
+  res += sizeof (Variable) * variables.size();
+  return res;
 }
 
 

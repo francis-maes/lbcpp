@@ -1,9 +1,9 @@
 
-Importance des variables dynamiques
- - LuapeNode::incrementImportance()
- - Call incrementImportance in LuapeLearner and store sum of importances
- - LuapeGraphBuilder: sample nodes from importance distribution
-
+ * Voir pourquoi au bout d'un moment, il n'arrive plus à créer de weakLearner (seuil sur le edge)
+ 
+ * Lancer experiences sur NIC3
+ 
+ 
 Luape-Other:
  * Go: rankboost + large-scale boosting
  * Go: support for polymorphism, neighborhood, regions

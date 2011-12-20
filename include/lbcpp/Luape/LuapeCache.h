@@ -255,7 +255,6 @@ protected:
       }
     }
 
-    static size_t getSizeInBytes(VectorPtr vector);
     size_t getSizeInBytes() const;
   };
 

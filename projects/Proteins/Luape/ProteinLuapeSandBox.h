@@ -72,6 +72,9 @@ public:
   AminoAcidType getAminoAcidType() const
     {return aminoAcidType;}
 
+  virtual size_t getSizeInBytes() const
+    {return sizeof (*this);}
+
 protected:
   friend class ProteinResiduePerceptionClass;
 
@@ -121,6 +124,9 @@ public:
   ProteinResiduePairPerception(const ProteinPerceptionPtr& protein, const ProteinResiduePerceptionPtr& firstResidue, const ProteinResiduePerceptionPtr& secondResidue)
     : protein(protein), firstResidue(firstResidue), secondResidue(secondResidue) {}
   ProteinResiduePairPerception() {}
+
+  virtual size_t getSizeInBytes() const
+    {return sizeof (*this);}
 
 protected:
   friend class ProteinResiduePairPerceptionClass;
@@ -176,6 +182,9 @@ public:
 
   const std::vector<size_t>& getCysteinIndices() const
     {return cysteinIndices;}
+
+  virtual size_t getSizeInBytes() const
+    {return sizeof (*this);}
 
 protected:
   friend class ProteinPerceptionClass;

@@ -81,6 +81,7 @@ public:
   */
   virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlImporter& importer);
+  virtual size_t getSizeInBytes() const;
 
   const std::vector<VariableValue>& getValues() const
     {return values;}
@@ -144,6 +145,7 @@ public:
   ** Object
   */
   virtual String toString() const;
+  virtual size_t getSizeInBytes() const;
 
   lbcpp_UseDebuggingNewOperator
 
@@ -210,6 +212,8 @@ public:
   std::vector<ObjectPtr>& getObjects()
     {return *objects;}
 
+  virtual size_t getSizeInBytes() const;
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -254,6 +258,7 @@ public:
   ** Object
   */
   virtual void saveToXml(XmlExporter& exporter) const;
+  virtual size_t getSizeInBytes() const;
 
   lbcpp_UseDebuggingNewOperator
 

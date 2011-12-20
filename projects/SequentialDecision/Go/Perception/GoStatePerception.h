@@ -60,6 +60,9 @@ public:
   const GoBoardPositionPerceptionPtr& getLastAction() const
     {return lastAction;}
 
+  virtual size_t getSizeInBytes() const
+    {return sizeof (*this);}
+
 protected:
   friend class GoStatePerceptionClass;
 

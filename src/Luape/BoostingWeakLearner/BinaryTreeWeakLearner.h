@@ -31,6 +31,11 @@ public:
     */
     jassert(examples->size());
     LuapeNodePtr conditionNode = conditionLearner->learn(context, structureLearner, examples, weakObjective);
+    if (!conditionNode)
+    {
+      context.errorCallback(T("Could not learn condition with ") + String((int)examples->size()) + T(" examples"));
+      return LuapeNodePtr();
+    }
     LuapeTestNodePtr res = conditionNode.dynamicCast<LuapeTestNode>();
     if (!res)
       return conditionNode; // probably a constant node
