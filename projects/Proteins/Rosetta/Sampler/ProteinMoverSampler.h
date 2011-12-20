@@ -11,7 +11,7 @@
 
 # include "SimpleResidueSampler.h"
 # include "ResiduePairSampler.h"
-# include "../Data/ProteinMover.h"
+# include "../Data/PoseMover.h"
 # include "../Data/ProteinMoverSampler.h"
 
 namespace lbcpp
@@ -29,7 +29,7 @@ public:
   ProteinMoverSampler(size_t numResidues)
   {
     createObjectSamplers(numResidues);
-    samplers.push_back(enumerationSampler(proteinMoverEnumerationEnumeration));
+    samplers.push_back(enumerationSampler(poseMoverEnumerationEnumeration));
   }
 
   ProteinMoverSampler() {}
@@ -50,10 +50,10 @@ public:
     subSamples.resize(numSamplers);
     subWeights.resize(numSamplers);
 
-    VectorPtr classSamples = vector(proteinMoverEnumerationEnumeration, n);
+    VectorPtr classSamples = vector(poseMoverEnumerationEnumeration, n);
     for (size_t i = 0; i < numSamplers - 1; ++i)
     {
-      subSamples[i] = new ObjectVector(proteinMoverClass, 0);
+      subSamples[i] = new ObjectVector(poseMoverClass, 0);
       if (inputs)
         subInputs[i] = vector(inputs->getElementsType());
     }
@@ -74,7 +74,7 @@ public:
         target = 2;
       else
         jassert(false);
-      classSamples->setElement(i, Variable(target, proteinMoverEnumerationEnumeration));
+      classSamples->setElement(i, Variable(target, poseMoverEnumerationEnumeration));
 
       subSamples[target].staticCast<Vector>()->append(element);
       if (inputs)

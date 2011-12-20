@@ -15,7 +15,7 @@
 # include "../Data/Formats/PDBFileGenerator.h"
 # include "RosettaUtils.h"
 # include "ProteinOptimizer/ProteinOptimizer.h"
-# include "Data/ProteinMover.h"
+# include "Data/PoseMover.h"
 # include "ProteinOptimizer/SimulatedAnnealingOptimizer.h"
 # include "Data/ProteinMoverSampler.h"
 # include "Sampler/ProteinMoverSampler.h"
@@ -364,7 +364,7 @@ public:
         if (includeBestMoversInLearning == 0)
           bestLearning = false;
 
-        std::vector<ProteinMoverPtr> returnMovers(numMoversToKeep);
+        std::vector<PoseMoverPtr> returnMovers(numMoversToKeep);
 
         // find best movers by EDA
         DenseDoubleVectorPtr energyMeans = new DenseDoubleVector(numIterations, 0);

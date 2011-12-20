@@ -31,10 +31,11 @@ v relancer optim sur test avec resultats unfold
     v essayer sur energie (facteur ne change pas grand chose)
     v essayer sur mtm (facteur changera quelque chose)
     v laisser tomber enmtm
-  - relancer optimisation avec nouveaux couples struct/movers
-    - 1.1
-    - 1.2
-    - 1.5
+  v relancer optimisation avec nouveaux couples struct/movers
+    v 1.1
+    v 1.2
+    v 1.5
+  - analyser raisons bonnes performances 1.5 mtm (pas beaucoup de structures? ou bonnes structures intermédiaires)
 
 
 TODO Rosetta

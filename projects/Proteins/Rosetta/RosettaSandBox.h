@@ -16,7 +16,7 @@
 # include "../Data/Formats/PDBFileGenerator.h"
 # include "../Evaluator/QScoreEvaluator.h"
 # include "RosettaUtils.h"
-# include "Data/ProteinMover.h"
+# include "Data/PoseMover.h"
 # include "Data/Mover/PhiPsiMover.h"
 # include "Data/Mover/ShearMover.h"
 # include "Data/Mover/RigidBodyMover.h"
@@ -92,7 +92,7 @@ public:
     //inputs = vector(inputClass);
     //inputs = new ObjectVector(doubleVectorClass(), 0); // not work
     inputs = vector(doubleVectorClass(), 0);
-    samples = vector(proteinMoverClass);
+    samples = vector(poseMoverClass);
 
     core::pose::PoseOP pose = new core::pose::Pose();
     String acc = T("AAAAAAAAAPSHHH");
@@ -252,7 +252,7 @@ public:
 # endif
 #if 0
     generateMoversDataSet(inputs, samples);
-    SamplerPtr moverClassSampler = maximumEntropySampler(proteinMoverEnumerationEnumeration);
+    SamplerPtr moverClassSampler = maximumEntropySampler(poseMoverEnumerationEnumeration);
     SamplerPtr MEsampler = proteinMoverSampler(moverClassSampler, 1000);
 
     MEsampler->learn(context, inputs, samples);

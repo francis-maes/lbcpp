@@ -101,11 +101,11 @@ public:
       context.enterScope(T("Iteration"));
       context.resultCallback(T("Iteration number"), Variable((int)0));
       context.resultCallback(T("Energy"), Variable(getTotalEnergy(workingPose, fullAtomEnergy)));
-      context.resultCallback(T("Mover"), ProteinMoverPtr());
+      context.resultCallback(T("Mover"), PoseMoverPtr());
       context.leaveScope(Variable(qual));
 
       RandomGeneratorPtr random = new RandomGenerator();
-      ProteinMoverPtr mover;
+      PoseMoverPtr mover;
       ProteinPtr workingProtein;
 
       for (int i = 0; (i < numIterations) && (numberSelected < maxPairs); i++)
@@ -117,7 +117,7 @@ public:
         *tempPose = *workingPose;
 
         // sample mover, apply it to the structure and evaluate mover
-        mover = moverSampler->sample(context, random).getObjectAndCast<ProteinMover> ();
+        mover = moverSampler->sample(context, random).getObjectAndCast<PoseMover> ();
         mover->move(tempPose);
         tempQual = evaluateQualityUnfold(tempPose, &energy);
 
@@ -144,7 +144,7 @@ public:
             workingProtein->saveToPDBFile(context, File(pdbFile.getFullPathName() + T("/")
                 + (*references[j]).getFileNameWithoutExtension() + T("_") + String(i) + T(".pdb")));
 
-          ProteinMoverPtr toSave = mover->getOpposite();
+          PoseMoverPtr toSave = mover->getOpposite();
           toSave->saveToFile(context, File(outputFileMovers.getFullPathName() + T("/")
               + (*references[j]).getFileNameWithoutExtension() + T("_") + String(i) + T("_mover")
               + T(".xml")));

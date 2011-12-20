@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEINS_ROSETTA_DATA_MOVER_RIGID_BODY_MOVER_H_
 # define LBCPP_PROTEINS_ROSETTA_DATA_MOVER_RIGID_BODY_MOVER_H_
 
-# include "../ProteinMover.h"
+# include "../PoseMover.h"
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 #  undef T
@@ -25,11 +25,11 @@ namespace lbcpp
 class RigidBodyMover;
 typedef ReferenceCountedObjectPtr<RigidBodyMover> RigidBodyMoverPtr;
 
-class RigidBodyMover : public ProteinMover
+class RigidBodyMover : public PoseMover
 {
 public:
   RigidBodyMover()
-    : ProteinMover() {}
+    : PoseMover() {}
 
   /**
    * Instantiates a mover object that performs a rotation around the axis formed by the
@@ -45,11 +45,11 @@ public:
    * abs(index1-index2) >= 2.
    */
   RigidBodyMover(size_t indexResidueOne, size_t indexResidueTwo, double magnitude, double amplitude)
-    : ProteinMover(), residues(new Pair(indexResidueOne, indexResidueTwo)),
+    : PoseMover(), residues(new Pair(indexResidueOne, indexResidueTwo)),
       magnitude(magnitude), amplitude(amplitude) {}
 
   RigidBodyMover(const RigidBodyMover& mover)
-    : ProteinMover(), residues(new Pair(mover.residues->getFirst(), mover.residues->getSecond())),
+    : PoseMover(), residues(new Pair(mover.residues->getFirst(), mover.residues->getSecond())),
       magnitude(mover.magnitude), amplitude(mover.amplitude) {}
 
   /**
@@ -207,7 +207,7 @@ public:
   size_t getIndexResidueTwo()
     {return residues->getSecond().getInteger();}
 
-  virtual bool isEqual(const ProteinMoverPtr& mover, double tolerance)
+  virtual bool isEqual(const PoseMoverPtr& mover, double tolerance)
   {
     if (mover.isInstanceOf<RigidBodyMover> ())
     {
@@ -232,7 +232,7 @@ public:
       return false;
   }
 
-  virtual ProteinMoverPtr getOpposite()
+  virtual PoseMoverPtr getOpposite()
   {
     return new RigidBodyMover(residues->getFirst().getInteger(),
         residues->getSecond().getInteger(), -1.0 * magnitude, -1.0 * amplitude);

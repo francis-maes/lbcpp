@@ -11,7 +11,7 @@
 
 # include "precompiled.h"
 # include "ProteinOptimizer.h"
-# include "../Data/ProteinMover.h"
+# include "../Data/PoseMover.h"
 
 namespace lbcpp
 {
@@ -114,7 +114,7 @@ public:
 //
 //    for (int i = 1; i <= maxSteps; i++)
 //    {
-//      ProteinMoverPtr mover = worker->sample(context, random).getObjectAndCast<ProteinMover> ();
+//      PoseMoverPtr mover = worker->sample(context, random).getObjectAndCast<PoseMover> ();
 //      mover->move(workingPose);
 //      temporaryEnergy = getConformationScore(workingPose, fullAtomEnergy);
 //

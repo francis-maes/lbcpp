@@ -10,8 +10,8 @@
 
 #include "../RosettaUtils.h"
 
-namespace lbcpp
-{
+using namespace lbcpp;
+
 Rosetta::Rosetta()
   : context(NULL), ownLock(new CriticalSection()), poolLock(NULL), nProc(1), id(0), isInPool(false) {}
 Rosetta::~Rosetta()
@@ -159,5 +159,3 @@ void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed)
   {jassert(false);}
 
 # endif //! LBCPP_PROTEIN_ROSETTA
-
-}; /* namespace lbcpp */

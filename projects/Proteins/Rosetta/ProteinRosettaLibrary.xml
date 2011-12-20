@@ -49,7 +49,7 @@
     <variable type="Double" name="value"/>
     <variable type="Integer" name="arg" shortName="a" description="An input argument to RosettaTest"/>
     <variable type="String" name="proteinsDir" shortName="d" description="Directory of proteins to load"/>
-    <variable type="ProteinMover" name="moverEnter"/>
+    <variable type="PoseMover" name="moverEnter"/>
   </class>
   
   <class name="ProteinTestParallelWorkUnit" base="WorkUnit">

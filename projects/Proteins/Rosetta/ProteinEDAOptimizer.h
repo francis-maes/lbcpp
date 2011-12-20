@@ -12,7 +12,7 @@
 # include "precompiled.h"
 
 # include "RosettaUtils.h"
-# include "Data/ProteinMover.h"
+# include "Data/PoseMover.h"
 # include "Data/ProteinMoverSampler.h"
 # include "Sampler/ProteinMoverSampler.h"
 # include "../Evaluator/QScoreEvaluator.h"
@@ -22,7 +22,7 @@ namespace lbcpp
 
 struct MoverAndScore
 {
-  ProteinMoverPtr mover;
+  PoseMoverPtr mover;
   double score;
   double deltaEnergy;
   double energy;
@@ -31,7 +31,7 @@ struct MoverAndScore
     mover(NULL), score(-1), deltaEnergy(-1), energy(-1), qScore(-1)
   {
   }
-  MoverAndScore(ProteinMoverPtr& m, double s, double dE, double en, double qs) :
+  MoverAndScore(PoseMoverPtr& m, double s, double dE, double en, double qs) :
     mover(m), score(s), deltaEnergy(dE), energy(en), qScore(qs)
   {
   }
@@ -92,7 +92,7 @@ public:
       globalScore = energyScore * energyScore + juce::jmax(0.0, 1 - energyScore) * structureScore;
 
     MoverAndScore result;
-    result.mover = ProteinMoverPtr();
+    result.mover = PoseMoverPtr();
     result.score = globalScore;
     result.deltaEnergy = energyBeforeMove - realTargetEnergy;
     result.energy = realTargetEnergy;
@@ -106,7 +106,7 @@ public:
 
   SamplerPtr findBestMovers(ExecutionContext& context, const RandomGeneratorPtr& random,
       const core::pose::PoseOP& target, const core::pose::PoseOP& reference, SamplerPtr sampler,
-      std::vector<ProteinMoverPtr>& movers, size_t maxIterations, size_t numSamples = 1000,
+      std::vector<PoseMoverPtr>& movers, size_t maxIterations, size_t numSamples = 1000,
       size_t numGoodSamples = 500, size_t numMoversToKeep = 20, bool includeBestMoversInLearning =
           true, DenseDoubleVectorPtr* energyMeans = NULL, DenseDoubleVectorPtr* qScoreMeans = NULL,
       DenseDoubleVectorPtr* scoreMeans = NULL)
@@ -136,8 +136,8 @@ public:
 
       for (size_t j = 0; j < numSamples; j++)
       {
-        ProteinMoverPtr mover = workingSampler->sample(context, random, NULL).getObjectAndCast<
-            ProteinMover> ();
+        PoseMoverPtr mover = workingSampler->sample(context, random, NULL).getObjectAndCast<
+            PoseMover> ();
 
         mover->move(workingPose);
 
@@ -225,14 +225,14 @@ public:
           moversVector[numLearningSamplesFirstPass + j] = MoverAndScore(rest[ordering[j]]);
       }
 
-      ObjectVectorPtr dataset = new ObjectVector(proteinMoverClass, 0);
+      ObjectVectorPtr dataset = new ObjectVector(poseMoverClass, 0);
       for (size_t j = 0; j < moversVector.size(); j++)
         dataset->append(moversVector[j].mover);
       if (dataset->getNumElements() >= numGoodSamples)
         workingSampler->learn(context, ContainerPtr(), dataset);
     }
 
-    movers = std::vector<ProteinMoverPtr>(numMoversToKeep);
+    movers = std::vector<PoseMoverPtr>(numMoversToKeep);
     for (size_t i = 0; i < numMoversToKeep; i++)
     {
       movers[i] = moversToKeep.front().mover;
