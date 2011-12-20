@@ -141,7 +141,7 @@ public:
     {
       context.enterScope("Iteration " + String((int)i + 1));
       context.resultCallback(T("iteration"), i+1);
-      bool ok = learner->doLearningIteration(context);
+      bool ok = learner->doLearningIteration(context, i + 1);
       context.leaveScope(ok);
       if (!ok)
         break;

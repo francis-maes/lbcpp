@@ -21,6 +21,11 @@ public:
   LuapeBatchLearner(LuapeLearnerPtr learner, size_t maxIterations)
     : learner(learner), maxIterations(maxIterations) {}
   LuapeBatchLearner() {}
+  virtual ~LuapeBatchLearner()
+  {
+    if (plotOutputStream)
+      delete plotOutputStream;
+  }
 
   virtual TypePtr getRequiredFunctionType() const
     {return luapeInferenceClass;}
@@ -39,18 +44,29 @@ public:
 
     context.enterScope(T("Boosting"));
 
+    if (plotOutputStream)
+    {
+      *plotOutputStream << "# " << String((int)trainingData.size()) << " training examples, " << String((int)validationData.size()) << " validation examples\n";
+      *plotOutputStream << "# Learner: " << learner->toShortString() << "\n";
+      *plotOutputStream << "# Iterations: " << String((int)maxIterations) << "\n\n";
+      plotOutputStream->flush();
+    }
+
     context.informationCallback(String((int)trainingData.size()) + T(" training examples"));
     if (validationData.size())
       context.informationCallback(String((int)validationData.size()) + T(" validation examples"));
 
     LuapeNodeUniversePtr universe = function->getUniverse();
+
+    ScalarVariableMean lastIterationsValidationScore;
     for (size_t i = 0; i < maxIterations; ++i)
     {
       context.enterScope(T("Iteration ") + String((int)i + 1));
       context.resultCallback(T("iteration"), i+1);
       context.resultCallback(T("log10(iteration)"), log10((double)i+1.0));
       
-      learner->doLearningIteration(context);
+      double trainingScore, validationScore;
+      learner->doLearningIteration(context, trainingScore, validationScore);
       if (learner->getVerbose())
       {
         context.resultCallback("trainCacheSizeInMb", learner->getTrainingCache()->getCacheSizeInBytes() / (1024.0 * 1024.0));
@@ -59,6 +75,15 @@ public:
         //learner->getTrainingCache()->displayCacheInformation(context);
         //       learner->getTrainingCache()->getComputeTimeStatistics(context);
       }
+
+      if (plotOutputStream)
+      {
+        *plotOutputStream << String((int)i+1) << " " << String(trainingScore) << " " << String(validationScore) << "\n";
+        plotOutputStream->flush();
+      }
+      if (i >= 4 * maxIterations / 5)
+        lastIterationsValidationScore.push(validationScore);
+
       context.leaveScope();
 
       //  context.informationCallback(T("Graph: ") + learner->getGraph()->toShortString());
@@ -72,6 +97,13 @@ public:
       }
     }
     context.leaveScope();
+
+    if (plotOutputStream)
+    {
+      *plotOutputStream << "# last 20% iteration evaluation: " << String(lastIterationsValidationScore.getMean() * 100, 3) << "%\n\n";
+      plotOutputStream->flush();
+    }
+      
     //Object::displayObjectAllocationInfo(std::cerr);
     //context.resultCallback("votes", function->getVotes());
     return true;
@@ -122,11 +154,24 @@ public:
     }
   }
 
+  void setPlotFile(const File& plotFile)
+  {
+    jassert(!plotOutputStream);
+    if (plotFile.existsAsFile())
+      plotFile.deleteFile();
+    plotOutputStream = plotFile.createOutputStream();
+  }
+
+  OutputStream* getPlotOutputStream() const
+    {return plotOutputStream;}
+
 protected:
   friend class LuapeBatchLearnerClass;
 
   LuapeLearnerPtr learner;
   size_t maxIterations;
+
+  OutputStream* plotOutputStream;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeBatchLearner> LuapeBatchLearnerPtr;

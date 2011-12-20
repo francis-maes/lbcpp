@@ -34,13 +34,13 @@ public:
     return true;
   }
 
-  virtual bool doLearningIteration(ExecutionContext& context)
+  virtual bool doLearningIteration(ExecutionContext& context, double& trainingScore, double& validationScore)
   {
     VectorPtr predictions = getTrainingPredictions();
     double loss;
     weights = computeSampleWeights(context, predictions, loss);
     context.resultCallback(T("loss"), loss);
-    return BoostingLearner::doLearningIteration(context);
+    return BoostingLearner::doLearningIteration(context, trainingScore, validationScore);
   }
 
 protected:

@@ -97,7 +97,7 @@ LuapeNodePtr BoostingLearner::turnWeakNodeIntoContribution(ExecutionContext& con
   return res;
 }
 
-bool BoostingLearner::doLearningIteration(ExecutionContext& context)
+bool BoostingLearner::doLearningIteration(ExecutionContext& context, double& trainingScore, double& validationScore)
 {
   LuapeNodePtr contribution;
   double weakObjective;
@@ -128,11 +128,17 @@ bool BoostingLearner::doLearningIteration(ExecutionContext& context)
   {
     TimedScope _(context, "evaluate", verbose);
     VectorPtr trainingPredictions = getTrainingPredictions();
-    context.resultCallback(T("train error"), function->evaluatePredictions(context, trainingPredictions, trainingData));
+    trainingScore = function->evaluatePredictions(context, trainingPredictions, trainingData);
+    context.resultCallback(T("train error"), trainingScore);
 
     VectorPtr validationPredictions = getValidationPredictions();
     if (validationPredictions)
-      context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
+    {
+      validationScore = function->evaluatePredictions(context, validationPredictions, validationData);
+      context.resultCallback(T("validation error"), validationScore);
+    }
+    else
+      validationScore = 0.0;
   }
 
   // trainingCache->checkCacheIsCorrect(context, function->getRootNode());

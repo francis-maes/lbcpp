@@ -29,5 +29,7 @@
     <variable type="PositiveInteger" name="budgetPerIteration"/>
     <variable type="PositiveInteger" name="maxIterations"/>
     <variable type="PositiveInteger" name="treeDepth"/>
+    <variable type="Boolean" name="verbose"/>
+    <variable type="File" name="plotFile"/>
   </class>
 </library>

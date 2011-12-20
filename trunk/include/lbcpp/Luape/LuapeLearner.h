@@ -24,7 +24,7 @@ public:
 
   virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function);
   virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data);
-  virtual bool doLearningIteration(ExecutionContext& context) = 0;
+  virtual bool doLearningIteration(ExecutionContext& context, double& trainingScore, double& validationScore) = 0;
 
   const LuapeInferencePtr& getFunction() const
     {return function;}
@@ -138,7 +138,7 @@ public:
   const BoostingWeakLearnerPtr& getWeakLearner() const
     {return weakLearner;}
 
-  virtual bool doLearningIteration(ExecutionContext& context);
+  virtual bool doLearningIteration(ExecutionContext& context, double& trainingScore, double& validationScore);
   virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const = 0;
 
   LuapeNodePtr turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, double weakObjective, const IndexSetPtr& examples) const;
