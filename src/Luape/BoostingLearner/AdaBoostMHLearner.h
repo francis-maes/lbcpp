@@ -325,9 +325,9 @@ public:
   }
 
 #if 0
-  virtual bool doLearningIteration(ExecutionContext& context)
+  virtual bool doLearningIteration(ExecutionContext& context, double& trainingScore, double& validationScore)
   {
-    if (!WeightBoostingLearner::doLearningIteration(context))
+    if (!WeightBoostingLearner::doLearningIteration(context, trainingScore, validationScore))
       return false;
     return true;
 

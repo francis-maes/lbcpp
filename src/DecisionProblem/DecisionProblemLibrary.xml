@@ -21,6 +21,9 @@
 
   <!-- Policy -->
   <class name="Policy" base="Object" abstract="yes"/>
+  <class name="RandomPolicy" base="Policy">
+    <constructor/>
+  </class>
 
   <class name="MixturePolicy" base="Policy">
     <constructor arguments="const PolicyPtr&amp; policy1, const PolicyPtr&amp; policy2, double k"/>

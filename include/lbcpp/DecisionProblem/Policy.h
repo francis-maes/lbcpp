@@ -48,6 +48,7 @@ public:
   lbcpp_UseDebuggingNewOperator
 };
 
+extern PolicyPtr randomPolicy();
 extern PolicyPtr mixturePolicy(const PolicyPtr& policy1, const PolicyPtr& policy2, double k);
 
 class MixturePolicy : public Policy
