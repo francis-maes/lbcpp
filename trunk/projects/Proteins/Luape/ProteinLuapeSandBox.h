@@ -353,7 +353,7 @@ public:
     machine->addFunction(getDoubleVectorElementLuapeFunction());
 
     // protein-specific operations
-    machine->addFunction(new ProteinGetRelativeResidueLuapeFunction());
+    //machine->addFunction(new ProteinGetRelativeResidueLuapeFunction());
   }
 
   // task level
