@@ -80,8 +80,8 @@ public:
           context.informationCallback(T("Name structure : ") + nameToSearch);
           RosettaProteinPtr inWorker = new RosettaProtein(pose, residueFeatures, energyFeatures,
               histogramFeatures, distanceFeatures);
-          ProteinMoverPtr inMover =
-              Variable::createFromFile(context, (*movers[j])).getObjectAndCast<ProteinMover> ();
+          PoseMoverPtr inMover =
+              Variable::createFromFile(context, (*movers[j])).getObjectAndCast<PoseMover> ();
           inputWorkers->append(inWorker);
           inputMovers->append(inMover);
           context.progressCallback(new ProgressionState((size_t)(i + 1), (size_t)juce::jmin(

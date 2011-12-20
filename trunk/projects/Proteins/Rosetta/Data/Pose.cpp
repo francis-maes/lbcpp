@@ -10,8 +10,8 @@
 #include <lbcpp/Data/SymmetricMatrix.h>
 #include "Pose.h"
 
-namespace lbcpp
-{
+using namespace lbcpp;
+
 #ifdef LBCPP_PROTEIN_ROSETTA
 
 Pose::Pose(const String& sequence)
@@ -246,4 +246,3 @@ double Pose::getCollisionCorrectionFactor()
 }
 
 #endif //! LBCPP_PROTEIN_ROSETTA
-}; /* namespace lbcpp */

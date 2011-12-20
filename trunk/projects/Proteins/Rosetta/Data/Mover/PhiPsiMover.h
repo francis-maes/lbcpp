@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEINS_ROSETTA_DATA_MOVER_PHI_PSI_MOVER_H_
 # define LBCPP_PROTEINS_ROSETTA_DATA_MOVER_PHI_PSI_MOVER_H_
 
-# include "../ProteinMover.h"
+# include "../PoseMover.h"
 
 namespace lbcpp
 {
@@ -17,11 +17,11 @@ namespace lbcpp
 class PhiPsiMover;
 typedef ReferenceCountedObjectPtr<PhiPsiMover> PhiPsiMoverPtr;
 
-class PhiPsiMover : public ProteinMover
+class PhiPsiMover : public PoseMover
 {
 public:
   PhiPsiMover()
-    : ProteinMover() {}
+    : PoseMover() {}
 
   /**
    * Instantiates a mover object that performs a modification on the Phi and Psi
@@ -32,7 +32,7 @@ public:
    * @param deltaPsi the increment of the Psi angle
    */
   PhiPsiMover(size_t residue, double deltaPhi, double deltaPsi)
-    : ProteinMover(), residue(residue), deltaPhi(deltaPhi), deltaPsi(deltaPsi) {}
+    : PoseMover(), residue(residue), deltaPhi(deltaPhi), deltaPsi(deltaPsi) {}
 
   /**
    * Performs the move on the pose specified by the parameters of the mover.
@@ -105,7 +105,7 @@ public:
   double getDeltaPsi()
     {return deltaPsi;}
 
-  virtual bool isEqual(const ProteinMoverPtr& mover, double tolerance)
+  virtual bool isEqual(const PoseMoverPtr& mover, double tolerance)
   {
     if (mover.isInstanceOf<PhiPsiMover> ())
     {
@@ -121,7 +121,7 @@ public:
       return false;
   }
 
-  virtual ProteinMoverPtr getOpposite()
+  virtual PoseMoverPtr getOpposite()
     {return new PhiPsiMover(residue, -1.0 * deltaPhi, -1.0 * deltaPsi);}
 
 protected:

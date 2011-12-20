@@ -10,7 +10,7 @@
 # define LBCPP_SAMPLER_GENERAL_PROTEIN_MOVER_SAMPLER_H_
 
 # include "precompiled.h"
-# include "../Data/ProteinMover.h"
+# include "../Data/PoseMover.h"
 # include "../Data/ProteinMoverSampler.h"
 
 namespace lbcpp
@@ -172,10 +172,10 @@ public:
     subSamples.resize(numSamplers);
     subWeights.resize(numSamplers);
 
-    VectorPtr classSamples = vector(proteinMoverEnumerationEnumeration, n);
+    VectorPtr classSamples = vector(poseMoverEnumerationEnumeration, n);
     for (size_t i = 0; i < numSamplers - 1; ++i)
     {
-      subSamples[i] = new ObjectVector(proteinMoverClass, 0);
+      subSamples[i] = new ObjectVector(poseMoverClass, 0);
       if (inputs)
         subInputs[i] = vector(inputs->getElementsType());
     }
@@ -199,7 +199,7 @@ public:
         jassert(false);
       }
 
-      classSamples->setElement(i, Variable(target, proteinMoverEnumerationEnumeration));
+      classSamples->setElement(i, Variable(target, poseMoverEnumerationEnumeration));
 
       subSamples[target].staticCast<Vector> ()->append(element);
       if (inputs)
@@ -250,7 +250,7 @@ protected:
   {
     // create samplers, by default corresponds to learningPolicy == 0 and 1
     // mover
-    SamplerPtr moverSampler = enumerationSampler(proteinMoverEnumerationEnumeration);
+    SamplerPtr moverSampler = enumerationSampler(poseMoverEnumerationEnumeration);
     // mover parameters
     // residues
     SamplerPtr phiPsiResidues = new GeneralSimpleResidueSampler(numResidues);
@@ -266,11 +266,11 @@ protected:
 
     if (learningPolicy == 2)
     {
-      moverSampler = maximumEntropySampler(proteinMoverEnumerationEnumeration);
+      moverSampler = maximumEntropySampler(poseMoverEnumerationEnumeration);
     }
     else if (learningPolicy == 3)
     {
-      moverSampler = maximumEntropySampler(proteinMoverEnumerationEnumeration);
+      moverSampler = maximumEntropySampler(poseMoverEnumerationEnumeration);
       phiPsiDeltaPhi = new ClamperSampler(-180, 180);
       phiPsiDeltaPsi = new ClamperSampler(-180, 180);
       shearDeltaPhi = new ClamperSampler(-180, 180);

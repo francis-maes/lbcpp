@@ -16,7 +16,7 @@
 # include "../Data/Formats/PDBFileGenerator.h"
 # include "../Evaluator/QScoreEvaluator.h"
 # include "RosettaUtils.h"
-# include "Data/ProteinMover.h"
+# include "Data/PoseMover.h"
 # include "ProteinOptimizer/ProteinOptimizer.h"
 # include "ProteinOptimizer/GreedyOptimizer.h"
 # include "ProteinOptimizer/SequentialOptimizer.h"
@@ -64,7 +64,7 @@ private:
   size_t arg;
   double value;
   String proteinsDir;
-  ProteinMoverPtr moverEnter;
+  PoseMoverPtr moverEnter;
 
 public:
   virtual Variable run(ExecutionContext& context)
@@ -199,18 +199,18 @@ public:
     //    String acc;
     //
     //    VectorPtr inputWorker = new VariableVector(0);
-    //    VectorPtr inputMover = vector(proteinMoverClass, 0);
+    //    VectorPtr inputMover = vector(poseMoverClass, 0);
     //
     //    ClassPtr inputClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
     //    VectorPtr inputTest = vector(inputClass, 0);
-    //    VectorPtr samples = vector(proteinMoverClass);
+    //    VectorPtr samples = vector(poseMoverClass);
     //
     //    generateMoversDataset(inputWorker, inputMover);
 
     //    for (size_t i = 0; i < inputMover->getNumElements(); i++)
-    //      cout << inputWorker->getElement(i).getObjectAndCast<RosettaWorker>()->getFeatures(context).getObjectAndCast<DoubleVector>()->toString() << " : " << (const char*)inputMover->getElement(i).getObjectAndCast<ProteinMover>()->toString() << endl;
+    //      cout << inputWorker->getElement(i).getObjectAndCast<RosettaWorker>()->getFeatures(context).getObjectAndCast<DoubleVector>()->toString() << " : " << (const char*)inputMover->getElement(i).getObjectAndCast<PoseMover>()->toString() << endl;
 
-    //SamplerPtr maxent = maximumEntropySampler(proteinMoverEnumerationEnumeration);
+    //SamplerPtr maxent = maximumEntropySampler(poseMoverEnumerationEnumeration);
 
     ObjectVectorPtr featureVectors = new ObjectVector(doubleVectorClass(), 0);
 
@@ -364,8 +364,8 @@ public:
         features->setValue(0, (double)j / 100);
         Variable input(features);
 
-        //ProteinMoverPtr mover =
-        //    gen->sample(context, random, &input).getObjectAndCast<ProteinMover> ();
+        //PoseMoverPtr mover =
+        //    gen->sample(context, random, &input).getObjectAndCast<PoseMover> ();
         Variable mover =
                     simple->sample(context, random, &input);
         //cout << (const char*)mover->toString() << endl;
@@ -416,8 +416,8 @@ public:
 //      for (size_t i = 0; i < 20; i++)
 //      {
 //        Variable input((int)j);
-//        ProteinMoverPtr mover =
-//            gen->sample(context, random, &input).getObjectAndCast<ProteinMover> ();
+//        PoseMoverPtr mover =
+//            gen->sample(context, random, &input).getObjectAndCast<PoseMover> ();
 //        cout << (const char*)mover->toString() << endl;
 //
 //        if (mover.isInstanceOf<PhiPsiMover> ())
@@ -695,7 +695,7 @@ public:
 #  if 0
     // --------------- Samplers
     SamplerPtr samp = new ProteinMoverSampler(5);
-    ObjectVectorPtr learning = new ObjectVector(proteinMoverClass, 0);
+    ObjectVectorPtr learning = new ObjectVector(poseMoverClass, 0);
 
     // phipsi
     learning->append(phiPsiMover(1, 34, -123));
@@ -735,7 +735,7 @@ public:
     {
       Variable v = samp->sample(context, random);
 
-      ProteinMoverPtr t = v.getObjectAndCast<ProteinMover> ();
+      PoseMoverPtr t = v.getObjectAndCast<PoseMover> ();
       cout << i << " : " << (const char*)t->toString() << endl;
 
       if (t.isInstanceOf<PhiPsiMover> ())
@@ -751,7 +751,7 @@ public:
     cout << "shear : " << (double)count1 / (double)num << endl;
     cout << "rigidbody : " << (double)count2 / (double)num << endl;
 
-    ObjectVectorPtr learning2 = new ObjectVector(proteinMoverClass, 0);
+    ObjectVectorPtr learning2 = new ObjectVector(poseMoverClass, 0);
     learning2->append(phiPsiMover(1, 34, -123));
     learning2->append(phiPsiMover(0, 30, -122));
     learning2->append(phiPsiMover(2, 27, -121));
@@ -766,7 +766,7 @@ public:
     //        for (int i = 0; i < num; i++)
     //        {
     //          Variable v = phipsisampler->sample(context, random2);
-    //          ProteinMoverPtr t = v.getObjectAndCast<ProteinMover>();
+    //          PoseMoverPtr t = v.getObjectAndCast<PoseMover>();
     //          cout << i << " : " << (const char* )t->toString() << endl;
     //        }
 
@@ -787,8 +787,8 @@ public:
       Variable v = rebirth->sample(context, random2);
       Variable v2 = rebirth2->sample(context, random3);
 
-      ProteinMoverPtr t = v.getObjectAndCast<ProteinMover> ();
-      ProteinMoverPtr t2 = v2.getObjectAndCast<ProteinMover> ();
+      PoseMoverPtr t = v.getObjectAndCast<PoseMover> ();
+      PoseMoverPtr t2 = v2.getObjectAndCast<PoseMover> ();
       cout << (const char*)t->toString() << endl;
       cout << (const char*)t2->toString() << endl;
       if (t.isInstanceOf<PhiPsiMover> ())
@@ -817,7 +817,7 @@ void generateMoversDataSet(VectorPtr& inputs, VectorPtr& samples)
   size_t numExamples = 100;
   ClassPtr inputClass = denseDoubleVectorClass(featuresMoverEnumerationEnumeration, doubleType);
   inputs = vector(inputClass);
-  samples = vector(proteinMoverClass);
+  samples = vector(poseMoverClass);
 
   DenseDoubleVectorPtr input = new DenseDoubleVector(inputClass, 3, 0.0);
   input->setValue(0, 20.0); // length of protein

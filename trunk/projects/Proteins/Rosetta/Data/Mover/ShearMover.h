@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEINS_ROSETTA_DATA_MOVER_SHEAR_MOVER_H_
 # define LBCPP_PROTEINS_ROSETTA_DATA_MOVER_SHEAR_MOVER_H_
 
-# include "../ProteinMover.h"
+# include "../PoseMover.h"
 
 namespace lbcpp
 {
@@ -17,11 +17,11 @@ namespace lbcpp
 class ShearMover;
 typedef ReferenceCountedObjectPtr<ShearMover> ShearMoverPtr;
 
-class ShearMover : public ProteinMover
+class ShearMover : public PoseMover
 {
 public:
   ShearMover()
-    : ProteinMover() {}
+    : PoseMover() {}
 
   /**
    * Instantiates a mover object that performs a modification on the Phi angle of the
@@ -34,7 +34,7 @@ public:
    * @param deltaPsi the increment of the Psi angle
    */
   ShearMover(size_t residue, double deltaPhi, double deltaPsi)
-    : ProteinMover(), residue(residue), deltaPhi(deltaPhi), deltaPsi(deltaPsi) {}
+    : PoseMover(), residue(residue), deltaPhi(deltaPhi), deltaPsi(deltaPsi) {}
 
   /**
    * Performs the move on the pose specified by the parameters of the mover.
@@ -107,7 +107,7 @@ public:
   double getDeltaPsi()
     {return deltaPsi;}
 
-  virtual bool isEqual(const ProteinMoverPtr& mover, double tolerance)
+  virtual bool isEqual(const PoseMoverPtr& mover, double tolerance)
   {
     if (mover.isInstanceOf<ShearMover> ())
     {
@@ -123,7 +123,7 @@ public:
       return false;
   }
 
-  virtual ProteinMoverPtr getOpposite()
+  virtual PoseMoverPtr getOpposite()
     {return new ShearMover(residue, -1.0 * deltaPhi, -1.0 * deltaPsi);}
 
 protected:

@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename:  ProteinMover.h                | ProteinMover                    |
+| Filename:  PoseMover.h                   | PoseMover                       |
 | Author  : Alejandro Marcos Alvarez       |                                 |
 | Started : 12/04/2011                     |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_PROTEINS_ROSETTA_DATA_PROTEIN_MOVER_H_
-# define LBCPP_PROTEINS_ROSETTA_DATA_PROTEIN_MOVER_H_
+#ifndef LBCPP_PROTEINS_ROSETTA_DATA_POSE_MOVER_H_
+# define LBCPP_PROTEINS_ROSETTA_DATA_POSE_MOVER_H_
 
 # include "precompiled.h"
 # include "../RosettaUtils.h"
@@ -15,10 +15,10 @@
 namespace lbcpp
 {
 
-class ProteinMover;
-typedef ReferenceCountedObjectPtr<ProteinMover> ProteinMoverPtr;
+class PoseMover;
+typedef ReferenceCountedObjectPtr<PoseMover> PoseMoverPtr;
 
-class ProteinMover: public Object
+class PoseMover: public Object
 {
 public:
   /**
@@ -28,25 +28,25 @@ public:
    */
   virtual void move(core::pose::PoseOP& pose) = 0;
 
-  virtual bool isEqual(const ProteinMoverPtr& mover, double tolerance) = 0;
+  virtual bool isEqual(const PoseMoverPtr& mover, double tolerance) = 0;
 
-  virtual ProteinMoverPtr getOpposite() = 0;
+  virtual PoseMoverPtr getOpposite() = 0;
 
 protected:
-  friend class ProteinMoverClass;
+  friend class PoseMoverClass;
 };
 
-extern ProteinMoverPtr phiPsiMover(size_t residue, double deltaPhi, double deltaPsi);
-extern ProteinMoverPtr shearMover(size_t residue, double deltaPhi, double deltaPsi);
-extern ProteinMoverPtr rigidBodyMover(size_t residue1, size_t residue2, double magnitude, double amplitude);
+extern PoseMoverPtr phiPsiMover(size_t residue, double deltaPhi, double deltaPsi);
+extern PoseMoverPtr shearMover(size_t residue, double deltaPhi, double deltaPsi);
+extern PoseMoverPtr rigidBodyMover(size_t residue1, size_t residue2, double magnitude, double amplitude);
 
-extern ClassPtr proteinMoverClass;
+extern ClassPtr poseMoverClass;
 extern ClassPtr phiPsiMoverClass;
 extern ClassPtr rigidBodyMoverClass;
 extern ClassPtr shearMoverClass;
 
-extern EnumerationPtr proteinMoverEnumerationEnumeration;
+extern EnumerationPtr poseMoverEnumerationEnumeration;
 
 }; /* namespace lbcpp */
 
-#endif //! LBCPP_PROTEINS_ROSETTA_PROTEIN_MOVER_H_
+#endif //! LBCPP_PROTEINS_ROSETTA_POSE_MOVER_H_

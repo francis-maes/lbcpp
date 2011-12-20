@@ -8,10 +8,10 @@
   <!-- class -->
   <class name="Rosetta" base="Object" />
   <class name="Pose" base="Object" />  
-  <class name="ProteinMover" base="Object" abstract="yes" />
+  <class name="PoseMover" base="Object" abstract="yes" />
     
   <!-- enumeration -->
-  <enumeration name="ProteinMoverEnumeration">
+  <enumeration name="PoseMoverEnumeration">
     <value name="phipsi"/>
     <value name="shear"/>
     <value name="rigidbody"/>
