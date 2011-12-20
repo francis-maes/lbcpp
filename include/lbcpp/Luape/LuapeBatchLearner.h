@@ -116,7 +116,7 @@ public:
       if (!node.isInstanceOf<LuapeInputNode>())
       {
         function->addActiveVariable(node);
-        if (function->getNumActiveVariables() >= 10)
+        if (function->getNumActiveVariables() >= 20)
           break;
       }
     }
