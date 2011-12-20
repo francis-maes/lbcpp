@@ -76,7 +76,9 @@ public:
     {return false;}
 
   virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& indices, double& weakObjective) const = 0;
-  //virtual void update(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, LuapeNodePtr weakLearner) {}
+
+  virtual void observeObjectiveValue(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
+    {}
 
   double computeWeakObjectiveWithEventualStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, LuapeNodePtr& weakNode, const IndexSetPtr& indices) const;
   double computeWeakObjective(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& indices) const;
@@ -93,14 +95,35 @@ class FiniteBoostingWeakLearner : public BoostingWeakLearner
 public:
   virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
     {jassert(false); return false;} // this must be implemented
+
   virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective) const;
 };
 
 typedef ReferenceCountedObjectPtr<FiniteBoostingWeakLearner> FiniteBoostingWeakLearnerPtr;
 
+class StochasticFiniteBoostingWeakLearner : public FiniteBoostingWeakLearner
+{
+public:
+  StochasticFiniteBoostingWeakLearner(size_t numWeakNodes = 0)
+    : numWeakNodes(numWeakNodes) {}
+  
+  virtual LuapeNodePtr sampleWeakNode(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const = 0;
+
+  virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& res) const;
+
+protected:
+  friend class StochasticFiniteBoostingWeakLearnerClass;
+
+  size_t numWeakNodes;
+};
+
+typedef ReferenceCountedObjectPtr<StochasticFiniteBoostingWeakLearner> StochasticFiniteBoostingWeakLearnerPtr;
+
 extern FiniteBoostingWeakLearnerPtr constantWeakLearner();
 extern FiniteBoostingWeakLearnerPtr singleStumpWeakLearner();
-extern FiniteBoostingWeakLearnerPtr policyBasedWeakLearner(const PolicyPtr& policy, size_t budget, size_t maxDepth);
+extern StochasticFiniteBoostingWeakLearnerPtr policyBasedWeakLearner(const PolicyPtr& policy, size_t budget, size_t maxDepth);
+extern StochasticFiniteBoostingWeakLearnerPtr adaptativeSamplingWeakLearner(size_t numWeakNodes, size_t maxSteps);
+
 extern BoostingWeakLearnerPtr binaryTreeWeakLearner(BoostingWeakLearnerPtr conditionLearner, BoostingWeakLearnerPtr subLearner);
 extern BoostingWeakLearnerPtr compositeWeakLearner(const std::vector<BoostingWeakLearnerPtr>& weakLearners);
 extern BoostingWeakLearnerPtr compositeWeakLearner(BoostingWeakLearnerPtr weakLearner1, BoostingWeakLearnerPtr weakLearner2);

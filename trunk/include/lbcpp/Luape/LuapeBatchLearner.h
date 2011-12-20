@@ -19,7 +19,7 @@ class LuapeBatchLearner : public BatchLearner
 {
 public:
   LuapeBatchLearner(LuapeLearnerPtr learner, size_t maxIterations)
-    : learner(learner), maxIterations(maxIterations) {}
+    : learner(learner), maxIterations(maxIterations), plotOutputStream(NULL) {}
   LuapeBatchLearner() {}
   virtual ~LuapeBatchLearner()
   {

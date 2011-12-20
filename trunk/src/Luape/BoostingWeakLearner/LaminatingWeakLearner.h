@@ -24,6 +24,9 @@ public:
 
   virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
     {return weakLearner->initialize(context, function);}
+  
+  virtual void observeObjectiveValue(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
+    {weakLearner->observeObjectiveValue(context, structureLearner, weakNode, examples, weakObjective);}
 
   virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective) const
   {
@@ -73,7 +76,8 @@ public:
       for (size_t i = 0; i < numWeakLearners; ++i)
       {
         LuapeNodePtr weakNode = weakNodesByScore[i].first;
-        weakNodesByScore[i].second = computeWeakObjectiveWithEventualStump(context, structureLearner, weakNode, examplesSubset); // side effect on weakNode (that we do not keep)
+        double objective = computeWeakObjectiveWithEventualStump(context, structureLearner, weakNode, examplesSubset); // side effect on weakNode (that we do not keep)
+        weakNodesByScore[i].second = objective;
       }
       // sort by decreasing score
       std::sort(weakNodesByScore.begin(), weakNodesByScore.begin() + numWeakLearners, SortDoubleValuesOperator());

@@ -39,6 +39,12 @@ public:
     return true;
   }
 
+  virtual void observeObjectiveValue(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
+  {
+    for (size_t i = 0; i < weakLearners.size(); ++i)
+      weakLearners[i]->observeObjectiveValue(context, structureLearner, weakNode, examples, weakObjective);
+  }
+
   virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective) const
   {
     weakObjective = -DBL_MAX;

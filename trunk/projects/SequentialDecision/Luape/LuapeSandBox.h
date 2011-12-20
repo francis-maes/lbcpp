@@ -53,7 +53,10 @@ public:
     if (maxSteps == 0)
       conditionLearner = singleStumpWeakLearner();
     else
-      conditionLearner = policyBasedWeakLearner(randomPolicy(), budgetPerIteration, maxSteps);
+      conditionLearner = adaptativeSamplingWeakLearner(budgetPerIteration, maxSteps);
+      //conditionLearner = policyBasedWeakLearner(randomPolicy(), budgetPerIteration, maxSteps);
+
+
     //conditionLearner = laminatingWeakLearner(conditionLearner, 100);
 
     conditionLearner = compositeWeakLearner(constantWeakLearner(), conditionLearner);

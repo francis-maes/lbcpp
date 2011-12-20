@@ -124,12 +124,12 @@ public:
   lbcpp_UseDebuggingNewOperator
 };
 
-class PolicyBasedWeakLearner : public FiniteBoostingWeakLearner
+class PolicyBasedWeakLearner : public StochasticFiniteBoostingWeakLearner
 {
 public:
-  PolicyBasedWeakLearner(const PolicyPtr& policy, size_t budget, size_t maxDepth)
-    : policy(policy), budget(budget), maxDepth(maxDepth) {}
-  PolicyBasedWeakLearner() : budget(0), maxDepth(0) {}
+  PolicyBasedWeakLearner(const PolicyPtr& policy, size_t numWeakNodes, size_t maxDepth)
+    : StochasticFiniteBoostingWeakLearner(numWeakNodes), policy(policy), maxDepth(maxDepth) {}
+  PolicyBasedWeakLearner() : maxDepth(0) {}
    
   virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
   {
@@ -138,27 +138,44 @@ public:
     return true;
   }
 
-  virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& res) const
+  virtual LuapeNodePtr sampleWeakNode(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const
   {
-    size_t numFailuresAllowed = 10 * budget;
-    std::set<LuapeNodePtr> weakNodes;
-    while (weakNodes.size() < budget && numFailuresAllowed > 0)
-    {
-      LuapeNodePtr weakNode = sampleTrajectory(context, structureLearner);
-      if (weakNode && weakNodes.find(weakNode) == weakNodes.end())
-        weakNodes.insert(weakNode);
-      else
-        --numFailuresAllowed;
-    }
+    const LuapeInferencePtr& function = structureLearner->getFunction();
+    LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(function, typeSearchSpace);
 
-    size_t index = res.size();
-    res.resize(index + weakNodes.size());
-    for (std::set<LuapeNodePtr>::const_iterator it = weakNodes.begin(); it != weakNodes.end(); ++it)
+    bool noMoreActions = false;
+    //String episode = "";
+    policy->startEpisode(context, builder);
+    while (!builder->isFinalState())
     {
-      //context.informationCallback(T("Candidate: ") + (*it)->toShortString());
-      res[index++] = *it;
+      ContainerPtr actions = builder->getAvailableActions();
+      if (!actions->getNumElements())
+      {
+        noMoreActions = true;
+        break;
+      }
+
+      Variable action = policy->selectAction(context, builder);
+      //episode += action.toShortString() + T(" ");
+      double reward;
+      builder->performTransition(context, action, reward);
+      policy->observeTransition(context, action, reward, builder);
     }
-    return true;
+    LuapeNodePtr node;
+    if (builder->getStackSize() == 1)
+    {
+      node = builder->getStackElement(0);
+//      episode  += T(" => ") + node->toShortString();
+    }
+    //context.informationCallback(episode);
+    
+    /*
+    if (noMoreActions)
+      context.informationCallback(T("Out-of-actions: ") + builder->toShortString());
+    else
+      context.informationCallback(T("Final State: ") + builder->toShortString());// + T(" => ") + String(weakObjective));
+    */
+    return node;
   }
 
 #if 0
@@ -240,54 +257,10 @@ public:
   }
 #endif // 0
   
-  LuapeNodePtr sampleTrajectory(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const // double& weakObjective, const IndexSetPtr& examples) const
-  {
-    const LuapeInferencePtr& function = structureLearner->getFunction();
-    LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(function, typeSearchSpace);
-
-    bool noMoreActions = false;
-    //String episode = "";
-    policy->startEpisode(context, builder);
-    while (!builder->isFinalState())
-    {
-      ContainerPtr actions = builder->getAvailableActions();
-      if (!actions->getNumElements())
-      {
-        noMoreActions = true;
-        break;
-      }
-
-      Variable action = policy->selectAction(context, builder);
-      //episode += action.toShortString() + T(" ");
-      double reward;
-      builder->performTransition(context, action, reward);
-      policy->observeTransition(context, action, reward, builder);
-    }
-    LuapeNodePtr node;
-    if (builder->getStackSize() == 1)
-    {
-      node = builder->getStackElement(0);
-//      episode  += T(" => ") + node->toShortString();
-//      weakObjective = computeWeakObjectiveWithEventualStump(context, structureLearner, node, examples);
-    }
-//    else
-//      weakObjective = 0.0;
-    //context.informationCallback(episode);
-    
-    /*
-    if (noMoreActions)
-      context.informationCallback(T("Out-of-actions: ") + builder->toShortString());
-    else
-      context.informationCallback(T("Final State: ") + builder->toShortString());// + T(" => ") + String(weakObjective));
-    */
-    return node;
-  }
-
 protected:
   friend class PolicyBasedWeakLearnerClass;
   
   PolicyPtr policy;
-  size_t budget;
   size_t maxDepth;
   
   LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;

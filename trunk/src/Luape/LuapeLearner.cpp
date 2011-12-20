@@ -229,7 +229,9 @@ double BoostingWeakLearner::computeWeakObjective(ExecutionContext& context, cons
   LuapeSampleVectorPtr weakPredictions = structureLearner->getTrainingCache()->getSamples(context, weakNode, indices);
   BoostingWeakObjectivePtr edgeCalculator = structureLearner->createWeakObjective();
   jassert(weakNode->getType() == booleanType || weakNode->getType() == probabilityType);
-  return edgeCalculator->compute(weakPredictions);
+  double res = edgeCalculator->compute(weakPredictions);
+  const_cast<BoostingWeakLearner* >(this)->observeObjectiveValue(context, structureLearner, weakNode, indices, res);
+  return res;
 }
 
 double BoostingWeakLearner::computeWeakObjectiveWithStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, const IndexSetPtr& indices, double& bestThreshold) const
@@ -239,6 +241,7 @@ double BoostingWeakLearner::computeWeakObjectiveWithStump(ExecutionContext& cont
   double bestScore;
   SparseDoubleVectorPtr sortedDoubleValues = structureLearner->getTrainingCache()->getSortedDoubleValues(context, numberNode, indices);
   bestThreshold = weakObjective->findBestThreshold(context, indices, sortedDoubleValues, bestScore, false);
+  const_cast<BoostingWeakLearner* >(this)->observeObjectiveValue(context, structureLearner, numberNode, indices, bestScore);
   return bestScore;
 }
 
@@ -266,13 +269,43 @@ LuapeNodePtr FiniteBoostingWeakLearner::learn(ExecutionContext& context, const B
   LuapeNodePtr bestWeakNode;
   for (size_t i = 0; i < weakNodes.size(); ++i)
   {
-    double objective = computeWeakObjectiveWithEventualStump(context, structureLearner, weakNodes[i], examples); // side effect of weakNodes[i]
+    LuapeNodePtr weakNode = weakNodes[i];
+    double objective = computeWeakObjectiveWithEventualStump(context, structureLearner, weakNode, examples); // side effect of weakNode
     if (objective > weakObjective)
-      weakObjective = objective, bestWeakNode = weakNodes[i];
+      weakObjective = objective, bestWeakNode = weakNode;
   }
 
   if (!bestWeakNode)
     return LuapeNodePtr();
 
   return makeContribution(context, structureLearner, bestWeakNode, weakObjective, examples);
+}
+
+/*
+** StochasticFiniteBoostingWeakLearner
+*/
+bool StochasticFiniteBoostingWeakLearner::getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& res) const
+{
+  size_t numFailuresAllowed = 10 * numWeakNodes;
+  size_t numFailures = 0;
+  std::set<LuapeNodePtr> weakNodes;
+  while (weakNodes.size() < numWeakNodes && numFailures < numFailuresAllowed)
+  {
+    LuapeNodePtr weakNode = sampleWeakNode(context, structureLearner);
+    if (weakNode && weakNodes.find(weakNode) == weakNodes.end())
+      weakNodes.insert(weakNode);
+    else
+      ++numFailures;
+  }
+
+  context.resultCallback(T("numSamplingFailures"), numFailures);
+
+  size_t index = res.size();
+  res.resize(index + weakNodes.size());
+  for (std::set<LuapeNodePtr>::const_iterator it = weakNodes.begin(); it != weakNodes.end(); ++it)
+  {
+    context.informationCallback(T("Candidate: ") + (*it)->toShortString());
+    res[index++] = *it;
+  }
+  return true;
 }
