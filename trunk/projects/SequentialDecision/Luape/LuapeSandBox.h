@@ -65,7 +65,7 @@ public:
     strongLearner->setVerbose(verbose);
     LuapeBatchLearnerPtr batchLearner = new LuapeBatchLearner(strongLearner, maxIterations);
     if (plotFile != File::nonexistent)
-      batchLearner->setPlotFile(plotFile);
+      batchLearner->setPlotFile(context, plotFile);
     classifier->setBatchLearner(batchLearner);
     classifier->setEvaluator(defaultSupervisedEvaluator());
 
