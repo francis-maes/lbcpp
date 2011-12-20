@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ConditionalProtein..Sampler.h  | ConditionalProteinMoverSampler  |
+| Filename: ConditionalPoseMoverSampler.h  | ConditionalPoseMoverSampler     |
 | Author  : Alejandro Marcos Alvarez       |                                 |
 | Started : 22 mai 2011  10:31:16          |                                 |
 `------------------------------------------/                                 |
@@ -13,7 +13,7 @@
 # include "../Data/ProteinMoverSampler.h"
 # include "../Data/PoseMover.h"
 # include "../RosettaSandBox.h"
-# include "GeneralProteinMoverSampler.h"
+# include "GeneralPoseMoverSampler.h"
 
 namespace lbcpp
 {
@@ -105,16 +105,16 @@ protected:
 
 typedef ReferenceCountedObjectPtr<ConditionalResiduePairSampler> ConditionalResiduePairSamplerPtr;
 
-class ConditionalProteinMoverSampler : public CompositeSampler
+class ConditionalPoseMoverSampler : public CompositeSampler
 {
 public:
-  ConditionalProteinMoverSampler(size_t level)
+  ConditionalPoseMoverSampler(size_t level)
   {
     createObjectSamplers(level);
     samplers.push_back(maximumEntropySampler(poseMoverEnumerationEnumeration));
   }
 
-  ConditionalProteinMoverSampler() {}
+  ConditionalPoseMoverSampler() {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
   {
@@ -165,7 +165,7 @@ public:
   }
 
 protected:
-  friend class ConditionalProteinMoverSamplerClass;
+  friend class ConditionalPoseMoverSamplerClass;
 
   void createObjectSamplers(size_t level)
     {
@@ -190,7 +190,7 @@ protected:
     }
   };
 
-typedef ReferenceCountedObjectPtr<ConditionalProteinMoverSampler> ConditionalProteinMoverSamplerPtr;
+typedef ReferenceCountedObjectPtr<ConditionalPoseMoverSampler> ConditionalPoseMoverSamplerPtr;
 
 }; /* namespace lbcpp */
 

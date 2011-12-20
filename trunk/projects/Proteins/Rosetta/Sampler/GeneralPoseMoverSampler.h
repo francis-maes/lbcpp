@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: GeneralProteinMoverSampler.h   | GeneralProteinMoverSampler      |
+| Filename: GeneralPoseMoverSampler.h      | GeneralPoseMoverSampler         |
 | Author  : Alejandro Marcos Alvarez       |                                 |
 | Started : 21 mai 2011  16:15:42          |                                 |
 `------------------------------------------/                                 |
@@ -146,13 +146,13 @@ protected:
   friend class GaussianSamplerWithoutLearnClass;
 };
 
-class GeneralProteinMoverSampler : public CompositeSampler
+class GeneralPoseMoverSampler : public CompositeSampler
 {
 public:
-  GeneralProteinMoverSampler(size_t numResidues, size_t learningPolicy)
+  GeneralPoseMoverSampler(size_t numResidues, size_t learningPolicy)
     : numResidues(numResidues), learningPolicy(learningPolicy)
     {createObjectSamplers(numResidues, learningPolicy);}
-  GeneralProteinMoverSampler() : numResidues(0), learningPolicy(0) {}
+  GeneralPoseMoverSampler() : numResidues(0), learningPolicy(0) {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
   {
@@ -244,7 +244,7 @@ public:
   }
 
 protected:
-  friend class GeneralProteinMoverSamplerClass;
+  friend class GeneralPoseMoverSamplerClass;
 
   void createObjectSamplers(size_t numResidues, size_t learningPolicy)
   {
@@ -296,7 +296,7 @@ protected:
   // 3 -> learned maxent for movers and conditionnal gaussian for angles and distances
 };
 
-typedef ReferenceCountedObjectPtr<GeneralProteinMoverSampler> GeneralProteinMoverSamplerPtr;
+typedef ReferenceCountedObjectPtr<GeneralPoseMoverSampler> GeneralPoseMoverSamplerPtr;
 
 }; /* namespace lbcpp */
 

@@ -12,7 +12,7 @@
 # include <lbcpp/Core/CompositeFunction.h>
 # include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 # include "RosettaUtils.h"
-# include "Sampler/GeneralProteinMoverSampler.h"
+# include "Sampler/GeneralPoseMoverSampler.h"
 
 namespace lbcpp
 {
@@ -286,7 +286,7 @@ public:
     features = rosettaProteinFeatures(residues, energy, histogram, distances);
     if (learningPolicy > 1)
       features->initialize(defaultExecutionContext(), rosettaProteinClass);
-    sampler = new GeneralProteinMoverSampler(pose->n_residue(), learningPolicy);
+    sampler = new GeneralPoseMoverSampler(pose->n_residue(), learningPolicy);
 # else
     jassert(false);
 # endif
@@ -371,7 +371,7 @@ protected:
 
   RosettaProteinPtr protein;
   RosettaProteinFeaturesPtr features;
-  GeneralProteinMoverSamplerPtr sampler;
+  GeneralPoseMoverSamplerPtr sampler;
   size_t learningPolicy;
 };
 

@@ -14,7 +14,6 @@
 # include "RosettaUtils.h"
 # include "Data/PoseMover.h"
 # include "Data/ProteinMoverSampler.h"
-# include "Sampler/ProteinMoverSampler.h"
 # include "../Evaluator/QScoreEvaluator.h"
 
 namespace lbcpp

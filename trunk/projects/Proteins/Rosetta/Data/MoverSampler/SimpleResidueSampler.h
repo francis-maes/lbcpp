@@ -6,11 +6,11 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_PROTEINS_ROSETTA_SIMPLE_RESIDUE_SAMPLER_H_
-# define LBCPP_PROTEINS_ROSETTA_SIMPLE_RESIDUE_SAMPLER_H_
+#ifndef LBCPP_PROTEINS_ROSETTA_DATA_MOVERSAMPLER_SIMPLERESIDUESAMPLER_H_
+# define LBCPP_PROTEINS_ROSETTA_DATA_MOVERSAMPLER_SIMPLERESIDUESAMPLER_H_
 
 # include "precompiled.h"
-# include "../Data/ProteinMoverSampler.h"
+# include "../ProteinMoverSampler.h"
 
 namespace lbcpp
 {
@@ -56,4 +56,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif //! LBCPP_PROTEINS_ROSETTA_SIMPLE_RESIDUE_SAMPLER_H_
+#endif //! LBCPP_PROTEINS_ROSETTA_DATA_MOVERSAMPLER_SIMPLERESIDUESAMPLER_H_

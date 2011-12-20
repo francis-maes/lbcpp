@@ -1,26 +1,27 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ResiduePairSampler.h           | ResiduePairSampler              |
+| Filename: PairResidueSampler.h           | PairResidueSampler              |
 | Author  : Alejandro Marcos Alvarez       |                                 |
 | Started : 15 mai 2011  17:16:11          |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_PROTEINS_ROSETTA_RESIDUE_PAIR_SAMPLER_H_
-# define LBCPP_PROTEINS_ROSETTA_RESIDUE_PAIR_SAMPLER_H_
+#ifndef LBCPP_PROTEINS_ROSETTA_DATA_MOVERSAMPLER_PAIRRESIDUESAMPLER_H_
+# define LBCPP_PROTEINS_ROSETTA_DATA_MOVERSAMPLER_PAIRRESIDUESAMPLER_H_
 
-# include "../Data/ProteinMoverSampler.h"
+# include <lbcpp/Sampler/Sampler.h>
+# include <lbcpp/Data/Matrix.h>
 
 namespace lbcpp
 {
 
-class ResiduePairSampler;
-typedef ReferenceCountedObjectPtr<ResiduePairSampler> ResiduePairSamplerPtr;
+class PairResidueSampler;
+typedef ReferenceCountedObjectPtr<PairResidueSampler> PairResidueSamplerPtr;
 
-class ResiduePairSampler : public CompositeSampler
+class PairResidueSampler : public CompositeSampler
 {
 public:
-  ResiduePairSampler(size_t numResidues)
+  PairResidueSampler(size_t numResidues)
     : CompositeSampler(1), numResidues(numResidues)
   {
     // only 2 clusters for GMM
@@ -55,7 +56,7 @@ public:
     samplers[0] = p;
   }
 
-  ResiduePairSampler() : CompositeSampler(1), numResidues(1) {}
+  PairResidueSampler() : CompositeSampler(1), numResidues(1) {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
@@ -124,11 +125,11 @@ public:
     {jassert(false);}
 
 protected:
-  friend class ResiduePairSamplerClass;
+  friend class PairResidueSamplerClass;
 
   size_t numResidues;
 };
 
 }; /* namespace lbcpp */
 
-#endif //! LBCPP_PROTEINS_ROSETTA_RESIDUE_PAIR_SAMPLER_H_
+#endif //! LBCPP_PROTEINS_ROSETTA_DATA_MOVERSAMPLER_PAIRRESIDUESAMPLER_H_
