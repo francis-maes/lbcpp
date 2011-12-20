@@ -22,8 +22,8 @@ class LuapeGraphBuilderTypeState : public Object
 {
 public:
   LuapeGraphBuilderTypeState(size_t depth, const std::vector<TypePtr>& stack)
-    : depth(depth), stack(stack), numNodeTypesWhenBuilt(0), canBePruned(false), canBePrunedComputed(false) {}
-  LuapeGraphBuilderTypeState() : depth(0), numNodeTypesWhenBuilt(0), canBePruned(false), canBePrunedComputed(false) {}
+    : depth(depth), stack(stack), stateIndex((size_t)-1), numNodeTypesWhenBuilt(0), canBePruned(false), canBePrunedComputed(false) {}
+  LuapeGraphBuilderTypeState() : depth(0), stateIndex((size_t)-1), numNodeTypesWhenBuilt(0), canBePruned(false), canBePrunedComputed(false) {}
 
   virtual String toShortString() const
   {
@@ -80,6 +80,9 @@ public:
   bool hasAnyAction() const
     {return hasPushActions() || hasApplyActions() || hasYieldAction();}
 
+  size_t getStateIndex() const
+    {return stateIndex;}
+
 private:
   friend class LuapeGraphBuilderTypeStateClass;
   friend class LuapeGraphBuilderTypeSearchSpace;
@@ -88,6 +91,7 @@ private:
   std::vector<TypePtr> stack;
   std::vector<std::pair<TypePtr, LuapeGraphBuilderTypeStatePtr> > push;
   std::vector<std::pair<LuapeFunctionPtr, LuapeGraphBuilderTypeStatePtr> > apply;
+  size_t stateIndex;
   
   size_t numNodeTypesWhenBuilt;
   bool canBePruned;
@@ -167,8 +171,18 @@ public:
     context.leaveScope(states.size());
   }
 
+  void assignStateIndices(ExecutionContext& context)
+  {
+    size_t index = 0;
+    for (StateMap::iterator it = states.begin(); it != states.end(); ++it)
+      it->second->stateIndex = index++;
+  }
+
   LuapeGraphBuilderTypeStatePtr getInitialState() const
     {return states.find(StateKey())->second;}
+
+  size_t getNumStates() const
+    {return states.size();}
 
   LuapeGraphBuilderTypeStatePtr getState(size_t depth, const std::vector<TypePtr>& stack) const
   {
@@ -176,9 +190,13 @@ public:
     return it == states.end() ? LuapeGraphBuilderTypeStatePtr() : it->second;
   }
 
-private:
   typedef std::pair<size_t, std::vector<TypePtr> > StateKey;
   typedef std::map<StateKey, LuapeGraphBuilderTypeStatePtr> StateMap;
+
+  const StateMap& getStates() const
+    {return states;}
+
+private:
 
   StateMap states;
 

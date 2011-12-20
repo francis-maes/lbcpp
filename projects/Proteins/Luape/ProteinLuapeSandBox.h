@@ -325,7 +325,8 @@ public:
   */
   BoostingWeakLearnerPtr createWeakLearner(ProteinTarget target) const
   {
-    BoostingWeakLearnerPtr conditionLearner = policyBasedWeakLearner(new RandomPolicy(), budget, numSteps);
+    //BoostingWeakLearnerPtr conditionLearner = policyBasedWeakLearner(new RandomPolicy(), budget, numSteps);
+    BoostingWeakLearnerPtr conditionLearner = adaptativeSamplingWeakLearner(budget, numSteps);
     conditionLearner = compositeWeakLearner(constantWeakLearner(), conditionLearner);
     conditionLearner = laminatingWeakLearner(conditionLearner, 1000);
 
