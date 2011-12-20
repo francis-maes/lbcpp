@@ -111,8 +111,7 @@ bool BoostingLearner::doLearningIteration(ExecutionContext& context)
       context.errorCallback(T("Failed to find a weak learner"));
       return false;
     }
-    if (verbose)
-      context.resultCallback(T("edge"), weakObjective);
+    context.resultCallback(T("edge"), weakObjective);
   }
 
   // add into node and caches

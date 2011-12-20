@@ -46,6 +46,9 @@ public:
   virtual String toShortString() const
     {return "board";}
 
+  virtual size_t getSizeInBytes() const
+    {return sizeof (*this);}
+
 protected:
   friend class GoBoardPerceptionClass;
 

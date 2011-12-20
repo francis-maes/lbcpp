@@ -78,6 +78,9 @@ public:
     target.staticCast<GoBoardPositionPerception>()->position = position;
   }
 
+  virtual size_t getSizeInBytes() const
+    {return sizeof (*this);}
+
 protected:
   friend class GoBoardPositionPerceptionClass;
 
@@ -122,6 +125,9 @@ public:
 
   size_t smallDelta;
   size_t largeDelta;
+
+  virtual size_t getSizeInBytes() const
+    {return sizeof (*this);}
 };
 
 extern ClassPtr goBoardPositionRelationPerceptionClass;

@@ -138,25 +138,7 @@ void LuapeSamplesCache::setInputObject(const std::vector<LuapeInputNodePtr>& inp
 }
 
 size_t LuapeSamplesCache::NodeCache::getSizeInBytes() const
-  {return (samples ? getSizeInBytes(samples) : 0) + (sortedDoubleValues ? getSizeInBytes(sortedDoubleValues) : 0);}
-
-size_t LuapeSamplesCache::NodeCache::getSizeInBytes(VectorPtr samples)
-{
-  if (!samples)
-    return 0;
-  SparseDoubleVectorPtr sparseVector = samples.dynamicCast<SparseDoubleVector>();
-  if (sparseVector)
-    return sparseVector->getNumValues() * 16;
-  else
-  {
-    TypePtr elementsType = samples->getElementsType();
-    size_t n = samples->getNumElements();
-    if (elementsType == booleanType)
-      return n; // 8 bits for one boolean
-    else
-      return n * 8; // 64 bits
-  }
-}
+  {return (samples ? samples->getSizeInBytes() : 0) + (sortedDoubleValues ? sortedDoubleValues->getSizeInBytes() : 0);}
 
 size_t LuapeSamplesCache::getCacheSizeInBytes() const
 {
@@ -377,7 +359,7 @@ SparseDoubleVectorPtr LuapeSamplesCache::getSortedDoubleValues(ExecutionContext&
   {
     // opportunism caching
     nodeCache.sortedDoubleValues = res;
-    actualCacheSize += NodeCache::getSizeInBytes(res);
+    actualCacheSize += res->getSizeInBytes();
     ensureSizeInLowerThanMaxSize(context);
   }
   return res;
@@ -398,7 +380,7 @@ struct SortDoubleValuesOperator
 
 SparseDoubleVectorPtr LuapeSamplesCache::computeSortedDoubleValuesFromSamples(const LuapeSampleVectorPtr& samples) const
 {
-  SparseDoubleVectorPtr res = new SparseDoubleVector();
+  SparseDoubleVectorPtr res = new SparseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType);
   std::vector< std::pair<size_t, double> >& v = res->getValuesVector();
   
   size_t n = samples->size();

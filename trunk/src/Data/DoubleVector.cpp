@@ -358,6 +358,12 @@ bool SparseDoubleVector::loadFromXml(XmlImporter& importer)
   return true;
 }
 
+size_t SparseDoubleVector::getSizeInBytes() const
+{
+  size_t res = Object::getSizeInBytes();
+  return res + sizeof (values) + values.size() * sizeof (std::pair<size_t, double>);
+}
+
 size_t SparseDoubleVector::incrementValue(size_t index, double delta)
 {
   if ((int)index > lastIndex)
@@ -679,6 +685,14 @@ bool DenseDoubleVector::loadFromXml(XmlImporter& importer)
       value = tokens[i].getDoubleValue();
   }
   return ok;
+}
+
+size_t DenseDoubleVector::getSizeInBytes() const
+{
+  size_t res = Object::getSizeInBytes();
+  if (values && ownValues)
+    res += sizeof (*values) + values->size() * sizeof (double);
+  return res;
 }
 
 void DenseDoubleVector::ensureSize(size_t minimumSize)
