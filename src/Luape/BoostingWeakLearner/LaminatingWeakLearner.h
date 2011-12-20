@@ -35,7 +35,7 @@ public:
     if (!ok)
     {
       context.errorCallback(T("Could not get finite set of candidate weak nodes"));
-      return false;
+      return LuapeNodePtr();
     }
 
     context.enterScope("Laminating");

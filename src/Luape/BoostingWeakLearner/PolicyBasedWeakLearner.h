@@ -155,7 +155,7 @@ public:
     res.resize(index + weakNodes.size());
     for (std::set<LuapeNodePtr>::const_iterator it = weakNodes.begin(); it != weakNodes.end(); ++it)
     {
-      context.informationCallback(T("Candidate: ") + (*it)->toShortString());
+      //context.informationCallback(T("Candidate: ") + (*it)->toShortString());
       res[index++] = *it;
     }
     return true;

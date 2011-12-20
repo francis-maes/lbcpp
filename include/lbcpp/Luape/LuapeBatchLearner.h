@@ -154,12 +154,14 @@ public:
     }
   }
 
-  void setPlotFile(const File& plotFile)
+  void setPlotFile(ExecutionContext& context, const File& plotFile)
   {
     jassert(!plotOutputStream);
     if (plotFile.existsAsFile())
       plotFile.deleteFile();
     plotOutputStream = plotFile.createOutputStream();
+    if (!plotOutputStream)
+      context.warningCallback(T("Could not create file ") + plotFile.getFullPathName());
   }
 
   OutputStream* getPlotOutputStream() const
