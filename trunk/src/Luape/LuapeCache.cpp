@@ -406,12 +406,12 @@ SparseDoubleVectorPtr LuapeSamplesCache::computeSortedDoubleValuesSubset(const S
   SparseDoubleVectorPtr res = new SparseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType);
   std::vector<std::pair<size_t, double> >& resValues = res->getValuesVector();
   
-  resValues.resize(indices->size());
+  resValues.reserve(indices->size());
   size_t index = 0;
   for (size_t i = 0; i < allValues->getNumValues(); ++i)
     if (flags[allValues->getValue(i).first] > 0)
-      resValues[index++] = allValues->getValue(i);
-  jassert(index == indices->size());
+      resValues.push_back(allValues->getValue(i));
+  jassert(resValues.size() <= indices->size()); // there may be missing values
   return res;
 }
 

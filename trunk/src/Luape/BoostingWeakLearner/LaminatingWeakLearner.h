@@ -26,7 +26,7 @@ public:
     {return weakLearner->initialize(context, function);}
   
   virtual void observeObjectiveValue(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
-    {weakLearner->observeObjectiveValue(context, structureLearner, weakNode, examples, weakObjective);}
+    {/*weakLearner->observeObjectiveValue(context, structureLearner, weakNode, examples, weakObjective);*/} // tmp !!
 
   virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective) const
   {
@@ -48,7 +48,7 @@ public:
       weakNodesByScore[i] = std::make_pair(weakNodes[i], 0.0);
 
     IndexSetPtr examplesSubset;
-    if (numInitialExamples > examples->size())
+    if (numInitialExamples >= examples->size())
       examplesSubset = examples;
     else
     {
@@ -111,6 +111,9 @@ public:
     LuapeNodePtr weakNode = weakNodesByScore[0].first;
     weakObjective = computeWeakObjectiveWithEventualStump(context, structureLearner, weakNode, examples); // side effect on weakNode
     context.leaveScope(weakObjective);
+
+    weakLearner->observeObjectiveValue(context, structureLearner, weakNodesByScore[0].first, examples, 1.0); // TMP !!
+
     return makeContribution(context, structureLearner, weakNode, weakObjective, examples);
   }
 

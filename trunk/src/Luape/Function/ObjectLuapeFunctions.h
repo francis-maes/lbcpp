@@ -109,7 +109,12 @@ public:
     : UnaryObjectLuapeFuntion<GetVariableLuapeFunction>(objectClass), variableIndex(variableIndex) {}
 
   virtual String toShortString() const
-    {return ".var[" + String((int)variableIndex) + "]";}
+  {
+    if (inputClass)
+      return "." + inputClass->getMemberVariableName(variableIndex);
+    else
+      return ".var[" + String((int)variableIndex) + "]";
+  }
 
   virtual TypePtr initialize(const std::vector<TypePtr>& inputTypes)
   {
@@ -183,9 +188,6 @@ public:
   GetDoubleVectorElementLuapeFunction(size_t index = 0)
     : UnaryObjectLuapeFuntion<GetDoubleVectorElementLuapeFunction>(doubleVectorClass()), index(index) {}
 
-  virtual String toShortString() const
-    {return "[" + String((int)index) + "]";}
-
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
   {
     EnumerationPtr features = DoubleVector::getElementsEnumeration(type);
@@ -194,17 +196,22 @@ public:
 
   virtual TypePtr initialize(const std::vector<TypePtr>& inputTypes)
   {
-    EnumerationPtr features;
-    DoubleVector::getTemplateParameters(defaultExecutionContext(), inputTypes[0], features, outputType);
+    DoubleVector::getTemplateParameters(defaultExecutionContext(), inputTypes[0], inputEnumeration, outputType);
     return outputType;
+  }
+
+  virtual String toShortString() const
+  {
+    if (inputEnumeration)
+      return T(".") + inputEnumeration->getElementName(index);
+    else
+      return "[" + String((int)index) + "]";
   }
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
   {
-    jassert(inputs.size() == 1);
-    EnumerationPtr features = DoubleVector::getElementsEnumeration(inputs[0]->getType());
-    jassert(features);
-    return inputs[0]->toShortString() + "." + features->getElementName(index);
+    jassert(inputs.size() == 1 && inputEnumeration);
+    return inputs[0]->toShortString() + "." + inputEnumeration->getElementName(index);
   }
 
   Variable computeObject(const ObjectPtr& input) const
@@ -239,6 +246,7 @@ protected:
   friend class GetDoubleVectorElementLuapeFunctionClass;
   size_t index;
 
+  EnumerationPtr inputEnumeration;
   TypePtr outputType;
 };
 

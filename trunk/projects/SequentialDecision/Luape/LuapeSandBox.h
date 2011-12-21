@@ -53,14 +53,15 @@ public:
     if (maxSteps == 0)
       conditionLearner = singleStumpWeakLearner();
     else
-      conditionLearner = optimalPolicyWeakLearner(maxSteps);
-      //conditionLearner = adaptativeSamplingWeakLearner(budgetPerIteration, maxSteps);
+      //conditionLearner = optimalPolicyWeakLearner(maxSteps);
+      conditionLearner = adaptativeSamplingWeakLearner(budgetPerIteration, maxSteps);
       //conditionLearner = policyBasedWeakLearner(randomPolicy(), budgetPerIteration, maxSteps);
 
 
-    //conditionLearner = laminatingWeakLearner(conditionLearner, 100);
+    conditionLearner = laminatingWeakLearner(conditionLearner, trainData->getNumElements()); // tmp !!!
 
     conditionLearner = compositeWeakLearner(constantWeakLearner(), conditionLearner);
+    
     BoostingWeakLearnerPtr weakLearner = conditionLearner;
     for (size_t i = 1; i < treeDepth; ++i)
       weakLearner = binaryTreeWeakLearner(conditionLearner, weakLearner);

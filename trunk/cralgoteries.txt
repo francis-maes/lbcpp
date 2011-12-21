@@ -1,5 +1,5 @@
-  
-* Fixer sur proteines (certaines actions sont encore dupliqués)
+ 
+* LuapeUniverse: stoquer aussi une map de LuapeFunction (ou passer par la map existante), puis virer les isSameAction()
 * Proteins: function canonizeNode() 
  
 Luape-Other:
