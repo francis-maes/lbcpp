@@ -21,7 +21,7 @@ public:
   void addInputNode(const LuapeInputNodePtr& inputNode)
     {inputNodes.push_back(inputNode);}
 
-  LuapeFunctionNodePtr makeFunctionNode(ClassPtr functionClass, const std::vector<Variable>& arguments, const std::vector<LuapeNodePtr>& inputs);
+  LuapeFunctionNodePtr makeFunctionNode(ClassPtr functionClass, const std::vector<Variable>& arguments, const std::vector<LuapeNodePtr>& inputs, const LuapeFunctionPtr& function = LuapeFunctionPtr());
   LuapeFunctionNodePtr makeFunctionNode(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs);
   LuapeFunctionNodePtr makeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& input)
     {return makeFunctionNode(function, std::vector<LuapeNodePtr>(1, input));}

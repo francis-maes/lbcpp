@@ -1,6 +1,6 @@
- * Lancer experiences sur NIC3
- 
- * Voir pourquoi au bout d'un moment, il n'arrive plus à créer de weakLearner (seuil sur le edge)
+  
+* Fixer sur proteines (certaines actions sont encore dupliqués)
+* Proteins: function canonizeNode() 
  
 Luape-Other:
  * Go: rankboost + large-scale boosting

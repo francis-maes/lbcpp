@@ -34,7 +34,20 @@ public:
       if (i < stack.size() - 1)
         res += T(", ");
     }
-    return res + T("}");
+    res += T("} -> ");
+    if (push.size())
+      res += String((int)push.size()) + T(" push actions");
+    if (apply.size())
+    {
+      if (push.size()) res += T(", ");
+      res += String((int)apply.size()) + T(" apply actions");
+    }
+    if (hasYieldAction())
+    {
+      if (push.size() || apply.size()) res += T(", ");
+      res += T("yield action");
+    }
+    return res;
   }
 
   size_t getDepth() const
@@ -48,6 +61,9 @@ public:
 
   bool hasPushActions() const
     {return push.size() > 0;}
+
+  const std::vector<std::pair<TypePtr, LuapeGraphBuilderTypeStatePtr> >& getPushActions() const
+    {return push;}
 
   bool canTypeBePushed(const TypePtr& type) const
   {

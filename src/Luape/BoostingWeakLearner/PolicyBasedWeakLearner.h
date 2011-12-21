@@ -144,7 +144,7 @@ public:
     LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(function, typeSearchSpace);
 
     bool noMoreActions = false;
-    //String episode = "";
+    String episode = "";
     policy->startEpisode(context, builder);
     while (!builder->isFinalState())
     {
@@ -155,8 +155,19 @@ public:
         break;
       }
 
+      bool hasYield = false;
+      for (size_t i = 0; i < actions->getNumElements(); ++i)
+        if (actions->getElement(i).getObjectAndCast<LuapeGraphBuilderAction>()->isYield())
+        {
+          hasYield = true;
+          break;
+        }
+      episode += T(" ");
+      if (hasYield)
+        episode += T(" *");
+
       Variable action = policy->selectAction(context, builder);
-      //episode += action.toShortString() + T(" ");
+      episode += action.toShortString();
       double reward;
       builder->performTransition(context, action, reward);
       policy->observeTransition(context, action, reward, builder);
@@ -165,16 +176,9 @@ public:
     if (builder->getStackSize() == 1)
     {
       node = builder->getStackElement(0);
-//      episode  += T(" => ") + node->toShortString();
+      episode  += T(" => ") + node->toShortString();
     }
-    //context.informationCallback(episode);
-    
-    /*
-    if (noMoreActions)
-      context.informationCallback(T("Out-of-actions: ") + builder->toShortString());
-    else
-      context.informationCallback(T("Final State: ") + builder->toShortString());// + T(" => ") + String(weakObjective));
-    */
+    context.informationCallback(episode);
     return node;
   }
 
@@ -226,37 +230,8 @@ public:
       return LuapeNodePtr();
     return makeContribution(context, structureLearner, bestWeakLearner, weakObjective, examples);
   }
-
-  void findOptimalWeakLearner(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeGraphBuilderStatePtr& state, const IndexSetPtr& examples, double& bestReward, LuapeNodePtr& bestWeakLearner) const
-  {
-    if (state->isFinalState())
-    {
-      if (state->getStackSize() == 1)
-      {
-        LuapeNodePtr node = state->getStackElement(0);
-        double reward = computeWeakObjectiveWithEventualStump(context, structureLearner, node, examples);
-        if (reward > bestReward)
-          bestReward = reward, bestWeakLearner = node;
-      }
-    }
-    else
-    {
-      ContainerPtr actions = state->getAvailableActions();
-      size_t n = actions->getNumElements();
-      for (size_t i = 0; i < n; ++i)
-      {
-        Variable stateBackup;
-        double reward;
-        state->performTransition(context, actions->getElement(i), reward, &stateBackup);
-        //context.enterScope(state->toShortString());
-        findOptimalWeakLearner(context, structureLearner, state, examples, bestReward, bestWeakLearner);
-        //context.leaveScope();
-        state->undoTransition(context, stateBackup);
-      }
-    }
-  }
 #endif // 0
-  
+
 protected:
   friend class PolicyBasedWeakLearnerClass;
   
@@ -264,7 +239,7 @@ protected:
   size_t maxDepth;
   
   LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
-  ScalarVariableStatistics regret;
+//  ScalarVariableStatistics regret;
 };
 
 ///////////////////////////////////////////////////////////////////////////

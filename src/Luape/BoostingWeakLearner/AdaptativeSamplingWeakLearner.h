@@ -20,7 +20,7 @@ class AdaptativeSamplingWeakLearner : public StochasticFiniteBoostingWeakLearner
 {
 public:
   AdaptativeSamplingWeakLearner(size_t numWeakNodes, size_t maxSteps)
-    : StochasticFiniteBoostingWeakLearner(numWeakNodes), maxSteps(maxSteps), temperature(0.05) {}
+    : StochasticFiniteBoostingWeakLearner(numWeakNodes), maxSteps(maxSteps), temperature(0.1) {}
   AdaptativeSamplingWeakLearner() {}
   
   virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
@@ -37,50 +37,44 @@ public:
     {
       size_t stateIndex = it->second->getStateIndex();
       jassert(stateIndex < stateActionStatistics.size());
-      stateActionStatistics[stateIndex].createInitialActions(function, it->second);
+      createInitialActions(function, it->second, stateActionStatistics[stateIndex]);
     }
+
+    objectiveStats = new ScalarVariableStatistics("weakObjective");
     return true;
   }
 
   virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
   {
     for (size_t i = 0; i < stateActionStatistics.size(); ++i)
-      const_cast<ActionStatistics&>(stateActionStatistics[i]).sortActions();
+      const_cast<TypeStateActionStatistics&>(stateActionStatistics[i]).update(temperature);
     return StochasticFiniteBoostingWeakLearner::getCandidateWeakNodes(context, structureLearner, candidates);
   }
 
   virtual LuapeNodePtr sampleWeakNode(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const
   {
+    RandomGeneratorPtr random = context.getRandomGenerator();
+
     std::vector<LuapeNodePtr> stack;
     LuapeGraphBuilderTypeStatePtr typeState;
 
     for (size_t i = 0; i < maxSteps; ++i)
     {
       // Retrieve type-state index
-      size_t typeStateIndex = getTypeStateIndex(i, stack);
-
-      // Compute probabilities
-      const ActionStatistics& stats = stateActionStatistics[typeStateIndex];
-
-      std::vector<double> probabilities(stats.sortedActions.size());
-      double Z = 0.0;
-      for (size_t j = 0; j < probabilities.size(); ++j)
-      {
-        double p = exp(stats.sortedActions[j].second / temperature);
-        Z += p;
-        probabilities[j] = p;
-      }
+      LuapeGraphBuilderTypeStatePtr typeState = getTypeState(i, stack);
+      jassert(typeState);
+      size_t typeStateIndex = typeState->getStateIndex();
+      const TypeStateActionStatistics& stats = stateActionStatistics[typeStateIndex];
 
       // Sample action
       ObjectPtr action;
-      size_t numFailuresAllowed = 20;
-      for (size_t i = 0; i < numFailuresAllowed; ++i)
-      {
-        size_t actionSortedIndex = context.getRandomGenerator()->sampleWithProbabilities(probabilities, Z);
-        action = stats.sortedActions[actionSortedIndex].first;
-        if (isActionAvailable(action, stack))
+      size_t numFailuresAllowed = 100;
+      size_t numFailures;
+      for (numFailures = 0; numFailures < numFailuresAllowed; ++numFailures)
+        if (stats.sampleAction(context, action) && isActionAvailable(action, stack))
           break;
-      }
+      if (numFailures == numFailuresAllowed)
+        return LuapeNodePtr();
 
       // Execute action
       executeAction(stack, action);
@@ -95,17 +89,27 @@ public:
 
   virtual void observeObjectiveValue(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
   {
+    double weight = (examples->size() / (double)structureLearner->getTrainingCache()->getNumSamples());
+    weakObjective *= weight;
+
+    // normalize objective
+    objectiveStats->push(weakObjective, weight);
+    if (objectiveStats->getStandardDeviation() == 0.0)
+      return;
+    if (weakNode.isInstanceOf<LuapeConstantNode>())
+      return; // those node cannot be produced by this policy
+
+    double normalizedObjective = (weakObjective - objectiveStats->getMean()) / objectiveStats->getStandardDeviation();
+
     std::vector<Trajectory> trajectories;
     getAllTrajectoriesToBuild(weakNode, maxSteps - 1, trajectories);
     jassert(trajectories.size());
-   // context.informationCallback(String((int)trajectories.size()) + T(" trajectories to build ") + weakNode->toShortString() + T(" in ") + String((int)maxSteps - 1) + T(" steps"));
-
-    weakObjective *= examples->size() / (double)structureLearner->getTrainingCache()->getNumSamples();
+    context.informationCallback(String((int)trajectories.size()) + T(" trajectories to build ") + weakNode->toShortString() + T(" in ") + String((int)maxSteps - 1) + T(" steps"));
 
     for (size_t i = 0; i < trajectories.size(); ++i)
     {
+      context.informationCallback("Start of trajectory " + String((int)i));
       std::vector<LuapeNodePtr> stack;
-      size_t stepNumber = 0;
       const Trajectory& trajectory = trajectories[i];
       jassert(trajectory.size() <= maxSteps - 1);
       String str;
@@ -113,23 +117,22 @@ public:
       {
         const ObjectPtr& action = trajectory[j];
         str += action->toShortString() + T(" ");
-        observeStateActionReward(stepNumber, stack, action, examples, weakObjective);
+        observeStateActionReward(context, j, stack, action, normalizedObjective, weight);
         executeAction(stack, action);
       }
-      //context.informationCallback(T("Trajectory: ") + str + T(" yield"));
-      observeStateActionReward(stepNumber, stack, ObjectPtr(), examples, weakObjective);
+      observeStateActionReward(context, trajectory.size(), stack, ObjectPtr(), normalizedObjective, weight); // finish with "yield"
+      context.informationCallback(T("Trajectory ") + String((int)i) + T(": ") + str + T(" yield"));
     }
   }
 
-  void observeStateActionReward(size_t stepNumber, const std::vector<LuapeNodePtr>& stack, const ObjectPtr& object, const IndexSetPtr& examples, double weakObjective)
+  void observeStateActionReward(ExecutionContext& context, size_t stepNumber, const std::vector<LuapeNodePtr>& stack, const ObjectPtr& object, double weakObjective, double weight)
   {
-    size_t typeStateIndex = getTypeStateIndex(stepNumber, stack);
-    if (typeStateIndex != (size_t)-1)
+    LuapeGraphBuilderTypeStatePtr typeState = getTypeState(stepNumber, stack);
+    if (typeState)
     {
+      size_t typeStateIndex = typeState->getStateIndex();
       jassert(typeStateIndex < stateActionStatistics.size());
-      ActionStatistics& stats = stateActionStatistics[typeStateIndex];
-      if (!object.isInstanceOf<LuapeFunctionNode>()) // Test !
-        stats.m[object].push(weakObjective, examples->size());
+      stateActionStatistics[typeStateIndex].observeReward(context, object, weakObjective, weight);
     }
   }
 
@@ -140,34 +143,25 @@ protected:
 
   LuapeNodeUniversePtr universe;
   LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
+  ScalarVariableStatisticsPtr objectiveStats;
 
   struct ActionStatistics
   {
-    void createInitialActions(const LuapeInferencePtr& function, const LuapeGraphBuilderTypeStatePtr& typeState)
-    {
-      if (typeState->hasPushActions())
-      {
-        for (size_t i = 0; i < function->getNumInputs(); ++i)
-        {
-          LuapeNodePtr node = function->getInput(i);
-          if (typeState->canTypeBePushed(node->getType()))
-            addAction(node);
-        }
-      }
-      if (typeState->hasApplyActions())
-      {
-        const std::vector<std::pair<LuapeFunctionPtr, LuapeGraphBuilderTypeStatePtr> >& apply = typeState->getApplyActions();
-        for (size_t i = 0; i < apply.size(); ++i)
-          addAction(apply[i].first);
-      }
-      if (typeState->hasYieldAction())
-        addAction(ObjectPtr());
-    }
+    ActionStatistics() : Z(0.0) {}
 
     void addAction(const ObjectPtr& action)
+      {m[action] = ScalarVariableMeanAndVariance();}
+
+    void removeAction(const ObjectPtr& action)
+      {m.erase(action);}
+
+    size_t getNumActions() const
+      {return m.size();}
+
+    void observeReward(ExecutionContext& context, const ObjectPtr& action, double weakObjective, double weight)
     {
-      m[action] = ScalarVariableMeanAndVariance();
-      sortedActions.push_back(std::make_pair(action, 0.0));
+      //context.informationCallback(T("Observe: ") + (action ? action->toShortString() : "yield") + T(" => ") + String(weakObjective) + T(" (") + String((int)examples->size()) + T(" examples)"));
+      m[action].push(weakObjective, weight);
     }
 
     struct SortOperator
@@ -176,26 +170,115 @@ protected:
         {return a.second == b.second ? a.first < b.first : a.second > b.second;}
     };
 
+    double getScore(const ScalarVariableMeanAndVariance& variable)
+    {
+      double c = variable.getCount();
+      return c ? (variable.getSum() - 0.0) / variable.getCount() : 5.0;
+    }
+
     void sortActions()
     {
       sortedActions.clear();
       for (std::map<ObjectPtr, ScalarVariableMeanAndVariance>::const_iterator it = m.begin(); it != m.end(); ++it)
-        sortedActions.push_back(std::make_pair(it->first, it->second.getMean()));
+        sortedActions.push_back(std::make_pair(it->first, getScore(it->second)));
       std::sort(sortedActions.begin(), sortedActions.end(), SortOperator());
       //if (sortedActions.size() > 64) // test !
       //  sortedActions.erase(sortedActions.begin() + 64, sortedActions.end());
     }
 
-    size_t getNumActions() const
-      {return m.size();}
+    void computeProbabilities(double temperature)
+    {
+      probabilities.resize(sortedActions.size());
+      Z = 0.0;
+      for (size_t j = 0; j < probabilities.size(); ++j)
+      {
+        double p = exp(sortedActions[j].second / temperature);
+        Z += p;
+        probabilities[j] = p;
+      }
+    }
+
+    ObjectPtr sampleAction(ExecutionContext& context) const
+    {
+      jassert(probabilities.size() == m.size() && sortedActions.size() == m.size());
+      String info;
+      for (size_t i = 0; i < sortedActions.size(); ++i)
+      {
+        ObjectPtr action = sortedActions[i].first;
+        info += (action ? action->toShortString() : "yield");
+        info += T(" ") + String(probabilities[i] * 100.0 / Z, 1) + T("% ");
+      }
+
+      if (m.empty())
+        return ObjectPtr();
+      else if (sortedActions.size() == 1)
+        return sortedActions[0].first;
+      else
+      {
+        size_t actionSortedIndex = context.getRandomGenerator()->sampleWithProbabilities(probabilities, Z);
+        ObjectPtr res = sortedActions[actionSortedIndex].first;
+        context.informationCallback(info + T(" ==> ") + (res ? res->toShortString() : "yield"));
+        return res;
+      }
+    }
 
     // key: either LuapeNodePtr to push, or LuapeFunctionPtr to apply, or ObjectPtr() to yield
     std::map<ObjectPtr, ScalarVariableMeanAndVariance> m;
-
     std::vector< std::pair<ObjectPtr, double> > sortedActions; // from highest score to lowest score
+    std::vector<double> probabilities;
+    double Z;
   };
 
-  std::vector<ActionStatistics> stateActionStatistics;
+  struct TypeStateActionStatistics
+  {
+   // operation action = type (either inheriting from LuapeFunction for apply actions or from any other type for push actions, or ObjectPtr() for yield action)
+    ActionStatistics operations; // operation -> statistics; 
+    std::map<TypePtr, ActionStatistics> arguments; // operation -> argument -> statistics
+
+    void update(double temperature)
+    {
+      operations.sortActions();
+      operations.computeProbabilities(temperature);
+      for (std::map<TypePtr, ActionStatistics>::iterator it = arguments.begin(); it != arguments.end(); ++it)
+      {
+        it->second.sortActions();
+        it->second.computeProbabilities(temperature);
+      }
+    }
+
+    bool sampleAction(ExecutionContext& context, ObjectPtr& res) const
+    {
+      ObjectPtr operation = operations.sampleAction(context);
+      if (!operation)
+      {
+        res = operation;
+        return true;
+      }
+      std::map<TypePtr, ActionStatistics>::const_iterator it = arguments.find(operation);
+      jassert(it != arguments.end());
+      res = it->second.sampleAction(context);
+      return res != ObjectPtr();
+    }
+
+    void observeReward(ExecutionContext& context, const ObjectPtr& action, double weakObjective, double weight)
+    {
+      ObjectPtr operation;
+      if (action)
+      {
+        if (action.isInstanceOf<LuapeFunction>())
+          operation = action->getClass(); // yield action
+        else if (action.isInstanceOf<LuapeNode>())
+          operation = action.staticCast<LuapeNode>()->getType(); // push action
+        else
+          jassert(false);
+      }
+      operations.observeReward(context, operation, weakObjective, weight);
+      if (operation)
+        arguments[operation].observeReward(context, action, weakObjective, weight);
+    }
+  };
+
+  std::vector<TypeStateActionStatistics> stateActionStatistics;
   double temperature;
 
   static bool isActionAvailable(ObjectPtr action, const std::vector<LuapeNodePtr>& stack)
@@ -204,15 +287,55 @@ protected:
       action.staticCast<LuapeFunction>()->acceptInputsStack(stack);
   }
 
-  size_t getTypeStateIndex(size_t stepNumber, const std::vector<LuapeNodePtr>& stack) const
+  LuapeGraphBuilderTypeStatePtr getTypeState(size_t stepNumber, const std::vector<LuapeNodePtr>& stack) const
   {
     std::vector<TypePtr> typeStack(stack.size());
     for (size_t j = 0; j < typeStack.size(); ++j)
       typeStack[j] = stack[j]->getType();
-    LuapeGraphBuilderTypeStatePtr typeState = typeSearchSpace->getState(stepNumber, typeStack);
-    return typeState ? typeState->getStateIndex() : (size_t)-1;
+    return typeSearchSpace->getState(stepNumber, typeStack);
   }
 
+  void createInitialActions(const LuapeInferencePtr& function, const LuapeGraphBuilderTypeStatePtr& typeState, TypeStateActionStatistics& res)
+  {
+    const std::vector<std::pair<TypePtr, LuapeGraphBuilderTypeStatePtr> >& pushActions = typeState->getPushActions();
+    if (pushActions.size())
+    {
+      for (size_t i = 0; i < pushActions.size(); ++i)
+      {
+        TypePtr pushType = pushActions[i].first;
+        res.operations.addAction(pushType);
+        ActionStatistics& actions = res.arguments[pushType];
+        for (size_t i = 0; i < function->getNumInputs(); ++i)
+        {
+          LuapeNodePtr node = function->getInput(i);
+          if (node->getType() == pushType)
+            actions.addAction(node);
+        }
+        if (!actions.getNumActions())
+        {
+          res.operations.removeAction(pushType);
+          res.arguments.erase(pushType);
+        }
+      }
+    }
+    const std::vector<std::pair<LuapeFunctionPtr, LuapeGraphBuilderTypeStatePtr> >& applyActions = typeState->getApplyActions();
+    if (applyActions.size())
+    {
+      std::set<ClassPtr> functionClasses;
+      for (size_t i = 0; i < applyActions.size(); ++i)
+        functionClasses.insert(applyActions[i].first->getClass());
+      for (std::set<ClassPtr>::const_iterator it = functionClasses.begin(); it != functionClasses.end(); ++it)
+      {
+        res.operations.addAction(*it);
+        ActionStatistics& actions = res.arguments[*it];
+        for (size_t i = 0; i < applyActions.size(); ++i)
+          if (applyActions[i].first->getClass() == *it)
+            actions.addAction(applyActions[i].first);
+      }
+    }
+    if (typeState->hasYieldAction())
+      res.operations.addAction(ObjectPtr());
+  }
 
   void executeAction(std::vector<LuapeNodePtr>& stack, const ObjectPtr& action) const
   {
@@ -246,7 +369,8 @@ protected:
     if (!budget)
       return;
 
-    res.push_back(Trajectory(1, target)); // single-step trajectory
+    if (target.isInstanceOf<LuapeInputNode>()) // TMP: restrict to input nodes
+      res.push_back(Trajectory(1, target)); // single-step trajectory
 
     LuapeFunctionNodePtr functionNode = target.dynamicCast<LuapeFunctionNode>();
     if (functionNode)

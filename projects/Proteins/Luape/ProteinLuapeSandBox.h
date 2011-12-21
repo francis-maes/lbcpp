@@ -327,6 +327,7 @@ public:
   {
     //BoostingWeakLearnerPtr conditionLearner = policyBasedWeakLearner(new RandomPolicy(), budget, numSteps);
     BoostingWeakLearnerPtr conditionLearner = adaptativeSamplingWeakLearner(budget, numSteps);
+    //BoostingWeakLearnerPtr conditionLearner = optimalPolicyWeakLearner(numSteps);
     conditionLearner = compositeWeakLearner(constantWeakLearner(), conditionLearner);
     conditionLearner = laminatingWeakLearner(conditionLearner, 1000);
 
