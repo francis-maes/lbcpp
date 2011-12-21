@@ -10,7 +10,7 @@
 #include <lbcpp/Luape/LuapeNode.h>
 using namespace lbcpp;
 
-LuapeFunctionNodePtr LuapeNodeUniverse::makeFunctionNode(ClassPtr functionClass, const std::vector<Variable>& arguments, const std::vector<LuapeNodePtr>& inputs)
+LuapeFunctionNodePtr LuapeNodeUniverse::makeFunctionNode(ClassPtr functionClass, const std::vector<Variable>& arguments, const std::vector<LuapeNodePtr>& inputs, const LuapeFunctionPtr& function)
 {
   FunctionKey key;
   key.functionClass = functionClass;
@@ -19,10 +19,14 @@ LuapeFunctionNodePtr LuapeNodeUniverse::makeFunctionNode(ClassPtr functionClass,
   FunctionNodesMap::const_iterator it = functionNodes.find(key);
   if (it == functionNodes.end())
   {
-    LuapeFunctionPtr function = LuapeFunction::create(functionClass);
-    for (size_t i = 0; i < arguments.size(); ++i)
-      function->setVariable(i, arguments[i]);
-    LuapeFunctionNodePtr res = new LuapeFunctionNode(function, inputs);
+    LuapeFunctionPtr fun = function;
+    if (!fun)
+    {
+      fun = LuapeFunction::create(functionClass);
+      for (size_t i = 0; i < arguments.size(); ++i)
+        fun->setVariable(i, arguments[i]);
+    }
+    LuapeFunctionNodePtr res = new LuapeFunctionNode(fun, inputs);
     functionNodes[key] = res;
     return res;
   }
@@ -35,7 +39,7 @@ LuapeFunctionNodePtr LuapeNodeUniverse::makeFunctionNode(const LuapeFunctionPtr&
   std::vector<Variable> arguments(function->getNumVariables());
   for (size_t i = 0; i < arguments.size(); ++i)
     arguments[i] = function->getVariable(i);
-  return makeFunctionNode(function->getClass(), arguments, inputs);
+  return makeFunctionNode(function->getClass(), arguments, inputs, function);
 }
 
 void LuapeNodeUniverse::observeNodeComputingTime(const LuapeNodePtr& node, size_t numInstances, double timeInMilliseconds)

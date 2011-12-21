@@ -29,36 +29,6 @@ public:
     }
     return true;
   }
-#if 0
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective) const
-  {
-    const LuapeInferencePtr& function = structureLearner->getFunction();
-
-    weakObjective = -DBL_MAX;
-    double bestThreshold = 0.0;
-    LuapeNodePtr bestNode;
-
-    for (size_t i = 0; i < function->getNumInputs(); ++i)
-    {
-      LuapeNodePtr node = function->getInput(i);
-      if (node->getType() == doubleType)
-      {
-        double threshold;
-        double score = computeWeakObjectiveWithStump(context, structureLearner, node, examples, threshold);
-        if (score > weakObjective)
-        {
-          weakObjective = score;
-          bestNode = node;
-          bestThreshold = threshold;
-        }
-      }
-    }
-    if (!bestNode)
-      return LuapeNodePtr();
-
-    return makeContribution(context, structureLearner, makeStump(structureLearner, bestNode, bestThreshold), weakObjective, examples);
-  }
-#endif // 0
 };
 
 #if 0
