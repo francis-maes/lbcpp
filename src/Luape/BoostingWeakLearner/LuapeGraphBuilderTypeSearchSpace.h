@@ -127,23 +127,12 @@ private:
   void setApplyTransition(const LuapeFunctionPtr& function, const LuapeGraphBuilderTypeStatePtr& nextState)
   {
     for (size_t i = 0; i < apply.size(); ++i)
-      if (isSameFunction(apply[i].first, function))
+      if (apply[i].first == function)
       {
         jassert(apply[i].second == nextState);
         return;
       }
     apply.push_back(std::make_pair(function, nextState));
-  }
-
-  static bool isSameFunction(const LuapeFunctionPtr& f1, const LuapeFunctionPtr& f2)
-  {
-    if (f1->getClass() != f2->getClass())
-      return false;
-    size_t n = f1->getNumVariables();
-    for (size_t i = 0; i < n; ++i)
-      if (f1->getVariable(i) != f2->getVariable(i))
-        return false;
-    return true;
   }
 };
 

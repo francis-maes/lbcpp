@@ -123,7 +123,7 @@ extern FiniteBoostingWeakLearnerPtr constantWeakLearner();
 extern FiniteBoostingWeakLearnerPtr singleStumpWeakLearner();
 extern StochasticFiniteBoostingWeakLearnerPtr policyBasedWeakLearner(const PolicyPtr& policy, size_t budget, size_t maxDepth);
 extern StochasticFiniteBoostingWeakLearnerPtr adaptativeSamplingWeakLearner(size_t numWeakNodes, size_t maxSteps);
-extern FiniteBoostingWeakLearnerPtr optimalPolicyWeakLearner(size_t maxDepth);
+extern FiniteBoostingWeakLearnerPtr exhaustiveWeakLearner(size_t maxDepth);
 
 extern BoostingWeakLearnerPtr binaryTreeWeakLearner(BoostingWeakLearnerPtr conditionLearner, BoostingWeakLearnerPtr subLearner);
 extern BoostingWeakLearnerPtr compositeWeakLearner(const std::vector<BoostingWeakLearnerPtr>& weakLearners);

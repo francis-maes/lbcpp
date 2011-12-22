@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: OptimalPolicyWeakLearner.h     | Optimal Policy Weak Learner     |
+| Filename: ExhaustiveWeakLearner.h        | Exhaustive Weak Learner         |
 | Author  : Francis Maes                   |                                 |
 | Started : 21/12/2011 13:13               |                                 |
 `------------------------------------------/                                 |
@@ -15,12 +15,12 @@
 namespace lbcpp
 {
 
-class OptimalPolicyWeakLearner : public FiniteBoostingWeakLearner
+class ExhaustiveWeakLearner : public FiniteBoostingWeakLearner
 {
 public:
-  OptimalPolicyWeakLearner(size_t maxDepth)
+  ExhaustiveWeakLearner(size_t maxDepth)
     : maxDepth(maxDepth) {}
-  OptimalPolicyWeakLearner() : maxDepth(0) {}
+  ExhaustiveWeakLearner() : maxDepth(0) {}
 
   virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
   {
@@ -37,7 +37,7 @@ public:
   }
 
 protected:
-  friend class OptimalPolicyWeakLearnerClass;
+  friend class ExhaustiveWeakLearnerClass;
 
   size_t maxDepth;
   LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;

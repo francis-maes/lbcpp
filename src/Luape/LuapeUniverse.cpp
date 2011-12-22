@@ -10,25 +10,17 @@
 #include <lbcpp/Luape/LuapeNode.h>
 using namespace lbcpp;
 
-LuapeFunctionNodePtr LuapeNodeUniverse::makeFunctionNode(ClassPtr functionClass, const std::vector<Variable>& arguments, const std::vector<LuapeNodePtr>& inputs, const LuapeFunctionPtr& function)
+LuapeFunctionPtr LuapeNodeUniverse::makeFunction(ClassPtr functionClass, const std::vector<Variable>& arguments)
 {
-  FunctionKey key;
-  key.functionClass = functionClass;
-  key.arguments = arguments;
-  key.inputs = inputs;
-  FunctionNodesMap::const_iterator it = functionNodes.find(key);
-  if (it == functionNodes.end())
+  FunctionKey key(functionClass, arguments);
+  FunctionsMap::const_iterator it = functions.find(key);
+  if (it == functions.end())
   {
-    LuapeFunctionPtr fun = function;
-    if (!fun)
-    {
-      fun = LuapeFunction::create(functionClass);
-      for (size_t i = 0; i < arguments.size(); ++i)
-        fun->setVariable(i, arguments[i]);
-    }
-    LuapeFunctionNodePtr res = new LuapeFunctionNode(fun, inputs);
-    functionNodes[key] = res;
-    return res;
+    LuapeFunctionPtr function = LuapeFunction::create(functionClass);
+    for (size_t i = 0; i < arguments.size(); ++i)
+      function->setVariable(i, arguments[i]);
+    functions[key] = function;
+    return function;
   }
   else
     return it->second;
@@ -36,10 +28,16 @@ LuapeFunctionNodePtr LuapeNodeUniverse::makeFunctionNode(ClassPtr functionClass,
 
 LuapeFunctionNodePtr LuapeNodeUniverse::makeFunctionNode(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs)
 {
-  std::vector<Variable> arguments(function->getNumVariables());
-  for (size_t i = 0; i < arguments.size(); ++i)
-    arguments[i] = function->getVariable(i);
-  return makeFunctionNode(function->getClass(), arguments, inputs, function);
+  FunctionNodeKey key(function, inputs);
+  FunctionNodesMap::const_iterator it = functionNodes.find(key);
+  if (it == functionNodes.end())
+  {
+    LuapeFunctionNodePtr res = new LuapeFunctionNode(function, inputs);
+    functionNodes[key] = res;
+    return res;
+  }
+  else
+    return it->second;
 }
 
 void LuapeNodeUniverse::observeNodeComputingTime(const LuapeNodePtr& node, size_t numInstances, double timeInMilliseconds)

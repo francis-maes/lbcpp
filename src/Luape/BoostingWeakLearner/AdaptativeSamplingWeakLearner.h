@@ -185,24 +185,6 @@ protected:
     size_t getNumActions() const
       {return m.size();}
 
-    static bool isSameAction(const ObjectPtr& a1, const ObjectPtr& a2)
-    {
-      if (a1 == a2)
-        return true;
-      if (a1.isInstanceOf<LuapeFunction>() && a2.isInstanceOf<LuapeFunction>())
-      {
-        if (a1->getClass() != a2->getClass())
-          return false;
-        size_t n = a1->getNumVariables();
-        for (size_t i = 0; i < n; ++i)
-          if (a1->getVariable(i) != a2->getVariable(i))
-            return false;
-        return true;
-      }
-      else
-        return false;
-    }
-
     void observeReward(ExecutionContext& context, const ObjectPtr& action, double weakObjective, double weight)
     {
       if (m.size() < 2)
@@ -217,7 +199,7 @@ protected:
       for (ActionMap::const_iterator it = m.begin(); it != m.end(); ++it)
       {
         scores->setValue(index, it->second);
-        if (isSameAction(it->first, action))
+        if (it->first == action)
           actionIndex = index;
         ++index;
       }
