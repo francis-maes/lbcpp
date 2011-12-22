@@ -21,10 +21,11 @@ public:
   void addInputNode(const LuapeInputNodePtr& inputNode)
     {inputNodes.push_back(inputNode);}
 
-  LuapeFunctionNodePtr makeFunctionNode(ClassPtr functionClass, const std::vector<Variable>& arguments, const std::vector<LuapeNodePtr>& inputs, const LuapeFunctionPtr& function = LuapeFunctionPtr());
   LuapeFunctionNodePtr makeFunctionNode(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs);
   LuapeFunctionNodePtr makeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& input)
     {return makeFunctionNode(function, std::vector<LuapeNodePtr>(1, input));}
+
+  LuapeFunctionPtr makeFunction(ClassPtr functionClass, const std::vector<Variable>& arguments);
 
   void observeNodeComputingTime(const LuapeNodePtr& node, size_t numInstances, double timeInMilliseconds);
   double getExpectedComputingTime(const LuapeNodePtr& node) const; // in milliseconds
@@ -38,22 +39,12 @@ public:
 private:
   friend class LuapeNodeUniverseClass;
 
-  struct FunctionKey
-  {
-    ClassPtr functionClass;
-    std::vector<Variable> arguments;
-    std::vector<LuapeNodePtr> inputs;
+  typedef std::pair<ClassPtr, std::vector<Variable> >  FunctionKey;
+  typedef std::map<FunctionKey, LuapeFunctionPtr> FunctionsMap;
+  FunctionsMap functions;
 
-    bool operator <(const FunctionKey& other) const
-    {
-      if (functionClass != other.functionClass)
-        return functionClass < other.functionClass;
-      if (arguments != other.arguments)
-        return arguments < other.arguments;
-      return inputs < other.inputs;
-    }
-  };
-  typedef std::map<FunctionKey, LuapeFunctionNodePtr> FunctionNodesMap;
+  typedef std::pair<LuapeFunctionPtr, std::vector<LuapeNodePtr> > FunctionNodeKey;
+  typedef std::map<FunctionNodeKey, LuapeFunctionNodePtr> FunctionNodesMap;
   FunctionNodesMap functionNodes;
 
   std::vector<LuapeInputNodePtr> inputNodes;

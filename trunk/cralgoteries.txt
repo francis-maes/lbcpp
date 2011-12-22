@@ -1,5 +1,4 @@
- 
-* LuapeUniverse: stoquer aussi une map de LuapeFunction (ou passer par la map existante), puis virer les isSameAction()
+* New weak learner: BanditBasedWeakLearner
 * Proteins: function canonizeNode() 
  
 Luape-Other:

@@ -70,7 +70,7 @@
     <variable type="PositiveInteger" name="maxSteps"/>
   </class>
 
-  <class name="OptimalPolicyWeakLearner" base="FiniteBoostingWeakLearner">
+  <class name="ExhaustiveWeakLearner" base="FiniteBoostingWeakLearner">
     <constructor arguments="size_t maxDepth"/>
     <variable type="PositiveInteger" name="maxDepth"/>
   </class>
