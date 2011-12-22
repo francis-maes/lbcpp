@@ -23,7 +23,7 @@ namespace lbcpp
 class LuapeSandBox : public WorkUnit
 {
 public:
-  LuapeSandBox() : maxExamples(0), maxSteps(3), budgetPerIteration(1000), maxIterations(10), treeDepth(3), verbose(false) {}
+  LuapeSandBox() : maxExamples(0), treeDepth(1), complexity(5), relativeBudget(0.1), miniBatchRelativeSize(0.0), numIterations(1000), verbose(false) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -50,15 +50,17 @@ public:
       return false;
 
     BoostingWeakLearnerPtr conditionLearner;
-    if (maxSteps == 0)
+    if (complexity == 0)
       conditionLearner = singleStumpWeakLearner();
     else
-      //conditionLearner = exhaustiveWeakLearner(maxSteps);
-      conditionLearner = adaptativeSamplingWeakLearner(budgetPerIteration, maxSteps);
+      conditionLearner = exhaustiveWeakLearner(complexity);
+      //conditionLearner = adaptativeSamplingWeakLearner(budgetPerIteration, maxSteps);
       //conditionLearner = policyBasedWeakLearner(randomPolicy(), budgetPerIteration, maxSteps);
-
-
-    conditionLearner = laminatingWeakLearner(conditionLearner, trainData->getNumElements()); // tmp !!!
+    
+    if (miniBatchRelativeSize == 0.0)
+      conditionLearner = laminatingWeakLearner(conditionLearner, relativeBudget);
+    else
+      conditionLearner = banditBasedWeakLearner(conditionLearner, relativeBudget, miniBatchRelativeSize);
 
     conditionLearner = compositeWeakLearner(constantWeakLearner(), conditionLearner);
     
@@ -68,7 +70,7 @@ public:
 
     LuapeLearnerPtr strongLearner = adaBoostMHLearner(weakLearner, true);
     strongLearner->setVerbose(verbose);
-    LuapeBatchLearnerPtr batchLearner = new LuapeBatchLearner(strongLearner, maxIterations);
+    LuapeBatchLearnerPtr batchLearner = new LuapeBatchLearner(strongLearner, numIterations);
     if (plotFile != File::nonexistent)
       batchLearner->setPlotFile(context, plotFile);
     classifier->setBatchLearner(batchLearner);
@@ -114,10 +116,11 @@ protected:
   File trainFile;
   File testFile;
   size_t maxExamples;
-  size_t maxSteps;
-  size_t budgetPerIteration;
-  size_t maxIterations;
   size_t treeDepth;
+  size_t complexity;
+  double relativeBudget;
+  double miniBatchRelativeSize;
+  size_t numIterations;
   bool verbose;
   File plotFile;
 

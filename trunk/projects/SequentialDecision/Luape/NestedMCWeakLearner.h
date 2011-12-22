@@ -56,7 +56,7 @@ public:
     return true;
   }
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& strongLearner, const IndexSetPtr& examples, double& weakObjective) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& strongLearner, const IndexSetPtr& examples, double& weakObjective)
   {
     OptimizationProblemPtr problem = new OptimizationProblem(new Objective(refCountedPointerFromThis(this), strongLearner, examples));
     problem->setMaximisationProblem(true);

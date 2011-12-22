@@ -10,6 +10,7 @@
 # define LBCPP_LUAPE_LEARNER_ADAPTATIVE_SAMPLING_WEAK_H_
 
 # include <lbcpp/Luape/LuapeLearner.h>
+# include <lbcpp/Luape/LuapeCache.h>
 # include "LuapeGraphBuilder.h"
 # include <algorithm>
 
@@ -48,7 +49,7 @@ public:
   {
     for (size_t i = 0; i < stateActionStatistics.size(); ++i)
       const_cast<TypeStateActionStatistics&>(stateActionStatistics[i]).update(temperature);
-    // tmp --
+    // Display current policy
     for (LuapeGraphBuilderTypeSearchSpace::StateMap::const_iterator it = typeSearchSpace->getStates().begin(); it != typeSearchSpace->getStates().end(); ++it)
     {
       LuapeGraphBuilderTypeStatePtr typeState = it->second;
@@ -56,7 +57,7 @@ public:
       if (stats.observationCount > 0.0 && stats.getTotalNumActions() > 1)
         context.informationCallback(String(stats.observationCount) + T(" -- ") + typeState->toShortString() + T("\n") + stats.toShortString());
     }
-    // - 
+    // --
     return StochasticFiniteBoostingWeakLearner::getCandidateWeakNodes(context, structureLearner, candidates);
   }
 
@@ -104,7 +105,6 @@ public:
 
   virtual void observeObjectiveValue(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
   {
-#if 0
     if (weakObjective == -DBL_MAX)
       return;
     jassert(isNumberValid(weakObjective));
@@ -121,12 +121,6 @@ public:
       return; // those node cannot be produced by this policy
 
     double normalizedObjective = (weakObjective - objectiveStats->getMean()) / objectiveStats->getStandardDeviation();
-#else
-    double normalizedObjective = weakObjective; // TMP !
-    double weight = 1.0;
-    if (weakNode.isInstanceOf<LuapeConstantNode>())
-      return; // those node cannot be produced by this policy
-#endif
 
     std::vector<Trajectory> trajectories;
     getAllTrajectoriesToBuild(weakNode, maxSteps - 1, trajectories);

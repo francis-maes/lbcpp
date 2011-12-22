@@ -31,7 +31,7 @@ void IndexSet::addInterval(size_t begin, size_t end)
     v[s + i] = i;
 }
 
-void IndexSet::randomlyExpandUsingSource(ExecutionContext& context, size_t newSize, const IndexSetPtr& source, bool contiguous)
+void IndexSet::randomlyExpandUsingSource(ExecutionContext& context, size_t newSize, const IndexSetPtr& source)
 {
   RandomGeneratorPtr random = context.getRandomGenerator();
 

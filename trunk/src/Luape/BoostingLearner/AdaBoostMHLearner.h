@@ -10,6 +10,7 @@
 # define LBCPP_LUAPE_LEARNER_ADA_BOOST_MH_H_
 
 # include "WeightBoostingLearner.h"
+# include <lbcpp/Luape/LuapeCache.h>
 
 namespace lbcpp
 {

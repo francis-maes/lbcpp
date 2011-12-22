@@ -10,6 +10,7 @@
 # define LBCPP_LUAPE_LEARNER_BINARY_TREE_WEAK_H_
 
 # include <lbcpp/Luape/LuapeLearner.h>
+# include <lbcpp/Luape/LuapeCache.h>
 
 namespace lbcpp
 {
@@ -24,7 +25,7 @@ public:
   virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
     {return conditionLearner->initialize(context, function) && subLearner->initialize(context, function);}
   
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective)
   {
     /*
     ** Learn condition and retrieve condition values

@@ -25,7 +25,7 @@ public:
       indexSet->append(i);
 
     IndexSetPtr subset = new IndexSet();
-    subset->randomlyExpandUsingSource(context, 54, indexSet, false);
+    subset->randomlyExpandUsingSource(context, 54, indexSet);
     context.resultCallback("hop1", subset->cloneAndCast<IndexSet>());
     checkEgality(context, subset->size(), (size_t)54);
 
@@ -45,7 +45,7 @@ public:
       IndexSetPtr subset = new IndexSet();
       for (size_t size = 10; size <= 100; size += 10)
       {
-        subset->randomlyExpandUsingSource(context, size, indexSet, false);
+        subset->randomlyExpandUsingSource(context, size, indexSet);
         checkEgality(context, subset->size(), size);
       }
       std::set<size_t> dbg;
@@ -61,10 +61,10 @@ public:
       //subset->randomlyExpandUsingSource(context, 50, indexSet, true);
 
       for (size_t size = 10; size <= 50; size += 10)
-        subset->randomlyExpandUsingSource(context, size, indexSet, false);
-      //subset->randomlyExpandUsingSource(context, 10, indexSet, false);
-      //subset->randomlyExpandUsingSource(context, 20, indexSet, false);
-      //subset->randomlyExpandUsingSource(context, 50, indexSet, true);
+        subset->randomlyExpandUsingSource(context, size, indexSet);
+      //subset->randomlyExpandUsingSource(context, 10, indexSet);
+      //subset->randomlyExpandUsingSource(context, 20, indexSet);
+      //subset->randomlyExpandUsingSource(context, 50, indexSet);
       std::set<size_t> dbg;
       for (IndexSet::const_iterator it = subset->begin(); it != subset->end(); ++it)
         dbg.insert(*it);
