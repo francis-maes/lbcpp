@@ -1,6 +1,7 @@
 
-* Tester PUCB: http://gauss.ececs.uc.edu/Workshops/isaim2010/papers/rosin.pdf
-* Proteins: function canonizeNode() 
+* Fix proteins in Debug (invalid operator < )
+* ComputeDoubleVectorExtremums LuapeFunction
+* Voir ce qui prend toute la RAM
  
 Luape-Other:
  * Go: rankboost + large-scale boosting

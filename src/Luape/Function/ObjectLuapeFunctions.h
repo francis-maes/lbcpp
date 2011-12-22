@@ -30,7 +30,7 @@ public:
     {return 1;}
 
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
-    {return type->inheritsFrom(inputClass);}
+    {return type->inheritsFrom(inputClass ? inputClass : objectClass);}
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
   {
@@ -105,29 +105,28 @@ protected:
 class GetVariableLuapeFunction : public UnaryObjectLuapeFuntion<GetVariableLuapeFunction>
 {
 public:
-  GetVariableLuapeFunction(size_t variableIndex = 0)
-    : UnaryObjectLuapeFuntion<GetVariableLuapeFunction>(objectClass), variableIndex(variableIndex) {}
+  GetVariableLuapeFunction(ClassPtr inputClass = ClassPtr(), size_t variableIndex = 0)
+    : UnaryObjectLuapeFuntion<GetVariableLuapeFunction>(inputClass), inputClass(inputClass), variableIndex(variableIndex) {}
+  GetVariableLuapeFunction(ClassPtr inputClass, const String& variableName)
+    : UnaryObjectLuapeFuntion<GetVariableLuapeFunction>(inputClass), inputClass(inputClass), variableIndex((size_t)inputClass->findMemberVariable(variableName))
+  {
+    jassert(variableIndex != (size_t)-1);
+  }
 
   virtual String toShortString() const
-  {
-    if (inputClass)
-      return "." + inputClass->getMemberVariableName(variableIndex);
-    else
-      return ".var[" + String((int)variableIndex) + "]";
-  }
+    {return "." + inputClass->getMemberVariableName(variableIndex);}
 
   virtual TypePtr initialize(const std::vector<TypePtr>& inputTypes)
   {
-    jassert(inputTypes.size() == 1);
-    inputClass = inputTypes[0].staticCast<Class>();
-    outputType = inputTypes[0]->getMemberVariableType(variableIndex);
+    jassert(inputTypes.size() == 1 && inputTypes[0] == inputClass);
+    outputType = inputClass->getMemberVariableType(variableIndex);
     return outputType;
   }
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
   {
     jassert(inputs.size() == 1);
-    VariableSignaturePtr member = inputs[0]->getType()->getMemberVariable(variableIndex);
+    VariableSignaturePtr member = inputClass->getMemberVariable(variableIndex);
     return inputs[0]->toShortString() + "." + (member->getShortName().isNotEmpty() ? member->getShortName() : member->getName());
   }
 
@@ -142,21 +141,36 @@ public:
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
   {
-    TypePtr objectClass = inputTypes[0];
-    size_t n = objectClass->getNumMemberVariables();
-    VectorPtr res = vector(positiveIntegerType, n);
-    for (size_t i = 0; i < n; ++i)
-      res->setElement(i, i);
-    return res;
+    if (index == 0)
+    {
+      VectorPtr res = vector(typeClass, 1);
+      res->setElement(0, inputTypes[0]);
+      return res;
+    }
+    else
+    {
+      TypePtr objectClass = inputTypes[0];
+      size_t n = objectClass->getNumMemberVariables();
+      VectorPtr res = vector(positiveIntegerType, n);
+      for (size_t i = 0; i < n; ++i)
+        res->setElement(i, i);
+      return res;
+    }
   }
+
+  size_t getVariableIndex() const
+    {return variableIndex;}
 
 protected:
   friend class GetVariableLuapeFunctionClass;
+  ClassPtr inputClass;
   size_t variableIndex;
 
-  ClassPtr inputClass;
+  String variableName;
   TypePtr outputType;
 };
+
+typedef ReferenceCountedObjectPtr<GetVariableLuapeFunction> GetVariableLuapeFunctionPtr;
 
 class GetContainerLengthLuapeFunction : public UnaryObjectLuapeFuntion<GetContainerLengthLuapeFunction>
 {
@@ -185,34 +199,28 @@ public:
 class GetDoubleVectorElementLuapeFunction : public UnaryObjectLuapeFuntion<GetDoubleVectorElementLuapeFunction>
 {
 public:
-  GetDoubleVectorElementLuapeFunction(size_t index = 0)
-    : UnaryObjectLuapeFuntion<GetDoubleVectorElementLuapeFunction>(doubleVectorClass()), index(index) {}
+  GetDoubleVectorElementLuapeFunction(EnumerationPtr enumeration = EnumerationPtr(), size_t index = 0)
+    : UnaryObjectLuapeFuntion<GetDoubleVectorElementLuapeFunction>(doubleVectorClass()), enumeration(enumeration), index(index) {}
 
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
   {
     EnumerationPtr features = DoubleVector::getElementsEnumeration(type);
-    return features && features->getNumElements() > 0;
+    return enumeration ? enumeration == features : features && features->getNumElements() > 0;
   }
 
   virtual TypePtr initialize(const std::vector<TypePtr>& inputTypes)
   {
-    DoubleVector::getTemplateParameters(defaultExecutionContext(), inputTypes[0], inputEnumeration, outputType);
+    EnumerationPtr features;
+    DoubleVector::getTemplateParameters(defaultExecutionContext(), inputTypes[0], features, outputType);
+    jassert(features == enumeration);
     return outputType;
   }
 
   virtual String toShortString() const
-  {
-    if (inputEnumeration)
-      return T(".") + inputEnumeration->getElementName(index);
-    else
-      return "[" + String((int)index) + "]";
-  }
+    {return T(".") + enumeration->getElementName(index);}
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
-  {
-    jassert(inputs.size() == 1 && inputEnumeration);
-    return inputs[0]->toShortString() + "." + inputEnumeration->getElementName(index);
-  }
+    {return inputs[0]->toShortString() + "." + enumeration->getElementName(index);}
 
   Variable computeObject(const ObjectPtr& input) const
   {
@@ -235,18 +243,27 @@ public:
     if (!features || features->getNumElements() == 0)
       return ContainerPtr();
 
-    size_t n = features->getNumElements();
-    VectorPtr res = vector(positiveIntegerType, n);
-    for (size_t i = 0; i < n; ++i)
-      res->setElement(i, i);
-    return res;
+    if (index == 0)
+    {
+      ObjectVectorPtr res = new ObjectVector(enumerationClass, 1);
+      res->set(0, features);
+      return res;
+    }
+    else
+    {
+      size_t n = features->getNumElements();
+      VectorPtr res = vector(positiveIntegerType, n);
+      for (size_t i = 0; i < n; ++i)
+        res->setElement(i, i);
+      return res;
+    }
   }
 
 protected:
   friend class GetDoubleVectorElementLuapeFunctionClass;
+  EnumerationPtr enumeration;
   size_t index;
 
-  EnumerationPtr inputEnumeration;
   TypePtr outputType;
 };
 

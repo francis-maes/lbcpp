@@ -8,6 +8,7 @@
 #include "precompiled.h"
 #include <lbcpp/Luape/LuapeLearner.h>
 #include <lbcpp/Luape/LuapeCache.h>
+#include "Function/SpecialLuapeFunctions.h" // for StumpLuapeFunction
 using namespace lbcpp;
 
 /*
@@ -128,13 +129,33 @@ LuapeNodePtr FiniteBoostingWeakLearner::learn(ExecutionContext& context, const B
 
   weakObjective = -DBL_MAX;
   LuapeNodePtr bestWeakNode;
+  ScalarVariableMeanAndVariance objectiveStats;
+  //std::vector< std::pair<double, double> > objectiveAndThresholds(weakNodes.size());
   for (size_t i = 0; i < weakNodes.size(); ++i)
   {
     LuapeNodePtr weakNode = weakNodes[i];
     double objective = computeWeakObjectiveWithEventualStump(context, structureLearner, weakNode, examples); // side effect of weakNode
+    objectiveStats.push(objective);
+    /*double threshold = 0.0;
+    if (weakNode.isInstanceOf<LuapeFunctionNode>())
+    {
+      StumpLuapeFunctionPtr stump = weakNode.staticCast<LuapeFunctionNode>()->getFunction().dynamicCast<StumpLuapeFunction>();
+      if (stump)
+        threshold = stump->getThreshold();
+    }
     if (objective > weakObjective)
       weakObjective = objective, bestWeakNode = weakNode;
+    objectiveAndThresholds[i] = std::make_pair(objective, threshold);*/
   }
+
+/*  for (size_t i = 0; i < weakNodes.size(); ++i)
+  {
+    double objective = objectiveAndThresholds[i].first;
+    double threshold = objectiveAndThresholds[i].second;
+    String name = weakNodes[i]->toShortString();
+    context.resultCallback(name, (objective - objectiveStats.getMean()) / objectiveStats.getStandardDeviation());
+    context.resultCallback(name + " threshold", threshold);
+  }*/
 
   if (!bestWeakNode)
     return LuapeNodePtr();

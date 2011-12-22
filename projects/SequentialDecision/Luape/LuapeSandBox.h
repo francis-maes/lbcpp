@@ -23,7 +23,7 @@ namespace lbcpp
 class LuapeSandBox : public WorkUnit
 {
 public:
-  LuapeSandBox() : maxExamples(0), treeDepth(1), complexity(5), relativeBudget(0.1), miniBatchRelativeSize(0.0), numIterations(1000), verbose(false) {}
+  LuapeSandBox() : maxExamples(0), treeDepth(1), complexity(5), relativeBudget(10.0), miniBatchRelativeSize(0.0), numIterations(1000), verbose(false) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -59,7 +59,7 @@ public:
     
     if (miniBatchRelativeSize == 0.0)
       conditionLearner = laminatingWeakLearner(conditionLearner, relativeBudget);
-    else
+    else if (miniBatchRelativeSize < 1.0)
       conditionLearner = banditBasedWeakLearner(conditionLearner, relativeBudget, miniBatchRelativeSize);
 
     conditionLearner = compositeWeakLearner(constantWeakLearner(), conditionLearner);

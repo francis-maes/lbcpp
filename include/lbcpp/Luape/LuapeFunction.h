@@ -73,7 +73,7 @@ extern LuapeFunctionPtr mulDoubleLuapeFunction();
 extern LuapeFunctionPtr divDoubleLuapeFunction();
 
 // Enumeration
-extern LuapeFunctionPtr equalsConstantEnumLuapeFunction(const Variable& value = Variable());
+extern LuapeFunctionPtr equalsConstantEnumLuapeFunction(EnumerationPtr enumeration = EnumerationPtr(), size_t value = 0);
 
 // Special
 extern LuapeFunctionPtr normalizerLuapeFunction();
@@ -81,9 +81,10 @@ extern LuapeFunctionPtr stumpLuapeFunction(double threshold = 0.0);
 extern LuapeFunctionPtr greaterThanDoubleLuapeFunction();
 
 // Object
-extern LuapeFunctionPtr getVariableLuapeFunction(size_t variableIndex = 0);
+extern LuapeFunctionPtr getVariableLuapeFunction(ClassPtr inputClass = ClassPtr(), size_t variableIndex = 0);
+extern LuapeFunctionPtr getVariableLuapeFunction(ClassPtr inputClass, const String& variableName);
 extern LuapeFunctionPtr getContainerLengthLuapeFunction();
-extern LuapeFunctionPtr getDoubleVectorElementLuapeFunction(size_t index = 0);
+extern LuapeFunctionPtr getDoubleVectorElementLuapeFunction(EnumerationPtr enumeration = EnumerationPtr(), size_t index = 0);
 
 /*
 ** Base classes

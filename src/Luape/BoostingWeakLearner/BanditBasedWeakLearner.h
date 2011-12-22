@@ -45,7 +45,7 @@ public:
 
     size_t numTrainingSamples = structureLearner->getTrainingCache()->getNumSamples();
     size_t miniBatchSize = (size_t)(miniBatchRelativeSize * numTrainingSamples + 0.5);
-    size_t budget = (size_t)(relativeBudget * weakNodes.size() * numTrainingSamples);
+    size_t budget = (size_t)(relativeBudget * numTrainingSamples);
 
     size_t effectiveBudget = 0;
     size_t t;
@@ -79,7 +79,10 @@ public:
     for (size_t i = 0; i < weakNodes.size(); ++i)
     {
       const LuapeNodePtr& weakNode = weakNodes[i];
-      double empiricalWeakObjective = arms[weakNodes[i]].episodeStats.getMean();
+      ArmInfo& arm = arms[weakNodes[i]];
+      double empiricalWeakObjective = arm.episodeStats.getMean();
+      arm.previousEpisodesScore += arm.episodeStats.getCount();
+
       sortedNodes.insert(std::make_pair(empiricalWeakObjective, weakNode));
       if (empiricalWeakObjective > bestWeakObjective)
         bestWeakObjective = empiricalWeakObjective, bestWeakNode = weakNode;
@@ -92,7 +95,7 @@ public:
 
 
     weakObjective = computeWeakObjectiveWithEventualStump(context, structureLearner, bestWeakNode, examples); // side effect on bestWeakNode
-    context.informationCallback(T("Num Steps: ") + String((int)t) + T(" Effective budget: ") + String((int)effectiveBudget) + T(" normalized = ") + String((double)effectiveBudget / (weakNodes.size() * structureLearner->getTrainingCache()->getNumSamples())));
+    context.informationCallback(T("Num Steps: ") + String((int)t) + T(" Effective budget: ") + String((int)effectiveBudget) + T(" normalized = ") + String((double)effectiveBudget / structureLearner->getTrainingCache()->getNumSamples()));
     context.leaveScope(weakObjective);
     return makeContribution(context, structureLearner, bestWeakNode, weakObjective, examples);
   }
@@ -129,8 +132,10 @@ protected:
 
   struct ArmInfo
   {
-    // todo: previous episodes statistics
+    ArmInfo() : previousEpisodesScore(0.0) {}
+
     ScalarVariableStatistics episodeStats;
+    double previousEpisodesScore;
   };
 
   typedef std::map<LuapeNodePtr, ArmInfo> ArmMap;
@@ -138,10 +143,15 @@ protected:
 
   double getArmScore(const ArmInfo& arm) const
   {
-    static const double C = 0.005;
+    static const double C1 = 0.1;
+    //static const double C2 = 0.1;
     if (!arm.episodeStats.getCount())
       return DBL_MAX;
-    return arm.episodeStats.getMean() + C / arm.episodeStats.getCount();
+
+    double res = arm.episodeStats.getMean() + C1 / arm.episodeStats.getCount();
+    //if (arm.previousEpisodesScore)
+    //  res -= C2 / arm.previousEpisodesScore;
+    return res;
   }
 
   struct BanditScoresComparator

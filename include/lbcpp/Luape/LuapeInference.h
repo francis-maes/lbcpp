@@ -19,9 +19,9 @@ namespace lbcpp
 class LuapeInference : public Function
 {
 public:
-  LuapeInference();
+  LuapeInference(LuapeUniversePtr universe = LuapeUniversePtr());
 
-  const LuapeNodeUniversePtr& getUniverse() const
+  const LuapeUniversePtr& getUniverse() const
     {return universe;}
 
   /*
@@ -88,7 +88,7 @@ public:
 protected:
   friend class LuapeInferenceClass;
 
-  LuapeNodeUniversePtr universe;
+  LuapeUniversePtr universe;
   std::vector<LuapeInputNodePtr> inputs;
   std::vector<LuapeFunctionPtr> functions;
   std::set<LuapeNodePtr> activeVariables;
@@ -104,6 +104,9 @@ extern ClassPtr luapeInferenceClass;
 class LuapeRegressor : public LuapeInference
 {
 public:
+  LuapeRegressor(LuapeUniversePtr universe = LuapeUniversePtr())
+    : LuapeInference(universe) {}
+
   virtual size_t getNumRequiredInputs() const;
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
@@ -116,6 +119,9 @@ typedef ReferenceCountedObjectPtr<LuapeRegressor> LuapeRegressorPtr;
 class LuapeBinaryClassifier : public LuapeInference
 {
 public:
+  LuapeBinaryClassifier(LuapeUniversePtr universe = LuapeUniversePtr())
+    : LuapeInference(universe) {}
+
   virtual size_t getNumRequiredInputs() const;
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
@@ -130,6 +136,9 @@ typedef ReferenceCountedObjectPtr<LuapeBinaryClassifier> LuapeBinaryClassifierPt
 class LuapeClassifier : public LuapeInference
 {
 public:
+  LuapeClassifier(LuapeUniversePtr universe = LuapeUniversePtr())
+    : LuapeInference(universe) {}
+
   static EnumerationPtr getLabelsFromSupervision(TypePtr supervisionType);
 
   EnumerationPtr getLabels() const

@@ -92,7 +92,7 @@ LuapeSampleVectorPtr LuapeSampleVector::createCached(IndexSetPtr indices, const 
 /*
 ** LuapeSamplesCache
 */
-LuapeSamplesCache::LuapeSamplesCache(LuapeNodeUniversePtr universe, const std::vector<LuapeInputNodePtr>& inputs, size_t size, size_t maxCacheSizeInMb)
+LuapeSamplesCache::LuapeSamplesCache(LuapeUniversePtr universe, const std::vector<LuapeInputNodePtr>& inputs, size_t size, size_t maxCacheSizeInMb)
   : universe(universe), inputNodes(inputs), maxCacheSize(maxCacheSizeInMb * 1024 * 1024), actualCacheSize(0), allIndices(new IndexSet(0, size))
 {
   computingTimeThresholdToCache = 0.1; // 0.1 ms is the minimum computing time spent before considering entering cache
@@ -241,14 +241,14 @@ void LuapeSamplesCache::displayCacheInformation(ExecutionContext& context)
   /*
   ** Infos by Node type
   */
-  std::map<LuapeNodeUniverse::NodeTypeKey, NodeTypeCache> infoByKey;
+  std::map<LuapeUniverse::NodeTypeKey, NodeTypeCache> infoByKey;
   for (NodeCacheMap::const_iterator it = m.begin(); it != m.end(); ++it)
   {
-    LuapeNodeUniverse::NodeTypeKey key = LuapeNodeUniverse::makeNodeStatisticsKey(it->first);
+    LuapeUniverse::NodeTypeKey key = LuapeUniverse::makeNodeStatisticsKey(it->first);
     infoByKey[key].observe(it->second);
   }
 
-  for (std::map<LuapeNodeUniverse::NodeTypeKey, NodeTypeCache>::const_iterator it = infoByKey.begin();
+  for (std::map<LuapeUniverse::NodeTypeKey, NodeTypeCache>::const_iterator it = infoByKey.begin();
         it != infoByKey.end(); ++it)
   {
     String info = it->first.second ? it->first.second->getName() : it->first.first->getName();

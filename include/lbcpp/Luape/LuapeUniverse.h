@@ -9,20 +9,18 @@
 #ifndef LBCPP_LUAPE_UNIVERSE_H_
 # define LBCPP_LUAPE_UNIVERSE_H_
 
+# include "predeclarations.h"
 # include "LuapeFunction.h"
 # include "../Data/RandomVariable.h"
 
 namespace lbcpp
 {
 
-class LuapeNodeUniverse : public Object
+class LuapeUniverse : public Object
 {
 public:
-  void addInputNode(const LuapeInputNodePtr& inputNode)
-    {inputNodes.push_back(inputNode);}
-
-  LuapeFunctionNodePtr makeFunctionNode(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs);
-  LuapeFunctionNodePtr makeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& input)
+  LuapeNodePtr makeFunctionNode(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs);
+  LuapeNodePtr makeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& input)
     {return makeFunctionNode(function, std::vector<LuapeNodePtr>(1, input));}
 
   LuapeFunctionPtr makeFunction(ClassPtr functionClass, const std::vector<Variable>& arguments);
@@ -34,9 +32,12 @@ public:
 
   static NodeTypeKey makeNodeStatisticsKey(const LuapeNodePtr& node);
 
+  virtual LuapeNodePtr canonizeNode(const LuapeNodePtr& node)
+    {return node;}
+
   lbcpp_UseDebuggingNewOperator
 
-private:
+protected:
   friend class LuapeNodeUniverseClass;
 
   typedef std::pair<ClassPtr, std::vector<Variable> >  FunctionKey;
@@ -44,10 +45,8 @@ private:
   FunctionsMap functions;
 
   typedef std::pair<LuapeFunctionPtr, std::vector<LuapeNodePtr> > FunctionNodeKey;
-  typedef std::map<FunctionNodeKey, LuapeFunctionNodePtr> FunctionNodesMap;
+  typedef std::map<FunctionNodeKey, LuapeNodePtr> FunctionNodesMap;
   FunctionNodesMap functionNodes;
-
-  std::vector<LuapeInputNodePtr> inputNodes;
 
   // contain values for LuapeFunctionNode, LuapeTestNode, LuapeSequenceNode
   // keys for LuapeFunctionNode: (luapeFunctionNodeClass, luapeFunctionClass)
@@ -55,7 +54,7 @@ private:
   std::map<std::pair<ClassPtr, ClassPtr>, ScalarVariableStatistics> nodesComputingTimeStatistics;
 };
 
-typedef ReferenceCountedObjectPtr<LuapeNodeUniverse> LuapeNodeUniversePtr;
+typedef ReferenceCountedObjectPtr<LuapeUniverse> LuapeUniversePtr;
 
 #if 0
 class LuapeNodeKeysMap : public Object

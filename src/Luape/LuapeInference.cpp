@@ -14,9 +14,11 @@ using namespace lbcpp;
 /*
 ** LuapeInference
 */
-LuapeInference::LuapeInference()
-  : universe(new LuapeNodeUniverse())
+LuapeInference::LuapeInference(LuapeUniversePtr universe)
+  : universe(universe)
 {
+  if (!universe)
+    this->universe = new LuapeUniverse();
 }
 
 LuapeSamplesCachePtr LuapeInference::createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data) const

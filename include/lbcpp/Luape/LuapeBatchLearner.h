@@ -57,7 +57,7 @@ public:
     if (validationData.size())
       context.informationCallback(String((int)validationData.size()) + T(" validation examples"));
 
-    LuapeNodeUniversePtr universe = function->getUniverse();
+    LuapeUniversePtr universe = function->getUniverse();
 
     ScalarVariableMean lastIterationsValidationScore;
     double bestValidationScore = DBL_MAX;
@@ -93,12 +93,12 @@ public:
       //  context.informationCallback(T("Graph: ") + learner->getGraph()->toShortString());
       context.progressCallback(new ProgressionState(i+1, maxIterations, T("Iterations")));
       
-    /*  if ((i+1) % 10 == 0)
+      if ((i+1) % 10 == 0)
       {
         context.enterScope(T("Most important nodes"));
         displayMostImportantNodes(context, function);
         context.leaveScope();
-      }*/
+      }
     }
     context.leaveScope();
 
@@ -116,9 +116,10 @@ public:
   
   void getImportances(const LuapeNodePtr& node, std::map<LuapeNodePtr, double>& res) const
   {
-    if (node)
+    if (node && res.find(node) == res.end())
     {
       res[node] = node->getImportance();
+      node->setImportance(0.0); // TEST !!!
       size_t n = node->getNumSubNodes();
       for (size_t i = 0; i < n; ++i)
         getImportances(node->getSubNode(i), res);
@@ -142,20 +143,18 @@ public:
     
     size_t i = 0;
     function->clearActiveVariables();
-    for (std::multimap<double, LuapeNodePtr>::reverse_iterator it = nodeImportanceMap.rbegin(); it != nodeImportanceMap.rend(); ++it, ++i)
+    for (std::multimap<double, LuapeNodePtr>::reverse_iterator it = nodeImportanceMap.rbegin(); it != nodeImportanceMap.rend() && i < 100; ++it, ++i)
     {
+      if (it->first <= 0.0)
+        break;
+
       const LuapeNodePtr& node = it->second;
-      if (i < 20)
-        context.informationCallback(T("# ") + String((int)i + 1) + T(": ") + node->toShortString() + T(" [") + String(it->first * 100.0 / importanceSum, 2) + T("%]"));
+      context.informationCallback(T("# ") + String((int)i + 1) + T(": ") + node->toShortString() + T(" [") + String(it->first * 100.0 / importanceSum, 2) + T("%]"));
 
       /// !!! TEST
       /// !!!
-      if (!node.isInstanceOf<LuapeInputNode>())
-      {
+      if (!node.isInstanceOf<LuapeInputNode>() && function->getNumActiveVariables() < 10)
         function->addActiveVariable(node);
-        if (function->getNumActiveVariables() >= 20)
-          break;
-      }
     }
   }
 
