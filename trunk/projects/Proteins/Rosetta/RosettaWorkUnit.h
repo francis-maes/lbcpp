@@ -339,7 +339,7 @@ public:
       RandomGeneratorPtr random = new RandomGenerator();
       for (int i = 0; i < targets.size(); i++)
       {
-        ProteinPtr proteinTarget = Protein::createFromXml(context, *targets[i]);
+        ProteinPtr proteinTarget = Protein::createFromPDB(context, *targets[i]);
         core::pose::PoseOP targetPose;
         convertProteinToPose(context, proteinTarget, targetPose);
 
