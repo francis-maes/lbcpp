@@ -99,8 +99,12 @@ public:
     double frequenceVerbosity = 0.01;
     std::vector<ScalarVariableMeanAndVariancePtr> meansAndVariances;
 
+    context.enterScope(T("Optimization"));
+
     for (size_t i = 0; i < results.size(); i++)
     {
+      context.progressCallback(new ProgressionState((size_t)(i + 1), results.size(), T("Proteins")));
+
       ProteinPtr currentProtein = Protein::createFromXml(context, (*results[i]));
       String currentName = currentProtein->getName();
 
@@ -138,6 +142,8 @@ public:
 
       context.leaveScope(String("Done."));
     }
+
+    context.leaveScope();
 
     DenseDoubleVectorPtr energies = new DenseDoubleVector(meansAndVariances.size(), -1);
 

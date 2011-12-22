@@ -334,7 +334,7 @@ public:
 
       juce::OwnedArray<File> targets;
       targetFile.findChildFiles(targets, File::findFiles, false,
-          (*references[j]).getFileNameWithoutExtension() + T("*.xml"));
+          (*references[j]).getFileNameWithoutExtension() + T("*.pdb"));
 
       RandomGeneratorPtr random = new RandomGenerator();
       for (int i = 0; i < targets.size(); i++)

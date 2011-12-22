@@ -1,42 +1,34 @@
 TODO LBCPP
 ==========
 
+General
+-------
 - retirer les ifdef LBCPP_PROTEIN_ROSETTA
   - MoverSampler
-    - reorganiser (passer ProteinMoverSampler dans Data/ProteinMoverSampler)
-    - creer dossier dans Data pour accueillir les samplers
-  - creer Pose.h et Pose.cpp
+    - reorganiser samplers
+      - passer tous les samplers dans Data/ProteinMoverSampler
+      - faire un tri dans les samplers et les simplifier
+  - creer Pose avec generation des features 
 - reecrire ProteinOptimizationWorkUnit
-- apprentissage online
+- utiliser Distributed WU
 
+- finir DistributableWorkUnit.h
+
+Optim
+-----
 v tuner les parameters SA
 - essayer SA avec plusieurs noeuds ouverts
+- mean shift
 
-- changer noms ProteinMover et ProteinMoverSampler en PoseMover et PoseMoverSampler
+Apprentissage
+-------------
+- relancer optim avec en et mtm, mais en variant les parametres du learner
+- apprentissage online
 
 TODO NIC3
 =========
-
-v depliement proteines
-  v relancer mtm
-  v relancer en
-  v relancer mtm et en
-
-v relancer optim sur test avec resultats unfold
-
+  
 - lancer EDA sur optim_new_learn_all_it1
-
-- depliement
-  v mettre un facteur de depliement 1.1 ou 1.2 + plus diterations
-    v essayer sur energie (facteur ne change pas grand chose)
-    v essayer sur mtm (facteur changera quelque chose)
-    v laisser tomber enmtm
-  v relancer optimisation avec nouveaux couples struct/movers
-    v 1.1
-    v 1.2
-    v 1.5
-  - analyser raisons bonnes performances 1.5 mtm (pas beaucoup de structures? ou bonnes structures intermédiaires)
-
 
 TODO Rosetta
 ============

@@ -1,7 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <library name="ProteinRosettaWorkUnit" directory="Rosetta/WorkUnit">
-
+  
+  <class name="DistributableWorkUnit" base="WorkUnit" abstract="yes">
+    <variable type="String" name="name"/>
+    <variable type="CompositeWorkUnit" name="workUnits"/>
+  </class>
+  
+  <class name="DistributeToClusterWorkUnit" base="WorkUnit">
+    <variable type="String" name="clusterLogin"/>
+    <variable type="PositiveInteger" name="memory"/>
+    <variable type="PositiveInteger" name="time"/>
+    <variable type="DistributableWorkUnit" name="distributable"/>
+    <variable type="String" name="localHostLogin"/>
+    <variable type="String" name="remoteHostName"/>
+    <variable type="PositiveInteger" name="remoteHostPort"/>
+  </class>
+  
+  <class name="TestDistribWorkUnit" base="DistributableWorkUnit">
+    <constructor arguments="String&amp; name"/>
+  </class>
+  
   <class name="UnfoldProteinsWorkUnit" base="WorkUnit">
     <variable type="String" name="referenceDirectory" description="Directory where one can find the real proteins"/>
     <variable type="String" name="outputDirectoryStructures" description="Directory where to store the intermediate structures"/>
@@ -50,10 +69,10 @@
     <variable type="PositiveInteger" name="numIterations"/>
   </class>
   
-  <class name="ProteinEDAOptimizationWorkUnit" base="WorkUnit">
-    <variable type="PositiveInteger" name="numLearning"/>
-    <variable type="PositiveInteger" name="numSamplesPerIteration"/>
+  <class name="ProteinEDAOptimizationWorkUnit" base="WorkUnit">    
     <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="PositiveInteger" name="numSamplesPerIteration"/>
+    <variable type="PositiveInteger" name="numLearning"/>
   </class>
   
 </library>
