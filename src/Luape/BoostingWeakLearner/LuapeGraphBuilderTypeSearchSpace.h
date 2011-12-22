@@ -284,7 +284,7 @@ private:
           inputTypes[i] = state->stack[state->getStackSize() - numInputs + i];
 
         std::vector<LuapeFunctionPtr> functions;
-        enumerateFunctionVariables(function, inputTypes, tmp, 0, functions);
+        enumerateFunctionVariables(inference->getUniverse(), function, inputTypes, tmp, 0, functions);
 
         for (size_t j = 0; j < functions.size(); ++j)
           applyFunctionAndBuildSuccessor(inference, state, functions[j], nodeTypes, maxDepth);
@@ -292,15 +292,10 @@ private:
     }
   }
 
-  void enumerateFunctionVariables(const LuapeFunctionPtr& function, const std::vector<TypePtr>& inputTypes, std::vector<Variable>& variables, size_t variableIndex, std::vector<LuapeFunctionPtr>& res)
+  void enumerateFunctionVariables(const LuapeNodeUniversePtr& universe, const LuapeFunctionPtr& function, const std::vector<TypePtr>& inputTypes, std::vector<Variable>& variables, size_t variableIndex, std::vector<LuapeFunctionPtr>& res)
   {
     if (variableIndex == variables.size())
-    {
-      LuapeFunctionPtr fun = function->cloneAndCast<LuapeFunction>();
-      for (size_t i = 0; i < variables.size(); ++i)
-        fun->setVariable(i, variables[i]);
-      res.push_back(fun);
-    }
+      res.push_back(universe->makeFunction(function->getClass(), variables));
     else
     {
       ContainerPtr values = function->getVariableCandidateValues(variableIndex, inputTypes);
@@ -310,7 +305,7 @@ private:
         for (size_t i = 0; i < n; ++i)
         {
           variables[variableIndex] = values->getElement(i);
-          enumerateFunctionVariables(function, inputTypes, variables, variableIndex + 1, res);
+          enumerateFunctionVariables(universe, function, inputTypes, variables, variableIndex + 1, res);
         }
       }
     }

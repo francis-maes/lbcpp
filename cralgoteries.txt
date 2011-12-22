@@ -1,4 +1,5 @@
-* New weak learner: BanditBasedWeakLearner
+
+* Tester PUCB: http://gauss.ececs.uc.edu/Workshops/isaim2010/papers/rosin.pdf
 * Proteins: function canonizeNode() 
  
 Luape-Other:

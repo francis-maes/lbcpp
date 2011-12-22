@@ -25,10 +25,11 @@
     <variable type="File" name="trainFile"/>
     <variable type="File" name="testFile"/>
     <variable type="PositiveInteger" name="maxExamples"/>
-    <variable type="PositiveInteger" name="maxSteps"/>
-    <variable type="PositiveInteger" name="budgetPerIteration"/>
-    <variable type="PositiveInteger" name="maxIterations"/>
     <variable type="PositiveInteger" name="treeDepth"/>
+    <variable type="PositiveInteger" name="complexity"/>
+    <variable type="Double" name="relativeBudget"/>
+    <variable type="Double" name="miniBatchRelativeSize"/>
+    <variable type="PositiveInteger" name="numIterations"/>
     <variable type="Boolean" name="verbose"/>
     <variable type="File" name="plotFile"/>
   </class>

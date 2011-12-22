@@ -58,7 +58,7 @@ public:
     }
   }*/
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples)
   {
     const LuapeGraphPtr& graph = structureLearner->getGraph();
 

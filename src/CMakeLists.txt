@@ -647,6 +647,8 @@ SET(LBCPP_LUAPE_SOURCES
   Luape/LuapeNode.cpp
   ../include/lbcpp/Luape/LuapeInference.h
   Luape/LuapeInference.cpp
+  ../include/lbcpp/Luape/BoostingWeakLearner.h
+  Luape/BoostingWeakLearner.cpp
   ../include/lbcpp/Luape/LuapeLearner.h
   Luape/LuapeLearner.cpp
   ../include/lbcpp/Luape/LuapeBatchLearner.h
@@ -680,6 +682,7 @@ SET(LBCPP_LUAPE_BOOSTING_WEAK_LEARNER_SOURCES
   Luape/BoostingWeakLearner/BinaryTreeWeakLearner.h
   Luape/BoostingWeakLearner/CompositeWeakLearner.h
   Luape/BoostingWeakLearner/LaminatingWeakLearner.h
+  Luape/BoostingWeakLearner/BanditBasedWeakLearner.h
   Luape/BoostingWeakLearner/LuapeGraphBuilder.h
   Luape/BoostingWeakLearner/LuapeGraphBuilderTypeSearchSpace.h
   Luape/BoostingWeakLearner/PolicyBasedWeakLearner.h  

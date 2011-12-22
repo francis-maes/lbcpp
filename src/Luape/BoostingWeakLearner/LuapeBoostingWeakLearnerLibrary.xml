@@ -25,6 +25,7 @@
   </class>
 
   <!-- Weak Learners -->
+  <class name="DecoratorBoostingWeakLearner" base="BoostingWeakLearner" abstract="yes"/>
   <class name="FiniteBoostingWeakLearner" base="BoostingWeakLearner" abstract="yes"/>
   <class name="StochasticFiniteBoostingWeakLearner" base="FiniteBoostingWeakLearner" abstract="yes">
     <variable type="PositiveInteger" name="numWeakNodes"/>
@@ -59,10 +60,15 @@
     <variable type="ObjectVector[BoostingWeakLearner]" name="weakLearners"/>
   </class>
 
-  <class name="LaminatingWeakLearner" base="BoostingWeakLearner">
-    <constructor arguments="BoostingWeakLearnerPtr weakLearner, size_t numInitialExamples"/>
-    <variable type="BoostingWeakLearner" name="weakLearner"/>
-    <variable type="PositiveInteger" name="numInitialExamples"/>
+  <class name="LaminatingWeakLearner" base="DecoratorBoostingWeakLearner">
+    <constructor arguments="BoostingWeakLearnerPtr weakLearner, double relativeBudget"/>
+    <variable type="Double" name="relativeBudget"/>
+  </class>
+
+  <class name="BanditBasedWeakLearner" base="DecoratorBoostingWeakLearner">
+    <constructor arguments="BoostingWeakLearnerPtr weakLearner, double relativeBudget, double miniBatchRelativeSize"/>
+    <variable type="Double" name="relativeBudget"/>
+    <variable type="Double" name="miniBatchRelativeSize"/>
   </class>
 
   <class name="AdaptativeSamplingWeakLearner" base="StochasticFiniteBoostingWeakLearner">

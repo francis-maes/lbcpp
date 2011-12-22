@@ -183,7 +183,7 @@ public:
   }
 
 #if 0
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective)
   {
     static const bool computeOptimalLearner = false;
     jassert(examples.size());

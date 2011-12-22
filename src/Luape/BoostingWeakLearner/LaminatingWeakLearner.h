@@ -15,37 +15,33 @@
 namespace lbcpp
 {
 
-class LaminatingWeakLearner : public BoostingWeakLearner
+class LaminatingWeakLearner : public DecoratorBoostingWeakLearner
 {
 public:
-  LaminatingWeakLearner(BoostingWeakLearnerPtr weakLearner, size_t numInitialExamples)
-    : weakLearner(weakLearner), numInitialExamples(numInitialExamples)  {}
+  LaminatingWeakLearner(BoostingWeakLearnerPtr weakLearner, double relativeBudget)
+    : DecoratorBoostingWeakLearner(weakLearner), relativeBudget(relativeBudget)  {}
   LaminatingWeakLearner() {}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
-    {return weakLearner->initialize(context, function);}
-  
-  virtual void observeObjectiveValue(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
-    {/*weakLearner->observeObjectiveValue(context, structureLearner, weakNode, examples, weakObjective);*/} // tmp !!
-
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective) const
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective)
   {
-    context.enterScope(T("Generating candidate weak learners"));
+    context.enterScope("Laminating");
+
     // make initial weak learners
     std::vector<LuapeNodePtr> weakNodes;
-    bool ok = weakLearner->getCandidateWeakNodes(context, structureLearner, weakNodes);
-    context.leaveScope(weakNodes.size());
-    if (!ok)
-    {
-      context.errorCallback(T("Could not get finite set of candidate weak nodes"));
+    if (!getDecoratedCandidateWeakNodes(context, structureLearner, weakNodes))
       return LuapeNodePtr();
-    }
-
-    context.enterScope("Laminating");
     std::vector<std::pair<LuapeNodePtr, double> > weakNodesByScore;
     weakNodesByScore.resize(weakNodes.size());
     for (size_t i = 0; i < weakNodes.size(); ++i)
       weakNodesByScore[i] = std::make_pair(weakNodes[i], 0.0);
+
+    // compute number of initial examples
+    // W = numWeak, N = num examples
+    // W * N0 * log2(W) = relativeBudget * W * N
+    // N0 = relativeBudget * N / log2(W)
+    size_t numInitialExamples = (size_t)(structureLearner->getTrainingCache()->getNumSamples() * relativeBudget / log2((double)weakNodes.size()));
+
+    size_t effectiveBudget = 0;
 
     IndexSetPtr examplesSubset;
     if (numInitialExamples >= examples->size())
@@ -54,17 +50,8 @@ public:
     {
       // make initial examples subset
       examplesSubset = new IndexSet();
-      for (size_t i = 1; i <= 3; ++i) // expand in 3 pieces to add some stochasticity
-        examplesSubset->randomlyExpandUsingSource(context, (numInitialExamples * i) / 3, examples, false);
+      examplesSubset->randomlyExpandUsingSource(context, numInitialExamples, examples);
     }
-/*
-    std::vector<size_t> examplesOrder;
-    context.getRandomGenerator()->sampleOrder(examples->size(), examplesOrder);
-    std::vector<size_t> examplesSubset;
-    examplesSubset.reserve(examples->size());
-    examplesSubset.resize(numInitialExamples);
-    for (size_t i = 0; i < examplesSubset.size(); ++i)
-      examplesSubset[i] = examples[examplesOrder[i]];*/
 
     // laminating main loop
     size_t numWeakLearners = weakNodes.size();
@@ -79,6 +66,7 @@ public:
         double objective = computeWeakObjectiveWithEventualStump(context, structureLearner, weakNode, examplesSubset); // side effect on weakNode (that we do not keep)
         weakNodesByScore[i].second = objective;
       }
+      effectiveBudget += numWeakLearners * examplesSubset->size();
       // sort by decreasing score
       std::sort(weakNodesByScore.begin(), weakNodesByScore.begin() + numWeakLearners, SortDoubleValuesOperator());
 
@@ -105,23 +93,18 @@ public:
       }
       else
         examplesSubset->randomlyExpandUsingSource(context, numExamples, examples);
-        //for (size_t i = previousNumExamples; i < numExamples; ++i)
-        //examplesSubset[i] = examples[examplesOrder[i]];
     }
     LuapeNodePtr weakNode = weakNodesByScore[0].first;
     weakObjective = computeWeakObjectiveWithEventualStump(context, structureLearner, weakNode, examples); // side effect on weakNode
+    context.informationCallback(T("Effective budget: ") + String((int)effectiveBudget) + T(" normalized = ") + String((double)effectiveBudget / (weakNodes.size() * structureLearner->getTrainingCache()->getNumSamples())));
     context.leaveScope(weakObjective);
-
-    weakLearner->observeObjectiveValue(context, structureLearner, weakNodesByScore[0].first, examples, 1.0); // TMP !!
-
     return makeContribution(context, structureLearner, weakNode, weakObjective, examples);
   }
 
 protected:
   friend class LaminatingWeakLearnerClass;
 
-  BoostingWeakLearnerPtr weakLearner;
-  size_t numInitialExamples;
+  double relativeBudget;
 
   struct SortDoubleValuesOperator
   {

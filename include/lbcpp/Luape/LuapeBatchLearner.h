@@ -10,6 +10,7 @@
 # define LBCPP_LUAPE_BATCH_LEARNER_H_
 
 # include "LuapeLearner.h"
+# include "LuapeCache.h"
 # include <lbcpp/Learning/BatchLearner.h>
 
 namespace lbcpp
