@@ -72,21 +72,26 @@ public:
     RandomGeneratorPtr random = new RandomGenerator();
 
 # ifdef LBCPP_PROTEIN_ROSETTA
-    Rosetta ros;
-    ros.init(context, false);
+    std::cout << "arg : " << arg << std::endl;
+    std::cout << "value : " << value << std::endl;
+    std::cout << "proteinsDir : " << proteinsDir << std::endl;
+    std::cout << "mover : " << moverEnter->toString() << std::endl;
 
-    PosePtr p = new Pose(context.getFile(T("2K47.pdb")));
-    PosePtr p2 = new Pose(p);
-
-    std::cout << "energy : " << p->getEnergy() << std::endl;
-
-    p->setPhi(2, p->getPhi(2) + 15);
-    p2->setPhi(2, p2->getPhi(2) - 15);
-
-    std::cout << "mov energy p : " << p->getCorrectedEnergy() << std::endl;
-    std::cout << "mov energy p2 : " << p2->getCorrectedEnergy() << std::endl;
-
-    std::cout << "length p : " << p->getLength() << std::endl;
+    //    Rosetta ros;
+//    ros.init(context, false);
+//
+//    PosePtr p = new Pose(context.getFile(T("2K47.pdb")));
+//    PosePtr p2 = new Pose(p);
+//
+//    std::cout << "energy : " << p->getEnergy() << std::endl;
+//
+//    p->setPhi(2, p->getPhi(2) + 15);
+//    p2->setPhi(2, p2->getPhi(2) - 15);
+//
+//    std::cout << "mov energy p : " << p->getCorrectedEnergy() << std::endl;
+//    std::cout << "mov energy p2 : " << p2->getCorrectedEnergy() << std::endl;
+//
+//    std::cout << "length p : " << p->getLength() << std::endl;
     //
     //    ResiduePtr res = prot->getTertiaryStructure()->getResidue(1);
     //

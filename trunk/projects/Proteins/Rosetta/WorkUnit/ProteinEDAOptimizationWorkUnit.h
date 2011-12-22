@@ -21,19 +21,17 @@
 
 namespace lbcpp
 {
-
 typedef struct PoseAndScore
 {
-  PosePtr pose;
   double energy;
   DenseDoubleVectorPtr phis;
   DenseDoubleVectorPtr psis;
   PoseAndScore()
-    : pose(NULL), energy(-1), phis(DenseDoubleVectorPtr()), psis(DenseDoubleVectorPtr()) {}
-  PoseAndScore(PosePtr& p, double en, DenseDoubleVectorPtr& phi, DenseDoubleVectorPtr& psi)
-    : pose(p), energy(en), phis(phi), psis(psi) {}
+    : energy(-1), phis(DenseDoubleVectorPtr()), psis(DenseDoubleVectorPtr()) {}
+  PoseAndScore(double en, DenseDoubleVectorPtr& phi, DenseDoubleVectorPtr& psi)
+    : energy(en), phis(phi), psis(psi) {}
   PoseAndScore(const PoseAndScore& x)
-    : pose(x.pose), energy(x.energy), phis(x.phis), psis(x.psis) {}
+    : energy(x.energy), phis(x.phis), psis(x.psis) {}
 } PoseAndScore;
 
 bool comparePoses(PoseAndScore first, PoseAndScore second)
@@ -54,24 +52,30 @@ public:
 
     context.enterScope(T("This protein"));
 
-    PosePtr pose = new Pose(T("AAAAAAAAAA"));
+    PosePtr pose = new Pose(T("AAAAA"));
     PosePtr minPose = new Pose(pose);
+    PosePtr tempPose = new Pose(pose);
     double minEnergy = minPose->getEnergy();
 
-    std::vector<ScalarVariableMean> phiMeans(pose->getLength());
-    std::vector<ScalarVariableMean> psiMeans(pose->getLength());
+    DenseDoubleVectorPtr phiMeans = new DenseDoubleVector(pose->getLength(), 0.0);
+    DenseDoubleVectorPtr psiMeans = new DenseDoubleVector(pose->getLength(), 0.0);
+    DenseDoubleVectorPtr phiVariances = new DenseDoubleVector(pose->getLength(), 50.0);
+    DenseDoubleVectorPtr psiVariances = new DenseDoubleVector(pose->getLength(), 50.0);
+
+    DenseDoubleVectorPtr phis;
+    DenseDoubleVectorPtr psis;
+    std::list<PoseAndScore> scores;
+    ScalarVariableMean meanEnergyAtThisIteration;
 
     for (size_t i = 0; i < numIterations; i++)
     {
-      std::list<PoseAndScore> scores;
-
-      ScalarVariableMean meanEnergyAtThisIteration;
+      scores.clear();
+      meanEnergyAtThisIteration.clear();
 
       for (size_t j = 0; j < numSamplesPerIteration; j++)
       {
-        PosePtr tempPose = new Pose(pose);
-        DenseDoubleVectorPtr phis = sampleAngles(random, phiMeans);
-        DenseDoubleVectorPtr psis = sampleAngles(random, psiMeans);
+        phis = sampleAngles(random, phiMeans, phiVariances);
+        psis = sampleAngles(random, psiMeans, psiVariances);
 
         for (size_t k = 0; k < tempPose->getLength(); k++)
         {
@@ -88,11 +92,18 @@ public:
           minEnergy = energy;
         }
 
-        PoseAndScore sc(tempPose, energy, phis, psis);
+        PoseAndScore sc(energy, phis, psis);
         scores.push_back(sc);
       }
 
+      // sorting
       scores.sort(comparePoses);
+
+      // learn
+      learnAnglesSimpleGaussian(scores, phiMeans, psiMeans, phiVariances, psiVariances);
+//      learnAnglesSimpleGaussian(scores, phiMeans, psiMeans);
+
+      // verbosity
       context.progressCallback(new ProgressionState((size_t)(i + 1), numIterations,
           T("Interations")));
 
@@ -104,77 +115,9 @@ public:
 
       minEnergies[i].push(minEnergy);
       averageEnergies[i].push(meanEnergyAtThisIteration.getMean());
-
-      // learn
-      for (size_t k = 0; k < phiMeans.size(); k++)
-      {
-        phiMeans[k].clear();
-        psiMeans[k].clear();
-      }
-
-      for (size_t j = 0; j < numLearning; j++)
-      {
-        PoseAndScore tempSc(scores.front());
-        for (size_t k = 0; k < pose->getLength(); k++)
-        {
-          phiMeans[k].push(tempSc.phis->getValue(k));
-          psiMeans[k].push(tempSc.psis->getValue(k));
-        }
-
-        scores.pop_front();
-      }
-
     }
     context.leaveScope();
 
-    //    juce::OwnedArray<File> results;
-    //    inputFile.findChildFiles(results, File::findFiles, false, T("*.xml"));
-//
-//    double frequenceVerbosity = 0.01;
-//    std::vector<ScalarVariableMeanAndVariancePtr> meansAndVariances;
-//
-//    for (size_t i = 0; i < results.size(); i++)
-//    {
-//      ProteinPtr currentProtein = Protein::createFromXml(context, (*results[i]));
-//      String currentName = currentProtein->getName();
-//
-//      convertProteinToPose(context, currentProtein, currentPose);
-//      if (currentPose() == NULL)
-//        continue;
-//
-//      core::pose::PoseOP initialPose;
-//      initializeProteinStructure(currentPose, initialPose);
-//      context.enterScope(T("Optimizing protein : ") + currentName);
-//
-//      RosettaWorkerPtr worker = new RosettaWorker(initialPose, learningPolicy, residueFeatures,
-//          energyFeatures, histogramFeatures, distanceFeatures);
-//      ContainerPtr addWorkers = inputWorkers;
-//      ContainerPtr addMovers = inputMovers;
-//      // learn
-//      worker->learn(context, addWorkers, addMovers);
-//
-//      RandomGeneratorPtr random = new RandomGenerator();
-//      DenseDoubleVectorPtr energiesAtIteration;
-//      ProteinSimulatedAnnealingOptimizerPtr optimizer = new ProteinSimulatedAnnealingOptimizer(
-//          initialTemperature, finalTemperature, 50, numIterations, 5, currentName,
-//          frequenceVerbosity, numOutputFiles, outputFile);
-//
-//      optimizer->apply(context, worker, random, energiesAtIteration);
-//
-//      for (size_t j = 0; j < energiesAtIteration->getNumValues(); j++)
-//        if (j >= meansAndVariances.size())
-//        {
-//          meansAndVariances.push_back(new ScalarVariableMeanAndVariance());
-//          meansAndVariances[j]->push(energiesAtIteration->getValue(j));
-//        }
-//        else
-//          meansAndVariances[j]->push(energiesAtIteration->getValue(j));
-//
-//      context.leaveScope(String("Done."));
-//    }
-//
-//    DenseDoubleVectorPtr energies = new DenseDoubleVector(meansAndVariances.size(), -1);
-//
     // export results
     context.enterScope(T("Results"));
     for (size_t k = 0; k < minEnergies.size(); k++)
@@ -192,23 +135,81 @@ public:
     return Variable();
   }
 
-  DenseDoubleVectorPtr sampleAngles(RandomGeneratorPtr& random,
-      std::vector<ScalarVariableMean>& means)
+  double checkAngleValidity(double angle)
+    {return angle - 360 * std::floor((angle + 180) / 360.0);}
+
+  DenseDoubleVectorPtr sampleAngles(RandomGeneratorPtr& random, DenseDoubleVectorPtr& means,
+      DenseDoubleVectorPtr& vars)
   {
-    DenseDoubleVectorPtr values = new DenseDoubleVector(means.size(), 0);
+    DenseDoubleVectorPtr values = new DenseDoubleVector(means->getNumElements(), 0);
 
     for (size_t i = 0; i < values->getNumElements(); i++)
-      values->setValue(i, random->sampleDoubleFromGaussian(means[i].getMean(), 150));
+    {
+      double sample = random->sampleDoubleFromGaussian(means->getValue(i), vars->getValue(i));
+      values->setValue(i, checkAngleValidity(sample));
+    }
 
     return values;
+  }
+
+  void learnAnglesSimpleGaussian(std::list<PoseAndScore>& scores, DenseDoubleVectorPtr& phiMeans,
+      DenseDoubleVectorPtr& psiMeans, DenseDoubleVectorPtr phiVariances = DenseDoubleVectorPtr(),
+      DenseDoubleVectorPtr psiVariances = DenseDoubleVectorPtr())
+  {
+    size_t numAvailableSamples = scores.size();
+    std::vector<ScalarVariableMeanAndVariance> phiMeansCalculator(phiMeans->getNumElements());
+    std::vector<ScalarVariableMeanAndVariance> psiMeansCalculator(psiMeans->getNumElements());
+
+    for (size_t j = 0; (j < numLearning) && (j < numAvailableSamples); j++)
+    {
+      PoseAndScore *tempSc = &scores.front();
+
+      for (size_t k = 0; k < phiMeans->getNumElements(); k++)
+      {
+        phiMeansCalculator[k].push(tempSc->phis->getValue(k));
+        psiMeansCalculator[k].push(tempSc->psis->getValue(k));
+      }
+
+      scores.pop_front();
+    }
+
+    for (size_t k = 0; k < phiMeans->getNumElements(); k++)
+    {
+      phiMeans->setValue(k, phiMeansCalculator[k].getMean());
+      psiMeans->setValue(k, psiMeansCalculator[k].getMean());
+      if (phiVariances.get() != NULL)
+        phiVariances->setValue(k, phiMeansCalculator[k].getVariance());
+      if (psiVariances.get() != NULL)
+        psiVariances->setValue(k, psiMeansCalculator[k].getVariance());
+    }
+  }
+
+  void learnAnglesMeanShift(std::list<PoseAndScore>& scores, DenseDoubleVectorPtr& phiMeans,
+      DenseDoubleVectorPtr& psiMeans, DenseDoubleVectorPtr phiVariances = DenseDoubleVectorPtr(),
+      DenseDoubleVectorPtr psiVariances = DenseDoubleVectorPtr())
+  {
+//    size_t numAvailableSamples = scores.size();
+//
+//    for (size_t j = 0; (j < numLearning) && (j < numAvailableSamples); j++)
+//    {
+//      PoseAndScore tempSc(scores.front());
+//
+//      for (size_t k = 0; k < phiMeans.size(); k++)
+//      {
+//        phiMeans[k].push(tempSc.phis->getValue(k));
+//        psiMeans[k].push(tempSc.psis->getValue(k));
+//      }
+//
+//      scores.pop_front();
+//    }
   }
 
 protected:
   friend class ProteinEDAOptimizationWorkUnitClass;
 
-  size_t numLearning;
-  size_t numSamplesPerIteration;
   size_t numIterations;
+  size_t numSamplesPerIteration;
+  size_t numLearning;
 };
 
 }; /* namespace lbcpp */
