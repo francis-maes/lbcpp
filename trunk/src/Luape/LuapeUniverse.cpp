@@ -10,7 +10,7 @@
 #include <lbcpp/Luape/LuapeNode.h>
 using namespace lbcpp;
 
-LuapeFunctionPtr LuapeNodeUniverse::makeFunction(ClassPtr functionClass, const std::vector<Variable>& arguments)
+LuapeFunctionPtr LuapeUniverse::makeFunction(ClassPtr functionClass, const std::vector<Variable>& arguments)
 {
   FunctionKey key(functionClass, arguments);
   FunctionsMap::const_iterator it = functions.find(key);
@@ -26,13 +26,13 @@ LuapeFunctionPtr LuapeNodeUniverse::makeFunction(ClassPtr functionClass, const s
     return it->second;
 }
 
-LuapeFunctionNodePtr LuapeNodeUniverse::makeFunctionNode(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs)
+LuapeNodePtr LuapeUniverse::makeFunctionNode(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs)
 {
   FunctionNodeKey key(function, inputs);
   FunctionNodesMap::const_iterator it = functionNodes.find(key);
   if (it == functionNodes.end())
   {
-    LuapeFunctionNodePtr res = new LuapeFunctionNode(function, inputs);
+    LuapeNodePtr res = canonizeNode(new LuapeFunctionNode(function, inputs));
     functionNodes[key] = res;
     return res;
   }
@@ -40,12 +40,12 @@ LuapeFunctionNodePtr LuapeNodeUniverse::makeFunctionNode(const LuapeFunctionPtr&
     return it->second;
 }
 
-void LuapeNodeUniverse::observeNodeComputingTime(const LuapeNodePtr& node, size_t numInstances, double timeInMilliseconds)
+void LuapeUniverse::observeNodeComputingTime(const LuapeNodePtr& node, size_t numInstances, double timeInMilliseconds)
 {
   nodesComputingTimeStatistics[makeNodeStatisticsKey(node)].push(timeInMilliseconds / (double)numInstances, (double)numInstances);
 }
 
-double LuapeNodeUniverse::getExpectedComputingTime(const LuapeNodePtr& node) const // in milliseconds
+double LuapeUniverse::getExpectedComputingTime(const LuapeNodePtr& node) const // in milliseconds
 {
   if (node.isInstanceOf<LuapeInputNode>() || node.isInstanceOf<LuapeConstantNode>())
     return 0.0;
@@ -55,7 +55,7 @@ double LuapeNodeUniverse::getExpectedComputingTime(const LuapeNodePtr& node) con
   return it->second.getMean();
 }
 
-std::pair<ClassPtr, ClassPtr> LuapeNodeUniverse::makeNodeStatisticsKey(const LuapeNodePtr& node) 
+std::pair<ClassPtr, ClassPtr> LuapeUniverse::makeNodeStatisticsKey(const LuapeNodePtr& node) 
 {
   if (node.isInstanceOf<LuapeFunctionNode>())
     return std::make_pair(luapeFunctionNodeClass, node.staticCast<LuapeFunctionNode>()->getFunction()->getClass());

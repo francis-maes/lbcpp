@@ -28,7 +28,7 @@ public:
   const LuapeInferencePtr& getFunction() const
     {return function;}
   
-  const LuapeNodeUniversePtr& getUniverse() const
+  const LuapeUniversePtr& getUniverse() const
     {return function->getUniverse();}
 
   const LuapeNodePtr& getRootNode() const

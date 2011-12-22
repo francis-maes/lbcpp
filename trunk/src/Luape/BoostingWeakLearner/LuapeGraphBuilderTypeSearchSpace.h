@@ -292,7 +292,7 @@ private:
     }
   }
 
-  void enumerateFunctionVariables(const LuapeNodeUniversePtr& universe, const LuapeFunctionPtr& function, const std::vector<TypePtr>& inputTypes, std::vector<Variable>& variables, size_t variableIndex, std::vector<LuapeFunctionPtr>& res)
+  void enumerateFunctionVariables(const LuapeUniversePtr& universe, const LuapeFunctionPtr& function, const std::vector<TypePtr>& inputTypes, std::vector<Variable>& variables, size_t variableIndex, std::vector<LuapeFunctionPtr>& res)
   {
     if (variableIndex == variables.size())
       res.push_back(universe->makeFunction(function->getClass(), variables));

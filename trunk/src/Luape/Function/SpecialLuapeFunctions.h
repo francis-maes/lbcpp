@@ -98,12 +98,16 @@ public:
     return ContainerPtr();
   }
 
+  double getThreshold() const
+    {return threshold;}
+
 protected:
   friend class StumpLuapeFunctionClass;
 
   double threshold;
 };
 
+typedef ReferenceCountedObjectPtr<StumpLuapeFunction> StumpLuapeFunctionPtr;
 
 class GreaterThanDoubleLuapeFunction : public LuapeFunction
 {

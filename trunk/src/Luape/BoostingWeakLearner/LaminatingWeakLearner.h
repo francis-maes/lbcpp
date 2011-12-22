@@ -37,12 +37,15 @@ public:
 
     // compute number of initial examples
     // W = numWeak, N = num examples
-    // W * N0 * log2(W) = relativeBudget * W * N
-    // N0 = relativeBudget * N / log2(W)
-    size_t numInitialExamples = (size_t)(structureLearner->getTrainingCache()->getNumSamples() * relativeBudget / log2((double)weakNodes.size()));
+    // W * N0 * log2(W) = relativeBudget * N
+    // N0 = relativeBudget * N / (W * log2(W))
+    double N = (double)structureLearner->getTrainingCache()->getNumSamples();
+    double W = (double)weakNodes.size();
+    size_t numInitialExamples = (size_t)(relativeBudget * N / (W * log2(W)));
+    if (numInitialExamples < 2)
+      numInitialExamples = 2;
 
     size_t effectiveBudget = 0;
-
     IndexSetPtr examplesSubset;
     if (numInitialExamples >= examples->size())
       examplesSubset = examples;
@@ -96,7 +99,7 @@ public:
     }
     LuapeNodePtr weakNode = weakNodesByScore[0].first;
     weakObjective = computeWeakObjectiveWithEventualStump(context, structureLearner, weakNode, examples); // side effect on weakNode
-    context.informationCallback(T("Effective budget: ") + String((int)effectiveBudget) + T(" normalized = ") + String((double)effectiveBudget / (weakNodes.size() * structureLearner->getTrainingCache()->getNumSamples())));
+    context.informationCallback(T("Effective budget: ") + String((int)effectiveBudget) + T(" normalized = ") + String((double)effectiveBudget / structureLearner->getTrainingCache()->getNumSamples()));
     context.leaveScope(weakObjective);
     return makeContribution(context, structureLearner, weakNode, weakObjective, examples);
   }

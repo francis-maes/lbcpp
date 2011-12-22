@@ -45,12 +45,12 @@
   </class>
 
   <!-- Cache -->
-  <class name="LuapeNodeUniverse" base="Object"/>
+  <class name="LuapeUniverse" base="Object"/>
 
 
   <!-- Inference -->
   <class name="LuapeInference" base="Function" abstract="yes">
-    <variable type="LuapeNodeUniverse" name="universe"/>
+    <variable type="LuapeUniverse" name="universe"/>
     <variable type="ObjectVector[LuapeInputNode]" name="inputs"/>
     <variable type="ObjectVector[Function]" name="functions"/>
     <variable type="LuapeNode" name="node"/>

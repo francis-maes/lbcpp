@@ -28,7 +28,7 @@ public:
   static LuapeGraphBuilderActionPtr push(const LuapeNodePtr& node)
     {return new LuapeGraphBuilderAction(0, node);}
 
-  static LuapeGraphBuilderActionPtr apply(const LuapeNodeUniversePtr& universe, const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs)
+  static LuapeGraphBuilderActionPtr apply(const LuapeUniversePtr& universe, const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs)
     {return new LuapeGraphBuilderAction(inputs.size(), universe->makeFunctionNode(function, inputs));}
 
   static LuapeGraphBuilderActionPtr yield()

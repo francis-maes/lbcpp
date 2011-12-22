@@ -56,21 +56,25 @@
 
   <!-- Luape Functions - Enumerations -->
   <class name="EqualsConstantEnumLuapeFunction" base="LuapeFunction">
-    <constructor arguments="const Variable&amp; value"/>
-    <variable type="Variable" name="value"/>
+    <constructor arguments="EnumerationPtr enumeration, size_t value"/>
+    <variable type="Enumeration" name="enumeration"/>
+    <variable type="PositiveInteger" name="value"/>
   </class>
 
   <!-- Luape Functions - Objects -->
   <class name="UnaryObjectLuapeFuntion" base="LuapeFunction" abstract="yes"/>
   <class name="GetVariableLuapeFunction" base="UnaryObjectLuapeFuntion">
-    <constructor arguments="size_t variableIndex" returnType="LuapeFunction"/>
+    <constructor arguments="ClassPtr inputClass, size_t variableIndex" returnType="LuapeFunction"/>
+    <constructor arguments="ClassPtr inputClass, const String&amp; variableName" returnType="LuapeFunction"/>
+    <variable type="Class" name="inputClass"/>
     <variable type="PositiveInteger" name="variableIndex"/>
   </class>
   <class name="GetContainerLengthLuapeFunction" base="LuapeFunction">
     <constructor/>
   </class>
   <class name="GetDoubleVectorElementLuapeFunction" base="LuapeFunction">
-    <constructor arguments="size_t index"/>
+    <constructor arguments="EnumerationPtr enumeration, size_t index"/>
+    <variable type="Enumeration" name="enumeration"/>
     <variable type="PositiveInteger" name="index"/>
   </class>
 

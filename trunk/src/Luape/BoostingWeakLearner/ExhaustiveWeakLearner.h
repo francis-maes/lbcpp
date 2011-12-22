@@ -32,7 +32,14 @@ public:
   virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
   {
     LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(structureLearner->getFunction(), typeSearchSpace);
-    enumerateWeakNodes(context, structureLearner, builder, candidates);
+    std::set<LuapeNodePtr> weakNodes;
+    enumerateWeakNodes(context, structureLearner, builder, weakNodes);
+    candidates.reserve(candidates.size() + weakNodes.size());
+    for (std::set<LuapeNodePtr>::const_iterator it = weakNodes.begin(); it != weakNodes.end(); ++it)
+    {
+      context.informationCallback((*it)->toShortString());
+      candidates.push_back(*it);
+    }
     return true;
   }
 
@@ -42,12 +49,12 @@ protected:
   size_t maxDepth;
   LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
 
-  void enumerateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeGraphBuilderStatePtr& state, std::vector<LuapeNodePtr>& res) const
+  void enumerateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeGraphBuilderStatePtr& state, std::set<LuapeNodePtr>& res) const
   {
     if (state->isFinalState())
     {
       if (state->getStackSize() == 1)
-        res.push_back(state->getStackElement(0));
+        res.insert(state->getStackElement(0));
     }
     else
     {

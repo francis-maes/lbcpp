@@ -38,6 +38,9 @@ typedef ReferenceCountedObjectPtr<LuapeInstanceCache> LuapeInstanceCachePtr;
 class LuapeSamplesCache;
 typedef ReferenceCountedObjectPtr<LuapeSamplesCache> LuapeSamplesCachePtr;
 
+class LuapeInference;
+typedef ReferenceCountedObjectPtr<LuapeInference> LuapeInferencePtr;
+
 class LuapeLearner;
 typedef ReferenceCountedObjectPtr<LuapeLearner> LuapeLearnerPtr;
 

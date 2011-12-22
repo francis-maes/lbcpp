@@ -162,7 +162,7 @@ protected:
 
   size_t maxSteps;
 
-  LuapeNodeUniversePtr universe;
+  LuapeUniversePtr universe;
   LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
   ScalarVariableRecentMeanAndVariancePtr objectiveStats;
 

@@ -18,45 +18,55 @@ namespace lbcpp
 class EqualsConstantEnumLuapeFunction : public LuapeFunction
 {
 public:
-  EqualsConstantEnumLuapeFunction(const Variable& value = Variable())
-    : value(value) {}
+  EqualsConstantEnumLuapeFunction(EnumerationPtr enumeration = EnumerationPtr(), size_t value = 0)
+    : enumeration(enumeration), value(value) {}
 
   virtual String toShortString() const
-    {return "= " + value.toShortString();}
+    {return "= " + Variable(value, enumeration).toShortString();}
 
   virtual size_t getNumInputs() const
     {return 1;}
 
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
-    {return type.isInstanceOf<Enumeration>();}
+    {return enumeration ? type == enumeration : type.isInstanceOf<Enumeration>();}
 
   virtual TypePtr initialize(const std::vector<TypePtr>& )
     {return booleanType;}
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
-    {return inputs[0]->toShortString() + T(" == ") + value.toShortString();}
+    {return inputs[0]->toShortString() + T(" == ") + Variable(value, enumeration).toShortString();}
   
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
   {
     if (inputs[0].isMissingValue())
       return Variable::missingValue(booleanType);
-    return inputs[0] == value;
+    return (size_t)inputs[0].getInteger() == value;
   }
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
   {
-    const EnumerationPtr& enumeration = inputTypes[0].staticCast<Enumeration>();
-    size_t n = enumeration->getNumElements();
-    VectorPtr res = vector(enumeration, n);
-    for (size_t i = 0; i < n; ++i)
-      res->setElement(i, Variable(i, enumeration));
-    return res;
+    if (index == 0)
+    {
+      ObjectVectorPtr res = new ObjectVector(enumerationClass, 1);
+      res->set(0, inputTypes[0]);
+      return res;
+    }
+    else
+    {
+      const EnumerationPtr& enumeration = inputTypes[0].staticCast<Enumeration>();
+      size_t n = enumeration->getNumElements();
+      VectorPtr res = vector(enumeration, n);
+      for (size_t i = 0; i < n; ++i)
+        res->setElement(i, Variable(i, enumeration));
+      return res;
+    }
   }
 
 protected:
   friend class EqualsConstantEnumLuapeFunctionClass;
 
-  Variable value; 
+  EnumerationPtr enumeration;
+  size_t value;
 };
 
 }; /* namespace lbcpp */

@@ -18,6 +18,8 @@
 #include "../Predictor/LargeProteinPredictorParameters.h"
 #include "../Evaluator/ProteinEvaluator.h"
 
+#include "../../../src/Luape/Function/ObjectLuapeFunctions.h"
+
 namespace lbcpp
 {
 
@@ -270,6 +272,75 @@ protected:
   }
 };
 
+////////////////////////////
+
+class ScalarVariableStatisticsPerception : public Object
+{
+public:
+  ScalarVariableStatisticsPerception() : mean(0.0), stddev(0.0), sum(0.0), min(0.0), max(0.0), percentActive(0.0) {}
+
+  double mean;
+  double stddev;
+  double sum;
+  double min;
+  double max;
+  double percentActive;
+};
+
+typedef ReferenceCountedObjectPtr<ScalarVariableStatisticsPerception> ScalarVariableStatisticsPerceptionPtr;
+extern ClassPtr scalarVariableStatisticsPerceptionClass;
+
+class ComputeDoubleVectorStatisticsLuapeFunction : public UnaryObjectLuapeFuntion<ComputeDoubleVectorStatisticsLuapeFunction>
+{
+public:
+  ComputeDoubleVectorStatisticsLuapeFunction() : UnaryObjectLuapeFuntion<ComputeDoubleVectorStatisticsLuapeFunction>(doubleVectorClass()) {}
+
+  virtual String toShortString() const
+    {return "stats(.)";}
+
+  virtual TypePtr initialize(const std::vector<TypePtr>& inputTypes)
+    {return scalarVariableStatisticsPerceptionClass;}
+
+  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+    {jassert(inputs.size() == 1); return "stats(" + inputs[0]->toShortString() + ")";}
+
+  Variable computeObject(const ObjectPtr& object) const
+  {
+    const DoubleVectorPtr& vector = object.staticCast<DoubleVector>();
+    ScalarVariableStatistics stats;
+    size_t numActive = 0;
+    DenseDoubleVectorPtr denseVector = vector.dynamicCast<DenseDoubleVector>();
+    if (denseVector)
+    {
+      for (size_t i = 0; i < denseVector->getNumValues(); ++i)
+      {
+        double value = denseVector->getValue(i);
+        stats.push(value);
+        if (value != 0.0)
+          ++numActive;
+      }
+    }
+    else
+    {
+      jassert(false); // not implemented yet
+    }
+    ScalarVariableStatisticsPerceptionPtr res = new ScalarVariableStatisticsPerception();
+    res->mean = stats.getMean();
+    res->stddev = stats.getStandardDeviation();
+    res->sum = stats.getSum();
+    res->min = stats.getMinimum();
+    res->max = stats.getMaximum();
+    res->percentActive = (double)numActive / stats.getCount();
+    return res;
+  }
+
+  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+  {
+    const ObjectPtr& object = inputs[0].getObject();
+    return object ? computeObject(object) : Variable::missingValue(scalarVariableStatisticsPerceptionClass);
+  }
+};
+
 //////////////////////////////////////////////
 ////////// Protein Predictor Parameters //////
 //////////////////////////////////////////////
@@ -277,8 +348,8 @@ protected:
 class LuapeProteinPredictorParameters : public ProteinPredictorParameters
 {
 public:
-  LuapeProteinPredictorParameters(size_t treeDepth, size_t numSteps, size_t budget, size_t numIterations)
-    : treeDepth(treeDepth), numSteps(numSteps), budget(budget), numIterations(numIterations) {}
+  LuapeProteinPredictorParameters(size_t treeDepth, size_t complexity, double relativeBudget, double miniBatchRelativeSize, size_t numIterations)
+    : treeDepth(treeDepth), complexity(complexity), relativeBudget(relativeBudget), miniBatchRelativeSize(miniBatchRelativeSize), numIterations(numIterations) {}
 
   Variable createProteinPerceptionFunction(ExecutionContext& context, const Variable& input) const
     {return new ProteinPerception(input.getObjectAndCast<Protein>());}
@@ -325,17 +396,73 @@ public:
   */
   BoostingWeakLearnerPtr createWeakLearner(ProteinTarget target) const
   {
-    //BoostingWeakLearnerPtr conditionLearner = policyBasedWeakLearner(new RandomPolicy(), budget, numSteps);
-    BoostingWeakLearnerPtr conditionLearner = adaptativeSamplingWeakLearner(budget, numSteps);
-    //BoostingWeakLearnerPtr conditionLearner = exhaustiveWeakLearner(numSteps);
+    //BoostingWeakLearnerPtr conditionLearner = policyBasedWeakLearner(new RandomPolicy(), budget, complexity);
+    //BoostingWeakLearnerPtr conditionLearner = adaptativeSamplingWeakLearner(budget, complexity);
+    BoostingWeakLearnerPtr conditionLearner = exhaustiveWeakLearner(complexity);
     conditionLearner = compositeWeakLearner(constantWeakLearner(), conditionLearner);
-    conditionLearner = laminatingWeakLearner(conditionLearner, 1000);
+
+    if (miniBatchRelativeSize == 0.0)
+      conditionLearner = laminatingWeakLearner(conditionLearner, relativeBudget);
+    else if (miniBatchRelativeSize < 1.0)
+      conditionLearner = banditBasedWeakLearner(conditionLearner, relativeBudget, miniBatchRelativeSize);
 
     BoostingWeakLearnerPtr res = conditionLearner;
     for (size_t i = 1; i < treeDepth; ++i)
       res = binaryTreeWeakLearner(conditionLearner, res);
     return res;
   }
+
+  struct Universe : public LuapeUniverse
+  {
+    bool isGetAccessor(const LuapeNodePtr& node, LuapeNodePtr& argument, String& variableName)
+    {
+      LuapeFunctionNodePtr functionNode = node.dynamicCast<LuapeFunctionNode>();
+      if (!functionNode)
+        return false;
+      GetVariableLuapeFunctionPtr function = functionNode->getFunction().dynamicCast<GetVariableLuapeFunction>();
+      if (!function)
+        return false;
+      argument = functionNode->getArgument(0);
+      size_t variableIndex = function->getVariableIndex();
+      variableName = argument->getType()->getMemberVariableShortName(variableIndex);
+      if (variableName.isEmpty())
+        variableName = argument->getType()->getMemberVariableName(variableIndex);
+      return true;
+    }
+
+    virtual LuapeNodePtr canonizeNode(const LuapeNodePtr& node)
+    {
+      // [x].prev.next => [x]
+      // [x].next.prev => [x]
+      if (node->getType() == proteinResiduePerceptionClass || node->getType() == proteinPerceptionClass)
+      {
+        LuapeNodePtr parent;
+        String parentVariable;
+        if (isGetAccessor(node, parent, parentVariable))
+        {
+          LuapeNodePtr grandParent;
+          String grandParentVariable;
+          if (isGetAccessor(parent, grandParent, grandParentVariable))
+          {
+            if (grandParent->getType() == proteinResiduePerceptionClass)
+            {
+              if ((parentVariable == T("next") && grandParentVariable == T("prev")) ||
+                  (parentVariable == T("prev") && grandParentVariable == T("next")) ||
+                  (parentVariable == T("nextT") && grandParentVariable == T("prevT")) ||
+                  (parentVariable == T("prevT") && grandParentVariable == T("nextT")))
+                return grandParent;
+              if (parentVariable == T("protein"))
+                return makeFunctionNode(getVariableLuapeFunction(proteinResiduePerceptionClass, T("protein")), grandParent); // [x].*.protein => [x].protein
+            }
+          }
+        }
+      }
+      return node;
+    }
+  };
+
+  LuapeUniversePtr createUniverse() const
+    {return new Universe();}
 
   void addFunctions(const LuapeInferencePtr& machine, ProteinTarget target) const
   {
@@ -361,7 +488,10 @@ public:
     // object operations
     machine->addFunction(getVariableLuapeFunction());
     machine->addFunction(getContainerLengthLuapeFunction());
+
+    // double vectors
     machine->addFunction(getDoubleVectorElementLuapeFunction());
+    machine->addFunction(new ComputeDoubleVectorStatisticsLuapeFunction());
 
     // protein-specific operations
     //machine->addFunction(new ProteinGetRelativeResidueLuapeFunction());
@@ -381,19 +511,27 @@ public:
     classifier->addInput(proteinResiduePerceptionClass, "r");
     return mapNContainerFunction(classifier);
   }
+  
+  virtual FunctionPtr probabilityVectorPredictor(ProteinTarget target) const
+  {
+    LuapeInferencePtr classifier = binaryClassifier(target).staticCast<LuapeInference>();
+    classifier->addInput(proteinResiduePerceptionClass, "r");
+    return mapNContainerFunction(classifier);
+  }
 
   // atomic level
   virtual FunctionPtr binaryClassifier(ProteinTarget target) const
   {
-    LuapeInferencePtr learningMachine = new LuapeBinaryClassifier();
+    LuapeInferencePtr learningMachine = new LuapeBinaryClassifier(createUniverse());
     addFunctions(learningMachine, target);
     learningMachine->setLearner(adaBoostLearner(createWeakLearner(target)), numIterations, true); // verbose 
+    learningMachine->setBatchLearner(filterUnsupervisedExamplesBatchLearner(learningMachine->getBatchLearner(), true));
     return learningMachine;
   }
 
   virtual FunctionPtr multiClassClassifier(ProteinTarget target) const
   {
-    LuapeInferencePtr learningMachine =  new LuapeClassifier();
+    LuapeInferencePtr learningMachine =  new LuapeClassifier(createUniverse());
     addFunctions(learningMachine, target);
     learningMachine->setLearner(adaBoostMHLearner(createWeakLearner(target), true), numIterations, true);// verbose 
     learningMachine->setBatchLearner(filterUnsupervisedExamplesBatchLearner(learningMachine->getBatchLearner(), true));
@@ -415,8 +553,9 @@ public:
 
 protected:
   size_t treeDepth;
-  size_t numSteps;
-  size_t budget;
+  size_t complexity;
+  double relativeBudget;
+  double miniBatchRelativeSize;
   size_t numIterations;
 };
 
@@ -427,7 +566,7 @@ protected:
 class ProteinLuapeSandBox : public WorkUnit
 {
 public:
-  ProteinLuapeSandBox() : maxProteinCount(0), treeDepth(2), numSteps(6), budget(100), numIterations(100) {}
+  ProteinLuapeSandBox() : maxProteinCount(0), treeDepth(1), complexity(5), relativeBudget(10.0), miniBatchRelativeSize(0.0), numIterations(1000) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -447,11 +586,12 @@ public:
     predictor->knnNeighbors = 5;
 #endif
      
-    ProteinPredictorParametersPtr predictor = new LuapeProteinPredictorParameters(treeDepth, numSteps, budget, numIterations);
+    ProteinPredictorParametersPtr predictor = new LuapeProteinPredictorParameters(treeDepth, complexity, relativeBudget, miniBatchRelativeSize, numIterations);
 
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
     //iteration->addTarget(dsbTarget);
-    iteration->addTarget(ss3Target);
+    iteration->addTarget(sa20Target);
+    //iteration->addTarget(ss3Target);
 
     if (!iteration->train(context, trainingProteins, testingProteins, T("Training")))
       return Variable::missingValue(doubleType);
@@ -474,8 +614,9 @@ protected:
   size_t maxProteinCount;
 
   size_t treeDepth;
-  size_t numSteps;
-  size_t budget;
+  size_t complexity;
+  double relativeBudget;
+  double miniBatchRelativeSize;
   size_t numIterations;
 
   ContainerPtr loadProteinPairs(ExecutionContext& context, const File& inputDirectory, const File& supervisionDirectory, const String& description)

@@ -188,7 +188,7 @@ public:
   /*
   ** Construction
   */
-  LuapeSamplesCache(LuapeNodeUniversePtr universe, const std::vector<LuapeInputNodePtr>& inputs, size_t size, size_t maxCacheSizeInMb = 1024);
+  LuapeSamplesCache(LuapeUniversePtr universe, const std::vector<LuapeInputNodePtr>& inputs, size_t size, size_t maxCacheSizeInMb = 1024);
   LuapeSamplesCache() : maxCacheSize(0), actualCacheSize(0) {}
 
   void setInputObject(const std::vector<LuapeInputNodePtr>& inputs, size_t index, const ObjectPtr& object);
@@ -231,7 +231,7 @@ public:
   void observeNodeComputingTime(const LuapeNodePtr& node, size_t numInstances, double timeInMilliseconds);
 
 protected:
-  LuapeNodeUniversePtr universe;
+  LuapeUniversePtr universe;
 
   struct NodeCache
   {

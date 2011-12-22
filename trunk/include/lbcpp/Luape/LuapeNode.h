@@ -40,6 +40,9 @@ public:
   double getImportance() const
     {return importance;}
 
+  void setImportance(double importance)
+    {this->importance = importance;}
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
