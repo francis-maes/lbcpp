@@ -358,9 +358,9 @@ bool SparseDoubleVector::loadFromXml(XmlImporter& importer)
   return true;
 }
 
-size_t SparseDoubleVector::getSizeInBytes() const
+size_t SparseDoubleVector::getSizeInBytes(bool recursively) const
 {
-  size_t res = Object::getSizeInBytes();
+  size_t res = Object::getSizeInBytes(recursively);
   return res + sizeof (values) + values.size() * sizeof (std::pair<size_t, double>);
 }
 
@@ -687,9 +687,9 @@ bool DenseDoubleVector::loadFromXml(XmlImporter& importer)
   return ok;
 }
 
-size_t DenseDoubleVector::getSizeInBytes() const
+size_t DenseDoubleVector::getSizeInBytes(bool recursively) const
 {
-  size_t res = Object::getSizeInBytes();
+  size_t res = Object::getSizeInBytes(recursively);
   if (values && ownValues)
     res += sizeof (*values) + values->size() * sizeof (double);
   return res;

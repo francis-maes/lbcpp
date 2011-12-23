@@ -255,7 +255,7 @@ protected:
       }
     }
 
-    size_t getSizeInBytes() const;
+    size_t getSizeInBytes(bool recursively) const;
   };
 
   typedef std::map<LuapeNodePtr, NodeCache> NodeCacheMap;
@@ -283,7 +283,7 @@ protected:
       if (nodeCache.samples)
       {
         ++numCached;
-        cacheSizeInBytes += nodeCache.getSizeInBytes();
+        cacheSizeInBytes += nodeCache.getSizeInBytes(true);
         cachedComputingTime.push(nodeCache.timeSpentInComputingSamples);
       }
       else

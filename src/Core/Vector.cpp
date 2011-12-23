@@ -300,9 +300,9 @@ bool GenericVector::loadFromXml(XmlImporter& importer)
   return Container::loadFromXml(importer);
 }
 
-size_t GenericVector::getSizeInBytes() const
+size_t GenericVector::getSizeInBytes(bool recursively) const
 {
-  size_t res = Container::getSizeInBytes();
+  size_t res = Container::getSizeInBytes(recursively);
   return res + getNumElements() * sizeof (VariableValue);
 }
 
@@ -336,8 +336,8 @@ String BooleanVector::toString() const
   return res;
 }  
 
-size_t BooleanVector::getSizeInBytes() const
-  {return Object::getSizeInBytes() + sizeof (v) + v.size() * sizeof (unsigned char);}
+size_t BooleanVector::getSizeInBytes(bool recursively) const
+  {return Object::getSizeInBytes(recursively) + sizeof (v) + v.size() * sizeof (unsigned char);}
 
 size_t BooleanVector::getNumElements() const
   {return v.size();}
@@ -464,19 +464,24 @@ Variable ObjectVector::getElement(size_t index) const
 void ObjectVector::setElement(size_t index, const Variable& value)
   {jassert(index < objects->size()); (*objects)[index] = value.getObject();}
 
-size_t ObjectVector::getSizeInBytes() const
+size_t ObjectVector::getSizeInBytes(bool recursively) const
 {
-  size_t res = Object::getSizeInBytes();
+  size_t res = Object::getSizeInBytes(recursively);
   if (objects && ownObjects)
   {
     // all the objects are assumed to have the same size
     size_t sizePerObject = 0;
-    for (size_t i = 0; i < objects->size(); ++i)
-      if ((*objects)[i])
-      {
-        sizePerObject = (*objects)[i]->getSizeInBytes();
-        break;
-      }
+    if (recursively)
+    {
+      for (size_t i = 0; i < objects->size(); ++i)
+        if ((*objects)[i])
+        {
+          sizePerObject = (*objects)[i]->getSizeInBytes(recursively);
+          break;
+        }
+    }
+    else
+      sizePerObject = sizeof (ObjectPtr);
     res += sizeof (*objects) + objects->size() + sizePerObject;
   }
   return res;
@@ -528,9 +533,9 @@ void VariableVector::saveToXml(XmlExporter& exporter) const
     exporter.saveElement(i, getElement(i), anyType);
 }
 
-size_t VariableVector::getSizeInBytes() const
+size_t VariableVector::getSizeInBytes(bool recursively) const
 {
-  size_t res = Object::getSizeInBytes();
+  size_t res = Object::getSizeInBytes(recursively);
   res += sizeof (Variable) * variables.size();
   return res;
 }

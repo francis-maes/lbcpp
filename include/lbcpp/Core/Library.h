@@ -32,11 +32,15 @@
 namespace lbcpp
 {
 
+extern ClassPtr libraryClass;
+
 class Library : public NameableObject
 {
 public:
-  Library(const String& name) : NameableObject(name) {}
+  Library(const String& name);
   Library() {}
+
+  virtual ClassPtr getClass() const;
 
   const std::vector<TypePtr>& getTypes() const
     {return types;}

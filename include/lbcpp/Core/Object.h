@@ -177,7 +177,7 @@ public:
   virtual VariableIterator* createVariablesIterator() const
     {return NULL;}
 
-  virtual size_t getSizeInBytes() const;
+  virtual size_t getSizeInBytes(bool recursively) const;
 
   /*
   ** User Interface

@@ -169,12 +169,18 @@ public:
 
   typedef std::multimap<int, String> ObjectCountsMap;
 
-  void getSortedCounts(ObjectCountsMap& res)
+  void getSortedCounts(ObjectCountsMap& res, size_t& totalSize)
   {
     ScopedLock _(objectsMapLock);
     for (ObjectsMap::const_iterator it = objectsMap.begin(); it != objectsMap.end(); ++it)
-      if (it->second.size())
-        res.insert(std::make_pair(it->second.size(), it->first));
+    {
+      size_t size = getSizeInBytes(it->second);
+      if (size)
+      {
+        totalSize += size;
+        res.insert(std::make_pair(size, it->first));
+      }
+    }
   }
 
   void getSortedDeltaCounts(ObjectCountsMap& res)
@@ -183,7 +189,8 @@ public:
     ScopedLock _(objectsMapLock);
     for (ObjectsMap::const_iterator it = objectsMap.begin(); it != objectsMap.end(); ++it)
     {
-      int delta = (int)it->second.size() - previousCounts[it->first];
+      size_t size = getSizeInBytes(it->second);
+      int delta = (int)size - (int)previousCounts[it->first];
       if (delta > 0)
         res.insert(std::make_pair(delta, it->first));
     }
@@ -197,11 +204,18 @@ public:
 
     // display most allocated objects
     ObjectCountsMap sortedCounts;
-    getSortedCounts(sortedCounts);
-    String res = T("Most allocated objects:\n");
+    size_t totalSize = 0;
+    getSortedCounts(sortedCounts, totalSize);
+    String res = T("Total size: ");
+    if (totalSize > 1024 * 1024)
+      res += String((int)totalSize / (1024 * 1024)) + T(" Mb\n");
+    else
+      res += String((int)totalSize / 1024) + T(" Kb\n");      
+    res += T("Most allocated objects:\n");
     size_t i = 0;
+    
     for (ObjectCountsMap::const_reverse_iterator it = sortedCounts.rbegin(); it != sortedCounts.rend() && i < 20; ++it, ++i)
-      res += String(it->first) + T(" ") + it->second + T("\n");
+      res += String(it->first / 1024) + T(" Kb ") + it->second + T("\n");
 
     // display biggest deltas
     if (previousCounts.size())
@@ -213,7 +227,7 @@ public:
         res += T("Biggest allocation increases:\n");
         i = 0;
         for (ObjectCountsMap::const_reverse_iterator it = sortedDeltaCounts.rbegin(); it != sortedDeltaCounts.rend() && i < 20; ++it, ++i)
-          res += String(it->first) + T(" ") + it->second + T("\n");
+          res += String(it->first / 1024) + T(" Kb ") + it->second + T("\n");
       }
       else
         res += T("No allocation increase\n");
@@ -222,7 +236,7 @@ public:
     // update previous counts
     previousCounts.clear();
     for (ObjectsMap::const_iterator it = objectsMap.begin(); it != objectsMap.end(); ++it)
-      previousCounts[it->first] = it->second.size();
+      previousCounts[it->first] = getSizeInBytes(it->second);
 
     return res;
   }
@@ -238,6 +252,15 @@ private:
   CriticalSection objectsMapLock;
   ObjectsMap objectsMap;
   std::map<String, size_t> previousCounts;
+
+  size_t getSizeInBytes(const std::set<Object*>& objects)
+  {
+    size_t res = 0;
+    for (std::set<Object* >::const_iterator it = objects.begin(); it != objects.end(); ++it)
+      res += (*it)->getSizeInBytes(false);
+    return res;
+    //return objects.size();
+  }
 };
 #endif // !LBCPP_DEBUG_OBJECT_ALLOCATION
 

@@ -163,9 +163,9 @@ public:
                     const String& name,
                     const String& shortName = String::empty,
                     const String& description = String::empty)
-    : VariableSignature(type, name, shortName, description) {}
+    : VariableSignature(type, name, shortName, description) {thisClass = variableSignatureClass;}
     
-  GeneratedVariableSignature() {}
+  GeneratedVariableSignature() {thisClass = variableSignatureClass;}
 };
 
 size_t DefaultClass::addMemberVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName, const String& description, bool isGenerated)

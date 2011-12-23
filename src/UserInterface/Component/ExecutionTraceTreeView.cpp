@@ -221,7 +221,7 @@ class MakeTraceAndFillTreeThreadExecutionCallback : public MakeTraceThreadExecut
 {
 public:
   MakeTraceAndFillTreeThreadExecutionCallback(ExecutionTraceTreeView* tree, ExecutionTracePtr trace, ExecutionTraceNodePtr traceNode, ExecutionTraceTreeViewNode* node)
-    : MakeTraceThreadExecutionCallback(traceNode, trace->getStartTime()), tree(tree), stack(1, node) {}
+    : MakeTraceThreadExecutionCallback(traceNode, trace->getStartTime()), tree(tree), stack(1, node) {thisClass = executionCallbackClass;}
 
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit)
   {
@@ -271,7 +271,7 @@ class ExecutionTraceTreeViewBuilderExecutionCallback : public DispatchByThreadEx
 {
 public:
   ExecutionTraceTreeViewBuilderExecutionCallback(ExecutionTraceTreeView* tree)
-    : tree(tree) {}
+    : tree(tree) {thisClass = executionCallbackClass;}
 
   virtual ExecutionCallbackPtr createCallbackForThread(const ExecutionStackPtr& stack, Thread::ThreadID threadId)
   {

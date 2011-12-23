@@ -61,7 +61,7 @@ public:
   AminoAcidType getAminoAcidType() const
     {return aminoAcidType;}
 
-  virtual size_t getSizeInBytes() const
+  virtual size_t getSizeInBytes(bool recursively) const
     {return sizeof (*this);}
 
 protected:
@@ -114,7 +114,7 @@ public:
     : protein(protein), firstResidue(firstResidue), secondResidue(secondResidue) {}
   ProteinResiduePairPerception() {}
 
-  virtual size_t getSizeInBytes() const
+  virtual size_t getSizeInBytes(bool recursively) const
     {return sizeof (*this);}
 
 protected:

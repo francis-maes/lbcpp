@@ -286,6 +286,10 @@ TemplateTypeCache* TypeManager::getTemplateType(ExecutionContext& context, const
 /*
 ** Library
 */
+Library::Library(const String& name) : NameableObject(name)
+{
+}
+
 bool Library::declareType(ExecutionContext& context, TypePtr type)
 {
   if (!typeManager().declare(context, type))
@@ -354,6 +358,9 @@ std::vector<TypePtr> Library::getTypesInheritingFrom(TypePtr baseType) const
   getTypesInheritingFrom(baseType, res);
   return res;
 }
+
+ClassPtr Library::getClass() const
+  {return libraryClass;}
 
 void Library::luaRegister(LuaState& state) const
 {

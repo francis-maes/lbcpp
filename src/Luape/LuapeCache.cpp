@@ -137,8 +137,18 @@ void LuapeSamplesCache::setInputObject(const std::vector<LuapeInputNodePtr>& inp
   }
 }
 
-size_t LuapeSamplesCache::NodeCache::getSizeInBytes() const
-  {return (samples ? samples->getSizeInBytes() : 0) + (sortedDoubleValues ? sortedDoubleValues->getSizeInBytes() : 0);}
+size_t LuapeSamplesCache::NodeCache::getSizeInBytes(bool recursively) const
+{
+  size_t res = sizeof (*this);
+  if (recursively)
+  {
+    if (samples)
+      res += samples->getSizeInBytes(recursively);
+    if (sortedDoubleValues)
+      res += sortedDoubleValues->getSizeInBytes(recursively);
+  }
+  return res;
+}
 
 size_t LuapeSamplesCache::getCacheSizeInBytes() const
 {
@@ -154,7 +164,7 @@ void LuapeSamplesCache::cacheNode(ExecutionContext& context, const LuapeNodePtr&
     nodeCache.timeSpentInComputingSamples = -1.0;
   jassert(nodeCache.samples);
 
-  size_t sizeInBytes = nodeCache.getSizeInBytes();
+  size_t sizeInBytes = nodeCache.getSizeInBytes(true);
   actualCacheSize += sizeInBytes;
   std::cout << (const char* )reason << ". Node " << node->toShortString() << " -> size = " << sizeInBytes / 1024.0 << " Kb" << std::endl;
   std::cout << "Cache size: " << getCacheSizeInBytes() / (1024.0 * 1024.0) << " / " << maxCacheSize / (1024 * 1024) << " Mb" << std::endl;
@@ -185,7 +195,7 @@ void LuapeSamplesCache::uncacheNode(ExecutionContext& context, const LuapeNodePt
 {
   NodeCache& nodeCache = m[node];
   jassert(nodeCache.samples);
-  size_t sizeInBytes = nodeCache.getSizeInBytes();
+  size_t sizeInBytes = nodeCache.getSizeInBytes(true);
   nodeCache.samples = VectorPtr();
   nodeCache.sortedDoubleValues = SparseDoubleVectorPtr();
   actualCacheSize -= sizeInBytes;
@@ -359,7 +369,7 @@ SparseDoubleVectorPtr LuapeSamplesCache::getSortedDoubleValues(ExecutionContext&
   {
     // opportunism caching
     nodeCache.sortedDoubleValues = res;
-    actualCacheSize += res->getSizeInBytes();
+    actualCacheSize += res->getSizeInBytes(true);
     ensureSizeInLowerThanMaxSize(context);
   }
   return res;

@@ -189,7 +189,7 @@ public:
   virtual String toShortString() const;
   virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlImporter& importer);
-  virtual size_t getSizeInBytes() const;
+  virtual size_t getSizeInBytes(bool recursively) const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
   // Lua
@@ -290,7 +290,7 @@ public:
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
   void saveToXml(XmlExporter& exporter) const;
   bool loadFromXml(XmlImporter& importer);
-  virtual size_t getSizeInBytes() const;
+  virtual size_t getSizeInBytes(bool recursively) const;
 
   // Lua
   virtual int __len(LuaState& state) const;

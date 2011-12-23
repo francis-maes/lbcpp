@@ -31,23 +31,44 @@ public:
 
   virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
   {
+    // FIXME: see why this do not work in release
+    enumerateCandidates(context, structureLearner, candidates);
+   /* std::set<LuapeNodePtr> activeVariables = structureLearner->getFunction()->getActiveVariables();
+    if (cachedActiveVariables != activeVariables || cachedCandidates.empty())
+    {
+      std::vector<LuapeNodePtr>& c = const_cast<ExhaustiveWeakLearner* >(this)->cachedCandidates;
+      c.clear();
+      enumerateCandidates(context, structureLearner, c);
+      const_cast<ExhaustiveWeakLearner* >(this)->cachedActiveVariables = activeVariables;
+    }
+    size_t s = candidates.size();
+    candidates.resize(s + cachedCandidates.size());
+    for (size_t i = s; i < candidates.size(); ++i)
+      candidates[i] = cachedCandidates[i - s];*/
+    return true;
+  }
+  
+protected:
+  friend class ExhaustiveWeakLearnerClass;
+
+  size_t maxDepth;
+  LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
+
+  std::set<LuapeNodePtr> cachedActiveVariables;
+  std::vector<LuapeNodePtr> cachedCandidates;
+
+  void enumerateCandidates(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
+  {
     LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(structureLearner->getFunction(), typeSearchSpace);
     std::set<LuapeNodePtr> weakNodes;
     enumerateWeakNodes(context, structureLearner, builder, weakNodes);
     candidates.reserve(candidates.size() + weakNodes.size());
     for (std::set<LuapeNodePtr>::const_iterator it = weakNodes.begin(); it != weakNodes.end(); ++it)
     {
-      context.informationCallback((*it)->toShortString());
+      //context.informationCallback((*it)->toShortString());
       candidates.push_back(*it);
     }
-    return true;
   }
-
-protected:
-  friend class ExhaustiveWeakLearnerClass;
-
-  size_t maxDepth;
-  LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
 
   void enumerateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeGraphBuilderStatePtr& state, std::set<LuapeNodePtr>& res) const
   {

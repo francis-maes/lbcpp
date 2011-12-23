@@ -12,6 +12,8 @@
   <include file="lbcpp/Learning/OnlineLearner.h"/>
   <include file="lbcpp/Core/XmlSerialisation.h"/>
 
+  <class name="Library" base="Object" abstract="yes"/>
+  
   <!-- Pair -->
   <template name="Pair" base="Object">
     <parameter name="firstType" type="Variable"/>
