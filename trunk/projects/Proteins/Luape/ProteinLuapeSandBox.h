@@ -45,8 +45,10 @@ public:
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
     //iteration->addTarget(dsbTarget);
     //iteration->addTarget(sa20Target);
-    iteration->addTarget(ss3Target);
+    //iteration->addTarget(ss3Target);
     //iteration->addTarget(ss8Target);
+    //iteration->addTarget(stalTarget);
+    iteration->addTarget(drTarget);
 
     if (!iteration->train(context, trainingProteins, testingProteins, T("Training")))
       return Variable::missingValue(doubleType);
