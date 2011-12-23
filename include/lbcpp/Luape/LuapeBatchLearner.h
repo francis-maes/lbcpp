@@ -118,8 +118,10 @@ public:
   {
     if (node && res.find(node) == res.end())
     {
-      res[node] = node->getImportance();
-      node->setImportance(0.0); // TEST !!!
+      double importance = node->getImportance();
+      //if (!node.isInstanceOf<LuapeFunctionNode>() || node.staticCast<LuapeFunctionNode>()->getFunction()->getClassName() != T("StumpLuapeFunction"))
+        res[node] = importance;
+      node->setImportance(0.0);
       size_t n = node->getNumSubNodes();
       for (size_t i = 0; i < n; ++i)
         getImportances(node->getSubNode(i), res);
@@ -132,29 +134,48 @@ public:
 
     std::map<LuapeNodePtr, double> importances;
     getImportances(rootNode, importances);
-    
-    std::multimap<double, LuapeNodePtr> nodeImportanceMap;
-    double importanceSum = 0.0;
-    for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it)
+
+    double Z = 0.0;
+    std::vector<double> probabilities(importances.size());
+    std::vector<LuapeNodePtr> nodes(importances.size());
+    size_t index = 0;
+    for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it, ++index)
     {
-      nodeImportanceMap.insert(std::make_pair(it->second, it->first));
-      importanceSum += it->second;
+      Z += it->second;
+      probabilities[index] = it->second;
+      nodes[index] = it->first;
     }
-    
-    size_t i = 0;
+
     function->clearActiveVariables();
+    while (function->getNumActiveVariables() < 10)
+    {
+      size_t index = context.getRandomGenerator()->sampleWithProbabilities(probabilities, Z);
+      LuapeNodePtr node = nodes[index];
+      if (!node.isInstanceOf<LuapeInputNode>())
+      {
+        context.informationCallback(T("Active variable: ") + node->toShortString());
+        function->addActiveVariable(node);
+      }
+      Z -= probabilities[index];
+      probabilities[index] = 0.0;
+    }
+
+    std::multimap<double, LuapeNodePtr> nodeImportanceMap;
+    for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it)
+      nodeImportanceMap.insert(std::make_pair(it->second, it->first));
+    size_t i = 0;
     for (std::multimap<double, LuapeNodePtr>::reverse_iterator it = nodeImportanceMap.rbegin(); it != nodeImportanceMap.rend() && i < 100; ++it, ++i)
     {
       if (it->first <= 0.0)
         break;
 
       const LuapeNodePtr& node = it->second;
-      context.informationCallback(T("# ") + String((int)i + 1) + T(": ") + node->toShortString() + T(" [") + String(it->first * 100.0 / importanceSum, 2) + T("%]"));
+      context.informationCallback(T("# ") + String((int)i + 1) + T(": ") + node->toShortString() + T(" [") + String(it->first * 100.0 / Z, 2) + T("%]"));
 
       /// !!! TEST
       /// !!!
-      if (!node.isInstanceOf<LuapeInputNode>() && function->getNumActiveVariables() < 10)
-        function->addActiveVariable(node);
+      //if (!node.isInstanceOf<LuapeInputNode>() && function->getNumActiveVariables() < 10)
+      //  function->addActiveVariable(node);
     }
   }
 
