@@ -1,7 +1,7 @@
 
-* Fix proteins in Debug (invalid operator < )
-* ComputeDoubleVectorExtremums LuapeFunction
-* Voir ce qui prend toute la RAM
+
+ * Voir ce qui prend toute la RAM
+ * Test: sampler les active variables d'après la distribution au lieu de prendre les N premiers
  
 Luape-Other:
  * Go: rankboost + large-scale boosting

@@ -84,7 +84,11 @@ extern LuapeFunctionPtr greaterThanDoubleLuapeFunction();
 extern LuapeFunctionPtr getVariableLuapeFunction(ClassPtr inputClass = ClassPtr(), size_t variableIndex = 0);
 extern LuapeFunctionPtr getVariableLuapeFunction(ClassPtr inputClass, const String& variableName);
 extern LuapeFunctionPtr getContainerLengthLuapeFunction();
+
+// DoubleVector
 extern LuapeFunctionPtr getDoubleVectorElementLuapeFunction(EnumerationPtr enumeration = EnumerationPtr(), size_t index = 0);
+extern LuapeFunctionPtr computeDoubleVectorStatisticsLuapeFunction();
+extern LuapeFunctionPtr getDoubleVectorExtremumsLuapeFunction(EnumerationPtr enumeration = EnumerationPtr());
 
 /*
 ** Base classes

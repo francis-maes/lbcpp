@@ -135,7 +135,7 @@ int Enumeration::compare(const ObjectPtr& otherObject) const
     return -1;
   size_t n = getNumElements();
   if (other->getNumElements() != n)
-    return -2;
+    return (int)n - (int)other->getNumElements();
   for (size_t i = 0; i < n; ++i)
     if (getElement(i)->getName() != other->getElement(i)->getName())
       return i + 1;
