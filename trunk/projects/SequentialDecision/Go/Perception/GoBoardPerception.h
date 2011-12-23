@@ -46,7 +46,7 @@ public:
   virtual String toShortString() const
     {return "board";}
 
-  virtual size_t getSizeInBytes() const
+  virtual size_t getSizeInBytes(bool recursively) const
     {return sizeof (*this);}
 
 protected:

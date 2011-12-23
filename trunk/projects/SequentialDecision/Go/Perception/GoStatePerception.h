@@ -60,7 +60,7 @@ public:
   const GoBoardPositionPerceptionPtr& getLastAction() const
     {return lastAction;}
 
-  virtual size_t getSizeInBytes() const
+  virtual size_t getSizeInBytes(bool recursively) const
     {return sizeof (*this);}
 
 protected:

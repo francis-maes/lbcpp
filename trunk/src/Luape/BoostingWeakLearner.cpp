@@ -108,7 +108,10 @@ double BoostingWeakLearner::computeWeakObjectiveWithStump(ExecutionContext& cont
 }
 
 LuapeNodePtr BoostingWeakLearner::makeStump(const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, double threshold) const
-  {return structureLearner->getUniverse()->makeFunctionNode(stumpLuapeFunction(threshold), numberNode);}
+{
+  return new LuapeFunctionNode(stumpLuapeFunction(threshold), numberNode); // bypass universe
+  //return structureLearner->getUniverse()->makeFunctionNode(stumpLuapeFunction(threshold), numberNode);
+}
 
 LuapeNodePtr BoostingWeakLearner::makeContribution(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, double weakObjective, const IndexSetPtr& examples) const
   {return structureLearner->turnWeakNodeIntoContribution(context, weakNode, weakObjective, examples);}

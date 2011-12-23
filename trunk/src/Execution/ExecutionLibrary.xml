@@ -46,6 +46,7 @@
     <variable type="ObjectVector[Pair[String,WorkUnit]]" name="stack"/>
   </class>
 
+  <!-- Notifications -->
   <class name="Notification" abstract="yes"/>
 
   <!-- Execution Callback and Context -->

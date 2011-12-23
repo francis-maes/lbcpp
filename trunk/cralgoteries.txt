@@ -1,6 +1,3 @@
-
-
- * Voir ce qui prend toute la RAM
  * Test: sampler les active variables d'après la distribution au lieu de prendre les N premiers
  
 Luape-Other:

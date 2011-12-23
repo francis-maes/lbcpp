@@ -62,7 +62,7 @@ public:
   const std::vector<size_t>& getCysteinIndices() const
     {return cysteinIndices;}
 
-  virtual size_t getSizeInBytes() const
+  virtual size_t getSizeInBytes(bool recursively) const
     {return sizeof (*this);}
 
 protected:

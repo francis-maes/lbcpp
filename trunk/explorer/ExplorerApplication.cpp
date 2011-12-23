@@ -21,7 +21,7 @@ ApplicationCommandManager* theCommandManager = NULL;
 class ExplorerExecutionCallback : public ExecutionCallback
 {
 public:
-  ExplorerExecutionCallback() : numErrors(0), numWarnings(0) {}
+  ExplorerExecutionCallback() : numErrors(0), numWarnings(0) {thisClass = executionCallbackClass;}
 
   virtual void errorCallback(const String& where, const String& what)
   {
