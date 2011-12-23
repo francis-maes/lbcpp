@@ -72,10 +72,29 @@
   <class name="GetContainerLengthLuapeFunction" base="LuapeFunction">
     <constructor/>
   </class>
+
+  <!-- Luape Functions - DoubleVectors -->
   <class name="GetDoubleVectorElementLuapeFunction" base="LuapeFunction">
     <constructor arguments="EnumerationPtr enumeration, size_t index"/>
     <variable type="Enumeration" name="enumeration"/>
     <variable type="PositiveInteger" name="index"/>
+  </class>
+
+  <class name="ScalarVariableStatisticsPerception">
+    <variable type="Double" name="mean"/>
+    <variable type="Double" name="stddev"/>
+    <variable type="Double" name="sum"/>
+    <variable type="Double" name="min"/>
+    <variable type="Double" name="max"/>
+    <variable type="Double" name="percentActive"/>
+  </class>
+  <class name="ComputeDoubleVectorStatisticsLuapeFunction" base="LuapeFunction">
+    <constructor/>
+  </class>
+  
+  <class name="GetDoubleVectorExtremumsLuapeFunction" base="LuapeFunction">
+    <constructor arguments="EnumerationPtr enumeration" returnType="LuapeFunction"/>
+    <variable type="Enumeration" name="enumeration"/>
   </class>
 
   <!-- Luape Functions - Special -->

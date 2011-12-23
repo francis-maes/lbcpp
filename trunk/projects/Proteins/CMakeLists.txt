@@ -130,6 +130,9 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
 )
 
 SET(LBCPP_PROTEIN_LUAPE_SOURCES
+  Luape/ProteinResiduePerception.h
+  Luape/ProteinPerception.h
+  Luape/LuapeProteinPredictorParameters.h
   Luape/ProteinLuapeSandBox.h
   Luape/ProteinLuapeLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinLuapeLibrary.cpp

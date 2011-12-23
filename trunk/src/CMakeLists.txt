@@ -662,6 +662,7 @@ SET(LBCPP_LUAPE_FUNCTION_SOURCES
   Luape/Function/DoubleLuapeFunctions.h
   Luape/Function/EnumerationLuapeFunctions.h
   Luape/Function/ObjectLuapeFunctions.h
+  Luape/Function/DoubleVectorLuapeFunctions.h
   Luape/Function/SpecialLuapeFunctions.h
   Luape/Function/LuapeFunctionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeFunctionLibrary.cpp

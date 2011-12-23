@@ -16,11 +16,12 @@
 
     <variable type="AminoAcidType" name="aminoAcidType" enumeration="yes"/>
     <variable type="DenseDoubleVector[PositionSpecificScoringMatrix, Probability]" name="pssmRow"/>
+    <!--
     <variable type="DenseDoubleVector[SecondaryStructureElement, Probability]" name="secondaryStructure"/>
     <variable type="DenseDoubleVector[DSSPSecondaryStructureElement, Probability]" name="dsspSecondaryStructure"/> 
     <variable type="DenseDoubleVector[StructuralAlphabetElement, Probability]" name="structuralAlphabet"/>
     <variable type="Probability" name="solventAccessibilityAt20p"/>
-    <variable type="Probability" name="disordered"/>
+    <variable type="Probability" name="disordered"/>-->
   </class>
   
   <class name="ProteinResiduePairPerception" base="Object">
@@ -36,17 +37,6 @@
   <class name="ProteinGetRelativeResidueLuapeFunction" base="LuapeFunction">
     <variable type="Integer" name="delta"/>
   </class>
-
-  <class name="ScalarVariableStatisticsPerception">
-    <variable type="Double" name="mean"/>
-    <variable type="Double" name="stddev"/>
-    <variable type="Double" name="sum"/>
-    <variable type="Double" name="min"/>
-    <variable type="Double" name="max"/>
-    <variable type="Double" name="percentActive"/>
-  </class>
-
-  <class name="ComputeDoubleVectorStatisticsLuapeFunction" base="LuapeFunction"/>
 
   <!-- Sand Box -->
   <class name="ProteinLuapeSandBox" base="WorkUnit">
