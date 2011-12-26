@@ -22,6 +22,7 @@ public:
 
   virtual bool train(ExecutionContext& context, const FunctionPtr& f, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
+    jassert(trainingData.size());
     const UnaryHigherOrderFunctionPtr& function = f.staticCast<UnaryHigherOrderFunction>();
     const FunctionPtr& baseFunction = function->getBaseFunction();
     jassert(baseFunction);

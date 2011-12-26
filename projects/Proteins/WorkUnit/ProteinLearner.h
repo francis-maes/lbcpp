@@ -44,6 +44,7 @@ protected:
   FunctionPtr createSequentialPredictor(ExecutionContext& context, ProteinPredictorParametersPtr parameters) const;
   FunctionPtr createParallelPredictor(ExecutionContext& context, ProteinPredictorParametersPtr parameters) const;
   FunctionPtr createOneStackPredictor(ExecutionContext& context, ProteinPredictorParametersPtr parameters) const;
+  EvaluatorPtr createEvaluator() const;
   ContainerPtr loadProteinPairs(ExecutionContext& context, const String& subDirectoryName) const;
   bool savePredictionsToDirectory(ExecutionContext& context, FunctionPtr predictor, ContainerPtr proteinPairs, const File& predictionDirectory) const;
   ScoreObjectPtr selectScoresFromTargets(EvaluatorPtr evaluator, ScoreObjectPtr scores) const;

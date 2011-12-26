@@ -254,6 +254,10 @@ template<class TT>
 inline void variableToNative(ExecutionContext& context, ReferenceCountedObjectPtr<TT>& dest, const Variable& source)
   {jassert(source.isObject()); dest = source.getObjectAndCast<TT>(context);}
 
+template<class TT>
+inline void variableToNative(ExecutionContext& context, TT*& dest, const Variable& source)
+  {jassert(source.isObject()); dest = source.getObjectAndCast<TT>(context).get();}
+
 inline void variableToNative(ExecutionContext& context, Variable& dest, const Variable& source)
   {dest = source;}
 
@@ -265,6 +269,10 @@ inline Variable nativeToVariable(const Variable& source, const TypePtr& )
 
 template<class TT>
 inline Variable nativeToVariable(const ReferenceCountedObjectPtr<TT>& source, const TypePtr& expectedType)
+  {return Variable(source, expectedType);}
+
+template<class TT>
+inline Variable nativeToVariable(const TT* source, const TypePtr& expectedType)
   {return Variable(source, expectedType);}
 
 template<class TT>

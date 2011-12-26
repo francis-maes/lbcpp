@@ -39,6 +39,7 @@ ObjectVectorPtr BatchLearner::makeObjectVector(const ContainerPtr& container)
 
 ScoreObjectPtr BatchLearner::trainSubFunction(ExecutionContext& context, const FunctionPtr& subFunction, const ContainerPtr& subTrainingData, const ContainerPtr& subValidationData)
 {
+  jassert(subTrainingData);
   String description = T("Learning ") + subFunction->getOutputVariable()->getName() + T(" with ");
   description += String((int)subTrainingData->getNumElements()) + T(" train examples");
   if (subValidationData)
