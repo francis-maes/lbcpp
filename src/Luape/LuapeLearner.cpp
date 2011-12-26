@@ -105,7 +105,7 @@ bool BoostingLearner::doLearningIteration(ExecutionContext& context, double& tra
   // do weak learning
   {
     TimedScope _(context, "weak learning", verbose);
-    contribution = weakLearner->learn(context, refCountedPointerFromThis(this), trainingCache->getAllIndices(), weakObjective);
+    contribution = weakLearner->learn(context, refCountedPointerFromThis(this), trainingCache->getAllIndices(), verbose, weakObjective);
     if (!contribution)
     {
       context.errorCallback(T("Failed to find a weak learner"));

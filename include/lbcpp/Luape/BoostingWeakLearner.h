@@ -42,7 +42,7 @@ public:
   virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
     {return false;}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& indices, double& weakObjective) = 0;
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& indices, bool verbose, double& weakObjective) = 0;
 
   virtual void observeObjectiveValue(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
     {}
@@ -63,7 +63,7 @@ public:
   virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
     {jassert(false); return false;} // this must be implemented
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective);
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective);
 };
 
 typedef ReferenceCountedObjectPtr<FiniteBoostingWeakLearner> FiniteBoostingWeakLearnerPtr;
@@ -99,8 +99,8 @@ public:
   virtual void observeObjectiveValue(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
     {decorated->observeObjectiveValue(context, structureLearner, weakNode, examples, weakObjective);}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective)
-    {return decorated->learn(context, structureLearner, examples, weakObjective);}
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
+    {return decorated->learn(context, structureLearner, examples, verbose, weakObjective);}
 
 protected:
   friend class DecoratorBoostingWeakLearnerClass;

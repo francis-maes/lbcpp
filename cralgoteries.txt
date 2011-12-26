@@ -1,5 +1,9 @@
- * Test: sampler les active variables d'après la distribution au lieu de prendre les N premiers
- 
+
+
+Classification:
+ * Lancer des expés (vérifier que le verbose est off, que les active variables sont off)
+
+
 Luape-Other:
  * Go: rankboost + large-scale boosting
  * Go: support for polymorphism, neighborhood, regions

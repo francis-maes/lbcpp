@@ -39,10 +39,12 @@ public:
     //context.resultCallback("train", trainData);
     //context.resultCallback("test", testData);
 
+    size_t numVariables = inputClass->getNumMemberVariables();
+
     context.informationCallback(
       String((int)trainData->getNumElements()) + T(" training examples, ") +
       String((int)testData->getNumElements()) + T(" testing examples, ") + 
-      String((int)inputClass->getNumMemberVariables()) + T(" input variables,") +
+      String((int)numVariables) + T(" input variables,") +
       String((int)labels->getNumElements()) + T(" labels"));
 
     LuapeClassifierPtr classifier = createClassifier(inputClass);
@@ -57,10 +59,13 @@ public:
       //conditionLearner = adaptativeSamplingWeakLearner(budgetPerIteration, maxSteps);
       //conditionLearner = policyBasedWeakLearner(randomPolicy(), budgetPerIteration, maxSteps);
     
-    if (miniBatchRelativeSize == 0.0)
-      conditionLearner = laminatingWeakLearner(conditionLearner, relativeBudget);
-    else if (miniBatchRelativeSize < 1.0)
-      conditionLearner = banditBasedWeakLearner(conditionLearner, relativeBudget, miniBatchRelativeSize);
+    if (relativeBudget > 0.0)
+    {
+      if (miniBatchRelativeSize == 0.0)
+        conditionLearner = laminatingWeakLearner(conditionLearner, relativeBudget * numVariables);
+      else if (miniBatchRelativeSize < 1.0)
+        conditionLearner = banditBasedWeakLearner(conditionLearner, relativeBudget * numVariables, miniBatchRelativeSize);
+    }
 
     conditionLearner = compositeWeakLearner(constantWeakLearner(), conditionLearner);
     
