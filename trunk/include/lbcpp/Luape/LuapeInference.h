@@ -141,8 +141,8 @@ public:
 
   static EnumerationPtr getLabelsFromSupervision(TypePtr supervisionType);
 
-  EnumerationPtr getLabels() const
-    {return getOutputType().staticCast<Enumeration>();}
+  const EnumerationPtr& getLabels() const
+    {return labels;}
 
   const ClassPtr& getDoubleVectorClass() const
     {return doubleVectorClass;}
@@ -157,6 +157,7 @@ public:
 
 protected:
   ClassPtr doubleVectorClass;
+  EnumerationPtr labels;
 };
 
 extern ClassPtr luapeClassifierClass;

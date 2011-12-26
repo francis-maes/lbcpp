@@ -19,6 +19,17 @@ ProteinLearner::ProteinLearner() : maxProteins(0), numStacks(1), sequentialLearn
   proteinTargets.push_back(drTarget);
 }
 
+EvaluatorPtr ProteinLearner::createEvaluator() const
+{
+  ProteinEvaluatorPtr res = new ProteinEvaluator();
+  res->addEvaluator(ss3Target,  containerSupervisedEvaluator(classificationEvaluator()), T("Secondary Structure"));
+  res->addEvaluator(ss8Target,  containerSupervisedEvaluator(classificationEvaluator()), T("DSSP Secondary Structure"));
+  res->addEvaluator(sa20Target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("Solvent Accessibility (@20)"));
+  res->addEvaluator(drTarget,   containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("Disorder regions"));
+  res->addEvaluator(stalTarget, containerSupervisedEvaluator(classificationEvaluator()), T("Structural Alphabet"));
+  return res;
+}
+
 Variable ProteinLearner::run(ExecutionContext& context)
 {
   if (!parameters)
@@ -47,6 +58,8 @@ Variable ProteinLearner::run(ExecutionContext& context)
 
   context.informationCallback(String((int)trainProteins->getNumElements()) + T(" training proteins, ") +
                               String((int)validationProteins->getNumElements()) + T(" validation proteins"));
+  if (!trainProteins->getNumElements())
+    return false;
 
   // train
   if (!predictor->train(context, trainProteins, validationProteins, T("Training")))
@@ -54,10 +67,9 @@ Variable ProteinLearner::run(ExecutionContext& context)
 
 
   // evaluate
-  jassertfalse; // TODO update evaluator by adding sub-evaluator
-  EvaluatorPtr trainEvaluator = new ProteinEvaluator();
+  EvaluatorPtr trainEvaluator = createEvaluator();
   ScoreObjectPtr trainScore = selectScoresFromTargets(trainEvaluator, predictor->evaluate(context, trainProteins, trainEvaluator, T("Evaluate on train proteins")));
-  EvaluatorPtr validationEvaluator = new ProteinEvaluator();
+  EvaluatorPtr validationEvaluator = createEvaluator();
   ScoreObjectPtr validationScore = selectScoresFromTargets(validationEvaluator, predictor->evaluate(context, validationProteins, validationEvaluator, T("Evaluate on validation proteins")));
   if (!trainScore || !validationScore)
     return false;
@@ -77,8 +89,7 @@ Variable ProteinLearner::run(ExecutionContext& context)
   if (testProteins)
   {
     context.informationCallback(String((int)testProteins->getNumElements()) + T(" test proteins"));
-    jassertfalse; // TODO update evaluator by adding sub-evaluator
-    EvaluatorPtr testEvaluator = new ProteinEvaluator();
+    EvaluatorPtr testEvaluator = createEvaluator();
     testScore = selectScoresFromTargets(testEvaluator, predictor->evaluate(context, testProteins, testEvaluator, T("Evaluate on test proteins")));
     if (!testScore)
       return false;
@@ -131,7 +142,7 @@ FunctionPtr ProteinLearner::createOneStackPredictor(ExecutionContext& context, P
   ProteinPredictorPtr res = new ProteinPredictor(parameters);
   for (size_t i = 0; i < proteinTargets.size(); ++i)
     res->addTarget(proteinTargets[i]);
-  res->setEvaluator(new ProteinEvaluator());
+  res->setEvaluator(createEvaluator());
   return res;
 }
 
@@ -191,11 +202,10 @@ FunctionPtr ProteinLearner::createSequentialPredictor(ExecutionContext& context,
     {
       ProteinPredictorPtr stack = new ProteinPredictor(parameters);
       stack->addTarget(proteinTargets[i]);
-      stack->setEvaluator(new ProteinEvaluator());
+      stack->setEvaluator(createEvaluator());
       res->addPredictor(stack);
     }
   }
-
   return res;
 }
 

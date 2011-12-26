@@ -30,7 +30,7 @@ public:
     std::vector<size_t> countByType(totalNumAminoAcids, 0);
     for (size_t i = 0; i < n; ++i)
     {
-      ProteinResiduePerceptionPtr residue = new ProteinResiduePerception(this, protein, i);
+      ProteinResiduePerceptionPtr residue(new ProteinResiduePerception(this, protein, i));
       residues->set(i, residue);
       if (i > 0)
         residue->setPrevious(residues->getAndCast<ProteinResiduePerception>(i - 1));
@@ -64,7 +64,7 @@ public:
 
   virtual size_t getSizeInBytes(bool recursively) const
     {return sizeof (*this);}
-
+ 
 protected:
   friend class ProteinPerceptionClass;
 

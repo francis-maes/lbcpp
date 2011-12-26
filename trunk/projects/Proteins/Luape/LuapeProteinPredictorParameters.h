@@ -22,6 +22,7 @@ class LuapeProteinPredictorParameters : public ProteinPredictorParameters
 public:
   LuapeProteinPredictorParameters(size_t treeDepth, size_t complexity, double relativeBudget, double miniBatchRelativeSize, size_t numIterations)
     : treeDepth(treeDepth), complexity(complexity), relativeBudget(relativeBudget), miniBatchRelativeSize(miniBatchRelativeSize), numIterations(numIterations) {}
+  LuapeProteinPredictorParameters() : treeDepth(1), complexity(5), relativeBudget(5.0), miniBatchRelativeSize(0.0), numIterations(1000) {}
 
   Variable createProteinPerceptionFunction(ExecutionContext& context, const Variable& input) const
     {return new ProteinPerception(input.getObjectAndCast<Protein>());}
@@ -225,6 +226,8 @@ public:
   }
 
 protected:
+  friend class LuapeProteinPredictorParametersClass;
+
   size_t treeDepth;
   size_t complexity;
   double relativeBudget;

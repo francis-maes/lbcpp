@@ -33,7 +33,7 @@ public:
     if (validationData.size())
       makeInitialStates(function, validationData, validationStates);
 
-    if (context.isMultiThread())
+    if (false)//context.isMultiThread())
       return trainMultiThread(context, function, trainingStates, validationStates);
     else
       return trainSingleThread(context, function, trainingStates, validationStates);

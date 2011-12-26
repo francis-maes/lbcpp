@@ -136,11 +136,11 @@ EnumerationPtr LuapeClassifier::getLabelsFromSupervision(TypePtr supervisionType
 
 TypePtr LuapeClassifier::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
 {
-  EnumerationPtr enumeration = getLabelsFromSupervision(inputVariables[1]->getType());
-  jassert(enumeration);
-  doubleVectorClass = denseDoubleVectorClass(enumeration, doubleType);
-  node = new LuapeVectorSumNode(enumeration);
-  return enumeration;
+  labels = getLabelsFromSupervision(inputVariables[1]->getType());
+  jassert(labels);
+  doubleVectorClass = denseDoubleVectorClass(labels, doubleType);
+  node = new LuapeVectorSumNode(labels);
+  return denseDoubleVectorClass(labels, probabilityType);
 }
 
 DenseDoubleVectorPtr LuapeClassifier::computeActivations(ExecutionContext& context, const ObjectPtr& input) const
@@ -148,9 +148,19 @@ DenseDoubleVectorPtr LuapeClassifier::computeActivations(ExecutionContext& conte
 
 Variable LuapeClassifier::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
-  // supervision = inputs[1]
   DenseDoubleVectorPtr activations = computeActivations(context, inputs[0].getObject());
-  return Variable(activations->getIndexOfMaximumValue(), getOutputType());
+  DenseDoubleVectorPtr probabilities = new DenseDoubleVector((ClassPtr)getOutputType());
+  size_t n = activations->getNumElements();
+  double Z = 0.0;
+  for (size_t i = 0; i < n; ++i)
+  {
+    double prob = 1.0 / (1.0 + exp(-activations->getValue(i)));
+    Z += prob;
+    probabilities->setValue(i, prob);
+  }
+  if (Z)
+    probabilities->multiplyByScalar(1.0 / Z);
+  return probabilities;
 }
 
 double LuapeClassifier::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const

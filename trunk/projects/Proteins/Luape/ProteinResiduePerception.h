@@ -24,7 +24,7 @@ typedef ReferenceCountedObjectPtr<ProteinResiduePairPerception> ProteinResiduePa
 class ProteinResiduePerception : public Object
 {
 public:
-  ProteinResiduePerception(const ProteinPerceptionPtr& proteinPerception, const ProteinPtr& protein, size_t index)
+  ProteinResiduePerception(ProteinPerception* proteinPerception, const ProteinPtr& protein, size_t index)
     : protein(proteinPerception), position(index), positionOfType((size_t)-1)
   {
     aminoAcidType = (AminoAcidType)protein->getPrimaryStructure()->getElement(index).getInteger();
@@ -35,7 +35,10 @@ public:
     solventAccessibilityAt20p = getProbability(protein->getSolventAccessibilityAt20p(), index);
     disordered = getProbability(protein->getDisorderRegions(), index);
   }
-  ProteinResiduePerception() : position((size_t)-1), positionOfType((size_t)-1), aminoAcidType(totalNumAminoAcids), solventAccessibilityAt20p(doubleMissingValue), disordered(doubleMissingValue) {}
+
+  ProteinResiduePerception() 
+    : protein(NULL), position((size_t)-1), positionOfType((size_t)-1),
+      aminoAcidType(totalNumAminoAcids), solventAccessibilityAt20p(doubleMissingValue), disordered(doubleMissingValue) {}
 
   void setPrevious(const ProteinResiduePerceptionPtr& previous)
   {
@@ -52,7 +55,7 @@ public:
   void setPositionOfType(size_t position)
     {positionOfType = position;}
 
-  const ProteinPerceptionPtr& getProtein() const
+  ProteinPerceptionPtr getProtein() const
     {return protein;}
 
   size_t getPosition() const
