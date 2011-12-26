@@ -28,6 +28,7 @@ LuapeNode::LuapeNode(const TypePtr& type)
 
 void LuapeNode::addImportance(double delta)
 {
+  jassert(isNumberValid(delta));
   importance += delta;
   size_t n = getNumSubNodes();
   for (size_t i = 0; i < n; ++i)

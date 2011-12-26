@@ -41,7 +41,7 @@ public:
     {return importance;}
 
   void setImportance(double importance)
-    {this->importance = importance;}
+    {jassert(isNumberValid(importance)); this->importance = importance;}
 
   lbcpp_UseDebuggingNewOperator
 

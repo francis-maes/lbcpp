@@ -45,14 +45,14 @@ public:
       weakLearners[i]->observeObjectiveValue(context, structureLearner, weakNode, examples, weakObjective);
   }
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective)
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
   {
     weakObjective = -DBL_MAX;
     LuapeNodePtr res;
     for (size_t i = 0; i < weakLearners.size(); ++i)
     {
       double objective;
-      LuapeNodePtr node = weakLearners[i]->learn(context, structureLearner, examples, objective);
+      LuapeNodePtr node = weakLearners[i]->learn(context, structureLearner, examples, verbose, objective);
       if (objective > weakObjective)
       {
         weakObjective = objective;

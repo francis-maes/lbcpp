@@ -23,7 +23,7 @@ public:
     : DecoratorBoostingWeakLearner(weakLearner), relativeBudget(relativeBudget), miniBatchRelativeSize(miniBatchRelativeSize)  {}
   BanditBasedWeakLearner() {}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective)
+  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
   {
     // make initial weak learners
     std::vector<LuapeNodePtr> weakNodes;
@@ -40,7 +40,8 @@ public:
     }
 
     // play bandits
-    context.enterScope(T("Playing bandits"));
+    if (verbose)
+      context.enterScope(T("Playing bandits"));
     std::vector<IndexSetPtr> subsets;
 
     size_t numTrainingSamples = structureLearner->getTrainingCache()->getNumSamples();
@@ -89,14 +90,19 @@ public:
     }
 
     // display ten best arms
-    size_t index = 0;
-    for (std::multimap<double, LuapeNodePtr>::const_reverse_iterator it = sortedNodes.rbegin(); it != sortedNodes.rend() && index < 10; ++it, ++index)
-      context.informationCallback(T("[") + String(it->first) + T("]: ") + it->second->toShortString() + T(" (tk = ") + String(arms[it->second].episodeStats.getCount()) + T(")"));
-
+    if (verbose)
+    {
+      size_t index = 0;
+      for (std::multimap<double, LuapeNodePtr>::const_reverse_iterator it = sortedNodes.rbegin(); it != sortedNodes.rend() && index < 10; ++it, ++index)
+        context.informationCallback(T("[") + String(it->first) + T("]: ") + it->second->toShortString() + T(" (tk = ") + String(arms[it->second].episodeStats.getCount()) + T(")"));
+    }
 
     weakObjective = computeWeakObjectiveWithEventualStump(context, structureLearner, bestWeakNode, examples); // side effect on bestWeakNode
-    context.informationCallback(T("Num Steps: ") + String((int)t) + T(" Effective budget: ") + String((int)effectiveBudget) + T(" normalized = ") + String((double)effectiveBudget / structureLearner->getTrainingCache()->getNumSamples()));
-    context.leaveScope(weakObjective);
+    if (verbose)
+    {
+      context.informationCallback(T("Num Steps: ") + String((int)t) + T(" Effective budget: ") + String((int)effectiveBudget) + T(" normalized = ") + String((double)effectiveBudget / structureLearner->getTrainingCache()->getNumSamples()));
+      context.leaveScope(weakObjective);
+    }
     return makeContribution(context, structureLearner, bestWeakNode, weakObjective, examples);
   }
 

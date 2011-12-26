@@ -114,12 +114,16 @@ LuapeNodePtr BoostingWeakLearner::makeStump(const BoostingLearnerPtr& structureL
 }
 
 LuapeNodePtr BoostingWeakLearner::makeContribution(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, double weakObjective, const IndexSetPtr& examples) const
-  {return structureLearner->turnWeakNodeIntoContribution(context, weakNode, weakObjective, examples);}
+{
+  if (!weakNode || weakObjective == -DBL_MAX)
+    return LuapeNodePtr();
+  return structureLearner->turnWeakNodeIntoContribution(context, weakNode, weakObjective, examples);
+}
 
 /*
 ** FiniteBoostingWeakLearner
 */
-LuapeNodePtr FiniteBoostingWeakLearner::learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, double& weakObjective)
+LuapeNodePtr FiniteBoostingWeakLearner::learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
 {
   const LuapeInferencePtr& function = structureLearner->getFunction();
 
@@ -146,9 +150,9 @@ LuapeNodePtr FiniteBoostingWeakLearner::learn(ExecutionContext& context, const B
       if (stump)
         threshold = stump->getThreshold();
     }
+    objectiveAndThresholds[i] = std::make_pair(objective, threshold);*/
     if (objective > weakObjective)
       weakObjective = objective, bestWeakNode = weakNode;
-    objectiveAndThresholds[i] = std::make_pair(objective, threshold);*/
   }
 
 /*  for (size_t i = 0; i < weakNodes.size(); ++i)
@@ -159,10 +163,6 @@ LuapeNodePtr FiniteBoostingWeakLearner::learn(ExecutionContext& context, const B
     context.resultCallback(name, (objective - objectiveStats.getMean()) / objectiveStats.getStandardDeviation());
     context.resultCallback(name + " threshold", threshold);
   }*/
-
-  if (!bestWeakNode)
-    return LuapeNodePtr();
-
   return makeContribution(context, structureLearner, bestWeakNode, weakObjective, examples);
 }
 
