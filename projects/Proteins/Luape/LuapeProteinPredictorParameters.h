@@ -20,9 +20,9 @@ namespace lbcpp
 class LuapeProteinPredictorParameters : public ProteinPredictorParameters
 {
 public:
-  LuapeProteinPredictorParameters(size_t treeDepth, size_t complexity, double relativeBudget, double miniBatchRelativeSize, size_t numIterations)
-    : treeDepth(treeDepth), complexity(complexity), relativeBudget(relativeBudget), miniBatchRelativeSize(miniBatchRelativeSize), numIterations(numIterations) {}
-  LuapeProteinPredictorParameters() : treeDepth(1), complexity(5), relativeBudget(5.0), miniBatchRelativeSize(0.0), numIterations(1000) {}
+  LuapeProteinPredictorParameters(size_t treeDepth, size_t complexity, double relativeBudget, double miniBatchRelativeSize, size_t numIterations, bool verbose = true)
+    : treeDepth(treeDepth), complexity(complexity), relativeBudget(relativeBudget), miniBatchRelativeSize(miniBatchRelativeSize), numIterations(numIterations), verbose(verbose) {}
+  LuapeProteinPredictorParameters() : treeDepth(1), complexity(5), relativeBudget(5.0), miniBatchRelativeSize(0.0), numIterations(1000), verbose(true) {}
 
   Variable createProteinPerceptionFunction(ExecutionContext& context, const Variable& input) const
     {return new ProteinPerception(input.getObjectAndCast<Protein>());}
@@ -103,10 +103,37 @@ public:
       return true;
     }
 
+    bool isGetRelativeAccessor(const LuapeNodePtr& node, LuapeNodePtr& argument, int& delta)
+    {
+      LuapeFunctionNodePtr functionNode = node.dynamicCast<LuapeFunctionNode>();
+      if (!functionNode)
+        return false;
+      ProteinGetRelativeResidueLuapeFunctionPtr function = functionNode->getFunction().dynamicCast<ProteinGetRelativeResidueLuapeFunction>();
+      if (!function)
+        return false;
+      argument = functionNode->getArgument(0);
+      delta = function->getDelta();
+      return true;
+    }
+
     virtual LuapeNodePtr canonizeNode(const LuapeNodePtr& node)
     {
-      // [x].prev.next => [x]
-      // [x].next.prev => [x]
+      // [x].getRelative(a).getRelative(b) => [x].getRelative(a+b)
+      if (node->getType() == proteinResiduePerceptionClass)
+      {
+        LuapeNodePtr parent;
+        LuapeNodePtr grandParent;
+        int deltaA, deltaB;
+        if (isGetRelativeAccessor(node, parent, deltaA))
+        {
+          if (isGetRelativeAccessor(parent, grandParent, deltaB))
+          {
+            int delta = deltaA + deltaB;
+            return delta ? makeFunctionNode(new ProteinGetRelativeResidueLuapeFunction(delta), grandParent) : grandParent;
+          }
+        }
+      }
+
       if (node->getType() == proteinResiduePerceptionClass || node->getType() == proteinPerceptionClass)
       {
         LuapeNodePtr parent;
@@ -119,13 +146,19 @@ public:
           {
             if (grandParent->getType() == proteinResiduePerceptionClass)
             {
+              // [x].prev.next => [x]
+              // [x].next.prev => [x]
               if ((parentVariable == T("next") && grandParentVariable == T("prev")) ||
                   (parentVariable == T("prev") && grandParentVariable == T("next")) ||
                   (parentVariable == T("nextT") && grandParentVariable == T("prevT")) ||
                   (parentVariable == T("prevT") && grandParentVariable == T("nextT")))
                 return grandParent;
+
+              // [x]....protein => [x].protein
               if (parentVariable == T("protein"))
                 return makeFunctionNode(getVariableLuapeFunction(proteinResiduePerceptionClass, T("protein")), grandParent); // [x].*.protein => [x].protein
+
+
             }
           }
         }
@@ -168,7 +201,7 @@ public:
     machine->addFunction(getDoubleVectorExtremumsLuapeFunction());
 
     // protein-specific operations
-    //machine->addFunction(new ProteinGetRelativeResidueLuapeFunction());
+    machine->addFunction(new ProteinGetRelativeResidueLuapeFunction());
   }
 
   // task level
@@ -198,7 +231,7 @@ public:
   {
     LuapeInferencePtr learningMachine = new LuapeBinaryClassifier(createUniverse());
     addFunctions(learningMachine, target);
-    learningMachine->setLearner(adaBoostLearner(createWeakLearner(target)), numIterations, true); // verbose 
+    learningMachine->setLearner(adaBoostLearner(createWeakLearner(target)), numIterations, verbose);
     learningMachine->setBatchLearner(filterUnsupervisedExamplesBatchLearner(learningMachine->getBatchLearner(), true));
     return learningMachine;
   }
@@ -207,7 +240,7 @@ public:
   {
     LuapeInferencePtr learningMachine =  new LuapeClassifier(createUniverse());
     addFunctions(learningMachine, target);
-    learningMachine->setLearner(adaBoostMHLearner(createWeakLearner(target), true), numIterations, true);// verbose 
+    learningMachine->setLearner(adaBoostMHLearner(createWeakLearner(target), true), numIterations, verbose);// verbose 
     learningMachine->setBatchLearner(filterUnsupervisedExamplesBatchLearner(learningMachine->getBatchLearner(), true));
     return learningMachine;
   }
@@ -233,6 +266,7 @@ protected:
   double relativeBudget;
   double miniBatchRelativeSize;
   size_t numIterations;
+  bool verbose;
 };
 
 }; /* namespace lbcpp */
