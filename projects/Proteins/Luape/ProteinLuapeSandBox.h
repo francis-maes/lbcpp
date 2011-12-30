@@ -40,7 +40,7 @@ public:
     predictor->knnNeighbors = 5;
 #endif
      
-    ProteinPredictorParametersPtr predictor = new LuapeProteinPredictorParameters(treeDepth, complexity, relativeBudget, miniBatchRelativeSize, numIterations);
+    ProteinPredictorParametersPtr predictor = new LuapeProteinPredictorParameters(treeDepth, complexity, relativeBudget, miniBatchRelativeSize, numIterations, false);
 
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
     //iteration->addTarget(dsbTarget);

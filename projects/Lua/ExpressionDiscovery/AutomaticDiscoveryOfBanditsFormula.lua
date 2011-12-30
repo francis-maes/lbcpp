@@ -10,9 +10,9 @@ require 'Sampler'
 require 'Random'
 
 local minK = 2
-local maxK = 10
-local maxRewardExpectation = 1
-local numBanditProblems = 1000
+local maxK = 2
+local maxRewardExpectation = 1.0
+local numBanditProblems = 10
 local horizon = 10
 
 local nestedMCLevel = 2

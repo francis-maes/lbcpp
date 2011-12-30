@@ -186,15 +186,15 @@ public:
 
   struct Run : public WorkUnit
   {
-    Run(const std::vector<GPExpressionPtr>& formulas, FunctionPtr objective, size_t numTimeSteps, const std::vector<DiscreteBanditPolicyPtr>& baselines, const String& description)
-      : formulas(formulas), objective(objective), numTimeSteps(numTimeSteps), baselines(baselines), description(description) {}
+  Run(const std::vector<GPExpressionPtr>& formulas, FunctionPtr objective, size_t numTimeSteps, const std::vector<DiscreteBanditPolicyPtr>& baselines, const String& description, double C)
+    : formulas(formulas), objective(objective), numTimeSteps(numTimeSteps), baselines(baselines), description(description), C(C) {}
 
     virtual String toShortString() const
       {return description;}
 
     virtual Variable run(ExecutionContext& context)
     {
-      DiscreteBanditPolicyPtr policy = new Formula5IndexBasedDiscreteBanditPolicy(1, false); // rk + 1/sqrt(tk)
+      DiscreteBanditPolicyPtr policy = new Formula5IndexBasedDiscreteBanditPolicy(C, false); // rk + 1/sqrt(tk)
       FormulaPool pool(policy, objective);
       pool.run(context, formulas, 1, numTimeSteps);
       
@@ -224,6 +224,7 @@ public:
     size_t numTimeSteps;
     const std::vector<DiscreteBanditPolicyPtr>& baselines;
     String description;
+    double C;
   };
 
   virtual Variable run(ExecutionContext& context)
@@ -247,16 +248,18 @@ public:
 
     CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Running"));
 
+    double Ccumul = 5.0;
+    double Csimple = 0.5;
     for (size_t horizon = minHorizon; horizon <= maxHorizon; horizon *= 10)
     {
       String pre = "Horizon " + String((int)horizon);
       FunctionPtr objective = new BanditFormulaObjective(false, 1, minArms, maxArms, maxExpectedReward, horizon);
       objective->initialize(context, gpExpressionClass);
-      workUnit->addWorkUnit(new Run(formulas, objective, numTimeSteps, baselines, pre + T(" Cumulative Regret")));
+      workUnit->addWorkUnit(new Run(formulas, objective, numTimeSteps, baselines, pre + T(" Cumulative Regret"), Ccumul));
       
       objective = new BanditFormulaObjective(true, 1, minArms, maxArms, maxExpectedReward, horizon);
       objective->initialize(context, gpExpressionClass);
-      workUnit->addWorkUnit(new Run(formulas, objective, numTimeSteps, baselines, pre + T(" Simple Regret")));
+      workUnit->addWorkUnit(new Run(formulas, objective, numTimeSteps, baselines, pre + T(" Simple Regret"), Csimple));
     }
     
     workUnit->setPushChildrenIntoStackFlag(true);
