@@ -15,7 +15,6 @@
 namespace lbcpp
 {
 
-// FIXME: implement missings vote
 class AdaBoostMHWeakObjective : public BoostingWeakObjective
 {
 public:
@@ -325,27 +324,28 @@ public:
     return res;
   }
 
-#if 0
   virtual bool doLearningIteration(ExecutionContext& context, double& trainingScore, double& validationScore)
   {
     if (!WeightBoostingLearner::doLearningIteration(context, trainingScore, validationScore))
       return false;
-    return true;
 
     static int counter = 0;
     ++counter;
 
-    if (true)//(counter % 10) == 0)
+    if ((counter % 50) == 0)
     {
-      static const size_t maxIterations = 100;
+      static const size_t maxIterations = 1;
 
       context.enterScope(T("SGD"));
 
       context.enterScope(T("Before"));
       context.resultCallback(T("iteration"), (size_t)0);
-      context.resultCallback(T("loss"), weightsSum);
-      context.resultCallback(T("train error"), function->evaluatePredictions(context, predictions, trainingData));
-      context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
+      double loss;
+      weights = computeSampleWeights(context, getTrainingPredictions(), loss);
+      context.resultCallback(T("loss"), loss);
+      
+      context.resultCallback(T("train error"), function->evaluatePredictions(context, getTrainingPredictions(), trainingData));
+      context.resultCallback(T("validation error"), function->evaluatePredictions(context, getValidationPredictions(), validationData));
       context.leaveScope();
 
       StoppingCriterionPtr stoppingCriterion = maxIterationsWithoutImprovementStoppingCriterion(2);
@@ -355,12 +355,14 @@ public:
         context.enterScope(T("Iteration ") + String((int)i+1));
         context.resultCallback(T("iteration"), i+1);
         doSGDIteration(context);
-        recomputePredictions(context);
-        recomputeWeights(context);
-        context.resultCallback(T("loss"), weightsSum);
-        double trainError = function->evaluatePredictions(context, predictions, trainingData);
+        //recomputePredictions(context);
+        //recomputeWeights(context);
+        double loss;
+        weights = computeSampleWeights(context, getTrainingPredictions(), loss);
+        context.resultCallback(T("loss"), loss);
+        double trainError = function->evaluatePredictions(context, getTrainingPredictions(), trainingData);
         context.resultCallback(T("train error"), trainError);
-        context.resultCallback(T("validation error"), function->evaluatePredictions(context, validationPredictions, validationData));
+        context.resultCallback(T("validation error"), function->evaluatePredictions(context, getValidationPredictions(), validationData));
 
        /* applyRegularizer(context);
         recomputePredictions(context);
@@ -375,7 +377,8 @@ public:
       }
       context.leaveScope();
     }
-    if (false)//counter > 100)
+#if 0
+    if (counter > 100)
     {
       context.enterScope(T("Pruning"));
       size_t yieldIndex = pruneSmallestVote(context);
@@ -390,16 +393,18 @@ public:
       context.leaveScope();
       context.resultCallback(T("yield index"), yieldIndex);
     }
+#endif // 0
     return true;
   }
 
+#if 0
   size_t pruneSmallestVote(ExecutionContext& context)
   {
     const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
     EnumerationPtr labels = classifier->getLabels();
     size_t numLabels = labels->getNumElements();
 
-    ObjectVectorPtr votes = classifier->getVotes().staticCast<ObjectVector>();
+    //ObjectVectorPtr votes = classifier->getVotes().staticCast<ObjectVector>();
     //size_t numVotes = votes->getNumElements();
     
     double smallestVoteNorm = DBL_MAX;
@@ -459,43 +464,47 @@ public:
       vote->multiplyByScalar(0.5);
     }
   }
+#endif // 0
 
   void doSGDIteration(ExecutionContext& context)
   {
-    static const double learningRate = 0.01;// / (1.0 + sqrt((double)graph->getNumYieldNodes()));
+    static const double learningRate = 0.001;// / (1.0 + sqrt((double)graph->getNumYieldNodes()));
 
     //MultiClassLossFunctionPtr lossFunction = logBinomialMultiClassLossFunction();
     //MultiClassLossFunctionPtr lossFunction = oneAgainstAllMultiClassLossFunction(exponentialDiscriminativeLossFunction());
 
     const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
+    const LuapeVectorSumNodePtr& sumNode = classifier->getRootNode().staticCast<LuapeVectorSumNode>();
     EnumerationPtr labels = classifier->getLabels();
     size_t numLabels = labels->getNumElements();
 
     std::vector<size_t> order;
-    context.getRandomGenerator()->sampleOrder(graph->getNumTrainingSamples(), order);
+    context.getRandomGenerator()->sampleOrder(trainingCache->getNumSamples(), order);
 
     DenseDoubleVectorPtr parameters = new DenseDoubleVector();
 
     ScalarVariableStatistics loss;
 
-    VectorPtr votes = classifier->getVotes();
-    size_t numVotes = votes->getNumElements();
-
     for (size_t i = 0; i < order.size(); ++i)
     {
-      const PairPtr& example = trainingData[order[i]].staticCast<Pair>();
+      // get example
+      const ObjectPtr& example = trainingData[order[i]];
+      ObjectPtr inputObject = example->getVariable(0).getObject();
+      size_t correctClass = (size_t)example->getVariable(1).getObjectAndCast<DoubleVector>()->getIndexOfMaximumValue();
 
-      // compute weak predictions
-      DenseDoubleVectorPtr weakPredictions = classifier->computeSignedWeakPredictions(context, example->getFirst().getObject());
-      jassert(numVotes == weakPredictions->getNumElements());
-
-      // compute activation
+      // compute terms and sum
+      LuapeInstanceCachePtr cache = new LuapeInstanceCache();
+      cache->setInputObject(function->getInputs(), inputObject);
       DenseDoubleVectorPtr activations = new DenseDoubleVector(classifier->getDoubleVectorClass());
-      for (size_t j = 0; j < numVotes; ++j)
-        votes->getElement(j).getObjectAndCast<DoubleVector>()->addWeightedTo(activations, 0, weakPredictions->getValue(j));
-
+      std::vector<DenseDoubleVectorPtr> terms(sumNode->getNumSubNodes());
+      for (size_t j = 0; j < terms.size(); ++j)
+      {
+        terms[j] = sumNode->getSubNode(j)->compute(context, cache).getObjectAndCast<DenseDoubleVector>();
+        if (terms[j])
+          terms[j]->addTo(activations);
+      }
+      
       // compute loss value and gradient
-      size_t correctClass = (size_t)example->getSecond().getInteger();
       double lossValue = 0.0;
       DenseDoubleVectorPtr lossGradient = new DenseDoubleVector(classifier->getDoubleVectorClass());
       for (size_t j = 0; j < numLabels; ++j)
@@ -507,20 +516,19 @@ public:
         lossValue += e * weight;
         lossGradient->setValue(j, -sign * e * weight);
       }
-      //lossFunction->computeMultiClassLoss(activations, correctClass, numLabels, &lossValue, &lossGradient, 1.0);
       loss.push(lossValue);
 
       // update
-      for (size_t j = 0; j < numVotes; ++j)
-      {
-        DenseDoubleVectorPtr v = votes->getElement(j).getObjectAndCast<DenseDoubleVector>();
-        lossGradient->addWeightedTo(v, 0, -learningRate * weakPredictions->getValue(j));
-      }
+      for (size_t j = 0; j < terms.size(); ++j)
+        if (terms[j])
+          lossGradient->addWeightedTo(terms[j], 0, -learningRate);
     }
+
+    trainingCache->recacheNode(context, sumNode, true);
+    validationCache->recacheNode(context, sumNode, true);
     
     context.resultCallback(T("meanLoss"), loss.getMean());
   }
-#endif // 0
 
 protected:
   friend class AdaBoostMHLearnerClass;

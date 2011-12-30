@@ -171,6 +171,17 @@ void LuapeSamplesCache::cacheNode(ExecutionContext& context, const LuapeNodePtr&
   ensureSizeInLowerThanMaxSize(context);
 }
 
+void LuapeSamplesCache::recacheNode(ExecutionContext& context, const LuapeNodePtr& node, bool isUncachable)
+{
+  NodeCache& nodeCache = m[node];
+  jassert(nodeCache.samples);
+  size_t sizeInBytes = nodeCache.getSizeInBytes(true);
+  nodeCache.samples = VectorPtr();
+  nodeCache.sortedDoubleValues = SparseDoubleVectorPtr();
+  actualCacheSize -= sizeInBytes;
+  nodeCache.samples = node->compute(context, refCountedPointerFromThis(this), allIndices)->getVector();
+}
+
 void LuapeSamplesCache::ensureSizeInLowerThanMaxSize(ExecutionContext& context)
 {
   if (maxCacheSize)

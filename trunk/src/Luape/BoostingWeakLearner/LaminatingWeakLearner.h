@@ -138,9 +138,9 @@ protected:
     if (!W0 || !N0)
       return 0.0;
     size_t numIterationsWrtN = 1 + (size_t)ceil(Nmax - log2((double)N0));
-    size_t numIterationsWrtW = (size_t)(log2((double)W0) - Wmin);
+    size_t numIterationsWrtW = (size_t)(log2((double)W0) - Wmin + 1e-9);
     size_t estimatedNumIterations = numIterationsWrtN < numIterationsWrtW ? numIterationsWrtN : numIterationsWrtW;
-
+#if 0
     size_t numExamples = N0;
     size_t numWeakLearners = W0;
     size_t numIterations = 0;
@@ -156,7 +156,7 @@ protected:
         numExamples = totalNumExamples;
     }
     jassert(estimatedNumIterations == numIterations);
-
+#endif // 0
     return estimatedNumIterations * W0 * N0;
   }
 

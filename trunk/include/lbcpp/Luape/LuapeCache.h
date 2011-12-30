@@ -200,6 +200,7 @@ public:
   void cacheNode(ExecutionContext& context, const LuapeNodePtr& node, const VectorPtr& values = VectorPtr(), const String& reason = String::empty, bool isUncachable = true);
   void uncacheNode(ExecutionContext& context, const LuapeNodePtr& node);
   void uncacheNodes(ExecutionContext& context, size_t count);
+  void recacheNode(ExecutionContext& context, const LuapeNodePtr& node, bool isUncachable);
   void ensureSizeInLowerThanMaxSize(ExecutionContext& context);
 
   bool isNodeCached(const LuapeNodePtr& node) const;
