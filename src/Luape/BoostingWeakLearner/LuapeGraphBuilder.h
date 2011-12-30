@@ -141,14 +141,14 @@ public:
       for (size_t i = 0; i < function->getNumInputs(); ++i)
       {
         LuapeNodePtr node = function->getInput(i);
-        if (typeState->canTypeBePushed(node->getType()))
+        if (typeState->hasPushAction(node->getType()))
           res->append(LuapeGraphBuilderAction::push(node));
       }
       const std::set<LuapeNodePtr>& activeVariables = function->getActiveVariables();
       for (std::set<LuapeNodePtr>::const_iterator it = activeVariables.begin(); it != activeVariables.end(); ++it)
       {
         LuapeNodePtr node = *it;
-        if (typeState->canTypeBePushed(node->getType()))
+        if (typeState->hasPushAction(node->getType()))
           res->append(LuapeGraphBuilderAction::push(node));
       }
     }

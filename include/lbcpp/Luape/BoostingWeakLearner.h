@@ -46,6 +46,8 @@ public:
 
   virtual void observeObjectiveValue(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
     {}
+  virtual void observeBestWeakNode(ExecutionContext& context,  const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& bestWeakNode, const IndexSetPtr& examples, double bestWeakObjective)
+    {}
 
   double computeWeakObjectiveWithEventualStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, LuapeNodePtr& weakNode, const IndexSetPtr& indices) const;
   double computeWeakObjective(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& indices) const;
@@ -86,6 +88,32 @@ protected:
 
 typedef ReferenceCountedObjectPtr<StochasticFiniteBoostingWeakLearner> StochasticFiniteBoostingWeakLearnerPtr;
 
+class SequentialBuilderWeakLearner : public StochasticFiniteBoostingWeakLearner
+{
+public:
+  SequentialBuilderWeakLearner(size_t numWeakNodes, size_t maxSteps);
+  SequentialBuilderWeakLearner() {}
+
+  virtual bool sampleAction(ExecutionContext& context, LuapeGraphBuilderTypeStatePtr typeState, ObjectPtr& res) const = 0;
+
+  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function);
+  virtual LuapeNodePtr sampleWeakNode(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const;
+
+protected:
+  friend class SequentialBuilderWeakLearnerClass;
+
+  virtual void samplingDone(ExecutionContext& context, size_t numSamplingFailures, size_t numFailuresAllowed) {}
+
+  size_t maxSteps;
+
+  LuapeUniversePtr universe;
+  LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
+
+  static bool isActionAvailable(ObjectPtr action, const std::vector<LuapeNodePtr>& stack);
+  LuapeGraphBuilderTypeStatePtr getTypeState(size_t stepNumber, const std::vector<LuapeNodePtr>& stack) const;
+  void executeAction(std::vector<LuapeNodePtr>& stack, const ObjectPtr& action) const;
+};
+
 class DecoratorBoostingWeakLearner : public BoostingWeakLearner
 {
 public:
@@ -98,6 +126,9 @@ public:
   
   virtual void observeObjectiveValue(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
     {decorated->observeObjectiveValue(context, structureLearner, weakNode, examples, weakObjective);}
+
+  virtual void observeBestWeakNode(ExecutionContext& context,  const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
+    {decorated->observeBestWeakNode(context, structureLearner, weakNode, examples, weakObjective);}
 
   virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
     {return decorated->learn(context, structureLearner, examples, verbose, weakObjective);}
@@ -127,14 +158,14 @@ typedef ReferenceCountedObjectPtr<DecoratorBoostingWeakLearner> DecoratorBoostin
 
 extern FiniteBoostingWeakLearnerPtr constantWeakLearner();
 extern FiniteBoostingWeakLearnerPtr singleStumpWeakLearner();
-extern StochasticFiniteBoostingWeakLearnerPtr policyBasedWeakLearner(const PolicyPtr& policy, size_t budget, size_t maxDepth);
-extern StochasticFiniteBoostingWeakLearnerPtr adaptativeSamplingWeakLearner(size_t numWeakNodes, size_t maxSteps);
+extern StochasticFiniteBoostingWeakLearnerPtr policyBasedWeakLearner(const PolicyPtr& policy, size_t budget, size_t complexity);
+extern StochasticFiniteBoostingWeakLearnerPtr adaptativeSamplingWeakLearner(size_t numWeakNodes, size_t complexity, bool useVariableRelevancies, bool useExtendedVariables);
 extern FiniteBoostingWeakLearnerPtr exhaustiveWeakLearner(size_t maxDepth);
 
 extern BoostingWeakLearnerPtr binaryTreeWeakLearner(BoostingWeakLearnerPtr conditionLearner, BoostingWeakLearnerPtr subLearner);
 extern BoostingWeakLearnerPtr compositeWeakLearner(const std::vector<BoostingWeakLearnerPtr>& weakLearners);
 extern BoostingWeakLearnerPtr compositeWeakLearner(BoostingWeakLearnerPtr weakLearner1, BoostingWeakLearnerPtr weakLearner2);
-extern DecoratorBoostingWeakLearnerPtr laminatingWeakLearner(BoostingWeakLearnerPtr weakLearner, double relativeBudget);
+extern DecoratorBoostingWeakLearnerPtr laminatingWeakLearner(BoostingWeakLearnerPtr weakLearner, double relativeBudget, size_t minExamplesForLaminating = 5);
 extern DecoratorBoostingWeakLearnerPtr banditBasedWeakLearner(BoostingWeakLearnerPtr weakLearner, double relativeBudget, double miniBatchRelativeSize = 0.01);
 
 extern PolicyPtr treeBasedRandomPolicy();

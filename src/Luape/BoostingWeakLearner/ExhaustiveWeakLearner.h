@@ -18,13 +18,13 @@ namespace lbcpp
 class ExhaustiveWeakLearner : public FiniteBoostingWeakLearner
 {
 public:
-  ExhaustiveWeakLearner(size_t maxDepth)
-    : maxDepth(maxDepth) {}
-  ExhaustiveWeakLearner() : maxDepth(0) {}
+  ExhaustiveWeakLearner(size_t complexity)
+    : complexity(complexity) {}
+  ExhaustiveWeakLearner() : complexity(0) {}
 
   virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
   {
-    typeSearchSpace = new LuapeGraphBuilderTypeSearchSpace(function, maxDepth);
+    typeSearchSpace = new LuapeGraphBuilderTypeSearchSpace(function, complexity);
     typeSearchSpace->pruneStates(context);
     return true;
   }
@@ -51,7 +51,7 @@ public:
 protected:
   friend class ExhaustiveWeakLearnerClass;
 
-  size_t maxDepth;
+  size_t complexity;
   LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
 
   std::set<LuapeNodePtr> cachedActiveVariables;

@@ -18,11 +18,9 @@ namespace lbcpp
 class LaminatingWeakLearner : public DecoratorBoostingWeakLearner
 {
 public:
-  LaminatingWeakLearner(BoostingWeakLearnerPtr weakLearner, double relativeBudget)
-    : DecoratorBoostingWeakLearner(weakLearner), relativeBudget(relativeBudget)  {}
+  LaminatingWeakLearner(BoostingWeakLearnerPtr weakLearner, double relativeBudget, size_t minExamplesForLaminating)
+    : DecoratorBoostingWeakLearner(weakLearner), relativeBudget(relativeBudget), minExamplesForLaminating(minExamplesForLaminating)  {}
   LaminatingWeakLearner() {}
-
-  enum {minNumExamples = 5};
 
   virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
   {
@@ -31,7 +29,7 @@ public:
 
     // make initial weak learners
     std::vector<LuapeNodePtr> weakNodes;
-    if (!getDecoratedCandidateWeakNodes(context, structureLearner, weakNodes))
+    if (!getDecoratedCandidateWeakNodes(context, structureLearner, weakNodes) || !weakNodes.size())
       return LuapeNodePtr();
 
     size_t W0, N0;
@@ -43,7 +41,7 @@ public:
         context.leaveScope(false);
       return LuapeNodePtr();
     }
-    jassert(N0 >= minNumExamples && N0 <= examples->size() && W0 <= weakNodes.size());
+    jassert(N0 >= minExamplesForLaminating && N0 <= examples->size() && W0 <= weakNodes.size());
 
     // create initial examples subset
     size_t effectiveBudget = 0;
@@ -127,6 +125,7 @@ protected:
   friend class LaminatingWeakLearnerClass;
 
   double relativeBudget;
+  size_t minExamplesForLaminating;
 
   struct SortDoubleValuesOperator
   {
@@ -142,7 +141,6 @@ protected:
     size_t numIterationsWrtW = (size_t)(log2((double)W0) - Wmin);
     size_t estimatedNumIterations = numIterationsWrtN < numIterationsWrtW ? numIterationsWrtN : numIterationsWrtW;
 
-#if 0
     size_t numExamples = N0;
     size_t numWeakLearners = W0;
     size_t numIterations = 0;
@@ -158,7 +156,6 @@ protected:
         numExamples = totalNumExamples;
     }
     jassert(estimatedNumIterations == numIterations);
-#endif // 0
 
     return estimatedNumIterations * W0 * N0;
   }
@@ -171,21 +168,24 @@ protected:
     // first try to take all weak nodes
     W0 = numWeakNodes;
     N0 = (size_t)(budget / (W0 * log2((double)W0))); // lower bound on N0
+    if (N0 > numExamples)
+      N0 = numExamples;
     jassert(computeBudget(W0, N0, Wmin, Nmax, numExamples) <= budget);
-    while (computeBudget(W0, N0 + 1, Wmin, Nmax, numExamples) < budget)
+    while (computeBudget(W0, N0 + 1, Wmin, Nmax, numExamples) < budget && N0 < numExamples)
       ++N0;
 
-    if (N0 < minNumExamples)
+    if (N0 < minExamplesForLaminating)
     {
       // we cannot use all weak nodes, select a subset of them
-      N0 = minNumExamples;
+      N0 = minExamplesForLaminating;
       W0 = (size_t)(budget / (N0 * (Nmax - log2((double)N0) + 1))); // lower bound on W0
-      jassert(computeBudget(W0, N0, Wmin, Nmax, numExamples) <= budget);
-      while (computeBudget(W0 + 1, N0, Wmin, Nmax, numExamples) < budget)
+      if (W0 > numWeakNodes)
+        W0 = numWeakNodes;
+      //jassert(computeBudget(W0, N0, Wmin, Nmax, numExamples) <= budget);
+      while (computeBudget(W0 + 1, N0, Wmin, Nmax, numExamples) < budget && W0 < numWeakNodes)
         ++W0;
     }
-
-    jassert(computeBudget(W0, N0, Wmin, Nmax, numExamples) <= budget);
+ //   jassert(computeBudget(W0, N0, Wmin, Nmax, numExamples) <= budget);
   }
 };
 

@@ -142,9 +142,7 @@ bool BoostingLearner::doLearningIteration(ExecutionContext& context, double& tra
   }
 
   // trainingCache->checkCacheIsCorrect(context, function->getRootNode());
-
-  context.informationCallback(contribution->toShortString());
   if (verbose)
-    context.resultCallback(T("contribution"), contribution);
+    context.resultCallback(T("contribution"), verbose ? Variable(contribution) : Variable(contribution->toShortString()));
   return true;
 }

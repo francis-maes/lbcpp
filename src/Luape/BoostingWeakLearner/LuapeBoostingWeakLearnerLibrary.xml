@@ -61,8 +61,9 @@
   </class>
 
   <class name="LaminatingWeakLearner" base="DecoratorBoostingWeakLearner">
-    <constructor arguments="BoostingWeakLearnerPtr weakLearner, double relativeBudget"/>
+    <constructor arguments="BoostingWeakLearnerPtr weakLearner, double relativeBudget, size_t minExamplesForLaminating"/>
     <variable type="Double" name="relativeBudget"/>
+    <variable type="PositiveInteger" name="minExamplesForLaminating"/>
   </class>
 
   <class name="BanditBasedWeakLearner" base="DecoratorBoostingWeakLearner">
@@ -71,14 +72,22 @@
     <variable type="Double" name="miniBatchRelativeSize"/>
   </class>
 
-  <class name="AdaptativeSamplingWeakLearner" base="StochasticFiniteBoostingWeakLearner">
-    <constructor arguments="size_t numWeakNodes, size_t maxSteps"/>
+  <class name="SequentialBuilderWeakLearner" base="StochasticFiniteBoostingWeakLearner" abstract="yes">
     <variable type="PositiveInteger" name="maxSteps"/>
   </class>
 
+  <class name="AdaptativeSequentialBuilderWeakLearner" base="SequentialBuilderWeakLearner" abstract="yes">
+    <variable type="Boolean" name="useVariableRelevancies"/>
+    <variable type="Boolean" name="useExtendedVariables"/>
+  </class>
+
+  <class name="AdaptativeSamplingWeakLearner" base="SequentialBuilderWeakLearner">
+    <constructor arguments="size_t numWeakNodes, size_t maxSteps, bool useVariableRelevancies, bool useExtendedVariables" returnType="StochasticFiniteBoostingWeakLearner"/>
+  </class>
+
   <class name="ExhaustiveWeakLearner" base="FiniteBoostingWeakLearner">
-    <constructor arguments="size_t maxDepth"/>
-    <variable type="PositiveInteger" name="maxDepth"/>
+    <constructor arguments="size_t complexity"/>
+    <variable type="PositiveInteger" name="complexity"/>
   </class>
 
 </library>

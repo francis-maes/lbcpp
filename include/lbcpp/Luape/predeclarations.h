@@ -47,6 +47,12 @@ typedef ReferenceCountedObjectPtr<LuapeLearner> LuapeLearnerPtr;
 class BoostingLearner;
 typedef ReferenceCountedObjectPtr<BoostingLearner> BoostingLearnerPtr;
 
+class LuapeGraphBuilderTypeState;
+typedef ReferenceCountedObjectPtr<LuapeGraphBuilderTypeState> LuapeGraphBuilderTypeStatePtr;
+
+class LuapeGraphBuilderTypeSearchSpace;
+typedef ReferenceCountedObjectPtr<LuapeGraphBuilderTypeSearchSpace> LuapeGraphBuilderTypeSearchSpacePtr;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_LUAPE_PREDECLARATIONS_H_
