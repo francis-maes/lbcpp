@@ -65,7 +65,7 @@ protected:
     candidates.reserve(candidates.size() + weakNodes.size());
     for (std::set<LuapeNodePtr>::const_iterator it = weakNodes.begin(); it != weakNodes.end(); ++it)
     {
-      context.informationCallback((*it)->toShortString());
+      //context.informationCallback((*it)->toShortString());
       candidates.push_back(*it);
     }
   }

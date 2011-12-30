@@ -47,7 +47,8 @@ bool NetworkClient::sendVariable(const Variable& variable)
   if (text == String::empty)
     return false;
 #ifdef JUCE_DEBUG
-  context.informationCallback(T("sendVariable"), text);
+  //  context.informationCallback(T("sendVariable"), text);
+  std::cout << "send variable: " << text << std::endl;
 #endif // !JUCE_DEBUG
   juce::MemoryBlock block(text.toUTF8(), text.length());
   return sendMessage(block);
@@ -56,7 +57,8 @@ bool NetworkClient::sendVariable(const Variable& variable)
 void NetworkClient::messageReceived(const juce::MemoryBlock& message)
 {
 #ifdef JUCE_DEBUG
-  context.informationCallback(T("messageReceived"), message.toString());
+  // context.informationCallback(T("messageReceived"), message.toString());
+  std::cout << "message received: " << message.toString() << std::endl;
 #endif // !JUCE_DEBUG
   juce::XmlDocument document(message.toString());
   XmlImporter importer(context, document);

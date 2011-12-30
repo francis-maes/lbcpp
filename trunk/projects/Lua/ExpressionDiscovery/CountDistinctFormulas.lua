@@ -183,4 +183,4 @@ local function saveFormulas(formulas, filename)
   context:leave()
 end
 
-saveFormulas(simplifiedFinalStates, formulaOutputFile)
+--saveFormulas(simplifiedFinalStates, formulaOutputFile)

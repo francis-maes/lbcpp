@@ -1,10 +1,10 @@
 
-local filename = "formulas2.txt"
-local outputFilename = "test.txt" --bandits_hor100_size4.txt"
+local filename = "formulas5.txt"
+local outputFilename = "bandits_hor10000_size5.txt"
 
 local managerHostName = "monster24.montefiore.ulg.ac.be"
 local managerPort = 1664
-local resourceEstimator = lbcpp.Object.create("FixedResourceEstimator", 1, 48, 1)
+local resourceEstimator = lbcpp.Object.create("FixedResourceEstimator", 300, 16, 1)
 local manager1 = context:connect(managerHostName, managerPort, "Lua", "Monster24", "jbecker@nic3", resourceEstimator)
 local manager2 = context:connect(managerHostName, managerPort, "Lua", "Monster24", "fmaes@nic3", resourceEstimator)
 local manager3 = context:connect(managerHostName, managerPort, "Lua", "Monster24", "amarcos@nic3", resourceEstimator)
