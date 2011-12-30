@@ -8,6 +8,7 @@
 #include "precompiled.h"
 #include <lbcpp/Luape/LuapeLearner.h>
 #include <lbcpp/Luape/LuapeCache.h>
+#include "BoostingWeakLearner/LuapeGraphBuilderTypeSearchSpace.h"
 #include "Function/SpecialLuapeFunctions.h" // for StumpLuapeFunction
 using namespace lbcpp;
 
@@ -117,6 +118,7 @@ LuapeNodePtr BoostingWeakLearner::makeContribution(ExecutionContext& context, co
 {
   if (!weakNode || weakObjective == -DBL_MAX)
     return LuapeNodePtr();
+  const_cast<BoostingWeakLearner* >(this)->observeBestWeakNode(context, structureLearner, weakNode, examples, weakObjective);
   return structureLearner->turnWeakNodeIntoContribution(context, weakNode, weakObjective, examples);
 }
 
@@ -189,8 +191,103 @@ bool StochasticFiniteBoostingWeakLearner::getCandidateWeakNodes(ExecutionContext
   res.resize(index + weakNodes.size());
   for (std::set<LuapeNodePtr>::const_iterator it = weakNodes.begin(); it != weakNodes.end(); ++it)
   {
-    context.informationCallback(T("Candidate: ") + (*it)->toShortString());
+    //context.informationCallback(T("Candidate: ") + (*it)->toShortString());
     res[index++] = *it;
   }
   return true;
+}
+
+/*
+** SequentialBuilderWeakLearner
+*/
+SequentialBuilderWeakLearner::SequentialBuilderWeakLearner(size_t numWeakNodes, size_t maxSteps)
+  : StochasticFiniteBoostingWeakLearner(numWeakNodes), maxSteps(maxSteps)
+{
+}
+
+bool SequentialBuilderWeakLearner::initialize(ExecutionContext& context, const LuapeInferencePtr& function)
+{
+  universe = function->getUniverse();
+  typeSearchSpace = new LuapeGraphBuilderTypeSearchSpace(function, maxSteps);
+  typeSearchSpace->pruneStates(context);
+  typeSearchSpace->assignStateIndices(context);
+  return true;
+}
+
+LuapeNodePtr SequentialBuilderWeakLearner::sampleWeakNode(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const
+{
+  RandomGeneratorPtr random = context.getRandomGenerator();
+
+  std::vector<LuapeNodePtr> stack;
+  LuapeGraphBuilderTypeStatePtr typeState;
+
+  for (size_t i = 0; i < maxSteps; ++i)
+  {
+    // Retrieve type-state index
+    LuapeGraphBuilderTypeStatePtr typeState = getTypeState(i, stack);
+    jassert(typeState);
+
+    // Sample action
+    ObjectPtr action;
+    size_t numFailuresAllowed = 100;
+    size_t numFailures;
+    for (numFailures = 0; numFailures < numFailuresAllowed; ++numFailures)
+      if (sampleAction(context, typeState, action) && isActionAvailable(action, stack))
+        break;
+    const_cast<SequentialBuilderWeakLearner* >(this)->samplingDone(context, numFailures, numFailuresAllowed);
+    if (numFailures == numFailuresAllowed)
+      return LuapeNodePtr();
+
+    // Execute action
+    executeAction(stack, action);
+    if (!action)
+    {
+      //context.informationCallback(T("Candidate: ") + stack[0]->toShortString());
+      return stack[0]; // yield action
+    }
+  }
+
+  context.informationCallback("Failed to sample candidate weak node");
+  return LuapeNodePtr();
+}
+
+bool SequentialBuilderWeakLearner::isActionAvailable(ObjectPtr action, const std::vector<LuapeNodePtr>& stack)
+{
+  return !action || !action.isInstanceOf<LuapeFunction>() ||
+    action.staticCast<LuapeFunction>()->acceptInputsStack(stack);
+}
+
+LuapeGraphBuilderTypeStatePtr SequentialBuilderWeakLearner::getTypeState(size_t stepNumber, const std::vector<LuapeNodePtr>& stack) const
+{
+  std::vector<TypePtr> typeStack(stack.size());
+  for (size_t j = 0; j < typeStack.size(); ++j)
+    typeStack[j] = stack[j]->getType();
+  return typeSearchSpace->getState(stepNumber, typeStack);
+}
+
+void SequentialBuilderWeakLearner::executeAction(std::vector<LuapeNodePtr>& stack, const ObjectPtr& action) const
+{
+  // Execute action
+  if (action)
+  {
+    if (action.isInstanceOf<LuapeNode>())
+      stack.push_back(action);   // push action
+    else
+    {
+      // apply action
+      LuapeFunctionPtr function = action.staticCast<LuapeFunction>();
+      size_t n = function->getNumInputs();
+      jassert(stack.size() >= n && n > 0);
+      std::vector<LuapeNodePtr> inputs(n);
+      for (size_t i = 0; i < n; ++i)
+        inputs[i] = stack[stack.size() - n + i];
+      stack.erase(stack.begin() + stack.size() - n, stack.end());
+      stack.push_back(universe->makeFunctionNode(function, inputs));
+    }
+  }
+  else
+  {
+    // yield action
+    jassert(stack.size() == 1);
+  }
 }

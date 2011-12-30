@@ -23,7 +23,8 @@ namespace lbcpp
 class LuapeSandBox : public WorkUnit
 {
 public:
-  LuapeSandBox() : maxExamples(0), treeDepth(1), complexity(5), relativeBudget(10.0), miniBatchRelativeSize(0.0), numIterations(1000), verbose(false) {}
+  LuapeSandBox() : maxExamples(0), treeDepth(1), complexity(5), relativeBudget(10.0), numIterations(1000),
+                   minExamplesForLaminating(5), useVariableRelevancies(false), useExtendedVariables(false), verbose(false) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -40,31 +41,34 @@ public:
     //context.resultCallback("test", testData);
 
     size_t numVariables = inputClass->getNumMemberVariables();
+    size_t numTrainingExamples = trainData->getNumElements();
 
     context.informationCallback(
-      String((int)trainData->getNumElements()) + T(" training examples, ") +
+      String((int)numTrainingExamples) + T(" training examples, ") +
       String((int)testData->getNumElements()) + T(" testing examples, ") + 
-      String((int)numVariables) + T(" input variables,") +
+      String((int)numVariables) + T(" input variables, ") +
       String((int)labels->getNumElements()) + T(" labels"));
 
     LuapeClassifierPtr classifier = createClassifier(inputClass);
     if (!classifier->initialize(context, inputClass, labels))
       return false;
 
+    double budget = relativeBudget * numVariables * numTrainingExamples;
+    size_t maxNumWeakNodes = (size_t)(budget / (minExamplesForLaminating * (log2((double)numTrainingExamples) - log2((double)minExamplesForLaminating) + 1)));
+    context.informationCallback(T("Max num weak nodes: ") + String((int)maxNumWeakNodes));
+
     BoostingWeakLearnerPtr conditionLearner;
     if (complexity == 0)
       conditionLearner = singleStumpWeakLearner();
     else
-      conditionLearner = exhaustiveWeakLearner(complexity);
-      //conditionLearner = adaptativeSamplingWeakLearner(budgetPerIteration, maxSteps);
+      //conditionLearner = exhaustiveWeakLearner(complexity);
+      conditionLearner = adaptativeSamplingWeakLearner(maxNumWeakNodes, complexity, useVariableRelevancies, useExtendedVariables);
       //conditionLearner = policyBasedWeakLearner(randomPolicy(), budgetPerIteration, maxSteps);
-    
+
     if (relativeBudget > 0.0)
     {
-      if (miniBatchRelativeSize == 0.0)
-        conditionLearner = laminatingWeakLearner(conditionLearner, relativeBudget * numVariables);
-      else if (miniBatchRelativeSize < 1.0)
-        conditionLearner = banditBasedWeakLearner(conditionLearner, relativeBudget * numVariables, miniBatchRelativeSize);
+      conditionLearner = laminatingWeakLearner(conditionLearner, budget / numTrainingExamples, minExamplesForLaminating);
+      // conditionLearner = banditBasedWeakLearner(conditionLearner, relativeBudget * numVariables, miniBatchRelativeSize);
     }
 
     conditionLearner = compositeWeakLearner(constantWeakLearner(), conditionLearner);
@@ -124,8 +128,10 @@ protected:
   size_t treeDepth;
   size_t complexity;
   double relativeBudget;
-  double miniBatchRelativeSize;
   size_t numIterations;
+  size_t minExamplesForLaminating;
+  bool useVariableRelevancies;
+  bool useExtendedVariables;
   bool verbose;
   File plotFile;
 

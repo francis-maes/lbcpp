@@ -65,7 +65,7 @@ public:
   const std::vector<std::pair<TypePtr, LuapeGraphBuilderTypeStatePtr> >& getPushActions() const
     {return push;}
 
-  bool canTypeBePushed(const TypePtr& type) const
+  bool hasPushAction(const TypePtr& type) const
   {
     for (size_t i = 0; i < push.size(); ++i)
       if (push[i].first == type)
@@ -83,6 +83,14 @@ public:
 
   bool hasApplyActions() const
     {return apply.size() > 0;}
+
+  bool hasApplyAction(const LuapeFunctionPtr& function) const
+  {
+    for (size_t i = 0; i < apply.size(); ++i)
+      if (apply[i].first == function)
+        return true;
+    return false;
+  }
 
   const std::vector<std::pair<LuapeFunctionPtr, LuapeGraphBuilderTypeStatePtr> >& getApplyActions() const
     {return apply;}

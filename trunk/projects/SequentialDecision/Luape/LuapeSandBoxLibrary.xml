@@ -19,7 +19,7 @@
     <variable type="PositiveInteger" name="maxDepth"/>
   </class>
   -->
-  
+
   <!-- Sand Box -->
   <class name="LuapeSandBox" base="WorkUnit">
     <variable type="File" name="trainFile"/>
@@ -28,8 +28,10 @@
     <variable type="PositiveInteger" name="treeDepth"/>
     <variable type="PositiveInteger" name="complexity"/>
     <variable type="Double" name="relativeBudget"/>
-    <variable type="Double" name="miniBatchRelativeSize"/>
     <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="PositiveInteger" name="minExamplesForLaminating"/>
+    <variable type="Boolean" name="useVariableRelevancies"/>
+    <variable type="Boolean" name="useExtendedVariables"/>
     <variable type="Boolean" name="verbose"/>
     <variable type="File" name="plotFile"/>
   </class>
