@@ -6,9 +6,9 @@
   <class name="ProteinResiduePerception" base="Object">
     <variable type="ProteinPerception" name="protein"/>
     <variable type="PositiveInteger" name="position"/>
-    
+<!--    
     <variable type="ProteinResiduePerception" name="previous" shortName="prev"/>
-    <variable type="ProteinResiduePerception" name="next"/>
+    <variable type="ProteinResiduePerception" name="next"/> -->
     
     <variable type="ProteinResiduePerception" name="previousOfType" shortName="prevT"/>
     <variable type="ProteinResiduePerception" name="nextOfType" shortName="nextT"/>

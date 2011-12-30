@@ -1,12 +1,13 @@
+Experiences - Proteins:
+ * Remettre l'opérateur [] 
+ * Nouvelles features: prev et next amino acid de chaque type; delta de ObjectVector[DenseDoubleVector]; local/global histogram
+ * Essayer du Totally corrective boosting
+
 
 Experiences - Classification:
  * faire passer le sampling de weak learners à l'echelle (complexity  4 -- 10)
  * Trois modes: sampling uniforme, relevancy-based sampling des input nodes, relevancy-based sampling de tous les nodes
  
-Experiences - Proteins:
- * 1) Donner d'office une fenetre de taille 15
- * 2) Essayer du Totally corrective boosting
-
 Lire:
 http://www-connex.lip6.fr/~amini/RelatedWorks/Has99.pdf
 

@@ -124,13 +124,16 @@ public:
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
   {
-    enum {windowHalfSize = 4};
+    enum {windowHalfSize = 7};
 
     VectorPtr res = vector(integerType, windowHalfSize * 2);
     for (int i = -windowHalfSize; i < windowHalfSize; ++i)
       res->setElement((size_t)(i + windowHalfSize), i < 0 ? i : i + 1);
     return res;
   }
+
+  int getDelta() const
+    {return delta;}
 
 protected:
   friend class ProteinGetRelativeResidueLuapeFunctionClass;
@@ -148,6 +151,8 @@ protected:
     return protein->getResidue((size_t)position);
   }
 };
+
+typedef ReferenceCountedObjectPtr<ProteinGetRelativeResidueLuapeFunction> ProteinGetRelativeResidueLuapeFunctionPtr;
 
 }; /* namespace lbcpp */
 

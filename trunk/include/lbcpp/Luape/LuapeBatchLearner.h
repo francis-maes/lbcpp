@@ -93,12 +93,9 @@ public:
       //  context.informationCallback(T("Graph: ") + learner->getGraph()->toShortString());
       context.progressCallback(new ProgressionState(i+1, maxIterations, T("Iterations")));
       
-      if (learner->getVerbose() && ((i+1) % 10 == 0))
-      {
-        context.enterScope(T("Most important nodes"));
-        displayMostImportantNodes(context, function);
-        context.leaveScope();
-      }
+      context.enterScope(T("Most important nodes"));
+      displayMostImportantNodes(context, function);
+      context.leaveScope();
     }
     context.leaveScope();
   
@@ -157,18 +154,21 @@ public:
     }
 
     // display most important nodes
-    std::multimap<double, LuapeNodePtr> nodeImportanceMap;
-    for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it)
-      nodeImportanceMap.insert(std::make_pair(it->second, it->first));
-    size_t i = 0;
-    for (std::multimap<double, LuapeNodePtr>::reverse_iterator it = nodeImportanceMap.rbegin(); it != nodeImportanceMap.rend() && i < 100; ++it, ++i)
+    if (learner->getVerbose())
     {
-      if (it->first <= 0.0)
-        break;
-      const LuapeNodePtr& node = it->second;
-      context.informationCallback(T("# ") + String((int)i + 1) + T(": ") + node->toShortString() + T(" [") + String(it->first * 100.0 / Z, 2) + T("%]"));
+      std::multimap<double, LuapeNodePtr> nodeImportanceMap;
+      for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it)
+        nodeImportanceMap.insert(std::make_pair(it->second, it->first));
+      size_t i = 0;
+      for (std::multimap<double, LuapeNodePtr>::reverse_iterator it = nodeImportanceMap.rbegin(); it != nodeImportanceMap.rend() && i < 20; ++it, ++i)
+      {
+        if (it->first <= 0.0)
+          break;
+        const LuapeNodePtr& node = it->second;
+        context.informationCallback(T("# ") + String((int)i + 1) + T(": ") + node->toShortString() + T(" [") + String(it->first * 100.0 / Z, 2) + T("%]"));
+      }
     }
-#if 0
+
     // sample new active variables
     function->clearActiveVariables();
     while (function->getNumActiveVariables() < 10 && Z > 1e-12)
@@ -184,7 +184,6 @@ public:
       Z -= probabilities[index];
       probabilities[index] = 0.0;
     }
-#endif // 0
   }
 
   void setPlotFile(ExecutionContext& context, const File& plotFile)
