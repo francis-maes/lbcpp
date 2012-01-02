@@ -32,7 +32,6 @@ public:
 
   const LuapeInferencePtr& getFunction() const
     {return function;}
-  
 
   const LuapeUniversePtr& getUniverse() const
     {return function->getUniverse();}
@@ -74,6 +73,8 @@ typedef ReferenceCountedObjectPtr<LuapeLearner> LuapeLearnerPtr;
 extern LuapeLearnerPtr compositeLearner(const std::vector<LuapeLearnerPtr>& learners);
 extern LuapeLearnerPtr compositeLearner(const LuapeLearnerPtr& learner1, const LuapeLearnerPtr& learner2);
 
+extern LuapeLearnerPtr generateTestNodesLearner(BoostingWeakLearnerPtr conditionGenerator);
+
 class IterativeLearner : public LuapeLearner
 {
 public:
@@ -99,6 +100,8 @@ protected:
   void getImportances(const LuapeNodePtr& node, std::map<LuapeNodePtr, double>& res) const;
   void displayMostImportantNodes(ExecutionContext& context, const LuapeInferencePtr& function, bool verbose) const;
 };
+
+extern IterativeLearnerPtr classifierSGDLearner(MultiClassLossFunctionPtr lossFunction, IterationFunctionPtr learningRate, size_t maxIterations);
 
 class BoostingLearner : public IterativeLearner
 {

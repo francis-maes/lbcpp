@@ -34,4 +34,19 @@
     <variable type="ObjectVector[LuapeLearner]" name="learners"/>
   </class>
   
+  <!-- Gradient Descent -->
+  <class name="GradientDescentLearner" base="IterativeLearner" abstract="yes">
+    <variable type="IterationFunction" name="learningRate"/>
+  </class>
+  <class name="ClassifierSGDLearner" base="GradientDescentLearner">
+    <constructor arguments="MultiClassLossFunctionPtr lossFunction, IterationFunctionPtr learningRate, size_t maxIterations" returnType="IterativeLearner"/>
+    <variable type="MultiClassLossFunction" name="lossFunction"/>
+  </class>
+
+  <!-- Structure generation -->
+  <class name="GenerateTestNodesLearner" base="LuapeLearner">
+    <constructor arguments="BoostingWeakLearnerPtr conditionGenerator"/>
+    <variable type="BoostingWeakLearner" name="conditionGenerator"/>
+  </class>
+
 </library>

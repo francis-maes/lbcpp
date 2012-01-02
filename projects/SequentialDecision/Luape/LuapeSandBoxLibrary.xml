@@ -19,15 +19,6 @@
     <variable type="PositiveInteger" name="maxDepth"/>
   </class>
   -->
-  <class name="GradientDescentLearner" base="IterativeLearner" abstract="yes">
-    <variable type="IterationFunction" name="learningRate"/>
-  </class>
-  <class name="ClassifierSGDLearner" base="GradientDescentLearner">
-    <variable type="MultiClassLossFunction" name="lossFunction"/>
-  </class>
-  <class name="GenerateTestNodesLearner" base="LuapeLearner">
-    <variable type="BoostingWeakLearner" name="conditionGenerator"/>
-  </class>
 
   <!-- Sand Box -->
   <class name="LuapeSandBox" base="WorkUnit">
