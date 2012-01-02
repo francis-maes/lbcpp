@@ -32,6 +32,9 @@ typedef ReferenceCountedObjectPtr<LuapeTestNode> LuapeTestNodePtr;
 class LuapeVectorSumNode;
 typedef ReferenceCountedObjectPtr<LuapeVectorSumNode> LuapeVectorSumNodePtr;
 
+class LuapeCreateSparseVectorNode;
+typedef ReferenceCountedObjectPtr<LuapeCreateSparseVectorNode> LuapeCreateSparseVectorNodePtr;
+
 class LuapeSampleVector;
 typedef ReferenceCountedObjectPtr<LuapeSampleVector> LuapeSampleVectorPtr;
 

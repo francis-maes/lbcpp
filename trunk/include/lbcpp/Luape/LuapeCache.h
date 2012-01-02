@@ -104,6 +104,17 @@ public:
       }
     }
 
+    inline int getRawInteger() const
+    {
+      switch (owner->implementation)
+      {
+      case constantValueImpl: return owner->constantValue.getInteger();
+      case ownedVectorImpl: return owner->vector->getElement(position).getInteger();
+      case cachedVectorImpl: return owner->vector->getElement(*it).getInteger();
+      default: jassert(false); return 0;
+      }
+    }
+
     inline double getRawDouble() const
     {
       switch (owner->implementation)
@@ -202,7 +213,7 @@ public:
   void cacheNode(ExecutionContext& context, const LuapeNodePtr& node, const VectorPtr& values = VectorPtr(), const String& reason = String::empty, bool isRemoveable = true);
   void uncacheNode(ExecutionContext& context, const LuapeNodePtr& node);
   void uncacheNodes(ExecutionContext& context, size_t count);
-  void recacheNode(ExecutionContext& context, const LuapeNodePtr& node);
+  void recacheNode(ExecutionContext& context, const LuapeNodePtr& node, const VectorPtr& values = VectorPtr());
   void ensureSizeInLowerThanMaxSize(ExecutionContext& context);
   void clearCache(ExecutionContext& context);
 

@@ -23,12 +23,11 @@ public:
     : learners(2) {learners[0] = learner1; learners[1] = learner2;}
   CompositeLearner() {}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
+  virtual void setFunction(const LuapeInferencePtr& function)
   {
-    bool ok = true;
+    LuapeLearner::setFunction(function);
     for (size_t i = 0; i < learners.size(); ++i)
-      ok &= learners[i]->initialize(context, function);
-    return ok;
+      learners[i]->setFunction(function);
   }
 
   virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
@@ -39,12 +38,23 @@ public:
     return ok;
   }
 
+  virtual bool initialize(ExecutionContext& context)
+  {
+    /*bool ok = true;
+    for (size_t i = 0; i < learners.size(); ++i)
+      ok &= learners[i]->initialize(context);
+    return ok;*/
+    return true;
+  }
+
   virtual bool learn(ExecutionContext& context)
   {
     bool ok = true;
     for (size_t i = 0; i < learners.size(); ++i)
     {
+      ok &= learners[i]->initialize(context);
       ok &= learners[i]->learn(context);
+      ok &= learners[i]->finalize(context);
       jassert(ok);
     }
     return ok;

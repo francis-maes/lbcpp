@@ -31,14 +31,14 @@ public:
     const LuapeInferencePtr& function = f.staticCast<LuapeInference>();
 
     LuapeLearnerPtr learner = this->learner->cloneAndCast<LuapeLearner>(); // avoid cycle between LuapeInference -> LuapeBatchLearner -> LuapeLearner -> LuapeInference
-    if (!learner->initialize(context, function))
+
+    learner->setFunction(function);
+
+    if (!learner->setExamples(context, true, trainingData))
       return false;
-
-    learner->setExamples(context, true, trainingData);
-    if (validationData.size())
-      learner->setExamples(context, false, validationData);
-
-    return learner->learn(context);
+    if (validationData.size() && !learner->setExamples(context, false, validationData))
+      return false;
+    return learner->initialize(context) && learner->learn(context) && learner->finalize(context);
   }
 
 protected:

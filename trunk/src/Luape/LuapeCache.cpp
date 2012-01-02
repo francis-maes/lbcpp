@@ -179,7 +179,7 @@ void LuapeSamplesCache::cacheNode(ExecutionContext& context, const LuapeNodePtr&
   ensureSizeInLowerThanMaxSize(context);
 }
 
-void LuapeSamplesCache::recacheNode(ExecutionContext& context, const LuapeNodePtr& node)
+void LuapeSamplesCache::recacheNode(ExecutionContext& context, const LuapeNodePtr& node, const VectorPtr& values)
 {
   ensureActualSizeIsCorrect();
 
@@ -188,7 +188,7 @@ void LuapeSamplesCache::recacheNode(ExecutionContext& context, const LuapeNodePt
   actualCacheSize -= nodeCache.getSizeInBytes(true);
   nodeCache.samples = VectorPtr();
   nodeCache.sortedDoubleValues = SparseDoubleVectorPtr();
-  nodeCache.samples = node->compute(context, refCountedPointerFromThis(this), allIndices)->getVector();
+  nodeCache.samples = values ? values : node->compute(context, refCountedPointerFromThis(this), allIndices)->getVector();
   actualCacheSize += nodeCache.getSizeInBytes(true);
 
   ensureActualSizeIsCorrect();

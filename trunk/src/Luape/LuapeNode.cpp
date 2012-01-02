@@ -234,7 +234,11 @@ LuapeSampleVectorPtr LuapeTestNode::compute(ExecutionContext& context, const Lua
       VectorPtr res = vector(type, n);
       size_t i = 0;
       for (LuapeSampleVector::const_iterator it = conditions->begin(); it != conditions->end(); ++it, ++i)
-        res->setElement(i, v[it.getRawBoolean()]);
+      {
+        unsigned char b = it.getRawBoolean();
+        jassert(b < 3);
+        res->setElement(i, v[b]);
+      }
       resultVector = res;
     }
   }
@@ -436,5 +440,50 @@ void LuapeVectorSumNode::updateOutputs(const VectorPtr& outputs, const LuapeSamp
         jassert(isNumberValid(target->getValue(j)));
 #endif // JUCE_DBEUG
     }
+  }
+}
+
+/*
+** LuapeCreateSparseVectorNode
+*/
+LuapeCreateSparseVectorNode::LuapeCreateSparseVectorNode(const std::vector<LuapeNodePtr>& nodes)
+  : LuapeSequenceNode(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType), nodes) {}
+
+LuapeCreateSparseVectorNode::LuapeCreateSparseVectorNode()
+  : LuapeSequenceNode(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType)) {}
+
+Variable LuapeCreateSparseVectorNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
+{
+  SparseDoubleVectorPtr res = new SparseDoubleVector((ClassPtr)getType());
+  for (size_t i = 0; i < nodes.size(); ++i)
+  {
+    Variable v = cache->compute(context, nodes[i]);
+    if (v.exists())
+      res->incrementValue((size_t)v.getInteger(), 1.0);
+  }
+  return res;
+}
+
+VectorPtr LuapeCreateSparseVectorNode::createEmptyOutputs(size_t numSamples) const
+{
+  ClassPtr sparseVectorClass = type;
+  ObjectVectorPtr res = new ObjectVector(sparseVectorClass, numSamples);
+  for (size_t i = 0; i < numSamples; ++i)
+    res->set(i, new SparseDoubleVector(sparseVectorClass));
+  return res;
+}
+
+void LuapeCreateSparseVectorNode::updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues) const
+{ 
+  const ObjectVectorPtr& a = outputs.staticCast<ObjectVector>();
+  size_t n = a->getNumElements();
+  jassert(newNodeValues->size() == n);
+  jassert(newNodeValues->getElementsType() == positiveIntegerType);
+  size_t i = 0;
+  for (LuapeSampleVector::const_iterator it = newNodeValues->begin(); it != newNodeValues->end(); ++it, ++i)
+  {
+    int newNodeValue = it.getRawInteger();
+    if (newNodeValue >= 0)
+      a->getAndCast<SparseDoubleVector>(i)->incrementValue((size_t)newNodeValue, 1.0);
   }
 }

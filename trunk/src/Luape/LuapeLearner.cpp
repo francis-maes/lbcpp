@@ -13,12 +13,6 @@ using namespace lbcpp;
 /*
 ** LuapeLearner
 */
-bool LuapeLearner::initialize(ExecutionContext& context, const LuapeInferencePtr& function)
-{
-  this->function = function;
-  return true;
-}
-
 bool LuapeLearner::setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
 {
   if (isTrainingData)
@@ -250,10 +244,8 @@ void IterativeLearner::displayMostImportantNodes(ExecutionContext& context, cons
 BoostingLearner::BoostingLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations)
   : IterativeLearner(maxIterations), weakLearner(weakLearner) {}
 
-bool BoostingLearner::initialize(ExecutionContext& context, const LuapeInferencePtr& function)
+bool BoostingLearner::initialize(ExecutionContext& context)
 {
-  if (!LuapeLearner::initialize(context, function))
-    return false;
   jassert(weakLearner);
   return weakLearner->initialize(context, function);
 }

@@ -23,6 +23,9 @@ public:
   const TypePtr& getType() const
     {return type;}
 
+  void setType(const TypePtr& type)
+    {this->type = type;}
+
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const = 0;
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const = 0;
   
@@ -92,6 +95,9 @@ public:
 
   const Variable& getValue() const
     {return value;}
+
+  void setValue(const Variable& value)
+    {type = value.getType(); this->value = value;}
 
   lbcpp_UseDebuggingNewOperator
 
@@ -220,6 +226,12 @@ public:
   void reserveNodes(size_t size)
     {nodes.reserve(size);}
 
+  const std::vector<LuapeNodePtr>& getNodes() const
+    {return nodes;}
+
+  void setNodes(const std::vector<LuapeNodePtr>& nodes)
+    {this->nodes = nodes;}
+
 protected:
   friend class LuapeSequenceNodeClass;
 
@@ -254,6 +266,19 @@ public:
   LuapeVectorSumNode(EnumerationPtr enumeration);
   LuapeVectorSumNode() {}
 
+  virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
+
+protected:
+  virtual VectorPtr createEmptyOutputs(size_t numSamples) const;
+  virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues) const;
+};
+
+class LuapeCreateSparseVectorNode : public LuapeSequenceNode
+{
+public:
+  LuapeCreateSparseVectorNode(const std::vector<LuapeNodePtr>& nodes);
+  LuapeCreateSparseVectorNode();
+    
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
 
 protected:

@@ -13,6 +13,7 @@
 # include <lbcpp/Core/DynamicObject.h>
 # include <lbcpp/Data/Stream.h>
 # include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Function/IterationFunction.h>
 # include <lbcpp/Luape/LuapeBatchLearner.h>
 # include <lbcpp/Luape/LuapeLearner.h>
 # include <lbcpp/Learning/LossFunction.h>
@@ -21,18 +22,139 @@
 namespace lbcpp
 {
 
-/*class ClassifierMiniBatchGDLearner : public IterativeLearner
+class GradientDescentLearner : public IterativeLearner
 {
 public:
-};
-*/
+  GradientDescentLearner(IterationFunctionPtr learningRate, size_t maxIterations)
+    : IterativeLearner(maxIterations), learningRate(learningRate) {}
+  GradientDescentLearner() {}
 
-class ClassifierSGDLearner : public IterativeLearner
+  virtual bool initialize(ExecutionContext& context)
+  {
+    LuapeSequenceNodePtr rootNode = function->getRootNode().staticCast<LuapeSequenceNode>();
+    featureFunction = new LuapeCreateSparseVectorNode(rootNode->getNodes());
+    parameters = vector(rootNode->getType(), 0);
+    parameters->reserve(featureFunction->getNumSubNodes() * 3);
+    transformIntoFeatureFunction(featureFunction, parameters);
+    return true;
+  }
+
+  virtual bool finalize(ExecutionContext& context)
+  {
+    context.enterScope(T("Finalizing"));
+    transformIntoOriginalForm(featureFunction, parameters, parameters->getElementsType());
+    LuapeSequenceNodePtr rootNode = function->getRootNode().staticCast<LuapeSequenceNode>();
+    rootNode->setNodes(featureFunction->getNodes());
+    parameters = VectorPtr();
+    featureFunction = LuapeCreateSparseVectorNodePtr();
+    context.leaveScope();
+    return true;
+  }
+
+protected:
+  friend class GradientDescentLearnerClass;
+
+  IterationFunctionPtr learningRate;
+
+  LuapeCreateSparseVectorNodePtr featureFunction;
+  VectorPtr parameters;
+
+  DenseDoubleVectorPtr computeMultiClassActivation(const SparseDoubleVectorPtr& features) const
+  {
+    DenseDoubleVectorPtr res = new DenseDoubleVector(function.staticCast<LuapeClassifier>()->getDoubleVectorClass());
+    for (size_t i = 0; i < features->getNumValues(); ++i)
+    {
+      const std::pair<size_t, double>& feature = features->getValue(i);
+      const DenseDoubleVectorPtr& param = parameters.staticCast<ObjectVector>()->get(feature.first).staticCast<DenseDoubleVector>();
+      param->addWeightedTo(res, 0, feature.second);
+    }
+    return res;
+  }
+
+  ObjectVectorPtr computeMultiClassActivations(const ObjectVectorPtr& featuresVector) const
+  {
+    size_t n = featuresVector->getNumElements();
+    ObjectVectorPtr res = new ObjectVector(function.staticCast<LuapeClassifier>()->getDoubleVectorClass(), n);
+    for (size_t i = 0; i < n; ++i)
+      res->set(i, computeMultiClassActivation(featuresVector->get(i).staticCast<SparseDoubleVector>()));
+    return res;
+  }
+
+  void transformIntoFeatureFunction(LuapeNodePtr node, VectorPtr parameters)
+  {
+    LuapeConstantNodePtr constant = node.dynamicCast<LuapeConstantNode>();
+    if (constant)
+    {
+      const Variable& value = constant->getValue();
+      if (value.exists())
+      {
+        size_t index = parameters->getNumElements();
+        parameters->append(constant->getValue());
+        constant->setValue(Variable(index, positiveIntegerType));
+      }
+      else
+        constant->setValue(Variable::missingValue(positiveIntegerType));
+    }
+
+    LuapeTestNodePtr test = node.dynamicCast<LuapeTestNode>();
+    if (test)
+      test->setType(positiveIntegerType);
+
+    size_t n = node->getNumSubNodes();
+    for (size_t i = 0; i < n; ++i)
+      transformIntoFeatureFunction(node->getSubNode(i), parameters);
+  }
+
+  void transformIntoOriginalForm(LuapeNodePtr node, const VectorPtr& parameters, TypePtr parametersType)
+  {
+    LuapeConstantNodePtr constant = node.dynamicCast<LuapeConstantNode>();
+    if (constant)
+    {
+      const Variable& value = constant->getValue();
+      if (value.exists())
+        constant->setValue(parameters->getElement((size_t)value.getInteger()));
+      else
+        constant->setValue(Variable::missingValue(parametersType));
+    }
+
+    LuapeTestNodePtr test = node.dynamicCast<LuapeTestNode>();
+    if (test)
+      test->setType(parametersType);
+
+    size_t n = node->getNumSubNodes();
+    for (size_t i = 0; i < n; ++i)
+      transformIntoOriginalForm(node->getSubNode(i), parameters, parametersType);
+  }
+};
+
+class ClassifierSGDLearner : public GradientDescentLearner
 {
 public:
-  ClassifierSGDLearner(MultiClassLossFunctionPtr lossFunction, size_t maxIterations)
-    : IterativeLearner(maxIterations), lossFunction(lossFunction) {}
+  ClassifierSGDLearner(MultiClassLossFunctionPtr lossFunction, IterationFunctionPtr learningRate, size_t maxIterations)
+    : GradientDescentLearner(learningRate, maxIterations), lossFunction(lossFunction) {}
   ClassifierSGDLearner() {}
+
+  virtual bool initialize(ExecutionContext& context)
+  {
+    if (!GradientDescentLearner::initialize(context))
+      return false;
+    
+    context.enterScope(T("Computing training features"));
+    LuapeSampleVectorPtr featureSamples = trainingCache->getSamples(context, featureFunction, trainingCache->getAllIndices());
+    trainingFeatures = featureSamples->getVector().staticCast<ObjectVector>();
+    jassert(trainingFeatures);
+    context.leaveScope();
+
+    if (validationCache)
+    {
+      context.enterScope(T("Computing validation features"));
+      LuapeSampleVectorPtr featureSamples = validationCache->getSamples(context, featureFunction, validationCache->getAllIndices());
+      validationFeatures = featureSamples->getVector().staticCast<ObjectVector>();
+      jassert(validationFeatures);
+      context.leaveScope();
+    }
+    return true;
+  }
 
   virtual bool doLearningIteration(ExecutionContext& context, double& trainingScore, double& validationScore)
   {
@@ -52,7 +174,6 @@ public:
     {
       // get example
       const ObjectPtr& example = trainingData[order[i]];
-      ObjectPtr inputObject = example->getVariable(0).getObject();
       Variable supervision = example->getVariable(1);
       size_t correctClass;
       if (supervision.isInteger())
@@ -61,47 +182,36 @@ public:
         correctClass = (size_t)supervision.getObjectAndCast<DoubleVector>()->getIndexOfMaximumValue();
 
       // compute terms and sum
-      LuapeInstanceCachePtr cache = new LuapeInstanceCache();
-      cache->setInputObject(function->getInputs(), inputObject);
-      DenseDoubleVectorPtr activations = new DenseDoubleVector(classifier->getDoubleVectorClass());
-      std::vector<DenseDoubleVectorPtr> terms(sumNode->getNumSubNodes());
-      for (size_t j = 0; j < terms.size(); ++j)
-      {
-        terms[j] = sumNode->getSubNode(j)->compute(context, cache).getObjectAndCast<DenseDoubleVector>();
-        if (terms[j])
-          terms[j]->addTo(activations);
-      }
-      
+      SparseDoubleVectorPtr exampleFeatures = trainingFeatures->get(order[i]).staticCast<SparseDoubleVector>();
+      DenseDoubleVectorPtr activations = computeMultiClassActivation(exampleFeatures);
+
       // compute loss value and gradient
       double lossValue = 0.0;
       DenseDoubleVectorPtr lossGradient = new DenseDoubleVector(classifier->getDoubleVectorClass());
       lossFunction->computeMultiClassLoss(activations, correctClass, numLabels, &lossValue, &lossGradient, 1.0);
-/*
-      for (size_t j = 0; j < numLabels; ++j)
-      {
-        bool isCorrectClass = (j == correctClass);
-        double weight = 1.0 / (2.0 * (isCorrectClass ? 1.0 : (numLabels - 1)));
-        double sign = isCorrectClass ? 1.0 : -1.0;
-        double e = exp(-sign * activations->getValue(j));
-        lossValue += e * weight;
-        lossGradient->setValue(j, -sign * e * weight);
-      }*/
       loss.push(lossValue);
 
       // update
-      for (size_t j = 0; j < terms.size(); ++j)
-        if (terms[j])
-          lossGradient->addWeightedTo(terms[j], 0, -learningRate);
+      for (size_t j = 0; j < exampleFeatures->getNumValues(); ++j)
+      {
+        size_t featureIndex = exampleFeatures->getValue(j).first;
+        double featureValue = exampleFeatures->getValue(j).second;
+        const DenseDoubleVectorPtr& param = parameters.staticCast<ObjectVector>()->get(featureIndex).staticCast<DenseDoubleVector>();
+        lossGradient->addWeightedTo(param, 0, -learningRate * featureValue );
+      }
     }
     context.leaveScope();
 
     context.enterScope(T("Recache training node"));
-    trainingCache->recacheNode(context, sumNode);
+    ObjectVectorPtr trainingPredictions = computeMultiClassActivations(trainingFeatures);
+    trainingCache->recacheNode(context, sumNode, trainingPredictions);
     context.leaveScope();
+
     if (validationCache)
     {
       context.enterScope(T("Recache validation node"));
-      validationCache->recacheNode(context, sumNode);
+      ObjectVectorPtr validationPredictions = computeMultiClassActivations(validationFeatures);
+      validationCache->recacheNode(context, sumNode, validationPredictions);
       context.leaveScope();
     }
     evaluatePredictions(context, trainingScore, validationScore);
@@ -115,6 +225,9 @@ protected:
   friend class ClassifierSGDLearnerClass;
 
   MultiClassLossFunctionPtr lossFunction;
+
+  ObjectVectorPtr trainingFeatures;
+  ObjectVectorPtr validationFeatures;
 };
 
 class GenerateTestNodesLearner : public LuapeLearner
@@ -124,8 +237,8 @@ public:
     : conditionGenerator(conditionGenerator) {}
   GenerateTestNodesLearner() {}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
-    {return LuapeLearner::initialize(context, function) && conditionGenerator->initialize(context, function);}
+  virtual bool initialize(ExecutionContext& context)
+    {return conditionGenerator->initialize(context, function);}
 
   virtual bool learn(ExecutionContext& context)
   {
@@ -216,9 +329,9 @@ public:
     if (complexity == 0)
       conditionLearner = singleStumpWeakLearner();
     else
-      conditionLearner = exhaustiveWeakLearner(complexity);
+      //conditionLearner = exhaustiveWeakLearner(complexity);
       //conditionLearner = adaptativeSamplingWeakLearner(maxNumWeakNodes, complexity, useVariableRelevancies, useExtendedVariables);
-      //conditionLearner = policyBasedWeakLearner(randomPolicy(), budgetPerIteration, maxSteps);
+      conditionLearner = policyBasedWeakLearner(randomPolicy(), (size_t)(relativeBudget * numVariables), complexity);
 
     BoostingWeakLearnerPtr weakLearner = conditionLearner;
     if (relativeBudget > 0.0)
@@ -233,7 +346,7 @@ public:
     //IterativeLearnerPtr strongLearner = discreteAdaBoostMHLearner(weakLearner, numIterations);
     MultiClassLossFunctionPtr lossFunction = oneAgainstAllMultiClassLossFunction(hingeDiscriminativeLossFunction());
     //logBinomialMultiClassLossFunction()
-    LuapeLearnerPtr strongLearner = compositeLearner(new GenerateTestNodesLearner(conditionLearner), new ClassifierSGDLearner(lossFunction, numIterations));
+    LuapeLearnerPtr strongLearner = compositeLearner(new GenerateTestNodesLearner(conditionLearner), new ClassifierSGDLearner(lossFunction, constantIterationFunction(0.1), numIterations));
 
     strongLearner->setVerbose(verbose);
     LuapeBatchLearnerPtr batchLearner = new LuapeBatchLearner(strongLearner);
