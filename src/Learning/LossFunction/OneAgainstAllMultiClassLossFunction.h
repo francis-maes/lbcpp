@@ -31,6 +31,7 @@ public:
     jassert(!gradientTarget || (*gradientTarget)->getNumElements() == numClasses);
 
     double correctValueDerivative = 0.0;
+    double Z = 1.0 / (numClasses - 1.0);
     for (size_t i = 0; i < numClasses; ++i)
       if (i != correctClass)
       {
@@ -39,11 +40,11 @@ public:
         double out = 0.0;
         binaryLoss->computeDiscriminativeLoss(deltaValue, output ? &out : NULL,  gradientTarget ? &derivative : NULL);
         if (output)
-          *output += out;
+          *output += out * Z;
         if (gradientTarget)
         {
-          correctValueDerivative += derivative;
-          (*gradientTarget)->decrementValue(i, derivative * gradientWeight);
+          correctValueDerivative += derivative * Z;
+          (*gradientTarget)->decrementValue(i, derivative * Z * gradientWeight);
         }
       }
 

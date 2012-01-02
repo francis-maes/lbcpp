@@ -29,7 +29,7 @@ public:
     return true;
   }
 
-  virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
+  virtual bool getCandidateWeakNodes(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
   {
     // FIXME: see why this do not work in release
     enumerateCandidates(context, structureLearner, candidates);
@@ -57,7 +57,7 @@ protected:
   std::set<LuapeNodePtr> cachedActiveVariables;
   std::vector<LuapeNodePtr> cachedCandidates;
 
-  void enumerateCandidates(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
+  void enumerateCandidates(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
   {
     LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(structureLearner->getFunction(), typeSearchSpace);
     std::set<LuapeNodePtr> weakNodes;
@@ -70,7 +70,7 @@ protected:
     }
   }
 
-  void enumerateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeGraphBuilderStatePtr& state, std::set<LuapeNodePtr>& res) const
+  void enumerateWeakNodes(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const LuapeGraphBuilderStatePtr& state, std::set<LuapeNodePtr>& res) const
   {
     if (state->isFinalState())
     {

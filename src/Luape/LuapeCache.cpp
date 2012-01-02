@@ -82,6 +82,14 @@ LuapeSampleVectorPtr LuapeSampleVector::createConstant(IndexSetPtr indices, cons
   return res;
 }
 
+Variable LuapeSampleVector::sampleElement(RandomGeneratorPtr random) const
+{
+  if (implementation == constantValueImpl)
+    return constantValue;
+  else
+    return vector->getElement(random->sampleSize(vector->getNumElements()));
+}
+
 LuapeSampleVectorPtr LuapeSampleVector::createCached(IndexSetPtr indices, const VectorPtr& cachedVector)
 {
   LuapeSampleVectorPtr res(new LuapeSampleVector(cachedVectorImpl, indices, cachedVector->getElementsType()));
@@ -93,7 +101,7 @@ LuapeSampleVectorPtr LuapeSampleVector::createCached(IndexSetPtr indices, const 
 ** LuapeSamplesCache
 */
 LuapeSamplesCache::LuapeSamplesCache(LuapeUniversePtr universe, const std::vector<LuapeInputNodePtr>& inputs, size_t size, size_t maxCacheSizeInMb)
-  : universe(universe), inputNodes(inputs), maxCacheSize(maxCacheSizeInMb * 1024 * 1024), actualCacheSize(0), minNumRequestsToBeCached(0), allIndices(new IndexSet(0, size))
+  : universe(universe), inputNodes(inputs), maxCacheSize(maxCacheSizeInMb * 1024 * 1024), actualCacheSize(0), minNumRequestsToBeCached(0), allIndices(new IndexSet(0, size)), cachingEnabled(true)
 {
   ensureActualSizeIsCorrect();
   inputCaches.resize(inputs.size());
@@ -240,11 +248,18 @@ void LuapeSamplesCache::uncacheNodes(ExecutionContext& context, size_t count)
   // in this case, the cache will big bigger than the maximum limit ...
   if (sortedNodes.size())
   {
-    minNumRequestsToBeCached = sortedNodes.rbegin()->first * 3 / 2;
+    minNumRequestsToBeCached = sortedNodes.rbegin()->first * 2;
     std::cout << "New threshold: " << minNumRequestsToBeCached << std::endl;
     for (std::multimap<juce::int64, LuapeNodePtr>::const_iterator it = sortedNodes.begin(); it != sortedNodes.end(); ++it)
       uncacheNode(context, it->second);
   }
+}
+
+void LuapeSamplesCache::clearCache(ExecutionContext& context)
+{
+  for (NodeCacheMap::iterator it = m.begin(); it != m.end(); ++it)
+    if (it->second.samples && it->second.numRequests >= 0)
+      uncacheNode(context, it->first);
 }
 
 bool LuapeSamplesCache::isNodeCached(const LuapeNodePtr& node) const
@@ -274,6 +289,10 @@ LuapeSamplesCache::NodeCache& LuapeSamplesCache::getOrCreateNodeCache(const Luap
 
 LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices)
 {
+  //static int pouet = 0;
+  //if (++pouet % 1000 == 0)
+  //  Object::displayObjectAllocationInfo(std::cout);
+
   if (indices->empty())
     return LuapeSampleVector::createConstant(indices, Variable::missingValue(node->getType()));
 
@@ -282,8 +301,11 @@ LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, co
     nodeCache.numRequests += indices->size();
 
   // cache nodes on which we spend much computation time
-  if (!nodeCache.samples && nodeCache.numRequests > minNumRequestsToBeCached && nodeCache.numRequests > allIndices->size())
-    cacheNode(context, node, VectorPtr(), "Deliberate caching");
+  if (cachingEnabled && node.isInstanceOf<LuapeFunctionNode>())
+  {
+    if (!nodeCache.samples && nodeCache.numRequests > minNumRequestsToBeCached && nodeCache.numRequests > allIndices->size())
+      cacheNode(context, node, VectorPtr(), "Deliberate caching");
+  }
 
   LuapeSampleVectorPtr res;
   if (nodeCache.samples)
@@ -296,11 +318,14 @@ LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, co
     // compute
     res = node->compute(context, refCountedPointerFromThis(this), indices);
 
-    // see if we can cache by opportunism
-    if (indices == allIndices && res->getVector() &&
-        (!maxCacheSize || getCacheSizeInBytes() < maxCacheSize) &&
-        nodeCache.numRequests > minNumRequestsToBeCached)
-      cacheNode(context, node, res->getVector(), "Cache by opportunism");
+    if (cachingEnabled && node.isInstanceOf<LuapeFunctionNode>())
+    {
+      // see if we can cache by opportunism
+      if (indices == allIndices && res->getVector() &&
+          (!maxCacheSize || getCacheSizeInBytes() < maxCacheSize) &&
+          nodeCache.numRequests > minNumRequestsToBeCached)
+        cacheNode(context, node, res->getVector(), "Cache by opportunism");
+    }
   }
   ensureSizeInLowerThanMaxSize(context);
   return res;

@@ -61,7 +61,7 @@ public:
     BoostingWeakLearnerPtr weakLearner = conditionLearner;
     for (size_t i = 1; i < treeDepth; ++i)
       weakLearner = binaryTreeWeakLearner(conditionLearner, weakLearner);
-    learningMachine->setBatchLearner(new LuapeBatchLearner(l2BoostingLearner(weakLearner, learningRate), numIterations));
+    learningMachine->setBatchLearner(new LuapeBatchLearner(l2BoostingLearner(weakLearner, numIterations, learningRate)));
 
     // learn
     learningMachine->train(context, *(const std::vector<ObjectPtr>* )&trainingExamples, *(const std::vector<ObjectPtr>* )&validationExamples, T("Training"), true);

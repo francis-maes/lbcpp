@@ -23,7 +23,7 @@ public:
 
   virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function);
   virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data);
-  virtual bool doLearningIteration(ExecutionContext& context, double& trainingScore, double& validationScore) = 0;
+  virtual bool learn(ExecutionContext& context) = 0;
 
   const LuapeInferencePtr& getFunction() const
     {return function;}
@@ -59,14 +59,45 @@ protected:
   LuapeSamplesCachePtr trainingCache;
   std::vector<ObjectPtr> validationData;
   LuapeSamplesCachePtr validationCache;
+
+  void evaluatePredictions(ExecutionContext& context, double& trainingScore, double& validationScore);
 };
 
 typedef ReferenceCountedObjectPtr<LuapeLearner> LuapeLearnerPtr;
 
-class BoostingLearner : public LuapeLearner
+extern LuapeLearnerPtr compositeLearner(const std::vector<LuapeLearnerPtr>& learners);
+extern LuapeLearnerPtr compositeLearner(const LuapeLearnerPtr& learner1, const LuapeLearnerPtr& learner2);
+
+class IterativeLearner : public LuapeLearner
 {
 public:
-  BoostingLearner(BoostingWeakLearnerPtr weakLearner);
+  IterativeLearner(size_t maxIterations = 0);
+  virtual ~IterativeLearner();
+
+  void setPlotFile(ExecutionContext& context, const File& plotFile);
+
+  virtual bool learn(ExecutionContext& context);
+  
+  OutputStream* getPlotOutputStream() const
+    {return plotOutputStream;}
+
+  virtual bool doLearningIteration(ExecutionContext& context, double& trainingScore, double& validationScore) = 0;
+
+protected:
+  friend class IterativeLearnerClass;
+  
+  size_t maxIterations;
+
+  OutputStream* plotOutputStream;
+  
+  void getImportances(const LuapeNodePtr& node, std::map<LuapeNodePtr, double>& res) const;
+  void displayMostImportantNodes(ExecutionContext& context, const LuapeInferencePtr& function, bool verbose) const;
+};
+
+class BoostingLearner : public IterativeLearner
+{
+public:
+  BoostingLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations);
   BoostingLearner() {}
 
   virtual BoostingWeakObjectivePtr createWeakObjective() const = 0;
@@ -87,13 +118,13 @@ protected:
   BoostingWeakLearnerPtr weakLearner;
 };
 
-extern BoostingLearnerPtr adaBoostLearner(BoostingWeakLearnerPtr weakLearner);
+extern BoostingLearnerPtr adaBoostLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations);
 
-extern BoostingLearnerPtr discreteAdaBoostMHLearner(BoostingWeakLearnerPtr weakLearner);
-extern BoostingLearnerPtr realAdaBoostMHLearner(BoostingWeakLearnerPtr weakLearner);
+extern BoostingLearnerPtr discreteAdaBoostMHLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations);
+extern BoostingLearnerPtr realAdaBoostMHLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations);
 
-extern BoostingLearnerPtr l2BoostingLearner(BoostingWeakLearnerPtr weakLearner, double learningRate);
-extern BoostingLearnerPtr rankingGradientBoostingLearner(BoostingWeakLearnerPtr weakLearner, double learningRate, RankingLossFunctionPtr rankingLoss);
+extern BoostingLearnerPtr l2BoostingLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations, double learningRate);
+extern BoostingLearnerPtr rankingGradientBoostingLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss);
 
 }; /* namespace lbcpp */
 

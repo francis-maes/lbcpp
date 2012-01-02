@@ -125,7 +125,7 @@ LuapeNodePtr BoostingWeakLearner::makeContribution(ExecutionContext& context, co
 /*
 ** FiniteBoostingWeakLearner
 */
-LuapeNodePtr FiniteBoostingWeakLearner::learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
+LuapeNodePtr FiniteBoostingWeakLearner::learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
 {
   const LuapeInferencePtr& function = structureLearner->getFunction();
 
@@ -171,7 +171,7 @@ LuapeNodePtr FiniteBoostingWeakLearner::learn(ExecutionContext& context, const B
 /*
 ** StochasticFiniteBoostingWeakLearner
 */
-bool StochasticFiniteBoostingWeakLearner::getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& res) const
+bool StochasticFiniteBoostingWeakLearner::getCandidateWeakNodes(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& res) const
 {
   size_t numFailuresAllowed = 10 * numWeakNodes;
   size_t numFailures = 0;
@@ -214,7 +214,7 @@ bool SequentialBuilderWeakLearner::initialize(ExecutionContext& context, const L
   return true;
 }
 
-LuapeNodePtr SequentialBuilderWeakLearner::sampleWeakNode(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const
+LuapeNodePtr SequentialBuilderWeakLearner::sampleWeakNode(ExecutionContext& context, const LuapeLearnerPtr& structureLearner) const
 {
   RandomGeneratorPtr random = context.getRandomGenerator();
 

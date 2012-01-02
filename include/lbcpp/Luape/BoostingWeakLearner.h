@@ -39,14 +39,14 @@ class BoostingWeakLearner : public Object
 public:
   virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function) {return true;}
 
-  virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
+  virtual bool getCandidateWeakNodes(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
     {return false;}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& indices, bool verbose, double& weakObjective) = 0;
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& indices, bool verbose, double& weakObjective) = 0;
 
-  virtual void observeObjectiveValue(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
+  virtual void observeObjectiveValue(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
     {}
-  virtual void observeBestWeakNode(ExecutionContext& context,  const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& bestWeakNode, const IndexSetPtr& examples, double bestWeakObjective)
+  virtual void observeBestWeakNode(ExecutionContext& context,  const LuapeLearnerPtr& structureLearner, const LuapeNodePtr& bestWeakNode, const IndexSetPtr& examples, double bestWeakObjective)
     {}
 
   double computeWeakObjectiveWithEventualStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, LuapeNodePtr& weakNode, const IndexSetPtr& indices) const;
@@ -62,10 +62,10 @@ typedef ReferenceCountedObjectPtr<BoostingWeakLearner> BoostingWeakLearnerPtr;
 class FiniteBoostingWeakLearner : public BoostingWeakLearner
 {
 public:
-  virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
+  virtual bool getCandidateWeakNodes(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
     {jassert(false); return false;} // this must be implemented
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective);
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective);
 };
 
 typedef ReferenceCountedObjectPtr<FiniteBoostingWeakLearner> FiniteBoostingWeakLearnerPtr;
@@ -76,9 +76,9 @@ public:
   StochasticFiniteBoostingWeakLearner(size_t numWeakNodes = 0)
     : numWeakNodes(numWeakNodes) {}
   
-  virtual LuapeNodePtr sampleWeakNode(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const = 0;
+  virtual LuapeNodePtr sampleWeakNode(ExecutionContext& context, const LuapeLearnerPtr& structureLearner) const = 0;
 
-  virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& res) const;
+  virtual bool getCandidateWeakNodes(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& res) const;
 
 protected:
   friend class StochasticFiniteBoostingWeakLearnerClass;
@@ -97,7 +97,7 @@ public:
   virtual bool sampleAction(ExecutionContext& context, LuapeGraphBuilderTypeStatePtr typeState, ObjectPtr& res) const = 0;
 
   virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function);
-  virtual LuapeNodePtr sampleWeakNode(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const;
+  virtual LuapeNodePtr sampleWeakNode(ExecutionContext& context, const LuapeLearnerPtr& structureLearner) const;
 
 protected:
   friend class SequentialBuilderWeakLearnerClass;
@@ -124,13 +124,13 @@ public:
   virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
     {return decorated->initialize(context, function);}
   
-  virtual void observeObjectiveValue(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
+  virtual void observeObjectiveValue(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
     {decorated->observeObjectiveValue(context, structureLearner, weakNode, examples, weakObjective);}
 
-  virtual void observeBestWeakNode(ExecutionContext& context,  const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
+  virtual void observeBestWeakNode(ExecutionContext& context,  const LuapeLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
     {decorated->observeBestWeakNode(context, structureLearner, weakNode, examples, weakObjective);}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
     {return decorated->learn(context, structureLearner, examples, verbose, weakObjective);}
 
 protected:
@@ -138,7 +138,7 @@ protected:
 
   BoostingWeakLearnerPtr decorated;
   
-  bool getDecoratedCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& res) const
+  bool getDecoratedCandidateWeakNodes(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& res) const
   {
     context.enterScope(T("Generating candidate weak learners"));
     // make initial weak learners

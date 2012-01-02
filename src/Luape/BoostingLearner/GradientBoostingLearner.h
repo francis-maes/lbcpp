@@ -86,8 +86,8 @@ typedef ReferenceCountedObjectPtr<L2BoostingWeakObjective> L2BoostingWeakObjecti
 class GradientBoostingLearner : public BoostingLearner
 {
 public:
-  GradientBoostingLearner(BoostingWeakLearnerPtr weakLearner, double learningRate)
-    : BoostingLearner(weakLearner), learningRate(learningRate) {}
+  GradientBoostingLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations, double learningRate)
+    : BoostingLearner(weakLearner, maxIterations), learningRate(learningRate) {}
   GradientBoostingLearner() : learningRate(0.0) {}
 
   virtual void computeLoss(const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const = 0;
@@ -164,8 +164,8 @@ typedef ReferenceCountedObjectPtr<GradientBoostingLearner> GradientBoostingLearn
 class L2BoostingLearner : public GradientBoostingLearner
 {
 public:
-  L2BoostingLearner(BoostingWeakLearnerPtr weakLearner, double learningRate)
-    : GradientBoostingLearner(weakLearner, learningRate) {}
+  L2BoostingLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations, double learningRate)
+    : GradientBoostingLearner(weakLearner, maxIterations, learningRate) {}
   L2BoostingLearner() {}
 
   virtual void computeLoss(const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const
@@ -208,8 +208,8 @@ public:
 class RankingGradientBoostingLearner : public GradientBoostingLearner
 {
 public:
-  RankingGradientBoostingLearner(BoostingWeakLearnerPtr weakLearner, double learningRate, RankingLossFunctionPtr rankingLoss)
-    : GradientBoostingLearner(weakLearner, learningRate), rankingLoss(rankingLoss) {}
+  RankingGradientBoostingLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss)
+    : GradientBoostingLearner(weakLearner, maxIterations, learningRate), rankingLoss(rankingLoss) {}
   RankingGradientBoostingLearner() {}
 
   virtual void computeLoss(const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const

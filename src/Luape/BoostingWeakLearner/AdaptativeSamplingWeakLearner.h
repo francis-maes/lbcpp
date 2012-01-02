@@ -28,7 +28,7 @@ public:
 
   virtual void observeStateActionReward(ExecutionContext& context, size_t stepNumber, const std::vector<LuapeNodePtr>& stack, const ObjectPtr& object, double weakObjective, double weight) = 0;
   
-  virtual void observeBestWeakNode(ExecutionContext& context,  const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
+  virtual void observeBestWeakNode(ExecutionContext& context,  const LuapeLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
   {
     if (weakObjective == -DBL_MAX)
       return;
@@ -175,7 +175,7 @@ public:
     return true;
   }
  
-  virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
+  virtual bool getCandidateWeakNodes(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
   {
     AdaptativeSamplingWeakLearner& pthis = *const_cast<AdaptativeSamplingWeakLearner* >(this);
 
@@ -389,7 +389,7 @@ public:
     return true;
   }
 
-  virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
+  virtual bool getCandidateWeakNodes(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
   {
     for (size_t i = 0; i < stateActionStatistics.size(); ++i)
       const_cast<TypeStateActionStatistics&>(stateActionStatistics[i]).update(temperature);

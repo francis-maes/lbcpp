@@ -47,6 +47,9 @@ typedef ReferenceCountedObjectPtr<LuapeInference> LuapeInferencePtr;
 class LuapeLearner;
 typedef ReferenceCountedObjectPtr<LuapeLearner> LuapeLearnerPtr;
 
+class IterativeLearner;
+typedef ReferenceCountedObjectPtr<IterativeLearner> IterativeLearnerPtr;
+
 class BoostingLearner;
 typedef ReferenceCountedObjectPtr<BoostingLearner> BoostingLearnerPtr;
 

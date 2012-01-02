@@ -113,7 +113,7 @@ public:
     return true;
   }
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples)
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& examples)
   {
     // FIXME: example subsets is not implemented
 
@@ -146,7 +146,7 @@ public:
   
   // FIXME: broken
   /*
-  virtual void update(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, LuapeNodePtr weakLearner)
+  virtual void update(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, LuapeNodePtr weakLearner)
   {
     pool->executeArm(context, structureLearner->getProblem(), structureLearner->getGraph(), weakLearner);
     context.resultCallback(T("numArms"), pool->getNumArms());

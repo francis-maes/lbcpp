@@ -25,7 +25,7 @@ public:
   virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
     {return conditionLearner->initialize(context, function) && subLearner->initialize(context, function);}
   
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
   {
     /*
     ** Learn condition and retrieve condition values
@@ -71,7 +71,7 @@ protected:
   BoostingWeakLearnerPtr conditionLearner;
   BoostingWeakLearnerPtr subLearner;
   
-  LuapeNodePtr subLearn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& subExamples, bool verbose, double& weakObjective) const
+  LuapeNodePtr subLearn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& subExamples, bool verbose, double& weakObjective) const
   {
     if (subExamples->size() == 0)
       return LuapeNodePtr();    

@@ -31,7 +31,7 @@ public:
     return true;
   }
  
-  virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& res) const
+  virtual bool getCandidateWeakNodes(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& res) const
   {
     for (size_t i = 0; i < weakLearners.size(); ++i)
       if (!weakLearners[i]->getCandidateWeakNodes(context, structureLearner, res))
@@ -39,19 +39,19 @@ public:
     return true;
   }
 
-  virtual void observeObjectiveValue(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
+  virtual void observeObjectiveValue(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
   {
     for (size_t i = 0; i < weakLearners.size(); ++i)
       weakLearners[i]->observeObjectiveValue(context, structureLearner, weakNode, examples, weakObjective);
   }
 
-  virtual void observeBestWeakNode(ExecutionContext& context,  const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
+  virtual void observeBestWeakNode(ExecutionContext& context,  const LuapeLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
   {
     for (size_t i = 0; i < weakLearners.size(); ++i)
       weakLearners[i]->observeBestWeakNode(context, structureLearner, weakNode, examples, weakObjective);
   }
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
   {
     weakObjective = -DBL_MAX;
     LuapeNodePtr res;

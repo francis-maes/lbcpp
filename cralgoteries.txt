@@ -2,7 +2,6 @@ Experiences - Proteins:
  * Nouvelles features: prev et next amino acid de chaque type; delta de ObjectVector[DenseDoubleVector]; local/global histogram
  * Essayer du Totally corrective boosting
 
-
 Experiences - Classification:
  * faire passer le sampling de weak learners à l'echelle (complexity  4 -- 10)
  * Trois modes: sampling uniforme, relevancy-based sampling des input nodes, relevancy-based sampling de tous les nodes

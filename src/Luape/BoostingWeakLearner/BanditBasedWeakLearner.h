@@ -23,7 +23,7 @@ public:
     : DecoratorBoostingWeakLearner(weakLearner), relativeBudget(relativeBudget), miniBatchRelativeSize(miniBatchRelativeSize)  {}
   BanditBasedWeakLearner() {}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
   {
     // make initial weak learners
     std::vector<LuapeNodePtr> weakNodes;
