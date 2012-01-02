@@ -74,7 +74,8 @@ public:
     BoostingWeakLearnerPtr conditionLearner = exhaustiveWeakLearner(complexity);
     conditionLearner = compositeWeakLearner(constantWeakLearner(), conditionLearner);
 
-    if (miniBatchRelativeSize == 0.0)
+    return conditionLearner;
+    /*if (miniBatchRelativeSize == 0.0)
       conditionLearner = laminatingWeakLearner(conditionLearner, relativeBudget);
     else if (miniBatchRelativeSize < 1.0)
       conditionLearner = banditBasedWeakLearner(conditionLearner, relativeBudget, miniBatchRelativeSize);
@@ -82,7 +83,7 @@ public:
     BoostingWeakLearnerPtr res = conditionLearner;
     for (size_t i = 1; i < treeDepth; ++i)
       res = binaryTreeWeakLearner(conditionLearner, res);
-    return res;
+    return res;*/
   }
 
   // task level
@@ -121,8 +122,12 @@ public:
   {
     LuapeInferencePtr learningMachine =  new LuapeClassifier(createUniverse());
     addFunctions(learningMachine, target);
+    //learningMachine->setLearner(discreteAdaBoostMHLearner(createWeakLearner(target), numIterations), verbose);
     
-    learningMachine->setLearner(discreteAdaBoostMHLearner(createWeakLearner(target), numIterations), verbose);// verbose 
+    MultiClassLossFunctionPtr lossFunction = oneAgainstAllMultiClassLossFunction(hingeDiscriminativeLossFunction());
+    LuapeLearnerPtr strongLearner = compositeLearner(generateTestNodesLearner(createWeakLearner(target)), classifierSGDLearner(lossFunction, constantIterationFunction(0.1), numIterations));
+    learningMachine->setLearner(strongLearner);
+
     learningMachine->setBatchLearner(filterUnsupervisedExamplesBatchLearner(learningMachine->getBatchLearner(), true));
     return learningMachine;
   }
