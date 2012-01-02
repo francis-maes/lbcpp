@@ -85,6 +85,71 @@ public:
     return res;
   }
 
+  // task level
+  virtual FunctionPtr disulfideBondPredictor(ProteinTarget target) const
+  {
+    LuapeInferencePtr classifier = binaryClassifier(target).staticCast<LuapeInference>();
+    classifier->addInput(proteinResiduePairPerceptionClass, "bond");
+    return mapNSymmetricMatrixFunction(classifier, 1);
+  }
+
+  virtual FunctionPtr labelVectorPredictor(ProteinTarget target) const
+  {
+    LuapeInferencePtr classifier = multiClassClassifier(target).staticCast<LuapeInference>();
+    classifier->addInput(proteinResiduePerceptionClass, "r");
+    return mapNContainerFunction(classifier);
+  }
+  
+  virtual FunctionPtr probabilityVectorPredictor(ProteinTarget target) const
+  {
+    LuapeInferencePtr classifier = binaryClassifier(target).staticCast<LuapeInference>();
+    classifier->addInput(proteinResiduePerceptionClass, "r");
+    return mapNContainerFunction(classifier);
+  }
+
+  // atomic level
+  virtual FunctionPtr binaryClassifier(ProteinTarget target) const
+  {
+    LuapeInferencePtr learningMachine = new LuapeBinaryClassifier(createUniverse());
+    addFunctions(learningMachine, target);
+    learningMachine->setLearner(adaBoostLearner(createWeakLearner(target), numIterations), verbose);
+    learningMachine->setBatchLearner(filterUnsupervisedExamplesBatchLearner(learningMachine->getBatchLearner(), true));
+    return learningMachine;
+  }
+
+  virtual FunctionPtr multiClassClassifier(ProteinTarget target) const
+  {
+    LuapeInferencePtr learningMachine =  new LuapeClassifier(createUniverse());
+    addFunctions(learningMachine, target);
+    
+    learningMachine->setLearner(discreteAdaBoostMHLearner(createWeakLearner(target), numIterations), verbose);// verbose 
+    learningMachine->setBatchLearner(filterUnsupervisedExamplesBatchLearner(learningMachine->getBatchLearner(), true));
+    return learningMachine;
+  }
+
+  virtual FunctionPtr regressor(ProteinTarget target) const
+  {
+    jassert(false);
+    return FunctionPtr();
+  }
+
+  // not used
+  virtual FunctionPtr learningMachine(ProteinTarget target) const
+  {
+    jassert(false);
+    return FunctionPtr();
+  }
+
+protected:
+  friend class LuapeProteinPredictorParametersClass;
+
+  size_t treeDepth;
+  size_t complexity;
+  double relativeBudget;
+  double miniBatchRelativeSize;
+  size_t numIterations;
+  bool verbose;
+
   struct Universe : public LuapeUniverse
   {
     bool isGetAccessor(const LuapeNodePtr& node, LuapeNodePtr& argument, String& variableName)
@@ -201,70 +266,6 @@ public:
     // protein-specific operations
     machine->addFunction(new ProteinGetRelativeResidueLuapeFunction());
   }
-
-  // task level
-  virtual FunctionPtr disulfideBondPredictor(ProteinTarget target) const
-  {
-    LuapeInferencePtr classifier = binaryClassifier(target).staticCast<LuapeInference>();
-    classifier->addInput(proteinResiduePairPerceptionClass, "bond");
-    return mapNSymmetricMatrixFunction(classifier, 1);
-  }
-
-  virtual FunctionPtr labelVectorPredictor(ProteinTarget target) const
-  {
-    LuapeInferencePtr classifier = multiClassClassifier(target).staticCast<LuapeInference>();
-    classifier->addInput(proteinResiduePerceptionClass, "r");
-    return mapNContainerFunction(classifier);
-  }
-  
-  virtual FunctionPtr probabilityVectorPredictor(ProteinTarget target) const
-  {
-    LuapeInferencePtr classifier = binaryClassifier(target).staticCast<LuapeInference>();
-    classifier->addInput(proteinResiduePerceptionClass, "r");
-    return mapNContainerFunction(classifier);
-  }
-
-  // atomic level
-  virtual FunctionPtr binaryClassifier(ProteinTarget target) const
-  {
-    LuapeInferencePtr learningMachine = new LuapeBinaryClassifier(createUniverse());
-    addFunctions(learningMachine, target);
-    learningMachine->setLearner(adaBoostLearner(createWeakLearner(target)), numIterations, verbose);
-    learningMachine->setBatchLearner(filterUnsupervisedExamplesBatchLearner(learningMachine->getBatchLearner(), true));
-    return learningMachine;
-  }
-
-  virtual FunctionPtr multiClassClassifier(ProteinTarget target) const
-  {
-    LuapeInferencePtr learningMachine =  new LuapeClassifier(createUniverse());
-    addFunctions(learningMachine, target);
-    learningMachine->setLearner(discreteAdaBoostMHLearner(createWeakLearner(target)), numIterations, verbose);// verbose 
-    learningMachine->setBatchLearner(filterUnsupervisedExamplesBatchLearner(learningMachine->getBatchLearner(), true));
-    return learningMachine;
-  }
-
-  virtual FunctionPtr regressor(ProteinTarget target) const
-  {
-    jassert(false);
-    return FunctionPtr();
-  }
-
-  // not used
-  virtual FunctionPtr learningMachine(ProteinTarget target) const
-  {
-    jassert(false);
-    return FunctionPtr();
-  }
-
-protected:
-  friend class LuapeProteinPredictorParametersClass;
-
-  size_t treeDepth;
-  size_t complexity;
-  double relativeBudget;
-  double miniBatchRelativeSize;
-  size_t numIterations;
-  bool verbose;
 };
 
 }; /* namespace lbcpp */

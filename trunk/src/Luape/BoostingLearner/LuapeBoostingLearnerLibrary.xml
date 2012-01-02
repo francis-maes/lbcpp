@@ -6,25 +6,32 @@
   <!-- Boosting with weights -->
   <class name="WeightBoostingLearner" base="BoostingLearner" abstract="yes"/>
   <class name="AdaBoostLearner" base="WeightBoostingLearner">
-    <constructor arguments="BoostingWeakLearnerPtr weakLearner" returnType="BoostingLearner"/>
+    <constructor arguments="BoostingWeakLearnerPtr weakLearner, size_t maxIterations" returnType="BoostingLearner"/>
   </class>
   <class name="AdaBoostMHLearner" base="WeightBoostingLearner" abstract="yes"/>
   <class name="DiscreteAdaBoostMHLearner" base="AdaBoostMHLearner">
-    <constructor arguments="BoostingWeakLearnerPtr weakLearner" returnType="BoostingLearner"/>
+    <constructor arguments="BoostingWeakLearnerPtr weakLearner, size_t maxIterations" returnType="BoostingLearner"/>
   </class>
   <class name="RealAdaBoostMHLearner" base="AdaBoostMHLearner">
-    <constructor arguments="BoostingWeakLearnerPtr weakLearner" returnType="BoostingLearner"/>
+    <constructor arguments="BoostingWeakLearnerPtr weakLearner, size_t maxIterations" returnType="BoostingLearner"/>
   </class>
 
-    <!-- Gradient Boosting -->
+  <!-- Gradient Boosting -->
   <class name="GradientBoostingLearner" base="BoostingLearner" abstract="yes"/>
   <class name="L2BoostingLearner" base="GradientBoostingLearner">
-    <constructor arguments="BoostingWeakLearnerPtr weakLearner, double learningRate" returnType="BoostingLearner"/>
+    <constructor arguments="BoostingWeakLearnerPtr weakLearner, size_t maxIterations, double learningRate" returnType="BoostingLearner"/>
   </class>
   
   <class name="RankingGradientBoostingLearner" base="GradientBoostingLearner">
-    <constructor arguments="BoostingWeakLearnerPtr weakLearner, double learningRate, RankingLossFunctionPtr rankingLoss" returnType="BoostingLearner"/>
+    <constructor arguments="BoostingWeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss" returnType="BoostingLearner"/>
     <variable type="RankingLossFunction" name="rankingLoss"/>
+  </class>
+
+  <!-- Composite Learner -->
+  <class name="CompositeLearner" base="LuapeLearner">
+    <constructor arguments="const LuapeLearnerPtr&amp; learner1, const LuapeLearnerPtr&amp; learner2"/>
+    <constructor arguments="const std::vector&lt;LuapeLearnerPtr&gt;&amp; learners"/>
+    <variable type="ObjectVector[LuapeLearner]" name="learners"/>
   </class>
   
 </library>

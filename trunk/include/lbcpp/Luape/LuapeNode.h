@@ -215,7 +215,10 @@ public:
   virtual const LuapeNodePtr& getSubNode(size_t index) const
     {return nodes[index];}
   
-  void pushNode(ExecutionContext& context, const LuapeNodePtr& node, const std::vector<LuapeSamplesCachePtr>& cachesToUpdate);
+  void pushNode(ExecutionContext& context, const LuapeNodePtr& node, const std::vector<LuapeSamplesCachePtr>& cachesToUpdate = std::vector<LuapeSamplesCachePtr>());
+
+  void reserveNodes(size_t size)
+    {nodes.reserve(size);}
 
 protected:
   friend class LuapeSequenceNodeClass;

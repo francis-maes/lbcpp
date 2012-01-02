@@ -138,7 +138,7 @@ public:
     return true;
   }
 
-  virtual LuapeNodePtr sampleWeakNode(ExecutionContext& context, const BoostingLearnerPtr& structureLearner) const
+  virtual LuapeNodePtr sampleWeakNode(ExecutionContext& context, const LuapeLearnerPtr& structureLearner) const
   {
     const LuapeInferencePtr& function = structureLearner->getFunction();
     LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(function, typeSearchSpace);
@@ -183,7 +183,7 @@ public:
   }
 
 #if 0
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
   {
     static const bool computeOptimalLearner = false;
     jassert(examples.size());

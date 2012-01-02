@@ -149,8 +149,8 @@ typedef ReferenceCountedObjectPtr<AdaBoostMHWeakObjective> AdaBoostMHWeakObjecti
 class AdaBoostMHLearner : public WeightBoostingLearner
 {
 public:
-  AdaBoostMHLearner(BoostingWeakLearnerPtr weakLearner)
-    : WeightBoostingLearner(weakLearner) {}
+  AdaBoostMHLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations)
+    : WeightBoostingLearner(weakLearner, maxIterations) {}
   AdaBoostMHLearner() {}
 
   virtual BoostingWeakObjectivePtr createWeakObjective() const
@@ -219,14 +219,13 @@ public:
   {
     if (!WeightBoostingLearner::doLearningIteration(context, trainingScore, validationScore))
       return false;
-    return true;
 
     static int counter = 0;
     ++counter;
 
-    if ((counter % 50) == 0)
+    if ((counter % 2) == 0)
     {
-      static const size_t maxIterations = 1;
+      static const size_t maxIterations = 10;
 
       context.enterScope(T("SGD"));
 
@@ -360,7 +359,7 @@ public:
 
   void doSGDIteration(ExecutionContext& context)
   {
-    static const double learningRate = 0.001;// / (1.0 + sqrt((double)graph->getNumYieldNodes()));
+    static const double learningRate = 0.01;// / (1.0 + sqrt((double)graph->getNumYieldNodes()));
 
     //MultiClassLossFunctionPtr lossFunction = logBinomialMultiClassLossFunction();
     //MultiClassLossFunctionPtr lossFunction = oneAgainstAllMultiClassLossFunction(exponentialDiscriminativeLossFunction());
@@ -373,10 +372,7 @@ public:
     std::vector<size_t> order;
     context.getRandomGenerator()->sampleOrder(trainingCache->getNumSamples(), order);
 
-    DenseDoubleVectorPtr parameters = new DenseDoubleVector();
-
     ScalarVariableStatistics loss;
-
     for (size_t i = 0; i < order.size(); ++i)
     {
       // get example
@@ -426,8 +422,8 @@ public:
 class DiscreteAdaBoostMHLearner : public AdaBoostMHLearner
 {
 public:
-  DiscreteAdaBoostMHLearner(BoostingWeakLearnerPtr weakLearner)
-    : AdaBoostMHLearner(weakLearner) {}
+  DiscreteAdaBoostMHLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations)
+    : AdaBoostMHLearner(weakLearner, maxIterations) {}
   DiscreteAdaBoostMHLearner() {}
 
   virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& indices, Variable& successVote, Variable& failureVote, Variable& missingVote) const
@@ -487,8 +483,8 @@ public:
 class RealAdaBoostMHLearner : public AdaBoostMHLearner
 {
 public:
-  RealAdaBoostMHLearner(BoostingWeakLearnerPtr weakLearner)
-    : AdaBoostMHLearner(weakLearner) {}
+  RealAdaBoostMHLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations)
+    : AdaBoostMHLearner(weakLearner, maxIterations) {}
   RealAdaBoostMHLearner() {}
 
   virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& indices, Variable& successVote, Variable& failureVote, Variable& missingVote) const

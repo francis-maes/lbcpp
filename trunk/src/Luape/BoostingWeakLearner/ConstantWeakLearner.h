@@ -19,10 +19,10 @@ class ConstantWeakLearner : public FiniteBoostingWeakLearner
 public:
   ConstantWeakLearner() : weakNode(new LuapeConstantNode(true)) {}
  
-  virtual bool getCandidateWeakNodes(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& res) const
+  virtual bool getCandidateWeakNodes(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& res) const
     {res.push_back(weakNode); return true;}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
   {
     weakObjective = computeWeakObjective(context, structureLearner, weakNode, examples);
     return makeContribution(context, structureLearner, weakNode, weakObjective, examples);

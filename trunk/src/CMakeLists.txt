@@ -669,6 +669,7 @@ SET(LBCPP_LUAPE_FUNCTION_SOURCES
 )
 
 SET(LBCPP_LUAPE_BOOSTING_LEARNER_SOURCES
+  Luape/BoostingLearner/CompositeLearner.h
   Luape/BoostingLearner/WeightBoostingLearner.h
   Luape/BoostingLearner/AdaBoostLearner.h
   Luape/BoostingLearner/AdaBoostMHLearner.h

@@ -20,6 +20,13 @@
   </class>
   -->
 
+  <class name="ClassifierSGDLearner" base="IterativeLearner">
+    <variable type="MultiClassLossFunction" name="lossFunction"/>
+  </class>
+  <class name="GenerateTestNodesLearner" base="LuapeLearner">
+    <variable type="BoostingWeakLearner" name="conditionGenerator"/>
+  </class>
+
   <!-- Sand Box -->
   <class name="LuapeSandBox" base="WorkUnit">
     <variable type="File" name="trainFile"/>

@@ -164,6 +164,8 @@ public:
   const VectorPtr& getVector() const
     {return vector;}
 
+  Variable sampleElement(RandomGeneratorPtr random) const;
+
 protected:
   Implementation implementation;
   IndexSetPtr indices;
@@ -202,6 +204,7 @@ public:
   void uncacheNodes(ExecutionContext& context, size_t count);
   void recacheNode(ExecutionContext& context, const LuapeNodePtr& node);
   void ensureSizeInLowerThanMaxSize(ExecutionContext& context);
+  void clearCache(ExecutionContext& context);
 
   bool isNodeCached(const LuapeNodePtr& node) const;
   VectorPtr getNodeCache(const LuapeNodePtr& node) const;
@@ -217,6 +220,12 @@ public:
 
   void displayCacheInformation(ExecutionContext& context);
   bool checkCacheIsCorrect(ExecutionContext& context, const LuapeNodePtr& node);
+
+  void disableCaching()
+    {cachingEnabled = false;}
+
+  void enableCaching()
+    {cachingEnabled = true;}
 
   /*
   ** Compute operation
@@ -260,6 +269,7 @@ protected:
   juce::int64 minNumRequestsToBeCached;
 
   IndexSetPtr allIndices;
+  bool cachingEnabled;
 
   void ensureActualSizeIsCorrect() const;
 

@@ -75,14 +75,16 @@
   <class name="LuapeLearner" abstract="yes">
     <variable type="Boolean" name="verbose"/>
   </class>
-  <class name="BoostingLearner" base="LuapeLearner" abstract="yes">
+  <class name="IterativeLearner" abstract="yes">
+    <variable type="PositiveInteger" name="maxIterations"/>
+  </class>
+  <class name="BoostingLearner" base="IterativeLearner" abstract="yes">
     <variable type="BoostingWeakLearner" name="weakLearner"/>
   </class>
 
   <!-- Wrapper to classical LBC++ learner -->
   <class name="LuapeBatchLearner" base="BatchLearner">
     <variable type="LuapeLearner" name="learner"/>
-    <variable type="PositiveInteger" name="maxIterations"/>
   </class>
   
 </library>

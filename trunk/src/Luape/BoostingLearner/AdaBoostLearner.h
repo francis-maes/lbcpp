@@ -97,8 +97,8 @@ typedef ReferenceCountedObjectPtr<AdaBoostWeakObjective> AdaBoostWeakObjectivePt
 class AdaBoostLearner : public WeightBoostingLearner
 {
 public:
-  AdaBoostLearner(BoostingWeakLearnerPtr weakLearner)
-    : WeightBoostingLearner(weakLearner) {}
+  AdaBoostLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations)
+    : WeightBoostingLearner(weakLearner, maxIterations) {}
   AdaBoostLearner() {}
 
   virtual BoostingWeakObjectivePtr createWeakObjective() const
