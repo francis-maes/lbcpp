@@ -25,8 +25,8 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     ContainerPtr trainingProteins = loadProteinPairs(context, trainingInputDirectory, trainingSupervisionDirectory, "training");
-    ContainerPtr testingProteins = loadProteinPairs(context, testingInputDirectory, testingSupervisionDirectory, "testing");
-    if (!trainingProteins || !testingProteins)
+    ContainerPtr testingProteins;// = loadProteinPairs(context, testingInputDirectory, testingSupervisionDirectory, "testing");
+    if (!trainingProteins)// || !testingProteins)
       return false;
 
 #if 0

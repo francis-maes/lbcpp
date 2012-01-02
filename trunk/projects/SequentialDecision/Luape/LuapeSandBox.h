@@ -77,7 +77,7 @@ public:
     for (size_t i = 1; i < treeDepth; ++i)
       weakLearner = binaryTreeWeakLearner(conditionLearner, weakLearner);
 
-    LuapeLearnerPtr strongLearner = adaBoostMHLearner(weakLearner, true);
+    LuapeLearnerPtr strongLearner = discreteAdaBoostMHLearner(weakLearner);
     strongLearner->setVerbose(verbose);
     LuapeBatchLearnerPtr batchLearner = new LuapeBatchLearner(strongLearner, numIterations);
     if (plotFile != File::nonexistent)

@@ -93,15 +93,16 @@ LuapeSampleVectorPtr LuapeSampleVector::createCached(IndexSetPtr indices, const 
 ** LuapeSamplesCache
 */
 LuapeSamplesCache::LuapeSamplesCache(LuapeUniversePtr universe, const std::vector<LuapeInputNodePtr>& inputs, size_t size, size_t maxCacheSizeInMb)
-  : universe(universe), inputNodes(inputs), maxCacheSize(maxCacheSizeInMb * 1024 * 1024), actualCacheSize(0), allIndices(new IndexSet(0, size))
+  : universe(universe), inputNodes(inputs), maxCacheSize(maxCacheSizeInMb * 1024 * 1024), actualCacheSize(0), minNumRequestsToBeCached(0), allIndices(new IndexSet(0, size))
 {
-  computingTimeThresholdToCache = 0.1; // 0.1 ms is the minimum computing time spent before considering entering cache
+  ensureActualSizeIsCorrect();
   inputCaches.resize(inputs.size());
   for (size_t i = 0; i < inputs.size(); ++i)
   {
     inputCaches[i] = vector(inputs[i]->getType(), size);
     cacheNode(defaultExecutionContext(), inputs[i], inputCaches[i], "Input node", false);
   }
+  ensureActualSizeIsCorrect();
 }
 
 void LuapeSamplesCache::setInputObject(const std::vector<LuapeInputNodePtr>& inputs, size_t index, const ObjectPtr& object)
@@ -151,35 +152,38 @@ size_t LuapeSamplesCache::NodeCache::getSizeInBytes(bool recursively) const
 }
 
 size_t LuapeSamplesCache::getCacheSizeInBytes() const
-{
-  return actualCacheSize + m.size() * (sizeof (NodeCache) + sizeof (LuapeNodePtr) + 128); // estimated over-head for storing a new entry in the map
-}
+  {return actualCacheSize;}
 
-void LuapeSamplesCache::cacheNode(ExecutionContext& context, const LuapeNodePtr& node, const VectorPtr& values, const String& reason, bool isUncachable)
+void LuapeSamplesCache::cacheNode(ExecutionContext& context, const LuapeNodePtr& node, const VectorPtr& values, const String& reason, bool isRemoveable)
 {
-  NodeCache& nodeCache = m[node];
+  NodeCache& nodeCache = getOrCreateNodeCache(node);
+  actualCacheSize -= nodeCache.getSizeInBytes(true);
   jassert(!nodeCache.samples);
   nodeCache.samples = values ? values : node->compute(context, refCountedPointerFromThis(this), allIndices)->getVector();
-  if (!isUncachable)
-    nodeCache.timeSpentInComputingSamples = -1.0;
+  if (!isRemoveable)
+    nodeCache.numRequests = -1;
   jassert(nodeCache.samples);
 
   size_t sizeInBytes = nodeCache.getSizeInBytes(true);
   actualCacheSize += sizeInBytes;
-  std::cout << (const char* )reason << ". Node " << node->toShortString() << " -> size = " << sizeInBytes / 1024.0 << " Kb" << std::endl;
+  std::cout << (const char* )reason << ". Node " << node->toShortString() << " -> size = " << sizeInBytes / 1024.0 << " Kb, numRequests = " << nodeCache.numRequests << std::endl; 
   std::cout << "Cache size: " << getCacheSizeInBytes() / (1024.0 * 1024.0) << " / " << maxCacheSize / (1024 * 1024) << " Mb" << std::endl;
   ensureSizeInLowerThanMaxSize(context);
 }
 
-void LuapeSamplesCache::recacheNode(ExecutionContext& context, const LuapeNodePtr& node, bool isUncachable)
+void LuapeSamplesCache::recacheNode(ExecutionContext& context, const LuapeNodePtr& node)
 {
+  ensureActualSizeIsCorrect();
+
   NodeCache& nodeCache = m[node];
   jassert(nodeCache.samples);
-  size_t sizeInBytes = nodeCache.getSizeInBytes(true);
+  actualCacheSize -= nodeCache.getSizeInBytes(true);
   nodeCache.samples = VectorPtr();
   nodeCache.sortedDoubleValues = SparseDoubleVectorPtr();
-  actualCacheSize -= sizeInBytes;
   nodeCache.samples = node->compute(context, refCountedPointerFromThis(this), allIndices)->getVector();
+  actualCacheSize += nodeCache.getSizeInBytes(true);
+
+  ensureActualSizeIsCorrect();
 }
 
 void LuapeSamplesCache::ensureSizeInLowerThanMaxSize(ExecutionContext& context)
@@ -209,39 +213,37 @@ void LuapeSamplesCache::uncacheNode(ExecutionContext& context, const LuapeNodePt
   size_t sizeInBytes = nodeCache.getSizeInBytes(true);
   nodeCache.samples = VectorPtr();
   nodeCache.sortedDoubleValues = SparseDoubleVectorPtr();
+  
   actualCacheSize -= sizeInBytes;
-  std::cout << "Uncache node " << node->toShortString() << " -> size = " << sizeInBytes / 1024 << " Kb" << std::endl; 
-  std::cout << "Cache size: " << getCacheSizeInBytes() / (1024 * 1024) << " / " << maxCacheSize / (1024 * 1024) << " Mb" << std::endl;
+  actualCacheSize += nodeCache.getSizeInBytes(true);
+
+  std::cout << "Uncache node " << node->toShortString() << " -> size = " << sizeInBytes / 1024 << " Kb, numRequests = " << nodeCache.numRequests << std::endl; 
+  std::cout << "Cache size: " << getCacheSizeInBytes() / (1024 * 1024.0) << " / " << maxCacheSize / (1024 * 1024) << " Mb" << std::endl;
 }
 
 void LuapeSamplesCache::uncacheNodes(ExecutionContext& context, size_t count)
 {
-  std::multimap<double, LuapeNodePtr> sortedNodes;
+  std::multimap<juce::int64, LuapeNodePtr> sortedNodes;
   for (NodeCacheMap::const_iterator it = m.begin(); it != m.end(); ++it)
-  {
-    double score = it->second.timeSpentInComputingSamples;
-    if (score >= 0.0 && it->second.samples)
+    if (it->second.numRequests >= 0 && it->second.samples)
     {
-      if (sortedNodes.size() < count || score < computingTimeThresholdToCache)
+      if (sortedNodes.size() < count || it->second.numRequests < sortedNodes.rbegin()->first)
       {
-        sortedNodes.insert(std::make_pair(score, it->first));
+        sortedNodes.insert(std::make_pair(it->second.numRequests, it->first));
         if (sortedNodes.size() > count)
           sortedNodes.erase(sortedNodes.rbegin()->first);
-        computingTimeThresholdToCache = sortedNodes.rbegin()->first;
-        jassert(isNumberValid(computingTimeThresholdToCache));
       }
     }
-  }
-  
+
   // if the cache it not big enough to store all inputs and their sorted double values, 
   // it may happen that no nodes can be uncached
   // in this case, the cache will big bigger than the maximum limit ...
   if (sortedNodes.size())
   {
-    for (std::multimap<double, LuapeNodePtr>::const_iterator it = sortedNodes.begin(); it != sortedNodes.end(); ++it)
+    minNumRequestsToBeCached = sortedNodes.rbegin()->first * 3 / 2;
+    std::cout << "New threshold: " << minNumRequestsToBeCached << std::endl;
+    for (std::multimap<juce::int64, LuapeNodePtr>::const_iterator it = sortedNodes.begin(); it != sortedNodes.end(); ++it)
       uncacheNode(context, it->second);
-    jassert(isNumberValid(computingTimeThresholdToCache));
-    std::cout << "New threshold: " << computingTimeThresholdToCache / 1000.0 << "s" << std::endl;
   }
 }
 
@@ -257,91 +259,36 @@ VectorPtr LuapeSamplesCache::getNodeCache(const LuapeNodePtr& node) const
   return it == m.end() ? VectorPtr() : it->second.samples;
 }
 
-void LuapeSamplesCache::displayCacheInformation(ExecutionContext& context)
+LuapeSamplesCache::NodeCache& LuapeSamplesCache::getOrCreateNodeCache(const LuapeNodePtr& node)
 {
-  /*
-  ** Infos by Node type
-  */
-  std::map<LuapeUniverse::NodeTypeKey, NodeTypeCache> infoByKey;
-  for (NodeCacheMap::const_iterator it = m.begin(); it != m.end(); ++it)
+  NodeCacheMap::iterator it = m.find(node);
+  if (it == m.end())
   {
-    LuapeUniverse::NodeTypeKey key = LuapeUniverse::makeNodeStatisticsKey(it->first);
-    infoByKey[key].observe(it->second);
+    NodeCache& res = m[node];
+    actualCacheSize += res.getSizeInBytes(true);
+    return res;
   }
-
-  for (std::map<LuapeUniverse::NodeTypeKey, NodeTypeCache>::const_iterator it = infoByKey.begin();
-        it != infoByKey.end(); ++it)
-  {
-    String info = it->first.second ? it->first.second->getName() : it->first.first->getName();
-    
-    info += T(" ") + String((int)it->second.numCached) + T(" / ") + String((int)it->second.count) + " cached nodes";
-    info += T(", size = ") + String((int)it->second.cacheSizeInBytes / 1024) + T(" Kb, ");
-    info += it->second.cachedComputingTime.toShortString() + T(" -- ") + it->second.uncachedComputingTime.toShortString();
-    context.informationCallback(info);
-  }
-
-  /*
-  ** Infos by node
-  */
-  std::multimap<double, LuapeNodePtr> cachedNodes;
-  std::multimap<double, LuapeNodePtr> uncachedNodes;
-  double worstScore = DBL_MAX;
-
-  for (NodeCacheMap::const_iterator it = m.begin(); it != m.end(); ++it)
-  {
-    double score = it->second.timeSpentInComputingSamples;
-    if (score < 0.0)
-      continue;
-    if (it->second.samples)
-      cachedNodes.insert(std::make_pair(score, it->first));
-    else
-      uncachedNodes.insert(std::make_pair(score, it->first));
-  }
-
-  size_t i;
-
-  i = 0;
-  for (std::multimap<double, LuapeNodePtr>::const_reverse_iterator it = cachedNodes.rbegin(); it != cachedNodes.rend() && i < 5; ++it, ++i)
-    context.informationCallback(T("Best cached: ") + it->second->toShortString() + T(" [") + String(it->first / 1000.0) + T("s]"));
-  i = 0;
-  for (std::multimap<double, LuapeNodePtr>::const_iterator it = cachedNodes.begin(); it != cachedNodes.end() && i < 5; ++it, ++i)
-    context.informationCallback(T("Worst cached: ") + it->second->toShortString() + T(" [") + String(it->first / 1000.0) + T("s]"));
-  i = 0;
-
-  for (std::multimap<double, LuapeNodePtr>::const_reverse_iterator it = uncachedNodes.rbegin(); it != uncachedNodes.rend() && i < 5; ++it, ++i)
-    context.informationCallback(T("Best uncached: ") + it->second->toShortString() + T(" [") + String(it->first / 1000.0) + T("s]"));
-  i = 0;
-  for (std::multimap<double, LuapeNodePtr>::const_iterator it = uncachedNodes.begin(); it != uncachedNodes.end() && i < 5; ++it, ++i)
-    context.informationCallback(T("Worst uncached: ") + it->second->toShortString() + T(" [") + String(it->first / 1000.0) + T("s]"));
+  else
+    return it->second;
 }
 
-double LuapeSamplesCache::computeExpectedComputingTimePerSample(const LuapeNodePtr& node) const
-{
-  double res = 0.0;
-  /*for (size_t i = 0; i < node->getNumSubNodes(); ++i)
-  {
-    const LuapeNodePtr& subNode = node->getSubNode(i);
-    if (!isNodeCached(subNode))
-      res += computeExpectedComputingTimePerSample(subNode);
-  }*/
-  return res + universe->getExpectedComputingTime(node);
-}
-
-LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices, bool isRemoveable)
+LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices)
 {
   if (indices->empty())
     return LuapeSampleVector::createConstant(indices, Variable::missingValue(node->getType()));
 
-  NodeCache& nodeCache = m[node];
+  NodeCache& nodeCache = getOrCreateNodeCache(node);
+  if (nodeCache.numRequests >= 0)
+    nodeCache.numRequests += indices->size();
 
   // cache nodes on which we spend much computation time
-  if (!nodeCache.samples && nodeCache.timeSpentInComputingSamples > computingTimeThresholdToCache && computingTimeThresholdToCache > 10)
+  if (!nodeCache.samples && nodeCache.numRequests > minNumRequestsToBeCached && nodeCache.numRequests > allIndices->size())
     cacheNode(context, node, VectorPtr(), "Deliberate caching");
 
   LuapeSampleVectorPtr res;
   if (nodeCache.samples)
   {
-    // update stats and return cached data
+    // return cached data
     res = LuapeSampleVector::createCached(indices, nodeCache.samples);
   }
   else
@@ -352,20 +299,21 @@ LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, co
     // see if we can cache by opportunism
     if (indices == allIndices && res->getVector() &&
         (!maxCacheSize || getCacheSizeInBytes() < maxCacheSize) &&
-        nodeCache.timeSpentInComputingSamples > computingTimeThresholdToCache)
+        nodeCache.numRequests > minNumRequestsToBeCached)
       cacheNode(context, node, res->getVector(), "Cache by opportunism");
   }
-  nodeCache.observeComputingTime(computeExpectedComputingTimePerSample(node) * indices->size());
   ensureSizeInLowerThanMaxSize(context);
   return res;
 }
 
 SparseDoubleVectorPtr LuapeSamplesCache::getSortedDoubleValues(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices)
 {
+  ensureActualSizeIsCorrect();
+
   if (indices->empty())
     return SparseDoubleVectorPtr();
 
-  NodeCache& nodeCache = m[node];
+  NodeCache& nodeCache = getOrCreateNodeCache(node);
   if (nodeCache.sortedDoubleValues)
   {
     if (indices == allIndices)
@@ -379,10 +327,13 @@ SparseDoubleVectorPtr LuapeSamplesCache::getSortedDoubleValues(ExecutionContext&
   if (indices == allIndices && nodeCache.samples)
   {
     // opportunism caching
+    actualCacheSize -= nodeCache.getSizeInBytes(true);
     nodeCache.sortedDoubleValues = res;
-    actualCacheSize += res->getSizeInBytes(true);
+    actualCacheSize += nodeCache.getSizeInBytes(true);
     ensureSizeInLowerThanMaxSize(context);
   }
+
+  ensureActualSizeIsCorrect();
   return res;
 }
 
@@ -469,4 +420,126 @@ bool LuapeSamplesCache::checkCacheIsCorrect(ExecutionContext& context, const Lua
     }
   }
   return true;
+}
+
+struct NodeTypeCacheInformation
+{
+  NodeTypeCacheInformation() : count(0), numCached(0), cacheSizeInBytes(0) {}
+
+  void observe(const LuapeSamplesCache::NodeCache& nodeCache)
+  {
+    ++count;
+    if (nodeCache.samples)
+    {
+      ++numCached;
+      cacheSizeInBytes += nodeCache.getSizeInBytes(true);
+      cachedNumRequests.push((double)nodeCache.numRequests);
+    }
+    else
+      uncachedNumRequests.push((double)nodeCache.numRequests);
+  }
+
+  size_t count;
+  size_t numCached;
+  size_t cacheSizeInBytes;
+  ScalarVariableStatistics cachedNumRequests;
+  ScalarVariableStatistics uncachedNumRequests;
+};
+
+void LuapeSamplesCache::recomputeCacheSize()
+{
+  actualCacheSize = 0;
+  for (NodeCacheMap::const_iterator it = m.begin(); it != m.end(); ++it)
+    actualCacheSize += it->second.getSizeInBytes(true);
+}
+
+void LuapeSamplesCache::ensureActualSizeIsCorrect() const
+{
+#ifdef JUCE_DEBUG
+  size_t sizeCheck = 0;
+  for (NodeCacheMap::const_iterator it = m.begin(); it != m.end(); ++it)
+    sizeCheck += it->second.getSizeInBytes(true);
+  jassert(sizeCheck == actualCacheSize);
+#endif // JUCE_DEBUG
+}
+
+void LuapeSamplesCache::displayCacheInformation(ExecutionContext& context)
+{
+  ensureActualSizeIsCorrect();
+
+  /*
+  ** Infos by Node type
+  */
+  std::map<LuapeUniverse::NodeTypeKey, NodeTypeCacheInformation> infoByKey;
+  for (NodeCacheMap::const_iterator it = m.begin(); it != m.end(); ++it)
+  {
+    LuapeUniverse::NodeTypeKey key = LuapeUniverse::makeNodeStatisticsKey(it->first);
+    infoByKey[key].observe(it->second);
+  }
+
+  for (std::map<LuapeUniverse::NodeTypeKey, NodeTypeCacheInformation>::const_iterator it = infoByKey.begin();
+        it != infoByKey.end(); ++it)
+  {
+    String info = it->first.second ? it->first.second->getName() : it->first.first->getName();
+    
+    info += T(" ") + String((int)it->second.numCached) + T(" / ") + String((int)it->second.count) + " cached nodes";
+    info += T(", size = ") + String((int)it->second.cacheSizeInBytes / 1024) + T(" Kb, ");
+    info += it->second.cachedNumRequests.toShortString() + T(" -- ") + it->second.uncachedNumRequests.toShortString();
+    context.informationCallback(info);
+  }
+
+  /*
+  ** Infos by node
+  */
+  std::multimap<double, LuapeNodePtr> cachedNodes;
+  std::multimap<double, LuapeNodePtr> uncachedNodes;
+  std::vector<LuapeNodePtr> nonRemoveableNodes;
+  double worstScore = DBL_MAX;
+
+  size_t nonRemoveableSize = 0;
+  size_t cachedSize = 0;
+  size_t uncachedSize = 0;
+
+  for (NodeCacheMap::const_iterator it = m.begin(); it != m.end(); ++it)
+  {
+    double score = (double)it->second.numRequests;
+    if (score < 0.0)
+    {
+      nonRemoveableNodes.push_back(it->first);
+      nonRemoveableSize += it->second.getSizeInBytes(true);
+    }
+    else if (it->second.samples)
+    {
+      cachedNodes.insert(std::make_pair(score, it->first));
+      cachedSize += it->second.getSizeInBytes(true);
+    }
+    else
+    {
+      uncachedNodes.insert(std::make_pair(score, it->first));
+      uncachedSize += it->second.getSizeInBytes(true);
+    }
+  }
+
+  context.informationCallback(String((int)nonRemoveableNodes.size()) + T(" non removeable nodes, ") +
+                              String((int)cachedNodes.size()) + T(" cached nodes, ") +
+                              String((int)uncachedNodes.size()) + T(" uncached nodes"));
+  context.informationCallback(T("Non removeable size: ") + String((int)nonRemoveableSize / 1024) + T(" Kb, Cached size: ") + String((int)cachedSize / 1024) + T(" Kb, Uncached size: ") + String((int)uncachedSize / 1024) + T(" Kb"));
+
+  size_t i;
+  //for (i = 0; i < nonRemoveableNodes.size(); ++i)
+  //  context.informationCallback(T("Non removeable: ") + nonRemoveableNodes[i]->toShortString());
+
+  i = 0;
+  for (std::multimap<double, LuapeNodePtr>::const_reverse_iterator it = cachedNodes.rbegin(); it != cachedNodes.rend() && i < 5; ++it, ++i)
+    context.informationCallback(T("Best cached: ") + it->second->toShortString() + T(" [") + String(it->first / 1000000.0) + T(" M]"));
+  i = 0;
+  for (std::multimap<double, LuapeNodePtr>::const_iterator it = cachedNodes.begin(); it != cachedNodes.end() && i < 5; ++it, ++i)
+    context.informationCallback(T("Worst cached: ") + it->second->toShortString() + T(" [") + String(it->first / 1000000.0) + T(" M]"));
+  i = 0;
+
+  for (std::multimap<double, LuapeNodePtr>::const_reverse_iterator it = uncachedNodes.rbegin(); it != uncachedNodes.rend() && i < 5; ++it, ++i)
+    context.informationCallback(T("Best uncached: ") + it->second->toShortString() + T(" [") + String(it->first / 1000000.0) + T(" M]"));
+  i = 0;
+  for (std::multimap<double, LuapeNodePtr>::const_iterator it = uncachedNodes.begin(); it != uncachedNodes.end() && i < 5; ++it, ++i)
+    context.informationCallback(T("Worst uncached: ") + it->second->toShortString() + T(" [") + String(it->first / 1000000.0) + T(" M]"));
 }

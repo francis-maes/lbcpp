@@ -38,7 +38,7 @@ bool LuapeLearner::setExamples(ExecutionContext& context, bool isTrainingData, c
 
 VectorPtr LuapeLearner::getTrainingPredictions() const
 {
-  LuapeSampleVectorPtr samples = trainingCache->getSamples(defaultExecutionContext(), function->getRootNode(), trainingCache->getAllIndices(), false);
+  LuapeSampleVectorPtr samples = trainingCache->getSamples(defaultExecutionContext(), function->getRootNode(), trainingCache->getAllIndices());
   jassert(samples->getImplementation() == LuapeSampleVector::cachedVectorImpl);
   return samples->getVector();
 }
@@ -47,7 +47,7 @@ VectorPtr LuapeLearner::getValidationPredictions() const
 {
   if (validationCache)
   {
-    LuapeSampleVectorPtr samples = validationCache->getSamples(defaultExecutionContext(), function->getRootNode(), validationCache->getAllIndices(), false);
+    LuapeSampleVectorPtr samples = validationCache->getSamples(defaultExecutionContext(), function->getRootNode(), validationCache->getAllIndices());
     jassert(samples->getImplementation() == LuapeSampleVector::cachedVectorImpl);
     return samples->getVector();
   }
