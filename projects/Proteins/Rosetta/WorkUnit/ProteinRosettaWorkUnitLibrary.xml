@@ -2,6 +2,7 @@
 
 <library name="ProteinRosettaWorkUnit" directory="Rosetta/WorkUnit">
   
+  <!-- General -->
   <class name="DistributableWorkUnit" base="WorkUnit" abstract="yes">
     <variable type="String" name="name"/>
     <variable type="CompositeWorkUnit" name="workUnits"/>
@@ -17,10 +18,16 @@
     <variable type="PositiveInteger" name="remoteHostPort"/>
   </class>
   
+  <!-- Test -->
+  <class name="TestDumbWorkUnit" base="WorkUnit">
+    <variable type="PositiveInteger" name="j"/>
+  </class>
+  
   <class name="TestDistribWorkUnit" base="DistributableWorkUnit">
     <constructor arguments="String&amp; name"/>
   </class>
   
+  <!-- Proteins -->
   <class name="UnfoldProteinsWorkUnit" base="WorkUnit">
     <variable type="String" name="referenceDirectory" description="Directory where one can find the real proteins"/>
     <variable type="String" name="outputDirectoryStructures" description="Directory where to store the intermediate structures"/>
@@ -38,7 +45,7 @@
     <variable type="PositiveInteger" name="numIterations"/>
   </class>
     
-  <class name="ProteinOptimizationWorkUnit" base="WorkUnit">
+  <class name="SingleThreadProteinOptimizationWorkUnit" base="WorkUnit">
     <!-- 0 -->
     <variable type="String" name="inputDirectory"/>
     <!-- 1 -->
@@ -73,6 +80,38 @@
     <variable type="PositiveInteger" name="numIterations"/>
     <variable type="PositiveInteger" name="numSamplesPerIteration"/>
     <variable type="PositiveInteger" name="numLearning"/>
+  </class>
+  
+  <class name="SingleProteinOptimizationWorkUnit" base="WorkUnit">
+    <variable type="Protein" name="inputProtein"/>
+    
+    <variable type="String" name="outputDirectory"/>
+    <variable type="Integer" name="numOutputFiles"/>    
+
+    <variable type="String" name="referencesDirectory"/>    
+    <variable type="String" name="moversDirectory"/>
+    <variable type="PositiveInteger" name="maxLearningSamples"/>    
+
+    <variable type="Double" name="initialTemperature"/>
+    <variable type="Double" name="finalTemperature"/>
+    <variable type="PositiveInteger" name="numDecreasingSteps"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+  
+  <class name="ProteinOptimizationWorkUnit" base="DistributableWorkUnit">  
+    <variable type="String" name="inputDirectory"/>
+    
+    <variable type="String" name="outputDirectory"/>
+    <variable type="Integer" name="numOutputFiles"/>    
+
+    <variable type="String" name="referencesDirectory"/>    
+    <variable type="String" name="moversDirectory"/>
+    <variable type="PositiveInteger" name="maxLearningSamples"/>    
+
+    <variable type="Double" name="initialTemperature"/>
+    <variable type="Double" name="finalTemperature"/>
+    <variable type="PositiveInteger" name="numDecreasingSteps"/>
+    <variable type="PositiveInteger" name="numIterations"/>
   </class>
   
 </library>

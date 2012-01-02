@@ -17,6 +17,7 @@ namespace lbcpp
 class TestDumbWorkUnit : public WorkUnit
 {
 public:
+  TestDumbWorkUnit() {}
   TestDumbWorkUnit(size_t j) : j(j) {}
 
   virtual Variable run(ExecutionContext& context)
@@ -41,6 +42,8 @@ public:
   }
 
 protected:
+  friend class TestDumbWorkUnitClass;
+
   size_t j;
 };
 
@@ -48,7 +51,7 @@ class DistributableWorkUnit : public WorkUnit
 {
 public:
   DistributableWorkUnit() : name(T("DistributableWorkUnit")) {}
-  DistributableWorkUnit(String& name) : name(name) {}
+  DistributableWorkUnit(String name) : name(name) {}
 
   /**
    * Each subworkunit should open a scope for itself to avoid undesired effects
@@ -58,7 +61,7 @@ public:
    * workUnits->addWorkUnit(new WorkUnit());
    *
    */
-  virtual void initializeWorkUnits()=0;
+  virtual void initializeWorkUnits(ExecutionContext& context)=0;
 
   /**
    * Manage the VariableVector output by run.
@@ -72,13 +75,27 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    initializeWorkUnits();
+    // initialization
+    context.enterScope(T("Initializing distributable work unit::local"));
+    initializeWorkUnits(context);
+    context.leaveScope();
+
+    // computing time
+    context.enterScope(name);
     Variable result = context.run(workUnits, true);
+    context.leaveScope();
 
+    // results callback
+    context.enterScope(T("Managing results"));
     Variable gatheredResult = resultsCallback(context, *result.getObjectAndCast<VariableVector> ());
+    context.leaveScope();
 
+    context.informationCallback(T("Local distributable work unit done."));
     return gatheredResult;
   }
+
+  String getName()
+    {return name;}
 
 protected:
   friend class DistributableWorkUnitClass;
@@ -96,7 +113,7 @@ public:
   TestDistribWorkUnit() {}
   TestDistribWorkUnit(String& name) : DistributableWorkUnit(name) {}
 
-  virtual void initializeWorkUnits()
+  virtual void initializeWorkUnits(ExecutionContext& context)
   {
     workUnits = new CompositeWorkUnit(name);
     for (size_t i = 0; i < 10; i++)
@@ -133,12 +150,31 @@ public:
         remoteHostPort, distributable->getName(), localHostLogin, clusterLogin,
         fixedResourceEstimator(memory, time, 1));
 
+    // initialization
+    context.enterScope(T("Initializing distributable work unit::distributed"));
+    distributable->initializeWorkUnits(context);
+    context.leaveScope();
     CompositeWorkUnitPtr units = distributable->getWorkUnits();
+    if (units->getNumWorkUnits() == 0)
+    {
+      context.informationCallback(T("No work units to treat."));
+      return Variable();
+    }
 
+    // computing time
+    context.enterScope(distributable->getName());
+    context.informationCallback(T("Treating ") + String((int)units->getNumWorkUnits())
+        + T(" work units."));
     Variable result = remoteContext->run(units);
+    context.leaveScope();
 
+    // managing results
+    context.enterScope(T("Managing results"));
     Variable gatheredResult = distributable->resultsCallback(context, *result.getObjectAndCast<
         VariableVector> ());
+    context.leaveScope();
+
+    context.informationCallback(T("Distribution to cluster done."));
 
     return gatheredResult;
   }
