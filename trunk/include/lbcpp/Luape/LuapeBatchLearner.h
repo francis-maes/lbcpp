@@ -92,15 +92,17 @@ public:
 
       //  context.informationCallback(T("Graph: ") + learner->getGraph()->toShortString());
       context.progressCallback(new ProgressionState(i+1, maxIterations, T("Iterations")));
-      
-      context.enterScope(T("Most important nodes"));
-      displayMostImportantNodes(context, function);
-      context.leaveScope();
+    
+      if (learner->getVerbose())
+	context.enterScope(T("Most important nodes"));
+      displayMostImportantNodes(context, function, learner->getVerbose());
+      if (learner->getVerbose())
+	context.leaveScope();
     }
     context.leaveScope();
   
     context.enterScope(T("Most important nodes"));
-    displayMostImportantNodes(context, function);
+    displayMostImportantNodes(context, function, true);
     context.leaveScope();
 
     context.informationCallback(T("Best evaluation: ") + String(bestValidationScore * 100.0, 3) + T("%"));
@@ -133,7 +135,7 @@ public:
     }
   }
   
-  void displayMostImportantNodes(ExecutionContext& context, const LuapeInferencePtr& function) const
+  void displayMostImportantNodes(ExecutionContext& context, const LuapeInferencePtr& function, bool verbose) const
   {
     const LuapeNodePtr& rootNode = function->getRootNode();
 
@@ -154,7 +156,7 @@ public:
     }
 
     // display most important nodes
-    if (learner->getVerbose())
+    if (verbose)
     {
       std::multimap<double, LuapeNodePtr> nodeImportanceMap;
       for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it)
