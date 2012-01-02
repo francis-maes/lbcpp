@@ -18,8 +18,8 @@ namespace lbcpp
 class AdaBoostMHWeakObjective : public BoostingWeakObjective
 {
 public:
-  AdaBoostMHWeakObjective(const LuapeClassifierPtr& classifier, const DenseDoubleVectorPtr& supervisions, const DenseDoubleVectorPtr& weights, bool useSymmetricVotes)
-    : labels(classifier->getLabels()), doubleVectorClass(classifier->getDoubleVectorClass()), supervisions(supervisions), weights(weights), votesUpToDate(false), useSymmetricVotes(useSymmetricVotes)
+  AdaBoostMHWeakObjective(const LuapeClassifierPtr& classifier, const DenseDoubleVectorPtr& supervisions, const DenseDoubleVectorPtr& weights)
+    : labels(classifier->getLabels()), doubleVectorClass(classifier->getDoubleVectorClass()), supervisions(supervisions), weights(weights), votesUpToDate(false)
   {
     jassert(supervisions->getNumValues() == weights->getNumValues());
     numLabels = labels->getNumElements();
@@ -70,29 +70,17 @@ public:
     size_t n = labels->getNumElements();
     double edge = 0.0;
 
-    if (useSymmetricVotes)
+    const double* muNegNegPtr = mu[0][0]->getValuePointer(0);
+    const double* muPosNegPtr = mu[1][0]->getValuePointer(0);
+    const double* muNegPosPtr = mu[0][1]->getValuePointer(0);
+    const double* muPosPosPtr = mu[1][1]->getValuePointer(0);
+    
+    for (size_t j = 0; j < n; ++j)
     {
-      const double* muNegNegPtr = mu[0][0]->getValuePointer(0);
-      const double* muPosNegPtr = mu[1][0]->getValuePointer(0);
-      const double* muNegPosPtr = mu[0][1]->getValuePointer(0);
-      const double* muPosPosPtr = mu[1][1]->getValuePointer(0);
-      
-      for (size_t j = 0; j < n; ++j)
-      {
-        double muPositive = (*muNegNegPtr++) + (*muPosPosPtr++);
-        double muNegative = (*muPosNegPtr++) + (*muNegPosPtr++);
-        double vote = (muPositive > muNegative + 1e-9 ? 1.0 : -1.0);
-        edge += vote * (muPositive - muNegative);
-      }
-    }
-    else
-    {
-      for (size_t i = 0; i < n; ++i)
-      {
-        edge += votes[0]->getValue(i) * (mu[0][1]->getValue(i) - mu[0][0]->getValue(i))
-              + votes[1]->getValue(i) * (mu[1][1]->getValue(i) - mu[1][0]->getValue(i))
-              + votes[2]->getValue(i) * (mu[2][1]->getValue(i) - mu[2][0]->getValue(i));
-      }
+      double muPositive = (*muNegNegPtr++) + (*muPosPosPtr++);
+      double muNegative = (*muPosNegPtr++) + (*muNegPosPtr++);
+      double vote = (muPositive > muNegative + 1e-9 ? 1.0 : -1.0);
+      edge += vote * (muPositive - muNegative);
     }
     return edge;
   }
@@ -117,8 +105,6 @@ protected:
   DenseDoubleVectorPtr mu[3][2]; // prediction -> supervision -> label -> weight
   DenseDoubleVectorPtr votes[3]; // prediction -> label -> {-1, 1}
   bool votesUpToDate;
-
-  bool useSymmetricVotes;
 
   void computeMuAndVoteValues()
   {
@@ -163,12 +149,12 @@ typedef ReferenceCountedObjectPtr<AdaBoostMHWeakObjective> AdaBoostMHWeakObjecti
 class AdaBoostMHLearner : public WeightBoostingLearner
 {
 public:
-  AdaBoostMHLearner(BoostingWeakLearnerPtr weakLearner, bool useSymmetricVotes)
-    : WeightBoostingLearner(weakLearner), useSymmetricVotes(useSymmetricVotes) {}
+  AdaBoostMHLearner(BoostingWeakLearnerPtr weakLearner)
+    : WeightBoostingLearner(weakLearner) {}
   AdaBoostMHLearner() {}
 
   virtual BoostingWeakObjectivePtr createWeakObjective() const
-    {return new AdaBoostMHWeakObjective(function.staticCast<LuapeClassifier>(), supervisions, weights, useSymmetricVotes);}
+    {return new AdaBoostMHWeakObjective(function.staticCast<LuapeClassifier>(), supervisions, weights);}
 
 //  virtual bool shouldStop(double weakObjectiveValue) const
 //    {return weakObjectiveValue == 0.0;}
@@ -193,101 +179,6 @@ public:
         res->setValue(index, j == label ? 1.0 : -1.0);
     }
     return res;
-  }
-
-  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& indices, Variable& successVote, Variable& failureVote, Variable& missingVote) const
-  {
-    AdaBoostMHWeakObjectivePtr objective = new AdaBoostMHWeakObjective(function.staticCast<LuapeClassifier>(), supervisions, weights, useSymmetricVotes);
-    objective->setPredictions(trainingCache->getSamples(context, weakNode, indices));
-
-    DenseDoubleVectorPtr res[3];
-    
-    if (useSymmetricVotes)
-    {
-      const double* muNegNegPtr = objective->getMu(0, false)->getValuePointer(0);
-      const double* muPosNegPtr = objective->getMu(1, false)->getValuePointer(0);
-      const double* muNegPosPtr = objective->getMu(0, true)->getValuePointer(0);
-      const double* muPosPosPtr = objective->getMu(1, true)->getValuePointer(0);
-      DenseDoubleVectorPtr votes = new DenseDoubleVector(function.staticCast<LuapeClassifier>()->getDoubleVectorClass());
-
-      double correctWeight = 0.0;
-      double errorWeight = 0.0;
-      size_t n = votes->getNumValues();
-    
-      for (size_t j = 0; j < n; ++j)
-      {
-        double muPositive = (*muNegNegPtr++) + (*muPosPosPtr++);
-        double muNegative = (*muPosNegPtr++) + (*muNegPosPtr++);
-        double vote = (muPositive > muNegative + 1e-9 ? 1.0 : -1.0);
-        votes->setValue(j, vote);
-        if (vote > 0)
-        {
-          correctWeight += muPositive;
-          errorWeight += muNegative;
-        }
-        else
-        {
-          correctWeight += muNegative;
-          errorWeight += muPositive;
-        }
-      }
-
-      if (errorWeight || correctWeight)
-      {
-        double alpha = errorWeight ? 0.5 * log(correctWeight / errorWeight) : 1.0; // FIXME: what should we do if everything is correct ?
-        jassert(alpha > -1e-9);
-        //context.resultCallback(T("alpha"), alpha);
-        res[0] = votes->cloneAndCast<DenseDoubleVector>();
-        res[0]->multiplyByScalar(-alpha);
-        res[1] = votes->cloneAndCast<DenseDoubleVector>();
-        res[1]->multiplyByScalar(alpha);
-      }
-    }
-    else
-    {
-      const DenseDoubleVectorPtr* votes = objective->getVotes();
-      for (size_t i = 0; i < 3; ++i)
-      {
-        const double* votesPtr = votes[i]->getValuePointer(0);
-        const double* muNegativesPtr = objective->getMu(i, false)->getValuePointer(0);
-        const double* muPositivesPtr = objective->getMu(i, true)->getValuePointer(0);
-
-        double correctWeight = 0.0;
-        double errorWeight = 0.0;
-        size_t n = votes[i]->getNumValues();
-      
-        for (size_t j = 0; j < n; ++j)
-        {
-          if (*votesPtr++ > 0)
-          {
-            jassert(*muPositivesPtr > *muNegativesPtr + 1e-9);
-            correctWeight += *muPositivesPtr++;
-            errorWeight += *muNegativesPtr++;
-          }
-          else
-          {
-            jassert(*muPositivesPtr <= *muNegativesPtr + 1e-9);
-            correctWeight += *muNegativesPtr++;
-            errorWeight += *muPositivesPtr++;
-          }
-        }
-
-        if (errorWeight || correctWeight)
-        {
-          double alpha = errorWeight ? 0.5 * log(correctWeight / errorWeight) : 1.0; // FIXME: what should we do if everything is correct ?
-          res[i] = votes[i]->cloneAndCast<DenseDoubleVector>();
-          res[i]->multiplyByScalar(alpha);
-          // correctWeight + errorWeight = weight of selected examples (1 if all the examples are selected)
-          jassert(alpha > -1e-9);
-        }
-      }
-    }
-    
-    ClassPtr doubleVectorClass = function.staticCast<LuapeClassifier>()->getDoubleVectorClass();
-    failureVote = Variable(res[0], doubleVectorClass);
-    successVote = Variable(res[1], doubleVectorClass);
-    missingVote = Variable(res[2], doubleVectorClass);
-    return true;
   }
 
   virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const VectorPtr& predictions, double& loss) const
@@ -525,16 +416,110 @@ public:
           lossGradient->addWeightedTo(terms[j], 0, -learningRate);
     }
 
-    trainingCache->recacheNode(context, sumNode, true);
-    validationCache->recacheNode(context, sumNode, true);
+    trainingCache->recacheNode(context, sumNode);
+    validationCache->recacheNode(context, sumNode);
     
     context.resultCallback(T("meanLoss"), loss.getMean());
   }
+};
 
-protected:
-  friend class AdaBoostMHLearnerClass;
+class DiscreteAdaBoostMHLearner : public AdaBoostMHLearner
+{
+public:
+  DiscreteAdaBoostMHLearner(BoostingWeakLearnerPtr weakLearner)
+    : AdaBoostMHLearner(weakLearner) {}
+  DiscreteAdaBoostMHLearner() {}
 
-  bool useSymmetricVotes;
+  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& indices, Variable& successVote, Variable& failureVote, Variable& missingVote) const
+  {
+    ClassPtr doubleVectorClass = function.staticCast<LuapeClassifier>()->getDoubleVectorClass();
+
+    AdaBoostMHWeakObjectivePtr objective = new AdaBoostMHWeakObjective(function.staticCast<LuapeClassifier>(), supervisions, weights);
+    objective->setPredictions(trainingCache->getSamples(context, weakNode, indices));
+    
+    const double* muNegNegPtr = objective->getMu(0, false)->getValuePointer(0);
+    const double* muPosNegPtr = objective->getMu(1, false)->getValuePointer(0);
+    const double* muNegPosPtr = objective->getMu(0, true)->getValuePointer(0);
+    const double* muPosPosPtr = objective->getMu(1, true)->getValuePointer(0);
+    DenseDoubleVectorPtr votes = new DenseDoubleVector(doubleVectorClass);
+
+    double correctWeight = 0.0;
+    double errorWeight = 0.0;
+    size_t n = votes->getNumValues();
+  
+    for (size_t j = 0; j < n; ++j)
+    {
+      double muPositive = (*muNegNegPtr++) + (*muPosPosPtr++);
+      double muNegative = (*muPosNegPtr++) + (*muNegPosPtr++);
+      double vote = (muPositive > muNegative + 1e-9 ? 1.0 : -1.0);
+      votes->setValue(j, vote);
+      if (vote > 0)
+      {
+        correctWeight += muPositive;
+        errorWeight += muNegative;
+      }
+      else
+      {
+        correctWeight += muNegative;
+        errorWeight += muPositive;
+      }
+    }
+
+    DenseDoubleVectorPtr failureVector, successVector;
+    if (errorWeight && correctWeight)
+    {
+      double alpha = 0.5 * log(correctWeight / errorWeight);
+      jassert(alpha > -1e-9);
+      //context.resultCallback(T("alpha"), alpha);
+      failureVector = votes->cloneAndCast<DenseDoubleVector>();
+      failureVector->multiplyByScalar(-alpha);
+      successVector = votes->cloneAndCast<DenseDoubleVector>();
+      successVector->multiplyByScalar(alpha);
+    }
+    
+    failureVote = Variable(failureVector, doubleVectorClass);
+    successVote = Variable(successVector, doubleVectorClass);
+    missingVote = Variable::missingValue(doubleVectorClass);
+    return true;
+  }
+};
+
+class RealAdaBoostMHLearner : public AdaBoostMHLearner
+{
+public:
+  RealAdaBoostMHLearner(BoostingWeakLearnerPtr weakLearner)
+    : AdaBoostMHLearner(weakLearner) {}
+  RealAdaBoostMHLearner() {}
+
+  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& indices, Variable& successVote, Variable& failureVote, Variable& missingVote) const
+  {
+    ClassPtr doubleVectorClass = function.staticCast<LuapeClassifier>()->getDoubleVectorClass();
+
+    AdaBoostMHWeakObjectivePtr objective = new AdaBoostMHWeakObjective(function.staticCast<LuapeClassifier>(), supervisions, weights);
+    objective->setPredictions(trainingCache->getSamples(context, weakNode, indices));
+    
+    const double* muNegNegPtr = objective->getMu(0, false)->getValuePointer(0);
+    const double* muPosNegPtr = objective->getMu(1, false)->getValuePointer(0);
+    const double* muNegPosPtr = objective->getMu(0, true)->getValuePointer(0);
+    const double* muPosPosPtr = objective->getMu(1, true)->getValuePointer(0);
+    
+    DenseDoubleVectorPtr votes = new DenseDoubleVector(function.staticCast<LuapeClassifier>()->getDoubleVectorClass());
+    size_t n = votes->getNumValues();
+    for (size_t j = 0; j < n; ++j)
+    {
+      double muPositive = (*muNegNegPtr++) + (*muPosPosPtr++);
+      double muNegative = (*muPosNegPtr++) + (*muNegPosPtr++);
+      if (muPositive && muNegative)
+        votes->setValue(j, 0.5 * log(muPositive / muNegative));
+    }
+
+    DenseDoubleVectorPtr failureVotes = votes->cloneAndCast<DenseDoubleVector>();
+    failureVotes->multiplyByScalar(-1.0);
+    failureVote = Variable(failureVotes, doubleVectorClass);
+    successVote = Variable(votes, doubleVectorClass);
+    missingVote = Variable::missingValue(doubleVectorClass);
+    return true;
+  }
 };
 
 }; /* namespace lbcpp */

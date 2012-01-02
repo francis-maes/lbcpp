@@ -8,12 +8,15 @@
   <class name="AdaBoostLearner" base="WeightBoostingLearner">
     <constructor arguments="BoostingWeakLearnerPtr weakLearner" returnType="BoostingLearner"/>
   </class>
-  <class name="AdaBoostMHLearner" base="WeightBoostingLearner">
-    <constructor arguments="BoostingWeakLearnerPtr weakLearner, bool useSymmetricVotes" returnType="BoostingLearner"/>
-    <variable type="Boolean" name="useSymmetricVotes"/>
+  <class name="AdaBoostMHLearner" base="WeightBoostingLearner" abstract="yes"/>
+  <class name="DiscreteAdaBoostMHLearner" base="AdaBoostMHLearner">
+    <constructor arguments="BoostingWeakLearnerPtr weakLearner" returnType="BoostingLearner"/>
   </class>
-  
-  <!-- Gradient Boosting -->
+  <class name="RealAdaBoostMHLearner" base="AdaBoostMHLearner">
+    <constructor arguments="BoostingWeakLearnerPtr weakLearner" returnType="BoostingLearner"/>
+  </class>
+
+    <!-- Gradient Boosting -->
   <class name="GradientBoostingLearner" base="BoostingLearner" abstract="yes"/>
   <class name="L2BoostingLearner" base="GradientBoostingLearner">
     <constructor arguments="BoostingWeakLearnerPtr weakLearner, double learningRate" returnType="BoostingLearner"/>

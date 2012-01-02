@@ -27,6 +27,7 @@ LuapeSamplesCachePtr LuapeInference::createSamplesCache(ExecutionContext& contex
   LuapeSamplesCachePtr res = new LuapeSamplesCache(universe, inputs, n, 512); // default: 512 Mb cache
   for (size_t i = 0; i < n; ++i)
     res->setInputObject(inputs, i, data[i]->getVariable(0).getObject());
+  res->recomputeCacheSize();
   return res;
 }
 
@@ -233,6 +234,7 @@ LuapeSamplesCachePtr LuapeRanker::createSamplesCache(ExecutionContext& context, 
     for (size_t j = 0; j < n; ++j)
       res->setInputObject(inputs, index++, alternatives->getElement(j).getObject());
   }
+  res->recomputeCacheSize();
   return res;
 }
 

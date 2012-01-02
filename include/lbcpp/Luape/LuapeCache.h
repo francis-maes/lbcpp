@@ -197,10 +197,10 @@ public:
   /*
   ** Cache methods
   */
-  void cacheNode(ExecutionContext& context, const LuapeNodePtr& node, const VectorPtr& values = VectorPtr(), const String& reason = String::empty, bool isUncachable = true);
+  void cacheNode(ExecutionContext& context, const LuapeNodePtr& node, const VectorPtr& values = VectorPtr(), const String& reason = String::empty, bool isRemoveable = true);
   void uncacheNode(ExecutionContext& context, const LuapeNodePtr& node);
   void uncacheNodes(ExecutionContext& context, size_t count);
-  void recacheNode(ExecutionContext& context, const LuapeNodePtr& node, bool isUncachable);
+  void recacheNode(ExecutionContext& context, const LuapeNodePtr& node);
   void ensureSizeInLowerThanMaxSize(ExecutionContext& context);
 
   bool isNodeCached(const LuapeNodePtr& node) const;
@@ -213,6 +213,7 @@ public:
     {return allIndices->size();}
 
   size_t getCacheSizeInBytes() const;
+  void recomputeCacheSize();
 
   void displayCacheInformation(ExecutionContext& context);
   bool checkCacheIsCorrect(ExecutionContext& context, const LuapeNodePtr& node);
@@ -220,7 +221,7 @@ public:
   /*
   ** Compute operation
   */
-  LuapeSampleVectorPtr getSamples(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices, bool isRemoveable = true);
+  LuapeSampleVectorPtr getSamples(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices);
   SparseDoubleVectorPtr getSortedDoubleValues(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices);
 
   /*
@@ -231,72 +232,40 @@ public:
 
   void observeNodeComputingTime(const LuapeNodePtr& node, size_t numInstances, double timeInMilliseconds);
 
-protected:
-  LuapeUniversePtr universe;
-
+  /*
+  ** Internal
+  */
   struct NodeCache
   {
-    NodeCache(const VectorPtr& samples) : samples(samples), timeSpentInComputingSamples(0) {}
-    NodeCache() : timeSpentInComputingSamples(0.0) {}
+    NodeCache(const VectorPtr& samples) : samples(samples), numRequests(0) {}
+    NodeCache() : numRequests(0) {}
 
     VectorPtr samples;
     SparseDoubleVectorPtr sortedDoubleValues;
-
-    // in ms; when cached, this is an expected value w.r.t. the current caching state, if this node was not cached
-    // if not cached, this is an observed value
-    // -1 if the node cannot be uncached
-    double timeSpentInComputingSamples;
-
-    void observeComputingTime(double timeInMilliseconds)
-    {
-      if (timeSpentInComputingSamples >= 0)
-      {
-        jassert(isNumberValid(timeInMilliseconds));
-        timeSpentInComputingSamples += timeInMilliseconds;
-      }
-    }
+    juce::int64 numRequests;
 
     size_t getSizeInBytes(bool recursively) const;
   };
 
+protected:
+  LuapeUniversePtr universe;
+
   typedef std::map<LuapeNodePtr, NodeCache> NodeCacheMap;
   NodeCacheMap m;
-  double computingTimeThresholdToCache;
-  
+
   std::vector<LuapeInputNodePtr> inputNodes;
   std::vector<VectorPtr> inputCaches;
   size_t maxCacheSize; // in bytes
   size_t actualCacheSize; // in bytes
+  juce::int64 minNumRequestsToBeCached;
 
   IndexSetPtr allIndices;
 
-  double computeExpectedComputingTimePerSample(const LuapeNodePtr& node) const;
+  void ensureActualSizeIsCorrect() const;
+
   SparseDoubleVectorPtr computeSortedDoubleValuesSubset(const SparseDoubleVectorPtr& allValues, const IndexSetPtr& indices) const;
   SparseDoubleVectorPtr computeSortedDoubleValuesFromSamples(const LuapeSampleVectorPtr& samples) const;
-
-  struct NodeTypeCache
-  {
-    NodeTypeCache() : count(0), numCached(0), cacheSizeInBytes(0) {}
-
-    void observe(const NodeCache& nodeCache)
-    {
-      ++count;
-      if (nodeCache.samples)
-      {
-        ++numCached;
-        cacheSizeInBytes += nodeCache.getSizeInBytes(true);
-        cachedComputingTime.push(nodeCache.timeSpentInComputingSamples);
-      }
-      else
-        uncachedComputingTime.push(nodeCache.timeSpentInComputingSamples);
-    }
-
-    size_t count;
-    size_t numCached;
-    size_t cacheSizeInBytes;
-    ScalarVariableStatistics cachedComputingTime;
-    ScalarVariableStatistics uncachedComputingTime;
-  };
+  NodeCache& getOrCreateNodeCache(const LuapeNodePtr& node);
 };
 
 typedef ReferenceCountedObjectPtr<LuapeSamplesCache> LuapeSamplesCachePtr;

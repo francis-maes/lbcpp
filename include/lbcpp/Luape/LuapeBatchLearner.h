@@ -63,6 +63,7 @@ public:
     double bestValidationScore = DBL_MAX;
     for (size_t i = 0; i < maxIterations; ++i)
     {
+      //learner->getTrainingCache()->displayCacheInformation(context);
       //Object::displayObjectAllocationInfo(std::cout);
 
       context.enterScope(T("Iteration ") + String((int)i + 1));

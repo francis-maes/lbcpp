@@ -482,7 +482,7 @@ size_t ObjectVector::getSizeInBytes(bool recursively) const
     }
     else
       sizePerObject = sizeof (ObjectPtr);
-    res += sizeof (*objects) + objects->size() + sizePerObject;
+    res += sizeof (*objects) + objects->size() * sizePerObject;
   }
   return res;
 }

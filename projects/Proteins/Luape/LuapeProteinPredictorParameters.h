@@ -238,7 +238,7 @@ public:
   {
     LuapeInferencePtr learningMachine =  new LuapeClassifier(createUniverse());
     addFunctions(learningMachine, target);
-    learningMachine->setLearner(adaBoostMHLearner(createWeakLearner(target), true), numIterations, verbose);// verbose 
+    learningMachine->setLearner(discreteAdaBoostMHLearner(createWeakLearner(target)), numIterations, verbose);// verbose 
     learningMachine->setBatchLearner(filterUnsupervisedExamplesBatchLearner(learningMachine->getBatchLearner(), true));
     return learningMachine;
   }
