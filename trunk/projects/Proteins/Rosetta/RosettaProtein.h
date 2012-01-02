@@ -109,7 +109,7 @@ public:
 # endif // LBCPP_PROTEIN_ROSETTA
   }
 
-  void energies(double* energy, double* score, double* normalizedScore = NULL)
+  void energies(double* energy, double* score = NULL, double* normalizedScore = NULL)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
     // energies updated
@@ -277,8 +277,8 @@ typedef ReferenceCountedObjectPtr<RosettaWorker> RosettaWorkerPtr;
 class RosettaWorker : public Object
 {
 public:
-  RosettaWorker(core::pose::PoseOP& pose, size_t learningPolicy,
-                size_t residues, size_t energy, size_t histogram, size_t distances)
+  RosettaWorker(core::pose::PoseOP& pose, size_t learningPolicy = 3, size_t residues = 1,
+      size_t energy = 1, size_t histogram = 1, size_t distances = 1)
     : learningPolicy(learningPolicy)
   {
 # ifdef LBCPP_PROTEIN_ROSETTA

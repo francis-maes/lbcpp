@@ -8,15 +8,20 @@ General
     - reorganiser samplers
       - passer tous les samplers dans Data/ProteinMoverSampler
       - faire un tri dans les samplers et les simplifier
-  - creer Pose avec generation des features 
+- Pose :
+  - generation des features
+  - stocker dedans pose et protein (permet la serialisation) et effectuer conversion de protein to pose quand
+    pose == NULL, comment faire pour convertir pose to protein au bon moment? (-> fonction a appeler avant la serialisation?)
 - reecrire ProteinOptimizationWorkUnit
-- utiliser Distributed WU
 
 - finir DistributableWorkUnit.h
+  - trace --> transferer la trace des sous work units vers la WU principale (--> DistributedExecutionContext?)
+- utiliser Distributed WU
 
 Optim
 -----
 v tuner les parameters SA
+  - relancer tuneSA_p_2
 - essayer SA avec plusieurs noeuds ouverts
 - mean shift
 
@@ -28,7 +33,7 @@ Apprentissage
 TODO NIC3
 =========
   
-- lancer EDA sur optim_new_learn_all_it1
+v lancer EDA sur optim_new_learn_all_it1
 
 TODO Rosetta
 ============

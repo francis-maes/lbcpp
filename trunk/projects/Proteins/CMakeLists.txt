@@ -207,6 +207,7 @@ SET(LBCPP_PROTEIN_ROSETTA_SAMPLER_SOURCES
 SET(LBCPP_PROTEIN_ROSETTA_WORKUNIT_SOURCES
   Rosetta/WorkUnit/UnfoldProteinsWorkUnit.h
   Rosetta/WorkUnit/TuningSAParametersWorkUnit.h
+  Rosetta/WorkUnit/SingleThreadProteinOptimizationWorkUnit.h
   Rosetta/WorkUnit/ProteinOptimizationWorkUnit.h
   Rosetta/WorkUnit/ProteinEDAOptimizationWorkUnit.h
   Rosetta/WorkUnit/DistributableWorkUnit.h

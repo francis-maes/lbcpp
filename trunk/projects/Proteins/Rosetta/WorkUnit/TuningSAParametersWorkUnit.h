@@ -11,7 +11,7 @@
 
 # include <lbcpp/Execution/WorkUnit.h>
 # include "../RosettaUtils.h"
-# include "ProteinOptimizationWorkUnit.h"
+# include "SingleThreadProteinOptimizationWorkUnit.h"
 
 namespace lbcpp
 {
@@ -48,7 +48,7 @@ public:
       {
         context.enterScope(T("Iteration"));
 
-        ProteinOptimizationWorkUnit sa;
+        SingleThreadProteinOptimizationWorkUnit sa;
 
         sa.setVariable(0, Variable(inputDirectory));
         sa.setVariable(1, Variable(String(T(""))));
