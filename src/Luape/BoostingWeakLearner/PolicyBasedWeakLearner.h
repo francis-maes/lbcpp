@@ -144,7 +144,7 @@ public:
     LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(function, typeSearchSpace);
 
     bool noMoreActions = false;
-    String episode = "";
+    //String episode = "";
     policy->startEpisode(context, builder);
     while (!builder->isFinalState())
     {
@@ -162,12 +162,12 @@ public:
           hasYield = true;
           break;
         }
-      episode += T(" ");
+      /*episode += T(" ");
       if (hasYield)
-        episode += T(" *");
+        episode += T(" *");*/
 
       Variable action = policy->selectAction(context, builder);
-      episode += action.toShortString();
+      //episode += action.toShortString();
       double reward;
       builder->performTransition(context, action, reward);
       policy->observeTransition(context, action, reward, builder);
@@ -176,9 +176,9 @@ public:
     if (builder->getStackSize() == 1)
     {
       node = builder->getStackElement(0);
-      episode  += T(" => ") + node->toShortString();
+      //episode  += T(" => ") + node->toShortString();
     }
-    context.informationCallback(episode);
+    //context.informationCallback(episode);
     return node;
   }
 

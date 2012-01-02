@@ -21,13 +21,19 @@ class LuapeLearner : public Object
 public:
   LuapeLearner() : verbose(false) {}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function);
+  virtual void setFunction(const LuapeInferencePtr& function)
+    {this->function = function;}
   virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data);
+  virtual bool initialize(ExecutionContext& context)
+    {return true;}
   virtual bool learn(ExecutionContext& context) = 0;
+  virtual bool finalize(ExecutionContext& context)
+    {return true;}
 
   const LuapeInferencePtr& getFunction() const
     {return function;}
   
+
   const LuapeUniversePtr& getUniverse() const
     {return function->getUniverse();}
 
@@ -102,7 +108,7 @@ public:
 
   virtual BoostingWeakObjectivePtr createWeakObjective() const = 0;
 
-  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function);
+  virtual bool initialize(ExecutionContext& context);
 
   const BoostingWeakLearnerPtr& getWeakLearner() const
     {return weakLearner;}

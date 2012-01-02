@@ -37,6 +37,7 @@
   </class>
   <class name="LuapeScalarSumNode" base="LuapeSequenceNode"/>
   <class name="LuapeVectorSumNode" base="LuapeSequenceNode"/>
+  <class name="LuapeCreateSparseVectorNode" base="LuapeSequenceNode"/>
   <class name="LuapeTestNode" base="LuapeNode">
     <variable type="LuapeNode" name="conditionNode"/>
     <variable type="LuapeNode" name="failureNode"/>
