@@ -59,6 +59,7 @@ GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Optimizer/Optimizer/OptimizerOptimizerLibrary.xml OptimizerOptimizerLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Luape/LuapeLibrary.xml LuapeLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Luape/NodeBuilder/LuapeNodeBuilderLibrary.xml LuapeNodeBuilderLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/Learner/LuapeLearnerLibrary.xml LuapeLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/BoostingWeakLearner/LuapeBoostingWeakLearnerLibrary.xml LuapeBoostingWeakLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/Function/LuapeFunctionLibrary.xml LuapeFunctionLibrary.cpp)
@@ -670,6 +671,19 @@ SET(LBCPP_LUAPE_FUNCTION_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeFunctionLibrary.cpp
 )
 
+SET(LBCPP_LUAPE_NODE_BUILDER_SOURCES
+  Luape/NodeBuilder/NodeBuilderDecisionProblem.h
+  Luape/NodeBuilder/NodeBuilderTypeSearchSpace.h
+  Luape/NodeBuilder/SingletonNodeBuilder.h
+  Luape/NodeBuilder/CompositeNodeBuilder.h
+  Luape/NodeBuilder/InputsNodeBuilder.h
+  Luape/NodeBuilder/ExhaustiveSequentialNodeBuilder.h
+  Luape/NodeBuilder/PolicyBasedNodeBuilder.h  
+  Luape/NodeBuilder/AdaptativeSamplingNodeBuilder.h  
+  Luape/NodeBuilder/LuapeNodeBuilderLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/LuapeNodeBuilderLibrary.cpp
+)
+
 SET(LBCPP_LUAPE_LEARNER_SOURCES
   Luape/Learner/EnsembleLearner.h
   Luape/Learner/CompositeLearner.h
@@ -684,17 +698,11 @@ SET(LBCPP_LUAPE_LEARNER_SOURCES
 )
 
 SET(LBCPP_LUAPE_BOOSTING_WEAK_LEARNER_SOURCES
-  Luape/BoostingWeakLearner/ConstantWeakLearner.h
-  Luape/BoostingWeakLearner/SingleStumpWeakLearner.h
-  Luape/BoostingWeakLearner/BinaryTreeWeakLearner.h
-  Luape/BoostingWeakLearner/CompositeWeakLearner.h
+  Luape/BoostingWeakLearner/ExactWeakLearner.h
   Luape/BoostingWeakLearner/LaminatingWeakLearner.h
   Luape/BoostingWeakLearner/BanditBasedWeakLearner.h
-  Luape/BoostingWeakLearner/LuapeGraphBuilder.h
-  Luape/BoostingWeakLearner/LuapeGraphBuilderTypeSearchSpace.h
-  Luape/BoostingWeakLearner/PolicyBasedWeakLearner.h  
-  Luape/BoostingWeakLearner/AdaptativeSamplingWeakLearner.h
-  Luape/BoostingWeakLearner/ExhaustiveWeakLearner.h
+  Luape/BoostingWeakLearner/BinaryTreeWeakLearner.h
+  
   Luape/BoostingWeakLearner/LuapeBoostingWeakLearnerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeBoostingWeakLearnerLibrary.cpp
 )
@@ -869,6 +877,7 @@ SET(LBCPP_SOURCES
   # Luape
   ${LBCPP_LUAPE_SOURCES}
     ${LBCPP_LUAPE_FUNCTION_SOURCES}
+    ${LBCPP_LUAPE_NODE_BUILDER_SOURCES}
 	  ${LBCPP_LUAPE_LEARNER_SOURCES}
 	  ${LBCPP_LUAPE_BOOSTING_WEAK_LEARNER_SOURCES}
  
@@ -959,6 +968,7 @@ SOURCE_SUB_GROUP(Optimizer Optimizer FILES ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES})
 ## Luape
 SOURCE_GROUP(Luape FILES ${LBCPP_LUAPE_SOURCES})
 SOURCE_SUB_GROUP(Luape Function FILES ${LBCPP_LUAPE_FUNCTION_SOURCES})
+SOURCE_SUB_GROUP(Luape NodeBuilder FILES ${LBCPP_LUAPE_NODE_BUILDER_SOURCES})
 SOURCE_SUB_GROUP(Luape Learner FILES ${LBCPP_LUAPE_LEARNER_SOURCES})
 SOURCE_SUB_GROUP(Luape BoostingWeakLearner FILES ${LBCPP_LUAPE_BOOSTING_WEAK_LEARNER_SOURCES})
 

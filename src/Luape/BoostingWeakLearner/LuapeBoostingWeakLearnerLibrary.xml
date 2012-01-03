@@ -3,91 +3,29 @@
 <library name="LuapeBoostingWeakLearner" directory="Luape/BoostingWeakLearner">
   <include file="lbcpp/Luape/LuapeLearner.h"/>
 
-  <!-- Builder Type Search Space -->
-  <class name="LuapeGraphBuilderTypeState">
-    <variable type="PositiveInteger" name="depth"/>
-    <variable type="ObjectVector[Type]" name="stack"/>
+  <class name="ExactWeakLearner" base="BoostingWeakLearner">
+    <constructor arguments="LuapeNodeBuilderPtr nodeBuilder"/>
+    <variable type="LuapeNodeBuilder" name="nodeBuilder"/>
   </class>
-  <class name="LuapeGraphBuilderTypeSearchSpace"/>
-
-  <!-- Builder Decision Problem -->
-  <class name="LuapeGraphBuilderAction"/>
-
-  <class name="LuapeGraphBuilderState" base="DecisionProblemState">
-    <variable type="LuapeInference" name="function"/>
-    <variable type="LuapeGraphBuilderTypeSearchSpace" name="typeSearchSpace"/>
-    <variable type="LuapeGraphBuilderTypeState" name="typeState"/>
-    <variable type="ObjectVector[LuapeGraphBuilderAction]" name="availableActions"/>
-    <variable type="ObjectVector[LuapeNode]" name="stack"/>
-    <variable type="PositiveInteger" name="numSteps"/>
-    <variable type="Boolean" name="isAborted"/>
-    <variable type="Boolean" name="isYielded"/>
+  
+  <class name="LaminatingWeakLearner" base="BoostingWeakLearner">
+    <constructor arguments="LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating"/>
+    <variable type="LuapeNodeBuilder" name="nodeBuilder"/>
+    <variable type="Double" name="relativeBudget"/>
+    <variable type="PositiveInteger" name="minExamplesForLaminating"/>
   </class>
 
-  <!-- Weak Learners -->
-  <class name="DecoratorBoostingWeakLearner" base="BoostingWeakLearner" abstract="yes"/>
-  <class name="FiniteBoostingWeakLearner" base="BoostingWeakLearner" abstract="yes"/>
-  <class name="StochasticFiniteBoostingWeakLearner" base="FiniteBoostingWeakLearner" abstract="yes">
-    <variable type="PositiveInteger" name="numWeakNodes"/>
-  </class>
-  <class name="SequentialBuilderWeakLearner" base="StochasticFiniteBoostingWeakLearner" abstract="yes">
-    <variable type="PositiveInteger" name="maxSteps"/>
-  </class>
-
-
-  <class name="ConstantWeakLearner" base="FiniteBoostingWeakLearner">
-    <constructor/>
-  </class>
-
-  <class name="SingleStumpWeakLearner" base="FiniteBoostingWeakLearner">
-    <constructor/>
-  </class>
-
-  <class name="TreeBasedRandomPolicy" base="Policy">
-    <constructor/>
-  </class>
-  <class name="PolicyBasedWeakLearner" base="StochasticFiniteBoostingWeakLearner">
-    <constructor arguments="const PolicyPtr&amp; policy, size_t numWeakNodes, size_t maxDepth"/>
-    <variable type="Policy" name="policy"/>
-    <variable type="PositiveInteger" name="maxDepth"/>
+  <class name="BanditBasedWeakLearner" base="BoostingWeakLearner">
+    <constructor arguments="LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize"/>
+    <variable type="LuapeNodeBuilder" name="nodeBuilder"/>
+    <variable type="Double" name="relativeBudget"/>
+    <variable type="Double" name="miniBatchRelativeSize"/>
   </class>
 
   <class name="BinaryTreeWeakLearner" base="BoostingWeakLearner">
     <constructor arguments="BoostingWeakLearnerPtr conditionLearner, BoostingWeakLearnerPtr subLearner"/>
     <variable type="BoostingWeakLearner" name="conditionLearner"/>
     <variable type="BoostingWeakLearner" name="subLearner"/>
-  </class>
-
-  <class name="CompositeWeakLearner" base="BoostingWeakLearner">
-    <constructor arguments="const std::vector&lt;BoostingWeakLearnerPtr&gt;&amp; weakLearners"/>
-    <constructor arguments="BoostingWeakLearnerPtr weakLearner1, BoostingWeakLearnerPtr weakLearner2"/>
-    <variable type="ObjectVector[BoostingWeakLearner]" name="weakLearners"/>
-  </class>
-
-  <class name="LaminatingWeakLearner" base="DecoratorBoostingWeakLearner">
-    <constructor arguments="BoostingWeakLearnerPtr weakLearner, double relativeBudget, size_t minExamplesForLaminating"/>
-    <variable type="Double" name="relativeBudget"/>
-    <variable type="PositiveInteger" name="minExamplesForLaminating"/>
-  </class>
-
-  <class name="BanditBasedWeakLearner" base="DecoratorBoostingWeakLearner">
-    <constructor arguments="BoostingWeakLearnerPtr weakLearner, double relativeBudget, double miniBatchRelativeSize"/>
-    <variable type="Double" name="relativeBudget"/>
-    <variable type="Double" name="miniBatchRelativeSize"/>
-  </class>
-
-  <class name="AdaptativeSequentialBuilderWeakLearner" base="SequentialBuilderWeakLearner" abstract="yes">
-    <variable type="Boolean" name="useVariableRelevancies"/>
-    <variable type="Boolean" name="useExtendedVariables"/>
-  </class>
-
-  <class name="AdaptativeSamplingWeakLearner" base="SequentialBuilderWeakLearner">
-    <constructor arguments="size_t numWeakNodes, size_t maxSteps, bool useVariableRelevancies, bool useExtendedVariables" returnType="StochasticFiniteBoostingWeakLearner"/>
-  </class>
-
-  <class name="ExhaustiveWeakLearner" base="FiniteBoostingWeakLearner">
-    <constructor arguments="size_t complexity"/>
-    <variable type="PositiveInteger" name="complexity"/>
   </class>
 
 </library>

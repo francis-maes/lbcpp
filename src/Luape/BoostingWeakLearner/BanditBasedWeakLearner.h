@@ -10,24 +10,26 @@
 # define LBCPP_LUAPE_WEAK_LEARNER_BANDIT_BASED_H_
 
 # include <lbcpp/Luape/LuapeLearner.h>
+# include <lbcpp/Luape/LuapeCache.h>
 # include <algorithm>
 # include <queue> // for priority queue in bandits pool
 
 namespace lbcpp
 {
 
-class BanditBasedWeakLearner : public DecoratorBoostingWeakLearner
+class BanditBasedWeakLearner : public BoostingWeakLearner
 {
 public:
-  BanditBasedWeakLearner(BoostingWeakLearnerPtr weakLearner, double relativeBudget, double miniBatchRelativeSize)
-    : DecoratorBoostingWeakLearner(weakLearner), relativeBudget(relativeBudget), miniBatchRelativeSize(miniBatchRelativeSize)  {}
+  BanditBasedWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize)
+    : nodeBuilder(nodeBuilder), relativeBudget(relativeBudget), miniBatchRelativeSize(miniBatchRelativeSize)  {}
   BanditBasedWeakLearner() {}
 
   virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
   {
     // make initial weak learners
     std::vector<LuapeNodePtr> weakNodes;
-    if (!getDecoratedCandidateWeakNodes(context, structureLearner, weakNodes))
+    nodeBuilder->buildNodes(context, structureLearner->getFunction(), 0, weakNodes);
+    if (!weakNodes.size())
       return LuapeNodePtr();
 
     // reset current-episode information
@@ -109,6 +111,7 @@ public:
 protected:
   friend class BanditBasedWeakLearnerClass;
 
+  LuapeNodeBuilderPtr nodeBuilder;
   double relativeBudget;
   double miniBatchRelativeSize;
 

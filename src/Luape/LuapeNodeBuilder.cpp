@@ -8,7 +8,7 @@
 #include "precompiled.h"
 #include <lbcpp/Luape/LuapeNodeBuilder.h>
 #include <lbcpp/Luape/LuapeInference.h>
-#include "BoostingWeakLearner/LuapeGraphBuilderTypeSearchSpace.h"
+#include "NodeBuilder/NodeBuilderTypeSearchSpace.h"
 using namespace lbcpp;
 
 /*
@@ -19,7 +19,7 @@ StochasticNodeBuilder::StochasticNodeBuilder(size_t numNodes)
 {
 }
 
-void StochasticNodeBuilder::buildNodes(ExecutionContext& context, size_t maxCount, std::vector<LuapeNodePtr>& res)
+void StochasticNodeBuilder::buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<LuapeNodePtr>& res)
 {
   size_t numFailuresAllowed = 10 * numNodes;
   size_t numFailures = 0;
@@ -29,7 +29,7 @@ void StochasticNodeBuilder::buildNodes(ExecutionContext& context, size_t maxCoun
     limit = maxCount;
   while (nodes.size() < limit && numFailures < numFailuresAllowed)
   {
-    LuapeNodePtr node = sampleNode(context);
+    LuapeNodePtr node = sampleNode(context, function);
     if (node && nodes.find(node) == nodes.end())
       nodes.insert(node);
     else
@@ -55,16 +55,11 @@ SequentialNodeBuilder::SequentialNodeBuilder(size_t numNodes, size_t complexity)
 {
 }
 
-bool SequentialNodeBuilder::initialize(ExecutionContext& context, const LuapeInferencePtr& function)
-{
-  universe = function->getUniverse();
-  typeSearchSpace = function->getSearchSpace(context, complexity);
-  return true;
-}
-
-LuapeNodePtr SequentialNodeBuilder::sampleNode(ExecutionContext& context)
+LuapeNodePtr SequentialNodeBuilder::sampleNode(ExecutionContext& context, const LuapeInferencePtr& function)
 {
   RandomGeneratorPtr random = context.getRandomGenerator();
+  universe = function->getUniverse();
+  typeSearchSpace = function->getSearchSpace(context, complexity);
 
   std::vector<LuapeNodePtr> stack;
   LuapeGraphBuilderTypeStatePtr typeState;

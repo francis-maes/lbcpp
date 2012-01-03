@@ -118,28 +118,32 @@ public:
     size_t maxNumWeakNodes = (size_t)(budget / (minExamplesForLaminating * (log2((double)numTrainingExamples) - log2((double)minExamplesForLaminating) + 1)));
     context.informationCallback(T("Max num weak nodes: ") + String((int)maxNumWeakNodes));
 
-    BoostingWeakLearnerPtr conditionLearner;
+    LuapeNodeBuilderPtr nodeBuilder;
     if (complexity == 0)
-      conditionLearner = singleStumpWeakLearner();
+      nodeBuilder = inputsNodeBuilder();
     else
-      //conditionLearner = exhaustiveWeakLearner(complexity);
-      //conditionLearner = adaptativeSamplingWeakLearner(maxNumWeakNodes, complexity, useVariableRelevancies, useExtendedVariables);
-      conditionLearner = policyBasedWeakLearner(randomPolicy(), (size_t)(relativeBudget * numVariables), complexity);
+      //nodeBuilder = exhaustiveSequentialNodeBuilder(complexity);
+      //nodeBuilder = adaptativeSamplingNodeBuilder(maxNumWeakNodes, complexity, useVariableRelevancies, useExtendedVariables);
+      nodeBuilder = policyBasedNodeBuilder(randomPolicy(), (size_t)(relativeBudget * numVariables), complexity);
+    nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
 
-    BoostingWeakLearnerPtr weakLearner = conditionLearner;
+    BoostingWeakLearnerPtr weakLearner;
     if (relativeBudget > 0.0)
     {
-      weakLearner = laminatingWeakLearner(weakLearner, budget / numTrainingExamples, minExamplesForLaminating);
-      // weakLearner = banditBasedWeakLearner(weakLearner, relativeBudget * numVariables, miniBatchRelativeSize);
+      weakLearner = laminatingWeakLearner(nodeBuilder, relativeBudget * numVariables, minExamplesForLaminating);
+      // weakLearner = banditBasedWeakLearner(nodeBuilder, relativeBudget * numVariables, miniBatchRelativeSize);
     }
-    weakLearner = compositeWeakLearner(constantWeakLearner(), weakLearner);
+    else
+      weakLearner = exactWeakLearner(nodeBuilder);
+
+    BoostingWeakLearnerPtr conditionLearner = weakLearner;
     for (size_t i = 1; i < treeDepth; ++i)
       weakLearner = binaryTreeWeakLearner(conditionLearner, weakLearner);
 
     //IterativeLearnerPtr strongLearner = discreteAdaBoostMHLearner(weakLearner, numIterations);
     MultiClassLossFunctionPtr lossFunction = oneAgainstAllMultiClassLossFunction(hingeDiscriminativeLossFunction());
     //logBinomialMultiClassLossFunction()
-    LuapeLearnerPtr strongLearner = compositeLearner(generateTestNodesLearner(conditionLearner), classifierSGDLearner(lossFunction, constantIterationFunction(0.1), numIterations));
+    LuapeLearnerPtr strongLearner = compositeLearner(generateTestNodesLearner(nodeBuilder), classifierSGDLearner(lossFunction, constantIterationFunction(0.1), numIterations));
 
     strongLearner->setVerbose(verbose);
     LuapeBatchLearnerPtr batchLearner = new LuapeBatchLearner(strongLearner);

@@ -57,7 +57,8 @@ public:
       return false;
 
     // configure gradient boosting
-    BoostingWeakLearnerPtr conditionLearner = policyBasedWeakLearner(treeBasedRandomPolicy(), budget, maxDepth);
+    LuapeNodeBuilderPtr nodeBuilder = policyBasedNodeBuilder(treeBasedRandomPolicy(), budget, maxDepth);
+    BoostingWeakLearnerPtr conditionLearner = exactWeakLearner(nodeBuilder);
     BoostingWeakLearnerPtr weakLearner = conditionLearner;
     for (size_t i = 1; i < treeDepth; ++i)
       weakLearner = binaryTreeWeakLearner(conditionLearner, weakLearner);

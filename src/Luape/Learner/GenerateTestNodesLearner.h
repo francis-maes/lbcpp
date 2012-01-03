@@ -17,18 +17,14 @@ namespace lbcpp
 class GenerateTestNodesLearner : public LuapeLearner
 {
 public:
-  GenerateTestNodesLearner(BoostingWeakLearnerPtr conditionGenerator)
-    : conditionGenerator(conditionGenerator) {}
+  GenerateTestNodesLearner(LuapeNodeBuilderPtr nodeBuilder)
+    : nodeBuilder(nodeBuilder) {}
   GenerateTestNodesLearner() {}
-
-  virtual bool initialize(ExecutionContext& context)
-    {return conditionGenerator->initialize(context, function);}
 
   virtual bool learn(ExecutionContext& context)
   {
     std::vector<LuapeNodePtr> weakNodes;
-    if (!conditionGenerator->getCandidateWeakNodes(context, this, weakNodes))
-      return false;
+    nodeBuilder->buildNodes(context, function, 100, weakNodes);
     if (!weakNodes.size())
     {
       context.errorCallback(T("No weak nodes"));
@@ -70,7 +66,7 @@ public:
 protected:
   friend class GenerateTestNodesLearnerClass;
 
-  BoostingWeakLearnerPtr conditionGenerator;
+  LuapeNodeBuilderPtr nodeBuilder;
 };
 
 }; /* namespace lbcpp */

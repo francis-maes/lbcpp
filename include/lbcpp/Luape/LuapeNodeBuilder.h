@@ -11,6 +11,7 @@
 
 # include "LuapeNode.h"
 # include "LuapeUniverse.h"
+# include <lbcpp/DecisionProblem/Policy.h>
 
 namespace lbcpp
 {
@@ -18,28 +19,37 @@ namespace lbcpp
 class LuapeNodeBuilder : public Object
 {
 public:
-  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
-    {return true;}
-
-  virtual void buildNodes(ExecutionContext& context, size_t maxCount, std::vector<LuapeNodePtr>& res) = 0;
+  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<LuapeNodePtr>& res) = 0;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeNodeBuilder> LuapeNodeBuilderPtr;
+
+extern LuapeNodeBuilderPtr inputsNodeBuilder();
+extern LuapeNodeBuilderPtr singletonNodeBuilder(const LuapeNodePtr& node);
+extern LuapeNodeBuilderPtr compositeNodeBuilder(const std::vector<LuapeNodeBuilderPtr>& builders);
+extern LuapeNodeBuilderPtr compositeNodeBuilder(LuapeNodeBuilderPtr builder1, LuapeNodeBuilderPtr builder2);
+extern LuapeNodeBuilderPtr exhaustiveSequentialNodeBuilder(size_t complexity);
 
 class StochasticNodeBuilder : public LuapeNodeBuilder
 {
 public:
   StochasticNodeBuilder(size_t numNodes = 0);
 
-  virtual LuapeNodePtr sampleNode(ExecutionContext& context) = 0;
+  virtual LuapeNodePtr sampleNode(ExecutionContext& context, const LuapeInferencePtr& function) = 0;
 
-  virtual void buildNodes(ExecutionContext& context, size_t maxCount, std::vector<LuapeNodePtr>& res);
+  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<LuapeNodePtr>& res);
 
 protected:
   friend class StochasticNodeBuilderClass;
 
   size_t numNodes;
 };
+
+typedef ReferenceCountedObjectPtr<StochasticNodeBuilder> StochasticNodeBuilderPtr;
+
+extern PolicyPtr treeBasedRandomPolicy();
+extern StochasticNodeBuilderPtr policyBasedNodeBuilder(const PolicyPtr& policy, size_t numNodes, size_t complexity);
+extern StochasticNodeBuilderPtr adaptativeSamplingNodeBuilder(size_t numNodes, size_t complexity, bool useVariableRelevancies, bool useExtendedVariables);
 
 class SequentialNodeBuilder : public StochasticNodeBuilder
 {
@@ -49,8 +59,7 @@ public:
 
   virtual bool sampleAction(ExecutionContext& context, LuapeGraphBuilderTypeStatePtr typeState, ObjectPtr& res) const = 0;
 
-  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function);
-  virtual LuapeNodePtr sampleNode(ExecutionContext& context);
+  virtual LuapeNodePtr sampleNode(ExecutionContext& context, const LuapeInferencePtr& function);
 
 protected:
   friend class SequentialNodeBuilderClass;
@@ -67,53 +76,6 @@ protected:
   void executeAction(std::vector<LuapeNodePtr>& stack, const ObjectPtr& action) const;
 };
 
-class SingletonNodeBuilder : public LuapeNodeBuilder
-{
-public:
-  SingletonNodeBuilder(const LuapeNodePtr& node = LuapeNodePtr())
-    : node(node) {}
-
-  virtual void buildNodes(ExecutionContext& context, size_t maxCount, std::vector<LuapeNodePtr>& res)
-    {res.push_back(node);}
-
-protected:
-  friend class SingletonNodeBuilderClass;
-
-  LuapeNodePtr node;
-};
-
-class CompositeNodeBuilder : public LuapeNodeBuilder
-{
-public:
-  CompositeNodeBuilder(const std::vector<LuapeNodeBuilderPtr>& builders)
-    : builders(builders) {}
-  CompositeNodeBuilder(LuapeNodeBuilderPtr builder1, LuapeNodeBuilderPtr builder2)
-    : builders(2) {builders[0] = builder1; builders[1] = builder2;}
-  CompositeNodeBuilder() {}
- 
-  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
-  {
-    bool ok = true;
-    for (size_t i = 0; i < builders.size(); ++i)
-      ok &= builders[i]->initialize(context, function);
-    return ok;
-  }
-
-  virtual void buildNodes(ExecutionContext& context, size_t maxCount, std::vector<LuapeNodePtr>& res)
-  {
-    for (size_t i = 0; i < builders.size(); ++i)
-    {
-      builders[i]->buildNodes(context, maxCount ? maxCount - res.size() : 0, res);
-      if (maxCount && res.size() >= maxCount)
-        break;
-    }
-  }
-
-protected:
-  friend class CompositeNodeBuilderClass;
-
-  std::vector<LuapeNodeBuilderPtr> builders;
-};
 
 }; /* namespace lbcpp */
 

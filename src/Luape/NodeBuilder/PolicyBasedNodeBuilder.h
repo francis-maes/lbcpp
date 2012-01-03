@@ -1,16 +1,15 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: PolicyBasedWeakLearner.h       | Policy Based Weak Learner       |
+| Filename: PolicyBasedNodeBuilder.h       | Policy Based Node Builder       |
 | Author  : Francis Maes                   |                                 |
-| Started : 19/11/2011 16:24               |                                 |
+| Started : 03/01/2012 18:23               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_LEARNER_POLICY_BASED_WEAK_H_
-# define LBCPP_LUAPE_LEARNER_POLICY_BASED_WEAK_H_
+#ifndef LBCPP_LUAPE_NODE_BUILDER_POLICY_BASED_H_
+# define LBCPP_LUAPE_NODE_BUILDER_POLICY_BASED_H_
 
-# include <lbcpp/Luape/LuapeLearner.h>
-# include "LuapeGraphBuilder.h"
+# include "NodeBuilderDecisionProblem.h"
 # include <lbcpp/DecisionProblem/Policy.h>
 # include <lbcpp/Data/RandomVariable.h>
 # include <list>
@@ -124,23 +123,16 @@ public:
   lbcpp_UseDebuggingNewOperator
 };
 
-class PolicyBasedWeakLearner : public StochasticFiniteBoostingWeakLearner
+class PolicyBasedNodeBuilder : public StochasticNodeBuilder
 {
 public:
-  PolicyBasedWeakLearner(const PolicyPtr& policy, size_t numWeakNodes, size_t maxDepth)
-    : StochasticFiniteBoostingWeakLearner(numWeakNodes), policy(policy), maxDepth(maxDepth) {}
-  PolicyBasedWeakLearner() : maxDepth(0) {}
-   
-  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
-  {
-    typeSearchSpace = new LuapeGraphBuilderTypeSearchSpace(function, maxDepth);
-    typeSearchSpace->pruneStates(context);
-    return true;
-  }
+  PolicyBasedNodeBuilder(const PolicyPtr& policy, size_t numNodes, size_t complexity)
+    : StochasticNodeBuilder(numNodes), policy(policy), complexity(complexity) {}
+  PolicyBasedNodeBuilder() : complexity(0) {}
 
-  virtual LuapeNodePtr sampleWeakNode(ExecutionContext& context, const LuapeLearnerPtr& structureLearner) const
+  virtual LuapeNodePtr sampleNode(ExecutionContext& context, const LuapeInferencePtr& function)
   {
-    const LuapeInferencePtr& function = structureLearner->getFunction();
+    LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = function->getSearchSpace(context, complexity);
     LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(function, typeSearchSpace);
 
     bool noMoreActions = false;
@@ -233,12 +225,11 @@ public:
 #endif // 0
 
 protected:
-  friend class PolicyBasedWeakLearnerClass;
+  friend class PolicyBasedNodeBuilderClass;
   
   PolicyPtr policy;
-  size_t maxDepth;
+  size_t complexity;
   
-  LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
 //  ScalarVariableStatistics regret;
 };
 
@@ -478,4 +469,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_LEARNER_POLICY_BASED_WEAK_H_
+#endif // !LBCPP_LUAPE_NODE_BUILDER_POLICY_BASED_H_

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="LuapeNodeBuilder" directory="Luape/NodeBuilder">
+  <include file="lbcpp/Luape/LuapeNodeBuilder.h"/>
+
+
+  <!-- Builder Type Search Space -->
+  <class name="LuapeGraphBuilderTypeState">
+    <variable type="PositiveInteger" name="depth"/>
+    <variable type="ObjectVector[Type]" name="stack"/>
+  </class>
+  <class name="LuapeGraphBuilderTypeSearchSpace"/>
+
+  <!-- Builder Decision Problem -->
+  <class name="LuapeGraphBuilderAction"/>
+
+  <class name="LuapeGraphBuilderState" base="DecisionProblemState">
+    <variable type="LuapeInference" name="function"/>
+    <variable type="LuapeGraphBuilderTypeSearchSpace" name="typeSearchSpace"/>
+    <variable type="LuapeGraphBuilderTypeState" name="typeState"/>
+    <variable type="ObjectVector[LuapeGraphBuilderAction]" name="availableActions"/>
+    <variable type="ObjectVector[LuapeNode]" name="stack"/>
+    <variable type="PositiveInteger" name="numSteps"/>
+    <variable type="Boolean" name="isAborted"/>
+    <variable type="Boolean" name="isYielded"/>
+  </class>
+
+  <!-- Node Builders -->
+  <class name="CompositeNodeBuilder" base="LuapeNodeBuilder">
+    <constructor arguments="const std::vector&lt;LuapeNodeBuilderPtr&gt;&amp; builders"/>
+    <constructor arguments="LuapeNodeBuilderPtr builder1, LuapeNodeBuilderPtr builder2"/>
+    <variable type="ObjectVector[LuapeNodeBuilder]" name="builders"/>
+  </class>
+  
+  <class name="SingletonNodeBuilder" base="LuapeNodeBuilder">
+    <constructor arguments="const LuapeNodePtr&amp; node"/>
+    <variable type="LuapeNode" name="node"/>
+  </class>
+  
+  <class name="InputsNodeBuilder" base="LuapeNodeBuilder">
+    <constructor/>
+  </class>
+
+  <class name="ExhaustiveSequentialNodeBuilder" base="LuapeNodeBuilder">
+    <constructor arguments="size_t complexity"/>
+    <variable type="PositiveInteger" name="complexity"/>
+  </class>
+
+  <class name="TreeBasedRandomPolicy" base="Policy">
+    <constructor/>
+  </class>
+  <class name="PolicyBasedNodeBuilder" base="StochasticNodeBuilder">
+    <constructor arguments="const PolicyPtr&amp; policy, size_t numNodes, size_t complexity"/>
+    <variable type="Policy" name="policy"/>
+    <variable type="PositiveInteger" name="complexity"/>
+  </class>
+
+  <class name="AdaptativeSequentialNodeBuilder" base="SequentialNodeBuilder" abstract="yes">
+    <variable type="Boolean" name="useVariableRelevancies"/>
+    <variable type="Boolean" name="useExtendedVariables"/>
+  </class>
+
+  <class name="AdaptativeSamplingNodeBuilder" base="AdaptativeSequentialNodeBuilder">
+    <constructor arguments="size_t numNoeds, size_t complexity, bool useVariableRelevancies, bool useExtendedVariables" returnType="StochasticNodeBuilder"/>
+  </class>
+
+</library>

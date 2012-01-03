@@ -1,16 +1,17 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuapeGraphBuilderTypeSearchSpace.h | Luape Graph Builder         |
+| Filename: NodeBuilderTypeSearchSpace.h   | Luape Node Builder              |
 | Author  : Francis Maes                   |  Search space over              |
 | Started : 20/11/2011 16:40               |    step - stack types states    |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_GRAPH_BUILDER_TYPE_SEARCH_SPACE_H_
-# define LBCPP_LUAPE_GRAPH_BUILDER_TYPE_SEARCH_SPACE_H_
+#ifndef LBCPP_LUAPE_NODE_BUILDER_TYPE_SEARCH_SPACE_H_
+# define LBCPP_LUAPE_NODE_BUILDER_TYPE_SEARCH_SPACE_H_
 
 # include <lbcpp/Luape/LuapeNode.h>
 # include <lbcpp/Luape/LuapeInference.h>
+# include <lbcpp/Luape/LuapeNodeBuilder.h>
 
 namespace lbcpp
 {
@@ -383,4 +384,4 @@ typedef ReferenceCountedObjectPtr<LuapeGraphBuilderTypeSearchSpace> LuapeGraphBu
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_GRAPH_BUILDER_TYPE_SEARCH_SPACE_H_
+#endif // !LBCPP_LUAPE_NODE_BUILDER_TYPE_SEARCH_SPACE_H_

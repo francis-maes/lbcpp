@@ -15,11 +15,11 @@
 namespace lbcpp
 {
 
-class LaminatingWeakLearner : public DecoratorBoostingWeakLearner
+class LaminatingWeakLearner : public BoostingWeakLearner
 {
 public:
-  LaminatingWeakLearner(BoostingWeakLearnerPtr weakLearner, double relativeBudget, size_t minExamplesForLaminating)
-    : DecoratorBoostingWeakLearner(weakLearner), relativeBudget(relativeBudget), minExamplesForLaminating(minExamplesForLaminating)  {}
+  LaminatingWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating)
+    : nodeBuilder(nodeBuilder), relativeBudget(relativeBudget), minExamplesForLaminating(minExamplesForLaminating)  {}
   LaminatingWeakLearner() {}
 
   virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
@@ -29,7 +29,8 @@ public:
 
     // make initial weak learners
     std::vector<LuapeNodePtr> weakNodes;
-    if (!getDecoratedCandidateWeakNodes(context, structureLearner, weakNodes) || !weakNodes.size())
+    nodeBuilder->buildNodes(context, structureLearner->getFunction(), 0, weakNodes);
+    if (!weakNodes.size())
       return LuapeNodePtr();
 
     size_t W0, N0;
@@ -124,6 +125,7 @@ public:
 protected:
   friend class LaminatingWeakLearnerClass;
 
+  LuapeNodeBuilderPtr nodeBuilder;
   double relativeBudget;
   size_t minExamplesForLaminating;
 

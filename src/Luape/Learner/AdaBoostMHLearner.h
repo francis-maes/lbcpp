@@ -219,7 +219,7 @@ public:
   {
     if (!WeightBoostingLearner::doLearningIteration(context, trainingScore, validationScore))
       return false;
-
+    return true;
     static int counter = 0;
     ++counter;
 
