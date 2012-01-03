@@ -67,6 +67,11 @@ public:
     {functions.push_back(function);}
 
   /*
+  ** Search space
+  */
+  LuapeGraphBuilderTypeSearchSpacePtr getSearchSpace(ExecutionContext& context, size_t complexity) const;
+
+  /*
   ** Luape Node 
   */
   const LuapeNodePtr& getRootNode() const

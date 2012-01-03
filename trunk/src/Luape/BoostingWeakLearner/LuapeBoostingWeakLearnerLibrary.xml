@@ -30,6 +30,10 @@
   <class name="StochasticFiniteBoostingWeakLearner" base="FiniteBoostingWeakLearner" abstract="yes">
     <variable type="PositiveInteger" name="numWeakNodes"/>
   </class>
+  <class name="SequentialBuilderWeakLearner" base="StochasticFiniteBoostingWeakLearner" abstract="yes">
+    <variable type="PositiveInteger" name="maxSteps"/>
+  </class>
+
 
   <class name="ConstantWeakLearner" base="FiniteBoostingWeakLearner">
     <constructor/>
@@ -70,10 +74,6 @@
     <constructor arguments="BoostingWeakLearnerPtr weakLearner, double relativeBudget, double miniBatchRelativeSize"/>
     <variable type="Double" name="relativeBudget"/>
     <variable type="Double" name="miniBatchRelativeSize"/>
-  </class>
-
-  <class name="SequentialBuilderWeakLearner" base="StochasticFiniteBoostingWeakLearner" abstract="yes">
-    <variable type="PositiveInteger" name="maxSteps"/>
   </class>
 
   <class name="AdaptativeSequentialBuilderWeakLearner" base="SequentialBuilderWeakLearner" abstract="yes">

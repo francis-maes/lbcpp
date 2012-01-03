@@ -70,6 +70,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<LuapeLearner> LuapeLearnerPtr;
 
+extern LuapeLearnerPtr ensembleLearner(const LuapeLearnerPtr& baseLearner, size_t ensembleSize);
 extern LuapeLearnerPtr compositeLearner(const std::vector<LuapeLearnerPtr>& learners);
 extern LuapeLearnerPtr compositeLearner(const LuapeLearnerPtr& learner1, const LuapeLearnerPtr& learner2);
 

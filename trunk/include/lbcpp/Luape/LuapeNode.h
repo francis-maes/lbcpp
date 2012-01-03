@@ -223,6 +223,9 @@ public:
   
   void pushNode(ExecutionContext& context, const LuapeNodePtr& node, const std::vector<LuapeSamplesCachePtr>& cachesToUpdate = std::vector<LuapeSamplesCachePtr>());
 
+  void clearNodes()
+    {nodes.clear();}
+
   void reserveNodes(size_t size)
     {nodes.reserve(size);}
 

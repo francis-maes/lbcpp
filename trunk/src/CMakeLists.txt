@@ -59,7 +59,7 @@ GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Optimizer/Optimizer/OptimizerOptimizerLibrary.xml OptimizerOptimizerLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Luape/LuapeLibrary.xml LuapeLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Luape/BoostingLearner/LuapeBoostingLearnerLibrary.xml LuapeBoostingLearnerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Luape/Learner/LuapeLearnerLibrary.xml LuapeLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/BoostingWeakLearner/LuapeBoostingWeakLearnerLibrary.xml LuapeBoostingWeakLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/Function/LuapeFunctionLibrary.xml LuapeFunctionLibrary.cpp)
 
@@ -647,6 +647,8 @@ SET(LBCPP_LUAPE_SOURCES
   Luape/LuapeNode.cpp
   ../include/lbcpp/Luape/LuapeInference.h
   Luape/LuapeInference.cpp
+  ../include/lbcpp/Luape/LuapeNodeBuilder.h
+  Luape/LuapeNodeBuilder.cpp
   ../include/lbcpp/Luape/BoostingWeakLearner.h
   Luape/BoostingWeakLearner.cpp
   ../include/lbcpp/Luape/LuapeLearner.h
@@ -669,15 +671,16 @@ SET(LBCPP_LUAPE_FUNCTION_SOURCES
 )
 
 SET(LBCPP_LUAPE_LEARNER_SOURCES
-  Luape/BoostingLearner/CompositeLearner.h
-  Luape/BoostingLearner/GradientDescentLearner.h
-  Luape/BoostingLearner/GenerateTestNodesLearner.h
-  Luape/BoostingLearner/WeightBoostingLearner.h
-  Luape/BoostingLearner/AdaBoostLearner.h
-  Luape/BoostingLearner/AdaBoostMHLearner.h
-  Luape/BoostingLearner/GradientBoostingLearner.h
-  Luape/BoostingLearner/LuapeBoostingLearnerLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/LuapeBoostingLearnerLibrary.cpp
+  Luape/Learner/EnsembleLearner.h
+  Luape/Learner/CompositeLearner.h
+  Luape/Learner/GradientDescentLearner.h
+  Luape/Learner/GenerateTestNodesLearner.h
+  Luape/Learner/WeightBoostingLearner.h
+  Luape/Learner/AdaBoostLearner.h
+  Luape/Learner/AdaBoostMHLearner.h
+  Luape/Learner/GradientBoostingLearner.h
+  Luape/Learner/LuapeLearnerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/LuapeLearnerLibrary.cpp
 )
 
 SET(LBCPP_LUAPE_BOOSTING_WEAK_LEARNER_SOURCES

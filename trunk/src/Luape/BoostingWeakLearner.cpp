@@ -208,9 +208,7 @@ SequentialBuilderWeakLearner::SequentialBuilderWeakLearner(size_t numWeakNodes, 
 bool SequentialBuilderWeakLearner::initialize(ExecutionContext& context, const LuapeInferencePtr& function)
 {
   universe = function->getUniverse();
-  typeSearchSpace = new LuapeGraphBuilderTypeSearchSpace(function, maxSteps);
-  typeSearchSpace->pruneStates(context);
-  typeSearchSpace->assignStateIndices(context);
+  typeSearchSpace = function->getSearchSpace(context, maxSteps);
   return true;
 }
 

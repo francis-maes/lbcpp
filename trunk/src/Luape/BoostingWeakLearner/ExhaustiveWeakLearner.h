@@ -24,8 +24,7 @@ public:
 
   virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
   {
-    typeSearchSpace = new LuapeGraphBuilderTypeSearchSpace(function, complexity);
-    typeSearchSpace->pruneStates(context);
+    typeSearchSpace = function->getSearchSpace(context, complexity);
     return true;
   }
 
@@ -54,8 +53,8 @@ protected:
   size_t complexity;
   LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
 
-  std::set<LuapeNodePtr> cachedActiveVariables;
-  std::vector<LuapeNodePtr> cachedCandidates;
+  //std::set<LuapeNodePtr> cachedActiveVariables;
+  //std::vector<LuapeNodePtr> cachedCandidates;
 
   void enumerateCandidates(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
   {

@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<library name="LuapeBoostingLearner" directory="Luape/BoostingLearner">
+<library name="LuapeLearner" directory="Luape/Learner">
   <include file="lbcpp/Luape/LuapeLearner.h"/>
-
+  
+  <!-- Meta Learners -->
+  <class name="EnsembleLearner" base="LuapeLearner">
+    <constructor arguments="const LuapeLearnerPtr&amp; baseLearner, size_t ensembleSize"/>
+    <variable type="LuapeLearner" name="baseLearner"/>
+    <variable type="PositiveInteger" name="ensembleSize"/>
+  </class>
+  <class name="CompositeLearner" base="LuapeLearner">
+    <constructor arguments="const LuapeLearnerPtr&amp; learner1, const LuapeLearnerPtr&amp; learner2"/>
+    <constructor arguments="const std::vector&lt;LuapeLearnerPtr&gt;&amp; learners"/>
+    <variable type="ObjectVector[LuapeLearner]" name="learners"/>
+  </class>
+  
   <!-- Boosting with weights -->
   <class name="WeightBoostingLearner" base="BoostingLearner" abstract="yes"/>
   <class name="AdaBoostLearner" base="WeightBoostingLearner">
@@ -25,13 +37,6 @@
   <class name="RankingGradientBoostingLearner" base="GradientBoostingLearner">
     <constructor arguments="BoostingWeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss" returnType="BoostingLearner"/>
     <variable type="RankingLossFunction" name="rankingLoss"/>
-  </class>
-
-  <!-- Composite Learner -->
-  <class name="CompositeLearner" base="LuapeLearner">
-    <constructor arguments="const LuapeLearnerPtr&amp; learner1, const LuapeLearnerPtr&amp; learner2"/>
-    <constructor arguments="const std::vector&lt;LuapeLearnerPtr&gt;&amp; learners"/>
-    <variable type="ObjectVector[LuapeLearner]" name="learners"/>
   </class>
   
   <!-- Gradient Descent -->
