@@ -2,7 +2,7 @@
 
 <library name="Luape" directory="Luape">
 
-  <import name="LuapeBoostingLearner"/>
+  <import name="LuapeLearner"/>
   <import name="LuapeBoostingWeakLearner"/>
   <import name="LuapeFunction"/>
   
@@ -10,6 +10,7 @@
   <include file="lbcpp/Luape/LuapeNode.h"/>
   <include file="lbcpp/Luape/LuapeInference.h"/>
   <include file="lbcpp/Luape/LuapeLearner.h"/>
+  <include file="lbcpp/Luape/LuapeNodeBuilder.h"/>
   <include file="lbcpp/Luape/LuapeBatchLearner.h"/>
     
   <!-- Luape Function -->
@@ -70,6 +71,21 @@
   </class>
 
   <class name="BoostingWeakLearner" base="Object" abstract="yes"/>
+
+  <!-- Node Builders -->
+  <class name="LuapeNodeBuilder" base="Object" abstract="yes"/>
+  <class name="StochasticNodeBuilder" base="LuapeNodeBuilder" abstract="yes">
+    <variable type="PositiveInteger" name="numNodes"/>
+  </class>
+  <class name="SequentialNodeBuilder" base="StochasticNodeBuilder" abstract="yes">
+    <variable type="PositiveInteger" name="complexity"/>
+  </class>
+  <class name="CompositeNodeBuilder" base="LuapeNodeBuilder">
+    <variable type="ObjectVector[LuapeNodeBuilder]" name="builders"/>
+  </class>
+  <class name="SingletonNodeBuilder" base="LuapeNodeBuilder">
+    <variable type="LuapeNode" name="node"/>
+  </class>
 
 
   <!-- Strong Learners -->

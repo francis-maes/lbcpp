@@ -9,6 +9,7 @@
 #include <lbcpp/Luape/LuapeInference.h>
 #include <lbcpp/Luape/LuapeBatchLearner.h>
 #include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
+#include "BoostingWeakLearner/LuapeGraphBuilderTypeSearchSpace.h"
 using namespace lbcpp;
 
 /*
@@ -47,6 +48,14 @@ void LuapeInference::setLearner(const LuapeLearnerPtr& learner, bool verbose)
 {
   learner->setVerbose(verbose);
   setBatchLearner(new LuapeBatchLearner(learner));
+}
+
+LuapeGraphBuilderTypeSearchSpacePtr LuapeInference::getSearchSpace(ExecutionContext& context, size_t complexity) const
+{
+  LuapeGraphBuilderTypeSearchSpacePtr res = new LuapeGraphBuilderTypeSearchSpace(refCountedPointerFromThis(this), complexity);
+  res->pruneStates(context);
+  res->assignStateIndices(context);
+  return res;
 }
 
 /*
