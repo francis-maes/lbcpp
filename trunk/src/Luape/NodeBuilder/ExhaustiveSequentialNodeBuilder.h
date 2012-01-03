@@ -1,37 +1,29 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ExhaustiveWeakLearner.h        | Exhaustive Weak Learner         |
+| Filename: ExhaustiveSequentialNodeBuilder.h | Exhaustive Weak Learner      |
 | Author  : Francis Maes                   |                                 |
-| Started : 21/12/2011 13:13               |                                 |
+| Started : 03/01/2012 18:06               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_LEARNER_OPTIMAL_POLICY_WEAK_H_
-# define LBCPP_LUAPE_LEARNER_OPTIMAL_POLICY_WEAK_H_
+#ifndef LBCPP_LUAPE_NODE_BUILDER_EXHAUSTIVE_SEQUENTIAL_H_
+# define LBCPP_LUAPE_NODE_BUILDER_EXHAUSTIVE_SEQUENTIAL_H_
 
-# include <lbcpp/Luape/LuapeLearner.h>
-# include "LuapeGraphBuilder.h"
+# include "NodeBuilderDecisionProblem.h"
 
 namespace lbcpp
 {
 
-class ExhaustiveWeakLearner : public FiniteBoostingWeakLearner
+class ExhaustiveSequentialNodeBuilder : public LuapeNodeBuilder
 {
 public:
-  ExhaustiveWeakLearner(size_t complexity)
+  ExhaustiveSequentialNodeBuilder(size_t complexity = 0)
     : complexity(complexity) {}
-  ExhaustiveWeakLearner() : complexity(0) {}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
-  {
-    typeSearchSpace = function->getSearchSpace(context, complexity);
-    return true;
-  }
-
-  virtual bool getCandidateWeakNodes(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
+  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<LuapeNodePtr>& res)
   {
     // FIXME: see why this do not work in release
-    enumerateCandidates(context, structureLearner, candidates);
+    enumerateCandidates(context, function, res);
    /* std::set<LuapeNodePtr> activeVariables = structureLearner->getFunction()->getActiveVariables();
     if (cachedActiveVariables != activeVariables || cachedCandidates.empty())
     {
@@ -44,23 +36,22 @@ public:
     candidates.resize(s + cachedCandidates.size());
     for (size_t i = s; i < candidates.size(); ++i)
       candidates[i] = cachedCandidates[i - s];*/
-    return true;
   }
   
 protected:
-  friend class ExhaustiveWeakLearnerClass;
+  friend class ExhaustiveSequentialNodeBuilderClass;
 
   size_t complexity;
-  LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
 
   //std::set<LuapeNodePtr> cachedActiveVariables;
   //std::vector<LuapeNodePtr> cachedCandidates;
 
-  void enumerateCandidates(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, std::vector<LuapeNodePtr>& candidates) const
+  void enumerateCandidates(ExecutionContext& context, const LuapeInferencePtr& function, std::vector<LuapeNodePtr>& candidates) const
   {
-    LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(structureLearner->getFunction(), typeSearchSpace);
+    LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = function->getSearchSpace(context, complexity);
+    LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(function, typeSearchSpace);
     std::set<LuapeNodePtr> weakNodes;
-    enumerateWeakNodes(context, structureLearner, builder, weakNodes);
+    enumerateWeakNodes(context, builder, weakNodes);
     candidates.reserve(candidates.size() + weakNodes.size());
     for (std::set<LuapeNodePtr>::const_iterator it = weakNodes.begin(); it != weakNodes.end(); ++it)
     {
@@ -69,7 +60,7 @@ protected:
     }
   }
 
-  void enumerateWeakNodes(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const LuapeGraphBuilderStatePtr& state, std::set<LuapeNodePtr>& res) const
+  void enumerateWeakNodes(ExecutionContext& context, const LuapeGraphBuilderStatePtr& state, std::set<LuapeNodePtr>& res) const
   {
     if (state->isFinalState())
     {
@@ -86,7 +77,7 @@ protected:
         double reward;
         state->performTransition(context, actions->getElement(i), reward, &stateBackup);
         //context.enterScope(state->toShortString());
-        enumerateWeakNodes(context, structureLearner, state, res);
+        enumerateWeakNodes(context, state, res);
         //context.leaveScope();
         state->undoTransition(context, stateBackup);
       }
@@ -96,4 +87,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_LEARNER_OPTIMAL_POLICY_WEAK_H_
+#endif // !LBCPP_LUAPE_NODE_BUILDER_EXHAUSTIVE_SEQUENTIAL_H_

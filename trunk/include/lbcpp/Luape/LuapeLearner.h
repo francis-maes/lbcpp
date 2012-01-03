@@ -74,7 +74,7 @@ extern LuapeLearnerPtr ensembleLearner(const LuapeLearnerPtr& baseLearner, size_
 extern LuapeLearnerPtr compositeLearner(const std::vector<LuapeLearnerPtr>& learners);
 extern LuapeLearnerPtr compositeLearner(const LuapeLearnerPtr& learner1, const LuapeLearnerPtr& learner2);
 
-extern LuapeLearnerPtr generateTestNodesLearner(BoostingWeakLearnerPtr conditionGenerator);
+extern LuapeLearnerPtr generateTestNodesLearner(LuapeNodeBuilderPtr nodeBuilder);
 
 class IterativeLearner : public LuapeLearner
 {

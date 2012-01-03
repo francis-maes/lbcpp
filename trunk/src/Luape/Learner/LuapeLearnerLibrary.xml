@@ -50,8 +50,8 @@
 
   <!-- Structure generation -->
   <class name="GenerateTestNodesLearner" base="LuapeLearner">
-    <constructor arguments="BoostingWeakLearnerPtr conditionGenerator"/>
-    <variable type="BoostingWeakLearner" name="conditionGenerator"/>
+    <constructor arguments="LuapeNodeBuilderPtr nodeBuilder"/>
+    <variable type="LuapeNodeBuilder" name="nodeBuilder"/>
   </class>
 
 </library>

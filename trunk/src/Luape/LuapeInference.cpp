@@ -9,7 +9,7 @@
 #include <lbcpp/Luape/LuapeInference.h>
 #include <lbcpp/Luape/LuapeBatchLearner.h>
 #include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
-#include "BoostingWeakLearner/LuapeGraphBuilderTypeSearchSpace.h"
+#include "NodeBuilder/NodeBuilderTypeSearchSpace.h"
 using namespace lbcpp;
 
 /*

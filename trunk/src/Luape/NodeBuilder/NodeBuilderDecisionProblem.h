@@ -1,15 +1,15 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuapeGraphBuilder.h            | Luape Graph Builder             |
+| Filename: NodeBuilderDecisionProblem.h   | Luape Node Builder              |
 | Author  : Francis Maes                   |  Decision Problem               |
 | Started : 25/10/2011 18:48               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_GRAPH_BUILDER_H_
-# define LBCPP_LUAPE_GRAPH_BUILDER_H_
+#ifndef LBCPP_LUAPE_NODE_BUILDER_DECISION_PROBLEM_H_
+# define LBCPP_LUAPE_NODE_BUILDER_DECISION_PROBLEM_H_
 
-# include "LuapeGraphBuilderTypeSearchSpace.h"
+# include "NodeBuilderTypeSearchSpace.h"
 # include <lbcpp/DecisionProblem/DecisionProblem.h>
 
 namespace lbcpp
@@ -268,4 +268,4 @@ extern ClassPtr luapeGraphBuilderStateClass;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_GRAPH_BUILDER_H_
+#endif // !LBCPP_LUAPE_NODE_BUILDER_DECISION_PROBLEM_H_
