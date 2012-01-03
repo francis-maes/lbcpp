@@ -129,7 +129,7 @@ public:
 
     double correctWeight = objective->getCorrectWeight();
     double errorWeight = objective->getErrorWeight();
-    double missingWeight = objective->getMissingWeight();
+    //double missingWeight = objective->getMissingWeight();
 
 #if 0
     BooleanVectorPtr weakBooleans = weakPredictions.dynamicCast<BooleanVector>();

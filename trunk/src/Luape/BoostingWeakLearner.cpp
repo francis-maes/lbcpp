@@ -127,7 +127,7 @@ LuapeNodePtr BoostingWeakLearner::makeContribution(ExecutionContext& context, co
 */
 LuapeNodePtr FiniteBoostingWeakLearner::learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
 {
-  const LuapeInferencePtr& function = structureLearner->getFunction();
+  //const LuapeInferencePtr& function = structureLearner->getFunction();
 
   std::vector<LuapeNodePtr> weakNodes;
   if (!getCandidateWeakNodes(context, structureLearner, weakNodes))

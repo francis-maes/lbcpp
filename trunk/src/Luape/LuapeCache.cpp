@@ -303,7 +303,7 @@ LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, co
   // cache nodes on which we spend much computation time
   if (cachingEnabled && node.isInstanceOf<LuapeFunctionNode>())
   {
-    if (!nodeCache.samples && nodeCache.numRequests > minNumRequestsToBeCached && nodeCache.numRequests > allIndices->size())
+    if (!nodeCache.samples && nodeCache.numRequests > minNumRequestsToBeCached && (size_t)nodeCache.numRequests > allIndices->size())
       cacheNode(context, node, VectorPtr(), "Deliberate caching");
   }
 
@@ -404,7 +404,7 @@ SparseDoubleVectorPtr LuapeSamplesCache::computeSortedDoubleValuesSubset(const S
   std::vector<std::pair<size_t, double> >& resValues = res->getValuesVector();
   
   resValues.reserve(indices->size());
-  size_t index = 0;
+  //size_t index = 0;
   for (size_t i = 0; i < allValues->getNumValues(); ++i)
     if (flags[allValues->getValue(i).first] > 0)
       resValues.push_back(allValues->getValue(i));
@@ -519,7 +519,7 @@ void LuapeSamplesCache::displayCacheInformation(ExecutionContext& context)
   std::multimap<double, LuapeNodePtr> cachedNodes;
   std::multimap<double, LuapeNodePtr> uncachedNodes;
   std::vector<LuapeNodePtr> nonRemoveableNodes;
-  double worstScore = DBL_MAX;
+  //double worstScore = DBL_MAX;
 
   size_t nonRemoveableSize = 0;
   size_t cachedSize = 0;

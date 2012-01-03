@@ -131,7 +131,7 @@ LuapeSampleVectorPtr LuapeFunctionNode::compute(ExecutionContext& context, const
 ** LuapeTestNode
 */
 LuapeTestNode::LuapeTestNode(const LuapeNodePtr& conditionNode, const LuapeNodePtr& successNode, const LuapeNodePtr& failureNode, const LuapeNodePtr& missingNode)
-  : LuapeNode(successNode->getType()), conditionNode(conditionNode), successNode(successNode), failureNode(failureNode), missingNode(missingNode)
+  : LuapeNode(successNode->getType()), conditionNode(conditionNode), failureNode(failureNode), successNode(successNode), missingNode(missingNode)
 {
 }
 
@@ -344,7 +344,7 @@ void LuapeSequenceNode::pushNode(ExecutionContext& context, const LuapeNodePtr& 
   for (size_t i = 0; i < cachesToUpdate.size(); ++i)
   {
     LuapeSamplesCachePtr cache = cachesToUpdate[i];
-    size_t n = cache->getNumSamples();
+    //size_t n = cache->getNumSamples();
     VectorPtr outputs = cache->getNodeCache(this);
     jassert(outputs);
     updateOutputs(outputs, cache->getSamples(context, node, cache->getAllIndices()));
