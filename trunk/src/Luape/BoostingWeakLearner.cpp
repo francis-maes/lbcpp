@@ -92,9 +92,7 @@ double BoostingWeakLearner::computeWeakObjective(ExecutionContext& context, cons
   LuapeSampleVectorPtr weakPredictions = structureLearner->getTrainingCache()->getSamples(context, weakNode, indices);
   BoostingWeakObjectivePtr edgeCalculator = structureLearner->createWeakObjective();
   jassert(weakNode->getType() == booleanType || weakNode->getType() == probabilityType);
-  double res = edgeCalculator->compute(weakPredictions);
-  const_cast<BoostingWeakLearner* >(this)->observeObjectiveValue(context, structureLearner, weakNode, indices, res);
-  return res;
+  return edgeCalculator->compute(weakPredictions);
 }
 
 double BoostingWeakLearner::computeWeakObjectiveWithStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, const IndexSetPtr& indices, double& bestThreshold) const
@@ -104,7 +102,6 @@ double BoostingWeakLearner::computeWeakObjectiveWithStump(ExecutionContext& cont
   double bestScore;
   SparseDoubleVectorPtr sortedDoubleValues = structureLearner->getTrainingCache()->getSortedDoubleValues(context, numberNode, indices);
   bestThreshold = weakObjective->findBestThreshold(context, indices, sortedDoubleValues, bestScore, false);
-  const_cast<BoostingWeakLearner* >(this)->observeObjectiveValue(context, structureLearner, numberNode, indices, bestScore);
   return bestScore;
 }
 
@@ -118,6 +115,5 @@ LuapeNodePtr BoostingWeakLearner::makeContribution(ExecutionContext& context, co
 {
   if (!weakNode || weakObjective == -DBL_MAX)
     return LuapeNodePtr();
-  const_cast<BoostingWeakLearner* >(this)->observeBestWeakNode(context, structureLearner, weakNode, examples, weakObjective);
   return structureLearner->turnWeakNodeIntoContribution(context, weakNode, weakObjective, examples);
 }

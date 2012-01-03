@@ -30,24 +30,21 @@ public:
   virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
     {return baseLearner->setExamples(context, isTrainingData, data);}
 
-  virtual bool initialize(ExecutionContext& context)
-    {return baseLearner->initialize(context);}
-
-  virtual bool learn(ExecutionContext& context)
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node)
   {
-    const LuapeSequenceNodePtr& sequenceNode = function->getRootNode().staticCast<LuapeSequenceNode>();
+    const LuapeSequenceNodePtr& sequenceNode = node.staticCast<LuapeSequenceNode>();
     sequenceNode->clearNodes();
     sequenceNode->reserveNodes(ensembleSize);
     bool ok = true;
     for (size_t i = 0; i < ensembleSize; ++i)
     {
-      // FIXME: baseLearner should return a LuapeNode
-      ok &= baseLearner->initialize(context);
-      ok &= baseLearner->learn(context);
-      ok &= baseLearner->finalize(context);
-      jassert(ok);
+      LuapeNodePtr baseModel = baseLearner->createInitialNode(context);
+      baseModel = baseLearner->learn(context, problem, baseModel);
+      if (!baseModel)
+        return LuapeNodePtr();
+      sequenceNode->pushNode(context, baseModel); // todo: cachesToUpdate
     }
-    return ok;
+    return sequenceNode;
   }
 
 protected:

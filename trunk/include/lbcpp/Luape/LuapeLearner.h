@@ -24,20 +24,14 @@ public:
   virtual void setFunction(const LuapeInferencePtr& function)
     {this->function = function;}
   virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data);
-  virtual bool initialize(ExecutionContext& context)
-    {return true;}
-  virtual bool learn(ExecutionContext& context) = 0;
-  virtual bool finalize(ExecutionContext& context)
-    {return true;}
+
+  virtual LuapeNodePtr createInitialNode(ExecutionContext& context)
+    {jassert(false); return LuapeNodePtr();}
+
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node) = 0;
 
   const LuapeInferencePtr& getFunction() const
     {return function;}
-
-  const LuapeUniversePtr& getUniverse() const
-    {return function->getUniverse();}
-
-  const LuapeNodePtr& getRootNode() const
-    {return function->getRootNode();}
 
   const LuapeSamplesCachePtr& getTrainingCache() const
     {return trainingCache;}
@@ -84,12 +78,16 @@ public:
 
   void setPlotFile(ExecutionContext& context, const File& plotFile);
 
-  virtual bool learn(ExecutionContext& context);
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node);
   
   OutputStream* getPlotOutputStream() const
     {return plotOutputStream;}
 
-  virtual bool doLearningIteration(ExecutionContext& context, double& trainingScore, double& validationScore) = 0;
+  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node)
+    {return true;}
+  virtual bool doLearningIteration(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& rootNode, double& trainingScore, double& validationScore) = 0;
+  virtual bool finalize(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node)
+    {return true;}
 
 protected:
   friend class IterativeLearnerClass;
@@ -112,12 +110,11 @@ public:
 
   virtual BoostingWeakObjectivePtr createWeakObjective() const = 0;
 
-  virtual bool initialize(ExecutionContext& context);
-
   const BoostingWeakLearnerPtr& getWeakLearner() const
     {return weakLearner;}
 
-  virtual bool doLearningIteration(ExecutionContext& context, double& trainingScore, double& validationScore);
+  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node);
+  virtual bool doLearningIteration(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& rootNode, double& trainingScore, double& validationScore);
   virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const = 0;
 
   LuapeNodePtr turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, double weakObjective, const IndexSetPtr& examples) const;

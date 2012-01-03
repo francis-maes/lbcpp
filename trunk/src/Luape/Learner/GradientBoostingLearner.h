@@ -92,7 +92,7 @@ public:
 
   virtual void computeLoss(const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const = 0;
 
-  virtual bool doLearningIteration(ExecutionContext& context, double& trainingScore, double& validationScore)
+  virtual bool doLearningIteration(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& rootNode, double& trainingScore, double& validationScore)
   {
     {
       TimedScope _(context, "compute residuals");
@@ -104,7 +104,7 @@ public:
       //context.resultCallback(T("predictions"), predictions);
       //context.resultCallback(T("pseudoResiduals"), pseudoResiduals);
     }
-    return BoostingLearner::doLearningIteration(context, trainingScore, validationScore);
+    return BoostingLearner::doLearningIteration(context, problem, rootNode, trainingScore, validationScore);
   }
 
   virtual BoostingWeakObjectivePtr createWeakObjective() const

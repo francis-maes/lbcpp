@@ -173,7 +173,7 @@ public:
  
   virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<LuapeNodePtr>& res)
   {
-    jassert(false); // initialize shoult only be called once
+    jassert(false); // initialize should only be called once
     initialize(context, function);
 
     if (useVariableRelevancies)

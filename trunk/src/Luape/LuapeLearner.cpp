@@ -90,7 +90,7 @@ void IterativeLearner::setPlotFile(ExecutionContext& context, const File& plotFi
     context.warningCallback(T("Could not create file ") + plotFile.getFullPathName());
 }
 
-bool IterativeLearner::learn(ExecutionContext& context)
+LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node)
 {
   context.enterScope(T("Learning"));
 
@@ -106,7 +106,10 @@ bool IterativeLearner::learn(ExecutionContext& context)
   if (validationData.size())
     context.informationCallback(String((int)validationData.size()) + T(" validation examples"));
 
-  LuapeUniversePtr universe = function->getUniverse();
+  if (!initialize(context, problem, node))
+    return LuapeNodePtr();
+
+  LuapeUniversePtr universe = problem->getUniverse();
 
   ScalarVariableMean lastIterationsValidationScore;
   double bestValidationScore = DBL_MAX;
@@ -119,7 +122,7 @@ bool IterativeLearner::learn(ExecutionContext& context)
     context.resultCallback(T("iteration"), i+1);
     
     double trainingScore, validationScore;
-    doLearningIteration(context, trainingScore, validationScore);
+    doLearningIteration(context, problem, node, trainingScore, validationScore);
     if (verbose)
     {
       context.resultCallback("trainCacheSizeInMb", trainingCache->getCacheSizeInBytes() / (1024.0 * 1024.0));
@@ -164,9 +167,12 @@ bool IterativeLearner::learn(ExecutionContext& context)
     plotOutputStream->flush();
   }
     
+  if (!finalize(context, problem, node))
+    return LuapeNodePtr();
+
   //Object::displayObjectAllocationInfo(std::cerr);
   //context.resultCallback("votes", function->getVotes());
-  return true;
+  return node;
 }
 
 void IterativeLearner::getImportances(const LuapeNodePtr& node, std::map<LuapeNodePtr, double>& res) const
@@ -244,7 +250,7 @@ void IterativeLearner::displayMostImportantNodes(ExecutionContext& context, cons
 BoostingLearner::BoostingLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations)
   : IterativeLearner(maxIterations), weakLearner(weakLearner) {}
 
-bool BoostingLearner::initialize(ExecutionContext& context)
+bool BoostingLearner::initialize(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node)
 {
   jassert(weakLearner);
   return weakLearner->initialize(context, function);
@@ -278,7 +284,7 @@ LuapeNodePtr BoostingLearner::turnWeakNodeIntoContribution(ExecutionContext& con
   return res;
 }
 
-bool BoostingLearner::doLearningIteration(ExecutionContext& context, double& trainingScore, double& validationScore)
+bool BoostingLearner::doLearningIteration(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& rootNode, double& trainingScore, double& validationScore)
 {
   LuapeNodePtr contribution;
   double weakObjective;
@@ -302,7 +308,7 @@ bool BoostingLearner::doLearningIteration(ExecutionContext& context, double& tra
     caches.push_back(trainingCache);
     if (validationCache)
       caches.push_back(validationCache);
-    function->getRootNode().staticCast<LuapeSequenceNode>()->pushNode(context, contribution, caches);
+    rootNode.staticCast<LuapeSequenceNode>()->pushNode(context, contribution, caches);
   }
 
   // evaluate
