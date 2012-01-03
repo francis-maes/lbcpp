@@ -215,9 +215,9 @@ public:
     return res;
   }
 
-  virtual bool doLearningIteration(ExecutionContext& context, double& trainingScore, double& validationScore)
+  virtual bool doLearningIteration(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& rootNode, double& trainingScore, double& validationScore)
   {
-    if (!WeightBoostingLearner::doLearningIteration(context, trainingScore, validationScore))
+    if (!WeightBoostingLearner::doLearningIteration(context, problem, rootNode, trainingScore, validationScore))
       return false;
     return true;
     static int counter = 0;
@@ -245,7 +245,7 @@ public:
       {
         context.enterScope(T("Iteration ") + String((int)i+1));
         context.resultCallback(T("iteration"), i+1);
-        doSGDIteration(context);
+        doSGDIteration(context, rootNode);
         //recomputePredictions(context);
         //recomputeWeights(context);
         double loss;
@@ -357,7 +357,7 @@ public:
   }
 #endif // 0
 
-  void doSGDIteration(ExecutionContext& context)
+  void doSGDIteration(ExecutionContext& context, const LuapeNodePtr& rootNode)
   {
     static const double learningRate = 0.01;// / (1.0 + sqrt((double)graph->getNumYieldNodes()));
 
@@ -365,8 +365,8 @@ public:
     //MultiClassLossFunctionPtr lossFunction = oneAgainstAllMultiClassLossFunction(exponentialDiscriminativeLossFunction());
 
     const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
-    const LuapeVectorSumNodePtr& sumNode = classifier->getRootNode().staticCast<LuapeVectorSumNode>();
-    EnumerationPtr labels = classifier->getLabels();
+    const LuapeVectorSumNodePtr& sumNode = rootNode.staticCast<LuapeVectorSumNode>();
+    EnumerationPtr labels = DoubleVector::getElementsEnumeration(sumNode->getType());
     size_t numLabels = labels->getNumElements();
 
     std::vector<size_t> order;

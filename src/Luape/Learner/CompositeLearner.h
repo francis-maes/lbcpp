@@ -38,26 +38,18 @@ public:
     return ok;
   }
 
-  virtual bool initialize(ExecutionContext& context)
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node)
   {
-    /*bool ok = true;
-    for (size_t i = 0; i < learners.size(); ++i)
-      ok &= learners[i]->initialize(context);
-    return ok;*/
-    return true;
-  }
-
-  virtual bool learn(ExecutionContext& context)
-  {
+    // default behavior is sequential
+    LuapeNodePtr res = node;
     bool ok = true;
     for (size_t i = 0; i < learners.size(); ++i)
     {
-      ok &= learners[i]->initialize(context);
-      ok &= learners[i]->learn(context);
-      ok &= learners[i]->finalize(context);
-      jassert(ok);
+      res = learners[i]->learn(context, problem, res);
+      if (!res)
+        break;
     }
-    return ok;
+    return res;
   }
 
   void addLearner(const LuapeLearnerPtr& learner)

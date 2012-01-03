@@ -21,17 +21,17 @@ public:
     : nodeBuilder(nodeBuilder) {}
   GenerateTestNodesLearner() {}
 
-  virtual bool learn(ExecutionContext& context)
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node)
   {
     std::vector<LuapeNodePtr> weakNodes;
-    nodeBuilder->buildNodes(context, function, 100, weakNodes);
+    nodeBuilder->buildNodes(context, problem, 100, weakNodes);
     if (!weakNodes.size())
     {
       context.errorCallback(T("No weak nodes"));
       return false;
     }
 
-    const LuapeSequenceNodePtr& sequenceNode = getRootNode().staticCast<LuapeSequenceNode>();
+    const LuapeSequenceNodePtr& sequenceNode = node.staticCast<LuapeSequenceNode>();
     sequenceNode->reserveNodes(sequenceNode->getNumSubNodes() + weakNodes.size());
 
     IndexSetPtr subset;
@@ -60,7 +60,7 @@ public:
       sequenceNode->pushNode(context, testNode);
     }
     context.informationCallback(T("Num features: ") + String((int)sequenceNode->getNumSubNodes()));
-    return true;
+    return sequenceNode;
   }
 
 protected:

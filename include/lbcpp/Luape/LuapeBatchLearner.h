@@ -38,7 +38,14 @@ public:
       return false;
     if (validationData.size() && !learner->setExamples(context, false, validationData))
       return false;
-    return learner->initialize(context) && learner->learn(context) && learner->finalize(context);
+    LuapeNodePtr node = function->getRootNode();
+    if (!node)
+      node = learner->createInitialNode(context);
+    node = learner->learn(context, function, node);
+    if (!node)
+      return false;
+    function->setRootNode(node);
+    return true;
   }
 
 protected:

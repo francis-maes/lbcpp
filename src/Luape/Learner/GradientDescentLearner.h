@@ -23,9 +23,9 @@ public:
     : IterativeLearner(maxIterations), learningRate(learningRate) {}
   GradientDescentLearner() {}
 
-  virtual bool initialize(ExecutionContext& context)
+  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node)
   {
-    LuapeSequenceNodePtr rootNode = function->getRootNode().staticCast<LuapeSequenceNode>();
+    LuapeSequenceNodePtr rootNode = node.staticCast<LuapeSequenceNode>();
     featureFunction = new LuapeCreateSparseVectorNode(rootNode->getNodes());
     parameters = vector(rootNode->getType(), 0);
     parameters->reserve(featureFunction->getNumSubNodes() * 3);
@@ -33,11 +33,11 @@ public:
     return true;
   }
 
-  virtual bool finalize(ExecutionContext& context)
+  virtual bool finalize(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node)
   {
     context.enterScope(T("Finalizing"));
     transformIntoOriginalForm(featureFunction, parameters, parameters->getElementsType());
-    LuapeSequenceNodePtr rootNode = function->getRootNode().staticCast<LuapeSequenceNode>();
+    LuapeSequenceNodePtr rootNode = node.staticCast<LuapeSequenceNode>();
     rootNode->setNodes(featureFunction->getNodes());
     parameters = VectorPtr();
     featureFunction = LuapeCreateSparseVectorNodePtr();
@@ -128,9 +128,9 @@ public:
     : GradientDescentLearner(learningRate, maxIterations), lossFunction(lossFunction) {}
   ClassifierSGDLearner() {}
 
-  virtual bool initialize(ExecutionContext& context)
+  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node)
   {
-    if (!GradientDescentLearner::initialize(context))
+    if (!GradientDescentLearner::initialize(context, problem, node))
       return false;
     
     context.enterScope(T("Computing training features"));
@@ -150,13 +150,13 @@ public:
     return true;
   }
 
-  virtual bool doLearningIteration(ExecutionContext& context, double& trainingScore, double& validationScore)
+  virtual bool doLearningIteration(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& rootNode, double& trainingScore, double& validationScore)
   {
     static const double learningRate = 0.1;
 
-    const LuapeClassifierPtr& classifier = function.staticCast<LuapeClassifier>();
-    const LuapeVectorSumNodePtr& sumNode = classifier->getRootNode().staticCast<LuapeVectorSumNode>();
-    EnumerationPtr labels = classifier->getLabels();
+    const LuapeVectorSumNodePtr& sumNode = rootNode.staticCast<LuapeVectorSumNode>();
+    ClassPtr doubleVectorClass = sumNode->getType();
+    EnumerationPtr labels = DoubleVector::getElementsEnumeration(doubleVectorClass);
     size_t numLabels = labels->getNumElements();
 
     std::vector<size_t> order;
@@ -181,7 +181,7 @@ public:
 
       // compute loss value and gradient
       double lossValue = 0.0;
-      DenseDoubleVectorPtr lossGradient = new DenseDoubleVector(classifier->getDoubleVectorClass());
+      DenseDoubleVectorPtr lossGradient = new DenseDoubleVector(doubleVectorClass);
       lossFunction->computeMultiClassLoss(activations, correctClass, numLabels, &lossValue, &lossGradient, 1.0);
       loss.push(lossValue);
 

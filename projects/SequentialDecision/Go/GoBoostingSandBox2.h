@@ -81,10 +81,6 @@ public:
 
   LuapeInferencePtr createLearningMachine(ExecutionContext& context) const
   {
-    //LuapeInferencePtr res = new LuapeRanker();
-    //if (!res->initialize(context, objectVectorClass(goBoardPositionPerceptionClass), simpleDenseDoubleVectorClass))
-    //  return LuapeInferencePtr();
-
     LuapeInferencePtr res = new LuapeRegressor();
 
     res->addInput(goBoardPositionPerceptionClass, "position");
@@ -95,63 +91,9 @@ public:
 
     if (!res->initialize(context, goBoardPositionPerceptionClass, doubleType))
       return LuapeInferencePtr();
-
-    /* initialize graph
-    LuapeGraphPtr graph = problem->createInitialGraph(context);
-    LuapeNodePtr positionNode = graph->getNode(0);
-    //LuapeNodePtr boardNode = graph->pushFunctionNode(context, getVariableFunction(0), positionNode); // retrieve board from position
-    //LuapeNodePtr stateNode = graph->pushFunctionNode(context, getVariableFunction(0), boardNode); // retrieve state from board
-    res->setGraph(graph);    */
-   
-    // initialize evaluator
-    //EvaluatorPtr evaluator = new GoActionScoringEvaluator();
-    //evaluator->setUseMultiThreading(true);
-    //res->setEvaluator(evaluator);
     return res;
   }
   
-#if 0
-
-  bool learn(ExecutionContext& context, const LuapeLearnerPtr& learner, const ContainerPtr& trainingGames, const ContainerPtr& testingGames) const
-  {
-
-/*    size_t n = trainingGames->getNumElements();
-    for (size_t i = 0; i < n; ++i)
-    {
-      context.enterScope("Iteration " + String((int)i + 1));
-      context.resultCallback(T("iteration"), i+1);
-      std::vector<PairPtr> rankingExamples;
-      makeRankingExamples(context, trainingGames->getElement(i), rankingExamples);
-      bool ok = true;
-      if (!rankingExamples.size())
-        context.warningCallback(T("No ranking examples"));
-      else
-        ok = learner->doLearningEpisode(context, *(std::vector<ObjectPtr>* )&rankingExamples);
-      context.leaveScope(ok);
-      if (!ok)
-        break;
-    }*/
-    std::vector<PairPtr> rankingExamples;
-    size_t n = trainingGames->getNumElements();
-    for (size_t i = 0; i < n; ++i)
-      makeRankingExamples(context, trainingGames->getElement(i), rankingExamples);
-
-    learner->setExamples(context, true, *(std::vector<ObjectPtr>* )&rankingExamples);
-    context.enterScope(T("Gradient Boosting"));
-    for (size_t i = 0; i < numIterations; ++i)
-    {
-      context.enterScope("Iteration " + String((int)i + 1));
-      context.resultCallback(T("iteration"), i+1);
-      bool ok = learner->doLearningIteration(context, i + 1);
-      context.leaveScope(ok);
-      if (!ok)
-        break;
-    }
-    context.leaveScope();
-    return true;
-  }
-#endif // 0
-
 private:
   friend class GoBoostingSandBox2Class;
 
