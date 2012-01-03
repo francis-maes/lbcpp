@@ -434,7 +434,35 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
   rtree_context = &context;
   rtree_progress = new ProgressionState(0, rTreeFunction->getNumTrees(), "Trees");
   build_one_tree_ensemble(NULL, 0);
-  
+
+  /* Calcul l'importance des variables */
+  const size_t numScores = nb_attributes * nb_goal_multiregr;
+  SCORE_TYPE* varimp = (SCORE_TYPE*)MyMalloc(numScores * sizeof(SCORE_TYPE));
+  average_predictions_ltrees = 1;
+  compute_ltrees_variable_importance_multiregr_separate(varimp, -1);
+
+  const EnumerationPtr attributesEnum = trainingData[0]->getVariable(0).getObjectAndCast<Container>()->getElementsEnumeration();
+  if (attributesEnum)
+  {
+    for (size_t j = 0; j < (size_t)nb_attributes; ++j)
+    {
+      double sum = 0.0;
+      context.enterScope(T("Importance of ") + attributesEnum->getElementName(j));
+      context.resultCallback(T("ID"), j);
+      context.resultCallback(T("Name"), attributesEnum->getElementName(j));
+      for (size_t i = 0; i < (size_t)nb_goal_multiregr; ++i)
+      {
+        context.resultCallback(T("Class ") + String((int)i), varimp[i * nb_attributes + j]);
+        sum += varimp[i * nb_attributes + j];
+      }
+      const double mean = sum / (double)nb_goal_multiregr;
+      context.resultCallback(T("Mean"), mean);
+      context.leaveScope(mean);
+    }
+    MyFreeAndNull(varimp);
+  }
+
+  /* Sauvegarde de l'arbre */
   RTreePtr trees = new RTree();
   trees->saveTreesState();
   rTreeFunction->setTrees(trees);

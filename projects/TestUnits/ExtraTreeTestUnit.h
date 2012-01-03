@@ -40,7 +40,7 @@ protected:
   size_t minSplitSize;
 
   void runClassification(ExecutionContext& context)
-  {  
+  {
     context.enterScope(T("Classification"));
 
     File input(File::getCurrentWorkingDirectory().getChildFile(T("../../projects/Examples/Data/ExtraTrees/classification.csv")));

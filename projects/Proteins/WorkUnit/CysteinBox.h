@@ -922,7 +922,15 @@ public:
     
     files.clear();
     directory.findChildFiles(files, File::findFiles, false, T("Param-*_Exp-*.kNN.trace"));
-    parseKNNFiles(context, files);
+    parseFiles(context, files);
+
+    files.clear();
+    directory.findChildFiles(files, File::findFiles, false, T("Param-*_Exp-*.Dumb.trace"));
+    parseFiles(context, files);
+
+    files.clear();
+    directory.findChildFiles(files, File::findFiles, false, T("Param-*_Exp-*.x3.trace"));
+    parseFiles(context, files);
 
     return true;
   }
@@ -953,10 +961,16 @@ protected:
   {
     ExecutionTracePtr trace = ExecutionTrace::createFromFile(context, f).staticCast<ExecutionTrace>();
     jassert(trace);
-    return trace->getRootNode()->findFirstNode()->getReturnValue().getDouble();
+    const Variable res = trace->getRootNode()->findFirstNode()->getReturnValue();
+    if (!res.isDouble())
+    {
+      context.warningCallback(T("Error in Trace: ") + f.getFileName());
+      return DBL_MAX;
+    }
+    return res.getDouble();
   }
 
-  void parseKNNFiles(ExecutionContext& context, const juce::OwnedArray<File>& files) const
+  void parseFiles(ExecutionContext& context, const juce::OwnedArray<File>& files) const
   {
     if (files.size() == 0)
       return;
@@ -969,12 +983,14 @@ protected:
       const size_t numParameters = parseNumParameters(context, fileName);      
       const size_t experimentId = parseExperimentId(context, fileName);
       const double result = getReturnValueOfTraceFile(context, *files[i]);
+      if (result == DBL_MAX)
+        continue;
 
       results[numParameters].push_back(std::make_pair(experimentId, result));
     }
 
     // Print results
-    OutputStream* o = context.getFile(T("result_kNN.plot")).createOutputStream();
+    OutputStream* o = context.getFile(T("result.plot")).createOutputStream();
     for (ScoresMap::iterator it = results.begin(); it != results.end(); ++it)
     {
       context.enterScope(T("Num. Parameters: ") + String((int)it->first));
@@ -1027,12 +1043,14 @@ protected:
       const double gamma = parseGamma(context, fileName);
       const double regularizer = parseRegularizer(context, fileName);
       const double result = getReturnValueOfTraceFile(context, *files[i]);
+      if (result == DBL_MAX)
+        continue;
 
       results[numParameters][experimentId][gamma][regularizer] = result;
     }
 
     // Print results
-    OutputStream* o = context.getFile(T("result_SVM.plot")).createOutputStream();
+    OutputStream* o = context.getFile(T("result.plot")).createOutputStream();
 
     typedef std::map<size_t, std::map<double, std::map<double, double> > > SubScoresMap;
     typedef std::map<double, std::map<double, double> > GammaScoresMap;
