@@ -158,7 +158,7 @@ extern ClassPtr luapeFunctionNodeClass;
 class LuapeTestNode : public LuapeNode
 {
 public:
-  LuapeTestNode(const LuapeNodePtr& conditionNode, const LuapeNodePtr& successNode, const LuapeNodePtr& failureNode, const LuapeNodePtr& missingNode);
+  LuapeTestNode(const LuapeNodePtr& conditionNode, const LuapeNodePtr& failureNode, const LuapeNodePtr& successNode, const LuapeNodePtr& missingNode);
   LuapeTestNode() {}
 
   virtual String toShortString() const;
@@ -168,7 +168,7 @@ public:
   virtual size_t getNumSubNodes() const;
   virtual const LuapeNodePtr& getSubNode(size_t index) const;
 
-  void dispatchIndices(const LuapeSampleVectorPtr& conditionValues, IndexSetPtr& failureIndices, IndexSetPtr& successIndices, IndexSetPtr& missingIndices) const;
+  static void dispatchIndices(const LuapeSampleVectorPtr& conditionValues, IndexSetPtr& failureIndices, IndexSetPtr& successIndices, IndexSetPtr& missingIndices);
 
   const LuapeNodePtr& getCondition() const
     {return conditionNode;}

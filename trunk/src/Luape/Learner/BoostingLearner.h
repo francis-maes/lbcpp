@@ -136,7 +136,7 @@ protected:
         res = new LuapeConstantNode(failureVote);
     }
     else
-      res = new LuapeTestNode(weakNode, new LuapeConstantNode(successVote), new LuapeConstantNode(failureVote), new LuapeConstantNode(missingVote));
+      res = new LuapeTestNode(weakNode, new LuapeConstantNode(failureVote), new LuapeConstantNode(successVote), new LuapeConstantNode(missingVote));
     if (verbose)
       context.informationCallback(res->toShortString());
     return res;

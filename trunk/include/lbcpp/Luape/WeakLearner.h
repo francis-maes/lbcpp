@@ -23,6 +23,12 @@ namespace lbcpp
 class WeakLearnerObjective : public Object
 {
 public:
+
+  // LuapeFunctionNodePtr computeBestStump(const IndexSetPtr& indices, const LuapeNodePtr& numberNode, double& score) (== findBestThreshold)
+  // LuapeConstantNodePtr computeBestConstant(const IndexSetPtr& indices, double& score)  (== computeVote)
+
+  virtual Variable computeVote(const IndexSetPtr& indices) const = 0;
+
   virtual void setPredictions(const LuapeSampleVectorPtr& predictions) = 0;
   virtual void flipPrediction(size_t index) = 0; // flip from negative prediction to positive prediction
   virtual double computeObjective() const = 0;

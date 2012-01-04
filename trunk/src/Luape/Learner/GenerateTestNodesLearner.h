@@ -28,7 +28,7 @@ public:
     if (!weakNodes.size())
     {
       context.errorCallback(T("No weak nodes"));
-      return false;
+      return LuapeNodePtr();
     }
 
     const LuapeSequenceNodePtr& sequenceNode = node.staticCast<LuapeSequenceNode>();

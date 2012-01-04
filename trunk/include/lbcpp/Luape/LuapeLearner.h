@@ -86,6 +86,7 @@ extern IterativeLearnerPtr rankingGradientBoostingLearner(WeakLearnerPtr weakLea
 extern LuapeLearnerPtr ensembleLearner(const LuapeLearnerPtr& baseLearner, size_t ensembleSize);
 extern LuapeLearnerPtr compositeLearner(const std::vector<LuapeLearnerPtr>& learners);
 extern LuapeLearnerPtr compositeLearner(const LuapeLearnerPtr& learner1, const LuapeLearnerPtr& learner2);
+extern LuapeLearnerPtr treeLearner(WeakLearnerPtr conditionLearner, WeakLearnerObjectivePtr weakObjective);
 
 // misc
 extern LuapeLearnerPtr generateTestNodesLearner(LuapeNodeBuilderPtr nodeBuilder);

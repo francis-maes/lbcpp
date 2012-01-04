@@ -32,6 +32,30 @@ public:
     votesUpToDate = false;
   }
 
+  virtual Variable computeVote(const IndexSetPtr& indices) const
+  {
+    std::vector<ScalarVariableMean> stats(numLabels);
+    for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
+    {
+      size_t example = *it;
+      double* supervisionsPtr = supervisions->getValuePointer(numLabels * example);
+      double* weightsPtr = weights->getValuePointer(numLabels * example);
+      for (size_t i = 0; i < numLabels; ++i)
+        stats[i].push(*supervisionsPtr++, *weightsPtr++);
+    }
+    DenseDoubleVectorPtr res = new DenseDoubleVector(labels, probabilityType);
+    double sum = 0.0;
+    for (size_t i = 0; i < numLabels; ++i)
+    {
+      double value = stats[i].getMean() > 1e-9 ? 1.0 : 0.0;
+      sum += value;
+      res->setValue(i, value);
+    }
+    if (sum > 1.0)
+      res->multiplyByScalar(1.0 / sum);
+    return Variable(res, probabilityType);
+  }
+
   virtual void setPredictions(const LuapeSampleVectorPtr& predictions)
   {
     this->predictions = predictions;

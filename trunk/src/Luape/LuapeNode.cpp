@@ -169,7 +169,7 @@ Variable LuapeTestNode::compute(ExecutionContext& context, const LuapeInstanceCa
     return (condition.getBoolean() ? successNode : failureNode)->compute(context, cache);
 }
 
-void LuapeTestNode::dispatchIndices(const LuapeSampleVectorPtr& conditionValues, IndexSetPtr& failureIndices, IndexSetPtr& successIndices, IndexSetPtr& missingIndices) const
+void LuapeTestNode::dispatchIndices(const LuapeSampleVectorPtr& conditionValues, IndexSetPtr& failureIndices, IndexSetPtr& successIndices, IndexSetPtr& missingIndices)
 {
   failureIndices = new IndexSet();
   failureIndices->reserve(conditionValues->size() / 4);

@@ -15,6 +15,15 @@
     <variable type="ObjectVector[LuapeLearner]" name="learners"/>
   </class>
 
+  <!-- Tree Learner -->
+  <class name="TreeLearner" base="LuapeLearner">
+    <constructor arguments="WeakLearnerPtr conditionLearner, WeakLearnerObjectivePtr weakObjective, size_t minExamplesToSplit, size_t maxDepth"/>
+    <variable type="WeakLearner" name="conditionLearner"/>
+    <variable type="WeakLearnerObjective" name="objective"/>
+    <variable type="PositiveInteger" name="minExamplesToSplit"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
+  </class>
+
   <!-- Boosting -->
   <class name="BoostingLearner" base="IterativeLearner" abstract="yes">
     <variable type="WeakLearner" name="weakLearner"/>
