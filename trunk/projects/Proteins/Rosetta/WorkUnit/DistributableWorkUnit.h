@@ -110,8 +110,7 @@ extern ClassPtr distributableWorkUnitClass;
 class TestDistribWorkUnit : public DistributableWorkUnit
 {
 public:
-  TestDistribWorkUnit() {}
-  TestDistribWorkUnit(String& name) : DistributableWorkUnit(name) {}
+  TestDistribWorkUnit() : DistributableWorkUnit() {}
 
   virtual void initializeWorkUnits(ExecutionContext& context)
   {
@@ -139,7 +138,7 @@ protected:
   friend class TestDistribWorkUnitClass;
 };
 
-extern DistributableWorkUnitPtr testDistribWorkUnit(String& name);
+extern DistributableWorkUnitPtr testDistribWorkUnit();
 
 class DistributeToClusterWorkUnit : public WorkUnit
 {
@@ -165,18 +164,19 @@ public:
     context.enterScope(distributable->getName());
     context.informationCallback(T("Treating ") + String((int)units->getNumWorkUnits())
         + T(" work units."));
-    Variable result = remoteContext->run(units);
+    //Variable result = remoteContext->run(units);
     context.leaveScope();
 
     // managing results
     context.enterScope(T("Managing results"));
-    Variable gatheredResult = distributable->resultsCallback(context, *result.getObjectAndCast<
-        VariableVector> ());
+//    Variable gatheredResult = distributable->resultsCallback(context, *result.getObjectAndCast<
+//        VariableVector> ());
     context.leaveScope();
 
     context.informationCallback(T("Distribution to cluster done."));
 
-    return gatheredResult;
+    //return gatheredResult;
+    return Variable();
   }
 
 protected:

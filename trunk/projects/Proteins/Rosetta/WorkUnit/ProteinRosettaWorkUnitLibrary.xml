@@ -3,8 +3,7 @@
 <library name="ProteinRosettaWorkUnit" directory="Rosetta/WorkUnit">
   
   <!-- General -->
-  <class name="DistributableWorkUnit" base="WorkUnit" abstract="yes">
-  </class>
+  <class name="DistributableWorkUnit" base="WorkUnit" abstract="yes"/>
   
   <class name="DistributeToClusterWorkUnit" base="WorkUnit">
     <variable type="String" name="clusterLogin"/>
@@ -22,7 +21,7 @@
   </class>
   
   <class name="TestDistribWorkUnit" base="DistributableWorkUnit">
-    <constructor arguments="String&amp; name"/>
+    <constructor arguments=""/>
   </class>
   
   <!-- Proteins -->

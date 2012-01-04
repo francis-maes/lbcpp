@@ -35,6 +35,7 @@
 # include "Sampler/ConditionalPoseMoverSampler.h"
 # include "RosettaSandBox.h"
 # include "RosettaProtein.h"
+# include "WorkUnit/DistributableWorkUnit.h"
 
 # include "Data/Rosetta.h"
 # include "Data/Pose.h"
@@ -65,6 +66,7 @@ private:
   double value;
   String proteinsDir;
   PoseMoverPtr moverEnter;
+  DistributableWorkUnitPtr distributable;
 
 public:
   virtual Variable run(ExecutionContext& context)
