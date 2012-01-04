@@ -26,13 +26,10 @@ public:
   virtual bool doLearningIteration(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
     double loss;
-    weights = computeSampleWeights(context, problem, loss);
+    objective->setWeights(computeSampleWeights(context, problem, loss));
     context.resultCallback(T("loss"), loss);
     return BoostingLearner::doLearningIteration(context, node, problem, examples, trainingScore, validationScore);
   }
-
-protected:
-  DenseDoubleVectorPtr weights;
 };
 
 typedef ReferenceCountedObjectPtr<WeightBoostingLearner> WeightBoostingLearnerPtr;

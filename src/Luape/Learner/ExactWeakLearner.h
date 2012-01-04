@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_WEAK_LEARNER_EXACT_H_
 # define LBCPP_LUAPE_WEAK_LEARNER_EXACT_H_
 
-# include <lbcpp/Luape/WeakLearner.h>
+# include <lbcpp/Luape/LuapeLearner.h>
 
 namespace lbcpp
 {

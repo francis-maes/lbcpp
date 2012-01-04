@@ -80,7 +80,14 @@
     <variable type="PositiveInteger" name="complexity"/>
   </class>
 
-  <!-- Strong Learners -->
+  <!-- Learning objectives -->
+  <class name="LearningObjective" base="Object" abstract="yes"/>
+  <class name="SupervisedLearningObjective" base="LearningObjective" abstract="yes"/>
+  <class name="RegressionLearningObjective" base="SupervisedLearningObjective"/>
+  <class name="BinaryClassificationLearningObjective" base="SupervisedLearningObjective"/>
+  <class name="ClassificationLearningObjective" base="SupervisedLearningObjective"/>
+
+  <!-- Learners -->
   <class name="LuapeLearner" abstract="yes">
     <variable type="Boolean" name="verbose"/>
   </class>

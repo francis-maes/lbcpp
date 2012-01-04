@@ -14,82 +14,6 @@
 namespace lbcpp
 {
 
-class L2WeakLearnerObjective : public WeakLearnerObjective
-{
-public:
-  L2WeakLearnerObjective(const DenseDoubleVectorPtr& targets)
-    : targets(targets) {}
-
-  virtual Variable computeVote(const IndexSetPtr& indices) const
-  {
-    ScalarVariableMean res;
-    for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
-      res.push(targets->getValue(*it));
-    return res.getMean();
-  }
-
-  virtual void setPredictions(const LuapeSampleVectorPtr& predictions)
-  {
-    this->predictions = predictions;
-    positives.clear();
-    negatives.clear();
-    missings.clear();
-
-    for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
-    {
-      double value = targets->getValue(it.getIndex());
-      switch (it.getRawBoolean())
-      {
-      case 0: negatives.push(value); break;
-      case 1: positives.push(value); break;
-      case 2: missings.push(value); break;
-      default: jassert(false);
-      }
-    }
-  }
-
-  virtual void flipPrediction(size_t index)
-  {
-    double value = targets->getValue(index);
-    negatives.push(value, -1.0);
-    positives.push(value);
-  }
-
-  virtual double computeObjective() const
-  {
-    double res = 0.0;
-    if (positives.getCount())
-      res += positives.getCount() * positives.getVariance();
-    if (negatives.getCount())
-      res += negatives.getCount() * negatives.getVariance();
-    if (missings.getCount())
-      res += missings.getCount() * missings.getVariance();
-    jassert(predictions->size() == (size_t)(positives.getCount() + negatives.getCount() + missings.getCount()));
-    if (predictions->size())
-      res /= (double)predictions->size();
-    return -res;
-  }
-
-  double getPositivesMean() const
-    {return positives.getMean();}
-
-  double getNegativesMean() const
-    {return negatives.getMean();}
-    
-  double getMissingsMean() const
-    {return missings.getMean();}
-
-protected:
-  DenseDoubleVectorPtr targets;
-  LuapeSampleVectorPtr predictions;
-
-  ScalarVariableMeanAndVariance positives;
-  ScalarVariableMeanAndVariance negatives;
-  ScalarVariableMeanAndVariance missings;
-};
-
-typedef ReferenceCountedObjectPtr<L2WeakLearnerObjective> L2WeakLearnerObjectivePtr;
-
 class GradientBoostingLearner : public BoostingLearner
 {
 public:
@@ -106,16 +30,18 @@ public:
 
       double lossValue;
       DenseDoubleVectorPtr predictions = problem->getTrainingPredictions().staticCast<DenseDoubleVector>();
+      DenseDoubleVectorPtr pseudoResiduals;
       computeLoss(problem, predictions, &lossValue, &pseudoResiduals);
       context.resultCallback(T("loss"), lossValue);
+      objective->setSupervisions(pseudoResiduals);
       //context.resultCallback(T("predictions"), predictions);
       //context.resultCallback(T("pseudoResiduals"), pseudoResiduals);
     }
     return BoostingLearner::doLearningIteration(context, node, problem, examples, trainingScore, validationScore);
   }
 
-  virtual WeakLearnerObjectivePtr createWeakObjective(const LuapeInferencePtr& problem) const
-    {return new L2WeakLearnerObjective(pseudoResiduals);}
+  virtual LearningObjectivePtr createWeakObjective(const LuapeInferencePtr& problem) const
+    {return new RegressionLearningObjective();}
 
   virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
@@ -162,7 +88,6 @@ public:
 
 protected:
   double learningRate;
-  DenseDoubleVectorPtr pseudoResiduals;
 };
 
 typedef ReferenceCountedObjectPtr<GradientBoostingLearner> GradientBoostingLearnerPtr;
@@ -202,7 +127,7 @@ public:
 
   virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
-    L2WeakLearnerObjectivePtr objective(new L2WeakLearnerObjective(pseudoResiduals));
+    RegressionLearningObjectivePtr objective = this->objective.staticCast<RegressionLearningObjective>();
     objective->setPredictions(weakPredictions);
     successVote = objective->getPositivesMean();
     failureVote = objective->getNegativesMean();

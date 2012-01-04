@@ -11,7 +11,9 @@
 
 # include "LuapeInference.h"
 # include "LuapeNodeBuilder.h"
-# include <lbcpp/Learning/LossFunction.h>
+# include "LearningObjective.h"
+# include "../Learning/LossFunction.h"
+# include "../Optimizer/Optimizer.h"
 
 namespace lbcpp
 {
@@ -72,6 +74,28 @@ protected:
   void displayMostImportantNodes(ExecutionContext& context, const LuapeInferencePtr& function, bool verbose) const;
 };
 
+class WeakLearner : public LuapeLearner
+{
+public:
+  WeakLearner() : bestWeakObjectiveValue(-DBL_MAX) {}
+
+  void setWeakObjective(const LearningObjectivePtr& weakObjective)
+    {this->weakObjective = weakObjective;}
+
+  double computeWeakObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeNodePtr& weakNode, const IndexSetPtr& indices) const;
+  double computeWeakObjective(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& weakNode, const IndexSetPtr& indices) const;
+  double computeWeakObjectiveWithStump(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& numberNode, const IndexSetPtr& indices, double& bestThreshold) const;
+
+  double getBestWeakObjectiveValue() const
+    {return bestWeakObjectiveValue;}
+
+protected:
+  LearningObjectivePtr weakObjective;
+  double bestWeakObjectiveValue;
+};
+
+typedef ReferenceCountedObjectPtr<WeakLearner> WeakLearnerPtr;
+
 // gradient descent
 extern IterativeLearnerPtr classifierSGDLearner(MultiClassLossFunctionPtr lossFunction, IterationFunctionPtr learningRate, size_t maxIterations);
 
@@ -86,10 +110,16 @@ extern IterativeLearnerPtr rankingGradientBoostingLearner(WeakLearnerPtr weakLea
 extern LuapeLearnerPtr ensembleLearner(const LuapeLearnerPtr& baseLearner, size_t ensembleSize);
 extern LuapeLearnerPtr compositeLearner(const std::vector<LuapeLearnerPtr>& learners);
 extern LuapeLearnerPtr compositeLearner(const LuapeLearnerPtr& learner1, const LuapeLearnerPtr& learner2);
-extern LuapeLearnerPtr treeLearner(WeakLearnerPtr conditionLearner, WeakLearnerObjectivePtr weakObjective);
+extern LuapeLearnerPtr treeLearner(WeakLearnerPtr conditionLearner, LearningObjectivePtr weakObjective);
 
 // misc
 extern LuapeLearnerPtr generateTestNodesLearner(LuapeNodeBuilderPtr nodeBuilder);
+
+// weak learners
+extern WeakLearnerPtr exactWeakLearner(LuapeNodeBuilderPtr nodeBuilder);
+extern WeakLearnerPtr laminatingWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating = 5);
+extern WeakLearnerPtr banditBasedWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize = 0.01);
+extern WeakLearnerPtr optimizerBasedSequentialWeakLearner(OptimizerPtr optimizer, size_t complexity);
 
 }; /* namespace lbcpp */
 

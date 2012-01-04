@@ -8,7 +8,6 @@
 #include "precompiled.h"
 #include <lbcpp/Luape/LuapeLearner.h>
 #include <lbcpp/Luape/LuapeCache.h>
-#include <lbcpp/Luape/WeakLearner.h> // tmp
 using namespace lbcpp;
 
 /*
@@ -210,4 +209,38 @@ void IterativeLearner::displayMostImportantNodes(ExecutionContext& context, cons
     probabilities[index] = 0.0;
   }
 #endif // 0
+}
+
+/*
+** WeakLearner
+*/
+double WeakLearner::computeWeakObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeNodePtr& weakNode, const IndexSetPtr& examples) const
+{
+  jassert(examples->size());
+  if (weakNode->getType() == booleanType)
+    return computeWeakObjective(context, problem, weakNode, examples);
+  else
+  {
+    jassert(weakNode->getType()->isConvertibleToDouble());
+    double threshold;
+    double res = computeWeakObjectiveWithStump(context, problem, weakNode, examples, threshold);
+    weakNode = new LuapeFunctionNode(stumpLuapeFunction(threshold), weakNode);
+    return res;
+  }
+}
+
+double WeakLearner::computeWeakObjective(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& weakNode, const IndexSetPtr& indices) const
+{
+  LuapeSampleVectorPtr weakPredictions = problem->getTrainingCache()->getSamples(context, weakNode, indices);
+  jassert(weakNode->getType() == booleanType || weakNode->getType() == probabilityType);
+  return weakObjective->compute(weakPredictions);
+}
+
+double WeakLearner::computeWeakObjectiveWithStump(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& numberNode, const IndexSetPtr& indices, double& bestThreshold) const
+{
+  jassert(indices->size());
+  double bestScore;
+  SparseDoubleVectorPtr sortedDoubleValues = problem->getTrainingCache()->getSortedDoubleValues(context, numberNode, indices);
+  bestThreshold = weakObjective->findBestThreshold(context, indices, sortedDoubleValues, bestScore, false);
+  return bestScore;
 }

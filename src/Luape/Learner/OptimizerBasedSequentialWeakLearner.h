@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_LEARNER_WEAK_OPTIMIZER_BASED_SEQUENTIAL_H_
 # define LBCPP_LUAPE_LEARNER_WEAK_OPTIMIZER_BASED_SEQUENTIAL_H_
 
-# include <lbcpp/Luape/WeakLearner.h>
+# include <lbcpp/Luape/LuapeLearner.h>
 # include "../NodeBuilder/NodeBuilderDecisionProblem.h"
 
 namespace lbcpp

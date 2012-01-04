@@ -17,7 +17,7 @@ namespace lbcpp
 class TreeLearner : public LuapeLearner
 {
 public:
-  TreeLearner(WeakLearnerPtr conditionLearner, WeakLearnerObjectivePtr objective, size_t minExamplesToSplit, size_t maxDepth)
+  TreeLearner(WeakLearnerPtr conditionLearner, LearningObjectivePtr objective, size_t minExamplesToSplit, size_t maxDepth)
     : conditionLearner(conditionLearner), objective(objective), minExamplesToSplit(minExamplesToSplit), maxDepth(maxDepth) {}
   TreeLearner() {}
 
@@ -28,7 +28,7 @@ protected:
   friend class TreeLearnerClass;
 
   WeakLearnerPtr conditionLearner;
-  WeakLearnerObjectivePtr objective;
+  LearningObjectivePtr objective;
   size_t minExamplesToSplit;
   size_t maxDepth;
 
@@ -63,16 +63,15 @@ class ClassificationTreeLearner : public TreeLearner
 {
 public:
   ClassificationTreeLearner(WeakLearnerPtr conditionLearner, size_t minExamplesToSplit, size_t maxDepth)
-    : TreeLearner(conditionLearner, WeakLearnerObjectivePtr(), minExamplesToSplit, maxDepth)
+    : TreeLearner(conditionLearner, LearningObjectivePtr(), minExamplesToSplit, maxDepth)
   {
   }
 
   virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     ClassPtr dvClass = problem.staticCast<LuapeClassifier>()->getDoubleVectorClass();
-    DenseDoubleVectorPtr supervisions = problem->getTrainingSupervisions(); // FIXME: must be converted
-    DenseDoubleVectorPtr weights = new DenseDoubleVector(problem->getTrainingCache()->getNumSamples(), 1.0); // FIXME: must be initialized
-    objective = new AdaBoostMHWeakObjective(dvClass, supervisions, weights);
+    objective = new ClassificationLearningObjective(dvClass);
+    objective->setSupervisions(problem->getTrainingSupervisions());
     return TreeLearner::learn(context, node, problem, examples);
   }
 };

@@ -1,6 +1,4 @@
 
- * Les WeakLearnerObjective ne doivent être instancié qu'une fois, puis mis à jour, grâce à setWeights() et setSupervisions()
- * AdaBoostMHWeakObjective: gerer la conversion des supervisions en signed et la création des weights initial
  * InformationGain learning objective
 
 La suite:
