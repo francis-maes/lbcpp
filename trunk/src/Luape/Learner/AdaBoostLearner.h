@@ -18,12 +18,12 @@ namespace lbcpp
 class AdaBoostLearner : public WeightBoostingLearner
 {
 public:
-  AdaBoostLearner(WeakLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
-    : WeightBoostingLearner(weakLearner, maxIterations, treeDepth) {}
+  AdaBoostLearner(LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
+    : WeightBoostingLearner(new BinaryClassificationLearningObjective(), weakLearner, maxIterations, treeDepth) {}
   AdaBoostLearner() {}
 
-  virtual LearningObjectivePtr createWeakObjective(const LuapeInferencePtr& problem) const
-    {return new BinaryClassificationLearningObjective();}
+  virtual LuapeNodePtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
+    {return new LuapeScalarSumNode();}
 
 //  virtual bool shouldStop(double accuracy) const
 //    {return accuracy == 0.0 || accuracy == 1.0;}

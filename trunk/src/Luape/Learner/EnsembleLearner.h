@@ -29,11 +29,11 @@ public:
     bool ok = true;
     for (size_t i = 0; i < ensembleSize; ++i)
     {
-      LuapeNodePtr baseModel = baseLearner->createInitialNode(context);
-      baseModel = baseLearner->learn(context, baseModel, problem, examples);
-      if (!baseModel)
+      LuapeNodePtr baseModel = subLearn(context, baseLearner, LuapeNodePtr(), problem, examples);
+      if (baseModel)
+        sequenceNode->pushNode(context, baseModel); // todo: cachesToUpdate
+      else
         return LuapeNodePtr();
-      sequenceNode->pushNode(context, baseModel); // todo: cachesToUpdate
     }
     return sequenceNode;
   }

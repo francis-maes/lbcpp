@@ -76,11 +76,11 @@ public:
     return compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
   }
 
-  WeakLearnerPtr createWeakLearner(ProteinTarget target) const
+  LuapeLearnerPtr createWeakLearner(ProteinTarget target) const
   {
     LuapeNodeBuilderPtr nodeBuilder = createNodeBuilder(target);
 
-    WeakLearnerPtr conditionLearner;
+    LuapeLearnerPtr conditionLearner;
     if (miniBatchRelativeSize == 0.0)
       return laminatingWeakLearner(nodeBuilder, relativeBudget);
     else if (miniBatchRelativeSize < 1.0)

@@ -32,6 +32,25 @@ double LearningObjective::compute(const LuapeSampleVectorPtr& predictions)
   return computeObjective();
 }
 
+double LearningObjective::computeObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeNodePtr& weakNode, const IndexSetPtr& examples)
+{
+  jassert(examples->size());
+  if (weakNode->getType() == booleanType)
+  {
+    LuapeSampleVectorPtr weakPredictions = problem->getTrainingCache()->getSamples(context, weakNode, examples);
+    return compute(weakPredictions);
+  }
+  else
+  {
+    jassert(weakNode->getType()->isConvertibleToDouble());
+    double res;
+    SparseDoubleVectorPtr sortedDoubleValues = problem->getTrainingCache()->getSortedDoubleValues(context, weakNode, examples);
+    double threshold = findBestThreshold(context, examples, sortedDoubleValues, res, false);
+    weakNode = new LuapeFunctionNode(stumpLuapeFunction(threshold), weakNode);
+    return res;
+  }
+}
+
 double LearningObjective::findBestThreshold(ExecutionContext& context, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose)
 {
   setPredictions(LuapeSampleVector::createConstant(indices, Variable(false, booleanType)));
@@ -211,9 +230,9 @@ double BinaryClassificationLearningObjective::computeObjective()
 /*
 ** ClassificationLearningObjective
 */
-ClassificationLearningObjective::ClassificationLearningObjective(const ClassPtr& doubleVectorClass)
-  : doubleVectorClass(doubleVectorClass)
+void ClassificationLearningObjective::initialize(const LuapeInferencePtr& problem)
 {
+  doubleVectorClass = problem.staticCast<LuapeClassifier>()->getDoubleVectorClass();
   labels = DoubleVector::getElementsEnumeration(doubleVectorClass);
   numLabels = labels->getNumElements();
   for (size_t i = 0; i < 3; ++i)
@@ -311,7 +330,7 @@ Variable ClassificationLearningObjective::computeVote(const IndexSetPtr& indices
   }
   if (sum > 1.0)
     res->multiplyByScalar(1.0 / sum);
-  return Variable(res, probabilityType);
+  return Variable(res, denseDoubleVectorClass(labels, probabilityType));
 }
 
 double ClassificationLearningObjective::computeObjective()

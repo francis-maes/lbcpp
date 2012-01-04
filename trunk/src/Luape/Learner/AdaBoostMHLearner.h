@@ -17,12 +17,12 @@ namespace lbcpp
 class AdaBoostMHLearner : public WeightBoostingLearner
 {
 public:
-  AdaBoostMHLearner(WeakLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
-    : WeightBoostingLearner(weakLearner, maxIterations, treeDepth) {}
+  AdaBoostMHLearner(LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
+    : WeightBoostingLearner(new ClassificationLearningObjective(), weakLearner, maxIterations, treeDepth) {}
   AdaBoostMHLearner() {}
 
-  virtual LearningObjectivePtr createWeakObjective(const LuapeInferencePtr& problem) const
-    {return new ClassificationLearningObjective(problem.staticCast<LuapeClassifier>()->getDoubleVectorClass());}
+  virtual LuapeNodePtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
+    {return new LuapeVectorSumNode(problem.staticCast<LuapeClassifier>()->getLabels());}
 
 //  virtual bool shouldStop(double weakObjectiveValue) const
 //    {return weakObjectiveValue == 0.0;}
@@ -70,7 +70,7 @@ public:
 class DiscreteAdaBoostMHLearner : public AdaBoostMHLearner
 {
 public:
-  DiscreteAdaBoostMHLearner(WeakLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
+  DiscreteAdaBoostMHLearner(LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
     : AdaBoostMHLearner(weakLearner, maxIterations, treeDepth) {}
   DiscreteAdaBoostMHLearner() {}
 
@@ -131,7 +131,7 @@ public:
 class RealAdaBoostMHLearner : public AdaBoostMHLearner
 {
 public:
-  RealAdaBoostMHLearner(WeakLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
+  RealAdaBoostMHLearner(LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
     : AdaBoostMHLearner(weakLearner, maxIterations, treeDepth) {}
   RealAdaBoostMHLearner() {}
 

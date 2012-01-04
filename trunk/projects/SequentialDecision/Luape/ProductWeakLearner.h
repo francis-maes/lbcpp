@@ -101,10 +101,10 @@ typedef ReferenceCountedObjectPtr<LuapeProductNode> LuapeProductNodePtr;
 
 #if 0 // FIXME
 
-class ProductWeakLearner : public WeakLearner
+class ProductWeakLearner : public LuapeLearner
 {
 public:
-  ProductWeakLearner(WeakLearnerPtr baseLearner, size_t numBaseClassifiers)
+  ProductWeakLearner(LuapeLearnerPtr baseLearner, size_t numBaseClassifiers)
     : baseLearner(baseLearner), numBaseClassifiers(numBaseClassifiers) {}
   ProductWeakLearner() {}
   
@@ -245,7 +245,7 @@ public:
 protected:
   friend class ProductWeakLearnerClass;
 
-  WeakLearnerPtr baseLearner;
+  LuapeLearnerPtr baseLearner;
   size_t numBaseClassifiers;
 };
 

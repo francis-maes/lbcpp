@@ -23,6 +23,9 @@ public:
   // LuapeFunctionNodePtr computeBestStump(const IndexSetPtr& indices, const LuapeNodePtr& numberNode, double& score) (== findBestThreshold)
   // LuapeConstantNodePtr computeBestConstant(const IndexSetPtr& indices, double& score)  (== computeVote)
 
+  virtual void initialize(const LuapeInferencePtr& problem)
+    {setSupervisions(problem->getTrainingSupervisions());}
+
   virtual void setSupervisions(const VectorPtr& supervisions) = 0;
   virtual void setWeights(const DenseDoubleVectorPtr& weights) = 0;
   virtual void setPredictions(const LuapeSampleVectorPtr& predictions) = 0;
@@ -35,6 +38,7 @@ public:
 
   // these two functions have side effects on the currently stored predictions
   double compute(const LuapeSampleVectorPtr& predictions);
+  double computeObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeNodePtr& weakNode, const IndexSetPtr& examples);
   double findBestThreshold(ExecutionContext& context, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose = false);
 
   virtual void update() = 0;
@@ -131,9 +135,9 @@ typedef ReferenceCountedObjectPtr<BinaryClassificationLearningObjective> BinaryC
 class ClassificationLearningObjective : public SupervisedLearningObjective
 {
 public:
-  ClassificationLearningObjective(const ClassPtr& doubleVectorClass);
   ClassificationLearningObjective() : numLabels(0) {}
 
+  virtual void initialize(const LuapeInferencePtr& problem);
   virtual void setSupervisions(const VectorPtr& supervisions);
   virtual void update();
   virtual void flipPrediction(size_t index);

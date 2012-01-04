@@ -16,7 +16,7 @@
 namespace lbcpp
 {
 
-class BanditBasedWeakLearner : public WeakLearner
+class BanditBasedWeakLearner : public LuapeLearner
 {
 public:
   BanditBasedWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize)
@@ -63,7 +63,7 @@ public:
       size_t subsetIndex = (size_t)arm.episodeStats.getCount();
       IndexSetPtr subset = getSubset(context, examples, subsetIndex, miniBatchSize, subsets);
       effectiveBudget += subset->size();
-      double weakObjective = computeWeakObjectiveWithEventualStump(context, problem, weakNode, subset); // side effect on weakNode (that we do not keep)
+      double weakObjective = objective->computeObjectiveWithEventualStump(context, problem, weakNode, subset); // side effect on weakNode (that we do not keep)
       weakObjective *= numTrainingSamples / (double)subset->size();
       // todo: here, we can retrieve the best threshold if it is a stump
 
@@ -98,11 +98,11 @@ public:
         context.informationCallback(T("[") + String(it->first) + T("]: ") + it->second->toShortString() + T(" (tk = ") + String(arms[it->second].episodeStats.getCount()) + T(")"));
     }
 
-    bestWeakObjectiveValue = computeWeakObjectiveWithEventualStump(context, problem, bestWeakNode, examples); // side effect on bestWeakNode
+    bestObjectiveValue = objective->computeObjectiveWithEventualStump(context, problem, bestWeakNode, examples); // side effect on bestWeakNode
     if (verbose)
     {
       context.informationCallback(T("Num Steps: ") + String((int)t) + T(" Effective budget: ") + String((int)effectiveBudget) + T(" normalized = ") + String((double)effectiveBudget / problem->getTrainingCache()->getNumSamples()));
-      context.leaveScope(bestWeakObjectiveValue);
+      context.leaveScope(bestObjectiveValue);
     }
     return bestWeakNode;
   }

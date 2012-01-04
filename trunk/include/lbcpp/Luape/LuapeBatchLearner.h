@@ -32,7 +32,7 @@ public:
     function->setSamples(context, trainingData, validationData);
     LuapeNodePtr node = function->getRootNode();
     if (!node)
-      node = learner->createInitialNode(context);
+      node = learner->createInitialNode(context, function);
     node = learner->learn(context, node, function, function->getTrainingCache()->getAllIndices());
     if (!node)
       return false;

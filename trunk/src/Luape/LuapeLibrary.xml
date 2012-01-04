@@ -10,7 +10,6 @@
   <include file="lbcpp/Luape/LuapeNode.h"/>
   <include file="lbcpp/Luape/LuapeInference.h"/>
   <include file="lbcpp/Luape/LuapeLearner.h"/>
-  <include file="lbcpp/Luape/WeakLearner.h"/>
   <include file="lbcpp/Luape/LuapeNodeBuilder.h"/>
   <include file="lbcpp/Luape/LuapeBatchLearner.h"/>
     

@@ -134,7 +134,6 @@ TypePtr LuapeBinaryClassifier::getRequiredInputType(size_t index, size_t numInpu
 
 TypePtr LuapeBinaryClassifier::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
 {
-  node = new LuapeScalarSumNode();
   return probabilityType;
 }
 
@@ -184,7 +183,6 @@ TypePtr LuapeClassifier::initializeFunction(ExecutionContext& context, const std
   labels = getLabelsFromSupervision(inputVariables[1]->getType());
   jassert(labels);
   doubleVectorClass = denseDoubleVectorClass(labels, doubleType);
-  node = new LuapeVectorSumNode(labels);
   return denseDoubleVectorClass(labels, probabilityType);
 }
 
