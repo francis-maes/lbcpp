@@ -21,7 +21,7 @@ public:
     : nodeBuilder(nodeBuilder) {}
   GenerateTestNodesLearner() {}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node)
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     std::vector<LuapeNodePtr> weakNodes;
     nodeBuilder->buildNodes(context, problem, 100, weakNodes);
@@ -35,20 +35,20 @@ public:
     sequenceNode->reserveNodes(sequenceNode->getNumSubNodes() + weakNodes.size());
 
     IndexSetPtr subset;
-    if (trainingCache->getNumSamples() > 100)
+    if (examples->size() > 100)
     {
       subset = new IndexSet();
-      subset->randomlyExpandUsingSource(context, 100, trainingCache->getAllIndices());
+      subset->randomlyExpandUsingSource(context, 100, examples);
     }
     else
-      subset = trainingCache->getAllIndices();
+      subset = examples;
 
     for (size_t i = 0; i < weakNodes.size(); ++i)
     {
       LuapeNodePtr condition = weakNodes[i];
       if (condition->getType() != booleanType)
       {
-        LuapeSampleVectorPtr samples = trainingCache->getSamples(context, condition, subset);
+        LuapeSampleVectorPtr samples = problem->getTrainingCache()->getSamples(context, condition, subset);
         double threshold = samples->sampleElement(context.getRandomGenerator()).toDouble();
         condition = new LuapeFunctionNode(stumpLuapeFunction(threshold), condition); // bypass universe
       }

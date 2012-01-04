@@ -11,6 +11,7 @@
   <include file="lbcpp/Luape/LuapeNode.h"/>
   <include file="lbcpp/Luape/LuapeInference.h"/>
   <include file="lbcpp/Luape/LuapeLearner.h"/>
+  <include file="lbcpp/Luape/BoostingWeakLearner.h"/>
   <include file="lbcpp/Luape/LuapeNodeBuilder.h"/>
   <include file="lbcpp/Luape/LuapeBatchLearner.h"/>
     
@@ -71,8 +72,6 @@
     <constructor/>
   </class>
 
-  <class name="BoostingWeakLearner" base="Object" abstract="yes"/>
-
   <!-- Node Builders -->
   <class name="LuapeNodeBuilder" base="Object" abstract="yes"/>
   <class name="StochasticNodeBuilder" base="LuapeNodeBuilder" abstract="yes">
@@ -86,12 +85,14 @@
   <class name="LuapeLearner" abstract="yes">
     <variable type="Boolean" name="verbose"/>
   </class>
-  <class name="IterativeLearner" abstract="yes">
+  <class name="IterativeLearner" base="LuapeLearner" abstract="yes">
     <variable type="PositiveInteger" name="maxIterations"/>
   </class>
   <class name="BoostingLearner" base="IterativeLearner" abstract="yes">
     <variable type="BoostingWeakLearner" name="weakLearner"/>
   </class>
+  <class name="BoostingWeakLearner" base="LuapeLearner" abstract="yes"/>
+
 
   <!-- Wrapper to classical LBC++ learner -->
   <class name="LuapeBatchLearner" base="BatchLearner">

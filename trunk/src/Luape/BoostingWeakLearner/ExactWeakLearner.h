@@ -20,28 +20,28 @@ public:
   ExactWeakLearner(LuapeNodeBuilderPtr nodeBuilder) : nodeBuilder(nodeBuilder) {}
   ExactWeakLearner() {}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     // make weak nodes
     std::vector<LuapeNodePtr> weakNodes;
-    nodeBuilder->buildNodes(context, structureLearner->getFunction(), 0, weakNodes);
+    nodeBuilder->buildNodes(context, problem, 0, weakNodes);
     if (!weakNodes.size())
       return LuapeNodePtr();
 
     // evaluate each weak node
     LuapeNodePtr bestWeakNode;
-    weakObjective = -DBL_MAX;
+    bestWeakObjectiveValue = -DBL_MAX;
     for (size_t i = 0; i < weakNodes.size(); ++i)
     {
       LuapeNodePtr weakNode = weakNodes[i];
-      double objective = computeWeakObjectiveWithEventualStump(context, structureLearner, weakNode, examples); // side effect on weakNode
-      if (objective > weakObjective)
+      double objective = computeWeakObjectiveWithEventualStump(context, problem, weakNode, examples); // side effect on weakNode
+      if (objective > bestWeakObjectiveValue)
       {
-        weakObjective = objective;
+        bestWeakObjectiveValue = objective;
         bestWeakNode = weakNode;
       }
     }
-    return makeContribution(context, structureLearner, bestWeakNode, weakObjective, examples);
+    return bestWeakNode;
   }
 
 protected:

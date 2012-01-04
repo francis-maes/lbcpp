@@ -12,6 +12,7 @@
 # include "GoProblem.h"
 # include "../Luape/BanditPoolWeakLearner.h"
 # include <lbcpp/Luape/LuapeBatchLearner.h>
+# include <lbcpp/Luape/BoostingWeakLearner.h>
 
 # include "Perception/GoStatePerception.h"
 # include "Perception/GoBoardPositionPerception.h"

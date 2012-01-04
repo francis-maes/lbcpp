@@ -10,7 +10,7 @@
 # define LBCPP_LUAPE_LEARNER_H_
 
 # include "LuapeInference.h"
-# include "BoostingWeakLearner.h"
+# include "LuapeNodeBuilder.h"
 # include <lbcpp/Learning/LossFunction.h>
 
 namespace lbcpp
@@ -28,19 +28,10 @@ public:
   virtual LuapeNodePtr createInitialNode(ExecutionContext& context)
     {jassert(false); return LuapeNodePtr();}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node) = 0;
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples) = 0;
 
   const LuapeInferencePtr& getFunction() const
     {return function;}
-
-  const LuapeSamplesCachePtr& getTrainingCache() const
-    {return trainingCache;}
-
-  const LuapeSamplesCachePtr& getValidationCache() const
-    {return validationCache;}
-
-  VectorPtr getTrainingPredictions() const;
-  VectorPtr getValidationPredictions() const;
 
   void setVerbose(bool v)
     {verbose = v;}
@@ -55,9 +46,7 @@ protected:
 
   LuapeInferencePtr function;
   std::vector<ObjectPtr> trainingData;
-  LuapeSamplesCachePtr trainingCache;
   std::vector<ObjectPtr> validationData;
-  LuapeSamplesCachePtr validationCache;
 
   void evaluatePredictions(ExecutionContext& context, double& trainingScore, double& validationScore);
 };
@@ -78,15 +67,15 @@ public:
 
   void setPlotFile(ExecutionContext& context, const File& plotFile);
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node);
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples);
   
   OutputStream* getPlotOutputStream() const
     {return plotOutputStream;}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node)
+  virtual bool initialize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
     {return true;}
-  virtual bool doLearningIteration(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& rootNode, double& trainingScore, double& validationScore) = 0;
-  virtual bool finalize(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node)
+  virtual bool doLearningIteration(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore) = 0;
+  virtual bool finalize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
     {return true;}
 
 protected:
@@ -109,13 +98,12 @@ public:
   BoostingLearner() {}
 
   virtual BoostingWeakObjectivePtr createWeakObjective() const = 0;
+  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& indices, Variable& successVote, Variable& failureVote, Variable& missingVote) const = 0;
 
   const BoostingWeakLearnerPtr& getWeakLearner() const
     {return weakLearner;}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node);
-  virtual bool doLearningIteration(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& rootNode, double& trainingScore, double& validationScore);
-  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const = 0;
+  virtual bool doLearningIteration(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore);
 
   LuapeNodePtr turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, double weakObjective, const IndexSetPtr& examples) const;
 

@@ -30,6 +30,8 @@ public:
   {
     const LuapeInferencePtr& function = f.staticCast<LuapeInference>();
 
+    function->setSamples(context, trainingData, validationData);
+
     LuapeLearnerPtr learner = this->learner->cloneAndCast<LuapeLearner>(); // avoid cycle between LuapeInference -> LuapeBatchLearner -> LuapeLearner -> LuapeInference
 
     learner->setFunction(function);
@@ -41,7 +43,7 @@ public:
     LuapeNodePtr node = function->getRootNode();
     if (!node)
       node = learner->createInitialNode(context);
-    node = learner->learn(context, function, node);
+    node = learner->learn(context, node, function, function->getTrainingCache()->getAllIndices());
     if (!node)
       return false;
     function->setRootNode(node);

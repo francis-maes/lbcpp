@@ -30,11 +30,13 @@ public:
   
   virtual void observeBestWeakNode(ExecutionContext& context,  const LuapeLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
   {
+    const LuapeInferencePtr& problem = structureLearner->getFunction();
+
     if (weakObjective == -DBL_MAX)
       return;
     jassert(isNumberValid(weakObjective));
 
-    double weight = examples->size() / (double)structureLearner->getTrainingCache()->getNumSamples();
+    double weight = examples->size() / (double)problem->getTrainingCache()->getNumSamples();
     weakObjective /= weight;
 
     // normalize objective

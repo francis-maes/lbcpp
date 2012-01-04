@@ -38,14 +38,14 @@ public:
     return ok;
   }
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node)
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     // default behavior is sequential
     LuapeNodePtr res = node;
     bool ok = true;
     for (size_t i = 0; i < learners.size(); ++i)
     {
-      res = learners[i]->learn(context, problem, res);
+      res = learners[i]->learn(context, res, problem, examples);
       if (!res)
         break;
     }

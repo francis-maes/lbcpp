@@ -8,6 +8,7 @@
 #include "precompiled.h"
 #include <lbcpp/Luape/LuapeLearner.h>
 #include <lbcpp/Luape/LuapeCache.h>
+#include <lbcpp/Luape/BoostingWeakLearner.h> // tmp
 using namespace lbcpp;
 
 /*
@@ -16,47 +17,20 @@ using namespace lbcpp;
 bool LuapeLearner::setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
 {
   if (isTrainingData)
-  {
     trainingData = data;
-    trainingCache = function->createSamplesCache(context, data);
-    trainingCache->cacheNode(context, function->getRootNode(), VectorPtr(), "Prediction node", false);
-  }
   else
-  {
     validationData = data;
-    validationCache = function->createSamplesCache(context, data);
-    validationCache->cacheNode(context, function->getRootNode(), VectorPtr(), "Prediction node", false);
-  }
   return true;
-}
-
-VectorPtr LuapeLearner::getTrainingPredictions() const
-{
-  LuapeSampleVectorPtr samples = trainingCache->getSamples(defaultExecutionContext(), function->getRootNode(), trainingCache->getAllIndices());
-  jassert(samples->getImplementation() == LuapeSampleVector::cachedVectorImpl);
-  return samples->getVector();
-}
-
-VectorPtr LuapeLearner::getValidationPredictions() const
-{
-  if (validationCache)
-  {
-    LuapeSampleVectorPtr samples = validationCache->getSamples(defaultExecutionContext(), function->getRootNode(), validationCache->getAllIndices());
-    jassert(samples->getImplementation() == LuapeSampleVector::cachedVectorImpl);
-    return samples->getVector();
-  }
-  else
-    return VectorPtr();
 }
 
 void LuapeLearner::evaluatePredictions(ExecutionContext& context, double& trainingScore, double& validationScore)
 {
   TimedScope _(context, "evaluate", verbose);
-  VectorPtr trainingPredictions = getTrainingPredictions();
+  VectorPtr trainingPredictions = function->getTrainingPredictions();
   trainingScore = function->evaluatePredictions(context, trainingPredictions, trainingData);
   context.resultCallback(T("train error"), trainingScore);
 
-  VectorPtr validationPredictions = getValidationPredictions();
+  VectorPtr validationPredictions = function->getValidationPredictions();
   if (validationPredictions)
   {
     validationScore = function->evaluatePredictions(context, validationPredictions, validationData);
@@ -90,7 +64,7 @@ void IterativeLearner::setPlotFile(ExecutionContext& context, const File& plotFi
     context.warningCallback(T("Could not create file ") + plotFile.getFullPathName());
 }
 
-LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node)
+LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
 {
   context.enterScope(T("Learning"));
 
@@ -106,7 +80,7 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeInfer
   if (validationData.size())
     context.informationCallback(String((int)validationData.size()) + T(" validation examples"));
 
-  if (!initialize(context, problem, node))
+  if (!initialize(context, node, problem, examples))
     return LuapeNodePtr();
 
   LuapeUniversePtr universe = problem->getUniverse();
@@ -122,12 +96,12 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeInfer
     context.resultCallback(T("iteration"), i+1);
     
     double trainingScore, validationScore;
-    doLearningIteration(context, problem, node, trainingScore, validationScore);
+    doLearningIteration(context, node, problem, examples, trainingScore, validationScore);
     if (verbose)
     {
-      context.resultCallback("trainCacheSizeInMb", trainingCache->getCacheSizeInBytes() / (1024.0 * 1024.0));
-      if (validationCache)
-        context.resultCallback("validationCacheSizeInMb", validationCache->getCacheSizeInBytes() / (1024.0 * 1024.0));
+      context.resultCallback("trainCacheSizeInMb", problem->getTrainingCache()->getCacheSizeInBytes() / (1024.0 * 1024.0));
+      if (problem->getValidationCache())
+        context.resultCallback("validationCacheSizeInMb", problem->getValidationCache()->getCacheSizeInBytes() / (1024.0 * 1024.0));
     }
     context.resultCallback(T("log10(iteration)"), log10((double)i+1.0));
 
@@ -167,7 +141,7 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeInfer
     plotOutputStream->flush();
   }
     
-  if (!finalize(context, problem, node))
+  if (!finalize(context, node, problem, examples))
     return LuapeNodePtr();
 
   //Object::displayObjectAllocationInfo(std::cerr);
@@ -250,12 +224,6 @@ void IterativeLearner::displayMostImportantNodes(ExecutionContext& context, cons
 BoostingLearner::BoostingLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations)
   : IterativeLearner(maxIterations), weakLearner(weakLearner) {}
 
-bool BoostingLearner::initialize(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node)
-{
-  jassert(weakLearner);
-  return weakLearner->initialize(context, function);
-}
-
 LuapeNodePtr BoostingLearner::turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, double weakObjective, const IndexSetPtr& indices) const
 {
   jassert(weakNode);
@@ -284,31 +252,29 @@ LuapeNodePtr BoostingLearner::turnWeakNodeIntoContribution(ExecutionContext& con
   return res;
 }
 
-bool BoostingLearner::doLearningIteration(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& rootNode, double& trainingScore, double& validationScore)
+bool BoostingLearner::doLearningIteration(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
 {
   LuapeNodePtr contribution;
-  double weakObjective;
  
   // do weak learning
   {
     TimedScope _(context, "weak learning", verbose);
-    contribution = weakLearner->learn(context, refCountedPointerFromThis(this), trainingCache->getAllIndices(), verbose, weakObjective);
-    if (!contribution)
+    weakLearner->setWeakObjective(createWeakObjective());
+    LuapeNodePtr weakNode = weakLearner->learn(context, node, problem, examples);
+    double weakObjective = weakLearner->getBestWeakObjectiveValue();
+    if (!weakNode || weakObjective == -DBL_MAX)
     {
       context.errorCallback(T("Failed to find a weak learner"));
       return false;
     }
+    contribution = turnWeakNodeIntoContribution(context, weakNode, weakObjective, examples);
     context.resultCallback(T("edge"), weakObjective);
   }
 
   // add into node and caches
   {
     TimedScope _(context, "add into node", verbose);
-    std::vector<LuapeSamplesCachePtr> caches;
-    caches.push_back(trainingCache);
-    if (validationCache)
-      caches.push_back(validationCache);
-    rootNode.staticCast<LuapeSequenceNode>()->pushNode(context, contribution, caches);
+    node.staticCast<LuapeSequenceNode>()->pushNode(context, contribution, problem->getSamplesCaches());
   }
 
   // evaluate

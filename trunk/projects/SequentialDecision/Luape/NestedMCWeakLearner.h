@@ -26,10 +26,10 @@ public:
   struct Objective : public SimpleUnaryFunction
   {
     Objective(BoostingWeakLearnerPtr weakLearner,
-              BoostingLearnerPtr strongLearner,
+              LuapeInferencePtr problem,
               const IndexSetPtr& examples)
        : SimpleUnaryFunction(luapeGraphBuilderStateClass, doubleType),
-        weakLearner(weakLearner), strongLearner(strongLearner), examples(examples) {}
+        weakLearner(weakLearner), problem(problem), examples(examples) {}
 
     virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
     {
@@ -37,7 +37,7 @@ public:
       if (builder->getStackSize() != 1)
         return 0.0;
       LuapeNodePtr node = builder->getStackElement(0);
-      double res = weakLearner->computeWeakObjectiveWithEventualStump(context, strongLearner, node, examples);
+      double res = weakLearner->computeWeakObjectiveWithEventualStump(context, problem, node, examples);
       builder->setStackElement(0, node); // node may have been replaced by a stump of itself
       context.informationCallback(node->toShortString() + T(" ==> ") + String(res));
       return res;
@@ -45,7 +45,7 @@ public:
 
   private:
     BoostingWeakLearnerPtr weakLearner;
-    BoostingLearnerPtr strongLearner;
+    LuapeInferencePtr problem;
     IndexSetPtr examples;
   };
 
@@ -56,19 +56,18 @@ public:
     return true;
   }
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeLearnerPtr& strongLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
-    OptimizationProblemPtr problem = new OptimizationProblem(new Objective(refCountedPointerFromThis(this), strongLearner, examples));
-    problem->setMaximisationProblem(true);
-    problem->setInitialState(new LuapeGraphBuilderState(strongLearner->getFunction(), typeSearchSpace));
+    OptimizationProblemPtr optimizationProblem = new OptimizationProblem(new Objective(refCountedPointerFromThis(this), problem, examples));
+    optimizationProblem->setMaximisationProblem(true);
+    optimizationProblem->setInitialState(new LuapeGraphBuilderState(problem, typeSearchSpace));
 
-    OptimizerStatePtr state = optimizer->optimize(context, problem);
+    OptimizerStatePtr state = optimizer->optimize(context, optimizationProblem);
     LuapeGraphBuilderStatePtr finalState = state->getBestSolution().getObjectAndCast<LuapeGraphBuilderState>();
     if (!finalState || finalState->getStackSize() != 1)
       return LuapeNodePtr();
-    LuapeNodePtr weakNode = finalState->getStackElement(0);
-    weakObjective = state->getBestScore();
-    return makeContribution(context, strongLearner, weakNode, weakObjective, examples);
+    bestWeakObjectiveValue = state->getBestScore();
+    return finalState->getStackElement(0);
   }
  
 protected:

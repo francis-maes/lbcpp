@@ -21,22 +21,21 @@ StochasticNodeBuilder::StochasticNodeBuilder(size_t numNodes)
 
 void StochasticNodeBuilder::buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<LuapeNodePtr>& res)
 {
-  size_t numFailuresAllowed = 10 * numNodes;
-  size_t numFailures = 0;
+  size_t numTrialsAllowed = 2 * numNodes;
+  
   std::set<LuapeNodePtr> nodes;
   size_t limit = numNodes;
   if (maxCount && maxCount < numNodes)
     limit = maxCount;
-  while (nodes.size() < limit && numFailures < numFailuresAllowed)
+  size_t numTrials;
+  for (numTrials = 0; numTrials < numTrialsAllowed && nodes.size() < limit; ++numTrials)
   {
     LuapeNodePtr node = sampleNode(context, function);
-    if (node && nodes.find(node) == nodes.end())
+    if (node)
       nodes.insert(node);
-    else
-      ++numFailures;
   }
 
-  context.resultCallback(T("numSamplingFailures"), numFailures);
+  context.resultCallback(T("numSamplingFailures"), numTrials - nodes.size());
 
   size_t index = res.size();
   res.resize(index + nodes.size());

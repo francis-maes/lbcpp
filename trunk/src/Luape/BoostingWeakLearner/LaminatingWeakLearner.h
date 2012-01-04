@@ -22,19 +22,23 @@ public:
     : nodeBuilder(nodeBuilder), relativeBudget(relativeBudget), minExamplesForLaminating(minExamplesForLaminating)  {}
   LaminatingWeakLearner() {}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     if (verbose)
       context.enterScope("Laminating");
 
     // make initial weak learners
     std::vector<LuapeNodePtr> weakNodes;
-    nodeBuilder->buildNodes(context, structureLearner->getFunction(), 0, weakNodes);
+    if (verbose)
+      context.enterScope("Generating variables");
+    nodeBuilder->buildNodes(context, problem, 0, weakNodes);
+    if (verbose)
+      context.leaveScope(weakNodes.size());
     if (!weakNodes.size())
       return LuapeNodePtr();
 
     size_t W0, N0;
-    double totalBudget = relativeBudget * structureLearner->getTrainingCache()->getNumSamples();
+    double totalBudget = relativeBudget * problem->getTrainingCache()->getNumSamples();
     determineInitialCounts(totalBudget, weakNodes.size(), examples->size(), W0, N0);
     if (!W0 || !N0)
     {
@@ -78,7 +82,7 @@ public:
       for (size_t i = 0; i < numWeakLearners; ++i)
       {
         LuapeNodePtr weakNode = weakNodesByScore[i].first;
-        double objective = computeWeakObjectiveWithEventualStump(context, structureLearner, weakNode, examplesSubset); // side effect on weakNode (that we do not keep)
+        double objective = computeWeakObjectiveWithEventualStump(context, problem, weakNode, examplesSubset); // side effect on weakNode (that we do not keep)
         weakNodesByScore[i].second = objective;
       }
       effectiveBudget += numWeakLearners * examplesSubset->size();
@@ -89,6 +93,7 @@ public:
       if (verbose)
       {
         context.resultCallback(T("iteration"), iteration);
+        context.resultCallback(T("normalizedWeakObjective"), weakNodesByScore[0].second * examples->size() / examplesSubset->size());
         context.resultCallback(T("numWeakLearners"), numWeakLearners);
         context.resultCallback(T("numExamples"), examplesSubset->size());
         context.resultCallback(T("bestWeakNode"), weakNodesByScore[0].first);
@@ -113,13 +118,13 @@ public:
         examplesSubset->randomlyExpandUsingSource(context, numExamples, examples);
     }
     LuapeNodePtr weakNode = weakNodesByScore[0].first;
-    weakObjective = computeWeakObjectiveWithEventualStump(context, structureLearner, weakNode, examples); // side effect on weakNode
+    bestWeakObjectiveValue = computeWeakObjectiveWithEventualStump(context, problem, weakNode, examples); // side effect on weakNode
     if (verbose)
     {
       context.informationCallback(T("Effective budget: ") + String((int)effectiveBudget) + T(" / ") + String(totalBudget) + T(" normalized = ") + String((double)effectiveBudget / totalBudget));
-      context.leaveScope(weakObjective);
+      context.leaveScope(bestWeakObjectiveValue);
     }
-    return makeContribution(context, structureLearner, weakNode, weakObjective, examples);
+    return weakNode;
   }
 
 protected:

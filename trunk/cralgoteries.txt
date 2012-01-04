@@ -1,13 +1,17 @@
 
- * Store training/validation cache within the LuapeInference
+* New Tree weak learner
+* Move DPOptimizerBasedWeakLearner into lbcpp-core
+
+La suite:
+1) Finish learners refactoring:
+ * Step3: Remove Learner::setFunction() and improve support of Learner::setExamples()
+2) Relaunch experiments of classification, with random sampling with tree depth={1..4}, complexity={2,4,6,8} budget={1,10}, minExamplesToLaminate={5,10,100}
+      check: no active variables -- pure random -- no verbose
+3) Implement ExtraTrees, and eventually standard decision trees
 
 Experiences - Proteins:
  * Nouvelles features: prev et next amino acid de chaque type; delta de ObjectVector[DenseDoubleVector]; local/global histogram
  * Essayer du Totally corrective boosting
-
-Experiences - Classification:
- * faire passer le sampling de weak learners à l'echelle (complexity  4 -- 10)
- * Trois modes: sampling uniforme, relevancy-based sampling des input nodes, relevancy-based sampling de tous les nodes
  
 Lire:
 http://www-connex.lip6.fr/~amini/RelatedWorks/Has99.pdf
