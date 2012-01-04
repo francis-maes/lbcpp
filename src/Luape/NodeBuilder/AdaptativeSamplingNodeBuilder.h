@@ -300,7 +300,7 @@ public:
     return false;
   }
 
-  virtual bool sampleAction(ExecutionContext& context, LuapeGraphBuilderTypeStatePtr typeState, ObjectPtr& res) const
+  virtual bool sampleAction(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeGraphBuilderTypeStatePtr typeState, ObjectPtr& res) const
   {
     std::vector<double> probabilities(3, 0.0);
     double Z = 0.0;

@@ -1,3 +1,8 @@
+Experiments
+ 1- reproduce multiboost
+ 2- like multiboost with laminating 
+ 3- random features
+
  
 La suite:
 2) Relaunch experiments of classification, with random sampling with tree depth={1..4}, complexity={2,4,6,8} budget={1,10}, minExamplesToLaminate={5,10,100}

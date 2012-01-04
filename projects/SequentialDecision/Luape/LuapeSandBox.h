@@ -56,9 +56,16 @@ public:
     if (!classifier->initialize(context, inputClass, labels))
       return false;
 
-    double budget = relativeBudget * numVariables * numTrainingExamples;
-    size_t maxNumWeakNodes = (size_t)(budget / (minExamplesForLaminating * (log2((double)numTrainingExamples) - log2((double)minExamplesForLaminating) + 1)));
-    context.informationCallback(T("Max num weak nodes: ") + String((int)maxNumWeakNodes));
+    double budget = 0.0;
+    size_t maxNumWeakNodes;
+    if (relativeBudget != 0.0)
+    {
+      budget = relativeBudget * numVariables * numTrainingExamples;
+      maxNumWeakNodes = (size_t)(budget / (minExamplesForLaminating * (log2((double)numTrainingExamples) - log2((double)minExamplesForLaminating) + 1)));
+      context.informationCallback(T("Max num weak nodes: ") + String((int)maxNumWeakNodes)); 
+    }
+    else
+      maxNumWeakNodes = numVariables;
 
     LuapeNodeBuilderPtr nodeBuilder;
     if (complexity == 0)
@@ -66,7 +73,8 @@ public:
     else
       //nodeBuilder = exhaustiveSequentialNodeBuilder(complexity);
       //nodeBuilder = adaptativeSamplingNodeBuilder(maxNumWeakNodes, complexity, useVariableRelevancies, useExtendedVariables);
-      nodeBuilder = policyBasedNodeBuilder(randomPolicy(), maxNumWeakNodes, complexity);
+      nodeBuilder = randomSequentialNodeBuilder(maxNumWeakNodes, complexity);
+      //nodeBuilder = policyBasedNodeBuilder(randomPolicy(), maxNumWeakNodes, complexity);
     nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
 
     WeakLearnerPtr weakLearner;
@@ -86,19 +94,13 @@ public:
 
     strongLearner->setVerbose(verbose);
     LuapeBatchLearnerPtr batchLearner = new LuapeBatchLearner(strongLearner);
-    //if (plotFile != File::nonexistent)
-    //  strongLearner->setPlotFile(context, plotFile);
+    if (plotFile != File::nonexistent)
+      strongLearner->setPlotFile(context, plotFile);
     classifier->setBatchLearner(batchLearner);
     classifier->setEvaluator(defaultSupervisedEvaluator());
 
     classifier->train(context, trainData, testData, T("Training"), false);
-    //classifier->evaluate(context, trainData, EvaluatorPtr(), T("Evaluating on training data"));
-    double error = classifier->evaluate(context, testData, EvaluatorPtr(), T("Evaluating on testing data"))->getScoreToMinimize();
-
-//    classifier->getGraph()->saveToGraphML(context, context.getFile(trainFile.getFileNameWithoutExtension() + ".graphml"));
-
-    //testClassifier(context, classifier, inputClass);
-    return error;
+    return true;
   }
 
   void testClassifier(ExecutionContext& context, const LuapeClassifierPtr& classifier, ClassPtr inputsClass)

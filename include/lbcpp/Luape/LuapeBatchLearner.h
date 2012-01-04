@@ -29,11 +29,7 @@ public:
   virtual bool train(ExecutionContext& context, const FunctionPtr& f, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
     const LuapeInferencePtr& function = f.staticCast<LuapeInference>();
-
     function->setSamples(context, trainingData, validationData);
-
-    LuapeLearnerPtr learner = this->learner->cloneAndCast<LuapeLearner>(); // avoid cycle between LuapeInference -> LuapeBatchLearner -> LuapeLearner -> LuapeInference
-
     LuapeNodePtr node = function->getRootNode();
     if (!node)
       node = learner->createInitialNode(context);

@@ -43,7 +43,7 @@ public:
         context.leaveScope(false);
       return LuapeNodePtr();
     }
-    jassert(N0 >= minExamplesForLaminating && N0 <= examples->size() && W0 <= weakNodes.size());
+    jassert(N0 <= examples->size() && W0 <= weakNodes.size());
 
     // create initial examples subset
     size_t effectiveBudget = 0;
@@ -175,10 +175,10 @@ protected:
     while (computeBudget(W0, N0 + 1, Wmin, Nmax, numExamples) < budget && N0 < numExamples)
       ++N0;
 
-    if (N0 < minExamplesForLaminating)
+    if (N0 < minExamplesForLaminating || numExamples < minExamplesForLaminating)
     {
       // we cannot use all weak nodes, select a subset of them
-      N0 = minExamplesForLaminating;
+      N0 = minExamplesForLaminating < numExamples ? minExamplesForLaminating : numExamples;
       W0 = (size_t)(budget / (N0 * (Nmax - log2((double)N0) + 1))); // lower bound on W0
       if (W0 > numWeakNodes)
         W0 = numWeakNodes;

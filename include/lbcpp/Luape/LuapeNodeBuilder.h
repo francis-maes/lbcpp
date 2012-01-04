@@ -50,6 +50,7 @@ typedef ReferenceCountedObjectPtr<StochasticNodeBuilder> StochasticNodeBuilderPt
 extern PolicyPtr treeBasedRandomPolicy();
 extern StochasticNodeBuilderPtr policyBasedNodeBuilder(const PolicyPtr& policy, size_t numNodes, size_t complexity);
 extern StochasticNodeBuilderPtr adaptativeSamplingNodeBuilder(size_t numNodes, size_t complexity, bool useVariableRelevancies, bool useExtendedVariables);
+extern StochasticNodeBuilderPtr randomSequentialNodeBuilder(size_t numNodes, size_t complexity);
 
 class SequentialNodeBuilder : public StochasticNodeBuilder
 {
@@ -57,9 +58,9 @@ public:
   SequentialNodeBuilder(size_t numNodes, size_t complexity);
   SequentialNodeBuilder() {}
 
-  virtual bool sampleAction(ExecutionContext& context, LuapeGraphBuilderTypeStatePtr typeState, ObjectPtr& res) const = 0;
+  virtual bool sampleAction(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeGraphBuilderTypeStatePtr typeState, ObjectPtr& res) const = 0;
 
-  virtual LuapeNodePtr sampleNode(ExecutionContext& context, const LuapeInferencePtr& function);
+  virtual LuapeNodePtr sampleNode(ExecutionContext& context, const LuapeInferencePtr& problem);
 
 protected:
   friend class SequentialNodeBuilderClass;
