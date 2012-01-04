@@ -21,7 +21,7 @@ class SingleProteinOptimizationWorkUnit : public WorkUnit
 public:
   SingleProteinOptimizationWorkUnit() {}
   SingleProteinOptimizationWorkUnit(
-      Protein inputProtein,
+      ProteinPtr inputProtein,
       String outputDirectory,
       int numOutputFiles,
       String referencesDirectory,
@@ -31,7 +31,7 @@ public:
       double finalTemperature,
       size_t numDecreasingSteps,
       size_t numIterations)
-    : inputProtein(new Protein(inputProtein)),
+    : inputProtein(inputProtein),
       outputDirectory(outputDirectory),
       numOutputFiles(numOutputFiles),
       referencesDirectory(referencesDirectory),
@@ -45,22 +45,24 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
+    context.enterScope(T("Treating protein : ") + inputProtein->getName());
     Rosetta ros;
     ros.init(context);
 
-    juce::File outputFile = context.getFile(outputDirectory);
-    if (!outputFile.exists())
-      outputFile.createDirectory();
-
+    File outputFile = context.getFile(outputDirectory);
     File referencesFile = context.getFile(referencesDirectory);
     File moversFile = context.getFile(moversDirectory);
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 
-    VariableVectorPtr inputWorkers = new VariableVector(0);
-    VariableVectorPtr inputMovers = new VariableVector(0);
+    VariableVectorPtr inputWorkers = NULL;
+    VariableVectorPtr inputMovers = NULL;
+    size_t learningPolicy = 0;
     if (referencesFile.exists() && moversFile.exists())
     {
+      inputWorkers = new VariableVector(0);
+      inputMovers = new VariableVector(0);
+      learningPolicy = 3;
       context.enterScope(T("Loading learning examples..."));
       juce::OwnedArray<File> references;
       referencesFile.findChildFiles(references, File::findFiles, false, T("*.pdb"));
@@ -85,7 +87,7 @@ public:
         moversFile.findChildFiles(movers, File::findFiles, false, nameToSearch);
         if (movers.size() > 0)
         {
-          context.informationCallback(T("Name structure : ") + nameToSearch);
+          context.informationCallback(T("Structure : ") + nameToSearch);
           RosettaProteinPtr inWorker = new RosettaProtein(pose, 1, 1, 1, 1);
           PoseMoverPtr inMover = Variable::createFromFile(context, (*movers[0])).getObjectAndCast<
               PoseMover> ();
@@ -95,6 +97,8 @@ public:
               (int)maxLearningSamples, (int)references.size()), T("Intermediate conformations")));
         }
       }
+      if (inputWorkers->getNumElements() == 0)
+        learningPolicy = 0;
       context.leaveScope();
     }
     else if (referencesFile.exists() || moversFile.exists())
@@ -108,13 +112,19 @@ public:
     core::pose::PoseOP currentPose;
     convertProteinToPose(context, inputProtein, currentPose);
 
+    if (currentPose() == NULL)
+    {
+      context.errorCallback(T("Protein not convertible."));
+      return Variable(false);
+    }
+
     double frequenceVerbosity = 0.01;
 
     core::pose::PoseOP initialPose;
     initializeProteinStructure(currentPose, initialPose);
     context.enterScope(T("Optimizing protein : ") + inputProtein->getName());
 
-    RosettaWorkerPtr worker = new RosettaWorker(initialPose);
+    RosettaWorkerPtr worker = new RosettaWorker(initialPose, learningPolicy);
     ContainerPtr addWorkers = inputWorkers;
     ContainerPtr addMovers = inputMovers;
     // learn
@@ -131,6 +141,8 @@ public:
     double finalEnergy = 0;
     worker->energies(&finalEnergy);
     context.leaveScope(finalEnergy);
+
+    context.leaveScope(Variable(T("Done.")));
 
     return Variable(energiesAtIteration);
 
@@ -196,9 +208,8 @@ public:
         context.resultCallback(T("Std Dev energy"), Variable(stdEnergy));
         context.leaveScope(Variable(meanEnergy));
       }
+      context.leaveScope();
     }
-    context.leaveScope();
-    context.informationCallback(T("Done."));
 
     return Variable(energies);
   }
@@ -224,7 +235,7 @@ public:
       ProteinPtr currentProtein = Protein::createFromPDB(context, (*inputProteins[i]));
 
       workUnits->addWorkUnit(new SingleProteinOptimizationWorkUnit(
-          *currentProtein,
+          currentProtein,
           outputDirectory,
           numOutputFiles,
           referencesDirectory,

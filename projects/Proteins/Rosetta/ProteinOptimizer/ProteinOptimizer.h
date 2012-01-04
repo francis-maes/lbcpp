@@ -35,7 +35,7 @@ public:
     frequencyVerbosity = 0.01;
     verbosity = true;
     saveToFile = false;
-    this->numOutputFiles = 1;
+    this->numOutputFiles = -1;
     nameScopesSet = false;
   }
 
