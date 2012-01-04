@@ -9,16 +9,16 @@
 #ifndef LBCPP_LUAPE_LEARNER_BINARY_TREE_WEAK_H_
 # define LBCPP_LUAPE_LEARNER_BINARY_TREE_WEAK_H_
 
-# include <lbcpp/Luape/BoostingWeakLearner.h>
+# include <lbcpp/Luape/WeakLearner.h>
 # include <lbcpp/Luape/LuapeCache.h>
 
 namespace lbcpp
 {
 
-class BinaryTreeWeakLearner : public BoostingWeakLearner
+class BinaryTreeWeakLearner : public WeakLearner
 {
 public:
-  BinaryTreeWeakLearner(BoostingWeakLearnerPtr conditionLearner, BoostingWeakLearnerPtr subLearner)
+  BinaryTreeWeakLearner(WeakLearnerPtr conditionLearner, WeakLearnerPtr subLearner)
     : conditionLearner(conditionLearner), subLearner(subLearner) {}
   BinaryTreeWeakLearner() {}
 
@@ -65,8 +65,8 @@ public:
 protected:
   friend class BinaryTreeWeakLearnerClass;
 
-  BoostingWeakLearnerPtr conditionLearner;
-  BoostingWeakLearnerPtr subLearner;
+  WeakLearnerPtr conditionLearner;
+  WeakLearnerPtr subLearner;
   
   LuapeNodePtr subLearn(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& subExamples, double& weakObjective) const
   {

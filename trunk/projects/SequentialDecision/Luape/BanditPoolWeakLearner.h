@@ -99,7 +99,7 @@ typedef ReferenceCountedObjectPtr<LuapeGraphBuilderBanditPool> LuapeGraphBuilder
 /*
 ** BanditPoolWeakLearner
 */
-class BanditPoolWeakLearner : public BoostingWeakLearner
+class BanditPoolWeakLearner : public WeakLearner
 {
 public:
   BanditPoolWeakLearner(size_t maxBandits = 0, size_t maxDepth = 0)

@@ -14,28 +14,33 @@
     <constructor arguments="const std::vector&lt;LuapeLearnerPtr&gt;&amp; learners"/>
     <variable type="ObjectVector[LuapeLearner]" name="learners"/>
   </class>
+
+  <!-- Boosting -->
+  <class name="BoostingLearner" base="IterativeLearner" abstract="yes">
+    <variable type="WeakLearner" name="weakLearner"/>
+  </class>
   
   <!-- Boosting with weights -->
   <class name="WeightBoostingLearner" base="BoostingLearner" abstract="yes"/>
   <class name="AdaBoostLearner" base="WeightBoostingLearner">
-    <constructor arguments="BoostingWeakLearnerPtr weakLearner, size_t maxIterations" returnType="BoostingLearner"/>
+    <constructor arguments="WeakLearnerPtr weakLearner, size_t maxIterations" returnType="IterativeLearner"/>
   </class>
   <class name="AdaBoostMHLearner" base="WeightBoostingLearner" abstract="yes"/>
   <class name="DiscreteAdaBoostMHLearner" base="AdaBoostMHLearner">
-    <constructor arguments="BoostingWeakLearnerPtr weakLearner, size_t maxIterations" returnType="BoostingLearner"/>
+    <constructor arguments="WeakLearnerPtr weakLearner, size_t maxIterations" returnType="IterativeLearner"/>
   </class>
   <class name="RealAdaBoostMHLearner" base="AdaBoostMHLearner">
-    <constructor arguments="BoostingWeakLearnerPtr weakLearner, size_t maxIterations" returnType="BoostingLearner"/>
+    <constructor arguments="WeakLearnerPtr weakLearner, size_t maxIterations" returnType="IterativeLearner"/>
   </class>
 
   <!-- Gradient Boosting -->
   <class name="GradientBoostingLearner" base="BoostingLearner" abstract="yes"/>
   <class name="L2BoostingLearner" base="GradientBoostingLearner">
-    <constructor arguments="BoostingWeakLearnerPtr weakLearner, size_t maxIterations, double learningRate" returnType="BoostingLearner"/>
+    <constructor arguments="WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate" returnType="IterativeLearner"/>
   </class>
   
   <class name="RankingGradientBoostingLearner" base="GradientBoostingLearner">
-    <constructor arguments="BoostingWeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss" returnType="BoostingLearner"/>
+    <constructor arguments="WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss" returnType="IterativeLearner"/>
     <variable type="RankingLossFunction" name="rankingLoss"/>
   </class>
   

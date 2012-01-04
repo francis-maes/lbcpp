@@ -16,7 +16,7 @@
 namespace lbcpp
 {
 
-class DPOptimizerBasedWeakLearner : public BoostingWeakLearner
+class DPOptimizerBasedWeakLearner : public WeakLearner
 {
 public:
   DPOptimizerBasedWeakLearner(OptimizerPtr optimizer, size_t maxDepth)
@@ -25,7 +25,7 @@ public:
 
   struct Objective : public SimpleUnaryFunction
   {
-    Objective(BoostingWeakLearnerPtr weakLearner,
+    Objective(WeakLearnerPtr weakLearner,
               LuapeInferencePtr problem,
               const IndexSetPtr& examples)
        : SimpleUnaryFunction(luapeGraphBuilderStateClass, doubleType),
@@ -44,7 +44,7 @@ public:
     }
 
   private:
-    BoostingWeakLearnerPtr weakLearner;
+    WeakLearnerPtr weakLearner;
     LuapeInferencePtr problem;
     IndexSetPtr examples;
   };

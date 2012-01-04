@@ -11,13 +11,13 @@
 
 # include "WeightBoostingLearner.h"
 # include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
-# include <lbcpp/Luape/BoostingWeakLearner.h>
+# include <lbcpp/Luape/WeakLearner.h>
 # include <lbcpp/Luape/LuapeCache.h>
 
 namespace lbcpp
 {
 
-class AdaBoostWeakObjective : public BoostingWeakObjective
+class AdaBoostWeakObjective : public WeakLearnerObjective
 {
 public:
   AdaBoostWeakObjective(const DenseDoubleVectorPtr& supervisions, const DenseDoubleVectorPtr& weights)
@@ -98,11 +98,11 @@ typedef ReferenceCountedObjectPtr<AdaBoostWeakObjective> AdaBoostWeakObjectivePt
 class AdaBoostLearner : public WeightBoostingLearner
 {
 public:
-  AdaBoostLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations)
+  AdaBoostLearner(WeakLearnerPtr weakLearner, size_t maxIterations)
     : WeightBoostingLearner(weakLearner, maxIterations) {}
   AdaBoostLearner() {}
 
-  virtual BoostingWeakObjectivePtr createWeakObjective() const
+  virtual WeakLearnerObjectivePtr createWeakObjective() const
     {return new AdaBoostWeakObjective(supervisions, weights);}
 
 //  virtual bool shouldStop(double accuracy) const

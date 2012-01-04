@@ -101,10 +101,10 @@ typedef ReferenceCountedObjectPtr<LuapeProductNode> LuapeProductNodePtr;
 
 #if 0 // FIXME
 
-class ProductWeakLearner : public BoostingWeakLearner
+class ProductWeakLearner : public WeakLearner
 {
 public:
-  ProductWeakLearner(BoostingWeakLearnerPtr baseLearner, size_t numBaseClassifiers)
+  ProductWeakLearner(WeakLearnerPtr baseLearner, size_t numBaseClassifiers)
     : baseLearner(baseLearner), numBaseClassifiers(numBaseClassifiers) {}
   ProductWeakLearner() {}
   
@@ -213,7 +213,7 @@ public:
       // update votes
       LuapeNodePtr baseNodeBackup = res->getBaseNode(index);
       res->setBaseNode(index, weak[0]);
-      BoostingWeakObjectivePtr edgeCalculator = batchLearner->createWeakObjective();
+      WeakLearnerObjectivePtr edgeCalculator = batchLearner->createWeakObjective();
       edgeCalculator->initialize(function, predictions[index], virtualSupervisions, weights);
       votes[index] = edgeCalculator->computeVote();
       voteProduct = computeVoteProduct(votes);
@@ -245,7 +245,7 @@ public:
 protected:
   friend class ProductWeakLearnerClass;
 
-  BoostingWeakLearnerPtr baseLearner;
+  WeakLearnerPtr baseLearner;
   size_t numBaseClassifiers;
 };
 

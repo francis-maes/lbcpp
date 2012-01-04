@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: BoostingWeakLearner.h          | Boosting Weak Learner           |
+| Filename: WeakLearner.h          | Boosting Weak Learner           |
 | Author  : Francis Maes                   |   base classes                  |
 | Started : 22/12/2011 14:54               |                                 |
 `------------------------------------------/                                 |
@@ -19,7 +19,7 @@
 namespace lbcpp
 {
 
-class BoostingWeakObjective : public Object
+class WeakLearnerObjective : public Object
 {
 public:
   virtual void setPredictions(const LuapeSampleVectorPtr& predictions) = 0;
@@ -31,14 +31,14 @@ public:
   double findBestThreshold(ExecutionContext& context, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose = false);
 };
 
-typedef ReferenceCountedObjectPtr<BoostingWeakObjective> BoostingWeakObjectivePtr;
+typedef ReferenceCountedObjectPtr<WeakLearnerObjective> WeakLearnerObjectivePtr;
 
-class BoostingWeakLearner : public LuapeLearner
+class WeakLearner : public LuapeLearner
 {
 public:
-  BoostingWeakLearner() : bestWeakObjectiveValue(-DBL_MAX) {}
+  WeakLearner() : bestWeakObjectiveValue(-DBL_MAX) {}
 
-  void setWeakObjective(const BoostingWeakObjectivePtr& weakObjective)
+  void setWeakObjective(const WeakLearnerObjectivePtr& weakObjective)
     {this->weakObjective = weakObjective;}
 
   double computeWeakObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeNodePtr& weakNode, const IndexSetPtr& indices) const;
@@ -49,16 +49,16 @@ public:
     {return bestWeakObjectiveValue;}
 
 protected:
-  BoostingWeakObjectivePtr weakObjective;
+  WeakLearnerObjectivePtr weakObjective;
   double bestWeakObjectiveValue;
 };
 
-typedef ReferenceCountedObjectPtr<BoostingWeakLearner> BoostingWeakLearnerPtr;
+typedef ReferenceCountedObjectPtr<WeakLearner> WeakLearnerPtr;
 
-extern BoostingWeakLearnerPtr exactWeakLearner(LuapeNodeBuilderPtr nodeBuilder);
-extern BoostingWeakLearnerPtr laminatingWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating = 5);
-extern BoostingWeakLearnerPtr banditBasedWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize = 0.01);
-extern BoostingWeakLearnerPtr binaryTreeWeakLearner(BoostingWeakLearnerPtr conditionLearner, BoostingWeakLearnerPtr subLearner);
+extern WeakLearnerPtr exactWeakLearner(LuapeNodeBuilderPtr nodeBuilder);
+extern WeakLearnerPtr laminatingWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating = 5);
+extern WeakLearnerPtr banditBasedWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize = 0.01);
+extern WeakLearnerPtr binaryTreeWeakLearner(WeakLearnerPtr conditionLearner, WeakLearnerPtr subLearner);
 
 }; /* namespace lbcpp */
 

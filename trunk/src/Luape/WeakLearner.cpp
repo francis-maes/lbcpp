@@ -1,27 +1,27 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: BoostingWeakLearner.cpp        | Boosting Weak Learner           |
+| Filename: WeakLearner.cpp        | Boosting Weak Learner           |
 | Author  : Francis Maes                   |   base classes                  |
 | Started : 22/12/2011 14:56               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp/Luape/BoostingWeakLearner.h>
+#include <lbcpp/Luape/WeakLearner.h>
 #include <lbcpp/Luape/LuapeCache.h>
 #include "NodeBuilder/NodeBuilderTypeSearchSpace.h"
 #include "Function/SpecialLuapeFunctions.h" // for StumpLuapeFunction
 using namespace lbcpp;
 
 /*
-** BoostingWeakObjective
+** WeakLearnerObjective
 */
-double BoostingWeakObjective::compute(const LuapeSampleVectorPtr& predictions)
+double WeakLearnerObjective::compute(const LuapeSampleVectorPtr& predictions)
 {
   setPredictions(predictions);
   return computeObjective();
 }
 
-double BoostingWeakObjective::findBestThreshold(ExecutionContext& context, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose)
+double WeakLearnerObjective::findBestThreshold(ExecutionContext& context, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose)
 {
   setPredictions(LuapeSampleVector::createConstant(indices, Variable(false, booleanType)));
 
@@ -70,9 +70,9 @@ double BoostingWeakObjective::findBestThreshold(ExecutionContext& context, const
 }
 
 /*
-** BoostingWeakLearner
+** WeakLearner
 */
-double BoostingWeakLearner::computeWeakObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeNodePtr& weakNode, const IndexSetPtr& examples) const
+double WeakLearner::computeWeakObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeNodePtr& weakNode, const IndexSetPtr& examples) const
 {
   jassert(examples->size());
   if (weakNode->getType() == booleanType)
@@ -87,14 +87,14 @@ double BoostingWeakLearner::computeWeakObjectiveWithEventualStump(ExecutionConte
   }
 }
 
-double BoostingWeakLearner::computeWeakObjective(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& weakNode, const IndexSetPtr& indices) const
+double WeakLearner::computeWeakObjective(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& weakNode, const IndexSetPtr& indices) const
 {
   LuapeSampleVectorPtr weakPredictions = problem->getTrainingCache()->getSamples(context, weakNode, indices);
   jassert(weakNode->getType() == booleanType || weakNode->getType() == probabilityType);
   return weakObjective->compute(weakPredictions);
 }
 
-double BoostingWeakLearner::computeWeakObjectiveWithStump(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& numberNode, const IndexSetPtr& indices, double& bestThreshold) const
+double WeakLearner::computeWeakObjectiveWithStump(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& numberNode, const IndexSetPtr& indices, double& bestThreshold) const
 {
   jassert(indices->size());
   double bestScore;

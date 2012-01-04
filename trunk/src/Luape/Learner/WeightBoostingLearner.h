@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_LEARNER_WEIGHT_BOOSTING_H_
 # define LBCPP_LUAPE_LEARNER_WEIGHT_BOOSTING_H_
 
-# include <lbcpp/Luape/LuapeLearner.h>
+# include "BoostingLearner.h"
 
 namespace lbcpp
 {
@@ -17,7 +17,7 @@ namespace lbcpp
 class WeightBoostingLearner : public BoostingLearner
 {
 public:
-  WeightBoostingLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations)
+  WeightBoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations)
    : BoostingLearner(weakLearner, maxIterations) {}
   WeightBoostingLearner() {}
 

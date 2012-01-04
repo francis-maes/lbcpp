@@ -16,7 +16,7 @@
 # include <lbcpp/Function/IterationFunction.h>
 # include <lbcpp/Luape/LuapeBatchLearner.h>
 # include <lbcpp/Luape/LuapeLearner.h>
-# include <lbcpp/Luape/BoostingWeakLearner.h>
+# include <lbcpp/Luape/WeakLearner.h>
 # include <lbcpp/Learning/LossFunction.h>
 # include "../Core/SinglePlayerMCTSOptimizer.h"
 
@@ -69,7 +69,7 @@ public:
       nodeBuilder = policyBasedNodeBuilder(randomPolicy(), maxNumWeakNodes, complexity);
     nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
 
-    BoostingWeakLearnerPtr weakLearner;
+    WeakLearnerPtr weakLearner;
     if (relativeBudget > 0.0)
     {
       weakLearner = laminatingWeakLearner(nodeBuilder, relativeBudget * numVariables, minExamplesForLaminating);
@@ -78,7 +78,7 @@ public:
     else
       weakLearner = exactWeakLearner(nodeBuilder);
 
-    BoostingWeakLearnerPtr conditionLearner = weakLearner;
+    WeakLearnerPtr conditionLearner = weakLearner;
     for (size_t i = 1; i < treeDepth; ++i)
       weakLearner = binaryTreeWeakLearner(conditionLearner, weakLearner);
 

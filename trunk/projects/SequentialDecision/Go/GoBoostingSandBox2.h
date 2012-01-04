@@ -12,7 +12,7 @@
 # include "GoProblem.h"
 # include "../Luape/BanditPoolWeakLearner.h"
 # include <lbcpp/Luape/LuapeBatchLearner.h>
-# include <lbcpp/Luape/BoostingWeakLearner.h>
+# include <lbcpp/Luape/WeakLearner.h>
 
 # include "Perception/GoStatePerception.h"
 # include "Perception/GoBoardPositionPerception.h"
@@ -59,8 +59,8 @@ public:
 
     // configure gradient boosting
     LuapeNodeBuilderPtr nodeBuilder = policyBasedNodeBuilder(treeBasedRandomPolicy(), budget, maxDepth);
-    BoostingWeakLearnerPtr conditionLearner = exactWeakLearner(nodeBuilder);
-    BoostingWeakLearnerPtr weakLearner = conditionLearner;
+    WeakLearnerPtr conditionLearner = exactWeakLearner(nodeBuilder);
+    WeakLearnerPtr weakLearner = conditionLearner;
     for (size_t i = 1; i < treeDepth; ++i)
       weakLearner = binaryTreeWeakLearner(conditionLearner, weakLearner);
     learningMachine->setBatchLearner(new LuapeBatchLearner(l2BoostingLearner(weakLearner, numIterations, learningRate)));
