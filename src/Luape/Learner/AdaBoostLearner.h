@@ -26,6 +26,14 @@ public:
     jassert(supervisions->getNumValues() == weights->getNumValues());
   }
 
+  virtual Variable computeVote(const IndexSetPtr& indices) const
+  {
+    ScalarVariableMean res;
+    for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
+      res.push(supervisions->getValue(*it), weights->getValue(*it));
+    return Variable(res.getMean(), probabilityType);
+  }
+
   virtual void setPredictions(const LuapeSampleVectorPtr& predictions)
   {
     this->predictions = predictions;

@@ -687,6 +687,7 @@ SET(LBCPP_LUAPE_NODE_BUILDER_SOURCES
 SET(LBCPP_LUAPE_LEARNER_SOURCES
   Luape/Learner/GradientDescentLearner.h
   Luape/Learner/GenerateTestNodesLearner.h
+  Luape/Learner/TreeLearner.h
   Luape/Learner/LuapeLearnerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeLearnerLibrary.cpp
 )

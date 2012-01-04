@@ -20,6 +20,14 @@ public:
   L2WeakLearnerObjective(const DenseDoubleVectorPtr& targets)
     : targets(targets) {}
 
+  virtual Variable computeVote(const IndexSetPtr& indices) const
+  {
+    ScalarVariableMean res;
+    for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
+      res.push(targets->getValue(*it));
+    return res.getMean();
+  }
+
   virtual void setPredictions(const LuapeSampleVectorPtr& predictions)
   {
     this->predictions = predictions;
