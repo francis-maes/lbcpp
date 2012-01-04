@@ -4,8 +4,6 @@
   
   <!-- General -->
   <class name="DistributableWorkUnit" base="WorkUnit" abstract="yes">
-    <variable type="String" name="name"/>
-    <variable type="CompositeWorkUnit" name="workUnits"/>
   </class>
   
   <class name="DistributeToClusterWorkUnit" base="WorkUnit">

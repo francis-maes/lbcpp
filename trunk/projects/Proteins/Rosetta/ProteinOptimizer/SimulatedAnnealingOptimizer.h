@@ -114,8 +114,6 @@ public:
       englobingScopesNames.push_back(T("Minimal energy"));
       englobingScopesNames.push_back(T("Temporary energy"));
       englobingScopesNames.push_back(T("Temperature"));
-      englobingScopesNames.push_back(T("Minimal energy (log10)"));
-      englobingScopesNames.push_back(T("Temporary energy (log10)"));
       englobingScopesNames.push_back(T("Ratio accepted movers"));
       englobingScopesNames.push_back(T("Ratio energy decreasing movers"));
       initializeCallbacks(context, englobingScopesNames, minimumEnergy);
@@ -123,10 +121,6 @@ public:
       resultCallbackValues.push_back(Variable(minimumEnergy));
       resultCallbackValues.push_back(Variable(temporaryEnergy));
       resultCallbackValues.push_back(Variable(currentTemperature));
-      double logMinimumEnergy = minimumEnergy >= 1 ? log10(minimumEnergy) : -log10(std::abs(minimumEnergy - 2));
-      double logTemporaryEnergy = temporaryEnergy >= 1 ? log10(temporaryEnergy) : -log10(std::abs(temporaryEnergy - 2));
-      resultCallbackValues.push_back(Variable(logMinimumEnergy));
-      resultCallbackValues.push_back(Variable(logTemporaryEnergy));
       resultCallbackValues.push_back(Variable((double)1.0));
       resultCallbackValues.push_back(Variable((double)1.0));
       callback(context, resultCallbackValues, Variable(minimumEnergy), maxSteps);
@@ -193,17 +187,15 @@ public:
         resultCallbackValues.at(1) = Variable(minimumEnergy);
         resultCallbackValues.at(2) = Variable(currentEnergy);
         resultCallbackValues.at(3) = Variable(currentTemperature);
-        resultCallbackValues.at(4) = Variable(log10(minimumEnergy));
-        resultCallbackValues.at(5) = Variable(log10(currentEnergy));
         if (numMoversSinceLastCheck == 0)
-          resultCallbackValues.at(6) = Variable((double)0.0);
+          resultCallbackValues.at(4) = Variable((double)0.0);
         else
-          resultCallbackValues.at(6) = Variable((double)numAcceptedMovers
+          resultCallbackValues.at(4) = Variable((double)numAcceptedMovers
               / (double)numMoversSinceLastCheck);
         if (numAcceptedMovers == 0)
-          resultCallbackValues.at(7) = Variable((double)0.0);
+          resultCallbackValues.at(5) = Variable((double)0.0);
         else
-          resultCallbackValues.at(7) = Variable((double)numDecreasingMovers
+          resultCallbackValues.at(5) = Variable((double)numDecreasingMovers
               / (double)numAcceptedMovers);
         callback(context, resultCallbackValues, Variable(minimumEnergy), maxSteps);
         numMoversSinceLastCheck = 0;

@@ -348,8 +348,8 @@ public:
   {
     //TypePtr doubleVectorType = features->getOutputType();
     //EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(doubleVectorType);
-    VectorPtr inputs;
-    if (learningPolicy > 1)
+    VectorPtr inputs = NULL;
+    if ((learningPolicy > 1) && (inputProteins.get() != NULL) && (inputMovers.get() != NULL))
     {
       inputs = vector(features->getOutputType());
       for (size_t i = 0; i < inputProteins->getNumElements(); i++)

@@ -94,7 +94,7 @@ public:
     core::pose::PoseOP currentPose;
 
     juce::OwnedArray<File> results;
-    inputFile.findChildFiles(results, File::findFiles, false, T("*.xml"));
+    inputFile.findChildFiles(results, File::findFiles, false, T("*.pdb"));
 
     double frequenceVerbosity = 0.01;
     std::vector<ScalarVariableMeanAndVariancePtr> meansAndVariances;
@@ -105,7 +105,7 @@ public:
     {
       context.progressCallback(new ProgressionState((size_t)(i + 1), results.size(), T("Proteins")));
 
-      ProteinPtr currentProtein = Protein::createFromXml(context, (*results[i]));
+      ProteinPtr currentProtein = Protein::createFromPDB(context, (*results[i]));
       String currentName = currentProtein->getName();
 
       convertProteinToPose(context, currentProtein, currentPose);
