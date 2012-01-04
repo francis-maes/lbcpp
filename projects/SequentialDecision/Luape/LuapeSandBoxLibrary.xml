@@ -18,6 +18,7 @@
     <variable type="PositiveInteger" name="treeDepth"/>
     <variable type="PositiveInteger" name="complexity"/>
     <variable type="Double" name="relativeBudget"/>
+    <variable type="Boolean" name="laminating"/>
     <variable type="PositiveInteger" name="numIterations"/>
     <variable type="PositiveInteger" name="minExamplesForLaminating"/>
     <variable type="Boolean" name="useVariableRelevancies"/>

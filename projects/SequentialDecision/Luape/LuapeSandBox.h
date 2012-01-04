@@ -25,7 +25,7 @@ namespace lbcpp
 class LuapeSandBox : public WorkUnit
 {
 public:
-  LuapeSandBox() : maxExamples(0), treeDepth(1), complexity(5), relativeBudget(10.0), numIterations(1000),
+  LuapeSandBox() : maxExamples(0), treeDepth(1), complexity(5), relativeBudget(10.0), laminating(false), numIterations(1000),
                    minExamplesForLaminating(5), useVariableRelevancies(false), useExtendedVariables(false), verbose(false) {}
 
   virtual Variable run(ExecutionContext& context)
@@ -55,16 +55,20 @@ public:
     if (!classifier->initialize(context, inputClass, labels))
       return false;
 
-    double budget = 0.0;
     size_t maxNumWeakNodes;
     if (relativeBudget != 0.0)
     {
-      budget = relativeBudget * numVariables * numTrainingExamples;
-      maxNumWeakNodes = (size_t)(budget / (minExamplesForLaminating * (log2((double)numTrainingExamples) - log2((double)minExamplesForLaminating) + 1)));
+      if (laminating)
+      {
+        double budget = relativeBudget * numVariables * numTrainingExamples;
+        maxNumWeakNodes = (size_t)(budget / (minExamplesForLaminating * (log2((double)numTrainingExamples) - log2((double)minExamplesForLaminating) + 1)));
+      }
+      else
+        maxNumWeakNodes = (size_t)(relativeBudget * numVariables + 0.5);
       context.informationCallback(T("Max num weak nodes: ") + String((int)maxNumWeakNodes)); 
     }
     else
-      maxNumWeakNodes = numVariables;
+      maxNumWeakNodes = 0;
 
     LuapeNodeBuilderPtr nodeBuilder;
     if (complexity == 0)
@@ -74,10 +78,12 @@ public:
       //nodeBuilder = adaptativeSamplingNodeBuilder(maxNumWeakNodes, complexity, useVariableRelevancies, useExtendedVariables);
       nodeBuilder = randomSequentialNodeBuilder(maxNumWeakNodes, complexity);
       //nodeBuilder = policyBasedNodeBuilder(randomPolicy(), maxNumWeakNodes, complexity);
-    nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
+
+ // -> constant for boosting ->
+    //nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
 
     LuapeLearnerPtr weakLearner;
-    if (relativeBudget > 0.0)
+    if (laminating)
     {
       weakLearner = laminatingWeakLearner(nodeBuilder, relativeBudget * numVariables, minExamplesForLaminating);
       // weakLearner = banditBasedWeakLearner(nodeBuilder, relativeBudget * numVariables, miniBatchRelativeSize);
@@ -88,12 +94,14 @@ public:
 
     size_t minExamplesToSplit = 2;
     LuapeLearnerPtr learner = treeLearner(new ClassificationLearningObjective(), weakLearner, minExamplesToSplit, treeDepth);
+    learner->setVerbose(verbose);
+    learner = ensembleLearner(learner, numIterations);
+    learner->setVerbose(true);
     //IterativeLearnerPtr learner = discreteAdaBoostMHLearner(weakLearner, numIterations, treeDepth);
     //MultiClassLossFunctionPtr lossFunction = oneAgainstAllMultiClassLossFunction(hingeDiscriminativeLossFunction());
     //logBinomialMultiClassLossFunction()
     //LuapeLearnerPtr strongLearner = compositeLearner(generateTestNodesLearner(nodeBuilder), classifierSGDLearner(lossFunction, constantIterationFunction(0.1), numIterations));
-
-    learner->setVerbose(verbose);
+    
     LuapeBatchLearnerPtr batchLearner = new LuapeBatchLearner(learner);
     if (plotFile != File::nonexistent && learner.isInstanceOf<IterativeLearner>())
       learner.staticCast<IterativeLearner>()->setPlotFile(context, plotFile);
@@ -139,6 +147,7 @@ protected:
   size_t treeDepth;
   size_t complexity;
   double relativeBudget;
+  bool laminating;
   size_t numIterations;
   size_t minExamplesForLaminating;
   bool useVariableRelevancies;

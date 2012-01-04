@@ -20,9 +20,6 @@ class LearningObjective : public Object
 public:
   LearningObjective() : upToDate(false) {}
 
-  // LuapeFunctionNodePtr computeBestStump(const IndexSetPtr& indices, const LuapeNodePtr& numberNode, double& score) (== findBestThreshold)
-  // LuapeConstantNodePtr computeBestConstant(const IndexSetPtr& indices, double& score)  (== computeVote)
-
   virtual void initialize(const LuapeInferencePtr& problem)
     {setSupervisions(problem->getTrainingSupervisions());}
 
@@ -30,18 +27,20 @@ public:
   virtual void setWeights(const DenseDoubleVectorPtr& weights) = 0;
   virtual void setPredictions(const LuapeSampleVectorPtr& predictions) = 0;
 
-  virtual Variable computeVote(const IndexSetPtr& indices) = 0;
-
+  virtual void update() = 0;
   virtual void flipPrediction(size_t index) = 0; // flip from negative prediction to positive prediction
-
   virtual double computeObjective() = 0;
 
-  // these two functions have side effects on the currently stored predictions
-  double compute(const LuapeSampleVectorPtr& predictions);
-  double computeObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeNodePtr& weakNode, const IndexSetPtr& examples);
-  double findBestThreshold(ExecutionContext& context, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose = false);
+  // LuapeFunctionNodePtr computeBestStump(const IndexSetPtr& indices, const LuapeNodePtr& numberNode, double& score) (== findBestThreshold)
+  // LuapeConstantNodePtr computeBestConstant(const IndexSetPtr& indices, double& score)  (== computeVote)
 
-  virtual void update() = 0;
+  virtual Variable computeVote(const IndexSetPtr& indices) = 0;
+
+  // these three functions have side effects on the currently stored predictions
+  double compute(const LuapeSampleVectorPtr& predictions);
+
+  double computeObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeNodePtr& weakNode, const IndexSetPtr& examples);
+  double findBestThreshold(ExecutionContext& context, const LuapeNodePtr& numberNode, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose = false);
 
   void ensureIsUpToDate();
   void invalidate()

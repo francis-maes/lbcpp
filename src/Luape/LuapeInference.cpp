@@ -40,6 +40,23 @@ void LuapeInference::setLearner(const LuapeLearnerPtr& learner, bool verbose)
   setBatchLearner(new LuapeBatchLearner(learner));
 }
 
+void LuapeInference::setRootNode(ExecutionContext& context, const LuapeNodePtr& node)
+{
+  if (node != this->node)
+  {
+    if (this->node)
+    {
+      trainingCache->uncacheNode(context, this->node);
+      if (validationCache)
+        validationCache->uncacheNode(context, this->node);
+    }
+    this->node = node;
+    trainingCache->cacheNode(context, node, VectorPtr(), "Prediction node", false);
+    if (validationCache)
+      validationCache->cacheNode(context, node, VectorPtr(), "Prediction node", false);
+  }
+}
+
 LuapeGraphBuilderTypeSearchSpacePtr LuapeInference::getSearchSpace(ExecutionContext& context, size_t complexity) const
 {
   LuapeInference* pthis = const_cast<LuapeInference* >(this);
@@ -75,12 +92,8 @@ void LuapeInference::setSamples(ExecutionContext& context, const std::vector<Obj
 {
   supervision = new LuapeInputNode(trainingData[0]->getVariableType(1), T("supervision"));
   trainingCache = createSamplesCache(context, trainingData);
-  trainingCache->cacheNode(context, node, VectorPtr(), "Prediction node", false);
   if (validationData.size())
-  {
     validationCache = createSamplesCache(context, validationData);
-    validationCache->cacheNode(context, node, VectorPtr(), "Prediction node", false);
-  }
 }
 
 std::vector<LuapeSamplesCachePtr> LuapeInference::getSamplesCaches() const

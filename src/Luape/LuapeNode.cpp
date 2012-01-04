@@ -130,7 +130,7 @@ LuapeSampleVectorPtr LuapeFunctionNode::compute(ExecutionContext& context, const
 /*
 ** LuapeTestNode
 */
-LuapeTestNode::LuapeTestNode(const LuapeNodePtr& conditionNode, const LuapeNodePtr& successNode, const LuapeNodePtr& failureNode, const LuapeNodePtr& missingNode)
+LuapeTestNode::LuapeTestNode(const LuapeNodePtr& conditionNode, const LuapeNodePtr& failureNode, const LuapeNodePtr& successNode, const LuapeNodePtr& missingNode)
   : LuapeNode(successNode->getType()), conditionNode(conditionNode), failureNode(failureNode), successNode(successNode), missingNode(missingNode)
 {
 }

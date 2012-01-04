@@ -28,15 +28,21 @@ public:
 
   virtual bool train(ExecutionContext& context, const FunctionPtr& f, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
-    const LuapeInferencePtr& function = f.staticCast<LuapeInference>();
-    function->setSamples(context, trainingData, validationData);
-    LuapeNodePtr node = function->getRootNode();
+    const LuapeInferencePtr& problem = f.staticCast<LuapeInference>();
+    problem->setSamples(context, trainingData, validationData);
+    
+    // create initial node
+    LuapeNodePtr node = problem->getRootNode();
     if (!node)
-      node = learner->createInitialNode(context, function);
-    node = learner->learn(context, node, function, function->getTrainingCache()->getAllIndices());
+      node = learner->createInitialNode(context, problem);
+    if (node)
+      problem->setRootNode(context, node);
+
+    // learn
+    node = learner->learn(context, node, problem, problem->getTrainingCache()->getAllIndices());
     if (!node)
       return false;
-    function->setRootNode(node);
+    problem->setRootNode(context, node);
     return true;
   }
 

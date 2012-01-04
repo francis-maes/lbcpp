@@ -84,8 +84,7 @@ public:
   const LuapeNodePtr& getRootNode() const
     {return node;}
 
-  void setRootNode(const LuapeNodePtr& node)
-    {this->node = node;}
+  void setRootNode(ExecutionContext& context, const LuapeNodePtr& node);
 
   /*
   ** Compute
