@@ -33,19 +33,8 @@ public:
   virtual double getSupervision(const ObjectPtr& example) const
   {
     Variable supervision = example->getVariable(1);
-    if (supervision.isEnumeration())
-      return supervision.toDouble();
-    else
-    {
-      DoubleVectorPtr vector = supervision.dynamicCast<DoubleVector>();
-      if (vector)
-        return (double)vector->getIndexOfMaximumValue();
-      else
-      {
-        jassert(false);
-        return 0.0;
-      }
-    }
+    size_t res;
+    return lbcpp::convertSupervisionVariableToEnumValue(supervision, res) ? res : -1;
   }
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)

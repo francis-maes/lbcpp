@@ -22,16 +22,6 @@ LuapeInference::LuapeInference(LuapeUniversePtr universe)
     this->universe = new LuapeUniverse();
 }
 
-LuapeSamplesCachePtr LuapeInference::createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data) const
-{
-  size_t n = data.size();
-  LuapeSamplesCachePtr res = new LuapeSamplesCache(universe, inputs, n, 512); // default: 512 Mb cache
-  for (size_t i = 0; i < n; ++i)
-    res->setInputObject(inputs, i, data[i]->getVariable(0).getObject());
-  res->recomputeCacheSize();
-  return res;
-}
-
 Variable LuapeInference::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
   return computeNode(context, inputs[0].getObject());
@@ -66,8 +56,24 @@ LuapeGraphBuilderTypeSearchSpacePtr LuapeInference::getSearchSpace(ExecutionCont
   return res;
 }
 
+LuapeSamplesCachePtr LuapeInference::createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data) const
+{
+  size_t n = data.size();
+  LuapeSamplesCachePtr res = new LuapeSamplesCache(universe, inputs, n, 512); // default: 512 Mb cache
+  VectorPtr supervisionValues = vector(data[0]->getVariableType(1), n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    res->setInputObject(inputs, i, data[i]->getVariable(0).getObject());
+    supervisionValues->setElement(i, data[i]->getVariable(1));
+  }
+  res->cacheNode(context, supervision, supervisionValues, T("Supervision"));
+  res->recomputeCacheSize();
+  return res;
+}
+
 void LuapeInference::setSamples(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
 {
+  supervision = new LuapeInputNode(trainingData[0]->getVariableType(1), T("supervision"));
   trainingCache = createSamplesCache(context, trainingData);
   trainingCache->cacheNode(context, node, VectorPtr(), "Prediction node", false);
   if (validationData.size())
@@ -86,25 +92,6 @@ std::vector<LuapeSamplesCachePtr> LuapeInference::getSamplesCaches() const
   return res;
 }
 
-VectorPtr LuapeInference::getTrainingPredictions() const
-{
-  LuapeSampleVectorPtr samples = trainingCache->getSamples(defaultExecutionContext(), node, trainingCache->getAllIndices());
-  jassert(samples->getImplementation() == LuapeSampleVector::cachedVectorImpl);
-  return samples->getVector();
-}
-
-VectorPtr LuapeInference::getValidationPredictions() const
-{
-  if (validationCache)
-  {
-    LuapeSampleVectorPtr samples = validationCache->getSamples(defaultExecutionContext(), node, validationCache->getAllIndices());
-    jassert(samples->getImplementation() == LuapeSampleVector::cachedVectorImpl);
-    return samples->getVector();
-  }
-  else
-    return VectorPtr();
-}
-
 /*
 ** LuapeRegressor
 */
@@ -120,16 +107,17 @@ TypePtr LuapeRegressor::initializeFunction(ExecutionContext& context, const std:
   return doubleType;
 }
 
-double LuapeRegressor::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const
+double LuapeRegressor::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& supervisions) const
 {
   // compute RMSE
   const DenseDoubleVectorPtr& pred = predictions.staticCast<DenseDoubleVector>();
+  const DenseDoubleVectorPtr& sup = supervisions.staticCast<DenseDoubleVector>();
   size_t n = pred->getNumValues();
-  jassert(n == data.size());
+  jassert(n == sup->getNumValues());
   double res = 0.0;
   for (size_t i = 0; i < n; ++i)
   {
-    double delta = pred->getValue(i) - data[i].staticCast<Pair>()->getSecond().getDouble();
+    double delta = pred->getValue(i) - sup->getValue(i);
     res += delta * delta;
   }
   return sqrt(res / (double)n);
@@ -157,16 +145,16 @@ Variable LuapeBinaryClassifier::computeFunction(ExecutionContext& context, const
   return Variable(1.0 / (1.0 + exp(-activation)), probabilityType);
 }
 
-double LuapeBinaryClassifier::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const
+double LuapeBinaryClassifier::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& supervisions) const
 {
   const DenseDoubleVectorPtr& pred = predictions.staticCast<DenseDoubleVector>();
   size_t n = pred->getNumValues();
-  jassert(n == data.size());
+  jassert(n == supervisions->getNumElements());
   size_t numErrors = 0;
   for (size_t i = 0; i < n; ++i)
   {
     bool predicted = (pred->getValue(i) > 0);
-    Variable supervision = data[i]->getVariable(1);
+    Variable supervision = supervisions->getElement(i);
     bool correct;
     if (!lbcpp::convertSupervisionVariableToBoolean(supervision, correct))
       jassert(false);
@@ -220,7 +208,7 @@ Variable LuapeClassifier::computeFunction(ExecutionContext& context, const Varia
   return probabilities;
 }
 
-double LuapeClassifier::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const
+double LuapeClassifier::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& supervisions) const
 {
   ObjectVectorPtr pred = predictions.staticCast<ObjectVector>();
   size_t numErrors = 0;
@@ -228,14 +216,13 @@ double LuapeClassifier::evaluatePredictions(ExecutionContext& context, const Vec
   for (size_t i = 0; i < n; ++i)
   {
     size_t j = pred->getAndCast<DenseDoubleVector>(i)->getIndexOfMaximumValue();
-    Variable supervision = data[i]->getVariable(1);
+    Variable supervision = supervisions->getElement(i);
     size_t correctClass;
-    if (supervision.isInteger())
-      correctClass = (size_t)supervision.getInteger();
-    else
-      correctClass = (size_t)supervision.getObjectAndCast<DoubleVector>()->getIndexOfMaximumValue();
-    if (j != correctClass)
-      ++numErrors;
+    if (lbcpp::convertSupervisionVariableToEnumValue(supervision, correctClass))
+    {
+      if (j != correctClass)
+        ++numErrors;
+    }
   }
   return numErrors / (double)n;
 }
@@ -270,31 +257,53 @@ Variable LuapeRanker::computeFunction(ExecutionContext& context, const Variable*
   return scores;
 }
 
-LuapeSamplesCachePtr LuapeRanker::createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data) const
+LuapeSamplesCachePtr LuapeRanker::createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data, std::vector<size_t>& exampleSizes) const
 {
   size_t numSamples = 0;
+  
+  exampleSizes.resize(data.size());
   for (size_t i = 0; i < data.size(); ++i)
   {
     const PairPtr& rankingExample = data[i].staticCast<Pair>();
     const ContainerPtr& alternatives = rankingExample->getFirst().getObjectAndCast<Container>();
-    numSamples += alternatives->getNumElements();
+    size_t n = alternatives->getNumElements();;
+    exampleSizes[i] = n;
+    numSamples += n;
   }
   
   LuapeSamplesCachePtr res = new LuapeSamplesCache(universe, inputs, numSamples);
+  DenseDoubleVectorPtr supervisionValues = new DenseDoubleVector(numSamples, 0.0);
   size_t index = 0;
   for (size_t i = 0; i < data.size(); ++i)
   {
-    const PairPtr& rankingExample = data[i].staticCast<Pair>();
-    const ContainerPtr& alternatives = rankingExample->getFirst().getObjectAndCast<Container>();
-    size_t n = alternatives->getNumElements();
+    const ObjectPtr& rankingExample = data[i];
+    const ContainerPtr& alternatives = rankingExample->getVariable(0).getObjectAndCast<Container>();
+    const DenseDoubleVectorPtr& costs = rankingExample->getVariable(1).getObjectAndCast<DenseDoubleVector>();
+    size_t n = exampleSizes[i];
     for (size_t j = 0; j < n; ++j)
-      res->setInputObject(inputs, index++, alternatives->getElement(j).getObject());
+    {
+      res->setInputObject(inputs, index, alternatives->getElement(j).getObject());
+      supervisionValues->setValue(index, costs->getValue(j));
+      ++index;
+    }
   }
+  res->cacheNode(context, supervision, supervisionValues, T("Supervision"));
   res->recomputeCacheSize();
   return res;
 }
 
-double LuapeRanker::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const
+void LuapeRanker::setSamples(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
+{
+  supervision = new LuapeInputNode(trainingData[0]->getVariableType(1), T("supervision"));
+  trainingCache = createSamplesCache(context, trainingData, trainingExampleSizes);
+  trainingCache->cacheNode(context, node, VectorPtr(), "Prediction node", false);
+  if (validationData.size())
+  {
+    validationCache = createSamplesCache(context, validationData, validationExampleSizes);
+    validationCache->cacheNode(context, node, VectorPtr(), "Prediction node", false);
+  }
+}
+double LuapeRanker::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& supervisions) const
 {
   jassert(false); // not yet implemented
   return 0.0;

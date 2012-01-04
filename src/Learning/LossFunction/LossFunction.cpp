@@ -79,14 +79,14 @@ void MultiClassLossFunction::computeScalarVectorFunction(const DenseDoubleVector
   jassert(classes);
   size_t numClasses = classes->getNumElements();
   jassert(numClasses > 1);
-  int correct;
-  if (otherInputs[0].isInteger())
-    correct = otherInputs[0].getInteger();
-  else
-    correct = (int)otherInputs[0].getObjectAndCast<DoubleVector>()->getIndexOfMaximumValue();
-
-  jassert(correct >= 0 && correct < (int)numClasses);
-  computeMultiClassLoss(scores, (size_t)correct, numClasses, output, gradientTarget, gradientWeight);
+  size_t correct;
+  if (!lbcpp::convertSupervisionVariableToEnumValue(otherInputs[0], correct))
+  {
+    jassertfalse;
+    return;
+  }
+  jassert(correct < numClasses);
+  computeMultiClassLoss(scores, correct, numClasses, output, gradientTarget, gradientWeight);
 }
 
 /*

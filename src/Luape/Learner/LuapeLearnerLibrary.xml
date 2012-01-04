@@ -53,10 +53,42 @@
     <variable type="MultiClassLossFunction" name="lossFunction"/>
   </class>
 
-  <!-- Structure generation -->
+  <!-- Structure Generation -->
   <class name="GenerateTestNodesLearner" base="LuapeLearner">
     <constructor arguments="LuapeNodeBuilderPtr nodeBuilder"/>
     <variable type="LuapeNodeBuilder" name="nodeBuilder"/>
   </class>
 
+  <!-- Weak Learners -->
+  <class name="ExactWeakLearner" base="WeakLearner">
+    <constructor arguments="LuapeNodeBuilderPtr nodeBuilder"/>
+    <variable type="LuapeNodeBuilder" name="nodeBuilder"/>
+  </class>
+
+  <class name="LaminatingWeakLearner" base="WeakLearner">
+    <constructor arguments="LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating"/>
+    <variable type="LuapeNodeBuilder" name="nodeBuilder"/>
+    <variable type="Double" name="relativeBudget"/>
+    <variable type="PositiveInteger" name="minExamplesForLaminating"/>
+  </class>
+
+  <class name="BanditBasedWeakLearner" base="WeakLearner">
+    <constructor arguments="LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize"/>
+    <variable type="LuapeNodeBuilder" name="nodeBuilder"/>
+    <variable type="Double" name="relativeBudget"/>
+    <variable type="Double" name="miniBatchRelativeSize"/>
+  </class>
+
+  <class name="BinaryTreeWeakLearner" base="WeakLearner">
+    <constructor arguments="WeakLearnerPtr conditionLearner, WeakLearnerPtr subLearner"/>
+    <variable type="WeakLearner" name="conditionLearner"/>
+    <variable type="WeakLearner" name="subLearner"/>
+  </class>
+
+  <class name="OptimizerBasedSequentialWeakLearner" base="WeakLearner">
+    <constructor arguments="OptimizerPtr optimizer, size_t complexity"/>
+    <variable type="Optimizer" name="optimizer"/>
+    <variable type="PositiveInteger" name="complexity"/>
+  </class>
+  
 </library>

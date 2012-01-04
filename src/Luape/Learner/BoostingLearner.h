@@ -25,8 +25,8 @@ public:
     : IterativeLearner(maxIterations), weakLearner(weakLearner) {}
   BoostingLearner() {}
 
-  virtual WeakLearnerObjectivePtr createWeakObjective() const = 0;
-  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& indices, Variable& successVote, Variable& failureVote, Variable& missingVote) const = 0;
+  virtual WeakLearnerObjectivePtr createWeakObjective(const LuapeInferencePtr& problem) const = 0;
+  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const = 0;
 
   const WeakLearnerPtr& getWeakLearner() const
     {return weakLearner;}
@@ -38,7 +38,7 @@ public:
     // do weak learning
     {
       TimedScope _(context, "weak learning", verbose);
-      weakLearner->setWeakObjective(createWeakObjective());
+      weakLearner->setWeakObjective(createWeakObjective(problem));
       LuapeNodePtr weakNode = weakLearner->learn(context, node, problem, examples);
       double weakObjective = weakLearner->getBestWeakObjectiveValue();
       if (!weakNode || weakObjective == -DBL_MAX)
@@ -46,7 +46,7 @@ public:
         context.errorCallback(T("Failed to find a weak learner"));
         return false;
       }
-      contribution = turnWeakNodeIntoContribution(context, weakNode, weakObjective, examples);
+      contribution = turnWeakNodeIntoContribution(context, weakNode, problem, examples, weakObjective);
       context.resultCallback(T("edge"), weakObjective);
     }
 
@@ -57,7 +57,7 @@ public:
     }
 
     // evaluate
-    evaluatePredictions(context, trainingScore, validationScore);
+    evaluatePredictions(context, problem, trainingScore, validationScore);
 
     // trainingCache->checkCacheIsCorrect(context, function->getRootNode());
     if (verbose)
@@ -70,11 +70,11 @@ protected:
   
   WeakLearnerPtr weakLearner;
 
-  LuapeNodePtr turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, double weakObjective, const IndexSetPtr& examples) const
+  LuapeNodePtr turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double weakObjective) const
   {
     jassert(weakNode);
     Variable successVote, failureVote, missingVote;
-    if (!computeVotes(context, weakNode, examples, successVote, failureVote, missingVote))
+    if (!computeVotes(context, weakNode, problem, examples, successVote, failureVote, missingVote))
       return LuapeNodePtr();
 
     weakNode->addImportance(weakObjective);

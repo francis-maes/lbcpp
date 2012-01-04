@@ -21,17 +21,10 @@ class LuapeLearner : public Object
 public:
   LuapeLearner() : verbose(false) {}
 
-  virtual void setFunction(const LuapeInferencePtr& function)
-    {this->function = function;}
-  virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data);
-
   virtual LuapeNodePtr createInitialNode(ExecutionContext& context)
     {jassert(false); return LuapeNodePtr();}
 
   virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples) = 0;
-
-  const LuapeInferencePtr& getFunction() const
-    {return function;}
 
   void setVerbose(bool v)
     {verbose = v;}
@@ -44,11 +37,7 @@ protected:
 
   bool verbose;
 
-  LuapeInferencePtr function;
-  std::vector<ObjectPtr> trainingData;
-  std::vector<ObjectPtr> validationData;
-
-  void evaluatePredictions(ExecutionContext& context, double& trainingScore, double& validationScore);
+  void evaluatePredictions(ExecutionContext& context, const LuapeInferencePtr& problem, double& trainingScore, double& validationScore);
 };
 
 typedef ReferenceCountedObjectPtr<LuapeLearner> LuapeLearnerPtr;

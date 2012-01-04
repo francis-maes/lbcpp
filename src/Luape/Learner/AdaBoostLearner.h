@@ -12,7 +12,6 @@
 # include "WeightBoostingLearner.h"
 # include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
 # include <lbcpp/Luape/WeakLearner.h>
-# include <lbcpp/Luape/LuapeCache.h>
 
 namespace lbcpp
 {
@@ -23,7 +22,8 @@ public:
   AdaBoostWeakObjective(const DenseDoubleVectorPtr& supervisions, const DenseDoubleVectorPtr& weights)
     : supervisions(supervisions), weights(weights), correctWeight(0.0), errorWeight(0.0), missingWeight(0.0)
   {
-    jassert(supervisions->getNumElements() == weights->getNumElements());
+    jassert(supervisions->getElementsType() == probabilityType);
+    jassert(supervisions->getNumValues() == weights->getNumValues());
   }
 
   virtual void setPredictions(const LuapeSampleVectorPtr& predictions)
@@ -37,7 +37,7 @@ public:
     for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
     {
       size_t example = it.getIndex();
-      bool sup = (supervisions->getValue(example) > 0);
+      bool sup = (supervisions->getValue(example) > 0.5);
       double weight = weights->getValue(example);
       unsigned char pred = it.getRawBoolean();
       if (pred == 2)
@@ -51,7 +51,7 @@ public:
 
   virtual void flipPrediction(size_t index)
   {
-    bool sup = supervisions->getValue(index) > 0;
+    bool sup = supervisions->getValue(index) > 0.5;
     double weight = weights->getValue(index);
     if (sup)
     {
@@ -102,69 +102,21 @@ public:
     : WeightBoostingLearner(weakLearner, maxIterations) {}
   AdaBoostLearner() {}
 
-  virtual WeakLearnerObjectivePtr createWeakObjective() const
-    {return new AdaBoostWeakObjective(supervisions, weights);}
+  virtual WeakLearnerObjectivePtr createWeakObjective(const LuapeInferencePtr& problem) const
+    {return new AdaBoostWeakObjective(problem->getTrainingSupervisions(), weights);}
 
 //  virtual bool shouldStop(double accuracy) const
 //    {return accuracy == 0.0 || accuracy == 1.0;}
  
-  virtual VectorPtr makeSupervisions(const std::vector<ObjectPtr>& examples) const
+  virtual bool computeVotes(ExecutionContext& context,const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
-    size_t n = examples.size();
-    DenseDoubleVectorPtr res = new DenseDoubleVector(n, 0.0);
-    for (size_t i = 0; i < n; ++i)
-    {
-      bool sup;
-      if (!lbcpp::convertSupervisionVariableToBoolean(examples[i]->getVariable(1), sup))
-        jassert(false);
-      res->setValue(i, sup ? 1.0 : -1.0);
-    }
-    return res;
-  }
-
-  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& indices, Variable& successVote, Variable& failureVote, Variable& missingVote) const
-  {
-    const LuapeInferencePtr& problem = this->function;
-
-    AdaBoostWeakObjectivePtr objective = new AdaBoostWeakObjective(supervisions, weights);
-    LuapeSampleVectorPtr weakPredictions = problem->getTrainingCache()->getSamples(context, weakNode, indices);
+    AdaBoostWeakObjectivePtr objective = createWeakObjective(problem).staticCast<AdaBoostWeakObjective>();
+    LuapeSampleVectorPtr weakPredictions = problem->getTrainingCache()->getSamples(context, node, examples);
     objective->setPredictions(weakPredictions);
 
     double correctWeight = objective->getCorrectWeight();
     double errorWeight = objective->getErrorWeight();
     //double missingWeight = objective->getMissingWeight();
-
-#if 0
-    BooleanVectorPtr weakBooleans = weakPredictions.dynamicCast<BooleanVector>();
-    if (weakBooleans)
-    {
-      size_t correctCount = 0, errorCount = 0, missingCount = 0, falseCount = 0, trueCount = 0;
-      for (IndexSet::const_iterator it = examples->begin(); it != examples->end(); ++it)
-      {
-        size_t example = *it;
-        unsigned char c = weakBooleans->getData()[example];
-        double sup = supervisions.staticCast<DenseDoubleVector>()->getValue(example);
-        if (c == 2)
-          ++missingCount;
-        else
-        {
-          if ((c == 0 && sup < 0) || (c == 1 && sup > 0))
-            ++correctCount;
-          else
-            ++errorCount;
-          if (c == 0)
-            ++falseCount;
-          else
-            ++trueCount;
-        }
-      }
-      context.informationCallback(T("False: ") + String((int)falseCount) +
-                                  T(" True: ") + String((int)trueCount) + 
-                                  T(" Missing: ") + String((int)missingCount) + T(" (") + String(missingWeight) + T(")") +
-                                  T(" Diff: ") + String((int)errorCount) + T(" (") + String(errorWeight) + T(")") +
-                                  T(" Same: ") + String((int)correctCount) + T(" (") + String(correctWeight) + T(")"));
-    }
-#endif // 0
 
     double vote;
     if (correctWeight == 0.0)
@@ -180,24 +132,27 @@ public:
     return true;
   }
 
-  virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const VectorPtr& predictions, double& loss) const
+  virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, double& loss) const
   {
-    size_t n = trainingData.size();
-    jassert(supervisions->getNumElements() == n);
+    DenseDoubleVectorPtr predictions = problem->getTrainingPredictions().staticCast<DenseDoubleVector>();
+    DenseDoubleVectorPtr supervisions = problem->getTrainingSupervisions().staticCast<DenseDoubleVector>();
+    jassert(predictions->getNumValues() == supervisions->getNumValues());
+    jassert(supervisions->getElementsType() == probabilityType);
+
+    size_t n = predictions->getNumValues();
     double invZ = 1.0 / (double)n;
-    const DenseDoubleVectorPtr& scalarPredictions = predictions.staticCast<DenseDoubleVector>();
     DenseDoubleVectorPtr res = new DenseDoubleVector(n, 0.0);
 
     double* weightsPtr = res->getValuePointer(0);
-    double* supervisionsPtr = this->supervisions.staticCast<DenseDoubleVector>()->getValuePointer(0);
-    double* predictionsPtr = scalarPredictions->getValuePointer(0);
+    double* supervisionsPtr = supervisions->getValuePointer(0);
+    double* predictionsPtr = predictions->getValuePointer(0);
 
     loss = 0.0;
     for (size_t i = 0; i < n; ++i)
     {
       double supervision = *supervisionsPtr++;
       double prediction = *predictionsPtr++;
-      double weight = invZ * exp(-supervision * prediction);
+      double weight = invZ * exp(-(2 * supervision - 1.0) * prediction); // supervision are probabilities, scale to range [-1,1]
       *weightsPtr++ = weight;
       loss += weight;
     }

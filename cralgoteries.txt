@@ -1,5 +1,5 @@
+
 * New Tree weak learner
-* Move DPOptimizerBasedWeakLearner into lbcpp-core
 
 La suite:
 1) Finish learners refactoring:

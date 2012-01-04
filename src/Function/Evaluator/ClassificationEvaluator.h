@@ -85,14 +85,8 @@ protected:
 
   int getLabel(const Variable& value) const
   {
-    if (value.isEnumeration())
-      return value.getInteger();
-    DoubleVectorPtr scores = value.dynamicCast<DoubleVector>();
-    if (scores)
-      return scores->getIndexOfMaximumValue();
-
-    jassert(false);
-    return -1;
+    size_t res;
+    return lbcpp::convertSupervisionVariableToEnumValue(value, res) ? (int)res : -1;
   }
 };
 

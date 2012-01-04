@@ -55,7 +55,7 @@ protected:
 
   DenseDoubleVectorPtr computeMultiClassActivation(const SparseDoubleVectorPtr& features) const
   {
-    DenseDoubleVectorPtr res = new DenseDoubleVector(function.staticCast<LuapeClassifier>()->getDoubleVectorClass());
+    DenseDoubleVectorPtr res = new DenseDoubleVector((ClassPtr)parameters->getElementsType());
     for (size_t i = 0; i < features->getNumValues(); ++i)
     {
       const std::pair<size_t, double>& feature = features->getValue(i);
@@ -68,7 +68,7 @@ protected:
   ObjectVectorPtr computeMultiClassActivations(const ObjectVectorPtr& featuresVector) const
   {
     size_t n = featuresVector->getNumElements();
-    ObjectVectorPtr res = new ObjectVector(function.staticCast<LuapeClassifier>()->getDoubleVectorClass(), n);
+    ObjectVectorPtr res = new ObjectVector((ClassPtr)parameters->getElementsType(), n);
     for (size_t i = 0; i < n; ++i)
       res->set(i, computeMultiClassActivation(featuresVector->get(i).staticCast<SparseDoubleVector>()));
     return res;
@@ -149,7 +149,7 @@ public:
     }
     return true;
   }
-
+  
   virtual bool doLearningIteration(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
     static const double learningRate = 0.1;
@@ -158,22 +158,23 @@ public:
     ClassPtr doubleVectorClass = sumNode->getType();
     EnumerationPtr labels = DoubleVector::getElementsEnumeration(doubleVectorClass);
     size_t numLabels = labels->getNumElements();
+    VectorPtr supervisions = problem->getTrainingSupervisions();
 
     std::vector<size_t> order;
-    context.getRandomGenerator()->sampleOrder(examples->size(), order);
+    context.getRandomGenerator()->sampleSubset(examples->getIndices(), examples->size(), order); // randomize
 
     ScalarVariableStatistics loss;
     context.enterScope(T("Perform ") + String((int)order.size()) + T(" stochastic gradient steps"));
     for (size_t i = 0; i < order.size(); ++i)
     {
-      // get example
-      const ObjectPtr& example = trainingData[order[i]];
-      Variable supervision = example->getVariable(1);
+      // get correct class
+      Variable supervision = supervisions->getElement(order[i]);
       size_t correctClass;
-      if (supervision.isInteger())
-        correctClass = (size_t)supervision.getInteger();
-      else
-        correctClass = (size_t)supervision.getObjectAndCast<DoubleVector>()->getIndexOfMaximumValue();
+      if (!lbcpp::convertSupervisionVariableToEnumValue(supervision, correctClass))
+      {
+        context.errorCallback(T("Missing supervision"));
+        return false;
+      }
 
       // compute terms and sum
       SparseDoubleVectorPtr exampleFeatures = trainingFeatures->get(order[i]).staticCast<SparseDoubleVector>();
@@ -208,7 +209,7 @@ public:
       problem->getValidationCache()->recacheNode(context, sumNode, validationPredictions);
       context.leaveScope();
     }
-    evaluatePredictions(context, trainingScore, validationScore);
+    evaluatePredictions(context, problem, trainingScore, validationScore);
     context.resultCallback(T("meanLoss"), loss.getMean());
 
     //context.informationCallback(sumNode->toShortString());

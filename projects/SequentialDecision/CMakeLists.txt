@@ -125,7 +125,6 @@ SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
 SET(LBCPP_LUAPE_VRAC_SOURCES
   Luape/BanditPoolWeakLearner.h
   Luape/BanditPoolWeakLearner.cpp
-  Luape/NestedMCWeakLearner.h
   Luape/ProductWeakLearner.h
 )
 

@@ -34,12 +34,6 @@ public:
 
     LuapeLearnerPtr learner = this->learner->cloneAndCast<LuapeLearner>(); // avoid cycle between LuapeInference -> LuapeBatchLearner -> LuapeLearner -> LuapeInference
 
-    learner->setFunction(function);
-
-    if (!learner->setExamples(context, true, trainingData))
-      return false;
-    if (validationData.size() && !learner->setExamples(context, false, validationData))
-      return false;
     LuapeNodePtr node = function->getRootNode();
     if (!node)
       node = learner->createInitialNode(context);
