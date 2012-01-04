@@ -30,19 +30,8 @@ public:
   virtual int getSupervision(const ObjectPtr& example) const
   {
     Variable supervision = example->getVariable(1);
-    if (supervision.isEnumeration())
-      return supervision.getInteger();
-    else
-    {
-      DoubleVectorPtr vector = supervision.dynamicCast<DoubleVector>();
-      if (vector)
-        return (int)vector->getIndexOfMaximumValue();
-      else
-      {
-        jassertfalse;
-        return 0;
-      }
-    }
+    size_t res;
+    return lbcpp::convertSupervisionVariableToEnumValue(supervision, res) ? res : -1;
   }
 
   virtual size_t getNumClasses() const

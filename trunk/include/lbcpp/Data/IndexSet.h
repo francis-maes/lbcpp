@@ -60,6 +60,9 @@ public:
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
     {target.staticCast<IndexSet>()->v = v;}
 
+  const std::vector<size_t>& getIndices() const
+    {return v;}
+
 protected:
   friend class IndexSetClass;
 

@@ -73,3 +73,29 @@ bool lbcpp::convertSupervisionVariableToBoolean(const Variable& supervision, boo
   return false;
 }
 
+bool lbcpp::convertSupervisionVariableToEnumValue(const Variable& supervision, size_t& result)
+{
+  if (!supervision.exists())
+    return false;
+
+  if (supervision.isEnumeration())
+  {
+    result = (size_t)supervision.getInteger();
+    return true;
+  }
+
+  DoubleVectorPtr scores = supervision.dynamicCast<DoubleVector>();
+  if (scores)
+  {
+    int argmax = scores->getIndexOfMaximumValue();
+    if (argmax >= 0)
+    {
+      result = (size_t)argmax;
+      return true;
+    }
+    else
+      return false;
+  }
+
+  return false;
+}

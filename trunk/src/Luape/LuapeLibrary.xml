@@ -5,7 +5,6 @@
   <import name="LuapeFunction"/>
   <import name="LuapeNodeBuilder"/>
   <import name="LuapeLearner"/>
-  <import name="LuapeWeakLearner"/>
   
   <include file="lbcpp/Luape/LuapeFunction.h"/>
   <include file="lbcpp/Luape/LuapeNode.h"/>

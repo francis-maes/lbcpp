@@ -89,7 +89,7 @@ public:
     : BoostingLearner(weakLearner, maxIterations), learningRate(learningRate) {}
   GradientBoostingLearner() : learningRate(0.0) {}
 
-  virtual void computeLoss(const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const = 0;
+  virtual void computeLoss(const LuapeInferencePtr& problem, const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const = 0;
 
   virtual bool doLearningIteration(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
@@ -98,7 +98,7 @@ public:
 
       double lossValue;
       DenseDoubleVectorPtr predictions = problem->getTrainingPredictions().staticCast<DenseDoubleVector>();
-      computeLoss(predictions, &lossValue, &pseudoResiduals);
+      computeLoss(problem, predictions, &lossValue, &pseudoResiduals);
       context.resultCallback(T("loss"), lossValue);
       //context.resultCallback(T("predictions"), predictions);
       //context.resultCallback(T("pseudoResiduals"), pseudoResiduals);
@@ -106,13 +106,11 @@ public:
     return BoostingLearner::doLearningIteration(context, node, problem, examples, trainingScore, validationScore);
   }
 
-  virtual WeakLearnerObjectivePtr createWeakObjective() const
+  virtual WeakLearnerObjectivePtr createWeakObjective(const LuapeInferencePtr& problem) const
     {return new L2WeakLearnerObjective(pseudoResiduals);}
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const LuapeInferencePtr& problem, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
-    const LuapeInferencePtr& problem = this->function;
-    jassert(false); // broken
     LuapeSequenceNodePtr sequence = problem->getRootNode().staticCast<LuapeSequenceNode>();
     VectorPtr predictions = problem->getTrainingPredictions();
 
@@ -135,7 +133,7 @@ public:
       //  newPredictions->incrementValue(i, K * getSignedScalarPrediction(weakPredictions, i));
 
       double lossValue;
-      computeLoss(newPredictions, &lossValue, NULL);
+      computeLoss(problem, newPredictions, &lossValue, NULL);
 
       if (lossValue < bestLoss)
       {
@@ -168,20 +166,20 @@ public:
     : GradientBoostingLearner(weakLearner, maxIterations, learningRate) {}
   L2BoostingLearner() {}
 
-  virtual void computeLoss(const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const
+  virtual void computeLoss(const LuapeInferencePtr& problem, const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const
   { 
     if (lossValue)
       *lossValue = 0.0;
     if (lossGradient)
       *lossGradient = new DenseDoubleVector(predictions->getNumValues(), 0.0);
   
-    size_t n = trainingData.size();
+    DenseDoubleVectorPtr supervisions = problem->getTrainingSupervisions().staticCast<DenseDoubleVector>();
+
+    size_t n = supervisions->getNumValues();
     jassert(n == predictions->getNumValues());
     for (size_t i = 0; i < n; ++i)
     {
-      double predicted = predictions->getValue(i);
-      double correct = trainingData[i].staticCast<Pair>()->getSecond().getDouble();
-      double delta = predicted - correct;
+      double delta = predictions->getValue(i) - supervisions->getValue(i);
 
       if (lossValue)
         *lossValue += delta * delta; 
@@ -194,10 +192,8 @@ public:
       (*lossGradient)->multiplyByScalar(-1.0);
   }
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const LuapeInferencePtr& problem, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
-    const LuapeInferencePtr& problem = this->function;
-
     L2WeakLearnerObjectivePtr objective(new L2WeakLearnerObjective(pseudoResiduals));
     objective->setPredictions(problem->getTrainingCache()->getSamples(context, weakNode, examples));
     successVote = objective->getPositivesMean();
@@ -214,21 +210,23 @@ public:
     : GradientBoostingLearner(weakLearner, maxIterations, learningRate), rankingLoss(rankingLoss) {}
   RankingGradientBoostingLearner() {}
 
-  virtual void computeLoss(const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const
+  virtual void computeLoss(const LuapeInferencePtr& problem, const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const
   {
     if (lossValue)
       *lossValue = 0.0;
     if (lossGradient)
       *lossGradient = new DenseDoubleVector(predictions->getNumValues(), 0.0);
   
+    DenseDoubleVectorPtr supervisions = problem->getTrainingSupervisions().staticCast<DenseDoubleVector>();
+
+    const std::vector<size_t>& exampleSizes = problem.staticCast<LuapeRanker>()->getTrainingExampleSizes();
     size_t index = 0;
-    for (size_t i = 0; i < trainingData.size(); ++i)
+    for (size_t i = 0; i < exampleSizes.size(); ++i)
     {
-      const PairPtr& example = trainingData[i].staticCast<Pair>();
+      size_t n = exampleSizes[i];
 
-      size_t n = example->getFirst().getObjectAndCast<Container>()->getNumElements();
-      DenseDoubleVectorPtr costs = example->getSecond().getObjectAndCast<DenseDoubleVector>();
-
+      DenseDoubleVectorPtr costs = new DenseDoubleVector(n, 0.0);
+      memcpy(costs->getValuePointer(0), supervisions->getValuePointer(index), sizeof (double) * n);
       DenseDoubleVectorPtr scores = new DenseDoubleVector(n, 0.0);
       memcpy(scores->getValuePointer(0), predictions->getValuePointer(index), sizeof (double) * n);
 
@@ -242,7 +240,7 @@ public:
       index += n;
     }
     if (lossValue)
-      *lossValue /= trainingData.size();
+      *lossValue /= exampleSizes.size();
     if (lossGradient)
       (*lossGradient)->multiplyByScalar(-1.0);
   }

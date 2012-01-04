@@ -11,6 +11,7 @@
 
 # include "LuapeNode.h"
 # include "LuapeUniverse.h"
+# include "LuapeCache.h"
 # include "../Core/Function.h"
 
 namespace lbcpp
@@ -55,6 +56,12 @@ public:
     {activeVariables.clear();}
 
   /*
+  ** Supervision variable
+  */
+  LuapeInputNodePtr getSupervision() const
+    {return supervision;}
+
+  /*
   ** Available Functions
   */
   size_t getNumFunctions() const
@@ -84,9 +91,7 @@ public:
   ** Compute
   */
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
-
-  virtual LuapeSamplesCachePtr createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data) const;
-  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const = 0;
+  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& supervisions) const = 0;
 
   /*
   ** Learner
@@ -97,7 +102,7 @@ public:
   /*
   ** Samples cache
   */
-  void setSamples(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData);
+  virtual void setSamples(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData);
 
   const LuapeSamplesCachePtr& getTrainingCache() const
     {return trainingCache;}
@@ -107,14 +112,24 @@ public:
 
   std::vector<LuapeSamplesCachePtr> getSamplesCaches() const;
 
-  VectorPtr getTrainingPredictions() const;
-  VectorPtr getValidationPredictions() const;
+  VectorPtr getTrainingPredictions() const
+    {return trainingCache->getNodeCache(node);}
+
+  VectorPtr getTrainingSupervisions() const
+    {return trainingCache->getNodeCache(supervision);}
+
+  VectorPtr getValidationPredictions() const
+    {return validationCache ? validationCache->getNodeCache(node) : VectorPtr();}
+
+  VectorPtr getValidationSupervisions() const
+    {return validationCache ? validationCache->getNodeCache(supervision) : VectorPtr();}
 
 protected:
   friend class LuapeInferenceClass;
 
   LuapeUniversePtr universe;
   std::vector<LuapeInputNodePtr> inputs;
+  LuapeInputNodePtr supervision;
   std::vector<LuapeFunctionPtr> functions;
   std::set<LuapeNodePtr> activeVariables;
   LuapeNodePtr node;
@@ -123,6 +138,7 @@ protected:
   std::vector<LuapeGraphBuilderTypeSearchSpacePtr> typeSearchSpaces;
 
   Variable computeNode(ExecutionContext& context, const ObjectPtr& inputs) const;
+  LuapeSamplesCachePtr createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data) const;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeInference> LuapeInferencePtr;
@@ -138,7 +154,7 @@ public:
   virtual size_t getNumRequiredInputs() const;
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
-  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const;
+  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& supervisions) const;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeRegressor> LuapeRegressorPtr;
@@ -154,7 +170,7 @@ public:
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
-  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const;
+  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& supervisions) const;
 };
 
 extern ClassPtr luapeBinaryClassifierClass;
@@ -181,7 +197,7 @@ public:
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
-  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const;
+  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& supervisions) const;
 
 protected:
   ClassPtr doubleVectorClass;
@@ -200,8 +216,20 @@ public:
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 
-  virtual LuapeSamplesCachePtr createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data) const;
-  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const std::vector<ObjectPtr>& data) const;
+  virtual void setSamples(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData);
+  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& supervisions) const;
+
+  const std::vector<size_t>& getTrainingExampleSizes() const
+    {return trainingExampleSizes;}
+
+  const std::vector<size_t>& getValidationExampleSizes() const
+    {return trainingExampleSizes;}
+
+protected:
+  std::vector<size_t> trainingExampleSizes;
+  std::vector<size_t> validationExampleSizes;
+
+  LuapeSamplesCachePtr createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data, std::vector<size_t>& exampleSizes) const;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeRanker> LuapeRankerPtr;

@@ -11,7 +11,6 @@
 
 # include "NodeBuilderDecisionProblem.h"
 # include <lbcpp/Luape/LuapeLearner.h>
-# include <lbcpp/Luape/LuapeCache.h>
 # include <algorithm>
 
 namespace lbcpp
@@ -28,10 +27,9 @@ public:
 
   virtual void observeStateActionReward(ExecutionContext& context, size_t stepNumber, const std::vector<LuapeNodePtr>& stack, const ObjectPtr& object, double weakObjective, double weight) = 0;
   
-  virtual void observeBestWeakNode(ExecutionContext& context,  const LuapeLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
+  // FIXME: this function is never called !!!
+  void observeBestWeakNode(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
   {
-    const LuapeInferencePtr& problem = structureLearner->getFunction();
-
     if (weakObjective == -DBL_MAX)
       return;
     jassert(isNumberValid(weakObjective));

@@ -185,6 +185,7 @@ extern FunctionPtr linearLearningMachine(LearnerParametersPtr parameters);
 
 // conversion utilities
 extern bool convertSupervisionVariableToBoolean(const Variable& supervision, bool& result);
+extern bool convertSupervisionVariableToEnumValue(const Variable& supervision, size_t& result);
 
 // libsvm
 enum LibSVMKernelType

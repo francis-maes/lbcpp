@@ -14,26 +14,15 @@ using namespace lbcpp;
 /*
 ** LuapeLearner
 */
-bool LuapeLearner::setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
-{
-  if (isTrainingData)
-    trainingData = data;
-  else
-    validationData = data;
-  return true;
-}
-
-void LuapeLearner::evaluatePredictions(ExecutionContext& context, double& trainingScore, double& validationScore)
+void LuapeLearner::evaluatePredictions(ExecutionContext& context, const LuapeInferencePtr& problem, double& trainingScore, double& validationScore)
 {
   TimedScope _(context, "evaluate", verbose);
-  VectorPtr trainingPredictions = function->getTrainingPredictions();
-  trainingScore = function->evaluatePredictions(context, trainingPredictions, trainingData);
+  trainingScore = problem->evaluatePredictions(context, problem->getTrainingPredictions(), problem->getTrainingSupervisions());
   context.resultCallback(T("train error"), trainingScore);
 
-  VectorPtr validationPredictions = function->getValidationPredictions();
-  if (validationPredictions)
+  if (problem->getValidationCache())
   {
-    validationScore = function->evaluatePredictions(context, validationPredictions, validationData);
+    validationScore = problem->evaluatePredictions(context, problem->getValidationPredictions(), problem->getValidationSupervisions());
     context.resultCallback(T("validation error"), validationScore);
   }
   else
@@ -70,15 +59,16 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
 
   if (plotOutputStream)
   {
-    *plotOutputStream << "# " << String((int)trainingData.size()) << " training examples, " << String((int)validationData.size()) << " validation examples\n";
+    *plotOutputStream << "# " << String((int)problem->getTrainingCache()->getNumSamples()) << " training examples, "
+                      << String(problem->getValidationCache() ? (int)problem->getValidationCache()->getNumSamples() : 0) << " validation examples\n";
     *plotOutputStream << "# Learner: " << toShortString() << "\n";
     *plotOutputStream << "# Iterations: " << String((int)maxIterations) << "\n\n";
     plotOutputStream->flush();
   }
 
-  context.informationCallback(String((int)trainingData.size()) + T(" training examples"));
-  if (validationData.size())
-    context.informationCallback(String((int)validationData.size()) + T(" validation examples"));
+  context.informationCallback(String((int)problem->getTrainingCache()->getNumSamples()) + T(" training examples"));
+  if (problem->getValidationCache())
+    context.informationCallback(String((int)problem->getValidationCache()->getNumSamples()) + T(" validation examples"));
 
   if (!initialize(context, node, problem, examples))
     return LuapeNodePtr();
@@ -122,14 +112,14 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
   
     if (verbose)
       context.enterScope(T("Most important nodes"));
-    displayMostImportantNodes(context, function, verbose);
+    displayMostImportantNodes(context, problem, verbose);
     if (verbose)
       context.leaveScope();
   }
   context.leaveScope();
 
   context.enterScope(T("Most important nodes"));
-  displayMostImportantNodes(context, function, true);
+  displayMostImportantNodes(context, problem, true);
   context.leaveScope();
 
   context.informationCallback(T("Best evaluation: ") + String(bestValidationScore * 100.0, 3) + T("%"));

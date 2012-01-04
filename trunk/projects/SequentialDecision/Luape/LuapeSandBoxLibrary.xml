@@ -2,16 +2,6 @@
 
 <library name="LuapeSandBox" directory="Luape">
   
-  <!-- Weak Learners -->
-  <class name="DPOptimizerBasedWeakLearner" base="WeakLearner">
-    <variable type="Optimizer" name="optimizer"/>
-    <variable type="PositiveInteger" name="maxDepth"/>
-    <variable type="LuapeGraphBuilderTypeSearchSpace" name="typeSearchSpace"/>
-  </class>
-  <class name="NestedMCWeakLearner" base="DPOptimizerBasedWeakLearner">
-    <constructor arguments="size_t level, size_t iterations, size_t maxDepth" returnType="WeakLearner"/>
-  </class>
-
   <!--
   <class name="BanditPoolWeakLearner" base="WeakLearner">
     <constructor arguments="size_t maxBandits, size_t maxDepth"/>

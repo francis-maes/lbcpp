@@ -10,7 +10,6 @@
 # define LBCPP_LUAPE_LEARNER_BINARY_TREE_WEAK_H_
 
 # include <lbcpp/Luape/WeakLearner.h>
-# include <lbcpp/Luape/LuapeCache.h>
 
 namespace lbcpp
 {

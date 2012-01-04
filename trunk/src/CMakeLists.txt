@@ -61,7 +61,6 @@ GENERATE_INTROSPECTION_CODE(Optimizer/Optimizer/OptimizerOptimizerLibrary.xml Op
 GENERATE_INTROSPECTION_CODE(Luape/LuapeLibrary.xml LuapeLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/NodeBuilder/LuapeNodeBuilderLibrary.xml LuapeNodeBuilderLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/Learner/LuapeLearnerLibrary.xml LuapeLearnerLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Luape/BoostingWeakLearner/LuapeBoostingWeakLearnerLibrary.xml LuapeBoostingWeakLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/Function/LuapeFunctionLibrary.xml LuapeFunctionLibrary.cpp)
 
 IF(LBCPP_USER_INTERFACE)
@@ -685,27 +684,31 @@ SET(LBCPP_LUAPE_NODE_BUILDER_SOURCES
 )
 
 SET(LBCPP_LUAPE_LEARNER_SOURCES
-  Luape/Learner/EnsembleLearner.h
-  Luape/Learner/CompositeLearner.h
   Luape/Learner/GradientDescentLearner.h
   Luape/Learner/GenerateTestNodesLearner.h
+  Luape/Learner/LuapeLearnerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/LuapeLearnerLibrary.cpp
+)
+
+SET(LBCPP_LUAPE_LEARNER_BOOSTING_SOURCES
   Luape/Learner/BoostingLearner.h
   Luape/Learner/WeightBoostingLearner.h
   Luape/Learner/AdaBoostLearner.h
   Luape/Learner/AdaBoostMHLearner.h
   Luape/Learner/GradientBoostingLearner.h
-  Luape/Learner/LuapeLearnerLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/LuapeLearnerLibrary.cpp
 )
 
-SET(LBCPP_LUAPE_BOOSTING_WEAK_LEARNER_SOURCES
-  Luape/BoostingWeakLearner/ExactWeakLearner.h
-  Luape/BoostingWeakLearner/LaminatingWeakLearner.h
-  Luape/BoostingWeakLearner/BanditBasedWeakLearner.h
-  Luape/BoostingWeakLearner/BinaryTreeWeakLearner.h
-  
-  Luape/BoostingWeakLearner/LuapeBoostingWeakLearnerLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/LuapeBoostingWeakLearnerLibrary.cpp
+SET(LBCPP_LUAPE_LEARNER_WEAK_SOURCES
+  Luape/Learner/ExactWeakLearner.h
+  Luape/Learner/LaminatingWeakLearner.h
+  Luape/Learner/BanditBasedWeakLearner.h
+  Luape/Learner/BinaryTreeWeakLearner.h
+  Luape/Learner/OptimizerBasedSequentialWeakLearner.h
+)
+
+SET(LBCPP_LUAPE_LEARNER_META_SOURCES
+  Luape/Learner/EnsembleLearner.h
+  Luape/Learner/CompositeLearner.h
 )
 
 #### UserInterface ####
@@ -880,7 +883,9 @@ SET(LBCPP_SOURCES
     ${LBCPP_LUAPE_FUNCTION_SOURCES}
     ${LBCPP_LUAPE_NODE_BUILDER_SOURCES}
 	  ${LBCPP_LUAPE_LEARNER_SOURCES}
-	  ${LBCPP_LUAPE_BOOSTING_WEAK_LEARNER_SOURCES}
+      ${LBCPP_LUAPE_LEARNER_BOOSTING_SOURCES}
+      ${LBCPP_LUAPE_LEARNER_WEAK_SOURCES}
+      ${LBCPP_LUAPE_LEARNER_META_SOURCES}	  
  
   # Lua
   ${LBCPP_LUA_SOURCES}
@@ -971,7 +976,9 @@ SOURCE_GROUP(Luape FILES ${LBCPP_LUAPE_SOURCES})
 SOURCE_SUB_GROUP(Luape Function FILES ${LBCPP_LUAPE_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(Luape NodeBuilder FILES ${LBCPP_LUAPE_NODE_BUILDER_SOURCES})
 SOURCE_SUB_GROUP(Luape Learner FILES ${LBCPP_LUAPE_LEARNER_SOURCES})
-SOURCE_SUB_GROUP(Luape WeakLearner FILES ${LBCPP_LUAPE_BOOSTING_WEAK_LEARNER_SOURCES})
+SOURCE_SUB_GROUP2(Luape Learner Boosting FILES ${LBCPP_LUAPE_LEARNER_BOOSTING_SOURCES})
+SOURCE_SUB_GROUP2(Luape Learner Weak FILES ${LBCPP_LUAPE_LEARNER_WEAK_SOURCES})
+SOURCE_SUB_GROUP2(Luape Learner Meta FILES ${LBCPP_LUAPE_LEARNER_META_SOURCES})
 
 ## Lua
 SOURCE_GROUP(Lua FILES ${LBCPP_LUA_SOURCES})

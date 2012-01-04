@@ -23,21 +23,6 @@ public:
     : learners(2) {learners[0] = learner1; learners[1] = learner2;}
   CompositeLearner() {}
 
-  virtual void setFunction(const LuapeInferencePtr& function)
-  {
-    LuapeLearner::setFunction(function);
-    for (size_t i = 0; i < learners.size(); ++i)
-      learners[i]->setFunction(function);
-  }
-
-  virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
-  {
-    bool ok = true;
-    for (size_t i = 0; i < learners.size(); ++i)
-      ok &= learners[i]->setExamples(context, isTrainingData, data);
-    return ok;
-  }
-
   virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     // default behavior is sequential

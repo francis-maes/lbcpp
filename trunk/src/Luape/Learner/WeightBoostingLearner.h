@@ -21,31 +21,18 @@ public:
    : BoostingLearner(weakLearner, maxIterations) {}
   WeightBoostingLearner() {}
 
-  virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const VectorPtr& predictions, double& loss) const = 0;
-  virtual VectorPtr makeSupervisions(const std::vector<ObjectPtr>& examples) const = 0;
+  virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, double& loss) const = 0;
   
-  virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
-  {
-    if (!BoostingLearner::setExamples(context, isTrainingData, data))
-      return false;
-     
-    if (isTrainingData)
-      supervisions = makeSupervisions(data);
-    return true;
-  }
-
   virtual bool doLearningIteration(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
-    VectorPtr predictions = problem->getTrainingPredictions();
     double loss;
-    weights = computeSampleWeights(context, predictions, loss);
+    weights = computeSampleWeights(context, problem, loss);
     context.resultCallback(T("loss"), loss);
     return BoostingLearner::doLearningIteration(context, node, problem, examples, trainingScore, validationScore);
   }
 
 protected:
   DenseDoubleVectorPtr weights;
-  VectorPtr supervisions;
 };
 
 typedef ReferenceCountedObjectPtr<WeightBoostingLearner> WeightBoostingLearnerPtr;

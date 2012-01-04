@@ -21,15 +21,6 @@ public:
     : baseLearner(baseLearner), ensembleSize(ensembleSize) {}
   EnsembleLearner() : ensembleSize(0) {}
 
-  virtual void setFunction(const LuapeInferencePtr& function)
-  {
-    LuapeLearner::setFunction(function);
-    baseLearner->setFunction(function);
-  }
-
-  virtual bool setExamples(ExecutionContext& context, bool isTrainingData, const std::vector<ObjectPtr>& data)
-    {return baseLearner->setExamples(context, isTrainingData, data);}
-
   virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     const LuapeSequenceNodePtr& sequenceNode = node.staticCast<LuapeSequenceNode>();
