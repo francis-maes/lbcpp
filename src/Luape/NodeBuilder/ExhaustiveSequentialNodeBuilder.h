@@ -65,7 +65,10 @@ protected:
     if (state->isFinalState())
     {
       if (state->getStackSize() == 1)
+      {
+        jassert(state->getStackElement(0));
         res.insert(state->getStackElement(0));
+      }
     }
     else
     {

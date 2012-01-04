@@ -23,7 +23,7 @@ public:
     : IterativeLearner(maxIterations), learningRate(learningRate) {}
   GradientDescentLearner() {}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node)
+  virtual bool initialize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     LuapeSequenceNodePtr rootNode = node.staticCast<LuapeSequenceNode>();
     featureFunction = new LuapeCreateSparseVectorNode(rootNode->getNodes());
@@ -33,7 +33,7 @@ public:
     return true;
   }
 
-  virtual bool finalize(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node)
+  virtual bool finalize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     context.enterScope(T("Finalizing"));
     transformIntoOriginalForm(featureFunction, parameters, parameters->getElementsType());
@@ -128,21 +128,21 @@ public:
     : GradientDescentLearner(learningRate, maxIterations), lossFunction(lossFunction) {}
   ClassifierSGDLearner() {}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& node)
+  virtual bool initialize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
-    if (!GradientDescentLearner::initialize(context, problem, node))
+    if (!GradientDescentLearner::initialize(context, node, problem, examples))
       return false;
     
     context.enterScope(T("Computing training features"));
-    LuapeSampleVectorPtr featureSamples = trainingCache->getSamples(context, featureFunction, trainingCache->getAllIndices());
+    LuapeSampleVectorPtr featureSamples = problem->getTrainingCache()->getSamples(context, featureFunction, examples);
     trainingFeatures = featureSamples->getVector().staticCast<ObjectVector>();
     jassert(trainingFeatures);
     context.leaveScope();
 
-    if (validationCache)
+    if (problem->getValidationCache())
     {
       context.enterScope(T("Computing validation features"));
-      LuapeSampleVectorPtr featureSamples = validationCache->getSamples(context, featureFunction, validationCache->getAllIndices());
+      LuapeSampleVectorPtr featureSamples = problem->getValidationCache()->getSamples(context, featureFunction, examples);
       validationFeatures = featureSamples->getVector().staticCast<ObjectVector>();
       jassert(validationFeatures);
       context.leaveScope();
@@ -150,17 +150,17 @@ public:
     return true;
   }
 
-  virtual bool doLearningIteration(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& rootNode, double& trainingScore, double& validationScore)
+  virtual bool doLearningIteration(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
     static const double learningRate = 0.1;
 
-    const LuapeVectorSumNodePtr& sumNode = rootNode.staticCast<LuapeVectorSumNode>();
+    const LuapeVectorSumNodePtr& sumNode = node.staticCast<LuapeVectorSumNode>();
     ClassPtr doubleVectorClass = sumNode->getType();
     EnumerationPtr labels = DoubleVector::getElementsEnumeration(doubleVectorClass);
     size_t numLabels = labels->getNumElements();
 
     std::vector<size_t> order;
-    context.getRandomGenerator()->sampleOrder(trainingCache->getNumSamples(), order);
+    context.getRandomGenerator()->sampleOrder(examples->size(), order);
 
     ScalarVariableStatistics loss;
     context.enterScope(T("Perform ") + String((int)order.size()) + T(" stochastic gradient steps"));
@@ -198,14 +198,14 @@ public:
 
     context.enterScope(T("Recache training node"));
     ObjectVectorPtr trainingPredictions = computeMultiClassActivations(trainingFeatures);
-    trainingCache->recacheNode(context, sumNode, trainingPredictions);
+    problem->getTrainingCache()->recacheNode(context, sumNode, trainingPredictions);
     context.leaveScope();
 
-    if (validationCache)
+    if (problem->getValidationCache())
     {
       context.enterScope(T("Recache validation node"));
       ObjectVectorPtr validationPredictions = computeMultiClassActivations(validationFeatures);
-      validationCache->recacheNode(context, sumNode, validationPredictions);
+      problem->getValidationCache()->recacheNode(context, sumNode, validationPredictions);
       context.leaveScope();
     }
     evaluatePredictions(context, trainingScore, validationScore);

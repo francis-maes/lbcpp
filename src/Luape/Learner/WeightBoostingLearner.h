@@ -34,13 +34,13 @@ public:
     return true;
   }
 
-  virtual bool doLearningIteration(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& rootNode, double& trainingScore, double& validationScore)
+  virtual bool doLearningIteration(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
-    VectorPtr predictions = getTrainingPredictions();
+    VectorPtr predictions = problem->getTrainingPredictions();
     double loss;
     weights = computeSampleWeights(context, predictions, loss);
     context.resultCallback(T("loss"), loss);
-    return BoostingLearner::doLearningIteration(context, problem, rootNode, trainingScore, validationScore);
+    return BoostingLearner::doLearningIteration(context, node, problem, examples, trainingScore, validationScore);
   }
 
 protected:

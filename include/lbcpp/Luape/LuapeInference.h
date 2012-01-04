@@ -93,6 +93,23 @@ public:
   */
   void setLearner(const LuapeLearnerPtr& learner, bool verbose = false);
 
+
+  /*
+  ** Samples cache
+  */
+  void setSamples(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData);
+
+  const LuapeSamplesCachePtr& getTrainingCache() const
+    {return trainingCache;}
+
+  const LuapeSamplesCachePtr& getValidationCache() const
+    {return validationCache;}
+
+  std::vector<LuapeSamplesCachePtr> getSamplesCaches() const;
+
+  VectorPtr getTrainingPredictions() const;
+  VectorPtr getValidationPredictions() const;
+
 protected:
   friend class LuapeInferenceClass;
 
@@ -101,6 +118,9 @@ protected:
   std::vector<LuapeFunctionPtr> functions;
   std::set<LuapeNodePtr> activeVariables;
   LuapeNodePtr node;
+  LuapeSamplesCachePtr trainingCache;
+  LuapeSamplesCachePtr validationCache;
+  std::vector<LuapeGraphBuilderTypeSearchSpacePtr> typeSearchSpaces;
 
   Variable computeNode(ExecutionContext& context, const ObjectPtr& inputs) const;
 };

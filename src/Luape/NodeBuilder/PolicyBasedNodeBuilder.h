@@ -218,9 +218,7 @@ public:
       context.resultCallback(T("averageRegret"), regret.getMean());
       context.informationCallback(T("Average Regret: ") + String(regret.getMean()));
     }
-    if (!bestWeakLearner)
-      return LuapeNodePtr();
-    return makeContribution(context, structureLearner, bestWeakLearner, weakObjective, examples);
+    return bestWeakLearner;
   }
 #endif // 0
 

@@ -11,6 +11,7 @@
 
 # include "WeightBoostingLearner.h"
 # include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
+# include <lbcpp/Luape/BoostingWeakLearner.h>
 # include <lbcpp/Luape/LuapeCache.h>
 
 namespace lbcpp
@@ -123,8 +124,10 @@ public:
 
   virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& indices, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
+    const LuapeInferencePtr& problem = this->function;
+
     AdaBoostWeakObjectivePtr objective = new AdaBoostWeakObjective(supervisions, weights);
-    LuapeSampleVectorPtr weakPredictions = trainingCache->getSamples(context, weakNode, indices);
+    LuapeSampleVectorPtr weakPredictions = problem->getTrainingCache()->getSamples(context, weakNode, indices);
     objective->setPredictions(weakPredictions);
 
     double correctWeight = objective->getCorrectWeight();

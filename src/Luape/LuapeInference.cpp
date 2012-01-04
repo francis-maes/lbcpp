@@ -52,10 +52,57 @@ void LuapeInference::setLearner(const LuapeLearnerPtr& learner, bool verbose)
 
 LuapeGraphBuilderTypeSearchSpacePtr LuapeInference::getSearchSpace(ExecutionContext& context, size_t complexity) const
 {
+  LuapeInference* pthis = const_cast<LuapeInference* >(this);
+
+  if (complexity >= typeSearchSpaces.size())
+    pthis->typeSearchSpaces.resize(complexity + 1);
+  if (typeSearchSpaces[complexity])
+    return typeSearchSpaces[complexity];
+
   LuapeGraphBuilderTypeSearchSpacePtr res = new LuapeGraphBuilderTypeSearchSpace(refCountedPointerFromThis(this), complexity);
   res->pruneStates(context);
   res->assignStateIndices(context);
+  pthis->typeSearchSpaces[complexity] = res;
   return res;
+}
+
+void LuapeInference::setSamples(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
+{
+  trainingCache = createSamplesCache(context, trainingData);
+  trainingCache->cacheNode(context, node, VectorPtr(), "Prediction node", false);
+  if (validationData.size())
+  {
+    validationCache = createSamplesCache(context, validationData);
+    validationCache->cacheNode(context, node, VectorPtr(), "Prediction node", false);
+  }
+}
+
+std::vector<LuapeSamplesCachePtr> LuapeInference::getSamplesCaches() const
+{
+  std::vector<LuapeSamplesCachePtr> res;
+  res.push_back(trainingCache);
+  if (validationCache)
+    res.push_back(validationCache);
+  return res;
+}
+
+VectorPtr LuapeInference::getTrainingPredictions() const
+{
+  LuapeSampleVectorPtr samples = trainingCache->getSamples(defaultExecutionContext(), node, trainingCache->getAllIndices());
+  jassert(samples->getImplementation() == LuapeSampleVector::cachedVectorImpl);
+  return samples->getVector();
+}
+
+VectorPtr LuapeInference::getValidationPredictions() const
+{
+  if (validationCache)
+  {
+    LuapeSampleVectorPtr samples = validationCache->getSamples(defaultExecutionContext(), node, validationCache->getAllIndices());
+    jassert(samples->getImplementation() == LuapeSampleVector::cachedVectorImpl);
+    return samples->getVector();
+  }
+  else
+    return VectorPtr();
 }
 
 /*

@@ -16,6 +16,7 @@
 # include <lbcpp/Function/IterationFunction.h>
 # include <lbcpp/Luape/LuapeBatchLearner.h>
 # include <lbcpp/Luape/LuapeLearner.h>
+# include <lbcpp/Luape/BoostingWeakLearner.h>
 # include <lbcpp/Learning/LossFunction.h>
 # include "../Core/SinglePlayerMCTSOptimizer.h"
 
@@ -65,7 +66,7 @@ public:
     else
       //nodeBuilder = exhaustiveSequentialNodeBuilder(complexity);
       //nodeBuilder = adaptativeSamplingNodeBuilder(maxNumWeakNodes, complexity, useVariableRelevancies, useExtendedVariables);
-      nodeBuilder = policyBasedNodeBuilder(randomPolicy(), (size_t)(relativeBudget * numVariables), complexity);
+      nodeBuilder = policyBasedNodeBuilder(randomPolicy(), maxNumWeakNodes, complexity);
     nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
 
     BoostingWeakLearnerPtr weakLearner;

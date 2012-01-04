@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp/Luape/LuapeLearner.h>
+#include <lbcpp/Luape/BoostingWeakLearner.h>
 #include <lbcpp/Luape/LuapeCache.h>
 #include "NodeBuilder/NodeBuilderTypeSearchSpace.h"
 #include "Function/SpecialLuapeFunctions.h" // for StumpLuapeFunction
@@ -72,48 +72,33 @@ double BoostingWeakObjective::findBestThreshold(ExecutionContext& context, const
 /*
 ** BoostingWeakLearner
 */
-double BoostingWeakLearner::computeWeakObjectiveWithEventualStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, LuapeNodePtr& weakNode, const IndexSetPtr& examples) const
+double BoostingWeakLearner::computeWeakObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeNodePtr& weakNode, const IndexSetPtr& examples) const
 {
   jassert(examples->size());
   if (weakNode->getType() == booleanType)
-    return computeWeakObjective(context, structureLearner, weakNode, examples);
+    return computeWeakObjective(context, problem, weakNode, examples);
   else
   {
     jassert(weakNode->getType()->isConvertibleToDouble());
     double threshold;
-    double res = computeWeakObjectiveWithStump(context, structureLearner, weakNode, examples, threshold);
-    weakNode = makeStump(structureLearner, weakNode, threshold);
+    double res = computeWeakObjectiveWithStump(context, problem, weakNode, examples, threshold);
+    weakNode = new LuapeFunctionNode(stumpLuapeFunction(threshold), weakNode);
     return res;
   }
 }
 
-double BoostingWeakLearner::computeWeakObjective(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& indices) const
+double BoostingWeakLearner::computeWeakObjective(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& weakNode, const IndexSetPtr& indices) const
 {
-  LuapeSampleVectorPtr weakPredictions = structureLearner->getTrainingCache()->getSamples(context, weakNode, indices);
-  BoostingWeakObjectivePtr edgeCalculator = structureLearner->createWeakObjective();
+  LuapeSampleVectorPtr weakPredictions = problem->getTrainingCache()->getSamples(context, weakNode, indices);
   jassert(weakNode->getType() == booleanType || weakNode->getType() == probabilityType);
-  return edgeCalculator->compute(weakPredictions);
+  return weakObjective->compute(weakPredictions);
 }
 
-double BoostingWeakLearner::computeWeakObjectiveWithStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, const IndexSetPtr& indices, double& bestThreshold) const
+double BoostingWeakLearner::computeWeakObjectiveWithStump(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& numberNode, const IndexSetPtr& indices, double& bestThreshold) const
 {
   jassert(indices->size());
-  BoostingWeakObjectivePtr weakObjective = structureLearner->createWeakObjective();
   double bestScore;
-  SparseDoubleVectorPtr sortedDoubleValues = structureLearner->getTrainingCache()->getSortedDoubleValues(context, numberNode, indices);
+  SparseDoubleVectorPtr sortedDoubleValues = problem->getTrainingCache()->getSortedDoubleValues(context, numberNode, indices);
   bestThreshold = weakObjective->findBestThreshold(context, indices, sortedDoubleValues, bestScore, false);
   return bestScore;
-}
-
-LuapeNodePtr BoostingWeakLearner::makeStump(const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, double threshold) const
-{
-  return new LuapeFunctionNode(stumpLuapeFunction(threshold), numberNode); // bypass universe
-  //return structureLearner->getUniverse()->makeFunctionNode(stumpLuapeFunction(threshold), numberNode);
-}
-
-LuapeNodePtr BoostingWeakLearner::makeContribution(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, double weakObjective, const IndexSetPtr& examples) const
-{
-  if (!weakNode || weakObjective == -DBL_MAX)
-    return LuapeNodePtr();
-  return structureLearner->turnWeakNodeIntoContribution(context, weakNode, weakObjective, examples);
 }

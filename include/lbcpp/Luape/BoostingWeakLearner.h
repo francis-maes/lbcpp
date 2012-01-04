@@ -11,6 +11,7 @@
 
 # include "LuapeInference.h"
 # include "LuapeNodeBuilder.h"
+# include "LuapeLearner.h"
 # include <lbcpp/Data/IndexSet.h>
 # include <lbcpp/Data/DoubleVector.h>
 # include <lbcpp/DecisionProblem/Policy.h>
@@ -32,19 +33,24 @@ public:
 
 typedef ReferenceCountedObjectPtr<BoostingWeakObjective> BoostingWeakObjectivePtr;
 
-class BoostingWeakLearner : public Object
+class BoostingWeakLearner : public LuapeLearner
 {
 public:
-  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function) {return true;}
+  BoostingWeakLearner() : bestWeakObjectiveValue(-DBL_MAX) {}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& indices, bool verbose, double& weakObjective) = 0;
+  void setWeakObjective(const BoostingWeakObjectivePtr& weakObjective)
+    {this->weakObjective = weakObjective;}
 
-  double computeWeakObjectiveWithEventualStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, LuapeNodePtr& weakNode, const IndexSetPtr& indices) const;
-  double computeWeakObjective(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, const IndexSetPtr& indices) const;
-  double computeWeakObjectiveWithStump(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, const IndexSetPtr& indices, double& bestThreshold) const;
+  double computeWeakObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeNodePtr& weakNode, const IndexSetPtr& indices) const;
+  double computeWeakObjective(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& weakNode, const IndexSetPtr& indices) const;
+  double computeWeakObjectiveWithStump(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& numberNode, const IndexSetPtr& indices, double& bestThreshold) const;
 
-  LuapeNodePtr makeStump(const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& numberNode, double threshold) const;
-  LuapeNodePtr makeContribution(ExecutionContext& context, const BoostingLearnerPtr& structureLearner, const LuapeNodePtr& weakNode, double weakObjective, const IndexSetPtr& examples) const;
+  double getBestWeakObjectiveValue() const
+    {return bestWeakObjectiveValue;}
+
+protected:
+  BoostingWeakObjectivePtr weakObjective;
+  double bestWeakObjectiveValue;
 };
 
 typedef ReferenceCountedObjectPtr<BoostingWeakLearner> BoostingWeakLearnerPtr;

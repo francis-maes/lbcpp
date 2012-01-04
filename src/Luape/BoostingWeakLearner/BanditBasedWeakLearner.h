@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_WEAK_LEARNER_BANDIT_BASED_H_
 # define LBCPP_LUAPE_WEAK_LEARNER_BANDIT_BASED_H_
 
-# include <lbcpp/Luape/LuapeLearner.h>
+# include <lbcpp/Luape/BoostingWeakLearner.h>
 # include <lbcpp/Luape/LuapeCache.h>
 # include <algorithm>
 # include <queue> // for priority queue in bandits pool
@@ -24,11 +24,11 @@ public:
     : nodeBuilder(nodeBuilder), relativeBudget(relativeBudget), miniBatchRelativeSize(miniBatchRelativeSize)  {}
   BanditBasedWeakLearner() {}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     // make initial weak learners
     std::vector<LuapeNodePtr> weakNodes;
-    nodeBuilder->buildNodes(context, structureLearner->getFunction(), 0, weakNodes);
+    nodeBuilder->buildNodes(context, problem, 0, weakNodes);
     if (!weakNodes.size())
       return LuapeNodePtr();
 
@@ -46,7 +46,7 @@ public:
       context.enterScope(T("Playing bandits"));
     std::vector<IndexSetPtr> subsets;
 
-    size_t numTrainingSamples = structureLearner->getTrainingCache()->getNumSamples();
+    size_t numTrainingSamples = problem->getTrainingCache()->getNumSamples();
     size_t miniBatchSize = (size_t)(miniBatchRelativeSize * numTrainingSamples + 0.5);
     size_t budget = (size_t)(relativeBudget * numTrainingSamples);
 
@@ -64,7 +64,7 @@ public:
       size_t subsetIndex = (size_t)arm.episodeStats.getCount();
       IndexSetPtr subset = getSubset(context, examples, subsetIndex, miniBatchSize, subsets);
       effectiveBudget += subset->size();
-      double weakObjective = computeWeakObjectiveWithEventualStump(context, structureLearner, weakNode, subset); // side effect on weakNode (that we do not keep)
+      double weakObjective = computeWeakObjectiveWithEventualStump(context, problem, weakNode, subset); // side effect on weakNode (that we do not keep)
       weakObjective *= numTrainingSamples / (double)subset->size();
       // todo: here, we can retrieve the best threshold if it is a stump
 
@@ -99,13 +99,13 @@ public:
         context.informationCallback(T("[") + String(it->first) + T("]: ") + it->second->toShortString() + T(" (tk = ") + String(arms[it->second].episodeStats.getCount()) + T(")"));
     }
 
-    weakObjective = computeWeakObjectiveWithEventualStump(context, structureLearner, bestWeakNode, examples); // side effect on bestWeakNode
+    bestWeakObjectiveValue = computeWeakObjectiveWithEventualStump(context, problem, bestWeakNode, examples); // side effect on bestWeakNode
     if (verbose)
     {
-      context.informationCallback(T("Num Steps: ") + String((int)t) + T(" Effective budget: ") + String((int)effectiveBudget) + T(" normalized = ") + String((double)effectiveBudget / structureLearner->getTrainingCache()->getNumSamples()));
-      context.leaveScope(weakObjective);
+      context.informationCallback(T("Num Steps: ") + String((int)t) + T(" Effective budget: ") + String((int)effectiveBudget) + T(" normalized = ") + String((double)effectiveBudget / problem->getTrainingCache()->getNumSamples()));
+      context.leaveScope(bestWeakObjectiveValue);
     }
-    return makeContribution(context, structureLearner, bestWeakNode, weakObjective, examples);
+    return bestWeakNode;
   }
 
 protected:

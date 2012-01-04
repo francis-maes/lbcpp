@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_LEARNER_BINARY_TREE_WEAK_H_
 # define LBCPP_LUAPE_LEARNER_BINARY_TREE_WEAK_H_
 
-# include <lbcpp/Luape/LuapeLearner.h>
+# include <lbcpp/Luape/BoostingWeakLearner.h>
 # include <lbcpp/Luape/LuapeCache.h>
 
 namespace lbcpp
@@ -22,16 +22,13 @@ public:
     : conditionLearner(conditionLearner), subLearner(subLearner) {}
   BinaryTreeWeakLearner() {}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeInferencePtr& function)
-    {return conditionLearner->initialize(context, function) && subLearner->initialize(context, function);}
-  
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     /*
     ** Learn condition and retrieve condition values
     */
     jassert(examples->size());
-    LuapeNodePtr conditionNode = conditionLearner->learn(context, structureLearner, examples, verbose, weakObjective);
+    LuapeNodePtr conditionNode = conditionLearner->learn(context, LuapeNodePtr(), problem, examples);
     if (!conditionNode)
     {
       context.errorCallback(T("Could not learn condition with ") + String((int)examples->size()) + T(" examples"));
@@ -41,7 +38,7 @@ public:
     if (!res)
       return conditionNode; // probably a constant node
 
-    LuapeSampleVectorPtr testValues = structureLearner->getTrainingCache()->getSamples(context, res->getCondition(), examples);
+    LuapeSampleVectorPtr testValues = problem->getTrainingCache()->getSamples(context, res->getCondition(), examples);
 
     /*
     ** Dispatch examples
@@ -52,14 +49,14 @@ public:
     /*
     ** Call sub-learners on sub-examples
     */
-    weakObjective = 0.0;
-    LuapeNodePtr successNode = subLearn(context, structureLearner, successExamples, verbose, weakObjective);
+    bestWeakObjectiveValue = 0.0;
+    LuapeNodePtr successNode = subLearn(context, problem, successExamples, bestWeakObjectiveValue);
     if (successNode)
       res->setSuccess(successNode);
-    LuapeNodePtr failureNode = subLearn(context, structureLearner, failureExamples, verbose, weakObjective);
+    LuapeNodePtr failureNode = subLearn(context, problem, failureExamples, bestWeakObjectiveValue);
     if (failureNode)
       res->setFailure(failureNode);
-    LuapeNodePtr missingNode = subLearn(context, structureLearner, missingExamples, verbose, weakObjective);
+    LuapeNodePtr missingNode = subLearn(context, problem, missingExamples, bestWeakObjectiveValue);
     if (missingNode)
       res->setMissing(missingNode);
     return res;
@@ -71,14 +68,13 @@ protected:
   BoostingWeakLearnerPtr conditionLearner;
   BoostingWeakLearnerPtr subLearner;
   
-  LuapeNodePtr subLearn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& subExamples, bool verbose, double& weakObjective) const
+  LuapeNodePtr subLearn(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& subExamples, double& weakObjective) const
   {
     if (subExamples->size() == 0)
       return LuapeNodePtr();    
-    double objective;
-    LuapeNodePtr node = subLearner->learn(context, structureLearner, subExamples, verbose, objective);
+    LuapeNodePtr node = subLearner->learn(context, LuapeNodePtr(), problem, subExamples);
     if (node)
-      weakObjective += objective;
+      weakObjective += subLearner->getBestWeakObjectiveValue();
     return node;
   }
 };

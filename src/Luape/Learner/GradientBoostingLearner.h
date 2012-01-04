@@ -92,19 +92,19 @@ public:
 
   virtual void computeLoss(const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const = 0;
 
-  virtual bool doLearningIteration(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& rootNode, double& trainingScore, double& validationScore)
+  virtual bool doLearningIteration(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
     {
       TimedScope _(context, "compute residuals");
 
       double lossValue;
-      DenseDoubleVectorPtr predictions = getTrainingPredictions().staticCast<DenseDoubleVector>();
+      DenseDoubleVectorPtr predictions = problem->getTrainingPredictions().staticCast<DenseDoubleVector>();
       computeLoss(predictions, &lossValue, &pseudoResiduals);
       context.resultCallback(T("loss"), lossValue);
       //context.resultCallback(T("predictions"), predictions);
       //context.resultCallback(T("pseudoResiduals"), pseudoResiduals);
     }
-    return BoostingLearner::doLearningIteration(context, problem, rootNode, trainingScore, validationScore);
+    return BoostingLearner::doLearningIteration(context, node, problem, examples, trainingScore, validationScore);
   }
 
   virtual BoostingWeakObjectivePtr createWeakObjective() const
@@ -112,9 +112,10 @@ public:
 
   virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
+    const LuapeInferencePtr& problem = this->function;
     jassert(false); // broken
-    LuapeSequenceNodePtr sequence = function->getRootNode().staticCast<LuapeSequenceNode>();
-    VectorPtr predictions = getTrainingPredictions();
+    LuapeSequenceNodePtr sequence = problem->getRootNode().staticCast<LuapeSequenceNode>();
+    VectorPtr predictions = problem->getTrainingPredictions();
 
     context.enterScope(T("Optimize weight"));
 
@@ -196,8 +197,10 @@ public:
 
   virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
+    const LuapeInferencePtr& problem = this->function;
+
     L2BoostingWeakObjectivePtr objective(new L2BoostingWeakObjective(pseudoResiduals));
-    objective->setPredictions(trainingCache->getSamples(context, weakNode, examples));
+    objective->setPredictions(problem->getTrainingCache()->getSamples(context, weakNode, examples));
     successVote = objective->getPositivesMean();
     failureVote = objective->getNegativesMean();
     missingVote = objective->getMissingsMean();
