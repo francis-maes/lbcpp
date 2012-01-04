@@ -59,7 +59,6 @@ typedef ReferenceCountedObjectPtr<WeakLearner> WeakLearnerPtr;
 extern WeakLearnerPtr exactWeakLearner(LuapeNodeBuilderPtr nodeBuilder);
 extern WeakLearnerPtr laminatingWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating = 5);
 extern WeakLearnerPtr banditBasedWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize = 0.01);
-extern WeakLearnerPtr binaryTreeWeakLearner(WeakLearnerPtr conditionLearner, WeakLearnerPtr subLearner);
 extern WeakLearnerPtr optimizerBasedSequentialWeakLearner(OptimizerPtr optimizer, size_t complexity);
 
 }; /* namespace lbcpp */

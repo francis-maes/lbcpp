@@ -85,8 +85,8 @@ typedef ReferenceCountedObjectPtr<L2WeakLearnerObjective> L2WeakLearnerObjective
 class GradientBoostingLearner : public BoostingLearner
 {
 public:
-  GradientBoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate)
-    : BoostingLearner(weakLearner, maxIterations), learningRate(learningRate) {}
+  GradientBoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, size_t treeDepth)
+    : BoostingLearner(weakLearner, maxIterations, treeDepth), learningRate(learningRate) {}
   GradientBoostingLearner() : learningRate(0.0) {}
 
   virtual void computeLoss(const LuapeInferencePtr& problem, const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const = 0;
@@ -109,7 +109,7 @@ public:
   virtual WeakLearnerObjectivePtr createWeakObjective(const LuapeInferencePtr& problem) const
     {return new L2WeakLearnerObjective(pseudoResiduals);}
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const LuapeInferencePtr& problem, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
     LuapeSequenceNodePtr sequence = problem->getRootNode().staticCast<LuapeSequenceNode>();
     VectorPtr predictions = problem->getTrainingPredictions();
@@ -162,8 +162,8 @@ typedef ReferenceCountedObjectPtr<GradientBoostingLearner> GradientBoostingLearn
 class L2BoostingLearner : public GradientBoostingLearner
 {
 public:
-  L2BoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate)
-    : GradientBoostingLearner(weakLearner, maxIterations, learningRate) {}
+  L2BoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, size_t treeDepth)
+    : GradientBoostingLearner(weakLearner, maxIterations, learningRate, treeDepth) {}
   L2BoostingLearner() {}
 
   virtual void computeLoss(const LuapeInferencePtr& problem, const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const
@@ -192,10 +192,10 @@ public:
       (*lossGradient)->multiplyByScalar(-1.0);
   }
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const LuapeInferencePtr& problem, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
     L2WeakLearnerObjectivePtr objective(new L2WeakLearnerObjective(pseudoResiduals));
-    objective->setPredictions(problem->getTrainingCache()->getSamples(context, weakNode, examples));
+    objective->setPredictions(weakPredictions);
     successVote = objective->getPositivesMean();
     failureVote = objective->getNegativesMean();
     missingVote = objective->getMissingsMean();
@@ -206,8 +206,8 @@ public:
 class RankingGradientBoostingLearner : public GradientBoostingLearner
 {
 public:
-  RankingGradientBoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss)
-    : GradientBoostingLearner(weakLearner, maxIterations, learningRate), rankingLoss(rankingLoss) {}
+  RankingGradientBoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss, size_t treeDepth)
+    : GradientBoostingLearner(weakLearner, maxIterations, learningRate, treeDepth), rankingLoss(rankingLoss) {}
   RankingGradientBoostingLearner() {}
 
   virtual void computeLoss(const LuapeInferencePtr& problem, const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const

@@ -42,12 +42,6 @@ protected:
 
 typedef ReferenceCountedObjectPtr<LuapeLearner> LuapeLearnerPtr;
 
-extern LuapeLearnerPtr ensembleLearner(const LuapeLearnerPtr& baseLearner, size_t ensembleSize);
-extern LuapeLearnerPtr compositeLearner(const std::vector<LuapeLearnerPtr>& learners);
-extern LuapeLearnerPtr compositeLearner(const LuapeLearnerPtr& learner1, const LuapeLearnerPtr& learner2);
-
-extern LuapeLearnerPtr generateTestNodesLearner(LuapeNodeBuilderPtr nodeBuilder);
-
 class IterativeLearner : public LuapeLearner
 {
 public:
@@ -78,15 +72,23 @@ protected:
   void displayMostImportantNodes(ExecutionContext& context, const LuapeInferencePtr& function, bool verbose) const;
 };
 
+// gradient descent
 extern IterativeLearnerPtr classifierSGDLearner(MultiClassLossFunctionPtr lossFunction, IterationFunctionPtr learningRate, size_t maxIterations);
 
-extern IterativeLearnerPtr adaBoostLearner(WeakLearnerPtr weakLearner, size_t maxIterations);
+// boosting
+extern IterativeLearnerPtr adaBoostLearner(WeakLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth = 1);
+extern IterativeLearnerPtr discreteAdaBoostMHLearner(WeakLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth = 1);
+extern IterativeLearnerPtr realAdaBoostMHLearner(WeakLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth = 1);
+extern IterativeLearnerPtr l2BoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, size_t treeDepth = 1);
+extern IterativeLearnerPtr rankingGradientBoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss, size_t treeDepth = 1);
 
-extern IterativeLearnerPtr discreteAdaBoostMHLearner(WeakLearnerPtr weakLearner, size_t maxIterations);
-extern IterativeLearnerPtr realAdaBoostMHLearner(WeakLearnerPtr weakLearner, size_t maxIterations);
+// meta
+extern LuapeLearnerPtr ensembleLearner(const LuapeLearnerPtr& baseLearner, size_t ensembleSize);
+extern LuapeLearnerPtr compositeLearner(const std::vector<LuapeLearnerPtr>& learners);
+extern LuapeLearnerPtr compositeLearner(const LuapeLearnerPtr& learner1, const LuapeLearnerPtr& learner2);
 
-extern IterativeLearnerPtr l2BoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate);
-extern IterativeLearnerPtr rankingGradientBoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss);
+// misc
+extern LuapeLearnerPtr generateTestNodesLearner(LuapeNodeBuilderPtr nodeBuilder);
 
 }; /* namespace lbcpp */
 
