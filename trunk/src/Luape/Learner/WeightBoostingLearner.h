@@ -17,8 +17,8 @@ namespace lbcpp
 class WeightBoostingLearner : public BoostingLearner
 {
 public:
-  WeightBoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations)
-   : BoostingLearner(weakLearner, maxIterations) {}
+  WeightBoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
+   : BoostingLearner(weakLearner, maxIterations, treeDepth) {}
   WeightBoostingLearner() {}
 
   virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, double& loss) const = 0;

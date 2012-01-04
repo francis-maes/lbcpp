@@ -702,7 +702,6 @@ SET(LBCPP_LUAPE_LEARNER_WEAK_SOURCES
   Luape/Learner/ExactWeakLearner.h
   Luape/Learner/LaminatingWeakLearner.h
   Luape/Learner/BanditBasedWeakLearner.h
-  Luape/Learner/BinaryTreeWeakLearner.h
   Luape/Learner/OptimizerBasedSequentialWeakLearner.h
 )
 

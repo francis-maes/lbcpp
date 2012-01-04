@@ -98,8 +98,8 @@ typedef ReferenceCountedObjectPtr<AdaBoostWeakObjective> AdaBoostWeakObjectivePt
 class AdaBoostLearner : public WeightBoostingLearner
 {
 public:
-  AdaBoostLearner(WeakLearnerPtr weakLearner, size_t maxIterations)
-    : WeightBoostingLearner(weakLearner, maxIterations) {}
+  AdaBoostLearner(WeakLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
+    : WeightBoostingLearner(weakLearner, maxIterations, treeDepth) {}
   AdaBoostLearner() {}
 
   virtual WeakLearnerObjectivePtr createWeakObjective(const LuapeInferencePtr& problem) const
@@ -108,10 +108,9 @@ public:
 //  virtual bool shouldStop(double accuracy) const
 //    {return accuracy == 0.0 || accuracy == 1.0;}
  
-  virtual bool computeVotes(ExecutionContext& context,const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
     AdaBoostWeakObjectivePtr objective = createWeakObjective(problem).staticCast<AdaBoostWeakObjective>();
-    LuapeSampleVectorPtr weakPredictions = problem->getTrainingCache()->getSamples(context, node, examples);
     objective->setPredictions(weakPredictions);
 
     double correctWeight = objective->getCorrectWeight();

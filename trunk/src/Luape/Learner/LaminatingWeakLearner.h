@@ -24,9 +24,6 @@ public:
 
   virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
-    if (verbose)
-      context.enterScope("Laminating");
-
     // make initial weak learners
     std::vector<LuapeNodePtr> weakNodes;
     if (verbose)
@@ -120,10 +117,7 @@ public:
     LuapeNodePtr weakNode = weakNodesByScore[0].first;
     bestWeakObjectiveValue = computeWeakObjectiveWithEventualStump(context, problem, weakNode, examples); // side effect on weakNode
     if (verbose)
-    {
       context.informationCallback(T("Effective budget: ") + String((int)effectiveBudget) + T(" / ") + String(totalBudget) + T(" normalized = ") + String((double)effectiveBudget / totalBudget));
-      context.leaveScope(bestWeakObjectiveValue);
-    }
     return weakNode;
   }
 

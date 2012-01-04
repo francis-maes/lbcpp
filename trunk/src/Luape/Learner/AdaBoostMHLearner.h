@@ -149,8 +149,8 @@ typedef ReferenceCountedObjectPtr<AdaBoostMHWeakObjective> AdaBoostMHWeakObjecti
 class AdaBoostMHLearner : public WeightBoostingLearner
 {
 public:
-  AdaBoostMHLearner(WeakLearnerPtr weakLearner, size_t maxIterations)
-    : WeightBoostingLearner(weakLearner, maxIterations) {}
+  AdaBoostMHLearner(WeakLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
+    : WeightBoostingLearner(weakLearner, maxIterations, treeDepth) {}
   AdaBoostMHLearner() {}
 
   virtual bool initialize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
@@ -231,16 +231,16 @@ protected:
 class DiscreteAdaBoostMHLearner : public AdaBoostMHLearner
 {
 public:
-  DiscreteAdaBoostMHLearner(WeakLearnerPtr weakLearner, size_t maxIterations)
-    : AdaBoostMHLearner(weakLearner, maxIterations) {}
+  DiscreteAdaBoostMHLearner(WeakLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
+    : AdaBoostMHLearner(weakLearner, maxIterations, treeDepth) {}
   DiscreteAdaBoostMHLearner() {}
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const LuapeInferencePtr& problem, const IndexSetPtr& indices, Variable& successVote, Variable& failureVote, Variable& missingVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
     ClassPtr doubleVectorClass = problem.staticCast<LuapeClassifier>()->getDoubleVectorClass();
 
     AdaBoostMHWeakObjectivePtr objective = createWeakObjective(problem).staticCast<AdaBoostMHWeakObjective>();
-    objective->setPredictions(problem->getTrainingCache()->getSamples(context, weakNode, indices));
+    objective->setPredictions(weakPredictions);
     
     const double* muNegNegPtr = objective->getMu(0, false)->getValuePointer(0);
     const double* muPosNegPtr = objective->getMu(1, false)->getValuePointer(0);
@@ -292,16 +292,16 @@ public:
 class RealAdaBoostMHLearner : public AdaBoostMHLearner
 {
 public:
-  RealAdaBoostMHLearner(WeakLearnerPtr weakLearner, size_t maxIterations)
-    : AdaBoostMHLearner(weakLearner, maxIterations) {}
+  RealAdaBoostMHLearner(WeakLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
+    : AdaBoostMHLearner(weakLearner, maxIterations, treeDepth) {}
   RealAdaBoostMHLearner() {}
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const LuapeInferencePtr& problem, const IndexSetPtr& indices, Variable& successVote, Variable& failureVote, Variable& missingVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
     ClassPtr doubleVectorClass = problem.staticCast<LuapeClassifier>()->getDoubleVectorClass();
 
     AdaBoostMHWeakObjectivePtr objective = createWeakObjective(problem).staticCast<AdaBoostMHWeakObjective>();
-    objective->setPredictions(problem->getTrainingCache()->getSamples(context, weakNode, indices));
+    objective->setPredictions(weakPredictions);
     
     const double* muNegNegPtr = objective->getMu(0, false)->getValuePointer(0);
     const double* muPosNegPtr = objective->getMu(1, false)->getValuePointer(0);

@@ -77,12 +77,9 @@ public:
     }
     else
       weakLearner = exactWeakLearner(nodeBuilder);
+    weakLearner->setVerbose(verbose);
 
-    WeakLearnerPtr conditionLearner = weakLearner;
-    for (size_t i = 1; i < treeDepth; ++i)
-      weakLearner = binaryTreeWeakLearner(conditionLearner, weakLearner);
-
-    IterativeLearnerPtr strongLearner = discreteAdaBoostMHLearner(weakLearner, numIterations);
+    IterativeLearnerPtr strongLearner = discreteAdaBoostMHLearner(weakLearner, numIterations, treeDepth);
     //MultiClassLossFunctionPtr lossFunction = oneAgainstAllMultiClassLossFunction(hingeDiscriminativeLossFunction());
     //logBinomialMultiClassLossFunction()
     //LuapeLearnerPtr strongLearner = compositeLearner(generateTestNodesLearner(nodeBuilder), classifierSGDLearner(lossFunction, constantIterationFunction(0.1), numIterations));

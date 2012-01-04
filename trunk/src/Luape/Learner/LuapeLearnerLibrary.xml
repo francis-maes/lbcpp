@@ -18,29 +18,30 @@
   <!-- Boosting -->
   <class name="BoostingLearner" base="IterativeLearner" abstract="yes">
     <variable type="WeakLearner" name="weakLearner"/>
+    <variable type="PositiveInteger" name="treeDepth"/>
   </class>
   
   <!-- Boosting with weights -->
   <class name="WeightBoostingLearner" base="BoostingLearner" abstract="yes"/>
   <class name="AdaBoostLearner" base="WeightBoostingLearner">
-    <constructor arguments="WeakLearnerPtr weakLearner, size_t maxIterations" returnType="IterativeLearner"/>
+    <constructor arguments="WeakLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth" returnType="IterativeLearner"/>
   </class>
   <class name="AdaBoostMHLearner" base="WeightBoostingLearner" abstract="yes"/>
   <class name="DiscreteAdaBoostMHLearner" base="AdaBoostMHLearner">
-    <constructor arguments="WeakLearnerPtr weakLearner, size_t maxIterations" returnType="IterativeLearner"/>
+    <constructor arguments="WeakLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth" returnType="IterativeLearner"/>
   </class>
   <class name="RealAdaBoostMHLearner" base="AdaBoostMHLearner">
-    <constructor arguments="WeakLearnerPtr weakLearner, size_t maxIterations" returnType="IterativeLearner"/>
+    <constructor arguments="WeakLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth" returnType="IterativeLearner"/>
   </class>
 
   <!-- Gradient Boosting -->
   <class name="GradientBoostingLearner" base="BoostingLearner" abstract="yes"/>
   <class name="L2BoostingLearner" base="GradientBoostingLearner">
-    <constructor arguments="WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate" returnType="IterativeLearner"/>
+    <constructor arguments="WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, size_t treeDepth" returnType="IterativeLearner"/>
   </class>
   
   <class name="RankingGradientBoostingLearner" base="GradientBoostingLearner">
-    <constructor arguments="WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss" returnType="IterativeLearner"/>
+    <constructor arguments="WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss, size_t treeDepth" returnType="IterativeLearner"/>
     <variable type="RankingLossFunction" name="rankingLoss"/>
   </class>
   
@@ -77,12 +78,6 @@
     <variable type="LuapeNodeBuilder" name="nodeBuilder"/>
     <variable type="Double" name="relativeBudget"/>
     <variable type="Double" name="miniBatchRelativeSize"/>
-  </class>
-
-  <class name="BinaryTreeWeakLearner" base="WeakLearner">
-    <constructor arguments="WeakLearnerPtr conditionLearner, WeakLearnerPtr subLearner"/>
-    <variable type="WeakLearner" name="conditionLearner"/>
-    <variable type="WeakLearner" name="subLearner"/>
   </class>
 
   <class name="OptimizerBasedSequentialWeakLearner" base="WeakLearner">
