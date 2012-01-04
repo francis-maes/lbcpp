@@ -16,7 +16,6 @@ using namespace lbcpp;
 /*
 ** LearningObjective
 */
-
 void LearningObjective::ensureIsUpToDate()
 {
   if (!upToDate)
@@ -45,15 +44,16 @@ double LearningObjective::computeObjectiveWithEventualStump(ExecutionContext& co
     jassert(weakNode->getType()->isConvertibleToDouble());
     double res;
     SparseDoubleVectorPtr sortedDoubleValues = problem->getTrainingCache()->getSortedDoubleValues(context, weakNode, examples);
-    double threshold = findBestThreshold(context, examples, sortedDoubleValues, res, false);
+    double threshold = findBestThreshold(context, weakNode, examples, sortedDoubleValues, res, false);
     weakNode = new LuapeFunctionNode(stumpLuapeFunction(threshold), weakNode);
     return res;
   }
 }
 
-double LearningObjective::findBestThreshold(ExecutionContext& context, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose)
+double LearningObjective::findBestThreshold(ExecutionContext& context, const LuapeNodePtr& numberNode, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose)
 {
   setPredictions(LuapeSampleVector::createConstant(indices, Variable(false, booleanType)));
+  ensureIsUpToDate();
 
   if (sortedDoubleValues->getNumValues() == 0)
   {
@@ -62,10 +62,10 @@ double LearningObjective::findBestThreshold(ExecutionContext& context, const Ind
   }
 
   bestScore = -DBL_MAX;
-  double res = 0.0;
+  std::vector<double> bestThresholds;
 
   if (verbose)
-    context.enterScope("Find best threshold for node");
+    context.enterScope("Find best threshold for node " + numberNode->toShortString());
 
   size_t n = sortedDoubleValues->getNumValues();
   double previousThreshold = sortedDoubleValues->getValue(n - 1).second;
@@ -88,7 +88,14 @@ double LearningObjective::findBestThreshold(ExecutionContext& context, const Ind
       }
 
       if (e >= bestScore)
-        bestScore = e, res = (threshold + previousThreshold) / 2.0;
+      {
+        if (e > bestScore)
+        {
+          bestThresholds.clear();
+          bestScore = e;
+        }
+        bestThresholds.push_back((threshold + previousThreshold) / 2.0);
+      }
       previousThreshold = threshold;
     }
     flipPrediction(index);
@@ -96,7 +103,8 @@ double LearningObjective::findBestThreshold(ExecutionContext& context, const Ind
 
   if (verbose)
     context.leaveScope();
-  return res;
+
+  return bestThresholds.size() ? bestThresholds[bestThresholds.size() / 2] : 0; // median value
 }
 
 /*
@@ -139,9 +147,12 @@ void RegressionLearningObjective::update()
 
 void RegressionLearningObjective::flipPrediction(size_t index)
 {
+  jassert(upToDate);
+
   double value = supervisions->getValue(index);
-  negatives.push(value, -1.0);
-  positives.push(value);
+  double weight = getWeight(index);
+  negatives.push(value, -weight);
+  positives.push(value, weight);
 }
 
 double RegressionLearningObjective::computeObjective()
@@ -205,6 +216,7 @@ void BinaryClassificationLearningObjective::update()
 
 void BinaryClassificationLearningObjective::flipPrediction(size_t index)
 {
+  jassert(upToDate);
   bool sup = supervisions->getValue(index) > 0.5;
   double weight = weights->getValue(index);
   if (sup)
@@ -232,6 +244,7 @@ double BinaryClassificationLearningObjective::computeObjective()
 */
 void ClassificationLearningObjective::initialize(const LuapeInferencePtr& problem)
 {
+  LearningObjective::initialize(problem);
   doubleVectorClass = problem.staticCast<LuapeClassifier>()->getDoubleVectorClass();
   labels = DoubleVector::getElementsEnumeration(doubleVectorClass);
   numLabels = labels->getNumElements();
@@ -286,6 +299,7 @@ void ClassificationLearningObjective::update()
 
 void ClassificationLearningObjective::flipPrediction(size_t index)
 {
+  jassert(upToDate);
   double* weightsPtr = weights->getValuePointer(index * numLabels);
   double* muNegNegPtr = mu[0][0]->getValuePointer(0);
   double* muNegPosPtr = mu[0][1]->getValuePointer(0);
@@ -312,24 +326,23 @@ void ClassificationLearningObjective::flipPrediction(size_t index)
 Variable ClassificationLearningObjective::computeVote(const IndexSetPtr& indices)
 {
   std::vector<ScalarVariableMean> stats(numLabels);
+  
+  DenseDoubleVectorPtr res = new DenseDoubleVector(labels, probabilityType);
+  double sum = 0.0;
   for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
   {
     size_t example = *it;
     double* supervisionsPtr = supervisions->getValuePointer(numLabels * example);
     double* weightsPtr = weights->getValuePointer(numLabels * example);
     for (size_t i = 0; i < numLabels; ++i)
-      stats[i].push(*supervisionsPtr++, *weightsPtr++);
+    {
+      double value = *weightsPtr++ * (*supervisionsPtr++ + 1.0) / 2.0; // transform signed supervision into probability
+      res->incrementValue(i, value);
+      sum += value;
+    }
   }
-  DenseDoubleVectorPtr res = new DenseDoubleVector(labels, probabilityType);
-  double sum = 0.0;
-  for (size_t i = 0; i < numLabels; ++i)
-  {
-    double value = stats[i].getMean() > 1e-9 ? 1.0 : 0.0;
-    sum += value;
-    res->setValue(i, value);
-  }
-  if (sum > 1.0)
-    res->multiplyByScalar(1.0 / sum);
+  if (sum)
+    res->multiplyByScalar(1.0 / sum); // normalize probability distribution
   return Variable(res, denseDoubleVectorClass(labels, probabilityType));
 }
 

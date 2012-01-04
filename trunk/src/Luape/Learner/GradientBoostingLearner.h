@@ -40,7 +40,7 @@ public:
     return BoostingLearner::doLearningIteration(context, node, problem, examples, trainingScore, validationScore);
   }
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& successVote, Variable& failureVote, Variable& missingVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& failureVote, Variable& successVote, Variable& missingVote) const
   {
     LuapeSequenceNodePtr sequence = problem->getRootNode().staticCast<LuapeSequenceNode>();
     VectorPtr predictions = problem->getTrainingPredictions();
@@ -122,7 +122,7 @@ public:
       (*lossGradient)->multiplyByScalar(-1.0);
   }
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& successVote, Variable& failureVote, Variable& missingVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& failureVote, Variable& successVote, Variable& missingVote) const
   {
     RegressionLearningObjectivePtr objective = this->objective.staticCast<RegressionLearningObjective>();
     objective->setPredictions(weakPredictions);

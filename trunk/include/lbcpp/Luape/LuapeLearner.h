@@ -25,7 +25,7 @@ public:
     : objective(objective), verbose(false), bestObjectiveValue(-DBL_MAX) {}
 
   virtual LuapeNodePtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
-    {jassert(false); return LuapeNodePtr();}
+    {return LuapeNodePtr();}
 
   virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples) = 0;
 

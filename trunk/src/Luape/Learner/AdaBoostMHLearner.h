@@ -45,11 +45,10 @@ public:
 
     double positiveWeight =  1.0 / (2 * n);
     double negativeWeight = 1.0 / (2 * n * (numLabels - 1));
-    const ObjectVectorPtr& predictedActivations = predictions.staticCast<ObjectVector>();
     loss = 0.0;
     for (size_t i = 0; i < n; ++i)
     {
-      const DenseDoubleVectorPtr& activations = predictedActivations->getAndCast<DenseDoubleVector>(i);
+      const DenseDoubleVectorPtr& activations = predictions->getAndCast<DenseDoubleVector>(i);
       double* activationsPtr = activations->getValuePointer(0);
       for (size_t j = 0; j < numLabels; ++j)
       {
@@ -74,12 +73,13 @@ public:
     : AdaBoostMHLearner(weakLearner, maxIterations, treeDepth) {}
   DiscreteAdaBoostMHLearner() {}
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& successVote, Variable& failureVote, Variable& missingVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& failureVote, Variable& successVote, Variable& missingVote) const
   {
     ClassPtr doubleVectorClass = problem.staticCast<LuapeClassifier>()->getDoubleVectorClass();
 
     ClassificationLearningObjectivePtr objective = this->objective.staticCast<ClassificationLearningObjective>();
     objective->setPredictions(weakPredictions);
+    objective->ensureIsUpToDate();
     
     const double* muNegNegPtr = objective->getMu(0, false)->getValuePointer(0);
     const double* muPosNegPtr = objective->getMu(1, false)->getValuePointer(0);
@@ -135,7 +135,7 @@ public:
     : AdaBoostMHLearner(weakLearner, maxIterations, treeDepth) {}
   RealAdaBoostMHLearner() {}
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& successVote, Variable& failureVote, Variable& missingVote) const
+  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& failureVote, Variable& successVote, Variable& missingVote) const
   {
     ClassPtr doubleVectorClass = problem.staticCast<LuapeClassifier>()->getDoubleVectorClass();
 

@@ -18,21 +18,30 @@ class TreeLearner : public LuapeLearner
 {
 public:
   TreeLearner(LearningObjectivePtr objective, LuapeLearnerPtr conditionLearner, size_t minExamplesToSplit, size_t maxDepth)
-    : objective(objective), conditionLearner(conditionLearner), minExamplesToSplit(minExamplesToSplit), maxDepth(maxDepth) {}
+    : LuapeLearner(objective), conditionLearner(conditionLearner), minExamplesToSplit(minExamplesToSplit), maxDepth(maxDepth) {}
   TreeLearner() {}
 
   virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     objective->initialize(problem);
     conditionLearner->setObjective(objective);
-    return makeTree(context, problem, examples, 1);
+    LuapeNodePtr res = makeTree(context, problem, examples, 1);
+    
+    size_t treeDepth = 0;
+    size_t numNodes = getNumTestNodes(res, 0, treeDepth);
+    context.resultCallback(T("treeDepth"), treeDepth);
+    context.resultCallback(T("treeSize"), numNodes);
+    if (verbose)
+      context.informationCallback(T("Tree depth = ") + String((int)treeDepth) + T(" size = ") + String((int)numNodes));
+
+    bestObjectiveValue = 0.0;
+    return res;
   }
 
 protected:
   friend class TreeLearnerClass;
 
   LuapeLearnerPtr conditionLearner;
-  LearningObjectivePtr objective;
   size_t minExamplesToSplit;
   size_t maxDepth;
 
@@ -44,7 +53,7 @@ protected:
 
     // learn condition and make a leaf if condition learning fails
     LuapeNodePtr conditionNode = subLearn(context, conditionLearner, LuapeNodePtr(), problem, examples);
-    if (!conditionNode)
+    if (!conditionNode || conditionNode.isInstanceOf<LuapeConstantNode>())
       return new LuapeConstantNode(objective->computeVote(examples));
 
     // otherwise split examples...
@@ -65,6 +74,18 @@ protected:
 
     // and build a test node.
     return new LuapeTestNode(conditionNode, failureNode, successNode, missingNode);
+  }
+
+  size_t getNumTestNodes(const LuapeNodePtr& node, size_t depth, size_t& maxDepth) const
+  {
+    if (depth > maxDepth)
+      maxDepth = depth;
+    size_t res = 0;
+    if (node.isInstanceOf<LuapeTestNode>())
+      ++res;
+    for (size_t i = 0; i < node->getNumSubNodes(); ++i)
+      res += getNumTestNodes(node->getSubNode(i), depth + 1, maxDepth);
+    return res;
   }
 };
 

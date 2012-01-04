@@ -24,7 +24,7 @@ public:
     : IterativeLearner(objective, maxIterations), weakLearner(weakLearner), treeDepth(treeDepth) {}
   BoostingLearner() : treeDepth(0) {}
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& successVote, Variable& failureVote, Variable& missingVote) const = 0;
+  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& failureVote, Variable& successVote, Variable& missingVote) const = 0;
 
   virtual bool initialize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
@@ -68,8 +68,6 @@ protected:
   LuapeLearnerPtr weakLearner;
   size_t treeDepth;
 
-  LearningObjectivePtr objective;
-
   LuapeNodePtr learnContribution(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, size_t depth)
   {
     if (examples->size() < 2)
@@ -108,8 +106,8 @@ protected:
   {
     jassert(weakNode);
     LuapeSampleVectorPtr weakPredictions = problem->getTrainingCache()->getSamples(context, weakNode, examples);
-    Variable successVote, failureVote, missingVote;
-    if (!computeVotes(context, problem, weakPredictions, successVote, failureVote, missingVote))
+    Variable failureVote, successVote, missingVote;
+    if (!computeVotes(context, problem, weakPredictions, failureVote, successVote, missingVote))
       return LuapeNodePtr();
 
     weakNode->addImportance(weakObjective);
