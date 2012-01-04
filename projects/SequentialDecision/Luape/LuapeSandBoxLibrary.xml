@@ -3,7 +3,7 @@
 <library name="LuapeSandBox" directory="Luape">
   
   <!--
-  <class name="BanditPoolWeakLearner" base="WeakLearner">
+  <class name="BanditPoolWeakLearner" base="LuapeLearner">
     <constructor arguments="size_t maxBandits, size_t maxDepth"/>
     <variable type="PositiveInteger" name="maxBandits"/>
     <variable type="PositiveInteger" name="maxDepth"/>

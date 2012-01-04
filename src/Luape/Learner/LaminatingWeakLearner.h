@@ -15,7 +15,7 @@
 namespace lbcpp
 {
 
-class LaminatingWeakLearner : public WeakLearner
+class LaminatingWeakLearner : public LuapeLearner
 {
 public:
   LaminatingWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating)
@@ -79,8 +79,8 @@ public:
       for (size_t i = 0; i < numWeakLearners; ++i)
       {
         LuapeNodePtr weakNode = weakNodesByScore[i].first;
-        double objective = computeWeakObjectiveWithEventualStump(context, problem, weakNode, examplesSubset); // side effect on weakNode (that we do not keep)
-        weakNodesByScore[i].second = objective;
+        double objectiveValue = objective->computeObjectiveWithEventualStump(context, problem, weakNode, examplesSubset); // side effect on weakNode (that we do not keep)
+        weakNodesByScore[i].second = objectiveValue;
       }
       effectiveBudget += numWeakLearners * examplesSubset->size();
       // sort by decreasing score
@@ -115,7 +115,7 @@ public:
         examplesSubset->randomlyExpandUsingSource(context, numExamples, examples);
     }
     LuapeNodePtr weakNode = weakNodesByScore[0].first;
-    bestWeakObjectiveValue = computeWeakObjectiveWithEventualStump(context, problem, weakNode, examples); // side effect on weakNode
+    bestObjectiveValue = objective->computeObjectiveWithEventualStump(context, problem, weakNode, examples); // side effect on weakNode
     if (verbose)
       context.informationCallback(T("Effective budget: ") + String((int)effectiveBudget) + T(" / ") + String(totalBudget) + T(" normalized = ") + String((double)effectiveBudget / totalBudget));
     return weakNode;

@@ -76,7 +76,7 @@ public:
       //nodeBuilder = policyBasedNodeBuilder(randomPolicy(), maxNumWeakNodes, complexity);
     nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
 
-    WeakLearnerPtr weakLearner;
+    LuapeLearnerPtr weakLearner;
     if (relativeBudget > 0.0)
     {
       weakLearner = laminatingWeakLearner(nodeBuilder, relativeBudget * numVariables, minExamplesForLaminating);
@@ -86,19 +86,23 @@ public:
       weakLearner = exactWeakLearner(nodeBuilder);
     weakLearner->setVerbose(verbose);
 
-    IterativeLearnerPtr strongLearner = discreteAdaBoostMHLearner(weakLearner, numIterations, treeDepth);
+    size_t minExamplesToSplit = 2;
+    LuapeLearnerPtr learner = treeLearner(new ClassificationLearningObjective(), weakLearner, minExamplesToSplit, treeDepth);
+    //IterativeLearnerPtr learner = discreteAdaBoostMHLearner(weakLearner, numIterations, treeDepth);
     //MultiClassLossFunctionPtr lossFunction = oneAgainstAllMultiClassLossFunction(hingeDiscriminativeLossFunction());
     //logBinomialMultiClassLossFunction()
     //LuapeLearnerPtr strongLearner = compositeLearner(generateTestNodesLearner(nodeBuilder), classifierSGDLearner(lossFunction, constantIterationFunction(0.1), numIterations));
 
-    strongLearner->setVerbose(verbose);
-    LuapeBatchLearnerPtr batchLearner = new LuapeBatchLearner(strongLearner);
-    if (plotFile != File::nonexistent)
-      strongLearner->setPlotFile(context, plotFile);
+    learner->setVerbose(verbose);
+    LuapeBatchLearnerPtr batchLearner = new LuapeBatchLearner(learner);
+    if (plotFile != File::nonexistent && learner.isInstanceOf<IterativeLearner>())
+      learner.staticCast<IterativeLearner>()->setPlotFile(context, plotFile);
     classifier->setBatchLearner(batchLearner);
     classifier->setEvaluator(defaultSupervisedEvaluator());
-
+ 
     classifier->train(context, trainData, testData, T("Training"), false);
+
+    context.resultCallback("classifier", classifier->getRootNode());
     return true;
   }
 

@@ -14,7 +14,7 @@
 namespace lbcpp
 {
 
-class ExactWeakLearner : public WeakLearner
+class ExactWeakLearner : public LuapeLearner
 {
 public:
   ExactWeakLearner(LuapeNodeBuilderPtr nodeBuilder) : nodeBuilder(nodeBuilder) {}
@@ -30,14 +30,14 @@ public:
 
     // evaluate each weak node
     LuapeNodePtr bestWeakNode;
-    bestWeakObjectiveValue = -DBL_MAX;
+    bestObjectiveValue = -DBL_MAX;
     for (size_t i = 0; i < weakNodes.size(); ++i)
     {
       LuapeNodePtr weakNode = weakNodes[i];
-      double objective = computeWeakObjectiveWithEventualStump(context, problem, weakNode, examples); // side effect on weakNode
-      if (objective > bestWeakObjectiveValue)
+      double objectiveValue = objective->computeObjectiveWithEventualStump(context, problem, weakNode, examples); // side effect on weakNode
+      if (objectiveValue > bestObjectiveValue)
       {
-        bestWeakObjectiveValue = objective;
+        bestObjectiveValue = objectiveValue;
         bestWeakNode = weakNode;
       }
     }

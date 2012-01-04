@@ -17,17 +17,21 @@ namespace lbcpp
 class TreeLearner : public LuapeLearner
 {
 public:
-  TreeLearner(WeakLearnerPtr conditionLearner, LearningObjectivePtr objective, size_t minExamplesToSplit, size_t maxDepth)
-    : conditionLearner(conditionLearner), objective(objective), minExamplesToSplit(minExamplesToSplit), maxDepth(maxDepth) {}
+  TreeLearner(LearningObjectivePtr objective, LuapeLearnerPtr conditionLearner, size_t minExamplesToSplit, size_t maxDepth)
+    : objective(objective), conditionLearner(conditionLearner), minExamplesToSplit(minExamplesToSplit), maxDepth(maxDepth) {}
   TreeLearner() {}
 
   virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
-    {return makeTree(context, problem, examples, 1);}
+  {
+    objective->initialize(problem);
+    conditionLearner->setObjective(objective);
+    return makeTree(context, problem, examples, 1);
+  }
 
 protected:
   friend class TreeLearnerClass;
 
-  WeakLearnerPtr conditionLearner;
+  LuapeLearnerPtr conditionLearner;
   LearningObjectivePtr objective;
   size_t minExamplesToSplit;
   size_t maxDepth;
@@ -39,8 +43,7 @@ protected:
       return new LuapeConstantNode(objective->computeVote(examples));
 
     // learn condition and make a leaf if condition learning fails
-    conditionLearner->setWeakObjective(objective);
-    LuapeNodePtr conditionNode = conditionLearner->learn(context, LuapeNodePtr(), problem, examples);
+    LuapeNodePtr conditionNode = subLearn(context, conditionLearner, LuapeNodePtr(), problem, examples);
     if (!conditionNode)
       return new LuapeConstantNode(objective->computeVote(examples));
 
@@ -48,31 +51,20 @@ protected:
     LuapeSampleVectorPtr conditionValues = problem->getTrainingCache()->getSamples(context, conditionNode, examples);
     IndexSetPtr failureExamples, successExamples, missingExamples;
     LuapeTestNode::dispatchIndices(conditionValues, failureExamples, successExamples, missingExamples);
+    if (failureExamples->size() == examples->size() || successExamples->size() == examples->size() || missingExamples->size() == examples->size())
+      return new LuapeConstantNode(objective->computeVote(examples));
 
     // ...call recursively
+    if (verbose)
+      context.enterScope(conditionNode->toShortString() + T(" ") + String((int)examples->size()) + T(" -> ") + String((int)failureExamples->size()) + T("; ") + String((int)successExamples->size()) + T("; ") + String((int)missingExamples->size()));
     LuapeNodePtr failureNode = makeTree(context, problem, failureExamples, depth + 1);
-    LuapeNodePtr successNode = makeTree(context, problem, failureExamples, depth + 1);
-    LuapeNodePtr missingNode = makeTree(context, problem, failureExamples, depth + 1);
+    LuapeNodePtr successNode = makeTree(context, problem, successExamples, depth + 1);
+    LuapeNodePtr missingNode = makeTree(context, problem, missingExamples, depth + 1);
+    if (verbose)
+      context.leaveScope();
 
     // and build a test node.
     return new LuapeTestNode(conditionNode, failureNode, successNode, missingNode);
-  }
-};
-
-class ClassificationTreeLearner : public TreeLearner
-{
-public:
-  ClassificationTreeLearner(WeakLearnerPtr conditionLearner, size_t minExamplesToSplit, size_t maxDepth)
-    : TreeLearner(conditionLearner, LearningObjectivePtr(), minExamplesToSplit, maxDepth)
-  {
-  }
-
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
-  {
-    ClassPtr dvClass = problem.staticCast<LuapeClassifier>()->getDoubleVectorClass();
-    objective = new ClassificationLearningObjective(dvClass);
-    objective->setSupervisions(problem->getTrainingSupervisions());
-    return TreeLearner::learn(context, node, problem, examples);
   }
 };
 

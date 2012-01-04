@@ -17,40 +17,40 @@
 
   <!-- Tree Learner -->
   <class name="TreeLearner" base="LuapeLearner">
-    <constructor arguments="WeakLearnerPtr conditionLearner, LearningObjectivePtr weakObjective, size_t minExamplesToSplit, size_t maxDepth"/>
-    <variable type="WeakLearner" name="conditionLearner"/>
+    <constructor arguments="LearningObjectivePtr weakObjective, LuapeLearnerPtr conditionLearner, size_t minExamplesToSplit, size_t maxDepth"/>
     <variable type="LearningObjective" name="objective"/>
+    <variable type="LuapeLearner" name="conditionLearner"/>
     <variable type="PositiveInteger" name="minExamplesToSplit"/>
     <variable type="PositiveInteger" name="maxDepth"/>
   </class>
 
   <!-- Boosting -->
   <class name="BoostingLearner" base="IterativeLearner" abstract="yes">
-    <variable type="WeakLearner" name="weakLearner"/>
+    <variable type="LuapeLearner" name="weakLearner"/>
     <variable type="PositiveInteger" name="treeDepth"/>
   </class>
   
   <!-- Boosting with weights -->
   <class name="WeightBoostingLearner" base="BoostingLearner" abstract="yes"/>
   <class name="AdaBoostLearner" base="WeightBoostingLearner">
-    <constructor arguments="WeakLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth" returnType="IterativeLearner"/>
+    <constructor arguments="LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth" returnType="IterativeLearner"/>
   </class>
   <class name="AdaBoostMHLearner" base="WeightBoostingLearner" abstract="yes"/>
   <class name="DiscreteAdaBoostMHLearner" base="AdaBoostMHLearner">
-    <constructor arguments="WeakLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth" returnType="IterativeLearner"/>
+    <constructor arguments="LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth" returnType="IterativeLearner"/>
   </class>
   <class name="RealAdaBoostMHLearner" base="AdaBoostMHLearner">
-    <constructor arguments="WeakLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth" returnType="IterativeLearner"/>
+    <constructor arguments="LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth" returnType="IterativeLearner"/>
   </class>
 
   <!-- Gradient Boosting -->
   <class name="GradientBoostingLearner" base="BoostingLearner" abstract="yes"/>
   <class name="L2BoostingLearner" base="GradientBoostingLearner">
-    <constructor arguments="WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, size_t treeDepth" returnType="IterativeLearner"/>
+    <constructor arguments="LuapeLearnerPtr weakLearner, size_t maxIterations, double learningRate, size_t treeDepth" returnType="IterativeLearner"/>
   </class>
   
   <class name="RankingGradientBoostingLearner" base="GradientBoostingLearner">
-    <constructor arguments="WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss, size_t treeDepth" returnType="IterativeLearner"/>
+    <constructor arguments="LuapeLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss, size_t treeDepth" returnType="IterativeLearner"/>
     <variable type="RankingLossFunction" name="rankingLoss"/>
   </class>
   
@@ -70,26 +70,26 @@
   </class>
 
   <!-- Weak Learners -->
-  <class name="ExactWeakLearner" base="WeakLearner">
+  <class name="ExactWeakLearner" base="LuapeLearner">
     <constructor arguments="LuapeNodeBuilderPtr nodeBuilder"/>
     <variable type="LuapeNodeBuilder" name="nodeBuilder"/>
   </class>
 
-  <class name="LaminatingWeakLearner" base="WeakLearner">
+  <class name="LaminatingWeakLearner" base="LuapeLearner">
     <constructor arguments="LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating"/>
     <variable type="LuapeNodeBuilder" name="nodeBuilder"/>
     <variable type="Double" name="relativeBudget"/>
     <variable type="PositiveInteger" name="minExamplesForLaminating"/>
   </class>
 
-  <class name="BanditBasedWeakLearner" base="WeakLearner">
+  <class name="BanditBasedWeakLearner" base="LuapeLearner">
     <constructor arguments="LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize"/>
     <variable type="LuapeNodeBuilder" name="nodeBuilder"/>
     <variable type="Double" name="relativeBudget"/>
     <variable type="Double" name="miniBatchRelativeSize"/>
   </class>
 
-  <class name="OptimizerBasedSequentialWeakLearner" base="WeakLearner">
+  <class name="OptimizerBasedSequentialWeakLearner" base="LuapeLearner">
     <constructor arguments="OptimizerPtr optimizer, size_t complexity"/>
     <variable type="Optimizer" name="optimizer"/>
     <variable type="PositiveInteger" name="complexity"/>

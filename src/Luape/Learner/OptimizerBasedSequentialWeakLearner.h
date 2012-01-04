@@ -15,7 +15,7 @@
 namespace lbcpp
 {
 
-class OptimizerBasedSequentialWeakLearner : public WeakLearner
+class OptimizerBasedSequentialWeakLearner : public LuapeLearner
 {
 public:
   OptimizerBasedSequentialWeakLearner(OptimizerPtr optimizer, size_t complexity)
@@ -33,7 +33,7 @@ public:
     LuapeGraphBuilderStatePtr finalState = state->getBestSolution().getObjectAndCast<LuapeGraphBuilderState>();
     if (!finalState || finalState->getStackSize() != 1)
       return LuapeNodePtr();
-    bestWeakObjectiveValue = state->getBestScore();
+    bestObjectiveValue = state->getBestScore();
     return finalState->getStackElement(0);
   }
  
@@ -45,7 +45,7 @@ protected:
 
   struct Objective : public SimpleUnaryFunction
   {
-    Objective(WeakLearnerPtr weakLearner,
+    Objective(LuapeLearnerPtr weakLearner,
               LuapeInferencePtr problem,
               const IndexSetPtr& examples)
        : SimpleUnaryFunction(luapeGraphBuilderStateClass, doubleType),
@@ -57,14 +57,14 @@ protected:
       if (builder->getStackSize() != 1)
         return 0.0;
       LuapeNodePtr node = builder->getStackElement(0);
-      double res = weakLearner->computeWeakObjectiveWithEventualStump(context, problem, node, examples);
+      double res = weakLearner->getObjective()->computeObjectiveWithEventualStump(context, problem, node, examples);
       builder->setStackElement(0, node); // node may have been replaced by a stump of itself
       context.informationCallback(node->toShortString() + T(" ==> ") + String(res));
       return res;
     }
 
   private:
-    WeakLearnerPtr weakLearner;
+    LuapeLearnerPtr weakLearner;
     LuapeInferencePtr problem;
     IndexSetPtr examples;
   };

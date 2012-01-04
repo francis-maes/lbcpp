@@ -58,7 +58,7 @@ public:
 
     // configure gradient boosting
     LuapeNodeBuilderPtr nodeBuilder = policyBasedNodeBuilder(treeBasedRandomPolicy(), budget, maxDepth);
-    WeakLearnerPtr weakLearner = exactWeakLearner(nodeBuilder);
+    LuapeLearnerPtr weakLearner = exactWeakLearner(nodeBuilder);
     learningMachine->setBatchLearner(new LuapeBatchLearner(l2BoostingLearner(weakLearner, numIterations, learningRate, treeDepth)));
 
     // learn

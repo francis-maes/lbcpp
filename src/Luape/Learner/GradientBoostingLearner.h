@@ -17,8 +17,8 @@ namespace lbcpp
 class GradientBoostingLearner : public BoostingLearner
 {
 public:
-  GradientBoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, size_t treeDepth)
-    : BoostingLearner(weakLearner, maxIterations, treeDepth), learningRate(learningRate) {}
+  GradientBoostingLearner(LuapeLearnerPtr weakLearner, size_t maxIterations, double learningRate, size_t treeDepth)
+    : BoostingLearner(new RegressionLearningObjective(), weakLearner, maxIterations, treeDepth), learningRate(learningRate) {}
   GradientBoostingLearner() : learningRate(0.0) {}
 
   virtual void computeLoss(const LuapeInferencePtr& problem, const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const = 0;
@@ -39,9 +39,6 @@ public:
     }
     return BoostingLearner::doLearningIteration(context, node, problem, examples, trainingScore, validationScore);
   }
-
-  virtual LearningObjectivePtr createWeakObjective(const LuapeInferencePtr& problem) const
-    {return new RegressionLearningObjective();}
 
   virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
@@ -95,7 +92,7 @@ typedef ReferenceCountedObjectPtr<GradientBoostingLearner> GradientBoostingLearn
 class L2BoostingLearner : public GradientBoostingLearner
 {
 public:
-  L2BoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, size_t treeDepth)
+  L2BoostingLearner(LuapeLearnerPtr weakLearner, size_t maxIterations, double learningRate, size_t treeDepth)
     : GradientBoostingLearner(weakLearner, maxIterations, learningRate, treeDepth) {}
   L2BoostingLearner() {}
 
@@ -139,7 +136,7 @@ public:
 class RankingGradientBoostingLearner : public GradientBoostingLearner
 {
 public:
-  RankingGradientBoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss, size_t treeDepth)
+  RankingGradientBoostingLearner(LuapeLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss, size_t treeDepth)
     : GradientBoostingLearner(weakLearner, maxIterations, learningRate, treeDepth), rankingLoss(rankingLoss) {}
   RankingGradientBoostingLearner() {}
 
