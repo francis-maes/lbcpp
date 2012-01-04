@@ -77,6 +77,7 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
 
   ScalarVariableMean lastIterationsValidationScore;
   double bestValidationScore = DBL_MAX;
+  double trainingScore, validationScore;
   for (size_t i = 0; i < maxIterations; ++i)
   {
     //learner->getTrainingCache()->displayCacheInformation(context);
@@ -85,7 +86,6 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
     context.enterScope(T("Iteration ") + String((int)i + 1));
     context.resultCallback(T("iteration"), i+1);
     
-    double trainingScore, validationScore;
     doLearningIteration(context, node, problem, examples, trainingScore, validationScore);
     if (verbose)
     {
@@ -110,11 +110,12 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
     //  context.informationCallback(T("Graph: ") + learner->getGraph()->toShortString());
     context.progressCallback(new ProgressionState(i+1, maxIterations, T("Iterations")));
   
-    if (verbose)
+    if (verbose && (i % 10 == 9))
+    {
       context.enterScope(T("Most important nodes"));
-    displayMostImportantNodes(context, problem, verbose);
-    if (verbose)
+      displayMostImportantNodes(context, problem, verbose);
       context.leaveScope();
+    }
   }
   context.leaveScope();
 
@@ -127,7 +128,8 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
   if (plotOutputStream)
   {
     *plotOutputStream << "\n# best evaluation score: " << String(bestValidationScore * 100.0, 3) << "%\n";
-    *plotOutputStream << "# last 20% iteration evaluation: " << String(lastIterationsValidationScore.getMean() * 100, 3) << "%\n\n";
+    *plotOutputStream << "# last 20% iteration evaluation: " << String(lastIterationsValidationScore.getMean() * 100, 3) << "%\n";
+    *plotOutputStream << "# final evaluation: " << String(validationScore * 100, 3) << "%\n";
     plotOutputStream->flush();
   }
     
@@ -191,6 +193,7 @@ void IterativeLearner::displayMostImportantNodes(ExecutionContext& context, cons
     }
   }
 
+#if 0
   // sample new active variables
   function->clearActiveVariables();
   while (function->getNumActiveVariables() < 10 && Z > 1e-12)
@@ -206,4 +209,5 @@ void IterativeLearner::displayMostImportantNodes(ExecutionContext& context, cons
     Z -= probabilities[index];
     probabilities[index] = 0.0;
   }
+#endif // 0
 }

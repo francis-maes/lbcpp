@@ -677,7 +677,8 @@ SET(LBCPP_LUAPE_NODE_BUILDER_SOURCES
   Luape/NodeBuilder/CompositeNodeBuilder.h
   Luape/NodeBuilder/InputsNodeBuilder.h
   Luape/NodeBuilder/ExhaustiveSequentialNodeBuilder.h
-  Luape/NodeBuilder/PolicyBasedNodeBuilder.h  
+  Luape/NodeBuilder/PolicyBasedNodeBuilder.h
+  Luape/NodeBuilder/RandomSequentialNodeBuilder.h
   Luape/NodeBuilder/AdaptativeSamplingNodeBuilder.h  
   Luape/NodeBuilder/LuapeNodeBuilderLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeNodeBuilderLibrary.cpp

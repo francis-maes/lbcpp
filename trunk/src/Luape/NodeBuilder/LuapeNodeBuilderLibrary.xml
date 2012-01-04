@@ -25,7 +25,7 @@
     <variable type="Boolean" name="isYielded"/>
   </class>
 
-  <!-- Node Builders -->
+  <!-- Generic Node Builders -->
   <class name="CompositeNodeBuilder" base="LuapeNodeBuilder">
     <constructor arguments="const std::vector&lt;LuapeNodeBuilderPtr&gt;&amp; builders"/>
     <constructor arguments="LuapeNodeBuilderPtr builder1, LuapeNodeBuilderPtr builder2"/>
@@ -37,10 +37,12 @@
     <variable type="LuapeNode" name="node"/>
   </class>
   
+  <!-- Input Variables Node Builder -->
   <class name="InputsNodeBuilder" base="LuapeNodeBuilder">
     <constructor/>
   </class>
 
+  <!-- Node Builders based on the NodeBuilderDecisionProblem -->
   <class name="ExhaustiveSequentialNodeBuilder" base="LuapeNodeBuilder">
     <constructor arguments="size_t complexity"/>
     <variable type="PositiveInteger" name="complexity"/>
@@ -53,6 +55,11 @@
     <constructor arguments="const PolicyPtr&amp; policy, size_t numNodes, size_t complexity"/>
     <variable type="Policy" name="policy"/>
     <variable type="PositiveInteger" name="complexity"/>
+  </class>
+
+  <!-- Native sequential Node Builders -->
+  <class name="RandomSequentialNodeBuilder" base="SequentialNodeBuilder">
+    <constructor arguments="size_t numNodes, size_t complexity" returnType="StochasticNodeBuilder"/>
   </class>
 
   <class name="AdaptativeSequentialNodeBuilder" base="SequentialNodeBuilder" abstract="yes">

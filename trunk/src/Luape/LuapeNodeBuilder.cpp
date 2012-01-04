@@ -21,7 +21,7 @@ StochasticNodeBuilder::StochasticNodeBuilder(size_t numNodes)
 
 void StochasticNodeBuilder::buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<LuapeNodePtr>& res)
 {
-  size_t numTrialsAllowed = 2 * numNodes;
+  size_t numTrialsAllowed = 5 * numNodes;
   
   std::set<LuapeNodePtr> nodes;
   size_t limit = numNodes;
@@ -54,11 +54,11 @@ SequentialNodeBuilder::SequentialNodeBuilder(size_t numNodes, size_t complexity)
 {
 }
 
-LuapeNodePtr SequentialNodeBuilder::sampleNode(ExecutionContext& context, const LuapeInferencePtr& function)
+LuapeNodePtr SequentialNodeBuilder::sampleNode(ExecutionContext& context, const LuapeInferencePtr& problem)
 {
   RandomGeneratorPtr random = context.getRandomGenerator();
-  universe = function->getUniverse();
-  typeSearchSpace = function->getSearchSpace(context, complexity);
+  universe = problem->getUniverse();
+  typeSearchSpace = problem->getSearchSpace(context, complexity);
 
   std::vector<LuapeNodePtr> stack;
   LuapeGraphBuilderTypeStatePtr typeState;
@@ -74,7 +74,7 @@ LuapeNodePtr SequentialNodeBuilder::sampleNode(ExecutionContext& context, const 
     size_t numFailuresAllowed = 100;
     size_t numFailures;
     for (numFailures = 0; numFailures < numFailuresAllowed; ++numFailures)
-      if (sampleAction(context, typeState, action) && isActionAvailable(action, stack))
+      if (sampleAction(context, problem, typeState, action) && isActionAvailable(action, stack))
         break;
     samplingDone(context, numFailures, numFailuresAllowed);
     if (numFailures == numFailuresAllowed)

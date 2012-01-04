@@ -73,6 +73,7 @@ public:
     //LuapeNodeBuilderPtr nodeBuilder = policyBasedNodeBuilder(new RandomPolicy(), budget, complexity);
     //LuapeNodeBuilderPtr nodeBuilder = adaptativeSamplingNodeBuilder(budget, complexity);
     LuapeNodeBuilderPtr nodeBuilder = exhaustiveSequentialNodeBuilder(complexity);
+    //LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(budget, complexity);
     return compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
   }
 

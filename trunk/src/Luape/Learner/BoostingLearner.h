@@ -64,6 +64,8 @@ protected:
 
   LuapeNodePtr learnContribution(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, size_t depth)
   {
+    if (examples->size() < 2)
+      return LuapeNodePtr();
     double weakObjective;
     LuapeNodePtr weakNode = weakLearn(context, problem, examples, weakObjective);
     if (!weakNode)
