@@ -12,7 +12,6 @@
 # include "ProteinPerception.h"
 # include "../Predictor/ProteinPredictorParameters.h"
 # include <lbcpp/Luape/LuapeLearner.h>
-# include <lbcpp/Luape/WeakLearner.h>
 # include "../../../src/Luape/Function/ObjectLuapeFunctions.h"
 
 namespace lbcpp

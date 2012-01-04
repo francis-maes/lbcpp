@@ -16,7 +16,6 @@
 # include <lbcpp/Function/IterationFunction.h>
 # include <lbcpp/Luape/LuapeBatchLearner.h>
 # include <lbcpp/Luape/LuapeLearner.h>
-# include <lbcpp/Luape/WeakLearner.h>
 # include <lbcpp/Learning/LossFunction.h>
 # include "../Core/SinglePlayerMCTSOptimizer.h"
 

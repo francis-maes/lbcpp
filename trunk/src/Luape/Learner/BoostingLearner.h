@@ -10,7 +10,6 @@
 # define LBCPP_LUAPE_LEARNER_BOOSTING_H_
 
 # include <lbcpp/Luape/LuapeLearner.h>
-# include <lbcpp/Luape/WeakLearner.h>
 # include <lbcpp/Data/IndexSet.h>
 # include <lbcpp/Data/DoubleVector.h>
 # include <lbcpp/DecisionProblem/Policy.h>
@@ -25,8 +24,15 @@ public:
     : IterativeLearner(maxIterations), weakLearner(weakLearner), treeDepth(treeDepth) {}
   BoostingLearner() : treeDepth(0) {}
 
-  virtual WeakLearnerObjectivePtr createWeakObjective(const LuapeInferencePtr& problem) const = 0;
+  virtual LearningObjectivePtr createWeakObjective(const LuapeInferencePtr& problem) const = 0;
   virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& successVote, Variable& failureVote, Variable& missingVote) const = 0;
+
+  virtual bool initialize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  {
+    objective = createWeakObjective(problem);
+    objective->setSupervisions(problem->getTrainingSupervisions());
+    return true;
+  }
 
   virtual bool doLearningIteration(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
@@ -61,6 +67,8 @@ protected:
   
   WeakLearnerPtr weakLearner;
   size_t treeDepth;
+
+  LearningObjectivePtr objective;
 
   LuapeNodePtr learnContribution(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, size_t depth)
   {
@@ -98,7 +106,7 @@ protected:
       return LuapeNodePtr();
     if (verbose)
       context.enterScope(T("Weak learning with ") + String((int)examples->size()) + T(" examples"));
-    weakLearner->setWeakObjective(createWeakObjective(problem));
+    weakLearner->setWeakObjective(objective);
     LuapeNodePtr weakNode = weakLearner->learn(context, LuapeNodePtr(), problem, examples);
     weakObjective = weakLearner->getBestWeakObjectiveValue();
     if (verbose)

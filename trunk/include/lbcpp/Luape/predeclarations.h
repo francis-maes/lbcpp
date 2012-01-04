@@ -56,8 +56,8 @@ typedef ReferenceCountedObjectPtr<IterativeLearner> IterativeLearnerPtr;
 class BoostingLearner;
 typedef ReferenceCountedObjectPtr<BoostingLearner> BoostingLearnerPtr;
 
-class WeakLearnerObjective;
-typedef ReferenceCountedObjectPtr<WeakLearnerObjective> WeakLearnerObjectivePtr;
+class LearningObjective;
+typedef ReferenceCountedObjectPtr<LearningObjective> LearningObjectivePtr;
 
 class WeakLearner;
 typedef ReferenceCountedObjectPtr<WeakLearner> WeakLearnerPtr;

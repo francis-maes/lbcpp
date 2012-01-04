@@ -11,97 +11,9 @@
 
 # include "WeightBoostingLearner.h"
 # include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
-# include <lbcpp/Luape/WeakLearner.h>
 
 namespace lbcpp
 {
-
-class AdaBoostWeakObjective : public WeakLearnerObjective
-{
-public:
-  AdaBoostWeakObjective(const DenseDoubleVectorPtr& supervisions, const DenseDoubleVectorPtr& weights)
-    : supervisions(supervisions), weights(weights), correctWeight(0.0), errorWeight(0.0), missingWeight(0.0)
-  {
-    jassert(supervisions->getElementsType() == probabilityType);
-    jassert(supervisions->getNumValues() == weights->getNumValues());
-  }
-
-  virtual Variable computeVote(const IndexSetPtr& indices) const
-  {
-    ScalarVariableMean res;
-    for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
-      res.push(supervisions->getValue(*it), weights->getValue(*it));
-    return Variable(res.getMean(), probabilityType);
-  }
-
-  virtual void setPredictions(const LuapeSampleVectorPtr& predictions)
-  {
-    this->predictions = predictions;
-
-    correctWeight = 0.0;
-    errorWeight = 0.0;
-    missingWeight = 0.0;
-
-    for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
-    {
-      size_t example = it.getIndex();
-      bool sup = (supervisions->getValue(example) > 0.5);
-      double weight = weights->getValue(example);
-      unsigned char pred = it.getRawBoolean();
-      if (pred == 2)
-        missingWeight += weight;
-      else if ((pred == 0 && !sup) || (pred == 1 && sup))
-        correctWeight += weight;
-      else
-        errorWeight += weight;
-    }
-  }
-
-  virtual void flipPrediction(size_t index)
-  {
-    bool sup = supervisions->getValue(index) > 0.5;
-    double weight = weights->getValue(index);
-    if (sup)
-    {
-      correctWeight += weight;
-      errorWeight -= weight;
-    }
-    else
-    {
-      errorWeight += weight;
-      correctWeight -= weight;
-    }
-  }
-
-  virtual double computeObjective() const
-  {
-    double totalWeight = (missingWeight + correctWeight + errorWeight);
-    jassert(totalWeight);
-    return juce::jmax(correctWeight / totalWeight, errorWeight / totalWeight);
-  }
-
-  double getCorrectWeight() const
-    {return correctWeight;}
-
-  double getErrorWeight() const
-    {return errorWeight;}
-
-  double getMissingWeight() const
-    {return missingWeight;}
-
-protected:
-  friend class AdaBoostWeakObjectiveClass;
-
-  LuapeSampleVectorPtr predictions;
-  DenseDoubleVectorPtr supervisions;
-  DenseDoubleVectorPtr weights;
-
-  double correctWeight;
-  double errorWeight;
-  double missingWeight;
-};
-
-typedef ReferenceCountedObjectPtr<AdaBoostWeakObjective> AdaBoostWeakObjectivePtr;
 
 class AdaBoostLearner : public WeightBoostingLearner
 {
@@ -110,15 +22,15 @@ public:
     : WeightBoostingLearner(weakLearner, maxIterations, treeDepth) {}
   AdaBoostLearner() {}
 
-  virtual WeakLearnerObjectivePtr createWeakObjective(const LuapeInferencePtr& problem) const
-    {return new AdaBoostWeakObjective(problem->getTrainingSupervisions(), weights);}
+  virtual LearningObjectivePtr createWeakObjective(const LuapeInferencePtr& problem) const
+    {return new BinaryClassificationLearningObjective();}
 
 //  virtual bool shouldStop(double accuracy) const
 //    {return accuracy == 0.0 || accuracy == 1.0;}
  
   virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
-    AdaBoostWeakObjectivePtr objective = createWeakObjective(problem).staticCast<AdaBoostWeakObjective>();
+    BinaryClassificationLearningObjectivePtr objective = this->objective.staticCast<BinaryClassificationLearningObjective>();
     objective->setPredictions(weakPredictions);
 
     double correctWeight = objective->getCorrectWeight();

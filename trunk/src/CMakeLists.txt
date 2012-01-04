@@ -649,8 +649,8 @@ SET(LBCPP_LUAPE_SOURCES
   Luape/LuapeInference.cpp
   ../include/lbcpp/Luape/LuapeNodeBuilder.h
   Luape/LuapeNodeBuilder.cpp
-  ../include/lbcpp/Luape/WeakLearner.h
-  Luape/WeakLearner.cpp
+  ../include/lbcpp/Luape/LearningObjective.h
+  Luape/LearningObjective.cpp
   ../include/lbcpp/Luape/LuapeLearner.h
   Luape/LuapeLearner.cpp
   ../include/lbcpp/Luape/LuapeBatchLearner.h
