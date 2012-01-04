@@ -650,8 +650,8 @@ SET(LBCPP_LUAPE_SOURCES
   Luape/LuapeInference.cpp
   ../include/lbcpp/Luape/LuapeNodeBuilder.h
   Luape/LuapeNodeBuilder.cpp
-  ../include/lbcpp/Luape/BoostingWeakLearner.h
-  Luape/BoostingWeakLearner.cpp
+  ../include/lbcpp/Luape/WeakLearner.h
+  Luape/WeakLearner.cpp
   ../include/lbcpp/Luape/LuapeLearner.h
   Luape/LuapeLearner.cpp
   ../include/lbcpp/Luape/LuapeBatchLearner.h
@@ -689,6 +689,7 @@ SET(LBCPP_LUAPE_LEARNER_SOURCES
   Luape/Learner/CompositeLearner.h
   Luape/Learner/GradientDescentLearner.h
   Luape/Learner/GenerateTestNodesLearner.h
+  Luape/Learner/BoostingLearner.h
   Luape/Learner/WeightBoostingLearner.h
   Luape/Learner/AdaBoostLearner.h
   Luape/Learner/AdaBoostMHLearner.h
@@ -970,7 +971,7 @@ SOURCE_GROUP(Luape FILES ${LBCPP_LUAPE_SOURCES})
 SOURCE_SUB_GROUP(Luape Function FILES ${LBCPP_LUAPE_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(Luape NodeBuilder FILES ${LBCPP_LUAPE_NODE_BUILDER_SOURCES})
 SOURCE_SUB_GROUP(Luape Learner FILES ${LBCPP_LUAPE_LEARNER_SOURCES})
-SOURCE_SUB_GROUP(Luape BoostingWeakLearner FILES ${LBCPP_LUAPE_BOOSTING_WEAK_LEARNER_SOURCES})
+SOURCE_SUB_GROUP(Luape WeakLearner FILES ${LBCPP_LUAPE_BOOSTING_WEAK_LEARNER_SOURCES})
 
 ## Lua
 SOURCE_GROUP(Lua FILES ${LBCPP_LUA_SOURCES})

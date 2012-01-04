@@ -15,7 +15,7 @@
 namespace lbcpp
 {
 
-class AdaBoostMHWeakObjective : public BoostingWeakObjective
+class AdaBoostMHWeakObjective : public WeakLearnerObjective
 {
 public:
   AdaBoostMHWeakObjective(const ClassPtr& doubleVectorClass, const DenseDoubleVectorPtr& supervisions, const DenseDoubleVectorPtr& weights)
@@ -150,11 +150,11 @@ typedef ReferenceCountedObjectPtr<AdaBoostMHWeakObjective> AdaBoostMHWeakObjecti
 class AdaBoostMHLearner : public WeightBoostingLearner
 {
 public:
-  AdaBoostMHLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations)
+  AdaBoostMHLearner(WeakLearnerPtr weakLearner, size_t maxIterations)
     : WeightBoostingLearner(weakLearner, maxIterations) {}
   AdaBoostMHLearner() {}
 
-  virtual BoostingWeakObjectivePtr createWeakObjective() const
+  virtual WeakLearnerObjectivePtr createWeakObjective() const
     {return new AdaBoostMHWeakObjective(function.staticCast<LuapeClassifier>()->getDoubleVectorClass(), supervisions, weights);}
 
 //  virtual bool shouldStop(double weakObjectiveValue) const
@@ -419,7 +419,7 @@ public:
 class DiscreteAdaBoostMHLearner : public AdaBoostMHLearner
 {
 public:
-  DiscreteAdaBoostMHLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations)
+  DiscreteAdaBoostMHLearner(WeakLearnerPtr weakLearner, size_t maxIterations)
     : AdaBoostMHLearner(weakLearner, maxIterations) {}
   DiscreteAdaBoostMHLearner() {}
 
@@ -482,7 +482,7 @@ public:
 class RealAdaBoostMHLearner : public AdaBoostMHLearner
 {
 public:
-  RealAdaBoostMHLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations)
+  RealAdaBoostMHLearner(WeakLearnerPtr weakLearner, size_t maxIterations)
     : AdaBoostMHLearner(weakLearner, maxIterations) {}
   RealAdaBoostMHLearner() {}
 

@@ -9,16 +9,15 @@
 #ifndef LBCPP_LUAPE_LEARNER_GRADIENT_BOOSTING_H_
 # define LBCPP_LUAPE_LEARNER_GRADIENT_BOOSTING_H_
 
-# include <lbcpp/Luape/LuapeLearner.h>
-# include <lbcpp/Data/RandomVariable.h>
+# include "BoostingLearner.h"
 
 namespace lbcpp
 {
 
-class L2BoostingWeakObjective : public BoostingWeakObjective
+class L2WeakLearnerObjective : public WeakLearnerObjective
 {
 public:
-  L2BoostingWeakObjective(const DenseDoubleVectorPtr& targets)
+  L2WeakLearnerObjective(const DenseDoubleVectorPtr& targets)
     : targets(targets) {}
 
   virtual void setPredictions(const LuapeSampleVectorPtr& predictions)
@@ -81,12 +80,12 @@ protected:
   ScalarVariableMeanAndVariance missings;
 };
 
-typedef ReferenceCountedObjectPtr<L2BoostingWeakObjective> L2BoostingWeakObjectivePtr;
+typedef ReferenceCountedObjectPtr<L2WeakLearnerObjective> L2WeakLearnerObjectivePtr;
 
 class GradientBoostingLearner : public BoostingLearner
 {
 public:
-  GradientBoostingLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations, double learningRate)
+  GradientBoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate)
     : BoostingLearner(weakLearner, maxIterations), learningRate(learningRate) {}
   GradientBoostingLearner() : learningRate(0.0) {}
 
@@ -107,8 +106,8 @@ public:
     return BoostingLearner::doLearningIteration(context, node, problem, examples, trainingScore, validationScore);
   }
 
-  virtual BoostingWeakObjectivePtr createWeakObjective() const
-    {return new L2BoostingWeakObjective(pseudoResiduals);}
+  virtual WeakLearnerObjectivePtr createWeakObjective() const
+    {return new L2WeakLearnerObjective(pseudoResiduals);}
 
   virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, Variable& successVote, Variable& failureVote, Variable& missingVote) const
   {
@@ -165,7 +164,7 @@ typedef ReferenceCountedObjectPtr<GradientBoostingLearner> GradientBoostingLearn
 class L2BoostingLearner : public GradientBoostingLearner
 {
 public:
-  L2BoostingLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations, double learningRate)
+  L2BoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate)
     : GradientBoostingLearner(weakLearner, maxIterations, learningRate) {}
   L2BoostingLearner() {}
 
@@ -199,7 +198,7 @@ public:
   {
     const LuapeInferencePtr& problem = this->function;
 
-    L2BoostingWeakObjectivePtr objective(new L2BoostingWeakObjective(pseudoResiduals));
+    L2WeakLearnerObjectivePtr objective(new L2WeakLearnerObjective(pseudoResiduals));
     objective->setPredictions(problem->getTrainingCache()->getSamples(context, weakNode, examples));
     successVote = objective->getPositivesMean();
     failureVote = objective->getNegativesMean();
@@ -211,7 +210,7 @@ public:
 class RankingGradientBoostingLearner : public GradientBoostingLearner
 {
 public:
-  RankingGradientBoostingLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss)
+  RankingGradientBoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss)
     : GradientBoostingLearner(weakLearner, maxIterations, learningRate), rankingLoss(rankingLoss) {}
   RankingGradientBoostingLearner() {}
 

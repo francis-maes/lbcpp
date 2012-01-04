@@ -15,7 +15,7 @@
 namespace lbcpp
 {
 
-class LaminatingWeakLearner : public BoostingWeakLearner
+class LaminatingWeakLearner : public WeakLearner
 {
 public:
   LaminatingWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating)

@@ -9,12 +9,12 @@
 #ifndef LBCPP_LUAPE_WEAK_LEARNER_EXACT_H_
 # define LBCPP_LUAPE_WEAK_LEARNER_EXACT_H_
 
-# include <lbcpp/Luape/BoostingWeakLearner.h>
+# include <lbcpp/Luape/WeakLearner.h>
 
 namespace lbcpp
 {
 
-class ExactWeakLearner : public BoostingWeakLearner
+class ExactWeakLearner : public WeakLearner
 {
 public:
   ExactWeakLearner(LuapeNodeBuilderPtr nodeBuilder) : nodeBuilder(nodeBuilder) {}

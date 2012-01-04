@@ -12,7 +12,7 @@
 # include "ProteinPerception.h"
 # include "../Predictor/ProteinPredictorParameters.h"
 # include <lbcpp/Luape/LuapeLearner.h>
-# include <lbcpp/Luape/BoostingWeakLearner.h>
+# include <lbcpp/Luape/WeakLearner.h>
 # include "../../../src/Luape/Function/ObjectLuapeFunctions.h"
 
 namespace lbcpp
@@ -76,11 +76,11 @@ public:
     return compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
   }
 
-  BoostingWeakLearnerPtr createWeakLearner(ProteinTarget target) const
+  WeakLearnerPtr createWeakLearner(ProteinTarget target) const
   {
     LuapeNodeBuilderPtr nodeBuilder = createNodeBuilder(target);
 
-    BoostingWeakLearnerPtr conditionLearner;
+    WeakLearnerPtr conditionLearner;
     if (miniBatchRelativeSize == 0.0)
       conditionLearner = laminatingWeakLearner(nodeBuilder, relativeBudget);
     else if (miniBatchRelativeSize < 1.0)
@@ -88,7 +88,7 @@ public:
     else
       conditionLearner = exactWeakLearner(nodeBuilder);
 
-    BoostingWeakLearnerPtr res = conditionLearner;
+    WeakLearnerPtr res = conditionLearner;
     for (size_t i = 1; i < treeDepth; ++i)
       res = binaryTreeWeakLearner(conditionLearner, res);
     return res;

@@ -91,35 +91,13 @@ protected:
 
 extern IterativeLearnerPtr classifierSGDLearner(MultiClassLossFunctionPtr lossFunction, IterationFunctionPtr learningRate, size_t maxIterations);
 
-class BoostingLearner : public IterativeLearner
-{
-public:
-  BoostingLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations);
-  BoostingLearner() {}
+extern IterativeLearnerPtr adaBoostLearner(WeakLearnerPtr weakLearner, size_t maxIterations);
 
-  virtual BoostingWeakObjectivePtr createWeakObjective() const = 0;
-  virtual bool computeVotes(ExecutionContext& context, const LuapeNodePtr& weakNode, const IndexSetPtr& indices, Variable& successVote, Variable& failureVote, Variable& missingVote) const = 0;
+extern IterativeLearnerPtr discreteAdaBoostMHLearner(WeakLearnerPtr weakLearner, size_t maxIterations);
+extern IterativeLearnerPtr realAdaBoostMHLearner(WeakLearnerPtr weakLearner, size_t maxIterations);
 
-  const BoostingWeakLearnerPtr& getWeakLearner() const
-    {return weakLearner;}
-
-  virtual bool doLearningIteration(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore);
-
-  LuapeNodePtr turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, double weakObjective, const IndexSetPtr& examples) const;
-
-protected:
-  friend class BoostingLearnerClass;
-  
-  BoostingWeakLearnerPtr weakLearner;
-};
-
-extern BoostingLearnerPtr adaBoostLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations);
-
-extern BoostingLearnerPtr discreteAdaBoostMHLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations);
-extern BoostingLearnerPtr realAdaBoostMHLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations);
-
-extern BoostingLearnerPtr l2BoostingLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations, double learningRate);
-extern BoostingLearnerPtr rankingGradientBoostingLearner(BoostingWeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss);
+extern IterativeLearnerPtr l2BoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate);
+extern IterativeLearnerPtr rankingGradientBoostingLearner(WeakLearnerPtr weakLearner, size_t maxIterations, double learningRate, RankingLossFunctionPtr rankingLoss);
 
 }; /* namespace lbcpp */
 

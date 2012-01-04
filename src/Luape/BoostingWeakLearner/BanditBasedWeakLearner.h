@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_WEAK_LEARNER_BANDIT_BASED_H_
 # define LBCPP_LUAPE_WEAK_LEARNER_BANDIT_BASED_H_
 
-# include <lbcpp/Luape/BoostingWeakLearner.h>
+# include <lbcpp/Luape/WeakLearner.h>
 # include <lbcpp/Luape/LuapeCache.h>
 # include <algorithm>
 # include <queue> // for priority queue in bandits pool
@@ -17,7 +17,7 @@
 namespace lbcpp
 {
 
-class BanditBasedWeakLearner : public BoostingWeakLearner
+class BanditBasedWeakLearner : public WeakLearner
 {
 public:
   BanditBasedWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize)
