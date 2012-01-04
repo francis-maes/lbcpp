@@ -28,9 +28,9 @@ public:
 
     for (size_t i = 0; i < 100; ++i)
     {
-      if (i % 10 == 0)
+      if ((i + 1) % 10 == 0)
         context.progressCallback(new ProgressionState(i + 1, 100, T("It")));
-      juce::Thread::sleep(context.getRandomGenerator()->sampleInt(100, 100 * i + 200));
+      juce::Thread::sleep(context.getRandomGenerator()->sampleInt(100, 300));
     }
 
     juce::RelativeTime t2 = juce::RelativeTime::milliseconds(juce::Time::currentTimeMillis());
