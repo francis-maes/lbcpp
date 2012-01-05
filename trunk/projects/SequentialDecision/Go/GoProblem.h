@@ -213,6 +213,8 @@ public:
 
 typedef ReferenceCountedObjectPtr<GoProblem> GoProblemPtr;
 
+#ifdef LBCPP_USER_INTERFACE
+
 class GoBoardComponent : public MatrixComponent
 {
 public:
@@ -330,6 +332,8 @@ public:
 protected:
   MatrixPtr scores;
 };
+
+#endif // !LBCPP_USER_INTERFACE_H_
 
 }; /* namespace lbcpp */
 

@@ -80,7 +80,7 @@ public:
       //nodeBuilder = policyBasedNodeBuilder(randomPolicy(), maxNumWeakNodes, complexity);
 
  // -> constant for boosting ->
-    //nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
+    nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
 
     LuapeLearnerPtr weakLearner;
     if (laminating)
@@ -92,12 +92,15 @@ public:
       weakLearner = exactWeakLearner(nodeBuilder);
     weakLearner->setVerbose(verbose);
 
-    size_t minExamplesToSplit = 2;
+    /*size_t minExamplesToSplit = 2;
     LuapeLearnerPtr learner = treeLearner(new ClassificationLearningObjective(), weakLearner, minExamplesToSplit, treeDepth);
     learner->setVerbose(verbose);
     learner = ensembleLearner(learner, numIterations);
-    learner->setVerbose(true);
-    //IterativeLearnerPtr learner = discreteAdaBoostMHLearner(weakLearner, numIterations, treeDepth);
+    learner->setVerbose(true);*/
+
+    IterativeLearnerPtr learner = discreteAdaBoostMHLearner(weakLearner, numIterations, treeDepth);
+    learner->setVerbose(verbose);
+
     //MultiClassLossFunctionPtr lossFunction = oneAgainstAllMultiClassLossFunction(hingeDiscriminativeLossFunction());
     //logBinomialMultiClassLossFunction()
     //LuapeLearnerPtr strongLearner = compositeLearner(generateTestNodesLearner(nodeBuilder), classifierSGDLearner(lossFunction, constantIterationFunction(0.1), numIterations));
