@@ -265,8 +265,8 @@ public:
 
   virtual void traceReceived(const String& uniqueIdentifier, const ExecutionTracePtr& trace)
   {
-    // TODO: merge with the current Trace
-    warningCallback(T("Hey guy ! I received a trace, what am I supposed to do with ?"));
+    enterScope(T("Trace ") + uniqueIdentifier);
+    leaveScope(trace);
   }
 
   virtual void connectionMade()
