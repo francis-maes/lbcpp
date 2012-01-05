@@ -175,9 +175,25 @@ public:
     return NetworkClientPtr();
   }
 
-  void setNetworkClientOf(const String& uniqueIndentifier, const NetworkClientPtr& client)
+  void setNetworkClientOf(const String& uniqueIdentifier, const NetworkClientPtr& client)
   {
-    routingTable[uniqueIndentifier] = client;
+    routingTable[uniqueIdentifier] = client;
+  }
+
+  XmlElementPtr getTrace(const String& uniqueIdentifier) const
+  {
+    juce::OwnedArray<File> files;
+    context.getProjectDirectory().findChildFiles(files, File::findFiles, true, uniqueIdentifier + T(".archive"));
+    jassert(files.size() <= 1);
+    if (files.size() == 0)
+      return XmlElementPtr();
+    PairPtr p = Pair::createFromFile(context, *files[0]);
+    if (!p)
+    {
+      context.warningCallback(T("Manager::getTrace"), T("Corrupted file"));
+      return XmlElementPtr();
+    }
+    return p->getSecond().getObjectAndCast<XmlElement>(context);
   }
 
 protected:

@@ -96,6 +96,12 @@ void ManagerNetworkClient::variableReceived(const Variable& variable)
     if (callback)
       callback->workUnitResultReceived(message->getUniqueIdentifier(), message->getResult(context));
   }
+  else if (objClass == executionTracesNetworkMessageClass)
+  {
+    ExecutionTracesNetworkMessagePtr messsage = obj.staticCast<ExecutionTracesNetworkMessage>();
+    for (size_t i = 0; i < messsage->getNumTraces(); ++i)
+      callback->traceReceived(messsage->getUniqueIdentifier(i), messsage->getTrace(context, i));
+  }
   else
     context.warningCallback(T("ManagerNetworkClient::variableReceived")
                             , T("Unknwon object of type: ") + objClass->toString());
@@ -107,6 +113,11 @@ bool ManagerNetworkClient::sendWorkUnit(size_t sourceIdentifier, const WorkUnitP
                           size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
 {
   return sendVariable(new WorkUnitRequestNetworkMessage(context, sourceIdentifier, workUnit, projectName, source, destination, requiredCpus, requiredMemory, requiredTime));
+}
+
+bool ManagerNetworkClient::askTrace(const String& uniqueIdentifier)
+{
+  return sendVariable(new GetTraceNetworkMessage(uniqueIdentifier));
 }
 
 void GridNetworkClient::variableReceived(const Variable& variable)

@@ -439,7 +439,7 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
   const size_t numScores = nb_attributes * nb_goal_multiregr;
   SCORE_TYPE* varimp = (SCORE_TYPE*)MyMalloc(numScores * sizeof(SCORE_TYPE));
   average_predictions_ltrees = 1;
-  compute_ltrees_variable_importance_multiregr_separate(varimp, -1);
+  compute_ltrees_variable_importance_multiregr(varimp, -1);
 
   const EnumerationPtr attributesEnum = trainingData[0]->getVariable(0).getObjectAndCast<Container>()->getElementsEnumeration();
   if (attributesEnum)

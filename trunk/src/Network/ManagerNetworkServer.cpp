@@ -49,6 +49,11 @@ public:
       for (size_t i = 0; i < traces.size(); ++i)
         xmlExecutionTracesReceived(traces[i].first, traces[i].second);
     }
+    else if (objClass == getTraceNetworkMessageClass)
+    {
+      GetTraceNetworkMessagePtr message = obj.staticCast<GetTraceNetworkMessage>();
+      getTraceReceived(message->getUniqueIdentifier());
+    }
     else
       context.warningCallback(T("ManagerServerNetworkClient::variableReceived")
                               , T("Unknwon object of type: ") + objClass->toString());
@@ -127,6 +132,19 @@ public:
     }
 
     client->sendVariable(new WorkUnitResultNetworkMessage(context, uniqueIdentifier, manager->getXmlResult(request)));
+  }
+
+  void getTraceReceived(const String& uniqueIdentifier) const
+  {
+    ExecutionTracesNetworkMessagePtr message = new ExecutionTracesNetworkMessage();
+    message->addXmlElementExecutionTrace(uniqueIdentifier, manager->getTrace(uniqueIdentifier));
+    NetworkClientPtr client = manager->getNetworkClientOf(uniqueIdentifier);
+    if (!client)
+    {
+      context.warningCallback(T("ManagerServerNetworkClient::getTraceReceived"), T("The request ") + uniqueIdentifier + (" has no associated NetworkWork client !"));
+      return;
+    }
+    client->sendVariable(message);
   }
   
   /** Sender **/
