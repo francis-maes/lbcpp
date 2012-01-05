@@ -103,7 +103,11 @@ protected:
       else if (tag == T("enumeration"))
         generateEnumerationDeclaration(elt);
       else if (tag == T("uicomponent"))
+#ifdef LBCPP_USER_INTERFACE
         declarations.push_back(Declaration::makeUIComponent(currentNamespace, elt->getStringAttribute(T("name")), xmlTypeToCppType(elt->getStringAttribute(T("type")))));
+#else
+        {} // ignore
+#endif // LBCPP_USER_INTERFACE
       else if (tag == T("code"))
         generateCode(elt);
       else if (tag == T("namespace"))
