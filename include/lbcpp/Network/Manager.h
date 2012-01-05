@@ -69,7 +69,7 @@ public:
     archive->saveToFile(context, createFullPathOfFile(getArchiveFile(context, request)));
     getRequestFile(context, request).deleteFile();
     requests.erase(request->getUniqueIdentifier());
-    routingTable.erase(request->getUniqueIdentifier());
+    //routingTable.erase(request->getUniqueIdentifier());
   }
 
   void crachedRequest(WorkUnitNetworkRequestPtr request)
