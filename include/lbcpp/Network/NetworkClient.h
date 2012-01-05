@@ -54,6 +54,7 @@ public:
 
   virtual void workUnitAcknowledgementReceived(size_t sourceIdentifier, const String& uniqueIdentifier) = 0;
   virtual void workUnitResultReceived(const String& uniqueIdentifier, const Variable& result) = 0;
+  virtual void traceReceived(const String& uniqueIdentifier, const ExecutionTracePtr& trace) = 0;
 
   virtual void connectionMade() {}
   virtual void connectionLost() {}
@@ -73,6 +74,8 @@ public:
   bool sendWorkUnit(size_t sourceIdentifier, const WorkUnitPtr& workUnit,
                     const String& projectName, const String& source, const String& destination,
                     size_t requiredCpus, size_t requiredMemory, size_t requiredTime);
+
+  bool askTrace(const String& uniqueIdentifier);
 
   virtual void connectionMade()
     {if (callback) callback->connectionMade();}

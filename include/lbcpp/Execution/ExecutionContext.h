@@ -129,11 +129,11 @@ extern ExecutionContextPtr defaultConsoleExecutionContext(bool noMultiThreading 
 
 extern ExecutionContextPtr distributedExecutionContext(ExecutionContext& parentContext, const String& remoteHostName, size_t remotePort,
                                                        const String& project, const String& from, const std::vector<String>& to,
-                                                       const ResourceEstimatorPtr& resourceEstimator);
+                                                       const ResourceEstimatorPtr& resourceEstimator, bool importTrace = false);
 
 extern ExecutionContextPtr distributedExecutionContext(ExecutionContext& parentContext, const String& remoteHostName, size_t remotePort,
                                                        const String& project, const String& from, const String& to,
-                                                       const ResourceEstimatorPtr& resourceEstimator);
+                                                       const ResourceEstimatorPtr& resourceEstimator, bool importTrace = false);
 
 /* DistributedExecutionContext */
 class ResourceEstimator : public Object

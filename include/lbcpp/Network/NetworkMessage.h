@@ -62,6 +62,26 @@ protected:
 typedef ReferenceCountedObjectPtr<WorkUnitRequestNetworkMessage> WorkUnitRequestNetworkMessagePtr;
 extern ClassPtr workUnitRequestNetworkMessageClass;
 
+class GetTraceNetworkMessage : public NetworkMessage
+{
+public:
+  GetTraceNetworkMessage(const String& uniqueIdentifier)
+    : uniqueIdentifier(uniqueIdentifier) {}
+
+  String getUniqueIdentifier() const
+    {return uniqueIdentifier;}
+
+protected:
+  friend class GetTraceNetworkMessageClass;
+
+  String uniqueIdentifier;
+
+  GetTraceNetworkMessage() {}
+};
+
+typedef ReferenceCountedObjectPtr<GetTraceNetworkMessage> GetTraceNetworkMessagePtr;
+extern ClassPtr getTraceNetworkMessageClass;
+
 class WorkUnitAcknowledgementNetworkMessage : public NetworkMessage
 {
 public:
@@ -188,6 +208,26 @@ public:
     XmlElementPtr element = new XmlElement();
     element->saveObject(context, trace, T("trace"));
     traces.push_back(std::pair<String, XmlElementPtr>(uniqueIdentifier, element));
+  }
+
+  void addXmlElementExecutionTrace(const String& uniqueIdentifier, const XmlElementPtr& trace)
+  {
+    traces.push_back(std::pair<String, XmlElementPtr>(uniqueIdentifier, trace));
+  }
+
+  size_t getNumTraces() const
+    {return traces.size();}
+
+  ExecutionTracePtr getTrace(ExecutionContext& context, size_t index) const
+  {
+    jassert(index < traces.size());
+    return traces[index].second->createObject(context).dynamicCast<ExecutionTrace>();
+  }
+
+  String getUniqueIdentifier(size_t index) const
+  {
+    jassert(index < traces.size());
+    return traces[index].first;
   }
 
 protected:

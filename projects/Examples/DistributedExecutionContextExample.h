@@ -55,7 +55,7 @@ public:
   {
     ExecutionContextPtr remoteContext = distributedExecutionContext(context, hostName, hostPort,
                                                                     T("testProject"), T("jbecker@mac"), T("jbecker@nic3"),
-                                                                    fixedResourceEstimator(1, 1, 1));
+                                                                    fixedResourceEstimator(1, 1000, 1), true);
 
     context.informationCallback(T("ClientWorkUnit::run"), T("Use of CompositeWorkUnit"));
     CompositeWorkUnitPtr workUnits = new CompositeWorkUnit(T("A composite work unit (synchronous run)"));

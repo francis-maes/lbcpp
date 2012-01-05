@@ -40,6 +40,9 @@ public:
 
   virtual void waitUntilAllWorkUnitsAreDone()
     {decorated->waitUntilAllWorkUnitsAreDone();}
+
+  virtual void flushCallbacks()
+    {decorated->flushCallbacks();}
   
   virtual Variable run(const WorkUnitPtr& workUnit, bool pushIntoStack = true)
     {return run(workUnit, pushIntoStack);}
@@ -56,7 +59,7 @@ class LocalGridExecutionContextCallback : public ExecutionContextCallback
 {
 public:
   LocalGridExecutionContextCallback(ExecutionContext& context, const GridNetworkClientPtr& client, const String& uniqueIdentifier)
-    : context(context), runContext(new DecoratorExecutionContext(context)), client(client), uniqueIdentifier(uniqueIdentifier)
+    : context(context), runContext(new DecoratorExecutionContext(context)), client(client), uniqueIdentifier(uniqueIdentifier), isFinished(false)
   {
     trace = new ExecutionTrace();
     runContext->appendCallback(makeTraceExecutionCallback(trace));
@@ -70,7 +73,16 @@ public:
     ExecutionTracesNetworkMessagePtr message = new ExecutionTracesNetworkMessage();
     message->addExecutionTrace(context, uniqueIdentifier, trace);
     client->sendVariable(message);
-    delete this;
+    isFinished = true;
+  //  delete this;
+  }
+
+  void waitWorkUnitsAreDone() const
+  {
+    while (!isFinished)
+    {
+      juce::Thread::sleep(200);
+    }
   }
 
 protected:
@@ -79,6 +91,7 @@ protected:
   ExecutionTracePtr trace;
   GridNetworkClientPtr client;
   String uniqueIdentifier;
+  volatile bool isFinished;
 };
 
 typedef LocalGridExecutionContextCallback* LocalGridExecutionContextCallbackPtr;
@@ -93,11 +106,20 @@ public:
   {
     ScopedLock _(lock);
 
+    std::vector<LocalGridExecutionContextCallbackPtr> callbacks(workUnitRequests.size());
     for (size_t i = 0; i < workUnitRequests.size(); ++i)
     {
-      LocalGridExecutionContextCallbackPtr callback = new LocalGridExecutionContextCallback(context, this, workUnitRequests[i]->getUniqueIdentifier());
-      callback->getExecutionContext()->pushWorkUnit(workUnitRequests[i]->getWorkUnit(context), callback);
+      callbacks[i] = new LocalGridExecutionContextCallback(context, this, workUnitRequests[i]->getUniqueIdentifier());
+      callbacks[i]->getExecutionContext()->pushWorkUnit(workUnitRequests[i]->getWorkUnit(context), callbacks[i]);
     }
+
+    for (size_t i = 0; i < callbacks.size(); ++i)
+    {
+      callbacks[i]->waitWorkUnitsAreDone();
+      delete callbacks[i];
+    }
+    context.waitUntilAllWorkUnitsAreDone();
+
     isWaitingWorkUnits = false;
   }
 

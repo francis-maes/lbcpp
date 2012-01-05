@@ -30,6 +30,10 @@
     <variable type="WorkUnitNetworkRequest" name="request"/>
   </class>
 
+  <class name="GetTraceNetworkMessage" base="NetworkMessage">
+    <variable type="String" name="uniqueIdentifier"/>
+  </class>
+
   <class name="WorkUnitAcknowledgementNetworkMessage" base="NetworkMessage">
     <variable type="PositiveInteger" name="sourceIdentifier"/>
     <variable type="String" name="uniqueIdentifier"/>

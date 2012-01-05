@@ -155,10 +155,12 @@ public:
   DistributedExecutionContext(ExecutionContext& parentContext,
                               const String& remoteHostName, size_t remotePort,
                               const String& project, const String& from, const std::vector<String>& to,
-                              const ResourceEstimatorPtr& resourceEstimator)
+                              const ResourceEstimatorPtr& resourceEstimator,
+                              bool importTrace)
     : SubExecutionContext(parentContext), client(new ManagerNetworkClient(parentContext)),
       remoteHostName(remoteHostName), remotePort(remotePort),
       project(project), from(from), to(to), resourceEstimator(resourceEstimator),
+      importTrace(importTrace),
       asynchroneousWorkUnitPool(new AsynchroneousWorkUnitPool()),
       numSentWorkUnits(0), currentTo(0)
   {
@@ -168,10 +170,12 @@ public:
   DistributedExecutionContext(ExecutionContext& parentContext,
                               const String& remoteHostName, size_t remotePort,
                               const String& project, const String& from, const String& to,
-                              const ResourceEstimatorPtr& resourceEstimator)
+                              const ResourceEstimatorPtr& resourceEstimator,
+                              bool importTrace)
   : SubExecutionContext(parentContext), client(new ManagerNetworkClient(parentContext)),
   remoteHostName(remoteHostName), remotePort(remotePort),
   project(project), from(from), to(std::vector<String>(1, to)), resourceEstimator(resourceEstimator),
+  importTrace(importTrace),
   asynchroneousWorkUnitPool(new AsynchroneousWorkUnitPool()),
   numSentWorkUnits(0), currentTo(0)
   {
@@ -254,6 +258,15 @@ public:
     poolAndId.first->resultReceived(poolAndId.second, result);
     workUnitIds.erase(uniqueIdentifier);
     pools.erase(internalId);
+
+    if (importTrace)
+      client->askTrace(uniqueIdentifier);
+  }
+
+  virtual void traceReceived(const String& uniqueIdentifier, const ExecutionTracePtr& trace)
+  {
+    // TODO: merge with the current Trace
+    warningCallback(T("Hey guy ! I received a trace, what am I supposed to do with ?"));
   }
 
   virtual void connectionMade()
@@ -276,6 +289,7 @@ protected:
   String from;
   std::vector<String> to;
   ResourceEstimatorPtr resourceEstimator;
+  bool importTrace;
 
   AsynchroneousWorkUnitPoolPtr asynchroneousWorkUnitPool;
 
