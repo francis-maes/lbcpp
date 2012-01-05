@@ -290,8 +290,16 @@
   <!-- END BanditBox -->
 
 
-
-
+  <!-- BEGIN Perceptron WorkUnit -->
+  <class name="SimplePerceptron" base="Function">
+    <variable type="DenseDoubleVector[EnumValue, Double]" name="weights"/>
+    <variable type="Double" name="bias"/>
+  </class>
+  <class name="SimplePerceptronBatchLearner" base="BatchLearner">
+    <constructor/>
+  </class>
+  <class name="SimplePerceptronWorkUnit" base="WorkUnit"/>
+  <!-- END Perceptron WorkUnit -->
 
 
 
