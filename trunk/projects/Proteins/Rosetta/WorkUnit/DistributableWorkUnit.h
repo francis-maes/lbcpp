@@ -121,7 +121,6 @@ public:
 
   virtual Variable resultsCallback(ExecutionContext& context, VariableVector& results)
   {
-    context.enterScope(T("Manage results"));
     double j = 0;
 
     for (size_t i = 0; i < results.getNumElements(); i++)
@@ -129,7 +128,6 @@ public:
     j /= (double)results.getNumElements();
 
     context.informationCallback(T("Average is ") + String(j));
-    context.leaveScope(Variable(j));
 
     return Variable();
   }
@@ -172,8 +170,7 @@ public:
     for (size_t i = 0; i < distributable->getWorkUnits()->getNumWorkUnits(); i++)
     {
       context.enterScope(distributable->getWorkUnits()->getWorkUnit(i));
-      context.resultCallback(T("Result"), result.getObjectAndCast<VariableVector> ()->getElement(i));
-      context.leaveScope();
+      context.leaveScope(result.getObjectAndCast<VariableVector> ()->getElement(i));
     }
     context.leaveScope();
 
@@ -181,7 +178,7 @@ public:
     context.enterScope(T("Managing results"));
     Variable gatheredResult = distributable->resultsCallback(context, *result.getObjectAndCast<
         VariableVector> ());
-    context.leaveScope();
+    context.leaveScope(gatheredResult);
 
     context.informationCallback(T("Distribution to cluster done."));
 
