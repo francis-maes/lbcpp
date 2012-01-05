@@ -122,6 +122,7 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/CysteinBox.h
   WorkUnit/LargeBox.h
   WorkUnit/BanditBox.h
+  WorkUnit/PerceptronWorkUnit.h
   WorkUnit/ProteinStatisticsWorkUnit.h
   WorkUnit/FabienBox.h
   WorkUnit/ESANN11.h
