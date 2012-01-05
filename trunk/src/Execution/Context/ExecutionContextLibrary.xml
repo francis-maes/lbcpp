@@ -19,7 +19,7 @@
   </class>
 
   <class name="FixedResourceEstimator" base="ResourceEstimator">
-    <constructor arguments="size_t requiredMemory, size_t requiredTime, size_t requiredCpus"/>
+    <constructor arguments="size_t requiredCpus, size_t requiredMemory, size_t requiredTime"/>
     <variable type="PositiveInteger" name="requiredMemory"/>
     <variable type="PositiveInteger" name="requiredTime"/>
     <variable type="PositiveInteger" name="requiredCpus"/>
