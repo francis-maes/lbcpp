@@ -19,6 +19,7 @@
 namespace lbcpp
 {
 
+#ifdef LBCPP_USER_INTERFACE
 GoStateComponent::GoStateComponent(GoStatePtr state, const String& name)
   : MatrixComponent(state->getBoard()), state(state), actionsPerceptionFunction(new GoActionsPerception())
 {
@@ -29,6 +30,7 @@ GoStateAndScoresComponent::GoStateAndScoresComponent(PairPtr stateAndScores, con
   : GoStateComponent(stateAndScores->getFirst().getObjectAndCast<GoState>(), name), scores(stateAndScores->getSecond().getObjectAndCast<Matrix>())
 {
 }
+#endif //LBCPP_USER_INTERFACE
 
 class GoSandBox : public WorkUnit
 {
