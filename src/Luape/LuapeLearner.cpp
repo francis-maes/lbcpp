@@ -71,7 +71,8 @@ void IterativeLearner::setPlotFile(ExecutionContext& context, const File& plotFi
 
 LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
 {
-  context.enterScope(T("Learning"));
+  if (verbose)
+    context.enterScope(T("Learning"));
 
   if (plotOutputStream)
   {
@@ -99,8 +100,11 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
     //learner->getTrainingCache()->displayCacheInformation(context);
     //Object::displayObjectAllocationInfo(std::cout);
 
-    context.enterScope(T("Iteration ") + String((int)i + 1));
-    context.resultCallback(T("iteration"), i+1);
+    if (verbose)
+    {
+      context.enterScope(T("Iteration ") + String((int)i + 1));
+      context.resultCallback(T("iteration"), i+1);
+    }
     
     doLearningIteration(context, node, problem, examples, trainingScore, validationScore);
     if (verbose)
@@ -108,8 +112,8 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
       context.resultCallback("trainCacheSizeInMb", problem->getTrainingCache()->getCacheSizeInBytes() / (1024.0 * 1024.0));
       if (problem->getValidationCache())
         context.resultCallback("validationCacheSizeInMb", problem->getValidationCache()->getCacheSizeInBytes() / (1024.0 * 1024.0));
+      context.resultCallback(T("log10(iteration)"), log10((double)i+1.0));
     }
-    context.resultCallback(T("log10(iteration)"), log10((double)i+1.0));
 
     if (validationScore < bestValidationScore)
       bestValidationScore = validationScore;
@@ -121,26 +125,33 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
     if (i >= 4 * maxIterations / 5)
       lastIterationsValidationScore.push(validationScore);
 
-    context.leaveScope();
-
-    //  context.informationCallback(T("Graph: ") + learner->getGraph()->toShortString());
-    context.progressCallback(new ProgressionState(i+1, maxIterations, T("Iterations")));
-  
-    if (verbose && (i % 10 == 9))
+    if (verbose)
     {
-      context.enterScope(T("Most important nodes"));
-      displayMostImportantNodes(context, problem, verbose);
       context.leaveScope();
+
+      //  context.informationCallback(T("Graph: ") + learner->getGraph()->toShortString());
+      context.progressCallback(new ProgressionState(i+1, maxIterations, T("Iterations")));
+    
+      if (i % 10 == 9)
+      {
+        context.enterScope(T("Most important nodes"));
+        displayMostImportantNodes(context, problem, verbose);
+        context.leaveScope();
+      }
     }
   }
-  context.leaveScope();
+  if (verbose)
+  {
+    context.leaveScope();
 
-  context.enterScope(T("Most important nodes"));
-  displayMostImportantNodes(context, problem, true);
-  context.leaveScope();
+    context.enterScope(T("Most important nodes"));
+    displayMostImportantNodes(context, problem, true);
+    context.leaveScope();
 
-  context.informationCallback(T("Best evaluation: ") + String(bestValidationScore * 100.0, 3) + T("%"));
-  context.informationCallback(T("Last 20% iteration evaluation: ") + String(lastIterationsValidationScore.getMean() * 100, 3) + T("%"));
+    context.informationCallback(T("Best evaluation: ") + String(bestValidationScore * 100.0, 3) + T("%"));
+    context.informationCallback(T("Last 20% iteration evaluation: ") + String(lastIterationsValidationScore.getMean() * 100, 3) + T("%"));
+  }
+  
   if (plotOutputStream)
   {
     *plotOutputStream << "\n# best evaluation score: " << String(bestValidationScore * 100.0, 3) << "%\n";

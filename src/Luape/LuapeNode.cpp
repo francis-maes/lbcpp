@@ -424,8 +424,7 @@ VectorPtr LuapeVectorSumNode::createEmptyOutputs(size_t numSamples) const
 void LuapeVectorSumNode::updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues) const
 {
   const ObjectVectorPtr& a = outputs.staticCast<ObjectVector>();
-  size_t n = a->getNumElements();
-  jassert(newNodeValues->size() == n);
+  jassert(newNodeValues->size() == a->getNumElements());
   jassert(newNodeValues->getElementsType()->inheritsFrom(denseDoubleVectorClass()));
   size_t i = 0;
   for (LuapeSampleVector::const_iterator it = newNodeValues->begin(); it != newNodeValues->end(); ++it, ++i)
@@ -476,8 +475,7 @@ VectorPtr LuapeCreateSparseVectorNode::createEmptyOutputs(size_t numSamples) con
 void LuapeCreateSparseVectorNode::updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues) const
 { 
   const ObjectVectorPtr& a = outputs.staticCast<ObjectVector>();
-  size_t n = a->getNumElements();
-  jassert(newNodeValues->size() == n);
+  jassert(newNodeValues->size() == a->getNumElements());
   jassert(newNodeValues->getElementsType() == positiveIntegerType);
   size_t i = 0;
   for (LuapeSampleVector::const_iterator it = newNodeValues->begin(); it != newNodeValues->end(); ++it, ++i)

@@ -51,7 +51,8 @@ public:
     }
 
     // evaluate
-    evaluatePredictions(context, problem, trainingScore, validationScore);
+    if (verbose)
+      evaluatePredictions(context, problem, trainingScore, validationScore);
 
     // trainingCache->checkCacheIsCorrect(context, function->getRootNode());
     if (verbose)

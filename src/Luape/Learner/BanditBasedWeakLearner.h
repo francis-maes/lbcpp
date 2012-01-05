@@ -93,9 +93,11 @@ public:
     // display ten best arms
     if (verbose)
     {
+#ifndef JUCE_MAC    
       size_t index = 0;
       for (std::multimap<double, LuapeNodePtr>::const_reverse_iterator it = sortedNodes.rbegin(); it != sortedNodes.rend() && index < 10; ++it, ++index)
         context.informationCallback(T("[") + String(it->first) + T("]: ") + it->second->toShortString() + T(" (tk = ") + String(arms[it->second].episodeStats.getCount()) + T(")"));
+#endif
     }
 
     bestObjectiveValue = objective->computeObjectiveWithEventualStump(context, problem, bestWeakNode, examples); // side effect on bestWeakNode

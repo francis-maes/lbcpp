@@ -65,7 +65,7 @@ public:
       Variable element = samples->getElement(i);
       TypePtr type = element.getType();
 
-      size_t target;
+      size_t target = 0;
       if (type == phiPsiMoverClass)
         target = 0;
       else if (type == shearMoverClass)
