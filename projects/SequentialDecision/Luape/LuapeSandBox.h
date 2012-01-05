@@ -25,7 +25,7 @@ namespace lbcpp
 class LuapeSandBox : public WorkUnit
 {
 public:
-  LuapeSandBox() : maxExamples(0), treeDepth(1), complexity(5), relativeBudget(10.0), laminating(false), numIterations(1000),
+  LuapeSandBox() : maxExamples(0), treeDepth(1), complexity(5), relativeBudget(10.0), numIterations(1000),
                    minExamplesForLaminating(5), useVariableRelevancies(false), useExtendedVariables(false), verbose(false) {}
 
   virtual Variable run(ExecutionContext& context)
@@ -55,6 +55,8 @@ public:
     if (!classifier->initialize(context, inputClass, labels))
       return false;
 
+    bool laminating = (minExamplesForLaminating > 0);
+
     size_t maxNumWeakNodes;
     if (relativeBudget != 0.0)
     {
@@ -68,7 +70,7 @@ public:
       context.informationCallback(T("Max num weak nodes: ") + String((int)maxNumWeakNodes)); 
     }
     else
-      maxNumWeakNodes = 0;
+      maxNumWeakNodes = numVariables;
 
     LuapeNodeBuilderPtr nodeBuilder;
     if (complexity == 0)
@@ -150,7 +152,6 @@ protected:
   size_t treeDepth;
   size_t complexity;
   double relativeBudget;
-  bool laminating;
   size_t numIterations;
   size_t minExamplesForLaminating;
   bool useVariableRelevancies;
