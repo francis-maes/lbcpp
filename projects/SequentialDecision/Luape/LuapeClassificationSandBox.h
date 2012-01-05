@@ -137,7 +137,7 @@ public:
 
     for (size_t complexity = 4; complexity <= 8; complexity += 2)
     {
-      String str(complexity / 2);
+      String str((int)complexity / 2);
       str += T("-variables ");
       weakLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(numVariables, complexity));
       testConditionLearner(context, learnerConstructor, weakLearner, str + T("random + randomsplit"), scoreStats);
