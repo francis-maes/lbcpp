@@ -208,7 +208,7 @@ public:
   {
     ExecutionContextPtr remoteContext = distributedExecutionContext(context, remoteHostName,
         remoteHostPort, distributable->getName(), localHostLogin, clusterLogin,
-        fixedResourceEstimator(1, memory, time));
+        fixedResourceEstimator(1, memory, time), true);
 
     // initialization
     context.enterScope(T("Initializing distributable work unit::distributed"));
