@@ -118,6 +118,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_GO_PERCEPTION_SOURCES
 
 SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
   Luape/LuapeSandBox.h
+  Luape/LuapeClassificationSandBox.h
   Luape/LuapeSandBoxLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeSandBoxLibrary.cpp
 )

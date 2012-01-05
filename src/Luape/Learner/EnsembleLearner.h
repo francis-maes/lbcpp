@@ -32,6 +32,9 @@ public:
     }
   }
 
+  virtual IndexSetPtr getSubSamples(ExecutionContext& context, size_t modelIndex, const IndexSetPtr& examples) const
+    {return examples;}
+
   virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     const LuapeSequenceNodePtr& sequenceNode = node.staticCast<LuapeSequenceNode>();
@@ -45,7 +48,7 @@ public:
         context.enterScope(T("Iteration ") + String((int)i));
         context.resultCallback(T("iteration"), i);
       }
-      LuapeNodePtr baseModel = subLearn(context, baseLearner, LuapeNodePtr(), problem, examples);
+      LuapeNodePtr baseModel = subLearn(context, baseLearner, LuapeNodePtr(), problem, getSubSamples(context, i, examples));
       if (baseModel)
         sequenceNode->pushNode(context, baseModel, problem->getSamplesCaches());
       else
@@ -67,6 +70,17 @@ protected:
 
   LuapeLearnerPtr baseLearner;
   size_t ensembleSize;
+};
+
+class BaggingLearner : public EnsembleLearner
+{
+public:
+  BaggingLearner(const LuapeLearnerPtr& baseLearner, size_t ensembleSize)
+    : EnsembleLearner(baseLearner, ensembleSize) {}
+  BaggingLearner() {}
+
+  virtual IndexSetPtr getSubSamples(ExecutionContext& context, size_t modelIndex, const IndexSetPtr& examples) const
+    {return examples->sampleBootStrap(context.getRandomGenerator());}
 };
 
 }; /* namespace lbcpp */

@@ -25,6 +25,8 @@ public:
   virtual bool sampleAction(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeGraphBuilderTypeStatePtr typeState, ObjectPtr& res) const
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
+    if (!typeState)
+      return false;
 
     std::vector<double> probabilities(3, 0.0);
     double Z = 0.0;
@@ -57,6 +59,8 @@ public:
       {
         const std::vector<std::pair<LuapeFunctionPtr, LuapeGraphBuilderTypeStatePtr> >& apply = typeState->getApplyActions();
         jassert(apply.size());
+        if (apply.empty())
+          return false;
         res = apply[random->sampleSize(apply.size())].first;
         return true;
       }

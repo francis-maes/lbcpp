@@ -48,14 +48,10 @@ public:
     // create initial examples subset
     size_t effectiveBudget = 0;
     IndexSetPtr examplesSubset;
-    if (N0 == examples->size())
+    if (N0 >= examples->size())
       examplesSubset = examples;
     else
-    {
-      // make initial examples subset
-      examplesSubset = new IndexSet();
-      examplesSubset->randomlyExpandUsingSource(context, N0, examples);
-    }
+      examplesSubset = examples->sampleSubset(context.getRandomGenerator(), N0);
 
     // create initial weak learners subset
     std::vector<std::pair<LuapeNodePtr, double> > weakNodesByScore(W0);
@@ -112,7 +108,7 @@ public:
         examplesSubset = examples;
       }
       else
-        examplesSubset->randomlyExpandUsingSource(context, numExamples, examples);
+        examplesSubset = examples->sampleSubset(context.getRandomGenerator(), numExamples);
     }
     LuapeNodePtr weakNode = weakNodesByScore[0].first;
     bestObjectiveValue = objective->computeObjectiveWithEventualStump(context, problem, weakNode, examples); // side effect on weakNode

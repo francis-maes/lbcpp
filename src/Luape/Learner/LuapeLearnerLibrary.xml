@@ -9,6 +9,11 @@
     <variable type="LuapeLearner" name="baseLearner"/>
     <variable type="PositiveInteger" name="ensembleSize"/>
   </class>
+
+  <class name="BaggingLearner" base="EnsembleLearner">
+    <constructor arguments="const LuapeLearnerPtr&amp; baseLearner, size_t ensembleSize" returnType="LuapeLearner"/>
+  </class>
+    
   <class name="CompositeLearner" base="LuapeLearner">
     <constructor arguments="const LuapeLearnerPtr&amp; learner1, const LuapeLearnerPtr&amp; learner2"/>
     <constructor arguments="const std::vector&lt;LuapeLearnerPtr&gt;&amp; learners"/>
@@ -35,6 +40,8 @@
   <class name="AdaBoostLearner" base="WeightBoostingLearner">
     <constructor arguments="LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth" returnType="IterativeLearner"/>
   </class>
+  <class name="AdaBoostMHLearningObjective" base="ClassificationLearningObjective"/>
+  
   <class name="AdaBoostMHLearner" base="WeightBoostingLearner" abstract="yes"/>
   <class name="DiscreteAdaBoostMHLearner" base="AdaBoostMHLearner">
     <constructor arguments="LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth" returnType="IterativeLearner"/>
@@ -74,7 +81,11 @@
     <constructor arguments="LuapeNodeBuilderPtr nodeBuilder"/>
     <variable type="LuapeNodeBuilder" name="nodeBuilder"/>
   </class>
-
+  
+  <class name="RandomSplitWeakLearner" base="ExactWeakLearner">
+    <constructor arguments="LuapeNodeBuilderPtr nodeBuilder" returnType="LuapeLearner"/>
+  </class>
+  
   <class name="LaminatingWeakLearner" base="LuapeLearner">
     <constructor arguments="LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating"/>
     <variable type="LuapeNodeBuilder" name="nodeBuilder"/>

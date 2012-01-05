@@ -25,4 +25,13 @@
     <variable type="Boolean" name="verbose"/>
     <variable type="File" name="plotFile"/>
   </class>
+
+  <class name="LuapeClassificationSandBox" base="WorkUnit">
+    <variable type="File" name="dataFile"/>
+    <variable type="PositiveInteger" name="maxExamples"/>
+    <variable type="PositiveInteger" name="trainingSize"/>
+    <variable type="PositiveInteger" name="numRuns"/>
+    <variable type="Boolean" name="verbose"/>
+  </class>
+  
 </library>

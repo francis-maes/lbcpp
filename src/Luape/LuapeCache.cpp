@@ -174,8 +174,8 @@ void LuapeSamplesCache::cacheNode(ExecutionContext& context, const LuapeNodePtr&
 
   size_t sizeInBytes = nodeCache.getSizeInBytes(true);
   actualCacheSize += sizeInBytes;
-  std::cout << (const char* )reason << ". Node " << node->toShortString() << " -> size = " << sizeInBytes / 1024.0 << " Kb, numRequests = " << nodeCache.numRequests << std::endl; 
-  std::cout << "Cache size: " << getCacheSizeInBytes() / (1024.0 * 1024.0) << " / " << maxCacheSize / (1024 * 1024) << " Mb" << std::endl;
+  //std::cout << (const char* )reason << ". Node " << node->toShortString() << " -> size = " << sizeInBytes / 1024.0 << " Kb, numRequests = " << nodeCache.numRequests << std::endl; 
+  //std::cout << "Cache size: " << getCacheSizeInBytes() / (1024.0 * 1024.0) << " / " << maxCacheSize / (1024 * 1024) << " Mb" << std::endl;
   ensureSizeInLowerThanMaxSize(context);
 }
 
@@ -225,8 +225,8 @@ void LuapeSamplesCache::uncacheNode(ExecutionContext& context, const LuapeNodePt
   actualCacheSize -= sizeInBytes;
   actualCacheSize += nodeCache.getSizeInBytes(true);
 
-  std::cout << "Uncache node " << node->toShortString() << " -> size = " << sizeInBytes / 1024 << " Kb, numRequests = " << nodeCache.numRequests << std::endl; 
-  std::cout << "Cache size: " << getCacheSizeInBytes() / (1024 * 1024.0) << " / " << maxCacheSize / (1024 * 1024) << " Mb" << std::endl;
+//  std::cout << "Uncache node " << node->toShortString() << " -> size = " << sizeInBytes / 1024 << " Kb, numRequests = " << nodeCache.numRequests << std::endl; 
+//  std::cout << "Cache size: " << getCacheSizeInBytes() / (1024 * 1024.0) << " / " << maxCacheSize / (1024 * 1024) << " Mb" << std::endl;
 }
 
 void LuapeSamplesCache::uncacheNodes(ExecutionContext& context, size_t count)
@@ -249,7 +249,7 @@ void LuapeSamplesCache::uncacheNodes(ExecutionContext& context, size_t count)
   if (sortedNodes.size())
   {
     minNumRequestsToBeCached = sortedNodes.rbegin()->first * 2;
-    std::cout << "New threshold: " << minNumRequestsToBeCached << std::endl;
+//    std::cout << "New threshold: " << minNumRequestsToBeCached << std::endl;
     for (std::multimap<juce::int64, LuapeNodePtr>::const_iterator it = sortedNodes.begin(); it != sortedNodes.end(); ++it)
       uncacheNode(context, it->second);
   }

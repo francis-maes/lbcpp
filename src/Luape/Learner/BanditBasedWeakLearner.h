@@ -131,7 +131,7 @@ protected:
           subset = new IndexSet();
         else
           subset = subsets[i - 1]->cloneAndCast<IndexSet>();
-        subset->randomlyExpandUsingSource(context, miniBatchSize * (i + 1), examples);
+        subset = examples->sampleSubset(context.getRandomGenerator(), miniBatchSize * (i + 1));
         subsets[i] = subset;
       }
     }

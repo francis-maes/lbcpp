@@ -9,6 +9,7 @@
 #include "precompiled.h"
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Data/IndexSet.h>
+#include <algorithm>
 using namespace lbcpp;
 
 IndexSet::IndexSet(size_t begin, size_t end)
@@ -31,44 +32,28 @@ void IndexSet::addInterval(size_t begin, size_t end)
     v[s + i] = i;
 }
 
-void IndexSet::randomlyExpandUsingSource(ExecutionContext& context, size_t newSize, const IndexSetPtr& source)
+IndexSetPtr IndexSet::sampleSubset(RandomGeneratorPtr random, size_t subsetSize) const
 {
-  RandomGeneratorPtr random = context.getRandomGenerator();
+  IndexSetPtr res = new IndexSet();
+  jassert(subsetSize <= v.size());
+  if (subsetSize == v.size())
+    return refCountedPointerFromThis(this);
+  std::vector<size_t> order;
+  random->sampleOrder(v.size(), order);
+  res->v.resize(subsetSize);
+  for (size_t i = 0; i < subsetSize; ++i)
+    res->v[i] = v[order[i]];
+  std::sort(res->v.begin(), res->v.end());
+  return res;
+}
 
-  jassert(newSize > v.size());
-  jassert(newSize <= source->size());
-
-  if (newSize == source->size())
-  {
-    v = source->v;
-    return;
-  }
-
-  std::set<size_t> thisIndices;
-  for (size_t i = 0; i < v.size(); ++i)
-    thisIndices.insert(v[i]);
-
-  size_t remainingInSource = source->size() - v.size();
-  size_t numRequired = newSize - v.size();
-  
-  if (numRequired < remainingInSource / 3)
-  {
-    while (thisIndices.size() < newSize)
-      thisIndices.insert(source->v[random->sampleSize(source->size())]);
-  }
-  else
-  {
-    std::vector<size_t> order;
-    random->sampleOrder(source->v.size(), order);
-    size_t i = 0;
-    while (thisIndices.size() < newSize)
-      thisIndices.insert(source->v[order[i++]]);
-  }
-
-  v.resize(thisIndices.size());
-  size_t i = 0;
-  for (std::set<size_t>::const_iterator it = thisIndices.begin(); it != thisIndices.end(); ++it)
-    v[i++] = *it;
-
-  jassert(v.size() == newSize);
+IndexSetPtr IndexSet::sampleBootStrap(RandomGeneratorPtr random) const
+{
+  IndexSetPtr res = new IndexSet();
+  size_t n = v.size();
+  res->v.resize(n);
+  for (size_t i = 0; i < n; ++i)
+    res->v[i] = random->sampleSize(n);
+  std::sort(res->v.begin(), res->v.end());
+  return res;
 }

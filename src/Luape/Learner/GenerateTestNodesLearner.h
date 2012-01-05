@@ -34,14 +34,7 @@ public:
     const LuapeSequenceNodePtr& sequenceNode = node.staticCast<LuapeSequenceNode>();
     sequenceNode->reserveNodes(sequenceNode->getNumSubNodes() + weakNodes.size());
 
-    IndexSetPtr subset;
-    if (examples->size() > 100)
-    {
-      subset = new IndexSet();
-      subset->randomlyExpandUsingSource(context, 100, examples);
-    }
-    else
-      subset = examples;
+    IndexSetPtr subset = examples->size() > 100 ? examples->sampleSubset(context.getRandomGenerator(), 100) : examples;
 
     for (size_t i = 0; i < weakNodes.size(); ++i)
     {
