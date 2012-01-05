@@ -26,11 +26,15 @@ public:
 
     juce::RelativeTime t1 = juce::RelativeTime::milliseconds(juce::Time::currentTimeMillis());
 
+    RandomGeneratorPtr random = new RandomGenerator((juce::uint32)j);
+    DenseDoubleVectorPtr values = new DenseDoubleVector(100, -1);
+
     for (size_t i = 0; i < 100; ++i)
     {
+      values->setValue(i, (double)random->sampleInt(0, 100));
       if ((i + 1) % 10 == 0)
         context.progressCallback(new ProgressionState(i + 1, 100, T("It")));
-      juce::Thread::sleep(context.getRandomGenerator()->sampleInt(100, 300));
+      juce::Thread::sleep(context.getRandomGenerator()->sampleInt(10, 30));
     }
 
     juce::RelativeTime t2 = juce::RelativeTime::milliseconds(juce::Time::currentTimeMillis());
@@ -38,7 +42,7 @@ public:
     double elapsed = t3.inSeconds();
 
     context.leaveScope(Variable(elapsed));
-    return Variable(elapsed);
+    return Variable(values);
   }
 
 protected:
@@ -67,7 +71,14 @@ public:
    * Manage the VariableVector output by run.
    * Should enter its own scope.
    */
-  virtual Variable resultsCallback(ExecutionContext& context, VariableVector& results)
+  virtual Variable singleResultCallback(ExecutionContext& context, Variable& result)
+    {return Variable(result);}
+
+  /**
+   * Manage the VariableVector output by run.
+   * Should enter its own scope.
+   */
+  virtual Variable multipleResultCallback(ExecutionContext& context, VariableVector& results)
     {return Variable();}
 
   virtual CompositeWorkUnitPtr getWorkUnits()
@@ -79,18 +90,36 @@ public:
     context.enterScope(T("Initializing distributable work unit::local"));
     initializeWorkUnits(context);
     context.leaveScope();
+    if (workUnits->getNumWorkUnits() == 0)
+    {
+      context.informationCallback(T("No work units to treat."));
+      return Variable();
+    }
 
     // computing time
     context.enterScope(name);
+    context.informationCallback(T("Treating ") + String((int)workUnits->getNumWorkUnits())
+        + T(" work units."));
     Variable result = context.run(workUnits, true);
     context.leaveScope();
 
-    // results callback
-    context.enterScope(T("Managing results"));
-    Variable gatheredResult = resultsCallback(context, *result.getObjectAndCast<VariableVector> ());
+    // show results
+    context.enterScope(T("Results"));
+    for (size_t i = 0; i < workUnits->getNumWorkUnits(); i++)
+    {
+      context.enterScope(workUnits->getWorkUnit(i));
+      context.leaveScope(singleResultCallback(context,
+          result.getObjectAndCast<VariableVector> ()->getElement(i)));
+    }
     context.leaveScope();
 
+    // managing results
+    context.enterScope(T("Managing results"));
+    Variable gatheredResult = multipleResultCallback(context, *result.getObjectAndCast<VariableVector> ());
+    context.leaveScope(gatheredResult);
+
     context.informationCallback(T("Local distributable work unit done."));
+
     return gatheredResult;
   }
 
@@ -119,17 +148,51 @@ public:
       workUnits->addWorkUnit(new TestDumbWorkUnit(i));
   }
 
-  virtual Variable resultsCallback(ExecutionContext& context, VariableVector& results)
+  virtual Variable singleResultCallback(ExecutionContext& context, Variable& result)
   {
-    double j = 0;
+    size_t numElements = result.getObjectAndCast<DenseDoubleVector> ()->getNumValues();
 
-    for (size_t i = 0; i < results.getNumElements(); i++)
-      j += results.getElement(i).getDouble();
-    j /= (double)results.getNumElements();
+    for (size_t i = 0; i < numElements; i++)
+    {
+      context.enterScope(T("Result"));
+      context.resultCallback(T("Step"), Variable((int)i));
+      context.resultCallback(T("Value"), Variable(
+          result.getObjectAndCast<DenseDoubleVector> ()->getValue(i)));
+      context.leaveScope();
+    }
 
-    context.informationCallback(T("Average is ") + String(j));
+    return (result);
+  }
 
-    return Variable();
+  virtual Variable multipleResultCallback(ExecutionContext& context, VariableVector& results)
+  {
+    //    double j = 0;
+    //
+    //    for (size_t i = 0; i < results.getNumElements(); i++)
+    //      j += results.getElement(i).getDouble();
+    //    j /= (double)results.getNumElements();
+    //
+    //    context.informationCallback(T("Average is ") + String(j));
+    size_t numElements =
+        results.getElement(0).getObjectAndCast<DenseDoubleVector> ()->getNumValues();
+    size_t numResults = results.getNumElements();
+
+    DenseDoubleVectorPtr mean = new DenseDoubleVector(numElements, -1);
+
+    for (size_t j = 0; j < numResults; j++)
+      for (size_t i = 0; i < numElements; i++)
+        mean->setValue(i, mean->getValue(i) + results.getElement(j).getObjectAndCast<
+            DenseDoubleVector> ()->getValue(i) / (double)numResults);
+
+    for (size_t i = 0; i < numElements; i++)
+    {
+      context.enterScope(T("Result"));
+      context.resultCallback(T("Step"), Variable((int)i));
+      context.resultCallback(T("Value"), Variable(mean->getValue(i)));
+      context.leaveScope();
+    }
+
+    return Variable(mean);
   }
 
 protected:
@@ -170,14 +233,15 @@ public:
     for (size_t i = 0; i < distributable->getWorkUnits()->getNumWorkUnits(); i++)
     {
       context.enterScope(distributable->getWorkUnits()->getWorkUnit(i));
-      context.leaveScope(result.getObjectAndCast<VariableVector> ()->getElement(i));
+      context.leaveScope(distributable->singleResultCallback(context, result.getObjectAndCast<
+          VariableVector> ()->getElement(i)));
     }
     context.leaveScope();
 
     // managing results
     context.enterScope(T("Managing results"));
-    Variable gatheredResult = distributable->resultsCallback(context, *result.getObjectAndCast<
-        VariableVector> ());
+    Variable gatheredResult = distributable->multipleResultCallback(context,
+        *result.getObjectAndCast<VariableVector> ());
     context.leaveScope(gatheredResult);
 
     context.informationCallback(T("Distribution to cluster done."));
