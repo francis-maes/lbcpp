@@ -137,30 +137,38 @@ public:
   ClassificationLearningObjective() : numLabels(0) {}
 
   virtual void initialize(const LuapeInferencePtr& problem);
-  virtual void setSupervisions(const VectorPtr& supervisions);
-  virtual void update();
-  virtual void flipPrediction(size_t index);
-  virtual Variable computeVote(const IndexSetPtr& indices);
-  virtual double computeObjective();
-
-  const DenseDoubleVectorPtr getMu(unsigned char prediction, bool supervision) const
-    {return mu[prediction][supervision ? 1 : 0];}
-
-  const DenseDoubleVectorPtr& getSupervisions() const
-    {return supervisions;}
 
 protected:
   EnumerationPtr labels;
   size_t numLabels;
   ClassPtr doubleVectorClass;
-  DenseDoubleVectorPtr supervisions;  // size = numExamples * numLabels
-
-  DenseDoubleVectorPtr mu[3][2]; // prediction -> supervision -> label -> weight
-  
-  DenseDoubleVectorPtr makeDefaultWeights(const DenseDoubleVectorPtr& supervisions) const;
 };
 
 typedef ReferenceCountedObjectPtr<ClassificationLearningObjective> ClassificationLearningObjectivePtr;
+
+class InformationGainLearningObjective : public ClassificationLearningObjective
+{
+public:
+  InformationGainLearningObjective(bool normalize = false);
+
+  virtual void setSupervisions(const VectorPtr& supervisions);
+  virtual void update();
+  virtual void flipPrediction(size_t index);
+  virtual double computeObjective();
+  virtual Variable computeVote(const IndexSetPtr& indices);
+
+protected:
+  bool normalize;
+
+  GenericVectorPtr supervisions;
+
+  DenseDoubleVectorPtr splitWeights;
+  DenseDoubleVectorPtr labelWeights;
+  double sumOfWeights;
+  DenseDoubleVectorPtr labelConditionalProbabilities[3];
+
+  static double computeEntropy(const DenseDoubleVectorPtr& vector, double sumOfWeights);
+};
 
 }; /* namespace lbcpp */
 

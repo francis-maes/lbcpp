@@ -84,7 +84,7 @@
   <class name="SupervisedLearningObjective" base="LearningObjective" abstract="yes"/>
   <class name="RegressionLearningObjective" base="SupervisedLearningObjective"/>
   <class name="BinaryClassificationLearningObjective" base="SupervisedLearningObjective"/>
-  <class name="ClassificationLearningObjective" base="SupervisedLearningObjective"/>
+  <class name="ClassificationLearningObjective" base="SupervisedLearningObjective" abstract="yes"/>
 
   <!-- Learners -->
   <class name="LuapeLearner" abstract="yes">

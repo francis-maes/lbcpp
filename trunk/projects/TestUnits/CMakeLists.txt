@@ -9,7 +9,6 @@ SET(LBCPP_TEST_UNITS_SOURCES
   precompiled.h
   precompiled.cpp
   ExtraTreeTestUnit.h
-  IndexSetTestUnit.h
   AllTestUnits.h
   TestUnitsLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/TestUnitsLibrary.cpp

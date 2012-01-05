@@ -100,6 +100,7 @@ extern IterativeLearnerPtr rankingGradientBoostingLearner(LuapeLearnerPtr weakLe
 
 // meta
 extern LuapeLearnerPtr ensembleLearner(const LuapeLearnerPtr& baseLearner, size_t ensembleSize);
+extern LuapeLearnerPtr baggingLearner(const LuapeLearnerPtr& baseLearner, size_t ensembleSize);
 extern LuapeLearnerPtr compositeLearner(const std::vector<LuapeLearnerPtr>& learners);
 extern LuapeLearnerPtr compositeLearner(const LuapeLearnerPtr& learner1, const LuapeLearnerPtr& learner2);
 extern LuapeLearnerPtr treeLearner(LearningObjectivePtr weakObjective, LuapeLearnerPtr conditionLearner, size_t minExamplesToSplit, size_t maxDepth);
@@ -109,6 +110,7 @@ extern LuapeLearnerPtr generateTestNodesLearner(LuapeNodeBuilderPtr nodeBuilder)
 
 // weak learners
 extern LuapeLearnerPtr exactWeakLearner(LuapeNodeBuilderPtr nodeBuilder);
+extern LuapeLearnerPtr randomSplitWeakLearner(LuapeNodeBuilderPtr nodeBuilder);
 extern LuapeLearnerPtr laminatingWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating = 5);
 extern LuapeLearnerPtr banditBasedWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize = 0.01);
 extern LuapeLearnerPtr optimizerBasedSequentialWeakLearner(OptimizerPtr optimizer, size_t complexity);

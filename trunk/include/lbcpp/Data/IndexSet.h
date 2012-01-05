@@ -52,16 +52,15 @@ public:
 
   void addInterval(size_t begin, size_t end);
 
-  // grow size to newSize; all new samples are taken from source starting from random positions and using contiguous blocks
-  // this set is assumed to be a subset of the source set
-  void randomlyExpandUsingSource(ExecutionContext& context, size_t newSize, const IndexSetPtr& source);
-
   // Object
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
     {target.staticCast<IndexSet>()->v = v;}
 
   const std::vector<size_t>& getIndices() const
     {return v;}
+
+  IndexSetPtr sampleBootStrap(RandomGeneratorPtr random) const;
+  IndexSetPtr sampleSubset(RandomGeneratorPtr random, size_t subsetSize) const;
 
 protected:
   friend class IndexSetClass;

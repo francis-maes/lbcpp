@@ -244,137 +244,112 @@ double BinaryClassificationLearningObjective::computeObjective()
 */
 void ClassificationLearningObjective::initialize(const LuapeInferencePtr& problem)
 {
-  LearningObjective::initialize(problem);
   doubleVectorClass = problem.staticCast<LuapeClassifier>()->getDoubleVectorClass();
   labels = DoubleVector::getElementsEnumeration(doubleVectorClass);
   numLabels = labels->getNumElements();
-  for (size_t i = 0; i < 3; ++i)
-    for (size_t j = 0; j < 2; ++j)
-      mu[i][j] = new DenseDoubleVector(doubleVectorClass, numLabels);
+  LearningObjective::initialize(problem);
 }
 
-void ClassificationLearningObjective::setSupervisions(const VectorPtr& sup)
+/*
+** InformationGainLearningObjective
+*/
+InformationGainLearningObjective::InformationGainLearningObjective(bool normalize)
+  : normalize(normalize) {}
+
+void InformationGainLearningObjective::setSupervisions(const VectorPtr& supervisions)
 {
-  EnumerationPtr labels = LuapeClassifier::getLabelsFromSupervision(sup->getElementsType());
-  size_t n = sup->getNumElements();
-  size_t m = labels->getNumElements();
-  supervisions = new DenseDoubleVector(n * m, 0.0);
-  size_t index = 0;
+  size_t n = supervisions->getNumElements();
+  this->supervisions = new GenericVector(labels, n);
   for (size_t i = 0; i < n; ++i)
   {
-    Variable supervision = sup->getElement(i);
+    Variable supervision = supervisions->getElement(i);
     size_t label;
-    if (!lbcpp::convertSupervisionVariableToEnumValue(supervision, label))
-      jassertfalse;
-    for (size_t j = 0; j < m; ++j, ++index)
-      supervisions->setValue(index, j == label ? 1.0 : -1.0);
+    if (lbcpp::convertSupervisionVariableToEnumValue(supervision, label))
+      this->supervisions->setElement(i, Variable(label, labels));
   }
 }
 
-void ClassificationLearningObjective::update()
+void InformationGainLearningObjective::update()
 {
-  if (!weights)
-  {
-    jassert(supervisions);
-    weights = makeDefaultWeights(supervisions);
-  }
-  jassert(supervisions->getNumValues() == weights->getNumValues());
-  for (size_t i = 0; i < 3; ++i)
-    for (size_t j = 0; j < 2; ++j)
-      mu[i][j]->multiplyByScalar(0.0);
+  splitWeights = new DenseDoubleVector(3, 0.0); // prediction probabilities
+  labelWeights = new DenseDoubleVector(doubleVectorClass); // label probabilities
+  for (int i = 0; i < 3; ++i)
+    labelConditionalProbabilities[i] = new DenseDoubleVector(doubleVectorClass); // label probabilities given that the predicted value is negative, positive or missing
 
+  sumOfWeights = 0.0;
   for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
   {
-    size_t example = it.getIndex();
-    unsigned char prediction = it.getRawBoolean();
-    double* weightsPtr = weights->getValuePointer(numLabels * example);
-    double* supervisionsPtr = supervisions->getValuePointer(numLabels * example);
-    for (size_t j = 0; j < numLabels; ++j)
-    {
-      double supervision = *supervisionsPtr++;
-      mu[prediction][supervision > 0 ? 1 : 0]->incrementValue(j, *weightsPtr++);
-    }
+    size_t index = it.getIndex();
+    double weight = getWeight(index);
+    size_t supervision = (int)supervisions->getElement(index).getInteger();
+    unsigned char b = it.getRawBoolean();
+
+    splitWeights->incrementValue((size_t)b, weight);
+    labelWeights->incrementValue(supervision, weight);
+    labelConditionalProbabilities[b]->incrementValue(supervision, weight);
+    sumOfWeights += weight;
   }
 }
 
-void ClassificationLearningObjective::flipPrediction(size_t index)
+void InformationGainLearningObjective::flipPrediction(size_t index)
 {
   jassert(upToDate);
-  double* weightsPtr = weights->getValuePointer(index * numLabels);
-  double* muNegNegPtr = mu[0][0]->getValuePointer(0);
-  double* muNegPosPtr = mu[0][1]->getValuePointer(0);
-  double* muPosNegPtr = mu[1][0]->getValuePointer(0);
-  double* muPosPosPtr = mu[1][1]->getValuePointer(0);
-  double* supervisionsPtr = supervisions->getValuePointer(index * numLabels);
-  for (size_t i = 0; i < numLabels; ++i)
-  {
-    double weight = *weightsPtr++;
-    
-    double& muNegNeg = *muNegNegPtr++;
-    double& muNegPos = *muNegPosPtr++;
-    double& muPosNeg = *muPosNegPtr++;
-    double& muPosPos = *muPosPosPtr++;
-    double supervision = *supervisionsPtr++;
-    
-    if (supervision < 0)
-      muNegNeg -= weight, muPosNeg += weight;
-    else
-      muNegPos -= weight, muPosPos += weight;
-  }
+  size_t supervision = (int)supervisions->getElement(index).getInteger();
+  double weight = getWeight(index);
+  splitWeights->decrementValue(0, weight); // remove 'false' prediction
+  labelConditionalProbabilities[0]->decrementValue(supervision, weight);
+  splitWeights->incrementValue(1, weight); // add 'true' prediction
+  labelConditionalProbabilities[1]->incrementValue(supervision, weight);
 }
 
-Variable ClassificationLearningObjective::computeVote(const IndexSetPtr& indices)
-{
-  std::vector<ScalarVariableMean> stats(numLabels);
-  
-  DenseDoubleVectorPtr res = new DenseDoubleVector(labels, probabilityType);
-  double sum = 0.0;
-  for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
-  {
-    size_t example = *it;
-    double* supervisionsPtr = supervisions->getValuePointer(numLabels * example);
-    double* weightsPtr = weights->getValuePointer(numLabels * example);
-    for (size_t i = 0; i < numLabels; ++i)
-    {
-      double value = *weightsPtr++ * (*supervisionsPtr++ + 1.0) / 2.0; // transform signed supervision into probability
-      res->incrementValue(i, value);
-      sum += value;
-    }
-  }
-  if (sum)
-    res->multiplyByScalar(1.0 / sum); // normalize probability distribution
-  return Variable(res, denseDoubleVectorClass(labels, probabilityType));
-}
-
-double ClassificationLearningObjective::computeObjective()
+double InformationGainLearningObjective::computeObjective()
 {
   ensureIsUpToDate();
-  size_t n = labels->getNumElements();
-  double edge = 0.0;
 
-  const double* muNegNegPtr = mu[0][0]->getValuePointer(0);
-  const double* muPosNegPtr = mu[1][0]->getValuePointer(0);
-  const double* muNegPosPtr = mu[0][1]->getValuePointer(0);
-  const double* muPosPosPtr = mu[1][1]->getValuePointer(0);
-  
-  for (size_t j = 0; j < n; ++j)
-  {
-    double muPositive = (*muNegNegPtr++) + (*muPosPosPtr++);
-    double muNegative = (*muPosNegPtr++) + (*muNegPosPtr++);
-    double vote = (muPositive > muNegative + 1e-9 ? 1.0 : -1.0);
-    edge += vote * (muPositive - muNegative);
-  }
-  return edge;
+  double currentEntropy = computeEntropy(labelWeights, sumOfWeights);
+  double splitEntropy = computeEntropy(splitWeights, sumOfWeights);
+  double expectedNextEntropy = 0.0;
+  for (int i = 0; i < 3; ++i)
+    expectedNextEntropy += splitWeights->getValue(i) * computeEntropy(labelConditionalProbabilities[i], splitWeights->getValue(i));
+  double informationGain = currentEntropy - expectedNextEntropy;
+  if (normalize)
+    return 2.0 * informationGain / (currentEntropy + splitEntropy);
+  else
+    return informationGain;
 }
 
-DenseDoubleVectorPtr ClassificationLearningObjective::makeDefaultWeights(const DenseDoubleVectorPtr& supervisions) const
+Variable InformationGainLearningObjective::computeVote(const IndexSetPtr& indices)
 {
-  size_t n = supervisions->getNumValues();
-  size_t numExamples = n / numLabels;
-  double positiveWeight =  1.0 / (2 * numExamples);
-  double negativeWeight = 1.0 / (2 * numExamples * (numLabels - 1));
-  DenseDoubleVectorPtr res = new DenseDoubleVector(n, 0.0);
-  for (size_t i = 0; i < n; ++i)
-    res->setValue(i, supervisions->getValue(i) > 0.0 ? positiveWeight : negativeWeight);
+  DenseDoubleVectorPtr res = new DenseDoubleVector(doubleVectorClass);
+  double sumOfWeights = 0.0;
+  for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
+  {
+    size_t index = *it;
+    double weight = getWeight(index);
+    res->incrementValue((size_t)supervisions->getElement(index).getInteger(), weight);
+    sumOfWeights += weight;
+  }
+  if (sumOfWeights)
+    res->multiplyByScalar(1.0 / sumOfWeights);
+  return res;
+}
+
+double InformationGainLearningObjective::computeEntropy(const DenseDoubleVectorPtr& vector, double sumOfWeights)
+{
+  if (!sumOfWeights)
+    return 0.0;
+  double res = 0.0;
+  double Z = 1.0 / sumOfWeights;
+  double sumOfP = 0.0;
+  for (size_t i = 0; i < vector->getNumValues(); ++i)
+  {
+    double p = vector->getValue(i) * Z;
+    if (p)
+    {
+      res -= p * log2(p);
+      sumOfP += p;
+    }
+  }
+  jassert(fabs(sumOfP - 1.0) < 1e-12);
   return res;
 }

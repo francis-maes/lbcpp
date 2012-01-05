@@ -125,7 +125,7 @@ class ClassifierSGDLearner : public GradientDescentLearner
 {
 public:
   ClassifierSGDLearner(MultiClassLossFunctionPtr lossFunction, IterationFunctionPtr learningRate, size_t maxIterations)
-    : GradientDescentLearner(new ClassificationLearningObjective(), learningRate, maxIterations), lossFunction(lossFunction) {}
+    : GradientDescentLearner(new AdaBoostMHLearningObjective(), learningRate, maxIterations), lossFunction(lossFunction) {}
   ClassifierSGDLearner() {}
 
   virtual bool initialize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
