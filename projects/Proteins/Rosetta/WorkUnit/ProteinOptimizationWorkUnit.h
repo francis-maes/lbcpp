@@ -176,7 +176,23 @@ public:
   ProteinOptimizationWorkUnit()
     : DistributableWorkUnit(String("ProteinOptimizationWorkunit")) {}
 
-  virtual Variable resultsCallback(ExecutionContext& context, VariableVector& results)
+  virtual Variable singleResultCallback(ExecutionContext& context, Variable& result)
+  {
+    size_t numElements = result.getObjectAndCast<DenseDoubleVector> ()->getNumElements();
+
+    for (size_t i = 0; i < numElements; i++)
+    {
+      context.enterScope(T("Value"));
+      context.resultCallback(T("Step"), Variable((int)i));
+      context.resultCallback(T("Energy"),
+          result.getObjectAndCast<DenseDoubleVector> ()->getValue(i));
+      context.leaveScope();
+    }
+
+    return result;
+  }
+
+  virtual Variable multipleResultCallback(ExecutionContext& context, VariableVector& results)
   {
     DenseDoubleVectorPtr energies;
     // export results

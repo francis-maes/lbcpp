@@ -209,46 +209,45 @@ public:
   {
     ExecutionContextPtr remoteContext = distributedExecutionContext(context, remoteHostName,
         remoteHostPort, distributable->getName(), localHostLogin, clusterLogin,
-        fixedResourceEstimator(1, memory, time), false);
+        fixedResourceEstimator(1, memory, time), true);
 
-//    // initialization
-//    context.enterScope(T("Initializing distributable work unit::distributed"));
-//    distributable->initializeWorkUnits(context);
-//    context.leaveScope();
-//    CompositeWorkUnitPtr units = distributable->getWorkUnits();
-//    if (units->getNumWorkUnits() == 0)
-//    {
-//      context.informationCallback(T("No work units to treat."));
-//      return Variable();
-//    }
-//
-//    // computing time
-//    context.enterScope(distributable->getName());
-//    context.informationCallback(T("Treating ") + String((int)units->getNumWorkUnits())
-//        + T(" work units."));
-//    Variable result = remoteContext->run(units);
-//    context.leaveScope();
-//
-//    // show results
-//    context.enterScope(T("Results"));
-//    for (size_t i = 0; i < distributable->getWorkUnits()->getNumWorkUnits(); i++)
-//    {
-//      context.enterScope(distributable->getWorkUnits()->getWorkUnit(i));
-//      context.leaveScope(distributable->singleResultCallback(context, result.getObjectAndCast<
-//          VariableVector> ()->getElement(i)));
-//    }
-//    context.leaveScope();
-//
-//    // managing results
-//    context.enterScope(T("Managing results"));
-//    Variable gatheredResult = distributable->multipleResultCallback(context,
-//        *result.getObjectAndCast<VariableVector> ());
-//    context.leaveScope(gatheredResult);
-//
-//    context.informationCallback(T("Distribution to cluster done."));
-//
-//    return gatheredResult;
-    return remoteContext->run(distributable->getWorkUnits());
+    // initialization
+    context.enterScope(T("Initializing distributable work unit::distributed"));
+    distributable->initializeWorkUnits(context);
+    context.leaveScope();
+    CompositeWorkUnitPtr units = distributable->getWorkUnits();
+    if (units->getNumWorkUnits() == 0)
+    {
+      context.informationCallback(T("No work units to treat."));
+      return Variable();
+    }
+
+    // computing time
+    context.enterScope(distributable->getName());
+    context.informationCallback(T("Treating ") + String((int)units->getNumWorkUnits())
+        + T(" work units."));
+    Variable result = remoteContext->run(units);
+    context.leaveScope();
+
+    // show results
+    context.enterScope(T("Results"));
+    for (size_t i = 0; i < distributable->getWorkUnits()->getNumWorkUnits(); i++)
+    {
+      context.enterScope(distributable->getWorkUnits()->getWorkUnit(i));
+      context.leaveScope(distributable->singleResultCallback(context, result.getObjectAndCast<
+          VariableVector> ()->getElement(i)));
+    }
+    context.leaveScope();
+
+    // managing results
+    context.enterScope(T("Managing results"));
+    Variable gatheredResult = distributable->multipleResultCallback(context,
+        *result.getObjectAndCast<VariableVector> ());
+    context.leaveScope(gatheredResult);
+
+    context.informationCallback(T("Distribution to cluster done."));
+
+    return gatheredResult;
   }
 
 protected:
