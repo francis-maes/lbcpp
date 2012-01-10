@@ -197,6 +197,7 @@ char* TextParser::readNextLine()
     if (fgets(line + len, maxLineLength - len, f) == NULL)
       break;
   }
-  *ptr = 0; // remove '\n' character
+  if (ptr)
+    *ptr = 0; // remove '\n' character
   return line;
 }
