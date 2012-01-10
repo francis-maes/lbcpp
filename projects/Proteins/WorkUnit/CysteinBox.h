@@ -760,18 +760,12 @@ public:
     LargeProteinParametersPtr parameter = LargeProteinParameters::createTestObject(40);
     LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(parameter);
 
-    OutputStream* o = context.getFile(outputPrefix + T(".train.arff")).createOutputStream();
+    OutputStream* o = context.getFile(outputPrefix + T(".arff")).createOutputStream();
     writeHeader(context, predictor, o);
-    writeData(context, proteins->invFold(0,10), predictor, o);
+    writeData(context, proteins, predictor, o);
     delete o;
 
-    o = context.getFile(outputPrefix + T(".test.arff")).createOutputStream();
-    writeHeader(context, predictor, o);
-    writeData(context, proteins->fold(0,10), predictor, o);
-    delete o;
-
-    context.informationCallback(T("Output train file: ") + outputPrefix + T(".train.arff"));
-    context.informationCallback(T("Output test file : ") + outputPrefix + T(".test.arff"));
+    context.informationCallback(T("Output file name: ") + outputPrefix + T(".train.arff"));
 
     return true;
   }
@@ -796,7 +790,7 @@ protected:
     TypePtr disulfideType = disulfideFunction->getOutputType();
     EnumerationPtr enumeration = disulfideType->getTemplateArgument(0)->getTemplateArgument(0).staticCast<Enumeration>();
     const size_t n = enumeration->getNumElements();
-    std::cout << "Num. Features: " << n << std::endl;
+    context.informationCallback(T("Num. Attributes: ") + String((int)n));
     for (size_t i = 0; i < n; ++i)
       *o << "@ATTRIBUTE " << enumeration->getElement(i)->getName() << " NUMERIC\n";
     *o << "@ATTRIBUTE class {0,1}\n";
@@ -810,7 +804,8 @@ protected:
     FunctionPtr disulfideFunction = predictor->createDisulfideSymmetricResiduePairVectorPerception();
 
     const size_t n = proteins->getNumElements();
-    std::cout << "Num. Proteins: " << n << std::endl;
+    context.informationCallback(T("Num. Proteins: ") + String((int)n));
+    size_t numExamples = 0;
     for (size_t i = 0; i < n; ++i)
     {
       Variable perception = proteinPerception->compute(context, proteins->getElement(i).getObjectAndCast<Pair>()->getFirst());
@@ -823,17 +818,15 @@ protected:
         {
           writeFeatures(featuresVector->getElement(j,k).getObjectAndCast<DoubleVector>(), o);
           *o << (supervision->getElement(j,k).getDouble() > 0.5f ? "1" : "0");
+          ++numExamples;
         }
     }
+    context.informationCallback(T("Num. Examples: ") + String((int)numExamples));
   }
 
   void writeFeatures(const DoubleVectorPtr& features, OutputStream* const o) const
   {
-    static bool firstVisit = true;
     DenseDoubleVectorPtr ddv = features->toDenseDoubleVector();
-    if (firstVisit)
-      std::cout << "Data's size: " << ddv->getNumValues() << std::endl;
-    firstVisit = false;
     for (size_t i = 0; i < ddv->getNumValues(); ++i)
       *o << ddv->getValue(i) << ",";
   }
