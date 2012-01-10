@@ -24,6 +24,9 @@ public:
   bool hasAutoRange() const
     {return autoRange;}
 
+  void setAutoRange(bool value)
+    {autoRange = value;}
+
   bool hasLogScale() const
     {return logScale;}
 
@@ -35,6 +38,12 @@ public:
 
   String getLabel() const
     {return label;}
+
+  void setRangeMin(double value)
+    {rangeMin = value;}
+
+  void setRangeMax(double value)
+    {rangeMax = value;}
 
 private:
   friend class CurveAxisConfigurationClass;
