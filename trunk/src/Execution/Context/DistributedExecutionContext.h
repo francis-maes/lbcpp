@@ -160,7 +160,7 @@ public:
     : SubExecutionContext(parentContext), client(new ManagerNetworkClient(parentContext)),
       remoteHostName(remoteHostName), remotePort(remotePort),
       project(project), from(from), to(to), resourceEstimator(resourceEstimator),
-      importTrace(importTrace),
+      importTrace(importTrace), numWaitingTraces(0),
       asynchroneousWorkUnitPool(new AsynchroneousWorkUnitPool()),
       numSentWorkUnits(0), currentTo(0)
   {
@@ -175,7 +175,7 @@ public:
   : SubExecutionContext(parentContext), client(new ManagerNetworkClient(parentContext)),
   remoteHostName(remoteHostName), remotePort(remotePort),
   project(project), from(from), to(std::vector<String>(1, to)), resourceEstimator(resourceEstimator),
-  importTrace(importTrace),
+  importTrace(importTrace), numWaitingTraces(0),
   asynchroneousWorkUnitPool(new AsynchroneousWorkUnitPool()),
   numSentWorkUnits(0), currentTo(0)
   {
@@ -217,7 +217,11 @@ public:
     {asynchroneousWorkUnitPool->flushCallbacks();}
 
   virtual void waitUntilAllWorkUnitsAreDone(size_t timeOutInMilliseconds = 0)
-    {waitUntilAllWorkUnitsAreDone(asynchroneousWorkUnitPool, timeOutInMilliseconds);}
+  {
+    waitUntilAllWorkUnitsAreDone(asynchroneousWorkUnitPool, timeOutInMilliseconds);
+    while (numWaitingTraces)
+      juce::Thread::sleep(200);
+  }
     
   virtual Variable run(const WorkUnitPtr& workUnit, bool pushIntoStack)
   {
@@ -260,13 +264,18 @@ public:
     pools.erase(internalId);
 
     if (importTrace)
+    {
       client->askTrace(uniqueIdentifier);
+      ++numWaitingTraces;
+    }
   }
 
   virtual void traceReceived(const String& uniqueIdentifier, const ExecutionTracePtr& trace)
   {
+    ScopedLock _(lock);
     enterScope(T("Trace ") + uniqueIdentifier);
     leaveScope(trace);
+    --numWaitingTraces;
   }
 
   virtual void connectionMade()
@@ -290,6 +299,7 @@ protected:
   std::vector<String> to;
   ResourceEstimatorPtr resourceEstimator;
   bool importTrace;
+  volatile size_t numWaitingTraces;
 
   AsynchroneousWorkUnitPoolPtr asynchroneousWorkUnitPool;
 
