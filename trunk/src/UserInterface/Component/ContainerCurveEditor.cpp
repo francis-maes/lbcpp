@@ -294,17 +294,22 @@ protected:
     {
       double minValue = DBL_MAX, maxValue = -DBL_MAX;
       getTableValueRange(configuration->getKeyVariableIndex(), minValue, maxValue);
+
       if (maxValue > minValue)
       {
         double length = maxValue - minValue;
         boundsX = minValue - length * 0.1;
         boundsWidth = length * 1.2;
+        axis->setRangeMin(boundsX);
+        axis->setRangeMax(boundsX + boundsWidth);
         return;
       }
       else if (maxValue == minValue)
       {
         boundsX = minValue - 1.1;
         boundsWidth = 2.2;
+        axis->setRangeMin(boundsX);
+        axis->setRangeMax(boundsX + boundsWidth);
         return;
       }
     }
@@ -314,7 +319,7 @@ protected:
 
   void computeVerticalBounds()
   {
-    CurveAxisConfigurationPtr axis = configuration->getXAxis();
+    CurveAxisConfigurationPtr axis = configuration->getYAxis();
     if (axis->hasAutoRange())
     {
       double minValue = DBL_MAX, maxValue = -DBL_MAX;
@@ -325,12 +330,16 @@ protected:
         double length = maxValue - minValue;
         boundsY = minValue - length * 0.1;
         boundsHeight = length * 1.2;
+        axis->setRangeMin(boundsY);
+        axis->setRangeMax(boundsY + boundsHeight);
         return;
       }
       else if (maxValue == minValue)
       {
         boundsY = minValue - 1.1;
         boundsHeight = 2.2;
+        axis->setRangeMin(boundsY);
+        axis->setRangeMax(boundsY + boundsHeight);
         return;
       }
     }
@@ -447,7 +456,7 @@ public:
   {
     curves[row]->setSelected(!curves[row]->isSelected());
     listBox->deselectRow(row);
-    callback->sendChangeMessage(this);
+    callback->sendSynchronousChangeMessage(this);
   }
 
   void setListBox(juce::ListBox* listBox)
@@ -462,7 +471,7 @@ protected:
 
 class ContainerCurveEditorConfigurationComponent : public Component, public juce::ChangeBroadcaster,
                                                    public juce::ComboBoxListener, public juce::ChangeListener,
-                                                   public juce::ButtonListener
+                                                   public juce::ButtonListener, public juce::TextEditorListener
 {
 public:
   ContainerCurveEditorConfigurationComponent(ContainerCurveEditorConfigurationPtr configuration)
@@ -483,6 +492,24 @@ public:
     selectAllButton->addButtonListener(this);
     addAndMakeVisible(noneButton = new juce::TextButton(T("None")));
     noneButton->addButtonListener(this);
+
+    addAndMakeVisible(scalesLabel = new juce::Label(T("scales"), T("Scales")));
+    addAndMakeVisible(xMinScaleLabel = new juce::Label(T("xMinScaleLabel"), T("x-Min")));
+    addAndMakeVisible(xMaxScaleLabel = new juce::Label(T("xMaxScaleLabel"), T("x-Max")));
+    addAndMakeVisible(yMinScaleLabel = new juce::Label(T("yMinScaleLabel"), T("y-Min")));
+    addAndMakeVisible(yMaxScaleLabel = new juce::Label(T("yMaxScaleLabel"), T("y-Max")));
+
+    addAndMakeVisible(xMinScaleTextEditor = new juce::TextEditor(T("xMinScaleTextEditor")));
+    addAndMakeVisible(xMaxScaleTextEditor = new juce::TextEditor(T("xMaxScaleTextEditor")));
+    addAndMakeVisible(yMinScaleTextEditor = new juce::TextEditor(T("yMinScaleTextEditor")));
+    addAndMakeVisible(yMaxScaleTextEditor = new juce::TextEditor(T("yMaxScaleTextEditor")));
+
+    xMinScaleTextEditor->addListener(this);
+    xMaxScaleTextEditor->addListener(this);
+    yMinScaleTextEditor->addListener(this);
+    yMaxScaleTextEditor->addListener(this);
+
+    addChangeListener(this);
   }
 
   virtual ~ContainerCurveEditorConfigurationComponent()
@@ -504,7 +531,7 @@ public:
         }
       }
       configuration->getCurve(configuration->getKeyVariableIndex())->setSelected(false);
-      sendChangeMessage(this);
+      sendSynchronousChangeMessage(this);
     }
   }
 
@@ -512,11 +539,43 @@ public:
   {
     if (comboBoxThatHasChanged == keyComboBox)
       configuration->setKeyVariableIndex(keyComboBox->getSelectedItemIndex());
-    sendChangeMessage(this);
+    sendSynchronousChangeMessage(this);
+  }
+  
+  virtual void textEditorEscapeKeyPressed(juce::TextEditor& editor) {}
+  virtual void textEditorTextChanged(juce::TextEditor &editor) {}
+  virtual void textEditorFocusLost(juce::TextEditor& editor) {}
+
+  virtual void textEditorReturnKeyPressed(juce::TextEditor& editor)
+  {
+    double value = editor.getText().getDoubleValue();
+    if (&editor == xMinScaleTextEditor)
+    {
+        configuration->getXAxis()->setAutoRange(false);
+        configuration->getXAxis()->setRangeMin(value);
+    }
+    else if (&editor == xMaxScaleTextEditor)
+    {
+        configuration->getXAxis()->setAutoRange(false);
+        configuration->getXAxis()->setRangeMax(value);
+    }
+    else if (&editor == yMinScaleTextEditor)
+    {
+        configuration->getYAxis()->setAutoRange(false);
+        configuration->getYAxis()->setRangeMin(value);
+    }
+    else if (&editor == yMaxScaleTextEditor)
+    {
+        configuration->getYAxis()->setAutoRange(false);
+        configuration->getYAxis()->setRangeMax(value);
+    }
+    sendSynchronousChangeMessage(this);
   }
 
   virtual void changeListenerCallback(void* objectThatHasChanged)
-    {sendChangeMessage(this);}
+  {
+    updateAxisRanges();
+  }
 
   virtual void resized()
   {
@@ -535,6 +594,34 @@ public:
     selectAllButton->setSize(selectAllButton->getWidth(), 20);
     noneButton->setBoundsRelative(0.7f, 0.44f, 0.3f, 0.5f);
     noneButton->setSize(noneButton->getWidth(), 20);
+
+    scalesLabel->setBoundsRelative(0, 0.44f, 0.3f, 0.5f);
+    scalesLabel->setSize(scalesLabel->getWidth(), 20);
+    xMinScaleLabel->setBoundsRelative(0.01f, 0.60f, 0.07f, 0.5f);
+    xMinScaleLabel->setSize(xMinScaleLabel->getWidth(), 20);
+    xMaxScaleLabel->setBoundsRelative(0.16f, 0.60f, 0.07f, 0.5f);
+    xMaxScaleLabel->setSize(xMaxScaleLabel->getWidth(), 20);
+    yMinScaleLabel->setBoundsRelative(0.01f, 0.80f, 0.07f, 0.5f);
+    yMinScaleLabel->setSize(yMinScaleLabel->getWidth(), 20);
+    yMaxScaleLabel->setBoundsRelative(0.16f, 0.80f, 0.07f, 0.5f);
+    yMaxScaleLabel->setSize(yMaxScaleLabel->getWidth(), 20);
+
+    xMinScaleTextEditor->setBoundsRelative(0.07f, 0.60f, 0.08f, 0.5f);
+    xMinScaleTextEditor->setSize(xMinScaleTextEditor->getWidth(), 20);
+    xMaxScaleTextEditor->setBoundsRelative(0.22f, 0.60f, 0.08f, 0.5f);
+    xMaxScaleTextEditor->setSize(xMinScaleTextEditor->getWidth(), 20);
+    yMinScaleTextEditor->setBoundsRelative(0.07f, 0.80f, 0.08f, 0.5f);
+    yMinScaleTextEditor->setSize(xMinScaleTextEditor->getWidth(), 20);
+    yMaxScaleTextEditor->setBoundsRelative(0.22f, 0.80f, 0.08f, 0.5f);
+    yMaxScaleTextEditor->setSize(xMinScaleTextEditor->getWidth(), 20);
+  }
+
+  void updateAxisRanges()
+  {
+    xMinScaleTextEditor->setText(String(configuration->getXAxis()->getRangeMin()));
+    xMaxScaleTextEditor->setText(String(configuration->getXAxis()->getRangeMax()));
+    yMinScaleTextEditor->setText(String(configuration->getYAxis()->getRangeMin()));
+    yMaxScaleTextEditor->setText(String(configuration->getYAxis()->getRangeMax()));
   }
 
 protected:
@@ -546,6 +633,17 @@ protected:
   juce::ListBox* yListBox;
   juce::Button* selectAllButton;
   juce::Button* noneButton;
+
+  juce::Label* scalesLabel;
+  juce::Label* xMinScaleLabel;
+  juce::Label* xMaxScaleLabel;
+  juce::Label* yMinScaleLabel;
+  juce::Label* yMaxScaleLabel;
+
+  juce::TextEditor* xMinScaleTextEditor;
+  juce::TextEditor* xMaxScaleTextEditor;
+  juce::TextEditor* yMinScaleTextEditor;
+  juce::TextEditor* yMaxScaleTextEditor;
 
   juce::ComboBox* createVariableIndexComboBox(size_t selectedIndex)
   {
