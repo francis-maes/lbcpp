@@ -144,6 +144,65 @@ protected:
   std::vector<int> columnToVariable;
 };
 
+class TestingSetParser : public TextParser
+{
+public:
+  TestingSetParser(ExecutionContext& context, const File& file, ContainerPtr data)
+    : TextParser(context, file), data(data) {}
+  TestingSetParser() {}
+
+  virtual TypePtr getElementsType() const
+  {
+    TypePtr exampleType = data->getElementsType();
+    return pairClass(containerClass(exampleType), containerClass(exampleType));
+  }
+
+  virtual bool parseLine(char* line)
+  {
+    std::set<size_t> testingIndices;
+    bool isFirst = true;
+    for (size_t i = 0; true; ++i)
+    {
+      char* token = strtok(isFirst ? line : NULL, " \t\n");
+      if (!token)
+        break;
+      isFirst = false;
+      int index = strtol(token, NULL, 0);
+      if (index < 1)
+      {
+        context.errorCallback(T("Invalid index ") + String(token));
+        return false;
+      }
+      size_t idx = (size_t)(index - 1);
+      if (testingIndices.find(idx) != testingIndices.end())
+      {
+        context.errorCallback(T("Redondant index ") + String(token));
+        return false;
+      }
+      testingIndices.insert(idx);
+    }
+
+    size_t n = data->getNumElements();
+    TypePtr exampleType = data->getElementsType();
+    VectorPtr learningData = vector(exampleType, 0);
+    learningData->reserve(n - testingIndices.size());
+    VectorPtr testingData = vector(exampleType, 0);
+    testingData->reserve(testingIndices.size());
+
+    for (size_t i = 0; i < n; ++i)
+      if (testingIndices.find(i) == testingIndices.end())
+        learningData->append(data->getElement(i));
+      else
+        testingData->append(data->getElement(i));
+
+    setResult(new Pair(learningData, testingData));
+    return true;
+  }
+
+protected:
+  ContainerPtr data;
+};
+
 class LuapeClassificationSandBox : public WorkUnit
 {
 public:
@@ -184,6 +243,8 @@ public:
   LuapeLearnerPtr treeBaggingLearner(LuapeLearnerPtr conditionLearner) const
     {return baggingLearner(singleTreeLearner(conditionLearner), 100);}
 
+
+
   virtual Variable run(ExecutionContext& context)
   {
     // load data
@@ -199,24 +260,19 @@ public:
     context.informationCallback(String((int)numExamples) + T(" examples, ") +
                                 String((int)numVariables) + T(" variables, ") +
                                 String((int)labels->getNumElements()) + T(" labels"));
-    if (trainingSize >= numExamples)
+//    context.informationCallback(String((int)trainingSize) + T(" training examples, ") + String((int)(numExamples - trainingSize)) + T(" testing examples"));
+
+    // make splits
+    context.enterScope(T("Splits"));
+    if (makeSplits(context, data, splits))
     {
-      context.errorCallback(T("Training size is too big"));
+      for (size_t i = 0; i < splits.size(); ++i)
+        context.informationCallback(T("Split ") + String((int)i) + T(": train size = ") + String((int)splits[i].first->getNumElements())
+                              + T(", test size = ") + String((int)splits[i].second->getNumElements()));
+    }
+    context.leaveScope(splits.size());
+    if (!splits.size())
       return false;
-    }
-    context.informationCallback(String((int)trainingSize) + T(" training examples, ") + String((int)(numExamples - trainingSize)) + T(" testing examples"));
-    return true;
-
-
-    // sample splits
-    splits.resize(numRuns);
-    for (size_t i = 0; i < numRuns; ++i)
-    {
-      ContainerPtr randomized = data->randomize();
-      ContainerPtr training = randomized->range(0, trainingSize);
-      ContainerPtr testing = randomized->range(trainingSize, randomized->getNumElements());
-      splits[i] = std::make_pair(training, testing);
-    }
 
     testLearners(context, &LuapeClassificationSandBox::singleTreeLearner, T("Single tree"));
     testLearners(context, &LuapeClassificationSandBox::singleTreeLearnerNormalizedIG, T("Single tree - normalized IG"));
@@ -314,6 +370,7 @@ protected:
 
   File dataFile;
   size_t maxExamples;
+  File tsFile;
   size_t trainingSize;
   size_t numRuns;
   bool verbose;
@@ -338,6 +395,39 @@ protected:
       res = ContainerPtr();
     context.leaveScope(res ? res->getNumElements() : 0);
     return res;
+  }
+
+  bool makeSplits(ExecutionContext& context, ContainerPtr data, std::vector< std::pair< ContainerPtr, ContainerPtr > >& res)
+  {
+    if (tsFile.existsAsFile())
+    {
+      TextParserPtr parser = new TestingSetParser(context, tsFile, data);
+      ContainerPtr splits = parser->load();
+      res.resize(splits->getNumElements());
+      for (size_t i = 0; i < res.size(); ++i)
+      {
+        PairPtr split = splits->getElement(i).getObjectAndCast<Pair>();
+        res[i] = std::make_pair(split->getFirst().getObjectAndCast<Container>(), split->getSecond().getObjectAndCast<Container>());
+      }
+    }
+    else
+    { 
+      if (trainingSize >= data->getNumElements())
+      {
+        context.errorCallback(T("Training size is too big"));
+        return false;
+      }
+
+      res.resize(numRuns);
+      for (size_t i = 0; i < numRuns; ++i)
+      {
+        ContainerPtr randomized = data->randomize();
+        ContainerPtr training = randomized->range(0, trainingSize);
+        ContainerPtr testing = randomized->range(trainingSize, randomized->getNumElements());
+        res[i] = std::make_pair(training, testing);
+      }
+    }
+    return true;
   }
 
   LuapeInferencePtr createClassifier(DynamicClassPtr inputClass) const
