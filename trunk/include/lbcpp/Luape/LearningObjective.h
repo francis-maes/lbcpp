@@ -151,6 +151,7 @@ class InformationGainLearningObjective : public ClassificationLearningObjective
 public:
   InformationGainLearningObjective(bool normalize = false);
 
+  virtual void initialize(const LuapeInferencePtr& problem);
   virtual void setSupervisions(const VectorPtr& supervisions);
   virtual void update();
   virtual void flipPrediction(size_t index);
@@ -158,6 +159,8 @@ public:
   virtual Variable computeVote(const IndexSetPtr& indices);
 
 protected:
+  friend class InformationGainLearningObjectiveClass;
+
   bool normalize;
 
   GenericVectorPtr supervisions;

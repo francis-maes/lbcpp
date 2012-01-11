@@ -95,7 +95,7 @@ void LuapeFunctionNode::initialize()
 {
   size_t numInputs = function->getNumInputs();
   jassert(arguments.size() == numInputs);
-  std::vector<TypePtr> inputTypes(numInputs);
+  TypePtr* inputTypes = new TypePtr[numInputs];
   for (size_t i = 0; i < numInputs; ++i)
   {
     jassert(arguments[i]);
@@ -104,6 +104,7 @@ void LuapeFunctionNode::initialize()
   }
 
   type = function->initialize(inputTypes);
+  delete [] inputTypes;
 }
 
 Variable LuapeFunctionNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const

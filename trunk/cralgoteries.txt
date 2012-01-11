@@ -3,9 +3,6 @@ Experiences - Proteins:
  * Nouvelles features: prev et next amino acid de chaque type; delta de ObjectVector[DenseDoubleVector]; local/global histogram
  * Essayer du Totally corrective boosting
  
-Lire:
-http://www-connex.lip6.fr/~amini/RelatedWorks/Has99.pdf
-
 Luape-Other:
  * Go: rankboost + large-scale boosting
  * Go: support for polymorphism, neighborhood, regions

@@ -63,6 +63,13 @@ public:
   const LuapeLearnerPtr& getWeakLearner() const
     {return weakLearner;}
 
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    IterativeLearner::clone(context, target);
+    if (weakLearner)
+      target.staticCast<BoostingLearner>()->weakLearner = weakLearner->cloneAndCast<LuapeLearner>(context);
+  }
+
 protected:
   friend class BoostingLearnerClass;
   

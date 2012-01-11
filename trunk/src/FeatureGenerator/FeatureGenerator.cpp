@@ -43,7 +43,7 @@ void FeatureGenerator::pushSparseVectorSize(size_t size)
 
 SparseDoubleVectorPtr FeatureGenerator::createEmptySparseVector() const
 {
-  SparseDoubleVectorPtr res(new SparseDoubleVector(nonLazyOutputType));
+  SparseDoubleVectorPtr res(new SparseDoubleVector((ClassPtr)nonLazyOutputType));
   size_t s = sparseVectorSizeUpperBound;
   if (s)
     res->reserveValues(s);

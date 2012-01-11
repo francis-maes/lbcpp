@@ -44,6 +44,8 @@ public:
   double getBestObjectiveValue() const
     {return bestObjectiveValue;}
 
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
+
 protected:
   friend class LuapeLearnerClass;
 
@@ -88,6 +90,23 @@ protected:
   void displayMostImportantNodes(ExecutionContext& context, const LuapeInferencePtr& function, bool verbose) const;
 };
 
+class NodeBuilderBasedLearner : public LuapeLearner
+{
+public:
+  NodeBuilderBasedLearner(LuapeNodeBuilderPtr nodeBuilder);
+  NodeBuilderBasedLearner() {}
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
+
+  const LuapeNodeBuilderPtr& getNodeBuilder() const
+    {return nodeBuilder;}
+
+protected:
+  friend class NodeBuilderBasedLearnerClass;
+
+  LuapeNodeBuilderPtr nodeBuilder;
+};
+
 // gradient descent
 extern IterativeLearnerPtr classifierSGDLearner(MultiClassLossFunctionPtr lossFunction, IterationFunctionPtr learningRate, size_t maxIterations);
 
@@ -109,10 +128,10 @@ extern LuapeLearnerPtr treeLearner(LearningObjectivePtr weakObjective, LuapeLear
 extern LuapeLearnerPtr generateTestNodesLearner(LuapeNodeBuilderPtr nodeBuilder);
 
 // weak learners
-extern LuapeLearnerPtr exactWeakLearner(LuapeNodeBuilderPtr nodeBuilder);
-extern LuapeLearnerPtr randomSplitWeakLearner(LuapeNodeBuilderPtr nodeBuilder);
-extern LuapeLearnerPtr laminatingWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating = 5);
-extern LuapeLearnerPtr banditBasedWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize = 0.01);
+extern NodeBuilderBasedLearnerPtr exactWeakLearner(LuapeNodeBuilderPtr nodeBuilder);
+extern NodeBuilderBasedLearnerPtr randomSplitWeakLearner(LuapeNodeBuilderPtr nodeBuilder);
+extern NodeBuilderBasedLearnerPtr laminatingWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating = 5);
+extern NodeBuilderBasedLearnerPtr banditBasedWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize = 0.01);
 extern LuapeLearnerPtr optimizerBasedSequentialWeakLearner(OptimizerPtr optimizer, size_t complexity);
 
 }; /* namespace lbcpp */

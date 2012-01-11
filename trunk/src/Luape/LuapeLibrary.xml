@@ -85,16 +85,20 @@
   <class name="RegressionLearningObjective" base="SupervisedLearningObjective"/>
   <class name="BinaryClassificationLearningObjective" base="SupervisedLearningObjective"/>
   <class name="ClassificationLearningObjective" base="SupervisedLearningObjective" abstract="yes"/>
+  <class name="InformationGainLearningObjective" base="ClassificationLearningObjective">
+    <variable type="Boolean" name="normalize"/>
+  </class>
 
   <!-- Learners -->
   <class name="LuapeLearner" abstract="yes">
     <variable type="Boolean" name="verbose"/>
   </class>
+  <class name="NodeBuilderBasedLearner" base="LuapeLearner" abstract="yes">
+    <variable type="LuapeNodeBuilder" name="nodeBuilder"/>
+  </class>
   <class name="IterativeLearner" base="LuapeLearner" abstract="yes">
     <variable type="PositiveInteger" name="maxIterations"/>
   </class>
-  <class name="WeakLearner" base="LuapeLearner" abstract="yes"/>
-
 
   <!-- Wrapper to classical LBC++ learner -->
   <class name="LuapeBatchLearner" base="BatchLearner">

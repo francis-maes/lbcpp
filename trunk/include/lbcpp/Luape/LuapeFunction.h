@@ -33,7 +33,7 @@ public:
 
   virtual size_t getNumInputs() const = 0;
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const = 0; 
-  virtual TypePtr initialize(const std::vector<TypePtr>& inputTypes) = 0; // returns the output type
+  virtual TypePtr initialize(const TypePtr* inputTypes) = 0; // returns the output type
 
   virtual bool acceptInputsStack(const std::vector<LuapeNodePtr>& stack) const;
 
@@ -105,7 +105,7 @@ public:
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
     {return type->inheritsFrom(this->type);}
 
-  virtual TypePtr initialize(const std::vector<TypePtr>& inputTypes)
+  virtual TypePtr initialize(const TypePtr* inputTypes)
     {return type;}
 
 private:
@@ -124,7 +124,7 @@ public:
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
     {return type->inheritsFrom(this->type);}
 
-  virtual TypePtr initialize(const std::vector<TypePtr>& inputTypes)
+  virtual TypePtr initialize(const TypePtr* inputTypes)
     {return type;}
 
 private:

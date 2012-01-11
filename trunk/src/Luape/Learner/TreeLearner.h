@@ -38,6 +38,13 @@ public:
     return res;
   }
 
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    LuapeLearner::clone(context, target);
+    if (conditionLearner)
+      target.staticCast<TreeLearner>()->conditionLearner = conditionLearner->cloneAndCast<LuapeLearner>(context);
+  }
+
 protected:
   friend class TreeLearnerClass;
 
@@ -60,6 +67,9 @@ protected:
     LuapeSampleVectorPtr conditionValues = problem->getTrainingCache()->getSamples(context, conditionNode, examples);
     IndexSetPtr failureExamples, successExamples, missingExamples;
     LuapeTestNode::dispatchIndices(conditionValues, failureExamples, successExamples, missingExamples);
+    if (missingExamples->size())
+      context.informationCallback(T("BLABLA MISSING Examples: ") + String((int)missingExamples->size()));
+
     if (failureExamples->size() == examples->size() || successExamples->size() == examples->size() || missingExamples->size() == examples->size())
       return new LuapeConstantNode(objective->computeVote(examples));
 

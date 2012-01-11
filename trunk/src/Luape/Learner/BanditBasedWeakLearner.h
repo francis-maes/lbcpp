@@ -16,11 +16,11 @@
 namespace lbcpp
 {
 
-class BanditBasedWeakLearner : public LuapeLearner
+class BanditBasedWeakLearner : public NodeBuilderBasedLearner
 {
 public:
   BanditBasedWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize)
-    : nodeBuilder(nodeBuilder), relativeBudget(relativeBudget), miniBatchRelativeSize(miniBatchRelativeSize)  {}
+    : NodeBuilderBasedLearner(nodeBuilder), relativeBudget(relativeBudget), miniBatchRelativeSize(miniBatchRelativeSize)  {}
   BanditBasedWeakLearner() {}
 
   virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
@@ -112,7 +112,6 @@ public:
 protected:
   friend class BanditBasedWeakLearnerClass;
 
-  LuapeNodeBuilderPtr nodeBuilder;
   double relativeBudget;
   double miniBatchRelativeSize;
 

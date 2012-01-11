@@ -82,7 +82,7 @@ public:
     if (!neighbors.size())
       return Variable::missingValue(getOutputType());
 
-    SparseDoubleVectorPtr res = new SparseDoubleVector(getOutputType());
+    SparseDoubleVectorPtr res = new SparseDoubleVector((ClassPtr)getOutputType());
     double weight = 1.0 / neighbors.size();
     for (std::set<Variable>::const_iterator it = neighbors.begin(); it != neighbors.end(); ++it)
     {

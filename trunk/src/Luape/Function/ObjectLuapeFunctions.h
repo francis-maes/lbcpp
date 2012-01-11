@@ -116,9 +116,9 @@ public:
   virtual String toShortString() const
     {return "." + inputClass->getMemberVariableName(variableIndex);}
 
-  virtual TypePtr initialize(const std::vector<TypePtr>& inputTypes)
+  virtual TypePtr initialize(const TypePtr* inputTypes)
   {
-    jassert(inputTypes.size() == 1 && inputTypes[0] == inputClass);
+    jassert(inputTypes[0] == inputClass);
     outputType = inputClass->getMemberVariableType(variableIndex);
     return outputType;
   }
@@ -180,7 +180,7 @@ public:
   virtual String toShortString() const
     {return "length(.)";}
 
-  virtual TypePtr initialize(const std::vector<TypePtr>& inputTypes)
+  virtual TypePtr initialize(const TypePtr* inputTypes)
     {return positiveIntegerType;}
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
