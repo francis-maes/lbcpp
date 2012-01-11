@@ -214,6 +214,9 @@
     <variable type="Double" name="learningRate"/>
     <variable type="PositiveInteger" name="numIterations"/>
     <variable type="PositiveInteger" name="numNeighbors"/>
+    <variable type="PositiveInteger" name="numTrees"/>
+    <variable type="PositiveInteger" name="numAttributes"/>
+    <variable type="PositiveInteger" name="kmin"/>
     <variable type="Boolean" name="useAddBias"/>
   </class>
   <!-- END Article: Lin 2009 -->

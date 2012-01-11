@@ -156,38 +156,41 @@ public:
     const size_t n = thisType->getNumMemberVariables();
     std::vector<StreamPtr> res(n);
     
-    for (size_t i = 0; i < n; ++i)
+    for (size_t j = 0; j < n; ++j)
     {
-      const TypePtr varType = thisType->getMemberVariableType(i);
-      const String varName = thisType->getMemberVariableName(i);
+      const TypePtr varType = thisType->getMemberVariableType(j);
+      const String varName = thisType->getMemberVariableName(j);
       if (varType->inheritsFrom(booleanType))
-        res[i] = booleanStream(true);
+        res[j] = booleanStream(true);
       else if (varName == T("aminoAcidWindowSize")
                || varName == T("pssmWindowSize"))
       {
         std::vector<int> values;
-        values.push_back(5);
-        values.push_back(15);
-        values.push_back(25);
-        res[i] = integerStream(positiveIntegerType, values);
+        for (size_t i = 1; i < 10; ++i)
+          values.push_back(i);
+        for (size_t i = 10; i < 20; i += 2)
+          values.push_back(i);
+        for (size_t i = 20; i <= 40; i += 5)
+          values.push_back(i);
+
+        res[j] = integerStream(positiveIntegerType, values);
       }
       else if (varName == T("aminoAcidLocalHistogramSize")
                || varName == T("pssmLocalHistogramSize"))
       {
         std::vector<int> values;
-        values.push_back(25);
-        values.push_back(50);
-        values.push_back(100);
-        res[i] = integerStream(positiveIntegerType, values);
+        for (size_t i = 10; i < 100; i += 10)
+          values.push_back(i);
+        res[j] = integerStream(positiveIntegerType, values);
       }
       else if (varName == T("separationProfilSize"))
       {
         std::vector<int> values;
-        values.push_back(3);
-        values.push_back(5);
-        values.push_back(9);
-        values.push_back(11);
-        res[i] = integerStream(positiveIntegerType, values);
+        for (size_t i = 1; i < 10; ++i)
+          values.push_back(i);
+        for (size_t i = 10; i < 20; i += 2)
+          values.push_back(i);
+        res[j] = integerStream(positiveIntegerType, values);
       }
       else
         jassertfalse;
@@ -198,6 +201,8 @@ public:
   static Lin09ParametersPtr createInitialObject()
   {
     Lin09ParametersPtr res = new Lin09Parameters();
+    //res->pssmWindowSize = 20;
+    //res->useCysteinDistance = true;
     return res;
   }
 };
@@ -209,7 +214,7 @@ public:
     : fp(fp)
     , C(7.4), kernelGamma(-4.6)
     , useLibSVM(true), useLibLinear(false), useLaRank(false), useKNN(false), useExtraTrees(false)
-    , learningRate(100.0), numIterations(150), numNeighbors(1)
+    , learningRate(100.0), numIterations(150), numNeighbors(1), numTrees(1000), numAttributes(10), kmin(0)
     , useAddBias(true)
   {setThisClass(lin09PredictorParametersClass);}
   
@@ -494,7 +499,7 @@ public:
         if (useKNN)
           return binaryNearestNeighbor(numNeighbors, true, false);
         if (useExtraTrees)
-          return binaryClassificationExtraTree(1000, 0, 0);
+          return binaryClassificationExtraTree(numTrees, numAttributes, kmin);
 
         FunctionPtr classifier = linearBinaryClassifier(new StochasticGDParameters(constantIterationFunction(learningRate), StoppingCriterionPtr(), numIterations));
         classifier->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
@@ -523,6 +528,9 @@ public:
   double learningRate;
   size_t numIterations;
   size_t numNeighbors;
+  size_t numTrees;
+  size_t numAttributes;
+  size_t kmin;
   bool useAddBias;
   String inputDirectory;
 };

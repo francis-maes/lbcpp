@@ -622,7 +622,9 @@ class DisulfideBondWorkUnit : public WorkUnit
 {
 public:
   DisulfideBondWorkUnit()
-    : learningMachineName(T("ExtraTrees")), svmC(4.0), svmGamma(1.0) {}
+    : learningMachineName(T("ExtraTrees")),
+      svmC(4.0), svmGamma(1.0),
+      x3Trees(1000), x3Attributes(0), x3Splits(1) {}
 
   DisulfideBondWorkUnit(double svmC, double svmGamma)
     : learningMachineName(T("LibSVM")), svmC(svmC), svmGamma(svmGamma) {}
@@ -640,7 +642,7 @@ public:
 
     LargeProteinParametersPtr parameter;
     if (parameterFile == File::nonexistent)
-      parameter = LargeProteinParameters::createTestObject(20);
+      parameter = LargeProteinParameters::createTestObject(40);
     else
     {
       parameter = LargeProteinParameters::createFromFile(context, parameterFile).dynamicCast<LargeProteinParameters>();
@@ -650,13 +652,20 @@ public:
         return 101;
       }
     }
-
+/*
+    context.warningCallback(T("Parameter set to lin09"));
+    parameter = new LargeProteinParameters();
+    parameter->usePositionDifference = true;
+    parameter->useIndexDifference = true;
+    parameter->pssmWindowSize = 23;
+    parameter->ss3WindowSize = 1;
+*/
     LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(parameter);
     predictor->learningMachineName = learningMachineName;
     // Config ExtraTrees
-    predictor->x3Trees = 1500;
-    predictor->x3Attributes = 0;
-    predictor->x3Splits = 1;
+    predictor->x3Trees = x3Trees;
+    predictor->x3Attributes = x3Attributes;
+    predictor->x3Splits = x3Splits;
     // Config kNN
     predictor->knnNeighbors = 5;
     // Config LibSVM
@@ -684,6 +693,9 @@ protected:
   String learningMachineName;
   double svmC;
   double svmGamma;
+  size_t x3Trees;
+  size_t x3Attributes;
+  size_t x3Splits;
 };
 
 class AverageDirectoryScoresWorkUnit : public WorkUnit
@@ -1104,7 +1116,8 @@ public:
     {
       ProteinPtr protein = Protein::createFromXml(context, *files[i]);
       protein->getCysteinBondingStates(context);
-      std::cout << protein->getNumBondedCysteins() << " " << files[i]->getFileName() << std::endl;
+      size_t numCys = protein->getCysteinIndices().size();
+      std::cout << (protein->getNumBondedCysteins() == numCys) << " " << files[i]->getFileName() << std::endl;
     }
     return true;
   }

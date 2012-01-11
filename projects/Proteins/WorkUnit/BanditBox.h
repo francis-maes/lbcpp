@@ -739,7 +739,7 @@ public:
                                               , proteinsPath, target, predictor);
     FunctionPtr f(new BanditFunction());
     OptimizationProblemPtr problem(new OptimizationProblem(f, Variable(), sampler));
-    OptimizerPtr optimizer(banditEDAOptimizer(1, 10, 5, 0.5f, 100, 1));
+    OptimizerPtr optimizer(banditEDAOptimizer(100, 100, 10, 0.5f, 10000, 20));
     return optimizer->compute(context, problem);
   }
 
@@ -753,15 +753,42 @@ protected:
 class TestParameterWorkUnit : public WorkUnit
 {
 public:
+  TestParameterWorkUnit() : target(ss3Target), learningMachine(T("kNN")) {}
+
   virtual Variable run(ExecutionContext& context)
   {
     LargeProteinParametersPtr fg = new LargeProteinParameters();
+    // SS3
     fg->useRelativePosition = true;
     fg->aminoAcidLocalHistogramSize = 34;
-    fg->pssmLocalHistogramSize = 88;
+    fg->pssmLocalHistogramSize = 88;           
+
+//    fg->pssmWindowSize = 20;
+//    fg->usePSSMGlobalHistogram = true;
+
+    // SS8
+//    fg->useRelativePosition = true;
+//    fg->useNumCysteins = true;
+//    fg->usePSSMGlobalHistogram = true;
+//    fg->aminoAcidLocalHistogramSize = 92;
+//    fg->pssmLocalHistogramSize = 100;
+
+    // SA
+//    fg->useRelativeCysteinIndex = true;
+//    fg->pssmWindowSize = 1;
+//    fg->pssmLocalHistogramSize = 51;
+//    fg->useAminoAcidGlobalHistogram = true;
+//    fg->separationProfilSize = 11;
+//    fg->usePSSMGlobalHistogram = true;
+
+    // DR
+//    fg->aminoAcidLocalHistogramSize = 100;
+//    fg->pssmLocalHistogramSize = 100;
 
     LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(fg);
-    predictor->learningMachineName = T("kNN");
+    predictor->learningMachineName = learningMachine;
+    predictor->svmGamma = 1.f;
+    predictor->svmC = 4.f;
     predictor->sgdRate = 1.f;
     predictor->sgdIterations = 300;
     predictor->knnNeighbors = 5;
@@ -774,7 +801,7 @@ public:
     }
 
     ProteinPredictorPtr stack = new ProteinPredictor(predictor);
-    stack->addTarget(ss3Target);
+    stack->addTarget(target);
 
     if (!stack->train(context, trainingData, ContainerPtr(), T("Training")))
       return 102.f;
@@ -789,7 +816,7 @@ public:
     ProteinEvaluatorPtr testEvaluator = new ProteinEvaluator();
     CompositeScoreObjectPtr testScores = stack->evaluate(context, testingData, testEvaluator, T("Evaluate on test proteins"));
     
-    context.informationCallback(T("1-Q_ss3: ") + String(testEvaluator->getScoreObjectOfTarget(testScores, ss3Target)->getScoreToMinimize()));
+    context.informationCallback(T("Error: ") + String(testEvaluator->getScoreObjectOfTarget(testScores, target)->getScoreToMinimize()));
     return testEvaluator;
   }
 
@@ -797,6 +824,8 @@ protected:
   friend class TestParameterWorkUnitClass;
 
   String proteinsPath;
+  ProteinTarget target;
+  String learningMachine;
 };
 
 };
