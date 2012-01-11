@@ -1,16 +1,26 @@
 #!/bin/bash
 
 processName="RunWorkUnit"
-
-if [ "x$1" != "x" ]
-then
-  processName="$1"
-fi
-
+processId="";
 outputFile=""
 
-echo -n "Looking for PID of ${processName} ... "
-processId="";
+if [ "x$1" == "xpid" ]
+then
+  processId=$2
+  startTime=`date "+%Y-%m-%d_%H-%M-%S"`
+  outputFile="PID_${processId}_${startTime}"
+else
+  if [ "x$1" != "x" ]
+  then
+    processName="$1"
+  fi
+fi
+
+if [ "x$processId" == "x" ]
+then
+  echo -n "Looking for PID of ${processName} ... "
+fi
+
 for (( i=0 ; ; i++ ))
 do
   sleep 1

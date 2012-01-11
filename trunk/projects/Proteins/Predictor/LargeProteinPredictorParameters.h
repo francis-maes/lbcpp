@@ -748,8 +748,8 @@ public:
       return new PreProcessInputCompositeFunction(doubleVectorNormalizeFunction(true, true)
                                                   , libSVMLearningMachine(pow(2.0, svmC), rbfKernel, 0, pow(2.0, svmGamma), 0.0));
     else if (learningMachineName == T("kNN"))
-      return new PreProcessInputCompositeFunction(composeFunction(doubleVectorNormalizeFunction(true, true),
-                                                                  concatenatedDoubleVectorNormalizeFunction()),
+      return new PreProcessInputCompositeFunction(/*composeFunction(*/doubleVectorNormalizeFunction(true, true),
+                                                                  //concatenatedDoubleVectorNormalizeFunction()),
                                                   nearestNeighborLearningMachine(knnNeighbors, true));
     else if (learningMachineName == T("LSH"))
       return binaryLocalitySensitiveHashing(knnNeighbors);

@@ -412,6 +412,9 @@ public:
 
     LargeProteinPredictorParametersPtr largePredictor = new LargeProteinPredictorParameters();
     largePredictor->learningMachineName = learningMachine;
+    largePredictor->knnNeighbors = 5;
+    largePredictor->sgdRate = 1.f;
+    largePredictor->sgdIterations = 300;
 
     FunctionPtr toOptimize = new ProteinLearnerFunction(target, proteinsPath, trainingProteins, testingProteins, largePredictor);
     OptimizationProblemPtr problem = new OptimizationProblem(toOptimize, new LargeProteinParameters());
