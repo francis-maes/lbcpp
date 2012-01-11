@@ -262,3 +262,31 @@ void NodeBuilderBasedLearner::clone(ExecutionContext& context, const ObjectPtr& 
   if (nodeBuilder)
     target.staticCast<NodeBuilderBasedLearner>()->nodeBuilder = nodeBuilder->cloneAndCast<LuapeNodeBuilder>(context);
 }
+
+/*
+** DecoratorLearner
+*/
+DecoratorLearner::DecoratorLearner(LuapeLearnerPtr decorated)
+  : decorated(decorated)
+{
+}
+
+LuapeNodePtr DecoratorLearner::createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
+  {return decorated->createInitialNode(context, problem);}
+
+LuapeNodePtr DecoratorLearner::learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+{
+  if (!decorated->getObjective())
+    decorated->setObjective(objective);
+  decorated->setVerbose(verbose);
+  LuapeNodePtr res = decorated->learn(context, node, problem, examples);
+  bestObjectiveValue = decorated->getBestObjectiveValue();
+  return res;
+}
+
+void DecoratorLearner::clone(ExecutionContext& context, const ObjectPtr& target) const
+{
+  LuapeLearner::clone(context, target);
+  if (decorated)
+    target.staticCast<DecoratorLearner>()->decorated = decorated->cloneAndCast<LuapeLearner>();
+}

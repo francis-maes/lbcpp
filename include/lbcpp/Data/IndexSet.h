@@ -48,7 +48,7 @@ public:
     {v.reserve(size);}
 
   void append(size_t index)
-    {jassert(v.empty() || index > v.back()); v.push_back(index);}
+    {jassert(v.empty() || index >= v.back()); v.push_back(index);}
 
   void addInterval(size_t begin, size_t end);
 

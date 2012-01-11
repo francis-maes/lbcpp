@@ -59,16 +59,16 @@ protected:
       return new LuapeConstantNode(objective->computeVote(examples));
 
     // learn condition and make a leaf if condition learning fails
-    LuapeNodePtr conditionNode = subLearn(context, conditionLearner, LuapeNodePtr(), problem, examples);
+    double conditionObjectiveValue;
+    LuapeNodePtr conditionNode = subLearn(context, conditionLearner, LuapeNodePtr(), problem, examples, &conditionObjectiveValue);
     if (!conditionNode || conditionNode.isInstanceOf<LuapeConstantNode>())
       return new LuapeConstantNode(objective->computeVote(examples));
+    conditionNode->addImportance(conditionObjectiveValue * examples->size() / problem->getTrainingCache()->getNumSamples());
 
     // otherwise split examples...
     LuapeSampleVectorPtr conditionValues = problem->getTrainingCache()->getSamples(context, conditionNode, examples);
     IndexSetPtr failureExamples, successExamples, missingExamples;
     LuapeTestNode::dispatchIndices(conditionValues, failureExamples, successExamples, missingExamples);
-    if (missingExamples->size())
-      context.informationCallback(T("BLABLA MISSING Examples: ") + String((int)missingExamples->size()));
 
     if (failureExamples->size() == examples->size() || successExamples->size() == examples->size() || missingExamples->size() == examples->size())
       return new LuapeConstantNode(objective->computeVote(examples));

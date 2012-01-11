@@ -107,6 +107,22 @@ protected:
   LuapeNodeBuilderPtr nodeBuilder;
 };
 
+
+class DecoratorLearner : public LuapeLearner
+{
+public:
+  DecoratorLearner(LuapeLearnerPtr decorated = LuapeLearnerPtr());
+
+  virtual LuapeNodePtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem);
+  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples);
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
+
+protected:
+  friend class DecoratorLearnerClass;
+
+  LuapeLearnerPtr decorated;
+};
+
 // gradient descent
 extern IterativeLearnerPtr classifierSGDLearner(MultiClassLossFunctionPtr lossFunction, IterationFunctionPtr learningRate, size_t maxIterations);
 
@@ -123,6 +139,8 @@ extern LuapeLearnerPtr baggingLearner(const LuapeLearnerPtr& baseLearner, size_t
 extern LuapeLearnerPtr compositeLearner(const std::vector<LuapeLearnerPtr>& learners);
 extern LuapeLearnerPtr compositeLearner(const LuapeLearnerPtr& learner1, const LuapeLearnerPtr& learner2);
 extern LuapeLearnerPtr treeLearner(LearningObjectivePtr weakObjective, LuapeLearnerPtr conditionLearner, size_t minExamplesToSplit, size_t maxDepth);
+
+extern DecoratorLearnerPtr addActiveVariablesLearner(LuapeLearnerPtr decorated, size_t numActiveVariables, bool deterministic);
 
 // misc
 extern LuapeLearnerPtr generateTestNodesLearner(LuapeNodeBuilderPtr nodeBuilder);
