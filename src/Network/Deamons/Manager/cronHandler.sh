@@ -1,7 +1,7 @@
 #!/bin/bash
 
 managerDirectory="/home/jbecker/Manager/"
-programDirectory="/home/jbecker/Workspace/LBC++/bin/Release/"
+programDirectory="/home/jbecker/Workspace/LBC++/bin/Debug/"
 
 cd $managerDirectory
 
@@ -16,7 +16,7 @@ startDate=`date`
 echo "$startDate - Start Manager" >> .cronHandler
 
 cd $programDirectory
-./RunWorkUnit ManagerWorkUnit --projectDirectory $managerDirectory --numThreads 1 2>&1 >> $managerDirectory/.cronHandler
+./RunWorkUnit ServerWorkUnit --projectDirectory $managerDirectory 2>&1 >> $managerDirectory/.cronHandler
 
 cd $managerDirectory
 endDate=`date`

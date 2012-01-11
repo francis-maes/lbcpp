@@ -177,6 +177,7 @@
     <variable type="PositiveInteger" name="x3Trees"/>
     <variable type="PositiveInteger" name="x3Attributes"/>
     <variable type="PositiveInteger" name="x3Splits"/>
+    <variable type="PositiveInteger" name="windowSize" shortName="w"/>
   </class>
   <class name="AverageDirectoryScoresWorkUnit" base="WorkUnit">
     <variable type="File" name="directory" shortName="in"/>
