@@ -14,6 +14,7 @@
 using namespace lbcpp;
 
 ClassPtr lbcpp::simpleDenseDoubleVectorClass;
+ClassPtr lbcpp::simpleSparseDoubleVectorClass;
 
 /*
 ** Default implementations
@@ -325,6 +326,12 @@ SparseDoubleVector::SparseDoubleVector(EnumerationPtr elementsEnumeration, TypeP
 
 SparseDoubleVector::SparseDoubleVector(ClassPtr thisClass)
   : DoubleVector(thisClass), lastIndex(-1) {}
+
+SparseDoubleVector::SparseDoubleVector(size_t initialReservedSize)
+  : DoubleVector(simpleSparseDoubleVectorClass), lastIndex(-1)
+{
+  values.reserve(initialReservedSize);
+}
 
 SparseDoubleVector::SparseDoubleVector()
   : lastIndex(-1) {}

@@ -14,10 +14,11 @@
 namespace lbcpp
 {
 
-class ExactWeakLearner : public LuapeLearner
+class ExactWeakLearner : public NodeBuilderBasedLearner
 {
 public:
-  ExactWeakLearner(LuapeNodeBuilderPtr nodeBuilder) : nodeBuilder(nodeBuilder) {}
+  ExactWeakLearner(LuapeNodeBuilderPtr nodeBuilder)
+    : NodeBuilderBasedLearner(nodeBuilder) {}
   ExactWeakLearner() {}
 
   virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
@@ -46,11 +47,6 @@ public:
 
   virtual double computeObjective(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, LuapeNodePtr& weakNode)
     {return objective->computeObjectiveWithEventualStump(context, problem, weakNode, examples);}
-
-protected:
-  friend class ExactWeakLearnerClass;
-
-  LuapeNodeBuilderPtr nodeBuilder;
 };
 
 

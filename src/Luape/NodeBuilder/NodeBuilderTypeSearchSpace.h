@@ -324,11 +324,12 @@ private:
   {
     // compute output type given input types
     size_t numInputs = function->getNumInputs();
-    std::vector<TypePtr> inputs(numInputs);
+    TypePtr* inputs = new TypePtr[numInputs];
     for (size_t i = 0; i < numInputs; ++i)
       inputs[i] = state->stack[state->getStackSize() - numInputs + i];
-
     TypePtr outputType = function->initialize(inputs);
+    delete [] inputs;
+
     insertType(nodeTypes, outputType); // the function output type can become a graph node in later episodes
 
     // compute new stack and new graph node types

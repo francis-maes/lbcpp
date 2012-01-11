@@ -120,11 +120,15 @@ extern ClassPtr denseDoubleVectorClass(TypePtr elementsEnumeration = enumValueTy
 extern ClassPtr lazyDoubleVectorClass(TypePtr elementsEnumeration = enumValueType, TypePtr elementsType = doubleType);
 extern ClassPtr compositeDoubleVectorClass(TypePtr elementsEnumeration = enumValueType, TypePtr elementsType = doubleType);
 
+extern ClassPtr simpleDenseDoubleVectorClass;
+extern ClassPtr simpleSparseDoubleVectorClass;
+
 class SparseDoubleVector : public DoubleVector
 {
 public:
   SparseDoubleVector(EnumerationPtr elementsEnumeration, TypePtr elementsType);
   SparseDoubleVector(ClassPtr thisClass);
+  SparseDoubleVector(size_t initialReservedSize);
   SparseDoubleVector();
 
   void appendValue(size_t index, double value)
@@ -303,8 +307,6 @@ private:
   std::vector<double>* values;
   bool ownValues;
 };
-
-extern ClassPtr simpleDenseDoubleVectorClass;
 
 class LazyDoubleVector : public DoubleVector
 {

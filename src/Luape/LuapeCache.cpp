@@ -377,11 +377,10 @@ struct SortDoubleValuesOperator
 
 SparseDoubleVectorPtr LuapeSamplesCache::computeSortedDoubleValuesFromSamples(const LuapeSampleVectorPtr& samples) const
 {
-  SparseDoubleVectorPtr res = new SparseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType);
+  size_t n = samples->size();
+  SparseDoubleVectorPtr res = new SparseDoubleVector(n);
   std::vector< std::pair<size_t, double> >& v = res->getValuesVector();
   
-  size_t n = samples->size();
-  v.reserve(n);
   bool isDouble = (samples->getElementsType() == doubleType);
   for (LuapeSampleVector::const_iterator it = samples->begin(); it != samples->end(); ++it)
   {
@@ -400,10 +399,9 @@ SparseDoubleVectorPtr LuapeSamplesCache::computeSortedDoubleValuesSubset(const S
   for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
     flags[*it] = 1;
   
-  SparseDoubleVectorPtr res = new SparseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType);
+  SparseDoubleVectorPtr res = new SparseDoubleVector(indices->size());
   std::vector<std::pair<size_t, double> >& resValues = res->getValuesVector();
   
-  resValues.reserve(indices->size());
   //size_t index = 0;
   for (size_t i = 0; i < allValues->getNumValues(); ++i)
     if (flags[allValues->getValue(i).first] > 0)

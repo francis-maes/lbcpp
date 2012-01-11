@@ -15,11 +15,11 @@
 namespace lbcpp
 {
 
-class LaminatingWeakLearner : public LuapeLearner
+class LaminatingWeakLearner : public NodeBuilderBasedLearner
 {
 public:
   LaminatingWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating)
-    : nodeBuilder(nodeBuilder), relativeBudget(relativeBudget), minExamplesForLaminating(minExamplesForLaminating)  {}
+    : NodeBuilderBasedLearner(nodeBuilder), relativeBudget(relativeBudget), minExamplesForLaminating(minExamplesForLaminating)  {}
   LaminatingWeakLearner() {}
 
   virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
@@ -120,7 +120,6 @@ public:
 protected:
   friend class LaminatingWeakLearnerClass;
 
-  LuapeNodeBuilderPtr nodeBuilder;
   double relativeBudget;
   size_t minExamplesForLaminating;
 

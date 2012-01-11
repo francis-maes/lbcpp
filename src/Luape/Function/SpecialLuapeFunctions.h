@@ -33,7 +33,7 @@ public:
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
     {return type->inheritsFrom(doubleType) || type->inheritsFrom(integerType);}
   
-  virtual TypePtr initialize(const std::vector<TypePtr>& )
+  virtual TypePtr initialize(const TypePtr* inputTypes)
     {return booleanType;}
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
@@ -121,7 +121,7 @@ public:
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
     {return type->inheritsFrom(doubleType);}
 
-  virtual TypePtr initialize(const std::vector<TypePtr>& )
+  virtual TypePtr initialize(const TypePtr* inputTypes)
     {return booleanType;}
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
@@ -144,7 +144,7 @@ public:
   NormalizerLuapeFunction()
     {vectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, probabilityType);}
 
-  virtual TypePtr initialize(const std::vector<TypePtr>& inputTypes)
+  virtual TypePtr initialize(const TypePtr* inputTypes)
     {return probabilityType;}
 
   void initialize(const DenseDoubleVectorPtr& inputValues, size_t numPercentiles = 10)

@@ -232,9 +232,6 @@ public:
     {return discreteAdaBoostMHLearner(conditionLearner, 100, 5);}
 
   LuapeLearnerPtr singleTreeLearner(LuapeLearnerPtr conditionLearner) const
-    {return treeLearner(new InformationGainLearningObjective(false), conditionLearner, 2, 0);}
-
-  LuapeLearnerPtr singleTreeLearnerNormalizedIG(LuapeLearnerPtr conditionLearner) const
     {return treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);}
 
   LuapeLearnerPtr treeEnsembleLearner(LuapeLearnerPtr conditionLearner) const
@@ -274,6 +271,30 @@ public:
     if (!splits.size())
       return false;
 
+    LuapeLearnerPtr conditionLearner, learner;
+    
+    conditionLearner = exactWeakLearner(inputsNodeBuilder());
+    learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
+    testConditionLearner(context, learner, "Single Tree");
+
+    learner = baggingLearner(learner, 100);
+    testConditionLearner(context, learner, "Tree Bagging");
+
+    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder((size_t)sqrt((double)numVariables), 2));
+    learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
+    testConditionLearner(context, learner, "Random Subspace");
+
+    learner = baggingLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
+    testConditionLearner(context, learner, "Random Forests");
+
+    conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder((size_t)sqrt((double)numVariables), 2));
+    learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
+    testConditionLearner(context, learner, "Extra Trees");
+
+    return true;
+/*
+    
+  
     testLearners(context, &LuapeClassificationSandBox::singleTreeLearner, T("Single tree"));
     testLearners(context, &LuapeClassificationSandBox::singleTreeLearnerNormalizedIG, T("Single tree - normalized IG"));
     testLearners(context, &LuapeClassificationSandBox::treeBaggingLearner, T("Tree Bagging"));
@@ -285,15 +306,7 @@ public:
     testLearners(context, &LuapeClassificationSandBox::treeDepth3RealAdaBoostMHLearner, T("Tree depth 3 real AdaBoost.MH"));
     testLearners(context, &LuapeClassificationSandBox::treeDepth4DiscreteAdaBoostMHLearner, T("Tree depth 4 discrete AdaBoost.MH"));
     testLearners(context, &LuapeClassificationSandBox::treeDepth5DiscreteAdaBoostMHLearner, T("Tree depth 5 discrete AdaBoost.MH"));
-    return true;
-  }
-
-  void testConditionLearner(ExecutionContext& context, LearnerConstructor learnerConstructor, const LuapeLearnerPtr& weakLearner, const String& name, ScalarVariableStatistics& scoreStats) const
-  {
-    weakLearner->setVerbose(verbose);
-    LuapeLearnerPtr learner = (this->*learnerConstructor)(weakLearner);
-    learner->setVerbose(verbose);
-    scoreStats.push(testConditionLearner(context, learner, name));
+    return true;*/
   }
 
   void testLearners(ExecutionContext& context, LearnerConstructor learnerConstructor, const String& name) const
@@ -333,36 +346,35 @@ public:
     context.leaveScope(new Pair(scoreStats.getMinimum(), scoreStats.getMean()));
   }
 
+  void testConditionLearner(ExecutionContext& context, LearnerConstructor learnerConstructor, const LuapeLearnerPtr& weakLearner, const String& name, ScalarVariableStatistics& scoreStats) const
+  {
+    weakLearner->setVerbose(verbose);
+    LuapeLearnerPtr learner = (this->*learnerConstructor)(weakLearner);
+    learner->setVerbose(verbose);
+    scoreStats.push(testConditionLearner(context, learner, name));
+  }
+
   double testConditionLearner(ExecutionContext& context, const LuapeLearnerPtr& learner, const String& name) const
   {
     context.enterScope(name);
 
-    ScalarVariableStatisticsPtr stats = new ScalarVariableStatistics(T("error"));
-
+    // construct parallel work unit 
+    CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(name, splits.size());
     for (size_t i = 0; i < splits.size(); ++i)
-    {
-      context.enterScope(T("Split ") + String((int)i));
-      context.resultCallback(T("split"), i);
-      ScoreObjectPtr score = trainAndTest(context, learner, splits[i].first, splits[i].second);
-      jassert(score);
-      stats->push(score->getScoreToMinimize());
-      context.leaveScope(score->getScoreToMinimize());
-      context.progressCallback(new ProgressionState(i+1, splits.size(), T("Splits")));
-    }
+      workUnit->setWorkUnit(i, new TrainAndTestLearnerWorkUnit(learner->cloneAndCast<LuapeLearner>(), splits[i].first, splits[i].second, inputClass, labels, "Split " + String((int)i)));
+    workUnit->setProgressionUnit(T("Splits"));
+    workUnit->setPushChildrenIntoStackFlag(true);
 
+    // run parallel work unit
+    ContainerPtr results = context.run(workUnit, false).getObjectAndCast<Container>();
+    jassert(results->getNumElements() == splits.size());
+
+    // compile results
+    ScalarVariableStatisticsPtr stats = new ScalarVariableStatistics(T("error"));
+    for (size_t i = 0; i < splits.size(); ++i)
+      stats->push(results->getElement(i).getDouble());
     context.leaveScope(stats);
     return stats->getMean();
-  }
-
-  ScoreObjectPtr trainAndTest(ExecutionContext& context, const LuapeLearnerPtr& learner, const ContainerPtr& trainingData, const ContainerPtr& testingData) const
-  {
-    LuapeClassifierPtr classifier = createClassifier(inputClass);
-    if (!classifier->initialize(context, inputClass, labels))
-      return ScoreObjectPtr();
-    LuapeBatchLearnerPtr batchLearner = new LuapeBatchLearner(learner);
-    classifier->setBatchLearner(batchLearner);
-    classifier->setEvaluator(defaultSupervisedEvaluator());
-    return classifier->train(context, trainingData, testingData, String::empty, false);
   }
 
 protected:
@@ -374,7 +386,6 @@ protected:
   size_t trainingSize;
   size_t numRuns;
   bool verbose;
-
 
   DynamicClassPtr inputClass;
   DefaultEnumerationPtr labels;
@@ -430,22 +441,51 @@ protected:
     return true;
   }
 
-  LuapeInferencePtr createClassifier(DynamicClassPtr inputClass) const
+  struct TrainAndTestLearnerWorkUnit : public WorkUnit
   {
-    LuapeInferencePtr res = new LuapeClassifier();
-    size_t n = inputClass->getNumMemberVariables();
-    for (size_t i = 0; i < n; ++i)
+    TrainAndTestLearnerWorkUnit(const LuapeLearnerPtr& learner, const ContainerPtr& trainingData, const ContainerPtr& testingData,
+                                const DynamicClassPtr& inputClass, const DefaultEnumerationPtr& labels, const String& description)
+      : learner(learner), trainingData(trainingData), testingData(testingData), inputClass(inputClass), labels(labels), description(description) {}
+
+    virtual String toShortString() const
+      {return description;}
+
+    virtual Variable run(ExecutionContext& context)
     {
-      VariableSignaturePtr variable = inputClass->getMemberVariable(i);
-      res->addInput(variable->getType(), variable->getName());
+      LuapeClassifierPtr classifier = createClassifier(inputClass);
+      if (!classifier->initialize(context, inputClass, labels))
+        return ScoreObjectPtr();
+      LuapeBatchLearnerPtr batchLearner = new LuapeBatchLearner(learner);
+      classifier->setBatchLearner(batchLearner);
+      classifier->setEvaluator(defaultSupervisedEvaluator());
+      return classifier->train(context, trainingData, testingData, String::empty, false)->getScoreToMinimize();
     }
 
-    res->addFunction(addDoubleLuapeFunction());
-    res->addFunction(subDoubleLuapeFunction());
-    res->addFunction(mulDoubleLuapeFunction());
-    res->addFunction(divDoubleLuapeFunction());
-    return res;
-  }
+  protected:
+    LuapeLearnerPtr learner;
+    ContainerPtr trainingData;
+    ContainerPtr testingData;
+    DynamicClassPtr inputClass;
+    DefaultEnumerationPtr labels;
+    String description;
+
+    LuapeInferencePtr createClassifier(DynamicClassPtr inputClass) const
+    {
+      LuapeInferencePtr res = new LuapeClassifier();
+      size_t n = inputClass->getNumMemberVariables();
+      for (size_t i = 0; i < n; ++i)
+      {
+        VariableSignaturePtr variable = inputClass->getMemberVariable(i);
+        res->addInput(variable->getType(), variable->getName());
+      }
+
+      res->addFunction(addDoubleLuapeFunction());
+      res->addFunction(subDoubleLuapeFunction());
+      res->addFunction(mulDoubleLuapeFunction());
+      res->addFunction(divDoubleLuapeFunction());
+      return res;
+    }
+  };
 };
 
 }; /* namespace lbcpp */

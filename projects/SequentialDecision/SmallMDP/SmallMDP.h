@@ -107,7 +107,7 @@ protected:
     void initialize()
     {
       rewards = new ScalarVariableStatistics("rewards");
-      nextStates = new SparseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType);
+      nextStates = new SparseDoubleVector(0);
     }
 
     void observe(size_t nextState, double reward)
@@ -189,7 +189,7 @@ public:
       {
         // this creates a random variable called reward (from which we can sample) with distribution bernoulli whose expectation is either a uniform number between 0 and 1 (with prob nonNullRewardProbability) or zero)
 		    SamplerPtr reward = bernoulliSampler(random->sampleBool(nonNullRewardProbability) ? random->sampleDouble() : 0.0);
-        SparseDoubleVectorPtr transitions = new SparseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType);
+        SparseDoubleVectorPtr transitions = new SparseDoubleVector(0);
         
         std::vector<size_t> order;
 		    // sample a permutation of the numbers (0..numStates-1) ...
@@ -232,7 +232,7 @@ public:
     // Here we allocate mem for the return vector. 
 	  //    positiveIntegerEnumerationEnumeration = type of indices (positive integers starting from 0)
 	  //   doubleType = vector contains double values
-	SparseDoubleVectorPtr res = new SparseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType);
+	SparseDoubleVectorPtr res = new SparseDoubleVector(0);
     Z = 1.0;
 
     if (state <= 2) // initial states
@@ -286,7 +286,7 @@ public:
 
   virtual SparseDoubleVectorPtr getTransitionProbabilities(size_t state, size_t action, double& Z) const
   {
-    SparseDoubleVectorPtr res = new SparseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType);
+    SparseDoubleVectorPtr res = new SparseDoubleVector(0);
     Z = 1.0;
 
     if (state == 0)
@@ -324,7 +324,7 @@ public:
 
   virtual SparseDoubleVectorPtr getTransitionProbabilities(size_t state, size_t action, double& Z) const
   {
-    SparseDoubleVectorPtr res = new SparseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType);
+    SparseDoubleVectorPtr res = new SparseDoubleVector(0);
     Z = 1.0;
 
     if (state >= 1 && state < getNumStates() - 1)

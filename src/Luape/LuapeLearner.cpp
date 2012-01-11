@@ -45,6 +45,15 @@ LuapeNodePtr LuapeLearner::subLearn(ExecutionContext& context, const LuapeLearne
   return weakNode;
 }
 
+void LuapeLearner::clone(ExecutionContext& context, const ObjectPtr& t) const
+{
+  Object::clone(context, t);
+  const LuapeLearnerPtr& target = t.staticCast<LuapeLearner>();
+  if (objective)
+    target->objective = objective->cloneAndCast<LearningObjective>(context);
+  target->bestObjectiveValue = bestObjectiveValue;
+}
+
 /*
 ** IterativeLearner
 */
@@ -237,4 +246,19 @@ void IterativeLearner::displayMostImportantNodes(ExecutionContext& context, cons
     probabilities[index] = 0.0;
   }
 #endif // 0
+}
+
+/*
+** NodeBuilderBasedLearner
+*/
+NodeBuilderBasedLearner::NodeBuilderBasedLearner(LuapeNodeBuilderPtr nodeBuilder)
+  : nodeBuilder(nodeBuilder)
+{
+}
+
+void NodeBuilderBasedLearner::clone(ExecutionContext& context, const ObjectPtr& target) const
+{
+  LuapeLearner::clone(context, target);
+  if (nodeBuilder)
+    target.staticCast<NodeBuilderBasedLearner>()->nodeBuilder = nodeBuilder->cloneAndCast<LuapeNodeBuilder>(context);
 }

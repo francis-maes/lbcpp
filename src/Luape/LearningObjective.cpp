@@ -256,6 +256,15 @@ void ClassificationLearningObjective::initialize(const LuapeInferencePtr& proble
 InformationGainLearningObjective::InformationGainLearningObjective(bool normalize)
   : normalize(normalize) {}
 
+void InformationGainLearningObjective::initialize(const LuapeInferencePtr& problem)
+{
+  ClassificationLearningObjective::initialize(problem);
+  splitWeights = new DenseDoubleVector(3, 0.0); // prediction probabilities
+  labelWeights = new DenseDoubleVector(doubleVectorClass); // label probabilities
+  for (int i = 0; i < 3; ++i)
+    labelConditionalProbabilities[i] = new DenseDoubleVector(doubleVectorClass); // label probabilities given that the predicted value is negative, positive or missing
+}
+
 void InformationGainLearningObjective::setSupervisions(const VectorPtr& supervisions)
 {
   size_t n = supervisions->getNumElements();
@@ -271,10 +280,10 @@ void InformationGainLearningObjective::setSupervisions(const VectorPtr& supervis
 
 void InformationGainLearningObjective::update()
 {
-  splitWeights = new DenseDoubleVector(3, 0.0); // prediction probabilities
-  labelWeights = new DenseDoubleVector(doubleVectorClass); // label probabilities
+  splitWeights->multiplyByScalar(0.0);
+  labelWeights->multiplyByScalar(0.0);
   for (int i = 0; i < 3; ++i)
-    labelConditionalProbabilities[i] = new DenseDoubleVector(doubleVectorClass); // label probabilities given that the predicted value is negative, positive or missing
+    labelConditionalProbabilities[i]->multiplyByScalar(0.0);
 
   sumOfWeights = 0.0;
   for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)

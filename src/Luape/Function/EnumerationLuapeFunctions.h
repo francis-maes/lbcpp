@@ -30,7 +30,7 @@ public:
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
     {return enumeration ? type == enumeration : type.isInstanceOf<Enumeration>();}
 
-  virtual TypePtr initialize(const std::vector<TypePtr>& )
+  virtual TypePtr initialize(const TypePtr* inputTypes)
     {return booleanType;}
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const

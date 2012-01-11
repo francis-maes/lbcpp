@@ -65,6 +65,13 @@ public:
     return sequenceNode;
   }
 
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    if (baseLearner)
+      target.staticCast<EnsembleLearner>()->baseLearner = baseLearner->cloneAndCast<LuapeLearner>(context);
+    target.staticCast<EnsembleLearner>()->ensembleSize = ensembleSize;
+  }
+
 protected:
   friend class EnsembleLearnerClass;
 

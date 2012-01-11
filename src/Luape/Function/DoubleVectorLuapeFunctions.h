@@ -27,7 +27,7 @@ public:
     return enumeration ? enumeration == features : features && features->getNumElements() > 0;
   }
 
-  virtual TypePtr initialize(const std::vector<TypePtr>& inputTypes)
+  virtual TypePtr initialize(const TypePtr* inputTypes)
   {
     EnumerationPtr features;
     DoubleVector::getTemplateParameters(defaultExecutionContext(), inputTypes[0], features, outputType);
@@ -110,7 +110,7 @@ public:
   virtual String toShortString() const
     {return "stats(.)";}
 
-  virtual TypePtr initialize(const std::vector<TypePtr>& inputTypes)
+  virtual TypePtr initialize(const TypePtr* inputTypes)
     {return scalarVariableStatisticsPerceptionClass;}
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
@@ -165,7 +165,7 @@ public:
     return enumeration ? enumeration == features : features != EnumerationPtr();
   }
 
-  virtual TypePtr initialize(const std::vector<TypePtr>& inputTypes)
+  virtual TypePtr initialize(const TypePtr* inputTypes)
   {
     EnumerationPtr features;
     TypePtr elementsType;

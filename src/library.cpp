@@ -325,6 +325,7 @@ void lbcpp::initialize(const char* executableName)
   importLibrary(lbCppLibrary());
   topLevelType = anyType = variableType;
   simpleDenseDoubleVectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType);
+  simpleSparseDoubleVectorClass = sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType);
   doubleMissingValue = doubleType->getMissingValue().getDouble();
   integerMissingValue = (int)integerType->getMissingValue().getInteger();
 }
@@ -345,6 +346,7 @@ void lbcpp::deinitialize()
     lbCppLibraryUnCacheTypes();
     topLevelType = anyType = TypePtr();
     simpleDenseDoubleVectorClass = ClassPtr();
+    simpleSparseDoubleVectorClass = ClassPtr();
 
     // shutdown types
     applicationContext->typeManager.shutdown();
@@ -462,6 +464,7 @@ void lbcpp::initializeDynamicLibrary(lbcpp::ApplicationContext& applicationConte
   lbCppLibraryCacheTypes(context);
   topLevelType = anyType = variableType;
   simpleDenseDoubleVectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType);
+  simpleSparseDoubleVectorClass = sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType);
   doubleMissingValue = doubleType->getMissingValue().getDouble();
   integerMissingValue = (int)integerType->getMissingValue().getInteger();
 #else
@@ -476,6 +479,7 @@ void lbcpp::deinitializeDynamicLibrary()
   lbCppLibraryUnCacheTypes();
   topLevelType = anyType = TypePtr();
   simpleDenseDoubleVectorClass = ClassPtr();
+  simpleSparseDoubleVectorClass = ClassPtr();
   jassert(lbcpp::applicationContext);
   //lbcpp::applicationContext = NULL;
 #endif // JUCE_WIN32

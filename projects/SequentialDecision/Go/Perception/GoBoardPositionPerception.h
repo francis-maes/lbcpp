@@ -144,7 +144,7 @@ public:
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
     {return type->inheritsFrom(goBoardPositionPerceptionClass);}
 
-  virtual TypePtr initialize(const std::vector<TypePtr>& inputTypes)
+  virtual TypePtr initialize(const TypePtr* inputTypes)
     {return goBoardPositionRelationPerceptionClass;}
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
