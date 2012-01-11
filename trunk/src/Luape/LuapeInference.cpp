@@ -40,6 +40,15 @@ void LuapeInference::setLearner(const LuapeLearnerPtr& learner, bool verbose)
   setBatchLearner(new LuapeBatchLearner(learner));
 }
 
+LuapeNodePtr LuapeInference::getActiveVariable(size_t index) const
+{
+  jassert(index < activeVariables.size());
+  std::set<LuapeNodePtr>::const_iterator it = activeVariables.begin();
+  for (size_t i = 0; i < index; ++i)
+    ++it;
+  return *it;
+}
+
 void LuapeInference::setRootNode(ExecutionContext& context, const LuapeNodePtr& node)
 {
   if (node != this->node)

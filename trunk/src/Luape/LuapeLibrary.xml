@@ -99,6 +99,9 @@
   <class name="IterativeLearner" base="LuapeLearner" abstract="yes">
     <variable type="PositiveInteger" name="maxIterations"/>
   </class>
+  <class name="DecoratorLearner" base="LuapeLearner" abstract="yes">
+    <variable type="LuapeLearner" name="decorated"/>
+  </class>
 
   <!-- Wrapper to classical LBC++ learner -->
   <class name="LuapeBatchLearner" base="BatchLearner">

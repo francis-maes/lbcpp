@@ -102,5 +102,12 @@
     <variable type="Optimizer" name="optimizer"/>
     <variable type="PositiveInteger" name="complexity"/>
   </class>
-  
+
+  <!-- Decorators -->
+  <class name="AddActiveVariablesLearner" base="DecoratorLearner">
+    <constructor arguments="LuapeLearnerPtr decorated, size_t numActiveVariables, bool deterministic"/>
+    <variable type="PositiveInteger" name="numActiveVariables"/>
+    <variable type="Boolean" name="deterministic"/>
+  </class>
+
 </library>

@@ -46,6 +46,8 @@ public:
   size_t getNumActiveVariables() const
     {return activeVariables.size();}
 
+  LuapeNodePtr getActiveVariable(size_t index) const;
+
   const std::set<LuapeNodePtr>& getActiveVariables() const
     {return activeVariables;}
 

@@ -32,3 +32,4 @@ public:
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_LUAPE_NODE_BUILDER_INPUTS_H_
+

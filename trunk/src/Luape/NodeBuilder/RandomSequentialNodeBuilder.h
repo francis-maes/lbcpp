@@ -44,12 +44,16 @@ public:
     case 0: // push
       {
         static const size_t numTrials = 10;
+        size_t numVariables = problem->getNumInputs() + problem->getNumActiveVariables();
         for (size_t trial = 0; trial < numTrials; ++trial)
         {
-          LuapeInputNodePtr input = problem->getInput(random->sampleSize(problem->getNumInputs()));
-          if (typeState->hasPushAction(input->getType()))
+          size_t variableIndex = random->sampleSize(numVariables);
+          LuapeNodePtr variable = variableIndex < problem->getNumInputs()
+            ? (LuapeNodePtr)problem->getInput(variableIndex)
+            : problem->getActiveVariable(variableIndex - problem->getNumInputs());
+          if (typeState->hasPushAction(variable->getType()))
           {
-            res = input;
+            res = variable;
             return true;
           }
         }

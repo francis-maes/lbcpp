@@ -710,6 +710,7 @@ SET(LBCPP_LUAPE_LEARNER_META_SOURCES
   Luape/Learner/TreeLearner.h
   Luape/Learner/EnsembleLearner.h
   Luape/Learner/CompositeLearner.h
+  Luape/Learner/AddActiveVariablesLearner.h
 )
 
 #### UserInterface ####

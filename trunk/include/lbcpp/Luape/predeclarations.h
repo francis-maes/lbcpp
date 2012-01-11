@@ -50,6 +50,9 @@ typedef ReferenceCountedObjectPtr<LuapeInference> LuapeInferencePtr;
 class LuapeLearner;
 typedef ReferenceCountedObjectPtr<LuapeLearner> LuapeLearnerPtr;
 
+class DecoratorLearner;
+typedef ReferenceCountedObjectPtr<DecoratorLearner> DecoratorLearnerPtr;
+
 class NodeBuilderBasedLearner;
 typedef ReferenceCountedObjectPtr<NodeBuilderBasedLearner> NodeBuilderBasedLearnerPtr;
 
