@@ -624,10 +624,11 @@ public:
   DisulfideBondWorkUnit()
     : learningMachineName(T("ExtraTrees")),
       svmC(4.0), svmGamma(1.0),
-      x3Trees(1000), x3Attributes(0), x3Splits(1) {}
+      x3Trees(1000), x3Attributes(0), x3Splits(1),
+      windowSize(40) {}
 
   DisulfideBondWorkUnit(double svmC, double svmGamma)
-    : learningMachineName(T("LibSVM")), svmC(svmC), svmGamma(svmGamma) {}
+    : learningMachineName(T("LibSVM")), svmC(svmC), svmGamma(svmGamma), windowSize(40) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -642,7 +643,7 @@ public:
 
     LargeProteinParametersPtr parameter;
     if (parameterFile == File::nonexistent)
-      parameter = LargeProteinParameters::createTestObject(40);
+      parameter = LargeProteinParameters::createTestObject(windowSize);
     else
     {
       parameter = LargeProteinParameters::createFromFile(context, parameterFile).dynamicCast<LargeProteinParameters>();
@@ -679,7 +680,9 @@ public:
       return Variable::missingValue(doubleType);
 
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-    evaluator->addEvaluator(dsbTarget,  new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)")); 
+    evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, true)), T("Cystein Bonding States (Sens. & Spec.)"));
+    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)")); 
+
     CompositeScoreObjectPtr scores = iteration->evaluate(context, test, evaluator, T("Evaluate on test proteins"));
     return evaluator->getScoreObjectOfTarget(scores, dsbTarget)->getScoreToMinimize();
   }
@@ -696,6 +699,7 @@ protected:
   size_t x3Trees;
   size_t x3Attributes;
   size_t x3Splits;
+  size_t windowSize;
 };
 
 class AverageDirectoryScoresWorkUnit : public WorkUnit
