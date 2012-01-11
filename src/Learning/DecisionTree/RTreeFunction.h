@@ -50,6 +50,29 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 
+  const std::vector<double>& getVariableImportances() const
+    {return variableImportances;}
+
+  void setVariableImportances(const std::vector<double>& varImp)
+    {variableImportances = varImp;}
+
+  void getRankedMapping(bool useRankAsIndex, std::vector<size_t>& result) const
+  {
+    std::multimap<double, size_t> mapRanks;
+    for (size_t i = 0; i < variableImportances.size(); ++i)
+      mapRanks.insert(std::pair<double, size_t>(variableImportances[i], i));
+
+    result.resize(variableImportances.size());
+    std::multimap<double, size_t>::reverse_iterator it = mapRanks.rbegin();
+    for (size_t i = 0; it != mapRanks.rend(); ++it, ++i)
+    {
+      if (useRankAsIndex)
+        result[i] = it->second;
+      else
+        result[it->second] = i;
+    }
+  }
+
 protected:
   friend class RTreeFunctionClass;
   
@@ -57,6 +80,8 @@ protected:
   size_t numTrees;
   size_t numAttributeSamplesPerSplit;
   size_t minimumSizeForSplitting;
+
+  std::vector<double> variableImportances;
 };
 
 extern ClassPtr rTreeFunctionClass;

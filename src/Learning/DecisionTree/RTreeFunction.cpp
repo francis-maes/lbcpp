@@ -436,28 +436,31 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
   build_one_tree_ensemble(NULL, 0);
 
   /* Calcul l'importance des variables */
-  const size_t numScores = nb_attributes * nb_goal_multiregr;
-  SCORE_TYPE* varimp = (SCORE_TYPE*)MyMalloc(numScores * sizeof(SCORE_TYPE));
+  SCORE_TYPE* varimp = (SCORE_TYPE*)MyMalloc(nb_attributes * sizeof(SCORE_TYPE));
   average_predictions_ltrees = 1;
   compute_ltrees_variable_importance_multiregr(varimp, -1);
+  
+  std::vector<double> variableImportances(nb_attributes);
+  for (size_t i = 0; i < (size_t)nb_attributes; ++i)
+    for (size_t j = 0; j < (size_t)nb_attributes; ++j)
+      variableImportances[j] = varimp[j];
+
+  rTreeFunction->setVariableImportances(variableImportances);
+
+  std::vector<size_t> ranks;
+  rTreeFunction->getRankedMapping(false, ranks);
 
   const EnumerationPtr attributesEnum = trainingData[0]->getVariable(0).getObjectAndCast<Container>()->getElementsEnumeration();
   if (attributesEnum)
   {
     for (size_t j = 0; j < (size_t)nb_attributes; ++j)
     {
-      double sum = 0.0;
       context.enterScope(T("Importance of ") + attributesEnum->getElementName(j));
-      context.resultCallback(T("ID"), j);
+      context.resultCallback(T("Rank"), ranks[j]);
+      context.resultCallback(T("Score"), variableImportances[j]);
+      context.resultCallback(T("Index"), j);
       context.resultCallback(T("Name"), attributesEnum->getElementName(j));
-      for (size_t i = 0; i < (size_t)nb_goal_multiregr; ++i)
-      {
-        context.resultCallback(T("Class ") + String((int)i), varimp[i * nb_attributes + j]);
-        sum += varimp[i * nb_attributes + j];
-      }
-      const double mean = sum / (double)nb_goal_multiregr;
-      context.resultCallback(T("Mean"), mean);
-      context.leaveScope(mean);
+      context.leaveScope(variableImportances[j]);
     }
     MyFreeAndNull(varimp);
   }

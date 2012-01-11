@@ -7,6 +7,7 @@
     <variable type="PositiveInteger" name="numTrees"/>
     <variable type="PositiveInteger" name="numAttributeSamplesPerSplit"/>
     <variable type="PositiveInteger" name="minimumSizeForSplitting"/>
+    <variable type="GenericVector[Double]" name="variableImportances"/>
   </class>
 
   <class name="ClassificationRTreeFunction" base="RTreeFunction"/>
