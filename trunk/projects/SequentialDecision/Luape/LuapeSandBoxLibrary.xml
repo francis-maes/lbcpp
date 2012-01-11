@@ -37,6 +37,7 @@
 
   <class name="LaunchLuapeClassification" base="WorkUnit">
     <variable type="File" name="dataDirectory"/>
+    <variable type="File" name="outputFile"/>
   </class>
 
   <class name="LuapeClassificationWorkUnit" base="WorkUnit">
