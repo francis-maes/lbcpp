@@ -360,14 +360,14 @@ public:
   FixedResourceEstimator(size_t requiredCpus = 1, size_t requiredMemory = 1, size_t requiredTime = 1)
     : requiredCpus(requiredCpus), requiredMemory(requiredMemory), requiredTime(requiredTime) {}
 
+  virtual size_t getNumRequiredCpus(const WorkUnitPtr& workUnit) const
+    {return requiredCpus;}
+
   virtual size_t getRequiredMemoryInMb(const WorkUnitPtr& workUnit) const
     {return requiredMemory;}
 
   virtual size_t getRequiredTimeInHours(const WorkUnitPtr& workUnit) const
     {return requiredTime;}
-
-  virtual size_t getNumRequiredCpus(const WorkUnitPtr& workUnit) const
-    {return requiredCpus;}
 
 protected:
   friend class FixedResourceEstimatorClass;
