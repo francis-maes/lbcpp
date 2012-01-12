@@ -76,7 +76,7 @@ LuapeGraphBuilderTypeSearchSpacePtr LuapeInference::getSearchSpace(ExecutionCont
     return typeSearchSpaces[complexity];
 
   LuapeGraphBuilderTypeSearchSpacePtr res = new LuapeGraphBuilderTypeSearchSpace(refCountedPointerFromThis(this), complexity);
-  res->pruneStates(context);
+  res->pruneStates(context, false); // verbose
   res->assignStateIndices(context);
   pthis->typeSearchSpaces[complexity] = res;
   return res;

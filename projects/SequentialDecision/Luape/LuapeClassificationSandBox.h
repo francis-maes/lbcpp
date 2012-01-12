@@ -690,37 +690,70 @@ public:
     context.leaveScope(splits.size());
     if (!splits.size())
       return false;
-//    splits.resize(1);
-/*
+    //splits.resize(7);
+
     LuapeLearnerPtr conditionLearner, learner;
     
+    
+    size_t K = (size_t)(0.5 + sqrt((double)numVariables));
+
     conditionLearner = exactWeakLearner(inputsNodeBuilder());
     learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
     learner->setVerbose(verbose);
     testConditionLearner(context, learner, "Single Tree");
-
+/*
     learner = baggingLearner(learner, 100);
     testConditionLearner(context, learner, "Tree Bagging");
 
-    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder((size_t)sqrt((double)numVariables), 2));
+    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(K, 2));
     learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
     testConditionLearner(context, learner, "Random Subspace");
 
     learner = baggingLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
     testConditionLearner(context, learner, "Random Forests");
+*/
 
-    conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder((size_t)sqrt((double)numVariables), 2));
+    conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(K, 2));
     learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
     testConditionLearner(context, learner, "Extra Trees");
 
-    LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(numVariables, 4);
-    conditionLearner = randomSplitWeakLearner(nodeBuilder);
-    conditionLearner->setVerbose(verbose);
-    learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
-    learner->setVerbose(verbose);
-    learner = ensembleLearner(learner, 100);
-    learner->setVerbose(verbose);
-    testConditionLearner(context, learner, "Extra Trees - Two variables");
+    for (size_t complexity = 4; complexity <= 8; ++complexity)
+    {
+      String str = String((int)complexity / 2) + T(" variables");
+      LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(numVariables, complexity);
+      conditionLearner = randomSplitWeakLearner(nodeBuilder);
+      conditionLearner->setVerbose(verbose);
+      learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
+      learner->setVerbose(verbose);
+      learner = ensembleLearner(learner, 100);
+      learner->setVerbose(verbose);
+      testConditionLearner(context, learner, "Extra Trees - " + str);
+
+      double bestScore = DBL_MAX;
+      context.enterScope(T("Importance driven Extra Trees - ") + str);
+      for (double logInitialImportance = 2.0; logInitialImportance >= -2.0; logInitialImportance -= 0.25)
+      {
+        double initialImportance = pow(10.0, logInitialImportance);
+        
+        context.enterScope(T("Initial importance = ") + String(initialImportance));
+        context.resultCallback(T("logInitialImportance"), logInitialImportance);
+        //context.resultCallback(T("initialImportance"), initialImportance);
+        LuapeNodeBuilderPtr nodeBuilder = biasedRandomSequentialNodeBuilder(numVariables, complexity, initialImportance);
+        conditionLearner = randomSplitWeakLearner(nodeBuilder);
+        conditionLearner->setVerbose(verbose);
+        learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
+        learner->setVerbose(verbose);
+        learner = ensembleLearner(learner, 100);
+        learner->setVerbose(verbose);
+        double validationScore = testConditionLearner(context, learner, String::empty);
+        bestScore = juce::jmin(bestScore, validationScore);
+        context.leaveScope(validationScore);
+      }
+      context.leaveScope(bestScore);
+    }
+    return true;
+
+    /*
 
     learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
     learner->setVerbose(verbose);
@@ -773,10 +806,12 @@ public:
     ScalarVariableStatistics scoreStats;
     LuapeLearnerPtr weakLearner;
 
-    weakLearner = randomSplitWeakLearner(randomSequentialNodeBuilder((size_t)sqrt((double)numVariables), 2));
+    size_t K = (size_t)(0.5 + sqrt((double)numVariables));
+
+    weakLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(K, 2));
     testConditionLearner(context, learnerConstructor, weakLearner, T("Single-variable random + randomsplit"), scoreStats);
 
-    weakLearner = exactWeakLearner(randomSequentialNodeBuilder((size_t)sqrt((double)numVariables), 2));
+    weakLearner = exactWeakLearner(randomSequentialNodeBuilder(K, 2));
     testConditionLearner(context, learnerConstructor, weakLearner, T("Single-variable random subspace"), scoreStats);
 
     weakLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 2));
@@ -811,7 +846,8 @@ public:
 
   double testConditionLearner(ExecutionContext& context, const LuapeLearnerPtr& learner, const String& name) const
   {
-    context.enterScope(name);
+    if (name.isNotEmpty())
+      context.enterScope(name);
 
     // construct parallel work unit 
     CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(name, splits.size());
@@ -828,7 +864,9 @@ public:
     ScalarVariableStatisticsPtr stats = new ScalarVariableStatistics(T("error"));
     for (size_t i = 0; i < splits.size(); ++i)
       stats->push(results->getElement(i).getDouble());
-    context.leaveScope(stats);
+    context.informationCallback(T("Validation score: ") + stats->toShortString());
+    if (name.isNotEmpty())
+      context.leaveScope(stats);
     return stats->getMean();
   }
 

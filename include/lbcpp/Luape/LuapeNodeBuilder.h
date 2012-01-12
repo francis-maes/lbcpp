@@ -51,6 +51,7 @@ extern PolicyPtr treeBasedRandomPolicy();
 extern StochasticNodeBuilderPtr policyBasedNodeBuilder(const PolicyPtr& policy, size_t numNodes, size_t complexity);
 extern StochasticNodeBuilderPtr adaptativeSamplingNodeBuilder(size_t numNodes, size_t complexity, bool useVariableRelevancies, bool useExtendedVariables);
 extern StochasticNodeBuilderPtr randomSequentialNodeBuilder(size_t numNodes, size_t complexity);
+extern StochasticNodeBuilderPtr biasedRandomSequentialNodeBuilder(size_t numNodes, size_t complexity, double initialImportance);
 
 class SequentialNodeBuilder : public StochasticNodeBuilder
 {

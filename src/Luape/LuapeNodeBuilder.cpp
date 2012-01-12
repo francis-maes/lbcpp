@@ -39,11 +39,13 @@ void StochasticNodeBuilder::buildNodes(ExecutionContext& context, const LuapeInf
 
   size_t index = res.size();
   res.resize(index + nodes.size());
+  //context.enterScope(String((int)nodes.size()) + T(" candidates"));
   for (std::set<LuapeNodePtr>::const_iterator it = nodes.begin(); it != nodes.end(); ++it)
   {
     //context.informationCallback(T("Candidate: ") + (*it)->toShortString());
     res[index++] = *it;
   }
+  //context.leaveScope();
 }
 
 /*

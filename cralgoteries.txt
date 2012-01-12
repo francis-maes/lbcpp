@@ -1,6 +1,6 @@
 ok Fixer crash, sans doute lié au cache
 ok Voir pquoi ca prend autant de RAM
-3) Comparer SingleTree avec celui de Pierre
+ok Comparer SingleTree avec celui de Pierre
 4) Choisir et lancer un subset des expériences 
 
 
