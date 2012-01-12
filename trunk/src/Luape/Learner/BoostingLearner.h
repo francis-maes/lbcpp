@@ -112,6 +112,8 @@ protected:
 
   LuapeNodePtr turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double weakObjective) const
   {
+    const LuapeUniversePtr& universe = problem->getUniverse();
+
     jassert(weakNode);
     LuapeSampleVectorPtr weakPredictions = problem->getTrainingCache()->getSamples(context, weakNode, examples);
     Variable failureVote, successVote, missingVote;
@@ -128,14 +130,14 @@ protected:
       Variable constantValue = constantNode->getValue();
       jassert(constantValue.isBoolean());
       if (constantValue.isMissingValue())
-        res = new LuapeConstantNode(missingVote);
+        res = universe->makeConstantNode(missingVote);
       else if (constantValue.getBoolean())
-        res = new LuapeConstantNode(successVote);
+        res = universe->makeConstantNode(successVote);
       else
-        res = new LuapeConstantNode(failureVote);
+        res = universe->makeConstantNode(failureVote);
     }
     else
-      res = new LuapeTestNode(weakNode, new LuapeConstantNode(failureVote), new LuapeConstantNode(successVote), new LuapeConstantNode(missingVote));
+      res = new LuapeTestNode(weakNode, universe->makeConstantNode(failureVote), universe->makeConstantNode(successVote), universe->makeConstantNode(missingVote));
     if (verbose)
       context.informationCallback(res->toShortString());
     return res;

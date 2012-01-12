@@ -59,6 +59,8 @@ public:
 
   virtual double computeObjective(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, LuapeNodePtr& weakNode)
   {
+    problem->getTrainingCache()->ensureActualSizeIsCorrect();
+
     LuapeSampleVectorPtr samples = problem->getTrainingCache()->getSamples(context, weakNode, examples);
     double minimumValue = DBL_MAX;
     double maximumValue = -DBL_MAX;

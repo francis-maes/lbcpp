@@ -54,15 +54,17 @@ protected:
 
   LuapeNodePtr makeTree(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, size_t depth)
   {
+    const LuapeUniversePtr& universe = problem->getUniverse();
+
     // min examples and max depth conditions to make a leaf
     if ((examples->size() < minExamplesToSplit) || (maxDepth && depth == maxDepth))
-      return new LuapeConstantNode(objective->computeVote(examples));
+      return universe->makeConstantNode(objective->computeVote(examples));
 
     // learn condition and make a leaf if condition learning fails
     double conditionObjectiveValue;
     LuapeNodePtr conditionNode = subLearn(context, conditionLearner, LuapeNodePtr(), problem, examples, &conditionObjectiveValue);
     if (!conditionNode || conditionNode.isInstanceOf<LuapeConstantNode>())
-      return new LuapeConstantNode(objective->computeVote(examples));
+      return universe->makeConstantNode(objective->computeVote(examples));
     conditionNode->addImportance(conditionObjectiveValue * examples->size() / problem->getTrainingCache()->getNumSamples());
 
     // otherwise split examples...
@@ -71,7 +73,7 @@ protected:
     LuapeTestNode::dispatchIndices(conditionValues, failureExamples, successExamples, missingExamples);
 
     if (failureExamples->size() == examples->size() || successExamples->size() == examples->size() || missingExamples->size() == examples->size())
-      return new LuapeConstantNode(objective->computeVote(examples));
+      return universe->makeConstantNode(objective->computeVote(examples));
 
     // ...call recursively
     if (verbose)

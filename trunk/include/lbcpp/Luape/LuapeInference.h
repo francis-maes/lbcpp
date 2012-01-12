@@ -113,17 +113,10 @@ public:
 
   std::vector<LuapeSamplesCachePtr> getSamplesCaches() const;
 
-  VectorPtr getTrainingPredictions() const
-    {return trainingCache->getNodeCache(node);}
-
-  VectorPtr getTrainingSupervisions() const
-    {return trainingCache->getNodeCache(supervision);}
-
-  VectorPtr getValidationPredictions() const
-    {return validationCache ? validationCache->getNodeCache(node) : VectorPtr();}
-
-  VectorPtr getValidationSupervisions() const
-    {return validationCache ? validationCache->getNodeCache(supervision) : VectorPtr();}
+  VectorPtr getTrainingPredictions() const;
+  VectorPtr getTrainingSupervisions() const;
+  VectorPtr getValidationPredictions() const;
+  VectorPtr getValidationSupervisions() const;
 
 protected:
   friend class LuapeInferenceClass;

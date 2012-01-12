@@ -10,6 +10,19 @@
 #include <lbcpp/Luape/LuapeNode.h>
 using namespace lbcpp;
 
+LuapeConstantNodePtr LuapeUniverse::makeConstantNode(const Variable& constantValue)
+{
+  ConstantNodesMap::const_iterator it = constantNodes.find(constantValue);
+  if (it == constantNodes.end())
+  {
+    LuapeConstantNodePtr res = new LuapeConstantNode(constantValue);
+    constantNodes[constantValue] = res;
+    return res;
+  }
+  else
+    return it->second;
+}
+
 LuapeFunctionPtr LuapeUniverse::makeFunction(ClassPtr functionClass, const std::vector<Variable>& arguments)
 {
   FunctionKey key(functionClass, arguments);

@@ -687,16 +687,16 @@ public:
     context.leaveScope(splits.size());
     if (!splits.size())
       return false;
+    splits.resize(7);
 
-    //splits.resize(7); // TMP !!
-
-  /*  LuapeLearnerPtr conditionLearner, learner;
+    LuapeLearnerPtr conditionLearner, learner;
     
     conditionLearner = exactWeakLearner(inputsNodeBuilder());
     learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
-    testConditionLearner(context, learner, "Single Tree");
+    learner->setVerbose(verbose);
+    //testConditionLearner(context, learner, "Single Tree");
 
-    learner = baggingLearner(learner, 100);
+  /*  learner = baggingLearner(learner, 100);
     testConditionLearner(context, learner, "Tree Bagging");
 
     conditionLearner = exactWeakLearner(randomSequentialNodeBuilder((size_t)sqrt((double)numVariables), 2));
@@ -712,25 +712,26 @@ public:
 
     LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(numVariables, 4);
     conditionLearner = randomSplitWeakLearner(nodeBuilder);
-    learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
+    conditionLearner->setVerbose(verbose);
+    learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
+    learner->setVerbose(verbose);
+    learner = ensembleLearner(learner, 100);
+    learner->setVerbose(verbose);
     testConditionLearner(context, learner, "Extra Trees - Two variables");
 
     learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
-    learner = ensembleLearner(addActiveVariablesLearner(learner, 2, false), 100);
-    testConditionLearner(context, learner, "Extra Trees - Two variables - 2 stochastic reinjected");
+    learner->setVerbose(verbose);
+    learner = addActiveVariablesLearner(learner, numVariables, false);
+    learner->setVerbose(verbose);
+    learner = ensembleLearner(learner, 100);
+    learner->setVerbose(verbose);
+    testConditionLearner(context, learner, "Extra Trees - Two variables - stochastic reinjected");
 
     learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
-    learner = ensembleLearner(addActiveVariablesLearner(learner, 5, false), 100);
-    testConditionLearner(context, learner, "Extra Trees - Two variables - 5 stochastic reinjected");
+    learner = ensembleLearner(addActiveVariablesLearner(learner, numVariables, true), 100);
+    testConditionLearner(context, learner, "Extra Trees - Two variables - deterministic reinjected");
 
-    learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
-    learner = ensembleLearner(addActiveVariablesLearner(learner, 10, false), 100);
-    testConditionLearner(context, learner, "Extra Trees - Two variables - 10 stochastic reinjected");
-
-    learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
-    learner = ensembleLearner(addActiveVariablesLearner(learner, 5, true), 100);
-    testConditionLearner(context, learner, "Extra Trees - Two variables - 5 deterministic reinjected");
-*/
+    return true;*/
 
     testLearners(context, &LuapeClassificationSandBox::singleTreeLearner, T("Single tree"));
 

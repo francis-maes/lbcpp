@@ -211,6 +211,11 @@ void LuapeSamplesCache::ensureSizeInLowerThanMaxSize(ExecutionContext& context)
       }
       while (size > maxCacheSize && size != prevSize);
     }
+    /*if (size > maxCacheSize)
+    {
+      std::cout << "Warning: could not uncache nodes" << std::endl;
+      displayCacheInformation(context);
+    }*/
   }
 }
 
@@ -225,8 +230,8 @@ void LuapeSamplesCache::uncacheNode(ExecutionContext& context, const LuapeNodePt
   actualCacheSize -= sizeInBytes;
   actualCacheSize += nodeCache.getSizeInBytes(true);
 
-//  std::cout << "Uncache node " << node->toShortString() << " -> size = " << sizeInBytes / 1024 << " Kb, numRequests = " << nodeCache.numRequests << std::endl; 
-//  std::cout << "Cache size: " << getCacheSizeInBytes() / (1024 * 1024.0) << " / " << maxCacheSize / (1024 * 1024) << " Mb" << std::endl;
+  //std::cout << "Uncache node " << node->toShortString() << " -> size = " << sizeInBytes / 1024 << " Kb, numRequests = " << nodeCache.numRequests << std::endl; 
+  //std::cout << "Cache size: " << getCacheSizeInBytes() / (1024 * 1024.0) << " / " << maxCacheSize / (1024 * 1024) << " Mb" << std::endl;
 }
 
 void LuapeSamplesCache::uncacheNodes(ExecutionContext& context, size_t count)
@@ -249,7 +254,7 @@ void LuapeSamplesCache::uncacheNodes(ExecutionContext& context, size_t count)
   if (sortedNodes.size())
   {
     minNumRequestsToBeCached = sortedNodes.rbegin()->first * 2;
-//    std::cout << "New threshold: " << minNumRequestsToBeCached << std::endl;
+    //std::cout << "New threshold: " << minNumRequestsToBeCached << std::endl;
     for (std::multimap<juce::int64, LuapeNodePtr>::const_iterator it = sortedNodes.begin(); it != sortedNodes.end(); ++it)
       uncacheNode(context, it->second);
   }
@@ -266,6 +271,12 @@ bool LuapeSamplesCache::isNodeCached(const LuapeNodePtr& node) const
 {
   NodeCacheMap::const_iterator it = m.find(node);
   return it != m.end() && it->second.samples;
+}
+
+bool LuapeSamplesCache::isNodeDefinitivelyCached(const LuapeNodePtr& node) const
+{
+  NodeCacheMap::const_iterator it = m.find(node);
+  return it != m.end() && it->second.samples && it->second.numRequests < 0;
 }
 
 VectorPtr LuapeSamplesCache::getNodeCache(const LuapeNodePtr& node) const
@@ -287,47 +298,63 @@ LuapeSamplesCache::NodeCache& LuapeSamplesCache::getOrCreateNodeCache(const Luap
     return it->second;
 }
 
+bool LuapeSamplesCache::isCandidateForCaching(const LuapeNodePtr& node) const
+{
+  if (node.isInstanceOf<LuapeFunctionNode>())
+  {
+    const LuapeFunctionNodePtr& functionNode = node.staticCast<LuapeFunctionNode>();
+    return functionNode->getFunction()->getClassName() != T("StumpLuapeFunction");
+  }
+  else
+    return false;
+}
+
 LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices)
 {
-  //static int pouet = 0;
-  //if (++pouet % 1000 == 0)
-  //  Object::displayObjectAllocationInfo(std::cout);
-
+  // no indices => return empty array
   if (indices->empty())
     return LuapeSampleVector::createConstant(indices, Variable::missingValue(node->getType()));
 
-  NodeCache& nodeCache = getOrCreateNodeCache(node);
-  if (nodeCache.numRequests >= 0)
-    nodeCache.numRequests += indices->size();
-
-  // cache nodes on which we spend much computation time
-  if (cachingEnabled && node.isInstanceOf<LuapeFunctionNode>())
+  // retrieve node information
+  NodeCacheMap::iterator it = m.find(node);
+  NodeCache* nodeCache;
+  if (it == m.end())
   {
-    if (!nodeCache.samples && nodeCache.numRequests > minNumRequestsToBeCached && (size_t)nodeCache.numRequests > allIndices->size())
-      cacheNode(context, node, VectorPtr(), "Deliberate caching");
-  }
-
-  LuapeSampleVectorPtr res;
-  if (nodeCache.samples)
-  {
-    // return cached data
-    res = LuapeSampleVector::createCached(indices, nodeCache.samples);
+    if (isCandidateForCaching(node))
+    {
+      nodeCache = &m[node];
+      actualCacheSize += nodeCache->getSizeInBytes(true);
+    }
+    else
+      nodeCache = NULL;
   }
   else
-  {
-    // compute
-    res = node->compute(context, refCountedPointerFromThis(this), indices);
+    nodeCache = &it->second;
 
-    if (cachingEnabled && node.isInstanceOf<LuapeFunctionNode>())
-    {
-      // see if we can cache by opportunism
-      if (indices == allIndices && res->getVector() &&
-          (!maxCacheSize || getCacheSizeInBytes() < maxCacheSize) &&
-          nodeCache.numRequests > minNumRequestsToBeCached)
-        cacheNode(context, node, res->getVector(), "Cache by opportunism");
-    }
+  // update num requests information
+  if (nodeCache && nodeCache->numRequests >= 0)
+    nodeCache->numRequests += indices->size();
+
+  // cache nodes on which we spend much computation time
+  if (nodeCache)
+  {
+    if (cachingEnabled && !nodeCache->samples && nodeCache->numRequests > minNumRequestsToBeCached && (size_t)nodeCache->numRequests > allIndices->size())
+      cacheNode(context, node, VectorPtr(), "Deliberate caching");
+
+    if (nodeCache->samples)
+      // return cached data
+      return LuapeSampleVector::createCached(indices, nodeCache->samples);
   }
-  ensureSizeInLowerThanMaxSize(context);
+
+  // compute
+  LuapeSampleVectorPtr res = node->compute(context, refCountedPointerFromThis(this), indices);
+
+  // see if we should cache by opportunism
+  if (cachingEnabled && nodeCache && indices == allIndices && res->getVector() &&
+      (!maxCacheSize || getCacheSizeInBytes() < maxCacheSize) &&
+      nodeCache->numRequests > minNumRequestsToBeCached)
+    cacheNode(context, node, res->getVector(), "Cache by opportunism");
+
   return res;
 }
 

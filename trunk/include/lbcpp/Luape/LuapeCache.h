@@ -218,6 +218,7 @@ public:
   void clearCache(ExecutionContext& context);
 
   bool isNodeCached(const LuapeNodePtr& node) const;
+  bool isNodeDefinitivelyCached(const LuapeNodePtr& node) const;
   VectorPtr getNodeCache(const LuapeNodePtr& node) const;
 
   size_t getNumberOfCachedNodes() const
@@ -267,6 +268,8 @@ public:
     size_t getSizeInBytes(bool recursively) const;
   };
 
+  void ensureActualSizeIsCorrect() const;
+
 protected:
   LuapeUniversePtr universe;
 
@@ -282,11 +285,10 @@ protected:
   IndexSetPtr allIndices;
   bool cachingEnabled;
 
-  void ensureActualSizeIsCorrect() const;
-
   SparseDoubleVectorPtr computeSortedDoubleValuesSubset(const SparseDoubleVectorPtr& allValues, const IndexSetPtr& indices) const;
   SparseDoubleVectorPtr computeSortedDoubleValuesFromSamples(const LuapeSampleVectorPtr& samples) const;
   NodeCache& getOrCreateNodeCache(const LuapeNodePtr& node);
+  bool isCandidateForCaching(const LuapeNodePtr& node) const;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeSamplesCache> LuapeSamplesCachePtr;
