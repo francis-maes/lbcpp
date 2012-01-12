@@ -170,6 +170,8 @@ protected:
   double sumOfWeights;
   DenseDoubleVectorPtr labelConditionalProbabilities[3];
 
+  std::vector<DenseDoubleVectorPtr> singleVoteVectors;
+
   static double computeEntropy(const DenseDoubleVectorPtr& vector, double sumOfWeights);
 };
 

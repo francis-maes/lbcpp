@@ -1,3 +1,8 @@
+1) Fixer crash, sans doute lié au cache
+2) Voir pquoi ca prend autant de RAM
+3) Comparer SingleTree avec celui de Pierre
+4) Choisir et lancer un subset des expériences 
+
 
 Experiences - Proteins:
  * Nouvelles features: prev et next amino acid de chaque type; delta de ObjectVector[DenseDoubleVector]; local/global histogram

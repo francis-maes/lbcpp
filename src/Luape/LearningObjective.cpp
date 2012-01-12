@@ -263,6 +263,13 @@ void InformationGainLearningObjective::initialize(const LuapeInferencePtr& probl
   labelWeights = new DenseDoubleVector(doubleVectorClass); // label probabilities
   for (int i = 0; i < 3; ++i)
     labelConditionalProbabilities[i] = new DenseDoubleVector(doubleVectorClass); // label probabilities given that the predicted value is negative, positive or missing
+
+  singleVoteVectors.resize(numLabels);
+  for (size_t i = 0; i < numLabels; ++i)
+  {
+    singleVoteVectors[i] = new DenseDoubleVector(doubleVectorClass);
+    singleVoteVectors[i]->setValue(i, 1.0);
+  }
 }
 
 void InformationGainLearningObjective::setSupervisions(const VectorPtr& supervisions)
@@ -330,18 +337,32 @@ double InformationGainLearningObjective::computeObjective()
 
 Variable InformationGainLearningObjective::computeVote(const IndexSetPtr& indices)
 {
-  DenseDoubleVectorPtr res = new DenseDoubleVector(doubleVectorClass);
-  double sumOfWeights = 0.0;
-  for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
+  if (indices->size() == 1)
   {
-    size_t index = *it;
-    double weight = getWeight(index);
-    res->incrementValue((size_t)supervisions->getElement(index).getInteger(), weight);
-    sumOfWeights += weight;
+    // special case when the vote is all concentrated on a single label to spare some memory
+    size_t label = (size_t)supervisions->getElement(*indices->begin()).getInteger();
+    return singleVoteVectors[label]; // (a vector containing a single 1 on the label)
   }
-  if (sumOfWeights)
-    res->multiplyByScalar(1.0 / sumOfWeights);
-  return res;
+  else
+  {
+    DenseDoubleVectorPtr res = new DenseDoubleVector(doubleVectorClass);
+    double sumOfWeights = 0.0;
+    for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
+    {
+      size_t index = *it;
+      double weight = getWeight(index);
+      res->incrementValue((size_t)supervisions->getElement(index).getInteger(), weight);
+      sumOfWeights += weight;
+    }
+    if (sumOfWeights)
+    {
+      res->multiplyByScalar(1.0 / sumOfWeights);
+      int argmax = res->getIndexOfMaximumValue();
+      if (argmax >= 0 && res->getValue(argmax) == 1.0)
+        return singleVoteVectors[argmax]; // reuse an existing vector to spare memory
+    }
+    return res;
+  }
 }
 
 double InformationGainLearningObjective::computeEntropy(const DenseDoubleVectorPtr& vector, double sumOfWeights)

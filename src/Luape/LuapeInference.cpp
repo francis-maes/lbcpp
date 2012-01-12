@@ -92,7 +92,7 @@ LuapeSamplesCachePtr LuapeInference::createSamplesCache(ExecutionContext& contex
     res->setInputObject(inputs, i, data[i]->getVariable(0).getObject());
     supervisionValues->setElement(i, data[i]->getVariable(1));
   }
-  res->cacheNode(context, supervision, supervisionValues, T("Supervision"));
+  res->cacheNode(context, supervision, supervisionValues, T("Supervision"), false);
   res->recomputeCacheSize();
   return res;
 }
@@ -112,6 +112,34 @@ std::vector<LuapeSamplesCachePtr> LuapeInference::getSamplesCaches() const
   if (validationCache)
     res.push_back(validationCache);
   return res;
+}
+
+VectorPtr LuapeInference::getTrainingPredictions() const
+{
+  jassert(trainingCache->isNodeDefinitivelyCached(node));
+  return trainingCache->getNodeCache(node);
+}
+
+VectorPtr LuapeInference::getTrainingSupervisions() const
+{
+  jassert(trainingCache->isNodeDefinitivelyCached(supervision));
+  return trainingCache->getNodeCache(supervision);
+}
+
+VectorPtr LuapeInference::getValidationPredictions() const
+{
+  if (!validationCache)
+    return VectorPtr();
+  jassert(validationCache->isNodeDefinitivelyCached(node));
+  return validationCache->getNodeCache(node);
+}
+
+VectorPtr LuapeInference::getValidationSupervisions() const
+{
+  if (!validationCache)
+    return VectorPtr();
+  jassert(validationCache->isNodeDefinitivelyCached(supervision));
+  return validationCache->getNodeCache(supervision);
 }
 
 /*
@@ -307,7 +335,7 @@ LuapeSamplesCachePtr LuapeRanker::createSamplesCache(ExecutionContext& context, 
       ++index;
     }
   }
-  res->cacheNode(context, supervision, supervisionValues, T("Supervision"));
+  res->cacheNode(context, supervision, supervisionValues, T("Supervision"), false);
   res->recomputeCacheSize();
   return res;
 }
