@@ -28,9 +28,12 @@ public:
     LuapeNodePtr res = makeTree(context, problem, examples, 1);
     
     size_t treeDepth = 0;
-    size_t numNodes = getNumTestNodes(res, 0, treeDepth);
+    ScalarVariableStatisticsPtr nodeSizeStats = new ScalarVariableStatistics(T("nodeSize"));
+    size_t numNodes = getNumTestNodes(res, 0, treeDepth, nodeSizeStats);
     context.resultCallback(T("treeDepth"), treeDepth);
     context.resultCallback(T("treeSize"), numNodes);
+    context.resultCallback(T("conditionSize"), nodeSizeStats);
+    context.resultCallback(T("meanConditionSize"), nodeSizeStats->getMean());
     if (verbose)
       context.informationCallback(T("Tree depth = ") + String((int)treeDepth) + T(" size = ") + String((int)numNodes));
 
@@ -79,6 +82,7 @@ protected:
     if (!conditionNode || conditionNode.isInstanceOf<LuapeConstantNode>())
       return universe->makeConstantNode(objective->computeVote(examples));
     conditionNode->addImportance(conditionObjectiveValue * examples->size() / problem->getTrainingCache()->getNumSamples());
+//    context.informationCallback(conditionNode->toShortString() + T(" [") + String(conditionNode->getSubNode(0)->getImportance()) + T("]"));
 
     // otherwise split examples...
     LuapeSampleVectorPtr conditionValues = problem->getTrainingCache()->getSamples(context, conditionNode, examples);
@@ -101,7 +105,15 @@ protected:
     return new LuapeTestNode(conditionNode, failureNode, successNode, missingNode);
   }
 
-  size_t getNumTestNodes(const LuapeNodePtr& node, size_t depth, size_t& maxDepth) const
+  size_t getNodeSize(const LuapeNodePtr& node) const
+  {
+    size_t res = 1;
+    for (size_t i = 0; i < node->getNumSubNodes(); ++i)
+      res += getNodeSize(node->getSubNode(i));
+    return res;
+  }
+
+  size_t getNumTestNodes(const LuapeNodePtr& node, size_t depth, size_t& maxDepth, ScalarVariableStatisticsPtr nodeSizeStats) const
   {
     if (depth > maxDepth)
       maxDepth = depth;
@@ -109,10 +121,11 @@ protected:
     LuapeTestNodePtr testNode = node.dynamicCast<LuapeTestNode>();
     if (testNode)
     {
+      nodeSizeStats->push(getNodeSize(testNode->getCondition()));
       ++res;
-      res += getNumTestNodes(testNode->getFailure(), depth + 1, maxDepth);
-      res += getNumTestNodes(testNode->getSuccess(), depth + 1, maxDepth);
-      res += getNumTestNodes(testNode->getMissing(), depth + 1, maxDepth);
+      res += getNumTestNodes(testNode->getFailure(), depth + 1, maxDepth, nodeSizeStats);
+      res += getNumTestNodes(testNode->getSuccess(), depth + 1, maxDepth, nodeSizeStats);
+      res += getNumTestNodes(testNode->getMissing(), depth + 1, maxDepth, nodeSizeStats);
     }
     return res;
   }

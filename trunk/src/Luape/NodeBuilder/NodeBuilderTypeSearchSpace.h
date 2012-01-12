@@ -175,7 +175,7 @@ public:
   {
   }
 
-  void pruneStates(ExecutionContext& context)
+  void pruneStates(ExecutionContext& context, bool verbose)
   {
 //    context.informationCallback(T("Num states before pruning: ") + String((int)states.size()));
     prune(getInitialState());
@@ -189,10 +189,13 @@ public:
       if (it->second->canBePruned)
         states.erase(it);
     }
-    context.enterScope(T("Type states"));
-    for (it = states.begin(); it != states.end(); ++it)
-      context.informationCallback(it->second->toShortString());
-    context.leaveScope(states.size());
+    if (verbose)
+    {
+      context.enterScope(T("Type states"));
+      for (it = states.begin(); it != states.end(); ++it)
+        context.informationCallback(it->second->toShortString());
+      context.leaveScope(states.size());
+    }
   }
 
   void assignStateIndices(ExecutionContext& context)
