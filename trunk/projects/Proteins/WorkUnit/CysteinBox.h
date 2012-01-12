@@ -834,6 +834,7 @@ protected:
         {
           writeFeatures(featuresVector->getElement(j,k).getObjectAndCast<DoubleVector>(), o);
           *o << (supervision->getElement(j,k).getDouble() > 0.5f ? "1" : "0");
+          *o << "\n";
           ++numExamples;
         }
     }
