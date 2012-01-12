@@ -30,19 +30,28 @@ public:
       return LuapeNodePtr();
 
     // evaluate each weak node
-    LuapeNodePtr bestWeakNode;
+    std::vector<LuapeNodePtr> bestWeakNodes;
     bestObjectiveValue = -DBL_MAX;
     for (size_t i = 0; i < weakNodes.size(); ++i)
     {
       LuapeNodePtr weakNode = weakNodes[i];
       double objectiveValue = computeObjective(context, problem, examples, weakNode); // side effect on weakNode
-      if (objectiveValue > bestObjectiveValue)
+      if (objectiveValue >= bestObjectiveValue)
       {
-        bestObjectiveValue = objectiveValue;
-        bestWeakNode = weakNode;
+        if (objectiveValue > bestObjectiveValue)
+        {
+          bestObjectiveValue = objectiveValue;
+          bestWeakNodes.clear();
+        }
+        bestWeakNodes.push_back(weakNode);
       }
     }
-    return bestWeakNode;
+    if (bestWeakNodes.empty())
+      return LuapeNodePtr();
+    if (bestWeakNodes.size() == 1)
+      return bestWeakNodes[0];
+    else
+      return bestWeakNodes[context.getRandomGenerator()->sampleSize(bestWeakNodes.size())];
   }
 
   virtual double computeObjective(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, LuapeNodePtr& weakNode)
