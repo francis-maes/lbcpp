@@ -166,19 +166,22 @@ public:
         break;
       isFirst = false;
       int index = strtol(token, NULL, 0);
-      if (index < 1)
+      if (index < 1 || index > (int)data->getNumElements())
       {
-        context.errorCallback(T("Invalid index ") + String(token));
+        context.errorCallback(T("Invalid index ") + String(token) + T(" (num examples = ") + String((int)data->getNumElements()) + T(")"));
         return false;
       }
       size_t idx = (size_t)(index - 1);
       if (testingIndices.find(idx) != testingIndices.end())
-      {
-        context.errorCallback(T("Redondant index ") + String(token));
-        return false;
-      }
+        context.warningCallback(T("Redundant index ") + String(token));
       testingIndices.insert(idx);
     }
+
+    /* tmp
+    for (std::set<size_t>::const_iterator it = testingIndices.begin(); it != testingIndices.end(); ++it)
+      std::cout << *it << " ";
+    std::cout << std::endl;
+    */
 
     size_t n = data->getNumElements();
     TypePtr exampleType = data->getElementsType();
@@ -687,16 +690,16 @@ public:
     context.leaveScope(splits.size());
     if (!splits.size())
       return false;
-    splits.resize(7);
-
+//    splits.resize(1);
+/*
     LuapeLearnerPtr conditionLearner, learner;
     
     conditionLearner = exactWeakLearner(inputsNodeBuilder());
     learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
     learner->setVerbose(verbose);
-    //testConditionLearner(context, learner, "Single Tree");
+    testConditionLearner(context, learner, "Single Tree");
 
-  /*  learner = baggingLearner(learner, 100);
+    learner = baggingLearner(learner, 100);
     testConditionLearner(context, learner, "Tree Bagging");
 
     conditionLearner = exactWeakLearner(randomSequentialNodeBuilder((size_t)sqrt((double)numVariables), 2));

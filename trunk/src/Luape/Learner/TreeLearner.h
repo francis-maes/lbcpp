@@ -52,12 +52,25 @@ protected:
   size_t minExamplesToSplit;
   size_t maxDepth;
 
+  bool isSupervisionConstant(const LuapeInferencePtr& problem, const IndexSetPtr& examples) const
+  {
+    if (examples->size() <= 1)
+      return true;
+    VectorPtr supervisions = problem->getTrainingSupervisions();
+    IndexSet::const_iterator it = examples->begin();
+    Variable supervision = supervisions->getElement(*it);
+    for (++it; it != examples->end(); ++it)
+      if (supervisions->getElement(*it) != supervision)
+        return false;
+    return true;
+  }
+
   LuapeNodePtr makeTree(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, size_t depth)
   {
     const LuapeUniversePtr& universe = problem->getUniverse();
 
     // min examples and max depth conditions to make a leaf
-    if ((examples->size() < minExamplesToSplit) || (maxDepth && depth == maxDepth))
+    if ((examples->size() < minExamplesToSplit) || (maxDepth && depth == maxDepth) || isSupervisionConstant(problem, examples))
       return universe->makeConstantNode(objective->computeVote(examples));
 
     // learn condition and make a leaf if condition learning fails
@@ -93,10 +106,14 @@ protected:
     if (depth > maxDepth)
       maxDepth = depth;
     size_t res = 0;
-    if (node.isInstanceOf<LuapeTestNode>())
+    LuapeTestNodePtr testNode = node.dynamicCast<LuapeTestNode>();
+    if (testNode)
+    {
       ++res;
-    for (size_t i = 0; i < node->getNumSubNodes(); ++i)
-      res += getNumTestNodes(node->getSubNode(i), depth + 1, maxDepth);
+      res += getNumTestNodes(testNode->getFailure(), depth + 1, maxDepth);
+      res += getNumTestNodes(testNode->getSuccess(), depth + 1, maxDepth);
+      res += getNumTestNodes(testNode->getMissing(), depth + 1, maxDepth);
+    }
     return res;
   }
 };

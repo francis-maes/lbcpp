@@ -102,7 +102,7 @@ double LearningObjective::findBestThreshold(ExecutionContext& context, const Lua
   }
 
   if (verbose)
-    context.leaveScope();
+    context.leaveScope(new Pair(bestThresholds.size() ? bestThresholds[0] : 0.0, bestScore));
 
   return bestThresholds.size() ? bestThresholds[bestThresholds.size() / 2] : 0; // median value
 }
