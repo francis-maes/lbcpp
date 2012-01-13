@@ -700,7 +700,6 @@ public:
 
     LuapeLearnerPtr conditionLearner, learner;
     
-    
     size_t K = (size_t)(0.5 + sqrt((double)numVariables));
 
     conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 2));
@@ -741,7 +740,7 @@ public:
     conditionLearner = randomSplitWeakLearner(inputsNodeBuilder());
     learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
     testConditionLearner(context, learner, "Extra Trees - K=N check");
-*/
+
 
     conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(K, 2));
     learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
@@ -758,7 +757,7 @@ public:
       learner = ensembleLearner(learner, 100);
       learner->setVerbose(verbose);
       testConditionLearner(context, learner, "Extra Trees - " + str);
-    }
+    }*/
 
     for (size_t complexity = 2; complexity <= 8; complexity += 2)
     {
@@ -766,7 +765,7 @@ public:
 
       double bestScore = DBL_MAX;
       context.enterScope(T("Deep Extra Trees - ") + str);
-      for (double logInitialImportance = -3.0; logInitialImportance <= -3.0; logInitialImportance += 0.5)
+      for (double logInitialImportance = -3.0; logInitialImportance <= 3.0; logInitialImportance += 0.5)
       {
         double initialImportance = pow(10.0, logInitialImportance);
         
