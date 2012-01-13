@@ -241,19 +241,17 @@ DenseDoubleVectorPtr LuapeClassifier::computeActivations(ExecutionContext& conte
 
 Variable LuapeClassifier::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
+  // normalize activations to make a probability distribution
   DenseDoubleVectorPtr activations = computeActivations(context, inputs[0].getObject());
-  DenseDoubleVectorPtr probabilities = new DenseDoubleVector((ClassPtr)getOutputType());
-  size_t n = activations->getNumElements();
-  double Z = 0.0;
-  for (size_t i = 0; i < n; ++i)
-  {
-    double prob = 1.0 / (1.0 + exp(-activations->getValue(i)));
-    Z += prob;
-    probabilities->setValue(i, prob);
-  }
+  DenseDoubleVectorPtr res = new DenseDoubleVector((ClassPtr)getOutputType());
+  double Z = activations->l1norm();
   if (Z)
-    probabilities->multiplyByScalar(1.0 / Z);
-  return probabilities;
+  {
+    size_t n = activations->getNumValues();
+    for (size_t i = 0; i < n; ++i)
+      res->setValue(i, activations->getValue(i) / Z);
+  }
+  return res;
 }
 
 double LuapeClassifier::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& supervisions) const

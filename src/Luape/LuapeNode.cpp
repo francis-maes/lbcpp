@@ -390,13 +390,8 @@ void LuapeScalarSumNode::updateOutputs(const VectorPtr& outputs, const LuapeSamp
 /*
 ** LuapeVectorSumNode
 */
-LuapeVectorSumNode::LuapeVectorSumNode(EnumerationPtr enumeration, const std::vector<LuapeNodePtr>& nodes)
-  : LuapeSequenceNode(denseDoubleVectorClass(enumeration, doubleType), nodes)
-{
-}
-
-LuapeVectorSumNode::LuapeVectorSumNode(EnumerationPtr enumeration) 
-  : LuapeSequenceNode(denseDoubleVectorClass(enumeration, doubleType))
+LuapeVectorSumNode::LuapeVectorSumNode(EnumerationPtr enumeration, bool convertToProbabilities) 
+  : LuapeSequenceNode(denseDoubleVectorClass(enumeration, doubleType)), convertToProbabilities(convertToProbabilities)
 {
 }
 
@@ -409,6 +404,18 @@ Variable LuapeVectorSumNode::compute(ExecutionContext& context, const LuapeInsta
     DenseDoubleVectorPtr value = cache->compute(context, nodes[i]).getObjectAndCast<DenseDoubleVector>();
     if (value)
       value->addTo(res);
+  }
+  return convertToProbabilities ? convertToProbabilitiesUsingSigmoid(res) : res;
+}
+
+LuapeSampleVectorPtr LuapeVectorSumNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
+{
+  LuapeSampleVectorPtr res = LuapeSequenceNode::compute(context, cache, indices);
+  if (convertToProbabilities)
+  {
+    jassert(false); // FIXME
+    std::cerr << "Not implemented yet" << std::endl;
+    return LuapeSampleVectorPtr();
   }
   return res;
 }
@@ -441,6 +448,22 @@ void LuapeVectorSumNode::updateOutputs(const VectorPtr& outputs, const LuapeSamp
 #endif // JUCE_DBEUG
     }
   }
+}
+
+DenseDoubleVectorPtr LuapeVectorSumNode::convertToProbabilitiesUsingSigmoid(const DenseDoubleVectorPtr& activations) const
+{
+  DenseDoubleVectorPtr probabilities = new DenseDoubleVector(DoubleVector::getElementsEnumeration(type), probabilityType);
+  size_t n = activations->getNumElements();
+  double Z = 0.0;
+  for (size_t i = 0; i < n; ++i)
+  {
+    double prob = 1.0 / (1.0 + exp(-activations->getValue(i)));
+    Z += prob;
+    probabilities->setValue(i, prob);
+  }
+  if (Z)
+    probabilities->multiplyByScalar(1.0 / Z);
+  return probabilities;
 }
 
 /*

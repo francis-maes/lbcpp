@@ -68,8 +68,6 @@ public:
 
   virtual double computeObjective(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, LuapeNodePtr& weakNode)
   {
-    problem->getTrainingCache()->ensureActualSizeIsCorrect();
-
     LuapeSampleVectorPtr samples = problem->getTrainingCache()->getSamples(context, weakNode, examples);
     double minimumValue = DBL_MAX;
     double maximumValue = -DBL_MAX;
@@ -81,9 +79,13 @@ public:
       if (value > maximumValue)
         maximumValue = value;
     }
-    if (maximumValue < minimumValue)
+    
+    if (maximumValue <= minimumValue)
       return -DBL_MAX;
+
     double threshold = context.getRandomGenerator()->sampleDouble(minimumValue, maximumValue);
+    //context.informationCallback(T("min = ") + String(minimumValue) + T(" max = ") + String(maximumValue) + T(" threshold = ") + String(threshold));
+    
     weakNode = new LuapeFunctionNode(stumpLuapeFunction(threshold), weakNode);
     return objective->compute(problem->getTrainingCache()->getSamples(context, weakNode, examples));
   }

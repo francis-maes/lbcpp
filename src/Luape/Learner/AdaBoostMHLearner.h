@@ -173,7 +173,7 @@ public:
   AdaBoostMHLearner() {}
 
   virtual LuapeNodePtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
-    {return new LuapeVectorSumNode(problem.staticCast<LuapeClassifier>()->getLabels());}
+    {return new LuapeVectorSumNode(problem.staticCast<LuapeClassifier>()->getLabels(), true);}
 
 //  virtual bool shouldStop(double weakObjectiveValue) const
 //    {return weakObjectiveValue == 0.0;}

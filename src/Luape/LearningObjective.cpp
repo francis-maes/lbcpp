@@ -44,7 +44,7 @@ double LearningObjective::computeObjectiveWithEventualStump(ExecutionContext& co
     jassert(weakNode->getType()->isConvertibleToDouble());
     double res;
     SparseDoubleVectorPtr sortedDoubleValues = problem->getTrainingCache()->getSortedDoubleValues(context, weakNode, examples);
-    double threshold = findBestThreshold(context, weakNode, examples, sortedDoubleValues, res, false);
+    double threshold = findBestThreshold(context, weakNode, examples, sortedDoubleValues, res, true);
     weakNode = new LuapeFunctionNode(stumpLuapeFunction(threshold), weakNode);
     return res;
   }

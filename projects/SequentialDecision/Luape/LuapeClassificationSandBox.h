@@ -177,13 +177,17 @@ public:
       testingIndices.insert(idx);
     }
 
-    /* tmp
-    for (std::set<size_t>::const_iterator it = testingIndices.begin(); it != testingIndices.end(); ++it)
-      std::cout << *it << " ";
+    size_t n = data->getNumElements();
+    /*
+    //for (std::set<size_t>::const_iterator it = testingIndices.begin(); it != testingIndices.end(); ++it)
+    //  std::cout << *it << " ";
+    std::cout << std::endl;
+    for (size_t i = 0; i < n; ++i)
+      if (testingIndices.find(i) == testingIndices.end())
+        std::cout << i << " ";
     std::cout << std::endl;
     */
 
-    size_t n = data->getNumElements();
     TypePtr exampleType = data->getElementsType();
     VectorPtr learningData = vector(exampleType, 0);
     learningData->reserve(n - testingIndices.size());
@@ -690,18 +694,26 @@ public:
     context.leaveScope(splits.size());
     if (!splits.size())
       return false;
-    //splits.resize(7);
+    
+    if (verbose)
+      splits.resize(1);
 
     LuapeLearnerPtr conditionLearner, learner;
     
     
     size_t K = (size_t)(0.5 + sqrt((double)numVariables));
 
-    conditionLearner = exactWeakLearner(inputsNodeBuilder());
+    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 2));
     learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
     learner->setVerbose(verbose);
     testConditionLearner(context, learner, "Single Tree");
 /*
+    conditionLearner = exactWeakLearner(inputsNodeBuilder());
+    learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
+    learner->setVerbose(verbose);
+    testConditionLearner(context, learner, "Single Tree (check)");
+
+    
     learner = baggingLearner(learner, 100);
     testConditionLearner(context, learner, "Tree Bagging");
 
@@ -711,15 +723,33 @@ public:
 
     learner = baggingLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
     testConditionLearner(context, learner, "Random Forests");
+
+
+    conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(4, 2));
+    conditionLearner->setVerbose(verbose);
+    learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
+    learner->setVerbose(verbose);
+    learner = ensembleLearner(learner, 100);
+    learner->setVerbose(verbose);
+    testConditionLearner(context, learner, "Extra Trees - K=4");
+
+   
+    conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(numVariables, 2));
+    learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
+    testConditionLearner(context, learner, "Extra Trees - K=N");
+
+    conditionLearner = randomSplitWeakLearner(inputsNodeBuilder());
+    learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
+    testConditionLearner(context, learner, "Extra Trees - K=N check");
 */
 
     conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(K, 2));
     learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
-    testConditionLearner(context, learner, "Extra Trees");
+    testConditionLearner(context, learner, "Extra Trees Default");
 
-    for (size_t complexity = 4; complexity <= 8; ++complexity)
+    for (size_t complexity = 2; complexity <= 8; complexity += 2)
     {
-      String str = String((int)complexity / 2) + T(" variables");
+      String str = (complexity == 2 ? T("1 variable") : String((int)complexity / 2) + T(" variables"));
       LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(numVariables, complexity);
       conditionLearner = randomSplitWeakLearner(nodeBuilder);
       conditionLearner->setVerbose(verbose);
@@ -728,10 +758,15 @@ public:
       learner = ensembleLearner(learner, 100);
       learner->setVerbose(verbose);
       testConditionLearner(context, learner, "Extra Trees - " + str);
+    }
+
+    for (size_t complexity = 2; complexity <= 8; complexity += 2)
+    {
+      String str = (complexity == 2 ? T("1 variable") : String((int)complexity / 2) + T(" variables"));
 
       double bestScore = DBL_MAX;
-      context.enterScope(T("Importance driven Extra Trees - ") + str);
-      for (double logInitialImportance = 2.0; logInitialImportance >= -2.0; logInitialImportance -= 0.25)
+      context.enterScope(T("Deep Extra Trees - ") + str);
+      for (double logInitialImportance = -3.0; logInitialImportance <= -3.0; logInitialImportance += 0.5)
       {
         double initialImportance = pow(10.0, logInitialImportance);
         

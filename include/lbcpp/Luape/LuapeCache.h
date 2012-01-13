@@ -231,7 +231,7 @@ public:
   void recomputeCacheSize();
 
   void displayCacheInformation(ExecutionContext& context);
-  bool checkCacheIsCorrect(ExecutionContext& context, const LuapeNodePtr& node);
+  bool checkCacheIsCorrect(ExecutionContext& context, const LuapeNodePtr& node, bool recursively);
 
   void disableCaching()
     {cachingEnabled = false;}

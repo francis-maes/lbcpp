@@ -265,15 +265,21 @@ protected:
 class LuapeVectorSumNode : public LuapeSequenceNode
 {
 public:
-  LuapeVectorSumNode(EnumerationPtr enumeration, const std::vector<LuapeNodePtr>& nodes);
-  LuapeVectorSumNode(EnumerationPtr enumeration);
+  LuapeVectorSumNode(EnumerationPtr enumeration, bool convertToProbabilities);
   LuapeVectorSumNode() {}
 
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
+  virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const;
 
 protected:
+  friend class LuapeVectorSumNodeClass;
+
+  bool convertToProbabilities;
+
   virtual VectorPtr createEmptyOutputs(size_t numSamples) const;
   virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues) const;
+
+  DenseDoubleVectorPtr convertToProbabilitiesUsingSigmoid(const DenseDoubleVectorPtr& activations) const;
 };
 
 class LuapeCreateSparseVectorNode : public LuapeSequenceNode
