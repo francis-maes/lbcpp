@@ -700,7 +700,7 @@ public:
 
     LuapeLearnerPtr conditionLearner, learner;
     
-    size_t K = (size_t)(0.5 + sqrt((double)numVariables));
+    size_t Kdef = (size_t)(0.5 + sqrt((double)numVariables));
 
     conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 2));
     learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
@@ -762,6 +762,7 @@ public:
     for (size_t complexity = 2; complexity <= 8; complexity += 2)
     {
       String str = (complexity == 2 ? T("1 variable") : String((int)complexity / 2) + T(" variables"));
+      size_t K = (complexity == 2 ? Kdef : numVariables);
 
       double bestScore = DBL_MAX;
       context.enterScope(T("Deep Extra Trees - ") + str);
@@ -772,7 +773,7 @@ public:
         context.enterScope(T("Initial importance = ") + String(initialImportance));
         context.resultCallback(T("logInitialImportance"), logInitialImportance);
         //context.resultCallback(T("initialImportance"), initialImportance);
-        LuapeNodeBuilderPtr nodeBuilder = biasedRandomSequentialNodeBuilder(numVariables, complexity, initialImportance);
+        LuapeNodeBuilderPtr nodeBuilder = biasedRandomSequentialNodeBuilder(K, complexity, initialImportance);
         conditionLearner = randomSplitWeakLearner(nodeBuilder);
         conditionLearner->setVerbose(verbose);
         learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
