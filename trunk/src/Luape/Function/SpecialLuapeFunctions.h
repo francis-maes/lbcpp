@@ -25,7 +25,7 @@ public:
     : threshold(threshold) {}
 
   virtual String toShortString() const
-    {return "> " + String(threshold);}
+    {return ">= " + String(threshold);}
 
   virtual size_t getNumInputs() const
     {return 1;}
@@ -53,7 +53,7 @@ public:
     {
       BooleanVectorPtr res = new BooleanVector(scalars->size());
       unsigned char* dest = res->getData();
-      for (LuapeSampleVector::const_iterator it = inputs[0]->begin(); it != inputs[0]->end(); ++it)
+      for (LuapeSampleVector::const_iterator it = scalars->begin(); it != scalars->end(); ++it)
       {
         double value = it.getRawDouble();
         if (value == doubleMissingValue)

@@ -37,7 +37,9 @@
     <variable type="ObjectVector[LuapeNode]" name="nodes"/>
   </class>
   <class name="LuapeScalarSumNode" base="LuapeSequenceNode"/>
-  <class name="LuapeVectorSumNode" base="LuapeSequenceNode"/>
+  <class name="LuapeVectorSumNode" base="LuapeSequenceNode">
+    <variable type="Boolean" name="convertToProbabilities"/>
+  </class>
   <class name="LuapeCreateSparseVectorNode" base="LuapeSequenceNode"/>
   <class name="LuapeTestNode" base="LuapeNode">
     <variable type="LuapeNode" name="conditionNode"/>

@@ -24,7 +24,7 @@ public:
   virtual LuapeNodePtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
   {
     if (problem.isInstanceOf<LuapeClassifier>())
-      return new LuapeVectorSumNode(problem.staticCast<LuapeClassifier>()->getLabels());
+      return new LuapeVectorSumNode(problem.staticCast<LuapeClassifier>()->getLabels(), false);
     else
     {
       jassert(false); // not implemented yet
@@ -41,6 +41,7 @@ public:
     sequenceNode->clearNodes();
     sequenceNode->reserveNodes(ensembleSize);
     //bool ok = true;
+
     for (size_t i = 0; i < ensembleSize; ++i)
     {
       if (verbose)
@@ -67,9 +68,9 @@ public:
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
   {
+    LuapeLearner::clone(context, target);
     if (baseLearner)
       target.staticCast<EnsembleLearner>()->baseLearner = baseLearner->cloneAndCast<LuapeLearner>(context);
-    target.staticCast<EnsembleLearner>()->ensembleSize = ensembleSize;
   }
 
 protected:

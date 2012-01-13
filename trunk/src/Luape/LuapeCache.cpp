@@ -440,12 +440,15 @@ SparseDoubleVectorPtr LuapeSamplesCache::computeSortedDoubleValuesSubset(const S
 void LuapeSamplesCache::observeNodeComputingTime(const LuapeNodePtr& node, size_t numInstances, double timeInMilliseconds)
   {universe->observeNodeComputingTime(node, numInstances, timeInMilliseconds);}
 
-bool LuapeSamplesCache::checkCacheIsCorrect(ExecutionContext& context, const LuapeNodePtr& node)
+bool LuapeSamplesCache::checkCacheIsCorrect(ExecutionContext& context, const LuapeNodePtr& node, bool recursively)
 {
   size_t n = node->getNumSubNodes();
-  for (size_t i = 0; i < n; ++i)
-    if (!checkCacheIsCorrect(context, node->getSubNode(i)))
-      return false;
+  if (recursively)
+  {
+    for (size_t i = 0; i < n; ++i)
+      if (!checkCacheIsCorrect(context, node->getSubNode(i), recursively))
+        return false;
+  }
 
   LuapeSampleVectorPtr outputs = getSamples(context, node, allIndices);
   for (LuapeSampleVector::const_iterator it = outputs->begin(); it != outputs->end(); ++it)
@@ -465,6 +468,7 @@ bool LuapeSamplesCache::checkCacheIsCorrect(ExecutionContext& context, const Lua
       context.errorCallback(T("Invalid cache for node ") + node->toShortString() + T(" at index ") + String((int)index));
       context.resultCallback(T("sampleCacheOutput"), sampleCacheOutput);
       context.resultCallback(T("instanceCacheOutput"), instanceCacheOutput);
+      std::cout << "ARF ! " << std::endl;
       jassert(false);
       return false;
     }
