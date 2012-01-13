@@ -40,7 +40,7 @@ public:
     const LuapeSequenceNodePtr& sequenceNode = node.staticCast<LuapeSequenceNode>();
     sequenceNode->clearNodes();
     sequenceNode->reserveNodes(ensembleSize);
-    bool ok = true;
+    //bool ok = true;
     for (size_t i = 0; i < ensembleSize; ++i)
     {
       if (verbose)
