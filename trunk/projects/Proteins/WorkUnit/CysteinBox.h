@@ -1,6 +1,7 @@
 
 #include <lbcpp/Core/Function.h>
 #include "../Predictor/DecoratorProteinPredictorParameters.h"
+#include "../Data/Formats/FASTAFileParser.h"
 
 namespace lbcpp
 {
@@ -1131,6 +1132,38 @@ protected:
   friend class CountNumDisulfideBridgePerProteinClass;
 
   File directory;
+};
+
+class CreateProteinWithCysteinBondingPropertyFromFastaWorkUnit : public WorkUnit
+{
+public:
+  CreateProteinWithCysteinBondingPropertyFromFastaWorkUnit()
+    : isPositiveExamples(true) {}
+
+  virtual Variable run(ExecutionContext& context)
+  {
+    ContainerPtr proteins = (new FASTAFileParser(context, fastaFile))->load();
+    if (!proteins)
+      return false;
+    const size_t n = proteins->getNumElements();
+    context.informationCallback(T("Num. Proteins: ") + String((int)n));
+    for (size_t i = 0; i < n; ++i)
+    {
+      ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>();
+      ContainerPtr cbp = Protein::createEmptyCysteinBondingProperty();
+      cbp->setElement(isPositiveExamples ? all : none, probability(1.0));
+      protein->setCysteinBondingProperty(cbp);
+      protein->saveToXmlFile(context, outputDirectory.getChildFile(protein->getName() + T(".xml")));
+    }
+    return true;
+  }
+
+protected:
+  friend class CreateProteinWithCysteinBondingPropertyFromFastaWorkUnitClass;
+
+  File fastaFile;
+  File outputDirectory;
+  bool isPositiveExamples;
 };
 
 };
