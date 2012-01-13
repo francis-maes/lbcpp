@@ -151,6 +151,8 @@ public:
 
   void setCysteinBondingProperty(DoubleVectorPtr cysteinBondingProperty)
     {this->cysteinBondingProperty = cysteinBondingProperty;}
+  
+  static ContainerPtr createEmptyCysteinBondingProperty();
 
   /*
   ** Secondary Structure

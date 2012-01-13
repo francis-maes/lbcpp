@@ -382,7 +382,7 @@ DoubleVectorPtr Protein::computeCysteinBondingProperty(DoubleVectorPtr bondingSt
     if (bondingStates->getElement(i).getDouble() > 0.5)
       ++numBondedCysteins;
 
-  SparseDoubleVectorPtr res = new SparseDoubleVector(sparseDoubleVectorClass(cysteinBondingPropertyElementEnumeration, probabilityType));
+  SparseDoubleVectorPtr res = createEmptyCysteinBondingProperty();
 
   if (!numBondedCysteins)
     res->setElement(none, probability(1.0));
@@ -627,6 +627,9 @@ ContainerPtr Protein::createEmptyDSSPSecondaryStructure(size_t length, bool useS
     : denseDoubleVectorClass(dsspSecondaryStructureElementEnumeration, probabilityType);
   return objectVector(elementsType, length);
 }
+
+ContainerPtr Protein::createEmptyCysteinBondingProperty()
+  {return new SparseDoubleVector(sparseDoubleVectorClass(cysteinBondingPropertyElementEnumeration, probabilityType));}
 
 DenseDoubleVectorPtr Protein::createEmptyProbabilitySequence(size_t length)
   {return new DenseDoubleVector(positiveIntegerEnumerationEnumeration, probabilityType, length, Variable::missingValue(probabilityType).getDouble());}

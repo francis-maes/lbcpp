@@ -200,7 +200,11 @@
   <class name="CountNumDisulfideBridgePerProtein" base="WorkUnit">
     <variable type="File" name="directory"/>
   </class>
-
+  <class name="CreateProteinWithCysteinBondingPropertyFromFastaWorkUnit" base="WorkUnit">
+    <variable type="File" name="fastaFile" shortName="in"/>
+    <variable type="File" name="outputDirectory" shortName="o"/>
+    <variable type="Boolean" name="isPositiveExamples" shortName="sup"/>
+  </class>
   <!-- END CysteinBox -->
 
   <!-- BEGIN LargeBox -->
