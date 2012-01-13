@@ -575,11 +575,11 @@ void LuapeSamplesCache::displayCacheInformation(ExecutionContext& context)
                               String((int)uncachedNodes.size()) + T(" uncached nodes"));
   context.informationCallback(T("Non removeable size: ") + String((int)nonRemoveableSize / 1024) + T(" Kb, Cached size: ") + String((int)cachedSize / 1024) + T(" Kb, Uncached size: ") + String((int)uncachedSize / 1024) + T(" Kb"));
 
+#ifndef JUCE_MAC
   size_t i;
   //for (i = 0; i < nonRemoveableNodes.size(); ++i)
   //  context.informationCallback(T("Non removeable: ") + nonRemoveableNodes[i]->toShortString());
 
-#ifndef JUCE_MAC
   i = 0;
   for (std::multimap<double, LuapeNodePtr>::const_reverse_iterator it = cachedNodes.rbegin(); it != cachedNodes.rend() && i < 5; ++it, ++i)
     context.informationCallback(T("Best cached: ") + it->second->toShortString() + T(" [") + String(it->first / 1000000.0) + T(" M]"));

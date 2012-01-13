@@ -27,7 +27,7 @@ public:
   {
     // default behavior is sequential
     LuapeNodePtr res = node;
-    bool ok = true;
+    //bool ok = true;
     for (size_t i = 0; i < learners.size(); ++i)
     {
       res = learners[i]->learn(context, res, problem, examples);

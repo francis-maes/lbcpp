@@ -186,7 +186,11 @@ public:
   DistributedExecutionContext() {}
 
   virtual ~DistributedExecutionContext()
-    {client->stopClient();}
+  {
+    while (numWaitingTraces)
+      juce::Thread::sleep(200);
+    client->stopClient();
+  }
 
   virtual String toString() const
     {return T("Distributed(") + parent->toString() + T(")");}
@@ -217,11 +221,7 @@ public:
     {asynchroneousWorkUnitPool->flushCallbacks();}
 
   virtual void waitUntilAllWorkUnitsAreDone(size_t timeOutInMilliseconds = 0)
-  {
-    waitUntilAllWorkUnitsAreDone(asynchroneousWorkUnitPool, timeOutInMilliseconds);
-    while (numWaitingTraces)
-      juce::Thread::sleep(200);
-  }
+    {waitUntilAllWorkUnitsAreDone(asynchroneousWorkUnitPool, timeOutInMilliseconds);}
     
   virtual Variable run(const WorkUnitPtr& workUnit, bool pushIntoStack)
   {
