@@ -702,11 +702,11 @@ public:
     
     size_t Kdef = (size_t)(0.5 + sqrt((double)numVariables));
 
-    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 2));
+/*    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 2));
     learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
     learner->setVerbose(verbose);
     testConditionLearner(context, learner, "Single Tree");
-/*
+
     conditionLearner = exactWeakLearner(inputsNodeBuilder());
     learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
     learner->setVerbose(verbose);
@@ -745,19 +745,22 @@ public:
     conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(K, 2));
     learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
     testConditionLearner(context, learner, "Extra Trees Default");
+    */
+
+    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(Kdef, 2));
+    learner = discreteAdaBoostMHLearner(conditionLearner, 1000);
+    testConditionLearner(context, learner, "SingleStump AdaBoost.MH K=sqrt(n)");
 
     for (size_t complexity = 2; complexity <= 8; complexity += 2)
     {
       String str = (complexity == 2 ? T("1 variable") : String((int)complexity / 2) + T(" variables"));
       LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(numVariables, complexity);
-      conditionLearner = randomSplitWeakLearner(nodeBuilder);
+      conditionLearner = exactWeakLearner(nodeBuilder);
       conditionLearner->setVerbose(verbose);
-      learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
+      learner = discreteAdaBoostMHLearner(conditionLearner, 1000);
       learner->setVerbose(verbose);
-      learner = ensembleLearner(learner, 100);
-      learner->setVerbose(verbose);
-      testConditionLearner(context, learner, "Extra Trees - " + str);
-    }*/
+      testConditionLearner(context, learner, "SingleStump AdaBoost.MH K=n - " + str);
+    }
 
     for (size_t complexity = 2; complexity <= 8; complexity += 2)
     {
@@ -765,8 +768,8 @@ public:
       size_t K = (complexity == 2 ? Kdef : numVariables);
 
       double bestScore = DBL_MAX;
-      context.enterScope(T("Deep Extra Trees - ") + str);
-      for (double logInitialImportance = -3.0; logInitialImportance <= 3.0; logInitialImportance += 0.5)
+      context.enterScope(T("Deep SingleStump AdaBoost.MH K=n - ") + str);
+      for (double logInitialImportance = -1.0; logInitialImportance <= 4.5; logInitialImportance += 0.5)
       {
         double initialImportance = pow(10.0, logInitialImportance);
         
@@ -774,11 +777,9 @@ public:
         context.resultCallback(T("logInitialImportance"), logInitialImportance);
         //context.resultCallback(T("initialImportance"), initialImportance);
         LuapeNodeBuilderPtr nodeBuilder = biasedRandomSequentialNodeBuilder(K, complexity, initialImportance);
-        conditionLearner = randomSplitWeakLearner(nodeBuilder);
+        conditionLearner = exactWeakLearner(nodeBuilder);
         conditionLearner->setVerbose(verbose);
-        learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
-        learner->setVerbose(verbose);
-        learner = ensembleLearner(learner, 100);
+        learner = discreteAdaBoostMHLearner(conditionLearner, 1000);
         learner->setVerbose(verbose);
         double validationScore = testConditionLearner(context, learner, String::empty);
         bestScore = juce::jmin(bestScore, validationScore);

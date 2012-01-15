@@ -413,9 +413,9 @@ LuapeSampleVectorPtr LuapeVectorSumNode::compute(ExecutionContext& context, cons
   LuapeSampleVectorPtr res = LuapeSequenceNode::compute(context, cache, indices);
   if (convertToProbabilities)
   {
-    jassert(false); // FIXME
-    std::cerr << "Not implemented yet" << std::endl;
-    return LuapeSampleVectorPtr();
+    //jassert(false); // FIXME
+    std::cerr << "Warning: Probabilities not implemented yet" << std::endl;
+    return res;
   }
   return res;
 }
