@@ -87,7 +87,7 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     // initialization
-    context.enterScope(T("Initializing distributable work unit"));
+    context.enterScope(T("Initializing distributable work unit::local"));
     initializeWorkUnits(context);
     context.leaveScope();
     if (workUnits->getNumWorkUnits() == 0)
@@ -119,7 +119,7 @@ public:
         VariableVector> ());
     context.leaveScope(gatheredResult);
 
-    context.informationCallback(T("Distributable work unit done."));
+    context.informationCallback(T("local"), T("Distributable work unit done."));
 
     return gatheredResult;
   }
@@ -245,7 +245,7 @@ public:
         *result.getObjectAndCast<VariableVector> ());
     context.leaveScope(gatheredResult);
 
-    context.informationCallback(T("Distribution to cluster done."));
+    context.informationCallback(T("cluster"), T("Distributable work unit done."));
 
     return gatheredResult;
   }
