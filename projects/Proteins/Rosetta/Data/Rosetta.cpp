@@ -63,7 +63,7 @@ VariableVectorPtr Rosetta::createRosettaPool(ExecutionContext& context, size_t s
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 
-void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed)
+void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed, size_t delay)
 {
   //  if (isInPool)
   //    getPoolLock();
@@ -105,6 +105,11 @@ void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed)
   args.add_back(std::string((const char*)String((int)nProc)));
   args.add_back(std::string("-run:proc_id"));
   args.add_back(std::string((const char*)String((int)id)));
+  args.add_back(std::string("-run:nodelay"));
+  args.add_back(std::string("false"));
+  args.add_back(std::string("-run:delay"));
+  args.add_back(std::string((const char*)String((int)delay)));
+
 
   // out paths
   //  args.add_back(std::string("-out:file"));

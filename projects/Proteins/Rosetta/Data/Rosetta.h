@@ -39,7 +39,7 @@ public:
   Rosetta();
   ~Rosetta();
 
-  void init(ExecutionContext& context, bool verbose = false, int seed = -1);
+  void init(ExecutionContext& context, bool verbose = false, int seed = -1, size_t delay = 0);
   static VariableVectorPtr createRosettaPool(ExecutionContext& context, size_t size);
 
   void getLock();

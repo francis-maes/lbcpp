@@ -21,6 +21,7 @@ class SingleProteinOptimizationWorkUnit : public WorkUnit
 public:
   SingleProteinOptimizationWorkUnit() {}
   SingleProteinOptimizationWorkUnit(
+      size_t id,
       ProteinPtr inputProtein,
       String outputDirectory,
       int numOutputFiles,
@@ -31,7 +32,8 @@ public:
       double finalTemperature,
       size_t numDecreasingSteps,
       size_t numIterations)
-    : inputProtein(inputProtein),
+    : id(id),
+      inputProtein(inputProtein),
       outputDirectory(outputDirectory),
       numOutputFiles(numOutputFiles),
       referencesDirectory(referencesDirectory),
@@ -47,7 +49,7 @@ public:
   {
     context.enterScope(T("Treating protein : ") + inputProtein->getName());
     Rosetta ros;
-    ros.init(context);
+    ros.init(context, false, -1, id * 5);
 
     File outputFile = context.getFile(outputDirectory);
     File referencesFile = context.getFile(referencesDirectory);
@@ -154,6 +156,8 @@ public:
 
 protected:
   friend class SingleProteinOptimizationWorkUnitClass;
+
+  size_t id;
 
   ProteinPtr inputProtein;
 
@@ -270,11 +274,12 @@ public:
 
     workUnits = new CompositeWorkUnit(T("Optimization"));
 
-    for (int i = 0; i < inputProteins.size(); i++)
+    for (size_t i = 0; i < inputProteins.size(); i++)
     {
       ProteinPtr currentProtein = Protein::createFromPDB(context, (*inputProteins[i]));
 
       workUnits->addWorkUnit(new SingleProteinOptimizationWorkUnit(
+          i,
           currentProtein,
           outputDirectory,
           numOutputFiles,
