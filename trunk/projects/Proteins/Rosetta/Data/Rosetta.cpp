@@ -81,7 +81,13 @@ void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed, size_t de
 
   // rosetta db
   args.add_back(std::string("-database"));
+  juce::File rootDirectoryToSearch = context->getProjectDirectory();
   juce::File dbDirectory = context->getFile(T("rosetta_database"));
+  while (!dbDirectory.exists())
+  {
+    rootDirectoryToSearch = rootDirectoryToSearch.getParentDirectory();
+    dbDirectory = rootDirectoryToSearch.getChildFile(T("rosetta_database"));
+  }
   jassert(dbDirectory != File::nonexistent);
   args.add_back(std::string((const char*)dbDirectory.getFullPathName()));
   args.add_back(std::string("-in::file::obey_ENDMDL"));

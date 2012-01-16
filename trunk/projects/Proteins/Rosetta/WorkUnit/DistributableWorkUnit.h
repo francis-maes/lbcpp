@@ -14,6 +14,29 @@
 namespace lbcpp
 {
 
+class DistributableExecutionContextCallback : public ExecutionContextCallback
+{
+public:
+  DistributableExecutionContextCallback(ExecutionContext& context)
+    : context(context) {}
+
+  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
+  {
+    //TODO save result
+    context.informationCallback(T("TestExecutionContextCallback::workUnitFinished"), result.toString());
+  }
+
+  static Variable gatherResults()
+  {
+
+  }
+
+protected:
+  ExecutionContext& context;
+};
+
+typedef ReferenceCountedObjectPtr<DistributableExecutionContextCallback> DistributableExecutionContextCallbackPtr;
+
 class TestDumbWorkUnit : public WorkUnit
 {
 public:
