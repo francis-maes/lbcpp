@@ -114,7 +114,7 @@ public:
   }
 
   virtual String toShortString() const
-    {return "." + inputClass->getMemberVariableName(variableIndex);}
+    {return inputClass ? "." + inputClass->getMemberVariableName(variableIndex) : ".[" + String((int)variableIndex) + T("]");}
 
   virtual TypePtr initialize(const TypePtr* inputTypes)
   {

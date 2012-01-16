@@ -140,8 +140,13 @@ void LuapeSamplesCache::setInputObject(const std::vector<LuapeInputNodePtr>& inp
     }
     else
     {
-      jassert(inputs.size() == 1 && inputs[0]->getType() == object->getClass());
-      inputCaches[0]->setElement(index, object);
+      if (inputs.size() == 1 && inputs[0]->getType() == object->getClass())
+        inputCaches[0]->setElement(index, object);
+      else
+      {
+        // invalid number of inputs        
+        jassert(false);
+      }
     }
   }
 }

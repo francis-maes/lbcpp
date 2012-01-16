@@ -263,7 +263,6 @@ protected:
   double discount;
 };
 
-
 class HIVSandBox : public WorkUnit
 {
 public:

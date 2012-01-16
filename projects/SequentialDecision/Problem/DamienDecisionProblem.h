@@ -117,6 +117,19 @@ public:
   double getE() const
     {return E;}
 
+  virtual String toShortString() const
+    {return T("T1=") + String(T1) + T(" T2=") + String(T2) + T(" T1*=") + String(T1star) + T(" T2*=") + String(T2star) + T(" V=") + String(V) + T(" E=") + String(E);}
+
+  void addAsResults(ExecutionContext& context)
+  {
+    context.resultCallback(T("log T1"), log10(T1));
+    context.resultCallback(T("log T2"), log10(T2));
+    context.resultCallback(T("log T1star"), log10(T1star));
+    context.resultCallback(T("log T2star"), log10(T2star));
+    context.resultCallback(T("log V"), log10(V));
+    context.resultCallback(T("log E"), log10(E));
+  }
+
 protected:
   friend class HIVDecisionProblemStateClass;
   ContainerPtr availableActions;
@@ -140,7 +153,7 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-   // const RandomGeneratorPtr& random = input.getObjectAndCast<RandomGenerator>();
+    const RandomGeneratorPtr& random = input.getObjectAndCast<RandomGenerator>();
     
     std::vector<double> initialState(6);
 
@@ -166,6 +179,10 @@ public:
     initialState[4] = 63919;
     initialState[5] = 24;
 
+    for (size_t i = 0; i < initialState.size(); ++i)
+      initialState[i] *= random->sampleDouble(0.8, 1.2);
+
+#if 0
     // just after infection start
     initialState[0] = 1000000.0;
     initialState[1] = 3198.0;
@@ -181,6 +198,7 @@ public:
     initialState[3] = 50;
     initialState[4] = 63000;
     initialState[5] = 20;
+#endif // 0
 
     return new HIVDecisionProblemState(initialState);
   }

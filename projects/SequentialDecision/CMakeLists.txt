@@ -46,6 +46,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_PROBLEM_DAMIEN_SOURCES
 
 SET(LBCPP_SEQUENTIAL_DECISION_WORK_UNIT_SOURCES
   WorkUnit/HIVSandBox.h
+  WorkUnit/InterpretHIVPolicy.h
   WorkUnit/SequentialDecisionSandBox.h
   WorkUnit/GPSandBox.h
   WorkUnit/BBOptimization.h

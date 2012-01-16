@@ -46,10 +46,11 @@ protected:
   double bestScore;
   DecisionProblemStatePtr bestFinalState;
 
-  void submitSolution(const DecisionProblemStatePtr& finalState, double score)
+  void submitSolution(ExecutionContext& context, const DecisionProblemStatePtr& finalState, double score)
   {
     if (optimizerState->isScoreBetterThan(score, bestScore))
     {
+      context.informationCallback(finalState->toShortString() + T(" [") + String(score) + T("]"));
       bestScore = score;
       bestFinalState = finalState;
     }
@@ -77,7 +78,7 @@ protected:
       }
       res = objective->compute(context, state).toDouble();
       //context.informationCallback(state->toShortString() + T(" ==> ") + String(res));
-      submitSolution(state, res);
+      submitSolution(context, state, res);
     }
     else
     {
@@ -113,7 +114,7 @@ protected:
         state->performTransition(context, bestAction, reward);
       }
       double score = objective->compute(context, state).toDouble();
-      submitSolution(state, res);
+      submitSolution(context, state, res);
       if (optimizerState->isScoreBetterThan(score, res))
         res = score;
     }

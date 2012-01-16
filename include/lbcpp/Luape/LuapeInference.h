@@ -103,7 +103,7 @@ public:
   /*
   ** Samples cache
   */
-  virtual void setSamples(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData);
+  virtual void setSamples(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData = std::vector<ObjectPtr>());
 
   const LuapeSamplesCachePtr& getTrainingCache() const
     {return trainingCache;}

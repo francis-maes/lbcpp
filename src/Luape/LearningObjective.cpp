@@ -189,7 +189,7 @@ Variable BinaryClassificationLearningObjective::computeVote(const IndexSetPtr& i
 {
   ScalarVariableMean res;
   for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
-    res.push(supervisions->getValue(*it), weights->getValue(*it));
+    res.push(supervisions->getValue(*it), getWeight(*it));
   return Variable(res.getMean(), probabilityType);
 }
 
@@ -203,7 +203,7 @@ void BinaryClassificationLearningObjective::update()
   {
     size_t example = it.getIndex();
     bool sup = (supervisions->getValue(example) > 0.5);
-    double weight = weights->getValue(example);
+    double weight = getWeight(example);
     unsigned char pred = it.getRawBoolean();
     if (pred == 2)
       missingWeight += weight;
@@ -218,7 +218,7 @@ void BinaryClassificationLearningObjective::flipPrediction(size_t index)
 {
   jassert(upToDate);
   bool sup = supervisions->getValue(index) > 0.5;
-  double weight = weights->getValue(index);
+  double weight = getWeight(index);
   if (sup)
   {
     correctWeight += weight;
