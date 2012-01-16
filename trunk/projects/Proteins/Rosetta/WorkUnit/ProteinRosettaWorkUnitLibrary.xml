@@ -80,6 +80,8 @@
   </class>
   
   <class name="SingleProteinOptimizationWorkUnit" base="WorkUnit">
+    <variable type="PositiveInteger" name="id"/>
+  
     <variable type="Protein" name="inputProtein"/>
     
     <variable type="String" name="outputDirectory"/>
