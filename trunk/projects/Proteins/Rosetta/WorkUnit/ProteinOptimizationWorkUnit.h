@@ -176,6 +176,30 @@ public:
   ProteinOptimizationWorkUnit()
     : DistributableWorkUnit(String("ProteinOptimizationWorkunit")) {}
 
+  ProteinOptimizationWorkUnit(
+      String inputDirectory,
+      String outputDirectory,
+      int numOutputFiles,
+      String referencesDirectory,
+      String moversDirectory,
+      size_t maxLearningSamples,
+      double initialTemperature,
+      double finalTemperature,
+      size_t numDecreasingSteps,
+      size_t numIterations)
+    : DistributableWorkUnit(String("ProteinOptimizationWorkunit")),
+      inputDirectory(inputDirectory),
+      outputDirectory(outputDirectory),
+      numOutputFiles(numOutputFiles),
+      referencesDirectory(referencesDirectory),
+      moversDirectory(moversDirectory),
+      maxLearningSamples(maxLearningSamples),
+      initialTemperature(initialTemperature),
+      finalTemperature(finalTemperature),
+      numDecreasingSteps(numDecreasingSteps),
+      numIterations(numIterations)
+  {}
+
   virtual Variable singleResultCallback(ExecutionContext& context, Variable& result)
   {
     size_t numElements = result.getObjectAndCast<DenseDoubleVector> ()->getNumElements();
@@ -282,6 +306,17 @@ protected:
   size_t numDecreasingSteps;
   size_t numIterations;
 };
+
+extern DistributableWorkUnitPtr proteinOptimizationWorkUnit(String inputDirectory,
+    String outputDirectory,
+    int numOutputFiles,
+    String referencesDirectory,
+    String moversDirectory,
+    size_t maxLearningSamples,
+    double initialTemperature,
+    double finalTemperature,
+    size_t numDecreasingSteps,
+    size_t numIterations);
 
 }; /* namespace lbcpp */
 

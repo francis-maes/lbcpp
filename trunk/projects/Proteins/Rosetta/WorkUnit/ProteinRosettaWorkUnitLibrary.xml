@@ -95,7 +95,8 @@
     <variable type="PositiveInteger" name="numIterations"/>
   </class>
   
-  <class name="ProteinOptimizationWorkUnit" base="DistributableWorkUnit">  
+  <class name="ProteinOptimizationWorkUnit" base="DistributableWorkUnit">
+    <constructor arguments="String inputDirectory, String outputDirectory, int numOutputFiles, String referencesDirectory, String moversDirectory, size_t maxLearningSamples, double initialTemperature, double finalTemperature, size_t numDecreasingSteps, size_t numIterations"/>  
     <variable type="String" name="inputDirectory"/>
     
     <variable type="String" name="outputDirectory"/>
