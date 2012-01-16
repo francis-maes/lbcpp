@@ -1,8 +1,7 @@
-ok Fixer crash, sans doute lié au cache
-ok Voir pquoi ca prend autant de RAM
-ok Comparer SingleTree avec celui de Pierre
-4) Choisir et lancer un subset des expériences 
-
+Interpret-HIV:
+ 1) Generation d'exemples d'apprentissage avec regret associé
+ 2) Tester différentes machines (stump, arbres, formules complexes)
+ 3) Tester avec l'operateur "nextState"
 
 Experiences - Proteins:
  * Nouvelles features: prev et next amino acid de chaque type; delta de ObjectVector[DenseDoubleVector]; local/global histogram

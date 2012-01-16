@@ -59,7 +59,7 @@ protected:
       LuapeNodePtr node = builder->getStackElement(0);
       double res = weakLearner->getObjective()->computeObjectiveWithEventualStump(context, problem, node, examples);
       builder->setStackElement(0, node); // node may have been replaced by a stump of itself
-      context.informationCallback(node->toShortString() + T(" ==> ") + String(res));
+      //context.informationCallback(node->toShortString() + T(" ==> ") + String(res));
       return res;
     }
 

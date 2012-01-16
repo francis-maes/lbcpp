@@ -189,27 +189,56 @@ TypePtr LuapeBinaryClassifier::initializeFunction(ExecutionContext& context, con
 
 Variable LuapeBinaryClassifier::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
-  double activation = computeNode(context, inputs[0].getObject()).getDouble();
-  jassert(activation != doubleMissingValue);
-  return Variable(1.0 / (1.0 + exp(-activation)), probabilityType);
+  Variable res = computeNode(context, inputs[0].getObject());
+  if (res.isBoolean())
+    return Variable(res.getBoolean() ? 1.0 : 0.0, probabilityType);
+  else if (res.getType() == probabilityType)
+    return res;
+  else
+  {
+    double activation = res.getDouble();
+    jassert(activation != doubleMissingValue);
+    return Variable(1.0 / (1.0 + exp(-activation)), probabilityType);
+  }
 }
 
 double LuapeBinaryClassifier::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& supervisions) const
 {
-  const DenseDoubleVectorPtr& pred = predictions.staticCast<DenseDoubleVector>();
-  size_t n = pred->getNumValues();
+  size_t n = predictions->getNumElements();
   jassert(n == supervisions->getNumElements());
+
   size_t numErrors = 0;
-  for (size_t i = 0; i < n; ++i)
+
+  if (predictions.isInstanceOf<DenseDoubleVector>())
   {
-    bool predicted = (pred->getValue(i) > 0);
-    Variable supervision = supervisions->getElement(i);
-    bool correct;
-    if (!lbcpp::convertSupervisionVariableToBoolean(supervision, correct))
-      jassert(false);
-    if (predicted != correct)
-      ++numErrors;
+    const DenseDoubleVectorPtr& pred = predictions.staticCast<DenseDoubleVector>();
+    for (size_t i = 0; i < n; ++i)
+    {
+      bool predicted = (pred->getValue(i) > 0);
+      Variable supervision = supervisions->getElement(i);
+      bool correct;
+      if (!lbcpp::convertSupervisionVariableToBoolean(supervision, correct))
+        jassert(false);
+      if (predicted != correct)
+        ++numErrors;
+    }
   }
+  else if (predictions.isInstanceOf<BooleanVector>())
+  {
+    const BooleanVectorPtr& pred = predictions.staticCast<BooleanVector>();
+    for (size_t i = 0; i < n; ++i)
+    {
+      bool predicted = pred->get(i);
+      Variable supervision = supervisions->getElement(i);
+      bool correct;
+      if (!lbcpp::convertSupervisionVariableToBoolean(supervision, correct))
+        jassert(false);
+      if (predicted != correct)
+        ++numErrors;
+    }
+  }
+  else
+    jassert(false);
   return numErrors / (double)n;
 }
 

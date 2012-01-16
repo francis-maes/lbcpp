@@ -63,7 +63,14 @@
     <variable type="Boolean" name="learnedHeuristic"/>
     <variable type="File" name="loadedHeuristics"/>
   </class>
-  
+
+  <class name="InterpretHIVPolicy" base="WorkUnit">
+    <variable type="PositiveInteger" name="numInitialStates"/>
+    <variable type="PositiveInteger" name="maxHorizon"/>
+    <variable type="Double" name="discount"/>
+  </class>
+
+
   <!-- GP SandBox -->
   <class name="GPSandBox" base="WorkUnit">
     <variable type="Double" name="lambda"/>
