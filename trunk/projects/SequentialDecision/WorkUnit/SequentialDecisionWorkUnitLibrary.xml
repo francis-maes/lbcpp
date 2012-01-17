@@ -64,9 +64,15 @@
     <variable type="File" name="loadedHeuristics"/>
   </class>
 
+  <class name="LookAHeadPolicy" base="Policy">
+    <variable type="Function" name="searchHeuristic"/>
+    <variable type="PositiveInteger" name="budget"/>
+  </class>
+
   <class name="InterpretHIVPolicy" base="WorkUnit">
     <variable type="PositiveInteger" name="numInitialStates"/>
     <variable type="PositiveInteger" name="maxHorizon"/>
+    <variable type="PositiveInteger" name="rolloutLength"/>
     <variable type="Double" name="discount"/>
   </class>
 

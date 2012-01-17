@@ -94,7 +94,7 @@ public:
     }
   }
 
-  virtual void startEpisode(ExecutionContext& context, const DecisionProblemStatePtr& state)
+  virtual void startEpisode(ExecutionContext& context, const DecisionProblemPtr& problem, const DecisionProblemStatePtr& state)
   {
     if (!rootNode)
       rootNode = new Node(NULL, state);
@@ -137,7 +137,7 @@ public:
 
     bool noMoreActions = false;
     //String episode = "";
-    policy->startEpisode(context, builder);
+    policy->startEpisode(context, DecisionProblemPtr(), builder);
     while (!builder->isFinalState())
     {
       ContainerPtr actions = builder->getAvailableActions();
@@ -388,7 +388,7 @@ public:
     rewards->startNewEpisode();
   }
 
-  virtual void startEpisode(ExecutionContext& context, const DecisionProblemStatePtr& initialState)
+  virtual void startEpisode(ExecutionContext& context, const DecisionProblemPtr& problem, const DecisionProblemStatePtr& initialState)
   {
     trajectoryFeatures = new DenseDoubleVector(features, doubleType);
   }
