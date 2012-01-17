@@ -87,10 +87,11 @@ bool lbcpp::convertSupervisionVariableToEnumValue(const Variable& supervision, s
   DoubleVectorPtr scores = supervision.dynamicCast<DoubleVector>();
   if (scores)
   {
-    int argmax = scores->getIndexOfMaximumValue();
-    if (argmax >= 0)
+    // either probabilities or costs
+    int res = scores->getElementsType() == probabilityType ? scores->getIndexOfMaximumValue() : scores->getIndexOfMinimumValue();
+    if (res >= 0)
     {
-      result = (size_t)argmax;
+      result = (size_t)res;
       return true;
     }
     else

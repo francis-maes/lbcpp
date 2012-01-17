@@ -286,20 +286,36 @@ Variable LuapeClassifier::computeFunction(ExecutionContext& context, const Varia
 double LuapeClassifier::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& supervisions) const
 {
   ObjectVectorPtr pred = predictions.staticCast<ObjectVector>();
-  size_t numErrors = 0;
   size_t n = pred->getNumElements();
-  for (size_t i = 0; i < n; ++i)
+
+  if (supervisions->getElementsType() == denseDoubleVectorClass(labels, doubleType))
   {
-    size_t j = pred->getAndCast<DenseDoubleVector>(i)->getIndexOfMaximumValue();
-    Variable supervision = supervisions->getElement(i);
-    size_t correctClass;
-    if (lbcpp::convertSupervisionVariableToEnumValue(supervision, correctClass))
+    const ObjectVectorPtr& sup = supervisions.staticCast<ObjectVector>();
+    double totalCost = 0.0;
+    for (size_t i = 0; i < n; ++i)
     {
-      if (j != correctClass)
-        ++numErrors;
+      size_t j = pred->getAndCast<DenseDoubleVector>(i)->getIndexOfMaximumValue();
+      double cost = sup->get(i).staticCast<DenseDoubleVector>()->getValue(j);
+      totalCost += cost;
     }
+    return totalCost / (double)n;    
   }
-  return numErrors / (double)n;
+  else
+  {
+    size_t numErrors = 0;
+    for (size_t i = 0; i < n; ++i)
+    {
+      size_t j = pred->getAndCast<DenseDoubleVector>(i)->getIndexOfMaximumValue();
+      Variable supervision = supervisions->getElement(i);
+      size_t correctClass;
+      if (lbcpp::convertSupervisionVariableToEnumValue(supervision, correctClass))
+      {
+        if (j != correctClass)
+          ++numErrors;
+      }
+    }
+    return numErrors / (double)n;
+  }
 }
 
 /*

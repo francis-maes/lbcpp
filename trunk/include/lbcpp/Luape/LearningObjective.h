@@ -146,10 +146,12 @@ protected:
 
 typedef ReferenceCountedObjectPtr<ClassificationLearningObjective> ClassificationLearningObjectivePtr;
 
+extern ClassificationLearningObjectivePtr adaBoostMHLearningObjective();
+
 class InformationGainLearningObjective : public ClassificationLearningObjective
 {
 public:
-  InformationGainLearningObjective(bool normalize = false);
+  InformationGainLearningObjective(bool normalize = true);
 
   virtual void initialize(const LuapeInferencePtr& problem);
   virtual void setSupervisions(const VectorPtr& supervisions);
