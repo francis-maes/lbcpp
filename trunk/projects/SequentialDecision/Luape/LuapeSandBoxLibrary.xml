@@ -35,17 +35,4 @@
     <variable type="Boolean" name="verbose"/>
   </class>
 
-  <class name="LaunchLuapeClassification" base="WorkUnit">
-    <variable type="File" name="dataDirectory"/>
-    <variable type="File" name="outputFile"/>
-  </class>
-
-  <class name="LuapeClassificationWorkUnit" base="WorkUnit">
-    <variable type="File" name="dataFile"/>
-    <variable type="File" name="tsFile"/>
-    <variable type="LuapeLearner" name="learner"/>
-    <variable type="String" name="methodName"/>
-    <variable type="String" name="variantName"/>
-  </class>
-
 </library>

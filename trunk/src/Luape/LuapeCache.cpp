@@ -316,6 +316,8 @@ bool LuapeSamplesCache::isCandidateForCaching(const LuapeNodePtr& node) const
 
 LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices)
 {
+  jassert(node);
+  
   // no indices => return empty array
   if (indices->empty())
     return LuapeSampleVector::createConstant(indices, Variable::missingValue(node->getType()));

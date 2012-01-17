@@ -61,8 +61,8 @@ public:
     bool isFirst = true;
     while (true)
     {
-      char* name = strtok(isFirst ? line : NULL, " \t\n");
-      char* kind = strtok(NULL, " \t\n");
+      char* name = strtok(isFirst ? line : NULL, " \t\n\r");
+      char* kind = strtok(NULL, " \t\n\r");
       if (!name || !kind)
         break;
       isFirst = false;
@@ -207,372 +207,6 @@ public:
 protected:
   ContainerPtr data;
 };
-
-///////////////////////////////////////////////////////////////////////////////
-
-class LuapeClassificationWorkUnit : public WorkUnit
-{
-public:
-  LuapeClassificationWorkUnit(const File& dataFile, const File& tsFile, const LuapeLearnerPtr& learner, const String& methodName, const String& variantName)
-    : dataFile(dataFile), tsFile(tsFile), learner(learner), methodName(methodName), variantName(variantName) {}
-  LuapeClassificationWorkUnit() {}
-
-  virtual Variable run(ExecutionContext& context)
-  {
-    context.informationCallback(T("Dataset: ") + dataFile.getFileNameWithoutExtension());
-    context.informationCallback(T("Learner: ") + learner->toShortString());
-
-    // load data
-    inputClass = new DynamicClass("inputs");
-    labels = new DefaultEnumeration("labels");
-    ContainerPtr data = loadData(context, dataFile, inputClass, labels);
-    if (!data || !data->getNumElements())
-      return false;
-
-    // display data info
-    size_t numVariables = inputClass->getNumMemberVariables();
-    size_t numExamples = data->getNumElements();
-    context.informationCallback(String((int)numExamples) + T(" examples, ") +
-                                String((int)numVariables) + T(" variables, ") +
-                                String((int)labels->getNumElements()) + T(" labels"));
-
-    // make splits
-    context.enterScope(T("Splits"));
-    if (makeSplits(context, data, splits))
-    {
-      for (size_t i = 0; i < splits.size(); ++i)
-        context.informationCallback(T("Split ") + String((int)i) + T(": train size = ") + String((int)splits[i].first->getNumElements())
-                              + T(", test size = ") + String((int)splits[i].second->getNumElements()));
-    }
-    context.leaveScope(splits.size());
-    if (!splits.size())
-      return false;
-
-    // run on splits
-    ScalarVariableStatisticsPtr res = new ScalarVariableStatistics(T("validation"));
-    for (size_t i = 0; i < splits.size(); ++i)
-    {
-      context.enterScope(T("Split ") + String((int)i));
-      double score = runOnSplit(context, splits[i].first, splits[i].second);
-      res->push(score);
-      context.leaveScope(score);
-    }
-    return res;
-  }
-
-protected:
-  friend class LuapeClassificationWorkUnitClass;
-
-  File dataFile;
-  File tsFile;
-  LuapeLearnerPtr learner;
-  String methodName;
-  String variantName;
-
-  DynamicClassPtr inputClass;
-  DefaultEnumerationPtr labels;
-  std::vector< std::pair< ContainerPtr, ContainerPtr > > splits;
-
-  ContainerPtr loadData(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, DefaultEnumerationPtr labels) const
-  { 
-    static const bool sparseData = true;
-
-    context.enterScope(T("Loading ") + file.getFileName());
-    TextParserPtr parser = new JDBDataParser(context, file, inputClass, labels, sparseData);
-    ContainerPtr res = parser->load();
-    if (res && !res->getNumElements())
-      res = ContainerPtr();
-    context.leaveScope(res ? res->getNumElements() : 0);
-    return res;
-  }
-
-  bool makeSplits(ExecutionContext& context, ContainerPtr data, std::vector< std::pair< ContainerPtr, ContainerPtr > >& res)
-  {
-    TextParserPtr parser = new TestingSetParser(context, tsFile, data);
-    ContainerPtr splits = parser->load();
-    res.resize(splits->getNumElements());
-    for (size_t i = 0; i < res.size(); ++i)
-    {
-      PairPtr split = splits->getElement(i).getObjectAndCast<Pair>();
-      res[i] = std::make_pair(split->getFirst().getObjectAndCast<Container>(), split->getSecond().getObjectAndCast<Container>());
-    }
-    return true;
-  }
-
-  double runOnSplit(ExecutionContext& context, const ContainerPtr& trainingData, const ContainerPtr& testingData)
-  {
-    LuapeClassifierPtr classifier = createClassifier(inputClass);
-    if (!classifier->initialize(context, inputClass, labels))
-      return DBL_MAX;
-    LuapeBatchLearnerPtr batchLearner = new LuapeBatchLearner(learner);
-    classifier->setBatchLearner(batchLearner);
-    classifier->setEvaluator(defaultSupervisedEvaluator());
-    ScoreObjectPtr score = classifier->train(context, trainingData, testingData, String::empty, false);
-    return score ? score->getScoreToMinimize() : DBL_MAX;
-  }
-
-  LuapeInferencePtr createClassifier(DynamicClassPtr inputClass) const
-  {
-    LuapeInferencePtr res = new LuapeClassifier();
-    size_t n = inputClass->getNumMemberVariables();
-    for (size_t i = 0; i < n; ++i)
-    {
-      VariableSignaturePtr variable = inputClass->getMemberVariable(i);
-      res->addInput(variable->getType(), variable->getName());
-    }
-
-    res->addFunction(addDoubleLuapeFunction());
-    res->addFunction(subDoubleLuapeFunction());
-    res->addFunction(mulDoubleLuapeFunction());
-    res->addFunction(divDoubleLuapeFunction());
-    return res;
-  }
-};
-
-class LaunchLuapeClassification : public WorkUnit, public ExecutionContextCallback
-{
-public:
-  virtual Variable run(ExecutionContext& context)
-  {
-    std::vector<String> to;
-    to.push_back(T("jbecker@nic3"));
-    to.push_back(T("fmaes@nic3"));
-    to.push_back(T("amarcos@nic3"));
-    
-    distributedContext = distributedExecutionContext(context, "monster24.montefiore.ulg.ac.be", 1664, "FormulaBoosting", "Francis", to, fixedResourceEstimator(1, 2048, 24));
-    if (outputFile.existsAsFile())
-      outputFile.deleteFile();
-    ostr = outputFile.createOutputStream();
-
-    // data files
-    juce::OwnedArray<File> dataFiles;
-    dataDirectory.findChildFiles(dataFiles, File::findFiles, false, T("*.jdb"));
-
-    // methods
-    std::vector< std::pair<String, LearnerConstructor> > methods;
-    methods.push_back(std::make_pair("SingleTree", &LaunchLuapeClassification::singleTreeLearner));
-
-    methods.push_back(std::make_pair("TreeEnsemble", &LaunchLuapeClassification::treeEnsembleLearner));
-    methods.push_back(std::make_pair("TreeEnsembleStochasticDeep", &LaunchLuapeClassification::treeEnsembleStochasticDeepLearner));
-    methods.push_back(std::make_pair("TreeEnsembleDeterministicDeep", &LaunchLuapeClassification::treeEnsembleDeterministicDeepLearner));
-
-    methods.push_back(std::make_pair("TreeBagging", &LaunchLuapeClassification::treeBaggingLearner));
-    methods.push_back(std::make_pair("TreeBaggingStochasticDeep", &LaunchLuapeClassification::treeBaggingStochasticDeepLearner));
-    methods.push_back(std::make_pair("TreeBaggingDeterministicDeep", &LaunchLuapeClassification::treeBaggingDeterministicDeepLearner));
-
-    methods.push_back(std::make_pair("AdaBoostMH1", &LaunchLuapeClassification::singleStumpAdaBoostMHLearner));
-    methods.push_back(std::make_pair("AdaBoostMH1StochasticDeep", &LaunchLuapeClassification::singleStumpAdaBoostMHStochasticDeepLearner));
-    methods.push_back(std::make_pair("AdaBoostMH1DeterministicDeep", &LaunchLuapeClassification::singleStumpAdaBoostMHDeterministicDeepLearner));
-
-    methods.push_back(std::make_pair("AdaBoostMH2", &LaunchLuapeClassification::treeDepth2AdaBoostMHLearner));
-    methods.push_back(std::make_pair("AdaBoostMH2StochasticDeep", &LaunchLuapeClassification::treeDepth2AdaBoostMHStochasticDeepLearner));
-    methods.push_back(std::make_pair("AdaBoostMH2DeterministicDeep", &LaunchLuapeClassification::treeDepth2AdaBoostMHDeterministicDeepLearner));
-    
-    methods.push_back(std::make_pair("AdaBoostMH3", &LaunchLuapeClassification::treeDepth3AdaBoostMHLearner));
-    methods.push_back(std::make_pair("AdaBoostMH3StochasticDeep", &LaunchLuapeClassification::treeDepth3AdaBoostMHStochasticDeepLearner));
-    methods.push_back(std::make_pair("AdaBoostMH3DeterministicDeep", &LaunchLuapeClassification::treeDepth3AdaBoostMHDeterministicDeepLearner));
-
-    methods.push_back(std::make_pair("AdaBoostMH4", &LaunchLuapeClassification::treeDepth4AdaBoostMHLearner));
-    methods.push_back(std::make_pair("AdaBoostMH5", &LaunchLuapeClassification::treeDepth5AdaBoostMHLearner));
-   
-    context.informationCallback(String(dataFiles.size()) + T(" data files"));
-    context.informationCallback(String((int)methods.size()) + T(" methods"));
-    for (int i = 0; i < dataFiles.size(); ++i)
-    {
-      File dataFile = *dataFiles[i];
-      File tsFile = dataFile.getParentDirectory().getChildFile(dataFile.getFileNameWithoutExtension() + T(".txt"));
-
-      for (size_t j = 0; j < methods.size(); ++j)
-      {
-        String method = methods[j].first;
-        LearnerConstructor learnerConstructor = methods[j].second;
-        launchWorkUnits(context, dataFile, tsFile, method, learnerConstructor);
-      }
-    }
-
-    while (true)
-    {
-      distributedContext->waitUntilAllWorkUnitsAreDone(1000);
-      distributedContext->flushCallbacks();
-      std::cout << "." << std::flush;
-    }
-    return true;
-  }
-
-  typedef LuapeLearnerPtr (LaunchLuapeClassification::*LearnerConstructor)(LuapeLearnerPtr conditionLearner) const;
-
-  void launchWorkUnits(ExecutionContext& context, const File& dataFile, const File& tsFile, const String& method, LearnerConstructor learnerConstructor)
-  {
-    inputClass = new DynamicClass("inputs");
-    labels = new DefaultEnumeration("labels");
-
-    TextParserPtr parser = new JDBDataParser(context, dataFile, inputClass, labels, true);
-    ContainerPtr res = parser->load();
-    size_t numVariables = inputClass->getNumMemberVariables();
-    static const int minExamplesForLaminating = 10;
-
-    std::vector< std::pair<String, LuapeLearnerPtr> > variants;
-    variants.push_back(std::make_pair("1VarFullRandom",
-      randomSplitWeakLearner(randomSequentialNodeBuilder((size_t)sqrt((double)numVariables), 2))));
-    variants.push_back(std::make_pair("1VarRandomSubspace",
-      exactWeakLearner(randomSequentialNodeBuilder((size_t)sqrt((double)numVariables), 2))));
-    variants.push_back(std::make_pair("1VarFull",
-      exactWeakLearner(randomSequentialNodeBuilder(numVariables, 2))));
-    variants.push_back(std::make_pair("1VarFullCheck",
-      exactWeakLearner(inputsNodeBuilder())));
-
-    for (size_t complexity = 4; complexity <= 8; complexity += 2)
-    {
-      String str((int)complexity / 2);
-      str += T("Var");
-      variants.push_back(std::make_pair(str + T("FullRandom"),
-          randomSplitWeakLearner(randomSequentialNodeBuilder(numVariables, complexity))));
-      variants.push_back(std::make_pair(str + T("RandomSubspace"),
-          exactWeakLearner(randomSequentialNodeBuilder(numVariables, complexity))));
-      variants.push_back(std::make_pair(str + T("Laminating"),
-          laminatingWeakLearner(randomSequentialNodeBuilder(numVariables, complexity), (double)numVariables, minExamplesForLaminating)));
-    }
-
-    for (size_t i = 0; i < variants.size(); ++i)
-    {
-      LuapeLearnerPtr learner = (this->*learnerConstructor)(variants[i].second);
-      launchWorkUnit(context, dataFile, tsFile, learner, method, variants[i].first);
-    }
-  }
-
-  void launchWorkUnit(ExecutionContext& context, const File& dataFile, const File& tsFile, const LuapeLearnerPtr& learner, const String& method, const String& variant)
-  {
-    WorkUnitPtr workUnit = new LuapeClassificationWorkUnit(dataFile, tsFile, learner, method, variant);
-    context.informationCallback(T("WorkUnit: ") + workUnit->toShortString());  
-    distributedContext->pushWorkUnit(workUnit, this); 
-  }
-
-  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
-  {
-    std::cout << "Result: " << result.toShortString() << std::endl;
-    ClassPtr cl = workUnit->getClass();
-    File dataFile = workUnit->getVariable(cl->findMemberVariable("dataFile")).getFile();
-    String method = workUnit->getVariable(cl->findMemberVariable("methodName")).getString();
-    String variant = workUnit->getVariable(cl->findMemberVariable("variantName")).getString();
-    if (result.isBoolean())
-    {
-      std::cerr << "Null results" << std::endl;
-      return;
-    }
-    ScalarVariableStatisticsPtr stats = result.getObjectAndCast<ScalarVariableStatistics>();
-    if (!stats)
-      {
-	std::cerr << "Bad results" << std::endl;
-	return;
-      }
-
-    String info = dataFile.getFileNameWithoutExtension() + T(" ") + method + T(" ") + variant + T(" ") +
-        String(stats->getMean()) + T(" ") + String(stats->getStandardDeviation());
-    std::cout << info << std::endl;
-    *ostr << info << "\n";
-    ostr->flush();
-  }
-
-protected:
-  friend class LaunchLuapeClassificationClass;
-
-  File dataDirectory;
-  File outputFile;
-
-  juce::OutputStream* ostr;
-
-  ExecutionContextPtr distributedContext;
-
-  DynamicClassPtr inputClass;
-  DefaultEnumerationPtr labels;
-
-  LuapeLearnerPtr singleTreeLearner(LuapeLearnerPtr conditionLearner) const
-    {return treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);}
-
-  LuapeLearnerPtr treeBaggingLearner(LuapeLearnerPtr conditionLearner) const
-    {return baggingLearner(singleTreeLearner(conditionLearner), 100);}
-
-  LuapeLearnerPtr treeBaggingStochasticDeepLearner(LuapeLearnerPtr conditionLearner) const
-  {
-    size_t numVariables = inputClass->getNumMemberVariables();
-    return baggingLearner(addActiveVariablesLearner(singleTreeLearner(conditionLearner), numVariables, false), 100);
-  }
-  
-  LuapeLearnerPtr treeBaggingDeterministicDeepLearner(LuapeLearnerPtr conditionLearner) const
-  {
-    size_t numVariables = inputClass->getNumMemberVariables();
-    return baggingLearner(addActiveVariablesLearner(singleTreeLearner(conditionLearner), numVariables, true), 100);
-  }
-
-  LuapeLearnerPtr treeEnsembleLearner(LuapeLearnerPtr conditionLearner) const
-    {return ensembleLearner(singleTreeLearner(conditionLearner), 100);}
-
-  LuapeLearnerPtr treeEnsembleStochasticDeepLearner(LuapeLearnerPtr conditionLearner) const
-  {
-    size_t numVariables = inputClass->getNumMemberVariables();
-    return ensembleLearner(addActiveVariablesLearner(singleTreeLearner(conditionLearner), numVariables, false), 100);
-  }
-  
-  LuapeLearnerPtr treeEnsembleDeterministicDeepLearner(LuapeLearnerPtr conditionLearner) const
-  {
-    size_t numVariables = inputClass->getNumMemberVariables();
-    return ensembleLearner(addActiveVariablesLearner(singleTreeLearner(conditionLearner), numVariables, true), 100);
-  }
-
-  LuapeLearnerPtr singleStumpAdaBoostMHLearner(LuapeLearnerPtr conditionLearner) const
-    {return discreteAdaBoostMHLearner(conditionLearner, 1000);}
-
-  LuapeLearnerPtr singleStumpAdaBoostMHStochasticDeepLearner(LuapeLearnerPtr conditionLearner) const
-  {
-    size_t numVariables = inputClass->getNumMemberVariables();
-    return discreteAdaBoostMHLearner(addActiveVariablesLearner(conditionLearner, numVariables, false), 1000);
-  }
-
-  LuapeLearnerPtr singleStumpAdaBoostMHDeterministicDeepLearner(LuapeLearnerPtr conditionLearner) const
-  {
-    size_t numVariables = inputClass->getNumMemberVariables();
-    return discreteAdaBoostMHLearner(addActiveVariablesLearner(conditionLearner, numVariables, true), 1000);
-  }
-
-  LuapeLearnerPtr treeDepth2AdaBoostMHLearner(LuapeLearnerPtr conditionLearner) const
-    {return discreteAdaBoostMHLearner(conditionLearner, 1000, 2);}
-  
-  LuapeLearnerPtr treeDepth2AdaBoostMHStochasticDeepLearner(LuapeLearnerPtr conditionLearner) const
-  {
-    size_t numVariables = inputClass->getNumMemberVariables();
-    return discreteAdaBoostMHLearner(addActiveVariablesLearner(conditionLearner, numVariables, false), 1000, 2);
-  }
-
-  LuapeLearnerPtr treeDepth2AdaBoostMHDeterministicDeepLearner(LuapeLearnerPtr conditionLearner) const
-  {
-    size_t numVariables = inputClass->getNumMemberVariables();
-    return discreteAdaBoostMHLearner(addActiveVariablesLearner(conditionLearner, numVariables, true), 1000, 2);
-  }
-
-  LuapeLearnerPtr treeDepth3AdaBoostMHLearner(LuapeLearnerPtr conditionLearner) const
-    {return discreteAdaBoostMHLearner(conditionLearner, 1000, 3);}
-
-  LuapeLearnerPtr treeDepth3AdaBoostMHStochasticDeepLearner(LuapeLearnerPtr conditionLearner) const
-  {
-    size_t numVariables = inputClass->getNumMemberVariables();
-    return discreteAdaBoostMHLearner(addActiveVariablesLearner(conditionLearner, numVariables, false), 1000, 3);
-  }
-
-  LuapeLearnerPtr treeDepth3AdaBoostMHDeterministicDeepLearner(LuapeLearnerPtr conditionLearner) const
-  {
-    size_t numVariables = inputClass->getNumMemberVariables();
-    return discreteAdaBoostMHLearner(addActiveVariablesLearner(conditionLearner, numVariables, true), 1000, 3);
-  }
-
-  LuapeLearnerPtr treeDepth4AdaBoostMHLearner(LuapeLearnerPtr conditionLearner) const
-    {return discreteAdaBoostMHLearner(conditionLearner, 1000, 4);}
-
-  LuapeLearnerPtr treeDepth5AdaBoostMHLearner(LuapeLearnerPtr conditionLearner) const
-    {return discreteAdaBoostMHLearner(conditionLearner, 1000, 5);}
-};
-
-
-/////////////////////////////////////////////////////////////////////////////////////
 
 class LuapeClassificationSandBox : public WorkUnit
 {
@@ -747,7 +381,10 @@ public:
     testConditionLearner(context, learner, "Extra Trees Default");
     */
 
-    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(Kdef, 2));
+    LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(Kdef, 2);
+    nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
+
+    conditionLearner = exactWeakLearner(nodeBuilder);
     learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 3);
     testConditionLearner(context, learner, "SevenStumps AdaBoost.MH K=sqrt(n)");
 
@@ -755,6 +392,7 @@ public:
     {
       String str = (complexity == 2 ? T("1 variable") : String((int)complexity / 2) + T(" variables"));
       LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(numVariables, complexity);
+      nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
       conditionLearner = exactWeakLearner(nodeBuilder);
       conditionLearner->setVerbose(verbose);
       learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 3);
@@ -777,6 +415,7 @@ public:
         context.resultCallback(T("logInitialImportance"), logInitialImportance);
         //context.resultCallback(T("initialImportance"), initialImportance);
         LuapeNodeBuilderPtr nodeBuilder = biasedRandomSequentialNodeBuilder(K, complexity, initialImportance);
+        nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
         conditionLearner = exactWeakLearner(nodeBuilder);
         conditionLearner->setVerbose(verbose);
         learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 3);

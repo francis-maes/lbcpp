@@ -47,7 +47,8 @@ public:
     // add into node and caches
     {
       TimedScope _(context, "add into node", verbose);
-      node.staticCast<LuapeSequenceNode>()->pushNode(context, contribution, problem->getSamplesCaches());
+      if (contribution)
+        node.staticCast<LuapeSequenceNode>()->pushNode(context, contribution, problem->getSamplesCaches());
     }
 
     // evaluate

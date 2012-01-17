@@ -339,6 +339,7 @@ LuapeSampleVectorPtr LuapeSequenceNode::compute(ExecutionContext& context, const
 
 void LuapeSequenceNode::pushNode(ExecutionContext& context, const LuapeNodePtr& node, const std::vector<LuapeSamplesCachePtr>& cachesToUpdate)
 {
+  jassert(node);
   nodes.push_back(node);
 
   // update caches
