@@ -49,6 +49,30 @@ protected:
   DecisionProblemPtr problem;
 };
 
+class ClassifierBasedPolicy : public Policy
+{
+public:
+  ClassifierBasedPolicy(const LuapeClassifierPtr& classifier = LuapeClassifierPtr())
+    : classifier(classifier) {}
+
+  virtual Variable selectAction(ExecutionContext& context, const DecisionProblemStatePtr& state)
+  {
+    ContainerPtr actions = state->getAvailableActions();
+    DenseDoubleVectorPtr probabilities = classifier->compute(context, state, Variable()).getObjectAndCast<DenseDoubleVector>();
+    int label = probabilities->getIndexOfMaximumValue();
+    jassert(label >= 0);
+    return label >= 0 ? actions->getElement(label) : Variable();
+  }
+
+  virtual String toShortString() const
+    {return classifier->getRootNode()->toShortString();}
+
+protected:
+  friend class ClassifierBasedPolicyClass;
+
+  LuapeClassifierPtr classifier;
+};
+
 class TwoBinaryClassifiersHIVPolicy : public Policy
 {
 public:
@@ -75,6 +99,75 @@ protected:
   LuapeBinaryClassifierPtr a2;
 };
 
+
+
+class CostSensitiveMultiClassAccuracyObjective : public ClassificationLearningObjective
+{
+public:
+  virtual void initialize(const LuapeInferencePtr& problem)
+  {
+    ClassificationLearningObjective::initialize(problem);
+    for (size_t i = 0; i < 3; ++i)
+      costs[i] = new DenseDoubleVector(doubleVectorClass);
+  }
+
+  virtual void setSupervisions(const VectorPtr& supervisions)
+  {
+    jassert(supervisions->getElementsType() == denseDoubleVectorClass(labels, doubleType));
+    this->supervisions = supervisions.staticCast<ObjectVector>();
+  }
+
+  virtual void update()
+  {
+    for (size_t i = 0; i < 3; ++i)
+      costs[i]->multiplyByScalar(0.0);
+    
+    for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
+    {
+      size_t example = it.getIndex();
+      unsigned char prediction = it.getRawBoolean();
+
+      const DenseDoubleVectorPtr& supervisionCosts = supervisions->get(example).staticCast<DenseDoubleVector>();
+      supervisionCosts->addTo(costs[prediction]);
+    }
+  }
+
+  virtual void flipPrediction(size_t index)
+  {
+    jassert(upToDate);
+    const DenseDoubleVectorPtr& supervisionCosts = supervisions->get(index).staticCast<DenseDoubleVector>();
+    supervisionCosts->subtractFrom(costs[0]);
+    supervisionCosts->addTo(costs[1]);
+  }
+
+  virtual double computeObjective() // sum of costs, if each sub-tree was a constant vote
+  {
+    ensureIsUpToDate();
+    return -(costs[0]->getMinimumValue() + costs[1]->getMinimumValue() + costs[2]->getMinimumValue());
+  }
+
+  virtual Variable computeVote(const IndexSetPtr& indices)
+  {
+    DenseDoubleVectorPtr costs = new DenseDoubleVector(doubleVectorClass);
+    for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
+    {
+      const DenseDoubleVectorPtr& supervisionCosts = supervisions->get(*it).staticCast<DenseDoubleVector>();
+      supervisionCosts->addTo(costs);
+    }
+    DenseDoubleVectorPtr res = new DenseDoubleVector(labels, probabilityType);
+    res->setValue(costs->getIndexOfMinimumValue(), 1.0);
+    return res;
+  }
+
+protected:
+  friend class CostSensitiveMultiClassAccuracyClass;
+
+  ObjectVectorPtr supervisions;
+  DenseDoubleVectorPtr costs[3];
+};
+
+extern EnumerationPtr hivActionEnumeration;
+
 class InterpretHIVPolicy : public WorkUnit
 {
 public:
@@ -83,22 +176,28 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
-
     DecisionProblemPtr problem = hivDecisionProblem(discount);
     ContainerPtr initialStates = problem->sampleInitialStates(context, random, numInitialStates);
 
-    PolicyPtr referencePolicy = createReferencePolicy(context, problem);
-    ScalarVariableStatisticsPtr returnStatistics = new ScalarVariableStatistics("return");
+    ContainerPtr examples;
 
-    std::pair<ContainerPtr, ContainerPtr> examples = createLearningExamples(context, problem, referencePolicy, initialStates, returnStatistics);
-    LuapeBinaryClassifierPtr a1 = findBestFormula(context, "a1", examples.first);
-    LuapeBinaryClassifierPtr a2 = findBestFormula(context, "a2", examples.second);
-    PolicyPtr interpretablePolicy = new TwoBinaryClassifiersHIVPolicy(a1, a2);
+    if (dataFile.exists())
+    {
+      examples = loadDataFile(context, dataFile);
+    }
+    else
+    {
+      PolicyPtr referencePolicy = createReferencePolicy(context, problem);
+      ScalarVariableStatisticsPtr returnStatistics = new ScalarVariableStatistics("return");
+
+      examples = createLearningExamples(context, problem, referencePolicy, initialStates, returnStatistics);
+    }
+
+    PolicyPtr interpretablePolicy = findInterpretablePolicy(context, examples);
 
     testDiscoveredPolicy(context, initialStates, interpretablePolicy);
     return true;
   }
-
 
 protected:
   friend class InterpretHIVPolicyClass;
@@ -107,6 +206,7 @@ protected:
   size_t maxHorizon;
   size_t rolloutLength;
   double discount;
+  File dataFile;
 
   PolicyPtr createReferencePolicy(ExecutionContext& context, DecisionProblemPtr problem)
   {
@@ -167,14 +267,13 @@ protected:
     return res;
   }
 
-  std::pair<ContainerPtr, ContainerPtr> createLearningExamples(ExecutionContext& context, const DecisionProblemPtr& problem, const PolicyPtr& policy, const ContainerPtr& initialStates, ScalarVariableStatisticsPtr returnStatistics)
+  ContainerPtr createLearningExamples(ExecutionContext& context, const DecisionProblemPtr& problem, const PolicyPtr& policy, const ContainerPtr& initialStates, ScalarVariableStatisticsPtr returnStatistics)
   {
     File outputFile = context.getFile("wsamples" + String((int)maxHorizon) + T("_") + String((int)numInitialStates) + T(".txt"));
     OutputStream* ostr = outputFile.createOutputStream();
 
     TypePtr examplesClass = pairClass(hivDecisionProblemStateClass, probabilityType);
-    ObjectVectorPtr a1Examples = new ObjectVector(examplesClass, 0);
-    ObjectVectorPtr a2Examples = new ObjectVector(examplesClass, 0);
+    ObjectVectorPtr examples = new ObjectVector(examplesClass, 0);
 
     context.enterScope(T("Creating learning examples"));
     for (size_t i = 0; i < initialStates->getNumElements(); ++i)
@@ -215,11 +314,7 @@ protected:
         }
 
         // save to memory
-        DecisionProblemStatePtr stateCopy = state->cloneAndCast<DecisionProblemState>();
-        bool a1 = actionVector->getValue(0) > 0.0;
-        bool a2 = actionVector->getValue(1) > 0.0;
-        a1Examples->append(new Pair(examplesClass, stateCopy, a1 ? 1.0 : 0.0));
-        a2Examples->append(new Pair(examplesClass, stateCopy, a2 ? 1.0 : 0.0));        
+        examples->append(new Pair(examplesClass, state->cloneAndCast<DecisionProblemState>(), regrets));
 
         // perform transition
         double reward = 0.0;
@@ -239,79 +334,127 @@ protected:
     context.leaveScope(returnStatistics->getMean());
 
     delete ostr;
-    return std::make_pair(a1Examples, a2Examples);
+    return examples;
   }
 
-  LuapeBinaryClassifierPtr findBestFormula(ExecutionContext& context, const String& name, const ContainerPtr& examples)
+  ContainerPtr loadDataFile(ExecutionContext& context, const File& dataFile)
   {
-    context.enterScope(T("Searching best formula for ") + name);
-    size_t n = examples->getNumElements();
-    context.informationCallback(String((int)n) + T(" examples"));
-    size_t numPositives = 0;
-    for (size_t i = 0; i < n; ++i)
-      if (examples->getElement(i).getObjectAndCast<Pair>()->getSecond().getDouble() > 0.0)
-        ++numPositives;
-    context.informationCallback(String((int)numPositives) + T(" positives, ") + String((int)n - (int)numPositives) + T(" negatives"));
-
-    LuapeBinaryClassifierPtr bestClassifier;
-    double bestObjectiveValue = -DBL_MAX;
-    for (size_t complexity = 3; complexity <= 6; complexity += 3)
+    InputStream* istr = dataFile.createInputStream();
+    if (!istr)
     {
-      context.enterScope(T("complexity = ") + String((int)complexity));
-      context.resultCallback(T("complexity"), complexity);
+      context.errorCallback(T("Could not open file ") + dataFile.getFileName());
+      return ContainerPtr();
+    }
+    ClassPtr examplesClass = pairClass(hivDecisionProblemStateClass, denseDoubleVectorClass(hivActionEnumeration, doubleType));
+    ObjectVectorPtr res = new ObjectVector(examplesClass);
 
-      LuapeBinaryClassifierPtr classifier = new LuapeBinaryClassifier();
+    while (!istr->isExhausted())
+    {
+      String line = istr->readNextLine();
+      StringArray tokens;
+      tokens.addTokens(line, true);
+      if (tokens.size() == 0)
+        continue;
 
-      classifier->addInput(hivDecisionProblemStateClass, "s");
-      classifier->addFunction(andBooleanLuapeFunction());
-      classifier->addFunction(equalBooleanLuapeFunction());
-      classifier->addFunction(addDoubleLuapeFunction());
-      classifier->addFunction(subDoubleLuapeFunction());
-      classifier->addFunction(mulDoubleLuapeFunction());
-      classifier->addFunction(divDoubleLuapeFunction());
-      classifier->addFunction(logDoubleLuapeFunction());
-      classifier->addFunction(getVariableLuapeFunction());
-      // todo: compute-successor function
-      classifier->setSamples(context, examples.staticCast<ObjectVector>()->getObjects());
-
-      LuapeNodeBuilderPtr nodeBuilder = exhaustiveSequentialNodeBuilder(complexity);
-      nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
+      jassert(tokens.size() >= 10);
+      std::vector<double> stateValues(6);
+      for (size_t i = 0; i < stateValues.size(); ++i)
+        stateValues[i] = tokens[i].getDoubleValue();
+      HIVDecisionProblemStatePtr state = new HIVDecisionProblemState(stateValues);
       
-      LuapeLearnerPtr learner = optimizerBasedSequentialWeakLearner(new NestedMonteCarloOptimizer(5, 1), complexity);
-      //LuapeLearnerPtr learner = exactWeakLearner(nodeBuilder);
-      
-      learner->setVerbose(true);
+      DenseDoubleVectorPtr costs = new DenseDoubleVector(hivActionEnumeration, doubleType);
+      for (size_t i = 0; i < costs->getNumValues(); ++i)
+        costs->setValue(i, tokens[i + 6].getDoubleValue());
 
-      LearningObjectivePtr objective = new BinaryClassificationLearningObjective();
-      objective->initialize(classifier);
-      learner->setObjective(objective);
-
-      //learner = treeLearner(objective, learner, 2, 5);
-    
-      LuapeNodePtr node = learner->learn(context, LuapeNodePtr(), classifier, classifier->getTrainingCache()->getAllIndices());
-      classifier->setRootNode(context, node);
-      double accuracy = 1.0 - classifier->evaluatePredictions(context, classifier->getTrainingPredictions(), classifier->getTrainingSupervisions());
-      if (node)
-      {
-        context.informationCallback(node->toShortString());
-        context.resultCallback(T("node"), node);
-        if (accuracy > bestObjectiveValue)
-        {
-          bestObjectiveValue = accuracy;
-          bestClassifier = classifier;
-        }
-      }
-
-      //classifier->setLearner(weakLearner, true);
-
-      //classifier->setLearner(adaBoostLearner(weakLearner, 10, 1), true); // 10 iterations, tree depth = 1
-
-      //ScoreObjectPtr score = classifier->train(context, examples, ContainerPtr(), T("Training"), true);
-      context.leaveScope(accuracy);
+      res->append(new Pair(examplesClass, state, costs));
     }
 
+    delete istr;
+    return res;
+  }
+
+  PolicyPtr findInterpretablePolicy(ExecutionContext& context, const ContainerPtr& examples)
+  {
+    context.enterScope(T("Searching interpretable policy"));
+    size_t n = examples->getNumElements();
+    context.informationCallback(String((int)n) + T(" examples"));
+    std::vector<size_t> countPerClass(4, 0);
+    for (size_t i = 0; i < n; ++i)
+    {
+      DenseDoubleVectorPtr supervision = examples->getElement(i).getObjectAndCast<Pair>()->getSecond().getObjectAndCast<DenseDoubleVector>();
+      int label = supervision->getIndexOfMinimumValue();
+      jassert(label >= 0 && label < 4);
+      countPerClass[label]++;
+    }
+    String info;
+    for (size_t i = 0; i < countPerClass.size(); ++i)
+    {
+      info += String((int)countPerClass[i]) + T(" ") + hivActionEnumeration->getElementName(i);
+      if (i < countPerClass.size() - 1)
+        info += T(", ");
+    }
+    context.informationCallback(info);
+
+    LuapeClassifierPtr bestClassifier;
+    double bestObjectiveValue = DBL_MAX;
+    for (size_t complexity = 3; complexity <= 6; complexity += 3)
+      for (size_t treeDepth = 2; treeDepth <= 12; ++treeDepth)
+      {
+        context.enterScope(T("complexity = ") + String((int)complexity) + T(" treeDepth = ") + String((int)treeDepth));
+        context.resultCallback(T("complexity"), complexity);
+        context.resultCallback(T("treeDepth"), treeDepth);
+
+        LuapeClassifierPtr classifier = new LuapeClassifier();
+        classifier->initialize(context, hivDecisionProblemStateClass, denseDoubleVectorClass(hivActionEnumeration, doubleType));
+
+        classifier->addInput(hivDecisionProblemStateClass, "s");
+        classifier->addFunction(andBooleanLuapeFunction());
+        classifier->addFunction(equalBooleanLuapeFunction());
+        classifier->addFunction(addDoubleLuapeFunction());
+        classifier->addFunction(subDoubleLuapeFunction());
+        classifier->addFunction(mulDoubleLuapeFunction());
+        classifier->addFunction(divDoubleLuapeFunction());
+        classifier->addFunction(logDoubleLuapeFunction());
+        classifier->addFunction(getVariableLuapeFunction());
+        // todo: compute-successor function
+        classifier->setSamples(context, examples.staticCast<ObjectVector>()->getObjects());
+
+        LuapeNodeBuilderPtr nodeBuilder = exhaustiveSequentialNodeBuilder(complexity);
+        nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
+        
+        LuapeLearnerPtr learner = optimizerBasedSequentialWeakLearner(new NestedMonteCarloOptimizer(5, 1), complexity);
+        
+        learner->setVerbose(true);
+
+        LearningObjectivePtr objective = new CostSensitiveMultiClassAccuracyObjective();
+        objective->initialize(classifier);
+        learner->setObjective(objective);
+        learner = treeLearner(objective, learner, 2, treeDepth);
+      
+        LuapeNodePtr node = learner->learn(context, LuapeNodePtr(), classifier, classifier->getTrainingCache()->getAllIndices());
+        classifier->setRootNode(context, node);
+        double error = classifier->evaluatePredictions(context, classifier->getTrainingPredictions(), classifier->getTrainingSupervisions());
+        if (node)
+        {
+          context.informationCallback(node->toShortString());
+          context.resultCallback(T("node"), node);
+          if (error < bestObjectiveValue)
+          {
+            bestObjectiveValue = error;
+            bestClassifier = classifier;
+          }
+        }
+
+        //classifier->setLearner(weakLearner, true);
+
+        //classifier->setLearner(adaBoostLearner(weakLearner, 10, 1), true); // 10 iterations, tree depth = 1
+
+        //ScoreObjectPtr score = classifier->train(context, examples, ContainerPtr(), T("Training"), true);
+        context.leaveScope(error);
+      }
+
     context.leaveScope(bestObjectiveValue);
-    return bestClassifier;
+    return new ClassifierBasedPolicy(bestClassifier);
   }
 
   void testDiscoveredPolicy(ExecutionContext& context, const ContainerPtr& initialStates, const PolicyPtr& policy)

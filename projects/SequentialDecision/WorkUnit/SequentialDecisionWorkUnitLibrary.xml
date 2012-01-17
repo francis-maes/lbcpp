@@ -69,11 +69,19 @@
     <variable type="PositiveInteger" name="budget"/>
   </class>
 
+  <enumeration name="HIVAction">
+    <value name="nodrugs"/>
+    <value name="drug1"/>
+    <value name="drug2"/>
+    <value name="bothdrugs"/>
+  </enumeration>
+
   <class name="InterpretHIVPolicy" base="WorkUnit">
     <variable type="PositiveInteger" name="numInitialStates"/>
     <variable type="PositiveInteger" name="maxHorizon"/>
     <variable type="PositiveInteger" name="rolloutLength"/>
     <variable type="Double" name="discount"/>
+    <variable type="File" name="dataFile"/>
   </class>
 
 
