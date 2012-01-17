@@ -480,7 +480,7 @@ protected:
     LuapeClassifierPtr bestClassifier;
     double bestObjectiveValue = DBL_MAX;
     for (size_t complexity = 3; complexity <= 12; complexity += 3)
-      for (size_t treeDepth = 3; treeDepth <= 9; ++treeDepth)
+      for (size_t treeDepth = 3; treeDepth <= 20; ++treeDepth)
       {
         context.enterScope(T("complexity = ") + String((int)complexity) + T(" treeDepth = ") + String((int)treeDepth));
         context.resultCallback(T("complexity"), complexity);
