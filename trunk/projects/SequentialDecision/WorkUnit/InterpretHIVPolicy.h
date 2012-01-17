@@ -229,7 +229,7 @@ protected:
     tokens.addTokens(line, true);
 
     DenseDoubleVectorPtr parameters = new DenseDoubleVector(featuresEnumeration, doubleType);
-    jassert(parameters->getNumValues() == tokens.size());
+    jassert(parameters->getNumValues() == (size_t)tokens.size());
     for (int i = 0; i < tokens.size(); ++i)
       parameters->setValue(i, tokens[i].getDoubleValue());
     FunctionPtr searchHeuristic = new HIVSearchHeuristic(featuresFunction, parameters);
@@ -289,7 +289,27 @@ protected:
         context.resultCallback(T("step"), t);
         HIVDecisionProblemStatePtr hivState = state.staticCast<HIVDecisionProblemState>();
         hivState->addAsResults(context);
+        // select action
+        Variable action = policy->selectAction(context, state);
+        DenseDoubleVectorPtr actionVector = action.getObjectAndCast<DenseDoubleVector>();
 
+
+        //DenseDoubleVectorPtr regrets = computeActionRegrets(context, problem, state, policy);
+        DenseDoubleVectorPtr regrets = new DenseDoubleVector(hivActionEnumeration, doubleType, (size_t)-1, 1.0);
+        if (actionVector->getValue(0) == 0.0)
+        {
+          if (actionVector->getValue(1) == 0.0)
+            regrets->setValue(0, 0.0);
+          else
+            regrets->setValue(2, 0.0);
+        }
+        else
+        {
+          if (actionVector->getValue(1) == 0.0)
+            regrets->setValue(1, 0.0);
+          else
+            regrets->setValue(3, 0.0);
+        }
 
         // write to file
         std::vector<double> stateValues;
@@ -297,16 +317,12 @@ protected:
         String line;
         for (size_t j = 0; j < stateValues.size(); ++j)
           line += String(stateValues[j]) + T(" ");
-        DenseDoubleVectorPtr regrets = computeActionRegrets(context, problem, state, policy);
         for (size_t j = 0; j < regrets->getNumValues(); ++j)
           line += String(regrets->getValue(j)) + T(" ");
         line += T("\n");
         *ostr << line;
         ostr->flush();
 
-        // select action
-        Variable action = policy->selectAction(context, state);
-        DenseDoubleVectorPtr actionVector = action.getObjectAndCast<DenseDoubleVector>();
         
         {
           context.resultCallback(T("a1"), actionVector->getValue(0));
