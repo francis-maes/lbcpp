@@ -320,13 +320,14 @@ void InformationGainLearningObjective::flipPrediction(size_t index)
 
 double InformationGainLearningObjective::computeObjective()
 {
+  // FIXME: check this !
   ensureIsUpToDate();
 
   double currentEntropy = computeEntropy(labelWeights, sumOfWeights);
   double splitEntropy = computeEntropy(splitWeights, sumOfWeights);
   double expectedNextEntropy = 0.0;
   for (int i = 0; i < 3; ++i)
-    expectedNextEntropy += splitWeights->getValue(i) * computeEntropy(labelConditionalProbabilities[i], splitWeights->getValue(i));
+    expectedNextEntropy += (splitWeights->getValue(i) / sumOfWeights) * computeEntropy(labelConditionalProbabilities[i], splitWeights->getValue(i));
   expectedNextEntropy /= sumOfWeights;
   double informationGain = currentEntropy - expectedNextEntropy;
   if (normalize)
