@@ -212,6 +212,7 @@ SET(LBCPP_PROTEIN_ROSETTA_WORKUNIT_SOURCES
   Rosetta/WorkUnit/ProteinOptimizationWorkUnit.h
   Rosetta/WorkUnit/ProteinEDAOptimizationWorkUnit.h
   Rosetta/WorkUnit/DistributableWorkUnit.h
+  Rosetta/WorkUnit/ExampleDistributableWorkUnit.h
   Rosetta/WorkUnit/ProteinRosettaWorkUnitLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaWorkUnitLibrary.cpp
 )
