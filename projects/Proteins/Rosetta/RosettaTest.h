@@ -65,8 +65,6 @@ private:
   size_t arg;
   double value;
   String proteinsDir;
-  PoseMoverPtr moverEnter;
-  DistributableWorkUnitPtr distributable;
 
 public:
   virtual Variable run(ExecutionContext& context)
@@ -77,7 +75,8 @@ public:
     std::cout << "arg : " << arg << std::endl;
     std::cout << "value : " << value << std::endl;
     std::cout << "proteinsDir : " << proteinsDir << std::endl;
-    std::cout << "mover : " << moverEnter->toString() << std::endl;
+    std::cout << "RosettaTest : " << this->toShortString() << std::endl;
+    std::cout << "RosettaTest : " << this->toString() << std::endl;
 
     //    Rosetta ros;
 //    ros.init(context, false);

@@ -17,62 +17,38 @@ namespace lbcpp
 class DistributableExecutionContextCallback : public ExecutionContextCallback
 {
 public:
-  DistributableExecutionContextCallback(ExecutionContext& context)
-    : context(context) {}
+  DistributableExecutionContextCallback(ExecutionContext& context, String projectName)
+    : context(context), projectName(projectName) {}
 
   virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
   {
-    //TODO save result
-    context.informationCallback(T("TestExecutionContextCallback::workUnitFinished"), result.toString());
+    savedResult = result;
+    File f(context.getProjectDirectory().getFullPathName() + T("/") + projectName + T("/")
+        + workUnit->toString() + T(".xml"));
+    result.saveToFile(context, f);
   }
 
-  static Variable gatherResults()
+  static Variable gatherResults(VariableVector& callbacks)
   {
+    VariableVectorPtr results = variableVector(callbacks.getNumElements());
 
+    for (size_t i = 0; i < callbacks.getNumElements(); i++)
+    {
+      results->setElement(i, callbacks.getElement(i).getObjectAndCast<
+          DistributableExecutionContextCallback> ()->savedResult);
+    }
+
+    return results;
   }
 
 protected:
   ExecutionContext& context;
+  String projectName;
+
+  Variable savedResult;
 };
 
 typedef ReferenceCountedObjectPtr<DistributableExecutionContextCallback> DistributableExecutionContextCallbackPtr;
-
-class TestDumbWorkUnit : public WorkUnit
-{
-public:
-  TestDumbWorkUnit() {}
-  TestDumbWorkUnit(size_t j) : j(j) {}
-
-  virtual Variable run(ExecutionContext& context)
-  {
-    context.enterScope(T("DumbWorkUnit ") + String((int)j));
-
-    juce::RelativeTime t1 = juce::RelativeTime::milliseconds(juce::Time::currentTimeMillis());
-
-    RandomGeneratorPtr random = new RandomGenerator((juce::uint32)j);
-    DenseDoubleVectorPtr values = new DenseDoubleVector(100, -1);
-
-    for (size_t i = 0; i < 100; ++i)
-    {
-      values->setValue(i, (double)random->sampleInt(0, 100));
-      if ((i + 1) % 10 == 0)
-        context.progressCallback(new ProgressionState(i + 1, 100, T("It")));
-      juce::Thread::sleep(context.getRandomGenerator()->sampleInt(10, 30));
-    }
-
-    juce::RelativeTime t2 = juce::RelativeTime::milliseconds(juce::Time::currentTimeMillis());
-    juce::RelativeTime t3 = t2 - t1;
-    double elapsed = t3.inSeconds();
-
-    context.leaveScope(Variable(elapsed));
-    return Variable(values);
-  }
-
-protected:
-  friend class TestDumbWorkUnitClass;
-
-  size_t j;
-};
 
 class DistributableWorkUnit : public WorkUnit
 {
@@ -160,79 +136,24 @@ protected:
 typedef ReferenceCountedObjectPtr<DistributableWorkUnit> DistributableWorkUnitPtr;
 extern ClassPtr distributableWorkUnitClass;
 
-class TestDistribWorkUnit : public DistributableWorkUnit
-{
-public:
-  TestDistribWorkUnit() : DistributableWorkUnit() {}
-
-  virtual void initializeWorkUnits(ExecutionContext& context)
-  {
-    workUnits = new CompositeWorkUnit(name);
-    for (size_t i = 0; i < 10; i++)
-      workUnits->addWorkUnit(new TestDumbWorkUnit(i));
-  }
-
-  virtual Variable singleResultCallback(ExecutionContext& context, Variable& result)
-  {
-    size_t numElements = result.getObjectAndCast<DenseDoubleVector> ()->getNumValues();
-
-    for (size_t i = 0; i < numElements; i++)
-    {
-      context.enterScope(T("Result"));
-      context.resultCallback(T("Step"), Variable((int)i));
-      context.resultCallback(T("Value"), Variable(
-          result.getObjectAndCast<DenseDoubleVector> ()->getValue(i)));
-      context.leaveScope();
-    }
-
-    return (result);
-  }
-
-  virtual Variable multipleResultCallback(ExecutionContext& context, VariableVector& results)
-  {
-    //    double j = 0;
-    //
-    //    for (size_t i = 0; i < results.getNumElements(); i++)
-    //      j += results.getElement(i).getDouble();
-    //    j /= (double)results.getNumElements();
-    //
-    //    context.informationCallback(T("Average is ") + String(j));
-    size_t numElements =
-        results.getElement(0).getObjectAndCast<DenseDoubleVector> ()->getNumValues();
-    size_t numResults = results.getNumElements();
-
-    DenseDoubleVectorPtr mean = new DenseDoubleVector(numElements, -1);
-
-    for (size_t j = 0; j < numResults; j++)
-      for (size_t i = 0; i < numElements; i++)
-        mean->setValue(i, mean->getValue(i) + results.getElement(j).getObjectAndCast<
-            DenseDoubleVector> ()->getValue(i) / (double)numResults);
-
-    for (size_t i = 0; i < numElements; i++)
-    {
-      context.enterScope(T("Result"));
-      context.resultCallback(T("Step"), Variable((int)i));
-      context.resultCallback(T("Value"), Variable(mean->getValue(i)));
-      context.leaveScope();
-    }
-
-    return Variable(mean);
-  }
-
-protected:
-  friend class TestDistribWorkUnitClass;
-};
-
-extern DistributableWorkUnitPtr testDistribWorkUnit();
-
 class DistributeToClusterWorkUnit : public WorkUnit
 {
 public:
   virtual Variable run(ExecutionContext& context)
   {
+    if (distributable->getName().isEmpty())
+    {
+      context.errorCallback(T("Name of distributable should not be empty."));
+      return Variable();
+    }
+
     ExecutionContextPtr remoteContext = distributedExecutionContext(context, remoteHostName,
         remoteHostPort, distributable->getName(), localHostLogin, clusterLogin,
         fixedResourceEstimator(1, memory, time), true);
+
+    File distributableWorkUnitDirectory = context.getFile(distributable->toString());
+    if (!distributableWorkUnitDirectory.exists())
+      distributableWorkUnitDirectory.createDirectory();
 
     // initialization
     context.enterScope(T("Initializing distributable work unit::distributed"));
@@ -249,7 +170,28 @@ public:
     context.enterScope(distributable->getName());
     context.informationCallback(T("Treating ") + String((int)units->getNumWorkUnits())
         + T(" work units."));
-    Variable result = remoteContext->run(units);
+
+    // check for already solved workunits and execute unsolved ones
+    for (size_t i = 0; i < units->getNumWorkUnits(); i++)
+    {
+      File wuResult(distributableWorkUnitDirectory.getFullPathName() + T("/") + units->getWorkUnit(
+          i)->toString() + T(".xml"));
+      if (!wuResult.exists())
+        remoteContext->pushWorkUnit(units->getWorkUnit(i),
+            new DistributableExecutionContextCallback(context, distributable->toString()));
+    }
+    remoteContext->waitUntilAllWorkUnitsAreDone();
+
+    // reload results
+    Variable result = variableVector(units->getNumWorkUnits());
+    for (size_t i = 0; i < units->getNumWorkUnits(); i++)
+    {
+      File wuResult(distributableWorkUnitDirectory.getFullPathName() + T("/") + units->getWorkUnit(
+          i)->toString() + T(".xml"));
+      Variable singleSolution = Variable::createFromFile(context, wuResult);
+      result.getObjectAndCast<VariableVector> ()->setElement(i, singleSolution);
+    }
+
     context.leaveScope();
 
     // show results
