@@ -99,6 +99,62 @@ protected:
   LuapeBinaryClassifierPtr a2;
 };
 
+class GetDecisionProblemSuccessorState : public LuapeFunction
+{
+public:
+  GetDecisionProblemSuccessorState(size_t numActions = 0)
+    : action(0), numActions(numActions) {}
+
+  virtual size_t getNumInputs() const
+    {return 1;}
+
+  virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
+    {return type->inheritsFrom(decisionProblemStateClass);}
+
+  virtual TypePtr initialize(const TypePtr* inputTypes)
+  {
+    outputClass = pairClass(inputTypes[0], doubleType);
+    return outputClass;
+  }
+
+  virtual String toShortString() const
+  {
+    return LuapeFunction::toShortString();
+  }
+    
+  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+    {return inputs[0]->toShortString() + T(".succ[") + String((int)action) + T("]");}
+
+  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
+  {
+    VectorPtr res = vector(positiveIntegerType, numActions);
+    for (size_t i = 0; i < numActions; ++i)
+      res->setElement(i, i);
+    return res;
+  }
+
+  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+  {
+    const DecisionProblemStatePtr& state = inputs[0].getObjectAndCast<DecisionProblemState>();
+    DecisionProblemStatePtr res = state->cloneAndCast<DecisionProblemState>();
+    ContainerPtr actions = state->getAvailableActions();
+    jassert(action < actions->getNumElements());
+    Variable action = actions->getElement(this->action);
+    double reward;
+    res->performTransition(context, action, reward);
+    return new Pair(outputClass, res, reward);
+  }
+  
+  lbcpp_UseDebuggingNewOperator
+
+protected:
+  friend class GetDecisionProblemSuccessorStateClass;
+        
+  size_t action;
+
+  size_t numActions;
+  ClassPtr outputClass;
+};
 
 
 class CostSensitiveMultiClassAccuracyObjective : public ClassificationLearningObjective
@@ -148,6 +204,8 @@ public:
 
   virtual Variable computeVote(const IndexSetPtr& indices)
   {
+    if (indices->size() == 0)
+      return Variable::missingValue(denseDoubleVectorClass(labels, probabilityType));
     DenseDoubleVectorPtr costs = new DenseDoubleVector(doubleVectorClass);
     for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
     {
@@ -193,7 +251,7 @@ public:
       examples = createLearningExamples(context, problem, referencePolicy, initialStates, returnStatistics);
     }
 
-    PolicyPtr interpretablePolicy = findInterpretablePolicy(context, examples);
+    PolicyPtr interpretablePolicy = findInterpretablePolicy(context, initialStates, examples);
 
     testDiscoveredPolicy(context, initialStates, interpretablePolicy);
     return true;
@@ -269,7 +327,9 @@ protected:
 
   ContainerPtr createLearningExamples(ExecutionContext& context, const DecisionProblemPtr& problem, const PolicyPtr& policy, const ContainerPtr& initialStates, ScalarVariableStatisticsPtr returnStatistics)
   {
-    File outputFile = context.getFile("wsamples" + String((int)maxHorizon) + T("_") + String((int)numInitialStates) + T(".txt"));
+    File outputFile = context.getFile("wsamples" + String((int)maxHorizon) + T("_") + String((int)numInitialStates) + T("_") + String((int)rolloutLength) + T(".txt"));
+    if (outputFile.existsAsFile())
+      outputFile.deleteFile();
     OutputStream* ostr = outputFile.createOutputStream();
 
     TypePtr examplesClass = pairClass(hivDecisionProblemStateClass, probabilityType);
@@ -294,21 +354,26 @@ protected:
         DenseDoubleVectorPtr actionVector = action.getObjectAndCast<DenseDoubleVector>();
 
 
-        //DenseDoubleVectorPtr regrets = computeActionRegrets(context, problem, state, policy);
-        DenseDoubleVectorPtr regrets = new DenseDoubleVector(hivActionEnumeration, doubleType, (size_t)-1, 1.0);
-        if (actionVector->getValue(0) == 0.0)
-        {
-          if (actionVector->getValue(1) == 0.0)
-            regrets->setValue(0, 0.0);
-          else
-            regrets->setValue(2, 0.0);
-        }
+        DenseDoubleVectorPtr regrets;
+        if (rolloutLength > 0)
+          regrets = computeActionRegrets(context, problem, state, policy);
         else
         {
-          if (actionVector->getValue(1) == 0.0)
-            regrets->setValue(1, 0.0);
+          regrets = new DenseDoubleVector(hivActionEnumeration, doubleType, (size_t)-1, 1.0);
+          if (actionVector->getValue(0) == 0.0)
+          {
+            if (actionVector->getValue(1) == 0.0)
+              regrets->setValue(0, 0.0);
+            else
+              regrets->setValue(2, 0.0);
+          }
           else
-            regrets->setValue(3, 0.0);
+          {
+            if (actionVector->getValue(1) == 0.0)
+              regrets->setValue(1, 0.0);
+            else
+              regrets->setValue(3, 0.0);
+          }
         }
 
         // write to file
@@ -348,6 +413,7 @@ protected:
       context.progressCallback(new ProgressionState(i+1, initialStates->getNumElements(), T("Trajectories")));
     }
     context.leaveScope(returnStatistics->getMean());
+    context.informationCallback(String((int)examples->getNumElements()) + T(" examples"));
 
     delete ostr;
     return examples;
@@ -389,7 +455,7 @@ protected:
     return res;
   }
 
-  PolicyPtr findInterpretablePolicy(ExecutionContext& context, const ContainerPtr& examples)
+  PolicyPtr findInterpretablePolicy(ExecutionContext& context, const ContainerPtr& initialStates, const ContainerPtr& examples)
   {
     context.enterScope(T("Searching interpretable policy"));
     size_t n = examples->getNumElements();
@@ -413,8 +479,8 @@ protected:
 
     LuapeClassifierPtr bestClassifier;
     double bestObjectiveValue = DBL_MAX;
-    for (size_t complexity = 3; complexity <= 6; complexity += 3)
-      for (size_t treeDepth = 2; treeDepth <= 12; ++treeDepth)
+    for (size_t complexity = 3; complexity <= 12; complexity += 3)
+      for (size_t treeDepth = 3; treeDepth <= 9; ++treeDepth)
       {
         context.enterScope(T("complexity = ") + String((int)complexity) + T(" treeDepth = ") + String((int)treeDepth));
         context.resultCallback(T("complexity"), complexity);
@@ -430,15 +496,16 @@ protected:
         classifier->addFunction(subDoubleLuapeFunction());
         classifier->addFunction(mulDoubleLuapeFunction());
         classifier->addFunction(divDoubleLuapeFunction());
-        classifier->addFunction(logDoubleLuapeFunction());
+        //classifier->addFunction(logDoubleLuapeFunction());
+        classifier->addFunction(greaterThanDoubleLuapeFunction());
         classifier->addFunction(getVariableLuapeFunction());
-        // todo: compute-successor function
+        classifier->addFunction(new GetDecisionProblemSuccessorState(4));
         classifier->setSamples(context, examples.staticCast<ObjectVector>()->getObjects());
 
         LuapeNodeBuilderPtr nodeBuilder = exhaustiveSequentialNodeBuilder(complexity);
         nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
         
-        LuapeLearnerPtr learner = optimizerBasedSequentialWeakLearner(new NestedMonteCarloOptimizer(5, 1), complexity);
+        LuapeLearnerPtr learner = optimizerBasedSequentialWeakLearner(new NestedMonteCarloOptimizer(2, 1), complexity);
         
         learner->setVerbose(true);
 
@@ -450,6 +517,7 @@ protected:
         LuapeNodePtr node = learner->learn(context, LuapeNodePtr(), classifier, classifier->getTrainingCache()->getAllIndices());
         classifier->setRootNode(context, node);
         double error = classifier->evaluatePredictions(context, classifier->getTrainingPredictions(), classifier->getTrainingSupervisions());
+        double policyReturn = 0.0;
         if (node)
         {
           context.informationCallback(node->toShortString());
@@ -459,21 +527,23 @@ protected:
             bestObjectiveValue = error;
             bestClassifier = classifier;
           }
+          policyReturn = testDiscoveredPolicy(context, initialStates, new ClassifierBasedPolicy(classifier));
         }
+
 
         //classifier->setLearner(weakLearner, true);
 
         //classifier->setLearner(adaBoostLearner(weakLearner, 10, 1), true); // 10 iterations, tree depth = 1
 
         //ScoreObjectPtr score = classifier->train(context, examples, ContainerPtr(), T("Training"), true);
-        context.leaveScope(error);
+        context.leaveScope(new Pair(error, policyReturn));
       }
 
     context.leaveScope(bestObjectiveValue);
     return new ClassifierBasedPolicy(bestClassifier);
   }
 
-  void testDiscoveredPolicy(ExecutionContext& context, const ContainerPtr& initialStates, const PolicyPtr& policy)
+  double testDiscoveredPolicy(ExecutionContext& context, const ContainerPtr& initialStates, const PolicyPtr& policy)
   {
     context.enterScope(T("Testing policy ") + policy->toShortString());
 
@@ -510,6 +580,7 @@ protected:
       context.progressCallback(new ProgressionState(i+1, initialStates->getNumElements(), T("Trajectories")));
     }
     context.leaveScope(returnStatistics->getMean());
+    return returnStatistics->getMean();
   }
 };
 

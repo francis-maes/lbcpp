@@ -50,7 +50,7 @@ protected:
   {
     if (optimizerState->isScoreBetterThan(score, bestScore))
     {
-      context.informationCallback(finalState->toShortString() + T(" [") + String(score) + T("]"));
+      //context.informationCallback(finalState->toShortString() + T(" [") + String(score) + T("]"));
       bestScore = score;
       bestFinalState = finalState;
     }
