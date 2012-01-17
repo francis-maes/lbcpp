@@ -748,8 +748,8 @@ public:
     */
 
     conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(Kdef, 2));
-    learner = discreteAdaBoostMHLearner(conditionLearner, 1000);
-    testConditionLearner(context, learner, "SingleStump AdaBoost.MH K=sqrt(n)");
+    learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 3);
+    testConditionLearner(context, learner, "SevenStumps AdaBoost.MH K=sqrt(n)");
 
     for (size_t complexity = 2; complexity <= 8; complexity += 2)
     {
@@ -757,18 +757,18 @@ public:
       LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(numVariables, complexity);
       conditionLearner = exactWeakLearner(nodeBuilder);
       conditionLearner->setVerbose(verbose);
-      learner = discreteAdaBoostMHLearner(conditionLearner, 1000);
+      learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 3);
       learner->setVerbose(verbose);
-      testConditionLearner(context, learner, "SingleStump AdaBoost.MH K=n - " + str);
+      testConditionLearner(context, learner, "SevenStumps AdaBoost.MH K=n - " + str);
     }
 
-    for (size_t complexity = 2; complexity <= 8; complexity += 2)
+    for (size_t complexity = 4; complexity <= 8; complexity += 2)
     {
       String str = (complexity == 2 ? T("1 variable") : String((int)complexity / 2) + T(" variables"));
       size_t K = (complexity == 2 ? Kdef : numVariables);
 
       double bestScore = DBL_MAX;
-      context.enterScope(T("Deep SingleStump AdaBoost.MH K=n - ") + str);
+      context.enterScope(T("Deep SevenStumps AdaBoost.MH K=n - ") + str);
       for (double logInitialImportance = -1.0; logInitialImportance <= 4.5; logInitialImportance += 0.5)
       {
         double initialImportance = pow(10.0, logInitialImportance);
@@ -779,7 +779,7 @@ public:
         LuapeNodeBuilderPtr nodeBuilder = biasedRandomSequentialNodeBuilder(K, complexity, initialImportance);
         conditionLearner = exactWeakLearner(nodeBuilder);
         conditionLearner->setVerbose(verbose);
-        learner = discreteAdaBoostMHLearner(conditionLearner, 1000);
+        learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 3);
         learner->setVerbose(verbose);
         double validationScore = testConditionLearner(context, learner, String::empty);
         bestScore = juce::jmin(bestScore, validationScore);
