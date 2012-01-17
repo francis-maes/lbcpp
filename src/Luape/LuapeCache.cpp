@@ -175,7 +175,7 @@ void LuapeSamplesCache::cacheNode(ExecutionContext& context, const LuapeNodePtr&
   nodeCache.samples = values ? values : node->compute(context, refCountedPointerFromThis(this), allIndices)->getVector();
   if (!isRemoveable)
     nodeCache.numRequests = -1;
-  jassert(nodeCache.samples);
+  jassert(nodeCache.samples || node.isInstanceOf<LuapeConstantNode>());
 
   size_t sizeInBytes = nodeCache.getSizeInBytes(true);
   actualCacheSize += sizeInBytes;
@@ -281,7 +281,7 @@ bool LuapeSamplesCache::isNodeCached(const LuapeNodePtr& node) const
 bool LuapeSamplesCache::isNodeDefinitivelyCached(const LuapeNodePtr& node) const
 {
   NodeCacheMap::const_iterator it = m.find(node);
-  return it != m.end() && it->second.samples && it->second.numRequests < 0;
+  return node.isInstanceOf<LuapeConstantNode>() || (it != m.end() && it->second.samples && it->second.numRequests < 0);
 }
 
 VectorPtr LuapeSamplesCache::getNodeCache(const LuapeNodePtr& node) const

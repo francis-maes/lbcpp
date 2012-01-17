@@ -55,7 +55,7 @@ protected:
     {
       const LuapeGraphBuilderStatePtr& builder = input.getObjectAndCast<LuapeGraphBuilderState>();
       if (builder->getStackSize() != 1)
-        return 0.0;
+        return -DBL_MAX;
       LuapeNodePtr node = builder->getStackElement(0);
       double res = weakLearner->getObjective()->computeObjectiveWithEventualStump(context, problem, node, examples);
       builder->setStackElement(0, node); // node may have been replaced by a stump of itself

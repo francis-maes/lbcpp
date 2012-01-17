@@ -76,6 +76,10 @@
     <value name="bothdrugs"/>
   </enumeration>
 
+  <class name="GetDecisionProblemSuccessorState" base="LuapeFunction">
+    <variable type="PositiveInteger" name="action"/>
+  </class>
+
   <class name="InterpretHIVPolicy" base="WorkUnit">
     <variable type="PositiveInteger" name="numInitialStates"/>
     <variable type="PositiveInteger" name="maxHorizon"/>

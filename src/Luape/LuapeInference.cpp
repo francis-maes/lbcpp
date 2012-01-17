@@ -76,7 +76,7 @@ LuapeGraphBuilderTypeSearchSpacePtr LuapeInference::getSearchSpace(ExecutionCont
     return typeSearchSpaces[complexity];
 
   LuapeGraphBuilderTypeSearchSpacePtr res = new LuapeGraphBuilderTypeSearchSpace(refCountedPointerFromThis(this), complexity);
-  res->pruneStates(context, false); // verbose
+  res->pruneStates(context, true); // verbose
   res->assignStateIndices(context);
   pthis->typeSearchSpaces[complexity] = res;
   return res;
@@ -286,6 +286,9 @@ Variable LuapeClassifier::computeFunction(ExecutionContext& context, const Varia
 double LuapeClassifier::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& supervisions) const
 {
   ObjectVectorPtr pred = predictions.staticCast<ObjectVector>();
+  if (!pred)
+    return DBL_MAX;
+
   size_t n = pred->getNumElements();
 
   if (supervisions->getElementsType() == denseDoubleVectorClass(labels, doubleType))
