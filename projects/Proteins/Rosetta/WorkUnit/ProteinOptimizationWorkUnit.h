@@ -274,7 +274,7 @@ public:
 
     workUnits = new CompositeWorkUnit(T("Optimization"));
 
-    for (size_t i = 0; i < inputProteins.size(); i++)
+    for (int i = 0; i < inputProteins.size(); i++)
     {
       ProteinPtr currentProtein = Protein::createFromPDB(context, (*inputProteins[i]));
 

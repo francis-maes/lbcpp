@@ -17,8 +17,10 @@ namespace lbcpp
 class Policy : public Object
 {
 public:
-  virtual void startEpisodes(ExecutionContext& context) {}
-  virtual void startEpisode(ExecutionContext& context, const DecisionProblemStatePtr& initialState) = 0;
+  virtual void startEpisodes(ExecutionContext& context)
+    {}
+  virtual void startEpisode(ExecutionContext& context, const DecisionProblemPtr& problem, const DecisionProblemStatePtr& initialState)
+    {}
 
   virtual Variable selectAction(ExecutionContext& context, const DecisionProblemStatePtr& state) = 0;
 
@@ -35,8 +37,6 @@ typedef ReferenceCountedObjectPtr<Policy> PolicyPtr;
 class RandomPolicy : public Policy
 {
 public:
-  virtual void startEpisode(ExecutionContext& context, const DecisionProblemStatePtr& initialState)
-    {}
   virtual Variable selectAction(ExecutionContext& context, const DecisionProblemStatePtr& state)
   {
     ContainerPtr actions = state->getAvailableActions();
@@ -58,10 +58,10 @@ public:
     : policy1(policy1), policy2(policy2), k(k) {}
   MixturePolicy() : k(0.0) {}
 
-  virtual void startEpisode(ExecutionContext& context, const DecisionProblemStatePtr& initialState)
+  virtual void startEpisode(ExecutionContext& context, const DecisionProblemPtr& problem, const DecisionProblemStatePtr& initialState)
   {
-    policy1->startEpisode(context, initialState);
-    policy2->startEpisode(context, initialState);
+    policy1->startEpisode(context, problem, initialState);
+    policy2->startEpisode(context, problem, initialState);
   }
 
   virtual Variable selectAction(ExecutionContext& context, const DecisionProblemStatePtr& state)
