@@ -205,6 +205,16 @@
     <variable type="File" name="outputDirectory" shortName="o"/>
     <variable type="Boolean" name="isPositiveExamples" shortName="sup"/>
   </class>
+  <class name="CysteinBondingPropertyWorkUnit" base="WorkUnit">
+    <variable type="String" name="inputDirectory" shortName="in"/>
+    <variable type="String" name="learningMachineName" shortName="m"/>
+    <variable type="PositiveInteger" name="x3Trees"/>
+    <variable type="PositiveInteger" name="x3Attributes"/>
+    <variable type="PositiveInteger" name="x3Splits"/>
+    <variable type="Double" name="sgdRate"/>
+    <variable type="PositiveInteger" name="sgdIterations"/>
+    <variable type="Boolean" name="useNormalization"/>
+  </class>
   <!-- END CysteinBox -->
 
   <!-- BEGIN LargeBox -->

@@ -206,7 +206,7 @@ extern EvaluatorPtr saveToDirectoryEvaluator(const File& directory, const String
 // Container[Pair[T_Input,T_Supervision]> -> T_Supervision
 extern SupervisedEvaluatorPtr containerSupervisedEvaluator(SupervisedEvaluatorPtr elementEvaluator);
 
-extern SupervisedEvaluatorPtr symmetricMatrixSupervisedEvaluator(SupervisedEvaluatorPtr elementEvaluator, size_t minimumDistanceFromDiagonal);
+extern SupervisedEvaluatorPtr symmetricMatrixSupervisedEvaluator(SupervisedEvaluatorPtr elementEvaluator, size_t minimumDistanceFromDiagonal = 1);
 
 };
 

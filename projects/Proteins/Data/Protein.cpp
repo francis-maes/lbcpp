@@ -220,6 +220,12 @@ Variable Protein::getTargetOrComputeIfMissing(ExecutionContext& context, size_t 
 Variable Protein::getCysteinBondingProperty(ExecutionContext& context) const
 {
   if (!cysteinIndices.size())
+    return Variable::missingValue(probabilityType);
+
+  return Variable(cysteinBondingProperty, probabilityType);
+
+/* 3-states version
+  if (!cysteinIndices.size())
     return Variable::missingValue(sparseDoubleVectorClass(cysteinBondingPropertyElementEnumeration, probabilityType));
 
   if (!cysteinBondingProperty)
@@ -229,6 +235,7 @@ Variable Protein::getCysteinBondingProperty(ExecutionContext& context) const
       const_cast<Protein* >(this)->cysteinBondingProperty = computeCysteinBondingProperty(bondingStates);
   }
   return cysteinBondingProperty;
+*/
 }
 
 

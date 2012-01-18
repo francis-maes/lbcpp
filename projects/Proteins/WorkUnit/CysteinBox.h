@@ -681,8 +681,8 @@ public:
       return Variable::missingValue(doubleType);
 
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-    evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, true)), T("Cystein Bonding States (Sens. & Spec.)"));
-    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)")); 
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("Disulfide Bonds (Acc.)"));
+    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)"));
 
     CompositeScoreObjectPtr scores = iteration->evaluate(context, test, evaluator, T("Evaluate on test proteins"));
     return evaluator->getScoreObjectOfTarget(scores, dsbTarget)->getScoreToMinimize();
@@ -1150,9 +1150,7 @@ public:
     for (size_t i = 0; i < n; ++i)
     {
       ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>();
-      ContainerPtr cbp = Protein::createEmptyCysteinBondingProperty();
-      cbp->setElement(isPositiveExamples ? all : none, probability(1.0));
-      protein->setCysteinBondingProperty(cbp);
+      protein->setCysteinBondingProperty(isPositiveExamples ? 1.f : 0.f);
       protein->saveToXmlFile(context, outputDirectory.getChildFile(protein->getName() + T(".xml")));
     }
     return true;
@@ -1164,6 +1162,95 @@ protected:
   File fastaFile;
   File outputDirectory;
   bool isPositiveExamples;
+};
+
+class CysteinBondingPropertyWorkUnit : public WorkUnit
+{
+public:
+  CysteinBondingPropertyWorkUnit()
+    : learningMachineName(T("ExtraTrees")),
+      x3Trees(1000), x3Attributes(0), x3Splits(1),
+      sgdRate(1.f), sgdIterations(1000),
+      useNormalization(false) {}
+
+  virtual Variable run(ExecutionContext& context)
+  {
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, File::nonexistent, context.getFile(inputDirectory), 0, T("Loading proteins"));
+
+    enum {numFolds = 10};
+    ScalarVariableMeanAndVariance stat;
+    for (size_t i = 0; i < numFolds; ++i)
+    {
+      context.enterScope(T("Fold ") + String((int)i + 1) + T(" on ") + String((int)numFolds));
+      double result = runOneFold(context, proteins, i, numFolds);
+      context.leaveScope(result);
+      if (result != DBL_MAX)
+        stat.push(result);
+    }
+    context.resultCallback(T("Mean"), stat.getMean());
+    context.resultCallback(T("Std. Dev."), stat.getStandardDeviation());
+    context.informationCallback(String(stat.getMean()) + T(" +/- ") + String(stat.getStandardDeviation()));
+    return stat.getMean();
+  }
+
+protected:
+  friend class CysteinBondingPropertyWorkUnitClass;
+
+  String inputDirectory;
+  String learningMachineName;
+  size_t x3Trees;
+  size_t x3Attributes;
+  size_t x3Splits;
+  double sgdRate;
+  size_t sgdIterations;
+  bool useNormalization;
+
+  double runOneFold(ExecutionContext& context, const ContainerPtr& proteins, size_t fold, size_t numFolds) const
+  {
+    ContainerPtr train = proteins->invFold(fold, numFolds);
+    ContainerPtr test = proteins->fold(fold, numFolds);
+
+    if (!train || !test || train->getNumElements() == 0 || test->getNumElements() == 0)
+    {
+      context.errorCallback(T("No training or testing proteins !"));
+      return DBL_MAX;
+    }
+
+    LargeProteinParametersPtr parameter = new LargeProteinParameters();
+    parameter->useProteinLength = true;
+    parameter->useNumCysteins = true;
+    parameter->useAminoAcidGlobalHistogram = true;
+    parameter->usePSSMGlobalHistogram = true;
+    
+    LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(parameter);
+    predictor->learningMachineName = learningMachineName;
+    // Config ExtraTrees
+    predictor->x3Trees = x3Trees;
+    predictor->x3Attributes = x3Attributes;
+    predictor->x3Splits = x3Splits;
+    
+    // Config SGD
+    predictor->sgdRate = sgdRate;
+    predictor->sgdIterations = sgdIterations;
+    
+    // Config kNN
+    predictor->knnNeighbors = 5;
+    
+    predictor->useAddBias = false;
+    
+    ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
+    iteration->addTarget(cbpTarget);
+    
+    if (!iteration->train(context, train, ContainerPtr(), T("Training")))
+      return DBL_MAX;
+    
+    ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+    //evaluator->addEvaluator(cbpTarget, rocAnalysisEvaluator(binaryClassificationAccuracyScore, true), T("Cystein Bonding Property (Acc.)"));
+    evaluator->addEvaluator(cbpTarget, binaryClassificationEvaluator(), T("Cystein Bonding Property (Classif.)"));
+    
+    CompositeScoreObjectPtr scores = iteration->evaluate(context, test, evaluator, T("Evaluate on test proteins"));
+    return evaluator->getScoreObjectOfTarget(scores, cbpTarget)->getScoreToMinimize();
+  }
 };
 
 };

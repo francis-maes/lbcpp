@@ -165,8 +165,11 @@
     <variable type="ObjectVector[DenseDoubleVector[PositionSpecificScoringMatrix, Probability]]" name="positionSpecificScoringMatrix" shortName="pssm" description="PSSM"/>
     
     <!-- Property -->
-    <variable type="DoubleVector[CysteinBondingPropertyElement, Probability]" name="cysteinBondingProperty" shortName="cbp" description="Cystein Bonding Property"/>
-    
+    <!-- 3-states version
+      <variable type="DoubleVector[CysteinBondingPropertyElement, Probability]" name="cysteinBondingProperty" shortName="cbp" description="Cystein Bonding Property"/>
+    -->
+    <variable type="Probability" name="cysteinBondingProperty" shortName="cbp" description="Cystein Bonding Property"/>
+
     <!-- Secondary Structure -->
     <variable type="ObjectVector[DoubleVector[SecondaryStructureElement, Probability]]" name="secondaryStructure" shortName="ss3" description="Secondary Structure"/>
     <variable type="ObjectVector[DoubleVector[DSSPSecondaryStructureElement, Probability]]" name="dsspSecondaryStructure" shortName="ss8" description="DSSP Secondary Structure"/>

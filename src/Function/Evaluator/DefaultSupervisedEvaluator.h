@@ -16,7 +16,7 @@ namespace lbcpp
 
 class DefaultSupervisedEvaluator : public ProxyEvaluator
 {
-public: 
+public:
   virtual EvaluatorPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const
   {
     TypePtr functionInputsType = Container::getTemplateParameter(inputVariables[1]->getType());

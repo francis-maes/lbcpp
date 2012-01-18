@@ -46,6 +46,30 @@ protected:
   PreProcessInputCompositeFunction() {}
 };
 
+class PreProcessCompositeFunction : public CompositeFunction
+{
+public:
+  PreProcessCompositeFunction(const FunctionPtr& f, const FunctionPtr& g)
+    : f(f), g(g) {}
+
+  virtual void buildFunction(CompositeFunctionBuilder& builder)
+  {
+    size_t input = builder.addInput(anyType, T("input"));
+    size_t supervision = builder.addInput(anyType, T("supervision"));
+
+    size_t res = builder.addFunction(f, input, supervision);
+    builder.addFunction(g, res, supervision);
+  }
+
+protected:
+  friend class PreProcessCompositeFunctionClass;
+
+  FunctionPtr f;
+  FunctionPtr g;
+
+  PreProcessCompositeFunction() {}
+};
+
 /*
 ** Large Protein Perception
 */
@@ -421,7 +445,7 @@ public:
   LargeProteinPredictorParameters(const LargeProteinParametersPtr& fp = LargeProteinParametersPtr(), bool isGlobalFeaturesLazy = false)
     : fp(fp), isGlobalFeaturesLazy(isGlobalFeaturesLazy), learningMachineName(T("SGD"))
     , svmC(4.0), svmGamma(1.0)
-    , knnNeighbors(5)
+    , knnNeighbors(1)
     , x3Trees(1000)
     , x3Attributes(0)
     , x3Splits(0)
@@ -430,6 +454,7 @@ public:
     , useAddBias(false)
     , useFisherFilter(false)
     , numFisherFeatures(100)
+    , useNormalization(false)
   {}
 
   virtual void proteinPerception(CompositeFunctionBuilder& builder) const
@@ -531,7 +556,54 @@ public:
   }
 
   virtual void propertyPerception(CompositeFunctionBuilder& builder) const
-    {jassertfalse;}
+  {
+    /* Inputs */
+    size_t proteinPerception = builder.addInput(largeProteinPerceptionClass());
+    /* Data */
+    size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinPerception, T("protein"));
+    size_t numCysteins = builder.addFunction(getVariableFunction(T("numCysteins")), proteinPerception, T("#Cys"));
+    size_t length = builder.addFunction(getVariableFunction(T("length")), proteinPerception, T("length"));
+    size_t aaAccumulator = builder.addFunction(getVariableFunction(T("aaAccumulator")), proteinPerception, T("aaAccu"));
+    size_t pssmAccumulator = builder.addFunction(getVariableFunction(T("pssmAccumulator")), proteinPerception, T("pssmAccu"));
+    size_t ss3Accumulator = builder.addFunction(getVariableFunction(T("ss3Accumulator")), proteinPerception, T("ss3Accu"));
+    size_t ss8Accumulator = builder.addFunction(getVariableFunction(T("ss8Accumulator")), proteinPerception, T("ss8Accu"));
+    size_t saAccumulator = builder.addFunction(getVariableFunction(T("saAccumulator")), proteinPerception, T("saAccu"));
+    size_t drAccumulator = builder.addFunction(getVariableFunction(T("drAccumulator")), proteinPerception, T("drAccu"));
+    size_t stalAccumulator = builder.addFunction(getVariableFunction(T("stalAccumulator")), proteinPerception, T("stalAccu"));
+    /* Output */
+    builder.startSelection();
+      /*** Global Features ***/
+      if (fp->useProteinLength)
+        builder.addFunction(integerFeatureGenerator(), length, T("length"));
+      
+      // global histograms
+      if (fp->useAminoAcidGlobalHistogram)
+        builder.addFunction(accumulatorGlobalMeanFunction(), aaAccumulator, T("h(AA)"));
+      if (fp->usePSSMGlobalHistogram)
+        builder.addFunction(accumulatorGlobalMeanFunction(), pssmAccumulator, T("h(PSSM)"));
+      if (fp->useSS3GlobalHistogram)
+        builder.addFunction(accumulatorGlobalMeanFunction(), ss3Accumulator, T("h(SS3)"));
+      if (fp->useSS8GlobalHistogram)
+        builder.addFunction(accumulatorGlobalMeanFunction(), ss8Accumulator, T("h(SS8)"));
+      if (fp->useSAGlobalHistogram)
+        builder.addFunction(accumulatorGlobalMeanFunction(), saAccumulator, T("h(SA)"));
+      if (fp->useDRGlobalHistogram)
+        builder.addFunction(accumulatorGlobalMeanFunction(), drAccumulator, T("h(DR)"));
+      if (fp->useSTALGlobalHistogram)
+        builder.addFunction(accumulatorGlobalMeanFunction(), stalAccumulator, T("h(StAl)"));
+      
+      // number of cysteins
+      if (fp->useNumCysteins)
+      {
+        builder.addFunction(integerFeatureGenerator(), numCysteins, T("#Cys"));
+        builder.addFunction(new IsNumCysteinPair(), protein, T("(#Cys+1) % 2"));
+      }
+
+      // bias (and anti-crash)
+      builder.addConstant(new DenseDoubleVector(singletonEnumeration, doubleType, 1, 1.0), T("bias"));
+
+    builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
+  }
 
   virtual void residueVectorPerception(CompositeFunctionBuilder& builder) const
   {
@@ -748,17 +820,30 @@ public:
       return new PreProcessInputCompositeFunction(doubleVectorNormalizeFunction(true, true)
                                                   , libSVMLearningMachine(pow(2.0, svmC), rbfKernel, 0, pow(2.0, svmGamma), 0.0));
     else if (learningMachineName == T("kNN"))
-      return new PreProcessInputCompositeFunction(/*composeFunction(*/doubleVectorNormalizeFunction(true, true),
-                                                                  //concatenatedDoubleVectorNormalizeFunction()),
-                                                  nearestNeighborLearningMachine(knnNeighbors, true));
+    {
+      FunctionPtr res = nearestNeighborLearningMachine(knnNeighbors, true);
+      if (useNormalization)
+        res = new PreProcessInputCompositeFunction(composeFunction(
+                                                                   doubleVectorNormalizeFunction(true, true), concatenatedDoubleVectorNormalizeFunction()
+                                                                   ), res);
+      return res;
+    }
     else if (learningMachineName == T("LSH"))
       return binaryLocalitySensitiveHashing(knnNeighbors);
     else if (learningMachineName == T("ExtraTrees"))
-      return extraTreeLearningMachine(x3Trees, x3Attributes, x3Splits);
+    {
+      FunctionPtr res = extraTreeLearningMachine(x3Trees, x3Attributes, x3Splits);
+      if (useAddBias)
+        res = new PreProcessCompositeFunction(res, addBiasLearnableFunction(binaryClassificationAccuracyScore));
+      return res;
+    }
     else if (learningMachineName == T("SGD"))
     {
-      FunctionPtr res = linearLearningMachine(new BinaryBalancedStochasticGDParameters(constantIterationFunction(sgdRate), StoppingCriterionPtr(), sgdIterations));
-      res->setEvaluator(defaultSupervisedEvaluator());
+      FunctionPtr res = linearBinaryClassifier(new StochasticGDParameters(constantIterationFunction(sgdRate), StoppingCriterionPtr(), sgdIterations, false, true, true, true, false));
+      //linearLearningMachine(new BinaryBalancedStochasticGDParameters(constantIterationFunction(sgdRate), StoppingCriterionPtr(), sgdIterations));
+      //res->setEvaluator(defaultSupervisedEvaluator());
+      if (useNormalization)
+        res = new PreProcessInputCompositeFunction(doubleVectorNormalizeFunction(true, true), res);
       return res;
     }
     else if (learningMachineName == T("kNN-LOO"))
@@ -801,6 +886,7 @@ public:
   bool useAddBias;
   bool useFisherFilter;
   size_t numFisherFeatures;
+  bool useNormalization;
 
 protected:
   friend class LargeProteinPredictorParametersClass;
