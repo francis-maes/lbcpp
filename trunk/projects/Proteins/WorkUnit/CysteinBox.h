@@ -633,8 +633,13 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    ContainerPtr train = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("train")), context.getFile(supervisionDirectory).getChildFile(T("train")), 0, T("Loading training proteins"));
-    ContainerPtr test = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("test")), context.getFile(supervisionDirectory).getChildFile(T("test")), 0, T("Loading testing proteins"));
+    size_t numProteinsToLoad = 0;
+#if JUCE_DEBUG
+    numProteinsToLoad = 10;
+    context.warningCallback(T("Only ") + String((int)numProteinsToLoad) + T(" will be loaded !"));
+#endif // !JUCE_DEBUG
+    ContainerPtr train = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("train")), context.getFile(supervisionDirectory).getChildFile(T("train")), numProteinsToLoad, T("Loading training proteins"));
+    ContainerPtr test = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("test")), context.getFile(supervisionDirectory).getChildFile(T("test")), numProteinsToLoad, T("Loading testing proteins"));
 
     if (!train || !test || train->getNumElements() == 0 || test->getNumElements() == 0)
     {
@@ -681,8 +686,14 @@ public:
       return Variable::missingValue(doubleType);
 
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("Disulfide Bonds (Acc.)"));
+
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("Disulfide Bonds (Acc.)"));
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("Disulfide Bonds (Tuned Acc.)"));
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, true)), T("Disulfide Bonds (Tuned Sens & Spec.)"));
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, true)), T("Disulfide Bonds (Tuned MCC)"));
+
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)"));
+    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(), T("Disulfide Bonds (Greedy L=6)"));
 
     CompositeScoreObjectPtr scores = iteration->evaluate(context, test, evaluator, T("Evaluate on test proteins"));
     return evaluator->getScoreObjectOfTarget(scores, dsbTarget)->getScoreToMinimize();
