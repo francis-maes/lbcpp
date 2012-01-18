@@ -273,7 +273,14 @@ public:
   virtual void traceReceived(const String& uniqueIdentifier, const ExecutionTracePtr& trace)
   {
     ScopedLock _(lock);
-    enterScope(T("Trace ") + uniqueIdentifier);
+    String traceName = uniqueIdentifier;
+    if (trace && trace->getRootNode())
+    {
+      ExecutionTraceNodePtr etn = trace->getRootNode()->findFirstNode();
+      if (etn)
+        traceName = etn->toString();
+    }
+    enterScope(T("Trace: ") + traceName);
     leaveScope(trace);
     --numWaitingTraces;
   }
