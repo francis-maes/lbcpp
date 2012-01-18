@@ -190,6 +190,12 @@
     <variable type="File" name="supervisionDirectory" shortName="sup"/>
     <variable type="String" name="outputPrefix" shortName="o"/>
   </class>
+  <class name="ExportResidueFeaturesWorkUnit" base="WorkUnit">
+    <variable type="File" name="inputDirectory" shortName="in"/>
+    <variable type="File" name="supervisionDirectory" shortName="sup"/>
+    <variable type="String" name="outputPrefix" shortName="o"/>
+    <variable type="VariablesEnumeration[Protein]" name="target" shortName="t"/>
+  </class>
   <class name="GenerateLargeProteinExperimentsWorkUnit" base="WorkUnit">
     <variable type="PositiveInteger" name="numParameters" shortName="p"/>
     <variable type="PositiveInteger" name="numExperiments" shortName="n"/>

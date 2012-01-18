@@ -793,7 +793,7 @@ public:
     writeData(context, proteins, predictor, o);
     delete o;
 
-    context.informationCallback(T("Output file name: ") + outputPrefix + T(".train.arff"));
+    context.informationCallback(T("Output file name: ") + outputPrefix + T(".arff"));
 
     return true;
   }
@@ -858,6 +858,128 @@ protected:
     DenseDoubleVectorPtr ddv = features->toDenseDoubleVector();
     for (size_t i = 0; i < ddv->getNumValues(); ++i)
       *o << ddv->getValue(i) << ",";
+  }
+};
+
+class ExportResidueFeaturesWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, 0, T("Loading proteins"));
+    if (!proteins)
+    {
+      context.errorCallback(T("ExportResidueFeaturesWorkUnit::run"), T("No proteins"));
+      return false;
+    }
+
+    if (outputPrefix == String::empty)
+      outputPrefix = proteinClass->getVariableName(target);
+
+    LargeProteinParametersPtr parameter = LargeProteinParameters::createTestObject(40);
+    LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(parameter);
+
+    OutputStream* o = context.getFile(outputPrefix + T(".arff")).createOutputStream();
+    writeHeader(context, predictor, o);
+    writeData(context, proteins, predictor, o);
+    delete o;
+
+    context.informationCallback(T("Output file name: ") + outputPrefix + T(".arff"));
+
+    return true;
+  }
+
+protected:
+  friend class ExportResidueFeaturesWorkUnitClass;
+
+  File inputDirectory;
+  File supervisionDirectory;
+  String outputPrefix;
+  ProteinTarget target;
+
+  void writeHeader(ExecutionContext& context, const LargeProteinPredictorParametersPtr& predictor, OutputStream* const o) const
+  {
+    *o << "@RELATION FeaturesOf_" << proteinClass->getVariableName(target) << "\n"; 
+
+    FunctionPtr proteinPerception = predictor->createProteinPerception();
+    proteinPerception->initialize(context, proteinClass);
+    TypePtr perceptionType = proteinPerception->getOutputType();
+
+    FunctionPtr residueFunction = predictor->createResidueVectorPerception();
+    residueFunction->initialize(context, perceptionType);
+    TypePtr residueType = residueFunction->getOutputType();
+    EnumerationPtr enumeration = residueType->getTemplateArgument(0)->getTemplateArgument(0).staticCast<Enumeration>();
+    const size_t n = enumeration->getNumElements();
+    context.informationCallback(T("Num. Attributes: ") + String((int)n));
+    for (size_t i = 0; i < n; ++i)
+      *o << "@ATTRIBUTE " << String((int)i) << "-" << enumeration->getElement(i)->getName() << " NUMERIC\n";
+    *o << "@ATTRIBUTE class {";
+    TypePtr supervisionType = proteinClass->getMemberVariableType(target);
+    if (supervisionType->inheritsFrom(objectVectorClass(doubleVectorClass(enumValueType, probabilityType))))
+    {
+      EnumerationPtr supEnum = supervisionType->getTemplateArgument(0)->getTemplateArgument(0).dynamicCast<Enumeration>();
+      const size_t n = supEnum->getNumElements();
+      for (size_t i = 0; i < n; ++i)
+        *o << (i != 0 ? "," : "") << supEnum->getElementName(i);
+    }
+    else if (supervisionType->inheritsFrom(doubleVectorClass(positiveIntegerEnumerationEnumeration, probabilityType)))
+      *o << "0,1";
+    else
+      jassertfalse;
+    *o << "}\n";
+  }
+
+  void writeData(ExecutionContext& context, const ContainerPtr& proteins, const LargeProteinPredictorParametersPtr& predictor, OutputStream* const o) const
+  {
+    *o << "@DATA\n";
+
+    FunctionPtr proteinPerception = predictor->createProteinPerception();
+    FunctionPtr residueFunction = predictor->createResidueVectorPerception();
+
+    const size_t n = proteins->getNumElements();
+    context.informationCallback(T("Num. Proteins: ") + String((int)n));
+    size_t numExamples = 0;
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable perception = proteinPerception->compute(context, proteins->getElement(i).getObjectAndCast<Pair>()->getFirst());
+      VectorPtr featuresVector = residueFunction->compute(context, perception).getObjectAndCast<Vector>();
+      ContainerPtr supervision = proteins->getElement(i).getObjectAndCast<Pair>()->getSecond().getObjectAndCast<Protein>()->getTargetOrComputeIfMissing(context, target).getObjectAndCast<Container>();
+      jassert(featuresVector && supervision && featuresVector->getNumElements() == supervision->getNumElements());
+      const size_t n = featuresVector->getNumElements();
+      for (size_t j = 0; j < n; ++j)
+      {
+        if (!supervision->getElement(j).exists())
+          continue;
+        writeFeatures(featuresVector->getElement(j).getObjectAndCast<DoubleVector>(), o);
+        writeSupervision(supervision->getElement(j), o);
+        *o << "\n";
+        ++numExamples;
+      }
+    }
+    context.informationCallback(T("Num. Examples: ") + String((int)numExamples));
+  }
+
+  void writeFeatures(const DoubleVectorPtr& features, OutputStream* const o) const
+  {
+    DenseDoubleVectorPtr ddv = features->toDenseDoubleVector();
+    for (size_t i = 0; i < ddv->getNumValues(); ++i)
+      *o << ddv->getValue(i) << ",";
+  }
+
+  void writeSupervision(const Variable& v, OutputStream* const o) const
+  {
+    if (v.inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
+    {
+      DoubleVectorPtr dv = v.getObjectAndCast<DoubleVector>();
+      String className = dv->getElementsEnumeration()->getElementName(dv->getIndexOfMaximumValue());
+      *o << className;
+    }
+    else if (v.inheritsFrom(probabilityType))
+    {
+      *o << (v.getDouble() > 0.5 ? "1" : "0");
+    }
+    else
+      jassertfalse;
   }
 };
 
