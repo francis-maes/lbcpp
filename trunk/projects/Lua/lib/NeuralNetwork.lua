@@ -10,6 +10,13 @@ random = Random.new(2)
 -- BEGIN Perceptron
 Perceptron = {numIterations = 10, learningRate = 0.1}
 
+function Perceptron:new (o)
+  o = o or {}
+  setmetatable(o, self)
+  self.__index = self
+  return o
+end
+
 function Perceptron:predict(input)
   return self:dot(input) < 0 and -1 or 1
 end
@@ -35,6 +42,10 @@ function Perceptron:learn(examples, testingExamples, evaluator)
   self.weights = {}
   for i = 1, #examples[1].input do self.weights[i] = 0 end
 
+  local bestLoss = math.huge
+  local bestIteration = 0
+  local bestWeights = {}
+  local bestBias = {}
   for i = 1, self.numIterations do
     context:enter("Iteration " .. i)
     local hingeLoss = 0
@@ -45,6 +56,14 @@ function Perceptron:learn(examples, testingExamples, evaluator)
         hingeLoss = hingeLoss + math.abs(prediction - examples[j].output)
       end
     end
+
+    if hingeLoss < bestLoss then
+      bestLoss = hingeLoss
+      bestIteration = i
+      bestWeights = self.weights
+      bestBias = self.bias
+    end
+
     context:result("Iteration", i)
     context:result("HingeLoss", hingeLoss)
     if evaluator then
@@ -55,8 +74,19 @@ function Perceptron:learn(examples, testingExamples, evaluator)
     end
     print("Weights: ", unpack(self.weights))
     print("Bias: ", self.bias)
+
     context:leave()
+
+    if self.numIterationsWithoutImprovement and i - bestIteration >= self.numIterationsWithoutImprovement then
+      print("No improvement")
+      break
+    end
   end
+
+  print("Restoring best parameters from iteration " .. bestIteration)
+  self.weights = bestWeights
+  self.bias = bestBias
+
   context:leave()
 end
 -- END Perceptron
@@ -236,21 +266,93 @@ end
 --mainFeedForwardNetwork()
 -- END Test Zone
 
+function createIntermediateDatasets(predictor, examples)
+  local negativeExamples = {}
+  local positiveExamples = {}
+  for i = 1, #examples do
+    local examplesList = predictor(examples[i].input) == -1 and negativeExamples or positiveExamples
+    table.insert(examplesList, examples[i])
+  end
+  return negativeExamples, positiveExamples
+end
+
+RecursivePerceptron = {}
+
+function RecursivePerceptron:predict(input)
+  return self:recursivePredict(self.root, input)
+end
+
+function RecursivePerceptron:recursivePredict(parent, input)
+  local res = parent:predict(input)
+  local nextPerceptron = res == -1 and parent.negativePerceptron or parent.positivePerceptron
+  return nextPerceptron and self:recursivePredict(nextPerceptron, input) or res
+end
+
+function RecursivePerceptron:train(trainingExamples, testingExamples, evaluator)
+  context:enter("Training RecursivePerceptron")
+  self.root = self:recursiveTrain(trainingExamples, testingExamples, evaluator, self.maxDeep)
+  context:leave()
+end
+
+function RecursivePerceptron:recursiveTrain(trainingExamples, testingExamples, evaluator, maxDeep)
+  print("Num. training examples", #trainingExamples)
+  print("Num. testing examples", #testingExamples)
+
+  local parent = Perceptron:new()
+  parent.numIterations = 1000
+  parent.numIterationsWithoutImprovement = 30
+  parent.learningRate = 0.01
+  parent:learn(trainingExamples, testingExamples, evaluator)
+
+  print("Global Training", evaluator(|x| parent:predict(x), trainingExamples))
+  print("Global Testing", evaluator(|x| parent:predict(x), testingExamples))
+
+  if maxDeep <= 1 then
+    return parent
+  end
+
+  local negTrainExamples, posTrainExamples = createIntermediateDatasets(|x| parent:predict(x), trainingExamples)
+  local negTestExamples, posTestExamples = createIntermediateDatasets(|x| parent:predict(x), testingExamples)
+
+  if #negTrainExamples > 0 and #posTrainExamples > 0 then
+    print("Negative Pre-Training", accuracy(|x| parent:predict(x), negTrainExamples))
+    print("Negative Pre-Testing", accuracy(|x| parent:predict(x), negTestExamples))
+
+    context:enter("Negative examples")
+    parent.negativePerceptron = self:recursiveTrain(negTrainExamples, negTestExamples, evaluator, maxDeep - 1)
+    context:leave()
+
+    print("Negative Post-Training", accuracy(|x| parent.negativePerceptron:predict(x), negTrainExamples))
+    print("Negative Post-Testing", accuracy(|x| parent.negativePerceptron:predict(x), negTestExamples))
+
+    print("Positive Pre-Training", accuracy(|x| parent:predict(x), posTrainExamples))
+    print("Positive Pre-Testing", accuracy(|x| parent:predict(x), posTestExamples))
+
+    context:enter("Positive examples")
+    parent.positivePerceptron = self:recursiveTrain(posTrainExamples, posTestExamples, evaluator, maxDeep - 1)
+    context:leave()
+
+    print("Positive Post-Training", accuracy(|x| parent.positivePerceptron:predict(x), posTrainExamples))
+    print("Positive Post-Testing", accuracy(|x| parent.positivePerceptron:predict(x), posTestExamples))
+  end
+
+  return parent
+end
+
 require 'Data'
 require 'Parser'
 require 'Dictionary'
 
 labels = Dictionary.new()
-local trainingExamples = convertToBinaryClassificationExamples(Data.load(Parser.libSVMClassification, 300, "/Users/jbecker/Documents/Workspace/LBC++/projects/Examples/Data/BinaryClassification/a1a.train", labels))
+local trainingExamples = convertToBinaryClassificationExamples(Data.load(Parser.libSVMClassification, 0, "/Users/jbecker/Documents/Workspace/LBC++/projects/Examples/Data/BinaryClassification/a1a.train", labels))
 local testingExamples = convertToBinaryClassificationExamples(Data.load(Parser.libSVMClassification, 300, "/Users/jbecker/Documents/Workspace/LBC++/projects/Examples/Data/BinaryClassification/a1a.test", labels))
 
-print("#Training Examples : " .. #trainingExamples)
+--print("#Training Examples : " .. #trainingExamples)
 --print("#Testing Examples : " .. #testingExamples)
 
-local p = Perceptron
-p.numIterations = 10
-p.learningRate = 0.01
-p:learn(trainingExamples, testingExamples, accuracy)
+local rp = RecursivePerceptron
+rp.maxDeep = 5
+rp:train(trainingExamples, testingExamples, accuracy)
 
-print("Training Evaluation: " .. accuracy(|x| p:predict(x), trainingExamples))
-print("Testing Evaluation: " .. accuracy(|x| p:predict(x), testingExamples))
+print("Train Evaluation: ", accuracy(|x| rp:predict(x), trainingExamples))
+print("Test Evaluation: ", accuracy(|x| rp:predict(x), testingExamples))

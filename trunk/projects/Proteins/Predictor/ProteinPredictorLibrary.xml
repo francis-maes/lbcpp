@@ -245,6 +245,11 @@
     <variable type="Function" name="g"/>
   </class>
 
+  <class name="PreProcessCompositeFunction" base="CompositeFunction">
+    <variable type="Function" name="f"/>
+    <variable type="Function" name="g"/>
+  </class>
+
   <template name="LargeProteinPerception" base="ProteinPrimaryPerception">
     <parameter name="aaFeaturesEnumeration"/>
     <parameter name="pssmFeaturesEnumeration"/>
@@ -339,6 +344,7 @@
     <variable type="Boolean" name="useAddBias"/>
     <variable type="Boolean" name="useFisherFilter"/>
     <variable type="PositiveInteger" name="numFisherFeatures"/>
+    <variable type="Boolean" name="useNormalization"/>
   </class>
 
   <class name="DumbBinaryClassifierFunction" base="Function"/>

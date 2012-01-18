@@ -114,18 +114,36 @@ public:
       // noTarget = whole protein
       if (targets[i] == noTarget && !evaluators[i]->updateScoreObject(context, scoreObject, example, output))
         return false;
-      
-      ContainerPtr supervisionContainer = supervision->getTargetOrComputeIfMissing(context, (int)targets[i]).getObjectAndCast<Container>();
-      ContainerPtr predictedContainer = predicted->getTargetOrComputeIfMissing(context, (int)targets[i]).getObjectAndCast<Container>();
-
-      if (!supervisionContainer || !predictedContainer)
+      else if (targets[i] == cbpTarget)
+      {
+        Variable supervisionValue = supervision->getTargetOrComputeIfMissing(context, (int)targets[i]);
+        Variable predictedValue = predicted->getTargetOrComputeIfMissing(context, (int)targets[i]);
+        
+        if (!supervisionValue.exists() || !predictedValue.exists())
+          continue;
+  
+        if (!evaluators[i]->updateScoreObject(context,
+                                              scores->getScoreObject(i),
+                                              new Pair(pairClass(anyType, anyType), supervisionValue, supervisionValue),
+                                              predictedValue))
+          return false;
+        
         continue;
+      }
+      else
+      {
+        ContainerPtr supervisionContainer = supervision->getTargetOrComputeIfMissing(context, (int)targets[i]).getObjectAndCast<Container>();
+        ContainerPtr predictedContainer = predicted->getTargetOrComputeIfMissing(context, (int)targets[i]).getObjectAndCast<Container>();
 
-      if (!evaluators[i]->updateScoreObject(context,
-                                            scores->getScoreObject(i),
-                                            new Pair(pairClass(anyType, anyType), supervisionContainer, supervisionContainer),
-                                            predictedContainer))
-        return false;
+        if (!supervisionContainer || !predictedContainer)
+          continue;
+
+        if (!evaluators[i]->updateScoreObject(context,
+                                              scores->getScoreObject(i),
+                                              new Pair(pairClass(anyType, anyType), supervisionContainer, supervisionContainer),
+                                              predictedContainer))
+          return false;
+      }
     }
     return true;
   }

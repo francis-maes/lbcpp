@@ -120,7 +120,7 @@ public:
   virtual NumericalLearnableFunctionPtr createLearnableFunction() const
   {
     NumericalLearnableFunctionPtr res = linearLearnableFunction();
-    res->setEvaluator(binaryClassificationEvaluator()); // todo: connect with scoreToOptimize
+    //res->setEvaluator(binaryClassificationEvaluator()); // todo: connect with scoreToOptimize
     return res;
   }
 

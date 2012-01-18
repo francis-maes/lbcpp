@@ -149,9 +149,13 @@ public:
   */
   Variable getCysteinBondingProperty(ExecutionContext& context) const;
 
+  void setCysteinBondingProperty(double cysteinBondingProperty)
+    {this->cysteinBondingProperty = cysteinBondingProperty;}
+  /* 3-states version
   void setCysteinBondingProperty(DoubleVectorPtr cysteinBondingProperty)
     {this->cysteinBondingProperty = cysteinBondingProperty;}
-  
+  */
+
   static ContainerPtr createEmptyCysteinBondingProperty();
 
   /*
@@ -258,7 +262,10 @@ protected:
   std::vector<int> cysteinInvIndices; // residue position => cystein index
 
   // 0D
-  DoubleVectorPtr cysteinBondingProperty;
+  double cysteinBondingProperty;
+  /* 3-states version
+   DoubleVectorPtr cysteinBondingProperty;
+   */
 
   // 1D
   ContainerPtr secondaryStructure;
