@@ -87,19 +87,22 @@ public:
 
   virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<LuapeNodePtr>& res)
   {
-    if (function->getRootNode()->getNumSubNodes() != counter)
+    //if (function->getRootNode()->getNumSubNodes() != counter)
     {
-      counter = function->getRootNode()->getNumSubNodes();
+      //counter = function->getRootNode()->getNumSubNodes();
+
       std::map<LuapeNodePtr, double> importances;
-      getImportances(function->getRootNode(), importances);
       for (size_t i = 0; i < function->getNumInputs(); ++i)
         importances[function->getInput(i)] = function->getInput(i)->getImportance();
+      if (function->getRootNode())
+        LuapeUniverse::getImportances(function->getRootNode(), importances);
+      else
+        function->getUniverse()->getImportances(importances);
    
       Z = 0.0;
       probabilities.resize(importances.size());
       nodes.resize(importances.size());
       size_t index = 0;
-      //context.enterScope(T("Importances"));
       for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it, ++index)
       {
         double p = it->second;
@@ -108,9 +111,9 @@ public:
         Z += p;
         probabilities[index] = p;
         nodes[index] = it->first;
-        //context.informationCallback(it->first->toShortString() + T(" => ") + String(p));
       }
-      //context.leaveScope(Z);
+
+      LuapeUniverse::displayMostImportantNodes(context, importances);
     }
     
     SequentialNodeBuilder::buildNodes(context, function, maxCount, res);
@@ -149,6 +152,7 @@ public:
           }
         }
       }
+      return false;
 
     case 1: // apply
       {
@@ -173,21 +177,6 @@ protected:
 
   double initialImportance;
   size_t counter;
-
-  void getImportances(const LuapeNodePtr& node, std::map<LuapeNodePtr, double>& res) const
-  {
-    if (node && res.find(node) == res.end())
-    {
-      double importance = node->getImportance();
-      jassert(isNumberValid(importance));
-      if (importance > 0)
-        if (!node.isInstanceOf<LuapeFunctionNode>() || node.staticCast<LuapeFunctionNode>()->getFunction()->getClassName() != T("StumpLuapeFunction"))
-          res[node] = importance;
-      size_t n = node->getNumSubNodes();
-      for (size_t i = 0; i < n; ++i)
-        getImportances(node->getSubNode(i), res);
-    }
-  }
 
   double Z;
   std::vector<double> probabilities;

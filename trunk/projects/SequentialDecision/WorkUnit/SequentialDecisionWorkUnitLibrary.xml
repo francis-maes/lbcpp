@@ -168,4 +168,15 @@
     <variable type="Double" name="C"/>
   </class>
 
+  <!-- Luape EDA -->
+  <class name="EvaluateHIVLuapePolicyFunction" base="Function">
+    <variable type="PositiveInteger" name="horizon"/>
+  </class>
+  <class name="LuapeEDASandBox" base="WorkUnit">
+    <variable type="PositiveInteger" name="complexity"/>
+    <variable type="PositiveInteger" name="populationSize"/>
+    <variable type="PositiveInteger" name="numBests"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+
 </library>

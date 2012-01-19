@@ -150,10 +150,12 @@ public:
   virtual size_t getNumRequiredInputs() const;
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
   virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& supervisions) const;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeRegressor> LuapeRegressorPtr;
+extern ClassPtr luapeRegressorClass;
 
 // votes = DenseDoubleVector of size numYields (symmetric weak predictor)
 class LuapeBinaryClassifier : public LuapeInference

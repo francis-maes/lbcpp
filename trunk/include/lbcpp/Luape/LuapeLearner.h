@@ -85,9 +85,6 @@ protected:
   size_t maxIterations;
 
   OutputStream* plotOutputStream;
-  
-  void getImportances(const LuapeNodePtr& node, std::map<LuapeNodePtr, double>& res) const;
-  void displayMostImportantNodes(ExecutionContext& context, const LuapeInferencePtr& function, bool verbose) const;
 };
 
 class NodeBuilderBasedLearner : public LuapeLearner
