@@ -34,6 +34,8 @@ public:
     return true;
   }
 
+  virtual void contributionAdded(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& contribution) {}
+
   virtual bool doLearningIteration(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
     LuapeNodePtr contribution;
@@ -48,7 +50,10 @@ public:
     {
       TimedScope _(context, "add into node", verbose);
       if (contribution)
+      {
         node.staticCast<LuapeSequenceNode>()->pushNode(context, contribution, problem->getSamplesCaches());
+        contributionAdded(context, problem, contribution);
+      }
     }
 
     // evaluate

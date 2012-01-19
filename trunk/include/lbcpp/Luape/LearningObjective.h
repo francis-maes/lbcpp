@@ -58,6 +58,9 @@ public:
   virtual void setWeights(const DenseDoubleVectorPtr& weights)
     {this->weights = weights; invalidate();}
 
+  const DenseDoubleVectorPtr& getWeights() const
+    {return weights;}
+
   virtual void setPredictions(const LuapeSampleVectorPtr& predictions)
     {this->predictions = predictions; invalidate();}
 

@@ -314,9 +314,10 @@ bool LuapeSamplesCache::isCandidateForCaching(const LuapeNodePtr& node) const
     return false;
 }
 
-LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices)
+LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& examples)
 {
   jassert(node);
+  IndexSetPtr indices = examples ? examples : allIndices;
   
   // no indices => return empty array
   if (indices->empty())
@@ -365,9 +366,10 @@ LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, co
   return res;
 }
 
-SparseDoubleVectorPtr LuapeSamplesCache::getSortedDoubleValues(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices)
+SparseDoubleVectorPtr LuapeSamplesCache::getSortedDoubleValues(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& examples)
 {
   ensureActualSizeIsCorrect();
+  IndexSetPtr indices = examples ? examples : allIndices;
 
   if (indices->empty())
     return SparseDoubleVectorPtr();
