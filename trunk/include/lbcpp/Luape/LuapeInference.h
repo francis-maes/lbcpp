@@ -129,6 +129,8 @@ protected:
   LuapeNodePtr node;
   LuapeSamplesCachePtr trainingCache;
   LuapeSamplesCachePtr validationCache;
+
+  CriticalSection typeSearchSpacesLock;
   std::vector<LuapeGraphBuilderTypeSearchSpacePtr> typeSearchSpaces;
 
   Variable computeNode(ExecutionContext& context, const ObjectPtr& inputs) const;

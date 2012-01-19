@@ -501,7 +501,7 @@ protected:
         classifier->addFunction(getVariableLuapeFunction());
         classifier->addFunction(new GetDecisionProblemSuccessorState(4));
         classifier->setSamples(context, examples.staticCast<ObjectVector>()->getObjects());
-
+        classifier->getTrainingCache()->setMaxSizeInMegaBytes(1024);
         LuapeNodeBuilderPtr nodeBuilder = exhaustiveSequentialNodeBuilder(complexity);
         nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
         
@@ -521,7 +521,6 @@ protected:
         if (node)
         {
           context.informationCallback(node->toShortString());
-          context.resultCallback(T("node"), node);
           if (error < bestObjectiveValue)
           {
             bestObjectiveValue = error;
@@ -529,14 +528,17 @@ protected:
           }
           policyReturn = testDiscoveredPolicy(context, initialStates, new ClassifierBasedPolicy(classifier));
         }
-
+        context.resultCallback(T("error"), error);
+        context.resultCallback(T("policyReturn"), policyReturn);
+        if (node)
+          context.resultCallback(T("node"), node);
 
         //classifier->setLearner(weakLearner, true);
 
         //classifier->setLearner(adaBoostLearner(weakLearner, 10, 1), true); // 10 iterations, tree depth = 1
 
         //ScoreObjectPtr score = classifier->train(context, examples, ContainerPtr(), T("Training"), true);
-        context.leaveScope(new Pair(error, policyReturn));
+        context.leaveScope(error);
       }
 
     context.leaveScope(bestObjectiveValue);

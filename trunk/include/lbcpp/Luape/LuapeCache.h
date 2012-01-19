@@ -228,6 +228,11 @@ public:
     {return allIndices->size();}
 
   size_t getCacheSizeInBytes() const;
+  void setMaxSizeInBytes(size_t sizeInBytes)
+    {maxCacheSize = sizeInBytes;}
+  void setMaxSizeInMegaBytes(size_t sizeInMegaBytes)
+    {setMaxSizeInBytes(sizeInMegaBytes * 1024 * 1024);}
+
   void recomputeCacheSize();
 
   void displayCacheInformation(ExecutionContext& context);

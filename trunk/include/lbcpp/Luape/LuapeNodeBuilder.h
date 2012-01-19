@@ -63,6 +63,8 @@ public:
 
   virtual LuapeNodePtr sampleNode(ExecutionContext& context, const LuapeInferencePtr& problem);
 
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
+
 protected:
   friend class SequentialNodeBuilderClass;
 

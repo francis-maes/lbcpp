@@ -68,6 +68,8 @@ void LuapeInference::setRootNode(ExecutionContext& context, const LuapeNodePtr& 
 
 LuapeGraphBuilderTypeSearchSpacePtr LuapeInference::getSearchSpace(ExecutionContext& context, size_t complexity) const
 {
+  ScopedLock _(typeSearchSpacesLock);
+
   LuapeInference* pthis = const_cast<LuapeInference* >(this);
 
   if (complexity >= typeSearchSpaces.size())
@@ -76,7 +78,7 @@ LuapeGraphBuilderTypeSearchSpacePtr LuapeInference::getSearchSpace(ExecutionCont
     return typeSearchSpaces[complexity];
 
   LuapeGraphBuilderTypeSearchSpacePtr res = new LuapeGraphBuilderTypeSearchSpace(refCountedPointerFromThis(this), complexity);
-  res->pruneStates(context, true); // verbose
+  res->pruneStates(context, false); // verbose
   res->assignStateIndices(context);
   pthis->typeSearchSpaces[complexity] = res;
   return res;
