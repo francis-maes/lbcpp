@@ -16,6 +16,31 @@
 namespace lbcpp
 {
 
+class RegretScoreObject : public ScoreObject
+{
+public:
+  RegretScoreObject(double regret = 1.0, double referenceRegret = 1.0)
+    : regret(regret), reward(juce::jlimit(0.0, 1.0, (referenceRegret - regret) / referenceRegret)) {}
+
+  virtual double getScoreToMinimize() const
+    {return regret;}
+
+  double getRegret() const
+    {return regret;}
+
+  double getReward() const
+    {return reward;}
+
+protected:
+  friend class RegretScoreObjectClass;
+
+  double regret;
+  double reward;
+};
+
+typedef ReferenceCountedObjectPtr<RegretScoreObject> RegretScoreObjectPtr;
+extern ClassPtr regretScoreObjectClass;
+
 class FormulaSearchProblem : public Object
 {
 public:

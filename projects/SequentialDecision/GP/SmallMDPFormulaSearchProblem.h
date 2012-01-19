@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SmallMDPFormulaObjective.h     | SmallMDP Formula Objective      |
+| Filename: SmallMDPFormulaSearchProblem.h | SmallMDP Formula Objective      |
 | Author  : Francis Maes                   |                                 |
 | Started : 10/11/2011 11:49               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_GP_SMALL_MDP_FORMULA_OBJECTIVE_H_
-# define LBCPP_GP_SMALL_MDP_FORMULA_OBJECTIVE_H_
+#ifndef LBCPP_GP_SEARCH_PROBLEM_SMALL_MDP_FORMULA_H_
+# define LBCPP_GP_SEARCH_PROBLEM_SMALL_MDP_FORMULA_H_
 
 # include "FormulaSearchProblem.h"
 # include "../SmallMDP/ParameterizedSmallMDPPolicy.h"
@@ -102,4 +102,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_EVALUATE_BANDIT_FORMULA_OBJECTIVE_H_
+#endif // !LBCPP_GP_SEARCH_PROBLEM_SMALL_MDP_FORMULA_H_

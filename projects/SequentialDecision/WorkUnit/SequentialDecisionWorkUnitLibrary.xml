@@ -84,6 +84,7 @@
     <variable type="PositiveInteger" name="numInitialStates"/>
     <variable type="PositiveInteger" name="maxHorizon"/>
     <variable type="PositiveInteger" name="rolloutLength"/>
+    <variable type="Probability" name="randomActionProbability"/>
     <variable type="Double" name="discount"/>
     <variable type="File" name="dataFile"/>
   </class>

@@ -13,7 +13,7 @@
 # include "../Core/NestedMonteCarloOptimizer.h"
 # include "../Core/BeamSearchOptimizer.h"
 
-# include "BanditFormulaObjective.h" // for RegretScoreObject
+# include "BanditFormulaSearchProblem.h" // for RegretScoreObject
 
 
 // hash maps

@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: EvaluateBanditFormulaObjective.h| Evaluate Bandit Formula        |
+| Filename: BanditFormaulSearchProblem.h   | Evaluate Bandit Formula        |
 | Author  : Francis Maes                   |                                 |
 | Started : 22/09/2011 20:13               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EVALUATE_BANDIT_FORMULA_OBJECTIVE_H_
-# define LBCPP_EVALUATE_BANDIT_FORMULA_OBJECTIVE_H_
+#ifndef LBCPP_GP_SEARCH_PROBLEM_BANDIT_FORMULA_H_
+# define LBCPP_GP_SEARCH_PROBLEM_BANDIT_FORMULA_H_
 
 # include "FormulaSearchProblem.h"
 # include "../Bandits/DiscreteBanditPolicy.h"
@@ -15,31 +15,6 @@
 
 namespace lbcpp
 {
-
-class RegretScoreObject : public ScoreObject
-{
-public:
-  RegretScoreObject(double regret = 1.0, double referenceRegret = 1.0)
-    : regret(regret), reward(juce::jlimit(0.0, 1.0, (referenceRegret - regret) / referenceRegret)) {}
-
-  virtual double getScoreToMinimize() const
-    {return regret;}
-
-  double getRegret() const
-    {return regret;}
-
-  double getReward() const
-    {return reward;}
-
-protected:
-  friend class RegretScoreObjectClass;
-
-  double regret;
-  double reward;
-};
-
-typedef ReferenceCountedObjectPtr<RegretScoreObject> RegretScoreObjectPtr;
-extern ClassPtr regretScoreObjectClass;
 
 class BanditFormulaObjective : public SimpleUnaryFunction
 {
@@ -235,4 +210,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_EVALUATE_BANDIT_FORMULA_OBJECTIVE_H_
+#endif // !LBCPP_GP_SEARCH_PROBLEM_BANDIT_FORMULA_H_

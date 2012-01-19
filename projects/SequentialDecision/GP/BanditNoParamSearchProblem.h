@@ -1,15 +1,15 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: BanditNoParamObjective.h       | Search policies without any param|
+| Filename: BanditNoParamSearchProblem.h   | Search policies without any param|
 | Author  : Francis Maes                   |                                 |
 | Started : 17/10/2011 10:15               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_GP_BANDIT_NO_PARAM_OBJECTIVE_H_
-# define LBCPP_GP_BANDIT_NO_PARAM_OBJECTIVE_H_
+#ifndef LBCPP_GP_SEARCH_PROBLEM_BANDIT_NO_PARAM_H_
+# define LBCPP_GP_SEARCH_PROBLEM_BANDIT_NO_PARAM_H_
 
-# include "BanditFormulaObjective.h"
+# include "BanditFormulaSearchProblem.h"
 # include "../Bandits/FindBanditsFormula.h"
 
 namespace lbcpp
@@ -155,4 +155,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_GP_BANDIT_NO_PARAM_OBJECTIVE_H_
+#endif // !LBCPP_GP_SEARCH_PROBLEM_BANDIT_NO_PARAM_H_

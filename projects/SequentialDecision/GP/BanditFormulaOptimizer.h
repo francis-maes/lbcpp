@@ -10,8 +10,8 @@
 # define LBCPP_SEQUENTIAL_DECISION_BANDIT_FORMULA_OPTIMIZER_H_
 
 # include <lbcpp/Execution/WorkUnit.h>
-# include "LearningRuleFormulaObjective.h"
-# include "BanditFormulaObjective.h"
+# include "LearningRuleFormulaSearchProblem.h"
+# include "BanditFormulaSearchProblem.h"
 # include <algorithm>
 # include "../WorkUnit/GPSandBox.h"
 # include "../Bandits/FindBanditsFormula.h"
