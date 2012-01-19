@@ -179,8 +179,8 @@ public:
     initialState[4] = 63919;
     initialState[5] = 24;
 
-    for (size_t i = 0; i < initialState.size(); ++i)
-      initialState[i] *= random->sampleDouble(0.8, 1.2);
+    //for (size_t i = 0; i < initialState.size(); ++i)
+    //  initialState[i] *= random->sampleDouble(0.8, 1.2);
 
 #if 0
     // just after infection start

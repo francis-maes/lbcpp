@@ -195,6 +195,26 @@
     <variable type="Function" name="objective"/>
   </class>
 
+  <!-- HIV Policy Search Policy -->
+  <class name="HIVPolicyFormulaObjective" base="Function">
+    <variable type="PositiveInteger" name="horizon"/>
+  </class>
+  
+  <enumeration name="HivStateVariables">
+    <value name="T1"/>
+    <value name="T2"/>
+    <value name="T1star"/>
+    <value name="T2star"/>
+    <value name="V"/>
+    <value name="E"/>
+    <value name="r"/>
+  </enumeration>
+
+  <class name="HIVPolicySearchProblem" base="FormulaSearchProblem" shortName="hivPolicy">
+    <variable type="Function" name="objective"/>
+  </class>
+
+  
   <!-- Learning Rule Formulas -->
   <enumeration name="LearningRuleFormulaVariables" shortName="gp">
     <value name="parameter"/>

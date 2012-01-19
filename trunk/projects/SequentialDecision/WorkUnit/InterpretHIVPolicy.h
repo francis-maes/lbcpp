@@ -14,6 +14,7 @@
 # include <lbcpp/Luape/LuapeLearner.h>
 # include <lbcpp/DecisionProblem/Policy.h>
 # include "../Core/NestedMonteCarloOptimizer.h"
+# include "../GP/HIVPolicySearchProblem.h"
 
 namespace lbcpp
 {
@@ -229,7 +230,7 @@ extern EnumerationPtr hivActionEnumeration;
 class InterpretHIVPolicy : public WorkUnit
 {
 public:
-  InterpretHIVPolicy() : numInitialStates(100), maxHorizon(300), rolloutLength(50), discount(0.98) {}
+  InterpretHIVPolicy() : numInitialStates(100), maxHorizon(300), rolloutLength(50), randomActionProbability(0.0), discount(0.98) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -251,6 +252,21 @@ public:
       examples = createLearningExamples(context, problem, referencePolicy, initialStates, returnStatistics);
     }
 
+    // E / log(T1)
+    GPExpressionPtr formula1 = new BinaryGPExpression(new VariableGPExpression(Variable(5, hivStateVariablesEnumeration)),
+                                                     gpDivision,
+                                                     new UnaryGPExpression(gpLog, new VariableGPExpression(Variable(0, hivStateVariablesEnumeration))));
+
+    testDiscoveredPolicy(context, initialStates, new FormulaBasedHIVPolicy(formula1));
+
+    // sqrt(E) / log(T1)
+    GPExpressionPtr formula2 = new BinaryGPExpression(new UnaryGPExpression(gpSquareRoot, new VariableGPExpression(Variable(5, hivStateVariablesEnumeration))),
+                                                     gpDivision,
+                                                     new UnaryGPExpression(gpLog, new VariableGPExpression(Variable(0, hivStateVariablesEnumeration))));
+    testDiscoveredPolicy(context, initialStates, new FormulaBasedHIVPolicy(formula2));
+    return true;
+
+
     PolicyPtr interpretablePolicy = findInterpretablePolicy(context, initialStates, examples);
 
     testDiscoveredPolicy(context, initialStates, interpretablePolicy);
@@ -263,6 +279,7 @@ protected:
   size_t numInitialStates;
   size_t maxHorizon;
   size_t rolloutLength;
+  double randomActionProbability;
   double discount;
   File dataFile;
 
@@ -327,7 +344,7 @@ protected:
 
   ContainerPtr createLearningExamples(ExecutionContext& context, const DecisionProblemPtr& problem, const PolicyPtr& policy, const ContainerPtr& initialStates, ScalarVariableStatisticsPtr returnStatistics)
   {
-    File outputFile = context.getFile("wsamples" + String((int)maxHorizon) + T("_") + String((int)numInitialStates) + T("_") + String((int)rolloutLength) + T(".txt"));
+    File outputFile = context.getFile("egreedy-samples" + String((int)maxHorizon) + T("_") + String((int)numInitialStates) + T("_") + String((int)rolloutLength) + T(".txt"));
     if (outputFile.existsAsFile())
       outputFile.deleteFile();
     OutputStream* ostr = outputFile.createOutputStream();
@@ -388,7 +405,6 @@ protected:
         *ostr << line;
         ostr->flush();
 
-        
         {
           context.resultCallback(T("a1"), actionVector->getValue(0));
           context.resultCallback(T("a2"), actionVector->getValue(1));
@@ -397,6 +413,13 @@ protected:
         // save to memory
         examples->append(new Pair(examplesClass, state->cloneAndCast<DecisionProblemState>(), regrets));
 
+        // take a random action with randomActionProbability
+        if (context.getRandomGenerator()->sampleBool(randomActionProbability))
+        {
+          ContainerPtr actions = state->getAvailableActions();
+          action = actions->getElement(context.getRandomGenerator()->sampleSize(actions->getNumElements()));
+        }
+     
         // perform transition
         double reward = 0.0;
         state->performTransition(context, action, reward);
@@ -479,8 +502,8 @@ protected:
 
     LuapeClassifierPtr bestClassifier;
     double bestObjectiveValue = DBL_MAX;
-    for (size_t complexity = 3; complexity <= 12; complexity += 3)
-      for (size_t treeDepth = 3; treeDepth <= 20; ++treeDepth)
+    for (size_t complexity = 3; complexity <= 18; complexity += 3)
+      for (size_t treeDepth = 3; treeDepth <= 3; ++treeDepth)
       {
         context.enterScope(T("complexity = ") + String((int)complexity) + T(" treeDepth = ") + String((int)treeDepth));
         context.resultCallback(T("complexity"), complexity);
@@ -501,15 +524,16 @@ protected:
         classifier->addFunction(getVariableLuapeFunction());
         classifier->addFunction(new GetDecisionProblemSuccessorState(4));
         classifier->setSamples(context, examples.staticCast<ObjectVector>()->getObjects());
-        classifier->getTrainingCache()->setMaxSizeInMegaBytes(1024);
+        classifier->getTrainingCache()->setMaxSizeInMegaBytes(512);
         LuapeNodeBuilderPtr nodeBuilder = exhaustiveSequentialNodeBuilder(complexity);
         nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
         
-        LuapeLearnerPtr learner = optimizerBasedSequentialWeakLearner(new NestedMonteCarloOptimizer(2, 1), complexity);
+        LuapeLearnerPtr learner = optimizerBasedSequentialWeakLearner(new NestedMonteCarloOptimizer(3, 1), complexity);
         
         learner->setVerbose(true);
 
-        LearningObjectivePtr objective = new CostSensitiveMultiClassAccuracyObjective();
+        //LearningObjectivePtr objective = new CostSensitiveMultiClassAccuracyObjective();
+        LearningObjectivePtr objective = new InformationGainLearningObjective(true);
         objective->initialize(classifier);
         learner->setObjective(objective);
         learner = treeLearner(objective, learner, 2, treeDepth);

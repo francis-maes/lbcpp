@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LearningRuleFormulaObjective.h | Evaluate Learning Rule Formula  |
+| Filename: LearningRuleFormulaSearchProblem.h | Evaluate Learning Rule Formula|
 | Author  : Francis Maes                   |                                 |
 | Started : 22/09/2011 20:15               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_GP_LEARNING_RULE_FORMULA_OBJECTIVE_H_
-# define LBCPP_GP_LEARNING_RULE_FORMULA_OBJECTIVE_H_
+#ifndef LBCPP_GP_SEARCH_PROBLEM_LEARNING_RULE_FORMULA_H_
+# define LBCPP_GP_SEARCH_PROBLEM_LEARNING_RULE_FORMULA_H_
 
 # include "FormulaSearchProblem.h"
 # include "../Bandits/DiscreteBanditExperiment.h"
@@ -394,4 +394,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_GP_LEARNING_RULE_FORMULA_OBJECTIVE_H_
+#endif // !LBCPP_GP_SEARCH_PROBLEM_LEARNING_RULE_FORMULA_H_
