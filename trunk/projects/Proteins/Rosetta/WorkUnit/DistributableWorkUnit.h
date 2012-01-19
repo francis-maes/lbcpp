@@ -20,7 +20,7 @@ public:
   DistributableExecutionContextCallback(ExecutionContext& context, String projectName)
     : context(context), projectName(projectName) {}
 
-  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
+  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result, const ExecutionTracePtr& trace)
   {
     savedResult = result;
     File f(context.getProjectDirectory().getFullPathName() + T("/") + projectName + T("/")

@@ -68,7 +68,7 @@ public:
   ExecutionContextPtr getExecutionContext() const
     {return runContext;}
 
-  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
+  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result, const ExecutionTracePtr& trace)
   {
     ExecutionTracesNetworkMessagePtr message = new ExecutionTracesNetworkMessage();
     message->addExecutionTrace(context, uniqueIdentifier, trace);

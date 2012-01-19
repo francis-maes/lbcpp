@@ -207,7 +207,7 @@ public:
   size_t getNumWorkUnitInProgress() const
     {return workUnitsToResults.size();}
 
-  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
+  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result, const ExecutionTracePtr& trace)
   {
     ScopedLock _(lock);
     jassert(workUnitsToResults.count(workUnit) == 1);

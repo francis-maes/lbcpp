@@ -19,7 +19,7 @@ class ExecutionContextCallback
 public:
   virtual ~ExecutionContextCallback() {}
 
-  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result) = 0;
+  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result, const ExecutionTracePtr& trace) = 0;
 };
 
 typedef ExecutionContextCallback* ExecutionContextCallbackPtr;

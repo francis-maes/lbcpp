@@ -179,7 +179,7 @@ public:
   LuaExecutionContextCallback(LuaState& state, int functionReference)
     : state((lua_State* )state), functionReference(functionReference) {}
 
-  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
+  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result, const ExecutionTracePtr& trace)
   {
     {
       ScopedLock _(state.lock);

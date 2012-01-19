@@ -162,7 +162,7 @@ public:
     ++numPlaySent;
   }
 
-  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
+  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result, const ExecutionTracePtr& trace)
   {
     ++numPlayed;
     jassert(banditsByWorkUnit.count(workUnit) == 1);
