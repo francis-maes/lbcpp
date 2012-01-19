@@ -56,11 +56,17 @@ SequentialNodeBuilder::SequentialNodeBuilder(size_t numNodes, size_t complexity)
 {
 }
 
+void SequentialNodeBuilder::clone(ExecutionContext& context, const ObjectPtr& target) const
+{
+  StochasticNodeBuilder::clone(context, target);
+}
+
 LuapeNodePtr SequentialNodeBuilder::sampleNode(ExecutionContext& context, const LuapeInferencePtr& problem)
 {
   RandomGeneratorPtr random = context.getRandomGenerator();
   universe = problem->getUniverse();
   typeSearchSpace = problem->getSearchSpace(context, complexity);
+  jassert(typeSearchSpace);
 
   std::vector<LuapeNodePtr> stack;
   LuapeGraphBuilderTypeStatePtr typeState;
@@ -103,6 +109,7 @@ bool SequentialNodeBuilder::isActionAvailable(ObjectPtr action, const std::vecto
 
 LuapeGraphBuilderTypeStatePtr SequentialNodeBuilder::getTypeState(size_t stepNumber, const std::vector<LuapeNodePtr>& stack) const
 {
+  jassert(typeSearchSpace);
   std::vector<TypePtr> typeStack(stack.size());
   for (size_t j = 0; j < typeStack.size(); ++j)
     typeStack[j] = stack[j]->getType();

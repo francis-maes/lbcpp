@@ -33,6 +33,14 @@ public:
     }
   }
 
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    const ReferenceCountedObjectPtr<CompositeNodeBuilder>& target = t.staticCast<CompositeNodeBuilder>();
+    target->builders.resize(builders.size());
+    for (size_t i = 0; i < builders.size(); ++i)
+      target->builders[i] = builders[i]->cloneAndCast<LuapeNodeBuilder>(context);
+  }
+
 protected:
   friend class CompositeNodeBuilderClass;
 
