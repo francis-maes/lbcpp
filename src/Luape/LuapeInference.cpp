@@ -55,12 +55,14 @@ void LuapeInference::setRootNode(ExecutionContext& context, const LuapeNodePtr& 
   {
     if (this->node)
     {
-      trainingCache->uncacheNode(context, this->node);
+      if (trainingCache)
+        trainingCache->uncacheNode(context, this->node);
       if (validationCache)
         validationCache->uncacheNode(context, this->node);
     }
     this->node = node;
-    trainingCache->cacheNode(context, node, VectorPtr(), "Prediction node", false);
+    if (trainingCache)
+      trainingCache->cacheNode(context, node, VectorPtr(), "Prediction node", false);
     if (validationCache)
       validationCache->cacheNode(context, node, VectorPtr(), "Prediction node", false);
   }
@@ -78,7 +80,7 @@ LuapeGraphBuilderTypeSearchSpacePtr LuapeInference::getSearchSpace(ExecutionCont
     return typeSearchSpaces[complexity];
 
   LuapeGraphBuilderTypeSearchSpacePtr res = new LuapeGraphBuilderTypeSearchSpace(refCountedPointerFromThis(this), complexity);
-  res->pruneStates(context, false); // verbose
+  res->pruneStates(context, true); // verbose
   res->assignStateIndices(context);
   pthis->typeSearchSpaces[complexity] = res;
   return res;
@@ -157,6 +159,12 @@ TypePtr LuapeRegressor::initializeFunction(ExecutionContext& context, const std:
 {
   node = new LuapeScalarSumNode();
   return doubleType;
+}
+
+Variable LuapeRegressor::computeFunction(ExecutionContext& context, const Variable* inputs) const
+{
+  Variable res = computeNode(context, inputs[0].getObject());
+  return res.toDouble();
 }
 
 double LuapeRegressor::evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& supervisions) const

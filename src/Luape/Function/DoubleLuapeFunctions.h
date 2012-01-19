@@ -57,6 +57,18 @@ public:
     {return "log(" + inputs[0]->toShortString() + ")";}
 };
 
+
+class SqrtDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
+{
+public:
+  virtual double computeDouble(double value) const
+    {return value < 0.0 ? doubleMissingValue : sqrt(value);}
+
+  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+    {return "sqrt(" + inputs[0]->toShortString() + ")";}
+};
+
+
 class BinaryDoubleLuapeFunction : public HomogeneousBinaryLuapeFunction
 {
 public:

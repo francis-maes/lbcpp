@@ -66,6 +66,7 @@ extern LuapeFunctionPtr divIntegerLuapeFunction();
 
 // Double
 extern LuapeFunctionPtr logDoubleLuapeFunction();
+extern LuapeFunctionPtr sqrtDoubleLuapeFunction();
 
 extern LuapeFunctionPtr addDoubleLuapeFunction();
 extern LuapeFunctionPtr subDoubleLuapeFunction();

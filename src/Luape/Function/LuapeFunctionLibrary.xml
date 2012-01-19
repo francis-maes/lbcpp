@@ -32,6 +32,9 @@
   <class name="LogDoubleLuapeFunction" base="UnaryDoubleLuapeFunction">
     <constructor returnType="LuapeFunction"/>
   </class>
+  <class name="SqrtDoubleLuapeFunction" base="UnaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
 
   <class name="NormalizerLuapeFunction" base="HomogeneousUnaryLuapeFunction">
     <constructor returnType="LuapeFunction"/>

@@ -76,6 +76,59 @@ std::pair<ClassPtr, ClassPtr> LuapeUniverse::makeNodeStatisticsKey(const LuapeNo
     return std::make_pair(node->getClass(), ClassPtr());
 }
 
+
+void LuapeUniverse::getImportances(std::map<LuapeNodePtr, double>& res) const
+{
+  for (ConstantNodesMap::const_iterator it = constantNodes.begin(); it != constantNodes.end(); ++it)
+    getImportances(it->second, res);
+  for (FunctionNodesMap::const_iterator it = functionNodes.begin(); it != functionNodes.end(); ++it)
+    getImportances(it->second, res);
+}
+
+void LuapeUniverse::getImportances(const LuapeNodePtr& node, std::map<LuapeNodePtr, double>& res)
+{
+  if (node && res.find(node) == res.end())
+  {
+    double importance = node->getImportance();
+    jassert(isNumberValid(importance));
+    if (importance > 0)
+      if (!node.isInstanceOf<LuapeFunctionNode>() || node.staticCast<LuapeFunctionNode>()->getFunction()->getClassName() != T("StumpLuapeFunction"))
+        res[node] = importance;
+    size_t n = node->getNumSubNodes();
+    for (size_t i = 0; i < n; ++i)
+      getImportances(node->getSubNode(i), res);
+  }
+}
+
+void LuapeUniverse::displayMostImportantNodes(ExecutionContext& context, const std::map<LuapeNodePtr, double>& importances)
+{
+  // create probabilities and nodes vectors
+  double Z = 0.0;
+  std::vector<double> probabilities(importances.size());
+  std::vector<LuapeNodePtr> nodes(importances.size());
+  size_t index = 0;
+  for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it, ++index)
+  {
+    Z += it->second;
+    probabilities[index] = it->second;
+    nodes[index] = it->first;
+  }
+
+  // display most important nodes
+  std::multimap<double, LuapeNodePtr> nodeImportanceMap;
+  for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it)
+    nodeImportanceMap.insert(std::make_pair(it->second, it->first));
+  size_t i = 0;
+  for (std::multimap<double, LuapeNodePtr>::reverse_iterator it = nodeImportanceMap.rbegin(); it != nodeImportanceMap.rend() && i < 20; ++it, ++i)
+  {
+    if (it->first <= 0.0)
+      break;
+    const LuapeNodePtr& node = it->second;
+    context.informationCallback(T("# ") + String((int)i + 1) + T(": ") + node->toShortString() + T(" [") + String(it->first * 100.0 / Z, 2) + T("%]"));
+  }
+}
+
+
 #if 0
 /*
 ** LuapeNodeKeysMap

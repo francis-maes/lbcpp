@@ -148,7 +148,9 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
       if (i % 10 == 9)
       {
         context.enterScope(T("Most important nodes"));
-        displayMostImportantNodes(context, problem, verbose);
+        std::map<LuapeNodePtr, double> importances;
+        LuapeUniverse::getImportances(problem->getRootNode(), importances);
+        LuapeUniverse::displayMostImportantNodes(context, importances);
         context.leaveScope();
       }
     }
@@ -158,7 +160,9 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
     context.leaveScope();
 
     context.enterScope(T("Most important nodes"));
-    displayMostImportantNodes(context, problem, true);
+    std::map<LuapeNodePtr, double> importances;
+    LuapeUniverse::getImportances(problem->getRootNode(), importances);
+    LuapeUniverse::displayMostImportantNodes(context, importances);
     context.leaveScope();
 
     context.informationCallback(T("Best evaluation: ") + String(bestValidationScore * 100.0, 3) + T("%"));
@@ -179,77 +183,6 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
   //Object::displayObjectAllocationInfo(std::cerr);
   //context.resultCallback("votes", function->getVotes());
   return node;
-}
-
-void IterativeLearner::getImportances(const LuapeNodePtr& node, std::map<LuapeNodePtr, double>& res) const
-{
-  if (node && res.find(node) == res.end())
-  {
-    double importance = node->getImportance();
-    jassert(isNumberValid(importance));
-    if (importance > 0)
-    //if (!node.isInstanceOf<LuapeFunctionNode>() || node.staticCast<LuapeFunctionNode>()->getFunction()->getClassName() != T("StumpLuapeFunction"))
-      res[node] = importance;
-    //node->setImportance(0.0);
-    size_t n = node->getNumSubNodes();
-    for (size_t i = 0; i < n; ++i)
-      getImportances(node->getSubNode(i), res);
-  }
-}
-
-void IterativeLearner::displayMostImportantNodes(ExecutionContext& context, const LuapeInferencePtr& function, bool verbose) const
-{
-  const LuapeNodePtr& rootNode = function->getRootNode();
-
-  // get importance values
-  std::map<LuapeNodePtr, double> importances;
-  getImportances(rootNode, importances);
-
-  // create probabilities and nodes vectors
-  double Z = 0.0;
-  std::vector<double> probabilities(importances.size());
-  std::vector<LuapeNodePtr> nodes(importances.size());
-  size_t index = 0;
-  for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it, ++index)
-  {
-    Z += it->second;
-    probabilities[index] = it->second;
-    nodes[index] = it->first;
-  }
-
-  // display most important nodes
-  if (verbose)
-  {
-    std::multimap<double, LuapeNodePtr> nodeImportanceMap;
-    for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it)
-      nodeImportanceMap.insert(std::make_pair(it->second, it->first));
-    size_t i = 0;
-    for (std::multimap<double, LuapeNodePtr>::reverse_iterator it = nodeImportanceMap.rbegin(); it != nodeImportanceMap.rend() && i < 20; ++it, ++i)
-    {
-      if (it->first <= 0.0)
-        break;
-      const LuapeNodePtr& node = it->second;
-      context.informationCallback(T("# ") + String((int)i + 1) + T(": ") + node->toShortString() + T(" [") + String(it->first * 100.0 / Z, 2) + T("%]"));
-    }
-  }
-
-#if 0
-  // sample new active variables
-  function->clearActiveVariables();
-  while (function->getNumActiveVariables() < 10 && Z > 1e-12)
-  {
-    jassert(isNumberValid(Z));
-    size_t index = context.getRandomGenerator()->sampleWithProbabilities(probabilities, Z);
-    LuapeNodePtr node = nodes[index];
-    if (!node.isInstanceOf<LuapeInputNode>())
-    {
-      context.informationCallback(T("Active variable: ") + node->toShortString());
-      function->addActiveVariable(node);
-    }
-    Z -= probabilities[index];
-    probabilities[index] = 0.0;
-  }
-#endif // 0
 }
 
 /*
