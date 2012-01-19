@@ -81,7 +81,12 @@ void IterativeLearner::setPlotFile(ExecutionContext& context, const File& plotFi
 LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
 {
   if (verbose)
+  {
     context.enterScope(T("Learning"));
+    context.informationCallback(String((int)problem->getTrainingCache()->getNumSamples()) + T(" training examples"));
+    if (problem->getValidationCache())
+      context.informationCallback(String((int)problem->getValidationCache()->getNumSamples()) + T(" validation examples"));
+  }
 
   if (plotOutputStream)
   {
@@ -91,10 +96,6 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
     *plotOutputStream << "# Iterations: " << String((int)maxIterations) << "\n\n";
     plotOutputStream->flush();
   }
-
-  context.informationCallback(String((int)problem->getTrainingCache()->getNumSamples()) + T(" training examples"));
-  if (problem->getValidationCache())
-    context.informationCallback(String((int)problem->getValidationCache()->getNumSamples()) + T(" validation examples"));
 
   if (!initialize(context, node, problem, examples))
     return LuapeNodePtr();

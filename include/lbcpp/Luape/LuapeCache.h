@@ -245,10 +245,10 @@ public:
     {cachingEnabled = true;}
 
   /*
-  ** Compute operation
+  ** Compute operation (use all indices by default)
   */
-  LuapeSampleVectorPtr getSamples(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices);
-  SparseDoubleVectorPtr getSortedDoubleValues(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices);
+  LuapeSampleVectorPtr getSamples(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices = IndexSetPtr());
+  SparseDoubleVectorPtr getSortedDoubleValues(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices = IndexSetPtr());
 
   /*
   ** Misc

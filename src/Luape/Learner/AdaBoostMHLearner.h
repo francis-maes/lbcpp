@@ -178,7 +178,7 @@ public:
 //  virtual bool shouldStop(double weakObjectiveValue) const
 //    {return weakObjectiveValue == 0.0;}
 
-  virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, double& loss) const
+  virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, double& logLoss) const
   {
     ObjectVectorPtr predictions = problem->getTrainingPredictions().staticCast<ObjectVector>();
 
@@ -196,7 +196,7 @@ public:
 
     double positiveWeight =  1.0 / (2 * n);
     double negativeWeight = 1.0 / (2 * n * (numLabels - 1));
-    loss = 0.0;
+    double sumOfWeights = 0.0;
     for (size_t i = 0; i < n; ++i)
     {
       const DenseDoubleVectorPtr& activations = predictions->getAndCast<DenseDoubleVector>(i);
@@ -208,12 +208,51 @@ public:
         double weight = w0 * exp(-supervision * (*activationsPtr++));
         jassert(isNumberValid(weight));
         *weightsPtr++ = weight;
-        loss += weight;
+        sumOfWeights += weight;
       }
     }
-    jassert(isNumberValid(loss));
-    res->multiplyByScalar(1.0 / loss);
+    jassert(isNumberValid(sumOfWeights));
+    res->multiplyByScalar(1.0 / sumOfWeights);
+    logLoss = log10(sumOfWeights);
     return res;
+  }
+
+  virtual void updateSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const
+  {
+    LuapeSampleVectorPtr predictions = problem->getTrainingCache()->getSamples(context, contribution);
+
+    const LuapeClassifierPtr& classifier = problem.staticCast<LuapeClassifier>();
+    EnumerationPtr labels = classifier->getLabels();
+    size_t numLabels = labels->getNumElements();
+    size_t n = predictions->size();
+
+    DenseDoubleVectorPtr signedSupervisions = objective.staticCast<AdaBoostMHLearningObjective>()->getSupervisions();
+    jassert(signedSupervisions->getNumElements() == n * numLabels);
+    double sumOfWeights = 0.0;
+    for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
+    {
+      const DenseDoubleVectorPtr& activations = it.getRawObject().staticCast<DenseDoubleVector>();
+      if (activations)
+      {
+        size_t index = it.getIndex() * numLabels;
+        double* activationsPtr = activations->getValuePointer(0);
+        double* supervisionsPtr = signedSupervisions->getValuePointer(index);
+        double* weightsPtr = weights->getValuePointer(index);
+
+        for (size_t j = 0; j < numLabels; ++j)
+        {
+          double supervision = *supervisionsPtr++;
+          double weight = *weightsPtr * exp(-supervision * (*activationsPtr++));
+          sumOfWeights += weight;
+          *weightsPtr++ = weight;
+        }
+      }
+    }
+    if (sumOfWeights != 0.0)
+    {
+      logLoss += log10(sumOfWeights);
+      weights->multiplyByScalar(1.0 / sumOfWeights);
+    }
   }
 };
 

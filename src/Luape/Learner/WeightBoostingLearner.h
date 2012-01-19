@@ -21,17 +21,29 @@ public:
    : BoostingLearner(objective, weakLearner, maxIterations, treeDepth) {}
   WeightBoostingLearner() {}
 
-  virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, double& loss) const = 0;
+  virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, double& logLoss) const = 0;
+  virtual void updateSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const = 0;
   
+  virtual bool initialize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  {
+    if (!BoostingLearner::initialize(context, node, problem, examples))
+      return false;
+    objective->setWeights(computeSampleWeights(context, problem, logLoss));
+    return true;
+  }
+
+  virtual void contributionAdded(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& contribution)
+    {updateSampleWeights(context, problem, contribution, objective.staticCast<SupervisedLearningObjective>()->getWeights(), logLoss);}
+
   virtual bool doLearningIteration(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
-    double loss;
-    objective->setWeights(computeSampleWeights(context, problem, loss));
-    context.resultCallback(T("loss"), loss);
-    if (loss < 1e-20)
-      return false; // stop learning
+    context.resultCallback(T("logLoss"), logLoss);
+    context.resultCallback(T("loss"), pow(10.0, logLoss));
     return BoostingLearner::doLearningIteration(context, node, problem, examples, trainingScore, validationScore);
   }
+
+protected:
+  double logLoss;
 };
 
 typedef ReferenceCountedObjectPtr<WeightBoostingLearner> WeightBoostingLearnerPtr;

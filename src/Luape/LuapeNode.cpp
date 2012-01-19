@@ -349,7 +349,7 @@ void LuapeSequenceNode::pushNode(ExecutionContext& context, const LuapeNodePtr& 
     //size_t n = cache->getNumSamples();
     VectorPtr outputs = cache->getNodeCache(this);
     jassert(outputs);
-    updateOutputs(outputs, cache->getSamples(context, node, cache->getAllIndices()));
+    updateOutputs(outputs, cache->getSamples(context, node));
   }
 }
 

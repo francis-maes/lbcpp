@@ -51,7 +51,7 @@ public:
     return true;
   }
 
-  virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, double& loss) const
+  virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, double& logLoss) const
   {
     DenseDoubleVectorPtr predictions = problem->getTrainingPredictions().staticCast<DenseDoubleVector>();
     DenseDoubleVectorPtr supervisions = problem->getTrainingSupervisions().staticCast<DenseDoubleVector>();
@@ -66,18 +66,25 @@ public:
     double* supervisionsPtr = supervisions->getValuePointer(0);
     double* predictionsPtr = predictions->getValuePointer(0);
 
-    loss = 0.0;
+    double sumOfWeights = 0.0;
     for (size_t i = 0; i < n; ++i)
     {
       double supervision = *supervisionsPtr++;
       double prediction = *predictionsPtr++;
       double weight = invZ * exp(-(2 * supervision - 1.0) * prediction); // supervision are probabilities, scale to range [-1,1]
       *weightsPtr++ = weight;
-      loss += weight;
+      sumOfWeights += weight;
     }
-    jassert(isNumberValid(loss));
-    res->multiplyByScalar(1.0 / loss);
+    jassert(isNumberValid(sumOfWeights));
+    res->multiplyByScalar(1.0 / sumOfWeights);
+    logLoss = log10(sumOfWeights);
     return res;
+  }
+
+  virtual void updateSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const
+  {
+    // FIXME
+    jassert(false);
   }
 };
 

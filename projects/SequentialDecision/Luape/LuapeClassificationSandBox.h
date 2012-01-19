@@ -380,13 +380,14 @@ public:
     learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
     testConditionLearner(context, learner, "Extra Trees Default");
     */
-
     LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(Kdef, 2);
     nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
 
     conditionLearner = exactWeakLearner(nodeBuilder);
+    conditionLearner->setVerbose(verbose);
     learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 4);
-    testConditionLearner(context, learner, "SevenStumps AdaBoost.MH K=sqrt(n)");
+    learner->setVerbose(verbose);
+    testConditionLearner(context, learner, "15Stumps AdaBoost.MH K=sqrt(n)");
 
     for (size_t complexity = 2; complexity <= 8; complexity += 2)
     {
@@ -397,7 +398,7 @@ public:
       conditionLearner->setVerbose(verbose);
       learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 4);
       learner->setVerbose(verbose);
-      testConditionLearner(context, learner, "SevenStumps AdaBoost.MH K=n - " + str);
+      testConditionLearner(context, learner, "15Stumps AdaBoost.MH K=n - " + str);
     }
 
     for (size_t complexity = 4; complexity <= 8; complexity += 2)
@@ -406,7 +407,7 @@ public:
       size_t K = (complexity == 2 ? Kdef : numVariables);
 
       double bestScore = DBL_MAX;
-      context.enterScope(T("Deep SevenStumps AdaBoost.MH K=n - ") + str);
+      context.enterScope(T("Deep 15Stumps AdaBoost.MH K=n - ") + str);
       for (double logInitialImportance = -1.0; logInitialImportance <= 4.5; logInitialImportance += 0.5)
       {
         double initialImportance = pow(10.0, logInitialImportance);
@@ -623,11 +624,18 @@ protected:
       LuapeClassifierPtr classifier = createClassifier(inputClass);
       if (!classifier->initialize(context, inputClass, labels))
         return ScoreObjectPtr();
+
+      classifier->setSamples(context, trainingData.staticCast<ObjectVector>()->getObjects(), testingData.staticCast<ObjectVector>()->getObjects());
+      LuapeNodePtr rootNode = learner->createInitialNode(context, classifier);
+      classifier->setRootNode(context, rootNode);    
+      learner->learn(context, rootNode, classifier, classifier->getTrainingCache()->getAllIndices());
+      return classifier->evaluatePredictions(context, classifier->getValidationPredictions(), classifier->getValidationSupervisions());
+/*
       LuapeBatchLearnerPtr batchLearner = new LuapeBatchLearner(learner);
       classifier->setBatchLearner(batchLearner);
       classifier->setEvaluator(defaultSupervisedEvaluator());
       ScoreObjectPtr score = classifier->train(context, trainingData, testingData, String::empty, false);
-      return score ? score->getScoreToMinimize() : DBL_MAX;
+      return score ? score->getScoreToMinimize() : DBL_MAX;*/
     }
 
   protected:
