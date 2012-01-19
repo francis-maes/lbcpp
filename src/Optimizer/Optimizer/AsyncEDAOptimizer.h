@@ -22,7 +22,7 @@ public:
     : SamplerBasedOptimizerState(problem, problem->getSampler()) {}
 
   /* ExecutionContextCallback */
-  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
+  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result, const ExecutionTracePtr& trace)
   {
     ScopedLock _(lock);
     jassert(workUnitParameters.count(workUnit) == 1);

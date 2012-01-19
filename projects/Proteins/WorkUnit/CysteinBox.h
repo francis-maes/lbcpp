@@ -63,7 +63,7 @@ public:
   size_t getNumWorkUnitInProcess() const
     {return workUnitMap.size();}
 
-  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
+  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result, const ExecutionTracePtr& trace)
   {
     jassert(workUnitMap.count(workUnit) == 1);
     setResult(workUnitMap[workUnit], result.getDouble());
@@ -319,7 +319,7 @@ public:
   size_t getNumWorkUnitInProcess() const
     {return workUnits.size();}
 
-  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
+  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result, const ExecutionTracePtr& trace)
   {
     results[workUnits[workUnit]] = result.getDouble();
     workUnits.erase(workUnit);

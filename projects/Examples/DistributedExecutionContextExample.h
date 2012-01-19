@@ -35,9 +35,10 @@ public:
   TestExecutionContextCallback(ExecutionContext& context)
     : context(context) {}
 
-  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
+  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result, const ExecutionTracePtr& trace)
   {
     context.informationCallback(T("TestExecutionContextCallback::workUnitFinished"), result.toString());
+    context.informationCallback(T("TestExecutionContextCallback::workUnitFinished"), (trace ? trace->toString() : T("No trace")));
     delete this;
   }
 
@@ -53,16 +54,25 @@ public:
 
   Variable run(ExecutionContext& context)
   {
+    CompositeWorkUnitPtr workUnits = new CompositeWorkUnit(T("A composite work unit (synchronous run)"));
+    for (size_t i = 0; i < 10; ++i)
+      workUnits->addWorkUnit(new DumbWorkUnit());
+    
+    context.informationCallback(T("ClientWorkUnit"), T("Local Synchronous Run"));
+    Variable result = context.run(workUnits);
+    context.informationCallback(result.toString());
+    
+    context.informationCallback(T("ClientWorkUnit::run"), T("Local Asynchronous Run"));
+    for (size_t i = 0; i < 10; ++i)
+      context.pushWorkUnit(new DumbWorkUnit(), new TestExecutionContextCallback(context));
+    context.waitUntilAllWorkUnitsAreDone();
+
     ExecutionContextPtr remoteContext = distributedExecutionContext(context, hostName, hostPort,
                                                                     T("testProject"), T("jbecker@mac"), T("jbecker@nic3"),
                                                                     fixedResourceEstimator(1, 1000, 1), true);
 
     context.informationCallback(T("ClientWorkUnit::run"), T("Use of CompositeWorkUnit"));
-    CompositeWorkUnitPtr workUnits = new CompositeWorkUnit(T("A composite work unit (synchronous run)"));
-    for (size_t i = 0; i < 10; ++i)
-      workUnits->addWorkUnit(new DumbWorkUnit());
-
-    Variable result = remoteContext->run(workUnits);
+    result = remoteContext->run(workUnits);
     context.informationCallback(result.toString());
 
     context.informationCallback(T("ClientWorkUnit::run"), T("Use of an ExecutionContextCallback (asynchronous run)"));

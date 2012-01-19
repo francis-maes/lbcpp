@@ -208,7 +208,7 @@ public:
     return true;
   }
 
-  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result)
+  virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result, const ExecutionTracePtr& trace)
   {
     checkCurrentThreadId();
 

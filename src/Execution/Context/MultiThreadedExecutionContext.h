@@ -124,7 +124,7 @@ public:
       this->callbacks.swap(callbacks);
     }
     for (std::list<CallbackInfo>::iterator it = callbacks.begin(); it != callbacks.end(); ++it)
-      it->callback->workUnitFinished(it->workUnit, it->result);
+      it->callback->workUnitFinished(it->workUnit, it->result, ExecutionTracePtr());
   }
 
   lbcpp_UseDebuggingNewOperator

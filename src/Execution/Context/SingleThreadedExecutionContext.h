@@ -41,7 +41,7 @@ public:
   {
     Variable res = ExecutionContext::run((WorkUnitPtr)workUnit, pushIntoStack);
     if (callback)
-      callback->workUnitFinished(workUnit, res);
+      callback->workUnitFinished(workUnit, res, ExecutionTracePtr());
   }
 
   virtual void waitUntilAllWorkUnitsAreDone(size_t timeOutInMillisecond)

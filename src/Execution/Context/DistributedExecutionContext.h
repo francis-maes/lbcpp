@@ -22,7 +22,8 @@ class WorkUnitPool : public Object
 {
 public:
   virtual bool areAllWorkUnitsDone() const = 0;
-  virtual void resultReceived(size_t index, const Variable& result) = 0;
+  virtual void resultReceived(size_t index, const Variable& result, bool waitTrace) = 0;
+  virtual void traceReceived(size_t index, const ExecutionTracePtr& trace) = 0;
 };
 
 typedef ReferenceCountedObjectPtr<WorkUnitPool> WorkUnitPoolPtr;
@@ -32,8 +33,22 @@ class SingleWorkUnitPool : public WorkUnitPool
 public:
   SingleWorkUnitPool() : done(false) {}
 
-  virtual void resultReceived(size_t index, const Variable& result)
-    {jassert(index == 0); ScopedLock _(resultLock); this->result = result; done = true;}
+  virtual void resultReceived(size_t index, const Variable& result, bool waitTrace)
+  {
+    jassert(index == 0);
+    ScopedLock _(resultLock);
+    this->result = result;
+    if (!waitTrace)
+      done = true;
+  }
+
+  virtual void traceReceived(size_t index, const ExecutionTracePtr& trace)
+  {
+    jassert(index == 0);
+    ScopedLock _(resultLock);
+    this->trace = trace;
+    done = true;
+  }
 
   virtual bool areAllWorkUnitsDone() const
     {return done;}
@@ -46,6 +61,7 @@ protected:
 
   CriticalSection resultLock;
   Variable result;
+  ExecutionTracePtr trace;
 };
 
 typedef ReferenceCountedObjectPtr<SingleWorkUnitPool> SingleWorkUnitPoolPtr;
@@ -54,10 +70,23 @@ class CompositeWorkUnitPool : public WorkUnitPool
 {
 public:
   CompositeWorkUnitPool(const CompositeWorkUnitPtr& workUnit)
-    : numWorkUnitsDone(0), results(variableVector(workUnit->getNumWorkUnits())) {}
+    : numWorkUnitsDone(0), results(variableVector(workUnit->getNumWorkUnits())),
+      traces(std::vector<ExecutionTracePtr>(workUnit->getNumWorkUnits())) {}
 
-  virtual void resultReceived(size_t index, const Variable& result)
-    {ScopedLock _(resultsLock); results->setElement(index, result); ++numWorkUnitsDone;}
+  virtual void resultReceived(size_t index, const Variable& result, bool waitTrace)
+  {
+    ScopedLock _(resultsLock);
+    results->setElement(index, result);
+    if (!waitTrace)
+      ++numWorkUnitsDone;
+  }
+
+  virtual void traceReceived(size_t index, const ExecutionTracePtr& trace)
+  {
+    ScopedLock _(resultsLock);
+    traces[index] = trace;
+    ++numWorkUnitsDone;
+  }
 
   virtual bool areAllWorkUnitsDone() const
     {return numWorkUnitsDone == results->getNumElements();}
@@ -69,6 +98,7 @@ protected:
   volatile size_t numWorkUnitsDone;
   CriticalSection resultsLock;
   VariableVectorPtr results;
+  std::vector<ExecutionTracePtr> traces;
 };
 
 typedef ReferenceCountedObjectPtr<CompositeWorkUnitPool> CompositeWorkUnitPoolPtr;
@@ -83,7 +113,7 @@ public:
     sentWorkUnits[index] = Entry(workUnit, callback);
   }
 
-  virtual void resultReceived(size_t index, const Variable& result)
+  virtual void resultReceived(size_t index, const Variable& result, bool waitTrace)
   {
     Entry entry;
     {
@@ -91,10 +121,37 @@ public:
       ScopedLock _(sentWorkUnitsLock);
       std::map<size_t, Entry>::iterator it = sentWorkUnits.find(index);
       jassert(it != sentWorkUnits.end());
-      entry = it->second;    
+
+      if (!waitTrace)
+      {
+        entry = it->second;
+        sentWorkUnits.erase(it);
+        entry.result = result;
+      }
+      else
+        it->second.result = result;
+    }
+    if (!waitTrace)
+    {
+      // push into finishedWorkUnitsLock
+      ScopedLock _(finishedWorkUnitsLock);
+      finishedWorkUnits.push_back(entry);
+    }
+  }
+
+  virtual void traceReceived(size_t index, const ExecutionTracePtr& trace)
+  {
+    Entry entry;
+    {
+      // pop entry from sentWorkUnits
+      ScopedLock _(sentWorkUnitsLock);
+      std::map<size_t, Entry>::iterator it = sentWorkUnits.find(index);
+      jassert(it != sentWorkUnits.end());
+
+      entry = it->second;
       sentWorkUnits.erase(it);
     }
-    entry.result = result;
+    entry.trace = trace;
     {
       // push into finishedWorkUnitsLock
       ScopedLock _(finishedWorkUnitsLock);
@@ -125,7 +182,7 @@ public:
       finishedWorkUnits.swap(entries);
     }
     for (std::list<Entry>::iterator it = entries.begin(); it != entries.end(); ++it)
-      it->callback->workUnitFinished(it->workUnit, it->result);
+      it->callback->workUnitFinished(it->workUnit, it->result, it->trace);
   }
 
 protected:
@@ -138,6 +195,7 @@ protected:
     WorkUnitPtr workUnit;
     Variable result;
     ExecutionContextCallbackPtr callback;
+    ExecutionTracePtr trace;
   };
 
   CriticalSection sentWorkUnitsLock;
@@ -188,7 +246,11 @@ public:
   virtual ~DistributedExecutionContext()
   {
     while (numWaitingTraces)
+    { // In normal case, this message should not appear. It's an ultimate security before killing the connection.
+      // If you are here, maybe you didn't correctly use the waitUntilAllWorkUnitsAreDone method !
+      std::cout << "~DistributedExecutionContext - numWaitingTrace: " << numWaitingTraces << std::endl;
       juce::Thread::sleep(200);
+    }
     client->stopClient();
   }
 
@@ -259,11 +321,13 @@ public:
     const size_t internalId = workUnitIds[uniqueIdentifier];
     jassert(pools.count(internalId));
     std::pair<WorkUnitPoolPtr, size_t> poolAndId = pools[internalId];
-    poolAndId.first->resultReceived(poolAndId.second, result);
-    workUnitIds.erase(uniqueIdentifier);
-    pools.erase(internalId);
-
-    if (importTrace)
+    poolAndId.first->resultReceived(poolAndId.second, result, importTrace);
+    if (!importTrace)
+    {
+      workUnitIds.erase(uniqueIdentifier);
+      pools.erase(internalId);
+    }
+    else
     {
       client->askTrace(uniqueIdentifier);
       ++numWaitingTraces;
@@ -272,16 +336,13 @@ public:
 
   virtual void traceReceived(const String& uniqueIdentifier, const ExecutionTracePtr& trace)
   {
-    ScopedLock _(lock);
-    String traceName = uniqueIdentifier;
-    if (trace && trace->getRootNode())
-    {
-      ExecutionTraceNodePtr etn = trace->getRootNode()->findFirstNode();
-      if (etn)
-        traceName = etn->toString();
-    }
-    enterScope(T("Trace: ") + traceName);
-    leaveScope(trace);
+    jassert(workUnitIds.count(uniqueIdentifier));
+    const size_t internalId = workUnitIds[uniqueIdentifier];
+    jassert(pools.count(internalId));
+    std::pair<WorkUnitPoolPtr, size_t> poolAndId = pools[internalId];
+    poolAndId.first->traceReceived(poolAndId.second, trace);
+    workUnitIds.erase(uniqueIdentifier);
+    pools.erase(internalId);
     --numWaitingTraces;
   }
 
