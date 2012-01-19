@@ -28,6 +28,8 @@ public:
     double loss;
     objective->setWeights(computeSampleWeights(context, problem, loss));
     context.resultCallback(T("loss"), loss);
+    if (loss < 1e-20)
+      return false; // stop learning
     return BoostingLearner::doLearningIteration(context, node, problem, examples, trainingScore, validationScore);
   }
 };

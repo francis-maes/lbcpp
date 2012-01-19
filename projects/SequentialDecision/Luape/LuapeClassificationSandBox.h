@@ -385,7 +385,7 @@ public:
     nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
 
     conditionLearner = exactWeakLearner(nodeBuilder);
-    learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 3);
+    learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 4);
     testConditionLearner(context, learner, "SevenStumps AdaBoost.MH K=sqrt(n)");
 
     for (size_t complexity = 2; complexity <= 8; complexity += 2)
@@ -395,7 +395,7 @@ public:
       nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
       conditionLearner = exactWeakLearner(nodeBuilder);
       conditionLearner->setVerbose(verbose);
-      learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 3);
+      learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 4);
       learner->setVerbose(verbose);
       testConditionLearner(context, learner, "SevenStumps AdaBoost.MH K=n - " + str);
     }
@@ -418,7 +418,7 @@ public:
         nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
         conditionLearner = exactWeakLearner(nodeBuilder);
         conditionLearner->setVerbose(verbose);
-        learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 3);
+        learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 4);
         learner->setVerbose(verbose);
         double validationScore = testConditionLearner(context, learner, String::empty);
         bestScore = juce::jmin(bestScore, validationScore);

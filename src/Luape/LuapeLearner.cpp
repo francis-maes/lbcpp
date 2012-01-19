@@ -104,7 +104,8 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
   ScalarVariableMean lastIterationsValidationScore;
   double bestValidationScore = DBL_MAX;
   double trainingScore, validationScore;
-  for (size_t i = 0; i < maxIterations; ++i)
+  bool stopped = false;
+  for (size_t i = 0; i < maxIterations && !stopped; ++i)
   {
     //learner->getTrainingCache()->displayCacheInformation(context);
     //Object::displayObjectAllocationInfo(std::cout);
@@ -115,7 +116,9 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
       context.resultCallback(T("iteration"), i+1);
     }
     
-    doLearningIteration(context, node, problem, examples, trainingScore, validationScore);
+    if (!doLearningIteration(context, node, problem, examples, trainingScore, validationScore))
+      stopped = true;
+      
     if (verbose)
     {
       context.resultCallback("trainCacheSizeInMb", problem->getTrainingCache()->getCacheSizeInBytes() / (1024.0 * 1024.0));
