@@ -31,6 +31,7 @@
   <uicomponent name="ConfusionMatrixComponent" type="BinaryClassificationConfusionMatrix"/>
 
   <uicomponent name="DoubleMatrixComponent" type="DoubleMatrix[Double]"/>
+  <uicomponent name="DoubleSymmetricMatrixComponent" type="DoubleSymmetricMatrix[Double]"/>
 
   <class name="PieChartConfiguration" base="Object">
     <variable type="String" name="description"/>

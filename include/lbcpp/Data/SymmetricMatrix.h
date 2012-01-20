@@ -164,6 +164,8 @@ public:
   lbcpp_UseDebuggingNewOperator
 };
 
+typedef ReferenceCountedObjectPtr<DoubleSymmetricMatrix> DoubleSymmetricMatrixPtr;
+
 extern ClassPtr objectSymmetricMatrixClass(TypePtr type);
 
 class ObjectSymmetricMatrix : public BuiltinTypeSymmetricMatrix<ObjectPtr>

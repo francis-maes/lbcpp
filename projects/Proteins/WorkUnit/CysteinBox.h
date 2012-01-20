@@ -1386,4 +1386,155 @@ protected:
   }
 };
 
+class ComputePearsonCorrelationOfDisulfideBondWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, 0, T("Loading proteins"));
+    if (!proteins)
+    {
+      context.errorCallback(T("ComputePearsonCorrelationOfDisulfideBondWorkUnit::run"), T("No proteins"));
+      return false;
+    }
+
+    std::vector<std::vector<double> > variables; // [variable, examples]
+    EnumerationPtr variableEnumeration = insertExamples(context, proteins, variables);
+    //displayStructure(context, variables);
+    normalizeExamples(context, variables);
+    //displayStructure(context, variables);
+    SymmetricMatrixPtr correlation = computePearsonCorrelation(context, variables);
+    rankCorrelations(context, correlation, variableEnumeration);
+
+    return true;
+  }
+
+protected:
+  friend class ComputePearsonCorrelationOfDisulfideBondWorkUnitClass;
+
+  File inputDirectory;
+  File supervisionDirectory;
+
+  void displayStructure(ExecutionContext& context, const std::vector<std::vector<double> >& variables) const
+  {
+    const size_t numVariables = variables.size();
+    const size_t numExamples = numVariables == 0 ? 0 : variables[0].size();
+    for (size_t i = 0; i < numExamples; ++i)
+    {
+      for (size_t j = 0; j < numVariables; ++j)
+        std::cout << variables[j][i] << " ";
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+  }
+
+  EnumerationPtr insertExamples(ExecutionContext& context, const ContainerPtr& proteins, std::vector<std::vector<double> >& result) const
+  {
+    EnumerationPtr featureEnumeration; // res
+    const size_t n = proteins->getNumElements();
+    context.informationCallback(T("Num. Proteins: ") + String((int)n));    
+
+    LargeProteinParametersPtr parameter = LargeProteinParameters::createTestObject(40);
+    LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(parameter);
+
+    FunctionPtr proteinPerception = predictor->createProteinPerception();
+    FunctionPtr disulfideFunction = predictor->createDisulfideSymmetricResiduePairVectorPerception();
+
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable perception = proteinPerception->compute(context, proteins->getElement(i).getObjectAndCast<Pair>()->getFirst());
+      SymmetricMatrixPtr featuresVector = disulfideFunction->compute(context, perception).getObjectAndCast<SymmetricMatrix>();
+      //SymmetricMatrixPtr supervision = proteins->getElement(i).getObjectAndCast<Pair>()->getSecond().getObjectAndCast<Protein>()->getDisulfideBonds(context);
+      //jassert(featuresVector && supervision && featuresVector->getDimension() == supervision->getDimension());
+      const size_t dimension = featuresVector->getDimension();
+      for (size_t j = 0; j < dimension; ++j)
+        for (size_t k = j + 1; k < dimension; ++k)
+        {
+          DenseDoubleVectorPtr ddv = featuresVector->getElement(j, k).getObjectAndCast<DoubleVector>()->toDenseDoubleVector();
+          if (i == 0 && j == 0 && k == 1) // first iteration
+          {
+            result.resize(ddv->getNumElements());
+            context.informationCallback(T("Num. Attributes: ") + String((int)ddv->getNumElements()));
+            featureEnumeration = featuresVector->getElement(j, k).getObjectAndCast<DoubleVector>()->getElementsEnumeration();//disulfideFunction->getOutputType()->getTemplateArgument(0).dynamicCast<Enumeration>();
+          }
+          jassert(ddv->getNumElements() == ddv->getNumValues());
+          for (size_t m = 0; m < ddv->getNumValues(); ++m)
+          {
+            Variable v = ddv->getElement(m);
+            result[m].push_back(v.exists() ? v.getDouble() : 0.f);
+          }
+        }
+    }
+    context.informationCallback(T("Num. Examples: ") + String((int)result[0].size()));
+    return featureEnumeration;
+  }
+
+  void normalizeExamples(ExecutionContext& context, std::vector<std::vector<double> >& result) const
+  {
+    jassert(result.size() > 0);
+    const size_t numExamples = result[0].size();
+
+    std::vector<ScalarVariableMeanAndVariancePtr> meanAndVariances(result.size());      
+    for (size_t i = 0; i < result.size(); ++i)
+    {
+      meanAndVariances[i] = new ScalarVariableMeanAndVariance();
+      for (size_t j = 0; j < numExamples; ++j)
+        meanAndVariances[i]->push(result[i][j]);
+    }
+
+    for (size_t i = 0; i < result.size(); ++i)
+    {
+      const double mean = meanAndVariances[i]->getMean();
+      const double stdDev = meanAndVariances[i]->getStandardDeviation() < 1e-6 ? 1.f : meanAndVariances[i]->getStandardDeviation();
+      for (size_t j = 0; j < numExamples; ++j)
+        result[i][j] = (result[i][j] - mean) / stdDev;
+    }
+  }
+
+  SymmetricMatrixPtr computePearsonCorrelation(ExecutionContext& context, const std::vector<std::vector<double> >& variables) const
+  {
+    jassert(variables.size() > 0);
+    const size_t numExamples = variables[0].size();
+    SymmetricMatrixPtr res = symmetricMatrix(probabilityType, variables.size());
+    for (size_t i = 0; i < variables.size(); ++i)
+      for (size_t j = i; j < variables.size(); ++j)
+      {
+        if (i == j)
+          res->setElement(i, j, probability(1.f));
+        else
+        {
+          jassert(variables[i].size() == variables[j].size());
+          double sum = 0.f;
+          for (size_t k = 0; k < numExamples; ++k)
+            sum += variables[i][k] * variables[j][k];
+          res->setElement(i, j, probability(sum / (double)numExamples));
+        }
+      }
+    return res;
+  }
+
+  void rankCorrelations(ExecutionContext& context, const SymmetricMatrixPtr& correlations, const EnumerationPtr& variableEnumeration) const
+  {
+    typedef std::multimap<double, std::pair<size_t, size_t> > ScoresMap;
+    ScoresMap scores;
+    const size_t dimension = correlations->getDimension();
+    for (size_t i = 0; i < dimension; ++i)
+      for (size_t j = i + 1; j < dimension; ++j)
+        scores.insert(std::make_pair(fabs(correlations->getElement(i, j).getDouble()), std::make_pair(i, j)));
+
+    size_t rankIndex = 0;
+    context.enterScope(T("Ranked variables"));
+    for (ScoresMap::reverse_iterator it = scores.rbegin(); it != scores.rend(); ++it, ++rankIndex)
+    {
+      context.enterScope(variableEnumeration->getElementName(it->second.first) + T(" & ") + variableEnumeration->getElementName(it->second.second));
+      context.resultCallback(T("Rank"), rankIndex);
+      context.resultCallback(T("Pearson"), it->first);
+      context.resultCallback(T("invRank"), dimension - rankIndex);
+      context.resultCallback(T("Variables"), variableEnumeration->getElementName(it->second.first) + T(" & ") + variableEnumeration->getElementName(it->second.second));
+      context.leaveScope();
+    }
+    context.leaveScope();
+  }
+};
+
 };
