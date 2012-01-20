@@ -230,7 +230,7 @@ public:
         i = 0;
 #ifndef JUCE_MAC
         for (ObjectCountsMap::const_reverse_iterator it = sortedDeltaCounts.rbegin(); it != sortedDeltaCounts.rend() && i < 20; ++it, ++i)
-          res += String(it->first / 1024) + T(" Kb ") + it->second + T("\n");
+          res += String(it->first / 1024.0, 2) + T(" Kb ") + it->second + T("\n");
 #endif
       }
       else

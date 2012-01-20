@@ -242,10 +242,10 @@ public:
     if (!splits.size())
       return false;
     
-    if (verbose)
+    //if (verbose)
       splits.resize(1);
 
-    static const size_t numIterations = 1000; // was 1000 + new operators + laminating
+    static const size_t numIterations = 10000;
 
     LuapeLearnerPtr conditionLearner, learner;
     
@@ -296,16 +296,18 @@ public:
     learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
     testConditionLearner(context, learner, "Extra Trees Default");
     */
-    LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(Kdef, 2);
-    nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
 
+   /*
+    LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(100, 20);
+    nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
+    //conditionLearner = laminatingWeakLearner(nodeBuilder, (double)numVariables, 10);
     conditionLearner = exactWeakLearner(nodeBuilder);
     conditionLearner->setVerbose(verbose);
     learner = discreteAdaBoostMHLearner(conditionLearner, numIterations, 2);
     learner->setVerbose(verbose);
     testConditionLearner(context, learner, "ThreeStumps AdaBoost.MH K=sqrt(n)");
-
-    for (size_t complexity = 4; complexity <= 8; complexity += 2)
+*/
+    for (size_t complexity = 8; complexity <= 8; complexity += 2)
     {
       String str = (complexity == 2 ? T("1 variable") : String((int)complexity / 2) + T(" variables"));
       LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(numVariables * 10, complexity);
@@ -316,6 +318,7 @@ public:
       conditionLearner->setVerbose(verbose);
       learner = discreteAdaBoostMHLearner(conditionLearner, numIterations, 2);
       learner->setVerbose(verbose);
+
       testConditionLearner(context, learner, "ThreeStumps AdaBoost.MH Laminating K=n - " + str);
     }
 
@@ -350,6 +353,8 @@ public:
 
   double testConditionLearner(ExecutionContext& context, const LuapeLearnerPtr& learner, const String& name) const
   {
+  //  Object::displayObjectAllocationInfo(std::cout);
+
     if (name.isNotEmpty())
       context.enterScope(name);
 
@@ -454,6 +459,8 @@ protected:
         return ScoreObjectPtr();
 
       classifier->setSamples(context, trainingData.staticCast<ObjectVector>()->getObjects(), testingData.staticCast<ObjectVector>()->getObjects());
+      //classifier->getTrainingCache()->disableCaching();
+      //classifier->getValidationCache()->disableCaching();
       LuapeNodePtr rootNode = learner->createInitialNode(context, classifier);
       classifier->setRootNode(context, rootNode);    
       learner->learn(context, rootNode, classifier, classifier->getTrainingCache()->getAllIndices());

@@ -12,6 +12,10 @@ using namespace lbcpp;
 
 LuapeConstantNodePtr LuapeUniverse::makeConstantNode(const Variable& constantValue)
 {
+  if (constantValue.exists())
+    return new LuapeConstantNode(constantValue);
+
+  // cache only "missing value" nodes for each type
   ConstantNodesMap::const_iterator it = constantNodes.find(constantValue);
   if (it == constantNodes.end())
   {
