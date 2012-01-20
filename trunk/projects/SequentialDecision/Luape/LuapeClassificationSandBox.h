@@ -242,7 +242,7 @@ public:
     if (!splits.size())
       return false;
     
-    //if (verbose)
+    if (verbose)
       splits.resize(1);
 
     static const size_t numIterations = 1000;
