@@ -73,6 +73,9 @@ extern LuapeFunctionPtr subDoubleLuapeFunction();
 extern LuapeFunctionPtr mulDoubleLuapeFunction();
 extern LuapeFunctionPtr divDoubleLuapeFunction();
 
+extern LuapeFunctionPtr minDoubleLuapeFunction();
+extern LuapeFunctionPtr maxDoubleLuapeFunction();
+
 // Enumeration
 extern LuapeFunctionPtr equalsConstantEnumLuapeFunction(EnumerationPtr enumeration = EnumerationPtr(), size_t value = 0);
 

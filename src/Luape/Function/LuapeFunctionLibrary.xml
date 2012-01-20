@@ -53,6 +53,12 @@
   <class name="DivDoubleLuapeFunction" base="BinaryDoubleLuapeFunction">
     <constructor returnType="LuapeFunction"/>
   </class>
+  <class name="MinDoubleLuapeFunction" base="BinaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="MaxDoubleLuapeFunction" base="BinaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
   <class name="GreaterThanDoubleLuapeFunction" base="LuapeFunction">
     <constructor returnType="LuapeFunction"/>
   </class>

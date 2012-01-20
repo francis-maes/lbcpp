@@ -173,6 +173,38 @@ public:
     {return (Flags)allSameArgIrrelevantFlag;}
 };
 
+class MinDoubleLuapeFunction : public BinaryDoubleLuapeFunction
+{
+public:
+  virtual String toShortString() const
+    {return "min";}
+
+  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+    {return "min(" + inputs[0]->toShortString() + ", " + inputs[1]->toShortString() + ")";}
+
+  virtual double computeDouble(double first, double second) const
+    {return juce::jmin(first, second);}
+
+  virtual Flags getFlags() const
+    {return (Flags)(allSameArgIrrelevantFlag | commutativeFlag);}
+};
+
+class MaxDoubleLuapeFunction : public BinaryDoubleLuapeFunction
+{
+public:
+  virtual String toShortString() const
+    {return "max";}
+
+  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+    {return "max(" + inputs[0]->toShortString() + ", " + inputs[1]->toShortString() + ")";}
+
+  virtual double computeDouble(double first, double second) const
+    {return juce::jmax(first, second);}
+
+  virtual Flags getFlags() const
+    {return (Flags)(allSameArgIrrelevantFlag | commutativeFlag);}
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_LUAPE_FUNCTION_DOUBLE_H_
