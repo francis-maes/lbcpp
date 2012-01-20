@@ -109,8 +109,8 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
   for (size_t i = 0; i < maxIterations && !stopped; ++i)
   {
     //learner->getTrainingCache()->displayCacheInformation(context);
-    if (i % 100 == 0)
-      Object::displayObjectAllocationInfo(std::cout);
+    //if (i % 100 == 0)
+    //  Object::displayObjectAllocationInfo(std::cout);
 
     if (verbose)
     {
