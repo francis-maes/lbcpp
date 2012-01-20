@@ -10,6 +10,7 @@
 # define LBCPP_USER_INTERFACE_COMPONENT_DOUBLE_MATRIX_H_
 
 # include <lbcpp/UserInterface/MatrixComponent.h>
+# include <lbcpp/Data/SymmetricMatrix.h>
 
 namespace lbcpp
 {
@@ -36,6 +37,24 @@ protected:
   double minValue, maxValue;
 };
 
+class DoubleSymmetricMatrixComponent : public MatrixComponent
+{
+public:
+   DoubleSymmetricMatrixComponent(const DoubleSymmetricMatrixPtr& matrix, const String& name)
+     : MatrixComponent(matrix) {}
+
+  virtual juce::Colour selectColour(const Variable& element)
+  {
+    double k = fabs(element.getDouble());
+    return juce::Colour((juce::uint8)(k * 255), (juce::uint8)0.f, (juce::uint8)((1.f - k) * 255), (juce::uint8)255);
+  }
+
+  virtual bool doPaintShortString(const Variable& element, int width, int height)
+    {return width > 5;}
+
+protected:
+  double minValue, maxValue;
+};
 
 }; /* namespace lbcpp */
 

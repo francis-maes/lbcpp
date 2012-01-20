@@ -221,6 +221,10 @@
     <variable type="PositiveInteger" name="sgdIterations"/>
     <variable type="Boolean" name="useNormalization"/>
   </class>
+  <class name="ComputePearsonCorrelationOfDisulfideBondWorkUnit" base="WorkUnit">
+    <variable type="File" name="inputDirectory" shortName="in"/>
+    <variable type="File" name="supervisionDirectory" shortName="sup"/>
+  </class>
   <!-- END CysteinBox -->
 
   <!-- BEGIN LargeBox -->
