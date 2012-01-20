@@ -245,7 +245,7 @@ public:
     //if (verbose)
       splits.resize(1);
 
-    static const size_t numIterations = 10000;
+    static const size_t numIterations = 1000;
 
     LuapeLearnerPtr conditionLearner, learner;
     
@@ -307,7 +307,7 @@ public:
     learner->setVerbose(verbose);
     testConditionLearner(context, learner, "ThreeStumps AdaBoost.MH K=sqrt(n)");
 */
-    for (size_t complexity = 8; complexity <= 8; complexity += 2)
+    for (size_t complexity = 4; complexity <= 8; complexity += 2)
     {
       String str = (complexity == 2 ? T("1 variable") : String((int)complexity / 2) + T(" variables"));
       LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(numVariables * 10, complexity);

@@ -113,7 +113,7 @@ public:
         nodes[index] = it->first;
       }
 
-      LuapeUniverse::displayMostImportantNodes(context, importances);
+      //LuapeUniverse::displayMostImportantNodes(context, importances);
     }
     
     SequentialNodeBuilder::buildNodes(context, function, maxCount, res);
