@@ -264,6 +264,10 @@ public:
                                                      gpDivision,
                                                      new UnaryGPExpression(gpLog, new VariableGPExpression(Variable(0, hivStateVariablesEnumeration))));
     testDiscoveredPolicy(context, initialStates, new FormulaBasedHIVPolicy(formula2));
+
+    // E
+    GPExpressionPtr formula3 = new VariableGPExpression(Variable(5, hivStateVariablesEnumeration));
+    testDiscoveredPolicy(context, initialStates, new FormulaBasedHIVPolicy(formula3));
     return true;
 
 

@@ -169,9 +169,11 @@
   </class>
 
   <!-- Luape EDA -->
-  <class name="EvaluateHIVLuapePolicyFunction" base="Function">
+  <class name="EvaluateLuapePolicyFunction" base="Function" abstract="yes">
     <variable type="PositiveInteger" name="horizon"/>
   </class>
+  <class name="EvaluateHIVLuapePolicyFunction" base="EvaluateLuapePolicyFunction"/>
+  
   <class name="LuapeEDASandBox" base="WorkUnit">
     <variable type="PositiveInteger" name="complexity"/>
     <variable type="PositiveInteger" name="populationSize"/>

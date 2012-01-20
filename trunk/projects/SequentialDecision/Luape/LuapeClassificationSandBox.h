@@ -213,93 +213,6 @@ class LuapeClassificationSandBox : public WorkUnit
 public:
   LuapeClassificationSandBox() : maxExamples(0), trainingSize(0), numRuns(0), verbose(false) {}
 
-  typedef LuapeLearnerPtr (LuapeClassificationSandBox::*LearnerConstructor)(LuapeLearnerPtr conditionLearner) const;
-
-  LuapeLearnerPtr singleTreeLearner(LuapeLearnerPtr conditionLearner) const
-    {return treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);}
-
-  LuapeLearnerPtr treeBaggingLearner(LuapeLearnerPtr conditionLearner) const
-    {return baggingLearner(singleTreeLearner(conditionLearner), 100);}
-
-  LuapeLearnerPtr treeBaggingStochasticDeepLearner(LuapeLearnerPtr conditionLearner) const
-  {
-    size_t numVariables = inputClass->getNumMemberVariables();
-    return baggingLearner(addActiveVariablesLearner(singleTreeLearner(conditionLearner), numVariables, false), 100);
-  }
-  
-  LuapeLearnerPtr treeBaggingDeterministicDeepLearner(LuapeLearnerPtr conditionLearner) const
-  {
-    size_t numVariables = inputClass->getNumMemberVariables();
-    return baggingLearner(addActiveVariablesLearner(singleTreeLearner(conditionLearner), numVariables, true), 100);
-  }
-
-  LuapeLearnerPtr treeEnsembleLearner(LuapeLearnerPtr conditionLearner) const
-    {return ensembleLearner(singleTreeLearner(conditionLearner), 100);}
-
-  LuapeLearnerPtr treeEnsembleStochasticDeepLearner(LuapeLearnerPtr conditionLearner) const
-  {
-    size_t numVariables = inputClass->getNumMemberVariables();
-    return ensembleLearner(addActiveVariablesLearner(singleTreeLearner(conditionLearner), numVariables, false), 100);
-  }
-  
-  LuapeLearnerPtr treeEnsembleDeterministicDeepLearner(LuapeLearnerPtr conditionLearner) const
-  {
-    size_t numVariables = inputClass->getNumMemberVariables();
-    return ensembleLearner(addActiveVariablesLearner(singleTreeLearner(conditionLearner), numVariables, true), 100);
-  }
-
-  LuapeLearnerPtr singleStumpAdaBoostMHLearner(LuapeLearnerPtr conditionLearner) const
-    {return discreteAdaBoostMHLearner(conditionLearner, 1000);}
-
-  LuapeLearnerPtr singleStumpAdaBoostMHStochasticDeepLearner(LuapeLearnerPtr conditionLearner) const
-  {
-    size_t numVariables = inputClass->getNumMemberVariables();
-    return discreteAdaBoostMHLearner(addActiveVariablesLearner(conditionLearner, numVariables, false), 1000);
-  }
-
-  LuapeLearnerPtr singleStumpAdaBoostMHDeterministicDeepLearner(LuapeLearnerPtr conditionLearner) const
-  {
-    size_t numVariables = inputClass->getNumMemberVariables();
-    return discreteAdaBoostMHLearner(addActiveVariablesLearner(conditionLearner, numVariables, true), 1000);
-  }
-
-  LuapeLearnerPtr treeDepth2AdaBoostMHLearner(LuapeLearnerPtr conditionLearner) const
-    {return discreteAdaBoostMHLearner(conditionLearner, 1000, 2);}
-  
-  LuapeLearnerPtr treeDepth2AdaBoostMHStochasticDeepLearner(LuapeLearnerPtr conditionLearner) const
-  {
-    size_t numVariables = inputClass->getNumMemberVariables();
-    return discreteAdaBoostMHLearner(addActiveVariablesLearner(conditionLearner, numVariables, false), 1000, 2);
-  }
-
-  LuapeLearnerPtr treeDepth2AdaBoostMHDeterministicDeepLearner(LuapeLearnerPtr conditionLearner) const
-  {
-    size_t numVariables = inputClass->getNumMemberVariables();
-    return discreteAdaBoostMHLearner(addActiveVariablesLearner(conditionLearner, numVariables, true), 1000, 2);
-  }
-
-  LuapeLearnerPtr treeDepth3AdaBoostMHLearner(LuapeLearnerPtr conditionLearner) const
-    {return discreteAdaBoostMHLearner(conditionLearner, 1000, 3);}
-
-  LuapeLearnerPtr treeDepth3AdaBoostMHStochasticDeepLearner(LuapeLearnerPtr conditionLearner) const
-  {
-    size_t numVariables = inputClass->getNumMemberVariables();
-    return discreteAdaBoostMHLearner(addActiveVariablesLearner(conditionLearner, numVariables, false), 1000, 3);
-  }
-
-  LuapeLearnerPtr treeDepth3AdaBoostMHDeterministicDeepLearner(LuapeLearnerPtr conditionLearner) const
-  {
-    size_t numVariables = inputClass->getNumMemberVariables();
-    return discreteAdaBoostMHLearner(addActiveVariablesLearner(conditionLearner, numVariables, true), 1000, 3);
-  }
-
-  LuapeLearnerPtr treeDepth4DiscreteAdaBoostMHLearner(LuapeLearnerPtr conditionLearner) const
-    {return discreteAdaBoostMHLearner(conditionLearner, 1000, 4);}
-
-  LuapeLearnerPtr treeDepth5DiscreteAdaBoostMHLearner(LuapeLearnerPtr conditionLearner) const
-    {return discreteAdaBoostMHLearner(conditionLearner, 1000, 5);}
-
-
   virtual Variable run(ExecutionContext& context)
   {
     // load data
@@ -332,9 +245,12 @@ public:
     if (verbose)
       splits.resize(1);
 
+    static const size_t numIterations = 1000; // was 1000 + new operators + laminating
+
     LuapeLearnerPtr conditionLearner, learner;
     
     size_t Kdef = (size_t)(0.5 + sqrt((double)numVariables));
+
 
 /*    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 2));
     learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
@@ -385,29 +301,30 @@ public:
 
     conditionLearner = exactWeakLearner(nodeBuilder);
     conditionLearner->setVerbose(verbose);
-    learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 4);
+    learner = discreteAdaBoostMHLearner(conditionLearner, numIterations, 2);
     learner->setVerbose(verbose);
-    testConditionLearner(context, learner, "15Stumps AdaBoost.MH K=sqrt(n)");
-
-    for (size_t complexity = 2; complexity <= 8; complexity += 2)
-    {
-      String str = (complexity == 2 ? T("1 variable") : String((int)complexity / 2) + T(" variables"));
-      LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(numVariables, complexity);
-      nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
-      conditionLearner = exactWeakLearner(nodeBuilder);
-      conditionLearner->setVerbose(verbose);
-      learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 4);
-      learner->setVerbose(verbose);
-      testConditionLearner(context, learner, "15Stumps AdaBoost.MH K=n - " + str);
-    }
+    testConditionLearner(context, learner, "ThreeStumps AdaBoost.MH K=sqrt(n)");
 
     for (size_t complexity = 4; complexity <= 8; complexity += 2)
     {
       String str = (complexity == 2 ? T("1 variable") : String((int)complexity / 2) + T(" variables"));
-      size_t K = (complexity == 2 ? Kdef : numVariables);
+      LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(numVariables * 10, complexity);
+      nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
+
+      conditionLearner = laminatingWeakLearner(nodeBuilder, (double)numVariables, 10);
+      //conditionLearner = exactWeakLearner(nodeBuilder);
+      conditionLearner->setVerbose(verbose);
+      learner = discreteAdaBoostMHLearner(conditionLearner, numIterations, 2);
+      learner->setVerbose(verbose);
+      testConditionLearner(context, learner, "ThreeStumps AdaBoost.MH Laminating K=n - " + str);
+    }
+
+    for (size_t complexity = 4; complexity <= 8; complexity += 2)
+    {
+      String str = String((int)complexity / 2) + T(" variables");
 
       double bestScore = DBL_MAX;
-      context.enterScope(T("Deep 15Stumps AdaBoost.MH K=n - ") + str);
+      context.enterScope(T("Deep ThreeStumps AdaBoost.MH Laminating K=n - ") + str);
       for (double logInitialImportance = -1.0; logInitialImportance <= 4.5; logInitialImportance += 0.5)
       {
         double initialImportance = pow(10.0, logInitialImportance);
@@ -415,11 +332,12 @@ public:
         context.enterScope(T("Initial importance = ") + String(initialImportance));
         context.resultCallback(T("logInitialImportance"), logInitialImportance);
         //context.resultCallback(T("initialImportance"), initialImportance);
-        LuapeNodeBuilderPtr nodeBuilder = biasedRandomSequentialNodeBuilder(K, complexity, initialImportance);
+        LuapeNodeBuilderPtr nodeBuilder = biasedRandomSequentialNodeBuilder(numVariables * 10, complexity, initialImportance);
         nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
-        conditionLearner = exactWeakLearner(nodeBuilder);
+        conditionLearner = laminatingWeakLearner(nodeBuilder, (double)numVariables, 10);
+        //conditionLearner = exactWeakLearner(nodeBuilder);
         conditionLearner->setVerbose(verbose);
-        learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 4);
+        learner = discreteAdaBoostMHLearner(conditionLearner, numIterations, 2);
         learner->setVerbose(verbose);
         double validationScore = testConditionLearner(context, learner, String::empty);
         bestScore = juce::jmin(bestScore, validationScore);
@@ -428,96 +346,6 @@ public:
       context.leaveScope(bestScore);
     }
     return true;
-
-    /*
-
-    learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
-    learner->setVerbose(verbose);
-    learner = addActiveVariablesLearner(learner, numVariables, false);
-    learner->setVerbose(verbose);
-    learner = ensembleLearner(learner, 100);
-    learner->setVerbose(verbose);
-    testConditionLearner(context, learner, "Extra Trees - Two variables - stochastic reinjected");
-
-    learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
-    learner = ensembleLearner(addActiveVariablesLearner(learner, numVariables, true), 100);
-    testConditionLearner(context, learner, "Extra Trees - Two variables - deterministic reinjected");
-
-    return true;*/
-
-    testLearners(context, &LuapeClassificationSandBox::singleTreeLearner, T("Single tree"));
-
-    testLearners(context, &LuapeClassificationSandBox::treeEnsembleLearner, T("Tree Ensemble"));
-    testLearners(context, &LuapeClassificationSandBox::treeEnsembleStochasticDeepLearner, T("Tree Ensemble - Stochastic Deep"));
-    testLearners(context, &LuapeClassificationSandBox::treeEnsembleDeterministicDeepLearner, T("Tree Ensemble - Deterministic Deep"));
-
-    testLearners(context, &LuapeClassificationSandBox::treeBaggingLearner, T("Tree Bagging"));
-    testLearners(context, &LuapeClassificationSandBox::treeBaggingStochasticDeepLearner, T("Tree Bagging - Stochastic Deep"));
-    testLearners(context, &LuapeClassificationSandBox::treeBaggingDeterministicDeepLearner, T("Tree Bagging - Deterministic Deep"));
-
-    testLearners(context, &LuapeClassificationSandBox::singleStumpAdaBoostMHLearner, T("Single stump AdaBoost.MH"));
-    testLearners(context, &LuapeClassificationSandBox::singleStumpAdaBoostMHStochasticDeepLearner, T("Single stump AdaBoost.MH - Stochastic Deep"));
-    testLearners(context, &LuapeClassificationSandBox::singleStumpAdaBoostMHDeterministicDeepLearner, T("Single stump AdaBoost.MH - Deterministic Deep"));
-
-    testLearners(context, &LuapeClassificationSandBox::treeDepth2AdaBoostMHLearner, T("Tree depth 2 AdaBoost.MH"));
-    testLearners(context, &LuapeClassificationSandBox::treeDepth2AdaBoostMHStochasticDeepLearner, T("Tree depth 2 AdaBoost.MH - Stochastic Deep"));
-    testLearners(context, &LuapeClassificationSandBox::treeDepth2AdaBoostMHDeterministicDeepLearner, T("Tree depth 2 AdaBoost.MH - Deterministic Deep"));
-
-    testLearners(context, &LuapeClassificationSandBox::treeDepth3AdaBoostMHLearner, T("Tree depth 3 AdaBoost.MH"));
-    testLearners(context, &LuapeClassificationSandBox::treeDepth3AdaBoostMHStochasticDeepLearner, T("Tree depth 3 AdaBoost.MH - Stochastic Deep"));
-    testLearners(context, &LuapeClassificationSandBox::treeDepth3AdaBoostMHDeterministicDeepLearner, T("Tree depth 3 AdaBoost.MH - Deterministic Deep"));
-
-    testLearners(context, &LuapeClassificationSandBox::treeDepth4DiscreteAdaBoostMHLearner, T("Tree depth 4 discrete AdaBoost.MH"));
-    testLearners(context, &LuapeClassificationSandBox::treeDepth5DiscreteAdaBoostMHLearner, T("Tree depth 5 discrete AdaBoost.MH"));
-    return true;
-  }
-
-  void testLearners(ExecutionContext& context, LearnerConstructor learnerConstructor, const String& name) const
-  {
-    static const int minExamplesForLaminating = 10;
-    size_t numVariables = inputClass->getNumMemberVariables();
-
-    context.enterScope(name);
-    
-    ScalarVariableStatistics scoreStats;
-    LuapeLearnerPtr weakLearner;
-
-    size_t K = (size_t)(0.5 + sqrt((double)numVariables));
-
-    weakLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(K, 2));
-    testConditionLearner(context, learnerConstructor, weakLearner, T("Single-variable random + randomsplit"), scoreStats);
-
-    weakLearner = exactWeakLearner(randomSequentialNodeBuilder(K, 2));
-    testConditionLearner(context, learnerConstructor, weakLearner, T("Single-variable random subspace"), scoreStats);
-
-    weakLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 2));
-    testConditionLearner(context, learnerConstructor, weakLearner, T("Single-variable full"), scoreStats);
-
-    weakLearner = exactWeakLearner(inputsNodeBuilder());
-    testConditionLearner(context, learnerConstructor, weakLearner, T("Single-variable full (check)"), scoreStats);
-
-    for (size_t complexity = 4; complexity <= 8; complexity += 2)
-    {
-      String str((int)complexity / 2);
-      str += T("-variables ");
-      weakLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(numVariables, complexity));
-      testConditionLearner(context, learnerConstructor, weakLearner, str + T("random subspace + random threshold"), scoreStats);
-
-      weakLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, complexity));
-      testConditionLearner(context, learnerConstructor, weakLearner, str + T("random subspace"), scoreStats);
-
-      weakLearner = laminatingWeakLearner(randomSequentialNodeBuilder(numVariables, complexity), (double)numVariables, minExamplesForLaminating);
-      testConditionLearner(context, learnerConstructor, weakLearner, str + T("laminating"), scoreStats);
-    }
-    context.leaveScope(new Pair(scoreStats.getMinimum(), scoreStats.getMean()));
-  }
-
-  void testConditionLearner(ExecutionContext& context, LearnerConstructor learnerConstructor, const LuapeLearnerPtr& weakLearner, const String& name, ScalarVariableStatistics& scoreStats) const
-  {
-    weakLearner->setVerbose(verbose);
-    LuapeLearnerPtr learner = (this->*learnerConstructor)(weakLearner);
-    learner->setVerbose(verbose);
-    scoreStats.push(testConditionLearner(context, learner, name));
   }
 
   double testConditionLearner(ExecutionContext& context, const LuapeLearnerPtr& learner, const String& name) const
@@ -656,10 +484,15 @@ protected:
         res->addInput(variable->getType(), variable->getName());
       }
 
+      //res->addFunction(logDoubleLuapeFunction());
+      //res->addFunction(sqrtDoubleLuapeFunction());
+
       res->addFunction(addDoubleLuapeFunction());
       res->addFunction(subDoubleLuapeFunction());
       res->addFunction(mulDoubleLuapeFunction());
       res->addFunction(divDoubleLuapeFunction());
+      //res->addFunction(minDoubleLuapeFunction());
+      //res->addFunction(maxDoubleLuapeFunction());
       return res;
     }
   };

@@ -15,18 +15,94 @@
 namespace lbcpp
 {
 
-class EvaluateHIVLuapePolicyFunction : public SimpleUnaryFunction
+class EvaluateLuapePolicyFunction : public SimpleUnaryFunction
 {
 public:
-  EvaluateHIVLuapePolicyFunction(size_t horizon = 300)
+  EvaluateLuapePolicyFunction(size_t horizon = 300)
     : SimpleUnaryFunction(luapeRegressorClass, doubleType), horizon(horizon) {}
+
+  virtual DecisionProblemPtr getDecisionProblem() const = 0;
+  virtual size_t getNumTrajectories() const
+    {return 1;}
+  virtual DecisionProblemStatePtr sampleInitialState(RandomGeneratorPtr random) const = 0;
+  virtual bool breakTrajectory(size_t timeStep, double reward, double cumulativeReward) const
+    {return false;}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     LuapeRegressorPtr regressor = input.getObjectAndCast<LuapeRegressor>();
-    
     RandomGeneratorPtr random = context.getRandomGenerator();
-  
+
+    size_t numTrajectories = getNumTrajectories();
+    double res = 0.0;
+    double discount = getDecisionProblem()->getDiscount();
+    for (size_t trajectory = 0; trajectory < numTrajectories; ++trajectory)
+    {
+      double cumulativeReward = 0.0;
+      DecisionProblemStatePtr state = sampleInitialState(random);
+      for (size_t t = 0; t < horizon; ++t)
+      {
+        ContainerPtr actions = state->getAvailableActions();
+        size_t n = actions->getNumElements();
+        double bestScore = -DBL_MAX;
+        DecisionProblemStatePtr bestNextState;
+        double bestReward = 0.0;
+        for (size_t j = 0; j < n; ++j)
+        {
+          DecisionProblemStatePtr nextState = state->cloneAndCast<DecisionProblemState>();
+          Variable action = actions->getElement(j);
+          double reward;
+          nextState->performTransition(context, action, reward, NULL);
+          double score = regressor->compute(context, nextState, doubleMissingValue).getDouble();
+          if (score > bestScore)
+            bestScore = score, bestNextState = nextState, bestReward = reward;
+        }
+        jassert(bestNextState);
+        state = bestNextState;
+        cumulativeReward += pow(discount, (double)t) * bestReward; 
+        if (breakTrajectory(t, bestReward, cumulativeReward))
+          break;
+      }
+      res += cumulativeReward;
+    }
+    return res / numTrajectories;
+  }
+
+protected:
+  friend class EvaluateLuapePolicyFunctionClass;
+
+  size_t horizon;
+};
+
+typedef ReferenceCountedObjectPtr<EvaluateLuapePolicyFunction> EvaluateLuapePolicyFunctionPtr;
+
+class EvaluateLPPLuapePolicyFunction : public EvaluateLuapePolicyFunction
+{
+public:
+  EvaluateLPPLuapePolicyFunction(size_t horizon = 50)
+    : EvaluateLuapePolicyFunction(50) {}
+
+  virtual DecisionProblemPtr getDecisionProblem() const
+    {return new LinearPointPhysicProblem();}
+
+  virtual size_t getNumTrajectories() const
+    {return 10;}
+
+  virtual DecisionProblemStatePtr sampleInitialState(RandomGeneratorPtr random) const
+    {return new LinearPointPhysicState(random->sampleDouble(-1.0, 1.0), random->sampleDouble(-2.0, 2.0));}
+};
+
+class EvaluateHIVLuapePolicyFunction : public EvaluateLuapePolicyFunction
+{
+public:
+  EvaluateHIVLuapePolicyFunction(size_t horizon = 300)
+    : EvaluateLuapePolicyFunction(horizon) {}
+
+  virtual DecisionProblemPtr getDecisionProblem() const
+    {return new HIVDecisionProblem();}
+
+  virtual DecisionProblemStatePtr sampleInitialState(RandomGeneratorPtr random) const
+  {
     std::vector<double> initialState(6);
     initialState[0] = 163573;
     initialState[1] = 5;
@@ -36,40 +112,11 @@ public:
     initialState[5] = 24;
     //for (size_t i = 0; i < initialState.size(); ++i)
     //  initialState[i] *= random->sampleDouble(0.8, 1.2);
-
-    HIVDecisionProblemStatePtr state = new HIVDecisionProblemState(initialState);
-    double cumulativeReward = 0.0;
-    static const double discount = 0.98;
-    for (size_t t = 0; t < horizon; ++t)
-    {
-      ContainerPtr actions = state->getAvailableActions();
-      HIVDecisionProblemStatePtr nextStates[4];
-      double rewards[4];
-      double bestScore = -DBL_MAX;
-      HIVDecisionProblemStatePtr nextState;
-      double reward = 0.0;
-      for (size_t j = 0; j < 4; ++j)
-      {
-        nextStates[j] = state->cloneAndCast<HIVDecisionProblemState>();
-        Variable action = actions->getElement(j);
-        nextStates[j]->performTransition(context, action, rewards[j], NULL);
-        double score = regressor->compute(context, nextStates[j], doubleMissingValue).getDouble();
-        if (score > bestScore)
-          bestScore = score, nextState = nextStates[j], reward = rewards[j];
-      }
-      if (!nextState)
-        return 0.0;
-      state = nextState;
-      cumulativeReward += pow(discount, (double)t) * reward; 
-    }
-
-    return cumulativeReward;
+    return new HIVDecisionProblemState(initialState);
   }
 
-protected:
-  friend class EvaluateHIVLuapePolicyFunctionClass;
-
-  size_t horizon;
+  virtual bool breakTrajectory(size_t timeStep, double reward, double cumulativeReward) const
+    {return timeStep >= 50 && reward < 5e6;}
 };
 
 class LuapeEDASandBox : public WorkUnit
@@ -101,24 +148,30 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    FunctionPtr objective = new EvaluateHIVLuapePolicyFunction(300);
+    //EvaluateLuapePolicyFunctionPtr objective = new EvaluateHIVLuapePolicyFunction(300);
+    EvaluateLuapePolicyFunctionPtr objective = new EvaluateLPPLuapePolicyFunction();
 
+    DecisionProblemPtr decisionProblem = objective->getDecisionProblem();
+
+    ClassPtr stateClass = decisionProblem->getStateClass();
 
     LuapeRegressorPtr regressor = new LuapeRegressor();
-    if (!regressor->initialize(context, hivDecisionProblemStateClass, doubleType))
+    if (!regressor->initialize(context, stateClass, doubleType))
       return false;
-    regressor->addInput(hivDecisionProblemStateClass, "s");
+    regressor->addInput(stateClass, "s");
     //regressor->addFunction(andBooleanLuapeFunction());
     //regressor->addFunction(equalBooleanLuapeFunction());
+    regressor->addFunction(logDoubleLuapeFunction());
+    regressor->addFunction(sqrtDoubleLuapeFunction());
     regressor->addFunction(addDoubleLuapeFunction());
     regressor->addFunction(subDoubleLuapeFunction());
     regressor->addFunction(mulDoubleLuapeFunction());
     regressor->addFunction(divDoubleLuapeFunction());
-    regressor->addFunction(logDoubleLuapeFunction());
-    regressor->addFunction(sqrtDoubleLuapeFunction());
+    regressor->addFunction(minDoubleLuapeFunction());
+    regressor->addFunction(maxDoubleLuapeFunction());
     //regressor->addFunction(greaterThanDoubleLuapeFunction());
     regressor->addFunction(getVariableLuapeFunction());
-    regressor->addFunction(new GetDecisionProblemSuccessorState(4));
+    regressor->addFunction(new GetDecisionProblemSuccessorState(decisionProblem->getFixedNumberOfActions()));
 
     std::vector< std::pair<LuapeNodePtr, double> > population;
     std::set<LuapeNodePtr> processedNodes;
@@ -166,8 +219,19 @@ public:
       std::sort(population.begin(), population.end(), PopulationComparator());
       if (population.size() > populationSize)
         population.erase(population.begin() + populationSize, population.end());
+      
+      double currentScore = doubleMissingValue;
+      size_t currentIndex = 0;
       for (size_t j = 0; j < population.size(); ++j)
-        population[j].first->addImportance(1.0 / (j + 1.0));
+      {
+        if (population[j].second != currentScore)
+        {
+          currentScore = population[j].second;
+          currentIndex = j;
+        }
+        population[j].first->addImportance(1.0 / (currentIndex + 1.0));
+      }
+
       context.leaveScope(population.front().second);
 
       context.resultCallback(T("bestScore"), population.front().second);
