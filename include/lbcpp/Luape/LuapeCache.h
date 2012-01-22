@@ -96,6 +96,11 @@ public:
       size_t index = (owner->implementation == ownedVectorImpl ? position : *it);
       if (owner->elementsType == booleanType)
         return owner->vector.staticCast<BooleanVector>()->getData()[index];
+      else if (owner->elementsType == probabilityType)
+      {
+        double value = owner->vector.staticCast<DenseDoubleVector>()->getValue(index);
+        return value == doubleMissingValue ? 2 : (value > 0.5 ? 1 : 0);
+      }
       else
       {
         jassert(owner->elementsType == doubleType);

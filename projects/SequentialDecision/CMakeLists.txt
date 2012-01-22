@@ -123,6 +123,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_GO_PERCEPTION_SOURCES
 )
 
 SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
+  Luape/LuapeSoftStump.h
   Luape/LuapeSandBox.h
   Luape/LuapeClassificationSandBox.h
   Luape/LuapeSandBoxLibrary.xml

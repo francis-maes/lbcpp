@@ -13,7 +13,6 @@
 
 namespace lbcpp
 {
-
 class AdaBoostMHLearningObjective : public ClassificationLearningObjective
 {
 public:
@@ -55,16 +54,31 @@ public:
       for (size_t j = 0; j < 2; ++j)
         mu[i][j]->multiplyByScalar(0.0);
 
+    bool probabilityPredictions = (predictions->getElementsType() == probabilityType);
     for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
     {
       size_t example = it.getIndex();
-      unsigned char prediction = it.getRawBoolean();
       double* weightsPtr = weights->getValuePointer(numLabels * example);
       double* supervisionsPtr = supervisions->getValuePointer(numLabels * example);
-      for (size_t j = 0; j < numLabels; ++j)
+      unsigned char prediction = it.getRawBoolean();
+
+      if (probabilityPredictions && prediction != 2) // e.g. soft-stumps
       {
-        double supervision = *supervisionsPtr++;
-        mu[prediction][supervision > 0 ? 1 : 0]->incrementValue(j, *weightsPtr++);
+        double pTrue = it.getRawDouble();
+        jassert(pTrue >= 0.0 && pTrue <= 1.0);
+
+        for (size_t j = 0; j < numLabels; ++j)
+        {
+          int sup = *supervisionsPtr++ > 0 ? 1 : 0;
+          double weight = *weightsPtr++;
+          mu[pTrue > 0.5 ? 1 : 0][sup]->incrementValue(j, 2.0 * weight * fabs(pTrue - 0.5));
+          //mu[1][sup]->incrementValue(j, weight * pTrue);
+        }
+      }
+      else
+      {
+        for (size_t j = 0; j < numLabels; ++j)
+          mu[prediction][*supervisionsPtr++ > 0 ? 1 : 0]->incrementValue(j, *weightsPtr++);
       }
     }
   }
@@ -118,27 +132,6 @@ public:
     return Variable(res, denseDoubleVectorClass(labels, probabilityType));
   }
   
-  virtual double computeObjective()
-  {
-    ensureIsUpToDate();
-    size_t n = labels->getNumElements();
-    double edge = 0.0;
-
-    const double* muNegNegPtr = mu[0][0]->getValuePointer(0);
-    const double* muPosNegPtr = mu[1][0]->getValuePointer(0);
-    const double* muNegPosPtr = mu[0][1]->getValuePointer(0);
-    const double* muPosPosPtr = mu[1][1]->getValuePointer(0);
-    
-    for (size_t j = 0; j < n; ++j)
-    {
-      double muPositive = (*muNegNegPtr++) + (*muPosPosPtr++);
-      double muNegative = (*muPosNegPtr++) + (*muNegPosPtr++);
-      double vote = (muPositive > muNegative + 1e-9 ? 1.0 : -1.0);
-      edge += vote * (muPositive - muNegative);
-    }
-    return edge;
-  }
-
   const DenseDoubleVectorPtr getMu(unsigned char prediction, bool supervision) const
     {return mu[prediction][supervision ? 1 : 0];}
 
@@ -168,12 +161,22 @@ typedef ReferenceCountedObjectPtr<AdaBoostMHLearningObjective> AdaBoostMHLearnin
 class AdaBoostMHLearner : public WeightBoostingLearner
 {
 public:
-  AdaBoostMHLearner(LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
-    : WeightBoostingLearner(new AdaBoostMHLearningObjective(), weakLearner, maxIterations, treeDepth) {}
+  AdaBoostMHLearner(AdaBoostMHLearningObjectivePtr objective, LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
+    : WeightBoostingLearner(objective, weakLearner, maxIterations, treeDepth) {}
   AdaBoostMHLearner() {}
 
   virtual LuapeNodePtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
     {return new LuapeVectorSumNode(problem.staticCast<LuapeClassifier>()->getLabels(), true);}
+
+  virtual Variable negateVote(const Variable& vote) const
+  {
+    DenseDoubleVectorPtr res = vote.getObject()->cloneAndCast<DenseDoubleVector>();
+    res->multiplyByScalar(-1.0);
+    return res;
+  }
+  
+  virtual LuapeFunctionPtr makeVoteFunction(ExecutionContext& context, const LuapeInferencePtr& problem, const Variable& vote) const
+    {return vectorVoteLuapeFunction(vote.getObjectAndCast<DenseDoubleVector>());}
 
 //  virtual bool shouldStop(double weakObjectiveValue) const
 //    {return weakObjectiveValue == 0.0;}
@@ -256,14 +259,42 @@ public:
   }
 };
 
+/*
+** Discrete AdaBoost.MH
+*/
+class DiscreteAdaBoostMHLearningObjective : public AdaBoostMHLearningObjective
+{
+public:
+  virtual double computeObjective()
+  {
+    ensureIsUpToDate();
+    size_t n = labels->getNumElements();
+    double edge = 0.0;
+
+    const double* muNegNegPtr = mu[0][0]->getValuePointer(0);
+    const double* muPosNegPtr = mu[1][0]->getValuePointer(0);
+    const double* muNegPosPtr = mu[0][1]->getValuePointer(0);
+    const double* muPosPosPtr = mu[1][1]->getValuePointer(0);
+    
+    for (size_t j = 0; j < n; ++j)
+    {
+      double muPositive = (*muNegNegPtr++) + (*muPosPosPtr++);
+      double muNegative = (*muPosNegPtr++) + (*muNegPosPtr++);
+      double vote = (muPositive > muNegative + 1e-9 ? 1.0 : -1.0);
+      edge += vote * (muPositive - muNegative);
+    }
+    return edge;
+  }
+};
+
 class DiscreteAdaBoostMHLearner : public AdaBoostMHLearner
 {
 public:
   DiscreteAdaBoostMHLearner(LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
-    : AdaBoostMHLearner(weakLearner, maxIterations, treeDepth) {}
+    : AdaBoostMHLearner(new DiscreteAdaBoostMHLearningObjective(), weakLearner, maxIterations, treeDepth) {}
   DiscreteAdaBoostMHLearner() {}
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& failureVote, Variable& successVote, Variable& missingVote) const
+  virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions) const
   {
     ClassPtr doubleVectorClass = problem.staticCast<LuapeClassifier>()->getDoubleVectorClass();
 
@@ -299,22 +330,55 @@ public:
       }
     }
 
-    DenseDoubleVectorPtr failureVector, successVector;
-    if (errorWeight && correctWeight)
-    {
-      double alpha = 0.5 * log(correctWeight / errorWeight);
-      jassert(alpha > -1e-9);
-      //context.resultCallback(T("alpha"), alpha);
-      failureVector = votes->cloneAndCast<DenseDoubleVector>();
-      failureVector->multiplyByScalar(-alpha);
-      successVector = votes->cloneAndCast<DenseDoubleVector>();
-      successVector->multiplyByScalar(alpha);
-    }
+    double epsilon = 1.0 / (2 * n * problem->getTrainingCache()->getNumSamples());
+    double alpha = 0.5 * log((correctWeight + epsilon) / (errorWeight + epsilon));
+    jassert(alpha > 0.0);
+    //context.resultCallback(T("alpha"), alpha);
+    DenseDoubleVectorPtr res = votes->cloneAndCast<DenseDoubleVector>();
+    res->multiplyByScalar(alpha);
+    return Variable(res, doubleVectorClass);
+  }
+};
+
+/*
+** Real AdaBoost.MH
+*/
+class RealAdaBoostMHLearningObjective : public AdaBoostMHLearningObjective
+{
+public:
+  virtual double computeObjective()
+  {
+    ensureIsUpToDate();
+    size_t n = labels->getNumElements();
+    double edge = 0.0;
+
+    const double* muNegNegPtr = mu[0][0]->getValuePointer(0);
+    const double* muPosNegPtr = mu[1][0]->getValuePointer(0);
+    const double* muNegPosPtr = mu[0][1]->getValuePointer(0);
+    const double* muPosPosPtr = mu[1][1]->getValuePointer(0);
     
-    failureVote = Variable(failureVector, doubleVectorClass);
-    successVote = Variable(successVector, doubleVectorClass);
-    missingVote = Variable::missingValue(doubleVectorClass);
-    return true;
+    for (size_t j = 0; j < n; ++j)
+    {
+      double muPositive = (*muNegNegPtr++) + (*muPosPosPtr++);
+      double muNegative = (*muPosNegPtr++) + (*muNegPosPtr++);
+      edge += sqrt(muPositive * muNegative);
+      //double vote = (muPositive > muNegative + 1e-9 ? 1.0 : -1.0);
+      //edge += vote * (muPositive - muNegative);
+    }
+    return edge;
+/*
+    double Z = 0.0;
+    const double* weightsPtr = weights->getValuePointer(0);
+    for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
+    {
+      size_t example = it.getIndex();
+      double* weightsPtr = weights->getValuePointer(numLabels * example);
+      double* supervisionsPtr = supervisions->getValuePointer(numLabels * example);
+      double prediction = it.getRawDouble() * 2.0 - 1.0;
+      for (size_t i = 0; i < numLabels; ++i)
+        Z += *weightsPtr++ * exp(- prediction * (*supervisionsPtr++) * votes[i]);
+    }
+    return -Z;*/
   }
 };
 
@@ -322,10 +386,10 @@ class RealAdaBoostMHLearner : public AdaBoostMHLearner
 {
 public:
   RealAdaBoostMHLearner(LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth)
-    : AdaBoostMHLearner(weakLearner, maxIterations, treeDepth) {}
+    : AdaBoostMHLearner(new RealAdaBoostMHLearningObjective(), weakLearner, maxIterations, treeDepth) {}
   RealAdaBoostMHLearner() {}
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& failureVote, Variable& successVote, Variable& missingVote) const
+  virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions) const
   {
     ClassPtr doubleVectorClass = problem.staticCast<LuapeClassifier>()->getDoubleVectorClass();
 
@@ -340,20 +404,16 @@ public:
     
     DenseDoubleVectorPtr votes = new DenseDoubleVector(doubleVectorClass);
     size_t n = votes->getNumValues();
+    double epsilon = 1.0 / (2.0 * n * problem->getTrainingCache()->getNumSamples());
+
     for (size_t j = 0; j < n; ++j)
     {
       double muPositive = (*muNegNegPtr++) + (*muPosPosPtr++);
       double muNegative = (*muPosNegPtr++) + (*muNegPosPtr++);
       if (muPositive && muNegative)
-        votes->setValue(j, 0.5 * log(muPositive / muNegative));
+        votes->setValue(j, 0.5 * log((muPositive + epsilon) / (muNegative + epsilon)));
     }
-
-    DenseDoubleVectorPtr failureVotes = votes->cloneAndCast<DenseDoubleVector>();
-    failureVotes->multiplyByScalar(-1.0);
-    failureVote = Variable(failureVotes, doubleVectorClass);
-    successVote = Variable(votes, doubleVectorClass);
-    missingVote = Variable::missingValue(doubleVectorClass);
-    return true;
+    return Variable(votes, doubleVectorClass);
   }
 };
 

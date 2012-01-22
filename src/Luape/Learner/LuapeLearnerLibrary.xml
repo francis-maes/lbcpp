@@ -40,10 +40,14 @@
   <class name="AdaBoostLearner" base="WeightBoostingLearner">
     <constructor arguments="LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth" returnType="IterativeLearner"/>
   </class>
-  <class name="AdaBoostMHLearningObjective" base="ClassificationLearningObjective">
-    <constructor/>
+  <class name="AdaBoostMHLearningObjective" base="ClassificationLearningObjective" abstract="yes"/>
+  <class name="DiscreteAdaBoostMHLearningObjective" base="AdaBoostMHLearningObjective">
+    <constructor returnType="ClassificationLearningObjective"/>
   </class>
-  
+  <class name="RealAdaBoostMHLearningObjective" base="AdaBoostMHLearningObjective">
+    <constructor returnType="ClassificationLearningObjective"/>
+  </class>
+
   <class name="AdaBoostMHLearner" base="WeightBoostingLearner" abstract="yes"/>
   <class name="DiscreteAdaBoostMHLearner" base="AdaBoostMHLearner">
     <constructor arguments="LuapeLearnerPtr weakLearner, size_t maxIterations, size_t treeDepth" returnType="IterativeLearner"/>

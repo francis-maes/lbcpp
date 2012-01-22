@@ -27,8 +27,8 @@ public:
 
 //  virtual bool shouldStop(double accuracy) const
 //    {return accuracy == 0.0 || accuracy == 1.0;}
- 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& failureVote, Variable& successVote, Variable& missingVote) const
+
+  virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions) const
   {
     BinaryClassificationLearningObjectivePtr objective = this->objective.staticCast<BinaryClassificationLearningObjective>();
     objective->setPredictions(weakPredictions);
@@ -37,20 +37,16 @@ public:
     double errorWeight = objective->getErrorWeight();
     //double missingWeight = objective->getMissingWeight();
 
-    double vote;
-    if (correctWeight == 0.0)
-      vote = -1.0;
-    else if (errorWeight == 0.0)
-      vote = 1.0;
-    else
-      vote = 0.5 * log(correctWeight / errorWeight);
-
-    successVote = vote;
-    failureVote = -vote;
-    missingVote = 0.0;
-    return true;
+    double epsilon = 1.0 / (double)problem->getTrainingCache()->getNumSamples();
+    return 0.5 * log((correctWeight + epsilon) / (errorWeight + epsilon));
   }
 
+  virtual Variable negateVote(const Variable& vote) const
+    {return -vote.getDouble();}
+
+  virtual LuapeFunctionPtr makeVoteFunction(ExecutionContext& context, const LuapeInferencePtr& problem, const Variable& vote) const
+    {return scalarVoteLuapeFunction(vote.getDouble());}
+  
   virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, double& logLoss) const
   {
     DenseDoubleVectorPtr predictions = problem->getTrainingPredictions().staticCast<DenseDoubleVector>();

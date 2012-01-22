@@ -35,4 +35,15 @@
     <variable type="Boolean" name="verbose"/>
   </class>
 
+  <!-- Soft Stumps -->
+
+  <class name="SoftStumpLuapeFunction" base="LuapeFunction">
+    <variable type="Double" name="threshold"/>
+    <variable type="Double" name="gamma"/>
+  </class>
+  <class name="SoftStumpWeakLearner" base="DecoratorLearner">
+    <variable type="Double" name="gamma"/>
+  </class>
+
+
 </library>

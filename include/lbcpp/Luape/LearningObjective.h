@@ -149,7 +149,8 @@ protected:
 
 typedef ReferenceCountedObjectPtr<ClassificationLearningObjective> ClassificationLearningObjectivePtr;
 
-extern ClassificationLearningObjectivePtr adaBoostMHLearningObjective();
+extern ClassificationLearningObjectivePtr discreteAdaBoostMHLearningObjective();
+extern ClassificationLearningObjectivePtr realAdaBoostMHLearningObjective();
 
 class InformationGainLearningObjective : public ClassificationLearningObjective
 {

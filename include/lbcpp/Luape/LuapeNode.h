@@ -159,6 +159,7 @@ class LuapeTestNode : public LuapeNode
 {
 public:
   LuapeTestNode(const LuapeNodePtr& conditionNode, const LuapeNodePtr& failureNode, const LuapeNodePtr& successNode, const LuapeNodePtr& missingNode);
+  LuapeTestNode(const LuapeNodePtr& conditionNode, TypePtr outputType);
   LuapeTestNode() {}
 
   virtual String toShortString() const;

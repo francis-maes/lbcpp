@@ -24,8 +24,6 @@ public:
     : IterativeLearner(objective, maxIterations), weakLearner(weakLearner), treeDepth(treeDepth) {}
   BoostingLearner() : treeDepth(0) {}
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& failureVote, Variable& successVote, Variable& missingVote) const = 0;
-
   virtual bool initialize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     if (!IterativeLearner::initialize(context, node, problem, examples))
@@ -95,11 +93,16 @@ protected:
       return LuapeNodePtr();
     }
     context.resultCallback(T("edge"), weakObjective);
-    LuapeNodePtr res = turnWeakNodeIntoContribution(context, weakNode, problem, examples, weakObjective);
+    weakNode->addImportance(weakObjective);
+    LuapeNodePtr contribution = turnWeakNodeIntoContribution(context, weakNode, problem, examples, weakObjective);
     if (depth == treeDepth || weakNode.isInstanceOf<LuapeConstantNode>())
-      return res;
+      return contribution;
 
-    LuapeTestNodePtr testNode = res.staticCast<LuapeTestNode>();
+
+    LuapeTestNodePtr testNode = contribution.dynamicCast<LuapeTestNode>();
+    if (!testNode)
+      testNode = new LuapeTestNode(contribution.staticCast<LuapeFunctionNode>()->getSubNode(0), contribution->getType()); // extract weak predictor from vote
+
     LuapeSampleVectorPtr testValues = problem->getTrainingCache()->getSamples(context, weakNode, examples);
     IndexSetPtr failureExamples, successExamples, missingExamples;
     testNode->dispatchIndices(testValues, failureExamples, successExamples, missingExamples);
@@ -116,38 +119,7 @@ protected:
     return testNode;
   }
 
-  LuapeNodePtr turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double weakObjective) const
-  {
-    const LuapeUniversePtr& universe = problem->getUniverse();
-
-    jassert(weakNode);
-    LuapeSampleVectorPtr weakPredictions = problem->getTrainingCache()->getSamples(context, weakNode, examples);
-    Variable failureVote, successVote, missingVote;
-    if (!computeVotes(context, problem, weakPredictions, failureVote, successVote, missingVote))
-      return LuapeNodePtr();
-
-    weakNode->addImportance(weakObjective);
-
-    LuapeNodePtr res;
-    jassert(weakNode->getType() == booleanType || weakNode->getType() == probabilityType);
-    if (weakNode.isInstanceOf<LuapeConstantNode>())
-    {
-      LuapeConstantNodePtr constantNode = weakNode.staticCast<LuapeConstantNode>();
-      Variable constantValue = constantNode->getValue();
-      jassert(constantValue.isBoolean());
-      if (constantValue.isMissingValue())
-        res = universe->makeConstantNode(missingVote);
-      else if (constantValue.getBoolean())
-        res = universe->makeConstantNode(successVote);
-      else
-        res = universe->makeConstantNode(failureVote);
-    }
-    else
-      res = new LuapeTestNode(weakNode, universe->makeConstantNode(failureVote), universe->makeConstantNode(successVote), universe->makeConstantNode(missingVote));
-    if (verbose)
-      context.informationCallback(res->toShortString());
-    return res;
-  }
+  virtual LuapeNodePtr turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double weakObjective) const = 0;
 };
 
 }; /* namespace lbcpp */

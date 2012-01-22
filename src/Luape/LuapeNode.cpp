@@ -136,6 +136,11 @@ LuapeTestNode::LuapeTestNode(const LuapeNodePtr& conditionNode, const LuapeNodeP
 {
 }
 
+LuapeTestNode::LuapeTestNode(const LuapeNodePtr& conditionNode, TypePtr outputType)
+  : LuapeNode(outputType), conditionNode(conditionNode)
+{
+}
+
 size_t LuapeTestNode::getNumSubNodes() const
   {return 4;}
   

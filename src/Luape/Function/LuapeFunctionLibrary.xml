@@ -112,4 +112,15 @@
     <variable type="Double" name="threshold"/>
   </class>
   
+  <!-- Luape Functions - Votes -->
+  <class name="VoteLuapeFunction" base="LuapeFunction" abstract="yes"/>
+  <class name="ScalarVoteLuapeFunction" base="VoteLuapeFunction">
+    <constructor arguments="double vote" returnType="LuapeFunction"/>
+    <variable type="Double" name="vote"/>
+  </class>
+  <class name="VectorVoteLuapeFunction" base="VoteLuapeFunction">
+    <constructor arguments="const DenseDoubleVectorPtr&amp; vote" returnType="LuapeFunction"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="vote"/>
+  </class>
+
 </library>
