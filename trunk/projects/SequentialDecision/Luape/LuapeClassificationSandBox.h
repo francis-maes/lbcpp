@@ -16,6 +16,7 @@
 # include <lbcpp/Data/Stream.h>
 # include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Learning/Numerical.h> // for lbcpp::convertSupervisionVariableToEnumValue
+# include "LuapeSoftStump.h"
 
 namespace lbcpp
 {
@@ -297,16 +298,21 @@ public:
     testConditionLearner(context, learner, "Extra Trees Default");
     */
 
-   /*
-    LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(100, 20);
+   
+    //LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(numVariables, 2);
+
+    LuapeNodeBuilderPtr nodeBuilder = inputsNodeBuilder();
     nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
     //conditionLearner = laminatingWeakLearner(nodeBuilder, (double)numVariables, 10);
     conditionLearner = exactWeakLearner(nodeBuilder);
     conditionLearner->setVerbose(verbose);
+    conditionLearner = new SoftStumpWeakLearner(conditionLearner, 10.0);
+    conditionLearner->setVerbose(verbose);
     learner = discreteAdaBoostMHLearner(conditionLearner, numIterations, 2);
     learner->setVerbose(verbose);
-    testConditionLearner(context, learner, "ThreeStumps AdaBoost.MH K=sqrt(n)");
-*/
+    testConditionLearner(context, learner, "Soft Stump Boosting");
+
+/*
     for (size_t complexity = 4; complexity <= 8; complexity += 2)
     {
       String str = (complexity == 2 ? T("1 variable") : String((int)complexity / 2) + T(" variables"));
@@ -347,7 +353,7 @@ public:
         context.leaveScope(validationScore);
       }
       context.leaveScope(bestScore);
-    }
+    }*/
     return true;
   }
 

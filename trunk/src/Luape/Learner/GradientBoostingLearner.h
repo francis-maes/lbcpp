@@ -83,6 +83,37 @@ public:
     return true;
   }
 
+  virtual LuapeNodePtr turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double weakObjective) const
+  {
+    const LuapeUniversePtr& universe = problem->getUniverse();
+
+    jassert(weakNode);
+    LuapeSampleVectorPtr weakPredictions = problem->getTrainingCache()->getSamples(context, weakNode, examples);
+    Variable failureVote, successVote, missingVote;
+    if (!computeVotes(context, problem, weakPredictions, failureVote, successVote, missingVote))
+      return LuapeNodePtr();
+
+    LuapeNodePtr res;
+    jassert(weakNode->getType() == booleanType);
+    if (weakNode.isInstanceOf<LuapeConstantNode>())
+    {
+      LuapeConstantNodePtr constantNode = weakNode.staticCast<LuapeConstantNode>();
+      Variable constantValue = constantNode->getValue();
+      jassert(constantValue.isBoolean());
+      if (constantValue.isMissingValue())
+        res = universe->makeConstantNode(missingVote);
+      else if (constantValue.getBoolean())
+        res = universe->makeConstantNode(successVote);
+      else
+        res = universe->makeConstantNode(failureVote);
+    }
+    else
+      res = new LuapeTestNode(weakNode, universe->makeConstantNode(failureVote), universe->makeConstantNode(successVote), universe->makeConstantNode(missingVote));
+    if (verbose)
+      context.informationCallback(res->toShortString());
+    return res;
+  }
+
 protected:
   double learningRate;
 };

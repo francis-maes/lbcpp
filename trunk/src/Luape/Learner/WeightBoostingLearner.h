@@ -23,6 +23,9 @@ public:
 
   virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, double& logLoss) const = 0;
   virtual void updateSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const = 0;
+  virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions) const = 0;
+  virtual Variable negateVote(const Variable& vote) const = 0;
+  virtual LuapeFunctionPtr makeVoteFunction(ExecutionContext& context, const LuapeInferencePtr& problem, const Variable& vote) const = 0;
   
   virtual bool initialize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
@@ -40,6 +43,38 @@ public:
     context.resultCallback(T("logLoss"), logLoss);
     context.resultCallback(T("loss"), pow(10.0, logLoss));
     return BoostingLearner::doLearningIteration(context, node, problem, examples, trainingScore, validationScore);
+  }
+
+  virtual LuapeNodePtr turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double weakObjective) const
+  {
+    const LuapeUniversePtr& universe = problem->getUniverse();
+
+    jassert(weakNode);
+    LuapeSampleVectorPtr weakPredictions = problem->getTrainingCache()->getSamples(context, weakNode, examples);
+    Variable vote = computeVote(context, problem, weakPredictions);
+    if (!vote.exists())
+      return LuapeNodePtr();
+
+    LuapeNodePtr res;
+    jassert(weakNode->getType() == booleanType || weakNode->getType() == probabilityType);
+    if (weakNode.isInstanceOf<LuapeConstantNode>())
+    {
+      LuapeConstantNodePtr constantNode = weakNode.staticCast<LuapeConstantNode>();
+      Variable constantValue = constantNode->getValue();
+      jassert(constantValue.isBoolean() && constantValue.exists());
+      if (constantValue.getBoolean())
+        res = universe->makeConstantNode(vote);
+      else
+        res = universe->makeConstantNode(negateVote(vote));
+    }
+    else
+    {
+      LuapeFunctionPtr voteFunction = makeVoteFunction(context, problem, vote);
+      res = universe->makeFunctionNode(voteFunction, weakNode);
+    }
+    if (verbose)
+      context.informationCallback(res->toShortString());
+    return res;
   }
 
 protected:

@@ -94,6 +94,10 @@ extern LuapeFunctionPtr getDoubleVectorElementLuapeFunction(EnumerationPtr enume
 extern LuapeFunctionPtr computeDoubleVectorStatisticsLuapeFunction();
 extern LuapeFunctionPtr getDoubleVectorExtremumsLuapeFunction(EnumerationPtr enumeration = EnumerationPtr());
 
+// Voting
+extern LuapeFunctionPtr scalarVoteLuapeFunction(double vote);
+extern LuapeFunctionPtr vectorVoteLuapeFunction(const DenseDoubleVectorPtr& vote);
+
 /*
 ** Base classes
 */

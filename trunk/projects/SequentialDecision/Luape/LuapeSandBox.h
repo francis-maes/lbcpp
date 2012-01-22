@@ -18,6 +18,7 @@
 # include <lbcpp/Luape/LuapeLearner.h>
 # include <lbcpp/Learning/LossFunction.h>
 # include "../Core/SinglePlayerMCTSOptimizer.h"
+# include "LuapeSoftStump.h"
 
 namespace lbcpp
 {
@@ -50,6 +51,13 @@ public:
       String((int)testData->getNumElements()) + T(" testing examples, ") + 
       String((int)numVariables) + T(" input variables, ") +
       String((int)labels->getNumElements()) + T(" labels"));
+
+    // tmp --
+    for (double logGamma = 0.0; logGamma <= 3.0; logGamma += 0.33)
+    {
+      context.enterScope(T("logGamma ") + String(logGamma));
+      context.resultCallback(T("logGamma"), logGamma);
+    //--
 
     LuapeClassifierPtr classifier = createClassifier(inputClass);
     if (!classifier->initialize(context, inputClass, labels))
@@ -93,6 +101,8 @@ public:
     else
       weakLearner = exactWeakLearner(nodeBuilder);
     weakLearner->setVerbose(verbose);
+    weakLearner = new SoftStumpWeakLearner(weakLearner, pow(10.0, logGamma));
+    weakLearner->setVerbose(verbose);
 
     /*size_t minExamplesToSplit = 2;
     LuapeLearnerPtr learner = treeLearner(new ClassificationLearningObjective(), weakLearner, minExamplesToSplit, treeDepth);
@@ -113,9 +123,18 @@ public:
     classifier->setBatchLearner(batchLearner);
     classifier->setEvaluator(defaultSupervisedEvaluator());
  
-    classifier->train(context, trainData, testData, T("Training"), false);
-
+    ScoreObjectPtr score = classifier->train(context, trainData, testData, T("Training"), false);
     context.resultCallback("classifier", classifier->getRootNode());
+    testClassifier(context, classifier, inputClass);
+
+
+
+    // tmp --
+    context.resultCallback(T("score"), score->getScoreToMinimize());
+      context.leaveScope(true);
+    }
+    // --
+
     return true;
   }
 

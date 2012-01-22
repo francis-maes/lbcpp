@@ -666,6 +666,7 @@ SET(LBCPP_LUAPE_FUNCTION_SOURCES
   Luape/Function/ObjectLuapeFunctions.h
   Luape/Function/DoubleVectorLuapeFunctions.h
   Luape/Function/SpecialLuapeFunctions.h
+  Luape/Function/VoteLuapeFunctions.h
   Luape/Function/LuapeFunctionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeFunctionLibrary.cpp
 )
