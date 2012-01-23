@@ -169,10 +169,8 @@ String LuapeTestNode::toShortString() const
 Variable LuapeTestNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
 {
   Variable condition = conditionNode->compute(context, cache);
-  if (condition.isMissingValue())
-    return missingNode ? missingNode->compute(context, cache) : Variable::missingValue(type);
-  else
-    return (condition.getBoolean() ? successNode : failureNode)->compute(context, cache);
+  LuapeNodePtr subNode = (condition.isMissingValue() ? missingNode : (condition.getBoolean() ? successNode : failureNode));
+  return subNode ? subNode->compute(context, cache) : Variable::missingValue(type);
 }
 
 void LuapeTestNode::dispatchIndices(const LuapeSampleVectorPtr& conditionValues, IndexSetPtr& failureIndices, IndexSetPtr& successIndices, IndexSetPtr& missingIndices)
@@ -254,9 +252,9 @@ LuapeSampleVectorPtr LuapeTestNode::compute(ExecutionContext& context, const Lua
     dispatchIndices(conditions, failureIndices, successIndices, missingIndices);
 
     LuapeSampleVectorPtr subValues[3];
-    subValues[0] = cache->getSamples(context, failureNode, failureIndices);
-    subValues[1] = cache->getSamples(context, successNode, successIndices);
-    subValues[2] = cache->getSamples(context, missingNode, missingIndices);
+    subValues[0] = getSubSamples(context, failureNode, cache, failureIndices);
+    subValues[1] = getSubSamples(context, successNode, cache, successIndices);
+    subValues[2] = getSubSamples(context, missingNode, cache, missingIndices);
     startTime = Time::getMillisecondCounterHiRes();
 
     TypePtr elementsType = subValues[0]->getElementsType();
@@ -309,6 +307,9 @@ LuapeSampleVectorPtr LuapeTestNode::compute(ExecutionContext& context, const Lua
   cache->observeNodeComputingTime(refCountedPointerFromThis(this), indices->size(), endTime - startTime);
   return new LuapeSampleVector(indices, resultVector);
 }
+
+LuapeSampleVectorPtr LuapeTestNode::getSubSamples(ExecutionContext& context, const LuapeNodePtr& subNode, const LuapeSamplesCachePtr& cache, const IndexSetPtr& subIndices) const
+  {return subNode ? cache->getSamples(context, subNode, subIndices) : LuapeSampleVector::createConstant(subIndices, Variable::missingValue(type));}
 
 /*
 ** LuapeSequenceNode

@@ -201,6 +201,8 @@ protected:
   LuapeNodePtr failureNode;
   LuapeNodePtr successNode;
   LuapeNodePtr missingNode;
+
+  LuapeSampleVectorPtr getSubSamples(ExecutionContext& context, const LuapeNodePtr& subNode, const LuapeSamplesCachePtr& cache, const IndexSetPtr& subIndices) const;
 };
 
 /*

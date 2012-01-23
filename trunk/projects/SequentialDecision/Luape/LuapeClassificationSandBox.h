@@ -306,28 +306,30 @@ public:
     //conditionLearner = laminatingWeakLearner(nodeBuilder, (double)numVariables, 10);
     conditionLearner = exactWeakLearner(nodeBuilder);
     conditionLearner->setVerbose(verbose);
-    conditionLearner = new SoftStumpWeakLearner(conditionLearner, 10.0);
+    conditionLearner = new SoftStumpWeakLearner(conditionLearner);
     conditionLearner->setVerbose(verbose);
     learner = discreteAdaBoostMHLearner(conditionLearner, numIterations, 2);
     learner->setVerbose(verbose);
-    testConditionLearner(context, learner, "Soft Stump Boosting");
+    testConditionLearner(context, learner, "ThreeStumps Boosting - 1-var");
 
-/*
     for (size_t complexity = 4; complexity <= 8; complexity += 2)
     {
       String str = (complexity == 2 ? T("1 variable") : String((int)complexity / 2) + T(" variables"));
-      LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(numVariables * 10, complexity);
+      LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(numVariables, complexity);
       nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
 
-      conditionLearner = laminatingWeakLearner(nodeBuilder, (double)numVariables, 10);
-      //conditionLearner = exactWeakLearner(nodeBuilder);
+      //conditionLearner = laminatingWeakLearner(nodeBuilder, (double)numVariables, 10);
+      conditionLearner = exactWeakLearner(nodeBuilder);
+      conditionLearner->setVerbose(verbose);
+      conditionLearner = new SoftStumpWeakLearner(conditionLearner);
       conditionLearner->setVerbose(verbose);
       learner = discreteAdaBoostMHLearner(conditionLearner, numIterations, 2);
       learner->setVerbose(verbose);
 
-      testConditionLearner(context, learner, "ThreeStumps AdaBoost.MH Laminating K=n - " + str);
+      testConditionLearner(context, learner, "ThreeStumps AdaBoost.MH K=n - " + str);
     }
 
+    /*
     for (size_t complexity = 4; complexity <= 8; complexity += 2)
     {
       String str = String((int)complexity / 2) + T(" variables");
