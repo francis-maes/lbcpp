@@ -28,7 +28,6 @@ public:
   
     double bestScore = -DBL_MAX;
     Variable bestAction;
-    double reward = 0.0;
     for (size_t j = 0; j < actions->getNumElements(); ++j)
     {
       Variable action = actions->getElement(j);

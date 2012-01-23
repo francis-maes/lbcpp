@@ -11,6 +11,7 @@
 
 # include <lbcpp/Luape/LuapeBatchLearner.h>
 # include <lbcpp/Luape/LuapeLearner.h>
+# include "../Problem/MountainCarProblem.h"
 
 namespace lbcpp
 {
@@ -24,7 +25,10 @@ public:
   virtual DecisionProblemPtr getDecisionProblem() const = 0;
   virtual size_t getNumTrajectories() const
     {return 1;}
-  virtual DecisionProblemStatePtr sampleInitialState(RandomGeneratorPtr random) const = 0;
+    
+  virtual DecisionProblemStatePtr sampleInitialState(RandomGeneratorPtr random) const
+    {return getDecisionProblem()->sampleInitialState(defaultExecutionContext(), random);}
+
   virtual bool breakTrajectory(size_t timeStep, double reward, double cumulativeReward) const
     {return false;}
 
@@ -80,7 +84,7 @@ class EvaluateLPPLuapePolicyFunction : public EvaluateLuapePolicyFunction
 {
 public:
   EvaluateLPPLuapePolicyFunction(size_t horizon = 50)
-    : EvaluateLuapePolicyFunction(50) {}
+    : EvaluateLuapePolicyFunction(horizon) {}
 
   virtual DecisionProblemPtr getDecisionProblem() const
     {return new LinearPointPhysicProblem();}
@@ -91,6 +95,24 @@ public:
   virtual DecisionProblemStatePtr sampleInitialState(RandomGeneratorPtr random) const
     {return new LinearPointPhysicState(random->sampleDouble(-1.0, 1.0), random->sampleDouble(-2.0, 2.0));}
 };
+
+
+class EvaluateMountainCarLuapePolicyFunction : public EvaluateLuapePolicyFunction
+{
+public:
+  EvaluateMountainCarLuapePolicyFunction(size_t horizon = 100)
+    : EvaluateLuapePolicyFunction(horizon) {}
+
+  virtual DecisionProblemPtr getDecisionProblem() const
+    {return new MountainCarProblem();}
+
+  virtual size_t getNumTrajectories() const
+    {return 10;}
+
+  virtual DecisionProblemStatePtr sampleInitialState(RandomGeneratorPtr random) const
+    {return new MountainCarState(random->sampleDouble(-1.0, 1.0), random->sampleDouble(-2.0, 2.0));}
+};
+
 
 class EvaluateHIVLuapePolicyFunction : public EvaluateLuapePolicyFunction
 {
@@ -149,7 +171,8 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     //EvaluateLuapePolicyFunctionPtr objective = new EvaluateHIVLuapePolicyFunction(300);
-    EvaluateLuapePolicyFunctionPtr objective = new EvaluateLPPLuapePolicyFunction();
+    //EvaluateLuapePolicyFunctionPtr objective = new EvaluateLPPLuapePolicyFunction();
+    EvaluateLuapePolicyFunctionPtr objective = new EvaluateMountainCarLuapePolicyFunction();
 
     DecisionProblemPtr decisionProblem = objective->getDecisionProblem();
 
