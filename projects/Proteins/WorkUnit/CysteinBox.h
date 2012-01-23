@@ -820,7 +820,7 @@ protected:
     const size_t n = enumeration->getNumElements();
     context.informationCallback(T("Num. Attributes: ") + String((int)n));
     for (size_t i = 0; i < n; ++i)
-      *o << "@ATTRIBUTE " << enumeration->getElement(i)->getName() << " NUMERIC\n";
+      *o << "@ATTRIBUTE " << String((int)i) << "-" << enumeration->getElement(i)->getName().removeCharacters(T(" %#")) << " NUMERIC\n";
     *o << "@ATTRIBUTE class {0,1}\n";
   }
 
