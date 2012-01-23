@@ -79,7 +79,7 @@ typedef ReferenceCountedObjectPtr<SoftStumpLuapeFunction> SoftStumpLuapeFunction
 class SoftStumpWeakLearner : public DecoratorLearner
 {
 public:
-  SoftStumpWeakLearner(LuapeLearnerPtr stumpLearner, double gamma)
+  SoftStumpWeakLearner(LuapeLearnerPtr stumpLearner, double gamma = 10.0)
     : DecoratorLearner(stumpLearner), gamma(gamma) {}
   SoftStumpWeakLearner() : gamma(0.0) {}
 
@@ -92,7 +92,6 @@ public:
     if (!samples || !samples->getNumValues())
       return LuapeFunctionNodePtr();
 
-    context.informationCallback(T("Ref objective value = ") + String(bestObjectiveValue));
 
     bestObjectiveValue = -DBL_MAX;
     double bestNormalizedObjective = -DBL_MAX;
@@ -113,7 +112,10 @@ public:
 
     LuapeFunctionNodePtr res;
     if (verbose)
+    {
       context.enterScope(T("Making soft stump"));
+      context.informationCallback(T("Ref objective value = ") + String(bestObjectiveValue));
+    }
     
     
     for (double logGamma = 0.0; logGamma <= 5.0; logGamma += 0.25)
@@ -148,7 +150,7 @@ public:
         sumOfWeights += fabs(it.getRawDouble() - 0.5);
       sumOfWeights /= (double)predictions->size();
       double normalizedObjective = sumOfWeights ? objectiveValue / sumOfWeights : 0.0;
-      if (normalizedObjective > bestNormalizedObjective)
+      if (normalizedObjective >= bestNormalizedObjective)
       {
         bestNormalizedObjective = normalizedObjective;
         bestObjectiveValue = objectiveValue;
@@ -164,7 +166,10 @@ public:
     }
 
     if (verbose)
+    {
+      context.informationCallback(T("New objective value = ") + String(bestObjectiveValue));
       context.leaveScope(res->toShortString());
+    }
     if (bestLogGamma == 5.0)
       return stumpNode;
     else
