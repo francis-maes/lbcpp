@@ -153,7 +153,7 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    const RandomGeneratorPtr& random = input.getObjectAndCast<RandomGenerator>();
+    //const RandomGeneratorPtr& random = input.getObjectAndCast<RandomGenerator>();
     
     std::vector<double> initialState(6);
 
