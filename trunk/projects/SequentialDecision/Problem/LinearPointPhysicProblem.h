@@ -10,7 +10,6 @@
 # define LBCPP_SEQUENTIAL_DECISION_SYSTEM_LINEAR_POINT_PHYSIC_H_
 
 # include <lbcpp/DecisionProblem/DecisionProblem.h>
-# include <lbcpp/Data/RandomGenerator.h>
 
 namespace lbcpp
 {
@@ -57,35 +56,31 @@ protected:
 
 typedef ReferenceCountedObjectPtr<LinearPointPhysicState> LinearPointPhysicStatePtr;
 
-class LinearPointPhysicStateSampler : public SimpleUnaryFunction
-{
-public:
-  LinearPointPhysicStateSampler()
-    : SimpleUnaryFunction(randomGeneratorClass, linearPointPhysicStateClass) {}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-  {
-    const RandomGeneratorPtr& random = input.getObjectAndCast<RandomGenerator>();
-    double position = random->sampleDouble(-1.0, 1.0);
-    double velocity = random->sampleDouble(-2.0, 2.0);
-    return new LinearPointPhysicState(position, velocity);
-  }
-};
-
 class LinearPointPhysicProblem : public DecisionProblem
 {
 public:
   LinearPointPhysicProblem() 
-    : DecisionProblem(new LinearPointPhysicStateSampler(), 0.9, 50) {}
+    : DecisionProblem(FunctionPtr(), 0.9, 50) {}
 
   virtual double getMaxReward() const
     {return 1.0;}
+
+  virtual ClassPtr getStateClass() const
+    {return linearPointPhysicStateClass;}
 
   virtual TypePtr getActionType() const
     {return doubleType;}
 
   virtual size_t getFixedNumberOfActions() const
     {return 2;}
+
+  virtual DecisionProblemStatePtr sampleInitialState(ExecutionContext& context) const
+  {
+    const RandomGeneratorPtr& random = context.getRandomGenerator();
+    double position = random->sampleDouble(-1.0, 1.0);
+    double velocity = random->sampleDouble(-2.0, 2.0);
+    return new LinearPointPhysicState(position, velocity);
+  }
 
   virtual DecisionProblemStatePtr sampleAnyState(ExecutionContext& context) const
     {return sampleInitialState(context);}
@@ -101,8 +96,6 @@ public:
     return res;
   }
 };
-
-extern DecisionProblemPtr linearPointPhysicProblem();
 
 }; /* namespace lbcpp */
 

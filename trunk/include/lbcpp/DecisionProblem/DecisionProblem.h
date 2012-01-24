@@ -58,7 +58,7 @@ public:
   /*
   ** Initial states
   */
-  ClassPtr getStateClass() const;
+  virtual ClassPtr getStateClass() const;
 
   const FunctionPtr& getInitialStateSampler() const
     {return initialStateSampler;}
