@@ -219,7 +219,16 @@ public:
   virtual size_t getFixedNumberOfActions() const
     {return 4;}
 
-  virtual ObjectVectorPtr getValidationInitialStates() const
+  virtual DecisionProblemStatePtr sampleAnyState(ExecutionContext& context) const
+  {
+    const RandomGeneratorPtr& random = context.getRandomGenerator();
+    std::vector<double> state(6);
+    for (size_t i = 0; i < state.size(); ++i)
+      state[i] = pow(10.0, random->sampleDouble(0.0, 6.0));
+    return new HIVDecisionProblemState(state);
+  }
+
+  virtual ObjectVectorPtr getValidationInitialStates(size_t& numTrajectoriesToValidate) const
   {
     ObjectVectorPtr res = new ObjectVector(hivDecisionProblemStateClass, 1);
     std::vector<double> initialState(6);
@@ -230,6 +239,7 @@ public:
     initialState[4] = 63919;
     initialState[5] = 24;
     res->set(0, new HIVDecisionProblemState(initialState));
+    numTrajectoriesToValidate = 1; // system is deterministic
     return res;
   }
 };

@@ -323,8 +323,7 @@ public:
     }
 
     // sample initial states
-    RandomGeneratorPtr random = context.getRandomGenerator();
-    ContainerPtr initialStates = problem->sampleInitialStates(context, random, numInitialStates);
+    ContainerPtr initialStates = problem->sampleInitialStates(context, numInitialStates);
 
     // load heuristics
     std::vector<FunctionPtr> loadedHeuristics;
@@ -468,7 +467,7 @@ private:
       {
         context.enterScope(T("Trial ") + String((int)j));
 
-        ContainerPtr trainingStates = problem->sampleInitialStates(context, context.getRandomGenerator(), numTrainingStates);
+        ContainerPtr trainingStates = problem->sampleInitialStates(context, numTrainingStates);
         FunctionPtr optimizedHeuristic = optimizeLookAHeadTreePolicy(context, trainingStates, maxSearchNodes);
 
         context.resultCallback(T("numTrainingStates"), numTrainingStates);

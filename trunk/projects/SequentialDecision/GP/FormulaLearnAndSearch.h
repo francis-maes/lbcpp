@@ -409,8 +409,8 @@ public:
     double validationScore = problem->validateFormula(context, bestFormula);
     context.leaveScope(validationScore);
     context.resultCallback(T("validationScore"), validationScore);
-
-    context.leaveScope();
+    context.resultCallback(T("bestFormula"), bestFormula);
+    context.leaveScope(validationScore);
   }
 
   GPExpressionPtr displayBestFormulas(ExecutionContext& context) // and return the best one

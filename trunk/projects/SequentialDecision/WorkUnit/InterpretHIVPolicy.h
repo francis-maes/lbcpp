@@ -258,9 +258,8 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    RandomGeneratorPtr random = context.getRandomGenerator();
     DecisionProblemPtr problem = hivDecisionProblem();
-    ContainerPtr initialStates = problem->sampleInitialStates(context, random, numInitialStates);
+    ContainerPtr initialStates = problem->sampleInitialStates(context, numInitialStates);
 
     ContainerPtr examples;
 

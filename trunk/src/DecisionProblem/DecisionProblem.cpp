@@ -94,17 +94,17 @@ ClassPtr DecisionProblem::getStateClass() const
   return initialStateSampler->getOutputType();
 }
 
-DecisionProblemStatePtr DecisionProblem::sampleInitialState(ExecutionContext& context, RandomGeneratorPtr random) const
+DecisionProblemStatePtr DecisionProblem::sampleInitialState(ExecutionContext& context) const
 {
-  Variable res = initialStateSampler->compute(context, random);
+  Variable res = initialStateSampler->compute(context, context.getRandomGenerator());
   return res.exists() ? res.getObjectAndCast<DecisionProblemState>() : DecisionProblemStatePtr();
 }
 
-ContainerPtr DecisionProblem::sampleInitialStates(ExecutionContext& context, RandomGeneratorPtr random, size_t count) const
+ContainerPtr DecisionProblem::sampleInitialStates(ExecutionContext& context, size_t count) const
 {
   ObjectVectorPtr res = new ObjectVector(getStateClass(), count);
   for (size_t i = 0; i < count; ++i)
-    res->set(i, sampleInitialState(context, random));
+    res->set(i, sampleInitialState(context));
   return res;
 }
 
