@@ -32,16 +32,16 @@ public:
     for (size_t j = 0; j < actions->getNumElements(); ++j)
     {
       std::vector<double> variables; // s .. a [.. r .. s']
-      getVariables(state, variables);
+      fillVariables(state, variables);
       Variable action = actions->getElement(j);
-      getVariables(action, variables);
+      fillVariables(action, variables);
       if (useNextState)
       {
         DecisionProblemStatePtr nextState = state->cloneAndCast<DecisionProblemState>();
         double reward;
         nextState->performTransition(context, action, reward, NULL);
         variables.push_back(reward);
-        getVariables(nextState, variables);
+        fillVariables(nextState, variables);
       }
 
       double score = formula->compute(&variables[0]);
@@ -66,13 +66,7 @@ public:
   virtual String toShortString() const
     {return formula->toShortString();}
 
-protected:
-  friend class GPExpressionBasedPolicyClass;
-
-  GPExpressionPtr formula;
-  bool useNextState;
-
-  static void getVariables(const Variable& v, std::vector<double>& res)
+  static void fillVariables(const Variable& v, std::vector<double>& res)
   {
     jassert(!v.isMissingValue());
     if (v.isConvertibleToDouble())
@@ -86,6 +80,12 @@ protected:
           res.push_back(object->getVariable(i).toDouble());
     }
   }
+
+protected:
+  friend class GPExpressionBasedPolicyClass;
+
+  GPExpressionPtr formula;
+  bool useNextState;
 };
 
 class PolicyFormulaObjective : public SimpleUnaryFunction
@@ -95,8 +95,11 @@ public:
     : SimpleUnaryFunction(gpExpressionClass, doubleType), problem(problem), useNextState(useNextState), horizon(horizon) {}
   PolicyFormulaObjective() : SimpleUnaryFunction(gpExpressionClass, doubleType), useNextState(false), horizon(0) {}
 
-  double makeTrajectory(ExecutionContext& context, const GPExpressionPtr& formula, const DecisionProblemStatePtr& state, size_t horizon, double discount, bool useNextState) const
+  double makeTrajectory(ExecutionContext& context, const GPExpressionPtr& formula, const DecisionProblemStatePtr& state) const
   {
+    size_t horizon = getHorizon();
+    double discount = getDiscount();
+
     PolicyPtr policy = new GPExpressionBasedPolicy(formula, useNextState);
     policy->startEpisode(context, problem, state);
     double res = 0.0;
@@ -115,8 +118,8 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     GPExpressionPtr formula = input.getObjectAndCast<GPExpression>();
-    DecisionProblemStatePtr state = problem->sampleInitialState(context, context.getRandomGenerator());
-    double cumulativeReward = makeTrajectory(context, formula, state, horizon ? horizon : problem->getHorizon(), problem->getDiscount(), useNextState);
+    DecisionProblemStatePtr state = problem->sampleInitialState(context);
+    double cumulativeReward = makeTrajectory(context, formula, state);
     double maxCumulativeReward = problem->getMaxCumulativeReward();
     jassert(maxCumulativeReward);
     if (!maxCumulativeReward || cumulativeReward > maxCumulativeReward)
@@ -232,23 +235,24 @@ public:
     if (!validationInitialStates)
     {
       PolicyFormulaSearchProblem& pthis = *const_cast<PolicyFormulaSearchProblem* >(this);
-      pthis.validationInitialStates = objective->getProblem()->getValidationInitialStates();
+      pthis.validationInitialStates = objective->getProblem()->getValidationInitialStates(pthis.numTrajectoriesToValidate);
     }
 
-    size_t n = validationInitialStates->getNumElements();
-    double res = 0.0;
+    context.enterScope(T("Example Trajectory"));
     PolicyPtr policy = new GPExpressionBasedPolicy(formula, objective->getUseNextState());
-    policy->startEpisodes(context);
+    double cumulativeReward = makeVerboseTrajectory(context, objective->getProblem()->sampleInitialState(context), policy);
+    context.leaveScope(cumulativeReward);
+
+    double res = 0.0;
+    size_t n = validationInitialStates->getNumElements();
     for (size_t i = 0; i < n; ++i)
     {
-      context.enterScope(T("Trajectory ") + String((int)i));
       DecisionProblemStatePtr state = validationInitialStates->getAndCast<DecisionProblemState>(i);
-      double cumulativeReward = makeVerboseTrajectory(context, state, policy);
-      context.leaveScope(cumulativeReward);
+      for (size_t j = 0; j < numTrajectoriesToValidate; ++j)
+        res += objective->makeTrajectory(context, formula, state->cloneAndCast<DecisionProblemState>());
       context.progressCallback(new ProgressionState(i + 1, n, T("Trajectories")));
-      res += cumulativeReward;
     }
-    return res / n;
+    return res / (n * numTrajectoriesToValidate);
   }
 
   virtual EnumerationPtr getVariables() const
@@ -275,25 +279,28 @@ public:
     EnumerationPtr variables = getVariables();
     RandomGeneratorPtr random = context.getRandomGenerator();
     res.resize(count);
-    size_t index = 0;
-    for (; index < count; ++index)
+    for (size_t index = 0; index < count; ++index)
     {
-      // FIXME: improve this!
-      std::vector<double> input(variables->getNumElements());
-      for (size_t i = 0; i < input.size(); ++i)
-        input[i] = random->sampleDouble(-100.0, 100.0);
+      std::vector<double> input;
+        
+      DecisionProblemStatePtr state = objective->getProblem()->sampleAnyState(context);
+      ContainerPtr actions = state->getAvailableActions();
+      jassert(actions->getNumElements());
+      Variable action = actions->getElement(random->sampleSize(actions->getNumElements()));
 
-/*
-      input[0] = pow(10.0, random->sampleDouble(5.0, 6.0)); // T1
-      input[1] = pow(10.0, random->sampleDouble(-1.0, 3.0)); // T2
-      input[2] = pow(10.0, random->sampleDouble(0.0, 6.0)); // T1star
-      input[3] = pow(10.0, random->sampleDouble(0.0, 2.0)); // T2star
-      input[4] = pow(10.0, random->sampleDouble(0.0, 6.0)); // V
-      input[5] = pow(10.0, random->sampleDouble(0.0, 6.0)); // E
-      input[6] = pow(10.0, random->sampleDouble(0.0, 6.0)); // r
-      for (size_t i = 0; i < input.size(); ++i)
-        input[i] = pow(10.0, random->sampleDouble(0.0, 9.0));*/
+      // s .. a
+      GPExpressionBasedPolicy::fillVariables(state, input);
+      GPExpressionBasedPolicy::fillVariables(action, input);
+      if (objective->getUseNextState())
+      {
+        // r .. s'
+        double reward;
+        state->performTransition(context, action, reward);
+        input.push_back(reward);
+        GPExpressionBasedPolicy::fillVariables(state, input);
+      }
 
+      jassert(input.size() == variables->getNumElements());
       res[index] = input;
     }
   }
@@ -333,6 +340,7 @@ protected:
   EnumerationPtr variables;
   size_t numStateVariables;
   ObjectVectorPtr validationInitialStates;
+  size_t numTrajectoriesToValidate;
 };
 
 

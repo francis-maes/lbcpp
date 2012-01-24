@@ -27,9 +27,6 @@ public:
   virtual size_t getNumTrajectories() const
     {return 1;}
     
-  virtual DecisionProblemStatePtr sampleInitialState(RandomGeneratorPtr random) const
-    {return getDecisionProblem()->sampleInitialState(defaultExecutionContext(), random);}
-
   virtual bool breakTrajectory(size_t timeStep, double reward, double cumulativeReward) const
     {return false;}
 
@@ -84,9 +81,11 @@ public:
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
+    DecisionProblemPtr problem = getDecisionProblem();
+
     initialStates.resize(getNumTrajectories());
     for (size_t i = 0; i < initialStates.size(); ++i)
-      initialStates[i] = sampleInitialState(context.getRandomGenerator());
+      initialStates[i] = problem->sampleInitialState(context);
     return SimpleUnaryFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
   }
 
@@ -148,9 +147,6 @@ public:
 
   virtual size_t getNumTrajectories() const
     {return 100;}
-
-  virtual DecisionProblemStatePtr sampleInitialState(RandomGeneratorPtr random) const
-    {return new LinearPointPhysicState(random->sampleDouble(-1.0, 1.0), random->sampleDouble(-2.0, 2.0));}
 };
 
 class EvaluateMountainCarLuapePolicyFunction : public EvaluateLuapePolicyFunction
@@ -188,20 +184,6 @@ public:
 
   virtual DecisionProblemPtr getDecisionProblem() const
     {return new HIVDecisionProblem();}
-
-  virtual DecisionProblemStatePtr sampleInitialState(RandomGeneratorPtr random) const
-  {
-    std::vector<double> initialState(6);
-    initialState[0] = 163573;
-    initialState[1] = 5;
-    initialState[2] = 11945;
-    initialState[3] = 46;
-    initialState[4] = 63919;
-    initialState[5] = 24;
-    //for (size_t i = 0; i < initialState.size(); ++i)
-    //  initialState[i] *= random->sampleDouble(0.8, 1.2);
-    return new HIVDecisionProblemState(initialState);
-  }
 
   virtual bool breakTrajectory(size_t timeStep, double reward, double cumulativeReward) const
     {return timeStep >= 50 && reward < 5e6;}

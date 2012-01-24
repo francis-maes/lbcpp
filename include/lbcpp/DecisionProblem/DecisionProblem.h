@@ -63,11 +63,14 @@ public:
   const FunctionPtr& getInitialStateSampler() const
     {return initialStateSampler;}
 
-  DecisionProblemStatePtr sampleInitialState(ExecutionContext& context, RandomGeneratorPtr random) const;
-  ContainerPtr sampleInitialStates(ExecutionContext& context, RandomGeneratorPtr random, size_t count) const;
+  virtual DecisionProblemStatePtr sampleInitialState(ExecutionContext& context) const;
+  virtual DecisionProblemStatePtr sampleAnyState(ExecutionContext& context) const
+    {jassert(false); return DecisionProblemStatePtr();}
 
-  virtual ObjectVectorPtr getValidationInitialStates() const
-    {return ObjectVectorPtr();}
+  ContainerPtr sampleInitialStates(ExecutionContext& context, size_t count) const;
+
+  virtual ObjectVectorPtr getValidationInitialStates(size_t& numTrajectoriesToValidate) const
+    {numTrajectoriesToValidate = 0; return ObjectVectorPtr();}
 
   /*
   ** Actions

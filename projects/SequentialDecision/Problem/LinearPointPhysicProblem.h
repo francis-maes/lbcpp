@@ -87,13 +87,17 @@ public:
   virtual size_t getFixedNumberOfActions() const
     {return 2;}
 
-  virtual ObjectVectorPtr getValidationInitialStates() const
+  virtual DecisionProblemStatePtr sampleAnyState(ExecutionContext& context) const
+    {return sampleInitialState(context);}
+
+  virtual ObjectVectorPtr getValidationInitialStates(size_t& numTrajectoriesToValidate) const
   {
     ObjectVectorPtr res = new ObjectVector(linearPointPhysicStateClass, 11 * 11);
     size_t index = 0;
     for (size_t i = 0; i < 11; ++i)
       for (size_t j = 0; j < 11; ++j)
         res->set(index++, new LinearPointPhysicState(-1.0 + i * 0.2, -2.0 + j * 0.4));
+    numTrajectoriesToValidate = 1; // system is deterministic
     return res;
   }
 };
