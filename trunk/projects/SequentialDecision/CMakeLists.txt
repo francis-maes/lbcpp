@@ -36,6 +36,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_PROBLEM_SOURCES
   Problem/LuaDecisionProblemState.h
   Problem/MountainCarProblem.h
   Problem/CarOnTheHillProblem.h
+  Problem/AcrobotProblem.h
   Problem/LeftOrRightControlProblem.h
   Problem/SequentialDecisionProblemLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionProblemLibrary.cpp
