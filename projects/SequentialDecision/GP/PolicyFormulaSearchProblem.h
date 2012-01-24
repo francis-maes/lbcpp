@@ -308,7 +308,11 @@ public:
   struct ValueComparator
   {
     bool operator() (const std::pair<size_t, double>& left, const std::pair<size_t, double>& right) const
-      {return (left.second != right.second ? left.second < right.second : left.first < right.first);}
+    {
+      double l = isNumberValid(left.second) ? left.second : -DBL_MAX;
+      double r = isNumberValid(right.second) ? right.second : -DBL_MAX;
+      return (l != r ? l < r : left.first < right.first);
+    }
   };
 
   virtual BinaryKeyPtr makeBinaryKey(const GPExpressionPtr& expression, const std::vector< std::vector<double> >& inputSamples) const

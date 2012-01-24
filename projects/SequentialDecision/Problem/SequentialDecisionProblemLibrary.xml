@@ -11,12 +11,23 @@
     <constructor/>
   </class>
 
-  <!-- Car on the hill-->
+  <!-- Car on the hill -->
   <class name="CarOnTheHillState" base="DecisionProblemState">
     <variable type="Double" name="position"/>
     <variable type="Double" name="velocity"/>
   </class>
   <class name="CarOnTheHillProblem" base="DecisionProblem" shortName="carOnTheHill">
+    <constructor/>
+  </class>
+
+  <!-- Acrobot -->
+  <class name="AcrobotState" base="DecisionProblemState">
+    <variable type="Double" name="angle1"/>
+    <variable type="Double" name="angle2"/>
+    <variable type="Double" name="velocity1"/>
+    <variable type="Double" name="velocity2"/>
+  </class>
+  <class name="AcrobotProblem" base="DecisionProblem" shortName="acrobot">
     <constructor/>
   </class>
   
