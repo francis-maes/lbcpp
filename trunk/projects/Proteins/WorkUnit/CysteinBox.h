@@ -1408,7 +1408,8 @@ public:
       //displayStructure(context, variables);
       correlation = computePearsonCorrelation(context, variables);
     }
-    rankCorrelations(context, correlation, variableEnumeration);
+//    rankCorrelations(context, correlation, variableEnumeration);
+    meanRankCorrelations(context, correlation, variableEnumeration);
 
     return true;
   }
@@ -1519,6 +1520,8 @@ protected:
 
   void rankCorrelations(ExecutionContext& context, const SymmetricMatrixPtr& correlations, const EnumerationPtr& variableEnumeration) const
   {
+    OutputStream* o = context.getFile(T("pearsonCorrelation.plot")).createOutputStream();
+    *o << "# Rank InvRank PearsonScore Variables\n";
     typedef std::multimap<double, std::pair<size_t, size_t> > ScoresMap;
     ScoresMap scores;
     const size_t dimension = correlations->getDimension();
@@ -1529,15 +1532,35 @@ protected:
     size_t rankIndex = 0;
     context.enterScope(T("Ranked variables"));
     for (ScoresMap::reverse_iterator it = scores.rbegin(); it != scores.rend(); ++it, ++rankIndex)
-    {
-      context.enterScope(variableEnumeration->getElementName(it->second.first) + T(" & ") + variableEnumeration->getElementName(it->second.second));
-      context.resultCallback(T("Rank"), rankIndex);
-      context.resultCallback(T("Pearson"), it->first);
-      context.resultCallback(T("invRank"), dimension - rankIndex);
-      context.resultCallback(T("Variables"), variableEnumeration->getElementName(it->second.first) + T(" & ") + variableEnumeration->getElementName(it->second.second));
-      context.leaveScope();
-    }
+      *o << (int)rankIndex << "\t" << (int)(scores.size() - rankIndex) << "\t" << it->first << "\t"
+      << "\"" << variableEnumeration->getElementName(it->second.first) << " & " << variableEnumeration->getElementName(it->second.second) << "\"\n";
     context.leaveScope();
+    delete o;
+  }
+
+  void meanRankCorrelations(ExecutionContext& context, const SymmetricMatrixPtr& correlations, const EnumerationPtr& variableEnumeration) const
+  {
+    OutputStream* o = context.getFile(T("pearsonCorrelation.mean.plot")).createOutputStream();
+    *o << "# Rank InvRank MeanPearsonScore StdDevpearsonScore MinValue MaxValue Variable\n";
+    typedef std::multimap<double, std::pair<size_t, ScalarVariableStatisticsPtr> > ScoresMap;
+    ScoresMap scores;
+    const size_t dimension = correlations->getDimension();
+    for (size_t i = 0; i < dimension; ++i)
+    {
+      ScalarVariableStatisticsPtr stat = new ScalarVariableStatistics();
+      for (size_t j = 0; j < dimension; ++j)
+        stat->push(fabs(correlations->getElement(i, j).getDouble()));
+      scores.insert(std::make_pair(stat->getMean(), std::make_pair(i, stat)));
+    }
+
+    size_t rankIndex = 0;
+    context.enterScope(T("Mean Ranked Variables"));
+    for (ScoresMap::reverse_iterator it = scores.rbegin(); it != scores.rend(); ++it, ++rankIndex)
+      *o << (int)rankIndex << "\t" << (int)(scores.size() - rankIndex) << "\t" << it->first << "\t" << it->second.second->getStandardDeviation() << "\t"
+      << it->second.second->getMinimum() << "\t" << it->second.second->getMaximum() << "\t"
+      << "\"" << variableEnumeration->getElementName(it->second.first) << "\"\n";
+    context.leaveScope();
+    delete o;
   }
 };
 

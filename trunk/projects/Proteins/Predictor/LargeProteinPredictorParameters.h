@@ -796,7 +796,7 @@ public:
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
-
+/*
   virtual FunctionPtr createTargetPredictor(ProteinTarget target) const
   {
     if (target == dsbTarget && useAddBias)
@@ -812,7 +812,7 @@ public:
       return new PreProcessInputCompositeFunction(fisherFilterLearnableFunction(numFisherFeatures), res);
     return res;
   }
-
+*/
   virtual FunctionPtr learningMachine(ProteinTarget target) const
   {
     // TODO: incorporate bias in case of binary target
