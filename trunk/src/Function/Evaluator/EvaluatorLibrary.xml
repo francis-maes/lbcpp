@@ -12,8 +12,9 @@
       {
         ScoreObjectPtr object = value.getObjectAndCast&lt;ScoreObject&gt;();
         return object ? object->getScoreToMinimize() : 0.0;
-      }        
+      }
     </code>
+    <function lang="lua" name="getScore"/>
   </class>
   <class name="DummyScoreObject" base="ScoreObject"/>
   <class name="CompositeScoreObject" base="ScoreObject">

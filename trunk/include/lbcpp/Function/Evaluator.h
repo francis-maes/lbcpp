@@ -11,6 +11,7 @@
 
 # include "predeclarations.h"
 # include <lbcpp/Core/Function.h>
+# include <lbcpp/Lua/Lua.h>
 
 namespace lbcpp
 {
@@ -18,10 +19,16 @@ namespace lbcpp
 /*
 ** ScoreObject
 */
+
 class ScoreObject : public NameableObject
 {
 public:
   virtual double getScoreToMinimize() const = 0;
+
+  /*
+   ** Lua
+   */
+  static int getScore(LuaState& state);
 };
 
 typedef ReferenceCountedObjectPtr<ScoreObject> ScoreObjectPtr;

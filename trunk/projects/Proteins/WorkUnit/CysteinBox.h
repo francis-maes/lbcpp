@@ -1398,12 +1398,16 @@ public:
       return false;
     }
 
-    std::vector<std::vector<double> > variables; // [variable, examples]
-    EnumerationPtr variableEnumeration = insertExamples(context, proteins, variables);
-    //displayStructure(context, variables);
-    normalizeExamples(context, variables);
-    //displayStructure(context, variables);
-    SymmetricMatrixPtr correlation = computePearsonCorrelation(context, variables);
+    EnumerationPtr variableEnumeration;
+    SymmetricMatrixPtr correlation;
+    {
+      std::vector<std::vector<double> > variables; // [variable, examples]
+      variableEnumeration = insertExamples(context, proteins, variables);
+      //displayStructure(context, variables);
+      normalizeExamples(context, variables);
+      //displayStructure(context, variables);
+      correlation = computePearsonCorrelation(context, variables);
+    }
     rankCorrelations(context, correlation, variableEnumeration);
 
     return true;
