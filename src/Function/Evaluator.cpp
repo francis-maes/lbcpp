@@ -14,6 +14,13 @@ using namespace lbcpp;
 namespace lbcpp 
 {
 
+int ScoreObject::getScore(LuaState& state)
+{
+  ScoreObjectPtr obj = state.checkObject(1, scoreObjectClass).staticCast<ScoreObject>();
+  state.pushNumber(obj->getScoreToMinimize());
+  return 1;
+}
+
 struct EvaluateExampleWorkUnit : public WorkUnit
 {
   EvaluateExampleWorkUnit(const EvaluatorPtr& evaluator, const FunctionPtr& function, const ObjectPtr& example, const ScoreObjectPtr& scores, CriticalSection& lock)
