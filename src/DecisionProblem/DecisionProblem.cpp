@@ -89,6 +89,7 @@ int DecisionProblemState::performTransition(LuaState& state)
 */
 ClassPtr DecisionProblem::getStateClass() const
 {
+  jassert(initialStateSampler);
   if (!initialStateSampler->isInitialized())
     initialStateSampler->initialize(defaultExecutionContext(), randomGeneratorClass);
   return initialStateSampler->getOutputType();

@@ -184,7 +184,7 @@ public:
       // s'
       for (size_t i = 0; i < stateClass->getNumMemberVariables(); ++i)
         if (stateClass->getMemberVariableType(i)->isConvertibleToDouble())
-          res->addElement(context, stateClass->getMemberVariableName(i) + T("'"));
+          res->addElement(context, T("next_") + stateClass->getMemberVariableName(i));
     }
     return res;
   }
