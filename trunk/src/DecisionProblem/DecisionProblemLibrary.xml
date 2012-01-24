@@ -14,6 +14,7 @@
   <class name="DecisionProblem" base="Object" abstract="yes">
     <variable type="Function" name="initialStateSampler"/>
     <variable type="Double" name="discount"/>
+    <variable type="PositiveInteger" name="horizon"/>
   </class>
   <class name="GetAvailableActionsFunction" base="Function">
     <constructor arguments="TypePtr actionType"/>

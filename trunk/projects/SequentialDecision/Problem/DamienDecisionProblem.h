@@ -71,26 +71,12 @@ public:
   HIVDecisionProblemState(const std::vector<double>& initialState)
     : DamienState(new damien::HIV())
   {
-    ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
+    ClassPtr actionClass = pairClass(booleanType, booleanType);// denseDoubleVectorClass(falseOrTrueEnumeration);
     availableActions = new ObjectVector(actionClass, 4);
-    DenseDoubleVectorPtr a;
-    
-    a = new DenseDoubleVector(actionClass, 2, 0.0);
-    availableActions->setElement(0, a);
-
-    a = new DenseDoubleVector(actionClass, 2, 0.0);
-    a->setValue(0, 0.7);
-    availableActions->setElement(1, a);
-
-    a = new DenseDoubleVector(actionClass, 2, 0.0);
-    a->setValue(1, 0.3);
-    availableActions->setElement(2, a);
-
-    a = new DenseDoubleVector(actionClass, 2, 0.0);
-    a->setValue(0, 0.7);
-    a->setValue(1, 0.3);
-    availableActions->setElement(3, a);
-
+    availableActions->setElement(0, new Pair(actionClass, false, false));
+    availableActions->setElement(1, new Pair(actionClass, true, false));
+    availableActions->setElement(2, new Pair(actionClass, false, true));
+    availableActions->setElement(3, new Pair(actionClass, true, true));
     setState(initialState);
   }
 
@@ -101,6 +87,9 @@ public:
 
   virtual ContainerPtr getAvailableActions() const
     {return availableActions;}
+
+  virtual TypePtr getActionType() const
+    {return pairClass(booleanType, booleanType);}
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
   {
@@ -130,6 +119,15 @@ public:
     context.resultCallback(T("log E"), log10(E));
   }
 
+  virtual void performTransition(ExecutionContext& context, const Variable& a, double& reward, Variable* stateBackup)
+  {
+    const PairPtr& p = a.getObjectAndCast<Pair>();
+    DenseDoubleVectorPtr vector = new DenseDoubleVector(2, 0.0);
+    vector->setValue(0, p->getFirst().getBoolean() ? 0.7 : 0.0);
+    vector->setValue(1, p->getSecond().getBoolean() ? 0.3 : 0.0);
+    DamienState::performTransition(context, vector, reward, stateBackup);
+  }
+
 protected:
   friend class HIVDecisionProblemStateClass;
   ContainerPtr availableActions;
@@ -153,8 +151,7 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    //const RandomGeneratorPtr& random = input.getObjectAndCast<RandomGenerator>();
-    
+    const RandomGeneratorPtr& random = input.getObjectAndCast<RandomGenerator>();
     std::vector<double> initialState(6);
 
     /*
@@ -179,8 +176,8 @@ public:
     initialState[4] = 63919;
     initialState[5] = 24;
 
-    //for (size_t i = 0; i < initialState.size(); ++i)
-    //  initialState[i] *= random->sampleDouble(0.8, 1.2);
+    for (size_t i = 0; i < initialState.size(); ++i)
+      initialState[i] *= random->sampleDouble(0.8, 1.2);
 
 #if 0
     // just after infection start
@@ -207,21 +204,38 @@ public:
 class HIVDecisionProblem : public DecisionProblem
 {
 public:
-  HIVDecisionProblem(double discount = 0.98)
-    : DecisionProblem(new HIVInitialStateSampler(), discount) {}
+  HIVDecisionProblem()
+    : DecisionProblem(new HIVInitialStateSampler(), 0.98, 300) {}
 
   virtual double getMaxReward() const
     {return 360e6;}
 
+  virtual double getMaxCumulativeReward() const
+    {return 5e9;}
+
   virtual TypePtr getActionType() const
-    {return denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);}
+    {return pairClass(booleanType, booleanType);}
 
   virtual size_t getFixedNumberOfActions() const
     {return 4;}
+
+  virtual ObjectVectorPtr getValidationInitialStates() const
+  {
+    ObjectVectorPtr res = new ObjectVector(hivDecisionProblemStateClass, 1);
+    std::vector<double> initialState(6);
+    initialState[0] = 163573;
+    initialState[1] = 5;
+    initialState[2] = 11945;
+    initialState[3] = 46;
+    initialState[4] = 63919;
+    initialState[5] = 24;
+    res->set(0, new HIVDecisionProblemState(initialState));
+    return res;
+  }
 };
 
 extern ClassPtr hivDecisionProblemStateClass;
-extern DecisionProblemPtr hivDecisionProblem(double discount);
+extern DecisionProblemPtr hivDecisionProblem();
 
 }; /* namespace lbcpp */
 

@@ -272,7 +272,7 @@ public:
                   iterations(100), populationSize(100), numBests(10), reinjectBest(false),
                   baseHeuristics(false), optimisticHeuristics(false), learnedHeuristic(false)
   {
-    problem = hivDecisionProblem(discount);
+    problem = hivDecisionProblem();
     featuresFunction = new SimpleSearchNodeFeatureGenerator();
   }
 

@@ -9,18 +9,23 @@
   </class>
   <class name="LinearPointPhysicStateSampler" base="Function"/>
   <class name="LinearPointPhysicProblem" base="DecisionProblem" shortName="lpp">
-    <constructor arguments="double discount"/>
+    <constructor/>
   </class>
   
-   <!-- Mountain car -->
+  <!-- Mountain car -->
   <class name="MountainCarState" base="DecisionProblemState">
     <variable type="Double" name="position"/>
     <variable type="Double" name="velocity"/>
   </class>
   <class name="MountainCarStateSampler" base="Function"/>
-  <class name="MountainCarProblem" base="DecisionProblem" shortName="mcar">
-    <constructor arguments="double discount"/>
+  <class name="MountainCarProblem" base="DecisionProblem" shortName="mcar"/>
+
+  <!-- Left or right control problem -->
+  <class name="LeftOrRightControlState" base="DecisionProblemState">
+    <variable type="Double" name="position"/>
   </class>
+  <class name="LeftOrRightControlStateSampler" base="Function"/>
+  <class name="LeftOrRightControlProblem" base="DecisionProblem" shortName="leftOrRight"/>
 
   <!-- Lua wrapper -->
   <class name="LuaDecisionProblemState" base="DecisionProblemState">
@@ -40,7 +45,7 @@
   <class name="HIVInitialStateSampler" base="Function"/>
 
   <class name="HIVDecisionProblem" base="DecisionProblem" shortName="hiv">
-    <constructor arguments="double discount"/>
+    <constructor/>
   </class>
   
 </library>

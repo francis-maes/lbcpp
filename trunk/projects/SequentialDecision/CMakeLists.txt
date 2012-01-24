@@ -35,6 +35,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_PROBLEM_SOURCES
   Problem/DamienDecisionProblem.h
   Problem/LuaDecisionProblemState.h
   Problem/MountainCarProblem.h
+  Problem/LeftOrRightControlProblem.h
   Problem/SequentialDecisionProblemLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionProblemLibrary.cpp
 )
@@ -78,7 +79,7 @@ SET(LBCPP_GP_SEARCH_PROBLEM_SOURCES
   GP/BanditNoParamSearchProblem.h
   GP/SmallMDPFormulaSearchProblem.h
   GP/LearningRuleFormulaSearchProblem.h
-  GP/HIVPolicySearchProblem.h
+  GP/PolicyFormulaSearchProblem.h
 )
 
 SET(LBCPP_SEQUENTIAL_DECISION_BANDITS_SOURCES

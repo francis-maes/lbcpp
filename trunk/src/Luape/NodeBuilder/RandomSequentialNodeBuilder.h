@@ -87,9 +87,10 @@ public:
 
   virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<LuapeNodePtr>& res)
   {
-    if (function->getRootNode()->getNumSubNodes() != counter)
+    if (!function->getRootNode() || function->getRootNode()->getNumSubNodes() != counter)
     {
-      counter = function->getRootNode()->getNumSubNodes();
+      if (function->getRootNode())
+        counter = function->getRootNode()->getNumSubNodes();
 
       std::map<LuapeNodePtr, double> importances;
       for (size_t i = 0; i < function->getNumInputs(); ++i)
