@@ -30,13 +30,13 @@ public:
     {return velocity;}
 
   virtual TypePtr getActionType() const
-    {return booleanType;}
+    {return doubleType;}
 
   virtual ContainerPtr getAvailableActions() const
   {
-    VectorPtr res = new GenericVector(booleanType, 2);
-    res->setElement(0, false);
-    res->setElement(1, true);
+    DenseDoubleVectorPtr res = new DenseDoubleVector(2, 0.0);
+    res->setValue(0, -1.0);
+    res->setValue(1, 1.0);
     return res;
   }
 
@@ -44,7 +44,7 @@ public:
   {
     static const double deltaT = 0.1;
     position += deltaT * velocity;
-    velocity += deltaT * (action.getBoolean() ? 1.0 : -1.0);
+    velocity += deltaT * action.getDouble();
     reward = juce::jmax(0.0, 1.0 - position * position);
   }
 
@@ -65,7 +65,6 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    //return new LinearPointPhysicState(-1.0, 0.0);
     const RandomGeneratorPtr& random = input.getObjectAndCast<RandomGenerator>();
     double position = random->sampleDouble(-1.0, 1.0);
     double velocity = random->sampleDouble(-2.0, 2.0);
@@ -76,20 +75,30 @@ public:
 class LinearPointPhysicProblem : public DecisionProblem
 {
 public:
-  LinearPointPhysicProblem(double discount = 0.9) 
-    : DecisionProblem(new LinearPointPhysicStateSampler(), discount) {}
+  LinearPointPhysicProblem() 
+    : DecisionProblem(new LinearPointPhysicStateSampler(), 0.9, 50) {}
 
   virtual double getMaxReward() const
     {return 1.0;}
 
   virtual TypePtr getActionType() const
-    {return booleanType;}
+    {return doubleType;}
 
   virtual size_t getFixedNumberOfActions() const
     {return 2;}
+
+  virtual ObjectVectorPtr getValidationInitialStates() const
+  {
+    ObjectVectorPtr res = new ObjectVector(linearPointPhysicStateClass, 11 * 11);
+    size_t index = 0;
+    for (size_t i = 0; i < 11; ++i)
+      for (size_t j = 0; j < 11; ++j)
+        res->set(index++, new LinearPointPhysicState(-1.0 + i * 0.2, -2.0 + j * 0.4));
+    return res;
+  }
 };
 
-extern DecisionProblemPtr linearPointPhysicProblem(double discount);
+extern DecisionProblemPtr linearPointPhysicProblem();
 
 }; /* namespace lbcpp */
 

@@ -14,7 +14,7 @@
 # include <lbcpp/Luape/LuapeLearner.h>
 # include <lbcpp/DecisionProblem/Policy.h>
 # include "../Core/NestedMonteCarloOptimizer.h"
-# include "../GP/HIVPolicySearchProblem.h"
+# include "../GP/PolicyFormulaSearchProblem.h"
 
 namespace lbcpp
 {
@@ -100,61 +100,85 @@ protected:
   LuapeBinaryClassifierPtr a2;
 };
 
-class GetDecisionProblemSuccessorState : public LuapeFunction
+class ComputeDecisionProblemSuccessorState : public LuapeFunction
 {
 public:
-  GetDecisionProblemSuccessorState(size_t numActions = 0)
-    : action(0), numActions(numActions) {}
+  ComputeDecisionProblemSuccessorState(DecisionProblemPtr problem = DecisionProblemPtr())
+    : problem(problem) {}
 
   virtual size_t getNumInputs() const
-    {return 1;}
+    {return 2;}
 
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
-    {return type->inheritsFrom(decisionProblemStateClass);}
+    {return index == 0 ? type->inheritsFrom(decisionProblemStateClass) : (!problem || type == problem->getActionType());}
 
   virtual TypePtr initialize(const TypePtr* inputTypes)
   {
     outputClass = pairClass(inputTypes[0], doubleType);
     return outputClass;
   }
-
-  virtual String toShortString() const
-  {
-    return LuapeFunction::toShortString();
-  }
     
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
-    {return inputs[0]->toShortString() + T(".succ[") + String((int)action) + T("]");}
+    {return T("succ(") + inputs[0]->toShortString() + T(", ") + inputs[1]->toShortString() + T(")");}
+
+  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+  {
+    const DecisionProblemStatePtr& state = inputs[0].getObjectAndCast<DecisionProblemState>();
+    Variable action = getAction(inputs);
+    double reward;
+    DecisionProblemStatePtr res = state->cloneAndCast<DecisionProblemState>();
+    res->performTransition(context, action, reward);
+    return new Pair(outputClass, res, reward);
+  }
+
+protected:
+  friend class ComputeDecisionProblemSuccessorStateClass;
+
+  DecisionProblemPtr problem;
+
+  ClassPtr outputClass;
+  
+  virtual Variable getAction(const Variable* inputs) const
+    {return inputs[1];}
+};
+
+class ComputeDecisionProblemSuccessorStateFunctor : public ComputeDecisionProblemSuccessorState
+{
+public:
+  ComputeDecisionProblemSuccessorStateFunctor(const DecisionProblemPtr& problem = DecisionProblemPtr())
+    : ComputeDecisionProblemSuccessorState(problem), action(0) {}
+
+  virtual size_t getNumInputs() const
+    {return 1;}
+
+  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+    {return T("succ(") + inputs[0]->toShortString() + T(", ") + String((int)action) + T(")");}
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
   {
+    size_t numActions = problem->getFixedNumberOfActions();
+    jassert(numActions);
     VectorPtr res = vector(positiveIntegerType, numActions);
     for (size_t i = 0; i < numActions; ++i)
       res->setElement(i, i);
     return res;
   }
 
-  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
-  {
-    const DecisionProblemStatePtr& state = inputs[0].getObjectAndCast<DecisionProblemState>();
-    DecisionProblemStatePtr res = state->cloneAndCast<DecisionProblemState>();
-    ContainerPtr actions = state->getAvailableActions();
-    jassert(action < actions->getNumElements());
-    Variable action = actions->getElement(this->action);
-    double reward;
-    res->performTransition(context, action, reward);
-    return new Pair(outputClass, res, reward);
-  }
-  
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  friend class GetDecisionProblemSuccessorStateClass;
+  friend class ComputeDecisionProblemSuccessorStateFunctorClass;
         
   size_t action;
 
-  size_t numActions;
-  ClassPtr outputClass;
+  virtual Variable getAction(const Variable* inputs) const
+  {
+    const DecisionProblemStatePtr& state = inputs[0].getObjectAndCast<DecisionProblemState>();
+    DecisionProblemStatePtr res = state->cloneAndCast<DecisionProblemState>();
+    ContainerPtr availableActions = state->getAvailableActions();
+    jassert(action < availableActions->getNumElements());
+    return availableActions->getElement(action);
+  }
 };
 
 
@@ -235,7 +259,7 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
-    DecisionProblemPtr problem = hivDecisionProblem(discount);
+    DecisionProblemPtr problem = hivDecisionProblem();
     ContainerPtr initialStates = problem->sampleInitialStates(context, random, numInitialStates);
 
     ContainerPtr examples;
@@ -252,6 +276,7 @@ public:
       examples = createLearningExamples(context, problem, referencePolicy, initialStates, returnStatistics);
     }
 
+#if 0
     // E / log(T1)
     GPExpressionPtr formula1 = new BinaryGPExpression(new VariableGPExpression(Variable(5, hivStateVariablesEnumeration)),
                                                      gpDivision,
@@ -268,6 +293,7 @@ public:
     // E
     GPExpressionPtr formula3 = new VariableGPExpression(Variable(5, hivStateVariablesEnumeration));
     testDiscoveredPolicy(context, initialStates, new FormulaBasedHIVPolicy(formula3));
+#endif // 0
     return true;
 
 
@@ -526,7 +552,7 @@ protected:
         //classifier->addFunction(logDoubleLuapeFunction());
         classifier->addFunction(greaterThanDoubleLuapeFunction());
         classifier->addFunction(getVariableLuapeFunction());
-        classifier->addFunction(new GetDecisionProblemSuccessorState(4));
+        //classifier->addFunction(new ComputeDecisionProblemSuccessorStateFunctor(decisionProblem));
         classifier->setSamples(context, examples.staticCast<ObjectVector>()->getObjects());
         classifier->getTrainingCache()->setMaxSizeInMegaBytes(512);
         LuapeNodeBuilderPtr nodeBuilder = exhaustiveSequentialNodeBuilder(complexity);

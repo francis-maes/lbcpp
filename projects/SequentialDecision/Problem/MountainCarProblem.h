@@ -44,7 +44,7 @@ public:
   virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward, Variable* stateBackup = NULL)
   {
     double a = action.getDouble();
-    velocity = juce::jlimit(-0.07, 0.07, a * 0.001 - 0.0025 * cos(3 * position));
+    velocity = juce::jlimit(-0.07, 0.07, velocity + a * 0.001 - 0.0025 * cos(3 * position));
     position = juce::jlimit(-1.2, 0.6, position + velocity);
     if (position == -1.2 && velocity < 0.0)
       velocity = 0.0;
@@ -71,7 +71,6 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    //return new LinearPointPhysicState(-1.0, 0.0);
     const RandomGeneratorPtr& random = input.getObjectAndCast<RandomGenerator>();
     double position = random->sampleDouble(-1.2, 0.6);
     double velocity = random->sampleDouble(-0.07, 0.07);
@@ -82,7 +81,7 @@ public:
 class MountainCarProblem : public DecisionProblem
 {
 public:
-  MountainCarProblem(double discount = 0.9) 
+  MountainCarProblem(double discount = 1.0) 
     : DecisionProblem(new MountainCarStateSampler(), discount) {}
 
   virtual double getMaxReward() const

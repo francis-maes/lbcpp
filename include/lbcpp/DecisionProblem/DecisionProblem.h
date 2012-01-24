@@ -50,8 +50,8 @@ extern ClassPtr decisionProblemStateClass;
 class DecisionProblem : public Object
 {
 public:
-  DecisionProblem(const FunctionPtr& initialStateSampler, double discount)
-    : initialStateSampler(initialStateSampler), discount(discount)
+  DecisionProblem(const FunctionPtr& initialStateSampler, double discount, size_t horizon = 0)
+    : initialStateSampler(initialStateSampler), discount(discount), horizon(horizon)
     {if (initialStateSampler) initialStateSampler->initialize(defaultExecutionContext(), randomGeneratorClass);}
   DecisionProblem() {}
 
@@ -66,6 +66,9 @@ public:
   DecisionProblemStatePtr sampleInitialState(ExecutionContext& context, RandomGeneratorPtr random) const;
   ContainerPtr sampleInitialStates(ExecutionContext& context, RandomGeneratorPtr random, size_t count) const;
 
+  virtual ObjectVectorPtr getValidationInitialStates() const
+    {return ObjectVectorPtr();}
+
   /*
   ** Actions
   */
@@ -79,8 +82,13 @@ public:
   double getDiscount() const
     {return discount;} // in [0,1]
 
+  size_t getHorizon() const
+    {return horizon;}
+
   virtual double getMaxReward() const
     {return 1.0;}
+
+  virtual double getMaxCumulativeReward() const;
 
   lbcpp_UseDebuggingNewOperator
 
@@ -89,6 +97,7 @@ protected:
 
   FunctionPtr initialStateSampler;
   double discount;
+  size_t horizon;
 };
 
 typedef ReferenceCountedObjectPtr<DecisionProblem> DecisionProblemPtr;

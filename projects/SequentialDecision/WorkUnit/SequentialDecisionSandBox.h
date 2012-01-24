@@ -122,7 +122,7 @@ public:
   // default values
   SequentialDecisionSandBox() : numInitialStates(1000), maxSearchNodes(100000), beamSize(10000), maxLearningIterations(100), numPasses(10)
   {
-    problem = linearPointPhysicProblem(0.9);
+    problem = linearPointPhysicProblem();
     rankingLoss = allPairsRankingLossFunction(hingeDiscriminativeLossFunction());
   }
 

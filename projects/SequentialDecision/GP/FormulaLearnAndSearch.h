@@ -399,12 +399,21 @@ public:
         playBestFormula(context);
     }
 
-    displayBestFormulas(context);
+    GPExpressionPtr bestFormula = displayBestFormulas(context);
+
+    context.enterScope(T("Regressor info"));
     regressor->flushInformation(context);
+    context.leaveScope();
+
+    context.enterScope("Validating " + bestFormula->toShortString());
+    double validationScore = problem->validateFormula(context, bestFormula);
+    context.leaveScope(validationScore);
+    context.resultCallback(T("validationScore"), validationScore);
+
     context.leaveScope();
   }
 
-  void displayBestFormulas(ExecutionContext& context)
+  GPExpressionPtr displayBestFormulas(ExecutionContext& context) // and return the best one
   {
     checkCurrentThreadId();
 
@@ -426,6 +435,7 @@ public:
     context.resultCallback(T("bestFormulaPlayCount"), bestFormula.statistics.getCount());
     context.resultCallback(T("bestFormulaSize"), bestFormula.expression->size());
     context.resultCallback(T("banditPoolSize"), formulasByMeanReward.size());
+    return bestFormula.expression;
   }
 
   size_t getNumFormulas() const
@@ -569,6 +579,14 @@ public:
   {   
     SuperFormulaPool pool(context, problem, 100);
     size_t iteration = 0;
+    
+    context.informationCallback(T("Problem: ") + problem->toShortString());
+    String varInfo;
+    EnumerationPtr variables = problem->getVariables();
+    for (size_t i = 0; i < variables->getNumElements(); ++i)
+      varInfo += T(" ") + variables->getElementName(i);
+    context.informationCallback(T("Variables:") + varInfo);
+
     if (formulaInitialSize > 0)
     {
       // generate initial formula classes

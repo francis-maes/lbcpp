@@ -76,7 +76,8 @@
     <value name="bothdrugs"/>
   </enumeration>
 
-  <class name="GetDecisionProblemSuccessorState" base="LuapeFunction">
+  <class name="ComputeDecisionProblemSuccessorState" base="LuapeFunction"/>
+  <class name="ComputeDecisionProblemSuccessorStateFunctor" base="ComputeDecisionProblemSuccessorState">
     <variable type="PositiveInteger" name="action"/>
   </class>
 

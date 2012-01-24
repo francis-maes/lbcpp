@@ -195,22 +195,19 @@
     <variable type="Function" name="objective"/>
   </class>
 
-  <!-- HIV Policy Search Policy -->
-  <class name="HIVPolicyFormulaObjective" base="Function">
+  <!-- Policy Search Policy -->
+  <class name="GPExpressionBasedPolicy" base="Policy">
+    <variable type="GPExpression" name="formula"/>
+    <variable type="Boolean" name="useNextState"/>
+  </class>
+
+  <class name="PolicyFormulaObjective" base="Function">
+    <variable type="DecisionProblem" name="problem"/>
+    <variable type="Boolean" name="useNextState"/>
     <variable type="PositiveInteger" name="horizon"/>
   </class>
   
-  <enumeration name="HivStateVariables">
-    <value name="T1"/>
-    <value name="T2"/>
-    <value name="T1star"/>
-    <value name="T2star"/>
-    <value name="V"/>
-    <value name="E"/>
-    <value name="r"/>
-  </enumeration>
-
-  <class name="HIVPolicySearchProblem" base="FormulaSearchProblem" shortName="hivPolicy">
+  <class name="PolicyFormulaSearchProblem" base="FormulaSearchProblem" shortName="policy">
     <variable type="Function" name="objective"/>
   </class>
 

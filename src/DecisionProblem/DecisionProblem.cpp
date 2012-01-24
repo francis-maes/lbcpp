@@ -84,7 +84,6 @@ int DecisionProblemState::performTransition(LuaState& state)
   return 1;
 }
 
-
 /*
 ** DecisionProblem
 */
@@ -107,4 +106,13 @@ ContainerPtr DecisionProblem::sampleInitialStates(ExecutionContext& context, Ran
   for (size_t i = 0; i < count; ++i)
     res->set(i, sampleInitialState(context, random));
   return res;
+}
+
+double DecisionProblem::getMaxCumulativeReward() const
+{
+  double maxReward = getMaxReward();
+  if (discount == 1.0)
+    return maxReward * horizon;
+  else
+    return maxReward * (1.0 - pow(discount, (double)horizon)) / (1.0 - discount);
 }

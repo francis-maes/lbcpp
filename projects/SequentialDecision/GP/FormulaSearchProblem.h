@@ -46,6 +46,9 @@ class FormulaSearchProblem : public Object
 public:
   virtual FunctionPtr getObjective() const = 0;
 
+  virtual double validateFormula(ExecutionContext& context, const GPExpressionPtr& formula) const
+    {return 0.0;}
+
   virtual EnumerationPtr getVariables() const = 0;
   virtual void getOperators(std::vector<GPPre>& unaryOperators, std::vector<GPOperator>& binaryOperators) const = 0;
 
