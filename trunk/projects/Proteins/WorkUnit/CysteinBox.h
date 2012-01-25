@@ -659,6 +659,7 @@ public:
         return 101;
       }
     }
+    parameter->saveToFile(context, context.getFile(T("parameter.xml")));
 /*
     context.warningCallback(T("Parameter set to lin09"));
     parameter = new LargeProteinParameters();
