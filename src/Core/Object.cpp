@@ -553,6 +553,14 @@ int Object::clone(LuaState& state)
   return 1;
 }
 
+int Object::save(LuaState& state)
+{
+  ObjectPtr object = state.checkObject(1);
+  File file = state.checkFile(2);
+  object->saveToFile(state.getContext(), file);
+  return 0;
+}
+
 int Object::__index(LuaState& state) const
 {
   if (state.isString(1)) // indiced by a string
