@@ -361,7 +361,7 @@ public:
     }
   }
 
-  void play(ExecutionContext& context, size_t iterationNumber, size_t numTimeSteps, size_t creationFrequency)
+  void play(ExecutionContext& context, size_t iterationNumber, size_t numTimeSteps, size_t creationFrequency, bool verbose)
   {
     checkCurrentThreadId();
 
@@ -399,21 +399,26 @@ public:
         playBestFormula(context);
     }
 
-    GPExpressionPtr bestFormula = displayBestFormulas(context);
+    GPExpressionPtr bestFormula = displayBestFormulas(context, verbose);
 
-    context.enterScope(T("Regressor info"));
-    regressor->flushInformation(context);
-    context.leaveScope();
+    if (verbose)
+    {
+      context.enterScope(T("Regressor info"));
+      regressor->flushInformation(context);
+      context.leaveScope();
+    }
 
-    context.enterScope("Validating " + bestFormula->toShortString());
-    double validationScore = problem->validateFormula(context, bestFormula);
-    context.leaveScope(validationScore);
+    if (verbose)
+      context.enterScope("Validating " + bestFormula->toShortString());
+    double validationScore = problem->validateFormula(context, bestFormula, verbose);
+    if (verbose)
+      context.leaveScope(validationScore);
     context.resultCallback(T("validationScore"), validationScore);
     context.resultCallback(T("bestFormula"), bestFormula);
     context.leaveScope(validationScore);
   }
 
-  GPExpressionPtr displayBestFormulas(ExecutionContext& context) // and return the best one
+  GPExpressionPtr displayBestFormulas(ExecutionContext& context, bool verbose) // and return the best one
   {
     checkCurrentThreadId();
 
@@ -421,13 +426,16 @@ public:
     for (std::multimap<double, size_t>::const_iterator it = sortedFormulaClasses.begin(); it != sortedFormulaClasses.end(); ++it)
       formulasByMeanReward.insert(std::make_pair(formulaClasses[it->second].statistics.getMean(), it->second));
 
-    size_t n = 10;
-    size_t i = 1;
-    for (std::multimap<double, size_t>::reverse_iterator it = formulasByMeanReward.rbegin(); i < n && it != formulasByMeanReward.rend(); ++it, ++i)
+    if (verbose)
     {
-      FormulaClassInfo& formula = formulaClasses[it->second];
-      context.informationCallback(T("[") + String((int)i) + T("] ") + formula.expression->toShortString() + T(" meanReward = ") + String(formula.statistics.getMean())
-        + T(" playedCount = ") + String(formula.statistics.getCount()));
+      size_t n = 10;
+      size_t i = 1;
+      for (std::multimap<double, size_t>::reverse_iterator it = formulasByMeanReward.rbegin(); i < n && it != formulasByMeanReward.rend(); ++it, ++i)
+      {
+        FormulaClassInfo& formula = formulaClasses[it->second];
+        context.informationCallback(T("[") + String((int)i) + T("] ") + formula.expression->toShortString() + T(" meanReward = ") + String(formula.statistics.getMean())
+          + T(" playedCount = ") + String(formula.statistics.getCount()));
+      }
     }
 
     FormulaClassInfo& bestFormula = formulaClasses[formulasByMeanReward.rbegin()->second];
@@ -573,7 +581,10 @@ protected:
 class FormulaLearnAndSearch : public WorkUnit
 {
 public:
-  FormulaLearnAndSearch() : formulaInitialSize(4), numInitialIterations(1), creationFrequency(10), numIterations(10), iterationsLength(1000) {}
+  FormulaLearnAndSearch()
+    : formulaInitialSize(4), numInitialIterations(1),
+      creationFrequency(10), numIterations(10), iterationsLength(1000),
+      verbose(false) {}
 
   virtual Variable run(ExecutionContext& context)
   {   
@@ -598,13 +609,13 @@ public:
       // initial plays
       //size_t n = pool.getNumFormulaClasses();
       for (size_t i = 0; i < numInitialIterations; ++i)
-        pool.play(context, iteration++, iterationsLength, 0);
+        pool.play(context, iteration++, iterationsLength, 0, verbose);
       context.informationCallback(T("End of initial plays"));
     }
 
     // all the rest
     for (size_t i = 0; i < numIterations; ++i)
-      pool.play(context, iteration++, iterationsLength, creationFrequency);
+      pool.play(context, iteration++, iterationsLength, creationFrequency, verbose);
 
     return Variable();
   }
@@ -618,6 +629,7 @@ protected:
   size_t creationFrequency;
   size_t numIterations;
   size_t iterationsLength;
+  bool verbose;
 };
 
 }; /* namespace lbcpp */

@@ -37,8 +37,8 @@
     <variable type="Double" name="omega_dot"/>
     <variable type="Double" name="theta"/>
     <variable type="Double" name="theta_dot"/>
-    <variable type="Double" name="xb"/>
-    <variable type="Double" name="yb"/>
+<!--    <variable type="Double" name="xb"/>
+    <variable type="Double" name="yb"/> -->
     <variable type="Double" name="psi"/>
   </class>
   <class name="BicyleBalancingProblem" base="DecisionProblem" shortName="bicycle">

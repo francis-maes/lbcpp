@@ -14,6 +14,8 @@
 namespace lbcpp
 {
 
+class BicyleBalancingState;
+typedef ReferenceCountedObjectPtr<BicyleBalancingState> BicyleBalancingStatePtr;
 extern ClassPtr bicyleBalancingStateClass;
 
 class BicyleBalancingState : public DecisionProblemState
@@ -144,10 +146,13 @@ public:
   virtual bool isFinalState() const
     {return fabs(omega) > pi / 15.0;}
 
-  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
   {
+    const BicyleBalancingStatePtr& target = t.staticCast<BicyleBalancingState>();
     DecisionProblemState::clone(context, target);
-    target.staticCast<BicyleBalancingState>()->useRidingReward = useRidingReward;
+    target->xb = xb;
+    target->yb = yb;
+    target->useRidingReward = useRidingReward;
   }
 
 protected:
@@ -179,8 +184,6 @@ protected:
     return angle;
   }
 };
-
-typedef ReferenceCountedObjectPtr<BicyleBalancingState> BicyleBalancingStatePtr;
 
 class BicyleBalancingProblem : public DecisionProblem
 {

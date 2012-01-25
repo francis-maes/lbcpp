@@ -224,7 +224,19 @@ public:
       state->performTransition(context, action, reward);
       cumulativeReward += pow(discount, (double)t) * reward; 
       
-      context.resultCallback(T("action"), action);
+      if (action.isObject())
+      {
+        const ObjectPtr& actionObject = action.getObject();
+        for (size_t j = 0; j < actionObject->getNumVariables(); ++j)
+        {
+          Variable v = actionObject->getVariable(j);
+          if (v.isDouble())
+            context.resultCallback(actionObject->getVariableName(j), v);
+        }
+      }
+      else
+        context.resultCallback(T("action"), action);
+
       context.resultCallback(T("reward"), reward);
       context.resultCallback(T("return"), cumulativeReward);
       context.leaveScope(cumulativeReward);
@@ -235,7 +247,7 @@ public:
     return cumulativeReward;
   }
 
-  virtual double validateFormula(ExecutionContext& context, const GPExpressionPtr& formula) const
+  virtual double validateFormula(ExecutionContext& context, const GPExpressionPtr& formula, bool verbose) const
   {
     if (!validationInitialStates)
     {
@@ -243,10 +255,13 @@ public:
       pthis.validationInitialStates = objective->getProblem()->getValidationInitialStates(pthis.numTrajectoriesToValidate);
     }
 
-    context.enterScope(T("Example Trajectory"));
-    PolicyPtr policy = new GPExpressionBasedPolicy(formula, objective->getUseNextState());
-    double cumulativeReward = makeVerboseTrajectory(context, objective->getProblem()->sampleInitialState(context), policy);
-    context.leaveScope(cumulativeReward);
+    if (verbose)
+    {
+      context.enterScope(T("Example Trajectory"));
+      PolicyPtr policy = new GPExpressionBasedPolicy(formula, objective->getUseNextState());
+      double cumulativeReward = makeVerboseTrajectory(context, objective->getProblem()->sampleInitialState(context), policy);
+      context.leaveScope(cumulativeReward);
+    }
 
     double res = 0.0;
     size_t n = validationInitialStates->getNumElements();
@@ -255,7 +270,8 @@ public:
       DecisionProblemStatePtr state = validationInitialStates->getAndCast<DecisionProblemState>(i);
       for (size_t j = 0; j < numTrajectoriesToValidate; ++j)
         res += objective->makeTrajectory(context, formula, state->cloneAndCast<DecisionProblemState>());
-      context.progressCallback(new ProgressionState(i + 1, n, T("Trajectories")));
+      if (verbose)
+        context.progressCallback(new ProgressionState(i + 1, n, T("Trajectories")));
     }
     return res / (n * numTrajectoriesToValidate);
   }

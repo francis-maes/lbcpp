@@ -46,7 +46,7 @@ class FormulaSearchProblem : public Object
 public:
   virtual FunctionPtr getObjective() const = 0;
 
-  virtual double validateFormula(ExecutionContext& context, const GPExpressionPtr& formula) const
+  virtual double validateFormula(ExecutionContext& context, const GPExpressionPtr& formula, bool verbose) const
     {return 0.0;}
 
   virtual EnumerationPtr getVariables() const = 0;
