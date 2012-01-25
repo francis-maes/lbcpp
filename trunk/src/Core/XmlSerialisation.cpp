@@ -527,7 +527,7 @@ Variable XmlImporter::loadVariable(TypePtr expectedType)
       return Variable::missingValue(type);
 
     Variable res = Variable::createFromXml(type, *this);
-    if (res.isObject())
+    if (res.isObject() && res.exists())
       linkCurrentElementToObject(res.getObject());
     return res;
   }

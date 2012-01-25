@@ -149,14 +149,18 @@
   <class name="BanditFormulaSearch" base="WorkUnit">
     <variable type="File" name="formulasFile"/>
     <variable type="PositiveInteger" name="numTimeSteps"/>
-    <variable type="PositiveInteger" name="minArms"/>
-    <variable type="PositiveInteger" name="maxArms"/>
-    <variable type="Double" name="maxExpectedReward"/>
+    <variable type="BanditProblemSampler" name="problemSampler"/>
     <variable type="PositiveInteger" name="minHorizon"/>
     <variable type="PositiveInteger" name="maxHorizon"/>
+    <variable type="File" name="outputDirectory"/>
   </class>
 
-
+  <class name="EvaluateBanditFormulas" base="WorkUnit">
+    <variable type="File" name="formulasFile"/>
+    <variable type="BanditProblemSampler" name="problemSampler"/>
+    <variable type="PositiveInteger" name="horizon"/>
+    <variable type="Boolean" name="isSimpleRegret"/>
+  </class>
 
   <!-- MultiArmed Bandit Formulas -->
   <enumeration name="GPExpressionDiscreteBanditPolicyVariables">
@@ -171,14 +175,19 @@
     <variable type="Double" name="reward"/>
   </class>
 
+
+  <class name="BanditProblemSampler" base="Sampler" abstract="yes"/>
+  <class name="Setup1BanditProblemSampler" base="BanditProblemSampler"/>
+  <class name="Setup2BanditProblemSampler" base="BanditProblemSampler"/>
+  <class name="Setup3BanditProblemSampler" base="BanditProblemSampler"/>
+  <class name="Setup4BanditProblemSampler" base="BanditProblemSampler"/>
+
   <class name="BanditFormulaObjective" base="SimpleUnaryFunction">
     <variable type="Boolean" name="isSimpleRegret"/>
-    <variable type="PositiveInteger" name="worstNumSamples"/>
-    <variable type="PositiveInteger" name="minArms"/>
-    <variable type="PositiveInteger" name="maxArms"/>
-    <variable type="Double" name="maxExpectedReward"/>
+    <variable type="BanditProblemSampler" name="problemSampler"/>
     <variable type="PositiveInteger" name="horizon"/>
   </class>
+  
   <class name="BanditFormulaSearchProblem" base="FormulaSearchProblem" shortName="multiArmedBandits">
     <variable type="Function" name="objective"/>
     <variable type="PositiveInteger" name="numArmsInSampling"/>
