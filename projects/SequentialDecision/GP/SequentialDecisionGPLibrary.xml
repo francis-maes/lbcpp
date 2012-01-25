@@ -271,6 +271,7 @@
     <variable type="PositiveInteger" name="creationFrequency"/>
     <variable type="PositiveInteger" name="numIterations"/>
     <variable type="PositiveInteger" name="iterationsLength"/>
+    <variable type="Boolean" name="verbose"/>
   </class>
   
 </library>
