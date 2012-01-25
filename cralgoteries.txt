@@ -1,9 +1,7 @@
+Bandit Formulas:
+ * Launch on Monster24
  
- * Car on the hill problem
- * Acrobot Swing Up problem
- * Bicycle Balancing and Bicycle Balancing and Riding problems
- * Launch on monster24
-
+ 
 Experiences - Proteins:
  * Nouvelles features: prev et next amino acid de chaque type; delta de ObjectVector[DenseDoubleVector]; local/global histogram
  * Essayer du Totally corrective boosting

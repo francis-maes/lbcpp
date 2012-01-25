@@ -94,6 +94,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_BANDITS_SOURCES
   Bandits/UCB1DiscreteBanditPolicy.h
   Bandits/UCB2DiscreteBanditPolicy.h
   Bandits/UCBvDiscreteBanditPolicy.h
+  Bandits/KLUCBDiscreteBanditPolicy.h
   Bandits/PowerDiscreteBanditPolicy.h
   Bandits/GPExpressionDiscreteBanditPolicy.h
 #  Bandits/BanditsMCTSWorkUnit.h

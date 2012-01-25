@@ -63,8 +63,11 @@ public:
     target->name = name;
   }
   
-  size_t getNumBandits() const
+  size_t getNumArms() const
     {return samplers.size();}
+
+  const std::vector<SamplerPtr>& getArms() const
+    {return samplers;}
 
   lbcpp_UseDebuggingNewOperator
 

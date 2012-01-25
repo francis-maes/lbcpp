@@ -625,7 +625,7 @@ protected:
   size_t numRunsPerEstimation;
 
   WorkUnitPtr makeEvaluationWorkUnit(const std::vector<DiscreteBanditStatePtr>& initialStates, const String& initialStatesDescription, const DiscreteBanditPolicyPtr& policy, bool verbose) const
-    {return new EvaluateDiscreteBanditPolicyWorkUnit(initialStates[0]->getNumBandits(), maxTimeStep, initialStates, initialStatesDescription, policy, numRunsPerEstimation, verbose);}
+    {return new EvaluateDiscreteBanditPolicyWorkUnit(initialStates[0]->getNumArms(), maxTimeStep, initialStates, initialStatesDescription, policy, numRunsPerEstimation, verbose);}
   
   Variable optimizePolicy(ExecutionContext& context, DiscreteBanditPolicyPtr policy, const std::vector<DiscreteBanditStatePtr>& trainingProblems, double& bestScore)
   {
@@ -653,9 +653,9 @@ protected:
     StoppingCriterionPtr stoppingCriterion = maxIterationsWithoutImprovementStoppingCriterion(5);
 
     // optimization problem
-    FunctionPtr objectiveFunction = new EvaluateDiscreteBanditPolicyParameters(policy, trainingProblems[0]->getNumBandits(), maxTimeStep, trainingProblems, numRunsPerEstimation, 51861664);
+    FunctionPtr objectiveFunction = new EvaluateDiscreteBanditPolicyParameters(policy, trainingProblems[0]->getNumArms(), maxTimeStep, trainingProblems, numRunsPerEstimation, 51861664);
     objectiveFunction->initialize(context, parametersType);
-    FunctionPtr validationFunction = new EvaluateDiscreteBanditPolicyParameters(policy, trainingProblems[0]->getNumBandits(), maxTimeStep, trainingProblems, numRunsPerEstimation);
+    FunctionPtr validationFunction = new EvaluateDiscreteBanditPolicyParameters(policy, trainingProblems[0]->getNumArms(), maxTimeStep, trainingProblems, numRunsPerEstimation);
     validationFunction->initialize(context, parametersType);
     OptimizationProblemPtr problem = new OptimizationProblem(objectiveFunction, Variable(), Parameterized::get(policy)->createParametersSampler(), validationFunction);
 
@@ -676,9 +676,9 @@ protected:
   {
     FunctionPtr makeGPExpressionUniqueFunction = new MakeGPExpressionUnique();
   
-    size_t numBandits = trainingStates[0]->getNumBandits();
+    size_t numArms = trainingStates[0]->getNumArms();
     FunctionPtr objective = new EvaluateDiscreteBanditPolicyParameters(
-      gpExpressionDiscreteBanditPolicy(), numBandits, maxTimeStep, trainingStates, numRunsPerEstimation, 51861664);
+      gpExpressionDiscreteBanditPolicy(), numArms, maxTimeStep, trainingStates, numRunsPerEstimation, 51861664);
     objective = new GPStructureObjectiveFunction(objective);
 
     UnaryCacheFunctionPtr cacheFunction = new UnaryCacheFunction(objective);
@@ -688,7 +688,7 @@ protected:
       return false;
       
     FunctionPtr validation = new EvaluateDiscreteBanditPolicyParameters(
-      gpExpressionDiscreteBanditPolicy(), numBandits, maxTimeStep, trainingStates, numRunsPerEstimation);
+      gpExpressionDiscreteBanditPolicy(), numArms, maxTimeStep, trainingStates, numRunsPerEstimation);
     if (!validation->initialize(context, gpExpressionClass))
       return false;
    
