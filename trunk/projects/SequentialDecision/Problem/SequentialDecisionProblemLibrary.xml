@@ -30,6 +30,21 @@
   <class name="AcrobotProblem" base="DecisionProblem" shortName="acrobot">
     <constructor/>
   </class>
+
+  <!-- BicyleBalancing -->
+  <class name="BicyleBalancingState" base="DecisionProblemState">
+    <variable type="Double" name="omega"/>
+    <variable type="Double" name="omega_dot"/>
+    <variable type="Double" name="theta"/>
+    <variable type="Double" name="theta_dot"/>
+    <variable type="Double" name="xb"/>
+    <variable type="Double" name="yb"/>
+    <variable type="Double" name="psi"/>
+  </class>
+  <class name="BicyleBalancingProblem" base="DecisionProblem" shortName="bicycle">
+    <constructor/>
+    <variable type="Boolean" name="useRidingReward"/>
+  </class>
   
   <!-- Mountain car -->
   <class name="MountainCarState" base="DecisionProblemState">

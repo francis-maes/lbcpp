@@ -128,6 +128,9 @@ public:
   virtual double getMaxReward() const
     {return 1.0;}
 
+  virtual double getMaxCumulativeReward() const
+    {return 1.0;}
+
   virtual ClassPtr getStateClass() const
     {return acrobotStateClass;}
 

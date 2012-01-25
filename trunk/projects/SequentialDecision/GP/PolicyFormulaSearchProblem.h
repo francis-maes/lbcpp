@@ -122,9 +122,14 @@ public:
     double cumulativeReward = makeTrajectory(context, formula, state);
     double maxCumulativeReward = problem->getMaxCumulativeReward();
     jassert(maxCumulativeReward);
-    if (!maxCumulativeReward || cumulativeReward > maxCumulativeReward)
-      context.informationCallback(T("Wrong maxCumulativeReward: ") + String(cumulativeReward) + T(" should be less than ") + String(maxCumulativeReward));
-    return cumulativeReward / maxCumulativeReward;
+    if (maxCumulativeReward)
+    {
+      if (cumulativeReward > maxCumulativeReward)
+        context.informationCallback(T("Wrong maxCumulativeReward: ") + String(cumulativeReward) + T(" should be less than ") + String(maxCumulativeReward));
+      return cumulativeReward / maxCumulativeReward;
+    }
+    else
+      return cumulativeReward;
   }
 
   const DecisionProblemPtr& getProblem() const
