@@ -73,8 +73,8 @@ public:
     double d = action->getFirst().getDouble();
     double T = action->getSecond().getDouble();
 
-	  double previousXfValue = xb+l*cos(psi);
-	  double previousXbValue = xb;
+//	  double previousXfValue = xb+l*cos(psi);
+//	  double previousXbValue = xb;
 	  double previousPsi = psi;
   
     double rf;
