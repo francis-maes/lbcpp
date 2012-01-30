@@ -12,6 +12,7 @@
   <include file="lbcpp/Data/Matrix.h"/>
   <include file="lbcpp/Data/SymmetricMatrix.h"/>
   <include file="lbcpp/Data/IndexSet.h"/>
+  <include file="lbcpp/Data/BinaryKey.h"/>
   
   <!-- Random Generator -->
   <class name="RandomGenerator">
@@ -137,5 +138,6 @@
   <class name="IndexSet" base="Object">
     <variable type="GenericVector[PositiveInteger]" name="v"/>
   </class>
+  <class name="BinaryKey" base="Object"/>
   
 </library>

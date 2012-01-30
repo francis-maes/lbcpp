@@ -86,6 +86,14 @@ public:
       res = 31 * res + *ptr++;
     return res;
   }
+  
+  virtual String toShortString() const
+  {
+    String res;
+    for (size_t i = 0; i < values.size(); ++i)
+      res += String::toHexString(values[i]);
+    return res;
+  }
 
 protected:
   std::vector<unsigned char> values;
