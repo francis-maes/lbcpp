@@ -24,9 +24,12 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
+#if JUCE_DEBUG
+    maxProteinCount = 20;
+#endif // !JUCE_DEBUG
     ContainerPtr trainingProteins = loadProteinPairs(context, trainingInputDirectory, trainingSupervisionDirectory, "training");
-    ContainerPtr testingProteins;// = loadProteinPairs(context, testingInputDirectory, testingSupervisionDirectory, "testing");
-    if (!trainingProteins)// || !testingProteins)
+    ContainerPtr testingProteins = loadProteinPairs(context, testingInputDirectory, testingSupervisionDirectory, "testing");
+    if (!trainingProteins || !testingProteins)
       return false;
 
 #if 0
@@ -43,9 +46,9 @@ public:
     ProteinPredictorParametersPtr predictor = new LuapeProteinPredictorParameters(treeDepth, complexity, relativeBudget, miniBatchRelativeSize, numIterations, false);
 
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
-    //iteration->addTarget(dsbTarget);
+    iteration->addTarget(dsbTarget);
     //iteration->addTarget(sa20Target);
-    iteration->addTarget(ss3Target);
+    //iteration->addTarget(ss3Target);
     //iteration->addTarget(ss8Target);
     //iteration->addTarget(stalTarget);
     //iteration->addTarget(drTarget);
@@ -86,7 +89,7 @@ protected:
   ProteinEvaluatorPtr createEvaluator(bool isFinalEvaluation) const
   {
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-    evaluator->addEvaluator(ss3Target, containerSupervisedEvaluator(classificationEvaluator()), T("Secondary Structure"));
+    //evaluator->addEvaluator(ss3Target, containerSupervisedEvaluator(classificationEvaluator()), T("Secondary Structure"));
     evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation), 1), T("Disulfide Bonds (Sens. and Spec)"));
     evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, isFinalEvaluation), 1), T("Disulfide Bonds (MCC)"));
     evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore), 1), T("Disulfide Bonds (Raw)"));

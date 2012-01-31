@@ -14,6 +14,8 @@
 # include <lbcpp/Luape/LuapeLearner.h>
 # include "../../../src/Luape/Function/ObjectLuapeFunctions.h"
 
+//# define USE_EXTRA_TREES
+
 namespace lbcpp
 {
 
@@ -80,6 +82,7 @@ public:
   {
     LuapeNodeBuilderPtr nodeBuilder = createNodeBuilder(target);
 
+# ifndef USE_EXTRA_TREES
     LuapeLearnerPtr conditionLearner;
     if (miniBatchRelativeSize == 0.0)
       return laminatingWeakLearner(nodeBuilder, relativeBudget);
@@ -87,6 +90,9 @@ public:
       return banditBasedWeakLearner(nodeBuilder, relativeBudget, miniBatchRelativeSize);
     else
       return exactWeakLearner(nodeBuilder);
+# else
+    return randomSplitWeakLearner(nodeBuilder);
+# endif // !USE_EXTRA_TREES
   }
 
   // task level
@@ -116,7 +122,12 @@ public:
   {
     LuapeInferencePtr learningMachine = new LuapeBinaryClassifier(createUniverse());
     addFunctions(learningMachine, target);
+# ifndef USE_EXTRA_TREES
     learningMachine->setLearner(adaBoostLearner(createWeakLearner(target), numIterations, treeDepth), verbose);
+# else
+    LuapeLearnerPtr baseLearner = treeLearner(new InformationGainLearningObjective(), createWeakLearner(target), 1, 0);
+    learningMachine->setLearner(ensembleLearner(baseLearner, numIterations), verbose);
+# endif // !USE_EXTRA_TREES
     learningMachine->setBatchLearner(filterUnsupervisedExamplesBatchLearner(learningMachine->getBatchLearner(), true));
     return learningMachine;
   }

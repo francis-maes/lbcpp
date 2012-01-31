@@ -19,6 +19,10 @@ local function compareVariableImportance(a, b)
   return a.stat:getMean() > b.stat:getMean()
 end
 
+local function compareNormalizedVariableImportance(a, b)
+  return a.stat:getMean() / a.stat:getStandardDeviation() > b.stat:getMean() / b.stat:getStandardDeviation()
+end
+
 local sumVarImp = nil
 for i = 0, 9 do
   local fileName = "x3_Win40_HugeK_1000T_Fold" .. i .. ".trace"
@@ -53,6 +57,8 @@ for i = 1, #sumVarImp do
 end
 res:save("/Users/jbecker/Documents/Workspace/LBC++/bin/Debug/mergeVarImp.xml")
 
+-- Sort by Score
+
 table.sort(sumVarImp, compareVariableImportance)
 
 context:enter("Variable Importances")
@@ -61,14 +67,30 @@ for i = 1, #sumVarImp do
   context:result("Rank", i)
   context:result("Score - Mean", sumVarImp[i].stat:getMean())
   context:result("Score - StdDev", sumVarImp[i].stat:getStandardDeviation())
-  context:result("Score - Mean-StdDev", sumVarImp[i].stat:getMean() - sumVarImp[i].stat:getStandardDeviation())
-  context:result("Score - Mean+StdDev", sumVarImp[i].stat:getMean() + sumVarImp[i].stat:getStandardDeviation())
   context:result("Score - Mean/StdDev", sumVarImp[i].stat:getMean() / sumVarImp[i].stat:getStandardDeviation())
   context:result("Index", sumVarImp[i].index)
   context:result("Variable", sumVarImp[i].name)
   context:leave()
 end
 context:leave()
+
+-- Sort by Normalize Score
+
+table.sort(sumVarImp, compareNormalizedVariableImportance)
+
+context:enter("Normalized Variable Importances")
+for i = 1, #sumVarImp do
+  context:enter("Variable " .. sumVarImp[i].name)
+  context:result("Rank", i)
+  context:result("Score - Mean/StdDev", sumVarImp[i].stat:getMean() / sumVarImp[i].stat:getStandardDeviation())
+  context:result("Score - Mean", sumVarImp[i].stat:getMean())
+  context:result("Score - StdDev", sumVarImp[i].stat:getStandardDeviation())
+  context:result("Index", sumVarImp[i].index)
+  context:result("Variable", sumVarImp[i].name)
+  context:leave()
+end
+context:leave()
+
 
 function addStat(a, b)
   a.samplesSum = a.samplesSum + b.samplesSum

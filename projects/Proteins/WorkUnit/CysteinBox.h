@@ -636,9 +636,17 @@ public:
     size_t numProteinsToLoad = 0;
 #if JUCE_DEBUG
     numProteinsToLoad = 10;
-    context.warningCallback(T("Only ") + String((int)numProteinsToLoad) + T(" will be loaded !"));
+    context.warningCallback(T("Only ") + String((int)numProteinsToLoad) + T(" proteins will be loaded !"));
+    windowSize = 10;
+    context.warningCallback(T("Windows Sizes were fixed to 10"));
 #endif // !JUCE_DEBUG
     ContainerPtr train = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("train")), context.getFile(supervisionDirectory).getChildFile(T("train")), numProteinsToLoad, T("Loading training proteins"));
+    ContainerPtr validation;
+#if JUCE_DEBUG
+    validation = train->fold(0, 5);
+    train = train->invFold(0, 5);
+    context.warningCallback(T("Creation of a validation set from training proteins"));
+#endif // !JUCE_DEBUG
     ContainerPtr test = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("test")), context.getFile(supervisionDirectory).getChildFile(T("test")), numProteinsToLoad, T("Loading testing proteins"));
 
     if (!train || !test || train->getNumElements() == 0 || test->getNumElements() == 0)
@@ -680,24 +688,23 @@ public:
     predictor->svmC = svmC;
     predictor->svmGamma = svmGamma;
 
+    predictor->useAddBias = true;
+
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
     iteration->addTarget(dsbTarget);
 
-    if (!iteration->train(context, train, ContainerPtr(), T("Training")))
+    if (!iteration->train(context, train, validation, T("Training")))
       return Variable::missingValue(doubleType);
 
-    ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+    ProteinEvaluatorPtr evaluator = createProteinEvaluator();
+    iteration->evaluate(context, train, evaluator, T("EvaluateTrain"));
 
-    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("Disulfide Bonds (Acc.)"));
-    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("Disulfide Bonds (Tuned Acc.)"));
-    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, true)), T("Disulfide Bonds (Tuned Sens & Spec.)"));
-    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, true)), T("Disulfide Bonds (Tuned MCC)"));
+    evaluator = createProteinEvaluator();
+    iteration->evaluate(context, validation, evaluator, T("EvaluateValidation"));
 
-    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)"));
-    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(), T("Disulfide Bonds (Greedy L=6)"));
-
-    CompositeScoreObjectPtr scores = iteration->evaluate(context, test, evaluator, T("Evaluate on test proteins"));
-    return evaluator->getScoreObjectOfTarget(scores, dsbTarget)->getScoreToMinimize();
+    evaluator = createProteinEvaluator();
+    CompositeScoreObjectPtr scores = iteration->evaluate(context, test, evaluator, T("EvaluateTest"));
+    return evaluator->getScoreToMinimize(scores);
   }
 
 protected:
@@ -713,6 +720,21 @@ protected:
   size_t x3Attributes;
   size_t x3Splits;
   size_t windowSize;
+
+  ProteinEvaluatorPtr createProteinEvaluator() const
+  {
+    ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("Disulfide Bonds (Acc.)"));
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("Disulfide Bonds (Tuned Acc.)"));
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, true)), T("Disulfide Bonds (Tuned Sens & Spec.)"));
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, true)), T("Disulfide Bonds (Tuned MCC)"));
+
+    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)"), true);
+    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(), T("Disulfide Bonds (Greedy L=6)"));
+
+    return evaluator;
+  }
 };
 
 class AverageDirectoryScoresWorkUnit : public WorkUnit

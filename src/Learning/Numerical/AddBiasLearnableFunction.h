@@ -17,8 +17,9 @@ namespace lbcpp
 class AddBiasLearnableFunction : public Function
 {
 public:
-  AddBiasLearnableFunction(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore, double bias = 0.0)
-    : scoreToOptimize(scoreToOptimize), bias(bias) {}
+  AddBiasLearnableFunction(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore, double bias = 0.0, bool learnBiasOnValidationData = false)
+    : bias(bias)
+    {setBatchLearner(addBiasBatchLearner(scoreToOptimize, learnBiasOnValidationData));}
 
   virtual size_t getNumRequiredInputs() const
     {return 2;}
@@ -30,7 +31,6 @@ public:
   {
     outputName = T("biased");
     outputShortName = T("b");
-    setBatchLearner(addBiasBatchLearner(scoreToOptimize));
     return doubleType;
   }
 
@@ -49,7 +49,6 @@ public:
 protected:
   friend class AddBiasLearnableFunctionClass;
 
-  BinaryClassificationScore scoreToOptimize;
   double bias;
 };
 
