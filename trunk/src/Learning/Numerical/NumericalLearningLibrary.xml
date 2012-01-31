@@ -48,13 +48,13 @@
   
   <!-- Low-level Learnable Functions -->
   <class name="AddBiasLearnableFunction" base="Function">
-    <constructor arguments="BinaryClassificationScore scoreToOptimize, double initialBias"/>
-    <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
+    <constructor arguments="BinaryClassificationScore scoreToOptimize, double initialBias, bool learnBiasOnValidationData"/>
     <variable type="Double" name="bias"/>
   </class>
   <class name="AddBiasBatchLearner" base="BatchLearner">
-    <constructor arguments="BinaryClassificationScore scoreToOptimize"/>
+    <constructor arguments="BinaryClassificationScore scoreToOptimize, bool learnBiasOnValidationData"/>
     <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
+    <variable type="Boolean" name="learnBiasOnValidationData"/>
   </class>
 
   <class name="FisherFilterLearnableFunction" base="Function">

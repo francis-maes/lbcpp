@@ -20,8 +20,8 @@ namespace lbcpp
 class AddBiasBatchLearner : public BatchLearner
 {
 public:
-  AddBiasBatchLearner(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore)
-    : scoreToOptimize(scoreToOptimize) {}
+  AddBiasBatchLearner(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore, bool learnBiasOnValidationData = false)
+    : scoreToOptimize(scoreToOptimize), learnBiasOnValidationData(learnBiasOnValidationData) {}
 
   virtual TypePtr getRequiredFunctionType() const
     {return addBiasLearnableFunctionClass;}
@@ -30,17 +30,14 @@ public:
   {
     const AddBiasLearnableFunctionPtr& function = f.staticCast<AddBiasLearnableFunction>();
 
+    if (learnBiasOnValidationData)
+      context.warningCallback(T("AddBiasBatchLearner::train"), T("Learning bias using validation data only"));
+    const std::vector<ObjectPtr>& data = learnBiasOnValidationData ? validationData : trainingData;
+
     ROCScoreObject roc;
-    for (size_t i = 0; i < trainingData.size(); ++i)
+    for (size_t i = 0; i < data.size(); ++i)
     {
-      const ObjectPtr& example = trainingData[i];
-      bool isPositive;
-      if (convertSupervisionVariableToBoolean(example->getVariable(1), isPositive))
-        roc.addPrediction(context, example->getVariable(0).getDouble(), isPositive);
-    }
-    for (size_t i = 0; i < validationData.size(); ++i)
-    {
-      const ObjectPtr& example = validationData[i];
+      const ObjectPtr& example = data[i];
       bool isPositive;
       if (convertSupervisionVariableToBoolean(example->getVariable(1), isPositive))
         roc.addPrediction(context, example->getVariable(0).getDouble(), isPositive);
@@ -64,6 +61,7 @@ protected:
   friend class AddBiasBatchLearnerClass;
 
   BinaryClassificationScore scoreToOptimize;
+  bool learnBiasOnValidationData;
 };
 
 }; /* namespace lbcpp */

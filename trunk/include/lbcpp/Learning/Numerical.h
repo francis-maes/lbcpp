@@ -159,14 +159,14 @@ protected:
 typedef ReferenceCountedObjectPtr<StochasticGDParameters> StochasticGDParametersPtr;
 
 // atomic learnable functions
-extern FunctionPtr addBiasLearnableFunction(BinaryClassificationScore scoreToOptimize, double initialBias = 0.0);
+extern FunctionPtr addBiasLearnableFunction(BinaryClassificationScore scoreToOptimize, double initialBias = 0.0, bool learnBiasOnValidationData = false);
 extern FunctionPtr fisherFilterLearnableFunction(size_t numSelectedFeature);
 extern NumericalLearnableFunctionPtr linearLearnableFunction();
 extern NumericalLearnableFunctionPtr multiLinearLearnableFunction(EnumerationPtr outputsEnumeration = EnumerationPtr());
 extern NumericalLearnableFunctionPtr rankingLearnableFunction(NumericalLearnableFunctionPtr scoringFunction);
 
 // batch learners
-extern BatchLearnerPtr addBiasBatchLearner(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore);
+extern BatchLearnerPtr addBiasBatchLearner(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore, bool learnBiasOnValidationData = false);
 extern BatchLearnerPtr fisherFilterBatchLearner();
 
 // online learners

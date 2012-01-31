@@ -834,7 +834,8 @@ public:
     {
       FunctionPtr res = extraTreeLearningMachine(x3Trees, x3Attributes, x3Splits);
       if (useAddBias)
-        res = new PreProcessCompositeFunction(res, addBiasLearnableFunction(binaryClassificationAccuracyScore));
+        res = new PreProcessCompositeFunction(res, composeFunction(addBiasLearnableFunction(binaryClassificationSensitivityAndSpecificityScore, 0.0, true)
+                                                                   , signedScalarToProbabilityFunction()));
       return res;
     }
     else if (learningMachineName == T("SGD"))

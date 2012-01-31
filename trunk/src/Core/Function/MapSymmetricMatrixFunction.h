@@ -184,7 +184,6 @@ public:
     }
 
     SymmetricMatrixPtr res = symmetricMatrix(baseFunction->getOutputType(), dimension);
-    
     if (minimumDistanceFromDiagonal > dimension)
       return res;
 

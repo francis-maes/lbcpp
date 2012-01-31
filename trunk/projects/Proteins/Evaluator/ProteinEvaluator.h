@@ -155,6 +155,11 @@ public:
         return scores->getScoreObject(i);
     return ScoreObjectPtr();
   }
+
+  double getScoreToMinimize(const CompositeScoreObjectPtr& scores)
+  {
+    return scores->getScoreObject(scoreToMinimizeIndex)->getScoreToMinimize();
+  }
   
   ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
   {
@@ -165,8 +170,10 @@ public:
     return res;
   }
 
-  void addEvaluator(ProteinTarget target, EvaluatorPtr evaluator, const String& description)
+  void addEvaluator(ProteinTarget target, EvaluatorPtr evaluator, const String& description, bool isTheScoreToMinimize = false)
   {
+    if (isTheScoreToMinimize)
+      scoreToMinimizeIndex = evaluators.size();
     targets.push_back(target);
     descriptions.push_back(description);
     CompositeEvaluator::addEvaluator(evaluator);
@@ -175,6 +182,7 @@ public:
 protected:
   std::vector<ProteinTarget> targets;
   std::vector<String> descriptions;
+  size_t scoreToMinimizeIndex;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinEvaluator> ProteinEvaluatorPtr;
