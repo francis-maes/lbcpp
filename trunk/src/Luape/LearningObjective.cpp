@@ -283,6 +283,7 @@ void InformationGainLearningObjective::setSupervisions(const VectorPtr& supervis
     if (lbcpp::convertSupervisionVariableToEnumValue(supervision, label))
       this->supervisions->setElement(i, Variable(label, labels));
   }
+  invalidate();
 }
 
 void InformationGainLearningObjective::update()

@@ -25,7 +25,7 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
 #if JUCE_DEBUG
-    maxProteinCount = 20;
+//    maxProteinCount = 20;
 #endif // !JUCE_DEBUG
     ContainerPtr trainingProteins = loadProteinPairs(context, trainingInputDirectory, trainingSupervisionDirectory, "training");
     ContainerPtr testingProteins = loadProteinPairs(context, testingInputDirectory, testingSupervisionDirectory, "testing");
@@ -43,12 +43,12 @@ public:
     predictor->knnNeighbors = 5;
 #endif
      
-    ProteinPredictorParametersPtr predictor = new LuapeProteinPredictorParameters(treeDepth, complexity, relativeBudget, miniBatchRelativeSize, numIterations, false);
+    ProteinPredictorParametersPtr predictor = new LuapeProteinPredictorParameters(treeDepth, complexity, relativeBudget, miniBatchRelativeSize, numIterations, true);
 
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
-    iteration->addTarget(dsbTarget);
+   // iteration->addTarget(dsbTarget);
     //iteration->addTarget(sa20Target);
-    //iteration->addTarget(ss3Target);
+    iteration->addTarget(ss3Target);
     //iteration->addTarget(ss8Target);
     //iteration->addTarget(stalTarget);
     //iteration->addTarget(drTarget);

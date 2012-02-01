@@ -37,7 +37,7 @@ public:
     double errorWeight = objective->getErrorWeight();
     //double missingWeight = objective->getMissingWeight();
 
-    double epsilon = 1.0 / (double)problem->getTrainingCache()->getNumSamples();
+    double epsilon = 0.0;//1.0 / (double)problem->getTrainingCache()->getNumSamples();
     return 0.5 * log((correctWeight + epsilon) / (errorWeight + epsilon));
   }
 
@@ -79,8 +79,28 @@ public:
 
   virtual void updateSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const
   {
-    // FIXME
-    jassert(false);
+    LuapeSampleVectorPtr predictions = problem->getTrainingCache()->getSamples(context, contribution);
+    DenseDoubleVectorPtr supervisions = problem->getTrainingSupervisions().staticCast<DenseDoubleVector>();
+    size_t n = predictions->size();
+    
+    jassert(supervisions->getElementsType() == probabilityType);
+    jassert(n == supervisions->getNumValues());
+    jassert(n == weights->getNumValues());
+    
+    double sumOfWeights = 0.0;
+    for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
+    {
+      size_t index = it.getIndex();
+      double supervision = supervisions->getValue(index) * 2 - 1.0; // scale from probabilities to {-1,1}
+      double weight = weights->getValue(index) * exp(-supervision * it.getRawDouble());
+      sumOfWeights += weight;
+      weights->setValue(index, weight);
+    }
+    if (sumOfWeights != 0.0)
+    {
+      logLoss += log10(sumOfWeights);
+      weights->multiplyByScalar(1.0 / sumOfWeights);
+    }
   }
 };
 

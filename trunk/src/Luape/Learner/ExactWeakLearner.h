@@ -69,11 +69,15 @@ public:
   virtual double computeObjective(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, LuapeNodePtr& weakNode)
   {
     LuapeSampleVectorPtr samples = problem->getTrainingCache()->getSamples(context, weakNode, examples);
+    if (samples->getElementsType() == booleanType)
+      return objective->compute(samples);
+     
     double minimumValue = DBL_MAX;
     double maximumValue = -DBL_MAX;
+    bool isInteger = samples->getElementsType()->inheritsFrom(integerType);
     for (LuapeSampleVector::const_iterator it = samples->begin(); it != samples->end(); ++it)
     {
-      double value = it.getRawDouble();
+      double value = isInteger ? (double)it.getRawInteger() : it.getRawDouble();
       if (value < minimumValue)
         minimumValue = value;
       if (value > maximumValue)

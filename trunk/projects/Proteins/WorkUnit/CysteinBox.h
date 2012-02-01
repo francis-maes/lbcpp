@@ -642,7 +642,7 @@ public:
 #endif // !JUCE_DEBUG
     ContainerPtr train = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("train")), context.getFile(supervisionDirectory).getChildFile(T("train")), numProteinsToLoad, T("Loading training proteins"));
     ContainerPtr validation;
-#if JUCE_DEBUG
+#if JUCE_DEBUG && 0
     validation = train->fold(0, 5);
     train = train->invFold(0, 5);
     context.warningCallback(T("Creation of a validation set from training proteins"));
@@ -688,7 +688,7 @@ public:
     predictor->svmC = svmC;
     predictor->svmGamma = svmGamma;
 
-    predictor->useAddBias = true;
+//    predictor->useAddBias = true;
 
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
     iteration->addTarget(dsbTarget);
@@ -699,8 +699,11 @@ public:
     ProteinEvaluatorPtr evaluator = createProteinEvaluator();
     iteration->evaluate(context, train, evaluator, T("EvaluateTrain"));
 
-    evaluator = createProteinEvaluator();
-    iteration->evaluate(context, validation, evaluator, T("EvaluateValidation"));
+    if (validation)
+    {
+      evaluator = createProteinEvaluator();
+      iteration->evaluate(context, validation, evaluator, T("EvaluateValidation"));
+    }
 
     evaluator = createProteinEvaluator();
     CompositeScoreObjectPtr scores = iteration->evaluate(context, test, evaluator, T("EvaluateTest"));
