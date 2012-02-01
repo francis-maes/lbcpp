@@ -47,7 +47,12 @@ public:
       VectorPtr res = lbcpp::vector(outputType, weakPredictions->size());
       size_t index = 0;
       for (LuapeSampleVector::const_iterator it = weakPredictions->begin(); it != weakPredictions->end(); ++it)
-        res->setElement(index++, it.getRawBoolean() ? positiveVote : negativeVote);
+      {
+        unsigned char c = it.getRawBoolean();
+        if (c < 2)
+          res->setElement(index, c == 1 ? positiveVote : negativeVote);
+        ++index;
+      }
       return new LuapeSampleVector(weakPredictions->getIndices(), res);
     }
     else
@@ -56,7 +61,12 @@ public:
       VectorPtr res = lbcpp::vector(outputType, weakPredictions->size());
       size_t index = 0;
       for (LuapeSampleVector::const_iterator it = weakPredictions->begin(); it != weakPredictions->end(); ++it)
-        res->setElement(index++, computeVote(it.getRawDouble()));
+      {
+        double d = it.getRawDouble();
+        if (d != doubleMissingValue)
+          res->setElement(index, computeVote(d));
+        ++index;
+      }
       return new LuapeSampleVector(weakPredictions->getIndices(), res);
     }
   }

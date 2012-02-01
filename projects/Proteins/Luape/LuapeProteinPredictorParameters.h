@@ -14,7 +14,7 @@
 # include <lbcpp/Luape/LuapeLearner.h>
 # include "../../../src/Luape/Function/ObjectLuapeFunctions.h"
 
-//# define USE_EXTRA_TREES
+# define USE_EXTRA_TREES
 
 namespace lbcpp
 {
@@ -123,7 +123,9 @@ public:
     LuapeInferencePtr learningMachine = new LuapeBinaryClassifier(createUniverse());
     addFunctions(learningMachine, target);
 # ifndef USE_EXTRA_TREES
-    learningMachine->setLearner(adaBoostLearner(createWeakLearner(target), numIterations, treeDepth), verbose);
+    LuapeLearnerPtr weakLearner = createWeakLearner(target);
+    weakLearner->setVerbose(verbose);
+    learningMachine->setLearner(adaBoostLearner(weakLearner, numIterations, treeDepth), verbose);
 # else
     LuapeLearnerPtr baseLearner = treeLearner(new InformationGainLearningObjective(), createWeakLearner(target), 1, 0);
     learningMachine->setLearner(ensembleLearner(baseLearner, numIterations), verbose);
@@ -136,8 +138,15 @@ public:
   {
     LuapeInferencePtr learningMachine =  new LuapeClassifier(createUniverse());
     addFunctions(learningMachine, target);
+# ifndef USE_EXTRA_TREES
     learningMachine->setLearner(discreteAdaBoostMHLearner(createWeakLearner(target), numIterations, treeDepth), verbose);
-    
+#else
+    LuapeLearnerPtr weakLearner = createWeakLearner(target);
+    weakLearner->setVerbose(verbose);
+    LuapeLearnerPtr baseLearner = treeLearner(new InformationGainLearningObjective(), weakLearner, 1, 0);
+    baseLearner->setVerbose(verbose);
+    learningMachine->setLearner(ensembleLearner(baseLearner, numIterations), verbose);  
+#endif
     //MultiClassLossFunctionPtr lossFunction = oneAgainstAllMultiClassLossFunction(hingeDiscriminativeLossFunction());
     //LuapeLearnerPtr strongLearner = compositeLearner(generateTestNodesLearner(createNodeBuilder(target)), classifierSGDLearner(lossFunction, constantIterationFunction(0.1), numIterations));
     //learningMachine->setLearner(strongLearner);
