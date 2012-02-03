@@ -40,6 +40,19 @@ protected:
   std::vector<SamplerPtr> arms;
 };
 
+// Icaart
+class Setup0BanditProblemSampler : public BanditProblemSampler
+{
+public:
+  virtual std::vector<SamplerPtr> sampleArms(const RandomGeneratorPtr& random) const
+  {
+    std::vector<SamplerPtr> arms(2);
+    arms[0] = bernoulliSampler(random->sampleDouble(0.0, 1.0));
+    arms[1] = bernoulliSampler(random->sampleDouble(0.0, 1.0));
+    return arms;
+  }
+}; 
+
 // Bernoulli bandits
 class Setup1BanditProblemSampler : public BanditProblemSampler
 {
@@ -232,7 +245,7 @@ public:
   struct ValueComparator
   {
     bool operator() (const std::pair<size_t, double>& left, const std::pair<size_t, double>& right) const
-      {return (left.second != right.second ? left.second < right.second : left.first < right.first);}
+      {return (fabs(left.second - right.second) > 1e-12 ? left.second < right.second : left.first < right.first);}
   };
 
   virtual BinaryKeyPtr makeBinaryKey(const GPExpressionPtr& expression, const std::vector< std::vector<double> >& inputSamples) const

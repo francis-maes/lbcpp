@@ -48,6 +48,12 @@ public:
       bitShift = 1, ++position;
   }
 
+  size_t getLength() const
+    {return values.size();}
+
+  unsigned char getByte(size_t index) const
+    {return values[index];}
+
   void pushByte(unsigned char c)
     {jassert(position < values.size()); values[position++] = c;}
 

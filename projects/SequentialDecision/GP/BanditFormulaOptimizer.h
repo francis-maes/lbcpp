@@ -519,7 +519,8 @@ public:
 
     double Ccumul = 5.0;
     double Csimple = 0.5;
-    for (size_t horizon = minHorizon; horizon <= maxHorizon; horizon *= 10)
+    size_t horizon = minHorizon;
+    while (horizon <= maxHorizon)
     {
       String pre = "Horizon " + String((int)horizon);
       FunctionPtr objective = new BanditFormulaObjective(false, problemSampler, horizon);
@@ -531,6 +532,11 @@ public:
       objective->initialize(context, gpExpressionClass);
       outputFile = outputDirectory.getChildFile("sim" + String((int)horizon) + ".txt");
       workUnit->addWorkUnit(new Run(formulas, objective, numTimeSteps, pre + T(" Simple Regret"), outputFile, Csimple));
+
+      if (minHorizon < 1000)
+	horizon *= 10;
+      else
+	horizon += minHorizon;
     }
     
     workUnit->setPushChildrenIntoStackFlag(true);
@@ -573,6 +579,8 @@ public:
     context.enterScope(T("Discovered formulas"));
     context.informationCallback("We have " + String((int)formulas.size()) + " formulas");
     double best = DBL_MAX;
+    //    if (formulas.size() > 5)
+    //  formulas.resize(5);
     for (size_t i = 0; i < formulas.size(); ++i)
       best = juce::jmin(best, evaluatePolicy(context, gpExpressionDiscreteBanditPolicy(formulas[i]), i));
     context.leaveScope(best);

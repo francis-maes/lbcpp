@@ -335,18 +335,20 @@ public:
       String str = String((int)complexity / 2) + T(" variables");
 
       double bestScore = DBL_MAX;
-      context.enterScope(T("Deep ThreeStumps AdaBoost.MH Laminating K=n - ") + str);
-      for (double logInitialImportance = -1.0; logInitialImportance <= 4.5; logInitialImportance += 0.5)
+      context.enterScope(T("ThreeStumps AdaBoost.MH") + str);
+      for (double budget = 0.25; budget <= 16.0; budget *= 2.0)
       {
-        double initialImportance = pow(10.0, logInitialImportance);
+	if (complexity == 2 && budget > 1.0)
+	  break;
+	//        double initialImportance = pow(10.0, logInitialImportance);
         
-        context.enterScope(T("Initial importance = ") + String(initialImportance));
-        context.resultCallback(T("logInitialImportance"), logInitialImportance);
+        context.enterScope(T("Budget = ") + String(budget));
+        context.resultCallback(T("budget"), budget);
         //context.resultCallback(T("initialImportance"), initialImportance);
-        LuapeNodeBuilderPtr nodeBuilder = biasedRandomSequentialNodeBuilder(numVariables * 10, complexity, initialImportance);
+        LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder((size_t)(budget * numVariables + 0.5), complexity);
         nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
-        conditionLearner = laminatingWeakLearner(nodeBuilder, (double)numVariables, 10);
-        //conditionLearner = exactWeakLearner(nodeBuilder);
+        //conditionLearner = laminatingWeakLearner(nodeBuilder, (double)numVariables, 10);
+        conditionLearner = exactWeakLearner(nodeBuilder);
         conditionLearner->setVerbose(verbose);
         learner = discreteAdaBoostMHLearner(conditionLearner, numIterations, 2);
         learner->setVerbose(verbose);

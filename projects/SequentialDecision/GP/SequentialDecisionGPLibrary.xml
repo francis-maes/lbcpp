@@ -177,6 +177,7 @@
 
 
   <class name="BanditProblemSampler" base="Sampler" abstract="yes"/>
+  <class name="Setup0BanditProblemSampler" base="BanditProblemSampler"/>
   <class name="Setup1BanditProblemSampler" base="BanditProblemSampler"/>
   <class name="Setup2BanditProblemSampler" base="BanditProblemSampler"/>
   <class name="Setup3BanditProblemSampler" base="BanditProblemSampler"/>
