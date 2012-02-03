@@ -41,10 +41,15 @@ public:
       BinaryKeyPtr key1 = problem->makeBinaryKey(expr1, inputSamples);
       BinaryKeyPtr key2 = problem->makeBinaryKey(expr2, inputSamples);
       BinaryKeyPtr key3 = problem->makeBinaryKey(expr3, inputSamples);
-      context.informationCallback(T("key1: ") + key1->toShortString());
-      context.informationCallback(T("key2: ") + key2->toShortString());
-      context.informationCallback(T("key3: ") + key3->toShortString());
+      //context.informationCallback(T("key1: ") + key1->toShortString());
+      //context.informationCallback(T("key2: ") + key2->toShortString());
+      //  context.informationCallback(T("key3: ") + key3->toShortString());
       std::cout << "Compare: " << key1->compare(key2) << " " << key1->compare(key3) << " " << key2->compare(key3) << " " << key3->compare(key1) << std::endl;
+      for (size_t i = 0; i < key1->getLength(); ++i)
+	if (key1->getByte(i) != key2->getByte(i))
+	  {
+	    std::cout << "Byte " << i << " " << (int)key1->getByte(i) << " vs. " << (int)key2->getByte(i) << std::endl;
+	  }
 
       SuperFormulaPool pool(context, problem, numSamples);
       pool.addFormula(context, expr1, true);
