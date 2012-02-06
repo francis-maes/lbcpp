@@ -667,7 +667,6 @@ public:
         return 101;
       }
     }
-    parameter->saveToFile(context, context.getFile(T("parameter.xml")));
 /*
     context.warningCallback(T("Parameter set to lin09"));
     parameter = new LargeProteinParameters();
@@ -730,8 +729,8 @@ protected:
 
     evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("Disulfide Bonds (Acc.)"));
     evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("Disulfide Bonds (Tuned Acc.)"));
-    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, true)), T("Disulfide Bonds (Tuned Sens & Spec.)"));
-    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, true)), T("Disulfide Bonds (Tuned MCC)"));
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, false)), T("Disulfide Bonds (Tuned Sens & Spec.)"));
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, false)), T("Disulfide Bonds (Tuned MCC)"));
 
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)"), true);
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(), T("Disulfide Bonds (Greedy L=6)"));
