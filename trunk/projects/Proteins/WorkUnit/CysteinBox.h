@@ -705,6 +705,8 @@ public:
     }
 
     evaluator = createProteinEvaluator();
+    for (size_t i = 1; i < 25; ++i)
+      evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(i, 0.0), 0.0), T("Disulfide Bonds (Greedy L=") + String((int)i) + T(")"));
     CompositeScoreObjectPtr scores = iteration->evaluate(context, test, evaluator, T("EvaluateTest"));
     return evaluator->getScoreToMinimize(scores);
   }
@@ -733,7 +735,7 @@ protected:
     evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, false)), T("Disulfide Bonds (Tuned MCC)"));
 
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)"), true);
-    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(), T("Disulfide Bonds (Greedy L=6)"));
+    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(), T("Disulfide Bonds"));
 
     return evaluator;
   }
