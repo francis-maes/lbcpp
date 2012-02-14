@@ -58,6 +58,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_WORK_UNIT_SOURCES
   WorkUnit/BBOptimization.h
   WorkUnit/AutoSGDSandBox.h
   WorkUnit/RFHooSandBox.h
+  WorkUnit/EvaluateInterpretablePolicies.h
   WorkUnit/SequentialDecisionWorkUnitLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionWorkUnitLibrary.cpp
 )
