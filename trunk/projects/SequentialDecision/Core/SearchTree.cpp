@@ -88,18 +88,21 @@ void SearchTree::exploreNode(ExecutionContext& context, size_t nodeIndex)
   jassert(node);
   openedNodes.push_back(nodeIndex);
 
-  ContainerPtr actions = node->getState()->getAvailableActions();
-  if (actions)
+  if (!node->getState()->isFinalState())
   {
-    size_t n = actions->getNumElements();
-
-    size_t firstChildIndex = nodes.size();
-    node->setChildrenIndices(firstChildIndex, firstChildIndex + n);
-    for (size_t i = 0; i < n; ++i)
+    ContainerPtr actions = node->getState()->getAvailableActions();
+    if (actions)
     {
-      SearchTreeNodePtr childNode = new SearchTreeNode(nodeClass, nodes, firstChildIndex + i, node->getNodeUid() * n + i);
-      childNode->open(context, problem, nodeIndex, actions->getElement(i));
-      addCandidate(context, childNode);
+      size_t n = actions->getNumElements();
+
+      size_t firstChildIndex = nodes.size();
+      node->setChildrenIndices(firstChildIndex, firstChildIndex + n);
+      for (size_t i = 0; i < n; ++i)
+      {
+        SearchTreeNodePtr childNode = new SearchTreeNode(nodeClass, nodes, firstChildIndex + i, node->getNodeUid() * n + i);
+        childNode->open(context, problem, nodeIndex, actions->getElement(i));
+        addCandidate(context, childNode);
+      }
     }
   }
 }
@@ -155,7 +158,7 @@ void SearchTree::doSearchEpisode(ExecutionContext& context, const SearchPolicyPt
       selectedNode = policy->policyStep(context, lastReward, pthis, actions);
     if (!selectedNode.exists())
     {
-      context.errorCallback(T("No selected node"));
+      //context.errorCallback(T("No selected node"));
       break;
     }
 

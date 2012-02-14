@@ -51,29 +51,45 @@ public:
 class EvaluateInterpretablePolicies : public WorkUnit
 {
 public:
-  EvaluateInterpretablePolicies() : numTrajectories(100000)
+  EvaluateInterpretablePolicies() : numTrajectories(10000)
   {
   }
 
   virtual Variable run(ExecutionContext& context)
   {
-    std::vector<DecisionProblemPtr> problems;
+    std::vector<std::pair<DecisionProblemPtr, String> > problems;
     getProblems(problems);
 
     for (size_t i = 0; i < problems.size(); ++i)
     {
-      DecisionProblemPtr problem = problems[i];
-      context.enterScope(problem->toShortString());
-      evaluatePoliciesOnProblem(context, problem);
+      DecisionProblemPtr problem = problems[i].first;
+      String problemShortName = problems[i].second;
+      context.enterScope(problemShortName);
+      evaluatePoliciesOnProblem(context, problem, problemShortName);
       context.leaveScope();
     }
     return true;
   }
 
-  void evaluatePoliciesOnProblem(ExecutionContext& context, DecisionProblemPtr problem)
+  void evaluatePoliciesOnProblem(ExecutionContext& context, DecisionProblemPtr problem, const String& problemShortName)
   {
     evaluatePolicyOnProblem(context, problem, randomPolicy(), "random");
     evaluatePolicyOnProblem(context, problem, new GreedyPolicy(), "greedy");
+
+    File formulaDirectory = context.getFile(problemShortName);
+    if (formulaDirectory.exists() && formulaDirectory.isDirectory())
+    {
+      juce::OwnedArray<File> formulaFiles;
+      formulaDirectory.findChildFiles(formulaFiles, File::findFiles, false, "*.formula");
+      for (int i = 0; i < formulaFiles.size(); ++i)
+      {
+        File formulaFile = *formulaFiles[i];
+        GPExpressionPtr formula = GPExpression::createFromFile(context, formulaFile);
+        String formulaName = formulaFile.getFileNameWithoutExtension() + T(" - ") + formula->toShortString();
+        PolicyPtr policy = new GPExpressionBasedPolicy(formula, formulaName.indexOf(T("MB")) >= 0);
+        evaluatePolicyOnProblem(context, problem, policy, formulaName);
+      }
+    }
   }
 
   struct EvaluatePolicyFromInitialState : public WorkUnit
@@ -123,6 +139,7 @@ public:
     CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(policyName, n);
     for (size_t i = 0; i < n; ++i)
       workUnit->setWorkUnit(i, new EvaluatePolicyFromInitialState(problem, initialStates->getAndCast<DecisionProblemState>(i), policy, numTrajectories));
+    workUnit->setProgressionUnit("Initial states");
 
     context.enterScope(workUnit->toShortString());
     ContainerPtr results = context.run(workUnit, false).getObjectAndCast<Container>();
@@ -140,17 +157,17 @@ protected:
 
   size_t numTrajectories;
 
-  void getProblems(std::vector<DecisionProblemPtr>& res)
+  void getProblems(std::vector<std::pair<DecisionProblemPtr, String> >& res)
   {
-    res.push_back(DecisionProblem::create(getType("LinearPointPhysicProblem")));
-    res.push_back(DecisionProblem::create(getType("LeftOrRightControlProblem")));
-    res.push_back(DecisionProblem::create(getType("BicyleBalancingProblem")));
+    res.push_back(std::make_pair(DecisionProblem::create(getType("LinearPointPhysicProblem")), "LP"));
+    res.push_back(std::make_pair(DecisionProblem::create(getType("LeftOrRightControlProblem")), "LoR"));
+    res.push_back(std::make_pair(DecisionProblem::create(getType("BicyleBalancingProblem")), "B"));
     DecisionProblemPtr pb = DecisionProblem::create(getType("BicyleBalancingProblem"));
     pb->setVariable(3, true);
-    res.push_back(pb);
-    res.push_back(DecisionProblem::create(getType("HIVDecisionProblem")));
-    res.push_back(DecisionProblem::create(getType("CarOnTheHillProblem")));
-    res.push_back(DecisionProblem::create(getType("AcrobotProblem")));
+    res.push_back(std::make_pair(pb, "B2"));
+    res.push_back(std::make_pair(DecisionProblem::create(getType("HIVDecisionProblem")), "HIV"));
+    res.push_back(std::make_pair(DecisionProblem::create(getType("CarOnTheHillProblem")), "Car"));
+    res.push_back(std::make_pair(DecisionProblem::create(getType("AcrobotProblem")), "Acr"));
   }
 };
 

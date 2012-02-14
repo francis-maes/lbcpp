@@ -267,7 +267,7 @@ class HIVSandBox : public WorkUnit
 {
 public:
   // default values
-  HIVSandBox() :  discount(0.98), minDepth(0), maxDepth(10), depthIsBudget(false), maxHorizon(300), numInitialStates(1),
+  HIVSandBox() :  minDepth(0), maxDepth(10), depthIsBudget(false),
                   verboseTrajectories(false), computeGeneralization(false),
                   iterations(100), populationSize(100), numBests(10), reinjectBest(false),
                   baseHeuristics(false), optimisticHeuristics(false), learnedHeuristic(false)
@@ -289,7 +289,7 @@ public:
       context.errorCallback(T("No decision problem"));
       return false;
     }
-    discount = problem->getDiscount();
+    double discount = problem->getDiscount();
 
     if (!featuresFunction)
     {
@@ -322,8 +322,14 @@ public:
         maxSearchNodes = maxSearchNodes * fixedNumberOfActions + 1; // any general formula for that ?
     }
 
-    // sample initial states
-    ContainerPtr initialStates = problem->sampleInitialStates(context, numInitialStates);
+    // get initial states
+    size_t numTrajectoriesToValidate;
+    ObjectVectorPtr singleInitialStates = problem->getValidationInitialStates(numTrajectoriesToValidate);
+    ObjectVectorPtr initialStates = new ObjectVector(decisionProblemStateClass, singleInitialStates->getNumElements() * numTrajectoriesToValidate);
+    for (size_t i = 0; i < initialStates->getNumElements(); ++i)
+      initialStates->set(i, singleInitialStates->get(i % singleInitialStates->getNumElements())->clone(context));
+    context.informationCallback(String((int)initialStates->getNumElements()) + T(" initial states"));
+    //ContainerPtr initialStates = problem->sampleInitialStates(context, 10);
 
     // load heuristics
     std::vector<FunctionPtr> loadedHeuristics;
@@ -345,6 +351,7 @@ public:
         context.enterScope(T("D = ") + String((int)depth) + T(" N = ")+ String((int)maxSearchNodes));
 
       context.resultCallback(T("maxSearchNodes"), maxSearchNodes);
+      context.resultCallback(T("log(maxSearchNodes)"), log10((double)maxSearchNodes));
       if (maxSearchNodes)
       {
         if (!depthIsBudget)
@@ -436,11 +443,8 @@ private:
   DecisionProblemPtr problem;
   FunctionPtr featuresFunction;
  
-  double discount;
   size_t minDepth, maxDepth;
   bool depthIsBudget;
-  size_t maxHorizon;
-  size_t numInitialStates;
   bool verboseTrajectories;
   bool computeGeneralization;
 
@@ -490,6 +494,8 @@ private:
   FunctionPtr optimizeLookAHeadTreePolicy(ExecutionContext& context, const ContainerPtr& trainingStates, size_t maxSearchNodes) const
   {
     // EDA
+    double discount = problem->getDiscount();
+    size_t maxHorizon = problem->getHorizon();
     FunctionPtr functionToOptimize = new EvaluateHIVSearchHeuristic(problem, featuresFunction, trainingStates, maxSearchNodes, maxHorizon, discount);
     
     EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(functionToOptimize->getRequiredInputType(0, 1));
@@ -622,95 +628,12 @@ private:
     return bestScore;
   }
 
-#if 0
-  struct UnderstandHIVBudget2Policy : public Policy
-  {
-    UnderstandHIVBudget2Policy(PolicyPtr pol)
-      : pol(pol) {}
-    PolicyPtr pol;
-    
-    virtual Variable policyStart(ExecutionContext& context, const Variable& state, const ContainerPtr& actions)
-    {
-      Variable res = pol->policyStart(context, state, actions);
-      jassert(res.getInteger() == 0);
-      return res;
-    }
-
-    size_t greedyAction;
-    size_t secondAction;
-
-    virtual Variable policyStep(ExecutionContext& context, double reward, const Variable& state, const ContainerPtr& actions)
-    {
-      SearchTreePtr tree = state.getObjectAndCast<SearchTree>();
-      greedyAction = tree->getRootNode()->getBestChildNode()->getNodeIndex();
-      jassert(greedyAction >= 1 && greedyAction <= 4);
-
-      Variable res = pol->policyStep(context, reward, state, actions);
-      secondAction = (size_t)res.getInteger();
-      jassert(secondAction >= 1 && secondAction <= 4);
-      //if (i == greedyAction)
-      {
-        probZeroG.push(greedyAction == 1 ? 1.0 : 0.0);
-        probOneG.push(greedyAction == 2 ? 1.0 : 0.0);
-        probTwoG.push(greedyAction == 3 ? 1.0 : 0.0);
-        probThreeG.push(greedyAction == 4 ? 1.0 : 0.0);
-      }
-     // else
-      {
-        probZero.push(secondAction == 1 ? 1.0 : 0.0);
-        probOne.push(secondAction == 2 ? 1.0 : 0.0);
-        probTwo.push(secondAction == 3 ? 1.0 : 0.0);
-        probThree.push(secondAction == 4 ? 1.0 : 0.0);
-      }      
-      probGreedy.push(secondAction == greedyAction ? 1.0 : 0.0);
-      return res;
-    }
-
-    virtual void policyEnd(ExecutionContext& context, double reward, const Variable& finalState)
-    {
-      SearchTreePtr searchTree = finalState.getObjectAndCast<SearchTree>();
-      
-      size_t finalAction = searchTree->getRootNode()->getBestChildNode()->getNodeIndex();
-      probUsefull.push(finalAction != greedyAction ? 1.0 : 0.0);
-      probSecondAction.push(finalAction == secondAction ? 1.0 : 0.0);
-
-      pol->policyEnd(context, reward, finalState);
-    }
-
-    void showResults(ExecutionContext& context)
-    {
-      context.resultCallback(T("probGreedy"), probGreedy.getMean());
-      context.resultCallback(T("probUsefull"), probUsefull.getMean());
-      context.resultCallback(T("probZero"), probZero.getMean());
-      context.resultCallback(T("probOne"), probOne.getMean());
-      context.resultCallback(T("probTwo"), probTwo.getMean());
-      context.resultCallback(T("probThree"), probThree.getMean());
-      context.resultCallback(T("probZeroG"), probZeroG.getMean());
-      context.resultCallback(T("probOneG"), probOneG.getMean());
-      context.resultCallback(T("probTwoG"), probTwoG.getMean());
-      context.resultCallback(T("probThreeG"), probThreeG.getMean());
-      context.resultCallback(T("probSecondAction"), probSecondAction.getMean());
-    }
-
-    ScalarVariableMean probGreedy;
-    ScalarVariableMean probUsefull;
-    ScalarVariableMean probZero;
-    ScalarVariableMean probOne;
-    ScalarVariableMean probTwo;
-    ScalarVariableMean probThree;
-    ScalarVariableMean probZeroG;
-    ScalarVariableMean probOneG;
-    ScalarVariableMean probTwoG;
-    ScalarVariableMean probThreeG;
-    ScalarVariableMean probSecondAction;
-  };
-#endif // 0
-
   double computeTrajectory(ExecutionContext& context, const DecisionProblemPtr& problem, const ContainerPtr& initialStates, const FunctionPtr& heuristic, const String& name, size_t maxSearchNodes) const
   {
+    double discount = problem->getDiscount();
+    size_t maxHorizon = problem->getHorizon();
     SearchPolicyPtr searchPolicy = new BestFirstSearchPolicy(heuristic);
-    
-    //ReferenceCountedObjectPtr<UnderstandHIVBudget2Policy> searchPolicy = new UnderstandHIVBudget2Policy(searchPolicy);
+   
 
     double res = 0.0;
     size_t n = initialStates->getNumElements();
@@ -723,6 +646,8 @@ private:
       double returnValue = 0.0;
       for (size_t t = 0; t < maxHorizon; ++t)
       {
+        if (state->isFinalState())
+          break;
         if (verboseTrajectories)
           context.enterScope(T("element ") + String((int)t));
 
