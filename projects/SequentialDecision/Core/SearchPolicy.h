@@ -94,7 +94,7 @@ public:
   {
     if (candidates.empty())
     {
-      context.errorCallback(T("No more candidates to explore"));
+      //context.errorCallback(T("No more candidates to explore"));
       return (size_t)-1;
     }
     return popBestCandidate();
