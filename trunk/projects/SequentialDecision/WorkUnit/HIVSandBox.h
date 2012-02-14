@@ -374,13 +374,8 @@ public:
 
         if (optimisticHeuristics)
         {
-          if (problem.isInstanceOf<HIVDecisionProblem>())
-          {
-            for (int i = 3; i <= 15; i += 3)
-              computeTrajectory(context, problem, initialStates, optimisticPlanningSearchHeuristic(discount, pow(10.0, (double)i)), T("optimistic(10^") + String(i) + T(")"), maxSearchNodes);
-          }
-          else
-            computeTrajectory(context, problem, initialStates, optimisticPlanningSearchHeuristic(discount), T("optimistic"), maxSearchNodes);
+          for (int i = -6; i <= 12; i += 3)
+            computeTrajectory(context, problem, initialStates, optimisticPlanningSearchHeuristic(discount, pow(10.0, (double)i)), T("optimistic(10^") + String(i) + T(")"), maxSearchNodes);
         }
 
         if (learnedHeuristic)
