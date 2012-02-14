@@ -95,7 +95,7 @@ public:
 
   virtual ObjectVectorPtr getValidationInitialStates(size_t& numTrajectoriesToValidate) const
   {
-    numTrajectoriesToValidate = 10000; // should be 100,000
+    numTrajectoriesToValidate = 100000; // should be 100,000
     ObjectVectorPtr res = new ObjectVector(leftOrRightControlStateClass, 11);
     for (size_t i = 0; i <= 10; ++i)
       res->set(i, new LeftOrRightControlState((double)i));

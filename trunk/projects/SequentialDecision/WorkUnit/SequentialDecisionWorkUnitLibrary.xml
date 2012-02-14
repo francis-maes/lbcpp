@@ -81,6 +81,7 @@
     <variable type="PositiveInteger" name="action"/>
   </class>
 
+  <!-- Interpretable Policies -->
   <class name="InterpretHIVPolicy" base="WorkUnit">
     <variable type="PositiveInteger" name="numInitialStates"/>
     <variable type="PositiveInteger" name="maxHorizon"/>
@@ -88,6 +89,14 @@
     <variable type="Probability" name="randomActionProbability"/>
     <variable type="Double" name="discount"/>
     <variable type="File" name="dataFile"/>
+  </class>
+
+  <class name="GreedyPolicy" base="Policy"> <!-- TODO: MOVE into core-->
+    <constructor/>
+  </class>
+
+  <class name="EvaluateInterpretablePolicies" base="WorkUnit">
+    <variable type="PositiveInteger" name="numTrajectories"/>
   </class>
 
 

@@ -189,7 +189,7 @@ class BicyleBalancingProblem : public DecisionProblem
 {
 public:
   BicyleBalancingProblem() 
-    : DecisionProblem(FunctionPtr(), 0.98, 50000) {}
+    : DecisionProblem(FunctionPtr(), 0.98, 50000), useRidingReward(false) {}
 
   virtual double getMaxReward() const
     {return 0.0;}
