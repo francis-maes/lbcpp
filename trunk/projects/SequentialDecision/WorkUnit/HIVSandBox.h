@@ -242,16 +242,20 @@ public:
       jassert(state);
       for (size_t t = 0; t < maxHorizon; ++t)
       {
+        if (state->isFinalState())
+          break;
+
         SearchTreePtr searchTree = new SearchTree(problem, state, maxSearchNodes);
         searchTree->doSearchEpisode(context, searchPolicy, maxSearchNodes);
         Variable action = searchTree->getBestAction();
+        jassert(action.exists());
 
         double reward = 0.0;
         state->performTransition(context, action, reward);
         res += reward * pow(discount, (double)t);
       }
     }
-    return -res / (double)n;
+    return res / (double)n;
   }
 
 protected:
@@ -505,95 +509,16 @@ private:
     if (!functionToOptimize->initialize(context, parametersClass))
       return FunctionPtr();
 
-#if 0 // FIXME: reimplement with samplers
-    IndependentDoubleVectorDistributionPtr initialDistribution = new IndependentDoubleVectorDistribution(featuresEnumeration);
-    for (size_t i = 0; i < featuresEnumeration->getNumElements(); ++i)
-      initialDistribution->setSubDistribution(i, new GaussianDistribution(0.0, 1.0));
-  
-    //double bestIndividualScore = evaluateEachFeature(context, functionToOptimize, featuresEnumeration);
+    SamplerPtr sampler = independentDoubleVectorSampler(featuresEnumeration, gaussianSampler());
+    OptimizationProblemPtr problem = new OptimizationProblem(functionToOptimize, Variable(), sampler);
+    problem->setMaximisationProblem(true);
 
-    Variable bestParameters;
-    /*double bestScore = */performEDA(context, functionToOptimize, initialDistribution, bestParameters);
-    return new HIVSearchHeuristic(featuresFunction, bestParameters.getObjectAndCast<DenseDoubleVector>());
-#endif // 0
-    return FunctionPtr();
+    OptimizerPtr optimizer = edaOptimizer(iterations, populationSize, numBests, StoppingCriterionPtr(), 0, reinjectBest, false);
+    OptimizerStatePtr res = optimizer->optimize(context, problem);
+    DenseDoubleVectorPtr bestParameters = res->getBestSolution().getObjectAndCast<DenseDoubleVector>();
+
+    return new HIVSearchHeuristic(featuresFunction, bestParameters);
   }
-
-#if 0 // FIXME: replace by default eda
-  double performEDA(ExecutionContext& context, const FunctionPtr& functionToOptimize, const DistributionPtr& initialDistribution, Variable& bestParameters) const
-  {
-    double bestScore = DBL_MAX;
-
-    DistributionPtr distribution = initialDistribution;
-    context.enterScope(T("Optimizing"));
-    for (size_t i = 0; i < iterations; ++i)
-    {
-      context.enterScope(T("Iteration ") + String((int)i + 1));
-      context.resultCallback(T("iteration"), i);
-      Variable bestIterationSolution = bestParameters;
-      double score = performEDAIteration(context, functionToOptimize, distribution, bestIterationSolution);
-      context.resultCallback(T("bestParameters"), bestIterationSolution);
-
-      //context.resultCallback(T("distribution"), distribution);
-      context.leaveScope(score);
-      if (score < bestScore)
-      {
-        bestScore = score;
-        bestParameters = bestIterationSolution;
-      }
-      context.progressCallback(new ProgressionState(i + 1, iterations, T("Iterations")));
-    }
-    context.leaveScope(bestScore);
-    return bestScore;
-  }
-
-  double performEDAIteration(ExecutionContext& context, const FunctionPtr& functionToMinimize, DistributionPtr& distribution, Variable& bestParameters) const
-  {
-    jassert(numBests < populationSize);
-    //Object::displayObjectAllocationInfo(std::cout);
-
-    RandomGeneratorPtr random = context.getRandomGenerator();
-    
-    // generate evaluation work units
-    CompositeWorkUnitPtr workUnit(new CompositeWorkUnit(T("Evaluating ") + String((int)populationSize) + T(" parameters"), populationSize));
-    std::vector<Variable> inputs(populationSize);
-    std::vector<Variable> scores(populationSize);
-    for (size_t i = 0; i < populationSize; ++i)
-    {
-      if (reinjectBest && i == 0 && bestParameters.exists())
-        inputs[0] = bestParameters;
-      else
-        inputs[i] = distribution->sample(random);
-      workUnit->setWorkUnit(i, new FunctionWorkUnit(functionToMinimize, inputs[i], String::empty, &scores[i]));
-    }
-    workUnit->setProgressionUnit(T("parameters"));
-    workUnit->setPushChildrenIntoStackFlag(false);
-
-    // run work units
-    context.run(workUnit);
-
-    // sort by scores
-    std::multimap<double, size_t> sortedScores;
-    for (size_t i = 0; i < populationSize; ++i)
-      sortedScores.insert(std::make_pair(scores[i].getDouble(), i));
-    jassert(sortedScores.size() == populationSize);
-
-    // build new distribution
-    std::multimap<double, size_t>::const_iterator it = sortedScores.begin();
-    DistributionBuilderPtr builder = distribution->createBuilder();
-    for (size_t i = 0; i < numBests; ++i, ++it)
-    {
-      size_t index = it->second;
-      //context.informationCallback(T("Best ") + String((int)i + 1) + T(": ") + inputs[index].toShortString() + T(" (") + scores[index].toShortString() + T(")"));
-      builder->addElement(inputs[index]);
-    }
-    distribution = builder->build(context);
-
-    // return best score
-    bestParameters = inputs[sortedScores.begin()->second];
-    return sortedScores.begin()->first;
-  }
-#endif // 0
 
   double evaluateEachFeature(ExecutionContext& context, const FunctionPtr& functionToMinimize, EnumerationPtr featuresEnumeration) const
   {

@@ -40,10 +40,10 @@ public:
       context.enterScope(T("Iteration ") + String((int)i + 1));
       performEDAIteration(context, state, problem, bestIterationSolution, bestIterationScore, worstIterationScore);
       Variable res = state->finishIteration(context, i+1, bestIterationScore, bestIterationSolution);
+      context.resultCallback(T("workIterationScore"), worstIterationScore);
       context.leaveScope(res);
 
-      jassert(bestIterationScore <= worstIterationScore);
-      if (worstIterationScore - bestIterationScore < 1e-9) // all scores are nearly identical
+      if (fabs(worstIterationScore - bestIterationScore) < 1e-9) // all scores are nearly identical
       {
         context.informationCallback(T("EDA has converged"));
         break;
@@ -86,20 +86,21 @@ protected:
       inputs[i] = input;
       workUnits->setWorkUnit(i, new FunctionWorkUnit(objectiveFunction, input));
     }
+    workUnits->setProgressionUnit(T("Candidates"));
 
     ContainerPtr results = context.run(workUnits, false).getObject();
 
     // sort results
-    std::multimap<double, Variable> sortedScores;
+    std::vector< std::pair<Variable, double> > sortedScores;
     pushResultsSortedbyScore(context, results, inputs, problem->isMaximisationProblem(), sortedScores);
 
     // build new distribution & update OptimizerState
     learnDistribution(context, initialSampler, state, sortedScores);
 
     // return best score and best parameter of this iteration
-    bestParameters = sortedScores.begin()->second;
-    bestScore = sortedScores.begin()->first;
-    worstScore = sortedScores.rbegin()->first;
+    bestParameters = sortedScores[0].first;
+    bestScore = sortedScores[0].second;
+    worstScore = sortedScores.back().second;
   }
 };
 
