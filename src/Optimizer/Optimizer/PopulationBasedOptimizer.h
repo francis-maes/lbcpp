@@ -12,6 +12,7 @@
 # include <lbcpp/Optimizer/Optimizer.h>
 # include <lbcpp/Sampler/Sampler.h>
 # include <lbcpp/Data/RandomVariable.h>
+# include <algorithm>
 
 namespace lbcpp
 {
@@ -81,14 +82,30 @@ protected:
   /**
    * Push the results of the OptimizerState buffer in the sorted map "sortedScore"
    */
-  void pushResultsSortedbyScore(ExecutionContext& context, const ContainerPtr results, const std::vector<Variable>& parameters, bool isMaximisationProblem, std::multimap<double, Variable>& sortedScores) const
+  struct SortResultsOperator
+  {
+    SortResultsOperator(bool isMaximisationProblem)
+      : isMaximisationProblem(isMaximisationProblem) {}
+
+    bool isMaximisationProblem;
+
+    bool operator ()(const std::pair<Variable, double>& a, const std::pair<Variable, double>& b) const
+    {
+      if (a.second != b.second)
+        return isMaximisationProblem ? a.second > b.second : a.second < b.second;
+      else
+        return a.first < b.first;
+    }
+  };
+
+  void pushResultsSortedbyScore(ExecutionContext& context, const ContainerPtr results, const std::vector<Variable>& parameters, bool isMaximisationProblem, std::vector< std::pair<Variable, double> >& sortedScores) const
   {
     const size_t n = results->getNumElements();
+    sortedScores.resize(n);
     for (size_t i = 0; i < n; ++i)
     {
       const double score = results->getElement(i).getDouble();
-      // todo: support maximisation problems as well 
-      sortedScores.insert(std::pair<double, Variable>(isMaximisationProblem ? -score : score, parameters[i]));
+      sortedScores[i] = std::make_pair(parameters[i], score);
       if (verbose) 
       {
         context.enterScope(T("Request ") + String((int) (i+1)));
@@ -97,12 +114,25 @@ protected:
         context.leaveScope(score);
       }
     }
+    std::sort(sortedScores.begin(), sortedScores.end(), SortResultsOperator(isMaximisationProblem));
   }
   
   /**
    * Learn a new distribution from the results in sortedScores.
    * The OptimizerState is updated.
    */
+  void learnDistribution(ExecutionContext& context, const SamplerPtr& initialSampler, const SamplerBasedOptimizerStatePtr& state, const std::vector< std::pair<Variable, double> >& sortedScores) const
+  {
+    bool isMaximisationProblem = sortedScores[0].second > sortedScores.back().second;
+    std::multimap<double, Variable> s;
+    for (size_t i = 0; i < sortedScores.size(); ++i)
+    {
+      double score = isMaximisationProblem ? -sortedScores[i].second : sortedScores[i].second;
+      s.insert(std::make_pair(score, sortedScores[i].first));
+    }
+    learnDistribution(context, initialSampler, state, s);
+  }
+
   void learnDistribution(ExecutionContext& context, const SamplerPtr& initialSampler, const SamplerBasedOptimizerStatePtr& state, const std::multimap<double, Variable>& sortedScores) const
   {
     std::map<Variable, ScalarVariableStatistics> bestVariables;
