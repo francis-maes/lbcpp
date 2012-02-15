@@ -162,9 +162,9 @@ protected:
     res.push_back(std::make_pair(DecisionProblem::create(getType("LinearPointPhysicProblem")), "LP"));
     res.push_back(std::make_pair(DecisionProblem::create(getType("LeftOrRightControlProblem")), "LoR"));
     res.push_back(std::make_pair(DecisionProblem::create(getType("BicyleBalancingProblem")), "B"));
-    DecisionProblemPtr pb = DecisionProblem::create(getType("BicyleBalancingProblem"));
+    /*DecisionProblemPtr pb = DecisionProblem::create(getType("BicyleBalancingProblem"));
     pb->setVariable(3, true);
-    res.push_back(std::make_pair(pb, "B2"));
+    res.push_back(std::make_pair(pb, "B2"));*/
     res.push_back(std::make_pair(DecisionProblem::create(getType("HIVDecisionProblem")), "HIV"));
     res.push_back(std::make_pair(DecisionProblem::create(getType("CarOnTheHillProblem")), "Car"));
     res.push_back(std::make_pair(DecisionProblem::create(getType("AcrobotProblem")), "Acr"));
