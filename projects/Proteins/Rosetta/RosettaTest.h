@@ -104,6 +104,7 @@ public:
 //    context.leaveScope();
 
     Rosetta ros;
+
     ros.init(context, false);
 
     File referencesFile = context.getFile(T("phipsipetitPDB"));

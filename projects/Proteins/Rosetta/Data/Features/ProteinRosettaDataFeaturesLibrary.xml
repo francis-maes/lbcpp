@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ProteinRosettaDataFeatures" directory="Rosetta/Data/Features">
+  
+  <class name="ResidueHistogramFeatureGenerator" base="FeatureGenerator">
+  </class>
+  
+  <class name="PoseFeatures" base="CompositeFunction">
+  </class>
+  
+    
+</library>

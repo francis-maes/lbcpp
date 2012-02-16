@@ -20,6 +20,7 @@ ENDIF(LBCPP_USER_INTERFACE)
 
 GENERATE_INTROSPECTION_CODE(Rosetta/ProteinRosettaLibrary.xml ProteinRosettaLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Rosetta/Data/ProteinRosettaDataLibrary.xml ProteinRosettaDataLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Rosetta/Data/Features/ProteinRosettaDataFeaturesLibrary.xml ProteinRosettaDataFeaturesLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Rosetta/Data/Mover/ProteinRosettaDataMoverLibrary.xml ProteinRosettaDataMoverLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Rosetta/Data/MoverSampler/ProteinRosettaDataMoverSamplerLibrary.xml ProteinRosettaDataMoverSamplerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Rosetta/ProteinOptimizer/ProteinRosettaOptimizerLibrary.xml ProteinRosettaOptimizerLibrary.cpp)
@@ -171,6 +172,13 @@ SET(LBCPP_PROTEIN_ROSETTA_DATA_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaDataLibrary.cpp
 )
 
+SET(LBCPP_PROTEIN_ROSETTA_DATA_FEATURES_SOURCES
+  Rosetta/Data/Features/PoseFeatures.h
+  Rosetta/Data/Features/ResidueHistogramFeatureGenerator.h
+  Rosetta/Data/Features/ProteinRosettaDataFeaturesLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaDataFeaturesLibrary.cpp
+)
+
 SET(LBCPP_PROTEIN_ROSETTA_DATA_MOVER_SOURCES
   Rosetta/Data/Mover/PoseMover.h
   Rosetta/Data/Mover/PhiPsiMover.h
@@ -282,6 +290,7 @@ SET(PROTEINS_CPP_SOURCES
   ${LBCPP_PROTEIN_USER_INTERFACE_SOURCES}
   ${LBCPP_PROTEIN_ROSETTA_SOURCES}
     ${LBCPP_PROTEIN_ROSETTA_DATA_SOURCES}
+    ${LBCPP_PROTEIN_ROSETTA_DATA_FEATURES_SOURCES}
     ${LBCPP_PROTEIN_ROSETTA_DATA_MOVER_SOURCES}
     ${LBCPP_PROTEIN_ROSETTA_DATA_MOVERSAMPLER_SOURCES}
     ${LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES}
@@ -312,6 +321,7 @@ SOURCE_GROUP(WorkUnit FILES ${LBCPP_PROTEIN_WORK_UNIT_SOURCES})
 SOURCE_GROUP(UserInterface FILES ${LBCPP_PROTEIN_USER_INTERFACE_SOURCES})
 SOURCE_GROUP(Rosetta FILES ${LBCPP_PROTEIN_ROSETTA_SOURCES})
 SOURCE_SUB_GROUP(Rosetta Data FILES ${LBCPP_PROTEIN_ROSETTA_DATA_SOURCES})
+SOURCE_SUB_GROUP(Rosetta DataFeatures FILES ${LBCPP_PROTEIN_ROSETTA_DATA_FEATURES_SOURCES})
 SOURCE_SUB_GROUP(Rosetta DataMover FILES ${LBCPP_PROTEIN_ROSETTA_DATA_MOVER_SOURCES})
 SOURCE_SUB_GROUP(Rosetta DataMoverSampler FILES ${LBCPP_PROTEIN_ROSETTA_DATA_MOVERSAMPLER_SOURCES})
 SOURCE_SUB_GROUP(Rosetta ProteinOptimizer FILES ${LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES})
