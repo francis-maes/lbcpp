@@ -33,15 +33,23 @@ typedef ReferenceCountedObjectPtr<Pose> PosePtr;
 class Pose : public Object
 {
 public:
+  /*
+   * Constructor
+   */
   Pose() {}
   Pose(const String& sequence);
   Pose(const File& pdbFile);
   Pose(const PosePtr& copy);
 
+  /*
+   * I/O
+   */
   void saveToPDB(const File& pdbFile);
-
   Pose& operator=(const Pose& copy);
 
+  /*
+   * Structure
+   */
   size_t getLength();
   double getPhi(size_t residue);
   double getPsi(size_t residue);
@@ -49,16 +57,25 @@ public:
   void setPsi(size_t residue, double psi);
   SymmetricMatrixPtr getBackboneDistanceMatrix();
 
+  /*
+   * Energy
+   */
+  void initializeEnergyFunction();
   double getEnergy();
   double getCorrectedEnergy();
   double getDistanceCorrectionFactor();
   double getCollisionCorrectionFactor();
+
+  /*
+   * Features
+   */
 
 protected:
   friend class PoseClass;
 
 # ifdef LBCPP_PROTEIN_ROSETTA
   core::pose::PoseOP pose;
+  core::scoring::ScoreFunctionOP score_fct;
 # endif //! LBCPP_PROTEIN_ROSETTA
 };
 

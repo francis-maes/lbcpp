@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEINS_ROSETTA_DATA_MOVER_RIGID_BODY_MOVER_H_
 # define LBCPP_PROTEINS_ROSETTA_DATA_MOVER_RIGID_BODY_MOVER_H_
 
-# include "../PoseMover.h"
+# include "PoseMover.h"
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 #  undef T

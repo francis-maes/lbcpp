@@ -11,7 +11,7 @@
 
 # include "precompiled.h"
 # include "../Data/PoseMoverSampler.h"
-# include "../Data/PoseMover.h"
+# include "../Data/Mover/PoseMover.h"
 # include "../RosettaSandBox.h"
 # include "GeneralPoseMoverSampler.h"
 

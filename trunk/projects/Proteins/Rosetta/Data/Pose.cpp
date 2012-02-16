@@ -96,12 +96,11 @@ SymmetricMatrixPtr Pose::getBackboneDistanceMatrix()
   return matrix;
 }
 
+void Pose::initializeEnergyFunction()
+  {score_fct = core::scoring::ScoreFunctionFactory::create_score_function("standard");}
+
 double Pose::getEnergy()
-{
-  core::scoring::ScoreFunctionOP score_fct =
-      core::scoring::ScoreFunctionFactory::create_score_function("standard");
-  return (*score_fct)(*pose);
-}
+  {return (*score_fct)(*pose);}
 
 double Pose::getCorrectedEnergy()
   {return getEnergy() + getDistanceCorrectionFactor() + getCollisionCorrectionFactor();}
@@ -220,6 +219,9 @@ SymmetricMatrixPtr Pose::getBackboneDistanceMatrix()
   jassert(false);
   return SymmetricMatrixPtr();
 }
+
+void Pose::initializeEnergyFunction()
+  {jassert(false);}
 
 double Pose::getEnergy()
 {
