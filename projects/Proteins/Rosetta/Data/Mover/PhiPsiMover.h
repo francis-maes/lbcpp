@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEINS_ROSETTA_DATA_MOVER_PHI_PSI_MOVER_H_
 # define LBCPP_PROTEINS_ROSETTA_DATA_MOVER_PHI_PSI_MOVER_H_
 
-# include "../PoseMover.h"
+# include "PoseMover.h"
 
 namespace lbcpp
 {

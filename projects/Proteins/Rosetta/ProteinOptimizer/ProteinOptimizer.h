@@ -12,7 +12,7 @@
 # include "precompiled.h"
 
 # include "../RosettaUtils.h"
-# include "../Data/PoseMover.h"
+# include "../Data/Mover/PoseMover.h"
 # include <iostream>
 # include <cmath>
 # include <algorithm>

@@ -15,7 +15,7 @@
 # include "../Data/Formats/PDBFileGenerator.h"
 # include "RosettaUtils.h"
 # include "ProteinOptimizer/ProteinOptimizer.h"
-# include "Data/PoseMover.h"
+# include "Data/Mover/PoseMover.h"
 # include "ProteinOptimizer/SimulatedAnnealingOptimizer.h"
 # include "Data/PoseMoverSampler.h"
 # include "../Data/TertiaryStructure.h"

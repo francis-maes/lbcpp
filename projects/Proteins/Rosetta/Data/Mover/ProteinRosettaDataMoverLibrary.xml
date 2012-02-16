@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <library name="ProteinRosettaDataMover" directory="Rosetta/Data/Mover">
+  <!-- abstract classes -->
+  <class name="PoseMover" base="Object" abstract="yes" />
   
+  <!-- enumeration -->
+  <enumeration name="PoseMoverEnumeration">
+    <value name="phipsi"/>
+    <value name="shear"/>
+    <value name="rigidbody"/>
+  </enumeration>
+  
+  <!-- classes -->
   <class name="PhiPsiMover" base="PoseMover">
     <constructor arguments="size_t residue, double deltaPhi, double deltaPsi"/>
     <variable type="PositiveInteger" name="residue" shortName="r" description="Index of the residue"/>

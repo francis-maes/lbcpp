@@ -16,7 +16,7 @@
 # include "../Data/Formats/PDBFileGenerator.h"
 # include "../Evaluator/QScoreEvaluator.h"
 # include "RosettaUtils.h"
-# include "Data/PoseMover.h"
+# include "Data/Mover/PoseMover.h"
 # include "ProteinOptimizer/ProteinOptimizer.h"
 # include "ProteinOptimizer/GreedyOptimizer.h"
 # include "ProteinOptimizer/SequentialOptimizer.h"

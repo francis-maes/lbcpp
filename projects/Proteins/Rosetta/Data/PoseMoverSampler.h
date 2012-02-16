@@ -12,7 +12,7 @@
 # include <lbcpp/Sampler/Sampler.h>
 # include "MoverSampler/SimpleResidueSampler.h"
 # include "MoverSampler/PairResidueSampler.h"
-# include "PoseMover.h"
+# include "Mover/PoseMover.h"
 
 namespace lbcpp
 {
@@ -135,13 +135,13 @@ protected:
 typedef ReferenceCountedObjectPtr<PoseMoverSampler> PoseMoverSamplerPtr;
 
 
-extern CompositeSamplerPtr pairResidueSampler(size_t numResidues);
-extern CompositeSamplerPtr simpleResidueSampler(size_t numResidues);
-
-extern CompositeSamplerPtr poseMoverSampler(size_t numResidues);
-extern CompositeSamplerPtr poseMoverSampler(DiscreteSamplerPtr classSampler, size_t numResidues);
-
-extern SamplerPtr gaussianMultivariateSampler();
+//extern CompositeSamplerPtr pairResidueSampler(size_t numResidues);
+//extern CompositeSamplerPtr simpleResidueSampler(size_t numResidues);
+//
+//extern CompositeSamplerPtr poseMoverSampler(size_t numResidues);
+//extern CompositeSamplerPtr poseMoverSampler(DiscreteSamplerPtr classSampler, size_t numResidues);
+//
+//extern SamplerPtr gaussianMultivariateSampler();
 
 
 }; /* namespace lbcpp */

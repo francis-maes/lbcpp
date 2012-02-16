@@ -10,7 +10,7 @@
 # define LBCPP_SAMPLER_GENERAL_PROTEIN_MOVER_SAMPLER_H_
 
 # include "precompiled.h"
-# include "../Data/PoseMover.h"
+# include "../Data/Mover/PoseMover.h"
 # include "../Data/PoseMoverSampler.h"
 # include <lbcpp/Data/DoubleVector.h>
 
