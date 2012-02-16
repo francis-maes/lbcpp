@@ -82,7 +82,20 @@ public:
     target.staticCast<EnumerationSampler>()->enumeration = enumeration;
   }
 
-protected:
+  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
+  {
+    DenseDoubleVectorPtr returnProbabilities = new DenseDoubleVector(samples->getNumElements(), 0.0);
+
+    for (size_t i = 0; i < samples->getNumElements(); i++)
+    {
+      size_t index = samples->getElement(i).getInteger();
+      returnProbabilities->setValue(i, probabilities->getValue(index));
+    }
+
+    return returnProbabilities;
+  }
+
+  protected:
   friend class EnumerationSamplerClass;
 
   DenseDoubleVectorPtr probabilities;

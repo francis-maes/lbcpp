@@ -334,6 +334,21 @@ public:
   void energies(double* energy, double* score = NULL, double* normalizedScore = NULL)
     {protein->energies(energy, score, normalizedScore);}
 
+  double getMoverProbability(ExecutionContext& context, PoseMoverPtr& mover)
+  {
+    Variable input;
+    if (learningPolicy > 1)
+      input = getFeatures(context);
+
+    ContainerPtr inputs = variableVector(1);
+    ContainerPtr movers = variableVector(1);
+    inputs->setElement(0, input);
+    movers->setElement(0, mover);
+    DenseDoubleVectorPtr probas = sampler->computeProbabilities(inputs, movers);
+
+    return probas->getValue(0);
+  }
+
   Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random)
   {
     Variable input;
