@@ -5,6 +5,7 @@
   <!-- import -->
   <import name="ProteinRosettaDataMover"/>
   <import name="ProteinRosettaDataMoverSampler"/>
+  <import name="ProteinRosettaDataFeatures"/>
   
   <!-- class -->
   <class name="Rosetta" base="Object" />

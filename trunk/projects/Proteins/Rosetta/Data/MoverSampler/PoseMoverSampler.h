@@ -134,16 +134,6 @@ protected:
 
 typedef ReferenceCountedObjectPtr<PoseMoverSampler> PoseMoverSamplerPtr;
 
-
-//extern CompositeSamplerPtr pairResidueSampler(size_t numResidues);
-//extern CompositeSamplerPtr simpleResidueSampler(size_t numResidues);
-//
-//extern CompositeSamplerPtr poseMoverSampler(size_t numResidues);
-//extern CompositeSamplerPtr poseMoverSampler(DiscreteSamplerPtr classSampler, size_t numResidues);
-//
-//extern SamplerPtr gaussianMultivariateSampler();
-
-
 }; /* namespace lbcpp */
 
 #endif //! LBCPP_PROTEINS_ROSETTA_DATA_POSEMOVERSAMPLER_H_

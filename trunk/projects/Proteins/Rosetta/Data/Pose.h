@@ -10,6 +10,7 @@
 # define LBCPP_PROTEIN_ROSETTA_DATA_POSE_H_
 
 # include "Rosetta.h"
+# include <lbcpp/Core/CompositeFunction.h>
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 #  undef T
@@ -28,6 +29,7 @@ namespace lbcpp
 {
 
 class Pose;
+extern ClassPtr poseClass;
 typedef ReferenceCountedObjectPtr<Pose> PosePtr;
 
 class Pose : public Object
@@ -69,9 +71,15 @@ public:
   /*
    * Features
    */
+  DenseDoubleVectorPtr getHistogram();
+  void setFeatureGenerator(CompositeFunctionPtr& features);
+  CompositeFunctionPtr getFeatureGenerator();
+  Variable getFeatures(ExecutionContext& context);
 
 protected:
   friend class PoseClass;
+
+  CompositeFunctionPtr features;
 
 # ifdef LBCPP_PROTEIN_ROSETTA
   core::pose::PoseOP pose;

@@ -12,6 +12,15 @@
 
 using namespace lbcpp;
 
+void Pose::setFeatureGenerator(CompositeFunctionPtr& features)
+  {this->features = features;}
+
+CompositeFunctionPtr Pose::getFeatureGenerator()
+  {return features;}
+
+Variable Pose::getFeatures(ExecutionContext& context)
+  {return features->compute(context, (PosePtr)this);}
+
 #ifdef LBCPP_PROTEIN_ROSETTA
 
 Pose::Pose(const String& sequence)
@@ -171,6 +180,13 @@ double Pose::getCollisionCorrectionFactor()
   return juce::jmax(0.0, correctionFactor);
 }
 
+DenseDoubleVectorPtr Pose::getHistogram()
+{
+  // TODO : to be implemented
+  jassert(false);
+  return DenseDoubleVectorPtr();
+}
+
 # else
 Pose::Pose(const String& sequence)
   {jassert(false);}
@@ -245,6 +261,12 @@ double Pose::getCollisionCorrectionFactor()
 {
   jassert(false);
   return 0.0;
+}
+
+DenseDoubleVectorPtr Pose::getHistogram()
+{
+  jassert(false);
+  return DenseDoubleVectorPtr();
 }
 
 #endif //! LBCPP_PROTEIN_ROSETTA
