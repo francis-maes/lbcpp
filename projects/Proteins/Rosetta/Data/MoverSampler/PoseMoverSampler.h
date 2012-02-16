@@ -10,9 +10,9 @@
 # define LBCPP_PROTEINS_ROSETTA_DATA_POSEMOVERSAMPLER_H_
 
 # include <lbcpp/Sampler/Sampler.h>
-# include "MoverSampler/SimpleResidueSampler.h"
-# include "MoverSampler/PairResidueSampler.h"
-# include "Mover/PoseMover.h"
+# include "SimpleResidueSampler.h"
+# include "PairResidueSampler.h"
+# include "../Mover/PoseMover.h"
 
 namespace lbcpp
 {

@@ -13,7 +13,7 @@
 # include "ProteinOptimizer.h"
 # include "SimulatedAnnealingOptimizer.h"
 # include "../Data/Mover/PoseMover.h"
-# include "../Data/PoseMoverSampler.h"
+# include "../Data/MoverSampler/PoseMoverSampler.h"
 
 namespace lbcpp
 {

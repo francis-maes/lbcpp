@@ -2,6 +2,11 @@
 
 <library name="ProteinRosettaDataMoverSampler" directory="Rosetta/Data/MoverSampler">
   
+  <class name="PoseMoverSampler" base="CompositeSampler">
+    <constructor arguments="DiscreteSamplerPtr classSampler, size_t numResidues"/>
+    <constructor arguments="size_t numResidues"/>
+  </class>
+  
   <class name="PairResidueSampler" base="CompositeSampler">
     <constructor arguments="size_t numResidues"/>
     <variable type="PositiveInteger" name="numResidues" shortName="n" description="The number of residues to sample from."/>

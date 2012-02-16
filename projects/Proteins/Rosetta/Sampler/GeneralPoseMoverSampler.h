@@ -11,7 +11,7 @@
 
 # include "precompiled.h"
 # include "../Data/Mover/PoseMover.h"
-# include "../Data/PoseMoverSampler.h"
+# include "../Data/MoverSampler/PoseMoverSampler.h"
 # include <lbcpp/Data/DoubleVector.h>
 
 namespace lbcpp
