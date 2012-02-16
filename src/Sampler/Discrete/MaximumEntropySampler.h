@@ -58,7 +58,7 @@ public:
     target->predictor = predictor->cloneAndCast<Function>();
   }
 
-  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
+  virtual DenseDoubleVectorPtr computeLogProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
   {
     DenseDoubleVectorPtr returnProbabilities = new DenseDoubleVector(samples->getNumElements(), 0.0);
     double normalize;
@@ -75,7 +75,7 @@ public:
 
       index = (size_t)samples->getElement(i).getInteger();
 
-      returnProbabilities->setValue(i, probabilities->getValue(index) / normalize);
+      returnProbabilities->setValue(i, std::log(probabilities->getValue(index) / normalize));
     }
 
     return returnProbabilities;

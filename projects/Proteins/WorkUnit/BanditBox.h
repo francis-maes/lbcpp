@@ -468,14 +468,16 @@ public:
     decorated->learn(context, trainingInputs, parameters, trainingWeights, validationInputs, validationSamples, validationWeights);
   }
 
-  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
+  virtual DenseDoubleVectorPtr computeLogProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
   {
+    // computeLogProbabilities instead of computeProbabilities -> may be source of trouble
+    jassert(false);
     const size_t n = samples->getNumElements();    
     ObjectVectorPtr parameters = objectVector(largeProteinParametersClass, n);
     for (size_t i = 0; i < n; ++i)
       parameters->setElement(i, samples->getElement(i).getObjectAndCast<BanditCandidate>()->getParameters());
 
-    return decorated->computeProbabilities(inputs, parameters);
+    return decorated->computeLogProbabilities(inputs, parameters);
   }
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const

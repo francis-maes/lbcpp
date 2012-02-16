@@ -23,13 +23,13 @@ void ConstantSampler::learn(ExecutionContext& context, const ContainerPtr& train
                                               const ContainerPtr& validationInputs, const ContainerPtr& validationSamples, const DenseDoubleVectorPtr& validationWeights)
   {}
 
-DenseDoubleVectorPtr ConstantSampler::computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
+DenseDoubleVectorPtr ConstantSampler::computeLogProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
 {
   size_t n = samples->getNumElements();
   DenseDoubleVectorPtr res = new DenseDoubleVector(n, 0.0);
   for (size_t i = 0; i < n; ++i)
     if (samples->getElement(i) == value)
-      res->setValue(i, 1.0);
+      res->setValue(i, 0.0);
   return res;
 }
 
@@ -121,8 +121,8 @@ void DecoratorSampler::learn(ExecutionContext& context, const ContainerPtr& trai
                                               const ContainerPtr& validationInputs, const ContainerPtr& validationSamples, const DenseDoubleVectorPtr& validationWeights)
   {return sampler->learn(context, trainingInputs, trainingSamples, trainingWeights, validationInputs, validationSamples, validationWeights);}
 
-DenseDoubleVectorPtr DecoratorSampler::computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
-  {return sampler->computeProbabilities(inputs, samples);}
+DenseDoubleVectorPtr DecoratorSampler::computeLogProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
+  {return sampler->computeLogProbabilities(inputs, samples);}
 
 void DecoratorSampler::clone(ExecutionContext& context, const ObjectPtr& target) const
 {

@@ -344,7 +344,7 @@ public:
     ContainerPtr movers = variableVector(1);
     inputs->setElement(0, input);
     movers->setElement(0, mover);
-    DenseDoubleVectorPtr probas = sampler->computeProbabilities(inputs, movers);
+    DenseDoubleVectorPtr probas = sampler->computeLogProbabilities(inputs, movers);
 
     return probas->getValue(0);
   }

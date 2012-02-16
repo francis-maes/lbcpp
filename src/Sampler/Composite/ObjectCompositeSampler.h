@@ -60,7 +60,7 @@ public:
     }
   }
 
-  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
+  virtual DenseDoubleVectorPtr computeLogProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
   {
     DenseDoubleVectorPtr probabilities = new DenseDoubleVector(samples->getNumElements(), 0.0);
     std::vector<DenseDoubleVectorPtr> subProbabilities(samplers.size());
@@ -72,14 +72,14 @@ public:
     makeSubExamples(inputs, samples, DenseDoubleVectorPtr(), subInputs, subSamples, subWeights);
 
     for (size_t i = 0; i < samplers.size(); i++)
-      subProbabilities[i] = samplers[i]->computeProbabilities(subInputs[i], subSamples[i]);
+      subProbabilities[i] = samplers[i]->computeLogProbabilities(subInputs[i], subSamples[i]);
 
     for (size_t i = 0; i < samples->getNumElements(); i++)
     {
-      tempProbability = 1.0;
+      tempProbability = 0.0;
 
       for (size_t j = 0; j < samplers.size(); j++)
-        tempProbability *= subProbabilities[j]->getValue(i);
+        tempProbability += subProbabilities[j]->getValue(i);
 
       probabilities->setValue(i, tempProbability);
     }

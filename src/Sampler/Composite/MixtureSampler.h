@@ -55,10 +55,10 @@ public:
   {
     for (size_t j = 0; j < samplers.size(); j++)
     {
-      rawProbabilities[j] = samplers[j]->computeProbabilities(trainingInputs, trainingSamples);
+      rawProbabilities[j] = samplers[j]->computeLogProbabilities(trainingInputs, trainingSamples);
 
       for (size_t i = 0; i < trainingSamples->getNumElements(); i++)
-        rawProbabilities[j]->setValue(i, rawProbabilities[j]->getValue(i) * probabilities->getValue(j));
+        rawProbabilities[j]->setValue(i, std::exp(rawProbabilities[j]->getValue(i)) * probabilities->getValue(j));
     }
   }
 
@@ -118,14 +118,22 @@ public:
     }
   }
 
-  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
+  virtual DenseDoubleVectorPtr computeLogProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
   {
     DenseDoubleVectorPtr result = new DenseDoubleVector(samples->getNumElements(), 0);
     for (size_t i = 0; i < probabilities->getNumElements(); i++)
     {
-      DenseDoubleVectorPtr tempProbabilities = samplers[i]->computeProbabilities(inputs, samples);
+      DenseDoubleVectorPtr tempProbabilities = samplers[i]->computeLogProbabilities(inputs, samples);
+
+      for (size_t j = 0; j < tempProbabilities->getNumElements(); j++)
+        tempProbabilities->setValue(j, std::exp(tempProbabilities->getValue(j)));
+
       tempProbabilities->addWeightedTo(result, 0, probabilities->getValue(i));
     }
+
+    for (size_t j = 0; j < result->getNumElements(); j++)
+      result->setValue(j, std::log(result->getValue(j)));
+
     return result;
   }
 

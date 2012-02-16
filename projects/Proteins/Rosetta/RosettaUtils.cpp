@@ -23,13 +23,34 @@ void lbcpp::convertProteinToPose(ExecutionContext& context, const ProteinPtr& pr
     core::pose::PoseOP& res)
 {
 #ifdef LBCPP_PROTEIN_ROSETTA
-  res = new core::pose::Pose();
-  String proteinPDBString = PDBFileGenerator::producePDBString(context, protein);
-  core::io::pdb::pose_from_pdbstring((*res), (const char*)proteinPDBString);
+  // res = new core::pose::Pose();
 
-  if ((int)res->n_residue() != (int)protein->getLength())
+  //  String proteinPDBString = PDBFileGenerator::producePDBString(context, protein);
+  //  core::io::pdb::pose_from_pdbstring((*res), (const char*)proteinPDBString);
+  //
+  //  if ((int)res->n_residue() != (int)protein->getLength())
+  //  {
+  //    context.errorCallback(T("convertProteinToPose"), protein->getName());
+  //    res.reset_to_null();
+  //  }
+
+  bool error = false;
+  String name = String(protein->getName());
+  File tempFile = File::createTempFile(T("tmp") + name + String(Time::currentTimeMillis()) + T(".pdb"));
+
+  if (tempFile != File::nonexistent)
   {
-    context.errorCallback(T("convertProteinToPose"), protein->getName());
+    protein->saveToPDBFile(context, tempFile);
+    res = new core::pose::Pose(std::string((const char*)tempFile.getFullPathName()));
+    tempFile.deleteFile();
+    error = (int)res->n_residue() != (int)protein->getLength();
+  }
+  else
+    error = true;
+
+  if (error)
+  {
+    context.errorCallback(T("convertProteinToPose"), name);
     res.reset_to_null();
   }
 
