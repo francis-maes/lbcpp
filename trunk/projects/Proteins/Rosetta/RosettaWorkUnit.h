@@ -17,7 +17,7 @@
 # include "ProteinOptimizer/ProteinOptimizer.h"
 # include "Data/Mover/PoseMover.h"
 # include "ProteinOptimizer/SimulatedAnnealingOptimizer.h"
-# include "Data/PoseMoverSampler.h"
+# include "Data/MoverSampler/PoseMoverSampler.h"
 # include "../Data/TertiaryStructure.h"
 # include "ProteinEDAOptimizer.h"
 

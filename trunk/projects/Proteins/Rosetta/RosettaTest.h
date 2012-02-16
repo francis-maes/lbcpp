@@ -28,7 +28,7 @@
 # include <vector>
 # include <cmath>
 # include <time.h>
-# include "Data/PoseMoverSampler.h"
+# include "Data/MoverSampler/PoseMoverSampler.h"
 # include "Data/MoverSampler/SimpleResidueSampler.h"
 # include "Data/MoverSampler/PairResidueSampler.h"
 # include "Sampler/GeneralPoseMoverSampler.h"

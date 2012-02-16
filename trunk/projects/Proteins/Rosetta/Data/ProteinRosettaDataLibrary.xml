@@ -10,9 +10,4 @@
   <class name="Rosetta" base="Object" />
   <class name="Pose" base="Object" />  
   
-  <class name="PoseMoverSampler" base="CompositeSampler">
-    <constructor arguments="DiscreteSamplerPtr classSampler, size_t numResidues"/>
-    <constructor arguments="size_t numResidues"/>
-  </class>
-  
 </library>
