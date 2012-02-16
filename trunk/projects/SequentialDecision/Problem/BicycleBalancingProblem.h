@@ -225,7 +225,7 @@ public:
   {
     ObjectVectorPtr res = new ObjectVector(bicyleBalancingStateClass, 9);
     for (size_t i = 0; i < 9; ++i)
-      res->set(i, new BicyleBalancingState(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pi * (-1.0 + i / 8.0), useRidingReward));
+      res->set(i, new BicyleBalancingState(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, pi * (-1.0 + i / 4.0), useRidingReward));
     numTrajectoriesToValidate = 100;
     return res;
   }
