@@ -58,6 +58,29 @@ public:
     target->predictor = predictor->cloneAndCast<Function>();
   }
 
+  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
+  {
+    DenseDoubleVectorPtr returnProbabilities = new DenseDoubleVector(samples->getNumElements(), 0.0);
+    double normalize;
+    size_t index;
+
+    for (size_t i = 0; i < samples->getNumElements(); i++)
+    {
+      DenseDoubleVectorPtr probabilities = predictor->compute(defaultExecutionContext(), inputs->getElement(i),
+          Variable::missingValue(outputType)).getObjectAndCast<DenseDoubleVector> ();
+
+      normalize = 0.0;
+      for (size_t j = 0; j < probabilities->getNumElements(); j++)
+        normalize += probabilities->getValue(j);
+
+      index = (size_t)samples->getElement(i).getInteger();
+
+      returnProbabilities->setValue(i, probabilities->getValue(index) / normalize);
+    }
+
+    return returnProbabilities;
+  }
+
 protected:
   friend class MaximumEntropySamplerClass;
 

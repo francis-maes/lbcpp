@@ -12,6 +12,7 @@
 # include "precompiled.h"
 # include "../Data/PoseMover.h"
 # include "../Data/PoseMoverSampler.h"
+# include <lbcpp/Data/DoubleVector.h>
 
 namespace lbcpp
 {
@@ -34,6 +35,14 @@ public:
   virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights = DenseDoubleVectorPtr(),
                                                 const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr(), const DenseDoubleVectorPtr& supervisionWeights = DenseDoubleVectorPtr())
     {}
+
+  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs,
+      const ContainerPtr& samples) const
+  {
+    DenseDoubleVectorPtr probabilities = new DenseDoubleVector(samples->getNumElements(), 1.0
+        / numResidues);
+    return probabilities;
+  }
 
 protected:
   friend class GeneralSimpleResidueSamplerClass;
@@ -74,6 +83,15 @@ public:
   virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights = DenseDoubleVectorPtr(),
                                                 const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr(), const DenseDoubleVectorPtr& supervisionWeights = DenseDoubleVectorPtr())
     {}
+
+  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs,
+      const ContainerPtr& samples) const
+  {
+    double jointProbability = pow(1.0 / numResidues, 2.0);
+    DenseDoubleVectorPtr probabilities = new DenseDoubleVector(samples->getNumElements(),
+        jointProbability);
+    return probabilities;
+  }
 
 protected:
   friend class GeneralResiduePairSamplerClass;
@@ -118,6 +136,22 @@ public:
         validationSamples, supervisionWeights);
   }
 
+  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs,
+      const ContainerPtr& samples) const
+  {
+    double normalize = 1.0 / (0.5 * (maxValue - minValue));
+    ContainerPtr newSamples = new DenseDoubleVector(samples->getNumElements(), 0.0);
+    for (size_t i = 0; i < samples->getNumElements(); i++)
+    {
+      double valueToSet = juce::jlimit(minValue, maxValue, samples->getElement(i).getDouble());
+      valueToSet -= mean;
+      valueToSet *= normalize;
+      newSamples->setElement(i, valueToSet);
+    }
+
+    return samplers[0]->computeProbabilities(inputs, newSamples);
+  }
+
 protected:
   friend class ClamperSamplerClass;
 
@@ -141,6 +175,10 @@ public:
     virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights = DenseDoubleVectorPtr(),
                                                   const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr(), const DenseDoubleVectorPtr& supervisionWeights = DenseDoubleVectorPtr())
       {}
+
+  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs,
+      const ContainerPtr& samples) const
+    {return samplers[0]->computeProbabilities(inputs, samples);}
 
 protected:
   friend class GaussianSamplerWithoutLearnClass;
@@ -241,6 +279,43 @@ public:
             samplers[i]->learn(context, subTrainingInputs[i], subTrainingSamples[i]);
       }
     }
+  }
+
+  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
+  {
+    DenseDoubleVectorPtr probabilities = new DenseDoubleVector(samples->getNumElements(), 0.0);
+    ContainerPtr input = variableVector(1);
+    ContainerPtr sample = variableVector(1);
+    ContainerPtr moverType = variableVector(1);
+
+    for (size_t i = 0; i < samples->getNumElements(); i++)
+    {
+      double tempProbability = 1.0;
+      input->setElement(0, inputs->getElement(i));
+      sample->setElement(0, samples->getElement(i));
+      TypePtr type = sample->getElement(0).getType();
+
+      size_t target = 0;
+      if (type == phiPsiMoverClass)
+        target = 0;
+      else if (type == shearMoverClass)
+        target = 1;
+      else if (type == rigidBodyMoverClass)
+        target = 2;
+      else
+      {
+        jassert(false);
+      }
+
+      tempProbability *= samplers[target]->computeProbabilities(input, sample)->getValue(0);
+      moverType->setElement(0, Variable(target, poseMoverEnumerationEnumeration));
+
+      tempProbability *= samplers.back()->computeProbabilities(input, moverType)->getValue(0);
+
+      probabilities->setValue(i, tempProbability);
+    }
+
+    return probabilities;
   }
 
 protected:

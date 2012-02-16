@@ -10,6 +10,7 @@
 # define LBCPP_PROTEINS_ROSETTA_WORKUNIT_DISTRIBUTABLEWORKUNIT_H_
 
 # include <lbcpp/Execution/WorkUnit.h>
+# include <lbcpp/Execution/ExecutionTrace.h>
 
 namespace lbcpp
 {
@@ -23,9 +24,14 @@ public:
   virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result, const ExecutionTracePtr& trace)
   {
     savedResult = result;
-    File f(context.getProjectDirectory().getFullPathName() + T("/") + projectName + T("/")
+    File fR(context.getProjectDirectory().getFullPathName() + T("/") + projectName + T("/")
         + workUnit->toString() + T(".xml"));
-    result.saveToFile(context, f);
+    result.saveToFile(context, fR);
+
+    savedTrace = trace;
+    File fT(context.getProjectDirectory().getFullPathName() + T("/") + projectName + T("/")
+        + workUnit->toString() + T(".trace"));
+    savedTrace->saveToFile(context, fT);
   }
 
   static Variable gatherResults(VariableVector& callbacks)
@@ -46,6 +52,7 @@ protected:
   String projectName;
 
   Variable savedResult;
+  ExecutionTracePtr savedTrace;
 };
 
 typedef ReferenceCountedObjectPtr<DistributableExecutionContextCallback> DistributableExecutionContextCallbackPtr;
@@ -184,12 +191,24 @@ public:
 
     // reload results
     Variable result = variableVector(units->getNumWorkUnits());
+    Variable traces = variableVector(units->getNumWorkUnits());
     for (size_t i = 0; i < units->getNumWorkUnits(); i++)
     {
+      // reload results
       File wuResult(distributableWorkUnitDirectory.getFullPathName() + T("/") + units->getWorkUnit(
           i)->toString() + T(".xml"));
       Variable singleSolution = Variable::createFromFile(context, wuResult);
       result.getObjectAndCast<VariableVector> ()->setElement(i, singleSolution);
+
+      // reload traces
+      File wuTrace(distributableWorkUnitDirectory.getFullPathName() + T("/")
+          + units->getWorkUnit(i)->toString() + T(".trace"));
+      Variable singleTrace;
+      if (wuTrace.exists())
+        singleTrace = Variable::createFromFile(context, wuTrace);
+      else
+        singleTrace = ExecutionTracePtr();
+      traces.getObjectAndCast<VariableVector> ()->setElement(i, singleTrace);
     }
 
     context.leaveScope();
@@ -199,8 +218,12 @@ public:
     for (size_t i = 0; i < distributable->getWorkUnits()->getNumWorkUnits(); i++)
     {
       context.enterScope(distributable->getWorkUnits()->getWorkUnit(i));
+      context.enterScope(T("Trace"));
+      context.leaveScope(traces.getObjectAndCast<VariableVector> ()->getElement(i));
+      context.enterScope(T("Single result callback"));
       context.leaveScope(distributable->singleResultCallback(context, result.getObjectAndCast<
           VariableVector> ()->getElement(i)));
+      context.leaveScope();
     }
     context.leaveScope();
 
