@@ -82,14 +82,14 @@ public:
     target.staticCast<EnumerationSampler>()->enumeration = enumeration;
   }
 
-  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
+  virtual DenseDoubleVectorPtr computeLogProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
   {
     DenseDoubleVectorPtr returnProbabilities = new DenseDoubleVector(samples->getNumElements(), 0.0);
 
     for (size_t i = 0; i < samples->getNumElements(); i++)
     {
       size_t index = samples->getElement(i).getInteger();
-      returnProbabilities->setValue(i, probabilities->getValue(index));
+      returnProbabilities->setValue(i, std::log(probabilities->getValue(index)));
     }
 
     return returnProbabilities;

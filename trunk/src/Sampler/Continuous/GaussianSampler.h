@@ -62,7 +62,7 @@ public:
     }
   }
 
-  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
+  virtual DenseDoubleVectorPtr computeLogProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
   {
     double invDenom = 1.0 / (std::sqrt(2 * M_PI) * stddev);
     DenseDoubleVectorPtr result = new DenseDoubleVector(samples->getNumElements(), 0);
@@ -70,7 +70,7 @@ public:
     {
       double currentProbability = invDenom * std::exp(-0.5 * std::pow(
           (samples->getElement(i).getDouble() - mean) / stddev, 2.0));
-      result->setValue(i, currentProbability);
+      result->setValue(i, std::log(currentProbability));
     }
     return result;
   }

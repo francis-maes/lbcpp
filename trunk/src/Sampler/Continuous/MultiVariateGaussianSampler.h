@@ -101,7 +101,7 @@ public:
     }
   }
 
-  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
+  virtual DenseDoubleVectorPtr computeLogProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
   {
     DenseDoubleVectorPtr result = new DenseDoubleVector(samples->getNumElements(), 0);
     double invDenominator;
@@ -120,7 +120,7 @@ public:
       product = tempSubT->multiplyBy(product);
       double numerator = std::exp(-0.5 * product->getValue(0, 0));
 
-      result->setValue(i, numerator * invDenominator);
+      result->setValue(i, std::log(numerator * invDenominator));
     }
     return result;
   }

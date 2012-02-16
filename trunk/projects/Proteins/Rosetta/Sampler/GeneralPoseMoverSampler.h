@@ -36,11 +36,9 @@ public:
                                                 const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr(), const DenseDoubleVectorPtr& supervisionWeights = DenseDoubleVectorPtr())
     {}
 
-  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs,
-      const ContainerPtr& samples) const
+  virtual DenseDoubleVectorPtr computeLogProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
   {
-    DenseDoubleVectorPtr probabilities = new DenseDoubleVector(samples->getNumElements(), 1.0
-        / numResidues);
+    DenseDoubleVectorPtr probabilities = new DenseDoubleVector(samples->getNumElements(), std::log(1.0 / numResidues));
     return probabilities;
   }
 
@@ -84,12 +82,10 @@ public:
                                                 const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr(), const DenseDoubleVectorPtr& supervisionWeights = DenseDoubleVectorPtr())
     {}
 
-  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs,
-      const ContainerPtr& samples) const
+  virtual DenseDoubleVectorPtr computeLogProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
   {
-    double jointProbability = pow(1.0 / numResidues, 2.0);
-    DenseDoubleVectorPtr probabilities = new DenseDoubleVector(samples->getNumElements(),
-        jointProbability);
+    double jointProbability = std::log(pow(1.0 / numResidues, 2.0));
+    DenseDoubleVectorPtr probabilities = new DenseDoubleVector(samples->getNumElements(), jointProbability);
     return probabilities;
   }
 
@@ -136,8 +132,7 @@ public:
         validationSamples, supervisionWeights);
   }
 
-  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs,
-      const ContainerPtr& samples) const
+  virtual DenseDoubleVectorPtr computeLogProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
   {
     double normalize = 1.0 / (0.5 * (maxValue - minValue));
     ContainerPtr newSamples = new DenseDoubleVector(samples->getNumElements(), 0.0);
@@ -149,7 +144,7 @@ public:
       newSamples->setElement(i, valueToSet);
     }
 
-    return samplers[0]->computeProbabilities(inputs, newSamples);
+    return samplers[0]->computeLogProbabilities(inputs, newSamples);
   }
 
 protected:
@@ -176,9 +171,8 @@ public:
                                                   const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr(), const DenseDoubleVectorPtr& supervisionWeights = DenseDoubleVectorPtr())
       {}
 
-  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs,
-      const ContainerPtr& samples) const
-    {return samplers[0]->computeProbabilities(inputs, samples);}
+  virtual DenseDoubleVectorPtr computeLogProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
+    {return samplers[0]->computeLogProbabilities(inputs, samples);}
 
 protected:
   friend class GaussianSamplerWithoutLearnClass;
@@ -281,7 +275,7 @@ public:
     }
   }
 
-  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
+  virtual DenseDoubleVectorPtr computeLogProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
   {
     DenseDoubleVectorPtr probabilities = new DenseDoubleVector(samples->getNumElements(), 0.0);
     ContainerPtr input = variableVector(1);
@@ -290,7 +284,7 @@ public:
 
     for (size_t i = 0; i < samples->getNumElements(); i++)
     {
-      double tempProbability = 1.0;
+      double tempProbability = 0.0;
       input->setElement(0, inputs->getElement(i));
       sample->setElement(0, samples->getElement(i));
       TypePtr type = sample->getElement(0).getType();
@@ -307,10 +301,10 @@ public:
         jassert(false);
       }
 
-      tempProbability *= samplers[target]->computeProbabilities(input, sample)->getValue(0);
+      tempProbability += samplers[target]->computeLogProbabilities(input, sample)->getValue(0);
       moverType->setElement(0, Variable(target, poseMoverEnumerationEnumeration));
 
-      tempProbability *= samplers.back()->computeProbabilities(input, moverType)->getValue(0);
+      tempProbability += samplers.back()->computeLogProbabilities(input, moverType)->getValue(0);
 
       probabilities->setValue(i, tempProbability);
     }

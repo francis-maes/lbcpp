@@ -73,6 +73,36 @@ public:
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 
+//    Rosetta ros;
+//    ros.init(context, false);
+//
+//    File referencesFile = context.getFile(T("data/psipred"));
+//    File outFile = context.getFile(T("data/psipredros"));
+//
+//    context.enterScope(T("Testing proteins..."));
+//    juce::OwnedArray<File> references;
+//    referencesFile.findChildFiles(references, File::findFiles, false, T("*.xml"));
+//
+//    for (size_t i = 0; i < references.size(); i++)
+//    {
+//      String nameToSearch = (*references[i]).getFileNameWithoutExtension();
+//      std::cout << (const char*)nameToSearch << std::endl;
+//
+//      ProteinPtr protein = Protein::createFromXml(context, (*references[i]));
+//      (*references[i]).deleteFile();
+//
+//      core::pose::PoseOP pose;
+//      convertProteinToPose(context, protein, pose);
+//
+//      if (pose() == NULL)
+//        continue;
+//
+//      protein->saveToPDBFile(context, File(outFile.getFullPathName() + T("/") + nameToSearch + T(".pdb")));
+//
+//      context.progressCallback(new ProgressionState(i, references.size(), T("Intermediate conformations")));
+//    }
+//    context.leaveScope();
+
     Rosetta ros;
     ros.init(context, false);
 

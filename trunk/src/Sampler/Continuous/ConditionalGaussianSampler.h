@@ -128,7 +128,7 @@ public:
     multiLinearFunction->train(context, trainingData, validationData, T("Training conditional gaussian"));
   }
 
-  virtual DenseDoubleVectorPtr computeProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
+  virtual DenseDoubleVectorPtr computeLogProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
   {
     DenseDoubleVectorPtr returnProbabilities = new DenseDoubleVector(samples->getNumElements(), 0.0);
     DenseDoubleVectorPtr meanAndStddev;
@@ -149,7 +149,7 @@ public:
       value = samples->getElement(i).getDouble();
       probability = invStd * pow(2 * M_PI, -0.5) * exp(-0.5 * pow((value - mean) * invStd, 2.0));
 
-      returnProbabilities->setValue(i, probability);
+      returnProbabilities->setValue(i, std::log(probability));
     }
 
     return returnProbabilities;
