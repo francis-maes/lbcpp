@@ -169,6 +169,77 @@ private:
   enum {noLine = 0, primaryStructure, secondaryStructure, solventAccessibility, ssBond} expectedLineType;
 };
 
+class SP39FileParser : public TextParser
+{
+public:
+  SP39FileParser(ExecutionContext& context, const File& file)
+    : TextParser(context, file), protein(new Protein(file.getFileName())), proteinLength(0),
+      expectedLineType(headerLine) {}
+  
+  virtual TypePtr getElementsType() const
+    {return proteinClass;}
+
+  virtual void parseBegin()
+  {}
+  
+  virtual bool parseLine(const String& line)
+  {
+    String trimmedLine = line.trim();
+    if (expectedLineType == headerLine)
+    {
+      StringArray tokens;
+      tokens.addTokens(trimmedLine, false);
+      jassert(tokens.size() == 2);
+      Variable v = Variable::createFromString(context, positiveIntegerType, tokens[1]);
+      jassert(v.exists() && v.getInteger() > 0);
+      proteinLength = v.getInteger();
+      expectedLineType = primaryStructureLine;
+    }
+    else if (expectedLineType == primaryStructureLine)
+    {
+      protein->setPrimaryStructure(trimmedLine);
+      jassert(protein->getLength() == proteinLength)
+      SymmetricMatrixPtr disulfideBonds = symmetricMatrix(probabilityType, protein->getCysteinIndices().size());
+      protein->setDisulfideBonds(disulfideBonds);
+      expectedLineType = ssBondLine;
+    }
+    else if (expectedLineType == ssBondLine)
+    {
+      StringArray tokens;
+      tokens.addTokens(trimmedLine, false);
+      jassert(tokens.size() == 6);
+      
+      const std::vector<int>& cysteinInvIndices = protein->getCysteinInvIndices();
+
+      Variable v = Variable::createFromString(context, positiveIntegerType, tokens[1]);
+      jassert(v.exists() && v.getInteger() > 0);
+      size_t firstCysteinIndex = cysteinInvIndices[v.getInteger() - 1];
+      jassert(firstCysteinIndex >= 0);
+
+      v = Variable::createFromString(context, positiveIntegerType, tokens[4]);
+      jassert(v.exists() && v.getInteger() > 0);
+      size_t secondCysteinIndex = cysteinInvIndices[v.getInteger() - 1];
+      jassert(secondCysteinIndex >= 0);
+
+      protein->getDisulfideBonds(context)->setElement(firstCysteinIndex, secondCysteinIndex, probability(1.0));
+    }
+    return true;
+  }
+
+  virtual bool parseEnd()
+  {
+    setResult(protein);
+    return true;
+  }
+
+private:
+  ProteinPtr protein;
+  size_t proteinLength;
+  SymmetricMatrixPtr disulfideBonds;
+
+  enum {headerLine = 0, primaryStructureLine, ssBondLine} expectedLineType;
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEINS_FORMATS_SPX_FILE_PARSER_H_

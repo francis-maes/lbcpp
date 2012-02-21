@@ -2,6 +2,7 @@
 #include <lbcpp/Core/Function.h>
 #include "../Predictor/DecoratorProteinPredictorParameters.h"
 #include "../Data/Formats/FASTAFileParser.h"
+#include "../Evaluator/ExhaustiveDisulfidePatternFunction.h"
 
 namespace lbcpp
 {
@@ -736,6 +737,8 @@ protected:
 
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)"), true);
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(), T("Disulfide Bonds"));
+    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(FunctionPtr(), 0.0), T("Disulfide Bonds (Threshold 0.0)"));
+    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new ExhaustiveDisulfidePatternFunction(0.0), 0.0), T("Disulfide Bonds (Exhaustive)"));
 
     return evaluator;
   }
@@ -1589,6 +1592,30 @@ protected:
     context.leaveScope();
     delete o;
   }
+};
+
+class ParseSP39DataWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    juce::OwnedArray<File> files;
+    inputDirectory.findChildFiles(files, File::findFiles, false, T("*"));
+    for (size_t i = 0; i < (size_t)files.size(); ++i)
+    {
+      context.informationCallback(files[i]->getFileName());
+      ProteinPtr protein = StreamPtr(new SP39FileParser(context, *files[i]))->next().getObjectAndCast<Protein>();
+      jassert(protein);
+      protein->saveToFile(context, outputDirectory.getChildFile(protein->getName() + T(".xml")));
+    }
+    return true;
+  }
+
+protected:
+  friend class ParseSP39DataWorkUnitClass;
+
+  File inputDirectory;
+  File outputDirectory;
 };
 
 };

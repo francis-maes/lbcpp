@@ -5,7 +5,8 @@ local function getScores(file)
   if trace == nil then
     return nil
   end
-  return trace.root.subItems[1].subItems[4].results[1].second.scores
+  local node = trace.root.subItems[1].subItems
+  return node[#node].results[1].second.scores
 end
 
 local function getSensitivity(scoreObject)
@@ -16,10 +17,13 @@ local function getSpecificity(scoreObject)
   return scoreObject.trueNegative / (scoreObject.trueNegative + scoreObject.falsePositive)
 end
 
+local function getPrecision(scoreObject)
+  return scoreObject.truePositive / (scoreObject.truePositive + scoreObject.falsePositive)
+end
+
 local function discrtizeValues(indexRanges, values)
   local res = {}
   local lastValues = {}
-
   for k, i in ipairs(indexRanges) do
     res[i] = Statistics.meanAndVariance()
     lastValues[i] = 1
@@ -34,7 +38,7 @@ local function discrtizeValues(indexRanges, values)
     else
       index = math.floor(fpr * 100) * 10
     end
-    if index ~= 0 then
+    if index ~= 0 and index ~= 1000 then
       res[index]:observe(tpr)
     end
   end
@@ -59,8 +63,12 @@ local function generateRocCurve(scores)
     local matrices = scores[fold][2].confusionMatrices
     local values = {}
     for i = 1, #matrices do
-      fpr = 1 - getSpecificity(matrices[i])
-      tpr = getSensitivity(matrices[i])
+      local fpr = 1 - getSpecificity(matrices[i])
+      local tpr = getSensitivity(matrices[i])
+--- ATTENTION ---
+      fpr = getSensitivity(matrices[i])
+      tpr = getPrecision(matrices[i])
+--- ATTENTION ---
       values[fpr] = tpr
     end
     stat = discrtizeValues(indexRanges, values)
@@ -89,7 +97,7 @@ local function generateRocCurve(scores)
 
   context:enter(1000)
   context:result("1 - Specificity", 1)
-  context:result("Sensitivity-Mean", 1)
+  context:result("Sensitivity-Mean", 0)
   context:result("Sensitivity-StdDev", 0)
   context:leave()
 end
@@ -122,11 +130,12 @@ local function getQpStat(scores)
   return res
 end
 
-local dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/FromESSANAndBoth/x3/WindowSizes/"
+--local dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/FromESSANAndBoth/x3/WindowSizes/"
+local dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/FromESSANAndBoth/x3/K/"
 
 local numFolds = 9
 
-local windowSizes = {0, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 25, 27, 29, 31, 33, 35, 37, 39, 45}
+local windowSizes = {19} --{0, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45}
 for i = 1,#windowSizes do
   context:enter("Window Size: " .. windowSizes[i])
   -- Load traces
@@ -134,7 +143,7 @@ for i = 1,#windowSizes do
   local scores = {}
   for fold = 0, numFolds do
     print("Loading fold " .. fold)
-    scores[fold] = getScores(dir .. "x3_Win" .. windowSizes[i] .. "_HugeK_1000T_NMIN1_Fold" .. fold .. ".trace")
+    scores[fold] = getScores(dir .. "x3_Win" .. windowSizes[i] .. "_K200_1000T_NMIN1_Fold" .. fold .. ".trace")
   end
   context:leave()
   -- Generate ROC Curve

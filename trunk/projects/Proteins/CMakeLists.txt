@@ -99,6 +99,7 @@ SET(LBCPP_PROTEIN_EVALUATOR_SOURCES
   Evaluator/TertiaryStructureEvaluator.h
   Evaluator/ContactMapEvaluator.h
   Evaluator/DisulfideBondEvaluator.h
+  Evaluator/ExhaustiveDisulfidePatternFunction.h
   Evaluator/ProteinEvaluator.h
   Evaluator/QScoreEvaluator.h
   Evaluator/QScoreEvaluator.cpp

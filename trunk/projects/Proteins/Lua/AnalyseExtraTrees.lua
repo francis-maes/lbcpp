@@ -25,6 +25,10 @@ local function getScoreToMinimize(scoreObject)
   return scoreObject:getScore()
 end
 
+local function getScoreToMaximize(scoreObject)
+  return 1 - scoreObject:getScore()
+end
+
 local function getSensitivity(scoreObject)
   return 1 - (scoreObject.truePositive / (scoreObject.truePositive + scoreObject.falseNegative))
 end
@@ -82,15 +86,22 @@ end
 -- file name: filePrefix .. varValues[.] .. filePostfix .. "_Foldx.trace"
 local function main(varName, varValues, filePrefix, filePostfix, numFolds)
   local scoresOfInterest = {}
-  scoresOfInterest["1 - Qp (Greedy 6)"] = {index = 5, getScore = getScoreToMinimize}
-  scoresOfInterest["1 - Qp"] = {index = 6, getScore = getScoreToMinimize}
-  scoresOfInterest["1 - Q2"] = {index = 1, getScore = getScoreToMinimize}
-  scoresOfInterest["1 - Q2 (Bias form test)"] = {index = 2, getScore = getScoreToMinimize}
-  scoresOfInterest["1 - Sensitivity"] = {index = 1, getScore = getSensitivity}
-  scoresOfInterest["1 - Specificity"] = {index = 1, getScore = getSpecificity}
-  scoresOfInterest["1 - Sensitivity (Bias form test)"] = {index = 3, getScore = getBestSensitivity}
-  scoresOfInterest["1 - Specificity (Bias from test)"] = {index = 3, getScore = getBestSpecificity}
+--  scoresOfInterest["1 - Qp (Greedy 6)"] = {index = 5, getScore = getScoreToMinimize}
+--  scoresOfInterest["1 - Qp"] = {index = 6, getScore = getScoreToMinimize}
+--  scoresOfInterest["1 - Qp (Greedy 20)"] = {index = 26, getScore = getScoreToMinimize}
+--  for L = 1, 24 do
+--    scoresOfInterest["Greedy " .. L] = {index = 6 + L, getScore = getScoreToMinimize}
+--  end
+--  scoresOfInterest["1 - Q2"] = {index = 1, getScore = getScoreToMinimize}
+--  scoresOfInterest["1 - Q2 (Bias form test)"] = {index = 2, getScore = getScoreToMinimize}
+--  scoresOfInterest["1 - Sensitivity"] = {index = 1, getScore = getSensitivity}
+--  scoresOfInterest["1 - Specificity"] = {index = 1, getScore = getSpecificity}
+--  scoresOfInterest["1 - Sensitivity (Bias form test)"] = {index = 3, getScore = getBestSensitivity}
+--  scoresOfInterest["1 - Specificity (Bias from test)"] = {index = 3, getScore = getBestSpecificity}
 
+  scoresOfInterest["Qp (Greedy 6)"] = {index = 5, getScore = getScoreToMaximize}
+  scoresOfInterest["Q2"] = {index = 1, getScore = getScoreToMaximize}
+  scoresOfInterest["Q2 (Bias form test)"] = {index = 2, getScore = getScoreToMaximize}
   for i = 1,#varValues do
     context:enter(varName .. ": " .. varValues[i])
     -- Load traces
@@ -104,7 +115,7 @@ local function main(varName, varValues, filePrefix, filePostfix, numFolds)
     end
 
     context:result(varName, varValues[i])
-    trainScoreStat = getScores(traces, "EvaluateTrain", scoresOfInterest)
+    trainScoreStat = {} --getScores(traces, "EvaluateTrain", scoresOfInterest)
     testScoreStat = getScores(traces, "EvaluateTest", scoresOfInterest)
     complexityStat = getComplexity(traces)
 
@@ -128,12 +139,36 @@ end
 
 local dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/FromESSANAndBoth/x3/"
 local numFolds = 9
-local nmin = {1, 3} --, 5, 7, 9, 11, 15, 19, 23, 27, 31, 55, 75, 101, 155, 301, 501}
-local nminPrefix = dir .. "Nmin/x3_Win19_HugeK_1000T_NMIN"
---main("Nmin", nmin, prefix, "", numFolds)
 
-local k = {1, 10, 20, 50, 100, 200, 500, 1000, 2000}
-main("K", k, dir .. "K/x3_Win19_K", "_1000T_NMIN1", numFolds)
+local winSizes = {0, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45}
+--main("Window Size", winSizes, dir .. "WindowSizes/x3_Win", "_HugeK_1000T_NMIN1", numFolds)
+
+local nmin = {1, 3, 5, 7, 9, 11, 15, 19, 23, 27, 31, 55, 75, 101, 155, 301, 501}
+--main("Nmin", nmin, dir .. "Nmin/x3_Win19_HugeK_1000T_NMIN", "", numFolds)
+
+local k = {1, 2, 5, 10, 20, 50, 100, 150, 200, 250, 300, 400, 500, 1000, 2000, 5000}
+--main("K", k, dir .. "K/x3_Win19_K", "_1000T_NMIN1", numFolds)
+
+--main("K200 - Nmin", {1, 3, 5, 7, 11, 21}, dir .. "K200/x3_Win19_K200_1000T_NMIN", "", numFolds)
+
+local tasks = {"NoTask", "ss3", "ss8", "sa", "dr", "stal", "No-ss3", "No-ss8", "No-sa", "No-dr", "No-stal"}
+--main("Task: AllTask", {""}, dir .. "K200_MultiGreedy/x3_Win19_K200_1000T_NMIN1", "", numFolds)
+--main("Task", tasks, dir .. "Tasks/x3_", "_Win19_K200_1000T_NMIN1", numFolds)
+
+nmin = {1, 3, 5, 7, 9, 11}
+--main("Task: NoTask, Nmin", nmin, dir .. "Tasks/x3_NoTask_Win19_K2000_1000T_NMIN", "", numFolds)
+
+--main("All", {""}, dir .. "WindowSizes/x3_Win19_HugeK_1000T_NMIN1", "", numFolds)
+
+nmin = {1, 3, 5, 7, 11, 21}
+--main("Nmin", nmin, dir .. "K200_MultiGreedy/x3_Win19_K200_1000T_NMIN", "", numFolds)
 
 
+local features = {"AllTask-NoGlobalHisto", "AllTask-NoLocalHisto", "AllTask-NoInterHisto", "AllTask-NoWindows", "AllTask-NoOthers",
+                  "GlobalHisto", "LocalHisto", "InterHisto", "Windows", "Others"}
+main("Features", features, dir .. "Tasks/x3_", "_Win19_K200_1000T_NMIN1", numFolds)
 
+-- ----- SP39 ----- --
+
+numFolds = 3
+--main("SP39", {"500T"}, dir .. "Test/x3_Win19_K2000_", "_NMIN1", numFolds)
