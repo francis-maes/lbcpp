@@ -166,6 +166,35 @@ public:
 
 typedef ReferenceCountedObjectPtr<DoubleSymmetricMatrix> DoubleSymmetricMatrixPtr;
 
+extern ClassPtr charSymmetricMatrixClass(TypePtr type);
+
+class CharSymmetricMatrix : public BuiltinTypeSymmetricMatrix<char>
+{
+public:
+  CharSymmetricMatrix(TypePtr elementsType, size_t dimension, double defaultValue)
+    : BuiltinTypeSymmetricMatrix<char>(elementsType, dimension, defaultValue)
+    {setThisClass(charSymmetricMatrixClass(elementsType));}
+  CharSymmetricMatrix() {}
+
+  /* Matrix */
+  virtual void setElement(size_t row, size_t column, const Variable& value)
+    {BuiltinTypeSymmetricMatrix<char>::setElement(row, column, (char)value.getInteger());}
+
+  /* Container */
+  virtual void setElement(size_t index, const Variable& value)
+    {BuiltinTypeSymmetricMatrix<char>::setElement(index, (char)value.getInteger());}
+
+  void setValue(size_t row, size_t column, char value)
+    {setElement(makeIndex(row, column), value);}
+
+  char getValue(size_t row, size_t column) const
+    {return elements[makeIndex(row, column)];}
+ 
+  lbcpp_UseDebuggingNewOperator
+};
+
+typedef ReferenceCountedObjectPtr<CharSymmetricMatrix> CharSymmetricMatrixPtr;
+
 extern ClassPtr objectSymmetricMatrixClass(TypePtr type);
 
 class ObjectSymmetricMatrix : public BuiltinTypeSymmetricMatrix<ObjectPtr>

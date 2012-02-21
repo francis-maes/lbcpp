@@ -130,6 +130,10 @@
     <parameter name="elementsType" type="Double"/>
   </template>
 
+  <template name="CharSymmetricMatrix" base="SymmetricMatrix[elementsType]">
+    <parameter name="elementsType" type="Integer"/>
+  </template>
+
   <template name="ObjectSymmetricMatrix" base="SymmetricMatrix[elementsType]">
     <parameter name="elementsType" type="Variable"/>
   </template>

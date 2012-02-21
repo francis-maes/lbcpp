@@ -225,6 +225,10 @@
     <variable type="File" name="inputDirectory" shortName="in"/>
     <variable type="File" name="supervisionDirectory" shortName="sup"/>
   </class>
+  <class name="ParseSP39DataWorkUnit" base="WorkUnit">
+    <variable type="File" name="inputDirectory" shortName="in"/>
+    <variable type="File" name="outputDirectory" shortName="o"/>
+  </class>
   <!-- END CysteinBox -->
 
   <!-- BEGIN LargeBox -->
