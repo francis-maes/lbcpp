@@ -170,6 +170,7 @@
   <class name="DisulfideBondWorkUnit" base="WorkUnit">
     <variable type="String" name="inputDirectory" shortName="in"/>
     <variable type="String" name="supervisionDirectory" shortName="sup"/>
+    <variable type="File" name="outputDirectory" shortName="o"/>
     <variable type="File" name="parameterFile" shortName="p"/>
     <variable type="String" name="learningMachineName" shortName="m"/>
     <variable type="Double" name="svmC"/>

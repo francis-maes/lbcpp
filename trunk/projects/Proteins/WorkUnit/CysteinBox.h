@@ -708,6 +708,13 @@ public:
     evaluator = createProteinEvaluator();
     for (size_t i = 1; i < 25; ++i)
       evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(i, 0.0), 0.0), T("Disulfide Bonds (Greedy L=") + String((int)i) + T(")"));
+    
+    if (outputDirectory != File::nonexistent)
+    {
+      //iteration->evaluate(context, train, saveToDirectoryEvaluator(outputDirectory.getChildFile(T("train")), T(".xml")), T("Saving train predictions to directory"));
+      iteration->evaluate(context, test, saveToDirectoryEvaluator(outputDirectory.getChildFile(T("test")), T(".xml")), T("Saving test predictions to directory"));
+    }
+
     CompositeScoreObjectPtr scores = iteration->evaluate(context, test, evaluator, T("EvaluateTest"));
     return evaluator->getScoreToMinimize(scores);
   }
@@ -717,6 +724,7 @@ protected:
 
   String inputDirectory;
   String supervisionDirectory;
+  File outputDirectory;
   File parameterFile;
   String learningMachineName;
   double svmC;
@@ -738,7 +746,7 @@ protected:
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)"), true);
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(), T("Disulfide Bonds"));
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(FunctionPtr(), 0.0), T("Disulfide Bonds (Threshold 0.0)"));
-    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new ExhaustiveDisulfidePatternFunction(0.0), 0.0), T("Disulfide Bonds (Exhaustive)"));
+    //evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new ExhaustiveDisulfidePatternFunction(0.0), 0.0), T("Disulfide Bonds (Exhaustive)"));
 
     return evaluator;
   }
