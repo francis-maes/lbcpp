@@ -1,47 +1,67 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ResidueHistogram..Generator.h  | Residue Histogram               |
-| Author  : Alejandro Marcos Alvarez       | Feature Generator               |
-| Started : Feb 16, 2012  3:24:43 PM       |                                 |
+| Filename: SimplePoseFeatures.h           | SimplePoseFeatures              |
+| Author  : Alejandro Marcos Alvarez       |                                 |
+| Started : Feb 24, 2012  3:23:37 PM       |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_PROTEINS_ROSETTA_DATA_FEATURES_RESIDUEHISTOGRAMFEATUREGENERATOR_H_
-# define LBCPP_PROTEINS_ROSETTA_DATA_FEATURES_RESIDUEHISTOGRAMFEATUREGENERATOR_H_
+#ifndef LBCPP_PROTEINS_ROSETTA_DATA_FEATURES_SIMPLEPOSEFEATURES_H_
+# define LBCPP_PROTEINS_ROSETTA_DATA_FEATURES_SIMPLEPOSEFEATURES_H_
 
-# include <lbcpp/FeatureGenerator/FeatureGenerator.h>
-# include "../Pose.h"
-# include "../../../Data/AminoAcid.h"
+# include "PoseFeatures.h"
 
 namespace lbcpp
 {
 
-class ResidueHistogramFeatureGenerator : public FeatureGenerator
+class SimplePoseFeatures : public PoseFeatures
 {
 public:
-  virtual size_t getNumRequiredInputs() const
-    {return 1;}
 
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return poseClass;}
-
-  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
-    {return aminoAcidTypeEnumeration;}
-
-  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  virtual Variable computeStaticFeatures(ExecutionContext& context, Variable& input)
   {
-    DenseDoubleVectorPtr histogram = (inputs[0].getObjectAndCast<Pose> ())->getHistogram();
-    for (size_t i = 0; i < histogram->getNumElements(); i++)
-      callback.sense(i, histogram->getValue(i));
+    std::vector<DenseDoubleVectorPtr> tempFeatures;
+
+    PosePtr pose = input.getObjectAndCast<Pose> ();
+
+    // histogram
+    DenseDoubleVectorPtr histogram = pose->getHistogram();
+    tempFeatures.push_back(histogram);
+
+    // num residues
+    DenseDoubleVectorPtr numResidues = numResiduesFeatureGenerator->computeFunction(context, &input).getObjectAndCast<
+        DenseDoubleVector> ();
+    tempFeatures.push_back(numResidues);
+
+    // gathering features
+    staticFeatures = concatenateFeatures(tempFeatures);
+
+    return staticFeatures;
+  }
+
+  virtual Variable computeDynamicFeatures(ExecutionContext& context, Variable& input)
+  {
+
+    return Variable();
   }
 
 protected:
-  friend class ResidueHistogramFeatureGeneratorClass;
+  friend class SimplePoseFeaturesClass;
+
+  virtual void selfInitialization(ExecutionContext& context, Variable& input)
+  {
+    // num residues feature generator
+    numResiduesFeatureGenerator = softDiscretizedNumberFeatureGenerator(0.0, 1000, 100, true);
+    numResiduesFeatureGenerator->initialize(context, doubleType);
+
+  }
+
+  FeatureGeneratorPtr numResiduesFeatureGenerator;
 };
 
 }; /* namespace lbcpp */
 
-#endif //! LBCPP_PROTEINS_ROSETTA_DATA_FEATURES_RESIDUEHISTOGRAMFEATUREGENERATOR_H_
+#endif //! LBCPP_PROTEINS_ROSETTA_DATA_FEATURES_SIMPLEPOSEFEATURES_H_
 
 
 //    // inputs and variables
@@ -73,3 +93,4 @@ protected:
 //
 //    // end selection
 //    builder.finishSelectionWithFunction(concatenateFeatureGenerator());
+

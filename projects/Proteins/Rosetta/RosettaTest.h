@@ -50,8 +50,6 @@
 #  define T JUCE_T
 # endif // LBCPP_PROTEIN_ROSETTA
 
-using namespace std;
-
 namespace lbcpp
 {
 extern EnumerationPtr featuresMoverEnumerationEnumeration;
@@ -73,8 +71,37 @@ public:
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 
-//    Rosetta ros;
-//    ros.init(context, false);
+    FeatureGeneratorPtr fg = softDiscretizedNumberFeatureGenerator(0.0, 1000, 100, true);
+
+    fg->initialize(context, doubleType);
+
+    Variable inputTest((double)-19.43);
+    Variable result = fg->computeFunction(context, &inputTest);
+    std::cout << "input " << inputTest.toString() << std::endl;
+    std::cout << "output " << result.toString() << std::endl;
+
+    inputTest = Variable((double)0.0);
+    result = fg->computeFunction(context, &inputTest);
+    std::cout << "input " << inputTest.toString() << std::endl;
+    std::cout << "output " << result.toString() << std::endl;
+
+    inputTest = Variable((double)10.0);
+    result = fg->computeFunction(context, &inputTest);
+    std::cout << "input " << inputTest.toString() << std::endl;
+    std::cout << "output " << result.toString() << std::endl;
+
+    inputTest = Variable((double)20);
+    result = fg->computeFunction(context, &inputTest);
+    std::cout << "input " << inputTest.toString() << std::endl;
+    std::cout << "output " << result.toString() << std::endl;
+
+    inputTest = Variable((double)1001);
+    result = fg->computeFunction(context, &inputTest);
+    std::cout << "input " << inputTest.toString() << std::endl;
+    std::cout << "output " << result.toString() << std::endl;
+
+    //    Rosetta ros;
+    //    ros.init(context, false);
 //
 //    File referencesFile = context.getFile(T("data/psipred"));
 //    File outFile = context.getFile(T("data/psipredros"));
@@ -103,114 +130,122 @@ public:
 //    }
 //    context.leaveScope();
 
-    Rosetta ros;
+//    Rosetta ros;
+//
+//    ros.init(context, false);
+//
+//    File referencesFile = context.getFile(T("phipsipetitPDB"));
+//    File moversFile = context.getFile(T("phipsipetit_movers"));
+//
+//    VariableVectorPtr inputWorkers = new VariableVector(0);
+//    VariableVectorPtr inputMovers = new VariableVector(0);
+//    size_t learningPolicy = 3;
+//
+//    context.enterScope(T("Loading learning examples..."));
+//    juce::OwnedArray<File> references;
+//    referencesFile.findChildFiles(references, File::findFiles, false, T("*.pdb"));
+//
+//    std::vector<size_t> res;
+//    RandomGeneratorPtr rand = new RandomGenerator();
+//    rand->sampleOrder(references.size(), res);
+//
+//    size_t j = 0;
+//
+//    for (size_t i = 0; (i < references.size()) && (i < 10000); i++)
+//    {
+//      size_t index = res[i];
+//      juce::OwnedArray<File> movers;
+//      String nameToSearch = (*references[index]).getFileNameWithoutExtension();
+//
+//      ProteinPtr protein = Protein::createFromPDB(context, (*references[index]));
+//      core::pose::PoseOP pose;
+//      convertProteinToPose(context, protein, pose);
+//
+//      if (pose() == NULL)
+//        continue;
+//
+//      nameToSearch += T("_mover.xml");
+//      moversFile.findChildFiles(movers, File::findFiles, false, nameToSearch);
+//      if (movers.size() > 0)
+//      {
+//        context.informationCallback(T("Structure : ") + nameToSearch);
+//        RosettaProteinPtr inWorker = new RosettaProtein(pose, 1, 1, 1, 1);
+//        PoseMoverPtr inMover = Variable::createFromFile(context, (*movers[0])).getObjectAndCast<PoseMover> ();
+//        inputWorkers->append(inWorker);
+//        inputMovers->append(inMover);
+//        context.progressCallback(new ProgressionState((size_t)(++j), (size_t)juce::jmin((int)10000,
+//            (int)references.size()), T("Intermediate conformations")));
+//      }
+//      else
+//        (*references[index]).deleteFile();
+//    }
+//    context.leaveScope();
+//
+//    core::pose::PoseOP currentPose = new core::pose::Pose();
+//    makePoseFromSequence(currentPose, T("AAAAAA"));
+//    core::pose::PoseOP initialPose = new core::pose::Pose();
+//    initializeProteinStructure(currentPose, initialPose);
+//
+//    RosettaWorkerPtr worker = new RosettaWorker(initialPose, learningPolicy);
+//    ContainerPtr addWorkers = inputWorkers;
+//    ContainerPtr addMovers = inputMovers;
+//    worker->learn(context, addWorkers, addMovers);
+//
+//    Variable currFeatures  = worker->getFeatures(context);
+//    std::cout << "currFeatures " << currFeatures.toString() << std::endl;
+//    std::cout << "currFeatures name " << (const char*)currFeatures.getTypeName() << std::endl;
+//    DenseDoubleVectorPtr feat = currFeatures.getObjectAndCast<DenseDoubleVector>();
+//    std::cout << "feat " << feat->toString() << std::endl;
 
-    ros.init(context, false);
+//    context.resultCallback(T("Features"), currFeatures);
 
-    File referencesFile = context.getFile(T("phipsipetitPDB"));
-    File moversFile = context.getFile(T("phipsipetit_movers"));
-
-    VariableVectorPtr inputWorkers = new VariableVector(0);
-    VariableVectorPtr inputMovers = new VariableVector(0);
-    size_t learningPolicy = 3;
-
-    context.enterScope(T("Loading learning examples..."));
-    juce::OwnedArray<File> references;
-    referencesFile.findChildFiles(references, File::findFiles, false, T("*.pdb"));
-
-    std::vector<size_t> res;
-    RandomGeneratorPtr rand = new RandomGenerator();
-    rand->sampleOrder(references.size(), res);
-
-    size_t j = 0;
-
-    for (size_t i = 0; (i < references.size()) && (i < 10000); i++)
-    {
-      size_t index = res[i];
-      juce::OwnedArray<File> movers;
-      String nameToSearch = (*references[index]).getFileNameWithoutExtension();
-
-      ProteinPtr protein = Protein::createFromPDB(context, (*references[index]));
-      core::pose::PoseOP pose;
-      convertProteinToPose(context, protein, pose);
-
-      if (pose() == NULL)
-        continue;
-
-      nameToSearch += T("_mover.xml");
-      moversFile.findChildFiles(movers, File::findFiles, false, nameToSearch);
-      if (movers.size() > 0)
-      {
-        context.informationCallback(T("Structure : ") + nameToSearch);
-        RosettaProteinPtr inWorker = new RosettaProtein(pose, 1, 1, 1, 1);
-        PoseMoverPtr inMover = Variable::createFromFile(context, (*movers[0])).getObjectAndCast<PoseMover> ();
-        inputWorkers->append(inWorker);
-        inputMovers->append(inMover);
-        context.progressCallback(new ProgressionState((size_t)(++j), (size_t)juce::jmin((int)10000,
-            (int)references.size()), T("Intermediate conformations")));
-      }
-      else
-        (*references[index]).deleteFile();
-    }
-    context.leaveScope();
-
-    core::pose::PoseOP currentPose = new core::pose::Pose();
-    makePoseFromSequence(currentPose, T("AAAAAAAAAAAAAAAAAAAAA"));
-    core::pose::PoseOP initialPose = new core::pose::Pose();
-    initializeProteinStructure(currentPose, initialPose);
-
-    RosettaWorkerPtr worker = new RosettaWorker(initialPose, learningPolicy);
-    ContainerPtr addWorkers = inputWorkers;
-    ContainerPtr addMovers = inputMovers;
-    worker->learn(context, addWorkers, addMovers);
-
-    PoseMoverPtr mover = new PhiPsiMover(2, 23, -43);
-    double probs = worker->getMoverProbability(context, mover);
-    std::cout << mover->toString() << " : " << probs << std::endl;
-
-    mover = new PhiPsiMover(3, 23, -43);
-    probs = worker->getMoverProbability(context, mover);
-    std::cout << mover->toString() << " : " << probs << std::endl;
-
-    mover = new PhiPsiMover(10, 23, -43);
-    probs = worker->getMoverProbability(context, mover);
-    std::cout << mover->toString() << " : " << probs << std::endl;
-
-    mover = new ShearMover(2, 23, -43);
-    probs = worker->getMoverProbability(context, mover);
-    std::cout << mover->toString() << " : " << probs << std::endl;
-
-    mover = new ShearMover(12, 23, -43);
-    probs = worker->getMoverProbability(context, mover);
-    std::cout << mover->toString() << " : " << probs << std::endl;
-
-    mover = new RigidBodyMover(2, 12, 0.5, -43);
-    probs = worker->getMoverProbability(context, mover);
-    std::cout << mover->toString() << " : " << probs << std::endl;
-
-    mover = new RigidBodyMover(2, 5, 0.5, -43);
-    probs = worker->getMoverProbability(context, mover);
-    std::cout << mover->toString() << " : " << probs << std::endl;
-
-    mover = new PhiPsiMover(6, -10, 50);
-    probs = worker->getMoverProbability(context, mover);
-    std::cout << mover->toString() << " : " << probs << std::endl;
-
-    currentPose = new core::pose::Pose();
-    makePoseFromSequence(currentPose, T("RRRRRAAAAAAAAAAAAAAAA"));
-    initialPose = new core::pose::Pose();
-    initializeProteinStructure(currentPose, initialPose);
-
-    worker = new RosettaWorker(initialPose, learningPolicy);
-    worker->learn(context, addWorkers, addMovers);
-
-    mover = new PhiPsiMover(2, 23, -43);
-    probs = worker->getMoverProbability(context, mover);
-    std::cout << mover->toString() << " : " << probs << std::endl;
-
-    mover = new PhiPsiMover(3, 23, -43);
-    probs = worker->getMoverProbability(context, mover);
-    std::cout << mover->toString() << " : " << probs << std::endl;
+//    PoseMoverPtr mover = new PhiPsiMover(2, 23, -43);
+//    double probs = worker->getMoverProbability(context, mover);
+//    std::cout << mover->toString() << " : " << probs << std::endl;
+//
+//    mover = new PhiPsiMover(3, 23, -43);
+//    probs = worker->getMoverProbability(context, mover);
+//    std::cout << mover->toString() << " : " << probs << std::endl;
+//
+//    mover = new PhiPsiMover(10, 23, -43);
+//    probs = worker->getMoverProbability(context, mover);
+//    std::cout << mover->toString() << " : " << probs << std::endl;
+//
+//    mover = new ShearMover(2, 23, -43);
+//    probs = worker->getMoverProbability(context, mover);
+//    std::cout << mover->toString() << " : " << probs << std::endl;
+//
+//    mover = new ShearMover(12, 23, -43);
+//    probs = worker->getMoverProbability(context, mover);
+//    std::cout << mover->toString() << " : " << probs << std::endl;
+//
+//    mover = new RigidBodyMover(2, 12, 0.5, -43);
+//    probs = worker->getMoverProbability(context, mover);
+//    std::cout << mover->toString() << " : " << probs << std::endl;
+//
+//    mover = new RigidBodyMover(2, 5, 0.5, -43);
+//    probs = worker->getMoverProbability(context, mover);
+//    std::cout << mover->toString() << " : " << probs << std::endl;
+//
+//    mover = new PhiPsiMover(6, -10, 50);
+//    probs = worker->getMoverProbability(context, mover);
+//    std::cout << mover->toString() << " : " << probs << std::endl;
+//
+//    currentPose = new core::pose::Pose();
+//    makePoseFromSequence(currentPose, T("RRRRRAAAAAAAAAAAAAAAA"));
+//    initialPose = new core::pose::Pose();
+//    initializeProteinStructure(currentPose, initialPose);
+//
+//    worker = new RosettaWorker(initialPose, learningPolicy);
+//    worker->learn(context, addWorkers, addMovers);
+//
+//    mover = new PhiPsiMover(2, 23, -43);
+//    probs = worker->getMoverProbability(context, mover);
+//    std::cout << mover->toString() << " : " << probs << std::endl;
+//
+//    mover = new PhiPsiMover(3, 23, -43);
+//    probs = worker->getMoverProbability(context, mover);
+//    std::cout << mover->toString() << " : " << probs << std::endl;
 
 
 # if 0
@@ -1023,24 +1058,22 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
-    context.informationCallback(T("test parallel WU : "));
-
-    size_t size = 6;
-
-    VariableVectorPtr pool = Rosetta::createRosettaPool(context, size);
-
-    //    RosettaPtr rosetta = new Rosetta();
-    //    rosetta->init(context, true);
-
-    CompositeWorkUnitPtr subWorkUnits(new CompositeWorkUnit(T("Parallel protein workUnit"), size));
-    for (size_t i = 0; i < subWorkUnits->getNumWorkUnits(); ++i)
-    {
-      RosettaPtr r = pool->getElement(i).getObjectAndCast<Rosetta> ();
-      subWorkUnits->setWorkUnit(i, new ProteinSubWorkUnitExample(i, r));
-      //      subWorkUnits->setWorkUnit(i, new ProteinSubWorkUnitExample(i, rosetta));
-    }
-    subWorkUnits->setPushChildrenIntoStackFlag(true);
-    context.run(subWorkUnits);
+//    context.informationCallback(T("test parallel WU : "));
+//
+//    size_t size = 6;
+//
+//    //    RosettaPtr rosetta = new Rosetta();
+//    //    rosetta->init(context, true);
+//
+//    CompositeWorkUnitPtr subWorkUnits(new CompositeWorkUnit(T("Parallel protein workUnit"), size));
+//    for (size_t i = 0; i < subWorkUnits->getNumWorkUnits(); ++i)
+//    {
+//      RosettaPtr r = pool->getElement(i).getObjectAndCast<Rosetta> ();
+//      subWorkUnits->setWorkUnit(i, new ProteinSubWorkUnitExample(i, r));
+//      //      subWorkUnits->setWorkUnit(i, new ProteinSubWorkUnitExample(i, rosetta));
+//    }
+//    subWorkUnits->setPushChildrenIntoStackFlag(true);
+//    context.run(subWorkUnits);
 
     return Variable();
 #else

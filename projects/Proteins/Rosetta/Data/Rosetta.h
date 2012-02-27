@@ -11,22 +11,6 @@
 
 //# define LBCPP_PROTEIN_ROSETTA
 
-# ifdef LBCPP_PROTEIN_ROSETTA
-#  undef T
-#  include <core/init.hh>
-#  include <utility/vector0.hh>
-#  define T JUCE_T
-# else // predeclare rosetta
-namespace utility {namespace pointer{
-  template< typename T > class owning_ptr;
-}; };
-
-namespace core { namespace pose {
-  class Pose;
-  typedef utility::pointer::owning_ptr< Pose > PoseOP;
-}; };
-# endif // LBCPP_PROTEIN_ROSETTA
-
 namespace lbcpp
 {
 
@@ -39,8 +23,7 @@ public:
   Rosetta();
   ~Rosetta();
 
-  void init(ExecutionContext& context, bool verbose = false, int seed = -1, size_t delay = 0);
-  static VariableVectorPtr createRosettaPool(ExecutionContext& context, size_t size);
+  void init(ExecutionContext& context, bool verbose = false, int id = -1, size_t delay = 0);
 
   void getLock();
   void releaseLock();
@@ -48,17 +31,10 @@ public:
 protected:
   void setContext(ExecutionContext& context);
 
-  void getPoolLock();
-  void releasePoolLock();
-
   friend class RosettaClass;
 
   ExecutionContextPtr context;
   CriticalSection* ownLock;
-  CriticalSection* poolLock;
-  size_t nProc;
-  size_t id;
-  bool isInPool;
 };
 
 extern ClassPtr rosettaClass;

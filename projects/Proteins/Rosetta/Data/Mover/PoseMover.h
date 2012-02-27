@@ -26,11 +26,11 @@ public:
    * classes.
    * @param pose the pose to perturb.
    */
-  virtual void move(core::pose::PoseOP& pose) = 0;
+  virtual void move(core::pose::PoseOP& pose) const = 0;
 
-  virtual bool isEqual(const PoseMoverPtr& mover, double tolerance) = 0;
+  virtual bool isEqual(const PoseMoverPtr& mover, double tolerance) const = 0;
 
-  virtual PoseMoverPtr getOpposite() = 0;
+  virtual PoseMoverPtr getOpposite() const = 0;
 
 protected:
   friend class PoseMoverClass;

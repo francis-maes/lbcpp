@@ -48,7 +48,7 @@ public:
     : PoseMover(), residues(new Pair(indexResidueOne, indexResidueTwo)),
       magnitude(magnitude), amplitude(amplitude) {}
 
-  RigidBodyMover(const RigidBodyMover& mover)
+  explicit RigidBodyMover(const RigidBodyMover& mover)
     : PoseMover(), residues(new Pair(mover.residues->getFirst(), mover.residues->getSecond())),
       magnitude(mover.magnitude), amplitude(mover.amplitude) {}
 
@@ -56,7 +56,7 @@ public:
    * Performs the rotation on the pose specified by the parameters of the mover.
    * @param the pose to modify.
    */
-  virtual void move(core::pose::PoseOP& pose)
+  virtual void move(core::pose::PoseOP& pose) const
   {
     move(pose, residues->getFirst().getInteger(), residues->getSecond().getInteger(), magnitude,
         amplitude);
@@ -109,8 +109,69 @@ public:
   double getMagnitude()
     {return magnitude;}
 
-  static void applyTranslation(core::pose::PoseOP& pose, size_t indexResidueOne,
-      size_t indexResidueTwo, double magnitude)
+  /**
+   * Sets the new first residue to modify.
+   * @param index the new index of the first residue to modify.
+   */
+  void setIndexResidueOne(size_t index)
+    {residues->setFirst(index);}
+
+  /**
+   * Gets the current index of the first residue to modify.
+   * @return the index of the current first residue.
+   */
+  size_t getIndexResidueOne()
+    {return residues->getFirst().getInteger();}
+
+  /**
+   * Sets the new second residue to modify.
+   * @param index the new index of the second residue to modify.
+   */
+  void setIndexResidueTwo(size_t index)
+    {residues->setSecond(index);}
+
+  /**
+   * Gets the current index of the second residue to modify.
+   * @return the index of the current second residue.
+   */
+  size_t getIndexResidueTwo()
+    {return residues->getSecond().getInteger();}
+
+  virtual bool isEqual(const PoseMoverPtr& mover, double tolerance) const
+  {
+    if (mover.isInstanceOf<RigidBodyMover> ())
+    {
+      size_t thisResidueOne = residues->getFirst().getInteger();
+      size_t thisResidueTwo = residues->getSecond().getInteger();
+      size_t moverResidueOne =
+          mover.staticCast<RigidBodyMover> ()->residues->getFirst().getInteger();
+      size_t moverResidueTwo =
+          mover.staticCast<RigidBodyMover> ()->residues->getSecond().getInteger();
+      double errorResidueOne = std::abs((double)thisResidueOne - (double)moverResidueOne)
+          / (double)thisResidueOne;
+      double errorResidueTwo = std::abs((double)thisResidueTwo - (double)moverResidueTwo)
+          / (double)thisResidueTwo;
+      double errorMagnitude = std::abs((double)magnitude
+          - (double)mover.staticCast<RigidBodyMover> ()->magnitude) / (double)magnitude;
+      double errorAmplitude = std::abs((double)amplitude
+          - (double)mover.staticCast<RigidBodyMover> ()->amplitude) / (double)amplitude;
+      return ((errorResidueOne < tolerance) && (errorResidueTwo < tolerance) && (errorMagnitude
+          < tolerance) && (errorAmplitude < tolerance));
+    }
+    else
+      return false;
+  }
+
+  virtual PoseMoverPtr getOpposite() const
+  {
+    RigidBodyMoverPtr temp = new RigidBodyMover(residues->getFirst().getInteger(), residues->getSecond().getInteger(),
+        -1.0 * magnitude, -1.0 * amplitude);
+    return temp;
+  }
+
+protected:
+  static void applyTranslation(core::pose::PoseOP& pose, size_t indexResidueOne, size_t indexResidueTwo,
+      double magnitude)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
     jassert(pose->n_residue() > 2);
@@ -126,8 +187,7 @@ public:
     pose->fold_tree(foldTree);
 
     // Perturb the pose
-    protocols::moves::RigidBodyTransMoverOP mover = new protocols::moves::RigidBodyTransMover(
-        (*pose), 1);
+    protocols::moves::RigidBodyTransMoverOP mover = new protocols::moves::RigidBodyTransMover((*pose), 1);
     mover->step_size(magnitude);
     mover->apply((*pose));
 
@@ -139,8 +199,7 @@ public:
 #endif // LBCPP_PROTEIN_ROSETTA
   }
 
-  static void applyRotation(core::pose::PoseOP& pose, size_t indexResidueOne,
-      size_t indexResidueTwo, double amplitude)
+  static void applyRotation(core::pose::PoseOP& pose, size_t indexResidueOne, size_t indexResidueTwo, double amplitude)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
     jassert(pose->n_residue() > 2);
@@ -179,66 +238,6 @@ public:
 #endif // LBCPP_PROTEIN_ROSETTA
   }
 
-  /**
-   * Sets the new first residue to modify.
-   * @param index the new index of the first residue to modify.
-   */
-  void setIndexResidueOne(size_t index)
-    {residues->setFirst(index);}
-
-  /**
-   * Gets the current index of the first residue to modify.
-   * @return the index of the current first residue.
-   */
-  size_t getIndexResidueOne()
-    {return residues->getFirst().getInteger();}
-
-  /**
-   * Sets the new second residue to modify.
-   * @param index the new index of the second residue to modify.
-   */
-  void setIndexResidueTwo(size_t index)
-    {residues->setSecond(index);}
-
-  /**
-   * Gets the current index of the second residue to modify.
-   * @return the index of the current second residue.
-   */
-  size_t getIndexResidueTwo()
-    {return residues->getSecond().getInteger();}
-
-  virtual bool isEqual(const PoseMoverPtr& mover, double tolerance)
-  {
-    if (mover.isInstanceOf<RigidBodyMover> ())
-    {
-      size_t thisResidueOne = residues->getFirst().getInteger();
-      size_t thisResidueTwo = residues->getSecond().getInteger();
-      size_t moverResidueOne =
-          mover.staticCast<RigidBodyMover> ()->residues->getFirst().getInteger();
-      size_t moverResidueTwo =
-          mover.staticCast<RigidBodyMover> ()->residues->getSecond().getInteger();
-      double errorResidueOne = std::abs((double)thisResidueOne - (double)moverResidueOne)
-          / (double)thisResidueOne;
-      double errorResidueTwo = std::abs((double)thisResidueTwo - (double)moverResidueTwo)
-          / (double)thisResidueTwo;
-      double errorMagnitude = std::abs((double)magnitude
-          - (double)mover.staticCast<RigidBodyMover> ()->magnitude) / (double)magnitude;
-      double errorAmplitude = std::abs((double)amplitude
-          - (double)mover.staticCast<RigidBodyMover> ()->amplitude) / (double)amplitude;
-      return ((errorResidueOne < tolerance) && (errorResidueTwo < tolerance) && (errorMagnitude
-          < tolerance) && (errorAmplitude < tolerance));
-    }
-    else
-      return false;
-  }
-
-  virtual PoseMoverPtr getOpposite()
-  {
-    return new RigidBodyMover(residues->getFirst().getInteger(),
-        residues->getSecond().getInteger(), -1.0 * magnitude, -1.0 * amplitude);
-  }
-
-protected:
   friend class RigidBodyMoverClass;
 
   PairPtr residues;

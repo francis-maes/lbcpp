@@ -8,18 +8,23 @@
 #include "precompiled.h"
 #include "Rosetta.h"
 
-#include "../RosettaUtils.h"
+# ifdef LBCPP_PROTEIN_ROSETTA
+#  undef T
+#  include <core/chemical/ChemicalManager.hh>
+#  include <core/chemical/util.hh>
+#  include <core/init.hh>
+#  include <core/pose/Pose.hh>
+#  include <utility/vector0.hh>
+#  define T JUCE_T
+# endif // LBCPP_PROTEIN_ROSETTA
 
 using namespace lbcpp;
 
 Rosetta::Rosetta()
-  : context(NULL), ownLock(new CriticalSection()), poolLock(NULL), nProc(1), id(0), isInPool(false) {}
+  : context(NULL), ownLock(new CriticalSection()) {}
+
 Rosetta::~Rosetta()
-{
-  delete ownLock;
-  if (isInPool && (id == 0))
-    delete poolLock;
-}
+  {delete ownLock;}
 
 void Rosetta::setContext(ExecutionContext& context)
   {this->context = &context;}
@@ -28,52 +33,16 @@ void Rosetta::getLock()
   {ownLock->enter();}
 void Rosetta::releaseLock()
   {ownLock->exit();}
-void Rosetta::getPoolLock()
-  {poolLock->enter();}
-void Rosetta::releasePoolLock()
-  {poolLock->exit();}
-
-VariableVectorPtr Rosetta::createRosettaPool(ExecutionContext& context, size_t size)
-{
-# if 0
-  VariableVectorPtr pool = new VariableVector(size);
-  CriticalSection* pl = new CriticalSection();
-
-  context.enterScope(T("Creating Rosetta cores"));
-  for (size_t i = 0; i < size; i++)
-  {
-    // initialize rosetta object in a pool
-    RosettaPtr r = new Rosetta();
-    r->poolLock = pl;
-    r->id = i;
-    r->nProc = size;
-    r->isInPool = true;
-
-    pool->setElement(i, r);
-    context.progressCallback(new ProgressionState(i, size, T("cores")));
-  }
-  context.leaveScope();
-
-  return pool;
-# else
-  jassert(false);
-  return VariableVectorPtr();
-# endif //! 0
-}
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 
-void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed, size_t delay)
+void Rosetta::init(ExecutionContext& eContext, bool verbose, int id, size_t delay)
 {
-  //  if (isInPool)
-  //    getPoolLock();
-
   setContext(eContext);
 
   context->informationCallback(T("Rosetta Id : ") + String((int)id) + T(" initializing..."));
 
   jassert(context.get() != NULL);
-  jassert((id >= 0) && (id < nProc));
 
   // init
   utility::vector0<std::string> args;
@@ -99,23 +68,19 @@ void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed, size_t de
   args.add_back(std::string("-run:constant_seed"));
   args.add_back(std::string("true"));
   args.add_back(std::string("-run:jran"));
-  if (!isInPool && (seed >= 0))
-    args.add_back(std::string((const char*)String(seed)));
-  else
-    args.add_back(std::string((const char*)String((int)id)));
+  args.add_back(std::string((const char*)String((int)id)));
 
   // processes
   args.add_back(std::string("-run:interactive"));
   args.add_back(std::string("true"));
   args.add_back(std::string("-run:nproc"));
-  args.add_back(std::string((const char*)String((int)nProc)));
+  args.add_back(std::string((const char*)String((int)std::abs(id) + 1)));
   args.add_back(std::string("-run:proc_id"));
   args.add_back(std::string((const char*)String((int)id)));
   args.add_back(std::string("-run:nodelay"));
   args.add_back(std::string("false"));
   args.add_back(std::string("-run:delay"));
   args.add_back(std::string((const char*)String((int)delay)));
-
 
   // out paths
   //  args.add_back(std::string("-out:file"));
@@ -156,12 +121,10 @@ void Rosetta::init(ExecutionContext& eContext, bool verbose, int seed, size_t de
 
   // ensures initialization of database
   core::pose::PoseOP pose = new core::pose::Pose();
-  makePoseFromSequence(pose, T("A"));
+  core::chemical::make_pose_from_sequence(*pose, ("A"),
+      core::chemical::ChemicalManager::get_instance()->nonconst_residue_type_set("fa_standard"));
 
   context->informationCallback(T("Rosetta Id : ") + String((int)id) + T(" initialized."));
-
-  //  if (isInPool)
-  //    releasePoolLock();
 }
 
 # else

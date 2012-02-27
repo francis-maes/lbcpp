@@ -38,7 +38,7 @@ public:
    * Performs the move on the pose specified by the parameters of the mover.
    * @param pose the pose to modify.
    */
-  virtual void move(core::pose::PoseOP& pose)
+  virtual void move(core::pose::PoseOP& pose) const
     {move(pose, residue, deltaPhi, deltaPsi);}
 
   /**
@@ -105,7 +105,7 @@ public:
   double getDeltaPsi()
     {return deltaPsi;}
 
-  virtual bool isEqual(const PoseMoverPtr& mover, double tolerance)
+  virtual bool isEqual(const PoseMoverPtr& mover, double tolerance) const
   {
     if (mover.isInstanceOf<PhiPsiMover> ())
     {
@@ -121,8 +121,11 @@ public:
       return false;
   }
 
-  virtual PoseMoverPtr getOpposite()
-    {return new PhiPsiMover(residue, -1.0 * deltaPhi, -1.0 * deltaPsi);}
+  virtual PoseMoverPtr getOpposite() const
+  {
+    PhiPsiMoverPtr temp = new PhiPsiMover(residue, -1.0 * deltaPhi, -1.0 * deltaPsi);
+    return temp;
+  }
 
 protected:
   friend class PhiPsiMoverClass;
