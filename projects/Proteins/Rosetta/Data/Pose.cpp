@@ -229,16 +229,13 @@ Pose::Pose(const String& sequence)
 Pose::Pose(const File& pdbFile)
   {jassert(false);}
 
-Pose::Pose(const PosePtr& copy)
-  {jassert(false);}
-
 void Pose::saveToPDB(const File& pdbFile) const
   {jassert(false);}
 
-Pose& Pose::operator=(const Pose& copy)
+PosePtr Pose::clone()
 {
   jassert(false);
-  return *this;
+  return PosePtr();
 }
 
 size_t Pose::getLength() const
