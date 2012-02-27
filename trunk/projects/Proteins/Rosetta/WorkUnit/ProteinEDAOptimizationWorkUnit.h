@@ -53,8 +53,8 @@ public:
     context.enterScope(T("This protein"));
 
     PosePtr pose = new Pose(T("AAAAA"));
-    PosePtr minPose = new Pose(pose);
-    PosePtr tempPose = new Pose(pose);
+    PosePtr minPose = pose->clone();
+    PosePtr tempPose = pose->clone();
     double minEnergy = minPose->getEnergy();
 
     DenseDoubleVectorPtr phiMeans = new DenseDoubleVector(pose->getLength(), 0.0);

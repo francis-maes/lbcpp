@@ -5,8 +5,10 @@
   <class name="ResidueHistogramFeatureGenerator" base="FeatureGenerator">
   </class>
   
-  <class name="PoseFeatures" base="CompositeFunction">
+  <class name="PoseFeatures" base="Object" abstract="yes">
   </class>
   
+  <class name="SimplePoseFeatures" base="PoseFeatures">
+  </class>
     
 </library>

@@ -7,19 +7,43 @@
                                `--------------------------------------------*/
 
 #include "precompiled.h"
-#include <lbcpp/Data/SymmetricMatrix.h>
 #include "Pose.h"
+#include "Features/PoseFeatures.h"
+
+#include "../../Data/AminoAcid.h"
+
+#include <lbcpp/Core/CompositeFunction.h>
+#include <lbcpp/Data/SymmetricMatrix.h>
+
+# ifdef LBCPP_PROTEIN_ROSETTA
+#  undef T
+#  include <core/chemical/ChemicalManager.hh>
+#  include <core/chemical/util.hh>
+#  include <core/conformation/Residue.hh>
+#  include <core/io/pdb/pose_io.hh>
+#  include <core/scoring/ScoreFunctionFactory.hh>
+#  include <numeric/xyzVector.hh>
+#  define T JUCE_T
+# endif // LBCPP_PROTEIN_ROSETTA
 
 using namespace lbcpp;
 
-void Pose::setFeatureGenerator(CompositeFunctionPtr& features)
-  {this->features = features;}
 
-CompositeFunctionPtr Pose::getFeatureGenerator()
-  {return features;}
+void Pose::setFeatureGenerator(ExecutionContext& context, PoseFeaturesPtr& features)
+{
+  featureGenerator = features;
+  Variable tmp = (PosePtr)this;
+  featureGenerator->initialize(context, tmp);
+}
+
+PoseFeaturesPtr Pose::getFeatureGenerator() const
+  {return featureGenerator;}
 
 Variable Pose::getFeatures(ExecutionContext& context)
-  {return features->compute(context, (PosePtr)this);}
+{
+  Variable tmp = (PosePtr)this;
+  return featureGenerator->computeFeatures(context, tmp);
+}
 
 #ifdef LBCPP_PROTEIN_ROSETTA
 
@@ -29,6 +53,7 @@ Pose::Pose(const String& sequence)
   pose = new core::pose::Pose();
   core::chemical::make_pose_from_sequence(*pose, (const char*)sequence,
       core::chemical::ChemicalManager::get_instance()->nonconst_residue_type_set("fa_standard"));
+  initializeEnergyFunction();
 }
 
 Pose::Pose(const File& pdbFile)
@@ -37,33 +62,30 @@ Pose::Pose(const File& pdbFile)
   pose = new core::pose::Pose((const char*)pdbFile.getFullPathName());
   if (pose() == NULL)
     jassert(false);
+  initializeEnergyFunction();
 }
 
-Pose::Pose(const PosePtr& copy)
-{
-  pose = new core::pose::Pose();
-  *pose = *copy->pose;
-}
-
-void Pose::saveToPDB(const File& pdbFile)
+void Pose::saveToPDB(const File& pdbFile) const
 {
   if (!pose->dump_pdb((const char*)pdbFile.getFullPathName()))
     jassert(false);
 }
 
-Pose& Pose::operator=(const Pose& copy)
+PosePtr Pose::clone()
 {
-  *pose = *copy.pose;
-  return *this;
+  PosePtr tmp = new Pose();
+  *(tmp->pose) = *pose;
+  *(tmp->score_fct) = *score_fct;
+  tmp->featureGenerator = featureGenerator->cloneAndCast<PoseFeatures> ();
 }
 
-size_t Pose::getLength()
+size_t Pose::getLength() const
   {return pose->n_residue();}
 
-double Pose::getPhi(size_t residue)
+double Pose::getPhi(size_t residue) const
   {return pose->phi(residue + 1);}
 
-double Pose::getPsi(size_t residue)
+double Pose::getPsi(size_t residue) const
   {return pose->psi(residue + 1);}
 
 void Pose::setPhi(size_t residue, double phi)
@@ -72,7 +94,7 @@ void Pose::setPhi(size_t residue, double phi)
 void Pose::setPsi(size_t residue, double psi)
   {pose->set_psi(residue + 1, psi);}
 
-SymmetricMatrixPtr Pose::getBackboneDistanceMatrix()
+SymmetricMatrixPtr Pose::getBackboneDistanceMatrix() const
 {
   SymmetricMatrixPtr matrix;
   matrix = new DoubleSymmetricMatrix(doubleType, 3 * (int)pose->n_residue(), 0.0);
@@ -108,13 +130,13 @@ SymmetricMatrixPtr Pose::getBackboneDistanceMatrix()
 void Pose::initializeEnergyFunction()
   {score_fct = core::scoring::ScoreFunctionFactory::create_score_function("standard");}
 
-double Pose::getEnergy()
+double Pose::getEnergy() const
   {return (*score_fct)(*pose);}
 
-double Pose::getCorrectedEnergy()
+double Pose::getCorrectedEnergy() const
   {return getEnergy() + getDistanceCorrectionFactor() + getCollisionCorrectionFactor();}
 
-double Pose::getDistanceCorrectionFactor()
+double Pose::getDistanceCorrectionFactor() const
 {
   double meanCN = 1.323;
   double stdCN = 0.1;
@@ -160,7 +182,7 @@ double Pose::getDistanceCorrectionFactor()
   return juce::jmax(0.0, correctionFactor - (double)3 * numberResidues + 1);
 }
 
-double Pose::getCollisionCorrectionFactor()
+double Pose::getCollisionCorrectionFactor() const
 {
   double correctionFactor = 0.0;
   // determined by inspecting all proteins, computing minimum distance for each
@@ -182,9 +204,22 @@ double Pose::getCollisionCorrectionFactor()
 
 DenseDoubleVectorPtr Pose::getHistogram()
 {
-  // TODO : to be implemented
-  jassert(false);
-  return DenseDoubleVectorPtr();
+  DenseDoubleVectorPtr histogram = new DenseDoubleVector(aminoAcidTypeEnumeration, doubleType);
+  double increment = 1.0 / pose->n_residue();
+  for (size_t i = 0; i < (size_t)pose->n_residue(); i++)
+  {
+    char n = pose->residue(i + 1).name1();
+    std::string name(&n, 1);
+    String resName(name.c_str());
+
+    for (size_t j = 0; j < aminoAcidTypeEnumeration->getNumElements(); j++)
+      if (!resName.compare(aminoAcidTypeEnumeration->getElement(j)->getVariable(1).toString()))
+      {
+        histogram->incrementValue(j, increment);
+        break;
+      }
+  }
+  return histogram;
 }
 
 # else
@@ -197,7 +232,7 @@ Pose::Pose(const File& pdbFile)
 Pose::Pose(const PosePtr& copy)
   {jassert(false);}
 
-void Pose::saveToPDB(const File& pdbFile)
+void Pose::saveToPDB(const File& pdbFile) const
   {jassert(false);}
 
 Pose& Pose::operator=(const Pose& copy)
@@ -206,19 +241,19 @@ Pose& Pose::operator=(const Pose& copy)
   return *this;
 }
 
-size_t Pose::getLength()
+size_t Pose::getLength() const
 {
   jassert(false);
   return 0;
 }
 
-double Pose::getPhi(size_t residue)
+double Pose::getPhi(size_t residue) const
 {
   jassert(false);
   return 0.0;
 }
 
-double Pose::getPsi(size_t residue)
+double Pose::getPsi(size_t residue) const
 {
   jassert(false);
   return 0.0;
@@ -230,7 +265,7 @@ void Pose::setPhi(size_t residue, double phi)
 void Pose::setPsi(size_t residue, double psi)
   {jassert(false);}
 
-SymmetricMatrixPtr Pose::getBackboneDistanceMatrix()
+SymmetricMatrixPtr Pose::getBackboneDistanceMatrix() const
 {
   jassert(false);
   return SymmetricMatrixPtr();
@@ -239,25 +274,25 @@ SymmetricMatrixPtr Pose::getBackboneDistanceMatrix()
 void Pose::initializeEnergyFunction()
   {jassert(false);}
 
-double Pose::getEnergy()
+double Pose::getEnergy() const
 {
   jassert(false);
   return 0.0;
 }
 
-double Pose::getCorrectedEnergy()
+double Pose::getCorrectedEnergy() const
 {
   jassert(false);
   return 0.0;
 }
 
-double Pose::getDistanceCorrectionFactor()
+double Pose::getDistanceCorrectionFactor() const
 {
   jassert(false);
   return 0.0;
 }
 
-double Pose::getCollisionCorrectionFactor()
+double Pose::getCollisionCorrectionFactor() const
 {
   jassert(false);
   return 0.0;

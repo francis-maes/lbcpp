@@ -10,23 +10,19 @@
 # define LBCPP_PROTEIN_ROSETTA_DATA_POSE_H_
 
 # include "Rosetta.h"
-# include <lbcpp/Core/CompositeFunction.h>
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 #  undef T
-#  include <core/chemical/ChemicalManager.hh>
-#  include <core/chemical/util.hh>
-#  include <core/conformation/Residue.hh>
-#  include <core/io/pdb/pose_io.hh>
 #  include <core/pose/Pose.hh>
 #  include <core/scoring/ScoreFunction.hh>
-#  include <core/scoring/ScoreFunctionFactory.hh>
-#  include <numeric/xyzVector.hh>
 #  define T JUCE_T
 # endif // LBCPP_PROTEIN_ROSETTA
 
 namespace lbcpp
 {
+
+class PoseFeatures;
+typedef ReferenceCountedObjectPtr<PoseFeatures> PoseFeaturesPtr;
 
 class Pose;
 extern ClassPtr poseClass;
@@ -39,47 +35,51 @@ public:
    * Constructor
    */
   Pose() {}
-  Pose(const String& sequence);
-  Pose(const File& pdbFile);
-  Pose(const PosePtr& copy);
+  explicit Pose(const String& sequence);
+  explicit Pose(const File& pdbFile);
 
   /*
-   * I/O
+   * I/O and copy
    */
-  void saveToPDB(const File& pdbFile);
-  Pose& operator=(const Pose& copy);
+  void saveToPDB(const File& pdbFile) const;
+  PosePtr clone();
 
   /*
    * Structure
    */
-  size_t getLength();
-  double getPhi(size_t residue);
-  double getPsi(size_t residue);
+  size_t getLength() const;
+  double getPhi(size_t residue) const;
+  double getPsi(size_t residue) const;
   void setPhi(size_t residue, double phi);
   void setPsi(size_t residue, double psi);
-  SymmetricMatrixPtr getBackboneDistanceMatrix();
+  SymmetricMatrixPtr getBackboneDistanceMatrix() const;
 
   /*
    * Energy
    */
-  void initializeEnergyFunction();
-  double getEnergy();
-  double getCorrectedEnergy();
-  double getDistanceCorrectionFactor();
-  double getCollisionCorrectionFactor();
+  double getEnergy() const;
+  double getCorrectedEnergy() const;
+  double getDistanceCorrectionFactor() const;
+  double getCollisionCorrectionFactor() const;
+
+  /*
+   * Features and feature generator
+   */
+  void setFeatureGenerator(ExecutionContext& context, PoseFeaturesPtr& features);
+  PoseFeaturesPtr getFeatureGenerator() const;
+  Variable getFeatures(ExecutionContext& context);
 
   /*
    * Features
    */
   DenseDoubleVectorPtr getHistogram();
-  void setFeatureGenerator(CompositeFunctionPtr& features);
-  CompositeFunctionPtr getFeatureGenerator();
-  Variable getFeatures(ExecutionContext& context);
 
 protected:
+  void initializeEnergyFunction();
+
   friend class PoseClass;
 
-  CompositeFunctionPtr features;
+  PoseFeaturesPtr featureGenerator;
 
 # ifdef LBCPP_PROTEIN_ROSETTA
   core::pose::PoseOP pose;
