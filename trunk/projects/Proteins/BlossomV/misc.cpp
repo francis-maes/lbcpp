@@ -1,3 +1,4 @@
+#include "precompiled.h"
 #include <stdio.h>
 #include "PerfectMatching.h"
 #include "LCA.h"

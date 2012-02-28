@@ -1,3 +1,4 @@
+#include "precompiled.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,6 +29,7 @@ PerfectMatching::PerfectMatching(int nodeNum, int edgeNumMax)
 }
 
 
+#pragma warning(disable:4996)
 void PerfectMatching::Save(char* filename, int format)
 {
 	if (!first_solve) { printf("Save() cannot be called after Solve()!\n"); exit(1); }

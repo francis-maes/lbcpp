@@ -171,7 +171,7 @@ extern ClassPtr charSymmetricMatrixClass(TypePtr type);
 class CharSymmetricMatrix : public BuiltinTypeSymmetricMatrix<char>
 {
 public:
-  CharSymmetricMatrix(TypePtr elementsType, size_t dimension, double defaultValue)
+  CharSymmetricMatrix(TypePtr elementsType, size_t dimension, char defaultValue)
     : BuiltinTypeSymmetricMatrix<char>(elementsType, dimension, defaultValue)
     {setThisClass(charSymmetricMatrixClass(elementsType));}
   CharSymmetricMatrix() {}

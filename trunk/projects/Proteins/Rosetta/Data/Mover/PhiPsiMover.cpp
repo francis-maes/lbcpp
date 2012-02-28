@@ -34,9 +34,9 @@ void PhiPsiMover::move(core::pose::PoseOP& pose, int residue, double deltaPhi, d
 
 void PhiPsiMover::move(PosePtr& pose, int residue, double deltaPhi, double deltaPsi)
 {
-  if (std::isfinite(deltaPhi))
+  if (isNumberValid(deltaPhi))
     pose->setPhi(residue + 1, pose->getPhi(residue + 1) + deltaPhi);
-  if (std::isfinite(deltaPsi))
+  if (isNumberValid(deltaPsi))
     pose->setPsi(residue + 1, pose->getPsi(residue + 1) + deltaPsi);
 }
 

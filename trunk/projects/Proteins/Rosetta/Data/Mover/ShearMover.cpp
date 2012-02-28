@@ -34,9 +34,9 @@ void ShearMover::move(core::pose::PoseOP& pose, int residue, double deltaPhi, do
 
 void ShearMover::move(PosePtr& pose, int residue, double deltaPhi, double deltaPsi)
 {
-  if (std::isfinite(deltaPhi))
+  if (isNumberValid(deltaPhi))
     pose->setPhi(residue + 1, pose->getPhi(residue + 1) + deltaPhi);
-  if (std::isfinite(deltaPsi) && (residue != 0))
+  if (isNumberValid(deltaPsi) && (residue != 0))
     pose->setPsi(residue, pose->getPsi(residue) + deltaPsi);
 }
 
