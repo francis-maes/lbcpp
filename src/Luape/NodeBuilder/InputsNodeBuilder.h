@@ -19,11 +19,17 @@ class InputsNodeBuilder : public LuapeNodeBuilder
 public:
   virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<LuapeNodePtr>& res)
   {
-    res.reserve(function->getNumInputs());
+    res.reserve(function->getNumInputs() + function->getNumActiveVariables());
     for (size_t i = 0; i < function->getNumInputs(); ++i)
     {
       LuapeNodePtr node = function->getInput(i);
-      if (node->getType() == doubleType)
+      if (node->getType()->isConvertibleToDouble())
+        res.push_back(node);
+    }
+    for (size_t i = 0; i < function->getNumActiveVariables(); ++i)
+    {
+      LuapeNodePtr node = function->getActiveVariable(i);
+      if (node->getType()->isConvertibleToDouble())
         res.push_back(node);
     }
   }

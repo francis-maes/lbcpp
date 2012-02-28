@@ -23,7 +23,7 @@ public:
 
   virtual void computeLoss(const LuapeInferencePtr& problem, const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const = 0;
 
-  virtual bool doLearningIteration(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
+  virtual bool doLearningIteration(ExecutionContext& context, LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
     {
       TimedScope _(context, "compute residuals");

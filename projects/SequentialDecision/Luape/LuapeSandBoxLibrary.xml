@@ -26,6 +26,11 @@
     <variable type="File" name="plotFile"/>
   </class>
 
+  <class name="RelevanceDrivenFeatureGenerationLearner" base="IterativeLearner">
+    <variable type="LuapeLearner" name="baseLearner"/>
+    <variable type="PositiveInteger" name="numActiveVariables"/>
+  </class>
+
   <class name="LuapeClassificationSandBox" base="WorkUnit">
     <variable type="File" name="dataFile"/>
     <variable type="PositiveInteger" name="maxExamples"/>

@@ -61,12 +61,17 @@ void LuapeInference::setRootNode(ExecutionContext& context, const LuapeNodePtr& 
         validationCache->uncacheNode(context, this->node);
     }
     this->node = node;
-    if (trainingCache)
-      trainingCache->cacheNode(context, node, VectorPtr(), "Prediction node", false);
-    if (validationCache)
-      validationCache->cacheNode(context, node, VectorPtr(), "Prediction node", false);
+    if (this->node)
+    {
+      if (trainingCache)
+        trainingCache->cacheNode(context, node, VectorPtr(), "Prediction node", false);
+      if (validationCache)
+        validationCache->cacheNode(context, node, VectorPtr(), "Prediction node", false);
+    }
   }
 }
+void LuapeInference::clearRootNode(ExecutionContext& context)
+  {if (node) setRootNode(context, node);}
 
 LuapeGraphBuilderTypeSearchSpacePtr LuapeInference::getSearchSpace(ExecutionContext& context, size_t complexity) const
 {

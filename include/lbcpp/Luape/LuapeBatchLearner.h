@@ -30,20 +30,7 @@ public:
   {
     const LuapeInferencePtr& problem = f.staticCast<LuapeInference>();
     problem->setSamples(context, trainingData, validationData);
-    
-    // create initial node
-    LuapeNodePtr node = problem->getRootNode();
-    if (!node)
-      node = learner->createInitialNode(context, problem);
-    if (node)
-      problem->setRootNode(context, node);
-
-    // learn
-    node = learner->learn(context, node, problem, problem->getTrainingCache()->getAllIndices());
-    if (!node)
-      return false;
-    problem->setRootNode(context, node);
-    return true;
+    return learner->learn(context, problem) != LuapeNodePtr();
   }
 
 protected:
