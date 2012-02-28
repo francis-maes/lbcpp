@@ -175,7 +175,6 @@ SET(LBCPP_PROTEIN_ROSETTA_DATA_SOURCES
 
 SET(LBCPP_PROTEIN_ROSETTA_DATA_FEATURES_SOURCES
   Rosetta/Data/Features/PoseFeatures.h
-  Rosetta/Data/Features/ResidueHistogramFeatureGenerator.h
   Rosetta/Data/Features/ProteinRosettaDataFeaturesLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaDataFeaturesLibrary.cpp
 )

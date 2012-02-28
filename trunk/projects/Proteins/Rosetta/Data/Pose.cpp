@@ -30,11 +30,7 @@ using namespace lbcpp;
 
 
 void Pose::setFeatureGenerator(ExecutionContext& context, PoseFeaturesPtr& features)
-{
-  featureGenerator = features;
-  Variable tmp = (PosePtr)this;
-  featureGenerator->initialize(context, tmp);
-}
+  {featureGenerator = features;}
 
 PoseFeaturesPtr Pose::getFeatureGenerator() const
   {return featureGenerator;}
@@ -71,7 +67,7 @@ void Pose::saveToPDB(const File& pdbFile) const
     jassert(false);
 }
 
-PosePtr Pose::clone()
+PosePtr Pose::clone() const
 {
   PosePtr tmp = new Pose();
   *(tmp->pose) = *pose;
@@ -81,6 +77,32 @@ PosePtr Pose::clone()
 
 size_t Pose::getLength() const
   {return pose->n_residue();}
+
+DoubleVectorPtr Pose::getCalphaPosition(size_t residue) const
+{
+  numeric::xyzVector<double> coord = (pose->residue(residue + 1)).xyz("CA");
+  DenseDoubleVectorPtr tmp = new DenseDoubleVector(3, 0.0);
+  tmp->setValue(0, coord.x());
+  tmp->setValue(1, coord.y());
+  tmp->setValue(2, coord.z());
+  return tmp;
+}
+
+void Pose::initializeToHelix()
+{
+  for (size_t i = 1; i <= pose->n_residue(); i++)
+  {
+    if (i == 1)
+      pose->set_phi(i, 0);
+    else
+      pose->set_phi(i, -150);
+    if (i == pose->n_residue())
+      pose->set_psi(i, 0);
+    else
+      pose->set_psi(i, 150);
+    pose->set_omega(i, 45);
+  }
+}
 
 double Pose::getPhi(size_t residue) const
   {return pose->phi(residue + 1);}
@@ -125,6 +147,92 @@ SymmetricMatrixPtr Pose::getBackboneDistanceMatrix() const
     }
   }
   return matrix;
+}
+
+void Pose::computeMeanDistances(size_t cutoff, double* shortRange, double* longRange) const
+{
+  size_t res = getLength();
+  size_t shortCount = 0;
+  size_t longCount = 0;
+  DenseDoubleVectorPtr first;
+  DenseDoubleVectorPtr second;
+  double distance;
+
+  for (size_t i = 0; i < res; i++)
+  {
+    first = getCalphaPosition(i);
+    for (size_t j = 0; j < res; j++)
+    {
+      second = getCalphaPosition(j);
+      distance = first->euclidianDistanceWith(second);
+
+      if (std::abs((int)i - (int)j) < cutoff)
+      {
+        if (shortRange != NULL)
+        {
+          *shortRange += distance;
+          shortCount++;
+        }
+      }
+      else
+      {
+        if (longRange != NULL)
+        {
+          *longRange += distance;
+          longCount++;
+        }
+      }
+    }
+  }
+
+  if (shortRange != NULL)
+    *shortRange /= shortCount;
+  if (longRange != NULL)
+    *longRange /= longCount;
+}
+
+double Pose::computeMinimumDistance() const
+{
+  size_t res = getLength();
+  DenseDoubleVectorPtr first;
+  DenseDoubleVectorPtr second;
+  double distance = 0;
+  double optimalDistance = INFINITY;
+
+  for (size_t i = 0; i < res; i++)
+  {
+    first = getCalphaPosition(i);
+    for (size_t j = 0; j < res; j++)
+    {
+      second = getCalphaPosition(j);
+      distance = first->euclidianDistanceWith(second);
+
+      optimalDistance = distance < optimalDistance ? distance : optimalDistance;
+    }
+  }
+  return optimalDistance;
+}
+
+double Pose::computeMaximumDistance() const
+{
+  size_t res = getLength();
+  DenseDoubleVectorPtr first;
+  DenseDoubleVectorPtr second;
+  double distance = 0;
+  double optimalDistance = 0;
+
+  for (size_t i = 0; i < res; i++)
+  {
+    first = getCalphaPosition(i);
+    for (size_t j = 0; j < res; j++)
+    {
+      second = getCalphaPosition(j);
+      distance = first->euclidianDistanceWith(second);
+
+      optimalDistance = distance > optimalDistance ? distance : optimalDistance;
+    }
+  }
+  return optimalDistance;
 }
 
 void Pose::initializeEnergyFunction()
@@ -202,7 +310,7 @@ double Pose::getCollisionCorrectionFactor() const
   return juce::jmax(0.0, correctionFactor);
 }
 
-DenseDoubleVectorPtr Pose::getHistogram()
+DenseDoubleVectorPtr Pose::getHistogram() const
 {
   DenseDoubleVectorPtr histogram = new DenseDoubleVector(aminoAcidTypeEnumeration, doubleType);
   double increment = 1.0 / pose->n_residue();
@@ -232,7 +340,7 @@ Pose::Pose(const File& pdbFile)
 void Pose::saveToPDB(const File& pdbFile) const
   {jassert(false);}
 
-PosePtr Pose::clone()
+PosePtr Pose::clone() const
 {
   jassert(false);
   return PosePtr();
@@ -243,6 +351,15 @@ size_t Pose::getLength() const
   jassert(false);
   return 0;
 }
+
+DoubleVectorPtr Pose::getCalphaPosition(size_t residue) const
+{
+  jassert(false);
+  return DenseDoubleVectorPtr();
+}
+
+void Pose::initializeToHelix()
+  {jassert(false);}
 
 double Pose::getPhi(size_t residue) const
 {
@@ -266,6 +383,21 @@ SymmetricMatrixPtr Pose::getBackboneDistanceMatrix() const
 {
   jassert(false);
   return SymmetricMatrixPtr();
+}
+
+void Pose::computeMeanDistances(size_t cutoff, double* shortRange, double* longRange) const
+  {jassert(false);}
+
+double Pose::computeMinimumDistance() const
+{
+  jassert(false);
+  return 0.0;
+}
+
+double Pose::computeMaximumDistance() const
+{
+  jassert(false);
+  return 0.0;
 }
 
 void Pose::initializeEnergyFunction()
@@ -295,7 +427,7 @@ double Pose::getCollisionCorrectionFactor() const
   return 0.0;
 }
 
-DenseDoubleVectorPtr Pose::getHistogram()
+DenseDoubleVectorPtr Pose::getHistogram() const
 {
   jassert(false);
   return DenseDoubleVectorPtr();
