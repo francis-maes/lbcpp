@@ -209,6 +209,87 @@ protected:
   ContainerPtr data;
 };
 
+class RelevanceDrivenFeatureGenerationLearner : public IterativeLearner
+{
+public:
+  RelevanceDrivenFeatureGenerationLearner(LuapeLearnerPtr baseLearner, size_t numIterations, size_t numActiveVariables, LuapeLearnerPtr targetLearner)
+    : IterativeLearner(baseLearner->getObjective(), numIterations), baseLearner(baseLearner), numActiveVariables(numActiveVariables), targetLearner(targetLearner) {}
+  RelevanceDrivenFeatureGenerationLearner() {}
+
+  virtual LuapeNodePtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
+    {return baseLearner->createInitialNode(context, problem);}
+
+  virtual bool doLearningIteration(ExecutionContext& context, LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
+  {
+    if (verbose)
+    {
+      if (targetLearner)
+      {
+        targetLearner->learn(context, problem, examples);
+        context.resultCallback(T("targetValidationScore"), problem->evaluatePredictions(context, problem->getValidationPredictions(), problem->getValidationSupervisions()));
+      }
+
+      for (size_t i = 0; i < problem->getNumActiveVariables(); ++i)
+      {
+        LuapeNodePtr activeVariable = problem->getActiveVariable(i);
+        context.informationCallback(T("Active variable: ") + activeVariable->toShortString());
+      }
+    }
+
+    // learn
+    problem->clearRootNode(context);
+    node = baseLearner->learn(context, problem, examples);
+
+    // evaluate
+    if (verbose)
+      evaluatePredictions(context, problem, trainingScore, validationScore);
+  
+    // retrieve node importances
+    std::map<LuapeNodePtr, double> importances;
+    LuapeUniverse::getImportances(problem->getRootNode(), importances);
+   // if (verbose)
+   //   LuapeUniverse::displayMostImportantNodes(context, importances);
+
+    // sort nodes by importance
+    std::multimap<double, LuapeNodePtr> nodeImportanceMap;
+    for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it)
+      if (!it->first.isInstanceOf<LuapeInputNode>())
+        nodeImportanceMap.insert(std::make_pair(it->second, it->first));
+    
+    // create new set of active variables
+    problem->clearActiveVariables();
+    for (std::multimap<double, LuapeNodePtr>::reverse_iterator it = nodeImportanceMap.rbegin(); it != nodeImportanceMap.rend(); ++it)
+    {
+      problem->addActiveVariable(it->second);
+      if (problem->getNumActiveVariables() >= numActiveVariables)
+        break;
+    }
+    return node;
+  }
+  
+  virtual bool finalize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  {
+    bestObjectiveValue = baseLearner->getBestObjectiveValue();
+    return IterativeLearner::finalize(context, node, problem, examples);
+  }
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    IterativeLearner::clone(context, target);
+    if (baseLearner)
+      target.staticCast<RelevanceDrivenFeatureGenerationLearner>()->baseLearner = baseLearner->cloneAndCast<LuapeLearner>();
+    if (targetLearner)
+      target.staticCast<RelevanceDrivenFeatureGenerationLearner>()->targetLearner = targetLearner->cloneAndCast<LuapeLearner>();
+  }
+
+protected:
+  friend class RelevanceDrivenFeatureGenerationLearnerClass;
+
+  LuapeLearnerPtr baseLearner;
+  LuapeLearnerPtr targetLearner;
+  size_t numActiveVariables;
+};
+
 class LuapeClassificationSandBox : public WorkUnit
 {
 public:
@@ -250,29 +331,46 @@ public:
 
     LuapeLearnerPtr conditionLearner, learner;
     
-    size_t Kdef = (size_t)(0.5 + sqrt((double)numVariables));
+    //size_t Kdef = (size_t)(0.5 + sqrt((double)numVariables));
+
+    conditionLearner = exactWeakLearner(inputsNodeBuilder());
+    //LuapeLearnerPtr targetLearner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
+    LuapeLearnerPtr targetLearner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
+    targetLearner->setVerbose(verbose);
+
+    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
+    //learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
+    learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
+    learner->setVerbose(verbose);
+    testLearner(context, learner, "Baseline explore");
+    testLearner(context, targetLearner, "Baseline simple");
+    
+    learner = new RelevanceDrivenFeatureGenerationLearner(learner, 25, numVariables, targetLearner);
+    learner->setVerbose(verbose);
+    testLearner(context, learner, "RDFG explore");
+    //testLearner(context, targetLearner, "RDFG simple");
 
 
 /*    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 2));
     learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
     learner->setVerbose(verbose);
-    testConditionLearner(context, learner, "Single Tree");
+    testLearner(context, learner, "Single Tree");
 
     conditionLearner = exactWeakLearner(inputsNodeBuilder());
     learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
     learner->setVerbose(verbose);
-    testConditionLearner(context, learner, "Single Tree (check)");
+    testLearner(context, learner, "Single Tree (check)");
 
     
     learner = baggingLearner(learner, 100);
-    testConditionLearner(context, learner, "Tree Bagging");
+    testLearner(context, learner, "Tree Bagging");
 
     conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(K, 2));
     learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
-    testConditionLearner(context, learner, "Random Subspace");
+    testLearner(context, learner, "Random Subspace");
 
     learner = baggingLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
-    testConditionLearner(context, learner, "Random Forests");
+    testLearner(context, learner, "Random Forests");
 
 
     conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(4, 2));
@@ -281,26 +379,27 @@ public:
     learner->setVerbose(verbose);
     learner = ensembleLearner(learner, 100);
     learner->setVerbose(verbose);
-    testConditionLearner(context, learner, "Extra Trees - K=4");
+    testLearner(context, learner, "Extra Trees - K=4");
 
    
     conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(numVariables, 2));
     learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
-    testConditionLearner(context, learner, "Extra Trees - K=N");
+    testLearner(context, learner, "Extra Trees - K=N");
 
     conditionLearner = randomSplitWeakLearner(inputsNodeBuilder());
     learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
-    testConditionLearner(context, learner, "Extra Trees - K=N check");
+    testLearner(context, learner, "Extra Trees - K=N check");
 
 
     conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(K, 2));
     learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
-    testConditionLearner(context, learner, "Extra Trees Default");
+    testLearner(context, learner, "Extra Trees Default");
     */
 
    
     //LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(numVariables, 2);
 
+#if 0
     LuapeNodeBuilderPtr nodeBuilder = inputsNodeBuilder();
     nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
     //conditionLearner = laminatingWeakLearner(nodeBuilder, (double)numVariables, 10);
@@ -310,7 +409,7 @@ public:
     conditionLearner->setVerbose(verbose);
     learner = discreteAdaBoostMHLearner(conditionLearner, numIterations, 2);
     learner->setVerbose(verbose);
-    testConditionLearner(context, learner, "ThreeStumps Boosting - 1-var");
+    testLearner(context, learner, "ThreeStumps Boosting - 1-var");
 
     for (size_t complexity = 4; complexity <= 8; complexity += 2)
     {
@@ -326,8 +425,9 @@ public:
       learner = discreteAdaBoostMHLearner(conditionLearner, numIterations, 2);
       learner->setVerbose(verbose);
 
-      testConditionLearner(context, learner, "ThreeStumps AdaBoost.MH K=n - " + str);
+      testLearner(context, learner, "ThreeStumps AdaBoost.MH K=n - " + str);
     }
+#endif // 0
 
     /*
     for (size_t complexity = 4; complexity <= 8; complexity += 2)
@@ -352,7 +452,7 @@ public:
         conditionLearner->setVerbose(verbose);
         learner = discreteAdaBoostMHLearner(conditionLearner, numIterations, 2);
         learner->setVerbose(verbose);
-        double validationScore = testConditionLearner(context, learner, String::empty);
+        double validationScore = testLearner(context, learner, String::empty);
         bestScore = juce::jmin(bestScore, validationScore);
         context.leaveScope(validationScore);
       }
@@ -361,7 +461,7 @@ public:
     return true;
   }
 
-  double testConditionLearner(ExecutionContext& context, const LuapeLearnerPtr& learner, const String& name) const
+  double testLearner(ExecutionContext& context, const LuapeLearnerPtr& learner, const String& name) const
   {
   //  Object::displayObjectAllocationInfo(std::cout);
 
@@ -425,7 +525,7 @@ protected:
     if (tsFile.existsAsFile())
     {
       TextParserPtr parser = new TestingSetParser(context, tsFile, data);
-      ContainerPtr splits = parser->load();
+      ContainerPtr splits = parser->load(verbose ? 1 : 0);
       res.resize(splits->getNumElements());
       for (size_t i = 0; i < res.size(); ++i)
       {
@@ -471,16 +571,8 @@ protected:
       classifier->setSamples(context, trainingData.staticCast<ObjectVector>()->getObjects(), testingData.staticCast<ObjectVector>()->getObjects());
       //classifier->getTrainingCache()->disableCaching();
       //classifier->getValidationCache()->disableCaching();
-      LuapeNodePtr rootNode = learner->createInitialNode(context, classifier);
-      classifier->setRootNode(context, rootNode);    
-      learner->learn(context, rootNode, classifier, classifier->getTrainingCache()->getAllIndices());
+      learner->learn(context, classifier);
       return classifier->evaluatePredictions(context, classifier->getValidationPredictions(), classifier->getValidationSupervisions());
-/*
-      LuapeBatchLearnerPtr batchLearner = new LuapeBatchLearner(learner);
-      classifier->setBatchLearner(batchLearner);
-      classifier->setEvaluator(defaultSupervisedEvaluator());
-      ScoreObjectPtr score = classifier->train(context, trainingData, testingData, String::empty, false);
-      return score ? score->getScoreToMinimize() : DBL_MAX;*/
     }
 
   protected:

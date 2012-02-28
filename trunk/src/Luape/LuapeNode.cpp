@@ -160,7 +160,8 @@ const LuapeNodePtr& LuapeTestNode::getSubNode(size_t index) const
 String LuapeTestNode::toShortString() const
 {
   String res = "(" + conditionNode->toShortString() + " ? " + 
-          successNode->toShortString() + T(" : ") + failureNode->toShortString();
+    (successNode ? successNode->toShortString() : T("NULL")) + T(" : ") + 
+    (failureNode ? failureNode->toShortString() : T("NULL"));
   if (missingNode && missingNode.isInstanceOf<LuapeConstantNode>() && missingNode.staticCast<LuapeConstantNode>()->getValue().exists())
     res += T(" : ") + missingNode->toShortString();
   return res + T(")");

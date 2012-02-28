@@ -13,6 +13,24 @@ using namespace lbcpp;
 /*
 ** LuapeLearner
 */
+LuapeNodePtr LuapeLearner::learn(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+{
+  // create initial node
+  LuapeNodePtr node = problem->getRootNode();
+  if (!node)
+    node = createInitialNode(context, problem);
+  if (node)
+    problem->setRootNode(context, node);
+
+  // learn
+  IndexSetPtr indices = examples ? examples : problem->getTrainingCache()->getAllIndices();
+  node = learn(context, node, problem, indices);
+  if (!node)
+    return LuapeNodePtr();
+  problem->setRootNode(context, node);
+  return node;
+}
+
 void LuapeLearner::evaluatePredictions(ExecutionContext& context, const LuapeInferencePtr& problem, double& trainingScore, double& validationScore)
 {
   TimedScope _(context, "evaluate", verbose);
@@ -80,6 +98,7 @@ void IterativeLearner::setPlotFile(ExecutionContext& context, const File& plotFi
 
 LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
 {
+  LuapeNodePtr res = node;
   if (verbose)
   {
     context.enterScope(T("Learning"));
@@ -97,7 +116,7 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
     plotOutputStream->flush();
   }
 
-  if (!initialize(context, node, problem, examples))
+  if (!initialize(context, res, problem, examples))
     return LuapeNodePtr();
 
   LuapeUniversePtr universe = problem->getUniverse();
@@ -118,7 +137,7 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
       context.resultCallback(T("iteration"), i+1);
     }
     
-    if (!doLearningIteration(context, node, problem, examples, trainingScore, validationScore))
+    if (!doLearningIteration(context, res, problem, examples, trainingScore, validationScore))
       stopped = true;
       
     if (verbose)
@@ -178,12 +197,12 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
     plotOutputStream->flush();
   }
     
-  if (!finalize(context, node, problem, examples))
+  if (!finalize(context, res, problem, examples))
     return LuapeNodePtr();
 
   //Object::displayObjectAllocationInfo(std::cerr);
   //context.resultCallback("votes", function->getVotes());
-  return node;
+  return res;
 }
 
 /*

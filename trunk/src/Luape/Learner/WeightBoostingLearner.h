@@ -38,7 +38,7 @@ public:
   virtual void contributionAdded(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& contribution)
     {updateSampleWeights(context, problem, contribution, objective.staticCast<SupervisedLearningObjective>()->getWeights(), logLoss);}
 
-  virtual bool doLearningIteration(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
+  virtual bool doLearningIteration(ExecutionContext& context, LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
     context.resultCallback(T("logLoss"), logLoss);
     context.resultCallback(T("loss"), pow(10.0, logLoss));

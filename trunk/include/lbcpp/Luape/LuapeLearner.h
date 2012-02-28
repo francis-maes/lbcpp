@@ -29,6 +29,8 @@ public:
 
   virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples) = 0;
 
+  LuapeNodePtr learn(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples = IndexSetPtr());
+
   void setObjective(const LearningObjectivePtr& objective)
     {this->objective = objective;}
 
@@ -75,7 +77,7 @@ public:
 
   virtual bool initialize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
     {objective->initialize(problem); return true;}
-  virtual bool doLearningIteration(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore) = 0;
+  virtual bool doLearningIteration(ExecutionContext& context, LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore) = 0;
   virtual bool finalize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
     {return true;}
 

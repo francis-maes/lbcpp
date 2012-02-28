@@ -87,6 +87,7 @@ public:
     {return node;}
 
   void setRootNode(ExecutionContext& context, const LuapeNodePtr& node);
+  void clearRootNode(ExecutionContext& context);
 
   /*
   ** Compute

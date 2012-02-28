@@ -34,7 +34,7 @@ public:
 
   virtual void contributionAdded(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& contribution) {}
 
-  virtual bool doLearningIteration(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
+  virtual bool doLearningIteration(ExecutionContext& context, LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
     LuapeNodePtr contribution;
    

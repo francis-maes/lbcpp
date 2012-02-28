@@ -280,12 +280,14 @@ bool LuapeSamplesCache::isNodeCached(const LuapeNodePtr& node) const
 
 bool LuapeSamplesCache::isNodeDefinitivelyCached(const LuapeNodePtr& node) const
 {
+  jassert(node);
   NodeCacheMap::const_iterator it = m.find(node);
   return node.isInstanceOf<LuapeConstantNode>() || (it != m.end() && it->second.samples && it->second.numRequests < 0);
 }
 
 VectorPtr LuapeSamplesCache::getNodeCache(const LuapeNodePtr& node) const
 {
+  jassert(node);
   NodeCacheMap::const_iterator it = m.find(node);
   return it == m.end() ? VectorPtr() : it->second.samples;
 }
