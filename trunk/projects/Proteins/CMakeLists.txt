@@ -203,8 +203,11 @@ SET(LBCPP_PROTEIN_ROSETTA_DATA_FEATURES_SOURCES
 SET(LBCPP_PROTEIN_ROSETTA_DATA_MOVER_SOURCES
   Rosetta/Data/Mover/PoseMover.h
   Rosetta/Data/Mover/PhiPsiMover.h
+  Rosetta/Data/Mover/PhiPsiMover.cpp
   Rosetta/Data/Mover/ShearMover.h
+  Rosetta/Data/Mover/ShearMover.cpp
   Rosetta/Data/Mover/RigidBodyMover.h
+  Rosetta/Data/Mover/RigidBodyMover.cpp
   Rosetta/Data/Mover/ProteinRosettaDataMoverLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaDataMoverLibrary.cpp
 )

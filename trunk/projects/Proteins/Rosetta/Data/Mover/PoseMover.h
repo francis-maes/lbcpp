@@ -10,7 +10,9 @@
 # define LBCPP_PROTEINS_ROSETTA_DATA_POSE_MOVER_H_
 
 # include "precompiled.h"
-# include "../../RosettaUtils.h"
+# include "../Pose.h"
+
+#define LBCPP_POSEMOVER_TOLERANCE 0.001
 
 namespace lbcpp
 {
@@ -21,15 +23,11 @@ typedef ReferenceCountedObjectPtr<PoseMover> PoseMoverPtr;
 class PoseMover: public Object
 {
 public:
-  /**
-   * Performs the perturbation on the object. Must be reimplemented in the inheriting
-   * classes.
-   * @param pose the pose to perturb.
-   */
+
   virtual void move(core::pose::PoseOP& pose) const = 0;
+  virtual void move(PosePtr& pose) const = 0;
 
-  virtual bool isEqual(const PoseMoverPtr& mover, double tolerance) const = 0;
-
+  virtual bool isEqual(const PoseMoverPtr& mover) const = 0;
   virtual PoseMoverPtr getOpposite() const = 0;
 
 protected:
