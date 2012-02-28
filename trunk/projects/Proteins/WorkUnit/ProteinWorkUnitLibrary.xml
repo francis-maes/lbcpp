@@ -230,6 +230,11 @@
     <variable type="File" name="inputDirectory" shortName="in"/>
     <variable type="File" name="outputDirectory" shortName="o"/>
   </class>
+  <class name="AnalysePatternWorkUnit" base="WorkUnit">
+    <variable type="File" name="inputDirectory" shortName="in"/>
+    <variable type="File" name="supervisionDirectory" shortName="sup"/>
+  </class>
+  <class name="TestGabowAlgorithmWorkUnit" base="WorkUnit"/>
   <!-- END CysteinBox -->
 
   <!-- BEGIN LargeBox -->
