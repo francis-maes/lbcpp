@@ -6,9 +6,9 @@
     <variable type="Boolean" name="initialized" />
     <variable type="PositiveInteger" name="numStaticFeatures" />
     <variable type="PositiveInteger" name="numDynamicFeatures" />
-    <variable type="DoubleVector" name="features" />
-    <variable type="DoubleVector" name="staticFeatures" />
-    <variable type="DoubleVector" name="dynamicFeatures" />
+    <variable type="DoubleVector[EnumValue, Double]" name="features" />
+    <variable type="DoubleVector[EnumValue, Double]" name="staticFeatures" />
+    <variable type="DoubleVector[EnumValue, Double]" name="dynamicFeatures" />
   </class>
   
   <class name="SimplePoseFeatures" base="GeneralFeatures">
