@@ -1,6 +1,11 @@
 #ifndef NJAKSDTHASKJERAXJGFBZJDLAGZ
 #define NJAKSDTHASKJERAXJGFBZJDLAGZ
 
+inline double get_time()
+  {return juce::Time::getMillisecondCounterHiRes() / 1000.0;}
+
+#if 0
+
 // At most one of the flags
 //    PM_TIMER_MSVC
 //    PM_TIMER_CLOCK_GETTIME
@@ -95,6 +100,8 @@
 	inline double get_time() { return 0; }
 
 #endif
+
+#endif // 0
 
 #endif
 
