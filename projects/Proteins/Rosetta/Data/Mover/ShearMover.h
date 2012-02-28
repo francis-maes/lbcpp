@@ -20,114 +20,27 @@ typedef ReferenceCountedObjectPtr<ShearMover> ShearMoverPtr;
 class ShearMover : public PoseMover
 {
 public:
-  ShearMover()
-    : PoseMover() {}
 
-  /**
-   * Instantiates a mover object that performs a modification on the Phi angle of the
-   * specified residue and on the Psi of the preceding residue.
-   * angles of the specified residue.
-   *
-   * @param residue the index of the residue to modify (starting from 0 but if 0, one
-   * angle will not change)
-   * @param deltaPhi the increment of the Phi angle
-   * @param deltaPsi the increment of the Psi angle
-   */
-  ShearMover(size_t residue, double deltaPhi, double deltaPsi)
-    : PoseMover(), residue(residue), deltaPhi(deltaPhi), deltaPsi(deltaPsi) {}
+  ShearMover();
+  ShearMover(size_t residue, double deltaPhi, double deltaPsi);
 
-  /**
-   * Performs the move on the pose specified by the parameters of the mover.
-   * @param pose the pose to modify.
-   */
-  virtual void move(core::pose::PoseOP& pose) const
-    {move(pose, residue, deltaPhi, deltaPsi);}
+  virtual void move(core::pose::PoseOP& pose) const;
+  virtual void move(PosePtr& pose) const;
 
-  /**
-   * Moves the angle Phi of the specified residue and the Psi angle of its predecessor.
-   *
-   * @param pose the pose object to modify.
-   * @param residue the residue whose Phi angle is to be modified (starting form 0)
-   * @parm deltaPhi the amount by which the Phi angle of the specified residue has
-   * to be modified.
-   * @parm deltaPsi the amount by which the Psi angle of the predecessor residue has
-   * to be modified.
-   */
-  static void move(core::pose::PoseOP& pose, int residue, double deltaPhi, double deltaPsi)
-  {
-#ifdef LBCPP_PROTEIN_ROSETTA
-    if (std::isfinite(deltaPhi))
-      pose->set_phi(residue + 1, pose->phi(residue + 1) + deltaPhi);
-    if (std::isfinite(deltaPsi) && (residue != 0))
-      pose->set_psi(residue, pose->psi(residue) + deltaPsi);
-#else
-    jassert(false);
-#endif // LBCPP_PROTEIN_ROSETTA
-  }
+  static void move(core::pose::PoseOP& pose, int residue, double deltaPhi, double deltaPsi);
+  static void move(PosePtr& pose, int residue, double deltaPhi, double deltaPsi);
 
-  /**
-   * Sets the new residue to modify.
-   * @param newResidueNumber the new index of the residue to modify.
-   */
-  void setResidueIndex(size_t index)
-    {residue = index;}
+  void setResidueIndex(size_t index);
+  size_t getResidueIndex();
 
-  /**
-   * Gets the current index of the residue to modify.
-   * @return the index of the current residue.
-   */
-  size_t getResidueIndex()
-    {return residue;}
+  void setDeltaPhi(double delta);
+  double getDeltaPhi();
+  void setDeltaPsi(double delta);
+  double getDeltaPsi();
 
-  /**
-   * Sets the new increment for the PHI angle.
-   * @param delta the new value for the PHI increment.
-   */
-  void setDeltaPhi(double delta)
-    {deltaPhi = delta;}
+  virtual bool isEqual(const PoseMoverPtr& mover) const;
 
-  /**
-   * Gets the current value for the PHI increment.
-   * @return the current PHI increment.
-   */
-  double getDeltaPhi()
-    {return deltaPhi;}
-
-  /**
-   * Sets the new increment for the PSI angle.
-   * @param delta the new value for the PSI increment.
-   */
-  void setDeltaPsi(double delta)
-    {deltaPsi = delta;}
-
-  /**
-   * Gets the current value for the PSI increment.
-   * @return the current PSI increment.
-   */
-  double getDeltaPsi()
-    {return deltaPsi;}
-
-  virtual bool isEqual(const PoseMoverPtr& mover, double tolerance) const
-  {
-    if (mover.isInstanceOf<ShearMover> ())
-    {
-      double errorResidue = std::abs((double)residue
-          - (double)mover.staticCast<ShearMover> ()->residue) / (double)residue;
-      double errorPhi = std::abs((double)deltaPhi
-          - (double)mover.staticCast<ShearMover> ()->deltaPhi) / (double)deltaPhi;
-      double errorPsi = std::abs((double)deltaPsi
-          - (double)mover.staticCast<ShearMover> ()->deltaPsi) / (double)deltaPsi;
-      return ((errorResidue < tolerance) && (errorPhi < tolerance) && (errorPsi < tolerance));
-    }
-    else
-      return false;
-  }
-
-  virtual PoseMoverPtr getOpposite() const
-  {
-    ShearMoverPtr temp = new ShearMover(residue, -1.0 * deltaPhi, -1.0 * deltaPsi);
-    return temp;
-  }
+  virtual PoseMoverPtr getOpposite() const;
 
 protected:
   friend class ShearMoverClass;

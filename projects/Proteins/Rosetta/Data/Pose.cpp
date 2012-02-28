@@ -19,10 +19,13 @@
 #  undef T
 #  include <core/chemical/ChemicalManager.hh>
 #  include <core/chemical/util.hh>
+#  include <core/conformation/Conformation.hh>
 #  include <core/conformation/Residue.hh>
 #  include <core/io/pdb/pose_io.hh>
+#  include <core/kinematics/FoldTree.hh>
 #  include <core/scoring/ScoreFunctionFactory.hh>
 #  include <numeric/xyzVector.hh>
+#  include <protocols/moves/RigidBodyMover.hh>
 #  define T JUCE_T
 # endif // LBCPP_PROTEIN_ROSETTA
 
@@ -115,6 +118,65 @@ void Pose::setPhi(size_t residue, double phi)
 
 void Pose::setPsi(size_t residue, double psi)
   {pose->set_psi(residue + 1, psi);}
+
+void Pose::applyRotation(size_t residueOne, size_t residueTwo, double amplitude)
+{
+  jassert(pose->n_residue() > 2);
+
+  size_t firstResidue = residueOne + 1;
+  size_t secondResidue = residueTwo + 1;
+
+  // Set a jump
+  core::kinematics::FoldTree foldTree = pose->fold_tree();
+  int cutpointResidue = (int)std::floor(((double)firstResidue + (double)secondResidue) / 2.0);
+
+  foldTree.new_jump(firstResidue, secondResidue, cutpointResidue);
+  pose->fold_tree(foldTree);
+
+  // Perturb the pose
+  core::kinematics::Jump jumpToModify = pose->jump(1);
+  core::kinematics::Stub firstStub = (pose->conformation()).upstream_jump_stub(1);
+  core::kinematics::Stub secondStub = (pose->conformation()).downstream_jump_stub(1);
+
+  // Create rotation axis and rotation center
+  core::Vector oneEnd = (pose->residue(firstResidue)).xyz("CA");
+  core::Vector secondEnd = (pose->residue(secondResidue)).xyz("CA");
+  core::Vector rotationAxis = oneEnd - secondEnd;
+
+  // Apply rotation
+  jumpToModify.set_rb_center(1, secondStub, secondEnd);
+  jumpToModify.rotation_by_axis(firstStub, rotationAxis, secondEnd, (float)amplitude);
+
+  // Set new conformation and clear the jump
+  pose->set_jump(1, jumpToModify);
+  foldTree = pose->fold_tree();
+  foldTree.simple_tree(pose->n_residue());
+  pose->fold_tree(foldTree);
+}
+
+void Pose::applyTranslation(size_t residueOne, size_t residueTwo, double amplitude)
+{
+  jassert(pose->n_residue() > 2);
+
+  size_t firstResidue = residueOne + 1;
+  size_t secondResidue = residueTwo + 1;
+
+  // Set a jump
+  core::kinematics::FoldTree foldTree = pose->fold_tree();
+  int cutpointResidue = (int)std::floor(((double)firstResidue + (double)secondResidue) / 2.0);
+
+  foldTree.new_jump(firstResidue, secondResidue, cutpointResidue);
+  pose->fold_tree(foldTree);
+
+  // Perturb the pose
+  protocols::moves::RigidBodyTransMoverOP mover = new protocols::moves::RigidBodyTransMover((*pose), 1);
+  mover->step_size(amplitude);
+  mover->apply((*pose));
+
+  // Clear the jump
+  foldTree.simple_tree(pose->n_residue());
+  pose->fold_tree(foldTree);
+}
 
 SymmetricMatrixPtr Pose::getBackboneDistanceMatrix() const
 {
@@ -377,6 +439,12 @@ void Pose::setPhi(size_t residue, double phi)
   {jassert(false);}
 
 void Pose::setPsi(size_t residue, double psi)
+  {jassert(false);}
+
+void Pose::applyRotation(size_t residueOne, size_t residueTwo, double amplitude)
+  {jassert(false);}
+
+void Pose::applyTranslation(size_t residueOne, size_t residueTwo, double amplitude)
   {jassert(false);}
 
 SymmetricMatrixPtr Pose::getBackboneDistanceMatrix() const

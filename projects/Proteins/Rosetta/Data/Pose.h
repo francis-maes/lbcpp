@@ -58,6 +58,9 @@ public:
   double getPsi(size_t residue) const;
   void setPhi(size_t residue, double phi);
   void setPsi(size_t residue, double psi);
+  void applyRotation(size_t residueOne, size_t residueTwo, double amplitude);
+  void applyTranslation(size_t residueOne, size_t residueTwo, double amplitude);
+
 
   /*
    * Structure - distances
