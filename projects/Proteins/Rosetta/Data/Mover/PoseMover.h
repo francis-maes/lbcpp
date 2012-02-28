@@ -12,6 +12,17 @@
 # include "precompiled.h"
 # include "../Pose.h"
 
+# ifndef LBCPP_PROTEIN_ROSETTA
+namespace utility {namespace pointer{
+  template< typename T > class owning_ptr;
+}; };
+
+namespace core { namespace pose {
+  class Pose;
+  typedef utility::pointer::owning_ptr< Pose > PoseOP;
+}; };
+#endif // LBCPP_PROTEIN_ROSETTA
+
 #define LBCPP_POSEMOVER_TOLERANCE 0.001
 
 namespace lbcpp
