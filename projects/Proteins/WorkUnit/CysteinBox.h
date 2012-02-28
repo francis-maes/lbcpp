@@ -3,6 +3,8 @@
 #include "../Predictor/DecoratorProteinPredictorParameters.h"
 #include "../Data/Formats/FASTAFileParser.h"
 #include "../Evaluator/ExhaustiveDisulfidePatternFunction.h"
+#include "../Evaluator/GabowPatternFunction.h"
+#include "../Evaluator/KolmogorovPerfectMatchingFunction.h"
 
 namespace lbcpp
 {
@@ -1624,6 +1626,203 @@ protected:
 
   File inputDirectory;
   File outputDirectory;
+};
+
+class AnalysePatternWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    juce::OwnedArray<File> files;
+    inputDirectory.findChildFiles(files, File::findFiles, false, T("*.xml"));
+    double threshold = 0.f;
+    double bestThreshold = 0.f;
+    size_t bestErrorPattern = files.size();
+
+    size_t numSupFullyBonded = 0;
+    size_t numSupPartiallyBonded = 0;
+    size_t numSupNotBonded = 0;
+
+    for (threshold = 0.f; threshold < 0.3; threshold += 0.05)
+    {
+      FunctionPtr patternBuilder = new GreedyDisulfidePatternBuilder(6, threshold);
+      patternBuilder->initialize(context, symmetricMatrixClass(probabilityType));
+
+      size_t errorNumBonds = 0;
+      size_t errorPatterns = 0;
+      for (size_t i = 0; i < (size_t)files.size(); ++i)
+      {
+  //      std::cout << "File: " << files[i]->getFileName();
+
+        ProteinPtr protein = Protein::createFromFile(context, *files[i]);
+        jassert(protein);
+        DoubleSymmetricMatrixPtr matrix = protein->getDisulfideBonds(context);//.dynamicCast<DoubleSymmetricMatrixPtr>();
+        jassert(matrix);
+
+        juce::OwnedArray<File> supFiles;
+        supervisionDirectory.findChildFiles(supFiles, File::findFiles, true, files[i]->getFileName());
+        jassert(supFiles.size() == 1);      
+
+        ProteinPtr supProtein = Protein::createFromFile(context, *supFiles[0]);
+        jassert(supProtein);
+        DoubleSymmetricMatrixPtr supMatrix = supProtein->getDisulfideBonds(context);
+        jassert(supMatrix);
+
+        DoubleSymmetricMatrixPtr pattern = patternBuilder->compute(context, matrix).getObjectAndCast<DoubleSymmetricMatrix>();
+        for (size_t i = 0; i < pattern->getDimension(); ++i)
+          pattern->setValue(i, i, 0.f);
+  /*
+        std::cout << std::endl;
+        std::cout << "Original" << std::endl;
+        std::cout << matrix->toString() << std::endl;
+        std::cout << "Greedy" << std::endl;
+        std::cout << pattern->toString() << std::endl;
+        std::cout << "Supervision" << std::endl;
+        std::cout << supMatrix->toString() << std::endl;
+        std::cout << std::endl;
+  */
+        
+        const size_t supNumBonds = getNumBonds(supMatrix);
+        const size_t patNumBonds = getNumBonds(pattern);
+        jassert(protein->getCysteinIndices().size() == matrix->getDimension());
+  //      std::cout << "\t#Cys: " << matrix->getDimension() << "\t#GreedyBonds: " << patNumBonds << "\t#SupBonds: " << supNumBonds << "\tScore: " << getScore(matrix);
+  /*
+        std::cout << "Evolution of scores" << std::endl;
+        double previousScore = 0.f;
+        for (size_t i = 1; i < 26; ++i)
+        {
+          patternBuilder = new GreedyDisulfidePatternBuilder(i, threshold);
+          patternBuilder->initialize(context, symmetricMatrixClass(probabilityType));
+
+          pattern = patternBuilder->compute(context, matrix).getObjectAndCast<DoubleSymmetricMatrix>();
+          for (size_t j = 0; j < pattern->getDimension(); ++j)
+            pattern->setValue(j, j, 0.f);
+          const double score = getScore(pattern);
+          std::cout << "L=" << i << "\t\tScore: " << score << std::endl;
+          jassert(previousScore <= score);
+          previousScore = score;
+        } continue;
+  */
+        if (patNumBonds != supNumBonds)
+        {
+  //        std::cout << "\t\t***** Error #Bonds *****";
+          ++errorNumBonds;
+        }
+        if (matrix->getDimension() > 2 * patNumBonds + 1)
+        {
+  //        std::cout << "\t\t***** Not Full Pattern *****";
+        }
+        if (!checkPattern(pattern, supMatrix))
+        {
+  //        std::cout << "\t\t***** Error Pattern *****";
+          ++errorPatterns;
+        }
+        //std::cout << std::endl;
+
+        if (supMatrix->getDimension() <= (supNumBonds + 1) * 2)
+          ++numSupFullyBonded;
+        else if (supNumBonds == 0)
+          ++numSupNotBonded;
+        else
+          ++numSupPartiallyBonded;
+      }
+
+    std::cout << "Threshold: " << threshold << "\t\tError Pattern: " << errorPatterns << std::endl;
+    if (errorPatterns < bestErrorPattern)
+    {
+      bestErrorPattern = errorPatterns;
+      bestThreshold = threshold;
+    }
+  }
+
+  std::cout << "Best Threshold: " << bestThreshold << "\t\tError Pattern: " << bestErrorPattern << std::endl;
+/*
+    std::cout << "Num. Proteins: " << files.size() << std::endl;
+    std::cout << "#Full: " << numSupFullyBonded
+              << "\t#Partial: " << numSupPartiallyBonded
+              << "\t#None: "<< numSupNotBonded << std::endl;
+    std::cout << "Error #Bonds: " << errorNumBonds << "\tError Pattern: " << errorPatterns << std::endl;
+*/
+    return true;
+  }
+
+protected:
+  friend class AnalysePatternWorkUnitClass;
+
+  File inputDirectory;
+  File supervisionDirectory;
+
+  size_t getNumBonds(const DoubleSymmetricMatrixPtr& matrix) const
+  {
+    size_t numBonds = 0;
+    for (size_t i = 0; i < matrix->getDimension(); ++i)
+      for (size_t j = i; j < matrix->getDimension(); ++j)
+        if (matrix->getValue(i, j) > 0.f)
+          ++numBonds;
+    return numBonds;
+  }
+
+  double getScore(const DoubleSymmetricMatrixPtr& matrix) const
+  {
+    double score = 0.f;
+    for (size_t i = 0; i < matrix->getDimension(); ++i)
+      for (size_t j = i; j < matrix->getDimension(); ++j)
+        if (matrix->getValue(i, j) > 0.f)
+          score += matrix->getValue(i, j);
+    return score;
+  }
+
+  bool checkPattern(const DoubleSymmetricMatrixPtr& pattern, const DoubleSymmetricMatrixPtr& supervision) const
+  {
+    const size_t dimension = pattern->getDimension();
+    for (size_t i = 0; i < dimension; ++i)
+      for (size_t j = i; j < dimension; ++j)
+        if ((supervision->getValue(i, j) > 0.f) != (pattern->getValue(i, j) > 0.f))
+          return false;
+    return true;
+  }
+};
+
+class TestGabowAlgorithmWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    DoubleSymmetricMatrixPtr graph = new DoubleSymmetricMatrix(doubleType, 10, 0.f);
+    graph->setValue(0, 1, 1.f);
+    graph->setValue(0, 2, 1.f);
+    graph->setValue(0, 9, 1.f);
+    graph->setValue(1, 2, 1.f);
+    graph->setValue(2, 3, 1.f);
+    graph->setValue(2, 8, 1.f);
+    graph->setValue(3, 6, 1.f);
+    graph->setValue(3, 7, 1.f);
+    graph->setValue(4, 5, 1.f);
+    graph->setValue(4, 8, 1.f);
+    graph->setValue(5, 6, 1.f);
+    graph->setValue(6, 7, 1.f);
+
+/*
+    DoubleSymmetricMatrixPtr graph = new DoubleSymmetricMatrix(doubleType, 6, 0.f);
+    graph->setValue(0, 1, 1.f);
+    graph->setValue(1, 2, 1.f);
+    graph->setValue(2, 3, 1.f);
+    graph->setValue(3, 0, 1.f);
+
+    graph->setValue(0, 4, 1.f);
+    graph->setValue(1, 5, 1.f);
+*/
+    FunctionPtr kolmogorov = new KolmogorovPerfectMatchingFunction();
+    SymmetricMatrixPtr res = kolmogorov->compute(context, graph).getObjectAndCast<SymmetricMatrix>();
+    std::cout << res->toString() << std::endl;
+    return res;
+/*
+    FunctionPtr gabow = new GabowPatternFunction();
+    SymmetricMatrixPtr res = gabow->compute(context, graph).getObjectAndCast<SymmetricMatrix>();
+    std::cout << res->toString() << std::endl;
+    return res;
+*/
+  }
 };
 
 };

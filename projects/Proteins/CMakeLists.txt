@@ -100,6 +100,8 @@ SET(LBCPP_PROTEIN_EVALUATOR_SOURCES
   Evaluator/ContactMapEvaluator.h
   Evaluator/DisulfideBondEvaluator.h
   Evaluator/ExhaustiveDisulfidePatternFunction.h
+  Evaluator/GabowPatternFunction.h
+  Evaluator/KolmogorovPerfectMatchingFunction.h
   Evaluator/ProteinEvaluator.h
   Evaluator/QScoreEvaluator.h
   Evaluator/QScoreEvaluator.cpp
@@ -151,6 +153,25 @@ IF(LBCPP_USER_INTERFACE)
     ${CMAKE_CURRENT_BINARY_DIR}/ProteinUserInterfaceLibrary.cpp
   )
 ENDIF(LBCPP_USER_INTERFACE)
+
+SET(LBCPP_PROTEIN_BLOSSOMV_SOURCES
+  BlossomV/block.h
+  BlossomV/LCA.h
+  BlossomV/misc.cpp
+  BlossomV/PerfectMatching.h
+  BlossomV/PMduals.cpp
+  BlossomV/PMexpand.cpp
+  BlossomV/PMimplementation.h
+  BlossomV/PMinit.cpp
+  BlossomV/PMinterface.cpp
+  BlossomV/PMmain.cpp
+  BlossomV/PMrepair.cpp
+  BlossomV/PMshrink.cpp
+  BlossomV/PQ.h
+  BlossomV/timer.h
+  BlossomV/MinCost/MinCost.cpp
+  BlossomV/MinCost/MinCost.h
+)
 
 SET(LBCPP_PROTEIN_ROSETTA_SOURCES
   Rosetta/RosettaProtein.h
@@ -296,6 +317,7 @@ SET(PROTEINS_CPP_SOURCES
     ${LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES}
     ${LBCPP_PROTEIN_ROSETTA_SAMPLER_SOURCES}
     ${LBCPP_PROTEIN_ROSETTA_WORKUNIT_SOURCES}
+  ${LBCPP_PROTEIN_BLOSSOMV_SOURCES}
   ${LBCPP_PROTEIN_LUAPE_SOURCES}
   
   ProteinLibrary.xml
@@ -327,6 +349,7 @@ SOURCE_SUB_GROUP(Rosetta DataMoverSampler FILES ${LBCPP_PROTEIN_ROSETTA_DATA_MOV
 SOURCE_SUB_GROUP(Rosetta ProteinOptimizer FILES ${LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES})
 SOURCE_SUB_GROUP(Rosetta Sampler FILES ${LBCPP_PROTEIN_ROSETTA_SAMPLER_SOURCES})
 SOURCE_SUB_GROUP(Rosetta WorkUnit FILES ${LBCPP_PROTEIN_ROSETTA_WORKUNIT_SOURCES})
+SOURCE_GROUP(BlossomV FILES ${LBCPP_PROTEIN_BLOSSOMV_SOURCES})
 SOURCE_GROUP(Luape FILES ${LBCPP_PROTEIN_LUAPE_SOURCES})
 
 GENERATE_LBCPP_PRECOMPILED(precompiled PROTEINS_SOURCES)
