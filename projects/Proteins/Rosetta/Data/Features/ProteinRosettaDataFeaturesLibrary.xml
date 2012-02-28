@@ -2,7 +2,7 @@
 
 <library name="ProteinRosettaDataFeatures" directory="Rosetta/Data/Features">
   
-  <class name="PoseFeatures" base="Object" abstract="yes">
+  <class name="GeneralFeatures" base="Object" abstract="yes">
     <variable type="Boolean" name="initialized" />
     <variable type="PositiveInteger" name="numStaticFeatures" />
     <variable type="PositiveInteger" name="numDynamicFeatures" />
@@ -11,7 +11,7 @@
     <variable type="DoubleVector" name="dynamicFeatures" />
   </class>
   
-  <class name="SimplePoseFeatures" base="PoseFeatures">
+  <class name="SimplePoseFeatures" base="GeneralFeatures">
     <variable type="FeatureGenerator" name="numResiduesFeatureGenerator" />
     <variable type="FeatureGenerator" name="shortDistanceFeatureGenerator" />
     <variable type="FeatureGenerator" name="longDistanceFeatureGenerator" />

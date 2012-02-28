@@ -78,7 +78,7 @@ public:
     PosePtr pose = new Pose(T("AAAAAAAAAAAA"));
     std::cout << "energy : " << pose->getEnergy() << std::endl;
 
-    PoseFeaturesPtr feat = new SimplePoseFeatures();
+    GeneralFeaturesPtr feat = new SimplePoseFeatures();
     feat->initialize(context, pose);
 
     pose->setFeatureGenerator(context, feat);

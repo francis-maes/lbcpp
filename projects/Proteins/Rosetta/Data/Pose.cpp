@@ -8,7 +8,7 @@
 
 #include "precompiled.h"
 #include "Pose.h"
-#include "Features/PoseFeatures.h"
+#include "Features/GeneralFeatures.h"
 
 #include "../../Data/AminoAcid.h"
 
@@ -29,10 +29,10 @@
 using namespace lbcpp;
 
 
-void Pose::setFeatureGenerator(ExecutionContext& context, PoseFeaturesPtr& features)
+void Pose::setFeatureGenerator(ExecutionContext& context, GeneralFeaturesPtr& features)
   {featureGenerator = features;}
 
-PoseFeaturesPtr Pose::getFeatureGenerator() const
+GeneralFeaturesPtr Pose::getFeatureGenerator() const
   {return featureGenerator;}
 
 Variable Pose::getFeatures(ExecutionContext& context)
@@ -72,7 +72,7 @@ PosePtr Pose::clone() const
   PosePtr tmp = new Pose();
   *(tmp->pose) = *pose;
   *(tmp->score_fct) = *score_fct;
-  tmp->featureGenerator = featureGenerator->cloneAndCast<PoseFeatures> ();
+  tmp->featureGenerator = featureGenerator->cloneAndCast<GeneralFeatures> ();
 }
 
 size_t Pose::getLength() const

@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: PoseFeatures.h                 | PoseFeatures                    |
+| Filename: GeneralFeatures.h              | GeneralFeatures                 |
 | Author  : Alejandro Marcos Alvarez       |                                 |
-| Started : Feb 16, 2012  5:02:56 PM       |                                 |
+| Started : Feb 28, 2012  9:50:59 AM       |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_PROTEINS_ROSETTA_DATA_FEATURES_POSEFEATURES_H_
-# define LBCPP_PROTEINS_ROSETTA_DATA_FEATURES_POSEFEATURES_H_
+#ifndef LBCPP_PROTEINS_ROSETTA_DATA_FEATURES_GENERALFEATURES_H_
+# define LBCPP_PROTEINS_ROSETTA_DATA_FEATURES_GENERALFEATURES_H_
 
 # include <lbcpp/Data/DoubleVector.h>
 
@@ -16,14 +16,14 @@
 namespace lbcpp
 {
 
-class PoseFeatures;
-typedef ReferenceCountedObjectPtr<PoseFeatures> PoseFeaturesPtr;
+class GeneralFeatures;
+typedef ReferenceCountedObjectPtr<GeneralFeatures> GeneralFeaturesPtr;
 
-class PoseFeatures : public Object
+class GeneralFeatures : public Object
 {
 public:
 
-  PoseFeatures() : initialized(false) {}
+  GeneralFeatures() : initialized(false) {}
 
   void initialize(ExecutionContext& context, const Variable& input)
   {
@@ -60,7 +60,7 @@ public:
   virtual Variable computeDynamicFeatures(ExecutionContext& context, const Variable& input) = 0;
 
 protected:
-  friend class PoseFeaturesClass;
+  friend class GeneralFeaturesClass;
 
   virtual void selfInitialization(ExecutionContext& context, const Variable& input) = 0;
 
@@ -94,4 +94,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif //! LBCPP_PROTEINS_ROSETTA_DATA_FEATURES_POSEFEATURES_H_
+#endif //! LBCPP_PROTEINS_ROSETTA_DATA_FEATURES_GENERALFEATURES_H_
