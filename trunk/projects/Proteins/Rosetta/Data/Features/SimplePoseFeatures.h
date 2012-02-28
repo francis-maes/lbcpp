@@ -11,14 +11,14 @@
 
 # include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 
-# include "PoseFeatures.h"
+# include "GeneralFeatures.h"
 
 # include "../Pose.h"
 
 namespace lbcpp
 {
 
-class SimplePoseFeatures : public PoseFeatures
+class SimplePoseFeatures : public GeneralFeatures
 {
 public:
 

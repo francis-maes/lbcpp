@@ -21,8 +21,8 @@
 namespace lbcpp
 {
 
-class PoseFeatures;
-typedef ReferenceCountedObjectPtr<PoseFeatures> PoseFeaturesPtr;
+class GeneralFeatures;
+typedef ReferenceCountedObjectPtr<GeneralFeatures> GeneralFeaturesPtr;
 
 class Pose;
 extern ClassPtr poseClass;
@@ -78,8 +78,8 @@ public:
   /*
    * Features and feature generator
    */
-  void setFeatureGenerator(ExecutionContext& context, PoseFeaturesPtr& features);
-  PoseFeaturesPtr getFeatureGenerator() const;
+  void setFeatureGenerator(ExecutionContext& context, GeneralFeaturesPtr& features);
+  GeneralFeaturesPtr getFeatureGenerator() const;
   Variable getFeatures(ExecutionContext& context);
 
   /*
@@ -92,7 +92,7 @@ protected:
 
   friend class PoseClass;
 
-  PoseFeaturesPtr featureGenerator;
+  GeneralFeaturesPtr featureGenerator;
 
 # ifdef LBCPP_PROTEIN_ROSETTA
   core::pose::PoseOP pose;
