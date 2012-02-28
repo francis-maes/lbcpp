@@ -91,6 +91,8 @@ public:
   void subtractFrom(const DenseDoubleVectorPtr& denseVector)
     {addWeightedTo(denseVector, 0, -1.0);}
 
+  double euclidianDistanceWith(const DoubleVectorPtr& denseVector) const;
+
   virtual SparseDoubleVectorPtr toSparseVector() const;
   virtual DenseDoubleVectorPtr toDenseDoubleVector() const;
 

@@ -31,6 +31,7 @@
 # include "Data/MoverSampler/PoseMoverSampler.h"
 # include "Data/MoverSampler/SimpleResidueSampler.h"
 # include "Data/MoverSampler/PairResidueSampler.h"
+# include "Data/Features/SimplePoseFeatures.h"
 # include "Sampler/GeneralPoseMoverSampler.h"
 # include "Sampler/ConditionalPoseMoverSampler.h"
 # include "RosettaSandBox.h"
@@ -71,42 +72,60 @@ public:
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 
-    FeatureGeneratorPtr fg = softDiscretizedNumberFeatureGenerator(0.0, 1000, 100, true);
+    RosettaPtr ros = new Rosetta();
+    ros->init(context, false, 0, 0);
 
-    fg->initialize(context, doubleType);
+    PosePtr pose = new Pose(T("AAAAAAAAAAAA"));
+    std::cout << "energy : " << pose->getEnergy() << std::endl;
 
-    Variable inputTest((double)-19.43);
-    Variable result = fg->computeFunction(context, &inputTest);
-    std::cout << "input " << inputTest.toString() << std::endl;
-    std::cout << "output " << result.toString() << std::endl;
+    PoseFeaturesPtr feat = new SimplePoseFeatures();
+    feat->initialize(context, pose);
 
-    inputTest = Variable((double)0.0);
-    result = fg->computeFunction(context, &inputTest);
-    std::cout << "input " << inputTest.toString() << std::endl;
-    std::cout << "output " << result.toString() << std::endl;
+    pose->setFeatureGenerator(context, feat);
 
-    inputTest = Variable((double)10.0);
-    result = fg->computeFunction(context, &inputTest);
-    std::cout << "input " << inputTest.toString() << std::endl;
-    std::cout << "output " << result.toString() << std::endl;
+    Variable features1 = pose->getFeatures(context);
+    Variable features2 = feat->computeFeatures(context, pose);
 
-    inputTest = Variable((double)20);
-    result = fg->computeFunction(context, &inputTest);
-    std::cout << "input " << inputTest.toString() << std::endl;
-    std::cout << "output " << result.toString() << std::endl;
+    std::cout << "features 1 = " << (const char*)features1.getObjectAndCast<DoubleVector>()->toString() << std::endl;
+    std::cout << "features 2 = " << (const char*)features2.getObjectAndCast<DoubleVector>()->toString() << std::endl;
+    std::cout << "blabla" << std::endl;
 
-    inputTest = Variable((double)1001);
-    result = fg->computeFunction(context, &inputTest);
-    std::cout << "input " << inputTest.toString() << std::endl;
-    std::cout << "output " << result.toString() << std::endl;
+    //    FeatureGeneratorPtr fg = softDiscretizedNumberFeatureGenerator(0.0, 1000, 100, true);
+    //
+    //    fg->initialize(context, doubleType);
+    //
+    //    Variable inputTest((double)-19.43);
+    //    Variable result = fg->computeFunction(context, &inputTest);
+    //    std::cout << "input " << inputTest.toString() << std::endl;
+    //    std::cout << "output " << result.toString() << std::endl;
+    //
+    //    inputTest = Variable((double)0.0);
+    //    result = fg->computeFunction(context, &inputTest);
+    //    std::cout << "input " << inputTest.toString() << std::endl;
+    //    std::cout << "output " << result.toString() << std::endl;
+    //
+    //    inputTest = Variable((double)10.0);
+    //    result = fg->computeFunction(context, &inputTest);
+    //    std::cout << "input " << inputTest.toString() << std::endl;
+    //    std::cout << "output " << result.toString() << std::endl;
+    //
+    //    inputTest = Variable((double)20);
+    //    result = fg->computeFunction(context, &inputTest);
+    //    std::cout << "input " << inputTest.toString() << std::endl;
+    //    std::cout << "output " << result.toString() << std::endl;
+    //
+    //    inputTest = Variable((double)1001);
+    //    result = fg->computeFunction(context, &inputTest);
+    //    std::cout << "input " << inputTest.toString() << std::endl;
+    //    std::cout << "output " << result.toString() << std::endl;
 
     //    Rosetta ros;
     //    ros.init(context, false);
-//
-//    File referencesFile = context.getFile(T("data/psipred"));
-//    File outFile = context.getFile(T("data/psipredros"));
-//
-//    context.enterScope(T("Testing proteins..."));
+    //
+    //    File referencesFile = context.getFile(T("data/psipred"));
+    //    File outFile = context.getFile(T("data/psipredros"));
+    //
+    //    context.enterScope(T("Testing proteins..."));
 //    juce::OwnedArray<File> references;
 //    referencesFile.findChildFiles(references, File::findFiles, false, T("*.xml"));
 //
@@ -1017,7 +1036,7 @@ public:
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
 
-    rosetta->init(context, true);
+    rosetta->init(context, true, 0, 0);
 
     context.enterScope(T("Optimization protein : ") + String((int)num));
     context.informationCallback(T("Before"));

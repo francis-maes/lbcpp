@@ -172,6 +172,15 @@ int DoubleVector::getIndexOfMinimumValue() const
   return getExtremumValue(false, &res) == DBL_MAX ? -1 : (int)res;
 }
 
+double DoubleVector::euclidianDistanceWith(const DoubleVectorPtr& denseVector) const
+{
+  jassert(this->getNumElements() == denseVector->getNumElements());
+  double distance = 0;
+  for (size_t i = 0; i < this->getNumElements(); i++)
+    distance += std::pow(this->getElement(i).getDouble() - denseVector->getElement(i).getDouble(), 2.0);
+  return std::sqrt(distance);
+}
+
 // arguments: a, b
 // <a, b>
 int DoubleVector::dot(LuaState& state)

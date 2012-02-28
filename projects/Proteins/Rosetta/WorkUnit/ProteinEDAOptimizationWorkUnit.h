@@ -43,7 +43,7 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     RosettaPtr rosetta = new Rosetta();
-    rosetta->init(context, false);
+    rosetta->init(context, false, 0, 0);
 
     std::vector<ScalarVariableMean> minEnergies(numIterations);
     std::vector<ScalarVariableMean> averageEnergies(numIterations);

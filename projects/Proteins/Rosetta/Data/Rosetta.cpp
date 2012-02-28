@@ -74,7 +74,7 @@ void Rosetta::init(ExecutionContext& eContext, bool verbose, int id, size_t dela
   args.add_back(std::string("-run:interactive"));
   args.add_back(std::string("true"));
   args.add_back(std::string("-run:nproc"));
-  args.add_back(std::string((const char*)String((int)std::abs(id) + 1)));
+  args.add_back(std::string((const char*)String((int)1)));
   args.add_back(std::string("-run:proc_id"));
   args.add_back(std::string((const char*)String((int)id)));
   args.add_back(std::string("-run:nodelay"));

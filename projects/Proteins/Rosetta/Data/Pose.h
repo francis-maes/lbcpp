@@ -42,17 +42,30 @@ public:
    * I/O and copy
    */
   void saveToPDB(const File& pdbFile) const;
-  PosePtr clone();
+  PosePtr clone() const;
 
   /*
-   * Structure
+   * Structure - miscellaneous
    */
   size_t getLength() const;
+  DoubleVectorPtr getCalphaPosition(size_t residue) const;
+  void initializeToHelix();
+
+  /*
+   * Structure - angles
+   */
   double getPhi(size_t residue) const;
   double getPsi(size_t residue) const;
   void setPhi(size_t residue, double phi);
   void setPsi(size_t residue, double psi);
+
+  /*
+   * Structure - distances
+   */
   SymmetricMatrixPtr getBackboneDistanceMatrix() const;
+  void computeMeanDistances(size_t cutoff, double* shortRange, double* longRange) const;
+  double computeMinimumDistance() const;
+  double computeMaximumDistance() const;
 
   /*
    * Energy
@@ -72,7 +85,7 @@ public:
   /*
    * Features
    */
-  DenseDoubleVectorPtr getHistogram();
+  DenseDoubleVectorPtr getHistogram() const;
 
 protected:
   void initializeEnergyFunction();
