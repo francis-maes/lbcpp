@@ -11,9 +11,9 @@ namespace lbcpp
 class KolmogorovPerfectMatchingFunction : public SimpleUnaryFunction
 {
 public:
-  KolmogorovPerfectMatchingFunction()
+  KolmogorovPerfectMatchingFunction(double threshold = 0.f)
     : SimpleUnaryFunction(doubleSymmetricMatrixClass(doubleType), doubleSymmetricMatrixClass(doubleType), T("Kolmogorov")),
-      threshold(0.f)
+      threshold(threshold)
     {}
   
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
@@ -26,13 +26,8 @@ public:
       vertexMap[i] = i;
 
     std::vector<size_t> matching(matrix->getDimension(), (size_t)-1);
-    double score = computePerfectMatching(matrix, vertexMap, matching);
-/*
-    std::cout << "Score: " << score << std::endl;
-    for (size_t i = 0; i < matrix->getDimension(); ++i)
-      std::cout << i << " <-> " << matching[i] << std::endl;
-*/
-    
+    computePerfectMatching(matrix, vertexMap, matching);
+
     DoubleSymmetricMatrixPtr res = new DoubleSymmetricMatrix(matrix->getElementsType(), matrix->getDimension(), 0.f);
     for (size_t i = 0; i < matching.size(); ++i)
       if (matching[i] != (size_t)-1)
@@ -94,7 +89,7 @@ private:
       std::vector<size_t> subVerticesMap;
       for (size_t j = 0; j < numVertices; ++j)
         if (j != i)
-          subVerticesMap.push_back(verticesMap[i]);
+          subVerticesMap.push_back(verticesMap[j]);
       std::vector<size_t> subMatching(matrix->getDimension(), (size_t)-1);
       double score = computePerfectMatching(matrix, subVerticesMap, subMatching);
       jassert(subMatching[validVertices[i]] == (size_t)-1);
@@ -109,10 +104,10 @@ private:
 
   double applyKolmogorovAlgorithm(const DoubleSymmetricMatrixPtr& matrix, const std::vector<size_t>& verticesMap, size_t numEdges, std::vector<size_t>& result) const
   {
-    std::cout << "Kolmogorov Perfect Matching - #Vertex: " << verticesMap.size() << " - #Edge: " << numEdges << std::endl;
-    jassert(verticesMap.size() % 2 == 0 && numEdges >= verticesMap.size() - 1);
+    //std::cout << "Kolmogorov Perfect Matching - #Vertex: " << verticesMap.size() << " - #Edge: " << numEdges << std::endl;
+    //jassert(verticesMap.size() % 2 == 0 && numEdges >= verticesMap.size() - 1);
     PerfectMatching matching(verticesMap.size(), numEdges);
-    matching.options.verbose = true;
+    matching.options.verbose = false;
     // Add edges
     for (size_t i = 0; i < verticesMap.size(); ++i)
       for (size_t j = i + 1; j < verticesMap.size(); ++j)

@@ -698,8 +698,8 @@ public:
     if (!iteration->train(context, train, validation, T("Training")))
       return Variable::missingValue(doubleType);
 
-    ProteinEvaluatorPtr evaluator = createProteinEvaluator();
-    iteration->evaluate(context, train, evaluator, T("EvaluateTrain"));
+    ProteinEvaluatorPtr evaluator;// = createProteinEvaluator();
+//    iteration->evaluate(context, train, evaluator, T("EvaluateTrain"));
 
     if (validation)
     {
@@ -708,9 +708,9 @@ public:
     }
 
     evaluator = createProteinEvaluator();
-    for (size_t i = 1; i < 25; ++i)
-      evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(i, 0.0), 0.0), T("Disulfide Bonds (Greedy L=") + String((int)i) + T(")"));
-    
+//    for (size_t i = 1; i < 25; ++i)
+//      evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(i, 0.0), 0.0), T("Disulfide Bonds (Greedy L=") + String((int)i) + T(")"));
+
     if (outputDirectory != File::nonexistent)
     {
       //iteration->evaluate(context, train, saveToDirectoryEvaluator(outputDirectory.getChildFile(T("train")), T(".xml")), T("Saving train predictions to directory"));
@@ -740,15 +740,23 @@ protected:
   {
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
 
-    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("Disulfide Bonds (Acc.)"));
-    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("Disulfide Bonds (Tuned Acc.)"));
-    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, false)), T("Disulfide Bonds (Tuned Sens & Spec.)"));
-    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, false)), T("Disulfide Bonds (Tuned MCC)"));
+    // TODO Add CBS evaluator
+    evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("CBS"));
+    evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("CBS Tuned Q2"));
+    evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, false)), T("CBS Tuned S&S"));
 
-    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)"), true);
-    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(), T("Disulfide Bonds"));
-    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(FunctionPtr(), 0.0), T("Disulfide Bonds (Threshold 0.0)"));
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("DSB Q2"));
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("DSB Tuned Q2"));
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, false)), T("DSB Tuned S&S"));
+    //evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, false)), T("Disulfide Bonds (Tuned MCC)"));
+
+    //evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)"), true);
+    //evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(), T("Disulfide Bonds"));
+    //evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(FunctionPtr(), 0.0), T("Disulfide Bonds (Threshold 0.0)"));
     //evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new ExhaustiveDisulfidePatternFunction(0.0), 0.0), T("Disulfide Bonds (Exhaustive)"));
+
+    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(), T("DSB QP"));
+    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("DSB QP Perfect"), true);
 
     return evaluator;
   }
@@ -1642,17 +1650,25 @@ public:
     size_t numSupFullyBonded = 0;
     size_t numSupPartiallyBonded = 0;
     size_t numSupNotBonded = 0;
+    size_t numSupNotBondedWithPattern = 0;
 
     for (threshold = 0.f; threshold < 0.3; threshold += 0.05)
     {
+      /*
       FunctionPtr patternBuilder = new GreedyDisulfidePatternBuilder(6, threshold);
       patternBuilder->initialize(context, symmetricMatrixClass(probabilityType));
+*/
+      FunctionPtr kolmogorov = new KolmogorovPerfectMatchingFunction(threshold);
+      kolmogorov->initialize(context, doubleSymmetricMatrixClass(doubleType));
 
       size_t errorNumBonds = 0;
       size_t errorPatterns = 0;
+      size_t numDiffPatterns = 0;
+      size_t errorKolmogorov = 0;
+      size_t samePrediction = 0;
       for (size_t i = 0; i < (size_t)files.size(); ++i)
       {
-  //      std::cout << "File: " << files[i]->getFileName();
+        //std::cout << "File: " << files[i]->getFileName();
 
         ProteinPtr protein = Protein::createFromFile(context, *files[i]);
         jassert(protein);
@@ -1667,24 +1683,32 @@ public:
         jassert(supProtein);
         DoubleSymmetricMatrixPtr supMatrix = supProtein->getDisulfideBonds(context);
         jassert(supMatrix);
-
+/*
         DoubleSymmetricMatrixPtr pattern = patternBuilder->compute(context, matrix).getObjectAndCast<DoubleSymmetricMatrix>();
         for (size_t i = 0; i < pattern->getDimension(); ++i)
           pattern->setValue(i, i, 0.f);
+*/
+        DoubleSymmetricMatrixPtr kolPattern = kolmogorov->compute(context, matrix).getObjectAndCast<DoubleSymmetricMatrix>();
   /*
         std::cout << std::endl;
         std::cout << "Original" << std::endl;
         std::cout << matrix->toString() << std::endl;
         std::cout << "Greedy" << std::endl;
         std::cout << pattern->toString() << std::endl;
+        std::cout << "Kolmogorov" << std::endl;
+        std::cout << kolPattern->toString() << std::endl;
         std::cout << "Supervision" << std::endl;
         std::cout << supMatrix->toString() << std::endl;
         std::cout << std::endl;
   */
-        
+        /*
+        std::cout << "Greedy Score: " << getScore(pattern) << std::endl;
+        std::cout << "Kolmogorov Score : " << getScore(kolPattern) << std::endl;
+        jassert(getScore(pattern) < getScore(kolPattern) + 1e-6);
         const size_t supNumBonds = getNumBonds(supMatrix);
         const size_t patNumBonds = getNumBonds(pattern);
         jassert(protein->getCysteinIndices().size() == matrix->getDimension());
+         */
   //      std::cout << "\t#Cys: " << matrix->getDimension() << "\t#GreedyBonds: " << patNumBonds << "\t#SupBonds: " << supNumBonds << "\tScore: " << getScore(matrix);
   /*
         std::cout << "Evolution of scores" << std::endl;
@@ -1703,6 +1727,7 @@ public:
           previousScore = score;
         } continue;
   */
+  /*
         if (patNumBonds != supNumBonds)
         {
   //        std::cout << "\t\t***** Error #Bonds *****";
@@ -1712,22 +1737,48 @@ public:
         {
   //        std::cout << "\t\t***** Not Full Pattern *****";
         }
-        if (!checkPattern(pattern, supMatrix))
+  */
+        if (!checkPattern(kolPattern, supMatrix))
         {
   //        std::cout << "\t\t***** Error Pattern *****";
           ++errorPatterns;
         }
+/*
+        bool patError = false;
+        if (!checkPattern(pattern, kolPattern))
+        {
+          ++numDiffPatterns;
+          patError = true;
+        }
+        bool kolError = false;
+        if (!checkPattern(kolPattern, supMatrix))
+        {
+          ++errorKolmogorov;
+          kolError = true;
+        }
+        if (patError == kolError)
+          ++samePrediction;
         //std::cout << std::endl;
 
         if (supMatrix->getDimension() <= (supNumBonds + 1) * 2)
           ++numSupFullyBonded;
         else if (supNumBonds == 0)
+        {
           ++numSupNotBonded;
+          if (!checkPattern(pattern, zeroSymmetricMatrix(pattern->getDimension())))
+              ++numSupNotBondedWithPattern;
+        }
         else
           ++numSupPartiallyBonded;
+*/
       }
 
-    std::cout << "Threshold: " << threshold << "\t\tError Pattern: " << errorPatterns << std::endl;
+    std::cout << "Threshold: " << threshold
+      << "\t\tError Pattern: " << errorPatterns;
+      //<< "\t\tDiff. from Kolmo: " << numDiffPatterns 
+      //<< "\t\tError Kolmogorov: " << errorKolmogorov << std::endl;
+      //std::cout << "Kolmogorov Qp == Pattern Qp : " << samePrediction;
+      std::cout << std::endl;
     if (errorPatterns < bestErrorPattern)
     {
       bestErrorPattern = errorPatterns;
@@ -1741,7 +1792,7 @@ public:
     std::cout << "#Full: " << numSupFullyBonded
               << "\t#Partial: " << numSupPartiallyBonded
               << "\t#None: "<< numSupNotBonded << std::endl;
-    std::cout << "Error #Bonds: " << errorNumBonds << "\tError Pattern: " << errorPatterns << std::endl;
+    std::cout << "#None With Pattern: " << numSupNotBondedWithPattern << std::endl;
 */
     return true;
   }
