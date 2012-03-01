@@ -223,16 +223,17 @@ public:
   {
     if (verbose)
     {
-      if (targetLearner)
-      {
-        targetLearner->learn(context, problem, examples);
-        context.resultCallback(T("targetValidationScore"), problem->evaluatePredictions(context, problem->getValidationPredictions(), problem->getValidationSupervisions()));
-      }
-
       for (size_t i = 0; i < problem->getNumActiveVariables(); ++i)
       {
         LuapeNodePtr activeVariable = problem->getActiveVariable(i);
         context.informationCallback(T("Active variable: ") + activeVariable->toShortString());
+      }
+
+      if (targetLearner)
+      {
+        problem->clearRootNode(context);
+        targetLearner->learn(context, problem, examples);
+        context.resultCallback(T("targetValidationScore"), problem->evaluatePredictions(context, problem->getValidationPredictions(), problem->getValidationSupervisions()));
       }
     }
 

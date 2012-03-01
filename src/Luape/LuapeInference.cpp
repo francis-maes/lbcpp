@@ -71,7 +71,7 @@ void LuapeInference::setRootNode(ExecutionContext& context, const LuapeNodePtr& 
   }
 }
 void LuapeInference::clearRootNode(ExecutionContext& context)
-  {if (node) setRootNode(context, node);}
+  {if (node) setRootNode(context, LuapeNodePtr());}
 
 LuapeGraphBuilderTypeSearchSpacePtr LuapeInference::getSearchSpace(ExecutionContext& context, size_t complexity) const
 {
