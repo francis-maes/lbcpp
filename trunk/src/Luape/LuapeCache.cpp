@@ -227,13 +227,15 @@ void LuapeSamplesCache::ensureSizeInLowerThanMaxSize(ExecutionContext& context)
 void LuapeSamplesCache::uncacheNode(ExecutionContext& context, const LuapeNodePtr& node)
 {
   NodeCache& nodeCache = m[node];
-  jassert(nodeCache.samples);
-  size_t sizeInBytes = nodeCache.getSizeInBytes(true);
-  nodeCache.samples = VectorPtr();
-  nodeCache.sortedDoubleValues = SparseDoubleVectorPtr();
-  
-  actualCacheSize -= sizeInBytes;
-  actualCacheSize += nodeCache.getSizeInBytes(true);
+  if (nodeCache.samples)
+  {
+    size_t sizeInBytes = nodeCache.getSizeInBytes(true);
+    nodeCache.samples = VectorPtr();
+    nodeCache.sortedDoubleValues = SparseDoubleVectorPtr();
+    
+    actualCacheSize -= sizeInBytes;
+    actualCacheSize += nodeCache.getSizeInBytes(true);
+  }
 
   //std::cout << "Uncache node " << node->toShortString() << " -> size = " << sizeInBytes / 1024 << " Kb, numRequests = " << nodeCache.numRequests << std::endl; 
   //std::cout << "Cache size: " << getCacheSizeInBytes() / (1024 * 1024.0) << " / " << maxCacheSize / (1024 * 1024) << " Mb" << std::endl;

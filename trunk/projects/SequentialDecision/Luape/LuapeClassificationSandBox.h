@@ -10,6 +10,7 @@
 # define LBCPP_LUAPE_CLASSIFICATION_SAND_BOX_H_
 
 # include <lbcpp/Execution/WorkUnit.h>
+# include <lbcpp/Execution/ExecutionTrace.h>
 # include <lbcpp/Luape/LuapeLearner.h>
 # include <lbcpp/Luape/LuapeBatchLearner.h>
 # include <lbcpp/Core/DynamicObject.h>
@@ -169,8 +170,9 @@ public:
       int index = strtol(token, NULL, 0);
       if (index < 1 || index > (int)data->getNumElements())
       {
-        context.errorCallback(T("Invalid index ") + String(token) + T(" (num examples = ") + String((int)data->getNumElements()) + T(")"));
-        return false;
+        context.warningCallback(T("Invalid index ") + String(token) + T(" (num examples = ") + String((int)data->getNumElements()) + T(")"));
+        //return false;
+        continue;
       }
       size_t idx = (size_t)(index - 1);
       if (testingIndices.find(idx) != testingIndices.end())
@@ -219,15 +221,18 @@ public:
   virtual LuapeNodePtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
     {return baseLearner->createInitialNode(context, problem);}
 
+  virtual bool initialize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+    {return IterativeLearner::initialize(context, node, problem, examples);}
+
   virtual bool doLearningIteration(ExecutionContext& context, LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
     if (verbose)
     {
-      for (size_t i = 0; i < problem->getNumActiveVariables(); ++i)
+     /* for (size_t i = 0; i < problem->getNumActiveVariables(); ++i)
       {
         LuapeNodePtr activeVariable = problem->getActiveVariable(i);
         context.informationCallback(T("Active variable: ") + activeVariable->toShortString());
-      }
+      }*/
 
       if (targetLearner)
       {
@@ -295,13 +300,59 @@ protected:
 class LuapeClassificationSandBox : public WorkUnit
 {
 public:
-  LuapeClassificationSandBox() : maxExamples(0), trainingSize(0), numRuns(0), verbose(false) {}
+  LuapeClassificationSandBox() : maxExamples(0), verbose(false) {}
 
   virtual Variable run(ExecutionContext& context)
   {
+    /*
+    juce::OwnedArray<File> dataFiles;
+    if (dataDirectory.isDirectory())
+      dataDirectory.findChildFiles(dataFiles, File::findFiles, false, T("*.jdb"));
+    else
+      dataFiles.add(new File(dataDirectory));
+
+    for (int i = 0; i < dataFiles.size(); ++i)
+    {
+      File dataFile = *dataFiles[i];
+      File tsFile = dataFile.getParentDirectory().getChildFile(dataFile.getFileNameWithoutExtension() + T(".txt"));
+      if (dataFile.existsAsFile() && tsFile.existsAsFile())
+      {
+        context.enterScope(dataFile.getFileNameWithoutExtension());
+        Variable res = runOnDataSet(context, dataFile, tsFile);
+        context.leaveScope(res);
+      }
+    }
+*/
+    runOnDataSet(context, "waveform");
+    runOnDataSet(context, "two-norm");
+    runOnDataSet(context, "ring-norm");
+    runOnDataSet(context, "vehicle");
+    runOnDataSet(context, "vowel");
+    runOnDataSet(context, "segment");
+    runOnDataSet(context, "spambase");
+    runOnDataSet(context, "satellite");
+    runOnDataSet(context, "pendigits");
+    runOnDataSet(context, "dig44");
+    runOnDataSet(context, "letter");
+    runOnDataSet(context, "isolet");
+
+    return true;
+  }
+
+  void runOnDataSet(ExecutionContext& context, const String& name)
+  {
+    context.enterScope(name);
+    File dataFile = dataDirectory.getChildFile(name + T(".jdb"));
+    File tsFile = dataDirectory.getChildFile(name + T(".txt"));
+    Variable res = runOnDataSet(context, dataFile, tsFile);
+    context.leaveScope(res);
+  }
+
+  virtual Variable runOnDataSet(ExecutionContext& context, const File& dataFile, const File& tsFile)
+  {
     // load data
-    inputClass = new DynamicClass("inputs");
-    labels = new DefaultEnumeration("labels");
+    DynamicClassPtr inputClass = new DynamicClass("inputs");
+    DefaultEnumerationPtr labels = new DefaultEnumeration("labels");
     ContainerPtr data = loadData(context, dataFile, inputClass, labels);
     if (!data || !data->getNumElements())
       return false;
@@ -315,8 +366,9 @@ public:
 //    context.informationCallback(String((int)trainingSize) + T(" training examples, ") + String((int)(numExamples - trainingSize)) + T(" testing examples"));
 
     // make splits
+    std::vector< std::pair< ContainerPtr, ContainerPtr > > splits;
     context.enterScope(T("Splits"));
-    if (makeSplits(context, data, splits))
+    if (makeSplits(context, tsFile, data, splits))
     {
       for (size_t i = 0; i < splits.size(); ++i)
         context.informationCallback(T("Split ") + String((int)i) + T(": train size = ") + String((int)splits[i].first->getNumElements())
@@ -337,39 +389,39 @@ public:
 
     
     // ST
-    //conditionLearner = exactWeakLearner(inputsNodeBuilder());
-    //LuapeLearnerPtr targetLearner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
+    conditionLearner = exactWeakLearner(inputsNodeBuilder());
+    LuapeLearnerPtr targetLearner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
     
     // XT
     //conditionLearner = randomSplitWeakLearner(inputsNodeBuilder());
     //LuapeLearnerPtr targetLearner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 10);
     
     // Boosting
-    conditionLearner = exactWeakLearner(inputsNodeBuilder());
-    LuapeLearnerPtr targetLearner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
+    //conditionLearner = exactWeakLearner(inputsNodeBuilder());
+    //LuapeLearnerPtr targetLearner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
     
     targetLearner->setVerbose(verbose);
 
     
     // ST
-    //conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
-    //learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
+    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
+    learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
     
     // XT
     //conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
     //learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 10);
     
     // Boosting
-    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
-    learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
+    //conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
+    //learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
     
     learner->setVerbose(verbose);
-    //testLearner(context, learner, "Baseline explore");
-    //testLearner(context, targetLearner, "Baseline simple");
+    //testLearner(context, learner, "Baseline explore", inputClass, labels, splits);
+    //testLearner(context, targetLearner, "Baseline simple", inputClass, labels, splits);
     
-    learner = new RelevanceDrivenFeatureGenerationLearner(learner, 5, numVariables, targetLearner);
-    learner->setVerbose(verbose);
-    testLearner(context, learner, "RDFG explore");
+    learner = new RelevanceDrivenFeatureGenerationLearner(learner, 100, numVariables, targetLearner);
+    learner->setVerbose(true);
+    testLearner(context, learner, "RDFG explore", inputClass, labels, splits);
     //testLearner(context, targetLearner, "RDFG simple");
 
 
@@ -483,7 +535,8 @@ public:
     return true;
   }
 
-  double testLearner(ExecutionContext& context, const LuapeLearnerPtr& learner, const String& name) const
+  double testLearner(ExecutionContext& context, const LuapeLearnerPtr& learner, const String& name,
+    DynamicClassPtr inputClass, DefaultEnumerationPtr labels, const std::vector< std::pair< ContainerPtr, ContainerPtr > >& splits) const
   {
   //  Object::displayObjectAllocationInfo(std::cout);
 
@@ -502,28 +555,58 @@ public:
     jassert(results->getNumElements() == splits.size());
 
     // compile results
-    ScalarVariableStatisticsPtr stats = new ScalarVariableStatistics(T("error"));
-    for (size_t i = 0; i < splits.size(); ++i)
-      stats->push(results->getElement(i).getDouble());
-    context.informationCallback(T("Validation score: ") + stats->toShortString());
     if (name.isNotEmpty())
-      context.leaveScope(stats);
-    return stats->getMean();
+      context.leaveScope();
+
+    mergeFoldTraces(context, name, results);
+    
+    return true;//stats->getMean();
+  }
+
+  void mergeFoldTraces(ExecutionContext& context, String name, ContainerPtr traces) const
+  {
+    size_t numFolds = traces->getNumElements();
+    std::vector<ExecutionTraceNodePtr> learningNodes(numFolds);
+    for (size_t i = 0; i < numFolds; ++i)
+      learningNodes[i] = traces->getElement(i).getObjectAndCast<ExecutionTrace>()->getRootNode()->getSubItems()[0];
+
+    size_t numIterations = learningNodes[0]->getNumSubItems() - 2;
+
+    context.enterScope(name + T(" results"));
+    for (size_t i = 0; i < numIterations; ++i)
+    {
+      context.enterScope(T("Iteration ") + String((int)i + 1));
+      context.resultCallback(T("iteration"), i + 1);
+      std::map<String, ScalarVariableStatisticsPtr> results;
+      for (size_t j = 0; j < numFolds; ++j)
+      {
+        std::vector<std::pair<String, Variable> > v = learningNodes[j]->getSubItems()[i + 2].staticCast<ExecutionTraceNode>()->getResults();
+        for (size_t k = 0; k < v.size(); ++k)
+        {
+          Variable value = v[k].second;
+          if (value.isConvertibleToDouble())
+          {
+            String name = v[k].first;
+            ScalarVariableStatisticsPtr& stats = results[name];
+            if (!stats)
+              stats = new ScalarVariableStatistics(name);
+            stats->push(value.toDouble());
+          }
+        }
+      }
+      for (std::map<String, ScalarVariableStatisticsPtr>::const_iterator it = results.begin(); it != results.end(); ++it)
+        context.resultCallback(it->first, it->second->getMean());
+      context.leaveScope();
+    }
+    context.leaveScope();
   }
 
 protected:
   friend class LuapeClassificationSandBoxClass;
 
-  File dataFile;
+  File dataDirectory;
   size_t maxExamples;
-  File tsFile;
-  size_t trainingSize;
-  size_t numRuns;
   bool verbose;
-
-  DynamicClassPtr inputClass;
-  DefaultEnumerationPtr labels;
-  std::vector< std::pair< ContainerPtr, ContainerPtr > > splits;
 
   ContainerPtr loadData(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, DefaultEnumerationPtr labels) const
   { 
@@ -542,9 +625,9 @@ protected:
     return res;
   }
 
-  bool makeSplits(ExecutionContext& context, ContainerPtr data, std::vector< std::pair< ContainerPtr, ContainerPtr > >& res)
+  bool makeSplits(ExecutionContext& context, const File& tsFile, ContainerPtr data, std::vector< std::pair< ContainerPtr, ContainerPtr > >& res)
   {
-    if (tsFile.existsAsFile())
+   // if (tsFile.existsAsFile())
     {
       TextParserPtr parser = new TestingSetParser(context, tsFile, data);
       ContainerPtr splits = parser->load(verbose ? 1 : 0);
@@ -555,7 +638,7 @@ protected:
         res[i] = std::make_pair(split->getFirst().getObjectAndCast<Container>(), split->getSecond().getObjectAndCast<Container>());
       }
     }
-    else
+    /*else
     { 
       if (trainingSize >= data->getNumElements())
       {
@@ -571,7 +654,7 @@ protected:
         ContainerPtr testing = randomized->range(trainingSize, randomized->getNumElements());
         res[i] = std::make_pair(training, testing);
       }
-    }
+    }*/
     return true;
   }
 
@@ -589,12 +672,21 @@ protected:
       LuapeClassifierPtr classifier = createClassifier(inputClass);
       if (!classifier->initialize(context, inputClass, labels))
         return ScoreObjectPtr();
-
+      if (!trainingData->getNumElements())
+        return ScoreObjectPtr();
+    
       classifier->setSamples(context, trainingData.staticCast<ObjectVector>()->getObjects(), testingData.staticCast<ObjectVector>()->getObjects());
       //classifier->getTrainingCache()->disableCaching();
       //classifier->getValidationCache()->disableCaching();
+
+      ExecutionTracePtr trace = new ExecutionTrace(T("hop"));
+      ExecutionCallbackPtr makeTraceCallback = makeTraceExecutionCallback(trace);
+      context.appendCallback(makeTraceCallback);
+
       learner->learn(context, classifier);
-      return classifier->evaluatePredictions(context, classifier->getValidationPredictions(), classifier->getValidationSupervisions());
+      context.removeCallback(makeTraceCallback);
+
+      return trace; //classifier->evaluatePredictions(context, classifier->getValidationPredictions(), classifier->getValidationSupervisions());
     }
 
   protected:

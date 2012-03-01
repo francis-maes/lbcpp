@@ -32,11 +32,8 @@
   </class>
 
   <class name="LuapeClassificationSandBox" base="WorkUnit">
-    <variable type="File" name="dataFile"/>
+    <variable type="File" name="dataDirectory"/>
     <variable type="PositiveInteger" name="maxExamples"/>
-    <variable type="File" name="tsFile"/>
-    <variable type="PositiveInteger" name="trainingSize"/>
-    <variable type="PositiveInteger" name="numRuns"/>
     <variable type="Boolean" name="verbose"/>
   </class>
 

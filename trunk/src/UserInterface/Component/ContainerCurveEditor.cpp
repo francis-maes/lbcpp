@@ -690,8 +690,7 @@ ContainerCurveEditorConfiguration::ContainerCurveEditorConfiguration(ClassPtr ro
   for (size_t i = 0; i < variables.size(); ++i)
   {
     TypePtr variableType = rowType->getMemberVariableType(i);
-    if (variableType->inheritsFrom(integerType) || variableType->inheritsFrom(doubleType) || 
-        variableType->inheritsFrom(booleanType) || variableType->inheritsFrom(scoreObjectClass))
+    if (variableType->isConvertibleToDouble())
       variables[i] = new CurveVariableConfiguration(false, i < numDefaultColours ? defaultColours[i] : randomColour(), rowType->getMemberVariableName(i));
   }
   // select two first variables
