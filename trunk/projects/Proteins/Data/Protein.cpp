@@ -11,7 +11,9 @@
 #include "Formats/PDBFileGenerator.h"
 #include "Formats/FASTAFileParser.h"
 #include "Formats/FASTAFileGenerator.h"
+#include "../Evaluator/KolmogorovPerfectMatchingFunction.h"
 #include <lbcpp/Lua/Lua.h>
+
 using namespace lbcpp;
 
 ProteinPtr Protein::createFromPDB(ExecutionContext& context, const File& pdbFile, bool beTolerant)
@@ -325,29 +327,54 @@ const MatrixPtr& Protein::getFullDisulfideBonds(ExecutionContext& context) const
 
 const DenseDoubleVectorPtr& Protein::getCysteinBondingStates(ExecutionContext& context) const
 {
-  const double threshold = 0.5;
+  const double threshold = 0.f;
   if (cysteinBondingStates)
     return cysteinBondingStates;
-  const SymmetricMatrixPtr& disulfideMap = getDisulfideBonds(context);
+  const DoubleSymmetricMatrixPtr& disulfideMap = getDisulfideBonds(context);
   if (!disulfideMap)
     return cysteinBondingStates;
 
   const size_t n = disulfideMap->getDimension();
   const_cast<Protein* >(this)->cysteinBondingStates = Protein::createEmptyProbabilitySequence(n);
   for (size_t i = 0; i < n; ++i)
-    cysteinBondingStates->setElement(i, probability(0.0));
+    cysteinBondingStates->setValue(i, 0.f);
 
   if (n < 2)
     return cysteinBondingStates;
-  
+
+  // Check pattern validity
+  bool isValid = true;
+  for (size_t i = 0; i < n; ++i)
+  {
+    size_t numBonds = 0;
+    for (size_t j = 0; j < n; ++j)
+      if (i != j && disulfideMap->getValue(i, j) > threshold)
+        ++numBonds;
+    if (numBonds > 1)
+    {
+      isValid = false;
+      break;
+    }
+  }
+
+  // Use a matching function in case of valid pattern
+  DoubleSymmetricMatrixPtr matrix = disulfideMap;
+  if (!isValid)
+  {
+    FunctionPtr kolmogorov = new KolmogorovPerfectMatchingFunction(0.f);
+    kolmogorov->initialize(context, doubleSymmetricMatrixClass(doubleType));
+    matrix = kolmogorov->compute(context, matrix).getObjectAndCast<DoubleSymmetricMatrix>();
+  }
+
+  // Infer bonding state fo cysteins
   for (size_t i = 0; i < n - 1; ++i)
     for (size_t j = i + 1; j < n; ++j)
     {
-      const double value = disulfideMap->getElement(i, j).getDouble();
+      const double value = matrix->getValue(i, j);
       if (value > threshold)
       {
-        cysteinBondingStates->setElement(i, probability(value));
-        cysteinBondingStates->setElement(j, probability(value));
+        cysteinBondingStates->setValue(i, value);
+        cysteinBondingStates->setValue(j, value);
       }
     }
 
