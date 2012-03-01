@@ -367,7 +367,7 @@ public:
     //testLearner(context, learner, "Baseline explore");
     //testLearner(context, targetLearner, "Baseline simple");
     
-    learner = new RelevanceDrivenFeatureGenerationLearner(learner, 25, numVariables, targetLearner);
+    learner = new RelevanceDrivenFeatureGenerationLearner(learner, 5, numVariables, targetLearner);
     learner->setVerbose(verbose);
     testLearner(context, learner, "RDFG explore");
     //testLearner(context, targetLearner, "RDFG simple");
