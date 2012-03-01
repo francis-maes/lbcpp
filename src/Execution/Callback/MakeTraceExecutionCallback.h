@@ -92,6 +92,8 @@ public:
   virtual ExecutionCallbackPtr createCallbackForThread(const ExecutionStackPtr& stack, Thread::ThreadID threadId)
   {
     ExecutionTraceNodePtr traceNode = trace->findNode(stack);
+    if (!traceNode)
+      traceNode = trace->getRootNode();
     jassert(traceNode);
     return new MakeTraceThreadExecutionCallback(traceNode, trace->getStartTime());
   }

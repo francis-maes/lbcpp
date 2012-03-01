@@ -339,8 +339,8 @@ VectorPtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context)
     for (size_t j = 0; j < childResults.size(); ++j)
     {
       TypePtr type = childResults[j].second.getType();
-      if (type->inheritsFrom(objectClass))
-        type = objectClass; // we distinguish only between atomic types
+      //if (type->inheritsFrom(objectClass))
+      //  type = objectClass; // we distinguish only between atomic types
       std::pair<String, TypePtr> key(childResults[j].first, type);
 
       SignatureToIndexMap::iterator it = mapping.find(key);
@@ -374,8 +374,8 @@ VectorPtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context)
     for (size_t j = 0; j < childResults.size(); ++j)
     {
       TypePtr type = childResults[j].second.getType();
-      if (type->inheritsFrom(objectClass))
-        type = objectClass; // we distinguish only between atomic types
+      //if (type->inheritsFrom(objectClass))
+      //  type = objectClass; // we distinguish only between atomic types
       std::pair<String, TypePtr> key(childResults[j].first, type);
 
       SignatureToIndexMap::iterator it = mapping.find(key);
