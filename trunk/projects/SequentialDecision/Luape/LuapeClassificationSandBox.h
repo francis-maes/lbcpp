@@ -265,6 +265,7 @@ public:
       if (problem->getNumActiveVariables() >= numActiveVariables)
         break;
     }
+    LuapeUniverse::clearImportances(problem->getRootNode());
     return node;
   }
   
@@ -287,8 +288,8 @@ protected:
   friend class RelevanceDrivenFeatureGenerationLearnerClass;
 
   LuapeLearnerPtr baseLearner;
-  LuapeLearnerPtr targetLearner;
   size_t numActiveVariables;
+  LuapeLearnerPtr targetLearner;
 };
 
 class LuapeClassificationSandBox : public WorkUnit
@@ -334,17 +335,37 @@ public:
     
     //size_t Kdef = (size_t)(0.5 + sqrt((double)numVariables));
 
-    conditionLearner = exactWeakLearner(inputsNodeBuilder());
+    
+    // ST
+    //conditionLearner = exactWeakLearner(inputsNodeBuilder());
     //LuapeLearnerPtr targetLearner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
+    
+    // XT
+    //conditionLearner = randomSplitWeakLearner(inputsNodeBuilder());
+    //LuapeLearnerPtr targetLearner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 10);
+    
+    // Boosting
+    conditionLearner = exactWeakLearner(inputsNodeBuilder());
     LuapeLearnerPtr targetLearner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
+    
     targetLearner->setVerbose(verbose);
 
-    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
+    
+    // ST
+    //conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
     //learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
+    
+    // XT
+    //conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
+    //learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 10);
+    
+    // Boosting
+    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
     learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
+    
     learner->setVerbose(verbose);
-    testLearner(context, learner, "Baseline explore");
-    testLearner(context, targetLearner, "Baseline simple");
+    //testLearner(context, learner, "Baseline explore");
+    //testLearner(context, targetLearner, "Baseline simple");
     
     learner = new RelevanceDrivenFeatureGenerationLearner(learner, 25, numVariables, targetLearner);
     learner->setVerbose(verbose);

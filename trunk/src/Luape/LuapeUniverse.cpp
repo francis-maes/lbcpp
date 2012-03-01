@@ -104,6 +104,16 @@ void LuapeUniverse::getImportances(const LuapeNodePtr& node, std::map<LuapeNodeP
   }
 }
 
+void LuapeUniverse::clearImportances(const LuapeNodePtr& node)
+{
+  if (!node)
+    return;
+  node->setImportance(0.0);
+  size_t n = node->getNumSubNodes();
+  for (size_t i = 0; i < n; ++i)
+    clearImportances(node->getSubNode(i));
+}
+
 void LuapeUniverse::displayMostImportantNodes(ExecutionContext& context, const std::map<LuapeNodePtr, double>& importances)
 {
   // create probabilities and nodes vectors
