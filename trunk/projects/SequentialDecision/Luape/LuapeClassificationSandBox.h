@@ -389,12 +389,12 @@ public:
 
     
     // ST
-    conditionLearner = exactWeakLearner(inputsNodeBuilder());
-    LuapeLearnerPtr targetLearner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
+    //conditionLearner = exactWeakLearner(inputsNodeBuilder());
+    //LuapeLearnerPtr targetLearner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
     
     // XT
-    //conditionLearner = randomSplitWeakLearner(inputsNodeBuilder());
-    //LuapeLearnerPtr targetLearner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 10);
+    conditionLearner = randomSplitWeakLearner(inputsNodeBuilder());
+    LuapeLearnerPtr targetLearner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 5);
     
     // Boosting
     //conditionLearner = exactWeakLearner(inputsNodeBuilder());
@@ -404,12 +404,12 @@ public:
 
     
     // ST
-    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
-    learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
+    //conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
+    //learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
     
     // XT
-    //conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
-    //learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 10);
+    conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
+    learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 5);
     
     // Boosting
     //conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
@@ -419,7 +419,7 @@ public:
     //testLearner(context, learner, "Baseline explore", inputClass, labels, splits);
     //testLearner(context, targetLearner, "Baseline simple", inputClass, labels, splits);
     
-    learner = new RelevanceDrivenFeatureGenerationLearner(learner, 100, numVariables, targetLearner);
+    learner = new RelevanceDrivenFeatureGenerationLearner(learner, 5, numVariables, targetLearner);
     learner->setVerbose(true);
     testLearner(context, learner, "RDFG explore", inputClass, labels, splits);
     //testLearner(context, targetLearner, "RDFG simple");

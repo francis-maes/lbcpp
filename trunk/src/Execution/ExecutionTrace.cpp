@@ -310,7 +310,11 @@ ObjectPtr ExecutionTraceNode::getResultsObject(ExecutionContext& context) const
 
   ObjectPtr res = resultsClass->createDenseObject();
   for (size_t i = 0; i < results.size(); ++i)
-    res->setVariable(i, results[i].second);
+  {
+    int idx = resultsClass->findMemberVariable(results[i].first);
+    if (idx >= 0)
+      res->setVariable((size_t)idx, results[i].second);
+  }
   return res;
 }
 
