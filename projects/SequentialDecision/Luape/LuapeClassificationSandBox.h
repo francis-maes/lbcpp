@@ -380,12 +380,15 @@ public:
     
     if (verbose)
       splits.resize(1);
+    else
+      splits.resize(10);
+      
 
     static const size_t numIterations = 1000;
 
     LuapeLearnerPtr conditionLearner, learner;
     
-    //size_t Kdef = (size_t)(0.5 + sqrt((double)numVariables));
+    size_t Kdef = (size_t)(0.5 + sqrt((double)numVariables));
 
     
     // ST
@@ -393,12 +396,12 @@ public:
     //LuapeLearnerPtr targetLearner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
     
     // XT
-    conditionLearner = randomSplitWeakLearner(inputsNodeBuilder());
-    LuapeLearnerPtr targetLearner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 5);
+    //conditionLearner = randomSplitWeakLearner(inputsNodeBuilder());
+    //LuapeLearnerPtr targetLearner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 5);
     
     // Boosting
-    //conditionLearner = exactWeakLearner(inputsNodeBuilder());
-    //LuapeLearnerPtr targetLearner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
+    conditionLearner = exactWeakLearner(inputsNodeBuilder());
+    LuapeLearnerPtr targetLearner = discreteAdaBoostMHLearner(conditionLearner, 1000, 1);
     
     targetLearner->setVerbose(verbose);
 
@@ -408,18 +411,18 @@ public:
     //learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
     
     // XT
-    conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
-    learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 5);
+    //conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
+    //learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 5);
     
     // Boosting
-    //conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
-    //learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
+    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
+    learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 1);
     
     learner->setVerbose(verbose);
     //testLearner(context, learner, "Baseline explore", inputClass, labels, splits);
     //testLearner(context, targetLearner, "Baseline simple", inputClass, labels, splits);
     
-    learner = new RelevanceDrivenFeatureGenerationLearner(learner, 5, numVariables, targetLearner);
+    learner = new RelevanceDrivenFeatureGenerationLearner(learner, 10, numVariables, targetLearner);
     learner->setVerbose(true);
     testLearner(context, learner, "RDFG explore", inputClass, labels, splits);
     //testLearner(context, targetLearner, "RDFG simple");
@@ -707,15 +710,15 @@ protected:
         res->addInput(variable->getType(), variable->getName());
       }
 
-      //res->addFunction(logDoubleLuapeFunction());
-      //res->addFunction(sqrtDoubleLuapeFunction());
-
+/*      res->addFunction(logDoubleLuapeFunction());
+      res->addFunction(sqrtDoubleLuapeFunction());
+      res->addFunction(minDoubleLuapeFunction());
+      res->addFunction(maxDoubleLuapeFunction());*/
+      
       res->addFunction(addDoubleLuapeFunction());
       res->addFunction(subDoubleLuapeFunction());
       res->addFunction(mulDoubleLuapeFunction());
-      res->addFunction(divDoubleLuapeFunction());
-      //res->addFunction(minDoubleLuapeFunction());
-      //res->addFunction(maxDoubleLuapeFunction());
+      res->addFunction(divDoubleLuapeFunction());      
       return res;
     }
   };
