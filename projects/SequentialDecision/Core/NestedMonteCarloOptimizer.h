@@ -131,7 +131,7 @@ public:
 
   virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {
-    if (numIterations > 1)
+    if (false)//numIterations > 1) // parallel version
     {
       CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Nested Monte Carlo runs"), numIterations);
       for (size_t i = 0; i < numIterations; ++i)
@@ -146,9 +146,13 @@ public:
     }
     else
     {
-      WorkUnitPtr workUnit = new NestedMonteCarloWorkUnit(optimizerState, level);
-      PairPtr best = workUnit->run(context).getObjectAndCast<Pair>();
-      optimizerState->submitSolution(best->getFirst(), best->getSecond().toDouble());
+      // single-thread version
+      for (size_t i = 0; i < numIterations; ++i)
+      {
+        WorkUnitPtr workUnit = new NestedMonteCarloWorkUnit(optimizerState, level);
+        PairPtr best = workUnit->run(context).getObjectAndCast<Pair>();
+        optimizerState->submitSolution(best->getFirst(), best->getSecond().toDouble());
+      }
     }
     return optimizerState;
   }

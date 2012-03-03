@@ -18,6 +18,9 @@
 # include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Learning/Numerical.h> // for lbcpp::convertSupervisionVariableToEnumValue
 # include "LuapeSoftStump.h"
+# include "../Core/NestedMonteCarloOptimizer.h"
+# include "../Core/SinglePlayerMCTSOptimizer.h"
+# include "../../../src/Luape/Learner/OptimizerBasedSequentialWeakLearner.h"
 
 namespace lbcpp
 {
@@ -380,8 +383,8 @@ public:
     
     if (verbose)
       splits.resize(1);
-    else
-      splits.resize(10);
+    //else
+    //  splits.resize(7);
       
 
     static const size_t numIterations = 1000;
@@ -390,7 +393,55 @@ public:
     
     size_t Kdef = (size_t)(0.5 + sqrt((double)numVariables));
 
+    /****
+    ***** MCTS Feature Generation
+    ****
+    context.enterScope(T("MCTS"));
+    for (size_t numIterations = 1; numIterations <= 256; numIterations *= 2)
+    {
+      context.enterScope(T("Num Iterations = " + String((int)numIterations)));
+      context.resultCallback(T("numIterations"), numIterations);
+      context.resultCallback(T("log(numIterations)"), log10((double)numIterations));
+      conditionLearner = optimizerBasedSequentialWeakLearner(new SinglePlayerMCTSOptimizer(numIterations), 6);
+      conditionLearner->setVerbose(verbose);
+      learner = discreteAdaBoostMHLearner(conditionLearner, 100, 2);
+      learner->setVerbose(verbose);
+      double score = testLearner(context, learner, String::empty, inputClass, labels, splits);
+      context.resultCallback(T("validationScore"), score);
+      context.leaveScope(score);
+    }
+    context.leaveScope();*/
+
+    /****
+    ***** Nested Monte Carlo Feature Generation
+    ****/
+    context.enterScope(T("Nested MC"));
+    size_t complexity = 6;
+    for (size_t numIterations = 1; numIterations <= numVariables * complexity * 5; numIterations *= 2)
+    {
+      context.enterScope(T("Num Iterations = " + String((int)numIterations)));
+      context.resultCallback(T("numIterations"), numIterations);
+      context.resultCallback(T("log(numIterations)"), log10((double)numIterations));
+      size_t maxLevel = numIterations <= 16 ? 1 : 0;
+      for (size_t level = 0; level <= maxLevel; ++level)
+      {
+        conditionLearner = optimizerBasedSequentialWeakLearner(new NestedMonteCarloOptimizer(level, numIterations), 6);
+        conditionLearner->setVerbose(verbose);
+        learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
+        learner->setVerbose(verbose);
+        double score = testLearner(context, learner, T("Level ") + String((int)level), inputClass, labels, splits);
+        String str = T("level") + String((int)level);
+        context.resultCallback(str + T("Score"), score);
+      }
+      context.leaveScope();
+    }
+    context.leaveScope();
     
+
+    /****
+    ***** Iterative Feature Generation
+    ****/
+    /*
     // ST
     //conditionLearner = exactWeakLearner(inputsNodeBuilder());
     //LuapeLearnerPtr targetLearner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
@@ -426,8 +477,11 @@ public:
     learner->setVerbose(true);
     testLearner(context, learner, "RDFG explore", inputClass, labels, splits);
     //testLearner(context, targetLearner, "RDFG simple");
+*/
 
-
+    /****
+    ***** Various Tree Methods
+    ****/
 /*    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 2));
     learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
     learner->setVerbose(verbose);
@@ -473,7 +527,10 @@ public:
     testLearner(context, learner, "Extra Trees Default");
     */
 
-   
+    /****
+    ***** Monte Carlo n-variables 
+    ****/
+
     //LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(numVariables, 2);
 
 #if 0
@@ -505,6 +562,10 @@ public:
       testLearner(context, learner, "ThreeStumps AdaBoost.MH K=n - " + str);
     }
 #endif // 0
+
+    /****
+    ***** Relevance driven Monte Carlo n-variables 
+    ****/
 
     /*
     for (size_t complexity = 4; complexity <= 8; complexity += 2)
@@ -557,14 +618,26 @@ public:
     ContainerPtr results = context.run(workUnit, false).getObjectAndCast<Container>();
     jassert(results->getNumElements() == splits.size());
 
+
+    double res = 0.0;
+    if (results->getElement(0).dynamicCast<ExecutionTrace>())
+    {
+      mergeFoldTraces(context, name, results);
+    }
+    else
+    {
+      ScalarVariableStatisticsPtr stats = new ScalarVariableStatistics();
+      for (size_t i = 0; i < results->getNumElements(); ++i)
+        stats->push(results->getElement(i).getDouble());
+      res = stats->getMean();
+    }
+
     // compile results
     if (name.isNotEmpty())
-      context.leaveScope();
+      context.leaveScope(res);
 
-    mergeFoldTraces(context, name, results);
-    
-    return true;//stats->getMean();
-  }
+    return res;
+  }    
 
   void mergeFoldTraces(ExecutionContext& context, String name, ContainerPtr traces) const
   {
@@ -572,6 +645,9 @@ public:
     std::vector<ExecutionTraceNodePtr> learningNodes(numFolds);
     for (size_t i = 0; i < numFolds; ++i)
       learningNodes[i] = traces->getElement(i).getObjectAndCast<ExecutionTrace>()->getRootNode()->getSubItems()[0];
+
+    if (learningNodes[0]->getNumSubItems() <= 2)
+      return;
 
     size_t numIterations = learningNodes[0]->getNumSubItems() - 2;
 
@@ -583,7 +659,10 @@ public:
       std::map<String, ScalarVariableStatisticsPtr> results;
       for (size_t j = 0; j < numFolds; ++j)
       {
-        std::vector<std::pair<String, Variable> > v = learningNodes[j]->getSubItems()[i + 2].staticCast<ExecutionTraceNode>()->getResults();
+        ExecutionTraceNodePtr resultsNode = learningNodes[j]->getSubItems()[i + 2].dynamicCast<ExecutionTraceNode>();
+        if (!resultsNode)
+          continue;
+        std::vector<std::pair<String, Variable> > v = resultsNode->getResults();
         for (size_t k = 0; k < v.size(); ++k)
         {
           Variable value = v[k].second;
@@ -679,17 +758,17 @@ protected:
         return ScoreObjectPtr();
     
       classifier->setSamples(context, trainingData.staticCast<ObjectVector>()->getObjects(), testingData.staticCast<ObjectVector>()->getObjects());
-      //classifier->getTrainingCache()->disableCaching();
-      //classifier->getValidationCache()->disableCaching();
+      classifier->getTrainingCache()->disableCaching();
+      classifier->getValidationCache()->disableCaching();
 
       ExecutionTracePtr trace = new ExecutionTrace(T("hop"));
       ExecutionCallbackPtr makeTraceCallback = makeTraceExecutionCallback(trace);
       context.appendCallback(makeTraceCallback);
-
       learner->learn(context, classifier);
       context.removeCallback(makeTraceCallback);
 
-      return trace; //classifier->evaluatePredictions(context, classifier->getValidationPredictions(), classifier->getValidationSupervisions());
+      //return trace;
+      return classifier->evaluatePredictions(context, classifier->getValidationPredictions(), classifier->getValidationSupervisions());
     }
 
   protected:

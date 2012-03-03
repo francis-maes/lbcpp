@@ -1,5 +1,7 @@
-Bandit Formulas:
- * Launch on Monster24
+Nested-MC Feature Construction:
+ * Checker les features construites par le NestedMC -> resultCallbacks 
+ * Eliminer les features doublons
+ * Voir si on peut l'optimiser un peu
  
  
 Experiences - Proteins:
