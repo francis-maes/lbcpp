@@ -68,7 +68,7 @@ public:
     if (!count)
       return DBL_MAX;
     else
-      return rewards->getMean() + 5.0 / count;
+      return rewards->getMean() + 2.0 / count;
   }
 
   void observeReward(double reward)
@@ -136,19 +136,23 @@ protected:
       ContainerPtr actions = node->getActions();
       if (!actions->getNumElements())
         break;
-      size_t bestSubNode = (size_t)-1;
+      std::vector<size_t> bestSubNodes;
       double bestIndexScore = -DBL_MAX;
       for (size_t i = 0; i < node->getNumSubNodes(); ++i)
       {
         double score = node->getSubNode(i)->getIndexScore();
-        if (score > bestIndexScore)
+        if (score >= bestIndexScore)
         {
-          bestIndexScore = score;
-          bestSubNode = i;
+          if (score > bestIndexScore)
+          {
+            bestIndexScore = score;
+            bestSubNodes.clear();
+          }
+          bestSubNodes.push_back(i);
         }
       }
-      jassert(bestSubNode != (size_t)-1);
-      node = node->getSubNode(bestSubNode);
+      jassert(bestSubNodes.size());
+      node = node->getSubNode(bestSubNodes[context.getRandomGenerator()->sampleSize(bestSubNodes.size())]);
     }
     return node;
   }
@@ -174,8 +178,8 @@ protected:
     }
     double res = objective->compute(context, state).toDouble();
     //context.informationCallback(state->toShortString() + T(" ==> ") + String(res));
-    submitSolution(state, -res);
-    return res;
+    submitSolution(state, res);
+    return problem->isMaximisationProblem() ? res : -res;
   }
 
   void backPropagate(SinglePlayerMCTSNodePtr node, double reward)
