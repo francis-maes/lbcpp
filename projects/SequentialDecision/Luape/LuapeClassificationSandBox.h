@@ -417,23 +417,26 @@ public:
     ****/
     context.enterScope(T("Nested MC"));
     size_t complexity = 6;
-    for (size_t numIterations = 1; numIterations <= numVariables * complexity * 5; numIterations *= 2)
-    {
-      context.enterScope(T("Num Iterations = " + String((int)numIterations)));
-      context.resultCallback(T("numIterations"), numIterations);
-      context.resultCallback(T("log(numIterations)"), log10((double)numIterations));
-      size_t maxLevel = numIterations <= 16 ? 1 : 0;
-      for (size_t level = 0; level <= maxLevel; ++level)
+    //for (size_t numIterations = 1; numIterations <= numVariables * complexity * 5; numIterations *= 2)
+    {size_t numIterations = 1;
+      //context.enterScope(T("Num Iterations = " + String((int)numIterations)));
+      //context.resultCallback(T("numIterations"), numIterations);
+      //context.resultCallback(T("log(numIterations)"), log10((double)numIterations));
+      //size_t maxLevel = numIterations <= 16 ? 1 : 0;
+      size_t level = 1;
+      //for (size_t level = 0; level <= maxLevel; ++level)
       {
-        conditionLearner = optimizerBasedSequentialWeakLearner(new NestedMonteCarloOptimizer(level, numIterations), 6);
+        conditionLearner = optimizerBasedSequentialWeakLearner(new NestedMonteCarloOptimizer(level, numIterations), complexity);
         conditionLearner->setVerbose(verbose);
-        learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
+        //learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
+        //learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
+        learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
         learner->setVerbose(verbose);
         double score = testLearner(context, learner, T("Level ") + String((int)level), inputClass, labels, splits);
-        String str = T("level") + String((int)level);
-        context.resultCallback(str + T("Score"), score);
+        //String str = T("level") + String((int)level);
+        //context.resultCallback(str + T("Score"), score);
       }
-      context.leaveScope();
+      //context.leaveScope();
     }
     context.leaveScope();
     
