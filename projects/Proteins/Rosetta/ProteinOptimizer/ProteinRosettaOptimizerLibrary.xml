@@ -2,7 +2,7 @@
 
 <library name="ProteinRosettaOptimizer" directory="Rosetta/ProteinOptimizer">
 
-  <class name="ProteinOptimizer" base="Object" abstract="yes">
+  <class name="OldProteinOptimizer" base="Object" abstract="yes">
     <variable type="GenericVector[String]" name="nameScopes" description="Name of the different scopes used for verbosity in explorer"/>
     <variable type="Boolean" name="verbosity" description="Indicates if there is verbosity to the explorer"/>
     <variable type="Boolean" name="saveToFile" description="Indicates if there is verbosity to files"/>
@@ -13,17 +13,7 @@
     <variable type="File" name="outputDirectory" description="Output directory where the files are going to be created"/>
   </class>
   
-  <class name="ProteinGreedyOptimizer" base="ProteinOptimizer">
-    <variable type="Integer" name="maxSteps" shortName="s" description="Maximum number of optimization steps performed"/>
-  </class>
-  
-  <class name="ProteinMonteCarloOptimizer" base="ProteinOptimizer">
-    <variable type="Integer" name="maxSteps" shortName="s" description="Maximum number of optimization steps performed"/>
-    <variable type="Integer" name="timesReinitialization" shortName="r" description="Number of temporary structure reinitializations performed during optimization"/>
-    <variable type="Double" name="temperature" shortName="t" description="Value of kT used in Metropolis criterion"/>
-  </class>
-  
-  <class name="ProteinSimulatedAnnealingOptimizer" base="ProteinOptimizer">
+  <class name="ProteinSimulatedAnnealingOptimizer" base="OldProteinOptimizer">
     <variable type="Integer" name="maxSteps" shortName="s" description="Maximum number of optimization steps performed"/>
     <variable type="Integer" name="timesReinitialization" shortName="r" description="Number of temporary structure reinitializations performed during optimization"/>
     <variable type="Double" name="initialTemperature" shortName="ti" description="Initial value of kT used in Metropolis criterion"/>
@@ -31,7 +21,7 @@
     <variable type="Integer" name="numberDecreasingSteps" shortName="d" description="Number of temperature's decreasing steps"/>
   </class>
   
-  <class name="ProteinSequentialOptimizer" base="ProteinOptimizer">
+  <class name="ProteinSequentialOptimizer" base="OldProteinOptimizer">
   </class>
     
 </library>

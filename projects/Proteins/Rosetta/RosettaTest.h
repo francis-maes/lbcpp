@@ -18,10 +18,8 @@
 # include "RosettaUtils.h"
 # include "Data/Mover/PoseMover.h"
 # include "ProteinOptimizer/ProteinOptimizer.h"
-# include "ProteinOptimizer/GreedyOptimizer.h"
 # include "ProteinOptimizer/SequentialOptimizer.h"
 # include "ProteinOptimizer/SimulatedAnnealingOptimizer.h"
-# include "ProteinOptimizer/MonteCarloOptimizer.h"
 # include <iostream>
 # include <fstream>
 # include <string>
@@ -72,23 +70,59 @@ public:
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 
-    RosettaPtr ros = new Rosetta();
-    ros->init(context, false, 0, 0);
+    DoubleVectorPtr v1 = new DenseDoubleVector(2, 0.0);
+    DenseDoubleVectorPtr v2 = new DenseDoubleVector(2, 1.0);
 
-    PosePtr pose = new Pose(T("AAAAAAAAAAAA"));
-    std::cout << "energy : " << pose->getEnergy() << std::endl;
+    std::cout << v1->l2norm(v2) << std::endl;
+    std::cout << v2->l2norm(v1) << std::endl;
 
-    GeneralFeaturesPtr feat = new SimplePoseFeatures();
-    feat->initialize(context, pose);
+    v1 = new DenseDoubleVector(5, 0.0);
+    v2 = new DenseDoubleVector(5, 1.0);
 
-    pose->setFeatureGenerator(context, feat);
+    std::cout << v1->l2norm(v2) << std::endl;
+    std::cout << v2->l2norm(v1) << std::endl;
 
-    Variable features1 = pose->getFeatures(context);
-    Variable features2 = feat->computeFeatures(context, pose);
+    v1 = new DenseDoubleVector(9, 0.0);
+    v2 = new DenseDoubleVector(9, 1.0);
 
-    std::cout << "features 1 = " << (const char*)features1.getObjectAndCast<DoubleVector>()->toString() << std::endl;
-    std::cout << "features 2 = " << (const char*)features2.getObjectAndCast<DoubleVector>()->toString() << std::endl;
-    std::cout << "blabla" << std::endl;
+    std::cout << v1->l2norm(v2) << std::endl;
+    std::cout << v2->l2norm(v1) << std::endl;
+
+    v1 = new DenseDoubleVector(16, 0.0);
+    v2 = new DenseDoubleVector(16, 1.0);
+
+    std::cout << v1->l2norm(v2) << std::endl;
+    std::cout << v2->l2norm(v1) << std::endl;
+
+    v1 = new DenseDoubleVector(25, 0.0);
+    v2 = new DenseDoubleVector(25, 2.0);
+
+    std::cout << v1->l2norm(v2) << std::endl;
+    std::cout << v2->l2norm(v1) << std::endl;
+
+    v1 = new DenseDoubleVector(100, 0.0);
+    v2 = new DenseDoubleVector(100, 1.0);
+
+    std::cout << v1->l2norm(v2) << std::endl;
+    std::cout << v2->l2norm(v1) << std::endl;
+
+    //    RosettaPtr ros = new Rosetta();
+    //    ros->init(context, false, 0, 0);
+    //
+    //    PosePtr pose = new Pose(T("AAAAAAAAAAAA"));
+    //    std::cout << "energy : " << pose->getEnergy() << std::endl;
+    //
+    //    GeneralFeaturesPtr feat = new SimplePoseFeatures();
+    //    feat->initialize(context, pose);
+    //
+    //    pose->setFeatureGenerator(context, feat);
+    //
+    //    Variable features1 = pose->getFeatures(context);
+    //    Variable features2 = feat->computeFeatures(context, pose);
+    //
+    //    std::cout << "features 1 = " << (const char*)features1.getObjectAndCast<DoubleVector>()->toString() << std::endl;
+    //    std::cout << "features 2 = " << (const char*)features2.getObjectAndCast<DoubleVector>()->toString() << std::endl;
+    //    std::cout << "blabla" << std::endl;
 
     //    FeatureGeneratorPtr fg = softDiscretizedNumberFeatureGenerator(0.0, 1000, 100, true);
     //

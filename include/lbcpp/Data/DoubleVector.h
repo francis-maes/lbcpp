@@ -79,7 +79,7 @@ public:
 
   int getIndexOfMinimumValue() const;
 
-  double l2norm() const
+  virtual double l2norm() const
     {return sqrt(sumOfSquares());}
 
   double dotProduct(const DenseDoubleVectorPtr& denseVector)
@@ -91,7 +91,7 @@ public:
   void subtractFrom(const DenseDoubleVectorPtr& denseVector)
     {addWeightedTo(denseVector, 0, -1.0);}
 
-  double euclidianDistanceWith(const DoubleVectorPtr& denseVector) const;
+  virtual double l2norm(const DoubleVectorPtr& vector) const;
 
   virtual SparseDoubleVectorPtr toSparseVector() const;
   virtual DenseDoubleVectorPtr toDenseDoubleVector() const;
@@ -174,6 +174,9 @@ public:
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
   virtual void computeFeatures(FeatureGeneratorCallback& callback) const;
+
+  virtual double l2norm(const DoubleVectorPtr& vector) const;
+  virtual double l2norm() const {return DoubleVector::l2norm();}
 
   virtual SparseDoubleVectorPtr toSparseVector() const
     {return refCountedPointerFromThis(this);}
@@ -261,8 +264,6 @@ public:
   // compute log(sum_i(exp(value[i]))) by avoiding numerical errors
   double computeLogSumOfExponentials() const;
 
-  double getDistanceTo(const SparseDoubleVectorPtr& other) const;
-
   // DoubleVector
   virtual double entropy() const;
   virtual size_t l0norm() const;
@@ -275,6 +276,9 @@ public:
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
   virtual void computeFeatures(FeatureGeneratorCallback& callback) const;
+
+  virtual double l2norm(const DoubleVectorPtr& vector) const;
+  virtual double l2norm() const {return DoubleVector::l2norm();}
 
   virtual DenseDoubleVectorPtr toDenseDoubleVector() const
     {return refCountedPointerFromThis(this);}
@@ -341,6 +345,8 @@ public:
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
   virtual void computeFeatures(FeatureGeneratorCallback& callback) const;
 
+  virtual double l2norm() const {return DoubleVector::l2norm();}
+
   virtual SparseDoubleVectorPtr toSparseVector() const;
 
   // Vector
@@ -403,6 +409,8 @@ public:
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
   virtual void computeFeatures(FeatureGeneratorCallback& callback) const;
+
+  virtual double l2norm() const {return DoubleVector::l2norm();}
 
   // Vector
   virtual void clear();

@@ -23,13 +23,13 @@
 namespace lbcpp
 {
 
-class ProteinOptimizer;
-typedef ReferenceCountedObjectPtr<ProteinOptimizer> ProteinOptimizerPtr;
+class OldProteinOptimizer;
+typedef ReferenceCountedObjectPtr<OldProteinOptimizer> OldProteinOptimizerPtr;
 
-class ProteinOptimizer: public Object
+class OldProteinOptimizer: public Object
 {
 public:
-  ProteinOptimizer()
+  OldProteinOptimizer()
   {
     name = String("Default");
     frequencyVerbosity = 0.01;
@@ -47,7 +47,7 @@ public:
    * @param numOutputFiles the number of output files stored in outputDirectory.
    * @param outputDirectory the directory where to put the saved files.
    */
-  ProteinOptimizer(String name, double frequencyCallback = 0.01, int numOutputFiles = -1,
+  OldProteinOptimizer(String name, double frequencyCallback = 0.01, int numOutputFiles = -1,
       File outputDirectory = juce::File()) :
     name(name)
   {
@@ -125,7 +125,7 @@ public:
                      const RandomGeneratorPtr& random, DenseDoubleVectorPtr& energiesAtIteration) = 0;
 
 protected:
-  friend class ProteinOptimizerClass;
+  friend class OldProteinOptimizerClass;
   bool verbosity;
   double frequencyVerbosity;
   String name;
@@ -227,10 +227,8 @@ protected:
 
 };
 
-extern ProteinOptimizerPtr proteinGreedyOptimizer();
-extern ProteinOptimizerPtr proteinMonteCarloOptimizer();
-extern ProteinOptimizerPtr proteinSimulatedAnnealingOptimizer();
-extern ProteinOptimizerPtr proteinSequentialOptimizer();
+extern OldProteinOptimizerPtr proteinSimulatedAnnealingOptimizer();
+extern OldProteinOptimizerPtr proteinSequentialOptimizer();
 
 }; /* namespace lbcpp */
 

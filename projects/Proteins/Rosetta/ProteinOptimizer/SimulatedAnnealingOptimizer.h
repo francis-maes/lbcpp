@@ -19,14 +19,14 @@ class ProteinSimulatedAnnealingOptimizer;
 typedef ReferenceCountedObjectPtr<ProteinSimulatedAnnealingOptimizer>
     ProteinSimulatedAnnealingOptimizerPtr;
 
-class ProteinSimulatedAnnealingOptimizer : public ProteinOptimizer
+class ProteinSimulatedAnnealingOptimizer : public OldProteinOptimizer
 {
 public:
   ProteinSimulatedAnnealingOptimizer(double initialTemperature, double finalTemperature,
       int numberDecreasingSteps, int maxSteps, int timesReinitialization, String name =
           juce::String("Default"), double frequencyCallback = 0.01, int numOutputFiles = -1,
       File outputDirectory = juce::File()) :
-    ProteinOptimizer(name, frequencyCallback, numOutputFiles, outputDirectory), initialTemperature(
+        OldProteinOptimizer(name, frequencyCallback, numOutputFiles, outputDirectory), initialTemperature(
         initialTemperature), finalTemperature(finalTemperature), numberDecreasingSteps(
         numberDecreasingSteps), maxSteps(maxSteps), timesReinitialization(timesReinitialization)
   {

@@ -20,16 +20,16 @@ namespace lbcpp
 class ProteinSequentialOptimizer;
 typedef ReferenceCountedObjectPtr<ProteinSequentialOptimizer> ProteinSequentialOptimizerPtr;
 
-class ProteinSequentialOptimizer: public ProteinOptimizer
+class ProteinSequentialOptimizer: public OldProteinOptimizer
 {
 public:
   ProteinSequentialOptimizer() :
-    ProteinOptimizer()
+    OldProteinOptimizer()
   {
   }
 
   ProteinSequentialOptimizer(String name) :
-    ProteinOptimizer(name, -1, -1, juce::File())
+    OldProteinOptimizer(name, -1, -1, juce::File())
   {
     if (name.isEmpty())
       this->name = String("Default");
