@@ -15,7 +15,7 @@ namespace lbcpp
 class GeneralOptimizerState : public Object
 {
 public:
-  double getObjective() const = 0;
+  virtual double getObjective() const = 0;
 
 protected:
   friend class GeneralOptimizerStateClass;
@@ -26,7 +26,7 @@ typedef ReferenceCountedObjectPtr<GeneralOptimizerState> GeneralOptimizerStatePt
 class GeneralOptimizerStateModifier : public Object
 {
 public:
-  GeneralOptimizerStatePtr getModifiedState(GeneralOptimizerStatePtr& state) = 0;
+  virtual GeneralOptimizerStatePtr getModifiedState(GeneralOptimizerStatePtr& state) = 0;
 
 protected:
   friend class GeneralOptimizerStateModifierClass;
@@ -37,7 +37,7 @@ typedef ReferenceCountedObjectPtr<GeneralOptimizerStateModifier> GeneralOptimize
 class GeneralOptimizerStoppingCriterion : public Object
 {
 public:
-  bool performNext(size_t iteration, GeneralOptimizerStatePtr& state, GeneralOptimizerStatePtr& bestState);
+  virtual bool performNext(size_t iteration, GeneralOptimizerStatePtr& state, GeneralOptimizerStatePtr& bestState) = 0;
 
 protected:
   friend class GeneralOptimizerStoppingCriterionClass;
@@ -78,8 +78,8 @@ public:
     {return bestState;}
 
 protected:
-  void performNextIteration() = 0;
-  void updateBestState() = 0;
+  virtual void performNextIteration() = 0;
+  virtual void updateBestState() = 0;
 
   friend class GeneralOptimizerClass;
 
