@@ -61,15 +61,15 @@ public:
   /*
    * Optimization
    */
-  void optimize()
-  {
+//  void optimize()
+//  {
 //    while (stoppingCriterion->performNext(iteration, state, bestState))
 //    {
 //      performNextIteration();
 //      updateBestState();
 //      iteration++;
-    }
-  }
+//    }
+//  }
 
   /*
    * Solution
