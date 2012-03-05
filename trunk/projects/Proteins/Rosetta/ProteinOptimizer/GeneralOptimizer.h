@@ -63,11 +63,11 @@ public:
    */
   void optimize()
   {
-    while (stoppingCriterion->performNext(iteration, state, bestState))
-    {
-      performNextIteration();
-      updateBestState();
-      iteration++;
+//    while (stoppingCriterion->performNext(iteration, state, bestState))
+//    {
+//      performNextIteration();
+//      updateBestState();
+//      iteration++;
     }
   }
 
