@@ -25,6 +25,8 @@ public:
   {
     if (problem.isInstanceOf<LuapeClassifier>())
       return new LuapeVectorSumNode(problem.staticCast<LuapeClassifier>()->getLabels(), false);
+    else if (problem.isInstanceOf<LuapeBinaryClassifier>())
+      return new LuapeScalarSumNode();
     else
     {
       jassert(false); // not implemented yet

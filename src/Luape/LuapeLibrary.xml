@@ -87,6 +87,9 @@
   <class name="RegressionLearningObjective" base="SupervisedLearningObjective"/>
   <class name="BinaryClassificationLearningObjective" base="SupervisedLearningObjective"/>
   <class name="ClassificationLearningObjective" base="SupervisedLearningObjective" abstract="yes"/>
+  <class name="InformationGainBinaryLearningObjective" base="BinaryClassificationLearningObjective">
+    <variable type="Boolean" name="normalize"/>
+  </class>
   <class name="InformationGainLearningObjective" base="ClassificationLearningObjective">
     <variable type="Boolean" name="normalize"/>
   </class>

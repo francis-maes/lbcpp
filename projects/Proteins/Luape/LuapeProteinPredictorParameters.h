@@ -127,7 +127,10 @@ public:
     weakLearner->setVerbose(verbose);
     learningMachine->setLearner(adaBoostLearner(weakLearner, numIterations, treeDepth), verbose);
 # else
-    LuapeLearnerPtr baseLearner = treeLearner(new InformationGainLearningObjective(), createWeakLearner(target), 1, 0);
+    LuapeLearnerPtr weakLearner = createWeakLearner(target);
+    weakLearner->setVerbose(verbose);
+    LuapeLearnerPtr baseLearner = treeLearner(new InformationGainBinaryLearningObjective(), weakLearner, 1, 0);
+    baseLearner->setVerbose(verbose);
     learningMachine->setLearner(ensembleLearner(baseLearner, numIterations), verbose);
 # endif // !USE_EXTRA_TREES
     learningMachine->setBatchLearner(filterUnsupervisedExamplesBatchLearner(learningMachine->getBatchLearner(), true));
