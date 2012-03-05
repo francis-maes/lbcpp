@@ -226,7 +226,7 @@ void Pose::computeMeanDistances(size_t cutoff, double* shortRange, double* longR
     for (size_t j = 0; j < res; j++)
     {
       second = getCalphaPosition(j);
-      distance = first->euclidianDistanceWith(second);
+      distance = first->l2norm(second);
 
       if (std::abs((int)i - (int)j) < cutoff)
       {
@@ -267,7 +267,7 @@ double Pose::computeMinimumDistance() const
     for (size_t j = 0; j < res; j++)
     {
       second = getCalphaPosition(j);
-      distance = first->euclidianDistanceWith(second);
+      distance = first->l2norm(second);
 
       optimalDistance = distance < optimalDistance ? distance : optimalDistance;
     }
@@ -289,7 +289,7 @@ double Pose::computeMaximumDistance() const
     for (size_t j = 0; j < res; j++)
     {
       second = getCalphaPosition(j);
-      distance = first->euclidianDistanceWith(second);
+      distance = first->l2norm(second);
 
       optimalDistance = distance > optimalDistance ? distance : optimalDistance;
     }

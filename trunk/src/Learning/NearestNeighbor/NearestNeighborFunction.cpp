@@ -25,7 +25,7 @@ Variable NearestNeighborFunction::computeFunction(ExecutionContext& context, con
   for (size_t i = 0; i < n; ++i)
   {
     //const double score = baseVector->getDistanceTo(inputData[i]);
-    const double score = baseVector->getDistanceTo(inputData[i]->toSparseVector());
+    const double score = baseVector->l2norm(inputData[i]->toSparseVector());
     scoredIndices.insert(std::pair<double, size_t>(-score, i));
   }
 

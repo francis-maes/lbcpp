@@ -222,8 +222,6 @@ SET(LBCPP_PROTEIN_ROSETTA_DATA_MOVERSAMPLER_SOURCES
   
 SET(LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES
   Rosetta/ProteinOptimizer/ProteinOptimizer.h
-  Rosetta/ProteinOptimizer/GreedyOptimizer.h
-  Rosetta/ProteinOptimizer/MonteCarloOptimizer.h
   Rosetta/ProteinOptimizer/SimulatedAnnealingOptimizer.h
   Rosetta/ProteinOptimizer/SequentialOptimizer.h
   Rosetta/ProteinOptimizer/ProteinRosettaOptimizerLibrary.xml

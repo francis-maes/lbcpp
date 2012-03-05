@@ -36,7 +36,7 @@ public:
   }
 
   ProteinOptimizerWorkUnit(const String& proteinName, const core::pose::PoseOP& pose,
-      ProteinOptimizerPtr& optimizer, SamplerPtr& sampler, RandomGeneratorPtr& random)
+      OldProteinOptimizerPtr& optimizer, SamplerPtr& sampler, RandomGeneratorPtr& random)
     : CompositeWorkUnit(T("ProteinOptimizerWorkUnit"))
   {
     this->proteinName = proteinName;
@@ -80,7 +80,7 @@ protected:
 #ifdef LBCPP_PROTEIN_ROSETTA
   core::pose::PoseOP pose;
 #endif // LBCPP_PROTEIN_ROSETTA
-  ProteinOptimizerPtr optimizer;
+  OldProteinOptimizerPtr optimizer;
   SamplerPtr sampler;
   RandomGeneratorPtr random;
 };
@@ -124,7 +124,7 @@ public:
 
       SamplerPtr moverSampler = new PoseMoverSampler(currentProtein->getLength());
 
-      ProteinOptimizerPtr o = new ProteinSimulatedAnnealingOptimizer(4.0, 0.01, 50,
+      OldProteinOptimizerPtr o = new ProteinSimulatedAnnealingOptimizer(4.0, 0.01, 50,
           maxNumberIterations, 5, currentProtein->getName(), 0.0001, timesFeatureGeneration,
           outputDirectory);
       RandomGeneratorPtr random = new RandomGenerator();

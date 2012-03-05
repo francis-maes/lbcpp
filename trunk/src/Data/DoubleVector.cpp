@@ -172,12 +172,43 @@ int DoubleVector::getIndexOfMinimumValue() const
   return getExtremumValue(false, &res) == DBL_MAX ? -1 : (int)res;
 }
 
-double DoubleVector::euclidianDistanceWith(const DoubleVectorPtr& denseVector) const
+double DoubleVector::l2norm(const DoubleVectorPtr& vector) const
 {
-  jassert(this->getNumElements() == denseVector->getNumElements());
+  size_t numElements = this->getNumElements();
+  jassert(numElements == vector->getNumElements());
   double distance = 0;
-  for (size_t i = 0; i < this->getNumElements(); i++)
-    distance += std::pow(this->getElement(i).getDouble() - denseVector->getElement(i).getDouble(), 2.0);
+
+  if (vector.isInstanceOf<SparseDoubleVector> ())
+  {
+    size_t indexInSparse = 0;
+    SparseDoubleVectorPtr tmpVector = vector;
+    std::vector<std::pair<size_t, double> > sparseValues = tmpVector->getValuesVector();
+
+    for (size_t i = 0; i < numElements; i++)
+    {
+      if ((indexInSparse < sparseValues.size()) && (i == sparseValues[indexInSparse].first))
+      {
+        distance += std::pow(getElement(i).getDouble() - sparseValues[indexInSparse].second, 2.0);
+        indexInSparse++;
+      }
+      else
+        distance += std::pow(getElement(i).getDouble(), 2.0);
+    }
+  }
+  else if (vector.isInstanceOf<DenseDoubleVector> ())
+  {
+    DenseDoubleVectorPtr tmpVector = vector;
+    std::vector<double> denseValues = tmpVector->getValues();
+
+    for (size_t i = 0; i < numElements; i++)
+      distance += std::pow(getElement(i).getDouble() - denseValues[i], 2.0);
+  }
+  else
+  {
+    for (size_t i = 0; i < numElements; i++)
+      distance += std::pow(getElement(i).getDouble() - vector->getElement(i).getDouble(), 2.0);
+  }
+
   return std::sqrt(distance);
 }
 
@@ -478,6 +509,72 @@ void SparseDoubleVector::computeFeatures(FeatureGeneratorCallback& callback) con
     callback.sense(values[i].first, values[i].second);
 }
 
+double SparseDoubleVector::l2norm(const DoubleVectorPtr& vector) const
+{
+  size_t indexInSparse = 0;
+  size_t numElements = vector->getNumElements();
+  jassert(lastIndex == (int)numElements);
+  double distance = 0;
+
+  if (vector.isInstanceOf<SparseDoubleVector> ())
+  {
+    size_t remoteIndexInSparse = 0;
+    SparseDoubleVectorPtr tmpVector = vector;
+    std::vector<std::pair<size_t, double> > sparseValues = tmpVector->getValuesVector();
+    double distanceAggregator = 0;
+
+    for (size_t i = 0; i < numElements; i++)
+    {
+      distanceAggregator = 0;
+
+      if ((indexInSparse < values.size()) && (i == values[indexInSparse].first))
+      {
+        distanceAggregator += values[indexInSparse].second;
+        indexInSparse++;
+      }
+
+      if ((remoteIndexInSparse < sparseValues.size()) && (i == sparseValues[remoteIndexInSparse].first))
+      {
+        distanceAggregator -= sparseValues[remoteIndexInSparse].second;
+        remoteIndexInSparse++;
+      }
+
+      distance += std::pow(distanceAggregator, 2.0);
+    }
+  }
+  else if (vector.isInstanceOf<DenseDoubleVector> ())
+  {
+    DenseDoubleVectorPtr tmpVector = vector;
+    std::vector<double> denseValues = tmpVector->getValues();
+
+    for (size_t i = 0; i < numElements; i++)
+    {
+      if ((indexInSparse < values.size()) && (i == values[indexInSparse].first))
+      {
+        distance += std::pow(values[indexInSparse].second - denseValues[i], 2.0);
+        indexInSparse++;
+      }
+      else
+        distance += std::pow(denseValues[i], 2.0);
+    }
+  }
+  else
+  {
+    for (size_t i = 0; i < numElements; i++)
+    {
+      if ((indexInSparse < values.size()) && (i == values[indexInSparse].first))
+      {
+        distance += std::pow(values[indexInSparse].second - vector->getElement(i).getDouble(), 2.0);
+        indexInSparse++;
+      }
+      else
+        distance += std::pow(vector->getElement(i).getDouble(), 2.0);
+    }
+  }
+
+  return std::sqrt(distance);
+}
+
 // vector
 void SparseDoubleVector::clear()
   {values.clear();}
@@ -750,29 +847,6 @@ double DenseDoubleVector::computeLogSumOfExponentials() const
   return log(res) + highestValue;
 }
 
-double DenseDoubleVector::getDistanceTo(const SparseDoubleVectorPtr& other) const
-{
-  size_t indexInSparse = 0;
-  const size_t denseSize = values->size();
-  const size_t sparseSize = other->values.size();
-  double res = 0.0;
-  for (size_t i = 0; i < denseSize; ++i)
-  {
-    double value = 0.0;
-    if (indexInSparse < sparseSize && other->values[indexInSparse].first == i)
-    {
-      const double diff = (*values)[i] - other->values[indexInSparse].second;
-      value = diff * diff;
-      ++indexInSparse;
-    }
-    else
-      value = (*values)[i] * (*values)[i];
-
-    res += value;
-  }
-  return sqrt(res);
-}
-
 // DoubleVector
 double DenseDoubleVector::entropy() const
   {return defaultEntropy(*this);}
@@ -852,6 +926,44 @@ void DenseDoubleVector::computeFeatures(FeatureGeneratorCallback& callback) cons
 {
   for (size_t i = 0; i < values->size() && !callback.shouldStop(); ++i)
     callback.sense(i, (*values)[i]);
+}
+
+double DenseDoubleVector::l2norm(const DoubleVectorPtr& vector) const
+{
+  size_t numElements = values->size();
+  jassert(numElements == vector->getNumElements());
+  double distance = 0;
+
+  if (vector.isInstanceOf<SparseDoubleVector> ())
+  {
+    size_t indexInSparse = 0;
+    SparseDoubleVectorPtr tmpVector = vector;
+    std::vector<std::pair<size_t, double> > sparseValues = tmpVector->getValuesVector();
+
+    for (size_t i = 0; i < numElements; i++)
+    {
+      if ((indexInSparse < sparseValues.size()) && (i == sparseValues[indexInSparse].first))
+      {
+        distance += std::pow((*values)[i] - sparseValues[indexInSparse].second, 2.0);
+        indexInSparse++;
+      }
+      else
+        distance += std::pow((*values)[i], 2.0);
+    }
+  }
+  else if (vector.isInstanceOf<DenseDoubleVector> ())
+  {
+    DenseDoubleVectorPtr tmpVector = vector;
+    for (size_t i = 0; i < numElements; i++)
+      distance += std::pow((*values)[i] - (*(tmpVector->values))[i], 2.0);
+  }
+  else
+  {
+    for (size_t i = 0; i < numElements; i++)
+      distance += std::pow((*values)[i] - vector->getElement(i).getDouble(), 2.0);
+  }
+
+  return std::sqrt(distance);
 }
 
 // Vector
