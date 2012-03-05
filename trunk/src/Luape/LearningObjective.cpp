@@ -251,6 +251,136 @@ void ClassificationLearningObjective::initialize(const LuapeInferencePtr& proble
 }
 
 /*
+ ** InformationGainBinaryLearningObjective
+ */
+
+InformationGainBinaryLearningObjective::InformationGainBinaryLearningObjective(bool normalize)
+  : normalize(normalize) {}
+
+void InformationGainBinaryLearningObjective::initialize(const LuapeInferencePtr& problem)
+{
+  static const TypePtr denseVectorClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
+  BinaryClassificationLearningObjective::initialize(problem);
+  splitWeights = new DenseDoubleVector(3, 0.0); // prediction probabilities
+  labelWeights = new DenseDoubleVector(denseVectorClass); // label probabilities
+  for (int i = 0; i < 3; ++i)
+    labelConditionalProbabilities[i] = new DenseDoubleVector(denseVectorClass); // label probabilities given that the predicted value is negative, positive or missing
+}
+
+void InformationGainBinaryLearningObjective::setSupervisions(const VectorPtr& supervisions)
+{
+  size_t n = supervisions->getNumElements();
+  this->supervisions = new GenericVector(booleanType, n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    Variable supervision = supervisions->getElement(i);
+    bool label;
+    if (lbcpp::convertSupervisionVariableToBoolean(supervision, label))
+      this->supervisions->setElement(i, Variable(label, booleanType));
+  }
+  invalidate();
+}
+
+void InformationGainBinaryLearningObjective::update()
+{
+  splitWeights->multiplyByScalar(0.0);
+  labelWeights->multiplyByScalar(0.0);
+  for (int i = 0; i < 3; ++i)
+    labelConditionalProbabilities[i]->multiplyByScalar(0.0);
+  
+  sumOfWeights = 0.0;
+  for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
+  {
+    size_t index = it.getIndex();
+    double weight = getWeight(index);
+    size_t supervision = (int)supervisions->getElement(index).getBoolean() ? 0 : 1;
+    unsigned char b = it.getRawBoolean();
+    
+    splitWeights->incrementValue((size_t)b, weight);
+    labelWeights->incrementValue(supervision, weight);
+    labelConditionalProbabilities[b]->incrementValue(supervision, weight);
+    sumOfWeights += weight;
+  }
+}
+
+void InformationGainBinaryLearningObjective::flipPrediction(size_t index)
+{
+  jassert(upToDate);
+  size_t supervision = (int)supervisions->getElement(index).getInteger();
+  double weight = getWeight(index);
+  splitWeights->decrementValue(0, weight); // remove 'false' prediction
+  labelConditionalProbabilities[0]->decrementValue(supervision, weight);
+  splitWeights->incrementValue(1, weight); // add 'true' prediction
+  labelConditionalProbabilities[1]->incrementValue(supervision, weight);
+}
+
+double InformationGainBinaryLearningObjective::computeObjective()
+{
+  ensureIsUpToDate();
+  
+  double currentEntropy = computeEntropy(labelWeights, sumOfWeights);
+  double splitEntropy = computeEntropy(splitWeights, sumOfWeights);
+  double expectedNextEntropy = 0.0;
+  for (int i = 0; i < 3; ++i)
+    expectedNextEntropy += (splitWeights->getValue(i) / sumOfWeights) * computeEntropy(labelConditionalProbabilities[i], splitWeights->getValue(i));
+  double informationGain = currentEntropy - expectedNextEntropy;
+  if (normalize)
+    return 2.0 * informationGain / (currentEntropy + splitEntropy);
+  else
+    return informationGain;
+}
+
+Variable InformationGainBinaryLearningObjective::computeVote(const IndexSetPtr& indices)
+{
+  if (indices->size() == 1)
+  {
+    // special case when the vote is all concentrated on a single label to spare some memory
+    bool label = (size_t)supervisions->getElement(*indices->begin()).getBoolean();
+    return Variable(label ? 1.f : 0.f, doubleType); // (a vector containing a single 1 on the label)
+  }
+  else
+  {
+    DenseDoubleVectorPtr res = new DenseDoubleVector(denseDoubleVectorClass(falseOrTrueEnumeration, doubleType));
+    double sumOfWeights = 0.0;
+    for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
+    {
+      size_t index = *it;
+      double weight = getWeight(index);
+      res->incrementValue((size_t)supervisions->getElement(index).getBoolean() ? 1 : 0, weight);
+      sumOfWeights += weight;
+    }
+    if (sumOfWeights)
+    {
+      res->multiplyByScalar(1.0 / sumOfWeights);
+      int argmax = res->getIndexOfMaximumValue();
+      if (argmax >= 0 && res->getValue(argmax) == 1.0)
+        return Variable(argmax ? 1.f : 0.f, doubleType); // reuse an existing vector to spare memory
+    }
+    return res->getElement(1);
+  }
+}
+
+double InformationGainBinaryLearningObjective::computeEntropy(const DenseDoubleVectorPtr& vector, double sumOfWeights)
+{
+  if (!sumOfWeights)
+    return 0.0;
+  double res = 0.0;
+  double Z = 1.0 / sumOfWeights;
+  double sumOfP = 0.0;
+  for (size_t i = 0; i < vector->getNumValues(); ++i)
+  {
+    double p = vector->getValue(i) * Z;
+    if (p)
+    {
+      res -= p * log2(p);
+      sumOfP += p;
+    }
+  }
+  jassert(fabs(sumOfP - 1.0) < 1e-12);
+  return res;
+}
+
+/*
 ** InformationGainLearningObjective
 */
 InformationGainLearningObjective::InformationGainLearningObjective(bool normalize)

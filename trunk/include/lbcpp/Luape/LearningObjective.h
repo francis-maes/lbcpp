@@ -152,6 +152,33 @@ typedef ReferenceCountedObjectPtr<ClassificationLearningObjective> Classificatio
 extern ClassificationLearningObjectivePtr discreteAdaBoostMHLearningObjective();
 extern ClassificationLearningObjectivePtr realAdaBoostMHLearningObjective();
 
+class InformationGainBinaryLearningObjective : public BinaryClassificationLearningObjective
+{
+public:
+  InformationGainBinaryLearningObjective(bool normalize = true);
+
+  virtual void initialize(const LuapeInferencePtr& problem);
+  virtual void setSupervisions(const VectorPtr& supervisions);
+  virtual void update();
+  virtual void flipPrediction(size_t index);
+  virtual double computeObjective();
+  virtual Variable computeVote(const IndexSetPtr& indices);
+
+protected:
+  friend class InformationGainBinaryLearningObjectiveClass;
+
+  bool normalize;
+
+  GenericVectorPtr supervisions;
+
+  DenseDoubleVectorPtr splitWeights;
+  DenseDoubleVectorPtr labelWeights;
+  double sumOfWeights;
+  DenseDoubleVectorPtr labelConditionalProbabilities[3];
+
+  static double computeEntropy(const DenseDoubleVectorPtr& vector, double sumOfWeights);
+};
+
 class InformationGainLearningObjective : public ClassificationLearningObjective
 {
 public:
