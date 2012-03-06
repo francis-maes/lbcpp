@@ -182,31 +182,41 @@ double DoubleVector::l2norm(const DoubleVectorPtr& vector) const
   {
     size_t indexInSparse = 0;
     SparseDoubleVectorPtr tmpVector = vector;
-    std::vector<std::pair<size_t, double> > sparseValues = tmpVector->getValuesVector();
+    const std::vector<std::pair<size_t, double> >& sparseValues = tmpVector->getValuesVector();
 
     for (size_t i = 0; i < numElements; i++)
     {
       if ((indexInSparse < sparseValues.size()) && (i == sparseValues[indexInSparse].first))
       {
-        distance += std::pow(getElement(i).getDouble() - sparseValues[indexInSparse].second, 2.0);
+        const double diff = getElement(i).getDouble() - sparseValues[indexInSparse].second;
+        distance += diff * diff;
         indexInSparse++;
       }
       else
-        distance += std::pow(getElement(i).getDouble(), 2.0);
+      {
+        const double diff = getElement(i).getDouble();
+        distance += diff * diff;
+      }
     }
   }
   else if (vector.isInstanceOf<DenseDoubleVector> ())
   {
     DenseDoubleVectorPtr tmpVector = vector;
-    std::vector<double> denseValues = tmpVector->getValues();
+    const std::vector<double>& denseValues = tmpVector->getValues();
 
     for (size_t i = 0; i < numElements; i++)
-      distance += std::pow(getElement(i).getDouble() - denseValues[i], 2.0);
+    {
+      const double diff = getElement(i).getDouble() - denseValues[i];
+      distance += diff * diff;
+    }
   }
   else
   {
     for (size_t i = 0; i < numElements; i++)
-      distance += std::pow(getElement(i).getDouble() - vector->getElement(i).getDouble(), 2.0);
+    {
+      const double diff = getElement(i).getDouble() - vector->getElement(i).getDouble();
+      distance += diff * diff;
+    }
   }
 
   return std::sqrt(distance);
@@ -520,7 +530,7 @@ double SparseDoubleVector::l2norm(const DoubleVectorPtr& vector) const
   {
     size_t remoteIndexInSparse = 0;
     SparseDoubleVectorPtr tmpVector = vector;
-    std::vector<std::pair<size_t, double> > sparseValues = tmpVector->getValuesVector();
+    const std::vector<std::pair<size_t, double> >& sparseValues = tmpVector->getValuesVector();
     double distanceAggregator = 0;
 
     for (size_t i = 0; i < numElements; i++)
@@ -539,23 +549,24 @@ double SparseDoubleVector::l2norm(const DoubleVectorPtr& vector) const
         remoteIndexInSparse++;
       }
 
-      distance += std::pow(distanceAggregator, 2.0);
+      distance += distanceAggregator * distanceAggregator;
     }
   }
   else if (vector.isInstanceOf<DenseDoubleVector> ())
   {
     DenseDoubleVectorPtr tmpVector = vector;
-    std::vector<double> denseValues = tmpVector->getValues();
+    const std::vector<double>& denseValues = tmpVector->getValues();
 
     for (size_t i = 0; i < numElements; i++)
     {
       if ((indexInSparse < values.size()) && (i == values[indexInSparse].first))
       {
-        distance += std::pow(values[indexInSparse].second - denseValues[i], 2.0);
+        const double diff = values[indexInSparse].second - denseValues[i];
+        distance += diff * diff;
         indexInSparse++;
       }
       else
-        distance += std::pow(denseValues[i], 2.0);
+        distance += denseValues[i] * denseValues[i];
     }
   }
   else
@@ -564,11 +575,15 @@ double SparseDoubleVector::l2norm(const DoubleVectorPtr& vector) const
     {
       if ((indexInSparse < values.size()) && (i == values[indexInSparse].first))
       {
-        distance += std::pow(values[indexInSparse].second - vector->getElement(i).getDouble(), 2.0);
+        const double diff = values[indexInSparse].second - vector->getElement(i).getDouble();
+        distance += diff * diff;
         indexInSparse++;
       }
       else
-        distance += std::pow(vector->getElement(i).getDouble(), 2.0);
+      {
+        const double diff = vector->getElement(i).getDouble();
+        distance += diff * diff;
+      }
     }
   }
 
@@ -938,29 +953,36 @@ double DenseDoubleVector::l2norm(const DoubleVectorPtr& vector) const
   {
     size_t indexInSparse = 0;
     SparseDoubleVectorPtr tmpVector = vector;
-    std::vector<std::pair<size_t, double> > sparseValues = tmpVector->getValuesVector();
+    const std::vector<std::pair<size_t, double> >& sparseValues = tmpVector->getValuesVector();
 
     for (size_t i = 0; i < numElements; i++)
     {
       if ((indexInSparse < sparseValues.size()) && (i == sparseValues[indexInSparse].first))
       {
-        distance += std::pow((*values)[i] - sparseValues[indexInSparse].second, 2.0);
+        const double diff = (*values)[i] - sparseValues[indexInSparse].second;
+        distance += diff * diff;
         indexInSparse++;
       }
       else
-        distance += std::pow((*values)[i], 2.0);
+        distance += (*values)[i] * (*values)[i];
     }
   }
   else if (vector.isInstanceOf<DenseDoubleVector> ())
   {
     DenseDoubleVectorPtr tmpVector = vector;
     for (size_t i = 0; i < numElements; i++)
-      distance += std::pow((*values)[i] - (*(tmpVector->values))[i], 2.0);
+    {
+      const double diff = (*values)[i] - (*(tmpVector->values))[i];
+      distance += diff * diff;
+    }
   }
   else
   {
     for (size_t i = 0; i < numElements; i++)
-      distance += std::pow((*values)[i] - vector->getElement(i).getDouble(), 2.0);
+    {
+      const double diff = (*values)[i] - vector->getElement(i).getDouble();
+      distance += diff * diff;
+    }
   }
 
   return std::sqrt(distance);
