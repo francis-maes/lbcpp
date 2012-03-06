@@ -92,10 +92,12 @@
   <class name="ScalarVariableStatisticsPerception">
     <variable type="Double" name="mean"/>
     <variable type="Double" name="stddev"/>
-    <variable type="Double" name="sum"/>
     <variable type="Double" name="min"/>
     <variable type="Double" name="max"/>
-    <variable type="Double" name="percentActive"/>
+    <variable type="Double" name="sum"/>
+    <variable type="Double" name="l0norm"/>
+    <variable type="Double" name="l1norm"/>
+    <variable type="Double" name="l2norm"/>
   </class>
   <class name="ComputeDoubleVectorStatisticsLuapeFunction" base="LuapeFunction">
     <constructor/>

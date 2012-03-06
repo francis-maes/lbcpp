@@ -89,14 +89,16 @@ protected:
 class ScalarVariableStatisticsPerception : public Object
 {
 public:
-  ScalarVariableStatisticsPerception() : mean(0.0), stddev(0.0), sum(0.0), min(0.0), max(0.0), percentActive(0.0) {}
+  ScalarVariableStatisticsPerception() : mean(0.0), stddev(0.0), min(0.0), max(0.0), sum(0.0), l0norm(0.0), l1norm(0.0), l2norm(0.0) {}
 
   double mean;
   double stddev;
-  double sum;
   double min;
   double max;
-  double percentActive;
+  double sum;
+  double l0norm;
+  double l1norm;
+  double l2norm;
 };
 
 typedef ReferenceCountedObjectPtr<ScalarVariableStatisticsPerception> ScalarVariableStatisticsPerceptionPtr;
@@ -120,7 +122,8 @@ public:
   {
     const DoubleVectorPtr& vector = object.staticCast<DoubleVector>();
     ScalarVariableStatistics stats;
-    size_t numActive = 0;
+    size_t l0norm = 0;
+    double l1norm = 0.0;
     DenseDoubleVectorPtr denseVector = vector.dynamicCast<DenseDoubleVector>();
     if (denseVector)
     {
@@ -129,7 +132,10 @@ public:
         double value = denseVector->getValue(i);
         stats.push(value);
         if (value != 0.0)
-          ++numActive;
+        {
+          ++l0norm;
+          l1norm += fabs(value);
+        }
       }
     }
     else
@@ -139,10 +145,12 @@ public:
     ScalarVariableStatisticsPerceptionPtr res = new ScalarVariableStatisticsPerception();
     res->mean = stats.getMean();
     res->stddev = stats.getStandardDeviation();
-    res->sum = stats.getSum();
     res->min = stats.getMinimum();
     res->max = stats.getMaximum();
-    res->percentActive = (double)numActive / stats.getCount();
+    res->sum = stats.getSum();
+    res->l0norm = (double)l0norm;
+    res->l1norm = l1norm;
+    res->l2norm = sqrt(stats.getSumOfSquares());
     return res;
   }
 

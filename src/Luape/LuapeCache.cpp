@@ -115,9 +115,16 @@ LuapeSamplesCache::LuapeSamplesCache(LuapeUniversePtr universe, const std::vecto
 
 void LuapeSamplesCache::setInputObject(const std::vector<LuapeInputNodePtr>& inputs, size_t index, const ObjectPtr& object)
 {
+  if (inputs.size() == 1 && object->getClass()->inheritsFrom(inputs[0]->getType()))
+  {
+    inputCaches[0]->setElement(index, object);
+    return;
+  }
+
   ContainerPtr container = object.dynamicCast<Container>();
   if (container)
   {
+    // inputs are the elements of a container
     size_t n = container->getNumElements();
     jassert(n <= inputs.size());
     for (size_t i = 0; i < n; ++i)
@@ -125,6 +132,7 @@ void LuapeSamplesCache::setInputObject(const std::vector<LuapeInputNodePtr>& inp
   }
   else if (object.isInstanceOf<SparseDoubleObject>())
   {
+    // inputs are the elements of a SparseDoubleObject
     SparseDoubleObjectPtr sparseObject = object.staticCast<SparseDoubleObject>();
     const std::vector< std::pair<size_t, double> >& values = sparseObject->getValues();
     for (size_t i = 0; i < values.size(); ++i)
@@ -132,22 +140,11 @@ void LuapeSamplesCache::setInputObject(const std::vector<LuapeInputNodePtr>& inp
   }
   else
   {
+    // inputs are the variables of an Object
     size_t n = object->getNumVariables();
-    if (n == inputs.size())
-    {
-      for (size_t i = 0; i < n; ++i)
-        inputCaches[i]->setElement(index, object->getVariable(i));
-    }
-    else
-    {
-      if (inputs.size() == 1 && inputs[0]->getType() == object->getClass())
-        inputCaches[0]->setElement(index, object);
-      else
-      {
-        // invalid number of inputs        
-        jassert(false);
-      }
-    }
+    jassert(n == inputs.size());
+    for (size_t i = 0; i < n; ++i)
+      inputCaches[i]->setElement(index, object->getVariable(i));
   }
 }
 
