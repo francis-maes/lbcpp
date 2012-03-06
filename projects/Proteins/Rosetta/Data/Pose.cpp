@@ -46,22 +46,20 @@ Variable Pose::getFeatures(ExecutionContext& context)
 
 #ifdef LBCPP_PROTEIN_ROSETTA
 
-Pose::Pose(const String& sequence)
+Pose::Pose(const String& sequence) : isEnergyFunctionInitialized(false)
 {
   jassert(sequence.length() != 0);
   pose = new core::pose::Pose();
   core::chemical::make_pose_from_sequence(*pose, (const char*)sequence,
       core::chemical::ChemicalManager::get_instance()->nonconst_residue_type_set("fa_standard"));
-  initializeEnergyFunction();
 }
 
-Pose::Pose(const File& pdbFile)
+Pose::Pose(const File& pdbFile) : isEnergyFunctionInitialized(false)
 {
   jassert(pdbFile != File::nonexistent);
   pose = new core::pose::Pose((const char*)pdbFile.getFullPathName());
   if (pose() == NULL)
     jassert(false);
-  initializeEnergyFunction();
 }
 
 void Pose::saveToPDB(const File& pdbFile) const
@@ -298,12 +296,19 @@ double Pose::computeMaximumDistance() const
 }
 
 void Pose::initializeEnergyFunction()
-  {score_fct = core::scoring::ScoreFunctionFactory::create_score_function("standard");}
+{
+  score_fct = core::scoring::ScoreFunctionFactory::create_score_function("standard");
+  isEnergyFunctionInitialized = true;
+}
 
-double Pose::getEnergy() const
-  {return (*score_fct)(*pose);}
+double Pose::getEnergy()
+{
+  if (!isEnergyFunctionInitialized)
+    initializeEnergyFunction();
+  return (*score_fct)(*pose);
+}
 
-double Pose::getCorrectedEnergy() const
+double Pose::getCorrectedEnergy()
   {return getEnergy() + getDistanceCorrectionFactor() + getCollisionCorrectionFactor();}
 
 double Pose::getDistanceCorrectionFactor() const
@@ -471,13 +476,13 @@ double Pose::computeMaximumDistance() const
 void Pose::initializeEnergyFunction()
   {jassert(false);}
 
-double Pose::getEnergy() const
+double Pose::getEnergy()
 {
   jassert(false);
   return 0.0;
 }
 
-double Pose::getCorrectedEnergy() const
+double Pose::getCorrectedEnergy()
 {
   jassert(false);
   return 0.0;

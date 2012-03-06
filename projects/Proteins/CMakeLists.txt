@@ -24,6 +24,7 @@ GENERATE_INTROSPECTION_CODE(Rosetta/Data/Features/ProteinRosettaDataFeaturesLibr
 GENERATE_INTROSPECTION_CODE(Rosetta/Data/Mover/ProteinRosettaDataMoverLibrary.xml ProteinRosettaDataMoverLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Rosetta/Data/MoverSampler/ProteinRosettaDataMoverSamplerLibrary.xml ProteinRosettaDataMoverSamplerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Rosetta/ProteinOptimizer/ProteinRosettaOptimizerLibrary.xml ProteinRosettaOptimizerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Rosetta/ProteinOptimizer/StoppingCriterion/ProteinRosettaOptimizerStoppingCriterionLibrary.xml ProteinRosettaOptimizerStoppingCriterionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Rosetta/Sampler/ProteinRosettaSamplerLibrary.xml ProteinRosettaSamplerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Rosetta/WorkUnit/ProteinRosettaWorkUnitLibrary.xml ProteinRosettaWorkUnitLibrary.cpp)
 
@@ -213,6 +214,7 @@ SET(LBCPP_PROTEIN_ROSETTA_DATA_MOVER_SOURCES
 )
 
 SET(LBCPP_PROTEIN_ROSETTA_DATA_MOVERSAMPLER_SOURCES
+  Rosetta/Data/MoverSampler/BlindPoseMoverSampler.h
   Rosetta/Data/MoverSampler/PoseMoverSampler.h
   Rosetta/Data/MoverSampler/SimpleResidueSampler.h
   Rosetta/Data/MoverSampler/PairResidueSampler.h
@@ -221,11 +223,18 @@ SET(LBCPP_PROTEIN_ROSETTA_DATA_MOVERSAMPLER_SOURCES
 )
   
 SET(LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES
+  Rosetta/ProteinOptimizer/GeneralOptimizer.h
   Rosetta/ProteinOptimizer/ProteinOptimizer.h
   Rosetta/ProteinOptimizer/SimulatedAnnealingOptimizer.h
+  Rosetta/ProteinOptimizer/SimulatedAnnealing.h
   Rosetta/ProteinOptimizer/SequentialOptimizer.h
   Rosetta/ProteinOptimizer/ProteinRosettaOptimizerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaOptimizerLibrary.cpp
+)
+
+SET(LBCPP_PROTEIN_ROSETTA_OPTIMIZER_STOPPINGCRITERION_SOURCES
+  Rosetta/ProteinOptimizer/StoppingCriterion/StoppingCriterion.h
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaOptimizerStoppingCriterionLibrary.cpp
 )
 
 SET(LBCPP_PROTEIN_ROSETTA_SAMPLER_SOURCES
@@ -316,6 +325,7 @@ SET(PROTEINS_CPP_SOURCES
     ${LBCPP_PROTEIN_ROSETTA_DATA_MOVER_SOURCES}
     ${LBCPP_PROTEIN_ROSETTA_DATA_MOVERSAMPLER_SOURCES}
     ${LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES}
+    ${LBCPP_PROTEIN_ROSETTA_OPTIMIZER_STOPPINGCRITERION_SOURCES}
     ${LBCPP_PROTEIN_ROSETTA_SAMPLER_SOURCES}
     ${LBCPP_PROTEIN_ROSETTA_WORKUNIT_SOURCES}
   ${LBCPP_PROTEIN_BLOSSOMV_SOURCES}
@@ -348,6 +358,7 @@ SOURCE_SUB_GROUP(Rosetta DataFeatures FILES ${LBCPP_PROTEIN_ROSETTA_DATA_FEATURE
 SOURCE_SUB_GROUP(Rosetta DataMover FILES ${LBCPP_PROTEIN_ROSETTA_DATA_MOVER_SOURCES})
 SOURCE_SUB_GROUP(Rosetta DataMoverSampler FILES ${LBCPP_PROTEIN_ROSETTA_DATA_MOVERSAMPLER_SOURCES})
 SOURCE_SUB_GROUP(Rosetta ProteinOptimizer FILES ${LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES})
+SOURCE_SUB_GROUP(Rosetta ProteinOptimizerStoppingCriterion FILES ${LBCPP_PROTEIN_ROSETTA_OPTIMIZER_STOPPINGCRITERION_SOURCES})
 SOURCE_SUB_GROUP(Rosetta Sampler FILES ${LBCPP_PROTEIN_ROSETTA_SAMPLER_SOURCES})
 SOURCE_SUB_GROUP(Rosetta WorkUnit FILES ${LBCPP_PROTEIN_ROSETTA_WORKUNIT_SOURCES})
 SOURCE_GROUP(BlossomV FILES ${LBCPP_PROTEIN_BLOSSOMV_SOURCES})
