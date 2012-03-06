@@ -70,41 +70,58 @@ public:
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 
-    DoubleVectorPtr v1 = new DenseDoubleVector(2, 0.0);
-    DenseDoubleVectorPtr v2 = new DenseDoubleVector(2, 1.0);
+    size_t numIt = 3000000000;
+    context.enterScope(T("test pow"));
+    for (size_t i = 0; i < numIt; i++)
+    {
+      double x = 2.3;
+      double y = std::pow(x, 2.0);
+    }
+    context.leaveScope();
 
-    std::cout << v1->l2norm(v2) << std::endl;
-    std::cout << v2->l2norm(v1) << std::endl;
+    context.enterScope(T("test x * x"));
+    for (size_t i = 0; i < numIt; i++)
+    {
+      double x = 2.3;
+      double y = x * x;
+    }
+    context.leaveScope();
 
-    v1 = new DenseDoubleVector(5, 0.0);
-    v2 = new DenseDoubleVector(5, 1.0);
-
-    std::cout << v1->l2norm(v2) << std::endl;
-    std::cout << v2->l2norm(v1) << std::endl;
-
-    v1 = new DenseDoubleVector(9, 0.0);
-    v2 = new DenseDoubleVector(9, 1.0);
-
-    std::cout << v1->l2norm(v2) << std::endl;
-    std::cout << v2->l2norm(v1) << std::endl;
-
-    v1 = new DenseDoubleVector(16, 0.0);
-    v2 = new DenseDoubleVector(16, 1.0);
-
-    std::cout << v1->l2norm(v2) << std::endl;
-    std::cout << v2->l2norm(v1) << std::endl;
-
-    v1 = new DenseDoubleVector(25, 0.0);
-    v2 = new DenseDoubleVector(25, 2.0);
-
-    std::cout << v1->l2norm(v2) << std::endl;
-    std::cout << v2->l2norm(v1) << std::endl;
-
-    v1 = new DenseDoubleVector(100, 0.0);
-    v2 = new DenseDoubleVector(100, 1.0);
-
-    std::cout << v1->l2norm(v2) << std::endl;
-    std::cout << v2->l2norm(v1) << std::endl;
+    //    DoubleVectorPtr v1 = new DenseDoubleVector(2, 0.0);
+    //    DenseDoubleVectorPtr v2 = new DenseDoubleVector(2, 1.0);
+    //
+    //    std::cout << v1->l2norm(v2) << std::endl;
+    //    std::cout << v2->l2norm(v1) << std::endl;
+    //
+    //    v1 = new DenseDoubleVector(5, 0.0);
+    //    v2 = new DenseDoubleVector(5, 1.0);
+    //
+    //    std::cout << v1->l2norm(v2) << std::endl;
+    //    std::cout << v2->l2norm(v1) << std::endl;
+    //
+    //    v1 = new DenseDoubleVector(9, 0.0);
+    //    v2 = new DenseDoubleVector(9, 1.0);
+    //
+    //    std::cout << v1->l2norm(v2) << std::endl;
+    //    std::cout << v2->l2norm(v1) << std::endl;
+    //
+    //    v1 = new DenseDoubleVector(16, 0.0);
+    //    v2 = new DenseDoubleVector(16, 1.0);
+    //
+    //    std::cout << v1->l2norm(v2) << std::endl;
+    //    std::cout << v2->l2norm(v1) << std::endl;
+    //
+    //    v1 = new DenseDoubleVector(25, 0.0);
+    //    v2 = new DenseDoubleVector(25, 2.0);
+    //
+    //    std::cout << v1->l2norm(v2) << std::endl;
+    //    std::cout << v2->l2norm(v1) << std::endl;
+    //
+    //    v1 = new DenseDoubleVector(100, 0.0);
+    //    v2 = new DenseDoubleVector(100, 1.0);
+    //
+    //    std::cout << v1->l2norm(v2) << std::endl;
+    //    std::cout << v2->l2norm(v1) << std::endl;
 
     //    RosettaPtr ros = new Rosetta();
     //    ros->init(context, false, 0, 0);

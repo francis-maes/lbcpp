@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename:  ProteinOptimizer.h            | ProteinOptimizer                |
+| Filename:  ProteinOptimizer.h            | Protein Optimizer               |
 | Author  : Alejandro Marcos Alvarez       |                                 |
 | Started : 12/04/2011                     |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_PROTEINS_ROSETTA_PROTEIN_OPTIMIZER_H_
-# define LBCPP_PROTEINS_ROSETTA_PROTEIN_OPTIMIZER_H_
+#ifndef LBCPP_PROTEINS_ROSETTA_PROTEINOPTIMIZER_PROTEINOPTIMIZER_H_
+# define LBCPP_PROTEINS_ROSETTA_PROTEINOPTIMIZER_PROTEINOPTIMIZER_H_
 
 # include "precompiled.h"
 
@@ -20,8 +20,57 @@
 # include "../Data/MoverSampler/PoseMoverSampler.h"
 # include "../RosettaProtein.h"
 
+# include "GeneralOptimizer.h"
+
 namespace lbcpp
 {
+
+/*
+ * Protein specific classes
+ */
+class PoseOptimizationState : public OptimizationProblemState
+{
+public:
+  PoseOptimizationState(PosePtr& pose) : pose(pose) {}
+
+  virtual double getObjective(ExecutionContext& context) const
+    {return pose->getCorrectedEnergy();}
+
+  virtual Variable getInternalState() const
+    {return pose;}
+
+protected:
+  friend class PoseOptimizationStateClass;
+
+  PosePtr pose;
+};
+
+typedef ReferenceCountedObjectPtr<PoseOptimizationState> PoseOptimizationStatePtr;
+
+class PoseOptimizationStateModifier : public OptimizationProblemStateModifier
+{
+public:
+  PoseOptimizationStateModifier(SamplerPtr& moverSampler) : moverSampler(moverSampler) {}
+
+  virtual OptimizationProblemStatePtr applyTo(ExecutionContext& context, const OptimizationProblemStatePtr& state) const
+  {
+    PosePtr pose = state->getInternalState().getObjectAndCast<Pose>();
+
+    PosePtr newPose = pose->clone();
+    Variable features = newPose->getFeatures(context);
+
+    PoseMoverPtr mover = moverSampler->sample(context, context.getRandomGenerator(), &features).getObjectAndCast<PoseMover>();
+    mover->move(newPose);
+    PoseOptimizationStatePtr newState = new PoseOptimizationState(newPose);
+    return newState;
+  }
+
+protected:
+  friend class OptimizationProblemStateModifierClass;
+
+  SamplerPtr moverSampler;
+};
+
 
 class OldProteinOptimizer;
 typedef ReferenceCountedObjectPtr<OldProteinOptimizer> OldProteinOptimizerPtr;
@@ -232,4 +281,4 @@ extern OldProteinOptimizerPtr proteinSequentialOptimizer();
 
 }; /* namespace lbcpp */
 
-#endif //! LBCPP_PROTEINS_ROSETTA_PROTEIN_OPTIMIZER_H_
+#endif //! LBCPP_PROTEINS_ROSETTA_PROTEINOPTIMIZER_PROTEINOPTIMIZER_H_

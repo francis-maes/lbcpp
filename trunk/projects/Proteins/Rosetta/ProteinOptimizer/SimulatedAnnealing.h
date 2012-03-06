@@ -10,17 +10,20 @@
 # define LBCPP_PROTEIN_ROSETTA_PROTEINOPTIMIZER_SIMULATEDANNEALING_H_
 
 # include "../Data/Pose.h"
-# include "TemperatureEvolution.h"
+# include "GeneralOptimizer.h"
 
 namespace lbcpp
 {
 
-class SimulatedAnnealing : public Object
+class SimulatedAnnealing : public GeneralOptimizer
 {
 public:
   SimulatedAnnealing();
 
+  virtual void optimize(ExecutionContext& context)
+  {
 
+  }
 
 protected:
   friend class SimulatedAnnealingClass;

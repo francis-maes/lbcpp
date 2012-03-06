@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ProteinRosettaOptimizerStoppingCriterion" directory="Rosetta/ProteinOptimizer/StoppingCriterion">
+
+  <class name="GeneralOptimizerStoppingCriterion" base="Object" abstract="yes">
+  </class>
+    
+</library>

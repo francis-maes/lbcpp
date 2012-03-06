@@ -9,48 +9,52 @@
 #ifndef LBCPP_PROTEIN_ROSETTA_PROTEINOPTIMIZER_GENERALOPTIMIZER_H_
 # define LBCPP_PROTEIN_ROSETTA_PROTEINOPTIMIZER_GENERALOPTIMIZER_H_
 
+#include "precompiled.h"
+
 namespace lbcpp
 {
 
-class GeneralOptimizerState : public Object
-{
-public:
-  virtual double getObjective() const = 0;
+/*
+ * Predeclarations
+ */
+class OptimizationProblemState;
+typedef ReferenceCountedObjectPtr<OptimizationProblemState> OptimizationProblemStatePtr;
 
-protected:
-  friend class GeneralOptimizerStateClass;
-};
-
-typedef ReferenceCountedObjectPtr<GeneralOptimizerState> GeneralOptimizerStatePtr;
-
-class GeneralOptimizerStateModifier : public Object
-{
-public:
-  virtual GeneralOptimizerStatePtr getModifiedState(GeneralOptimizerStatePtr& state) = 0;
-
-protected:
-  friend class GeneralOptimizerStateModifierClass;
-};
-
-typedef ReferenceCountedObjectPtr<GeneralOptimizerStateModifier> GeneralOptimizerStateModifierPtr;
-
-class GeneralOptimizerStoppingCriterion : public Object
-{
-public:
-  virtual bool performNext(size_t iteration, GeneralOptimizerStatePtr& state, GeneralOptimizerStatePtr& bestState) = 0;
-
-protected:
-  friend class GeneralOptimizerStoppingCriterionClass;
-
-};
-
+class GeneralOptimizerStoppingCriterion;
 typedef ReferenceCountedObjectPtr<GeneralOptimizerStoppingCriterion> GeneralOptimizerStoppingCriterionPtr;
+
+/*
+ * Declarations
+ */
+class OptimizationProblemState : public Object
+{
+public:
+  virtual double getObjective(ExecutionContext& context) const = 0;
+  virtual Variable getInternalState() const = 0;
+
+  virtual double isBetterThan(ExecutionContext& context, const OptimizationProblemStatePtr& candidate) const
+    {return getObjective(context) < candidate->getObjective(context);}
+
+protected:
+  friend class OptimizationProblemStateClass;
+};
+
+class OptimizationProblemStateModifier : public Object
+{
+public:
+  virtual OptimizationProblemStatePtr applyTo(ExecutionContext& context, const OptimizationProblemStatePtr& state) const = 0;
+
+protected:
+  friend class OptimizationProblemStateModifierClass;
+};
+
+typedef ReferenceCountedObjectPtr<OptimizationProblemStateModifier> OptimizationProblemStateModifierPtr;
 
 class GeneralOptimizer : public Object
 {
 public:
-  GeneralOptimizer(const GeneralOptimizerStatePtr& initialState,
-                   const GeneralOptimizerStateModifierPtr& modifier,
+  GeneralOptimizer(const OptimizationProblemStatePtr& initialState,
+                   const OptimizationProblemStateModifierPtr& modifier,
                    const GeneralOptimizerStoppingCriterionPtr& stoppingCriterion)
     : iteration(0),
       initialState(initialState),
@@ -59,34 +63,23 @@ public:
       stoppingCriterion(stoppingCriterion) {}
 
   /*
-   * Optimization
-   */
-//  void optimize()
-//  {
-//    while (stoppingCriterion->performNext(iteration, state, bestState))
-//    {
-//      performNextIteration();
-//      updateBestState();
-//      iteration++;
-//    }
-//  }
-
-  /*
    * Solution
    */
-  GeneralOptimizerStatePtr getBestState()
+  OptimizationProblemStatePtr getBestState()
     {return bestState;}
 
-protected:
-  virtual void performNextIteration() = 0;
-  virtual void updateBestState() = 0;
+  /*
+   * Optimization
+   */
+  virtual void optimize(ExecutionContext& context) = 0;
 
+protected:
   friend class GeneralOptimizerClass;
 
   size_t iteration;
-  GeneralOptimizerStatePtr initialState;
-  GeneralOptimizerStatePtr bestState;
-  GeneralOptimizerStateModifierPtr modifier;
+  OptimizationProblemStatePtr initialState;
+  OptimizationProblemStatePtr bestState;
+  OptimizationProblemStateModifierPtr modifier;
   GeneralOptimizerStoppingCriterionPtr stoppingCriterion;
 };
 
