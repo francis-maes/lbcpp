@@ -56,23 +56,29 @@ bool ARFFDataParser::parseAttributeLine(const String& line)
   if (line.getLastCharacter() == T('}'))
     return parseEnumerationAttributeLine(line);
 
-  int b = line.lastIndexOfAnyOf(T(" \t"));
+/*  int b = line.lastIndexOfAnyOf(T(" \t"));
   if (b < 0)
   {
     context.errorCallback(T("ARFFDataParser::parseAttributeLine"), T("Malformatted attribute description: ") + line.quoted());
     return false;
-  }
+  }*/
 
   StringArray tokens;
-  tokens.addTokens(line.substring(0, b).trim(), T(" \t"), T("'\""));
-  if (tokens.size() != 2)
+  tokens.addTokens(line.trim(), T(" \t"), T("'"));
+  if (tokens.size() < 3)
   {
     context.errorCallback(T("ARFFDataParser::parseAttributeLine"), T("Malformatted attribute name: ") + line.quoted());
     return false;
   }
-  attributesName.push_back(tokens[1].unquoted());
-  
-  String attributeTypeName = line.substring(b + 1).toLowerCase();
+  int tokenNumber = 1;
+  while (tokenNumber < tokens.size() && tokens[tokenNumber].trim().isEmpty())
+    ++tokenNumber;
+  attributesName.push_back(tokens[tokenNumber].unquoted());
+  ++tokenNumber;
+  while (tokenNumber < tokens.size() && tokens[tokenNumber].trim().isEmpty())
+    ++tokenNumber;
+
+  String attributeTypeName = tokens[tokenNumber].toLowerCase();
   if (attributeTypeName == T("float")
       || attributeTypeName == T("real")
       || attributeTypeName == T("numeric"))
@@ -157,7 +163,7 @@ bool ARFFDataParser::parseEnumerationAttributeLine(const String& line)
   // create enumeration
   DefaultEnumerationPtr enumClass = new DefaultEnumeration(enumerationName + T("ARFFEnum"));
   for (size_t i = 0; i < (size_t)tokens.size(); ++i)
-    if (enumClass->findOrAddElement(context, tokens[i].unquoted().trim().replaceCharacters(T(" \t"), T("--"))) != i)
+    if (enumClass->findOrAddElement(context, tokens[i].unquoted().trim()) != i)
     {
       context.errorCallback(T("ARFFDataParser::parseEnumerationAttributeLine"), T("Duplicate enumeration element found: ") + tokens[i].quoted());
       return false;
@@ -236,7 +242,10 @@ static Variable createFromString(ExecutionContext& context, const TypePtr& type,
   else if (type == doubleType)
     return strtod(str, NULL);
   else
-    return type->createFromString(context, str);
+  {
+    String unquoted = String(str).unquoted();
+    return type->createFromString(context, unquoted);
+  }
 }
 
 #ifdef JUCE_WIN32
@@ -256,7 +265,7 @@ bool ARFFDataParser::parseDataLine(const String& line)
   ObjectPtr inputs = sparseData ? features->createSparseObject() : features->createDenseObject();
   for (size_t i = 0; i < n; ++i)
   {
-    char* token = strtok(i == 0 ? str : NULL, ", \t");
+    char* token = strtok(i == 0 ? str : NULL, ",\t");
     if (!token)
     {
       context.errorCallback(T("ARFFDataParser::parseDataLine"), T("Invalid number of values in: ") + line.quoted());
@@ -277,7 +286,7 @@ bool ARFFDataParser::parseDataLine(const String& line)
   }
   if (ok)
   {
-    char* token = strtok(NULL, ", \t");
+    char* token = strtok(NULL, ",\t");
     if (token)
     {
       Variable output = createFromString(context, supervisionType, token);

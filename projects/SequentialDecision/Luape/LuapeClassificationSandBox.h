@@ -326,6 +326,7 @@ public:
       }
     }
 */
+    /*
     runOnDataSet(context, "waveform");
     runOnDataSet(context, "two-norm");
     runOnDataSet(context, "ring-norm");
@@ -338,7 +339,18 @@ public:
     runOnDataSet(context, "dig44");
     runOnDataSet(context, "letter");
     runOnDataSet(context, "isolet");
+    */
 
+    runOnDataSet(context, "liver-disorders");
+    runOnDataSet(context, "glass");
+    runOnDataSet(context, "ionosphere");
+    runOnDataSet(context, "new-thyroid");
+    runOnDataSet(context, "diabetes");
+    runOnDataSet(context, "sonar");
+    runOnDataSet(context, "vehicle");
+    runOnDataSet(context, "wine");
+    runOnDataSet(context, "wdbc");
+    runOnDataSet(context, "breast-orig");
     return true;
   }
 
@@ -346,7 +358,12 @@ public:
   {
     context.enterScope(name);
     File dataFile = dataDirectory.getChildFile(name + T(".jdb"));
-    File tsFile = dataDirectory.getChildFile(name + T(".txt"));
+    File tsFile;
+
+    if (dataFile.exists())
+      tsFile = dataDirectory.getChildFile(name + T(".txt"));
+    else
+      dataFile = dataDirectory.getChildFile(name + T(".arff"));
     Variable res = runOnDataSet(context, dataFile, tsFile);
     context.leaveScope(res);
   }
@@ -381,6 +398,8 @@ public:
     if (!splits.size())
       return false;
     
+    return true;
+
     if (verbose)
       splits.resize(1);
     //else
@@ -743,7 +762,7 @@ protected:
 
   bool makeSplits(ExecutionContext& context, const File& tsFile, DynamicClassPtr inputClass, ContainerPtr data, std::vector< std::pair< ContainerPtr, ContainerPtr > >& res)
   {
-   // if (tsFile.existsAsFile())
+    if (tsFile.existsAsFile())
     {
       TextParserPtr parser = new TestingSetParser(context, tsFile, data);
       ContainerPtr splits = parser->load(verbose ? 1 : 0);
@@ -756,23 +775,20 @@ protected:
         res[i] = std::make_pair(train, test);
       }
     }
-    /*else
+    else
     { 
-      if (trainingSize >= data->getNumElements())
-      {
-        context.errorCallback(T("Training size is too big"));
-        return false;
-      }
+      const size_t numSplits = 20;
+      const size_t numFolds = 10;
 
-      res.resize(numRuns);
-      for (size_t i = 0; i < numRuns; ++i)
+      res.resize(numSplits);
+      for (size_t i = 0; i < numSplits; ++i)
       {
         ContainerPtr randomized = data->randomize();
-        ContainerPtr training = randomized->range(0, trainingSize);
-        ContainerPtr testing = randomized->range(trainingSize, randomized->getNumElements());
+        ContainerPtr training = randomized->invFold(0, numFolds);
+        ContainerPtr testing = randomized->fold(0, numFolds);
         res[i] = std::make_pair(training, testing);
       }
-    }*/
+    }
     return true;
   }
 
