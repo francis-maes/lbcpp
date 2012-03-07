@@ -435,7 +435,7 @@ public:
     ***** Nested Monte Carlo Feature Generation
     ****/
     //context.enterScope(T("ST"));
-    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 6));
+    conditionLearner = exactWeakLearner(inputsNodeBuilder());
     learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
     //learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
     testLearner(context, learner, T("Boosting"), inputType, labels, splits);
