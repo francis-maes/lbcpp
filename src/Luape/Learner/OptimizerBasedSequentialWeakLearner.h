@@ -24,7 +24,7 @@ public:
 
   virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
-    LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = problem->getSearchSpace(context, complexity);
+    LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = problem->getSearchSpace(context, complexity, verbose);
     ObjectivePtr objective = new Objective(refCountedPointerFromThis(this), problem, examples);
     OptimizationProblemPtr optimizationProblem = new OptimizationProblem(objective);
     optimizationProblem->setMaximisationProblem(true);

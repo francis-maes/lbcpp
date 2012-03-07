@@ -78,7 +78,7 @@ public:
   /*
   ** Search space
   */
-  LuapeGraphBuilderTypeSearchSpacePtr getSearchSpace(ExecutionContext& context, size_t complexity) const;
+  LuapeGraphBuilderTypeSearchSpacePtr getSearchSpace(ExecutionContext& context, size_t complexity, bool verbose = false) const;
 
   /*
   ** Luape Node 

@@ -35,6 +35,8 @@
     <variable type="File" name="dataDirectory"/>
     <variable type="PositiveInteger" name="maxExamples"/>
     <variable type="Boolean" name="verbose"/>
+    <variable type="Boolean" name="useExtendedOperators"/>
+    <variable type="Boolean" name="useVectorOperators"/>
   </class>
 
   <!-- Soft Stumps -->
