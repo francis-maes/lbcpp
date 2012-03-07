@@ -303,7 +303,7 @@ protected:
 class LuapeClassificationSandBox : public WorkUnit
 {
 public:
-  LuapeClassificationSandBox() : maxExamples(0), verbose(false) {}
+  LuapeClassificationSandBox() : maxExamples(0), verbose(false), useExtendedOperators(false), useVectorOperators(false) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -398,8 +398,6 @@ public:
     if (!splits.size())
       return false;
     
-    return true;
-
     if (verbose)
       splits.resize(1);
     //else
@@ -407,7 +405,7 @@ public:
       
 
     TypePtr inputType = splits[0].first->getClass()->getTemplateArgument(0)->getTemplateArgument(0);
-
+    
     static const size_t numIterations = 1000;
 
     LuapeLearnerPtr conditionLearner, learner;
@@ -436,10 +434,17 @@ public:
     /****
     ***** Nested Monte Carlo Feature Generation
     ****/
-    context.enterScope(T("Nested MC"));
+    //context.enterScope(T("ST"));
+    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 6));
+    learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
+    //learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
+    testLearner(context, learner, T("Boosting"), inputType, labels, splits);
+    //context.leaveScope();
+
+    //context.enterScope(T("Nested MC"));
     size_t complexity = 6;
     //for (size_t numIterations = 1; numIterations <= numVariables * complexity * 5; numIterations *= 2)
-    {size_t numIterations = 16;
+    {size_t numIterations = 1;
       //context.enterScope(T("Num Iterations = " + String((int)numIterations)));
       //context.resultCallback(T("numIterations"), numIterations);
       //context.resultCallback(T("log(numIterations)"), log10((double)numIterations));
@@ -449,8 +454,8 @@ public:
       {
         conditionLearner = optimizerBasedSequentialWeakLearner(new NestedMonteCarloOptimizer(level, numIterations), complexity);
         conditionLearner->setVerbose(verbose);
-        //learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
-        learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
+        learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
+        //learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
         //learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
         learner->setVerbose(verbose);
         double score = testLearner(context, learner, T("Level ") + String((int)level), inputType, labels, splits);
@@ -459,7 +464,7 @@ public:
       }
       //context.leaveScope();
     }
-    context.leaveScope();
+    //context.leaveScope();
     
 
     /****
@@ -634,7 +639,7 @@ public:
     // construct parallel work unit 
     CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(name, splits.size());
     for (size_t i = 0; i < splits.size(); ++i)
-      workUnit->setWorkUnit(i, new TrainAndTestLearnerWorkUnit(learner->cloneAndCast<LuapeLearner>(), splits[i].first, splits[i].second, inputType, labels, "Split " + String((int)i)));
+      workUnit->setWorkUnit(i, new TrainAndTestLearnerWorkUnit(this, learner->cloneAndCast<LuapeLearner>(), splits[i].first, splits[i].second, inputType, labels, "Split " + String((int)i)));
     workUnit->setProgressionUnit(T("Splits"));
     workUnit->setPushChildrenIntoStackFlag(true);
 
@@ -714,6 +719,9 @@ protected:
   size_t maxExamples;
   bool verbose;
 
+  bool useExtendedOperators;
+  bool useVectorOperators;
+
   ContainerPtr loadData(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, DefaultEnumerationPtr labels) const
   { 
     static const bool sparseData = true;
@@ -741,9 +749,9 @@ protected:
     return res;
   }
 
-  static ObjectVectorPtr convertExamplesToVectors(const ObjectVectorPtr& examples)
+  static ObjectVectorPtr convertExamplesToVectors(const ContainerPtr& examples)
   {
-    PairPtr p = examples->getAndCast<Pair>(0);
+    PairPtr p = examples->getElement(0).getObjectAndCast<Pair>();
     
     ClassPtr dvClass = denseDoubleVectorClass(variablesEnumerationEnumeration(p->getFirst().getType()), doubleType);
     TypePtr supType = p->getSecond().getType();
@@ -754,7 +762,7 @@ protected:
     ObjectVectorPtr res = new ObjectVector(exampleType, n);
     for (size_t i = 0; i < n; ++i)
     {
-      PairPtr example = examples->getAndCast<Pair>(i);
+      PairPtr example =  examples->getElement(i).getObjectAndCast<Pair>();
       res->set(i, new Pair(exampleType, convertExampleToVector(example->getFirst().getObject(), dvClass), example->getSecond()));
     }
     return res;
@@ -784,8 +792,8 @@ protected:
       for (size_t i = 0; i < numSplits; ++i)
       {
         ContainerPtr randomized = data->randomize();
-        ContainerPtr training = randomized->invFold(0, numFolds);
-        ContainerPtr testing = randomized->fold(0, numFolds);
+        ContainerPtr training = convertExamplesToVectors(randomized->invFold(0, numFolds));
+        ContainerPtr testing = convertExamplesToVectors(randomized->fold(0, numFolds));
         res[i] = std::make_pair(training, testing);
       }
     }
@@ -794,9 +802,9 @@ protected:
 
   struct TrainAndTestLearnerWorkUnit : public WorkUnit
   {
-    TrainAndTestLearnerWorkUnit(const LuapeLearnerPtr& learner, const ContainerPtr& trainingData, const ContainerPtr& testingData,
+    TrainAndTestLearnerWorkUnit(const LuapeClassificationSandBox* owner, const LuapeLearnerPtr& learner, const ContainerPtr& trainingData, const ContainerPtr& testingData,
                                 const TypePtr& inputType, const DefaultEnumerationPtr& labels, const String& description)
-      : learner(learner), trainingData(trainingData), testingData(testingData), inputType(inputType), labels(labels), description(description) {}
+      : owner(owner), learner(learner), trainingData(trainingData), testingData(testingData), inputType(inputType), labels(labels), description(description) {}
 
     virtual String toShortString() const
       {return description;}
@@ -824,6 +832,7 @@ protected:
     }
 
   protected:
+    const LuapeClassificationSandBox* owner;
     LuapeLearnerPtr learner;
     ContainerPtr trainingData;
     ContainerPtr testingData;
@@ -834,23 +843,30 @@ protected:
     LuapeInferencePtr createClassifier() const
     {
       LuapeInferencePtr res = new LuapeClassifier();
-      res->addInput(inputType, "in");
-      /*size_t n = inputClass->getNumMemberVariables();
-      for (size_t i = 0; i < n; ++i)
+
+      if (owner->useVectorOperators)
       {
-        VariableSignaturePtr variable = inputClass->getMemberVariable(i);
-        res->addInput(variable->getType(), variable->getName());
-      }*/
-
-      res->addFunction(getDoubleVectorElementLuapeFunction());
-      res->addFunction(computeDoubleVectorStatisticsLuapeFunction());
-      res->addFunction(getDoubleVectorExtremumsLuapeFunction());
-      res->addFunction(getVariableLuapeFunction());
-
-      /*res->addFunction(logDoubleLuapeFunction());
-      res->addFunction(sqrtDoubleLuapeFunction());
-      res->addFunction(minDoubleLuapeFunction());
-      res->addFunction(maxDoubleLuapeFunction());*/
+        res->addInput(inputType, "in");
+        res->addFunction(getDoubleVectorElementLuapeFunction());
+        res->addFunction(computeDoubleVectorStatisticsLuapeFunction());
+        res->addFunction(getDoubleVectorExtremumsLuapeFunction());
+        res->addFunction(getVariableLuapeFunction());
+      }
+      else
+      {
+        EnumerationPtr attributes = DoubleVector::getElementsEnumeration(inputType);
+        size_t n = attributes->getNumElements();
+        for (size_t i = 0; i < n; ++i)
+          res->addInput(doubleType, attributes->getElementName(i));
+      }
+      
+      if (owner->useExtendedOperators)
+      {
+        res->addFunction(logDoubleLuapeFunction());
+        res->addFunction(sqrtDoubleLuapeFunction());
+        res->addFunction(minDoubleLuapeFunction());
+        res->addFunction(maxDoubleLuapeFunction());
+      }
 
       res->addFunction(addDoubleLuapeFunction());
       res->addFunction(subDoubleLuapeFunction());
