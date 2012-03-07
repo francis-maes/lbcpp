@@ -9,9 +9,14 @@
 #ifndef BLINDPOSEMOVERSAMPLER_H_
 #define BLINDPOSEMOVERSAMPLER_H_
 
+namespace lbcpp
+{
+
 class BlindPoseMoverSampler : public Object
 {
 
 };
+
+}; /* namespace lbcpp */
 
 #endif /* BLINDPOSEMOVERSAMPLER_H_ */
