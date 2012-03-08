@@ -19,7 +19,7 @@ class OptimizationProblemStatePtr;
 class GeneralOptimizerStoppingCriterion : public Object
 {
 public:
-  virtual bool performNext(ExecutionContext& context, size_t iteration, const OptimizationProblemStatePtr& state, const OptimizationProblemStatePtr& bestState) const = 0;
+  virtual bool performNext(ExecutionContext& context, size_t iteration, const OptimizationProblemStatePtr& state, const OptimizationProblemStatePtr& bestState) const {return true;}
 
 protected:
   friend class GeneralOptimizerStoppingCriterionClass;
@@ -27,7 +27,6 @@ protected:
 
 typedef ReferenceCountedObjectPtr<GeneralOptimizerStoppingCriterion> GeneralOptimizerStoppingCriterionPtr;
 
-}
-; /* namespace lbcpp */
+}; /* namespace lbcpp */
 
 #endif //! LBCPP_PROTEIN_ROSETTA_PROTEINOPTIMIZER_STOPPINGCRITERION_STOPPINGCRITERION_H_

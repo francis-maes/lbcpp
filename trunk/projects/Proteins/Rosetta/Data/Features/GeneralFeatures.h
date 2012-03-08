@@ -25,7 +25,7 @@ public:
 
   GeneralFeatures() : initialized(false) {}
 
-  void initialize(ExecutionContext& context, const Variable& input)
+  Variable initialize(ExecutionContext& context, const Variable& input)
   {
     selfInitialization(context, input);
 
@@ -43,6 +43,8 @@ public:
       features->setElement(numStaticFeatures + i, dynamicFeatures->getElement(i));
 
     initialized = true;
+
+    return features;
   }
 
   Variable computeFeatures(ExecutionContext& context, const Variable& input)
