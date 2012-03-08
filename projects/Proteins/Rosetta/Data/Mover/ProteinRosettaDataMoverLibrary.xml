@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <library name="ProteinRosettaDataMover" directory="Rosetta/Data/Mover">
+ 
   <!-- abstract classes -->
   <class name="PoseMover" base="Object" abstract="yes" />
   

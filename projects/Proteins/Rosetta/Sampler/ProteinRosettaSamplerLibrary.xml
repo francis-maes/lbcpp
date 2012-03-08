@@ -22,14 +22,4 @@
     <variable type="PositiveInteger" name="numResidues"/>
   </class>
   
-  <!-- conditional samplers -->
-  <class name="ConditionalPoseMoverSampler" base="CompositeSampler">
-  </class>
-  
-  <class name="ConditionalSimpleResidueSampler" base="CompositeSampler">
-  </class>
-  
-  <class name="ConditionalResiduePairSampler" base="CompositeSampler">
-  </class>
-  
 </library>

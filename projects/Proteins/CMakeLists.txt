@@ -196,6 +196,8 @@ SET(LBCPP_PROTEIN_ROSETTA_DATA_SOURCES
 )
 
 SET(LBCPP_PROTEIN_ROSETTA_DATA_FEATURES_SOURCES
+  Rosetta/Data/Features/SimplePoseFeatures.h
+  Rosetta/Data/Features/SimplePoseFeatures.cpp
   Rosetta/Data/Features/GeneralFeatures.h
   Rosetta/Data/Features/ProteinRosettaDataFeaturesLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaDataFeaturesLibrary.cpp
@@ -215,7 +217,6 @@ SET(LBCPP_PROTEIN_ROSETTA_DATA_MOVER_SOURCES
 
 SET(LBCPP_PROTEIN_ROSETTA_DATA_MOVERSAMPLER_SOURCES
   Rosetta/Data/MoverSampler/BlindPoseMoverSampler.h
-  Rosetta/Data/MoverSampler/PoseMoverSampler.h
   Rosetta/Data/MoverSampler/SimpleResidueSampler.h
   Rosetta/Data/MoverSampler/PairResidueSampler.h
   Rosetta/Data/MoverSampler/ProteinRosettaDataMoverSamplerLibrary.xml
@@ -238,7 +239,6 @@ SET(LBCPP_PROTEIN_ROSETTA_OPTIMIZER_STOPPINGCRITERION_SOURCES
 )
 
 SET(LBCPP_PROTEIN_ROSETTA_SAMPLER_SOURCES
-  Rosetta/Sampler/ConditionalPoseMoverSampler.h
   Rosetta/Sampler/GeneralPoseMoverSampler.h
   Rosetta/Sampler/ProteinRosettaSamplerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaSamplerLibrary.cpp

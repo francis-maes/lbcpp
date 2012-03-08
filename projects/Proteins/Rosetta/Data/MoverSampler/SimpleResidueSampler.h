@@ -10,6 +10,7 @@
 # define LBCPP_PROTEINS_ROSETTA_DATA_MOVERSAMPLER_SIMPLERESIDUESAMPLER_H_
 
 # include "precompiled.h"
+# include <lbcpp/Sampler/Sampler.h>
 
 namespace lbcpp
 {

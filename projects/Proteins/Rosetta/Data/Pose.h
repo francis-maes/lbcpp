@@ -10,6 +10,7 @@
 # define LBCPP_PROTEIN_ROSETTA_DATA_POSE_H_
 
 # include "Rosetta.h"
+# include "../../Data/Protein.h"
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 #  undef T
@@ -36,6 +37,7 @@ public:
    */
   Pose();
   explicit Pose(const String& sequence);
+  explicit Pose(const ProteinPtr& protein);
   explicit Pose(const File& pdbFile);
 
   /*

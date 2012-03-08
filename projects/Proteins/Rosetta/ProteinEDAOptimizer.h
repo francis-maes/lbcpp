@@ -10,10 +10,10 @@
 # define LBCPP_PROTEINS_ROSETTA_PROTEIN_EDA_OPTIMIZER_H_
 
 # include "precompiled.h"
+# include <lbcpp/Sampler/Sampler.h>
 
 # include "RosettaUtils.h"
 # include "Data/Mover/PoseMover.h"
-# include "Data/MoverSampler/PoseMoverSampler.h"
 # include "../Evaluator/QScoreEvaluator.h"
 
 namespace lbcpp
