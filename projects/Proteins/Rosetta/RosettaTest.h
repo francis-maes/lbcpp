@@ -26,8 +26,6 @@
 # include <vector>
 # include <cmath>
 # include <time.h>
-# include "Data/MoverSampler/SimpleResidueSampler.h"
-# include "Data/MoverSampler/PairResidueSampler.h"
 # include "Data/Features/SimplePoseFeatures.h"
 # include "Sampler/GeneralPoseMoverSampler.h"
 # include "RosettaSandBox.h"
@@ -83,7 +81,9 @@ public:
     SimulatedAnnealingParametersPtr params = new SimulatedAnnealingParameters(200, 4, 0.01, 20);
     SimulatedAnnealingPtr sa = new SimulatedAnnealing(optState, modifier, GeneralOptimizerStoppingCriterionPtr(), params);
 
-    sa->optimize(context);
+    DenseDoubleVectorPtr results1 = sa->optimize(context);
+
+    std::cout << (const char*)results1->toString() << std::endl;
 
     // without learning
     pose = new Pose(T("AAAAAAAAAAACDEDCDEDC"));
@@ -143,7 +143,9 @@ public:
     params = new SimulatedAnnealingParameters(200, 4, 0.01, 20);
     sa = new SimulatedAnnealing(optState, modifier, GeneralOptimizerStoppingCriterionPtr(), params);
 
-    sa->optimize(context);
+    DenseDoubleVectorPtr results2 = sa->optimize(context);
+
+    std::cout << (const char*)results2->toString() << std::endl;
 
     //    DoubleVectorPtr v1 = new DenseDoubleVector(2, 0.0);
     //    DenseDoubleVectorPtr v2 = new DenseDoubleVector(2, 1.0);

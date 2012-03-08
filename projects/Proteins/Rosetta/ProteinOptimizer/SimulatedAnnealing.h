@@ -80,11 +80,12 @@ public:
       return random->sampleDouble() < std::exp((energyCurrentState - energyNewState) / temperature);
   }
 
-  virtual void optimize(ExecutionContext& context)
+  virtual DenseDoubleVectorPtr optimize(ExecutionContext& context)
   {
     // initialization
     jassert(parameters.isInstanceOf<SimulatedAnnealingParameters>());
     double verbosity = 0.01;
+    DenseDoubleVectorPtr costEvolution = new DenseDoubleVector(0, 1.0);
 
     Variable iteration(0);
     VariableVectorPtr params = parameters->getParameters(context, iteration);
@@ -146,10 +147,13 @@ public:
         numModificationsTested = 0;
         numModificationsAccepted = 0;
         numModificationsDecreasingEnergy = 0;
+        costEvolution->appendValue(bestEnergy);
       }
     }
 
     context.leaveScope();
+
+    return costEvolution;
   }
 
 protected:
