@@ -129,7 +129,7 @@ void Rosetta::init(ExecutionContext& eContext, bool verbose, size_t id, size_t d
 
 # else
 
-void Rosetta::init(ExecutionContext& context, bool verbose, int seed, size_t delay)
+void Rosetta::init(ExecutionContext& context, bool verbose, size_t id, size_t delay)
   {jassert(false);}
 
 # endif //! LBCPP_PROTEIN_ROSETTA
