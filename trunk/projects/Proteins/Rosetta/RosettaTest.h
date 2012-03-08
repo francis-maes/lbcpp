@@ -26,12 +26,10 @@
 # include <vector>
 # include <cmath>
 # include <time.h>
-# include "Data/MoverSampler/PoseMoverSampler.h"
 # include "Data/MoverSampler/SimpleResidueSampler.h"
 # include "Data/MoverSampler/PairResidueSampler.h"
 # include "Data/Features/SimplePoseFeatures.h"
 # include "Sampler/GeneralPoseMoverSampler.h"
-# include "Sampler/ConditionalPoseMoverSampler.h"
 # include "RosettaSandBox.h"
 # include "RosettaProtein.h"
 # include "WorkUnit/DistributableWorkUnit.h"
@@ -82,7 +80,7 @@ public:
     SamplerPtr sampler = new GeneralPoseMoverSampler(20, 0);
     PoseOptimizationStateModifierPtr modifier = new PoseOptimizationStateModifier(sampler);
 
-    SimulatedAnnealingParametersPtr params = new SimulatedAnnealingParameters(10000, 4, 0.01, 20);
+    SimulatedAnnealingParametersPtr params = new SimulatedAnnealingParameters(200, 4, 0.01, 20);
     SimulatedAnnealingPtr sa = new SimulatedAnnealing(optState, modifier, GeneralOptimizerStoppingCriterionPtr(), params);
 
     sa->optimize(context);
@@ -142,7 +140,7 @@ public:
 
     modifier = new PoseOptimizationStateModifier(sampler);
 
-    params = new SimulatedAnnealingParameters(10000, 4, 0.01, 20);
+    params = new SimulatedAnnealingParameters(200, 4, 0.01, 20);
     sa = new SimulatedAnnealing(optState, modifier, GeneralOptimizerStoppingCriterionPtr(), params);
 
     sa->optimize(context);

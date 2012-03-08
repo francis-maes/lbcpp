@@ -22,7 +22,6 @@
 # include "Data/Mover/RigidBodyMover.h"
 # include "Data/MoverSampler/SimpleResidueSampler.h"
 # include "Data/MoverSampler/PairResidueSampler.h"
-# include "Data/MoverSampler/PoseMoverSampler.h"
 # include "Sampler/GeneralPoseMoverSampler.h"
 # include "RosettaProtein.h"
 //using namespace std;

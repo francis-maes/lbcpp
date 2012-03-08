@@ -66,6 +66,26 @@ Pose::Pose(const String& sequence) : isEnergyFunctionInitialized(false), hasFeat
       core::chemical::ChemicalManager::get_instance()->nonconst_residue_type_set("fa_standard"));
 }
 
+Pose::Pose(const ProteinPtr& protein)
+{
+  bool error = false;
+  String name = String(protein->getName());
+  File tempFile = File::createTempFile(name + String(Time::currentTimeMillis()) + T(".pdb"));
+
+  if (tempFile != File::nonexistent)
+  {
+    protein->saveToPDBFile(defaultExecutionContext(), tempFile);
+    pose = new core::pose::Pose(std::string((const char*)tempFile.getFullPathName()));
+    tempFile.deleteFile();
+    error = (int)pose->n_residue() != (int)protein->getLength();
+  }
+  else
+    error = true;
+
+  if (error)
+    jassert(false);
+}
+
 Pose::Pose(const File& pdbFile) : isEnergyFunctionInitialized(false), hasFeatureGenerator(false)
 {
   jassert(pdbFile != File::nonexistent);
@@ -430,6 +450,9 @@ DenseDoubleVectorPtr Pose::getHistogram() const
 
 # else
 Pose::Pose(const String& sequence)
+  {jassert(false);}
+
+Pose::Pose(const ProteinPtr& protein)
   {jassert(false);}
 
 Pose::Pose(const File& pdbFile)

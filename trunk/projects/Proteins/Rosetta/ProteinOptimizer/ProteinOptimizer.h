@@ -17,7 +17,6 @@
 # include <cmath>
 # include <algorithm>
 # include <vector>
-# include "../Data/MoverSampler/PoseMoverSampler.h"
 # include "../RosettaProtein.h"
 
 # include "GeneralOptimizer.h"

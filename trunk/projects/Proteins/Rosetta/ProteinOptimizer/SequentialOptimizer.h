@@ -13,7 +13,6 @@
 # include "ProteinOptimizer.h"
 # include "SimulatedAnnealingOptimizer.h"
 # include "../Data/Mover/PoseMover.h"
-# include "../Data/MoverSampler/PoseMoverSampler.h"
 
 namespace lbcpp
 {
@@ -82,6 +81,7 @@ public:
 
     for (size_t i = 1; i <= worker->getNumResidues(); i++)
     {
+      //FIXME
       maxSteps = (int)std::max((int)((factor * log((double)i)) + 1), numberDecreasingSteps);
 
       ProteinSimulatedAnnealingOptimizerPtr optimizer = new ProteinSimulatedAnnealingOptimizer(
@@ -90,7 +90,7 @@ public:
 
       acc->append_residue_by_bond(pose->residue(i), true);
 
-      SamplerPtr samp = new PoseMoverSampler(acc->n_residue());
+      //SamplerPtr samp = new PoseMoverSampler(acc->n_residue());
 
       core::pose::PoseOP tempPose;
 //      core::pose::PoseOP tempPose = optimizer->simulatedAnnealingOptimization(acc, samp.staticCast<
