@@ -36,7 +36,7 @@ void Rosetta::releaseLock()
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 
-void Rosetta::init(ExecutionContext& eContext, bool verbose, int id, size_t delay)
+void Rosetta::init(ExecutionContext& eContext, bool verbose, size_t id, size_t delay)
 {
   setContext(eContext);
 

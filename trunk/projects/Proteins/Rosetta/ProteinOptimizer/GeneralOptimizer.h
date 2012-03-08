@@ -85,7 +85,7 @@ public:
   /*
    * Optimization
    */
-  virtual void optimize(ExecutionContext& context) = 0;
+  virtual DenseDoubleVectorPtr optimize(ExecutionContext& context) = 0;
 
 protected:
   friend class GeneralOptimizerClass;

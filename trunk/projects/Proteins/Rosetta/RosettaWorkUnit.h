@@ -352,10 +352,10 @@ public:
 
         // choose sampler
         SamplerPtr moverSampler;
-        if (oneOrAll == 0)
-          moverSampler = objectCompositeSampler(phiPsiMoverClass, new SimpleResidueSampler(
-              targetPose->n_residue()), gaussianSampler(0, 25), gaussianSampler(0, 25));
-        else
+//        if (oneOrAll == 0)
+//          moverSampler = objectCompositeSampler(phiPsiMoverClass, new ResidueSampler(
+//              targetPose->n_residue()), gaussianSampler(0, 25), gaussianSampler(0, 25));
+//        else
           moverSampler = new GeneralPoseMoverSampler(targetPose->n_residue(), 0);
 
         bool bestLearning = true;

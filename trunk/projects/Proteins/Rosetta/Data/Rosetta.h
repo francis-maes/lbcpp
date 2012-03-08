@@ -23,7 +23,7 @@ public:
   Rosetta();
   ~Rosetta();
 
-  void init(ExecutionContext& context, bool verbose, int id, size_t delay);
+  void init(ExecutionContext& context, bool verbose, size_t id, size_t delay);
 
   void getLock();
   void releaseLock();
