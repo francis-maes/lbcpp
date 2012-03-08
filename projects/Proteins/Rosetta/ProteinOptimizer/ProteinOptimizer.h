@@ -54,13 +54,13 @@ public:
 
   virtual OptimizationProblemStatePtr applyTo(ExecutionContext& context, const OptimizationProblemStatePtr& state) const
   {
-    PosePtr pose = state->getInternalState().getObjectAndCast<Pose>();
-
+    PosePtr pose = state->getInternalState().getObjectAndCast<Pose> ();
     PosePtr newPose = pose->clone();
     Variable features = newPose->getFeatures(context);
 
-    PoseMoverPtr mover = moverSampler->sample(context, context.getRandomGenerator(), &features).getObjectAndCast<PoseMover>();
+    PoseMoverPtr mover = moverSampler->sample(context, context.getRandomGenerator(), &features).getObjectAndCast<PoseMover> ();
     mover->move(newPose);
+
     PoseOptimizationStatePtr newState = new PoseOptimizationState(newPose);
     return newState;
   }
@@ -71,6 +71,7 @@ protected:
   SamplerPtr moverSampler;
 };
 
+typedef ReferenceCountedObjectPtr<PoseOptimizationStateModifier> PoseOptimizationStateModifierPtr;
 
 class OldProteinOptimizer;
 typedef ReferenceCountedObjectPtr<OldProteinOptimizer> OldProteinOptimizerPtr;

@@ -34,7 +34,7 @@ public:
   /*
    * Constructor
    */
-  Pose() : isEnergyFunctionInitialized(false) {}
+  Pose();
   explicit Pose(const String& sequence);
   explicit Pose(const File& pdbFile);
 
@@ -97,6 +97,7 @@ protected:
 
   GeneralFeaturesPtr featureGenerator;
   bool isEnergyFunctionInitialized;
+  bool hasFeatureGenerator;
 
 # ifdef LBCPP_PROTEIN_ROSETTA
   core::pose::PoseOP pose;

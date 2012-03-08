@@ -33,20 +33,32 @@ using namespace lbcpp;
 
 
 void Pose::setFeatureGenerator(ExecutionContext& context, GeneralFeaturesPtr& features)
-  {featureGenerator = features;}
+{
+  featureGenerator = features;
+  hasFeatureGenerator = true;
+}
 
 GeneralFeaturesPtr Pose::getFeatureGenerator() const
   {return featureGenerator;}
 
 Variable Pose::getFeatures(ExecutionContext& context)
 {
-  Variable tmp = (PosePtr)this;
-  return featureGenerator->computeFeatures(context, tmp);
+  if (hasFeatureGenerator)
+  {
+    Variable tmp = (PosePtr)this;
+    return featureGenerator->computeFeatures(context, tmp);
+  }
+  else
+  {
+    DenseDoubleVectorPtr tmp = new DenseDoubleVector(1, 1.0);
+    return tmp;
+  }
 }
 
 #ifdef LBCPP_PROTEIN_ROSETTA
+Pose::Pose() : isEnergyFunctionInitialized(false), hasFeatureGenerator(false) {pose = new core::pose::Pose();}
 
-Pose::Pose(const String& sequence) : isEnergyFunctionInitialized(false)
+Pose::Pose(const String& sequence) : isEnergyFunctionInitialized(false), hasFeatureGenerator(false)
 {
   jassert(sequence.length() != 0);
   pose = new core::pose::Pose();
@@ -54,7 +66,7 @@ Pose::Pose(const String& sequence) : isEnergyFunctionInitialized(false)
       core::chemical::ChemicalManager::get_instance()->nonconst_residue_type_set("fa_standard"));
 }
 
-Pose::Pose(const File& pdbFile) : isEnergyFunctionInitialized(false)
+Pose::Pose(const File& pdbFile) : isEnergyFunctionInitialized(false), hasFeatureGenerator(false)
 {
   jassert(pdbFile != File::nonexistent);
   pose = new core::pose::Pose((const char*)pdbFile.getFullPathName());
@@ -70,10 +82,23 @@ void Pose::saveToPDB(const File& pdbFile) const
 
 PosePtr Pose::clone() const
 {
+  // create new pose
   PosePtr tmp = new Pose();
+
+  // copy Rosetta pose
   *(tmp->pose) = *pose;
-  *(tmp->score_fct) = *score_fct;
-  tmp->featureGenerator = featureGenerator->cloneAndCast<GeneralFeatures> ();
+
+  // copy energy function
+  tmp->isEnergyFunctionInitialized = isEnergyFunctionInitialized;
+  if (isEnergyFunctionInitialized)
+    tmp->score_fct = score_fct->clone();
+
+  // copy feature generator
+  tmp->hasFeatureGenerator = hasFeatureGenerator;
+  if (hasFeatureGenerator)
+    tmp->featureGenerator = featureGenerator->cloneAndCast<GeneralFeatures> ();
+
+  return tmp;
 }
 
 size_t Pose::getLength() const
@@ -119,7 +144,10 @@ void Pose::setPsi(size_t residue, double psi)
 
 void Pose::applyRotation(size_t residueOne, size_t residueTwo, double amplitude)
 {
-  jassert(pose->n_residue() > 2);
+  jassert(getLength() > 2);
+  jassert(std::abs((double)residueOne - (double)residueTwo) >= 2.0);
+  jassert((residueOne >= 0) && (residueOne < getLength()));
+  jassert((residueTwo >= 0) && (residueTwo < getLength()));
 
   size_t firstResidue = residueOne + 1;
   size_t secondResidue = residueTwo + 1;
@@ -154,7 +182,10 @@ void Pose::applyRotation(size_t residueOne, size_t residueTwo, double amplitude)
 
 void Pose::applyTranslation(size_t residueOne, size_t residueTwo, double amplitude)
 {
-  jassert(pose->n_residue() > 2);
+  jassert(getLength() > 2);
+  jassert(std::abs((double)residueOne - (double)residueTwo) >= 2.0);
+  jassert((residueOne >= 0) && (residueOne < getLength()));
+  jassert((residueTwo >= 0) && (residueTwo < getLength()));
 
   size_t firstResidue = residueOne + 1;
   size_t secondResidue = residueTwo + 1;

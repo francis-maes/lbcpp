@@ -36,6 +36,8 @@
 # include "RosettaProtein.h"
 # include "WorkUnit/DistributableWorkUnit.h"
 
+# include "ProteinOptimizer/SimulatedAnnealing.h"
+
 # include "Data/Rosetta.h"
 # include "Data/Pose.h"
 
@@ -70,22 +72,80 @@ public:
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 
-    size_t numIt = 3000000000;
-    context.enterScope(T("test pow"));
-    for (size_t i = 0; i < numIt; i++)
+    RosettaPtr ros = new Rosetta();
+    ros->init(context, false, 0, 0);
+
+    // without learning
+    PosePtr pose = new Pose(T("AAAAAAAAAAACDEDCDEDC"));
+    pose->initializeToHelix();
+    PoseOptimizationStatePtr optState = new PoseOptimizationState(pose);
+    SamplerPtr sampler = new GeneralPoseMoverSampler(20, 0);
+    PoseOptimizationStateModifierPtr modifier = new PoseOptimizationStateModifier(sampler);
+
+    SimulatedAnnealingParametersPtr params = new SimulatedAnnealingParameters(10000, 4, 0.01, 20);
+    SimulatedAnnealingPtr sa = new SimulatedAnnealing(optState, modifier, GeneralOptimizerStoppingCriterionPtr(), params);
+
+    sa->optimize(context);
+
+    // without learning
+    pose = new Pose(T("AAAAAAAAAAACDEDCDEDC"));
+    pose->initializeToHelix();
+
+    GeneralFeaturesPtr features = new SimplePoseFeatures();
+    features->initialize(context, pose);
+    pose->setFeatureGenerator(context, features);
+
+    optState = new PoseOptimizationState(pose);
+    sampler = new GeneralPoseMoverSampler(20, 3);
+
+    // learn the distribution
+    File referencesFile = context.getFile(T("phipsipetitPDB"));
+    File moversFile = context.getFile(T("phipsipetit_movers"));
+
+    VectorPtr inputWorkers = vector(doubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType));
+    VectorPtr inputMovers = vector(doubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType));
+    context.enterScope(T("Loading learning examples..."));
+    juce::OwnedArray<File> references;
+    referencesFile.findChildFiles(references, File::findFiles, false, T("*.pdb"));
+
+    std::vector<size_t> res;
+    RandomGeneratorPtr rand = new RandomGenerator();
+    rand->sampleOrder(references.size(), res);
+
+    for (size_t i = 0; (i < references.size()) && (i < 10000); i++)
     {
-      double x = 2.3;
-      double y = std::pow(x, 2.0);
+      size_t index = res[i];
+      juce::OwnedArray<File> movers;
+      String nameToSearch = (*references[index]).getFileNameWithoutExtension();
+
+      PosePtr protein = new Pose(*references[index]);
+
+      nameToSearch += T("_mover.xml");
+      moversFile.findChildFiles(movers, File::findFiles, false, nameToSearch);
+      if (movers.size() > 0)
+      {
+        context.informationCallback(T("Structure : ") + nameToSearch);
+        SimplePoseFeaturesPtr sfeats = new SimplePoseFeatures();
+        Variable tmpVar = sfeats->initialize(context, protein);
+        DoubleVectorPtr inFeatures = tmpVar.getObjectAndCast<DoubleVector> ();
+        PoseMoverPtr inMover = Variable::createFromFile(context, (*movers[0])).getObjectAndCast<PoseMover> ();
+        inputWorkers->append(inFeatures);
+        inputMovers->append(inMover);
+        context.progressCallback(new ProgressionState((size_t)(i + 1), (size_t)juce::jmin((int)10000, (int)references.size()), T("Intermediate conformations")));
+      }
     }
     context.leaveScope();
 
-    context.enterScope(T("test x * x"));
-    for (size_t i = 0; i < numIt; i++)
-    {
-      double x = 2.3;
-      double y = x * x;
-    }
-    context.leaveScope();
+    ContainerPtr addWorkers = inputWorkers;
+    ContainerPtr addMovers = inputMovers;
+    sampler->learn(context, addWorkers, addMovers, DenseDoubleVectorPtr(), ContainerPtr(), ContainerPtr(), DenseDoubleVectorPtr());
+
+    modifier = new PoseOptimizationStateModifier(sampler);
+
+    params = new SimulatedAnnealingParameters(10000, 4, 0.01, 20);
+    sa = new SimulatedAnnealing(optState, modifier, GeneralOptimizerStoppingCriterionPtr(), params);
+
+    sa->optimize(context);
 
     //    DoubleVectorPtr v1 = new DenseDoubleVector(2, 0.0);
     //    DenseDoubleVectorPtr v2 = new DenseDoubleVector(2, 1.0);

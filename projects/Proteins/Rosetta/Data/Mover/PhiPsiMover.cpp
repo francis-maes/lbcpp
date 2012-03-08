@@ -34,10 +34,11 @@ void PhiPsiMover::move(core::pose::PoseOP& pose, int residue, double deltaPhi, d
 
 void PhiPsiMover::move(PosePtr& pose, int residue, double deltaPhi, double deltaPsi)
 {
-  if (isNumberValid(deltaPhi))
-    pose->setPhi(residue + 1, pose->getPhi(residue + 1) + deltaPhi);
-  if (isNumberValid(deltaPsi))
-    pose->setPsi(residue + 1, pose->getPsi(residue + 1) + deltaPsi);
+  jassert(isNumberValid(deltaPhi) && isNumberValid(deltaPsi));
+  jassert((residue >= 0) && (residue < pose->getLength()));
+
+  pose->setPhi(residue, pose->getPhi(residue) + deltaPhi);
+  pose->setPsi(residue, pose->getPsi(residue) + deltaPsi);
 }
 
 void PhiPsiMover::setResidueIndex(size_t index)

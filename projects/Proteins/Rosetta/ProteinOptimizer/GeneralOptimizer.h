@@ -50,22 +50,36 @@ protected:
 
 typedef ReferenceCountedObjectPtr<OptimizationProblemStateModifier> OptimizationProblemStateModifierPtr;
 
+class GeneralOptimizerParameters : public Object
+{
+public:
+  virtual VariableVectorPtr getParameters(ExecutionContext& context, const Variable& input) const = 0;
+
+protected:
+  friend class GeneralOptimizerParametersClass;
+};
+
+typedef ReferenceCountedObjectPtr<GeneralOptimizerParameters> GeneralOptimizerParametersPtr;
+
 class GeneralOptimizer : public Object
 {
 public:
+  GeneralOptimizer() : iteration(0) {}
   GeneralOptimizer(const OptimizationProblemStatePtr& initialState,
                    const OptimizationProblemStateModifierPtr& modifier,
-                   const GeneralOptimizerStoppingCriterionPtr& stoppingCriterion)
+                   const GeneralOptimizerStoppingCriterionPtr& stoppingCriterion,
+                   const GeneralOptimizerParametersPtr& parameters)
     : iteration(0),
       initialState(initialState),
       bestState(initialState),
       modifier(modifier),
-      stoppingCriterion(stoppingCriterion) {}
+      stoppingCriterion(stoppingCriterion),
+      parameters(parameters) {}
 
   /*
    * Solution
    */
-  OptimizationProblemStatePtr getBestState()
+  OptimizationProblemStatePtr getBestState() const
     {return bestState;}
 
   /*
@@ -81,6 +95,7 @@ protected:
   OptimizationProblemStatePtr bestState;
   OptimizationProblemStateModifierPtr modifier;
   GeneralOptimizerStoppingCriterionPtr stoppingCriterion;
+  GeneralOptimizerParametersPtr parameters;
 };
 
 typedef ReferenceCountedObjectPtr<GeneralOptimizer> GeneralOptimizerPtr;

@@ -45,9 +45,25 @@ void RigidBodyMover::move(core::pose::PoseOP& pose, size_t indexResidueOne, size
 void RigidBodyMover::move(PosePtr& pose, size_t indexResidueOne, size_t indexResidueTwo, double magnitudeTranslation,
     double amplitudeRotation)
 {
-  if (isNumberValid(amplitudeRotation) && (amplitudeRotation != 0))
+  jassert(isNumberValid(amplitudeRotation) && isNumberValid(magnitudeTranslation));
+
+  if (std::abs((double)indexResidueOne - (double)indexResidueTwo) < 2.0)
+  {
+    if (indexResidueOne < indexResidueTwo)
+    {
+      indexResidueOne = (size_t)juce::jlimit(0, (int)pose->getLength() - 1, (int)indexResidueOne - 1);
+      indexResidueTwo = (size_t)juce::jlimit(0, (int)pose->getLength() - 1, (int)indexResidueTwo + 1);
+    }
+    else
+    {
+      indexResidueOne = (size_t)juce::jlimit(0, (int)pose->getLength() - 1, (int)indexResidueOne + 1);
+      indexResidueTwo = (size_t)juce::jlimit(0, (int)pose->getLength() - 1, (int)indexResidueTwo - 1);
+    }
+  }
+
+  if (amplitudeRotation != 0)
     pose->applyRotation(indexResidueOne, indexResidueTwo, amplitudeRotation);
-  if (isNumberValid(magnitudeTranslation) && (magnitudeTranslation != 0))
+  if (magnitudeTranslation != 0)
     pose->applyTranslation(indexResidueOne, indexResidueTwo, magnitudeTranslation);
 }
 
