@@ -58,7 +58,6 @@ public:
 
   virtual void initializeWorkUnits(ExecutionContext& context)
   {
-    workUnits = new CompositeWorkUnit(name);
     for (size_t i = 0; i < 10; i++)
       workUnits->addWorkUnit(new TestDumbWorkUnit(i));
   }
@@ -71,8 +70,7 @@ public:
     {
       context.enterScope(T("Result"));
       context.resultCallback(T("Step"), Variable((int)i));
-      context.resultCallback(T("Value"), Variable(
-          result.getObjectAndCast<DenseDoubleVector> ()->getValue(i)));
+      context.resultCallback(T("Value"), Variable(result.getObjectAndCast<DenseDoubleVector> ()->getValue(i)));
       context.leaveScope();
     }
 
@@ -81,16 +79,14 @@ public:
 
   virtual Variable multipleResultCallback(ExecutionContext& context, VariableVector& results)
   {
-    size_t numElements =
-        results.getElement(0).getObjectAndCast<DenseDoubleVector> ()->getNumValues();
+    size_t numElements = results.getElement(0).getObjectAndCast<DenseDoubleVector> ()->getNumValues();
     size_t numResults = results.getNumElements();
 
     DenseDoubleVectorPtr mean = new DenseDoubleVector(numElements, -1);
 
     for (size_t j = 0; j < numResults; j++)
       for (size_t i = 0; i < numElements; i++)
-        mean->setValue(i, mean->getValue(i) + results.getElement(j).getObjectAndCast<
-            DenseDoubleVector> ()->getValue(i) / (double)numResults);
+        mean->setValue(i, mean->getValue(i) + results.getElement(j).getObjectAndCast<DenseDoubleVector> ()->getValue(i) / (double)numResults);
 
     for (size_t i = 0; i < numElements; i++)
     {

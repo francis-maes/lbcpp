@@ -177,8 +177,7 @@ protected:
 class ProteinOptimizationWorkUnit : public DistributableWorkUnit
 {
 public:
-  ProteinOptimizationWorkUnit()
-    : DistributableWorkUnit(String("ProteinOptimizationWorkunit")) {}
+  ProteinOptimizationWorkUnit() : DistributableWorkUnit() {}
 
   ProteinOptimizationWorkUnit(
       String inputDirectory,
@@ -191,7 +190,7 @@ public:
       double finalTemperature,
       size_t numDecreasingSteps,
       size_t numIterations)
-    : DistributableWorkUnit(String("ProteinOptimizationWorkunit")),
+    : DistributableWorkUnit(),
       inputDirectory(inputDirectory),
       outputDirectory(outputDirectory),
       numOutputFiles(numOutputFiles),
