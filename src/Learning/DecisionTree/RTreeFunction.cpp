@@ -222,7 +222,7 @@ protected:
 typedef ReferenceCountedObjectPtr<RTreeFunction> RTreeFunctionPtr;
 typedef ReferenceCountedObjectPtr<RTree> RTreePtr;
 
-extern BatchLearnerPtr rTreeBatchLearner();
+extern BatchLearnerPtr rTreeBatchLearner(bool verbose = false);
 
 }; /* namespace lbcpp */
 
@@ -232,11 +232,12 @@ extern BatchLearnerPtr rTreeBatchLearner();
 
 RTreeFunction::RTreeFunction(size_t numTrees,
                              size_t numAttributeSamplesPerSplit,
-                             size_t minimumSizeForSplitting)
+                             size_t minimumSizeForSplitting,
+                             bool verbose)
   : numTrees(numTrees), 
     numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
     minimumSizeForSplitting(minimumSizeForSplitting)
-  {setBatchLearner(filterUnsupervisedExamplesBatchLearner(rTreeBatchLearner()));}
+  {setBatchLearner(filterUnsupervisedExamplesBatchLearner(rTreeBatchLearner(verbose)));}
 
 RTreeFunction::RTreeFunction() : numTrees(100), numAttributeSamplesPerSplit(10), minimumSizeForSplitting(1)
   {setBatchLearner(filterUnsupervisedExamplesBatchLearner(rTreeBatchLearner()));}
@@ -289,7 +290,7 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
 
   size_t n = trainingData.size();
   nb_attributes = trainingData[0]->getVariable(0).getObjectAndCast<Container>()->getNumElements();
-  const size_t numAttributeSamplesPerSplit = rTreeFunction->getNumAttributeSamplesPerSplit() ? rTreeFunction->getNumAttributeSamplesPerSplit() : (size_t)sqrt((double)nb_attributes);
+  const size_t numAttributeSamplesPerSplit = rTreeFunction->getNumAttributeSamplesPerSplit() ? juce::jmax(rTreeFunction->getNumAttributeSamplesPerSplit(), nb_attributes) : (size_t)sqrt((double)nb_attributes);
   context.resultCallback(T("Num Attributes"), nb_attributes);
   context.resultCallback(T("K"), numAttributeSamplesPerSplit);
   context.resultCallback(T("nmin"), rTreeFunction->getMinimumSizeForSplitting());
@@ -451,7 +452,7 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
   rTreeFunction->getRankedMapping(false, ranks);
 
   const EnumerationPtr attributesEnum = trainingData[0]->getVariable(0).getObjectAndCast<Container>()->getElementsEnumeration();
-  if (attributesEnum)
+  if (verbose && attributesEnum)
   {
     for (size_t j = 0; j < (size_t)nb_attributes; ++j)
     {

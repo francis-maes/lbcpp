@@ -449,6 +449,8 @@ DenseDoubleVectorPtr Pose::getHistogram() const
 }
 
 # else
+Pose::Pose() {}
+
 Pose::Pose(const String& sequence)
   {jassert(false);}
 

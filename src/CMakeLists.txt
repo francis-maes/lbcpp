@@ -582,6 +582,7 @@ SET(LBCPP_LEARNING_DECISION_TREE_SOURCES
   Learning/DecisionTree/RTreeFunction.h
   Learning/DecisionTree/RTreeFunction.cpp
   Learning/DecisionTree/RTreeBatchLearner.h
+  Learning/DecisionTree/LowMemoryRTreeFunction.h
   Learning/DecisionTree/DecisionTreeLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeLibrary.cpp
 )
