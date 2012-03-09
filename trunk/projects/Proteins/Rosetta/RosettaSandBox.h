@@ -20,9 +20,7 @@
 # include "Data/Mover/PhiPsiMover.h"
 # include "Data/Mover/ShearMover.h"
 # include "Data/Mover/RigidBodyMover.h"
-# include "Sampler/GeneralPoseMoverSampler.h"
 # include "RosettaProtein.h"
-//using namespace std;
 
 namespace lbcpp
 {
