@@ -19,6 +19,8 @@
 # include "ProteinOptimizer/SimulatedAnnealingOptimizer.h"
 # include "../Data/TertiaryStructure.h"
 # include "ProteinEDAOptimizer.h"
+# include "Data/MoverSampler/BlindPoseMoverSampler.h"
+# include "Data/MoverSampler/ConditionalPoseMoverSampler.h"
 
 namespace lbcpp
 {
@@ -121,7 +123,7 @@ public:
           outputDirectory.createDirectory();
       }
 
-      SamplerPtr moverSampler = new GeneralPoseMoverSampler(currentProtein->getLength(), 0);
+      SamplerPtr moverSampler = new BlindPoseMoverSampler(currentProtein->getLength());
 
       OldProteinOptimizerPtr o = new ProteinSimulatedAnnealingOptimizer(4.0, 0.01, 50,
           maxNumberIterations, 5, currentProtein->getName(), 0.0001, timesFeatureGeneration,
@@ -356,7 +358,7 @@ public:
 //          moverSampler = objectCompositeSampler(phiPsiMoverClass, new ResidueSampler(
 //              targetPose->n_residue()), gaussianSampler(0, 25), gaussianSampler(0, 25));
 //        else
-          moverSampler = new GeneralPoseMoverSampler(targetPose->n_residue(), 0);
+          moverSampler = new BlindPoseMoverSampler(targetPose->n_residue());
 
         bool bestLearning = true;
         if (includeBestMoversInLearning == 0)

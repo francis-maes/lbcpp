@@ -25,7 +25,6 @@ GENERATE_INTROSPECTION_CODE(Rosetta/Data/Mover/ProteinRosettaDataMoverLibrary.xm
 GENERATE_INTROSPECTION_CODE(Rosetta/Data/MoverSampler/ProteinRosettaDataMoverSamplerLibrary.xml ProteinRosettaDataMoverSamplerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Rosetta/ProteinOptimizer/ProteinRosettaOptimizerLibrary.xml ProteinRosettaOptimizerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Rosetta/ProteinOptimizer/StoppingCriterion/ProteinRosettaOptimizerStoppingCriterionLibrary.xml ProteinRosettaOptimizerStoppingCriterionLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Rosetta/Sampler/ProteinRosettaSamplerLibrary.xml ProteinRosettaSamplerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Rosetta/WorkUnit/ProteinRosettaWorkUnitLibrary.xml ProteinRosettaWorkUnitLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(ProteinLibrary.xml ProteinLibrary.cpp)
@@ -239,12 +238,6 @@ SET(LBCPP_PROTEIN_ROSETTA_OPTIMIZER_STOPPINGCRITERION_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaOptimizerStoppingCriterionLibrary.cpp
 )
 
-SET(LBCPP_PROTEIN_ROSETTA_SAMPLER_SOURCES
-  Rosetta/Sampler/GeneralPoseMoverSampler.h
-  Rosetta/Sampler/ProteinRosettaSamplerLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaSamplerLibrary.cpp
-)
-
 SET(LBCPP_PROTEIN_ROSETTA_WORKUNIT_SOURCES
   Rosetta/WorkUnit/UnfoldProteinsWorkUnit.h
   Rosetta/WorkUnit/TuningSAParametersWorkUnit.h
@@ -327,7 +320,6 @@ SET(PROTEINS_CPP_SOURCES
     ${LBCPP_PROTEIN_ROSETTA_DATA_MOVERSAMPLER_SOURCES}
     ${LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES}
     ${LBCPP_PROTEIN_ROSETTA_OPTIMIZER_STOPPINGCRITERION_SOURCES}
-    ${LBCPP_PROTEIN_ROSETTA_SAMPLER_SOURCES}
     ${LBCPP_PROTEIN_ROSETTA_WORKUNIT_SOURCES}
   ${LBCPP_PROTEIN_BLOSSOMV_SOURCES}
   ${LBCPP_PROTEIN_LUAPE_SOURCES}
@@ -360,7 +352,6 @@ SOURCE_SUB_GROUP(Rosetta DataMover FILES ${LBCPP_PROTEIN_ROSETTA_DATA_MOVER_SOUR
 SOURCE_SUB_GROUP(Rosetta DataMoverSampler FILES ${LBCPP_PROTEIN_ROSETTA_DATA_MOVERSAMPLER_SOURCES})
 SOURCE_SUB_GROUP(Rosetta ProteinOptimizer FILES ${LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES})
 SOURCE_SUB_GROUP(Rosetta ProteinOptimizerStoppingCriterion FILES ${LBCPP_PROTEIN_ROSETTA_OPTIMIZER_STOPPINGCRITERION_SOURCES})
-SOURCE_SUB_GROUP(Rosetta Sampler FILES ${LBCPP_PROTEIN_ROSETTA_SAMPLER_SOURCES})
 SOURCE_SUB_GROUP(Rosetta WorkUnit FILES ${LBCPP_PROTEIN_ROSETTA_WORKUNIT_SOURCES})
 SOURCE_GROUP(BlossomV FILES ${LBCPP_PROTEIN_BLOSSOMV_SOURCES})
 SOURCE_GROUP(Luape FILES ${LBCPP_PROTEIN_LUAPE_SOURCES})

@@ -27,11 +27,11 @@
 # include <cmath>
 # include <time.h>
 # include "Data/Features/SimplePoseFeatures.h"
-# include "Sampler/GeneralPoseMoverSampler.h"
 # include "RosettaSandBox.h"
 # include "RosettaProtein.h"
 # include "WorkUnit/DistributableWorkUnit.h"
 # include "Data/MoverSampler/BlindPoseMoverSampler.h"
+# include "Data/MoverSampler/ConditionalPoseMoverSampler.h"
 
 # include "ProteinOptimizer/SimulatedAnnealing.h"
 
@@ -76,10 +76,10 @@ public:
     PosePtr pose = new Pose(T("AAAAAAAAAAACDEDCDEDC"));
     pose->initializeToHelix();
     PoseOptimizationStatePtr optState = new PoseOptimizationState(pose);
-    SamplerPtr sampler = new GeneralPoseMoverSampler(20, 0);
+    SamplerPtr sampler = new BlindPoseMoverSampler(20);
     PoseOptimizationStateModifierPtr modifier = new PoseOptimizationStateModifier(sampler);
 
-    SimulatedAnnealingParametersPtr params = new SimulatedAnnealingParameters(200, 4, 0.01, 20);
+    SimulatedAnnealingParametersPtr params = new SimulatedAnnealingParameters(10000, 4, 0.01, 20);
     SimulatedAnnealingPtr sa = new SimulatedAnnealing(optState, modifier, GeneralOptimizerStoppingCriterionPtr(), params);
 
     DenseDoubleVectorPtr results1 = sa->optimize(context);
@@ -95,7 +95,7 @@ public:
     pose->setFeatureGenerator(context, features);
 
     optState = new PoseOptimizationState(pose);
-    sampler = new GeneralPoseMoverSampler(20, 3);
+    sampler = new ConditionalPoseMoverSampler(20);
 
     // learn the distribution
     File referencesFile = context.getFile(T("phipsipetitPDB"));
@@ -141,7 +141,7 @@ public:
 
     modifier = new PoseOptimizationStateModifier(sampler);
 
-    params = new SimulatedAnnealingParameters(200, 4, 0.01, 20);
+    params = new SimulatedAnnealingParameters(10000, 4, 0.01, 20);
     sa = new SimulatedAnnealing(optState, modifier, GeneralOptimizerStoppingCriterionPtr(), params);
 
     DenseDoubleVectorPtr results2 = sa->optimize(context);
