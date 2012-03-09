@@ -97,64 +97,6 @@ protected:
 
 typedef ReferenceCountedObjectPtr<GeneralResiduePairSampler> GeneralResiduePairSamplerPtr;
 
-class ClamperSampler : public CompositeSampler
-{
-public:
-  ClamperSampler(double minValue, double maxValue)
-    : CompositeSampler(1), minValue(minValue), maxValue(maxValue), mean((minValue + maxValue) / 2)
-    {samplers[0] = conditionalGaussianSampler();}
-  ClamperSampler() : CompositeSampler(1), minValue(0), maxValue(0), mean(0) {}
-
-  virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
-  {
-    double value = samplers[0]->sample(context, random, inputs).getDouble();
-
-    value *= 0.5 * (maxValue - minValue);
-    value += mean;
-    value = juce::jlimit(minValue, maxValue, value);
-    return value;
-  }
-
-  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights = DenseDoubleVectorPtr(),
-                                                const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr(), const DenseDoubleVectorPtr& supervisionWeights = DenseDoubleVectorPtr())
-  {
-    double normalize = 1.0 / (0.5 * (maxValue - minValue));
-    VectorPtr samples = new DenseDoubleVector(trainingSamples->getNumElements(), 0.0);
-    for (size_t i = 0; i < trainingSamples->getNumElements(); i++)
-    {
-      double valueToSet = juce::jlimit(minValue, maxValue, trainingSamples->getElement(i).getDouble());
-      valueToSet -= mean;
-      valueToSet *= normalize;
-      samples->setElement(i, valueToSet);
-    }
-
-    samplers[0]->learn(context, trainingInputs, samples, trainingWeights, validationInputs,
-        validationSamples, supervisionWeights);
-  }
-
-  virtual DenseDoubleVectorPtr computeLogProbabilities(const ContainerPtr& inputs, const ContainerPtr& samples) const
-  {
-    double normalize = 1.0 / (0.5 * (maxValue - minValue));
-    ContainerPtr newSamples = new DenseDoubleVector(samples->getNumElements(), 0.0);
-    for (size_t i = 0; i < samples->getNumElements(); i++)
-    {
-      double valueToSet = juce::jlimit(minValue, maxValue, samples->getElement(i).getDouble());
-      valueToSet -= mean;
-      valueToSet *= normalize;
-      newSamples->setElement(i, valueToSet);
-    }
-
-    return samplers[0]->computeLogProbabilities(inputs, newSamples);
-  }
-
-protected:
-  friend class ClamperSamplerClass;
-
-  double minValue;
-  double maxValue;
-  double mean;
-};
-
 class GaussianSamplerWithoutLearn : public CompositeSampler
 {
 public:
@@ -340,12 +282,12 @@ protected:
     else if (learningPolicy == 3)
     {
       moverSampler = maximumEntropySampler(poseMoverEnumerationEnumeration);
-      phiPsiDeltaPhi = new ClamperSampler(-180, 180);
-      phiPsiDeltaPsi = new ClamperSampler(-180, 180);
-      shearDeltaPhi = new ClamperSampler(-180, 180);
-      shearDeltaPsi = new ClamperSampler(-180, 180);
-      rbDeltaMag = new ClamperSampler(-5, 5);
-      rbDeltaAmp = new ClamperSampler(-180, 180);
+      phiPsiDeltaPhi = clamperSampler(-180, 180, conditionalGaussianSampler());
+      phiPsiDeltaPsi = clamperSampler(-180, 180, conditionalGaussianSampler());
+      shearDeltaPhi = clamperSampler(-180, 180, conditionalGaussianSampler());
+      shearDeltaPsi = clamperSampler(-180, 180, conditionalGaussianSampler());
+      rbDeltaMag = clamperSampler(-5, 5, conditionalGaussianSampler());
+      rbDeltaAmp = clamperSampler(-180, 180, conditionalGaussianSampler());
     }
 
     // add movers' samplers

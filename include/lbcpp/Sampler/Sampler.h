@@ -152,6 +152,8 @@ extern CompositeSamplerPtr mixtureSampler(const DenseDoubleVectorPtr& probabilit
 
 extern CompositeSamplerPtr zeroOrScalarContinuousSampler(DiscreteSamplerPtr equalZeroSampler, ScalarContinuousSamplerPtr scalarSampler);
 
+extern CompositeSamplerPtr clamperSampler(double minValue, double maxValue, const ScalarContinuousSamplerPtr& sampler);
+
 /*
 ** DecoratorSampler
 */

@@ -29,4 +29,11 @@
     <variable type="NumericalLearnableFunction" name="multiLinearFunction"/>
   </class>
 
+  <class name="ClamperSampler" base="CompositeSampler">
+    <constructor arguments="double minValue, double maxValue, const ScalarContinuousSamplerPtr&amp; sampler"/>
+    <variable type="Double" name="minValue"/>
+    <variable type="Double" name="maxValue"/>
+    <variable type="Double" name="mean"/>
+  </class>
+  
 </library>

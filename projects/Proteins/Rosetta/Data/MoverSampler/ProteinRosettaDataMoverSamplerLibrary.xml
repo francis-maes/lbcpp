@@ -13,5 +13,10 @@
   <class name="BlindPoseMoverSampler" base="CompositeSampler">
     <variable type="PositiveInteger" name="numResidues"/>
   </class>
+  
+  <class name="ConditionalPoseMoverSampler" base="CompositeSampler">
+    <variable type="PositiveInteger" name="numResidues"/>
+    <variable type="Boolean" name="hasBeenLearned"/>
+  </class>
     
 </library>
