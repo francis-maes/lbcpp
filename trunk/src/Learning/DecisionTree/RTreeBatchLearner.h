@@ -18,10 +18,18 @@ namespace lbcpp
 class RTreeBatchLearner : public BatchLearner
 {
 public:
+  RTreeBatchLearner(bool verbose = false)
+    : verbose(verbose) {}
+
   virtual TypePtr getRequiredFunctionType() const
     {return rTreeFunctionClass;}
   
   virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const;
+
+protected:
+  friend class RTreeBatchLearnerClass;
+
+  bool verbose;
 };
 
 }; /* namespace lbcpp */

@@ -12,19 +12,19 @@
 namespace lbcpp
 {
 
-FunctionPtr regressionExtraTree(size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+FunctionPtr regressionExtraTree(size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting, bool verbose)
 {
-  return new RegressionRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+  return new RegressionRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, verbose);
 }
 
-FunctionPtr binaryClassificationExtraTree(size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+FunctionPtr binaryClassificationExtraTree(size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting, bool verbose)
 {
-  return new BinaryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+  return new BinaryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, verbose);
 }
 
-FunctionPtr classificationExtraTree(size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+FunctionPtr classificationExtraTree(size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting, bool verbose)
 {
-  return new ClassificationRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+  return new ClassificationRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, verbose);
 }
 
 };

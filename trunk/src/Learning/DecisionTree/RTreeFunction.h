@@ -20,7 +20,8 @@ class RTreeFunction : public Function
 public:
   RTreeFunction(size_t numTrees,
                 size_t numAttributeSamplesPerSplit,
-                size_t minimumSizeForSplitting);
+                size_t minimumSizeForSplitting,
+                bool verbose);
   RTreeFunction();
 
   /* RTreeFunction */
@@ -91,10 +92,11 @@ class ClassificationRTreeFunction : public RTreeFunction
 public:
   ClassificationRTreeFunction(size_t numTrees,
                               size_t numAttributeSamplesPerSplit,
-                              size_t minimumSizeForSplitting)
+                              size_t minimumSizeForSplitting,
+                              bool verbose)
     : RTreeFunction(numTrees,
                     numAttributeSamplesPerSplit,
-                    minimumSizeForSplitting) {}
+                    minimumSizeForSplitting, verbose) {}
   ClassificationRTreeFunction() {}
   
   virtual TypePtr getSupervisionType() const
@@ -113,10 +115,11 @@ class RegressionRTreeFunction : public RTreeFunction
 public:
   RegressionRTreeFunction(size_t numTrees,
                           size_t numAttributeSamplesPerSplit,
-                          size_t minimumSizeForSplitting)
+                          size_t minimumSizeForSplitting,
+                          bool verbose)
     : RTreeFunction(numTrees,
                     numAttributeSamplesPerSplit,
-                    minimumSizeForSplitting) {}
+                    minimumSizeForSplitting, verbose) {}
   RegressionRTreeFunction() {}
   
   virtual TypePtr getSupervisionType() const
@@ -131,10 +134,11 @@ class BinaryRTreeFunction : public RTreeFunction
 public:
   BinaryRTreeFunction(size_t numTrees,
                       size_t numAttributeSamplesPerSplit,
-                      size_t minimumSizeForSplitting)
+                      size_t minimumSizeForSplitting,
+                      bool verbose)
     : RTreeFunction(numTrees,
                     numAttributeSamplesPerSplit,
-                    minimumSizeForSplitting) {}
+                    minimumSizeForSplitting, verbose) {}
   BinaryRTreeFunction() {}
   
   virtual TypePtr getSupervisionType() const
@@ -149,10 +153,12 @@ class ExtraTreeLearningMachine : public ProxyFunction
 public:
   ExtraTreeLearningMachine(size_t numTrees,
                            size_t numAttributeSamplesPerSplit,
-                           size_t minimumSizeForSplitting)
+                           size_t minimumSizeForSplitting,
+                           bool verbose)
     : numTrees(numTrees), 
       numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
-      minimumSizeForSplitting(minimumSizeForSplitting) {}
+      minimumSizeForSplitting(minimumSizeForSplitting),
+      verbose(verbose) {}
 
   virtual size_t getNumRequiredInputs() const
     {return 2;}
@@ -169,11 +175,11 @@ public:
     TypePtr supervisionType = inputVariables[1]->getType();
 
     if (supervisionType == doubleType)
-      return new RegressionRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+      return new RegressionRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, verbose);
     else if (supervisionType == probabilityType || supervisionType == booleanType)
-      return new BinaryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+      return new BinaryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, verbose);
     else if (supervisionType->inheritsFrom(enumValueType) || supervisionType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
-      return new ClassificationRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+      return new ClassificationRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, verbose);
     else
     {
       jassertfalse;
@@ -187,6 +193,7 @@ protected:
   size_t numTrees;
   size_t numAttributeSamplesPerSplit;
   size_t minimumSizeForSplitting;
+  bool verbose;
 
   ExtraTreeLearningMachine() {}
 };

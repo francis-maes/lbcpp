@@ -140,14 +140,14 @@ end
 local dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/1203XX-DSBWithExtraTreesAndPerfectMatching/"
 local numFolds = 9
 
-local winSizes = {0, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29} --, 31, 33, 35, 37, 39, 41, 43, 45}
-main("Window Size", winSizes, dir .. "WindowSizes/x3_Win", "_K10000_1000T_NMIN1", numFolds)
+local winSizes = {0, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29}--, 31, 33, 35, 37, 39, 41, 43, 45}
+--main("Window Size", winSizes, dir .. "WindowSizes/x3_Win", "_K10000_1000T_NMIN1", numFolds)
 
 local nmin = {1, 3, 5, 7, 9, 11, 15, 19, 23, 27, 31, 55, 75, 101, 155, 301, 501}
 --main("Nmin", nmin, dir .. "Nmin/x3_Win19_HugeK_1000T_NMIN", "", numFolds)
 
-local k = {1, 2, 5, 10, 20, 50, 100, 150, 200, 250, 300, 400, 500, 1000, 2000, 5000}
---main("K", k, dir .. "K/x3_Win19_K", "_1000T_NMIN1", numFolds)
+local k = {1, 5, 10, 20, 50, 100, 200, 500, 1000, 10000}
+main("K", k, dir .. "K/x3_Win11_K", "_1000T_NMIN1", numFolds)
 
 --main("K200 - Nmin", {1, 3, 5, 7, 11, 21}, dir .. "K200/x3_Win19_K200_1000T_NMIN", "", numFolds)
 
