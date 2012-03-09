@@ -36,6 +36,7 @@ public:
     // retrieve features and outputs
     featuresEnumeration = DoubleVector::getElementsEnumeration(inputVariables[0]->getType());
     jassert(featuresEnumeration);
+    jassert(featuresEnumeration->getNumElements());
     if (!outputsEnumeration)
     {
       outputsEnumeration = inputVariables[1]->getType().dynamicCast<Enumeration>();
