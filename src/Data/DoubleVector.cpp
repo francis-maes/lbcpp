@@ -740,9 +740,10 @@ DenseDoubleVector::DenseDoubleVector(ClassPtr thisClass, size_t initialSize, dou
 DenseDoubleVector::DenseDoubleVector(EnumerationPtr enumeration, TypePtr elementsType, size_t initialSize, double initialValue)
   : DoubleVector(denseDoubleVectorClass(enumeration, elementsType)), ownValues(true)
 {
+  jassert(enumeration);
   jassert(((ObjectPtr)enumeration).isInstanceOf<Enumeration>());
   if (initialSize == (size_t)-1)
-    initialSize = getElementsEnumeration()->getNumElements();
+    initialSize = enumeration->getNumElements();
   values = new std::vector<double>(initialSize, initialValue);
 }
 
