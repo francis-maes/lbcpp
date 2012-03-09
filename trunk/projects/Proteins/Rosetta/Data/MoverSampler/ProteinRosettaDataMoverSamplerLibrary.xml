@@ -9,5 +9,9 @@
   <class name="BlindResiduePairSampler" base="CompositeSampler">
     <variable type="PositiveInteger" name="numResidues"/>
   </class>
+  
+  <class name="BlindPoseMoverSampler" base="CompositeSampler">
+    <variable type="PositiveInteger" name="numResidues"/>
+  </class>
     
 </library>
