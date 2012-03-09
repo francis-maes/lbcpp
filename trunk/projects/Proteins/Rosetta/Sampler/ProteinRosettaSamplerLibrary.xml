@@ -2,12 +2,6 @@
 
 <library name="ProteinRosettaSampler" directory="Rosetta/Sampler">
   
-  <class name="ClamperSampler" base="CompositeSampler">
-    <variable type="Double" name="minValue"/>
-    <variable type="Double" name="maxValue"/>
-    <variable type="Double" name="mean"/>
-  </class>
-  
   <!-- general samplers -->
   <class name="GeneralPoseMoverSampler" base="CompositeSampler">
     <variable type="PositiveInteger" name="numResidues"/>

@@ -222,7 +222,7 @@ public:
     displayDataSet(context, T("Conditional gaussian dataset"), inputs, samples);
 
     //SamplerPtr sampler = conditionalGaussianSampler();
-    SamplerPtr sampler = new ClamperSampler(360, 480);
+    SamplerPtr sampler = clamperSampler(360, 480, conditionalGaussianSampler());
     sampler->learn(context, inputs, samples);
 
     context.enterScope(T("Testing conditional gaussian"));

@@ -31,6 +31,7 @@
 # include "RosettaSandBox.h"
 # include "RosettaProtein.h"
 # include "WorkUnit/DistributableWorkUnit.h"
+# include "Data/MoverSampler/BlindPoseMoverSampler.h"
 
 # include "ProteinOptimizer/SimulatedAnnealing.h"
 
