@@ -290,7 +290,7 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
 
   size_t n = trainingData.size();
   nb_attributes = trainingData[0]->getVariable(0).getObjectAndCast<Container>()->getNumElements();
-  const size_t numAttributeSamplesPerSplit = rTreeFunction->getNumAttributeSamplesPerSplit() ? juce::jmax(rTreeFunction->getNumAttributeSamplesPerSplit(), nb_attributes) : (size_t)sqrt((double)nb_attributes);
+  const size_t numAttributeSamplesPerSplit = rTreeFunction->getNumAttributeSamplesPerSplit() ? juce::jmin(rTreeFunction->getNumAttributeSamplesPerSplit(), nb_attributes) : (size_t)sqrt((double)nb_attributes);
   context.resultCallback(T("Num Attributes"), nb_attributes);
   context.resultCallback(T("K"), numAttributeSamplesPerSplit);
   context.resultCallback(T("nmin"), rTreeFunction->getMinimumSizeForSplitting());
