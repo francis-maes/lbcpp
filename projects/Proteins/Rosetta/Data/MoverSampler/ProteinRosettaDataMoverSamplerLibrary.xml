@@ -5,7 +5,6 @@
   <class name="BlindResidueSampler" base="CompositeSampler">
     <variable type="PositiveInteger" name="numResidues"/>
   </class>
-  
   <class name="BlindResiduePairSampler" base="CompositeSampler">
     <variable type="PositiveInteger" name="numResidues"/>
   </class>

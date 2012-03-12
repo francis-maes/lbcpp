@@ -2,7 +2,5 @@
 
 <library name="ProteinRosettaOptimizerStoppingCriterion" directory="Rosetta/ProteinOptimizer/StoppingCriterion">
 
-  <class name="GeneralOptimizerStoppingCriterion" base="Object" abstract="yes">
-  </class>
     
 </library>

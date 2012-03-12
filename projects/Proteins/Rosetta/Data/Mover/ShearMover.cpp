@@ -44,16 +44,16 @@ void ShearMover::move(PosePtr& pose, int residue, double deltaPhi, double deltaP
 
 void ShearMover::setResidueIndex(size_t index)
   {residue = index;}
-size_t ShearMover::getResidueIndex()
+size_t ShearMover::getResidueIndex() const
   {return residue;}
 
 void ShearMover::setDeltaPhi(double delta)
   {deltaPhi = delta;}
-double ShearMover::getDeltaPhi()
-  {return deltaPhi;}
 void ShearMover::setDeltaPsi(double delta)
   {deltaPsi = delta;}
-double ShearMover::getDeltaPsi()
+double ShearMover::getDeltaPhi() const
+  {return deltaPhi;}
+double ShearMover::getDeltaPsi() const
   {return deltaPsi;}
 
 bool ShearMover::isEqual(const PoseMoverPtr& mover) const

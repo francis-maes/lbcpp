@@ -61,6 +61,17 @@ protected:
 
 typedef ReferenceCountedObjectPtr<GeneralOptimizerParameters> GeneralOptimizerParametersPtr;
 
+class GeneralOptimizerStoppingCriterion : public Object
+{
+public:
+  virtual bool performNext(ExecutionContext& context, size_t iteration, const OptimizationProblemStatePtr& state, const OptimizationProblemStatePtr& bestState) const = 0;
+
+protected:
+  friend class GeneralOptimizerStoppingCriterionClass;
+};
+
+typedef ReferenceCountedObjectPtr<GeneralOptimizerStoppingCriterion> GeneralOptimizerStoppingCriterionPtr;
+
 class GeneralOptimizer : public Object
 {
 public:

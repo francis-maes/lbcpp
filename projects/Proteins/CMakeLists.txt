@@ -195,9 +195,10 @@ SET(LBCPP_PROTEIN_ROSETTA_DATA_SOURCES
 )
 
 SET(LBCPP_PROTEIN_ROSETTA_DATA_FEATURES_SOURCES
-  Rosetta/Data/Features/SimplePoseFeatures.h
-  Rosetta/Data/Features/SimplePoseFeatures.cpp
-  Rosetta/Data/Features/GeneralFeatures.h
+  Rosetta/Data/Features/BlindPoseFeatureGenerator.h
+  Rosetta/Data/Features/PoseStaticFeatureGenerator.h
+  Rosetta/Data/Features/PoseDynamicFeatureGenerator.h
+  Rosetta/Data/Features/PoseFeatureGenerator.h
   Rosetta/Data/Features/ProteinRosettaDataFeaturesLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaDataFeaturesLibrary.cpp
 )
@@ -234,7 +235,6 @@ SET(LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES
 )
 
 SET(LBCPP_PROTEIN_ROSETTA_OPTIMIZER_STOPPINGCRITERION_SOURCES
-  Rosetta/ProteinOptimizer/StoppingCriterion/StoppingCriterion.h
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaOptimizerStoppingCriterionLibrary.cpp
 )
 

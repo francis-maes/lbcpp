@@ -23,9 +23,7 @@ class BlindPoseMoverSampler : public CompositeSampler
 {
 public:
   BlindPoseMoverSampler() : numResidues(0) {}
-  BlindPoseMoverSampler(size_t numResidues)
-    : numResidues(numResidues)
-    {createObjectSamplers(numResidues);}
+  BlindPoseMoverSampler(size_t numResidues) : numResidues(numResidues) {createObjectSamplers(numResidues);}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
   {

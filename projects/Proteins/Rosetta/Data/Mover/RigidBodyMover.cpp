@@ -69,19 +69,19 @@ void RigidBodyMover::move(PosePtr& pose, size_t indexResidueOne, size_t indexRes
 
 void RigidBodyMover::setAmplitude(double newAmplitude)
   {amplitude = newAmplitude;}
-double RigidBodyMover::getAmplitude()
-  {return amplitude;}
 void RigidBodyMover::setMagnitude(double newMagnitude)
   {magnitude = newMagnitude;}
-double RigidBodyMover::getMagnitude()
+double RigidBodyMover::getAmplitude() const
+  {return amplitude;}
+double RigidBodyMover::getMagnitude() const
   {return magnitude;}
 void RigidBodyMover::setIndexResidueOne(size_t index)
   {residues->setFirst(index);}
-size_t RigidBodyMover::getIndexResidueOne()
-  {return residues->getFirst().getInteger();}
 void RigidBodyMover::setIndexResidueTwo(size_t index)
   {residues->setSecond(index);}
-size_t RigidBodyMover::getIndexResidueTwo()
+size_t RigidBodyMover::getIndexResidueOne() const
+  {return residues->getFirst().getInteger();}
+size_t RigidBodyMover::getIndexResidueTwo() const
   {return residues->getSecond().getInteger();}
 
 bool RigidBodyMover::isEqual(const PoseMoverPtr& mover) const

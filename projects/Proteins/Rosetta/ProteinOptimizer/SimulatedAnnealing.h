@@ -42,14 +42,14 @@ public:
     return vector;
   }
 
+protected:
+  friend class SimulatedAnnealingParametersClass;
+
   virtual double getCurrentTemperature(size_t iteration) const
   {
     double x = std::floor((double)iteration * (double)numSteps / (double)maxIterations);
     return initialTemperature - x * ((initialTemperature - finalTemperature) / ((double)numSteps - 1));
   }
-
-protected:
-  friend class SimulatedAnnealingParametersClass;
 
   VariableVectorPtr vector;
   size_t maxIterations;
@@ -149,6 +149,9 @@ public:
         numModificationsDecreasingEnergy = 0;
         costEvolution->appendValue(bestEnergy);
       }
+
+      if ((stoppingCriterion.get() != NULL) && (!stoppingCriterion->performNext(context, i, state, bestState)))
+        break;
     }
 
     context.leaveScope();

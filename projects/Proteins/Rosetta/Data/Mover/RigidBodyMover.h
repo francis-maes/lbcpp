@@ -32,13 +32,14 @@ public:
       double amplitudeRotation);
 
   void setAmplitude(double newAmplitude);
-  double getAmplitude();
   void setMagnitude(double newMagnitude);
-  double getMagnitude();
+  double getAmplitude() const;
+  double getMagnitude() const;
+
   void setIndexResidueOne(size_t index);
-  size_t getIndexResidueOne();
   void setIndexResidueTwo(size_t index);
-  size_t getIndexResidueTwo();
+  size_t getIndexResidueOne() const;
+  size_t getIndexResidueTwo() const;
 
   virtual bool isEqual(const PoseMoverPtr& mover) const;
 
