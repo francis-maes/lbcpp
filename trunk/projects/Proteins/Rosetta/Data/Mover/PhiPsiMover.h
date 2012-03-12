@@ -29,12 +29,12 @@ public:
   static void move(PosePtr& pose, int residue, double deltaPhi, double deltaPsi);
 
   void setResidueIndex(size_t index);
-  size_t getResidueIndex();
+  size_t getResidueIndex() const;
 
   void setDeltaPhi(double delta);
   void setDeltaPsi(double delta);
-  double getDeltaPhi();
-  double getDeltaPsi();
+  double getDeltaPhi() const;
+  double getDeltaPsi() const;
 
   virtual bool isEqual(const PoseMoverPtr& mover) const;
   virtual PoseMoverPtr getOpposite() const;

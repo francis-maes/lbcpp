@@ -43,16 +43,16 @@ void PhiPsiMover::move(PosePtr& pose, int residue, double deltaPhi, double delta
 
 void PhiPsiMover::setResidueIndex(size_t index)
   {residue = index;}
-size_t PhiPsiMover::getResidueIndex()
+size_t PhiPsiMover::getResidueIndex() const
   {return residue;}
 
 void PhiPsiMover::setDeltaPhi(double delta)
   {deltaPhi = delta;}
 void PhiPsiMover::setDeltaPsi(double delta)
   {deltaPsi = delta;}
-double PhiPsiMover::getDeltaPhi()
+double PhiPsiMover::getDeltaPhi() const
   {return deltaPhi;}
-double PhiPsiMover::getDeltaPsi()
+double PhiPsiMover::getDeltaPsi() const
   {return deltaPsi;}
 
 bool PhiPsiMover::isEqual(const PoseMoverPtr& mover) const

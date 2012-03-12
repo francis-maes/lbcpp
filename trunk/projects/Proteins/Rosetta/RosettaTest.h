@@ -26,12 +26,14 @@
 # include <vector>
 # include <cmath>
 # include <time.h>
-# include "Data/Features/SimplePoseFeatures.h"
 # include "RosettaSandBox.h"
 # include "RosettaProtein.h"
 # include "WorkUnit/DistributableWorkUnit.h"
 # include "Data/MoverSampler/BlindPoseMoverSampler.h"
 # include "Data/MoverSampler/ConditionalPoseMoverSampler.h"
+
+# include "Data/Features/PoseFeatureGenerator.h"
+# include "Data/Features/BlindPoseFeatureGenerator.h"
 
 # include "ProteinOptimizer/SimulatedAnnealing.h"
 
@@ -77,22 +79,22 @@ public:
     pose->initializeToHelix();
     PoseOptimizationStatePtr optState = new PoseOptimizationState(pose);
     SamplerPtr sampler = new BlindPoseMoverSampler(20);
-    PoseOptimizationStateModifierPtr modifier = new PoseOptimizationStateModifier(sampler);
+    FeatureGeneratorPtr blindFeatures = blindPoseFeatureGenerator();
+    PoseOptimizationStateModifierPtr modifier = new PoseOptimizationStateModifier(sampler, blindFeatures);
 
-    SimulatedAnnealingParametersPtr params = new SimulatedAnnealingParameters(10000, 4, 0.01, 20);
+    SimulatedAnnealingParametersPtr params = new SimulatedAnnealingParameters(10000, 4, 0.01, 50);
     SimulatedAnnealingPtr sa = new SimulatedAnnealing(optState, modifier, GeneralOptimizerStoppingCriterionPtr(), params);
 
     DenseDoubleVectorPtr results1 = sa->optimize(context);
 
-    std::cout << (const char*)results1->toString() << std::endl;
-
-    // without learning
+    // with learning
     pose = new Pose(T("AAAAAAAAAAACDEDCDEDC"));
     pose->initializeToHelix();
 
-    GeneralFeaturesPtr features = new SimplePoseFeatures();
-    features->initialize(context, pose);
-    pose->setFeatureGenerator(context, features);
+    // features
+    PoseFeatureGeneratorPtr feats = new PoseFeatureGenerator();
+    feats->initialize(context, poseClass);
+    DoubleVectorPtr tmpFeatures = feats->compute(context, pose).getObjectAndCast<DoubleVector>();
 
     optState = new PoseOptimizationState(pose);
     sampler = new ConditionalPoseMoverSampler(20);
@@ -101,8 +103,8 @@ public:
     File referencesFile = context.getFile(T("phipsipetitPDB"));
     File moversFile = context.getFile(T("phipsipetit_movers"));
 
-    VectorPtr inputWorkers = vector(doubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType));
-    VectorPtr inputMovers = vector(doubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType));
+    VectorPtr inputWorkers = vector(doubleVectorClass(tmpFeatures->getElementsEnumeration(), doubleType));
+    VectorPtr inputMovers = vector(doubleVectorClass(tmpFeatures->getElementsEnumeration(), doubleType));
     context.enterScope(T("Loading learning examples..."));
     juce::OwnedArray<File> references;
     referencesFile.findChildFiles(references, File::findFiles, false, T("*.pdb"));
@@ -124,9 +126,10 @@ public:
       if (movers.size() > 0)
       {
         context.informationCallback(T("Structure : ") + nameToSearch);
-        SimplePoseFeaturesPtr sfeats = new SimplePoseFeatures();
-        Variable tmpVar = sfeats->initialize(context, protein);
-        DoubleVectorPtr inFeatures = tmpVar.getObjectAndCast<DoubleVector> ();
+        DoubleVectorPtr inFeatures = feats->compute(context, protein).getObjectAndCast<DoubleVector> ();
+//        std::cout << (const char*)protein->getAminoAcidSequence() << std::endl;
+//        std::cout << (const char*)protein->getAminoAcidHistogram()->toString() << std::endl;
+//        std::cout << (const char*)inFeatures->toString() << std::endl << std::endl;
         PoseMoverPtr inMover = Variable::createFromFile(context, (*movers[0])).getObjectAndCast<PoseMover> ();
         inputWorkers->append(inFeatures);
         inputMovers->append(inMover);
@@ -139,14 +142,11 @@ public:
     ContainerPtr addMovers = inputMovers;
     sampler->learn(context, addWorkers, addMovers, DenseDoubleVectorPtr(), ContainerPtr(), ContainerPtr(), DenseDoubleVectorPtr());
 
-    modifier = new PoseOptimizationStateModifier(sampler);
+    modifier = new PoseOptimizationStateModifier(sampler, feats);
 
-    params = new SimulatedAnnealingParameters(10000, 4, 0.01, 20);
     sa = new SimulatedAnnealing(optState, modifier, GeneralOptimizerStoppingCriterionPtr(), params);
 
     DenseDoubleVectorPtr results2 = sa->optimize(context);
-
-    std::cout << (const char*)results2->toString() << std::endl;
 
     //    DoubleVectorPtr v1 = new DenseDoubleVector(2, 0.0);
     //    DenseDoubleVectorPtr v2 = new DenseDoubleVector(2, 1.0);

@@ -200,8 +200,7 @@ public:
 
   virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
   {
-    DenseDoubleVectorPtr histogram =
-        (inputs[0].getObjectAndCast<RosettaProtein> ())->getHistogram();
+    DenseDoubleVectorPtr histogram = (inputs[0].getObjectAndCast<RosettaProtein> ())->getHistogram();
     for (size_t i = 0; i < histogram->getNumValues(); i++)
       callback.sense(i, histogram->getValue(i));
   }

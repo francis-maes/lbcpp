@@ -9,6 +9,9 @@
   
   <!-- class -->
   <class name="Rosetta" base="Object" />
-  <class name="Pose" base="Object" />  
+  
+  <class name="Pose" base="Object">
+    <variable type="Boolean" name="isEnergyFunctionInitialized"/>
+  </class>  
   
 </library>

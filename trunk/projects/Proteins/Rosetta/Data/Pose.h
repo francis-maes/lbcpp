@@ -22,9 +22,6 @@
 namespace lbcpp
 {
 
-class GeneralFeatures;
-typedef ReferenceCountedObjectPtr<GeneralFeatures> GeneralFeaturesPtr;
-
 class Pose;
 extern ClassPtr poseClass;
 typedef ReferenceCountedObjectPtr<Pose> PosePtr;
@@ -50,6 +47,7 @@ public:
    * Structure - miscellaneous
    */
   size_t getLength() const;
+  String getAminoAcidSequence() const;
   DoubleVectorPtr getCalphaPosition(size_t residue) const;
   void initializeToHelix();
 
@@ -81,25 +79,16 @@ public:
   double getCollisionCorrectionFactor() const;
 
   /*
-   * Features and feature generator
-   */
-  void setFeatureGenerator(ExecutionContext& context, GeneralFeaturesPtr& features);
-  GeneralFeaturesPtr getFeatureGenerator() const;
-  Variable getFeatures(ExecutionContext& context);
-
-  /*
    * Features
    */
-  DenseDoubleVectorPtr getHistogram() const;
+  DenseDoubleVectorPtr getAminoAcidHistogram() const;
 
 protected:
   void initializeEnergyFunction();
 
   friend class PoseClass;
 
-  GeneralFeaturesPtr featureGenerator;
   bool isEnergyFunctionInitialized;
-  bool hasFeatureGenerator;
 
 # ifdef LBCPP_PROTEIN_ROSETTA
   core::pose::PoseOP pose;

@@ -49,13 +49,13 @@ typedef ReferenceCountedObjectPtr<PoseOptimizationState> PoseOptimizationStatePt
 class PoseOptimizationStateModifier : public OptimizationProblemStateModifier
 {
 public:
-  PoseOptimizationStateModifier(SamplerPtr& moverSampler) : moverSampler(moverSampler) {}
+  PoseOptimizationStateModifier(const SamplerPtr& moverSampler, const FunctionPtr& featureGenerator) : moverSampler(moverSampler), featureGenerator(featureGenerator) {}
 
   virtual OptimizationProblemStatePtr applyTo(ExecutionContext& context, const OptimizationProblemStatePtr& state) const
   {
     PosePtr pose = state->getInternalState().getObjectAndCast<Pose> ();
     PosePtr newPose = pose->clone();
-    Variable features = newPose->getFeatures(context);
+    Variable features = featureGenerator->compute(context, newPose);
 
     PoseMoverPtr mover = moverSampler->sample(context, context.getRandomGenerator(), &features).getObjectAndCast<PoseMover> ();
     mover->move(newPose);
@@ -68,6 +68,7 @@ protected:
   friend class OptimizationProblemStateModifierClass;
 
   SamplerPtr moverSampler;
+  FunctionPtr featureGenerator;
 };
 
 typedef ReferenceCountedObjectPtr<PoseOptimizationStateModifier> PoseOptimizationStateModifierPtr;

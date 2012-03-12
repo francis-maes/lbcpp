@@ -3,6 +3,9 @@
 <library name="ProteinRosettaOptimizer" directory="Rosetta/ProteinOptimizer">
 
   <import name="ProteinRosettaOptimizerStoppingCriterion"/>
+  
+  <class name="GeneralOptimizerStoppingCriterion" base="Object" abstract="yes">
+  </class>
 
   <class name="OldProteinOptimizer" base="Object" abstract="yes">
     <variable type="GenericVector[String]" name="nameScopes" description="Name of the different scopes used for verbosity in explorer"/>

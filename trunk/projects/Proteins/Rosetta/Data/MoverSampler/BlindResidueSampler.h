@@ -26,8 +26,7 @@ public:
     samplers.push_back(enumerationSampler(probas));
   }
 
-  virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
-      const Variable* inputs = NULL) const
+  virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
     {return samplers[0]->sample(context, random).getInteger();}
 
   virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, const DenseDoubleVectorPtr& trainingWeights = DenseDoubleVectorPtr(),

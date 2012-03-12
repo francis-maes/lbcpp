@@ -8,7 +8,6 @@
 
 #include "precompiled.h"
 #include "Pose.h"
-#include "Features/GeneralFeatures.h"
 
 #include "../../Data/AminoAcid.h"
 
@@ -31,34 +30,11 @@
 
 using namespace lbcpp;
 
-
-void Pose::setFeatureGenerator(ExecutionContext& context, GeneralFeaturesPtr& features)
-{
-  featureGenerator = features;
-  hasFeatureGenerator = true;
-}
-
-GeneralFeaturesPtr Pose::getFeatureGenerator() const
-  {return featureGenerator;}
-
-Variable Pose::getFeatures(ExecutionContext& context)
-{
-  if (hasFeatureGenerator)
-  {
-    Variable tmp = (PosePtr)this;
-    return featureGenerator->computeFeatures(context, tmp);
-  }
-  else
-  {
-    DenseDoubleVectorPtr tmp = new DenseDoubleVector(1, 1.0);
-    return tmp;
-  }
-}
-
 #ifdef LBCPP_PROTEIN_ROSETTA
-Pose::Pose() : isEnergyFunctionInitialized(false), hasFeatureGenerator(false) {pose = new core::pose::Pose();}
 
-Pose::Pose(const String& sequence) : isEnergyFunctionInitialized(false), hasFeatureGenerator(false)
+Pose::Pose() : isEnergyFunctionInitialized(false) {pose = new core::pose::Pose();}
+
+Pose::Pose(const String& sequence) : isEnergyFunctionInitialized(false)
 {
   jassert(sequence.length() != 0);
   pose = new core::pose::Pose();
@@ -66,7 +42,7 @@ Pose::Pose(const String& sequence) : isEnergyFunctionInitialized(false), hasFeat
       core::chemical::ChemicalManager::get_instance()->nonconst_residue_type_set("fa_standard"));
 }
 
-Pose::Pose(const ProteinPtr& protein)
+Pose::Pose(const ProteinPtr& protein) : isEnergyFunctionInitialized(false)
 {
   bool error = false;
   String name = String(protein->getName());
@@ -86,7 +62,7 @@ Pose::Pose(const ProteinPtr& protein)
     jassert(false);
 }
 
-Pose::Pose(const File& pdbFile) : isEnergyFunctionInitialized(false), hasFeatureGenerator(false)
+Pose::Pose(const File& pdbFile) : isEnergyFunctionInitialized(false)
 {
   jassert(pdbFile != File::nonexistent);
   pose = new core::pose::Pose((const char*)pdbFile.getFullPathName());
@@ -113,16 +89,14 @@ PosePtr Pose::clone() const
   if (isEnergyFunctionInitialized)
     tmp->score_fct = score_fct->clone();
 
-  // copy feature generator
-  tmp->hasFeatureGenerator = hasFeatureGenerator;
-  if (hasFeatureGenerator)
-    tmp->featureGenerator = featureGenerator->cloneAndCast<GeneralFeatures> ();
-
   return tmp;
 }
 
 size_t Pose::getLength() const
   {return pose->n_residue();}
+
+String Pose::getAminoAcidSequence() const
+  {return String(pose->sequence().c_str());}
 
 DoubleVectorPtr Pose::getCalphaPosition(size_t residue) const
 {
@@ -269,10 +243,15 @@ void Pose::computeMeanDistances(size_t cutoff, double* shortRange, double* longR
   DenseDoubleVectorPtr second;
   double distance;
 
-  for (size_t i = 0; i < res; i++)
+  if (shortRange != NULL)
+    *shortRange = 0;
+  if (longRange != NULL)
+    *longRange = 0;
+
+  for (size_t i = 0; i < res; ++i)
   {
     first = getCalphaPosition(i);
-    for (size_t j = 0; j < res; j++)
+    for (size_t j = (i + 1); j < res; ++j)
     {
       second = getCalphaPosition(j);
       distance = first->l2norm(second);
@@ -282,7 +261,7 @@ void Pose::computeMeanDistances(size_t cutoff, double* shortRange, double* longR
         if (shortRange != NULL)
         {
           *shortRange += distance;
-          shortCount++;
+          ++shortCount;
         }
       }
       else
@@ -290,15 +269,15 @@ void Pose::computeMeanDistances(size_t cutoff, double* shortRange, double* longR
         if (longRange != NULL)
         {
           *longRange += distance;
-          longCount++;
+          ++longCount;
         }
       }
     }
   }
 
-  if (shortRange != NULL)
+  if ((shortRange != NULL) && (shortCount > 0))
     *shortRange /= shortCount;
-  if (longRange != NULL)
+  if ((longRange != NULL) && (longCount > 0))
     *longRange /= longCount;
 }
 
@@ -310,10 +289,10 @@ double Pose::computeMinimumDistance() const
   double distance = 0;
   double optimalDistance = INFINITY;
 
-  for (size_t i = 0; i < res; i++)
+  for (size_t i = 0; i < res; ++i)
   {
     first = getCalphaPosition(i);
-    for (size_t j = 0; j < res; j++)
+    for (size_t j = 0; j < res; ++j)
     {
       second = getCalphaPosition(j);
       distance = first->l2norm(second);
@@ -332,10 +311,10 @@ double Pose::computeMaximumDistance() const
   double distance = 0;
   double optimalDistance = 0;
 
-  for (size_t i = 0; i < res; i++)
+  for (size_t i = 0; i < res; ++i)
   {
     first = getCalphaPosition(i);
-    for (size_t j = 0; j < res; j++)
+    for (size_t j = 0; j < res; ++j)
     {
       second = getCalphaPosition(j);
       distance = first->l2norm(second);
@@ -421,14 +400,14 @@ double Pose::getCollisionCorrectionFactor() const
   SymmetricMatrixPtr bbDistances = getBackboneDistanceMatrix();
 
   for (size_t i = 0; i < bbDistances->getNumRows(); i++)
-    for (size_t j = i + 2; j < bbDistances->getNumColumns(); j++)
+    for (size_t j = i + 2; j < bbDistances->getNumColumns(); ++j)
       correctionFactor += juce::jmax(0.0, std::exp(inverseVarianceMinimumDistance
           * (averageMinimumDistance - bbDistances->getElement(i, j).getDouble())) - 1);
 
   return juce::jmax(0.0, correctionFactor);
 }
 
-DenseDoubleVectorPtr Pose::getHistogram() const
+DenseDoubleVectorPtr Pose::getAminoAcidHistogram() const
 {
   DenseDoubleVectorPtr histogram = new DenseDoubleVector(aminoAcidTypeEnumeration, doubleType);
   double increment = 1.0 / pose->n_residue();
@@ -438,7 +417,7 @@ DenseDoubleVectorPtr Pose::getHistogram() const
     std::string name(&n, 1);
     String resName(name.c_str());
 
-    for (size_t j = 0; j < aminoAcidTypeEnumeration->getNumElements(); j++)
+    for (size_t j = 0; j < aminoAcidTypeEnumeration->getNumElements(); ++j)
       if (!resName.compare(aminoAcidTypeEnumeration->getElement(j)->getVariable(1).toString()))
       {
         histogram->incrementValue(j, increment);
@@ -473,6 +452,12 @@ size_t Pose::getLength() const
 {
   jassert(false);
   return 0;
+}
+
+String Pose::getAminoAcidSequence() const
+{
+  jassert(false);
+  return String();
 }
 
 DoubleVectorPtr Pose::getCalphaPosition(size_t residue) const
@@ -556,7 +541,7 @@ double Pose::getCollisionCorrectionFactor() const
   return 0.0;
 }
 
-DenseDoubleVectorPtr Pose::getHistogram() const
+DenseDoubleVectorPtr Pose::getAminoAcidHistogram() const
 {
   jassert(false);
   return DenseDoubleVectorPtr();
