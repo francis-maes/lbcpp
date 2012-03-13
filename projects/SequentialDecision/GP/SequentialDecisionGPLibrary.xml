@@ -200,8 +200,15 @@
     <value name="t"/>
     <value name="rk"/>
     <value name="tk"/>
-    <value name="i"/>
+    <!-- <value name="i"/> -->
   </enumeration>
+  <enumeration name="ExploChallengeFormulaObjectiveParameters">
+    <value name="minReward"/>
+    <value name="maxReward"/>
+    <value name="percentDocumentsAliveSimultaneously"/>
+    <value name="numArmsPerRound"/>
+  </enumeration>
+  
   <class name="ExploChallengeFormulaObjective" base="SimpleUnaryFunction">
     <variable type="PositiveInteger" name="horizon"/>
     <variable type="PositiveInteger" name="totalNumArms"/>

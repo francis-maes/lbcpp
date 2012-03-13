@@ -191,17 +191,10 @@
   
   <!-- Explore Exploit challenge -->
   <class name="ExploChallengeReverseSampler" base="IndependentDoubleVectorSampler"/>
-  
-  <enumeration name="ExploChallengeReverseObjectiveVariables">
-    <value name="minReward"/>
-    <value name="maxReward"/>
-    <value name="percentDocumentsAliveSimultaneously"/>
-    <value name="numArmsPerRound"/>
-    <value name="totalNumArms"/>
-  </enumeration>
 
   <class name="ExploChallengeSandBox" base="WorkUnit">
     <variable type="PositiveInteger" name="surrogateHorizon"/>
+    <variable type="PositiveInteger" name="surrogateNumDocuments"/>
   </class>
 
 </library>
