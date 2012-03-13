@@ -59,6 +59,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_WORK_UNIT_SOURCES
   WorkUnit/AutoSGDSandBox.h
   WorkUnit/RFHooSandBox.h
   WorkUnit/EvaluateInterpretablePolicies.h
+  WorkUnit/ExploChallengeSandBox.h
   WorkUnit/SequentialDecisionWorkUnitLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionWorkUnitLibrary.cpp
 )
@@ -84,6 +85,7 @@ SET(LBCPP_GP_SEARCH_PROBLEM_SOURCES
   GP/SmallMDPFormulaSearchProblem.h
   GP/LearningRuleFormulaSearchProblem.h
   GP/PolicyFormulaSearchProblem.h
+  GP/ExploChallengeFormulaSearchProblem.h
 )
 
 SET(LBCPP_SEQUENTIAL_DECISION_BANDITS_SOURCES

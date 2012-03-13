@@ -534,9 +534,9 @@ public:
       workUnit->addWorkUnit(new Run(formulas, objective, numTimeSteps, pre + T(" Simple Regret"), outputFile, Csimple));
 
       if (minHorizon < 1000)
-	horizon *= 10;
+	      horizon *= 10;
       else
-	horizon += minHorizon;
+	      horizon += minHorizon;
     }
     
     workUnit->setPushChildrenIntoStackFlag(true);

@@ -28,11 +28,19 @@ public:
 
   IndependentDoubleVectorSampler() {}
 
+  virtual Variable computeExpectation(const Variable* inputs = NULL) const
+  {
+    DenseDoubleVectorPtr res = new DenseDoubleVector(outputType, samplers.size());
+    for (size_t i = 0; i < samplers.size(); ++i)
+      res->setValue(i, samplers[i]->computeExpectation(inputs).toDouble());
+    return res;
+  }
+
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
   {
     DenseDoubleVectorPtr res = new DenseDoubleVector(outputType, samplers.size());
     for (size_t i = 0; i < samplers.size(); ++i)
-      res->setValue(i, samplers[i]->sample(context, random).toDouble());
+      res->setValue(i, samplers[i]->sample(context, random, inputs).toDouble());
     return res;
   }
 
