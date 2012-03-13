@@ -17,6 +17,7 @@ namespace lbcpp
 {
 
 extern EnumerationPtr exploChallengeFormulaVariablesEnumeration;
+extern EnumerationPtr exploChallengeFormulaObjectiveParametersEnumeration;
 
 class ExploChallengeFormulaObjective : public SimpleUnaryFunction
 {
@@ -82,6 +83,11 @@ public:
     }
   }
 
+/*  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    RandomGeneratorPtr random = 
+  }*/
+
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
@@ -93,8 +99,12 @@ public:
     for (size_t i = 0; i < totalNumArms; ++i)
     {
       //double expectation = sampleGamma(random, minRewardExpectation, maxRewardExpectation);
-      double expectation = random->sampleDouble(minRewardExpectation, maxRewardExpectation);
-      arms[i] = bernoulliSampler(expectation);
+      //double expectation = random->sampleDouble(-minRewardExpectation, maxRewardExpectation);
+      //double expectation = random->sampleDoubleFromGaussian(minRewardExpectation, maxRewardExpectation);
+
+      double expectation = random->sampleBool(minRewardExpectation) ? 0.0 : random->sampleDouble(0.0, maxRewardExpectation);
+
+      arms[i] = bernoulliSampler(juce::jlimit(0.0, 1.0, expectation));
     }
 
     std::vector<ArmInfo> armInfos(totalNumArms);
@@ -162,7 +172,7 @@ public:
 
     double variables[4];
     variables[0] = (double)info.presentedCount;
-    variables[1] = info.stats.getMean();
+    variables[1] = info.stats.getMean() / maxRewardExpectation; // tmp !!
     variables[2] = info.stats.getCount();
     variables[3] = relativeIndex;
     return formula->compute(variables);

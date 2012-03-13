@@ -17,22 +17,19 @@
 namespace lbcpp
 {
 
-extern EnumerationPtr exploChallengeReverseObjectiveVariablesEnumeration;
-
 class ExploChallengeReverseSampler : public IndependentDoubleVectorSampler
 {
 public:
   ExploChallengeReverseSampler()
-    : IndependentDoubleVectorSampler(exploChallengeReverseObjectiveVariablesEnumeration, gaussianSampler(0.5, 0.5)) {}
+    : IndependentDoubleVectorSampler(exploChallengeFormulaObjectiveParametersEnumeration, gaussianSampler(0.5, 0.5)) {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
   {
     DenseDoubleVectorPtr res = IndependentDoubleVectorSampler::sample(context, random).getObjectAndCast<DenseDoubleVector>();
     res->setValue(0, juce::jlimit(0.0, 1.0, res->getValue(0)));
-    res->setValue(1, juce::jlimit(res->getValue(0), 1.0, res->getValue(1)));
+    res->setValue(1, juce::jlimit(0.0, 1.0, res->getValue(1)));
     res->setValue(2, juce::jlimit(0.0, 1.0, res->getValue(2)));
     res->setValue(3, juce::jlimit(0.0, res->getValue(2), res->getValue(3)));
-    res->setValue(4, juce::jmax(0.0, res->getValue(4)));
     return res;
   }
 };
@@ -40,8 +37,8 @@ public:
 class ExploChallengeReverseObjective : public SimpleUnaryFunction
 {
 public:
-  ExploChallengeReverseObjective(size_t surrogateHorizon)
-    : SimpleUnaryFunction(denseDoubleVectorClass(exploChallengeReverseObjectiveVariablesEnumeration, doubleType), doubleType), surrogateHorizon(surrogateHorizon) {}
+  ExploChallengeReverseObjective(size_t surrogateHorizon, size_t surrogateNumDocuments)
+    : SimpleUnaryFunction(denseDoubleVectorClass(exploChallengeFormulaObjectiveParametersEnumeration, doubleType), doubleType), surrogateHorizon(surrogateHorizon), surrogateNumDocuments(surrogateNumDocuments) {}
 
   FunctionPtr createFormulaObjective(const Variable& params) const
   {
@@ -49,7 +46,7 @@ public:
 
     //size_t totalNumArms = 246;
     //size_t numArmsPerRound = 30;
-    size_t totalNumArms = (size_t)(pow(10.0, parameters->getValue(4) + 1.0));
+    size_t totalNumArms = surrogateNumDocuments;
     size_t numDocumentsAliveSimultaneously = (size_t)(parameters->getValue(2) * totalNumArms); // 80
     size_t numArmsPerRound = (size_t)(parameters->getValue(3) * totalNumArms);
     double minRewardExpectation = juce::jlimit(0.0, 1.0, parameters->getValue(0));
@@ -101,6 +98,7 @@ public:
 
 private:
   size_t surrogateHorizon;
+  size_t surrogateNumDocuments;
 };
 
 typedef ReferenceCountedObjectPtr<ExploChallengeReverseObjective> ExploChallengeReverseObjectivePtr;
@@ -108,7 +106,7 @@ typedef ReferenceCountedObjectPtr<ExploChallengeReverseObjective> ExploChallenge
 class ExploChallengeSandBox : public WorkUnit
 {
 public:
-  ExploChallengeSandBox() : surrogateHorizon(307000)
+  ExploChallengeSandBox() : surrogateHorizon(307000), surrogateNumDocuments(100)
   {
 
 
@@ -116,26 +114,28 @@ public:
 
   ExploChallengeReverseObjectivePtr createObjective() const
   {
+    ExploChallengeReverseObjectivePtr objective = new ExploChallengeReverseObjective(surrogateHorizon, surrogateNumDocuments);
+
     VariableGPExpressionPtr presentedCount = new VariableGPExpression(Variable(0, exploChallengeFormulaVariablesEnumeration));
     VariableGPExpressionPtr rewardMean = new VariableGPExpression(Variable(1, exploChallengeFormulaVariablesEnumeration));
     VariableGPExpressionPtr playedCount = new VariableGPExpression(Variable(2, exploChallengeFormulaVariablesEnumeration));
     VariableGPExpressionPtr relativeIndex = new VariableGPExpression(Variable(3, exploChallengeFormulaVariablesEnumeration));
 
-    ExploChallengeReverseObjectivePtr objective = new ExploChallengeReverseObjective(surrogateHorizon);
-
     // baselines
+    objective->addReferenceScore(rewardMean, 711.1); // Greedy
     //objective->addReferenceScore(relativeIndex, 266.7); // Always first
-    for (size_t i = 0; i < 3; ++i)
-    {
-      objective->addReferenceScore(new ConstantGPExpression(1.0), 366.7); // C(1)
+    objective->addReferenceScore(new ConstantGPExpression(1.0), 366.7); // C(1)
+    objective->addReferenceScore(new ConstantGPExpression(1.0), 366.7); // C(1)
+    objective->addReferenceScore(new ConstantGPExpression(1.0), 366.7); // C(1)
+    objective->addReferenceScore(new ConstantGPExpression(1.0), 366.7); // C(1)
     //objective->addReferenceScore(new UnaryGPExpression(gpOpposite, relativeIndex), 512.6); // Always last
    
 
     // minimalistic ucb
-      objective->addReferenceScore(new BinaryGPExpression(rewardMean, gpAddition,
-        new BinaryGPExpression(new ConstantGPExpression(2), gpDivision, playedCount)), 862.2);  // B(add, V(rk), B(div, C(2), V(tk)))
-    }
-    return objective;
+    objective->addReferenceScore(new BinaryGPExpression(rewardMean, gpAddition,
+      new BinaryGPExpression(new ConstantGPExpression(1), gpDivision, playedCount)), 846.6);  // B(add, V(rk), B(div, C(2), V(tk)))
+    objective->addReferenceScore(new BinaryGPExpression(rewardMean, gpAddition,
+      new BinaryGPExpression(new ConstantGPExpression(2), gpDivision, playedCount)), 862.2);  // B(add, V(rk), B(div, C(2), V(tk)))
 
     objective->addReferenceScore(new BinaryGPExpression(rewardMean, gpAddition,
       new BinaryGPExpression(new ConstantGPExpression(30), gpDivision, playedCount)), 723.6);
@@ -144,6 +144,8 @@ public:
 
     // max(rk, C)
     objective->addReferenceScore(new BinaryGPExpression(rewardMean, gpMax, new ConstantGPExpression(0.01)), 670.8);
+    objective->addReferenceScore(new BinaryGPExpression(rewardMean, gpMax, new ConstantGPExpression(0.03)), 740.1);
+    objective->addReferenceScore(new BinaryGPExpression(rewardMean, gpMax, new ConstantGPExpression(0.04)), 763.1);
     return objective;
   }
 
@@ -152,7 +154,7 @@ public:
     ExploChallengeReverseObjectivePtr objective = createObjective();
     SamplerPtr sampler = new ExploChallengeReverseSampler();
     OptimizationProblemPtr problem = new OptimizationProblem(objective, Variable(), sampler);
-    OptimizerPtr optimizer = edaOptimizer(30, 100, 25, StoppingCriterionPtr(), 0.0, false, true);
+    OptimizerPtr optimizer = edaOptimizer(10, 300, 30, StoppingCriterionPtr(), 0.0, false, true);
     OptimizerStatePtr state = optimizer->optimize(context, problem);
 
 
@@ -179,6 +181,7 @@ protected:
   friend class ExploChallengeSandBoxClass;
 
   size_t surrogateHorizon;
+  size_t surrogateNumDocuments;
 };
 
 }; /* namespace lbcpp */
