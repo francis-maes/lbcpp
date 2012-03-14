@@ -22,14 +22,37 @@ extern EnumerationPtr exploChallengeFormulaObjectiveParametersEnumeration;
 class ExploChallengeFormulaObjective : public SimpleUnaryFunction
 {
 public:
-  ExploChallengeFormulaObjective(size_t horizon = 307000, size_t totalNumArms = 246,
-                                  size_t numArmsPerRound = 30, size_t numDocumentsAliveSimultaneously = 80,
-                                  double minRewardExpectation = 0.0, double maxRewardExpectation = 0.05)
-    : SimpleUnaryFunction(gpExpressionClass, doubleType), horizon(horizon),
-      totalNumArms(totalNumArms), numArmsPerRound(numArmsPerRound), numDocumentsAliveSimultaneously(numDocumentsAliveSimultaneously),
-      minRewardExpectation(minRewardExpectation), maxRewardExpectation(maxRewardExpectation)
+  ExploChallengeFormulaObjective(size_t horizon = 307000, size_t totalNumArms = 246, DenseDoubleVectorPtr parameters = DenseDoubleVectorPtr())
+    : SimpleUnaryFunction(gpExpressionClass, doubleType), horizon(horizon), totalNumArms(totalNumArms), parameters(parameters)
   {
+    if (!parameters)
+    {
+      // tuned for H=10000, N=20
+      this->parameters = new DenseDoubleVector(exploChallengeFormulaObjectiveParametersEnumeration, doubleType);
+      this->parameters->setValue(0, 0.162); // prob of 0 reward
+      this->parameters->setValue(1, 0.116); // max reward expectation
+      this->parameters->setValue(2, 0.361); // percentDocumentsAliveSimultaneously
+      this->parameters->setValue(3, 0.176); // numArmsPerRound
+    }
+  }
 
+  static const double* getInitialSamplerParameters()
+  {
+    static const double meanAndStddevs[] = {
+        0.15, 0.15,
+        0.2, 0.2,
+        0.3, 0.5,
+        0.2, 0.5
+    };
+    return meanAndStddevs;
+  }
+
+  static void applyConstraints(DenseDoubleVectorPtr params)
+  {
+    params->setValue(0, juce::jlimit(0.0, 1.0, params->getValue(0)));
+    params->setValue(1, juce::jlimit(0.0, 1.0, params->getValue(1)));
+    params->setValue(2, juce::jlimit(0.0, 1.0, params->getValue(2)));
+    params->setValue(3, juce::jlimit(0.0, params->getValue(2), params->getValue(3)));
   }
 
   struct ArmInfo
@@ -40,56 +63,13 @@ public:
     ScalarVariableStatistics stats;
   };
 
-  static double sampleGamma(RandomGeneratorPtr random, double k, double theta)
-  {
-    if (k < 1)
-    {
-      // Weibull algorithm
-      double c = (1 / k);
-      double d = ((1 - k) * pow(k, (k / (1 - k))));
-      double u, v, z, e, x;
-      while (true)
-      {
-        u = random->sampleDouble();
-        v = random->sampleDouble();
-        z = -log(u);
-        e = -log(v);
-        x = pow(z, c);
-        if ((z + e) >= (d + x))
-         break;
-      }
-      return x * theta;
-    }
-    else
-    {
-      // Cheng's algorithm
-      double b = (k - log(4.0));
-      double c = (k + sqrt(2.0 * k - 1.0));
-      double lam = sqrt(2 * k - 1.0);
-      double cheng = (1 + log(4.5));
-      double u, v, x, y, z, r;
-      while (true)
-      {
-        u = random->sampleDouble();
-        v = random->sampleDouble();
-        y = ((1 / lam) * log(v / (1 - v)));
-        x = (k * exp(y));
-        z = (u * v * v);
-        r = (b + (c * y) - x);
-        if ((r >= ((4.5 * z) - cheng)) || (r >= log(z)))
-          break;
-      }
-      return x * theta;
-    }
-  }
-
-/*  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-  {
-    RandomGeneratorPtr random = 
-  }*/
-
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
+    size_t numDocumentsAliveSimultaneously = (size_t)(parameters->getValue(2) * totalNumArms); // 80
+    size_t numArmsPerRound = (size_t)(parameters->getValue(3) * totalNumArms);
+    double minRewardExpectation = juce::jlimit(0.0, 1.0, parameters->getValue(0));
+    double maxRewardExpectation = juce::jlimit(0.0, 1.0, parameters->getValue(1));
+
     RandomGeneratorPtr random = context.getRandomGenerator();
 
     GPExpressionPtr formula = input.getObjectAndCast<GPExpression>();
@@ -172,7 +152,7 @@ public:
 
     double variables[4];
     variables[0] = (double)info.presentedCount;
-    variables[1] = info.stats.getMean() / maxRewardExpectation; // tmp !!
+    variables[1] = info.stats.getMean();
     variables[2] = info.stats.getCount();
     variables[3] = relativeIndex;
     return formula->compute(variables);
@@ -183,10 +163,7 @@ protected:
 
   size_t horizon;
   size_t totalNumArms;
-  size_t numArmsPerRound;
-  size_t numDocumentsAliveSimultaneously;
-  double minRewardExpectation;
-  double maxRewardExpectation;
+  DenseDoubleVectorPtr parameters;
 };
 
 typedef ReferenceCountedObjectPtr<ExploChallengeFormulaObjective> ExploChallengeFormulaObjectivePtr;

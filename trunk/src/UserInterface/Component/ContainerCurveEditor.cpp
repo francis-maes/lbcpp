@@ -538,7 +538,7 @@ public:
   virtual void comboBoxChanged(ComboBox* comboBoxThatHasChanged)
   {
     if (comboBoxThatHasChanged == keyComboBox)
-      configuration->setKeyVariableIndex(keyComboBox->getSelectedItemIndex());
+      configuration->setKeyVariableIndex(keyComboBox->getSelectedId() - 1);
     sendSynchronousChangeMessage(this);
   }
   

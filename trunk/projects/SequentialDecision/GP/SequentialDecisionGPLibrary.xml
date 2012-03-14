@@ -212,10 +212,7 @@
   <class name="ExploChallengeFormulaObjective" base="SimpleUnaryFunction">
     <variable type="PositiveInteger" name="horizon"/>
     <variable type="PositiveInteger" name="totalNumArms"/>
-    <variable type="PositiveInteger" name="numArmsPerRound"/>
-    <variable type="PositiveInteger" name="numDocumentsAliveSimultaneously"/>
-    <variable type="Double" name="minRewardExpectation"/>
-    <variable type="Double" name="maxRewardExpectation"/>
+    <variable type="DenseDoubleVector[ExploChallengeFormulaObjectiveParameters,Double]" name="parameters"/>
   </class>
   <class name="ExploChallengeFormulaSearchProblem" base="FormulaSearchProblem" shortName="exploChallenge">
     <variable type="Function" name="objective"/>

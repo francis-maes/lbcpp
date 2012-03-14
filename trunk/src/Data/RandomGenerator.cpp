@@ -197,3 +197,50 @@ int RandomGenerator::sample(LuaState& state)
   state.pushNumber(random->sampleDouble());
   return 1;
 }
+
+/*
+// From http://vyshemirsky.blogspot.com/2007/11/sample-from-gamma-distribution-in-java.html
+// Not tested
+  static double sampleGamma(RandomGeneratorPtr random, double k, double theta)
+  {
+    if (k < 1)
+    {
+      // Weibull algorithm
+      double c = (1 / k);
+      double d = ((1 - k) * pow(k, (k / (1 - k))));
+      double u, v, z, e, x;
+      while (true)
+      {
+        u = random->sampleDouble();
+        v = random->sampleDouble();
+        z = -log(u);
+        e = -log(v);
+        x = pow(z, c);
+        if ((z + e) >= (d + x))
+         break;
+      }
+      return x * theta;
+    }
+    else
+    {
+      // Cheng's algorithm
+      double b = (k - log(4.0));
+      double c = (k + sqrt(2.0 * k - 1.0));
+      double lam = sqrt(2 * k - 1.0);
+      double cheng = (1 + log(4.5));
+      double u, v, x, y, z, r;
+      while (true)
+      {
+        u = random->sampleDouble();
+        v = random->sampleDouble();
+        y = ((1 / lam) * log(v / (1 - v)));
+        x = (k * exp(y));
+        z = (u * v * v);
+        r = (b + (c * y) - x);
+        if ((r >= ((4.5 * z) - cheng)) || (r >= log(z)))
+          break;
+      }
+      return x * theta;
+    }
+  }
+*/

@@ -40,7 +40,7 @@ public:
       context.enterScope(T("Iteration ") + String((int)i + 1));
       performEDAIteration(context, state, problem, bestIterationSolution, bestIterationScore, worstIterationScore);
       Variable res = state->finishIteration(context, i+1, bestIterationScore, bestIterationSolution);
-      context.resultCallback(T("workIterationScore"), worstIterationScore);
+      context.resultCallback(T("worstIterationScore"), worstIterationScore);
       context.leaveScope(res);
 
       if (fabs(worstIterationScore - bestIterationScore) < 1e-9) // all scores are nearly identical
