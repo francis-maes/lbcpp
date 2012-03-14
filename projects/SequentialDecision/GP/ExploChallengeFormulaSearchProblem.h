@@ -57,10 +57,11 @@ public:
 
   struct ArmInfo
   {
-    ArmInfo() : presentedCount(0) {}
+    ArmInfo() : presentedCount(0), prevScore(1.0) {}
 
     size_t presentedCount;
     ScalarVariableStatistics stats;
+    double prevScore;
   };
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
@@ -116,6 +117,7 @@ public:
       {
         size_t index = presentedArms[i];
         double score = computeScore(formula, armInfos[index], i / (double)presentedArms.size());
+        armInfos[index].prevScore = score;
         if (score >= bestScore)
         {
           if (score > bestScore)
@@ -152,9 +154,9 @@ public:
 
     double variables[4];
     variables[0] = (double)info.presentedCount;
-    variables[1] = info.stats.getMean();
+    variables[1] = info.stats.getMean() * 10.0;
     variables[2] = info.stats.getCount();
-    variables[3] = relativeIndex;
+    //variables[3] = info.prevScore;
     return formula->compute(variables);
   }
 
@@ -199,7 +201,7 @@ public:
       input[0] = random->sampleSize(1, 1000); // presented count
       input[1] = juce::jmax(0.0, random->sampleDouble(-0.1, 1.1)); // reward mean
       input[2] = random->sampleSize(1, 1000); // play count
-      input[3] = random->sampleDouble(); // relative index
+      input[3] = random->sampleDouble(-1000, 1000); // prev value
       res[index] = input;
     }
   }
