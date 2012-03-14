@@ -1,9 +1,6 @@
-1) Completer les scores de references
-2) Fonctions objective = max erreur
+1) Nouveau modèle génératif plus complexe
 
-3) Faire en sorte que l'objectif prenne directement le vecteurs de params
-4) Nouveau modèle génératif plus complexe
-
+2) Formules récursives
 
  
 Experiences - Proteins:

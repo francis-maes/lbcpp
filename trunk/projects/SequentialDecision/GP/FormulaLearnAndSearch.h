@@ -533,7 +533,7 @@ protected:
     formula.statistics.push(reward);
 
     // update bandit score (reinsert into bandit pool)
-    double newScore = formula.statistics.getMean() + 2.0 / formula.statistics.getCount();
+    double newScore = formula.statistics.getMean() + 5.0 / formula.statistics.getCount();
     sortedFormulaClasses.insert(std::make_pair(-newScore, index));
 
     // add regression example, and eventually create new formula
