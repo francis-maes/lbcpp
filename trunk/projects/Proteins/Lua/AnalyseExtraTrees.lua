@@ -140,20 +140,20 @@ end
 local dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/1203XX-DSBWithExtraTreesAndPerfectMatching/"
 local numFolds = 9
 
-local winSizes = {0, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29}--, 31, 33, 35, 37, 39, 41, 43, 45}
---main("Window Size", winSizes, dir .. "WindowSizes/x3_Win", "_K10000_1000T_NMIN1", numFolds)
+local winSizes = {0, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 45}
+main("Window Size", winSizes, dir .. "WindowSizes/x3_Win", "_K10000_1000T_NMIN1", numFolds)
 
-local nmin = {1, 3, 5, 7, 9, 11, 15, 19, 23, 27, 31, 55, 75, 101, 155, 301, 501}
---main("Nmin", nmin, dir .. "Nmin/x3_Win19_HugeK_1000T_NMIN", "", numFolds)
+local nmin = {1, 3, 5, 7, 9, 11, 13, 15, 21, 51, 101, 201}
+--main("Nmin", nmin, dir .. "Nmin/x3_Win19_K200_1000T_NMIN", "", numFolds)
 
-local k = {1, 5, 10, 20, 50, 100, 200, 500, 1000, 10000}
-main("K", k, dir .. "K/x3_Win11_K", "_1000T_NMIN1", numFolds)
+local k = {1, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 10000}
+--main("K", k, dir .. "K/x3_Win19_K", "_1000T_NMIN1", numFolds)
 
 --main("K200 - Nmin", {1, 3, 5, 7, 11, 21}, dir .. "K200/x3_Win19_K200_1000T_NMIN", "", numFolds)
 
 local tasks = {"NoTask", "ss3", "ss8", "sa", "dr", "stal", "No-ss3", "No-ss8", "No-sa", "No-dr", "No-stal"}
---main("Task: AllTask", {""}, dir .. "K200_MultiGreedy/x3_Win19_K200_1000T_NMIN1", "", numFolds)
---main("Task", tasks, dir .. "Tasks/x3_", "_Win19_K200_1000T_NMIN1", numFolds)
+--main("Task: AllTask", {""}, dir .. "Tasks/x3_Win19_K200_1000T_NMIN5", "", numFolds)
+--main("Task", tasks, dir .. "Tasks/x3_", "_Win19_K200_1000T_NMIN5", numFolds)
 
 nmin = {1, 3, 5, 7, 9, 11}
 --main("Task: NoTask, Nmin", nmin, dir .. "Tasks/x3_NoTask_Win19_K2000_1000T_NMIN", "", numFolds)
@@ -165,8 +165,18 @@ nmin = {1, 3, 5, 7, 11, 21}
 
 
 local features = {"AllTask-NoGlobalHisto", "AllTask-NoLocalHisto", "AllTask-NoInterHisto", "AllTask-NoWindows", "AllTask-NoOthers",
-                  "GlobalHisto", "LocalHisto", "InterHisto", "Windows", "Others"}
---main("Features", features, dir .. "Tasks/x3_", "_Win19_K200_1000T_NMIN1", numFolds)
+                  "GlobalHisto", "LocalHisto", "InterHisto", "Windows", "Others",
+                  "OthersGlobalHisto", "OthersLocalHisto", "OthersInterHisto", "OthersWindows"}
+features = {"GlobalHistoOthersWindows", "LocalHistoOthersWindows", "InterHistoOthersWindows"}
+--main("Features", features, dir .. "Features/x3_", "_Win19_K200_1000T_NMIN5", numFolds)
+
+
+features = {"GlobalHisto", "LocalHisto", "InterHisto", "Windows", "Others"}
+features = {"GlobalHistoOthers", "LocalHistoOthers", "InterHistoOthers", "WindowsOthers"}
+features = {"GlobalHistoWindowsOthers", "LocalHistoWindowsOthers", "InterHistoWindowsOthers"}
+features = {"LocalHistoGlobalHistoWindowsOthers", "InterHistoGlobalHistoWindowsOthers"}
+--main("AA & PSSM Features", features, dir .. "NoTask/x3_", "_Win19_K200_1000T_NMIN5", numFolds)
+
 
 -- ----- SP39 ----- --
 

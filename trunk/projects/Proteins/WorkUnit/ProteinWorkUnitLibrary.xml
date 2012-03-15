@@ -396,7 +396,7 @@
 <!-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -->
 
 
-
+  <class name="TestStudentDistributionWorkUnit" base="WorkUnit"/>
 
 
 </library>
