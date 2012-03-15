@@ -35,7 +35,7 @@ void ShearMover::move(core::pose::PoseOP& pose, int residue, double deltaPhi, do
 void ShearMover::move(PosePtr& pose, int residue, double deltaPhi, double deltaPsi)
 {
   jassert(isNumberValid(deltaPhi) && isNumberValid(deltaPsi));
-  jassert((residue >= 0) && (residue < pose->getLength()));
+  jassert((residue >= 0) && (residue < (int)pose->getLength()));
 
   pose->setPhi(residue, pose->getPhi(residue) + deltaPhi);
   if (residue != 0)

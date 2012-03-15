@@ -130,6 +130,7 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/ProteinStatisticsWorkUnit.h
   WorkUnit/FabienBox.h
   WorkUnit/ESANN11.h
+  WorkUnit/StudentTestsBox.h
   WorkUnit/ProteinWorkUnitLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinWorkUnitLibrary.cpp
 )
