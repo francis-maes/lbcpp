@@ -434,13 +434,13 @@ public:
     /****
     ***** Baseline
     ****/
-    context.enterScope(T("XT"));
-    conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(Kdef, 2));
+    context.enterScope(T("RF"));
+    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(Kdef, 2));
     // conditionLearner = exactWeakLearner(inputsNodeBuilder());
     conditionLearner->setVerbose(verbose);
     //    learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
     //learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
-    learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
+    learner = baggingLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
     learner->setVerbose(verbose);
     double score = testLearner(context, learner, String::empty, inputType, labels, splits);
     
@@ -463,18 +463,18 @@ public:
 
       for (size_t complexity = 6; complexity <= 6; complexity += 2)
       {
-        conditionLearner = optimizerBasedSequentialWeakLearner(new NestedMonteCarloOptimizer(level, numIterations), complexity, true);
+        conditionLearner = optimizerBasedSequentialWeakLearner(new NestedMonteCarloOptimizer(level, numIterations), complexity, false);
         conditionLearner->setVerbose(verbose);
         //learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 5);
         //learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
         //learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
-        learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
+        learner = baggingLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
         learner->setVerbose(verbose);
-        double score = testLearner(context, learner, T("XT(100) NMC(1,1,") + String((int)complexity) + T(")"), inputType, labels, splits);
+        double score = testLearner(context, learner, T("RF(100) NMC(1,1,") + String((int)complexity) + T(")"), inputType, labels, splits);
         
-        learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 250);
+        learner = baggingLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 250);
         learner->setVerbose(verbose);
-        score = testLearner(context, learner, T("XT(250) NMC(1,1,") + String((int)complexity) + T(")"), inputType, labels, splits);
+        score = testLearner(context, learner, T("RF(250) NMC(1,1,") + String((int)complexity) + T(")"), inputType, labels, splits);
         //String str = T("level") + String((int)level);
         //context.resultCallback(str + T("Score"), score);
       }
