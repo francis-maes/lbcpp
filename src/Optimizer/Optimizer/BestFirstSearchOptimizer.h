@@ -313,10 +313,10 @@ public:
       while (!state->areAllWorkUnitsDone())
       {
         const size_t currentNumWorkUnitInProgress = state->getNumWorkUnitInProgress();
-        context.progressCallback(new ProgressionState(numPushedWorkUnit - currentNumWorkUnitInProgress, numPushedWorkUnit, T("Evaluation")));
         if (currentNumWorkUnitInProgress != previousNumWorkUnitInProgress)
         {
           saveOptimizerState(context, state);
+          context.progressCallback(new ProgressionState(numPushedWorkUnit - currentNumWorkUnitInProgress, numPushedWorkUnit, T("Evaluation")));
           previousNumWorkUnitInProgress = currentNumWorkUnitInProgress;
         }
         juce::Thread::sleep(500);
