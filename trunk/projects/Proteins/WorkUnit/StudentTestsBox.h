@@ -1241,7 +1241,7 @@ extern double tDistributionOfStudent(ExecutionContext& context, size_t degreeOfF
   }
   return res;
 }
-  
+
 class TestStudentDistributionWorkUnit : public WorkUnit
 {
 public:

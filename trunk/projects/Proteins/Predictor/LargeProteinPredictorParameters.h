@@ -255,23 +255,32 @@ public:
       else if (varName.endsWith(T("WindowSize")))
       {
         std::vector<int> values;
+        values.push_back(1);
+        values.push_back(5);
+        values.push_back(9);
+        values.push_back(11);
+        values.push_back(15);
+        values.push_back(19);
+        values.push_back(21);
+        /*
         for (int j = 1; j < 20; j += 2)
           values.push_back(j);
         for (int j = 21; j < 40; j += 4)
           values.push_back(j);
+         */
         res[i] = integerStream(positiveIntegerType, values);
       }
       else if (varName.endsWith(T("LocalHistogramSize")))
       {
         std::vector<int> values;
-        for (int j = 10; j < 100; j += 10)
+        for (int j = 10; j < 100; j += 20)
           values.push_back(j);
         res[i] = integerStream(positiveIntegerType, values);
       }
       else if (varName == T("separationProfilSize"))
       {
         std::vector<int> values;
-        for (int j = 1; j < 20; j += 2)
+        for (int j = 1; j < 20; j += 4)
           values.push_back(j);
         res[i] = integerStream(positiveIntegerType, values);
       }
