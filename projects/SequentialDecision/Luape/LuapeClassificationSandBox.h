@@ -432,17 +432,25 @@ public:
     context.leaveScope();*/
 
     /****
-    ***** Nested Monte Carlo Feature Generation
+    ***** Baseline
     ****/
-    //context.enterScope(T("ST"));
-    //conditionLearner = exactWeakLearner(inputsNodeBuilder());
+    context.enterScope(T("RF"));
+    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(Kdef, 2));
+    // conditionLearner = exactWeakLearner(inputsNodeBuilder());
+    conditionLearner->setVerbose(verbose);
     //    learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
     //learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
-    //testLearner(context, learner, T("Boosting"), inputType, labels, splits);
-    //context.leaveScope();
+    learner = baggingLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
+    learner->setVerbose(verbose);
+    testLearner(context, learner, String::empty, inputType, labels, splits);
+    
+    context.leaveScope();
 
+    /****
+    ***** Nested Monte Carlo Feature Generation
+    ****/
     context.enterScope(T("NMC(1,1)"));
-    size_t complexity = 4;
+    //size_t complexity = 4;
     //    for (size_t numIterations = 1; numIterations <= 4096; numIterations *= 2)
     {
       size_t numIterations = 1;
@@ -452,23 +460,17 @@ public:
       //size_t maxLevel = numIterations <= 16 ? 1 : 0;
       size_t level = 1;
       //for (size_t level = 0; level <= maxLevel; ++level)
-      {
-	conditionLearner = exactWeakLearner(inputsNodeBuilder());
-	conditionLearner->setVerbose(verbose);
-	learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 5);
-	learner->setVerbose(verbose);
-	testLearner(context, learner, T("AdaBoost.MH Depth 5"), inputType, labels, splits);
-      }
 
-      for (size_t complexity = 4; complexity <= 8; complexity += 2)
+      for (size_t complexity = 6; complexity <= 6; complexity += 2)
       {
         conditionLearner = optimizerBasedSequentialWeakLearner(new NestedMonteCarloOptimizer(level, numIterations), complexity);
         conditionLearner->setVerbose(verbose);
-        learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 5);
+        //learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 5);
         //learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
         //learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
+        learner = baggingLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
         learner->setVerbose(verbose);
-        double score = testLearner(context, learner, T("AdaBoost.MH Depth 5 NMC(1,1,") + String((int)complexity) + T(")"), inputType, labels, splits);
+        double score = testLearner(context, learner, T("RF NMC(1,1,") + String((int)complexity) + T(")"), inputType, labels, splits);
         //String str = T("level") + String((int)level);
         //context.resultCallback(str + T("Score"), score);
       }
