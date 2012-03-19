@@ -100,8 +100,8 @@ local function main(varName, varValues, filePrefix, filePostfix, numFolds)
 --  scoresOfInterest["1 - Specificity (Bias from test)"] = {index = 3, getScore = getBestSpecificity}
 
   scoresOfInterest["Qp (Perfect)"] = {index = 8, getScore = getScoreToMaximize}
---  scoresOfInterest["Q2"] = {index = 1, getScore = getScoreToMaximize}
-  scoresOfInterest["Q2 (Bias form test)"] = {index = 5, getScore = getScoreToMaximize}
+  scoresOfInterest["Q2"] = {index = 4, getScore = getScoreToMaximize}
+--  scoresOfInterest["Q2 (Bias form test)"] = {index = 5, getScore = getScoreToMaximize}
   for i = 1,#varValues do
     context:enter(varName .. ": " .. varValues[i])
     -- Load traces
@@ -140,20 +140,22 @@ end
 local dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/1203XX-DSBWithExtraTreesAndPerfectMatching/"
 local numFolds = 9
 
-local winSizes = {0, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 45}
-main("Window Size", winSizes, dir .. "WindowSizes/x3_Win", "_K10000_1000T_NMIN1", numFolds)
+local winSizes = {0, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45}
+--main("Window Size", winSizes, dir .. "WindowSizes/x3_Win", "_K200_1000T_NMIN5", numFolds)
+main("Window Size", winSizes, dir .. "NoTaskWindowSizes/x3_NoTask_Win", "_K10000_1000T_NMIN1", numFolds)
 
 local nmin = {1, 3, 5, 7, 9, 11, 13, 15, 21, 51, 101, 201}
 --main("Nmin", nmin, dir .. "Nmin/x3_Win19_K200_1000T_NMIN", "", numFolds)
 
-local k = {1, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 10000}
+local k = {1, 5, 10, 20, 50, 100, 200, 500, 1000, 2000} --, 10000}
 --main("K", k, dir .. "K/x3_Win19_K", "_1000T_NMIN1", numFolds)
+--main("Task: ss8 - K", k, dir .. "Tasks/x3_ss8_Win19_K", "_1000T_NMIN1", numFolds)
 
 --main("K200 - Nmin", {1, 3, 5, 7, 11, 21}, dir .. "K200/x3_Win19_K200_1000T_NMIN", "", numFolds)
 
 local tasks = {"NoTask", "ss3", "ss8", "sa", "dr", "stal", "No-ss3", "No-ss8", "No-sa", "No-dr", "No-stal"}
 --main("Task: AllTask", {""}, dir .. "Tasks/x3_Win19_K200_1000T_NMIN5", "", numFolds)
---main("Task", tasks, dir .. "Tasks/x3_", "_Win19_K200_1000T_NMIN5", numFolds)
+--main("Task", tasks, dir .. "Tasks/x3_", "_Win19_K0_1000T_NMIN5", numFolds)
 
 nmin = {1, 3, 5, 7, 9, 11}
 --main("Task: NoTask, Nmin", nmin, dir .. "Tasks/x3_NoTask_Win19_K2000_1000T_NMIN", "", numFolds)

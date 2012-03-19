@@ -1994,4 +1994,85 @@ protected:
   }
 };
 
+class DSBLearnerFunction : public Function
+{
+public:
+  DSBLearnerFunction(File inputDirectory, File supervisionDirectory)
+    : inputDirectory(inputDirectory), supervisionDirectory(supervisionDirectory) {}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return largeProteinParametersClass;}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return doubleType;}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    ContainerPtr train = Protein::loadProteinsFromDirectoryPair(context, inputDirectory.getChildFile(T("train")), supervisionDirectory.getChildFile(T("train")), 0, T("Loading training proteins"));
+    ContainerPtr test = Protein::loadProteinsFromDirectoryPair(context, inputDirectory.getChildFile(T("test")), supervisionDirectory.getChildFile(T("test")), 0, T("Loading testing proteins"));
+
+    if (!train || !test || train->getNumElements() == 0 || test->getNumElements() == 0)
+      return 100.f;
+
+    LargeProteinParametersPtr parameters = input.getObjectAndCast<LargeProteinParameters>(context);
+    LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(parameters);
+    predictor->learningMachineName = T("ExtraTrees");
+    // Config ExtraTrees
+    predictor->x3Trees = 1000;
+    predictor->x3Attributes = 0;
+    predictor->x3Splits = 5;
+
+    ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
+    iteration->addTarget(dsbTarget);
+
+    if (!iteration->train(context, train, ContainerPtr(), T("Training")))
+      return 101.f;
+
+    ProteinEvaluatorPtr evaluator = createProteinEvaluator();
+    CompositeScoreObjectPtr scores = iteration->evaluate(context, test, evaluator, T("EvaluateTest"));
+    return evaluator->getScoreToMinimize(scores);
+  }
+
+protected:
+  friend class DSBLearnerFunctionClass;
+
+  File inputDirectory;
+  File supervisionDirectory;
+
+  DSBLearnerFunction() {}
+
+  ProteinEvaluatorPtr createProteinEvaluator() const
+  {
+    ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("DSB QP Perfect"), true);
+    return evaluator;
+  }
+};
+
+class BFSOptimizeDSBWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    ExecutionContextPtr remoteContext = distributedExecutionContext(context, T("monster24.montefiore.ulg.ac.be"), 1664,
+                                                                    T("1203XX-BFS-DSB"), T("jbecker@screen"), T("jbecker@giga"),
+                                                                    fixedResourceEstimator(1, 12 * 1024, 100), false);
+  
+    OptimizationProblemPtr problem = new OptimizationProblem(new DSBLearnerFunction(inputDirectory, supervisionDirectory), new LargeProteinParameters());
+    OptimizerPtr optimizer = bestFirstSearchOptimizer(LargeProteinParameters::createStreams(), optimizerStateFile);
+
+    return optimizer->compute(context, problem);
+  }
+
+protected:
+  friend class BFSOptimizeDSBWorkUnitClass;
+
+  File inputDirectory;
+  File supervisionDirectory;
+  File optimizerStateFile;
+};
+
 };
