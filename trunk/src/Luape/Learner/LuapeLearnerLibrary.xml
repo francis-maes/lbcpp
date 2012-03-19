@@ -104,9 +104,10 @@
   </class>
 
   <class name="OptimizerBasedSequentialWeakLearner" base="LuapeLearner">
-    <constructor arguments="OptimizerPtr optimizer, size_t complexity"/>
+    <constructor arguments="OptimizerPtr optimizer, size_t complexity, bool useRandomSplit"/>
     <variable type="Optimizer" name="optimizer"/>
     <variable type="PositiveInteger" name="complexity"/>
+    <variable type="Boolean" name="useRandomSplit"/>
   </class>
 
   <!-- Decorators -->

@@ -149,7 +149,7 @@ extern NodeBuilderBasedLearnerPtr exactWeakLearner(LuapeNodeBuilderPtr nodeBuild
 extern NodeBuilderBasedLearnerPtr randomSplitWeakLearner(LuapeNodeBuilderPtr nodeBuilder);
 extern NodeBuilderBasedLearnerPtr laminatingWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating = 5);
 extern NodeBuilderBasedLearnerPtr banditBasedWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize = 0.01);
-extern LuapeLearnerPtr optimizerBasedSequentialWeakLearner(OptimizerPtr optimizer, size_t complexity);
+extern LuapeLearnerPtr optimizerBasedSequentialWeakLearner(OptimizerPtr optimizer, size_t complexity, bool useRandomSplit = false);
 
 }; /* namespace lbcpp */
 

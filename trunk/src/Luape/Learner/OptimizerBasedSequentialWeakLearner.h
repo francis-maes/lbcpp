@@ -18,14 +18,14 @@ namespace lbcpp
 class OptimizerBasedSequentialWeakLearner : public LuapeLearner
 {
 public:
-  OptimizerBasedSequentialWeakLearner(OptimizerPtr optimizer, size_t complexity)
-    : optimizer(optimizer), complexity(complexity), totalNumCalls(0), totalNumUniqueCalls(0) {}
+  OptimizerBasedSequentialWeakLearner(OptimizerPtr optimizer, size_t complexity, bool useRandomSplit)
+    : optimizer(optimizer), complexity(complexity), useRandomSplit(useRandomSplit), totalNumCalls(0), totalNumUniqueCalls(0) {}
   OptimizerBasedSequentialWeakLearner() : complexity(0), totalNumCalls(0), totalNumUniqueCalls(0) {}
 
   virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = problem->getSearchSpace(context, complexity, verbose);
-    ObjectivePtr objective = new Objective(refCountedPointerFromThis(this), problem, examples);
+    ObjectivePtr objective = new Objective(refCountedPointerFromThis(this), problem, examples, useRandomSplit);
     OptimizationProblemPtr optimizationProblem = new OptimizationProblem(objective);
     optimizationProblem->setMaximisationProblem(true);
     optimizationProblem->setInitialState(new LuapeGraphBuilderState(problem, typeSearchSpace));
@@ -60,6 +60,7 @@ protected:
 
   OptimizerPtr optimizer; // example: new NestedMonteCarloOptimizer(level, iterations)
   size_t complexity;
+  bool useRandomSplit;
   size_t totalNumCalls;
   size_t totalNumUniqueCalls;
 
@@ -67,9 +68,10 @@ protected:
   {
     Objective(LuapeLearnerPtr weakLearner,
               LuapeInferencePtr problem,
-              const IndexSetPtr& examples)
+              const IndexSetPtr& examples,
+              bool useRandomSplit)
        : SimpleUnaryFunction(luapeGraphBuilderStateClass, doubleType),
-        weakLearner(weakLearner), problem(problem), examples(examples),
+        weakLearner(weakLearner), problem(problem), examples(examples), useRandomSplit(useRandomSplit),
         numCalls(0), numInvalidCalls(0), numUniqueCalls(0) {}
 
     virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
@@ -96,6 +98,8 @@ protected:
       else
       {
         ++pthis.numUniqueCalls;
+        if (node->getType() != booleanType && useRandomSplit)
+          node = makeRandomSplit(context, node);
         res = weakLearner->getObjective()->computeObjectiveWithEventualStump(context, problem, node, examples);
         pthis.cache[builder->getStackElement(0)] = std::make_pair(node, res);
       }
@@ -103,7 +107,7 @@ protected:
       //context.informationCallback(node->toShortString() + T(" ==> ") + String(res));
       return res;
     }
-   
+    
     size_t getNumCalls() const
       {return numCalls;}
 
@@ -117,6 +121,7 @@ protected:
     LuapeLearnerPtr weakLearner;
     LuapeInferencePtr problem;
     IndexSetPtr examples;
+    bool useRandomSplit;
 
     typedef std::map<LuapeNodePtr, std::pair<LuapeNodePtr, double> > CacheMap;
     CacheMap cache; // node -> (booleanized node, score)
@@ -124,6 +129,26 @@ protected:
     size_t numCalls;
     size_t numInvalidCalls;
     size_t numUniqueCalls;
+    
+    LuapeNodePtr makeRandomSplit(ExecutionContext& context, LuapeNodePtr node) const
+    {
+      LuapeSampleVectorPtr samples = problem->getTrainingCache()->getSamples(context, node, examples);
+      double minimumValue = DBL_MAX;
+      double maximumValue = -DBL_MAX;
+      bool isInteger = samples->getElementsType()->inheritsFrom(integerType);
+      for (LuapeSampleVector::const_iterator it = samples->begin(); it != samples->end(); ++it)
+      {
+        double value = isInteger ? (double)it.getRawInteger() : it.getRawDouble();
+        if (value < minimumValue)
+          minimumValue = value;
+        if (value > maximumValue)
+          maximumValue = value;
+      }
+      
+      double threshold = context.getRandomGenerator()->sampleDouble(minimumValue, maximumValue);
+      //context.informationCallback(T("min = ") + String(minimumValue) + T(" max = ") + String(maximumValue) + T(" threshold = ") + String(threshold));
+      return new LuapeFunctionNode(stumpLuapeFunction(threshold), node);
+    }
   };
 
   typedef ReferenceCountedObjectPtr<Objective> ObjectivePtr;
