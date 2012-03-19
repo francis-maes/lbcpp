@@ -33,8 +33,9 @@ public:
 
   virtual void result(double* const& point, std::vector<double>& value)
   {
-    DenseDoubleVectorPtr vector = new DenseDoubleVector(m_dimension, 0.0);
-    memcpy(vector->getValuePointer(0), point, sizeof (double) * m_dimension);
+    DenseDoubleVectorPtr vector = new DenseDoubleVector(initialGuess->getClass());
+    vector->resize(initialGuess->getNumValues());
+    memcpy(vector->getValuePointer(0), point, sizeof (double) * vector->getNumValues());
 	  value.resize(1);
 	  value[0] = objective->compute(context, vector).toDouble();
 	  m_timesCalled++;
