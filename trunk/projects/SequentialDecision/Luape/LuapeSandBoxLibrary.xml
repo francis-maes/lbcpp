@@ -48,6 +48,27 @@
   <class name="SoftStumpWeakLearner" base="DecoratorLearner">
     <variable type="Double" name="gamma"/>
   </class>
+  
+  <!-- Meta MC -->
+  <class name="MCObjective" abstract="yes"/>
+  
+  <class name="MCAlgorithm" abstract="yes"/>
+  <class name="RolloutMCAlgorithm" base="MCAlgorithm" shortName="rollout"/>
+  <class name="DecoratorMCAlgorithm" base="MCAlgorithm" abstract="yes">
+    <variable type="MCAlgorithm" name="algorithm"/>
+  </class>
+  <class name="IterateMCAlgorithm" base="DecoratorMCAlgorithm" shortName="iterate">
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+  <class name="LookAheadMCAlgorithm" base="DecoratorMCAlgorithm" shortName="lookAhead">
+    <variable type="Double" name="numActions"/>
+  </class>
+  <class name="StepByStepMCAlgorithm" base="DecoratorMCAlgorithm" shortName="stepByStep"/>
+
+  <class name="MCOptimizer" base="Optimizer">
+    <variable type="MCAlgorithm" name="algorithm"/>
+    <variable type="PositiveInteger" name="budget"/>
+  </class>
 
 
 </library>
