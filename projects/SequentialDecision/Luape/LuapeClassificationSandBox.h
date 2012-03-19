@@ -18,6 +18,7 @@
 # include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Learning/Numerical.h> // for lbcpp::convertSupervisionVariableToEnumValue
 # include "LuapeSoftStump.h"
+# include "MetaMCSandBox.h"
 # include "../Core/NestedMonteCarloOptimizer.h"
 # include "../Core/SinglePlayerMCTSOptimizer.h"
 # include "../../../src/Luape/Learner/OptimizerBasedSequentialWeakLearner.h"
@@ -400,8 +401,8 @@ public:
     
     if (verbose)
       splits.resize(1);
-    //else
-    //  splits.resize(7);
+    else
+      splits.resize(7);
       
 
     TypePtr inputType = splits[0].first->getClass()->getTemplateArgument(0)->getTemplateArgument(0);
@@ -433,22 +434,47 @@ public:
 
     /****
     ***** Baseline
-    ****/
-    context.enterScope(T("RF"));
-    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(Kdef, 2));
-    // conditionLearner = exactWeakLearner(inputsNodeBuilder());
+    ****
+    context.enterScope(T("Boosting"));
+    //conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(Kdef, 2));
+    conditionLearner = exactWeakLearner(inputsNodeBuilder());
     conditionLearner->setVerbose(verbose);
-    //    learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
+    learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 1);
     //learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
-    learner = baggingLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
+    //learner = baggingLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
     learner->setVerbose(verbose);
     double score = testLearner(context, learner, String::empty, inputType, labels, splits);
-    
-    context.leaveScope(score);
+    context.leaveScope(score);*/
+
+    /****
+    ***** Meta-MC Test
+    ****/
+    std::vector<MCAlgorithmPtr> algorithms;
+    MCAlgorithmSet set(3);
+    set.getAlgorithms(algorithms);
+
+    context.enterScope(T("Test ") + String((int)algorithms.size()) + T(" algorithms"));
+    double bestError = DBL_MAX, worstError = -DBL_MAX;
+    MCAlgorithmPtr bestAlgorithm;
+    MCAlgorithmPtr worstAlgorithm;
+    for (size_t i = 0; i < algorithms.size(); ++i)
+    {
+      double error = testMCAlgorithm(context, i, algorithms[i], numVariables, inputType, labels, splits);
+      if (error < bestError)
+        bestError = error, bestAlgorithm = algorithms[i];
+      if (error > worstError)
+        worstError = error, worstAlgorithm = algorithms[i];
+      context.progressCallback(new ProgressionState(i+1, algorithms.size(), T("Algorithms")));
+    }
+    context.resultCallback("bestError", bestError);
+    context.resultCallback("bestAlgorithm", bestAlgorithm);
+    context.resultCallback("worstError", worstError);
+    context.resultCallback("worstAlgorithm", worstAlgorithm);
+    context.leaveScope(new Pair(bestError, bestAlgorithm->toShortString()));
 
     /****
     ***** Nested Monte Carlo Feature Generation
-    ****/
+    ****
     context.enterScope(T("NMC(1,1)"));
     //size_t complexity = 4;
     //    for (size_t numIterations = 1; numIterations <= 4096; numIterations *= 2)
@@ -482,7 +508,7 @@ public:
       //context.leaveScope();
     }
     context.leaveScope();
-    
+    */
 
     /****
     ***** Iterative Feature Generation
@@ -643,6 +669,24 @@ public:
       context.leaveScope(bestScore);
     }*/
     return true;
+  }
+  
+  double testMCAlgorithm(ExecutionContext& context, size_t index, MCAlgorithmPtr algorithm,
+    size_t numVariables, TypePtr inputType, DefaultEnumerationPtr labels, const std::vector< std::pair< ContainerPtr, ContainerPtr > >& splits) const
+  {
+    context.enterScope(algorithm->toShortString());
+    context.resultCallback("index", index);
+    context.resultCallback("algorithm", algorithm->toShortString());
+    size_t complexity = 6;
+    size_t budget = complexity * (4 + numVariables);
+    LuapeLearnerPtr conditionLearner = optimizerBasedSequentialWeakLearner(new MCOptimizer(algorithm, budget), complexity, false);
+    conditionLearner->setVerbose(verbose);
+    LuapeLearnerPtr learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 1);
+    learner->setVerbose(verbose);
+    double res = testLearner(context, learner, String::empty, inputType, labels, splits);
+    context.resultCallback("score", res);
+    context.leaveScope(res);
+    return res;
   }
 
   double testLearner(ExecutionContext& context, const LuapeLearnerPtr& learner, const String& name,

@@ -273,7 +273,7 @@ protected:
   }
 
   // L routine
-  void assignEdgeLabelToNonOuterVertices(GabowState& state, size_t edgeId) const
+  void assignEdgeLabelToNonOuterVertices(GabowState& state, int edgeId) const
   {
     const std::pair<size_t, size_t>& edge = state.getVertices(edgeId);
     std::cout << "Assign edge: " << edge.first << " <-> " << edge.second << std::endl;

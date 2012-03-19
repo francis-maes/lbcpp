@@ -16,7 +16,7 @@
 #define ae_pi 3.1415926535897932384626433832795
 
 typedef ptrdiff_t ae_int_t;
-typedef int32_t AE_INT32_T; // FIX
+typedef juce::int32 AE_INT32_T; // FIX
 typedef AE_INT32_T ae_int32_t;
 typedef void(*ae_deallocator)(void*);
 

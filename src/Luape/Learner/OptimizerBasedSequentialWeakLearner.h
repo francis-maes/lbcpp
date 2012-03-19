@@ -55,6 +55,12 @@ public:
   size_t getTotalNumUniqueCalls() const
     {return totalNumUniqueCalls;}
 
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    LuapeLearner::clone(context, target);
+    target.staticCast<OptimizerBasedSequentialWeakLearner>()->optimizer = optimizer->cloneAndCast<Optimizer>();
+  }
+
 protected:
   friend class OptimizerBasedSequentialWeakLearnerClass;
 

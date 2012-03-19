@@ -135,6 +135,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
   Luape/LuapeSoftStump.h
   Luape/LuapeSandBox.h
   Luape/LuapeClassificationSandBox.h
+  Luape/MetaMCSandBox.h
   Luape/LuapeSandBoxLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeSandBoxLibrary.cpp
 )
