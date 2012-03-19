@@ -442,9 +442,9 @@ public:
     //learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
     learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
     learner->setVerbose(verbose);
-    testLearner(context, learner, String::empty, inputType, labels, splits);
+    double score = testLearner(context, learner, String::empty, inputType, labels, splits);
     
-    context.leaveScope();
+    context.leaveScope(score);
 
     /****
     ***** Nested Monte Carlo Feature Generation
