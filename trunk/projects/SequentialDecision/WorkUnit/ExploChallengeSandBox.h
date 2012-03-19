@@ -42,13 +42,17 @@ public:
 class ExploChallengeReverseObjective : public SimpleUnaryFunction
 {
 public:
-  ExploChallengeReverseObjective(size_t surrogateHorizon, size_t surrogateNumDocuments)
-    : SimpleUnaryFunction(denseDoubleVectorClass(exploChallengeFormulaObjectiveParametersEnumeration, doubleType), doubleType), surrogateHorizon(surrogateHorizon), surrogateNumDocuments(surrogateNumDocuments) {}
+  ExploChallengeReverseObjective(size_t surrogateHorizon = 10000)
+    : SimpleUnaryFunction(denseDoubleVectorClass(exploChallengeFormulaObjectiveParametersEnumeration, doubleType), doubleType), surrogateHorizon(surrogateHorizon) {}
+
+  virtual String toShortString() const
+    {return T("Reverse Engineer Explo challenge");}
 
   FunctionPtr createFormulaObjective(const Variable& params) const
   {
     DenseDoubleVectorPtr parameters = params.getObjectAndCast<DenseDoubleVector>();
-    return new ExploChallengeFormulaObjective(surrogateHorizon, surrogateNumDocuments, parameters);
+    ExploChallengeFormulaObjective::applyConstraints(parameters);
+    return new ExploChallengeFormulaObjective(surrogateHorizon, parameters);
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
@@ -62,9 +66,10 @@ public:
       for (size_t j = 0; j < numRuns; ++j)
         predictedScore += formulaObjective->compute(context, scores[i].first).toDouble();
       predictedScore /= numRuns;
-      res = juce::jmax(res, fabs(scores[i].second - predictedScore));
+      //res = juce::jmax(res, fabs(scores[i].second - predictedScore));
+      res += fabs(scores[i].second - predictedScore);
     }
-    return res;
+    return res / scores.size();
   }
 
   void addReferenceScore(const GPExpressionPtr& formula, double score)
@@ -92,13 +97,15 @@ public:
       double delta = mean.getMean() - scores[i].second;
       stats->push(fabs(delta));
       context.leaveScope(delta);
+      context.progressCallback(new ProgressionState(i + 1, scores.size(), T("Formulas")));
     }
     return stats;
   }
 
 private:
+  friend class ExploChallengeReverseObjectiveClass;
+
   size_t surrogateHorizon;
-  size_t surrogateNumDocuments;
 };
 
 typedef ReferenceCountedObjectPtr<ExploChallengeReverseObjective> ExploChallengeReverseObjectivePtr;
@@ -106,7 +113,7 @@ typedef ReferenceCountedObjectPtr<ExploChallengeReverseObjective> ExploChallenge
 class ExploChallengeSandBox : public WorkUnit
 {
 public:
-  ExploChallengeSandBox() : surrogateHorizon(307000), surrogateNumDocuments(100)
+  ExploChallengeSandBox() : surrogateHorizon(307000)
   {
   }
 
@@ -150,11 +157,13 @@ public:
     static GPExpressionPtr maxRkC(double C)  // max(rk, C)
       {return new BinaryGPExpression(rewardMean(), gpMax, new ConstantGPExpression(C));}
 
+    static GPExpressionPtr maxRkCDivTk(double C)  // max(rk, C / tk)
+      {return new BinaryGPExpression(rewardMean(), gpMax, new BinaryGPExpression(new ConstantGPExpression(C), gpDivision, playedCount()));}
   };
 
   ExploChallengeReverseObjectivePtr createObjective() const
   {
-    ExploChallengeReverseObjectivePtr objective = new ExploChallengeReverseObjective(surrogateHorizon, surrogateNumDocuments);
+    ExploChallengeReverseObjectivePtr objective = new ExploChallengeReverseObjective(surrogateHorizon);
 
     VariableGPExpressionPtr presentedCount = new VariableGPExpression(Variable(0, exploChallengeFormulaVariablesEnumeration));
     VariableGPExpressionPtr rewardMean = new VariableGPExpression(Variable(1, exploChallengeFormulaVariablesEnumeration));
@@ -163,11 +172,14 @@ public:
 
     // baselines
     objective->addReferenceScore(Policies::random(), 366.7);
-    objective->addReferenceScore(Policies::rewardMean(), 711.1); // Greedy
-    //objective->addReferenceScore(relativeIndex, 266.7); // Always first
-    //objective->addReferenceScore(new UnaryGPExpression(gpOpposite, relativeIndex), 512.6); // Always last
+    objective->addReferenceScore(Policies::rewardMean(), 700.0); // Greedy
+    objective->addReferenceScore(new UnaryGPExpression(gpOpposite, relativeIndex), 266.7); // Always first
+    objective->addReferenceScore(relativeIndex, 512.6); // Always last
 
     // ucb1
+    objective->addReferenceScore(Policies::ucb1(0.0005), 756.5);
+    objective->addReferenceScore(Policies::ucb1(0.001), 799.7);
+    objective->addReferenceScore(Policies::ucb1(0.005), 862.1);
     objective->addReferenceScore(Policies::ucb1(0.01), 849.4);
     objective->addReferenceScore(Policies::ucb1(0.05), 838.8);
     objective->addReferenceScore(Policies::ucb1(0.1), 817.4);
@@ -192,22 +204,30 @@ public:
     objective->addReferenceScore(Policies::maxRkC(0.02), 747.5);
     objective->addReferenceScore(Policies::maxRkC(0.03), 740.1);
     objective->addReferenceScore(Policies::maxRkC(0.04), 763.1);
+    objective->addReferenceScore(Policies::maxRkC(0.045), 775.4);
     objective->addReferenceScore(Policies::maxRkC(0.05), 768.7);
     objective->addReferenceScore(Policies::maxRkC(0.06), 757.1);
     objective->addReferenceScore(Policies::maxRkC(0.07), 761.1);
-    
-    // misc
 
+    // max(rk, C/tk)
+    objective->addReferenceScore(Policies::maxRkCDivTk(0.1), 751.7);
+    objective->addReferenceScore(Policies::maxRkCDivTk(0.5), 809.5);
+    objective->addReferenceScore(Policies::maxRkCDivTk(1.0), 725.4);
+    objective->addReferenceScore(Policies::maxRkCDivTk(2.0), 800.4);
+    objective->addReferenceScore(Policies::maxRkCDivTk(5.0), 789.4);
+
+    // misc
+/*
     // Rk + 0.2 log(Tk) / T	==> 682.6
     objective->addReferenceScore(new BinaryGPExpression(Policies::rewardMean(), gpAddition,
       new BinaryGPExpression(new ConstantGPExpression(0.2), gpMultiplication,
         new BinaryGPExpression(new UnaryGPExpression(gpLog, Policies::playedCount()), gpDivision, Policies::presentedCount()))), 682.6);
 
     // log(Tk)(Rk - 0.2)	==> 767.0
-    objective->addReferenceScore(new BinaryGPExpression(
+    /*objective->addReferenceScore(new BinaryGPExpression(
       new UnaryGPExpression(gpLog, Policies::playedCount()),
       gpMultiplication,
-      new BinaryGPExpression(Policies::rewardMean(), gpSubtraction, new ConstantGPExpression(0.2))), 767.0);
+      new BinaryGPExpression(Policies::rewardMean(), gpSubtraction, new ConstantGPExpression(0.2))), 767.0);*/
     return objective;
   }
 
@@ -215,27 +235,33 @@ public:
   {
     ExploChallengeReverseObjectivePtr objective = createObjective();
     SamplerPtr sampler = new ExploChallengeReverseSampler();
-    OptimizationProblemPtr problem = new OptimizationProblem(objective, Variable(), sampler);
-    OptimizerPtr optimizer = edaOptimizer(10, 100, 30, StoppingCriterionPtr(), 0.0, false, true);
+    Variable initialGuess = ExploChallengeFormulaObjective::getInitialGuess();
+
+    OptimizationProblemPtr problem = new OptimizationProblem(objective, initialGuess, sampler);
+    OptimizerPtr optimizer = edaOptimizer(5, 100, 20, StoppingCriterionPtr(), 0.0, false, true);
+    //OptimizerPtr optimizer = cmaesOptimizer(10);
     OptimizerStatePtr state = optimizer->optimize(context, problem);
 
 
     context.informationCallback(T("Best solution found: ") + state->getBestSolution().toShortString());
     context.informationCallback(T("Best solution score: ") + String(state->getBestScore()));
 
-    SamplerPtr finalSampler = state->getVariable(3).getObjectAndCast<Sampler>();
-    Variable samplerExpectation = finalSampler->computeExpectation();
-    context.informationCallback(T("Sampler expectation: ") + samplerExpectation.toShortString());
+    SamplerPtr finalSampler = state->getNumVariables() > 3 ? state->getVariable(3).dynamicCast<Sampler>() : SamplerPtr();
+    if (finalSampler)
+    {
+      Variable samplerExpectation = finalSampler->computeExpectation();
+      context.informationCallback(T("Sampler expectation: ") + samplerExpectation.toShortString());
+      context.enterScope(T("Validate Sampler Expectation"));
+      Variable res = objective->validate(context, samplerExpectation);
+      context.leaveScope(res);
+    }
 
     //context.resultCallback("state", state);
 
     context.enterScope(T("Validate Best Solution"));
     Variable res = objective->validate(context, state->getBestSolution());
     context.leaveScope(res);
-
-    context.enterScope(T("Validate Sampler Expectation"));
-    res = objective->validate(context, samplerExpectation);
-    context.leaveScope(res);
+    
     return true;
   }
 
@@ -243,7 +269,6 @@ protected:
   friend class ExploChallengeSandBoxClass;
 
   size_t surrogateHorizon;
-  size_t surrogateNumDocuments;
 };
 
 }; /* namespace lbcpp */

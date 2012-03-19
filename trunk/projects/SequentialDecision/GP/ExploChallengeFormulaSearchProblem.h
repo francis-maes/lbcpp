@@ -22,42 +22,70 @@ extern EnumerationPtr exploChallengeFormulaObjectiveParametersEnumeration;
 class ExploChallengeFormulaObjective : public SimpleUnaryFunction
 {
 public:
-  ExploChallengeFormulaObjective(size_t horizon = 307000, size_t totalNumArms = 246, DenseDoubleVectorPtr parameters = DenseDoubleVectorPtr())
-    : SimpleUnaryFunction(gpExpressionClass, doubleType), horizon(horizon), totalNumArms(totalNumArms), parameters(parameters)
+  ExploChallengeFormulaObjective(size_t horizon = 307000, DenseDoubleVectorPtr parameters = DenseDoubleVectorPtr())
+    : SimpleUnaryFunction(gpExpressionClass, doubleType), horizon(horizon), parameters(parameters)
   {
     if (!parameters)
     {
       // tuned for H=10000, N=20
       this->parameters = new DenseDoubleVector(exploChallengeFormulaObjectiveParametersEnumeration, doubleType);
-      this->parameters->setValue(0, 0.162); // prob of 0 reward
-      this->parameters->setValue(1, 0.116); // max reward expectation
-      this->parameters->setValue(2, 0.361); // percentDocumentsAliveSimultaneously
-      this->parameters->setValue(3, 0.176); // numArmsPerRound
+      this->parameters->setValue(0, 0.365); // probability of creation 0.334%
+      this->parameters->setValue(1, 1.0); // ten arms
+      this->parameters->setValue(2, 0.357); // min life time
+      this->parameters->setValue(3, 0.842); // max life time
+      this->parameters->setValue(4, 0.0);  // min reward
+      this->parameters->setValue(5, 0.126); // max reward
+      this->parameters->setValue(6, 0.0); // min reward decrease
+      this->parameters->setValue(7, 0.597); // max reward decrease
     }
   }
 
   static const double* getInitialSamplerParameters()
   {
     static const double meanAndStddevs[] = {
-        0.15, 0.15,
-        0.2, 0.2,
-        0.3, 0.5,
-        0.2, 0.5
+        0.35, 0.1,
+        1.0, 0.5,
+        0.35, 0.1,
+        0.9, 0.1,
+        0.0, 0.01,
+        0.115, 0.1,
+        0.0, 0.2,
+        0.6, 0.2,
     };
     return meanAndStddevs;
+  }
+
+  static DenseDoubleVectorPtr getInitialGuess()
+  {
+    const double* params = getInitialSamplerParameters();
+    DenseDoubleVectorPtr res = new DenseDoubleVector(exploChallengeFormulaObjectiveParametersEnumeration, doubleType);
+    for (size_t i = 0; i < res->getNumValues(); ++i)
+      res->setValue(i, params[i * 2]);
+    return res;
   }
 
   static void applyConstraints(DenseDoubleVectorPtr params)
   {
     params->setValue(0, juce::jlimit(0.0, 1.0, params->getValue(0)));
-    params->setValue(1, juce::jlimit(0.0, 1.0, params->getValue(1)));
+    params->setValue(1, 1.0);//juce::jmax(0.0, params->getValue(1)));
     params->setValue(2, juce::jlimit(0.0, 1.0, params->getValue(2)));
-    params->setValue(3, juce::jlimit(0.0, params->getValue(2), params->getValue(3)));
+    params->setValue(3, juce::jlimit(0.0, 1.0, params->getValue(3)));
+    params->setValue(4, 0.0);//juce::jlimit(0.0, 1.0, params->getValue(4)));
+    params->setValue(5, 0.126);//juce::jlimit(0.0, 1.0, params->getValue(5)));
+    params->setValue(6, 0.0);
+    params->setValue(7, 0.597);
   }
 
   struct ArmInfo
   {
-    ArmInfo() : presentedCount(0), prevScore(1.0) {}
+    ArmInfo() : creationTime(0), rewardExpectation(0.0), rewardExpectationDecreaseRate(0.0), presentedCount(0), prevScore(1.0) {}
+
+    int creationTime;
+    double rewardExpectation;
+    double rewardExpectationDecreaseRate;
+
+    double sampleReward(RandomGeneratorPtr random) const
+      {return random->sampleBool(juce::jlimit(0.0, 1.0, rewardExpectation - rewardExpectationDecreaseRate * presentedCount)) ? 1.0 : 0.0;}
 
     size_t presentedCount;
     ScalarVariableStatistics stats;
@@ -66,58 +94,82 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    size_t numDocumentsAliveSimultaneously = (size_t)(parameters->getValue(2) * totalNumArms); // 80
-    size_t numArmsPerRound = (size_t)(parameters->getValue(3) * totalNumArms);
-    double minRewardExpectation = juce::jlimit(0.0, 1.0, parameters->getValue(0));
-    double maxRewardExpectation = juce::jlimit(0.0, 1.0, parameters->getValue(1));
+    double probabilityOfNewArm = parameters->getValue(0) / 100.0;
+    size_t numSelectedArms = (size_t)(juce::jmax(2.0, parameters->getValue(1) * 10.0));
+    double minLifeTime = parameters->getValue(2) * horizon;
+    double maxLifeTime = parameters->getValue(3) * horizon;
+    double minRewardExpectation = -parameters->getValue(4);
+    double maxRewardExpectation = parameters->getValue(5);
+    double minRewardDecreaseRate = parameters->getValue(6) / horizon;
+    double maxRewardDecreaseRate = parameters->getValue(7) / horizon;
 
     RandomGeneratorPtr random = context.getRandomGenerator();
-
+ 
     GPExpressionPtr formula = input.getObjectAndCast<GPExpression>();
 
-    // initialize arms
-    std::vector<SamplerPtr> arms(totalNumArms);
-    for (size_t i = 0; i < totalNumArms; ++i)
-    {
-      //double expectation = sampleGamma(random, minRewardExpectation, maxRewardExpectation);
-      //double expectation = random->sampleDouble(-minRewardExpectation, maxRewardExpectation);
-      //double expectation = random->sampleDoubleFromGaussian(minRewardExpectation, maxRewardExpectation);
-
-      double expectation = random->sampleBool(minRewardExpectation) ? 0.0 : random->sampleDouble(0.0, maxRewardExpectation);
-
-      arms[i] = bernoulliSampler(juce::jlimit(0.0, 1.0, expectation));
-    }
-
-    std::vector<ArmInfo> armInfos(totalNumArms);
-
     // do episode
-    std::vector<size_t> presentedArms;
+    std::vector<ArmInfo> arms;
+    arms.reserve((size_t)(1.2 * horizon * probabilityOfNewArm));
+    std::map<int, size_t> alifeArms;
+
+    std::vector<size_t> selectedArms;
     std::vector<size_t> bestArms;
     double sumOfRewards = 0.0;
-    for (size_t t = 0; t < horizon; ++t)
+    for (int t = -(int)horizon; t < (int)horizon; ++t)
     {
-      size_t firstDocumentIndex = (t * (totalNumArms - numDocumentsAliveSimultaneously)) / horizon;
-      jassert(firstDocumentIndex + numDocumentsAliveSimultaneously <= totalNumArms);
+      if (random->sampleBool(probabilityOfNewArm))
+      {
+        // create new arm
+        ArmInfo arm;
+        arm.creationTime = t;
+        int length = (int)(horizon * random->sampleDouble(minLifeTime, maxLifeTime));
+        int deathTime = t + length;
+        arm.rewardExpectation = juce::jlimit(0.0, 1.0, random->sampleDouble(minRewardExpectation, maxRewardExpectation));
+        arm.rewardExpectationDecreaseRate = random->sampleDouble(minRewardDecreaseRate, maxRewardDecreaseRate);
+        alifeArms[deathTime] = arms.size();
+        arms.push_back(arm);
+      }
 
+      selectedArms.clear();
+      std::map<int, size_t>::iterator it, nxt;
+      for (it = alifeArms.begin(); it != alifeArms.end(); it = nxt)
+      {
+        nxt = it; ++nxt;
+        if (it->first <= t)
+          alifeArms.erase(it); // destroy dead arms
+        else if (t >= 0)
+          selectedArms.push_back(it->second); // select arm
+      }
 
-      // select arms
-      std::vector<size_t> presentedArms;
-      for (size_t i = 0; i < numDocumentsAliveSimultaneously; ++i)
-        if (random->sampleBool(0.5))
-        {
-          size_t index = firstDocumentIndex + i;
-          presentedArms.push_back(index);
-          ++armInfos[index].presentedCount;
-        }
+      if (t < 0)
+        continue;
 
+      if (selectedArms.size() < 2)
+      {
+        //std::cout << "no selected arms" << " params = " << parameters->toShortString() << std::endl;
+        return -10000.0; // invalid setting: no documents at all
+      }
+
+      // randomly selected arms subset and sort arms
+      std::random_shuffle(selectedArms.begin(), selectedArms.end());
+      size_t s = (size_t)juce::jmin((int)selectedArms.size(), (int)numSelectedArms);
+      std::set<size_t> tmp;
+      for (size_t i = 0; i < s; ++i)
+        tmp.insert(selectedArms[i]);
+      selectedArms.clear();
+      for (std::set<size_t>::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
+        selectedArms.push_back(*it);
+      
       // compute scores for each arm and select best arms
       double bestScore = -DBL_MAX;
       bestArms.clear();
-      for (size_t i = 0; i < presentedArms.size(); ++i)
+      for (size_t i = 0; i < selectedArms.size(); ++i)
       {
-        size_t index = presentedArms[i];
-        double score = computeScore(formula, armInfos[index], i / (double)presentedArms.size());
-        armInfos[index].prevScore = score;
+        size_t index = selectedArms[i];
+        ArmInfo& arm = arms[index];
+        arm.presentedCount++;
+        double score = computeScore(formula, arm, i / (double)selectedArms.size());
+        arm.prevScore = score;
         if (score >= bestScore)
         {
           if (score > bestScore)
@@ -128,22 +180,22 @@ public:
           bestArms.push_back(index);
         }
       }
-      if (presentedArms.empty())
-        continue;
       
       // sample best arm
       size_t armIndex;
       if (bestArms.size())
         armIndex = bestArms[random->sampleSize(bestArms.size())];
       else
-        armIndex = presentedArms[random->sampleSize(presentedArms.size())];
+        armIndex = selectedArms[random->sampleSize(selectedArms.size())];
       
       // play arm
-      double reward = arms[armIndex]->sample(context, random).toDouble();
+      ArmInfo& playedArm = arms[armIndex];
+      double reward = playedArm.sampleReward(random);
       sumOfRewards += reward;
-      armInfos[armIndex].stats.push(reward);
+      playedArm.stats.push(reward);
     }
 
+    //std::cout << "Success evaluation: " << 10000.0 * sumOfRewards / horizon << std::endl;
     return 10000.0 * sumOfRewards / horizon;
   }
 
@@ -154,9 +206,9 @@ public:
 
     double variables[4];
     variables[0] = (double)info.presentedCount;
-    variables[1] = info.stats.getMean() * 10.0;
+    variables[1] = info.stats.getMean() * 10.0; // !!!!
     variables[2] = info.stats.getCount();
-    //variables[3] = info.prevScore;
+    variables[3] = relativeIndex;
     return formula->compute(variables);
   }
 
@@ -164,7 +216,6 @@ protected:
   friend class ExploChallengeFormulaObjectiveClass;
 
   size_t horizon;
-  size_t totalNumArms;
   DenseDoubleVectorPtr parameters;
 };
 

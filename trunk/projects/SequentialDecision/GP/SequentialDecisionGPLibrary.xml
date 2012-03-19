@@ -204,15 +204,18 @@
     <!-- <value name="i"/> -->
   </enumeration>
   <enumeration name="ExploChallengeFormulaObjectiveParameters">
-    <value name="minReward"/>
-    <value name="maxReward"/>
-    <value name="percentDocumentsAliveSimultaneously"/>
-    <value name="numArmsPerRound"/>
+    <value name="probabilityOfNewArm"/>
+    <value name="numSelectedArms"/>
+    <value name="minLifeTime"/>
+    <value name="maxLifeTime"/>
+    <value name="minRewardExpectation"/>
+    <value name="maxRewardExpectation"/>
+    <value name="minRewardDecreaseRate"/>
+    <value name="maxRewardDecreaseRate"/>
   </enumeration>
   
   <class name="ExploChallengeFormulaObjective" base="SimpleUnaryFunction">
     <variable type="PositiveInteger" name="horizon"/>
-    <variable type="PositiveInteger" name="totalNumArms"/>
     <variable type="DenseDoubleVector[ExploChallengeFormulaObjectiveParameters,Double]" name="parameters"/>
   </class>
   <class name="ExploChallengeFormulaSearchProblem" base="FormulaSearchProblem" shortName="exploChallenge">

@@ -687,14 +687,18 @@ ContainerCurveEditorConfiguration::ContainerCurveEditorConfiguration(ClassPtr ro
   };
   const size_t numDefaultColours = sizeof (defaultColours) / sizeof (juce::Colour);
 
+  keyVariableIndex = (size_t)-1;
   for (size_t i = 0; i < variables.size(); ++i)
   {
     TypePtr variableType = rowType->getMemberVariableType(i);
     if (variableType->isConvertibleToDouble())
+    {
+      if (keyVariableIndex == (size_t)-1)
+        keyVariableIndex = i; // default x-variable
       variables[i] = new CurveVariableConfiguration(false, i < numDefaultColours ? defaultColours[i] : randomColour(), rowType->getMemberVariableName(i));
+    }
   }
-  // select two first variables
-  keyVariableIndex = 0;
+  // select y-variable
   for (size_t i = keyVariableIndex + 1; i < variables.size(); ++i)
     if (variables[i])
     {

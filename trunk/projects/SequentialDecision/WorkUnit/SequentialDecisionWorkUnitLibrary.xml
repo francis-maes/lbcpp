@@ -192,9 +192,12 @@
   <!-- Explore Exploit challenge -->
   <class name="ExploChallengeReverseSampler" base="IndependentDoubleVectorSampler"/>
 
+  <class name="ExploChallengeReverseObjective" base="Function">
+    <variable type="PositiveInteger" name="surrogateHorizon"/>
+  </class>
+
   <class name="ExploChallengeSandBox" base="WorkUnit">
     <variable type="PositiveInteger" name="surrogateHorizon"/>
-    <variable type="PositiveInteger" name="surrogateNumDocuments"/>
   </class>
 
 </library>
