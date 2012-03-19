@@ -326,7 +326,7 @@ public:
       }
     }
 */
-    /*
+    
     runOnDataSet(context, "waveform");
     runOnDataSet(context, "two-norm");
     runOnDataSet(context, "ring-norm");
@@ -338,9 +338,9 @@ public:
     runOnDataSet(context, "pendigits");
     runOnDataSet(context, "dig44");
     runOnDataSet(context, "letter");
-    runOnDataSet(context, "isolet");
-    */
-
+    //runOnDataSet(context, "isolet");
+    
+    /*
     runOnDataSet(context, "liver-disorders");
     runOnDataSet(context, "glass");
     runOnDataSet(context, "ionosphere");
@@ -350,7 +350,7 @@ public:
     runOnDataSet(context, "vehicle");
     runOnDataSet(context, "wine");
     runOnDataSet(context, "wdbc");
-    runOnDataSet(context, "breast-orig");
+    runOnDataSet(context, "breast-orig");*/
     return true;
   }
 
@@ -435,36 +435,47 @@ public:
     ***** Nested Monte Carlo Feature Generation
     ****/
     //context.enterScope(T("ST"));
-    conditionLearner = exactWeakLearner(inputsNodeBuilder());
-    learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
+    //conditionLearner = exactWeakLearner(inputsNodeBuilder());
+    //    learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
     //learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
-    testLearner(context, learner, T("Boosting"), inputType, labels, splits);
+    //testLearner(context, learner, T("Boosting"), inputType, labels, splits);
     //context.leaveScope();
 
-    //context.enterScope(T("Nested MC"));
-    size_t complexity = 6;
-    //for (size_t numIterations = 1; numIterations <= numVariables * complexity * 5; numIterations *= 2)
-    {size_t numIterations = 1;
-      //context.enterScope(T("Num Iterations = " + String((int)numIterations)));
+    context.enterScope(T("NMC(1,1)"));
+    size_t complexity = 4;
+    //    for (size_t numIterations = 1; numIterations <= 4096; numIterations *= 2)
+    {
+      size_t numIterations = 1;
+      //      context.enterScope(T("Num Iterations = " + String((int)numIterations)));
       //context.resultCallback(T("numIterations"), numIterations);
       //context.resultCallback(T("log(numIterations)"), log10((double)numIterations));
       //size_t maxLevel = numIterations <= 16 ? 1 : 0;
       size_t level = 1;
       //for (size_t level = 0; level <= maxLevel; ++level)
       {
+	conditionLearner = exactWeakLearner(inputsNodeBuilder());
+	conditionLearner->setVerbose(verbose);
+	learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 5);
+	learner->setVerbose(verbose);
+	testLearner(context, learner, T("AdaBoost.MH Depth 5"), inputType, labels, splits);
+      }
+
+      for (size_t complexity = 4; complexity <= 8; complexity += 2)
+      {
         conditionLearner = optimizerBasedSequentialWeakLearner(new NestedMonteCarloOptimizer(level, numIterations), complexity);
         conditionLearner->setVerbose(verbose);
-        learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 2);
+        learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 5);
         //learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
         //learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
         learner->setVerbose(verbose);
-        double score = testLearner(context, learner, T("Level ") + String((int)level), inputType, labels, splits);
+        double score = testLearner(context, learner, T("AdaBoost.MH Depth 5 NMC(1,1,") + String((int)complexity) + T(")"), inputType, labels, splits);
         //String str = T("level") + String((int)level);
         //context.resultCallback(str + T("Score"), score);
       }
+
       //context.leaveScope();
     }
-    //context.leaveScope();
+    context.leaveScope();
     
 
     /****
@@ -476,12 +487,12 @@ public:
     //LuapeLearnerPtr targetLearner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
     
     // XT
-    //conditionLearner = randomSplitWeakLearner(inputsNodeBuilder());
-    //LuapeLearnerPtr targetLearner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 5);
+    conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(Kdef, 2));
+    LuapeLearnerPtr targetLearner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
     
     // Boosting
-    conditionLearner = exactWeakLearner(inputsNodeBuilder());
-    LuapeLearnerPtr targetLearner = discreteAdaBoostMHLearner(conditionLearner, 1000, 1);
+    //conditionLearner = exactWeakLearner(inputsNodeBuilder());
+    // LuapeLearnerPtr targetLearner = discreteAdaBoostMHLearner(conditionLearner, 1000, 1);
     
     targetLearner->setVerbose(verbose);
 
@@ -491,12 +502,12 @@ public:
     //learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
     
     // XT
-    //conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
-    //learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 5);
+    conditionLearner = randomSplitWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
+    learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), 100);
     
     // Boosting
-    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
-    learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 1);
+    //    conditionLearner = exactWeakLearner(randomSequentialNodeBuilder(numVariables, 4));
+    //learner = discreteAdaBoostMHLearner(conditionLearner, 1000, 1);
     
     learner->setVerbose(verbose);
     //testLearner(context, learner, "Baseline explore", inputClass, labels, splits);
