@@ -443,6 +443,11 @@ class BFSTestWorkUnit : public WorkUnit
 public:
   Variable run(ExecutionContext& context)
   {
+    ExecutionContextPtr remoteContext = distributedExecutionContext(context, T("monster24.montefiore.ulg.ac.be"), 1664,
+                                                                    T("testProject"), T("jbecker@mac"), T("jbecker@giga"),
+                                                                    fixedResourceEstimator(1, 1024, 1), false);
+    
+    
     std::vector<double> values(5);
     for (size_t i = 0; i < 5; ++i)
       values[i] = (double)i - 2;
@@ -461,7 +466,7 @@ public:
     
     OptimizationProblemPtr problem = new OptimizationProblem(new BFSTestObjectiveFunction(), new BFSTestParameter());
     
-    return optimizer->compute(context, problem);
+    return optimizer->compute(*remoteContext.get(), problem);
   }
 };
 
