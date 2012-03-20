@@ -136,8 +136,8 @@ class DistributeToClusterWorkUnit : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
-    ExecutionContextPtr remoteContext = distributedExecutionContext(context, remoteHostName, remoteHostPort, distributable->toString(), localHostLogin, clusterLogin, fixedResourceEstimator(1, memory,
-        time), true);
+    ExecutionContextPtr remoteContext = distributedExecutionContext(context, remoteHostName, remoteHostPort, T("DistributableDirectory"), localHostLogin, clusterLogin, fixedResourceEstimator(1,
+        memory, time), true);
 
     File distributableWorkUnitDirectory = context.getFile(distributable->toString());
     if (!distributableWorkUnitDirectory.exists())
@@ -154,12 +154,22 @@ public:
     context.informationCallback(T("Treating ") + String((int)units->getNumWorkUnits()) + T(" work units."));
 
     // check for already solved workunits and execute unsolved ones
+    size_t numExecuted = 0;
     for (size_t i = 0; i < units->getNumWorkUnits(); i++)
     {
       File wuResult(distributableWorkUnitDirectory.getFullPathName() + T("/") + units->getWorkUnit(i)->toString() + T(".xml"));
       if (!wuResult.exists())
+      {
+        if (numExecuted > 100)
+        {
+          Thread::sleep(7200000);
+          numExecuted = 0;
+        }
         remoteContext->pushWorkUnit(units->getWorkUnit(i), new DistributableExecutionContextCallback(context, distributable->toString()));
+        ++numExecuted;
+      }
     }
+    context.informationCallback(T("DistributableWorkUnit::cluster : all workunits sent"));
     remoteContext->waitUntilAllWorkUnitsAreDone();
 
     // reload results
