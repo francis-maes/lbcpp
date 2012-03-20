@@ -54,11 +54,12 @@ protected:
 class TestDistribWorkUnit : public DistributableWorkUnit
 {
 public:
-  TestDistribWorkUnit() : DistributableWorkUnit() {}
+  TestDistribWorkUnit() {}
+  TestDistribWorkUnit(size_t num) : num(num) {}
 
   virtual void initializeWorkUnits(ExecutionContext& context)
   {
-    for (size_t i = 0; i < 10; i++)
+    for (size_t i = 0; i < num; i++)
       workUnits->addWorkUnit(new TestDumbWorkUnit(i));
   }
 
@@ -101,6 +102,8 @@ public:
 
 protected:
   friend class TestDistribWorkUnitClass;
+
+  size_t num;
 };
 
 extern DistributableWorkUnitPtr testDistribWorkUnit();
