@@ -21,7 +21,8 @@
   </class>
   
   <class name="TestDistribWorkUnit" base="DistributableWorkUnit">
-    <constructor arguments=""/>
+    <constructor arguments="size_t num"/>
+    <variable type="PositiveInteger" name="num"/>
   </class>
   
   <!-- Proteins -->
