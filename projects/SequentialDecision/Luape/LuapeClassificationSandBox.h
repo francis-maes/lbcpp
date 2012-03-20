@@ -471,7 +471,7 @@ public:
     // make splits
     std::vector< std::pair< ContainerPtr, ContainerPtr > > splits;
     context.enterScope(T("Splits"));
-    if (makeSplits(context, tsFile, inputClass, data, splits))
+    if (makeSplits(context, tsFile, inputClass, data, splits) && verbose)
     {
       for (size_t i = 0; i < splits.size(); ++i)
         context.informationCallback(T("Split ") + String((int)i) + T(": train size = ") + String((int)splits[i].first->getNumElements())
@@ -504,21 +504,7 @@ public:
     // train and test
     context.enterScope("Learning");
     double res = trainAndTestClassifier(context, classifier, learner, trainingData, testingData);
-    context.leaveScope(String(res * 100.0, 3) + T("%"));
-
-    // write result into outputFile
-    if (outputFile != File::nonexistent)
-    {
-      if (!outputFile.exists() && outputFile.create())
-      {
-        context.errorCallback("Could not create " + outputFile.getFullPathName());
-      }
-      else
-      {
-        String line = String((int)foldNumber) + " " + String(res) + " # " + toShortString() + "\n";
-        outputFile.appendText(line);
-      }
-    }
+    context.leaveScope(res);
     return res;
   }
 
@@ -531,7 +517,6 @@ protected:
   size_t foldNumber;
   size_t featureLength;
   MCAlgorithmPtr searchAlgorithm;
-  File outputFile;
 
   LuapeLearnerPtr createLearner(ExecutionContext& context, size_t numVariables) const
   {

@@ -46,7 +46,6 @@
     <variable type="PositiveInteger" name="foldNumber"/>
     <variable type="PositiveInteger" name="featureLength"/>
     <variable type="MCAlgorithm" name="searchAlgorithm"/>
-    <variable type="File" name="outputFile"/>
   </class>
   
   <class name="LuapeClassificationSandBox" base="LuapeClassificationWorkUnit">
