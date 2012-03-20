@@ -7,26 +7,16 @@
   <class name="GeneralOptimizerStoppingCriterion" base="Object" abstract="yes">
   </class>
 
-  <class name="OldProteinOptimizer" base="Object" abstract="yes">
-    <variable type="GenericVector[String]" name="nameScopes" description="Name of the different scopes used for verbosity in explorer"/>
-    <variable type="Boolean" name="verbosity" description="Indicates if there is verbosity to the explorer"/>
-    <variable type="Boolean" name="saveToFile" description="Indicates if there is verbosity to files"/>
-    <variable type="Boolean" name="nameScopesSet" description="Indicates if the name scopes are set"/>
-    <variable type="Double" name="frequencyVerbosity" description="Frequency at which information are output"/>
-    <variable type="Integer" name="numOutputFiles" description="Number of files that have to be created with current structure information"/>  
-    <variable type="String" name="name" description="Name of the protein optimized"/>
-    <variable type="File" name="outputDirectory" description="Output directory where the files are going to be created"/>
+  <class name="GeneralOptimizerParameters" base="Object" abstract="yes">
   </class>
   
-  <class name="ProteinSimulatedAnnealingOptimizer" base="OldProteinOptimizer">
-    <variable type="Integer" name="maxSteps" shortName="s" description="Maximum number of optimization steps performed"/>
-    <variable type="Integer" name="timesReinitialization" shortName="r" description="Number of temporary structure reinitializations performed during optimization"/>
-    <variable type="Double" name="initialTemperature" shortName="ti" description="Initial value of kT used in Metropolis criterion"/>
-    <variable type="Double" name="finalTemperature" shortName="tf" description="Final value of kT used in Metropolis criterion"/>
-    <variable type="Integer" name="numberDecreasingSteps" shortName="d" description="Number of temperature's decreasing steps"/>
+  <class name="SimulatedAnnealingParameters" base="GeneralOptimizerParameters">
+    <variable type="VariableVector" name="vector"/>
+    <variable type="PositiveInteger" name="maxIterations"/>
+    <variable type="Double" name="initialTemperature"/>
+    <variable type="Double" name="finalTemperature"/>
+    <variable type="PositiveInteger" name="numSteps"/>
   </class>
   
-  <class name="ProteinSequentialOptimizer" base="OldProteinOptimizer">
-  </class>
-    
+  
 </library>

@@ -80,12 +80,14 @@ public:
       return random->sampleDouble() < std::exp((energyCurrentState - energyNewState) / temperature);
   }
 
-  virtual DenseDoubleVectorPtr optimize(ExecutionContext& context)
+  virtual VariableVectorPtr optimize(ExecutionContext& context)
   {
     // initialization
     jassert(parameters.isInstanceOf<SimulatedAnnealingParameters>());
     double verbosity = 0.01;
     DenseDoubleVectorPtr costEvolution = new DenseDoubleVector(0, 1.0);
+    DenseDoubleVectorPtr acceptedModificationsEvolution = new DenseDoubleVector(0, 1.0);
+    DenseDoubleVectorPtr decreasingModificationsEvolution = new DenseDoubleVector(0, 1.0);
 
     Variable iteration(0);
     VariableVectorPtr params = parameters->getParameters(context, iteration);
@@ -135,6 +137,7 @@ public:
 
       if ((i == 0) || ((i + 1) == maxIterations) || ((i % (size_t)juce::jmax(1.0, verbosity * maxIterations)) == 0))
       {
+        // verbosity in trace
         context.progressCallback(new ProgressionState(i + 1, maxIterations, T("Interations")));
         context.enterScope(T("Iteration"));
         context.resultCallback(T("Iteration"), Variable((int)i));
@@ -144,10 +147,16 @@ public:
         context.resultCallback(T("Ratio accepted modifications"), Variable((double)numModificationsAccepted / (double)numModificationsTested));
         context.resultCallback(T("Ratio energy decreasing modifications"), Variable((double)numModificationsDecreasingEnergy / (double)numModificationsTested));
         context.leaveScope(Variable(bestEnergy));
+
+        // return values
+        costEvolution->appendValue(bestEnergy);
+        acceptedModificationsEvolution->appendValue((double)numModificationsAccepted / (double)numModificationsTested);
+        decreasingModificationsEvolution->appendValue((double)numModificationsDecreasingEnergy / (double)numModificationsTested);
+
+        // re initialization
         numModificationsTested = 0;
         numModificationsAccepted = 0;
         numModificationsDecreasingEnergy = 0;
-        costEvolution->appendValue(bestEnergy);
       }
 
       if ((stoppingCriterion.get() != NULL) && (!stoppingCriterion->performNext(context, i, state, bestState)))
@@ -156,7 +165,12 @@ public:
 
     context.leaveScope();
 
-    return costEvolution;
+    VariableVectorPtr returnVector = variableVector(3);
+    returnVector->setElement(0, costEvolution);
+    returnVector->setElement(1, acceptedModificationsEvolution);
+    returnVector->setElement(2, decreasingModificationsEvolution);
+
+    return returnVector;
   }
 
 protected:

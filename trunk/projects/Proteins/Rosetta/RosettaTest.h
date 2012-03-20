@@ -82,10 +82,10 @@ public:
     FeatureGeneratorPtr blindFeatures = blindPoseFeatureGenerator();
     PoseOptimizationStateModifierPtr modifier = new PoseOptimizationStateModifier(sampler, blindFeatures);
 
-    SimulatedAnnealingParametersPtr params = new SimulatedAnnealingParameters(10000, 4, 0.01, 50);
+    SimulatedAnnealingParametersPtr params = new SimulatedAnnealingParameters(200, 4, 0.01, 20);
     SimulatedAnnealingPtr sa = new SimulatedAnnealing(optState, modifier, GeneralOptimizerStoppingCriterionPtr(), params);
 
-    DenseDoubleVectorPtr results1 = sa->optimize(context);
+    VariableVectorPtr results1 = sa->optimize(context);
 
     // with learning
     pose = new Pose(T("AAAAAAAAAAACDEDCDEDC"));
@@ -113,7 +113,7 @@ public:
     RandomGeneratorPtr rand = new RandomGenerator();
     rand->sampleOrder(references.size(), res);
 
-    for (size_t i = 0; (i < references.size()) && (i < 10000); i++)
+    for (size_t i = 0; (i < references.size()) && (i < 10); i++)
     {
       size_t index = res[i];
       juce::OwnedArray<File> movers;
@@ -146,7 +146,7 @@ public:
 
     sa = new SimulatedAnnealing(optState, modifier, GeneralOptimizerStoppingCriterionPtr(), params);
 
-    DenseDoubleVectorPtr results2 = sa->optimize(context);
+    VariableVectorPtr results2 = sa->optimize(context);
 
     //    DoubleVectorPtr v1 = new DenseDoubleVector(2, 0.0);
     //    DenseDoubleVectorPtr v2 = new DenseDoubleVector(2, 1.0);

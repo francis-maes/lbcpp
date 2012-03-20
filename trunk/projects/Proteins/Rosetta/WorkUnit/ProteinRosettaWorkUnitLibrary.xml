@@ -41,69 +41,20 @@
     <variable type="String" name="moversDirectory" description="Directory of the associated movers"/>
     <variable type="PositiveInteger" name="numIterations"/>
   </class>
-    
-  <class name="SingleThreadProteinOptimizationWorkUnit" base="WorkUnit">
-    <!-- 0 -->
-    <variable type="String" name="inputDirectory"/>
-    <!-- 1 -->
-    <variable type="String" name="outputDirectory"/>
-    <!-- 2 -->
-    <variable type="String" name="referencesDirectory"/>
-    <!-- 3 -->
-    <variable type="String" name="moversDirectory"/>
-    <!-- 4 -->
-    <variable type="PositiveInteger" name="learningPolicy"/>
-    <!-- 5 -->
-    <variable type="PositiveInteger" name="residueFeatures"/>
-    <!-- 6 -->
-    <variable type="PositiveInteger" name="energyFeatures"/>
-    <!-- 7 -->
-    <variable type="PositiveInteger" name="histogramFeatures"/>
-    <!-- 8 -->
-    <variable type="PositiveInteger" name="distanceFeatures"/>
-    <!-- 9 -->
-    <variable type="PositiveInteger" name="numMoversToLearn"/>
-    <!-- 10 -->
-    <variable type="Double" name="initialTemperature"/>
-    <!-- 11 -->
-    <variable type="Double" name="finalTemperature"/>
-    <!-- 12 -->
-    <variable type="Integer" name="numOutputFiles"/>
-    <!-- 13 -->
-    <variable type="PositiveInteger" name="numIterations"/>
-  </class>
-  
-  <class name="ProteinEDAOptimizationWorkUnit" base="WorkUnit">    
-    <variable type="PositiveInteger" name="numIterations"/>
-    <variable type="PositiveInteger" name="numSamplesPerIteration"/>
-    <variable type="PositiveInteger" name="numLearning"/>
-  </class>
   
   <class name="SingleProteinOptimizationWorkUnit" base="WorkUnit">
     <variable type="PositiveInteger" name="id"/>
-  
     <variable type="Protein" name="inputProtein"/>
-
-    <variable type="String" name="referencesDirectory"/>    
-    <variable type="String" name="moversDirectory"/>    
-
-    <variable type="Double" name="initialTemperature"/>
-    <variable type="Double" name="finalTemperature"/>
-    <variable type="PositiveInteger" name="numDecreasingSteps"/>
-    <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="String" name="referencesDirectory"/>
+    <variable type="String" name="moversDirectory"/>
+    <variable type="GeneralOptimizerParameters" name="parameters"/>
   </class>
   
   <class name="ProteinOptimizationWorkUnit" base="DistributableWorkUnit">
-    <constructor arguments="String inputDirectory, String referencesDirectory, String moversDirectory, double initialTemperature, double finalTemperature, size_t numDecreasingSteps, size_t numIterations"/>  
-    <variable type="String" name="inputDirectory"/>    
-
-    <variable type="String" name="referencesDirectory"/>    
-    <variable type="String" name="moversDirectory"/>    
-
-    <variable type="Double" name="initialTemperature"/>
-    <variable type="Double" name="finalTemperature"/>
-    <variable type="PositiveInteger" name="numDecreasingSteps"/>
-    <variable type="PositiveInteger" name="numIterations"/>
+    <constructor arguments="String inputDirectory, String referencesDirectory, String moversDirectory"/>  
+    <variable type="String" name="inputDirectory"/>
+    <variable type="String" name="referencesDirectory"/>
+    <variable type="String" name="moversDirectory"/>
   </class>
   
 </library>
