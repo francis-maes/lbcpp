@@ -509,18 +509,18 @@ public:
     // write result into outputFile
     if (outputFile != File::nonexistent)
     {
-      OutputStream* ostr = NULL;
-      for (size_t i = 0; !ostr && i < 100; ++i)
+      FILE* f = NULL;
+      for (size_t i = 0; !f && i < 100; ++i)
       {
-        ostr = outputFile.createOutputStream();
-        if (!ostr)
-          Thread::sleep(10);
+        f = fopen(outputFile.getFullPathName(), "a");
+        if (!f)
+          Thread::sleep(100);
       }
-      if (ostr)
+      if (f)
       {
-        *ostr << "# " << toShortString() << "\n";
-        *ostr << String((int)foldNumber) << T(" ") << String(res) << T("\n");
-        delete ostr;
+        String line = String((int)foldNumber) + " " + String(res) + " # " + toShortString() + "\n";
+        fputs(line, f);
+        fclose(f);
       }
       else
         context.errorCallback(T("Could not open file ") + outputFile.getFullPathName());
