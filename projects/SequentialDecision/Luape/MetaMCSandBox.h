@@ -33,10 +33,10 @@ typedef ReferenceCountedObjectPtr<MCObjective> MCObjectivePtr;
 class MCAlgorithm : public Object
 {
 public:
-  double search(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr initialState, Variable& firstAction, DecisionProblemStatePtr& finalState)
+  double search(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr initialState, std::vector<Variable>& actions, DecisionProblemStatePtr& finalState)
   {
     bestScore = -DBL_MAX;
-    bestFirstAction = Variable();
+    bestActions.clear();
     bestFinalState = DecisionProblemStatePtr();
 
     //String dbg = initialState->toShortString();
@@ -47,11 +47,14 @@ public:
 
     search(context, objective, initialState);
     jassert((bestScore == -DBL_MAX) == (bestFinalState == DecisionProblemStatePtr()));
-    jassert((bestScore == -DBL_MAX) == !bestFirstAction.exists());
+    jassert((bestScore == -DBL_MAX) == bestActions.empty());
     //String dbg2 = initialState->toShortString();
     //jassert(dbg == dbg2);
 
-    firstAction = bestFirstAction;
+    actions.reserve(actions.size() + bestActions.size());
+    for (size_t i = 0; i < bestActions.size(); ++i)
+      actions.push_back(bestActions[i]);
+    
     finalState = bestFinalState;
     /*if (bestScore != -DBL_MAX)
     {
@@ -69,9 +72,9 @@ protected:
 
   double bestScore;
   DecisionProblemStatePtr bestFinalState;
-  Variable bestFirstAction;
+  std::vector<Variable> bestActions;
 
-  void submitFinalState(ExecutionContext& context, MCObjectivePtr objective, const Variable& firstAction, DecisionProblemStatePtr state, double score = -DBL_MAX)
+  void submitFinalState(ExecutionContext& context, MCObjectivePtr objective, const std::vector<Variable>& actions, DecisionProblemStatePtr state, double score = -DBL_MAX)
   {
     if (score == -DBL_MAX)
     {
@@ -82,7 +85,7 @@ protected:
     {
       bestScore = score;
       bestFinalState = state;
-      bestFirstAction = firstAction;
+      bestActions = actions;
     }
   }
 };
@@ -96,20 +99,19 @@ protected:
   {
     DecisionProblemStatePtr state = initialState->cloneAndCast<DecisionProblemState>();
     size_t t = 0;
-    Variable firstAction;
+    std::vector<Variable> actions;
     while (!state->isFinalState() && !objective->shouldStop())
     {
-      ContainerPtr actions = state->getAvailableActions();
-      size_t n = actions->getNumElements();
-      Variable action = actions->getElement(context.getRandomGenerator()->sampleSize(n));
-      if (t == 0)
-        firstAction = action;
+      ContainerPtr availableActions = state->getAvailableActions();
+      size_t n = availableActions->getNumElements();
+      Variable action = availableActions->getElement(context.getRandomGenerator()->sampleSize(n));
+      actions.push_back(action);
       double reward;
       state->performTransition(context, action, reward);
       ++t;
     }
     if (state->isFinalState())
-      submitFinalState(context, objective, firstAction, state);
+      submitFinalState(context, objective, actions, state);
   }
 };
 
@@ -135,11 +137,11 @@ protected:
 
   MCAlgorithmPtr algorithm;
 
-  double subSearch(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr initialState, const Variable& currentFirstAction, Variable& firstAction, DecisionProblemStatePtr& finalState)
+  double subSearch(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr state, std::vector<Variable>& actions, DecisionProblemStatePtr& finalState)
   {
-    double res = algorithm->search(context, objective, initialState, firstAction, finalState);
+    double res = algorithm->search(context, objective, state, actions, finalState);
     if (res != -DBL_MAX)
-      submitFinalState(context, objective, currentFirstAction.exists() ? currentFirstAction : firstAction, finalState, res);
+      submitFinalState(context, objective, actions, finalState, res);
     return res;
   }
 };
@@ -167,9 +169,10 @@ protected:
     {
       if (objective->shouldStop())
         break;
-      Variable firstAction;
+
+      std::vector<Variable> actions;
       DecisionProblemStatePtr finalState;
-      subSearch(context, objective, initialState, Variable(), firstAction, finalState);
+      subSearch(context, objective, initialState, actions, finalState);
     }
   }
 };
@@ -207,13 +210,13 @@ protected:
       state->performTransition(context, action, reward, &stateBackup);
 
       if (state->isFinalState())
-        submitFinalState(context, objective, action, state->cloneAndCast<DecisionProblemState>());
+        submitFinalState(context, objective, std::vector<Variable>(1, action), state->cloneAndCast<DecisionProblemState>());
       else
       {
+        std::vector<Variable> actions;
+        actions.push_back(action);
         DecisionProblemStatePtr finalState;
-        Variable secondAction;
-        double score = subSearch(context, objective, state, action, secondAction, finalState);
-        jassert(score != -DBL_MAX && finalState);
+        subSearch(context, objective, state, actions, finalState);
       }
 
       state->undoTransition(context, stateBackup);
@@ -224,29 +227,41 @@ protected:
 class StepByStepMCAlgorithm : public DecoratorMCAlgorithm
 {
 public:
-  StepByStepMCAlgorithm(MCAlgorithmPtr algorithm = MCAlgorithmPtr())
-    : DecoratorMCAlgorithm(algorithm) {}
+  StepByStepMCAlgorithm(MCAlgorithmPtr algorithm, bool useGlobalBest)
+    : DecoratorMCAlgorithm(algorithm), useGlobalBest(useGlobalBest) {}
+  StepByStepMCAlgorithm() : useGlobalBest(false) {}
 
 protected:
+  friend class StepByStepMCAlgorithmClass;
+
+  bool useGlobalBest;
+
   virtual void search(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr initialState)
   {
-    Variable firstAction;
     DecisionProblemStatePtr state = initialState->cloneAndCast<DecisionProblemState>();
-    size_t t = 0;
+    std::vector<Variable> actions;
     while (!state->isFinalState() && !objective->shouldStop())
     {
-      Variable bestFirstAction;
+      std::vector<Variable> bestActions(actions.size());
+      for (size_t i = 0; i < actions.size(); ++i)
+        bestActions[i] = actions[i];
+      
       DecisionProblemStatePtr bestFinalState;
-      subSearch(context, objective, state, firstAction, bestFirstAction, bestFinalState);
-      if (!bestFinalState)
+      subSearch(context, objective, state, bestActions, bestFinalState);
+
+      Variable selectedAction;
+      if (useGlobalBest && this->bestFinalState)
+        selectedAction = this->bestActions[actions.size()];
+      else if (bestFinalState)
+        selectedAction = bestActions[actions.size()];
+      
+      if (!selectedAction.exists())
         break;
 
-      if (t == 0)
-        firstAction = bestFirstAction;
+      actions.push_back(selectedAction);
 
       double reward;
-      state->performTransition(context, bestFirstAction, reward);
-      ++t;
+      state->performTransition(context, selectedAction, reward);
     }
   }
 };
@@ -291,10 +306,10 @@ public:
 
   virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {
-    Variable firstAction;
+    std::vector<Variable> actions;
     DecisionProblemStatePtr bestFinalState;
     MCAlgorithmPtr algorithm = new IterateMCAlgorithm(this->algorithm, 0x7FFFFFFF); // repeat base algorithm until budget is exhausted
-    double bestScore = algorithm->search(context, new WrapperMCObjective(problem->getObjective(), budget), problem->getInitialState(), firstAction, bestFinalState);
+    double bestScore = algorithm->search(context, new WrapperMCObjective(problem->getObjective(), budget), problem->getInitialState(), actions, bestFinalState);
     optimizerState->submitSolution(bestFinalState, bestScore);
     return optimizerState;
   }
@@ -325,8 +340,8 @@ inline MCAlgorithmPtr rollout()
 inline MCAlgorithmPtr iterate(MCAlgorithmPtr algorithm, size_t numIterations)
   {return new IterateMCAlgorithm(algorithm, numIterations);}
 
-inline MCAlgorithmPtr step(MCAlgorithmPtr algorithm)
-  {return new StepByStepMCAlgorithm(algorithm);}
+inline MCAlgorithmPtr step(MCAlgorithmPtr algorithm, bool useGlobalBest = true)
+  {return new StepByStepMCAlgorithm(algorithm, useGlobalBest);}
 
 inline MCAlgorithmPtr lookAhead(MCAlgorithmPtr algorithm, double numActions)
   {return new LookAheadMCAlgorithm(algorithm, numActions);}
@@ -391,7 +406,8 @@ protected:
   {
     addAlgorithm(iterate(algorithm, 2));
     addAlgorithm(iterate(algorithm, 5));
-    addAlgorithm(step(algorithm));
+    addAlgorithm(step(algorithm, false));
+    addAlgorithm(step(algorithm, true));
     addAlgorithm(lookAhead(algorithm, 0.1));
     addAlgorithm(lookAhead(algorithm, 0.5));
     addAlgorithm(lookAhead(algorithm, 1.0));
