@@ -18,7 +18,10 @@ class MakeAndAutoSaveTraceExecutionCallback : public MakeTraceExecutionCallback
 {
 public:
   MakeAndAutoSaveTraceExecutionCallback(ExecutionTracePtr trace, double autoSaveIntervalInSeconds, const File& file)
-    : MakeTraceExecutionCallback(trace), saveInterval(autoSaveIntervalInSeconds), file(file), lastSaveTime(0.0) {}
+    : MakeTraceExecutionCallback(trace), saveInterval((juce::int64)(autoSaveIntervalInSeconds * 1000.0)), file(file)
+  {
+    lastSaveTime = Time::currentTimeMillis() - 9 * saveInterval / 10; // the first time, we save after saveInterval/10 ms.
+  }
   MakeAndAutoSaveTraceExecutionCallback() : saveInterval(0.0), lastSaveTime(0.0) {}
 
   virtual ExecutionCallbackPtr createCallbackForThread(const ExecutionStackPtr& stack, Thread::ThreadID threadId)
@@ -33,7 +36,7 @@ public:
     MakeTraceExecutionCallback::notificationCallback(notification);
     {
       ScopedLock _(autoSaveLock);
-      double time = Time::getMillisecondCounter() / 1000.0;
+      juce::int64 time = Time::currentTimeMillis();
       if (saveInterval > 0.0 && (time - lastSaveTime > saveInterval))
       {
         lastSaveTime = time;
@@ -46,10 +49,10 @@ protected:
   friend class MakeAndAutoSaveTraceExecutionCallbackClass;
 
   CriticalSection autoSaveLock;
-  double saveInterval;
+  juce::int64 saveInterval;
   File file;
 
-  double lastSaveTime;
+  juce::int64 lastSaveTime;
 
   void autoSave()
   {
