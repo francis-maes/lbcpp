@@ -509,21 +509,15 @@ public:
     // write result into outputFile
     if (outputFile != File::nonexistent)
     {
-      FILE* f = NULL;
-      for (size_t i = 0; !f && i < 100; ++i)
+      if (!outputFile.exists() && outputFile.create())
       {
-        f = fopen(outputFile.getFullPathName(), "a");
-        if (!f)
-          Thread::sleep(100);
-      }
-      if (f)
-      {
-        String line = String((int)foldNumber) + " " + String(res) + " # " + toShortString() + "\n";
-        fputs(line, f);
-        fclose(f);
+        context.errorCallback("Could not create " + outputFile.getFullPathName());
       }
       else
-        context.errorCallback(T("Could not open file ") + outputFile.getFullPathName());
+      {
+        String line = String((int)foldNumber) + " " + String(res) + " # " + toShortString() + "\n";
+        outputFile.appendText(line);
+      }
     }
     return res;
   }
