@@ -546,7 +546,7 @@ protected:
     else
     {
       size_t Kdef = (size_t)(0.5 + sqrt((double)numVariables));
-      LuapeNodeBuilderPtr nodeBuilder = useRandomSubspaces ? randomSequentialNodeBuilder(Kdef, 2) : inputsNodeBuilder();
+      LuapeNodeBuilderPtr nodeBuilder = useRandomSubspaces ? (LuapeNodeBuilderPtr)randomSequentialNodeBuilder(Kdef, 2) : (LuapeNodeBuilderPtr)inputsNodeBuilder();
       conditionLearner = useRandomSplits ? (LuapeLearnerPtr)randomSplitWeakLearner(nodeBuilder) : (LuapeLearnerPtr)exactWeakLearner(nodeBuilder);
     }
     conditionLearner->setVerbose(verbose);

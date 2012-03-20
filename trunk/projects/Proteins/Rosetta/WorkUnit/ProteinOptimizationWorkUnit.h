@@ -66,7 +66,7 @@ public:
       juce::OwnedArray<File> references;
       referencesFile.findChildFiles(references, File::findFiles, false, T("*.pdb"));
 
-      for (size_t i = 0; i < references.size(); i++)
+      for (size_t i = 0; i < (size_t)references.size(); i++)
       {
         juce::OwnedArray<File> movers;
         String nameToSearch = (*references[i]).getFileNameWithoutExtension();
