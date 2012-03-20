@@ -301,11 +301,289 @@ protected:
   LuapeLearnerPtr targetLearner;
 };
 
-class LuapeClassificationSandBox : public WorkUnit
+//////////////////////////////////////////////////////
+
+class LuapeClassificationWorkUnit : public WorkUnit
 {
 public:
-  LuapeClassificationSandBox() : maxExamples(0), verbose(false), useExtendedOperators(false), useVectorOperators(false) {}
+  LuapeClassificationWorkUnit() : maxExamples(0), verbose(false), useExtendedOperators(false), useVectorOperators(false) {}
 
+protected:
+  friend class LuapeClassificationWorkUnitClass;
+
+  size_t maxExamples;
+  bool verbose;
+  bool useExtendedOperators;
+  bool useVectorOperators;
+
+  ContainerPtr loadData(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, DefaultEnumerationPtr labels) const
+  { 
+    static const bool sparseData = true;
+
+    context.enterScope(T("Loading ") + file.getFileName());
+    TextParserPtr parser;
+    if (file.getFileExtension() == T(".jdb"))
+      parser = new JDBDataParser(context, file, inputClass, labels, sparseData);
+    else
+      parser = classificationARFFDataParser(context, file, inputClass, labels, sparseData);
+    ContainerPtr res = parser->load(maxExamples);
+    if (res && !res->getNumElements())
+      res = ContainerPtr();
+    context.leaveScope(res ? res->getNumElements() : 0);
+    return res;
+  }
+
+  static DenseDoubleVectorPtr convertExampleToVector(const ObjectPtr& example, const ClassPtr& dvClass)
+  {
+    DenseDoubleVectorPtr res = new DenseDoubleVector(dvClass);
+    size_t n = res->getNumValues();
+    jassert(n == example->getNumVariables());
+    for (size_t i = 0; i < n; ++i)
+      res->setValue(i, example->getVariable(i).toDouble());
+    return res;
+  }
+
+  static ObjectVectorPtr convertExamplesToVectors(const ContainerPtr& examples)
+  {
+    PairPtr p = examples->getElement(0).getObjectAndCast<Pair>();
+    
+    ClassPtr dvClass = denseDoubleVectorClass(variablesEnumerationEnumeration(p->getFirst().getType()), doubleType);
+    TypePtr supType = p->getSecond().getType();
+    ClassPtr exampleType = pairClass(dvClass, supType);
+
+    size_t n = examples->getNumElements();
+
+    ObjectVectorPtr res = new ObjectVector(exampleType, n);
+    for (size_t i = 0; i < n; ++i)
+    {
+      PairPtr example =  examples->getElement(i).getObjectAndCast<Pair>();
+      res->set(i, new Pair(exampleType, convertExampleToVector(example->getFirst().getObject(), dvClass), example->getSecond()));
+    }
+    return res;
+  }
+
+  bool makeSplits(ExecutionContext& context, const File& tsFile, DynamicClassPtr inputClass, ContainerPtr data, std::vector< std::pair< ContainerPtr, ContainerPtr > >& res)
+  {
+    if (tsFile.existsAsFile())
+    {
+      TextParserPtr parser = new TestingSetParser(context, tsFile, data);
+      ContainerPtr splits = parser->load(0);
+      res.resize(splits->getNumElements());
+      for (size_t i = 0; i < res.size(); ++i)
+      {
+        PairPtr split = splits->getElement(i).getObjectAndCast<Pair>();
+        ContainerPtr train = convertExamplesToVectors(split->getFirst().getObjectAndCast<ObjectVector>());
+        ContainerPtr test = convertExamplesToVectors(split->getSecond().getObjectAndCast<ObjectVector>());
+        res[i] = std::make_pair(train, test);
+      }
+    }
+    else
+    { 
+      const size_t numSplits = 20;
+      const size_t numFolds = 10;
+
+      res.resize(numSplits);
+      for (size_t i = 0; i < numSplits; ++i)
+      {
+        ContainerPtr randomized = data->randomize();
+        ContainerPtr training = convertExamplesToVectors(randomized->invFold(0, numFolds));
+        ContainerPtr testing = convertExamplesToVectors(randomized->fold(0, numFolds));
+        res[i] = std::make_pair(training, testing);
+      }
+    }
+    return true;
+  }
+
+  LuapeInferencePtr createClassifier(TypePtr inputDoubleVectorType) const
+  {
+    LuapeInferencePtr res = new LuapeClassifier();
+
+    if (useVectorOperators)
+    {
+      res->addInput(inputDoubleVectorType, "in");
+      res->addFunction(getDoubleVectorElementLuapeFunction());
+      res->addFunction(computeDoubleVectorStatisticsLuapeFunction());
+      res->addFunction(getDoubleVectorExtremumsLuapeFunction());
+      res->addFunction(getVariableLuapeFunction());
+    }
+    else
+    {
+      EnumerationPtr attributes = DoubleVector::getElementsEnumeration(inputDoubleVectorType);
+      size_t n = attributes->getNumElements();
+      for (size_t i = 0; i < n; ++i)
+        res->addInput(doubleType, attributes->getElementName(i));
+    }
+    
+    if (useExtendedOperators)
+    {
+      res->addFunction(logDoubleLuapeFunction());
+      res->addFunction(sqrtDoubleLuapeFunction());
+      res->addFunction(minDoubleLuapeFunction());
+      res->addFunction(maxDoubleLuapeFunction());
+    }
+
+    res->addFunction(addDoubleLuapeFunction());
+    res->addFunction(subDoubleLuapeFunction());
+    res->addFunction(mulDoubleLuapeFunction());
+    res->addFunction(divDoubleLuapeFunction());      
+    return res;
+  }
+
+  double trainAndTestClassifier(ExecutionContext& context, const LuapeInferencePtr& inference, const LuapeLearnerPtr& learner,
+     const ContainerPtr& trainingData, const ContainerPtr& testingData) const
+  {
+    if (!trainingData->getNumElements())
+      return 0.0;
+    inference->setSamples(context, trainingData.staticCast<ObjectVector>()->getObjects(), testingData.staticCast<ObjectVector>()->getObjects());
+    //inference->getTrainingCache()->disableCaching();
+    //inference->getValidationCache()->disableCaching();
+    learner->learn(context, inference);
+    return inference->evaluatePredictions(context, inference->getValidationPredictions(), inference->getValidationSupervisions());
+  }
+};
+
+////////////////////////////////////////
+
+class ECML12WorkUnit : public LuapeClassificationWorkUnit
+{
+public:
+  ECML12WorkUnit() : method("ST"), ensembleSize(100), foldNumber(0), featureLength(0), searchAlgorithm(rollout()) {}
+  
+  virtual Variable run(ExecutionContext& context)
+  {
+    File tsFile = dataFile.withFileExtension("txt");
+
+    // load data
+    DynamicClassPtr inputClass = new DynamicClass("inputs");
+    DefaultEnumerationPtr labels = new DefaultEnumeration("labels");
+    ContainerPtr data = loadData(context, dataFile, inputClass, labels);
+    if (!data || !data->getNumElements())
+      return false;
+
+    // display data info
+    size_t numVariables = inputClass->getNumMemberVariables();
+    size_t numExamples = data->getNumElements();
+    context.informationCallback(String((int)numExamples) + T(" examples, ") +
+                                String((int)numVariables) + T(" variables, ") +
+                                String((int)labels->getNumElements()) + T(" labels"));
+//    context.informationCallback(String((int)trainingSize) + T(" training examples, ") + String((int)(numExamples - trainingSize)) + T(" testing examples"));
+
+    // make splits
+    std::vector< std::pair< ContainerPtr, ContainerPtr > > splits;
+    context.enterScope(T("Splits"));
+    if (makeSplits(context, tsFile, inputClass, data, splits))
+    {
+      for (size_t i = 0; i < splits.size(); ++i)
+        context.informationCallback(T("Split ") + String((int)i) + T(": train size = ") + String((int)splits[i].first->getNumElements())
+                              + T(", test size = ") + String((int)splits[i].second->getNumElements()));
+    }
+    context.leaveScope(splits.size());
+    if (!splits.size())
+      return false;
+    if (foldNumber >= splits.size())
+    {
+      context.errorCallback(T("Invalid fold number"));
+      return false;
+    }
+    ContainerPtr trainingData = splits[foldNumber].first;
+    ContainerPtr testingData = splits[foldNumber].second;
+    TypePtr inputDoubleVectorType = trainingData->getElementsType()->getTemplateArgument(0);
+
+    // create classifier
+    LuapeInferencePtr classifier = createClassifier(inputDoubleVectorType);
+    if (!classifier->initialize(context, inputDoubleVectorType, labels))
+      return false;
+
+
+    // create learner
+    LuapeLearnerPtr learner = createLearner(context, numVariables);
+    if (!learner)
+      return false;
+    context.informationCallback(T("Learner: ") + learner->toShortString());
+
+    // train and test
+    context.enterScope("Learning");
+    double res = trainAndTestClassifier(context, classifier, learner, trainingData, testingData);
+    context.leaveScope(String(res * 100.0, 3) + T("%"));
+
+    // write result into outputFile
+    if (outputFile != File::nonexistent)
+    {
+      OutputStream* ostr = outputFile.createOutputStream();
+      if (ostr)
+      {
+        *ostr << "# " << toShortString() << "\n";
+        *ostr << String((int)foldNumber) << T(" ") << String(res) << T("\n");
+        delete ostr;
+      }
+    }
+    return res;
+  }
+
+protected:
+  friend class ECML12WorkUnitClass;
+
+  File dataFile;
+  String method; // ST, RF, ETd, ETn, BS, BT2 .. BT100
+  size_t ensembleSize;
+  size_t foldNumber;
+  size_t featureLength;
+  MCAlgorithmPtr searchAlgorithm;
+  File outputFile;
+
+  LuapeLearnerPtr createLearner(ExecutionContext& context, size_t numVariables) const
+  {
+    bool useRandomSplits = method.startsWith(T("ET"));
+    bool hasFeatureGeneration = (featureLength > 0);
+    bool useRandomSubspaces = (method == T("ETd") || method == T("RF"));
+
+    LuapeLearnerPtr conditionLearner;
+    if (hasFeatureGeneration)
+    {
+      size_t budget = numVariables * featureLength;
+      conditionLearner = optimizerBasedSequentialWeakLearner(new MCOptimizer(searchAlgorithm, budget), featureLength, useRandomSplits);
+    }
+    else
+    {
+      size_t Kdef = (size_t)(0.5 + sqrt((double)numVariables));
+      LuapeNodeBuilderPtr nodeBuilder = useRandomSubspaces ? randomSequentialNodeBuilder(Kdef, 2) : inputsNodeBuilder();
+      conditionLearner = useRandomSplits ? randomSplitWeakLearner(nodeBuilder) : exactWeakLearner(nodeBuilder);
+    }
+    conditionLearner->setVerbose(verbose);
+
+    LuapeLearnerPtr learner;
+    if (method == T("ST"))
+      learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
+    else if (method.startsWith(T("ET")))
+      learner = ensembleLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), ensembleSize);
+    else if (method == T("RF"))
+      learner = baggingLearner(treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0), ensembleSize);
+    else if (method == T("BS") || method.startsWith(T("BT")))
+    {
+      int treeDepth = (method == T("BS") ? 1 : method.substring(2).getIntValue());
+      if (treeDepth <= 0)
+      {
+        context.errorCallback(T("Invalid tree size"));
+        return LuapeLearnerPtr();
+      }
+      learner = discreteAdaBoostMHLearner(conditionLearner, ensembleSize, (size_t)treeDepth);
+    }
+    else
+    {
+      context.errorCallback(T("Invalid learner"));
+      return LuapeLearnerPtr();
+    }
+
+    learner->setVerbose(verbose);
+    return learner;
+  }
+};
+
+////////////////////////////////////////
+
+class LuapeClassificationSandBox : public LuapeClassificationWorkUnit
+{
+public:
   virtual Variable run(ExecutionContext& context)
   {
     /*
@@ -450,8 +728,13 @@ public:
     ***** Meta-MC Test
     ****/
     std::vector<MCAlgorithmPtr> algorithms;
-    MCAlgorithmSet set(3);
-    set.getAlgorithms(algorithms);
+    //MCAlgorithmSet set(2);
+    //set.getAlgorithms(algorithms);
+    algorithms.push_back(rollout());
+    algorithms.push_back(step(lookAhead(rollout(), 1.0), true));
+    algorithms.push_back(step(lookAhead(rollout(), 1.0), false));
+    algorithms.push_back(step(rollout(), true));
+    algorithms.push_back(step(rollout(), false));
 
     context.enterScope(T("Test ") + String((int)algorithms.size()) + T(" algorithms"));
     double bestError = DBL_MAX, worstError = -DBL_MAX;
@@ -777,89 +1060,6 @@ protected:
   friend class LuapeClassificationSandBoxClass;
 
   File dataDirectory;
-  size_t maxExamples;
-  bool verbose;
-
-  bool useExtendedOperators;
-  bool useVectorOperators;
-
-  ContainerPtr loadData(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, DefaultEnumerationPtr labels) const
-  { 
-    static const bool sparseData = true;
-
-    context.enterScope(T("Loading ") + file.getFileName());
-    TextParserPtr parser;
-    if (file.getFileExtension() == T(".jdb"))
-      parser = new JDBDataParser(context, file, inputClass, labels, sparseData);
-    else
-      parser = classificationARFFDataParser(context, file, inputClass, labels, sparseData);
-    ContainerPtr res = parser->load(maxExamples);
-    if (res && !res->getNumElements())
-      res = ContainerPtr();
-    context.leaveScope(res ? res->getNumElements() : 0);
-    return res;
-  }
-
-  static DenseDoubleVectorPtr convertExampleToVector(const ObjectPtr& example, const ClassPtr& dvClass)
-  {
-    DenseDoubleVectorPtr res = new DenseDoubleVector(dvClass);
-    size_t n = res->getNumValues();
-    jassert(n == example->getNumVariables());
-    for (size_t i = 0; i < n; ++i)
-      res->setValue(i, example->getVariable(i).toDouble());
-    return res;
-  }
-
-  static ObjectVectorPtr convertExamplesToVectors(const ContainerPtr& examples)
-  {
-    PairPtr p = examples->getElement(0).getObjectAndCast<Pair>();
-    
-    ClassPtr dvClass = denseDoubleVectorClass(variablesEnumerationEnumeration(p->getFirst().getType()), doubleType);
-    TypePtr supType = p->getSecond().getType();
-    ClassPtr exampleType = pairClass(dvClass, supType);
-
-    size_t n = examples->getNumElements();
-
-    ObjectVectorPtr res = new ObjectVector(exampleType, n);
-    for (size_t i = 0; i < n; ++i)
-    {
-      PairPtr example =  examples->getElement(i).getObjectAndCast<Pair>();
-      res->set(i, new Pair(exampleType, convertExampleToVector(example->getFirst().getObject(), dvClass), example->getSecond()));
-    }
-    return res;
-  }
-
-  bool makeSplits(ExecutionContext& context, const File& tsFile, DynamicClassPtr inputClass, ContainerPtr data, std::vector< std::pair< ContainerPtr, ContainerPtr > >& res)
-  {
-    if (tsFile.existsAsFile())
-    {
-      TextParserPtr parser = new TestingSetParser(context, tsFile, data);
-      ContainerPtr splits = parser->load(verbose ? 1 : 0);
-      res.resize(splits->getNumElements());
-      for (size_t i = 0; i < res.size(); ++i)
-      {
-        PairPtr split = splits->getElement(i).getObjectAndCast<Pair>();
-        ContainerPtr train = convertExamplesToVectors(split->getFirst().getObjectAndCast<ObjectVector>());
-        ContainerPtr test = convertExamplesToVectors(split->getSecond().getObjectAndCast<ObjectVector>());
-        res[i] = std::make_pair(train, test);
-      }
-    }
-    else
-    { 
-      const size_t numSplits = 20;
-      const size_t numFolds = 10;
-
-      res.resize(numSplits);
-      for (size_t i = 0; i < numSplits; ++i)
-      {
-        ContainerPtr randomized = data->randomize();
-        ContainerPtr training = convertExamplesToVectors(randomized->invFold(0, numFolds));
-        ContainerPtr testing = convertExamplesToVectors(randomized->fold(0, numFolds));
-        res[i] = std::make_pair(training, testing);
-      }
-    }
-    return true;
-  }
 
   struct TrainAndTestLearnerWorkUnit : public WorkUnit
   {
@@ -872,24 +1072,10 @@ protected:
 
     virtual Variable run(ExecutionContext& context)
     {
-      LuapeClassifierPtr classifier = createClassifier();
+      LuapeClassifierPtr classifier = owner->createClassifier(inputType);
       if (!classifier->initialize(context, inputType, labels))
         return ScoreObjectPtr();
-      if (!trainingData->getNumElements())
-        return ScoreObjectPtr();
-    
-      classifier->setSamples(context, trainingData.staticCast<ObjectVector>()->getObjects(), testingData.staticCast<ObjectVector>()->getObjects());
-      classifier->getTrainingCache()->disableCaching();
-      classifier->getValidationCache()->disableCaching();
-
-      ExecutionTracePtr trace = new ExecutionTrace(T("hop"));
-      ExecutionCallbackPtr makeTraceCallback = makeTraceExecutionCallback(trace);
-      context.appendCallback(makeTraceCallback);
-      learner->learn(context, classifier);
-      context.removeCallback(makeTraceCallback);
-
-      //return trace;
-      return classifier->evaluatePredictions(context, classifier->getValidationPredictions(), classifier->getValidationSupervisions());
+      return owner->trainAndTestClassifier(context, classifier, learner, trainingData, testingData);
     }
 
   protected:
@@ -900,41 +1086,6 @@ protected:
     TypePtr inputType;
     DefaultEnumerationPtr labels;
     String description;
-
-    LuapeInferencePtr createClassifier() const
-    {
-      LuapeInferencePtr res = new LuapeClassifier();
-
-      if (owner->useVectorOperators)
-      {
-        res->addInput(inputType, "in");
-        res->addFunction(getDoubleVectorElementLuapeFunction());
-        res->addFunction(computeDoubleVectorStatisticsLuapeFunction());
-        res->addFunction(getDoubleVectorExtremumsLuapeFunction());
-        res->addFunction(getVariableLuapeFunction());
-      }
-      else
-      {
-        EnumerationPtr attributes = DoubleVector::getElementsEnumeration(inputType);
-        size_t n = attributes->getNumElements();
-        for (size_t i = 0; i < n; ++i)
-          res->addInput(doubleType, attributes->getElementName(i));
-      }
-      
-      if (owner->useExtendedOperators)
-      {
-        res->addFunction(logDoubleLuapeFunction());
-        res->addFunction(sqrtDoubleLuapeFunction());
-        res->addFunction(minDoubleLuapeFunction());
-        res->addFunction(maxDoubleLuapeFunction());
-      }
-
-      res->addFunction(addDoubleLuapeFunction());
-      res->addFunction(subDoubleLuapeFunction());
-      res->addFunction(mulDoubleLuapeFunction());
-      res->addFunction(divDoubleLuapeFunction());      
-      return res;
-    }
   };
 };
 

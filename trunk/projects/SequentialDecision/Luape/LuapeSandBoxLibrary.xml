@@ -31,12 +31,26 @@
     <variable type="PositiveInteger" name="numActiveVariables"/>
   </class>
 
-  <class name="LuapeClassificationSandBox" base="WorkUnit">
-    <variable type="File" name="dataDirectory"/>
+
+  <class name="LuapeClassificationWorkUnit" base="WorkUnit" abstract="yes">
     <variable type="PositiveInteger" name="maxExamples"/>
     <variable type="Boolean" name="verbose"/>
     <variable type="Boolean" name="useExtendedOperators"/>
     <variable type="Boolean" name="useVectorOperators"/>
+  </class>
+  
+  <class name="ECML12WorkUnit" base="LuapeClassificationWorkUnit">
+    <variable type="File" name="dataFile"/>
+    <variable type="String" name="method"/>
+    <variable type="PositiveInteger" name="ensembleSize"/>
+    <variable type="PositiveInteger" name="foldNumber"/>
+    <variable type="PositiveInteger" name="featureLength"/>
+    <variable type="MCAlgorithm" name="searchAlgorithm"/>
+    <variable type="File" name="outputFile"/>
+  </class>
+  
+  <class name="LuapeClassificationSandBox" base="LuapeClassificationWorkUnit">
+    <variable type="File" name="dataDirectory"/>
   </class>
 
   <!-- Soft Stumps -->
@@ -63,7 +77,9 @@
   <class name="LookAheadMCAlgorithm" base="DecoratorMCAlgorithm" shortName="lookAhead">
     <variable type="Double" name="numActions"/>
   </class>
-  <class name="StepByStepMCAlgorithm" base="DecoratorMCAlgorithm" shortName="stepByStep"/>
+  <class name="StepByStepMCAlgorithm" base="DecoratorMCAlgorithm" shortName="step">
+    <variable type="Boolean" name="useGlobalBest"/>
+  </class>
 
   <class name="MCOptimizer" base="Optimizer">
     <variable type="MCAlgorithm" name="algorithm"/>

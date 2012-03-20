@@ -22,7 +22,7 @@ public:
   {
     lastSaveTime = Time::currentTimeMillis() - 9 * saveInterval / 10; // the first time, we save after saveInterval/10 ms.
   }
-  MakeAndAutoSaveTraceExecutionCallback() : saveInterval(0.0), lastSaveTime(0.0) {}
+  MakeAndAutoSaveTraceExecutionCallback() : saveInterval(0), lastSaveTime(0) {}
 
   virtual ExecutionCallbackPtr createCallbackForThread(const ExecutionStackPtr& stack, Thread::ThreadID threadId)
   {
