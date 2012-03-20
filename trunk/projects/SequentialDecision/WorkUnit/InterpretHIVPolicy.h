@@ -316,7 +316,7 @@ protected:
   {
     FunctionPtr featuresFunction = new SimpleSearchNodeFeatureGenerator(true, true);
     if (!featuresFunction->initialize(context, searchTreeNodeClass(problem->getStateClass(), problem->getActionType())))
-      return false;
+      return PolicyPtr();
     EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(featuresFunction->getOutputType());
     /*
     -0.104502031 -0.337083007 1.45883731 -0.989125727 0.916016545 -1.19195962 1.29469848 -0.704655225 -0.908633602 -0.253788533 1.43174049 -0.750602368 -0.734515027 -0.827228593 -0.974346984 1.19547833 -1.25078751 0.184333038
