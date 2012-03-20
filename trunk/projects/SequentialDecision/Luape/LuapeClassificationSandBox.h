@@ -509,13 +509,21 @@ public:
     // write result into outputFile
     if (outputFile != File::nonexistent)
     {
-      OutputStream* ostr = outputFile.createOutputStream();
+      OutputStream* ostr = NULL;
+      for (size_t i = 0; !ostr && i < 100; ++i)
+      {
+        ostr = outputFile.createOutputStream();
+        if (!ostr)
+          Thread::sleep(10);
+      }
       if (ostr)
       {
         *ostr << "# " << toShortString() << "\n";
         *ostr << String((int)foldNumber) << T(" ") << String(res) << T("\n");
         delete ostr;
       }
+      else
+        context.errorCallback(T("Could not open file ") + outputFile.getFullPathName());
     }
     return res;
   }
