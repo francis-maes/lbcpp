@@ -240,13 +240,13 @@
     <variable type="File" name="supervisionDirectory" shortName="sup"/>
   </class>
   <class name="DSBLearnerFunction" base="Function">
-    <variable type="File" name="inputDirectory"/>
-    <variable type="File" name="supervisionDirectory"/>
+    <variable type="String" name="inputDirectory"/>
+    <variable type="String" name="supervisionDirectory"/>
   </class>
   <class name="BFSOptimizeDSBWorkUnit" base="WorkUnit">
-    <variable type="File" name="inputDirectory" shortName="in"/>
-    <variable type="File" name="supervisionDirectory" shortName="sup"/>
-    <variable type="File" name="optimizerStateFile" shortName="st"/>
+    <variable type="String" name="inputDirectory" shortName="in"/>
+    <variable type="String" name="supervisionDirectory" shortName="sup"/>
+    <variable type="String" name="optimizerStateFile" shortName="st"/>
   </class>
   <!-- END CysteinBox -->
 

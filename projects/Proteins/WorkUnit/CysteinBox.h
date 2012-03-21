@@ -1997,7 +1997,7 @@ protected:
 class DSBLearnerFunction : public Function
 {
 public:
-  DSBLearnerFunction(File inputDirectory, File supervisionDirectory)
+  DSBLearnerFunction(const String& inputDirectory, const String& supervisionDirectory)
     : inputDirectory(inputDirectory), supervisionDirectory(supervisionDirectory) {}
 
   virtual size_t getNumRequiredInputs() const
@@ -2011,8 +2011,18 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    ContainerPtr train = Protein::loadProteinsFromDirectoryPair(context, inputDirectory.getChildFile(T("train")), supervisionDirectory.getChildFile(T("train")), 0, T("Loading training proteins"));
-    ContainerPtr test = Protein::loadProteinsFromDirectoryPair(context, inputDirectory.getChildFile(T("test")), supervisionDirectory.getChildFile(T("test")), 0, T("Loading testing proteins"));
+    double sum = 0.f;
+    for (size_t i = 0; i < 10; ++i)
+      sum += computeFold(context, input, i);
+    return sum / 10.f;
+  }
+
+  double computeFold(ExecutionContext& context, const Variable& input, size_t fold) const
+  {
+    File inputFold = context.getFile(inputDirectory).getChildFile(T("fold") + String((int)fold));
+    File supFold = context.getFile(supervisionDirectory).getChildFile(T("fold") + String((int)fold));
+    ContainerPtr train = Protein::loadProteinsFromDirectoryPair(context, inputFold.getChildFile(T("train")), supFold.getChildFile(T("train")), 0, T("Loading training proteins"));
+    ContainerPtr test = Protein::loadProteinsFromDirectoryPair(context, inputFold.getChildFile(T("test")), supFold.getChildFile(T("test")), 0, T("Loading testing proteins"));
 
     if (!train || !test || train->getNumElements() == 0 || test->getNumElements() == 0)
       return 100.f;
@@ -2039,8 +2049,8 @@ public:
 protected:
   friend class DSBLearnerFunctionClass;
 
-  File inputDirectory;
-  File supervisionDirectory;
+  String inputDirectory;
+  String supervisionDirectory;
 
   DSBLearnerFunction() {}
 
@@ -2059,20 +2069,20 @@ public:
   {
     ExecutionContextPtr remoteContext = distributedExecutionContext(context, T("monster24.montefiore.ulg.ac.be"), 1664,
                                                                     T("1203XX-BFS-DSB"), T("jbecker@screen"), T("jbecker@giga"),
-                                                                    fixedResourceEstimator(1, 12 * 1024, 100), false);
+                                                                    fixedResourceEstimator(1, 12 * 1024, 240), false);
   
     OptimizationProblemPtr problem = new OptimizationProblem(new DSBLearnerFunction(inputDirectory, supervisionDirectory), new LargeProteinParameters());
-    OptimizerPtr optimizer = bestFirstSearchOptimizer(LargeProteinParameters::createStreams(), optimizerStateFile);
+    OptimizerPtr optimizer = bestFirstSearchOptimizer(LargeProteinParameters::createStreams(), context.getFile(optimizerStateFile));
 
-    return optimizer->compute(context, problem);
+    return optimizer->compute(*remoteContext.get(), problem);
   }
 
 protected:
   friend class BFSOptimizeDSBWorkUnitClass;
 
-  File inputDirectory;
-  File supervisionDirectory;
-  File optimizerStateFile;
+  String inputDirectory;
+  String supervisionDirectory;
+  String optimizerStateFile;
 };
 
 };
