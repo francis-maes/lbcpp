@@ -523,18 +523,17 @@ protected:
   {
     bool useRandomSplits = method.startsWith(T("ET"));
     bool hasFeatureGeneration = (featureLength > 0);
-    bool useRandomSubspaces = (method == T("ETd") || method == T("RF"));
+    bool useRandomSubspaces = ((method.startsWith("ET") && method != T("ETn")) || method == T("RF"));
+    size_t budget = featureBudget ? (size_t)juce::jmax(1.0, numVariables * featureBudget) : (size_t)(0.5 + sqrt((double)numVariables));
 
     LuapeLearnerPtr conditionLearner;
     if (hasFeatureGeneration)
     {
-      size_t budget = (size_t)juce::jmax(1.0, numVariables * featureBudget);
       conditionLearner = optimizerBasedSequentialWeakLearner(new MCOptimizer(searchAlgorithm, budget), featureLength, useRandomSplits);
     }
     else
     {
-      size_t Kdef = (size_t)(0.5 + sqrt((double)numVariables));
-      LuapeNodeBuilderPtr nodeBuilder = useRandomSubspaces ? (LuapeNodeBuilderPtr)randomSequentialNodeBuilder(Kdef, 2) : (LuapeNodeBuilderPtr)inputsNodeBuilder();
+      LuapeNodeBuilderPtr nodeBuilder = useRandomSubspaces ? (LuapeNodeBuilderPtr)randomSequentialNodeBuilder(budget, 2) : (LuapeNodeBuilderPtr)inputsNodeBuilder();
       conditionLearner = useRandomSplits ? (LuapeLearnerPtr)randomSplitWeakLearner(nodeBuilder) : (LuapeLearnerPtr)exactWeakLearner(nodeBuilder);
     }
     conditionLearner->setVerbose(verbose);
