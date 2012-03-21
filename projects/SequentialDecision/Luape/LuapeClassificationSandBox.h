@@ -447,7 +447,7 @@ protected:
 class ECML12WorkUnit : public LuapeClassificationWorkUnit
 {
 public:
-  ECML12WorkUnit() : method("ST"), ensembleSize(100), foldNumber(0), featureLength(0), searchAlgorithm(rollout()) {}
+  ECML12WorkUnit() : method("ST"), ensembleSize(100), foldNumber(0), featureLength(0), featureBudget(10.0), searchAlgorithm(rollout()) {}
   
   virtual Variable run(ExecutionContext& context)
   {
@@ -516,6 +516,7 @@ protected:
   size_t ensembleSize;
   size_t foldNumber;
   size_t featureLength;
+  double featureBudget; // percentage of "numVariables"
   MCAlgorithmPtr searchAlgorithm;
 
   LuapeLearnerPtr createLearner(ExecutionContext& context, size_t numVariables) const
@@ -527,7 +528,7 @@ protected:
     LuapeLearnerPtr conditionLearner;
     if (hasFeatureGeneration)
     {
-      size_t budget = numVariables * featureLength;
+      size_t budget = (size_t)juce::jmax(1.0, numVariables * featureBudget);
       conditionLearner = optimizerBasedSequentialWeakLearner(new MCOptimizer(searchAlgorithm, budget), featureLength, useRandomSplits);
     }
     else

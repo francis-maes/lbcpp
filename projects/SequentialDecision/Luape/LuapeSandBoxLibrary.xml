@@ -45,6 +45,7 @@
     <variable type="PositiveInteger" name="ensembleSize"/>
     <variable type="PositiveInteger" name="foldNumber"/>
     <variable type="PositiveInteger" name="featureLength"/>
+    <variable type="Double" name="featureBudget"/>
     <variable type="MCAlgorithm" name="searchAlgorithm"/>
   </class>
   
