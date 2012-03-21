@@ -523,7 +523,8 @@ protected:
   {
     bool useRandomSplits = method.startsWith(T("ET"));
     bool hasFeatureGeneration = (featureLength > 0);
-    bool useRandomSubspaces = ((method.startsWith(T("ET")) && method != T("ETn")) || method == T("RF"));
+    bool useRandomSubspaces = ((method.startsWith(T("ET")) && method != T("ETn")) || method == T("RF") || (featureBudget > 0 && featureBudget < 1));
+
     size_t budget = featureBudget ? (size_t)juce::jmax(1.0, numVariables * featureBudget) : (size_t)(0.5 + sqrt((double)numVariables));
 
     LuapeLearnerPtr conditionLearner;
