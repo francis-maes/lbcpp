@@ -273,14 +273,17 @@ class WrapperMCObjective : public MCObjective
 {
 public:
   WrapperMCObjective(FunctionPtr lbcppObjective, size_t budget)
-    : lbcppObjective(lbcppObjective), budget(budget), numEvaluations(0) {}
+    : lbcppObjective(lbcppObjective), budget(budget), numEvaluations(0), numCachedEvaluations(0) {}
 
   virtual double evaluate(ExecutionContext& context, DecisionProblemStatePtr finalState)
   {
     String str = finalState->toShortString();
     std::map<String, double>::iterator it = cache.find(str);
     if (it != cache.end())
+    {
+      ++numCachedEvaluations;
       return it->second;
+    }
     ++numEvaluations;
     double res = lbcppObjective->compute(context, finalState).toDouble();
     cache[str] = res;
@@ -288,12 +291,13 @@ public:
   }
 
   virtual bool shouldStop() const
-    {return numEvaluations >= budget;}
+    {return numEvaluations >= budget || numCachedEvaluations >= 100 * budget;}
 
 protected:
   FunctionPtr lbcppObjective;
   size_t budget;
   size_t numEvaluations;
+  size_t numCachedEvaluations;
   std::map<String, double> cache;
 };
 

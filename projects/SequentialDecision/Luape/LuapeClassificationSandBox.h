@@ -435,8 +435,8 @@ protected:
     if (!trainingData->getNumElements())
       return 0.0;
     inference->setSamples(context, trainingData.staticCast<ObjectVector>()->getObjects(), testingData.staticCast<ObjectVector>()->getObjects());
-    //inference->getTrainingCache()->disableCaching();
-    //inference->getValidationCache()->disableCaching();
+    inference->getTrainingCache()->disableCaching();
+    inference->getValidationCache()->disableCaching();
     learner->learn(context, inference);
     return inference->evaluatePredictions(context, inference->getValidationPredictions(), inference->getValidationSupervisions());
   }
