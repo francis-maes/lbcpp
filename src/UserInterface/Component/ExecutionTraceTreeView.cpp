@@ -183,8 +183,16 @@ void ExecutionTraceTreeView::timerCallback()
           if (hasSubItems)
           {
             table = trace->getChildrenResultsTable(*context);
-            if (table && table->getElementsType()->getNumMemberVariables() <= 1)
-              table = ContainerPtr(); // do not display tables that have only one column
+            if (table)
+            {
+              size_t numConvertibleToDouble = 0;
+              TypePtr type = table->getElementsType();
+              for (size_t i = 0; i < type->getNumMemberVariables(); ++i)
+                if (type->getMemberVariableType(i)->isConvertibleToDouble())
+                  ++numConvertibleToDouble;
+              if (numConvertibleToDouble <= 1)
+                table = ContainerPtr(); // do not display tables that have only one column
+            }
           }
 
           if (results || table)

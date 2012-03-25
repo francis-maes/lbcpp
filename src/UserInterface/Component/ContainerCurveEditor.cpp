@@ -25,7 +25,8 @@ public:
     : table(table), configuration(configuration)
   {
     selectedCurves = configuration->getSelectedCurves();
-    table->makeOrder(configuration->getKeyVariableIndex(), true, order);
+    size_t keyVariableIndex = configuration->getKeyVariableIndex();
+    table->makeOrder(keyVariableIndex, true, order);
     computeHorizontalBounds();
     computeVerticalBounds();
     if (!isNumberValid(boundsX) || !isNumberValid(boundsY) || !isNumberValid(boundsWidth) || !isNumberValid(boundsHeight))
@@ -698,6 +699,8 @@ ContainerCurveEditorConfiguration::ContainerCurveEditorConfiguration(ClassPtr ro
       variables[i] = new CurveVariableConfiguration(false, i < numDefaultColours ? defaultColours[i] : randomColour(), rowType->getMemberVariableName(i));
     }
   }
+  if (keyVariableIndex == (size_t)-1)
+    keyVariableIndex = 0;
   // select y-variable
   for (size_t i = keyVariableIndex + 1; i < variables.size(); ++i)
     if (variables[i])
