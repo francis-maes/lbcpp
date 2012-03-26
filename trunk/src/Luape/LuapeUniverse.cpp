@@ -29,32 +29,33 @@ LuapeConstantNodePtr LuapeUniverse::makeConstantNode(const Variable& constantVal
 
 LuapeFunctionPtr LuapeUniverse::makeFunction(ClassPtr functionClass, const std::vector<Variable>& arguments)
 {
-  FunctionKey key(functionClass, arguments);
+/*  FunctionKey key(functionClass, arguments);
   FunctionsMap::const_iterator it = functions.find(key);
   if (it == functions.end())
-  {
+  {*/
     LuapeFunctionPtr function = LuapeFunction::create(functionClass);
     for (size_t i = 0; i < arguments.size(); ++i)
       function->setVariable(i, arguments[i]);
-    functions[key] = function;
+  //  functions[key] = function;
     return function;
-  }
+/*  }
   else
-    return it->second;
+    return it->second;*/
 }
 
 LuapeNodePtr LuapeUniverse::makeFunctionNode(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs)
 {
+  /*
   FunctionNodeKey key(function, inputs);
   FunctionNodesMap::const_iterator it = functionNodes.find(key);
   if (it == functionNodes.end())
-  {
+  {*/
     LuapeNodePtr res = canonizeNode(new LuapeFunctionNode(function, inputs));
-    functionNodes[key] = res;
+    //functionNodes[key] = res;
     return res;
-  }
+ /* }
   else
-    return it->second;
+    return it->second;*/
 }
 
 void LuapeUniverse::observeNodeComputingTime(const LuapeNodePtr& node, size_t numInstances, double timeInMilliseconds)
