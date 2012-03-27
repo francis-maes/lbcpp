@@ -35,6 +35,23 @@ void LuapeNode::addImportance(double delta)
     getSubNode(i)->addImportance(delta);
 }
 
+size_t LuapeNode::getDepth() const
+{
+  size_t res = 0;
+  for (size_t i = 0; i < getNumSubNodes(); ++i)
+  {
+    LuapeNodePtr subNode = getSubNode(i);
+    if (subNode)
+    {
+      size_t d = subNode->getDepth();
+      if (d > res)
+        res = d;
+    }
+  }
+  return res + 1;
+}
+
+
 /*
 ** LuapeInputNode
 */

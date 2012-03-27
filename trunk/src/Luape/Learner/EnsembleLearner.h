@@ -46,6 +46,7 @@ public:
 
     for (size_t i = 0; i < ensembleSize; ++i)
     {
+      //Object::displayObjectAllocationInfo(std::cout);
       if (verbose)
       {
         context.enterScope(T("Iteration ") + String((int)i));
