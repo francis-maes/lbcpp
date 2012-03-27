@@ -60,7 +60,7 @@ public:
     VectorPtr inputMovers = vector(doubleVectorClass(initializeFeatures->getElementsEnumeration(), doubleType));
     SamplerPtr sampler;
 
-    if (referencesDirectory.isEmpty() || moversDirectory.isEmpty() || !referencesFile.exists() || !moversFile.exists())
+    if (!referencesDirectory.isEmpty() && !moversDirectory.isEmpty() && referencesFile.exists() && moversFile.exists())
     {
       context.enterScope(T("Loading learning examples..."));
       juce::OwnedArray<File> references;
