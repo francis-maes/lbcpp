@@ -71,6 +71,8 @@ public:
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 
+    jassert(false);
+
     RosettaPtr ros = new Rosetta();
     ros->init(context, false, 0, 0);
 

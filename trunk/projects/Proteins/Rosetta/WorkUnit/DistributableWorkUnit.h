@@ -148,6 +148,7 @@ public:
     distributable->initializeWorkUnits(context);
     context.leaveScope();
     CompositeWorkUnitPtr units = distributable->getWorkUnits();
+    size_t numWorkUnits = units->getNumWorkUnits();
 
     // computing time
     context.enterScope(T("DistributableWorkUnit::cluster : Computing"));
@@ -160,9 +161,9 @@ public:
       File wuResult(distributableWorkUnitDirectory.getFullPathName() + T("/") + units->getWorkUnit(i)->toString() + T(".xml"));
       if (!wuResult.exists())
       {
-        if (numExecuted > 100)
+        if (numExecuted > 20)
         {
-          Thread::sleep(7200000);
+          remoteContext->waitUntilAllWorkUnitsAreDone(time * 60 * 60 * 250);
           numExecuted = 0;
         }
         remoteContext->pushWorkUnit(units->getWorkUnit(i), new DistributableExecutionContextCallback(context, distributable->toString()));

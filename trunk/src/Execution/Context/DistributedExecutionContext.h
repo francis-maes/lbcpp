@@ -393,7 +393,18 @@ protected:
   void waitUntilAllWorkUnitsAreDone(const WorkUnitPoolPtr& pool, size_t timeOutInMilliseconds)
   {
     AsynchroneousWorkUnitPoolPtr asynchroneousWorkUnitPool = pool.dynamicCast<AsynchroneousWorkUnitPool>();
-    if (timeOutInMilliseconds)
+    size_t counter = 0;
+    while (!pool->areAllWorkUnitsDone())
+    {
+      ++counter;
+      if (timeOutInMilliseconds && (1000 * counter > timeOutInMilliseconds))
+        break;
+      juce::Thread::sleep(1000);
+      if (asynchroneousWorkUnitPool)
+        asynchroneousWorkUnitPool->flushCallbacks();
+    }
+
+    /*if (timeOutInMilliseconds)
     {
       juce::Thread::sleep(timeOutInMilliseconds);
       if (asynchroneousWorkUnitPool)
@@ -405,7 +416,7 @@ protected:
         juce::Thread::sleep(1000);
         if (asynchroneousWorkUnitPool)
           asynchroneousWorkUnitPool->flushCallbacks();
-      }
+      }*/
   }
 
   CriticalSection lock;
