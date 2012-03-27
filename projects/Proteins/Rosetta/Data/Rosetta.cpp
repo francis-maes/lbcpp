@@ -79,7 +79,7 @@ void Rosetta::init(ExecutionContext& eContext, bool verbose, size_t id, size_t d
   args.add_back(std::string((const char*)String((int)id)));
   args.add_back(std::string("-run:nodelay"));
   args.add_back(std::string("false"));
-  args.add_back(std::string("-run:delay"));
+  args.add_back(std::string("-run:random_delay"));
   args.add_back(std::string((const char*)String((int)delay)));
 
   // out paths

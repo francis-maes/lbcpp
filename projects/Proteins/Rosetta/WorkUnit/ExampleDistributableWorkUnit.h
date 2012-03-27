@@ -75,7 +75,8 @@ public:
       context.leaveScope();
     }
 
-    return (result);
+    Variable returnValue = result;
+    return returnValue;
   }
 
   virtual Variable multipleResultCallback(ExecutionContext& context, VariableVector& results)

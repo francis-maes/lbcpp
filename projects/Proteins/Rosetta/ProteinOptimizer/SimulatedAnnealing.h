@@ -30,6 +30,7 @@ public:
     this->numSteps = juce::jmin((int)maxIterations, (int)numSteps);
 
     vector = variableVector(5);
+    vector->setElement(0, Variable((double)1.0));
     vector->setElement(1, Variable((int)maxIterations));
     vector->setElement(2, Variable(initialTemperature));
     vector->setElement(3, Variable(finalTemperature));

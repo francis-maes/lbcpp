@@ -43,7 +43,7 @@ public:
   {
     context.enterScope(T("Treating protein : ") + inputProtein->getName());
     Rosetta ros;
-    ros.init(context, false, 0, id * 5);
+    ros.init(context, false, id, 100);
 
     PosePtr pose = new Pose(inputProtein);
     pose->initializeToHelix();
@@ -60,7 +60,7 @@ public:
     VectorPtr inputMovers = vector(doubleVectorClass(initializeFeatures->getElementsEnumeration(), doubleType));
     SamplerPtr sampler;
 
-    if (!referencesFile.exists() || !moversFile.exists())
+    if (referencesDirectory.isEmpty() || moversDirectory.isEmpty() || !referencesFile.exists() || !moversFile.exists())
     {
       context.enterScope(T("Loading learning examples..."));
       juce::OwnedArray<File> references;
@@ -95,6 +95,15 @@ public:
     }
     else
     {
+      if (referencesDirectory.isEmpty())
+        context.informationCallback(T("Input empty : referencesDirectory"));
+      if (moversDirectory.isEmpty())
+        context.informationCallback(T("Input empty : moversDirectory"));
+      if (!referencesFile.exists())
+        context.informationCallback(T("Input file not found : referencesFile"));
+      if (!moversFile.exists())
+        context.informationCallback(T("Input file not found : moversFile"));
+
       context.informationCallback(T("Using BlindPoseMoverSampler"));
       sampler = new BlindPoseMoverSampler(pose->getLength());
     }
@@ -127,19 +136,33 @@ public:
   ProteinOptimizationWorkUnit() {}
   ProteinOptimizationWorkUnit(String inputDirectory,
                               String referencesDirectory,
-                              String moversDirectory)
+                              String moversDirectory,
+                              size_t numIterations,
+                              double initialTemperature,
+                              double finalTemperature,
+                              size_t numDecreasingSteps)
     : inputDirectory(inputDirectory),
       referencesDirectory(referencesDirectory),
-      moversDirectory(moversDirectory)
+      moversDirectory(moversDirectory),
+      numIterations(numIterations),
+      initialTemperature(initialTemperature),
+      finalTemperature(finalTemperature),
+      numDecreasingSteps(numDecreasingSteps)
     {}
 
   virtual Variable singleResultCallback(ExecutionContext& context, Variable& result)
   {
+    context.resultCallback(T("numIterations"), Variable((int)numIterations));
+    context.resultCallback(T("initialTemperature"), Variable(initialTemperature));
+    context.resultCallback(T("finalTemperature"), Variable(finalTemperature));
+    context.resultCallback(T("numDecreasingSteps"), Variable((int)numDecreasingSteps));
+
     DenseDoubleVectorPtr costEvolution = result.getObjectAndCast<VariableVector> ()->getElement(0).getObjectAndCast<DenseDoubleVector> ();
     DenseDoubleVectorPtr acceptedModificationsEvolution = result.getObjectAndCast<VariableVector> ()->getElement(1).getObjectAndCast<DenseDoubleVector> ();
     DenseDoubleVectorPtr decreasingModificationsEvolution = result.getObjectAndCast<VariableVector> ()->getElement(2).getObjectAndCast<DenseDoubleVector> ();
     size_t numElements = costEvolution->getNumElements();
 
+    context.enterScope(T("Results"));
     for (size_t i = 0; i < numElements; i++)
     {
       context.enterScope(T("Value"));
@@ -149,12 +172,18 @@ public:
       context.resultCallback(T("Energy decreasing modifications"), decreasingModificationsEvolution->getValue(i));
       context.leaveScope();
     }
+    context.leaveScope();
 
     return result;
   }
 
   virtual Variable multipleResultCallback(ExecutionContext& context, VariableVector& results)
   {
+    context.resultCallback(T("numIterations"), Variable((int)numIterations));
+    context.resultCallback(T("initialTemperature"), Variable(initialTemperature));
+    context.resultCallback(T("finalTemperature"), Variable(finalTemperature));
+    context.resultCallback(T("numDecreasingSteps"), Variable((int)numDecreasingSteps));
+
     DenseDoubleVectorPtr energies;
     DenseDoubleVectorPtr acceptedModificationsEvolution;
     DenseDoubleVectorPtr decreasingModificationsEvolution;
@@ -191,7 +220,6 @@ public:
       }
 
       context.enterScope(T("Results"));
-
       for (size_t i = 0; i < numElements; i++)
       {
         double meanEnergyTmp = meanEnergies[i]->getMean();
@@ -221,7 +249,12 @@ public:
       context.leaveScope();
     }
 
-    return Variable(energies);
+    VariableVectorPtr returnVector = variableVector(3);
+    returnVector->setElement(0, energies);
+    returnVector->setElement(1, acceptedModificationsEvolution);
+    returnVector->setElement(2, decreasingModificationsEvolution);
+
+    return returnVector;
   }
 
   virtual void initializeWorkUnits(ExecutionContext& context)
@@ -246,7 +279,7 @@ public:
     for (int i = 0; i < inputProteins.size(); i++)
     {
       ProteinPtr currentProtein = Protein::createFromPDB(context, (*inputProteins[i]));
-      GeneralOptimizerParametersPtr parameters = new SimulatedAnnealingParameters(1000000, 4, 0.01, 50);
+      GeneralOptimizerParametersPtr parameters = new SimulatedAnnealingParameters(numIterations, initialTemperature, finalTemperature, numDecreasingSteps);
 
       workUnits->addWorkUnit(new SingleProteinOptimizationWorkUnit(i, currentProtein, referencesDirectory, moversDirectory, parameters));
 
@@ -261,11 +294,20 @@ protected:
   String inputDirectory;
   String referencesDirectory;
   String moversDirectory;
+
+  size_t numIterations;
+  double initialTemperature;
+  double finalTemperature;
+  size_t numDecreasingSteps;
 };
 
 extern DistributableWorkUnitPtr proteinOptimizationWorkUnit(String inputDirectory,
                                                             String referencesDirectory,
-                                                            String moversDirectory);
+                                                            String moversDirectory,
+                                                            size_t numIterations,
+                                                            double initialTemperature,
+                                                            double finalTemperature,
+                                                            size_t numDecreasingSteps);
 
 }; /* namespace lbcpp */
 

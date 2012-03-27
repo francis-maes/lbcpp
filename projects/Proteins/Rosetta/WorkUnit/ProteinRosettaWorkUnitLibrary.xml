@@ -52,10 +52,15 @@
   </class>
   
   <class name="ProteinOptimizationWorkUnit" base="DistributableWorkUnit">
-    <constructor arguments="String inputDirectory, String referencesDirectory, String moversDirectory"/>  
+    <constructor arguments="String inputDirectory, String referencesDirectory, String moversDirectory, size_t numIterations, double initialTemperature, double finalTemperature, size_t numDecreasingSteps"/>  
     <variable type="String" name="inputDirectory"/>
     <variable type="String" name="referencesDirectory"/>
     <variable type="String" name="moversDirectory"/>
+    
+    <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="Double" name="initialTemperature"/>
+    <variable type="Double" name="finalTemperature"/>
+    <variable type="PositiveInteger" name="numDecreasingSteps"/>
   </class>
   
 </library>
