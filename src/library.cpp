@@ -214,10 +214,8 @@ public:
     res += T("Most allocated objects:\n");
     size_t i = 0;
     
-#ifndef JUCE_MAC
-    for (ObjectCountsMap::const_reverse_iterator it = sortedCounts.rbegin(); it != sortedCounts.rend() && i < 20; ++it, ++i)
+    for (ObjectCountsMap::reverse_iterator it = sortedCounts.rbegin(); it != sortedCounts.rend() && i < 20; ++it, ++i)
       res += String(it->first / 1024) + T(" Kb ") + it->second + T("\n");
-#endif
 
     // display biggest deltas
     if (previousCounts.size())
@@ -228,10 +226,8 @@ public:
       {
         res += T("Biggest allocation increases:\n");
         i = 0;
-#ifndef JUCE_MAC
-        for (ObjectCountsMap::const_reverse_iterator it = sortedDeltaCounts.rbegin(); it != sortedDeltaCounts.rend() && i < 20; ++it, ++i)
+        for (ObjectCountsMap::reverse_iterator it = sortedDeltaCounts.rbegin(); it != sortedDeltaCounts.rend() && i < 20; ++it, ++i)
           res += String(it->first / 1024.0, 2) + T(" Kb ") + it->second + T("\n");
-#endif
       }
       else
         res += T("No allocation increase\n");

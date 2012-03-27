@@ -46,6 +46,8 @@ public:
   void setImportance(double importance)
     {jassert(isNumberValid(importance)); this->importance = importance;}
 
+  size_t getDepth() const;
+
   lbcpp_UseDebuggingNewOperator
 
 protected:

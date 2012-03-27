@@ -394,12 +394,13 @@ void InformationGainLearningObjective::initialize(const LuapeInferencePtr& probl
   for (int i = 0; i < 3; ++i)
     labelConditionalProbabilities[i] = new DenseDoubleVector(doubleVectorClass); // label probabilities given that the predicted value is negative, positive or missing
 
-  singleVoteVectors.resize(numLabels);
+  singleVoteVectors.resize(numLabels + 1);
   for (size_t i = 0; i < numLabels; ++i)
   {
     singleVoteVectors[i] = new DenseDoubleVector(doubleVectorClass);
     singleVoteVectors[i]->setValue(i, 1.0);
   }
+  singleVoteVectors[numLabels] = new DenseDoubleVector(doubleVectorClass);
 }
 
 void InformationGainLearningObjective::setSupervisions(const VectorPtr& supervisions)
@@ -467,7 +468,9 @@ double InformationGainLearningObjective::computeObjective()
 
 Variable InformationGainLearningObjective::computeVote(const IndexSetPtr& indices)
 {
-  if (indices->size() == 1)
+  if (indices->size() == 0)
+    return singleVoteVectors[numLabels]; // (a vector of zeros)
+  else if (indices->size() == 1)
   {
     // special case when the vote is all concentrated on a single label to spare some memory
     size_t label = (size_t)supervisions->getElement(*indices->begin()).getInteger();
@@ -488,7 +491,7 @@ Variable InformationGainLearningObjective::computeVote(const IndexSetPtr& indice
     {
       res->multiplyByScalar(1.0 / sumOfWeights);
       int argmax = res->getIndexOfMaximumValue();
-      if (argmax >= 0 && res->getValue(argmax) == 1.0)
+      if (argmax >= 0 && fabs(res->getValue(argmax) - 1.0) < 1e-12)
         return singleVoteVectors[argmax]; // reuse an existing vector to spare memory
     }
     return res;
