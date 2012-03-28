@@ -98,9 +98,10 @@ public:
 
     // computing time
     context.enterScope(T("DistributableWorkUnit::local : Computing"));
-    context.informationCallback(T("Treating ") + String((int)workUnits->getNumWorkUnits())
-        + T(" work units."));
-    Variable result = context.run(workUnits, true);
+    context.informationCallback(T("Treating ") + String((int)workUnits->getNumWorkUnits()) + T(" work units."));
+    Variable result = variableVector(workUnits->getNumWorkUnits());
+    for (size_t i = 0; i < workUnits->getNumWorkUnits(); ++i)
+      result.getObjectAndCast<VariableVector> ()->setElement(i, context.run(workUnits->getWorkUnit(i)));
     context.leaveScope();
 
     // show results

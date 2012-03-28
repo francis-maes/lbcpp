@@ -49,10 +49,11 @@
     <variable type="String" name="referencesDirectory"/>
     <variable type="String" name="moversDirectory"/>
     <variable type="GeneralOptimizerParameters" name="parameters"/>
+    <variable type="PositiveInteger" name="repeat"/>
   </class>
   
   <class name="ProteinOptimizationWorkUnit" base="DistributableWorkUnit">
-    <constructor arguments="String inputDirectory, String referencesDirectory, String moversDirectory, size_t numIterations, double initialTemperature, double finalTemperature, size_t numDecreasingSteps"/>  
+    <constructor arguments="String inputDirectory, String referencesDirectory, String moversDirectory, size_t numIterations, double initialTemperature, double finalTemperature, size_t numDecreasingSteps, size_t repeat"/>  
     <variable type="String" name="inputDirectory"/>
     <variable type="String" name="referencesDirectory"/>
     <variable type="String" name="moversDirectory"/>
@@ -61,6 +62,8 @@
     <variable type="Double" name="initialTemperature"/>
     <variable type="Double" name="finalTemperature"/>
     <variable type="PositiveInteger" name="numDecreasingSteps"/>
+    
+    <variable type="PositiveInteger" name="repeat"/>
   </class>
   
 </library>

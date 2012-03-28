@@ -31,12 +31,14 @@ public:
                                     ProteinPtr inputProtein,
                                     String referencesDirectory,
                                     String moversDirectory,
-                                    GeneralOptimizerParametersPtr parameters)
+                                    GeneralOptimizerParametersPtr parameters,
+                                    size_t repeat)
     : id(id),
       inputProtein(inputProtein),
       referencesDirectory(referencesDirectory),
       moversDirectory(moversDirectory),
-      parameters(parameters)
+      parameters(parameters),
+      repeat(repeat)
   {}
 
   virtual Variable run(ExecutionContext& context)
@@ -46,12 +48,11 @@ public:
     ros.init(context, false, id, 100);
 
     PosePtr pose = new Pose(inputProtein);
-    pose->initializeToHelix();
 
     // features
     PoseFeatureGeneratorPtr features = new PoseFeatureGenerator();
     features->initialize(context, poseClass);
-    DoubleVectorPtr initializeFeatures = features->compute(context, pose).getObjectAndCast<DoubleVector>();
+    DoubleVectorPtr initializeFeatures = features->compute(context, pose).getObjectAndCast<DoubleVector> ();
 
     // learn the distribution
     File referencesFile = context.getFile(referencesDirectory);
@@ -108,16 +109,102 @@ public:
       sampler = new BlindPoseMoverSampler(pose->getLength());
     }
 
-    OptimizationProblemStatePtr optState = new PoseOptimizationState(pose);
+    std::vector<ScalarVariableMeanAndVariancePtr> meanEnergies;
+    std::vector<ScalarVariableMeanAndVariancePtr> meanAccepted;
+    std::vector<ScalarVariableMeanAndVariancePtr> meanDecreasing;
+    size_t numElements = 0;
 
-    OptimizationProblemStateModifierPtr modifier = new PoseOptimizationStateModifier(sampler, features);
-    SimulatedAnnealingPtr sa = new SimulatedAnnealing(optState, modifier, GeneralOptimizerStoppingCriterionPtr(), parameters);
+    // repeat optimization to average results
+    repeat = (int)juce::jmax((int)1, (int)repeat);
+    for (size_t i = 0; i < repeat; ++i)
+    {
+      // initialize data
+      pose->initializeToHelix();
+      OptimizationProblemStatePtr optState = new PoseOptimizationState(pose);
 
-    Variable optimizationResult = sa->optimize(context);
+      OptimizationProblemStateModifierPtr modifier = new PoseOptimizationStateModifier(sampler, features);
+      SimulatedAnnealingPtr sa = new SimulatedAnnealing(optState, modifier, GeneralOptimizerStoppingCriterionPtr(), parameters);
+
+      // optimize
+      Variable optimizationResult = sa->optimize(context);
+
+      // results
+      DenseDoubleVectorPtr costEvolution = optimizationResult.getObjectAndCast<VariableVector> ()->getElement(0).getObjectAndCast<DenseDoubleVector> ();
+      DenseDoubleVectorPtr acceptedModificationsEvolution = optimizationResult.getObjectAndCast<VariableVector> ()->getElement(1).getObjectAndCast<DenseDoubleVector> ();
+      DenseDoubleVectorPtr decreasingModificationsEvolution = optimizationResult.getObjectAndCast<VariableVector> ()->getElement(2).getObjectAndCast<DenseDoubleVector> ();
+      numElements = costEvolution->getNumElements();
+
+      // first result obtained
+      if (i == 0)
+      {
+        meanEnergies = std::vector<ScalarVariableMeanAndVariancePtr>(numElements);
+        meanAccepted = std::vector<ScalarVariableMeanAndVariancePtr>(numElements);
+        meanDecreasing = std::vector<ScalarVariableMeanAndVariancePtr>(numElements);
+
+        for (size_t j = 0; j < numElements; ++j)
+        {
+          meanEnergies[j] = new ScalarVariableMeanAndVariance();
+          meanAccepted[j] = new ScalarVariableMeanAndVariance();
+          meanDecreasing[j] = new ScalarVariableMeanAndVariance();
+        }
+      }
+
+      for (size_t j = 0; j < numElements; j++)
+      {
+        meanEnergies[j]->push(costEvolution->getValue(j));
+        meanAccepted[j]->push(acceptedModificationsEvolution->getValue(j));
+        meanDecreasing[j]->push(decreasingModificationsEvolution->getValue(j));
+      }
+
+    }
 
     context.leaveScope();
 
-    return optimizationResult;
+    // get averages and return those averages
+    DenseDoubleVectorPtr energiesToReturn = new DenseDoubleVector(numElements, -1);
+    DenseDoubleVectorPtr acceptedToReturn = new DenseDoubleVector(numElements, -1);
+    DenseDoubleVectorPtr decreasingToReturn = new DenseDoubleVector(numElements, -1);
+
+    if (repeat > 1)
+      context.enterScope(T("Mean values"));
+    for (size_t i = 0; i < numElements; i++)
+    {
+      double meanEnergyTmp = meanEnergies[i]->getMean();
+      double stdEnergyTmp = meanEnergies[i]->getStandardDeviation();
+      energiesToReturn->setValue(i, meanEnergyTmp);
+
+      double meanAcceptedTmp = meanAccepted[i]->getMean();
+      double stdAcceptedTmp = meanAccepted[i]->getStandardDeviation();
+      acceptedToReturn->setValue(i, meanAcceptedTmp);
+
+      double meanDecreasingTmp = meanDecreasing[i]->getMean();
+      double stdDecreasingTmp = meanDecreasing[i]->getStandardDeviation();
+      decreasingToReturn->setValue(i, meanDecreasingTmp);
+
+      if (repeat > 1)
+      {
+        context.enterScope(T("Result"));
+        context.resultCallback(T("Iteration"), Variable(i));
+        context.resultCallback(T("Mean energy"), Variable(meanEnergyTmp));
+        context.resultCallback(T("Std Dev energy"), Variable(stdEnergyTmp));
+
+        context.resultCallback(T("Mean accepted"), Variable(meanAcceptedTmp));
+        context.resultCallback(T("Std Dev accepted"), Variable(stdAcceptedTmp));
+
+        context.resultCallback(T("Mean decreasing"), Variable(meanDecreasingTmp));
+        context.resultCallback(T("Std Dev decreasing"), Variable(stdDecreasingTmp));
+        context.leaveScope(Variable(meanEnergyTmp));
+      }
+    }
+    if (repeat > 1)
+      context.leaveScope();
+
+    VariableVectorPtr returnVector = variableVector(3);
+    returnVector->setElement(0, energiesToReturn);
+    returnVector->setElement(1, acceptedToReturn);
+    returnVector->setElement(2, decreasingToReturn);
+
+    return returnVector;
   }
 
 protected:
@@ -128,6 +215,7 @@ protected:
   String referencesDirectory;
   String moversDirectory;
   GeneralOptimizerParametersPtr parameters;
+  size_t repeat;
 };
 
 class ProteinOptimizationWorkUnit : public DistributableWorkUnit
@@ -140,14 +228,16 @@ public:
                               size_t numIterations,
                               double initialTemperature,
                               double finalTemperature,
-                              size_t numDecreasingSteps)
+                              size_t numDecreasingSteps,
+                              size_t repeat)
     : inputDirectory(inputDirectory),
       referencesDirectory(referencesDirectory),
       moversDirectory(moversDirectory),
       numIterations(numIterations),
       initialTemperature(initialTemperature),
       finalTemperature(finalTemperature),
-      numDecreasingSteps(numDecreasingSteps)
+      numDecreasingSteps(numDecreasingSteps),
+      repeat(repeat)
     {}
 
   virtual Variable singleResultCallback(ExecutionContext& context, Variable& result)
@@ -156,6 +246,7 @@ public:
     context.resultCallback(T("initialTemperature"), Variable(initialTemperature));
     context.resultCallback(T("finalTemperature"), Variable(finalTemperature));
     context.resultCallback(T("numDecreasingSteps"), Variable((int)numDecreasingSteps));
+    context.resultCallback(T("repeat"), Variable((int)repeat));
 
     DenseDoubleVectorPtr costEvolution = result.getObjectAndCast<VariableVector> ()->getElement(0).getObjectAndCast<DenseDoubleVector> ();
     DenseDoubleVectorPtr acceptedModificationsEvolution = result.getObjectAndCast<VariableVector> ()->getElement(1).getObjectAndCast<DenseDoubleVector> ();
@@ -183,6 +274,7 @@ public:
     context.resultCallback(T("initialTemperature"), Variable(initialTemperature));
     context.resultCallback(T("finalTemperature"), Variable(finalTemperature));
     context.resultCallback(T("numDecreasingSteps"), Variable((int)numDecreasingSteps));
+    context.resultCallback(T("repeat"), Variable((int)repeat));
 
     DenseDoubleVectorPtr energies;
     DenseDoubleVectorPtr acceptedModificationsEvolution;
@@ -273,15 +365,14 @@ public:
     inputFile.findChildFiles(inputProteins, File::findFiles, false, T("*.pdb"));
 
     context.enterScope(T("Creating work units..."));
-
     workUnits = new CompositeWorkUnit(T("Optimization"));
 
-    for (int i = 0; i < inputProteins.size(); i++)
+    for (size_t i = 0; i < inputProteins.size(); ++i)
     {
       ProteinPtr currentProtein = Protein::createFromPDB(context, (*inputProteins[i]));
       GeneralOptimizerParametersPtr parameters = new SimulatedAnnealingParameters(numIterations, initialTemperature, finalTemperature, numDecreasingSteps);
 
-      workUnits->addWorkUnit(new SingleProteinOptimizationWorkUnit(i, currentProtein, referencesDirectory, moversDirectory, parameters));
+      workUnits->addWorkUnit(new SingleProteinOptimizationWorkUnit(i, currentProtein, referencesDirectory, moversDirectory, parameters, repeat));
 
       context.progressCallback(new ProgressionState((size_t)(i + 1), inputProteins.size(), T("Proteins")));
     }
@@ -299,6 +390,8 @@ protected:
   double initialTemperature;
   double finalTemperature;
   size_t numDecreasingSteps;
+
+  size_t repeat;
 };
 
 extern DistributableWorkUnitPtr proteinOptimizationWorkUnit(String inputDirectory,
@@ -307,7 +400,8 @@ extern DistributableWorkUnitPtr proteinOptimizationWorkUnit(String inputDirector
                                                             size_t numIterations,
                                                             double initialTemperature,
                                                             double finalTemperature,
-                                                            size_t numDecreasingSteps);
+                                                            size_t numDecreasingSteps,
+                                                            size_t repeat);
 
 }; /* namespace lbcpp */
 
