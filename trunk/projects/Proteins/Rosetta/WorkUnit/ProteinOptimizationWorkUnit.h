@@ -186,13 +186,13 @@ public:
         context.enterScope(T("Result"));
         context.resultCallback(T("Iteration"), Variable(i));
         context.resultCallback(T("Mean energy"), Variable(meanEnergyTmp));
-        context.resultCallback(T("Std Dev energy"), Variable(stdEnergyTmp));
+        //context.resultCallback(T("Std Dev energy"), Variable(stdEnergyTmp));
 
         context.resultCallback(T("Mean accepted"), Variable(meanAcceptedTmp));
-        context.resultCallback(T("Std Dev accepted"), Variable(stdAcceptedTmp));
+        //context.resultCallback(T("Std Dev accepted"), Variable(stdAcceptedTmp));
 
         context.resultCallback(T("Mean decreasing"), Variable(meanDecreasingTmp));
-        context.resultCallback(T("Std Dev decreasing"), Variable(stdDecreasingTmp));
+        //context.resultCallback(T("Std Dev decreasing"), Variable(stdDecreasingTmp));
         context.leaveScope(Variable(meanEnergyTmp));
       }
     }
