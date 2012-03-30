@@ -67,6 +67,7 @@ public:
       juce::OwnedArray<File> references;
       referencesFile.findChildFiles(references, File::findFiles, false, T("*.pdb"));
 
+      size_t counter = 0;
       for (size_t i = 0; i < (size_t)references.size(); i++)
       {
         juce::OwnedArray<File> movers;
@@ -78,13 +79,15 @@ public:
         moversFile.findChildFiles(movers, File::findFiles, false, nameToSearch);
         if (movers.size() > 0)
         {
-          context.informationCallback(T("Structure : ") + nameToSearch);
+          //context.informationCallback(T("Structure : ") + nameToSearch);
           DoubleVectorPtr inFeatures = features->compute(context, protein).getObjectAndCast<DoubleVector> ();
           PoseMoverPtr inMover = Variable::createFromFile(context, (*movers[0])).getObjectAndCast<PoseMover> ();
           inputWorkers->append(inFeatures);
           inputMovers->append(inMover);
-          context.progressCallback(new ProgressionState((size_t)(i + 1), (size_t)juce::jmin((int)10000, (int)references.size()), T("Intermediate conformations")));
+          context.progressCallback(new ProgressionState((size_t)(++counter), references.size(), T("Intermediate conformations")));
         }
+        else
+          context.informationCallback(T("Structure not loaded : ") + nameToSearch);
       }
       context.leaveScope();
 
@@ -184,7 +187,7 @@ public:
       if (repeat > 1)
       {
         context.enterScope(T("Result"));
-        context.resultCallback(T("Iteration"), Variable(i));
+        context.resultCallback(T("Step"), Variable(i));
         context.resultCallback(T("Mean energy"), Variable(meanEnergyTmp));
         //context.resultCallback(T("Std Dev energy"), Variable(stdEnergyTmp));
 
@@ -259,8 +262,8 @@ public:
       context.enterScope(T("Value"));
       context.resultCallback(T("Step"), Variable((int)i));
       context.resultCallback(T("Energy"), costEvolution->getValue(i));
-      context.resultCallback(T("Accepted decreasing modifications"), acceptedModificationsEvolution->getValue(i));
-      context.resultCallback(T("Energy decreasing modifications"), decreasingModificationsEvolution->getValue(i));
+      context.resultCallback(T("Accepted"), acceptedModificationsEvolution->getValue(i));
+      context.resultCallback(T("Energy"), decreasingModificationsEvolution->getValue(i));
       context.leaveScope();
     }
     context.leaveScope();
@@ -329,13 +332,13 @@ public:
         context.enterScope(T("Result"));
         context.resultCallback(T("Iteration"), Variable(i));
         context.resultCallback(T("Mean energy"), Variable(meanEnergyTmp));
-        context.resultCallback(T("Std Dev energy"), Variable(stdEnergyTmp));
+        context.resultCallback(T("StdDev energy"), Variable(stdEnergyTmp));
 
         context.resultCallback(T("Mean accepted"), Variable(meanAcceptedTmp));
-        context.resultCallback(T("Std Dev accepted"), Variable(stdAcceptedTmp));
+        context.resultCallback(T("StdDev accepted"), Variable(stdAcceptedTmp));
 
         context.resultCallback(T("Mean decreasing"), Variable(meanDecreasingTmp));
-        context.resultCallback(T("Std Dev decreasing"), Variable(stdDecreasingTmp));
+        context.resultCallback(T("StdDev decreasing"), Variable(stdDecreasingTmp));
         context.leaveScope(Variable(meanEnergyTmp));
       }
       context.leaveScope();

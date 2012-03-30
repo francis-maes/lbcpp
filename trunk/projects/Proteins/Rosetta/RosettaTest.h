@@ -71,84 +71,95 @@ public:
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 
-    jassert(false);
+    std::vector<double> meanEnergies;
+    std::cout << "size : " << meanEnergies.size() << std::endl;
+    meanEnergies = std::vector<double>(3);
+    std::cout << "size : " << meanEnergies.size() << std::endl;
+    meanEnergies[0] = 1;
+    meanEnergies[1] = 2;
+    meanEnergies[2] = 3;
+    std::cout << "[0] : " << meanEnergies[0] << std::endl;
+    std::cout << "[1] : " << meanEnergies[1] << std::endl;
+    std::cout << "[2] : " << meanEnergies[2] << std::endl;
 
-    RosettaPtr ros = new Rosetta();
-    ros->init(context, false, 0, 0);
-
-    // without learning
-    PosePtr pose = new Pose(T("AAAAAAAAAAACDEDCDEDC"));
-    pose->initializeToHelix();
-    PoseOptimizationStatePtr optState = new PoseOptimizationState(pose);
-    SamplerPtr sampler = new BlindPoseMoverSampler(20);
-    FeatureGeneratorPtr blindFeatures = blindPoseFeatureGenerator();
-    PoseOptimizationStateModifierPtr modifier = new PoseOptimizationStateModifier(sampler, blindFeatures);
-
-    SimulatedAnnealingParametersPtr params = new SimulatedAnnealingParameters(200, 4, 0.01, 20);
-    SimulatedAnnealingPtr sa = new SimulatedAnnealing(optState, modifier, GeneralOptimizerStoppingCriterionPtr(), params);
-
-    VariableVectorPtr results1 = sa->optimize(context);
-
-    // with learning
-    pose = new Pose(T("AAAAAAAAAAACDEDCDEDC"));
-    pose->initializeToHelix();
-
-    // features
-    PoseFeatureGeneratorPtr feats = new PoseFeatureGenerator();
-    feats->initialize(context, poseClass);
-    DoubleVectorPtr tmpFeatures = feats->compute(context, pose).getObjectAndCast<DoubleVector>();
-
-    optState = new PoseOptimizationState(pose);
-    sampler = new ConditionalPoseMoverSampler(20);
-
-    // learn the distribution
-    File referencesFile = context.getFile(T("phipsipetitPDB"));
-    File moversFile = context.getFile(T("phipsipetit_movers"));
-
-    VectorPtr inputWorkers = vector(doubleVectorClass(tmpFeatures->getElementsEnumeration(), doubleType));
-    VectorPtr inputMovers = vector(doubleVectorClass(tmpFeatures->getElementsEnumeration(), doubleType));
-    context.enterScope(T("Loading learning examples..."));
-    juce::OwnedArray<File> references;
-    referencesFile.findChildFiles(references, File::findFiles, false, T("*.pdb"));
-
-    std::vector<size_t> res;
-    RandomGeneratorPtr rand = new RandomGenerator();
-    rand->sampleOrder(references.size(), res);
-
-    for (size_t i = 0; (i < references.size()) && (i < 10); i++)
-    {
-      size_t index = res[i];
-      juce::OwnedArray<File> movers;
-      String nameToSearch = (*references[index]).getFileNameWithoutExtension();
-
-      PosePtr protein = new Pose(*references[index]);
-
-      nameToSearch += T("_mover.xml");
-      moversFile.findChildFiles(movers, File::findFiles, false, nameToSearch);
-      if (movers.size() > 0)
-      {
-        context.informationCallback(T("Structure : ") + nameToSearch);
-        DoubleVectorPtr inFeatures = feats->compute(context, protein).getObjectAndCast<DoubleVector> ();
-//        std::cout << (const char*)protein->getAminoAcidSequence() << std::endl;
-//        std::cout << (const char*)protein->getAminoAcidHistogram()->toString() << std::endl;
-//        std::cout << (const char*)inFeatures->toString() << std::endl << std::endl;
-        PoseMoverPtr inMover = Variable::createFromFile(context, (*movers[0])).getObjectAndCast<PoseMover> ();
-        inputWorkers->append(inFeatures);
-        inputMovers->append(inMover);
-        context.progressCallback(new ProgressionState((size_t)(i + 1), (size_t)juce::jmin((int)10000, (int)references.size()), T("Intermediate conformations")));
-      }
-    }
-    context.leaveScope();
-
-    ContainerPtr addWorkers = inputWorkers;
-    ContainerPtr addMovers = inputMovers;
-    sampler->learn(context, addWorkers, addMovers, DenseDoubleVectorPtr(), ContainerPtr(), ContainerPtr(), DenseDoubleVectorPtr());
-
-    modifier = new PoseOptimizationStateModifier(sampler, feats);
-
-    sa = new SimulatedAnnealing(optState, modifier, GeneralOptimizerStoppingCriterionPtr(), params);
-
-    VariableVectorPtr results2 = sa->optimize(context);
+    //    jassert(false);
+    //
+    //    RosettaPtr ros = new Rosetta();
+    //    ros->init(context, false, 0, 0);
+    //
+    //    // without learning
+    //    PosePtr pose = new Pose(T("AAAAAAAAAAACDEDCDEDC"));
+    //    pose->initializeToHelix();
+    //    PoseOptimizationStatePtr optState = new PoseOptimizationState(pose);
+    //    SamplerPtr sampler = new BlindPoseMoverSampler(20);
+    //    FeatureGeneratorPtr blindFeatures = blindPoseFeatureGenerator();
+    //    PoseOptimizationStateModifierPtr modifier = new PoseOptimizationStateModifier(sampler, blindFeatures);
+    //
+    //    SimulatedAnnealingParametersPtr params = new SimulatedAnnealingParameters(200, 4, 0.01, 20);
+    //    SimulatedAnnealingPtr sa = new SimulatedAnnealing(optState, modifier, GeneralOptimizerStoppingCriterionPtr(), params);
+    //
+    //    VariableVectorPtr results1 = sa->optimize(context);
+    //
+    //    // with learning
+    //    pose = new Pose(T("AAAAAAAAAAACDEDCDEDC"));
+    //    pose->initializeToHelix();
+    //
+    //    // features
+    //    PoseFeatureGeneratorPtr feats = new PoseFeatureGenerator();
+    //    feats->initialize(context, poseClass);
+    //    DoubleVectorPtr tmpFeatures = feats->compute(context, pose).getObjectAndCast<DoubleVector>();
+    //
+    //    optState = new PoseOptimizationState(pose);
+    //    sampler = new ConditionalPoseMoverSampler(20);
+    //
+    //    // learn the distribution
+    //    File referencesFile = context.getFile(T("phipsipetitPDB"));
+    //    File moversFile = context.getFile(T("phipsipetit_movers"));
+    //
+    //    VectorPtr inputWorkers = vector(doubleVectorClass(tmpFeatures->getElementsEnumeration(), doubleType));
+    //    VectorPtr inputMovers = vector(doubleVectorClass(tmpFeatures->getElementsEnumeration(), doubleType));
+    //    context.enterScope(T("Loading learning examples..."));
+    //    juce::OwnedArray<File> references;
+    //    referencesFile.findChildFiles(references, File::findFiles, false, T("*.pdb"));
+    //
+    //    std::vector<size_t> res;
+    //    RandomGeneratorPtr rand = new RandomGenerator();
+    //    rand->sampleOrder(references.size(), res);
+    //
+    //    for (size_t i = 0; (i < references.size()) && (i < 10); i++)
+    //    {
+    //      size_t index = res[i];
+    //      juce::OwnedArray<File> movers;
+    //      String nameToSearch = (*references[index]).getFileNameWithoutExtension();
+    //
+    //      PosePtr protein = new Pose(*references[index]);
+    //
+    //      nameToSearch += T("_mover.xml");
+    //      moversFile.findChildFiles(movers, File::findFiles, false, nameToSearch);
+    //      if (movers.size() > 0)
+    //      {
+    //        context.informationCallback(T("Structure : ") + nameToSearch);
+    //        DoubleVectorPtr inFeatures = feats->compute(context, protein).getObjectAndCast<DoubleVector> ();
+    ////        std::cout << (const char*)protein->getAminoAcidSequence() << std::endl;
+    ////        std::cout << (const char*)protein->getAminoAcidHistogram()->toString() << std::endl;
+    ////        std::cout << (const char*)inFeatures->toString() << std::endl << std::endl;
+    //        PoseMoverPtr inMover = Variable::createFromFile(context, (*movers[0])).getObjectAndCast<PoseMover> ();
+    //        inputWorkers->append(inFeatures);
+    //        inputMovers->append(inMover);
+    //        context.progressCallback(new ProgressionState((size_t)(i + 1), (size_t)juce::jmin((int)10000, (int)references.size()), T("Intermediate conformations")));
+    //      }
+    //    }
+    //    context.leaveScope();
+    //
+    //    ContainerPtr addWorkers = inputWorkers;
+    //    ContainerPtr addMovers = inputMovers;
+    //    sampler->learn(context, addWorkers, addMovers, DenseDoubleVectorPtr(), ContainerPtr(), ContainerPtr(), DenseDoubleVectorPtr());
+    //
+    //    modifier = new PoseOptimizationStateModifier(sampler, feats);
+    //
+    //    sa = new SimulatedAnnealing(optState, modifier, GeneralOptimizerStoppingCriterionPtr(), params);
+    //
+    //    VariableVectorPtr results2 = sa->optimize(context);
 
     //    DoubleVectorPtr v1 = new DenseDoubleVector(2, 0.0);
     //    DenseDoubleVectorPtr v2 = new DenseDoubleVector(2, 1.0);

@@ -140,13 +140,13 @@ public:
       {
         // verbosity in trace
         context.progressCallback(new ProgressionState(i + 1, maxIterations, T("Interations")));
-        context.enterScope(T("Iteration"));
-        context.resultCallback(T("Iteration"), Variable((int)i));
-        context.resultCallback(T("Current energy"), Variable(currentEnergy));
-        context.resultCallback(T("Best energy"), Variable(bestEnergy));
-        context.resultCallback(T("Temperature"), Variable(temperature));
-        context.resultCallback(T("Ratio accepted modifications"), Variable((double)numModificationsAccepted / (double)numModificationsTested));
-        context.resultCallback(T("Ratio energy decreasing modifications"), Variable((double)numModificationsDecreasingEnergy / (double)numModificationsTested));
+        context.enterScope(T("It"));
+        context.resultCallback(T("It"), Variable((int)i));
+        context.resultCallback(T("Current"), Variable(currentEnergy));
+        context.resultCallback(T("Best"), Variable(bestEnergy));
+        context.resultCallback(T("Temp"), Variable(temperature));
+        context.resultCallback(T("Ratio accepted"), Variable((double)numModificationsAccepted / (double)numModificationsTested));
+        context.resultCallback(T("Ratio decreasing"), Variable((double)numModificationsDecreasingEnergy / (double)numModificationsTested));
         context.leaveScope(Variable(bestEnergy));
 
         // return values
