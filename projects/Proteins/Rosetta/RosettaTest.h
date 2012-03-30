@@ -71,16 +71,46 @@ public:
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 
-    std::vector<double> meanEnergies;
-    std::cout << "size : " << meanEnergies.size() << std::endl;
-    meanEnergies = std::vector<double>(3);
-    std::cout << "size : " << meanEnergies.size() << std::endl;
-    meanEnergies[0] = 1;
-    meanEnergies[1] = 2;
-    meanEnergies[2] = 3;
-    std::cout << "[0] : " << meanEnergies[0] << std::endl;
-    std::cout << "[1] : " << meanEnergies[1] << std::endl;
-    std::cout << "[2] : " << meanEnergies[2] << std::endl;
+    File referencesFile = context.getFile(T("data/psipred_test"));
+
+    juce::OwnedArray<File> references;
+    referencesFile.findChildFiles(references, File::findFiles, false, T("*.pdb"));
+
+//    size_t num100 = 0;
+//    size_t num200 = 0;
+//    size_t numplus = 0;
+//    size_t maxSize = 0;
+//    size_t mean = 0;
+//    for (size_t i = 0; i < references.size(); i++)
+//    {
+//      ProteinPtr protein = Protein::createFromPDB(context, *references[i]);
+//
+//      if (protein->getLength() <= 100)
+//        ++num100;
+//      else if ((protein->getLength() > 100) && (protein->getLength() <= 200))
+//        ++num200;
+//      else
+//      {
+//        ++numplus;
+//        mean += protein->getLength();
+//        if (protein->getLength() > maxSize)
+//          maxSize = protein->getLength();
+//      }
+//    }
+//
+//    std::cout << "num -100 : " << num100 << std::endl;
+//    std::cout << "num +100 -200 : " << num200 << std::endl;
+//    std::cout << "num plus : " << numplus << std::endl;
+//    std::cout << "maxSize : " << maxSize << std::endl;
+//    std::cout << "mean size plus : " << (double)mean / (double)numplus << std::endl;
+
+    for (size_t i = 0; i < references.size(); i++)
+    {
+      ProteinPtr protein = Protein::createFromPDB(context, *references[i]);
+
+      if (protein->getLength() > 200)
+        (*references[i]).deleteFile();
+    }
 
     //    jassert(false);
     //
