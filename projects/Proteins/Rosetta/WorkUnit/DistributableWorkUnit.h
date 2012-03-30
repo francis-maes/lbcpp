@@ -162,9 +162,9 @@ public:
       File wuResult(distributableWorkUnitDirectory.getFullPathName() + T("/") + units->getWorkUnit(i)->toString() + T(".xml"));
       if (!wuResult.exists())
       {
-        if (numExecuted > 20)
+        if (numExecuted >= 20)
         {
-          remoteContext->waitUntilAllWorkUnitsAreDone(time * 60 * 60 * 333);
+          remoteContext->waitUntilAllWorkUnitsAreDone(time * 60 * 60 * 501);
           numExecuted = 0;
         }
         remoteContext->pushWorkUnit(units->getWorkUnit(i), new DistributableExecutionContextCallback(context, distributable->toString()));
