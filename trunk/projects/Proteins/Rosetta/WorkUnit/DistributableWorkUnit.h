@@ -164,7 +164,7 @@ public:
       {
         if (numExecuted >= 20)
         {
-          remoteContext->waitUntilAllWorkUnitsAreDone(time * 60 * 60 * 501);
+          remoteContext->waitUntilAllWorkUnitsAreDone(time * 60 * 60 * 451);
           numExecuted = 0;
         }
         remoteContext->pushWorkUnit(units->getWorkUnit(i), new DistributableExecutionContextCallback(context, distributable->toString()));
