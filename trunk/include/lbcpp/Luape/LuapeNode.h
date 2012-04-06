@@ -240,6 +240,9 @@ public:
   void setNodes(const std::vector<LuapeNodePtr>& nodes)
     {this->nodes = nodes;}
 
+  void setNode(size_t index, const LuapeNodePtr& node)
+    {jassert(index < nodes.size()); nodes[index] = node;}
+
 protected:
   friend class LuapeSequenceNodeClass;
 

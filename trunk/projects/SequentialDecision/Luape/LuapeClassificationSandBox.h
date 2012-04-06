@@ -366,14 +366,16 @@ protected:
   {
     if (tsFile.existsAsFile())
     {
-      TextParserPtr parser = new TestingSetParser(context, tsFile, data);
+      ContainerPtr convertedData = convertExamplesToVectors(data.staticCast<ObjectVector>());
+
+      TextParserPtr parser = new TestingSetParser(context, tsFile, convertedData);
       ContainerPtr splits = parser->load(0);
       res.resize(splits->getNumElements());
       for (size_t i = 0; i < res.size(); ++i)
       {
         PairPtr split = splits->getElement(i).getObjectAndCast<Pair>();
-        ContainerPtr train = convertExamplesToVectors(split->getFirst().getObjectAndCast<ObjectVector>());
-        ContainerPtr test = convertExamplesToVectors(split->getSecond().getObjectAndCast<ObjectVector>());
+        ContainerPtr train = split->getFirst().getObjectAndCast<Container>();
+        ContainerPtr test = split->getSecond().getObjectAndCast<Container>();
         res[i] = std::make_pair(train, test);
       }
     }

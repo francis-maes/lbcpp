@@ -54,7 +54,10 @@ public:
       }
       LuapeNodePtr baseModel = subLearn(context, baseLearner, LuapeNodePtr(), problem, getSubSamples(context, i, examples));
       if (baseModel)
+      {
         sequenceNode->pushNode(context, baseModel, problem->getSamplesCaches());
+        sequenceNode->setNode(i, LuapeNodePtr()); // TMP: save memory !
+      }
       else
         return LuapeNodePtr();
 

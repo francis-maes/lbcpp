@@ -18,11 +18,13 @@ namespace lbcpp
 class LuapeGraphBuilderAction;
 typedef ReferenceCountedObjectPtr<LuapeGraphBuilderAction> LuapeGraphBuilderActionPtr;
 
+extern ClassPtr luapeGraphBuilderActionClass;
+
 class LuapeGraphBuilderAction : public Object
 {
 public:
   LuapeGraphBuilderAction(size_t numNodesToRemove, const LuapeNodePtr& nodeToAdd)
-    : numNodesToRemove(numNodesToRemove), nodeToAdd(nodeToAdd) {}
+    : Object(luapeGraphBuilderActionClass), numNodesToRemove(numNodesToRemove), nodeToAdd(nodeToAdd) {}
   LuapeGraphBuilderAction() : numNodesToRemove(0) {}
 
   static LuapeGraphBuilderActionPtr push(const LuapeNodePtr& node)
@@ -86,8 +88,6 @@ private:
   LuapeNodePtr nodeToAdd;
   std::vector<LuapeNodePtr> removedNodes; // use in state backup only
 };
-
-extern ClassPtr luapeGraphBuilderActionClass;
 
 class LuapeGraphBuilderState : public DecisionProblemState
 {
