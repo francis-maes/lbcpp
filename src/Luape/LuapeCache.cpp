@@ -329,7 +329,7 @@ LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, co
   NodeCache* nodeCache;
   if (it == m.end())
   {
-    if (isCandidateForCaching(node))
+    if (cachingEnabled && isCandidateForCaching(node))
     {
       nodeCache = &m[node];
       actualCacheSize += nodeCache->getSizeInBytes(true);
@@ -347,7 +347,7 @@ LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, co
   // cache nodes on which we spend much computation time
   if (nodeCache)
   {
-    if (cachingEnabled && !nodeCache->samples && nodeCache->numRequests > minNumRequestsToBeCached && (size_t)nodeCache->numRequests > allIndices->size())
+    if (!nodeCache->samples && nodeCache->numRequests > minNumRequestsToBeCached && (size_t)nodeCache->numRequests > allIndices->size())
       cacheNode(context, node, VectorPtr(), "Deliberate caching");
 
     if (nodeCache->samples)
@@ -359,7 +359,7 @@ LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, co
   LuapeSampleVectorPtr res = node->compute(context, refCountedPointerFromThis(this), indices);
 
   // see if we should cache by opportunism
-  if (cachingEnabled && nodeCache && indices == allIndices && res->getVector() &&
+  if (nodeCache && indices == allIndices && res->getVector() &&
       (!maxCacheSize || getCacheSizeInBytes() < maxCacheSize) &&
       nodeCache->numRequests > minNumRequestsToBeCached)
     cacheNode(context, node, res->getVector(), "Cache by opportunism");
@@ -375,23 +375,38 @@ SparseDoubleVectorPtr LuapeSamplesCache::getSortedDoubleValues(ExecutionContext&
   if (indices->empty())
     return SparseDoubleVectorPtr();
 
-  NodeCache& nodeCache = getOrCreateNodeCache(node);
-  if (nodeCache.sortedDoubleValues)
+  // retrieve node information
+  NodeCacheMap::iterator it = m.find(node);
+  NodeCache* nodeCache;
+  if (it == m.end())
+  {
+    if (cachingEnabled && isCandidateForCaching(node))
+    {
+      nodeCache = &m[node];
+      actualCacheSize += nodeCache->getSizeInBytes(true);
+    }
+    else
+      nodeCache = NULL;
+  }
+  else
+    nodeCache = &it->second;
+
+  if (nodeCache && nodeCache->sortedDoubleValues)
   {
     if (indices == allIndices)
-      return nodeCache.sortedDoubleValues;
+      return nodeCache->sortedDoubleValues;
     else
-      return computeSortedDoubleValuesSubset(nodeCache.sortedDoubleValues, indices);
+      return computeSortedDoubleValuesSubset(nodeCache->sortedDoubleValues, indices);
   }
 
   // compute sorted double values
   SparseDoubleVectorPtr res = computeSortedDoubleValuesFromSamples(getSamples(context, node, indices));
-  if (indices == allIndices && nodeCache.samples)
+  if (indices == allIndices && nodeCache && nodeCache->samples)
   {
     // opportunism caching
-    actualCacheSize -= nodeCache.getSizeInBytes(true);
-    nodeCache.sortedDoubleValues = res;
-    actualCacheSize += nodeCache.getSizeInBytes(true);
+    actualCacheSize -= nodeCache->getSizeInBytes(true);
+    nodeCache->sortedDoubleValues = res;
+    actualCacheSize += nodeCache->getSizeInBytes(true);
     ensureSizeInLowerThanMaxSize(context);
   }
 

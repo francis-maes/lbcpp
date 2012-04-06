@@ -10,6 +10,7 @@
 # define LBCPP_LUAPE_META_MONTE_CARLO_SAND_BOX_H_
 
 # include <lbcpp/Execution/WorkUnit.h>
+# include "../../../src/Luape/NodeBuilder/NodeBuilderDecisionProblem.h"
 
 namespace lbcpp
 {
@@ -33,7 +34,7 @@ typedef ReferenceCountedObjectPtr<MCObjective> MCObjectivePtr;
 class MCAlgorithm : public Object
 {
 public:
-  double search(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr initialState, std::vector<Variable>& actions, DecisionProblemStatePtr& finalState)
+  double search(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr initialState, std::vector<Variable>* actions, DecisionProblemStatePtr& finalState)
   {
     bestScore = -DBL_MAX;
     bestActions.clear();
@@ -51,9 +52,12 @@ public:
     //String dbg2 = initialState->toShortString();
     //jassert(dbg == dbg2);
 
-    actions.reserve(actions.size() + bestActions.size());
-    for (size_t i = 0; i < bestActions.size(); ++i)
-      actions.push_back(bestActions[i]);
+    if (actions)
+    {
+      actions->reserve(actions->size() + bestActions.size());
+      for (size_t i = 0; i < bestActions.size(); ++i)
+        actions->push_back(bestActions[i]);
+    }
     
     finalState = bestFinalState;
     /*if (bestScore != -DBL_MAX)
@@ -139,7 +143,7 @@ protected:
 
   double subSearch(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr state, std::vector<Variable>& actions, DecisionProblemStatePtr& finalState)
   {
-    double res = algorithm->search(context, objective, state, actions, finalState);
+    double res = algorithm->search(context, objective, state, &actions, finalState);
     if (res != -DBL_MAX)
       submitFinalState(context, objective, actions, finalState, res);
     return res;
@@ -277,8 +281,11 @@ public:
 
   virtual double evaluate(ExecutionContext& context, DecisionProblemStatePtr finalState)
   {
-    String str = finalState->toShortString();
-    std::map<String, double>::iterator it = cache.find(str);
+    LuapeGraphBuilderStatePtr builder = finalState.staticCast<LuapeGraphBuilderState>();
+    if (builder->getStackSize() != 1)
+      return -DBL_MAX;
+    LuapeNodePtr node = builder->getStackElement(0);
+    std::map<LuapeNodePtr, double>::iterator it = cache.find(node);
     if (it != cache.end())
     {
       ++numCachedEvaluations;
@@ -286,7 +293,7 @@ public:
     }
     ++numEvaluations;
     double res = lbcppObjective->compute(context, finalState).toDouble();
-    cache[str] = res;
+    cache[node] = res;
     return res;
   }
 
@@ -298,7 +305,7 @@ protected:
   size_t budget;
   size_t numEvaluations;
   size_t numCachedEvaluations;
-  std::map<String, double> cache;
+  std::map<LuapeNodePtr, double> cache;
 };
 
 class MCOptimizer : public Optimizer
@@ -310,10 +317,9 @@ public:
 
   virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {
-    std::vector<Variable> actions;
     DecisionProblemStatePtr bestFinalState;
     MCAlgorithmPtr algorithm = new IterateMCAlgorithm(this->algorithm, 0x7FFFFFFF); // repeat base algorithm until budget is exhausted
-    double bestScore = algorithm->search(context, new WrapperMCObjective(problem->getObjective(), budget), problem->getInitialState(), actions, bestFinalState);
+    double bestScore = algorithm->search(context, new WrapperMCObjective(problem->getObjective(), budget), problem->getInitialState(), NULL, bestFinalState);
     optimizerState->submitSolution(bestFinalState, bestScore);
     return optimizerState;
   }
