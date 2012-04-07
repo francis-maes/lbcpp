@@ -59,7 +59,12 @@ public:
     LuapeSampleVectorPtr predictions = problem->getTrainingCache()->getSamples(context, formula);
     ScalarVariableMean res;
     for (LuapeSampleVector::const_iterator it = predictions->begin(); it != predictions->end(); ++it)
-      res.push(fabs(supervisions->getValue(it.getIndex()) - it.getRawDouble()));
+    {
+      double prediction = it.getRawDouble();
+      if (prediction == doubleMissingValue)
+        return -DBL_MAX;
+      res.push(fabs(supervisions->getValue(it.getIndex()) - prediction));
+    }
     return -res.getMean();
   }
 };

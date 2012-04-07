@@ -153,6 +153,8 @@ public:
     std::vector<TypePtr> nodeTypes;
     for (size_t i = 0; i < function->getNumInputs(); ++i)
       insertType(nodeTypes, function->getInput(i)->getType());
+    for (size_t i = 0; i < function->getNumConstants(); ++i)
+      insertType(nodeTypes, function->getConstant(i)->getType());
     insertType(nodeTypes, booleanType); // automatically included since boosting methods may create stump nodes that output booleans
 
     LuapeGraphBuilderTypeStatePtr root = getOrCreateState(0, std::vector<TypePtr>());

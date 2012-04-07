@@ -269,7 +269,7 @@ inline MCAlgorithmPtr iterate(MCAlgorithmPtr algorithm, size_t numIterations)
 inline MCAlgorithmPtr step(MCAlgorithmPtr algorithm, bool useGlobalBest = true)
   {return new StepByStepMCAlgorithm(algorithm, useGlobalBest);}
 
-inline MCAlgorithmPtr lookAhead(MCAlgorithmPtr algorithm, double numActions)
+inline MCAlgorithmPtr lookAhead(MCAlgorithmPtr algorithm, double numActions = 1.0)
   {return new LookAheadMCAlgorithm(algorithm, numActions);}
 
 /*
