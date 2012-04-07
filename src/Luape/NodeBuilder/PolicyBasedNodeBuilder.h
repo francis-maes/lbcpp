@@ -133,7 +133,7 @@ public:
   virtual LuapeNodePtr sampleNode(ExecutionContext& context, const LuapeInferencePtr& function)
   {
     LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = function->getSearchSpace(context, complexity);
-    LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(function, typeSearchSpace);
+    LuapeNodeBuilderStatePtr builder = new LuapeNodeBuilderState(function, typeSearchSpace);
 
     bool noMoreActions = false;
     //String episode = "";
@@ -149,7 +149,7 @@ public:
 
       bool hasYield = false;
       for (size_t i = 0; i < actions->getNumElements(); ++i)
-        if (actions->getElement(i).getObjectAndCast<LuapeGraphBuilderAction>()->isYield())
+        if (actions->getElement(i).getObjectAndCast<LuapeNodeBuilderAction>()->isYield())
         {
           hasYield = true;
           break;
@@ -187,7 +187,7 @@ public:
     if (computeOptimalLearner)
     {
       context.enterScope(T("Computing optimal weak learner"));
-      findOptimalWeakLearner(context, structureLearner, new LuapeGraphBuilderState(function, typeSearchSpace), examples, optimalWeakObjective, optimalWeakLearner);
+      findOptimalWeakLearner(context, structureLearner, new LuapeNodeBuilderState(function, typeSearchSpace), examples, optimalWeakObjective, optimalWeakLearner);
       context.leaveScope(optimalWeakObjective);
     }
 
@@ -336,8 +336,8 @@ public:
 
   SparseDoubleVectorPtr makeFeatures(ExecutionContext& context, const DecisionProblemStatePtr& s, const Variable& a) const
   {
-    const LuapeGraphBuilderStatePtr& state = s.staticCast<LuapeGraphBuilderState>();
-    const LuapeGraphBuilderActionPtr& action = a.getObjectAndCast<LuapeGraphBuilderAction>();
+    const LuapeNodeBuilderStatePtr& state = s.staticCast<LuapeNodeBuilderState>();
+    const LuapeNodeBuilderActionPtr& action = a.getObjectAndCast<LuapeNodeBuilderAction>();
 
     SparseDoubleVectorPtr res(new SparseDoubleVector(features, doubleType));
 

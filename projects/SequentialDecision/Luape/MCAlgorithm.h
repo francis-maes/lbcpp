@@ -81,6 +81,7 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<MCAlgorithm> MCAlgorithmPtr;
+extern ClassPtr mcAlgorithmClass;
 
 class RolloutMCAlgorithm : public MCAlgorithm
 {
@@ -104,6 +105,8 @@ protected:
       submitFinalState(context, objective, actions, state);
   }
 };
+
+extern ClassPtr rolloutMCAlgorithmClass;
 
 class DecoratorMCAlgorithm : public MCAlgorithm
 {
@@ -167,6 +170,8 @@ protected:
   }
 };
 
+extern ClassPtr iterateMCAlgorithmClass;
+
 class LookAheadMCAlgorithm : public DecoratorMCAlgorithm
 {
 public:
@@ -214,6 +219,8 @@ protected:
   }
 };
 
+extern ClassPtr lookAheadMCAlgorithmClass;
+
 class StepByStepMCAlgorithm : public DecoratorMCAlgorithm
 {
 public:
@@ -256,6 +263,7 @@ protected:
   }
 };
 
+extern ClassPtr stepByStepMCAlgorithmClass;
 
 /*
 ** Constructors
@@ -274,7 +282,7 @@ inline MCAlgorithmPtr lookAhead(MCAlgorithmPtr algorithm, double numActions = 1.
 
 /*
 ** MCAlgorithmSet
-*/
+*
 class MCAlgorithmSet : public Object
 {
 public:
@@ -358,7 +366,7 @@ protected:
 
     return algorithm;
   }
-};
+};*/
 
 }; /* namespace lbcpp */
 

@@ -88,9 +88,19 @@ public:
     {constants.push_back(new LuapeConstantNode(value));}
 
   /*
+  ** Accepted target types
+  */
+  bool isTargetTypeAccepted(TypePtr type);
+  void addTargetType(TypePtr type)
+    {targetTypes.insert(type);}
+  void clearTargetTypes()
+    {targetTypes.clear();}
+
+  /*
   ** Search space
   */
   LuapeGraphBuilderTypeSearchSpacePtr getSearchSpace(ExecutionContext& context, size_t complexity, bool verbose = false) const;
+  void enumerateNodesExhaustively(ExecutionContext& context, size_t complexity, std::vector<LuapeNodePtr>& res, bool verbose = false) const;
 
   /*
   ** Luape Node 
@@ -105,7 +115,8 @@ public:
   ** Compute
   */
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
-  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& supervisions) const = 0;
+  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& supervisions) const
+    {jassert(false); return 0.0;}
 
   /*
   ** Learner
@@ -139,6 +150,7 @@ protected:
   LuapeInputNodePtr supervision;
   std::vector<LuapeConstantNodePtr> constants;
   std::vector<LuapeFunctionPtr> functions;
+  std::set<TypePtr> targetTypes;
   std::set<LuapeNodePtr> activeVariables;
   LuapeNodePtr node;
   LuapeSamplesCachePtr trainingCache;

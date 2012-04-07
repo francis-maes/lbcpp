@@ -10,6 +10,7 @@
 #include <lbcpp/Luape/LuapeBatchLearner.h>
 #include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
 #include "NodeBuilder/NodeBuilderTypeSearchSpace.h"
+#include "NodeBuilder/NodeBuilderDecisionProblem.h"
 using namespace lbcpp;
 
 /*
@@ -73,6 +74,21 @@ void LuapeInference::setRootNode(ExecutionContext& context, const LuapeNodePtr& 
 void LuapeInference::clearRootNode(ExecutionContext& context)
   {if (node) setRootNode(context, LuapeNodePtr());}
 
+bool LuapeInference::isTargetTypeAccepted(TypePtr type)
+{
+  if (!targetTypes.size())
+  {
+    // old definition for Luape weak learners
+    return type->inheritsFrom(booleanType) || type->inheritsFrom(doubleType) ||
+      (!type.isInstanceOf<Enumeration>() && type->inheritsFrom(integerType));
+  }
+
+  for (std::set<TypePtr>::const_iterator it = targetTypes.begin(); it != targetTypes.end(); ++it)
+    if (type->inheritsFrom(*it))
+      return true;
+  return false;
+}
+
 LuapeGraphBuilderTypeSearchSpacePtr LuapeInference::getSearchSpace(ExecutionContext& context, size_t complexity, bool verbose) const
 {
   ScopedLock _(typeSearchSpacesLock);
@@ -89,6 +105,38 @@ LuapeGraphBuilderTypeSearchSpacePtr LuapeInference::getSearchSpace(ExecutionCont
   res->assignStateIndices(context);
   pthis->typeSearchSpaces[complexity] = res;
   return res;
+}
+
+static void enumerateExhaustively(ExecutionContext& context, LuapeNodeBuilderStatePtr state, std::vector<LuapeNodePtr>& res, bool verbose)
+{
+  if (state->isFinalState() && state->getStackSize() == 1)
+  {
+    LuapeNodePtr node = state->getStackElement(0);
+    res.push_back(node);
+    //if (verbose)
+    //  context.informationCallback(node->toShortString());
+  }
+  else
+  {
+    ContainerPtr actions = state->getAvailableActions();
+    size_t n = actions->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable stateBackup;
+      Variable action = actions->getElement(i);
+      double reward;
+      state->performTransition(context, action, reward, &stateBackup);
+      enumerateExhaustively(context, state, res, verbose);
+      state->undoTransition(context, stateBackup);
+    }
+  }
+}
+
+void LuapeInference::enumerateNodesExhaustively(ExecutionContext& context, size_t complexity, std::vector<LuapeNodePtr>& res, bool verbose) const
+{
+  LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = getSearchSpace(context, complexity, verbose);
+  LuapeNodeBuilderStatePtr state = new LuapeNodeBuilderState(refCountedPointerFromThis(this), typeSearchSpace);
+  enumerateExhaustively(context, state, res, verbose);
 }
 
 LuapeSamplesCachePtr LuapeInference::createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data) const

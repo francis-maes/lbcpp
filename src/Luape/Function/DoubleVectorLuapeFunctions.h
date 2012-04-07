@@ -15,11 +15,11 @@
 namespace lbcpp
 {
 
-class GetDoubleVectorElementLuapeFunction : public UnaryObjectLuapeFuntion<GetDoubleVectorElementLuapeFunction>
+class GetDoubleVectorElementLuapeFunction : public UnaryObjectLuapeFunction<GetDoubleVectorElementLuapeFunction>
 {
 public:
   GetDoubleVectorElementLuapeFunction(EnumerationPtr enumeration = EnumerationPtr(), size_t index = 0)
-    : UnaryObjectLuapeFuntion<GetDoubleVectorElementLuapeFunction>(doubleVectorClass()), enumeration(enumeration), index(index) {}
+    : UnaryObjectLuapeFunction<GetDoubleVectorElementLuapeFunction>(doubleVectorClass()), enumeration(enumeration), index(index) {}
 
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
   {
@@ -104,10 +104,10 @@ public:
 typedef ReferenceCountedObjectPtr<ScalarVariableStatisticsPerception> ScalarVariableStatisticsPerceptionPtr;
 extern ClassPtr scalarVariableStatisticsPerceptionClass;
 
-class ComputeDoubleVectorStatisticsLuapeFunction : public UnaryObjectLuapeFuntion<ComputeDoubleVectorStatisticsLuapeFunction>
+class ComputeDoubleVectorStatisticsLuapeFunction : public UnaryObjectLuapeFunction<ComputeDoubleVectorStatisticsLuapeFunction>
 {
 public:
-  ComputeDoubleVectorStatisticsLuapeFunction() : UnaryObjectLuapeFuntion<ComputeDoubleVectorStatisticsLuapeFunction>(doubleVectorClass()) {}
+  ComputeDoubleVectorStatisticsLuapeFunction() : UnaryObjectLuapeFunction<ComputeDoubleVectorStatisticsLuapeFunction>(doubleVectorClass()) {}
 
   virtual String toShortString() const
     {return "stats(.)";}
@@ -161,11 +161,11 @@ public:
   }
 };
 
-class GetDoubleVectorExtremumsLuapeFunction : public UnaryObjectLuapeFuntion<GetDoubleVectorExtremumsLuapeFunction>
+class GetDoubleVectorExtremumsLuapeFunction : public UnaryObjectLuapeFunction<GetDoubleVectorExtremumsLuapeFunction>
 {
 public:
   GetDoubleVectorExtremumsLuapeFunction(EnumerationPtr enumeration = EnumerationPtr())
-    : UnaryObjectLuapeFuntion<GetDoubleVectorExtremumsLuapeFunction>(doubleVectorClass()), enumeration(enumeration) {}
+    : UnaryObjectLuapeFunction<GetDoubleVectorExtremumsLuapeFunction>(doubleVectorClass()), enumeration(enumeration) {}
 
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
   {

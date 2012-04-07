@@ -45,12 +45,12 @@ public:
 
   void enumerateNewArms(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode)
   {
-    LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(graph->cloneAndCast<LuapeGraph>(), new LuapeGraphBuilderTypeSearchSpace(problem, maxDepth));
-    //builder->performTransition(context, LuapeGraphBuilderAction::push(newNode));
+    LuapeNodeBuilderStatePtr builder = new LuapeNodeBuilderState(graph->cloneAndCast<LuapeGraph>(), new LuapeGraphBuilderTypeSearchSpace(problem, maxDepth));
+    //builder->performTransition(context, LuapeNodeBuilderAction::push(newNode));
     enumerateNewArmsRecursively(context, builder);
   }
 
-  void enumerateNewArmsRecursively(ExecutionContext& context, const LuapeGraphBuilderStatePtr& state)
+  void enumerateNewArmsRecursively(ExecutionContext& context, const LuapeNodeBuilderStatePtr& state)
   {
     if (state->isFinalState())
     {

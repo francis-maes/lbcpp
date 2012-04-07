@@ -80,8 +80,8 @@
   </class>
 
   <!-- Luape Functions - Objects -->
-  <class name="UnaryObjectLuapeFuntion" base="LuapeFunction" abstract="yes"/>
-  <class name="GetVariableLuapeFunction" base="UnaryObjectLuapeFuntion">
+  <class name="UnaryObjectLuapeFunction" base="LuapeFunction" abstract="yes"/>
+  <class name="GetVariableLuapeFunction" base="UnaryObjectLuapeFunction">
     <constructor arguments="ClassPtr inputClass, size_t variableIndex" returnType="LuapeFunction"/>
     <constructor arguments="ClassPtr inputClass, const String&amp; variableName" returnType="LuapeFunction"/>
     <variable type="Class" name="inputClass"/>

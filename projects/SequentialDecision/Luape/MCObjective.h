@@ -35,7 +35,7 @@ public:
 
   virtual double evaluate(ExecutionContext& context, DecisionProblemStatePtr finalState)
   {
-    LuapeGraphBuilderStatePtr builder = finalState.staticCast<LuapeGraphBuilderState>();
+    LuapeNodeBuilderStatePtr builder = finalState.staticCast<LuapeNodeBuilderState>();
     if (builder->getStackSize() != 1)
       return -DBL_MAX;
     return evaluate(context, problem, builder->getStackElement(0));

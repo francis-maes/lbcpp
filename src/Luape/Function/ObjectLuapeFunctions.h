@@ -17,10 +17,10 @@ namespace lbcpp
 {
 
 template<class ExactType>
-class UnaryObjectLuapeFuntion : public LuapeFunction
+class UnaryObjectLuapeFunction : public LuapeFunction
 {
 public:
-  UnaryObjectLuapeFuntion(ClassPtr inputClass = objectClass)
+  UnaryObjectLuapeFunction(ClassPtr inputClass = objectClass)
     : inputClass(inputClass) {}
 
   Variable computeObject(const ObjectPtr& object) const
@@ -102,13 +102,13 @@ protected:
     {return *(const ExactType* )this;}
 };
 
-class GetVariableLuapeFunction : public UnaryObjectLuapeFuntion<GetVariableLuapeFunction>
+class GetVariableLuapeFunction : public UnaryObjectLuapeFunction<GetVariableLuapeFunction>
 {
 public:
   GetVariableLuapeFunction(ClassPtr inputClass = ClassPtr(), size_t variableIndex = 0)
-    : UnaryObjectLuapeFuntion<GetVariableLuapeFunction>(inputClass), inputClass(inputClass), variableIndex(variableIndex) {}
+    : UnaryObjectLuapeFunction<GetVariableLuapeFunction>(inputClass), inputClass(inputClass), variableIndex(variableIndex) {}
   GetVariableLuapeFunction(ClassPtr inputClass, const String& variableName)
-    : UnaryObjectLuapeFuntion<GetVariableLuapeFunction>(inputClass), inputClass(inputClass), variableIndex((size_t)inputClass->findMemberVariable(variableName))
+    : UnaryObjectLuapeFunction<GetVariableLuapeFunction>(inputClass), inputClass(inputClass), variableIndex((size_t)inputClass->findMemberVariable(variableName))
   {
     jassert(variableIndex != (size_t)-1);
   }
@@ -172,10 +172,10 @@ protected:
 
 typedef ReferenceCountedObjectPtr<GetVariableLuapeFunction> GetVariableLuapeFunctionPtr;
 
-class GetContainerLengthLuapeFunction : public UnaryObjectLuapeFuntion<GetContainerLengthLuapeFunction>
+class GetContainerLengthLuapeFunction : public UnaryObjectLuapeFunction<GetContainerLengthLuapeFunction>
 {
 public:
-  GetContainerLengthLuapeFunction() : UnaryObjectLuapeFuntion<GetContainerLengthLuapeFunction>(containerClass()) {}
+  GetContainerLengthLuapeFunction() : UnaryObjectLuapeFunction<GetContainerLengthLuapeFunction>(containerClass()) {}
 
   virtual String toShortString() const
     {return "length(.)";}

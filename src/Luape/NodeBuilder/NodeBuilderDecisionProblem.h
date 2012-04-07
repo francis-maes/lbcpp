@@ -15,26 +15,26 @@
 namespace lbcpp
 {
 
-class LuapeGraphBuilderAction;
-typedef ReferenceCountedObjectPtr<LuapeGraphBuilderAction> LuapeGraphBuilderActionPtr;
+class LuapeNodeBuilderAction;
+typedef ReferenceCountedObjectPtr<LuapeNodeBuilderAction> LuapeNodeBuilderActionPtr;
 
-extern ClassPtr luapeGraphBuilderActionClass;
+extern ClassPtr luapeNodeBuilderActionClass;
 
-class LuapeGraphBuilderAction : public Object
+class LuapeNodeBuilderAction : public Object
 {
 public:
-  LuapeGraphBuilderAction(size_t numNodesToRemove, const LuapeNodePtr& nodeToAdd)
-    : Object(luapeGraphBuilderActionClass), numNodesToRemove(numNodesToRemove), nodeToAdd(nodeToAdd) {}
-  LuapeGraphBuilderAction() : numNodesToRemove(0) {}
+  LuapeNodeBuilderAction(size_t numNodesToRemove, const LuapeNodePtr& nodeToAdd)
+    : Object(luapeNodeBuilderActionClass), numNodesToRemove(numNodesToRemove), nodeToAdd(nodeToAdd) {}
+  LuapeNodeBuilderAction() : numNodesToRemove(0) {}
 
-  static LuapeGraphBuilderActionPtr push(const LuapeNodePtr& node)
-    {return new LuapeGraphBuilderAction(0, node);}
+  static LuapeNodeBuilderActionPtr push(const LuapeNodePtr& node)
+    {return new LuapeNodeBuilderAction(0, node);}
 
-  static LuapeGraphBuilderActionPtr apply(const LuapeUniversePtr& universe, const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs)
-    {return new LuapeGraphBuilderAction(inputs.size(), universe->makeFunctionNode(function, inputs));}
+  static LuapeNodeBuilderActionPtr apply(const LuapeUniversePtr& universe, const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs)
+    {return new LuapeNodeBuilderAction(inputs.size(), universe->makeFunctionNode(function, inputs));}
 
-  static LuapeGraphBuilderActionPtr yield()
-    {return new LuapeGraphBuilderAction(0, LuapeNodePtr());}
+  static LuapeNodeBuilderActionPtr yield()
+    {return new LuapeNodeBuilderAction(0, LuapeNodePtr());}
 
   const LuapeNodePtr& getNodeToAdd() const
     {return nodeToAdd;}
@@ -89,10 +89,10 @@ private:
   std::vector<LuapeNodePtr> removedNodes; // use in state backup only
 };
 
-class LuapeGraphBuilderState : public DecisionProblemState
+class LuapeNodeBuilderState : public DecisionProblemState
 {
 public:
-  LuapeGraphBuilderState(const LuapeInferencePtr& function, LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace)
+  LuapeNodeBuilderState(const LuapeInferencePtr& function, LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace)
     : function(function), typeSearchSpace(typeSearchSpace), typeState(typeSearchSpace->getInitialState()), numSteps(0), isAborted(false), isYielded(false)
   {
     /*nodeKeys = new LuapeNodeKeysMap();
@@ -102,7 +102,7 @@ public:
         */
 
   }
-  LuapeGraphBuilderState() : numSteps(0), isAborted(false), isYielded(false) {}
+  LuapeNodeBuilderState() : numSteps(0), isAborted(false), isYielded(false) {}
 
   virtual String toShortString() const
   {
@@ -123,7 +123,7 @@ public:
   }
 
   virtual TypePtr getActionType() const
-    {return luapeGraphBuilderActionClass;}
+    {return luapeNodeBuilderActionClass;}
       
   virtual ContainerPtr getAvailableActions() const
   {
@@ -133,8 +133,8 @@ public:
     if (!typeState)
       return ContainerPtr();
 
-    ObjectVectorPtr res = new ObjectVector(luapeGraphBuilderActionClass, 0);
-    const_cast<LuapeGraphBuilderState* >(this)->availableActions = res;
+    ObjectVectorPtr res = new ObjectVector(luapeNodeBuilderActionClass, 0);
+    const_cast<LuapeNodeBuilderState* >(this)->availableActions = res;
 
     if (typeState->hasPushActions())
     {
@@ -164,7 +164,7 @@ public:
           for (size_t i = 0; i < numInputs; ++i)
             inputs[i] = stack[stack.size() - numInputs + i];
 
-          LuapeGraphBuilderActionPtr action = LuapeGraphBuilderAction::apply(this->function->getUniverse(), function, inputs);
+          LuapeNodeBuilderActionPtr action = LuapeNodeBuilderAction::apply(this->function->getUniverse(), function, inputs);
           // if (!action->isUseless(graph)) // useless == the created node already exists in the graph
             res->append(action);
         }
@@ -172,13 +172,13 @@ public:
     }
 
     if (typeState->hasYieldAction())
-      res->append(LuapeGraphBuilderAction::yield());
+      res->append(LuapeNodeBuilderAction::yield());
     return res;
   }
 
   virtual void performTransition(ExecutionContext& context, const Variable& a, double& reward, Variable* stateBackup = NULL)
   {
-    const LuapeGraphBuilderActionPtr& action = a.getObjectAndCast<LuapeGraphBuilderAction>();
+    const LuapeNodeBuilderActionPtr& action = a.getObjectAndCast<LuapeNodeBuilderAction>();
     if (stateBackup)
       *stateBackup = action;
     action->perform(stack);
@@ -209,7 +209,7 @@ public:
 
   virtual bool undoTransition(ExecutionContext& context, const Variable& stateBackup)
   {
-    const LuapeGraphBuilderActionPtr& action = stateBackup.getObjectAndCast<LuapeGraphBuilderAction>();
+    const LuapeNodeBuilderActionPtr& action = stateBackup.getObjectAndCast<LuapeNodeBuilderAction>();
     isAborted = isYielded = false;
     --numSteps;
     action->undo(stack);
@@ -239,7 +239,7 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  friend class LuapeGraphBuilderStateClass;
+  friend class LuapeNodeBuilderStateClass;
 
   LuapeInferencePtr function;
   LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
@@ -264,12 +264,12 @@ protected:
   void addPushActionIfAvailable(const ObjectVectorPtr& availableActions, const LuapeNodePtr& node) const
   {
     if (typeState->hasPushAction(node->getType()))
-      availableActions->append(LuapeGraphBuilderAction::push(node));
+      availableActions->append(LuapeNodeBuilderAction::push(node));
   }
 };
 
-typedef ReferenceCountedObjectPtr<LuapeGraphBuilderState> LuapeGraphBuilderStatePtr;
-extern ClassPtr luapeGraphBuilderStateClass;
+typedef ReferenceCountedObjectPtr<LuapeNodeBuilderState> LuapeNodeBuilderStatePtr;
+extern ClassPtr luapeNodeBuilderStateClass;
 
 }; /* namespace lbcpp */
 
