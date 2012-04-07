@@ -57,6 +57,16 @@ public:
     {return "log(" + inputs[0]->toShortString() + ")";}
 };
 
+class ExpDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
+{
+public:
+  virtual double computeDouble(double value) const
+    {return value >= 100 ? doubleMissingValue : exp(value);}
+
+  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+    {return "exp(" + inputs[0]->toShortString() + ")";}
+};
+
 class SqrtDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
 {
 public:
@@ -65,6 +75,26 @@ public:
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
     {return "sqrt(" + inputs[0]->toShortString() + ")";}
+};
+
+class CosDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
+{
+public:
+  virtual double computeDouble(double value) const
+    {return cos(value);}
+
+  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+    {return "cos(" + inputs[0]->toShortString() + ")";}
+};
+
+class SinDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
+{
+public:
+  virtual double computeDouble(double value) const
+    {return sin(value);}
+
+  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+    {return "sin(" + inputs[0]->toShortString() + ")";}
 };
 
 class BinaryDoubleLuapeFunction : public HomogeneousBinaryLuapeFunction

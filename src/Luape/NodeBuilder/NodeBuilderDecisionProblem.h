@@ -124,7 +124,7 @@ public:
 
   virtual TypePtr getActionType() const
     {return luapeGraphBuilderActionClass;}
-
+      
   virtual ContainerPtr getAvailableActions() const
   {
     if (availableActions)
@@ -138,19 +138,18 @@ public:
 
     if (typeState->hasPushActions())
     {
+      // constants
+      for (size_t i = 0; i < function->getNumConstants(); ++i)
+        addPushActionIfAvailable(res, function->getConstant(i));
+
+      // inputs
       for (size_t i = 0; i < function->getNumInputs(); ++i)
-      {
-        LuapeNodePtr node = function->getInput(i);
-        if (typeState->hasPushAction(node->getType()))
-          res->append(LuapeGraphBuilderAction::push(node));
-      }
+        addPushActionIfAvailable(res, function->getInput(i));
+
+      // active variables
       const std::set<LuapeNodePtr>& activeVariables = function->getActiveVariables();
       for (std::set<LuapeNodePtr>::const_iterator it = activeVariables.begin(); it != activeVariables.end(); ++it)
-      {
-        LuapeNodePtr node = *it;
-        if (typeState->hasPushAction(node->getType()))
-          res->append(LuapeGraphBuilderAction::push(node));
-      }
+        addPushActionIfAvailable(res, *it);
     }
     if (typeState->hasApplyActions())
     {
@@ -260,6 +259,12 @@ protected:
       types[i] = stack[i]->getType();
     typeState = typeSearchSpace->getState(numSteps, types);
     jassert(typeState);
+  }
+
+  void addPushActionIfAvailable(const ObjectVectorPtr& availableActions, const LuapeNodePtr& node) const
+  {
+    if (typeState->hasPushAction(node->getType()))
+      availableActions->append(LuapeGraphBuilderAction::push(node));
   }
 };
 

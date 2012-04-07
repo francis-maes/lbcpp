@@ -76,6 +76,18 @@ public:
     {functions.push_back(function);}
 
   /*
+  ** Available Constants
+  */
+  size_t getNumConstants() const
+    {return constants.size();}
+
+  const LuapeConstantNodePtr& getConstant(size_t index) const
+    {jassert(index < constants.size()); return constants[index];}
+
+  void addConstant(const Variable& value)
+    {constants.push_back(new LuapeConstantNode(value));}
+
+  /*
   ** Search space
   */
   LuapeGraphBuilderTypeSearchSpacePtr getSearchSpace(ExecutionContext& context, size_t complexity, bool verbose = false) const;
@@ -125,6 +137,7 @@ protected:
   LuapeUniversePtr universe;
   std::vector<LuapeInputNodePtr> inputs;
   LuapeInputNodePtr supervision;
+  std::vector<LuapeConstantNodePtr> constants;
   std::vector<LuapeFunctionPtr> functions;
   std::set<LuapeNodePtr> activeVariables;
   LuapeNodePtr node;

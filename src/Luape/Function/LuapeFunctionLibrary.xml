@@ -32,7 +32,16 @@
   <class name="LogDoubleLuapeFunction" base="UnaryDoubleLuapeFunction">
     <constructor returnType="LuapeFunction"/>
   </class>
+  <class name="ExpDoubleLuapeFunction" base="UnaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
   <class name="SqrtDoubleLuapeFunction" base="UnaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="CosDoubleLuapeFunction" base="UnaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="SinDoubleLuapeFunction" base="UnaryDoubleLuapeFunction">
     <constructor returnType="LuapeFunction"/>
   </class>
 

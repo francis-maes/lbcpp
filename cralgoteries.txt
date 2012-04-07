@@ -1,7 +1,3 @@
- * Test same algorithms as david
- * Luape: add support for constants
- * Luape: add "exp", "cos" and "sin" functions
- 
  
 Experiences - Proteins:
  * Nouvelles features: prev et next amino acid de chaque type; delta de ObjectVector[DenseDoubleVector]; local/global histogram
