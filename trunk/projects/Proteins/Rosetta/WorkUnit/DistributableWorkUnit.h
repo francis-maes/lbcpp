@@ -160,11 +160,12 @@ public:
     for (size_t i = 0; i < units->getNumWorkUnits(); i++)
     {
       File wuResult(distributableWorkUnitDirectory.getFullPathName() + T("/") + units->getWorkUnit(i)->toString() + T(".xml"));
-      if (!wuResult.exists())
+      File wuTrace(distributableWorkUnitDirectory.getFullPathName() + T("/") + units->getWorkUnit(i)->toString() + T(".trace"));
+      if (!wuResult.exists() || !wuTrace.exists())
       {
         if (numExecuted >= 20)
         {
-          remoteContext->waitUntilAllWorkUnitsAreDone(time * 60 * 60 * 451);
+          remoteContext->waitUntilAllWorkUnitsAreDone(time * 60 * 60 * 333);
           numExecuted = 0;
         }
         remoteContext->pushWorkUnit(units->getWorkUnit(i), new DistributableExecutionContextCallback(context, distributable->toString()));
