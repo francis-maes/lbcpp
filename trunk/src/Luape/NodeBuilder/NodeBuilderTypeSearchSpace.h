@@ -22,8 +22,8 @@ typedef ReferenceCountedObjectPtr<LuapeGraphBuilderTypeState> LuapeGraphBuilderT
 class LuapeGraphBuilderTypeState : public Object
 {
 public:
-  LuapeGraphBuilderTypeState(size_t depth, const std::vector<TypePtr>& stack)
-    : depth(depth), stack(stack), stateIndex((size_t)-1), numNodeTypesWhenBuilt(0), canBePruned(false), canBePrunedComputed(false) {}
+  LuapeGraphBuilderTypeState(size_t depth, const std::vector<TypePtr>& stack, bool yieldable)
+    : depth(depth), stack(stack), yieldable(yieldable), stateIndex((size_t)-1), numNodeTypesWhenBuilt(0), canBePruned(false), canBePrunedComputed(false) {}
   LuapeGraphBuilderTypeState() : depth(0), stateIndex((size_t)-1), numNodeTypesWhenBuilt(0), canBePruned(false), canBePrunedComputed(false) {}
 
   virtual String toShortString() const
@@ -97,10 +97,7 @@ public:
     {return apply;}
 
   bool hasYieldAction() const
-    {return stack.size() == 1 && (
-      stack[0]->inheritsFrom(booleanType) ||
-      stack[0]->inheritsFrom(doubleType) ||
-      (!stack[0].isInstanceOf<Enumeration>() && stack[0]->inheritsFrom(integerType)));}
+    {return yieldable;}
 
   bool hasAnyAction() const
     {return hasPushActions() || hasApplyActions() || hasYieldAction();}
@@ -116,6 +113,7 @@ private:
   std::vector<TypePtr> stack;
   std::vector<std::pair<TypePtr, LuapeGraphBuilderTypeStatePtr> > push;
   std::vector<std::pair<LuapeFunctionPtr, LuapeGraphBuilderTypeStatePtr> > apply;
+  bool yieldable;
   size_t stateIndex;
   
   size_t numNodeTypesWhenBuilt;
@@ -148,20 +146,20 @@ private:
 class LuapeGraphBuilderTypeSearchSpace : public Object
 {
 public:
-  LuapeGraphBuilderTypeSearchSpace(const LuapeInferencePtr& function, size_t maxDepth)
+  LuapeGraphBuilderTypeSearchSpace(const LuapeInferencePtr& problem, size_t maxDepth)
   {
     std::vector<TypePtr> nodeTypes;
-    for (size_t i = 0; i < function->getNumInputs(); ++i)
-      insertType(nodeTypes, function->getInput(i)->getType());
-    for (size_t i = 0; i < function->getNumConstants(); ++i)
-      insertType(nodeTypes, function->getConstant(i)->getType());
+    for (size_t i = 0; i < problem->getNumInputs(); ++i)
+      insertType(nodeTypes, problem->getInput(i)->getType());
+    for (size_t i = 0; i < problem->getNumConstants(); ++i)
+      insertType(nodeTypes, problem->getConstant(i)->getType());
     insertType(nodeTypes, booleanType); // automatically included since boosting methods may create stump nodes that output booleans
 
-    LuapeGraphBuilderTypeStatePtr root = getOrCreateState(0, std::vector<TypePtr>());
+    LuapeGraphBuilderTypeStatePtr root = getOrCreateState(problem, 0, std::vector<TypePtr>());
     size_t numTypes = nodeTypes.size();
     while (true)
     {
-      buildSuccessors(function, root, nodeTypes, maxDepth);
+      buildSuccessors(problem, root, nodeTypes, maxDepth);
       size_t newNumTypes = nodeTypes.size();
       if (newNumTypes != numTypes)
       { 
@@ -228,13 +226,14 @@ public:
 private:
   StateMap states;
 
-  LuapeGraphBuilderTypeStatePtr getOrCreateState(size_t depth, const std::vector<TypePtr>& stack)
+  LuapeGraphBuilderTypeStatePtr getOrCreateState(const LuapeInferencePtr& problem, size_t depth, const std::vector<TypePtr>& stack)
   {
     StateKey key(depth, stack);
     StateMap::const_iterator it = states.find(key);
     if (it == states.end())
     { 
-      LuapeGraphBuilderTypeStatePtr res = new LuapeGraphBuilderTypeState(depth, stack);
+      bool yieldable = (stack.size() == 1 && problem->isTargetTypeAccepted(stack[0]));
+      LuapeGraphBuilderTypeStatePtr res = new LuapeGraphBuilderTypeState(depth, stack, yieldable);
       states[key] = res;
       return res;
     }
@@ -250,7 +249,7 @@ private:
     types.push_back(type);
   }
 
-  void buildSuccessors(const LuapeInferencePtr& inference, const LuapeGraphBuilderTypeStatePtr& state, std::vector<TypePtr>& nodeTypes, size_t maxDepth)
+  void buildSuccessors(const LuapeInferencePtr& problem, const LuapeGraphBuilderTypeStatePtr& state, std::vector<TypePtr>& nodeTypes, size_t maxDepth)
   {
     if (maxDepth == state->getDepth())
     {
@@ -270,7 +269,7 @@ private:
         TypePtr type = nodeTypes[i];
         LuapeGraphBuilderTypeStatePtr nextState = state->getPushTransition(type);
         if (nextState)
-          buildSuccessors(inference, nextState, nodeTypes, maxDepth);
+          buildSuccessors(problem, nextState, nodeTypes, maxDepth);
         else
         {
           // compute new stack
@@ -278,16 +277,16 @@ private:
           newStack.push_back(type);
 
           // create successor state and call recursively
-          LuapeGraphBuilderTypeStatePtr newState = getOrCreateState(state->getDepth() + 1, newStack);
+          LuapeGraphBuilderTypeStatePtr newState = getOrCreateState(problem, state->getDepth() + 1, newStack);
           state->setPushTransition(type, newState);
-          buildSuccessors(inference, newState, nodeTypes, maxDepth);
+          buildSuccessors(problem, newState, nodeTypes, maxDepth);
         }
       }
     }
 
-    for (size_t i = 0; i < inference->getNumFunctions(); ++i)
+    for (size_t i = 0; i < problem->getNumFunctions(); ++i)
     {
-      LuapeFunctionPtr function = inference->getFunction(i);
+      LuapeFunctionPtr function = problem->getFunction(i);
       if (acceptInputTypes(function, state->getStack()))
       {
         size_t numInputs = function->getNumInputs();
@@ -298,10 +297,10 @@ private:
           inputTypes[i] = state->stack[state->getStackSize() - numInputs + i];
 
         std::vector<LuapeFunctionPtr> functions;
-        enumerateFunctionVariables(inference->getUniverse(), function, inputTypes, tmp, 0, functions);
+        enumerateFunctionVariables(problem->getUniverse(), function, inputTypes, tmp, 0, functions);
 
         for (size_t j = 0; j < functions.size(); ++j)
-          applyFunctionAndBuildSuccessor(inference, state, functions[j], nodeTypes, maxDepth);
+          applyFunctionAndBuildSuccessor(problem, state, functions[j], nodeTypes, maxDepth);
       }
     }
   }
@@ -325,7 +324,7 @@ private:
     }
   }
 
-  void applyFunctionAndBuildSuccessor(const LuapeInferencePtr& inference, const LuapeGraphBuilderTypeStatePtr& state, const LuapeFunctionPtr& function, std::vector<TypePtr>& nodeTypes, size_t maxDepth)
+  void applyFunctionAndBuildSuccessor(const LuapeInferencePtr& problem, const LuapeGraphBuilderTypeStatePtr& state, const LuapeFunctionPtr& function, std::vector<TypePtr>& nodeTypes, size_t maxDepth)
   {
     // compute output type given input types
     size_t numInputs = function->getNumInputs();
@@ -344,9 +343,9 @@ private:
     newStack.back() = outputType;
 
     // create successor state and call recursively
-    LuapeGraphBuilderTypeStatePtr newState = getOrCreateState(state->getDepth() + 1, newStack);
+    LuapeGraphBuilderTypeStatePtr newState = getOrCreateState(problem, state->getDepth() + 1, newStack);
     state->setApplyTransition(function, newState);
-    buildSuccessors(inference, newState, nodeTypes, maxDepth);
+    buildSuccessors(problem, newState, nodeTypes, maxDepth);
   }
 
   bool acceptInputTypes(const LuapeFunctionPtr& function, const std::vector<TypePtr>& stack) const

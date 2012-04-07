@@ -28,7 +28,7 @@ public:
     ObjectivePtr objective = new Objective(refCountedPointerFromThis(this), problem, examples, useRandomSplit);
     OptimizationProblemPtr optimizationProblem = new OptimizationProblem(objective);
     optimizationProblem->setMaximisationProblem(true);
-    optimizationProblem->setInitialState(new LuapeGraphBuilderState(problem, typeSearchSpace));
+    optimizationProblem->setInitialState(new LuapeNodeBuilderState(problem, typeSearchSpace));
 
     OptimizerStatePtr state = optimizer->optimize(context, optimizationProblem);
 
@@ -41,7 +41,7 @@ public:
     totalNumCalls += objective->getNumCalls();
     totalNumUniqueCalls += objective->getNumUniqueCalls();
 
-    LuapeGraphBuilderStatePtr finalState = state->getBestSolution().getObjectAndCast<LuapeGraphBuilderState>();
+    LuapeNodeBuilderStatePtr finalState = state->getBestSolution().getObjectAndCast<LuapeNodeBuilderState>();
     if (!finalState || finalState->getStackSize() != 1)
       return LuapeNodePtr();
 
@@ -76,7 +76,7 @@ protected:
               LuapeInferencePtr problem,
               const IndexSetPtr& examples,
               bool useRandomSplit)
-       : SimpleUnaryFunction(luapeGraphBuilderStateClass, doubleType),
+       : SimpleUnaryFunction(luapeNodeBuilderStateClass, doubleType),
         weakLearner(weakLearner), problem(problem), examples(examples), useRandomSplit(useRandomSplit),
         numCalls(0), numInvalidCalls(0), numUniqueCalls(0) {}
 
@@ -86,7 +86,7 @@ protected:
 
       ++pthis.numCalls;
 
-      const LuapeGraphBuilderStatePtr& builder = input.getObjectAndCast<LuapeGraphBuilderState>();
+      const LuapeNodeBuilderStatePtr& builder = input.getObjectAndCast<LuapeNodeBuilderState>();
       if (builder->getStackSize() != 1)
       {
         ++pthis.numInvalidCalls;

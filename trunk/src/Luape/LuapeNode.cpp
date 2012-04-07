@@ -26,6 +26,9 @@ LuapeNode::LuapeNode(const TypePtr& type)
 {
 }
 
+Variable LuapeNode::compute(ExecutionContext& context) const
+    {return compute(context, new LuapeInstanceCache());}
+
 void LuapeNode::addImportance(double delta)
 {
   jassert(isNumberValid(delta));

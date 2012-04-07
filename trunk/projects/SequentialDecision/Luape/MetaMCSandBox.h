@@ -12,9 +12,59 @@
 # include <lbcpp/Execution/WorkUnit.h>
 # include "MCAlgorithm.h"
 # include "MCOptimizer.h"
+# include "../../../src/Luape/Function/ObjectLuapeFunctions.h"
 
 namespace lbcpp
 {
+
+/*
+** Luape functions
+*/
+class MCAlgorithmLuapeFunction : public UnaryObjectLuapeFunction<MCAlgorithmLuapeFunction>
+{
+public:
+  MCAlgorithmLuapeFunction() : UnaryObjectLuapeFunction(mcAlgorithmClass) {}
+
+  virtual TypePtr initialize(const TypePtr* inputTypes)
+    {return mcAlgorithmClass;}
+
+  virtual MCAlgorithmPtr createAlgorithm(const MCAlgorithmPtr& input) const = 0;
+
+  Variable computeObject(const ObjectPtr& object) const
+    {return createAlgorithm(object.staticCast<MCAlgorithm>());} 
+};
+
+class IterateMCAlgorithmLuapeFunction : public MCAlgorithmLuapeFunction
+{
+public:
+ virtual TypePtr initialize(const TypePtr* inputTypes)
+    {return iterateMCAlgorithmClass;}
+
+  virtual MCAlgorithmPtr createAlgorithm(const MCAlgorithmPtr& input) const
+    {return new IterateMCAlgorithm(input, 4);}
+};
+
+class StepMCAlgorithmLuapeFunction : public MCAlgorithmLuapeFunction
+{
+public:
+ virtual TypePtr initialize(const TypePtr* inputTypes)
+    {return stepByStepMCAlgorithmClass;}
+
+  virtual MCAlgorithmPtr createAlgorithm(const MCAlgorithmPtr& input) const
+    {return new StepByStepMCAlgorithm(input, true);}
+};
+
+class LookAheadMCAlgorithmLuapeFunction : public MCAlgorithmLuapeFunction
+{
+public:
+ virtual TypePtr initialize(const TypePtr* inputTypes)
+    {return lookAheadMCAlgorithmClass;}
+
+  virtual MCAlgorithmPtr createAlgorithm(const MCAlgorithmPtr& input) const
+    {return new LookAheadMCAlgorithm(input);}
+};
+
+/////////////////
 
 class CacheAndFiniteBudgetMCObjective : public MCObjective
 {
@@ -24,7 +74,7 @@ public:
 
   virtual double evaluate(ExecutionContext& context, DecisionProblemStatePtr finalState)
   {
-    LuapeGraphBuilderStatePtr builder = finalState.staticCast<LuapeGraphBuilderState>();
+    LuapeNodeBuilderStatePtr builder = finalState.staticCast<LuapeNodeBuilderState>();
     if (builder->getStackSize() != 1)
       return -DBL_MAX;
     LuapeNodePtr node = builder->getStackElement(0);
@@ -85,9 +135,81 @@ class MetaMCSandBox : public WorkUnit
 public:
   MetaMCSandBox() : budget(1024), complexity(8), numRuns(100) {}
 
-  double testAlgorithm(ExecutionContext& context, const String& algoName, MCAlgorithmPtr algorithm, bool useCache, size_t problemNumber, std::vector<ScalarVariableStatistics>& resultCurve)
+  virtual Variable run(ExecutionContext& context)
   {
-    context.enterScope(algoName);
+    std::vector<std::pair<String, MCAlgorithmPtr> > algorithms;
+    generateMCAlgorithms(context, algorithms);
+    
+    algorithms.push_back(std::make_pair("RAND", rollout()));
+    algorithms.push_back(std::make_pair("LA1", step(lookAhead(rollout()))));
+    algorithms.push_back(std::make_pair("LA2", step(lookAhead(lookAhead(rollout())))));
+    algorithms.push_back(std::make_pair("LA3", step(lookAhead(lookAhead(lookAhead(rollout()))))));
+    algorithms.push_back(std::make_pair("LA4", step(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))));
+    algorithms.push_back(std::make_pair("LA5", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout()))))))));
+    algorithms.push_back(std::make_pair("LA6", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))))));
+    //algorithms.push_back(std::make_pair("LA7", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout()))))))))));
+    //algorithms.push_back(std::make_pair("LA8", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))))))));
+    algorithms.push_back(std::make_pair("NMC2", step(lookAhead(step(lookAhead(rollout()))))));
+    algorithms.push_back(std::make_pair("NMC3", step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))));
+    algorithms.push_back(std::make_pair("NMC4", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))));
+    //algorithms.push_back(std::make_pair("NMC5", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))))));
+    //algorithms.push_back(std::make_pair("NMC6", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))))))));
+    
+    
+    context.informationCallback(String((int)algorithms.size()) + T(" Algorithms"));
+
+    for (size_t problemNumber = 1; problemNumber <= 8; ++problemNumber)
+    {
+      context.enterScope(T("Problem ") + String((int)problemNumber));
+      double bestScore = DBL_MAX;
+      String bestAlgorithm;
+      std::vector< std::vector<ScalarVariableStatistics> > resultCurves(algorithms.size());
+      for (size_t i = 0; i < algorithms.size(); ++i)
+      {
+        context.enterScope(algorithms[i].first);
+        context.resultCallback(T("algorithm"), i);
+        context.resultCallback(T("algorithmName"), algorithms[i].first);
+
+        MCAlgorithmPtr algorithm = algorithms[i].second;
+        double score = testAlgorithm(context, algorithm, false, problemNumber, resultCurves[i]);
+        if (score < bestScore)
+          bestScore = score, bestAlgorithm = algorithms[i].first;
+        context.leaveScope(score);
+      }
+      context.informationCallback(T("Best: ") + bestAlgorithm + T(": ") + String(bestScore));
+
+      context.enterScope(T("Results")); // skip first points
+      for (size_t i = 3; i < resultCurves[0].size(); ++i)
+      {
+        context.enterScope(T("Budget ") + String(pow(2.0, (double)i)));
+        context.resultCallback("logBudget", i);
+        for (size_t j = 0; j < resultCurves.size(); ++j)
+        {
+          if (i < resultCurves[j].size())
+          {
+            double value = resultCurves[j][i].getMean();
+            if (isNumberValid(value))
+              context.resultCallback(algorithms[j].first, value);
+          }
+        }
+        context.leaveScope();
+      }
+      context.leaveScope();
+
+      context.leaveScope(bestAlgorithm);
+    }
+    return true;
+  }
+
+protected:
+  friend class MetaMCSandBoxClass;
+
+  size_t budget;
+  size_t complexity;
+  size_t numRuns;
+
+  double testAlgorithm(ExecutionContext& context, MCAlgorithmPtr algorithm, bool useCache, size_t problemNumber, std::vector<ScalarVariableStatistics>& resultCurve)
+  {
     ScalarVariableStatisticsPtr stats = new ScalarVariableStatistics("score");
     std::map<String, size_t> solutions;
     for (size_t i = 0; i < numRuns; ++i)
@@ -99,10 +221,10 @@ public:
       CacheAndFiniteBudgetMCObjectivePtr objective = new CacheAndFiniteBudgetMCObjective(new SymbolicRegressionMCObjective(problem), budget, useCache);
       DecisionProblemStatePtr finalState;
 
-      double score = iterate(algorithm, 0)->search(context, objective, new LuapeGraphBuilderState(problem, typeSearchSpace), NULL, finalState);
+      double score = iterate(algorithm, 0)->search(context, objective, new LuapeNodeBuilderState(problem, typeSearchSpace), NULL, finalState);
       if (finalState)
       {
-        LuapeNodePtr formula = finalState.staticCast<LuapeGraphBuilderState>()->getStackElement(0);
+        LuapeNodePtr formula = finalState.staticCast<LuapeNodeBuilderState>()->getStackElement(0);
         solutions[formula->toShortString()]++;
         stats->push(-score);
 
@@ -135,74 +257,31 @@ public:
       context.informationCallback(info);
     }
 
-    context.leaveScope(stats);
     return stats->getMean();
   }
 
-  virtual Variable run(ExecutionContext& context)
+  void generateMCAlgorithms(ExecutionContext& context, std::vector<std::pair<String, MCAlgorithmPtr> >& res)
   {
-    std::vector<std::pair<String, MCAlgorithmPtr> > algorithms;
-    
-    algorithms.push_back(std::make_pair("RAND", rollout()));
-    algorithms.push_back(std::make_pair("LA1", step(lookAhead(rollout()))));
-    algorithms.push_back(std::make_pair("LA2", step(lookAhead(lookAhead(rollout())))));
-    algorithms.push_back(std::make_pair("LA3", step(lookAhead(lookAhead(lookAhead(rollout()))))));
-    algorithms.push_back(std::make_pair("LA4", step(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))));
-    algorithms.push_back(std::make_pair("LA5", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout()))))))));
-    algorithms.push_back(std::make_pair("LA6", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))))));
-    //algorithms.push_back(std::make_pair("LA7", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout()))))))))));
-    //algorithms.push_back(std::make_pair("LA8", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))))))));
-    algorithms.push_back(std::make_pair("NMC2", step(lookAhead(step(lookAhead(rollout()))))));
-    algorithms.push_back(std::make_pair("NMC3", step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))));
-    algorithms.push_back(std::make_pair("NMC4", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))));
-    //algorithms.push_back(std::make_pair("NMC5", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))))));
-    //algorithms.push_back(std::make_pair("NMC6", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))))))));
-    
-//    MCAlgorithmSet algorithmSet(3);
-  //  algorithmSet.getAlgorithms(algorithms);
-    context.informationCallback(String((int)algorithms.size()) + T(" Algorithms"));
+    LuapeInferencePtr problem = new LuapeInference();
 
-    for (size_t problemNumber = 1; problemNumber <= 8; ++problemNumber)
+    problem->addConstant(rollout());
+    problem->addFunction(new IterateMCAlgorithmLuapeFunction());
+    problem->addFunction(new StepMCAlgorithmLuapeFunction());
+    problem->addFunction(new LookAheadMCAlgorithmLuapeFunction());
+    problem->addTargetType(mcAlgorithmClass);
+
+    std::vector<LuapeNodePtr> nodes;
+    problem->enumerateNodesExhaustively(context, 6, nodes, true);
+
+    res.reserve(nodes.size());
+    for (size_t i = 0; i < nodes.size(); ++i)
     {
-      context.enterScope(T("Problem ") + String((int)problemNumber));
-      double bestScore = DBL_MAX;
-      String bestAlgorithm;
-      std::vector< std::vector<ScalarVariableStatistics> > resultCurves(algorithms.size());
-      for (size_t i = 0; i < algorithms.size(); ++i)
-      {
-        String algoName = algorithms[i].first;
-        MCAlgorithmPtr algorithm = algorithms[i].second;
-        double score = testAlgorithm(context, algoName, algorithm, false, problemNumber, resultCurves[i]);
-        if (score < bestScore)
-          bestScore = score, bestAlgorithm = algoName;
-      }
-      context.informationCallback(T("Best: ") + bestAlgorithm + T(": ") + String(bestScore));
-
-      context.enterScope(T("Results")); // skip first points
-      for (size_t i = 3; i < resultCurves[0].size(); ++i)
-      {
-        context.enterScope(T("Budget ") + String(pow(2.0, (double)i)));
-        context.resultCallback("logBudget", i);
-        for (size_t j = 0; j < resultCurves.size(); ++j)
-        {
-          if (i < resultCurves[j].size())
-            context.resultCallback(algorithms[j].first, resultCurves[j][i].getMean());
-        }
-        context.leaveScope();
-      }
-      context.leaveScope();
-
-      context.leaveScope(bestAlgorithm);
+      LuapeNodePtr node = nodes[i];
+      MCAlgorithmPtr algorithm = node->compute(context).getObjectAndCast<MCAlgorithm>();
+      res.push_back(std::make_pair(algorithm->toShortString(), algorithm));
+      //context.informationCallback(algorithm->toShortString());
     }
-    return true;
   }
-
-protected:
-  friend class MetaMCSandBoxClass;
-
-  size_t budget;
-  size_t complexity;
-  size_t numRuns;
 
   LuapeRegressorPtr createProblem(ExecutionContext& context, size_t problemNumber) const
   {

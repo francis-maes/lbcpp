@@ -27,6 +27,8 @@ public:
     {this->type = type;}
 
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const = 0;
+  Variable compute(ExecutionContext& context) const;
+
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const = 0;
   
   virtual size_t getNumSubNodes() const

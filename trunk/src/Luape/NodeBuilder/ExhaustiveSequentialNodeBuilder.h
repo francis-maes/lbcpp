@@ -49,7 +49,7 @@ protected:
   void enumerateCandidates(ExecutionContext& context, const LuapeInferencePtr& function, std::vector<LuapeNodePtr>& candidates) const
   {
     LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = function->getSearchSpace(context, complexity);
-    LuapeGraphBuilderStatePtr builder = new LuapeGraphBuilderState(function, typeSearchSpace);
+    LuapeNodeBuilderStatePtr builder = new LuapeNodeBuilderState(function, typeSearchSpace);
     std::set<LuapeNodePtr> weakNodes;
     enumerateWeakNodes(context, builder, weakNodes);
     candidates.reserve(candidates.size() + weakNodes.size());
@@ -60,7 +60,7 @@ protected:
     }
   }
 
-  void enumerateWeakNodes(ExecutionContext& context, const LuapeGraphBuilderStatePtr& state, std::set<LuapeNodePtr>& res) const
+  void enumerateWeakNodes(ExecutionContext& context, const LuapeNodeBuilderStatePtr& state, std::set<LuapeNodePtr>& res) const
   {
     if (state->isFinalState())
     {
