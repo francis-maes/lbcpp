@@ -146,7 +146,7 @@ public:
     {return "*";}
 
   virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
-    {return "(" + inputs[0]->toShortString() + " x " + inputs[1]->toShortString() + ")";}
+    {return "(" + inputs[0]->toShortString() + " * " + inputs[1]->toShortString() + ")";}
 
   virtual double computeDouble(double first, double second) const
     {return first * second;}

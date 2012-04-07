@@ -1,6 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <library name="LuapeSandBox" directory="Luape">
+
+  <!-- MC Objective -->
+  <class name="MCObjective" abstract="yes"/>
+
+  <class name="LuapeMCObjective" base="MCObjective" abstract="yes">
+    <variable type="LuapeInference" name="problem"/>
+  </class>
+  <class name="SymbolicRegressionMCObjective" base="LuapeMCObjective"/>
+
+  <!-- MC Algorithm -->
+  <class name="MCAlgorithm" abstract="yes"/>
+  <class name="RolloutMCAlgorithm" base="MCAlgorithm" shortName="rollout"/>
+  <class name="DecoratorMCAlgorithm" base="MCAlgorithm" abstract="yes">
+    <variable type="MCAlgorithm" name="algorithm"/>
+  </class>
+  <class name="IterateMCAlgorithm" base="DecoratorMCAlgorithm" shortName="iterate">
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+  <class name="LookAheadMCAlgorithm" base="DecoratorMCAlgorithm" shortName="lookAhead">
+    <variable type="Double" name="numActions"/>
+  </class>
+  <class name="StepByStepMCAlgorithm" base="DecoratorMCAlgorithm" shortName="step">
+    <variable type="Boolean" name="useGlobalBest"/>
+  </class>
+
+  <!-- MC Optimizer -->
+  <class name="MCOptimizer" base="Optimizer">
+    <variable type="MCAlgorithm" name="algorithm"/>
+    <variable type="PositiveInteger" name="budget"/>
+  </class>
+
   
   <!--
   <class name="BanditPoolWeakLearner" base="LuapeLearner">
@@ -9,8 +40,14 @@
     <variable type="PositiveInteger" name="maxDepth"/>
   </class>
   -->
-
+  
   <!-- Sand Box -->
+  <class name="MetaMCSandBox" base="WorkUnit">
+    <variable type="PositiveInteger" name="budget"/>
+    <variable type="PositiveInteger" name="complexity"/>
+    <variable type="PositiveInteger" name="numRuns"/>
+  </class>
+
   <class name="LuapeSandBox" base="WorkUnit">
     <variable type="File" name="trainFile"/>
     <variable type="File" name="testFile"/>
@@ -54,7 +91,6 @@
   </class>
 
   <!-- Soft Stumps -->
-
   <class name="SoftStumpLuapeFunction" base="LuapeFunction">
     <variable type="Double" name="threshold"/>
     <variable type="Double" name="gamma"/>
@@ -63,28 +99,4 @@
     <variable type="Double" name="gamma"/>
   </class>
   
-  <!-- Meta MC -->
-  <class name="MCObjective" abstract="yes"/>
-  
-  <class name="MCAlgorithm" abstract="yes"/>
-  <class name="RolloutMCAlgorithm" base="MCAlgorithm" shortName="rollout"/>
-  <class name="DecoratorMCAlgorithm" base="MCAlgorithm" abstract="yes">
-    <variable type="MCAlgorithm" name="algorithm"/>
-  </class>
-  <class name="IterateMCAlgorithm" base="DecoratorMCAlgorithm" shortName="iterate">
-    <variable type="PositiveInteger" name="numIterations"/>
-  </class>
-  <class name="LookAheadMCAlgorithm" base="DecoratorMCAlgorithm" shortName="lookAhead">
-    <variable type="Double" name="numActions"/>
-  </class>
-  <class name="StepByStepMCAlgorithm" base="DecoratorMCAlgorithm" shortName="step">
-    <variable type="Boolean" name="useGlobalBest"/>
-  </class>
-
-  <class name="MCOptimizer" base="Optimizer">
-    <variable type="MCAlgorithm" name="algorithm"/>
-    <variable type="PositiveInteger" name="budget"/>
-  </class>
-
-
 </library>

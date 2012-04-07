@@ -18,7 +18,7 @@
 # include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Learning/Numerical.h> // for lbcpp::convertSupervisionVariableToEnumValue
 # include "LuapeSoftStump.h"
-# include "MetaMCSandBox.h"
+# include "MCOptimizer.h"
 # include "../Core/NestedMonteCarloOptimizer.h"
 # include "../Core/SinglePlayerMCTSOptimizer.h"
 # include "../../../src/Luape/Learner/OptimizerBasedSequentialWeakLearner.h"
