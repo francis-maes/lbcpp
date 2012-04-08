@@ -50,6 +50,9 @@ protected:
 class LogDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
 {
 public:
+  virtual String toShortString() const
+    {return "log";}
+
   virtual double computeDouble(double value) const
     {return value <= 0.0 ? doubleMissingValue : log(value);}
 
@@ -60,6 +63,9 @@ public:
 class ExpDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
 {
 public:
+  virtual String toShortString() const
+    {return "exp";}
+
   virtual double computeDouble(double value) const
     {return value >= 100 ? doubleMissingValue : exp(value);}
 
@@ -70,6 +76,9 @@ public:
 class SqrtDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
 {
 public:
+  virtual String toShortString() const
+    {return "sqrt";}
+
   virtual double computeDouble(double value) const
     {return value < 0.0 ? doubleMissingValue : sqrt(value);}
 
@@ -80,6 +89,9 @@ public:
 class CosDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
 {
 public:
+  virtual String toShortString() const
+    {return "cos";}
+
   virtual double computeDouble(double value) const
     {return cos(value);}
 
@@ -90,6 +102,9 @@ public:
 class SinDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
 {
 public:
+  virtual String toShortString() const
+    {return "sin";}
+
   virtual double computeDouble(double value) const
     {return sin(value);}
 

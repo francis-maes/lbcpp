@@ -395,7 +395,7 @@ public:
     }
     else
     {
-      for (size_t j = 0; j < formulas.size(); ++j)
+      for (size_t j = 0; j < numTimeSteps; ++j)
         playBestFormula(context);
     }
 

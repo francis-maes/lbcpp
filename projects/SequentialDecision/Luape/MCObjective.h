@@ -69,6 +69,8 @@ public:
   }
 };
 
+typedef ReferenceCountedObjectPtr<SymbolicRegressionMCObjective> SymbolicRegressionMCObjectivePtr;
+
 
 }; /* namespace lbcpp */
 
