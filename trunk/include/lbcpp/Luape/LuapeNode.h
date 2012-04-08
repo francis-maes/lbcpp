@@ -118,7 +118,8 @@ class LuapeFunctionNode : public LuapeNode
 {
 public:
   LuapeFunctionNode(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& arguments);
-  LuapeFunctionNode(const LuapeFunctionPtr& function, LuapeNodePtr argument);
+  LuapeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& argument1, const LuapeNodePtr& argument2);
+  LuapeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& argument);
   LuapeFunctionNode() {}
 
   virtual String toShortString() const;

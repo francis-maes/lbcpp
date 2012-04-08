@@ -102,7 +102,15 @@ LuapeFunctionNode::LuapeFunctionNode(const LuapeFunctionPtr& function, const std
   initialize();
 }
 
-LuapeFunctionNode::LuapeFunctionNode(const LuapeFunctionPtr& function, LuapeNodePtr argument)
+LuapeFunctionNode::LuapeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& argument1, const LuapeNodePtr& argument2)
+  : function(function), arguments(2)
+{
+  arguments[0] = argument1;
+  arguments[1] = argument2;
+  initialize();
+}
+
+LuapeFunctionNode::LuapeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& argument)
   : function(function), arguments(1, argument)
 {
   initialize();

@@ -13,6 +13,7 @@
 # include "MCAlgorithm.h"
 # include "MCOptimizer.h"
 # include "../../../src/Luape/Function/ObjectLuapeFunctions.h"
+# include <fstream>
 
 namespace lbcpp
 {
@@ -135,8 +136,93 @@ class MetaMCSandBox : public WorkUnit
 public:
   MetaMCSandBox() : budget(1024), complexity(8), numRuns(100) {}
 
+#if 0
+  void testToto(ExecutionContext& context)
+  {
+    ScalarVariableStatisticsPtr stats = new ScalarVariableStatistics();
+    for (size_t i = 0; i < numRuns; ++i)
+    {
+      LuapeRegressorPtr problem = createProblem(context, 1);
+
+      SymbolicRegressionMCObjectivePtr objective = new SymbolicRegressionMCObjective(problem);
+      LuapeUniversePtr universe = problem->getUniverse();
+      // x2 + x
+      LuapeNodePtr x = problem->getInput(0);
+      LuapeNodePtr node = new LuapeFunctionNode(addDoubleLuapeFunction(),
+          new LuapeFunctionNode(mulDoubleLuapeFunction(), x, x), x);
+      double score = objective->evaluate(context, problem, node);
+      stats->push(-score);
+      //context.informationCallback(String(-score));
+    }
+    context.resultCallback("stats", stats);
+    context.informationCallback(stats->toShortString());
+  }
+
+  static void enumerateExhaustively(ExecutionContext& context, LuapeNodeBuilderStatePtr state, const String& description, std::ostream& ostr)
+{
+  if (state->isFinalState() && state->getStackSize() == 1)
+  {
+    ostr << description << std::endl;
+    
+    //LuapeNodePtr node = state->getStackElement(0);
+    //res.push_back(node);
+    //if (verbose)
+    //  context.informationCallback(node->toShortString());
+  }
+  else
+  {
+    ContainerPtr actions = state->getAvailableActions();
+    size_t n = actions->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable stateBackup;
+      Variable action = actions->getElement(i);
+      double reward;
+      state->performTransition(context, action, reward, &stateBackup);
+      String newDescription = description.isEmpty() ? String::empty : description + T(" ");
+      newDescription += action.toShortString();
+      enumerateExhaustively(context, state, newDescription, ostr);
+      state->undoTransition(context, stateBackup);
+    }
+  }
+}
+
+  void testTutu(ExecutionContext& context)
+  {
+    for (size_t complexity = 1; complexity <= 6; ++complexity)
+    {
+      LuapeRegressorPtr problem = createProblem(context, 1);
+      LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = problem->getSearchSpace(context, complexity, true);
+      LuapeNodeBuilderStatePtr state = new LuapeNodeBuilderState(problem, typeSearchSpace);
+      std::ofstream ostr((const char* )context.getFile("allrpn" + String((int)complexity) + T(".txt")).getFullPathName());
+      enumerateExhaustively(context, state, String::empty, ostr);
+    }
+  }
+#endif // 0
+
+  struct AlgorithmObjective : public SimpleBinaryFunction
+  {
+    AlgorithmObjective(MetaMCSandBox* owner) 
+      : SimpleBinaryFunction(mcAlgorithmClass, positiveIntegerType, doubleType), owner(owner) {}
+
+    MetaMCSandBox* owner;
+
+    virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+    {
+      MCAlgorithmPtr algorithm = inputs[0].getObjectAndCast<MCAlgorithm>();
+      int instanceNumber = inputs[1].getInteger();
+      size_t problemNumber = (size_t)(1 + (instanceNumber % 8));
+      double score = owner->testAlgorithm(context, algorithm, false, problemNumber);
+      return 1.0 - score; // transform into reward
+    }
+  };
+
   virtual Variable run(ExecutionContext& context)
   {
+    //testTutu(context);
+    //return true;
+    //testToto(context);
+    //return true;
     std::vector<std::pair<String, MCAlgorithmPtr> > algorithms;
     generateMCAlgorithms(context, algorithms);
     
@@ -155,8 +241,14 @@ public:
     //algorithms.push_back(std::make_pair("NMC5", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))))));
     //algorithms.push_back(std::make_pair("NMC6", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))))))));
     
-    
     context.informationCallback(String((int)algorithms.size()) + T(" Algorithms"));
+
+    MCBanditPoolPtr pool = new MCBanditPool(new AlgorithmObjective(this), 5.0);
+    pool->reserveArms(algorithms.size());
+    for (size_t i = 0; i < algorithms.size(); ++i)
+      pool->createArm(algorithms[i].second);
+    pool->playIterations(context, 100, 100);
+    return true;
 
     for (size_t problemNumber = 1; problemNumber <= 8; ++problemNumber)
     {
@@ -171,7 +263,7 @@ public:
         context.resultCallback(T("algorithmName"), algorithms[i].first);
 
         MCAlgorithmPtr algorithm = algorithms[i].second;
-        double score = testAlgorithm(context, algorithm, false, problemNumber, resultCurves[i]);
+        double score = testAlgorithm(context, algorithm, false, problemNumber, &resultCurves[i]);
         if (score < bestScore)
           bestScore = score, bestAlgorithm = algorithms[i].first;
         context.leaveScope(score);
@@ -208,7 +300,7 @@ protected:
   size_t complexity;
   size_t numRuns;
 
-  double testAlgorithm(ExecutionContext& context, MCAlgorithmPtr algorithm, bool useCache, size_t problemNumber, std::vector<ScalarVariableStatistics>& resultCurve)
+  double testAlgorithm(ExecutionContext& context, MCAlgorithmPtr algorithm, bool useCache, size_t problemNumber, std::vector<ScalarVariableStatistics>* resultCurve = NULL)
   {
     ScalarVariableStatisticsPtr stats = new ScalarVariableStatistics("score");
     std::map<String, size_t> solutions;
@@ -229,11 +321,14 @@ protected:
         stats->push(-score);
 
         // merge curve
-        const std::vector<double>& curve = objective->getCurve();
-        if (curve.size() > resultCurve.size())
-          resultCurve.resize(curve.size());
-        for (size_t i = 0; i < curve.size(); ++i)
-          resultCurve[i].push(-curve[i]);
+        if (resultCurve)
+        {
+          const std::vector<double>& curve = objective->getCurve();
+          if (curve.size() > resultCurve->size())
+            resultCurve->resize(curve.size());
+          for (size_t i = 0; i < curve.size(); ++i)
+            (*resultCurve)[i].push(-curve[i]);
+        }
       }
 
       /*
@@ -243,9 +338,10 @@ protected:
           */
       //context.leaveScope(score);
     }
-    context.informationCallback("Score: " + stats->toShortString());
+    //context.informationCallback("Score: " + stats->toShortString());
 
     // sort and display solutions
+    /*
     std::multimap<size_t, String> sortedSolutions;
     for (std::map<String, size_t>::const_iterator it = solutions.begin(); it != solutions.end(); ++it)
       sortedSolutions.insert(std::make_pair(it->second, it->first));
@@ -255,7 +351,7 @@ protected:
       if (it->first > 1)
         info += T(" (") + String((int)it->first) + T(" times)");
       context.informationCallback(info);
-    }
+    }*/
 
     return stats->getMean();
   }

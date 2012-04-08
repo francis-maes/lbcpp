@@ -59,6 +59,8 @@ bool LuapeFunction::acceptInputsStack(const std::vector<LuapeNodePtr>& stack) co
     if (!doAcceptInputType(i, stack[stackFirstIndex + i]->getType()))
       return false;
 
+  return true; // !!! DISCARDS FLAGS for the moment
+
   if (n)
   {
     if (hasFlags(commutativeFlag))
