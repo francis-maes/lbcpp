@@ -42,6 +42,7 @@
   <class name="MCBanditPool">
     <variable type="Function" name="objective"/>
     <variable type="Double" name="explorationCoefficient"/>
+    <variable type="Boolean" name="useMultiThreading"/>
   </class>
 
   <!--

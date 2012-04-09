@@ -17,8 +17,8 @@ namespace lbcpp
 class MCBanditPool : public Object, public ExecutionContextCallback
 {
 public:
-  MCBanditPool(const FunctionPtr& objective, double explorationCoefficient) 
-    : objective(objective), explorationCoefficient(explorationCoefficient) {}
+  MCBanditPool(const FunctionPtr& objective, double explorationCoefficient, bool useMultiThreading = false) 
+    : objective(objective), explorationCoefficient(explorationCoefficient), useMultiThreading(useMultiThreading) {}
   MCBanditPool() : explorationCoefficient(0.0) {}
 
   size_t getNumArms() const
@@ -32,8 +32,9 @@ public:
 
   size_t selectAndPlayArm(ExecutionContext& context);
   size_t sampleArmWithHighestReward(ExecutionContext& context) const;
+  void observeReward(size_t index, double reward);
 
-  void displayInformation(ExecutionContext& context);
+  void displayInformation(ExecutionContext& context, size_t numBestArms = 10);
 
   void play(ExecutionContext& context, size_t numTimeSteps, bool showProgression = true);
   void playIterations(ExecutionContext& context, size_t numIterations, size_t stepsPerIteration);
@@ -43,6 +44,7 @@ protected:
 
   FunctionPtr objective; // samples rewards in range [0,1]
   double explorationCoefficient;
+  bool useMultiThreading;
 
   struct Arm
   {
@@ -66,7 +68,6 @@ protected:
   std::vector<Arm> arms;
 
   virtual void workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result, const ExecutionTracePtr& trace);
-  void observeReward(const Variable& parameter, double reward);
   double getIndexScore(Arm& arm) const;
 
   struct ArmScoreComparator
@@ -74,7 +75,7 @@ protected:
     bool operator()(const std::pair<size_t, double>& left, const std::pair<size_t, double>& right) const
     {
       if (left.second != right.second)
-        return left.second > right.second;
+        return left.second < right.second;
       else
         return left.first < right.first;
     }

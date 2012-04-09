@@ -237,6 +237,7 @@ protected:
   {
     DecisionProblemStatePtr state = initialState->cloneAndCast<DecisionProblemState>();
     std::vector<Variable> actions;
+    //context.informationCallback(T("----"));
     while (!state->isFinalState() && !objective->shouldStop())
     {
       std::vector<Variable> bestActions(actions.size());
@@ -244,7 +245,17 @@ protected:
         bestActions[i] = actions[i];
       
       DecisionProblemStatePtr bestFinalState;
-      subSearch(context, objective, state, bestActions, bestFinalState);
+      double score = subSearch(context, objective, state, bestActions, bestFinalState);
+
+      /*if (bestFinalState)
+      {
+        String info = "Best Actions:";
+        for (size_t i = 0; i < bestActions.size(); ++i)
+          info += " " + bestActions[i].toShortString();
+        context.informationCallback(info + T(" (") + String(score) + T(")"));
+      }
+      else
+        context.informationCallback("No Best Final State");*/
 
       Variable selectedAction;
       if (useGlobalBest && this->bestFinalState)
@@ -253,12 +264,23 @@ protected:
         selectedAction = bestActions[actions.size()];
       
       if (!selectedAction.exists())
+      {
+        //context.informationCallback(T("Break"));
         break;
+      }
 
       actions.push_back(selectedAction);
 
       double reward;
       state->performTransition(context, selectedAction, reward);
+      
+      while (!state->isFinalState())
+      {
+        ContainerPtr actions = state->getAvailableActions();
+        if (actions->getNumElements() > 1)
+          break;
+        state->performTransition(context, actions->getElement(0), reward);
+      }
     }
   }
 };

@@ -75,6 +75,7 @@ public:
 
   virtual double evaluate(ExecutionContext& context, DecisionProblemStatePtr finalState)
   {
+    ++numEvaluations;
     LuapeNodeBuilderStatePtr builder = finalState.staticCast<LuapeNodeBuilderState>();
     if (builder->getStackSize() != 1)
       return -DBL_MAX;
@@ -88,7 +89,6 @@ public:
         return it->second;
       }
     }
-    ++numEvaluations;
     //context.informationCallback(finalState->toShortString());
     double res = objective->evaluate(context, finalState);
     bestScoreSoFar = juce::jmax(res, bestScoreSoFar);
@@ -136,11 +136,10 @@ class MetaMCSandBox : public WorkUnit
 public:
   MetaMCSandBox() : budget(1024), complexity(8), numRuns(100) {}
 
-#if 0
   void testToto(ExecutionContext& context)
   {
     ScalarVariableStatisticsPtr stats = new ScalarVariableStatistics();
-    for (size_t i = 0; i < numRuns; ++i)
+    for (size_t i = 0; i < 1; ++i)
     {
       LuapeRegressorPtr problem = createProblem(context, 1);
 
@@ -151,11 +150,11 @@ public:
       LuapeNodePtr node = new LuapeFunctionNode(addDoubleLuapeFunction(),
           new LuapeFunctionNode(mulDoubleLuapeFunction(), x, x), x);
       double score = objective->evaluate(context, problem, node);
-      stats->push(-score);
-      //context.informationCallback(String(-score));
+      //stats->push(-score);
+      context.informationCallback(String(-score));
     }
-    context.resultCallback("stats", stats);
-    context.informationCallback(stats->toShortString());
+    //context.resultCallback("stats", stats);
+    //context.informationCallback(stats->toShortString());
   }
 
   static void enumerateExhaustively(ExecutionContext& context, LuapeNodeBuilderStatePtr state, const String& description, std::ostream& ostr)
@@ -189,7 +188,7 @@ public:
 
   void testTutu(ExecutionContext& context)
   {
-    for (size_t complexity = 1; complexity <= 6; ++complexity)
+    for (size_t complexity = 1; complexity <= 8; ++complexity)
     {
       LuapeRegressorPtr problem = createProblem(context, 1);
       LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = problem->getSearchSpace(context, complexity, true);
@@ -198,7 +197,6 @@ public:
       enumerateExhaustively(context, state, String::empty, ostr);
     }
   }
-#endif // 0
 
   struct AlgorithmObjective : public SimpleBinaryFunction
   {
@@ -227,18 +225,25 @@ public:
     generateMCAlgorithms(context, algorithms);
     
     algorithms.push_back(std::make_pair("RAND", rollout()));
+    
     algorithms.push_back(std::make_pair("LA1", step(lookAhead(rollout()))));
     algorithms.push_back(std::make_pair("LA2", step(lookAhead(lookAhead(rollout())))));
     algorithms.push_back(std::make_pair("LA3", step(lookAhead(lookAhead(lookAhead(rollout()))))));
     algorithms.push_back(std::make_pair("LA4", step(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))));
     algorithms.push_back(std::make_pair("LA5", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout()))))))));
     algorithms.push_back(std::make_pair("LA6", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))))));
-    //algorithms.push_back(std::make_pair("LA7", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout()))))))))));
-    //algorithms.push_back(std::make_pair("LA8", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))))))));
+    
     algorithms.push_back(std::make_pair("NMC2", step(lookAhead(step(lookAhead(rollout()))))));
     algorithms.push_back(std::make_pair("NMC3", step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))));
     algorithms.push_back(std::make_pair("NMC4", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))));
-    //algorithms.push_back(std::make_pair("NMC5", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))))));
+    algorithms.push_back(std::make_pair("NMC5", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))))));
+    
+    algorithms.push_back(std::make_pair("LA2bis", step(step(lookAhead(lookAhead(rollout()))))));
+    algorithms.push_back(std::make_pair("LA2ter", step(step(step(lookAhead(lookAhead(rollout())))))));
+    
+    
+    //algorithms.push_back(std::make_pair("LA7", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout()))))))))));
+    //algorithms.push_back(std::make_pair("LA8", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))))))));
     //algorithms.push_back(std::make_pair("NMC6", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))))))));
     
     context.informationCallback(String((int)algorithms.size()) + T(" Algorithms"));
@@ -246,8 +251,11 @@ public:
     MCBanditPoolPtr pool = new MCBanditPool(new AlgorithmObjective(this), 5.0);
     pool->reserveArms(algorithms.size());
     for (size_t i = 0; i < algorithms.size(); ++i)
-      pool->createArm(algorithms[i].second);
-    pool->playIterations(context, 100, 100);
+      if (!algorithms[i].second.isInstanceOf<IterateMCAlgorithm>())
+        pool->createArm(algorithms[i].second);
+
+    context.informationCallback(String((int)pool->getNumArms()) + T(" Arms"));
+    pool->playIterations(context, 1000, 1000);
     return true;
 
     for (size_t problemNumber = 1; problemNumber <= 8; ++problemNumber)
@@ -337,8 +345,15 @@ protected:
           + String((int)objective->getNumCachedEvaluations()) + T(" cached evaluations"));
           */
       //context.leaveScope(score);
+
+      if (numRuns > 1)
+        context.progressCallback(new ProgressionState(i+1, numRuns, "Runs"));
     }
-    //context.informationCallback("Score: " + stats->toShortString());
+    if (numRuns > 1)
+    {
+      context.resultCallback(T("scoreStats"), stats);
+      context.informationCallback("Score: " + stats->toShortString());
+    }
 
     // sort and display solutions
     /*
@@ -367,7 +382,7 @@ protected:
     problem->addTargetType(mcAlgorithmClass);
 
     std::vector<LuapeNodePtr> nodes;
-    problem->enumerateNodesExhaustively(context, 6, nodes, true);
+    problem->enumerateNodesExhaustively(context, 7, nodes, true);
 
     res.reserve(nodes.size());
     for (size_t i = 0; i < nodes.size(); ++i)
@@ -409,7 +424,7 @@ protected:
 
     for (size_t i = 0; i < examples.size(); ++i)
     {
-      double x = random->sampleDouble(lowerLimit, upperLimit);
+      double x = lowerLimit + (upperLimit - lowerLimit) * i / (examples.size() - 1.0);// random->sampleDouble(lowerLimit, upperLimit);
       double y = computeFunction(problemNumber, x);
       examples[i] = new Pair(new DenseDoubleVector(singletonEnumeration, doubleType, 1, x), y);
     }
