@@ -13,13 +13,15 @@ using namespace lbcpp;
 
 void MCBanditPool::play(ExecutionContext& context, size_t numTimeSteps, bool showProgression)
 {
-  if (context.isMultiThread())
+  for (size_t i = 0; i < numTimeSteps; ++i)
   {
-    for (size_t i = 0; i < numTimeSteps; ++i)
+    if (showProgression)
+      context.progressCallback(new ProgressionState(i + 1, numTimeSteps, T("Steps")));
+
+    selectAndPlayArm(context);
+
+    if (useMultiThreading && context.isMultiThread())
     {
-      if (showProgression)
-        context.progressCallback(new ProgressionState(i + 1, numTimeSteps, T("Steps")));
-      selectAndPlayArm(context);
       context.flushCallbacks();
       //context.informationCallback(T("Num played: ") + String((int)j + 1) + T(" num currently evaluated: " ) + String((int)getNumCurrentlyEvaluatedFormulas()));
       
@@ -30,17 +32,14 @@ void MCBanditPool::play(ExecutionContext& context, size_t numTimeSteps, bool sho
         context.flushCallbacks();
       }
     }
+  }
+
+  if (useMultiThreading && context.isMultiThread())
     while (getNumCurrentlyPlayedArms() > 0)
     {
       Thread::sleep(10);
       context.flushCallbacks();
     }
-  }
-  else
-  {
-    for (size_t j = 0; j < numTimeSteps; ++j)
-      selectAndPlayArm(context);
-  }
 }
 
 void MCBanditPool::playIterations(ExecutionContext& context, size_t numIterations, size_t stepsPerIteration)
@@ -50,7 +49,7 @@ void MCBanditPool::playIterations(ExecutionContext& context, size_t numIteration
     context.enterScope(T("Iteration ") + String((int)i+1));
     context.resultCallback(T("iteration"), i+1);
     play(context, stepsPerIteration);
-    displayInformation(context);
+    displayInformation(context, 25);
     context.leaveScope();
   }
 }
@@ -73,7 +72,7 @@ size_t MCBanditPool::selectAndPlayArm(ExecutionContext& context)
   if (objective->getNumRequiredInputs() == 2)
     variables.push_back(arm.playedCount);
   WorkUnitPtr workUnit = functionWorkUnit(objective, variables);
-  if (context.isMultiThread())
+  if (useMultiThreading && context.isMultiThread())
   {
     jassert(currentlyPlayedArms.find(arm.parameter) == currentlyPlayedArms.end());
     currentlyPlayedArms[arm.parameter] = (size_t)index;
@@ -90,31 +89,32 @@ size_t MCBanditPool::selectAndPlayArm(ExecutionContext& context)
 void MCBanditPool::workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result, const ExecutionTracePtr& trace)
 {
   FunctionWorkUnitPtr wu = workUnit.staticCast<FunctionWorkUnit>();
-  observeReward(wu->getInputs()[0], result.toDouble());
-}
-
-void MCBanditPool::observeReward(const Variable& parameter, double reward)
-{
+  
+  Variable parameter = wu->getInputs()[0];
   std::map<Variable, size_t>::iterator it = currentlyPlayedArms.find(parameter);
   jassert(it != currentlyPlayedArms.end());
   size_t index = it->second;
   currentlyPlayedArms.erase(it);
 
+  observeReward(index, result.toDouble());
+}
+
+void MCBanditPool::observeReward(size_t index, double reward)
+{
   Arm& arm = arms[index];
   arm.observe(reward);
   pushArmIntoQueue(index, getIndexScore(arm));
 }
 
-void MCBanditPool::displayInformation(ExecutionContext& context)
+void MCBanditPool::displayInformation(ExecutionContext& context, size_t numBestArms)
 {
   std::multimap<double, size_t> armsByMeanReward;
   for (size_t i = 0; i < arms.size(); ++i)
     if (arms[i].parameter.exists())
       armsByMeanReward.insert(std::make_pair(arms[i].getMeanReward(), i));
 
-  size_t n = 10;
   size_t i = 1;
-  for (std::multimap<double, size_t>::reverse_iterator it = armsByMeanReward.rbegin(); i < n && it != armsByMeanReward.rend(); ++it, ++i)
+  for (std::multimap<double, size_t>::reverse_iterator it = armsByMeanReward.rbegin(); i < numBestArms && it != armsByMeanReward.rend(); ++it, ++i)
   {
     Arm& arm = arms[it->second];
     context.informationCallback(T("[") + String((int)i) + T("] r = ") + String(arm.getMeanReward())
