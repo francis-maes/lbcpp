@@ -139,10 +139,13 @@ void LuapeInference::enumerateNodesExhaustively(ExecutionContext& context, size_
   enumerateExhaustively(context, state, res, verbose);
 }
 
+LuapeSamplesCachePtr LuapeInference::createCache(size_t size, size_t maxCacheSizeInMb) const
+    {return new LuapeSamplesCache(universe, inputs, size, maxCacheSizeInMb);}
+
 LuapeSamplesCachePtr LuapeInference::createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data) const
 {
   size_t n = data.size();
-  LuapeSamplesCachePtr res = new LuapeSamplesCache(universe, inputs, n, 50); // TMP ! default: 512 Mb cache
+  LuapeSamplesCachePtr res = createCache(n, 512); // default: 512 Mb cache
   VectorPtr supervisionValues = vector(data[0]->getVariableType(1), n);
   for (size_t i = 0; i < n; ++i)
   {

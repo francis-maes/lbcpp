@@ -160,6 +160,8 @@ protected:
   std::vector<LuapeGraphBuilderTypeSearchSpacePtr> typeSearchSpaces;
 
   Variable computeNode(ExecutionContext& context, const ObjectPtr& inputs) const;
+
+  LuapeSamplesCachePtr createCache(size_t size, size_t maxCacheSizeInMb) const;
   LuapeSamplesCachePtr createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data) const;
 };
 

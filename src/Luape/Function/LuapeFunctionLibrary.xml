@@ -28,7 +28,16 @@
   
   <!-- Luape Functions - Doubles -->
   <class name="UnaryDoubleLuapeFunction" base="HomogeneousBinaryLuapeFunction" abstract="yes"/>
-  
+
+  <class name="OppositeDoubleLuapeFunction" base="UnaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="InverseDoubleLuapeFunction" base="UnaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="AbsDoubleLuapeFunction" base="UnaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
   <class name="LogDoubleLuapeFunction" base="UnaryDoubleLuapeFunction">
     <constructor returnType="LuapeFunction"/>
   </class>

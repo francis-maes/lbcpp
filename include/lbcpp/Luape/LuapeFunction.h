@@ -40,7 +40,7 @@ public:
   virtual String toShortString() const
     {return getClassName();}
     
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const;
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const;
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
     {jassert(getNumVariables() == 0); return ContainerPtr();}
@@ -65,6 +65,9 @@ extern LuapeFunctionPtr mulIntegerLuapeFunction();
 extern LuapeFunctionPtr divIntegerLuapeFunction();
 
 // Double
+extern LuapeFunctionPtr oppositeDoubleLuapeFunction();
+extern LuapeFunctionPtr inverseDoubleLuapeFunction();
+extern LuapeFunctionPtr absDoubleLuapeFunction();
 extern LuapeFunctionPtr logDoubleLuapeFunction();
 extern LuapeFunctionPtr expDoubleLuapeFunction();
 extern LuapeFunctionPtr sqrtDoubleLuapeFunction();

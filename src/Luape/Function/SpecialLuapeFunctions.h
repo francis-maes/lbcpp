@@ -36,7 +36,7 @@ public:
   virtual TypePtr initialize(const TypePtr* inputTypes)
     {return booleanType;}
 
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
     {return inputs[0]->toShortString() + " >= " + String(threshold);}
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
@@ -124,7 +124,7 @@ public:
   virtual TypePtr initialize(const TypePtr* inputTypes)
     {return booleanType;}
 
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
     {return inputs[0]->toShortString() + T(" > ") + inputs[1]->toShortString();}
   
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
@@ -150,7 +150,7 @@ public:
   void initialize(const DenseDoubleVectorPtr& inputValues, size_t numPercentiles = 10)
     {computePercentiles(inputValues, numPercentiles, percentiles);}
 
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
     {return "normalize(" + inputs[0]->toShortString() + ")";}
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const

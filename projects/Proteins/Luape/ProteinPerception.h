@@ -102,7 +102,7 @@ public:
   virtual TypePtr initialize(const TypePtr* inputTypes)
     {return proteinResiduePerceptionClass;}
 
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
     {return inputs[0]->toShortString() + T(".neighbor[") + String(delta) + T("]");}
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const

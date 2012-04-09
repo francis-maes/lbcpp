@@ -12,7 +12,7 @@
 #include <lbcpp/Luape/LuapeCache.h>
 using namespace lbcpp;
 
-String LuapeFunction::toShortString(const std::vector<LuapeNodePtr>& inputs) const
+String LuapeFunction::makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
 {
   ClassPtr thisClass = getClass();
   String res = (thisClass->getShortName().isNotEmpty() ? thisClass->getShortName() : thisClass->getName()) + T("(");

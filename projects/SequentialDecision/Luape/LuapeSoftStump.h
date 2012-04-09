@@ -34,7 +34,7 @@ public:
   virtual TypePtr initialize(const TypePtr* inputTypes)
     {return probabilityType;}
 
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
     {return T("softstump(") + inputs[0]->toShortString() + " >= " + String(threshold) + T(", ") + String(gamma) + T(")");}
 
   double compute(double x) const
