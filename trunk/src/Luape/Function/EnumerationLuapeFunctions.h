@@ -33,7 +33,7 @@ public:
   virtual TypePtr initialize(const TypePtr* inputTypes)
     {return booleanType;}
 
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
     {return inputs[0]->toShortString() + T(" == ") + Variable(value, enumeration).toShortString();}
   
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const

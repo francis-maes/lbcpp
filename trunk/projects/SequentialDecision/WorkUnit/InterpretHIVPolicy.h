@@ -118,7 +118,7 @@ public:
     return outputClass;
   }
     
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
     {return T("succ(") + inputs[0]->toShortString() + T(", ") + inputs[1]->toShortString() + T(")");}
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
@@ -151,7 +151,7 @@ public:
   virtual size_t getNumInputs() const
     {return 1;}
 
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
     {return T("succ(") + inputs[0]->toShortString() + T(", ") + String((int)action) + T(")");}
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const

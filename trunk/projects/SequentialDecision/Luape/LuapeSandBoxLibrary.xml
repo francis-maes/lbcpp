@@ -110,5 +110,21 @@
   <class name="SoftStumpWeakLearner" base="DecoratorLearner">
     <variable type="Double" name="gamma"/>
   </class>
+
+  <!-- Luape Node Search --> 
+  <class name="LuapeNodeSearchProblem" base="LuapeInference" abstract="yes"/>
+  <class name="LuapeBanditFormulaSearchProblem" base="LuapeNodeSearchProblem">
+    <variable type="BanditProblemSampler" name="problemSampler"/>
+    <variable type="PositiveInteger" name="horizon"/>
+  </class>
+
+  <class name="LuapeFormulaDiscoverySandBox" base="WorkUnit">
+    <variable type="LuapeNodeSearchProblem" name="problem"/>
+    <variable type="PositiveInteger" name="complexity"/>
+    <variable type="Double" name="explorationCoefficient"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="PositiveInteger" name="numStepsPerIteration"/>
+    <variable type="Boolean" name="useMultiThreading"/>
+  </class>
   
 </library>

@@ -54,10 +54,10 @@
 
   <!-- Inference -->
   <class name="LuapeInference" base="Function" abstract="yes">
-    <variable type="LuapeUniverse" name="universe"/>
+<!--    <variable type="LuapeUniverse" name="universe"/>
     <variable type="ObjectVector[LuapeInputNode]" name="inputs"/>
     <variable type="ObjectVector[Function]" name="functions"/>
-    <variable type="LuapeNode" name="node"/>
+    <variable type="LuapeNode" name="node"/> --> <!--TODO: split LuapeInference from LuapeProblem-->
   </class>
   <class name="LuapeBinaryClassifier" base="LuapeInference">
     <constructor/>

@@ -86,7 +86,7 @@ public:
   virtual Variable computeVote(double input) const
     {return (input * 2 - 1) * vote;}
 
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
     {return "vote(" + inputs[0]->toShortString() + ", " + Variable(vote).toShortString() + ")";}
 
 protected:
@@ -109,7 +109,7 @@ public:
     return res;
   }
 
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
     {return "vote(" + inputs[0]->toShortString() + ", " + vote->toShortString() + ")";}
 
 protected:

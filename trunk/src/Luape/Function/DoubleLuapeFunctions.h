@@ -43,8 +43,41 @@ public:
     return new LuapeSampleVector(inputs->getIndices(), res);
   }
 
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+    {return toShortString() + "(" + inputs[0]->toShortString() + ")";}
+
 protected:
   ClassPtr vectorClass;
+};
+
+class OppositeDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
+{
+public:
+  virtual String toShortString() const
+    {return "-";}
+
+  virtual double computeDouble(double value) const
+    {return -value;}
+};
+
+class InverseDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
+{
+public:
+  virtual String toShortString() const
+    {return "inverse";}
+
+  virtual double computeDouble(double value) const
+    {return value ? 1.0 / value : doubleMissingValue;}
+};
+
+class AbsDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
+{
+public:
+  virtual String toShortString() const
+    {return "abs";}
+
+  virtual double computeDouble(double value) const
+    {return fabs(value);}
 };
 
 class LogDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
@@ -55,9 +88,6 @@ public:
 
   virtual double computeDouble(double value) const
     {return value <= 0.0 ? doubleMissingValue : log(value);}
-
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
-    {return "log(" + inputs[0]->toShortString() + ")";}
 };
 
 class ExpDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
@@ -68,9 +98,6 @@ public:
 
   virtual double computeDouble(double value) const
     {return value >= 100 ? doubleMissingValue : exp(value);}
-
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
-    {return "exp(" + inputs[0]->toShortString() + ")";}
 };
 
 class SqrtDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
@@ -81,9 +108,6 @@ public:
 
   virtual double computeDouble(double value) const
     {return value < 0.0 ? doubleMissingValue : sqrt(value);}
-
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
-    {return "sqrt(" + inputs[0]->toShortString() + ")";}
 };
 
 class CosDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
@@ -94,9 +118,6 @@ public:
 
   virtual double computeDouble(double value) const
     {return cos(value);}
-
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
-    {return "cos(" + inputs[0]->toShortString() + ")";}
 };
 
 class SinDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
@@ -107,9 +128,6 @@ public:
 
   virtual double computeDouble(double value) const
     {return sin(value);}
-
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
-    {return "sin(" + inputs[0]->toShortString() + ")";}
 };
 
 class BinaryDoubleLuapeFunction : public HomogeneousBinaryLuapeFunction
@@ -158,7 +176,7 @@ public:
   virtual String toShortString() const
     {return "+";}
 
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " + " + inputs[1]->toShortString() + ")";}
 
   virtual double computeDouble(double first, double second) const
@@ -174,7 +192,7 @@ public:
   virtual String toShortString() const
     {return "-";}
 
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " - " + inputs[1]->toShortString() + ")";}
 
   virtual double computeDouble(double first, double second) const
@@ -190,7 +208,7 @@ public:
   virtual String toShortString() const
     {return "*";}
 
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " * " + inputs[1]->toShortString() + ")";}
 
   virtual double computeDouble(double first, double second) const
@@ -206,7 +224,7 @@ public:
   virtual String toShortString() const
     {return "/";}
 
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " / " + inputs[1]->toShortString() + ")";}
 
   virtual double computeDouble(double first, double second) const
@@ -222,7 +240,7 @@ public:
   virtual String toShortString() const
     {return "min";}
 
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
     {return "min(" + inputs[0]->toShortString() + ", " + inputs[1]->toShortString() + ")";}
 
   virtual double computeDouble(double first, double second) const
@@ -238,7 +256,7 @@ public:
   virtual String toShortString() const
     {return "max";}
 
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
     {return "max(" + inputs[0]->toShortString() + ", " + inputs[1]->toShortString() + ")";}
 
   virtual double computeDouble(double first, double second) const

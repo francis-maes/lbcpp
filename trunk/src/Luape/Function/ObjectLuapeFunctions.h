@@ -123,7 +123,7 @@ public:
     return outputType;
   }
 
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
   {
     jassert(inputs.size() == 1);
     VariableSignaturePtr member = inputClass->getMemberVariable(variableIndex);
@@ -183,7 +183,7 @@ public:
   virtual TypePtr initialize(const TypePtr* inputTypes)
     {return positiveIntegerType;}
 
-  virtual String toShortString(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
     {jassert(inputs.size() == 1); return "length(" + inputs[0]->toShortString() + ")";}
 
   Variable computeObject(const ObjectPtr& object) const

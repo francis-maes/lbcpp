@@ -117,7 +117,7 @@ LuapeFunctionNode::LuapeFunctionNode(const LuapeFunctionPtr& function, const Lua
 }
 
 String LuapeFunctionNode::toShortString() const
-  {return function->toShortString(arguments);}
+  {return function->makeNodeName(arguments);}
 
 void LuapeFunctionNode::initialize()
 {

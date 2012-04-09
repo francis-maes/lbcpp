@@ -141,6 +141,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
   Luape/MCBanditPool.h
   Luape/MCBanditPool.cpp
   Luape/MetaMCSandBox.h
+  Luape/LuapeFormulaDiscovery.h
   Luape/LuapeSandBoxLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeSandBoxLibrary.cpp
 )
