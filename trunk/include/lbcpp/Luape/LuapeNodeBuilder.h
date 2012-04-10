@@ -16,6 +16,39 @@
 namespace lbcpp
 {
 
+class LuapeRPNSequence;
+typedef ReferenceCountedObjectPtr<LuapeRPNSequence> LuapeRPNSequencePtr;
+
+class LuapeRPNSequence : public Object
+{
+public:
+  LuapeRPNSequence(const std::vector<ObjectPtr>& sequence);
+  LuapeRPNSequence() {}
+
+  static LuapeRPNSequencePtr fromNode(const LuapeNodePtr& node);
+
+  void appendNode(const LuapeNodePtr& node);
+  void append(const ObjectPtr& action)
+    {sequence.push_back(action);}
+
+  size_t getLength() const
+    {return sequence.size();}
+
+  const ObjectPtr& getElement(size_t index) const
+    {jassert(index < sequence.size()); return sequence[index];}
+
+  bool startsWith(const LuapeRPNSequencePtr& start) const;
+
+  virtual String toShortString() const;
+
+  std::vector<TypePtr> computeTypeState(const std::vector<TypePtr>& initialState = std::vector<TypePtr>()) const;
+
+private:
+  friend class LuapeRPNSequenceClass;
+
+  std::vector<ObjectPtr> sequence;
+};
+
 class LuapeNodeBuilder : public Object
 {
 public:

@@ -12,6 +12,78 @@
 using namespace lbcpp;
 
 /*
+** LuapeRPNSequence
+*/
+LuapeRPNSequence::LuapeRPNSequence(const std::vector<ObjectPtr>& sequence)
+  : sequence(sequence) {}
+
+String LuapeRPNSequence::toShortString() const
+{
+  String res;
+  for (size_t i = 0; i < sequence.size(); ++i)
+  {
+    res += sequence[i]->toShortString();
+    if (i < sequence.size() - 1)
+      res += " ";
+  }
+  return res;
+}
+
+LuapeRPNSequencePtr LuapeRPNSequence::fromNode(const LuapeNodePtr& node)
+{
+  LuapeRPNSequencePtr res = new LuapeRPNSequence();
+  res->appendNode(node);
+  return res;
+}
+
+void LuapeRPNSequence::appendNode(const LuapeNodePtr& node)
+{
+  if (node.isInstanceOf<LuapeInputNode>() || node.isInstanceOf<LuapeConstantNode>())
+    append(node);
+  else if (node.isInstanceOf<LuapeFunctionNode>())
+  {
+    const LuapeFunctionNodePtr& functionNode = node.staticCast<LuapeFunctionNode>();
+    size_t n = functionNode->getNumArguments();
+    for (size_t i = 0; i < n; ++i)
+      appendNode(functionNode->getArgument(i));
+    append(functionNode->getFunction());
+  }
+  else
+    jassert(false);
+}
+
+bool LuapeRPNSequence::startsWith(const LuapeRPNSequencePtr& start) const
+{
+  size_t n = start->sequence.size();
+  if (sequence.size() < n)
+    return false;
+  for (size_t i = 0; i < n; ++i)
+    if (sequence[i] != start->sequence[i])
+      return false;
+  return true;
+}
+
+std::vector<TypePtr> LuapeRPNSequence::computeTypeState(const std::vector<TypePtr>& initialState) const
+{
+  std::vector<TypePtr> state(initialState);
+  for (size_t i = 0; i < sequence.size(); ++i)
+  {
+    ObjectPtr action = sequence[i];
+    if (action.isInstanceOf<LuapeNode>())
+      state.push_back(action.staticCast<LuapeNode>()->getType());
+    else
+    {
+      const LuapeFunctionPtr& function = action.staticCast<LuapeFunction>();
+      jassert(state.size() >= function->getNumInputs());
+      TypePtr outputType = function->initialize(&state[state.size() - function->getNumInputs()]);
+      state.resize(state.size() - function->getNumInputs() + 1);
+      state.back() = outputType;
+    }
+  }
+  return state;
+}
+
+/*
 ** StochasticNodeBuilder
 */
 StochasticNodeBuilder::StochasticNodeBuilder(size_t numNodes)

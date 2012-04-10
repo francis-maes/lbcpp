@@ -94,15 +94,14 @@ private:
 class LuapeNodeBuilderState : public DecisionProblemState
 {
 public:
-  LuapeNodeBuilderState(const LuapeInferencePtr& function, LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace)
+  LuapeNodeBuilderState(const LuapeInferencePtr& function, LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace, const LuapeRPNSequencePtr& subSequence = LuapeRPNSequencePtr())
     : function(function), typeSearchSpace(typeSearchSpace), typeState(typeSearchSpace->getInitialState()), numSteps(0), isAborted(false), isYielded(false)
   {
-    /*nodeKeys = new LuapeNodeKeysMap();
-    for (size_t i = 0; i < graph->getNumNodes(); ++i)
-      if (!graph->getNode(i).isInstanceOf<LuapeYieldNode>())
-        nodeKeys->addNodeToCache(defaultExecutionContext(), graph->getNode(i));
-        */
-
+    if (subSequence)
+    {
+      for (size_t i = 0; i < subSequence->getLength(); ++i)
+        performAction(subSequence->getElement(i));
+    }
   }
   LuapeNodeBuilderState() : numSteps(0), isAborted(false), isYielded(false) {}
 
@@ -182,42 +181,10 @@ public:
   virtual void performTransition(ExecutionContext& context, const Variable& a, double& reward, Variable* stateBackup = NULL)
   {
     const ObjectPtr& action = a.getObject();
-
     if (stateBackup)
       *stateBackup = action;
+    performAction(action);
 
-    if (action.isInstanceOf<LuapeNode>()) // push action
-      stack.push_back(action.staticCast<LuapeNode>());
-    else if (action.isInstanceOf<LuapeFunction>()) // apply action
-    {
-      const LuapeFunctionPtr& function = action.staticCast<LuapeFunction>();
-      size_t numInputs = function->getNumInputs();
-      jassert(stack.size() >= numInputs);
-      std::vector<LuapeNodePtr> inputs(numInputs);
-      for (size_t i = 0; i < numInputs; ++i)
-        inputs[i] = stack[stack.size() - numInputs + i];
-      stack.resize(stack.size() - numInputs + 1);
-      stack.back() = this->function->getUniverse()->makeFunctionNode(function, inputs);
-    }
-
-#if 0
-    if (stateBackup)
-      *stateBackup = action;
-    action->perform(stack);
-    LuapeNodePtr nodeToAdd = action->getNodeToAdd();
-    /*
-    if (action->isNewNode())
-    {
-      nodeToAdd->updateCache(context, true);
-      if (nodeToAdd.isInstanceOf<LuapeFunctionNode>() && !nodeKeys->isNodeKeyNew(nodeToAdd))
-      {
-        context.informationCallback(T("Aborded: ") + nodeToAdd->toShortString());
-        isAborted = true; // create a node that has the same key as an already existing node in the graph is forbidden 
-        // note that in the current implementation, we only compare to the nodes existing in the current initial graph
-        //  (not intermediary nodes created along the builder trajectory)
-      }
-    }*/
-#endif // 0
     reward = 0.0;
     ++numSteps;
     availableActions = ContainerPtr();
@@ -301,6 +268,23 @@ protected:
   {
     if (typeState->hasPushAction(node->getType()))
       availableActions->append(node);
+  }
+
+  void performAction(ObjectPtr action)
+  {
+    if (action.isInstanceOf<LuapeNode>()) // push action
+      stack.push_back(action.staticCast<LuapeNode>());
+    else if (action.isInstanceOf<LuapeFunction>()) // apply action
+    {
+      const LuapeFunctionPtr& function = action.staticCast<LuapeFunction>();
+      size_t numInputs = function->getNumInputs();
+      jassert(stack.size() >= numInputs);
+      std::vector<LuapeNodePtr> inputs(numInputs);
+      for (size_t i = 0; i < numInputs; ++i)
+        inputs[i] = stack[stack.size() - numInputs + i];
+      stack.resize(stack.size() - numInputs + 1);
+      stack.back() = this->function->getUniverse()->makeFunctionNode(function, inputs);
+    }
   }
 };
 

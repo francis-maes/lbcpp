@@ -44,6 +44,7 @@ public:
   void observeReward(size_t index, double objective);
 
   void displayInformation(ExecutionContext& context, size_t numBestArms = 10);
+  void getArmsOrder(std::vector< std::pair<size_t, double> >& res) const; // from best to worst w.r.t. mean objective value
 
   void play(ExecutionContext& context, size_t numTimeSteps, bool showProgression = true);
   void playIterations(ExecutionContext& context, size_t numIterations, size_t stepsPerIteration);

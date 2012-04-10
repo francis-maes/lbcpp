@@ -99,8 +99,10 @@ public:
   /*
   ** Search space
   */
-  LuapeGraphBuilderTypeSearchSpacePtr getSearchSpace(ExecutionContext& context, size_t complexity, bool verbose = false) const;
-  void enumerateNodesExhaustively(ExecutionContext& context, size_t complexity, std::vector<LuapeNodePtr>& res, bool verbose = false) const;
+  LuapeGraphBuilderTypeSearchSpacePtr getSearchSpace(ExecutionContext& context, size_t complexity, bool verbose = false) const; // cached with initialState = vector<TypePtr>()
+
+  LuapeGraphBuilderTypeSearchSpacePtr createTypeSearchSpace(ExecutionContext& context, const std::vector<TypePtr>& initialState, size_t complexity, bool verbose) const;
+  void enumerateNodesExhaustively(ExecutionContext& context, size_t complexity, std::vector<LuapeNodePtr>& res, bool verbose = false, const LuapeRPNSequencePtr& subSequence = LuapeRPNSequencePtr()) const;
 
   /*
   ** Luape Node 
