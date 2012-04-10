@@ -24,7 +24,7 @@ namespace lbcpp
 class MCAlgorithmLuapeFunction : public UnaryObjectLuapeFunction<MCAlgorithmLuapeFunction>
 {
 public:
-  MCAlgorithmLuapeFunction() : UnaryObjectLuapeFunction(mcAlgorithmClass) {}
+  MCAlgorithmLuapeFunction() : UnaryObjectLuapeFunction<MCAlgorithmLuapeFunction>(mcAlgorithmClass) {}
 
   virtual TypePtr initialize(const TypePtr* inputTypes)
     {return mcAlgorithmClass;}

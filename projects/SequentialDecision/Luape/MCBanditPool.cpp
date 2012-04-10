@@ -9,6 +9,7 @@
 #include "MCBanditPool.h"
 #include <lbcpp/Core/Function.h>
 #include <lbcpp/Execution/WorkUnit.h>
+#include <algorithm>
 using namespace lbcpp;
 
 void MCBanditPool::play(ExecutionContext& context, size_t numTimeSteps, bool showProgression)
