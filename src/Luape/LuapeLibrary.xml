@@ -74,6 +74,10 @@
   </class>
 
   <!-- Node Builders -->
+  <class name="LuapeRPNSequence" base="Object">
+    <variable type="ObjectVector[Object]" name="sequence"/>
+  </class>
+  
   <class name="LuapeNodeBuilder" base="Object" abstract="yes"/>
   <class name="StochasticNodeBuilder" base="LuapeNodeBuilder" abstract="yes">
     <variable type="PositiveInteger" name="numNodes"/>

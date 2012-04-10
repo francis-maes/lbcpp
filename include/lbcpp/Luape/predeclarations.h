@@ -65,6 +65,9 @@ typedef ReferenceCountedObjectPtr<BoostingLearner> BoostingLearnerPtr;
 class LearningObjective;
 typedef ReferenceCountedObjectPtr<LearningObjective> LearningObjectivePtr;
 
+class LuapeRPNSequence;
+typedef ReferenceCountedObjectPtr<LuapeRPNSequence> LuapeRPNSequencePtr;
+
 class LuapeGraphBuilderTypeState;
 typedef ReferenceCountedObjectPtr<LuapeGraphBuilderTypeState> LuapeGraphBuilderTypeStatePtr;
 

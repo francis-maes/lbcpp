@@ -100,10 +100,14 @@ LuapeGraphBuilderTypeSearchSpacePtr LuapeInference::getSearchSpace(ExecutionCont
   if (typeSearchSpaces[complexity])
     return typeSearchSpaces[complexity];
 
-  LuapeGraphBuilderTypeSearchSpacePtr res = new LuapeGraphBuilderTypeSearchSpace(refCountedPointerFromThis(this), complexity);
+  return (pthis->typeSearchSpaces[complexity] = createTypeSearchSpace(context, std::vector<TypePtr>(), complexity, verbose));
+}
+
+LuapeGraphBuilderTypeSearchSpacePtr LuapeInference::createTypeSearchSpace(ExecutionContext& context, const std::vector<TypePtr>& initialState, size_t complexity, bool verbose) const
+{
+  LuapeGraphBuilderTypeSearchSpacePtr res = new LuapeGraphBuilderTypeSearchSpace(refCountedPointerFromThis(this), initialState, complexity);
   res->pruneStates(context, verbose);
   res->assignStateIndices(context);
-  pthis->typeSearchSpaces[complexity] = res;
   return res;
 }
 
@@ -132,10 +136,15 @@ static void enumerateExhaustively(ExecutionContext& context, LuapeNodeBuilderSta
   }
 }
 
-void LuapeInference::enumerateNodesExhaustively(ExecutionContext& context, size_t complexity, std::vector<LuapeNodePtr>& res, bool verbose) const
+void LuapeInference::enumerateNodesExhaustively(ExecutionContext& context, size_t complexity, std::vector<LuapeNodePtr>& res, bool verbose, const LuapeRPNSequencePtr& subSequence) const
 {
-  LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = getSearchSpace(context, complexity, verbose);
-  LuapeNodeBuilderStatePtr state = new LuapeNodeBuilderState(refCountedPointerFromThis(this), typeSearchSpace);
+  LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
+  if (subSequence)
+    typeSearchSpace = createTypeSearchSpace(context, subSequence->computeTypeState(), complexity, verbose); // create on-demand
+  else
+    typeSearchSpace = getSearchSpace(context, complexity, verbose); // use cached version
+
+  LuapeNodeBuilderStatePtr state = new LuapeNodeBuilderState(refCountedPointerFromThis(this), typeSearchSpace, subSequence);
   enumerateExhaustively(context, state, res, verbose);
 }
 

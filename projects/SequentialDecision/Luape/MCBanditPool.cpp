@@ -104,25 +104,32 @@ void MCBanditPool::observeReward(size_t index, double objectiveValue)
   pushArmIntoQueue(index, getIndexScore(arm));
 }
 
+void MCBanditPool::getArmsOrder(std::vector< std::pair<size_t, double> >& res) const
+{
+  res.resize(arms.size());
+  for (size_t i = 0; i < arms.size(); ++i)
+    res[i] = std::make_pair(i, -arms[i].getMeanReward());
+  std::sort(res.begin(), res.end(), ArmScoreComparator());
+}
+
 void MCBanditPool::displayInformation(ExecutionContext& context, size_t numBestArms)
 {
-  std::multimap<double, size_t> armsByMeanReward;
-  for (size_t i = 0; i < arms.size(); ++i)
-    if (arms[i].parameter.exists())
-      armsByMeanReward.insert(std::make_pair(arms[i].getMeanReward(), i));
-
-  size_t i = 1;
-  for (std::multimap<double, size_t>::reverse_iterator it = armsByMeanReward.rbegin(); i < numBestArms && it != armsByMeanReward.rend(); ++it, ++i)
+  std::vector< std::pair<size_t, double> > order;
+  getArmsOrder(order);
+  if (order.size())
   {
-    Arm& arm = arms[it->second];
-    context.informationCallback(T("[") + String((int)i) + T("] ") + 
-      arm.parameter.toShortString() + T(" -> ") + String(arm.getMeanObjectiveValue()) +
-        T(" (played ") + String((int)arm.playedCount) + T(" times)"));
-  }
+    size_t count = order.size();
+    if (numBestArms < count)
+      count = numBestArms;
+    for (size_t i = 0; i < count; ++i)
+    {
+      Arm& arm = arms[order[i].first];
+      context.informationCallback(T("[") + String((int)i) + T("] ") + 
+        arm.parameter.toShortString() + T(" -> ") + String(arm.getMeanObjectiveValue()) +
+          T(" (played ") + String((int)arm.playedCount) + T(" times)"));
+    }
 
-  if (armsByMeanReward.size())
-  {
-    Arm& bestArm = arms[armsByMeanReward.rbegin()->second];
+    Arm& bestArm = arms[order[0].first];
     context.resultCallback(T("bestArmReward"), bestArm.getMeanReward());
     context.resultCallback(T("bestArmPlayCount"), bestArm.playedCount);
   }

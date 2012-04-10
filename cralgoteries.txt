@@ -1,7 +1,4 @@
  
- * Faire un systeme itératif qui choppe la meilleure action RPN à chaque itération
-
- 
 Experiences - Proteins:
  * Nouvelles features: prev et next amino acid de chaque type; delta de ObjectVector[DenseDoubleVector]; local/global histogram
  * Essayer du Totally corrective boosting

@@ -211,46 +211,6 @@ private:
 
 //////////////////////////////////////////////////////////
 
-class LuapeRPNSequence;
-typedef ReferenceCountedObjectPtr<LuapeRPNSequence> LuapeRPNSequencePtr;
-
-class LuapeRPNSequence : public Object
-{
-public:
-  LuapeRPNSequence(const std::vector<ObjectPtr>& sequence)
-    : sequence(sequence) {}
-  LuapeRPNSequence() {}
-
-  static LuapeRPNSequencePtr fromNode(const LuapeNodePtr& node)
-  {
-    LuapeRPNSequencePtr res = new LuapeRPNSequence();
-    res->appendNode(node);
-    return res;
-  }
-
-  void appendNode(const LuapeNodePtr& node)
-  {
-    if (node.isInstanceOf<LuapeInputNode>() || node.isInstanceOf<LuapeConstantNode>())
-      append(node);
-    else if (node.isInstanceOf<LuapeFunctionNode>())
-    {
-      const LuapeFunctionNodePtr& functionNode = node.staticCast<LuapeFunctionNode>();
-      size_t n = functionNode->getNumArguments();
-      for (size_t i = 0; i < n; ++i)
-        appendNode(functionNode->getArgument(i));
-      append(functionNode->getFunction());
-    }
-    else
-      jassert(false);
-  }
-
-  void append(const ObjectPtr& action)
-    {sequence.push_back(action);}
-
-private:
-  std::vector<ObjectPtr> sequence;
-};
-
 class LuapeNodeEquivalenceClass : public Object
 {
 public:
@@ -260,13 +220,19 @@ public:
 
   void add(LuapeNodePtr node)
   {
-    elements.push_back(LuapeRPNSequence::fromNode(node));
-    if (!representent || isSmallerThan(node, representent))
-      representent = node;
+    if (elements.insert(node).second)
+    {
+      sequences.push_back(LuapeRPNSequence::fromNode(node));
+      if (!representent || isSmallerThan(node, representent))
+        representent = node;
+    }
   }
 
   size_t getNumElements() const
-    {return elements.size();}
+    {return sequences.size();}
+
+  const LuapeRPNSequencePtr& getSequence(size_t index) const
+    {jassert(index < sequences.size()); return sequences[index];}
 
   const LuapeNodePtr& getRepresentent() const
     {return representent;}
@@ -275,7 +241,10 @@ public:
     {return T("[") + representent->toShortString() + T("]");}
 
 protected:
-  std::vector<LuapeRPNSequencePtr> elements;
+  friend class LuapeNodeEquivalenceClassClass;
+
+  std::set<LuapeNodePtr> elements;
+  std::vector<LuapeRPNSequencePtr> sequences;
   LuapeNodePtr representent;
 
   bool isSmallerThan(const LuapeNodePtr& a, const LuapeNodePtr& b) const
@@ -309,12 +278,12 @@ typedef ReferenceCountedObjectPtr<LuapeNodeEquivalenceClass> LuapeNodeEquivalenc
 class LuapeNodeEquivalenceClasses : public Object
 {
 public:
-  void add(ExecutionContext& context, const std::vector<LuapeNodePtr>& nodes, LuapeNodeSearchProblemPtr problem, bool verbose = false)
+  void add(ExecutionContext& context, const std::vector<LuapeNodePtr>& nodes, LuapeNodeSearchProblemPtr problem, bool verbose = false, MCBanditPoolPtr pool = MCBanditPoolPtr())
   {
     for (size_t i = 0; i < nodes.size(); ++i)
     {
       LuapeNodePtr node = nodes[i];
-      add(context, node, problem->makeBinaryKey(context, node), verbose);
+      add(context, node, problem->makeBinaryKey(context, node), verbose, pool);
     }
     if (verbose)
     {
@@ -323,14 +292,18 @@ public:
     }
   }
 
-  void add(ExecutionContext& context, LuapeNodePtr node, BinaryKeyPtr key, bool verbose = false)
+  void add(ExecutionContext& context, LuapeNodePtr node, BinaryKeyPtr key, bool verbose = false, MCBanditPoolPtr pool = MCBanditPoolPtr())
   {
     if (key)
     {
       Map::const_iterator it = m.find(key);
       if (it == m.end())
       {
-        m[key] = new LuapeNodeEquivalenceClass(node);
+        LuapeNodeEquivalenceClassPtr equivalenceClass = new LuapeNodeEquivalenceClass(node);
+        m[key] = equivalenceClass;
+        if (pool)
+          pool->createArm(equivalenceClass);
+
         if (verbose && (m.size() % 1000) == 0)
           context.informationCallback(String((int)m.size()) + T(" equivalence classes, last: ") + m[key]->toShortString());
       }
@@ -355,7 +328,7 @@ public:
   void addClassesToBanditPool(MCBanditPoolPtr pool)
   {
     for (Map::const_iterator it = m.begin(); it != m.end(); ++it)
-      pool->createArm(it->second->getRepresentent());
+      pool->createArm(it->second);
   }
 
 protected:
@@ -381,27 +354,115 @@ public:
     if (!problem->initializeProblem(context))
       return false;
 
-    context.enterScope(T("Enumerating candidates"));
-    std::vector<LuapeNodePtr> candidates;
-    problem->enumerateNodesExhaustively(context, complexity, candidates, true);
-    context.leaveScope(candidates.size());
-    
-    context.enterScope(T("Making equivalence classes"));
     LuapeNodeEquivalenceClassesPtr equivalenceClasses = new LuapeNodeEquivalenceClasses();
-    equivalenceClasses->add(context, candidates, problem, true);
-    candidates.clear(); // free memory
-    context.leaveScope(equivalenceClasses->getNumClasses());
-
-    context.enterScope(T("Creating bandits"));
     MCBanditPoolPtr pool = new MCBanditPool(new ObjectiveWrapper(problem), explorationCoefficient, useMultiThreading); 
-    equivalenceClasses->addClassesToBanditPool(pool);
-    equivalenceClasses = LuapeNodeEquivalenceClassesPtr(); // free memory
-    context.leaveScope();
 
-    context.enterScope(T("Playing bandits"));
-    pool->playIterations(context, numIterations, numStepsPerIteration);
-    context.leaveScope();
+    LuapeRPNSequencePtr subSequence = new LuapeRPNSequence();
+    for (size_t iteration = 0; iteration < numIterations; ++iteration)
+    {
+      context.enterScope(T("Iteration ") + String((int)iteration+1) + T(", Subsequence: ") + subSequence->toShortString());
+
+      context.enterScope(T("Enumerating candidates"));
+      std::vector<LuapeNodePtr> candidates;     
+      problem->enumerateNodesExhaustively(context, complexity, candidates, true, subSequence);
+      context.leaveScope(candidates.size());
+      
+      context.enterScope(T("Making equivalence classes"));
+      equivalenceClasses->add(context, candidates, problem, true, pool);
+      candidates.clear(); // free memory
+      context.leaveScope(equivalenceClasses->getNumClasses());
+
+      context.enterScope(T("Playing bandits"));
+      pool->playIterations(context, numStepsPerIteration, equivalenceClasses->getNumClasses());
+
+      LuapeRPNSequencePtr newSubSequence = new LuapeRPNSequence();
+      for (size_t i = 0; i < subSequence->getLength(); ++i)
+      {
+        ObjectPtr bestSymbol = findBestSymbolCompletion(context, pool, newSubSequence);
+        if (bestSymbol == subSequence->getElement(i))
+          newSubSequence->append(bestSymbol);
+        else
+          break;
+      }
+      ObjectPtr bestSymbol = findBestSymbolCompletion(context, pool, newSubSequence);
+      if (bestSymbol)
+        newSubSequence->append(bestSymbol);
+      else
+        break;
+      context.leaveScope();
+
+      context.leaveScope();
+
+      subSequence = newSubSequence;
+    }
     return true;
+  }
+
+  ObjectPtr findBestSymbolCompletion(ExecutionContext& context, MCBanditPoolPtr pool, const LuapeRPNSequencePtr& subSequence)
+  {
+    std::vector< std::pair<size_t, double> > order;
+    pool->getArmsOrder(order);
+
+    std::set<ObjectPtr> candidates;
+    
+    for (size_t i = 0; i < order.size() && candidates.size() != 1; ++i)
+    {
+      LuapeNodeEquivalenceClassPtr equivalenceClass = pool->getArmParameter(order[i].first).getObjectAndCast<LuapeNodeEquivalenceClass>();
+      std::set<ObjectPtr> candidateActions = getCandidateActions(equivalenceClass, subSequence);
+      /*String info = equivalenceClass->toShortString() + T(" => ");
+      for (std::set<ObjectPtr>::const_iterator it = candidateActions.begin(); it != candidateActions.end(); ++it)
+        info += (*it)->toShortString() + T(" ");
+      context.informationCallback(info);*/
+
+      if (i == 0)
+      {
+        candidates = candidateActions;
+        if (candidates.empty())
+          return ObjectPtr();
+      }
+      else
+      {
+        std::set<ObjectPtr> remainingCandidates;
+        std::set_intersection(candidateActions.begin(), candidateActions.end(), candidates.begin(), candidates.end(),
+                                std::inserter(remainingCandidates, remainingCandidates.begin()));
+        if (remainingCandidates.empty())
+          break;
+        candidates.swap(remainingCandidates);
+      }
+      
+      /*info = String::empty;
+      for (std::set<ObjectPtr>::const_iterator it = candidates.begin(); it != candidates.end(); ++it)
+        info += (*it)->toShortString() + T(" ");
+      context.informationCallback(info);*/
+    }
+
+    jassert(candidates.size());
+    String info("Final candidates: ");
+    for (std::set<ObjectPtr>::const_iterator it = candidates.begin(); it != candidates.end(); ++it)
+      info += (*it)->toShortString() + T(" ");
+    context.informationCallback(info);
+
+    if (candidates.size() == 1)
+      return *candidates.begin();
+
+    size_t n = context.getRandomGenerator()->sampleSize(candidates.size());
+    std::set<ObjectPtr>::const_iterator it = candidates.begin();
+    for (size_t i = 0; i < n; ++i)
+      ++it;
+    return *it;
+  }
+
+  std::set<ObjectPtr> getCandidateActions(LuapeNodeEquivalenceClassPtr equivalenceClass, const LuapeRPNSequencePtr& subSequence)
+  {
+    size_t n = equivalenceClass->getNumElements();
+    std::set<ObjectPtr> res;
+    for (size_t i = 0; i < n; ++i)
+    {
+      LuapeRPNSequencePtr sequence = equivalenceClass->getSequence(i);
+      if (sequence->startsWith(subSequence) && sequence->getLength() > subSequence->getLength())
+        res.insert(sequence->getElement(subSequence->getLength()));
+    }
+    return res;
   }
 
 protected:
@@ -424,7 +485,10 @@ protected:
       {problem->getObjectiveRange(worst, best);}
  
     virtual double computeObjective(ExecutionContext& context, const Variable& parameter, size_t instanceIndex)
-      {return problem->computeObjective(context, parameter.getObjectAndCast<LuapeNode>(), instanceIndex);}
+    {
+      LuapeNodeEquivalenceClassPtr equivalenceClass = parameter.getObjectAndCast<LuapeNodeEquivalenceClass>();
+      return problem->computeObjective(context, equivalenceClass->getRepresentent(), instanceIndex);
+    }
   };
 };
 

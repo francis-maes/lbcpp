@@ -119,6 +119,11 @@
     <variable type="PositiveInteger" name="horizon"/>
   </class>
 
+  <class name="LuapeNodeEquivalenceClass" base="Object">
+    <variable type="ObjectVector[LuapeRPNSequence]" name="elements"/>
+    <variable type="LuapeNode" name="representent"/>
+  </class>
+
   <class name="LuapeFormulaDiscoverySandBox" base="WorkUnit">
     <variable type="LuapeNodeSearchProblem" name="problem"/>
     <variable type="PositiveInteger" name="complexity"/>

@@ -146,20 +146,20 @@ private:
 class LuapeGraphBuilderTypeSearchSpace : public Object
 {
 public:
-  LuapeGraphBuilderTypeSearchSpace(const LuapeInferencePtr& problem, size_t maxDepth)
+  LuapeGraphBuilderTypeSearchSpace(const LuapeInferencePtr& problem, const std::vector<TypePtr>& initialState, size_t maxDepth)
   {
     std::vector<TypePtr> nodeTypes;
     for (size_t i = 0; i < problem->getNumInputs(); ++i)
       insertType(nodeTypes, problem->getInput(i)->getType());
     for (size_t i = 0; i < problem->getNumConstants(); ++i)
       insertType(nodeTypes, problem->getConstant(i)->getType());
-    insertType(nodeTypes, booleanType); // automatically included since boosting methods may create stump nodes that output booleans
+    //insertType(nodeTypes, booleanType); // automatically included since boosting methods may create stump nodes that output booleans
 
-    LuapeGraphBuilderTypeStatePtr root = getOrCreateState(problem, 0, std::vector<TypePtr>());
+    this->initialState = getOrCreateState(problem, 0, initialState);
     size_t numTypes = nodeTypes.size();
     while (true)
     {
-      buildSuccessors(problem, root, nodeTypes, maxDepth);
+      buildSuccessors(problem, this->initialState, nodeTypes, maxDepth);
       size_t newNumTypes = nodeTypes.size();
       if (newNumTypes != numTypes)
       { 
@@ -178,7 +178,7 @@ public:
   void pruneStates(ExecutionContext& context, bool verbose)
   {
 //    context.informationCallback(T("Num states before pruning: ") + String((int)states.size()));
-    prune(getInitialState());
+    prune(initialState);
     //jassert(!isRootPrunable);
 
     StateMap::iterator it, nxt;
@@ -206,7 +206,7 @@ public:
   }
 
   LuapeGraphBuilderTypeStatePtr getInitialState() const
-    {return states.find(StateKey())->second;}
+    {return initialState;}
 
   size_t getNumStates() const
     {return states.size();}
@@ -224,6 +224,7 @@ public:
     {return states;}
 
 private:
+  LuapeGraphBuilderTypeStatePtr initialState;
   StateMap states;
 
   LuapeGraphBuilderTypeStatePtr getOrCreateState(const LuapeInferencePtr& problem, size_t depth, const std::vector<TypePtr>& stack)
