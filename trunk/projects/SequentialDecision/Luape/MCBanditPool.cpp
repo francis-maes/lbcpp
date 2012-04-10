@@ -60,6 +60,20 @@ const Variable& MCBanditPool::getArmParameter(size_t index) const
 void MCBanditPool::setArmParameter(size_t index, const Variable& parameter)
   {jassert(index < arms.size()); arms[index].parameter = parameter;}
 
+struct PlayArmWorkUnit : public WorkUnit
+{
+  PlayArmWorkUnit(MCBanditPoolObjectivePtr objective, const Variable& parameter, size_t instanceIndex, size_t armInedx)
+    : objective(objective), parameter(parameter), instanceIndex(instanceIndex), armIndex(armIndex) {}
+
+  MCBanditPoolObjectivePtr objective;
+  Variable parameter;
+  size_t instanceIndex;
+  size_t armIndex;
+
+  virtual Variable run(ExecutionContext& context)
+    {return objective->computeObjective(context, parameter, instanceIndex);}
+};
+
 size_t MCBanditPool::selectAndPlayArm(ExecutionContext& context)
 {
   int index = popArmFromQueue();
@@ -67,42 +81,26 @@ size_t MCBanditPool::selectAndPlayArm(ExecutionContext& context)
     return (size_t)-1;
 
   Arm& arm = arms[index];
-  std::vector<Variable> variables;
-  variables.push_back(arm.parameter);
-  if (objective->getNumRequiredInputs() == 2)
-    variables.push_back(arm.playedCount);
-  WorkUnitPtr workUnit = functionWorkUnit(objective, variables);
+  WorkUnitPtr workUnit = new PlayArmWorkUnit(objective, arm.parameter, arm.playedCount, index);
   if (useMultiThreading && context.isMultiThread())
-  {
-    jassert(currentlyPlayedArms.find(arm.parameter) == currentlyPlayedArms.end());
-    currentlyPlayedArms[arm.parameter] = (size_t)index;
     context.pushWorkUnit(workUnit, this, false);
-  }
   else
   {
-    double reward = context.run(workUnit, false).toDouble();
+    double reward = context.run(workUnit, false).getDouble();
     observeReward(index, reward);
   }
   return (size_t)index;
 }
 
 void MCBanditPool::workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result, const ExecutionTracePtr& trace)
-{
-  FunctionWorkUnitPtr wu = workUnit.staticCast<FunctionWorkUnit>();
-  
-  Variable parameter = wu->getInputs()[0];
-  std::map<Variable, size_t>::iterator it = currentlyPlayedArms.find(parameter);
-  jassert(it != currentlyPlayedArms.end());
-  size_t index = it->second;
-  currentlyPlayedArms.erase(it);
+  {observeReward(workUnit.staticCast<PlayArmWorkUnit>()->armIndex, result.toDouble());}
 
-  observeReward(index, result.toDouble());
-}
-
-void MCBanditPool::observeReward(size_t index, double reward)
+void MCBanditPool::observeReward(size_t index, double objectiveValue)
 {
   Arm& arm = arms[index];
-  arm.observe(reward);
+  double worst, best;
+  objective->getObjectiveRange(worst, best);
+  arm.observe(objectiveValue, (objectiveValue - worst) / (best - worst));
   pushArmIntoQueue(index, getIndexScore(arm));
 }
 
@@ -117,8 +115,9 @@ void MCBanditPool::displayInformation(ExecutionContext& context, size_t numBestA
   for (std::multimap<double, size_t>::reverse_iterator it = armsByMeanReward.rbegin(); i < numBestArms && it != armsByMeanReward.rend(); ++it, ++i)
   {
     Arm& arm = arms[it->second];
-    context.informationCallback(T("[") + String((int)i) + T("] r = ") + String(arm.getMeanReward())
-      + T(" t = ") + String((int)arm.playedCount) + T(" -- ") + arm.parameter.toShortString());
+    context.informationCallback(T("[") + String((int)i) + T("] ") + 
+      arm.parameter.toShortString() + T(" -> ") + String(arm.getMeanObjectiveValue()) +
+        T(" (played ") + String((int)arm.playedCount) + T(" times)"));
   }
 
   if (armsByMeanReward.size())

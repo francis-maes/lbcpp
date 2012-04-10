@@ -38,7 +38,7 @@ public:
     {return inputs;}
 
   void addInput(const TypePtr& type, const String& name)
-    {inputs.push_back(new LuapeInputNode(type, name));}
+    {size_t index = inputs.size(); inputs.push_back(new LuapeInputNode(type, name, index));}
 
   /*
   ** Active variables

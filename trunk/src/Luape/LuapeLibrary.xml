@@ -25,6 +25,7 @@
   </class>
   <class name="LuapeInputNode" base="LuapeNode">
     <variable type="String" name="name"/>
+    <variable type="PositiveInteger" name="inputIndex"/>
   </class>
   <class name="LuapeConstantNode" base="LuapeNode">
     <variable type="Variable" name="value"/>

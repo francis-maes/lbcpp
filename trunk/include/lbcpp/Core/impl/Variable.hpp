@@ -78,7 +78,7 @@ inline Variable::Variable()
   : type(nilType), value() {}
 
 inline Variable::~Variable()
-  {type->destroy(value);}
+  {if (type != nilType) type->destroy(value);}
 
 inline void Variable::clear()
   {type->destroy(value); type = nilType;}
