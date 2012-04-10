@@ -15,6 +15,7 @@
 namespace lbcpp
 {
 
+#if 0
 class LuapeNodeBuilderAction;
 typedef ReferenceCountedObjectPtr<LuapeNodeBuilderAction> LuapeNodeBuilderActionPtr;
 
@@ -88,6 +89,7 @@ private:
   LuapeNodePtr nodeToAdd;
   std::vector<LuapeNodePtr> removedNodes; // use in state backup only
 };
+#endif // 0
 
 class LuapeNodeBuilderState : public DecisionProblemState
 {
@@ -123,7 +125,7 @@ public:
   }
 
   virtual TypePtr getActionType() const
-    {return luapeNodeBuilderActionClass;}
+    {return objectClass;} // sumType(luapeNodeClass, luapeFunctionClass)
       
   virtual ContainerPtr getAvailableActions() const
   {
@@ -133,7 +135,7 @@ public:
     if (!typeState)
       return ContainerPtr();
 
-    ObjectVectorPtr res = new ObjectVector(luapeNodeBuilderActionClass, 0);
+    ObjectVectorPtr res = new ObjectVector(objectClass, 0);
     const_cast<LuapeNodeBuilderState* >(this)->availableActions = res;
 
     if (typeState->hasPushActions())
@@ -159,26 +161,46 @@ public:
         LuapeFunctionPtr function = apply[i].first;
         if (function->acceptInputsStack(stack))
         {
-          size_t numInputs = function->getNumInputs();
+          res->append(function);
+          /*size_t numInputs = function->getNumInputs();
           std::vector<LuapeNodePtr> inputs(numInputs);
           for (size_t i = 0; i < numInputs; ++i)
             inputs[i] = stack[stack.size() - numInputs + i];
 
           LuapeNodeBuilderActionPtr action = LuapeNodeBuilderAction::apply(this->function->getUniverse(), function, inputs);
           // if (!action->isUseless(graph)) // useless == the created node already exists in the graph
-            res->append(action);
+            res->append(action);*/
         }
       }
     }
 
     if (typeState->hasYieldAction())
-      res->append(LuapeNodeBuilderAction::yield());
+      res->append(ObjectPtr());
     return res;
   }
 
   virtual void performTransition(ExecutionContext& context, const Variable& a, double& reward, Variable* stateBackup = NULL)
   {
-    const LuapeNodeBuilderActionPtr& action = a.getObjectAndCast<LuapeNodeBuilderAction>();
+    const ObjectPtr& action = a.getObject();
+
+    if (stateBackup)
+      *stateBackup = action;
+
+    if (action.isInstanceOf<LuapeNode>()) // push action
+      stack.push_back(action.staticCast<LuapeNode>());
+    else if (action.isInstanceOf<LuapeFunction>()) // apply action
+    {
+      const LuapeFunctionPtr& function = action.staticCast<LuapeFunction>();
+      size_t numInputs = function->getNumInputs();
+      jassert(stack.size() >= numInputs);
+      std::vector<LuapeNodePtr> inputs(numInputs);
+      for (size_t i = 0; i < numInputs; ++i)
+        inputs[i] = stack[stack.size() - numInputs + i];
+      stack.resize(stack.size() - numInputs + 1);
+      stack.back() = this->function->getUniverse()->makeFunctionNode(function, inputs);
+    }
+
+#if 0
     if (stateBackup)
       *stateBackup = action;
     action->perform(stack);
@@ -195,10 +217,11 @@ public:
         //  (not intermediary nodes created along the builder trajectory)
       }
     }*/
+#endif // 0
     reward = 0.0;
     ++numSteps;
     availableActions = ContainerPtr();
-    if (action->isYield())
+    if (action == ObjectPtr()) // yield
     {
       isYielded = true;
       typeState = LuapeGraphBuilderTypeStatePtr();
@@ -209,10 +232,23 @@ public:
 
   virtual bool undoTransition(ExecutionContext& context, const Variable& stateBackup)
   {
-    const LuapeNodeBuilderActionPtr& action = stateBackup.getObjectAndCast<LuapeNodeBuilderAction>();
+    const ObjectPtr& action = stateBackup.getObject();
     isAborted = isYielded = false;
     --numSteps;
-    action->undo(stack);
+
+    jassert(stack.size());
+    if (action.isInstanceOf<LuapeNode>()) // push action
+      stack.pop_back();
+    else if (action.isInstanceOf<LuapeFunction>()) // apply action
+    {
+      LuapeFunctionNodePtr functionNode = stack.back().staticCast<LuapeFunctionNode>();
+      stack.pop_back();
+      jassert(functionNode->getFunction() == action.staticCast<LuapeFunction>());
+      size_t n = functionNode->getNumArguments();
+      for (size_t i = 0; i < n; ++i)
+        stack.push_back(functionNode->getArgument(i));
+    }
+
     availableActions = ContainerPtr();
     updateTypeState();
     return true;
@@ -264,7 +300,7 @@ protected:
   void addPushActionIfAvailable(const ObjectVectorPtr& availableActions, const LuapeNodePtr& node) const
   {
     if (typeState->hasPushAction(node->getType()))
-      availableActions->append(LuapeNodeBuilderAction::push(node));
+      availableActions->append(node);
   }
 };
 

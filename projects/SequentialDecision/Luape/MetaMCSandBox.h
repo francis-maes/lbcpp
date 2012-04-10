@@ -198,20 +198,20 @@ public:
     }
   }
 
-  struct AlgorithmObjective : public SimpleBinaryFunction
+  struct AlgorithmObjective : public MCBanditPoolObjective
   {
-    AlgorithmObjective(MetaMCSandBox* owner) 
-      : SimpleBinaryFunction(mcAlgorithmClass, positiveIntegerType, doubleType), owner(owner) {}
+    AlgorithmObjective(MetaMCSandBox* owner) : owner(owner) {}
 
     MetaMCSandBox* owner;
+    
+    virtual void getObjectiveRange(double& worst, double& best) const
+      {worst = 1.0; best = 0.0;}
 
-    virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+    virtual double computeObjective(ExecutionContext& context, const Variable& parameter, size_t instanceIndex)
     {
-      MCAlgorithmPtr algorithm = inputs[0].getObjectAndCast<MCAlgorithm>();
-      int instanceNumber = inputs[1].getInteger();
-      size_t problemNumber = (size_t)(1 + (instanceNumber % 8));
-      double score = owner->testAlgorithm(context, algorithm, false, problemNumber);
-      return 1.0 - score; // transform into reward
+      MCAlgorithmPtr algorithm = parameter.getObjectAndCast<MCAlgorithm>();
+      size_t problemNumber = (size_t)(1 + (instanceIndex % 8));
+      return owner->testAlgorithm(context, algorithm, false, problemNumber);
     }
   };
 

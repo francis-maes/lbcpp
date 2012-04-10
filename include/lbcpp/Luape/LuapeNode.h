@@ -26,6 +26,7 @@ public:
   void setType(const TypePtr& type)
     {this->type = type;}
 
+  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const = 0;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const = 0;
   Variable compute(ExecutionContext& context) const;
 
@@ -69,10 +70,11 @@ extern ClassPtr luapeNodeClass;
 class LuapeInputNode : public LuapeNode
 {
 public:
-  LuapeInputNode(const TypePtr& type, const String& name);
+  LuapeInputNode(const TypePtr& type, const String& name, size_t inputIndex);
   LuapeInputNode() {}
 
   virtual String toShortString() const;
+  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const;
 
@@ -82,6 +84,7 @@ protected:
   friend class LuapeInputNodeClass;
 
   String name;
+  size_t inputIndex;
 };
 
 /*
@@ -94,6 +97,7 @@ public:
   LuapeConstantNode() {}
 
   virtual String toShortString() const;
+  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const;
 
@@ -124,6 +128,7 @@ public:
 
   virtual String toShortString() const;
 
+  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const;
 
@@ -168,6 +173,7 @@ public:
   LuapeTestNode() {}
 
   virtual String toShortString() const;
+  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const;
 
@@ -266,6 +272,7 @@ public:
   LuapeScalarSumNode(const std::vector<LuapeNodePtr>& nodes);
   LuapeScalarSumNode();
 
+  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
 
 protected:
@@ -279,6 +286,7 @@ public:
   LuapeVectorSumNode(EnumerationPtr enumeration, bool convertToProbabilities);
   LuapeVectorSumNode() {}
 
+  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const;
 
@@ -299,6 +307,7 @@ public:
   LuapeCreateSparseVectorNode(const std::vector<LuapeNodePtr>& nodes);
   LuapeCreateSparseVectorNode();
     
+  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
 
 protected:

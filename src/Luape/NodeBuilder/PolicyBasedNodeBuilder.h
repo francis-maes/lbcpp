@@ -149,7 +149,7 @@ public:
 
       bool hasYield = false;
       for (size_t i = 0; i < actions->getNumElements(); ++i)
-        if (actions->getElement(i).getObjectAndCast<LuapeNodeBuilderAction>()->isYield())
+        if (actions->getElement(i).getObject() == ObjectPtr()) // yield action
         {
           hasYield = true;
           break;

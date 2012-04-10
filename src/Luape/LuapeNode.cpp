@@ -58,11 +58,14 @@ size_t LuapeNode::getDepth() const
 /*
 ** LuapeInputNode
 */
-LuapeInputNode::LuapeInputNode(const TypePtr& type, const String& name)
-  : LuapeNode(type), name(name) {}
+LuapeInputNode::LuapeInputNode(const TypePtr& type, const String& name, size_t inputIndex)
+  : LuapeNode(type), name(name), inputIndex(inputIndex) {}
 
 String LuapeInputNode::toShortString() const
   {return name;}
+
+Variable LuapeInputNode::compute(ExecutionContext& context, const Variable* inputs) const
+  {return inputs[inputIndex];}
 
 Variable LuapeInputNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
 {
@@ -86,6 +89,9 @@ LuapeConstantNode::LuapeConstantNode(const Variable& value)
 
 String LuapeConstantNode::toShortString() const
   {return value.toShortString();}
+
+Variable LuapeConstantNode::compute(ExecutionContext& context, const Variable* inputs) const
+  {return value;}
 
 Variable LuapeConstantNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
   {return value;}
@@ -135,10 +141,36 @@ void LuapeFunctionNode::initialize()
   delete [] inputTypes;
 }
 
+Variable LuapeFunctionNode::compute(ExecutionContext& context, const Variable* inputs) const
+{
+  size_t n = arguments.size();
+  if (n == 0)
+    return function->compute(context, NULL);
+  else if (n == 1)
+  {
+    Variable v = arguments[0]->compute(context, inputs);
+    return function->compute(context, &v);
+  }
+  else if (n == 2)
+  {
+    Variable v[2];
+    v[0] = arguments[0]->compute(context, inputs);
+    v[1] = arguments[1]->compute(context, inputs);
+    return function->compute(context, v);
+  }
+  else
+  {
+    std::vector<Variable> inputValues(arguments.size());
+    for (size_t i = 0; i < arguments.size(); ++i)
+      inputValues[i] = arguments[i]->compute(context, inputs);
+    return function->compute(context, &inputValues[0]);
+  }
+}
+
 Variable LuapeFunctionNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
 {
   std::vector<Variable> inputValues(arguments.size());
-  for (size_t i = 0; i < inputValues.size(); ++i)
+  for (size_t i = 0; i < arguments.size(); ++i)
     inputValues[i] = cache->compute(context, arguments[i]);
   return function->compute(context, &inputValues[0]);
 }
@@ -193,6 +225,13 @@ String LuapeTestNode::toShortString() const
   if (missingNode && missingNode.isInstanceOf<LuapeConstantNode>() && missingNode.staticCast<LuapeConstantNode>()->getValue().exists())
     res += T(" : ") + missingNode->toShortString();
   return res + T(")");
+}
+
+Variable LuapeTestNode::compute(ExecutionContext& context, const Variable* inputs) const
+{
+  Variable condition = conditionNode->compute(context, inputs);
+  LuapeNodePtr subNode = (condition.isMissingValue() ? missingNode : (condition.getBoolean() ? successNode : failureNode));
+  return subNode ? subNode->compute(context, inputs) : Variable::missingValue(type);
 }
 
 Variable LuapeTestNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
@@ -401,6 +440,14 @@ LuapeScalarSumNode::LuapeScalarSumNode()
 {
 }
 
+Variable LuapeScalarSumNode::compute(ExecutionContext& context, const Variable* inputs) const
+{
+  double res = 0.0;
+  for (size_t i = 0; i < nodes.size(); ++i)
+    res += nodes[i]->compute(context, inputs).getDouble();
+  return res;
+}
+
 Variable LuapeScalarSumNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
 {
   double res = 0.0;
@@ -429,6 +476,19 @@ void LuapeScalarSumNode::updateOutputs(const VectorPtr& outputs, const LuapeSamp
 LuapeVectorSumNode::LuapeVectorSumNode(EnumerationPtr enumeration, bool convertToProbabilities) 
   : LuapeSequenceNode(denseDoubleVectorClass(enumeration, doubleType)), convertToProbabilities(convertToProbabilities)
 {
+}
+
+Variable LuapeVectorSumNode::compute(ExecutionContext& context, const Variable* inputs) const
+{
+  ClassPtr doubleVectorClass = type;
+  DenseDoubleVectorPtr res = new DenseDoubleVector(doubleVectorClass);
+  for (size_t i = 0; i < nodes.size(); ++i)
+  {
+    DenseDoubleVectorPtr value = nodes[i]->compute(context, inputs).getObjectAndCast<DenseDoubleVector>();
+    if (value)
+      value->addTo(res);
+  }
+  return convertToProbabilities ? convertToProbabilitiesUsingSigmoid(res) : res;
 }
 
 Variable LuapeVectorSumNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
@@ -510,6 +570,18 @@ LuapeCreateSparseVectorNode::LuapeCreateSparseVectorNode(const std::vector<Luape
 
 LuapeCreateSparseVectorNode::LuapeCreateSparseVectorNode()
   : LuapeSequenceNode(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType)) {}
+
+Variable LuapeCreateSparseVectorNode::compute(ExecutionContext& context, const Variable* inputs) const
+{
+  SparseDoubleVectorPtr res = new SparseDoubleVector((ClassPtr)getType());
+  for (size_t i = 0; i < nodes.size(); ++i)
+  {
+    Variable v = nodes[i]->compute(context, inputs);
+    if (v.exists())
+      res->incrementValue((size_t)v.getInteger(), 1.0);
+  }
+  return res;
+}
 
 Variable LuapeCreateSparseVectorNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
 {

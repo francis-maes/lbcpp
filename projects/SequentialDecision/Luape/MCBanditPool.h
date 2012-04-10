@@ -14,10 +14,19 @@
 namespace lbcpp
 {
 
+class MCBanditPoolObjective : public Object
+{
+public:
+  virtual void getObjectiveRange(double& worst, double& best) const = 0;
+  virtual double computeObjective(ExecutionContext& context, const Variable& parameter, size_t instanceIndex) = 0;
+};
+
+typedef ReferenceCountedObjectPtr<MCBanditPoolObjective> MCBanditPoolObjectivePtr;
+
 class MCBanditPool : public Object, public ExecutionContextCallback
 {
 public:
-  MCBanditPool(const FunctionPtr& objective, double explorationCoefficient, bool useMultiThreading = false) 
+  MCBanditPool(const MCBanditPoolObjectivePtr& objective, double explorationCoefficient, bool useMultiThreading = false) 
     : objective(objective), explorationCoefficient(explorationCoefficient), useMultiThreading(useMultiThreading) {}
   MCBanditPool() : explorationCoefficient(0.0) {}
 
@@ -32,7 +41,7 @@ public:
 
   size_t selectAndPlayArm(ExecutionContext& context);
   size_t sampleArmWithHighestReward(ExecutionContext& context) const;
-  void observeReward(size_t index, double reward);
+  void observeReward(size_t index, double objective);
 
   void displayInformation(ExecutionContext& context, size_t numBestArms = 10);
 
@@ -42,27 +51,31 @@ public:
 protected:
   friend class MCBanditPoolClass;
 
-  FunctionPtr objective; // samples rewards in range [0,1]
+  MCBanditPoolObjectivePtr objective; // samples rewards in range [0,1]
   double explorationCoefficient;
   bool useMultiThreading;
 
   struct Arm
   {
-    Arm() : playedCount(0), rewardSum(0.0) {}
+    Arm() : playedCount(0), objectiveValueSum(0.0), rewardSum(0.0) {}
 
     size_t playedCount;
+    double objectiveValueSum;
     double rewardSum;
 
     Variable parameter;
 
-    void observe(double reward)
-      {++playedCount; rewardSum += reward;}
+    void observe(double objectiveValue, double reward)
+      {++playedCount; objectiveValueSum += objectiveValue; rewardSum += reward;}
 
     void reset()
       {playedCount = 0; rewardSum = 0.0;}
 
     double getMeanReward() const
       {return playedCount ? rewardSum / (double)playedCount : 0.0;}
+
+    double getMeanObjectiveValue() const
+      {return playedCount ? objectiveValueSum / (double)playedCount : 0.0;}
   };
 
   std::vector<Arm> arms;
@@ -87,10 +100,8 @@ protected:
   void pushArmIntoQueue(size_t index, double score);
   int popArmFromQueue();
 
-  std::map<Variable, size_t> currentlyPlayedArms;
-
   size_t getNumCurrentlyPlayedArms() const
-    {return currentlyPlayedArms.size();}
+    {return arms.size() - queue.size();}
 };
 
 typedef ReferenceCountedObjectPtr<MCBanditPool> MCBanditPoolPtr;

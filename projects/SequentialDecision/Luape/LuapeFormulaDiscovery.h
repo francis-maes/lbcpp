@@ -199,31 +199,68 @@ private:
     virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
     {
       BanditStatisticsPtr arm = banditStatistics[banditNumber];
-      DenseDoubleVectorPtr input = new DenseDoubleVector(4, 0.0);
-      input->setValue(0, arm->getRewardMean());
-      input->setValue(1, arm->getRewardStandardDeviation());
-      input->setValue(2, (double)arm->getPlayedCount());
-      input->setValue(3, (double)timeStep);
-
-      LuapeInstanceCachePtr cache = new LuapeInstanceCache();
-      cache->setInputObject(problem->getInputs(), input);
-      return cache->compute(defaultExecutionContext(), formula).toDouble();
+      Variable input[4];
+      input[0] = arm->getRewardMean();
+      input[1] = arm->getRewardStandardDeviation();
+      input[2] = (double)arm->getPlayedCount();
+      input[3] = (double)timeStep;
+      return formula->compute(defaultExecutionContext(), input).toDouble();
     }
   };
 };
 
 //////////////////////////////////////////////////////////
 
+class LuapeRPNSequence;
+typedef ReferenceCountedObjectPtr<LuapeRPNSequence> LuapeRPNSequencePtr;
+
+class LuapeRPNSequence : public Object
+{
+public:
+  LuapeRPNSequence(const std::vector<ObjectPtr>& sequence)
+    : sequence(sequence) {}
+  LuapeRPNSequence() {}
+
+  static LuapeRPNSequencePtr fromNode(const LuapeNodePtr& node)
+  {
+    LuapeRPNSequencePtr res = new LuapeRPNSequence();
+    res->appendNode(node);
+    return res;
+  }
+
+  void appendNode(const LuapeNodePtr& node)
+  {
+    if (node.isInstanceOf<LuapeInputNode>() || node.isInstanceOf<LuapeConstantNode>())
+      append(node);
+    else if (node.isInstanceOf<LuapeFunctionNode>())
+    {
+      const LuapeFunctionNodePtr& functionNode = node.staticCast<LuapeFunctionNode>();
+      size_t n = functionNode->getNumArguments();
+      for (size_t i = 0; i < n; ++i)
+        appendNode(functionNode->getArgument(i));
+      append(functionNode->getFunction());
+    }
+    else
+      jassert(false);
+  }
+
+  void append(const ObjectPtr& action)
+    {sequence.push_back(action);}
+
+private:
+  std::vector<ObjectPtr> sequence;
+};
+
 class LuapeNodeEquivalenceClass : public Object
 {
 public:
   LuapeNodeEquivalenceClass(const LuapeNodePtr& node)
-    : elements(1, node), representent(node) {}
+    {add(node);}
   LuapeNodeEquivalenceClass() {}
 
   void add(LuapeNodePtr node)
   {
-    elements.push_back(node);
+    elements.push_back(LuapeRPNSequence::fromNode(node));
     if (!representent || isSmallerThan(node, representent))
       representent = node;
   }
@@ -238,7 +275,7 @@ public:
     {return T("[") + representent->toShortString() + T("]");}
 
 protected:
-  std::vector<LuapeNodePtr> elements;
+  std::vector<LuapeRPNSequencePtr> elements;
   LuapeNodePtr representent;
 
   bool isSmallerThan(const LuapeNodePtr& a, const LuapeNodePtr& b) const
@@ -377,20 +414,17 @@ protected:
   size_t numStepsPerIteration;
   bool useMultiThreading;
 
-  struct ObjectiveWrapper : public SimpleBinaryFunction
+  struct ObjectiveWrapper : public MCBanditPoolObjective
   {
-    ObjectiveWrapper(LuapeNodeSearchProblemPtr problem) 
-      : SimpleBinaryFunction(luapeNodeClass, positiveIntegerType, doubleType), problem(problem)
-      {problem->getObjectiveRange(worst, best);}
+    ObjectiveWrapper(LuapeNodeSearchProblemPtr problem) : problem(problem) {}
 
     LuapeNodeSearchProblemPtr problem;
-    double worst, best;
 
-    virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-    {
-      double score = problem->computeObjective(context, inputs[0].getObjectAndCast<LuapeNode>(), (size_t)inputs[1].getInteger());
-      return (score - worst) / (best - worst);
-    }
+    virtual void getObjectiveRange(double& worst, double& best) const
+      {problem->getObjectiveRange(worst, best);}
+ 
+    virtual double computeObjective(ExecutionContext& context, const Variable& parameter, size_t instanceIndex)
+      {return problem->computeObjective(context, parameter.getObjectAndCast<LuapeNode>(), instanceIndex);}
   };
 };
 

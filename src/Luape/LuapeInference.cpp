@@ -159,7 +159,7 @@ LuapeSamplesCachePtr LuapeInference::createSamplesCache(ExecutionContext& contex
 
 void LuapeInference::setSamples(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
 {
-  supervision = new LuapeInputNode(trainingData[0]->getVariableType(1), T("supervision"));
+  supervision = new LuapeInputNode(trainingData[0]->getVariableType(1), T("supervision"), inputs.size());
   trainingCache = createSamplesCache(context, trainingData);
   if (validationData.size())
     validationCache = createSamplesCache(context, validationData);
@@ -454,7 +454,7 @@ LuapeSamplesCachePtr LuapeRanker::createSamplesCache(ExecutionContext& context, 
 
 void LuapeRanker::setSamples(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
 {
-  supervision = new LuapeInputNode(trainingData[0]->getVariableType(1), T("supervision"));
+  supervision = new LuapeInputNode(trainingData[0]->getVariableType(1), T("supervision"), inputs.size());
   trainingCache = createSamplesCache(context, trainingData, trainingExampleSizes);
   trainingCache->cacheNode(context, node, VectorPtr(), "Prediction node", false);
   if (validationData.size())

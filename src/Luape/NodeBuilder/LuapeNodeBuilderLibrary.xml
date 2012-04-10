@@ -12,13 +12,11 @@
   <class name="LuapeGraphBuilderTypeSearchSpace"/>
 
   <!-- Builder Decision Problem -->
-  <class name="LuapeNodeBuilderAction"/>
-
   <class name="LuapeNodeBuilderState" base="DecisionProblemState">
     <variable type="LuapeInference" name="function"/>
     <variable type="LuapeGraphBuilderTypeSearchSpace" name="typeSearchSpace"/>
     <variable type="LuapeGraphBuilderTypeState" name="typeState"/>
-    <variable type="ObjectVector[LuapeNodeBuilderAction]" name="availableActions"/>
+    <variable type="ObjectVector[Object]" name="availableActions"/>
     <variable type="ObjectVector[LuapeNode]" name="stack"/>
     <variable type="PositiveInteger" name="numSteps"/>
     <variable type="Boolean" name="isAborted"/>
