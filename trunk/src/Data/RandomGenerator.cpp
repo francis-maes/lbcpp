@@ -165,8 +165,7 @@ size_t RandomGenerator::sampleWithProbabilities(const std::vector<double>& proba
       return i;
     number -= prob;
   }
-  jassert(false);
-  return 0;
+  return probabilities.size() - 1; // this might happen in case in numerical imprecisions (sum of probabilities which do not perfectly match probabilitiesSum)
 }
 
 double RandomGenerator::sampleDoubleFromGaussian()
