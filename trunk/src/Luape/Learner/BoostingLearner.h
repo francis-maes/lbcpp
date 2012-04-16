@@ -55,7 +55,7 @@ public:
     }
 
     // evaluate
-    if (verbose)
+    //if (verbose) // TMP !
       evaluatePredictions(context, problem, trainingScore, validationScore);
 
     // trainingCache->checkCacheIsCorrect(context, function->getRootNode());
