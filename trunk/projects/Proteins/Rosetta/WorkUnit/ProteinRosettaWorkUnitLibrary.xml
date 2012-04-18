@@ -70,6 +70,8 @@
     <variable type="String" name="referencesDirectory"/>
     <variable type="String" name="moversDirectory"/>
     <variable type="Double" name="ratioTestSet"/>
+    <variable type="PositiveInteger" name="authorized"/>
+    <variable type="PositiveInteger" name="numSteps"/>
   </class>
   
 </library>

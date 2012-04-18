@@ -22,8 +22,8 @@ class EvaluateLikelihoodWorkUnit : public WorkUnit
 {
 public:
   EvaluateLikelihoodWorkUnit() {}
-  EvaluateLikelihoodWorkUnit(String referencesDirectory, String moversDirectory, double ratioTestSet)
-    : referencesDirectory(referencesDirectory), moversDirectory(moversDirectory), ratioTestSet(ratioTestSet) {}
+  EvaluateLikelihoodWorkUnit(String referencesDirectory, String moversDirectory, double ratioTestSet, size_t authorized, size_t numSteps)
+    : referencesDirectory(referencesDirectory), moversDirectory(moversDirectory), ratioTestSet(ratioTestSet), authorized(authorized), numSteps(numSteps) {}
 
   SamplerPtr learnDistribution(ExecutionContext& context, const juce::OwnedArray<File>& references, const File& moversFile, const std::vector<size_t>& indexes, size_t numLearned) const
   {
@@ -156,9 +156,6 @@ public:
     ros.init(context, false, 0, 0);
 
     // sizesof sets
-    size_t authorized = 1000;
-    size_t numSteps = 100;
-
     size_t sizeTestSet = (double)references.size() * ratioTestSet;
     size_t sizeLearningSet = references.size() - sizeTestSet;
 
@@ -227,11 +224,15 @@ protected:
   String referencesDirectory;
   String moversDirectory;
   double ratioTestSet;
+  size_t authorized;
+  size_t numSteps;
 };
 
 extern WorkUnitPtr evaluateLikelihoodWorkUnit(String referencesDirectory,
                                               String moversDirectory,
-                                              double ratioTestSet);
+                                              double ratioTestSet,
+                                              size_t authorized,
+                                              size_t numSteps);
 
 }; /* namespace lbcpp */
 
