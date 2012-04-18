@@ -71,46 +71,55 @@ public:
 
 # ifdef LBCPP_PROTEIN_ROSETTA
 
-    File referencesFile = context.getFile(T("data/psipred_test"));
+    RosettaPtr ros = new Rosetta();
+    ros->init(context, false, 0, 0);
 
-    juce::OwnedArray<File> references;
-    referencesFile.findChildFiles(references, File::findFiles, false, T("*.pdb"));
+    File referencesFile = context.getFile(T("3IOL.pdb"));
 
-//    size_t num100 = 0;
-//    size_t num200 = 0;
-//    size_t numplus = 0;
-//    size_t maxSize = 0;
-//    size_t mean = 0;
-//    for (size_t i = 0; i < references.size(); i++)
-//    {
-//      ProteinPtr protein = Protein::createFromPDB(context, *references[i]);
-//
-//      if (protein->getLength() <= 100)
-//        ++num100;
-//      else if ((protein->getLength() > 100) && (protein->getLength() <= 200))
-//        ++num200;
-//      else
-//      {
-//        ++numplus;
-//        mean += protein->getLength();
-//        if (protein->getLength() > maxSize)
-//          maxSize = protein->getLength();
-//      }
-//    }
-//
-//    std::cout << "num -100 : " << num100 << std::endl;
-//    std::cout << "num +100 -200 : " << num200 << std::endl;
-//    std::cout << "num plus : " << numplus << std::endl;
-//    std::cout << "maxSize : " << maxSize << std::endl;
-//    std::cout << "mean size plus : " << (double)mean / (double)numplus << std::endl;
+    PosePtr p = new Pose(referencesFile);
+    p->saveToPDB(referencesFile);
 
-    for (size_t i = 0; i < references.size(); i++)
-    {
-      ProteinPtr protein = Protein::createFromPDB(context, *references[i]);
+    PoseMoverPtr mov = rigidBodyMover(4, 6, 4, 0);
+    mov->move(p);
 
-      if (protein->getLength() > 200)
-        (*references[i]).deleteFile();
-    }
+    File saveFile = context.getFile(T("3IOL_modif.pdb"));
+    p->saveToPDB(saveFile);
+
+    //    size_t num100 = 0;
+    //    size_t num200 = 0;
+    //    size_t numplus = 0;
+    //    size_t maxSize = 0;
+    //    size_t mean = 0;
+    //    for (size_t i = 0; i < references.size(); i++)
+    //    {
+    //      ProteinPtr protein = Protein::createFromPDB(context, *references[i]);
+    //
+    //      if (protein->getLength() <= 100)
+    //        ++num100;
+    //      else if ((protein->getLength() > 100) && (protein->getLength() <= 200))
+    //        ++num200;
+    //      else
+    //      {
+    //        ++numplus;
+    //        mean += protein->getLength();
+    //        if (protein->getLength() > maxSize)
+    //          maxSize = protein->getLength();
+    //      }
+    //    }
+    //
+    //    std::cout << "num -100 : " << num100 << std::endl;
+    //    std::cout << "num +100 -200 : " << num200 << std::endl;
+    //    std::cout << "num plus : " << numplus << std::endl;
+    //    std::cout << "maxSize : " << maxSize << std::endl;
+    //    std::cout << "mean size plus : " << (double)mean / (double)numplus << std::endl;
+
+    //    for (size_t i = 0; i < references.size(); i++)
+    //    {
+    //      ProteinPtr protein = Protein::createFromPDB(context, *references[i]);
+    //
+    //      if (protein->getLength() > 200)
+    //        (*references[i]).deleteFile();
+    //    }
 
     //    jassert(false);
     //

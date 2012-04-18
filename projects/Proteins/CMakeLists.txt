@@ -240,6 +240,7 @@ SET(LBCPP_PROTEIN_ROSETTA_OPTIMIZER_STOPPINGCRITERION_SOURCES
 )
 
 SET(LBCPP_PROTEIN_ROSETTA_WORKUNIT_SOURCES
+  Rosetta/WorkUnit/EvaluateLikelihoodWorkUnit.h
   Rosetta/WorkUnit/UnfoldProteinsWorkUnit.h
   Rosetta/WorkUnit/TuningSAParametersWorkUnit.h
   Rosetta/WorkUnit/SingleThreadProteinOptimizationWorkUnit.h
