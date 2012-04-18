@@ -669,8 +669,8 @@ public:
     
     if (verbose)
       splits.resize(1);
-    else
-      splits.resize(7);
+    //else
+    //  splits.resize(7);
       
 
     TypePtr inputType = splits[0].first->getClass()->getTemplateArgument(0)->getTemplateArgument(0);
@@ -678,8 +678,18 @@ public:
     static const size_t numIterations = 1000;
 
     LuapeLearnerPtr conditionLearner, learner;
-    
     size_t Kdef = (size_t)(0.5 + sqrt((double)numVariables));
+
+    conditionLearner = exactWeakLearner(inputsNodeBuilder());
+    conditionLearner->setVerbose(verbose);
+    learner = treeLearner(new InformationGainLearningObjective(true), conditionLearner, 2, 0);
+    learner->setVerbose(verbose);
+    for (int run = 0; run < 10; ++run)
+    {
+      double score = testLearner(context, learner, T("ST"), inputType, labels, splits);
+      return score;
+    }
+
 
     /****
     ***** MCTS Feature Generation
