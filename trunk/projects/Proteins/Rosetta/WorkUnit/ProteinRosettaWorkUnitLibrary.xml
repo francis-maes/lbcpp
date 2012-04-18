@@ -66,4 +66,10 @@
     <variable type="PositiveInteger" name="repeat"/>
   </class>
   
+  <class name="EvaluateLikelihoodWorkUnit" base="WorkUnit">
+    <variable type="String" name="referencesDirectory"/>
+    <variable type="String" name="moversDirectory"/>
+    <variable type="Double" name="ratioTestSet"/>
+  </class>
+  
 </library>
