@@ -22,8 +22,8 @@ class EvaluateLikelihoodWorkUnit : public WorkUnit
 {
 public:
   EvaluateLikelihoodWorkUnit() {}
-  EvaluateLikelihoodWorkUnit(String referencesDirectory, String moversDirectory, double ratioTestSet, size_t authorized, size_t numSteps)
-    : referencesDirectory(referencesDirectory), moversDirectory(moversDirectory), ratioTestSet(ratioTestSet), authorized(authorized), numSteps(numSteps) {}
+  EvaluateLikelihoodWorkUnit(String referencesDirectory, String moversDirectory, double ratioTestSet, size_t authorized, size_t numSteps, size_t repeat)
+    : referencesDirectory(referencesDirectory), moversDirectory(moversDirectory), ratioTestSet(ratioTestSet), authorized(authorized), numSteps(numSteps), repeat(repeat) {}
 
   SamplerPtr learnDistribution(ExecutionContext& context, const juce::OwnedArray<File>& references, const File& moversFile, const std::vector<size_t>& indexes, size_t numLearned) const
   {
@@ -39,6 +39,7 @@ public:
     VectorPtr inputMovers = vector(doubleVectorClass(initializeFeatures->getElementsEnumeration(), doubleType));
     SamplerPtr sampler = new ConditionalPoseMoverSampler(pose->getLength());
 
+    context.enterScope(T("Learning"));
     context.enterScope(T("Loading learning examples..."));
 
     size_t counter = 0;
@@ -73,6 +74,7 @@ public:
     sampler->learn(context, addWorkers, addMovers, DenseDoubleVectorPtr(), ContainerPtr(), ContainerPtr(), DenseDoubleVectorPtr());
     context.leaveScope();
 
+    context.leaveScope();
     return sampler;
   }
 
@@ -90,7 +92,8 @@ public:
     VectorPtr inputWorkers = vector(doubleVectorClass(initializeFeatures->getElementsEnumeration(), doubleType));
     VectorPtr inputMovers = vector(doubleVectorClass(initializeFeatures->getElementsEnumeration(), doubleType));
 
-    context.enterScope(T("Loading learning examples..."));
+    context.enterScope(T("Evaluating"));
+    context.enterScope(T("Loading test examples..."));
 
     size_t counter = 0;
     for (size_t i = 0; i < indexes.size(); i++)
@@ -120,12 +123,65 @@ public:
     ContainerPtr addWorkers = inputWorkers;
     ContainerPtr addMovers = inputMovers;
 
+    context.enterScope(T("Computing likelihood vector"));
     DenseDoubleVectorPtr likelihoodVector = sampler->computeLogProbabilities(inputWorkers, inputMovers);
+    context.leaveScope();
 
     for (size_t i = 0; i < likelihoodVector->getNumElements(); ++i)
       likelihood += likelihoodVector->getValue(i);
 
+    context.leaveScope();
+
     return likelihood;
+  }
+
+  DenseDoubleVectorPtr performLearningAndEvaluation(ExecutionContext& context, RandomGeneratorPtr& rand, const juce::OwnedArray<File>& references, const File& moversFile, size_t sizeTestSet,
+      size_t maxCount, const DenseDoubleVectorPtr& sizes) const
+  {
+    DenseDoubleVectorPtr results = new DenseDoubleVector(numSteps, 0.0);
+
+    // generate orders of test set and learning set
+    std::vector<size_t> res;
+    rand->sampleOrder(references.size(), res);
+
+    std::vector<size_t> testSet(sizeTestSet);
+    for (size_t i = 0; (i < sizeTestSet) && (i < references.size()); ++i)
+      testSet[i] = res[i];
+
+    std::vector<size_t> learningSet(maxCount);
+    for (size_t i = 0; (i < maxCount) && (i + sizeTestSet < references.size()); ++i)
+      learningSet[i] = res[i + sizeTestSet];
+
+    // computing
+    context.enterScope(T("Computing"));
+    for (size_t i = 0; i < numSteps; ++i)
+    {
+      context.enterScope(T("Step : ") + String((int)i));
+      size_t thisSize = sizes->getValue(i);
+      double likelihood = 0.0;
+      if (thisSize > 1)
+      {
+        SamplerPtr sampler = learnDistribution(context, references, moversFile, learningSet, thisSize);
+        likelihood = evaluateLikelihood(context, sampler, references, moversFile, testSet);
+      }
+      results->setValue(i, likelihood);
+      context.leaveScope(likelihood);
+    }
+    context.leaveScope();
+
+    // results
+    context.enterScope(T("Results"));
+    for (int i = (numSteps - 1); i >= 0; --i)
+    {
+      context.enterScope(T("r"));
+      context.resultCallback(T("Size"), sizes->getValue(i));
+      double likelihood = results->getValue(i);
+      context.resultCallback(T("Likelihood"), likelihood);
+      context.leaveScope(likelihood);
+    }
+    context.leaveScope();
+
+    return results;
   }
 
   virtual Variable run(ExecutionContext& context)
@@ -154,63 +210,63 @@ public:
 
     Rosetta ros;
     ros.init(context, false, 0, 0);
+    RandomGeneratorPtr rand = new RandomGenerator();
 
     // sizesof sets
     size_t sizeTestSet = (double)references.size() * ratioTestSet;
     size_t sizeLearningSet = references.size() - sizeTestSet;
+    repeat = juce::jmax((int)repeat, 1);
 
     size_t maxCount = juce::jmin((int)authorized, (int)sizeLearningSet);
-    if (sizeLearningSet <= numSteps)
-      numSteps = sizeLearningSet * 0.5;
-    if ((sizeTestSet <= 1) || (sizeLearningSet <= 1) || (numSteps <= 1))
+    if (maxCount <= numSteps)
+      numSteps = maxCount * 0.5;
+    if ((sizeTestSet <= 1) || (maxCount <= 1) || (numSteps <= 1))
     {
       context.errorCallback(T("Set sizes : sets too small."));
       return Variable();
     }
 
-    // generate orders of test set and learning set
-    std::vector<size_t> res;
-    RandomGeneratorPtr rand = new RandomGenerator();
-    rand->sampleOrder(references.size(), res);
-
-    std::vector<size_t> testSet(sizeTestSet);
-    for (size_t i = 0; (i < sizeTestSet) && (i < references.size()); ++i)
-      testSet[i] = res[i];
-
-    std::vector<size_t> learningSet(maxCount);
-    for (size_t i = 0; (i < sizeLearningSet) && (i + sizeTestSet < references.size()); ++i)
-      learningSet[i] = res[i + sizeTestSet];
-
     // results
     DenseDoubleVectorPtr results = new DenseDoubleVector(numSteps, 0.0);
     DenseDoubleVectorPtr sizes = new DenseDoubleVector(numSteps, 0.0);
 
-    // computing
-    context.enterScope(T("Computing"));
+    // computing sizes of learning sets
     for (size_t i = 0; i < numSteps; ++i)
     {
-      context.enterScope(T("Step : ") + String((int)i));
       size_t thisSize = maxCount * ((double)(numSteps - i) / (double)(numSteps));
       sizes->setValue(i, (double)thisSize);
-      double likelihood = 0.0;
-      if (thisSize > 1)
-      {
-        SamplerPtr sampler = learnDistribution(context, references, moversFile, learningSet, thisSize);
-        likelihood = evaluateLikelihood(context, sampler, references, moversFile, testSet);
-      }
-      results->setValue(i, likelihood);
-      context.leaveScope(likelihood);
+    }
+
+    // perform likelihood estimations
+    std::vector<ScalarVariableMeanAndVariancePtr> means(numSteps);
+    for (size_t j = 0; j < numSteps; ++j)
+      means[j] = new ScalarVariableMeanAndVariance();
+
+    context.enterScope(T("Computing iterations"));
+    for (size_t i = 0; i < repeat; ++i)
+    {
+      context.enterScope(T("It"));
+      DenseDoubleVectorPtr r = performLearningAndEvaluation(context, rand, references, moversFile, sizeTestSet, maxCount, sizes);
+      context.leaveScope();
+
+      context.progressCallback(new ProgressionState((size_t)(i + 1), repeat, T("It")));
+
+      // aggregate results
+      for (size_t j = 0; j < numSteps; ++j)
+        means[j]->push(r->getValue(j));
     }
     context.leaveScope();
 
-    // results
+    // show results
     context.enterScope(T("Results"));
     for (int i = (numSteps - 1); i >= 0; --i)
     {
       context.enterScope(T("Result"));
       context.resultCallback(T("Size"), sizes->getValue(i));
-      double likelihood = results->getValue(i);
+      double likelihood = means[i]->getMean();
+      results->setValue(i, likelihood);
       context.resultCallback(T("Likelihood"), likelihood);
+      context.resultCallback(T("Var"), means[i]->getVariance());
       context.leaveScope(likelihood);
     }
     context.leaveScope();
@@ -226,15 +282,16 @@ protected:
   double ratioTestSet;
   size_t authorized;
   size_t numSteps;
+  size_t repeat;
 };
 
 extern WorkUnitPtr evaluateLikelihoodWorkUnit(String referencesDirectory,
                                               String moversDirectory,
                                               double ratioTestSet,
                                               size_t authorized,
-                                              size_t numSteps);
+                                              size_t numSteps,
+                                              size_t repeat);
 
 }; /* namespace lbcpp */
 
 #endif //! LBCPP_PROTEINS_ROSETTA_WORKUNIT_EVALUATELIKELIHOODWORKUNIT_H_
-

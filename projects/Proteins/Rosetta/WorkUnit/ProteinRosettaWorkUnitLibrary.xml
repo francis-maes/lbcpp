@@ -72,6 +72,7 @@
     <variable type="Double" name="ratioTestSet"/>
     <variable type="PositiveInteger" name="authorized"/>
     <variable type="PositiveInteger" name="numSteps"/>
+    <variable type="PositiveInteger" name="repeat"/>
   </class>
   
 </library>
