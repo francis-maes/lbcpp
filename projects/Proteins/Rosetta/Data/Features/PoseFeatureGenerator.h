@@ -31,7 +31,7 @@ public:
     builder.addFunction(new PoseDynamicFeatureGenerator(), input);
 
     // end selection
-    builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
+    builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
   }
 
 protected:
