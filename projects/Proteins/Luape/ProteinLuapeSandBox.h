@@ -13,6 +13,7 @@
 # include "LuapeProteinPredictorParameters.h"
 # include "../Predictor/ProteinPredictor.h"
 # include "../Evaluator/ProteinEvaluator.h"
+# include "../Evaluator/KolmogorovPerfectMatchingFunction.h"
 
 namespace lbcpp
 {
@@ -47,12 +48,12 @@ public:
 
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
     iteration->addTarget(dsbTarget);
-    //iteration->addTarget(sa20Target);
-    //iteration->addTarget(ss3Target);
+//    iteration->addTarget(sa20Target);
+//    iteration->addTarget(ss3Target);
     //iteration->addTarget(ss8Target);
     //iteration->addTarget(stalTarget);
     //iteration->addTarget(drTarget);
-
+    
     if (!iteration->train(context, trainingProteins, testingProteins, T("Training")))
       return Variable::missingValue(doubleType);
 
@@ -89,11 +90,15 @@ protected:
   ProteinEvaluatorPtr createEvaluator(bool isFinalEvaluation) const
   {
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("DSB Q2"));
+    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("DSB QP Perfect"), true);
+    
     //evaluator->addEvaluator(ss3Target, containerSupervisedEvaluator(classificationEvaluator()), T("Secondary Structure"));
-    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation), 1), T("Disulfide Bonds (Sens. and Spec)"));
+/*    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation), 1), T("Disulfide Bonds (Sens. and Spec)"));
     evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, isFinalEvaluation), 1), T("Disulfide Bonds (MCC)"));
     evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore), 1), T("Disulfide Bonds (Raw)"));
-    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)"));    
+    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)"));    */
+    
     return evaluator;
   }
 };

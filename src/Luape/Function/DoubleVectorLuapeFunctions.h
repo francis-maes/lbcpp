@@ -45,7 +45,7 @@ public:
   {
     DenseDoubleVectorPtr denseInput = input.dynamicCast<DenseDoubleVector>();
     if (denseInput)
-      return denseInput->getValue(index);
+      return Variable(denseInput->getValue(index), outputType);
     else
       return input.staticCast<DoubleVector>()->getElement(index);
   }

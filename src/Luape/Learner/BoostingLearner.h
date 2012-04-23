@@ -55,10 +55,10 @@ public:
     }
 
     // evaluate
-    //if (verbose) // TMP !
+    if (verbose)
       evaluatePredictions(context, problem, trainingScore, validationScore);
 
-    // trainingCache->checkCacheIsCorrect(context, function->getRootNode());
+    //problem->getTrainingCache()->checkCacheIsCorrect(context, problem->getRootNode(), true);
     if (verbose)
       context.resultCallback(T("contribution"), verbose ? Variable(contribution) : Variable(contribution->toShortString()));
     return true;

@@ -126,7 +126,6 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
   double trainingScore, validationScore;
   bool stopped = false;
 
-  size_t nextVerbosedIteration = 1;
   for (size_t i = 0; i < maxIterations && !stopped; ++i)
   {
     //learner->getTrainingCache()->displayCacheInformation(context);
@@ -142,13 +141,6 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
     if (!doLearningIteration(context, res, problem, examples, trainingScore, validationScore))
       stopped = true;
 
-    if (i == nextVerbosedIteration - 1) // TMP !
-    {
-      std::cout << "Iteration " << i+1 << " " << validationScore << std::endl;
-      nextVerbosedIteration *= 2;
-    }
-    
-      
     if (verbose)
     {
       context.resultCallback("trainCacheSizeInMb", problem->getTrainingCache()->getCacheSizeInBytes() / (1024.0 * 1024.0));

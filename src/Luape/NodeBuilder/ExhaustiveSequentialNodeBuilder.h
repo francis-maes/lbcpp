@@ -48,7 +48,7 @@ protected:
 
   void enumerateCandidates(ExecutionContext& context, const LuapeInferencePtr& function, std::vector<LuapeNodePtr>& candidates) const
   {
-    LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = function->getSearchSpace(context, complexity);
+    LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = function->getSearchSpace(context, complexity, true);
     LuapeNodeBuilderStatePtr builder = new LuapeNodeBuilderState(function, typeSearchSpace);
     std::set<LuapeNodePtr> weakNodes;
     enumerateWeakNodes(context, builder, weakNodes);

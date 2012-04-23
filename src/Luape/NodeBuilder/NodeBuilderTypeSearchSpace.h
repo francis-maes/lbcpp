@@ -31,7 +31,9 @@ public:
     String res = T("[") + String((int)depth) + T("] {");
     for (size_t i = 0; i < stack.size(); ++i)
     {
-      res += stack[i]->getName();
+      String name = stack[i]->getName();
+      jassert(name.isNotEmpty());
+      res += name;
       if (i < stack.size() - 1)
         res += T(", ");
     }
@@ -254,7 +256,8 @@ private:
   {
     if (maxDepth == state->getDepth())
     {
-      state->stack.clear();
+      state->stack.clear(); // thanks to this, the state will be pruned
+      state->yieldable = false;
       return;
     }
 

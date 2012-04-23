@@ -86,6 +86,14 @@ public:
   virtual Variable computeVote(double input) const
     {return (input * 2 - 1) * vote;}
 
+  virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
+  {
+    if (inputs[0].exists())
+      return computeVote(inputs[0].toDouble());
+    else
+      return 0.0;
+  }
+
   virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
     {return "vote(" + inputs[0]->toShortString() + ", " + Variable(vote).toShortString() + ")";}
 
