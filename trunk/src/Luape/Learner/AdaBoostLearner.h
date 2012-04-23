@@ -32,12 +32,15 @@ public:
   {
     BinaryClassificationLearningObjectivePtr objective = this->objective.staticCast<BinaryClassificationLearningObjective>();
     objective->setPredictions(weakPredictions);
-
+    objective->ensureIsUpToDate();
+    
     double correctWeight = objective->getCorrectWeight();
     double errorWeight = objective->getErrorWeight();
-    //double missingWeight = objective->getMissingWeight();
+    double missingWeight = objective->getMissingWeight();
 
-    double epsilon = 0.0;//1.0 / (double)problem->getTrainingCache()->getNumSamples();
+    double epsilon = 1.0 / (double)problem->getTrainingCache()->getNumSamples();
+    std::cout << "Correct: " << correctWeight << " Error: " << errorWeight << " Missing: " << missingWeight << " => vote = " << 0.5 * log((correctWeight + epsilon) / (errorWeight + epsilon)) << std::endl;
+    
     return 0.5 * log((correctWeight + epsilon) / (errorWeight + epsilon));
   }
 
@@ -93,6 +96,7 @@ public:
       size_t index = it.getIndex();
       double supervision = supervisions->getValue(index) * 2 - 1.0; // scale from probabilities to {-1,1}
       double weight = weights->getValue(index) * exp(-supervision * it.getRawDouble());
+      //std::cout << index << ": " << supervision << " " << it.getRawDouble() << " " << weight << "; " << std::flush;
       sumOfWeights += weight;
       weights->setValue(index, weight);
     }

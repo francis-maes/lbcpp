@@ -137,7 +137,7 @@ LuapeNodePtr SequentialNodeBuilder::sampleNode(ExecutionContext& context, const 
 {
   RandomGeneratorPtr random = context.getRandomGenerator();
   universe = problem->getUniverse();
-  typeSearchSpace = problem->getSearchSpace(context, complexity);
+  typeSearchSpace = problem->getSearchSpace(context, complexity, true);
   jassert(typeSearchSpace);
 
   std::vector<LuapeNodePtr> stack;

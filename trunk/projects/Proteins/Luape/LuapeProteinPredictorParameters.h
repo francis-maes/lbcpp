@@ -14,7 +14,7 @@
 # include <lbcpp/Luape/LuapeLearner.h>
 # include "../../../src/Luape/Function/ObjectLuapeFunctions.h"
 
-# define USE_EXTRA_TREES
+//# define USE_EXTRA_TREES
 
 namespace lbcpp
 {
@@ -73,8 +73,8 @@ public:
   {
     //LuapeNodeBuilderPtr nodeBuilder = policyBasedNodeBuilder(new RandomPolicy(), budget, complexity);
     //LuapeNodeBuilderPtr nodeBuilder = adaptativeSamplingNodeBuilder(budget, complexity);
-    LuapeNodeBuilderPtr nodeBuilder = exhaustiveSequentialNodeBuilder(complexity);
-    //LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(budget, complexity);
+    //LuapeNodeBuilderPtr nodeBuilder = exhaustiveSequentialNodeBuilder(complexity);
+    LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(20, complexity);
     return compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
   }
 
@@ -83,12 +83,11 @@ public:
     LuapeNodeBuilderPtr nodeBuilder = createNodeBuilder(target);
 
 # ifndef USE_EXTRA_TREES
-    LuapeLearnerPtr conditionLearner;
-    if (miniBatchRelativeSize == 0.0)
+/*    if (miniBatchRelativeSize == 0.0)
       return laminatingWeakLearner(nodeBuilder, relativeBudget);
     else if (miniBatchRelativeSize < 1.0)
       return banditBasedWeakLearner(nodeBuilder, relativeBudget, miniBatchRelativeSize);
-    else
+    else*/
       return exactWeakLearner(nodeBuilder);
 # else
     return randomSplitWeakLearner(nodeBuilder);
@@ -122,6 +121,7 @@ public:
   {
     LuapeInferencePtr learningMachine = new LuapeBinaryClassifier(createUniverse());
     addFunctions(learningMachine, target);
+    
 # ifndef USE_EXTRA_TREES
     LuapeLearnerPtr weakLearner = createWeakLearner(target);
     weakLearner->setVerbose(verbose);

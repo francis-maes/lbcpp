@@ -498,7 +498,7 @@ public:
 
 
     // create learner
-    LuapeLearnerPtr learner = createLearner(context, numVariables);
+    LuapeLearnerPtr learner = createLearner(context, method, numVariables, verbose);
     if (!learner)
       return false;
     context.informationCallback(T("Learner: ") + learner->toShortString());
@@ -521,7 +521,7 @@ protected:
   double featureBudget; // percentage of "numVariables"
   MCAlgorithmPtr searchAlgorithm;
 
-  LuapeLearnerPtr createLearner(ExecutionContext& context, size_t numVariables) const
+  LuapeLearnerPtr createLearner(ExecutionContext& context, const String& method, size_t numVariables, bool verbose) const
   {
     bool useRandomSplits = method.startsWith(T("ET"));
     bool hasFeatureGeneration = (featureLength > 0);

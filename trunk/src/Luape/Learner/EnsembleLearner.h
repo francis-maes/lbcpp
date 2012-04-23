@@ -56,7 +56,7 @@ public:
       if (baseModel)
       {
         sequenceNode->pushNode(context, baseModel, problem->getSamplesCaches());
-        sequenceNode->setNode(i, LuapeNodePtr()); // TMP: save memory !
+        //sequenceNode->setNode(i, LuapeNodePtr()); // TMP: save memory !
       }
       else
         return LuapeNodePtr();

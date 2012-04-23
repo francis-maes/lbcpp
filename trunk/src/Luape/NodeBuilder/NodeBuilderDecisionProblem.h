@@ -210,7 +210,6 @@ public:
     {
       LuapeFunctionNodePtr functionNode = stack.back().staticCast<LuapeFunctionNode>();
       stack.pop_back();
-      jassert(functionNode->getFunction() == action.staticCast<LuapeFunction>());
       size_t n = functionNode->getNumArguments();
       for (size_t i = 0; i < n; ++i)
         stack.push_back(functionNode->getArgument(i));

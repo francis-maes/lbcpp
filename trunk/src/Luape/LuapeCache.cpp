@@ -467,10 +467,9 @@ void LuapeSamplesCache::observeNodeComputingTime(const LuapeNodePtr& node, size_
 
 bool LuapeSamplesCache::checkCacheIsCorrect(ExecutionContext& context, const LuapeNodePtr& node, bool recursively)
 {
-  size_t n = node->getNumSubNodes();
   if (recursively)
   {
-    for (size_t i = 0; i < n; ++i)
+    for (size_t i = 0; i < node->getNumSubNodes(); ++i)
       if (!checkCacheIsCorrect(context, node->getSubNode(i), recursively))
         return false;
   }
@@ -482,10 +481,7 @@ bool LuapeSamplesCache::checkCacheIsCorrect(ExecutionContext& context, const Lua
     LuapeInstanceCachePtr instanceCache(new LuapeInstanceCache());
     jassert(inputNodes.size() == inputCaches.size());
     for (size_t j = 0; j < inputNodes.size(); ++j)
-    {
-      jassert(inputCaches[j]->getNumElements() == n);
       instanceCache->set(inputNodes[j], inputCaches[j]->getElement(index));
-    }
     Variable sampleCacheOutput = *it;
     Variable instanceCacheOutput = instanceCache->compute(context, node);
     if (sampleCacheOutput != instanceCacheOutput)
