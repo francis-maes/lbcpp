@@ -2011,10 +2011,10 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    double sum = 0.f;
+    ScalarVariableMeanAndVariancePtr res = new ScalarVariableMeanAndVariance();
     for (size_t i = 0; i < 10; ++i)
-      sum += computeFold(context, input, i);
-    return sum / 10.f;
+      res->push(computeFold(context, input, i));
+    return res;
   }
 
   double computeFold(ExecutionContext& context, const Variable& input, size_t fold) const
@@ -2033,7 +2033,7 @@ public:
     // Config ExtraTrees
     predictor->x3Trees = 1000;
     predictor->x3Attributes = 0;
-    predictor->x3Splits = 5;
+    predictor->x3Splits = 1;
 
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
     iteration->addTarget(dsbTarget);
@@ -2068,9 +2068,9 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     ExecutionContextPtr remoteContext = distributedExecutionContext(context, T("monster24.montefiore.ulg.ac.be"), 1664,
-                                                                    T("1203XX-BFS-DSB"), T("jbecker@screen"), T("jbecker@giga"),
+                                                                    T("1204XX-BFS-DSB"), T("jbecker@screen"), T("jbecker@giga"),
                                                                     fixedResourceEstimator(1, 12 * 1024, 240), false);
-  
+
     OptimizationProblemPtr problem = new OptimizationProblem(new DSBLearnerFunction(inputDirectory, supervisionDirectory), new LargeProteinParameters());
     OptimizerPtr optimizer = bestFirstSearchOptimizer(LargeProteinParameters::createStreams(), context.getFile(optimizerStateFile));
 

@@ -428,13 +428,18 @@ class BFSTestObjectiveFunction : public SimpleUnaryFunction
 {
 public:
   BFSTestObjectiveFunction()
-    : SimpleUnaryFunction(bfsTestParameterClass, doubleType, T("BFSTest")) {}
+    : SimpleUnaryFunction(bfsTestParameterClass, scalarVariableMeanAndVarianceClass, T("BFSTest")) {}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     ReferenceCountedObjectPtr<BFSTestParameter> param = input.getObjectAndCast<BFSTestParameter>(context);
     juce::Thread::sleep(context.getRandomGenerator()->sampleSize(1000, 3000));
-    return Variable(fabs(param->a * param->a + param->b * param->c - 10), doubleType);
+
+    ScalarVariableMeanAndVariancePtr res = new ScalarVariableMeanAndVariance();
+    for (size_t i = 0; i < 10; ++i)
+      res->push(fabs(param->a * param->a + param->b * param->c - 10) + context.getRandomGenerator()->sampleDouble(-5.f, 5.f));
+
+    return res;
   }
 };
 
@@ -446,7 +451,6 @@ public:
     ExecutionContextPtr remoteContext = distributedExecutionContext(context, T("monster24.montefiore.ulg.ac.be"), 1664,
                                                                     T("testProject"), T("jbecker@mac"), T("jbecker@giga"),
                                                                     fixedResourceEstimator(1, 1024, 1), false);
-    
     
     std::vector<double> values(5);
     for (size_t i = 0; i < 5; ++i)
@@ -463,10 +467,11 @@ public:
     
     OptimizerPtr optimizer = bestFirstSearchOptimizer(streams, context.getFile(T("osTest.xml")));
     //OptimizerPtr optimizer = edaOptimizer(objectCompositeSampler(bfsTestParameterClass, samplers), 20, 20, 5);
-    
-    OptimizationProblemPtr problem = new OptimizationProblem(new BFSTestObjectiveFunction(), new BFSTestParameter());
+
+    OptimizationProblemPtr problem = new OptimizationProblem(new BFSTestObjectiveFunction(), new BFSTestParameter(), SamplerPtr(), new BFSTestObjectiveFunction());
     
     return optimizer->compute(*remoteContext.get(), problem);
+    //return optimizer->compute(context, problem);
   }
 };
 

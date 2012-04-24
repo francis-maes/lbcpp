@@ -21,12 +21,12 @@ class BestFirstSearchParameter : public Object
 {
 public:
   BestFirstSearchParameter(size_t index = (size_t)-1)
-    : index(index), isComputed(false) {}
+    : index(index), scores(new VariableVector()), isComputed(false) {}
 
   size_t getIndex() const
     {return index;}
 
-  double getBestScore()
+  Variable getBestScore()
   {
     const_cast<BestFirstSearchParameter*>(this)->ensureIsComputed();
     return bestScore;
@@ -38,26 +38,27 @@ public:
     return bestValue;
   }
 
-  double getScore(size_t index) const
-    {jassert(index < scores.size()); return scores[index];}
+  Variable getScore(size_t index) const
+    {jassert(index < scores->getNumElements()); return scores->getElement(index);}
 
-  void setScore(size_t index, double value)
-    {jassert(index < scores.size()); scores[index] = value;}
+  void setScore(size_t index, Variable value)
+    {jassert(index < scores->getNumElements()); scores->getElement(index) = value;}
 
-  void appendValue(double score)
-    {scores.push_back(score);}
+  void appendValue(Variable score)
+    {scores->append(score);}
 
 protected:
   friend class BestFirstSearchParameterClass;
 
   size_t index;
-  std::vector<double> scores;
+  VariableVectorPtr scores;
+  //std::vector<Variable> scores;
 
 private:
   bool isComputed;
 
   size_t bestValue;
-  double bestScore;
+  Variable bestScore;
 
   void ensureIsComputed()
   {
@@ -65,12 +66,12 @@ private:
       return;
 
     size_t bestValue = (size_t)-1;
-    double bestScore = DBL_MAX;
-    for (size_t i = 0; i < scores.size(); ++i)
-      if (scores[i] < bestScore)
+    Variable bestScore = DBL_MAX;
+    for (size_t i = 0; i < scores->getNumElements(); ++i)
+      if (scores->getElement(i).toDouble() < bestScore.toDouble())
       {
         bestValue = i;
-        bestScore = scores[i];
+        bestScore = scores->getElement(i);
       }
 
     this->bestValue = bestValue;
@@ -103,7 +104,7 @@ public:
     return bestValue;
   }
 
-  double getBestScore() const
+  Variable getBestScore() const
   {
     const_cast<BestFirstSearchIteration*>(this)->ensureIsComputed();
     return bestScore;
@@ -115,6 +116,12 @@ public:
   void appendParameter(const BestFirstSearchParameterPtr& parameter)
     {parameters.push_back(parameter);}
 
+  Variable getValidationScore() const
+    {return validationScore;}
+
+  void setValidationScore(const Variable score)
+    {validationScore = score;}
+
 protected:
   friend class BestFirstSearchIterationClass;
 
@@ -125,7 +132,8 @@ private:
 
   size_t bestParameter;
   size_t bestValue;
-  double bestScore;
+  Variable bestScore;
+  Variable validationScore;
 
   void ensureIsComputed()
   {
@@ -134,9 +142,9 @@ private:
 
     size_t bestParameter = (size_t)-1;
     size_t bestValue = (size_t)-1;
-    double bestScore = DBL_MAX;
+    Variable bestScore = DBL_MAX;
     for (size_t i = 0; i < parameters.size(); ++i)
-      if (parameters[i]->getBestScore() < bestScore)
+      if (parameters[i]->getBestScore().toDouble() < bestScore.toDouble())
       {
         bestParameter = parameters[i]->getIndex();
         bestValue = parameters[i]->getBestValue();
@@ -212,9 +220,7 @@ public:
     ScopedLock _(lock);
     jassert(workUnitsToResults.count(workUnit) == 1);
     const std::pair<size_t, size_t> indices = workUnitsToResults[workUnit];
-    const double value = result.isDouble() ? result.getDouble()
-                       : (result.isInteger() ? (double)result.getInteger() : DBL_MAX);
-    iterations[iterations.size() - 1]->getParameter(indices.first)->setScore(indices.second, value);
+    iterations[iterations.size() - 1]->getParameter(indices.first)->setScore(indices.second, result);
     workUnitsToResults.erase(workUnit);
   }
 
@@ -261,10 +267,14 @@ public:
   virtual OptimizerStatePtr optimize(ExecutionContext& context, const OptimizerStatePtr& optimizerState, const OptimizationProblemPtr& problem) const
   {
     const FunctionPtr& objectiveFunction = problem->getObjective();
+    if (!objectiveFunction)
+    {
+      context.errorCallback(T("BestFirstSearchOptimizer::optimize"), T("No objective fonction !"));
+      return optimizerState;
+    }
+
     StreamBasedOptimizerStatePtr state = optimizerState.staticCast<StreamBasedOptimizerState>();
     jassert(state);
-
-    const double missingValue = Variable::missingValue(doubleType).getDouble();
 
     for (size_t numIteration = 0; true; ++numIteration)
     {
@@ -294,7 +304,7 @@ public:
         for (size_t valueIndex = 0; !stream->isExhausted(); ++valueIndex)
         {
           const Variable value = stream->next();
-          if (parameter->getScore(valueIndex) != missingValue)
+          if (parameter->getScore(valueIndex).exists())
             continue;
 
           ObjectPtr candidate = baseObject->clone(context);
@@ -326,17 +336,26 @@ public:
       context.leaveScope();
 
       // Update state
-      pushIterationIntoStack(context, state, iteration);
-
       if (numIteration + 1 == state->getNumIterations())
       {
-        if(iteration->getBestScore() + 0.0001 >= state->getBestScore())
+        if(iteration->getBestScore().toDouble() >= state->getBestScore())
           break;
 
         baseObject->setVariable(iteration->getBestParameter(), getParameterValue(state, iteration->getBestParameter(), iteration->getBestValue()));
-        state->submitSolution(baseObject->clone(context), iteration->getBestScore());
+        state->submitSolution(baseObject->clone(context), iteration->getBestScore().toDouble());
         saveOptimizerState(context, state);
+
+        if (problem->getValidation())
+        {
+          context.enterScope(T("Validation"));
+          const Variable validationScore = context.run(new FunctionWorkUnit(problem->getValidation(), baseObject), false);
+          iteration->setValidationScore(validationScore);
+          saveOptimizerState(context, state);
+          context.leaveScope(validationScore);
+        }
       }
+
+      pushIterationIntoStack(context, state, iteration);
     }
 
     return state;
@@ -366,7 +385,7 @@ protected:
 
       StreamPtr stream = state->getStream(parameterIndices[i]);
       for (stream->rewind(); !stream->isExhausted(); stream->next())
-        parameter->appendValue(Variable::missingValue(doubleType).getDouble());
+        parameter->appendValue(Variable::missingValue(doubleType));
     }
 
     return iteration;
@@ -397,6 +416,7 @@ protected:
     context.resultCallback(T("Best score"), iteration->getBestScore());
     context.resultCallback(T("Best parameter"), objClass->getMemberVariableName(iteration->getBestParameter()));
     context.resultCallback(T("Best value"), getParameterValue(state, iteration->getBestParameter(), iteration->getBestValue()));
+    context.resultCallback(T("Validation"), iteration->getValidationScore());
     context.leaveScope(iteration->getBestScore());
   }
 
@@ -410,9 +430,8 @@ protected:
       Variable value = stream->next();
       context.enterScope(T("Value ") + value.toString());
       context.resultCallback(T("Value"), value);
-      const double score = parameter->getScore(i);
-      context.resultCallback(T("Score"), score);
-      context.leaveScope(score);
+      context.resultCallback(T("Score"), parameter->getScore(i));
+      context.leaveScope(parameter->getScore(i));
       ++i;
     }
   }

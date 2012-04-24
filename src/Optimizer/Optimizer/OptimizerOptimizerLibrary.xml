@@ -46,11 +46,12 @@
   <!-- BestFirstSearch -->
   <class name="BestFirstSearchParameter" base="Object">
     <variable type="PositiveInteger" name="index"/>
-    <variable type="GenericVector[Double]" name="scores"/>
+    <variable type="VariableVector" name="scores"/>
   </class>
 
   <class name="BestFirstSearchIteration" base="Object">
     <variable type="GenericVector[BestFirstSearchParameter]" name="parameters"/>
+    <variable type="Variable" name="validationScore"/>
   </class>
 
   <class name="StreamBasedOptimizerState" base="OptimizerState">
