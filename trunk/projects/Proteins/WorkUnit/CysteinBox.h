@@ -2063,7 +2063,7 @@ protected:
   ProteinEvaluatorPtr createProteinEvaluator() const
   {
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("DSB QP Perfect"), true);
+    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(-1.f), 0.f), T("DSB QP Perfect"), true);
     return evaluator;
   }
 };
@@ -2073,18 +2073,15 @@ class BFSOptimizeDSBWorkUnit : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
-    /*
     ExecutionContextPtr remoteContext = distributedExecutionContext(context, T("monster24.montefiore.ulg.ac.be"), 1664,
                                                                     T("1204XX-BFS-DSB"), T("jbecker@screen"), T("jbecker@giga"),
                                                                     fixedResourceEstimator(1, 12 * 1024, 240), false);
-     */
     OptimizationProblemPtr problem = new OptimizationProblem(new DSBLearnerFunction(inputDirectory, supervisionDirectory),
                                                              new LargeProteinParameters(), SamplerPtr(),
                                                              new DSBLearnerFunction(inputDirectory, supervisionDirectory, true));
     OptimizerPtr optimizer = bestFirstSearchOptimizer(LargeProteinParameters::createStreams(), context.getFile(optimizerStateFile));
 
-    return optimizer->compute(context, problem);
-    //return optimizer->compute(*remoteContext.get(), problem);
+    return optimizer->compute(*remoteContext.get(), problem);
   }
 
 protected:
@@ -2109,7 +2106,6 @@ public:
 
     return f->compute(context, p);
   }
-
 };
 
 };
