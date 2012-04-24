@@ -249,6 +249,7 @@
     <variable type="String" name="supervisionDirectory" shortName="sup"/>
     <variable type="String" name="optimizerStateFile" shortName="st"/>
   </class>
+  <class name="BFSDebugWorkUnit" base="WorkUnit"/>
   <!-- END CysteinBox -->
 
   <!-- BEGIN LargeBox -->

@@ -2073,16 +2073,18 @@ class BFSOptimizeDSBWorkUnit : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
+    /*
     ExecutionContextPtr remoteContext = distributedExecutionContext(context, T("monster24.montefiore.ulg.ac.be"), 1664,
                                                                     T("1204XX-BFS-DSB"), T("jbecker@screen"), T("jbecker@giga"),
                                                                     fixedResourceEstimator(1, 12 * 1024, 240), false);
-
+     */
     OptimizationProblemPtr problem = new OptimizationProblem(new DSBLearnerFunction(inputDirectory, supervisionDirectory),
                                                              new LargeProteinParameters(), SamplerPtr(),
                                                              new DSBLearnerFunction(inputDirectory, supervisionDirectory, true));
     OptimizerPtr optimizer = bestFirstSearchOptimizer(LargeProteinParameters::createStreams(), context.getFile(optimizerStateFile));
 
-    return optimizer->compute(*remoteContext.get(), problem);
+    return optimizer->compute(context, problem);
+    //return optimizer->compute(*remoteContext.get(), problem);
   }
 
 protected:
@@ -2091,6 +2093,23 @@ protected:
   String inputDirectory;
   String supervisionDirectory;
   String optimizerStateFile;
+};
+
+class BFSDebugWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    FunctionPtr f = new DSBLearnerFunction(T("/Users/jbecker/Documents/Workspace/Data/Proteins/SPX/FromESANN/5FCV_Fold_0"),
+                                           T("/Users/jbecker/Documents/Workspace/Data/Proteins/SPX/FromBoth/5FCV_Fold_0"));
+    LargeProteinParametersPtr p = new LargeProteinParameters();
+    p->useRelativePosition = true;
+
+    std::cout << p->toString() << std::endl;
+
+    return f->compute(context, p);
+  }
+
 };
 
 };
