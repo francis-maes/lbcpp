@@ -140,9 +140,17 @@ end
 local dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/1203XX-DSBWithExtraTreesAndPerfectMatching/"
 local numFolds = 9
 
-local winSizes = {0, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45}
+local winSizes = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35}--, 37, 39, 41, 43, 45}
 --main("Window Size", winSizes, dir .. "WindowSizes/x3_Win", "_K200_1000T_NMIN5", numFolds)
-main("Window Size", winSizes, dir .. "NoTaskWindowSizes/x3_NoTask_Win", "_K10000_1000T_NMIN1", numFolds)
+
+--main("Window Size", winSizes, dir .. "WindowTasks/x3_SingleTask11_ss3_Win", "_K10000_1000T_NMIN1", numFolds)
+--main("Window Size", winSizes, dir .. "WindowTasks/x3_SingleTask11_ss8_Win", "_K10000_1000T_NMIN1", numFolds)
+--main("Window Size", winSizes, dir .. "WindowTasks/x3_SingleTask11_sa_Win", "_K10000_1000T_NMIN1", numFolds)
+--main("Window Size", winSizes, dir .. "WindowTasks/x3_SingleTask11_dr_Win", "_K10000_1000T_NMIN1", numFolds)
+--main("Window Size", winSizes, dir .. "WindowTasks/x3_SingleTask11_stal_Win", "_K10000_1000T_NMIN1", numFolds)
+dir2 = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/1204XX-DSBFeatures/"
+winSizes = {3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31}--, 33, 35}--, 37, 39, 41, 43, 45}
+main("Window Size", winSizes, dir2 .. "PSSM/x3_PSSM", "_K10000_1000T_NMIN1", numFolds)
 
 local nmin = {1, 3, 5, 7, 9, 11, 13, 15, 21, 51, 101, 201}
 --main("Nmin", nmin, dir .. "Nmin/x3_Win19_K200_1000T_NMIN", "", numFolds)
@@ -171,6 +179,8 @@ local features = {"AllTask-NoGlobalHisto", "AllTask-NoLocalHisto", "AllTask-NoIn
                   "OthersGlobalHisto", "OthersLocalHisto", "OthersInterHisto", "OthersWindows"}
 features = {"GlobalHistoOthersWindows", "LocalHistoOthersWindows", "InterHistoOthersWindows"}
 --main("Features", features, dir .. "Features/x3_", "_Win19_K200_1000T_NMIN5", numFolds)
+features = {""}
+--main("Features", features, dir .. "Features/x3_PSSM11_Win19_K10000_1000T_NMIN1", "", numFolds)
 
 
 features = {"GlobalHisto", "LocalHisto", "InterHisto", "Windows", "Others"}
