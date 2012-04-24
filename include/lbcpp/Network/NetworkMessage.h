@@ -120,7 +120,7 @@ public:
     {return uniqueIdentifier;}
 
   Variable getResult(ExecutionContext& context) const
-    {return result->createVariable(context);}
+    {return result ? result->createVariable(context) : Variable();}
 
   XmlElementPtr getXmlElementResult() const
     {return result;}
