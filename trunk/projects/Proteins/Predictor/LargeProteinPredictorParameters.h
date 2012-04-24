@@ -262,6 +262,7 @@ public:
         values.push_back(15);
         values.push_back(19);
         values.push_back(21);
+        values.push_back(25);
         /*
         for (int j = 1; j < 20; j += 2)
           values.push_back(j);
@@ -273,14 +274,14 @@ public:
       else if (varName.endsWith(T("LocalHistogramSize")))
       {
         std::vector<int> values;
-        for (int j = 10; j < 100; j += 20)
+        for (int j = 10; j < 100; j += 10)
           values.push_back(j);
         res[i] = integerStream(positiveIntegerType, values);
       }
       else if (varName == T("separationProfilSize"))
       {
         std::vector<int> values;
-        for (int j = 1; j < 20; j += 4)
+        for (int j = 1; j < 20; j += 2)
           values.push_back(j);
         res[i] = integerStream(positiveIntegerType, values);
       }

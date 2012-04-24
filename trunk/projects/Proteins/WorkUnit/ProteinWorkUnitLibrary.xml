@@ -242,6 +242,7 @@
   <class name="DSBLearnerFunction" base="Function">
     <variable type="String" name="inputDirectory"/>
     <variable type="String" name="supervisionDirectory"/>
+    <variable type="Boolean" name="isValidation"/>
   </class>
   <class name="BFSOptimizeDSBWorkUnit" base="WorkUnit">
     <variable type="String" name="inputDirectory" shortName="in"/>

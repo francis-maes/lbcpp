@@ -1641,6 +1641,7 @@ class AnalysePatternWorkUnit : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
+#if 0 // Stop compilation warnings
     juce::OwnedArray<File> files;
     inputDirectory.findChildFiles(files, File::findFiles, false, T("*.xml"));
     double threshold = 0.f;
@@ -1794,6 +1795,7 @@ public:
               << "\t#None: "<< numSupNotBonded << std::endl;
     std::cout << "#None With Pattern: " << numSupNotBondedWithPattern << std::endl;
 */
+#endif
     return true;
   }
 
@@ -1997,8 +1999,8 @@ protected:
 class DSBLearnerFunction : public Function
 {
 public:
-  DSBLearnerFunction(const String& inputDirectory, const String& supervisionDirectory)
-    : inputDirectory(inputDirectory), supervisionDirectory(supervisionDirectory) {}
+  DSBLearnerFunction(const String& inputDirectory, const String& supervisionDirectory, bool isValidation = false)
+    : inputDirectory(inputDirectory), supervisionDirectory(supervisionDirectory), isValidation(isValidation) {}
 
   virtual size_t getNumRequiredInputs() const
     {return 1;}
@@ -2007,26 +2009,29 @@ public:
     {return largeProteinParametersClass;}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return doubleType;}
+    {return scalarVariableMeanAndVarianceClass;}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
+    ContainerPtr train = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("train/")), context.getFile(supervisionDirectory).getChildFile(T("train/")), 0, T("Loading proteins"));
     ScalarVariableMeanAndVariancePtr res = new ScalarVariableMeanAndVariance();
-    for (size_t i = 0; i < 10; ++i)
-      res->push(computeFold(context, input, i));
+
+    if (isValidation)
+    {
+      ContainerPtr test = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("test/")), context.getFile(supervisionDirectory).getChildFile(T("test/")), 0, T("Loading proteins"));
+      res->push(computeFold(context, input, train, test));
+    }
+    else
+    {
+      for (size_t i = 0; i < 10; ++i)
+        res->push(computeFold(context, input, train->invFold(i, 10), train->fold(i, 10)));
+    }
+
     return res;
   }
 
-  double computeFold(ExecutionContext& context, const Variable& input, size_t fold) const
+  double computeFold(ExecutionContext& context, const Variable& input, const ContainerPtr& train, const ContainerPtr& test) const
   {
-    File inputFold = context.getFile(inputDirectory).getChildFile(T("fold") + String((int)fold));
-    File supFold = context.getFile(supervisionDirectory).getChildFile(T("fold") + String((int)fold));
-    ContainerPtr train = Protein::loadProteinsFromDirectoryPair(context, inputFold.getChildFile(T("train")), supFold.getChildFile(T("train")), 0, T("Loading training proteins"));
-    ContainerPtr test = Protein::loadProteinsFromDirectoryPair(context, inputFold.getChildFile(T("test")), supFold.getChildFile(T("test")), 0, T("Loading testing proteins"));
-
-    if (!train || !test || train->getNumElements() == 0 || test->getNumElements() == 0)
-      return 100.f;
-
     LargeProteinParametersPtr parameters = input.getObjectAndCast<LargeProteinParameters>(context);
     LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(parameters);
     predictor->learningMachineName = T("ExtraTrees");
@@ -2051,6 +2056,7 @@ protected:
 
   String inputDirectory;
   String supervisionDirectory;
+  bool isValidation;
 
   DSBLearnerFunction() {}
 
@@ -2071,7 +2077,9 @@ public:
                                                                     T("1204XX-BFS-DSB"), T("jbecker@screen"), T("jbecker@giga"),
                                                                     fixedResourceEstimator(1, 12 * 1024, 240), false);
 
-    OptimizationProblemPtr problem = new OptimizationProblem(new DSBLearnerFunction(inputDirectory, supervisionDirectory), new LargeProteinParameters());
+    OptimizationProblemPtr problem = new OptimizationProblem(new DSBLearnerFunction(inputDirectory, supervisionDirectory),
+                                                             new LargeProteinParameters(), SamplerPtr(),
+                                                             new DSBLearnerFunction(inputDirectory, supervisionDirectory, true));
     OptimizerPtr optimizer = bestFirstSearchOptimizer(LargeProteinParameters::createStreams(), context.getFile(optimizerStateFile));
 
     return optimizer->compute(*remoteContext.get(), problem);
