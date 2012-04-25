@@ -1,3 +1,8 @@
+ Vehicle:
+ - evaluer la variance du resultat
+ - evaluer ties random vs. first
+ - evaluer l'impact du < au lieu du <=  dans les stumps
+ 
  
 Experiences - Proteins:
  * Nouvelles features: prev et next amino acid de chaque type; delta de ObjectVector[DenseDoubleVector]; local/global histogram

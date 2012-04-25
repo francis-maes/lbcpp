@@ -38,6 +38,8 @@
   </class>
 
   <!-- Protein Predictor Parameters -->
+  <class name="DisulfideBondClassifier" base="LuapeBinaryClassifier"/>
+  
   <class name="LuapeProteinPredictorParameters" base="ProteinPredictorParameters">
     <variable type="PositiveInteger" name="treeDepth"/>
     <variable type="PositiveInteger" name="complexity"/>

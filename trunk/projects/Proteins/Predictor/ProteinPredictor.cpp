@@ -22,7 +22,7 @@ ProteinPredictor::ProteinPredictor(ProteinPredictorParametersPtr parameters = Pr
 {
 }
 
-void ProteinPredictor::addTarget(ProteinTarget target)
+FunctionPtr ProteinPredictor::addTarget(ProteinTarget target)
 {
   FunctionPtr targetPredictor = parameters->createTargetPredictor(target);
   jassert(targetPredictor);
@@ -51,6 +51,8 @@ void ProteinPredictor::addTarget(ProteinTarget target)
       jassertfalse;
       break;
   }
+
+  return targetPredictor;
 }
 
 void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)

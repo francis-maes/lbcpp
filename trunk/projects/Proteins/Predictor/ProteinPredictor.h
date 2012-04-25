@@ -28,7 +28,7 @@ public:
       activeCysteinResiduePerception(false)
     {}
 
-  void addTarget(ProteinTarget target);
+  FunctionPtr addTarget(ProteinTarget target); // returns the target predictor
 
   virtual void buildFunction(CompositeFunctionBuilder& builder);
 

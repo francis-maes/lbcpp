@@ -370,7 +370,7 @@ public:
     context.enterScope(T("Creating work units..."));
     workUnits = new CompositeWorkUnit(T("Optimization"));
 
-    for (size_t i = 0; i < inputProteins.size(); ++i)
+    for (size_t i = 0; i < (size_t)inputProteins.size(); ++i)
     {
       ProteinPtr currentProtein = Protein::createFromPDB(context, (*inputProteins[i]));
       GeneralOptimizerParametersPtr parameters = new SimulatedAnnealingParameters(numIterations, initialTemperature, finalTemperature, numDecreasingSteps);
