@@ -47,7 +47,11 @@ public:
     ProteinPredictorParametersPtr predictor = new LuapeProteinPredictorParameters(treeDepth, complexity, relativeBudget, miniBatchRelativeSize, numIterations, true);
 
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
-    iteration->addTarget(dsbTarget);
+    DisulfideBondClassifierPtr dsbClassifier = iteration->addTarget(dsbTarget)->getVariable(0).getObjectAndCast<DisulfideBondClassifier>();
+    dsbClassifier->setProteinPairs(context, trainingProteins, true);
+    dsbClassifier->setProteinPairs(context, testingProteins, false);
+
+    
 //    iteration->addTarget(sa20Target);
 //    iteration->addTarget(ss3Target);
     //iteration->addTarget(ss8Target);
@@ -58,11 +62,13 @@ public:
       return Variable::missingValue(doubleType);
 
     ProteinEvaluatorPtr evaluator = createEvaluator(true);    
-    iteration->evaluate(context, trainingProteins, evaluator, T("Evaluate on training proteins"));
+    CompositeScoreObjectPtr scores = iteration->evaluate(context, trainingProteins, evaluator, T("Evaluate on training proteins"));
+    double trainScore = evaluator->getScoreObjectOfTarget(scores, dsbTarget)->getScoreToMinimize();
 
     evaluator = createEvaluator(true);
-    CompositeScoreObjectPtr scores = iteration->evaluate(context, testingProteins, evaluator, T("Evaluate on test proteins"));
-    return evaluator->getScoreObjectOfTarget(scores, dsbTarget)->getScoreToMinimize();
+    scores = iteration->evaluate(context, testingProteins, evaluator, T("Evaluate on test proteins"));
+    double testScore = evaluator->getScoreObjectOfTarget(scores, dsbTarget)->getScoreToMinimize();
+    return new Pair(trainScore, testScore);
   }
 
 protected:
@@ -90,8 +96,8 @@ protected:
   ProteinEvaluatorPtr createEvaluator(bool isFinalEvaluation) const
   {
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("DSB Q2"));
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("DSB QP Perfect"), true);
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("DSB Q2"));
     
     //evaluator->addEvaluator(ss3Target, containerSupervisedEvaluator(classificationEvaluator()), T("Secondary Structure"));
 /*    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, isFinalEvaluation), 1), T("Disulfide Bonds (Sens. and Spec)"));

@@ -35,7 +35,23 @@ public:
   {
     SymmetricMatrixPtr supervisionContainer = example->getVariable(1).dynamicCast<SymmetricMatrix>();
     SymmetricMatrixPtr predictedContainer = output.dynamicCast<SymmetricMatrix>();
+    return addElements(context, scores, predictedContainer, supervisionContainer);
+  }
 
+  virtual void addPrediction(ExecutionContext& context, const Variable& prediction, const Variable& supervision, const ScoreObjectPtr& result) const
+    {addElements(context, result, prediction.getObjectAndCast<SymmetricMatrix>(), supervision.getObjectAndCast<SymmetricMatrix>());}
+
+  virtual void finalizeScoreObject(const ScoreObjectPtr& scores, const FunctionPtr& function) const
+    {elementEvaluator->finalizeScoreObject(scores, function);}
+
+protected:
+  friend class SymmetricMatrixSupervisedEvaluatorClass;
+
+  SupervisedEvaluatorPtr elementEvaluator;
+  size_t minimumDistanceFromDiagonal;
+
+  bool addElements(ExecutionContext& context, const ScoreObjectPtr& scores, SymmetricMatrixPtr predictedContainer, SymmetricMatrixPtr supervisionContainer) const
+  {
     const size_t dimension = predictedContainer->getDimension();
     jassert(supervisionContainer->getDimension() == dimension);
 
@@ -56,22 +72,10 @@ public:
           return false;
         }
         //jassertfalse;
-        addPrediction(context, predicted, supervision, scores);
+        elementEvaluator->addPrediction(context, predicted, supervision, scores);
       }
     return true;
   }
-
-  virtual void addPrediction(ExecutionContext& context, const Variable& prediction, const Variable& supervision, const ScoreObjectPtr& result) const
-    {elementEvaluator->addPrediction(context, prediction, supervision, result);}
-
-  virtual void finalizeScoreObject(const ScoreObjectPtr& scores, const FunctionPtr& function) const
-    {elementEvaluator->finalizeScoreObject(scores, function);}
-
-protected:
-  friend class SymmetricMatrixSupervisedEvaluatorClass;
-
-  SupervisedEvaluatorPtr elementEvaluator;
-  size_t minimumDistanceFromDiagonal;
 };
 
 }; /* namespace lbcpp */

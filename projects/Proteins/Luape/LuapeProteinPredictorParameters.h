@@ -13,11 +13,65 @@
 # include "../Predictor/ProteinPredictorParameters.h"
 # include <lbcpp/Luape/LuapeLearner.h>
 # include "../../../src/Luape/Function/ObjectLuapeFunctions.h"
+# include "../Evaluator/ProteinEvaluator.h"
+# include "../Evaluator/KolmogorovPerfectMatchingFunction.h"
 
 //# define USE_EXTRA_TREES
 
 namespace lbcpp
 {
+
+class DisulfideBondClassifier : public LuapeBinaryClassifier
+{
+public:
+  void setProteinPairs(ExecutionContext& context, const ContainerPtr& proteinPairs, bool isTrainingData)
+  {
+    std::vector<SymmetricMatrixPtr>& supervisions = (isTrainingData ? trainPatterns : testPatterns);
+    size_t n = proteinPairs->getNumElements();
+    supervisions.resize(n);
+    for (size_t i = 0; i < n; ++i)
+    {
+      ObjectPtr pair = proteinPairs->getElement(i).getObject();
+      ProteinPtr supervisionProtein = pair->getVariable(1).getObjectAndCast<Protein>();
+      supervisions[i] = supervisionProtein->getDisulfideBonds(context);
+    }
+  }
+
+  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& sup) const
+  {
+    SupervisedEvaluatorPtr evaluator = new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f);
+    //SupervisedEvaluatorPtr evaluator = symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore));
+    
+    ScoreObjectPtr score = evaluator->createEmptyScoreObject(context, FunctionPtr());
+    const std::vector<SymmetricMatrixPtr>& supervisions = (sup == getTrainingSupervisions() ? trainPatterns : testPatterns);
+    double* predictionsPtr = predictions.staticCast<DenseDoubleVector>()->getValuePointer(0);
+    size_t index = 0;
+    for (size_t i = 0; i < supervisions.size(); ++i)
+    {
+      SymmetricMatrixPtr supervision = supervisions[i];
+      size_t n = supervision->getNumRows();
+      DoubleSymmetricMatrixPtr prediction = new DoubleSymmetricMatrix(probabilityType, n, 0.0);
+      for (size_t j = 0; j < n; ++j)
+        for (size_t k = j + 1; k < n; ++k)
+        {
+          jassert(index < predictions->getNumElements());
+          double activation = predictionsPtr[index++];
+          double probability = 1 / (1 + exp(-activation));
+          prediction->setValue(j, k, probability);
+        }
+      evaluator->addPrediction(context, prediction, supervision, score);
+    }
+    jassert(index == predictions->getNumElements());
+    evaluator->finalizeScoreObject(score, FunctionPtr());
+    return score->getScoreToMinimize();
+  }
+
+private:
+  std::vector<SymmetricMatrixPtr> trainPatterns;
+  std::vector<SymmetricMatrixPtr> testPatterns;
+};
+
+typedef ReferenceCountedObjectPtr<DisulfideBondClassifier> DisulfideBondClassifierPtr;
 
 class LuapeProteinPredictorParameters : public ProteinPredictorParameters
 {
@@ -119,7 +173,11 @@ public:
   // atomic level
   virtual FunctionPtr binaryClassifier(ProteinTarget target) const
   {
-    LuapeInferencePtr learningMachine = new LuapeBinaryClassifier(createUniverse());
+    LuapeInferencePtr learningMachine;
+    if (target == dsbTarget)
+      learningMachine = new DisulfideBondClassifier();
+    else
+      learningMachine = new LuapeBinaryClassifier();
     addFunctions(learningMachine, target);
     
 # ifndef USE_EXTRA_TREES
@@ -133,7 +191,7 @@ public:
     baseLearner->setVerbose(verbose);
     learningMachine->setLearner(ensembleLearner(baseLearner, numIterations), verbose);
 # endif // !USE_EXTRA_TREES
-    learningMachine->setBatchLearner(filterUnsupervisedExamplesBatchLearner(learningMachine->getBatchLearner(), true));
+    learningMachine->setBatchLearner(filterUnsupervisedExamplesBatchLearner(learningMachine->getBatchLearner(), false));
     return learningMachine;
   }
 

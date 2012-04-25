@@ -140,16 +140,18 @@ public:
   {
     DenseDoubleVectorPtr results = new DenseDoubleVector(numSteps, 0.0);
 
+    size_t numReferences = (size_t)references.size();
+
     // generate orders of test set and learning set
     std::vector<size_t> res;
-    rand->sampleOrder(references.size(), res);
+    rand->sampleOrder(numReferences, res);
 
     std::vector<size_t> testSet(sizeTestSet);
-    for (size_t i = 0; (i < sizeTestSet) && (i < references.size()); ++i)
+    for (size_t i = 0; (i < sizeTestSet) && (i < numReferences); ++i)
       testSet[i] = res[i];
 
     std::vector<size_t> learningSet(maxCount);
-    for (size_t i = 0; (i < maxCount) && (i + sizeTestSet < references.size()); ++i)
+    for (size_t i = 0; (i < maxCount) && (i + sizeTestSet < numReferences); ++i)
       learningSet[i] = res[i + sizeTestSet];
 
     // computing
@@ -157,7 +159,7 @@ public:
     for (size_t i = 0; i < numSteps; ++i)
     {
       context.enterScope(T("Step : ") + String((int)i));
-      size_t thisSize = sizes->getValue(i);
+      size_t thisSize = (size_t)sizes->getValue(i);
       double likelihood = 0.0;
       if (thisSize > 1)
       {
@@ -213,13 +215,13 @@ public:
     RandomGeneratorPtr rand = new RandomGenerator();
 
     // sizesof sets
-    size_t sizeTestSet = (double)references.size() * ratioTestSet;
+    size_t sizeTestSet = (size_t)((double)references.size() * ratioTestSet);
     size_t sizeLearningSet = references.size() - sizeTestSet;
     repeat = juce::jmax((int)repeat, 1);
 
     size_t maxCount = juce::jmin((int)authorized, (int)sizeLearningSet);
     if (maxCount <= numSteps)
-      numSteps = maxCount * 0.5;
+      numSteps = maxCount / 2;
     if ((sizeTestSet <= 1) || (maxCount <= 1) || (numSteps <= 1))
     {
       context.errorCallback(T("Set sizes : sets too small."));
@@ -233,7 +235,7 @@ public:
     // computing sizes of learning sets
     for (size_t i = 0; i < numSteps; ++i)
     {
-      size_t thisSize = maxCount * ((double)(numSteps - i) / (double)(numSteps));
+      size_t thisSize = (size_t)(maxCount * ((double)(numSteps - i) / (double)(numSteps)));
       sizes->setValue(i, (double)thisSize);
     }
 
