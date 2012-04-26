@@ -198,7 +198,7 @@ public:
     }
   }
 
-  struct AlgorithmObjective : public MCBanditPoolObjective
+  struct AlgorithmObjective : public BanditPoolObjective
   {
     AlgorithmObjective(MetaMCSandBox* owner) : owner(owner) {}
 
@@ -248,7 +248,7 @@ public:
     
     context.informationCallback(String((int)algorithms.size()) + T(" Algorithms"));
 
-    MCBanditPoolPtr pool = new MCBanditPool(new AlgorithmObjective(this), 5.0);
+    BanditPoolPtr pool = new BanditPool(new AlgorithmObjective(this), 5.0);
     pool->reserveArms(algorithms.size());
     for (size_t i = 0; i < algorithms.size(); ++i)
       if (!algorithms[i].second.isInstanceOf<IterateMCAlgorithm>())

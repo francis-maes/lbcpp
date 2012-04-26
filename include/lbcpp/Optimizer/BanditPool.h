@@ -1,20 +1,21 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: MCBanditPool.h                 | Monte Carlo Bandit Pool         |
+| Filename: BanditPool.h                   | Monte Carlo Bandit Pool         |
 | Author  : Francis Maes                   |                                 |
 | Started : 08/04/2012 15:15               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_MC_BANDIT_POOL_H_
-# define LBCPP_LUAPE_MC_BANDIT_POOL_H_
+#ifndef LBCPP_OPTIMIZER_BANDIT_POOL_H_
+# define LBCPP_OPTIMIZER_BANDIT_POOL_H_
 
+# include <lbcpp/Core/Variable.h>
 # include <queue>
 
 namespace lbcpp
 {
 
-class MCBanditPoolObjective : public Object
+class BanditPoolObjective : public Object
 {
 public:
   virtual size_t getNumInstances() const {return 0;} // 0 stands for infinity
@@ -22,14 +23,14 @@ public:
   virtual double computeObjective(ExecutionContext& context, const Variable& parameter, size_t instanceIndex) = 0;
 };
 
-typedef ReferenceCountedObjectPtr<MCBanditPoolObjective> MCBanditPoolObjectivePtr;
+typedef ReferenceCountedObjectPtr<BanditPoolObjective> BanditPoolObjectivePtr;
 
-class MCBanditPool : public Object, public ExecutionContextCallback
+class BanditPool : public Object, public ExecutionContextCallback
 {
 public:
-  MCBanditPool(const MCBanditPoolObjectivePtr& objective, double explorationCoefficient, bool useMultiThreading = false) 
-    : objective(objective), explorationCoefficient(explorationCoefficient), useMultiThreading(useMultiThreading) {}
-  MCBanditPool() : explorationCoefficient(0.0) {}
+  BanditPool(const BanditPoolObjectivePtr& objective, double explorationCoefficient, bool optimizeMax = false, bool useMultiThreading = false) 
+    : objective(objective), explorationCoefficient(explorationCoefficient), optimizeMax(optimizeMax), useMultiThreading(useMultiThreading) {}
+  BanditPool() : explorationCoefficient(0.0) {}
 
   size_t getNumArms() const
     {return arms.size();}
@@ -51,24 +52,34 @@ public:
   void playIterations(ExecutionContext& context, size_t numIterations, size_t stepsPerIteration);
 
 protected:
-  friend class MCBanditPoolClass;
+  friend class BanditPoolClass;
 
-  MCBanditPoolObjectivePtr objective; // samples rewards in range [0,1]
+  BanditPoolObjectivePtr objective; // samples rewards in range [0,1]
   double explorationCoefficient;
+  bool optimizeMax;
   bool useMultiThreading;
 
   struct Arm
   {
-    Arm() : playedCount(0), objectiveValueSum(0.0), rewardSum(0.0) {}
+    Arm() : playedCount(0), objectiveValueSum(0.0), objectiveValueBest(0.0), rewardSum(0.0), rewardMin(1.0), rewardMax(0.0) {}
 
     size_t playedCount;
     double objectiveValueSum;
+    double objectiveValueBest;
     double rewardSum;
+    double rewardMin;
+    double rewardMax;
 
     Variable parameter;
 
     void observe(double objectiveValue, double reward)
-      {++playedCount; objectiveValueSum += objectiveValue; rewardSum += reward;}
+    {
+      ++playedCount;
+      objectiveValueSum += objectiveValue;
+      rewardSum += reward;
+      rewardMin = juce::jmin(rewardMin, reward);
+      rewardMax = juce::jmax(rewardMax, reward);
+    }
 
     void reset()
       {playedCount = 0; rewardSum = 0.0;}
@@ -106,8 +117,8 @@ protected:
     {return arms.size() - queue.size();}
 };
 
-typedef ReferenceCountedObjectPtr<MCBanditPool> MCBanditPoolPtr;
+typedef ReferenceCountedObjectPtr<BanditPool> BanditPoolPtr;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_MC_BANDIT_POOL_H_
+#endif // !LBCPP_OPTIMIZER_BANDIT_POOL_H_

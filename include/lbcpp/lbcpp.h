@@ -85,6 +85,7 @@
 
 # include "DecisionProblem/DecisionProblem.h"
 # include "Optimizer/Optimizer.h"
+# include "Optimizer/BanditPool.h"
 
 # include "Luape/LuapeFunction.h"
 # include "Luape/LuapeNode.h"
