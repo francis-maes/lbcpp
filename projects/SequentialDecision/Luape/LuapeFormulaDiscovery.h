@@ -21,7 +21,7 @@ class LuapeNodeSearchProblem : public LuapeInference
 public:
   virtual bool initializeProblem(ExecutionContext& context) = 0;
 
-//  virtual size_t getNumInstances() const {return 0;} // 0 stands for infinity
+  virtual size_t getNumInstances() const {return 0;} // 0 stands for infinity
   virtual void getObjectiveRange(double& worst, double& best) const = 0;
   virtual double computeObjective(ExecutionContext& context, const LuapeNodePtr& node, size_t instanceIndex) = 0;
 
@@ -323,7 +323,7 @@ public:
     {return m.size();}
 
   size_t getNumInvalids() const
-    {return invalids->getNumElements();}
+    {return invalids ? invalids->getNumElements() : 0;}
 
   void addClassesToBanditPool(MCBanditPoolPtr pool)
   {
@@ -480,6 +480,9 @@ protected:
     ObjectiveWrapper(LuapeNodeSearchProblemPtr problem) : problem(problem) {}
 
     LuapeNodeSearchProblemPtr problem;
+
+    virtual size_t getNumInstances() const
+      {return problem->getNumInstances();}
 
     virtual void getObjectiveRange(double& worst, double& best) const
       {problem->getObjectiveRange(worst, best);}

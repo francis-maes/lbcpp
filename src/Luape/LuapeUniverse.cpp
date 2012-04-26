@@ -50,7 +50,7 @@ LuapeNodePtr LuapeUniverse::makeFunctionNode(const LuapeFunctionPtr& function, c
   if (it == functionNodes.end())
   {
     LuapeNodePtr res = canonizeNode(new LuapeFunctionNode(function, inputs));
-    if (res->getDepth() < 4)
+    if (res->getDepth() < 6)
       functionNodes[key] = res;
     return res;
   }

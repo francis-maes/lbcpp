@@ -59,6 +59,9 @@ public:
   const ProteinResiduePerceptionPtr& getResidue(size_t index) const
     {return residues->getAndCast<ProteinResiduePerception>(index);}
 
+  size_t getNumCysteins() const
+    {return cysteinIndices.size();}
+
   const std::vector<size_t>& getCysteinIndices() const
     {return cysteinIndices;}
 

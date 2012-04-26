@@ -17,6 +17,7 @@ namespace lbcpp
 class MCBanditPoolObjective : public Object
 {
 public:
+  virtual size_t getNumInstances() const {return 0;} // 0 stands for infinity
   virtual void getObjectiveRange(double& worst, double& best) const = 0;
   virtual double computeObjective(ExecutionContext& context, const Variable& parameter, size_t instanceIndex) = 0;
 };
