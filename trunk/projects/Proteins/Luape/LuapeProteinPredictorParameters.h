@@ -29,12 +29,34 @@ public:
     std::vector<SymmetricMatrixPtr>& supervisions = (isTrainingData ? trainPatterns : testPatterns);
     size_t n = proteinPairs->getNumElements();
     supervisions.resize(n);
+    
+    std::vector<ObjectPtr> data;
     for (size_t i = 0; i < n; ++i)
     {
       ObjectPtr pair = proteinPairs->getElement(i).getObject();
+      ProteinPtr inputProtein = pair->getVariable(0).getObjectAndCast<Protein>();
+      ProteinPerceptionPtr inputPerception = new ProteinPerception(inputProtein);
+      const std::vector<size_t>& cysteinIndices = inputPerception->getCysteinIndices();
+      
       ProteinPtr supervisionProtein = pair->getVariable(1).getObjectAndCast<Protein>();
       supervisions[i] = supervisionProtein->getDisulfideBonds(context);
+      size_t numCysteins = supervisions[i]->getDimension();
+      for (size_t j = 0; j < numCysteins; ++j)
+        for (size_t k = j + 1; k < numCysteins; ++k)
+        {
+          ObjectPtr bondPerception = new ProteinResiduePairPerception(inputPerception,
+            inputPerception->getResidue(cysteinIndices[j]), inputPerception->getResidue(cysteinIndices[k]));
+          data.push_back(new Pair(bondPerception, supervisions[i]->getElement(j, k).getDouble() > 0.5));
+        }
     }
+ 
+    if (isTrainingData)
+    {
+      supervision = new LuapeInputNode(probabilityType, T("supervision"), inputs.size());
+      trainingCache = createSamplesCache(context, data);
+    }
+    else
+      validationCache = createSamplesCache(context, data);
   }
 
   virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& sup) const

@@ -183,7 +183,14 @@ void MCBanditPool::destroyArm(size_t index)
 }
 
 double MCBanditPool::getIndexScore(Arm& arm) const
-  {return arm.playedCount ? (arm.rewardSum + explorationCoefficient) / (double)arm.playedCount : DBL_MAX;}
+{
+  if (!arm.playedCount)
+    return DBL_MAX;
+  size_t N = objective->getNumInstances();
+  if (N && arm.playedCount == N)
+    return -DBL_MAX;
+  return (arm.rewardSum + explorationCoefficient) / (double)arm.playedCount;
+}
 
 void MCBanditPool::pushArmIntoQueue(size_t index, double score)
   {queue.push(std::make_pair(index, score));}

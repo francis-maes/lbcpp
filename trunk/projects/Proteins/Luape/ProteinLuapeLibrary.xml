@@ -63,5 +63,14 @@
     <variable type="Double" name="miniBatchRelativeSize"/>
     <variable type="PositiveInteger" name="numIterations"/>
   </class>
-
+  
+  <!-- DSB Formula Discovery
+  <class name="DSBFormulaSearchProblem" base="LuapeNodeSearchProblem">
+    <variable type="File" name="trainingInputDirectory"/>
+    <variable type="File" name="trainingSupervisionDirectory"/>
+    <variable type="File" name="testingInputDirectory"/>
+    <variable type="File" name="testingSupervisionDirectory"/>
+    <variable type="PositiveInteger" name="maxProteinCount"/>    
+  </class>
+   -->
 </library>

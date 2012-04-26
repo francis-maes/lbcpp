@@ -140,6 +140,7 @@ SET(LBCPP_PROTEIN_LUAPE_SOURCES
   Luape/ProteinPerception.h
   Luape/LuapeProteinPredictorParameters.h
   Luape/ProteinLuapeSandBox.h
+  Luape/DSBFormulaSearchProblem.h
   Luape/ProteinLuapeLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinLuapeLibrary.cpp
 )

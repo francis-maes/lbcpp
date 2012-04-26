@@ -51,6 +51,9 @@ public:
     dsbClassifier->setProteinPairs(context, trainingProteins, true);
     dsbClassifier->setProteinPairs(context, testingProteins, false);
 
+    context.enterScope(T("Learn bond classifier"));
+    learnClassifier(context, dsbClassifier);
+    context.leaveScope();
     
 //    iteration->addTarget(sa20Target);
 //    iteration->addTarget(ss3Target);
@@ -58,8 +61,8 @@ public:
     //iteration->addTarget(stalTarget);
     //iteration->addTarget(drTarget);
     
-    if (!iteration->train(context, trainingProteins, testingProteins, T("Training")))
-      return Variable::missingValue(doubleType);
+    //if (!iteration->train(context, trainingProteins, testingProteins, T("Training")))
+    //  return Variable::missingValue(doubleType);
 
     ProteinEvaluatorPtr evaluator = createEvaluator(true);    
     CompositeScoreObjectPtr scores = iteration->evaluate(context, trainingProteins, evaluator, T("Evaluate on training proteins"));
@@ -69,6 +72,73 @@ public:
     scores = iteration->evaluate(context, testingProteins, evaluator, T("Evaluate on test proteins"));
     double testScore = evaluator->getScoreObjectOfTarget(scores, dsbTarget)->getScoreToMinimize();
     return new Pair(trainScore, testScore);
+  }
+
+  void learnClassifier(ExecutionContext& context, LuapeBinaryClassifierPtr classifier)
+  {
+    for (size_t i = 0; i < numIterations; ++i)
+    {
+      context.enterScope(T("Iteration ") + String((int)i));
+      learnClassifierIteration(context, classifier);
+      context.progressCallback(new ProgressionState(i+1, numIterations, "Iterations"));
+      context.leaveScope();
+      context.resultCallback(T("iteration"), i+1);
+    }
+  }
+
+  void learnClassifierIteration(ExecutionContext& context, LuapeBinaryClassifierPtr classifier)
+  {
+    LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder((size_t)relativeBudget, complexity);
+    
+    std::vector<LuapeNodePtr> candidates;
+    nodeBuilder->buildNodes(context, classifier, 0, candidates);
+
+    for (size_t i = 0; i < candidates.size(); ++i)
+    {
+      LuapeNodePtr node = candidates[i];
+      context.enterScope(node->toShortString());
+      double res = makeCurves(context, classifier, node);
+      context.leaveScope(res);
+    }
+  }
+
+  double makeCurves(ExecutionContext& context, LuapeBinaryClassifierPtr classifier, LuapeNodePtr node)
+  {
+    SparseDoubleVectorPtr sortedDoubleValues = classifier->getTrainingCache()->getSortedDoubleValues(context, node);
+    size_t n = sortedDoubleValues->getNumValues();
+    double previousThreshold = sortedDoubleValues->getValue(n - 1).second;
+    double bestScore = DBL_MAX;
+    for (int i = (int)n - 1; i >= 0; --i)
+    {
+      size_t index = sortedDoubleValues->getValue(i).first;
+      double threshold = sortedDoubleValues->getValue(i).second;
+
+      jassert(threshold <= previousThreshold);
+      if (threshold < previousThreshold)
+      {
+        context.enterScope(T("Threshold ") + String(threshold));
+        context.resultCallback(T("threshold"), threshold);
+
+        LuapeNodePtr stumpNode = new LuapeFunctionNode(stumpLuapeFunction(threshold), node);
+
+        double bestScoreGivenThreshold = DBL_MAX;
+        for (double v = -1.0; v <= 1.0; v += 2.0)
+        {
+          LuapeNodePtr voteNode = new LuapeFunctionNode(scalarVoteLuapeFunction(v), stumpNode);
+          VectorPtr trainPredictions = classifier->getTrainingCache()->getSamples(context, voteNode)->getVector();
+          double trainError = classifier->evaluatePredictions(context, trainPredictions, classifier->getTrainingSupervisions());
+          bestScore = juce::jmin(bestScore, trainError);
+          bestScoreGivenThreshold = juce::jmin(bestScoreGivenThreshold, trainError);
+          //VectorPtr validationPredictions = classifier->getValidationCache()->getSamples(context, voteNode)->getVector();
+          //double testError = classifier->evaluatePredictions(context, validationPredictions, classifier->getValidationSupervisions());
+          context.resultCallback(T("trainError") + String(v), trainError);
+          //context.resultCallback(T("testError") + String(v), testError);
+        }
+        context.leaveScope(bestScoreGivenThreshold);
+        previousThreshold = threshold;
+      }
+    }
+    return bestScore;
   }
 
 protected:
@@ -89,7 +159,7 @@ protected:
   ContainerPtr loadProteinPairs(ExecutionContext& context, const File& inputDirectory, const File& supervisionDirectory, const String& description)
   {
     ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, maxProteinCount, T("Loading ") + description + T(" proteins"));
-    context.informationCallback(String(proteins ? (int)proteins->getNumElements() : 0) + T(" ") + description + T(" proteins"));
+    //context.informationCallback(String(proteins ? (int)proteins->getNumElements() : 0) + T(" ") + description + T(" proteins"));
     return proteins;
   }
 
