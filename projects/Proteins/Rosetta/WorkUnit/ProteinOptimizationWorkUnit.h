@@ -9,6 +9,8 @@
 #ifndef LBCPP_PROTEINS_ROSETTA_WORKUNIT_PROTEINOPTIMIZATIONWORKUNIT_H_
 # define LBCPP_PROTEINS_ROSETTA_WORKUNIT_PROTEINOPTIMIZATIONWORKUNIT_H_
 
+# include <limits>
+
 # include "DistributableWorkUnit.h"
 
 # include "../Data/Features/PoseFeatureGenerator.h"
@@ -123,6 +125,7 @@ public:
     {
       // initialize data
       pose->initializeToHelix();
+
       OptimizationProblemStatePtr optState = new PoseOptimizationState(pose);
 
       OptimizationProblemStateModifierPtr modifier = new PoseOptimizationStateModifier(sampler, features);
@@ -152,7 +155,10 @@ public:
         }
       }
 
-      for (size_t j = 0; j < numElements; j++)
+      pose->initializeToHelix();
+      double currentEnergy = pose->getEnergy();
+
+      for (size_t j = 0; (j < numElements) && (currentEnergy < DBL_MAX); j++)
       {
         meanEnergies[j]->push(costEvolution->getValue(j));
         meanAccepted[j]->push(acceptedModificationsEvolution->getValue(j));
