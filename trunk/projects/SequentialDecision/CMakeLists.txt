@@ -138,8 +138,6 @@ SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
   Luape/MCObjective.h
   Luape/MCAlgorithm.h
   Luape/MCOptimizer.h
-  Luape/MCBanditPool.h
-  Luape/MCBanditPool.cpp
   Luape/MetaMCSandBox.h
   Luape/LuapeFormulaDiscovery.h
   Luape/LuapeSandBoxLibrary.xml

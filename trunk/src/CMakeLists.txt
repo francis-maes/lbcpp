@@ -618,6 +618,8 @@ SET(LBCPP_OPTIMIZER_SOURCES
   ../include/lbcpp/Optimizer/Optimizer.h
   ../include/lbcpp/Optimizer/OptimizerState.h
   Optimizer/Optimizer.cpp
+  ../include/lbcpp/Optimizer/BanditPool.h
+  Optimizer/BanditPool.cpp
   Optimizer/OptimizerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OptimizerLibrary.cpp
 )

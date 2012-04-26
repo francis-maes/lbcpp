@@ -9,8 +9,8 @@
 #ifndef LBCPP_LUAPE_FORMULA_DISCOVERY_H_
 # define LBCPP_LUAPE_FORMULA_DISCOVERY_H_
 
+# include <lbcpp/Optimizer/BanditPool.h>
 # include "MCAlgorithm.h"
-# include "MCBanditPool.h"
 # include "../GP/BanditFormulaSearchProblem.h"
 
 namespace lbcpp
@@ -278,7 +278,7 @@ typedef ReferenceCountedObjectPtr<LuapeNodeEquivalenceClass> LuapeNodeEquivalenc
 class LuapeNodeEquivalenceClasses : public Object
 {
 public:
-  void add(ExecutionContext& context, const std::vector<LuapeNodePtr>& nodes, LuapeNodeSearchProblemPtr problem, bool verbose = false, MCBanditPoolPtr pool = MCBanditPoolPtr())
+  void add(ExecutionContext& context, const std::vector<LuapeNodePtr>& nodes, LuapeNodeSearchProblemPtr problem, bool verbose = false, BanditPoolPtr pool = BanditPoolPtr())
   {
     for (size_t i = 0; i < nodes.size(); ++i)
     {
@@ -292,7 +292,7 @@ public:
     }
   }
 
-  void add(ExecutionContext& context, LuapeNodePtr node, BinaryKeyPtr key, bool verbose = false, MCBanditPoolPtr pool = MCBanditPoolPtr())
+  void add(ExecutionContext& context, LuapeNodePtr node, BinaryKeyPtr key, bool verbose = false, BanditPoolPtr pool = BanditPoolPtr())
   {
     if (key)
     {
@@ -325,7 +325,7 @@ public:
   size_t getNumInvalids() const
     {return invalids ? invalids->getNumElements() : 0;}
 
-  void addClassesToBanditPool(MCBanditPoolPtr pool)
+  void addClassesToBanditPool(BanditPoolPtr pool)
   {
     for (Map::const_iterator it = m.begin(); it != m.end(); ++it)
       pool->createArm(it->second);
@@ -355,7 +355,7 @@ public:
       return false;
 
     LuapeNodeEquivalenceClassesPtr equivalenceClasses = new LuapeNodeEquivalenceClasses();
-    MCBanditPoolPtr pool = new MCBanditPool(new ObjectiveWrapper(problem), explorationCoefficient, useMultiThreading); 
+    BanditPoolPtr pool = new BanditPool(new ObjectiveWrapper(problem), explorationCoefficient, false, useMultiThreading); 
 
     LuapeRPNSequencePtr subSequence = new LuapeRPNSequence();
     for (size_t iteration = 0; iteration < numIterations; ++iteration)
@@ -398,7 +398,7 @@ public:
     return true;
   }
 
-  ObjectPtr findBestSymbolCompletion(ExecutionContext& context, MCBanditPoolPtr pool, const LuapeRPNSequencePtr& subSequence)
+  ObjectPtr findBestSymbolCompletion(ExecutionContext& context, BanditPoolPtr pool, const LuapeRPNSequencePtr& subSequence)
   {
     std::vector< std::pair<size_t, double> > order;
     pool->getArmsOrder(order);
@@ -475,7 +475,7 @@ protected:
   size_t numStepsPerIteration;
   bool useMultiThreading;
 
-  struct ObjectiveWrapper : public MCBanditPoolObjective
+  struct ObjectiveWrapper : public BanditPoolObjective
   {
     ObjectiveWrapper(LuapeNodeSearchProblemPtr problem) : problem(problem) {}
 

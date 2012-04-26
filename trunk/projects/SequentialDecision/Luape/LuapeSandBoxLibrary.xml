@@ -38,14 +38,6 @@
     <variable type="PositiveInteger" name="budget"/>
   </class>
 
-  <!-- Bandit Pool -->
-  <class name="MCBanditPoolObjective" abstract="yes"/>
-  <class name="MCBanditPool">
-    <variable type="MCBanditPoolObjective" name="objective"/>
-    <variable type="Double" name="explorationCoefficient"/>
-    <variable type="Boolean" name="useMultiThreading"/>
-  </class>
-
   <!--
   <class name="BanditPoolWeakLearner" base="LuapeLearner">
     <constructor arguments="size_t maxBandits, size_t maxDepth"/>
