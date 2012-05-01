@@ -48,13 +48,16 @@ public:
     ProteinPredictorParametersPtr predictor = new LuapeProteinPredictorParameters(treeDepth, complexity, relativeBudget, miniBatchRelativeSize, numIterations, true);
 
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
-    DisulfideBondClassifierPtr dsbClassifier = iteration->addTarget(dsbTarget)->getVariable(0).getObjectAndCast<DisulfideBondClassifier>();
-    dsbClassifier->setProteinPairs(context, trainingProteins, true);
-    dsbClassifier->setProteinPairs(context, testingProteins, false);
+    DisulfideBondClassifierPtr dsbClassifier = iteration->addTarget(dsbTarget)->getVariable(0).dynamicCast<DisulfideBondClassifier>();
+    if (dsbClassifier)
+    {
+      dsbClassifier->setProteinPairs(context, trainingProteins, true);
+      dsbClassifier->setProteinPairs(context, testingProteins, false);
+    }
 
-    context.enterScope(T("Learn bond classifier"));
+    /*context.enterScope(T("Learn bond classifier"));
     learnClassifier(context, dsbClassifier);
-    context.leaveScope();
+    context.leaveScope();*/
     
 //    iteration->addTarget(sa20Target);
 //    iteration->addTarget(ss3Target);
@@ -62,8 +65,8 @@ public:
     //iteration->addTarget(stalTarget);
     //iteration->addTarget(drTarget);
     
-    //if (!iteration->train(context, trainingProteins, testingProteins, T("Training")))
-    //  return Variable::missingValue(doubleType);
+    if (!iteration->train(context, trainingProteins, testingProteins, T("Training")))
+      return Variable::missingValue(doubleType);
 
     ProteinEvaluatorPtr evaluator = createEvaluator(true);    
     CompositeScoreObjectPtr scores = iteration->evaluate(context, trainingProteins, evaluator, T("Evaluate on training proteins"));
@@ -75,13 +78,8 @@ public:
     return new Pair(trainScore, testScore);
   }
 
-  //LuapeGraphBuilderTypeSearchSpacePtr fromResidueTypeSearchSpace;
-
   void learnClassifier(ExecutionContext& context, LuapeBinaryClassifierPtr classifier)
   {
-    //std::vector<TypePtr> initialState(1, proteinResiduePerceptionClass);
-    //fromResidueTypeSearchSpace = classifier->createTypeSearchSpace(context, initialState, complexity - 2, true);
-    
     classifier->setRootNode(context, new LuapeScalarSumNode());
     for (size_t i = 0; i < numIterations; ++i)
     {

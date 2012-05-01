@@ -258,7 +258,7 @@ protected:
   std::vector<LuapeNodePtr> nodes;
 
   virtual VectorPtr createEmptyOutputs(size_t numSamples) const = 0;
-  virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues) const = 0;
+  virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const = 0;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeSequenceNode> LuapeSequenceNodePtr;
@@ -269,15 +269,20 @@ typedef ReferenceCountedObjectPtr<LuapeSequenceNode> LuapeSequenceNodePtr;
 class LuapeScalarSumNode : public LuapeSequenceNode
 {
 public:
-  LuapeScalarSumNode(const std::vector<LuapeNodePtr>& nodes);
-  LuapeScalarSumNode();
+  LuapeScalarSumNode(const std::vector<LuapeNodePtr>& nodes, bool convertToProbabilities, bool computeAverage);
+  LuapeScalarSumNode(bool convertToProbabilities = false, bool computeAverage = true);
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
 
 protected:
+  friend class LuapeScalarSumNodeClass;
+
+  bool convertToProbabilities;
+  bool computeAverage;
+
   virtual VectorPtr createEmptyOutputs(size_t numSamples) const;
-  virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues) const;
+  virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const;
 };
 
 class LuapeVectorSumNode : public LuapeSequenceNode
@@ -296,7 +301,7 @@ protected:
   bool convertToProbabilities;
 
   virtual VectorPtr createEmptyOutputs(size_t numSamples) const;
-  virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues) const;
+  virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const;
 
   DenseDoubleVectorPtr convertToProbabilitiesUsingSigmoid(const DenseDoubleVectorPtr& activations) const;
 };
@@ -312,7 +317,7 @@ public:
 
 protected:
   virtual VectorPtr createEmptyOutputs(size_t numSamples) const;
-  virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues) const;
+  virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const;
 };
 
 }; /* namespace lbcpp */

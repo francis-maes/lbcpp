@@ -175,8 +175,6 @@ protected:
   DenseDoubleVectorPtr labelWeights;
   double sumOfWeights;
   DenseDoubleVectorPtr labelConditionalProbabilities[3];
-
-  static double computeEntropy(const DenseDoubleVectorPtr& vector, double sumOfWeights);
 };
 
 class InformationGainLearningObjective : public ClassificationLearningObjective
@@ -204,8 +202,6 @@ protected:
   DenseDoubleVectorPtr labelConditionalProbabilities[3];
 
   std::vector<DenseDoubleVectorPtr> singleVoteVectors;
-
-  static double computeEntropy(const DenseDoubleVectorPtr& vector, double sumOfWeights);
 };
 
 }; /* namespace lbcpp */
