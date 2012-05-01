@@ -253,7 +253,6 @@ void ClassificationLearningObjective::initialize(const LuapeInferencePtr& proble
 /*
  ** InformationGainBinaryLearningObjective
  */
-
 InformationGainBinaryLearningObjective::InformationGainBinaryLearningObjective(bool normalize)
   : normalize(normalize) {}
 
@@ -318,11 +317,11 @@ double InformationGainBinaryLearningObjective::computeObjective()
 {
   ensureIsUpToDate();
   
-  double currentEntropy = computeEntropy(labelWeights, sumOfWeights);
-  double splitEntropy = computeEntropy(splitWeights, sumOfWeights);
+  double currentEntropy = labelWeights->computeEntropy(sumOfWeights);
+  double splitEntropy = splitWeights->computeEntropy(sumOfWeights);
   double expectedNextEntropy = 0.0;
   for (int i = 0; i < 3; ++i)
-    expectedNextEntropy += (splitWeights->getValue(i) / sumOfWeights) * computeEntropy(labelConditionalProbabilities[i], splitWeights->getValue(i));
+    expectedNextEntropy += (splitWeights->getValue(i) / sumOfWeights) * labelConditionalProbabilities[i]->computeEntropy(splitWeights->getValue(i));
   double informationGain = currentEntropy - expectedNextEntropy;
   if (normalize)
     return 2.0 * informationGain / (currentEntropy + splitEntropy);
@@ -332,52 +331,21 @@ double InformationGainBinaryLearningObjective::computeObjective()
 
 Variable InformationGainBinaryLearningObjective::computeVote(const IndexSetPtr& indices)
 {
-  if (indices->size() == 1)
+  double trueWeight = 0.0;
+  double falseWeight = 0.0;
+  for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
   {
-    // special case when the vote is all concentrated on a single label to spare some memory
-    bool label = (size_t)supervisions->getElement(*indices->begin()).getBoolean();
-    return Variable(label ? 1.f : 0.f, doubleType); // (a vector containing a single 1 on the label)
+    size_t index = *it;
+    double weight = getWeight(index);
+    if (supervisions->getElement(index).getBoolean())
+      trueWeight += weight;
+    else
+      falseWeight += weight;
   }
+  if (trueWeight || falseWeight)
+    return Variable(trueWeight / (trueWeight + falseWeight), probabilityType);
   else
-  {
-    DenseDoubleVectorPtr res = new DenseDoubleVector(denseDoubleVectorClass(falseOrTrueEnumeration, doubleType));
-    double sumOfWeights = 0.0;
-    for (IndexSet::const_iterator it = indices->begin(); it != indices->end(); ++it)
-    {
-      size_t index = *it;
-      double weight = getWeight(index);
-      res->incrementValue((size_t)supervisions->getElement(index).getBoolean() ? 1 : 0, weight);
-      sumOfWeights += weight;
-    }
-    if (sumOfWeights)
-    {
-      res->multiplyByScalar(1.0 / sumOfWeights);
-      int argmax = res->getIndexOfMaximumValue();
-      if (argmax >= 0 && res->getValue(argmax) == 1.0)
-        return Variable(argmax ? 1.f : 0.f, doubleType); // reuse an existing vector to spare memory
-    }
-    return res->getElement(1);
-  }
-}
-
-double InformationGainBinaryLearningObjective::computeEntropy(const DenseDoubleVectorPtr& vector, double sumOfWeights)
-{
-  if (!sumOfWeights)
-    return 0.0;
-  double res = 0.0;
-  double Z = 1.0 / sumOfWeights;
-  double sumOfP = 0.0;
-  for (size_t i = 0; i < vector->getNumValues(); ++i)
-  {
-    double p = vector->getValue(i) * Z;
-    if (p)
-    {
-      res -= p * log2(p);
-      sumOfP += p;
-    }
-  }
-  jassert(fabs(sumOfP - 1.0) < 1e-12);
-  return res;
+    return Variable::missingValue(probabilityType);
 }
 
 /*
@@ -454,11 +422,11 @@ double InformationGainLearningObjective::computeObjective()
 {
   ensureIsUpToDate();
 
-  double currentEntropy = computeEntropy(labelWeights, sumOfWeights);
-  double splitEntropy = computeEntropy(splitWeights, sumOfWeights);
+  double currentEntropy = labelWeights->computeEntropy(sumOfWeights);
+  double splitEntropy = splitWeights->computeEntropy(sumOfWeights);
   double expectedNextEntropy = 0.0;
   for (int i = 0; i < 3; ++i)
-    expectedNextEntropy += (splitWeights->getValue(i) / sumOfWeights) * computeEntropy(labelConditionalProbabilities[i], splitWeights->getValue(i));
+    expectedNextEntropy += (splitWeights->getValue(i) / sumOfWeights) * labelConditionalProbabilities[i]->computeEntropy(splitWeights->getValue(i));
   double informationGain = currentEntropy - expectedNextEntropy;
   if (normalize)
     return 2.0 * informationGain / (currentEntropy + splitEntropy);
@@ -496,24 +464,4 @@ Variable InformationGainLearningObjective::computeVote(const IndexSetPtr& indice
     }
     return res;
   }
-}
-
-double InformationGainLearningObjective::computeEntropy(const DenseDoubleVectorPtr& vector, double sumOfWeights)
-{
-  if (!sumOfWeights)
-    return 0.0;
-  double res = 0.0;
-  double Z = 1.0 / sumOfWeights;
-  double sumOfP = 0.0;
-  for (size_t i = 0; i < vector->getNumValues(); ++i)
-  {
-    double p = vector->getValue(i) * Z;
-    if (p)
-    {
-      res -= p * log2(p);
-      sumOfP += p;
-    }
-  }
-  jassert(fabs(sumOfP - 1.0) < 1e-12);
-  return res;
 }

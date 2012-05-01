@@ -23,7 +23,7 @@ public:
   AdaBoostLearner() {}
 
   virtual LuapeNodePtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
-    {return new LuapeScalarSumNode();}
+    {return new LuapeScalarSumNode(false, false);}
 
 //  virtual bool shouldStop(double accuracy) const
 //    {return accuracy == 0.0 || accuracy == 1.0;}

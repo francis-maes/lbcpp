@@ -34,6 +34,7 @@ public:
     context.resultCallback(T("treeSize"), numNodes);
     context.resultCallback(T("conditionSize"), nodeSizeStats);
     context.resultCallback(T("meanConditionSize"), nodeSizeStats->getMean());
+    context.resultCallback(T("TMP"), res);
     if (verbose)
       context.informationCallback(T("Tree depth = ") + String((int)treeDepth) + T(" size = ") + String((int)numNodes));
 

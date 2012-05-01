@@ -283,7 +283,7 @@ LuapeSampleVectorPtr LuapeTestNode::compute(ExecutionContext& context, const Lua
       dv[0] = v[0].getDouble();
       dv[1] = v[1].getDouble();
       dv[2] = v[2].getDouble();
-      DenseDoubleVectorPtr res = new DenseDoubleVector(n, 0.0);
+      DenseDoubleVectorPtr res = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, type, n, 0.0);
       double* ptr = res->getValuePointer(0);
       for (LuapeSampleVector::const_iterator it = conditions->begin(); it != conditions->end(); ++it)
         *ptr++ = dv[it.getRawBoolean()];
@@ -336,7 +336,7 @@ LuapeSampleVectorPtr LuapeTestNode::compute(ExecutionContext& context, const Lua
 
     if (elementsType == doubleType)
     {
-      DenseDoubleVectorPtr res = new DenseDoubleVector(n, 0.0);
+      DenseDoubleVectorPtr res = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, type, n, 0.0);
       double* ptr = res->getValuePointer(0);
       for (LuapeSampleVector::const_iterator conditionIt = conditions->begin(); conditionIt != conditions->end(); ++conditionIt)
       {
@@ -404,7 +404,7 @@ LuapeSampleVectorPtr LuapeSequenceNode::compute(ExecutionContext& context, const
   double startTime = Time::getMillisecondCounterHiRes();
   VectorPtr outputs = createEmptyOutputs(indices->size());
   for (size_t i = 0; i < nodeValues.size(); ++i)
-    updateOutputs(outputs, nodeValues[i]);
+    updateOutputs(outputs, nodeValues[i], i);
   double endTime = Time::getMillisecondCounterHiRes();
   cache->observeNodeComputingTime(refCountedPointerFromThis(this), indices->size(), endTime - startTime);
 
@@ -413,6 +413,7 @@ LuapeSampleVectorPtr LuapeSequenceNode::compute(ExecutionContext& context, const
 
 void LuapeSequenceNode::pushNode(ExecutionContext& context, const LuapeNodePtr& node, const std::vector<LuapeSamplesCachePtr>& cachesToUpdate)
 {
+  size_t index = nodes.size();
   jassert(node);
   nodes.push_back(node);
 
@@ -423,20 +424,21 @@ void LuapeSequenceNode::pushNode(ExecutionContext& context, const LuapeNodePtr& 
     //size_t n = cache->getNumSamples();
     VectorPtr outputs = cache->getNodeCache(this);
     jassert(outputs);
-    updateOutputs(outputs, cache->getSamples(context, node));
+    updateOutputs(outputs, cache->getSamples(context, node), index);
   }
 }
 
 /*
 ** LuapeScalarSumNode
 */
-LuapeScalarSumNode::LuapeScalarSumNode(const std::vector<LuapeNodePtr>& nodes)
-  : LuapeSequenceNode(doubleType, nodes)
+LuapeScalarSumNode::LuapeScalarSumNode(const std::vector<LuapeNodePtr>& nodes, bool convertToProbabilities, bool computeAverage)
+  : LuapeSequenceNode(convertToProbabilities ? probabilityType : doubleType, nodes),
+  convertToProbabilities(convertToProbabilities), computeAverage(computeAverage)
 {
 }
 
-LuapeScalarSumNode::LuapeScalarSumNode() 
-  : LuapeSequenceNode(doubleType)
+LuapeScalarSumNode::LuapeScalarSumNode(bool convertToProbabilities, bool computeAverage) 
+  : LuapeSequenceNode(convertToProbabilities ? probabilityType : doubleType), convertToProbabilities(convertToProbabilities), computeAverage(computeAverage)
 {
 }
 
@@ -445,7 +447,9 @@ Variable LuapeScalarSumNode::compute(ExecutionContext& context, const Variable* 
   double res = 0.0;
   for (size_t i = 0; i < nodes.size(); ++i)
     res += nodes[i]->compute(context, inputs).getDouble();
-  return res;
+  if (computeAverage)
+    res /= (double)nodes.size();
+  return Variable(res, type);
 }
 
 Variable LuapeScalarSumNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
@@ -453,20 +457,27 @@ Variable LuapeScalarSumNode::compute(ExecutionContext& context, const LuapeInsta
   double res = 0.0;
   for (size_t i = 0; i < nodes.size(); ++i)
     res += cache->compute(context, nodes[i]).getDouble();
-  return res;
+  if (computeAverage)
+    res /= (double)nodes.size();
+  return Variable(res, type);
 }
 
 VectorPtr LuapeScalarSumNode::createEmptyOutputs(size_t numSamples) const
-  {return new DenseDoubleVector(numSamples, 0.0);}
+  {return new DenseDoubleVector(positiveIntegerEnumerationEnumeration, type, numSamples, 0.0);}
 
-void LuapeScalarSumNode::updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues) const
+void LuapeScalarSumNode::updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const
 {
   const DenseDoubleVectorPtr& a = outputs.staticCast<DenseDoubleVector>();
   double* dest = a->getValuePointer(0);
   for (LuapeSampleVector::const_iterator it = newNodeValues->begin(); it != newNodeValues->end(); ++it)
   {
     double value = it.getRawDouble();
-    *dest++ += (value == doubleMissingValue ? 0.0 : value);
+    if (value == doubleMissingValue)
+      value = 0.0;
+    if (computeAverage && newNodeIndex > 0)
+      *dest++ = (*dest * (newNodeIndex - 1) + value) / (double)newNodeIndex;
+    else
+      *dest++ += value;
   }
 }
 
@@ -525,7 +536,7 @@ VectorPtr LuapeVectorSumNode::createEmptyOutputs(size_t numSamples) const
   return res;
 }
  
-void LuapeVectorSumNode::updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues) const
+void LuapeVectorSumNode::updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const
 {
   const ObjectVectorPtr& a = outputs.staticCast<ObjectVector>();
   jassert(newNodeValues->size() == a->getNumElements());
@@ -604,7 +615,7 @@ VectorPtr LuapeCreateSparseVectorNode::createEmptyOutputs(size_t numSamples) con
   return res;
 }
 
-void LuapeCreateSparseVectorNode::updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues) const
+void LuapeCreateSparseVectorNode::updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const
 { 
   const ObjectVectorPtr& a = outputs.staticCast<ObjectVector>();
   jassert(newNodeValues->size() == a->getNumElements());

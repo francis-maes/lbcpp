@@ -222,7 +222,6 @@ TypePtr LuapeRegressor::getRequiredInputType(size_t index, size_t numInputs) con
 
 TypePtr LuapeRegressor::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
 {
-  node = new LuapeScalarSumNode();
   return doubleType;
 }
 
@@ -287,14 +286,19 @@ double LuapeBinaryClassifier::evaluatePredictions(ExecutionContext& context, con
   if (predictions.isInstanceOf<DenseDoubleVector>())
   {
     const DenseDoubleVectorPtr& pred = predictions.staticCast<DenseDoubleVector>();
+    TypePtr elementsType = pred->getElementsType();
     for (size_t i = 0; i < n; ++i)
     {
-      bool predicted = (pred->getValue(i) > 0);
+      bool prediction;
+      if (elementsType == probabilityType)
+        prediction = pred->getValue(i) > 0.5;
+      else
+        prediction = pred->getValue(i) > 0.0;
       Variable supervision = supervisions->getElement(i);
       bool correct;
       if (!lbcpp::convertSupervisionVariableToBoolean(supervision, correct))
         jassert(false);
-      if (predicted != correct)
+      if (prediction != correct)
         ++numErrors;
     }
   }
@@ -407,7 +411,6 @@ TypePtr LuapeRanker::getRequiredInputType(size_t index, size_t numInputs) const
 
 TypePtr LuapeRanker::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
 {
-  node = new LuapeScalarSumNode();
   return simpleDenseDoubleVectorClass;
 }
 

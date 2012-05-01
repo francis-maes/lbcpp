@@ -16,7 +16,7 @@
 # include "../Evaluator/ProteinEvaluator.h"
 # include "../Evaluator/KolmogorovPerfectMatchingFunction.h"
 
-//# define USE_EXTRA_TREES
+# define USE_EXTRA_TREES
 
 namespace lbcpp
 {
@@ -62,9 +62,11 @@ public:
   virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& sup) const
   {
     SupervisedEvaluatorPtr evaluator = new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f);
-    //SupervisedEvaluatorPtr evaluator = symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore));
+    SupervisedEvaluatorPtr evaluator2 = symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore));
     
     ScoreObjectPtr score = evaluator->createEmptyScoreObject(context, FunctionPtr());
+    ScoreObjectPtr score2 = evaluator2->createEmptyScoreObject(context, FunctionPtr());
+
     const std::vector<SymmetricMatrixPtr>& supervisions = (sup == getTrainingSupervisions() ? trainPatterns : testPatterns);
     double* predictionsPtr = predictions.staticCast<DenseDoubleVector>()->getValuePointer(0);
     size_t index = 0;
@@ -82,10 +84,12 @@ public:
           prediction->setValue(j, k, probability);
         }
       evaluator->addPrediction(context, prediction, supervision, score);
+      evaluator2->addPrediction(context, prediction, supervision, score2);
     }
     jassert(index == predictions->getNumElements());
     evaluator->finalizeScoreObject(score, FunctionPtr());
-    return score->getScoreToMinimize();
+    evaluator2->finalizeScoreObject(score2, FunctionPtr());
+    return score->getScoreToMinimize() + score2->getScoreToMinimize() / (double)supervisions.size();
   }
 
 private:
@@ -151,7 +155,8 @@ public:
     //LuapeNodeBuilderPtr nodeBuilder = adaptativeSamplingNodeBuilder(budget, complexity);
     //LuapeNodeBuilderPtr nodeBuilder = exhaustiveSequentialNodeBuilder(complexity);
     LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder((size_t)relativeBudget, complexity);
-    return compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
+    //return compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
+    return nodeBuilder;
   }
 
   LuapeLearnerPtr createWeakLearner(ProteinTarget target) const
@@ -196,9 +201,9 @@ public:
   virtual FunctionPtr binaryClassifier(ProteinTarget target) const
   {
     LuapeInferencePtr learningMachine;
-    if (target == dsbTarget)
+    /*if (target == dsbTarget)
       learningMachine = new DisulfideBondClassifier();
-    else
+    else*/
       learningMachine = new LuapeBinaryClassifier();
     addFunctions(learningMachine, target);
     

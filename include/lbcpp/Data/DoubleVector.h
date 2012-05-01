@@ -264,6 +264,9 @@ public:
   // compute log(sum_i(exp(value[i]))) by avoiding numerical errors
   double computeLogSumOfExponentials() const;
 
+  // compute -sum_i(p_i * log2(p_i)) with p_i = value[i] / l1norm. By default, l1norm is computed automatically
+  double computeEntropy(double l1norm = -1.0) const;
+
   // DoubleVector
   virtual double entropy() const;
   virtual size_t l0norm() const;

@@ -863,6 +863,30 @@ double DenseDoubleVector::computeLogSumOfExponentials() const
   return log(res) + highestValue;
 }
 
+
+double DenseDoubleVector::computeEntropy(double l1norm) const
+{
+  if (l1norm < 0)
+    l1norm = this->l1norm();
+  if (!l1norm)
+    return 0.0;
+
+  double Z = 1.0 / l1norm;
+  double res = 0.0;
+  double sumOfP = 0.0;
+  for (size_t i = 0; i < values->size(); ++i)
+  {
+    double p = (*values)[i] * Z;
+    if (p)
+    {
+      res -= p * log2(p);
+      sumOfP += p;
+    }
+  }
+  jassert(fabs(sumOfP - 1.0) < 1e-12);
+  return res;
+}
+
 // DoubleVector
 double DenseDoubleVector::entropy() const
   {return defaultEntropy(*this);}
