@@ -338,8 +338,6 @@ public:
       // Update state
       if (numIteration + 1 == state->getNumIterations())
       {
-        if(iteration->getBestScore().toDouble() >= state->getBestScore())
-          break;
 
         baseObject->setVariable(iteration->getBestParameter(), getParameterValue(state, iteration->getBestParameter(), iteration->getBestValue()));
         state->submitSolution(baseObject->clone(context), iteration->getBestScore().toDouble());
@@ -352,6 +350,12 @@ public:
           iteration->setValidationScore(validationScore);
           saveOptimizerState(context, state);
           context.leaveScope(validationScore);
+        }
+
+        if(iteration->getBestScore().toDouble() >= state->getBestScore())
+        {
+          pushIterationIntoStack(context, state, iteration);
+          break;
         }
       }
 
