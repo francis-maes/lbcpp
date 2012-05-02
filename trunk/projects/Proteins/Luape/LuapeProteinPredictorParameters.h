@@ -201,9 +201,9 @@ public:
   virtual FunctionPtr binaryClassifier(ProteinTarget target) const
   {
     LuapeInferencePtr learningMachine;
-    /*if (target == dsbTarget)
+    if (target == dsbTarget)
       learningMachine = new DisulfideBondClassifier();
-    else*/
+    else
       learningMachine = new LuapeBinaryClassifier();
     addFunctions(learningMachine, target);
     

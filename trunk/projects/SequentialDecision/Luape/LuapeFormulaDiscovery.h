@@ -32,6 +32,10 @@ typedef ReferenceCountedObjectPtr<LuapeNodeSearchProblem> LuapeNodeSearchProblem
 
 //////////////////////////////////////////////////////////
 
+
+
+//////////////////////////////////////////////////////////
+
 class LuapeBanditFormulaSearchProblem : public LuapeNodeSearchProblem
 {
 public:
