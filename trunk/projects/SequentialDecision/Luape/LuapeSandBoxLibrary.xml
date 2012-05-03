@@ -106,10 +106,6 @@
 
   <!-- Luape Node Search --> 
   <class name="LuapeNodeSearchProblem" base="LuapeInference" abstract="yes"/>
-  <class name="LuapeBanditFormulaSearchProblem" base="LuapeNodeSearchProblem">
-    <variable type="BanditProblemSampler" name="problemSampler"/>
-    <variable type="PositiveInteger" name="horizon"/>
-  </class>
 
   <class name="LuapeNodeEquivalenceClass" base="Object">
     <variable type="ObjectVector[LuapeRPNSequence]" name="elements"/>
@@ -125,4 +121,16 @@
     <variable type="Boolean" name="useMultiThreading"/>
   </class>
   
+  <!-- Luape Search Problems -->
+  <class name="LuapeBanditFormulaSearchProblem" base="LuapeNodeSearchProblem">
+    <variable type="BanditProblemSampler" name="problemSampler"/>
+    <variable type="PositiveInteger" name="horizon"/>
+  </class>
+
+  <class name="LuapeLearningFormulaSearchProblem" base="LuapeNodeSearchProblem">
+    <variable type="File" name="dataFile"/>
+    <variable type="PositiveInteger" name="maxExamples"/>
+    <variable type="PositiveInteger" name="numTrainingExamples"/>
+  </class>
+
 </library>
