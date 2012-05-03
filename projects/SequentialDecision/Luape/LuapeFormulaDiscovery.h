@@ -10,6 +10,7 @@
 # define LBCPP_LUAPE_FORMULA_DISCOVERY_H_
 
 # include <lbcpp/Optimizer/BanditPool.h>
+# include <lbcpp/Execution/WorkUnit.h>
 # include "MCAlgorithm.h"
 # include "../GP/BanditFormulaSearchProblem.h"
 
@@ -29,191 +30,6 @@ public:
 };
 
 typedef ReferenceCountedObjectPtr<LuapeNodeSearchProblem> LuapeNodeSearchProblemPtr;
-
-//////////////////////////////////////////////////////////
-
-
-
-//////////////////////////////////////////////////////////
-
-class LuapeBanditFormulaSearchProblem : public LuapeNodeSearchProblem
-{
-public:
-  LuapeBanditFormulaSearchProblem(BanditProblemSamplerPtr problemSampler, size_t horizon)
-    : problemSampler(problemSampler), horizon(horizon)
-  {
-  }
-  LuapeBanditFormulaSearchProblem() : horizon(0) {}
-
-  virtual bool initializeProblem(ExecutionContext& context)
-  {
-    addConstant(1.0);
-    addConstant(2.0);
-    addConstant(3.0);
-    addConstant(5.0);
-    addConstant(7.0);
-
-    addInput(doubleType, "rk");
-    addInput(doubleType, "sk");
-    addInput(doubleType, "tk");
-    addInput(doubleType, "t");
-
-    addFunction(oppositeDoubleLuapeFunction());
-    addFunction(inverseDoubleLuapeFunction());
-    addFunction(sqrtDoubleLuapeFunction());
-    addFunction(logDoubleLuapeFunction());
-    addFunction(absDoubleLuapeFunction());
-
-    addFunction(addDoubleLuapeFunction());
-    addFunction(subDoubleLuapeFunction());
-    addFunction(mulDoubleLuapeFunction());
-    addFunction(divDoubleLuapeFunction());
-    addFunction(minDoubleLuapeFunction());
-    addFunction(maxDoubleLuapeFunction());
-
-    addTargetType(doubleType);
-
-    samplesCache = sampleInputs(context.getRandomGenerator());
-    return true;
-  }
-
-  virtual void getObjectiveRange(double& worst, double& best) const
-    {worst = (double)horizon; best = 0.0;}
-
-  virtual double computeObjective(ExecutionContext& context, const LuapeNodePtr& node, size_t instanceIndex)
-  {
-    const std::vector<SamplerPtr>& arms = getProblem(context, instanceIndex);
-    std::vector<double> expectedRewards(arms.size());
-    double bestRewardExpectation = 0.0;
-    double meanRewardExpectation = 0.0;
-    for (size_t i = 0; i < arms.size(); ++i)
-    {
-      double p = arms[i]->computeExpectation().getDouble();
-      if (p > bestRewardExpectation) 
-        bestRewardExpectation = p;
-      meanRewardExpectation += p;
-      expectedRewards[i] = p;
-    }
-    meanRewardExpectation /= arms.size();
-
-    DiscreteBanditStatePtr state = new DiscreteBanditState(arms);    
-    DiscreteBanditPolicyPtr policy = new Policy(refCountedPointerFromThis(this), node);
-    policy->initialize(arms.size());
-    double sumOfRewards = 0.0;
-    for (size_t timeStep = 1; timeStep <= horizon; ++timeStep)
-    {
-      size_t action = performBanditStep(context, state, policy);
-      sumOfRewards += expectedRewards[action];
-    }
-    return horizon * bestRewardExpectation - sumOfRewards;
-  }
-
-  virtual BinaryKeyPtr makeBinaryKey(ExecutionContext& context, const LuapeNodePtr& node) const
-  {
-    LuapeSampleVectorPtr samples = samplesCache->getSamples(context, node);
-    if (!samples)
-      return BinaryKeyPtr();
-
-    LuapeSampleVector::const_iterator it = samples->begin();
-    BinaryKeyPtr res = new BinaryKey(numBanditSamples * numArmsPerBanditSample);
-    for (size_t i = 0; i < numBanditSamples; ++i)
-    {
-      std::vector<std::pair<size_t, double> > values(numArmsPerBanditSample);
-      for (size_t j = 0; j < numArmsPerBanditSample; ++j)
-      {
-        double value = it.getRawDouble(); ++it;
-        if (value == doubleMissingValue)
-          return BinaryKeyPtr();
-        values[j] = std::make_pair(j, value);
-      }
-      std::sort(values.begin(), values.end(), ValueComparator());
-  
-      jassert(numArmsPerBanditSample <= 128);
-      for (size_t j = 0; j < numArmsPerBanditSample; ++j)
-      {
-        bool isHigherThanPrevious = (j > 0 && values[j].second > values[j-1].second);
-        res->pushByte((unsigned char)(values[j].first + (isHigherThanPrevious ? 128 : 0)));
-      }
-    }
-    return res;
-  }
-
-protected:
-  friend class LuapeBanditFormulaSearchProblemClass;
-
-  BanditProblemSamplerPtr problemSampler;
-  size_t horizon;
-
-private:
-  std::vector< std::vector<SamplerPtr> > problems;
-  LuapeSamplesCachePtr samplesCache;
-
-  enum {numBanditSamples = 100, numArmsPerBanditSample = 5};
-
-  LuapeSamplesCachePtr sampleInputs(RandomGeneratorPtr random) const
-  {
-    LuapeSamplesCachePtr res = createCache(numBanditSamples * numArmsPerBanditSample, 100); // 100 Mb cache
-
-    for (size_t i = 0; i < numBanditSamples; ++i)
-    {
-      double t = juce::jmax(1, (int)pow(10.0, random->sampleDouble(-0.1, 5)));
-      for (size_t j = 0; j < numArmsPerBanditSample; ++j)
-      {
-        DenseDoubleVectorPtr input = new DenseDoubleVector(4, 0.0);
-        input->setValue(0, juce::jlimit(0.0, 1.0, random->sampleDouble(-0.1, 1.1))); // rk1
-        input->setValue(1, juce::jlimit(0.0, 1.0, random->sampleDouble(-0.1, 1.1))); // sk1
-        input->setValue(2, juce::jlimit(1, (int)t, (int)(t * random->sampleDouble(-0.1, 1.1)))); // tk1
-        input->setValue(3, (double)t);
-        res->setInputObject(inputs, i * numArmsPerBanditSample + j, input);
-      }
-    }
-    return res;
-  }
-
-  struct ValueComparator
-  {
-    bool operator() (const std::pair<size_t, double>& left, const std::pair<size_t, double>& right) const
-      {return (fabs(left.second - right.second) > 1e-12 ? left.second < right.second : left.first < right.first);}
-  };
-
-  const std::vector<SamplerPtr>& getProblem(ExecutionContext& context, size_t index)
-  {
-    while (index >= problems.size())
-      problems.push_back(problemSampler->sampleArms(context.getRandomGenerator()));
-    return problems[index];
-  }
-
-  static size_t performBanditStep(ExecutionContext& context, DiscreteBanditStatePtr state, DiscreteBanditPolicyPtr policy)
-  {
-    size_t action = policy->selectNextBandit(context);
-    double reward;
-    state->performTransition(context, action, reward);
-    policy->updatePolicy(action, reward);
-    return action;
-  }
-
-  struct Policy : public IndexBasedDiscreteBanditPolicy
-  {
-    Policy(LuapeInferencePtr problem, LuapeNodePtr formula)
-      : problem(problem), formula(formula) {}
-
-    LuapeInferencePtr problem;
-    LuapeNodePtr formula;
-
-    virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
-    {
-      BanditStatisticsPtr arm = banditStatistics[banditNumber];
-      Variable input[4];
-      input[0] = arm->getRewardMean();
-      input[1] = arm->getRewardStandardDeviation();
-      input[2] = (double)arm->getPlayedCount();
-      input[3] = (double)timeStep;
-      return formula->compute(defaultExecutionContext(), input).toDouble();
-    }
-  };
-};
-
-//////////////////////////////////////////////////////////
 
 class LuapeNodeEquivalenceClass : public Object
 {
@@ -349,12 +165,17 @@ typedef ReferenceCountedObjectPtr<LuapeNodeEquivalenceClasses> LuapeNodeEquivale
 class LuapeFormulaDiscoverySandBox : public WorkUnit
 {
 public:
-  LuapeFormulaDiscoverySandBox() 
-    : problem(new LuapeBanditFormulaSearchProblem(new Setup1BanditProblemSampler(), 100)),
+  LuapeFormulaDiscoverySandBox() :
     complexity(5), explorationCoefficient(5.0), numIterations(100), numStepsPerIteration(100), useMultiThreading(false) {}
 
   virtual Variable run(ExecutionContext& context)
   {
+    if (!problem)
+    {
+      context.errorCallback(T("Missing problem"));
+      return false;
+    }
+
     if (!problem->initializeProblem(context))
       return false;
 
@@ -362,43 +183,58 @@ public:
     BanditPoolPtr pool = new BanditPool(new ObjectiveWrapper(problem), explorationCoefficient, false, useMultiThreading); 
 
     LuapeRPNSequencePtr subSequence = new LuapeRPNSequence();
-    for (size_t iteration = 0; iteration < numIterations; ++iteration)
+    bool cont = true;
+    for (size_t iteration = 0; iteration < numIterations && cont; ++iteration)
     {
       context.enterScope(T("Iteration ") + String((int)iteration+1) + T(", Subsequence: ") + subSequence->toShortString());
+      cont = doIteration(context, equivalenceClasses, pool, subSequence);
+      context.leaveScope();
+    }
+    return true;
+  }
 
-      context.enterScope(T("Enumerating candidates"));
-      std::vector<LuapeNodePtr> candidates;     
-      problem->enumerateNodesExhaustively(context, complexity, candidates, true, subSequence);
-      context.leaveScope(candidates.size());
-      
-      context.enterScope(T("Making equivalence classes"));
-      equivalenceClasses->add(context, candidates, problem, true, pool);
-      candidates.clear(); // free memory
-      context.leaveScope(equivalenceClasses->getNumClasses());
+protected:
+  friend class LuapeFormulaDiscoverySandBoxClass;
 
-      context.enterScope(T("Playing bandits"));
-      pool->playIterations(context, numStepsPerIteration, equivalenceClasses->getNumClasses());
+  LuapeNodeSearchProblemPtr problem;
+  size_t complexity;
+  double explorationCoefficient;
+  size_t numIterations;
+  size_t numStepsPerIteration;
+  bool useMultiThreading;
 
-      LuapeRPNSequencePtr newSubSequence = new LuapeRPNSequence();
-      for (size_t i = 0; i < subSequence->getLength(); ++i)
-      {
-        ObjectPtr bestSymbol = findBestSymbolCompletion(context, pool, newSubSequence);
-        if (bestSymbol == subSequence->getElement(i))
-          newSubSequence->append(bestSymbol);
-        else
-          break;
-      }
+  bool doIteration(ExecutionContext& context, LuapeNodeEquivalenceClassesPtr equivalenceClasses, BanditPoolPtr pool, LuapeRPNSequencePtr& subSequence)
+  {
+    context.enterScope(T("Enumerating candidates"));
+    std::vector<LuapeNodePtr> candidates;     
+    problem->enumerateNodesExhaustively(context, complexity, candidates, true, subSequence);
+    context.leaveScope(candidates.size());
+    
+    context.enterScope(T("Making equivalence classes"));
+    equivalenceClasses->add(context, candidates, problem, true, pool);
+    candidates.clear(); // free memory
+    context.leaveScope(equivalenceClasses->getNumClasses());
+
+    context.enterScope(T("Playing bandits"));
+    pool->playIterations(context, numStepsPerIteration, equivalenceClasses->getNumClasses());
+
+    LuapeRPNSequencePtr newSubSequence = new LuapeRPNSequence();
+    for (size_t i = 0; i < subSequence->getLength(); ++i)
+    {
       ObjectPtr bestSymbol = findBestSymbolCompletion(context, pool, newSubSequence);
-      if (bestSymbol)
+      if (bestSymbol == subSequence->getElement(i))
         newSubSequence->append(bestSymbol);
       else
-        break;
-      context.leaveScope();
-
-      context.leaveScope();
-
-      subSequence = newSubSequence;
+        return false;
     }
+    ObjectPtr bestSymbol = findBestSymbolCompletion(context, pool, newSubSequence);
+    if (bestSymbol)
+      newSubSequence->append(bestSymbol);
+    else
+      return false;
+
+    subSequence = newSubSequence;
+    context.leaveScope();
     return true;
   }
 
@@ -468,16 +304,6 @@ public:
     }
     return res;
   }
-
-protected:
-  friend class LuapeFormulaDiscoverySandBoxClass;
-
-  LuapeNodeSearchProblemPtr problem;
-  size_t complexity;
-  double explorationCoefficient;
-  size_t numIterations;
-  size_t numStepsPerIteration;
-  bool useMultiThreading;
 
   struct ObjectiveWrapper : public BanditPoolObjective
   {

@@ -19,6 +19,8 @@ class BinaryKey : public Object
 public:
   BinaryKey(size_t size)
     : values(size, 0), position(0), bitShift(1) {}
+  BinaryKey(const std::vector<unsigned char>& data)
+    : values(data), position(data.size()), bitShift(1) {}
   BinaryKey() {}
 
   virtual int compare(const ObjectPtr& otherObject) const
