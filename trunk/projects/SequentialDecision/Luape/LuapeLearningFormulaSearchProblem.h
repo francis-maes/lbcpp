@@ -18,7 +18,8 @@ namespace lbcpp
 class LuapeLearningFormulaSearchProblem : public LuapeNodeSearchProblem
 {
 public:
-  LuapeLearningFormulaSearchProblem() : maxExamples(0), numTrainingExamples(0) {}
+  LuapeLearningFormulaSearchProblem(const File& dataFile = File(), size_t maxExamples = 0, size_t numTrainingExamples = 0, bool isMultiPass = false)
+    : dataFile(dataFile), maxExamples(0), numTrainingExamples(0), isMultiPass(isMultiPass) {}
 
   struct Dataset
   {
@@ -46,6 +47,23 @@ public:
       }
       context.informationCallback(String((int)datasets.size()) + T(" datasets"));
       context.leaveScope(datasets.size());
+
+      ScalarVariableStatistics accStats;
+      for (size_t iter = 0; iter < 10; ++iter)
+        for (size_t i = 0; i < datasets.size(); ++i)
+        {
+          FunctionPtr function = libLinearClassifier(1.0, l2RegularizedLogisticRegression);
+          ContainerPtr data = datasets[i].data->randomize();
+          function->train(context, data->fold(0, 2));
+          ScoreObjectPtr score = function->evaluate(context, data->invFold(0, 2), classificationEvaluator());
+          if (score)
+          {
+            double accuracy = 1.0 - score->getScoreToMinimize();
+            accStats.push(accuracy);
+            context.informationCallback(T("Dataset ") + String((int)i) + T(" score = ") + String(accuracy));
+          }
+        }
+      context.informationCallback(T("Mean Score = ") + String(accStats.getMean()));
     }
     else
     {
@@ -56,6 +74,9 @@ public:
     }
 
     // setup search space
+    addConstant(0.001);
+    addConstant(0.01);
+    addConstant(0.1);
 
     addConstant(1.0);
     addConstant(2.0);
@@ -68,6 +89,16 @@ public:
     addInput(doubleType, "sigma[f]");
     addInput(doubleType, "mu[f|c]");
     addInput(doubleType, "sigma[f|c]");
+    if (isMultiPass)
+    {
+      addInput(doubleType, "prevparam");
+      addInput(doubleType, "p[correct|c]");
+      addInput(doubleType, "mu[f|c,correct]");
+      addInput(doubleType, "sigma[f|c,correct]");
+      addInput(doubleType, "mu[f|c,error]");
+      addInput(doubleType, "sigma[f|c,error]");
+      addInput(doubleType, "grad[f|c]");
+    }
 
     addFunction(oppositeDoubleLuapeFunction());
     addFunction(inverseDoubleLuapeFunction());
@@ -84,7 +115,10 @@ public:
 
     addTargetType(doubleType);
 
-    samplesCache = makeInputs(datasets[0], datasets[0].data); // used in the key computation, that is only based on the first dataset
+    DenseDoubleVectorPtr currentParameters;
+    if (isMultiPass)
+      currentParameters = makeInitialParameters(datasets[0], datasets[0].data);
+    samplesCache = makeInputs(context, datasets[0], datasets[0].data, currentParameters); // used in the key computation, that is only based on the first dataset
     return true;
   }
 
@@ -94,7 +128,11 @@ public:
   struct FeatureInfo
   {
     FeatureInfo(size_t numLabels)
-      {perLabel.resize(numLabels);}
+    {
+      perLabel.resize(numLabels);
+      perLabelCorrect.resize(numLabels);
+      perLabelError.resize(numLabels);
+    }
 
     void observe(double value, size_t label)
     {
@@ -102,11 +140,43 @@ public:
       perLabel[label].push(value);
     }
 
+    void observe(double value, size_t label, bool isCorrectlyClassified)
+    {
+      observe(value, label);
+      if (isCorrectlyClassified)
+      {
+        correct.push(value);
+        perLabelCorrect[label].push(value);
+      }
+      else
+      {
+        error.push(value);
+        perLabelError[label].push(value);
+      }
+    }
+
     ScalarVariableStatistics overall;
+    ScalarVariableStatistics correct;
+    ScalarVariableStatistics error;
     std::vector<ScalarVariableStatistics> perLabel;
+    std::vector<ScalarVariableStatistics> perLabelCorrect;
+    std::vector<ScalarVariableStatistics> perLabelError;
   };
 
 
+  DenseDoubleVectorPtr computeParameters(ExecutionContext& context, LuapeSamplesCachePtr samples, const LuapeNodePtr& node)
+  {
+    // compute parameters using formula
+    DenseDoubleVectorPtr parameters = samples->getSamples(context, node)->getVector().staticCast<DenseDoubleVector>();
+    if (parameters)
+    {
+      // clean missing values
+      for (size_t i = 0; i < parameters->getNumValues(); ++i)
+        if (parameters->getValue(i) == doubleMissingValue)
+          parameters->setValue(i, 0.0);
+    }
+    return parameters;
+  }
 
   virtual double computeObjective(ExecutionContext& context, const LuapeNodePtr& node, size_t instanceIndex)
   {
@@ -120,39 +190,30 @@ public:
     size_t numTrain = this->numTrainingExamples ? this->numTrainingExamples : data->getNumElements() / 2;
     ContainerPtr trainingData = data->range(0, numTrain);
     ContainerPtr testingData = data->invRange(0, numTrain);
-
-    // make samples and predictions
-    LuapeSamplesCachePtr samples = makeInputs(dataset, trainingData);
-    DenseDoubleVectorPtr parameters = samples->getSamples(context, node)->getVector().staticCast<DenseDoubleVector>();
-    if (!parameters) // constant value
-      return 0.0;
-
-    // clean missing values
-    for (size_t i = 0; i < parameters->getNumValues(); ++i)
-      if (parameters->getValue(i) == doubleMissingValue)
-        parameters->setValue(i, 0.0);
-
-    /* set parameter values
-    size_t index = 0;
-    size_t numLabels = labels->getNumElements();
-    size_t numFeatures = DoubleVector::getElementsEnumeration(this->doubleVectorClass)->getNumElements();
-    std::vector<DenseDoubleVectorPtr> parameters(numLabels);
-    for (size_t i = 0; i < numLabels; ++i)
+    
+    double testAccuracy;
+    if (isMultiPass)
     {
-      DenseDoubleVectorPtr params = new DenseDoubleVector(this->doubleVectorClass);
-      for (size_t j = 0; j < numFeatures; ++j)
+      DenseDoubleVectorPtr currentParameters = new DenseDoubleVector(dataset.labels->getNumElements() * dataset.numFeatures, 0.0);// makeInitialParameters(dataset, trainingData);
+      //for (size_t i = 0; i < currentParameters->getNumValues(); ++i)
+      //  currentParameters->setValue(i, context.getRandomGenerator()->sampleDoubleFromGaussian());
+      for (size_t i = 0; i < 5; ++i)
       {
-        double pred = predictions->getValue(index++);
-        if (pred == doubleMissingValue)
-          pred = 0.0;
-        params->setValue(j, pred);
+        LuapeSamplesCachePtr samples = makeInputs(context, dataset, trainingData, currentParameters);
+        currentParameters = computeParameters(context, samples, node);
+        //double trainAccuracy = evaluateAccuracy(context, dataset, trainingData, currentParameters);
+        //testAccuracy = evaluateAccuracy(context, dataset, testingData, currentParameters);
+        //context.informationCallback(T("i=") + String((int)i) + T(" Train: ") + String(trainAccuracy * 100, 2) + T("% Test: ") + String(testAccuracy * 100, 2) + T("%"));
       }
-      parameters[i] = params;
-    }*/
+      testAccuracy = evaluateAccuracy(context, dataset, testingData, currentParameters);
+    }
+    else
+    {
+      LuapeSamplesCachePtr samples = makeInputs(context, dataset, trainingData);
+      DenseDoubleVectorPtr parameters = computeParameters(context, samples, node);
+      testAccuracy = evaluateAccuracy(context, dataset, testingData, parameters);
+    }
 
-    //double trainAccuracy = evaluateAccuracy(context, dataset, trainingData, parameters);
-    double testAccuracy = evaluateAccuracy(context, dataset, testingData, parameters);
-    //context.informationCallback(T("Train: ") + String(trainAccuracy * 100, 2) + T("% Test: ") + String(testAccuracy * 100, 2) + T("%"));
     return testAccuracy;
   } 
 
@@ -247,7 +308,7 @@ protected:
   File dataFile;
   size_t maxExamples;
   size_t numTrainingExamples;
-
+  bool isMultiPass;
 
   std::vector<Dataset> datasets;
   LuapeSamplesCachePtr samplesCache;
@@ -288,6 +349,14 @@ protected:
       DefaultEnumerationPtr features = new DefaultEnumeration(T("features"));
       TextParserPtr parser = classificationLibSVMDataParser(context, file, features, labels);
       res = parser->load(maxExamples);
+      /*for (size_t i = 0; i < res->getNumElements(); ++i)
+      {
+        PairPtr example = res->getElement(i).getObjectAndCast<Pair>();
+        SparseDoubleVectorPtr features = example->getFirst().getObjectAndCast<SparseDoubleVector>();
+        std::vector<std::pair<size_t, double> >& values = features->getValuesVector();
+        for (size_t j = 0; j < values.size(); ++j)
+          values[j].second = values[j].second * 2 - 1; // TMP! bring into [0,1]
+      }*/
     }
 
     if (res && !res->getNumElements())
@@ -325,18 +394,49 @@ protected:
     }
     return res;
   }
-  
-  LuapeSamplesCachePtr makeInputs(Dataset& dataset, ContainerPtr data) const
+
+  DenseDoubleVectorPtr makeInitialParameters(Dataset& dataset, ContainerPtr data) const
   {
+    size_t numLabels = dataset.labels->getNumElements();
+    std::vector<FeatureInfo> featureInfos(dataset.numFeatures, FeatureInfo(numLabels));
+    size_t n = data->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      PairPtr example = data->getElement(i).getObjectAndCast<Pair>();
+      DenseDoubleVectorPtr features = example->getFirst().getObjectAndCast<DoubleVector>()->toDenseDoubleVector();
+      size_t label = (size_t)example->getSecond().getInteger();
+      jassert(features->getNumValues() == dataset.numFeatures);
+      for (size_t j = 0; j < dataset.numFeatures; ++j)
+        featureInfos[j].observe(features->getValue(j), label);
+    }
+
+    DenseDoubleVectorPtr res = new DenseDoubleVector(numLabels * dataset.numFeatures, 0.0);
+    size_t index = 0;
+    for (size_t i = 0; i < numLabels; ++i)
+    {
+      for (size_t j = 0; j < dataset.numFeatures; ++j)
+      {
+        ScalarVariableStatistics& stats = featureInfos[j].perLabel[i];
+        res->setValue(index++, stats.getMean() - stats.getStandardDeviation());
+      }
+    }
+    return res;
+  }
+  
+  LuapeSamplesCachePtr makeInputs(ExecutionContext& context, Dataset& dataset, ContainerPtr data, DenseDoubleVectorPtr currentParameters = DenseDoubleVectorPtr()) const
+  {
+    jassert(!isMultiPass || currentParameters);
+
     size_t numLabels = dataset.labels->getNumElements();
     
     LuapeSamplesCachePtr res = createCache(numLabels * dataset.numFeatures, 100);
 
     // compute statistics
     std::vector<FeatureInfo> featureInfos(dataset.numFeatures, FeatureInfo(numLabels));
-    size_t n = data->getNumElements();
+    size_t numExamples = data->getNumElements();
     DenseDoubleVectorPtr classFrequencies = new DenseDoubleVector(dataset.labels, probabilityType);
-    for (size_t i = 0; i < n; ++i)
+    DenseDoubleVectorPtr gradient = new DenseDoubleVector(numLabels * dataset.numFeatures, 0.0);
+    for (size_t i = 0; i < numExamples; ++i)
     {
       PairPtr example = data->getElement(i).getObjectAndCast<Pair>();
       DenseDoubleVectorPtr features = example->getFirst().getObjectAndCast<DoubleVector>()->toDenseDoubleVector();
@@ -344,10 +444,38 @@ protected:
 
       classFrequencies->incrementValue(label, 1.0);
       jassert(features->getNumValues() == dataset.numFeatures);
+
+      bool correctlyClassified = false;
+      if (isMultiPass)
+      {
+        jassert(currentParameters);
+        std::vector<size_t> predictions = getPredictedLabels(dataset, currentParameters, features);
+        size_t prediction = 0;
+        if (predictions.empty())
+          correctlyClassified = false;
+        else
+        {
+          prediction = predictions[context.getRandomGenerator()->sampleSize(predictions.size())];
+          correctlyClassified = (label == prediction);
+        }
+
+        if (!correctlyClassified)
+        {
+          features->addWeightedTo(gradient, label * dataset.numFeatures, 1.0 / numExamples);
+          features->addWeightedTo(gradient, prediction * dataset.numFeatures, -1.0 / numExamples);
+        }
+        //(prediction.size() == 1 && *prediction.begin() == label);
+      }
+
       for (size_t j = 0; j < dataset.numFeatures; ++j)
-        featureInfos[j].observe(features->getValue(j), label);
+      {
+        if (isMultiPass)
+          featureInfos[j].observe(features->getValue(j), label, correctlyClassified);
+        else
+          featureInfos[j].observe(features->getValue(j), label);
+      }
     }
-    classFrequencies->multiplyByScalar(1.0 / (double)n);
+    classFrequencies->multiplyByScalar(1.0 / (double)numExamples);
 
     // create prediction problems
     size_t index = 0;
@@ -357,16 +485,77 @@ protected:
       for (size_t j = 0; j < dataset.numFeatures; ++j)
       {
         FeatureInfo& info = featureInfos[j];
-        DenseDoubleVectorPtr variables = new DenseDoubleVector(5, 0.0);
+        DenseDoubleVectorPtr variables = new DenseDoubleVector(getNumInputs(), 0.0);
         variables->setValue(0, classFrequency);
         variables->setValue(1, info.overall.getMean());
         variables->setValue(2, info.overall.getStandardDeviation());
         variables->setValue(3, info.perLabel[i].getMean());
         variables->setValue(4, info.perLabel[i].getStandardDeviation());
+        if (isMultiPass)
+        {
+          variables->setValue(5, currentParameters->getValue(index)); // current parameter
+          variables->setValue(6, info.perLabelCorrect[i].getCount() / data->getNumElements());
+          variables->setValue(7, info.perLabelCorrect[i].getMean());
+          variables->setValue(8, info.perLabelCorrect[i].getStandardDeviation());
+          variables->setValue(9, info.perLabelError[i].getMean());
+          variables->setValue(10, info.perLabelError[i].getStandardDeviation());
+          variables->setValue(11, gradient->getValue(index));
+        }
         res->setInputObject(inputs, index++, variables);
       }
     }
     return res;
+  }
+};
+
+class LearningFormulaDiscoverySandBox : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    LuapeNodeSearchProblemPtr problem = new LuapeLearningFormulaSearchProblem(context.getFile("libsvmdata"), 0, 0, true);
+    if (!problem->initializeProblem(context))
+      return false;
+
+    LuapeUniversePtr universe = problem->getUniverse();
+/*
+    for (size_t i = 0; i < problem->getNumInputs(); ++i)
+    {
+      LuapeNodePtr node = problem->getInput(i);
+      context.informationCallback(T("Score of ") + node->toShortString() + T(": ") + String(evaluate(context, problem, node)));
+    }*/
+
+    context.enterScope(T("Curve"));
+    for (double C = -5.0; C <= 5.0; C += 0.2)
+    {
+      context.enterScope(T("C = ") + String(C));
+      LuapeNodePtr node = new LuapeFunctionNode(addDoubleLuapeFunction(), problem->getInput(5), 
+        new LuapeFunctionNode(mulDoubleLuapeFunction(), new LuapeConstantNode(pow(10.0, C)), problem->getInput(11)));
+        //new LuapeFunctionNode(mulDoubleLuapeFunction(), problem->getInput(9), 
+        //  new LuapeFunctionNode(subDoubleLuapeFunction(), new LuapeConstantNode(1.0), problem->getInput(6)))));
+      context.resultCallback(T("C"), C);
+      context.resultCallback(T("score"), evaluate(context, problem, node));
+/*
+      for (double P = 1.0 / 32.0; P <= 1.0; P *= 2.0)
+      {
+        LuapeNodePtr node = new LuapeFunctionNode(addDoubleLuapeFunction(), problem->getInput(3), 
+          new LuapeFunctionNode(mulDoubleLuapeFunction(), new LuapeConstantNode(C / P), 
+            new LuapeFunctionNode(powDoubleLuapeFunction(), problem->getInput(4), new LuapeConstantNode(P))));
+        context.resultCallback(T("scoreP=") + String(P), evaluate(context, problem, node));
+      }
+*/
+      context.leaveScope();
+    }
+    return true;
+  }
+
+  double evaluate(ExecutionContext& context, LuapeNodeSearchProblemPtr problem, const LuapeNodePtr& node)
+  {
+    static const size_t precision = 100;
+    double res = 0.0;
+    for (size_t i = 0; i < precision; ++i)
+      res += problem->computeObjective(context, node, i);
+    return res / precision;
   }
 };
 

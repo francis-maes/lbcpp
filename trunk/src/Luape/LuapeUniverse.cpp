@@ -57,6 +57,16 @@ LuapeNodePtr LuapeUniverse::makeFunctionNode(const LuapeFunctionPtr& function, c
   else
     return it->second;
 }
+LuapeNodePtr LuapeUniverse::makeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& input)
+  {return makeFunctionNode(function, std::vector<LuapeNodePtr>(1, input));}
+
+LuapeNodePtr LuapeUniverse::makeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& input1, const LuapeNodePtr& input2)
+{
+  std::vector<LuapeNodePtr> inputs(2);
+  inputs[0] = input1;
+  inputs[1] = input2;
+  return makeFunctionNode(function, inputs);
+}
 
 void LuapeUniverse::observeNodeComputingTime(const LuapeNodePtr& node, size_t numInstances, double timeInMilliseconds)
 {

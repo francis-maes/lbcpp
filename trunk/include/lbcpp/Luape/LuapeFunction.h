@@ -78,6 +78,7 @@ extern LuapeFunctionPtr addDoubleLuapeFunction();
 extern LuapeFunctionPtr subDoubleLuapeFunction();
 extern LuapeFunctionPtr mulDoubleLuapeFunction();
 extern LuapeFunctionPtr divDoubleLuapeFunction();
+extern LuapeFunctionPtr powDoubleLuapeFunction();
 
 extern LuapeFunctionPtr minDoubleLuapeFunction();
 extern LuapeFunctionPtr maxDoubleLuapeFunction();

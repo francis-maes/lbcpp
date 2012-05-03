@@ -168,6 +168,9 @@ public:
     }
     return new LuapeSampleVector(inputs[0]->getIndices(), res);
   }
+
+  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+    {return "(" + inputs[0]->toShortString() + " " + toShortString() + " " + inputs[1]->toShortString() + ")";}
 };
 
 class AddDoubleLuapeFunction : public BinaryDoubleLuapeFunction
@@ -175,9 +178,6 @@ class AddDoubleLuapeFunction : public BinaryDoubleLuapeFunction
 public:
   virtual String toShortString() const
     {return "+";}
-
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
-    {return "(" + inputs[0]->toShortString() + " + " + inputs[1]->toShortString() + ")";}
 
   virtual double computeDouble(double first, double second) const
     {return first + second;}
@@ -192,9 +192,6 @@ public:
   virtual String toShortString() const
     {return "-";}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
-    {return "(" + inputs[0]->toShortString() + " - " + inputs[1]->toShortString() + ")";}
-
   virtual double computeDouble(double first, double second) const
     {return first - second;}
 
@@ -207,9 +204,6 @@ class MulDoubleLuapeFunction : public BinaryDoubleLuapeFunction
 public:
   virtual String toShortString() const
     {return "*";}
-
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
-    {return "(" + inputs[0]->toShortString() + " * " + inputs[1]->toShortString() + ")";}
 
   virtual double computeDouble(double first, double second) const
     {return first * second;}
@@ -224,14 +218,21 @@ public:
   virtual String toShortString() const
     {return "/";}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
-    {return "(" + inputs[0]->toShortString() + " / " + inputs[1]->toShortString() + ")";}
-
   virtual double computeDouble(double first, double second) const
     {return second ? first / second : doubleMissingValue;}
 
   virtual Flags getFlags() const
     {return (Flags)allSameArgIrrelevantFlag;}
+};
+
+class PowDoubleLuapeFunction : public BinaryDoubleLuapeFunction
+{
+public:
+  virtual String toShortString() const
+    {return "^";}
+
+  virtual double computeDouble(double first, double second) const
+    {return first || second ? std::pow(first, second) : doubleMissingValue;}
 };
 
 class MinDoubleLuapeFunction : public BinaryDoubleLuapeFunction
