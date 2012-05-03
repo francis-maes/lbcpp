@@ -131,6 +131,8 @@
     <variable type="File" name="dataFile"/>
     <variable type="PositiveInteger" name="maxExamples"/>
     <variable type="PositiveInteger" name="numTrainingExamples"/>
+    <variable type="Boolean" name="isMultiPass"/>
   </class>
-
+  <class name="LearningFormulaDiscoverySandBox" base="WorkUnit"/>
+  
 </library>
