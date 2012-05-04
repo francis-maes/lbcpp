@@ -162,10 +162,10 @@ class BinaryClassificationLibSVMDataParser : public LibSVMDataParser
 {
 public:
   BinaryClassificationLibSVMDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features)
-    : LibSVMDataParser(context, file), features(features)
+    : LibSVMDataParser(context, file), features(features), numPositives(0), numNegatives(0)
     {elementsType = pairClass(sparseDoubleVectorClass(features), booleanType);}
 
-  BinaryClassificationLibSVMDataParser() {}
+  BinaryClassificationLibSVMDataParser() : numPositives(0), numNegatives(0) {}
 
   virtual TypePtr getElementsType() const
     {return elementsType;}
@@ -182,10 +182,22 @@ public:
     setResult(new Pair(elementsType, featuresVector, supervision));
     return true;
   }
+  
+  virtual bool parseEnd()
+  {
+    if (numPositives == 0 || numNegatives == 0)
+    {
+      context.errorCallback(T("All examples have same label"));
+      return false;
+    }
+    return LibSVMDataParser::parseEnd();
+  }
 
 private:
   DefaultEnumerationPtr features;
   TypePtr elementsType;
+
+  size_t numPositives, numNegatives;
 };
 
 class ClassificationLibSVMDataParser : public LibSVMDataParser

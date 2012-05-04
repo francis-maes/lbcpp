@@ -121,12 +121,13 @@
     <variable type="Boolean" name="useMultiThreading"/>
   </class>
   
-  <!-- Luape Search Problems -->
+  <!-- Luape Search Problem : Bandit Formula -->
   <class name="LuapeBanditFormulaSearchProblem" base="LuapeNodeSearchProblem">
     <variable type="BanditProblemSampler" name="problemSampler"/>
     <variable type="PositiveInteger" name="horizon"/>
   </class>
 
+  <!-- Luape Search Problem : Learning Formula 1 (Iterative scheme for linear learning with dense continuous features) -->
   <class name="LuapeLearningFormulaSearchProblem" base="LuapeNodeSearchProblem">
     <variable type="File" name="dataFile"/>
     <variable type="PositiveInteger" name="maxExamples"/>
@@ -134,5 +135,32 @@
     <variable type="Boolean" name="isMultiPass"/>
   </class>
   <class name="LearningFormulaDiscoverySandBox" base="WorkUnit"/>
-  
+
+  <!-- Luape Search Problem : Learning Formula 2 (Search for the form of a binary classifier with dense continuous features) -->
+  <class name="BinaryClassificationFormulaSearchProblem" base="LuapeNodeSearchProblem" abstract="yes">
+    <variable type="File" name="dataFile"/>
+    <variable type="PositiveInteger" name="numExamples"/>
+  </class>
+
+  <class name="SimpleContinuousFeatureInformation">
+    <variable type="EmpiricalContinuousDistribution" name="all"/>
+    <variable type="EmpiricalContinuousDistribution" name="pos"/>
+    <variable type="EmpiricalContinuousDistribution" name="neg"/>
+  </class>
+
+  <class name="SimpleContinuousFeatureBCFSP" base="BinaryClassificationFormulaSearchProblem"/>
+
+
+  <!-- EmpiricalContinuousDistribution -->
+  <class name="EmpiricalContinuousDistribution"/>
+  <class name="EmpiricalContinuousDistributionLuapeAccessor" base="LuapeFunction" abstract="yes"/>
+  <class name="EmpiricalContinuousDistributionNumSamplesFunction" base="EmpiricalContinuousDistributionLuapeAccessor"/>
+  <class name="EmpiricalContinuousDistributionMeanFunction" base="EmpiricalContinuousDistributionLuapeAccessor"/>
+  <class name="EmpiricalContinuousDistributionSquaresMeanFunction" base="EmpiricalContinuousDistributionLuapeAccessor"/>
+  <class name="EmpiricalContinuousDistributionVarianceFunction" base="EmpiricalContinuousDistributionLuapeAccessor"/>
+  <class name="EmpiricalContinuousDistributionStandardDeviationFunction" base="EmpiricalContinuousDistributionLuapeAccessor"/>
+  <class name="EmpiricalContinuousDistributionMinimumFunction" base="EmpiricalContinuousDistributionLuapeAccessor"/>
+  <class name="EmpiricalContinuousDistributionMaximumFunction" base="EmpiricalContinuousDistributionLuapeAccessor"/>
+  <class name="EmpiricalContinuousDistributionMedianFunction" base="EmpiricalContinuousDistributionLuapeAccessor"/>
+
 </library>
