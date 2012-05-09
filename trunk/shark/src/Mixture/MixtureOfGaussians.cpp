@@ -50,7 +50,7 @@
 #include <Mixture/MixtureOfGaussians.h>
 
 #ifdef __STDC__
-extern "C" double erf(double) throw();
+//extern "C" double erf(double) throw();
 #endif
 
 #ifdef _WIN32 // !!!
