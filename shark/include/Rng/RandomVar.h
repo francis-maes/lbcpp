@@ -105,7 +105,7 @@ public:
 	//! in the derived classes, because the probability of the
 	//! parameter depends on the type of distribution given by
 	//! the type of random number generator used.
-	virtual double p(const T&) const = 0;
+	virtual double p(const T&) const {}
 
 
 	//========================================================================
