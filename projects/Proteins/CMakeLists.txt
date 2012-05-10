@@ -283,11 +283,13 @@ ELSE(WIN32)
     
     # Mac
     INCLUDE_DIRECTORIES(
-      /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/src
-      /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/src/platform/macos
-      /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/external/boost_1_38_0
+      /Users/alex/Documents/docwork/lbcpp_work/rosetta3.2-src/rosetta_source/src
+      /Users/alex/Documents/docwork/lbcpp_work/rosetta3.2-src/rosetta_source/src/platform/macos
+      /Users/alex/Documents/docwork/lbcpp_work/rosetta3.2-src/rosetta_source/external/boost_1_38_0
     )
-    SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/build/src/${ROSETTA_BUILD_TYPE}/macos/10.6/64/x86/gcc)
+    
+    # SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/build/src/${ROSETTA_BUILD_TYPE}/macos/10.6/64/x86/gcc)
+    SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE /Users/alex/Documents/docwork/lbcpp_work/rosetta3.2-src/rosetta_source/build/src/${ROSETTA_BUILD_TYPE}/macos/11.3/64/x86/gcc)
     SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE}/libcore.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE}/libutility.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE}/libnumeric.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE}/libObjexxFCL.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE}/libprotocols.dylib)
     
   ELSE(APPLE)
