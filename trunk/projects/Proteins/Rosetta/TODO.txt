@@ -1,6 +1,16 @@
 TODO LBCPP
 ==========
 
+- tester si probleme survient avec beaucoup de DumbWorkUnit en meme temps
+- sinon creer fonction afin de loader les fichiers et puis supprimer les File crees
+
+
+
+
+
+
+
+
 General
 -------
 - retirer les ifdef LBCPP_PROTEIN_ROSETTA

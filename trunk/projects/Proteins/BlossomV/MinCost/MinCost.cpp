@@ -254,19 +254,19 @@ template <typename CostType>
 template <typename CostType> 
 	void DualMinCost<CostType>::SetLowerBound(NodeId i, CostType cmin)
 {
-	AddEdge(i, source, FLOW_INFTY, 0, -cmin);
+	this->AddEdge(i, source, FLOW_INFTY, 0, -cmin);
 }
 
 template <typename CostType> 
 	void DualMinCost<CostType>::SetUpperBound(NodeId i, CostType cmax)
 {
-	AddEdge(source, i, FLOW_INFTY, 0, cmax);
+  this->AddEdge(source, i, FLOW_INFTY, 0, cmax);
 }
 
 template <typename CostType> 
 	void DualMinCost<CostType>::AddConstraint(NodeId i, NodeId j, CostType cmax)
 {
-	AddEdge(i, j, FLOW_INFTY, 0, cmax);
+  this->AddEdge(i, j, FLOW_INFTY, 0, cmax);
 }
 
 template <typename CostType> 
