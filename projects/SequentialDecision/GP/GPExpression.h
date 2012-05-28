@@ -205,7 +205,7 @@ class BinaryGPExpression : public GPExpression
 {
 public:
   BinaryGPExpression(GPExpressionPtr left, GPOperator op, GPExpressionPtr right);
-  BinaryGPExpression() {}
+  BinaryGPExpression() : op(gpAddition) {}
 
   virtual size_t size() const
     {return left->size() + 1 + right->size();}

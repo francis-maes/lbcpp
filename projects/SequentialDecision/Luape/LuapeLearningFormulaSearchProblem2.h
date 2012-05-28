@@ -23,7 +23,7 @@ public:
     : dataFile(dataFile) {}
 
   virtual ClassPtr getFeatureInformationClass() const = 0;
-  virtual void makeFeatureInformations(const ContainerPtr& data, size_t numFeatures, std::vector<ObjectPtr>& res) const = 0;
+  virtual void makeFeatureInformations(const ContainerPtr& data, size_t numFeatures, std::vector< std::pair<ObjectPtr, ObjectPtr> >& res) const = 0;
   virtual void createActiveVariables(ExecutionContext& context) = 0;
  
   struct Dataset
@@ -147,10 +147,13 @@ public:
       DenseDoubleVectorPtr features = example->getFirst().getObjectAndCast<DoubleVector>()->toDenseDoubleVector();
       bool supervision = example->getSecond().getBoolean();
       
-      double score = 0.0;
+      double score1 = 0.0, score2 = 0.0;
       for (size_t j = 0; j < dataset.numFeatures; ++j)
-        score += activations->getValue(index++);
-      bool prediction = (score > 0);
+      {
+        score1 += activations->getValue(index++);
+        score2 += activations->getValue(index++);
+      }
+      bool prediction = (score1 > score2);
 
       if (supervision == prediction)
         ++numCorrect;
@@ -171,7 +174,7 @@ public:
 
   virtual BinaryKeyPtr makeBinaryKey(ExecutionContext& context, const LuapeNodePtr& node) const
   {
-    if (!useNode(node, getInput(0)) || !useNode(node, getInput(1)))
+    if (!useNode(node, getInput(1)))
       return BinaryKeyPtr();
 
     DenseDoubleVectorPtr activations = samplesCache->getSamples(context, node)->getVector().staticCast<DenseDoubleVector>();
@@ -185,15 +188,19 @@ public:
     size_t index = 0;
     for (size_t i = 0; i < numExamples; ++i)
     {
-      double score = 0.0;
+      double score1 = 0.0, score2 = 0.0;
       for (size_t j = 0; j < numFeatures; ++j)
       {
         double activation = activations->getValue(index++);
         if (activation == doubleMissingValue)
           return BinaryKeyPtr();
-        score += activation;
+        score1 += activation;
+        activation = activations->getValue(index++);
+        if (activation == doubleMissingValue)
+          return BinaryKeyPtr();
+        score2 += activation;
       }
-      res->pushBit(score > 0);
+      res->pushBit(score1 > score2);
     }
     return res;
   }
@@ -239,12 +246,12 @@ protected:
   LuapeSamplesCachePtr makeSamples(ExecutionContext& context, Dataset& dataset, const ContainerPtr& trainingData, const ContainerPtr& testingData)
   {
     // make feature informations based on training data
-    std::vector<ObjectPtr> featureInformations;
+    std::vector< std::pair<ObjectPtr, ObjectPtr> > featureInformations;
     makeFeatureInformations(trainingData, dataset.numFeatures, featureInformations);
 
     // make samples cache based on testing data
     size_t numTestExamples = testingData->getNumElements();
-    LuapeSamplesCachePtr res = createCache(numTestExamples * dataset.numFeatures, 100);
+    LuapeSamplesCachePtr res = createCache(2 * numTestExamples * dataset.numFeatures, 100);
     ClassPtr exampleType = pairClass(getFeatureInformationClass(), doubleType);
     size_t index = 0;
     for (size_t i = 0; i < numTestExamples; ++i)
@@ -254,9 +261,11 @@ protected:
       for (size_t j = 0; j < dataset.numFeatures; ++j)
       {
         VariableVectorPtr input = new VariableVector(3);
-        input->setElement(0, featureInformations[j]);
+        input->setElement(0, featureInformations[j].first);
         input->setElement(1, features->getValue(j));
         input->setElement(2, (double)dataset.numFeatures);
+        res->setInputObject(inputs, index++, input);
+        input->setElement(0, featureInformations[j].second);
         res->setInputObject(inputs, index++, input);
       }
     }
@@ -288,6 +297,9 @@ public:
     pos(new EmpiricalContinuousDistribution()),
     neg(new EmpiricalContinuousDistribution()) {}
 
+  SimpleContinuousFeatureInformation(EmpiricalContinuousDistributionPtr all, EmpiricalContinuousDistributionPtr pos, EmpiricalContinuousDistributionPtr neg)
+    : all(all), pos(pos), neg(neg) {}
+
   void observe(double value, bool isPositive)
   {
     all->observe(value);
@@ -316,13 +328,17 @@ public:
   virtual ClassPtr getFeatureInformationClass() const
     {return simpleContinuousFeatureInformationClass;}
 
-  virtual void makeFeatureInformations(const ContainerPtr& data, size_t numFeatures, std::vector<ObjectPtr>& res) const
+  virtual void makeFeatureInformations(const ContainerPtr& data, size_t numFeatures, std::vector< std::pair<ObjectPtr, ObjectPtr> >& res) const
   {
     res.resize(numFeatures);
     size_t numExamples = data->getNumElements();
     res.resize(numFeatures);
     for (size_t i = 0; i < numFeatures; ++i)
-      res[i] = new SimpleContinuousFeatureInformation();
+    {
+      SimpleContinuousFeatureInformationPtr info = new SimpleContinuousFeatureInformation();
+      res[i].first = info;
+      res[i].second = new SimpleContinuousFeatureInformation(info->all, info->neg, info->pos);
+    }
 
     for (size_t i = 0; i < numExamples; ++i)
     {
@@ -331,7 +347,7 @@ public:
       bool isPositive = example->getSecond().getBoolean();
 
       for (size_t j = 0; j < numFeatures; ++j)
-        res[j].staticCast<SimpleContinuousFeatureInformation>()->observe(features->getValue(j), isPositive);
+        res[j].first.staticCast<SimpleContinuousFeatureInformation>()->observe(features->getValue(j), isPositive);
     }
   }
 

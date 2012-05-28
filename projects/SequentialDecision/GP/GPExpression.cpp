@@ -194,7 +194,7 @@ String VariableGPExpression::toString() const
   {return T("V(") + Variable(index, enumeration).toString() + T(")");}
 
 String VariableGPExpression::toShortString() const
-  {return enumeration ? Variable(index, enumeration).toShortString() : T("v") + String((int)index);}
+  {return enumeration && enumeration != positiveIntegerEnumerationEnumeration ? Variable(index, enumeration).toShortString() : T("v") + String((int)index);}
 
 int VariableGPExpression::compare(const ObjectPtr& other) const
 {

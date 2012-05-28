@@ -461,12 +461,12 @@ protected:
 class BanditFormulaSearch : public WorkUnit
 {
 public:
-  BanditFormulaSearch() : numTimeSteps(100000), minHorizon(10), maxHorizon(10000) {}
+  BanditFormulaSearch() : numTimeSteps(100000), minHorizon(10), maxHorizon(10000), verbose(false) {}
 
   struct Run : public WorkUnit
   {
-    Run(const std::vector<GPExpressionPtr>& formulas, FunctionPtr objective, size_t numTimeSteps, const String& description, const File& outputFile, double C)
-      : formulas(formulas), objective(objective), numTimeSteps(numTimeSteps), description(description), outputFile(outputFile), C(C) {}
+    Run(const std::vector<GPExpressionPtr>& formulas, FunctionPtr objective, size_t numTimeSteps, const String& description, const File& outputFile, double C, bool verbose)
+      : formulas(formulas), objective(objective), numTimeSteps(numTimeSteps), description(description), outputFile(outputFile), C(C), verbose(verbose) {}
 
     virtual String toShortString() const
       {return description;}
@@ -500,6 +500,7 @@ public:
     String description;
     File outputFile;
     double C;
+    bool verbose;
   };
 
   virtual Variable run(ExecutionContext& context)
@@ -526,12 +527,12 @@ public:
       FunctionPtr objective = new BanditFormulaObjective(false, problemSampler, horizon);
       objective->initialize(context, gpExpressionClass);
       File outputFile = outputDirectory.getChildFile("cum" + String((int)horizon) + ".txt");
-      workUnit->addWorkUnit(new Run(formulas, objective, numTimeSteps, pre + T(" Cumulative Regret"), outputFile, Ccumul));
+      workUnit->addWorkUnit(new Run(formulas, objective, numTimeSteps, pre + T(" Cumulative Regret"), outputFile, Ccumul, verbose));
       
       objective = new BanditFormulaObjective(true, problemSampler, horizon);
       objective->initialize(context, gpExpressionClass);
       outputFile = outputDirectory.getChildFile("sim" + String((int)horizon) + ".txt");
-      workUnit->addWorkUnit(new Run(formulas, objective, numTimeSteps, pre + T(" Simple Regret"), outputFile, Csimple));
+      workUnit->addWorkUnit(new Run(formulas, objective, numTimeSteps, pre + T(" Simple Regret"), outputFile, Csimple, verbose));
 
       if (minHorizon < 1000)
 	      horizon *= 10;
@@ -555,6 +556,7 @@ protected:
   size_t minHorizon;
   size_t maxHorizon;
   File outputDirectory;
+  bool verbose;
 };
 
 /////////// Evaluate discovered policies and compare against baselines /////////

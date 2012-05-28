@@ -27,6 +27,13 @@
   <class name="GPExpression" base="Object" abstract="yes">
     <function name="createFromString" lang="lua" static="yes"/>
     <function name="compute" lang="lua"/>
+    <code>
+      virtual Variable createFromXml(XmlImporter&amp; importer) const
+        {return Variable(GPExpression::createFromString(importer.getContext(), importer.getAllSubText(), positiveIntegerEnumerationEnumeration));}
+
+      virtual Variable createFromString(ExecutionContext&amp; context, const String&amp; value) const
+        {return Variable(GPExpression::createFromString(context, value, positiveIntegerEnumerationEnumeration));}
+    </code>    
   </class>
 
   <class name="ConstantGPExpression" base="GPExpression">

@@ -58,6 +58,12 @@ void BanditPool::playIterations(ExecutionContext& context, size_t numIterations,
 const Variable& BanditPool::getArmParameter(size_t index) const
   {jassert(index < arms.size()); return arms[index].parameter;}
 
+double BanditPool::getArmMeanObjective(size_t index) const
+  {jassert(index < arms.size()); return arms[index].getMeanObjectiveValue();}
+
+size_t BanditPool::getArmPlayedCount(size_t index) const
+  {jassert(index < arms.size()); return arms[index].playedCount;}
+
 void BanditPool::setArmParameter(size_t index, const Variable& parameter)
   {jassert(index < arms.size()); arms[index].parameter = parameter;}
 

@@ -206,6 +206,12 @@
         {return 0;}
       virtual EnumerationElementPtr getElement(size_t index) const
         {String str((int)index); return new EnumerationElement(str, String::empty, str);}
+      virtual int findElementByName(const String&amp; name) const
+        {return name.getIntValue();}
+      virtual String toString(const VariableValue&amp; value) const
+        {return String(value.getInteger());}
+      virtual VariableValue getMissingValue() const
+        {return VariableValue(-1);}
     </code>
   </class>
   

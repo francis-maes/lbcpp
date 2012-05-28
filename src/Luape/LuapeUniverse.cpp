@@ -50,7 +50,7 @@ LuapeNodePtr LuapeUniverse::makeFunctionNode(const LuapeFunctionPtr& function, c
   if (it == functionNodes.end())
   {
     LuapeNodePtr res = canonizeNode(new LuapeFunctionNode(function, inputs));
-    if (res->getDepth() < 6)
+    //if (res->getDepth() < 6)
       functionNodes[key] = res;
     return res;
   }
@@ -91,6 +91,13 @@ std::pair<ClassPtr, ClassPtr> LuapeUniverse::makeNodeStatisticsKey(const LuapeNo
     return std::make_pair(node->getClass(), ClassPtr());
 }
 
+void LuapeUniverse::clearImportances()
+{
+  for (ConstantNodesMap::const_iterator it = constantNodes.begin(); it != constantNodes.end(); ++it)
+    clearImportances(it->second);
+  for (FunctionNodesMap::const_iterator it = functionNodes.begin(); it != functionNodes.end(); ++it)
+    clearImportances(it->second);
+}
 
 void LuapeUniverse::getImportances(std::map<LuapeNodePtr, double>& res) const
 {

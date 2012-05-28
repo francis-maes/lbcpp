@@ -83,6 +83,34 @@ std::vector<TypePtr> LuapeRPNSequence::computeTypeState(const std::vector<TypePt
   return state;
 }
 
+void LuapeRPNSequence::apply(const LuapeUniversePtr& universe, std::vector<LuapeNodePtr>& stack, const ObjectPtr& element)
+{
+   if (element.isInstanceOf<LuapeNode>()) // push action
+    stack.push_back(element.staticCast<LuapeNode>());
+  else if (element.isInstanceOf<LuapeFunction>()) // apply action
+  {
+    const LuapeFunctionPtr& function = element.staticCast<LuapeFunction>();
+    size_t numInputs = function->getNumInputs();
+    jassert(stack.size() >= numInputs);
+    std::vector<LuapeNodePtr> inputs(numInputs);
+    for (size_t i = 0; i < numInputs; ++i)
+      inputs[i] = stack[stack.size() - numInputs + i];
+    stack.resize(stack.size() - numInputs + 1);
+    stack.back() = universe->makeFunctionNode(function, inputs);
+  }
+  else
+    jassert(false);
+}
+
+LuapeNodePtr LuapeRPNSequence::toNode(const LuapeUniversePtr& universe) const
+{
+  std::vector<LuapeNodePtr> stack;
+  for (size_t i = 0; i < sequence.size(); ++i)
+    apply(universe, stack, sequence[i]);
+  jassert(stack.size() == 1);
+  return stack[0];
+}
+
 /*
 ** StochasticNodeBuilder
 */

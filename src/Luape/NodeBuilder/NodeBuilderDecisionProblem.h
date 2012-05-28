@@ -15,82 +15,6 @@
 namespace lbcpp
 {
 
-#if 0
-class LuapeNodeBuilderAction;
-typedef ReferenceCountedObjectPtr<LuapeNodeBuilderAction> LuapeNodeBuilderActionPtr;
-
-extern ClassPtr luapeNodeBuilderActionClass;
-
-class LuapeNodeBuilderAction : public Object
-{
-public:
-  LuapeNodeBuilderAction(size_t numNodesToRemove, const LuapeNodePtr& nodeToAdd)
-    : Object(luapeNodeBuilderActionClass), numNodesToRemove(numNodesToRemove), nodeToAdd(nodeToAdd) {}
-  LuapeNodeBuilderAction() : numNodesToRemove(0) {}
-
-  static LuapeNodeBuilderActionPtr push(const LuapeNodePtr& node)
-    {return new LuapeNodeBuilderAction(0, node);}
-
-  static LuapeNodeBuilderActionPtr apply(const LuapeUniversePtr& universe, const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs)
-    {return new LuapeNodeBuilderAction(inputs.size(), universe->makeFunctionNode(function, inputs));}
-
-  static LuapeNodeBuilderActionPtr yield()
-    {return new LuapeNodeBuilderAction(0, LuapeNodePtr());}
-
-  const LuapeNodePtr& getNodeToAdd() const
-    {return nodeToAdd;}
-
-  bool isYield() const
-    {return numNodesToRemove == 0 && !nodeToAdd;}
-  
-  virtual String toShortString() const
-  {
-    if (numNodesToRemove == 0)
-      return nodeToAdd ? T("push(") + nodeToAdd->toShortString() + T(")") : T("yield");
-    else
-      return T("apply(") + nodeToAdd.staticCast<LuapeFunctionNode>()->getFunction()->toShortString() + T(")");
-  }
-
-  //bool isUseless(const LuapeGraphPtr& graph) const
-  //  {return nodeToAdd && isNewNode() && graph->containsNode(nodeToAdd);}
-
-  void perform(std::vector<LuapeNodePtr>& stack)
-  {
-    if (numNodesToRemove)
-    {
-      jassert(stack.size() >= numNodesToRemove);
-      removedNodes.resize(numNodesToRemove);
-      size_t firstIndex = stack.size() - numNodesToRemove;
-      for (size_t i = 0; i < numNodesToRemove; ++i)
-        removedNodes[i] = stack[firstIndex + i];
-      stack.erase(stack.begin() + firstIndex, stack.end());
-    }
-    if (nodeToAdd)
-      stack.push_back(nodeToAdd);
-  }
-
-  void undo(std::vector<LuapeNodePtr>& stack)
-  {
-    if (nodeToAdd)
-    {
-      jassert(stack.size() && stack.back() == nodeToAdd);
-      stack.pop_back();
-    }
-    if (numNodesToRemove)
-    {
-      jassert(removedNodes.size() == numNodesToRemove);
-      for (size_t i = 0; i < numNodesToRemove; ++i)
-        stack.push_back(removedNodes[i]);
-    }
-  }
-
-private:
-  size_t numNodesToRemove;
-  LuapeNodePtr nodeToAdd;
-  std::vector<LuapeNodePtr> removedNodes; // use in state backup only
-};
-#endif // 0
-
 class LuapeNodeBuilderState : public DecisionProblemState
 {
 public:
@@ -100,7 +24,7 @@ public:
     if (subSequence)
     {
       for (size_t i = 0; i < subSequence->getLength(); ++i)
-        performAction(subSequence->getElement(i));
+        LuapeRPNSequence::apply(function->getUniverse(), stack, subSequence->getElement(i));
     }
   }
   LuapeNodeBuilderState() : numSteps(0), isAborted(false), isYielded(false) {}
@@ -124,7 +48,7 @@ public:
   }
 
   virtual TypePtr getActionType() const
-    {return objectClass;} // sumType(luapeNodeClass, luapeFunctionClass)
+    {return objectClass;}
       
   virtual ContainerPtr getAvailableActions() const
   {
@@ -183,7 +107,8 @@ public:
     const ObjectPtr& action = a.getObject();
     if (stateBackup)
       *stateBackup = action;
-    performAction(action);
+    if (action)
+      LuapeRPNSequence::apply(function->getUniverse(), stack, action);
 
     reward = 0.0;
     ++numSteps;
@@ -267,23 +192,6 @@ protected:
   {
     if (typeState->hasPushAction(node->getType()))
       availableActions->append(node);
-  }
-
-  void performAction(ObjectPtr action)
-  {
-    if (action.isInstanceOf<LuapeNode>()) // push action
-      stack.push_back(action.staticCast<LuapeNode>());
-    else if (action.isInstanceOf<LuapeFunction>()) // apply action
-    {
-      const LuapeFunctionPtr& function = action.staticCast<LuapeFunction>();
-      size_t numInputs = function->getNumInputs();
-      jassert(stack.size() >= numInputs);
-      std::vector<LuapeNodePtr> inputs(numInputs);
-      for (size_t i = 0; i < numInputs; ++i)
-        inputs[i] = stack[stack.size() - numInputs + i];
-      stack.resize(stack.size() - numInputs + 1);
-      stack.back() = this->function->getUniverse()->makeFunctionNode(function, inputs);
-    }
   }
 };
 

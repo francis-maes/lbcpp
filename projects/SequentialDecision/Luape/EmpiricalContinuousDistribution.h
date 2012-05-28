@@ -52,6 +52,8 @@ public:
 
   double getPercentile(double p) const
   {
+    if (values.empty())
+      return 0.0;
     jassert(p >= 0.0 && p <= 1.0);
     size_t index = (size_t)(p * values.size());
     if (index == values.size())

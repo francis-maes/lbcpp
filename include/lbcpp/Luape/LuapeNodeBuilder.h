@@ -26,6 +26,9 @@ public:
   LuapeRPNSequence() {}
 
   static LuapeRPNSequencePtr fromNode(const LuapeNodePtr& node);
+  LuapeNodePtr toNode(const LuapeUniversePtr& universe) const;
+
+  static void apply(const LuapeUniversePtr& universe, std::vector<LuapeNodePtr>& stack, const ObjectPtr& element);
 
   void appendNode(const LuapeNodePtr& node);
   void append(const ObjectPtr& action)
