@@ -54,6 +54,17 @@ size_t LuapeNode::getDepth() const
   return res + 1;
 }
 
+size_t LuapeNode::getTreeSize() const
+{
+  size_t res = 1;
+  for (size_t i = 0; i < getNumSubNodes(); ++i)
+  {
+    LuapeNodePtr subNode = getSubNode(i);
+    if (subNode)
+      res += subNode->getTreeSize();
+  }
+  return res;
+}
 
 /*
 ** LuapeInputNode

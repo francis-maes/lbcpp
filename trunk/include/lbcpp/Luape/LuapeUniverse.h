@@ -38,7 +38,9 @@ public:
     {return node;}
 
 
+  void clearImportances();
   void getImportances(std::map<LuapeNodePtr, double>& res) const;
+
   static void getImportances(const LuapeNodePtr& node, std::map<LuapeNodePtr, double>& res);
   static void clearImportances(const LuapeNodePtr& node);
   static void displayMostImportantNodes(ExecutionContext& context, const std::map<LuapeNodePtr, double>& importances);

@@ -38,7 +38,11 @@ public:
   void reserveArms(size_t count);
   size_t createArm(const Variable& parameter);
   void destroyArm(size_t index);
+  
   const Variable& getArmParameter(size_t index) const;
+  double getArmMeanObjective(size_t index) const;
+  size_t getArmPlayedCount(size_t index) const;
+
   void setArmParameter(size_t index, const Variable& parameter);
 
   size_t selectAndPlayArm(ExecutionContext& context);

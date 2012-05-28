@@ -57,6 +57,9 @@ public:
   const LuapeNodePtr& getRepresentent() const
     {return representent;}
 
+  const std::set<LuapeNodePtr>& getElements() const
+    {return elements;}
+
   virtual String toShortString() const
     {return T("[") + representent->toShortString() + T("]");}
 
@@ -69,10 +72,10 @@ protected:
 
   bool isSmallerThan(const LuapeNodePtr& a, const LuapeNodePtr& b) const
   {
-    size_t da = a->getDepth();
-    size_t db = b->getDepth();
-    if (da != db)
-      return da < db;
+    size_t na = a->getTreeSize();
+    size_t nb = b->getTreeSize();
+    if (na != nb)
+      return na < nb;
     int ta = getNodeType(a);
     int tb = getNodeType(b);
     if (ta != tb)
@@ -182,12 +185,13 @@ public:
     LuapeNodeEquivalenceClassesPtr equivalenceClasses = new LuapeNodeEquivalenceClasses();
     BanditPoolPtr pool = new BanditPool(new ObjectiveWrapper(problem), explorationCoefficient, false, useMultiThreading); 
 
-    LuapeRPNSequencePtr subSequence = new LuapeRPNSequence();
+    //LuapeRPNSequencePtr subSequence = new LuapeRPNSequence();
     bool cont = true;
     for (size_t iteration = 0; iteration < numIterations && cont; ++iteration)
     {
-      context.enterScope(T("Iteration ") + String((int)iteration+1) + T(", Subsequence: ") + subSequence->toShortString());
-      cont = doIteration(context, equivalenceClasses, pool, subSequence);
+      context.enterScope(T("Iteration ") + String((int)iteration+1));// + T(", Subsequence: ") + subSequence->toShortString());
+      context.resultCallback(T("iteration"), iteration+1);
+      cont = doIteration(context, equivalenceClasses, pool);
       context.leaveScope();
     }
     return true;
@@ -203,21 +207,69 @@ protected:
   size_t numStepsPerIteration;
   bool useMultiThreading;
 
-  bool doIteration(ExecutionContext& context, LuapeNodeEquivalenceClassesPtr equivalenceClasses, BanditPoolPtr pool, LuapeRPNSequencePtr& subSequence)
+  bool doIteration(ExecutionContext& context, LuapeNodeEquivalenceClassesPtr equivalenceClasses, BanditPoolPtr pool)
   {
     context.enterScope(T("Enumerating candidates"));
     std::vector<LuapeNodePtr> candidates;     
-    problem->enumerateNodesExhaustively(context, complexity, candidates, true, subSequence);
+    problem->enumerateNodesExhaustively(context, complexity, candidates, true);
     context.leaveScope(candidates.size());
+    context.resultCallback(T("numCandidates"), candidates.size());
+
+    if (candidates.empty())
+    {
+      context.errorCallback(T("No candidates"));
+      return false;
+    }
     
+    size_t prevNumArms = pool->getNumArms();
     context.enterScope(T("Making equivalence classes"));
     equivalenceClasses->add(context, candidates, problem, true, pool);
     candidates.clear(); // free memory
     context.leaveScope(equivalenceClasses->getNumClasses());
+    context.resultCallback(T("numEquivalenceClasses"), equivalenceClasses->getNumClasses());
+    context.resultCallback(T("numInvalids"), equivalenceClasses->getNumInvalids());
 
-    context.enterScope(T("Playing bandits"));
-    pool->playIterations(context, numStepsPerIteration, equivalenceClasses->getNumClasses());
+    if (equivalenceClasses->getNumClasses() == 0)
+    {
+      context.errorCallback(T("No valid equivalence classes"));
+      return false;
+    }
 
+    if (pool->getNumArms() > prevNumArms)
+    {
+      context.enterScope(T("Playing bandits"));
+      pool->playIterations(context, numStepsPerIteration, pool->getNumArms() - prevNumArms);
+      context.leaveScope();
+    }
+
+    size_t bestArm = pool->sampleArmWithHighestReward(context);
+    String bestEquivalenceClass = pool->getArmParameter(bestArm).getObjectAndCast<LuapeNodeEquivalenceClass>()->toShortString();
+    context.resultCallback(T("bestArm"), bestEquivalenceClass);
+    context.resultCallback(T("bestArmScore"), pool->getArmMeanObjective(bestArm));
+    context.resultCallback(T("bestArmPlayedCount"), pool->getArmPlayedCount(bestArm));
+    
+    context.enterScope(T("Most important nodes"));
+    std::multimap<double, LuapeNodePtr> nodesByImportance;
+    getMostImportantNodes(context, equivalenceClasses, pool, nodesByImportance);
+    context.leaveScope();
+
+    const std::set<LuapeNodePtr>& actives = problem->getActiveVariables();
+
+    for (std::multimap<double, LuapeNodePtr>::reverse_iterator it = nodesByImportance.rbegin(); it != nodesByImportance.rend(); ++it)
+    {
+      LuapeNodePtr node = it->second;
+      if (!node.isInstanceOf<LuapeInputNode>() && !node.isInstanceOf<LuapeConstantNode>() && actives.find(node) == actives.end())
+      {
+        context.informationCallback(T("New Active Variable: ") + node->toShortString());
+        context.resultCallback(T("newActiveVariable"), node->toShortString());
+        problem->addActiveVariable(node);
+        return true;
+      }
+    }
+
+    return false;
+
+#if 0
     LuapeRPNSequencePtr newSubSequence = new LuapeRPNSequence();
     for (size_t i = 0; i < subSequence->getLength(); ++i)
     {
@@ -234,10 +286,40 @@ protected:
       return false;
 
     subSequence = newSubSequence;
-    context.leaveScope();
-    return true;
+#endif // 0
   }
 
+  void getMostImportantNodes(ExecutionContext& context, LuapeNodeEquivalenceClassesPtr equivalenceClasses, BanditPoolPtr pool, std::multimap<double, LuapeNodePtr>& res)
+  {
+    // clear importances
+    LuapeUniversePtr universe = problem->getUniverse();
+    universe->clearImportances();
+
+    // add importances
+    std::vector< std::pair<size_t, double> > order;
+    pool->getArmsOrder(order);
+    for (size_t i = 0; i < order.size() && i < 10; ++i)
+    {
+      LuapeNodeEquivalenceClassPtr equivalenceClass = pool->getArmParameter(order[i].first).getObjectAndCast<LuapeNodeEquivalenceClass>();
+      size_t treeSize = equivalenceClass->getRepresentent()->getTreeSize();
+
+      const std::set<LuapeNodePtr>& nodes = equivalenceClass->getElements();
+      double reward = -order[i].second;
+      for (std::set<LuapeNodePtr>::const_iterator it = nodes.begin(); it != nodes.end(); ++it)
+        if ((*it)->getTreeSize() == treeSize)
+          (*it)->addImportance(reward);
+    }
+
+    // display
+    std::map<LuapeNodePtr, double> importances;
+    universe->getImportances(importances);
+    LuapeUniverse::displayMostImportantNodes(context, importances);
+
+    for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it)
+      res.insert(std::make_pair(it->second, it->first));
+  }
+
+#if 0
   ObjectPtr findBestSymbolCompletion(ExecutionContext& context, BanditPoolPtr pool, const LuapeRPNSequencePtr& subSequence)
   {
     std::vector< std::pair<size_t, double> > order;
@@ -304,6 +386,7 @@ protected:
     }
     return res;
   }
+#endif // 0
 
   struct ObjectiveWrapper : public BanditPoolObjective
   {

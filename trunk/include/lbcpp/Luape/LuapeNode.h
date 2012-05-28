@@ -50,6 +50,7 @@ public:
     {jassert(isNumberValid(importance)); this->importance = importance;}
 
   size_t getDepth() const;
+  size_t getTreeSize() const;
 
   lbcpp_UseDebuggingNewOperator
 
