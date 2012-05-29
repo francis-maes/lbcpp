@@ -216,36 +216,13 @@ protected:
 
 typedef ReferenceCountedObjectPtr<UnaryCacheFunction> UnaryCacheFunctionPtr;
 
-class SingleParameterIndexBasedDiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
+
+class Formula1IndexBasedDiscreteBanditPolicy : public OneParameterIndexBasedDiscreteBanditPolicy
 {
 public:
-  SingleParameterIndexBasedDiscreteBanditPolicy(double C = 1.0)
-    : C(C) {}
+  virtual void getParameterRange(double& minValue, double& maxValue) const
+    {minValue = 0.0; maxValue = 1.0;}
 
-  virtual double getParameterInitialGuess() const
-    {return 1.0;}
-
-  virtual SamplerPtr createParametersSampler() const
-    {return gaussianSampler(getParameterInitialGuess(), 1.0);}
-
-  virtual void setParameters(const Variable& parameters)
-    {C = parameters.toDouble();}
-
-  virtual Variable getParameters() const
-    {return C;}
-
-protected:
-  friend class SingleParameterIndexBasedDiscreteBanditPolicyClass;
-
-  double C;
-};
-
-
-class Formula1IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
-{
-public:
-  virtual double getParameterInitialGuess() const
-    {return 0.5;}
     
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
@@ -254,12 +231,12 @@ public:
   }
 };
 
-class Formula2IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
+class Formula2IndexBasedDiscreteBanditPolicy : public OneParameterIndexBasedDiscreteBanditPolicy
 {
 public:
-  virtual double getParameterInitialGuess() const
-    {return 1.0;}
-    
+  virtual void getParameterRange(double& minValue, double& maxValue) const
+    {minValue = 0.0; maxValue = 1.0;}
+
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
     const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
@@ -269,12 +246,28 @@ public:
   }
 };
 
-
-class Formula3IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
+class Formula2CustomIndexBasedDiscreteBanditPolicy : public OneParameterIndexBasedDiscreteBanditPolicy
 {
 public:
-  virtual double getParameterInitialGuess() const
-    {return 1.0;}
+  virtual void getParameterRange(double& minValue, double& maxValue) const
+    {minValue = 0.0; maxValue = 1.0;}
+
+  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
+  {
+    const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
+    double tk = (double)statistics->getPlayedCount();
+    double rk = statistics->getRewardMean();
+    return rk * pow(tk, C);
+  }
+};
+
+
+
+class Formula3IndexBasedDiscreteBanditPolicy : public OneParameterIndexBasedDiscreteBanditPolicy
+{
+public:
+  virtual void getParameterRange(double& minValue, double& maxValue) const
+    {minValue = 0.0; maxValue = 1.0;}
     
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
@@ -284,11 +277,11 @@ public:
   }
 };
 
-class Formula4IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
+class Formula4IndexBasedDiscreteBanditPolicy : public OneParameterIndexBasedDiscreteBanditPolicy
 {
 public:
-  virtual double getParameterInitialGuess() const
-    {return 1.0;}
+  virtual void getParameterRange(double& minValue, double& maxValue) const
+    {minValue = 0.0; maxValue = 1.0;}
     
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
@@ -298,20 +291,20 @@ public:
   }
 };
 
-class Formula5IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
+class Formula5IndexBasedDiscreteBanditPolicy : public OneParameterIndexBasedDiscreteBanditPolicy
 {
 public:
   Formula5IndexBasedDiscreteBanditPolicy(double C = 1.0, bool useSquareRoot = false, bool useLogarithm = false)
-    : SingleParameterIndexBasedDiscreteBanditPolicy(C), useSquareRoot(useSquareRoot), useLogarithm(useLogarithm) {}
+    : OneParameterIndexBasedDiscreteBanditPolicy(C), useSquareRoot(useSquareRoot), useLogarithm(useLogarithm) {}
 
   virtual void initialize(size_t numBandits)
   {
     banditsQueue = BanditsQueue();
-    SingleParameterIndexBasedDiscreteBanditPolicy::initialize(numBandits);
+    OneParameterIndexBasedDiscreteBanditPolicy::initialize(numBandits);
   }
 
-  virtual double getParameterInitialGuess() const
-    {return 1.0;}
+  virtual void getParameterRange(double& minValue, double& maxValue) const
+    {minValue = 0.0; maxValue = 5.0;}
     
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   { 
@@ -338,7 +331,7 @@ public:
 
   virtual void updatePolicy(size_t banditNumber, double reward)
   {
-    SingleParameterIndexBasedDiscreteBanditPolicy::updatePolicy(banditNumber, reward);
+    OneParameterIndexBasedDiscreteBanditPolicy::updatePolicy(banditNumber, reward);
     double score = computeBanditScore(banditNumber, timeStep, banditStatistics);    
     banditsQueue.push(std::make_pair(banditNumber, score));
   }
@@ -428,11 +421,11 @@ protected:
   double C;
 };
 
-class Formula6IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
+class Formula6IndexBasedDiscreteBanditPolicy : public OneParameterIndexBasedDiscreteBanditPolicy
 {
 public:
-  virtual double getParameterInitialGuess() const
-    {return 1.0;}
+  virtual void getParameterRange(double& minValue, double& maxValue) const
+    {minValue = 0.0; maxValue = 5.0;}
     
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
@@ -444,11 +437,11 @@ public:
   }
 };
 
-class Formula7IndexBasedDiscreteBanditPolicy : public SingleParameterIndexBasedDiscreteBanditPolicy
+class Formula7IndexBasedDiscreteBanditPolicy : public OneParameterIndexBasedDiscreteBanditPolicy
 {
 public:
-  virtual double getParameterInitialGuess() const
-    {return 1.0;}
+  virtual void getParameterRange(double& minValue, double& maxValue) const
+    {minValue = 0.0; maxValue = 5.0;}
     
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
@@ -625,7 +618,7 @@ protected:
   size_t numRunsPerEstimation;
 
   WorkUnitPtr makeEvaluationWorkUnit(const std::vector<DiscreteBanditStatePtr>& initialStates, const String& initialStatesDescription, const DiscreteBanditPolicyPtr& policy, bool verbose) const
-    {return new EvaluateDiscreteBanditPolicyWorkUnit(initialStates[0]->getNumArms(), maxTimeStep, initialStates, initialStatesDescription, policy, numRunsPerEstimation, verbose);}
+    {return new EvaluateDiscreteBanditPolicyWorkUnit(maxTimeStep, initialStates, initialStatesDescription, policy, numRunsPerEstimation, verbose);}
   
   Variable optimizePolicy(ExecutionContext& context, DiscreteBanditPolicyPtr policy, const std::vector<DiscreteBanditStatePtr>& trainingProblems, double& bestScore)
   {
@@ -653,9 +646,9 @@ protected:
     StoppingCriterionPtr stoppingCriterion = maxIterationsWithoutImprovementStoppingCriterion(5);
 
     // optimization problem
-    FunctionPtr objectiveFunction = new EvaluateDiscreteBanditPolicyParameters(policy, trainingProblems[0]->getNumArms(), maxTimeStep, trainingProblems, numRunsPerEstimation, 51861664);
+    FunctionPtr objectiveFunction = new EvaluateDiscreteBanditPolicyParameters(policy, maxTimeStep, trainingProblems, numRunsPerEstimation, 51861664);
     objectiveFunction->initialize(context, parametersType);
-    FunctionPtr validationFunction = new EvaluateDiscreteBanditPolicyParameters(policy, trainingProblems[0]->getNumArms(), maxTimeStep, trainingProblems, numRunsPerEstimation);
+    FunctionPtr validationFunction = new EvaluateDiscreteBanditPolicyParameters(policy, maxTimeStep, trainingProblems, numRunsPerEstimation);
     validationFunction->initialize(context, parametersType);
     OptimizationProblemPtr problem = new OptimizationProblem(objectiveFunction, Variable(), Parameterized::get(policy)->createParametersSampler(), validationFunction);
 
@@ -676,9 +669,8 @@ protected:
   {
     FunctionPtr makeGPExpressionUniqueFunction = new MakeGPExpressionUnique();
   
-    size_t numArms = trainingStates[0]->getNumArms();
     FunctionPtr objective = new EvaluateDiscreteBanditPolicyParameters(
-      gpExpressionDiscreteBanditPolicy(), numArms, maxTimeStep, trainingStates, numRunsPerEstimation, 51861664);
+      gpExpressionDiscreteBanditPolicy(), maxTimeStep, trainingStates, numRunsPerEstimation, 51861664);
     objective = new GPStructureObjectiveFunction(objective);
 
     UnaryCacheFunctionPtr cacheFunction = new UnaryCacheFunction(objective);
@@ -688,7 +680,7 @@ protected:
       return false;
       
     FunctionPtr validation = new EvaluateDiscreteBanditPolicyParameters(
-      gpExpressionDiscreteBanditPolicy(), numArms, maxTimeStep, trainingStates, numRunsPerEstimation);
+      gpExpressionDiscreteBanditPolicy(), maxTimeStep, trainingStates, numRunsPerEstimation);
     if (!validation->initialize(context, gpExpressionClass))
       return false;
    

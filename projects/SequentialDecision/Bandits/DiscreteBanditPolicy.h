@@ -219,11 +219,9 @@ extern DiscreteBanditPolicyPtr uniformDiscreteBanditPolicy();
 
 extern IndexBasedDiscreteBanditPolicyPtr greedyDiscreteBanditPolicy();
 
-extern IndexBasedDiscreteBanditPolicyPtr ucb1DiscreteBanditPolicy(double C = 2.0);
 extern IndexBasedDiscreteBanditPolicyPtr ucb1TunedDiscreteBanditPolicy();
 extern IndexBasedDiscreteBanditPolicyPtr ucb1NormalDiscreteBanditPolicy();
 extern IndexBasedDiscreteBanditPolicyPtr ucb2DiscreteBanditPolicy(double alpha = 0.001);
-extern IndexBasedDiscreteBanditPolicyPtr ucbvDiscreteBanditPolicy(double c = 1.0, double zeta = 1.0);
 extern IndexBasedDiscreteBanditPolicyPtr epsilonGreedyDiscreteBanditPolicy(double c = 1.0, double d = 1.0);
 extern IndexBasedDiscreteBanditPolicyPtr klucbDiscreteBanditPolicy(double c = 0.0);
 
@@ -231,6 +229,95 @@ extern IndexBasedDiscreteBanditPolicyPtr powerDiscreteBanditPolicy(size_t maxPow
 
 extern EnumerationPtr gpExpressionDiscreteBanditPolicyVariablesEnumeration;
 extern IndexBasedDiscreteBanditPolicyPtr gpExpressionDiscreteBanditPolicy(GPExpressionPtr expression = GPExpressionPtr());
+
+class OneParameterIndexBasedDiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
+{
+public:
+  OneParameterIndexBasedDiscreteBanditPolicy(double C = 1.0)
+    : C(C) {}
+
+  virtual void getParameterRange(double& minValue, double& maxValue) const = 0;
+
+  virtual double getParameterInitialGuess() const
+  {
+    double minValue, maxValue;
+    getParameterRange(minValue, maxValue);
+    return (minValue + maxValue) / 2.0;
+  }
+
+  virtual SamplerPtr createParametersSampler() const
+  {
+    double minValue, maxValue;
+    getParameterRange(minValue, maxValue);
+    return gaussianSampler(getParameterInitialGuess(), (maxValue - minValue) / 5.0);
+  }
+
+  virtual void setParameters(const Variable& parameters)
+    {C = parameters.toDouble();}
+
+  virtual Variable getParameters() const
+    {return C;}
+
+  double getC() const
+    {return C;}
+
+protected:
+  friend class OneParameterIndexBasedDiscreteBanditPolicyClass;
+
+  double C;
+};
+
+typedef ReferenceCountedObjectPtr<OneParameterIndexBasedDiscreteBanditPolicy> OneParameterIndexBasedDiscreteBanditPolicyPtr;
+
+extern OneParameterIndexBasedDiscreteBanditPolicyPtr ucb1DiscreteBanditPolicy(double C = 2.0);
+
+class TwoParametersIndexBasedDiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
+{
+public:
+  TwoParametersIndexBasedDiscreteBanditPolicy(double alpha = 1.0, double beta = 1.0)
+    : alpha(alpha), beta(beta) {}
+
+  virtual void getParameterRanges(double& alphaMin, double& alphaMax, double& betaMin, double& betaMax) const = 0;
+
+  virtual SamplerPtr createParametersSampler() const
+  {
+    double alphaMin, alphaMax, betaMin, betaMax;
+    getParameterRanges(alphaMin, alphaMax, betaMin, betaMax);
+    return objectCompositeSampler(pairClass(doubleType, doubleType),
+        gaussianSampler((alphaMin + alphaMax) / 2.0, (alphaMax - alphaMin) / 5.0),
+        gaussianSampler((betaMin + betaMax) / 2.0, (betaMax - betaMin) / 5.0));
+  }
+
+
+  virtual void setParameters(const Variable& parameters)
+  {
+    const PairPtr& pair = parameters.getObjectAndCast<Pair>();
+    alpha = pair->getFirst().getDouble();
+    beta = pair->getSecond().getDouble();
+  }
+
+  virtual Variable getParameters() const
+    {return new Pair(alpha, beta);}
+
+  double getAlpha() const
+    {return alpha;}
+
+  double getBeta() const
+    {return beta;}
+
+protected:
+  friend class TwoParametersIndexBasedDiscreteBanditPolicyClass;
+
+  double alpha;
+  double beta;
+};
+
+typedef ReferenceCountedObjectPtr<TwoParametersIndexBasedDiscreteBanditPolicy> TwoParametersIndexBasedDiscreteBanditPolicyPtr;
+
+extern TwoParametersIndexBasedDiscreteBanditPolicyPtr ucbvDiscreteBanditPolicy(double c = 1.0, double zeta = 1.0);
+extern TwoParametersIndexBasedDiscreteBanditPolicyPtr overExploitDiscreteBanditPolicy(double alpha = 0.5, double beta = 0.0);
+extern TwoParametersIndexBasedDiscreteBanditPolicyPtr exploreExploitDiscreteBanditPolicy(double alpha = 0.5, double beta = 1.0);
+
 
 }; /* namespace lbcpp */
 

@@ -29,7 +29,7 @@ void BanditPool::play(ExecutionContext& context, size_t numTimeSteps, bool showP
       while (getNumCurrentlyPlayedArms() >= 10)
       {
         //context.informationCallback(T("Waiting - Num played: ") + String((int)j + 1) + T(" num currently evaluated: " ) + String((int)getNumCurrentlyEvaluatedFormulas()));
-        Thread::sleep(10);
+        Thread::sleep(1);
         context.flushCallbacks();
       }
     }
@@ -69,7 +69,7 @@ void BanditPool::setArmParameter(size_t index, const Variable& parameter)
 
 struct PlayArmWorkUnit : public WorkUnit
 {
-  PlayArmWorkUnit(BanditPoolObjectivePtr objective, const Variable& parameter, size_t instanceIndex, size_t armInedx)
+  PlayArmWorkUnit(BanditPoolObjectivePtr objective, const Variable& parameter, size_t instanceIndex, size_t armIndex)
     : objective(objective), parameter(parameter), instanceIndex(instanceIndex), armIndex(armIndex) {}
 
   BanditPoolObjectivePtr objective;

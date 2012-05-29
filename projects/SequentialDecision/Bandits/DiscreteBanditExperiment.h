@@ -22,14 +22,14 @@ namespace lbcpp
 class EvaluateDiscreteBanditPolicyWorkUnit : public WorkUnit
 {
 public:
-  EvaluateDiscreteBanditPolicyWorkUnit(size_t numBandits, size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& initialStates, const String& initialStatesDescription, const DiscreteBanditPolicyPtr& policy,  size_t numEstimationsPerBandit = 100, bool verbose = true, juce::uint32 seedValue = 166451)
-    : numBandits(numBandits), maxTimeStep(maxTimeStep), initialStates(initialStates), initialStatesDescription(initialStatesDescription), policy(policy), numEstimationsPerBandit(numEstimationsPerBandit), verbose(verbose), seedValue(seedValue)
+  EvaluateDiscreteBanditPolicyWorkUnit(size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& initialStates, const String& initialStatesDescription, const DiscreteBanditPolicyPtr& policy,  size_t numEstimationsPerBandit = 100, bool verbose = true, juce::uint32 seedValue = 166451)
+    : maxTimeStep(maxTimeStep), initialStates(initialStates), initialStatesDescription(initialStatesDescription), policy(policy), numEstimationsPerBandit(numEstimationsPerBandit), verbose(verbose), seedValue(seedValue)
   {
     jassert(policy);
   }
 
   EvaluateDiscreteBanditPolicyWorkUnit()
-    : numBandits(0), maxTimeStep(0), verbose(false) {}
+    : maxTimeStep(0), verbose(false) {}
 
   virtual String toShortString() const
     {return T("Evaluate ") + policy->toShortString() + T(" on ") + initialStatesDescription;}
@@ -61,10 +61,11 @@ public:
     for (size_t i = 0; i < states.size(); ++i)
     {
       DiscreteBanditStatePtr state = states[i];
-      std::vector<double> expectedRewards(numBandits);
+      size_t numArms = state->getNumArms();
+      std::vector<double> expectedRewards(numArms);
       double bestReward = -DBL_MAX;
       size_t optimalBandit = 0;
-      for (size_t j = 0; j < numBandits; ++j)
+      for (size_t j = 0; j < numArms; ++j)
       {
         double er = state->getExpectedReward(j);
         expectedRewards[j] = er;
@@ -74,7 +75,7 @@ public:
 
       for (size_t estimation = 0; estimation < numEstimationsPerBandit; ++estimation)
       {
-        policy->initialize(numBandits);
+        policy->initialize(numArms);
 
         double sumOfRewards = 0.0;
 
@@ -128,9 +129,9 @@ protected:
 class EvaluateDiscreteBanditPolicyParameters : public SimpleUnaryFunction
 {
 public:
-  EvaluateDiscreteBanditPolicyParameters(const DiscreteBanditPolicyPtr& policy, size_t numBandits, size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& initialStates, size_t numEstimationsPerBandit = 100, juce::uint32 seedValue = 166451)
+  EvaluateDiscreteBanditPolicyParameters(const DiscreteBanditPolicyPtr& policy, size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& initialStates, size_t numEstimationsPerBandit = 100, juce::uint32 seedValue = 166451)
     : SimpleUnaryFunction(Parameterized::getParametersType(policy), doubleType), policy(policy),
-      numBandits(numBandits), maxTimeStep(maxTimeStep), initialStates(initialStates), numEstimationsPerBandit(numEstimationsPerBandit), verbose(false), seedValue(seedValue)
+      maxTimeStep(maxTimeStep), initialStates(initialStates), numEstimationsPerBandit(numEstimationsPerBandit), verbose(false), seedValue(seedValue)
   {
   }
   EvaluateDiscreteBanditPolicyParameters() : SimpleUnaryFunction(variableType, variableType) {}
@@ -139,7 +140,7 @@ public:
   {
     DiscreteBanditPolicyPtr policy = Parameterized::cloneWithNewParameters(this->policy, input);
     jassert(policy);
-    WorkUnitPtr workUnit = new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, initialStates, T("Training Problems"), policy, numEstimationsPerBandit, verbose, seedValue);
+    WorkUnitPtr workUnit = new EvaluateDiscreteBanditPolicyWorkUnit(maxTimeStep, initialStates, T("Training Problems"), policy, numEstimationsPerBandit, verbose, seedValue);
     DenseDoubleVectorPtr regrets = context.run(workUnit, false).getObjectAndCast<DenseDoubleVector>();
     double res = regrets->getValue(regrets->getNumValues() - 1);
 /*    if (l0Weight)
@@ -154,7 +155,6 @@ protected:
   friend class EvaluateDiscreteBanditPolicyParametersClass;
 
   DiscreteBanditPolicyPtr policy;
-  size_t numBandits;
   size_t maxTimeStep;
   std::vector<DiscreteBanditStatePtr> initialStates;
   size_t numEstimationsPerBandit;
@@ -371,9 +371,9 @@ private:
 
 
     // optimization problem
-    FunctionPtr objectiveFunction = new EvaluateDiscreteBanditPolicyParameters(policy, numBandits, horizon, trainingProblems, 0);
+    FunctionPtr objectiveFunction = new EvaluateDiscreteBanditPolicyParameters(policy, horizon, trainingProblems, 0);
     objectiveFunction->initialize(context, parametersType);
-    FunctionPtr validationFunction = new EvaluateDiscreteBanditPolicyParameters(policy, numBandits, horizon, testingProblems, 10);
+    FunctionPtr validationFunction = new EvaluateDiscreteBanditPolicyParameters(policy, horizon, testingProblems, 10);
     validationFunction->initialize(context, parametersType);
     OptimizationProblemPtr problem = new OptimizationProblem(objectiveFunction, Variable(), Parameterized::get(policy)->createParametersSampler(), validationFunction);
 
@@ -409,7 +409,7 @@ private:
         if (n >= 0)
           referenceHorizon = (size_t)name.substring(n + 1).getIntValue();
       }
-      workUnit->setWorkUnit(i, new EvaluatePolicyWorkUnit(policies[i].first, policies[i].second, numBandits, maxTimeStep, testingProblems, generalizationProblems, referenceHorizon));
+      workUnit->setWorkUnit(i, new EvaluatePolicyWorkUnit(policies[i].first, policies[i].second, maxTimeStep, testingProblems, generalizationProblems, referenceHorizon));
     }
     workUnit->setProgressionUnit(T("Policies"));
     workUnit->setPushChildrenIntoStackFlag(policies.size() > 1);
@@ -419,22 +419,22 @@ private:
 
   struct EvaluatePolicyWorkUnit : public WorkUnit
   {
-    EvaluatePolicyWorkUnit(const DiscreteBanditPolicyPtr& policy, const String& policyName, size_t numBandits, size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& testingProblems,
+    EvaluatePolicyWorkUnit(const DiscreteBanditPolicyPtr& policy, const String& policyName, size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& testingProblems,
                                                                   const std::vector<DiscreteBanditStatePtr>& generalizationProblems, size_t referenceHorizon)
-        : policy(policy), policyName(policyName), numBandits(numBandits), maxTimeStep(maxTimeStep), testingProblems(testingProblems), generalizationProblems(generalizationProblems), referenceHorizon(referenceHorizon)
+        : policy(policy), policyName(policyName), maxTimeStep(maxTimeStep), testingProblems(testingProblems), generalizationProblems(generalizationProblems), referenceHorizon(referenceHorizon)
     {
       jassert(policy);
     }
               
     virtual Variable run(ExecutionContext& context)
     {
-      WorkUnitPtr workUnit = new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, testingProblems, T("Testing Problems"), policy, 100, true);
+      WorkUnitPtr workUnit = new EvaluateDiscreteBanditPolicyWorkUnit(maxTimeStep, testingProblems, T("Testing Problems"), policy, 100, true);
       DenseDoubleVectorPtr testingResult = context.run(workUnit).getObjectAndCast<DenseDoubleVector>();
 
       for (size_t i = 0; i < testingResult->getNumElements(); ++i)
         context.resultCallback(T("testingRegret@") + String(pow(10.0, i + 1.0)), testingResult->getValue(i));
 
-      workUnit = new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, generalizationProblems, T("Generalization Problems"), policy, 100, true);
+      workUnit = new EvaluateDiscreteBanditPolicyWorkUnit(maxTimeStep, generalizationProblems, T("Generalization Problems"), policy, 100, true);
       DenseDoubleVectorPtr generalizationResult = context.run(workUnit).getObjectAndCast<DenseDoubleVector>();
 
       for (size_t i = 0; i < generalizationResult->getNumElements(); ++i)
@@ -453,7 +453,6 @@ private:
   protected:
     DiscreteBanditPolicyPtr policy;
     String policyName;
-    size_t numBandits;
     size_t maxTimeStep;
     const std::vector<DiscreteBanditStatePtr>& testingProblems;
     const std::vector<DiscreteBanditStatePtr>& generalizationProblems;
@@ -470,11 +469,11 @@ private:
       {
         std::vector<DiscreteBanditStatePtr> initialStates(1, testingProblems[i]);
 
-        DenseDoubleVectorPtr baselineRegrets = context.run(new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, referenceHorizon, initialStates, T("Baseline Policy"), baselinePolicy->cloneAndCast<DiscreteBanditPolicy>(), 100, false), false).getObjectAndCast<DenseDoubleVector>();;
+        DenseDoubleVectorPtr baselineRegrets = context.run(new EvaluateDiscreteBanditPolicyWorkUnit(referenceHorizon, initialStates, T("Baseline Policy"), baselinePolicy->cloneAndCast<DiscreteBanditPolicy>(), 100, false), false).getObjectAndCast<DenseDoubleVector>();;
         double baselineScore = baselineRegrets->getValue(baselineRegrets->getNumValues() - 1);
         baselineScoreSum += baselineScore;
 
-        DenseDoubleVectorPtr optimizedRegrets = context.run(new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, referenceHorizon, initialStates, T("This Policy"), policy->cloneAndCast<DiscreteBanditPolicy>(), 100, false), false).getObjectAndCast<DenseDoubleVector>();
+        DenseDoubleVectorPtr optimizedRegrets = context.run(new EvaluateDiscreteBanditPolicyWorkUnit(referenceHorizon, initialStates, T("This Policy"), policy->cloneAndCast<DiscreteBanditPolicy>(), 100, false), false).getObjectAndCast<DenseDoubleVector>();
         double optimizedScore = optimizedRegrets->getValue(optimizedRegrets->getNumValues() - 1);
         optimizedScoreSum += optimizedScore;
 
