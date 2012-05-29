@@ -19,6 +19,13 @@
   <class name="BanditStatistics" base="Object"/>
   <class name="DiscreteBanditPolicy" base="Object" abstract="yes"/>
   <class name="IndexBasedDiscreteBanditPolicy" base="DiscreteBanditPolicy" abstract="yes"/>
+  <class name="OneParameterIndexBasedDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" abstract="yes">
+    <variable type="Double" name="C"/>
+  </class>
+  <class name="TwoParametersIndexBasedDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" abstract="yes">
+    <variable type="Double" name="alpha"/>
+    <variable type="Double" name="beta"/>
+  </class>
 
   <class name="UniformDiscreteBanditPolicy" base="DiscreteBanditPolicy" shortName="uniform">
     <constructor/>
@@ -28,9 +35,8 @@
     <constructor/>
   </class>
   
-  <class name="UCB1DiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucb1">
+  <class name="UCB1DiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="ucb1">
     <constructor arguments="double C"/>
-    <variable type="Double" name="C"/>
   </class>
 
   <class name="UCB1TunedDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucb1Bernoulli">
@@ -46,10 +52,15 @@
     <variable type="Double" name="alpha"/>
   </class>
 
-  <class name="UCBVDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucbv">
+  <class name="UCBVDiscreteBanditPolicy" base="TwoParametersIndexBasedDiscreteBanditPolicy" shortName="ucbv">
     <constructor arguments="double c, double zeta"/>
-    <variable type="Double" name="c"/>
-    <variable type="Double" name="zeta"/>
+  </class>
+
+  <class name="OverExploitDiscreteBanditPolicy" base="TwoParametersIndexBasedDiscreteBanditPolicy" shortName="overExploit">
+    <constructor arguments="double alpha, double beta"/>
+  </class>
+  <class name="ExploreExploitDiscreteBanditPolicy" base="TwoParametersIndexBasedDiscreteBanditPolicy" shortName="exploreExploit">
+    <constructor arguments="double alpha, double beta"/>
   </class>
 
   <class name="EpsilonGreedyDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="epsilonGreedy">
@@ -79,7 +90,6 @@
 
   <!-- Discrete Bandit Experiment -->
   <class name="EvaluateDiscreteBanditPolicyWorkUnit" base="WorkUnit">
-    <variable type="PositiveInteger" name="numBandits"/>
     <variable type="PositiveInteger" name="maxTimeStep"/>
     <variable type="ObjectVector[DiscreteBanditState]" name="initialStates"/>
     <variable type="DiscreteBanditPolicy" name="policy"/>
@@ -89,7 +99,6 @@
 
   <class name="EvaluateDiscreteBanditPolicyParameters" base="Function">
     <variable type="DiscreteBanditPolicy" name="policy"/>
-    <variable type="PositiveInteger" name="numBandits"/>
     <variable type="PositiveInteger" name="maxTimeStep"/>
     <variable type="ObjectVector[DiscreteBanditState]" name="initialStates"/>
     <variable type="Boolean" name="verbose"/>
@@ -103,14 +112,13 @@
     <variable type="PositiveInteger" name="maxTimeStep" shortName="H"/>
   </class>
     
-  <class name="SingleParameterIndexBasedDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" abstract="yes">
-    <variable type="Double" name="C"/>
-  </class>
-  <class name="Formula1IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula1"/>
-  <class name="Formula2IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula2"/>
-  <class name="Formula3IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula3"/>
-  <class name="Formula4IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula4"/>
-  <class name="Formula5IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula5">
+
+  <class name="Formula1IndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula1"/>
+  <class name="Formula2IndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula2"/>
+  <class name="Formula2CustomIndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula2custom"/>
+  <class name="Formula3IndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula3"/>
+  <class name="Formula4IndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula4"/>
+  <class name="Formula5IndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula5">
     <variable type="Boolean" name="useSquareRoot"/>
     <variable type="Boolean" name="useLogarithm"/>
   </class>
@@ -118,14 +126,22 @@
     <variable type="GPExpression" name="expression"/>
     <variable type="PositiveInteger" name="horizon"/>
   </class>  
-  <class name="Formula6IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula6"/>
-  <class name="Formula7IndexBasedDiscreteBanditPolicy" base="SingleParameterIndexBasedDiscreteBanditPolicy" shortName="formula7"/>
+  <class name="Formula6IndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula6"/>
+  <class name="Formula7IndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula7"/>
 
-  <class name="FindBanditsFormula" base="WorkUnit">
+  <class name="FindBanditsFormula" base="WorkUnit"> <!-- EWRL'12 -->
     <variable type="PositiveInteger" name="problemIndex" shortName="p"/>
     <variable type="PositiveInteger" name="maxTimeStep" shortName="N"/>
     <variable type="PositiveInteger" name="numRunsPerEstimation" shortName="r"/>
  </class>
+
+  <class name="CompareTunedBanditPoliciesExperiment" base="WorkUnit">
+    <variable type="PositiveInteger" name="numTrainingProblems"/>
+    <variable type="PositiveInteger" name="numTestingProblems"/>
+    <variable type="PositiveInteger" name="tuningPrecision"/>
+  </class>
+  
+  
 
   <!-- MCTS Work Unit -->
   <class name="BanditsMCTSWorkUnit" base="WorkUnit">

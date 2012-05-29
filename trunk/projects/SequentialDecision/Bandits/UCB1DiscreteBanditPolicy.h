@@ -40,31 +40,20 @@ protected:
 };
 // --
 
-class UCB1DiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
+class UCB1DiscreteBanditPolicy : public OneParameterIndexBasedDiscreteBanditPolicy
 {
 public:
   UCB1DiscreteBanditPolicy(double C = 2.0)
-    : C(C) {}
+    : OneParameterIndexBasedDiscreteBanditPolicy(C) {}
 
-  virtual SamplerPtr createParametersSampler() const
-    {return gaussianSampler(2.0, 1.0);}
-
-  virtual void setParameters(const Variable& parameters)
-    {C = parameters.toDouble();}
-
-  virtual Variable getParameters() const
-    {return C;}
+  virtual void getParameterRange(double& minValue, double& maxValue) const
+    {minValue = 0.0; maxValue = 2.0;}
 
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
     const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
     return statistics->getRewardMean() + sqrt(C * log((double)timeStep) / statistics->getPlayedCount());
   }
-
-protected:
-  friend class UCB1DiscreteBanditPolicyClass;
-
-  double C;
 };
 
 class UCB1TunedDiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy
