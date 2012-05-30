@@ -116,7 +116,6 @@
 
   <class name="Formula1IndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula1"/>
   <class name="Formula2IndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula2"/>
-  <class name="Formula2CustomIndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula2custom"/>
   <class name="Formula3IndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula3"/>
   <class name="Formula4IndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula4"/>
   <class name="Formula5IndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula5">
@@ -135,6 +134,11 @@
     <variable type="PositiveInteger" name="maxTimeStep" shortName="N"/>
     <variable type="PositiveInteger" name="numRunsPerEstimation" shortName="r"/>
  </class>
+
+  <class name="PureOverExploitationDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="pureOverExploitation"/>
+  <class name="FixedHorizonUCB1DiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="fixedTUCB1">
+    <variable type="PositiveInteger" name="horizon"/>
+  </class>
 
   <class name="CompareTunedBanditPoliciesExperiment" base="WorkUnit">
     <variable type="PositiveInteger" name="numTrainingProblems"/>
