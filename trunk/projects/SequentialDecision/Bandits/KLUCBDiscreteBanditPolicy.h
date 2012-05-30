@@ -14,27 +14,24 @@
 namespace lbcpp
 {
 
-class KLUCBDiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
+class KLUCBDiscreteBanditPolicy : public OneParameterIndexBasedDiscreteBanditPolicy
 {
 public:
   KLUCBDiscreteBanditPolicy(double c = 0.0)
-    : c(c) {}
+    : OneParameterIndexBasedDiscreteBanditPolicy(c) {}
 
-  virtual SamplerPtr createParametersSampler() const
-    {return gaussianSampler(0.0, 3.0);}
+  virtual void getParameterRange(double& minValue, double& maxValue) const
+    {minValue = -3.0; maxValue = 3.0;}
 
-  virtual void setParameters(const Variable& parameters)
-    {c = parameters.toDouble();}
-
-  virtual Variable getParameters() const
-    {return c;}
+  virtual double getParameterInitialGuess() const
+    {return 3.0;}
 
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
     const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
 
     double logT = log((double)timeStep);
-    double limit = (logT + c * log(logT)) / statistics->getPlayedCount();
+    double limit = (logT + C * log(logT)) / statistics->getPlayedCount();
     double rk = statistics->getRewardMean();
 
     double min = rk;
@@ -52,10 +49,6 @@ public:
   }
 
 protected:
-  friend class KLUCBDiscreteBanditPolicyClass;
-
-  double c;
-
   static double aLogAOverB(double a, double b)
   {
     if (!a)

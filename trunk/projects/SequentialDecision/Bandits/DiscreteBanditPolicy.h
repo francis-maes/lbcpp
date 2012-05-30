@@ -222,8 +222,6 @@ extern IndexBasedDiscreteBanditPolicyPtr greedyDiscreteBanditPolicy();
 extern IndexBasedDiscreteBanditPolicyPtr ucb1TunedDiscreteBanditPolicy();
 extern IndexBasedDiscreteBanditPolicyPtr ucb1NormalDiscreteBanditPolicy();
 extern IndexBasedDiscreteBanditPolicyPtr ucb2DiscreteBanditPolicy(double alpha = 0.001);
-extern IndexBasedDiscreteBanditPolicyPtr epsilonGreedyDiscreteBanditPolicy(double c = 1.0, double d = 1.0);
-extern IndexBasedDiscreteBanditPolicyPtr klucbDiscreteBanditPolicy(double c = 0.0);
 
 extern IndexBasedDiscreteBanditPolicyPtr powerDiscreteBanditPolicy(size_t maxPower, bool useSparseSampler);
 
@@ -270,6 +268,7 @@ protected:
 typedef ReferenceCountedObjectPtr<OneParameterIndexBasedDiscreteBanditPolicy> OneParameterIndexBasedDiscreteBanditPolicyPtr;
 
 extern OneParameterIndexBasedDiscreteBanditPolicyPtr ucb1DiscreteBanditPolicy(double C = 2.0);
+extern OneParameterIndexBasedDiscreteBanditPolicyPtr klucbDiscreteBanditPolicy(double c = 0.0);
 
 class TwoParametersIndexBasedDiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
 {
@@ -313,6 +312,9 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<TwoParametersIndexBasedDiscreteBanditPolicy> TwoParametersIndexBasedDiscreteBanditPolicyPtr;
+
+extern TwoParametersIndexBasedDiscreteBanditPolicyPtr epsilonGreedyDiscreteBanditPolicy(double c = 1.0, double d = 1.0);
+extern TwoParametersIndexBasedDiscreteBanditPolicyPtr thompsonSamplingDiscreteBanditPolicy(double alpha = 1.0, double beta = 1.0);
 
 extern TwoParametersIndexBasedDiscreteBanditPolicyPtr ucbvDiscreteBanditPolicy(double c = 1.0, double zeta = 1.0);
 extern TwoParametersIndexBasedDiscreteBanditPolicyPtr overExploitDiscreteBanditPolicy(double alpha = 0.5, double beta = 0.0);
