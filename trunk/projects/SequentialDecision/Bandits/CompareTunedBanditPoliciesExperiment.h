@@ -10,11 +10,50 @@
 # define LBCPP_BANDITS_COMPARE_TUNED_POLICIES_EXPERIMENT_H_
 
 # include "DiscreteBanditExperiment.h"
-# include "FindBanditsFormula.h"
 # include <lbcpp/Optimizer/BanditPool.h>
 
 namespace lbcpp
 {
+
+class PureOverExploitationDiscreteBanditPolicy : public OneParameterIndexBasedDiscreteBanditPolicy
+{
+public:
+  virtual void getParameterRange(double& minValue, double& maxValue) const
+    {minValue = 0.0; maxValue = 1.0;}
+
+  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
+  {
+    const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
+    double tk = (double)statistics->getPlayedCount();
+    double rk = statistics->getRewardMean();
+    return rk * pow(tk, C);
+  }
+};
+
+class FixedHorizonUCB1DiscreteBanditPolicy : public OneParameterIndexBasedDiscreteBanditPolicy
+{
+public:
+  FixedHorizonUCB1DiscreteBanditPolicy() : horizon(0) {}
+
+  virtual void getParameterRange(double& minValue, double& maxValue) const
+    {minValue = 0.0; maxValue = 2.0;}
+
+  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
+  {
+    const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
+    double tk = (double)statistics->getPlayedCount();
+    double rk = statistics->getRewardMean();
+    return rk + sqrt(C * log((double)horizon) / tk);
+  }
+
+  void setHorizon(size_t horizon)
+    {this->horizon = horizon;}
+
+protected:
+  friend class FixedHorizonUCB1DiscreteBanditPolicyClass;
+ 
+  size_t horizon;
+};
 
 class CompareTunedBanditPoliciesExperiment : public WorkUnit
 {
@@ -35,8 +74,10 @@ public:
 
     std::vector<OneParameterIndexBasedDiscreteBanditPolicyPtr> oneParamPolicies;
     oneParamPolicies.push_back(ucb1DiscreteBanditPolicy());
+    oneParamPolicies.push_back(new FixedHorizonUCB1DiscreteBanditPolicy());
     oneParamPolicies.push_back(klucbDiscreteBanditPolicy());
-    oneParamPolicies.push_back(new Formula2CustomIndexBasedDiscreteBanditPolicy()); // pow(tk, C) * rk
+    oneParamPolicies.push_back(new PureOverExploitationDiscreteBanditPolicy()); // pow(tk, C) * rk
+
 /*    oneParamPolicies.push_back(new Formula2IndexBasedDiscreteBanditPolicy()); // tk * (rk - C)
     oneParamPolicies.push_back(new Formula6IndexBasedDiscreteBanditPolicy()); // tk * (rk - C * sk)
     oneParamPolicies.push_back(new Formula7IndexBasedDiscreteBanditPolicy()); // tk * (tk^2 - C * sk)*/
@@ -80,6 +121,8 @@ public:
       for (size_t i = 0; i < oneParamPolicies.size(); ++i)
       {
         OneParameterIndexBasedDiscreteBanditPolicyPtr policy = oneParamPolicies[i];
+        if (policy.isInstanceOf<FixedHorizonUCB1DiscreteBanditPolicy>())
+          policy.staticCast<FixedHorizonUCB1DiscreteBanditPolicy>()->setHorizon(horizon);
         String str = policy->getClass()->getShortName();
         context.enterScope(T("Tuning ") + str);
         tuneOneParameterPolicy(context, policy, trainingProblems, horizon);

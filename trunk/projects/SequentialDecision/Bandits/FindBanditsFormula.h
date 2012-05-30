@@ -246,23 +246,6 @@ public:
   }
 };
 
-class Formula2CustomIndexBasedDiscreteBanditPolicy : public OneParameterIndexBasedDiscreteBanditPolicy
-{
-public:
-  virtual void getParameterRange(double& minValue, double& maxValue) const
-    {minValue = 0.0; maxValue = 1.0;}
-
-  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
-  {
-    const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
-    double tk = (double)statistics->getPlayedCount();
-    double rk = statistics->getRewardMean();
-    return rk * pow(tk, C);
-  }
-};
-
-
-
 class Formula3IndexBasedDiscreteBanditPolicy : public OneParameterIndexBasedDiscreteBanditPolicy
 {
 public:
