@@ -11,6 +11,7 @@
 
 # include <lbcpp/Core/Variable.h>
 # include "../../../src/Luape/Function/ObjectLuapeFunctions.h"
+# include <algorithm>
 
 namespace lbcpp
 {
