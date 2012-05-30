@@ -230,7 +230,7 @@ protected:
     if (verbose)
       pool->playIterations(context, tuningPrecision, problems.size());
     else
-      pool->play(context, tuningPrecision * problems.size());
+      pool->play(context, tuningPrecision * problems.size(), false);
     size_t armIndex = pool->sampleArmWithHighestReward(context);
     Variable bestParameter = pool->getArmParameter(armIndex);
     dynamic_cast<Parameterized* >(policy.get())->setParameters(bestParameter);
