@@ -249,6 +249,13 @@ public:
   double sampleDoubleFromGaussian(double mean, double standardDeviation)
     {return sampleDoubleFromGaussian() * standardDeviation + mean;}
 
+  // Return a random double drawn from a Gamma distribution with mean alpha*beta+lamba and variance alpha*beta^2.
+  double sampleFromGamma(double alpha, double beta, double lambda = 0.0);
+
+  // Return a random double drawn from a Beta distribution with mean a/(a+b) and variance ab/((a+b+1)(a+b)^2).
+  double sampleFromBeta(double alpha, double beta);
+
+
   /** Samples an ordering of fixed size.
   **
   ** This functions fills the vector @a res with all the indices

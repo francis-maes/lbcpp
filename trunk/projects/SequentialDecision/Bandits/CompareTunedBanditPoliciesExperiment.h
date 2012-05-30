@@ -19,7 +19,7 @@ namespace lbcpp
 class CompareTunedBanditPoliciesExperiment : public WorkUnit
 {
 public:
-  CompareTunedBanditPoliciesExperiment() : numTrainingProblems(10000), numTestingProblems(10000), tuningPrecision(10), numArms(10) {}
+  CompareTunedBanditPoliciesExperiment() : numTrainingProblems(10000), numTestingProblems(10000), tuningPrecision(10), numArms(10), verbose(false) {}
   
   virtual Variable run(ExecutionContext& context)
   {
@@ -49,8 +49,11 @@ public:
     twoParamPolicies.push_back(thompsonSamplingDiscreteBanditPolicy());
 
     context.enterScope(T("Curve"));
+    size_t iter = 0;
     for (size_t p = paramMin; p <= paramMax; p += paramStep)
     {
+      if (++iter == 5)
+        paramStep *= 2, iter = 0;
       context.enterScope(T("Param = ") + String((int)p));
       context.resultCallback(T("problem_param"), p);
       //context.resultCallback(T("log(problem_param)"), log10((double)p));
@@ -111,6 +114,7 @@ protected:
   size_t numTestingProblems;
   size_t tuningPrecision;
   size_t numArms;
+  bool verbose;
 
   SamplerPtr createProblemSampler(size_t hyperParameter, size_t& horizon) const
   {
@@ -179,6 +183,15 @@ protected:
       pool->createArm(minValue + (maxValue - minValue) * i / (double)precision);
     
     tunePolicy(context, policy, problems, pool);
+
+    context.enterScope(T("TuningCurve"));
+    for (size_t i = 0; i < pool->getNumArms(); ++i)
+    {
+      context.enterScope(T("Arm ") + String((int)i));
+      context.resultCallback("param", pool->getArmParameter(i).getDouble());
+      context.leaveScope(pool->getArmMeanObjective(i));
+    }
+    context.leaveScope();
   }
 
   void tuneTwoParametersPolicy(ExecutionContext& context, TwoParametersIndexBasedDiscreteBanditPolicyPtr policy, const std::vector<DiscreteBanditStatePtr>& problems, size_t horizon)
@@ -199,11 +212,25 @@ protected:
       }
 
     tunePolicy(context, policy, problems, pool);
+
+    context.enterScope(T("TuningCurve"));
+    for (size_t i = 0; i < pool->getNumArms(); ++i)
+    {
+      context.enterScope(T("Arm ") + String((int)i));
+      PairPtr params = pool->getArmParameter(i).getObjectAndCast<Pair>();
+      context.resultCallback("param1", params->getFirst().getDouble());
+      context.resultCallback("param2", params->getSecond().getDouble());
+      context.leaveScope(pool->getArmMeanObjective(i));
+    }
+    context.leaveScope();
   }
 
   void tunePolicy(ExecutionContext& context, DiscreteBanditPolicyPtr policy, const std::vector<DiscreteBanditStatePtr>& problems, BanditPoolPtr pool)
   {
-    pool->playIterations(context, tuningPrecision, problems.size());
+    if (verbose)
+      pool->playIterations(context, tuningPrecision, problems.size());
+    else
+      pool->play(context, tuningPrecision * problems.size());
     size_t armIndex = pool->sampleArmWithHighestReward(context);
     Variable bestParameter = pool->getArmParameter(armIndex);
     dynamic_cast<Parameterized* >(policy.get())->setParameters(bestParameter);

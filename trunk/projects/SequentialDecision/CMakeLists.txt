@@ -93,6 +93,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_BANDITS_SOURCES
   Bandits/DiscreteBanditPolicy.h
   Bandits/DiscreteBanditExperiment.h
   Bandits/CompareTunedBanditPoliciesExperiment.h
+  Bandits/TestThompsonSamplingWorkUnit.h
   Bandits/FindBanditsFormula.h
   Bandits/EpsilonGreedyDiscreteBanditPolicy.h
   Bandits/UCB1DiscreteBanditPolicy.h
