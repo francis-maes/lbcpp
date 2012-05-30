@@ -198,48 +198,86 @@ int RandomGenerator::sample(LuaState& state)
 }
 
 /*
-// From http://vyshemirsky.blogspot.com/2007/11/sample-from-gamma-distribution-in-java.html
-// Not tested
-  static double sampleGamma(RandomGeneratorPtr random, double k, double theta)
+** sampleFromGamma() and sampleFromBeta() are translated from Java from
+** "MALLET" (MAchine Learning for LanguagE Toolkit). http://www.cs.umass.edu/~mccallum/mallet
+** Author: Andrew McCallum 
+*/
+double RandomGenerator::sampleFromGamma(double alpha, double beta, double lambda) // not tested
+{
+  double gamma = 0;
+  jassert(alpha > 0 && beta > 0);
+  if (alpha < 1)
   {
-    if (k < 1)
+    double b = 1 + alpha * exp(-1.0);
+    while (true)
     {
-      // Weibull algorithm
-      double c = (1 / k);
-      double d = ((1 - k) * pow(k, (k / (1 - k))));
-      double u, v, z, e, x;
-      while (true)
+      double p = b * sampleDouble();
+      if (p>1)
       {
-        u = random->sampleDouble();
-        v = random->sampleDouble();
-        z = -log(u);
-        e = -log(v);
-        x = pow(z, c);
-        if ((z + e) >= (d + x))
-         break;
-      }
-      return x * theta;
-    }
-    else
-    {
-      // Cheng's algorithm
-      double b = (k - log(4.0));
-      double c = (k + sqrt(2.0 * k - 1.0));
-      double lam = sqrt(2 * k - 1.0);
-      double cheng = (1 + log(4.5));
-      double u, v, x, y, z, r;
-      while (true)
-      {
-        u = random->sampleDouble();
-        v = random->sampleDouble();
-        y = ((1 / lam) * log(v / (1 - v)));
-        x = (k * exp(y));
-        z = (u * v * v);
-        r = (b + (c * y) - x);
-        if ((r >= ((4.5 * z) - cheng)) || (r >= log(z)))
+        gamma = -log((b-p)/alpha);
+        if (sampleDouble() <= pow(gamma, alpha-1))
           break;
       }
-      return x * theta;
+      else
+      {
+        gamma = pow(p,1/alpha);
+        if (sampleDouble() <= exp(-gamma))
+          break;
+      }
     }
   }
-*/
+  else if (alpha == 1)
+    gamma = -log(sampleDouble());
+  else
+  {
+    double y = -log(sampleDouble());
+    while (sampleDouble() > pow(y * exp(1 - y), alpha - 1))
+      y = -log(sampleDouble());
+    gamma = alpha * y;
+  }
+  return beta * gamma + lambda;
+}
+
+double RandomGenerator::sampleFromBeta(double alpha, double beta)
+{
+  jassert(alpha > 0.0 && beta > 0.0);
+  if (alpha == 1 && beta == 1)
+    return sampleDouble();
+  else if (alpha >= 1 && beta >= 1)
+  {
+    double A = alpha - 1, B = beta - 1;
+    double C = A + B;
+    double L = C * log (C);
+    double mu = A / C;
+    double sigma = 0.5 / sqrt(C);
+    double x, y;
+    do
+    {
+      y = sampleDoubleFromGaussian();
+      x = sigma * y + mu;
+    }
+    while (x < 0 || x > 1);
+    double u = sampleDouble();
+    while (log(u) >= A * log(x / A) + B * log((1 - x) / B) + L + 0.5 * y * y)
+    {
+      do
+      {
+        y = sampleDoubleFromGaussian();
+        x = sigma * y + mu;
+      }
+      while (x < 0 || x > 1);
+      u = sampleDouble();
+    }
+    return x;
+  }
+  else
+  {
+    double v1, v2;
+    do
+    {
+      v1 = pow(sampleDouble(), 1 / alpha);
+      v2 = pow(sampleDouble(), 1 / beta);
+    } while (v1 + v2 > 1);
+    return v1 / (v1 + v2);
+  }
+}

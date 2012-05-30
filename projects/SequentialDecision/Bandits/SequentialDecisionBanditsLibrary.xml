@@ -141,9 +141,13 @@
     <variable type="PositiveInteger" name="numTestingProblems"/>
     <variable type="PositiveInteger" name="tuningPrecision"/>
     <variable type="PositiveInteger" name="numArms"/>
+    <variable type="Boolean" name="verbose"/>
   </class>
   
-  
+  <class name="TestThompsonSamplingWorkUnit" base="WorkUnit">
+    <variable type="PositiveInteger" name="K"/>
+    <variable type="Double" name="epsilon"/>
+  </class>
 
   <!-- MCTS Work Unit -->
   <class name="BanditsMCTSWorkUnit" base="WorkUnit">
@@ -155,5 +159,6 @@
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="expressionScores"/>
   </class>
 
+  
 </library>
 
