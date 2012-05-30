@@ -19,13 +19,13 @@ namespace lbcpp
 class CompareTunedBanditPoliciesExperiment : public WorkUnit
 {
 public:
-  CompareTunedBanditPoliciesExperiment() : numTrainingProblems(10000), numTestingProblems(10000), tuningPrecision(10) {}
+  CompareTunedBanditPoliciesExperiment() : numTrainingProblems(10000), numTestingProblems(10000), tuningPrecision(10), numArms(10) {}
   
   virtual Variable run(ExecutionContext& context)
   {
-    size_t paramMin = 20;
-    size_t paramMax = 1000;
-    size_t paramStep = 20;
+    size_t paramMin = numArms * 2;
+    size_t paramMax = numArms * 1000;
+    size_t paramStep = numArms;
 
     std::vector<DiscreteBanditPolicyPtr> noParamPolicies;
     noParamPolicies.push_back(ucb1DiscreteBanditPolicy());
@@ -35,15 +35,18 @@ public:
 
     std::vector<OneParameterIndexBasedDiscreteBanditPolicyPtr> oneParamPolicies;
     oneParamPolicies.push_back(ucb1DiscreteBanditPolicy());
+    oneParamPolicies.push_back(klucbDiscreteBanditPolicy());
     oneParamPolicies.push_back(new Formula2CustomIndexBasedDiscreteBanditPolicy()); // pow(tk, C) * rk
-    oneParamPolicies.push_back(new Formula2IndexBasedDiscreteBanditPolicy()); // tk * (rk - C)
+/*    oneParamPolicies.push_back(new Formula2IndexBasedDiscreteBanditPolicy()); // tk * (rk - C)
     oneParamPolicies.push_back(new Formula6IndexBasedDiscreteBanditPolicy()); // tk * (rk - C * sk)
-    oneParamPolicies.push_back(new Formula7IndexBasedDiscreteBanditPolicy()); // tk * (tk^2 - C * sk)
+    oneParamPolicies.push_back(new Formula7IndexBasedDiscreteBanditPolicy()); // tk * (tk^2 - C * sk)*/
 
     std::vector<TwoParametersIndexBasedDiscreteBanditPolicyPtr> twoParamPolicies;
     twoParamPolicies.push_back(overExploitDiscreteBanditPolicy());
     twoParamPolicies.push_back(exploreExploitDiscreteBanditPolicy());
     twoParamPolicies.push_back(ucbvDiscreteBanditPolicy());
+    twoParamPolicies.push_back(epsilonGreedyDiscreteBanditPolicy());
+    twoParamPolicies.push_back(thompsonSamplingDiscreteBanditPolicy());
 
     context.enterScope(T("Curve"));
     for (size_t p = paramMin; p <= paramMax; p += paramStep)
@@ -107,10 +110,10 @@ protected:
   size_t numTrainingProblems;
   size_t numTestingProblems;
   size_t tuningPrecision;
+  size_t numArms;
 
   SamplerPtr createProblemSampler(size_t hyperParameter, size_t& horizon) const
   {
-    const size_t numArms = 10;
     horizon = hyperParameter;
 
     ClassPtr bernoulliSamplerClass = lbcpp::getType(T("BernoulliSampler"));
@@ -208,7 +211,7 @@ protected:
 
   double evaluatePolicy(ExecutionContext& context, DiscreteBanditPolicyPtr policy, const String& shortName, const std::vector<DiscreteBanditStatePtr>& problems, size_t horizon)
   {
-    size_t numEstimationsPerProblem = 10;
+    size_t numEstimationsPerProblem = 1;
 
     context.enterScope(T("Evaluating ") + policy->toShortString());
     ScalarVariableMean mean;

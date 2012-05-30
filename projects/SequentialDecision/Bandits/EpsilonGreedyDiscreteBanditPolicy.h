@@ -14,48 +14,35 @@
 namespace lbcpp
 {
 
-class EpsilonGreedyDiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
+// alpha = c, beta = d
+class EpsilonGreedyDiscreteBanditPolicy : public TwoParametersIndexBasedDiscreteBanditPolicy
 {
 public:
-  EpsilonGreedyDiscreteBanditPolicy(double c, double d)
-    : c(c), d(d) {}
-  EpsilonGreedyDiscreteBanditPolicy() : c(0.0), d(0.0) {}
+  EpsilonGreedyDiscreteBanditPolicy(double c = 0.0, double d = 0.0)
+    : TwoParametersIndexBasedDiscreteBanditPolicy(c, d) {}
 
-  virtual SamplerPtr createParametersSampler() const
-    {return objectCompositeSampler(pairClass(doubleType, doubleType), gaussianSampler(0.5, 0.5), gaussianSampler(0.5, 0.5));}
-
-  virtual void setParameters(const Variable& parameters)
+  virtual void getParameterRanges(double& alphaMin, double& alphaMax, double& betaMin, double& betaMax) const
   {
-    const PairPtr& pair = parameters.getObjectAndCast<Pair>();
-    c = pair->getFirst().getDouble();
-    d = pair->getSecond().getDouble();
+    alphaMin = 0.0; alphaMax = 5.0;
+    betaMin = 0.0; betaMax = 1.0;
   }
-
-  virtual Variable getParameters() const
-    {return new Pair(c, d);}
 
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
     {return banditStatistics[banditNumber]->getRewardMean();}
  
   virtual size_t selectBandit(ExecutionContext& context, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
   {
-    size_t numBandits = banditStatistics.size();
-    if (timeStep < numBandits)
+    size_t numArms = banditStatistics.size();
+    if (timeStep < numArms)
       return timeStep; // play each bandit once
 
-    double epsilon = juce::jmin(1.0, c * numBandits / (d * d * (timeStep + 1)));
+    double epsilon = beta ? juce::jmin(1.0, alpha * numArms / (beta * beta * (timeStep + 1))) : 1.0;
     const RandomGeneratorPtr& random = context.getRandomGenerator();
     if (random->sampleBool(epsilon))
-      return random->sampleSize(numBandits);
+      return random->sampleSize(numArms);
     else
       return selectMaximumIndexBandit(context, timeStep, banditStatistics);
   }
-
-protected:
-  friend class EpsilonGreedyDiscreteBanditPolicyClass;
-
-  double c;
-  double d;
 };
 
 }; /* namespace lbcpp */
