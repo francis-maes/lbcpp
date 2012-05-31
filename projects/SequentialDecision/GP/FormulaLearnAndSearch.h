@@ -605,6 +605,7 @@ public:
       size_t numFinalStates;
       pool.addAllFormulasUpToSize(context, formulaInitialSize, numFinalStates);
       context.leaveScope(pool.getNumFormulaClasses());
+      
 
       // initial plays
       //size_t n = pool.getNumFormulaClasses();

@@ -21,7 +21,7 @@ public:
     : OneParameterIndexBasedDiscreteBanditPolicy(c) {}
 
   virtual void getParameterRange(double& minValue, double& maxValue) const
-    {minValue = -3.0; maxValue = 3.0;}
+    {minValue = -5.0; maxValue = 3.0;}
 
   virtual double getParameterInitialGuess() const
     {return 3.0;}

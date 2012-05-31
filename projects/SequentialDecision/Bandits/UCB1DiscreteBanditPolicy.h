@@ -47,12 +47,12 @@ public:
     : OneParameterIndexBasedDiscreteBanditPolicy(C) {}
 
   virtual void getParameterRange(double& minValue, double& maxValue) const
-    {minValue = 0.0; maxValue = 2.0;}
+    {minValue = -1.0; maxValue = 1.0;}
 
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
     const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
-    return statistics->getRewardMean() + sqrt(C * log((double)timeStep) / statistics->getPlayedCount());
+    return statistics->getRewardMean() + C * sqrt(log((double)timeStep) / statistics->getPlayedCount());
   }
 };
 

@@ -25,19 +25,6 @@ public:
   ExploChallengeFormulaObjective(size_t horizon = 307000, DenseDoubleVectorPtr parameters = DenseDoubleVectorPtr())
     : SimpleUnaryFunction(gpExpressionClass, doubleType), horizon(horizon), parameters(parameters)
   {
-    if (!parameters)
-    {
-      // tuned for H=10000, N=20
-      this->parameters = new DenseDoubleVector(exploChallengeFormulaObjectiveParametersEnumeration, doubleType);
-      this->parameters->setValue(0, 0.365); // probability of creation 0.334%
-      this->parameters->setValue(1, 1.0); // ten arms
-      this->parameters->setValue(2, 0.357); // min life time
-      this->parameters->setValue(3, 0.842); // max life time
-      this->parameters->setValue(4, 0.0);  // min reward
-      this->parameters->setValue(5, 0.126); // max reward
-      this->parameters->setValue(6, 0.0); // min reward decrease
-      this->parameters->setValue(7, 0.597); // max reward decrease
-    }
   }
 
   static const double* getInitialSamplerParameters()
@@ -94,6 +81,21 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
+    if (!parameters)
+    {
+      // tuned for H=10000, N=20
+      DenseDoubleVectorPtr parameters = new DenseDoubleVector(exploChallengeFormulaObjectiveParametersEnumeration, doubleType);
+      parameters->setValue(0, 0.365); // probability of creation 0.334%
+      parameters->setValue(1, 1.0); // ten arms
+      parameters->setValue(2, 0.357); // min life time
+      parameters->setValue(3, 0.842); // max life time
+      parameters->setValue(4, 0.0);  // min reward
+      parameters->setValue(5, 0.126); // max reward
+      parameters->setValue(6, 0.0); // min reward decrease
+      parameters->setValue(7, 0.597); // max reward decrease
+      const_cast<ExploChallengeFormulaObjective* >(this)->parameters = parameters;
+    }
+
     double probabilityOfNewArm = parameters->getValue(0) / 100.0;
     size_t numSelectedArms = (size_t)(juce::jmax(2.0, parameters->getValue(1) * 10.0));
     double minLifeTime = parameters->getValue(2) * horizon;

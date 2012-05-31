@@ -17,11 +17,11 @@ namespace lbcpp
 class ThompsonSamplingDiscreteBanditPolicy : public TwoParametersIndexBasedDiscreteBanditPolicy
 {
 public:
-  ThompsonSamplingDiscreteBanditPolicy(double alpha = 1.0, double beta = 1.0)
+  ThompsonSamplingDiscreteBanditPolicy(double alpha = 0.0, double beta = 0.0)
     : TwoParametersIndexBasedDiscreteBanditPolicy(alpha, beta) {}
 
   virtual void getParameterRanges(double& alphaMin, double& alphaMax, double& betaMin, double& betaMax) const
-    {alphaMin = betaMin = 0.0; alphaMax = 2.0; betaMax = 4.0;}
+    {alphaMin = betaMin = -2.0; alphaMax = betaMax = 2.0;}
 
   virtual double computeBanditScore(size_t armNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
     {return banditStatistics[armNumber]->getRewardMean();}
@@ -33,8 +33,8 @@ public:
     std::vector<size_t> bestArms;
     double bestScore = -DBL_MAX;
 
-    //double alpha = pow(10.0, this->alpha);
-    //double beta = pow(10.0, this->beta);
+    double alpha = pow(10.0, this->alpha);
+    double beta = pow(10.0, this->beta);
 
     for (size_t i = 0; i < numArms; ++i)
     {

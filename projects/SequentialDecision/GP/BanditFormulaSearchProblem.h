@@ -47,8 +47,8 @@ public:
   virtual std::vector<SamplerPtr> sampleArms(const RandomGeneratorPtr& random) const
   {
     std::vector<SamplerPtr> arms(2);
-    arms[0] = bernoulliSampler(random->sampleDouble(0.0, 1.0));
-    arms[1] = bernoulliSampler(random->sampleDouble(0.0, 1.0));
+    for (size_t i = 0; i < arms.size(); ++i)
+      arms[i] = bernoulliSampler(random->sampleDouble(0.0, 1.0));
     return arms;
   }
 }; 
