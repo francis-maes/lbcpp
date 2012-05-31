@@ -318,6 +318,7 @@ extern TwoParametersIndexBasedDiscreteBanditPolicyPtr thompsonSamplingDiscreteBa
 
 extern TwoParametersIndexBasedDiscreteBanditPolicyPtr ucbvDiscreteBanditPolicy(double c = 1.0, double zeta = 1.0);
 extern TwoParametersIndexBasedDiscreteBanditPolicyPtr overExploitDiscreteBanditPolicy(double alpha = 0.5, double beta = 0.0);
+extern TwoParametersIndexBasedDiscreteBanditPolicyPtr overExploit2DiscreteBanditPolicy(double alpha = 0.5, double beta = 0.0);
 extern TwoParametersIndexBasedDiscreteBanditPolicyPtr exploreExploitDiscreteBanditPolicy(double alpha = 0.5, double beta = 1.0);
 
 

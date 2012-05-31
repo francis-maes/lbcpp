@@ -64,6 +64,9 @@
   <class name="OverExploitDiscreteBanditPolicy" base="TwoParametersIndexBasedDiscreteBanditPolicy" shortName="overExploit">
     <constructor arguments="double alpha, double beta"/>
   </class>
+  <class name="OverExploit2DiscreteBanditPolicy" base="TwoParametersIndexBasedDiscreteBanditPolicy" shortName="overExploit2">
+    <constructor arguments="double alpha, double beta"/>
+  </class>
   <class name="ExploreExploitDiscreteBanditPolicy" base="TwoParametersIndexBasedDiscreteBanditPolicy" shortName="exploreExploit">
     <constructor arguments="double alpha, double beta"/>
   </class>

@@ -19,7 +19,7 @@ class PureOverExploitationDiscreteBanditPolicy : public OneParameterIndexBasedDi
 {
 public:
   virtual void getParameterRange(double& minValue, double& maxValue) const
-    {minValue = 0.0; maxValue = 1.0;}
+    {minValue = 0.0; maxValue = 0.5;}
 
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
@@ -36,14 +36,14 @@ public:
   FixedHorizonUCB1DiscreteBanditPolicy() : horizon(0) {}
 
   virtual void getParameterRange(double& minValue, double& maxValue) const
-    {minValue = 0.0; maxValue = 2.0;}
+    {minValue = -1.0; maxValue = 1.0;}
 
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
     const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
     double tk = (double)statistics->getPlayedCount();
     double rk = statistics->getRewardMean();
-    return rk + sqrt(C * log((double)horizon) / tk);
+    return rk + C * sqrt(log((double)horizon) / tk);
   }
 
   void setHorizon(size_t horizon)
@@ -77,13 +77,10 @@ public:
     oneParamPolicies.push_back(new FixedHorizonUCB1DiscreteBanditPolicy());
     oneParamPolicies.push_back(klucbDiscreteBanditPolicy());
     oneParamPolicies.push_back(new PureOverExploitationDiscreteBanditPolicy()); // pow(tk, C) * rk
-
-/*    oneParamPolicies.push_back(new Formula2IndexBasedDiscreteBanditPolicy()); // tk * (rk - C)
-    oneParamPolicies.push_back(new Formula6IndexBasedDiscreteBanditPolicy()); // tk * (rk - C * sk)
-    oneParamPolicies.push_back(new Formula7IndexBasedDiscreteBanditPolicy()); // tk * (tk^2 - C * sk)*/
-
+    
     std::vector<TwoParametersIndexBasedDiscreteBanditPolicyPtr> twoParamPolicies;
     twoParamPolicies.push_back(overExploitDiscreteBanditPolicy());
+    twoParamPolicies.push_back(overExploit2DiscreteBanditPolicy());
     twoParamPolicies.push_back(exploreExploitDiscreteBanditPolicy());
     twoParamPolicies.push_back(ucbvDiscreteBanditPolicy());
     twoParamPolicies.push_back(epsilonGreedyDiscreteBanditPolicy());

@@ -66,7 +66,7 @@ extern OptimizerPtr asyncEDAOptimizer(size_t numIterations, size_t populationSiz
 extern OptimizerPtr banditEDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, double ratioOfBanditToKeep, size_t budget, size_t numSimultaneousPlays);
 
 extern OptimizerPtr cmaesOptimizer(size_t numIterations);
-extern OptimizerPtr hooOptimizer(size_t numIterations, double nu, double rho);
+extern OptimizerPtr hooOptimizer(size_t numIterations, double nu = 1.0, double rho = 0.5, double C = 2.0);
 
 extern OptimizerPtr bestFirstSearchOptimizer(const std::vector<StreamPtr>& streams, const File& optimizerStateFile = File::nonexistent);
 

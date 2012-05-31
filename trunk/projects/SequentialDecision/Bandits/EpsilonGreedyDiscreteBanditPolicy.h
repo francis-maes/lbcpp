@@ -23,8 +23,8 @@ public:
 
   virtual void getParameterRanges(double& alphaMin, double& alphaMax, double& betaMin, double& betaMax) const
   {
-    alphaMin = 0.0; alphaMax = 5.0;
-    betaMin = 0.0; betaMax = 1.0;
+    alphaMin = 0.0; alphaMax = 2.0;
+    betaMin = 0.0; betaMax = 2.0;
   }
 
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
