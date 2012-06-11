@@ -62,9 +62,44 @@ public:
   
   virtual Variable run(ExecutionContext& context)
   {
-    size_t paramMin = numArms * 2;
-    size_t paramMax = numArms * 1000;
-    size_t paramStep = numArms;
+    RandomGeneratorPtr random = new RandomGenerator(51);
+
+    OneParameterIndexBasedDiscreteBanditPolicyPtr policy = ucb1DiscreteBanditPolicy();
+
+    for (double logNumArms = 0.4; logNumArms <= 3.0; logNumArms += 0.25)
+      for (double logRatio = 0.25; logRatio <= 2.0; logRatio += 0.25)
+      {
+        size_t numArms = (size_t)(pow(10.0, logNumArms));
+        size_t horizon = (size_t)(numArms * pow(10.0, logRatio));
+
+        context.enterScope("T = " + String((int)horizon) + " K = " + String((int)numArms));
+        context.resultCallback("numArms", numArms);
+        context.resultCallback("ratio", pow(10.0, logRatio));
+        context.resultCallback("horizon", horizon);
+
+        SamplerPtr problemSampler = createProblemSampler(numArms);
+        std::vector<DiscreteBanditStatePtr> problems(numTrainingProblems);
+        for (size_t i = 0; i < problems.size(); ++i)
+          problems[i] = problemSampler->sample(context, random).getObjectAndCast<DiscreteBanditState>();
+
+        context.enterScope(T("Tuning"));
+        tuneOneParameterPolicy(context, policy, problems, horizon);
+        context.leaveScope();
+
+        context.resultCallback("C", policy->getC());
+        evaluatePolicy(context, policy, "ucb1", problems, horizon);
+        context.leaveScope();
+      }
+
+    return true;
+  }
+
+#if 0
+  virtual Variable run(ExecutionContext& context)
+  {
+    size_t horizonMin = numArms * 2;
+    size_t horizonMax = numArms * 1000;
+    size_t horizonStep = numArms;
 
     std::vector<DiscreteBanditPolicyPtr> noParamPolicies;
     noParamPolicies.push_back(ucb1DiscreteBanditPolicy());
@@ -88,18 +123,15 @@ public:
 
     context.enterScope(T("Curve"));
     size_t iter = 0;
-    for (size_t p = paramMin; p <= paramMax; p += paramStep)
+    for (size_t horizon = horizonMin; p <= horizonMax; p += horizonStep)
     {
       if (++iter == 5)
-        paramStep *= 2, iter = 0;
-      context.enterScope(T("Param = ") + String((int)p));
-      context.resultCallback(T("problem_param"), p);
-      //context.resultCallback(T("log(problem_param)"), log10((double)p));
+        horizonStep *= 2, iter = 0;
+      context.enterScope(T("Horizon = ") + String((int)horizon));
+      context.resultCallback(T("horizon"), horizon);
 
       context.enterScope(T("Sampling training and testing problems"));
-      size_t horizon;
-      SamplerPtr problemSampler = createProblemSampler(p, horizon);
-      context.resultCallback(T("horizon"), horizon);
+      SamplerPtr problemSampler = createProblemSampler(numArms);
 
       RandomGeneratorPtr random = new RandomGenerator(51);
       std::vector<DiscreteBanditStatePtr> trainingProblems(numTrainingProblems), testingProblems(numTestingProblems);
@@ -146,6 +178,7 @@ public:
 
     return Variable();
   }
+#endif // 0
 
 protected:
   friend class CompareTunedBanditPoliciesExperimentClass;
@@ -156,10 +189,8 @@ protected:
   size_t numArms;
   bool verbose;
 
-  SamplerPtr createProblemSampler(size_t hyperParameter, size_t& horizon) const
+  SamplerPtr createProblemSampler(size_t numArms) const
   {
-    horizon = hyperParameter;
-
     ClassPtr bernoulliSamplerClass = lbcpp::getType(T("BernoulliSampler"));
     SamplerPtr banditSamplerSampler = objectCompositeSampler(bernoulliSamplerClass, uniformScalarSampler(0.0, 1.0));
     return new DiscreteBanditInitialStateSampler(banditSamplerSampler, numArms);
@@ -224,14 +255,17 @@ protected:
     
     tunePolicy(context, policy, problems, pool);
 
-    context.enterScope(T("TuningCurve"));
-    for (size_t i = 0; i < pool->getNumArms(); ++i)
+    if (verbose)
     {
-      context.enterScope(T("Arm ") + String((int)i));
-      context.resultCallback("param", pool->getArmParameter(i).getDouble());
-      context.leaveScope(pool->getArmMeanObjective(i));
+      context.enterScope(T("TuningCurve"));
+      for (size_t i = 0; i < pool->getNumArms(); ++i)
+      {
+        context.enterScope(T("Arm ") + String((int)i));
+        context.resultCallback("param", pool->getArmParameter(i).getDouble());
+        context.leaveScope(pool->getArmMeanObjective(i));
+      }
+      context.leaveScope();
     }
-    context.leaveScope();
   }
 
   void tuneTwoParametersPolicy(ExecutionContext& context, TwoParametersIndexBasedDiscreteBanditPolicyPtr policy, const std::vector<DiscreteBanditStatePtr>& problems, size_t horizon)
