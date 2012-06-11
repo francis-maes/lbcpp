@@ -149,13 +149,17 @@ local winSizes = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33,
 --main("Window Size", winSizes, dir .. "WindowTasks/x3_SingleTask11_dr_Win", "_K10000_1000T_NMIN1", numFolds)
 --main("Window Size", winSizes, dir .. "WindowTasks/x3_SingleTask11_stal_Win", "_K10000_1000T_NMIN1", numFolds)
 dir2 = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/1204XX-DSBFeatures/"
-winSizes = {3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31}--, 33, 35}--, 37, 39, 41, 43, 45}
-main("Window Size", winSizes, dir2 .. "PSSM/x3_PSSM", "_K10000_1000T_NMIN1", numFolds)
+feat = {"pssm19", "pssm19csp17", "pssm19csp17ss8hl77"}
+--main("Feature", feat, dir2 .. "FromBFS/x3_", "_K0_1000T_NMIN1", numFolds)
 
-local nmin = {1, 3, 5, 7, 9, 11, 13, 15, 21, 51, 101, 201}
---main("Nmin", nmin, dir .. "Nmin/x3_Win19_K200_1000T_NMIN", "", numFolds)
+local trees = {10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000}
+main("Trees", trees, dir2 .. "FromBFS/x3_pssm19csp17_K0_", "T_NMIN1", numFolds)
 
-local k = {1, 5, 10, 20, 50, 100, 200, 500, 1000, 2000} --, 10000}
+local nmin = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 31, 41, 51, 61, 71, 81, 91, 101}--, 13, 15, 21, 51, 101, 201}
+--main("Nmin", nmin, dir2 .. "FromBFS/x3_pssm19csp17_K0_1000T_NMIN", "", numFolds)
+
+local k = {1, 2, 5, 10, 20, 50, 100, 200, 500, 666} --, 10000}
+--main("K", k, dir2 .. "FromBFS/x3_pssm19csp17_K", "_1000T_NMIN1", numFolds)
 --main("K", k, dir .. "K/x3_Win19_K", "_1000T_NMIN1", numFolds)
 --main("Task: ss8 - K", k, dir .. "Tasks/x3_ss8_Win19_K", "_1000T_NMIN1", numFolds)
 

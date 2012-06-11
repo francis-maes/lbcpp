@@ -55,6 +55,13 @@ namespace lbcpp
 class RTree : public Object
 {
 public:
+  RTree(size_t maxNumNodes, size_t numLeaves, size_t numPredictions)
+  {
+    treesState.maxNumNodes = maxNumNodes;
+    treesState.numLeaves = numLeaves;
+    treesState.numPredictions = numPredictions;
+  }
+
   Variable makePrediction(ExecutionContext& context, const Variable& input, const TypePtr& outputType) const
   {
     ScopedLock _(learnerLock);
@@ -196,16 +203,389 @@ public:
     nb_attributes = treesState.nb_attributes;
     getattval = treesState.getattval;
   }
+
+  void saveToXml(XmlExporter& exporter) const
+  {
+    exporter.enter(T("maxNumNodes"));
+    exporter.writeVariable(Variable(treesState.maxNumNodes, integerType), integerType);
+    exporter.leave();
+    
+    exporter.enter(T("numLeaves"));
+    exporter.writeVariable(Variable(treesState.numLeaves, integerType), integerType);
+    exporter.leave();
+    
+    exporter.enter(T("numPredictions"));
+    exporter.writeVariable(Variable(treesState.numPredictions, integerType), integerType);
+    exporter.leave();
+    
+    exporter.enter(T("nb_goal_multiregr"));
+    exporter.writeVariable(Variable(treesState.nb_goal_multiregr, integerType), integerType);
+    exporter.leave();
+    
+    exporter.enter(T("current_nb_of_ensemble_terms"));
+    exporter.writeVariable(Variable(treesState.current_nb_of_ensemble_terms, integerType), integerType);
+    exporter.leave();
+
+    exporter.enter(T("average_predictions_ltrees"));
+    exporter.writeVariable(Variable(treesState.average_predictions_ltrees, integerType), integerType);
+    exporter.leave();
+
+    exporter.enter(T("size_current_tree_table_pred"));
+    exporter.writeVariable(Variable(treesState.size_current_tree_table_pred, integerType), integerType);
+    exporter.leave();
+
+    exporter.enter(T("nb_attributes"));
+    exporter.writeVariable(Variable(treesState.nb_attributes, integerType), integerType);
+    exporter.leave();
+
+    String res = String::empty;
+    for (size_t i = 0; i < (size_t)treesState.current_nb_of_ensemble_terms; ++i)
+    {
+      if (i != 0)
+        res += T(" ");
+      res += String(treesState.ltrees[i]);
+    }
+    exporter.enter(T("ltrees"));
+    exporter.addTextElement(res);
+    exporter.leave();
+
+    res = String::empty;
+    for (size_t i = 0; i < (size_t)treesState.current_nb_of_ensemble_terms; ++i)
+    {
+      if (i != 0)
+        res += T(" ");
+      res += String(treesState.ltrees_weight[i]);
+    }
+    exporter.enter(T("ltrees_weight"));
+    exporter.addTextElement(res);
+    exporter.leave();
+
+    res = String::empty;
+    for (size_t i = 0; i < (size_t)treesState.maxNumNodes; ++i)
+    {
+      if (i != 0)
+        res += T(" ");
+      res += String(treesState.left_successor[i]);
+    }
+    exporter.enter(T("left_successor"));
+    exporter.addTextElement(res);
+    exporter.leave();
+
+    res = String::empty;
+    for (size_t i = 0; i < (size_t)treesState.maxNumNodes; ++i)
+    {
+      if (i != 0)
+        res += T(" ");
+      res += String(treesState.right_successor[i]);
+    }
+    exporter.enter(T("right_successor"));
+    exporter.addTextElement(res);
+    exporter.leave();
+
+    res = String::empty;
+    for (size_t i = 0; i < (size_t)treesState.maxNumNodes; ++i)
+    {
+      if (i != 0)
+        res += T(" ");
+      res += String(treesState.tested_attribute[i]);
+    }
+    exporter.enter(T("tested_attribute"));
+    exporter.addTextElement(res);
+    exporter.leave();
+
+    res = String::empty;
+    for (size_t i = 0; i < treesState.maxNumNodes; ++i)
+    {
+      String subRes = String::empty;
+      for (size_t j = 0; j < MAX_NUMBER_OF_SYMBOLIC_VALUES_DIV_32; ++j)
+      {
+        if (i != 0 || j != 0)
+          subRes += T(" ");
+        subRes += String(treesState.threshold[i].i[j]);
+      }
+      res += subRes;
+    }
+    exporter.enter(T("threshold"));
+    exporter.addTextElement(res);
+    exporter.leave();
+
+    res = String::empty;
+    for (size_t i = 0; i < treesState.maxNumNodes; ++i)
+    {
+      if (i != 0)
+        res += T(" ");
+      res += String(treesState.prediction[i]);
+    }
+    exporter.enter(T("prediction"));
+    exporter.addTextElement(res);
+    exporter.leave();
+
+    res = String::empty;
+    for (size_t i = 0; i < treesState.numLeaves; ++i)
+    {
+      String subRes = String::empty;
+      for (size_t j = 0; j < treesState.numPredictions; ++j)
+      {
+        if (i != 0 || j != 0)
+          subRes += T(" ");
+        subRes += String(treesState.prediction_values[i][j]);
+      }
+      res += subRes;
+    }
+    exporter.enter(T("prediction_values"));
+    exporter.addTextElement(res);
+    exporter.leave();
+    
+    res = String::empty;
+    for (size_t i = 0; i < (size_t)treesState.nb_attributes; ++i)
+    {
+      if (i != 0)
+        res += T(" ");
+      res += String(treesState.attribute_descriptors[i]);
+    }
+    exporter.enter(T("attribute_descriptors"));
+    exporter.addTextElement(res);
+    exporter.leave();
+  }
+  
+  bool loadFromXml(XmlImporter& importer)
+  {
+    if (importer.enter(T("maxNumNodes")))
+    {
+      treesState.maxNumNodes = (size_t)importer.getAllSubText().getIntValue();
+      importer.leave();
+    }
+    if (importer.enter(T("numLeaves")))
+    {
+      treesState.numLeaves = (size_t)importer.getAllSubText().getIntValue();
+      importer.leave();
+    }
+    if (importer.enter(T("numPredictions")))
+    {
+      treesState.numPredictions = (size_t)importer.getAllSubText().getIntValue();
+      importer.leave();
+    }
+    if (importer.enter(T("nb_goal_multiregr")))
+    {
+      treesState.nb_goal_multiregr = importer.getAllSubText().getIntValue();
+      importer.leave();
+    }
+    if (importer.enter(T("current_nb_of_ensemble_terms")))
+    {
+      treesState.current_nb_of_ensemble_terms = importer.getAllSubText().getIntValue();
+      importer.leave();
+    }
+    if (importer.enter(T("average_predictions_ltrees")))
+    {
+      treesState.average_predictions_ltrees = importer.getAllSubText().getIntValue();
+      importer.leave();
+    }
+    if (importer.enter(T("size_current_tree_table_pred")))
+    {
+      treesState.size_current_tree_table_pred = importer.getAllSubText().getIntValue();
+      importer.leave();
+    }
+    if (importer.enter(T("nb_attributes")))
+    {
+      treesState.nb_attributes = importer.getAllSubText().getIntValue();
+      importer.leave();
+    }
+
+    if (importer.enter(T("ltrees")))
+    {
+      StringArray tokens;
+      tokens.addTokens(importer.getAllSubText(), false);
+      jassert(tokens.size() == treesState.current_nb_of_ensemble_terms);
+      treesState.ltrees = (int*)MyMalloc(treesState.current_nb_of_ensemble_terms * sizeof(int));
+      if (treesState.ltrees == NULL)
+      {
+        importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (ltrees) !"));
+        return false;
+      }
+      for (size_t i = 0; i < (size_t)treesState.current_nb_of_ensemble_terms; ++i)
+        treesState.ltrees[i] = tokens[i].getIntValue();
+      importer.leave();
+    }
+    
+    if (importer.enter(T("ltrees_weight")))
+    {
+      StringArray tokens;
+      tokens.addTokens(importer.getAllSubText(), false);
+      jassert(tokens.size() == treesState.current_nb_of_ensemble_terms);
+      treesState.ltrees_weight = (float*)MyMalloc(treesState.current_nb_of_ensemble_terms * sizeof(float));
+      if (treesState.ltrees_weight == NULL)
+      {
+        importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (ltrees_weight) !"));
+        return false;
+      }
+      for (size_t i = 0; i < (size_t)treesState.current_nb_of_ensemble_terms; ++i)
+        treesState.ltrees_weight[i] = tokens[i].getFloatValue();
+      importer.leave();
+    }
+    
+    if (importer.enter(T("left_successor")))
+    {
+      StringArray tokens;
+      tokens.addTokens(importer.getAllSubText(), false);
+      jassert(tokens.size() == (int)treesState.maxNumNodes);
+      treesState.left_successor = (int*)MyMalloc(treesState.maxNumNodes * sizeof(int));
+      if (treesState.left_successor == NULL)
+      {
+        importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (left_successor) !"));
+        return false;
+      }
+      for (size_t i = 0; i < (size_t)treesState.maxNumNodes; ++i)
+        treesState.left_successor[i] = tokens[i].getIntValue();
+      importer.leave();
+    }
+    
+    if (importer.enter(T("right_successor")))
+    {
+      StringArray tokens;
+      tokens.addTokens(importer.getAllSubText(), false);
+      jassert(tokens.size() == (int)treesState.maxNumNodes);
+      treesState.right_successor = (int*)MyMalloc(treesState.maxNumNodes * sizeof(int));
+      if (treesState.right_successor == NULL)
+      {
+        importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (right_successor) !"));
+        return false;
+      }
+      for (size_t i = 0; i < (size_t)treesState.maxNumNodes; ++i)
+        treesState.right_successor[i] = tokens[i].getIntValue();
+      importer.leave();
+    }
+    
+    if (importer.enter(T("tested_attribute")))
+    {
+      StringArray tokens;
+      tokens.addTokens(importer.getAllSubText(), false);
+      jassert(tokens.size() == (int)treesState.maxNumNodes);
+      treesState.tested_attribute = (int*)MyMalloc(treesState.maxNumNodes * sizeof(int));
+      if (treesState.tested_attribute == NULL)
+      {
+        importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (tested_attribute) !"));
+        return false;
+      }
+      for (size_t i = 0; i < (size_t)treesState.maxNumNodes; ++i)
+        treesState.tested_attribute[i] = tokens[i].getIntValue();
+      importer.leave();
+    }
+    
+    if (importer.enter(T("tested_attribute")))
+    {
+      StringArray tokens;
+      tokens.addTokens(importer.getAllSubText(), false);
+      jassert(tokens.size() == (int)treesState.maxNumNodes);
+      treesState.tested_attribute = (int*)MyMalloc(treesState.maxNumNodes * sizeof(int));
+      if (treesState.tested_attribute == NULL)
+      {
+        importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (tested_attribute) !"));
+        return false;
+      }
+      for (size_t i = 0; i < (size_t)treesState.maxNumNodes; ++i)
+        treesState.tested_attribute[i] = tokens[i].getIntValue();
+      importer.leave();
+    }
+    
+    if (importer.enter(T("threshold")))
+    {
+      StringArray tokens;
+      tokens.addTokens(importer.getAllSubText(), false);
+      jassert(tokens.size() == (int)treesState.maxNumNodes * MAX_NUMBER_OF_SYMBOLIC_VALUES_DIV_32);
+      treesState.threshold = (union threshold_type*)MyMalloc(treesState.maxNumNodes * sizeof(union threshold_type));
+      if (treesState.threshold == NULL)
+      {
+        importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (threshold) !"));
+        return false;
+      }
+      for (size_t i = 0; i < (size_t)treesState.maxNumNodes; ++i)
+        for (size_t j = 0; j < MAX_NUMBER_OF_SYMBOLIC_VALUES_DIV_32; ++j)
+          treesState.threshold[i].i[j] = tokens[i * MAX_NUMBER_OF_SYMBOLIC_VALUES_DIV_32 + j].getIntValue();
+      importer.leave();
+    }
+    
+    if (importer.enter(T("prediction")))
+    {
+      StringArray tokens;
+      tokens.addTokens(importer.getAllSubText(), false);
+      jassert(tokens.size() == (int)treesState.maxNumNodes);
+      treesState.prediction = (int*)MyMalloc(treesState.maxNumNodes * sizeof(int));
+      if (treesState.prediction == NULL)
+      {
+        importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (prediction) !"));
+        return false;
+      }
+      for (size_t i = 0; i < (size_t)treesState.maxNumNodes; ++i)
+        treesState.prediction[i] = tokens[i].getIntValue();
+      importer.leave();
+    }
+    
+    if (importer.enter(T("prediction_values")))
+    {
+      StringArray tokens;
+      tokens.addTokens(importer.getAllSubText(), false);
+      jassert(tokens.size() == (int)treesState.numLeaves * (int)treesState.numPredictions);
+      treesState.prediction_values = (float**)MyMalloc(treesState.numLeaves * sizeof(float*));
+      if (treesState.prediction_values == NULL)
+      {
+        importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (prediction_values) !"));
+        return false;
+      }
+      for (size_t i = 0; i < treesState.numLeaves; ++i)
+      {
+        treesState.prediction_values[i] = (float*)MyMalloc(treesState.numPredictions * sizeof(float));
+        if (treesState.prediction_values[i] == NULL)
+        {
+          importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (prediction_values[") + String((int)i) + T("]) !"));
+          return false;
+        }
+        for (size_t j = 0; j < treesState.numPredictions; ++j)
+          treesState.prediction_values[i][j] = tokens[i * treesState.numPredictions + j].getIntValue();
+      }
+      importer.leave();
+    }
+
+    if (importer.enter(T("attribute_descriptors")))
+    {
+      StringArray tokens;
+      tokens.addTokens(importer.getAllSubText(), false);
+      jassert(tokens.size() == (int)treesState.nb_attributes);
+      treesState.attribute_descriptors = (int*)MyMalloc(treesState.nb_attributes * sizeof(int));
+      if (treesState.attribute_descriptors == NULL)
+      {
+        importer.getContext().errorCallback(T("RTree::loadFromXml"), T("Malloc failed (attribute_descriptors) !"));
+        return false;
+      }
+      for (size_t i = 0; i < (size_t)treesState.nb_attributes; ++i)
+        treesState.attribute_descriptors[i] = tokens[i].getIntValue();
+      importer.leave();
+    }
+
+    treesState.get_tree_prediction_vector = get_tree_prediction_vector_classical;
+    treesState.getattval = getattval_normal;
+    
+    set_print_result(0, 0);
+    goal_type = MULTIREGR;
+    goal = MULTIREGR;
+    length_attribute_descriptors = treesState.nb_attributes;
+    nb_classes = 0;
+    
+    return true;
+  }
   
 protected:
   struct
   {
+    size_t maxNumNodes;
+    size_t numLeaves;
+    size_t numPredictions;
     int nb_goal_multiregr;
     int current_nb_of_ensemble_terms;
     int* ltrees; // need to be copied form 0 to current_nb_of_ensemble_terms
     float* ltrees_weight; // need to be copied form 0 to current_nb_of_ensemble_terms
     int average_predictions_ltrees;
     float *(*get_tree_prediction_vector)(int tree, int obj); // normaly, this fonction is constant
+                                                             // get_tree_prediction_vector_classical
     int* left_successor;
     int* right_successor;
     int* tested_attribute;
@@ -216,6 +596,7 @@ protected:
     int* attribute_descriptors;
     int nb_attributes;
     float (*getattval)(int obj, int att); // normaly, this fonction is constant
+                                          // getattval_normal
   } treesState;
 };
 
@@ -248,6 +629,28 @@ Variable RTreeFunction::computeFunction(ExecutionContext& context, const Variabl
     Variable::missingValue(getOutputType());
   return trees.staticCast<RTree>()->makePrediction(context, inputs[0], getInputVariable(1)->getType());
 }
+
+void RTreeFunction::saveToXml(XmlExporter& exporter) const
+{
+  Object::saveToXml(exporter);
+  exporter.enter(T("rTree"));
+  trees->saveToXml(exporter);
+  exporter.leave();
+}
+
+bool RTreeFunction::loadFromXml(XmlImporter& importer)
+{
+  if (!Object::loadFromXml(importer))
+    return false;
+  if (!importer.enter(T("rTree")))
+    return false;
+  trees = new RTree(0,0,0);
+  if (!trees->loadFromXml(importer))
+    return false;
+  importer.leave();
+  return true;
+}
+
 
 /*
 ** RTreeBatchLearner
@@ -425,9 +828,9 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
   int maxnbnodes = number_of_ensemble_terms
   * (best_first * (2 * best_first_max_nb_tests + 1)
      + (1 - best_first) * (2 * nb_obj_in_core_table - 1));
-  allocate_tree_tables(maxnbnodes,
-                       (int)ceil((double)(maxnbnodes + number_of_ensemble_terms) / 2),
-                       multiregr_savepred * nb_goal_multiregr, 0);
+  int nb_leaves = (int)ceil((double)(maxnbnodes + number_of_ensemble_terms) / 2);
+  int nb_pred = multiregr_savepred * nb_goal_multiregr;
+  allocate_tree_tables(maxnbnodes, nb_leaves, nb_pred, 0);
   allocate_multiregr_table_score(nb_goal_multiregr);
   
   clean_all_trees();
@@ -467,7 +870,7 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
   }
 
   /* Sauvegarde de l'arbre */
-  RTreePtr trees = new RTree();
+  RTreePtr trees = new RTree(maxnbnodes, nb_leaves, nb_pred);
   trees->saveTreesState();
   rTreeFunction->setTrees(trees);
 
