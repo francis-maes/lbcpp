@@ -73,6 +73,9 @@ public:
         result[it->second] = i;
     }
   }
+  
+  virtual void saveToXml(XmlExporter& exporter) const;
+  virtual bool loadFromXml(XmlImporter& importer);
 
 protected:
   friend class RTreeFunctionClass;

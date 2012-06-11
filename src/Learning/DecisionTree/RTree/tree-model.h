@@ -147,6 +147,9 @@ void (*find_a_threshold_symb)(int att, int *ls_vector, int start, int end);
 
 void write_one_tree(int tree, FILE *fp);
 
+DllExport void save_ensemble(char *filename);
+DllExport void load_ensemble(char *filename);
+
 /* Sorting function */
 
 void quicksort_ls_vector(int ls_vector[], int start, int end, int att);

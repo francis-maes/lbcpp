@@ -3378,6 +3378,11 @@ DllExport void prettyprinttree(int tree, int max_depth) {
 float *get_tree_prediction_vector_classical(int tree, int obj) {
   int current_node=tree;
   while (left_successor[current_node]!=-1) {
+    /*
+    std::cout << current_node << " [" << tested_attribute[current_node]
+              << "(" << getattval(obj,tested_attribute[current_node]) << ") > "
+              << threshold[current_node].f << "] " << std::endl;
+     */
     if (check_test(tested_attribute[current_node],
 		   getattval(obj,tested_attribute[current_node]), 
 		   threshold[current_node]))
@@ -3385,6 +3390,7 @@ float *get_tree_prediction_vector_classical(int tree, int obj) {
     else
       current_node+=right_successor[current_node];
   }
+  //std::cout << "Results: (" << prediction[current_node] << ") " << prediction_values[prediction[current_node]][0] << " vs. " << prediction_values[prediction[current_node]][1] << std::endl;
   return prediction_values[prediction[current_node]];
 }
 
