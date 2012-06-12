@@ -407,6 +407,11 @@
 <!-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -->
 
 
+  <class name="PlosComputationalBiologyJournal" base="WorkUnit">
+    <variable type="File" name="fastaFile"/>
+    <variable type="File" name="pssmFile"/>
+  </class>
+
   <class name="TestStudentDistributionWorkUnit" base="WorkUnit"/>
 
 
