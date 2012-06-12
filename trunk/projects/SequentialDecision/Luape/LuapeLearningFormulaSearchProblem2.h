@@ -229,7 +229,7 @@ protected:
 
   ContainerPtr loadData(ExecutionContext& context, const File& file) const
   { 
-    static const bool sparseData = true;
+   // static const bool sparseData = true;
 
     context.enterScope(T("Loading ") + file.getFileName());
 

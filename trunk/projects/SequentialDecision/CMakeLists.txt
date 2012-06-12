@@ -141,6 +141,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
   Luape/LuapeSandBox.h
   Luape/LuapeClassificationSandBox.h
   Luape/MCObjective.h
+  Luape/MCProblem.h
   Luape/MCAlgorithm.h
   Luape/MCOptimizer.h
   Luape/MetaMCSandBox.h

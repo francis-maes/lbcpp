@@ -36,7 +36,7 @@ public:
     
     double correctWeight = objective->getCorrectWeight();
     double errorWeight = objective->getErrorWeight();
-    double missingWeight = objective->getMissingWeight();
+    //double missingWeight = objective->getMissingWeight();
 
     double epsilon = 1.0 / (double)problem->getTrainingCache()->getNumSamples();
     //std::cout << "Correct: " << correctWeight << " Error: " << errorWeight << " Missing: " << missingWeight << " => vote = " << 0.5 * log((correctWeight + epsilon) / (errorWeight + epsilon)) << std::endl;

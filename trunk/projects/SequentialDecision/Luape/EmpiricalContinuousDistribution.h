@@ -19,7 +19,7 @@ namespace lbcpp
 class EmpiricalContinuousDistribution : public Object
 {
 public:
-  EmpiricalContinuousDistribution() : isSorted(true), sum(0.0), sumOfSquares(0.0) {}
+  EmpiricalContinuousDistribution() : sum(0.0), sumOfSquares(0.0), isSorted(true) {}
 
   void observe(double value)
   {
