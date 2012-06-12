@@ -245,7 +245,7 @@ protected:
         bestActions[i] = actions[i];
       
       DecisionProblemStatePtr bestFinalState;
-      double score = subSearch(context, objective, state, bestActions, bestFinalState);
+      /*double score = */subSearch(context, objective, state, bestActions, bestFinalState);
 
       /*if (bestFinalState)
       {

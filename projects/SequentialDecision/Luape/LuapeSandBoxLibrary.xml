@@ -4,11 +4,22 @@
 
   <!-- MC Objective -->
   <class name="MCObjective" abstract="yes"/>
-
   <class name="LuapeMCObjective" base="MCObjective" abstract="yes">
     <variable type="LuapeInference" name="problem"/>
   </class>
   <class name="SymbolicRegressionMCObjective" base="LuapeMCObjective"/>
+
+  <!-- MC Problem --> 
+  <class name="MCProblem" abstract="yes"/>
+  <class name="DecisionProblemMCProblem" base="MCProblem" shortName="dp2mc">
+    <variable type="DecisionProblem" name="decisionProblem"/>
+  </class>
+  <class name="F8SymbolicRegressionMCProblem" base="MCProblem" shortName="f8symbreg">
+    <variable type="PositiveInteger" name="maxDepth"/>
+  </class>
+  <class name="PrimeNumberMCProblem" base="MCProblem" shortName="prime">
+    <variable type="PositiveInteger" name="maxDepth"/>
+  </class>
 
   <!-- MC Algorithm -->
   <class name="MCAlgorithm" abstract="yes"/>
@@ -48,9 +59,10 @@
   
   <!-- Sand Box -->
   <class name="MetaMCSandBox" base="WorkUnit">
+    <variable type="MCProblem" name="problem"/>
     <variable type="PositiveInteger" name="budget"/>
-    <variable type="PositiveInteger" name="complexity"/>
-    <variable type="PositiveInteger" name="numRuns"/>
+    <variable type="PositiveInteger" name="maxAlgorithmSize"/>
+    <variable type="Double" name="explorationCoefficient"/>
   </class>
 
   <class name="LuapeSandBox" base="WorkUnit">

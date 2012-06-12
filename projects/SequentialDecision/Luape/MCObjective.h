@@ -18,6 +18,7 @@ namespace lbcpp
 class MCObjective : public Object
 {
 public:
+  // this score should be maximized
   virtual double evaluate(ExecutionContext& context, DecisionProblemStatePtr finalState) = 0;
   virtual bool shouldStop() const
     {return false;}
@@ -47,6 +48,7 @@ protected:
   LuapeInferencePtr problem;
 };
 
+// negative average absolute difference
 class SymbolicRegressionMCObjective : public LuapeMCObjective
 {
 public:

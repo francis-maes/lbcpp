@@ -675,10 +675,10 @@ public:
 
     TypePtr inputType = splits[0].first->getClass()->getTemplateArgument(0)->getTemplateArgument(0);
     
-    static const size_t numIterations = 1000;
+//    static const size_t numIterations = 1000;
 
     LuapeLearnerPtr conditionLearner, learner;
-    size_t Kdef = (size_t)(0.5 + sqrt((double)numVariables));
+ //   size_t Kdef = (size_t)(0.5 + sqrt((double)numVariables));
 
     conditionLearner = exactWeakLearner(inputsNodeBuilder());
     conditionLearner->setVerbose(verbose);

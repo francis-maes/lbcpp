@@ -1,0 +1,199 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: MCProblem.h                    | Monte Carlo Problem             |
+| Author  : Francis Maes                   |                                 |
+| Started : 12/06/2012 15:20               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#ifndef LBCPP_LUAPE_MC_PROBLEM_H_
+# define LBCPP_LUAPE_MC_PROBLEM_H_
+
+# include "MCObjective.h"
+
+namespace lbcpp
+{
+
+class MCProblem : public Object
+{
+public:
+  virtual void getObjectiveRange(double& worst, double& best) const = 0;
+  virtual std::pair<DecisionProblemStatePtr, MCObjectivePtr> getInstance(ExecutionContext& context, size_t instanceIndex) = 0;
+};
+
+typedef ReferenceCountedObjectPtr<MCProblem> MCProblemPtr;
+
+class DecisionProblemMCProblem : public MCProblem
+{
+public:
+  DecisionProblemMCProblem(DecisionProblemPtr decisionProblem = DecisionProblemPtr())
+    : decisionProblem(decisionProblem) {}
+
+  virtual void getObjectiveRange(double& worst, double& best) const
+    {worst = 0.0; best = decisionProblem->getMaxReward();}
+  
+  struct Objective : public MCObjective
+  {
+    virtual double evaluate(ExecutionContext& context, DecisionProblemStatePtr finalState)
+      {return finalState->getFinalStateReward();}
+  };
+  
+  virtual std::pair<DecisionProblemStatePtr, MCObjectivePtr> getInstance(ExecutionContext& context, size_t instanceIndex)
+  {
+    if (instances.size() <= instanceIndex)
+    {
+      MCObjectivePtr objective = new Objective();
+      while (instances.size() <= instanceIndex)
+        instances.push_back(std::make_pair(decisionProblem->sampleInitialState(context), objective));
+    }
+    return instances[instanceIndex];
+  }
+
+protected:
+  friend class DecisionProblemMCProblemClass;
+  
+  DecisionProblemPtr decisionProblem;
+  
+  std::vector< std::pair<DecisionProblemStatePtr, MCObjectivePtr> > instances;
+};
+
+class F8SymbolicRegressionMCProblem : public MCProblem
+{
+public:
+  F8SymbolicRegressionMCProblem(size_t maxDepth = 10)
+    : maxDepth(maxDepth) {}
+    
+  virtual std::pair<DecisionProblemStatePtr, MCObjectivePtr> getInstance(ExecutionContext& context, size_t instanceIndex)
+  {
+    LuapeRegressorPtr problem = createProblem(context, 1 + (instanceIndex % 8));
+    LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = problem->getSearchSpace(context, maxDepth);
+    DecisionProblemStatePtr initialState(new LuapeNodeBuilderState(problem, typeSearchSpace));
+    MCObjectivePtr objective(new SymbolicRegressionMCObjective(problem));
+    return std::make_pair(initialState, objective);
+  }
+    
+  virtual void getObjectiveRange(double& worst, double& best) const
+    {worst = -1.0; best = 0.0;}
+  
+protected:
+  friend class F8SymbolicRegressionMCProblemClass;
+  
+  size_t maxDepth;
+
+  LuapeRegressorPtr createProblem(ExecutionContext& context, size_t problemNumber) const
+  {
+    LuapeRegressorPtr regressor = new LuapeRegressor();
+
+    regressor->addInput(doubleType, "x");
+
+    regressor->addConstant(1.0);
+
+    regressor->addFunction(logDoubleLuapeFunction());
+    regressor->addFunction(expDoubleLuapeFunction());
+    regressor->addFunction(sinDoubleLuapeFunction());
+    regressor->addFunction(cosDoubleLuapeFunction());
+
+    regressor->addFunction(addDoubleLuapeFunction());
+    regressor->addFunction(subDoubleLuapeFunction());
+    regressor->addFunction(mulDoubleLuapeFunction());
+    regressor->addFunction(divDoubleLuapeFunction());
+
+    RandomGeneratorPtr random = context.getRandomGenerator();
+    std::vector<ObjectPtr> examples(20);
+
+    double lowerLimit = -1.0;
+    double upperLimit = 1.0;
+    if (problemNumber == 7)
+      lowerLimit = 0.0, upperLimit = 2.0;
+    else if (problemNumber == 8)
+      lowerLimit = 0.0, upperLimit = 4.0;
+
+    for (size_t i = 0; i < examples.size(); ++i)
+    {
+      double x = lowerLimit + (upperLimit - lowerLimit) * i / (examples.size() - 1.0);// random->sampleDouble(lowerLimit, upperLimit);
+      double y = computeFunction(problemNumber, x);
+      examples[i] = new Pair(new DenseDoubleVector(singletonEnumeration, doubleType, 1, x), y);
+    }
+    regressor->setSamples(context, examples);
+    return regressor;
+  }
+
+  static double computeFunction(size_t problemNumber, double x)
+  {
+    double x2 = x * x;
+    switch (problemNumber)
+    {
+    case 1: return x * x2 + x2 + x;
+    case 2: return x2 * x2 + x * x2 + x2 + x;
+    case 3: return x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
+    case 4: return x2 * x2 * x2 + x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
+    case 5: return sin(x2) * cos(x) - 1.0;
+    case 6: return sin(x) + sin(x + x2);
+    case 7: return log(x + 1) + log(x2 + 1);
+    case 8: return sqrt(x);
+    default: jassert(false); return 0.0;
+    };
+  }
+};
+
+class PrimeNumberMCProblem : public MCProblem
+{
+public:
+  PrimeNumberMCProblem(size_t maxDepth = 10)
+    : maxDepth(maxDepth) {}
+  
+  struct Objective : public LuapeMCObjective
+  {
+    Objective(LuapeRegressorPtr regressor)
+      : LuapeMCObjective(regressor) {}
+
+    virtual double evaluate(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& formula)
+    {
+      // TODO: implement evaluation function
+      for (int x = 1; x < 10; ++x)
+      {
+        // example of use:
+        int fx = evaluateFormula(context, formula, x);
+        // ...
+      }
+      return 0.0;
+    }
+    
+    // evaluateFormula() is a utility function to evaluate the formula given an integer input
+    int evaluateFormula(ExecutionContext& context, const LuapeNodePtr& formula, int input) const
+    {
+      Variable in(input);
+      double res = formula->compute(context, &in).getDouble();
+      return res == doubleMissingValue ? 0 : juce::roundDoubleToInt(res);
+    }
+  };
+        
+  virtual std::pair<DecisionProblemStatePtr, MCObjectivePtr> getInstance(ExecutionContext& context, size_t instanceIndex)
+  {
+    LuapeRegressorPtr regressor = new LuapeRegressor();
+    regressor->addInput(doubleType, "x");
+
+    // TODO: setup constants and functions here
+    regressor->addConstant(1.0);
+    regressor->addFunction(addDoubleLuapeFunction());
+    regressor->addFunction(subDoubleLuapeFunction());
+    regressor->addFunction(mulDoubleLuapeFunction());
+    regressor->addFunction(divDoubleLuapeFunction());
+
+    LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = regressor->getSearchSpace(context, maxDepth);
+    DecisionProblemStatePtr initialState(new LuapeNodeBuilderState(regressor, typeSearchSpace));
+    return std::make_pair(initialState, new Objective(regressor));
+  }
+    
+  virtual void getObjectiveRange(double& worst, double& best) const
+    {worst = 0.0; best = 10.0;} // TODO: fill the worst and best value that the objective function can take
+  
+protected:
+  friend class PrimeNumberMCProblemClass;
+  
+  size_t maxDepth;
+};
+
+}; /* namespace lbcpp */
+
+#endif // !LBCPP_LUAPE_MC_PROBLEM_H_
