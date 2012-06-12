@@ -825,6 +825,9 @@ public:
 */
   virtual FunctionPtr learningMachine(ProteinTarget target) const
   {
+    if (learner)
+      return learner;
+    
     // TODO: incorporate bias in case of binary target
     if (learningMachineName == T("LibSVM"))
       return new PreProcessInputCompositeFunction(doubleVectorNormalizeFunction(true, true)
@@ -892,6 +895,8 @@ public:
   bool useFisherFilter;
   size_t numFisherFeatures;
   bool useNormalization;
+  
+  FunctionPtr learner;
 
 protected:
   friend class LargeProteinPredictorParametersClass;

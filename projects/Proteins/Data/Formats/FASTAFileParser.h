@@ -54,7 +54,7 @@ private:
   
   void flush()
   {
-    if (currentName.isNotEmpty() && currentAminoAcidSequence.isNotEmpty())
+    if (/*currentName.isNotEmpty() && */currentAminoAcidSequence.isNotEmpty())
     {
       ProteinPtr res = new Protein(currentName);
       res->setPrimaryStructure(currentAminoAcidSequence);
