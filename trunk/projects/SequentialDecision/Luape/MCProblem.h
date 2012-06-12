@@ -115,6 +115,7 @@ protected:
       examples[i] = new Pair(new DenseDoubleVector(singletonEnumeration, doubleType, 1, x), y);
     }
     regressor->setSamples(context, examples);
+    regressor->getTrainingCache()->disableCaching();
     return regressor;
   }
 
