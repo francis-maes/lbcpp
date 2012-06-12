@@ -75,6 +75,7 @@ public:
   virtual double evaluate(ExecutionContext& context, DecisionProblemStatePtr finalState)
   {
     ++numEvaluations;
+    /*
     LuapeNodeBuilderStatePtr builder = finalState.staticCast<LuapeNodeBuilderState>();
     if (builder->getStackSize() != 1)
       return -DBL_MAX;
@@ -87,7 +88,8 @@ public:
         ++numCachedEvaluations;
         return it->second;
       }
-    }
+    }*/
+    
     //context.informationCallback(finalState->toShortString());
     double res = objective->evaluate(context, finalState);
     bestScoreSoFar = juce::jmax(res, bestScoreSoFar);
@@ -98,8 +100,8 @@ public:
       nextCurvePoint *= 2;
     }
 
-    if (useCache)
-      cache[node] = res;
+//    if (useCache)
+//      cache[node] = res;
     return res;
   }
 
@@ -121,7 +123,7 @@ protected:
   bool useCache;
   size_t numEvaluations;
   size_t numCachedEvaluations;
-  std::map<LuapeNodePtr, double> cache;
+//  std::map<LuapeNodePtr, double> cache;
 
   double bestScoreSoFar;
   size_t nextCurvePoint;
