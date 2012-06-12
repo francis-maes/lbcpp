@@ -65,8 +65,6 @@ public:
     {return new LookAheadMCAlgorithm(input);}
 };
 
-/////////////////
-
 class CacheAndFiniteBudgetMCObjective : public MCObjective
 {
 public:
@@ -130,6 +128,8 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<CacheAndFiniteBudgetMCObjective> CacheAndFiniteBudgetMCObjectivePtr;
+
+/////////////////
 
 class MetaMCSandBox : public WorkUnit
 {

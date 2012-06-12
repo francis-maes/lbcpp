@@ -82,4 +82,12 @@
     <constructor/>
   </class>
   
+   <!-- Sudoku -->
+  <class name="SudokuState" base="DecisionProblemState">
+  </class>
+  <class name="SudokuProblem" base="DecisionProblem" shortName="sudoku">
+    <constructor/>
+    <variable type="PositiveInteger" name="sudokuSize"/>
+  </class>
+  
 </library>
