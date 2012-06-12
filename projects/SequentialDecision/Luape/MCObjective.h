@@ -72,6 +72,7 @@ public:
 typedef ReferenceCountedObjectPtr<SymbolicRegressionMCObjective> SymbolicRegressionMCObjectivePtr;
 
 
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_LUAPE_MC_OBJECTIVE_H_
