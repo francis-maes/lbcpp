@@ -65,9 +65,19 @@ public:
     
   virtual std::pair<DecisionProblemStatePtr, MCObjectivePtr> getInstance(ExecutionContext& context, size_t instanceIndex)
   {
-    LuapeRegressorPtr problem = createProblem(context, 1 + (instanceIndex % 8));
-    LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = problem->getSearchSpace(context, maxDepth);
-    DecisionProblemStatePtr initialState(new LuapeNodeBuilderState(problem, typeSearchSpace));
+    if (instances.empty())
+    {
+      instances.resize(8);
+      for (size_t i = 0; i < instances.size(); ++i)
+      {
+        LuapeRegressorPtr problem = createInstance(context, i + 1);
+        LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = problem->getSearchSpace(context, maxDepth);
+        DecisionProblemStatePtr initialState(new LuapeNodeBuilderState(problem, typeSearchSpace));
+        instances[i] = std::make_pair(problem, initialState);
+      }
+    }
+    LuapeRegressorPtr problem = instances[instanceIndex % 8].first;
+    DecisionProblemStatePtr initialState = instances[instanceIndex % 8].second->cloneAndCast<DecisionProblemState>();
     MCObjectivePtr objective(new SymbolicRegressionMCObjective(problem));
     return std::make_pair(initialState, objective);
   }
@@ -79,8 +89,9 @@ protected:
   friend class F8SymbolicRegressionMCProblemClass;
   
   size_t maxDepth;
+  std::vector< std::pair<LuapeRegressorPtr, DecisionProblemStatePtr> > instances;
 
-  LuapeRegressorPtr createProblem(ExecutionContext& context, size_t problemNumber) const
+  LuapeRegressorPtr createInstance(ExecutionContext& context, size_t problemNumber) const
   {
     LuapeRegressorPtr regressor = new LuapeRegressor();
 
@@ -115,7 +126,7 @@ protected:
       examples[i] = new Pair(new DenseDoubleVector(singletonEnumeration, doubleType, 1, x), y);
     }
     regressor->setSamples(context, examples);
-    regressor->getTrainingCache()->disableCaching();
+    regressor->getTrainingCache()->disableCaching();// setMaxSizeInMegaBytes(100);
     return regressor;
   }
 

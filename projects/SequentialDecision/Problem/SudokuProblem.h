@@ -64,7 +64,7 @@ public:
   virtual bool isFinalState() const
     {return finalState;}
 
-  virtual bool getFinalStateReward() const
+  virtual double getFinalStateReward() const
     {return finalStateReward;}
 
 protected:
