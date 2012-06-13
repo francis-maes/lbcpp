@@ -58,7 +58,7 @@ public:
     return bestScore;
   }    
 
-  virtual void initialize(ExecutionContext& context) {}
+  virtual void reset(ExecutionContext& context) {}
 
 protected:
   virtual void search(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr initialState) = 0;
@@ -130,8 +130,8 @@ public:
   const MCAlgorithmPtr& getAlgorithm() const
     {return algorithm;}
 
-  virtual void initialize(ExecutionContext& context)
-    {if (algorithm) algorithm->initialize(context);}
+  virtual void reset(ExecutionContext& context)
+    {if (algorithm) algorithm->reset(context);}
 
 protected:
   friend class DecoratorMCAlgorithmClass;
@@ -302,12 +302,6 @@ public:
     : DecoratorMCAlgorithm(algorithm), explorationCoefficient(explorationCoefficient) {}
   SelectMCAlgorithm() {}
 
-  virtual void initialize(ExecutionContext& context)
-  {
-    trees.clear();
-    DecoratorMCAlgorithm::initialize(context);
-  }
-
   virtual void search(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr initialState)
   {
     SinglePlayerMCTSNodePtr& root = trees[initialState->toShortString()];
@@ -335,6 +329,12 @@ public:
     
    // std::cout << " ==> reward = " << reward << std::endl;
     leaf->backPropagate(reward);
+  }
+
+  virtual void reset(ExecutionContext& context)
+  {
+    trees.clear();
+    DecoratorMCAlgorithm::reset(context);
   }
 
 private:
