@@ -39,12 +39,31 @@ public:
 class IterateMCAlgorithmLuapeFunction : public MCAlgorithmLuapeFunction
 {
 public:
- virtual TypePtr initialize(const TypePtr* inputTypes)
+  IterateMCAlgorithmLuapeFunction() : numIterations(2) {}
+
+  virtual TypePtr initialize(const TypePtr* inputTypes)
     {return iterateMCAlgorithmClass;}
 
   virtual MCAlgorithmPtr createAlgorithm(const MCAlgorithmPtr& input) const
-    {return new IterateMCAlgorithm(input, 4);}
+    {return new IterateMCAlgorithm(input, numIterations);}
+
+  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
+  {
+    jassert(index == 0);
+    VectorPtr candidates = vector(positiveIntegerType, 3);
+    candidates->setElement(0, Variable(2, positiveIntegerType));
+    candidates->setElement(1, Variable(3, positiveIntegerType));
+    candidates->setElement(2, Variable(5, positiveIntegerType));
+    return candidates;
+  }
+
+protected:
+  friend class IterateMCAlgorithmLuapeFunctionClass;
+
+  size_t numIterations;
 };
+
+extern ClassPtr iterateMCAlgorithmLuapeFunctionClass;
 
 class StepMCAlgorithmLuapeFunction : public MCAlgorithmLuapeFunction
 {
@@ -65,6 +84,38 @@ public:
   virtual MCAlgorithmPtr createAlgorithm(const MCAlgorithmPtr& input) const
     {return new LookAheadMCAlgorithm(input);}
 };
+
+class MCAlgorithmsUniverse : public LuapeUniverse
+{
+public:
+  size_t getNumIterations(const LuapeNodePtr& node) const
+  {
+    if (!node.isInstanceOf<LuapeFunctionNode>())
+      return 0;
+    const LuapeFunctionNodePtr& functionNode = node.staticCast<LuapeFunctionNode>();
+    const LuapeFunctionPtr& function = functionNode->getFunction();
+    return function.isInstanceOf<IterateMCAlgorithmLuapeFunction>() ? (size_t)function->getVariable(0).getInteger() : 0;
+  }
+
+  virtual LuapeNodePtr canonizeNode(const LuapeNodePtr& node)
+  {
+    // iterate(N_1, iterate(N_2, S)) ==> iterate(N_1 * N_2, S)
+    size_t numIterations = getNumIterations(node);
+    if (numIterations > 0)
+    {
+      size_t numIterations2 = getNumIterations(node->getSubNode(0));
+      if (numIterations2 > 0)
+      {
+        LuapeFunctionPtr function = makeFunction(iterateMCAlgorithmLuapeFunctionClass, std::vector<Variable>(1, numIterations * numIterations2));
+        LuapeNodePtr argument = node->getSubNode(0)->getSubNode(0);
+        return makeFunctionNode(function, argument);
+      }
+    }
+    return node;
+  }
+};
+
+/////////////////////////////////
 
 class CacheAndFiniteBudgetMCObjective : public MCObjective
 {
@@ -146,12 +197,15 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     // create arms
+    context.enterScope("Create arms");
     BanditPoolPtr pool = new BanditPool(new AlgorithmObjective(problem, budget), explorationCoefficient);
     generateMCAlgorithms(context, pool);
-    context.informationCallback(String((int)pool->getNumArms()) + T(" Arms"));
+    context.leaveScope((int)pool->getNumArms());
 
     // play arms
+    context.enterScope("Play arms");
     pool->playIterations(context, 100, pool->getNumArms());
+    context.leaveScope();
 
     // display results
     context.enterScope("Arms");
@@ -175,7 +229,7 @@ protected:
 
   void generateMCAlgorithms(ExecutionContext& context, BanditPoolPtr pool)
   {
-    LuapeInferencePtr problem = new LuapeInference();
+    LuapeInferencePtr problem = new LuapeInference(new MCAlgorithmsUniverse());
 
     problem->addConstant(rollout());
     problem->addFunction(new IterateMCAlgorithmLuapeFunction());
@@ -186,13 +240,31 @@ protected:
     std::vector<LuapeNodePtr> nodes;
     problem->enumerateNodesExhaustively(context, maxAlgorithmSize + 1, nodes, true);
 
+    std::set<LuapeNodePtr> uniqueNodes;
     for (size_t i = 0; i < nodes.size(); ++i)
     {
       LuapeNodePtr node = nodes[i];
       MCAlgorithmPtr algorithm = node->compute(context).getObjectAndCast<MCAlgorithm>();
       if (!algorithm.isInstanceOf<IterateMCAlgorithm>())
-        pool->createArm(algorithm);
+        uniqueNodes.insert(node);
     }
+
+    pool->reserveArms(uniqueNodes.size());
+    size_t count = 0;
+    for (std::set<LuapeNodePtr>::const_iterator it = uniqueNodes.begin(); it != uniqueNodes.end(); ++it)
+    {
+      LuapeNodePtr node = *it;
+      MCAlgorithmPtr algorithm = node->compute(context).getObjectAndCast<MCAlgorithm>();
+      ++count;
+      if (count < 20)
+        context.informationCallback(algorithm->toShortString());
+      else if (count == 20)
+        context.informationCallback("...");
+
+      pool->createArm(algorithm);
+    }
+
+    context.informationCallback("Num algorithms exhaustive: " + String((int)nodes.size()) + T(", pruned: ") + String((int)uniqueNodes.size()));
   }
 
   struct AlgorithmObjective : public BanditPoolObjective

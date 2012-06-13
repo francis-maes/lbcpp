@@ -23,14 +23,14 @@
 
   <!-- MC Algorithm -->
   <class name="MCAlgorithm" abstract="yes"/>
-  <class name="RolloutMCAlgorithm" base="MCAlgorithm" shortName="rollout"/>
+  <class name="RolloutMCAlgorithm" base="MCAlgorithm" shortName="simulate"/>
   <class name="DecoratorMCAlgorithm" base="MCAlgorithm" abstract="yes">
     <variable type="MCAlgorithm" name="algorithm"/>
   </class>
-  <class name="IterateMCAlgorithm" base="DecoratorMCAlgorithm" shortName="iterate">
+  <class name="IterateMCAlgorithm" base="DecoratorMCAlgorithm" shortName="repeat">
     <variable type="PositiveInteger" name="numIterations"/>
   </class>
-  <class name="LookAheadMCAlgorithm" base="DecoratorMCAlgorithm" shortName="lookAhead">
+  <class name="LookAheadMCAlgorithm" base="DecoratorMCAlgorithm" shortName="lookahead">
     <variable type="Double" name="numActions"/>
   </class>
   <class name="StepByStepMCAlgorithm" base="DecoratorMCAlgorithm" shortName="step">
@@ -39,7 +39,9 @@
 
   <!--MC Algorithms Luape Functions -->
   <class name="MCAlgorithmLuapeFunction" base="LuapeFunction" abstract="yes"/>
-  <class name="IterateMCAlgorithmLuapeFunction" base="MCAlgorithmLuapeFunction"/>
+  <class name="IterateMCAlgorithmLuapeFunction" base="MCAlgorithmLuapeFunction">
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
   <class name="StepMCAlgorithmLuapeFunction" base="MCAlgorithmLuapeFunction"/>
   <class name="LookAheadMCAlgorithmLuapeFunction" base="MCAlgorithmLuapeFunction"/>
 
