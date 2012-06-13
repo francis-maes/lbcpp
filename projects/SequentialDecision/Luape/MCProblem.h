@@ -27,7 +27,7 @@ class DecisionProblemMCProblem : public MCProblem
 {
 public:
   DecisionProblemMCProblem(DecisionProblemPtr decisionProblem = DecisionProblemPtr())
-    : decisionProblem(decisionProblem) {}
+    : decisionProblem(decisionProblem) {std::cout<<"came mc prob l30"<<std::endl;}
 
   virtual void getObjectiveRange(double& worst, double& best) const
     {worst = 0.0; best = decisionProblem->getMaxReward();}
