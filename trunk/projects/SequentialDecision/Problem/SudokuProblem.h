@@ -20,7 +20,6 @@ class SudokuState : public DecisionProblemState
 {
 public:
 	SudokuState(size_t sudokuSize = 3) : board(sudokuSize * sudokuSize), finalState(false), finalStateReward(0.0) {}
-
   virtual TypePtr getActionType() const
     {return pairClass(positiveIntegerType, positiveIntegerType);}
 
@@ -29,9 +28,9 @@ public:
   	ClassPtr actionType = getActionType();
 
     ObjectVectorPtr res = new ObjectVector(actionType, 0);
-	// TODO test svn windows
+	
     // TODO: loop over the board and enumerate legal moves
-      
+    // first insert every number
     // example:
     //res->append(new Pair(actionType, position, value));
     return res;
@@ -67,10 +66,13 @@ public:
   virtual double getFinalStateReward() const
     {return finalStateReward;}
 
+  //virtual std::vector< std::vector<size_t> >& getBoard(){return board;}
+  std::vector< std::vector<size_t> > board;
+  std::vector<std::vector<std::set<size_t> > > actionsBoard;
 protected:
   friend class SudokuStateClass;
 
-  std::vector< std::set<size_t> > board;
+  
   bool finalState;
   double finalStateReward;
 };
@@ -92,12 +94,68 @@ public:
   virtual TypePtr getActionType() const
     {return pairClass(positiveIntegerType, positiveIntegerType);}
 
-  virtual DecisionProblemStatePtr sampleInitialState(ExecutionContext& context) const
+  virtual DecisionProblemStatePtr sampleInitialState(ExecutionContext& context)
   {
   	SudokuStatePtr state = new SudokuState(sudokuSize);
-    // todo : fill state
+   	
+	// prepare a list of legal actions 
+	std::set<size_t> numbers;
+	for(size_t i=0;i<sudokuSize*sudokuSize;++i)
+		numbers.insert(i);
+
+	std::vector<size_t> zeros;
+	for(size_t i=0;i<sudokuSize*sudokuSize;++i)
+		zeros.push_back(0);
+
+	// generate the possibility board and the real board	
+	for (size_t i=0;i<sudokuSize*sudokuSize;++i)
+		{
+			std::vector<std::set<size_t> > region;
+			std::vector<size_t> boardZeros;
+			boardZeros=zeros;
+			for (size_t j=0;j<sudokuSize*sudokuSize;++j)
+			{
+				std::set<size_t> actions;
+				actions = numbers;
+				region.push_back(actions);
+			}
+			state->actionsBoard.push_back(region);
+			state->board.push_back(boardZeros);
+		}
+
+	// fill 33% of the board
+	double thres = 1.0/3;
+
+	for(size_t i=0;i<sudokuSize*sudokuSize;++i)
+		for(size_t j=0;j<sudokuSize*sudokuSize;++j)
+			if(context.getRandomGenerator()->sampleDouble()<thres)
+			{
+				size_t pos = context.getRandomGenerator()->sampleSize(state->actionsBoard[i][j].size());
+				jassert(state->board[i][j]==0);
+				state->board[i][j]=state->actionsBoard[i][j][pos];
+				updateActions(state,i,j, sudokuSize, pos);
+			}
+
+
+
+
   	return state;
   }
+
+  virtual void updateActions(SudokuStatePtr state, size_t row, size_t col, size_t bound, size_t pos)
+  {
+	  // remove from row
+	  for(size_t i=0;i<bound*bound;++i)
+	  {
+
+
+	  }
+	  // remove from col
+
+	  // remove from region
+  }
+
+
 
 protected:
   friend class SudokuProblemClass;
