@@ -32,7 +32,7 @@ public:
   virtual bool isFinalState() const
     {return !getAvailableActions();}
     
-  virtual bool getFinalStateReward() const
+  virtual double getFinalStateReward() const
     {return 0.0;}
 
   void performTrajectory(const ContainerPtr& actions, double& sumOfRewards, size_t maxSteps = 0);

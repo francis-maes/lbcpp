@@ -19,6 +19,8 @@ namespace lbcpp
 class LuapeUniverse : public Object
 {
 public:
+  LuapeUniverse();
+
   LuapeConstantNodePtr makeConstantNode(const Variable& constantValue);
 
   LuapeNodePtr makeFunctionNode(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs);
@@ -57,13 +59,18 @@ protected:
   typedef std::pair<LuapeFunctionPtr, std::vector<LuapeNodePtr> > FunctionNodeKey;
   typedef std::map<FunctionNodeKey, LuapeNodePtr> FunctionNodesMap;
   FunctionNodesMap functionNodes;
+  size_t maxFunctionDepth;
+  size_t maxObservedFunctionDepth;
 
   typedef std::map<Variable, LuapeConstantNodePtr> ConstantNodesMap;
   ConstantNodesMap constantNodes;
 
+  void cacheFunctionNode(const FunctionNodeKey& key, LuapeNodePtr node);
+
   // contain values for LuapeFunctionNode, LuapeTestNode, LuapeSequenceNode
   // keys for LuapeFunctionNode: (luapeFunctionNodeClass, luapeFunctionClass)
   // keys for the others: (luapeNodeClass, ClassPtr())
+
   std::map<std::pair<ClassPtr, ClassPtr>, ScalarVariableStatistics> nodesComputingTimeStatistics;
 };
 

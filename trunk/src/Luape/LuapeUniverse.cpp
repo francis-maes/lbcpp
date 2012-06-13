@@ -10,6 +10,10 @@
 #include <lbcpp/Luape/LuapeNode.h>
 using namespace lbcpp;
 
+LuapeUniverse::LuapeUniverse() : maxFunctionDepth((size_t)-1), maxObservedFunctionDepth(0)
+{
+}
+
 LuapeConstantNodePtr LuapeUniverse::makeConstantNode(const Variable& constantValue)
 {
   if (constantValue.exists())
@@ -50,13 +54,13 @@ LuapeNodePtr LuapeUniverse::makeFunctionNode(const LuapeFunctionPtr& function, c
   if (it == functionNodes.end())
   {
     LuapeNodePtr res = canonizeNode(new LuapeFunctionNode(function, inputs));
-    //if (res->getDepth() < 6)
-      functionNodes[key] = res;
+    cacheFunctionNode(key, res);
     return res;
   }
   else
     return it->second;
 }
+
 LuapeNodePtr LuapeUniverse::makeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& input)
   {return makeFunctionNode(function, std::vector<LuapeNodePtr>(1, input));}
 
@@ -66,6 +70,38 @@ LuapeNodePtr LuapeUniverse::makeFunctionNode(const LuapeFunctionPtr& function, c
   inputs[0] = input1;
   inputs[1] = input2;
   return makeFunctionNode(function, inputs);
+}
+
+void LuapeUniverse::cacheFunctionNode(const FunctionNodeKey& key, LuapeNodePtr node)
+{
+  enum {maxNumCachedFunctionNodes = 1000000}; 
+
+  size_t depth = node->getDepth();
+  if (depth > maxObservedFunctionDepth)
+    maxObservedFunctionDepth = depth;
+  if (depth >= maxFunctionDepth)
+    return; // do not cache: too deep
+
+  functionNodes[key] = node;
+  while (functionNodes.size() >= maxNumCachedFunctionNodes)
+  {
+    if (maxFunctionDepth == (size_t)-1)
+      maxFunctionDepth = maxObservedFunctionDepth;
+    else
+    {
+      jassert(maxFunctionDepth > 0);
+      --maxFunctionDepth;
+    }
+
+    FunctionNodesMap::iterator it, nxt;
+    for (it = functionNodes.begin(); it != functionNodes.end(); it = nxt)
+    {
+      nxt = it; ++nxt;
+      if (it->second->getDepth() >= maxFunctionDepth)
+        functionNodes.erase(it);
+    }
+    std::cout << "Too much function nodes, new maxDepth = " << maxFunctionDepth << " => " << functionNodes.size() << " functions" << std::endl;
+  }
 }
 
 void LuapeUniverse::observeNodeComputingTime(const LuapeNodePtr& node, size_t numInstances, double timeInMilliseconds)
