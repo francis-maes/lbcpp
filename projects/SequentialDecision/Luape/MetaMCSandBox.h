@@ -322,12 +322,13 @@ protected:
     virtual double computeObjective(ExecutionContext& context, const Variable& parameter, size_t instanceIndex)
     {
       MCAlgorithmPtr algorithm = parameter.getObjectAndCast<MCAlgorithm>();
-      algorithm->initialize(context);
       std::pair<DecisionProblemStatePtr, MCObjectivePtr> stateAndObjective = problem->getInstance(context, instanceIndex);
       CacheAndFiniteBudgetMCObjectivePtr objective = new CacheAndFiniteBudgetMCObjective(stateAndObjective.second, budget, false);
 
       DecisionProblemStatePtr finalState;
-      return iterate(algorithm, 0)->search(context, objective, stateAndObjective.first, NULL, finalState);
+      double res = iterate(algorithm, 0)->search(context, objective, stateAndObjective.first, NULL, finalState);
+      algorithm->reset(context);
+      return res;
     }
     
   private:
@@ -386,13 +387,12 @@ protected:
     context.enterScope(name);
     for (size_t i = 0; i < numEvaluationProblems; ++i)
     {
-      algorithm->initialize(context);
-
       std::pair<DecisionProblemStatePtr, MCObjectivePtr> stateAndObjective = problem->getInstance(context, i);
       CacheAndFiniteBudgetMCObjectivePtr objective = new CacheAndFiniteBudgetMCObjective(stateAndObjective.second, budget, false);
 
       DecisionProblemStatePtr finalState;
       mean.push(iterate(algorithm, 0)->search(context, objective, stateAndObjective.first, NULL, finalState));
+      algorithm->reset(context);
     }
     context.leaveScope(mean.getMean());
   }
