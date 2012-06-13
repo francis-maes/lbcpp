@@ -19,7 +19,7 @@ extern ClassPtr sudokuStateClass;
 class SudokuState : public DecisionProblemState
 {
 public:
-	SudokuState(size_t sudokuSize = 3) : board(sudokuSize * sudokuSize), finalState(false), finalStateReward(0.0) {}
+	SudokuState(size_t sudokuSize = 3) : board(sudokuSize * sudokuSize), finalState(false), finalStateReward(0.0) {std::cout<<"here"<<std::endl;}
   virtual TypePtr getActionType() const
     {return pairClass(positiveIntegerType, positiveIntegerType);}
 
@@ -66,7 +66,6 @@ public:
   virtual double getFinalStateReward() const
     {return finalStateReward;}
 
-  //virtual std::vector< std::vector<size_t> >& getBoard(){return board;}
   std::vector< std::vector<size_t> > board;
   std::vector<std::vector<std::set<size_t> > > actionsBoard;
 protected:
@@ -123,9 +122,8 @@ public:
 			state->board.push_back(boardZeros);
 		}
 
-	// fill 33% of the board
+	// fill X% of the board
 	double thres = 1.0/3;
-
 	for(size_t i=0;i<sudokuSize*sudokuSize;++i)
 		for(size_t j=0;j<sudokuSize*sudokuSize;++j)
 			if(context.getRandomGenerator()->sampleDouble()<thres)
@@ -150,15 +148,18 @@ public:
 
   virtual void updateActions(SudokuStatePtr state, size_t row, size_t col, size_t bound, size_t value)
   {
-	  // remove from row
+	  // remove from row and col
 	  for(size_t i=0;i<bound*bound;++i)
 	  {
-
-
+		state->actionsBoard[row][i].erase(value);
+		state->actionsBoard[i][col].erase(value);
 	  }
-	  // remove from col
-
-	  // remove from region
+	  // find region3
+	  size_t rowRegion = row/bound;
+	  size_t colRegion = col/bound;
+	  for(size_t i=0;i<bound;++i)
+		  for(size_t j=0;j<bound;++j)
+			  state->actionsBoard[rowRegion*bound+i][colRegion*bound+j].erase(value);
   }
 
 
