@@ -145,41 +145,23 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    std::vector<std::pair<String, MCAlgorithmPtr> > algorithms;
-    generateMCAlgorithms(context, algorithms);
-    
-    algorithms.push_back(std::make_pair("RAND", rollout()));
-    
-    algorithms.push_back(std::make_pair("LA1", step(lookAhead(rollout()))));
-    algorithms.push_back(std::make_pair("LA2", step(lookAhead(lookAhead(rollout())))));
-    algorithms.push_back(std::make_pair("LA3", step(lookAhead(lookAhead(lookAhead(rollout()))))));
-    algorithms.push_back(std::make_pair("LA4", step(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))));
-    algorithms.push_back(std::make_pair("LA5", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout()))))))));
-    algorithms.push_back(std::make_pair("LA6", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))))));
-    
-    algorithms.push_back(std::make_pair("NMC2", step(lookAhead(step(lookAhead(rollout()))))));
-    algorithms.push_back(std::make_pair("NMC3", step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))));
-    algorithms.push_back(std::make_pair("NMC4", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))));
-    algorithms.push_back(std::make_pair("NMC5", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))))));
-    
-    algorithms.push_back(std::make_pair("LA2bis", step(step(lookAhead(lookAhead(rollout()))))));
-    algorithms.push_back(std::make_pair("LA2ter", step(step(step(lookAhead(lookAhead(rollout())))))));
-    
-    
-    //algorithms.push_back(std::make_pair("LA7", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout()))))))))));
-    //algorithms.push_back(std::make_pair("LA8", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))))))));
-    //algorithms.push_back(std::make_pair("NMC6", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))))))));
-    
-    context.informationCallback(String((int)algorithms.size()) + T(" Algorithms"));
-
+    // create arms
     BanditPoolPtr pool = new BanditPool(new AlgorithmObjective(problem, budget), explorationCoefficient);
-    pool->reserveArms(algorithms.size());
-    for (size_t i = 0; i < algorithms.size(); ++i)
-      if (!algorithms[i].second.isInstanceOf<IterateMCAlgorithm>())
-        pool->createArm(algorithms[i].second);
-
+    generateMCAlgorithms(context, pool);
     context.informationCallback(String((int)pool->getNumArms()) + T(" Arms"));
+
+    // play arms
     pool->playIterations(context, 100, pool->getNumArms());
+
+    // display results
+    context.enterScope("Arms");
+    pool->displayAllArms(context);
+    context.leaveScope();
+
+    // evaluate baselines and discovered algorithms
+    context.enterScope("Evaluation");
+    evaluateBaselinesAndDiscoveredAlgorithms(context, pool);
+    context.leaveScope();
     return true;
   }
 
@@ -191,7 +173,7 @@ protected:
   size_t maxAlgorithmSize;
   double explorationCoefficient;
 
-  void generateMCAlgorithms(ExecutionContext& context, std::vector<std::pair<String, MCAlgorithmPtr> >& res)
+  void generateMCAlgorithms(ExecutionContext& context, BanditPoolPtr pool)
   {
     LuapeInferencePtr problem = new LuapeInference();
 
@@ -204,13 +186,12 @@ protected:
     std::vector<LuapeNodePtr> nodes;
     problem->enumerateNodesExhaustively(context, maxAlgorithmSize + 1, nodes, true);
 
-    res.reserve(nodes.size());
     for (size_t i = 0; i < nodes.size(); ++i)
     {
       LuapeNodePtr node = nodes[i];
       MCAlgorithmPtr algorithm = node->compute(context).getObjectAndCast<MCAlgorithm>();
-      res.push_back(std::make_pair(algorithm->toShortString(), algorithm));
-      //context.informationCallback(algorithm->toShortString());
+      if (!algorithm.isInstanceOf<IterateMCAlgorithm>())
+        pool->createArm(algorithm);
     }
   }
 
@@ -235,7 +216,65 @@ protected:
   private:
     MCProblemPtr problem;
     size_t budget;
-  };  
+  };
+
+  void evaluateBaselinesAndDiscoveredAlgorithms(ExecutionContext& context, BanditPoolPtr pool)
+  {
+    // baselines
+    std::vector< std::pair<String, MCAlgorithmPtr> > baselines;
+    baselines.push_back(std::make_pair("RAND", rollout()));
+    
+    baselines.push_back(std::make_pair("LA1", step(lookAhead(rollout()))));
+    baselines.push_back(std::make_pair("LA2", step(lookAhead(lookAhead(rollout())))));
+    baselines.push_back(std::make_pair("LA3", step(lookAhead(lookAhead(lookAhead(rollout()))))));
+    baselines.push_back(std::make_pair("LA4", step(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))));
+    baselines.push_back(std::make_pair("LA5", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout()))))))));
+    baselines.push_back(std::make_pair("LA6", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))))));
+    
+    baselines.push_back(std::make_pair("NMC2", step(lookAhead(step(lookAhead(rollout()))))));
+    baselines.push_back(std::make_pair("NMC3", step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))));
+    baselines.push_back(std::make_pair("NMC4", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))));
+    baselines.push_back(std::make_pair("NMC5", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))))));
+    
+    baselines.push_back(std::make_pair("(step2la2rollout)", step(step(lookAhead(lookAhead(rollout()))))));
+    baselines.push_back(std::make_pair("(step3la2rollout", step(step(step(lookAhead(lookAhead(rollout())))))));
+    
+    //baselines.push_back(std::make_pair("LA7", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout()))))))))));
+    //baselines.push_back(std::make_pair("LA8", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))))))));
+    //baselines.push_back(std::make_pair("NMC6", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))))))));
+
+    for (size_t i = 0; i < baselines.size(); ++i)
+      evaluateAlgorithm(context, baselines[i].first, baselines[i].second);
+
+    // discovered
+    std::vector< std::pair<size_t, double> > armsOrder;
+    pool->getArmsOrder(armsOrder);
+    size_t numBests = 10;
+    if (armsOrder.size() < numBests)
+      numBests = armsOrder.size();
+    for (size_t i = 0; i < numBests; ++i)
+    {
+      MCAlgorithmPtr algorithm = pool->getArmParameter(armsOrder[i].first).getObjectAndCast<MCAlgorithm>();
+      evaluateAlgorithm(context, "Discovered " + String((int)i+1) + ": " + algorithm->toShortString(), algorithm);
+    }
+  }
+
+  void evaluateAlgorithm(ExecutionContext& context, const String& name, const MCAlgorithmPtr& algorithm)
+  {
+    const size_t numEvaluationProblems = 100;
+
+    ScalarVariableMean mean;
+    context.enterScope(name);
+    for (size_t i = 0; i < numEvaluationProblems; ++i)
+    {
+      std::pair<DecisionProblemStatePtr, MCObjectivePtr> stateAndObjective = problem->getInstance(context, i);
+      CacheAndFiniteBudgetMCObjectivePtr objective = new CacheAndFiniteBudgetMCObjective(stateAndObjective.second, budget, false);
+
+      DecisionProblemStatePtr finalState;
+      mean.push(iterate(algorithm, 0)->search(context, objective, stateAndObjective.first, NULL, finalState));
+    }
+    context.leaveScope(mean.getMean());
+  }
 };
 
 }; /* namespace lbcpp */

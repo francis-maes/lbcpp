@@ -1,8 +1,6 @@
 
-
 2- Enumeration des parametres pour Repeat
 3- SelectMCAlgorithm
-4- BanditPool : afficher courbe complete à la fin
 
 Experiences - Proteins:
  * Nouvelles features: prev et next amino acid de chaque type; delta de ObjectVector[DenseDoubleVector]; local/global histogram
