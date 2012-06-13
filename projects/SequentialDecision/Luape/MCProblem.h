@@ -42,6 +42,7 @@ public:
   {
     if (instances.size() <= instanceIndex)
     {
+
       MCObjectivePtr objective = new Objective();
       while (instances.size() <= instanceIndex)
         instances.push_back(std::make_pair(decisionProblem->sampleInitialState(context), objective));
