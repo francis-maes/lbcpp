@@ -102,11 +102,19 @@ public:
     return res;
   }
 
+  struct Backup : public Object
+  {
+    Backup(const std::vector<LuapeNodePtr>& stack)
+      : stack(stack) {}
+
+    std::vector<LuapeNodePtr> stack;
+  };
+
   virtual void performTransition(ExecutionContext& context, const Variable& a, double& reward, Variable* stateBackup = NULL)
   {
     const ObjectPtr& action = a.getObject();
     if (stateBackup)
-      *stateBackup = action;
+      *stateBackup = Variable(new Backup(stack), objectClass);
     if (action)
       LuapeRPNSequence::apply(function->getUniverse(), stack, action);
 
@@ -124,22 +132,9 @@ public:
 
   virtual bool undoTransition(ExecutionContext& context, const Variable& stateBackup)
   {
-    const ObjectPtr& action = stateBackup.getObject();
     isAborted = isYielded = false;
     --numSteps;
-
-    jassert(stack.size());
-    if (action.isInstanceOf<LuapeNode>()) // push action
-      stack.pop_back();
-    else if (action.isInstanceOf<LuapeFunction>()) // apply action
-    {
-      LuapeFunctionNodePtr functionNode = stack.back().staticCast<LuapeFunctionNode>();
-      stack.pop_back();
-      size_t n = functionNode->getNumArguments();
-      for (size_t i = 0; i < n; ++i)
-        stack.push_back(functionNode->getArgument(i));
-    }
-
+    stack = stateBackup.getObjectAndCast<Backup>()->stack;
     availableActions = ContainerPtr();
     updateTypeState();
     return true;
