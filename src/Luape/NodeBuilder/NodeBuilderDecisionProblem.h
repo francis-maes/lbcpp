@@ -33,10 +33,11 @@ public:
   {
     String seps = isFinalState() ? T("[]") : T("{}");
 
-    String res;
+    String res = isYielded ? "yielded - " : String::empty;
     if (isAborted)
       res += T("canceled - ");
     res += seps[0];
+    res += String((int)numSteps) + T(": ");
     for (size_t i = 0; i < stack.size(); ++i)
     {
       res += stack[i]->toShortString();

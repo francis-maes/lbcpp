@@ -50,10 +50,12 @@ public:
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
   {
     jassert(index == 0);
-    VectorPtr candidates = vector(positiveIntegerType, 3);
+    VectorPtr candidates = vector(positiveIntegerType, 5);
     candidates->setElement(0, Variable(2, positiveIntegerType));
     candidates->setElement(1, Variable(3, positiveIntegerType));
     candidates->setElement(2, Variable(5, positiveIntegerType));
+    candidates->setElement(3, Variable(10, positiveIntegerType));
+    candidates->setElement(4, Variable(100, positiveIntegerType));
     return candidates;
   }
 
@@ -85,6 +87,33 @@ public:
     {return new LookAheadMCAlgorithm(input);}
 };
 
+class SelectMCAlgorithmLuapeFunction : public MCAlgorithmLuapeFunction
+{
+public:
+ virtual TypePtr initialize(const TypePtr* inputTypes)
+    {return selectMCAlgorithmClass;}
+
+  virtual MCAlgorithmPtr createAlgorithm(const MCAlgorithmPtr& input) const
+    {return new SelectMCAlgorithm(input, explorationCoefficient);}
+
+  virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
+  {
+    jassert(index == 0);
+    DenseDoubleVectorPtr candidates = new DenseDoubleVector(4, 0.0);
+    candidates->setValue(0, -1.0);
+    candidates->setValue(0, 0.0);
+    candidates->setValue(0, 0.1);
+    candidates->setValue(0, 1.0);
+    return candidates;
+  }
+
+private:
+  friend class SelectMCAlgorithmLuapeFunctionClass;
+  double explorationCoefficient;
+};
+
+extern ClassPtr selectMCAlgorithmLuapeFunctionClass;
+
 class MCAlgorithmsUniverse : public LuapeUniverse
 {
 public:
@@ -97,8 +126,22 @@ public:
     return function.isInstanceOf<IterateMCAlgorithmLuapeFunction>() ? (size_t)function->getVariable(0).getInteger() : 0;
   }
 
+  bool isSelect(const LuapeNodePtr& node) const
+  {
+    return node.isInstanceOf<LuapeFunctionNode>() && 
+      node.staticCast<LuapeFunctionNode>()->getFunction().isInstanceOf<SelectMCAlgorithmLuapeFunction>();
+  }
+
   virtual LuapeNodePtr canonizeNode(const LuapeNodePtr& node)
   {
+    // select(pi1, select(pi2, X)) ==> select(pi1, X)
+    if (isSelect(node) && isSelect(node->getSubNode(0)))
+    {
+      LuapeFunctionPtr function = node.staticCast<LuapeFunctionNode>()->getFunction();
+      LuapeNodePtr argument = node->getSubNode(0)->getSubNode(0);
+      return makeFunctionNode(function, argument);
+    }
+
     // iterate(N_1, iterate(N_2, S)) ==> iterate(N_1 * N_2, S)
     size_t numIterations = getNumIterations(node);
     if (numIterations > 0)
@@ -235,6 +278,7 @@ protected:
     problem->addFunction(new IterateMCAlgorithmLuapeFunction());
     problem->addFunction(new StepMCAlgorithmLuapeFunction());
     problem->addFunction(new LookAheadMCAlgorithmLuapeFunction());
+    problem->addFunction(new SelectMCAlgorithmLuapeFunction());
     problem->addTargetType(mcAlgorithmClass);
 
     std::vector<LuapeNodePtr> nodes;
@@ -278,6 +322,7 @@ protected:
     virtual double computeObjective(ExecutionContext& context, const Variable& parameter, size_t instanceIndex)
     {
       MCAlgorithmPtr algorithm = parameter.getObjectAndCast<MCAlgorithm>();
+      algorithm->initialize(context);
       std::pair<DecisionProblemStatePtr, MCObjectivePtr> stateAndObjective = problem->getInstance(context, instanceIndex);
       CacheAndFiniteBudgetMCObjectivePtr objective = new CacheAndFiniteBudgetMCObjective(stateAndObjective.second, budget, false);
 
@@ -295,7 +340,9 @@ protected:
     // baselines
     std::vector< std::pair<String, MCAlgorithmPtr> > baselines;
     baselines.push_back(std::make_pair("RAND", rollout()));
-    
+    baselines.push_back(std::make_pair("MCTS", select(rollout())));
+    baselines.push_back(std::make_pair("Step(MCTS)", step(iterate(select(rollout()), budget / 10))));
+
     baselines.push_back(std::make_pair("LA1", step(lookAhead(rollout()))));
     baselines.push_back(std::make_pair("LA2", step(lookAhead(lookAhead(rollout())))));
     baselines.push_back(std::make_pair("LA3", step(lookAhead(lookAhead(lookAhead(rollout()))))));
@@ -339,6 +386,8 @@ protected:
     context.enterScope(name);
     for (size_t i = 0; i < numEvaluationProblems; ++i)
     {
+      algorithm->initialize(context);
+
       std::pair<DecisionProblemStatePtr, MCObjectivePtr> stateAndObjective = problem->getInstance(context, i);
       CacheAndFiniteBudgetMCObjectivePtr objective = new CacheAndFiniteBudgetMCObjective(stateAndObjective.second, budget, false);
 

@@ -36,6 +36,9 @@
   <class name="StepByStepMCAlgorithm" base="DecoratorMCAlgorithm" shortName="step">
     <variable type="Boolean" name="useGlobalBest"/>
   </class>
+  <class name="SelectMCAlgorithm" base="DecoratorMCAlgorithm" shortName="select">
+    <variable type="Double" name="explorationCoefficient"/>
+  </class>
 
   <!--MC Algorithms Luape Functions -->
   <class name="MCAlgorithmLuapeFunction" base="LuapeFunction" abstract="yes"/>
@@ -44,6 +47,9 @@
   </class>
   <class name="StepMCAlgorithmLuapeFunction" base="MCAlgorithmLuapeFunction"/>
   <class name="LookAheadMCAlgorithmLuapeFunction" base="MCAlgorithmLuapeFunction"/>
+  <class name="SelectMCAlgorithmLuapeFunction" base="MCAlgorithmLuapeFunction">
+    <variable type="Double" name="explorationCoefficient"/>
+  </class>
 
   <!-- MC Optimizer -->
   <class name="MCOptimizer" base="Optimizer">

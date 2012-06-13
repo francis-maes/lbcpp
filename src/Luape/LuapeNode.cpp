@@ -70,7 +70,13 @@ size_t LuapeNode::getTreeSize() const
 ** LuapeInputNode
 */
 LuapeInputNode::LuapeInputNode(const TypePtr& type, const String& name, size_t inputIndex)
-  : LuapeNode(type), name(name), inputIndex(inputIndex) {}
+  : LuapeNode(type), name(name), inputIndex(inputIndex)
+{
+}
+
+LuapeInputNode::LuapeInputNode() : inputIndex(0)
+{
+}
 
 String LuapeInputNode::toShortString() const
   {return name;}

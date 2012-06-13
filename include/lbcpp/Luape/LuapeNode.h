@@ -72,7 +72,7 @@ class LuapeInputNode : public LuapeNode
 {
 public:
   LuapeInputNode(const TypePtr& type, const String& name, size_t inputIndex);
-  LuapeInputNode() {}
+  LuapeInputNode();
 
   virtual String toShortString() const;
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;

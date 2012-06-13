@@ -10,6 +10,7 @@
 # define LBCPP_LUAPE_MC_ALGORITHM_H_
 
 # include "MCObjective.h"
+# include "../Core/SinglePlayerMCTSOptimizer.h"
 
 namespace lbcpp
 {
@@ -57,6 +58,8 @@ public:
     return bestScore;
   }    
 
+  virtual void initialize(ExecutionContext& context) {}
+
 protected:
   virtual void search(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr initialState) = 0;
 
@@ -64,7 +67,7 @@ protected:
   DecisionProblemStatePtr bestFinalState;
   std::vector<Variable> bestActions;
 
-  void submitFinalState(ExecutionContext& context, MCObjectivePtr objective, const std::vector<Variable>& actions, DecisionProblemStatePtr state, double score = -DBL_MAX)
+  double submitFinalState(ExecutionContext& context, MCObjectivePtr objective, const std::vector<Variable>& actions, DecisionProblemStatePtr state, double score = -DBL_MAX)
   {
     if (score == -DBL_MAX)
     {
@@ -76,7 +79,9 @@ protected:
       bestScore = score;
       bestFinalState = state;
       bestActions = actions;
+      jassert(actions.size());
     }
+    return score;
   }
 };
 
@@ -125,6 +130,9 @@ public:
   const MCAlgorithmPtr& getAlgorithm() const
     {return algorithm;}
 
+  virtual void initialize(ExecutionContext& context)
+    {if (algorithm) algorithm->initialize(context);}
+
 protected:
   friend class DecoratorMCAlgorithmClass;
 
@@ -132,10 +140,15 @@ protected:
 
   double subSearch(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr state, std::vector<Variable>& actions, DecisionProblemStatePtr& finalState)
   {
-    double res = algorithm->search(context, objective, state, &actions, finalState);
-    if (res != -DBL_MAX)
-      submitFinalState(context, objective, actions, finalState, res);
-    return res;
+    if (state->isFinalState())
+      return submitFinalState(context, objective, actions, state);
+    else
+    {
+      double res = algorithm->search(context, objective, state, &actions, finalState);
+      if (res != -DBL_MAX)
+        submitFinalState(context, objective, actions, finalState, res);
+      return res;
+    }
   }
 };
 
@@ -204,15 +217,9 @@ protected:
       Variable stateBackup;
       state->performTransition(context, action, reward, &stateBackup);
 
-      if (state->isFinalState())
-        submitFinalState(context, objective, std::vector<Variable>(1, action), state->cloneAndCast<DecisionProblemState>());
-      else
-      {
-        std::vector<Variable> actions;
-        actions.push_back(action);
-        DecisionProblemStatePtr finalState;
-        subSearch(context, objective, state, actions, finalState);
-      }
+      std::vector<Variable> actions(1, action);
+      DecisionProblemStatePtr finalState;
+      subSearch(context, objective, state, actions, finalState);
 
       state->undoTransition(context, stateBackup);
     }
@@ -287,6 +294,59 @@ protected:
 
 extern ClassPtr stepByStepMCAlgorithmClass;
 
+// politique en dur:  rk + 2 / tk
+class SelectMCAlgorithm : public DecoratorMCAlgorithm
+{
+public:
+  SelectMCAlgorithm(MCAlgorithmPtr algorithm, double explorationCoefficient = 0.5)
+    : DecoratorMCAlgorithm(algorithm), explorationCoefficient(explorationCoefficient) {}
+  SelectMCAlgorithm() {}
+
+  virtual void initialize(ExecutionContext& context)
+  {
+    trees.clear();
+    DecoratorMCAlgorithm::initialize(context);
+  }
+
+  virtual void search(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr initialState)
+  {
+    SinglePlayerMCTSNodePtr& root = trees[initialState->toShortString()];
+    if (!root)
+      root = new SinglePlayerMCTSNode(initialState->cloneAndCast<DecisionProblemState>());
+
+    SinglePlayerMCTSNodePtr leaf = root->select(context);
+
+    //std::cout << "Selected node: " << leaf->toShortString() << std::flush;
+
+    if (!leaf->isExpanded())
+      leaf->expand(context);
+
+    std::vector<Variable> bestActions;
+    for (SinglePlayerMCTSNodePtr ptr = leaf; ptr != root; ptr = ptr->getParentNode())
+      bestActions.insert(bestActions.begin(), ptr->getLastAction());
+
+/*    size_t initialDepth = initialState.staticCast<LuapeNodeBuilderState>()->getCurrentStep();
+    size_t leafDepth = leaf->getState().staticCast<LuapeNodeBuilderState>()->getCurrentStep();
+    jassert(leafDepth - initialDepth == bestActions.size());*/
+
+    DecisionProblemStatePtr bestFinalState;
+    double reward = subSearch(context, objective, leaf->getState(), bestActions, bestFinalState);
+
+    
+   // std::cout << " ==> reward = " << reward << std::endl;
+    leaf->backPropagate(reward);
+  }
+
+private:
+  friend class SelectMCAlgorithmClass;
+
+  double explorationCoefficient;
+
+  std::map<String, SinglePlayerMCTSNodePtr> trees;
+};
+
+extern ClassPtr selectMCAlgorithmClass;
+
 /*
 ** Constructors
 */
@@ -301,6 +361,9 @@ inline MCAlgorithmPtr step(MCAlgorithmPtr algorithm, bool useGlobalBest = true)
 
 inline MCAlgorithmPtr lookAhead(MCAlgorithmPtr algorithm, double numActions = 1.0)
   {return new LookAheadMCAlgorithm(algorithm, numActions);}
+
+inline MCAlgorithmPtr select(MCAlgorithmPtr algorithm)
+  {return new SelectMCAlgorithm(algorithm);}
 
 /*
 ** MCAlgorithmSet
