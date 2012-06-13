@@ -29,7 +29,7 @@ public:
   	ClassPtr actionType = getActionType();
 
     ObjectVectorPtr res = new ObjectVector(actionType, 0);
-
+	// TODO test svn windows
     // TODO: loop over the board and enumerate legal moves
       
     // example:
