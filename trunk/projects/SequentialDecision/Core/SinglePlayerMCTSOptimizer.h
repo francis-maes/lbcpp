@@ -10,6 +10,7 @@
 # define LBCPP_OPTIMIZER_SINGLE_PLAYER_MCTS_H_
 
 # include <lbcpp/Optimizer/Optimizer.h>
+# include "../Bandits/DiscreteBanditPolicy.h"
 # include "SearchTree.h"
 
 namespace lbcpp
@@ -22,11 +23,11 @@ class SinglePlayerMCTSNode : public Object
 {
 public:
   SinglePlayerMCTSNode(DecisionProblemStatePtr state)
-    : state(state), parent(NULL), indexInParent((size_t)-1), rewards(new ScalarVariableStatistics("reward"))
+    : state(state), parent(NULL), indexInParent((size_t)-1), rewards(new ScalarVariableStatistics("reward")), fullyVisited(false)
     {computeActionsAndCreateSubNodes();}
 
   SinglePlayerMCTSNode(SinglePlayerMCTSNode* parent, size_t indexInParent)
-    : parent(parent), indexInParent(indexInParent), rewards(new ScalarVariableStatistics("reward")) {}
+    : parent(parent), indexInParent(indexInParent), rewards(new ScalarVariableStatistics("reward")), fullyVisited(false) {}
 
   SinglePlayerMCTSNode() : indexInParent((size_t)-1) {}
 
@@ -42,17 +43,6 @@ public:
   ContainerPtr getActions() const
     {return actions;}
 
-  void expand(ExecutionContext& context)
-  {
-    jassert(!isExpanded());
-    jassert(parent && parent->isExpanded());
-    Variable action = parent->getActions()->getElement(indexInParent);
-    state = parent->getState()->cloneAndCast<DecisionProblemState>();
-    double reward;
-    state->performTransition(context, action, reward);
-    computeActionsAndCreateSubNodes();
-  }
-
   size_t getNumSubNodes() const
     {return subNodes.size();}
 
@@ -62,13 +52,16 @@ public:
   SinglePlayerMCTSNodePtr getParentNode() const
     {return SinglePlayerMCTSNodePtr(parent);}
 
-  double getIndexScore() const
+  Variable getLastAction() const
+    {jassert(parent); return parent->getActions()->getElement(indexInParent);}
+
+  double getIndexScore(double explorationCoefficient, size_t timeStep) const
   {
     size_t count = (size_t)rewards->getCount();
     if (!count)
       return DBL_MAX;
     else
-      return rewards->getMean() + 2.0 / count;
+      return rewards->getMean() + explorationCoefficient * sqrt(log((double)timeStep) / count);
   }
 
   void observeReward(double reward)
@@ -85,6 +78,87 @@ public:
     }
   }
 
+  SinglePlayerMCTSNodePtr select(ExecutionContext& context, double explorationCoefficient = 0.5) const
+  {
+    if (!isExpanded() || isFinalState() || fullyVisited)
+      return refCountedPointerFromThis(this);
+
+    ContainerPtr actions = getActions();
+    jassert(actions->getNumElements() == subNodes.size());
+
+    std::vector<size_t> candidates;
+    candidates.reserve(subNodes.size());
+    for (size_t i = 0; i < subNodes.size(); ++i)
+      if (!subNodes[i]->fullyVisited)
+        candidates.push_back(i);
+    if (candidates.empty())
+      return refCountedPointerFromThis(this);
+
+    std::vector<size_t> bestSubNodes;
+    double bestIndexScore = -DBL_MAX;
+    for (size_t i = 0; i < candidates.size(); ++i)
+    {
+      double score = getSubNode(candidates[i])->getIndexScore(explorationCoefficient, (size_t)rewards->getCount());
+      if (score >= bestIndexScore)
+      {
+        if (score > bestIndexScore)
+        {
+          bestIndexScore = score;
+          bestSubNodes.clear();
+        }
+        bestSubNodes.push_back(candidates[i]);
+      }
+    }
+    jassert(bestSubNodes.size());
+    SinglePlayerMCTSNodePtr subNode = getSubNode(bestSubNodes[context.getRandomGenerator()->sampleSize(bestSubNodes.size())]);
+    return subNode->select(context);
+  }
+
+  void expand(ExecutionContext& context)
+  {
+    jassert(!isExpanded());
+    jassert(parent && parent->isExpanded());
+    Variable action = getLastAction();
+    state = parent->getState()->cloneAndCast<DecisionProblemState>();
+    double reward;
+    state->performTransition(context, action, reward);
+    if (state->isFinalState())
+      markAsFullyVisited();
+    else
+      computeActionsAndCreateSubNodes();
+  }
+
+  void backPropagate(double reward)
+  {
+    observeReward(reward);
+    if (parent)
+      parent->backPropagate(reward);
+  }
+
+  virtual String toShortString() const
+  {
+    jassert(parent);
+    if (isExpanded())
+    {
+      String res = state->toShortString() + " (expanded)";
+      if (isFinalState())
+        res += " (final)";
+      if (fullyVisited)
+        res += " (fully visited";
+      return res;
+    }
+    else
+    {
+      DecisionProblemStatePtr state = parent->state->cloneAndCast<DecisionProblemState>();
+      double reward;
+      state->performTransition(defaultExecutionContext(), parent->actions->getElement(indexInParent), reward);
+      String res = state->toShortString();
+      if (state->isFinalState())
+        res += " (final)";
+      return res;
+    }
+  }
+
 protected:
   friend class SinglePlayerMCTSNodeClass;
 
@@ -94,6 +168,7 @@ protected:
   SinglePlayerMCTSNode* parent;
   size_t indexInParent;
   ScalarVariableStatisticsPtr rewards;
+  bool fullyVisited;
 
   void computeActionsAndCreateSubNodes()
   {
@@ -102,6 +177,22 @@ protected:
     subNodes.resize(actions->getNumElements());
     for (size_t i = 0; i < subNodes.size(); ++i)
       subNodes[i] = new SinglePlayerMCTSNode(this, i);
+  }
+
+  void markAsFullyVisited()
+  {
+    jassert(!fullyVisited);
+    fullyVisited = true;
+    if (parent)
+    {
+      size_t n = parent->subNodes.size();
+      size_t i;
+      for (i = 0; i < n; ++i)
+        if (!parent->subNodes[i]->fullyVisited)
+          break;
+      if (i == n)
+        parent->markAsFullyVisited();
+    }
   }
 };
 
@@ -114,9 +205,9 @@ public:
 
   double doEpisode(ExecutionContext& context)
   { 
-    SinglePlayerMCTSNodePtr leaf = select(context, rootNode);
+    SinglePlayerMCTSNodePtr leaf = rootNode->select(context);
     double reward = expandAndSimulate(context, leaf);
-    backPropagate(leaf, reward);
+    leaf->backPropagate(reward);
     return reward;
   }
 
@@ -128,34 +219,6 @@ protected:
 
   SinglePlayerMCTSNodePtr rootNode;
   FunctionPtr objective;
-
-  SinglePlayerMCTSNodePtr select(ExecutionContext& context, SinglePlayerMCTSNodePtr node) const
-  {
-    while (node->isExpanded() && !node->isFinalState())
-    {
-      ContainerPtr actions = node->getActions();
-      if (!actions->getNumElements())
-        break;
-      std::vector<size_t> bestSubNodes;
-      double bestIndexScore = -DBL_MAX;
-      for (size_t i = 0; i < node->getNumSubNodes(); ++i)
-      {
-        double score = node->getSubNode(i)->getIndexScore();
-        if (score >= bestIndexScore)
-        {
-          if (score > bestIndexScore)
-          {
-            bestIndexScore = score;
-            bestSubNodes.clear();
-          }
-          bestSubNodes.push_back(i);
-        }
-      }
-      jassert(bestSubNodes.size());
-      node = node->getSubNode(bestSubNodes[context.getRandomGenerator()->sampleSize(bestSubNodes.size())]);
-    }
-    return node;
-  }
 
   double expandAndSimulate(ExecutionContext& context, const SinglePlayerMCTSNodePtr& node)
   {
@@ -180,15 +243,6 @@ protected:
     //context.informationCallback(state->toShortString() + T(" ==> ") + String(res));
     submitSolution(state, res);
     return problem->isMaximisationProblem() ? res : -res;
-  }
-
-  void backPropagate(SinglePlayerMCTSNodePtr node, double reward)
-  {
-    while (node)
-    {
-      node->observeReward(reward);
-      node = node->getParentNode();
-    }
   }
 };
 
