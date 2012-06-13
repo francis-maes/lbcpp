@@ -132,17 +132,23 @@ public:
 			{
 				size_t pos = context.getRandomGenerator()->sampleSize(state->actionsBoard[i][j].size());
 				jassert(state->board[i][j]==0);
-				state->board[i][j]=state->actionsBoard[i][j][pos];
-				updateActions(state,i,j, sudokuSize, pos);
+
+				size_t count = 0;
+				set<size_t>::iterator it;
+				for(it = state->actionsBoard[i][j].begin();it != state->actionsBoard[i][j].end();it++)
+						if(count==pos)
+						{
+							state->board[i][j]=*it;
+							updateActions(state,i,j, sudokuSize, *it);
+							break;
+						}
+						else
+							++count;				
 			}
-
-
-
-
   	return state;
   }
 
-  virtual void updateActions(SudokuStatePtr state, size_t row, size_t col, size_t bound, size_t pos)
+  virtual void updateActions(SudokuStatePtr state, size_t row, size_t col, size_t bound, size_t value)
   {
 	  // remove from row
 	  for(size_t i=0;i<bound*bound;++i)
