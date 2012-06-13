@@ -64,7 +64,7 @@ public:
     {
       double prediction = it.getRawDouble();
       if (prediction == doubleMissingValue)
-        return -DBL_MAX;
+        prediction = 0.0;
       res.push(fabs(supervisions->getValue(it.getIndex()) - prediction));
     }
     return -res.getMean();

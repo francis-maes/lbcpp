@@ -133,6 +133,23 @@ void BanditPool::getArmsOrder(std::vector< std::pair<size_t, double> >& res) con
   std::sort(res.begin(), res.end(), ArmScoreComparator());
 }
 
+void BanditPool::displayAllArms(ExecutionContext& context)
+{
+  std::vector< std::pair<size_t, double> > order;
+  getArmsOrder(order);
+  for (size_t i = 0; i < order.size(); ++i)
+  {
+    Arm& arm = arms[order[i].first];
+    context.enterScope(arm.parameter.toShortString());
+    context.resultCallback("rank", i);
+    context.resultCallback("parameter", arm.parameter.toShortString());
+    context.resultCallback("playedCount", arm.playedCount);
+    context.resultCallback("meanReward", arm.rewardSum / arm.playedCount);
+    context.resultCallback("meanObjectiveValue", arm.objectiveValueSum / arm.playedCount);
+    context.leaveScope();
+  }
+}
+
 void BanditPool::displayInformation(ExecutionContext& context, size_t numBestArms)
 {
   std::vector< std::pair<size_t, double> > order;
