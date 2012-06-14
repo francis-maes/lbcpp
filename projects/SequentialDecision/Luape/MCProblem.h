@@ -162,17 +162,13 @@ public:
 
 	virtual double evaluate(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& formula)
 	{
-		// Test if it is constant
-		double fx=0.0;
-		fx = evaluateFormula(context, formula, 1);
-		size_t primeCounter = 0;
+		size_t primeCounter = 1;
 		bool isvalid = true;
-		while(isPrime(fx))
+		while(isPrime(evaluateFormula(context, formula, primeCounter)))
 		{
 			primeCounter++;
 			if(primeCounter>99)
 			{isvalid = false; break;}
-			fx = evaluateFormula(context, formula, primeCounter);
 		}
 
 		if(!isvalid)
@@ -184,9 +180,6 @@ public:
 	{
 		double root = pow(value, 0.5);
 		bool prime=true;
-
-		//	  std::cout<<value-(int)value<<" in prime "<<std::endl;
-
 
 		if(value<2.0)
 			return false;
@@ -201,13 +194,18 @@ public:
 		return prime;
 	}
 
-
 	// evaluateFormula() is a utility function to evaluate the formula given an integer input
 	double evaluateFormula(ExecutionContext& context, const LuapeNodePtr& formula, int input) const
 	{
 		Variable in(input);
-		double res = formula->compute(context, &in).getDouble();
-		return res == doubleMissingValue ? 0 : res;
+
+		std::cout<<" bef compute "<<input<<" type "<<in.getType()<<std::endl;
+
+		double res = formula->compute(context, &in).toDouble();
+
+		std::cout<<" input "<<input<<" res "<<res<<std::endl;
+
+		return res == doubleMissingValue ? 0.0 : res;
 	}
 };
 
