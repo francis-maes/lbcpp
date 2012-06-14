@@ -72,6 +72,9 @@
     <variable type="PositiveInteger" name="maxAlgorithmSize"/>
     <variable type="Double" name="explorationCoefficient"/>
   </class>
+  <class name="DecisionProblemRandomTrajectoryWorkUnit" base="WorkUnit">
+    <variable type="DecisionProblem" name="problem"/>
+  </class>
 
   <class name="LuapeSandBox" base="WorkUnit">
     <variable type="File" name="trainFile"/>
