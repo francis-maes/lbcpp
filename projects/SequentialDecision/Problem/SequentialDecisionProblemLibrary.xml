@@ -89,5 +89,13 @@
     <constructor/>
     <variable type="PositiveInteger" name="sudokuSize"/>
   </class>
+
+  <!-- Morpio -->
+  <class name="MorpioState" base="DecisionProblemState">
+  </class>
+  <class name="MorpioProblem" base="DecisionProblem" shortName="morpio">
+    <constructor/>
+    <variable type="PositiveInteger" name="crossLength"/>
+  </class>
   
 </library>
