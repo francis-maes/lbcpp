@@ -228,6 +228,41 @@ typedef ReferenceCountedObjectPtr<CacheAndFiniteBudgetMCObjective> CacheAndFinit
 
 /////////////
 
+class DecisionProblemRandomTrajectoryWorkUnit : public WorkUnit
+{
+public:
+   virtual Variable run(ExecutionContext& context)
+   {
+  	 if (!problem)
+  		 return false;
+
+  	 DecisionProblemStatePtr state = problem->sampleInitialState(context);
+
+  	 size_t t = 1;
+  	 while (!state->isFinalState() && t < 100)
+  	 {
+  		 context.informationCallback("State: " + state->toShortString());
+  		 ContainerPtr actions = state->getAvailableActions();
+  		 context.informationCallback(String((int)actions->getNumElements()) + " actions");
+  		 Variable action = actions->getElement(context.getRandomGenerator()->sampleSize(actions->getNumElements()));
+  		 double reward;
+  		 state->performTransition(context, action, reward);
+  		 context.informationCallback("Reward: " + String(reward));
+  		 t = t + 1;
+  	 }
+  	 context.informationCallback("FinalState: " + state->toShortString());
+
+  	 return true;
+   }
+
+private:
+	friend class DecisionProblemRandomTrajectoryWorkUnitClass;
+
+	DecisionProblemPtr problem;
+};
+
+/////////////
+
 class MetaMCSandBox : public WorkUnit
 {
 public:

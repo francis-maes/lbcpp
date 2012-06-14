@@ -188,6 +188,8 @@ public:
 
     // TODO: setup constants and functions here
     regressor->addConstant(1.0);
+    regressor->addConstant(2.0);
+    regressor->addConstant(3.0);
     regressor->addFunction(addDoubleLuapeFunction());
     regressor->addFunction(subDoubleLuapeFunction());
     regressor->addFunction(mulDoubleLuapeFunction());
