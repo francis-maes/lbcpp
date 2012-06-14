@@ -126,7 +126,7 @@ inline bool Variable::isDouble() const
   {return type->inheritsFrom(doubleType);}
 
 inline double Variable::getDouble() const
-  {jassert(isDouble()); return value.getDouble();}
+  {jassert(isDouble());return value.getDouble();}
 
 inline bool Variable::isString() const
   {return type->inheritsFrom(stringType);}
