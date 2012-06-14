@@ -253,7 +253,7 @@ public:
 	: DecisionProblem(FunctionPtr(), 1.0, sudokuSize * sudokuSize * sudokuSize * sudokuSize), sudokuSize(sudokuSize) {}
 
 	virtual double getMaxReward() const
-	{return 1.0;}
+	{return 100.0;}
 
 	virtual ClassPtr getStateClass() const
 	{return sudokuStateClass;}
