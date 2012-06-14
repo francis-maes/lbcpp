@@ -357,7 +357,7 @@ protected:
     baselines.push_back(std::make_pair("NMC5", step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(step(lookAhead(rollout()))))))))))));
     
     baselines.push_back(std::make_pair("(step2la2rollout)", step(step(lookAhead(lookAhead(rollout()))))));
-    baselines.push_back(std::make_pair("(step3la2rollout", step(step(step(lookAhead(lookAhead(rollout())))))));
+    baselines.push_back(std::make_pair("(step3la2rollout)", step(step(step(lookAhead(lookAhead(rollout())))))));
     
     //baselines.push_back(std::make_pair("LA7", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout()))))))))));
     //baselines.push_back(std::make_pair("LA8", step(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(lookAhead(rollout())))))))))));
@@ -381,7 +381,7 @@ protected:
 
   void evaluateAlgorithm(ExecutionContext& context, const String& name, const MCAlgorithmPtr& algorithm)
   {
-    const size_t numEvaluationProblems = 100;
+    const size_t numEvaluationProblems = 1000;
 
     ScalarVariableMean mean;
     context.enterScope(name);
