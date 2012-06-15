@@ -211,14 +211,14 @@ public:
             tmp.y=p.y+k*modifY;
             //TODO make if works
             // if point not there or point incoming already used (here south), 
-            if(!(state->board.find(tmp)) || (state->board.find(tmp) && state->board.find(tmp)->second[oppositeDirection]==false) )//!= std::map<Point, std::vector<bool> >::end
+            if(state->board.find(tmp)==state->board.end() || (state->board.find(tmp)!=state->board.end() && state->board.find(tmp)->second[oppositeDirection]==false) )//!= std::map<Point, std::vector<bool> >::end
                 {add=false;}
         
         }
         // make sure there is NOT already a point there
         tmp.x=p.x+(num-1)*modifX;
         tmp.y=p.y+(num-1)*modifY;
-        if((state->board.find(tmp)))
+        if(state->board.find(tmp) != state->board.end())
             add=false;
 
         if(add)
@@ -239,29 +239,33 @@ public:
         dummy = start;
         switch(direction)
         {
-        case 'E': 
+        case 'E': {
             Point p(posX+i,posY);
             state->board.insert(std::make_pair(p,dummy)); 
             last.x=p.x;
             last.y=p.y;
+            }
             break;
-        case 'S':
+        case 'S': {
             Point p(posX,posY-i);
-            state->board.insert(std::make_pair(pp,dummy));
+            state->board.insert(std::make_pair(p,dummy));
             last.x=p.x;
             last.y=p.y;
+            }
             break;
-        case 'O':  
+        case 'O':  {
             Point p(posX-i,posY);
             state->board.insert(std::make_pair(p,dummy)); 
             last.x=p.x;
             last.y=p.y;
+            }
             break;
-        case 'N':  
+        case 'N':  {
             Point p(posX,posY+i);
             state->board.insert(std::make_pair(p,dummy)); 
             last.x=p.x;
             last.y=p.y;
+            }
             break;
         default: break;
 
