@@ -174,7 +174,7 @@ public:
 		if(!isvalid)
 			primeCounter=1;
 
-		return 1.0/primeCounter;
+		return primeCounter;
 	}
 	virtual bool isPrime(double value)
 	{
@@ -197,14 +197,8 @@ public:
 	// evaluateFormula() is a utility function to evaluate the formula given an integer input
 	double evaluateFormula(ExecutionContext& context, const LuapeNodePtr& formula, int input) const
 	{
-		Variable in(input);
-
-		std::cout<<" bef compute "<<input<<" type "<<in.getType()<<std::endl;
-
-		double res = formula->compute(context, &in).toDouble();
-
-		std::cout<<" input "<<input<<" res "<<res<<std::endl;
-
+		Variable in((double)input);
+		double res = formula->compute(context, &in).getDouble();
 		return res == doubleMissingValue ? 0.0 : res;
 	}
 };
@@ -229,7 +223,7 @@ public:
   						}
 
 	virtual void getObjectiveRange(double& worst, double& best) const
-	{worst = 0.0; best = 10.0;} // TODO: fill the worst and best value that the objective function can take
+	{worst = 0.0; best = 100.0;} // TODO: fill the worst and best value that the objective function can take
 
 	protected:
 	friend class PrimeNumberMCProblemClass;
