@@ -77,17 +77,14 @@ public:
     for (size_t j = 0; j < tmp.size(); ++j)
     {
       if (tmp[j] == value)
-      {
-        addValue(row, col, value);
-        updateActions(row, col, value);
-      }
+        setValueAndRemoveFromRowColumnAndRegion(row, col, value);
       else // keep only the value for this position
         removeValue(row, col, tmp[j]);
     }
     prepareNextIteration();
 	}
 
-	void updateActions(size_t row, size_t col, size_t value)
+	void setValueAndRemoveFromRowColumnAndRegion(size_t row, size_t col, size_t value)
 	{
     // for each row : col fixed
     // for each col : row fixed
@@ -101,9 +98,11 @@ public:
 		size_t colRegion = col / baseSize;
 		for (size_t i = 0; i < baseSize; ++i)
 			for (size_t j = 0; j < baseSize; ++j)
-			 if (i != row || j != col) // already removed or if row=i && col=j ; we dont want to remove
         removeValue(rowRegion*baseSize+i, colRegion*baseSize+j, value);
-	}
+
+    // set value
+    setValue(row, col, value);
+  }
 
 	virtual bool undoTransition(ExecutionContext& context, const Variable& stateBackup)
 	{
@@ -127,16 +126,13 @@ public:
 
   /* remove value from the mask of a position */
 	void removeValue(size_t row, size_t column, size_t value)
-	{
-		size_t& state = getState(row, column);
-		state &= ~(1 << value);
-	}
+	  {getState(row, column) &= ~(1 << value);}
 
 	void addValue(size_t row, size_t column, size_t value)
-	{
-		size_t& state = getState(row, column);
-		state |= (1 << value);
-	}
+	  {getState(row, column) |= (1 << value);}
+
+  void setValue(size_t row, size_t column, size_t value)
+    {getState(row, column) = (1 << value);}
 
 	std::vector<size_t> getAvailableValues(size_t row, size_t column) const
 	{
@@ -172,8 +168,6 @@ public:
     if(biggest==1)
       {finalState=true;finalStateReward=1.0;}
   }
-
-
 
   virtual bool isFinalState() const
 	  {return finalState;}
@@ -268,34 +262,21 @@ public:
     size_t boardSize = baseSize * baseSize;
 
     double thres = 1.0/3;
-    for (size_t i = 0; i < boardSize * boardSize; ++i)
-      if (random->sampleDouble() < thres)
-      {
-        size_t row = i / boardSize;
-	      size_t col = i % boardSize;
-        std::vector<size_t> tmp = state->getAvailableValues(row, col);
-        if (tmp.size() > 0)
+    for (size_t row = 0; row < boardSize; ++row)
+      for (size_t col = 0; col < boardSize; ++col)
+        if (random->sampleDouble() < thres)
         {
-          //TODO must be a better way...
-          size_t value = tmp[random->sampleSize(tmp.size())];
-          for (size_t j = 0; j < tmp.size(); ++j)
+          std::vector<size_t> values = state->getAvailableValues(row, col);
+          if (values.empty())
           {
-            if (tmp[j] == value)
-            {
-              state->addValue(row, col, value);
-              state->updateActions(row, col, value);
-            }
-            else // keep only the value for this position
-              state->removeValue(row, col, tmp[j]);
+            state->setFinalState(true);
+            state->setReward(0.0);
+            break;
           }
+        
+          size_t value = values[random->sampleSize(values.size())];
+          state->setValueAndRemoveFromRowColumnAndRegion(row, col, value);
         }
-        //TODO do we give .5 ...
-        else // game generated cannot be solved
-        {
-          state->setFinalState(true);
-          state->setReward(0.0);
-        }
-      }
 
     state->prepareNextIteration();
 		return state;
