@@ -27,7 +27,7 @@ class DecisionProblemMCProblem : public MCProblem
 {
 public:
 	DecisionProblemMCProblem(DecisionProblemPtr decisionProblem = DecisionProblemPtr())
-	: decisionProblem(decisionProblem) {std::cout<<"came mc prob l30"<<std::endl;}
+	: decisionProblem(decisionProblem) {}
 
 	virtual void getObjectiveRange(double& worst, double& best) const
 	{worst = 0.0; best = decisionProblem->getMaxReward();}
@@ -45,7 +45,7 @@ public:
 
 			MCObjectivePtr objective = new Objective();
 			while (instances.size() <= instanceIndex)
-				instances.push_back(std::make_pair(decisionProblem->sampleInitialState(context), objective));
+        instances.push_back(std::make_pair(decisionProblem->sampleInitialState(context), objective));
 		}
 		return instances[instanceIndex];
   						}

@@ -20,7 +20,8 @@ class SudokuState : public DecisionProblemState
 {
 public:
 	SudokuState(size_t sudokuSize = 3)
-	: board(sudokuSize * sudokuSize), finalState(false), finalStateReward(0.0), sudokuSize(sudokuSize), boardSize(sudokuSize * sudokuSize) {}
+	: board(sudokuSize * sudokuSize), finalState(false), finalStateReward(0.0), sudokuSize(sudokuSize), boardSize(sudokuSize * sudokuSize),
+    smallest(sudokuSize * sudokuSize),biggest(0){}
 
 	virtual TypePtr getActionType() const
 	{return pairClass(positiveIntegerType, positiveIntegerType);}
@@ -30,42 +31,23 @@ public:
 		ClassPtr actionType = getActionType();
 
 		ObjectVectorPtr res = new ObjectVector(actionType, 0);
-
-		// first get the board position where it is the smallest
-		size_t smallest=sudokuSize*sudokuSize;
-		for(size_t i=0;i<board.size();++i)
-			for(size_t j=0;j<board.size();++j)
-				if(board[i][j]==0 && actionsBoard[i][j].size()<smallest)
-				{
-					smallest=actionsBoard[i][j].size();
-				}
-
-		// now enumerate all legal moves
-		for(size_t i=0;i<board.size();++i)
-			for(size_t j=0;j<board.size();++j)
-				if(board[i][j]==0 && actionsBoard[i][j].size()==smallest)
-				{
-					set<size_t>::iterator it;
-					for(it = actionsBoard[i][j].begin();it != actionsBoard[i][j].end();it++)
-					{
-						//		std::cout<<" pos " <<(i*sudokuSize*sudokuSize+j)<<" in r,c "<<i<<" "<<j<<" "<<*it<<std::endl;
-						res->append(new Pair(actionType, (i*sudokuSize*sudokuSize+j), *it));
-					}
-				}
-
-
-
+   // fill up
+   for(size_t i=0;i<board.size();++i)
+    {
+   	std::vector<size_t> tmp = getAvailableValues(i/boardSize,i-i/boardSize*boardSize);
+    if(tmp.size()==smallest)
+        for(size_t j=0;j<tmp.size();++j)
+            res->append(new Pair(actionType, i, tmp[j]));   
+    }
 		return res;
 	}
 
 	struct Backup : public Object
 	{
-		Backup(const std::vector<std::vector<size_t> >& board,
-				const std::vector<std::vector<std::set<size_t> > >& actionsBoard)
-		: board(board),actionsBoard(actionsBoard) {}
+		Backup(const std::vector<size_t>& board)
+		: board(board) {}
 
-		std::vector< std::vector<size_t> > board;
-		std::vector<std::vector<std::set<size_t> > > actionsBoard;
+		std::vector<size_t> board;
 	};
 
 	virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward, Variable* stateBackup = NULL)
@@ -77,142 +59,62 @@ public:
 
 		// save in "stateBackup" information about the current state
 		if (stateBackup)
-			*stateBackup = Variable(new Backup(board,actionsBoard), objectClass);
+			*stateBackup = Variable(new Backup(board), objectClass);
 
-
-
-		// update board by setting value at position
-		size_t row = position/board.size();
-		size_t col = position - row*board.size();
-		jassert(board[row][col]==0);
-		board[row][col]=value;
-
-
-		//	std::cout<<" position "<<position<<" row "<<row<<" col "<<col<<"val "<<value<<std::endl;
-
-		//update move list
-		updateActions(row,col, sudokuSize, value);
-
-		// check if the game is finished
-		// compute final reward: either 1 (win) or 0 (loose)
-		if (isLost())
-		{
-			finalState = true;
-			finalStateReward = 0.0;
-
-		}
-		else if(isWon())
-		{
-			finalState = true;
-			finalStateReward = 1.0;
-
-		}
-
+    // execute action && update board
+    size_t row = position/boardSize;
+    size_t col = position-position/boardSize*boardSize;
+    std::vector<size_t> tmp = getAvailableValues(row,col);
+    for(size_t j=0;j<tmp.size();++j)
+    {
+     if(tmp[j]==value)
+      { addValue(row,col,value);
+        updateActions(row,col,boardSize,value);
+      }
+      else // keep only the value for this position
+        removeValue(row,col,tmp[j]);
+    }
+    prepareNextIteration();
 	}
 
 	void updateActions(size_t row, size_t col, size_t bound, size_t value)
 	{
-
-		// std::cout<<"came l106 "<<row<<" "<<col<<std::endl;
-		// remove from row and col
-		for(size_t i=0;i<bound*bound;++i)
+    // for each row : col fixed
+    // for each col : row fixed
+    for(size_t i=0;i<bound;++i)
 		{
-			actionsBoard[row][i].erase(value);
-			actionsBoard[i][col].erase(value);
+			removeValue(i*bound,col,value);
+			removeValue(row,i,value);
 		}
-		// find region3
-		size_t rowRegion = row/bound;
-		size_t colRegion = col/bound;
-		for(size_t i=0;i<bound;++i)
-			for(size_t j=0;j<bound;++j)
-			{ actionsBoard[rowRegion*bound+i][colRegion*bound+j].erase(value);
-			}
+    // for the region
+    size_t rowRegion = row/sudokuSize;
+		size_t colRegion = col/sudokuSize;
+		for(size_t i=0;i<sudokuSize;++i)
+			for(size_t j=0;j<sudokuSize;++j)
+			 if(i!=row || j!=col) // already removed or if row=i && col=j ; we dont want to remove
+        removeValue(rowRegion*sudokuSize+i,colRegion*sudokuSize+j,value);	
 	}
-
-	bool isWon()
-	{
-		for(size_t i=0;i<board.size();++i)
-			for(size_t j=0;j<board[i].size();++j)
-				if(board[i][j]==0)
-				{
-
-					return false;
-				}
-		//		std::cout<<"won "<<std::endl;
-		printBoard();
-		return true;
-	}
-	bool isLost()
-	{
-		for(size_t i=0;i<board.size();++i)
-			for(size_t j=0;j<board[i].size();++j)
-				if(board[i][j]==0)
-					if(actionsBoard[i][j].size()<1)
-					{
-						//			std::cout<<"lost through "<<i<<" "<<j<<std::endl;
-						//			printBoard();
-						return true;
-					}
-		return false;
-	}
-
-
 
 	virtual bool undoTransition(ExecutionContext& context, const Variable& stateBackup)
 	{
 		// restore previous state given the information stored in stackBackup
-		board = stateBackup.getObjectAndCast<Backup>()->board;
-		actionsBoard = stateBackup.getObjectAndCast<Backup>()->actionsBoard;
-		return false;
+		//board = stateBackup.getObjectAndCast<Backup>()->board;
+			return false;
 	}
-
-	virtual bool isFinalState() const
-	{return finalState;}
-
-	virtual double getFinalStateReward() const
-	{return finalStateReward;}
-
-	virtual String toShortString() const
-	{
-		//	printBoard();
-		return "coucou";
-	}
-
-	void printBoard() const
-	{
-		for(size_t k=0;k<board.size();++k)
-		{
-			std::cout<<"\n"<<std::endl;
-			for(size_t l=0;l<board[k].size();++l)
-				std::cout<<board[k][l]<<" ";
-		}
-		std::cout<<"\n"<<std::endl;
-	}
-
-	std::vector< std::vector<size_t> > board;
-	std::vector<std::vector<std::set<size_t> > > actionsBoard;
-
-	protected:
-	friend class SudokuStateClass;
-
-	bool finalState;
-	double finalStateReward;
-	size_t sudokuSize;
-	size_t boardSize;
-
-#if 0
+  /* apply the mask across the whole board */
 	void initializeBoard()
 	{
 		size_t initialValue = (1 << boardSize) - 1;
 		board.resize(boardSize * boardSize, initialValue);
 	}
-
+  /* return the mask of a specific position */
 	size_t getState(size_t row, size_t column) const
 	{return board[row * boardSize + column];}
 
 	size_t& getState(size_t row, size_t column)
 	{return board[row * boardSize + column];}
 
+  /* remove value from the mask of a position */
 	void removeValue(size_t row, size_t column, size_t value)
 	{
 		size_t& state = getState(row, column);
@@ -225,23 +127,83 @@ public:
 		state |= (1 << value);
 	}
 
-	std::vector<size_t> getAvailableValues(size_t row, size_t column)
-					{
+	std::vector<size_t> getAvailableValues(size_t row, size_t column) const
+	{
 		size_t state = getState(row, column);
 
 		std::vector<size_t> res;
 		size_t bit = 1;
 		for (size_t i = 0; i < boardSize; ++i)
 		{
-			if (state & bit == bit)
+			if ((state & bit) == bit)
 				res.push_back(i);
 			bit <<= 1;
 		}
 		return res;
-					}
+	}
+
+  void prepareNextIteration()
+  {
+  // prepare next iteration
+    biggest = 0;
+    smallest = boardSize;
+    for(size_t i=0;i<board.size();++i)
+    {
+   	std::vector<size_t> tmp = getAvailableValues(i/boardSize,i-i/boardSize*boardSize);
+    if(tmp.size()<smallest)
+      smallest=tmp.size();
+    if(tmp.size()>biggest)
+      biggest=tmp.size();
+    }
+    // check end game
+    if(smallest==0)
+      {finalState=true;finalStateReward=0.0;}
+    if(biggest==1)
+      {finalState=true;finalStateReward=1.0;}
+  }
+
+
+
+  virtual bool isFinalState() const
+	{return finalState;}
+
+  void setFinalState(bool value)
+  {finalState=value;}
+
+  void setReward(double value)
+  {finalStateReward=0.0;}
+
+	virtual double getFinalStateReward() const
+	{return finalStateReward;}
+
+	virtual String toShortString() const
+	{
+		//	printBoard();
+		return "coucou";
+	}
+
+  void printBoard()
+  {
+  for(size_t i=0;i<board.size();++i)
+  {
+  if (i%boardSize==0)
+    std::cout<<"\n";
+  std::cout<<board[i]<<" ";
+  }
+
+  }
+
 
 	std::vector<size_t> board;
-#endif // 0
+  protected:
+	friend class SudokuStateClass;
+
+	bool finalState;
+	double finalStateReward;
+	size_t sudokuSize;
+  size_t boardSize;
+  size_t smallest;
+  size_t biggest;
 };
 
 typedef ReferenceCountedObjectPtr<SudokuState> SudokuStatePtr;
@@ -250,10 +212,11 @@ class SudokuProblem : public DecisionProblem
 {
 public:
 	SudokuProblem(size_t sudokuSize = 3)
-	: DecisionProblem(FunctionPtr(), 1.0, sudokuSize * sudokuSize * sudokuSize * sudokuSize), sudokuSize(sudokuSize) {}
+	: DecisionProblem(FunctionPtr(), 1.0, sudokuSize * sudokuSize * sudokuSize * sudokuSize), sudokuSize(sudokuSize),
+    row(0), col(0), bound(sudokuSize*sudokuSize) {std::cout<<"create prob"<<std::endl;}
 
 	virtual double getMaxReward() const
-	{return 100.0;}
+	{return 1.0;}
 
 	virtual ClassPtr getStateClass() const
 	{return sudokuStateClass;}
@@ -261,66 +224,47 @@ public:
 	virtual TypePtr getActionType() const
 	{return pairClass(positiveIntegerType, positiveIntegerType);}
 
-	virtual DecisionProblemStatePtr sampleInitialState(ExecutionContext& context) const
+	virtual DecisionProblemStatePtr sampleInitialState(ExecutionContext& context)
 	{
+
+   std::cout<<"started prlb l 230"<<std::endl;
 		SudokuStatePtr state = new SudokuState(sudokuSize);
 
-		state->actionsBoard.clear();
+    std::cout<<"started prlb l 233"<<std::endl;
 
-		// prepare a list of legal actions
-		std::set<size_t> numbers;
-		for(size_t i=1;i<sudokuSize*sudokuSize+1;++i)
-			numbers.insert(i);
+	  state->initializeBoard();
 
-		std::vector<size_t> zeros;
-		for(size_t i=0;i<sudokuSize*sudokuSize;++i)
-			zeros.push_back(0);
-
-		// generate the possibility board and the real board
-		for (size_t i=0;i<sudokuSize*sudokuSize;++i)
-		{
-			std::vector<std::set<size_t> > region;
-			std::vector<size_t> boardZeros;
-			boardZeros=zeros;
-			for (size_t j=0;j<sudokuSize*sudokuSize;++j)
-			{
-				std::set<size_t> actions;
-				actions = numbers;
-				region.push_back(actions);
-			}
-			state->actionsBoard.push_back(region);
-			state->board[i]=boardZeros;
-		}
-
-		//printBoard(state);
-
-		//TODO build protection
-		// fill X% of the board
-		double thres = 1.0/3;
-		for(size_t i=0;i<sudokuSize*sudokuSize;++i)
-			for(size_t j=0;j<sudokuSize*sudokuSize;++j)
-				if(context.getRandomGenerator()->sampleDouble()<thres)
-				{
-					if(state->actionsBoard[i][j].size()>0){
-						size_t pos = context.getRandomGenerator()->sampleSize(state->actionsBoard[i][j].size());
-						jassert(state->board[i][j]==0);
-
-						size_t count = 0;
-						set<size_t>::iterator it;
-						for(it = state->actionsBoard[i][j].begin();it != state->actionsBoard[i][j].end();it++)
-							if(count==pos)
-							{
-								state->board[i][j]=*it;
-								state->updateActions(i,j, sudokuSize, *it);
-								break;
-							}
-							else
-								++count;
-
-						//	printBoard(state);
-					}
-
-				}
+    state->printBoard();
+    
+    double thres = 1.0/3;
+    for(size_t i=0;i<state->board.size();++i)
+      if(context.getRandomGenerator()->sampleDouble()<thres)
+        {
+          row = i/bound;
+		      col = i - row*bound;
+          std::vector<size_t> tmp=state->getAvailableValues(row,col);
+          if(tmp.size()>0)
+          {
+          //TODO must be a better way...
+           size_t value=tmp[context.getRandomGenerator()->sampleSize(tmp.size())];
+           for(size_t j=0;j<tmp.size();++j)
+           {
+            if(tmp[j]==value)
+             { state->addValue(row,col,value);
+               state->updateActions(row,col,bound,value);
+             }
+            else // keep only the value for this position
+              state->removeValue(row,col,tmp[j]);
+           }
+          }
+          //TODO do we give .5 ...
+          else // game generated cannot be solved
+          {
+            state->setFinalState(true);
+            state->setReward(0.0);
+          }
+        }
+        state->prepareNextIteration();
 		return state;
 	}
 
@@ -329,6 +273,9 @@ protected:
 	friend class SudokuProblemClass;
 
 	size_t sudokuSize;
+  size_t row;
+  size_t col;
+  size_t bound;
 };
 
 }; /* namespace lbcpp */
