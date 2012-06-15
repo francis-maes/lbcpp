@@ -77,29 +77,31 @@ public:
     // execute action && update board
     //std::vector<size_t> tmp = getAvailableValues(position);
     setValueAndRemoveFromRowColumnAndRegion(position, value);
+
+    reward = finalState ? finalStateReward : 0.0; 
 	}
 
 	void setValueAndRemoveFromRowColumnAndRegion(size_t index, size_t value)
 	{
-    size_t row = index % boardSize;
-    size_t col = index / boardSize;
+    size_t x = index % boardSize;
+    size_t y = index / boardSize;
 
     // for each row : col fixed
     // for each col : row fixed
     for (size_t i = 0; i < boardSize; ++i)
 		{
-			removeValue(i, col, value);
-			removeValue(row, i, value);
+			removeValue(i, y, value);
+			removeValue(x, i, value);
 		}
     // for the region
-    size_t rowRegion = row / baseSize;
-		size_t colRegion = col / baseSize;
+    size_t xRegion = x / baseSize;
+		size_t yRegion = y / baseSize;
 		for (size_t i = 0; i < baseSize; ++i)
 			for (size_t j = 0; j < baseSize; ++j)
-        removeValue(rowRegion*baseSize+i, colRegion*baseSize+j, value);
+        removeValue(xRegion*baseSize+i, yRegion*baseSize+j, value);
 
     // set value
-    setValue(row, col, value);
+    setValue(x, y, value);
 
     // test if game is winned
     bool isFinished = true;
@@ -138,9 +140,9 @@ public:
 	  {return board[x + y * boardSize];}
 
   /* remove value from the mask of a position */
-	void removeValue(size_t row, size_t column, size_t value)
+	void removeValue(size_t x, size_t y, size_t value)
 	{
-    size_t& state = getState(row, column);
+    size_t& state = getState(x, y);
     state &= ~(1 << value);
     if (state == 0)
     {
