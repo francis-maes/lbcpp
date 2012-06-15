@@ -262,6 +262,7 @@ public:
       if (numActions == 0)
         break;
     }
+    context.resultCallback("finalState", state);
     context.informationCallback("FinalState: " + state->toShortString());
     return true;
   }
