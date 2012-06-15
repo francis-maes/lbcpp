@@ -40,16 +40,17 @@ public:
     
     size_t smallest = boardSize;
     for (size_t i = 0; i < board.size(); ++i)
-    {
+     if(doneList.find(i)==doneList.end())
+     {
       size_t n = getNumAvailableValues(i);
-      if (n > 1 && n < smallest)
-        smallest = n;
-    }
+      if (n < smallest)
+         smallest = n;
+     }
 
     for (size_t i = 0; i < board.size(); ++i)
     {
  	    std::vector<size_t> values = getAvailableValues(i);
-      if (values.size() == smallest)
+      if (values.size() == smallest && doneList.find(i)==doneList.end())
         for (size_t j = 0; j < values.size(); ++j)
           res->append(new Pair(actionType, i, values[j]));   
     }
@@ -86,44 +87,28 @@ public:
 	{
     size_t x = index % boardSize;
     size_t y = index / boardSize;
+    doneList.insert(index);
 
-    std::set<std::pair<size_t, size_t> > doneList;
-    std::map<std::pair<size_t, size_t>, size_t > todoList;
-    todoList[std::make_pair(index % boardSize, index / boardSize)] = value;
-    
-    // FIXME !! while (todoList.size())
-    {
-      std::map<std::pair<size_t, size_t>, size_t>::iterator it = todoList.begin();
-      std::pair<size_t, size_t> pos = it->first;
-      size_t value = it->second;
-      todoList.erase(it);
-      doneList.insert(pos);
-
-      size_t x = pos.first;
-      size_t y = pos.second;
-
-      // for each row : col fixed
-      // for each col : row fixed
-      for (size_t i = 0; i < boardSize; ++i)
-		  {
-			  removeValue(i, y, value, todoList, doneList);
-			  removeValue(x, i, value, todoList, doneList);
-		  }
-      // for the region
-      size_t xRegion = x / baseSize;
-		  size_t yRegion = y / baseSize;
-		  for (size_t i = 0; i < baseSize; ++i)
-			  for (size_t j = 0; j < baseSize; ++j)
-          removeValue(xRegion*baseSize+i, yRegion*baseSize+j, value, todoList, doneList);
-
-      // set value
-      setValue(x, y, value);
-    }
-
-    // test if game is winned
+    // for each row : col fixed
+    // for each col : row fixed
+    for (size_t i = 0; i < boardSize; ++i)
+	  {
+          removeValue(i, y, value);
+	        removeValue(x, i, value);
+	  }
+    // for the region
+    size_t xRegion = x / baseSize;
+		size_t yRegion = y / baseSize;
+		for (size_t i = 0; i < baseSize; ++i)
+			for (size_t j = 0; j < baseSize; ++j)
+          removeValue(xRegion*baseSize+i, yRegion*baseSize+j, value);
+   
+    // set value
+    setValue(x, y, value);
+    // test if game is won
     bool isFinished = true;
     for (size_t i = 0; i < board.size(); ++i)
-      if (getNumAvailableValues(i) > 1)
+      if (doneList.size()<boardSize*boardSize)//getNumAvailableValues(i) > 1
       {
         isFinished = false;
         break;
@@ -137,26 +122,25 @@ public:
   }
 
   /* remove value from the mask of a position */
-	void removeValue(size_t x, size_t y, size_t value, 
-    std::map<std::pair<size_t, size_t>, size_t >& todoList, 
-    const std::set<std::pair<size_t, size_t> >& doneList)
+	void removeValue(size_t x, size_t y, size_t value)
 	{
     size_t& state = getState(x, y);
     state &= ~(1 << value);
     size_t n = getNumAvailableValues(x, y);
-    if (n == 0)
-    {
-	    finalState = true;
-	    finalStateReward = 0.0;
-    }
-    else if (n == 1 && doneList.find(std::make_pair(x, y)) == doneList.end())
-      todoList[std::make_pair(x, y)] = getAvailableValues(x, y)[0];
+    if(doneList.find(y*boardSize+x)==doneList.end())
+      if (n == 0)
+        {
+	      finalState = true;
+	      finalStateReward = 0.0;
+        }
+ //   else if (n == 1 && doneList.find(std::make_pair(x, y)) == doneList.end())
+  //    todoList[std::make_pair(x, y)] = getAvailableValues(x, y)[0];
   }
 
 	virtual bool undoTransition(ExecutionContext& context, const Variable& stateBackup)
 	{
 		// restore previous state given the information stored in stackBackup
-		//board = stateBackup.getObjectAndCast<Backup>()->board;
+		  board = stateBackup.getObjectAndCast<Backup>()->board;
 			return false;
 	}
   /* apply the mask across the whole board */
@@ -252,6 +236,10 @@ public:
 
   size_t getBoardSize() const
     {return boardSize;}
+
+
+
+  std::set<size_t> doneList;
 
 protected:
 	friend class SudokuStateClass;
