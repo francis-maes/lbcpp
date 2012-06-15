@@ -84,11 +84,14 @@
   
    <!-- Sudoku -->
   <class name="SudokuState" base="DecisionProblemState">
+    <variable type="PositiveInteger" name="baseSize"/>
   </class>
   <class name="SudokuProblem" base="DecisionProblem" shortName="sudoku">
     <constructor/>
-    <variable type="PositiveInteger" name="sudokuSize"/>
+    <variable type="PositiveInteger" name="baseSize"/>
   </class>
+  
+  <uicomponent name="SudokuStateComponent" type="SudokuState"/>
 
   <!-- Morpion -->
   <class name="MorpionAction"/>
