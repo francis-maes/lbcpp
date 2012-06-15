@@ -27,10 +27,7 @@ class SudokuState : public DecisionProblemState
 {
 public:
 	SudokuState(size_t baseSize = 3)
-	: finalState(false), finalStateReward(0.0), baseSize(baseSize), boardSize(baseSize * baseSize),
-    smallest(baseSize * baseSize), biggest(0)
-  {
-  }
+    : finalState(false), finalStateReward(0.0), baseSize(baseSize), boardSize(baseSize * baseSize) {}
 
 	virtual TypePtr getActionType() const
 	  {return pairClass(positiveIntegerType, positiveIntegerType);}
@@ -38,17 +35,24 @@ public:
 	virtual ContainerPtr getAvailableActions() const
 	{
 		ClassPtr actionType = getActionType();
-
 		ObjectVectorPtr res = new ObjectVector(actionType, 0);
-    // fill up
-    for(size_t i=0;i<board.size();++i)
+    
+    size_t smallest = boardSize;
+    for (size_t i = 0; i < board.size(); ++i)
     {
-   	  std::vector<size_t> tmp = getAvailableValues(i/boardSize,i-i/boardSize*boardSize);
-      if (tmp.size() == smallest)
-        for (size_t j=0;j<tmp.size();++j)
-          res->append(new Pair(actionType, i, tmp[j]));   
+      size_t n = getAvailableValues(i).size();
+      if (n > 1 && n < smallest)
+        smallest = n;
     }
-		return res;
+
+    for (size_t i = 0; i < board.size(); ++i)
+    {
+ 	    std::vector<size_t> values = getAvailableValues(i);
+      if (values.size() == smallest)
+        for (size_t j = 0; j < values.size(); ++j)
+          res->append(new Pair(actionType, i, values[j]));   
+    }
+    return res;
 	}
 
 	struct Backup : public Object
@@ -71,21 +75,15 @@ public:
 			*stateBackup = Variable(new Backup(board), objectClass);
 
     // execute action && update board
-    size_t row = position/boardSize;
-    size_t col = position%boardSize;
-    std::vector<size_t> tmp = getAvailableValues(row,col);
-    for (size_t j = 0; j < tmp.size(); ++j)
-    {
-      if (tmp[j] == value)
-        setValueAndRemoveFromRowColumnAndRegion(row, col, value);
-      else // keep only the value for this position
-        removeValue(row, col, tmp[j]);
-    }
-    prepareNextIteration();
+    //std::vector<size_t> tmp = getAvailableValues(position);
+    setValueAndRemoveFromRowColumnAndRegion(position, value);
 	}
 
-	void setValueAndRemoveFromRowColumnAndRegion(size_t row, size_t col, size_t value)
+	void setValueAndRemoveFromRowColumnAndRegion(size_t index, size_t value)
 	{
+    size_t row = index % boardSize;
+    size_t col = index / boardSize;
+
     // for each row : col fixed
     // for each col : row fixed
     for (size_t i = 0; i < boardSize; ++i)
@@ -102,6 +100,21 @@ public:
 
     // set value
     setValue(row, col, value);
+
+    // test if game is winned
+    bool isFinished = true;
+    for (size_t i = 0; i < board.size(); ++i)
+      if (getAvailableValues(i).size() > 1)
+      {
+        isFinished = false;
+        break;
+      }
+
+    if (isFinished)
+    {
+      finalState = true;
+      finalStateReward = 1.0;
+    }
   }
 
 	virtual bool undoTransition(ExecutionContext& context, const Variable& stateBackup)
@@ -118,27 +131,34 @@ public:
 		board.resize(boardSize * boardSize, initialValue);
 	}
   /* return the mask of a specific position */
-	size_t getState(size_t row, size_t column) const
-	  {return board[row * boardSize + column];}
+	size_t getState(size_t x, size_t y) const
+	  {return board[x + y * boardSize];}
 
-	size_t& getState(size_t row, size_t column)
-	  {return board[row * boardSize + column];}
+	size_t& getState(size_t x, size_t y)
+	  {return board[x + y * boardSize];}
 
   /* remove value from the mask of a position */
 	void removeValue(size_t row, size_t column, size_t value)
-	  {getState(row, column) &= ~(1 << value);}
-
-	void addValue(size_t row, size_t column, size_t value)
-	  {getState(row, column) |= (1 << value);}
-
-  void setValue(size_t row, size_t column, size_t value)
-    {getState(row, column) = (1 << value);}
-
-	std::vector<size_t> getAvailableValues(size_t row, size_t column) const
 	{
-		size_t state = getState(row, column);
+    size_t& state = getState(row, column);
+    state &= ~(1 << value);
+    if (state == 0)
+    {
+	    finalState = true;
+	    finalStateReward = 0.0;
+    }
+  }
 
-		std::vector<size_t> res;
+	void addValue(size_t x, size_t y, size_t value)
+	  {getState(x, y) |= (1 << value);}
+
+  void setValue(size_t x, size_t y, size_t value)
+    {getState(x, y) = (1 << value);}
+
+  std::vector<size_t> getAvailableValues(size_t index) const
+  {
+    size_t state = board[index];
+    std::vector<size_t> res;
 		size_t bit = 1;
 		for (size_t i = 0; i < boardSize; ++i)
 		{
@@ -146,28 +166,11 @@ public:
 				res.push_back(i);
 			bit <<= 1;
 		}
-		return res;
-	}
-
-  void prepareNextIteration()
-  {
-  // prepare next iteration
-    biggest = 0;
-    smallest = boardSize;
-    for(size_t i=0;i<board.size();++i)
-    {
-   	std::vector<size_t> tmp = getAvailableValues(i/boardSize,i-i/boardSize*boardSize);
-    if(tmp.size()<smallest)
-      smallest=tmp.size();
-    if(tmp.size()>biggest)
-      biggest=tmp.size();
-    }
-    // check end game
-    if(smallest==0)
-      {finalState=true;finalStateReward=0.0;}
-    if(biggest==1)
-      {finalState=true;finalStateReward=1.0;}
+    return res;
   }
+
+	std::vector<size_t> getAvailableValues(size_t x, size_t y) const
+    {return getAvailableValues(x + y * boardSize);}
 
   virtual bool isFinalState() const
 	  {return finalState;}
@@ -184,10 +187,10 @@ public:
 	virtual String toShortString() const
 	{
     String res;
-    for (size_t i = 0; i < boardSize; ++i)
+    for (size_t j = 0; j < boardSize; ++j)
     {
-      for (size_t j = 0; j < boardSize; ++j)
-        res += String(board[i]) + T(" ");
+      for (size_t i = 0; i < boardSize; ++i)
+        res += String(getState(i, j)) + T(" ");
       res += "\n";
     }
     return res;
@@ -201,18 +204,6 @@ public:
     target->finalStateReward = finalStateReward;
     target->baseSize = baseSize;
     target->boardSize = boardSize;
-    target->smallest = smallest;
-    target->biggest = biggest;
-  }
-
-  void printBoard()
-  {
-    for(size_t i=0;i<board.size();++i)
-    {
-      if (i % boardSize == 0)
-        std::cout << "\n";
-      std::cout << board[i] <<" ";
-    }
   }
 
   size_t getBaseSize() const
@@ -229,8 +220,6 @@ protected:
 	double finalStateReward;
 	size_t baseSize;
   size_t boardSize;
-  size_t smallest;
-  size_t biggest;
 };
 
 /*
@@ -256,17 +245,18 @@ public:
 		SudokuStatePtr state = new SudokuState(baseSize);
 
     RandomGeneratorPtr random = context.getRandomGenerator();
-	  state->initializeBoard();
-    state->printBoard();
-    
-    size_t boardSize = baseSize * baseSize;
 
-    double thres = 1.0/3;
-    for (size_t row = 0; row < boardSize; ++row)
-      for (size_t col = 0; col < boardSize; ++col)
+    do
+    {
+	    state->initializeBoard();
+      
+      size_t boardSize = baseSize * baseSize;
+
+      double thres = 1.0/3;
+      for (size_t i = 0; i < boardSize * boardSize; ++i)
         if (random->sampleDouble() < thres)
         {
-          std::vector<size_t> values = state->getAvailableValues(row, col);
+          std::vector<size_t> values = state->getAvailableValues(i);
           if (values.empty())
           {
             state->setFinalState(true);
@@ -275,10 +265,10 @@ public:
           }
         
           size_t value = values[random->sampleSize(values.size())];
-          state->setValueAndRemoveFromRowColumnAndRegion(row, col, value);
+          state->setValueAndRemoveFromRowColumnAndRegion(i, value);
         }
-
-    state->prepareNextIteration();
+    }
+    while (state->isFinalState());
 		return state;
 	}
 
@@ -329,7 +319,7 @@ public:
     for (size_t x = 0; x < boardSize; ++x)
       for (size_t y = 0; y < boardSize; ++y)
       {
-        std::vector<size_t> values = state->getAvailableValues(y, x);
+        std::vector<size_t> values = state->getAvailableValues(x, y);
         if (values.empty())
           continue;
         if (values.size() == 1)
