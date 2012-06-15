@@ -11,6 +11,7 @@
 
 # include <lbcpp/DecisionProblem/DecisionProblem.h>
 # include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
+# include <list>
 
 namespace lbcpp
 {
@@ -40,7 +41,7 @@ public:
     size_t smallest = boardSize;
     for (size_t i = 0; i < board.size(); ++i)
     {
-      size_t n = getAvailableValues(i).size();
+      size_t n = getNumAvailableValues(i);
       if (n > 1 && n < smallest)
         smallest = n;
     }
@@ -86,27 +87,43 @@ public:
     size_t x = index % boardSize;
     size_t y = index / boardSize;
 
-    // for each row : col fixed
-    // for each col : row fixed
-    for (size_t i = 0; i < boardSize; ++i)
-		{
-			removeValue(i, y, value);
-			removeValue(x, i, value);
-		}
-    // for the region
-    size_t xRegion = x / baseSize;
-		size_t yRegion = y / baseSize;
-		for (size_t i = 0; i < baseSize; ++i)
-			for (size_t j = 0; j < baseSize; ++j)
-        removeValue(xRegion*baseSize+i, yRegion*baseSize+j, value);
+    std::set<std::pair<size_t, size_t> > doneList;
+    std::map<std::pair<size_t, size_t>, size_t > todoList;
+    todoList[std::make_pair(index % boardSize, index / boardSize)] = value;
+    
+    // FIXME !! while (todoList.size())
+    {
+      std::map<std::pair<size_t, size_t>, size_t>::iterator it = todoList.begin();
+      std::pair<size_t, size_t> pos = it->first;
+      size_t value = it->second;
+      todoList.erase(it);
+      doneList.insert(pos);
 
-    // set value
-    setValue(x, y, value);
+      size_t x = pos.first;
+      size_t y = pos.second;
+
+      // for each row : col fixed
+      // for each col : row fixed
+      for (size_t i = 0; i < boardSize; ++i)
+		  {
+			  removeValue(i, y, value, todoList, doneList);
+			  removeValue(x, i, value, todoList, doneList);
+		  }
+      // for the region
+      size_t xRegion = x / baseSize;
+		  size_t yRegion = y / baseSize;
+		  for (size_t i = 0; i < baseSize; ++i)
+			  for (size_t j = 0; j < baseSize; ++j)
+          removeValue(xRegion*baseSize+i, yRegion*baseSize+j, value, todoList, doneList);
+
+      // set value
+      setValue(x, y, value);
+    }
 
     // test if game is winned
     bool isFinished = true;
     for (size_t i = 0; i < board.size(); ++i)
-      if (getAvailableValues(i).size() > 1)
+      if (getNumAvailableValues(i) > 1)
       {
         isFinished = false;
         break;
@@ -117,6 +134,23 @@ public:
       finalState = true;
       finalStateReward = 1.0;
     }
+  }
+
+  /* remove value from the mask of a position */
+	void removeValue(size_t x, size_t y, size_t value, 
+    std::map<std::pair<size_t, size_t>, size_t >& todoList, 
+    const std::set<std::pair<size_t, size_t> >& doneList)
+	{
+    size_t& state = getState(x, y);
+    state &= ~(1 << value);
+    size_t n = getNumAvailableValues(x, y);
+    if (n == 0)
+    {
+	    finalState = true;
+	    finalStateReward = 0.0;
+    }
+    else if (n == 1 && doneList.find(std::make_pair(x, y)) == doneList.end())
+      todoList[std::make_pair(x, y)] = getAvailableValues(x, y)[0];
   }
 
 	virtual bool undoTransition(ExecutionContext& context, const Variable& stateBackup)
@@ -139,23 +173,25 @@ public:
 	size_t& getState(size_t x, size_t y)
 	  {return board[x + y * boardSize];}
 
-  /* remove value from the mask of a position */
-	void removeValue(size_t x, size_t y, size_t value)
-	{
-    size_t& state = getState(x, y);
-    state &= ~(1 << value);
-    if (state == 0)
-    {
-	    finalState = true;
-	    finalStateReward = 0.0;
-    }
-  }
-
 	void addValue(size_t x, size_t y, size_t value)
 	  {getState(x, y) |= (1 << value);}
 
   void setValue(size_t x, size_t y, size_t value)
     {getState(x, y) = (1 << value);}
+
+  size_t getNumAvailableValues(size_t index) const
+  {
+    size_t state = board[index];
+    size_t res = 0;
+		size_t bit = 1;
+		for (size_t i = 0; i < boardSize; ++i)
+		{
+			if ((state & bit) == bit)
+				++res;
+			bit <<= 1;
+		}
+    return res;
+  }
 
   std::vector<size_t> getAvailableValues(size_t index) const
   {
@@ -170,6 +206,9 @@ public:
 		}
     return res;
   }
+
+	size_t getNumAvailableValues(size_t x, size_t y) const
+    {return getNumAvailableValues(x + y * boardSize);}
 
 	std::vector<size_t> getAvailableValues(size_t x, size_t y) const
     {return getAvailableValues(x + y * boardSize);}
