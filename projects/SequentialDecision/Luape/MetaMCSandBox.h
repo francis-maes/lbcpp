@@ -231,34 +231,46 @@ typedef ReferenceCountedObjectPtr<CacheAndFiniteBudgetMCObjective> CacheAndFinit
 class DecisionProblemRandomTrajectoryWorkUnit : public WorkUnit
 {
 public:
-   virtual Variable run(ExecutionContext& context)
-   {
-  	 if (!problem)
-  		 return false;
+  DecisionProblemRandomTrajectoryWorkUnit() : horizon(10) {}
 
-  	 DecisionProblemStatePtr state = problem->sampleInitialState(context);
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (!problem)
+      return false;
 
-  	 size_t t = 1;
-  	 while (!state->isFinalState() && t < 100)
-  	 {
-  		 context.informationCallback("State: " + state->toShortString());
-  		 ContainerPtr actions = state->getAvailableActions();
-  		 context.informationCallback(String((int)actions->getNumElements()) + " actions");
-  		 Variable action = actions->getElement(context.getRandomGenerator()->sampleSize(actions->getNumElements()));
-  		 double reward;
-  		 state->performTransition(context, action, reward);
-  		 context.informationCallback("Reward: " + String(reward));
-  		 t = t + 1;
-  	 }
-  	 context.informationCallback("FinalState: " + state->toShortString());
+    DecisionProblemStatePtr state = problem->sampleInitialState(context);
 
-  	 return true;
-   }
+    size_t t = 1;
+    while (!state->isFinalState() && t < horizon)
+    {
+      context.enterScope(T("Step ") + String((int)t));
+      context.resultCallback("step", t);
+      context.resultCallback("state", state->cloneAndCast<DecisionProblemState>());
+      ContainerPtr actions = state->getAvailableActions();
+      context.resultCallback("actions", actions);
+      size_t numActions = actions->getNumElements();
+      if (numActions > 0)
+      {
+        Variable action = actions->getElement(context.getRandomGenerator()->sampleSize(actions->getNumElements()));
+        double reward;
+        context.resultCallback("action", action);
+        state->performTransition(context, action, reward);
+        context.resultCallback("reward", reward);
+      }
+      context.leaveScope();
+      t = t + 1;
+      if (numActions == 0)
+        break;
+    }
+    context.informationCallback("FinalState: " + state->toShortString());
+    return true;
+  }
 
 private:
-	friend class DecisionProblemRandomTrajectoryWorkUnitClass;
+  friend class DecisionProblemRandomTrajectoryWorkUnitClass;
 
-	DecisionProblemPtr problem;
+  DecisionProblemPtr problem;
+  size_t horizon;
 };
 
 /////////////

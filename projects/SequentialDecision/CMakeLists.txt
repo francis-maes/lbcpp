@@ -40,6 +40,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_PROBLEM_SOURCES
   Problem/AcrobotProblem.h
   Problem/BicycleBalancingProblem.h
   Problem/SudokuProblem.h
+  Problem/MorpionProblem.h
   Problem/SequentialDecisionProblemLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionProblemLibrary.cpp
 )

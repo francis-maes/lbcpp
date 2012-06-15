@@ -90,12 +90,17 @@
     <variable type="PositiveInteger" name="sudokuSize"/>
   </class>
 
-  <!-- Morpio -->
-  <class name="MorpioState" base="DecisionProblemState">
-  </class>
-  <class name="MorpioProblem" base="DecisionProblem" shortName="morpio">
-    <constructor/>
+  <!-- Morpion -->
+  <class name="MorpionAction"/>
+  <class name="MorpionState" base="DecisionProblemState">
     <variable type="PositiveInteger" name="crossLength"/>
+    <variable type="Boolean" name="isDisjoint"/>
   </class>
-  
+  <class name="MorpionProblem" base="DecisionProblem" shortName="morpion">
+    <variable type="PositiveInteger" name="crossLength"/>
+    <variable type="Boolean" name="isDisjoint"/>
+  </class>
+
+  <uicomponent name="MorpionStateComponent" type="MorpionState"/>
+
 </library>
