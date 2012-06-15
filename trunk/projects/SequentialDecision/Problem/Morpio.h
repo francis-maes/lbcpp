@@ -196,8 +196,8 @@ public:
         lookDir(state,tmp,1,-1,num,'D',7); // SE
         lookDir(state,tmp,0,-1,num,'S',0); // S
         lookDir(state,tmp,-1,-1,num,'S',1); // SW
-        lookDir(state,tmp,-1,0,num,'S',1); // W
-        lookDir(state,tmp,-1,1,num,'B',1); // NW        
+        lookDir(state,tmp,-1,0,num,'S',2); // W
+        lookDir(state,tmp,-1,1,num,'B',3); // NW
       }
   }
   
@@ -211,7 +211,7 @@ public:
             tmp.y=p.y+k*modifY;
             //TODO make if works
             // if point not there or point incoming already used (here south), 
-            if(!state->board.find(tmp) || (state->board.find(tmp) && state->board.find(tmp)->second[oppositeDirection]==false) )//!= std::map<Point, std::vector<bool> >::end
+            if(!(state->board.find(tmp)) || (state->board.find(tmp) && state->board.find(tmp)->second[oppositeDirection]==false) )//!= std::map<Point, std::vector<bool> >::end
                 {add=false;}
         
         }
@@ -247,7 +247,7 @@ public:
             break;
         case 'S':
             Point p(posX,posY-i);
-            state->board.insert(std::make_pair(p,dummy)); 
+            state->board.insert(std::make_pair(pp,dummy));
             last.x=p.x;
             last.y=p.y;
             break;
