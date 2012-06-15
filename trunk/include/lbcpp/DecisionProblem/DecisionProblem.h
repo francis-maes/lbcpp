@@ -96,6 +96,11 @@ public:
 
   virtual double getMaxCumulativeReward() const;
 
+  /*
+  ** Object
+  */
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
+
   lbcpp_UseDebuggingNewOperator
 
 protected:

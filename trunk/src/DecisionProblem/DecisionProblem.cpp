@@ -117,3 +117,12 @@ double DecisionProblem::getMaxCumulativeReward() const
   else
     return maxReward * (1.0 - pow(discount, (double)horizon)) / (1.0 - discount);
 }
+
+void DecisionProblem::clone(ExecutionContext& context, const ObjectPtr& t) const
+{
+  Object::clone(context, t);
+  const DecisionProblemPtr& target = t.staticCast<DecisionProblem>();
+  target->initialStateSampler = initialStateSampler;
+  target->discount = discount;
+  target->horizon = horizon;
+}

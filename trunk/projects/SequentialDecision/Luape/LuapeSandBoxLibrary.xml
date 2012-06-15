@@ -74,6 +74,7 @@
   </class>
   <class name="DecisionProblemRandomTrajectoryWorkUnit" base="WorkUnit">
     <variable type="DecisionProblem" name="problem"/>
+    <variable type="PositiveInteger" name="horizon"/>
   </class>
 
   <class name="LuapeSandBox" base="WorkUnit">
