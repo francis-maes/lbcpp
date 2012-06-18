@@ -42,6 +42,7 @@ private:
       }
       *o << T("\n");
     }
+    delete o;
   }
 };
 
