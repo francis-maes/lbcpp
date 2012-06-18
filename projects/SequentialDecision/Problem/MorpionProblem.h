@@ -40,7 +40,7 @@ public:
     {static int dys[] = {-1, 0, 1, 1, 0}; return dys[dir];}
 
   String toString() const
-    {static char* strs[] = {"NE", "E", "SE", "S", "none"}; return strs[dir];}
+    {static String strs[] = {T("NE"), T("E"), T("SE"), T("S"), T("none")}; return strs[dir];}
 
 private:
   Direction dir;
