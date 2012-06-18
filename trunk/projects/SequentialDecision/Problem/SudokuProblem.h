@@ -215,7 +215,7 @@ public:
     for (size_t j = 0; j < boardSize; ++j)
     {
       for (size_t i = 0; i < boardSize; ++i)
-        res += String(getState(i, j)) + T(" ");
+        res += String((int)getState(i, j)) + T(" ");
       res += "\n";
     }
     return res;
@@ -354,7 +354,7 @@ public:
         if (values.size() == 1)
         {
           g.setFont(largeFont);
-          g.drawText(String(values[0]+1), x0 + x * edgePixels, y0 + y * edgePixels, edgePixels, edgePixels, juce::Justification::centred, false);
+          g.drawText(String((int)values[0]+1), x0 + x * edgePixels, y0 + y * edgePixels, edgePixels, edgePixels, juce::Justification::centred, false);
         }
         else
         {
@@ -368,7 +368,7 @@ public:
             {
               if (str.isNotEmpty())
                 str += T(" ");
-              str += String(values[valueIndex]+1);
+              str += String((int)values[valueIndex]+1);
             }
             g.drawText(str, x0 + x * edgePixels, y0 + y * edgePixels + (line * edgePixels / numLines), edgePixels, edgePixels / numLines, juce::Justification::centred, false);
           }
