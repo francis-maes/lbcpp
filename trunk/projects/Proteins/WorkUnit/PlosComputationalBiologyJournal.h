@@ -80,6 +80,8 @@ public:
     // Compile protein
     protein->setPositionSpecificScoringMatrix(pssm);
 
+    proteins = proteins->apply(context, proteinToInputOutputPairFunction(false));
+
     // Features
     LargeProteinParametersPtr parameter = new LargeProteinParameters();
     parameter->pssmWindowSize = 15;
