@@ -217,6 +217,7 @@ public:
   {
     const SudokuStatePtr& target = t.staticCast<SudokuState>();
     target->board = board;
+    target->doneList = doneList;
     target->finalState = finalState;
     target->baseSize = baseSize;
     target->boardSize = boardSize;
