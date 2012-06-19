@@ -244,6 +244,9 @@ public:
   MorpionPoint getEndPosition(size_t crossLength) const
     {return position.moveIntoDirection(direction, (int)(crossLength - 1 - indexInLine));}
 
+  MorpionPoint getLinePoint(size_t index) const
+  {return position.moveIntoDirection(direction, (int)index - (int)indexInLine);}
+
   virtual String toShortString() const
     {return position.toString() + ", " + direction.toString() + ", " + String((int)indexInLine);}
 
@@ -280,6 +283,20 @@ public:
 	{
 		ObjectVectorPtr res = new ObjectVector(morpionActionClass, 0);
 		
+    
+    std::vector<MorpionAction> possibleMoves;
+    int minSize = board.getMinX();
+    int maxSize = board.getMaxX();
+    for(int x=minSize;x<maxSize;++x)
+      for (int y=board.getMinY(x);y<board.getMaxY(x);++y)
+        {
+        if(!board.isOccupied(x,y))        
+          exhaustiveList(x,y, res);// if it can form a line
+        
+
+        }
+
+    /*
     // tmp ! --
     int xMin, xMax, yMin, yMax;
     board.getXRange(xMin, xMax);
@@ -296,9 +313,51 @@ public:
         random->sampleSize(crossLength)));
     }
     // --
-
+    */
     return res;
 	}
+
+  void exhaustiveList(int x, int y, ObjectVectorPtr res) const
+  {
+    // Direction TODO remove hard code
+    for(size_t dir=0;dir<4;++dir)
+    { // there are 5 different index lines
+      for(size_t index=0;index<crossLength;++index)
+      { // look if it is a possible move
+        bool isValid = true;
+        MorpionAction action(MorpionPoint(x,y), MorpionDirection((MorpionDirection::Direction)dir),index) ;
+
+        for(size_t position=0;position<crossLength;++position)
+        {
+          if(position!=index)
+          {
+            if(board.isOccupied(action.getLinePoint(position)))
+              {
+                if(ensureDiscontinuity(action.getLinePoint(position),action.getDirection())){}
+                else
+                {isValid = false; break;}
+              }
+            else // last check, discontinuity
+              {isValid = false; break;}
+          }
+        }
+        if(isValid) // TODO make sure it works
+         res->append(new MorpionAction(MorpionPoint(x,y), MorpionDirection((MorpionDirection::Direction)dir),index));
+      }
+    }
+  }
+
+  bool ensureDiscontinuity(MorpionPoint point, MorpionDirection dir) const
+  {
+  for(size_t line=0;line<history.size();++line)
+  //TODO make it work 
+  //  if(history[line]->getDirection()==dir)
+      for(size_t check=0;check<crossLength;++check)
+        if(history[line]->getPosition().getX()==point.getX() && history[line]->getPosition().getY()==point.getY())
+          return false;
+  return true;
+  }
+
 
 	virtual void performTransition(ExecutionContext& context, const Variable& ac, double& reward, Variable* stateBackup = NULL)
 	{
@@ -307,20 +366,13 @@ public:
     board.markAsOccupied(action->getPosition());
 
 		history.push_back(action);
-    reward = 1.0;
+    reward += 1.0;
 
 		// save in "stateBackup" information about the current state
 /*		if (stateBackup)
 			*stateBackup = Variable(new Backup(board,actionsBoard), objectClass);
  */
-		//TODO add point on board
-
-    // TODO remove from actionBoard
-
-    // TODO update actionsBoard
-	
-
-    // TODO check for end game
+		
 	
 	}
 
