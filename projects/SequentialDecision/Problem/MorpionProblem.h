@@ -81,6 +81,9 @@ public:
     }
     return res;
   }
+  
+  void incrementIntoDirection(const MorpionDirection& direction)
+    {x += direction.getDx(); y += direction.getDy();}
 
   bool operator ==(const MorpionPoint& other) const
     {return x == other.x && y == other.y;}
@@ -372,30 +375,39 @@ protected:
 
   void exhaustiveList(int x, int y, ObjectVectorPtr res) const
   {
-    // Direction TODO remove hard code
-    for(size_t dir=0;dir<4;++dir)
-    { // there are 5 different index lines
-      for(size_t index=0;index<crossLength;++index)
-      { // look if it is a possible move
-        bool isValid = true;
-        MorpionAction action(MorpionPoint(x,y), MorpionDirection((MorpionDirection::Direction)dir),index) ;
-
-        for (size_t position=0;position<crossLength;++position)
+    MorpionPoint position(x, y);
+    
+    for (size_t dir = 0; dir < 4; ++dir)
+    { 
+      MorpionDirection direction((MorpionDirection::Direction)dir);
+      
+      if (!board.isOccupied(position.moveIntoDirection(direction, 1)) &&
+          !board.isOccupied(position.moveIntoDirection(direction, -1)))
+        continue;
+      
+      // there are 5 different index lines
+      for (size_t index=0;index<crossLength;++index)
+      {
+        // look if it is a possible move
+        MorpionAction action(position, direction, index);
+        jassert(ensureDiscontinuity(action) == ensureDiscontinuity2(action));
+        if (ensureDiscontinuity(action))
         {
-          if (position!=index)
+          bool isValid = true;
+          MorpionPoint otherPosition = action.getStartPosition();
+          for (size_t i = 0; i < crossLength; ++i)
           {
-            if (board.isOccupied(action.getLinePoint(position)))
+            if (i != index && !board.isOccupied(otherPosition))
             {
-              jassert(ensureDiscontinuity(action) == ensureDiscontinuity2(action));
-              if (!ensureDiscontinuity(action))
-                {isValid = false; break;}
+              isValid = false;
+              break;
             }
-            else
-              {isValid = false; break;}
+            otherPosition.incrementIntoDirection(direction);
           }
+            
+          if (isValid)
+            res->append(new MorpionAction(position, direction, index));
         }
-        if(isValid) // TODO make sure it works
-          res->append(new MorpionAction(MorpionPoint(x,y), MorpionDirection((MorpionDirection::Direction)dir),index));
       }
     }
   }
