@@ -28,7 +28,7 @@ class SudokuState : public DecisionProblemState
 {
 public:
 	SudokuState(size_t baseSize = 3)
-    : finalState(false), finalStateReward(0.0), baseSize(baseSize), boardSize(baseSize * baseSize) {}
+    : finalState(false), baseSize(baseSize), boardSize(baseSize * baseSize) {}
 
 	virtual TypePtr getActionType() const
 	  {return pairClass(positiveIntegerType, positiveIntegerType);}
@@ -40,7 +40,7 @@ public:
     
     size_t smallest = boardSize;
     for (size_t i = 0; i < board.size(); ++i)
-     if(doneList.find(i)==doneList.end())
+     if (doneList.find(i) == doneList.end())
      {
       size_t n = getNumAvailableValues(i);
       if (n < smallest)
@@ -50,19 +50,20 @@ public:
     for (size_t i = 0; i < board.size(); ++i)
     {
  	    std::vector<size_t> values = getAvailableValues(i);
-      if (values.size() == smallest && doneList.find(i)==doneList.end())
+      if (values.size() == smallest && doneList.find(i) == doneList.end())
         for (size_t j = 0; j < values.size(); ++j)
-          res->append(new Pair(actionType, i, values[j]));   
+          res->append(new Pair(actionType, i, values[j]));  
     }
     return res;
 	}
 
 	struct Backup : public Object
 	{
-		Backup(const std::vector<size_t>& board)
-		: board(board) {}
+		Backup(const std::vector<size_t>& board, size_t lastPosition)
+		: board(board), lastPosition(lastPosition) {}
 
 		std::vector<size_t> board;
+    size_t lastPosition;
 	};
 
 	virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward, Variable* stateBackup = NULL)
@@ -74,14 +75,14 @@ public:
 
 		// save in "stateBackup" information about the current state
 		if (stateBackup)
-			*stateBackup = Variable(new Backup(board), objectClass);
+			*stateBackup = Variable(new Backup(board, position), objectClass);
 
     // execute action && update board
     //std::vector<size_t> tmp = getAvailableValues(position);
     setValueAndRemoveFromRowColumnAndRegion(position, value);
 
-    reward = finalState ? finalStateReward : 0.0; 
-	}
+    reward = 1.0;
+  }
 
 	void setValueAndRemoveFromRowColumnAndRegion(size_t index, size_t value)
 	{
@@ -93,32 +94,29 @@ public:
     // for each col : row fixed
     for (size_t i = 0; i < boardSize; ++i)
 	  {
-          removeValue(i, y, value);
-	        removeValue(x, i, value);
+      if (i != x)
+        removeValue(i, y, value);
+      if (i != y)
+        removeValue(x, i, value);
 	  }
     // for the region
     size_t xRegion = x / baseSize;
 		size_t yRegion = y / baseSize;
 		for (size_t i = 0; i < baseSize; ++i)
 			for (size_t j = 0; j < baseSize; ++j)
-          removeValue(xRegion*baseSize+i, yRegion*baseSize+j, value);
+      {
+        size_t ii = xRegion*baseSize+i;
+        size_t jj = yRegion*baseSize+j;
+        if (ii != x || jj != y)
+          removeValue(ii, jj, value);
+      }
    
     // set value
     setValue(x, y, value);
-    // test if game is won
-    bool isFinished = true;
-    for (size_t i = 0; i < board.size(); ++i)
-      if (doneList.size()<boardSize*boardSize)//getNumAvailableValues(i) > 1
-      {
-        isFinished = false;
-        break;
-      }
 
-    if (isFinished)
-    {
+    // test if game is won
+    if (doneList.size() == board.size())
       finalState = true;
-      finalStateReward = 1.0;
-    }
   }
 
   /* remove value from the mask of a position */
@@ -126,30 +124,30 @@ public:
 	{
     size_t& state = getState(x, y);
     state &= ~(1 << value);
-    size_t n = getNumAvailableValues(x, y);
-    if(doneList.find(y*boardSize+x)==doneList.end())
-      if (n == 0)
-        {
-	      finalState = true;
-	      finalStateReward = 0.0;
-        }
- //   else if (n == 1 && doneList.find(std::make_pair(x, y)) == doneList.end())
-  //    todoList[std::make_pair(x, y)] = getAvailableValues(x, y)[0];
+    if (state == 0)
+      finalState = true;
   }
 
 	virtual bool undoTransition(ExecutionContext& context, const Variable& stateBackup)
 	{
+    const ReferenceCountedObjectPtr<Backup>& b = stateBackup.getObjectAndCast<Backup>();
 		// restore previous state given the information stored in stackBackup
-		  board = stateBackup.getObjectAndCast<Backup>()->board;
-			return false;
+    board = b->board;
+    doneList.erase(b->lastPosition);
+    finalState = false;
+		return false;
 	}
+  
   /* apply the mask across the whole board */
 	void initializeBoard()
 	{
 		size_t initialValue = (1 << boardSize) - 1;
     board.clear();
 		board.resize(boardSize * boardSize, initialValue);
+    doneList.clear();
+    finalState = false;
 	}
+  
   /* return the mask of a specific position */
 	size_t getState(size_t x, size_t y) const
 	  {return board[x + y * boardSize];}
@@ -200,14 +198,8 @@ public:
   virtual bool isFinalState() const
 	  {return finalState;}
 
-  void setFinalState(bool value)
-    {finalState = value;}
-
-  void setReward(double value)
-    {finalStateReward = 0.0;}
-
 	virtual double getFinalStateReward() const
-	  {return finalStateReward;}
+	  {return (double)doneList.size();}
 
 	virtual String toShortString() const
 	{
@@ -226,7 +218,6 @@ public:
     const SudokuStatePtr& target = t.staticCast<SudokuState>();
     target->board = board;
     target->finalState = finalState;
-    target->finalStateReward = finalStateReward;
     target->baseSize = baseSize;
     target->boardSize = boardSize;
   }
@@ -237,18 +228,14 @@ public:
   size_t getBoardSize() const
     {return boardSize;}
 
-
-
-  std::set<size_t> doneList;
-
 protected:
 	friend class SudokuStateClass;
 
 	std::vector<size_t> board;
+  std::set<size_t> doneList;
 	bool finalState;
-	double finalStateReward;
-	size_t baseSize;
-  size_t boardSize;
+	size_t baseSize; // e.g. 3
+  size_t boardSize; // e.g. 9, board.size = boardSize * boardSize, e.g. 81
 };
 
 /*
@@ -261,7 +248,7 @@ public:
 	: DecisionProblem(FunctionPtr(), 1.0, baseSize * baseSize * baseSize * baseSize), baseSize(baseSize) {}
 
 	virtual double getMaxReward() const
-	  {return 1.0;}
+	  {return pow((double)baseSize, 4.0);}
 
 	virtual ClassPtr getStateClass() const
 	  {return sudokuStateClass;}
@@ -271,28 +258,17 @@ public:
 
 	virtual DecisionProblemStatePtr sampleInitialState(ExecutionContext& context) const
 	{
-		SudokuStatePtr state = new SudokuState(baseSize);
-
     RandomGeneratorPtr random = context.getRandomGenerator();
-
+		SudokuStatePtr state = new SudokuState(baseSize);
     do
     {
 	    state->initializeBoard();
-      
       size_t boardSize = baseSize * baseSize;
-
-      double thres = 1.0/3;
-      for (size_t i = 0; i < boardSize * boardSize; ++i)
-        if (random->sampleDouble() < thres)
+      for (size_t i = 0; i < boardSize * boardSize && !state->isFinalState(); ++i)
+        if (random->sampleBool(1.0 / 3.0))
         {
           std::vector<size_t> values = state->getAvailableValues(i);
-          if (values.empty())
-          {
-            state->setFinalState(true);
-            state->setReward(0.0);
-            break;
-          }
-        
+          jassert(values.size());
           size_t value = values[random->sampleSize(values.size())];
           state->setValueAndRemoveFromRowColumnAndRegion(i, value);
         }
