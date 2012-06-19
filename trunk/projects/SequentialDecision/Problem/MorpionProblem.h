@@ -298,15 +298,9 @@ public:
     std::vector<MorpionAction> possibleMoves;
     int minSizeX = board.getMinX()-1;
     int maxSizeX = board.getMaxX()+1;
-    int minSizeY = 100;
-    int maxSizeY = -100;
-    for(int boardSizeX=minSizeX;boardSizeX<=maxSizeX;++boardSizeX)
-      {
-        if(board.getMinY(boardSizeX)<minSizeY)
-          minSizeY=board.getMinY(boardSizeX);
-        if(board.getMaxY(boardSizeX)>maxSizeY)
-          maxSizeY=board.getMaxY(boardSizeX);
-      }
+    int minSizeY;
+    int maxSizeY;
+    board.getYRange(minSizeY, maxSizeY);
     minSizeY--;
     maxSizeY++;
 
