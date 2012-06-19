@@ -25,6 +25,7 @@ public:
       activeResiduePairPerception(false),
       activeDisulfideResiduePairPerception(false),
       activeDisulfideSymmetricResiduePairPerception(false),
+      activeOxidizedDisulfideSymmetricResiduePairPerception(false),
       activeCysteinResiduePerception(false)
     {}
 
@@ -46,6 +47,7 @@ protected:
   bool activeResiduePairPerception;
   bool activeDisulfideResiduePairPerception;
   bool activeDisulfideSymmetricResiduePairPerception;
+  bool activeOxidizedDisulfideSymmetricResiduePairPerception;
   bool activeCysteinResiduePerception;
 
   TypePtr residuePerceptionType;

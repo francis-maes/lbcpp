@@ -642,8 +642,22 @@ public:
       builder.addInSelection(proteinPerception);
 
     builder.finishSelectionWithFunction(new CreateDisulfideSymmetricMatrixFunction(
-            lbcppMemberCompositeFunction(LargeProteinPredictorParameters, cysteinResiduePairVectorFeatures))
+            lbcppMemberCompositeFunction(LargeProteinPredictorParameters, cysteinResiduePairVectorFeatures), false)
                                         , T("cysteinResiduePairFeatures"));
+  }
+
+  virtual void oxidizedCysteinSymmetricResiudePairVectorPerception(CompositeFunctionBuilder& builder) const
+  {
+    /* Input */
+    size_t proteinPerception = builder.addInput(largeProteinPerceptionClass());
+    /* Output */
+    builder.startSelection();
+    builder.addFunction(getVariableFunction(T("protein")), proteinPerception);
+    builder.addInSelection(proteinPerception);
+    
+    builder.finishSelectionWithFunction(new CreateDisulfideSymmetricMatrixFunction(
+                                        lbcppMemberCompositeFunction(LargeProteinPredictorParameters, cysteinResiduePairVectorFeatures), true)
+                                        , T("oxidizedCysteinResiduePairFeatures"));
   }
 
   void cysteinResiduePairVectorFeatures(CompositeFunctionBuilder& builder) const

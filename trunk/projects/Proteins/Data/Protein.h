@@ -38,8 +38,8 @@ enum ProteinTarget
   dmaTarget,
   dmbTarget,
   dsbTarget,
+  odsbTarget,
   fdsbTarget
-
   // todo: continue
 };
 
@@ -94,9 +94,10 @@ class Protein : public NameableObject
 {
 public:
   Protein(const String& name)
-    : NameableObject(name) {}
+    : NameableObject(name), bondingStateThreshold(0.f) {}
 
-  Protein() {}
+  Protein()
+    : bondingStateThreshold(0.f) {}
 
   /*
   ** Save/Load operators
@@ -132,6 +133,8 @@ public:
 
   const std::vector<int>& getCysteinInvIndices() const // residue position => cystein index
     {return cysteinInvIndices;}
+
+  void getCysteinIndices(bool useKnowledgeOfCysteineBondingStates, std::vector<size_t>& results) const;
 
   void setPrimaryStructure(VectorPtr primaryStructure);
   void setPrimaryStructure(const String& primaryStructure);
@@ -219,13 +222,17 @@ public:
   ** Disulfide Bonds
   */
   const SymmetricMatrixPtr& getDisulfideBonds(ExecutionContext& context) const;
+  const SymmetricMatrixPtr& getOxidizedDisulfideBonds(ExecutionContext& context) const;
+
   const MatrixPtr& getFullDisulfideBonds(ExecutionContext& context) const;
 
   void setDisulfideBonds(const SymmetricMatrixPtr& disulfideBonds)
     {jassert(disulfideBonds->getDimension() == cysteinIndices.size()); this->disulfideBonds = disulfideBonds;}
 
   const DenseDoubleVectorPtr& getCysteinBondingStates(ExecutionContext& context) const;
-  
+  void setCysteinBondingStates(ExecutionContext& context, const DenseDoubleVectorPtr& cysteinBondingStates)
+    {jassert(cysteinBondingStates->getNumElements() == cysteinIndices.size()); this->cysteinBondingStates = cysteinBondingStates;}
+
   size_t getNumBondedCysteins() const;
   
   /*
@@ -255,6 +262,7 @@ public:
 protected:
   friend class ProteinClass;
 
+  const double bondingStateThreshold;
   // input
   VectorPtr primaryStructure;
   ContainerPtr positionSpecificScoringMatrix;
@@ -285,6 +293,7 @@ protected:
   SymmetricMatrixPtr distanceMapCb;
 
   SymmetricMatrixPtr disulfideBonds;
+  SymmetricMatrixPtr oxidizedDisulfideBonds;
   MatrixPtr fullDisulfideBonds;
 
   // 3D

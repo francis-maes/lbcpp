@@ -207,7 +207,7 @@ protected:
     for (size_t i = 0; i < n; ++i)
     {
       ObjectPtr pair = proteins->getElement(i).getObject();
-      res[i].first = new ProteinPerception(pair->getVariable(0).getObjectAndCast<Protein>());
+      res[i].first = new ProteinPerception(pair->getVariable(0).getObjectAndCast<Protein>(), false);
       res[i].second = pair->getVariable(1).getObjectAndCast<Protein>();
     }
     return res;

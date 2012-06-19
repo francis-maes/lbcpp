@@ -152,6 +152,8 @@ public:
     {jassertfalse;}
   virtual void cysteinSymmetricResiudePairVectorPerception(CompositeFunctionBuilder& builder) const
     {jassertfalse;}
+  virtual void oxidizedCysteinSymmetricResiudePairVectorPerception(CompositeFunctionBuilder& builder) const
+    {jassertfalse;}
   virtual void cysteinResiudeVectorPerception(CompositeFunctionBuilder& builder) const
     {jassertfalse;}
 

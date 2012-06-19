@@ -35,7 +35,7 @@ public:
     {
       ObjectPtr pair = proteinPairs->getElement(i).getObject();
       ProteinPtr inputProtein = pair->getVariable(0).getObjectAndCast<Protein>();
-      ProteinPerceptionPtr inputPerception = new ProteinPerception(inputProtein);
+      ProteinPerceptionPtr inputPerception = new ProteinPerception(inputProtein, false);
       const std::vector<size_t>& cysteinIndices = inputPerception->getCysteinIndices();
       
       ProteinPtr supervisionProtein = pair->getVariable(1).getObjectAndCast<Protein>();
@@ -107,7 +107,7 @@ public:
   LuapeProteinPredictorParameters() : treeDepth(1), complexity(5), relativeBudget(5.0), miniBatchRelativeSize(0.0), numIterations(1000), verbose(false) {}
 
   Variable createProteinPerceptionFunction(ExecutionContext& context, const Variable& input) const
-    {return new ProteinPerception(input.getObjectAndCast<Protein>());}
+    {return new ProteinPerception(input.getObjectAndCast<Protein>(), false);}
   
   Variable createResidueVectorPerceptionFunction(ExecutionContext& context, const Variable& input) const
     {return input.getObjectAndCast<ProteinPerception>()->getResidues();}

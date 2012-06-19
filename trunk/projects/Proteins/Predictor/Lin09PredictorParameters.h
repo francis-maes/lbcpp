@@ -413,9 +413,12 @@ public:
       builder.addInSelection(proteinPerception);
 
     builder.finishSelectionWithFunction(new CreateDisulfideSymmetricMatrixFunction(
-            lbcppMemberCompositeFunction(Lin09PredictorParameters, cysteinResiduePairVectorFeatures))
+            lbcppMemberCompositeFunction(Lin09PredictorParameters, cysteinResiduePairVectorFeatures), false)
                                         , T("cysteinResiduePairFeatures"));
   }
+
+  virtual void oxidizedCysteinSymmetricResiudePairVectorPerception(CompositeFunctionBuilder& builder) const
+    {jassertfalse;}
   
   void cysteinResiduePairVectorFeatures(CompositeFunctionBuilder& builder) const
   {

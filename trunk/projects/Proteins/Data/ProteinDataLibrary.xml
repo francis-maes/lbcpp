@@ -186,6 +186,7 @@
     <variable type="DoubleSymmetricMatrix[AngstromDistance]" name="distanceMapCa" shortName="dma" description="Distance Map C-alpha"/>
     <variable type="DoubleSymmetricMatrix[AngstromDistance]" name="distanceMapCb" shortName="dmb" description="Distance Map C-beta"/>
     <variable type="DoubleSymmetricMatrix[Probability]" name="disulfideBonds" shortName="dsb" description="Disulfide Bonds"/>
+    <variable type="DoubleSymmetricMatrix[Probability]" name="oxidizedDisulfideBonds" shortName="odsb" description="Disulfide Bonds Of Oxidized Cysteines"/>
     <variable type="DoubleMatrix[Probability]" name="fullDisulfideBonds" shortName="fdsb" description="Disulfide Bonds (Asymmetric)"/>
 
     <!-- Tertiary Structure -->

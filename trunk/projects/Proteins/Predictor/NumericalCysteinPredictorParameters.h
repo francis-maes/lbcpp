@@ -477,7 +477,8 @@ public:
   /*
   ************************ Cystein Residue Pair Perception ************************
   */
-  virtual void cysteinSymmetricResiudePairVectorPerception(CompositeFunctionBuilder& builder) const {}
+  virtual void cysteinSymmetricResiudePairVectorPerception(CompositeFunctionBuilder& builder) const {jassertfalse;}
+  virtual void oxidizedCysteinSymmetricResiudePairVectorPerception(CompositeFunctionBuilder& builder) const {jassertfalse;}
 
   virtual void cysteinResiudePairVectorPerception(CompositeFunctionBuilder& builder) const
   {
@@ -489,7 +490,7 @@ public:
       builder.addInSelection(proteinPerception);
 
     builder.finishSelectionWithFunction(new CreateDisulfideSymmetricMatrixFunction(
-            lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, cysteinResiduePairVectorFeatures))
+            lbcppMemberCompositeFunction(NumericalCysteinPredictorParameters, cysteinResiduePairVectorFeatures), false)
                                         , T("cysteinResiduePairFeatures"));
   }
   

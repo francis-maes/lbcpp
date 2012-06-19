@@ -44,6 +44,9 @@ FunctionPtr ProteinPredictor::addTarget(ProteinTarget target)
     case disulfideSymmetricBondType:
       activeDisulfideSymmetricResiduePairPerception = true;
       break;
+    case oxidizedDisulfideSymmetricBondType:
+      activeOxidizedDisulfideSymmetricResiduePairPerception = true;
+      break;
     case cysteinBondingStateType:
       activeCysteinResiduePerception = true;
       break;
@@ -67,6 +70,7 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
   size_t residuePerception = activeResiduePerception ? builder.addFunction(parameters->createResidueVectorPerception(), proteinPerception) : (size_t)-1;
   size_t residuePairPerception = activeResiduePairPerception ? builder.addFunction(parameters->createResiduePairVectorPerception(), proteinPerception) : (size_t)-1;
   size_t disulfideSymmetricResiduePerception = activeDisulfideSymmetricResiduePairPerception ? builder.addFunction(parameters->createDisulfideSymmetricResiduePairVectorPerception(), proteinPerception) : (size_t)-1;
+  size_t oxidizedDisulfideSymmetricResiduePerception = activeOxidizedDisulfideSymmetricResiduePairPerception ? builder.addFunction(parameters->createOxidizedDisulfideSymmetricResiduePairVectorPerception(), proteinPerception) : (size_t)-1;
   size_t disulfideResiduePerception = activeDisulfideResiduePairPerception ? builder.addFunction(parameters->createDisulfideResiduePairVectorPerception(), proteinPerception) : (size_t)-1;
   size_t cysteinBondingStatePerception = activeCysteinResiduePerception ? builder.addFunction(parameters->createCysteinBondingStateVectorPerception(), proteinPerception) : (size_t)-1;
 
@@ -98,6 +102,9 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
         break;
       case disulfideSymmetricBondType:
         targetPredictorInput = disulfideSymmetricResiduePerception;
+        break;
+      case oxidizedDisulfideSymmetricBondType:
+        targetPredictorInput = oxidizedDisulfideSymmetricResiduePerception;
         break;
       case disulfideBondType:
         targetPredictorInput = disulfideResiduePerception;

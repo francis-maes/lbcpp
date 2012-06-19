@@ -411,6 +411,8 @@
     <variable type="File" name="fastaFile"/>
     <variable type="File" name="pssmFile"/>
   </class>
+  
+  <class name="ExportDisulfidePatternEvaluator" base="SupervisedEvaluator"/>
 
   <class name="TestStudentDistributionWorkUnit" base="WorkUnit"/>
 

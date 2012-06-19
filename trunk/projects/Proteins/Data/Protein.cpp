@@ -166,6 +166,23 @@ void Protein::setPrimaryStructure(const String& primaryStructure)
   setPrimaryStructure(v);
 }
 
+void Protein::getCysteinIndices(bool useKnowledgeOfCysteineBondingStates, std::vector<size_t>& results) const
+{
+  results.clear();
+  if (!useKnowledgeOfCysteineBondingStates)
+  {
+    results = cysteinIndices;
+    return;
+  }
+
+  if (!cysteinBondingStates)
+    return;
+  jassert(cysteinIndices.size() == cysteinBondingStates->getNumElements());
+  for (size_t i = 0; i < cysteinIndices.size(); ++i)
+    if (cysteinBondingStates->getValue(i) > bondingStateThreshold)
+      results.push_back(cysteinIndices[i]);
+}
+
 void Protein::setContactMap(SymmetricMatrixPtr contactMap, double threshold, bool betweenCBetaAtoms)
 {
   jassert(threshold == 8.0);
@@ -208,10 +225,12 @@ Variable Protein::getTargetOrComputeIfMissing(ExecutionContext& context, size_t 
   case 12: return getDistanceMap(context, false);
   case 13: return getDistanceMap(context, true);
   case 14: return getDisulfideBonds(context);
-  case 15: return getFullDisulfideBonds(context);
-  case 16: return getCAlphaTrace();
-  case 17: return getTertiaryStructure();
-  default: jassert(false); return Variable();
+  case 15: return getOxidizedDisulfideBonds(context);
+  case 16: return getFullDisulfideBonds(context);
+  case 17: return getDisulfideBonds(context);
+  case 18: return getCAlphaTrace();
+  case 19: return getTertiaryStructure();
+  default: jassertfalse; return Variable();
   }
 }
 
@@ -310,7 +329,41 @@ const SymmetricMatrixPtr& Protein::getDisulfideBonds(ExecutionContext& context) 
     if (distanceMap)
       const_cast<Protein* >(this)->disulfideBonds = computeDisulfideBondsFromTertiaryStructure(distanceMap);
   }
+
   return disulfideBonds;
+}
+
+const SymmetricMatrixPtr& Protein::getOxidizedDisulfideBonds(ExecutionContext& context) const
+{
+  if (oxidizedDisulfideBonds)
+    return oxidizedDisulfideBonds;
+  if (!getDisulfideBonds(context) || !getCysteinBondingStates(context))
+  {
+    jassertfalse;
+    return oxidizedDisulfideBonds;
+  }
+
+  const size_t n = cysteinBondingStates->getNumElements();
+  jassert(n == disulfideBonds->getDimension() && n == getCysteinIndices().size());
+
+  size_t numBondedCysteines = 0;
+  for (size_t i = 0; i < n; ++i)
+    numBondedCysteines += cysteinBondingStates->getValue(i) > bondingStateThreshold ? 1 : 0;
+
+  const_cast<Protein* >(this)->oxidizedDisulfideBonds = symmetricMatrix(probabilityType, numBondedCysteines);
+  for (size_t i = 0, rowIndex = 0; i < n; ++i)
+  {
+    if (cysteinBondingStates->getValue(i) <= bondingStateThreshold)
+      continue;
+    
+    for (size_t j = 0, columnIndex = 0; j < n; ++j)
+      if (cysteinBondingStates->getValue(j) > bondingStateThreshold)
+        const_cast<Protein* >(this)->oxidizedDisulfideBonds->setElement(rowIndex, columnIndex++, disulfideBonds->getElement(i, j));
+    
+    ++rowIndex;
+  }
+
+  return oxidizedDisulfideBonds;
 }
 
 const MatrixPtr& Protein::getFullDisulfideBonds(ExecutionContext& context) const
@@ -357,7 +410,7 @@ const DenseDoubleVectorPtr& Protein::getCysteinBondingStates(ExecutionContext& c
     }
   }
 
-  // Use a matching function in case of valid pattern
+  // Use a matching function in case of no-valid pattern
   DoubleSymmetricMatrixPtr matrix = disulfideMap;
   if (!isValid)
   {

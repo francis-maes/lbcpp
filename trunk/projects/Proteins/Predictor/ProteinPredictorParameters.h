@@ -47,6 +47,9 @@ public:
   virtual FunctionPtr createDisulfideSymmetricResiduePairVectorPerception() const
     {jassert(false); return FunctionPtr();}
 
+  virtual FunctionPtr createOxidizedDisulfideSymmetricResiduePairVectorPerception() const
+    {jassertfalse; return FunctionPtr();}
+
   virtual FunctionPtr createDisulfideResiduePairVectorPerception() const
     {jassert(false); return FunctionPtr();}
 
@@ -95,7 +98,7 @@ public:
       res = probabilityVectorPredictor(target);
     else if (target == cma8Target || target == cmb8Target)
       res = contactMapPredictor(target);
-    else if (target == dsbTarget)
+    else if (target == dsbTarget || target == odsbTarget)
       res = disulfideBondPredictor(target);
     else if (target == cbpTarget)
       res = labelPropertyPredictor(target);
@@ -122,6 +125,7 @@ public:
   virtual void residuePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
   virtual void cysteinResiudePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
   virtual void cysteinSymmetricResiudePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
+  virtual void oxidizedCysteinSymmetricResiudePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
   virtual void cysteinResiudeVectorPerception(CompositeFunctionBuilder& builder) const = 0;
 
   virtual void residuePerception(CompositeFunctionBuilder& builder) const 
@@ -169,6 +173,13 @@ public:
   virtual FunctionPtr createDisulfideSymmetricResiduePairVectorPerception() const
   {
     FunctionPtr function = lbcppMemberCompositeFunction(CFProteinPredictorParameters, cysteinSymmetricResiudePairVectorPerception);
+    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
+    return function;
+  }
+
+  virtual FunctionPtr createOxidizedDisulfideSymmetricResiduePairVectorPerception() const
+  {
+    FunctionPtr function = lbcppMemberCompositeFunction(CFProteinPredictorParameters, oxidizedCysteinSymmetricResiudePairVectorPerception);
     function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
     return function;
   }
