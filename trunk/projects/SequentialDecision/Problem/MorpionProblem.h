@@ -380,16 +380,16 @@ protected:
         bool isValid = true;
         MorpionAction action(MorpionPoint(x,y), MorpionDirection((MorpionDirection::Direction)dir),index) ;
 
-        for(size_t position=0;position<crossLength;++position)
+        for (size_t position=0;position<crossLength;++position)
         {
-          if(position!=index)
+          if (position!=index)
           {
-            if(board.isOccupied(action.getLinePoint(position)))
-              {
-
-                if(!ensureDiscontinuity(action))
-                  {isValid = false; break;}
-              }
+            if (board.isOccupied(action.getLinePoint(position)))
+            {
+              jassert(ensureDiscontinuity(action) == ensureDiscontinuity2(action));
+              if (!ensureDiscontinuity(action))
+                {isValid = false; break;}
+            }
             else
               {isValid = false; break;}
           }
@@ -400,16 +400,45 @@ protected:
     }
   }
 
-  bool ensureDiscontinuity(MorpionAction action) const
+  static int project(const MorpionPoint& point, const MorpionDirection& direction)
+    {return point.getX() * direction.getDx() + point.getY() * direction.getDy();}
+
+  static int projectOrtho(const MorpionPoint& point, const MorpionDirection& direction)
+    {return point.getX() * direction.getDy() - point.getY() * direction.getDx();}
+
+  bool ensureDiscontinuity(const MorpionAction& action) const
   {
-    for (size_t line = 0; line < history.size();++line)
-      if(history[line]->getDirection()==action.getDirection()) // quick check-up
+    MorpionDirection dir = action.getDirection();
+    int a = project(action.getStartPosition(), dir);
+    int b = project(action.getEndPosition(crossLength), dir);
+    int o = projectOrtho(action.getPosition(), dir);
+    
+    jassert(a < b);
+
+    for (size_t line = 0; line < history.size(); ++line)
+      if (history[line]->getDirection() == dir && o == projectOrtho(history[line]->getPosition(), dir)) // quick check-up
+      {
+        int c = project(history[line]->getStartPosition(), dir);
+        int d = project(history[line]->getEndPosition(crossLength), dir);
+        jassert(c < d);
+        
+        bool ok = c > b || d < a;
+        if (!ok)
+          return false;
+      }
+    return true;
+  }
+  
+  bool ensureDiscontinuity2(const MorpionAction& action) const
+  {
+    for (size_t line = 0; line < history.size(); ++line)
+      if (history[line]->getDirection() == action.getDirection())
         for(size_t check=0;check<crossLength;++check) // the 5 points of the existing line
           for(size_t newLine=0;newLine<crossLength;++newLine) // the 5 points of the new line
             if(history[line]->getLinePoint(check)==action.getLinePoint(newLine))
                 return false;
     return true;
-  }  
+  }
 };
 
 extern ClassPtr morpionStateClass;
