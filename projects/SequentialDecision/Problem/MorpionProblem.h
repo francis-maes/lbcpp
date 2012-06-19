@@ -41,6 +41,12 @@ public:
 
   String toString() const
     {static String strs[] = {T("NE"), T("E"), T("SE"), T("S"), T("none")}; return strs[dir];}
+    
+  bool operator ==(const MorpionDirection& other) const
+    {return dir == other.dir;}
+
+  bool operator !=(const MorpionDirection& other) const
+    {return dir != other.dir;}
 
 private:
   Direction dir;
@@ -287,8 +293,8 @@ public:
     std::vector<MorpionAction> possibleMoves;
     int minSize = board.getMinX();
     int maxSize = board.getMaxX();
-    for(int x=minSize;x<maxSize;++x)
-      for (int y=board.getMinY(x);y<board.getMaxY(x);++y)
+    for(int x=minSize-1;x<=maxSize+1;++x)
+      for (int y=board.getMinY(x)-1;y<=board.getMaxY(x)+1;++y)
         {
         if(!board.isOccupied(x,y))        
           exhaustiveList(x,y, res);// if it can form a line
@@ -333,7 +339,7 @@ public:
           {
             if(board.isOccupied(action.getLinePoint(position)))
               {
-                if(ensureDiscontinuity(action.getLinePoint(position),action.getDirection())){}
+                if(ensureDiscontinuity(action)){}
                 else
                 {isValid = false; break;}
               }
@@ -347,14 +353,15 @@ public:
     }
   }
 
-  bool ensureDiscontinuity(MorpionPoint point, MorpionDirection dir) const
+  bool ensureDiscontinuity(MorpionAction action) const
   {
   for(size_t line=0;line<history.size();++line)
-  //TODO make it work 
-  //  if(history[line]->getDirection()==dir)
-      for(size_t check=0;check<crossLength;++check)
-        if(history[line]->getPosition().getX()==point.getX() && history[line]->getPosition().getY()==point.getY())
-          return false;
+    if(history[line]->getDirection()==action.getDirection()) // quick check-up
+      for(size_t check=0;check<crossLength;++check) // the 5 points of the existing line
+        for(size_t newLine=0;newLine<crossLength;++newLine) // the 5 points of the new line
+            if(history[line]->getLinePoint(check).getX()==action.getLinePoint(newLine).getX() 
+            && history[line]->getLinePoint(check).getY()==action.getLinePoint(newLine).getY())
+                return false;
   return true;
   }
 
@@ -378,7 +385,11 @@ public:
 
 	virtual bool undoTransition(ExecutionContext& context, const Variable& stateBackup)
 	{
+    // TODO we must either remove the cross or do a full restore
+    board.markAsOccupied(history.back()->getPosition(),false);
     history.pop_back();
+
+
 /*		// restore previous state given the information stored in stackBackup
 		board = stateBackup.getObjectAndCast<Backup>()->board;
 		actionsBoard = stateBackup.getObjectAndCast<Backup>()->actionsBoard;
