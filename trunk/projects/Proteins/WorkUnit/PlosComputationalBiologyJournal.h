@@ -80,6 +80,8 @@ public:
     }
     // Compile protein
     protein->setPositionSpecificScoringMatrix(pssm);
+    // Dummy supervision
+    protein->setDisulfideBonds(symmetricMatrix(probabilityType, protein->getCysteinIndices().size()));
 
     proteins = proteins->apply(context, proteinToInputOutputPairFunction(false));
 
@@ -89,7 +91,6 @@ public:
     parameter->separationProfilSize = 17;
     // Machine learning
     LargeProteinPredictorParametersPtr learningMachine = new LargeProteinPredictorParameters(parameter);
-    learningMachine->learningMachineName = T("FromFile");
     learningMachine->learner = Function::createFromFile(context, context.getFile("extraTrees.xml"));
     // Protein predictor
     ProteinPredictorPtr predictor = new ProteinPredictor(learningMachine);
@@ -110,3 +111,4 @@ protected:
 };
 
 }
+

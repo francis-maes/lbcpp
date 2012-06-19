@@ -475,7 +475,7 @@ RTreeFunction::RTreeFunction() : numTrees(100), numAttributeSamplesPerSplit(10),
 Variable RTreeFunction::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
   if (!trees)
-    Variable::missingValue(getOutputType());
+    return Variable::missingValue(getOutputType());
   return trees.staticCast<RTree>()->makePrediction(context, inputs[0], getInputVariable(1)->getType());
 }
 
