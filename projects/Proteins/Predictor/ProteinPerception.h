@@ -21,6 +21,7 @@ enum ProteinPerceptionType
   residueType,
   residuePairType,
   disulfideSymmetricBondType,
+  oxidizedDisulfideSymmetricBondType,
   disulfideBondType,
   cysteinBondingStateType
 };
@@ -41,6 +42,7 @@ inline ProteinPerceptionType typeOfProteinPerception(ProteinTarget target)
     case dmbTarget: return residuePairType;
     case fdsbTarget: return disulfideBondType;
     case dsbTarget: return disulfideSymmetricBondType;
+    case odsbTarget: return oxidizedDisulfideSymmetricBondType;
     case cbsTarget: return cysteinBondingStateType;
     default:
       jassertfalse;
@@ -385,8 +387,8 @@ public:
 class CreateDisulfideSymmetricMatrixFunction : public Function
 {
 public:
-  CreateDisulfideSymmetricMatrixFunction(FunctionPtr elementGeneratorFunction = FunctionPtr())
-    : elementGeneratorFunction(elementGeneratorFunction) {}
+  CreateDisulfideSymmetricMatrixFunction(FunctionPtr elementGeneratorFunction, bool useKnowledgeOfCysteineBondingStates)
+    : elementGeneratorFunction(elementGeneratorFunction), useKnowledgeOfCysteineBondingStates(useKnowledgeOfCysteineBondingStates) {}
 
   virtual size_t getMinimumNumRequiredInputs() const
     {return 1;}
@@ -419,7 +421,8 @@ public:
     size_t numInputs = getNumInputs();
     ProteinPtr protein = inputs[0].getObjectAndCast<Protein>();
 
-    const std::vector<size_t> cysteinIndices = protein->getCysteinIndices();
+    std::vector<size_t> cysteinIndices;
+    protein->getCysteinIndices(useKnowledgeOfCysteineBondingStates, cysteinIndices);
     const size_t n = cysteinIndices.size();
 
     SymmetricMatrixPtr res = symmetricMatrix(elementGeneratorFunction->getOutputType(), n);
@@ -443,6 +446,9 @@ protected:
   friend class CreateDisulfideSymmetricMatrixFunctionClass;
 
   FunctionPtr elementGeneratorFunction;
+  bool useKnowledgeOfCysteineBondingStates;
+
+  CreateDisulfideSymmetricMatrixFunction() {}
 };
 
 // generates a matrix M(i, j) = f(i, j, x) where i,j in [0,n[ from input n,x
@@ -575,7 +581,7 @@ protected:
 class CreateCysteinSeparationProfil : public Function
 {
 public:
-  CreateCysteinSeparationProfil(bool normalizeWithProteinLength = false)
+  CreateCysteinSeparationProfil(bool normalizeWithProteinLength = false, bool useKnowledgeOfCysteineBondingStates = false)
     : normalizeWithProteinLength(normalizeWithProteinLength) {}
 
   virtual size_t getNumRequiredInputs() const
@@ -596,7 +602,8 @@ public:
     jassert(protein);
     size_t position = inputs[1].getInteger();
 
-    const std::vector<size_t>& cysteinIndices = protein->getCysteinIndices();
+    std::vector<size_t> cysteinIndices;
+    protein->getCysteinIndices(useKnowledgeOfCysteineBondingStates, cysteinIndices);
     const size_t n = cysteinIndices.size();
     if (!n)
       return Variable::missingValue(getOutputType());
@@ -611,12 +618,13 @@ public:
 
 protected:
   bool normalizeWithProteinLength;
+  bool useKnowledgeOfCysteineBondingStates;
 };
 
 class CysteinSeparationProfilFeatureGenerator : public FeatureGenerator
 {
 public:
-  CysteinSeparationProfilFeatureGenerator(size_t windowSize, bool normalizeWithProteinLength = false)
+  CysteinSeparationProfilFeatureGenerator(size_t windowSize, bool normalizeWithProteinLength = false, bool useKnowledgeOfCysteineBondingStates = false)
     : windowSize(windowSize), normalizeWithProteinLength(normalizeWithProteinLength) {}
 
   virtual size_t getNumRequiredInputs() const
@@ -643,7 +651,8 @@ public:
     jassert(protein);
     size_t position = inputs[1].getInteger();
 
-    const std::vector<size_t>& cysteinIndices = protein->getCysteinIndices();
+    std::vector<size_t> cysteinIndices;
+    protein->getCysteinIndices(useKnowledgeOfCysteineBondingStates, cysteinIndices);
     const size_t n = cysteinIndices.size();
     if (!n)
       return;
@@ -668,6 +677,7 @@ public:
 protected:
   size_t windowSize;
   bool normalizeWithProteinLength;
+  bool useKnowledgeOfCysteineBondingStates;
 };
 
 class CysteinBondingStateRatio : public SimpleUnaryFunction

@@ -42,6 +42,9 @@ public:
   virtual void cysteinSymmetricResiudePairVectorPerception(CompositeFunctionBuilder& builder) const
     {decorated->cysteinSymmetricResiudePairVectorPerception(builder);}
 
+  virtual void oxidizedCysteinSymmetricResiudePairVectorPerception(CompositeFunctionBuilder& builder) const
+    {decorated->oxidizedCysteinSymmetricResiudePairVectorPerception(builder);}
+
   virtual void cysteinResiudeVectorPerception(CompositeFunctionBuilder& builder) const
     {decorated->cysteinResiudeVectorPerception(builder);}
 
@@ -205,6 +208,9 @@ public:
     DecoratorProteinPredictorParameters::cysteinSymmetricResiudePairVectorPerception(builder);
     builder.finishSelectionWithFunction(mapNFunction(gaussianKernel), T("Gaussian"));
   }
+  
+  virtual void oxidizedCysteinSymmetricResiudePairVectorPerception(CompositeFunctionBuilder& builder) const
+    {jassertfalse;}
 
 protected:
   friend class GaussianKernelPredictorParametersClass;

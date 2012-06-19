@@ -359,7 +359,7 @@ public:
     context.enterScope(T("Tuning threshold with vote = ") + String(vote));
     for (int i = (int)n - 1; i >= 0; --i)
     {
-      size_t index = sortedDoubleValues->getValue(i).first;
+      //size_t index = sortedDoubleValues->getValue(i).first;
       double threshold = sortedDoubleValues->getValue(i).second;
 
       jassert(threshold <= previousThreshold);
@@ -400,7 +400,7 @@ public:
       context.enterScope(T("Vote ") + String(vote));
       context.resultCallback(T("vote"), vote);
 
-      double bestScoreGivenThreshold = -DBL_MAX;
+      //double bestScoreGivenThreshold = -DBL_MAX;
       double trainQp = WeakLearningObjective::computeObjective(context, classifier, currentPredictions, stumpNode, vote);
       if (trainQp >= bestScore)
       {
@@ -428,7 +428,7 @@ public:
     double bestScore = -DBL_MAX;
     for (int i = (int)n - 1; i >= 0; --i)
     {
-      size_t index = sortedDoubleValues->getValue(i).first;
+      //size_t index = sortedDoubleValues->getValue(i).first;
       double threshold = sortedDoubleValues->getValue(i).second;
 
       jassert(threshold <= previousThreshold);

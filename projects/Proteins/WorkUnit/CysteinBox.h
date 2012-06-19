@@ -644,13 +644,14 @@ public:
     context.warningCallback(T("Windows Sizes were fixed to 10"));
 #endif // !JUCE_DEBUG
     ContainerPtr train = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("train")), context.getFile(supervisionDirectory).getChildFile(T("train")), numProteinsToLoad, T("Loading training proteins"));
+    ContainerPtr test;
     ContainerPtr validation;
-#if JUCE_DEBUG && 0
-    validation = train->fold(0, 5);
+#if JUCE_DEBUG
+    test = train->fold(0, 5);
     train = train->invFold(0, 5);
-    context.warningCallback(T("Creation of a validation set from training proteins"));
+#else
+    test = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("test")), context.getFile(supervisionDirectory).getChildFile(T("test")), numProteinsToLoad, T("Loading testing proteins"));
 #endif // !JUCE_DEBUG
-    ContainerPtr test = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("test")), context.getFile(supervisionDirectory).getChildFile(T("test")), numProteinsToLoad, T("Loading testing proteins"));
 
     if (!train || !test || train->getNumElements() == 0 || test->getNumElements() == 0)
     {
@@ -695,6 +696,12 @@ public:
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
     iteration->addTarget(dsbTarget);
 
+    // Copy CBS
+    for (size_t i = 0; i < train->getNumElements(); ++i)
+      train->getElement(i).dynamicCast<Pair>()->getFirst().getObjectAndCast<Protein>()->setCysteinBondingStates(context, train->getElement(i).dynamicCast<Pair>()->getSecond().getObjectAndCast<Protein>()->getCysteinBondingStates(context));
+    for (size_t i = 0; i < test->getNumElements(); ++i)
+      test->getElement(i).dynamicCast<Pair>()->getFirst().getObjectAndCast<Protein>()->setCysteinBondingStates(context, test->getElement(i).dynamicCast<Pair>()->getSecond().getObjectAndCast<Protein>()->getCysteinBondingStates(context));
+    
     if (!iteration->train(context, train, validation, T("Training")))
       return Variable::missingValue(doubleType);
 
@@ -758,6 +765,9 @@ protected:
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(), T("DSB QP"));
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("DSB QP Perfect"), true);
 
+    evaluator->addEvaluator(odsbTarget, new DisulfidePatternEvaluator(), T("OxyDSB QP"));
+    evaluator->addEvaluator(odsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("OxyDSB QP Perfect"), true);
+    
     return evaluator;
   }
 };

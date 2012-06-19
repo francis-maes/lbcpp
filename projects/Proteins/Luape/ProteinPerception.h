@@ -20,7 +20,7 @@ namespace lbcpp
 class ProteinPerception : public Object
 {
 public:
-  ProteinPerception(const ProteinPtr& protein)
+  ProteinPerception(const ProteinPtr& protein, bool useKnowledgeOfCysteineBondingStates)
   {
     // create residues
     size_t n = protein->getLength();
@@ -46,7 +46,7 @@ public:
     }
 
     // cysteins
-    cysteinIndices = protein->getCysteinIndices();
+    protein->getCysteinIndices(useKnowledgeOfCysteineBondingStates, cysteinIndices);
   }
   ProteinPerception() {}
 
