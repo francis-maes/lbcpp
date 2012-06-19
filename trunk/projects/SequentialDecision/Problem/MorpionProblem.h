@@ -172,7 +172,7 @@ public:
       n, 2 * n, 0, 1, 2 * n, 2 * n, 0, 1
     };
 
-    for (int i = 0; i < sizeof (lines) / sizeof (int); i += 4)
+    for (size_t i = 0; i < sizeof (lines) / sizeof (int); i += 4)
     {
       int x = lines[i];
       int y = lines[i+1];
@@ -282,54 +282,93 @@ class MorpionState : public DecisionProblemState
 public:
 	MorpionState(size_t crossLength, bool isDisjoint)
     : DecisionProblemState(String((int)crossLength) + (isDisjoint ? "D" : "T")),
-      crossLength(crossLength), isDisjoint(isDisjoint), finalState(false)
+      crossLength(crossLength), isDisjoint(isDisjoint)
   {
     board.initialize(crossLength);
+    availableActions = computeAvailableActions();    
   }
   MorpionState() : crossLength(0), isDisjoint(false) {}
 
 	virtual TypePtr getActionType() const
 	  {return morpionActionClass;}
-
+  
 	virtual ContainerPtr getAvailableActions() const
-	{
-		ObjectVectorPtr res = new ObjectVector(morpionActionClass, 0);
-		
-    std::vector<MorpionAction> possibleMoves;
-    int minSizeX = board.getMinX()-1;
-    int maxSizeX = board.getMaxX()+1;
-    int minSizeY;
-    int maxSizeY;
-    board.getYRange(minSizeY, maxSizeY);
-    minSizeY--;
-    maxSizeY++;
+    {return availableActions;}
 
-    for(int x=minSizeX;x<=maxSizeX;++x)
-      for (int y=minSizeY;y<=maxSizeY;++y)
-        {
-          if(!board.isOccupied(x,y))        
-            exhaustiveList(x,y, res);// if it can form a line
-        }
-    /*
-    // tmp ! --
-    int xMin, xMax, yMin, yMax;
-    board.getXRange(xMin, xMax);
-    board.getYRange(yMin, yMax);
-    --xMin, ++xMax, --yMin, ++yMax;
-    RandomGeneratorPtr random = new RandomGenerator();
-    while (res->getNumElements() < 10)
-    {
-      MorpionPoint point(random->sampleInt(xMin, xMax), random->sampleInt(yMin, yMax));
-      if (board.isOccupied(point))
-        continue;
-      res->append(new MorpionAction(point,
-        MorpionDirection((MorpionDirection::Direction)random->sampleSize(4)),
-        random->sampleSize(crossLength)));
-    }
-    // --
-    */
-    return res;
+	virtual void performTransition(ExecutionContext& context, const Variable& ac, double& reward, Variable* stateBackup = NULL)
+	{
+    MorpionActionPtr action = ac.getObjectAndCast<MorpionAction>();
+    board.markAsOccupied(action->getPosition());
+		history.push_back(action);
+    reward = 1.0;
+    if (stateBackup)
+      *stateBackup = availableActions;
+    availableActions = computeAvailableActions();
 	}
+
+	virtual bool undoTransition(ExecutionContext& context, const Variable& stateBackup)
+	{
+    board.markAsOccupied(history.back()->getPosition(),false);
+    history.pop_back();
+    availableActions = stateBackup.getObjectAndCast<ObjectVector>();
+    return true;
+	}
+
+	virtual bool isFinalState() const
+	  {return availableActions->getNumElements() == 0;}
+
+	virtual double getFinalStateReward() const
+	  {return (double)history.size();}
+
+	virtual String toShortString() const
+    {return String((int)crossLength) + (isDisjoint ? "D" : "T") + " - " + String((int)history.size());}
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    const MorpionStatePtr& target = t.staticCast<MorpionState>();
+    target->name = name;
+    target->crossLength = crossLength;
+    target->isDisjoint = isDisjoint;
+    target->board = board;
+    target->history = history;
+    target->availableActions = availableActions;
+  }
+
+  size_t getCrossLength() const
+    {return crossLength;}
+
+  bool getIsDisjointFlag() const
+    {return isDisjoint;}
+
+  const MorpionBoard& getBoard() const
+    {return board;}
+
+  const std::vector<MorpionActionPtr>& getHistory() const
+    {return history;}
+
+protected:
+	friend class MorpionStateClass;
+
+  size_t crossLength;
+  bool isDisjoint;
+
+  MorpionBoard board;
+  std::vector<MorpionActionPtr> history;
+
+  ObjectVectorPtr availableActions;
+  
+  ObjectVectorPtr computeAvailableActions() const
+  {
+		ObjectVectorPtr res = new ObjectVector(morpionActionClass, 0);
+    int minSizeX, maxSizeX, minSizeY, maxSizeY;
+    board.getXRange(minSizeX, maxSizeX);
+    board.getYRange(minSizeY, maxSizeY);
+    for (int x = minSizeX - 1; x <= maxSizeX + 1; ++x)
+      for (int y = minSizeY - 1; y <= maxSizeY + 1; ++y)
+          if (!board.isOccupied(x,y))        
+            exhaustiveList(x,y, res); // if it can form a line
+    return res;    
+  }
 
   void exhaustiveList(int x, int y, ObjectVectorPtr res) const
   {
@@ -369,83 +408,8 @@ public:
           for(size_t newLine=0;newLine<crossLength;++newLine) // the 5 points of the new line
             if(history[line]->getLinePoint(check)==action.getLinePoint(newLine))
                 return false;
-  return true;
-  }
-
-
-	virtual void performTransition(ExecutionContext& context, const Variable& ac, double& reward, Variable* stateBackup = NULL)
-	{
-    MorpionActionPtr action = ac.getObjectAndCast<MorpionAction>();
-  
-    board.markAsOccupied(action->getPosition());
-
-		history.push_back(action);
-    reward = 1.0;
-
-		// save in "stateBackup" information about the current state
-/*		if (stateBackup)
-			*stateBackup = Variable(new Backup(board,actionsBoard), objectClass);
- */
-		
-	
-	}
-
-	virtual bool undoTransition(ExecutionContext& context, const Variable& stateBackup)
-	{
-    // TODO we must either remove the cross or do a full restore
-    board.markAsOccupied(history.back()->getPosition(),false);
-    history.pop_back();
-
-
-/*		// restore previous state given the information stored in stackBackup
-		board = stateBackup.getObjectAndCast<Backup>()->board;
-		actionsBoard = stateBackup.getObjectAndCast<Backup>()->actionsBoard;
-    */
     return true;
-	}
-
-	virtual bool isFinalState() const
-	  {return finalState;}
-
-	virtual double getFinalStateReward() const
-	  {return (double)history.size();}
-
-	virtual String toShortString() const
-    {return String((int)crossLength) + (isDisjoint ? "D" : "T") + " - " + String((int)history.size());}
-
-  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
-  {
-    const MorpionStatePtr& target = t.staticCast<MorpionState>();
-    target->name = name;
-    target->crossLength = crossLength;
-    target->isDisjoint = isDisjoint;
-    target->board = board;
-    target->history = history;
-    target->finalState = finalState;
-  }
-
-  size_t getCrossLength() const
-    {return crossLength;}
-
-  bool getIsDisjointFlag() const
-    {return isDisjoint;}
-
-  const MorpionBoard& getBoard() const
-    {return board;}
-
-  const std::vector<MorpionActionPtr>& getHistory() const
-    {return history;}
-
-protected:
-	friend class MorpionStateClass;
-
-  size_t crossLength;
-  bool isDisjoint;
-
-  MorpionBoard board;
-  std::vector<MorpionActionPtr> history;
-
-	bool finalState;
+  }  
 };
 
 extern ClassPtr morpionStateClass;
@@ -495,9 +459,6 @@ public:
 
   virtual void paint(juce::Graphics& g)
   {
-    const int width = getWidth();
-    const int height = getHeight();
-
     const MorpionBoard& board = state->getBoard();
 
     // get board range
