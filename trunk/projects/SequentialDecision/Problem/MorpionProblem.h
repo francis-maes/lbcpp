@@ -82,6 +82,12 @@ public:
     return res;
   }
 
+  bool operator ==(const MorpionPoint& other) const
+    {return x == other.x && y == other.y;}
+    
+  bool operator !=(const MorpionPoint& other) const
+    {return x != other.x || y != other.y;}
+
 private:
   int x, y;
 };
@@ -289,19 +295,27 @@ public:
 	{
 		ObjectVectorPtr res = new ObjectVector(morpionActionClass, 0);
 		
-    
     std::vector<MorpionAction> possibleMoves;
-    int minSize = board.getMinX();
-    int maxSize = board.getMaxX();
-    for(int x=minSize-1;x<=maxSize+1;++x)
-      for (int y=board.getMinY(x)-1;y<=board.getMaxY(x)+1;++y)
+    int minSizeX = board.getMinX()-1;
+    int maxSizeX = board.getMaxX()+1;
+    int minSizeY = 100;
+    int maxSizeY = -100;
+    for(int boardSizeX=minSizeX;boardSizeX<=maxSizeX;++boardSizeX)
+      {
+        if(board.getMinY(boardSizeX)<minSizeY)
+          minSizeY=board.getMinY(boardSizeX);
+        if(board.getMaxY(boardSizeX)>maxSizeY)
+          maxSizeY=board.getMaxY(boardSizeX);
+      }
+    minSizeY--;
+    maxSizeY++;
+
+    for(int x=minSizeX;x<=maxSizeX;++x)
+      for (int y=minSizeY;y<=maxSizeY;++y)
         {
-        if(!board.isOccupied(x,y))        
-          exhaustiveList(x,y, res);// if it can form a line
-        
-
+          if(!board.isOccupied(x,y))        
+            exhaustiveList(x,y, res);// if it can form a line
         }
-
     /*
     // tmp ! --
     int xMin, xMax, yMin, yMax;
@@ -339,28 +353,27 @@ public:
           {
             if(board.isOccupied(action.getLinePoint(position)))
               {
-                if(ensureDiscontinuity(action)){}
-                else
-                {isValid = false; break;}
+
+                if(!ensureDiscontinuity(action))
+                  {isValid = false; break;}
               }
-            else // last check, discontinuity
+            else
               {isValid = false; break;}
           }
         }
         if(isValid) // TODO make sure it works
-         res->append(new MorpionAction(MorpionPoint(x,y), MorpionDirection((MorpionDirection::Direction)dir),index));
+          res->append(new MorpionAction(MorpionPoint(x,y), MorpionDirection((MorpionDirection::Direction)dir),index));
       }
     }
   }
 
   bool ensureDiscontinuity(MorpionAction action) const
   {
-  for(size_t line=0;line<history.size();++line)
-    if(history[line]->getDirection()==action.getDirection()) // quick check-up
-      for(size_t check=0;check<crossLength;++check) // the 5 points of the existing line
-        for(size_t newLine=0;newLine<crossLength;++newLine) // the 5 points of the new line
-            if(history[line]->getLinePoint(check).getX()==action.getLinePoint(newLine).getX() 
-            && history[line]->getLinePoint(check).getY()==action.getLinePoint(newLine).getY())
+    for (size_t line = 0; line < history.size();++line)
+      if(history[line]->getDirection()==action.getDirection()) // quick check-up
+        for(size_t check=0;check<crossLength;++check) // the 5 points of the existing line
+          for(size_t newLine=0;newLine<crossLength;++newLine) // the 5 points of the new line
+            if(history[line]->getLinePoint(check)==action.getLinePoint(newLine))
                 return false;
   return true;
   }
@@ -373,7 +386,7 @@ public:
     board.markAsOccupied(action->getPosition());
 
 		history.push_back(action);
-    reward += 1.0;
+    reward = 1.0;
 
 		// save in "stateBackup" information about the current state
 /*		if (stateBackup)
