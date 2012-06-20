@@ -101,6 +101,7 @@ local function main(varName, varValues, filePrefix, filePostfix, numFolds)
 
   scoresOfInterest["Qp (Perfect)"] = {index = 8, getScore = getScoreToMaximize}
   scoresOfInterest["Q2"] = {index = 4, getScore = getScoreToMaximize}
+  scoresOfInterest["CBS-Based Qp (Perfect)"] = {index = 10, getScore = getScoreToMaximize}
 --  scoresOfInterest["Q2 (Bias form test)"] = {index = 5, getScore = getScoreToMaximize}
   for i = 1,#varValues do
     context:enter(varName .. ": " .. varValues[i])
@@ -153,7 +154,7 @@ feat = {"pssm19", "pssm19csp17", "pssm19csp17ss8hl77"}
 --main("Feature", feat, dir2 .. "FromBFS/x3_", "_K0_1000T_NMIN1", numFolds)
 
 local trees = {10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000}
-main("Trees", trees, dir2 .. "FromBFS/x3_pssm19csp17_K0_", "T_NMIN1", numFolds)
+--main("Trees", trees, dir2 .. "FromBFS/x3_pssm19csp17_K0_", "T_NMIN1", numFolds)
 
 local nmin = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 31, 41, 51, 61, 71, 81, 91, 101}--, 13, 15, 21, 51, 101, 201}
 --main("Nmin", nmin, dir2 .. "FromBFS/x3_pssm19csp17_K0_1000T_NMIN", "", numFolds)
@@ -192,6 +193,11 @@ features = {"GlobalHistoOthers", "LocalHistoOthers", "InterHistoOthers", "Window
 features = {"GlobalHistoWindowsOthers", "LocalHistoWindowsOthers", "InterHistoWindowsOthers"}
 features = {"LocalHistoGlobalHistoWindowsOthers", "InterHistoGlobalHistoWindowsOthers"}
 --main("AA & PSSM Features", features, dir .. "NoTask/x3_", "_Win19_K200_1000T_NMIN5", numFolds)
+
+dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120619-CBSBasedDSB/"
+features = {"pssm15", "pssm15_csp17", "pssm15_csp17_ss8local77"}
+main("Baseline", features, dir .. "x3_", "_K0_1000T_NMIN1_Baseline", numFolds)
+main("CBS-Based", features, dir .. "x3_", "_K0_1000T_NMIN1_ODSB", numFolds)
 
 
 -- ----- SP39 ----- --
