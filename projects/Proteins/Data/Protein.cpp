@@ -339,7 +339,7 @@ const SymmetricMatrixPtr& Protein::getOxidizedDisulfideBonds(ExecutionContext& c
     return oxidizedDisulfideBonds;
   if (!getDisulfideBonds(context) || !getCysteinBondingStates(context))
   {
-    jassertfalse;
+    //jassertfalse;
     return oxidizedDisulfideBonds;
   }
 
