@@ -65,16 +65,24 @@
   </class>
   -->
   
-  <!-- Sand Box -->
+  <!-- META-MC -->
   <class name="MetaMCSandBox" base="WorkUnit">
     <variable type="MCProblem" name="problem"/>
     <variable type="PositiveInteger" name="budget"/>
     <variable type="PositiveInteger" name="maxAlgorithmSize"/>
     <variable type="Double" name="explorationCoefficient"/>
+    <variable type="Boolean" name="useMultiThreading"/>
   </class>
   <class name="DecisionProblemRandomTrajectoryWorkUnit" base="WorkUnit">
     <variable type="DecisionProblem" name="problem"/>
     <variable type="PositiveInteger" name="horizon"/>
+  </class>
+
+  <class name="RunMCAlgorithmWorkUnit" base="WorkUnit">
+    <variable type="MCProblem" name="problem"/>
+    <variable type="MCAlgorithm" name="algorithm"/>
+    <variable type="PositiveInteger" name="budget"/>
+    <variable type="PositiveInteger" name="numRuns"/>  
   </class>
 
   <class name="LuapeSandBox" base="WorkUnit">

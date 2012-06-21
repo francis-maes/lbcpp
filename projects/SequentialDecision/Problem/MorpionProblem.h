@@ -96,17 +96,6 @@ private:
 };
 
 /*
-** Line
-*/
-class MorpionLine
-{
-public:
-  
-private:
-  std::vector<MorpionPoint> v;
-};
-
-/*
 ** Board
 */
 template<class T>
@@ -260,10 +249,13 @@ public:
     {return position.moveIntoDirection(direction, (int)(crossLength - 1 - indexInLine));}
 
   MorpionPoint getLinePoint(size_t index) const
-  {return position.moveIntoDirection(direction, (int)index - (int)indexInLine);}
+    {return position.moveIntoDirection(direction, (int)index - (int)indexInLine);}
 
   virtual String toShortString() const
     {return position.toString() + ", " + direction.toString() + ", " + String((int)indexInLine);}
+
+  bool operator ==(const MorpionAction& other) const
+    {return position == other.position && direction == other.direction && indexInLine == other.indexInLine;}
 
 private:
   MorpionPoint position;
@@ -301,7 +293,16 @@ public:
 	virtual void performTransition(ExecutionContext& context, const Variable& ac, double& reward, Variable* stateBackup = NULL)
 	{
     MorpionActionPtr action = ac.getObjectAndCast<MorpionAction>();
+    
+   /* bool ok = false;
+    for (size_t i = 0; i < availableActions->getNumElements(); ++i)
+      if (*availableActions->getAndCast<MorpionAction>(i) == *action)
+        ok = true;
+    if (!ok)
+      std::cout << "PAS BIEN" << std::endl;*/
+    
     board.markAsOccupied(action->getPosition());
+    
 		history.push_back(action);
     reward = 1.0;
     if (stateBackup)
@@ -311,7 +312,7 @@ public:
 
 	virtual bool undoTransition(ExecutionContext& context, const Variable& stateBackup)
 	{
-    board.markAsOccupied(history.back()->getPosition(),false);
+    board.markAsOccupied(history.back()->getPosition(), false);
     history.pop_back();
     availableActions = stateBackup.getObjectAndCast<ObjectVector>();
     return true;
@@ -324,7 +325,12 @@ public:
 	  {return (double)history.size();}
 
 	virtual String toShortString() const
-    {return String((int)crossLength) + (isDisjoint ? "D" : "T") + " - " + String((int)history.size());}
+  {
+    String res = String((int)crossLength) + (isDisjoint ? "D" : "T") + " - " + String((int)history.size());
+    for (size_t i = 0; i < history.size(); ++i)
+      res += T(" ") + history[i]->toShortString();
+    return res;
+  }
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
   {
@@ -370,6 +376,20 @@ protected:
       for (int y = minSizeY - 1; y <= maxSizeY + 1; ++y)
           if (!board.isOccupied(x,y))        
             exhaustiveList(x,y, res); // if it can form a line
+            
+    // tmp
+    for (size_t i = 0; i < res->getNumElements(); ++i)
+    {
+      MorpionActionPtr action = res->getAndCast<MorpionAction>(i);
+      for (size_t j = 0; j < crossLength; ++j)
+      {
+        bool expectedValue = (j != action->getIndexInLine());
+        bool observedValue = board.isOccupied(action->getLinePoint(j));
+        if (expectedValue != observedValue)
+          std::cout << "BOUGHDOIUGHO" << std::endl;
+      }
+    }
+            
     return res;    
   }
 
@@ -532,6 +552,7 @@ public:
     }
 
     // paint initial crosses
+    g.setColour(juce::Colours::black);
     MorpionBoard initialBoard;
     initialBoard.initialize(state->getCrossLength());
     for (int x = initialBoard.getMinX(); x <= initialBoard.getMaxX(); ++x)
@@ -562,7 +583,6 @@ public:
     float x2 = (float)(x + pointHalfSize);
     float y2 = (float)(y + pointHalfSize);
     float lineWidth = juce::jmax(1.f, baseSize / 20.f);
-    g.setColour(juce::Colours::black);
     g.drawLine(x1, y1, x2 + 1.f, y2 + 1.f, lineWidth);
     g.drawLine(x1, y2, x2 + 1.f, y1 + 1.f, lineWidth);
   }
