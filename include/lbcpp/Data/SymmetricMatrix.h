@@ -217,6 +217,78 @@ public:
 };
 
 typedef ReferenceCountedObjectPtr<ObjectSymmetricMatrix> ObjectSymmetricMatrixPtr;
+/*
+extern ClassPtr subsetSymmetricMatrixClass;
+
+class SubsetSymmetricMatrix : public SymmetricMatrix
+{
+public:
+  SubsetSymmetricMatrix(const SymmetricMatrixPtr& decorated, const std::vector<size_t>& subsetIndices)
+    : decorated(decorated), indices(subsetIndices)
+  {
+    setThisClass(subsetSymmetricMatrixClass);
+    jassert(decorated);
+    sort(indices.begin(), indices.end());
+    jassert(indices.back() < decorated->getDimension());
+  }
+
+  virtual void setDimension(size_t size)
+    {jassertfalse;}
+
+  virtual size_t getDimension() const
+    {return indices.size();}
+
+  virtual Variable getElement(size_t row, size_t column) const
+  {
+    jassert(row < indices.size() && column < indices.size());
+    return decorated->getElement(indices[row], indices[column]);
+  }
+
+  virtual void setElement(size_t row, size_t column, const Variable& value)
+  {
+    jassert(row < indices.size() && column < indices.size());
+    return decorated->setElement(indices[row], indices[column], value);
+  }
+
+  virtual Variable getElement(size_t index) const
+  {
+    size_t currentIndex = 0;
+    for (size_t i = 0; i < indices.size(); ++i)
+      for (size_t j = i; j < indices.size(); ++j)
+      {
+        if (currentIndex == index)
+          return getElement(indices[i], indices[j]);
+        ++index;
+      }
+
+    jassertfalse;
+    return Variable();
+  }
+
+  virtual void setElement(size_t index, const Variable& value)
+  {
+    size_t currentIndex = 0;
+    for (size_t i = 0; i < indices.size(); ++i)
+      for (size_t j = i; j < indices.size(); ++j)
+      {
+        if (currentIndex == index)
+          return setElement(indices[i], indices[j], value);
+        ++index;
+      }
+    jassertfalse;
+  }
+
+protected:
+  friend class SubsetSymmetricMatrixClass;
+
+  SymmetricMatrixPtr decorated;
+  std::vector<size_t> indices;
+
+  SubsetSymmetricMatrix() {}
+};
+
+typedef ReferenceCountedObjectPtr<SubsetSymmetricMatrix> SubsetSymmetricMatrixPtr;
+*/
 
 /*
  ** Symmetric Matrix Constructor Method

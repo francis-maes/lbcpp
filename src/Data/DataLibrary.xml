@@ -138,6 +138,8 @@
     <parameter name="elementsType" type="Variable"/>
   </template>
 
+  <!-- <class name="SubsetSymmetricMatrix" base="SymmetricMatrix[Variable]"/> -->
+
   <!-- IndexSet -->
   <class name="IndexSet" base="Object">
     <variable type="GenericVector[PositiveInteger]" name="v"/>

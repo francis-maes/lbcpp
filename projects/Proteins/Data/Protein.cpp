@@ -166,21 +166,21 @@ void Protein::setPrimaryStructure(const String& primaryStructure)
   setPrimaryStructure(v);
 }
 
-void Protein::getCysteinIndices(bool useKnowledgeOfCysteineBondingStates, std::vector<size_t>& results) const
+size_t Protein::getCysteinBondingStates(double oxidizedCysteineThreshold, std::vector<bool>& results) const
 {
-  results.clear();
-  if (!useKnowledgeOfCysteineBondingStates)
-  {
-    results = cysteinIndices;
-    return;
-  }
+  results.resize(cysteinIndices.size(), true);
 
   if (!cysteinBondingStates)
-    return;
+    return cysteinIndices.size();
+
   jassert(cysteinIndices.size() == cysteinBondingStates->getNumElements());
+  size_t numOxidizedCysteines = 0;
   for (size_t i = 0; i < cysteinIndices.size(); ++i)
-    if (cysteinBondingStates->getValue(i) > bondingStateThreshold)
-      results.push_back(cysteinIndices[i]);
+  {
+    results[i] = cysteinBondingStates->getValue(i) >= bondingStateThreshold;
+    numOxidizedCysteines += results[i] ? 1 : 0;
+  }
+  return numOxidizedCysteines;
 }
 
 void Protein::setContactMap(SymmetricMatrixPtr contactMap, double threshold, bool betweenCBetaAtoms)
@@ -335,13 +335,8 @@ const SymmetricMatrixPtr& Protein::getDisulfideBonds(ExecutionContext& context) 
 
 const SymmetricMatrixPtr& Protein::getOxidizedDisulfideBonds(ExecutionContext& context) const
 {
-  if (oxidizedDisulfideBonds)
+  if (oxidizedDisulfideBonds || !getDisulfideBonds(context) || !getCysteinBondingStates(context))
     return oxidizedDisulfideBonds;
-  if (!getDisulfideBonds(context) || !getCysteinBondingStates(context))
-  {
-    //jassertfalse;
-    return oxidizedDisulfideBonds;
-  }
 
   const size_t n = cysteinBondingStates->getNumElements();
   jassert(n == disulfideBonds->getDimension() && n == getCysteinIndices().size());
@@ -350,6 +345,16 @@ const SymmetricMatrixPtr& Protein::getOxidizedDisulfideBonds(ExecutionContext& c
   for (size_t i = 0; i < n; ++i)
     numBondedCysteines += cysteinBondingStates->getValue(i) > bondingStateThreshold ? 1 : 0;
 
+  const_cast<Protein* >(this)->oxidizedDisulfideBonds = symmetricMatrix(probabilityType, n);
+  for (size_t i = 0; i < n; ++i)
+    for (size_t j = i; j < n; ++j)
+    {
+      const Variable element = (cysteinBondingStates->getValue(i) > bondingStateThreshold
+                                && cysteinBondingStates->getValue(j) > bondingStateThreshold)
+                                ? disulfideBonds->getElement(i, j) : probability(0.f);
+      const_cast<Protein* >(this)->oxidizedDisulfideBonds->setElement(i, j, element);
+    }
+/*
   const_cast<Protein* >(this)->oxidizedDisulfideBonds = symmetricMatrix(probabilityType, numBondedCysteines);
   for (size_t i = 0, rowIndex = 0; i < n; ++i)
   {
@@ -362,7 +367,7 @@ const SymmetricMatrixPtr& Protein::getOxidizedDisulfideBonds(ExecutionContext& c
     
     ++rowIndex;
   }
-
+*/
   return oxidizedDisulfideBonds;
 }
 

@@ -211,7 +211,7 @@ public:
   bool useSAIntervalHistogram;
   bool useDRIntervalHistogram;
   bool useSTALIntervalHistogram;
-  
+
   LargeProteinParameters() :
     /* Global Features */
     useProteinLength(false), useNumCysteins(false),
@@ -465,6 +465,7 @@ public:
     , useFisherFilter(false)
     , numFisherFeatures(100)
     , useNormalization(false)
+    , oxidizedCysteineThreshold(0.f)
   {}
 
   virtual void proteinPerception(CompositeFunctionBuilder& builder) const
@@ -642,7 +643,7 @@ public:
       builder.addInSelection(proteinPerception);
 
     builder.finishSelectionWithFunction(new CreateDisulfideSymmetricMatrixFunction(
-            lbcppMemberCompositeFunction(LargeProteinPredictorParameters, cysteinResiduePairVectorFeatures), false)
+            lbcppMemberCompositeFunction(LargeProteinPredictorParameters, cysteinResiduePairVectorFeatures), 0.f)
                                         , T("cysteinResiduePairFeatures"));
   }
 
@@ -656,7 +657,7 @@ public:
       builder.addInSelection(proteinPerception);
     
     builder.finishSelectionWithFunction(new CreateDisulfideSymmetricMatrixFunction(
-                                        lbcppMemberCompositeFunction(LargeProteinPredictorParameters, cysteinResiduePairVectorFeatures), true)
+                                        lbcppMemberCompositeFunction(LargeProteinPredictorParameters, cysteinResiduePairVectorFeatures), oxidizedCysteineThreshold)
                                         , T("oxidizedCysteinResiduePairFeatures"));
   }
 
@@ -923,6 +924,7 @@ public:
   bool useNormalization;
   
   FunctionPtr learner;
+  double oxidizedCysteineThreshold;
 
 protected:
   friend class LargeProteinPredictorParametersClass;

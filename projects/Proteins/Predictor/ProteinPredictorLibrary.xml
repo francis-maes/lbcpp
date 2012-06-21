@@ -345,6 +345,7 @@
     <variable type="Boolean" name="useFisherFilter"/>
     <variable type="PositiveInteger" name="numFisherFeatures"/>
     <variable type="Boolean" name="useNormalization"/>
+    <variable type="Double" name="oxidizedCysteineThreshold"/>
   </class>
 
   <class name="DumbBinaryClassifierFunction" base="Function"/>

@@ -134,7 +134,7 @@ public:
   const std::vector<int>& getCysteinInvIndices() const // residue position => cystein index
     {return cysteinInvIndices;}
 
-  void getCysteinIndices(bool useKnowledgeOfCysteineBondingStates, std::vector<size_t>& results) const;
+  size_t getCysteinBondingStates(double oxidizedCysteineThreshold, std::vector<bool>& results) const;
 
   void setPrimaryStructure(VectorPtr primaryStructure);
   void setPrimaryStructure(const String& primaryStructure);

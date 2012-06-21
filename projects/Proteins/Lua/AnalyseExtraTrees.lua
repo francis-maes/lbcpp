@@ -99,6 +99,7 @@ local function main(varName, varValues, filePrefix, filePostfix, numFolds)
 --  scoresOfInterest["1 - Sensitivity (Bias form test)"] = {index = 3, getScore = getBestSensitivity}
 --  scoresOfInterest["1 - Specificity (Bias from test)"] = {index = 3, getScore = getBestSpecificity}
 
+  scoresOfInterest["CBS"] = {index = 1, getScore = getScoreToMaximize}
   scoresOfInterest["Qp (Perfect)"] = {index = 8, getScore = getScoreToMaximize}
   scoresOfInterest["Q2"] = {index = 4, getScore = getScoreToMaximize}
   scoresOfInterest["CBS-Based Qp (Perfect)"] = {index = 10, getScore = getScoreToMaximize}
@@ -196,8 +197,10 @@ features = {"LocalHistoGlobalHistoWindowsOthers", "InterHistoGlobalHistoWindowsO
 
 dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120619-CBSBasedDSB/"
 features = {"pssm15", "pssm15_csp17", "pssm15_csp17_ss8local77"}
-main("Baseline", features, dir .. "x3_", "_K0_1000T_NMIN1_Baseline", numFolds)
-main("CBS-Based", features, dir .. "x3_", "_K0_1000T_NMIN1_ODSB", numFolds)
+--main("Baseline", features, dir .. "x3_", "_K0_1000T_NMIN1_Baseline", numFolds)
+--main("CBS-Based", features, dir .. "x3_", "_K0_1000T_NMIN1_ODSB", numFolds)
+main("CBS", features, dir .. "x3_", "_K0_1000T_NMIN1_CBS", numFolds)
+main("CBS-DSB", features, dir .. "x3_", "_K0_1000T_NMIN1_CBS-DSB5", numFolds)
 
 
 -- ----- SP39 ----- --
