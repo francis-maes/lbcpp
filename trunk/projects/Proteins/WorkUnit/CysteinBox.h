@@ -693,8 +693,16 @@ public:
 
 //    predictor->useAddBias = true;
 
-    ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
+    ProteinSequentialPredictorPtr iterations = new ProteinSequentialPredictor();
+    ProteinPredictorPtr iteration;
+    
+    iteration = new ProteinPredictor(predictor);
     iteration->addTarget(cbsTarget);
+    iterations->addPredictor(iteration);
+
+    iteration = new ProteinPredictor(predictor);
+    iteration->addTarget(odsbTarget);
+    iterations->addPredictor(iteration);
 
     // Copy CBS
     for (size_t i = 0; i < train->getNumElements(); ++i)
@@ -702,21 +710,19 @@ public:
     for (size_t i = 0; i < test->getNumElements(); ++i)
       test->getElement(i).dynamicCast<Pair>()->getFirst().getObjectAndCast<Protein>()->setCysteinBondingStates(context, test->getElement(i).dynamicCast<Pair>()->getSecond().getObjectAndCast<Protein>()->getCysteinBondingStates(context));
     
-    if (!iteration->train(context, train, validation, T("Training")))
+    if (!iterations->train(context, train, validation, T("Training")))
       return Variable::missingValue(doubleType);
 
     ProteinEvaluatorPtr evaluator;// = createProteinEvaluator();
 //    iteration->evaluate(context, train, evaluator, T("EvaluateTrain"));
-
+/*
     if (validation)
     {
       evaluator = createProteinEvaluator();
-      iteration->evaluate(context, validation, evaluator, T("EvaluateValidation"));
+      iterations->evaluate(context, validation, evaluator, T("EvaluateValidation"));
     }
-
+*/
     evaluator = createProteinEvaluator();
-//    for (size_t i = 1; i < 25; ++i)
-//      evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(i, 0.0), 0.0), T("Disulfide Bonds (Greedy L=") + String((int)i) + T(")"));
 
     if (outputDirectory != File::nonexistent)
     {

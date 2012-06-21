@@ -387,8 +387,8 @@ public:
 class CreateDisulfideSymmetricMatrixFunction : public Function
 {
 public:
-  CreateDisulfideSymmetricMatrixFunction(FunctionPtr elementGeneratorFunction, bool useKnowledgeOfCysteineBondingStates)
-    : elementGeneratorFunction(elementGeneratorFunction), useKnowledgeOfCysteineBondingStates(useKnowledgeOfCysteineBondingStates) {}
+  CreateDisulfideSymmetricMatrixFunction(FunctionPtr elementGeneratorFunction, double oxidizedCysteineThreshold)
+    : elementGeneratorFunction(elementGeneratorFunction), oxidizedCysteineThreshold(oxidizedCysteineThreshold) {}
 
   virtual size_t getMinimumNumRequiredInputs() const
     {return 1;}
@@ -421,9 +421,11 @@ public:
     size_t numInputs = getNumInputs();
     ProteinPtr protein = inputs[0].getObjectAndCast<Protein>();
 
-    std::vector<size_t> cysteinIndices;
-    protein->getCysteinIndices(useKnowledgeOfCysteineBondingStates, cysteinIndices);
+    const std::vector<size_t>& cysteinIndices = protein->getCysteinIndices();
     const size_t n = cysteinIndices.size();
+
+    std::vector<bool> oxidizedCysteines;
+    protein->getCysteinBondingStates(oxidizedCysteineThreshold, oxidizedCysteines);
 
     SymmetricMatrixPtr res = symmetricMatrix(elementGeneratorFunction->getOutputType(), n);
     std::vector<Variable> subInputs(numInputs + 1);
@@ -432,9 +434,15 @@ public:
 
     for (size_t i = 0; i < n; ++i)
     {
+      if (!oxidizedCysteines[i])
+        continue;
+
       subInputs[0] = Variable(cysteinIndices[i], positiveIntegerType);
       for (size_t j = i; j < n; ++j)
       {
+        if (!oxidizedCysteines[j])
+          continue;
+
         subInputs[1] = Variable(cysteinIndices[j], positiveIntegerType);
         res->setElement(i, j, elementGeneratorFunction->compute(context, subInputs));
       }
@@ -446,7 +454,7 @@ protected:
   friend class CreateDisulfideSymmetricMatrixFunctionClass;
 
   FunctionPtr elementGeneratorFunction;
-  bool useKnowledgeOfCysteineBondingStates;
+  double oxidizedCysteineThreshold;
 
   CreateDisulfideSymmetricMatrixFunction() {}
 };
@@ -581,8 +589,8 @@ protected:
 class CreateCysteinSeparationProfil : public Function
 {
 public:
-  CreateCysteinSeparationProfil(bool normalizeWithProteinLength = false, bool useKnowledgeOfCysteineBondingStates = false)
-    : normalizeWithProteinLength(normalizeWithProteinLength) {}
+  CreateCysteinSeparationProfil(bool normalizeWithProteinLength = false, double oxidizedCysteineThreshold = 0.f)
+    : normalizeWithProteinLength(normalizeWithProteinLength), oxidizedCysteineThreshold(oxidizedCysteineThreshold) {}
 
   virtual size_t getNumRequiredInputs() const
     {return 2;}
@@ -602,30 +610,45 @@ public:
     jassert(protein);
     size_t position = inputs[1].getInteger();
 
-    std::vector<size_t> cysteinIndices;
-    protein->getCysteinIndices(useKnowledgeOfCysteineBondingStates, cysteinIndices);
+    const std::vector<size_t>& cysteinIndices = protein->getCysteinIndices();
     const size_t n = cysteinIndices.size();
-    if (!n)
-      return Variable::missingValue(getOutputType());
 
-    const size_t zFactor = normalizeWithProteinLength ? protein->getLength() -1 : cysteinIndices[n-1] - cysteinIndices[0];
-    VectorPtr res = vector(doubleType, n);
+    std::vector<bool> oxidizedCysteines;
+    size_t numOxidizedCysteines = protein->getCysteinBondingStates(oxidizedCysteineThreshold, oxidizedCysteines);
+
+    if (!numOxidizedCysteines)
+      return Variable::missingValue(getOutputType());
+    
+    size_t firstCysteineIndex = (size_t)-1;
+    size_t lastCysteineIndex = (size_t)-1;
     for (size_t i = 0; i < n; ++i)
-      res->setElement(i, Variable((double)abs((int)cysteinIndices[i] - (int)position) / (zFactor ? (double)zFactor : 1.f), doubleType));
+    {
+      if (!oxidizedCysteines[i])
+        continue;
+      if (firstCysteineIndex == (size_t)-1)
+        firstCysteineIndex = cysteinIndices[i];
+      lastCysteineIndex = cysteinIndices[i];
+    }
+    
+    const size_t zFactor = normalizeWithProteinLength ? protein->getLength() -1 : lastCysteineIndex - firstCysteineIndex;
+    VectorPtr res = vector(doubleType, numOxidizedCysteines);
+    for (size_t i = 0, index = 0; i < n; ++i)
+      if (oxidizedCysteines[i])
+        res->setElement(index++, Variable((double)abs((int)cysteinIndices[i] - (int)position) / (zFactor ? (double)zFactor : 1.f), doubleType));
 
     return res;
   }
 
 protected:
   bool normalizeWithProteinLength;
-  bool useKnowledgeOfCysteineBondingStates;
+  double oxidizedCysteineThreshold;
 };
 
 class CysteinSeparationProfilFeatureGenerator : public FeatureGenerator
 {
 public:
-  CysteinSeparationProfilFeatureGenerator(size_t windowSize, bool normalizeWithProteinLength = false, bool useKnowledgeOfCysteineBondingStates = false)
-    : windowSize(windowSize), normalizeWithProteinLength(normalizeWithProteinLength) {}
+  CysteinSeparationProfilFeatureGenerator(size_t windowSize, bool normalizeWithProteinLength = false, double oxidizedCysteineThreshold = 0.f)
+    : windowSize(windowSize), normalizeWithProteinLength(normalizeWithProteinLength), oxidizedCysteineThreshold(oxidizedCysteineThreshold) {}
 
   virtual size_t getNumRequiredInputs() const
     {return 2;}
@@ -651,33 +674,41 @@ public:
     jassert(protein);
     size_t position = inputs[1].getInteger();
 
-    std::vector<size_t> cysteinIndices;
-    protein->getCysteinIndices(useKnowledgeOfCysteineBondingStates, cysteinIndices);
-    const size_t n = cysteinIndices.size();
-    if (!n)
-      return;
+    const std::vector<size_t>& cysteinIndices = protein->getCysteinIndices();
+    
+    std::vector<bool> oxidizedCysteines;
+    size_t numOxidizedCysteines = protein->getCysteinBondingStates(oxidizedCysteineThreshold, oxidizedCysteines);
 
-    size_t zFactor = normalizeWithProteinLength ? protein->getLength() -1 : cysteinIndices[n-1] - cysteinIndices[0];
+    if (!numOxidizedCysteines)
+      return;
+    
+    std::vector<size_t> oxidizedCysteineIndices;
+    oxidizedCysteineIndices.reserve(numOxidizedCysteines);
+    for (size_t i = 0; i < cysteinIndices.size(); ++i)
+      if (oxidizedCysteines[i])
+        oxidizedCysteineIndices.push_back(cysteinIndices[i]);
+
+    size_t zFactor = normalizeWithProteinLength ? protein->getLength() -1 : oxidizedCysteineIndices.back() - oxidizedCysteineIndices.front();
     if (zFactor == 0)
       zFactor = 1;
 
-    size_t index = n;
-    for (size_t i = 0; i < n; ++i)
-      if (position <= cysteinIndices[i])
+    size_t index = numOxidizedCysteines;
+    for (size_t i = 0; i < numOxidizedCysteines; ++i)
+      if (position <= oxidizedCysteineIndices[i])
       {
         index = i;
         break;
       }
 
     const int startCysteinIndex = index - windowSize / 2;
-    for (size_t i = (startCysteinIndex < 0) ? -startCysteinIndex : 0; i < windowSize && startCysteinIndex + i < n; ++i)
-      callback.sense(i, (double)abs((int)cysteinIndices[startCysteinIndex + i] - (int)position) / (double)zFactor);
+    for (size_t i = (startCysteinIndex < 0) ? -startCysteinIndex : 0; i < windowSize && startCysteinIndex + i < numOxidizedCysteines; ++i)
+      callback.sense(i, (double)abs((int)oxidizedCysteineIndices[startCysteinIndex + i] - (int)position) / (double)zFactor);
   }
 
 protected:
   size_t windowSize;
   bool normalizeWithProteinLength;
-  bool useKnowledgeOfCysteineBondingStates;
+  double oxidizedCysteineThreshold;
 };
 
 class CysteinBondingStateRatio : public SimpleUnaryFunction
