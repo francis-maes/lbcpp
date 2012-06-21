@@ -244,7 +244,7 @@ protected:
   {
     DecisionProblemStatePtr state = initialState->cloneAndCast<DecisionProblemState>();
     std::vector<Variable> actions;
-    //context.informationCallback(T("----"));
+//    context.informationCallback(T("----"));
     while (!state->isFinalState() && !objective->shouldStop())
     {
       std::vector<Variable> bestActions(actions.size());
@@ -283,10 +283,12 @@ protected:
       
       while (!state->isFinalState())
       {
-        ContainerPtr actions = state->getAvailableActions();
-        if (actions->getNumElements() > 1)
+        ContainerPtr availableActions = state->getAvailableActions();
+        if (availableActions->getNumElements() > 1)
           break;
-        state->performTransition(context, actions->getElement(0), reward);
+        Variable action = availableActions->getElement(0);
+        actions.push_back(action);
+        state->performTransition(context, action, reward);
       }
     }
   }

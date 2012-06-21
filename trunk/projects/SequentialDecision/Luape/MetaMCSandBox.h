@@ -276,12 +276,55 @@ private:
 
 /////////////
 
+class RunMCAlgorithmWorkUnit : public WorkUnit
+{
+public:
+  RunMCAlgorithmWorkUnit() : budget(1000), numRuns(10) {}
+
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (!problem || !algorithm)
+      return false;
+
+    for (size_t run = 0; run < numRuns; ++run)
+    {
+      context.enterScope(T("Run ") + String((int)run + 1));
+      double bestReward = runAlgorithm(context, problem, algorithm, budget, run);
+      context.leaveScope(bestReward);
+    }
+    return true;
+  }
+  
+private:
+  friend class RunMCAlgorithmWorkUnitClass;
+
+  MCProblemPtr problem;
+  MCAlgorithmPtr algorithm;
+  size_t budget;
+  size_t numRuns;
+  
+  double runAlgorithm(ExecutionContext& context, MCProblemPtr problem, MCAlgorithmPtr algorithm, size_t budget, size_t instanceIndex)
+  {
+    std::pair<DecisionProblemStatePtr, MCObjectivePtr> stateAndObjective = problem->getInstance(context, instanceIndex);
+    CacheAndFiniteBudgetMCObjectivePtr objective = new CacheAndFiniteBudgetMCObjective(stateAndObjective.second, budget, false);
+
+    DecisionProblemStatePtr finalState;
+    double res = iterate(algorithm, 0)->search(context, objective, stateAndObjective.first, NULL, finalState);
+    algorithm->reset(context);
+    context.resultCallback("bestReward", res);
+    context.resultCallback("bestFinalState", finalState);
+    return res;
+  }  
+};
+
+/////////////
+
 class MetaMCSandBox : public WorkUnit
 {
 public:
   MetaMCSandBox()
     : problem(new F8SymbolicRegressionMCProblem()), budget(1000),
-      maxAlgorithmSize(6), explorationCoefficient(5.0)
+      maxAlgorithmSize(6), explorationCoefficient(5.0), useMultiThreading(false)
   {
   }
 
@@ -289,7 +332,7 @@ public:
   {
     // create arms
     context.enterScope("Create arms");
-    BanditPoolPtr pool = new BanditPool(new AlgorithmObjective(problem, budget), explorationCoefficient);
+    BanditPoolPtr pool = new BanditPool(new AlgorithmObjective(problem, budget), explorationCoefficient, false, useMultiThreading);
     generateMCAlgorithms(context, pool);
     context.leaveScope((int)pool->getNumArms());
 
@@ -317,6 +360,7 @@ protected:
   size_t budget;
   size_t maxAlgorithmSize;
   double explorationCoefficient;
+  bool useMultiThreading;
 
   void generateMCAlgorithms(ExecutionContext& context, BanditPoolPtr pool)
   {
