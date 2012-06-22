@@ -74,11 +74,8 @@ public:
   MorpionPoint moveIntoDirection(const MorpionDirection& direction, int delta) const
   {
     MorpionPoint res(x, y);
-    if (delta)
-    {
-      res.x += delta * direction.getDx();
-      res.y += delta * direction.getDy();
-    }
+    res.x += delta * direction.getDx();
+    res.y += delta * direction.getDy();
     return res;
   }
   
@@ -158,6 +155,7 @@ public:
     flagE = 0x04,
     flagSE = 0x08,
     flagS = 0x10,
+    flagNeighbor = 0x20,
   };
 
   void initialize(size_t crossLength)
@@ -200,10 +198,33 @@ public:
   void markAsOccupied(int x, int y, bool occupied = true)
   {
     if (occupied)
+    {
       b[x][y] |= flagOccupied;
+      markAsNeighbor(x - 1, y - 1);
+      markAsNeighbor(x - 1, y);
+      markAsNeighbor(x - 1, y + 1);
+      markAsNeighbor(x, y - 1);
+      markAsNeighbor(x, y + 1);
+      markAsNeighbor(x + 1, y - 1);
+      markAsNeighbor(x + 1, y);
+      markAsNeighbor(x + 1, y + 1);
+    }
     else
+    {
       b[x][y] &= ~flagOccupied;
+      undoNeighborState(x - 1, y - 1);
+      undoNeighborState(x - 1, y);
+      undoNeighborState(x - 1, y + 1);
+      undoNeighborState(x, y - 1);
+      undoNeighborState(x, y + 1);
+      undoNeighborState(x + 1, y - 1);
+      undoNeighborState(x + 1, y);
+      undoNeighborState(x + 1, y + 1);
+    }
   }
+
+  bool isNeighbor(int x, int y) const
+    {return (b[x][y] & flagNeighbor) == flagNeighbor;}
 
   void markAsOccupied(const MorpionPoint& point, bool occupied = true)
     {markAsOccupied(point.getX(), point.getY(), occupied);}
@@ -259,6 +280,22 @@ private:
     default: jassert(false); return 0;
     }
   }
+
+  void undoNeighborState(int x, int y)
+  {
+    if (!computeIfNeighbor(x, y))
+      b[x][y] &= ~flagNeighbor;
+  }
+
+  bool computeIfNeighbor(int x, int y) const
+  {
+    return isOccupied(x - 1, y - 1) || isOccupied(x - 1, y) || isOccupied(x - 1, y + 1) ||
+            isOccupied(x, y - 1) || isOccupied(x, y + 1) ||
+            isOccupied(x + 1, y - 1) || isOccupied(x + 1, y) || isOccupied(x + 1, y + 1);
+  }
+
+  void markAsNeighbor(int x, int y)
+    {b[x][y] |= flagNeighbor;}
 };
 
 /*
@@ -331,7 +368,10 @@ public:
 	virtual void performTransition(ExecutionContext& context, const Variable& ac, double& reward, Variable* stateBackup = NULL)
 	{
     MorpionActionPtr action = ac.getObjectAndCast<MorpionAction>();
-    board.markAsOccupied(action->getPosition());
+    int x = action->getPosition().getX();
+    int y = action->getPosition().getY();
+    board.markAsOccupied(x, y);
+   
     MorpionPoint position = action->getStartPosition();
     for (size_t i = 0; i < crossLength - 1; ++i)
     {
@@ -452,9 +492,9 @@ protected:
     int minSizeX, maxSizeX, minSizeY, maxSizeY;
     board.getXRange(minSizeX, maxSizeX);
     board.getYRange(minSizeY, maxSizeY);
-    for (int x = minSizeX - 1; x <= maxSizeX + 1; ++x)
-      for (int y = minSizeY - 1; y <= maxSizeY + 1; ++y)
-          if (!board.isOccupied(x, y))      
+    for (int x = minSizeX; x <= maxSizeX; ++x)
+      for (int y = minSizeY; y <= maxSizeY; ++y)
+          if (!board.isOccupied(x, y) && board.isNeighbor(x, y))     
             addActionsWithPosition(MorpionPoint(x, y), res); // if it can form a line
     return res;
   }
@@ -464,10 +504,9 @@ protected:
     for (size_t dir = MorpionDirection::NE; dir <= MorpionDirection::S; ++dir)
     {
       MorpionDirection direction((MorpionDirection::Direction)dir);
-      if (!board.isOccupied(position.moveIntoDirection(direction, 1)) &&
-          !board.isOccupied(position.moveIntoDirection(direction, -1)))
-        continue; // fast check to discard directions
-      addActionsWithPositionAndDirection(position, direction, res);
+      if (board.isOccupied(position.moveIntoDirection(direction, 1)) || // fast check to discard directions
+          board.isOccupied(position.moveIntoDirection(direction, -1)))
+        addActionsWithPositionAndDirection(position, direction, res);
     }
   }
 
