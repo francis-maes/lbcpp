@@ -66,7 +66,7 @@ public:
   void addPredictor(ProteinPredictorPtr predictor)
     {jassert(predictor); predictors.push_back(predictor);}
   
-  void buildFunction(CompositeFunctionBuilder& builder)
+  virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
     size_t input = builder.addInput(proteinClass, T("input"));
     size_t supervision = builder.addInput(proteinClass, T("supervision"));
