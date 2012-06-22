@@ -638,7 +638,7 @@ public:
   {
     size_t numProteinsToLoad = 0;
 #if JUCE_DEBUG
-    numProteinsToLoad = 10;
+    numProteinsToLoad = 30;
     context.warningCallback(T("Only ") + String((int)numProteinsToLoad) + T(" proteins will be loaded !"));
     windowSize = 10;
     context.warningCallback(T("Windows Sizes were fixed to 10"));
@@ -695,21 +695,23 @@ public:
 
     ProteinSequentialPredictorPtr iterations = new ProteinSequentialPredictor();
     ProteinPredictorPtr iteration;
-    
+
     iteration = new ProteinPredictor(predictor);
     iteration->addTarget(cbsTarget);
     iterations->addPredictor(iteration);
-
+/*
     iteration = new ProteinPredictor(predictor);
     iteration->addTarget(odsbTarget);
     iterations->addPredictor(iteration);
-
+*/
     // Copy CBS
+    /*
     for (size_t i = 0; i < train->getNumElements(); ++i)
       train->getElement(i).dynamicCast<Pair>()->getFirst().getObjectAndCast<Protein>()->setCysteinBondingStates(context, train->getElement(i).dynamicCast<Pair>()->getSecond().getObjectAndCast<Protein>()->getCysteinBondingStates(context));
     for (size_t i = 0; i < test->getNumElements(); ++i)
       test->getElement(i).dynamicCast<Pair>()->getFirst().getObjectAndCast<Protein>()->setCysteinBondingStates(context, test->getElement(i).dynamicCast<Pair>()->getSecond().getObjectAndCast<Protein>()->getCysteinBondingStates(context));
-    
+    */
+
     if (!iterations->train(context, train, validation, T("Training")))
       return Variable::missingValue(doubleType);
 
@@ -730,7 +732,7 @@ public:
       iteration->evaluate(context, test, saveToDirectoryEvaluator(outputDirectory.getChildFile(T("test")), T(".xml")), T("Saving test predictions to directory"));
     }
 
-    CompositeScoreObjectPtr scores = iteration->evaluate(context, test, evaluator, T("EvaluateTest"));
+    CompositeScoreObjectPtr scores = iterations->evaluate(context, test, evaluator, T("EvaluateTest"));
     return evaluator->getScoreToMinimize(scores);
   }
 
@@ -754,11 +756,11 @@ protected:
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
 
     // TODO Add CBS evaluator
-    evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("CBS"));
+    evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("CBS"), true);
     evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("CBS Tuned Q2"));
     evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, false)), T("CBS Tuned S&S"));
 
-    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("DSB Q2"), true);
+    evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("DSB Q2"));
     evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("DSB Tuned Q2"));
     evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, false)), T("DSB Tuned S&S"));
     //evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, false)), T("Disulfide Bonds (Tuned MCC)"));
@@ -2057,7 +2059,7 @@ public:
     predictor->x3Splits = 1;
 
     ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
-    iteration->addTarget(dsbTarget);
+    iteration->addTarget(cbsTarget);
 
     if (!iteration->train(context, train, ContainerPtr(), T("Training")))
       return 101.f;
@@ -2079,7 +2081,8 @@ protected:
   ProteinEvaluatorPtr createProteinEvaluator() const
   {
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(-1.f), 0.f), T("DSB QP Perfect"), true);
+    evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("CBS"), true);
+    //evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(-1.f), 0.f), T("DSB QP Perfect"), true);
     return evaluator;
   }
 };
@@ -2090,12 +2093,12 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     ExecutionContextPtr remoteContext = distributedExecutionContext(context, T("monster24.montefiore.ulg.ac.be"), 1664,
-                                                                    T("1204XX-BFS-DSB"), T("jbecker@screen"), T("jbecker@giga"),
-                                                                    fixedResourceEstimator(1, 12 * 1024, 240), false);
+                                                                    T("1206XX-BFS-CBS"), T("jbecker@screen"), T("jbecker@giga"),
+                                                                    fixedResourceEstimator(1, 5 * 1024, 240), false);
     OptimizationProblemPtr problem = new OptimizationProblem(new DSBLearnerFunction(inputDirectory, supervisionDirectory),
                                                              new LargeProteinParameters(), SamplerPtr(),
                                                              new DSBLearnerFunction(inputDirectory, supervisionDirectory, true));
-    OptimizerPtr optimizer = bestFirstSearchOptimizer(LargeProteinParameters::createStreams(), context.getFile(optimizerStateFile));
+    OptimizerPtr optimizer = bestFirstSearchOptimizer(LargeProteinParameters::createResidueStreams(), context.getFile(optimizerStateFile));
 
     return optimizer->compute(*remoteContext.get(), problem);
   }

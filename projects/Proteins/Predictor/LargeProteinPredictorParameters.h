@@ -291,6 +291,18 @@ public:
     return res;
   }
 
+  static std::vector<StreamPtr> createResidueStreams()
+  {
+    const size_t n = largeProteinParametersClass->getNumMemberVariables();
+    const size_t startIndex = largeProteinParametersClass->findMemberVariable(T("usePositionDifference"));
+
+    std::vector<StreamPtr> res = createStreams();
+    jassertfalse(res.size() == n);
+    for (size_t i = startIndex; i < n; ++i)
+      res[i] = StreamPtr();
+    return res;
+  }
+
   static std::vector<SamplerPtr> createSamplers()
   {
     const size_t n = largeProteinParametersClass->getNumMemberVariables();
