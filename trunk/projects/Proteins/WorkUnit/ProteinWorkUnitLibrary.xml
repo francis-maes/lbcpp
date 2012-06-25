@@ -171,14 +171,12 @@
     <variable type="String" name="inputDirectory" shortName="in"/>
     <variable type="String" name="supervisionDirectory" shortName="sup"/>
     <variable type="File" name="outputDirectory" shortName="o"/>
-    <variable type="File" name="parameterFile" shortName="p"/>
+    <variable type="File" name="cbsParameterFile" shortName="cbs"/>
+    <variable type="File" name="odsbParameterFile" shortName="odsb"/>
     <variable type="String" name="learningMachineName" shortName="m"/>
-    <variable type="Double" name="svmC"/>
-    <variable type="Double" name="svmGamma"/>
     <variable type="PositiveInteger" name="x3Trees"/>
     <variable type="PositiveInteger" name="x3Attributes"/>
     <variable type="PositiveInteger" name="x3Splits"/>
-    <variable type="PositiveInteger" name="windowSize" shortName="w"/>
   </class>
   <class name="AverageDirectoryScoresWorkUnit" base="WorkUnit">
     <variable type="File" name="directory" shortName="in"/>

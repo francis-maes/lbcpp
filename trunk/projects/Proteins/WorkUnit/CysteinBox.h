@@ -627,31 +627,13 @@ class DisulfideBondWorkUnit : public WorkUnit
 public:
   DisulfideBondWorkUnit()
     : learningMachineName(T("ExtraTrees")),
-      svmC(4.0), svmGamma(1.0),
-      x3Trees(1000), x3Attributes(0), x3Splits(1),
-      windowSize(40) {}
-
-  DisulfideBondWorkUnit(double svmC, double svmGamma)
-    : learningMachineName(T("LibSVM")), svmC(svmC), svmGamma(svmGamma), windowSize(40) {}
+      x3Trees(1000), x3Attributes(0), x3Splits(1) {}
 
   virtual Variable run(ExecutionContext& context)
   {
     size_t numProteinsToLoad = 0;
-#if JUCE_DEBUG
-    numProteinsToLoad = 30;
-    context.warningCallback(T("Only ") + String((int)numProteinsToLoad) + T(" proteins will be loaded !"));
-    windowSize = 10;
-    context.warningCallback(T("Windows Sizes were fixed to 10"));
-#endif // !JUCE_DEBUG
     ContainerPtr train = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("train")), context.getFile(supervisionDirectory).getChildFile(T("train")), numProteinsToLoad, T("Loading training proteins"));
-    ContainerPtr test;
-    ContainerPtr validation;
-#if JUCE_DEBUG
-    test = train->fold(0, 5);
-    train = train->invFold(0, 5);
-#else
-    test = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("test")), context.getFile(supervisionDirectory).getChildFile(T("test")), numProteinsToLoad, T("Loading testing proteins"));
-#endif // !JUCE_DEBUG
+    ContainerPtr test = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("test")), context.getFile(supervisionDirectory).getChildFile(T("test")), numProteinsToLoad, T("Loading testing proteins"));
 
     if (!train || !test || train->getNumElements() == 0 || test->getNumElements() == 0)
     {
@@ -659,79 +641,43 @@ public:
       return 100;
     }
 
-    LargeProteinParametersPtr parameter;
-    if (parameterFile == File::nonexistent)
-      parameter = LargeProteinParameters::createTestObject(windowSize);
-    else
-    {
-      parameter = LargeProteinParameters::createFromFile(context, parameterFile).dynamicCast<LargeProteinParameters>();
-      if (!parameter)
-      {
-        context.errorCallback(T("Invalid LargeProteinParameters file !"));
-        return 101;
-      }
-    }
-/*
-    context.warningCallback(T("Parameter set to lin09"));
-    parameter = new LargeProteinParameters();
-    parameter->usePositionDifference = true;
-    parameter->useIndexDifference = true;
-    parameter->pssmWindowSize = 23;
-    parameter->ss3WindowSize = 1;
-*/
-    LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(parameter);
-    predictor->learningMachineName = learningMachineName;
-    // Config ExtraTrees
-    predictor->x3Trees = x3Trees;
-    predictor->x3Attributes = x3Attributes;
-    predictor->x3Splits = x3Splits;
-    // Config kNN
-    predictor->knnNeighbors = 5;
-    // Config LibSVM
-    predictor->svmC = svmC;
-    predictor->svmGamma = svmGamma;
-
-//    predictor->useAddBias = true;
-
     ProteinSequentialPredictorPtr iterations = new ProteinSequentialPredictor();
-    ProteinPredictorPtr iteration;
+    // CBS
+    LargeProteinParametersPtr cbsParameter = LargeProteinParameters::createFromFile(context, cbsParameterFile).dynamicCast<LargeProteinParameters>();
+    LargeProteinPredictorParametersPtr cbsPredictor = new LargeProteinPredictorParameters(cbsParameter);
+    cbsPredictor->learningMachineName = learningMachineName;
+    cbsPredictor->x3Trees = x3Trees;
+    cbsPredictor->x3Attributes = x3Attributes;
+    cbsPredictor->x3Splits = x3Splits;
+    ProteinPredictorPtr cbsIteration = new ProteinPredictor(cbsPredictor);
+    cbsIteration->addTarget(cbsTarget);
+    iterations->addPredictor(cbsIteration);
 
-    iteration = new ProteinPredictor(predictor);
-    iteration->addTarget(cbsTarget);
-    iterations->addPredictor(iteration);
-/*
-    iteration = new ProteinPredictor(predictor);
-    iteration->addTarget(odsbTarget);
-    iterations->addPredictor(iteration);
-*/
+    // ODSB
+    LargeProteinParametersPtr odsbParameter = LargeProteinParameters::createFromFile(context, odsbParameterFile).dynamicCast<LargeProteinParameters>();
+    LargeProteinPredictorParametersPtr odsbPredictor = new LargeProteinPredictorParameters(odsbParameter);
+    odsbPredictor->learningMachineName = learningMachineName;
+    odsbPredictor->x3Trees = x3Trees;
+    odsbPredictor->x3Attributes = x3Attributes;
+    odsbPredictor->x3Splits = x3Splits;
+    ProteinPredictorPtr odsbIteration = new ProteinPredictor(odsbPredictor);
+    odsbIteration->addTarget(odsbTarget);
+    iterations->addPredictor(odsbIteration);
+    
     // Copy CBS
-    /*
-    for (size_t i = 0; i < train->getNumElements(); ++i)
-      train->getElement(i).dynamicCast<Pair>()->getFirst().getObjectAndCast<Protein>()->setCysteinBondingStates(context, train->getElement(i).dynamicCast<Pair>()->getSecond().getObjectAndCast<Protein>()->getCysteinBondingStates(context));
-    for (size_t i = 0; i < test->getNumElements(); ++i)
-      test->getElement(i).dynamicCast<Pair>()->getFirst().getObjectAndCast<Protein>()->setCysteinBondingStates(context, test->getElement(i).dynamicCast<Pair>()->getSecond().getObjectAndCast<Protein>()->getCysteinBondingStates(context));
-    */
+    //copyCysteineBondingStateSupervisons(context, train);
+    //copyCysteineBondingStateSupervisons(context, test);
 
-    if (!iterations->train(context, train, validation, T("Training")))
+    if (!iterations->train(context, train, ContainerPtr(), T("Training")))
       return Variable::missingValue(doubleType);
-
-    ProteinEvaluatorPtr evaluator;// = createProteinEvaluator();
-//    iteration->evaluate(context, train, evaluator, T("EvaluateTrain"));
-/*
-    if (validation)
-    {
-      evaluator = createProteinEvaluator();
-      iterations->evaluate(context, validation, evaluator, T("EvaluateValidation"));
-    }
-*/
-    evaluator = createProteinEvaluator();
 
     if (outputDirectory != File::nonexistent)
     {
       //iteration->evaluate(context, train, saveToDirectoryEvaluator(outputDirectory.getChildFile(T("train")), T(".xml")), T("Saving train predictions to directory"));
-      iteration->evaluate(context, test, saveToDirectoryEvaluator(outputDirectory.getChildFile(T("test")), T(".xml")), T("Saving test predictions to directory"));
+      iterations->evaluate(context, test, saveToDirectoryEvaluator(outputDirectory.getChildFile(T("test")), T(".xml")), T("Saving test predictions to directory"));
     }
 
+    ProteinEvaluatorPtr evaluator = createProteinEvaluator();
     CompositeScoreObjectPtr scores = iterations->evaluate(context, test, evaluator, T("EvaluateTest"));
     return evaluator->getScoreToMinimize(scores);
   }
@@ -742,20 +688,16 @@ protected:
   String inputDirectory;
   String supervisionDirectory;
   File outputDirectory;
-  File parameterFile;
+  File cbsParameterFile;
+  File odsbParameterFile;
   String learningMachineName;
-  double svmC;
-  double svmGamma;
   size_t x3Trees;
   size_t x3Attributes;
   size_t x3Splits;
-  size_t windowSize;
 
   ProteinEvaluatorPtr createProteinEvaluator() const
   {
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-
-    // TODO Add CBS evaluator
     evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("CBS"), true);
     evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("CBS Tuned Q2"));
     evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, false)), T("CBS Tuned S&S"));
@@ -763,12 +705,6 @@ protected:
     evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("DSB Q2"));
     evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("DSB Tuned Q2"));
     evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, false)), T("DSB Tuned S&S"));
-    //evaluator->addEvaluator(dsbTarget, symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, false)), T("Disulfide Bonds (Tuned MCC)"));
-
-    //evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new GreedyDisulfidePatternBuilder(6, 0.0), 0.0), T("Disulfide Bonds (Greedy L=6)"), true);
-    //evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(), T("Disulfide Bonds"));
-    //evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(FunctionPtr(), 0.0), T("Disulfide Bonds (Threshold 0.0)"));
-    //evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new ExhaustiveDisulfidePatternFunction(0.0), 0.0), T("Disulfide Bonds (Exhaustive)"));
 
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(), T("DSB QP"));
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("DSB QP Perfect"));
@@ -777,6 +713,12 @@ protected:
     evaluator->addEvaluator(odsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("OxyDSB QP Perfect"));
     
     return evaluator;
+  }
+
+  void copyCysteineBondingStateSupervisons(ExecutionContext& context, const ContainerPtr& proteins) const
+  {
+    for (size_t i = 0; i < proteins->getNumElements(); ++i)
+      proteins->getElement(i).dynamicCast<Pair>()->getFirst().getObjectAndCast<Protein>()->setCysteinBondingStates(context, proteins->getElement(i).dynamicCast<Pair>()->getSecond().getObjectAndCast<Protein>()->getCysteinBondingStates(context));
   }
 };
 
