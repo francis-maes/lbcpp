@@ -119,7 +119,7 @@ local function main(varName, varValues, filePrefix, filePostfix, numFolds)
     context:result(varName, varValues[i])
     trainScoreStat = {} --getScores(traces, "EvaluateTrain", scoresOfInterest)
     testScoreStat = getScores(traces, "EvaluateTest", scoresOfInterest)
-    complexityStat = getComplexity(traces)
+--    complexityStat = getComplexity(traces)
 
     -- Results
     for scoreName, scoreStat in pairs(trainScoreStat) do
@@ -132,8 +132,8 @@ local function main(varName, varValues, filePrefix, filePostfix, numFolds)
       context:result("Test: " .. scoreName .. " (StdDev)", scoreStat:getStandardDeviation())
     end
 
-    context:result("Complexity (Mean)", complexityStat:getMean())
-    context:result("Complexity (StdDev)", complexityStat:getStandardDeviation())
+--    context:result("Complexity (Mean)", complexityStat:getMean())
+--    context:result("Complexity (StdDev)", complexityStat:getStandardDeviation())
 
     context:leave()
   end
@@ -200,7 +200,11 @@ features = {"pssm15", "pssm15_csp17", "pssm15_csp17_ss8local77"}
 --main("Baseline", features, dir .. "x3_", "_K0_1000T_NMIN1_Baseline", numFolds)
 --main("CBS-Based", features, dir .. "x3_", "_K0_1000T_NMIN1_ODSB", numFolds)
 main("CBS", features, dir .. "x3_", "_K0_1000T_NMIN1_CBS", numFolds)
-main("CBS-DSB", features, dir .. "x3_", "_K0_1000T_NMIN1_CBS-DSB5", numFolds)
+--main("CBS-DSB", features, dir .. "x3_", "_K0_1000T_NMIN1_CBS-DSB5", numFolds)
+
+dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120622-CBS/"
+features = {"hlpssm75", "hlpssm75_hlsa10", "hlpssm75_hlsa10_hgsa", "hlpssm75_hlsa10_hgsa_csp12"}
+main("CBS", features, dir .. "x3_", "_K0_1000T_NMIN1_CBS", numFolds)
 
 
 -- ----- SP39 ----- --
