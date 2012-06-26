@@ -654,7 +654,7 @@ public:
     cbsPredictor->x3Splits = x3Splits;
     ProteinPredictorPtr cbsIteration = new ProteinPredictor(cbsPredictor);
     cbsIteration->addTarget(cbsTarget);
-    iterations->addPredictor(cbsIteration);
+    //iterations->addPredictor(cbsIteration);
 
     // ODSB
     LargeProteinParametersPtr odsbParameter = LargeProteinParameters::createFromFile(context, odsbParameterFile).dynamicCast<LargeProteinParameters>();
@@ -668,8 +668,8 @@ public:
     iterations->addPredictor(odsbIteration);
     
     // Copy CBS
-    //copyCysteineBondingStateSupervisons(context, train);
-    //copyCysteineBondingStateSupervisons(context, test);
+    copyCysteineBondingStateSupervisons(context, train);
+    copyCysteineBondingStateSupervisons(context, test);
 
     if (!iterations->train(context, train, ContainerPtr(), T("Training")))
       return Variable::missingValue(doubleType);
