@@ -177,7 +177,7 @@ size_t Protein::getCysteinBondingStates(double oxidizedCysteineThreshold, std::v
   size_t numOxidizedCysteines = 0;
   for (size_t i = 0; i < cysteinIndices.size(); ++i)
   {
-    results[i] = cysteinBondingStates->getValue(i) >= bondingStateThreshold;
+    results[i] = cysteinBondingStates->getValue(i) >= oxidizedCysteineThreshold;
     numOxidizedCysteines += results[i] ? 1 : 0;
   }
   return numOxidizedCysteines;
@@ -343,31 +343,18 @@ const SymmetricMatrixPtr& Protein::getOxidizedDisulfideBonds(ExecutionContext& c
 
   size_t numBondedCysteines = 0;
   for (size_t i = 0; i < n; ++i)
-    numBondedCysteines += cysteinBondingStates->getValue(i) > bondingStateThreshold ? 1 : 0;
+    numBondedCysteines += cysteinBondingStates->getValue(i) >= bondingStateThreshold ? 1 : 0;
 
   const_cast<Protein* >(this)->oxidizedDisulfideBonds = symmetricMatrix(probabilityType, n);
   for (size_t i = 0; i < n; ++i)
     for (size_t j = i; j < n; ++j)
     {
-      const Variable element = (cysteinBondingStates->getValue(i) > bondingStateThreshold
-                                && cysteinBondingStates->getValue(j) > bondingStateThreshold)
+      const Variable element = (cysteinBondingStates->getValue(i) >= bondingStateThreshold
+                                && cysteinBondingStates->getValue(j) >= bondingStateThreshold)
                                 ? disulfideBonds->getElement(i, j) : probability(0.f);
       const_cast<Protein* >(this)->oxidizedDisulfideBonds->setElement(i, j, element);
     }
-/*
-  const_cast<Protein* >(this)->oxidizedDisulfideBonds = symmetricMatrix(probabilityType, numBondedCysteines);
-  for (size_t i = 0, rowIndex = 0; i < n; ++i)
-  {
-    if (cysteinBondingStates->getValue(i) <= bondingStateThreshold)
-      continue;
-    
-    for (size_t j = 0, columnIndex = 0; j < n; ++j)
-      if (cysteinBondingStates->getValue(j) > bondingStateThreshold)
-        const_cast<Protein* >(this)->oxidizedDisulfideBonds->setElement(rowIndex, columnIndex++, disulfideBonds->getElement(i, j));
-    
-    ++rowIndex;
-  }
-*/
+
   return oxidizedDisulfideBonds;
 }
 
