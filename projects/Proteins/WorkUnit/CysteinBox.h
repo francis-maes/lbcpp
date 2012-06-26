@@ -654,7 +654,7 @@ public:
     cbsPredictor->x3Splits = x3Splits;
     ProteinPredictorPtr cbsIteration = new ProteinPredictor(cbsPredictor);
     cbsIteration->addTarget(cbsTarget);
-    //iterations->addPredictor(cbsIteration);
+    iterations->addPredictor(cbsIteration);
 
     // ODSB
     LargeProteinParametersPtr odsbParameter = LargeProteinParameters::createFromFile(context, odsbParameterFile).dynamicCast<LargeProteinParameters>();
@@ -668,8 +668,8 @@ public:
     iterations->addPredictor(odsbIteration);
     
     // Copy CBS
-    copyCysteineBondingStateSupervisons(context, train);
-    copyCysteineBondingStateSupervisons(context, test);
+    //copyCysteineBondingStateSupervisons(context, train);
+    //copyCysteineBondingStateSupervisons(context, test);
 
     if (!iterations->train(context, train, ContainerPtr(), T("Training")))
       return Variable::missingValue(doubleType);
@@ -682,6 +682,16 @@ public:
 
     ProteinEvaluatorPtr evaluator = createProteinEvaluator();
     CompositeScoreObjectPtr scores = iterations->evaluate(context, test, evaluator, T("EvaluateTest"));
+/*
+    std::cout << "---------------- Testing proteins --------------------" << std::endl;
+    for (size_t i = 0; i < test->getNumElements(); ++i)
+    {
+      std::cout << "-- Protein " << i << std::endl;
+      ProteinPtr p = iterations->compute(context, test->getElement(i).getObjectAndCast<Pair>()->getFirst(), Variable()).getObjectAndCast<Protein>();
+      std::cout << "---CBS ---" << std::endl << p->getCysteinBondingStates(context)->toString() << std::endl;
+      std::cout << "--- ODSB ---" << std::endl << p->getOxidizedDisulfideBonds(context)->toString() << std::endl;
+    }
+*/
     return evaluator->getScoreToMinimize(scores);
   }
 
@@ -713,7 +723,7 @@ protected:
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("DSB QP Perfect"));
 
     evaluator->addEvaluator(odsbTarget, new DisulfidePatternEvaluator(), T("OxyDSB QP"));
-    evaluator->addEvaluator(odsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("OxyDSB QP Perfect"));
+    evaluator->addEvaluator(odsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("OxyDSB QP Perfect"), true);
     
     return evaluator;
   }

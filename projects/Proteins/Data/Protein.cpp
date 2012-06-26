@@ -335,7 +335,16 @@ const SymmetricMatrixPtr& Protein::getDisulfideBonds(ExecutionContext& context) 
 
 const SymmetricMatrixPtr& Protein::getOxidizedDisulfideBonds(ExecutionContext& context) const
 {
-  if (oxidizedDisulfideBonds || !getDisulfideBonds(context) || !getCysteinBondingStates(context))
+  if (oxidizedDisulfideBonds) // Set missing elements to 0
+  {
+    const size_t n = oxidizedDisulfideBonds->getDimension();
+    for (size_t i = 0; i < n - 1; ++i)
+      for (size_t j = i + 1; j < n; ++j)
+        if (!oxidizedDisulfideBonds->getElement(i,j).exists())
+          const_cast<Protein* >(this)->oxidizedDisulfideBonds->setElement(i, j, probability(0.f));
+  }
+  
+  if(!getDisulfideBonds(context) || !getCysteinBondingStates(context))
     return oxidizedDisulfideBonds;
 
   const size_t n = cysteinBondingStates->getNumElements();
