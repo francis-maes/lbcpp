@@ -543,7 +543,15 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
   }
 
   size_t n = trainingData.size();
-  nb_attributes = trainingData[0]->getVariable(0).getObjectAndCast<Container>()->getNumElements();
+  ContainerPtr firstData;
+  for (size_t i = 0; i < n; ++i)
+  {
+    firstData = trainingData[i]->getVariable(0).getObjectAndCast<Container>();
+    if (firstData)
+      break;
+  }
+  jassert(firstData);
+  nb_attributes = firstData->getNumElements();
   const size_t numAttributeSamplesPerSplit = rTreeFunction->getNumAttributeSamplesPerSplit() ? juce::jmin(rTreeFunction->getNumAttributeSamplesPerSplit(), nb_attributes) : (size_t)sqrt((double)nb_attributes);
   context.resultCallback(T("Num Attributes"), nb_attributes);
   context.resultCallback(T("K"), numAttributeSamplesPerSplit);
@@ -585,7 +593,6 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
 
   length_attribute_descriptors = nb_attributes;
   attribute_descriptors = (int*)MyMalloc((size_t)nb_attributes * sizeof(int));
-  ContainerPtr firstData = trainingData[0]->getVariable(0).getObjectAndCast<Container>(context);
   for (size_t i = 0; i < (size_t)nb_attributes; ++i)
   {
     TypePtr attrType = firstData->getElement(i).getType();
@@ -707,7 +714,7 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
   std::vector<size_t> ranks;
   rTreeFunction->getRankedMapping(false, ranks);
 
-  const EnumerationPtr attributesEnum = trainingData[0]->getVariable(0).getObjectAndCast<Container>()->getElementsEnumeration();
+  const EnumerationPtr attributesEnum = firstData->getElementsEnumeration();
   if (verbose && attributesEnum)
   {
     for (size_t j = 0; j < (size_t)nb_attributes; ++j)

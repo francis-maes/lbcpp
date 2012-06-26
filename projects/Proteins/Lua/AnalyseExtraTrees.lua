@@ -199,13 +199,15 @@ dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120619-CB
 features = {"pssm15", "pssm15_csp17", "pssm15_csp17_ss8local77"}
 --main("Baseline", features, dir .. "x3_", "_K0_1000T_NMIN1_Baseline", numFolds)
 --main("CBS-Based", features, dir .. "x3_", "_K0_1000T_NMIN1_ODSB", numFolds)
-main("CBS", features, dir .. "x3_", "_K0_1000T_NMIN1_CBS", numFolds)
+--main("CBS", features, dir .. "x3_", "_K0_1000T_NMIN1_CBS", numFolds)
 --main("CBS-DSB", features, dir .. "x3_", "_K0_1000T_NMIN1_CBS-DSB5", numFolds)
 
 dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120622-CBS/"
 features = {"hlpssm75", "hlpssm75_hlsa10", "hlpssm75_hlsa10_hgsa", "hlpssm75_hlsa10_hgsa_csp12"}
-main("CBS", features, dir .. "x3_", "_K0_1000T_NMIN1_CBS", numFolds)
+--main("CBS", features, dir .. "x3_", "_K0_1000T_NMIN1_CBS", numFolds)
 
+dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120626-CBS-ODSB/"
+main("CBS-DSB", {""}, dir .. "x3_K0_1000T_NMIN1_CBS-ODSB", "", numFolds)
 
 -- ----- SP39 ----- --
 
