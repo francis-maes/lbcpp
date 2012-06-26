@@ -74,6 +74,8 @@ public:
     core_table = (CORETABLE_TYPE *)MyMalloc((size_t)nb_attributes * sizeof(CORETABLE_TYPE));
     jassert(core_table);
     ContainerPtr obj = input.getObjectAndCast<Container>(context);
+    if (!obj)
+      return Variable::missingValue(outputType);
     //jassert(obj->getNumElements() == (size_t)nb_attributes);
     for (size_t j = 0; j < (size_t)nb_attributes; ++j)
     {
@@ -558,6 +560,8 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
   for (size_t i = 0; i < (size_t)nb_obj_in_core_table; ++i)
   {
     ContainerPtr obj = trainingData[i]->getVariable(0).getObjectAndCast<Container>(); // training inputs
+    if (!obj)
+      continue;
     jassert(obj->getNumElements() == (size_t)nb_attributes);
     for (size_t j = 0; j < (size_t)nb_attributes; ++j)
     {
