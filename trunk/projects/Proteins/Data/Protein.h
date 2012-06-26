@@ -94,10 +94,10 @@ class Protein : public NameableObject
 {
 public:
   Protein(const String& name)
-    : NameableObject(name), bondingStateThreshold(0.f) {}
+    : NameableObject(name), bondingStateThreshold(0.5f) {}
 
   Protein()
-    : bondingStateThreshold(0.f) {}
+    : bondingStateThreshold(0.5f) {}
 
   /*
   ** Save/Load operators

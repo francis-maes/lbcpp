@@ -477,7 +477,7 @@ public:
     , useFisherFilter(false)
     , numFisherFeatures(100)
     , useNormalization(false)
-    , oxidizedCysteineThreshold(0.f)
+    , oxidizedCysteineThreshold(0.5f)
   {}
 
   virtual void proteinPerception(CompositeFunctionBuilder& builder) const
