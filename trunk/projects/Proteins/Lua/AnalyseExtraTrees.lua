@@ -101,8 +101,8 @@ local function main(varName, varValues, filePrefix, filePostfix, numFolds)
 
   scoresOfInterest["CBS"] = {index = 1, getScore = getScoreToMaximize}
   scoresOfInterest["Qp (Perfect)"] = {index = 8, getScore = getScoreToMaximize}
-  scoresOfInterest["Q2"] = {index = 4, getScore = getScoreToMaximize}
-  scoresOfInterest["CBS-Based Qp (Perfect)"] = {index = 10, getScore = getScoreToMaximize}
+--  scoresOfInterest["Q2"] = {index = 4, getScore = getScoreToMaximize}
+  scoresOfInterest["OxyDSB Qp (Perfect)"] = {index = 10, getScore = getScoreToMaximize}
 --  scoresOfInterest["Q2 (Bias form test)"] = {index = 5, getScore = getScoreToMaximize}
   for i = 1,#varValues do
     context:enter(varName .. ": " .. varValues[i])
