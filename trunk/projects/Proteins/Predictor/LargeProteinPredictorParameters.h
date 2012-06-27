@@ -464,8 +464,9 @@ public:
 class LargeProteinPredictorParameters : public CFProteinPredictorParameters
 {
 public:
-  LargeProteinPredictorParameters(const LargeProteinParametersPtr& fp = LargeProteinParametersPtr(), bool isGlobalFeaturesLazy = false)
-    : fp(fp), isGlobalFeaturesLazy(isGlobalFeaturesLazy), learningMachineName(T("SGD"))
+  LargeProteinPredictorParameters(const LargeProteinParametersPtr& fp = LargeProteinParametersPtr(), double oxidizedCysteineThreshold = 0.5f)
+    : CFProteinPredictorParameters(oxidizedCysteineThreshold)
+    , fp(fp), learningMachineName(T("SGD"))
     , svmC(4.0), svmGamma(1.0)
     , knnNeighbors(1)
     , x3Trees(1000)
@@ -477,7 +478,6 @@ public:
     , useFisherFilter(false)
     , numFisherFeatures(100)
     , useNormalization(false)
-    , oxidizedCysteineThreshold(0.5f)
   {}
 
   virtual void proteinPerception(CompositeFunctionBuilder& builder) const
@@ -669,7 +669,7 @@ public:
       builder.addInSelection(proteinPerception);
     
     builder.finishSelectionWithFunction(new CreateDisulfideSymmetricMatrixFunction(
-                                        lbcppMemberCompositeFunction(LargeProteinPredictorParameters, cysteinResiduePairVectorFeatures), oxidizedCysteineThreshold)
+                                        lbcppMemberCompositeFunction(LargeProteinPredictorParameters, cysteinResiduePairVectorFeatures), getOxidizedCysteineThreshold())
                                         , T("oxidizedCysteinResiduePairFeatures"));
   }
 
@@ -918,7 +918,6 @@ public:
 
 public:
   LargeProteinParametersPtr fp;
-  bool isGlobalFeaturesLazy;
 
   String learningMachineName;
   double svmC;
@@ -936,7 +935,6 @@ public:
   bool useNormalization;
   
   FunctionPtr learner;
-  double oxidizedCysteineThreshold;
 
 protected:
   friend class LargeProteinPredictorParametersClass;

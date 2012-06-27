@@ -111,6 +111,20 @@ public:
     }
     return res;
   }
+
+  double getOxidizedCysteineThreshold() const
+    {return oxidizedCysteineThreshold;}
+
+  void setOxidizedCysteineThreshold(double oxidizedCysteineThreshold)
+    {this->oxidizedCysteineThreshold = oxidizedCysteineThreshold;}
+
+protected:
+  friend class ProteinPredictorParametersClass;
+
+  double oxidizedCysteineThreshold;
+
+  ProteinPredictorParameters(double oxidizedCysteineThreshold = 0.5f)
+    : oxidizedCysteineThreshold(oxidizedCysteineThreshold) {}
 };
 
 extern ClassPtr proteinPredictorParametersClass;
@@ -197,6 +211,10 @@ public:
     function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
     return function;
   }
+
+protected:
+  CFProteinPredictorParameters(double oxidizedCysteineThreshold = 0.5f)
+    : ProteinPredictorParameters(oxidizedCysteineThreshold) {}
 };
 
 typedef ReferenceCountedObjectPtr<CFProteinPredictorParameters> CFProteinPredictorParametersPtr;
