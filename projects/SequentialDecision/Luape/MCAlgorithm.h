@@ -12,6 +12,8 @@
 # include "MCObjective.h"
 # include "../Core/SinglePlayerMCTSOptimizer.h"
 
+# include "../Problem/MorpionProblem.h" // tmp, for debugging
+
 namespace lbcpp
 {
 
@@ -21,8 +23,13 @@ namespace lbcpp
 class MCAlgorithm : public Object
 {
 public:
-  double search(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr initialState, std::vector<Variable>* actions, DecisionProblemStatePtr& finalState)
+  MCAlgorithm() : isSearching(false) {}
+
+  double search(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr initialState, std::vector<Variable>& actions, DecisionProblemStatePtr& finalState)
   {
+    jassert(!isSearching);
+    isSearching = true;
+
     bestScore = -DBL_MAX;
     bestActions.clear();
     bestFinalState = DecisionProblemStatePtr();
@@ -33,18 +40,17 @@ public:
     if (!dbgActions || !dbgActions->getNumElements())
       return bestScore;*/
 
-    search(context, objective, initialState);
+    search(context, objective, actions, initialState);
     jassert((bestScore == -DBL_MAX) == (bestFinalState == DecisionProblemStatePtr()));
     jassert((bestScore == -DBL_MAX) == bestActions.empty());
     //String dbg2 = initialState->toShortString();
     //jassert(dbg == dbg2);
 
-    if (actions)
-    {
-      actions->reserve(actions->size() + bestActions.size());
-      for (size_t i = 0; i < bestActions.size(); ++i)
-        actions->push_back(bestActions[i]);
-    }
+#ifdef JUCE_DEBUG
+    for (size_t i = 0; i < actions.size(); ++i)
+      jassert(actions[i] == bestActions[i]);
+#endif // JUCE_DEBUG
+    actions = bestActions;
     
     finalState = bestFinalState;
     /*if (bestScore != -DBL_MAX)
@@ -55,20 +61,31 @@ public:
           break;
       jassert(i < dbgActions->getNumElements());
     }*/
+    isSearching = false;
     return bestScore;
   }    
 
-  virtual void reset(ExecutionContext& context) {}
+  virtual void startSearch(ExecutionContext& context, DecisionProblemStatePtr initialState) {}
+  virtual void finishSearch(ExecutionContext& context) {}
 
 protected:
-  virtual void search(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr initialState) = 0;
+  virtual void search(ExecutionContext& context, MCObjectivePtr objective, const std::vector<Variable>& previousActions, DecisionProblemStatePtr state) = 0;
 
   double bestScore;
   DecisionProblemStatePtr bestFinalState;
   std::vector<Variable> bestActions;
+  bool isSearching;
 
   double submitFinalState(ExecutionContext& context, MCObjectivePtr objective, const std::vector<Variable>& actions, DecisionProblemStatePtr state, double score = -DBL_MAX)
   {
+    // tmp !!
+    MorpionStatePtr dbg = state.dynamicCast<MorpionState>();
+    if (dbg)
+    {
+      jassert(actions.size() == dbg->getHistory().size());
+    }
+    // --
+
     if (score == -DBL_MAX)
     {
       score = objective->evaluate(context, state);
@@ -91,11 +108,11 @@ extern ClassPtr mcAlgorithmClass;
 class RolloutMCAlgorithm : public MCAlgorithm
 {
 protected:
-  virtual void search(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr initialState)
+  virtual void search(ExecutionContext& context, MCObjectivePtr objective, const std::vector<Variable>& previousActions, DecisionProblemStatePtr state)
   {
-    DecisionProblemStatePtr state = initialState->cloneAndCast<DecisionProblemState>();
+    state = state->cloneAndCast<DecisionProblemState>();
     size_t t = 0;
-    std::vector<Variable> actions;
+    std::vector<Variable> actions(previousActions);
     while (!state->isFinalState() && !objective->shouldStop())
     {
       ContainerPtr availableActions = state->getAvailableActions();
@@ -130,8 +147,11 @@ public:
   const MCAlgorithmPtr& getAlgorithm() const
     {return algorithm;}
 
-  virtual void reset(ExecutionContext& context)
-    {if (algorithm) algorithm->reset(context);}
+  virtual void startSearch(ExecutionContext& context, DecisionProblemStatePtr initialState)
+    {if (algorithm) algorithm->startSearch(context, initialState);}
+
+  virtual void finishSearch(ExecutionContext& context)
+    {if (algorithm) algorithm->finishSearch(context);}
 
 protected:
   friend class DecoratorMCAlgorithmClass;
@@ -144,7 +164,7 @@ protected:
       return submitFinalState(context, objective, actions, state);
     else
     {
-      double res = algorithm->search(context, objective, state, &actions, finalState);
+      double res = algorithm->search(context, objective, state, actions, finalState);
       if (res != -DBL_MAX)
         submitFinalState(context, objective, actions, finalState, res);
       return res;
@@ -169,16 +189,16 @@ protected:
 
   size_t numIterations;
 
-  virtual void search(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr initialState)
+  virtual void search(ExecutionContext& context, MCObjectivePtr objective, const std::vector<Variable>& previousActions, DecisionProblemStatePtr state)
   {
     for (size_t i = 0; !numIterations || i < numIterations; ++i)
     {
       if (objective->shouldStop())
         break;
 
-      std::vector<Variable> actions;
+      std::vector<Variable> actions(previousActions);
       DecisionProblemStatePtr finalState;
-      subSearch(context, objective, initialState, actions, finalState);
+      subSearch(context, objective, state, actions, finalState);
     }
   }
 };
@@ -197,7 +217,7 @@ protected:
 
   double numActions;
 
-  virtual void search(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr state)
+  virtual void search(ExecutionContext& context, MCObjectivePtr objective, const std::vector<Variable>& previousActions, DecisionProblemStatePtr state)
   {
     ContainerPtr actions = state->getAvailableActions();
     size_t n = actions->getNumElements();
@@ -217,7 +237,9 @@ protected:
       Variable stateBackup;
       state->performTransition(context, action, reward, &stateBackup);
 
-      std::vector<Variable> actions(1, action);
+      std::vector<Variable> actions(previousActions);
+      actions.push_back(action);
+
       DecisionProblemStatePtr finalState;
       subSearch(context, objective, state, actions, finalState);
 
@@ -240,17 +262,14 @@ protected:
 
   bool useGlobalBest;
 
-  virtual void search(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr initialState)
+  virtual void search(ExecutionContext& context, MCObjectivePtr objective, const std::vector<Variable>& previousActions, DecisionProblemStatePtr state)
   {
-    DecisionProblemStatePtr state = initialState->cloneAndCast<DecisionProblemState>();
-    std::vector<Variable> actions;
+    state = state->cloneAndCast<DecisionProblemState>();
+    std::vector<Variable> actions(previousActions);
 //    context.informationCallback(T("----"));
     while (!state->isFinalState() && !objective->shouldStop())
     {
-      std::vector<Variable> bestActions(actions.size());
-      for (size_t i = 0; i < actions.size(); ++i)
-        bestActions[i] = actions[i];
-      
+      std::vector<Variable> bestActions(actions);
       DecisionProblemStatePtr bestFinalState;
       /*double score = */subSearch(context, objective, state, bestActions, bestFinalState);
 
@@ -264,21 +283,17 @@ protected:
       else
         context.informationCallback("No Best Final State");*/
 
+      // select action
       Variable selectedAction;
       if (useGlobalBest && this->bestFinalState)
-        selectedAction = this->bestActions[actions.size()];
+        selectedAction = this->bestActions[actions.size()];  // global best
       else if (bestFinalState)
-        selectedAction = bestActions[actions.size()];
-      
+        selectedAction = bestActions[actions.size()];       // local best
       if (!selectedAction.exists())
-      {
-        //context.informationCallback(T("Break"));
         break;
-      }
-
-      actions.push_back(selectedAction);
 
       double reward;
+      actions.push_back(selectedAction);
       state->performTransition(context, selectedAction, reward);
       
       while (!state->isFinalState())
@@ -304,20 +319,42 @@ public:
     : DecoratorMCAlgorithm(algorithm), explorationCoefficient(explorationCoefficient) {}
   SelectMCAlgorithm() {}
 
-  virtual void search(ExecutionContext& context, MCObjectivePtr objective, DecisionProblemStatePtr initialState)
+  virtual void startSearch(ExecutionContext& context, DecisionProblemStatePtr initialState)
   {
-    SinglePlayerMCTSNodePtr& root = trees[initialState->toShortString()];
-    if (!root)
-      root = new SinglePlayerMCTSNode(initialState->cloneAndCast<DecisionProblemState>());
+    tree = new SinglePlayerMCTSNode(initialState->cloneAndCast<DecisionProblemState>());
+    DecoratorMCAlgorithm::startSearch(context, initialState);
+  }
 
-    SinglePlayerMCTSNodePtr leaf = root->select(context);
+  virtual void finishSearch(ExecutionContext& context)
+  {
+    tree = SinglePlayerMCTSNodePtr();
+    DecoratorMCAlgorithm::finishSearch(context);
+  }
+
+  virtual void search(ExecutionContext& context, MCObjectivePtr objective, const std::vector<Variable>& previousActions, DecisionProblemStatePtr initialState)
+  {
+    // find local root
+    SinglePlayerMCTSNodePtr root = this->tree;
+    SinglePlayerMCTSNodePtr localRoot = root;
+    for (size_t i = 0; i < previousActions.size(); ++i)
+    {
+      if (!localRoot->isExpanded())
+        localRoot->expand(context);
+      localRoot = localRoot->getSubNodeByAction(previousActions[i]);
+      jassert(localRoot);
+    }
+
+    // select leaf
+    SinglePlayerMCTSNodePtr leaf = localRoot->select(context);
 
     //std::cout << "Selected node: " << leaf->toShortString() << std::flush;
 
+    // expand
     if (!leaf->isExpanded())
       leaf->expand(context);
 
-    std::vector<Variable> bestActions;
+    // sub search
+    std::vector<Variable> bestActions;//(previousActions);
     for (SinglePlayerMCTSNodePtr ptr = leaf; ptr != root; ptr = ptr->getParentNode())
       bestActions.insert(bestActions.begin(), ptr->getLastAction());
 
@@ -328,23 +365,17 @@ public:
     DecisionProblemStatePtr bestFinalState;
     double reward = subSearch(context, objective, leaf->getState(), bestActions, bestFinalState);
 
-    
-   // std::cout << " ==> reward = " << reward << std::endl;
-    leaf->backPropagate(reward);
-  }
-
-  virtual void reset(ExecutionContext& context)
-  {
-    trees.clear();
-    DecoratorMCAlgorithm::reset(context);
+    // normalize reward and back-propagate
+    double worst, best;
+    objective->getObjectiveRange(worst, best);
+    leaf->backPropagate((reward - worst) / (best - worst));
   }
 
 private:
   friend class SelectMCAlgorithmClass;
 
   double explorationCoefficient;
-
-  std::map<String, SinglePlayerMCTSNodePtr> trees;
+  SinglePlayerMCTSNodePtr tree;
 };
 
 extern ClassPtr selectMCAlgorithmClass;

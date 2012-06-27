@@ -43,6 +43,9 @@ public:
 
   virtual bool shouldStop() const
     {return numEvaluations >= budget || numCachedEvaluations >= 100 * budget;}
+  
+  virtual void getObjectiveRange(double& worst, double& best) const
+    {jassert(false); worst = -100.0; best = 0.0;}
 
 protected:
   FunctionPtr lbcppObjective;
@@ -63,7 +66,8 @@ public:
   {
     DecisionProblemStatePtr bestFinalState;
     MCAlgorithmPtr algorithm = new IterateMCAlgorithm(this->algorithm, 0x7FFFFFFF); // repeat base algorithm until budget is exhausted
-    double bestScore = algorithm->search(context, new WrapperMCObjective(problem->getObjective(), budget), problem->getInitialState(), NULL, bestFinalState);
+    std::vector<Variable> actions;
+    double bestScore = algorithm->search(context, new WrapperMCObjective(problem->getObjective(), budget), problem->getInitialState(), actions, bestFinalState);
     optimizerState->submitSolution(bestFinalState, bestScore);
     return optimizerState;
   }

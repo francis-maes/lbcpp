@@ -83,6 +83,10 @@
   </class>
   
    <!-- Sudoku -->
+  <class name="SudokuAction" base="Object">
+    <variable type="PositiveInteger" name="position"/>
+    <variable type="PositiveInteger" name="value"/>
+  </class>
   <class name="SudokuState" base="DecisionProblemState">
     <variable type="PositiveInteger" name="baseSize"/>
   </class>

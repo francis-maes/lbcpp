@@ -50,7 +50,7 @@ void BanditPool::playIterations(ExecutionContext& context, size_t numIterations,
     context.enterScope(T("Iteration ") + String((int)i+1));
     context.resultCallback(T("iteration"), i+1);
     play(context, stepsPerIteration);
-    displayInformation(context, 25);
+    displayInformation(context, 20, 5);
     context.leaveScope();
   }
 }
@@ -78,7 +78,7 @@ struct PlayArmWorkUnit : public WorkUnit
   size_t armIndex;
 
   virtual Variable run(ExecutionContext& context)
-    {return objective->computeObjective(context, parameter, instanceIndex);}
+   {return objective->computeObjective(context, parameter, instanceIndex);}
 };
 
 size_t BanditPool::selectAndPlayArm(ExecutionContext& context)
@@ -150,25 +150,37 @@ void BanditPool::displayAllArms(ExecutionContext& context)
   }
 }
 
-void BanditPool::displayInformation(ExecutionContext& context, size_t numBestArms)
+void BanditPool::displayArmInformation(ExecutionContext& context, size_t order, size_t armIndex) const
+{
+  const Arm& arm = arms[armIndex];
+  double objectiveValue = optimizeMax ? arm.objectiveValueBest : arm.getMeanObjectiveValue();
+  context.informationCallback(T("[") + String((int)order+1) + T("] ") + 
+    arm.parameter.toShortString() + T(" -> ") + String(objectiveValue) +
+      T(" (played ") + String((int)arm.playedCount) + T(" times)"));
+}
+
+void BanditPool::displayInformation(ExecutionContext& context, size_t numBestArms, size_t numWorstArms) const
 {
   std::vector< std::pair<size_t, double> > order;
   getArmsOrder(order);
   if (order.size())
   {
     size_t count = order.size();
-    if (numBestArms < count)
-      count = numBestArms;
-    for (size_t i = 0; i < count; ++i)
+    if (numBestArms + numWorstArms >= count)
     {
-      Arm& arm = arms[order[i].first];
-      double objectiveValue = optimizeMax ? arm.objectiveValueBest : arm.getMeanObjectiveValue();
-      context.informationCallback(T("[") + String((int)i) + T("] ") + 
-        arm.parameter.toShortString() + T(" -> ") + String(objectiveValue) +
-          T(" (played ") + String((int)arm.playedCount) + T(" times)"));
+      for (size_t i = 0; i < count; ++i)
+        displayArmInformation(context, i, order[i].first);
+    }
+    else
+    {
+      for (size_t i = 0; i < numBestArms; ++i)
+        displayArmInformation(context, i, order[i].first);
+      context.informationCallback("...");
+      for (size_t i = count - numWorstArms; i < count; ++i)
+        displayArmInformation(context, i, order[i].first);
     }
 
-    Arm& bestArm = arms[order[0].first];
+    const Arm& bestArm = arms[order[0].first];
     context.resultCallback(T("bestArmPlayCount"), bestArm.playedCount);
     context.resultCallback(T("bestArmObjective"), bestArm.getMeanObjectiveValue());
     context.resultCallback(T("bestArmBestObjective"), bestArm.objectiveValueBest);

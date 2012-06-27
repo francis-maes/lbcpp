@@ -72,12 +72,7 @@ public:
     {return T("(") + String(x) + T(", ") + String(y) + T(")");}
 
   MorpionPoint moveIntoDirection(const MorpionDirection& direction, int delta) const
-  {
-    MorpionPoint res(x, y);
-    res.x += delta * direction.getDx();
-    res.y += delta * direction.getDy();
-    return res;
-  }
+    {return MorpionPoint(x + delta * direction.getDx(), y + delta * direction.getDy());}
   
   void incrementIntoDirection(const MorpionDirection& direction)
     {x += direction.getDx(); y += direction.getDy();}
@@ -301,11 +296,15 @@ private:
 /*
 ** Action
 */
+extern ClassPtr morpionActionClass;
+class MorpionAction;
+typedef ReferenceCountedObjectPtr<MorpionAction> MorpionActionPtr;
+
 class MorpionAction : public Object
 {
 public:
   MorpionAction(const MorpionPoint& position, const MorpionDirection& direction, size_t indexInLine)
-    : position(position), direction(direction), indexInLine(indexInLine) {}
+    : Object(morpionActionClass), position(position), direction(direction), indexInLine(indexInLine) {}
   MorpionAction() : indexInLine(-1) {}
 
   const MorpionPoint& getPosition() const
@@ -332,14 +331,25 @@ public:
   bool operator ==(const MorpionAction& other) const
     {return position == other.position && direction == other.direction && indexInLine == other.indexInLine;}
 
+  virtual int compare(const ObjectPtr& otherObject) const
+  {
+    MorpionActionPtr other = otherObject.dynamicCast<MorpionAction>();
+    if (!other)
+      return Object::compare(otherObject);
+    if (position.getX() != other->position.getX())
+      return position.getX() - other->position.getX();
+    if (position.getY() != other->position.getY())
+      return position.getY() - other->position.getY();
+    if (direction != other->direction)
+      return (int)(MorpionDirection::Direction)direction - (int)(MorpionDirection::Direction)other->direction;
+    return (int)indexInLine - (int)other->indexInLine;
+  }
+
 private:
   MorpionPoint position;
   MorpionDirection direction;
   size_t indexInLine; // in range [0, crossLength[
 };
-
-typedef ReferenceCountedObjectPtr<MorpionAction> MorpionActionPtr;
-extern ClassPtr morpionActionClass;
 
 /*
 ** State
@@ -368,24 +378,27 @@ public:
 	virtual void performTransition(ExecutionContext& context, const Variable& ac, double& reward, Variable* stateBackup = NULL)
 	{
     MorpionActionPtr action = ac.getObjectAndCast<MorpionAction>();
+#ifdef JUCE_DEBUG
+    bool ok = false;
+    for (size_t i = 0; i < availableActions->getNumElements(); ++i)
+      if (*availableActions->getAndCast<MorpionAction>(i) == *action)
+        ok = true;
+    jassert(ok);
+#endif // JUCE_DEBUG
+        
     int x = action->getPosition().getX();
     int y = action->getPosition().getY();
+    jassert(!board.isOccupied(x, y));
     board.markAsOccupied(x, y);
    
     MorpionPoint position = action->getStartPosition();
     for (size_t i = 0; i < crossLength - 1; ++i)
     {
+      jassert(!board.hasSegment(position, action->getDirection()));
       board.addSegment(position, action->getDirection());
       position.incrementIntoDirection(action->getDirection());
     }
 
-   /* bool ok = false;
-    for (size_t i = 0; i < availableActions->getNumElements(); ++i)
-      if (*availableActions->getAndCast<MorpionAction>(i) == *action)
-        ok = true;
-    if (!ok)
-      std::cout << "PAS BIEN" << std::endl;*/
-        
 		history.push_back(action);
     reward = 1.0;
     if (stateBackup)
@@ -488,7 +501,7 @@ protected:
   
   ObjectVectorPtr computeAvailableActions() const
   {
-    ObjectVectorPtr res = new ObjectVector(morpionActionClass, 0);
+    ObjectVectorPtr res = new ObjectVector(availableActions ? availableActions->getClass() : objectVectorClass(morpionActionClass));
     int minSizeX, maxSizeX, minSizeY, maxSizeY;
     board.getXRange(minSizeX, maxSizeX);
     board.getYRange(minSizeY, maxSizeY);
