@@ -627,7 +627,8 @@ class DisulfideBondWorkUnit : public WorkUnit
 public:
   DisulfideBondWorkUnit()
     : learningMachineName(T("ExtraTrees")),
-      x3Trees(1000), x3Attributes(0), x3Splits(1) {}
+      x3Trees(1000), x3Attributes(0), x3Splits(1),
+      oxidizedCysteineThreshold(0.5f) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -658,7 +659,7 @@ public:
 
     // ODSB
     LargeProteinParametersPtr odsbParameter = LargeProteinParameters::createFromFile(context, odsbParameterFile).dynamicCast<LargeProteinParameters>();
-    LargeProteinPredictorParametersPtr odsbPredictor = new LargeProteinPredictorParameters(odsbParameter);
+    LargeProteinPredictorParametersPtr odsbPredictor = new LargeProteinPredictorParameters(odsbParameter, oxidizedCysteineThreshold);
     odsbPredictor->learningMachineName = learningMachineName;
     odsbPredictor->x3Trees = x3Trees;
     odsbPredictor->x3Attributes = x3Attributes;
@@ -668,6 +669,7 @@ public:
     iterations->addPredictor(odsbIteration);
 
     // DSB
+    /*
     LargeProteinParametersPtr dsbParameter = LargeProteinParameters::createFromFile(context, odsbParameterFile).dynamicCast<LargeProteinParameters>();
     LargeProteinPredictorParametersPtr dsbPredictor = new LargeProteinPredictorParameters(dsbParameter);
     dsbPredictor->learningMachineName = learningMachineName;
@@ -677,6 +679,7 @@ public:
     ProteinPredictorPtr dsbIteration = new ProteinPredictor(dsbPredictor);
     dsbIteration->addTarget(dsbTarget);
     iterations->addPredictor(dsbIteration);
+    */
     
     // Copy CBS
     //copyCysteineBondingStateSupervisons(context, train);
@@ -718,10 +721,11 @@ protected:
   size_t x3Trees;
   size_t x3Attributes;
   size_t x3Splits;
+  double oxidizedCysteineThreshold;
 
   ProteinEvaluatorPtr createProteinEvaluator() const
   {
-    ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+    ProteinEvaluatorPtr evaluator = new ProteinEvaluator(oxidizedCysteineThreshold);
     evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("CBS"), true);
     evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("CBS Tuned Q2"));
     evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, false)), T("CBS Tuned S&S"));

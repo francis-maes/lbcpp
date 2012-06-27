@@ -94,11 +94,9 @@ class Protein : public NameableObject
 {
 public:
   Protein(const String& name)
-    : NameableObject(name), bondingStateThreshold(0.5f) {}
+    : NameableObject(name) {}
 
-  Protein()
-    : bondingStateThreshold(0.5f) {}
-
+  Protein() {}
   /*
   ** Save/Load operators
   */
@@ -222,14 +220,14 @@ public:
   ** Disulfide Bonds
   */
   const SymmetricMatrixPtr& getDisulfideBonds(ExecutionContext& context) const;
-  const SymmetricMatrixPtr& getOxidizedDisulfideBonds(ExecutionContext& context) const;
+  const SymmetricMatrixPtr& getOxidizedDisulfideBonds(ExecutionContext& context, double oxidizedCysteineThreshold) const;
 
   const MatrixPtr& getFullDisulfideBonds(ExecutionContext& context) const;
 
   void setDisulfideBonds(const SymmetricMatrixPtr& disulfideBonds)
     {jassert(disulfideBonds->getDimension() == cysteinIndices.size()); this->disulfideBonds = disulfideBonds;}
 
-  const DenseDoubleVectorPtr& getCysteinBondingStates(ExecutionContext& context) const;
+  const DenseDoubleVectorPtr& getCysteinBondingStates(ExecutionContext& context, double disulfideBondThreshold = 0.5f) const;
   void setCysteinBondingStates(ExecutionContext& context, const DenseDoubleVectorPtr& cysteinBondingStates)
     {jassert(cysteinBondingStates->getNumElements() == cysteinIndices.size()); this->cysteinBondingStates = cysteinBondingStates;}
 
@@ -262,7 +260,6 @@ public:
 protected:
   friend class ProteinClass;
 
-  const double bondingStateThreshold;
   // input
   VectorPtr primaryStructure;
   ContainerPtr positionSpecificScoringMatrix;

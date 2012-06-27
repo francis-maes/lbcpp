@@ -71,7 +71,9 @@
     <variable type="ObjectVector[ProteinPredictor]" name="predictors"/>
   </class>
 
-  <class name="ProteinPredictorParameters" base="Object" abstract="yes"/>
+  <class name="ProteinPredictorParameters" base="Object" abstract="yes">
+      <variable type="Double" name="oxidizedCysteineThreshold"/>
+  </class>
   <class name="CFProteinPredictorParameters" base="ProteinPredictorParameters" abstract="yes"/>
 
   <class name="NumericalProteinFeaturesParameters" shortName="features">
@@ -331,7 +333,6 @@
   
   <class name="LargeProteinPredictorParameters" base="CFProteinPredictorParameters">
     <variable type="LargeProteinParameters" name="fp"/>
-    <variable type="Boolean" name="isGlobalFeaturesLazy"/>
     <variable type="String" name="learningMachineName"/>
     <variable type="Double" name="svmC"/>
     <variable type="Double" name="svmGamma"/>
@@ -345,7 +346,6 @@
     <variable type="Boolean" name="useFisherFilter"/>
     <variable type="PositiveInteger" name="numFisherFeatures"/>
     <variable type="Boolean" name="useNormalization"/>
-    <variable type="Double" name="oxidizedCysteineThreshold"/>
   </class>
 
   <class name="DumbBinaryClassifierFunction" base="Function"/>

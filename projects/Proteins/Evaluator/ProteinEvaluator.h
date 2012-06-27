@@ -74,7 +74,8 @@ typedef ReferenceCountedObjectPtr<ProteinLearnerScoreObject> ProteinLearnerScore
 class ProteinEvaluator : public CompositeEvaluator
 {
 public:
-  ProteinEvaluator()
+  ProteinEvaluator(double oxidizedCysteineThreshold = 0.5f)
+  : oxidizedCysteineThreshold(oxidizedCysteineThreshold)
   {
 #if 0
 /* Exemples */
@@ -132,8 +133,18 @@ public:
       }
       else
       {
-        ContainerPtr supervisionContainer = supervision->getTargetOrComputeIfMissing(context, (int)targets[i]).getObjectAndCast<Container>();
-        ContainerPtr predictedContainer = predicted->getTargetOrComputeIfMissing(context, (int)targets[i]).getObjectAndCast<Container>();
+        ContainerPtr supervisionContainer;
+        ContainerPtr predictedContainer;
+        if (targets[i] == odsbTarget)
+        {
+          supervisionContainer = supervision->getOxidizedDisulfideBonds(context, oxidizedCysteineThreshold);
+          predictedContainer = predicted->getOxidizedDisulfideBonds(context, oxidizedCysteineThreshold);
+        }
+        else
+        {
+          supervisionContainer = supervision->getTargetOrComputeIfMissing(context, (int)targets[i]).getObjectAndCast<Container>();
+          predictedContainer = predicted->getTargetOrComputeIfMissing(context, (int)targets[i]).getObjectAndCast<Container>();
+        }
 
         if (!supervisionContainer || !predictedContainer)
           continue;
@@ -180,6 +191,7 @@ public:
   }  
 
 protected:
+  double oxidizedCysteineThreshold;
   std::vector<ProteinTarget> targets;
   std::vector<String> descriptions;
   size_t scoreToMinimizeIndex;
