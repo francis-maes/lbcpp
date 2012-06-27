@@ -666,6 +666,17 @@ public:
     ProteinPredictorPtr odsbIteration = new ProteinPredictor(odsbPredictor);
     odsbIteration->addTarget(odsbTarget);
     iterations->addPredictor(odsbIteration);
+
+    // DSB
+    LargeProteinParametersPtr dsbParameter = LargeProteinParameters::createFromFile(context, odsbParameterFile).dynamicCast<LargeProteinParameters>();
+    LargeProteinPredictorParametersPtr dsbPredictor = new LargeProteinPredictorParameters(dsbParameter);
+    dsbPredictor->learningMachineName = learningMachineName;
+    dsbPredictor->x3Trees = x3Trees;
+    dsbPredictor->x3Attributes = x3Attributes;
+    dsbPredictor->x3Splits = x3Splits;
+    ProteinPredictorPtr dsbIteration = new ProteinPredictor(dsbPredictor);
+    dsbIteration->addTarget(dsbTarget);
+    iterations->addPredictor(dsbIteration);
     
     // Copy CBS
     //copyCysteineBondingStateSupervisons(context, train);
