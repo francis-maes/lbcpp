@@ -49,6 +49,18 @@ public:
   const SinglePlayerMCTSNodePtr& getSubNode(size_t index) const
     {jassert(index < subNodes.size()); return subNodes[index];}
 
+  SinglePlayerMCTSNodePtr getSubNodeByAction(const Variable& action) const
+  {
+    jassert(isExpanded());
+    size_t n = actions->getNumElements();
+    jassert(subNodes.size() == n);
+    for (size_t i = 0; i < n; ++i)
+      if (actions->getElement(i) == action)
+        return subNodes[i];
+    jassert(false);
+    return SinglePlayerMCTSNodePtr();
+  }
+
   SinglePlayerMCTSNodePtr getParentNode() const
     {return SinglePlayerMCTSNodePtr(parent);}
 
@@ -61,7 +73,7 @@ public:
     if (!count)
       return DBL_MAX;
     else
-      return rewards->getMean() + explorationCoefficient * sqrt(log((double)timeStep) / count);
+      return rewards->getMean() + explorationCoefficient * sqrt(log((double)timeStep) / (double)count);
   }
 
   void observeReward(double reward)

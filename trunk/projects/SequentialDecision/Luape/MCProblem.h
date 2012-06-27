@@ -17,7 +17,6 @@ namespace lbcpp
 class MCProblem : public Object
 {
 public:
-	virtual void getObjectiveRange(double& worst, double& best) const = 0;
 	virtual std::pair<DecisionProblemStatePtr, MCObjectivePtr> getInstance(ExecutionContext& context, size_t instanceIndex) = 0;
 };
 
@@ -27,34 +26,39 @@ class DecisionProblemMCProblem : public MCProblem
 {
 public:
 	DecisionProblemMCProblem(DecisionProblemPtr decisionProblem = DecisionProblemPtr())
-	: decisionProblem(decisionProblem) {}
-
-	virtual void getObjectiveRange(double& worst, double& best) const
-	{worst = 0.0; best = decisionProblem->getMaxReward();}
+	  : decisionProblem(decisionProblem) {}
 
 	struct Objective : public MCObjective
 	{
+    Objective(DecisionProblemPtr decisionProblem)
+      : decisionProblem(decisionProblem) {}
+
+    DecisionProblemPtr decisionProblem;
+
+  	virtual void getObjectiveRange(double& worst, double& best) const
+	    {worst = 0.0; best = decisionProblem->getMaxReward();}
+
 		virtual double evaluate(ExecutionContext& context, DecisionProblemStatePtr finalState)
-		{return finalState->getFinalStateReward();}
+		  {return finalState->getFinalStateReward();}
 	};
 
 	virtual std::pair<DecisionProblemStatePtr, MCObjectivePtr> getInstance(ExecutionContext& context, size_t instanceIndex)
-  						{
+  {
+    ScopedLock _(instancesLock);
 		if (instances.size() <= instanceIndex)
 		{
-
-			MCObjectivePtr objective = new Objective();
+			MCObjectivePtr objective = new Objective(decisionProblem);
 			while (instances.size() <= instanceIndex)
         instances.push_back(std::make_pair(decisionProblem->sampleInitialState(context), objective));
 		}
-		return instances[instanceIndex];
-  						}
+    return std::make_pair(instances[instanceIndex].first->cloneAndCast<DecisionProblemState>(), instances[instanceIndex].second);
+	}
 
-	protected:
+protected:
 	friend class DecisionProblemMCProblemClass;
 
 	DecisionProblemPtr decisionProblem;
-
+  CriticalSection instancesLock;
 	std::vector< std::pair<DecisionProblemStatePtr, MCObjectivePtr> > instances;
 };
 
@@ -62,10 +66,10 @@ class F8SymbolicRegressionMCProblem : public MCProblem
 {
 public:
 	F8SymbolicRegressionMCProblem(size_t maxDepth = 10)
-	: maxDepth(maxDepth) {}
+  	: maxDepth(maxDepth) {}
 
 	virtual std::pair<DecisionProblemStatePtr, MCObjectivePtr> getInstance(ExecutionContext& context, size_t instanceIndex)
-  						{
+	{
 		if (instances.empty())
 		{
 			instances.resize(8);
@@ -79,12 +83,9 @@ public:
 		}
 		LuapeRegressorPtr problem = instances[instanceIndex % 8].first;
 		DecisionProblemStatePtr initialState = instances[instanceIndex % 8].second->cloneAndCast<DecisionProblemState>();
-		MCObjectivePtr objective(new SymbolicRegressionMCObjective(problem));
+		MCObjectivePtr objective(new SymbolicRegressionMCObjective(problem, 1.0));
 		return std::make_pair(initialState, objective);
-  						}
-
-	virtual void getObjectiveRange(double& worst, double& best) const
-	{worst = -1.0; best = 0.0;}
+  }
 
 protected:
 	friend class F8SymbolicRegressionMCProblemClass;
@@ -153,58 +154,62 @@ class PrimeNumberMCProblem : public MCProblem
 {
 public:
 	PrimeNumberMCProblem(size_t maxDepth = 10)
-	: maxDepth(maxDepth) {}
+	  : maxDepth(maxDepth) {}
 
 	struct Objective : public LuapeMCObjective
 	{
 		Objective(LuapeRegressorPtr regressor)
 		: LuapeMCObjective(regressor) {}
 
-	virtual double evaluate(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& formula)
-	{
-		size_t primeCounter = 1;
-		bool isvalid = true;
-		while(isPrime(evaluateFormula(context, formula, primeCounter)))
-		{
-			primeCounter++;
-			if(primeCounter>99)
-			{isvalid = false; break;}
-		}
+	  virtual double evaluate(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& formula)
+	  {
+		  size_t primeCounter = 1;
+		  bool isvalid = true;
+		  while(isPrime(evaluateFormula(context, formula, primeCounter)))
+		  {
+			  primeCounter++;
+			  if(primeCounter>99)
+			  {isvalid = false; break;}
+		  }
 
-		if(!isvalid)
-			primeCounter=1;
+		  if(!isvalid)
+			  primeCounter=1;
 
-		return primeCounter;
-	}
-	virtual bool isPrime(double value)
-	{
-		double root = pow(value, 0.5);
-		bool prime=true;
+		  return primeCounter;
+	  }
 
-		if(value<2.0)
-			return false;
-		if((value-(int)value)>1e-12)
-			return false;
-		if(value==DBL_MAX)
-			return false;
+	  virtual bool isPrime(double value)
+	  {
+		  double root = pow(value, 0.5);
+		  bool prime=true;
 
-		for (size_t i=2; i<= root; i++)
-			if ((int)value % i == 0)
-				prime = false;
-		return prime;
-	}
+		  if(value<2.0)
+			  return false;
+		  if((value-(int)value)>1e-12)
+			  return false;
+		  if(value==DBL_MAX)
+			  return false;
 
-	// evaluateFormula() is a utility function to evaluate the formula given an integer input
-	double evaluateFormula(ExecutionContext& context, const LuapeNodePtr& formula, int input) const
-	{
-		Variable in((double)input);
-		double res = formula->compute(context, &in).getDouble();
-		return res == doubleMissingValue ? 0.0 : res;
-	}
-};
+		  for (size_t i=2; i<= root; i++)
+			  if ((int)value % i == 0)
+				  prime = false;
+		  return prime;
+	  }
+
+    virtual void getObjectiveRange(double& worst, double& best) const
+  	  {worst = 0.0; best = 100.0;}
+
+	  // evaluateFormula() is a utility function to evaluate the formula given an integer input
+	  double evaluateFormula(ExecutionContext& context, const LuapeNodePtr& formula, int input) const
+	  {
+		  Variable in((double)input);
+		  double res = formula->compute(context, &in).getDouble();
+		  return res == doubleMissingValue ? 0.0 : res;
+	  }
+  };
 
 	virtual std::pair<DecisionProblemStatePtr, MCObjectivePtr> getInstance(ExecutionContext& context, size_t instanceIndex)
-  						{
+  {
 		LuapeRegressorPtr regressor = new LuapeRegressor();
 		regressor->addInput(doubleType, "x");
 
@@ -220,12 +225,9 @@ public:
 		LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = regressor->getSearchSpace(context, maxDepth);
 		DecisionProblemStatePtr initialState(new LuapeNodeBuilderState(regressor, typeSearchSpace));
 		return std::make_pair(initialState, new Objective(regressor));
-  						}
+  }
 
-	virtual void getObjectiveRange(double& worst, double& best) const
-	{worst = 0.0; best = 100.0;} // TODO: fill the worst and best value that the objective function can take
-
-	protected:
+protected:
 	friend class PrimeNumberMCProblemClass;
 
 	size_t maxDepth;

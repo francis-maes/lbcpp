@@ -49,7 +49,8 @@ public:
   size_t sampleArmWithHighestReward(ExecutionContext& context) const;
   void observeReward(size_t index, double objective);
 
-  void displayInformation(ExecutionContext& context, size_t numBestArms = 10);
+  void displayArmInformation(ExecutionContext& context, size_t order, size_t armIndex) const;
+  void displayInformation(ExecutionContext& context, size_t numBestArms = 15, size_t numWorstArms = 5) const;
   void displayAllArms(ExecutionContext& context);
 
   void getArmsOrder(std::vector< std::pair<size_t, double> >& res) const; // from best to worst w.r.t. mean objective value

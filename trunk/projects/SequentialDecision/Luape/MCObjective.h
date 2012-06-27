@@ -22,6 +22,7 @@ public:
   virtual double evaluate(ExecutionContext& context, DecisionProblemStatePtr finalState) = 0;
   virtual bool shouldStop() const
     {return false;}
+	virtual void getObjectiveRange(double& worst, double& best) const = 0;
 };
 
 typedef ReferenceCountedObjectPtr<MCObjective> MCObjectivePtr;
@@ -52,8 +53,11 @@ protected:
 class SymbolicRegressionMCObjective : public LuapeMCObjective
 {
 public:
-  SymbolicRegressionMCObjective(LuapeInferencePtr problem = LuapeInferencePtr())
-    : LuapeMCObjective(problem) {}
+  SymbolicRegressionMCObjective(LuapeInferencePtr problem = LuapeInferencePtr(), double worstError = 1.0)
+    : LuapeMCObjective(problem), worstError(worstError) {}
+
+  virtual void getObjectiveRange(double& worst, double& best) const
+    {worst = -worstError; best = 0.0;}
 
   virtual double evaluate(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& formula)
   {
@@ -69,6 +73,9 @@ public:
     }
     return -res.getMean();
   }
+
+protected:
+  double worstError;
 };
 
 typedef ReferenceCountedObjectPtr<SymbolicRegressionMCObjective> SymbolicRegressionMCObjectivePtr;

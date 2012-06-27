@@ -17,6 +17,43 @@ namespace lbcpp
 {
 
 /*
+** Action
+*/
+class SudokuAction;
+typedef ReferenceCountedObjectPtr<SudokuAction> SudokuActionPtr;
+extern ClassPtr sudokuActionClass;
+
+class SudokuAction : public Object
+{
+public:
+  SudokuAction(size_t position, size_t value)
+    : Object(sudokuActionClass), position(position), value(value) {}
+  SudokuAction() : position(0), value(0) {}
+
+  size_t getPosition() const
+    {return position;}
+
+  size_t getValue() const
+    {return value;}
+
+  virtual int compare(const ObjectPtr& otherObject) const
+  {
+    SudokuActionPtr other = otherObject.dynamicCast<SudokuAction>();
+    if (!other)
+      return Object::compare(otherObject);
+    if (position != other->position)
+      return (int)position - (int)other->position;
+    return (int)value - (int)other->value;
+  }
+
+protected:
+  friend class SudokuActionClass;
+
+  size_t position;
+  size_t value;
+};
+
+/*
 ** State
 */
 extern ClassPtr sudokuStateClass;
@@ -31,12 +68,11 @@ public:
     : finalState(false), baseSize(baseSize), boardSize(baseSize * baseSize) {}
 
 	virtual TypePtr getActionType() const
-	  {return pairClass(positiveIntegerType, positiveIntegerType);}
+    {return sudokuActionClass;}
 
 	virtual ContainerPtr getAvailableActions() const
 	{
-		ClassPtr actionType = getActionType();
-		ObjectVectorPtr res = new ObjectVector(actionType, 0);
+		ObjectVectorPtr res = new ObjectVector(sudokuActionClass, 0);
     
     size_t smallest = boardSize;
     for (size_t i = 0; i < board.size(); ++i)
@@ -52,7 +88,7 @@ public:
  	    std::vector<size_t> values = getAvailableValues(i);
       if (values.size() == smallest && doneList.find(i) == doneList.end())
         for (size_t j = 0; j < values.size(); ++j)
-          res->append(new Pair(actionType, i, values[j]));  
+          res->append(new SudokuAction(i, values[j]));  
     }
     return res;
 	}
@@ -66,20 +102,18 @@ public:
     size_t lastPosition;
 	};
 
-	virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward, Variable* stateBackup = NULL)
+	virtual void performTransition(ExecutionContext& context, const Variable& ac, double& reward, Variable* stateBackup = NULL)
 	{
-		// First, we extract the position and the value which are encoded in the action
-		PairPtr positionAndValue = action.getObjectAndCast<Pair>();
-		size_t position = positionAndValue->getFirst().getInteger();
-		size_t value = positionAndValue->getSecond().getInteger();
+		// Retrieve action
+		SudokuActionPtr action = ac.getObjectAndCast<SudokuAction>();
 
 		// save in "stateBackup" information about the current state
 		if (stateBackup)
-			*stateBackup = Variable(new Backup(board, position), objectClass);
+			*stateBackup = Variable(new Backup(board, action->getPosition()), objectClass);
 
     // execute action && update board
     //std::vector<size_t> tmp = getAvailableValues(position);
-    setValueAndRemoveFromRowColumnAndRegion(position, value);
+    setValueAndRemoveFromRowColumnAndRegion(action->getPosition(), action->getValue());
 
     reward = 1.0;
   }
@@ -255,7 +289,7 @@ public:
 	  {return sudokuStateClass;}
 
 	virtual TypePtr getActionType() const
-	  {return pairClass(positiveIntegerType, positiveIntegerType);}
+	  {return sudokuActionClass;}
 
 	virtual DecisionProblemStatePtr sampleInitialState(ExecutionContext& context) const
 	{

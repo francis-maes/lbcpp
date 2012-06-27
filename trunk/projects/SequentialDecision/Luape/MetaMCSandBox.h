@@ -50,12 +50,11 @@ public:
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
   {
     jassert(index == 0);
-    VectorPtr candidates = vector(positiveIntegerType, 5);
+    VectorPtr candidates = vector(positiveIntegerType, 4);
     candidates->setElement(0, Variable(2, positiveIntegerType));
-    candidates->setElement(1, Variable(3, positiveIntegerType));
-    candidates->setElement(2, Variable(5, positiveIntegerType));
-    candidates->setElement(3, Variable(10, positiveIntegerType));
-    candidates->setElement(4, Variable(100, positiveIntegerType));
+    candidates->setElement(1, Variable(5, positiveIntegerType));
+    candidates->setElement(2, Variable(10, positiveIntegerType));
+    candidates->setElement(3, Variable(100, positiveIntegerType));
     return candidates;
   }
 
@@ -100,10 +99,10 @@ public:
   {
     jassert(index == 0);
     DenseDoubleVectorPtr candidates = new DenseDoubleVector(4, 0.0);
-    candidates->setValue(0, -1.0);
     candidates->setValue(0, 0.0);
-    candidates->setValue(0, 0.1);
-    candidates->setValue(0, 1.0);
+    candidates->setValue(1, 0.3);
+    candidates->setValue(2, 0.5);
+    candidates->setValue(3, 1.0);
     return candidates;
   }
 
@@ -201,6 +200,9 @@ public:
 
   virtual bool shouldStop() const
     {return numEvaluations >= budget || numCachedEvaluations >= 100 * budget;}
+
+  virtual void getObjectiveRange(double& worst, double& best) const
+    {objective->getObjectiveRange(worst, best);}
 
   size_t getNumEvaluations() const
     {return numEvaluations;}
@@ -309,8 +311,10 @@ private:
     CacheAndFiniteBudgetMCObjectivePtr objective = new CacheAndFiniteBudgetMCObjective(stateAndObjective.second, budget, false);
 
     DecisionProblemStatePtr finalState;
-    double res = iterate(algorithm, 0)->search(context, objective, stateAndObjective.first, NULL, finalState);
-    algorithm->reset(context);
+    std::vector<Variable> actions;
+    algorithm->startSearch(context, stateAndObjective.first);
+    double res = iterate(algorithm, 0)->search(context, objective, stateAndObjective.first, actions, finalState);
+    algorithm->finishSearch(context);
     context.resultCallback("bestReward", res);
     context.resultCallback("bestFinalState", finalState);
     return res;
@@ -390,7 +394,7 @@ protected:
     for (std::set<LuapeNodePtr>::const_iterator it = uniqueNodes.begin(); it != uniqueNodes.end(); ++it)
     {
       LuapeNodePtr node = *it;
-      MCAlgorithmPtr algorithm = node->compute(context).getObjectAndCast<MCAlgorithm>();
+      MCAlgorithmPtr algorithm = node->compute(context).getObject()->cloneAndCast<MCAlgorithm>(); // clone for multi-thread safety
       ++count;
       if (count < 20)
         context.informationCallback(algorithm->toShortString());
@@ -406,10 +410,11 @@ protected:
   struct AlgorithmObjective : public BanditPoolObjective
   {
     AlgorithmObjective(MCProblemPtr problem, size_t budget)
-      : problem(problem), budget(budget) {}
+      : problem(problem), budget(budget)
+      {problem->getInstance(defaultExecutionContext(), 0).second->getObjectiveRange(worstScore, bestScore);}
 
     virtual void getObjectiveRange(double& worst, double& best) const
-      {problem->getObjectiveRange(worst, best);}
+      {worst = worstScore; best = bestScore;}
 
     virtual double computeObjective(ExecutionContext& context, const Variable& parameter, size_t instanceIndex)
     {
@@ -418,14 +423,17 @@ protected:
       CacheAndFiniteBudgetMCObjectivePtr objective = new CacheAndFiniteBudgetMCObjective(stateAndObjective.second, budget, false);
 
       DecisionProblemStatePtr finalState;
-      double res = iterate(algorithm, 0)->search(context, objective, stateAndObjective.first, NULL, finalState);
-      algorithm->reset(context);
+      std::vector<Variable> actions;
+      algorithm->startSearch(context, stateAndObjective.first);
+      double res = iterate(algorithm, 0)->search(context, objective, stateAndObjective.first, actions, finalState);
+      algorithm->finishSearch(context);
       return res;
     }
     
   private:
     MCProblemPtr problem;
     size_t budget;
+    double worstScore, bestScore;
   };
 
   void evaluateBaselinesAndDiscoveredAlgorithms(ExecutionContext& context, BanditPoolPtr pool)
@@ -483,8 +491,12 @@ protected:
       CacheAndFiniteBudgetMCObjectivePtr objective = new CacheAndFiniteBudgetMCObjective(stateAndObjective.second, budget, false);
 
       DecisionProblemStatePtr finalState;
-      mean.push(iterate(algorithm, 0)->search(context, objective, stateAndObjective.first, NULL, finalState));
-      algorithm->reset(context);
+      std::vector<Variable> actions;
+    
+      algorithm->startSearch(context, stateAndObjective.first);
+      double res = iterate(algorithm, 0)->search(context, objective, stateAndObjective.first, actions, finalState);
+      algorithm->finishSearch(context);
+      mean.push(res);
     }
     context.leaveScope(mean.getMean());
   }
