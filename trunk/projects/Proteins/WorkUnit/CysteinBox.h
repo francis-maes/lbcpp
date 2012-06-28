@@ -633,7 +633,7 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     size_t numProteinsToLoad = 0;
-#if defined(JUCE_MAC) && defined(JUCE_DEBUG)
+#if JUCE_MAC && JUCE_DEBUG
     numProteinsToLoad = 20;
 #endif
     ContainerPtr train = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("train")), context.getFile(supervisionDirectory).getChildFile(T("train")), numProteinsToLoad, T("Loading training proteins"));
