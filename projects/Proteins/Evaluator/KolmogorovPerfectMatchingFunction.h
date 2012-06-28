@@ -89,7 +89,7 @@ private:
       std::vector<size_t> subVerticesMap;
       for (size_t j = 0; j < numVertices; ++j)
         if (j != i)
-          subVerticesMap.push_back(verticesMap[j]);
+          subVerticesMap.push_back(validVertices[j]);
       std::vector<size_t> subMatching(matrix->getDimension(), (size_t)-1);
       double score = computePerfectMatching(matrix, subVerticesMap, subMatching);
       jassert(subMatching[validVertices[i]] == (size_t)-1);
