@@ -320,38 +320,14 @@ public:
   }
 
 private:
-  typedef std::vector<bool> BitMask;
+  typedef std::pair<juce::int64, size_t> BitMask;
 
   size_t toIndex(const BitMask& mask) const
-  {
-    size_t res = 0;
-    size_t bit = 1;
-    for (int i = mask.size() - 1; i >= 0; --i)
-    {
-      if (mask[i])
-        res |= bit;
-      bit <<= 1;
-    }
-    return res;
-  }
-
-  void addBits(BitMask& mask, bool b1, bool b2, bool b3, bool b4, bool b5, bool b6, bool b7, bool b8) const
-  {
-    mask.push_back(b1);
-    mask.push_back(b2);
-    mask.push_back(b3);
-    mask.push_back(b4);
-    mask.push_back(b5);
-    mask.push_back(b6);
-    mask.push_back(b7);
-    mask.push_back(b8);
-  }
+    {return (size_t)mask.first;}
 
   BitMask makeMask(const MorpionBoard& board, int x, int y, size_t complexity) const
   {
     BitMask res;
-    res.reserve(complexity * 4 + 1);
-
     if (complexity >= 1)
       addBits(res, board.isOccupied(x - 1, y - 1), board.isOccupied(x, y - 1), board.isOccupied(x + 1, y - 1),
                    board.isOccupied(x + 1, y),
@@ -367,27 +343,27 @@ private:
                     board.hasSegment(x, y, MorpionDirection::S), // bottom
                     board.hasSegment(x - 1, y + 1, MorpionDirection::NE), // bottom-left
                     board.hasSegment(x - 1, y, MorpionDirection::E)); // left
-
+    
+    if (complexity >= 3)
+      addBits(res, board.isOccupied(x - 2, y - 2), board.isOccupied(x, y - 2), board.isOccupied(x + 2, y - 2),
+                   board.isOccupied(x + 2, y),
+                   board.isOccupied(x + 2, y + 2), board.isOccupied(x, y + 2), board.isOccupied(x - 2, y + 2),
+                   board.isOccupied(x - 2, y));
+                   
+    if (complexity >= 4)
+      addBits(res, board.hasSegment(x - 1, y, MorpionDirection::NE),
+                   board.hasSegment(x, y - 2, MorpionDirection::S),
+                   board.hasSegment(x, y - 1, MorpionDirection::SE),
+                   board.hasSegment(x + 1, y, MorpionDirection::E),
+                   board.hasSegment(x, y + 1, MorpionDirection::NE),
+                   board.hasSegment(x, y + 1, MorpionDirection::S),
+                   board.hasSegment(x - 1, y, MorpionDirection::SE),
+                   board.hasSegment(x - 2, y, MorpionDirection::E));
+                   
     // canonize and add current position bit
     res = canonizeMask(res);
     //res.push_back(board.isOccupied(x, y));
     return res;
-  }
-
-  void reverseBits(BitMask& mask, size_t offset, const int* order) const
-  {
-    bool values[8];
-    for (size_t i = 0; i < 8; ++i)
-      values[i] = mask[offset + i];
-    for (size_t i = 0; i < 8; ++i)
-      mask[offset+i] = values[order[i]];
-  }
-
-  void reverseBits(BitMask& mask, const int* order) const
-  {
-    jassert(mask.size() % 8 == 0);
-    for (size_t i = 0; i < mask.size(); i += 8)
-      reverseBits(mask, i, order);
   }
 
   BitMask canonizeMask(const BitMask& mask) const
@@ -396,6 +372,7 @@ private:
     BitMask res = mask;
 
     static const int orders[] = {
+      0, 1, 2, 3, 4, 5, 6, 7,
       6, 7, 0, 1, 2, 3, 4, 5,
       4, 5, 6, 7, 0, 1, 2, 3,
       2, 3, 4, 5, 6, 7, 0, 1,
@@ -406,15 +383,60 @@ private:
       0, 7, 6, 5, 4, 3, 2, 1
     };
 
-    for (size_t i = 0; i < 7; ++i)
+    jassert(reverseBits(mask, orders) == mask);
+    for (size_t i = 1; i < 8; ++i)
     {
-      BitMask tmp = mask;
-      reverseBits(tmp, orders + i * 8);
+      BitMask tmp = reverseBits(mask, orders + i * 8);
       //std::cout << String::toHexString((int)toIndex(tmp)) << " "; 
-      if (tmp < res)
+      if (tmp.first < res.first)
         res = tmp;
     }
     //std::cout << " ==> " << String::toHexString((int)toIndex(res)) << std::endl;
+    return res;
+  }
+
+  bool getBit(const BitMask& mask, size_t index) const
+  {
+    jassert(index < mask.second);
+    juce::int64 bit = (1 << index);
+    return (mask.first & bit) == bit;
+  }
+  
+  void addBits(BitMask& mask, bool b1, bool b2, bool b3, bool b4, bool b5, bool b6, bool b7, bool b8) const
+  {
+    juce::int64 m = 0;
+    if (b1) m |= 0x01;
+    if (b2) m |= 0x02;
+    if (b3) m |= 0x04;
+    if (b4) m |= 0x08;
+    if (b5) m |= 0x10;
+    if (b6) m |= 0x20;
+    if (b7) m |= 0x40;
+    if (b8) m |= 0x80;
+    mask.first |= (m << mask.second);
+    mask.second += 8;
+    jassert(mask.second <= 64);
+  }
+
+  void reverseBits(const BitMask& mask, size_t offset, const int order[8], BitMask& res) const
+  {
+    addBits(res,
+      getBit(mask, order[0] + offset), 
+      getBit(mask, order[1] + offset), 
+      getBit(mask, order[2] + offset), 
+      getBit(mask, order[3] + offset), 
+      getBit(mask, order[4] + offset), 
+      getBit(mask, order[5] + offset), 
+      getBit(mask, order[6] + offset), 
+      getBit(mask, order[7] + offset));
+  }
+
+  BitMask reverseBits(const BitMask& mask, const int order[8]) const
+  {
+    jassert(mask.second % 8 == 0);
+    BitMask res;
+    for (size_t i = 0; i < mask.second; i += 8)
+      reverseBits(mask, i, order, res);
     return res;
   }
 };

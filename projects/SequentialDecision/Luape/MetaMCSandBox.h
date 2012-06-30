@@ -185,7 +185,15 @@ public:
     
     //context.informationCallback(finalState->toShortString());
     double res = objective->evaluate(context, finalState);
-    bestScoreSoFar = juce::jmax(res, bestScoreSoFar);
+    if (res > bestScoreSoFar)
+    {
+      /*context.enterScope("Record: " + String(res));
+      context.resultCallback("finalState", finalState->cloneAndCast<DecisionProblemState>());
+      context.resultCallback("score", res);
+      context.resultCallback("numEvaluations", numEvaluations);
+      context.leaveScope();*/
+      bestScoreSoFar = res;
+    }
 
     if (numEvaluations == nextCurvePoint)
     {
