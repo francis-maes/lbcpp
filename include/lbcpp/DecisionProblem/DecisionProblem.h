@@ -25,6 +25,9 @@ public:
 
   virtual TypePtr getActionType() const = 0;
   virtual ContainerPtr getAvailableActions() const = 0;
+  virtual ObjectVectorPtr computeActionFeatures(const ContainerPtr& actions) const
+    {jassert(false); return ObjectVectorPtr();}
+
   virtual void performTransition(ExecutionContext& context, const Variable& action, double& reward, Variable* stateBackup = NULL) = 0;
   virtual bool undoTransition(ExecutionContext& context, const Variable& stateBackup)
     {return false;}

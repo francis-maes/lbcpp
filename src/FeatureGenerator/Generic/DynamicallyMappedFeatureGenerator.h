@@ -61,8 +61,6 @@ protected:
 
 typedef ReferenceCountedObjectPtr<DynamicSubsetEnumeration> DynamicSubsetEnumerationPtr;
 
-
-// DoubleVector[n], DoubleVector[m] -> DoubleVector[n x m]
 class DynamicallyMappedFeatureGenerator : public FeatureGenerator
 {
 public:

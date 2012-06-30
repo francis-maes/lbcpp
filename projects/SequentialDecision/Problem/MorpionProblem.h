@@ -375,6 +375,35 @@ public:
 	virtual ContainerPtr getAvailableActions() const
     {return availableActions;}
 
+  SparseDoubleVectorPtr computeActionFeatures(const MorpionActionPtr& action) const
+  {
+    SparseDoubleVectorPtr res = new SparseDoubleVector(simpleSparseDoubleVectorClass);
+
+    int x = action->getPosition().getX();
+    int y = action->getPosition().getY();
+    int d = (int)(MorpionDirection::Direction)action->getDirection();
+    int i = action->getIndexInLine();
+
+    int position = (x + 50) * 100 + (y + 50);
+    int index = i + crossLength * (d + 4 * position);
+    if (index >= 0)
+      res->appendValue((size_t)index, 1.0);
+
+    return res;
+  }
+
+  virtual ObjectVectorPtr computeActionFeatures(const ContainerPtr& actions) const
+  {
+    size_t n = actions->getNumElements();
+    ObjectVectorPtr res = new ObjectVector(simpleSparseDoubleVectorClass, n);
+    for (size_t i = 0; i < n; ++i)
+    {
+      MorpionActionPtr action = actions->getElement(i).getObjectAndCast<MorpionAction>();
+      res->set(i, computeActionFeatures(action));
+    }
+    return res;
+  }
+
 	virtual void performTransition(ExecutionContext& context, const Variable& ac, double& reward, Variable* stateBackup = NULL)
 	{
     MorpionActionPtr action = ac.getObjectAndCast<MorpionAction>();
