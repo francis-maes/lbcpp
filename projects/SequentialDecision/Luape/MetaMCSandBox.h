@@ -250,6 +250,8 @@ public:
       context.resultCallback("state", state->cloneAndCast<DecisionProblemState>());
       ContainerPtr actions = state->getAvailableActions();
       context.resultCallback("actions", actions);
+      ObjectVectorPtr actionFeatures = state->computeActionFeatures(context, actions);
+      context.resultCallback("actionFeatures", actionFeatures);
       size_t numActions = actions->getNumElements();
       if (numActions > 0)
       {
