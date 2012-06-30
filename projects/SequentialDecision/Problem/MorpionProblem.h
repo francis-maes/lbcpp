@@ -328,8 +328,17 @@ protected:
 
     int maxIndexInLine = -minDelta;
     int minIndexInLine = crossLength - 1 - maxDelta;
-    for (int indexInLine = minIndexInLine; indexInLine <= maxIndexInLine; ++indexInLine)
-      res->append(new MorpionAction(point, direction, indexInLine));
+    
+    if (minIndexInLine > maxIndexInLine)
+      return;
+    else if (minIndexInLine == maxIndexInLine)
+      res->append(new MorpionAction(point, direction, maxIndexInLine));
+    else
+    {
+      // todo: remove dominated moves
+      for (int indexInLine = minIndexInLine; indexInLine <= maxIndexInLine; ++indexInLine)
+        res->append(new MorpionAction(point, direction, indexInLine));
+    }
   }
 
 #if 0
