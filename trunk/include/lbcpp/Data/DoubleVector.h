@@ -162,6 +162,8 @@ public:
   void updateLastIndex()
     {lastIndex = values.size() ? (int)values.back().first : -1;}
 
+  void pruneValues(double epsilon = 0.0);
+
   // DoubleVector
   virtual double entropy() const;
   virtual size_t l0norm() const;

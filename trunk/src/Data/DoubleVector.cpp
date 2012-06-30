@@ -440,6 +440,18 @@ size_t SparseDoubleVector::incrementValue(size_t index, double delta)
   return res;
 }
 
+void SparseDoubleVector::pruneValues(double epsilon)
+{
+  for (size_t i = 0; i < values.size(); )
+  {
+    if (fabs(values[i].second) <= epsilon)
+      values.erase(values.begin() + i);
+    else
+      ++i;
+  }
+  lastIndex = values.size() ? (int)values.back().first : -1;
+}
+
 // double vector
 double SparseDoubleVector::entropy() const
   {return defaultEntropy(*this);}
@@ -481,8 +493,9 @@ void SparseDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, siz
 
 void SparseDoubleVector::addWeightedTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const
 {
-  jassert(false);
-  // FIXME: implement
+  // TODO: more optimized implementation
+  for (size_t i = 0; i < values.size(); ++i)
+    sparseVector->incrementValue(values[i].first + offsetInSparseVector, values[i].second * weight);
 }
 
 void SparseDoubleVector::addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const

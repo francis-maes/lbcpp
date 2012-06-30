@@ -47,7 +47,7 @@ public:
       ContainerPtr availableActions = state->getAvailableActions();
       size_t n = availableActions->getNumElements();
       Step step;
-      step.actionFeatures = state->computeActionFeatures(availableActions);
+      step.actionFeatures = state->computeActionFeatures(context, availableActions);
       jassert(n == step.actionFeatures->getNumElements());
 
       // compute action selection probabilities
@@ -84,7 +84,7 @@ public:
     {
       double normalizedScore = (score - scoreStatistics.getMean()) / stddev;
       makeSGDStep(context, trajectory, normalizedScore);
-      if (stepNumber % 100 == 0)
+      if (stepNumber % 1 == 0)
       {
         context.enterScope("Step " + String((int)stepNumber));
         context.resultCallback("step", stepNumber);
