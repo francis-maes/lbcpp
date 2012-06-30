@@ -31,78 +31,20 @@ public:
     DenseDoubleVectorPtr actionActivations;
     size_t selectedAction;
   };
+  
+  typedef std::vector<Step> Trajectory;
 
   virtual void search(ExecutionContext& context, MCObjectivePtr objective, const std::vector<Variable>& previousActions, DecisionProblemStatePtr state)
   {
-    std::vector<Step> trajectory;
-
-    state = state->cloneAndCast<DecisionProblemState>();
-    std::vector<Variable> actions(previousActions);
-    while (!state->isFinalState())
-    {
-      if (objective->shouldStop())
-        return;
-
-      // enumerate actions and compute action features
-      ContainerPtr availableActions = state->getAvailableActions();
-      size_t n = availableActions->getNumElements();
-      Step step;
-      step.actionFeatures = state->computeActionFeatures(context, availableActions);
-      jassert(n == step.actionFeatures->getNumElements());
-
-      // compute action selection probabilities
-      step.actionActivations = new DenseDoubleVector(n, 0.0);
-      std::vector<double> probabilities(n);
-      double probabilitiesSum = 0.0;
-      for (size_t i = 0; i < n; ++i)
-      {
-        DoubleVectorPtr features = step.actionFeatures->getAndCast<DoubleVector>(i);
-        if (meanActiveFeatures.getCount() < 100 || context.getRandomGenerator()->sampleBool(0.01))
-          meanActiveFeatures.push(features->l0norm());
-        double activation = predictActivation(features);
-        step.actionActivations->setValue(i, activation);
-        double p = exp(activation);
-        probabilities[i] = p;
-        probabilitiesSum += p;
-      }
-
-      // select action
-      step.selectedAction = context.getRandomGenerator()->sampleWithProbabilities(probabilities, probabilitiesSum);
-      Variable action = availableActions->getElement(step.selectedAction);
-
-      // perform transition and store information
-      double reward;
-      state->performTransition(context, action, reward);
-      actions.push_back(action);
-      trajectory.push_back(step);
-    }
-
-    // submit solution
-    double score = submitFinalState(context, objective, actions, state);
+    Trajectory trajectory;
+    double score = rollout(context, objective, previousActions, state, parameters, trajectory);
 
     // update parameters
-    scoreStatistics.push(score);
     double stddev = scoreStatistics.getStandardDeviation();
     if (stddev > 0.0)
     {
       double normalizedScore = (score - scoreStatistics.getMean()) / stddev;
-      makeSGDStep(context, trajectory, normalizedScore);
-      if (stepNumber % 10 == 0)
-      {
-        context.enterScope("Step " + String((int)stepNumber));
-        context.resultCallback("step", stepNumber);
-        context.resultCallback("score", score);
-        context.resultCallback("normalizedScore", normalizedScore);
-        context.resultCallback("scoreMean", scoreStatistics.getMean());
-        context.resultCallback("scoreStddev", scoreStatistics.getStandardDeviation());
-        context.resultCallback("scoreMax", scoreStatistics.getMaximum());
-        context.resultCallback("meanActiveFeatures", meanActiveFeatures.getMean());
-        context.resultCallback("parametersL0Norm", parameters->l0norm());
-        context.resultCallback("parametersL1Norm", parameters->l1norm());
-        context.resultCallback("parametersL2Norm", parameters->l2norm());
-        context.leaveScope();
-      }
-      ++stepNumber;
+      makeSGDStep(context, parameters, trajectory, normalizedScore);
     }
   }
 
@@ -123,10 +65,59 @@ protected:
   DenseDoubleVectorPtr parameters;
   size_t stepNumber;
 
-  double predictActivation(const DoubleVectorPtr& features) const
+  double predictActivation(const DenseDoubleVectorPtr& parameters, const DoubleVectorPtr& features) const
     {return parameters ? features->dotProduct(parameters, 0) : 0.0;}
 
-  void makeSGDStep(ExecutionContext& context, const std::vector<Step>& trajectory, double normalizedScore)
+  double rollout(ExecutionContext& context, MCObjectivePtr objective, const std::vector<Variable>& previousActions, DecisionProblemStatePtr state, DenseDoubleVectorPtr parameters, Trajectory& trajectory)
+  {
+    state = state->cloneAndCast<DecisionProblemState>();
+    std::vector<Variable> actions(previousActions);
+    while (!state->isFinalState())
+    {
+      if (objective->shouldStop())
+        return -DBL_MAX;
+
+      // enumerate actions and compute action features
+      ContainerPtr availableActions = state->getAvailableActions();
+      size_t n = availableActions->getNumElements();
+      Step step;
+      step.actionFeatures = state->computeActionFeatures(context, availableActions);
+      jassert(n == step.actionFeatures->getNumElements());
+
+      // compute action selection probabilities
+      step.actionActivations = new DenseDoubleVector(n, 0.0);
+      std::vector<double> probabilities(n);
+      double probabilitiesSum = 0.0;
+      for (size_t i = 0; i < n; ++i)
+      {
+        DoubleVectorPtr features = step.actionFeatures->getAndCast<DoubleVector>(i);
+        if (meanActiveFeatures.getCount() < 100 || context.getRandomGenerator()->sampleBool(0.01))
+          meanActiveFeatures.push(features->l0norm());
+        double activation = predictActivation(parameters, features);
+        step.actionActivations->setValue(i, activation);
+        double p = exp(activation);
+        probabilities[i] = p;
+        probabilitiesSum += p;
+      }
+
+      // select action
+      step.selectedAction = context.getRandomGenerator()->sampleWithProbabilities(probabilities, probabilitiesSum);
+      Variable action = availableActions->getElement(step.selectedAction);
+
+      // perform transition and store information
+      double reward;
+      state->performTransition(context, action, reward);
+      actions.push_back(action);
+      trajectory.push_back(step);
+    }
+
+    // submit solution
+    double score = submitFinalState(context, objective, actions, state);
+    scoreStatistics.push(score);
+    return score;    
+  }
+
+  void makeSGDStep(ExecutionContext& context, DenseDoubleVectorPtr& parameters, const std::vector<Step>& trajectory, double normalizedScore)
   {
     if (!parameters)
     {
@@ -146,7 +137,7 @@ protected:
       for (size_t i = 0; i < n; ++i)
       {
         double score = step.actionActivations->getValue(i);
-        double derivative = exp(score - logZ);
+        double derivative = exp(score - logZ); // = probability
         jassert(isNumberValid(derivative));
         gradient->incrementValue(i, derivative);
       }
@@ -158,6 +149,23 @@ protected:
         features->addWeightedTo(parameters, 0, k * gradient->getValue(i));
       }
     }
+    
+    if (stepNumber % 100 == 0)
+    {
+      context.enterScope("Step " + String((int)stepNumber));
+      context.resultCallback("step", stepNumber);
+      //context.resultCallback("score", score);
+      context.resultCallback("normalizedScore", normalizedScore);
+      context.resultCallback("scoreMean", scoreStatistics.getMean());
+      context.resultCallback("scoreStddev", scoreStatistics.getStandardDeviation());
+      context.resultCallback("scoreMax", scoreStatistics.getMaximum());
+      context.resultCallback("meanActiveFeatures", meanActiveFeatures.getMean());
+      context.resultCallback("parametersL0Norm", parameters->l0norm());
+      context.resultCallback("parametersL1Norm", parameters->l1norm());
+      context.resultCallback("parametersL2Norm", parameters->l2norm());
+      context.leaveScope();
+    }
+    ++stepNumber;    
   }
 };
 

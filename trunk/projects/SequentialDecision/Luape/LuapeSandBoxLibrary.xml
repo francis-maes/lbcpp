@@ -42,6 +42,10 @@
   <class name="OnlineLearningMCAlgorithm" base="MCAlgorithm" shortName="onlinelearner">
     <variable type="Double" name="learningRate"/>
   </class>
+  <class name="NRPAMCAlgorithm" base="OnlineLearningMCAlgorithm" shortName="nrpa">
+    <variable type="PositiveInteger" name="level"/>
+    <variable type="PositiveInteger" name="iterations"/>
+  </class>
 
   <!--MC Algorithms Luape Functions -->
   <class name="MCAlgorithmLuapeFunction" base="LuapeFunction" abstract="yes"/>
