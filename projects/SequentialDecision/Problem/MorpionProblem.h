@@ -100,7 +100,7 @@ public:
 
   virtual ObjectVectorPtr computeActionFeatures(ExecutionContext& context, const ContainerPtr& actions) const
   {
-    enum {featuresComplexity = 4};
+    enum {featuresComplexity = 2};
 
     MorpionFeatures features;
 

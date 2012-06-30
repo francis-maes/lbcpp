@@ -306,12 +306,13 @@ public:
     std::map<size_t, size_t> counts;
     for (int x = board.getMinX(); x <= board.getMaxX(); ++x)
       for (int y = board.getMinY(x); y <= board.getMaxY(x); ++y)
-      {
-        BitMask mask = makeMask(board, x, y, complexity);
-        size_t maskIndex = toIndex(mask);
-        if (maskIndex)
-          counts[maskIndex]++;
-      }
+        if (board.isOccupied(x, y))
+        {
+          BitMask mask = makeMask(board, x, y, complexity);
+          size_t maskIndex = toIndex(mask);
+          //if (maskIndex)
+            counts[maskIndex]++;
+        }
     SparseDoubleVectorPtr res = new SparseDoubleVector(simpleSparseDoubleVectorClass);
     for (std::map<size_t, size_t>::const_iterator it = counts.begin(); it != counts.end(); ++it)
       res->setElement(it->first, (double)it->second);
@@ -334,12 +335,16 @@ private:
     return res;
   }
 
-  void addBits(BitMask& mask, bool b1, bool b2, bool b3, bool b4) const
+  void addBits(BitMask& mask, bool b1, bool b2, bool b3, bool b4, bool b5, bool b6, bool b7, bool b8) const
   {
     mask.push_back(b1);
     mask.push_back(b2);
     mask.push_back(b3);
     mask.push_back(b4);
+    mask.push_back(b5);
+    mask.push_back(b6);
+    mask.push_back(b7);
+    mask.push_back(b8);
   }
 
   BitMask makeMask(const MorpionBoard& board, int x, int y, size_t complexity) const
@@ -348,85 +353,69 @@ private:
     res.reserve(complexity * 4 + 1);
 
     if (complexity >= 1)
-      addBits(res, board.isOccupied(x - 1, y), // left
-                   board.isOccupied(x, y - 1), // top
-                   board.isOccupied(x + 1, y), // right
-                   board.isOccupied(x, y + 1)); // bottom
+      addBits(res, board.isOccupied(x - 1, y - 1), board.isOccupied(x, y - 1), board.isOccupied(x + 1, y - 1),
+                   board.isOccupied(x + 1, y),
+                   board.isOccupied(x + 1, y + 1), board.isOccupied(x, y + 1), board.isOccupied(x - 1, y + 1),
+                   board.isOccupied(x - 1, y));
+
     if (complexity >= 2)
-      addBits(res, board.hasSegment(x - 1, y, MorpionDirection::E), // left
-                   board.hasSegment(x, y - 1, MorpionDirection::S), // top
-                   board.hasSegment(x, y, MorpionDirection::E), // right
-                   board.hasSegment(x, y, MorpionDirection::S)); // bottom
-    if (complexity >= 3)
-      addBits(res, board.isOccupied(x - 1, y - 1), // top-left
-                   board.isOccupied(x + 1, y - 1), // top-right
-                   board.isOccupied(x + 1, y + 1), // bottom-right
-                   board.isOccupied(x - 1, y + 1)); // bottom-left
-    if (complexity >= 4)
       addBits(res, board.hasSegment(x - 1, y - 1, MorpionDirection::SE), // top-left
-                   board.hasSegment(x, y, MorpionDirection::NE), // top-right
-                   board.hasSegment(x, y, MorpionDirection::SE), // bottom-right
-                   board.hasSegment(x - 1, y + 1, MorpionDirection::NE)); // bottom-left
-    if (complexity >= 5)
-      addBits(res, board.isOccupied(x - 2, y), // left
-                   board.isOccupied(x, y - 2), // top
-                   board.isOccupied(x + 2, y), // right
-                   board.isOccupied(x, y + 2)); // bottom
-    if (complexity >= 6)
-      addBits(res, board.isOccupied(x - 2, y - 2), // top-left
-                   board.isOccupied(x + 2, y - 2), // top-right
-                   board.isOccupied(x + 2, y + 2), // bottom-right
-                   board.isOccupied(x - 2, y + 2)); // bottom-left
+                    board.hasSegment(x, y - 1, MorpionDirection::S), // top
+                    board.hasSegment(x, y, MorpionDirection::NE), // top-right
+                    board.hasSegment(x, y, MorpionDirection::E), // right
+                    board.hasSegment(x, y, MorpionDirection::SE), // bottom-right
+                    board.hasSegment(x, y, MorpionDirection::S), // bottom
+                    board.hasSegment(x - 1, y + 1, MorpionDirection::NE), // bottom-left
+                    board.hasSegment(x - 1, y, MorpionDirection::E)); // left
 
     // canonize and add current position bit
     res = canonizeMask(res);
-    res.push_back(board.isOccupied(x, y));
+    //res.push_back(board.isOccupied(x, y));
     return res;
+  }
+
+  void reverseBits(BitMask& mask, size_t offset, const int* order) const
+  {
+    bool values[8];
+    for (size_t i = 0; i < 8; ++i)
+      values[i] = mask[offset + i];
+    for (size_t i = 0; i < 8; ++i)
+      mask[offset+i] = values[order[i]];
+  }
+
+  void reverseBits(BitMask& mask, const int* order) const
+  {
+    jassert(mask.size() % 8 == 0);
+    for (size_t i = 0; i < mask.size(); i += 8)
+      reverseBits(mask, i, order);
   }
 
   BitMask canonizeMask(const BitMask& mask) const
   {
+    //std::cout << String::toHexString((int)toIndex(mask)) << " => "; 
     BitMask res = mask;
-    BitMask tmp = mask;
-    shiftByFour(tmp); if (tmp < res) res = tmp;
-    shiftByFour(tmp); if (tmp < res) res = tmp;
-    shiftByFour(tmp); if (tmp < res) res = tmp;
-    jassert((res < tmp) == (toIndex(res) < toIndex(tmp)));
-    
-    tmp = mask;
-    invertByFour(tmp); if (tmp < res) res = tmp;
-    shiftByFour(tmp); if (tmp < res) res = tmp;
-    shiftByFour(tmp); if (tmp < res) res = tmp;
-    shiftByFour(tmp); if (tmp < res) res = tmp;
-    jassert((res < tmp) == (toIndex(res) < toIndex(tmp)));
+
+    static const int orders[] = {
+      6, 7, 0, 1, 2, 3, 4, 5,
+      4, 5, 6, 7, 0, 1, 2, 3,
+      2, 3, 4, 5, 6, 7, 0, 1,
+
+      6, 5, 4, 3, 2, 1, 0, 7,
+      4, 3, 2, 1, 0, 7, 6, 5,
+      2, 1, 0, 7, 6, 5, 4, 3,
+      0, 7, 6, 5, 4, 3, 2, 1
+    };
+
+    for (size_t i = 0; i < 7; ++i)
+    {
+      BitMask tmp = mask;
+      reverseBits(tmp, orders + i * 8);
+      //std::cout << String::toHexString((int)toIndex(tmp)) << " "; 
+      if (tmp < res)
+        res = tmp;
+    }
+    //std::cout << " ==> " << String::toHexString((int)toIndex(res)) << std::endl;
     return res;
-  }
-
-  void shiftByFour(BitMask& mask) const
-  {
-    jassert(mask.size() % 4 == 0);
-    for (size_t i = 0; i < mask.size(); i += 4)
-    {
-      bool tmp = mask[i];
-      mask[i] = mask[i+1];
-      mask[i+1] = mask[i+2];
-      mask[i+2] = mask[i+3];
-      mask[i+3] = tmp;
-    }
-  }
-
-  void invertByFour(BitMask& mask) const
-  {
-    jassert(mask.size() % 4 == 0);
-    for (size_t i = 0; i < mask.size(); i += 4)
-    {
-      bool tmp = mask[i];
-      mask[i] = mask[i+3];
-      mask[i+3] = tmp;
-      tmp = mask[i+1];
-      mask[i+1] = mask[i+2];
-      mask[i+2] = tmp;
-    }
   }
 };
 
