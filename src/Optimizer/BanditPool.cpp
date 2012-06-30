@@ -26,7 +26,7 @@ void BanditPool::play(ExecutionContext& context, size_t numTimeSteps, bool showP
       context.flushCallbacks();
       //context.informationCallback(T("Num played: ") + String((int)j + 1) + T(" num currently evaluated: " ) + String((int)getNumCurrentlyEvaluatedFormulas()));
       
-      while (getNumCurrentlyPlayedArms() >= 10)
+      while (getNumCurrentlyPlayedArms() >= 25)
       {
         //context.informationCallback(T("Waiting - Num played: ") + String((int)j + 1) + T(" num currently evaluated: " ) + String((int)getNumCurrentlyEvaluatedFormulas()));
         Thread::sleep(1);
