@@ -86,13 +86,13 @@ class ScalarVariableMeanAndVariance : public ScalarVariableMean
 public:
   ScalarVariableMeanAndVariance(const String& name = String::empty);
 
-  void clear()
+  virtual void clear()
     {ScalarVariableMean::clear(); samplesSumOfSquares = 0.0;}
   
-  void push(double val)
+  virtual void push(double val)
     {ScalarVariableMean::push(val); samplesSumOfSquares += sqr(val);}
 
-  void push(double val, double weight)
+  virtual void push(double val, double weight)
     {ScalarVariableMean::push(val, weight); samplesSumOfSquares += sqr(val) * weight;}
 
   double getSquaresMean() const
@@ -131,9 +131,11 @@ class ScalarVariableStatistics : public ScalarVariableMeanAndVariance
 public:
   ScalarVariableStatistics(const String& name = String::empty);
 
-  void push(double val);
+  virtual void clear();
+  virtual void push(double val);
+  virtual void push(double val, double weight);
+
   void push(const std::vector<double>& values);
-  void push(double val, double weight);
 
   double getMinimum() const
     {return minimumValue;}

@@ -78,14 +78,6 @@ protected:
 
   double submitFinalState(ExecutionContext& context, MCObjectivePtr objective, const std::vector<Variable>& actions, DecisionProblemStatePtr state, double score = -DBL_MAX)
   {
-    // tmp !!
-    MorpionStatePtr dbg = state.dynamicCast<MorpionState>();
-    if (dbg)
-    {
-      jassert(actions.size() == dbg->getHistory().size());
-    }
-    // --
-
     if (score == -DBL_MAX)
     {
       score = objective->evaluate(context, state);
@@ -113,8 +105,10 @@ protected:
     state = state->cloneAndCast<DecisionProblemState>();
     size_t t = 0;
     std::vector<Variable> actions(previousActions);
-    while (!state->isFinalState() && !objective->shouldStop())
+    while (!state->isFinalState())
     {
+      if (objective->shouldStop())
+        return;
       ContainerPtr availableActions = state->getAvailableActions();
       size_t n = availableActions->getNumElements();
       Variable action = availableActions->getElement(context.getRandomGenerator()->sampleSize(n));
@@ -123,8 +117,7 @@ protected:
       state->performTransition(context, action, reward);
       ++t;
     }
-    if (state->isFinalState())
-      submitFinalState(context, objective, actions, state);
+    submitFinalState(context, objective, actions, state);
   }
 };
 

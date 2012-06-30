@@ -115,6 +115,13 @@ ScalarVariableStatistics::ScalarVariableStatistics(const String& name)
 {
 }
 
+void ScalarVariableStatistics::clear()
+{
+  ScalarVariableMeanAndVariance::clear();
+  minimumValue = DBL_MAX;
+  maximumValue = -DBL_MAX;
+}
+
 void ScalarVariableStatistics::push(double val)
 {
   ScalarVariableMeanAndVariance::push(val);
