@@ -56,7 +56,10 @@ public:
       double probabilitiesSum = 0.0;
       for (size_t i = 0; i < n; ++i)
       {
-        double activation = predictActivation(step.actionFeatures->getAndCast<DoubleVector>(i));
+        DoubleVectorPtr features = step.actionFeatures->getAndCast<DoubleVector>(i);
+        if (meanActiveFeatures.getCount() < 100 || context.getRandomGenerator()->sampleBool(0.01))
+          meanActiveFeatures.push(features->l0norm());
+        double activation = predictActivation(features);
         step.actionActivations->setValue(i, activation);
         double p = exp(activation);
         probabilities[i] = p;
@@ -84,7 +87,7 @@ public:
     {
       double normalizedScore = (score - scoreStatistics.getMean()) / stddev;
       makeSGDStep(context, trajectory, normalizedScore);
-      if (stepNumber % 1 == 0)
+      if (stepNumber % 10 == 0)
       {
         context.enterScope("Step " + String((int)stepNumber));
         context.resultCallback("step", stepNumber);
@@ -93,6 +96,7 @@ public:
         context.resultCallback("scoreMean", scoreStatistics.getMean());
         context.resultCallback("scoreStddev", scoreStatistics.getStandardDeviation());
         context.resultCallback("scoreMax", scoreStatistics.getMaximum());
+        context.resultCallback("meanActiveFeatures", meanActiveFeatures.getMean());
         context.resultCallback("parametersL0Norm", parameters->l0norm());
         context.resultCallback("parametersL1Norm", parameters->l1norm());
         context.resultCallback("parametersL2Norm", parameters->l2norm());
@@ -106,6 +110,7 @@ public:
   {
     parameters = DenseDoubleVectorPtr();
     scoreStatistics.clear();
+    meanActiveFeatures.clear();
   }
 
 protected:
@@ -114,6 +119,7 @@ protected:
   double learningRate;
 
   ScalarVariableStatistics scoreStatistics;
+  ScalarVariableMean meanActiveFeatures;
   DenseDoubleVectorPtr parameters;
   size_t stepNumber;
 
@@ -128,6 +134,7 @@ protected:
       parameters = new DenseDoubleVector(dvClass);
     }
 
+    double k = - learningRate * normalizedScore / meanActiveFeatures.getMean();
     for (size_t i = 0; i < trajectory.size(); ++i)
     {
       const Step& step = trajectory[i];
@@ -148,7 +155,7 @@ protected:
       for (size_t i = 0; i < n; ++i)
       {
         DoubleVectorPtr features = step.actionFeatures->getAndCast<DoubleVector>(i);
-        features->addWeightedTo(parameters, 0, -learningRate * normalizedScore * gradient->getValue(i));
+        features->addWeightedTo(parameters, 0, k * gradient->getValue(i));
       }
     }
   }

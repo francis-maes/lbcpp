@@ -224,7 +224,7 @@ public:
         new BinaryGPExpression(new UnaryGPExpression(gpLog, Policies::playedCount()), gpDivision, Policies::presentedCount()))), 682.6);
 
     // log(Tk)(Rk - 0.2)	==> 767.0
-    /*objective->addReferenceScore(new BinaryGPExpression(
+    //objective->addReferenceScore(new BinaryGPExpression(
       new UnaryGPExpression(gpLog, Policies::playedCount()),
       gpMultiplication,
       new BinaryGPExpression(Policies::rewardMean(), gpSubtraction, new ConstantGPExpression(0.2))), 767.0);*/

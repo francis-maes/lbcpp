@@ -304,7 +304,7 @@ protected:
       {
         LuapeNodePtr parent;
         LuapeNodePtr grandParent;
-        int deltaA, deltaB;
+        int deltaA = 0, deltaB = 0;
         if (isGetRelativeAccessor(node, parent, deltaA))
         {
           if (isGetRelativeAccessor(parent, grandParent, deltaB))

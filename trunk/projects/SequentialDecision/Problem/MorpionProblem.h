@@ -100,7 +100,7 @@ public:
 
   virtual ObjectVectorPtr computeActionFeatures(ExecutionContext& context, const ContainerPtr& actions) const
   {
-    enum {featuresComplexity = 2};
+   /* enum {featuresComplexity = 2};
 
     MorpionFeatures features;
 
@@ -116,6 +116,26 @@ public:
       const_cast<MorpionState* >(this)->removeLineFromBoard(action);
       stateFeatures->addWeightedTo(actionFeatures, 0, -1.0);
       actionFeatures->pruneValues();
+      res->set(i, actionFeatures);
+    }
+    return res;*/
+    
+    size_t n = actions->getNumElements();
+    ObjectVectorPtr res = new ObjectVector(simpleSparseDoubleVectorClass, n);
+    for (size_t i = 0; i < n; ++i)
+    {
+      MorpionActionPtr action = actions->getElement(i).getObjectAndCast<MorpionAction>();
+      
+      int x = action->getPosition().getX();
+      int y = action->getPosition().getY();
+      int position = (x + 25) * 100 + (y + 25);
+      int d = (int)(MorpionDirection::Direction)(action->getDirection());
+      int indexInLine = action->getIndexInLine();
+      int featureIndex = indexInLine + crossLength * (d + 4 * position);
+      
+      SparseDoubleVectorPtr actionFeatures = new SparseDoubleVector(simpleSparseDoubleVectorClass);
+      if (featureIndex >= 0)
+        actionFeatures->appendValue(featureIndex, 1.0);
       res->set(i, actionFeatures);
     }
     return res;
