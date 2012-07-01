@@ -298,12 +298,19 @@ public:
     if (!problem || !algorithm)
       return false;
 
+    CompositeWorkUnitPtr wu(new CompositeWorkUnit(algorithm->toShortString(), numRuns));
     for (size_t run = 0; run < numRuns; ++run)
-    {
-      context.enterScope(T("Run ") + String((int)run + 1));
-      double bestReward = runAlgorithm(context, problem, algorithm, budget, run);
-      context.leaveScope(bestReward);
-    }
+      wu->setWorkUnit(run, new RunAlgorithmWorkUnit(problem, algorithm->cloneAndCast<MCAlgorithm>(), budget, run));
+    wu->setProgressionUnit("Runs");
+    wu->setPushChildrenIntoStackFlag(true);
+
+    ContainerPtr results = context.run(wu).getObjectAndCast<Container>();
+
+    ScalarVariableStatisticsPtr statistics(new ScalarVariableStatistics("scores"));
+    for (size_t i = 0; i < results->getNumElements(); ++i)
+      statistics->push(results->getElement(i).toDouble());
+    context.informationCallback("Results: " + statistics->toShortString());
+    context.resultCallback("statistics", statistics);
     return true;
   }
   
@@ -315,20 +322,36 @@ private:
   size_t budget;
   size_t numRuns;
   
-  double runAlgorithm(ExecutionContext& context, MCProblemPtr problem, MCAlgorithmPtr algorithm, size_t budget, size_t instanceIndex)
+  struct RunAlgorithmWorkUnit : public WorkUnit
   {
-    std::pair<DecisionProblemStatePtr, MCObjectivePtr> stateAndObjective = problem->getInstance(context, instanceIndex);
-    CacheAndFiniteBudgetMCObjectivePtr objective = new CacheAndFiniteBudgetMCObjective(stateAndObjective.second, budget, false);
+    RunAlgorithmWorkUnit(MCProblemPtr problem, MCAlgorithmPtr algorithm, size_t budget, size_t instanceIndex)
+      : problem(problem), algorithm(algorithm), budget(budget), instanceIndex(instanceIndex) {}
 
-    DecisionProblemStatePtr finalState;
-    std::vector<Variable> actions;
-    algorithm->startSearch(context, stateAndObjective.first);
-    double res = iterate(algorithm, 0)->search(context, objective, stateAndObjective.first, actions, finalState);
-    algorithm->finishSearch(context);
-    context.resultCallback("bestReward", res);
-    context.resultCallback("bestFinalState", finalState);
-    return res;
-  }  
+    virtual Variable run(ExecutionContext& context)
+    {
+      context.getRandomGenerator()->setSeed(instanceIndex);
+      std::pair<DecisionProblemStatePtr, MCObjectivePtr> stateAndObjective = problem->getInstance(context, instanceIndex);
+      CacheAndFiniteBudgetMCObjectivePtr objective = new CacheAndFiniteBudgetMCObjective(stateAndObjective.second, budget, false);
+
+      DecisionProblemStatePtr finalState;
+      std::vector<Variable> actions;
+      algorithm->startSearch(context, stateAndObjective.first);
+      double res = iterate(algorithm, 0)->search(context, objective, stateAndObjective.first, actions, finalState);
+      algorithm->finishSearch(context);
+      context.resultCallback("bestReward", res);
+      context.resultCallback("bestFinalState", finalState);
+      return res;
+    }
+
+    virtual String toShortString() const
+      {return "Run " + String((int)instanceIndex + 1);}
+
+  protected:
+    MCProblemPtr problem;
+    MCAlgorithmPtr algorithm;
+    size_t budget;
+    size_t instanceIndex;
+  };
 };
 
 /////////////

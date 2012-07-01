@@ -26,9 +26,9 @@ typedef ReferenceCountedObjectPtr<MorpionAction> MorpionActionPtr;
 class MorpionAction : public Object
 {
 public:
-  MorpionAction(const MorpionPoint& position, const MorpionDirection& direction, size_t indexInLine)
-    : Object(morpionActionClass), position(position), direction(direction), indexInLine(indexInLine) {}
-  MorpionAction() : indexInLine(-1) {}
+  MorpionAction(const MorpionPoint& position, const MorpionDirection& direction, size_t requestedIndexInLine, size_t indexInLine)
+    : Object(morpionActionClass), position(position), direction(direction), requestedIndexInLine(requestedIndexInLine), indexInLine(indexInLine) {}
+  MorpionAction() : requestedIndexInLine(-1), indexInLine(-1) {}
 
   const MorpionPoint& getPosition() const
     {return position;}
@@ -36,8 +36,11 @@ public:
   const MorpionDirection& getDirection() const
     {return direction;}
 
-  int getIndexInLine() const
+  size_t getIndexInLine() const
     {return indexInLine;}
+
+  size_t getRequestedIndexInLine() const
+    {return requestedIndexInLine;}
 
   MorpionPoint getStartPosition() const
     {return position.moveIntoDirection(direction, -(int)indexInLine);}
@@ -52,7 +55,7 @@ public:
     {return position.toString() + ", " + direction.toString() + ", " + String((int)indexInLine);}
 
   bool operator ==(const MorpionAction& other) const
-    {return position == other.position && direction == other.direction && indexInLine == other.indexInLine;}
+    {return position == other.position && direction == other.direction && requestedIndexInLine == other.requestedIndexInLine;}
 
   virtual int compare(const ObjectPtr& otherObject) const
   {
@@ -65,12 +68,33 @@ public:
       return position.getY() - other->position.getY();
     if (direction != other->direction)
       return (int)(MorpionDirection::Direction)direction - (int)(MorpionDirection::Direction)other->direction;
-    return (int)indexInLine - (int)other->indexInLine;
+    return (int)requestedIndexInLine - (int)other->requestedIndexInLine;
+  }
+
+  virtual void saveToXml(XmlExporter& exporter) const
+  {
+    exporter.setAttribute("x", position.getX());
+    exporter.setAttribute("y", position.getY());
+    exporter.setAttribute("dir", direction.toString());
+    exporter.setAttribute("ri", requestedIndexInLine);
+    exporter.setAttribute("i", indexInLine);
+  }
+
+  virtual bool loadFromXml(XmlImporter& importer)
+  {
+    position = MorpionPoint(importer.getIntAttribute("x"), importer.getIntAttribute("y"));
+    direction = MorpionDirection::fromString(importer.getStringAttribute("dir"));
+    requestedIndexInLine = (size_t)importer.getIntAttribute("ri");
+    indexInLine = (size_t)importer.getIntAttribute("i");
+    return true;
   }
 
 private:
+  friend class MorpionActionClass;
+
   MorpionPoint position;
   MorpionDirection direction;
+  size_t requestedIndexInLine;
   size_t indexInLine; // in range [0, crossLength[
 };
 
@@ -130,7 +154,7 @@ public:
       int y = action->getPosition().getY();
       int position = (x + 25) * 100 + (y + 25);
       int d = (int)(MorpionDirection::Direction)(action->getDirection());
-      int indexInLine = action->getIndexInLine();
+      int indexInLine = action->getRequestedIndexInLine();
       int featureIndex = indexInLine + crossLength * (d + 4 * position);
       
       SparseDoubleVectorPtr actionFeatures = new SparseDoubleVector(simpleSparseDoubleVectorClass);
@@ -226,6 +250,53 @@ public:
 
   const std::vector<MorpionActionPtr>& getHistory() const
     {return history;}
+ 
+  virtual void saveToXml(XmlExporter& exporter) const
+  {
+    DecisionProblemState::saveToXml(exporter);
+
+    exporter.enter("history");
+    exporter.setAttribute("size", history.size());
+    for (size_t i = 0; i < history.size(); ++i)
+    {
+      exporter.enter("move");
+      exporter.setAttribute("index", i);
+      history[i]->saveToXml(exporter);
+      exporter.leave();
+    }
+    exporter.leave();
+  }
+
+  virtual bool loadFromXml(XmlImporter& importer)
+  {
+    if (!DecisionProblemState::loadFromXml(importer))
+      return false;
+
+    if (!importer.enter("history"))
+    {
+      importer.errorMessage("MorpionState", "No history");
+      return false;
+    }
+    history.resize(importer.getIntAttribute("size"));
+    forEachXmlChildElementWithTagName(*importer.getCurrentElement(), elt, T("move"))
+    {
+      importer.enter(elt);
+      size_t index = (size_t)importer.getIntAttribute("index");
+      MorpionActionPtr action = new MorpionAction();
+      if (!action->loadFromXml(importer))
+        return false;
+      history[index] = action;
+      importer.leave();
+    }
+    importer.leave();
+
+    board.clear();
+    board.initialize(crossLength);
+    for (size_t i = 0; i < history.size(); ++i)
+      addLineOnBoard(history[i]);
+    availableActions = computeAvailableActions();    
+    return true;
+  }
 
 protected:
 	friend class MorpionStateClass;
@@ -353,15 +424,16 @@ protected:
     if (minIndexInLine > maxIndexInLine)
       return;
     else if (minIndexInLine == maxIndexInLine)
-      res->append(new MorpionAction(point, direction, maxIndexInLine));
+      res->append(new MorpionAction(point, direction, maxIndexInLine, maxIndexInLine));
     else
     {
-      std::cout << "Lowest Point: " << lowestPoint << " Segment: " << lowestSegment
+      /*std::cout << "Lowest Point: " << lowestPoint << " Segment: " << lowestSegment
               << ", Highest Point: " << highestPoint << " Segment: " << highestSegment
               << ", Indices: " << minIndexInLine << " -- " << maxIndexInLine << std::endl;
-      std::cout << "Penalties: ";
+      std::cout << "Penalties: ";*/
       std::vector<size_t> penalties(maxIndexInLine - minIndexInLine + 1);
       size_t bestPenalty = (size_t)-1;
+      int bestIndexInLine = 0;
       int minDistance = (int)crossLength + (isDisjoint ? 1 : -1);
       for (int indexInLine = minIndexInLine; indexInLine <= maxIndexInLine; ++indexInLine)
       {
@@ -373,15 +445,18 @@ protected:
         
         size_t penalty = (distanceFromLowestSegment < minDistance ? distanceFromLowestSegment : 0) +
                           (distanceFromHighestSegment < minDistance ? distanceFromHighestSegment : 0);
-        std::cout << penalty << std::flush;
+        //std::cout << penalty << std::flush;
         penalties[indexInLine - minIndexInLine] = penalty;
         if (penalty < bestPenalty)
-          bestPenalty = penalty;
+          bestPenalty = penalty, bestIndexInLine = indexInLine;
       }
-      std::cout << std::endl;
+      //std::cout << std::endl;
       for (int indexInLine = minIndexInLine; indexInLine <= maxIndexInLine; ++indexInLine)
-        if (penalties[indexInLine - minIndexInLine] == bestPenalty)
-          res->append(new MorpionAction(point, direction, indexInLine));
+      {
+        size_t requestedIndexInLine = (size_t)indexInLine;
+        size_t obtainedIndexInLine = (penalties[indexInLine - minIndexInLine] == bestPenalty ? requestedIndexInLine : (size_t)bestIndexInLine);
+        res->append(new MorpionAction(point, direction, requestedIndexInLine, obtainedIndexInLine));
+      }
     }
   }
 
@@ -432,7 +507,7 @@ protected:
           }
             
           if (isValid)
-            res->append(new MorpionAction(position, direction, index));
+            res->append(new MorpionAction(position, direction, index, index));
         }
       }
     }
