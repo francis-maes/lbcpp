@@ -299,35 +299,56 @@ protected:
 
   void addActionsWithPositionAndDirection(const MorpionPoint& point, const MorpionDirection& direction, ObjectVectorPtr& res) const
   {
-    MorpionPoint pt;
+    MorpionPoint previousPt;
     int delta;
+   
+    // find lowest missing point and lowest existing segment
+    previousPt = point;
+    for (delta = -1; delta > -(int)crossLength; --delta)
+    {
+      MorpionPoint pt = previousPt.moveIntoDirection(direction, -1);
+      if (!board.isOccupied(pt))
+        break;
+      previousPt = pt;
+    }
+    int lowestPoint = delta + 1;
     
-    pt = point;
-    for (delta = 0; delta > 1 - (int)crossLength; --delta)
+    previousPt = isDisjoint ? point.moveIntoDirection(direction, -1) : point;
+    for (delta = -1; delta >= -2 * (int)crossLength; --delta)
     {
-      MorpionPoint nextPt = pt.moveIntoDirection(direction, -1);
-      if (board.hasSegment(nextPt, direction) || !board.isOccupied(nextPt))
+      MorpionPoint pt = previousPt.moveIntoDirection(direction, -1);
+      if (board.hasSegment(pt, direction))
         break;
-      pt = nextPt;
+      previousPt = pt;
     }
-    int minDelta = delta;
-    if (isDisjoint && board.hasSegment(pt.moveIntoDirection(direction, -1), direction))
-      ++minDelta;
-
-    pt = point;
-    for (delta = 0; delta < (int)crossLength - 1; ++delta)
+    int lowestSegment = delta + 1;
+    
+    // find highest missing point and highest existing segment
+    previousPt = point;
+    for (delta = 1; delta < (int)crossLength; ++delta)
     {
-      MorpionPoint nextPt = pt.moveIntoDirection(direction, 1);
-      if (board.hasSegment(pt, direction) || !board.isOccupied(nextPt))
+      MorpionPoint pt = previousPt.moveIntoDirection(direction, 1);
+      if (!board.isOccupied(pt))
         break;
-      pt = nextPt;
+      previousPt = pt;
     }
-    int maxDelta = delta;
-    if (isDisjoint && board.hasSegment(pt, direction))
-      --maxDelta;
-
-    int maxIndexInLine = -minDelta;
-    int minIndexInLine = crossLength - 1 - maxDelta;
+    int highestPoint = delta - 1;
+    
+    previousPt = isDisjoint ? point : point.moveIntoDirection(direction, -1);
+    for (delta = 1; delta <= 2 * (int)crossLength; ++delta)
+    {
+      MorpionPoint pt = previousPt.moveIntoDirection(direction, 1);
+      if (board.hasSegment(pt, direction))
+        break;
+      previousPt = pt;
+    }
+    int highestSegment = delta - 1;
+    
+    // compute minIndexInLine and maxIndexInLine
+    int minDelta = juce::jmax(lowestPoint, lowestSegment);
+    int maxDelta = juce::jmin(highestPoint, highestSegment);
+    int maxIndexInLine = juce::jmin(crossLength - 1, -minDelta);
+    int minIndexInLine = juce::jmax(0, crossLength - 1 - maxDelta);
     
     if (minIndexInLine > maxIndexInLine)
       return;
@@ -335,9 +356,32 @@ protected:
       res->append(new MorpionAction(point, direction, maxIndexInLine));
     else
     {
-      // todo: remove dominated moves
+      std::cout << "Lowest Point: " << lowestPoint << " Segment: " << lowestSegment
+              << ", Highest Point: " << highestPoint << " Segment: " << highestSegment
+              << ", Indices: " << minIndexInLine << " -- " << maxIndexInLine << std::endl;
+      std::cout << "Penalties: ";
+      std::vector<size_t> penalties(maxIndexInLine - minIndexInLine + 1);
+      size_t bestPenalty = (size_t)-1;
+      int minDistance = (int)crossLength + (isDisjoint ? 1 : -1);
       for (int indexInLine = minIndexInLine; indexInLine <= maxIndexInLine; ++indexInLine)
-        res->append(new MorpionAction(point, direction, indexInLine));
+      {
+        int firstPoint = -indexInLine;
+        int lastPoint = firstPoint + (int)crossLength - 1;
+        int distanceFromLowestSegment = firstPoint - lowestSegment;
+        int distanceFromHighestSegment = highestSegment - lastPoint;
+        jassert(distanceFromLowestSegment >= 0 && distanceFromHighestSegment >= 0);
+        
+        size_t penalty = (distanceFromLowestSegment < minDistance ? distanceFromLowestSegment : 0) +
+                          (distanceFromHighestSegment < minDistance ? distanceFromHighestSegment : 0);
+        std::cout << penalty << std::flush;
+        penalties[indexInLine - minIndexInLine] = penalty;
+        if (penalty < bestPenalty)
+          bestPenalty = penalty;
+      }
+      std::cout << std::endl;
+      for (int indexInLine = minIndexInLine; indexInLine <= maxIndexInLine; ++indexInLine)
+        if (penalties[indexInLine - minIndexInLine] == bestPenalty)
+          res->append(new MorpionAction(point, direction, indexInLine));
     }
   }
 
