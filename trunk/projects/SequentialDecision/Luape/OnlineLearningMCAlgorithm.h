@@ -150,7 +150,7 @@ protected:
       }
     }
     
-    if (stepNumber % 100 == 0)
+    if (stepNumber % 1000 == 0)
     {
       context.enterScope("Step " + String((int)stepNumber));
       context.resultCallback("step", stepNumber);
