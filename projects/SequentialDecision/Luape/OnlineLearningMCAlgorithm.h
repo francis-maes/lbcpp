@@ -112,10 +112,13 @@ protected:
     }
 
     // submit solution
-    double score = submitFinalState(context, objective, actions, state);
+    double score = submitFinalState(context, objective, actions, state, -DBL_MAX, true);
     scoreStatistics.push(score);
-    return score;    
+    return score;
   }
+
+  static bool isPowerOfTwo(size_t x)
+    {return ((x & (x - 1)) == 0);}
 
   void makeSGDStep(ExecutionContext& context, DenseDoubleVectorPtr& parameters, const std::vector<Step>& trajectory, double normalizedScore)
   {
@@ -150,9 +153,11 @@ protected:
       }
     }
     
-    if (stepNumber % 1000 == 0)
+    ++stepNumber;    
+    if (isPowerOfTwo(stepNumber))
     {
       context.enterScope("Step " + String((int)stepNumber));
+      context.resultCallback("log(step)", log10((double)stepNumber));
       context.resultCallback("step", stepNumber);
       //context.resultCallback("score", score);
       context.resultCallback("normalizedScore", normalizedScore);
@@ -165,7 +170,6 @@ protected:
       context.resultCallback("parametersL2Norm", parameters->l2norm());
       context.leaveScope();
     }
-    ++stepNumber;    
   }
 };
 

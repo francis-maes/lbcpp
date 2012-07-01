@@ -76,7 +76,7 @@ protected:
   std::vector<Variable> bestActions;
   bool isSearching;
 
-  double submitFinalState(ExecutionContext& context, MCObjectivePtr objective, const std::vector<Variable>& actions, DecisionProblemStatePtr state, double score = -DBL_MAX)
+  double submitFinalState(ExecutionContext& context, MCObjectivePtr objective, const std::vector<Variable>& actions, DecisionProblemStatePtr state, double score = -DBL_MAX, bool verbose = false)
   {
     if (score == -DBL_MAX)
     {
@@ -88,6 +88,13 @@ protected:
       bestScore = score;
       bestFinalState = state;
       bestActions = actions;
+      if (verbose)
+      {
+        context.enterScope("New record: " + String(score));
+        context.resultCallback("finalState", state->cloneAndCast<DecisionProblemState>());
+        context.resultCallback("score", score);
+        context.leaveScope();
+      }
       jassert(actions.size());
     }
     return score;

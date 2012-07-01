@@ -40,7 +40,16 @@ public:
 
   String toString() const
     {static String strs[] = {T("NE"), T("E"), T("SE"), T("S"), T("none")}; return strs[dir];}
-    
+  
+  static Direction fromString(const String& str)
+  {
+    if (str == T("NE")) return NE;
+    if (str == T("E")) return E;
+    if (str == T("SE")) return SE;
+    if (str == T("S")) return S;
+    return none;
+  }
+
   bool operator ==(const MorpionDirection& other) const
     {return dir == other.dir;}
 
@@ -115,6 +124,9 @@ public:
   int getMaxIndex() const
     {return pos.size() - 1;}
 
+  void clear()
+    {neg.clear(); pos.clear();}
+
 private:
   std::vector<T> neg;
   std::vector<T> pos;
@@ -151,6 +163,11 @@ public:
     flagS = 0x10,
     flagNeighbor = 0x20,
   };
+
+  void clear()
+  {
+    b.clear();
+  }
 
   void initialize(size_t crossLength)
   {
