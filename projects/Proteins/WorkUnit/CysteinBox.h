@@ -658,6 +658,7 @@ public:
     iterations->addPredictor(cbsIteration);
 
     // ODSB
+    /*
     LargeProteinParametersPtr odsbParameter = LargeProteinParameters::createFromFile(context, odsbParameterFile).dynamicCast<LargeProteinParameters>();
     LargeProteinPredictorParametersPtr odsbPredictor = new LargeProteinPredictorParameters(odsbParameter, oxidizedCysteineThreshold);
     odsbPredictor->learningMachineName = learningMachineName;
@@ -667,9 +668,8 @@ public:
     ProteinPredictorPtr odsbIteration = new ProteinPredictor(odsbPredictor);
     odsbIteration->addTarget(odsbTarget);
     iterations->addPredictor(odsbIteration);
-
+    */
     // DSB
-    /*
     LargeProteinParametersPtr dsbParameter = LargeProteinParameters::createFromFile(context, odsbParameterFile).dynamicCast<LargeProteinParameters>();
     LargeProteinPredictorParametersPtr dsbPredictor = new LargeProteinPredictorParameters(dsbParameter);
     dsbPredictor->learningMachineName = learningMachineName;
@@ -679,7 +679,6 @@ public:
     ProteinPredictorPtr dsbIteration = new ProteinPredictor(dsbPredictor);
     dsbIteration->addTarget(dsbTarget);
     iterations->addPredictor(dsbIteration);
-    */
     
     // Copy CBS
     //copyCysteineBondingStateSupervisons(context, train);
