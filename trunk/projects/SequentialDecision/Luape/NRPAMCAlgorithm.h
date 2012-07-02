@@ -30,6 +30,9 @@ public:
                                                   const std::vector<Variable>& previousActions, DecisionProblemStatePtr state,
                                                   size_t level, DenseDoubleVectorPtr parameters)
   {
+    if (objective->shouldStop())
+      return std::make_pair(-DBL_MAX, Trajectory());
+      
     if (level == 0)
     {
       Trajectory trajectory;

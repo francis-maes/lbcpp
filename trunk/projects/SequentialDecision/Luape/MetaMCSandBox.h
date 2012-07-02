@@ -15,6 +15,7 @@
 # include "MCProblem.h"
 # include "../../../src/Luape/Function/ObjectLuapeFunctions.h"
 # include <fstream>
+# include "NRPAMCAlgorithm.h"
 
 namespace lbcpp
 {
@@ -300,7 +301,7 @@ public:
 
     CompositeWorkUnitPtr wu(new CompositeWorkUnit(algorithm->toShortString(), numRuns));
     for (size_t run = 0; run < numRuns; ++run)
-      wu->setWorkUnit(run, new RunAlgorithmWorkUnit(problem, algorithm->cloneAndCast<MCAlgorithm>(), budget, run));
+      wu->setWorkUnit(run, new RunAlgorithmWorkUnit(problem, algorithm->cloneAndCast<MCAlgorithm>(), budget, run,  "Run " + String((int)run + 1)));
     wu->setProgressionUnit("Runs");
     wu->setPushChildrenIntoStackFlag(true);
 
@@ -314,8 +315,9 @@ public:
     return true;
   }
   
-private:
+protected:
   friend class RunMCAlgorithmWorkUnitClass;
+  friend class RunNRPAWorkUnitClass; // pas bien !!!
 
   MCProblemPtr problem;
   MCAlgorithmPtr algorithm;
@@ -324,8 +326,8 @@ private:
   
   struct RunAlgorithmWorkUnit : public WorkUnit
   {
-    RunAlgorithmWorkUnit(MCProblemPtr problem, MCAlgorithmPtr algorithm, size_t budget, size_t instanceIndex)
-      : problem(problem), algorithm(algorithm), budget(budget), instanceIndex(instanceIndex) {}
+    RunAlgorithmWorkUnit(MCProblemPtr problem, MCAlgorithmPtr algorithm, size_t budget, size_t instanceIndex, const String& description)
+      : problem(problem), algorithm(algorithm), budget(budget), instanceIndex(instanceIndex), description(description) {}
 
     virtual Variable run(ExecutionContext& context)
     {
@@ -344,14 +346,52 @@ private:
     }
 
     virtual String toShortString() const
-      {return "Run " + String((int)instanceIndex + 1);}
+      {return description;}
 
   protected:
     MCProblemPtr problem;
     MCAlgorithmPtr algorithm;
     size_t budget;
     size_t instanceIndex;
+    String description;
   };
+};
+
+/////////////////////////////////
+
+class RunNRPAWorkUnit : public RunMCAlgorithmWorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (!problem)
+      return false;
+
+    RandomGeneratorPtr random = context.getRandomGenerator();
+
+    CompositeWorkUnitPtr wu(new CompositeWorkUnit("NRPA", numRuns));
+    for (size_t run = 0; run < numRuns; ++run)
+    {
+      static const size_t numIterationss[] = {5, 10, 20, 50, 100, 200, 500, 1000};
+      static const double learningRates[] = {0.001, 0.01, 0.1, 1.0, 10.0};
+    
+      size_t numIterations = numIterationss[random->sampleSize(8)];
+      double learningRate = learningRates[random->sampleSize(5)];
+      MCAlgorithmPtr algorithm = new NRPAMCAlgorithm(4, numIterations, learningRate);
+      wu->setWorkUnit(run, new RunAlgorithmWorkUnit(problem, algorithm, budget, run, algorithm->toShortString()));
+    }
+    wu->setProgressionUnit("Runs");
+    wu->setPushChildrenIntoStackFlag(true);
+
+    ContainerPtr results = context.run(wu).getObjectAndCast<Container>();
+
+    ScalarVariableStatisticsPtr statistics(new ScalarVariableStatistics("scores"));
+    for (size_t i = 0; i < results->getNumElements(); ++i)
+      statistics->push(results->getElement(i).toDouble());
+    context.informationCallback("Results: " + statistics->toShortString());
+    context.resultCallback("statistics", statistics);
+    return true;
+  }
 };
 
 /////////////
