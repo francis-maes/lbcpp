@@ -207,7 +207,8 @@ features = {"hlpssm75", "hlpssm75_hlsa10", "hlpssm75_hlsa10_hgsa", "hlpssm75_hls
 --main("CBS", features, dir .. "x3_", "_K0_1000T_NMIN1_CBS", numFolds)
 
 dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120626-CBS-ODSB/"
-main("CBS-DSB", {""}, dir .. "x3_K0_1000T_NMIN1_CBS-ODSB", "", numFolds)
+local threshold = {"0.10", "0.15", "0.20", "0.25", "0.30", "0.35", "0.40", "0.45", "0.50", "0.55", "0.60", "0.65", "0.70", "0.75", "0.80", "0.85", "0.90", "0.95"}
+main("CBS-DSB", threshold, dir .. "x3_K0_1000T_NMIN1_CBS-ODSB_TH", "", numFolds)
 
 -- ----- SP39 ----- --
 

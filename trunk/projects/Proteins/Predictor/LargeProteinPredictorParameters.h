@@ -769,6 +769,9 @@ public:
     size_t drAccumulator = builder.addFunction(getVariableFunction(T("drAccumulator")), proteinPerception, T("drAccu"));
     size_t stalResidueFeatures = builder.addFunction(getVariableFunction(T("stalResidueFeatures")), proteinPerception, T("stalRF"));
     size_t stalAccumulator = builder.addFunction(getVariableFunction(T("stalAccumulator")), proteinPerception, T("stalAccu"));
+
+    size_t cbsValue = builder.addFunction(getElementInVariableFunction(T("cysteinBondingStates")), protein, cysteinIndex, T("cbs"));
+
     /* Output */
     builder.startSelection();
       /*** Global Features ***/
@@ -790,6 +793,8 @@ public:
         builder.addFunction(accumulatorGlobalMeanFunction(), drAccumulator, T("h(DR)"));
       if (fp->useSTALGlobalHistogram)
         builder.addFunction(accumulatorGlobalMeanFunction(), stalAccumulator, T("h(StAl)"));
+
+      builder.addFunction(doubleFeatureGenerator(), cbsValue, T("cbs"));
 
       // number of cysteins
       if (fp->useNumCysteins)
