@@ -15,7 +15,7 @@
 #define LOAD_MULTIREGR
 #define LOAD_OK3
 
-static void rtree_update_progression(size_t);
+static void rtree_update_progression(size_t, size_t);
 static void context_result(const String&, double);
 
 #include "RTree/tree-model.h"
@@ -36,15 +36,11 @@ float getobjy_multiregr_learn_matlab(int obj, int att) {
 using namespace lbcpp;
 
 ExecutionContext* rtree_context;
-ProgressionStatePtr rtree_progress;
 
 static CriticalSection learnerLock;
 
-void rtree_update_progression(size_t value)
-{
-  rtree_progress->setValue(value);
-  rtree_context->progressCallback(rtree_progress);
-}
+void rtree_update_progression(size_t value, size_t total)
+  {rtree_context->progressCallback(new ProgressionState(value, total, "Trees"));}
 
 void context_result(const String& name, double data)
   {rtree_context->resultCallback(name, data);}
@@ -696,7 +692,6 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
   clean_all_trees();
   /* construction de l'ensemble d'arbres */
   rtree_context = &context;
-  rtree_progress = new ProgressionState(0, rTreeFunction->getNumTrees(), "Trees");
   build_one_tree_ensemble(NULL, 0);
 
   /* Calcul l'importance des variables */
