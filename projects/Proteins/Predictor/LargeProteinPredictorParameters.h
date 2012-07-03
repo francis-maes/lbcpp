@@ -212,6 +212,12 @@ public:
   bool useDRIntervalHistogram;
   bool useSTALIntervalHistogram;
 
+  /* Cysteine Bonding State */
+  size_t cbsAbsoluteSize;
+  size_t cbsRelativeSize;
+  size_t cbsMeanSize;
+  size_t cbsStdDevSize;
+
   LargeProteinParameters() :
     /* Global Features */
     useProteinLength(false), useNumCysteins(false),
@@ -239,7 +245,10 @@ public:
     useAminoAcidIntervalHistogram(false), usePSSMIntervalHistogram(false),
     useSS3IntervalHistogram(false), useSS8IntervalHistogram(false),
     useSAIntervalHistogram(false), useDRIntervalHistogram(false),
-    useSTALIntervalHistogram(false)
+    useSTALIntervalHistogram(false),
+  
+    /* Cysteine Bonding State */
+    cbsAbsoluteSize(0), cbsRelativeSize(0), cbsMeanSize(0), cbsStdDevSize(0)
   {}
 
   static std::vector<StreamPtr> createStreams()
@@ -287,6 +296,37 @@ public:
       }
       else
         jassertfalse;
+    }
+    return res;
+  }
+  
+  static std::vector<StreamPtr> createCbsRelatedStreams()
+  {
+    const size_t n = largeProteinParametersClass->getNumMemberVariables();
+    std::vector<StreamPtr> res(n);
+    for (size_t i = 0; i < n; ++i)
+    {
+      const TypePtr varType = largeProteinParametersClass->getMemberVariableType(i);
+      const String varName = largeProteinParametersClass->getMemberVariableName(i);
+      if (varName.startsWith(T("cbs")))
+      {
+        std::vector<int> values;
+        values.push_back(1);
+        values.push_back(5);
+        values.push_back(9);
+        values.push_back(11);
+        values.push_back(15);
+        values.push_back(19);
+        values.push_back(21);
+        values.push_back(25);
+        /*
+         for (int j = 1; j < 20; j += 2)
+         values.push_back(j);
+         for (int j = 21; j < 40; j += 4)
+         values.push_back(j);
+         */
+        res[i] = integerStream(positiveIntegerType, values);
+      }
     }
     return res;
   }
@@ -770,7 +810,11 @@ public:
     size_t stalResidueFeatures = builder.addFunction(getVariableFunction(T("stalResidueFeatures")), proteinPerception, T("stalRF"));
     size_t stalAccumulator = builder.addFunction(getVariableFunction(T("stalAccumulator")), proteinPerception, T("stalAccu"));
 
-    size_t cbsValue = builder.addFunction(getElementInVariableFunction(T("cysteinBondingStates")), protein, cysteinIndex, T("cbs"));
+    size_t cbsVector = builder.addFunction(getVariableFunction(T("cysteinBondingStates")), protein, T("cbs"));
+    size_t idCbsVector = builder.addFunction(new NormalizeDenseDoubleVector(NormalizeDenseDoubleVector::none), cbsVector);
+    size_t relativeCbsVector = builder.addFunction(new NormalizeDenseDoubleVector(NormalizeDenseDoubleVector::relative), cbsVector);
+    size_t meanCbsVector = builder.addFunction(new NormalizeDenseDoubleVector(NormalizeDenseDoubleVector::mean), cbsVector);
+    size_t stdDevCbsVector = builder.addFunction(new NormalizeDenseDoubleVector(NormalizeDenseDoubleVector::meanAndStandardDeviation), cbsVector);
 
     /* Output */
     builder.startSelection();
@@ -794,7 +838,14 @@ public:
       if (fp->useSTALGlobalHistogram)
         builder.addFunction(accumulatorGlobalMeanFunction(), stalAccumulator, T("h(StAl)"));
 
-      builder.addFunction(doubleFeatureGenerator(), cbsValue, T("cbs"));
+    if (fp->cbsAbsoluteSize)
+      builder.addFunction(centeredContainerWindowFeatureGenerator(fp->cbsAbsoluteSize), idCbsVector, cysteinIndex, T("w(CBS_abs,") + String((int)fp->cbsAbsoluteSize) + (")"));
+    if (fp->cbsRelativeSize)
+      builder.addFunction(centeredContainerWindowFeatureGenerator(fp->cbsRelativeSize), relativeCbsVector, cysteinIndex, T("w(CBS_rel,") + String((int)fp->cbsRelativeSize) + (")"));
+    if (fp->cbsMeanSize)
+      builder.addFunction(centeredContainerWindowFeatureGenerator(fp->cbsMeanSize), meanCbsVector, cysteinIndex, T("w(CBS_mean,") + String((int)fp->cbsMeanSize) + (")"));
+    if (fp->cbsStdDevSize)
+      builder.addFunction(centeredContainerWindowFeatureGenerator(fp->cbsStdDevSize), stdDevCbsVector, cysteinIndex, T("w(CBS_std,") + String((int)fp->cbsStdDevSize) + (")"));
 
       // number of cysteins
       if (fp->useNumCysteins)
