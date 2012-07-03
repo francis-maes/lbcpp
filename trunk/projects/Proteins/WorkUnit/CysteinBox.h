@@ -2019,22 +2019,36 @@ public:
 
   double computeFold(ExecutionContext& context, const Variable& input, const ContainerPtr& train, const ContainerPtr& test) const
   {
-    LargeProteinParametersPtr parameters = input.getObjectAndCast<LargeProteinParameters>(context);
-    LargeProteinPredictorParametersPtr predictor = new LargeProteinPredictorParameters(parameters);
-    predictor->learningMachineName = T("ExtraTrees");
-    // Config ExtraTrees
-    predictor->x3Trees = 1000;
-    predictor->x3Attributes = 0;
-    predictor->x3Splits = 1;
+    ProteinSequentialPredictorPtr iterations = new ProteinSequentialPredictor();
+    // CBS
+    LargeProteinParametersPtr cbsParameter = new LargeProteinParameters();
+    cbsParameter->pssmLocalHistogramSize = 75;
+    cbsParameter->saLocalHistogramSize = 10;
+    cbsParameter->useSAGlobalHistogram = true;
+    LargeProteinPredictorParametersPtr cbsPredictor = new LargeProteinPredictorParameters(cbsParameter);
+    cbsPredictor->learningMachineName = T("ExtraTrees");
+    cbsPredictor->x3Trees = 1000;
+    cbsPredictor->x3Attributes = 0;
+    cbsPredictor->x3Splits = 1;
+    ProteinPredictorPtr cbsIteration = new ProteinPredictor(cbsPredictor);
+    cbsIteration->addTarget(cbsTarget);
+    iterations->addPredictor(cbsIteration);
+    // DSB
+    LargeProteinParametersPtr dsbParameter = input.getObjectAndCast<LargeProteinParameters>(context);
+    LargeProteinPredictorParametersPtr dsbPredictor = new LargeProteinPredictorParameters(dsbParameter);
+    dsbPredictor->learningMachineName = T("ExtraTrees");
+    dsbPredictor->x3Trees = 1000;
+    dsbPredictor->x3Attributes = 0;
+    dsbPredictor->x3Splits = 1;
+    ProteinPredictorPtr dsbIteration = new ProteinPredictor(dsbPredictor);
+    dsbIteration->addTarget(dsbTarget);
+    iterations->addPredictor(dsbIteration);
 
-    ProteinPredictorPtr iteration = new ProteinPredictor(predictor);
-    iteration->addTarget(cbsTarget);
-
-    if (!iteration->train(context, train, ContainerPtr(), T("Training")))
+    if (!iterations->train(context, train, ContainerPtr(), T("Training")))
       return 101.f;
 
     ProteinEvaluatorPtr evaluator = createProteinEvaluator();
-    CompositeScoreObjectPtr scores = iteration->evaluate(context, test, evaluator, T("EvaluateTest"));
+    CompositeScoreObjectPtr scores = iterations->evaluate(context, test, evaluator, T("EvaluateTest"));
     return evaluator->getScoreToMinimize(scores);
   }
 
@@ -2050,8 +2064,8 @@ protected:
   ProteinEvaluatorPtr createProteinEvaluator() const
   {
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-    evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("CBS"), true);
-    //evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(-1.f), 0.f), T("DSB QP Perfect"), true);
+    //evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("CBS"), true);
+    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("DSB QP Perfect"), true);
     return evaluator;
   }
 };
@@ -2062,12 +2076,15 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     ExecutionContextPtr remoteContext = distributedExecutionContext(context, T("monster24.montefiore.ulg.ac.be"), 1664,
-                                                                    T("1206XX-BFS-CBS"), T("jbecker@screen"), T("jbecker@giga"),
-                                                                    fixedResourceEstimator(1, 5 * 1024, 240), false);
+                                                                    T("120703-BFS-CBS-DSB"), T("jbecker@screen"), T("jbecker@giga"),
+                                                                    fixedResourceEstimator(1, 12 * 1024, 24), false);
+    LargeProteinParametersPtr initialParameters = new LargeProteinParameters();
+    initialParameters->pssmWindowSize = 15;
+    initialParameters->separationProfilSize = 17;
     OptimizationProblemPtr problem = new OptimizationProblem(new DSBLearnerFunction(inputDirectory, supervisionDirectory),
-                                                             new LargeProteinParameters(), SamplerPtr(),
+                                                             initialParameters, SamplerPtr(),
                                                              new DSBLearnerFunction(inputDirectory, supervisionDirectory, true));
-    OptimizerPtr optimizer = bestFirstSearchOptimizer(LargeProteinParameters::createResidueStreams(), context.getFile(optimizerStateFile));
+    OptimizerPtr optimizer = bestFirstSearchOptimizer(LargeProteinParameters::createCbsRelatedStreams(), context.getFile(optimizerStateFile));
 
     return optimizer->compute(*remoteContext.get(), problem);
   }

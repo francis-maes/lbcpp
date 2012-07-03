@@ -1609,6 +1609,70 @@ protected:
   size_t incrementValue;
 };
 
+class NormalizeDenseDoubleVector : public SimpleUnaryFunction
+{
+public:
+  enum NormalizationType {none = 0, relative, mean, meanAndStandardDeviation};
+
+  NormalizeDenseDoubleVector(NormalizationType type)
+    : SimpleUnaryFunction(denseDoubleVectorClass(enumValueType, doubleType), vectorClass(denseDoubleVectorClass(singletonEnumeration, doubleType)), T("normDDV")),
+      type(type)
+  {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    DenseDoubleVectorPtr ddv = input.getObjectAndCast<DenseDoubleVector>();
+    if (!ddv)
+      return Variable::missingValue(vectorClass(denseDoubleVectorClass(singletonEnumeration, doubleType)));
+
+    const size_t n = ddv->getNumElements();
+    std::vector<double> values(n, 0.f);
+    for (size_t i = 0; i < n; ++i)
+      if (ddv->getElement(i).exists())
+        values[i] = ddv->getValue(i);
+
+    ScalarVariableMeanAndVariance stat;
+    for (size_t i = 0; i < values.size(); ++i)
+      stat.push(values[i]);
+
+    if (type == relative)
+    {
+      for (size_t i = 0; i < values.size(); ++i)
+        values[i] /= stat.getSum();
+    }
+    else if (type == mean)
+    {
+      const double mean = stat.getMean();
+      for (size_t i = 0; i < values.size(); ++i)
+        values[i] -= mean;
+    }
+    else if (type == meanAndStandardDeviation)
+    {
+      const double mean = stat.getMean();
+      const double stdDev = stat.getStandardDeviation();
+      for (size_t i = 0; i < values.size(); ++i)
+      {
+        values[i] -= mean;
+        if (stdDev > 10e-6)
+          values[i] /= stdDev;
+      }
+    }
+
+    VectorPtr res = objectVector(denseDoubleVectorClass(singletonEnumeration, doubleType), n);
+    for (size_t i = 0; i < n; ++i)
+    {
+      DenseDoubleVectorPtr element = new DenseDoubleVector(singletonEnumeration, doubleType);
+      element->setElement(0, Variable(values[i], doubleType));
+      res->setElement(i, element);
+    }
+    
+    return res;
+  }  
+
+protected:
+  NormalizationType type;
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEIN_PERCEPTION_H_

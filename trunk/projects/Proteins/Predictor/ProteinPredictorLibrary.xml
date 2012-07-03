@@ -329,6 +329,12 @@
     <variable type="Boolean" name="useSAIntervalHistogram"/>
     <variable type="Boolean" name="useDRIntervalHistogram"/>
     <variable type="Boolean" name="useSTALIntervalHistogram"/>
+
+    <!-- Cysteine Bonding State -->
+    <variable type="PositiveInteger" name="cbsAbsoluteSize"/>
+    <variable type="PositiveInteger" name="cbsRelativeSize"/>
+    <variable type="PositiveInteger" name="cbsMeanSize"/>
+    <variable type="PositiveInteger" name="cbsStdDevSize"/>
   </class>
   
   <class name="LargeProteinPredictorParameters" base="CFProteinPredictorParameters">
