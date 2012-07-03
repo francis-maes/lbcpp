@@ -5107,7 +5107,7 @@ DllExport float build_one_tree_ensemble(int *ts_vector, int length_ts_vector) {
 	save_ensemble_ls_pos++;
       }
     }
-    rtree_update_progression((size_t)t + 1);
+    rtree_update_progression((size_t)t + 1, number_of_ensemble_terms);
     if (print_result) {
       printf("model %d...",t+1);
       fflush(stdout);
