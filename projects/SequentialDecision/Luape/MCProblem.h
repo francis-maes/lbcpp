@@ -165,9 +165,15 @@ public:
 	  {
 		  size_t primeCounter = 1;
 		  bool isvalid = true;
-		  while(isPrime(evaluateFormula(context, formula, primeCounter)))
+      std::vector<int> cache;
+		  while(isPrime(evaluateFormula(context, formula, primeCounter),cache))
 		  {
 			  primeCounter++;
+
+        if(primeCounter==40)
+          if(cache.size()<20)
+            {isvalid=false; break;}
+
 			  if(primeCounter>99)
 			  {isvalid = false; break;}
 		  }
@@ -178,7 +184,7 @@ public:
 		  return primeCounter;
 	  }
 
-	  virtual bool isPrime(double value)
+	  virtual bool isPrime(double value, std::vector<int>& cache)
 	  {
 		  double root = pow(value, 0.5);
 		  bool prime=true;
@@ -193,7 +199,18 @@ public:
 		  for (size_t i=2; i<= root; i++)
 			  if ((int)value % i == 0)
 				  prime = false;
-		  return prime;
+		  
+      
+      bool add = true;
+      for(size_t i=0;i<cache.size();++i)
+        if(cache[i]==(int)value)
+          {add=false;break;}
+      if(add)
+        cache.push_back((int)value);
+      
+      
+      return prime;
+      
 	  }
 
     virtual void getObjectiveRange(double& worst, double& best) const
