@@ -72,7 +72,7 @@ public:
 	{
 		if (instances.empty())
 		{
-			instances.resize(8);
+			instances.resize(4); // TODO change here 8 - 4
 			for (size_t i = 0; i < instances.size(); ++i)
 			{
 				LuapeRegressorPtr problem = createInstance(context, i + 1);
@@ -81,8 +81,8 @@ public:
 				instances[i] = std::make_pair(problem, initialState);
 			}
 		}
-		LuapeRegressorPtr problem = instances[instanceIndex % 8].first;
-		DecisionProblemStatePtr initialState = instances[instanceIndex % 8].second->cloneAndCast<DecisionProblemState>();
+		LuapeRegressorPtr problem = instances[instanceIndex % 4].first;
+		DecisionProblemStatePtr initialState = instances[instanceIndex % 4].second->cloneAndCast<DecisionProblemState>();
 		MCObjectivePtr objective(new SymbolicRegressionMCObjective(problem, 1.0));
 		return std::make_pair(initialState, objective);
   }
@@ -137,14 +137,14 @@ protected:
 		double x2 = x * x;
 		switch (problemNumber)
 		{
-		case 1: return x * x2 + x2 + x;
-		case 2: return x2 * x2 + x * x2 + x2 + x;
-		case 3: return x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
-		case 4: return x2 * x2 * x2 + x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
-		case 5: return sin(x2) * cos(x) - 1.0;
-		case 6: return sin(x) + sin(x + x2);
-		case 7: return log(x + 1) + log(x2 + 1);
-		case 8: return sqrt(x);
+		case 9: return x * x2 + x2 + x;
+		case 1: return x2 * x2 + x * x2 + x2 + x;
+		case 2: return x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
+		case 99: return x2 * x2 * x2 + x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
+		case 3: return sin(x2) * cos(x) - 1.0;
+		case 999: return sin(x) + sin(x + x2);
+		case 4: return log(x + 1) + log(x2 + 1);
+		case 9999: return sqrt(x);
 		default: jassert(false); return 0.0;
 		};
 	}
