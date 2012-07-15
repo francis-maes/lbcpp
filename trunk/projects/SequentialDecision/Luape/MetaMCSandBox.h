@@ -372,12 +372,12 @@ public:
     CompositeWorkUnitPtr wu(new CompositeWorkUnit("NRPA", numRuns));
     for (size_t run = 0; run < numRuns; ++run)
     {
-      static const size_t numIterationss[] = {5, 10, 20, 50, 100, 200, 500, 1000};
+      /*static const size_t numIterationss[] = {5, 10, 20, 50, 100, 200, 500, 1000};
       static const double learningRates[] = {0.001, 0.01, 0.1, 1.0, 10.0};
     
       size_t numIterations = numIterationss[random->sampleSize(8)];
-      double learningRate = learningRates[random->sampleSize(5)];
-      MCAlgorithmPtr algorithm = new NRPAMCAlgorithm(4, numIterations, learningRate);
+      double learningRate = learningRates[random->sampleSize(5)];*/
+      MCAlgorithmPtr algorithm = new NRPAMCAlgorithm(6, 0, 0.0);
       wu->setWorkUnit(run, new RunAlgorithmWorkUnit(problem, algorithm, budget, run, algorithm->toShortString()));
     }
     wu->setProgressionUnit("Runs");

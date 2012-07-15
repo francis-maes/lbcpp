@@ -46,7 +46,11 @@ public:
       Trajectory bestTrajectory;
       if (parameters)
         parameters = parameters->cloneAndCast<DenseDoubleVector>();
-      for (size_t i = 0; i < iterations; ++i)
+        
+      size_t numIterations = iterations ? iterations : (size_t)pow(10.0, context.getRandomGenerator()->sampleDouble(1.0, 3.0));
+      double learningRate = this->learningRate ? this->learningRate : pow(10.0, context.getRandomGenerator()->sampleDouble(-1.0, 1.0));
+        
+      for (size_t i = 0; i < numIterations; ++i)
       {
         std::pair<double, Trajectory> subResult = searchRecursively(context, objective, previousActions, state, level - 1, parameters);
         if (subResult.first >= bestScore)
@@ -63,7 +67,7 @@ public:
           for (size_t j = 0; j < n; ++j)
             step.actionActivations->setValue(j, predictActivation(parameters, step.actionFeatures->getAndCast<DoubleVector>(j)));
         }
-        makeSGDStep(context, parameters, bestTrajectory, 1.0);
+        makeSGDStep(context, parameters, bestTrajectory, learningRate);
       }
       return std::make_pair(bestScore, bestTrajectory);
     }

@@ -44,7 +44,7 @@ public:
     if (stddev > 0.0)
     {
       double normalizedScore = (score - scoreStatistics.getMean()) / stddev;
-      makeSGDStep(context, parameters, trajectory, normalizedScore);
+      makeSGDStep(context, parameters, trajectory, normalizedScore * learningRate);
     }
   }
 
@@ -120,7 +120,7 @@ protected:
   static bool isPowerOfTwo(size_t x)
     {return ((x & (x - 1)) == 0);}
 
-  void makeSGDStep(ExecutionContext& context, DenseDoubleVectorPtr& parameters, const std::vector<Step>& trajectory, double normalizedScore)
+  void makeSGDStep(ExecutionContext& context, DenseDoubleVectorPtr& parameters, const std::vector<Step>& trajectory, double learningRate)
   {
     if (!parameters)
     {
@@ -128,7 +128,7 @@ protected:
       parameters = new DenseDoubleVector(dvClass);
     }
 
-    double k = - learningRate * normalizedScore / meanActiveFeatures.getMean();
+    double k = - learningRate / meanActiveFeatures.getMean();
     for (size_t i = 0; i < trajectory.size(); ++i)
     {
       const Step& step = trajectory[i];
@@ -160,7 +160,6 @@ protected:
       context.resultCallback("log(step)", log10((double)stepNumber));
       context.resultCallback("step", stepNumber);
       //context.resultCallback("score", score);
-      context.resultCallback("normalizedScore", normalizedScore);
       context.resultCallback("scoreMean", scoreStatistics.getMean());
       context.resultCallback("scoreStddev", scoreStatistics.getStandardDeviation());
       context.resultCallback("scoreMax", scoreStatistics.getMaximum());
