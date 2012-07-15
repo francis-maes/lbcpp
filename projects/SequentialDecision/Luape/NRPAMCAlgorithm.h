@@ -23,7 +23,8 @@ public:
   virtual void search(ExecutionContext& context, MCObjectivePtr objective,
                       const std::vector<Variable>& previousActions, DecisionProblemStatePtr state)
   {
-    searchRecursively(context, objective, previousActions, state, level, DenseDoubleVectorPtr());
+    while (!objective->shouldStop()) // tmp !!!
+      searchRecursively(context, objective, previousActions, state, level, DenseDoubleVectorPtr());
   }
   
   std::pair<double, Trajectory> searchRecursively(ExecutionContext& context, MCObjectivePtr objective,
