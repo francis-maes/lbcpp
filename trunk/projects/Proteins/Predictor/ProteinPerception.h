@@ -710,6 +710,54 @@ protected:
   bool normalizeWithProteinLength;
   double oxidizedCysteineThreshold;
 };
+  
+
+class DisuflideSeparationProfilFeatureGenerator : public FeatureGenerator
+{
+public:
+  DisuflideSeparationProfilFeatureGenerator(size_t windowSize)
+    : windowSize(windowSize) {}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : (TypePtr)symmetricMatrixClass(doubleType);}
+
+  virtual String getOutputPostFix() const
+    {return T("DsbSepProfil");}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration();
+    const int startIndex = -(int)windowSize / 2;
+    for (size_t i = 0; i < windowSize; ++i)
+      res->addElement(context, T("[") + String((int)i + startIndex) + ("]"));
+    return res;
+  }
+  
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    SymmetricMatrixPtr matrix = inputs[0].getObjectAndCast<SymmetricMatrix>();
+    if (!matrix)
+      return;
+    size_t index = inputs[1].getInteger();
+    
+    const size_t n = matrix->getDimension();
+    if (n <= 1)
+      return;
+
+    const int startCysteinIndex = index - windowSize / 2;
+    for (size_t i = (startCysteinIndex < 0) ? -startCysteinIndex : 0;
+         i < windowSize && startCysteinIndex + i < n; ++i)
+      callback.sense(i, matrix->getElement(index, startCysteinIndex + i).getDouble());
+  }
+
+protected:
+  size_t windowSize;
+};
+
+
 
 class CysteinBondingStateRatio : public SimpleUnaryFunction
 {

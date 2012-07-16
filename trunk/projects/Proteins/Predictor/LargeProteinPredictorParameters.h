@@ -816,6 +816,8 @@ public:
     size_t meanCbsVector = builder.addFunction(new NormalizeDenseDoubleVector(NormalizeDenseDoubleVector::mean), cbsVector);
     size_t stdDevCbsVector = builder.addFunction(new NormalizeDenseDoubleVector(NormalizeDenseDoubleVector::meanAndStandardDeviation), cbsVector);
 
+    size_t dsb = builder.addFunction(getVariableFunction(T("disulfideBonds")), protein, T("dsb"));
+
     /* Output */
     builder.startSelection();
       /*** Global Features ***/
@@ -899,6 +901,8 @@ public:
       if (fp->separationProfilSize)
         builder.addFunction(new CysteinSeparationProfilFeatureGenerator(fp->separationProfilSize, true), protein, position, T("CysProfil(") + String((int)fp->separationProfilSize) + T(")"));
 
+      builder.addFunction(new DisuflideSeparationProfilFeatureGenerator(fp->separationProfilSize), dsb, cysteinIndex, T("DsbProfil(") + String((int)fp->separationProfilSize) + T(")"));
+    
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
 /*

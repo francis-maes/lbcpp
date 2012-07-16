@@ -647,6 +647,7 @@ public:
 
     ProteinSequentialPredictorPtr iterations = new ProteinSequentialPredictor();
     // CBS
+    /*
     LargeProteinParametersPtr cbsParameter = LargeProteinParameters::createFromFile(context, cbsParameterFile).dynamicCast<LargeProteinParameters>();
     LargeProteinPredictorParametersPtr cbsPredictor = new LargeProteinPredictorParameters(cbsParameter);
     cbsPredictor->learningMachineName = learningMachineName;
@@ -656,7 +657,7 @@ public:
     ProteinPredictorPtr cbsIteration = new ProteinPredictor(cbsPredictor);
     cbsIteration->addTarget(cbsTarget);
     iterations->addPredictor(cbsIteration);
-
+     */
     // ODSB
     /*
     LargeProteinParametersPtr odsbParameter = LargeProteinParameters::createFromFile(context, odsbParameterFile).dynamicCast<LargeProteinParameters>();
@@ -670,16 +671,18 @@ public:
     iterations->addPredictor(odsbIteration);
     */
     // DSB
-    LargeProteinParametersPtr dsbParameter = LargeProteinParameters::createFromFile(context, odsbParameterFile).dynamicCast<LargeProteinParameters>();
-    LargeProteinPredictorParametersPtr dsbPredictor = new LargeProteinPredictorParameters(dsbParameter);
-    dsbPredictor->learningMachineName = learningMachineName;
-    dsbPredictor->x3Trees = x3Trees;
-    dsbPredictor->x3Attributes = x3Attributes;
-    dsbPredictor->x3Splits = x3Splits;
-    ProteinPredictorPtr dsbIteration = new ProteinPredictor(dsbPredictor);
-    dsbIteration->addTarget(dsbTarget);
-    iterations->addPredictor(dsbIteration);
-    
+    for (size_t i = 0; i < 2; ++i)
+    {
+      LargeProteinParametersPtr dsbParameter = LargeProteinParameters::createFromFile(context, odsbParameterFile).dynamicCast<LargeProteinParameters>();
+      LargeProteinPredictorParametersPtr dsbPredictor = new LargeProteinPredictorParameters(dsbParameter);
+      dsbPredictor->learningMachineName = learningMachineName;
+      dsbPredictor->x3Trees = x3Trees;
+      dsbPredictor->x3Attributes = x3Attributes;
+      dsbPredictor->x3Splits = x3Splits;
+      ProteinPredictorPtr dsbIteration = new ProteinPredictor(dsbPredictor);
+      dsbIteration->addTarget(dsbTarget);
+      iterations->addPredictor(dsbIteration);
+    }
     // Copy CBS
     //copyCysteineBondingStateSupervisons(context, train);
     //copyCysteineBondingStateSupervisons(context, test);
