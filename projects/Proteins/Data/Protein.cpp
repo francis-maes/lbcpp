@@ -226,10 +226,9 @@ Variable Protein::getTargetOrComputeIfMissing(ExecutionContext& context, size_t 
   case 13: return getDistanceMap(context, true);
   case 14: return getDisulfideBonds(context);
   case 15: jassertfalse; return Variable();//getOxidizedDisulfideBonds(context, 0.5f);
-  case 16: return getFullDisulfideBonds(context);
-  case 17: return getDisulfideBonds(context);
-  case 18: return getCAlphaTrace();
-  case 19: return getTertiaryStructure();
+  case 16: jassertfalse; return getFullDisulfideBonds(context);
+  case 17: return getCAlphaTrace();
+  case 18: return getTertiaryStructure();
   default: jassertfalse; return Variable();
   }
 }
@@ -335,6 +334,7 @@ const SymmetricMatrixPtr& Protein::getDisulfideBonds(ExecutionContext& context) 
 
 const SymmetricMatrixPtr& Protein::getOxidizedDisulfideBonds(ExecutionContext& context, double oxidizedCysteineThreshold) const
 {
+  jassertfalse;
   if (oxidizedDisulfideBonds) // Set missing elements to 0
   {
     const size_t n = oxidizedDisulfideBonds->getDimension();
@@ -369,6 +369,7 @@ const SymmetricMatrixPtr& Protein::getOxidizedDisulfideBonds(ExecutionContext& c
 
 const MatrixPtr& Protein::getFullDisulfideBonds(ExecutionContext& context) const
 {
+  jassertfalse;
   if (fullDisulfideBonds)
     return fullDisulfideBonds;
 
