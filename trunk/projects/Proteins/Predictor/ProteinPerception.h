@@ -764,7 +764,42 @@ protected:
   size_t windowSize;
 };
 
+class DisulfideInfoFeatureGenerator : public FeatureGenerator
+{
+  virtual size_t getNumRequiredInputs() const
+    {return 3;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : (TypePtr)symmetricMatrixClass(doubleType);}
+  
+  virtual String getOutputPostFix() const
+    {return T("dsb");}
+  
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration();
+    res->addElement(context, T("[DSB(i,j)]"));
+    return res;
+  }
+  
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    SymmetricMatrixPtr matrix = inputs[0].getObjectAndCast<SymmetricMatrix>();
+    if (!matrix)
+      return;
+    size_t firstIndex = inputs[1].getInteger();
+    size_t secondIndex = inputs[1].getInteger();
 
+    const size_t n = matrix->getDimension();
+    if (n <= 1)
+      return;
+
+    jassert(firstIndex < n && secondIndex < n);
+
+    callback.sense(0, matrix->getElement(firstIndex, secondIndex).getDouble());
+  }
+  
+};
 
 class CysteinBondingStateRatio : public SimpleUnaryFunction
 {

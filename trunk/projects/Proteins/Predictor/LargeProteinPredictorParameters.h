@@ -734,6 +734,8 @@ public:
 
     size_t cysDist = builder.addFunction(new SubtractFunction(), secondIndex, firstIndex, T("|CYS2-CYS1|"));
     size_t aaDist = builder.addFunction(new SubtractFunction(), secondPosition, firstPosition, T("|AA2-AA1|"));
+    
+    size_t dsb = builder.addFunction(getVariableFunction(T("disulfideBonds")), protein, T("dsb"));
     /* Output */
     builder.startSelection();
       builder.addFunction(lbcppMemberCompositeFunction(LargeProteinPredictorParameters, residuePerception), firstPosition, proteinPerception, T("rf1"));
@@ -764,6 +766,10 @@ public:
     if (fp->useSTALIntervalHistogram)
       builder.addFunction(accumulatorWindowMeanFunction(), stalAccumulator, firstPosition, secondPosition, T("h(STAL1,STAL2)"));
 
+    
+    builder.addFunction(new DisulfideInfoFeatureGenerator(), dsb, firstIndex, secondIndex, T("dsb"));
+
+    
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
 
