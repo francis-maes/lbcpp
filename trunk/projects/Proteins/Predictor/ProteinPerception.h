@@ -742,15 +742,22 @@ public:
     if (!matrix)
       return;
     size_t index = inputs[1].getInteger();
-    
+
     const size_t n = matrix->getDimension();
     if (n <= 1)
       return;
 
+    double zFactor = 0.0;
+    for (size_t i = 0; i < n; ++i)
+      if (i != index)
+        zFactor += matrix->getElement(index, i).getDouble();
+    jassert(zFactor > 1e-6);
+
     const int startCysteinIndex = index - windowSize / 2;
     for (size_t i = (startCysteinIndex < 0) ? -startCysteinIndex : 0;
          i < windowSize && startCysteinIndex + i < n; ++i)
-      callback.sense(i, matrix->getElement(index, startCysteinIndex + i).getDouble());
+      if (i != index)
+        callback.sense(i, matrix->getElement(index, startCysteinIndex + i).getDouble() / zFactor);
   }
 
 protected:
