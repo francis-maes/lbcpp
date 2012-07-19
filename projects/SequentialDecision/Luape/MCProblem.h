@@ -137,17 +137,25 @@ protected:
 		double x2 = x * x;
 		switch (problemNumber)
 		{
-		case 9: return x * x2 + x2 + x;
-		case 1: return x2 * x2 + x * x2 + x2 + x;
-		case 2: return x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
-		case 99: return x2 * x2 * x2 + x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
-		case 3: return sin(x2) * cos(x) - 1.0;
-		case 999: return sin(x) + sin(x + x2);
-		case 4: return log(x + 1) + log(x2 + 1);
-		case 9999: return sqrt(x);
+		case 1: return x * x2 + x2 + x;
+		case 2: return x2 * x2 + x * x2 + x2 + x;
+		case 3: return x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
+		case 4: return x2 * x2 * x2 + x * x2 * x2 + x2 * x2 + x * x2 + x2 + x;
+		case 5: return sin(x2) * cos(x) - 1.0;
+		case 6: return sin(x) + sin(x + x2);
+		case 7: return log(x + 1) + log(x2 + 1);
+		case 8: return sqrt(x);
 		default: jassert(false); return 0.0;
 		};
 	}
+	
+	virtual double getMaxReward() const
+	{return 1.0;}
+	  
+	virtual void getObjectiveRange(double& worst, double& best) const
+  	{worst = 0.0; best = 4.0;}
+	
+	
 };
 
 class PrimeNumberMCProblem : public MCProblem
