@@ -335,6 +335,12 @@
     <variable type="PositiveInteger" name="cbsRelativeSize"/>
     <variable type="PositiveInteger" name="cbsMeanSize"/>
     <variable type="PositiveInteger" name="cbsStdDevSize"/>
+
+    <!-- Disulfide Connectivity -->
+    <variable type="PositiveInteger" name="dsbProfilSize"/>
+    <variable type="PositiveInteger" name="normalizedDsbProfilSize"/>
+    <variable type="Boolean" name="useDsbProbability"/>
+    <variable type="Boolean" name="useNormDsbProbability"/>
   </class>
   
   <class name="LargeProteinPredictorParameters" base="CFProteinPredictorParameters">

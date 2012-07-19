@@ -2024,6 +2024,7 @@ public:
   {
     ProteinSequentialPredictorPtr iterations = new ProteinSequentialPredictor();
     // CBS
+    /*
     LargeProteinParametersPtr cbsParameter = new LargeProteinParameters();
     cbsParameter->pssmLocalHistogramSize = 75;
     cbsParameter->saLocalHistogramSize = 10;
@@ -2036,6 +2037,7 @@ public:
     ProteinPredictorPtr cbsIteration = new ProteinPredictor(cbsPredictor);
     cbsIteration->addTarget(cbsTarget);
     iterations->addPredictor(cbsIteration);
+    */
     // DSB
     LargeProteinParametersPtr dsbParameter = input.getObjectAndCast<LargeProteinParameters>(context);
     LargeProteinPredictorParametersPtr dsbPredictor = new LargeProteinPredictorParameters(dsbParameter);
@@ -2079,15 +2081,13 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     ExecutionContextPtr remoteContext = distributedExecutionContext(context, T("monster24.montefiore.ulg.ac.be"), 1664,
-                                                                    T("120703-BFS-CBS-DSB"), T("jbecker@screen"), T("jbecker@giga"),
-                                                                    fixedResourceEstimator(1, 12 * 1024, 24), false);
+                                                                    T("120719-BFS-DSB"), T("jbecker@screen"), T("jbecker@giga"),
+                                                                    fixedResourceEstimator(1, 12 * 1024, 100), false);
     LargeProteinParametersPtr initialParameters = new LargeProteinParameters();
-    initialParameters->pssmWindowSize = 15;
-    initialParameters->separationProfilSize = 17;
     OptimizationProblemPtr problem = new OptimizationProblem(new DSBLearnerFunction(inputDirectory, supervisionDirectory),
                                                              initialParameters, SamplerPtr(),
                                                              new DSBLearnerFunction(inputDirectory, supervisionDirectory, true));
-    OptimizerPtr optimizer = bestFirstSearchOptimizer(LargeProteinParameters::createCbsRelatedStreams(), context.getFile(optimizerStateFile));
+    OptimizerPtr optimizer = bestFirstSearchOptimizer(LargeProteinParameters::createStreams(), context.getFile(optimizerStateFile));
 
     return optimizer->compute(*remoteContext.get(), problem);
   }
