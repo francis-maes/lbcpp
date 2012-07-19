@@ -715,8 +715,8 @@ protected:
 class DisuflideSeparationProfilFeatureGenerator : public FeatureGenerator
 {
 public:
-  DisuflideSeparationProfilFeatureGenerator(size_t windowSize)
-    : windowSize(windowSize) {}
+  DisuflideSeparationProfilFeatureGenerator(size_t windowSize, bool normalize)
+    : windowSize(windowSize), normalize(normalize) {}
 
   virtual size_t getNumRequiredInputs() const
     {return 2;}
@@ -747,11 +747,15 @@ public:
     if (n <= 1)
       return;
 
-    double zFactor = 0.0;
-    for (size_t i = 0; i < n; ++i)
-      if (i != index)
-        zFactor += matrix->getElement(index, i).getDouble();
-    jassert(zFactor > 1e-6);
+    double zFactor = 1.0;
+    if (normalize)
+    {
+      zFactor = 0.0;
+      for (size_t i = 0; i < n; ++i)
+        if (i != index)
+          zFactor += matrix->getElement(index, i).getDouble();
+      jassert(zFactor > 1e-6);
+    }
 
     const int startCysteinIndex = index - windowSize / 2;
     for (size_t i = (startCysteinIndex < 0) ? -startCysteinIndex : 0;
@@ -762,10 +766,15 @@ public:
 
 protected:
   size_t windowSize;
+  bool normalize;
 };
 
 class DisulfideInfoFeatureGenerator : public FeatureGenerator
 {
+public:
+  DisulfideInfoFeatureGenerator(bool useProbability, bool useNormProbability)
+    : useProbability(useProbability), useNormProbability(useNormProbability) {}
+
   virtual size_t getNumRequiredInputs() const
     {return 3;}
   
@@ -778,7 +787,13 @@ class DisulfideInfoFeatureGenerator : public FeatureGenerator
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
     DefaultEnumerationPtr res = new DefaultEnumeration();
-    res->addElement(context, T("[DSB(i,j)]"));
+    if (useProbability)
+      res->addElement(context, T("[DSB(i,j)]"));
+    if (useNormProbability)
+    {
+      res->addElement(context, T("[DSB(i,j)/Sum_i]"));
+      res->addElement(context, T("[DSB(i,j)/Sum_j]"));
+    }
     return res;
   }
   
@@ -796,9 +811,28 @@ class DisulfideInfoFeatureGenerator : public FeatureGenerator
 
     jassert(firstIndex < n && secondIndex < n);
 
-    callback.sense(0, matrix->getElement(firstIndex, secondIndex).getDouble());
+    size_t index = 0;
+    if (useNormProbability)
+      callback.sense(index++, matrix->getElement(firstIndex, secondIndex).getDouble());    
+    
+    if (useNormProbability)
+    {
+      double ziFactor = 0.0;
+      for (size_t i = 0; i < n; ++i)
+        ziFactor += matrix->getElement(firstIndex, i).getDouble();
+      
+      double zjFactor = 0.0;
+      for (size_t i = 0; i < n; ++i)
+        zjFactor += matrix->getElement(secondIndex, i).getDouble();
+      
+      callback.sense(index++, matrix->getElement(firstIndex, secondIndex).getDouble() / ziFactor);
+      callback.sense(index++, matrix->getElement(firstIndex, secondIndex).getDouble() / zjFactor);
+    }
   }
-  
+
+private:
+  bool useProbability;
+  bool useNormProbability;
 };
 
 class CysteinBondingStateRatio : public SimpleUnaryFunction

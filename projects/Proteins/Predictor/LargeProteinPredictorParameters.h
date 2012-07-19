@@ -218,6 +218,12 @@ public:
   size_t cbsMeanSize;
   size_t cbsStdDevSize;
 
+  /* Disulfide Connectivity */
+  size_t dsbProfilSize;
+  size_t normalizedDsbProfilSize;
+  bool useDsbProbability;
+  bool useNormDsbProbability;
+
   LargeProteinParameters() :
     /* Global Features */
     useProteinLength(false), useNumCysteins(false),
@@ -248,7 +254,11 @@ public:
     useSTALIntervalHistogram(false),
   
     /* Cysteine Bonding State */
-    cbsAbsoluteSize(0), cbsRelativeSize(0), cbsMeanSize(0), cbsStdDevSize(0)
+    cbsAbsoluteSize(0), cbsRelativeSize(0), cbsMeanSize(0), cbsStdDevSize(0),
+
+    /* Disulfide Connectivity */
+    dsbProfilSize(0), normalizedDsbProfilSize(0),
+    useDsbProbability(false), useNormDsbProbability(false)
   {}
 
   static std::vector<StreamPtr> createStreams()
@@ -287,11 +297,30 @@ public:
           values.push_back(j);
         res[i] = integerStream(positiveIntegerType, values);
       }
-      else if (varName == T("separationProfilSize"))
+      else if (varName.endsWith(T("ProfilSize")))
       {
         std::vector<int> values;
         for (int j = 1; j < 20; j += 2)
           values.push_back(j);
+        res[i] = integerStream(positiveIntegerType, values);
+      }
+      if (varName.startsWith(T("cbs")))
+      {
+        std::vector<int> values;
+        values.push_back(1);
+        values.push_back(5);
+        values.push_back(9);
+        values.push_back(11);
+        values.push_back(15);
+        values.push_back(19);
+        values.push_back(21);
+        values.push_back(25);
+        /*
+         for (int j = 1; j < 20; j += 2)
+         values.push_back(j);
+         for (int j = 21; j < 40; j += 4)
+         values.push_back(j);
+         */
         res[i] = integerStream(positiveIntegerType, values);
       }
       else
@@ -766,8 +795,8 @@ public:
     if (fp->useSTALIntervalHistogram)
       builder.addFunction(accumulatorWindowMeanFunction(), stalAccumulator, firstPosition, secondPosition, T("h(STAL1,STAL2)"));
 
-    
-    builder.addFunction(new DisulfideInfoFeatureGenerator(), dsb, firstIndex, secondIndex, T("dsb"));
+    if (fp->useDsbProbability || fp->useNormDsbProbability)
+      builder.addFunction(new DisulfideInfoFeatureGenerator(fp->useDsbProbability, fp->useNormDsbProbability), dsb, firstIndex, secondIndex, T("dsb"));
 
     
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
@@ -906,8 +935,10 @@ public:
       // cystein profil
       if (fp->separationProfilSize)
         builder.addFunction(new CysteinSeparationProfilFeatureGenerator(fp->separationProfilSize, true), protein, position, T("CysProfil(") + String((int)fp->separationProfilSize) + T(")"));
-
-      builder.addFunction(new DisuflideSeparationProfilFeatureGenerator(fp->separationProfilSize), dsb, cysteinIndex, T("DsbProfil(") + String((int)fp->separationProfilSize) + T(")"));
+    if (fp->dsbProfilSize)
+      builder.addFunction(new DisuflideSeparationProfilFeatureGenerator(fp->dsbProfilSize, false), dsb, cysteinIndex, T("DsbProfil(") + String((int)fp->separationProfilSize) + T(")"));
+    if (fp->normalizedDsbProfilSize)
+      builder.addFunction(new DisuflideSeparationProfilFeatureGenerator(fp->normalizedDsbProfilSize, true), dsb, cysteinIndex, T("NormDsbProfil(") + String((int)fp->separationProfilSize) + T(")"));
     
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }

@@ -100,10 +100,10 @@ local function main(varName, varValues, filePrefix, filePostfix, numFolds)
 --  scoresOfInterest["1 - Specificity (Bias from test)"] = {index = 3, getScore = getBestSpecificity}
 
   scoresOfInterest["CBS"] = {index = 1, getScore = getScoreToMaximize}
-  scoresOfInterest["CBS S&S"] = {index = 3, getScore = getScoreToMaximize}
+--  scoresOfInterest["CBS S&S"] = {index = 3, getScore = getScoreToMaximize}
   scoresOfInterest["Qp (Perfect)"] = {index = 8, getScore = getScoreToMaximize}
 --  scoresOfInterest["Q2"] = {index = 4, getScore = getScoreToMaximize}
-  scoresOfInterest["OxyDSB Qp (Perfect)"] = {index = 10, getScore = getScoreToMaximize}
+--  scoresOfInterest["OxyDSB Qp (Perfect)"] = {index = 10, getScore = getScoreToMaximize}
 --  scoresOfInterest["Q2 (Bias form test)"] = {index = 5, getScore = getScoreToMaximize}
   for i = 1,#varValues do
     context:enter(varName .. ": " .. varValues[i])
@@ -143,75 +143,12 @@ end
 local dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/1203XX-DSBWithExtraTreesAndPerfectMatching/"
 local numFolds = 9
 
-local winSizes = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35}--, 37, 39, 41, 43, 45}
---main("Window Size", winSizes, dir .. "WindowSizes/x3_Win", "_K200_1000T_NMIN5", numFolds)
-
---main("Window Size", winSizes, dir .. "WindowTasks/x3_SingleTask11_ss3_Win", "_K10000_1000T_NMIN1", numFolds)
---main("Window Size", winSizes, dir .. "WindowTasks/x3_SingleTask11_ss8_Win", "_K10000_1000T_NMIN1", numFolds)
---main("Window Size", winSizes, dir .. "WindowTasks/x3_SingleTask11_sa_Win", "_K10000_1000T_NMIN1", numFolds)
---main("Window Size", winSizes, dir .. "WindowTasks/x3_SingleTask11_dr_Win", "_K10000_1000T_NMIN1", numFolds)
---main("Window Size", winSizes, dir .. "WindowTasks/x3_SingleTask11_stal_Win", "_K10000_1000T_NMIN1", numFolds)
-dir2 = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/1204XX-DSBFeatures/"
-feat = {"pssm19", "pssm19csp17", "pssm19csp17ss8hl77"}
---main("Feature", feat, dir2 .. "FromBFS/x3_", "_K0_1000T_NMIN1", numFolds)
-
-local trees = {10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000}
---main("Trees", trees, dir2 .. "FromBFS/x3_pssm19csp17_K0_", "T_NMIN1", numFolds)
-
-local nmin = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 31, 41, 51, 61, 71, 81, 91, 101}--, 13, 15, 21, 51, 101, 201}
---main("Nmin", nmin, dir2 .. "FromBFS/x3_pssm19csp17_K0_1000T_NMIN", "", numFolds)
-
-local k = {1, 2, 5, 10, 20, 50, 100, 200, 500, 666} --, 10000}
---main("K", k, dir2 .. "FromBFS/x3_pssm19csp17_K", "_1000T_NMIN1", numFolds)
---main("K", k, dir .. "K/x3_Win19_K", "_1000T_NMIN1", numFolds)
---main("Task: ss8 - K", k, dir .. "Tasks/x3_ss8_Win19_K", "_1000T_NMIN1", numFolds)
-
---main("K200 - Nmin", {1, 3, 5, 7, 11, 21}, dir .. "K200/x3_Win19_K200_1000T_NMIN", "", numFolds)
-
-local tasks = {"NoTask", "ss3", "ss8", "sa", "dr", "stal", "No-ss3", "No-ss8", "No-sa", "No-dr", "No-stal"}
---main("Task: AllTask", {""}, dir .. "Tasks/x3_Win19_K200_1000T_NMIN5", "", numFolds)
---main("Task", tasks, dir .. "Tasks/x3_", "_Win19_K0_1000T_NMIN5", numFolds)
-
-nmin = {1, 3, 5, 7, 9, 11}
---main("Task: NoTask, Nmin", nmin, dir .. "Tasks/x3_NoTask_Win19_K2000_1000T_NMIN", "", numFolds)
-
---main("All", {""}, dir .. "WindowSizes/x3_Win19_HugeK_1000T_NMIN1", "", numFolds)
-
-nmin = {1, 3, 5, 7, 11, 21}
---main("Nmin", nmin, dir .. "K200_MultiGreedy/x3_Win19_K200_1000T_NMIN", "", numFolds)
+--local winSizes = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35}--, 37, 39, 41, 43, 45}
 
 
-local features = {"AllTask-NoGlobalHisto", "AllTask-NoLocalHisto", "AllTask-NoInterHisto", "AllTask-NoWindows", "AllTask-NoOthers",
-                  "GlobalHisto", "LocalHisto", "InterHisto", "Windows", "Others",
-                  "OthersGlobalHisto", "OthersLocalHisto", "OthersInterHisto", "OthersWindows"}
-features = {"GlobalHistoOthersWindows", "LocalHistoOthersWindows", "InterHistoOthersWindows"}
---main("Features", features, dir .. "Features/x3_", "_Win19_K200_1000T_NMIN5", numFolds)
-features = {""}
---main("Features", features, dir .. "Features/x3_PSSM11_Win19_K10000_1000T_NMIN1", "", numFolds)
+dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120717-DSBFeatures/"
+main("NormPCiCj", {""}, dir .. "x3_K0_1000T_NMIN1_DSB_PlosOne_PCiCj_NormPCiCj", "", numFolds)
 
-
-features = {"GlobalHisto", "LocalHisto", "InterHisto", "Windows", "Others"}
-features = {"GlobalHistoOthers", "LocalHistoOthers", "InterHistoOthers", "WindowsOthers"}
-features = {"GlobalHistoWindowsOthers", "LocalHistoWindowsOthers", "InterHistoWindowsOthers"}
-features = {"LocalHistoGlobalHistoWindowsOthers", "InterHistoGlobalHistoWindowsOthers"}
---main("AA & PSSM Features", features, dir .. "NoTask/x3_", "_Win19_K200_1000T_NMIN5", numFolds)
-
-dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120619-CBSBasedDSB/"
-features = {"pssm15", "pssm15_csp17", "pssm15_csp17_ss8local77"}
---main("Baseline", features, dir .. "x3_", "_K0_1000T_NMIN1_Baseline", numFolds)
---main("CBS-Based", features, dir .. "x3_", "_K0_1000T_NMIN1_ODSB", numFolds)
---main("CBS", features, dir .. "x3_", "_K0_1000T_NMIN1_CBS", numFolds)
---main("CBS-DSB", features, dir .. "x3_", "_K0_1000T_NMIN1_CBS-DSB5", numFolds)
-
-dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120622-CBS/"
-features = {"hlpssm75", "hlpssm75_hlsa10", "hlpssm75_hlsa10_hgsa", "hlpssm75_hlsa10_hgsa_csp12"}
-main("CBS", features, dir .. "x3_", "_K0_1000T_NMIN1_CBS", numFolds)
-
-dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120626-CBS-ODSB/"
-local threshold = {"0.10", "0.15", "0.20", "0.25", "0.30", "0.35", "0.40", "0.45", "0.50", "0.55", "0.60", "0.65", "0.70", "0.75", "0.80", "0.85", "0.90", "0.95"}
---main("CBS-DSB", threshold, dir .. "x3_K0_1000T_NMIN1_CBS-ODSB_TH", "", numFolds)
-
---main("CBS-DSB Feature", {""}, dir .. "x3_K0_1000T_NMIN1_CBS-DSB_Feature", "", numFolds)
 
 -- ----- SP39 ----- --
 
