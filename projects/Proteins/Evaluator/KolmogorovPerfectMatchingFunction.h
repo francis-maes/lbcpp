@@ -106,16 +106,21 @@ private:
   {
     //std::cout << "Kolmogorov Perfect Matching - #Vertex: " << verticesMap.size() << " - #Edge: " << numEdges << std::endl;
     //jassert(verticesMap.size() % 2 == 0 && numEdges >= verticesMap.size() - 1);
-    PerfectMatching matching(verticesMap.size(), numEdges);
+    PerfectMatching matching(verticesMap.size(), verticesMap.size() * (verticesMap.size() - 1) / 2);//numEdges);
     matching.options.verbose = false;
     // Add edges
+//std::cout << "applyKolmogorovAlgorithm" << std::endl;
     for (size_t i = 0; i < verticesMap.size(); ++i)
       for (size_t j = i + 1; j < verticesMap.size(); ++j)
       {
         const double value = matrix->getValue(verticesMap[i], verticesMap[j]);
-        if (value > threshold)
+        if (value > threshold || true)
+        {
           matching.AddEdge(i, j, -(int)(value * 10000.f));
+//std::cout << "Edge: " << i << " " << j << " > " << value << std::endl;
+        }
       }
+//std::cout << std::endl;
     matching.Solve(true);
 
     double res = 0.f;
@@ -123,7 +128,8 @@ private:
     {
       const size_t j = matching.GetMatch(i);
       jassert(j < verticesMap.size());
-      jassert(matrix->getValue(verticesMap[i], verticesMap[j]) > threshold);
+      if (matrix->getValue(verticesMap[i], verticesMap[j]) <= threshold)
+        continue;
       jassert(result[verticesMap[i]] == (size_t)-1);
       result[verticesMap[i]] = verticesMap[j];
       res += matrix->getValue(verticesMap[i], verticesMap[j]);
