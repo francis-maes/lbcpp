@@ -149,6 +149,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_LUAPE_SOURCES
   Luape/NRPAMCAlgorithm.h
   Luape/MCOptimizer.h
   Luape/MetaMCSandBox.h
+  Luape/MorpionSandBox.h
   Luape/LuapeFormulaDiscovery.h
   Luape/LuapeBanditFormulaSearchProblem.h
   Luape/LuapeLearningFormulaSearchProblem.h

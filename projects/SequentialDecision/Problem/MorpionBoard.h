@@ -56,6 +56,12 @@ public:
   bool operator !=(const MorpionDirection& other) const
     {return dir != other.dir;}
 
+  bool operator ==(Direction d) const
+    {return dir == d;}
+
+  bool operator !=(Direction d) const
+    {return dir != d;}
+
 private:
   Direction dir;
 };
