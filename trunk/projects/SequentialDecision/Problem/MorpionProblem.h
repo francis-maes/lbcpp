@@ -99,6 +99,56 @@ private:
 };
 
 /*
+** Action Vector
+*/
+class MorpionActionVector : public Container
+{
+public:
+  MorpionActionVector() : numActions(0) {}
+
+  virtual TypePtr getElementsType() const
+    {return morpionActionClass;}
+
+  virtual size_t getNumElements() const
+    {return numActions;}
+
+  virtual Variable getElement(size_t index) const
+    {return Variable(new MorpionAction(actions[index]), morpionActionClass);}
+
+  virtual void setElement(size_t index, const Variable& value)
+    {jassert(false);}
+
+  size_t getNumActions() const
+    {return numActions;}
+
+  const MorpionAction& getAction(size_t index) const
+    {jassert(index < numActions); return actions[index];}
+
+  void clear()
+    {numActions = 0;}
+
+  void append(const MorpionAction& action)
+  {
+    jassert(numActions + 1 < maxNumActions);
+    actions[numActions] = action;
+    ++numActions;
+  }
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    MorpionActionVector& target = *t.staticCast<MorpionActionVector>();
+    target.numActions = numActions;
+    memcpy(target.actions, actions, sizeof (MorpionAction) * numActions);
+  }
+
+private:
+  enum {maxNumActions = 128};
+  MorpionAction actions[maxNumActions];
+  size_t numActions;
+};
+typedef ReferenceCountedObjectPtr<MorpionActionVector> MorpionActionVectorPtr;
+
+/*
 ** State
 */
 class MorpionState;
@@ -112,7 +162,7 @@ public:
       crossLength(crossLength), isDisjoint(isDisjoint)
   {
     board.initialize(crossLength);
-    availableActions = computeAvailableActions();    
+    updateAvailableActions();    
   }
   MorpionState() : crossLength(0), isDisjoint(false) {}
 
@@ -173,7 +223,7 @@ public:
     reward = 1.0;
     if (stateBackup)
       *stateBackup = availableActions;
-    availableActions = computeAvailableActions();
+    updateAvailableActions();
 
 #if 0
     ObjectVectorPtr dbg = computeAvailableActionsReference();
@@ -206,7 +256,7 @@ public:
 
 	virtual bool undoTransition(ExecutionContext& context, const Variable& stateBackup)
 	{
-    availableActions = stateBackup.getObjectAndCast<ObjectVector>();
+    availableActions = stateBackup.getObjectAndCast<MorpionActionVector>();
     jassert(history.size());
     MorpionActionPtr action = history.back();
     history.pop_back();
@@ -294,7 +344,7 @@ public:
     board.initialize(crossLength);
     for (size_t i = 0; i < history.size(); ++i)
       addLineOnBoard(history[i]);
-    availableActions = computeAvailableActions();    
+    updateAvailableActions();    
     return true;
   }
 
@@ -307,14 +357,14 @@ protected:
   MorpionBoard board;
   std::vector<MorpionActionPtr> history;
 
-  ObjectVectorPtr availableActions;
+  MorpionActionVectorPtr availableActions;
 
   void addLineOnBoard(const MorpionActionPtr& action)
   {
 #ifdef JUCE_DEBUG
     bool ok = false;
-    for (size_t i = 0; i < availableActions->getNumElements(); ++i)
-      if (*availableActions->getAndCast<MorpionAction>(i) == *action)
+    for (size_t i = 0; i < availableActions->getNumActions(); ++i)
+      if (availableActions->getAction(i) == *action)
         ok = true;
     jassert(ok);
 #endif // JUCE_DEBUG
@@ -344,31 +394,32 @@ protected:
     board.markAsOccupied(action->getPosition(), false);
   }
 
-  ObjectVectorPtr computeAvailableActions() const
+  void updateAvailableActions()
   {
-    ObjectVectorPtr res = new ObjectVector(availableActions ? availableActions->getClass() : objectVectorClass(morpionActionClass));
-    int minSizeX, maxSizeX, minSizeY, maxSizeY;
-    board.getXRange(minSizeX, maxSizeX);
-    board.getYRange(minSizeY, maxSizeY);
-    for (int x = minSizeX; x <= maxSizeX; ++x)
-      for (int y = minSizeY; y <= maxSizeY; ++y)
+    //if (!availableActions)
+      availableActions = new MorpionActionVector();
+   // else
+   //   availableActions->clear();
+    int minX, minY, maxX, maxY;
+    board.getXYRange(minX, minY, maxX, maxY);
+    for (int x = minX; x <= maxX; ++x)
+      for (int y = minY; y <= maxY; ++y)
           if (!board.isOccupied(x, y) && board.isNeighbor(x, y))     
-            addActionsWithPosition(MorpionPoint(x, y), res); // if it can form a line
-    return res;
+            addActionsWithPosition(MorpionPoint(x, y)); // if it can form a line
   }
 
-  void addActionsWithPosition(const MorpionPoint& position, ObjectVectorPtr& res) const
+  void addActionsWithPosition(const MorpionPoint& position) const
   {
     for (size_t dir = MorpionDirection::NE; dir <= MorpionDirection::S; ++dir)
     {
       MorpionDirection direction((MorpionDirection::Direction)dir);
       if (board.isOccupied(position.moveIntoDirection(direction, 1)) || // fast check to discard directions
           board.isOccupied(position.moveIntoDirection(direction, -1)))
-        addActionsWithPositionAndDirection(position, direction, res);
+        addActionsWithPositionAndDirection(position, direction);
     }
   }
 
-  void addActionsWithPositionAndDirection(const MorpionPoint& point, const MorpionDirection& direction, ObjectVectorPtr& res) const
+  void addActionsWithPositionAndDirection(const MorpionPoint& point, const MorpionDirection& direction) const
   {
     MorpionPoint previousPt;
     int delta;
@@ -385,7 +436,7 @@ protected:
     int lowestPoint = delta + 1;
     
     previousPt = isDisjoint ? point.moveIntoDirection(direction, -1) : point;
-    for (delta = -1; delta >= -2 * (int)crossLength; --delta)
+    for (delta = -1; delta >= -(int)crossLength; --delta) // FIXME: 2 * crossLength to enable action domination
     {
       MorpionPoint pt = previousPt.moveIntoDirection(direction, -1);
       if (board.hasSegment(pt, direction))
@@ -406,7 +457,7 @@ protected:
     int highestPoint = delta - 1;
     
     previousPt = isDisjoint ? point : point.moveIntoDirection(direction, -1);
-    for (delta = 1; delta <= 2 * (int)crossLength; ++delta)
+    for (delta = 1; delta <= (int)crossLength; ++delta) // FIXME: 2 * crossLength to enable action domination
     {
       MorpionPoint pt = previousPt.moveIntoDirection(direction, 1);
       if (board.hasSegment(pt, direction))
@@ -424,13 +475,16 @@ protected:
     if (minIndexInLine > maxIndexInLine)
       return;
     else if (minIndexInLine == maxIndexInLine)
-      res->append(new MorpionAction(point, direction, maxIndexInLine, maxIndexInLine));
+      availableActions->append(MorpionAction(point, direction, maxIndexInLine, maxIndexInLine));
     else
     {
+       for (int indexInLine = minIndexInLine; indexInLine <= maxIndexInLine; ++indexInLine)
+         availableActions->append(MorpionAction(point, direction, indexInLine, indexInLine));
+#if 0
       /*std::cout << "Lowest Point: " << lowestPoint << " Segment: " << lowestSegment
               << ", Highest Point: " << highestPoint << " Segment: " << highestSegment
-              << ", Indices: " << minIndexInLine << " -- " << maxIndexInLine << std::endl;
-      std::cout << "Penalties: ";*/
+              << ", Indices: " << minIndexInLine << " -- " << maxIndexInLine << std::endl;*/
+      //std::cout << "Penalties: ";
       std::vector<size_t> penalties(maxIndexInLine - minIndexInLine + 1);
       size_t bestPenalty = (size_t)-1;
       int bestIndexInLine = 0;
@@ -439,6 +493,7 @@ protected:
       {
         int firstPoint = -indexInLine;
         int lastPoint = firstPoint + (int)crossLength - 1;
+        //std::cout << lowestSegment << " " << firstPoint << " " << lastPoint << " " << highestSegment << std::endl;
         int distanceFromLowestSegment = firstPoint - lowestSegment;
         int distanceFromHighestSegment = highestSegment - lastPoint;
         jassert(distanceFromLowestSegment >= 0 && distanceFromHighestSegment >= 0);
@@ -454,9 +509,23 @@ protected:
       for (int indexInLine = minIndexInLine; indexInLine <= maxIndexInLine; ++indexInLine)
       {
         size_t requestedIndexInLine = (size_t)indexInLine;
-        size_t obtainedIndexInLine = (penalties[indexInLine - minIndexInLine] == bestPenalty ? requestedIndexInLine : (size_t)bestIndexInLine);
-        res->append(new MorpionAction(point, direction, requestedIndexInLine, obtainedIndexInLine));
+        size_t obtainedIndexInLine = requestedIndexInLine;
+
+        // change the index in line if the action is dominated
+        if (penalties[indexInLine - minIndexInLine] > bestPenalty)
+        {
+          size_t nearestIndexDistance = crossLength;
+          for (int indexInLine2 = minIndexInLine; indexInLine2 <= maxIndexInLine; ++indexInLine2)
+            if (penalties[indexInLine2 - minIndexInLine] == bestPenalty)
+            {
+              size_t distance = (size_t)abs(indexInLine2 - indexInLine);
+              if (distance < nearestIndexDistance)
+                nearestIndexDistance = distance, obtainedIndexInLine = (size_t)indexInLine2;
+            }
+        }
+        availableActions->append(MorpionAction(point, direction, requestedIndexInLine, obtainedIndexInLine));
       }
+#endif // 0
     }
   }
 
@@ -606,8 +675,7 @@ public:
 
     // get board range
     int xMin, xMax, yMin, yMax;
-    board.getXRange(xMin, xMax);
-    board.getYRange(yMin, yMax);
+    board.getXYRange(xMin, yMin, xMax, yMax);
     if (xMax < xMin || yMax < yMin)
       return;
 
@@ -638,8 +706,8 @@ public:
     g.setColour(juce::Colours::black);
     MorpionBoard initialBoard;
     initialBoard.initialize(state->getCrossLength());
-    for (int x = initialBoard.getMinX(); x <= initialBoard.getMaxX(); ++x)
-      for (int y = initialBoard.getMinY(x); y <= initialBoard.getMaxY(x); ++y)
+    for (int x = 0; x < (int)initialBoard.getWidth(); ++x)
+      for (int y = 0; y < (int)initialBoard.getHeight(); ++y)
         if (initialBoard.isOccupied(x, y))
         {
           int px = boardPixelsX + (x - xMin) * edgePixels;
