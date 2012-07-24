@@ -359,43 +359,6 @@ protected:
 
 /////////////////////////////////
 
-class RunNRPAWorkUnit : public RunMCAlgorithmWorkUnit
-{
-public:
-  virtual Variable run(ExecutionContext& context)
-  {
-    if (!problem)
-      return false;
-
-    RandomGeneratorPtr random = context.getRandomGenerator();
-
-    CompositeWorkUnitPtr wu(new CompositeWorkUnit("NRPA", numRuns));
-    for (size_t run = 0; run < numRuns; ++run)
-    {
-      /*static const size_t numIterationss[] = {5, 10, 20, 50, 100, 200, 500, 1000};
-      static const double learningRates[] = {0.001, 0.01, 0.1, 1.0, 10.0};
-    
-      size_t numIterations = numIterationss[random->sampleSize(8)];
-      double learningRate = learningRates[random->sampleSize(5)];*/
-      MCAlgorithmPtr algorithm = new NRPAMCAlgorithm(6, 0, 0.0);
-      wu->setWorkUnit(run, new RunAlgorithmWorkUnit(problem, algorithm, budget, run, algorithm->toShortString()));
-    }
-    wu->setProgressionUnit("Runs");
-    wu->setPushChildrenIntoStackFlag(true);
-
-    ContainerPtr results = context.run(wu).getObjectAndCast<Container>();
-
-    ScalarVariableStatisticsPtr statistics(new ScalarVariableStatistics("scores"));
-    for (size_t i = 0; i < results->getNumElements(); ++i)
-      statistics->push(results->getElement(i).toDouble());
-    context.informationCallback("Results: " + statistics->toShortString());
-    context.resultCallback("statistics", statistics);
-    return true;
-  }
-};
-
-/////////////
-
 class MetaMCSandBox : public WorkUnit
 {
 public:

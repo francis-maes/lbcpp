@@ -311,7 +311,7 @@ protected:
 
   void addLineOnBoard(const MorpionActionPtr& action)
   {
-    #ifdef JUCE_DEBUG
+#ifdef JUCE_DEBUG
     bool ok = false;
     for (size_t i = 0; i < availableActions->getNumElements(); ++i)
       if (*availableActions->getAndCast<MorpionAction>(i) == *action)

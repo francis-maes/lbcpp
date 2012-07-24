@@ -91,12 +91,6 @@
     <variable type="PositiveInteger" name="budget"/>
     <variable type="PositiveInteger" name="numRuns"/>  
   </class>
-  
-  <class name="RunNRPAWorkUnit" base="WorkUnit">
-    <variable type="MCProblem" name="problem"/>
-    <variable type="PositiveInteger" name="budget"/>
-    <variable type="PositiveInteger" name="numRuns"/>  
-  </class>
 
   <class name="LuapeSandBox" base="WorkUnit">
     <variable type="File" name="trainFile"/>
@@ -207,5 +201,16 @@
   <class name="EmpiricalContinuousDistributionMinimumFunction" base="EmpiricalContinuousDistributionLuapeAccessor"/>
   <class name="EmpiricalContinuousDistributionMaximumFunction" base="EmpiricalContinuousDistributionLuapeAccessor"/>
   <class name="EmpiricalContinuousDistributionMedianFunction" base="EmpiricalContinuousDistributionLuapeAccessor"/>
+
+  <!-- Morpion -->
+  <class name="PlayMorpionTrajectory" base="WorkUnit">
+    <variable type="File" name="file"/>
+  </class>
+
+  <class name="RunNRPAWorkUnit" base="WorkUnit">
+    <variable type="MCProblem" name="problem"/>
+    <variable type="PositiveInteger" name="budget"/>
+    <variable type="PositiveInteger" name="numRuns"/>
+  </class>
 
 </library>
