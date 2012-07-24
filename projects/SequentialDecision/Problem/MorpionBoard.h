@@ -101,64 +101,10 @@ private:
   int x, y;
 };
 
-/*
-** Board
-*/
-template<class T>
-class MorpionBidirectionalVector
-{
-public:
-  MorpionBidirectionalVector(size_t initialNegSize, size_t initialPosSize, const T& initialValue)
-    : neg(initialNegSize, initialValue), pos(initialPosSize, initialValue), initialValue(initialValue) {}
-  MorpionBidirectionalVector() {}
-
-  const T& operator [](int index) const
-    {return index >= 0 ? get(pos, posIndex(index)) : get(neg, negIndex(index));}
-  
-  T& operator [](int index)
-    {return index >= 0 ? resizeAndGet(pos, posIndex(index)) : resizeAndGet(neg, negIndex(index));}
-
-  size_t getPositiveSize() const
-    {return pos.size();}
-
-  size_t getNegativeSize() const
-    {return neg.size();}
-
-  int getMinIndex() const
-    {return -(int)neg.size();}
-
-  int getMaxIndex() const
-    {return pos.size() - 1;}
-
-  void clear()
-    {neg.clear(); pos.clear();}
-
-private:
-  std::vector<T> neg;
-  std::vector<T> pos;
-  T initialValue;
-
-  inline size_t posIndex(int index) const
-    {return (size_t)index;}
-
-  inline size_t negIndex(int index) const
-    {return (size_t)(-(index + 1));}
-
-  const T& get(const std::vector<T>& v, size_t index) const
-    {return index < v.size() ? v[index] : initialValue;}
-
-  T& resizeAndGet(std::vector<T>& v, size_t index)
-  {
-    if (v.size() <= index)
-      v.resize(index + 1, initialValue);
-    return v[index];
-  }
-};
-
 class MorpionBoard
 {
 public:
-  MorpionBoard() : b(0, 0, MorpionBidirectionalVector< char >(0, 0, 0)) {}
+  MorpionBoard() : width(0), height(0) {}
 
   enum
   {
@@ -171,12 +117,15 @@ public:
   };
 
   void clear()
-  {
-    b.clear();
-  }
+    {board.clear();}
 
   void initialize(size_t crossLength)
   {
+    size_t dim = crossLength * 10;
+    resizeBoard(dim, dim);
+    int refX = crossLength * 4;
+    int refY = crossLength * 4;
+
     int n = crossLength - 2;
     int lines[] = {
             n, 0, 1, 0,
@@ -190,8 +139,8 @@ public:
 
     for (size_t i = 0; i < sizeof (lines) / sizeof (int); i += 4)
     {
-      int x = lines[i];
-      int y = lines[i+1];
+      int x = lines[i] + refX;
+      int y = lines[i+1] + refY;
       int dx = lines[i+2];
       int dy = lines[i+3];
       for (int j = 0; j <= n; ++j)
@@ -203,11 +152,26 @@ public:
     }
   }
 
+  size_t getWidth() const
+    {return width;}
+
+  size_t getHeight() const
+    {return height;}
+
+  char getState(const MorpionPoint& point) const
+    {return board[point.getY() * width + point.getX()];}
+
   char getState(int x, int y) const
-    {return b[x][y];}
+    {return board[y * width + x];}
+  
+  char& getState(const MorpionPoint& point)
+    {return board[point.getY() * width + point.getX()];}
+
+  char& getState(int x, int y)
+    {return board[y * width + x];}
 
   bool isOccupied(int x, int y) const
-    {return (b[x][y] & flagOccupied) == flagOccupied;}
+    {return (getState(x, y) & flagOccupied) == flagOccupied;}
 
   bool isOccupied(const MorpionPoint& point) const
     {return isOccupied(point.getX(), point.getY());}
@@ -216,7 +180,7 @@ public:
   {
     if (occupied)
     {
-      b[x][y] |= flagOccupied;
+      getState(x, y) |= flagOccupied;
       markAsNeighbor(x - 1, y - 1);
       markAsNeighbor(x - 1, y);
       markAsNeighbor(x - 1, y + 1);
@@ -228,7 +192,7 @@ public:
     }
     else
     {
-      b[x][y] &= ~flagOccupied;
+      getState(x, y) &= ~flagOccupied;
       undoNeighborState(x - 1, y - 1);
       undoNeighborState(x - 1, y);
       undoNeighborState(x - 1, y + 1);
@@ -244,50 +208,45 @@ public:
     {markAsOccupied(point.getX(), point.getY(), occupied);}
 
   bool isNeighbor(int x, int y) const
-    {return (b[x][y] & flagNeighbor) == flagNeighbor;}
+    {return (getState(x, y) & flagNeighbor) == flagNeighbor;}
 
   void addSegment(const MorpionPoint& point, const MorpionDirection& direction)
-    {b[point.getX()][point.getY()] |= getFlag(direction);}
+    {getState(point) |= getFlag(direction);}
 
   void removeSegment(const MorpionPoint& point, const MorpionDirection& direction)
-    {b[point.getX()][point.getY()] &= ~getFlag(direction);}
+    {getState(point) &= ~getFlag(direction);}
 
   bool hasSegment(int x, int y, const MorpionDirection& direction) const
-    {return (b[x][y] & getFlag(direction)) != 0;}
+    {return (getState(x, y) & getFlag(direction)) != 0;}
 
   bool hasSegment(const MorpionPoint& point, const MorpionDirection& direction) const
     {return hasSegment(point.getX(), point.getY(), direction);}
 
-  int getMinX() const
-    {return b.getMinIndex();}
-
-  int getMaxX() const
-    {return b.getMaxIndex();}
-
-  int getMinY(int x) const
-    {return b[x].getMinIndex();}
-
-  int getMaxY(int x) const
-    {return b[x].getMaxIndex();}
-
-  void getXRange(int& minIndex, int& maxIndex) const
-    {minIndex = getMinX(); maxIndex = getMaxX();}
-
-  void getYRange(int& minIndex, int& maxIndex) const
+  void getXYRange(int& minX, int& minY, int& maxX, int& maxY) const
   {
-    int x1 = getMinX();
-    int x2 = getMaxX();
-    minIndex = 0x7FFFFFFF;
-    maxIndex = -0x7FFFFFFF;
-    for (int x = x1; x <= x2; ++x)
-    {
-      minIndex = juce::jmin(minIndex, getMinY(x));
-      maxIndex = juce::jmax(maxIndex, getMaxY(x));
-    }
+    minX = 0x7FFFFFFF;
+    minY = 0x7FFFFFFF;
+    maxX = -0x7FFFFFFF;
+    maxY = -0x7FFFFFFF;
+    for (size_t i = 0; i < board.size(); ++i)
+      if (board[i] != 0)
+      {
+        int x = ((int)i % width);
+        int y = ((int)i / width);
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
+      }
   }
 
 private:
-  MorpionBidirectionalVector< MorpionBidirectionalVector< char > > b;
+  size_t width;
+  size_t height;
+  std::vector<char> board;
+
+  void resizeBoard(size_t width, size_t height)
+    {this->width = width; this->height = height; board.resize(width * height, 0);}
 
   static int getFlag(const MorpionDirection::Direction& dir)
   {
@@ -304,7 +263,7 @@ private:
   void undoNeighborState(int x, int y)
   {
     if (!computeIfNeighbor(x, y))
-      b[x][y] &= ~flagNeighbor;
+      getState(x, y) &= ~flagNeighbor;
   }
 
   bool computeIfNeighbor(int x, int y) const
@@ -315,7 +274,7 @@ private:
   }
 
   void markAsNeighbor(int x, int y)
-    {b[x][y] |= flagNeighbor;}
+    {getState(x, y) |= flagNeighbor;}
 };
 
 /*
@@ -327,8 +286,10 @@ public:
   SparseDoubleVectorPtr compute(const MorpionBoard& board, size_t complexity) const
   {
     std::map<size_t, size_t> counts;
-    for (int x = board.getMinX(); x <= board.getMaxX(); ++x)
-      for (int y = board.getMinY(x); y <= board.getMaxY(x); ++y)
+    int minX, minY, maxX, maxY;
+    board.getXYRange(minX, minY, maxX, maxY);
+    for (int x = minX; x <= maxX; ++x)
+      for (int y = minY; y <= maxY; ++y)
         if (board.isOccupied(x, y))
         {
           BitMask mask = makeMask(board, x, y, complexity);

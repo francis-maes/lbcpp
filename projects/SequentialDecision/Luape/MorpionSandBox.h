@@ -86,7 +86,7 @@ public:
       return MorpionActionPtr();
     ++i;
     MorpionPoint point = parsePosition(line.substring(0, i));
-    int delta = crossLength - 2; // the reference of Pentasol is shifted compared to ours
+    int delta = crossLength * 5 - 2; // the reference of Pentasol is shifted compared to ours
     point = MorpionPoint(point.getX() - referencePosition.getX() + delta, point.getY() - referencePosition.getY() + delta);
     if (line[i] != ' ')
       return MorpionActionPtr();
@@ -171,7 +171,7 @@ public:
     
       size_t numIterations = numIterationss[random->sampleSize(8)];
       double learningRate = learningRates[random->sampleSize(5)];*/
-      MCAlgorithmPtr algorithm = new NRPAMCAlgorithm(6, 0, 0.0);
+      MCAlgorithmPtr algorithm = new NRPAMCAlgorithm(3, 100, 1.0);
       wu->setWorkUnit(run, new RunAlgorithmWorkUnit(problem, algorithm, budget, run, algorithm->toShortString()));
     }
     wu->setProgressionUnit("Runs");

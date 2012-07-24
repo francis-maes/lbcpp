@@ -102,6 +102,7 @@
     <variable type="PositiveInteger" name="requestedIndexInLine"/>
     <variable type="PositiveInteger" name="indexInLine"/>
   </class>
+  <class name="MorpionActionVector" base="Container[MorpionAction]"/>
   <class name="MorpionState" base="DecisionProblemState">
     <variable type="PositiveInteger" name="crossLength"/>
     <variable type="Boolean" name="isDisjoint"/>
