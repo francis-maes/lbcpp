@@ -31,8 +31,8 @@ public:
     isSearching = true;
 
     bestScore = -DBL_MAX;
-    bestActions.clear();
-    bestFinalState = DecisionProblemStatePtr();
+    jassert(bestActions.empty());
+    jassert(bestFinalState == DecisionProblemStatePtr());
 
     //String dbg = initialState->toShortString();
 
@@ -61,6 +61,9 @@ public:
           break;
       jassert(i < dbgActions->getNumElements());
     }*/
+
+    bestFinalState = DecisionProblemStatePtr(); // free memory
+    bestActions.clear();
     isSearching = false;
     return bestScore;
   }    

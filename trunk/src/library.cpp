@@ -196,6 +196,9 @@ public:
     }
   }
 
+  String describe(const String& name, size_t kiloBytes) const
+    {return String(kiloBytes / 1024.0, 2) + T(" Kb ") + name + T(" [") + String((int)objectsMap.find(name)->second.size()) + T("]\n");}
+
   String updateMemoryInformation()
   {
     enum {n = 5};
@@ -214,8 +217,11 @@ public:
     res += T("Most allocated objects:\n");
     size_t i = 0;
     
-    for (ObjectCountsMap::reverse_iterator it = sortedCounts.rbegin(); it != sortedCounts.rend() && i < 20; ++it, ++i)
-      res += String(it->first / 1024) + T(" Kb ") + it->second + T("\n");
+    {
+      ScopedLock _(objectsMapLock);
+      for (ObjectCountsMap::reverse_iterator it = sortedCounts.rbegin(); it != sortedCounts.rend() && i < 20; ++it, ++i)
+        res += describe(it->second, it->first);
+    }
 
     // display biggest deltas
     if (previousCounts.size())
@@ -226,8 +232,9 @@ public:
       {
         res += T("Biggest allocation increases:\n");
         i = 0;
+        ScopedLock _(objectsMapLock);
         for (ObjectCountsMap::reverse_iterator it = sortedDeltaCounts.rbegin(); it != sortedDeltaCounts.rend() && i < 20; ++it, ++i)
-          res += String(it->first / 1024.0, 2) + T(" Kb ") + it->second + T("\n");
+          res += describe(it->second, it->first);
       }
       else
         res += T("No allocation increase\n");

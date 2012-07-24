@@ -98,7 +98,8 @@
     <variable type="Container[Variable]" name="actions"/>
     <variable type="ObjectVector[SinglePlayerMCTSNode]" name="subNodes"/>
     <variable type="PositiveInteger" name="indexInParent"/>
-    <variable type="ScalarVariableStatistics" name="rewards"/>
+    <variable type="PositiveInteger" name="numRewards"/>
+    <variable type="Double" name="rewardsSum"/>
   </class>
 
   <class name="SinglePlayerMCTSOptimizerState" base="OptimizerState">

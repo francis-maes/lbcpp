@@ -150,12 +150,10 @@ protected:
 	}
 	
 	virtual double getMaxReward() const
-	{return 1.0;}
+	  {return 1.0;}
 	  
 	virtual void getObjectiveRange(double& worst, double& best) const
   	{worst = 0.0; best = 1.0;}
-	
-	
 };
 
 class PrimeNumberMCProblem : public MCProblem
@@ -167,7 +165,7 @@ public:
 	struct Objective : public LuapeMCObjective
 	{
 		Objective(LuapeRegressorPtr regressor)
-		: LuapeMCObjective(regressor) {}
+		  : LuapeMCObjective(regressor) {}
 
 	  virtual double evaluate(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& formula)
 	  {
@@ -215,10 +213,7 @@ public:
           {add=false;break;}
       if(add)
         cache.push_back((int)value);
-      
-      
       return prime;
-      
 	  }
 
     virtual void getObjectiveRange(double& worst, double& best) const
@@ -233,50 +228,54 @@ public:
 	  }
   };
 
+  LuapeRegressorPtr regressor;// always use the same instance of the regressor
+  
 	virtual std::pair<DecisionProblemStatePtr, MCObjectivePtr> getInstance(ExecutionContext& context, size_t instanceIndex)
   {
-		LuapeRegressorPtr regressor = new LuapeRegressor();
-		regressor->addInput(doubleType, "x");
+    if (!regressor)
+    {
+		  regressor = new LuapeRegressor();
+		  regressor->addInput(doubleType, "x");
 
-		regressor->addConstant(1.0);
-		regressor->addConstant(2.0);
-		regressor->addConstant(3.0);
-    regressor->addConstant(4.0);
-		regressor->addConstant(5.0);
-		regressor->addConstant(6.0);
-    regressor->addConstant(7.0);
-		regressor->addConstant(8.0);
-		regressor->addConstant(9.0);
-    regressor->addConstant(10.0);
-		regressor->addConstant(11.0);
-		regressor->addConstant(13.0);
-    regressor->addConstant(17.0);
-		regressor->addConstant(19.0);
-		regressor->addConstant(23.0);
-		regressor->addConstant(29.0);
-		regressor->addConstant(31.0);
-    regressor->addConstant(37.0);
-		regressor->addConstant(41.0);
-		regressor->addConstant(43.0);
-    regressor->addConstant(47.0);
-    regressor->addConstant(53.0);
-		regressor->addConstant(59.0);
-    regressor->addConstant(61.0);
-		regressor->addConstant(67.0);
-		regressor->addConstant(71.0);
-    regressor->addConstant(73.0);
-		regressor->addConstant(79.0);
-		regressor->addConstant(83.0);
-    regressor->addConstant(89.0);
-		regressor->addConstant(97.0);
-		regressor->addFunction(addDoubleLuapeFunction());
-		regressor->addFunction(subDoubleLuapeFunction());
-		regressor->addFunction(mulDoubleLuapeFunction());
-		regressor->addFunction(divDoubleLuapeFunction());
-
-		LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = regressor->getSearchSpace(context, maxDepth);
-		DecisionProblemStatePtr initialState(new LuapeNodeBuilderState(regressor, typeSearchSpace));
-		return std::make_pair(initialState, new Objective(regressor));
+		  regressor->addConstant(1.0);
+		  regressor->addConstant(2.0);
+		  regressor->addConstant(3.0);
+      regressor->addConstant(4.0);
+		  regressor->addConstant(5.0);
+		  regressor->addConstant(6.0);
+      regressor->addConstant(7.0);
+		  regressor->addConstant(8.0);
+		  regressor->addConstant(9.0);
+      regressor->addConstant(10.0);
+		  regressor->addConstant(11.0);
+		  regressor->addConstant(13.0);
+      regressor->addConstant(17.0);
+		  regressor->addConstant(19.0);
+		  regressor->addConstant(23.0);
+		  regressor->addConstant(29.0);
+		  regressor->addConstant(31.0);
+      regressor->addConstant(37.0);
+		  regressor->addConstant(41.0);
+		  regressor->addConstant(43.0);
+      regressor->addConstant(47.0);
+      regressor->addConstant(53.0);
+		  regressor->addConstant(59.0);
+      regressor->addConstant(61.0);
+		  regressor->addConstant(67.0);
+		  regressor->addConstant(71.0);
+      regressor->addConstant(73.0);
+		  regressor->addConstant(79.0);
+		  regressor->addConstant(83.0);
+      regressor->addConstant(89.0);
+		  regressor->addConstant(97.0);
+		  regressor->addFunction(addDoubleLuapeFunction());
+		  regressor->addFunction(subDoubleLuapeFunction());
+		  regressor->addFunction(mulDoubleLuapeFunction());
+		  regressor->addFunction(divDoubleLuapeFunction());
+    }
+	  LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = regressor->getSearchSpace(context, maxDepth);
+	  DecisionProblemStatePtr initialState(new LuapeNodeBuilderState(regressor, typeSearchSpace));
+	  return std::make_pair(initialState, new Objective(regressor));
   }
 
 protected:

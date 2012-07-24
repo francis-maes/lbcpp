@@ -79,6 +79,12 @@ void LuapeUniverse::cacheFunctionNode(const FunctionNodeKey& key, LuapeNodePtr n
   size_t depth = node->getDepth();
   if (depth > maxObservedFunctionDepth)
     maxObservedFunctionDepth = depth;
+
+/*  {
+    static int counter = 0;
+    if (++counter % 1000 == 0)
+      std::cout << "depth = " << depth << " maxObserved: " << maxObservedFunctionDepth << " maxDepth: " << maxFunctionDepth << " count = " << functionNodes.size() << " / " << maxNumCachedFunctionNodes << std::endl;
+  }*/
   if (depth >= maxFunctionDepth)
     return; // do not cache: too deep
 
