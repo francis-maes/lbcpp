@@ -497,9 +497,12 @@ protected:
 
       DecisionProblemStatePtr finalState;
       std::vector<Variable> actions;
+
       algorithm->startSearch(context, stateAndObjective.first);
       double res = iterate(algorithm, 0)->search(context, objective, stateAndObjective.first, actions, finalState);
       algorithm->finishSearch(context);
+
+      //Object::displayObjectAllocationInfo(std::cout);
       return res;
     }
     

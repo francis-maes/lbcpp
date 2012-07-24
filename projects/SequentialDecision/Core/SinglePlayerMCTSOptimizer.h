@@ -23,11 +23,11 @@ class SinglePlayerMCTSNode : public Object
 {
 public:
   SinglePlayerMCTSNode(DecisionProblemStatePtr state)
-    : state(state), parent(NULL), indexInParent((size_t)-1), rewards(new ScalarVariableStatistics("reward")), fullyVisited(false)
-    {computeActionsAndCreateSubNodes();}
+    : state(state), parent(NULL), indexInParent((size_t)-1), numRewards(0), rewardsSum(0.0), fullyVisited(false)
+    {computeActionsAndPrepareSubNodes();}
 
   SinglePlayerMCTSNode(SinglePlayerMCTSNode* parent, size_t indexInParent)
-    : parent(parent), indexInParent(indexInParent), rewards(new ScalarVariableStatistics("reward")), fullyVisited(false) {}
+    : parent(parent), indexInParent(indexInParent), numRewards(0), rewardsSum(0.0), fullyVisited(false) {}
 
   SinglePlayerMCTSNode() : indexInParent((size_t)-1) {}
 
@@ -45,9 +45,17 @@ public:
 
   size_t getNumSubNodes() const
     {return subNodes.size();}
-
-  const SinglePlayerMCTSNodePtr& getSubNode(size_t index) const
-    {jassert(index < subNodes.size()); return subNodes[index];}
+  
+  const SinglePlayerMCTSNodePtr& getSubNode(size_t i) const
+  {
+    jassert(i < subNodes.size());
+    if (!subNodes[i])
+    {
+      SinglePlayerMCTSNode* pthis = const_cast<SinglePlayerMCTSNode* >(this);
+      pthis->subNodes[i] = new SinglePlayerMCTSNode(pthis, i);
+    }
+    return subNodes[i];
+  }
 
   SinglePlayerMCTSNodePtr getSubNodeByAction(const Variable& action) const
   {
@@ -56,7 +64,7 @@ public:
     jassert(subNodes.size() == n);
     for (size_t i = 0; i < n; ++i)
       if (actions->getElement(i) == action)
-        return subNodes[i];
+        return getSubNode(i);
     jassert(false);
     return SinglePlayerMCTSNodePtr();
   }
@@ -69,26 +77,25 @@ public:
 
   double getIndexScore(double explorationCoefficient, size_t timeStep) const
   {
-    size_t count = (size_t)rewards->getCount();
-    if (!count)
+    if (!numRewards)
       return DBL_MAX;
     else
-      return rewards->getMean() + explorationCoefficient * sqrt(log((double)timeStep) / (double)count);
+      return rewardsSum / (double)numRewards + explorationCoefficient * sqrt(log((double)timeStep) / (double)numRewards);
   }
 
   void observeReward(double reward)
-    {rewards->push(reward);}
+    {++numRewards; rewardsSum += reward;}
 
   void getFinalStatesSortedByReward(std::multimap<double, SinglePlayerMCTSNodePtr>& res) const
   {
     if (isExpanded() && isFinalState())
-      res.insert(std::make_pair(rewards->getMean(), refCountedPointerFromThis(this)));
+      res.insert(std::make_pair(numRewards ? rewardsSum / (double)numRewards : 0.0, refCountedPointerFromThis(this)));
     else
     {
       for (size_t i = 0; i < subNodes.size(); ++i)
-        subNodes[i]->getFinalStatesSortedByReward(res);
+        getSubNode(i)->getFinalStatesSortedByReward(res);
     }
-  }
+  }    
 
   SinglePlayerMCTSNodePtr select(ExecutionContext& context, double explorationCoefficient = 0.5) const
   {
@@ -101,7 +108,7 @@ public:
     std::vector<size_t> candidates;
     candidates.reserve(subNodes.size());
     for (size_t i = 0; i < subNodes.size(); ++i)
-      if (!subNodes[i]->fullyVisited)
+      if (!subNodes[i] || !subNodes[i]->fullyVisited)
         candidates.push_back(i);
     if (candidates.empty())
       return refCountedPointerFromThis(this);
@@ -110,7 +117,7 @@ public:
     double bestIndexScore = -DBL_MAX;
     for (size_t i = 0; i < candidates.size(); ++i)
     {
-      double score = getSubNode(candidates[i])->getIndexScore(explorationCoefficient, (size_t)rewards->getCount());
+      double score = getSubNode(candidates[i])->getIndexScore(explorationCoefficient, numRewards);
       if (score >= bestIndexScore)
       {
         if (score > bestIndexScore)
@@ -137,7 +144,7 @@ public:
     if (state->isFinalState())
       markAsFullyVisited();
     else
-      computeActionsAndCreateSubNodes();
+      computeActionsAndPrepareSubNodes();
   }
 
   void backPropagate(double reward)
@@ -179,16 +186,15 @@ protected:
   std::vector<SinglePlayerMCTSNodePtr> subNodes;
   SinglePlayerMCTSNode* parent;
   size_t indexInParent;
-  ScalarVariableStatisticsPtr rewards;
+  size_t numRewards;
+  double rewardsSum;
   bool fullyVisited;
 
-  void computeActionsAndCreateSubNodes()
+  void computeActionsAndPrepareSubNodes()
   {
     jassert(subNodes.empty());
     actions = state->getAvailableActions();
     subNodes.resize(actions->getNumElements());
-    for (size_t i = 0; i < subNodes.size(); ++i)
-      subNodes[i] = new SinglePlayerMCTSNode(this, i);
   }
 
   void markAsFullyVisited()
@@ -200,7 +206,7 @@ protected:
       size_t n = parent->subNodes.size();
       size_t i;
       for (i = 0; i < n; ++i)
-        if (!parent->subNodes[i]->fullyVisited)
+        if (!parent->subNodes[i] || !parent->subNodes[i]->fullyVisited)
           break;
       if (i == n)
         parent->markAsFullyVisited();
