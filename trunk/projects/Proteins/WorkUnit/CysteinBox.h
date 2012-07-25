@@ -684,8 +684,8 @@ public:
       iterations->addPredictor(dsbIteration);
     }
     // Copy CBS
-    //copyCysteineBondingStateSupervisons(context, train);
-    //copyCysteineBondingStateSupervisons(context, test);
+    copyCysteineBondingStateSupervisons(context, train);
+    copyCysteineBondingStateSupervisons(context, test);
 
     if (!iterations->train(context, train, ContainerPtr(), T("Training")))
       return Variable::missingValue(doubleType);
@@ -2049,12 +2049,22 @@ public:
     dsbIteration->addTarget(dsbTarget);
     iterations->addPredictor(dsbIteration);
 
+    // Copy CBS
+    copyCysteineBondingStateSupervisons(context, train);
+    copyCysteineBondingStateSupervisons(context, test);    
+    
     if (!iterations->train(context, train, ContainerPtr(), T("Training")))
       return 101.f;
 
     ProteinEvaluatorPtr evaluator = createProteinEvaluator();
     CompositeScoreObjectPtr scores = iterations->evaluate(context, test, evaluator, T("EvaluateTest"));
     return evaluator->getScoreToMinimize(scores);
+  }
+
+  void copyCysteineBondingStateSupervisons(ExecutionContext& context, const ContainerPtr& proteins) const
+  {
+    for (size_t i = 0; i < proteins->getNumElements(); ++i)
+      proteins->getElement(i).dynamicCast<Pair>()->getFirst().getObjectAndCast<Protein>()->setCysteinBondingStates(context, proteins->getElement(i).dynamicCast<Pair>()->getSecond().getObjectAndCast<Protein>()->getCysteinBondingStates(context));
   }
 
 protected:
@@ -2081,7 +2091,7 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     ExecutionContextPtr remoteContext = distributedExecutionContext(context, T("monster24.montefiore.ulg.ac.be"), 1664,
-                                                                    T("120719-BFS-DSB"), T("jbecker@screen"), T("jbecker@giga"),
+                                                                    T("120725-BFS-TrueCBS-DSB"), T("jbecker@screen"), T("jbecker@giga"),
                                                                     fixedResourceEstimator(1, 12 * 1024, 100), false);
     LargeProteinParametersPtr initialParameters = new LargeProteinParameters();
     OptimizationProblemPtr problem = new OptimizationProblem(new DSBLearnerFunction(inputDirectory, supervisionDirectory),

@@ -146,8 +146,8 @@ local numFolds = 9
 --local winSizes = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35}--, 37, 39, 41, 43, 45}
 
 
-dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120717-DSBFeatures/"
-main("NormPCiCj", {""}, dir .. "x3_K0_1000T_NMIN1_DSB_PlosOne_PCiCj_NormPCiCj", "", numFolds)
+dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120622-CBS/"
+main("CBS", {""}, dir .. "x3_hlpssm75_hlsa10_hgsa_csp12_K0_1000T_NMIN1_CBS", "", numFolds)
 
 
 -- ----- SP39 ----- --
