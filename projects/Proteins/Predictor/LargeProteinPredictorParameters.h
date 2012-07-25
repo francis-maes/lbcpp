@@ -297,7 +297,7 @@ public:
           values.push_back(j);
         res[i] = integerStream(positiveIntegerType, values);
       }
-      else if (varName.endsWith(T("ProfilSize")))
+      else if (varName.endsWith(T("separationProfilSize")))
       {
         std::vector<int> values;
         for (int j = 1; j < 20; j += 2)
