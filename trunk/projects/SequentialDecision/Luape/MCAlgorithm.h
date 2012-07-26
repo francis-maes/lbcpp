@@ -347,9 +347,9 @@ public:
     {
       if (!localRoot->isExpanded())
         {localRoot->expand(context);
-		 numLeaf++;                  
-		 if(numLeaf<maxLeaf)				
-		   break;
+		// numLeaf++;                  
+		// if(numLeaf<maxLeaf)				
+		//   break;
 		}
       localRoot = localRoot->getSubNodeByAction(previousActions[i]);
       jassert(localRoot);
