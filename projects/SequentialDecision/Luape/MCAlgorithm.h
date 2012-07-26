@@ -326,6 +326,10 @@ public:
   {
     tree = new SinglePlayerMCTSNode(initialState->cloneAndCast<DecisionProblemState>());
     DecoratorMCAlgorithm::startSearch(context, initialState);
+	// initialize counter here
+	maxLeaf=1000000;
+	numLeaf=0;
+	
   }
 
   virtual void finishSearch(ExecutionContext& context)
@@ -342,20 +346,25 @@ public:
     for (size_t i = 0; i < previousActions.size(); ++i)
     {
       if (!localRoot->isExpanded())
-        localRoot->expand(context);
+        {localRoot->expand(context);
+		 numLeaf++;                  
+		 if(numLeaf>maxLeaf)				
+		   break;
+		}
       localRoot = localRoot->getSubNodeByAction(previousActions[i]);
       jassert(localRoot);
     }
 
     // select leaf
-    SinglePlayerMCTSNodePtr leaf = localRoot->select(context);
+    SinglePlayerMCTSNodePtr leaf = localRoot->select(context,explorationCoefficient);
 
     //std::cout << "Selected node: " << leaf->toShortString() << std::flush;
 
     // expand
-    if (!leaf->isExpanded())
-      leaf->expand(context);
-
+    if (!leaf->isExpanded() && numLeaf>maxLeaf) // && counter > 1
+      {leaf->expand(context); 
+	    numLeaf++;
+	  }
     // sub search
     std::vector<Variable> bestActions;//(previousActions);
     for (SinglePlayerMCTSNodePtr ptr = leaf; ptr != root; ptr = ptr->getParentNode())
@@ -378,6 +387,8 @@ private:
   friend class SelectMCAlgorithmClass;
 
   double explorationCoefficient;
+  size_t maxLeaf;
+  size_t numLeaf;
   SinglePlayerMCTSNodePtr tree;
 };
 
