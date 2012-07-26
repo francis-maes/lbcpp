@@ -348,7 +348,7 @@ public:
       if (!localRoot->isExpanded())
         {localRoot->expand(context);
 		 numLeaf++;                  
-		 if(numLeaf>maxLeaf)				
+		 if(numLeaf<maxLeaf)				
 		   break;
 		}
       localRoot = localRoot->getSubNodeByAction(previousActions[i]);
@@ -361,7 +361,7 @@ public:
     //std::cout << "Selected node: " << leaf->toShortString() << std::flush;
 
     // expand
-    if (!leaf->isExpanded() && numLeaf>maxLeaf) // && counter > 1
+    if (!leaf->isExpanded() && numLeaf<maxLeaf) // && counter > 1
       {leaf->expand(context); 
 	    numLeaf++;
 	  }
