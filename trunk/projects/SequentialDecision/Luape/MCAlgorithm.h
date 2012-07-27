@@ -326,10 +326,7 @@ public:
   {
     tree = new SinglePlayerMCTSNode(initialState->cloneAndCast<DecisionProblemState>());
     DecoratorMCAlgorithm::startSearch(context, initialState);
-	// initialize counter here
-	maxLeaf=1000000;
-	numLeaf=0;
-	
+    numLeafs = 0;
   }
 
   virtual void finishSearch(ExecutionContext& context)
@@ -340,21 +337,23 @@ public:
 
   virtual void search(ExecutionContext& context, MCObjectivePtr objective, const std::vector<Variable>& previousActions, DecisionProblemStatePtr initialState)
   {
+    enum {maxNumLeafs = 1000000};
+    
     // find local root
     SinglePlayerMCTSNodePtr root = this->tree;
     SinglePlayerMCTSNodePtr localRoot = root;
     for (size_t i = 0; i < previousActions.size(); ++i)
     {
       if (!localRoot->isExpanded())
-	  {
-		if (numLeaf <= maxLeaf)
-		{
-		  localRoot->expand(context);
-		  ++numLeaf;
-		}
-		else
-		  break;
-	  
+      {
+        if (numLeafs <= maxNumLeafs)
+        {
+          localRoot->expand(context);
+          ++numLeafs;
+        }
+        else
+          break;
+      }
       localRoot = localRoot->getSubNodeByAction(previousActions[i]);
       jassert(localRoot);
     }
@@ -365,9 +364,10 @@ public:
     //std::cout << "Selected node: " << leaf->toShortString() << std::flush;
 
     // expand
-    if (!leaf->isExpanded() && numLeaf<maxLeaf) // && counter > 1
-      {leaf->expand(context); 
-	    numLeaf++;
+    if (!leaf->isExpanded() && numLeafs < maxNumLeafs)
+    {
+      leaf->expand(context); 
+	    ++numLeafs;
 	  }
     // sub search
     std::vector<Variable> bestActions;//(previousActions);
@@ -379,14 +379,14 @@ public:
     jassert(leafDepth - initialDepth == bestActions.size());*/
 
     DecisionProblemStatePtr bestFinalState;
-	  DecisionproblemStatePtr state = leaf->getState();
+	  DecisionProblemStatePtr state = leaf->getState();
 	  if (!state)
 	  {
-	  state = leaf->getParentNode()->getState()->cloneAndCast<DecisionProblemState>();
-    double reward;
-    state->performTransition(context, leaf->getLastAction(), reward);
+      state = leaf->getParentNode()->getState()->cloneAndCast<DecisionProblemState>();
+      double reward;
+      state->performTransition(context, leaf->getLastAction(), reward);
     }
-    double reward = subSearch(context, objective, leaf->getState(), bestActions, bestFinalState);
+    double reward = subSearch(context, objective, state, bestActions, bestFinalState);
 
     // normalize reward and back-propagate
     double worst, best;
@@ -398,8 +398,7 @@ private:
   friend class SelectMCAlgorithmClass;
 
   double explorationCoefficient;
-  size_t maxLeaf;
-  size_t numLeaf;
+  size_t numLeafs;
   SinglePlayerMCTSNodePtr tree;
 };
 
