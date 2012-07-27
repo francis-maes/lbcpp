@@ -346,11 +346,15 @@ public:
     for (size_t i = 0; i < previousActions.size(); ++i)
     {
       if (!localRoot->isExpanded())
-        {localRoot->expand(context);
-		// numLeaf++;                  
-		// if(numLeaf<maxLeaf)				
-		//   break;
+	  {
+		if (numLeaf <= maxLeaf)
+		{
+		  localRoot->expand(context);
+		  ++numLeaf;
 		}
+		else
+		  break;
+	  
       localRoot = localRoot->getSubNodeByAction(previousActions[i]);
       jassert(localRoot);
     }
@@ -375,6 +379,13 @@ public:
     jassert(leafDepth - initialDepth == bestActions.size());*/
 
     DecisionProblemStatePtr bestFinalState;
+	  DecisionproblemStatePtr state = leaf->getState();
+	  if (!state)
+	  {
+	  state = leaf->getParentNode()->getState()->cloneAndCast<DecisionProblemState>();
+    double reward;
+    state->performTransition(context, leaf->getLastAction(), reward);
+    }
     double reward = subSearch(context, objective, leaf->getState(), bestActions, bestFinalState);
 
     // normalize reward and back-propagate
