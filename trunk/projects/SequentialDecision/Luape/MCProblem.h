@@ -72,7 +72,7 @@ public:
 	{
 		if (instances.empty())
 		{
-			instances.resize(4); // TODO change here 8 - 4
+			instances.resize(8);
 			for (size_t i = 0; i < instances.size(); ++i)
 			{
 				LuapeRegressorPtr problem = createInstance(context, i + 1);
@@ -81,8 +81,8 @@ public:
 				instances[i] = std::make_pair(problem, initialState);
 			}
 		}
-		LuapeRegressorPtr problem = instances[instanceIndex % 4].first;
-		DecisionProblemStatePtr initialState = instances[instanceIndex % 4].second->cloneAndCast<DecisionProblemState>();
+		LuapeRegressorPtr problem = instances[instanceIndex % 8].first;
+		DecisionProblemStatePtr initialState = instances[instanceIndex % 8].second->cloneAndCast<DecisionProblemState>();
 		MCObjectivePtr objective(new SymbolicRegressionMCObjective(problem, 1.0));
 		return std::make_pair(initialState, objective);
   }
