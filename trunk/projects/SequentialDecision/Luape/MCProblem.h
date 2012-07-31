@@ -116,10 +116,10 @@ protected:
 
 		double lowerLimit = -1.0;
 		double upperLimit = 1.0;
-		if (problemNumber == 7)
+	//	if (problemNumber == 7)
+	//		lowerLimit = 0.0, upperLimit = 2.0;
+		if (problemNumber == 8)
 			lowerLimit = 0.0, upperLimit = 2.0;
-		else if (problemNumber == 8)
-			lowerLimit = 0.0, upperLimit = 4.0;
 
 		for (size_t i = 0; i < examples.size(); ++i)
 		{
@@ -145,12 +145,23 @@ protected:
 		case 6: return sin(x) + sin(x + x2);
 		case 7: return log(x + 1) + log(x2 + 1);
 		case 8: return sqrt(x);
+
+/*
+                case 1: return x*x2-x2-x;
+                case 2: return x2*x2-x2*x-x2-x;
+                case 3: return x2*x2 + sin(x);
+                case 4: return cos(x2*x)+sin(x+1);
+                case 5: return sqrt(x)+x2;
+                case 6: return x2*x2*x2 +1;
+                case 7: return sin(x2*x+x2);
+                case 8: return log(x2*x+1)+x;
+*/
 		default: jassert(false); return 0.0;
 		};
 	}
 	
 	virtual double getMaxReward() const
-	  {return 1.0;}
+	  {return 100.0;}
 	  
 	virtual void getObjectiveRange(double& worst, double& best) const
   	{worst = 0.0; best = 1.0;}
