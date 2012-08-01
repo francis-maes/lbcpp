@@ -116,10 +116,10 @@ protected:
 
 		double lowerLimit = -1.0;
 		double upperLimit = 1.0;
-	//	if (problemNumber == 7)
-	//		lowerLimit = 0.0, upperLimit = 2.0;
-		if (problemNumber == 8)
+		if (problemNumber == 7)
 			lowerLimit = 0.0, upperLimit = 2.0;
+		if (problemNumber == 8)
+			lowerLimit = 0.0, upperLimit = 4.0;
 
 		for (size_t i = 0; i < examples.size(); ++i)
 		{
