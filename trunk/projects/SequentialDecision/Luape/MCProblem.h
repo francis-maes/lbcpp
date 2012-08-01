@@ -161,7 +161,7 @@ protected:
 	}
 	
 	virtual double getMaxReward() const
-	  {return 100.0;}
+	  {return 1.0;}
 	  
 	virtual void getObjectiveRange(double& worst, double& best) const
   	{worst = 0.0; best = 1.0;}
