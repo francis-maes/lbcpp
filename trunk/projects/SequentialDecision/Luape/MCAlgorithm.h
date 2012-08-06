@@ -337,7 +337,7 @@ public:
 
   virtual void search(ExecutionContext& context, MCObjectivePtr objective, const std::vector<Variable>& previousActions, DecisionProblemStatePtr initialState)
   {
-    enum {maxNumLeafs = 1000000};
+    enum {maxNumLeafs = 100000000};
     
     // find local root
     SinglePlayerMCTSNodePtr root = this->tree;
