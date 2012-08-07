@@ -337,7 +337,7 @@ public:
 
   virtual void search(ExecutionContext& context, MCObjectivePtr objective, const std::vector<Variable>& previousActions, DecisionProblemStatePtr initialState)
   {
-    enum {maxNumLeafs = 100000000};
+    enum {maxNumLeafs = 10000000};
     
     // find local root
     SinglePlayerMCTSNodePtr root = this->tree;
@@ -349,7 +349,7 @@ public:
         if (numLeafs <= maxNumLeafs)
         {
           localRoot->expand(context);
-          ++numLeafs;
+        //  ++numLeafs;
         }
         else
           break;
@@ -367,7 +367,7 @@ public:
     if (!leaf->isExpanded() && numLeafs < maxNumLeafs)
     {
       leaf->expand(context); 
-	    ++numLeafs;
+	  //  ++numLeafs;
 	  }
     // sub search
     std::vector<Variable> bestActions;//(previousActions);
