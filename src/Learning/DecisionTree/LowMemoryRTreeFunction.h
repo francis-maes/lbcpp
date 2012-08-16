@@ -22,14 +22,13 @@ extern BatchLearnerPtr lowMemoryRTreeBatchLearner();
 class LowMemoryRTreeFunction : public Function
 {
 public:
-  LowMemoryRTreeFunction(const ContainerPtr& testingData,
-                         size_t numTrees,
+  LowMemoryRTreeFunction(size_t numTrees,
                          size_t numAttributeSamplesPerSplit,
                          size_t minimumSizeForSplitting)
-    : testingData(testingData),
-      numTrees(numTrees),
+    : numTrees(numTrees),
       numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
-      minimumSizeForSplitting(minimumSizeForSplitting)
+      minimumSizeForSplitting(minimumSizeForSplitting),
+      predictionIndex((size_t)-1)
     {setBatchLearner(filterUnsupervisedExamplesBatchLearner(lowMemoryRTreeBatchLearner()));}
 
   /* LowMemoryRTreeFunction */
@@ -56,22 +55,20 @@ public:
   
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    ContainerPtr inputData = inputs[0].getObjectAndCast<Container>();
-    jassert(predictions.count(inputData) == 1);
-    return predictions.find(inputData)->second;
+    jassert(predictionIndex < predictions.size());
+    return predictions[const_cast<LowMemoryRTreeFunction*>(this)->predictionIndex++];
   }
   
 protected:
   friend class LowMemoryRTreeFunctionClass;
   friend class LowMemoryRTreeBatchLearner;
-  
-  ContainerPtr testingData;
 
   size_t numTrees;
   size_t numAttributeSamplesPerSplit;
   size_t minimumSizeForSplitting;
 
-  std::map<ObjectPtr, Variable> predictions;
+  size_t predictionIndex;
+  std::vector<Variable> predictions;
 
   LowMemoryRTreeFunction()
     {setBatchLearner(filterUnsupervisedExamplesBatchLearner(lowMemoryRTreeBatchLearner()));}
@@ -102,7 +99,7 @@ public:
       return false;
     }
 
-    const size_t numTesting = rTreeFunction->testingData->getNumElements();
+    const size_t numTesting = validationData.size();
 
     std::vector<std::vector<Variable> > predictions(numTesting);
     for (size_t i = 0; i < numTesting; ++i)
@@ -119,17 +116,15 @@ public:
       }
       
       for (size_t j = 0; j < numTesting; ++j)
-        predictions[j][i] = x3Function->compute(context, rTreeFunction->testingData->getElement(j).getObjectAndCast<Pair>()->getFirst(), Variable());
+        predictions[j][i] = x3Function->compute(context, validationData[j]->getVariable(0), Variable());
 
       context.progressCallback(new ProgressionState(i + 1, rTreeFunction->numTrees, T("trees")));
     }
 
+    rTreeFunction->predictions.resize(numTesting);
+    rTreeFunction->predictionIndex = 0;
     for (size_t i = 0; i < numTesting; ++i)
-    {
-      ObjectPtr key = rTreeFunction->testingData->getElement(i).getObjectAndCast<Pair>()->getFirst().getObject();
-      Variable value = rTreeFunction->computePrediction(predictions[i]);
-      rTreeFunction->predictions[key] = value;
-    }
+      rTreeFunction->predictions[i] = rTreeFunction->computePrediction(predictions[i]);
     
     context.leaveScope();
     return true;
@@ -139,12 +134,10 @@ public:
 class RegressionLowMemoryRTreeFunction : public LowMemoryRTreeFunction
 {
 public:
-  RegressionLowMemoryRTreeFunction(const ContainerPtr& testingData,
-                                   size_t numTrees,
+  RegressionLowMemoryRTreeFunction(size_t numTrees,
                                    size_t numAttributeSamplesPerSplit,
                                    size_t minimumSizeForSplitting)
-    : LowMemoryRTreeFunction(testingData,
-                             numTrees,
+    : LowMemoryRTreeFunction(numTrees,
                              numAttributeSamplesPerSplit,
                              minimumSizeForSplitting) {}
   RegressionLowMemoryRTreeFunction() {}
@@ -173,12 +166,10 @@ public:
 class BinaryLowMemoryRTreeFunction : public LowMemoryRTreeFunction
 {
 public:
-  BinaryLowMemoryRTreeFunction(const ContainerPtr& testingData,
-                                   size_t numTrees,
+  BinaryLowMemoryRTreeFunction(size_t numTrees,
                                    size_t numAttributeSamplesPerSplit,
                                    size_t minimumSizeForSplitting)
-    : LowMemoryRTreeFunction(testingData,
-                             numTrees,
+    : LowMemoryRTreeFunction(numTrees,
                              numAttributeSamplesPerSplit,
                              minimumSizeForSplitting) {}
   BinaryLowMemoryRTreeFunction() {}
@@ -207,12 +198,10 @@ public:
 class ClassificationLowMemoryRTreeFunction : public LowMemoryRTreeFunction
 {
 public:
-  ClassificationLowMemoryRTreeFunction(const ContainerPtr& testingData,
-                                   size_t numTrees,
-                                   size_t numAttributeSamplesPerSplit,
-                                   size_t minimumSizeForSplitting)
-    : LowMemoryRTreeFunction(testingData,
-                             numTrees,
+  ClassificationLowMemoryRTreeFunction(size_t numTrees,
+                                       size_t numAttributeSamplesPerSplit,
+                                       size_t minimumSizeForSplitting)
+    : LowMemoryRTreeFunction(numTrees,
                              numAttributeSamplesPerSplit,
                              minimumSizeForSplitting) {}
   ClassificationLowMemoryRTreeFunction() {}
@@ -235,9 +224,16 @@ public:
   virtual Variable computePrediction(const std::vector<Variable>& subPredicitons) const
   {
     const size_t n = subPredicitons.size();
-    DenseDoubleVectorPtr res = new DenseDoubleVector(getOutputType());
+    if (n == 0)
+      return Variable::missingValue(getOutputType());
+    DenseDoubleVectorPtr res = new DenseDoubleVector(subPredicitons[0].getType());
     for (size_t i = 0; i < n; ++i)
       subPredicitons[i].getObjectAndCast<DenseDoubleVector>()->addTo(res);
+
+    std::vector<double>& values = res->getValues();
+    for (size_t i = 0; i < values.size(); ++i)
+      values[i] /= n;
+
     return res;
   }
 };

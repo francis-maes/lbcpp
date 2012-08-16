@@ -18,19 +18,19 @@ extern FunctionPtr regressionExtraTree(size_t numTrees = 100,
                                        size_t numAttributeSamplesPerSplit = 10,
                                        size_t minimumSizeForSplitting = 0,
                                        bool verbose = false,
-                                       ContainerPtr testingData = ContainerPtr());
+                                       bool useLowMemory = false);
 
 extern FunctionPtr binaryClassificationExtraTree(size_t numTrees = 100,
                                                  size_t numAttributeSamplesPerSplit = 10,
                                                  size_t minimumSizeForSplitting = 0,
                                                  bool verbose = false,
-                                                 ContainerPtr testingData = ContainerPtr());
+                                                 bool useLowMemory = false);
 
 extern FunctionPtr classificationExtraTree(size_t numTrees = 100,
                                            size_t numAttributeSamplesPerSplit = 10,
                                            size_t minimumSizeForSplitting = 0,
                                            bool verbose = false,
-                                           ContainerPtr testingData = ContainerPtr());
+                                           bool useLowMemory = false);
 
 extern FunctionPtr extraTreeLearningMachine(size_t numTrees = 100,
                                             size_t numAttributeSamplesPerSplit = 10,

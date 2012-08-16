@@ -17,33 +17,33 @@ FunctionPtr regressionExtraTree(size_t numTrees,
                                 size_t numAttributeSamplesPerSplit,
                                 size_t minimumSizeForSplitting,
                                 bool verbose,
-                                ContainerPtr testingData)
+                                bool useLowMemory)
 {
-  if (!testingData)
+  if (!useLowMemory)
     return new RegressionRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, verbose);
-  return new RegressionLowMemoryRTreeFunction(testingData, numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+  return new RegressionLowMemoryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
 }
 
 FunctionPtr binaryClassificationExtraTree(size_t numTrees,
                                           size_t numAttributeSamplesPerSplit,
                                           size_t minimumSizeForSplitting,
                                           bool verbose,
-                                          ContainerPtr testingData)
+                                          bool useLowMemory)
 {
-  if (!testingData)
+  if (!useLowMemory)
     return new BinaryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, verbose);
-  return new BinaryLowMemoryRTreeFunction(testingData, numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+  return new BinaryLowMemoryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
 }
 
 FunctionPtr classificationExtraTree(size_t numTrees,
                                     size_t numAttributeSamplesPerSplit,
                                     size_t minimumSizeForSplitting,
                                     bool verbose,
-                                    ContainerPtr testingData)
+                                    bool useLowMemory)
 {
-  if (!testingData)
+  if (!useLowMemory)
     return new ClassificationRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, verbose);
-  return new ClassificationLowMemoryRTreeFunction(testingData, numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+  return new ClassificationLowMemoryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
 }
 
 };

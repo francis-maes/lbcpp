@@ -634,7 +634,7 @@ public:
   {
     size_t numProteinsToLoad = 0;
 #if JUCE_MAC && JUCE_DEBUG
-    numProteinsToLoad = 20;
+    numProteinsToLoad = 10;
 #endif
     ContainerPtr train = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("train")), context.getFile(supervisionDirectory).getChildFile(T("train")), numProteinsToLoad, T("Loading training proteins"));
     ContainerPtr test = Protein::loadProteinsFromDirectoryPair(context, context.getFile(inputDirectory).getChildFile(T("test")), context.getFile(supervisionDirectory).getChildFile(T("test")), numProteinsToLoad, T("Loading testing proteins"));
@@ -676,7 +676,7 @@ public:
       LargeProteinParametersPtr dsbParameter = LargeProteinParameters::createFromFile(context, odsbParameterFile).dynamicCast<LargeProteinParameters>();
       LargeProteinPredictorParametersPtr dsbPredictor = new LargeProteinPredictorParameters(dsbParameter);
       //dsbPredictor->learningMachineName = learningMachineName;
-      dsbPredictor->learner = classificationExtraTree(x3Trees, x3Attributes, x3Splits, false, test);
+      dsbPredictor->learner = classificationExtraTree(x3Trees, x3Attributes, x3Splits, false, true);
       dsbPredictor->x3Trees = x3Trees;
       dsbPredictor->x3Attributes = x3Attributes;
       dsbPredictor->x3Splits = x3Splits;
@@ -688,7 +688,7 @@ public:
     //copyCysteineBondingStateSupervisons(context, train);
     //copyCysteineBondingStateSupervisons(context, test);
 
-    if (!iterations->train(context, train, ContainerPtr(), T("Training")))
+    if (!iterations->train(context, train, test, T("Training")))
       return Variable::missingValue(doubleType);
 
     if (outputDirectory != File::nonexistent)
@@ -699,16 +699,7 @@ public:
 
     ProteinEvaluatorPtr evaluator = createProteinEvaluator();
     CompositeScoreObjectPtr scores = iterations->evaluate(context, test, evaluator, T("EvaluateTest"));
-/*
-    std::cout << "---------------- Testing proteins --------------------" << std::endl;
-    for (size_t i = 0; i < test->getNumElements(); ++i)
-    {
-      std::cout << "-- Protein " << i << std::endl;
-      ProteinPtr p = iterations->compute(context, test->getElement(i).getObjectAndCast<Pair>()->getFirst(), Variable()).getObjectAndCast<Protein>();
-      std::cout << "---CBS ---" << std::endl << p->getCysteinBondingStates(context)->toString() << std::endl;
-      std::cout << "--- ODSB ---" << std::endl << p->getOxidizedDisulfideBonds(context)->toString() << std::endl;
-    }
-*/
+
     return evaluator->getScoreToMinimize(scores);
   }
 
