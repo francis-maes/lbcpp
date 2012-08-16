@@ -234,10 +234,6 @@
     <variable type="File" name="supervisionDirectory" shortName="sup"/>
   </class>
   <class name="TestGabowAlgorithmWorkUnit" base="WorkUnit"/>
-  <class name="LowMemoryDisulfideBondWorkUnit" base="WorkUnit">
-    <variable type="File" name="inputDirectory" shortName="in"/>
-    <variable type="File" name="supervisionDirectory" shortName="sup"/>
-  </class>
   <class name="DSBLearnerFunction" base="Function">
     <variable type="String" name="inputDirectory"/>
     <variable type="String" name="supervisionDirectory"/>

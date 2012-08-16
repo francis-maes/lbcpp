@@ -103,7 +103,7 @@ local function main(varName, varValues, filePrefix, filePostfix, numFolds)
 --  scoresOfInterest["CBS S&S"] = {index = 3, getScore = getScoreToMaximize}
   scoresOfInterest["Qp (Perfect)"] = {index = 8, getScore = getScoreToMaximize}
 --  scoresOfInterest["Q2"] = {index = 4, getScore = getScoreToMaximize}
---  scoresOfInterest["OxyDSB Qp (Perfect)"] = {index = 10, getScore = getScoreToMaximize}
+  scoresOfInterest["OxyDSB Qp (Perfect)"] = {index = 10, getScore = getScoreToMaximize}
 --  scoresOfInterest["Q2 (Bias form test)"] = {index = 5, getScore = getScoreToMaximize}
   for i = 1,#varValues do
     context:enter(varName .. ": " .. varValues[i])
@@ -146,8 +146,8 @@ local numFolds = 9
 --local winSizes = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35}--, 37, 39, 41, 43, 45}
 
 
-dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120622-CBS/"
-main("CBS", {""}, dir .. "x3_hlpssm75_hlsa10_hgsa_csp12_K0_1000T_NMIN1_CBS", "", numFolds)
+dir = "/Users/jbecker/Documents/Workspace/Data/Proteins/dsbExperiments/120619-CBSBasedDSB/"
+main("ODSB", {""}, dir .. "x3_pssm15_csp17_K0_1000T_NMIN1_Baseline", "", numFolds)
 
 
 -- ----- SP39 ----- --

@@ -27,10 +27,19 @@
     <variable type="Boolean" name="verbose"/>
   </class>
 
-  <class name="LowMemoryRTreeFunction" base="Function">
-    <constructor arguments="size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting" returnType="Function"/>
+  <class name="LowMemoryRTreeFunction" base="Function" abstract="yes">
+<!--    <constructor arguments="ContainerPtr testingData, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting" returnType="Function"/> -->
     <variable type="PositiveInteger" name="numTrees"/>
     <variable type="PositiveInteger" name="numAttributeSamplesPerSplit"/>
     <variable type="PositiveInteger" name="minimumSizeForSplitting"/>
   </class>
+
+  <class name="LowMemoryRTreeBatchLearner" base="BatchLearner">
+    <constructor/>
+  </class>
+
+  <class name="RegressionLowMemoryRTreeFunction" base="LowMemoryRTreeFunction"/>
+  <class name="BinaryLowMemoryRTreeFunction" base="LowMemoryRTreeFunction"/>
+  <class name="ClassificationLowMemoryRTreeFunction" base="LowMemoryRTreeFunction"/>
+
 </library>

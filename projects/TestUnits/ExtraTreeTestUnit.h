@@ -50,9 +50,9 @@ protected:
 
     ContainerPtr learningData = loadDataToContainer(context, data, 0, 300, true);
     ContainerPtr testingData = loadDataToContainer(context, data, 300, 2300, true);
-
+    
     FunctionPtr learner = classificationExtraTree(numTrees, numAttributes, minSplitSize);
-
+    
     learner->train(context, learningData, ContainerPtr(), T("Training"));
     //learner->saveToFile(context, context.getFile(T("testSaveTree.xml")));
     //learner = Function::createFromFile(context, context.getFile(T("testSaveTree.xml")));
@@ -78,10 +78,9 @@ protected:
     
     ContainerPtr learningData = loadDataToContainer(context, data, 0, 300, false);
     ContainerPtr testingData = loadDataToContainer(context, data, 300, 2300, false);
-    
-    FunctionPtr learner = regressionExtraTree(numTrees, numAttributes, minSplitSize);
 
-    learner->train(context, learningData, ContainerPtr(), T("Training"));
+    FunctionPtr learner = regressionExtraTree(numTrees, numAttributes, minSplitSize);
+    learner->train(context, learningData, testingData, T("Training"));
 
     EvaluatorPtr evaluator = regressionEvaluator();
     ScoreObjectPtr score = learner->evaluate(context, learningData, evaluator, T("Evaluating on training data"));
@@ -90,7 +89,7 @@ protected:
     evaluator = regressionEvaluator();
     score = learner->evaluate(context, testingData, evaluator, T("Evaluating on testing data"));
     checkIsCloseTo(context, 2.2, 0.3, score->getScoreToMinimize());
-    
+
     context.leaveScope();
   }
 
