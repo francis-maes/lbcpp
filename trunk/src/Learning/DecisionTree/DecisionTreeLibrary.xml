@@ -28,7 +28,6 @@
   </class>
 
   <class name="LowMemoryRTreeFunction" base="Function" abstract="yes">
-<!--    <constructor arguments="ContainerPtr testingData, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting" returnType="Function"/> -->
     <variable type="PositiveInteger" name="numTrees"/>
     <variable type="PositiveInteger" name="numAttributeSamplesPerSplit"/>
     <variable type="PositiveInteger" name="minimumSizeForSplitting"/>

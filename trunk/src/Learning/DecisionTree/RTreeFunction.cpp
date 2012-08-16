@@ -634,7 +634,12 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
     object_weight[i] = 1.0;
   
   TypePtr outputType = trainingData[0]->getVariable(1).getType();
-  nb_goal_multiregr = outputType->inheritsFrom(enumValueType) ? outputType.dynamicCast<Enumeration>()->getNumElements() : 1;
+  nb_goal_multiregr = 1;
+  if (outputType->inheritsFrom(enumValueType))
+    nb_goal_multiregr = outputType.dynamicCast<Enumeration>()->getNumElements();
+  else if (outputType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
+    nb_goal_multiregr = outputType->getTemplateArgument(0).dynamicCast<Enumeration>()->getNumElements();
+
   core_table_y = (CORETABLE_TYPE *)MyMalloc((size_t)nb_obj_in_core_table * (size_t)nb_goal_multiregr * sizeof(CORETABLE_TYPE));
   for (size_t i = 0; i < (size_t)nb_obj_in_core_table; ++i)
   {
@@ -648,8 +653,6 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
         value = (CORETABLE_TYPE)objVariable.getDouble();
       else if (outputType->inheritsFrom(integerType))
         value = (CORETABLE_TYPE)objVariable.getInteger();
-      else if (outputType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
-        value = (CORETABLE_TYPE)objVariable.getObjectAndCast<DoubleVector>()->getIndexOfMaximumValue();
       else
         jassertfalse;
       core_table_y[i] = value;
@@ -658,7 +661,11 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
     {
       for (size_t j = 0; j < (size_t)nb_goal_multiregr; ++j)
         core_table_y[j * nb_obj_in_core_table + i] = (CORETABLE_TYPE)0;
-      core_table_y[nb_obj_in_core_table * objVariable.getInteger() + i] = (CORETABLE_TYPE)1;
+      
+      if (outputType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
+        core_table_y[nb_obj_in_core_table * objVariable.getObjectAndCast<DoubleVector>()->getIndexOfMaximumValue() + i] = (CORETABLE_TYPE)1;
+      else
+        core_table_y[nb_obj_in_core_table * objVariable.getInteger() + i] = (CORETABLE_TYPE)1;
     }
   }
 

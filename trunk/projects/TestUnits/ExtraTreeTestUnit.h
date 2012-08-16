@@ -50,10 +50,16 @@ protected:
 
     ContainerPtr learningData = loadDataToContainer(context, data, 0, 300, true);
     ContainerPtr testingData = loadDataToContainer(context, data, 300, 2300, true);
+
+    VectorPtr allData = vector(learningData->getElementsType());
+    for (size_t i = 0; i < learningData->getNumElements(); ++i)
+      allData->append(learningData->getElement(i));
+    for (size_t i = 0; i < testingData->getNumElements(); ++i)
+      allData->append(testingData->getElement(i));
     
-    FunctionPtr learner = classificationExtraTree(numTrees, numAttributes, minSplitSize);
+    FunctionPtr learner = classificationExtraTree(numTrees, numAttributes, minSplitSize, false, true);
     
-    learner->train(context, learningData, ContainerPtr(), T("Training"));
+    learner->train(context, learningData, allData, T("Training"));
     //learner->saveToFile(context, context.getFile(T("testSaveTree.xml")));
     //learner = Function::createFromFile(context, context.getFile(T("testSaveTree.xml")));
     EvaluatorPtr evaluator = classificationEvaluator();
