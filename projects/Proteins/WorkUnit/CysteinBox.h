@@ -675,17 +675,18 @@ public:
     {
       LargeProteinParametersPtr dsbParameter = LargeProteinParameters::createFromFile(context, odsbParameterFile).dynamicCast<LargeProteinParameters>();
       LargeProteinPredictorParametersPtr dsbPredictor = new LargeProteinPredictorParameters(dsbParameter);
-      dsbPredictor->learningMachineName = learningMachineName;
+      //dsbPredictor->learningMachineName = learningMachineName;
+      dsbPredictor->learner = classificationExtraTree(x3Trees, x3Attributes, x3Splits, false, test);
       dsbPredictor->x3Trees = x3Trees;
       dsbPredictor->x3Attributes = x3Attributes;
       dsbPredictor->x3Splits = x3Splits;
       ProteinPredictorPtr dsbIteration = new ProteinPredictor(dsbPredictor);
-      dsbIteration->addTarget(dsbTarget);
+      dsbIteration->addTarget(ss3Target);
       iterations->addPredictor(dsbIteration);
     }
     // Copy CBS
-    copyCysteineBondingStateSupervisons(context, train);
-    copyCysteineBondingStateSupervisons(context, test);
+    //copyCysteineBondingStateSupervisons(context, train);
+    //copyCysteineBondingStateSupervisons(context, test);
 
     if (!iterations->train(context, train, ContainerPtr(), T("Training")))
       return Variable::missingValue(doubleType);
@@ -728,6 +729,7 @@ protected:
   ProteinEvaluatorPtr createProteinEvaluator() const
   {
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator(oxidizedCysteineThreshold);
+/*
     evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("CBS"), true);
     evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, true)), T("CBS Tuned Q2"));
     evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationSensitivityAndSpecificityScore, false)), T("CBS Tuned S&S"));
@@ -738,6 +740,8 @@ protected:
 
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(), T("DSB QP"));
     evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("DSB QP Perfect"));
+*/
+    evaluator->addEvaluator(ss3Target,  containerSupervisedEvaluator(classificationEvaluator()), T("SS3"), true);
 
 //    evaluator->addEvaluator(odsbTarget, new DisulfidePatternEvaluator(), T("OxyDSB QP"));
 //    evaluator->addEvaluator(odsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("OxyDSB QP Perfect"), true);
@@ -1928,12 +1932,12 @@ public:
     dsbPredictor->x3Attributes = 0;
     dsbPredictor->x3Splits = 1;
     ProteinPredictorPtr dsbIteration = new ProteinPredictor(dsbPredictor);
-    dsbIteration->addTarget(dsbTarget);
+    dsbIteration->addTarget(ss3Target);
     iterations->addPredictor(dsbIteration);
 
     // Copy CBS
-    copyCysteineBondingStateSupervisons(context, train);
-    copyCysteineBondingStateSupervisons(context, test);    
+    //copyCysteineBondingStateSupervisons(context, train);
+    //copyCysteineBondingStateSupervisons(context, test);    
     
     if (!iterations->train(context, train, ContainerPtr(), T("Training")))
       return 101.f;
@@ -1962,7 +1966,8 @@ protected:
   {
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
     //evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("CBS"), true);
-    evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("DSB QP Perfect"), true);
+    //evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("DSB QP Perfect"), true);
+    evaluator->addEvaluator(ss3Target,  containerSupervisedEvaluator(classificationEvaluator()), T("SS3"), true);
     return evaluator;
   }
 };
@@ -1973,7 +1978,7 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     ExecutionContextPtr remoteContext = distributedExecutionContext(context, T("monster24.montefiore.ulg.ac.be"), 1664,
-                                                                    T("120725-BFS-TrueCBS-DSB"), T("jbecker@screen"), T("jbecker@giga"),
+                                                                    T("120815-BFS-SS3"), T("jbecker@screen"), T("jbecker@giga"),
                                                                     fixedResourceEstimator(1, 12 * 1024, 100), false);
     LargeProteinParametersPtr initialParameters = new LargeProteinParameters();
     OptimizationProblemPtr problem = new OptimizationProblem(new DSBLearnerFunction(inputDirectory, supervisionDirectory),
