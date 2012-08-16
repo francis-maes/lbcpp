@@ -14,14 +14,28 @@
 namespace lbcpp
 {
 
-extern FunctionPtr regressionExtraTree(size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0, bool verbose = false);
-extern FunctionPtr binaryClassificationExtraTree(size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0, bool verbose = false);
-extern FunctionPtr classificationExtraTree(size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0, bool verbose = false);
+extern FunctionPtr regressionExtraTree(size_t numTrees = 100,
+                                       size_t numAttributeSamplesPerSplit = 10,
+                                       size_t minimumSizeForSplitting = 0,
+                                       bool verbose = false,
+                                       ContainerPtr testingData = ContainerPtr());
 
-extern FunctionPtr extraTreeLearningMachine(size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0, bool verbose = false);
+extern FunctionPtr binaryClassificationExtraTree(size_t numTrees = 100,
+                                                 size_t numAttributeSamplesPerSplit = 10,
+                                                 size_t minimumSizeForSplitting = 0,
+                                                 bool verbose = false,
+                                                 ContainerPtr testingData = ContainerPtr());
 
-// Container[Pair[TrainFeature, TrainSupervision]], Container[Pair[TestInput, Any]] -> Container[Prediction]
-extern FunctionPtr lowMemoryRTreeFunction(size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
+extern FunctionPtr classificationExtraTree(size_t numTrees = 100,
+                                           size_t numAttributeSamplesPerSplit = 10,
+                                           size_t minimumSizeForSplitting = 0,
+                                           bool verbose = false,
+                                           ContainerPtr testingData = ContainerPtr());
+
+extern FunctionPtr extraTreeLearningMachine(size_t numTrees = 100,
+                                            size_t numAttributeSamplesPerSplit = 10,
+                                            size_t minimumSizeForSplitting = 0,
+                                            bool verbose = false);
 
 }; /* namespace lbcpp */
 
