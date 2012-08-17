@@ -74,12 +74,14 @@ protected:
     {setBatchLearner(filterUnsupervisedExamplesBatchLearner(lowMemoryRTreeBatchLearner()));}
   
   virtual FunctionPtr createExtraTreeImplementation() const = 0;
-  virtual Variable computePrediction(const std::vector<Variable>& subPredicitons) const = 0;
+
+  virtual Variable createEmptyPrediction() const = 0;
+  virtual Variable addPrediction(const Variable& a, const Variable& b) const = 0;
+  virtual Variable finalizePrediction(const Variable& value) const = 0;
 };
 
 extern ClassPtr lowMemoryRTreeFunctionClass;
 typedef ReferenceCountedObjectPtr<LowMemoryRTreeFunction> LowMemoryRTreeFunctionPtr;
-
 
 class LowMemoryRTreeBatchLearner : public BatchLearner
 {
@@ -101,9 +103,10 @@ public:
 
     const size_t numTesting = validationData.size();
 
-    std::vector<std::vector<Variable> > predictions(numTesting);
+    std::vector<Variable> predictions;
+    predictions.resize(numTesting);
     for (size_t i = 0; i < numTesting; ++i)
-      predictions[i] = std::vector<Variable>(rTreeFunction->numTrees);
+      predictions[i] = rTreeFunction->createEmptyPrediction();
 
     context.enterScope(T("Low Memory RTree Learning"));
     for (size_t i = 0; i < rTreeFunction->numTrees; ++i)
@@ -114,18 +117,22 @@ public:
         context.errorCallback(T("LowMemoryRTreeFunction"), T("Error during learning"));
         return false;
       }
-      
+
       for (size_t j = 0; j < numTesting; ++j)
-        predictions[j][i] = x3Function->compute(context, validationData[j]->getVariable(0), Variable());
+      {
+        const Variable& result = x3Function->compute(context, validationData[j]->getVariable(0), Variable());
+        predictions[j] = rTreeFunction->addPrediction(predictions[j], result);
+      }
 
       context.progressCallback(new ProgressionState(i + 1, rTreeFunction->numTrees, T("trees")));
     }
-    
-    rTreeFunction->predictions.resize(numTesting);
+
+    for (size_t j = 0; j < numTesting; ++j)
+      predictions[j] = rTreeFunction->finalizePrediction(predictions[j]);
+
+    rTreeFunction->predictions = predictions;
     rTreeFunction->predictionIndex = 0;
-    for (size_t i = 0; i < numTesting; ++i)
-      rTreeFunction->predictions[i] = rTreeFunction->computePrediction(predictions[i]);
-    
+
     context.leaveScope();
     return true;
   }
@@ -153,13 +160,19 @@ public:
     return new RegressionRTreeFunction(1, numAttributeSamplesPerSplit, minimumSizeForSplitting, false);
   }
 
-  virtual Variable computePrediction(const std::vector<Variable>& subPredicitons) const
+  virtual Variable createEmptyPrediction() const
   {
-    const size_t n = subPredicitons.size();
-    double sum = 0.f;
-    for (size_t i = 0; i < n; ++i)
-      sum += subPredicitons[i].getDouble();
-    return Variable(sum / (double)n, doubleType);
+    return Variable(0.f, doubleType);
+  }
+
+  virtual Variable addPrediction(const Variable& a, const Variable& b) const
+  {
+    return Variable(a.getDouble() + b.getDouble(), doubleType);
+  }
+
+  virtual Variable finalizePrediction(const Variable& value) const
+  {
+    return Variable(value.getDouble() / (double)numTrees, doubleType);
   }
 };
 
@@ -185,13 +198,19 @@ public:
     return new BinaryRTreeFunction(1, numAttributeSamplesPerSplit, minimumSizeForSplitting, false);
   }
 
-  virtual Variable computePrediction(const std::vector<Variable>& subPredicitons) const
+  virtual Variable createEmptyPrediction() const
   {
-    const size_t n = subPredicitons.size();
-    double sum = 0.f;
-    for (size_t i = 0; i < n; ++i)
-      sum += subPredicitons[i].getDouble();
-    return Variable(sum / (double)n, probabilityType);
+    return Variable(0.f, probabilityType);
+  }
+
+  virtual Variable addPrediction(const Variable& a, const Variable& b) const
+  {
+    return Variable(a.getDouble() + b.getDouble(), probabilityType);
+  }
+  
+  virtual Variable finalizePrediction(const Variable& value) const
+  {
+    return Variable(value.getDouble() / (double)numTrees, probabilityType);
   }
 };
 
@@ -221,20 +240,23 @@ public:
     return new ClassificationRTreeFunction(1, numAttributeSamplesPerSplit, minimumSizeForSplitting, false);
   }
 
-  virtual Variable computePrediction(const std::vector<Variable>& subPredicitons) const
+  virtual Variable createEmptyPrediction() const
   {
-    const size_t n = subPredicitons.size();
-    if (n == 0)
-      return Variable::missingValue(getOutputType());
-    DenseDoubleVectorPtr res = new DenseDoubleVector(subPredicitons[0].getType());
-    for (size_t i = 0; i < n; ++i)
-      subPredicitons[i].getObjectAndCast<DenseDoubleVector>()->addTo(res);
+    return new DenseDoubleVector(denseDoubleVectorClass(getOutputType()->getTemplateArgument(0), probabilityType));
+  }
 
-    std::vector<double>& values = res->getValues();
+  virtual Variable addPrediction(const Variable& a, const Variable& b) const
+  {
+    b.getObjectAndCast<DenseDoubleVector>()->addTo(a.getObjectAndCast<DenseDoubleVector>());
+    return a;
+  }
+  
+  virtual Variable finalizePrediction(const Variable& value) const
+  {
+    std::vector<double>& values = value.getObjectAndCast<DenseDoubleVector>()->getValues();
     for (size_t i = 0; i < values.size(); ++i)
-      values[i] /= n;
-
-    return res;
+      values[i] /= numTrees;
+    return value;
   }
 };
 
