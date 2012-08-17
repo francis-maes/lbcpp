@@ -55,6 +55,8 @@ public:
   
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
+    if (!inputs[1].exists())
+      return Variable::missingValue(getOutputType());
     jassert(predictionIndex < predictions.size());
     return predictions[const_cast<LowMemoryRTreeFunction*>(this)->predictionIndex++];
   }
