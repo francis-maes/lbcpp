@@ -26,7 +26,6 @@ static void context_result(const String&, double);
 #include "RTree/tree-ok3.c"
 #include "RTree/tree-multiregr.c"
 
-
 CORETABLE_TYPE *core_table_y = NULL;
 
 float getobjy_multiregr_learn_matlab(int obj, int att) {
