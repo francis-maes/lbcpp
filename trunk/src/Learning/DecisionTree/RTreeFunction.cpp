@@ -56,8 +56,19 @@ public:
     treesState.numLeaves = numLeaves;
     treesState.numPredictions = numPredictions;
   }
-
+  
   Variable makePrediction(ExecutionContext& context, const Variable& input, const TypePtr& outputType) const
+  {
+    void* coreTable = RTreeFunction::computeCoreTableOf(context, input);
+    if (!coreTable)
+      return Variable::missingValue(outputType);
+
+    Variable res = makePredictionFromCoreTable(context, coreTable, outputType);
+    RTreeFunction::deleteCoreTable(coreTable);
+    return res;
+  }
+
+  Variable makePredictionFromCoreTable(ExecutionContext& context, void* coreTable, const TypePtr& outputType) const
   {
     ScopedLock _(learnerLock);
     restoreTreesState();
@@ -66,31 +77,7 @@ public:
 
     /* on change la core table */
     nb_obj_in_core_table = 1;
-    core_table = (CORETABLE_TYPE *)MyMalloc((size_t)nb_attributes * sizeof(CORETABLE_TYPE));
-    jassert(core_table);
-    ContainerPtr obj = input.getObjectAndCast<Container>(context);
-    if (!obj)
-      return Variable::missingValue(outputType);
-    //jassert(obj->getNumElements() == (size_t)nb_attributes);
-    for (size_t j = 0; j < (size_t)nb_attributes; ++j)
-    {
-      Variable objVariable = obj->getElement(j);
-      TypePtr objType = objVariable.getType();
-      CORETABLE_TYPE value;
-      if (objType->inheritsFrom(booleanType))
-        value = (CORETABLE_TYPE)(objVariable.getBoolean() ? 1 : 0);
-      else if (objType->inheritsFrom(enumValueType))
-        value = (CORETABLE_TYPE)objVariable.getInteger();
-      else if (objType->inheritsFrom(doubleType))
-        value = (CORETABLE_TYPE)objVariable.getDouble();
-      else if (objType->inheritsFrom(integerType))
-        value = (CORETABLE_TYPE)objVariable.getInteger();
-      else {
-        jassertfalse;
-      }
-      core_table[j] = value;
-    }
-
+    core_table = (CORETABLE_TYPE*)coreTable;
     /* on cree la table */
     float* output = (float*)MyMalloc((size_t)nb_goal_multiregr * sizeof(float));
     jassert(output);
@@ -123,7 +110,6 @@ public:
     }
 
     /* Liberation de la mémoire */
-    MyFree(core_table);
     MyFree(output);
 
     /* on remet la coretable (pour les variables importances) */
@@ -452,7 +438,6 @@ protected:
   } treesState;
 };
 
-typedef ReferenceCountedObjectPtr<RTreeFunction> RTreeFunctionPtr;
 typedef ReferenceCountedObjectPtr<RTree> RTreePtr;
 
 extern BatchLearnerPtr rTreeBatchLearner(bool verbose = false);
@@ -480,6 +465,48 @@ Variable RTreeFunction::computeFunction(ExecutionContext& context, const Variabl
   if (!trees)
     return Variable::missingValue(getOutputType());
   return trees.staticCast<RTree>()->makePrediction(context, inputs[0], getInputVariable(1)->getType());
+}
+
+void* RTreeFunction::computeCoreTableOf(ExecutionContext& context, const Variable& input)
+{
+  ContainerPtr obj = input.getObjectAndCast<Container>(context);
+  if (!obj)
+    return NULL;
+  
+  const size_t numAttributes = obj->getNumElements();
+  CORETABLE_TYPE* res = (CORETABLE_TYPE *)MyMalloc((size_t)numAttributes * sizeof(CORETABLE_TYPE));
+  jassert(res);
+
+  for (size_t j = 0; j < (size_t)numAttributes; ++j)
+  {
+    Variable objVariable = obj->getElement(j);
+    TypePtr objType = objVariable.getType();
+    CORETABLE_TYPE value;
+    if (objType->inheritsFrom(booleanType))
+      value = (CORETABLE_TYPE)(objVariable.getBoolean() ? 1 : 0);
+    else if (objType->inheritsFrom(enumValueType))
+      value = (CORETABLE_TYPE)objVariable.getInteger();
+    else if (objType->inheritsFrom(doubleType))
+      value = (CORETABLE_TYPE)objVariable.getDouble();
+    else if (objType->inheritsFrom(integerType))
+      value = (CORETABLE_TYPE)objVariable.getInteger();
+    else {
+      jassertfalse;
+    }
+    res[j] = value;
+  }
+  return res;
+}
+
+void RTreeFunction::deleteCoreTable(void* coreTable)
+{
+  MyFree(coreTable);
+}
+
+Variable RTreeFunction::makePredictionFromCoreTable(ExecutionContext& context, void* coreTable)
+{
+  jassert(coreTable && trees);
+  return trees.dynamicCast<RTree>()->makePredictionFromCoreTable(context, coreTable, getInputVariable(1)->getType());
 }
 
 void RTreeFunction::saveToXml(XmlExporter& exporter) const
