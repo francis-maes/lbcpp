@@ -68,7 +68,8 @@ private:
     size_t bestValue = (size_t)-1;
     Variable bestScore = DBL_MAX;
     for (size_t i = 0; i < scores->getNumElements(); ++i)
-      if (scores->getElement(i).toDouble() < bestScore.toDouble())
+      if (scores->getElement(i).exists()
+          && scores->getElement(i).toDouble() < bestScore.toDouble())
       {
         bestValue = i;
         bestScore = scores->getElement(i);
@@ -144,7 +145,8 @@ private:
     size_t bestValue = (size_t)-1;
     Variable bestScore = DBL_MAX;
     for (size_t i = 0; i < parameters.size(); ++i)
-      if (parameters[i]->getBestScore().toDouble() < bestScore.toDouble())
+      if (parameters[i]->getBestScore().exists() 
+          && parameters[i]->getBestScore().toDouble() < bestScore.toDouble())
       {
         bestParameter = parameters[i]->getIndex();
         bestValue = parameters[i]->getBestValue();
