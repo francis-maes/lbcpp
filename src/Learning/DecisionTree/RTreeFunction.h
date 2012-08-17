@@ -77,6 +77,11 @@ public:
   virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlImporter& importer);
 
+  // Private
+  static void* computeCoreTableOf(ExecutionContext& context, const Variable& input);
+  static void deleteCoreTable(void* coreTable);
+  Variable makePredictionFromCoreTable(ExecutionContext& context, void* coreTable);
+
 protected:
   friend class RTreeFunctionClass;
   
@@ -89,6 +94,7 @@ protected:
 };
 
 extern ClassPtr rTreeFunctionClass;
+typedef ReferenceCountedObjectPtr<RTreeFunction> RTreeFunctionPtr;
 
 class ClassificationRTreeFunction : public RTreeFunction
 {

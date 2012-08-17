@@ -105,6 +105,10 @@ public:
 
     const size_t numTesting = validationData.size();
 
+    std::vector<void*> precomputedCoreTables(numTesting);
+    for (size_t i = 0; i < numTesting; ++i)
+      precomputedCoreTables[i] = RTreeFunction::computeCoreTableOf(context, validationData[i]->getVariable(0));
+
     std::vector<Variable> predictions;
     predictions.resize(numTesting);
     for (size_t i = 0; i < numTesting; ++i)
@@ -113,7 +117,7 @@ public:
     context.enterScope(T("Low Memory RTree Learning"));
     for (size_t i = 0; i < rTreeFunction->numTrees; ++i)
     {
-      FunctionPtr x3Function = rTreeFunction->createExtraTreeImplementation();
+      RTreeFunctionPtr x3Function = rTreeFunction->createExtraTreeImplementation().dynamicCast<RTreeFunction>();
       if (!x3Function->train(context, trainingData))
       {
         context.errorCallback(T("LowMemoryRTreeFunction"), T("Error during learning"));
@@ -122,7 +126,8 @@ public:
 
       for (size_t j = 0; j < numTesting; ++j)
       {
-        const Variable& result = x3Function->compute(context, validationData[j]->getVariable(0), Variable());
+        //const Variable result = x3Function->compute(context, validationData[j]->getVariable(0), Variable());
+        const Variable result = x3Function->makePredictionFromCoreTable(context, precomputedCoreTables[j]);
         predictions[j] = rTreeFunction->addPrediction(predictions[j], result);
       }
 
@@ -134,6 +139,9 @@ public:
 
     rTreeFunction->predictions = predictions;
     rTreeFunction->predictionIndex = 0;
+
+    for (size_t i = 0; i < numTesting; ++i)
+      RTreeFunction::deleteCoreTable(precomputedCoreTables[i]);
 
     context.leaveScope();
     return true;

@@ -69,7 +69,7 @@ protected:
     evaluator = classificationEvaluator();
     score = learner->evaluate(context, testingData, evaluator, T("Evaluating on testing data"));
     checkIsCloseTo(context, 0.85, 0.03, 1 - score->getScoreToMinimize());
-    
+
     context.leaveScope();
   }
 
