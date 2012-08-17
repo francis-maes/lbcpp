@@ -89,10 +89,65 @@
 #define DllExport
 #endif
 
-/* redefinition du malloc (pour l'interface matlab) */
-#define MyMalloc malloc
-#define MyFree free
-#define MyFreeAndNull(x) free(x); x = NULL
+//#define _RTREE_DEBUG_MEMORY_
+#ifdef _RTREE_DEBUG_MEMORY_
+size_t numMalloc = 0;
+size_t sizeMalloc = 0;
+size_t numFree = 0;
+size_t sizeFree = 0;
+std::map<void*, size_t> allocatedMemory;
+void* MyLogMalloc(size_t x)
+{
+  void* res = malloc(x);
+  allocatedMemory[res] = x;
+  ++numMalloc;
+  sizeMalloc += x;
+/*
+  if (x == 88 || x == 176)
+  {
+    std::cout << "MyMalloc: " << res << " - " << x << std::endl;
+    jassertfalse;
+  }
+*/
+  return res;
+}
+
+void MyLogFree(void* ptr)
+{
+  if (!allocatedMemory.count(ptr))
+  {
+    std::cout << "MyFree: Not logged !" << std::endl;
+    free(ptr);
+  }
+  ++numFree;
+  sizeFree += allocatedMemory[ptr];
+  allocatedMemory[ptr] = 0;
+  free(ptr);
+}
+
+void MyLogUnfreed()
+{
+  typedef std::map<void*, size_t> MyMap;
+  
+  std::cout << "Unfreed memory" << std::endl;
+  for (MyMap::iterator it = allocatedMemory.begin();
+       it != allocatedMemory.end();
+       it++)
+    if (it->second != 0)
+      std::cout << it->first << " - " << it->second << std::endl;
+}
+
+#define MyMalloc(x) MyLogMalloc(x);
+#define MyFree(x) MyLogFree(x); 
+#define MyFreeAndNull(x) MyLogFree(x); x = NULL
+
+#else
+
+#define MyMalloc(x) malloc(x);
+#define MyFree(x) free(x); 
+#define MyFreeAndNull(x) free(x); x = NULL;
+
+#endif // !_RTREE_DEBUG_MEMORY_
 
 /* definition de types */
 
