@@ -120,7 +120,7 @@ public:
 
       context.progressCallback(new ProgressionState(i + 1, rTreeFunction->numTrees, T("trees")));
     }
-
+    
     rTreeFunction->predictions.resize(numTesting);
     rTreeFunction->predictionIndex = 0;
     for (size_t i = 0; i < numTesting; ++i)

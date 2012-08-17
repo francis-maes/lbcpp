@@ -145,6 +145,12 @@ public:
     free_table_float(treesState.prediction_values, treesState.size_current_tree_table_pred);
     MyFreeAndNull(treesState.prediction);
     MyFreeAndNull(treesState.threshold);
+    MyFreeAndNull(treesState.attribute_descriptors);
+#ifdef _RTREE_DEBUG_MEMORY_
+    std::cout << "Num. MyMalloc: " << numMalloc << " - Allocated memory: " << sizeMalloc << std::endl;
+    std::cout << "Num. Free: " << numFree << " - Freed memory: " << sizeFree << std::endl;
+    MyLogUnfreed();
+#endif // !_RTREE_DEBUG_MEMORY_
   }
 
   void saveTreesState()
@@ -559,7 +565,7 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
   goal = MULTIREGR;
   jassert(nb_attributes);
   nb_obj_in_core_table = n;
-  
+
   core_table = (CORETABLE_TYPE *)MyMalloc((size_t)nb_obj_in_core_table * (size_t)nb_attributes * sizeof(CORETABLE_TYPE));
   for (size_t i = 0; i < (size_t)nb_obj_in_core_table; ++i)
   {
@@ -729,8 +735,8 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
       context.resultCallback(T("Name"), attributesEnum->getElementName(j));
       context.leaveScope(variableImportances[j]);
     }
-    MyFreeAndNull(varimp);
   }
+  MyFreeAndNull(varimp);
 
   /* Sauvegarde de l'arbre */
   RTreePtr trees = new RTree(maxnbnodes, nb_leaves, nb_pred);
