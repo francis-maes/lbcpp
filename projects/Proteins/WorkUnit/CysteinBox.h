@@ -1930,7 +1930,7 @@ public:
     //copyCysteineBondingStateSupervisons(context, train);
     //copyCysteineBondingStateSupervisons(context, test);    
     
-    if (!iterations->train(context, train, ContainerPtr(), T("Training")))
+    if (!iterations->train(context, train, test, T("Training")))
       return 101.f;
 
     ProteinEvaluatorPtr evaluator = createProteinEvaluator();
@@ -1969,13 +1969,13 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     ExecutionContextPtr remoteContext = distributedExecutionContext(context, T("monster24.montefiore.ulg.ac.be"), 1664,
-                                                                    T("120815-BFS-SS3"), T("jbecker@screen"), T("jbecker@giga"),
-                                                                    fixedResourceEstimator(1, 12 * 1024, 100), false);
+                                                                    T("120817-BFS-SS3"), T("jbecker@screen"), T("jbecker@giga"),
+                                                                    fixedResourceEstimator(1, 6 * 1024, 200), false);
     LargeProteinParametersPtr initialParameters = new LargeProteinParameters();
     OptimizationProblemPtr problem = new OptimizationProblem(new DSBLearnerFunction(inputDirectory, supervisionDirectory),
                                                              initialParameters, SamplerPtr(),
                                                              new DSBLearnerFunction(inputDirectory, supervisionDirectory, true));
-    OptimizerPtr optimizer = bestFirstSearchOptimizer(LargeProteinParameters::createStreams(), context.getFile(optimizerStateFile));
+    OptimizerPtr optimizer = bestFirstSearchOptimizer(LargeProteinParameters::createSingleTaskSingleStageStreams(), context.getFile(optimizerStateFile));
 
     return optimizer->compute(*remoteContext.get(), problem);
   }

@@ -432,27 +432,43 @@ public:
 
   static std::vector<StreamPtr> createSingleTaskSingleStageStreams()
   {
-    std::vector<StreamPtr> res = createStreams();
+    const size_t n = largeProteinParametersClass->getNumMemberVariables();
+    std::vector<StreamPtr> res(n);
+    
+    res[largeProteinParametersClass->findMemberVariable(T("useProteinLength"))] = booleanStream(true);
+    res[largeProteinParametersClass->findMemberVariable(T("useNumCysteins"))] = booleanStream(true);
 
-    res[largeProteinParametersClass->findMemberVariable(T("useSS3GlobalHistogram"))] = StreamPtr();
-    res[largeProteinParametersClass->findMemberVariable(T("ss3WindowSize"))] = StreamPtr();
-    res[largeProteinParametersClass->findMemberVariable(T("ss3LocalHistogramSize"))] = StreamPtr();
+    res[largeProteinParametersClass->findMemberVariable(T("useAminoAcidGlobalHistogram"))] = booleanStream(true);
+    res[largeProteinParametersClass->findMemberVariable(T("usePSSMGlobalHistogram"))] = booleanStream(true);
 
-    res[largeProteinParametersClass->findMemberVariable(T("useSS8GlobalHistogram"))] = StreamPtr();
-    res[largeProteinParametersClass->findMemberVariable(T("ss8WindowSize"))] = StreamPtr();
-    res[largeProteinParametersClass->findMemberVariable(T("ss8LocalHistogramSize"))] = StreamPtr();
+    res[largeProteinParametersClass->findMemberVariable(T("useRelativePosition"))] = booleanStream(true);
+    res[largeProteinParametersClass->findMemberVariable(T("useRelativeCysteinIndex"))] = booleanStream(true);
 
-    res[largeProteinParametersClass->findMemberVariable(T("useSAGlobalHistogram"))] = StreamPtr();
-    res[largeProteinParametersClass->findMemberVariable(T("saWindowSize"))] = StreamPtr();
-    res[largeProteinParametersClass->findMemberVariable(T("saLocalHistogramSize"))] = StreamPtr();
+    
+    std::vector<int> windowValues;
+    windowValues.push_back(1);
+    windowValues.push_back(5);
+    windowValues.push_back(9);
+    windowValues.push_back(11);
+    windowValues.push_back(15);
+    windowValues.push_back(19);
+    windowValues.push_back(21);
+    windowValues.push_back(25);
 
-    res[largeProteinParametersClass->findMemberVariable(T("useDRGlobalHistogram"))] = StreamPtr();
-    res[largeProteinParametersClass->findMemberVariable(T("drWindowSize"))] = StreamPtr();
-    res[largeProteinParametersClass->findMemberVariable(T("drLocalHistogramSize"))] = StreamPtr();
+    res[largeProteinParametersClass->findMemberVariable(T("aminoAcidWindowSize"))] = integerStream(positiveIntegerType, windowValues);
+    res[largeProteinParametersClass->findMemberVariable(T("pssmWindowSize"))] = integerStream(positiveIntegerType, windowValues);
 
-    res[largeProteinParametersClass->findMemberVariable(T("useSTALGlobalHistogram"))] = StreamPtr();
-    res[largeProteinParametersClass->findMemberVariable(T("stalWindowSize"))] = StreamPtr();
-    res[largeProteinParametersClass->findMemberVariable(T("stalLocalHistogramSize"))] = StreamPtr();
+    std::vector<int> localValues;
+    for (int j = 10; j < 100; j += 10)
+      localValues.push_back(j);
+
+    res[largeProteinParametersClass->findMemberVariable(T("aminoAcidLocalHistogramSize"))] = integerStream(positiveIntegerType, localValues);
+    res[largeProteinParametersClass->findMemberVariable(T("pssmLocalHistogramSize"))] = integerStream(positiveIntegerType, localValues);
+
+    std::vector<int> cysSepProfilvalues;
+    for (int j = 1; j < 20; j += 2)
+      cysSepProfilvalues.push_back(j);
+    res[largeProteinParametersClass->findMemberVariable(T("separationProfilSize"))] = integerStream(positiveIntegerType, cysSepProfilvalues);
 
     return res;
   }
