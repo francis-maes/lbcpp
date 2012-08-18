@@ -352,6 +352,7 @@
     <variable type="PositiveInteger" name="x3Trees"/>
     <variable type="PositiveInteger" name="x3Attributes"/>
     <variable type="PositiveInteger" name="x3Splits"/>
+    <variable type="PositiveInteger" name="x3LowMemory"/>
     <variable type="Double" name="sgdRate"/>
     <variable type="PositiveInteger" name="sgdIterations"/>
     <variable type="Boolean" name="useAddBias"/>

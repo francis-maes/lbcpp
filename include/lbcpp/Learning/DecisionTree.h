@@ -35,7 +35,8 @@ extern FunctionPtr classificationExtraTree(size_t numTrees = 100,
 extern FunctionPtr extraTreeLearningMachine(size_t numTrees = 100,
                                             size_t numAttributeSamplesPerSplit = 10,
                                             size_t minimumSizeForSplitting = 0,
-                                            bool verbose = false);
+                                            bool verbose = false,
+                                            bool useLowMemory = false);
 
 }; /* namespace lbcpp */
 

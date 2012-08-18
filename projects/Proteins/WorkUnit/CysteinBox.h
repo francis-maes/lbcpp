@@ -1866,8 +1866,8 @@ public:
 class DSBLearnerFunction : public Function
 {
 public:
-  DSBLearnerFunction(const String& inputDirectory, const String& supervisionDirectory, bool isValidation = false)
-    : inputDirectory(inputDirectory), supervisionDirectory(supervisionDirectory), isValidation(isValidation) {}
+  DSBLearnerFunction(const String& inputDirectory, const String& supervisionDirectory, ProteinTarget target = ss3Target, bool isValidation = false)
+    : inputDirectory(inputDirectory), supervisionDirectory(supervisionDirectory), target(target), isValidation(isValidation) {}
 
   virtual size_t getNumRequiredInputs() const
     {return 1;}
@@ -1922,8 +1922,9 @@ public:
     dsbPredictor->x3Trees = 1000;
     dsbPredictor->x3Attributes = 0;
     dsbPredictor->x3Splits = 1;
+    dsbPredictor->x3LowMemory = true;
     ProteinPredictorPtr dsbIteration = new ProteinPredictor(dsbPredictor);
-    dsbIteration->addTarget(ss3Target);
+    dsbIteration->addTarget(target);
     iterations->addPredictor(dsbIteration);
 
     // Copy CBS
@@ -1949,6 +1950,7 @@ protected:
 
   String inputDirectory;
   String supervisionDirectory;
+  ProteinTarget target;
   bool isValidation;
 
   DSBLearnerFunction() {}
@@ -1957,8 +1959,15 @@ protected:
   {
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
     //evaluator->addEvaluator(cbsTarget, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("CBS"), true);
-    //evaluator->addEvaluator(dsbTarget, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("DSB QP Perfect"), true);
-    evaluator->addEvaluator(ss3Target,  containerSupervisedEvaluator(classificationEvaluator()), T("SS3"), true);
+    if (target == ss3Target || target == ss8Target || target == stalTarget)
+      evaluator->addEvaluator(target, containerSupervisedEvaluator(classificationEvaluator()), T("SS3-SS8-StAl"), true);
+    else if (target == sa20Target)
+      evaluator->addEvaluator(target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)), T("SA20"), true);
+    else if (target == drTarget)
+      evaluator->addEvaluator(target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)), T("DR"), true);
+    else if (target == dsbTarget)
+      evaluator->addEvaluator(target, new DisulfidePatternEvaluator(new KolmogorovPerfectMatchingFunction(0.f), 0.f), T("DSB QP Perfect"), true);
+
     return evaluator;
   }
 };
@@ -1972,9 +1981,9 @@ public:
                                                                     T("120817-BFS-SS3"), T("jbecker@screen"), T("jbecker@giga"),
                                                                     fixedResourceEstimator(1, 6 * 1024, 200), false);
     LargeProteinParametersPtr initialParameters = new LargeProteinParameters();
-    OptimizationProblemPtr problem = new OptimizationProblem(new DSBLearnerFunction(inputDirectory, supervisionDirectory),
+    OptimizationProblemPtr problem = new OptimizationProblem(new DSBLearnerFunction(inputDirectory, supervisionDirectory, target),
                                                              initialParameters, SamplerPtr(),
-                                                             new DSBLearnerFunction(inputDirectory, supervisionDirectory, true));
+                                                             new DSBLearnerFunction(inputDirectory, supervisionDirectory, target, true));
     OptimizerPtr optimizer = bestFirstSearchOptimizer(LargeProteinParameters::createSingleTaskSingleStageStreams(), context.getFile(optimizerStateFile));
 
     return optimizer->compute(*remoteContext.get(), problem);
@@ -1986,22 +1995,7 @@ protected:
   String inputDirectory;
   String supervisionDirectory;
   String optimizerStateFile;
-};
-
-class BFSDebugWorkUnit : public WorkUnit
-{
-public:
-  virtual Variable run(ExecutionContext& context)
-  {
-    FunctionPtr f = new DSBLearnerFunction(T("/Users/jbecker/Documents/Workspace/Data/Proteins/SPX/FromESANN/5FCV_Fold_0"),
-                                           T("/Users/jbecker/Documents/Workspace/Data/Proteins/SPX/FromBoth/5FCV_Fold_0"));
-    LargeProteinParametersPtr p = new LargeProteinParameters();
-    p->useRelativePosition = true;
-
-    std::cout << p->toString() << std::endl;
-
-    return f->compute(context, p);
-  }
+  ProteinTarget target;
 };
 
 };

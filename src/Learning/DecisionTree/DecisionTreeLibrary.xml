@@ -20,11 +20,12 @@
   </class>
   
   <class name="ExtraTreeLearningMachine" base="ProxyFunction">
-    <constructor arguments="size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting, bool verbose" returnType="Function"/>
+    <constructor arguments="size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting, bool verbose, bool useLowMemory" returnType="Function"/>
     <variable type="PositiveInteger" name="numTrees"/>
     <variable type="PositiveInteger" name="numAttributeSamplesPerSplit"/>
     <variable type="PositiveInteger" name="minimumSizeForSplitting"/>
     <variable type="Boolean" name="verbose"/>
+    <variable type="Boolean" name="useLowMemory"/>
   </class>
 
   <class name="LowMemoryRTreeFunction" base="Function" abstract="yes">

@@ -557,6 +557,7 @@ public:
     , x3Trees(1000)
     , x3Attributes(0)
     , x3Splits(0)
+    , x3LowMemory(false)
     , sgdRate(1.0)
     , sgdIterations(100)
     , useAddBias(false)
@@ -997,7 +998,7 @@ public:
       return binaryLocalitySensitiveHashing(knnNeighbors);
     else if (learningMachineName == T("ExtraTrees"))
     {
-      FunctionPtr res = extraTreeLearningMachine(x3Trees, x3Attributes, x3Splits);
+      FunctionPtr res = extraTreeLearningMachine(x3Trees, x3Attributes, x3Splits, false, x3LowMemory);
       if (useAddBias)
         res = new PreProcessCompositeFunction(res, composeFunction(addBiasLearnableFunction(binaryClassificationSensitivityAndSpecificityScore, 0.0, true)
                                                                    , signedScalarToProbabilityFunction()));
@@ -1039,6 +1040,7 @@ public:
   size_t x3Trees;
   size_t x3Attributes;
   size_t x3Splits;
+  bool x3LowMemory;
   double sgdRate;
   size_t sgdIterations;
 
