@@ -237,14 +237,15 @@
   <class name="DSBLearnerFunction" base="Function">
     <variable type="String" name="inputDirectory"/>
     <variable type="String" name="supervisionDirectory"/>
+    <variable type="VariablesEnumeration[Protein]" name="target"/>
     <variable type="Boolean" name="isValidation"/>
   </class>
   <class name="BFSOptimizeDSBWorkUnit" base="WorkUnit">
     <variable type="String" name="inputDirectory" shortName="in"/>
     <variable type="String" name="supervisionDirectory" shortName="sup"/>
     <variable type="String" name="optimizerStateFile" shortName="st"/>
+    <variable type="VariablesEnumeration[Protein]" name="target" shortName="t"/>
   </class>
-  <class name="BFSDebugWorkUnit" base="WorkUnit"/>
   <!-- END CysteinBox -->
 
   <!-- BEGIN LargeBox -->

@@ -11,6 +11,7 @@
 
 # include <lbcpp/Core/Function.h>
 # include <lbcpp/Data/DoubleVector.h>
+# include <lbcpp/Learning/DecisionTree.h>
 
 namespace lbcpp
 {
@@ -105,7 +106,9 @@ public:
                               bool verbose)
     : RTreeFunction(numTrees,
                     numAttributeSamplesPerSplit,
-                    minimumSizeForSplitting, verbose) {}
+                    minimumSizeForSplitting,
+                    verbose) {}
+
   ClassificationRTreeFunction() {}
   
   virtual TypePtr getSupervisionType() const
@@ -128,7 +131,9 @@ public:
                           bool verbose)
     : RTreeFunction(numTrees,
                     numAttributeSamplesPerSplit,
-                    minimumSizeForSplitting, verbose) {}
+                    minimumSizeForSplitting,
+                    verbose) {}
+
   RegressionRTreeFunction() {}
   
   virtual TypePtr getSupervisionType() const
@@ -147,7 +152,9 @@ public:
                       bool verbose)
     : RTreeFunction(numTrees,
                     numAttributeSamplesPerSplit,
-                    minimumSizeForSplitting, verbose) {}
+                    minimumSizeForSplitting,
+                    verbose) {}
+
   BinaryRTreeFunction() {}
   
   virtual TypePtr getSupervisionType() const
@@ -163,11 +170,13 @@ public:
   ExtraTreeLearningMachine(size_t numTrees,
                            size_t numAttributeSamplesPerSplit,
                            size_t minimumSizeForSplitting,
-                           bool verbose)
+                           bool verbose,
+                           bool useLowMemory)
     : numTrees(numTrees), 
       numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
       minimumSizeForSplitting(minimumSizeForSplitting),
-      verbose(verbose) {}
+      verbose(verbose),
+      useLowMemory(useLowMemory) {}
 
   virtual size_t getNumRequiredInputs() const
     {return 2;}
@@ -184,11 +193,11 @@ public:
     TypePtr supervisionType = inputVariables[1]->getType();
 
     if (supervisionType == doubleType)
-      return new RegressionRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, verbose);
+      return regressionExtraTree(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, verbose, useLowMemory);
     else if (supervisionType == probabilityType || supervisionType == booleanType)
-      return new BinaryRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, verbose);
+      return binaryClassificationExtraTree(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, verbose, useLowMemory);
     else if (supervisionType->inheritsFrom(enumValueType) || supervisionType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
-      return new ClassificationRTreeFunction(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, verbose);
+      return classificationExtraTree(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting, verbose, useLowMemory);
     else
     {
       jassertfalse;
@@ -203,6 +212,7 @@ protected:
   size_t numAttributeSamplesPerSplit;
   size_t minimumSizeForSplitting;
   bool verbose;
+  bool useLowMemory;
 
   ExtraTreeLearningMachine() {}
 };
