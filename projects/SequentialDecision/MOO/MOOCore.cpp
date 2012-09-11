@@ -50,6 +50,23 @@ bool MOOFitness::dominates(const MOOFitnessPtr& other, bool strictly) const
 bool MOOFitness::strictlyDominates(const MOOFitnessPtr& other) const
   {return dominates(other, true);}
 
+MOOFitnessPtr MOOFitness::makeWorstCombination(const MOOFitnessPtr& fitness1, const MOOFitnessPtr& fitness2)
+{
+  jassert(fitness1->limits == fitness2->limits);
+  size_t n = fitness1->objectives.size();
+  std::vector<double> res(n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    double objective1 = fitness1->getObjective(i);
+    double objective2 = fitness2->getObjective(i);
+    if (fitness1->limits->getObjectiveSign(i) * (objective2 - objective1) > 0)
+      res[i] = objective1;
+    else
+      res[i] = objective2;
+  }
+  return new MOOFitness(res, fitness1->limits);
+}
+
 int MOOFitness::compare(const ObjectPtr& otherObject) const
 {
   MOOFitnessPtr otherFitness = otherObject.dynamicCast<MOOFitness>();
@@ -120,6 +137,15 @@ void MOOParetoFront::getSolutions(std::vector< std::pair<MOOFitnessPtr, ObjectPt
     for (size_t i = 0; i < solutions.size(); ++i)
       res.push_back(std::make_pair(fitness, solutions[i]));
   }
+}
+
+void MOOParetoFront::getSolutionsByFitness(const MOOFitnessPtr& fitness, std::vector<ObjectPtr>& res) const
+{
+  ParetoMap::const_iterator it = m.find(fitness);
+  if (it == m.end())
+    res.clear();
+  else
+    res = it->second;
 }
 
 MOOFitnessLimitsPtr MOOParetoFront::getEmpiricalLimits() const

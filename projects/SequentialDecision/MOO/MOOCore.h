@@ -101,6 +101,8 @@ public:
   virtual String toShortString() const;
   virtual int compare(const ObjectPtr& otherObject) const;
 
+  static MOOFitnessPtr makeWorstCombination(const MOOFitnessPtr& fitness1, const MOOFitnessPtr& fitness2);
+
 protected:
   friend class MOOFitnessClass;
 
@@ -116,6 +118,7 @@ public:
 
   void insert(const ObjectPtr& solution, const MOOFitnessPtr& fitness);
   void getSolutions(std::vector< std::pair<MOOFitnessPtr, ObjectPtr> >& res) const;
+  void getSolutionsByFitness(const MOOFitnessPtr& fitness, std::vector<ObjectPtr>& res) const;
 
   const MOOFitnessLimitsPtr& getTheoreticalLimits() const
     {return limits;}
