@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="MOO" directory="MOO">
+
+  <!-- CORE -->
+  <class name="MOOFitnessLimits">
+    <variable type="ObjectVector[Pair[Double,Double]]" name="limits"/>
+  </class>
+
+  <class name="MOOFitness">
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="objectives"/>
+    <variable type="MOOFitnessLimits" name="limits"/>
+  </class>
+
+  <class name="MOOParetoSet">
+    <variable type="MOOFitnessLimits" name="limits"/>
+  </class>
+
+  <class name="MOOProblem" abstract="yes"/>
+  <class name="MOOOptimizer" abstract="yes"/>
+  <class name="MOOSampler" abstract="yes"/>
+  
+  <!-- Optimizers -->
+  <class name="RandomMOOOptimizer" base="MOOOptimizer">
+    <variable type="MOOSampler" name="sampler"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+
+  <class name="NRPAMOOOptimizer" base="MOOOptimizer">
+    <variable type="MOOSampler" name="sampler"/>
+    <variable type="PositiveInteger" name="level"/>
+    <variable type="PositiveInteger" name="numIterationsPerLevel"/>
+  </class>
+
+  <!-- WorkUnits -->
+  <class name="MOOSandBox" base="WorkUnit">
+      
+  </class>
+  
+</library>
