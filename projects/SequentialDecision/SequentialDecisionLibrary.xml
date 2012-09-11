@@ -6,9 +6,10 @@
   <import name="SequentialDecisionProblem"/>
   <import name="SequentialDecisionWorkUnit"/>
   <import name="LuapeSandBox"/>
+  <import name="SmallMDP"/>
   <import name="SequentialDecisionGo"/>
   <import name="SequentialDecisionGP"/>
   <import name="SequentialDecisionBandits"/>
-  <import name="SmallMDP"/>
+  <import name="MOO"/>
   
 </library>
