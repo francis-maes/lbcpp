@@ -62,6 +62,19 @@ int MOOFitness::compare(const ObjectPtr& otherObject) const
   return 0;
 }
 
+String MOOFitness::toShortString() const
+{
+  String res = "(";
+  for (size_t i = 0; i < objectives.size(); ++i)
+  {
+    res += Variable(objectives[i]).toShortString();
+    if (i < objectives.size() - 1)
+      res += ", ";
+  }
+  res += ")";
+  return res;
+}
+
 /*
 ** MOOParetoFront
 */
@@ -95,6 +108,37 @@ void MOOParetoFront::insert(const ObjectPtr& solution, const MOOFitnessPtr& fitn
   else
     it->second.push_back(solution);
   ++size;
+}
+
+void MOOParetoFront::getSolutions(std::vector< std::pair<MOOFitnessPtr, ObjectPtr> >& res) const
+{
+  res.reserve(size);
+  for (ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
+  {
+    MOOFitnessPtr fitness = it->first;
+    const std::vector<ObjectPtr>& solutions = it->second;
+    for (size_t i = 0; i < solutions.size(); ++i)
+      res.push_back(std::make_pair(fitness, solutions[i]));
+  }
+}
+
+MOOFitnessLimitsPtr MOOParetoFront::getEmpiricalLimits() const
+{
+  size_t n = limits->getNumDimensions();
+  std::vector< std::pair<double, double> > res(n, std::make_pair(DBL_MAX, -DBL_MAX));
+
+  for (ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
+  {
+    for (size_t i = 0; i < n; ++i)
+    {
+      double value = it->first->getObjective(i);
+      if (value < res[i].first)
+        res[i].first = value;
+      if (value > res[i].second)
+        res[i].second = value;
+    }
+  }
+  return new MOOFitnessLimits(res);
 }
 
 /*

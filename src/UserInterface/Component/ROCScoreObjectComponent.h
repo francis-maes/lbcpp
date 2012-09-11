@@ -56,8 +56,8 @@ protected:
   ContainerCurveEditorConfigurationPtr createCurveEditorConfiguration() const
   {
     ContainerCurveEditorConfigurationPtr res = new ContainerCurveEditorConfiguration(rocScoreObjectElementClass);
-    res->setXAxis(new CurveAxisConfiguration(0.0, 1.0, T(""), false));
-    res->setYAxis(new CurveAxisConfiguration(0.0, 1.0, T(""), false));
+    res->setXAxis(new PlotAxis(0.0, 1.0, T(""), false));
+    res->setYAxis(new PlotAxis(0.0, 1.0, T(""), false));
     return res;
   }
 };

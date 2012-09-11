@@ -763,6 +763,7 @@ IF(LBCPP_USER_INTERFACE)
     ../include/lbcpp/UserInterface/MatrixComponent.h
     ../include/lbcpp/UserInterface/PieChartComponent.h
     ../include/lbcpp/UserInterface/HistogramComponent.h
+    ../include/lbcpp/UserInterface/PlotAxis.h
     UserInterface/UserInterfaceManager.cpp
     ${LBCPP_USER_INTEFACE_GENERATED_FILES}
   )
@@ -784,6 +785,11 @@ IF(LBCPP_USER_INTERFACE)
     UserInterface/Component/DoubleMatrixComponent.h
     UserInterface/Component/UserInterfaceComponentLibrary.xml
     ${CMAKE_CURRENT_BINARY_DIR}/UserInterfaceComponentLibrary.cpp
+  )
+  
+  SET(LBCPP_USER_INTERFACE_PLOT_SOURCES
+    UserInterface/Plot/TwoDimensionalPlotDrawable.h
+    UserInterface/Plot/TwoDimensionalPlotDrawable.cpp
   )
 
 ENDIF(LBCPP_USER_INTERFACE)
@@ -900,6 +906,7 @@ SET(LBCPP_SOURCES
   # User Interface
   ${LBCPP_USER_INTERFACE_SOURCES}
     ${LBCPP_USER_INTERFACE_COMPONENT_SOURCES}
+    ${LBCPP_USER_INTERFACE_PLOT_SOURCES}
     ${LBCPP_USER_INTERFACE_DATA_FILES}
 )
 
@@ -993,6 +1000,7 @@ SOURCE_GROUP(Lua FILES ${LBCPP_LUA_SOURCES})
 ## UserInterface
 SOURCE_GROUP(UserInterface FILES ${LBCPP_USER_INTERFACE_SOURCES})
 SOURCE_SUB_GROUP(UserInterface Component FILES ${LBCPP_USER_INTERFACE_COMPONENT_SOURCES})
+SOURCE_SUB_GROUP(UserInterface Plot FILES ${LBCPP_USER_INTERFACE_PLOT_SOURCES})
 SOURCE_SUB_GROUP(UserInterface Data FILES ${LBCPP_USER_INTERFACE_DATA_FILES})
 
 IF (UNIX)

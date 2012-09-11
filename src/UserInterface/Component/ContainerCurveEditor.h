@@ -10,52 +10,11 @@
 # define LBCPP_USER_INTERFACE_COMPONENTS_CONTAINER_CURVE_EDITOR_H_
 
 # include <lbcpp/UserInterface/ObjectEditor.h>
+# include <lbcpp/UserInterface/PlotAxis.h>
 # include <lbcpp/Execution/ExecutionTrace.h>
 
 namespace lbcpp
 {
-class CurveAxisConfiguration : public Object
-{
-public:
-  CurveAxisConfiguration(double rangeMin, double rangeMax, const String& label = String::empty, bool autoRange = true)
-    : rangeMin(rangeMin), rangeMax(rangeMax), autoRange(autoRange), logScale(false), label(label) {}
-  CurveAxisConfiguration() : rangeMin(0.0), rangeMax(0.0), autoRange(true), logScale(false) {}
-
-  bool hasAutoRange() const
-    {return autoRange;}
-
-  void setAutoRange(bool value)
-    {autoRange = value;}
-
-  bool hasLogScale() const
-    {return logScale;}
-
-  double getRangeMin() const
-    {return rangeMin;}
-
-  double getRangeMax() const
-    {return rangeMax;}
-
-  String getLabel() const
-    {return label;}
-
-  void setRangeMin(double value)
-    {rangeMin = value;}
-
-  void setRangeMax(double value)
-    {rangeMax = value;}
-
-private:
-  friend class CurveAxisConfigurationClass;
-
-  double rangeMin, rangeMax;
-  bool autoRange;
-  bool logScale;
-  String unit;
-  String label;
-};
-
-typedef ReferenceCountedObjectPtr<CurveAxisConfiguration> CurveAxisConfigurationPtr;
 
 class CurveVariableConfiguration : public Object
 {
@@ -100,16 +59,16 @@ public:
   TypePtr getRowType() const
     {return rowType;}
 
-  CurveAxisConfigurationPtr getXAxis() const
+  PlotAxisPtr getXAxis() const
     {return xAxis;}
 
-  CurveAxisConfigurationPtr getYAxis() const
+  PlotAxisPtr getYAxis() const
     {return yAxis;}
   
-  void setXAxis(CurveAxisConfigurationPtr axis)
+  void setXAxis(PlotAxisPtr axis)
     {xAxis = axis;}
 
-  void setYAxis(CurveAxisConfigurationPtr axis)
+  void setYAxis(PlotAxisPtr axis)
     {yAxis = axis;}
 
   size_t getNumCurves() const
@@ -128,8 +87,8 @@ protected:
   friend class ContainerCurveEditorConfigurationClass;
 
   TypePtr rowType;
-  CurveAxisConfigurationPtr xAxis;
-  CurveAxisConfigurationPtr yAxis;
+  PlotAxisPtr xAxis;
+  PlotAxisPtr yAxis;
   std::vector<CurveVariableConfigurationPtr> variables;
   size_t keyVariableIndex;
 };

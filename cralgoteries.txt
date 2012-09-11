@@ -1,9 +1,5 @@
-essaie ca: tu devrais avoir autour de 25 % de memoire utiliser. sinon essaie 2-3 autre formule decouverte de prime.
-./RunWorkUnit RunMCAlgorithmWorkUnit --problem "prime(10)" --algorithm "step(step(lookahead(select(simulate, 0), 1), True), True)" --numRuns 100 --budget 100000 --traceAutoSave 600 --trace prime_T_Rank9__B5.trace
 
-laisse rouler ca 1 h et la memoire va etre rempli sur monster.
-./RunWorkUnit MetaMCSandBox  --problem "prime(10)" --budget 10000 --maxAlgorithmSize 5 --explorationCoefficient 5.0000 --traceAutoSave 600 --trace primeB4A5.trace
-
+  * ParetoFrontComponent: Make selectable
 
 Experiences - Proteins:
  * Nouvelles features: prev et next amino acid de chaque type; delta de ObjectVector[DenseDoubleVector]; local/global histogram

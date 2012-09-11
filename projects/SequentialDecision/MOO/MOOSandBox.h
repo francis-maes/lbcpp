@@ -167,15 +167,42 @@ public:
 class MOOSandBox : public WorkUnit
 {
 public:
+  MOOSandBox() : problem(new ZTD1MOOProblem()), numEvaluations(1000) {}
+
   virtual Variable run(ExecutionContext& context)
   {
-    size_t numEvaluations = 1000;
-    MOOProblemPtr problem = new ZTD1MOOProblem();
     MOOSamplerPtr sampler = new UniformContinuousMOOSampler();
     MOOOptimizerPtr optimizer = new RandomMOOOptimizer(sampler, numEvaluations);
     MOOParetoFrontPtr paretoFront = optimizer->optimize(context, problem);
+
+    context.resultCallback("problem", problem);
+    context.resultCallback("sampler", sampler);
+    context.resultCallback("optimizer", optimizer);
+    context.resultCallback("paretoFront", paretoFront);
+
+    std::vector< std::pair<MOOFitnessPtr, ObjectPtr> > solutions;
+    paretoFront->getSolutions(solutions);
+    context.enterScope("solutions");
+    for (size_t i = 0; i < solutions.size(); ++i)
+    {
+      context.enterScope("Solution " + String((int)i+1));
+      context.resultCallback("index", i+1);
+      context.resultCallback("solution", solutions[i].second);
+      MOOFitnessPtr fitness = solutions[i].first;
+      context.resultCallback("fitness", fitness);
+      for (size_t j = 0; j < fitness->getNumObjectives(); ++j)
+        context.resultCallback("fitness" + String((int)j+1), fitness->getObjective(j));
+      context.leaveScope();
+    }
+    context.leaveScope();
     return true;
   }
+
+protected:
+  friend class MOOSandBoxClass;
+
+  MOOProblemPtr problem;
+  size_t numEvaluations;
 };
 
 }; /* namespace lbcpp */

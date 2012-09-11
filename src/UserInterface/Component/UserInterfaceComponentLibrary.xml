@@ -5,7 +5,7 @@
   <include file="lbcpp/UserInterface/PieChartComponent.h"/>
   <include file="lbcpp/UserInterface/HistogramComponent.h"/>
 
-  <class name="CurveAxisConfiguration">
+  <class name="PlotAxis">
     <variable type="Double" name="rangeMin"/>
     <variable type="Double" name="rangeMax"/>
     <variable type="Boolean" name="autoRange"/>
@@ -21,8 +21,8 @@
   </class>
 
   <class name="ContainerCurveEditorConfiguration">
-    <variable type="CurveAxisConfiguration" name="xAxis"/>
-    <variable type="CurveAxisConfiguration" name="yAxis"/>
+    <variable type="PlotAxis" name="xAxis"/>
+    <variable type="PlotAxis" name="yAxis"/>
     <variable type="ObjectVector[CurveVariableConfiguration]" name="variables"/>
     <variable type="PositiveInteger" name="keyVariableIndex"/>
   </class>
