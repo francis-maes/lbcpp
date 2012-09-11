@@ -40,9 +40,13 @@
 
   <class name="UniformContinuousMOOSampler" base="MOOSampler"/>
   
+  <!-- UI -->
+  <uicomponent name="MOOParetoFrontComponent" type="MOOParetoFront"/>
+  
   <!-- WorkUnits -->
   <class name="MOOSandBox" base="WorkUnit">
-      
+    <variable type="MOOProblem" name="problem"/>
+    <variable type="PositiveInteger" name="numEvaluations"/>
   </class>
   
 </library>

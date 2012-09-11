@@ -68,6 +68,10 @@ protected:
 class MOOFitnessLimits : public ContinuousMOODomain
 {
 public:
+  MOOFitnessLimits(const std::vector< std::pair<double, double> >& limits)
+    : ContinuousMOODomain(limits) {}
+  MOOFitnessLimits() {}
+
   size_t getNumObjectives() const
     {return limits.size();}
 
@@ -93,6 +97,8 @@ public:
 
   bool dominates(const MOOFitnessPtr& other, bool strictly = false) const;
   bool strictlyDominates(const MOOFitnessPtr& other) const;
+  
+  virtual String toShortString() const;
   virtual int compare(const ObjectPtr& otherObject) const;
 
 protected:
@@ -109,18 +115,28 @@ public:
   MOOParetoFront();
 
   void insert(const ObjectPtr& solution, const MOOFitnessPtr& fitness);
+  void getSolutions(std::vector< std::pair<MOOFitnessPtr, ObjectPtr> >& res) const;
 
-  const MOOFitnessLimitsPtr& getLimits() const
+  const MOOFitnessLimitsPtr& getTheoreticalLimits() const
     {return limits;}
+
+  MOOFitnessLimitsPtr getEmpiricalLimits() const;
+
+  size_t getNumObjectives() const
+    {return limits->getNumObjectives();}
 
   size_t getNumSolutions() const
     {return size;}
+
+  typedef std::map<MOOFitnessPtr, std::vector<ObjectPtr>, ObjectComparator > ParetoMap;
+
+  const ParetoMap& getParetoMap() const
+    {return m;}
 
 protected:
   friend class MOOParetoFrontClass;
 
   MOOFitnessLimitsPtr limits;
-  typedef std::map<MOOFitnessPtr, std::vector<ObjectPtr>, ObjectComparator > ParetoMap;
   ParetoMap m;
   size_t size;
 };

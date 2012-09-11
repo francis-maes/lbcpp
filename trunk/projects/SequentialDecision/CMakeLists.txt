@@ -180,6 +180,7 @@ SET(LBCPP_LUAPE_VRAC_SOURCES
 SET(LBCPP_MOO_SOURCES
   MOO/MOOCore.h
   MOO/MOOCore.cpp
+  MOO/MOOParetoFrontComponent.h
   MOO/MOOSandBox.h
   MOO/MOOLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MOOLibrary.cpp
