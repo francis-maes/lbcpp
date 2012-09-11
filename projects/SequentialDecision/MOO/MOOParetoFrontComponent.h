@@ -104,8 +104,8 @@ protected:
 
   void getPixelPosition(MOOFitnessPtr fitness, int& x, int& y, const juce::AffineTransform& transform) const
   {
-    double dx = fitness->getObjective(0);
-    double dy = fitness->getObjective(1);
+    double dx = fitness->getValue(0);
+    double dy = fitness->getValue(1);
     transform.transformPoint(dx, dy);
     x = (int)dx;
     y = (int)dy;
