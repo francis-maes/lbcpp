@@ -3,16 +3,18 @@
 <library name="MOO" directory="MOO">
 
   <!-- CORE -->
-  <class name="MOOFitnessLimits">
+  <class name="MOODomain" abstract="yes"/>
+  <class name="ContinuousMOODomain" base="MOODomain">
     <variable type="ObjectVector[Pair[Double,Double]]" name="limits"/>
   </class>
+  <class name="MOOFitnessLimits" base="ContinuousMOODomain"/>
 
   <class name="MOOFitness">
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="objectives"/>
     <variable type="MOOFitnessLimits" name="limits"/>
   </class>
 
-  <class name="MOOParetoSet">
+  <class name="MOOParetoFront">
     <variable type="MOOFitnessLimits" name="limits"/>
   </class>
 
@@ -32,6 +34,12 @@
     <variable type="PositiveInteger" name="numIterationsPerLevel"/>
   </class>
 
+  <!-- ZDT -->
+  <class name="ZDTMOOProblem" base="MOOProblem" abstract="yes"/>
+  <class name="ZTD1MOOProblem" base="ZDTMOOProblem"/>
+
+  <class name="UniformContinuousMOOSampler" base="MOOSampler"/>
+  
   <!-- WorkUnits -->
   <class name="MOOSandBox" base="WorkUnit">
       
