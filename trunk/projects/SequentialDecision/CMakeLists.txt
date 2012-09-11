@@ -2,6 +2,7 @@ INCLUDE_DIRECTORIES(
   ${LBCpp_SOURCE_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
+  ${LBCpp_SOURCE_DIR}/shark/include
 )
 
 GENERATE_INTROSPECTION_CODE(Core/SequentialDecisionCoreLibrary.xml SequentialDecisionCoreLibrary.cpp)
@@ -177,6 +178,8 @@ SET(LBCPP_LUAPE_VRAC_SOURCES
 )
   
 SET(LBCPP_MOO_SOURCES
+  MOO/MOOCore.h
+  MOO/MOOCore.cpp
   MOO/MOOSandBox.h
   MOO/MOOLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MOOLibrary.cpp
