@@ -59,6 +59,15 @@ public:
   double getUpperLimit(size_t dimension) const
     {jassert(dimension < limits.size()); return limits[dimension].second;}
 
+  DenseDoubleVectorPtr sampleUniformly(RandomGeneratorPtr random) const
+  {
+    size_t n = limits.size();
+    DenseDoubleVectorPtr res(new DenseDoubleVector(n, 0.0));
+    for (size_t i = 0; i < n; ++i)
+      res->setValue(i, random->sampleDouble(getLowerLimit(i), getUpperLimit(i)));
+    return res;
+  }
+
 protected:
   friend class ContinuousMOODomainClass;
 
@@ -86,14 +95,17 @@ public:
 class MOOFitness : public Object
 {
 public:
-  MOOFitness(const std::vector<double>& objectives, const MOOFitnessLimitsPtr& limits);
+  MOOFitness(const std::vector<double>& values, const MOOFitnessLimitsPtr& limits);
   MOOFitness() {}
 
-  size_t getNumObjectives() const
-    {return objectives.size();}
+  size_t getNumValues() const
+    {return values.size();}
 
-  double getObjective(size_t i) const
-    {jassert(i < objectives.size()); return objectives[i];}
+  double getValue(size_t i) const
+    {jassert(i < values.size()); return values[i];}
+
+  const std::vector<double>& getValues() const
+    {return values;}
 
   bool dominates(const MOOFitnessPtr& other, bool strictly = false) const;
   bool strictlyDominates(const MOOFitnessPtr& other) const;
@@ -106,7 +118,7 @@ public:
 protected:
   friend class MOOFitnessClass;
 
-  std::vector<double> objectives;
+  std::vector<double> values;
   MOOFitnessLimitsPtr limits;
 };
 
@@ -150,7 +162,11 @@ public:
   virtual MOODomainPtr getSolutionDomain() const = 0;
   virtual MOOFitnessLimitsPtr getFitnessLimits() const = 0;
 
-  virtual MOOFitnessPtr evaluate(const ObjectPtr& solution) const = 0;
+  virtual MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution) const = 0;
+
+  virtual ObjectPtr proposeStartingSolution(ExecutionContext& context) const
+    {jassertfalse; return ObjectPtr();}
+
   virtual bool shouldStop() const
     {return false;}
 
@@ -162,7 +178,7 @@ class MOOOptimizer : public Object
 {
 public:
   MOOParetoFrontPtr optimize(ExecutionContext& context, MOOProblemPtr problem);
-  virtual void optimize(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr paretoSet) = 0;
+  virtual void optimize(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr paretoFront) = 0;
 
 protected:
   typedef std::pair<ObjectPtr, MOOFitnessPtr> SolutionAndFitnessPair;

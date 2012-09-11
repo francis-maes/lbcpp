@@ -10,7 +10,7 @@
   <class name="MOOFitnessLimits" base="ContinuousMOODomain"/>
 
   <class name="MOOFitness">
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="objectives"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="values"/>
     <variable type="MOOFitnessLimits" name="limits"/>
   </class>
 
@@ -32,6 +32,20 @@
     <variable type="MOOSampler" name="sampler"/>
     <variable type="PositiveInteger" name="level"/>
     <variable type="PositiveInteger" name="numIterationsPerLevel"/>
+  </class>
+
+  <class name="NSGA2MOOOptimizer" base="MOOOptimizer">
+    <variable type="PositiveInteger" name="populationSize"/>
+    <variable type="PositiveInteger" name="numGenerations"/>
+    <variable type="Double" name="nm"/>
+    <variable type="Double" name="nc"/>
+    <variable type="Double" name="pc"/>
+  </class>
+
+  <class name="CMAESMOOOptimizer" base="MOOOptimizer">
+    <variable type="PositiveInteger" name="numParents"/>
+    <variable type="PositiveInteger" name="numOffsprings"/>
+    <variable type="PositiveInteger" name="numGenerations"/>
   </class>
 
   <!-- ZDT -->

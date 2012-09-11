@@ -10,6 +10,7 @@
 # define LBCPP_MOO_SANDBOX_H_
 
 # include "MOOCore.h"
+# include "MOOSharkOptimizer.h"
 # include <lbcpp/Execution/WorkUnit.h>
 # include <MOO-EALib/TestFunction.h>
 
@@ -28,7 +29,7 @@ public:
     for (size_t iteration = 0; iteration < numIterations && !problem->shouldStop(); ++iteration)
     {
       ObjectPtr solution = sampler->sample(context, problem->getSolutionDomain());
-      paretoSet->insert(solution, problem->evaluate(solution));
+      paretoSet->insert(solution, problem->evaluate(context, solution));
     }
   }
 
@@ -64,7 +65,7 @@ protected:
     if (level == 0)
     {
       ObjectPtr solution = sampler->sample(context, problem->getSolutionDomain());
-      return SolutionAndFitnessPair(solution, problem->evaluate(solution));
+      return SolutionAndFitnessPair(solution, problem->evaluate(context, solution));
     }
     else
     {
@@ -110,7 +111,7 @@ public:
   virtual MOOFitnessLimitsPtr getFitnessLimits() const
     {jassert(limits); return limits;}
   
-  virtual MOOFitnessPtr evaluate(const ObjectPtr& solution) const
+  virtual MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution) const
   {
     const std::vector<double>& sol = solution.staticCast<DenseDoubleVector>()->getValues();
     std::vector<double> objectives(2);
@@ -119,8 +120,11 @@ public:
     return new MOOFitness(objectives, limits);
   }
 
+  virtual ObjectPtr proposeStartingSolution(ExecutionContext& context) const
+    {return domain->sampleUniformly(context.getRandomGenerator());}
+
 protected:
-  MOODomainPtr domain;
+  ContinuousMOODomainPtr domain;
   MOOFitnessLimitsPtr limits;
 
   virtual std::vector< std::pair<double, double> > getDomainLimits() const = 0;
@@ -148,14 +152,9 @@ class UniformContinuousMOOSampler : public MOOSampler
 public:
   virtual ObjectPtr sample(ExecutionContext& context, const MOODomainPtr& dom) const
   {
-    RandomGeneratorPtr random = context.getRandomGenerator();
     ContinuousMOODomainPtr domain = dom.staticCast<ContinuousMOODomain>();
     jassert(domain);
-    size_t n = domain->getNumDimensions();
-    DenseDoubleVectorPtr res(new DenseDoubleVector(n, 0.0));
-    for (size_t i = 0; i < n; ++i)
-      res->setValue(i, random->sampleDouble(domain->getLowerLimit(i), domain->getUpperLimit(i)));
-    return res;
+    return domain->sampleUniformly(context.getRandomGenerator());
   }
 
   virtual void reinforce(const ObjectPtr& solution)
@@ -171,31 +170,20 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    MOOSamplerPtr sampler = new UniformContinuousMOOSampler();
-    MOOOptimizerPtr optimizer = new RandomMOOOptimizer(sampler, numEvaluations);
-    MOOParetoFrontPtr paretoFront = optimizer->optimize(context, problem);
-
     context.resultCallback("problem", problem);
-    context.resultCallback("sampler", sampler);
+    solveWithOptimizer(context, new RandomMOOOptimizer(new UniformContinuousMOOSampler(), numEvaluations));
+    solveWithOptimizer(context, new NSGA2MOOOptimizer(100, numEvaluations / 100));
+    solveWithOptimizer(context, new CMAESMOOOptimizer(100, 100, numEvaluations / 100));
+    return true;
+  }
+
+  void solveWithOptimizer(ExecutionContext& context, MOOOptimizerPtr optimizer)
+  {
+    context.enterScope(optimizer->toShortString());
+    MOOParetoFrontPtr paretoFront = optimizer->optimize(context, problem);
     context.resultCallback("optimizer", optimizer);
     context.resultCallback("paretoFront", paretoFront);
-
-    std::vector< std::pair<MOOFitnessPtr, ObjectPtr> > solutions;
-    paretoFront->getSolutions(solutions);
-    context.enterScope("solutions");
-    for (size_t i = 0; i < solutions.size(); ++i)
-    {
-      context.enterScope("Solution " + String((int)i+1));
-      context.resultCallback("index", i+1);
-      context.resultCallback("solution", solutions[i].second);
-      MOOFitnessPtr fitness = solutions[i].first;
-      context.resultCallback("fitness", fitness);
-      for (size_t j = 0; j < fitness->getNumObjectives(); ++j)
-        context.resultCallback("fitness" + String((int)j+1), fitness->getObjective(j));
-      context.leaveScope();
-    }
-    context.leaveScope();
-    return true;
+    context.leaveScope(paretoFront);
   }
 
 protected:

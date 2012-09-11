@@ -196,7 +196,7 @@ void MOCMASearch::run()
 	m_pop->SMeasure();		// use hypervolume for sorting
 
 	// check success of offspring	
-	std::vector<unsigned int> indices;
+	std::vector<unsigned int> indices(m_pop->size()); // FIX francis: add "m_pop->size()" (it was initialized to empty)
 	for( unsigned int i = 0; i < m_pop->size(); i++ ) {
 		indices[i] = i;
 	}

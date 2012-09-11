@@ -26,8 +26,8 @@ double MOOFitnessLimits::getObjectiveSign(size_t objectiveIndex) const
 /*
 ** MOOFitness
 */
-MOOFitness::MOOFitness(const std::vector<double>& objectives, const MOOFitnessLimitsPtr& limits)
-  : objectives(objectives), limits(limits)
+MOOFitness::MOOFitness(const std::vector<double>& values, const MOOFitnessLimitsPtr& limits)
+  : values(values), limits(limits)
 {
 }
 
@@ -36,9 +36,9 @@ bool MOOFitness::dominates(const MOOFitnessPtr& other, bool strictly) const
   jassert(other->limits == limits);
 
   size_t numObjectivesForWhichThisIsBetter = 0;
-  for (size_t i = 0; i < objectives.size(); ++i)
+  for (size_t i = 0; i < values.size(); ++i)
   {
-    double delta = (other->objectives[i] - objectives[i]) * limits->getObjectiveSign(i);
+    double delta = (other->values[i] - values[i]) * limits->getObjectiveSign(i);
     if (delta > 0)
       return false; // other is better than this
     else if (delta < 0)
@@ -53,12 +53,12 @@ bool MOOFitness::strictlyDominates(const MOOFitnessPtr& other) const
 MOOFitnessPtr MOOFitness::makeWorstCombination(const MOOFitnessPtr& fitness1, const MOOFitnessPtr& fitness2)
 {
   jassert(fitness1->limits == fitness2->limits);
-  size_t n = fitness1->objectives.size();
+  size_t n = fitness1->values.size();
   std::vector<double> res(n);
   for (size_t i = 0; i < n; ++i)
   {
-    double objective1 = fitness1->getObjective(i);
-    double objective2 = fitness2->getObjective(i);
+    double objective1 = fitness1->getValue(i);
+    double objective2 = fitness2->getValue(i);
     if (fitness1->limits->getObjectiveSign(i) * (objective2 - objective1) > 0)
       res[i] = objective1;
     else
@@ -74,18 +74,18 @@ int MOOFitness::compare(const ObjectPtr& otherObject) const
     return Object::compare(otherObject);
   if (limits != otherFitness->limits)
     return limits < otherFitness->limits ? -1 : 1;
-  if (objectives != otherFitness->objectives)
-    return objectives < otherFitness->objectives ? -1 : 1;
+  if (values != otherFitness->values)
+    return values < otherFitness->values ? -1 : 1;
   return 0;
 }
 
 String MOOFitness::toShortString() const
 {
   String res = "(";
-  for (size_t i = 0; i < objectives.size(); ++i)
+  for (size_t i = 0; i < values.size(); ++i)
   {
-    res += Variable(objectives[i]).toShortString();
-    if (i < objectives.size() - 1)
+    res += Variable(values[i]).toShortString();
+    if (i < values.size() - 1)
       res += ", ";
   }
   res += ")";
@@ -157,7 +157,7 @@ MOOFitnessLimitsPtr MOOParetoFront::getEmpiricalLimits() const
   {
     for (size_t i = 0; i < n; ++i)
     {
-      double value = it->first->getObjective(i);
+      double value = it->first->getValue(i);
       if (value < res[i].first)
         res[i].first = value;
       if (value > res[i].second)
