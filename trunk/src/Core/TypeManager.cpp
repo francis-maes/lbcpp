@@ -326,6 +326,17 @@ bool Library::declareUIComponent(ExecutionContext& context, const String& typeNa
   return true;
 }
 
+bool Library::hasUIComponent(TypePtr type) const
+{
+  for (size_t i = 0; i < uiComponents.size(); ++i)
+    if (type->inheritsFrom(uiComponents[i].first))
+      return true;
+  for (size_t i = 0; i < subLibraries.size(); ++i)
+    if (subLibraries[i]->hasUIComponent(type))
+      return true;
+  return false;
+}
+
 juce::Component* Library::createUIComponentIfExists(ExecutionContext& context, const ObjectPtr& object, const String& name)
 {
   ClassPtr type = object->getClass();

@@ -37,8 +37,8 @@
   <class name="NSGA2MOOOptimizer" base="MOOOptimizer">
     <variable type="PositiveInteger" name="populationSize"/>
     <variable type="PositiveInteger" name="numGenerations"/>
-    <variable type="Double" name="nm"/>
-    <variable type="Double" name="nc"/>
+    <variable type="Double" name="mutationDistributionIndex"/>
+    <variable type="Double" name="crossOverDistributionIndex"/>
     <variable type="Double" name="crossOverProbability"/>
   </class>
 
@@ -58,9 +58,14 @@
   <class name="HyperVolumeEvaluatorDecoratorMOOProblem" base="MaxNumIterationsDecoratorMOOProblem">
     <variable type="PositiveInteger" name="hyperVolumeComputationPeriod"/>
   </class>
-  
-  <class name="ZDTMOOProblem" base="MOOProblem" abstract="yes"/>
-  <class name="ZTD1MOOProblem" base="ZDTMOOProblem"/>
+
+  <class name="MOOProblemFromSharkObjectiveFunction" base="MOOProblem" abstract="yes"/>
+    <class name="ZDTMOOProblem" base="MOOProblemFromSharkObjectiveFunction" abstract="yes"/>
+      <class name="ZDT1MOOProblem" base="ZDTMOOProblem"/>
+      <class name="ZDT2MOOProblem" base="ZDTMOOProblem"/>
+      <class name="ZDT3MOOProblem" base="ZDTMOOProblem"/>
+      <class name="ZDT4MOOProblem" base="ZDTMOOProblem"/>
+      <class name="ZDT6MOOProblem" base="ZDTMOOProblem"/>
 
   <!-- Samplers -->
   <class name="UniformContinuousMOOSampler" base="MOOSampler"/>
@@ -70,7 +75,6 @@
   
   <!-- WorkUnits -->
   <class name="MOOSandBox" base="WorkUnit">
-    <variable type="MOOProblem" name="problem"/>
     <variable type="PositiveInteger" name="numEvaluations"/>
   </class>
   

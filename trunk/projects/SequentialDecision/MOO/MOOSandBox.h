@@ -12,7 +12,7 @@
 # include <lbcpp/Execution/WorkUnit.h>
 # include "SharkMOOOptimizers.h"
 # include "RandomMOOOptimizer.h"
-# include "ZDTMOOProblems.h"
+# include "SharkMOOProblems.h"
 # include "DecoratorMOOProblems.h"
 
 namespace lbcpp
@@ -37,26 +37,40 @@ public:
 class MOOSandBox : public WorkUnit
 {
 public:
-  MOOSandBox() : problem(new ZTD1MOOProblem()), numEvaluations(1000) {}
+  MOOSandBox() : numEvaluations(1000) {}
 
   virtual Variable run(ExecutionContext& context)
   {
-    context.resultCallback("problem", problem);
-    solveWithOptimizer(context, new RandomMOOOptimizer(new UniformContinuousMOOSampler(), numEvaluations));
-    solveWithOptimizer(context, new NSGA2MOOOptimizer(100, numEvaluations / 100));
-    solveWithOptimizer(context, new CMAESMOOOptimizer(100, 100, numEvaluations / 100));
+    std::vector<MOOProblemPtr> problems;
+    problems.push_back(new ZDT1MOOProblem());
+    problems.push_back(new ZDT2MOOProblem());
+    problems.push_back(new ZDT3MOOProblem());
+    problems.push_back(new ZDT4MOOProblem());
+    problems.push_back(new ZDT6MOOProblem());
+
+    for (size_t i = 0; i < problems.size(); ++i)
+    {
+      MOOProblemPtr problem = problems[i];
+      context.enterScope(problem->toShortString());
+
+      context.resultCallback("problem", problem);
+      solveWithOptimizer(context, problem, new RandomMOOOptimizer(new UniformContinuousMOOSampler()));
+      solveWithOptimizer(context, problem, new NSGA2MOOOptimizer(100));
+      solveWithOptimizer(context, problem, new CMAESMOOOptimizer(100, 100));
+      solveWithOptimizer(context, problem, new CMAESMOOOptimizer(5, 100));
+      context.leaveScope();
+    }
     return true;
   }
 
 protected:
   friend class MOOSandBoxClass;
 
-  MOOProblemPtr problem;
   size_t numEvaluations;
 
-  void solveWithOptimizer(ExecutionContext& context, MOOOptimizerPtr optimizer)
+  void solveWithOptimizer(ExecutionContext& context, MOOProblemPtr problem, MOOOptimizerPtr optimizer)
   {
-    HyperVolumeEvaluatorDecoratorMOOProblemPtr decorator(new HyperVolumeEvaluatorDecoratorMOOProblem(problem, numEvaluations, 1000));
+    HyperVolumeEvaluatorDecoratorMOOProblemPtr decorator(new HyperVolumeEvaluatorDecoratorMOOProblem(problem, numEvaluations, numEvaluations > 250 ? numEvaluations / 250 : 1));
 
     context.enterScope(optimizer->toShortString());
     MOOParetoFrontPtr paretoFront = optimizer->optimize(context, decorator);
@@ -64,7 +78,7 @@ protected:
     context.resultCallback("paretoFront", paretoFront);
     context.resultCallback("numEvaluations", decorator->getNumEvaluations());
 
-    context.enterScope("HyperVolume Curve");
+    //context.enterScope("HyperVolume Curve");
     std::vector<double> hyperVolumes = decorator->getHyperVolumes();
     std::vector<double> cpuTimes = decorator->getCpuTimes();
 
@@ -77,9 +91,9 @@ protected:
       context.resultCallback("cpuTime", cpuTimes[i]);
       context.leaveScope();
     }
-    context.leaveScope();
+    //context.leaveScope();
 
-    context.leaveScope(paretoFront);
+    context.leaveScope(paretoFront->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness()));
   }
 };
 

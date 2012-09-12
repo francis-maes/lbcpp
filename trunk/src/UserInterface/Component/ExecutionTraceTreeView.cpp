@@ -9,6 +9,8 @@
 #include "ExecutionTraceTreeView.h"
 #include "ContainerCurveEditor.h"
 #include <lbcpp/Execution/ExecutionStack.h>
+#include <lbcpp/Core/Library.h>
+#include <lbcpp/library.h>
 using namespace lbcpp;
 using juce::Graphics;
 using juce::Colour;
@@ -104,7 +106,12 @@ public:
     {
       results = pair->getFirst().getObject();
       if (results)
+      {
+        for (size_t i = 0; i < results->getNumVariables(); ++i)
+          if (hasUIComponent(results->getVariableType(i)))
+            addTab(results->getVariableName(i), Colours::lightgrey);
         addTab(T("Results"), Colours::white);
+      }
     }
   }
 
@@ -112,8 +119,15 @@ public:
   {
     if (tabName == T("Results"))
       return results;
-    else
+    else if (tabName == T("Curves") || tabName == T("Table"))
       return table;
+    else
+    {
+      jassert(results);
+      int index = results->getClass()->findMemberVariable(tabName);
+      jassert(index >= 0);
+      return results->getVariable(index);
+    }
   }
 
   virtual Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& tabName)
@@ -125,12 +139,21 @@ public:
     else if (tabName == T("Results"))
       return userInterfaceManager().createVariableTreeView(context, variable, tabName, true, true, false, false);
     else
-      return NULL;
+      return userInterfaceManager().createComponentIfExists(context, getSubVariable(variable, tabName).getObject(), tabName);
   }
 
 protected:
   ContainerPtr table;
   ObjectPtr results;
+
+  static bool hasUIComponent(TypePtr type)
+  {
+    size_t n = lbcpp::getNumLibraries();
+    for (size_t i = 0; i < n; ++i)
+      if (lbcpp::getLibrary(i)->hasUIComponent(type))
+        return true;
+    return false;
+  }
 };
 
 juce::Component* ExecutionTraceTreeView::createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name)

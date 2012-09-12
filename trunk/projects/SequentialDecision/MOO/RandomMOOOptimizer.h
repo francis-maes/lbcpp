@@ -17,13 +17,13 @@ namespace lbcpp
 class RandomMOOOptimizer : public MOOOptimizer
 {
 public:
-  RandomMOOOptimizer(MOOSamplerPtr sampler, size_t numIterations)
+  RandomMOOOptimizer(MOOSamplerPtr sampler, size_t numIterations = 0)
     : sampler(sampler), numIterations(numIterations) {}
   RandomMOOOptimizer() : numIterations(0) {}
 
   virtual void optimize(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr paretoSet)
   {
-    for (size_t iteration = 0; iteration < numIterations && !problem->shouldStop(); ++iteration)
+    for (size_t iteration = 0; (!numIterations || iteration < numIterations) && !problem->shouldStop(); ++iteration)
     {
       ObjectPtr solution = sampler->sample(context, problem->getSolutionDomain());
       paretoSet->insert(solution, problem->evaluate(context, solution));
