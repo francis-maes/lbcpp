@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: MOOSharkOptimizer.h            | Wrapper for MOO Shark Optimizers|
+| Filename: SharkMOOOptimizer.h            | Wrapper for MOO Shark Optimizers|
 | Author  : Francis Maes                   |                                 |
 | Started : 11/09/2012 21:09               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_MOO_SHARK_OPTIMIZER_H_
-# define LBCPP_MOO_SHARK_OPTIMIZER_H_
+#ifndef LBCPP_MOO_OPTIMIZER_SHARK_H_
+# define LBCPP_MOO_OPTIMIZER_SHARK_H_
 
 # include "MOOCore.h"
 # undef T
@@ -66,7 +66,7 @@ protected:
   MOOProblemPtr problem;
 };
 
-class SharkWrapperMOOOptimizer : public MOOOptimizer
+class SharkMOOOptimizer : public MOOOptimizer
 {
 protected:
   template<class SearchAlgorithmClass>
@@ -101,7 +101,7 @@ protected:
   }
 };
 
-class NSGA2MOOOptimizer : public SharkWrapperMOOOptimizer
+class NSGA2MOOOptimizer : public SharkMOOOptimizer
 {
 public:
   NSGA2MOOOptimizer(size_t populationSize = 100, size_t numGenerations = 250, double nm = 20.0, double nc = 20.0, double crossOverProbability = 0.9)
@@ -124,7 +124,7 @@ protected:
   double crossOverProbability;
 };
 
-class CMAESMOOOptimizer : public SharkWrapperMOOOptimizer
+class CMAESMOOOptimizer : public SharkMOOOptimizer
 {
 public:
   CMAESMOOOptimizer(size_t numParents = 100, size_t numOffsprings = 100, size_t numGenerations = 100)
@@ -148,4 +148,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_MOO_SHARK_OPTIMIZER_H_
+#endif // !LBCPP_MOO_OPTIMIZER_SHARK_H_
