@@ -53,6 +53,7 @@ public:
   const std::vector<LibraryPtr>& getSubLibraries() const
     {return subLibraries;}
 #ifdef LBCPP_USER_INTERFACE
+  bool hasUIComponent(TypePtr type) const;
   juce::Component* createUIComponentIfExists(ExecutionContext& context, const ObjectPtr& object, const String& name = String::empty);
 #endif
   

@@ -14,7 +14,7 @@
 
 namespace lbcpp
 {
-
+#if 0
 class ZDTMOOProblem : public MOOProblem
 {
 public:
@@ -68,6 +68,7 @@ protected:
   virtual double evaluateF2(const std::vector<double>& solution) const
     {return ZDT1F2(solution);}
 };
+#endif // 0
 
 }; /* namespace lbcpp */
 

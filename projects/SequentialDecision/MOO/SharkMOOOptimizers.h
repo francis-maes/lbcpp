@@ -92,7 +92,7 @@ protected:
   template<class SearchAlgorithmClass>
   void runAndFillParetoFront(ExecutionContext& context, SearchAlgorithmClass& searchAlgorithm, MOOProblemPtr problem, MOOParetoFrontPtr front, size_t numGenerations)
   {
-    for (size_t i = 1; i < numGenerations; ++i) // first generation is evaluated during the init()
+    for (size_t i = 1; (numGenerations == 0 || i < numGenerations) && !problem->shouldStop(); ++i) // first generation is evaluated during the init()
     {
       searchAlgorithm.run();
       context.progressCallback(new ProgressionState(i+1, numGenerations, "Generations"));
@@ -104,14 +104,14 @@ protected:
 class NSGA2MOOOptimizer : public SharkMOOOptimizer
 {
 public:
-  NSGA2MOOOptimizer(size_t populationSize = 100, size_t numGenerations = 250, double nm = 20.0, double nc = 20.0, double crossOverProbability = 0.9)
-    : populationSize(populationSize), numGenerations(numGenerations), nm(nm), nc(nc), crossOverProbability(crossOverProbability) {}
+  NSGA2MOOOptimizer(size_t populationSize = 100, size_t numGenerations = 0, double mutationDistributionIndex = 20.0, double crossOverDistributionIndex = 20.0, double crossOverProbability = 0.9)
+    : populationSize(populationSize), numGenerations(numGenerations), mutationDistributionIndex(mutationDistributionIndex), crossOverDistributionIndex(crossOverDistributionIndex), crossOverProbability(crossOverProbability) {}
 
   virtual void optimize(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr paretoFront)
   {
     SharkObjectiveFunctionFromMOOProblem sharkObjective(context, problem);
     NSGA2Search nsga2;
-    nsga2.init(sharkObjective, populationSize, nm, nc, crossOverProbability);
+    nsga2.init(sharkObjective, populationSize, mutationDistributionIndex, crossOverDistributionIndex, crossOverProbability);
     runAndFillParetoFront(context, nsga2, problem, paretoFront, numGenerations);
   }
 
@@ -120,14 +120,15 @@ protected:
 
   size_t populationSize;
   size_t numGenerations;
-  double nm, nc; // todo: replace by understandable names
+  double mutationDistributionIndex;
+  double crossOverDistributionIndex;
   double crossOverProbability;
 };
 
 class CMAESMOOOptimizer : public SharkMOOOptimizer
 {
 public:
-  CMAESMOOOptimizer(size_t numParents = 100, size_t numOffsprings = 100, size_t numGenerations = 100)
+  CMAESMOOOptimizer(size_t numParents = 100, size_t numOffsprings = 100, size_t numGenerations = 0)
     : numParents(numParents), numOffsprings(numOffsprings), numGenerations(numGenerations) {}
   
   virtual void optimize(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr paretoFront)

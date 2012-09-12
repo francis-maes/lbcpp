@@ -130,11 +130,13 @@ protected:
     double upper = theoreticalLimits->getUpperLimit(index);
     if (lower > upper)
       {double tmp = lower; lower = upper; upper = tmp;}
+
     double empiricalRange = empiricalLimits->getUpperLimit(index) - empiricalLimits->getLowerLimit(index);
-    if (!isNumberValid(lower))
+    if (empiricalLimits->getLowerLimit(index) < lower || !isNumberValid(lower))
       lower = empiricalLimits->getLowerLimit(index) - empiricalRange / 10.0;
-    if (!isNumberValid(upper))
+    if (empiricalLimits->getUpperLimit(index) > upper || !isNumberValid(upper))
       upper = empiricalLimits->getUpperLimit(index) + empiricalRange / 10.0;
+
     return new PlotAxis(lower, upper, "F" + String((int)index + 1), false);
   }
 };
