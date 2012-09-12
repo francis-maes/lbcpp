@@ -97,8 +97,8 @@ public:
   ZDTMOOProblem()
   {
     limits = new MOOFitnessLimits();
-    limits->addObjective(1, 0); // f1
-    limits->addObjective(DBL_MAX, 0); // f2
+    limits->addObjective(1.0, 0.0); // f1
+    limits->addObjective(1.0, 0.0); // f2 (in fact it is ]+oo, 0], but we keep 1 as reference point for the hyper-volume calculation)
   }
 
   virtual MOODomainPtr getSolutionDomain() const
@@ -111,7 +111,7 @@ public:
   virtual MOOFitnessLimitsPtr getFitnessLimits() const
     {jassert(limits); return limits;}
   
-  virtual MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution) const
+  virtual MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution)
   {
     const std::vector<double>& sol = solution.staticCast<DenseDoubleVector>()->getValues();
     std::vector<double> objectives(2);
@@ -163,6 +163,93 @@ public:
 
 ///////////////////////////////////////////////
 
+class DecoratorMOOProblem : public MOOProblem
+{
+public:
+  DecoratorMOOProblem(MOOProblemPtr problem = MOOProblemPtr())
+    : problem(problem) {}
+
+  virtual MOODomainPtr getSolutionDomain() const
+    {return problem->getSolutionDomain();}
+
+  virtual MOOFitnessLimitsPtr getFitnessLimits() const
+    {return problem->getFitnessLimits();}
+
+  virtual MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution)
+    {return problem->evaluate(context, solution);}
+
+  virtual ObjectPtr proposeStartingSolution(ExecutionContext& context) const
+    {return problem->proposeStartingSolution(context);}
+
+  virtual bool shouldStop() const
+    {return problem->shouldStop();}
+
+protected:
+  friend class DecoratorMOOProblemClass;
+
+  MOOProblemPtr problem;
+};
+
+class MaxNumIterationsDecoratorMOOProblem : public DecoratorMOOProblem
+{
+public:
+  MaxNumIterationsDecoratorMOOProblem(MOOProblemPtr problem, size_t maxNumEvaluations)
+    : DecoratorMOOProblem(problem), maxNumEvaluations(maxNumEvaluations), numEvaluations(0) {}
+  MaxNumIterationsDecoratorMOOProblem() : maxNumEvaluations(0), numEvaluations(0) {}
+
+  virtual MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution)
+    {jassert(numEvaluations < maxNumEvaluations); ++numEvaluations; return DecoratorMOOProblem::evaluate(context, solution);}
+
+  virtual bool shouldStop() const
+    {return numEvaluations >= maxNumEvaluations || DecoratorMOOProblem::shouldStop();}
+
+  size_t getNumEvaluations() const
+    {return numEvaluations;}
+
+protected:
+  friend class MaxNumIterationsDecoratorMOOProblemClass;
+
+  size_t maxNumEvaluations;
+
+  size_t numEvaluations;
+};
+
+class HyperVolumeEvaluatorDecoratorMOOProblem : public MaxNumIterationsDecoratorMOOProblem
+{
+public:
+  HyperVolumeEvaluatorDecoratorMOOProblem(MOOProblemPtr problem, size_t maxNumEvaluations, size_t hyperVolumeComputationPeriod)
+    : MaxNumIterationsDecoratorMOOProblem(problem, maxNumEvaluations), hyperVolumeComputationPeriod(hyperVolumeComputationPeriod)
+    {front = new MOOParetoFront(problem->getFitnessLimits());}
+  HyperVolumeEvaluatorDecoratorMOOProblem() : hyperVolumeComputationPeriod(0) {}
+
+  virtual MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution)
+  {
+    MOOFitnessPtr res = MaxNumIterationsDecoratorMOOProblem::evaluate(context, solution);
+    front->insert(solution, res);
+    if ((numEvaluations % hyperVolumeComputationPeriod) == 0)
+      hyperVolumes.push_back(front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness()));
+    return res;
+  }
+
+  const std::vector<double>& getHyperVolumes() const
+    {return hyperVolumes;}
+
+  size_t getHyperVolumeComputationPeriod() const
+    {return hyperVolumeComputationPeriod;}
+
+protected:
+  friend class HyperVolumeEvaluatorDecoratorMOOProblemClass;
+
+  size_t hyperVolumeComputationPeriod;
+
+  MOOParetoFrontPtr front;
+  std::vector<double> hyperVolumes;
+};
+
+typedef ReferenceCountedObjectPtr<HyperVolumeEvaluatorDecoratorMOOProblem> HyperVolumeEvaluatorDecoratorMOOProblemPtr;
+
+////////////////////////////////////////
+
 class MOOSandBox : public WorkUnit
 {
 public:
@@ -177,20 +264,36 @@ public:
     return true;
   }
 
-  void solveWithOptimizer(ExecutionContext& context, MOOOptimizerPtr optimizer)
-  {
-    context.enterScope(optimizer->toShortString());
-    MOOParetoFrontPtr paretoFront = optimizer->optimize(context, problem);
-    context.resultCallback("optimizer", optimizer);
-    context.resultCallback("paretoFront", paretoFront);
-    context.leaveScope(paretoFront);
-  }
-
 protected:
   friend class MOOSandBoxClass;
 
   MOOProblemPtr problem;
   size_t numEvaluations;
+
+  void solveWithOptimizer(ExecutionContext& context, MOOOptimizerPtr optimizer)
+  {
+    HyperVolumeEvaluatorDecoratorMOOProblemPtr decorator(new HyperVolumeEvaluatorDecoratorMOOProblem(problem, numEvaluations, 1000));
+
+    context.enterScope(optimizer->toShortString());
+    MOOParetoFrontPtr paretoFront = optimizer->optimize(context, decorator);
+    context.resultCallback("optimizer", optimizer);
+    context.resultCallback("paretoFront", paretoFront);
+    context.resultCallback("numEvaluations", decorator->getNumEvaluations());
+
+    context.enterScope("HyperVolume Curve");
+    std::vector<double> hyperVolumes = decorator->getHyperVolumes();
+    for (size_t i = 0; i < hyperVolumes.size(); ++i)
+    {
+      size_t numEvaluations = i * decorator->getHyperVolumeComputationPeriod();
+      context.enterScope(String((int)numEvaluations));
+      context.resultCallback("numEvaluations", numEvaluations);
+      context.resultCallback("hyperVolume", hyperVolumes[i]);
+      context.leaveScope();
+    }
+    context.leaveScope();
+
+    context.leaveScope(paretoFront);
+  }
 };
 
 }; /* namespace lbcpp */

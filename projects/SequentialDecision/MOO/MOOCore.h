@@ -87,6 +87,7 @@ public:
   void addObjective(double worstValue, double bestValue)
     {limits.push_back(std::make_pair(worstValue, bestValue));}
 
+  bool shouldObjectiveBeMaximized(size_t objectiveIndex) const;
   double getObjectiveSign(size_t objectiveIndex) const; // 1 for maximisation and -1 for minimisation
 
   MOOFitnessPtr getWorstPossibleFitness() const;
@@ -107,8 +108,11 @@ public:
   const std::vector<double>& getValues() const
     {return values;}
 
+  std::vector<double> getValuesToBeMinimized() const;
+
   bool dominates(const MOOFitnessPtr& other, bool strictly = false) const;
   bool strictlyDominates(const MOOFitnessPtr& other) const;
+  bool isBetterForAtLeastOneObjectiveThan(const MOOFitnessPtr& other, bool strictly = true) const;
   
   virtual String toShortString() const;
   virtual int compare(const ObjectPtr& otherObject) const;
@@ -143,6 +147,8 @@ public:
   size_t getNumSolutions() const
     {return size;}
 
+  double computeHyperVolume(const MOOFitnessPtr& referenceFitness) const;
+
   typedef std::map<MOOFitnessPtr, std::vector<ObjectPtr>, ObjectComparator > ParetoMap;
 
   const ParetoMap& getParetoMap() const
@@ -162,7 +168,7 @@ public:
   virtual MOODomainPtr getSolutionDomain() const = 0;
   virtual MOOFitnessLimitsPtr getFitnessLimits() const = 0;
 
-  virtual MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution) const = 0;
+  virtual MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution) = 0;
 
   virtual ObjectPtr proposeStartingSolution(ExecutionContext& context) const
     {jassertfalse; return ObjectPtr();}

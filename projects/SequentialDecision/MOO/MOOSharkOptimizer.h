@@ -92,7 +92,7 @@ protected:
   template<class SearchAlgorithmClass>
   void runAndFillParetoFront(ExecutionContext& context, SearchAlgorithmClass& searchAlgorithm, MOOProblemPtr problem, MOOParetoFrontPtr front, size_t numGenerations)
   {
-    for (size_t i = 0; i < numGenerations; ++i)
+    for (size_t i = 1; i < numGenerations; ++i) // first generation is evaluated during the init()
     {
       searchAlgorithm.run();
       context.progressCallback(new ProgressionState(i+1, numGenerations, "Generations"));
@@ -104,14 +104,14 @@ protected:
 class NSGA2MOOOptimizer : public SharkWrapperMOOOptimizer
 {
 public:
-  NSGA2MOOOptimizer(size_t populationSize = 100, size_t numGenerations = 250, double nm = 20.0, double nc = 20.0, double pc = 0.9)
-    : populationSize(populationSize), numGenerations(numGenerations), nm(nm), nc(nc), pc(pc) {}
+  NSGA2MOOOptimizer(size_t populationSize = 100, size_t numGenerations = 250, double nm = 20.0, double nc = 20.0, double crossOverProbability = 0.9)
+    : populationSize(populationSize), numGenerations(numGenerations), nm(nm), nc(nc), crossOverProbability(crossOverProbability) {}
 
   virtual void optimize(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr paretoFront)
   {
     SharkObjectiveFunctionFromMOOProblem sharkObjective(context, problem);
     NSGA2Search nsga2;
-    nsga2.init(sharkObjective, populationSize, nm, nc, pc);
+    nsga2.init(sharkObjective, populationSize, nm, nc, crossOverProbability);
     runAndFillParetoFront(context, nsga2, problem, paretoFront, numGenerations);
   }
 
@@ -120,7 +120,8 @@ protected:
 
   size_t populationSize;
   size_t numGenerations;
-  double nm, nc, pc; // todo: replace by understandable names
+  double nm, nc; // todo: replace by understandable names
+  double crossOverProbability;
 };
 
 class CMAESMOOOptimizer : public SharkWrapperMOOOptimizer
