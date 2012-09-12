@@ -1,6 +1,6 @@
-Objectif:
-  * courbe hypervolume v.s. num evaluations / cpu time
+
   * plus de benchmarks
+  
 
 
 
