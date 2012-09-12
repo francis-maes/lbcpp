@@ -1,8 +1,5 @@
 
   * plus de benchmarks
-  
-
-
 
 Experiences - Proteins:
  * Nouvelles features: prev et next amino acid de chaque type; delta de ObjectVector[DenseDoubleVector]; local/global histogram
