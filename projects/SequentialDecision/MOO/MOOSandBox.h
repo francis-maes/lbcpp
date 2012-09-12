@@ -10,7 +10,7 @@
 # define LBCPP_MOO_SANDBOX_H_
 
 # include <lbcpp/Execution/WorkUnit.h>
-# include "SharkMOOOptimizer.h"
+# include "SharkMOOOptimizers.h"
 # include "RandomMOOOptimizer.h"
 # include "ZDTMOOProblems.h"
 # include "DecoratorMOOProblems.h"
