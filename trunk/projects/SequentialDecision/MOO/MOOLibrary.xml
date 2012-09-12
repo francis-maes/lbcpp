@@ -39,7 +39,7 @@
     <variable type="PositiveInteger" name="numGenerations"/>
     <variable type="Double" name="nm"/>
     <variable type="Double" name="nc"/>
-    <variable type="Double" name="pc"/>
+    <variable type="Double" name="crossOverProbability"/>
   </class>
 
   <class name="CMAESMOOOptimizer" base="MOOOptimizer">
@@ -48,10 +48,21 @@
     <variable type="PositiveInteger" name="numGenerations"/>
   </class>
 
-  <!-- ZDT -->
+  <!-- Problems -->
+  <class name="DecoratorMOOProblem" base="MOOProblem" abstract="yes">
+    <variable type="MOOProblem" name="problem"/>
+  </class>
+  <class name="MaxNumIterationsDecoratorMOOProblem" base="DecoratorMOOProblem">
+    <variable type="PositiveInteger" name="maxNumEvaluations"/>
+  </class>
+  <class name="HyperVolumeEvaluatorDecoratorMOOProblem" base="MaxNumIterationsDecoratorMOOProblem">
+    <variable type="PositiveInteger" name="hyperVolumeComputationPeriod"/>
+  </class>
+  
   <class name="ZDTMOOProblem" base="MOOProblem" abstract="yes"/>
   <class name="ZTD1MOOProblem" base="ZDTMOOProblem"/>
 
+  <!-- Samplers -->
   <class name="UniformContinuousMOOSampler" base="MOOSampler"/>
   
   <!-- UI -->

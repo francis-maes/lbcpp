@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include "MOOCore.h"
+#include <MOO-EALib/Hypervolume.h>
 using namespace lbcpp;
 
 /*
@@ -20,8 +21,11 @@ MOOFitnessPtr MOOFitnessLimits::getWorstPossibleFitness() const
   return MOOFitnessPtr(new MOOFitness(res, refCountedPointerFromThis(this)));
 }
 
+bool MOOFitnessLimits::shouldObjectiveBeMaximized(size_t objectiveIndex) const
+  {return limits[objectiveIndex].second > limits[objectiveIndex].first;}
+
 double MOOFitnessLimits::getObjectiveSign(size_t objectiveIndex) const
-  {return limits[objectiveIndex].second > limits[objectiveIndex].first ? 1.0 : -1.0;}
+  {return shouldObjectiveBeMaximized(objectiveIndex) ? 1.0 : -1.0;}
 
 /*
 ** MOOFitness
@@ -49,6 +53,18 @@ bool MOOFitness::dominates(const MOOFitnessPtr& other, bool strictly) const
 
 bool MOOFitness::strictlyDominates(const MOOFitnessPtr& other) const
   {return dominates(other, true);}
+
+bool MOOFitness::isBetterForAtLeastOneObjectiveThan(const MOOFitnessPtr& other, bool strictly) const
+{
+  jassert(other->limits == limits);
+  for (size_t i = 0; i < values.size(); ++i)
+  {
+    double delta = (other->values[i] - values[i]) * limits->getObjectiveSign(i);
+    if ((strictly && delta < 0) || (!strictly && delta <= 0))
+      return true;
+  }
+  return false;
+}
 
 MOOFitnessPtr MOOFitness::makeWorstCombination(const MOOFitnessPtr& fitness1, const MOOFitnessPtr& fitness2)
 {
@@ -89,6 +105,15 @@ String MOOFitness::toShortString() const
       res += ", ";
   }
   res += ")";
+  return res;
+}
+
+std::vector<double> MOOFitness::getValuesToBeMinimized() const
+{
+  std::vector<double> res = getValues();
+  for (size_t i = 0; i < res.size(); ++i)
+    if (limits->shouldObjectiveBeMaximized(i))
+      res[i] = -res[i];
   return res;
 }
 
@@ -154,7 +179,6 @@ MOOFitnessLimitsPtr MOOParetoFront::getEmpiricalLimits() const
   std::vector< std::pair<double, double> > res(n, std::make_pair(DBL_MAX, -DBL_MAX));
 
   for (ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
-  {
     for (size_t i = 0; i < n; ++i)
     {
       double value = it->first->getValue(i);
@@ -163,8 +187,43 @@ MOOFitnessLimitsPtr MOOParetoFront::getEmpiricalLimits() const
       if (value > res[i].second)
         res[i].second = value;
     }
-  }
+
   return new MOOFitnessLimits(res);
+}
+
+double MOOParetoFront::computeHyperVolume(const MOOFitnessPtr& referenceFitness) const
+{
+  if (m.empty())
+    return 0.0;
+
+  size_t numObjectives = limits->getNumObjectives();
+  if (numObjectives == 1)
+  {
+    double bestValue = (limits->shouldObjectiveBeMaximized(0) ? m.rbegin()->first->getValue(0) : m.begin()->first->getValue(0));
+    double res = limits->getObjectiveSign(0) * (bestValue - referenceFitness->getValue(0));
+    return res > 0.0 ? res : 0.0;
+  }
+  else
+  {
+    // remove points that fall outside the hypervolume and convert to minimization problem
+    std::vector<double> points(m.size() * numObjectives);
+    size_t numPoints = 0;
+    for (ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
+      if (!referenceFitness->isBetterForAtLeastOneObjectiveThan(it->first))
+      {
+        std::vector<double> val = it->first->getValuesToBeMinimized();
+        memcpy(&points[numPoints * numObjectives], &val[0], sizeof (double) * numObjectives);
+        ++numPoints;
+      }
+
+    if (!numPoints)
+      return 0.0;
+
+    std::vector<double> ref = referenceFitness->getValuesToBeMinimized();
+
+    // shark implementation
+    return hypervolume(&points[0], &ref[0], (unsigned int)numObjectives, (unsigned int)numPoints);
+  }
 }
 
 /*
