@@ -29,6 +29,9 @@ typedef ReferenceCountedObjectPtr<MOOFitnessLimits> MOOFitnessLimitsPtr;
 class MOOProblem;
 typedef ReferenceCountedObjectPtr<MOOProblem> MOOProblemPtr;
 
+class MOOSolutionSet;
+typedef ReferenceCountedObjectPtr<MOOSolutionSet> MOOSolutionSetPtr;
+
 class MOOParetoFront;
 typedef ReferenceCountedObjectPtr<MOOParetoFront> MOOParetoFrontPtr;
 
@@ -126,14 +129,14 @@ protected:
   MOOFitnessLimitsPtr limits;
 };
 
-class MOOParetoFront : public Object
+class MOOSolutionSet : public Object
 {
 public:
-  MOOParetoFront(MOOFitnessLimitsPtr limits);
-  MOOParetoFront();
+  MOOSolutionSet(MOOFitnessLimitsPtr limits);
+  MOOSolutionSet();
 
-  void insert(const ObjectPtr& solution, const MOOFitnessPtr& fitness, bool removeDominatedSolutions);
-  void insert(const MOOParetoFrontPtr& solutions, bool removeDominatedSolutions);
+  void add(const ObjectPtr& solution, const MOOFitnessPtr& fitness);
+  void add(const MOOSolutionSetPtr& solutions);
   void getSolutions(std::vector<ObjectPtr>& res) const;
   void getSolutionAndFitnesses(std::vector< std::pair<MOOFitnessPtr, ObjectPtr> >& res) const;
   void getSolutionsByFitness(const MOOFitnessPtr& fitness, std::vector<ObjectPtr>& res) const;
@@ -149,19 +152,28 @@ public:
   size_t getNumElements() const
     {return size;}
 
-  double computeHyperVolume(const MOOFitnessPtr& referenceFitness) const;
-
   typedef std::map<MOOFitnessPtr, std::vector<ObjectPtr>, ObjectComparator > ParetoMap;
 
   const ParetoMap& getMap() const
     {return m;}
 
 protected:
-  friend class MOOParetoFrontClass;
+  friend class MOOSolutionSetClass;
 
   MOOFitnessLimitsPtr limits;
   ParetoMap m;
   size_t size;
+};
+
+class MOOParetoFront : public MOOSolutionSet
+{
+public:
+  MOOParetoFront(MOOFitnessLimitsPtr limits) : MOOSolutionSet(limits) {}
+  MOOParetoFront() {}
+
+  void insert(const ObjectPtr& solution, const MOOFitnessPtr& fitness);
+
+  double computeHyperVolume(const MOOFitnessPtr& referenceFitness) const;
 };
 
 class MOOProblem : public Object
@@ -196,10 +208,10 @@ protected:
   MOOParetoFrontPtr front;
 
   MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution);
-  MOOFitnessPtr evaluateAndSave(ExecutionContext& context, const ObjectPtr& solution, MOOParetoFrontPtr archive);
-  MOOFitnessPtr sampleAndEvaluateSolution(ExecutionContext& context, MOOSamplerPtr sampler, MOOParetoFrontPtr population = MOOParetoFrontPtr());
-  MOOParetoFrontPtr sampleAndEvaluatePopulation(ExecutionContext& context, MOOSamplerPtr sampler, size_t populationSize);
-  void learnSampler(ExecutionContext& context, MOOParetoFrontPtr population, MOOSamplerPtr sampler);
+  MOOFitnessPtr evaluateAndSave(ExecutionContext& context, const ObjectPtr& solution, MOOSolutionSetPtr archive);
+  MOOFitnessPtr sampleAndEvaluateSolution(ExecutionContext& context, MOOSamplerPtr sampler, MOOSolutionSetPtr population = MOOSolutionSetPtr());
+  MOOSolutionSetPtr sampleAndEvaluatePopulation(ExecutionContext& context, MOOSamplerPtr sampler, size_t populationSize);
+  void learnSampler(ExecutionContext& context, MOOSolutionSetPtr population, MOOSamplerPtr sampler);
 };
 
 class PopulationBasedMOOOptimizer : public MOOOptimizer

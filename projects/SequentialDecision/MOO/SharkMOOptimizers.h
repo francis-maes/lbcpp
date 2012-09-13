@@ -82,7 +82,7 @@ static void sharkFillParetoFront(SearchAlgorithmClass& searchAlgorithm, MOOProbl
     std::vector<double> fitness(problem->getNumObjectives());
     for (size_t j = 0; j < fitness.size(); ++j)
       fitness[j] = fitnesses(i, j);
-    front->insert(sol, new MOOFitness(fitness, problem->getFitnessLimits()), false);
+    front->insert(sol, new MOOFitness(fitness, problem->getFitnessLimits()));
   }
 }
 

@@ -31,7 +31,7 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     testSingleObjectiveOptimizers(context);
-    //testBiObjectiveOptimizers(context);
+    testBiObjectiveOptimizers(context);
     return true;
   }
 
@@ -52,6 +52,7 @@ protected:
     problems.push_back(new RosenbrockProblem());
     problems.push_back(new RosenbrockRotatedProblem());
 
+#if 0
     for (size_t numTrainingSamples = 10; numTrainingSamples < 100; numTrainingSamples += 5)
     {
       context.enterScope(String((int)numTrainingSamples));
@@ -66,7 +67,7 @@ protected:
         new NestedCrossEntropyOptimizer(new DiagonalGaussianSampler(), 3, 100, numTrainingSamples)));
       context.leaveScope();
     }
-    return;
+#endif // 0
 
     for (size_t i = 0; i < problems.size(); ++i)
     {
@@ -74,16 +75,7 @@ protected:
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
       solveWithSingleObjectiveOptimizer(context, problem, new RandomOptimizer(new UniformContinuousSampler(), numEvaluations));
-
-      /*solveWithSingleObjectiveOptimizer(context, problem, new NestedCrossEntropyOptimizer(new DiagonalGaussianSampler(), 2, 100, 30));
-
-      solveWithSingleObjectiveOptimizer(context, problem, new NestedCrossEntropyOptimizer(new DiagonalGaussianSampler(), 1, 100, 50));
-      solveWithSingleObjectiveOptimizer(context, problem, new NestedCrossEntropyOptimizer(new DiagonalGaussianSampler(), 2, 100, 50));*/
-      
-      //for (double r = -1.0; r <= 1.0; r += 0.5)
-      //  for (int l = 0; l <= 3; ++l)
-      //    solveWithSingleObjectiveOptimizer(context, problem, new NRPAOptimizer(new DiagonalGaussianSampler(pow(10.0, r)), l, 100));
-
+      solveWithSingleObjectiveOptimizer(context, problem, new CrossEntropyOptimizer(new DiagonalGaussianSampler(), 100, 30, numEvaluations / 100));
       context.leaveScope();
     }
   }

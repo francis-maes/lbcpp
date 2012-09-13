@@ -14,10 +14,12 @@
     <variable type="MOOFitnessLimits" name="limits"/>
   </class>
 
-  <class name="MOOParetoFront">
+  <class name="MOOSolutionSet">
     <variable type="MOOFitnessLimits" name="limits"/>
   </class>
-  <uicomponent name="MOOParetoFrontComponent" type="MOOParetoFront"/>
+  <class name="MOOParetoFront" base="MOOSolutionSet"/>
+  
+  <uicomponent name="MOOSolutionSetComponent" type="MOOSolutionSet"/>  
 
   <class name="MOOProblem" abstract="yes"/>
   <class name="MOOOptimizer" abstract="yes"/>

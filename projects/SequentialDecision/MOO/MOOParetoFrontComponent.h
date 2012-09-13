@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: MOOParetoFrontComponent.h      | User Interface for Pareto Fronts|
+| Filename: MOOSolutionSetComponent.h      | User Interface for Pareto Fronts|
 | Author  : Francis Maes                   |                                 |
 | Started : 11/09/2012 19:04               |                                 |
 `------------------------------------------/                                 |
@@ -17,20 +17,20 @@
 namespace lbcpp
 {
 
-class MOOParetoFrontDrawable : public TwoDimensionalPlotDrawable
+class MOOSolutionSetDrawable : public TwoDimensionalPlotDrawable
 {
 public:
-  MOOParetoFrontDrawable(MOOParetoFrontPtr front) : front(front)
+  MOOSolutionSetDrawable(MOOSolutionSetPtr solutions) : solutions(solutions)
   {
-    MOOFitnessLimitsPtr theoreticalLimits = front->getTheoreticalLimits();
-    MOOFitnessLimitsPtr empiricalLimits = front->getEmpiricalLimits();
+    MOOFitnessLimitsPtr theoreticalLimits = solutions->getTheoreticalLimits();
+    MOOFitnessLimitsPtr empiricalLimits = solutions->getEmpiricalLimits();
     xAxis = makeAxis(theoreticalLimits, empiricalLimits, 0);
     yAxis = makeAxis(theoreticalLimits, empiricalLimits, 1);
     computeBounds();
   }
 
   virtual Drawable* createCopy() const
-    {return new MOOParetoFrontDrawable(front);}
+    {return new MOOSolutionSetDrawable(solutions);}
 
   virtual PlotAxisPtr getXAxis() const
     {return xAxis;}
@@ -44,9 +44,9 @@ public:
     if (!areBoundsValid())
       return;
 
-    const MOOParetoFront::ParetoMap& m = front->getMap();
+    const MOOSolutionSet::ParetoMap& m = solutions->getMap();
     g.setColour(juce::Colours::lightgrey);
-    MOOParetoFront::ParetoMap::const_iterator it, nxt;
+    MOOSolutionSet::ParetoMap::const_iterator it, nxt;
     for (it = m.begin(); it != m.end(); it = nxt)
     {
       nxt = it; ++nxt;
@@ -74,8 +74,8 @@ public:
     double minDistance = DBL_MAX;
     MOOFitnessPtr res;
 
-    const MOOParetoFront::ParetoMap& m = front->getMap();
-    for (MOOParetoFront::ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
+    const MOOSolutionSet::ParetoMap& m = solutions->getMap();
+    for (MOOSolutionSet::ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
     {
       int ox, oy;
       getPixelPosition(it->first, ox, oy, transform);
@@ -98,7 +98,7 @@ public:
     {return currentFitness;}
 
 protected:
-  MOOParetoFrontPtr front;
+  MOOSolutionSetPtr solutions;
   PlotAxisPtr xAxis, yAxis;
   MOOFitnessPtr currentFitness;
 
@@ -141,17 +141,17 @@ protected:
   }
 };
 
-class MOOParetoFrontComponent : public juce::Component, public ComponentWithPreferedSize, public VariableSelector
+class MOOSolutionSetComponent : public juce::Component, public ComponentWithPreferedSize, public VariableSelector
 {
 public:
-  MOOParetoFrontComponent(MOOParetoFrontPtr front, const String& name)
-    : front(front), drawable(NULL)
+  MOOSolutionSetComponent(MOOSolutionSetPtr solutions, const String& name)
+    : solutions(solutions), drawable(NULL)
   {
     setWantsKeyboardFocus(true);
-    if (front->getNumObjectives() == 2)
-      drawable = new MOOParetoFrontDrawable(front);
+    if (solutions->getNumObjectives() == 2)
+      drawable = new MOOSolutionSetDrawable(solutions);
   }
-  virtual ~MOOParetoFrontComponent()
+  virtual ~MOOSolutionSetComponent()
     {if (drawable) delete drawable;}
 
   virtual int getDefaultWidth() const
@@ -162,7 +162,7 @@ public:
 
   virtual void paint(juce::Graphics& g)
   {
-    const MOOParetoFront::ParetoMap& m = front->getMap();
+    const MOOSolutionSet::ParetoMap& m = solutions->getMap();
     if (m.empty())
     {
       paintText(g, "Empty Pareto Front");
@@ -170,7 +170,7 @@ public:
     }
     if (!drawable)
     {
-      paintText(g, "Only the display of bi-objective pareto fronts is supported yet");
+      paintText(g, "Only the display of bi-objective pareto solutionss is supported yet");
       return;
     }
 
@@ -200,8 +200,8 @@ public:
   }
 
 protected:
-  MOOParetoFrontPtr front;
-  MOOParetoFrontDrawable* drawable;
+  MOOSolutionSetPtr solutions;
+  MOOSolutionSetDrawable* drawable;
 
   void paintText(juce::Graphics& g, const String& text)
   {
@@ -234,18 +234,18 @@ protected:
   {
     if (fitness)
     {
-      std::vector<ObjectPtr> solutions;
-      front->getSolutionsByFitness(fitness, solutions);
+      std::vector<ObjectPtr> sol;
+      solutions->getSolutionsByFitness(fitness, sol);
 
       Variable res;
-      if (solutions.size() == 1)
-        res = Variable::pair(fitness->getVariable(0), solutions[0]);
+      if (sol.size() == 1)
+        res = Variable::pair(fitness->getVariable(0), sol[0]);
       else
       {
-        ObjectVectorPtr sol(new ObjectVector(objectClass, 0));
-        for (size_t i = 0; i < solutions.size(); ++i)
-          sol->append(solutions[i]);
-        res = Variable::pair(fitness->getVariable(0), sol);
+        ObjectVectorPtr listOfSol(new ObjectVector(objectClass, 0));
+        for (size_t i = 0; i < sol.size(); ++i)
+          listOfSol->append(sol[i]);
+        res = Variable::pair(fitness->getVariable(0), listOfSol);
       }
       sendSelectionChanged(res, T("pareto point"));
     }
@@ -264,8 +264,8 @@ protected:
     const MOOFitnessPtr& current = drawable->getCurrentFitness();
     if (!current)
       return;
-    const MOOParetoFront::ParetoMap& m = front->getMap();
-    MOOParetoFront::ParetoMap::const_iterator it = m.find(current);
+    const MOOSolutionSet::ParetoMap& m = solutions->getMap();
+    MOOSolutionSet::ParetoMap::const_iterator it = m.find(current);
     if (it == m.end())
       return;
     if (gotoRight)

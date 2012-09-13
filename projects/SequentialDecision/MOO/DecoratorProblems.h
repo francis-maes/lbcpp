@@ -146,7 +146,7 @@ public:
   virtual MOOFitnessPtr decoratedEvaluate(ExecutionContext& context, const ObjectPtr& solution)
   {
     MOOFitnessPtr res = MaxIterationsDecoratorProblem::evaluate(context, solution);
-    front->insert(solution, res, true);
+    front->insert(solution, res);
     return res;
   }
  
