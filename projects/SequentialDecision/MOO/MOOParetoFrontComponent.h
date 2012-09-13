@@ -145,10 +145,14 @@ class MOOParetoFrontComponent : public juce::Component, public ComponentWithPref
 {
 public:
   MOOParetoFrontComponent(MOOParetoFrontPtr front, const String& name)
-    : front(front), drawable(front)
+    : front(front), drawable(NULL)
   {
     setWantsKeyboardFocus(true);
+    if (front->getNumObjectives() == 2)
+      drawable = new MOOParetoFrontDrawable(front);
   }
+  virtual ~MOOParetoFrontComponent()
+    {if (drawable) delete drawable;}
 
   virtual int getDefaultWidth() const
     {return 600;}
@@ -164,14 +168,14 @@ public:
       paintText(g, "Empty Pareto Front");
       return;
     }
-    if (front->getNumObjectives() != 2)
+    if (!drawable)
     {
       paintText(g, "Only the display of bi-objective pareto fronts is supported yet");
       return;
     }
 
     if (getWidth() > leftMargin + rightMargin && getHeight() > topMargin + bottomMargin)
-      drawable.draw(g, getTransform());
+      drawable->draw(g, getTransform());
   }
 
   virtual bool keyPressed(const juce::KeyPress& key)
@@ -190,11 +194,14 @@ public:
   }
 
   virtual void mouseUp(const juce::MouseEvent& e)
-    {select(drawable.hittest(e.getMouseDownX(), e.getMouseDownY(), getTransform()));}
+  {
+    if (drawable)
+      select(drawable->hittest(e.getMouseDownX(), e.getMouseDownY(), getTransform()));
+  }
 
 protected:
   MOOParetoFrontPtr front;
-  MOOParetoFrontDrawable drawable;
+  MOOParetoFrontDrawable* drawable;
 
   void paintText(juce::Graphics& g, const String& text)
   {
@@ -218,7 +225,7 @@ protected:
     const int destH = getHeight() - topMargin - bottomMargin;
 
     float x, y, w, h;
-    drawable.getBounds(x, y, w, h);
+    drawable->getBounds(x, y, w, h);
     juce::RectanglePlacement placement(juce::RectanglePlacement::stretchToFit);
     return placement.getTransformToFit(x, y, w, h, (float)destX, (float)destY, (float)destW, (float)destH);
   }
@@ -245,13 +252,16 @@ protected:
     else
       sendSelectionChanged(std::vector<Variable>(), String::empty);
 
-    drawable.setCurrentFitness(fitness);
+    if (drawable)
+      drawable->setCurrentFitness(fitness);
     repaint();
   }
 
   void changeSelection(bool gotoRight)
   {
-    const MOOFitnessPtr& current = drawable.getCurrentFitness();
+    if (!drawable)
+      return;
+    const MOOFitnessPtr& current = drawable->getCurrentFitness();
     if (!current)
       return;
     const MOOParetoFront::ParetoMap& m = front->getMap();

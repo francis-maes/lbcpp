@@ -203,7 +203,7 @@ class PopulationBasedMOOOptimizer : public MOOOptimizer
 {
 public:
   PopulationBasedMOOOptimizer(size_t populationSize = 100, size_t numGenerations = 0)
-    : populationSize(100), numGenerations(0) {}
+    : populationSize(populationSize), numGenerations(numGenerations) {}
 
 protected:
   friend class PopulationBasedMOOOptimizerClass;

@@ -63,12 +63,22 @@
   <class name="MaxIterationsDecoratorProblem" base="DecoratorMOOProblem">
     <variable type="PositiveInteger" name="maxNumEvaluations"/>
   </class>
-  <class name="HyperVolumeEvaluatorDecoratorProblem" base="MaxIterationsDecoratorProblem">
-    <variable type="PositiveInteger" name="hyperVolumeComputationPeriod"/>
+  <class name="EvaluatorDecoratorProblem" base="MaxIterationsDecoratorProblem" abstract="yes">
+    <variable type="PositiveInteger" name="evaluationPeriod"/>
   </class>
+  <class name="SingleObjectiveEvaluatorDecoratorProblem" base="EvaluatorDecoratorProblem"/>
+  <class name="HyperVolumeEvaluatorDecoratorProblem" base="EvaluatorDecoratorProblem"/>
 
   <class name="MOOProblemFromSharkObjectiveFunction" base="MOOProblem" abstract="yes"/>
-    <class name="ZDTMOProblem" base="MOOProblemFromSharkObjectiveFunction" abstract="yes"/>
+
+    <class name="SingleObjectiveSharkMOProblem" base="MOOProblemFromSharkObjectiveFunction" abstract="yes"/>
+      <class name="AckleyProblem" base="SingleObjectiveSharkMOProblem"/>
+      <class name="GriewangkProblem" base="SingleObjectiveSharkMOProblem"/>
+      <class name="RastriginProblem" base="SingleObjectiveSharkMOProblem"/>
+      <class name="RosenbrockProblem" base="SingleObjectiveSharkMOProblem"/>
+      <class name="RosenbrockRotatedProblem" base="SingleObjectiveSharkMOProblem"/>
+
+  <class name="ZDTMOProblem" base="MOOProblemFromSharkObjectiveFunction" abstract="yes"/>
       <class name="ZDT1MOProblem" base="ZDTMOProblem"/>
       <class name="ZDT2MOProblem" base="ZDTMOProblem"/>
       <class name="ZDT3MOProblem" base="ZDTMOProblem"/>
@@ -77,7 +87,7 @@
 
   <!-- Samplers -->
   <class name="UniformContinuousSampler" base="MOOSampler"/>
-  <class name="DiagonalGaussianContinuousSampler" base="MOOSampler">
+  <class name="DiagonalGaussianSampler" base="MOOSampler">
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="mean"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="stddev"/>
   </class>

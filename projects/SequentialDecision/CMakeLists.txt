@@ -188,12 +188,12 @@ SET(LBCPP_MOO_SOURCES
 
 SET(LBCPP_MOO_PROBLEM_SOURCES
   MOO/DecoratorProblems.h
-  MOO/SharkMOProblems.h
+  MOO/SharkProblems.h
 )
 
 SET(LBCPP_MOO_SAMPLER_SOURCES
   MOO/UniformContinuousSampler.h
-  MOO/DiagonalGaussianContinuousSampler.h
+  MOO/DiagonalGaussianSampler.h
 ) 
 
 SET(LBCPP_MOO_OPTIMIZER_SOURCES
