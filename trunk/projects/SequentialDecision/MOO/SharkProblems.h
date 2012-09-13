@@ -147,12 +147,12 @@ private:
   double max2;
 };
 
-struct ZDT1MOProblem : public ZDTMOProblem {ZDT1MOProblem() : ZDTMOProblem(new ZDT1(30), 1.0, 1.0) {} };
-struct ZDT2MOProblem : public ZDTMOProblem {ZDT2MOProblem() : ZDTMOProblem(new ZDT2(30), 1.0, 1.0) {} };
-struct ZDT3MOProblem : public ZDTMOProblem {ZDT3MOProblem() : ZDTMOProblem(new ZDT3(30), 0.852, 1.0) {} };
-struct ZDT4MOProblem : public ZDTMOProblem {ZDT4MOProblem() : ZDTMOProblem(new ZDT4(30), 1.0, 1.0) {} };
+struct ZDT1MOProblem : public ZDTMOProblem {ZDT1MOProblem() : ZDTMOProblem(new ZDT1(30), 1.0, 5.0) {} };
+struct ZDT2MOProblem : public ZDTMOProblem {ZDT2MOProblem() : ZDTMOProblem(new ZDT2(30), 1.0, 5.0) {} };
+struct ZDT3MOProblem : public ZDTMOProblem {ZDT3MOProblem() : ZDTMOProblem(new ZDT3(30), 0.852, 5.0) {} };
+struct ZDT4MOProblem : public ZDTMOProblem {ZDT4MOProblem() : ZDTMOProblem(new ZDT4(30), 1.0, 5.0) {} };
 // ZDT5 not wrapper yet (domain is discrete)
-struct ZDT6MOProblem : public ZDTMOProblem {ZDT6MOProblem() : ZDTMOProblem(new ZDT6(30), 1.0, 1.0) {} };
+struct ZDT6MOProblem : public ZDTMOProblem {ZDT6MOProblem() : ZDTMOProblem(new ZDT6(30), 1.0, 5.0) {} };
 
 }; /* namespace lbcpp */
 

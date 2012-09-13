@@ -44,23 +44,28 @@ public:
     if (!areBoundsValid())
       return;
 
-    const MOOSolutionSet::ParetoMap& m = solutions->getMap();
-    g.setColour(juce::Colours::lightgrey);
-    MOOSolutionSet::ParetoMap::const_iterator it, nxt;
-    for (it = m.begin(); it != m.end(); it = nxt)
+    std::vector<MOOParetoFrontPtr> fronts = solutions->nonDominatedSort();
+    for (size_t i = 0; i < fronts.size(); ++i)
     {
-      nxt = it; ++nxt;
-      if (nxt == m.end())
-        break;
-      int x1, y1, x2, y2, x3, y3;
-      getPixelPosition(it->first, x1, y1, transform);
-      getPixelPosition(MOOFitness::makeWorstCombination(it->first, nxt->first), x2, y2, transform);
-      getPixelPosition(nxt->first, x3, y3, transform);
-      g.drawLine((float)x1, (float)y1, (float)x2, (float)y2);
-      g.drawLine((float)x2, (float)y2, (float)x3, (float)y3);
+      const MOOSolutionSet::Map& m = fronts[i]->getMap();
+      g.setColour(juce::Colour(i / (float)fronts.size(), 0.5f, 1.f, (juce::uint8)255));
+      MOOSolutionSet::Map::const_iterator it, nxt;
+      for (it = m.begin(); it != m.end(); it = nxt)
+      {
+        nxt = it; ++nxt;
+        if (nxt == m.end())
+          break;
+        int x1, y1, x2, y2, x3, y3;
+        getPixelPosition(it->first, x1, y1, transform);
+        getPixelPosition(MOOFitness::makeWorstCombination(it->first, nxt->first), x2, y2, transform);
+        getPixelPosition(nxt->first, x3, y3, transform);
+        g.drawLine((float)x1, (float)y1, (float)x2, (float)y2);
+        g.drawLine((float)x2, (float)y2, (float)x3, (float)y3);
+      }
     }
 
-    for (it = m.begin(); it != m.end(); ++it)
+    const MOOSolutionSet::Map& m = solutions->getMap();
+    for (MOOSolutionSet::Map::const_iterator it = m.begin(); it != m.end(); ++it)
     {
       int x, y;
       getPixelPosition(it->first, x, y, transform);
@@ -74,8 +79,8 @@ public:
     double minDistance = DBL_MAX;
     MOOFitnessPtr res;
 
-    const MOOSolutionSet::ParetoMap& m = solutions->getMap();
-    for (MOOSolutionSet::ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
+    const MOOSolutionSet::Map& m = solutions->getMap();
+    for (MOOSolutionSet::Map::const_iterator it = m.begin(); it != m.end(); ++it)
     {
       int ox, oy;
       getPixelPosition(it->first, ox, oy, transform);
@@ -162,7 +167,7 @@ public:
 
   virtual void paint(juce::Graphics& g)
   {
-    const MOOSolutionSet::ParetoMap& m = solutions->getMap();
+    const MOOSolutionSet::Map& m = solutions->getMap();
     if (m.empty())
     {
       paintText(g, "Empty Pareto Front");
@@ -264,8 +269,8 @@ protected:
     const MOOFitnessPtr& current = drawable->getCurrentFitness();
     if (!current)
       return;
-    const MOOSolutionSet::ParetoMap& m = solutions->getMap();
-    MOOSolutionSet::ParetoMap::const_iterator it = m.find(current);
+    const MOOSolutionSet::Map& m = solutions->getMap();
+    MOOSolutionSet::Map::const_iterator it = m.find(current);
     if (it == m.end())
       return;
     if (gotoRight)

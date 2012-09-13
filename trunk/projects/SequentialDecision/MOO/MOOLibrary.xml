@@ -48,6 +48,8 @@
     <variable type="PositiveInteger" name="numTrainingSamples"/>
   </class>
 
+  <class name="CrossEntropyMOOptimizer" base="CrossEntropyOptimizer"/>
+
   <class name="NestedCrossEntropyOptimizer" base="CrossEntropyOptimizer">
     <variable type="PositiveInteger" name="level"/>
   </class>

@@ -124,6 +124,14 @@ std::vector<double> MOOFitness::getValuesToBeMinimized() const
 /*
 ** MOOSolutionSet
 */
+MOOSolutionSet::MOOSolutionSet(MOOFitnessLimitsPtr limits, const Map& elements)
+  : limits(limits), m(elements)
+{
+  size = 0;
+  for (Map::const_iterator it = elements.begin(); it != elements.end(); ++it)
+    size += it->second.size();
+}
+
 MOOSolutionSet::MOOSolutionSet(MOOFitnessLimitsPtr limits)
   : limits(limits), size(0)
 {
@@ -136,9 +144,9 @@ MOOSolutionSet::MOOSolutionSet() : size(0)
 void MOOSolutionSet::add(const MOOSolutionSetPtr& solutions)
 {
   jassert(solutions);
-  for (ParetoMap::const_iterator it = solutions->m.begin(); it != solutions->m.end(); ++it)
+  for (Map::const_iterator it = solutions->m.begin(); it != solutions->m.end(); ++it)
   {
-    ParetoMap::iterator it2 = m.find(it->first);
+    Map::iterator it2 = m.find(it->first);
     std::vector<ObjectPtr>& target = (it2 == m.end() ? m[it->first] : it2->second);
     target.reserve(target.size() + it->second.size());
     for (size_t i = 0; i < it->second.size(); ++i)
@@ -150,7 +158,7 @@ void MOOSolutionSet::add(const MOOSolutionSetPtr& solutions)
 void MOOSolutionSet::add(const ObjectPtr& solution, const MOOFitnessPtr& fitness)
 {
   jassert(fitness);
-  ParetoMap::iterator it = m.find(fitness);
+  Map::iterator it = m.find(fitness);
   if (it == m.end())
     m[fitness] = std::vector<ObjectPtr>(1, solution);
   else
@@ -160,20 +168,30 @@ void MOOSolutionSet::add(const ObjectPtr& solution, const MOOFitnessPtr& fitness
 
 void MOOSolutionSet::getSolutions(std::vector<ObjectPtr>& res) const
 {
-  res.reserve(size);
-  for (ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
+  res.resize(size);
+  size_t index = 0;
+  for (Map::const_iterator it = m.begin(); it != m.end(); ++it)
   {
     MOOFitnessPtr fitness = it->first;
     const std::vector<ObjectPtr>& solutions = it->second;
     for (size_t i = 0; i < solutions.size(); ++i)
-      res.push_back(solutions[i]);
+      {jassert(index < size); res[index++] = solutions[i];}
   }
+  jassert(index == size);
+}
+
+void MOOSolutionSet::getFitnesses(std::vector<MOOFitnessPtr>& res) const
+{
+  res.resize(m.size());
+  size_t index = 0;
+  for (Map::const_iterator it = m.begin(); it != m.end(); ++it)
+    res[index++] = it->first;
 }
 
 void MOOSolutionSet::getSolutionAndFitnesses(std::vector< std::pair<MOOFitnessPtr, ObjectPtr> >& res) const
 {
   res.reserve(size);
-  for (ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
+  for (Map::const_iterator it = m.begin(); it != m.end(); ++it)
   {
     MOOFitnessPtr fitness = it->first;
     const std::vector<ObjectPtr>& solutions = it->second;
@@ -184,7 +202,7 @@ void MOOSolutionSet::getSolutionAndFitnesses(std::vector< std::pair<MOOFitnessPt
 
 void MOOSolutionSet::getSolutionsByFitness(const MOOFitnessPtr& fitness, std::vector<ObjectPtr>& res) const
 {
-  ParetoMap::const_iterator it = m.find(fitness);
+  Map::const_iterator it = m.find(fitness);
   if (it == m.end())
     res.clear();
   else
@@ -196,7 +214,7 @@ MOOFitnessLimitsPtr MOOSolutionSet::getEmpiricalLimits() const
   size_t n = limits->getNumDimensions();
   std::vector< std::pair<double, double> > res(n, std::make_pair(DBL_MAX, -DBL_MAX));
 
-  for (ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
+  for (Map::const_iterator it = m.begin(); it != m.end(); ++it)
     for (size_t i = 0; i < n; ++i)
     {
       double value = it->first->getValue(i);
@@ -209,30 +227,106 @@ MOOFitnessLimitsPtr MOOSolutionSet::getEmpiricalLimits() const
   return new MOOFitnessLimits(res);
 }
 
+std::vector<MOOParetoFrontPtr> MOOSolutionSet::nonDominatedSort() const
+{
+  std::vector<MOOFitnessPtr> fitnesses;
+  getFitnesses(fitnesses);
+  size_t n = fitnesses.size();
+
+  std::vector<size_t> dominationCounter(n, 0); // by how many others am I dominated?
+  std::vector< std::vector<size_t> > dominationIndices(n); // who do I dominate?
+
+  Map front;
+  std::vector<size_t> currentFrontIndices;
+  for (size_t i = 0; i < n; ++i)
+  {
+    for (size_t j = 0; j < n; ++j)
+      if (fitnesses[i]->strictlyDominates(fitnesses[j]))
+        dominationIndices[i].push_back(j);
+      else if (fitnesses[j]->strictlyDominates(fitnesses[i]))
+        dominationCounter[i]++;
+    if (dominationCounter[i] == 0)
+    {
+      front[fitnesses[i]] = m.find(fitnesses[i])->second;
+      currentFrontIndices.push_back(i);
+    }
+  }
+
+  std::vector<MOOParetoFrontPtr> res;
+  if (currentFrontIndices.empty())
+    return res;
+  
+  res.push_back(new MOOParetoFront(limits, front));
+  while (true)
+  {
+    Map nextFront;
+    std::vector<size_t> nextFrontIndices;
+    front.clear();
+    for (size_t i = 0; i < currentFrontIndices.size(); ++i)
+    {
+      const std::vector<size_t>& indices = dominationIndices[currentFrontIndices[i]];
+      for (size_t j = 0; j < indices.size(); ++j)
+      {
+        size_t index = indices[j];
+        size_t& counter = dominationCounter[index];
+        jassert(counter > 0);
+        --counter;
+        if (counter == 0)
+        {
+          MOOFitnessPtr fitness = fitnesses[index];
+          nextFrontIndices.push_back(index);
+          front[fitness] = m.find(fitness)->second;
+        }
+      }
+    }
+    currentFrontIndices.swap(nextFrontIndices);
+
+    jassert(front.size() == currentFrontIndices.size());
+    if (front.size())
+      res.push_back(new MOOParetoFront(limits, front));
+    else
+      break;
+  }
+
+#ifdef JUCE_DEBUG
+  size_t debugSize = 0;
+  for (size_t i = 0; i < res.size(); ++i)
+    debugSize += res[i]->getNumElements();
+  jassert(debugSize == size);
+#endif // JUCE_DEBUG
+  return res;
+}
+
 /*
 ** MOOParetoFront
 */
 void MOOParetoFront::insert(const ObjectPtr& solution, const MOOFitnessPtr& fitness)
 {
-  for (ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
+  for (Map::const_iterator it = m.begin(); it != m.end(); ++it)
     if (it->first->strictlyDominates(fitness))
       return; // dominated
 
-  ParetoMap::iterator it = m.find(fitness);
+  Map::iterator it = m.find(fitness);
   if (it == m.end())
   {
-    ParetoMap::iterator nxt;
+    Map::iterator nxt;
     for (it = m.begin(); it != m.end(); it = nxt)
     {
       nxt = it; ++nxt;
       if (fitness->strictlyDominates(it->first))
+      {
+        size -= it->second.size();
         m.erase(it);
+      }
     }
     m[fitness] = std::vector<ObjectPtr>(1, solution);
+    ++size;
   }
   else
+  {
     it->second.push_back(solution);
-  ++size;
+    ++size;
+  }
 }
 
 double MOOParetoFront::computeHyperVolume(const MOOFitnessPtr& referenceFitness) const
@@ -252,7 +346,7 @@ double MOOParetoFront::computeHyperVolume(const MOOFitnessPtr& referenceFitness)
     // remove points that fall outside the hypervolume and convert to minimization problem
     std::vector<double> points(m.size() * numObjectives);
     size_t numPoints = 0;
-    for (ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
+    for (Map::const_iterator it = m.begin(); it != m.end(); ++it)
       if (!referenceFitness->isBetterForAtLeastOneObjectiveThan(it->first))
       {
         std::vector<double> val = it->first->getValuesToBeMinimized();
@@ -291,6 +385,8 @@ MOOFitnessPtr MOOOptimizer::evaluate(ExecutionContext& context, const ObjectPtr&
 {
   jassert(problem && front);
   MOOFitnessPtr fitness = problem->evaluate(context, solution);
+  for (size_t i = 0; i < fitness->getNumValues(); ++i)
+    jassert(isNumberValid(fitness->getValue(i)));
   front->insert(solution, fitness);
   return fitness;
 }
@@ -302,9 +398,12 @@ MOOFitnessPtr MOOOptimizer::evaluateAndSave(ExecutionContext& context, const Obj
   return fitness;
 }
 
+ObjectPtr MOOOptimizer::sampleSolution(ExecutionContext& context, MOOSamplerPtr sampler)
+  {return problem->getSolutionDomain()->projectIntoDomain(sampler->sample(context));}
+ 
 MOOFitnessPtr MOOOptimizer::sampleAndEvaluateSolution(ExecutionContext& context, MOOSamplerPtr sampler, MOOSolutionSetPtr population)
 {
-  ObjectPtr solution = sampler->sample(context);
+  ObjectPtr solution = sampleSolution(context, sampler); 
   return population ? evaluateAndSave(context, solution, population) : evaluate(context, solution);
 }
 
