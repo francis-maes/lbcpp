@@ -46,13 +46,14 @@ protected:
     }
     else
     {
-      MOOFitnessPtr bestFitness = problem->getFitnessLimits()->getWorstPossibleFitness();
+      MOOFitnessPtr bestFitness = problem->getFitnessLimits()->getWorstPossibleFitness(true);
       ObjectPtr bestSolution;
-        
-      for (size_t i = 0; i < numIterationsPerLevel; ++i)
+
+      bool isTopLevel = (this->level == level);
+      for (size_t i = 0; isTopLevel || i < numIterationsPerLevel; ++i)
       {
         SolutionAndFitnessPair subResult = optimizeRecursively(context, sampler->cloneAndCast<MOOSampler>(), level - 1);
-        if (subResult.second->dominates(bestFitness))
+        if (subResult.second && subResult.second->dominates(bestFitness))
         {
           bestSolution = subResult.first;
           bestFitness = subResult.second;
@@ -60,6 +61,9 @@ protected:
         
         if (bestSolution)
           sampler->reinforce(context, bestSolution);
+
+        if (isTopLevel && problem->shouldStop())
+          break;
       }
       return std::make_pair(bestSolution, bestFitness);
     }

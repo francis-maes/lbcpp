@@ -13,11 +13,15 @@ using namespace lbcpp;
 /*
 ** MOOFitnessLimits
 */
-MOOFitnessPtr MOOFitnessLimits::getWorstPossibleFitness() const
+MOOFitnessPtr MOOFitnessLimits::getWorstPossibleFitness(bool useInfiniteValues) const
 {
   std::vector<double> res(limits.size());
-  for (size_t i = 0; i < res.size(); ++i)
-    res[i] = limits[i].first;
+  if (useInfiniteValues)
+    for (size_t i = 0; i < res.size(); ++i)
+      res[i] = shouldObjectiveBeMaximized(i) ? -DBL_MAX : DBL_MAX;
+  else
+    for (size_t i = 0; i < res.size(); ++i)
+      res[i] = limits[i].first;
   return MOOFitnessPtr(new MOOFitness(res, refCountedPointerFromThis(this)));
 }
 

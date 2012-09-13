@@ -88,6 +88,7 @@
   <!-- Samplers -->
   <class name="UniformContinuousSampler" base="MOOSampler"/>
   <class name="DiagonalGaussianSampler" base="MOOSampler">
+    <variable type="Double" name="learningRate"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="mean"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="stddev"/>
   </class>

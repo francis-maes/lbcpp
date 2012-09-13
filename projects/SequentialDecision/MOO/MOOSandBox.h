@@ -14,6 +14,7 @@
 # include "RandomOptimizer.h"
 # include "SharkProblems.h"
 # include "DecoratorProblems.h"
+# include "NRPAOptimizer.h"
 # include "CrossEntropyOptimizer.h"
 # include "UniformContinuousSampler.h"
 # include "DiagonalGaussianSampler.h"
@@ -29,7 +30,7 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     testSingleObjectiveOptimizers(context);
-    testBiObjectiveOptimizers(context);
+    //testBiObjectiveOptimizers(context);
     return true;
   }
 
@@ -57,6 +58,11 @@ protected:
       context.resultCallback("problem", problem);
       solveWithSingleObjectiveOptimizer(context, problem, new RandomOptimizer(new UniformContinuousSampler(), numEvaluations));
       solveWithSingleObjectiveOptimizer(context, problem, new CrossEntropyOptimizer(new DiagonalGaussianSampler(), 100, 30, numEvaluations / 100));
+      
+      for (double r = -1.0; r <= 1.0; r += 0.5)
+        for (int l = 1; l <= 3; ++l)
+          solveWithSingleObjectiveOptimizer(context, problem, new NRPAOptimizer(new DiagonalGaussianSampler(pow(10.0, r)), l, 100));
+
       context.leaveScope();
     }
   }
