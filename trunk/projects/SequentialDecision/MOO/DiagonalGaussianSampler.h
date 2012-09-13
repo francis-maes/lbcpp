@@ -1,20 +1,20 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: DiagonalGaussianContinuousSampler.h | Diagonal Gaussian sampler  |
-| Author  : Francis Maes                   |  in R^n                         |
+| Filename: DiagonalGaussianSampler.h      | Diagonal Gaussian sampler in R^n|
+| Author  : Francis Maes                   |                                 |
 | Started : 13/09/2012 11:17               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_MOO_SAMPLER_DIAGONAL_GAUSSIAN_CONTINUOUS_H_
-# define LBCPP_MOO_SAMPLER_DIAGONAL_GAUSSIAN_CONTINUOUS_H_
+#ifndef LBCPP_MOO_SAMPLER_DIAGONAL_GAUSSIAN_H_
+# define LBCPP_MOO_SAMPLER_DIAGONAL_GAUSSIAN_H_
 
 # include "MOOCore.h"
 
 namespace lbcpp
 {
 
-class DiagonalGaussianContinuousSampler : public MOOSampler
+class DiagonalGaussianSampler : public MOOSampler
 {
 public:
   virtual void initialize(ExecutionContext& context, const MOODomainPtr& d)
@@ -72,8 +72,16 @@ public:
   virtual void reinforce(ExecutionContext& context, const ObjectPtr& solution)
     {jassertfalse;}
 
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    const ReferenceCountedObjectPtr<DiagonalGaussianSampler>& target = t.staticCast<DiagonalGaussianSampler>();
+    target->mean = mean ? mean->cloneAndCast<DenseDoubleVector>() : DenseDoubleVectorPtr();
+    target->stddev = stddev ? stddev->cloneAndCast<DenseDoubleVector>() : DenseDoubleVectorPtr();
+    target->domain = domain;
+  }
+
 protected:
-  friend class DiagonalGaussianContinuousSamplerClass;
+  friend class DiagonalGaussianSamplerClass;
 
   DenseDoubleVectorPtr mean;
   DenseDoubleVectorPtr stddev;
@@ -83,4 +91,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_MOO_SAMPLER_DIAGONAL_GAUSSIAN_CONTINUOUS_H_
+#endif // !LBCPP_MOO_SAMPLER_DIAGONAL_GAUSSIAN_H_

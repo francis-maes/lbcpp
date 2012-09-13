@@ -12,11 +12,11 @@
 # include <lbcpp/Execution/WorkUnit.h>
 # include "SharkMOOptimizers.h"
 # include "RandomOptimizer.h"
-# include "SharkMOProblems.h"
+# include "SharkProblems.h"
 # include "DecoratorProblems.h"
 # include "CrossEntropyOptimizer.h"
 # include "UniformContinuousSampler.h"
-# include "DiagonalGaussianContinuousSampler.h"
+# include "DiagonalGaussianSampler.h"
 
 namespace lbcpp
 {
@@ -29,7 +29,7 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     testSingleObjectiveOptimizers(context);
-    //testBiObjectiveOptimizers(context);
+    testBiObjectiveOptimizers(context);
     return true;
   }
 
@@ -38,13 +38,61 @@ protected:
 
   size_t numEvaluations;
 
-
+  /*
+  ** Single Objective
+  */
   void testSingleObjectiveOptimizers(ExecutionContext& context)
   {
     std::vector<MOOProblemPtr> problems;
-    
+    problems.push_back(new AckleyProblem());
+    problems.push_back(new GriewangkProblem());
+    problems.push_back(new RastriginProblem());
+    problems.push_back(new RosenbrockProblem());
+    problems.push_back(new RosenbrockRotatedProblem());
+
+    for (size_t i = 0; i < problems.size(); ++i)
+    {
+      MOOProblemPtr problem = problems[i];
+      context.enterScope(problem->toShortString());
+      context.resultCallback("problem", problem);
+      solveWithSingleObjectiveOptimizer(context, problem, new RandomOptimizer(new UniformContinuousSampler(), numEvaluations));
+      solveWithSingleObjectiveOptimizer(context, problem, new CrossEntropyOptimizer(new DiagonalGaussianSampler(), 100, 30, numEvaluations / 100));
+      context.leaveScope();
+    }
   }
 
+  void solveWithSingleObjectiveOptimizer(ExecutionContext& context, MOOProblemPtr problem, MOOOptimizerPtr optimizer)
+  {
+    SingleObjectiveEvaluatorDecoratorProblemPtr decorator(new SingleObjectiveEvaluatorDecoratorProblem(problem, numEvaluations, numEvaluations > 250 ? numEvaluations / 250 : 1));
+
+    context.enterScope(optimizer->toShortString());
+    MOOParetoFrontPtr front = optimizer->optimize(context, decorator);
+    context.resultCallback("optimizer", optimizer);
+    context.resultCallback("front", front);
+    context.resultCallback("numEvaluations", decorator->getNumEvaluations());
+
+    std::vector<double> cpuTimes = decorator->getCpuTimes();
+    std::vector<double> scores = decorator->getScores();
+
+    for (size_t i = 0; i < scores.size(); ++i)
+    {
+      size_t numEvaluations = i * decorator->getEvaluationPeriod();
+      context.enterScope(String((int)numEvaluations));
+      context.resultCallback("numEvaluations", numEvaluations);
+      context.resultCallback("score", scores[i]);
+      context.resultCallback("cpuTime", cpuTimes[i]);
+      context.leaveScope();
+    }
+
+    jassert(front->getMap().size() == 1);
+    double score = front->getMap().begin()->first->getValue(0);
+    context.resultCallback("score", score);
+    context.leaveScope(score);
+  }
+
+  /*
+  ** Multi-objective
+  */
   void testBiObjectiveOptimizers(ExecutionContext& context)
   {
     std::vector<MOOProblemPtr> problems;
@@ -58,12 +106,11 @@ protected:
     {
       MOOProblemPtr problem = problems[i];
       context.enterScope(problem->toShortString());
-
       context.resultCallback("problem", problem);
-      solveWithMultiObjectiveOptimizer(context, problem, new RandomOptimizer(new UniformContinuousSampler()));
-      solveWithMultiObjectiveOptimizer(context, problem, new NSGA2MOOptimizer(100));
-      solveWithMultiObjectiveOptimizer(context, problem, new CMAESMOOptimizer(100, 100));
-      solveWithMultiObjectiveOptimizer(context, problem, new CMAESMOOptimizer(5, 100));
+      solveWithMultiObjectiveOptimizer(context, problem, new RandomOptimizer(new UniformContinuousSampler(), numEvaluations));
+      solveWithMultiObjectiveOptimizer(context, problem, new NSGA2MOOptimizer(100, numEvaluations / 100));
+      solveWithMultiObjectiveOptimizer(context, problem, new CMAESMOOptimizer(100, 100, numEvaluations / 100));
+      solveWithMultiObjectiveOptimizer(context, problem, new CMAESMOOptimizer(5, 100, numEvaluations / 100));
       context.leaveScope();
     }
   }
@@ -73,27 +120,25 @@ protected:
     HyperVolumeEvaluatorDecoratorProblemPtr decorator(new HyperVolumeEvaluatorDecoratorProblem(problem, numEvaluations, numEvaluations > 250 ? numEvaluations / 250 : 1));
 
     context.enterScope(optimizer->toShortString());
-    MOOParetoFrontPtr paretoFront = optimizer->optimize(context, decorator);
+    MOOParetoFrontPtr front = optimizer->optimize(context, decorator);
     context.resultCallback("optimizer", optimizer);
-    context.resultCallback("paretoFront", paretoFront);
+    context.resultCallback("front", front);
     context.resultCallback("numEvaluations", decorator->getNumEvaluations());
 
-    //context.enterScope("HyperVolume Curve");
     std::vector<double> hyperVolumes = decorator->getHyperVolumes();
     std::vector<double> cpuTimes = decorator->getCpuTimes();
 
     for (size_t i = 0; i < hyperVolumes.size(); ++i)
     {
-      size_t numEvaluations = i * decorator->getHyperVolumeComputationPeriod();
+      size_t numEvaluations = i * decorator->getEvaluationPeriod();
       context.enterScope(String((int)numEvaluations));
       context.resultCallback("numEvaluations", numEvaluations);
       context.resultCallback("hyperVolume", hyperVolumes[i]);
       context.resultCallback("cpuTime", cpuTimes[i]);
       context.leaveScope();
     }
-    //context.leaveScope();
 
-    context.leaveScope(paretoFront->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness()));
+    context.leaveScope(front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness()));
   }
 };
 

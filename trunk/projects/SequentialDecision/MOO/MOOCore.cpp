@@ -239,10 +239,14 @@ MOOParetoFrontPtr MOOOptimizer::optimize(ExecutionContext& context, MOOProblemPt
 {
   this->front = new MOOParetoFront(problem->getFitnessLimits());
   this->problem = problem;
+
   optimize(context);
+  MOOParetoFrontPtr res = front;
+
   this->problem = MOOProblemPtr();
   this->front = MOOParetoFrontPtr();
-  return front;
+
+  return res;
 }
 
 MOOFitnessPtr MOOOptimizer::evaluate(ExecutionContext& context, const ObjectPtr& solution)

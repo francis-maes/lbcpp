@@ -31,7 +31,9 @@ public:
       std::vector<ObjectPtr> samples = selectTrainingSamples(context, population);
       sampler = sampler->cloneAndCast<MOOSampler>();
       sampler->learn(context, samples);
+      context.progressCallback(new ProgressionState(i+1, numGenerations, "Generations"));
     }
+    context.resultCallback("sampler", sampler);
   }
 
   virtual std::vector<ObjectPtr> selectTrainingSamples(ExecutionContext& context, MOOParetoFrontPtr population) const
