@@ -133,7 +133,9 @@ public:
   MOOParetoFront();
 
   void insert(const ObjectPtr& solution, const MOOFitnessPtr& fitness, bool removeDominatedSolutions);
-  void getSolutions(std::vector< std::pair<MOOFitnessPtr, ObjectPtr> >& res) const;
+  void insert(const MOOParetoFrontPtr& solutions, bool removeDominatedSolutions);
+  void getSolutions(std::vector<ObjectPtr>& res) const;
+  void getSolutionAndFitnesses(std::vector< std::pair<MOOFitnessPtr, ObjectPtr> >& res) const;
   void getSolutionsByFitness(const MOOFitnessPtr& fitness, std::vector<ObjectPtr>& res) const;
 
   const MOOFitnessLimitsPtr& getTheoreticalLimits() const
@@ -197,6 +199,7 @@ protected:
   MOOFitnessPtr evaluateAndSave(ExecutionContext& context, const ObjectPtr& solution, MOOParetoFrontPtr archive);
   MOOFitnessPtr sampleAndEvaluateSolution(ExecutionContext& context, MOOSamplerPtr sampler, MOOParetoFrontPtr population = MOOParetoFrontPtr());
   MOOParetoFrontPtr sampleAndEvaluatePopulation(ExecutionContext& context, MOOSamplerPtr sampler, size_t populationSize);
+  void learnSampler(ExecutionContext& context, MOOParetoFrontPtr population, MOOSamplerPtr sampler);
 };
 
 class PopulationBasedMOOOptimizer : public MOOOptimizer

@@ -24,7 +24,7 @@ public:
   virtual void optimize(ExecutionContext& context)
   {
     sampler->initialize(context, problem->getSolutionDomain());
-    optimizeRecursively(context, this->sampler->cloneAndCast<MOOSampler>(), level);
+    optimizeRecursively(context, sampler, level);
   }
 
 protected:
@@ -49,10 +49,11 @@ protected:
       MOOFitnessPtr bestFitness = problem->getFitnessLimits()->getWorstPossibleFitness(true);
       ObjectPtr bestSolution;
 
+      MOOSamplerPtr currentSampler = sampler->cloneAndCast<MOOSampler>();
       bool isTopLevel = (this->level == level);
       for (size_t i = 0; isTopLevel || i < numIterationsPerLevel; ++i)
       {
-        SolutionAndFitnessPair subResult = optimizeRecursively(context, sampler->cloneAndCast<MOOSampler>(), level - 1);
+        SolutionAndFitnessPair subResult = optimizeRecursively(context, currentSampler, level - 1);
         if (subResult.second && subResult.second->dominates(bestFitness))
         {
           bestSolution = subResult.first;
@@ -60,7 +61,7 @@ protected:
         }
         
         if (bestSolution)
-          sampler->reinforce(context, bestSolution);
+          currentSampler->reinforce(context, bestSolution);
 
         if (isTopLevel && problem->shouldStop())
           break;

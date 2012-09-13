@@ -201,6 +201,7 @@ SET(LBCPP_MOO_OPTIMIZER_SOURCES
   MOO/NRPAOptimizer.h
   MOO/SharkMOOptimizers.h
   MOO/CrossEntropyOptimizer.h
+  MOO/NestedCrossEntropyOptimizer.h
 )
 
 SET(LBCPP_SEQUENTIAL_DECISION_SOURCES
