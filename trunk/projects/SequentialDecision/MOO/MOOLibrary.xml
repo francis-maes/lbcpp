@@ -17,6 +17,7 @@
   <class name="MOOParetoFront">
     <variable type="MOOFitnessLimits" name="limits"/>
   </class>
+  <uicomponent name="MOOParetoFrontComponent" type="MOOParetoFront"/>
 
   <class name="MOOProblem" abstract="yes"/>
   <class name="MOOOptimizer" abstract="yes"/>
@@ -76,9 +77,10 @@
 
   <!-- Samplers -->
   <class name="UniformContinuousSampler" base="MOOSampler"/>
-  
-  <!-- UI -->
-  <uicomponent name="MOOParetoFrontComponent" type="MOOParetoFront"/>
+  <class name="DiagonalGaussianContinuousSampler" base="MOOSampler">
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="mean"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="stddev"/>
+  </class>
   
   <!-- WorkUnits -->
   <class name="MOOSandBox" base="WorkUnit">

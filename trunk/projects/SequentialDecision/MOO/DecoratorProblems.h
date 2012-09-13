@@ -41,12 +41,12 @@ protected:
   MOOProblemPtr problem;
 };
 
-class MaxNumIterationsDecoratorMOOProblem : public DecoratorMOOProblem
+class MaxIterationsDecoratorProblem : public DecoratorMOOProblem
 {
 public:
-  MaxNumIterationsDecoratorMOOProblem(MOOProblemPtr problem, size_t maxNumEvaluations)
+  MaxIterationsDecoratorProblem(MOOProblemPtr problem, size_t maxNumEvaluations)
     : DecoratorMOOProblem(problem), maxNumEvaluations(maxNumEvaluations), numEvaluations(0) {}
-  MaxNumIterationsDecoratorMOOProblem() : maxNumEvaluations(0), numEvaluations(0) {}
+  MaxIterationsDecoratorProblem() : maxNumEvaluations(0), numEvaluations(0) {}
 
   virtual MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution)
     {jassert(numEvaluations < maxNumEvaluations); ++numEvaluations; return DecoratorMOOProblem::evaluate(context, solution);}
@@ -58,27 +58,27 @@ public:
     {return numEvaluations;}
 
 protected:
-  friend class MaxNumIterationsDecoratorMOOProblemClass;
+  friend class MaxIterationsDecoratorProblemClass;
 
   size_t maxNumEvaluations;
 
   size_t numEvaluations;
 };
 
-class HyperVolumeEvaluatorDecoratorMOOProblem : public MaxNumIterationsDecoratorMOOProblem
+class HyperVolumeEvaluatorDecoratorProblem : public MaxIterationsDecoratorProblem
 {
 public:
-  HyperVolumeEvaluatorDecoratorMOOProblem(MOOProblemPtr problem, size_t maxNumEvaluations, size_t hyperVolumeComputationPeriod)
-    : MaxNumIterationsDecoratorMOOProblem(problem, maxNumEvaluations), hyperVolumeComputationPeriod(hyperVolumeComputationPeriod)
+  HyperVolumeEvaluatorDecoratorProblem(MOOProblemPtr problem, size_t maxNumEvaluations, size_t hyperVolumeComputationPeriod)
+    : MaxIterationsDecoratorProblem(problem, maxNumEvaluations), hyperVolumeComputationPeriod(hyperVolumeComputationPeriod)
     {front = new MOOParetoFront(problem->getFitnessLimits());}
-  HyperVolumeEvaluatorDecoratorMOOProblem() : hyperVolumeComputationPeriod(0) {}
+  HyperVolumeEvaluatorDecoratorProblem() : hyperVolumeComputationPeriod(0) {}
 
   virtual MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution)
   {
     if (numEvaluations == 0)
       firstEvaluationTime = juce::Time::getMillisecondCounterHiRes() / 1000.0;
-    MOOFitnessPtr res = MaxNumIterationsDecoratorMOOProblem::evaluate(context, solution);
-    front->insert(solution, res);
+    MOOFitnessPtr res = MaxIterationsDecoratorProblem::evaluate(context, solution);
+    front->insert(solution, res, true);
     if ((numEvaluations % hyperVolumeComputationPeriod) == 0)
     {
       hyperVolumes.push_back(front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness()));
@@ -97,7 +97,7 @@ public:
     {return hyperVolumeComputationPeriod;}
 
 protected:
-  friend class HyperVolumeEvaluatorDecoratorMOOProblemClass;
+  friend class HyperVolumeEvaluatorDecoratorProblemClass;
 
   size_t hyperVolumeComputationPeriod;
 
@@ -107,7 +107,7 @@ protected:
   std::vector<double> hyperVolumes;
 };
 
-typedef ReferenceCountedObjectPtr<HyperVolumeEvaluatorDecoratorMOOProblem> HyperVolumeEvaluatorDecoratorMOOProblemPtr;
+typedef ReferenceCountedObjectPtr<HyperVolumeEvaluatorDecoratorProblem> HyperVolumeEvaluatorDecoratorProblemPtr;
 
 }; /* namespace lbcpp */
 

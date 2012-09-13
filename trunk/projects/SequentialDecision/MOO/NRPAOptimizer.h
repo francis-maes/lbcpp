@@ -22,7 +22,10 @@ public:
   NRPAOptimizer() : level(0), numIterationsPerLevel(0) {}
   
   virtual void optimize(ExecutionContext& context)
-    {optimizeRecursively(context, this->sampler->cloneAndCast<MOOSampler>(), level);}
+  {
+    sampler->initialize(context, problem->getSolutionDomain());
+    optimizeRecursively(context, this->sampler->cloneAndCast<MOOSampler>(), level);
+  }
 
 protected:
   friend class NRPAOptimizerClass;
@@ -38,7 +41,7 @@ protected:
       
     if (level == 0)
     {
-      ObjectPtr solution = sampler->sample(context, problem->getSolutionDomain());
+      ObjectPtr solution = sampler->sample(context);
       return SolutionAndFitnessPair(solution, evaluate(context, solution));
     }
     else

@@ -262,7 +262,7 @@ MOOFitnessPtr MOOOptimizer::evaluateAndSave(ExecutionContext& context, const Obj
 
 MOOFitnessPtr MOOOptimizer::sampleAndEvaluateSolution(ExecutionContext& context, MOOSamplerPtr sampler, MOOParetoFrontPtr population)
 {
-  ObjectPtr solution = sampler->sample(context, problem->getSolutionDomain());
+  ObjectPtr solution = sampler->sample(context);
   return population ? evaluateAndSave(context, solution, population) : evaluate(context, solution);
 }
 
