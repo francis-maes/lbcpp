@@ -46,10 +46,13 @@
   <class name="CrossEntropyOptimizer" base="PopulationBasedMOOOptimizer">
     <variable type="MOOSampler" name="sampler"/>
     <variable type="PositiveInteger" name="numTrainingSamples"/>
+    <variable type="Boolean" name="elitist"/>
   </class>
 
-  <class name="CrossEntropyMOOptimizer" base="CrossEntropyOptimizer"/>
-
+  <class name="CrossEntropyMOOptimizer" base="CrossEntropyOptimizer">
+    <variable type="Boolean" name="useCrowding"/>
+  </class>
+  
   <class name="NestedCrossEntropyOptimizer" base="CrossEntropyOptimizer">
     <variable type="PositiveInteger" name="level"/>
   </class>

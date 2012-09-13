@@ -10,6 +10,7 @@
 # define LBCPP_MOO_CORE_H_
 
 # include <lbcpp/Core/Object.h>
+# include <algorithm>
 
 namespace lbcpp
 {
@@ -165,6 +166,7 @@ public:
   void getFitnesses(std::vector<MOOFitnessPtr>& res) const;
   void getSolutionAndFitnesses(std::vector< std::pair<MOOFitnessPtr, ObjectPtr> >& res) const;
   void getSolutionsByFitness(const MOOFitnessPtr& fitness, std::vector<ObjectPtr>& res) const;
+  void computeCrowdingDistances(std::vector<double>& res) const;
 
   const MOOFitnessLimitsPtr& getTheoreticalLimits() const
     {return limits;}

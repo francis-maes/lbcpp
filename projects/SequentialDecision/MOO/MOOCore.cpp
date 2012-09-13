@@ -227,6 +227,50 @@ MOOFitnessLimitsPtr MOOSolutionSet::getEmpiricalLimits() const
   return new MOOFitnessLimits(res);
 }
 
+struct CompareIthObjective
+{
+  CompareIthObjective(const std::vector<MOOFitnessPtr>& fitnesses, size_t i, bool isMaximisation)
+    : fitnesses(fitnesses), i(i), isMaximisation(isMaximisation) {}
+
+  const std::vector<MOOFitnessPtr>& fitnesses;
+  size_t i;
+  bool isMaximisation;
+
+  bool operator()(size_t a, size_t b)
+    {return isMaximisation ? fitnesses[a]->getValue(i) > fitnesses[b]->getValue(i) : fitnesses[a]->getValue(i) < fitnesses[b]->getValue(i);}
+};
+
+void MOOSolutionSet::computeCrowdingDistances(std::vector<double>& res) const
+{
+  std::vector<MOOFitnessPtr> fitnesses;
+  getFitnesses(fitnesses);
+  size_t n = fitnesses.size();
+
+  res.resize(n, 0.0);
+  if (n <= 2)
+  {
+    for (size_t i = 0; i < n; ++i)
+      res[i] = DBL_MAX;
+    return;
+  }
+  
+  std::vector<size_t> order(n);
+  for (size_t i = 0; i < n; ++i)
+    order[i] = i;
+
+  for (size_t i = 0; i < limits->getNumObjectives(); ++i)
+  {
+    std::sort(order.begin(), order.end(), CompareIthObjective(fitnesses, i, limits->shouldObjectiveBeMaximized(i)));
+    double bestValue = fitnesses[order.front()]->getValue(i);
+    double worstValue = fitnesses[order.back()]->getValue(i);
+    double invRange = 1.0 / (worstValue - bestValue);
+    res[order.front()] = DBL_MAX;
+    res[order.back()] = DBL_MAX;
+    for (size_t j = 1; j < order.size() - 1; ++j)
+      res[order[j]] += (fitnesses[order[j+1]]->getValue(i) - fitnesses[order[j-1]]->getValue(i)) * invRange;
+  }
+}
+
 std::vector<MOOParetoFrontPtr> MOOSolutionSet::nonDominatedSort() const
 {
   std::vector<MOOFitnessPtr> fitnesses;
