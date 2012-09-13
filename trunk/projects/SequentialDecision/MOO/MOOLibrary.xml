@@ -23,52 +23,59 @@
   <class name="MOOSampler" abstract="yes"/>
   
   <!-- Optimizers -->
-  <class name="RandomMOOOptimizer" base="MOOOptimizer">
+  <class name="RandomOptimizer" base="MOOOptimizer">
     <variable type="MOOSampler" name="sampler"/>
     <variable type="PositiveInteger" name="numIterations"/>
   </class>
 
-  <class name="NRPAMOOOptimizer" base="MOOOptimizer">
+  <class name="NRPAOptimizer" base="MOOOptimizer">
     <variable type="MOOSampler" name="sampler"/>
     <variable type="PositiveInteger" name="level"/>
     <variable type="PositiveInteger" name="numIterationsPerLevel"/>
   </class>
-
-  <class name="NSGA2MOOOptimizer" base="MOOOptimizer">
+  
+  <!-- Population Based Optimizers -->
+  <class name="PopulationBasedMOOOptimizer" base="MOOOptimizer" abstract="yes">
     <variable type="PositiveInteger" name="populationSize"/>
     <variable type="PositiveInteger" name="numGenerations"/>
+  </class>
+
+  <class name="CrossEntropyOptimizer" base="PopulationBasedMOOOptimizer">
+    <variable type="MOOSampler" name="sampler"/>
+    <variable type="PositiveInteger" name="numTrainingSamples"/>
+  </class>
+
+  <class name="NSGA2MOOptimizer" base="PopulationBasedMOOOptimizer">
     <variable type="Double" name="mutationDistributionIndex"/>
     <variable type="Double" name="crossOverDistributionIndex"/>
     <variable type="Double" name="crossOverProbability"/>
   </class>
 
-  <class name="CMAESMOOOptimizer" base="MOOOptimizer">
-    <variable type="PositiveInteger" name="numParents"/>
+  <class name="CMAESMOOptimizer" base="PopulationBasedMOOOptimizer">
     <variable type="PositiveInteger" name="numOffsprings"/>
-    <variable type="PositiveInteger" name="numGenerations"/>
   </class>
 
   <!-- Problems -->
   <class name="DecoratorMOOProblem" base="MOOProblem" abstract="yes">
     <variable type="MOOProblem" name="problem"/>
   </class>
-  <class name="MaxNumIterationsDecoratorMOOProblem" base="DecoratorMOOProblem">
+  <class name="MaxIterationsDecoratorProblem" base="DecoratorMOOProblem">
     <variable type="PositiveInteger" name="maxNumEvaluations"/>
   </class>
-  <class name="HyperVolumeEvaluatorDecoratorMOOProblem" base="MaxNumIterationsDecoratorMOOProblem">
+  <class name="HyperVolumeEvaluatorDecoratorProblem" base="MaxIterationsDecoratorProblem">
     <variable type="PositiveInteger" name="hyperVolumeComputationPeriod"/>
   </class>
 
   <class name="MOOProblemFromSharkObjectiveFunction" base="MOOProblem" abstract="yes"/>
-    <class name="ZDTMOOProblem" base="MOOProblemFromSharkObjectiveFunction" abstract="yes"/>
-      <class name="ZDT1MOOProblem" base="ZDTMOOProblem"/>
-      <class name="ZDT2MOOProblem" base="ZDTMOOProblem"/>
-      <class name="ZDT3MOOProblem" base="ZDTMOOProblem"/>
-      <class name="ZDT4MOOProblem" base="ZDTMOOProblem"/>
-      <class name="ZDT6MOOProblem" base="ZDTMOOProblem"/>
+    <class name="ZDTMOProblem" base="MOOProblemFromSharkObjectiveFunction" abstract="yes"/>
+      <class name="ZDT1MOProblem" base="ZDTMOProblem"/>
+      <class name="ZDT2MOProblem" base="ZDTMOProblem"/>
+      <class name="ZDT3MOProblem" base="ZDTMOProblem"/>
+      <class name="ZDT4MOProblem" base="ZDTMOProblem"/>
+      <class name="ZDT6MOProblem" base="ZDTMOProblem"/>
 
   <!-- Samplers -->
-  <class name="UniformContinuousMOOSampler" base="MOOSampler"/>
+  <class name="UniformContinuousSampler" base="MOOSampler"/>
   
   <!-- UI -->
   <uicomponent name="MOOParetoFrontComponent" type="MOOParetoFront"/>

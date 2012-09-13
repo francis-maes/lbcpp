@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: NRPAMOOOptimizer.h             | Nested Rollout Policy Adaptation|
+| Filename: NRPAOptimizer.h                | Nested Rollout Policy Adaptation|
 | Author  : Francis Maes                   | Optimizer                       |
 | Started : 12/09/2012 15:51               |                                 |
 `------------------------------------------/                                 |
@@ -14,24 +14,24 @@
 namespace lbcpp
 {
 
-class NRPAMOOOptimizer : public MOOOptimizer
+class NRPAOptimizer : public MOOOptimizer
 {
 public:
-  NRPAMOOOptimizer(MOOSamplerPtr sampler, size_t level, size_t numIterationsPerLevel)
+  NRPAOptimizer(MOOSamplerPtr sampler, size_t level, size_t numIterationsPerLevel)
     : sampler(sampler), level(level), numIterationsPerLevel(numIterationsPerLevel) {}
-  NRPAMOOOptimizer() : level(0), numIterationsPerLevel(0) {}
+  NRPAOptimizer() : level(0), numIterationsPerLevel(0) {}
   
-  virtual void optimize(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr paretoSet)
-    {optimizeRecursively(context, problem, paretoSet, this->sampler->cloneAndCast<MOOSampler>(), level);}
+  virtual void optimize(ExecutionContext& context)
+    {optimizeRecursively(context, this->sampler->cloneAndCast<MOOSampler>(), level);}
 
 protected:
-  friend class NRPAMOOOptimizerClass;
+  friend class NRPAOptimizerClass;
 
   MOOSamplerPtr sampler;
   size_t level;
   size_t numIterationsPerLevel;
 
-  SolutionAndFitnessPair optimizeRecursively(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr paretoSet, MOOSamplerPtr sampler, size_t level)
+  SolutionAndFitnessPair optimizeRecursively(ExecutionContext& context, MOOSamplerPtr sampler, size_t level)
   {
     if (problem->shouldStop())
       return SolutionAndFitnessPair();
@@ -39,7 +39,7 @@ protected:
     if (level == 0)
     {
       ObjectPtr solution = sampler->sample(context, problem->getSolutionDomain());
-      return SolutionAndFitnessPair(solution, problem->evaluate(context, solution));
+      return SolutionAndFitnessPair(solution, evaluate(context, solution));
     }
     else
     {
@@ -48,7 +48,7 @@ protected:
         
       for (size_t i = 0; i < numIterationsPerLevel; ++i)
       {
-        SolutionAndFitnessPair subResult = optimizeRecursively(context, problem, paretoSet, sampler->cloneAndCast<MOOSampler>(), level - 1);
+        SolutionAndFitnessPair subResult = optimizeRecursively(context, sampler->cloneAndCast<MOOSampler>(), level - 1);
         if (subResult.second->dominates(bestFitness))
         {
           bestSolution = subResult.first;
@@ -56,7 +56,7 @@ protected:
         }
         
         if (bestSolution)
-          sampler->reinforce(bestSolution);
+          sampler->reinforce(context, bestSolution);
       }
       return std::make_pair(bestSolution, bestFitness);
     }

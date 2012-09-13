@@ -74,10 +74,10 @@ protected:
   virtual void adjustLimits(std::vector< std::pair<double, double> >& res) const {}
 };
 
-class ZDTMOOProblem : public MOOProblemFromSharkObjectiveFunction
+class ZDTMOProblem : public MOOProblemFromSharkObjectiveFunction
 {
 public:
-  ZDTMOOProblem(ObjectiveFunctionVS<double>* objective, double max1, double max2)
+  ZDTMOProblem(ObjectiveFunctionVS<double>* objective, double max1, double max2)
     : MOOProblemFromSharkObjectiveFunction(objective), max1(max1), max2(max2) {}
 
   virtual String toShortString() const
@@ -97,12 +97,12 @@ private:
   double max2;
 };
 
-struct ZDT1MOOProblem : public ZDTMOOProblem {ZDT1MOOProblem() : ZDTMOOProblem(new ZDT1(30), 1.0, 1.0) {} };
-struct ZDT2MOOProblem : public ZDTMOOProblem {ZDT2MOOProblem() : ZDTMOOProblem(new ZDT2(30), 1.0, 1.0) {} };
-struct ZDT3MOOProblem : public ZDTMOOProblem {ZDT3MOOProblem() : ZDTMOOProblem(new ZDT3(30), 0.852, 1.0) {} };
-struct ZDT4MOOProblem : public ZDTMOOProblem {ZDT4MOOProblem() : ZDTMOOProblem(new ZDT4(30), 1.0, 1.0) {} };
+struct ZDT1MOProblem : public ZDTMOProblem {ZDT1MOProblem() : ZDTMOProblem(new ZDT1(30), 1.0, 1.0) {} };
+struct ZDT2MOProblem : public ZDTMOProblem {ZDT2MOProblem() : ZDTMOProblem(new ZDT2(30), 1.0, 1.0) {} };
+struct ZDT3MOProblem : public ZDTMOProblem {ZDT3MOProblem() : ZDTMOProblem(new ZDT3(30), 0.852, 1.0) {} };
+struct ZDT4MOProblem : public ZDTMOProblem {ZDT4MOProblem() : ZDTMOProblem(new ZDT4(30), 1.0, 1.0) {} };
 // ZDT5 not wrapper yet (domain is discrete)
-struct ZDT6MOOProblem : public ZDTMOOProblem {ZDT6MOOProblem() : ZDTMOOProblem(new ZDT6(30), 1.0, 1.0) {} };
+struct ZDT6MOProblem : public ZDTMOProblem {ZDT6MOProblem() : ZDTMOProblem(new ZDT6(30), 1.0, 1.0) {} };
 
 }; /* namespace lbcpp */
 

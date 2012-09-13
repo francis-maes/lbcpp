@@ -187,15 +187,14 @@ SET(LBCPP_MOO_SOURCES
 )
 
 SET(LBCPP_MOO_OPTIMIZER_SOURCES
-  MOO/RandomMOOOptimizer.h
-  MOO/NRPAMOOOptimizer.h
-  MOO/SharkMOOOptimizers.h
+  MOO/RandomOptimizer.h
+  MOO/NRPAOptimizer.h
+  MOO/SharkMOOptimizers.h
 )
 
 SET(LBCPP_MOO_PROBLEM_SOURCES
-  MOO/DecoratorMOOProblems.h
-  MOO/SharkMOOProblems.h
-  MOO/ZDTMOOProblems.h
+  MOO/DecoratorProblems.h
+  MOO/SharkMOProblems.h
 )
 
 SET(LBCPP_SEQUENTIAL_DECISION_SOURCES

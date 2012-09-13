@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: RandomMOOOptimizer.h           | Random Optimizer                |
+| Filename: RandomOptimizer.h              | Random Optimizer                |
 | Author  : Francis Maes                   |                                 |
 | Started : 12/09/2012 15:50               |                                 |
 `------------------------------------------/                                 |
@@ -14,24 +14,21 @@
 namespace lbcpp
 {
 
-class RandomMOOOptimizer : public MOOOptimizer
+class RandomOptimizer : public MOOOptimizer
 {
 public:
-  RandomMOOOptimizer(MOOSamplerPtr sampler, size_t numIterations = 0)
+  RandomOptimizer(MOOSamplerPtr sampler, size_t numIterations = 0)
     : sampler(sampler), numIterations(numIterations) {}
-  RandomMOOOptimizer() : numIterations(0) {}
+  RandomOptimizer() : numIterations(0) {}
 
-  virtual void optimize(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr paretoSet)
+  virtual void optimize(ExecutionContext& context)
   {
     for (size_t iteration = 0; (!numIterations || iteration < numIterations) && !problem->shouldStop(); ++iteration)
-    {
-      ObjectPtr solution = sampler->sample(context, problem->getSolutionDomain());
-      paretoSet->insert(solution, problem->evaluate(context, solution));
-    }
+      evaluate(context, sampler->sample(context, problem->getSolutionDomain()));
   }
 
 protected:
-  friend class RandomMOOOptimizerClass;
+  friend class RandomOptimizerClass;
 
   MOOSamplerPtr sampler;
   size_t numIterations;
