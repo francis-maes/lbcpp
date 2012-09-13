@@ -90,7 +90,7 @@ public:
   bool shouldObjectiveBeMaximized(size_t objectiveIndex) const;
   double getObjectiveSign(size_t objectiveIndex) const; // 1 for maximisation and -1 for minimisation
 
-  MOOFitnessPtr getWorstPossibleFitness() const;
+  MOOFitnessPtr getWorstPossibleFitness(bool useInfiniteValues = false) const;
 };
 
 class MOOFitness : public Object
