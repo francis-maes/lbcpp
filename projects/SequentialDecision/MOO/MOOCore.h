@@ -44,6 +44,8 @@ typedef ReferenceCountedObjectPtr<MOOSampler> MOOSamplerPtr;
 class MOODomain : public Object
 {
 public:
+  virtual ObjectPtr projectIntoDomain(const ObjectPtr& object) const
+    {return object;}
 };
 
 class ContinuousMOODomain : public MOODomain
@@ -69,6 +71,25 @@ public:
     for (size_t i = 0; i < n; ++i)
       res->setValue(i, random->sampleDouble(getLowerLimit(i), getUpperLimit(i)));
     return res;
+  }
+
+  virtual ObjectPtr projectIntoDomain(const ObjectPtr& object) const
+  {
+    DenseDoubleVectorPtr solution = object.staticCast<DenseDoubleVector>();
+    DenseDoubleVectorPtr res;
+    size_t n = limits.size();
+    for (size_t i = 0; i < n; ++i)
+    {
+      double value = solution->getValue(i);
+      double projectedValue = juce::jlimit(limits[i].first, limits[i].second, value);
+      if (value != projectedValue)
+      {
+        if (!res)
+          res = solution->cloneAndCast<DenseDoubleVector>(); // allocate in a lazy way
+        res->setValue(i, projectedValue);
+      }
+    }
+    return res ? res : object;
   }
 
 protected:
@@ -132,12 +153,16 @@ protected:
 class MOOSolutionSet : public Object
 {
 public:
+  typedef std::map<MOOFitnessPtr, std::vector<ObjectPtr>, ObjectComparator > Map;
+
+  MOOSolutionSet(MOOFitnessLimitsPtr limits, const Map& elements);
   MOOSolutionSet(MOOFitnessLimitsPtr limits);
   MOOSolutionSet();
 
   void add(const ObjectPtr& solution, const MOOFitnessPtr& fitness);
   void add(const MOOSolutionSetPtr& solutions);
   void getSolutions(std::vector<ObjectPtr>& res) const;
+  void getFitnesses(std::vector<MOOFitnessPtr>& res) const;
   void getSolutionAndFitnesses(std::vector< std::pair<MOOFitnessPtr, ObjectPtr> >& res) const;
   void getSolutionsByFitness(const MOOFitnessPtr& fitness, std::vector<ObjectPtr>& res) const;
 
@@ -152,22 +177,23 @@ public:
   size_t getNumElements() const
     {return size;}
 
-  typedef std::map<MOOFitnessPtr, std::vector<ObjectPtr>, ObjectComparator > ParetoMap;
+  std::vector<MOOParetoFrontPtr> nonDominatedSort() const;
 
-  const ParetoMap& getMap() const
+  const Map& getMap() const
     {return m;}
 
 protected:
   friend class MOOSolutionSetClass;
 
   MOOFitnessLimitsPtr limits;
-  ParetoMap m;
+  Map m;
   size_t size;
 };
 
 class MOOParetoFront : public MOOSolutionSet
 {
 public:
+  MOOParetoFront(MOOFitnessLimitsPtr limits, const Map& elements) : MOOSolutionSet(limits, elements) {}
   MOOParetoFront(MOOFitnessLimitsPtr limits) : MOOSolutionSet(limits) {}
   MOOParetoFront() {}
 
@@ -209,6 +235,7 @@ protected:
 
   MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution);
   MOOFitnessPtr evaluateAndSave(ExecutionContext& context, const ObjectPtr& solution, MOOSolutionSetPtr archive);
+  ObjectPtr sampleSolution(ExecutionContext& context, MOOSamplerPtr sampler);
   MOOFitnessPtr sampleAndEvaluateSolution(ExecutionContext& context, MOOSamplerPtr sampler, MOOSolutionSetPtr population = MOOSolutionSetPtr());
   MOOSolutionSetPtr sampleAndEvaluatePopulation(ExecutionContext& context, MOOSamplerPtr sampler, size_t populationSize);
   void learnSampler(ExecutionContext& context, MOOSolutionSetPtr population, MOOSamplerPtr sampler);

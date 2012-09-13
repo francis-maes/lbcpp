@@ -14,6 +14,8 @@
 namespace lbcpp
 {
 
+// TODO: "Comparator" concept
+
 class CrossEntropyOptimizer : public PopulationBasedMOOOptimizer
 {
 public:
@@ -62,6 +64,44 @@ protected:
 
   MOOSamplerPtr sampler;
   size_t numTrainingSamples;
+};
+
+class CrossEntropyMOOptimizer : public CrossEntropyOptimizer
+{
+public:
+  CrossEntropyMOOptimizer(MOOSamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations = 0)
+    : CrossEntropyOptimizer(sampler, populationSize, numTrainingSamples, numGenerations) {}
+  CrossEntropyMOOptimizer() {}
+
+  virtual MOOSolutionSetPtr selectTrainingSamples(ExecutionContext& context, MOOSolutionSetPtr population) const
+  {
+    if (numTrainingSamples >= population->getNumElements())
+      return population;
+
+    std::vector<MOOParetoFrontPtr> fronts = population->nonDominatedSort();
+    
+    MOOSolutionSetPtr res = new MOOSolutionSet();
+    for (size_t i = 0; i < fronts.size() && res->getNumElements() < numTrainingSamples; ++i)
+    {
+      MOOParetoFrontPtr front = fronts[i];
+      size_t numRequired = numTrainingSamples - res->getNumElements();
+      if (front->getNumElements() <= numRequired)
+        // add the whole sub-front
+        res->add(front);
+      else
+      {
+        // sample a subset of the sub-front
+        std::vector< std::pair<MOOFitnessPtr, ObjectPtr> > solutions;
+        front->getSolutionAndFitnesses(solutions);
+        std::vector<size_t> order;
+        context.getRandomGenerator()->sampleOrder(solutions.size(), order);
+        for (size_t j = 0; j < numRequired; ++j)
+          res->add(solutions[order[j]].second, solutions[order[j]].first);
+      }
+    }
+    jassert(res->getNumElements() == numTrainingSamples);
+    return res;
+  }
 };
 
 }; /* namespace lbcpp */
