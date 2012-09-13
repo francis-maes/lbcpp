@@ -132,7 +132,7 @@ public:
   MOOParetoFront(MOOFitnessLimitsPtr limits);
   MOOParetoFront();
 
-  void insert(const ObjectPtr& solution, const MOOFitnessPtr& fitness);
+  void insert(const ObjectPtr& solution, const MOOFitnessPtr& fitness, bool removeDominatedSolutions);
   void getSolutions(std::vector< std::pair<MOOFitnessPtr, ObjectPtr> >& res) const;
   void getSolutionsByFitness(const MOOFitnessPtr& fitness, std::vector<ObjectPtr>& res) const;
 
@@ -144,14 +144,14 @@ public:
   size_t getNumObjectives() const
     {return limits->getNumObjectives();}
 
-  size_t getNumSolutions() const
+  size_t getNumElements() const
     {return size;}
 
   double computeHyperVolume(const MOOFitnessPtr& referenceFitness) const;
 
   typedef std::map<MOOFitnessPtr, std::vector<ObjectPtr>, ObjectComparator > ParetoMap;
 
-  const ParetoMap& getParetoMap() const
+  const ParetoMap& getMap() const
     {return m;}
 
 protected:
@@ -184,17 +184,41 @@ class MOOOptimizer : public Object
 {
 public:
   MOOParetoFrontPtr optimize(ExecutionContext& context, MOOProblemPtr problem);
-  virtual void optimize(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr paretoFront) = 0;
+
+  virtual void optimize(ExecutionContext& context) = 0;
 
 protected:
   typedef std::pair<ObjectPtr, MOOFitnessPtr> SolutionAndFitnessPair;
+
+  MOOProblemPtr problem;
+  MOOParetoFrontPtr front;
+
+  MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution);
+  MOOFitnessPtr evaluateAndSave(ExecutionContext& context, const ObjectPtr& solution, MOOParetoFrontPtr archive);
+  MOOFitnessPtr sampleAndEvaluateSolution(ExecutionContext& context, MOOSamplerPtr sampler, MOOParetoFrontPtr population = MOOParetoFrontPtr());
+  MOOParetoFrontPtr sampleAndEvaluatePopulation(ExecutionContext& context, MOOSamplerPtr sampler, size_t populationSize);
+};
+
+class PopulationBasedMOOOptimizer : public MOOOptimizer
+{
+public:
+  PopulationBasedMOOOptimizer(size_t populationSize = 100, size_t numGenerations = 0)
+    : populationSize(100), numGenerations(0) {}
+
+protected:
+  friend class PopulationBasedMOOOptimizerClass;
+
+  size_t populationSize;
+  size_t numGenerations;
 };
 
 class MOOSampler : public Object
 {
 public:
   virtual ObjectPtr sample(ExecutionContext& context, const MOODomainPtr& domain) const = 0;
-  virtual void reinforce(const ObjectPtr& solution) = 0;
+
+  virtual void learn(ExecutionContext& context, const std::vector<ObjectPtr>& solutions) = 0;
+  virtual void reinforce(ExecutionContext& context, const ObjectPtr& solution) = 0;
 };
 
 }; /* namespace lbcpp */

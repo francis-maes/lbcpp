@@ -129,21 +129,27 @@ MOOParetoFront::MOOParetoFront() : size(0)
 {
 }
 
-void MOOParetoFront::insert(const ObjectPtr& solution, const MOOFitnessPtr& fitness)
+void MOOParetoFront::insert(const ObjectPtr& solution, const MOOFitnessPtr& fitness, bool removeDominatedSolutions)
 {
-  for (ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
-    if (it->first->strictlyDominates(fitness))
-      return; // dominated
+  if (removeDominatedSolutions)
+  {
+    for (ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
+      if (it->first->strictlyDominates(fitness))
+        return; // dominated
+  }
 
   ParetoMap::iterator it = m.find(fitness);
   if (it == m.end())
   {
-    ParetoMap::iterator nxt;
-    for (it = m.begin(); it != m.end(); it = nxt)
+    if (removeDominatedSolutions)
     {
-      nxt = it; ++nxt;
-      if (fitness->strictlyDominates(it->first))
-        m.erase(it);
+      ParetoMap::iterator nxt;
+      for (it = m.begin(); it != m.end(); it = nxt)
+      {
+        nxt = it; ++nxt;
+        if (fitness->strictlyDominates(it->first))
+          m.erase(it);
+      }
     }
     m[fitness] = std::vector<ObjectPtr>(1, solution);
   }
@@ -231,7 +237,40 @@ double MOOParetoFront::computeHyperVolume(const MOOFitnessPtr& referenceFitness)
 */
 MOOParetoFrontPtr MOOOptimizer::optimize(ExecutionContext& context, MOOProblemPtr problem)
 {
-  MOOParetoFrontPtr res(new MOOParetoFront(problem->getFitnessLimits()));
-  optimize(context, problem, res);
+  this->front = new MOOParetoFront(problem->getFitnessLimits());
+  this->problem = problem;
+  optimize(context);
+  this->problem = MOOProblemPtr();
+  this->front = MOOParetoFrontPtr();
+  return front;
+}
+
+MOOFitnessPtr MOOOptimizer::evaluate(ExecutionContext& context, const ObjectPtr& solution)
+{
+  jassert(problem && front);
+  MOOFitnessPtr fitness = problem->evaluate(context, solution);
+  front->insert(solution, fitness, true);
+  return fitness;
+}
+
+MOOFitnessPtr MOOOptimizer::evaluateAndSave(ExecutionContext& context, const ObjectPtr& solution, MOOParetoFrontPtr archive)
+{
+  MOOFitnessPtr fitness = evaluate(context, solution);
+  archive->insert(solution, fitness, false);
+  return fitness;
+}
+
+MOOFitnessPtr MOOOptimizer::sampleAndEvaluateSolution(ExecutionContext& context, MOOSamplerPtr sampler, MOOParetoFrontPtr population)
+{
+  ObjectPtr solution = sampler->sample(context, problem->getSolutionDomain());
+  return population ? evaluateAndSave(context, solution, population) : evaluate(context, solution);
+}
+
+MOOParetoFrontPtr MOOOptimizer::sampleAndEvaluatePopulation(ExecutionContext& context, MOOSamplerPtr sampler, size_t populationSize)
+{
+  MOOParetoFrontPtr res = new MOOParetoFront(problem->getFitnessLimits());
+  for (size_t i = 0; i < populationSize; ++i)
+    sampleAndEvaluateSolution(context, sampler, res);
+  jassert(res->getNumElements() == populationSize);
   return res;
 }

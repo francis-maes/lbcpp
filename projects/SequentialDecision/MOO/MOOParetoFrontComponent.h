@@ -44,7 +44,7 @@ public:
     if (!areBoundsValid())
       return;
 
-    const MOOParetoFront::ParetoMap& m = front->getParetoMap();
+    const MOOParetoFront::ParetoMap& m = front->getMap();
     g.setColour(juce::Colours::lightgrey);
     MOOParetoFront::ParetoMap::const_iterator it, nxt;
     for (it = m.begin(); it != m.end(); it = nxt)
@@ -74,7 +74,7 @@ public:
     double minDistance = DBL_MAX;
     MOOFitnessPtr res;
 
-    const MOOParetoFront::ParetoMap& m = front->getParetoMap();
+    const MOOParetoFront::ParetoMap& m = front->getMap();
     for (MOOParetoFront::ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
     {
       int ox, oy;
@@ -158,7 +158,7 @@ public:
 
   virtual void paint(juce::Graphics& g)
   {
-    const MOOParetoFront::ParetoMap& m = front->getParetoMap();
+    const MOOParetoFront::ParetoMap& m = front->getMap();
     if (m.empty())
     {
       paintText(g, "Empty Pareto Front");
@@ -254,7 +254,7 @@ protected:
     const MOOFitnessPtr& current = drawable.getCurrentFitness();
     if (!current)
       return;
-    const MOOParetoFront::ParetoMap& m = front->getParetoMap();
+    const MOOParetoFront::ParetoMap& m = front->getMap();
     MOOParetoFront::ParetoMap::const_iterator it = m.find(current);
     if (it == m.end())
       return;
