@@ -215,10 +215,12 @@ protected:
 class MOOSampler : public Object
 {
 public:
-  virtual ObjectPtr sample(ExecutionContext& context, const MOODomainPtr& domain) const = 0;
+  virtual void initialize(ExecutionContext& context, const MOODomainPtr& domain) = 0;
 
   virtual void learn(ExecutionContext& context, const std::vector<ObjectPtr>& solutions) = 0;
   virtual void reinforce(ExecutionContext& context, const ObjectPtr& solution) = 0;
+
+  virtual ObjectPtr sample(ExecutionContext& context) const = 0;
 };
 
 }; /* namespace lbcpp */
