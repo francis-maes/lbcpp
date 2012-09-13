@@ -28,26 +28,32 @@ public:
     for (size_t i = 0; (numGenerations == 0 || i < numGenerations) && !problem->shouldStop(); ++i)
     {
       MOOParetoFrontPtr population = sampleAndEvaluatePopulation(context, sampler, populationSize);
-      std::vector<ObjectPtr> samples = selectTrainingSamples(context, population);
+      MOOParetoFrontPtr selectedPopulation = selectTrainingSamples(context, population);
+
       sampler = sampler->cloneAndCast<MOOSampler>();
-      sampler->learn(context, samples);
+      learnSampler(context, selectedPopulation, sampler);
+
       context.progressCallback(new ProgressionState(i+1, numGenerations, "Generations"));
     }
     context.resultCallback("sampler", sampler);
   }
 
-  virtual std::vector<ObjectPtr> selectTrainingSamples(ExecutionContext& context, MOOParetoFrontPtr population) const
+  virtual MOOParetoFrontPtr selectTrainingSamples(ExecutionContext& context, MOOParetoFrontPtr population) const
   {
     // default implementation for single objective
     jassert(problem->getNumObjectives() == 1);
 
     std::vector< std::pair<MOOFitnessPtr, ObjectPtr> > pop;
-    population->getSolutions(pop);
+    population->getSolutionAndFitnesses(pop);
     bool isMaximisation = problem->getFitnessLimits()->shouldObjectiveBeMaximized(0);
 
-    std::vector<ObjectPtr> res(numTrainingSamples < pop.size() ? numTrainingSamples : pop.size());
-    for (size_t i = 0; i < res.size(); ++i)
-      res[i] = pop[isMaximisation ? res.size() - 1 - i : i].second;
+    size_t size = numTrainingSamples < pop.size() ? numTrainingSamples : pop.size();
+    MOOParetoFrontPtr res = new MOOParetoFront();
+    for (size_t i = 0; i < size; ++i)
+    {
+      size_t index = (isMaximisation ? pop.size() - 1 - i : i);
+      res->insert(pop[index].second, pop[index].first, false);
+    }
     return res;
   }
 

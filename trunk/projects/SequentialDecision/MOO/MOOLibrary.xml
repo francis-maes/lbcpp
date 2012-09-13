@@ -46,6 +46,10 @@
     <variable type="PositiveInteger" name="numTrainingSamples"/>
   </class>
 
+  <class name="NestedCrossEntropyOptimizer" base="CrossEntropyOptimizer">
+    <variable type="PositiveInteger" name="level"/>
+  </class>
+
   <class name="NSGA2MOOptimizer" base="PopulationBasedMOOOptimizer">
     <variable type="Double" name="mutationDistributionIndex"/>
     <variable type="Double" name="crossOverDistributionIndex"/>

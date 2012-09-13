@@ -133,6 +133,29 @@ MOOParetoFront::MOOParetoFront() : size(0)
 {
 }
 
+void MOOParetoFront::insert(const MOOParetoFrontPtr& solutions, bool removeDominatedSolutions)
+{
+  jassert(solutions);
+  if (removeDominatedSolutions)
+  {
+    for (ParetoMap::const_iterator it = solutions->m.begin(); it != solutions->m.end(); ++it)
+      for (size_t i = 0; i < it->second.size(); ++it)
+        insert(it->second[i], it->first, true);
+  }
+  else
+  {
+    for (ParetoMap::const_iterator it = solutions->m.begin(); it != solutions->m.end(); ++it)
+    {
+      ParetoMap::iterator it2 = m.find(it->first);
+      std::vector<ObjectPtr>& target = (it2 == m.end() ? m[it->first] : it2->second);
+      target.reserve(target.size() + it->second.size());
+      for (size_t i = 0; i < it->second.size(); ++i)
+        target.push_back(it->second[i]);
+    }
+    size += solutions->size;
+  }
+}
+
 void MOOParetoFront::insert(const ObjectPtr& solution, const MOOFitnessPtr& fitness, bool removeDominatedSolutions)
 {
   if (removeDominatedSolutions)
@@ -162,7 +185,19 @@ void MOOParetoFront::insert(const ObjectPtr& solution, const MOOFitnessPtr& fitn
   ++size;
 }
 
-void MOOParetoFront::getSolutions(std::vector< std::pair<MOOFitnessPtr, ObjectPtr> >& res) const
+void MOOParetoFront::getSolutions(std::vector<ObjectPtr>& res) const
+{
+  res.reserve(size);
+  for (ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
+  {
+    MOOFitnessPtr fitness = it->first;
+    const std::vector<ObjectPtr>& solutions = it->second;
+    for (size_t i = 0; i < solutions.size(); ++i)
+      res.push_back(solutions[i]);
+  }
+}
+
+void MOOParetoFront::getSolutionAndFitnesses(std::vector< std::pair<MOOFitnessPtr, ObjectPtr> >& res) const
 {
   res.reserve(size);
   for (ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
@@ -281,4 +316,11 @@ MOOParetoFrontPtr MOOOptimizer::sampleAndEvaluatePopulation(ExecutionContext& co
     sampleAndEvaluateSolution(context, sampler, res);
   jassert(res->getNumElements() == populationSize);
   return res;
+}
+
+void MOOOptimizer::learnSampler(ExecutionContext& context, MOOParetoFrontPtr population, MOOSamplerPtr sampler)
+{
+  std::vector<ObjectPtr> samples;
+  population->getSolutions(samples);
+  sampler->learn(context, samples);
 }
