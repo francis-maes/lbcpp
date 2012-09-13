@@ -28,9 +28,9 @@ public:
     context.resultCallback("sampler", sampler);
   }
 
-  MOOParetoFrontPtr optimizeRecursively(ExecutionContext& context, MOOSamplerPtr sampler, size_t level)
+  MOOSolutionSetPtr optimizeRecursively(ExecutionContext& context, MOOSamplerPtr sampler, size_t level)
   {
-    MOOParetoFrontPtr population;
+    MOOSolutionSetPtr population;
     if (problem->shouldStop())
       return population;
     
@@ -41,14 +41,15 @@ public:
       MOOSamplerPtr currentSampler = sampler->cloneAndCast<MOOSampler>();
       bool isTopLevel = (this->level == level);
 
-      population = new MOOParetoFront(problem->getFitnessLimits());
+      population = new MOOSolutionSet(problem->getFitnessLimits());
       for (size_t i = 0; isTopLevel || i < populationSize; ++i)
       {
-        MOOParetoFrontPtr subSolutions = optimizeRecursively(context, currentSampler, level - 1);
+        MOOSolutionSetPtr subSolutions = optimizeRecursively(context, currentSampler, level - 1);
         if (subSolutions)
         {
-          population->insert(subSolutions, false);
+          population->add(subSolutions);
           learnSampler(context, subSolutions, currentSampler);
+          //learnSampler(context, selectTrainingSamples(context, population), currentSampler);
         }
         if (isTopLevel && problem->shouldStop())
           break;

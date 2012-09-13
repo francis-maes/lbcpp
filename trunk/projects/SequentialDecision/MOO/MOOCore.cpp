@@ -122,70 +122,43 @@ std::vector<double> MOOFitness::getValuesToBeMinimized() const
 }
 
 /*
-** MOOParetoFront
+** MOOSolutionSet
 */
-MOOParetoFront::MOOParetoFront(MOOFitnessLimitsPtr limits)
+MOOSolutionSet::MOOSolutionSet(MOOFitnessLimitsPtr limits)
   : limits(limits), size(0)
 {
 }
 
-MOOParetoFront::MOOParetoFront() : size(0)
+MOOSolutionSet::MOOSolutionSet() : size(0)
 {
 }
 
-void MOOParetoFront::insert(const MOOParetoFrontPtr& solutions, bool removeDominatedSolutions)
+void MOOSolutionSet::add(const MOOSolutionSetPtr& solutions)
 {
   jassert(solutions);
-  if (removeDominatedSolutions)
+  for (ParetoMap::const_iterator it = solutions->m.begin(); it != solutions->m.end(); ++it)
   {
-    for (ParetoMap::const_iterator it = solutions->m.begin(); it != solutions->m.end(); ++it)
-      for (size_t i = 0; i < it->second.size(); ++it)
-        insert(it->second[i], it->first, true);
+    ParetoMap::iterator it2 = m.find(it->first);
+    std::vector<ObjectPtr>& target = (it2 == m.end() ? m[it->first] : it2->second);
+    target.reserve(target.size() + it->second.size());
+    for (size_t i = 0; i < it->second.size(); ++i)
+      target.push_back(it->second[i]);
   }
-  else
-  {
-    for (ParetoMap::const_iterator it = solutions->m.begin(); it != solutions->m.end(); ++it)
-    {
-      ParetoMap::iterator it2 = m.find(it->first);
-      std::vector<ObjectPtr>& target = (it2 == m.end() ? m[it->first] : it2->second);
-      target.reserve(target.size() + it->second.size());
-      for (size_t i = 0; i < it->second.size(); ++i)
-        target.push_back(it->second[i]);
-    }
-    size += solutions->size;
-  }
+  size += solutions->size;
 }
 
-void MOOParetoFront::insert(const ObjectPtr& solution, const MOOFitnessPtr& fitness, bool removeDominatedSolutions)
+void MOOSolutionSet::add(const ObjectPtr& solution, const MOOFitnessPtr& fitness)
 {
-  if (removeDominatedSolutions)
-  {
-    for (ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
-      if (it->first->strictlyDominates(fitness))
-        return; // dominated
-  }
-
+  jassert(fitness);
   ParetoMap::iterator it = m.find(fitness);
   if (it == m.end())
-  {
-    if (removeDominatedSolutions)
-    {
-      ParetoMap::iterator nxt;
-      for (it = m.begin(); it != m.end(); it = nxt)
-      {
-        nxt = it; ++nxt;
-        if (fitness->strictlyDominates(it->first))
-          m.erase(it);
-      }
-    }
     m[fitness] = std::vector<ObjectPtr>(1, solution);
-  }
   else
     it->second.push_back(solution);
   ++size;
 }
 
-void MOOParetoFront::getSolutions(std::vector<ObjectPtr>& res) const
+void MOOSolutionSet::getSolutions(std::vector<ObjectPtr>& res) const
 {
   res.reserve(size);
   for (ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
@@ -197,7 +170,7 @@ void MOOParetoFront::getSolutions(std::vector<ObjectPtr>& res) const
   }
 }
 
-void MOOParetoFront::getSolutionAndFitnesses(std::vector< std::pair<MOOFitnessPtr, ObjectPtr> >& res) const
+void MOOSolutionSet::getSolutionAndFitnesses(std::vector< std::pair<MOOFitnessPtr, ObjectPtr> >& res) const
 {
   res.reserve(size);
   for (ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
@@ -209,7 +182,7 @@ void MOOParetoFront::getSolutionAndFitnesses(std::vector< std::pair<MOOFitnessPt
   }
 }
 
-void MOOParetoFront::getSolutionsByFitness(const MOOFitnessPtr& fitness, std::vector<ObjectPtr>& res) const
+void MOOSolutionSet::getSolutionsByFitness(const MOOFitnessPtr& fitness, std::vector<ObjectPtr>& res) const
 {
   ParetoMap::const_iterator it = m.find(fitness);
   if (it == m.end())
@@ -218,7 +191,7 @@ void MOOParetoFront::getSolutionsByFitness(const MOOFitnessPtr& fitness, std::ve
     res = it->second;
 }
 
-MOOFitnessLimitsPtr MOOParetoFront::getEmpiricalLimits() const
+MOOFitnessLimitsPtr MOOSolutionSet::getEmpiricalLimits() const
 {
   size_t n = limits->getNumDimensions();
   std::vector< std::pair<double, double> > res(n, std::make_pair(DBL_MAX, -DBL_MAX));
@@ -234,6 +207,32 @@ MOOFitnessLimitsPtr MOOParetoFront::getEmpiricalLimits() const
     }
 
   return new MOOFitnessLimits(res);
+}
+
+/*
+** MOOParetoFront
+*/
+void MOOParetoFront::insert(const ObjectPtr& solution, const MOOFitnessPtr& fitness)
+{
+  for (ParetoMap::const_iterator it = m.begin(); it != m.end(); ++it)
+    if (it->first->strictlyDominates(fitness))
+      return; // dominated
+
+  ParetoMap::iterator it = m.find(fitness);
+  if (it == m.end())
+  {
+    ParetoMap::iterator nxt;
+    for (it = m.begin(); it != m.end(); it = nxt)
+    {
+      nxt = it; ++nxt;
+      if (fitness->strictlyDominates(it->first))
+        m.erase(it);
+    }
+    m[fitness] = std::vector<ObjectPtr>(1, solution);
+  }
+  else
+    it->second.push_back(solution);
+  ++size;
 }
 
 double MOOParetoFront::computeHyperVolume(const MOOFitnessPtr& referenceFitness) const
@@ -292,33 +291,33 @@ MOOFitnessPtr MOOOptimizer::evaluate(ExecutionContext& context, const ObjectPtr&
 {
   jassert(problem && front);
   MOOFitnessPtr fitness = problem->evaluate(context, solution);
-  front->insert(solution, fitness, true);
+  front->insert(solution, fitness);
   return fitness;
 }
 
-MOOFitnessPtr MOOOptimizer::evaluateAndSave(ExecutionContext& context, const ObjectPtr& solution, MOOParetoFrontPtr archive)
+MOOFitnessPtr MOOOptimizer::evaluateAndSave(ExecutionContext& context, const ObjectPtr& solution, MOOSolutionSetPtr archive)
 {
   MOOFitnessPtr fitness = evaluate(context, solution);
-  archive->insert(solution, fitness, false);
+  archive->add(solution, fitness);
   return fitness;
 }
 
-MOOFitnessPtr MOOOptimizer::sampleAndEvaluateSolution(ExecutionContext& context, MOOSamplerPtr sampler, MOOParetoFrontPtr population)
+MOOFitnessPtr MOOOptimizer::sampleAndEvaluateSolution(ExecutionContext& context, MOOSamplerPtr sampler, MOOSolutionSetPtr population)
 {
   ObjectPtr solution = sampler->sample(context);
   return population ? evaluateAndSave(context, solution, population) : evaluate(context, solution);
 }
 
-MOOParetoFrontPtr MOOOptimizer::sampleAndEvaluatePopulation(ExecutionContext& context, MOOSamplerPtr sampler, size_t populationSize)
+MOOSolutionSetPtr MOOOptimizer::sampleAndEvaluatePopulation(ExecutionContext& context, MOOSamplerPtr sampler, size_t populationSize)
 {
-  MOOParetoFrontPtr res = new MOOParetoFront(problem->getFitnessLimits());
+  MOOSolutionSetPtr res = new MOOSolutionSet(problem->getFitnessLimits());
   for (size_t i = 0; i < populationSize; ++i)
     sampleAndEvaluateSolution(context, sampler, res);
   jassert(res->getNumElements() == populationSize);
   return res;
 }
 
-void MOOOptimizer::learnSampler(ExecutionContext& context, MOOParetoFrontPtr population, MOOSamplerPtr sampler)
+void MOOOptimizer::learnSampler(ExecutionContext& context, MOOSolutionSetPtr population, MOOSamplerPtr sampler)
 {
   std::vector<ObjectPtr> samples;
   population->getSolutions(samples);

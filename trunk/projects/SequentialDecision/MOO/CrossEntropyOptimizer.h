@@ -27,8 +27,8 @@ public:
     sampler->initialize(context, problem->getSolutionDomain());
     for (size_t i = 0; (numGenerations == 0 || i < numGenerations) && !problem->shouldStop(); ++i)
     {
-      MOOParetoFrontPtr population = sampleAndEvaluatePopulation(context, sampler, populationSize);
-      MOOParetoFrontPtr selectedPopulation = selectTrainingSamples(context, population);
+      MOOSolutionSetPtr population = sampleAndEvaluatePopulation(context, sampler, populationSize);
+      MOOSolutionSetPtr selectedPopulation = selectTrainingSamples(context, population);
 
       sampler = sampler->cloneAndCast<MOOSampler>();
       learnSampler(context, selectedPopulation, sampler);
@@ -38,7 +38,7 @@ public:
     context.resultCallback("sampler", sampler);
   }
 
-  virtual MOOParetoFrontPtr selectTrainingSamples(ExecutionContext& context, MOOParetoFrontPtr population) const
+  virtual MOOSolutionSetPtr selectTrainingSamples(ExecutionContext& context, MOOSolutionSetPtr population) const
   {
     // default implementation for single objective
     jassert(problem->getNumObjectives() == 1);
@@ -48,11 +48,11 @@ public:
     bool isMaximisation = problem->getFitnessLimits()->shouldObjectiveBeMaximized(0);
 
     size_t size = numTrainingSamples < pop.size() ? numTrainingSamples : pop.size();
-    MOOParetoFrontPtr res = new MOOParetoFront();
+    MOOSolutionSetPtr res = new MOOSolutionSet();
     for (size_t i = 0; i < size; ++i)
     {
       size_t index = (isMaximisation ? pop.size() - 1 - i : i);
-      res->insert(pop[index].second, pop[index].first, false);
+      res->add(pop[index].second, pop[index].first);
     }
     return res;
   }
