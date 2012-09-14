@@ -23,7 +23,7 @@ public:
  
   virtual void optimize(ExecutionContext& context)
   {
-    sampler->initialize(context, problem->getSolutionDomain());
+    sampler->initialize(context, problem->getObjectDomain());
     optimizeRecursively(context, sampler, level);
     context.resultCallback("sampler", sampler);
   }
@@ -47,7 +47,7 @@ public:
         MOOSolutionSetPtr subSolutions = optimizeRecursively(context, currentSampler, level - 1);
         if (subSolutions)
         {
-          population->add(subSolutions);
+          population->addSolutions(subSolutions);
           learnSampler(context, subSolutions, currentSampler);
           //learnSampler(context, selectTrainingSamples(context, population), currentSampler);
         }

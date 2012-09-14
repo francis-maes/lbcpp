@@ -39,7 +39,7 @@ public:
   virtual ~MOOProblemFromSharkObjectiveFunction()
     {delete objective;}
 
-  virtual MOODomainPtr getSolutionDomain() const
+  virtual MOODomainPtr getObjectDomain() const
     {return domain;}
 
   virtual MOOFitnessLimitsPtr getFitnessLimits() const

@@ -8,6 +8,7 @@
 #include "precompiled.h"
 #include "MOOCore.h"
 #include <MOO-EALib/Hypervolume.h>
+#include <algorithm>
 using namespace lbcpp;
 
 /*
@@ -18,18 +19,84 @@ MOOFitnessPtr MOOFitnessLimits::getWorstPossibleFitness(bool useInfiniteValues) 
   std::vector<double> res(limits.size());
   if (useInfiniteValues)
     for (size_t i = 0; i < res.size(); ++i)
-      res[i] = shouldObjectiveBeMaximized(i) ? -DBL_MAX : DBL_MAX;
+      res[i] = shouldObjectiveBeMaximised(i) ? -DBL_MAX : DBL_MAX;
   else
     for (size_t i = 0; i < res.size(); ++i)
       res[i] = limits[i].first;
   return MOOFitnessPtr(new MOOFitness(res, refCountedPointerFromThis(this)));
 }
 
-bool MOOFitnessLimits::shouldObjectiveBeMaximized(size_t objectiveIndex) const
+bool MOOFitnessLimits::shouldObjectiveBeMaximised(size_t objectiveIndex) const
   {return limits[objectiveIndex].second > limits[objectiveIndex].first;}
 
 double MOOFitnessLimits::getObjectiveSign(size_t objectiveIndex) const
-  {return shouldObjectiveBeMaximized(objectiveIndex) ? 1.0 : -1.0;}
+  {return shouldObjectiveBeMaximised(objectiveIndex) ? 1.0 : -1.0;}
+
+struct DominanceSolutionComparator : public MOOSolutionComparator
+{
+  virtual int compare(const MOOSolutionPtr& solution1, const MOOSolutionPtr& solution2) const
+  {
+    // TODO: optimized version to avoid two calls to MOOFitness::strictlyDominates()
+
+    //MOOFitnessLimitsPtr limits = solution1->getFitnessLimits();
+    //jassert(limits == solution2->getFitnessLimits());
+
+    if (solution1->getFitness()->strictlyDominates(solution2->getFitness()))
+      return -1;
+    else if (solution2->getFitness()->strictlyDominates(solution1->getFitness()))
+      return 1;
+    else
+      return 0;
+  }
+};
+
+MOOSolutionComparatorPtr MOOFitnessLimits::makeDominanceComparator() const
+  {return new DominanceSolutionComparator();}
+
+struct LexicographicSolutionComparator : public MOOSolutionComparator
+{
+  virtual int compare(const MOOSolutionPtr& solution1, const MOOSolutionPtr& solution2) const
+  {
+    MOOFitnessLimitsPtr limits = solution1->getFitnessLimits();
+    jassert(limits == solution2->getFitnessLimits());
+
+    for (size_t i = 0; i < limits->getNumObjectives(); ++i)
+    {
+      double value1 = solution1->getFitness()->getValue(i);
+      double value2 = solution2->getFitness()->getValue(i);
+      if (value1 != value2)
+      {
+        double deltaValue = limits->getObjectiveSign(i) * (value2 - value1);
+        return deltaValue > 0 ? 1 : -1;
+      }
+    }
+    return 0;
+  }
+};
+
+MOOSolutionComparatorPtr MOOFitnessLimits::makeLexicographicComparator() const
+  {return new LexicographicSolutionComparator();}
+
+struct ObjectiveSolutionComparator : public MOOSolutionComparator
+{
+  ObjectiveSolutionComparator(size_t objectiveIndex, double objectiveSign)
+    : objectiveIndex(objectiveIndex), objectiveSign(objectiveSign) {}
+
+  virtual int compare(const MOOSolutionPtr& solution1, const MOOSolutionPtr& solution2) const
+  {
+    double value1 = solution1->getFitness()->getValue(objectiveIndex);
+    double value2 = solution1->getFitness()->getValue(objectiveIndex);
+    double deltaValue = objectiveSign * (value2 - value1);
+    return deltaValue > 0 ? 1 : (deltaValue < 0 ? -1 : 0);
+  }
+
+private:
+  size_t objectiveIndex;
+  double objectiveSign;
+};
+
+MOOSolutionComparatorPtr MOOFitnessLimits::makeObjectiveComparator(size_t objectiveIndex) const
+  {return new ObjectiveSolutionComparator(objectiveIndex, getObjectiveSign(objectiveIndex));}
 
 /*
 ** MOOFitness
@@ -116,7 +183,7 @@ std::vector<double> MOOFitness::getValuesToBeMinimized() const
 {
   std::vector<double> res = getValues();
   for (size_t i = 0; i < res.size(); ++i)
-    if (limits->shouldObjectiveBeMaximized(i))
+    if (limits->shouldObjectiveBeMaximised(i))
       res[i] = -res[i];
   return res;
 }
@@ -124,6 +191,216 @@ std::vector<double> MOOFitness::getValuesToBeMinimized() const
 /*
 ** MOOSolutionSet
 */
+MOOSolutionSet::MOOSolutionSet(MOOFitnessLimitsPtr limits, const std::vector<MOOSolutionPtr>& solutions, MOOSolutionComparatorPtr comparator)
+  : limits(limits), solutions(solutions), comparator(comparator)
+{
+}
+
+MOOSolutionSet::MOOSolutionSet(MOOFitnessLimitsPtr limits)
+  : limits(limits)
+{
+}
+
+void MOOSolutionSet::addSolution(const MOOSolutionPtr& solution)
+{
+  solutions.push_back(solution);
+  comparator = MOOSolutionComparatorPtr(); // mark as unsorted
+}
+
+void MOOSolutionSet::addSolution(const ObjectPtr& object, const MOOFitnessPtr& fitness)
+  {addSolution(new MOOSolution(object, fitness));}
+
+void MOOSolutionSet::addSolutions(const MOOSolutionSetPtr& otherSolutions)
+{
+  size_t offset = solutions.size();
+  size_t n = otherSolutions->getNumSolutions();
+  solutions.resize(offset + n);
+  for (size_t i = 0; i < n; ++i)
+    solutions[i + offset] = otherSolutions->solutions[i];
+  comparator = MOOSolutionComparatorPtr(); // mark as unsorted
+}
+
+std::vector<ObjectPtr> MOOSolutionSet::getObjects() const
+{
+  std::vector<ObjectPtr> res(solutions.size());
+  for (size_t i = 0; i < res.size(); ++i)
+    res[i] = solutions[i]->getObject();
+  return res;
+}
+
+struct WrapSolutionComparator
+{
+  WrapSolutionComparator(const MOOSolutionComparatorPtr& comparator)
+    : comparator(comparator) {}
+
+  MOOSolutionComparatorPtr comparator;
+
+  bool operator()(const MOOSolutionPtr& a, const MOOSolutionPtr& b) const
+    {return comparator->compare(a, b) < 0;}
+};
+
+MOOSolutionSetPtr MOOSolutionSet::sort(const MOOSolutionComparatorPtr& comparator) const
+{
+  if (this->comparator == comparator)
+    return refCountedPointerFromThis(this);
+  
+  MOOSolutionSetPtr res = cloneAndCast<MOOSolutionSet>();
+  std::sort(res->solutions.begin(), res->solutions.end(), WrapSolutionComparator(comparator));
+  res->comparator = comparator; // mark as sorted
+  return res;
+}
+
+int MOOSolutionSet::findBestSolution(const MOOSolutionComparatorPtr& comparator) const
+{
+  if (solutions.empty())
+    return -1;
+  if (this->comparator == comparator)
+    return 0; // already sorted: the best is at first position
+
+  MOOSolutionPtr bestSolution = solutions[0];
+  size_t bestSolutionIndex = 0;
+  for (size_t i = 1; i < solutions.size(); ++i)
+    if (comparator->compare(solutions[i], bestSolution) == -1)
+    {
+      bestSolution = solutions[i];
+      bestSolutionIndex = i;
+    }
+
+  return (int)bestSolutionIndex;
+}
+
+MOOSolutionPtr MOOSolutionSet::getBestSolution(const MOOSolutionComparatorPtr& comparator) const
+{
+  int index = findBestSolution(comparator);
+  return index >= 0 ? solutions[index] : MOOSolutionPtr();
+}
+
+MOOSolutionSetPtr MOOSolutionSet::selectNBests(const MOOSolutionComparatorPtr& comparator, size_t n) const
+{
+  if (n >= solutions.size())
+    return refCountedPointerFromThis(this);
+
+  MOOSolutionSetPtr res = sort(comparator);
+  res->solutions.resize(n);
+  return res;
+}
+
+MOOFitnessLimitsPtr MOOSolutionSet::getEmpiricalLimits() const
+{
+  size_t n = limits->getNumDimensions();
+  std::vector< std::pair<double, double> > res(n, std::make_pair(DBL_MAX, -DBL_MAX));
+
+  for (size_t i = 0; i < solutions.size(); ++i)
+  {
+    MOOFitnessPtr fitness = solutions[i]->getFitness();
+    for (size_t j = 0; j < n; ++j)
+    {
+      double value = fitness->getValue(j);
+      if (value < res[j].first)
+        res[j].first = value;
+      if (value > res[j].second)
+        res[j].second = value;
+    }
+  }
+  return new MOOFitnessLimits(res);
+}
+
+bool MOOSolutionSet::strictlyDominates(const MOOFitnessPtr& fitness) const
+{
+  for (size_t i = 0; i < solutions.size(); ++i)
+    if (solutions[i]->getFitness()->strictlyDominates(fitness))
+      return true;
+  return false;
+}
+
+MOOParetoFrontPtr MOOSolutionSet::getParetoFront() const
+{
+  std::vector<MOOSolutionPtr> res;
+  for (size_t i = 0; i < solutions.size(); ++i)
+    if (!strictlyDominates(solutions[i]->getFitness()))
+      res.push_back(solutions[i]);
+  return new MOOParetoFront(limits, res, comparator);
+}
+
+std::vector<MOOParetoFrontPtr> MOOSolutionSet::nonDominatedSort() const
+{
+  MOOSolutionComparatorPtr comparator = limits->makeDominanceComparator();
+
+  size_t n = solutions.size();
+  std::vector<size_t> dominationCounter(n, 0); // by how many others am I dominated?
+  std::vector< std::vector<size_t> > dominationIndices(n); // who do I dominate?
+
+  std::vector<MOOSolutionPtr> front;
+  std::vector<size_t> currentFrontIndices;
+  for (size_t i = 0; i < n; ++i)
+  {
+    for (size_t j = 0; j < n; ++j)
+    {
+      int c = comparator->compare(solutions[i], solutions[j]);
+      if (c == -1)
+        dominationIndices[i].push_back(j);
+      else if (c == 1)
+        dominationCounter[i]++;
+    }
+    if (dominationCounter[i] == 0)
+    {
+      front.push_back(solutions[i]);
+      currentFrontIndices.push_back(i);
+    }
+  }
+
+  std::vector<MOOParetoFrontPtr> res;
+  if (currentFrontIndices.empty())
+    return res;
+  
+  res.push_back(new MOOParetoFront(limits, front, this->comparator));
+  while (true)
+  {
+    std::vector<size_t> nextFrontIndices;
+    front.clear();
+    for (size_t i = 0; i < currentFrontIndices.size(); ++i)
+    {
+      const std::vector<size_t>& indices = dominationIndices[currentFrontIndices[i]];
+      for (size_t j = 0; j < indices.size(); ++j)
+      {
+        size_t index = indices[j];
+        size_t& counter = dominationCounter[index];
+        jassert(counter > 0);
+        --counter;
+        if (counter == 0)
+        {
+          front.push_back(solutions[index]);
+          nextFrontIndices.push_back(index);
+        }
+      }
+    }
+    currentFrontIndices.swap(nextFrontIndices);
+
+    jassert(front.size() == currentFrontIndices.size());
+    if (front.size())
+      res.push_back(new MOOParetoFront(limits, front, this->comparator));
+    else
+      break;
+  }
+
+#ifdef JUCE_DEBUG
+  size_t debugSize = 0;
+  for (size_t i = 0; i < res.size(); ++i)
+    debugSize += res[i]->getNumSolutions();
+  jassert(debugSize == solutions.size());
+#endif // JUCE_DEBUG
+  return res;
+}
+
+void MOOSolutionSet::clone(ExecutionContext& context, const ObjectPtr& t) const
+{
+  const MOOSolutionSetPtr& target = t.staticCast<MOOSolutionSet>();
+  target->limits = limits;
+  target->solutions = solutions;
+  target->comparator = comparator;
+}
+
+#if 0
 MOOSolutionSet::MOOSolutionSet(MOOFitnessLimitsPtr limits, const Map& elements)
   : limits(limits), m(elements)
 {
@@ -209,24 +486,6 @@ void MOOSolutionSet::getSolutionsByFitness(const MOOFitnessPtr& fitness, std::ve
     res = it->second;
 }
 
-MOOFitnessLimitsPtr MOOSolutionSet::getEmpiricalLimits() const
-{
-  size_t n = limits->getNumDimensions();
-  std::vector< std::pair<double, double> > res(n, std::make_pair(DBL_MAX, -DBL_MAX));
-
-  for (Map::const_iterator it = m.begin(); it != m.end(); ++it)
-    for (size_t i = 0; i < n; ++i)
-    {
-      double value = it->first->getValue(i);
-      if (value < res[i].first)
-        res[i].first = value;
-      if (value > res[i].second)
-        res[i].second = value;
-    }
-
-  return new MOOFitnessLimits(res);
-}
-
 struct CompareIthObjective
 {
   CompareIthObjective(const std::vector<MOOFitnessPtr>& fitnesses, size_t i, bool isMaximisation)
@@ -260,7 +519,7 @@ void MOOSolutionSet::computeCrowdingDistances(std::vector<double>& res) const
 
   for (size_t i = 0; i < limits->getNumObjectives(); ++i)
   {
-    std::sort(order.begin(), order.end(), CompareIthObjective(fitnesses, i, limits->shouldObjectiveBeMaximized(i)));
+    std::sort(order.begin(), order.end(), CompareIthObjective(fitnesses, i, limits->shouldObjectiveBeMaximised(i)));
     double bestValue = fitnesses[order.front()]->getValue(i);
     double worstValue = fitnesses[order.back()]->getValue(i);
     double invRange = 1.0 / (worstValue - bestValue);
@@ -271,132 +530,55 @@ void MOOSolutionSet::computeCrowdingDistances(std::vector<double>& res) const
   }
 }
 
-std::vector<MOOParetoFrontPtr> MOOSolutionSet::nonDominatedSort() const
-{
-  std::vector<MOOFitnessPtr> fitnesses;
-  getFitnesses(fitnesses);
-  size_t n = fitnesses.size();
 
-  std::vector<size_t> dominationCounter(n, 0); // by how many others am I dominated?
-  std::vector< std::vector<size_t> > dominationIndices(n); // who do I dominate?
-
-  Map front;
-  std::vector<size_t> currentFrontIndices;
-  for (size_t i = 0; i < n; ++i)
-  {
-    for (size_t j = 0; j < n; ++j)
-      if (fitnesses[i]->strictlyDominates(fitnesses[j]))
-        dominationIndices[i].push_back(j);
-      else if (fitnesses[j]->strictlyDominates(fitnesses[i]))
-        dominationCounter[i]++;
-    if (dominationCounter[i] == 0)
-    {
-      front[fitnesses[i]] = m.find(fitnesses[i])->second;
-      currentFrontIndices.push_back(i);
-    }
-  }
-
-  std::vector<MOOParetoFrontPtr> res;
-  if (currentFrontIndices.empty())
-    return res;
-  
-  res.push_back(new MOOParetoFront(limits, front));
-  while (true)
-  {
-    Map nextFront;
-    std::vector<size_t> nextFrontIndices;
-    front.clear();
-    for (size_t i = 0; i < currentFrontIndices.size(); ++i)
-    {
-      const std::vector<size_t>& indices = dominationIndices[currentFrontIndices[i]];
-      for (size_t j = 0; j < indices.size(); ++j)
-      {
-        size_t index = indices[j];
-        size_t& counter = dominationCounter[index];
-        jassert(counter > 0);
-        --counter;
-        if (counter == 0)
-        {
-          MOOFitnessPtr fitness = fitnesses[index];
-          nextFrontIndices.push_back(index);
-          front[fitness] = m.find(fitness)->second;
-        }
-      }
-    }
-    currentFrontIndices.swap(nextFrontIndices);
-
-    jassert(front.size() == currentFrontIndices.size());
-    if (front.size())
-      res.push_back(new MOOParetoFront(limits, front));
-    else
-      break;
-  }
-
-#ifdef JUCE_DEBUG
-  size_t debugSize = 0;
-  for (size_t i = 0; i < res.size(); ++i)
-    debugSize += res[i]->getNumElements();
-  jassert(debugSize == size);
-#endif // JUCE_DEBUG
-  return res;
-}
+#endif // 0
 
 /*
 ** MOOParetoFront
 */
-void MOOParetoFront::insert(const ObjectPtr& solution, const MOOFitnessPtr& fitness)
+void MOOParetoFront::addSolutionAndUpdateFront(const ObjectPtr& object, const MOOFitnessPtr& fitness)
 {
-  for (Map::const_iterator it = m.begin(); it != m.end(); ++it)
-    if (it->first->strictlyDominates(fitness))
+  std::vector<MOOSolutionPtr> newSolutions;
+  newSolutions.reserve(solutions.size());
+  for (size_t i = 0; i < solutions.size(); ++i)
+  {
+    MOOFitnessPtr solutionFitness = solutions[i]->getFitness();
+    if (solutionFitness->strictlyDominates(fitness))
       return; // dominated
-
-  Map::iterator it = m.find(fitness);
-  if (it == m.end())
-  {
-    Map::iterator nxt;
-    for (it = m.begin(); it != m.end(); it = nxt)
-    {
-      nxt = it; ++nxt;
-      if (fitness->strictlyDominates(it->first))
-      {
-        size -= it->second.size();
-        m.erase(it);
-      }
-    }
-    m[fitness] = std::vector<ObjectPtr>(1, solution);
-    ++size;
+    if (!fitness->strictlyDominates(solutionFitness))
+      newSolutions.push_back(solutions[i]);
   }
-  else
-  {
-    it->second.push_back(solution);
-    ++size;
-  }
+  newSolutions.push_back(new MOOSolution(object, fitness));
+  solutions.swap(newSolutions);
 }
 
 double MOOParetoFront::computeHyperVolume(const MOOFitnessPtr& referenceFitness) const
 {
-  if (m.empty())
+  if (isEmpty())
     return 0.0;
 
   size_t numObjectives = limits->getNumObjectives();
   if (numObjectives == 1)
   {
-    double bestValue = (limits->shouldObjectiveBeMaximized(0) ? m.rbegin()->first->getValue(0) : m.begin()->first->getValue(0));
+    double bestValue = getBestSolution(limits->makeObjectiveComparator(0))->getFitness()->getValue(0);
     double res = limits->getObjectiveSign(0) * (bestValue - referenceFitness->getValue(0));
     return res > 0.0 ? res : 0.0;
   }
   else
   {
     // remove points that fall outside the hypervolume and convert to minimization problem
-    std::vector<double> points(m.size() * numObjectives);
+    std::vector<double> points(solutions.size() * numObjectives);
     size_t numPoints = 0;
-    for (Map::const_iterator it = m.begin(); it != m.end(); ++it)
-      if (!referenceFitness->isBetterForAtLeastOneObjectiveThan(it->first))
+    for (size_t i = 0; i < solutions.size(); ++i)
+    {
+      MOOFitnessPtr fitness = solutions[i]->getFitness();
+      if (!referenceFitness->isBetterForAtLeastOneObjectiveThan(fitness))
       {
-        std::vector<double> val = it->first->getValuesToBeMinimized();
+        std::vector<double> val = fitness->getValuesToBeMinimized();
         memcpy(&points[numPoints * numObjectives], &val[0], sizeof (double) * numObjectives);
         ++numPoints;
       }
+    }
 
     if (!numPoints)
       return 0.0;
@@ -425,25 +607,25 @@ MOOParetoFrontPtr MOOOptimizer::optimize(ExecutionContext& context, MOOProblemPt
   return res;
 }
 
-MOOFitnessPtr MOOOptimizer::evaluate(ExecutionContext& context, const ObjectPtr& solution)
+MOOFitnessPtr MOOOptimizer::evaluate(ExecutionContext& context, const ObjectPtr& object)
 {
   jassert(problem && front);
-  MOOFitnessPtr fitness = problem->evaluate(context, solution);
+  MOOFitnessPtr fitness = problem->evaluate(context, object);
   for (size_t i = 0; i < fitness->getNumValues(); ++i)
     jassert(isNumberValid(fitness->getValue(i)));
-  front->insert(solution, fitness);
+  front->addSolutionAndUpdateFront(object, fitness);
   return fitness;
 }
 
-MOOFitnessPtr MOOOptimizer::evaluateAndSave(ExecutionContext& context, const ObjectPtr& solution, MOOSolutionSetPtr archive)
+MOOFitnessPtr MOOOptimizer::evaluateAndSave(ExecutionContext& context, const ObjectPtr& object, MOOSolutionSetPtr solutions)
 {
-  MOOFitnessPtr fitness = evaluate(context, solution);
-  archive->add(solution, fitness);
+  MOOFitnessPtr fitness = evaluate(context, object);
+  solutions->addSolution(object, fitness);
   return fitness;
 }
 
 ObjectPtr MOOOptimizer::sampleSolution(ExecutionContext& context, MOOSamplerPtr sampler)
-  {return problem->getSolutionDomain()->projectIntoDomain(sampler->sample(context));}
+  {return problem->getObjectDomain()->projectIntoDomain(sampler->sample(context));}
  
 MOOFitnessPtr MOOOptimizer::sampleAndEvaluateSolution(ExecutionContext& context, MOOSamplerPtr sampler, MOOSolutionSetPtr population)
 {
@@ -456,13 +638,9 @@ MOOSolutionSetPtr MOOOptimizer::sampleAndEvaluatePopulation(ExecutionContext& co
   MOOSolutionSetPtr res = new MOOSolutionSet(problem->getFitnessLimits());
   for (size_t i = 0; i < populationSize; ++i)
     sampleAndEvaluateSolution(context, sampler, res);
-  jassert(res->getNumElements() == populationSize);
+  jassert(res->getNumSolutions() == populationSize);
   return res;
 }
 
-void MOOOptimizer::learnSampler(ExecutionContext& context, MOOSolutionSetPtr population, MOOSamplerPtr sampler)
-{
-  std::vector<ObjectPtr> samples;
-  population->getSolutions(samples);
-  sampler->learn(context, samples);
-}
+void MOOOptimizer::learnSampler(ExecutionContext& context, MOOSolutionSetPtr solutions, MOOSamplerPtr sampler)
+  {sampler->learn(context, solutions->getObjects());}

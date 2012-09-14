@@ -9,38 +9,10 @@
 #ifndef LBCPP_MOO_CORE_H_
 # define LBCPP_MOO_CORE_H_
 
-# include <lbcpp/Core/Object.h>
-# include <algorithm>
+# include "predeclarations.h"
 
 namespace lbcpp
 {
-
-class MOODomain;
-typedef ReferenceCountedObjectPtr<MOODomain> MOODomainPtr;
-
-class ContinuousMOODomain;
-typedef ReferenceCountedObjectPtr<ContinuousMOODomain> ContinuousMOODomainPtr;
-
-class MOOFitness;
-typedef ReferenceCountedObjectPtr<MOOFitness> MOOFitnessPtr;
-
-class MOOFitnessLimits;
-typedef ReferenceCountedObjectPtr<MOOFitnessLimits> MOOFitnessLimitsPtr;
-
-class MOOProblem;
-typedef ReferenceCountedObjectPtr<MOOProblem> MOOProblemPtr;
-
-class MOOSolutionSet;
-typedef ReferenceCountedObjectPtr<MOOSolutionSet> MOOSolutionSetPtr;
-
-class MOOParetoFront;
-typedef ReferenceCountedObjectPtr<MOOParetoFront> MOOParetoFrontPtr;
-
-class MOOOptimizer;
-typedef ReferenceCountedObjectPtr<MOOOptimizer> MOOOptimizerPtr;
-
-class MOOSampler;
-typedef ReferenceCountedObjectPtr<MOOSampler> MOOSamplerPtr;
 
 class MOODomain : public Object
 {
@@ -112,10 +84,14 @@ public:
   void addObjective(double worstValue, double bestValue)
     {limits.push_back(std::make_pair(worstValue, bestValue));}
 
-  bool shouldObjectiveBeMaximized(size_t objectiveIndex) const;
+  bool shouldObjectiveBeMaximised(size_t objectiveIndex) const;
   double getObjectiveSign(size_t objectiveIndex) const; // 1 for maximisation and -1 for minimisation
 
   MOOFitnessPtr getWorstPossibleFitness(bool useInfiniteValues = false) const;
+
+  MOOSolutionComparatorPtr makeDominanceComparator() const;
+  MOOSolutionComparatorPtr makeLexicographicComparator() const;
+  MOOSolutionComparatorPtr makeObjectiveComparator(size_t objectiveIndex) const;
 };
 
 class MOOFitness : public Object
@@ -123,6 +99,9 @@ class MOOFitness : public Object
 public:
   MOOFitness(const std::vector<double>& values, const MOOFitnessLimitsPtr& limits);
   MOOFitness() {}
+
+  const MOOFitnessLimitsPtr& getLimits() const
+    {return limits;}
 
   size_t getNumValues() const
     {return values.size();}
@@ -151,6 +130,108 @@ protected:
   MOOFitnessLimitsPtr limits;
 };
 
+class MOOSolution : public Object
+{
+public:
+  MOOSolution(const ObjectPtr& object, const MOOFitnessPtr& fitness)
+    : object(object), fitness(fitness) {}
+  MOOSolution() {}
+
+  const ObjectPtr& getObject() const
+    {return object;}
+
+  const MOOFitnessPtr& getFitness() const
+    {return fitness;}
+
+  const MOOFitnessLimitsPtr& getFitnessLimits() const
+    {return fitness->getLimits();}
+
+protected:
+  friend class MOOSolutionClass;
+
+  ObjectPtr object;
+  MOOFitnessPtr fitness;
+};
+
+class MOOSolutionComparator : public Object
+{
+public:
+  // returns -1 if solution1 is prefered, +1 if solution2 is prefered and 0 if there is no preference between the two solutions
+  virtual int compare(const MOOSolutionPtr& solution1, const MOOSolutionPtr& solution2) const = 0;
+};
+
+class MOOSolutionSet : public Object
+{
+public:
+  MOOSolutionSet(MOOFitnessLimitsPtr limits, const std::vector<MOOSolutionPtr>& solutions, MOOSolutionComparatorPtr comparator = MOOSolutionComparatorPtr());
+  MOOSolutionSet(MOOFitnessLimitsPtr limits);
+  MOOSolutionSet() {}
+  
+  /*
+  ** Solution accessors
+  */
+  bool isEmpty() const
+    {return solutions.empty();}
+
+  size_t getNumSolutions() const
+    {return solutions.size();}
+
+  MOOSolutionPtr getSolution(size_t index) const
+    {jassert(index < solutions.size()); return solutions[index];}
+
+  MOOFitnessPtr getFitness(size_t index) const
+    {return getSolution(index)->getFitness();}
+
+  std::vector<ObjectPtr> getObjects() const;
+
+  /*
+  ** Solutions insertion
+  */
+  void addSolution(const MOOSolutionPtr& solution);
+  void addSolution(const ObjectPtr& object, const MOOFitnessPtr& fitness);
+  void addSolutions(const MOOSolutionSetPtr& solutions);
+
+  /*
+  ** Solutions comparison
+  */
+  bool isSorted() const
+    {return comparator;}
+
+  MOOSolutionSetPtr sort(const MOOSolutionComparatorPtr& comparator) const; // sort from the most prefered solution to the least prefered one
+
+  int findBestSolution(const MOOSolutionComparatorPtr& comparator) const;
+  MOOSolutionPtr getBestSolution(const MOOSolutionComparatorPtr& comparator) const;
+  MOOSolutionSetPtr selectNBests(const MOOSolutionComparatorPtr& comparator, size_t n) const;
+  
+  std::vector<MOOParetoFrontPtr> nonDominatedSort() const;
+  bool strictlyDominates(const MOOFitnessPtr& fitness) const;
+  MOOParetoFrontPtr getParetoFront() const;
+
+  /*
+  ** Fitness limits
+  */
+  const MOOFitnessLimitsPtr& getTheoreticalLimits() const
+    {return limits;}
+
+  MOOFitnessLimitsPtr getEmpiricalLimits() const;
+
+  size_t getNumObjectives() const
+    {return limits->getNumObjectives();}
+
+  /*
+  ** Object
+  */
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
+
+protected:
+  friend class MOOSolutionSetClass;
+
+  MOOFitnessLimitsPtr limits;
+  std::vector<MOOSolutionPtr> solutions;
+  MOOSolutionComparatorPtr comparator;
+};
+
+#if 0
 class MOOSolutionSet : public Object
 {
 public:
@@ -191,26 +272,27 @@ protected:
   Map m;
   size_t size;
 };
+#endif // 0
 
 class MOOParetoFront : public MOOSolutionSet
 {
 public:
-  MOOParetoFront(MOOFitnessLimitsPtr limits, const Map& elements) : MOOSolutionSet(limits, elements) {}
+  MOOParetoFront(MOOFitnessLimitsPtr limits, const std::vector<MOOSolutionPtr>& solutions, MOOSolutionComparatorPtr comparator = MOOSolutionComparatorPtr())
+    : MOOSolutionSet(limits, solutions, comparator) {}
   MOOParetoFront(MOOFitnessLimitsPtr limits) : MOOSolutionSet(limits) {}
   MOOParetoFront() {}
 
-  void insert(const ObjectPtr& solution, const MOOFitnessPtr& fitness);
-
+  void addSolutionAndUpdateFront(const ObjectPtr& object, const MOOFitnessPtr& fitness);
   double computeHyperVolume(const MOOFitnessPtr& referenceFitness) const;
 };
 
 class MOOProblem : public Object
 {
 public:
-  virtual MOODomainPtr getSolutionDomain() const = 0;
+  virtual MOODomainPtr getObjectDomain() const = 0;
   virtual MOOFitnessLimitsPtr getFitnessLimits() const = 0;
 
-  virtual MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution) = 0;
+  virtual MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object) = 0;
 
   virtual ObjectPtr proposeStartingSolution(ExecutionContext& context) const
     {jassertfalse; return ObjectPtr();}
@@ -235,12 +317,12 @@ protected:
   MOOProblemPtr problem;
   MOOParetoFrontPtr front;
 
-  MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution);
-  MOOFitnessPtr evaluateAndSave(ExecutionContext& context, const ObjectPtr& solution, MOOSolutionSetPtr archive);
+  MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object);
+  MOOFitnessPtr evaluateAndSave(ExecutionContext& context, const ObjectPtr& object, MOOSolutionSetPtr solutions);
   ObjectPtr sampleSolution(ExecutionContext& context, MOOSamplerPtr sampler);
-  MOOFitnessPtr sampleAndEvaluateSolution(ExecutionContext& context, MOOSamplerPtr sampler, MOOSolutionSetPtr population = MOOSolutionSetPtr());
+  MOOFitnessPtr sampleAndEvaluateSolution(ExecutionContext& context, MOOSamplerPtr sampler, MOOSolutionSetPtr solutions = MOOSolutionSetPtr());
   MOOSolutionSetPtr sampleAndEvaluatePopulation(ExecutionContext& context, MOOSamplerPtr sampler, size_t populationSize);
-  void learnSampler(ExecutionContext& context, MOOSolutionSetPtr population, MOOSamplerPtr sampler);
+  void learnSampler(ExecutionContext& context, MOOSolutionSetPtr solutions, MOOSamplerPtr sampler);
 };
 
 class PopulationBasedMOOOptimizer : public MOOOptimizer

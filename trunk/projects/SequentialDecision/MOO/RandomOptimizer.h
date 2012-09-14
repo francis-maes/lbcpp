@@ -23,7 +23,7 @@ public:
 
   virtual void optimize(ExecutionContext& context)
   {
-    sampler->initialize(context, problem->getSolutionDomain());
+    sampler->initialize(context, problem->getObjectDomain());
     for (size_t iteration = 0; (!numIterations || iteration < numIterations) && !problem->shouldStop(); ++iteration)
       sampleAndEvaluateSolution(context, sampler);
   }

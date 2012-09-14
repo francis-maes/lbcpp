@@ -20,8 +20,8 @@ public:
   DecoratorMOOProblem(MOOProblemPtr problem = MOOProblemPtr())
     : problem(problem) {}
 
-  virtual MOODomainPtr getSolutionDomain() const
-    {return problem->getSolutionDomain();}
+  virtual MOODomainPtr getObjectDomain() const
+    {return problem->getObjectDomain();}
 
   virtual MOOFitnessLimitsPtr getFitnessLimits() const
     {return problem->getFitnessLimits();}
@@ -143,10 +143,10 @@ public:
     {front = new MOOParetoFront(problem->getFitnessLimits());}
   HyperVolumeEvaluatorDecoratorProblem() {}
 
-  virtual MOOFitnessPtr decoratedEvaluate(ExecutionContext& context, const ObjectPtr& solution)
+  virtual MOOFitnessPtr decoratedEvaluate(ExecutionContext& context, const ObjectPtr& object)
   {
-    MOOFitnessPtr res = MaxIterationsDecoratorProblem::evaluate(context, solution);
-    front->insert(solution, res);
+    MOOFitnessPtr res = MaxIterationsDecoratorProblem::evaluate(context, object);
+    front->addSolutionAndUpdateFront(object, res);
     return res;
   }
  

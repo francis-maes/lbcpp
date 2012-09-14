@@ -1,5 +1,6 @@
 
-  * plus de benchmarks
+  * Reparer MOCrossEntropy
+  * Refactorer CrossEntropy avec les histoires de Comparator
 
 Experiences - Proteins:
  * Nouvelles features: prev et next amino acid de chaque type; delta de ObjectVector[DenseDoubleVector]; local/global histogram

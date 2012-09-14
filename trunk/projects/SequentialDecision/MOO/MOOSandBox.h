@@ -30,8 +30,9 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    //testSingleObjectiveOptimizers(context);
-    testBiObjectiveOptimizers(context);
+    testSingleObjectiveOptimizers(context);
+    //testBiObjectiveOptimizers(context);
+    //testSolutionSetComponent(context);
     return true;
   }
 
@@ -75,7 +76,8 @@ protected:
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
       solveWithSingleObjectiveOptimizer(context, problem, new RandomOptimizer(new UniformContinuousSampler(), numEvaluations));
-      solveWithSingleObjectiveOptimizer(context, problem, new CrossEntropyOptimizer(new DiagonalGaussianSampler(), 100, 30, numEvaluations / 100));
+      solveWithSingleObjectiveOptimizer(context, problem, new CrossEntropyOptimizer(new DiagonalGaussianSampler(), 100, 50, numEvaluations / 100));
+      solveWithSingleObjectiveOptimizer(context, problem, new CrossEntropyOptimizer(new DiagonalGaussianSampler(), 100, 50, numEvaluations / 100, true));
       context.leaveScope();
     }
   }
@@ -86,11 +88,11 @@ protected:
     for (size_t i = 0; i < numRuns; ++i)
       for (size_t j = 0; j < problems.size(); ++j)
       {
-        MaxIterationsDecoratorProblemPtr  decorator(new MaxIterationsDecoratorProblem(problems[j], numEvaluations));
+        MaxIterationsDecoratorProblemPtr decorator(new MaxIterationsDecoratorProblem(problems[j], numEvaluations));
 
         MOOParetoFrontPtr front = optimizer->optimize(context, decorator);
-        jassert(front->getMap().size() == 1);
-        stats.push(front->getMap().begin()->first->getValue(0));
+        jassert(!front->isEmpty());
+        stats.push(front->getSolution(0)->getFitness()->getValue(0));
       }
     return stats.getMean();
   }
@@ -118,8 +120,8 @@ protected:
       context.leaveScope();
     }
 
-    jassert(front->getMap().size() == 1);
-    double score = front->getMap().begin()->first->getValue(0);
+    jassert(!front->isEmpty());
+    double score = front->getSolution(0)->getFitness()->getValue(0);
     context.resultCallback("score", score);
     context.leaveScope(score);
     return score;
@@ -163,8 +165,7 @@ protected:
     MOOParetoFrontPtr front = optimizer->optimize(context, decorator);
     context.resultCallback("optimizer", optimizer);
     context.resultCallback("front", front);
-    context.resultCallback("frontNumFitnesses", front->getMap().size());
-    context.resultCallback("frontSize", front->getNumElements());
+    context.resultCallback("frontSize", front->getNumSolutions());
 
     /*std::vector<MOOParetoFrontPtr> subFronts = front->nonDominatedSort();
     for (size_t i = 0; i < subFronts.size(); ++i)
@@ -186,6 +187,24 @@ protected:
     }
 
     context.leaveScope(front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness()));
+  }
+
+  void testSolutionSetComponent(ExecutionContext& context)
+  {
+    MOOProblemPtr problem = new ZDT1MOProblem();
+    MOOSamplerPtr sampler = new UniformContinuousSampler();
+    sampler->initialize(context, problem->getObjectDomain());
+
+    MOOSolutionSetPtr solutions = new MOOSolutionSet(problem->getFitnessLimits());
+    for (size_t i = 0; i < 100; ++i)
+    {
+      ObjectPtr object = sampler->sample(context);
+      MOOFitnessPtr fitness = problem->evaluate(context, object);
+      solutions->addSolution(object, fitness);
+    }
+    MOOParetoFrontPtr front = solutions->getParetoFront();
+    context.resultCallback("solutions", solutions);
+    context.resultCallback("front", front);
   }
 };
 
