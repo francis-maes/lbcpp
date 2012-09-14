@@ -1,10 +1,8 @@
 
-  * Reparer MOCrossEntropy
-  * Refactorer CrossEntropy avec les histoires de Comparator
-
-Experiences - Proteins:
- * Nouvelles features: prev et next amino acid de chaque type; delta de ObjectVector[DenseDoubleVector]; local/global histogram
- * Essayer du Totally corrective boosting
+ * FIXME: better implementation of DominanceSolutionComparator
+ * FIXME: finish to implement Multi-objective Cross entropy
+ -
+ * Wrap the JNI stuff
  
 Luape-Other:
  * Go: rankboost + large-scale boosting

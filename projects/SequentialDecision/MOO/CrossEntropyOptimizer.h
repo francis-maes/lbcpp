@@ -19,8 +19,8 @@ namespace lbcpp
 class CrossEntropyOptimizer : public PopulationBasedMOOOptimizer
 {
 public:
-  CrossEntropyOptimizer(MOOSamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations = 0, bool elitist = false)
-    : PopulationBasedMOOOptimizer(populationSize, numGenerations), sampler(sampler), numTrainingSamples(numTrainingSamples), elitist(elitist) {}
+  CrossEntropyOptimizer(MOOSamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations = 0, bool elitist = false, MOOSolutionComparatorPtr comparator = MOOSolutionComparatorPtr())
+    : PopulationBasedMOOOptimizer(populationSize, numGenerations), sampler(sampler), numTrainingSamples(numTrainingSamples), elitist(elitist), comparator(comparator) {}
   CrossEntropyOptimizer() : elitist(false) {}
 
   virtual void optimize(ExecutionContext& context)
@@ -33,7 +33,7 @@ public:
       MOOSolutionSetPtr population = sampleAndEvaluatePopulation(context, sampler, populationSize);
       if (parents)
         population->addSolutions(parents);
-      MOOSolutionSetPtr selectedPopulation = selectTrainingSamples(context, population);
+      MOOSolutionSetPtr selectedPopulation = population->selectNBests(comparator ? comparator : createDefaultComparator(), numTrainingSamples);
 
       sampler = sampler->cloneAndCast<MOOSampler>();
       learnSampler(context, selectedPopulation, sampler);
@@ -45,20 +45,26 @@ public:
     context.resultCallback("sampler", sampler);
   }
 
-  virtual MOOSolutionSetPtr selectTrainingSamples(ExecutionContext& context, MOOSolutionSetPtr population) const
-  {
-    // default implementation for single objective
-    jassert(problem->getNumObjectives() == 1);
-    return population->selectNBests(problem->getFitnessLimits()->makeObjectiveComparator(0), numTrainingSamples);
-  }
-
 protected:
   friend class CrossEntropyOptimizerClass;
 
   MOOSamplerPtr sampler;
   size_t numTrainingSamples;
   bool elitist;
+  MOOSolutionComparatorPtr comparator;
+
+  MOOSolutionComparatorPtr createDefaultComparator() const
+  {
+    if (problem->getNumObjectives() == 1)
+      return problem->getFitnessLimits()->makeObjectiveComparator(0);
+    else
+    {
+      jassertfalse;
+      return MOOSolutionComparatorPtr();
+    }
+  }
 };
+#if 0
 
 class CrossEntropyMOOptimizer : public CrossEntropyOptimizer
 {
@@ -140,6 +146,8 @@ protected:
 
   bool useCrowding;
 };
+
+#endif // 0
 
 }; /* namespace lbcpp */
 

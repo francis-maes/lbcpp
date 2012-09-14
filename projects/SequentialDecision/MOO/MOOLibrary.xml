@@ -17,8 +17,12 @@
   <class name="MOOSolution">
     <variable type="Object" name="object"/>
     <variable type="MOOFitness" name="fitness"/>
+    <variable type="Integer" name="paretoRank"/>
+    <variable type="Double" name="crowdingDistance"/>
   </class>
 
+  <class name="MOOSolutionComparator" abstract="yes"/>
+  
   <class name="MOOSolutionSet">
     <variable type="MOOFitnessLimits" name="limits"/>
     <variable type="ObjectVector[MOOSolution]" name="solutions"/>
@@ -53,12 +57,9 @@
     <variable type="MOOSampler" name="sampler"/>
     <variable type="PositiveInteger" name="numTrainingSamples"/>
     <variable type="Boolean" name="elitist"/>
+    <variable type="MOOSolutionComparator" name="comparator"/>
   </class>
 
-  <class name="CrossEntropyMOOptimizer" base="CrossEntropyOptimizer">
-    <variable type="Boolean" name="useCrowding"/>
-  </class>
-  
   <class name="NestedCrossEntropyOptimizer" base="CrossEntropyOptimizer">
     <variable type="PositiveInteger" name="level"/>
   </class>
