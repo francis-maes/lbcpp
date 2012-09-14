@@ -87,12 +87,13 @@ static void sharkFillParetoFront(SearchAlgorithmClass& searchAlgorithm, MOOProbl
 }
 
 template<class SearchAlgorithmClass>
-static void sharkRunAndFillParetoFront(ExecutionContext& context, SearchAlgorithmClass& searchAlgorithm, MOOProblemPtr problem, MOOParetoFrontPtr front, size_t numGenerations)
+static void sharkRunAndFillParetoFront(ExecutionContext& context, SearchAlgorithmClass& searchAlgorithm, MOOProblemPtr problem, MOOParetoFrontPtr front, size_t numGenerations, MOOOptimizer::Verbosity verbosity)
 {
   for (size_t i = 1; (numGenerations == 0 || i < numGenerations) && !problem->shouldStop(); ++i) // first generation is evaluated during the init()
   {
     searchAlgorithm.run();
-    context.progressCallback(new ProgressionState(i+1, numGenerations, "Generations"));
+    if (verbosity >= MOOOptimizer::verbosityProgressAndResult)
+      context.progressCallback(new ProgressionState(i+1, numGenerations, "Generations"));
   }
   sharkFillParetoFront(searchAlgorithm, problem, front);
 }
@@ -108,7 +109,7 @@ public:
     SharkObjectiveFunctionFromMOOProblem sharkObjective(context, problem);
     NSGA2Search nsga2;
     nsga2.init(sharkObjective, populationSize, mutationDistributionIndex, crossOverDistributionIndex, crossOverProbability);
-    sharkRunAndFillParetoFront(context, nsga2, problem, front, numGenerations);
+    sharkRunAndFillParetoFront(context, nsga2, problem, front, numGenerations, verbosity);
   }
 
 protected:
@@ -130,7 +131,7 @@ public:
     SharkObjectiveFunctionFromMOOProblem sharkObjective(context, problem);
     MOCMASearch mocma;
     mocma.init(sharkObjective, populationSize, numOffsprings);
-    sharkRunAndFillParetoFront(context, mocma, problem, front, numGenerations);
+    sharkRunAndFillParetoFront(context, mocma, problem, front, numGenerations, verbosity);
   }
 
 protected:

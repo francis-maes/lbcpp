@@ -26,7 +26,7 @@ namespace lbcpp
 class MOOSandBox : public WorkUnit
 {
 public:
-  MOOSandBox() : numEvaluations(1000) {}
+  MOOSandBox() : numEvaluations(1000), verbosity(1) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -40,6 +40,7 @@ protected:
   friend class MOOSandBoxClass;
 
   size_t numEvaluations;
+  size_t verbosity;
 
   /*
   ** Single Objective
@@ -102,7 +103,7 @@ protected:
     SingleObjectiveEvaluatorDecoratorProblemPtr decorator(new SingleObjectiveEvaluatorDecoratorProblem(problem, numEvaluations, numEvaluations > 250 ? numEvaluations / 250 : 1));
 
     context.enterScope(optimizer->toShortString());
-    MOOParetoFrontPtr front = optimizer->optimize(context, decorator);
+    MOOParetoFrontPtr front = optimizer->optimize(context, decorator, (MOOOptimizer::Verbosity)verbosity);
     context.resultCallback("optimizer", optimizer);
     context.resultCallback("front", front);
     context.resultCallback("numEvaluations", decorator->getNumEvaluations());
@@ -145,10 +146,17 @@ protected:
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
       solveWithMultiObjectiveOptimizer(context, problem, new RandomOptimizer(new UniformContinuousSampler(), numEvaluations));
-      solveWithMultiObjectiveOptimizer(context, problem, new NSGA2MOOptimizer(100, numEvaluations / 100));
+      //solveWithMultiObjectiveOptimizer(context, problem, new NSGA2MOOptimizer(100, numEvaluations / 100));
+
       solveWithMultiObjectiveOptimizer(context, problem, new CrossEntropyOptimizer(new DiagonalGaussianSampler(), 100, 50, numEvaluations / 100, false));
       solveWithMultiObjectiveOptimizer(context, problem, new CrossEntropyOptimizer(new DiagonalGaussianSampler(), 100, 50, numEvaluations / 100, true));
+      
+      solveWithMultiObjectiveOptimizer(context, problem, new NestedCrossEntropyOptimizer(new DiagonalGaussianSampler(), 0, 100, 50, numEvaluations / 100, false));
+      solveWithMultiObjectiveOptimizer(context, problem, new NestedCrossEntropyOptimizer(new DiagonalGaussianSampler(), 0, 100, 50, numEvaluations / 100, true));
 
+      solveWithMultiObjectiveOptimizer(context, problem, new NestedCrossEntropyOptimizer(new DiagonalGaussianSampler(), 1, 50, 25, 2, false));
+      solveWithMultiObjectiveOptimizer(context, problem, new NestedCrossEntropyOptimizer(new DiagonalGaussianSampler(), 1, 50, 25, 2, true));
+      
       context.leaveScope();
     }
   }
@@ -158,27 +166,25 @@ protected:
     HyperVolumeEvaluatorDecoratorProblemPtr decorator(new HyperVolumeEvaluatorDecoratorProblem(problem, numEvaluations, numEvaluations > 250 ? numEvaluations / 250 : 1));
 
     context.enterScope(optimizer->toShortString());
-    MOOParetoFrontPtr front = optimizer->optimize(context, decorator);
+    MOOParetoFrontPtr front = optimizer->optimize(context, decorator, (MOOOptimizer::Verbosity)verbosity);
     context.resultCallback("optimizer", optimizer);
-    context.resultCallback("front", front);
-    context.resultCallback("frontSize", front->getNumSolutions());
-
-    /*std::vector<MOOParetoFrontPtr> subFronts = front->nonDominatedSort();
-    for (size_t i = 0; i < subFronts.size(); ++i)
-      context.resultCallback("subFront" + String((int)i), subFronts[i]);*/
-
     context.resultCallback("numEvaluations", decorator->getNumEvaluations());
 
-    std::vector<double> hyperVolumes = decorator->getHyperVolumes();
-    std::vector<double> cpuTimes = decorator->getCpuTimes();
-
-    for (size_t i = 0; i < hyperVolumes.size(); ++i)
+    if (verbosity >= 1)
     {
-      size_t numEvaluations = i * decorator->getEvaluationPeriod();
-      context.enterScope(String((int)numEvaluations));
-      context.resultCallback("numEvaluations", numEvaluations);
-      context.resultCallback("hyperVolume", hyperVolumes[i]);
-      context.resultCallback("cpuTime", cpuTimes[i]);
+      context.enterScope("curve");
+      std::vector<double> hyperVolumes = decorator->getHyperVolumes();
+      std::vector<double> cpuTimes = decorator->getCpuTimes();
+
+      for (size_t i = 0; i < hyperVolumes.size(); ++i)
+      {
+        size_t numEvaluations = i * decorator->getEvaluationPeriod();
+        context.enterScope(String((int)numEvaluations));
+        context.resultCallback("numEvaluations", numEvaluations);
+        context.resultCallback("hyperVolume", hyperVolumes[i]);
+        context.resultCallback("cpuTime", cpuTimes[i]);
+        context.leaveScope();
+      }
       context.leaveScope();
     }
 

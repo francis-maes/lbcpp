@@ -13,6 +13,7 @@
 # include <lbcpp/Execution/WorkUnit.h>
 # include "RandomOptimizer.h"
 # include "CrossEntropyOptimizer.h"
+# include "NestedCrossEntropyOptimizer.h"
 # include "DecoratorProblems.h"
 
 namespace lbcpp
@@ -70,8 +71,8 @@ public:
   {
     domain = new ColoDomain();
     std::vector< std::pair<double, double> > v(2);
-    v[0].first = 3.0; v[1].first = 0.0; // computational cost (minimization)
-    v[1].first = 0.0; v[1].second = 3.0; // speed-up (maximization)
+    v[0].first = 2.0; v[1].first = 0.5; // computational cost (minimization)
+    v[1].first = 0.5; v[1].second = 2.0; // speed-up (maximization)
     limits = new MOOFitnessLimits(v);
     wrapper = createColoJavaWrapper(context, javaDirectory, modelDirectory);
   }
@@ -212,9 +213,14 @@ public:
 
     for (size_t i = 0; i < n; ++i)
     {
-      double invZ = 1.0 / totalCounts[i];
-      for (size_t j = 0; j < n; ++j)
-        probabilities[i][j] = counts[i][j] * invZ;
+      if (totalCounts[i])
+      {
+        double invZ = 1.0 / totalCounts[i];
+        for (size_t j = 0; j < n; ++j)
+          probabilities[i][j] = counts[i][j] * invZ;
+      }
+      else
+        probabilities[i] = std::vector<double>(n, 1.0 / n);
     }
   }
 
@@ -239,10 +245,15 @@ public:
       return false;
 
     runOptimizer(context, problem, new RandomOptimizer(new ColoSampler(), numEvaluations));
-    runOptimizer(context, problem, new CrossEntropyOptimizer(new ColoSampler(), 100, 50, numEvaluations / 100, false));
-    runOptimizer(context, problem, new CrossEntropyOptimizer(new ColoSampler(), 100, 50, numEvaluations / 100, true));
-    runOptimizer(context, problem, new CrossEntropyOptimizer(new ColoSampler2(), 100, 50, numEvaluations / 100, false));
-    runOptimizer(context, problem, new CrossEntropyOptimizer(new ColoSampler2(), 100, 50, numEvaluations / 100, true));
+    runOptimizer(context, problem, new CrossEntropyOptimizer(new ColoSampler(), 100, 30, numEvaluations / 100, false));
+    runOptimizer(context, problem, new CrossEntropyOptimizer(new ColoSampler(), 100, 30, numEvaluations / 100, true));
+    runOptimizer(context, problem, new CrossEntropyOptimizer(new ColoSampler2(), 100, 30, numEvaluations / 100, false));
+    runOptimizer(context, problem, new CrossEntropyOptimizer(new ColoSampler2(), 100, 30, numEvaluations / 100, true));
+    
+    runOptimizer(context, problem, new NestedCrossEntropyOptimizer(new ColoSampler(), 2, 20, 10, 5, false));
+    runOptimizer(context, problem, new NestedCrossEntropyOptimizer(new ColoSampler(), 2, 20, 10, 5, true));
+    runOptimizer(context, problem, new NestedCrossEntropyOptimizer(new ColoSampler2(), 2, 20, 10, 5, false));
+    runOptimizer(context, problem, new NestedCrossEntropyOptimizer(new ColoSampler2(), 2, 20, 10, 5, true));
     return true;
   }
 
@@ -252,8 +263,7 @@ public:
 
     HyperVolumeEvaluatorDecoratorProblemPtr decorator(new HyperVolumeEvaluatorDecoratorProblem(problem, numEvaluations, numEvaluations > 250 ? numEvaluations / 250 : 1));
 
-    MOOParetoFrontPtr front = optimizer->optimize(context, decorator);
-    context.resultCallback("front", front);
+    MOOParetoFrontPtr front = optimizer->optimize(context, decorator, MOOOptimizer::verbosityProgressAndResult);
     context.resultCallback("numEvaluations", decorator->getNumEvaluations());
 
     std::vector<double> hyperVolumes = decorator->getHyperVolumes();

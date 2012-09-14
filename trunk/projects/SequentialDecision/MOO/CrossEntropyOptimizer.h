@@ -14,15 +14,13 @@
 namespace lbcpp
 {
 
-// TODO: "Comparator" concept
-
 class CrossEntropyOptimizer : public PopulationBasedMOOOptimizer
 {
 public:
   CrossEntropyOptimizer(MOOSamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations = 0, bool elitist = false, MOOSolutionComparatorPtr comparator = MOOSolutionComparatorPtr())
     : PopulationBasedMOOOptimizer(populationSize, numGenerations), sampler(sampler), numTrainingSamples(numTrainingSamples), elitist(elitist), comparator(comparator) {}
   CrossEntropyOptimizer() : elitist(false) {}
-
+   
   virtual void optimize(ExecutionContext& context)
   {
     MOOSamplerPtr sampler = this->sampler;
@@ -30,22 +28,27 @@ public:
     MOOSolutionSetPtr parents;
     for (size_t i = 0; (numGenerations == 0 || i < numGenerations) && !problem->shouldStop(); ++i)
     {
+      startGeneration(context, i, sampler);
+
       MOOSolutionSetPtr population = sampleAndEvaluatePopulation(context, sampler, populationSize);
       if (parents)
         population->addSolutions(parents);
-      MOOSolutionSetPtr selectedPopulation = population->selectNBests(comparator ? comparator : createDefaultComparator(), numTrainingSamples);
+      MOOSolutionSetPtr selectedPopulation = select(population, numTrainingSamples);
 
       sampler = sampler->cloneAndCast<MOOSampler>();
       learnSampler(context, selectedPopulation, sampler);
-
-      context.progressCallback(new ProgressionState(i+1, numGenerations, "Generations"));
+      
       if (elitist)
         parents = selectedPopulation;
+
+      finishGeneration(context, i, numGenerations);
     }
-    context.resultCallback("sampler", sampler);
+
+    if (verbosity >= verbosityProgressAndResult)
+      context.resultCallback("sampler", sampler);
   }
 
-protected:
+ protected:
   friend class CrossEntropyOptimizerClass;
 
   MOOSamplerPtr sampler;
@@ -59,6 +62,30 @@ protected:
       return objectiveComparator(0);  // single-objective
     else
       return paretoRankAndCrowdingDistanceComparator(); // multi-objective
+  }
+  
+  MOOSolutionSetPtr select(const MOOSolutionSetPtr& population, size_t count) const
+    {return population->selectNBests(comparator ? comparator : createDefaultComparator(), count);}
+
+  void startGeneration(ExecutionContext& context, size_t index, MOOSamplerPtr sampler)
+  {
+    if (verbosity >= verbosityDetailed)
+    {
+      context.enterScope("Generation " + String((int)index + 1));
+      context.resultCallback("generation", index + 1);
+      context.resultCallback("sampler", sampler->cloneAndCast<MOOSampler>());
+    }
+  }
+
+  void finishGeneration(ExecutionContext& context, size_t index, size_t numGenerations, bool isTopLevel = true)
+  {
+    if (verbosity >= verbosityDetailed)
+    {
+      context.resultCallback("hyperVolume", this->front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness()));
+      context.leaveScope();
+    }
+    if (verbosity >= verbosityProgressAndResult && isTopLevel)
+      context.progressCallback(new ProgressionState(index+1, numGenerations, "Generations"));
   }
 };
 

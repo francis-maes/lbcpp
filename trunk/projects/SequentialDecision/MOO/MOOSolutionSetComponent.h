@@ -115,15 +115,20 @@ protected:
 
   void paintPoint(juce::Graphics& g, int x, int y) const
   {
-    const int pointHalfSize = 4;
-    const float lineWidth = 2.f;
+    if (solutions->getNumSolutions() < 200)
+    {
+      const int pointHalfSize = 4;
+      const float lineWidth = 2.f;
 
-    float x1 = (float)(x - pointHalfSize);
-    float y1 = (float)(y - pointHalfSize);
-    float x2 = (float)(x + pointHalfSize);
-    float y2 = (float)(y + pointHalfSize);
-    g.drawLine(x1, y1, x2 + 1.f, y2 + 1.f, lineWidth);
-    g.drawLine(x1, y2, x2 + 1.f, y1 + 1.f, lineWidth);
+      float x1 = (float)(x - pointHalfSize);
+      float y1 = (float)(y - pointHalfSize);
+      float x2 = (float)(x + pointHalfSize);
+      float y2 = (float)(y + pointHalfSize);
+      g.drawLine(x1, y1, x2 + 1.f, y2 + 1.f, lineWidth);
+      g.drawLine(x1, y2, x2 + 1.f, y1 + 1.f, lineWidth);
+    }
+    else
+      g.setPixel(x, y);
   }
 
   PlotAxisPtr makeAxis(MOOFitnessLimitsPtr theoreticalLimits, MOOFitnessLimitsPtr empiricalLimits, size_t index)
