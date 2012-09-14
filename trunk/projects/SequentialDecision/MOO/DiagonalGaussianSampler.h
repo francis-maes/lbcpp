@@ -54,17 +54,17 @@ public:
     return res;
   }
 
-  virtual void learn(ExecutionContext& context, const std::vector<ObjectPtr>& solutions)
+  virtual void learn(ExecutionContext& context, const std::vector<ObjectPtr>& objects)
   {
     size_t n = domain->getNumDimensions();
     jassert(mean && n == mean->getNumValues() && stddev && n == stddev->getNumValues());
 
     std::vector<ScalarVariableMeanAndVariance> stats(domain->getNumDimensions());
-    for (size_t i = 0; i < solutions.size(); ++i)
+    for (size_t i = 0; i < objects.size(); ++i)
     {
-      DenseDoubleVectorPtr solution = solutions[i].staticCast<DenseDoubleVector>();
+      DenseDoubleVectorPtr vector = objects[i].staticCast<DenseDoubleVector>();
       for (size_t j = 0; j < n; ++j)
-        stats[j].push(solution->getValue(j));
+        stats[j].push(vector->getValue(j));
     }
 
     for (size_t i = 0; i < n; ++i)
@@ -74,16 +74,16 @@ public:
     } 
   }
 
-  virtual void reinforce(ExecutionContext& context, const ObjectPtr& sol)
+  virtual void reinforce(ExecutionContext& context, const ObjectPtr& object)
   {
     static const double minStddev = 1e-6;
-    DenseDoubleVectorPtr solution = sol.staticCast<DenseDoubleVector>();
+    DenseDoubleVectorPtr vector = object.staticCast<DenseDoubleVector>();
 
     size_t n = domain->getNumDimensions();
-    jassert(solution->getNumValues() == n);
+    jassert(vector->getNumValues() == n);
     for (size_t i = 0; i < n; ++i)
     {
-      double value = solution->getValue(i);
+      double value = vector->getValue(i);
       double& mean = this->mean->getValueReference(i);
       double& stddev = this->stddev->getValueReference(i);
       if (stddev == minStddev)
