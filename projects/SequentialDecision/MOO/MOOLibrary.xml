@@ -17,12 +17,24 @@
   <class name="MOOSolution">
     <variable type="Object" name="object"/>
     <variable type="MOOFitness" name="fitness"/>
-    <variable type="Integer" name="paretoRank"/>
-    <variable type="Double" name="crowdingDistance"/>
   </class>
 
   <class name="MOOSolutionComparator" abstract="yes"/>
-  
+    <class name="ObjectiveComparator" base="MOOSolutionComparator">
+      <constructor arguments="size_t index"/>
+      <variable type="PositiveInteger" name="index"/>
+    </class>
+    <class name="LexicographicComparator" base="MOOSolutionComparator">
+      <constructor/>
+    </class>
+    <class name="DominanceComparator" base="MOOSolutionComparator">
+      <constructor/>
+    </class>
+    <class name="ParetoRankAndCrowdingDistanceComparator" base="MOOSolutionComparator">
+      <constructor/>
+    </class>
+
+
   <class name="MOOSolutionSet">
     <variable type="MOOFitnessLimits" name="limits"/>
     <variable type="ObjectVector[MOOSolution]" name="solutions"/>

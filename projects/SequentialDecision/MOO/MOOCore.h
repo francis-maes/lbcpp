@@ -37,33 +37,8 @@ public:
   double getUpperLimit(size_t dimension) const
     {jassert(dimension < limits.size()); return limits[dimension].second;}
 
-  DenseDoubleVectorPtr sampleUniformly(RandomGeneratorPtr random) const
-  {
-    size_t n = limits.size();
-    DenseDoubleVectorPtr res(new DenseDoubleVector(n, 0.0));
-    for (size_t i = 0; i < n; ++i)
-      res->setValue(i, random->sampleDouble(getLowerLimit(i), getUpperLimit(i)));
-    return res;
-  }
-
-  virtual ObjectPtr projectIntoDomain(const ObjectPtr& object) const
-  {
-    DenseDoubleVectorPtr solution = object.staticCast<DenseDoubleVector>();
-    DenseDoubleVectorPtr res;
-    size_t n = limits.size();
-    for (size_t i = 0; i < n; ++i)
-    {
-      double value = solution->getValue(i);
-      double projectedValue = juce::jlimit(limits[i].first, limits[i].second, value);
-      if (value != projectedValue)
-      {
-        if (!res)
-          res = solution->cloneAndCast<DenseDoubleVector>(); // allocate in a lazy way
-        res->setValue(i, projectedValue);
-      }
-    }
-    return res ? res : object;
-  }
+  DenseDoubleVectorPtr sampleUniformly(RandomGeneratorPtr random) const;
+  virtual ObjectPtr projectIntoDomain(const ObjectPtr& object) const;
 
 protected:
   friend class ContinuousMOODomainClass;
@@ -88,10 +63,6 @@ public:
   double getObjectiveSign(size_t objectiveIndex) const; // 1 for maximisation and -1 for minimisation
 
   MOOFitnessPtr getWorstPossibleFitness(bool useInfiniteValues = false) const;
-
-  MOOSolutionComparatorPtr makeDominanceComparator() const;
-  MOOSolutionComparatorPtr makeLexicographicComparator() const;
-  MOOSolutionComparatorPtr makeObjectiveComparator(size_t objectiveIndex) const;
 };
 
 class MOOFitness : public Object
@@ -134,8 +105,8 @@ class MOOSolution : public Object
 {
 public:
   MOOSolution(const ObjectPtr& object, const MOOFitnessPtr& fitness)
-    : object(object), fitness(fitness), paretoRank(-1), crowdingDistance(-1.0) {}
-  MOOSolution() : paretoRank(-1), crowdingDistance(-1.0) {}
+    : object(object), fitness(fitness) {}
+  MOOSolution() {}
 
   /*
   ** Object
@@ -152,45 +123,26 @@ public:
   const MOOFitnessLimitsPtr& getFitnessLimits() const
     {return fitness->getLimits();}
 
-  /*
-  ** Pareto rank
-  */
-  void setParetoRank(size_t rank)
-    {paretoRank = (int)rank;}
-
-  bool hasParetoRank() const
-    {return paretoRank >= 0;}
-
-  size_t getParetoRank() const
-    {return (size_t)paretoRank;}
-
-  /*
-  ** Crowding distance
-  */
-  void setCrowdingDistance(double distance)
-    {crowdingDistance = distance;}
-
-  bool hasCrowdingDistance() const
-    {return crowdingDistance >= 0.0;}
-
-  double getCrowdingDistance() const
-    {return crowdingDistance;}
-
 protected:
   friend class MOOSolutionClass;
 
   ObjectPtr object;
   MOOFitnessPtr fitness;
-  int paretoRank;
-  double crowdingDistance;
 };
 
 class MOOSolutionComparator : public Object
 {
 public:
+  virtual void initialize(const MOOSolutionSetPtr& solutions) = 0;
+
   // returns -1 if solution1 is prefered, +1 if solution2 is prefered and 0 if there is no preference between the two solutions
-  virtual int compare(const MOOSolutionPtr& solution1, const MOOSolutionPtr& solution2) const = 0;
+  virtual int compare(size_t index1, size_t index2) = 0;
 };
+
+extern MOOSolutionComparatorPtr objectiveComparator(size_t index);
+extern MOOSolutionComparatorPtr lexicographicComparator();
+extern MOOSolutionComparatorPtr dominanceComparator();
+extern MOOSolutionComparatorPtr paretoRankAndCrowdingDistanceComparator();
 
 class MOOSolutionSet : public Object
 {
@@ -229,20 +181,24 @@ public:
   bool isSorted() const
     {return comparator;}
 
-  MOOSolutionSetPtr sort(const MOOSolutionComparatorPtr& comparator) const; // sort from the most prefered solution to the least prefered one
+  MOOSolutionSetPtr sort(const MOOSolutionComparatorPtr& comparator, std::vector<size_t>* mapping = NULL) const; // sort from the most prefered solution to the least prefered one
 
   int findBestSolution(const MOOSolutionComparatorPtr& comparator) const;
   MOOSolutionPtr getBestSolution(const MOOSolutionComparatorPtr& comparator) const;
   MOOSolutionSetPtr selectNBests(const MOOSolutionComparatorPtr& comparator, size_t n) const;
   
-  std::vector<MOOParetoFrontPtr> nonDominatedSort() const;
+  void computeParetoRanks(std::vector< std::pair<size_t, size_t> >& mapping, std::vector<size_t>& countPerRank) const;
+  std::vector<MOOParetoFrontPtr> nonDominatedSort(std::vector< std::pair<size_t, size_t> >* mapping = NULL) const;
+
   bool strictlyDominates(const MOOFitnessPtr& fitness) const;
   MOOParetoFrontPtr getParetoFront() const;
+
+  void computeCrowdingDistances(std::vector<double>& res) const;
 
   /*
   ** Fitness limits
   */
-  const MOOFitnessLimitsPtr& getTheoreticalLimits() const
+  const MOOFitnessLimitsPtr& getFitnessLimits() const
     {return limits;}
 
   MOOFitnessLimitsPtr getEmpiricalLimits() const;
@@ -262,49 +218,6 @@ protected:
   std::vector<MOOSolutionPtr> solutions;
   MOOSolutionComparatorPtr comparator;
 };
-
-#if 0
-class MOOSolutionSet : public Object
-{
-public:
-  typedef std::map<MOOFitnessPtr, std::vector<ObjectPtr>, ObjectComparator > Map;
-
-  MOOSolutionSet(MOOFitnessLimitsPtr limits, const Map& elements);
-  MOOSolutionSet(MOOFitnessLimitsPtr limits);
-  MOOSolutionSet();
-
-  void add(const ObjectPtr& solution, const MOOFitnessPtr& fitness);
-  void add(const MOOSolutionSetPtr& solutions);
-  void getSolutions(std::vector<ObjectPtr>& res) const;
-  void getFitnesses(std::vector<MOOFitnessPtr>& res) const;
-  void getSolutionAndFitnesses(std::vector< std::pair<MOOFitnessPtr, ObjectPtr> >& res) const;
-  void getSolutionsByFitness(const MOOFitnessPtr& fitness, std::vector<ObjectPtr>& res) const;
-  void computeCrowdingDistances(std::vector<double>& res) const;
-
-  const MOOFitnessLimitsPtr& getTheoreticalLimits() const
-    {return limits;}
-
-  MOOFitnessLimitsPtr getEmpiricalLimits() const;
-
-  size_t getNumObjectives() const
-    {return limits->getNumObjectives();}
-
-  size_t getNumElements() const
-    {return size;}
-
-  std::vector<MOOParetoFrontPtr> nonDominatedSort() const;
-
-  const Map& getMap() const
-    {return m;}
-
-protected:
-  friend class MOOSolutionSetClass;
-
-  MOOFitnessLimitsPtr limits;
-  Map m;
-  size_t size;
-};
-#endif // 0
 
 class MOOParetoFront : public MOOSolutionSet
 {

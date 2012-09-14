@@ -1,7 +1,4 @@
 
- * FIXME: better implementation of DominanceSolutionComparator
- * FIXME: finish to implement Multi-objective Cross entropy
- -
  * Wrap the JNI stuff
  
 Luape-Other:

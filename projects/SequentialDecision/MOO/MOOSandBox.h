@@ -30,8 +30,8 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    testSingleObjectiveOptimizers(context);
-    //testBiObjectiveOptimizers(context);
+    //testSingleObjectiveOptimizers(context);
+    testBiObjectiveOptimizers(context);
     //testSolutionSetComponent(context);
     return true;
   }
@@ -146,13 +146,9 @@ protected:
       context.resultCallback("problem", problem);
       solveWithMultiObjectiveOptimizer(context, problem, new RandomOptimizer(new UniformContinuousSampler(), numEvaluations));
       solveWithMultiObjectiveOptimizer(context, problem, new NSGA2MOOptimizer(100, numEvaluations / 100));
-      //solveWithMultiObjectiveOptimizer(context, problem, new CrossEntropyMOOptimizer(new DiagonalGaussianSampler(), 100, 50, numEvaluations / 100, true, true));
+      solveWithMultiObjectiveOptimizer(context, problem, new CrossEntropyOptimizer(new DiagonalGaussianSampler(), 100, 50, numEvaluations / 100, false));
+      solveWithMultiObjectiveOptimizer(context, problem, new CrossEntropyOptimizer(new DiagonalGaussianSampler(), 100, 50, numEvaluations / 100, true));
 
-      /*solveWithMultiObjectiveOptimizer(context, problem, new CrossEntropyMOOptimizer(new DiagonalGaussianSampler(), 100, 50, numEvaluations / 100, false, false));
-      solveWithMultiObjectiveOptimizer(context, problem, new CrossEntropyMOOptimizer(new DiagonalGaussianSampler(), 100, 50, numEvaluations / 100, false, true));
-      solveWithMultiObjectiveOptimizer(context, problem, new CrossEntropyMOOptimizer(new DiagonalGaussianSampler(), 100, 50, numEvaluations / 100, true, false));*/
-      //solveWithMultiObjectiveOptimizer(context, problem, new CMAESMOOptimizer(100, 100, numEvaluations / 100));
-      //solveWithMultiObjectiveOptimizer(context, problem, new CMAESMOOptimizer(5, 100, numEvaluations / 100));
       context.leaveScope();
     }
   }

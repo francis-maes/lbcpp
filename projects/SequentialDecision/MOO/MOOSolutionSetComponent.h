@@ -22,10 +22,10 @@ class MOOSolutionSetDrawable : public TwoDimensionalPlotDrawable
 public:
   MOOSolutionSetDrawable(MOOSolutionSetPtr solutions) : solutions(solutions)
   {
-    MOOFitnessLimitsPtr theoreticalLimits = solutions->getTheoreticalLimits();
+    MOOFitnessLimitsPtr fitnessLimits = solutions->getFitnessLimits();
     MOOFitnessLimitsPtr empiricalLimits = solutions->getEmpiricalLimits();
-    xAxis = makeAxis(theoreticalLimits, empiricalLimits, 0);
-    yAxis = makeAxis(theoreticalLimits, empiricalLimits, 1);
+    xAxis = makeAxis(fitnessLimits, empiricalLimits, 0);
+    yAxis = makeAxis(fitnessLimits, empiricalLimits, 1);
     computeBounds();
   }
 
@@ -147,7 +147,7 @@ class MOOSolutionSetComponent : public juce::Component, public ComponentWithPref
 {
 public:
   MOOSolutionSetComponent(MOOSolutionSetPtr solutions, const String& name)
-    : solutions(solutions->sort(solutions->getTheoreticalLimits()->makeLexicographicComparator())), drawable(NULL), selectedIndex(-1)
+    : solutions(solutions->sort(lexicographicComparator())), drawable(NULL), selectedIndex(-1)
   {
     setWantsKeyboardFocus(true);
     if (solutions->getNumObjectives() == 2)
