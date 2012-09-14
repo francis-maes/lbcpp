@@ -288,10 +288,10 @@ class MOOSampler : public Object
 public:
   virtual void initialize(ExecutionContext& context, const MOODomainPtr& domain) = 0;
 
-  virtual void learn(ExecutionContext& context, const std::vector<ObjectPtr>& solutions) = 0;
-  virtual void reinforce(ExecutionContext& context, const ObjectPtr& solution) = 0;
-
   virtual ObjectPtr sample(ExecutionContext& context) const = 0;
+
+  virtual void learn(ExecutionContext& context, const std::vector<ObjectPtr>& objects) = 0;
+  virtual void reinforce(ExecutionContext& context, const ObjectPtr& object) = 0;
 };
 
 }; /* namespace lbcpp */
