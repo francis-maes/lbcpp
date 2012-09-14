@@ -47,53 +47,50 @@ public:
     std::vector<MOOParetoFrontPtr> fronts = solutions->nonDominatedSort();
     for (size_t i = 0; i < fronts.size(); ++i)
     {
-      const MOOSolutionSet::Map& m = fronts[i]->getMap();
+      MOOParetoFrontPtr front = fronts[i];
+
       g.setColour(juce::Colour(i / (float)fronts.size(), 0.5f, 1.f, (juce::uint8)255));
-      MOOSolutionSet::Map::const_iterator it, nxt;
-      for (it = m.begin(); it != m.end(); it = nxt)
+      for (size_t j = 0; j < front->getNumSolutions() - 1; ++j)
       {
-        nxt = it; ++nxt;
-        if (nxt == m.end())
-          break;
         int x1, y1, x2, y2, x3, y3;
-        getPixelPosition(it->first, x1, y1, transform);
-        getPixelPosition(MOOFitness::makeWorstCombination(it->first, nxt->first), x2, y2, transform);
-        getPixelPosition(nxt->first, x3, y3, transform);
+        getPixelPosition(front->getFitness(j), x1, y1, transform);
+        getPixelPosition(MOOFitness::makeWorstCombination(front->getFitness(j), front->getFitness(j + 1)), x2, y2, transform);
+        getPixelPosition(front->getFitness(j + 1), x3, y3, transform);
         g.drawLine((float)x1, (float)y1, (float)x2, (float)y2);
         g.drawLine((float)x2, (float)y2, (float)x3, (float)y3);
       }
     }
 
-    const MOOSolutionSet::Map& m = solutions->getMap();
-    for (MOOSolutionSet::Map::const_iterator it = m.begin(); it != m.end(); ++it)
+    for (size_t i = 0; i < solutions->getNumSolutions(); ++i)
     {
+      MOOFitnessPtr fitness = solutions->getFitness(i);
       int x, y;
-      getPixelPosition(it->first, x, y, transform);
-      g.setColour(it->first == currentFitness ? juce::Colours::red : juce::Colours::black);
+      getPixelPosition(fitness, x, y, transform);
+      g.setColour(fitness == currentFitness ? juce::Colours::red : juce::Colours::black);
       paintPoint(g, x, y);
     }
   }
 
-  MOOFitnessPtr hittest(int x, int y, const juce::AffineTransform& transform) const
+  int hittest(int x, int y, const juce::AffineTransform& transform) const
   {
     double minDistance = DBL_MAX;
-    MOOFitnessPtr res;
+    int res = -1;
 
-    const MOOSolutionSet::Map& m = solutions->getMap();
-    for (MOOSolutionSet::Map::const_iterator it = m.begin(); it != m.end(); ++it)
+    for (size_t i = 0; i < solutions->getNumSolutions(); ++i)
     {
+      MOOFitnessPtr fitness = solutions->getFitness(i);
       int ox, oy;
-      getPixelPosition(it->first, ox, oy, transform);
+      getPixelPosition(fitness, ox, oy, transform);
       double distance = sqrt((double)((x - ox) * (x - ox) + (y - oy) * (y - oy)));
       if (distance < minDistance)
       {
         minDistance = distance;
-        res = it->first;
+        res = (int)i;
       }
     }
 
     const int hittestRadius = 7;
-    return minDistance < hittestRadius ? res : MOOFitnessPtr();
+    return minDistance < hittestRadius ? res : -1;
   }
 
   void setCurrentFitness(const MOOFitnessPtr& fitness)
@@ -150,11 +147,11 @@ class MOOSolutionSetComponent : public juce::Component, public ComponentWithPref
 {
 public:
   MOOSolutionSetComponent(MOOSolutionSetPtr solutions, const String& name)
-    : solutions(solutions), drawable(NULL)
+    : solutions(solutions->sort(solutions->getTheoreticalLimits()->makeLexicographicComparator())), drawable(NULL), selectedIndex(-1)
   {
     setWantsKeyboardFocus(true);
     if (solutions->getNumObjectives() == 2)
-      drawable = new MOOSolutionSetDrawable(solutions);
+      drawable = new MOOSolutionSetDrawable(this->solutions);
   }
   virtual ~MOOSolutionSetComponent()
     {if (drawable) delete drawable;}
@@ -167,8 +164,7 @@ public:
 
   virtual void paint(juce::Graphics& g)
   {
-    const MOOSolutionSet::Map& m = solutions->getMap();
-    if (m.empty())
+    if (solutions->isEmpty())
     {
       paintText(g, "Empty Pareto Front");
       return;
@@ -207,6 +203,7 @@ public:
 protected:
   MOOSolutionSetPtr solutions;
   MOOSolutionSetDrawable* drawable;
+  int selectedIndex;
 
   void paintText(juce::Graphics& g, const String& text)
   {
@@ -235,57 +232,33 @@ protected:
     return placement.getTransformToFit(x, y, w, h, (float)destX, (float)destY, (float)destW, (float)destH);
   }
 
-  void select(const MOOFitnessPtr& fitness)
+  void select(int index)
   {
-    if (fitness)
-    {
-      std::vector<ObjectPtr> sol;
-      solutions->getSolutionsByFitness(fitness, sol);
-
-      Variable res;
-      if (sol.size() == 1)
-        res = Variable::pair(fitness->getVariable(0), sol[0]);
-      else
-      {
-        ObjectVectorPtr listOfSol(new ObjectVector(objectClass, 0));
-        for (size_t i = 0; i < sol.size(); ++i)
-          listOfSol->append(sol[i]);
-        res = Variable::pair(fitness->getVariable(0), listOfSol);
-      }
-      sendSelectionChanged(res, T("pareto point"));
-    }
+    if (index >= 0)
+      sendSelectionChanged(solutions->getSolution(index), T("solution"));
     else
       sendSelectionChanged(std::vector<Variable>(), String::empty);
 
+    selectedIndex = index;
     if (drawable)
-      drawable->setCurrentFitness(fitness);
+      drawable->setCurrentFitness(selectedIndex >= 0 ? solutions->getFitness(selectedIndex) : MOOFitnessPtr());
     repaint();
   }
 
   void changeSelection(bool gotoRight)
   {
-    if (!drawable)
+    if (!drawable || selectedIndex < 0)
       return;
-    const MOOFitnessPtr& current = drawable->getCurrentFitness();
-    if (!current)
-      return;
-    const MOOSolutionSet::Map& m = solutions->getMap();
-    MOOSolutionSet::Map::const_iterator it = m.find(current);
-    if (it == m.end())
-      return;
+    
     if (gotoRight)
     {
-      ++it;
-      if (it != m.end())
-        select(it->first);
+      if (selectedIndex < (int)solutions->getNumSolutions() - 1)
+        select(selectedIndex + 1);
     }
     else
     {
-      if (it != m.begin())
-      {
-        --it;
-        select(it->first);
-      }
+      if (selectedIndex > 0)
+        select(selectedIndex - 1);
     }
   }
 };

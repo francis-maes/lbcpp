@@ -26,13 +26,13 @@ public:
   virtual void optimize(ExecutionContext& context)
   {
     MOOSamplerPtr sampler = this->sampler;
-    sampler->initialize(context, problem->getSolutionDomain());
+    sampler->initialize(context, problem->getObjectDomain());
     MOOSolutionSetPtr parents;
     for (size_t i = 0; (numGenerations == 0 || i < numGenerations) && !problem->shouldStop(); ++i)
     {
       MOOSolutionSetPtr population = sampleAndEvaluatePopulation(context, sampler, populationSize);
       if (parents)
-        population->add(parents);
+        population->addSolutions(parents);
       MOOSolutionSetPtr selectedPopulation = selectTrainingSamples(context, population);
 
       sampler = sampler->cloneAndCast<MOOSampler>();
@@ -49,19 +49,7 @@ public:
   {
     // default implementation for single objective
     jassert(problem->getNumObjectives() == 1);
-
-    std::vector< std::pair<MOOFitnessPtr, ObjectPtr> > pop;
-    population->getSolutionAndFitnesses(pop);
-    bool isMaximisation = problem->getFitnessLimits()->shouldObjectiveBeMaximized(0);
-
-    size_t size = numTrainingSamples < pop.size() ? numTrainingSamples : pop.size();
-    MOOSolutionSetPtr res = new MOOSolutionSet();
-    for (size_t i = 0; i < size; ++i)
-    {
-      size_t index = (isMaximisation ? pop.size() - 1 - i : i);
-      res->add(pop[index].second, pop[index].first);
-    }
-    return res;
+    return population->selectNBests(problem->getFitnessLimits()->makeObjectiveComparator(0), numTrainingSamples);
   }
 
 protected:
@@ -92,6 +80,8 @@ public:
 
   virtual MOOSolutionSetPtr selectTrainingSamples(ExecutionContext& context, MOOSolutionSetPtr population) const
   {
+    jassertfalse;
+#if 0
     if (numTrainingSamples >= population->getNumElements())
       return population;
 
@@ -141,6 +131,8 @@ public:
     }
     jassert(res->getNumElements() == numTrainingSamples);
     return res;
+#endif // 0
+    return MOOSolutionSetPtr();
   }
 
 protected:

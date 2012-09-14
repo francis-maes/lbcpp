@@ -23,7 +23,7 @@ public:
   
   virtual void optimize(ExecutionContext& context)
   {
-    sampler->initialize(context, problem->getSolutionDomain());
+    sampler->initialize(context, problem->getObjectDomain());
     optimizeRecursively(context, sampler, level);
   }
 

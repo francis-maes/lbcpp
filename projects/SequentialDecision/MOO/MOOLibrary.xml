@@ -14,8 +14,14 @@
     <variable type="MOOFitnessLimits" name="limits"/>
   </class>
 
+  <class name="MOOSolution">
+    <variable type="Object" name="object"/>
+    <variable type="MOOFitness" name="fitness"/>
+  </class>
+
   <class name="MOOSolutionSet">
     <variable type="MOOFitnessLimits" name="limits"/>
+    <variable type="ObjectVector[MOOSolution]" name="solutions"/>
   </class>
   <class name="MOOParetoFront" base="MOOSolutionSet"/>
   
