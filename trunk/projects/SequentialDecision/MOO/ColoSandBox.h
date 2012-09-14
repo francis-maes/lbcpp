@@ -11,6 +11,7 @@
 
 # include "MOOCore.h"
 # include <lbcpp/Execution/WorkUnit.h>
+# include "RandomOptimizer.h"
 # include "CrossEntropyOptimizer.h"
 # include "DecoratorProblems.h"
 
@@ -33,7 +34,7 @@ public:
     {
       if (i > 0)
         res += "-";
-      res += String((int)sequence[i]);
+      res += String((int)sequence[i]+1);
     }
     return res;
   }
@@ -58,19 +59,29 @@ public:
 
 typedef ReferenceCountedObjectPtr<ColoDomain> ColoDomainPtr;
 
+extern void* createColoJavaWrapper(ExecutionContext& context, const File& javaDirectory, const File& modelDirectory);
+extern std::vector<double> evaluateColoJavaWrapper(void* wrapper, const ColoObjectPtr& colo);
+extern void freeColoJavaWrapper(void* wrapper);
+
 class ColoProblem : public MOOProblem
 {
 public:
-  ColoProblem(const File& modelDirectory)
+  ColoProblem(ExecutionContext& context, const File& javaDirectory, const File& modelDirectory)
   {
     domain = new ColoDomain();
     std::vector< std::pair<double, double> > v(2);
-    v[0].first = 10.0; v[1].first = 0.0; // computational cost (minimization)
-    v[1].first = 0.0; v[1].second = 10.0; // speed-up (maximization)
+    v[0].first = 3.0; v[1].first = 0.0; // computational cost (minimization)
+    v[1].first = 0.0; v[1].second = 3.0; // speed-up (maximization)
     limits = new MOOFitnessLimits(v);
-
+    wrapper = createColoJavaWrapper(context, javaDirectory, modelDirectory);
   }
   ColoProblem() {}
+
+  virtual ~ColoProblem()
+    {if (wrapper) freeColoJavaWrapper(wrapper);}
+
+  bool isLoaded() const
+    {return wrapper != NULL;}
 
   virtual MOODomainPtr getObjectDomain() const
     {return domain;}
@@ -79,13 +90,7 @@ public:
     {return limits;}
 
   virtual MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
-  {
-    // FIXME
-    std::vector<double> values(2);
-    values[0] = context.getRandomGenerator()->sampleDouble(0.0, 10.0);
-    values[1] = context.getRandomGenerator()->sampleDouble(0.0, 10.0);
-    return new MOOFitness(values, limits);
-  }
+    {return new MOOFitness(evaluateColoJavaWrapper(wrapper, object.staticCast<ColoObject>()), limits);}
 
 protected:
   friend class ColoProblemClass;
@@ -94,7 +99,10 @@ protected:
 
   ColoDomainPtr domain;
   MOOFitnessLimitsPtr limits;
+  void* wrapper;
 };
+
+typedef ReferenceCountedObjectPtr<ColoProblem> ColoProblemPtr;
 
 class ColoSampler : public MOOSampler
 {
@@ -150,6 +158,75 @@ protected:
   std::vector<double> probabilities;
 };
 
+class ColoSampler2 : public MOOSampler
+{
+public:
+  virtual void initialize(ExecutionContext& context, const MOODomainPtr& domain)
+  {
+    probabilities.clear();
+    size_t n = domain.staticCast<ColoDomain>()->getNumFlags() + 1;
+    probabilities.resize(n, std::vector<double>(n, 1.0 / n));
+  }
+
+  virtual ObjectPtr sample(ExecutionContext& context) const
+  {
+    RandomGeneratorPtr random = context.getRandomGenerator();
+
+    ColoObjectPtr res = new ColoObject();
+    size_t maxLength = probabilities.size();
+    size_t n = probabilities.size();
+    size_t currentState = n - 1;
+    for (size_t i = 0; i < maxLength; ++i)
+    {
+      size_t flag = random->sampleWithNormalizedProbabilities(probabilities[currentState]);
+      if (flag == n - 1)
+        break;
+      else
+      {
+        res->append(flag);
+        currentState = flag;
+      }
+    }
+    return res;
+  }
+
+  virtual void learn(ExecutionContext& context, const std::vector<ObjectPtr>& objects)
+  {
+	  size_t n = probabilities.size();
+    std::vector< std::vector<size_t> > counts(n, std::vector<size_t>(n, 0));
+    std::vector<size_t> totalCounts(n, 0);
+
+    for (size_t i = 0; i < objects.size(); ++i)
+    {
+      const std::vector<size_t>& sequence = objects[i].staticCast<ColoObject>()->getSequence();
+      size_t currentState = n-1;
+      for (size_t j = 0; j < sequence.size(); ++j)
+      {
+        ++counts[currentState][sequence[j]];
+        ++totalCounts[currentState];
+        currentState = sequence[j];
+      }
+      ++counts[currentState][n-1];
+      ++totalCounts[currentState];
+    }
+
+    for (size_t i = 0; i < n; ++i)
+    {
+      double invZ = 1.0 / totalCounts[i];
+      for (size_t j = 0; j < n; ++j)
+        probabilities[i][j] = counts[i][j] * invZ;
+    }
+  }
+
+  virtual void reinforce(ExecutionContext& context, const ObjectPtr& solution)
+    {jassertfalse;}
+
+protected:
+  friend class ColoSampler2Class;
+
+  std::vector< std::vector<double> > probabilities;
+};
+
 class ColoSandBox : public WorkUnit
 {
 public:
@@ -157,9 +234,15 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    MOOProblemPtr problem = new ColoProblem(modelDirectory);
-    MOOOptimizerPtr optimizer = new CrossEntropyOptimizer(new ColoSampler(), 100, 50, numEvaluations / 100, true);
-    runOptimizer(context, problem, optimizer);
+    ColoProblemPtr problem = new ColoProblem(context, javaDirectory, modelDirectory);
+    if (!problem->isLoaded())
+      return false;
+
+    runOptimizer(context, problem, new RandomOptimizer(new ColoSampler(), numEvaluations));
+    runOptimizer(context, problem, new CrossEntropyOptimizer(new ColoSampler(), 100, 50, numEvaluations / 100, false));
+    runOptimizer(context, problem, new CrossEntropyOptimizer(new ColoSampler(), 100, 50, numEvaluations / 100, true));
+    runOptimizer(context, problem, new CrossEntropyOptimizer(new ColoSampler2(), 100, 50, numEvaluations / 100, false));
+    runOptimizer(context, problem, new CrossEntropyOptimizer(new ColoSampler2(), 100, 50, numEvaluations / 100, true));
     return true;
   }
 
@@ -195,6 +278,7 @@ public:
 protected:
   friend class ColoSandBoxClass;
 
+  File javaDirectory;
   File modelDirectory;
   size_t numEvaluations;
 };

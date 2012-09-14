@@ -134,8 +134,12 @@
   <class name="ColoSampler" base="MOOSampler">
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="probabilities"/>
   </class>
+  <class name="ColoSampler2" base="MOOSampler">
+    <variable type="ObjectVector[DenseDoubleVector[PositiveIntegerEnumeration,Double]]" name="probabilities"/>
+  </class>
 
   <class name="ColoSandBox" base="WorkUnit">
+    <variable type="File" name="javaDirectory"/>
     <variable type="File" name="modelDirectory"/>
     <variable type="PositiveInteger" name="numEvaluations"/>
   </class>
