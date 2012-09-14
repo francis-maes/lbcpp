@@ -55,7 +55,7 @@ public:
           break;
       }
     }
-    return selectTrainingSamples(context, population);
+    return population->selectNBests(comparator ? comparator : createDefaultComparator(), numTrainingSamples);
   }
 
 protected:

@@ -134,23 +134,55 @@ class MOOSolution : public Object
 {
 public:
   MOOSolution(const ObjectPtr& object, const MOOFitnessPtr& fitness)
-    : object(object), fitness(fitness) {}
-  MOOSolution() {}
+    : object(object), fitness(fitness), paretoRank(-1), crowdingDistance(-1.0) {}
+  MOOSolution() : paretoRank(-1), crowdingDistance(-1.0) {}
 
+  /*
+  ** Object
+  */
   const ObjectPtr& getObject() const
     {return object;}
 
+  /*
+  ** Fitness
+  */
   const MOOFitnessPtr& getFitness() const
     {return fitness;}
 
   const MOOFitnessLimitsPtr& getFitnessLimits() const
     {return fitness->getLimits();}
 
+  /*
+  ** Pareto rank
+  */
+  void setParetoRank(size_t rank)
+    {paretoRank = (int)rank;}
+
+  bool hasParetoRank() const
+    {return paretoRank >= 0;}
+
+  size_t getParetoRank() const
+    {return (size_t)paretoRank;}
+
+  /*
+  ** Crowding distance
+  */
+  void setCrowdingDistance(double distance)
+    {crowdingDistance = distance;}
+
+  bool hasCrowdingDistance() const
+    {return crowdingDistance >= 0.0;}
+
+  double getCrowdingDistance() const
+    {return crowdingDistance;}
+
 protected:
   friend class MOOSolutionClass;
 
   ObjectPtr object;
   MOOFitnessPtr fitness;
+  int paretoRank;
+  double crowdingDistance;
 };
 
 class MOOSolutionComparator : public Object
