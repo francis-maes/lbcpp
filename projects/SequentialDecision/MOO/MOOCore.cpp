@@ -177,6 +177,7 @@ void MOOSolutionSet::addSolution(const ObjectPtr& object, const MOOFitnessPtr& f
 
 void MOOSolutionSet::addSolutions(const MOOSolutionSetPtr& otherSolutions)
 {
+  jassert(otherSolutions);
   size_t offset = solutions.size();
   size_t n = otherSolutions->getNumSolutions();
   solutions.resize(offset + n);
@@ -487,14 +488,22 @@ double MOOParetoFront::computeHyperVolume(const MOOFitnessPtr& referenceFitness)
 /*
 ** MOOOptimizer
 */
-MOOParetoFrontPtr MOOOptimizer::optimize(ExecutionContext& context, MOOProblemPtr problem)
+MOOParetoFrontPtr MOOOptimizer::optimize(ExecutionContext& context, MOOProblemPtr problem, Verbosity verbosity)
 {
   this->front = new MOOParetoFront(problem->getFitnessLimits());
   this->problem = problem;
+  this->verbosity = verbosity;
 
   optimize(context);
   MOOParetoFrontPtr res = front;
 
+  if (verbosity >= verbosityProgressAndResult)
+  {
+    context.resultCallback("front", res);
+    context.resultCallback("hyperVolume", res->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness()));
+  }
+
+  this->verbosity = verbosityQuiet;
   this->problem = MOOProblemPtr();
   this->front = MOOParetoFrontPtr();
 

@@ -6,11 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-
-extern "C" {
 #include <jni.h>
-};
-
 #include "ColoSandBox.h"
 using namespace lbcpp;
 
@@ -87,29 +83,15 @@ public:
   jobject instance;
 } jvm;
 
-class ColoJavaWrapper
-{
-public:
-  bool initialize(ExecutionContext& context, const File& javaDirectory, const File& modelDirectory)
-    {return jvm.jvm || jvm.initialize(context, javaDirectory, modelDirectory);}
-
-  std::vector<double> evaluate(const ColoObjectPtr& colo)
-    {return jvm.evaluate(colo);}
-
-};
-
 void* lbcpp::createColoJavaWrapper(ExecutionContext& context, const File& javaDirectory, const File& modelDirectory)
 {
-  ColoJavaWrapper* res = new ColoJavaWrapper();
-  if (res->initialize(context, javaDirectory, modelDirectory))
-    return res;
-  delete res;
-  return NULL;
+  if (!jvm.jvm && !jvm.initialize(context, javaDirectory, modelDirectory))
+    return NULL;
+  return (void* )1;
 }
   
 std::vector<double> lbcpp::evaluateColoJavaWrapper(void* wrapper, const ColoObjectPtr& colo)
-  {return ((ColoJavaWrapper* )wrapper)->evaluate(colo);}
+  {return jvm.evaluate(colo);}
 
 void lbcpp::freeColoJavaWrapper(void* wrapper)
-  {delete (ColoJavaWrapper* )wrapper;}
-
+  {}

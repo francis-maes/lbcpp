@@ -252,7 +252,17 @@ public:
 class MOOOptimizer : public Object
 {
 public:
-  MOOParetoFrontPtr optimize(ExecutionContext& context, MOOProblemPtr problem);
+  MOOOptimizer() : verbosity(verbosityQuiet) {}
+  
+  enum Verbosity
+  {
+    verbosityQuiet = 0,
+    verbosityProgressAndResult,
+    verbosityDetailed,
+    verbosityAll
+  };
+
+  MOOParetoFrontPtr optimize(ExecutionContext& context, MOOProblemPtr problem, Verbosity verbosity = verbosityQuiet);
 
   virtual void optimize(ExecutionContext& context) = 0;
 
@@ -261,6 +271,7 @@ protected:
 
   MOOProblemPtr problem;
   MOOParetoFrontPtr front;
+  Verbosity verbosity;
 
   MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object);
   MOOFitnessPtr evaluateAndSave(ExecutionContext& context, const ObjectPtr& object, MOOSolutionSetPtr solutions);

@@ -17,8 +17,8 @@ namespace lbcpp
 class NestedCrossEntropyOptimizer : public CrossEntropyOptimizer
 {
 public:
-  NestedCrossEntropyOptimizer(MOOSamplerPtr sampler, size_t level, size_t populationSize, size_t numTrainingSamples)
-    : CrossEntropyOptimizer(sampler, populationSize, numTrainingSamples, 0), level(level) {}
+  NestedCrossEntropyOptimizer(MOOSamplerPtr sampler, size_t level, size_t populationSize, size_t numTrainingSamples, size_t numGenerations = 10, bool elitist = true)
+    : CrossEntropyOptimizer(sampler, populationSize, numTrainingSamples, numGenerations, elitist), level(level) {}
   NestedCrossEntropyOptimizer() {}
  
   virtual void optimize(ExecutionContext& context)
@@ -30,34 +30,98 @@ public:
 
   MOOSolutionSetPtr optimizeRecursively(ExecutionContext& context, MOOSamplerPtr sampler, size_t level)
   {
-    MOOSolutionSetPtr population;
+    sampler->initialize(context, problem->getObjectDomain());
+    MOOSolutionSetPtr lastPopulation;
+
+    bool isTopLevel = (level == this->level);
+    for (size_t i = 0; (isTopLevel || i < numGenerations) && !problem->shouldStop(); ++i)
+    {
+      startGeneration(context, i, sampler);
+
+      MOOSolutionSetPtr population = new MOOSolutionSet(problem->getFitnessLimits());
+      for (size_t j = 0; j < populationSize; ++j)
+      {
+        if (level == 0)
+        {
+          ObjectPtr object = sampleSolution(context, sampler); 
+          population->addSolution(object, evaluate(context, object));
+        }
+        else
+        {
+          if (verbosity >= verbosityAll)
+            context.enterScope("Sub-optimize " + String((int)j+1));
+          MOOSolutionSetPtr subSolutions = optimizeRecursively(context, sampler, level - 1);
+          if (subSolutions)
+            population->addSolutions(subSolutions->getParetoFront());
+          if (verbosity >= verbosityAll)
+            context.leaveScope();
+        }
+      }
+      
+      if (elitist && lastPopulation)
+        population->addSolutions(lastPopulation);
+      MOOSolutionSetPtr selectedPopulation = select(population, numTrainingSamples);
+
+      sampler = sampler->cloneAndCast<MOOSampler>();
+      learnSampler(context, selectedPopulation, sampler);
+      
+      lastPopulation = selectedPopulation;
+
+      finishGeneration(context, i, numGenerations);
+    }
+
+    if (verbosity >= verbosityProgressAndResult)
+      context.resultCallback("sampler", sampler);
+    return lastPopulation;
+  }
+
+  /*
+  MOOSolutionSetPtr optimizeRecursively(ExecutionContext& context, MOOSamplerPtr sampler, size_t level)
+  {
     if (problem->shouldStop())
-      return population;
+      return MOOSolutionSetPtr();
     
     if (level == 0)
-      population = sampleAndEvaluatePopulation(context, sampler, populationSize);
+    {
+      MOOOptimizerPtr crossEntropy = new CrossEntropyOptimizer(sampler, populationSize, numTrainingSamples, numGenerations, elitist, comparator);
+      return crossEntropy->optimize(context, problem);
+    }
     else
     {
       MOOSamplerPtr currentSampler = sampler->cloneAndCast<MOOSampler>();
+
       bool isTopLevel = (this->level == level);
 
-      population = new MOOSolutionSet(problem->getFitnessLimits());
-      for (size_t i = 0; isTopLevel || i < populationSize; ++i)
+      MOOSolutionSetPtr population = new MOOSolutionSet(problem->getFitnessLimits());
+      for (size_t i = 0; isTopLevel || i < numGenerations; ++i)
       {
-        MOOSolutionSetPtr subSolutions = optimizeRecursively(context, currentSampler, level - 1);
-        if (subSolutions)
+        startGeneration(context, i, currentSampler);
+
+        for (size_t j = 0; j < populationSize; ++j)
         {
-          population->addSolutions(subSolutions);
-          learnSampler(context, subSolutions, currentSampler);
-          //learnSampler(context, selectTrainingSamples(context, population), currentSampler);
+
         }
-        if (isTopLevel && problem->shouldStop())
+
+        
+        MOOSolutionSetPtr subPopulation = optimizeRecursively(context, currentSampler, level - 1);
+        if (subPopulation)
+        {
+          jassert(subPopulation->getNumSolutions() <= numTrainingSamples);
+          if (verbosity >= verbosityAll)
+            context.resultCallback("solutions", subPopulation);
+
+          population->addSolutions(subPopulation);
+          population = select(population, numTrainingSamples);
+          learnSampler(context, elitist ? population : subPopulation, currentSampler);
+        }
+        finishGeneration(context, i, isTopLevel ? 0 : populationSize, isTopLevel);
+        if (problem->shouldStop())
           break;
       }
+      return population;
     }
-    return population->selectNBests(comparator ? comparator : createDefaultComparator(), numTrainingSamples);
   }
-
+  */
 protected:
   friend class NestedCrossEntropyOptimizerClass;
 

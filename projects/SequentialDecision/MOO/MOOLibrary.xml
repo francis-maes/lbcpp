@@ -148,6 +148,7 @@
   <!-- WorkUnits -->
   <class name="MOOSandBox" base="WorkUnit">
     <variable type="PositiveInteger" name="numEvaluations"/>
+    <variable type="PositiveInteger" name="verbosity"/>
   </class>
 
 </library>

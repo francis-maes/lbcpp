@@ -25,7 +25,11 @@ public:
   {
     sampler->initialize(context, problem->getObjectDomain());
     for (size_t iteration = 0; (!numIterations || iteration < numIterations) && !problem->shouldStop(); ++iteration)
+    {
       sampleAndEvaluateSolution(context, sampler);
+      if (verbosity >= verbosityProgressAndResult)
+        context.progressCallback(new ProgressionState(iteration+1, numIterations, T("Iterations")));
+    }
   }
 
 protected:
