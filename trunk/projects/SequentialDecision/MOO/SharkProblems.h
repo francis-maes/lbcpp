@@ -103,18 +103,18 @@ protected:
 };
 
 struct AckleyProblem : public SingleObjectiveSharkMOProblem
-  { AckleyProblem(size_t numDimensions = 30) : SingleObjectiveSharkMOProblem(new Ackley((unsigned)numDimensions)) {} };
+  { AckleyProblem(size_t numDimensions = 30) : SingleObjectiveSharkMOProblem(new Ackley((unsigned)numDimensions), 20.0) {} };
 
 struct GriewangkProblem : public SingleObjectiveSharkMOProblem
-  { GriewangkProblem(size_t numDimensions = 30) : SingleObjectiveSharkMOProblem(new Griewangk((unsigned)numDimensions)) {} };
+  { GriewangkProblem(size_t numDimensions = 30) : SingleObjectiveSharkMOProblem(new Griewangk((unsigned)numDimensions), 400.0) {} };
 
 struct RastriginProblem : public SingleObjectiveSharkMOProblem
-  { RastriginProblem(size_t numDimensions = 30) : SingleObjectiveSharkMOProblem(new Rastrigin((unsigned)numDimensions)) {} };
+  { RastriginProblem(size_t numDimensions = 30) : SingleObjectiveSharkMOProblem(new Rastrigin((unsigned)numDimensions), 400.0) {} };
 
 struct RosenbrockProblem : public SingleObjectiveSharkMOProblem
 {
   RosenbrockProblem(size_t numDimensions = 30)
-    : SingleObjectiveSharkMOProblem(new Rosenbrock((unsigned)numDimensions)) 
+    : SingleObjectiveSharkMOProblem(new Rosenbrock((unsigned)numDimensions), 4000.0) 
   {
     domain = new ContinuousMOODomain(std::vector< std::pair<double, double> >(numDimensions, std::make_pair(-2.0, 2.0)));
   }
@@ -137,7 +137,7 @@ class ZDTMOProblem : public MOOProblemFromSharkObjectiveFunction
 {
 public:
   ZDTMOProblem(ObjectiveFunctionVS<double>* objective, double max1, double max2)
-    : MOOProblemFromSharkObjectiveFunction(objective), max1(max1), max2(max2) {}
+    : MOOProblemFromSharkObjectiveFunction(objective), max1(10.0), max2(10.0) {} // TMP !!
 
   virtual void adjustLimits(std::vector< std::pair<double, double> >& res) const
     {res[0].first = max1; res[1].first = max2;}

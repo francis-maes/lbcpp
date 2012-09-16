@@ -91,6 +91,13 @@
     <variable type="PositiveInteger" name="numOffsprings"/>
   </class>
 
+  <!-- Meta Optimizers -->
+  <class name="MABMetaOptimizer" base="IterativeOptimizer">
+    <variable type="IterativeOptimizer" name="baseOptimizer"/>
+    <variable type="PositiveInteger" name="numInstances"/>
+    <variable type="Double" name="explorationCoefficient"/>
+  </class>
+  
   <!-- Problems -->
   <class name="DecoratorMOOProblem" base="MOOProblem" abstract="yes">
     <variable type="MOOProblem" name="problem"/>

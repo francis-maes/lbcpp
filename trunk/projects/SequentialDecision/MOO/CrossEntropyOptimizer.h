@@ -21,6 +21,14 @@ public:
     : PopulationBasedMOOOptimizer(populationSize, numGenerations), sampler(sampler), numTrainingSamples(numTrainingSamples), elitist(elitist), comparator(comparator) {}
   CrossEntropyOptimizer() : elitist(false) {}
   
+  virtual void configure(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr front, Verbosity verbosity)
+  {
+    IterativeOptimizer::configure(context, problem, front, verbosity);
+    currentSampler = this->sampler;
+    currentSampler->initialize(context, problem->getObjectDomain());
+    currentParents = MOOSolutionSetPtr();
+  }
+
   virtual bool iteration(ExecutionContext& context, size_t iter)
   {
     if (verbosity >= verbosityDetailed)
@@ -40,16 +48,11 @@ public:
     return !currentSampler->isDegenerate();
   }
 
-  virtual void optimize(ExecutionContext& context)
+  virtual void clear(ExecutionContext& context)
   {
-    currentSampler = this->sampler;
-    currentSampler->initialize(context, problem->getObjectDomain());
-    currentParents = MOOSolutionSetPtr();
-
-    PopulationBasedMOOOptimizer::optimize(context);
-
     if (verbosity >= verbosityProgressAndResult)
       context.resultCallback("sampler", currentSampler);
+    MOOOptimizer::clear(context);
   }
 
  protected:

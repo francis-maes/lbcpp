@@ -21,11 +21,14 @@ public:
     : sampler(sampler), level(level), numIterationsPerLevel(numIterationsPerLevel) {}
   NRPAOptimizer() : level(0), numIterationsPerLevel(0) {}
   
-  virtual void optimize(ExecutionContext& context)
+  virtual void configure(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr front, Verbosity verbosity)
   {
+    MOOOptimizer::configure(context, problem, front, verbosity);
     sampler->initialize(context, problem->getObjectDomain());
-    optimizeRecursively(context, sampler, level);
   }
+
+  virtual void optimize(ExecutionContext& context)
+    {optimizeRecursively(context, sampler, level);}
 
 protected:
   friend class NRPAOptimizerClass;

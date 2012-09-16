@@ -133,6 +133,7 @@ protected:
 
   PlotAxisPtr makeAxis(MOOFitnessLimitsPtr theoreticalLimits, MOOFitnessLimitsPtr empiricalLimits, size_t index)
   {
+    /*
     double lower = theoreticalLimits->getLowerLimit(index);
     double upper = theoreticalLimits->getUpperLimit(index);
     if (lower > upper)
@@ -143,7 +144,13 @@ protected:
       lower = empiricalLimits->getLowerLimit(index) - empiricalRange / 10.0;
     if (empiricalLimits->getUpperLimit(index) > upper || !isNumberValid(upper))
       upper = empiricalLimits->getUpperLimit(index) + empiricalRange / 10.0;
+      */
 
+    double lower = empiricalLimits->getLowerLimit(index);
+    double upper = empiricalLimits->getUpperLimit(index);
+    double range = upper - lower;
+    lower -= range / 10.0;
+    upper += range / 10.0;
     return new PlotAxis(lower, upper, "F" + String((int)index + 1), false);
   }
 };

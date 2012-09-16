@@ -61,6 +61,9 @@ const Variable& BanditPool::getArmParameter(size_t index) const
 double BanditPool::getArmMeanObjective(size_t index) const
   {jassert(index < arms.size()); return arms[index].getMeanObjectiveValue();}
 
+double BanditPool::getArmMeanReward(size_t index) const
+  {jassert(index < arms.size()); return arms[index].getMeanReward();}
+
 size_t BanditPool::getArmPlayedCount(size_t index) const
   {jassert(index < arms.size()); return arms[index].playedCount;}
 
@@ -93,21 +96,25 @@ size_t BanditPool::selectAndPlayArm(ExecutionContext& context)
     context.pushWorkUnit(workUnit, this, false);
   else
   {
-    double reward = context.run(workUnit, false).getDouble();
-    observeReward(index, reward);
+    double objective = context.run(workUnit, false).getDouble();
+    observeObjective(index, objective);
   }
   return (size_t)index;
 }
 
 void BanditPool::workUnitFinished(const WorkUnitPtr& workUnit, const Variable& result, const ExecutionTracePtr& trace)
-  {observeReward(workUnit.staticCast<PlayArmWorkUnit>()->armIndex, result.toDouble());}
+  {observeObjective(workUnit.staticCast<PlayArmWorkUnit>()->armIndex, result.toDouble());}
 
-void BanditPool::observeReward(size_t index, double objectiveValue)
+void BanditPool::observeObjective(size_t index, double objectiveValue)
 {
   Arm& arm = arms[index];
   double worst, best;
   objective->getObjectiveRange(worst, best);
-  arm.observe(objectiveValue, (objectiveValue - worst) / (best - worst));
+  if ((best > worst && objectiveValue == -DBL_MAX) ||
+      (best < worst && objectiveValue == DBL_MAX))
+    return; // arm is killed
+  else
+    arm.observe(objectiveValue, (objectiveValue - worst) / (best - worst));
   
   if (arm.playedCount == 1)
     arm.objectiveValueBest = objectiveValue;

@@ -41,13 +41,14 @@ public:
   
   const Variable& getArmParameter(size_t index) const;
   double getArmMeanObjective(size_t index) const;
+  double getArmMeanReward(size_t index) const;
   size_t getArmPlayedCount(size_t index) const;
 
   void setArmParameter(size_t index, const Variable& parameter);
 
   size_t selectAndPlayArm(ExecutionContext& context);
   size_t sampleArmWithHighestReward(ExecutionContext& context) const;
-  void observeReward(size_t index, double objective);
+  void observeObjective(size_t index, double objective);
 
   void displayArmInformation(ExecutionContext& context, size_t order, size_t armIndex) const;
   void displayInformation(ExecutionContext& context, size_t numBestArms = 15, size_t numWorstArms = 5) const;
