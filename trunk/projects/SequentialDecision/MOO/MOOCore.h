@@ -316,6 +316,8 @@ protected:
   size_t numIterations;
 };
 
+extern IterativeOptimizerPtr randomOptimizer(MOOSamplerPtr sampler, size_t numIterations = 0);
+
 class PopulationBasedMOOOptimizer : public IterativeOptimizer
 {
 public:

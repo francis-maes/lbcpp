@@ -244,7 +244,7 @@ public:
     if (!problem->isLoaded())
       return false;
 
-    runOptimizer(context, problem, new RandomOptimizer(new ColoSampler(), numEvaluations));
+    runOptimizer(context, problem, randomOptimizer(new ColoSampler(), numEvaluations));
     runOptimizer(context, problem, new CrossEntropyOptimizer(new ColoSampler(), 100, 30, numEvaluations / 100, false));
     runOptimizer(context, problem, new CrossEntropyOptimizer(new ColoSampler(), 100, 30, numEvaluations / 100, true));
     runOptimizer(context, problem, new CrossEntropyOptimizer(new ColoSampler2(), 100, 30, numEvaluations / 100, false));
