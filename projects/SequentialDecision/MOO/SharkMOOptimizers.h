@@ -92,6 +92,13 @@ public:
   NSGA2MOOptimizer(size_t populationSize = 100, size_t numGenerations = 0, double mutationDistributionIndex = 20.0, double crossOverDistributionIndex = 20.0, double crossOverProbability = 0.9)
     : PopulationBasedMOOOptimizer(populationSize, numGenerations), mutationDistributionIndex(mutationDistributionIndex), crossOverDistributionIndex(crossOverDistributionIndex), crossOverProbability(crossOverProbability), objective(NULL), nsga2(NULL) {}
 
+  virtual void configure(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr front, Verbosity verbosity)
+  {
+    PopulationBasedMOOOptimizer::configure(context, problem, front, verbosity);
+    objective = new SharkObjectiveFunctionFromMOOProblem(context, problem);
+    nsga2 = new NSGA2Search();
+  }
+
   virtual bool iteration(ExecutionContext& context, size_t iter)
   {
     jassert(nsga2);
@@ -102,14 +109,12 @@ public:
     return true;
   }
 
-  virtual void optimize(ExecutionContext& context)
+  virtual void clear(ExecutionContext& context)
   {
-    objective = new SharkObjectiveFunctionFromMOOProblem(context, problem);
-    nsga2 = new NSGA2Search();
-    PopulationBasedMOOOptimizer::optimize(context);
     sharkFillParetoFront(*nsga2, problem, front);
     deleteAndZero(nsga2);
     deleteAndZero(objective);
+    PopulationBasedMOOOptimizer::clear(context);
   }
 
 protected:
@@ -129,6 +134,13 @@ public:
   CMAESMOOptimizer(size_t populationSize = 100, size_t numOffsprings = 100, size_t numGenerations = 0)
     : PopulationBasedMOOOptimizer(populationSize, numGenerations), numOffsprings(numOffsprings), objective(NULL), mocma(NULL) {}
 
+  virtual void configure(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr front, Verbosity verbosity)
+  {
+    PopulationBasedMOOOptimizer::configure(context, problem, front, verbosity);
+    objective = new SharkObjectiveFunctionFromMOOProblem(context, problem);
+    mocma = new MOCMASearch();
+  }
+
   virtual bool iteration(ExecutionContext& context, size_t iter)
   {
     jassert(mocma && objective);
@@ -139,14 +151,12 @@ public:
     return true;
   }
 
-  virtual void optimize(ExecutionContext& context)
+  virtual void clear(ExecutionContext& context)
   {
-    objective = new SharkObjectiveFunctionFromMOOProblem(context, problem);
-    mocma = new MOCMASearch();
-    PopulationBasedMOOOptimizer::optimize(context);
     sharkFillParetoFront(*mocma, problem, front);
     deleteAndZero(mocma);
     deleteAndZero(objective);
+    PopulationBasedMOOOptimizer::clear(context);
   }
 
 protected:

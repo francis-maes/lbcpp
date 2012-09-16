@@ -21,14 +21,14 @@ public:
     : IterativeOptimizer(numIterations), sampler(sampler) {}
   RandomOptimizer() {}
 
+  virtual void configure(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr front, Verbosity verbosity)
+  {
+    IterativeOptimizer::configure(context, problem, front, verbosity);
+    sampler->initialize(context, problem->getObjectDomain());
+  }
+
   virtual bool iteration(ExecutionContext& context, size_t iter)
     {sampleAndEvaluateSolution(context, sampler); return true;}
-
-  virtual void optimize(ExecutionContext& context)
-  {
-    sampler->initialize(context, problem->getObjectDomain());
-    IterativeOptimizer::optimize(context);
-  }
 
 protected:
   friend class RandomOptimizerClass;

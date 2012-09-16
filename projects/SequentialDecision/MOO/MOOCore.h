@@ -63,6 +63,9 @@ public:
   double getObjectiveSign(size_t objectiveIndex) const; // 1 for maximisation and -1 for minimisation
 
   MOOFitnessPtr getWorstPossibleFitness(bool useInfiniteValues = false) const;
+  MOOFitnessPtr getBestPossibleFitness(bool useInfiniteValues = false) const;
+
+  double computeUtopicHyperVolume() const;
 };
 
 class MOOFitness : public Object
@@ -264,7 +267,18 @@ public:
 
   MOOParetoFrontPtr optimize(ExecutionContext& context, MOOProblemPtr problem, Verbosity verbosity = verbosityQuiet);
 
+  virtual void configure(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr front, Verbosity verbosity = verbosityQuiet);
   virtual void optimize(ExecutionContext& context) = 0;
+  virtual void clear(ExecutionContext& context);
+  
+  MOOProblemPtr getProblem() const
+    {return problem;}
+
+  MOOParetoFrontPtr getFront() const
+    {return front;}
+
+  double computeHyperVolume() const
+    {return front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness());}
 
 protected:
   typedef std::pair<ObjectPtr, MOOFitnessPtr> SolutionAndFitnessPair;

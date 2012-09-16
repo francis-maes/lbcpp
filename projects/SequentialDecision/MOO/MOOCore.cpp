@@ -57,6 +57,26 @@ MOOFitnessPtr MOOFitnessLimits::getWorstPossibleFitness(bool useInfiniteValues) 
   return MOOFitnessPtr(new MOOFitness(res, refCountedPointerFromThis(this)));
 }
 
+MOOFitnessPtr MOOFitnessLimits::getBestPossibleFitness(bool useInfiniteValues) const
+{
+  std::vector<double> res(limits.size());
+  if (useInfiniteValues)
+    for (size_t i = 0; i < res.size(); ++i)
+      res[i] = shouldObjectiveBeMaximised(i) ? DBL_MAX : -DBL_MAX;
+  else
+    for (size_t i = 0; i < res.size(); ++i)
+      res[i] = limits[i].second;
+  return MOOFitnessPtr(new MOOFitness(res, refCountedPointerFromThis(this)));
+}
+
+double MOOFitnessLimits::computeUtopicHyperVolume() const
+{
+  double res = 1.0;
+  for (size_t i = 0; i < limits.size(); ++i)
+    res *= fabs(limits[i].first - limits[i].second);
+  return res;
+}
+
 bool MOOFitnessLimits::shouldObjectiveBeMaximised(size_t objectiveIndex) const
   {return limits[objectiveIndex].second > limits[objectiveIndex].first;}
 
@@ -488,25 +508,32 @@ double MOOParetoFront::computeHyperVolume(const MOOFitnessPtr& referenceFitness)
 /*
 ** MOOOptimizer
 */
-MOOParetoFrontPtr MOOOptimizer::optimize(ExecutionContext& context, MOOProblemPtr problem, Verbosity verbosity)
+void MOOOptimizer::configure(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr front, Verbosity verbosity)
 {
-  this->front = new MOOParetoFront(problem->getFitnessLimits());
+  this->front = front;
   this->problem = problem;
   this->verbosity = verbosity;
+}
 
+void MOOOptimizer::clear(ExecutionContext& context)
+{
+  front = MOOParetoFrontPtr();
+  problem = MOOProblemPtr();
+  verbosity = verbosityQuiet;
+}
+
+MOOParetoFrontPtr MOOOptimizer::optimize(ExecutionContext& context, MOOProblemPtr problem, Verbosity verbosity)
+{
+  MOOParetoFrontPtr res = new MOOParetoFront(problem->getFitnessLimits());
+  
+  configure(context, problem, res, verbosity);
   optimize(context);
-  MOOParetoFrontPtr res = front;
-
   if (verbosity >= verbosityProgressAndResult)
   {
     context.resultCallback("front", res);
-    context.resultCallback("hyperVolume", res->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness()));
+    context.resultCallback("hyperVolume", computeHyperVolume());
   }
-
-  this->verbosity = verbosityQuiet;
-  this->problem = MOOProblemPtr();
-  this->front = MOOParetoFrontPtr();
-
+  clear(context);
   return res;
 }
 
@@ -566,7 +593,7 @@ void IterativeOptimizer::optimize(ExecutionContext& context)
 
     if (verbosity >= verbosityDetailed)
     {
-      context.resultCallback("hyperVolume", this->front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness()));
+      context.resultCallback("hyperVolume", computeHyperVolume());
       context.leaveScope();
     }
     if (verbosity >= verbosityProgressAndResult)
