@@ -547,3 +547,32 @@ MOOSolutionSetPtr MOOOptimizer::sampleAndEvaluatePopulation(ExecutionContext& co
 
 void MOOOptimizer::learnSampler(ExecutionContext& context, MOOSolutionSetPtr solutions, MOOSamplerPtr sampler)
   {sampler->learn(context, solutions->getObjects());}
+
+/*
+** IterativeOptimizer
+*/
+void IterativeOptimizer::optimize(ExecutionContext& context)
+{
+  bool shouldContinue = true;
+  for (size_t i = 0; (!numIterations || i < numIterations) && !problem->shouldStop() && shouldContinue; ++i)
+  {
+    if (verbosity >= verbosityDetailed)
+    {
+      context.enterScope("Iteration " + String((int)i + 1));
+      context.resultCallback("iteration", i + 1);
+    }
+
+    shouldContinue = iteration(context, i);
+
+    if (verbosity >= verbosityDetailed)
+    {
+      context.resultCallback("hyperVolume", this->front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness()));
+      context.leaveScope();
+    }
+    if (verbosity >= verbosityProgressAndResult)
+    {
+      context.resultCallback("hasConverged", !shouldContinue);
+      context.progressCallback(new ProgressionState(i+1, numIterations, "Iterations"));
+    }
+  }
+}

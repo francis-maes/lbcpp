@@ -86,30 +86,30 @@ static void sharkFillParetoFront(SearchAlgorithmClass& searchAlgorithm, MOOProbl
   }
 }
 
-template<class SearchAlgorithmClass>
-static void sharkRunAndFillParetoFront(ExecutionContext& context, SearchAlgorithmClass& searchAlgorithm, MOOProblemPtr problem, MOOParetoFrontPtr front, size_t numGenerations, MOOOptimizer::Verbosity verbosity)
-{
-  for (size_t i = 1; (numGenerations == 0 || i < numGenerations) && !problem->shouldStop(); ++i) // first generation is evaluated during the init()
-  {
-    searchAlgorithm.run();
-    if (verbosity >= MOOOptimizer::verbosityProgressAndResult)
-      context.progressCallback(new ProgressionState(i+1, numGenerations, "Generations"));
-  }
-  sharkFillParetoFront(searchAlgorithm, problem, front);
-}
-
 class NSGA2MOOptimizer : public PopulationBasedMOOOptimizer
 {
 public:
   NSGA2MOOptimizer(size_t populationSize = 100, size_t numGenerations = 0, double mutationDistributionIndex = 20.0, double crossOverDistributionIndex = 20.0, double crossOverProbability = 0.9)
-    : PopulationBasedMOOOptimizer(populationSize, numGenerations), mutationDistributionIndex(mutationDistributionIndex), crossOverDistributionIndex(crossOverDistributionIndex), crossOverProbability(crossOverProbability) {}
+    : PopulationBasedMOOOptimizer(populationSize, numGenerations), mutationDistributionIndex(mutationDistributionIndex), crossOverDistributionIndex(crossOverDistributionIndex), crossOverProbability(crossOverProbability), objective(NULL), nsga2(NULL) {}
+
+  virtual bool iteration(ExecutionContext& context, size_t iter)
+  {
+    jassert(nsga2);
+    if (iter == 0)
+      nsga2->init(*objective, populationSize, mutationDistributionIndex, crossOverDistributionIndex, crossOverProbability);
+    else
+      nsga2->run();
+    return true;
+  }
 
   virtual void optimize(ExecutionContext& context)
   {
-    SharkObjectiveFunctionFromMOOProblem sharkObjective(context, problem);
-    NSGA2Search nsga2;
-    nsga2.init(sharkObjective, populationSize, mutationDistributionIndex, crossOverDistributionIndex, crossOverProbability);
-    sharkRunAndFillParetoFront(context, nsga2, problem, front, numGenerations, verbosity);
+    objective = new SharkObjectiveFunctionFromMOOProblem(context, problem);
+    nsga2 = new NSGA2Search();
+    PopulationBasedMOOOptimizer::optimize(context);
+    sharkFillParetoFront(*nsga2, problem, front);
+    deleteAndZero(nsga2);
+    deleteAndZero(objective);
   }
 
 protected:
@@ -118,26 +118,44 @@ protected:
   double mutationDistributionIndex;
   double crossOverDistributionIndex;
   double crossOverProbability;
+
+  SharkObjectiveFunctionFromMOOProblem* objective;
+  NSGA2Search* nsga2;
 };
 
 class CMAESMOOptimizer : public PopulationBasedMOOOptimizer
 {
 public:
   CMAESMOOptimizer(size_t populationSize = 100, size_t numOffsprings = 100, size_t numGenerations = 0)
-    : PopulationBasedMOOOptimizer(populationSize, numGenerations), numOffsprings(numOffsprings) {}
-  
+    : PopulationBasedMOOOptimizer(populationSize, numGenerations), numOffsprings(numOffsprings), objective(NULL), mocma(NULL) {}
+
+  virtual bool iteration(ExecutionContext& context, size_t iter)
+  {
+    jassert(mocma && objective);
+    if (iter == 0)
+      mocma->init(*objective, populationSize, numOffsprings);
+    else
+      mocma->run();
+    return true;
+  }
+
   virtual void optimize(ExecutionContext& context)
   {
-    SharkObjectiveFunctionFromMOOProblem sharkObjective(context, problem);
-    MOCMASearch mocma;
-    mocma.init(sharkObjective, populationSize, numOffsprings);
-    sharkRunAndFillParetoFront(context, mocma, problem, front, numGenerations, verbosity);
+    objective = new SharkObjectiveFunctionFromMOOProblem(context, problem);
+    mocma = new MOCMASearch();
+    PopulationBasedMOOOptimizer::optimize(context);
+    sharkFillParetoFront(*mocma, problem, front);
+    deleteAndZero(mocma);
+    deleteAndZero(objective);
   }
 
 protected:
   friend class CMAESMOOptimizerClass;
 
   size_t numOffsprings;
+
+  SharkObjectiveFunctionFromMOOProblem* objective;
+  MOCMASearch* mocma;
 };
 
 }; /* namespace lbcpp */

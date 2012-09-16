@@ -86,6 +86,14 @@ public:
       double value = vector->getValue(i);
       double& mean = this->mean->getValueReference(i);
       double& stddev = this->stddev->getValueReference(i);
+
+      //mean += (value - mean) * learningRate;
+      mean = value;
+      stddev *= 1.0 - learningRate;
+      if (stddev < minStddev)
+        stddev = 0.0;
+#if 0
+
       if (stddev == minStddev)
         mean = value; // gaussian has converged
       else
@@ -114,9 +122,14 @@ public:
         stddev += learningRate * derivativeWrtStddev;
         stddev = juce::jlimit(minStddev, initialStddev->getValue(i), stddev);
       }
+#endif // 0
     }
+    ++epoch;
   }
-
+  
+  virtual bool isDegenerate() const
+    {return stddev->l2norm() < 1e-12;}
+    
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
   {
     const ReferenceCountedObjectPtr<DiagonalGaussianSampler>& target = t.staticCast<DiagonalGaussianSampler>();
@@ -124,6 +137,7 @@ public:
     target->mean = mean ? mean->cloneAndCast<DenseDoubleVector>() : DenseDoubleVectorPtr();
     target->stddev = stddev ? stddev->cloneAndCast<DenseDoubleVector>() : DenseDoubleVectorPtr();
     target->initialStddev = initialStddev;
+    target->epoch = epoch;
     target->domain = domain;
   }
 

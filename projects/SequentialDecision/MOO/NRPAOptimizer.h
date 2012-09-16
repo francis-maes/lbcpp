@@ -61,7 +61,11 @@ protected:
         }
         
         if (bestSolution)
+        {
           currentSampler->reinforce(context, bestSolution);
+          if (currentSampler->isDegenerate())
+            break;
+        }
 
         if (isTopLevel && problem->shouldStop())
           break;

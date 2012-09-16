@@ -281,17 +281,32 @@ protected:
   void learnSampler(ExecutionContext& context, MOOSolutionSetPtr solutions, MOOSamplerPtr sampler);
 };
 
-class PopulationBasedMOOOptimizer : public MOOOptimizer
+class IterativeOptimizer : public MOOOptimizer
+{
+public:
+  IterativeOptimizer(size_t numIterations = 0)
+    : numIterations(numIterations) {}
+
+  virtual bool iteration(ExecutionContext& context, size_t iter) = 0; // returns false if the optimizer has converged
+
+  virtual void optimize(ExecutionContext& context);
+
+protected:
+  friend class IterativeOptimizerClass;
+
+  size_t numIterations;
+};
+
+class PopulationBasedMOOOptimizer : public IterativeOptimizer
 {
 public:
   PopulationBasedMOOOptimizer(size_t populationSize = 100, size_t numGenerations = 0)
-    : populationSize(populationSize), numGenerations(numGenerations) {}
+    : IterativeOptimizer(numGenerations), populationSize(populationSize) {}
 
 protected:
   friend class PopulationBasedMOOOptimizerClass;
 
   size_t populationSize;
-  size_t numGenerations;
 };
 
 class MOOSampler : public Object
@@ -300,6 +315,8 @@ public:
   virtual void initialize(ExecutionContext& context, const MOODomainPtr& domain) = 0;
 
   virtual ObjectPtr sample(ExecutionContext& context) const = 0;
+  virtual bool isDegenerate() const // returns true if the sampler has became deterministic
+    {return false;}
 
   virtual void learn(ExecutionContext& context, const std::vector<ObjectPtr>& objects) = 0;
   virtual void reinforce(ExecutionContext& context, const ObjectPtr& object) = 0;

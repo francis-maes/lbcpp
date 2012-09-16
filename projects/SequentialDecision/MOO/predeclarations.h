@@ -44,6 +44,9 @@ typedef ReferenceCountedObjectPtr<MOOParetoFront> MOOParetoFrontPtr;
 class MOOOptimizer;
 typedef ReferenceCountedObjectPtr<MOOOptimizer> MOOOptimizerPtr;
 
+class IterativeOptimizer;
+typedef ReferenceCountedObjectPtr<IterativeOptimizer> IterativeOptimizerPtr;
+
 class MOOSampler;
 typedef ReferenceCountedObjectPtr<MOOSampler> MOOSamplerPtr;
 
