@@ -14,29 +14,26 @@
 namespace lbcpp
 {
 
-class RandomOptimizer : public MOOOptimizer
+class RandomOptimizer : public IterativeOptimizer
 {
 public:
   RandomOptimizer(MOOSamplerPtr sampler, size_t numIterations = 0)
-    : sampler(sampler), numIterations(numIterations) {}
-  RandomOptimizer() : numIterations(0) {}
+    : IterativeOptimizer(numIterations), sampler(sampler) {}
+  RandomOptimizer() {}
+
+  virtual bool iteration(ExecutionContext& context, size_t iter)
+    {sampleAndEvaluateSolution(context, sampler); return true;}
 
   virtual void optimize(ExecutionContext& context)
   {
     sampler->initialize(context, problem->getObjectDomain());
-    for (size_t iteration = 0; (!numIterations || iteration < numIterations) && !problem->shouldStop(); ++iteration)
-    {
-      sampleAndEvaluateSolution(context, sampler);
-      if (verbosity >= verbosityProgressAndResult)
-        context.progressCallback(new ProgressionState(iteration+1, numIterations, T("Iterations")));
-    }
+    IterativeOptimizer::optimize(context);
   }
 
 protected:
   friend class RandomOptimizerClass;
 
   MOOSamplerPtr sampler;
-  size_t numIterations;
 };
 
 }; /* namespace lbcpp */

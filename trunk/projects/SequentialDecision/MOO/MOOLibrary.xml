@@ -60,9 +60,12 @@
   </class>
   
   <!-- Population Based Optimizers -->
-  <class name="PopulationBasedMOOOptimizer" base="MOOOptimizer" abstract="yes">
+  <class name="IterativeOptimizer" base="MOOOptimizer" abstract="yes">
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+
+  <class name="PopulationBasedMOOOptimizer" base="IterativeOptimizer" abstract="yes">
     <variable type="PositiveInteger" name="populationSize"/>
-    <variable type="PositiveInteger" name="numGenerations"/>
   </class>
 
   <class name="CrossEntropyOptimizer" base="PopulationBasedMOOOptimizer">
@@ -72,9 +75,11 @@
     <variable type="MOOSolutionComparator" name="comparator"/>
   </class>
 
+  <!--
   <class name="NestedCrossEntropyOptimizer" base="CrossEntropyOptimizer">
     <variable type="PositiveInteger" name="level"/>
   </class>
+  -->
 
   <class name="NSGA2MOOptimizer" base="PopulationBasedMOOOptimizer">
     <variable type="Double" name="mutationDistributionIndex"/>
