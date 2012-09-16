@@ -188,6 +188,7 @@ SET(LBCPP_MOO_SOURCES
   MOO/MOOSolutionSetComponent.h
   MOO/MOOSandBox.h
   MOO/ColoSandBox.h
+  MOO/MOTreeSandBox.h
   MOO/ColoJavaWrapper.cpp
   MOO/MOOLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MOOLibrary.cpp
