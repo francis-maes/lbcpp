@@ -38,21 +38,30 @@ public:
       {if (left) delete left; if (right) delete right;}
 
     size_t uid;
-
-    std::vector<Sample> samples;
     std::vector<ScalarVariableStatistics> stats;
 
-    size_t splitDimension;
-    double splitThreshold;
+    void observeOutput(const std::vector<double>& output)
+    {
+      if (stats.empty())
+        stats.resize(output.size());
+      for (size_t i = 0; i < output.size(); ++i)
+        stats[i].push(output[i]);
+    }
 
+    // internal nodes
     bool isInternal() const
       {return left && right;}
+    
+    size_t splitDimension;
+    double splitThreshold;
+    Node* left;
+    Node* right;
 
+    // leaf nodes
     bool isLeaf() const
       {return !isInternal();}
 
-    Node* left;
-    Node* right;
+    std::vector<Sample> samples;
   };
 
   Node* getRoot() const
@@ -104,26 +113,41 @@ public:
     return res;
   }
 
-  void addSample(const DenseDoubleVectorPtr& input, const std::vector<double>& output)
-    {addSample(findLeafForInput(input), input, output);}
+  void addSample(ExecutionContext& context, const DenseDoubleVectorPtr& input, const std::vector<double>& output)
+  {
+    Node* node = root;
+    while (node->isInternal())
+    {
+      node->observeOutput(output);
+      if (input->getValue(node->splitDimension) < node->splitThreshold)
+        node = node->left;
+      else
+        node = node->right;
+    }
+    addSample(context, node, input, output);
+  }
 
-  void addSample(Node* node, const DenseDoubleVectorPtr& input, const std::vector<double>& output)
+  void storeSample(Node* node, const DenseDoubleVectorPtr& input, const std::vector<double>& output)
+  {
+    node->samples.push_back(std::make_pair(input, output));
+    node->observeOutput(output);
+  }
+
+  void addSample(ExecutionContext& context, Node* node, const DenseDoubleVectorPtr& input, const std::vector<double>& output)
   {
     jassert(node->isLeaf());
-    // update statistics
-    node->stats.resize(output.size());
-    for (size_t i = 0; i < output.size(); ++i)
-      node->stats[i].push(output[i]);
-    node->samples.push_back(std::make_pair(input, output));
+
+    // store sample
+    storeSample(node, input, output);
 
     // see if node must be splitted
     if (node->samples.size() >= minSamplesToSplit && !isConstant(node->stats))
-      splitNode(node);
+      splitNode(context, node);
   }
 
-  void splitNode(Node* node)
+  void splitNode(ExecutionContext& context, Node* node)
   {
-    if (chooseSplit(node))
+    if (chooseSplit(context, node))
     {
       // create sub nodes
       node->left = createNode();
@@ -133,33 +157,49 @@ public:
       for (size_t i = 0; i < node->samples.size(); ++i)
       {
         const Sample& sample = node->samples[i];
+        Node* subNode;
         if (sample.first->getValue(node->splitDimension) < node->splitThreshold)
-          addSample(node->left, sample.first, sample.second);
+          subNode = node->left;
         else
-          addSample(node->right, sample.first, sample.second);
+          subNode = node->right;
+        storeSample(subNode, sample.first, sample.second);
       }
+      jassert(node->left->samples.size() < node->samples.size());
+      jassert(node->right->samples.size() < node->samples.size());
       node->samples.clear();
     }
   }
 
-  bool chooseSplit(Node* node)
+  bool chooseSplit(ExecutionContext& context, Node* node)
   {
     size_t d = node->samples[0].first->getNumValues();
-    double bestScore = DBL_MAX;
+    double currentVariance = computeSplitVariance(node->stats, std::vector<ScalarVariableStatistics>(node->stats.size())); // current Variance
 
+    std::vector<std::pair<size_t, double> > bestSplits;
+    double bestVariance = currentVariance;
     for (size_t i = 0; i < d; ++i)
     {
       double threshold;
-      double score = findBestThreshold(node->samples, i, threshold);
+      double variance = findBestThreshold(node->samples, i, threshold);
       //std::cout << "Dim " << i << " Variance = " << score << " Threshold = " << threshold << std::endl;
-      if (score < bestScore)
+      if (variance <= bestVariance)
       {
-        bestScore = score;
-        node->splitDimension = i;
-        node->splitThreshold = threshold;
+        if (variance < bestVariance)
+        {
+          bestSplits.clear();
+          bestVariance = variance;
+        }
+        bestSplits.push_back(std::make_pair(i, threshold));
       }
     }
-    return bestScore != DBL_MAX;
+    if (bestVariance == currentVariance || bestSplits.empty())
+      return false;
+
+    // sample one split randomly
+    size_t index = (bestSplits.size() == 1 ? 0 : context.getRandomGenerator()->sampleSize(bestSplits.size()));
+    node->splitDimension = bestSplits[index].first;
+    node->splitThreshold = bestSplits[index].second;
+    return true;
   }
 
   bool isConstant(const std::vector<ScalarVariableStatistics>& stats) const
@@ -170,7 +210,7 @@ public:
     return true;
   }
 
-  void observe(std::vector<ScalarVariableMeanAndVariance>& stats, const std::vector<double>& value, double weight)
+  void observe(std::vector<ScalarVariableStatistics>& stats, const std::vector<double>& value, double weight)
   {
     jassert(value.size() == stats.size());
     for (size_t i = 0; i < stats.size(); ++i)
@@ -184,8 +224,8 @@ public:
 
     size_t numOutputs = samples[0].second.size();
 
-    std::vector<ScalarVariableMeanAndVariance> negatives(numOutputs);
-    std::vector<ScalarVariableMeanAndVariance> positives(numOutputs);
+    std::vector<ScalarVariableStatistics> negatives(numOutputs);
+    std::vector<ScalarVariableStatistics> positives(numOutputs);
 
     std::map<double, std::vector<size_t> > sorted;
     for (size_t i = 0; i < samples.size(); ++i)
@@ -196,11 +236,11 @@ public:
       sorted[value].push_back(i);
     }
 
-    if (sorted.size() == 1)
+    if (sorted.size() == 1 || (sorted.rbegin()->first - sorted.begin()->first < 1e-9))
       return DBL_MAX;
 
-    double bestVariance = computeSplitVariance(negatives, positives);
-    bestThreshold = sorted.begin()->first - 1.0;
+    double bestVariance = DBL_MAX;
+    bestThreshold = -DBL_MAX;
 
     std::map<double, std::vector<size_t> >::const_iterator it, nxt;
     it = sorted.begin();
@@ -221,8 +261,8 @@ public:
     return bestVariance;
   }
 
-  double computeSplitVariance(const std::vector<ScalarVariableMeanAndVariance>& negatives,
-                              const std::vector<ScalarVariableMeanAndVariance>& positives) const
+  double computeSplitVariance(const std::vector<ScalarVariableStatistics>& negatives,
+                              const std::vector<ScalarVariableStatistics>& positives) const
   {
     size_t n = negatives.size();
     double res = 0.0;
@@ -231,7 +271,7 @@ public:
     return res;
   }
 
-  double computeSplitVariance(const ScalarVariableMeanAndVariance& negatives, const ScalarVariableMeanAndVariance& positives) const
+  double computeSplitVariance(const ScalarVariableStatistics& negatives, const ScalarVariableStatistics& positives) const
   {
     size_t p = (size_t)positives.getCount();
     size_t n = (size_t)negatives.getCount();
@@ -256,22 +296,18 @@ private:
 
 typedef ReferenceCountedObjectPtr<MultiObjectiveRegressionTree> MultiObjectiveRegressionTreePtr;
 
-class TreeBasedContinuousSampler : public MOOSampler
+class MOTreeSampler : public MOOSampler
 {
 public:
-  TreeBasedContinuousSampler(MultiObjectiveRegressionTreePtr tree = MultiObjectiveRegressionTreePtr(), double learningRate = 1.0)
-    : tree(tree), learningRate(learningRate) {}
+  MOTreeSampler(MultiObjectiveRegressionTreePtr tree = MultiObjectiveRegressionTreePtr())
+    : tree(tree) {}
 
   typedef MultiObjectiveRegressionTree::Node Node;
+ 
+  virtual double getProbabilityToSelectRight(Node* node) const = 0;
 
   virtual void initialize(ExecutionContext& context, const MOODomainPtr& d)
-  {
-    domain = d.staticCast<ContinuousMOODomain>();
-    jassert(domain);
-    size_t n = domain->getNumDimensions();
-    if (!weights)
-      weights = new DenseDoubleVector(tree->getNumNodes(), 0.0);
-  }
+    {domain = d.staticCast<ContinuousMOODomain>(); jassert(domain);}
  
   virtual ObjectPtr sample(ExecutionContext& context) const
   {
@@ -280,24 +316,90 @@ public:
     std::vector<std::pair<double, double> > subDomain = domain->getLimits();
     while (node->isInternal())
     {
-      double a = exp(getWeight(node->left));
-      double b = exp(getWeight(node->right));
-      if (random->sampleBool(a / (a + b)))
-      {
-        subDomain[node->splitDimension].second = node->splitThreshold;
-        node = node->left;
-      }
-      else
+      if (random->sampleBool(getProbabilityToSelectRight(node)))
       {
         subDomain[node->splitDimension].first = node->splitThreshold;
         node = node->right;
       }
+      else
+      {
+        subDomain[node->splitDimension].second = node->splitThreshold;
+        node = node->left;
+      }
     }
+    return sampleUniformly(random, subDomain);
+  }
 
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    const ReferenceCountedObjectPtr<MOTreeSampler>& target = t.staticCast<MOTreeSampler>();
+    target->tree = tree;
+    target->domain = domain;
+  }
+
+protected:
+  friend class MOTreeSamplerClass;
+
+  MultiObjectiveRegressionTreePtr tree;
+  ContinuousMOODomainPtr domain;
+
+  DenseDoubleVectorPtr sampleUniformly(RandomGeneratorPtr random, const std::vector<std::pair<double, double> >& subDomain) const
+  {
     DenseDoubleVectorPtr res = new DenseDoubleVector(subDomain.size(), 0.0);
     for (size_t i = 0; i < res->getNumValues(); ++i)
       res->setValue(i, random->sampleDouble(subDomain[i].first, subDomain[i].second));
     return res;
+  }
+};
+
+class EpsilonGreedyMOTreeSampler : public MOTreeSampler
+{
+public:
+  EpsilonGreedyMOTreeSampler(MultiObjectiveRegressionTreePtr tree, double epsilon = 0.05)
+    : MOTreeSampler(tree), epsilon(epsilon) {}
+  EpsilonGreedyMOTreeSampler() : epsilon(0.0) {}
+ 
+  virtual double getProbabilityToSelectRight(Node* node) const
+  {
+    bool isRightBest = node->right->stats[0].getMinimum() < node->left->stats[0].getMinimum(); // BIG HACK for 1D minimization !
+    return isRightBest ? 1.0 - epsilon : epsilon;
+  }
+
+  virtual void learn(ExecutionContext& context, const std::vector<ObjectPtr>& objects) {}
+  virtual void reinforce(ExecutionContext& context, const ObjectPtr& object) {}
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    MOTreeSampler::clone(context, t);
+    const ReferenceCountedObjectPtr<EpsilonGreedyMOTreeSampler>& target = t.staticCast<EpsilonGreedyMOTreeSampler>();
+    target->epsilon = epsilon;
+  }
+
+protected:
+  friend class EpsilonGreedyMOTreeSamplerClass;
+
+  double epsilon;
+};
+
+class AdaptativeMOTreeSampler : public MOTreeSampler
+{
+public:
+  AdaptativeMOTreeSampler(MultiObjectiveRegressionTreePtr tree = MultiObjectiveRegressionTreePtr(), double learningRate = 1.0)
+    : MOTreeSampler(tree), learningRate(learningRate) {}
+
+  virtual void initialize(ExecutionContext& context, const MOODomainPtr& domain)
+  {
+    MOTreeSampler::initialize(context, domain);
+    size_t n = this->domain->getNumDimensions();
+    if (!weights)
+      weights = new DenseDoubleVector(tree->getNumNodes(), 0.0);
+  }
+ 
+  virtual double getProbabilityToSelectRight(Node* node) const
+  {
+    double a = exp(getWeight(node->left));
+    double b = exp(getWeight(node->right));
+    return b / (a + b);
   }
  
   virtual void learn(ExecutionContext& context, const std::vector<ObjectPtr>& objects)
@@ -359,20 +461,18 @@ public:
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
   {
-    const ReferenceCountedObjectPtr<TreeBasedContinuousSampler>& target = t.staticCast<TreeBasedContinuousSampler>();
-    target->tree = tree;
+    MOTreeSampler::clone(context, t);
+
+    const ReferenceCountedObjectPtr<AdaptativeMOTreeSampler>& target = t.staticCast<AdaptativeMOTreeSampler>();
     target->learningRate = learningRate;
     target->weights = weights ? weights->cloneAndCast<DenseDoubleVector>() : DenseDoubleVectorPtr();
   }
 
 protected:
-  friend class TreeBasedContinuousSamplerClass;
+  friend class AdaptativeMOTreeSamplerClass;
 
-  MultiObjectiveRegressionTreePtr tree;
   double learningRate;
   DenseDoubleVectorPtr weights;
-
-  ContinuousMOODomainPtr domain;
 
   void setProbability(Node* node, double probability)
     {setWeight(node, probability ? log(probability) : -DBL_MAX);}
@@ -398,23 +498,198 @@ protected:
   }
 };
 
+class LearnMultiObjectiveRegressionTreeDecorator : public DecoratorMOOProblem
+{
+public:
+  LearnMultiObjectiveRegressionTreeDecorator(MOOProblemPtr problem, MultiObjectiveRegressionTreePtr tree)
+    : DecoratorMOOProblem(problem), tree(tree) {}
+
+  virtual String toShortString() const
+    {return problem->toShortString();}
+
+  virtual MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution)
+  {
+    MOOFitnessPtr res = DecoratorMOOProblem::evaluate(context, solution);
+    tree->addSample(context, solution.staticCast<DenseDoubleVector>(), res->getValues());
+    return res;
+  }
+
+protected:
+  MultiObjectiveRegressionTreePtr tree;
+};
+
 class MOTreeSandBox : public WorkUnit
 {
 public:
-  MOTreeSandBox() : minSamplesToSplit(10) {}
+  MOTreeSandBox() : numEvaluations(1000), minSamplesToSplit(10), verbosity(1) {}
   
   typedef MultiObjectiveRegressionTree::Sample Sample;
     
   virtual Variable run(ExecutionContext& context)
   {
-    testLearningND(context);
+    testSingleObjectiveOptimizers(context);
+    //testMultiObjectiveOptimization(context);
+    //testLearningND(context);
+    //testLearning1D(context);
     return true;
   }
 
 protected:
   friend class MOTreeSandBoxClass;
 
+  size_t numEvaluations;
   size_t minSamplesToSplit;
+  size_t verbosity;
+
+  /*
+  ** Single Objective
+  */
+  void testSingleObjectiveOptimizers(ExecutionContext& context)
+  {
+    std::vector<MOOProblemPtr> problems;
+    problems.push_back(new AckleyProblem(5));
+    problems.push_back(new GriewangkProblem(5));
+    problems.push_back(new RastriginProblem(5));
+    problems.push_back(new RosenbrockProblem(5));
+    problems.push_back(new RosenbrockRotatedProblem(5));
+
+    for (size_t i = 0; i < problems.size(); ++i)
+    {
+      MOOProblemPtr problem = problems[i];
+      context.enterScope(problem->toShortString());
+      context.resultCallback("problem", problem);
+      solveWithSingleObjectiveOptimizer(context, problem, randomOptimizer(new UniformContinuousSampler(), numEvaluations));
+      solveWithSingleObjectiveOptimizer(context, problem, new CrossEntropyOptimizer(new DiagonalGaussianSampler(), 100, 50, numEvaluations / 100, false));
+      solveWithSingleObjectiveOptimizer(context, problem, new CrossEntropyOptimizer(new DiagonalGaussianSampler(), 100, 50, numEvaluations / 100, true));
+      MultiObjectiveRegressionTreePtr tree;
+      MOOProblemPtr decoratedProblem;
+/*
+      tree = new MultiObjectiveRegressionTree(minSamplesToSplit);
+      decoratedProblem = new LearnMultiObjectiveRegressionTreeDecorator(problem, tree);
+      solveWithSingleObjectiveOptimizer(context, decoratedProblem, new CrossEntropyOptimizer(new TreeBasedContinuousSampler(tree), 100, 50, numEvaluations / 100, false));
+
+      tree = new MultiObjectiveRegressionTree(minSamplesToSplit);
+      decoratedProblem = new LearnMultiObjectiveRegressionTreeDecorator(problem, tree);
+      solveWithSingleObjectiveOptimizer(context, decoratedProblem, new CrossEntropyOptimizer(new TreeBasedContinuousSampler(tree), 100, 50, numEvaluations / 100, true));*/
+/*
+      for (double epsilon = 0.0; epsilon <= 0.5; epsilon *= 2)
+      {
+        MultiObjectiveRegressionTreePtr tree = new MultiObjectiveRegressionTree(minSamplesToSplit);
+        MOOProblemPtr decoratedProblem = new LearnMultiObjectiveRegressionTreeDecorator(problem, tree);
+        solveWithSingleObjectiveOptimizer(context, decoratedProblem, randomOptimizer(new EpsilonGreedyMOTreeSampler(tree, epsilon), numEvaluations));
+        if (!epsilon)
+          epsilon = 0.0001;
+      }
+      */
+
+      tree = new MultiObjectiveRegressionTree(minSamplesToSplit);
+      decoratedProblem = new LearnMultiObjectiveRegressionTreeDecorator(problem, tree);
+      solveWithSingleObjectiveOptimizer(context, decoratedProblem, new NRPAOptimizer(new AdaptativeMOTreeSampler(tree), 2, 100));
+
+      context.leaveScope(); 
+    }
+  }
+
+  double solveWithSingleObjectiveOptimizer(ExecutionContext& context, MOOProblemPtr problem, MOOOptimizerPtr optimizer)
+  {
+    SingleObjectiveEvaluatorDecoratorProblemPtr decorator(new SingleObjectiveEvaluatorDecoratorProblem(problem, numEvaluations, numEvaluations > 250 ? numEvaluations / 250 : 1));
+
+    context.enterScope(optimizer->toShortString());
+    MOOParetoFrontPtr front = optimizer->optimize(context, decorator, (MOOOptimizer::Verbosity)verbosity);
+    context.resultCallback("optimizer", optimizer);
+    context.resultCallback("front", front);
+    context.resultCallback("numEvaluations", decorator->getNumEvaluations());
+
+    if (verbosity >= 1)
+    {
+      context.enterScope("curve");
+      std::vector<double> cpuTimes = decorator->getCpuTimes();
+      std::vector<double> scores = decorator->getScores();
+
+      for (size_t i = 0; i < scores.size(); ++i)
+      {
+        size_t numEvaluations = i * decorator->getEvaluationPeriod();
+        context.enterScope(String((int)numEvaluations));
+        context.resultCallback("numEvaluations", numEvaluations);
+        context.resultCallback("score", scores[i]);
+        context.resultCallback("cpuTime", cpuTimes[i]);
+        context.leaveScope();
+      }
+      context.leaveScope();
+    }
+
+    jassert(!front->isEmpty());
+    double score = front->getSolution(0)->getFitness()->getValue(0);
+    context.resultCallback("score", score);
+    context.leaveScope(score);
+    return score;
+  }
+
+  /*
+  ** Test MultiObjective optimization
+  */
+  void testMultiObjectiveOptimization(ExecutionContext& context)
+  {
+    std::vector<MOOProblemPtr> problems;
+    problems.push_back(new ZDT1MOProblem());
+    problems.push_back(new ZDT2MOProblem());
+    problems.push_back(new ZDT3MOProblem());
+    problems.push_back(new ZDT4MOProblem());
+    problems.push_back(new ZDT6MOProblem());
+
+    for (size_t i = 0; i < problems.size(); ++i)
+    {
+      MOOProblemPtr problem = problems[i];
+      context.enterScope(problem->toShortString());
+      context.resultCallback("problem", problem);
+      solveWithMultiObjectiveOptimizer(context, problem, randomOptimizer(new UniformContinuousSampler(), numEvaluations));
+      //solveWithMultiObjectiveOptimizer(context, problem, new NSGA2MOOptimizer(100, numEvaluations / 100));
+      //solveWithMultiObjectiveOptimizer(context, problem, new CMAESMOOptimizer(100, 100, numEvaluations / 100));
+
+      //solveWithMultiObjectiveOptimizer(context, problem, new CrossEntropyOptimizer(new DiagonalGaussianSampler(), 100, 50, numEvaluations / 100, false));
+      //solveWithMultiObjectiveOptimizer(context, problem, new CrossEntropyOptimizer(new DiagonalGaussianSampler(), 100, 50, numEvaluations / 100, true));
+
+      MultiObjectiveRegressionTreePtr tree = new MultiObjectiveRegressionTree(minSamplesToSplit);
+      MOOProblemPtr decoratedProblem = new LearnMultiObjectiveRegressionTreeDecorator(problem, tree);
+      solveWithMultiObjectiveOptimizer(context, decoratedProblem, new CrossEntropyOptimizer(new AdaptativeMOTreeSampler(tree), 100, 50, numEvaluations / 100, false));
+
+      tree = new MultiObjectiveRegressionTree(minSamplesToSplit);
+      decoratedProblem = new LearnMultiObjectiveRegressionTreeDecorator(problem, tree);
+      solveWithMultiObjectiveOptimizer(context, decoratedProblem, new CrossEntropyOptimizer(new AdaptativeMOTreeSampler(tree), 100, 50, numEvaluations / 100, true));
+
+      context.leaveScope();
+    }
+  }
+
+  void solveWithMultiObjectiveOptimizer(ExecutionContext& context, MOOProblemPtr problem, MOOOptimizerPtr optimizer)
+  {
+    HyperVolumeEvaluatorDecoratorProblemPtr decorator(new HyperVolumeEvaluatorDecoratorProblem(problem, numEvaluations, numEvaluations > 250 ? numEvaluations / 250 : 1));
+
+    context.enterScope(optimizer->toShortString());
+    MOOParetoFrontPtr front = optimizer->optimize(context, decorator, (MOOOptimizer::Verbosity)verbosity);
+    context.resultCallback("optimizer", optimizer);
+    context.resultCallback("numEvaluations", decorator->getNumEvaluations());
+
+    if (verbosity >= 1)
+    {
+      context.enterScope("curve");
+      std::vector<double> hyperVolumes = decorator->getHyperVolumes();
+      std::vector<double> cpuTimes = decorator->getCpuTimes();
+
+      for (size_t i = 0; i < hyperVolumes.size(); ++i)
+      {
+        size_t numEvaluations = i * decorator->getEvaluationPeriod();
+        context.enterScope(String((int)numEvaluations));
+        context.resultCallback("numEvaluations", numEvaluations);
+        context.resultCallback("hyperVolume", hyperVolumes[i]);
+        context.resultCallback("cpuTime", cpuTimes[i]);
+        context.leaveScope();
+      }
+      context.leaveScope();
+    }
+
+    context.leaveScope(front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness()));
+  }
 
   /*
   ** Test Learning ND
@@ -433,7 +708,7 @@ protected:
     {
       context.enterScope(String((int)i));
       context.resultCallback("i", i);
-      tree->addSample(trainingSamples[i].first, trainingSamples[i].second);
+      tree->addSample(context, trainingSamples[i].first, trainingSamples[i].second);
       context.resultCallback("trainError", computeError(tree, trainingSamples));
       context.resultCallback("testError", computeError(tree, testingSamples));
       context.resultCallback("cpuTime", Time::getMillisecondCounterHiRes() - startTime);
@@ -496,10 +771,21 @@ protected:
     MultiObjectiveRegressionTreePtr tree = new MultiObjectiveRegressionTree(minSamplesToSplit);
     addSamplesToTree(context, problem, sampler, tree, 10);
     displayTreePredictions(context, "After 10 samples", domain, tree);
+    displayEpsilonGreedyHistogram(context, "EpsGreedy(0.001)", domain, tree, 0.001);
+    displayEpsilonGreedyHistogram(context, "EpsGreedy(0.01)", domain, tree, 0.01);
+    displayEpsilonGreedyHistogram(context, "EpsGreedy(0.1)", domain, tree, 0.1);
+
     addSamplesToTree(context, problem, sampler, tree, 90);
     displayTreePredictions(context, "After 100 samples", domain, tree);
+    displayEpsilonGreedyHistogram(context, "EpsGreedy(0.001)", domain, tree, 0.001);
+    displayEpsilonGreedyHistogram(context, "EpsGreedy(0.01)", domain, tree, 0.01);
+    displayEpsilonGreedyHistogram(context, "EpsGreedy(0.1)", domain, tree, 0.1);
+
     addSamplesToTree(context, problem, sampler, tree, 900);
     displayTreePredictions(context, "After 1000 samples", domain, tree);
+    displayEpsilonGreedyHistogram(context, "EpsGreedy(0.001)", domain, tree, 0.001);
+    displayEpsilonGreedyHistogram(context, "EpsGreedy(0.01)", domain, tree, 0.01);
+    displayEpsilonGreedyHistogram(context, "EpsGreedy(0.1)", domain, tree, 0.1);
   }
 
   void addSamplesToTree(ExecutionContext& context, const MOOProblemPtr& problem, const MOOSamplerPtr& sampler, MultiObjectiveRegressionTreePtr tree, size_t count)
@@ -508,8 +794,36 @@ protected:
     {
       DenseDoubleVectorPtr input = sampler->sample(context).staticCast<DenseDoubleVector>();
       MOOFitnessPtr fitness = problem->evaluate(context, input);
-      tree->addSample(input, fitness->getValues());
+      tree->addSample(context, input, fitness->getValues());
     }
+  }
+
+  void displayEpsilonGreedyHistogram(ExecutionContext& context, const String& name, ContinuousMOODomainPtr domain, MultiObjectiveRegressionTreePtr tree, double epsilon)
+  {
+    context.enterScope(name);
+    double xmin = domain->getLowerLimit(0);
+    double xmax = domain->getUpperLimit(0);
+    double xstep = (xmax - xmin) / 100.0;
+
+    MOOSamplerPtr sampler(new EpsilonGreedyMOTreeSampler(tree, epsilon));
+    sampler->initialize(context, domain);
+    
+    std::vector<size_t> histogram((size_t)(xmax - xmin) / xstep + 1, 0);
+    size_t count = 100000;
+    for (size_t i = 0; i < count; ++i)
+    {
+      double x = sampler->sample(context).staticCast<DenseDoubleVector>()->getValue(0);
+      histogram[(size_t)((x - xmin) / xstep)]++;
+    }
+
+    for (size_t i = 0; i < histogram.size() - 1; ++i)
+    {
+      context.enterScope(String((int)i));
+      context.resultCallback("x", xmin + xstep * (i + 0.5));
+      context.resultCallback("frequency", histogram[i] / (double)count);
+      context.leaveScope();
+    }
+    context.leaveScope();
   }
 
   void displayTreePredictions(ExecutionContext& context, const String& name, ContinuousMOODomainPtr domain, MultiObjectiveRegressionTreePtr tree)

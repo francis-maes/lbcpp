@@ -44,13 +44,17 @@
   <uicomponent name="MOOSolutionSetComponent" type="MOOSolutionSet"/>  
 
   <class name="MOOProblem" abstract="yes"/>
-  <class name="MOOOptimizer" abstract="yes"/>
   <class name="MOOSampler" abstract="yes"/>
   
-  <!-- Optimizers -->
-  <class name="RandomOptimizer" base="MOOOptimizer">
-    <variable type="MOOSampler" name="sampler"/>
+  <class name="MOOOptimizer" abstract="yes"/>
+  <class name="IterativeOptimizer" base="MOOOptimizer" abstract="yes">
     <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+
+  <!-- Optimizers -->
+  <class name="RandomOptimizer" base="IterativeOptimizer">
+    <constructor arguments="MOOSamplerPtr sample, size_t numIterations"/>
+    <variable type="MOOSampler" name="sampler"/>
   </class>
 
   <class name="NRPAOptimizer" base="MOOOptimizer">
@@ -60,10 +64,6 @@
   </class>
   
   <!-- Population Based Optimizers -->
-  <class name="IterativeOptimizer" base="MOOOptimizer" abstract="yes">
-    <variable type="PositiveInteger" name="numIterations"/>
-  </class>
-
   <class name="PopulationBasedMOOOptimizer" base="IterativeOptimizer" abstract="yes">
     <variable type="PositiveInteger" name="populationSize"/>
   </class>
@@ -158,13 +158,22 @@
 
   <!-- MO Tree -->
   <class name="MultiObjectiveRegressionTree" base="Object"/>
-  <class name="TreeBasedContinuousSampler" base="MOOSampler">
+
+  <class name="MOTreeSampler" base="MOOSampler" abstract="yes">
     <variable type="MultiObjectiveRegressionTree" name="tree"/>
+  </class>
+  <class name="EpsilonGreedyMOTreeSampler" base="MOTreeSampler">
+    <variable type="Double" name="epsilon"/>
+  </class>
+  <class name="AdaptativeMOTreeSampler" base="MOTreeSampler">
     <variable type="Double" name="learningRate"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="weights"/>
   </class>
+
   <class name="MOTreeSandBox" base="WorkUnit">
+    <variable type="PositiveInteger" name="numEvaluations"/>
     <variable type="PositiveInteger" name="minSamplesToSplit"/>
+    <variable type="PositiveInteger" name="verbosity"/>
   </class>
 
   <!-- WorkUnits -->
