@@ -156,6 +156,16 @@
     <variable type="PositiveInteger" name="numEvaluations"/>
   </class>
 
+  <!-- MO Tree -->
+  <class name="MultiObjectiveRegressionTree" base="Object"/>
+  <class name="TreeBasedContinuousSampler" base="MOOSampler">
+    <variable type="MultiObjectiveRegressionTree" name="tree"/>
+    <variable type="Double" name="learningRate"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="weights"/>
+  </class>
+  <class name="MOTreeSandBox" base="WorkUnit">
+    <variable type="PositiveInteger" name="minSamplesToSplit"/>
+  </class>
 
   <!-- WorkUnits -->
   <class name="MOOSandBox" base="WorkUnit">

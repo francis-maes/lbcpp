@@ -37,8 +37,13 @@ public:
   double getUpperLimit(size_t dimension) const
     {jassert(dimension < limits.size()); return limits[dimension].second;}
 
+  const std::vector< std::pair<double, double> >& getLimits() const
+    {return limits;}
+
   DenseDoubleVectorPtr sampleUniformly(RandomGeneratorPtr random) const;
   virtual ObjectPtr projectIntoDomain(const ObjectPtr& object) const;
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
 protected:
   friend class ContinuousMOODomainClass;

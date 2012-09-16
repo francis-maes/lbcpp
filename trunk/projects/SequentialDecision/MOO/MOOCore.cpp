@@ -42,6 +42,9 @@ ObjectPtr ContinuousMOODomain::projectIntoDomain(const ObjectPtr& object) const
   return res ? res : object;
 }
 
+void ContinuousMOODomain::clone(ExecutionContext& context, const ObjectPtr& target) const
+  {target.staticCast<ContinuousMOODomain>()->limits = limits;}
+
 /*
 ** MOOFitnessLimits
 */
