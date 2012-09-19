@@ -315,7 +315,8 @@ public:
           WorkUnitPtr workUnit = new FunctionWorkUnit(objectiveFunction, candidate);
           state->mapWorkUnitToResult(workUnit, i, valueIndex);
 
-          context.pushWorkUnit(workUnit, state.get(), false);
+          std::cout << baseObject->getVariableName(parameter->getIndex()) << " : " << value << std::endl;
+          //context.pushWorkUnit(workUnit, state.get(), false);
           ++numPushedWorkUnit;
         }
       }
@@ -348,7 +349,7 @@ public:
         if (problem->getValidation())
         {
           context.enterScope(T("Validation"));
-          const Variable validationScore = context.run(new FunctionWorkUnit(problem->getValidation(), baseObject), false);
+          const Variable validationScore;// = context.run(new FunctionWorkUnit(problem->getValidation(), baseObject), false);
           iteration->setValidationScore(validationScore);
           saveOptimizerState(context, state);
           context.leaveScope(validationScore);

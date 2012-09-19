@@ -1978,7 +1978,7 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     ExecutionContextPtr remoteContext = distributedExecutionContext(context, T("monster24.montefiore.ulg.ac.be"), 1664,
-                                                                    T("120817-BFS-SS3"), T("jbecker@screen"), T("jbecker@giga"),
+                                                                    T("120817-BFS-SS3"), T("jbecker@screen"), T("jbecker@no-where"),
                                                                     fixedResourceEstimator(1, 6 * 1024, 200), false);
     LargeProteinParametersPtr initialParameters = new LargeProteinParameters();
     OptimizationProblemPtr problem = new OptimizationProblem(new DSBLearnerFunction(inputDirectory, supervisionDirectory, target),
