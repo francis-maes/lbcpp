@@ -280,7 +280,7 @@ class ASTRALFileParser : public TextParser
 public:
   ASTRALFileParser(ExecutionContext& context, const File& file, const File& outputFile)
     : TextParser(context, file), fileName(file.getFileNameWithoutExtension()),
-      outputFile(outputFile) {}
+      outputFile(outputFile), terLine(false) {}
   
   virtual TypePtr getElementsType() const
     {return proteinClass;}
@@ -292,8 +292,11 @@ public:
     String line = srcLine;
     if (line.startsWith(T("HEADER")))
       headerLine = line;
-    
-    if (!line.startsWith(T("ATOM")))
+
+    if (line.startsWith(T("TER ")))
+      terLine = true;
+
+    if (terLine || !line.startsWith(T("ATOM")))
       return true;
 
     line = line.replaceSection(21, 1, T(" "));
@@ -335,11 +338,13 @@ public:
   }
   
 protected:
+  String fileName;
+  File outputFile;
+
+  bool terLine;
   String headerLine;
   std::vector<String> atomLines;
   
-  String fileName;
-  File outputFile;
   std::vector<String> residueNames;
   String previousResidueNumber;
 
