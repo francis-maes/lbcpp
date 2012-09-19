@@ -474,6 +474,8 @@ TertiaryStructurePtr PDBFileParser::finalizeChain(ExecutionContext& context, cha
       int index = primaryAminoAcids.indexOf(lastIndex, blockAminoAcids);
       if (index < 0)
       {
+        context.informationCallback(T("Seq. From RESSEQ: ") + primaryAminoAcids);
+        context.informationCallback(T("Seq. From ATOMS : ") + blockAminoAcids);
         context.errorCallback(T("PDBFileParser::finalizeChain"), T("Could not align tertiary structure block with primary structure"));
         return TertiaryStructurePtr();
       }
