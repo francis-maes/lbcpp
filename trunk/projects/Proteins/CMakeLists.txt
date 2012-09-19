@@ -128,7 +128,7 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/BanditBox.h
   WorkUnit/PerceptronWorkUnit.h
   WorkUnit/ProteinStatisticsWorkUnit.h
-  WorkUnit/FabienBox.h
+  WorkUnit/CB513AndRS126Box.h
   WorkUnit/ESANN11.h
   WorkUnit/StudentTestsBox.h
   WorkUnit/PlosComputationalBiologyJournal.h

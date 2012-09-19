@@ -74,11 +74,21 @@
     <variable type="File" name="traceFile" shortName="i"/>
   </class>
     
-  <class name="ConvertFabienFileToProtein" base="WorkUnit">
+  <class name="ConvertCB513FileToProtein" base="WorkUnit">
     <variable type="File" name="inputDirectory" shortName="i"/>
     <variable type="File" name="outputDirectory" shortName="o"/>
   </class>
-  
+
+  <class name="ConvertASTRALFileToPDB" base="WorkUnit">
+    <variable type="File" name="inputDirectory" shortName="i"/>
+    <variable type="File" name="outputDirectory" shortName="o"/>
+  </class>
+
+  <class name="ConvertRS126FileToProtein" base="WorkUnit">
+    <variable type="File" name="inputDirectory" shortName="i"/>
+    <variable type="File" name="outputDirectory" shortName="o"/>
+  </class>
+
   <class name="ConvertSPXFileToProteins" base="WorkUnit">
     <variable type="File" name="spxFile"/>
     <variable type="File" name="outputDirectory"/>
