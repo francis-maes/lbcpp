@@ -302,7 +302,7 @@ public:
     line = line.replaceSection(21, 1, T(" "));
     atomLines.push_back(line);
 
-    String residueNumber = line.substring(23, 26);
+    String residueNumber = line.substring(23, 27);
     if (residueNumber == previousResidueNumber)
       return true;
 
