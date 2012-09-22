@@ -19,9 +19,6 @@ GENERATE_INTROSPECTION_CODE(Execution/ExecutionLibrary.xml ExecutionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Execution/Callback/ExecutionCallbackLibrary.xml ExecutionCallbackLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Execution/Context/ExecutionContextLibrary.xml ExecutionContextLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(Function/FunctionLibrary.xml FunctionLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Function/IterationFunction/IterationFunctionLibrary.xml IterationFunctionLibrary.cpp)
-
 GENERATE_INTROSPECTION_CODE(Learning/LearningLibrary.xml LearningLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/OnlineLearner/OnlineLearnerLibrary.xml OnlineLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/BatchLearner/BatchLearnerLibrary.xml BatchLearnerLibrary.cpp)
@@ -167,6 +164,8 @@ SET(LBCPP_DATA_SOURCES
   ../include/lbcpp/Data/BinaryKey.h
   ../include/lbcpp/Data/BinaryConfusionMatrix.h
   Data/BinaryConfusionMatrix.cpp
+  ../include/lbcpp/Data/IterationFunction.h
+  Data/IterationFunction.hpp
 
   Data/DataLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DataLibrary.cpp
@@ -249,23 +248,6 @@ SET(LBCPP_EXECUTION_CONTEXT_SOURCES
   Execution/Context/MultiThreadedExecutionContext.h
   Execution/Context/ExecutionContextLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExecutionContextLibrary.cpp
-)
-
-
-#### Function ####
-
-SET(LBCPP_FUNCTION_SOURCES
-  ../include/lbcpp/Function/predeclarations.h
-  ../include/lbcpp/Function/IterationFunction.h
-  Function/FunctionLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/FunctionLibrary.cpp
-)
- 
-SET(LBCPP_FUNCTION_ITERATION_SOURCES
-  Function/IterationFunction/ConstantIterationFunction.h
-  Function/IterationFunction/InvLinearIterationFunction.h
-  Function/IterationFunction/IterationFunctionLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/IterationFunctionLibrary.cpp
 )
 
 #### Learning ####
@@ -520,11 +502,6 @@ SET(LBCPP_SOURCES
     ${LBCPP_EXECUTION_CALLBACK_SOURCES}
     ${LBCPP_EXECUTION_CONTEXT_SOURCES}
   
-  # Function
-  ${LBCPP_FUNCTION_SOURCES}
-    ${LBCPP_FUNCTION_ITERATION_SOURCES}
-    ${LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES}
-
   # Learning
   ${LBCPP_LEARNING_SOURCES}
     ${LBCPP_LEARNING_LOSS_FUNCTION_SOURCES}
@@ -580,10 +557,6 @@ SOURCE_SUB_GROUP(Data Matrix FILES ${LBCPP_DATA_MATRIX_SOURCES})
 SOURCE_GROUP(Execution FILES ${LBCPP_EXECUTION_SOURCES})
 SOURCE_SUB_GROUP(Execution Callback FILES ${LBCPP_EXECUTION_CALLBACK_SOURCES})
 SOURCE_SUB_GROUP(Execution Context FILES ${LBCPP_EXECUTION_CONTEXT_SOURCES})
-
-## Function
-SOURCE_GROUP(Function FILES ${LBCPP_FUNCTION_SOURCES})
-SOURCE_SUB_GROUP(Function IterationFunction FILES ${LBCPP_FUNCTION_ITERATION_SOURCES})
 
 ## Learning
 SOURCE_GROUP(Learning FILES ${LBCPP_LEARNING_SOURCES})

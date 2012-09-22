@@ -148,6 +148,7 @@ protected:
     OwnedArray<File> headerFiles;
     File directory = inputFile.getParentDirectory();
     directory.findChildFiles(headerFiles, File::findFiles, false, T("*.h"));
+    directory.findChildFiles(headerFiles, File::findFiles, false, T("*.hpp"));
     std::set<String> sortedFiles;
     for (int i = 0; i < headerFiles.size(); ++i)
     {

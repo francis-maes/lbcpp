@@ -70,6 +70,8 @@ public:
     {return computeIterationFunction((size_t)input.getInteger());}
 };
 
+typedef ReferenceCountedObjectPtr<IterationFunction> IterationFunctionPtr;
+
 /*!
 ** Creates a constant IterationFunction.
 **
