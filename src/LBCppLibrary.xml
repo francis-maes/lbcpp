@@ -8,6 +8,7 @@
 
   <import name="DecisionProblem"/>
   <import name="Optimizer"/>
+  <import name="LossFunction"/>
   <import name="Luape"/>
   
   <import name="UserInterfaceComponent" ifdef="LBCPP_USER_INTERFACE"/>

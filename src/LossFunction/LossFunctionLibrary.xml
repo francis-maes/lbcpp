@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<library name="LearningLossFunction" directory="Learning/LossFunction">
+<library name="LossFunction" directory="LossFunction">
   <include file="lbcpp/Learning/LossFunction.h"/>
 
   <class name="ScalarFunction" base="Object" abstract="yes"/>
