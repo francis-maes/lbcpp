@@ -11,7 +11,6 @@
 
 # include <lbcpp/Core/Container.h>
 # include <lbcpp/Core/Function.h>
-# include <lbcpp/Learning/BatchLearner.h>
 # include <lbcpp/Data/DoubleVector.h>
 # include <lbcpp/Data/SymmetricMatrix.h>
 

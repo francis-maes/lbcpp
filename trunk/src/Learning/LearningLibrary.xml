@@ -2,16 +2,6 @@
 
 <library name="Learning" directory="Learning">
 
-  <include file="lbcpp/Learning/LearnableFunction.h"/>
-
-  <class name="LearnerParameters" base="Object" abstract="yes"/>
-  
-  <import name="BatchLearner"/>
-  <import name="OnlineLearner"/>
   <import name="LearningLossFunction"/>
-  <import name="NumericalLearning"/>
-  <import name="DecisionTree"/>
-  <import name="NearestNeighbor"/>
-  <import name="LocalitySensitiveHashing"/>
 
 </library>

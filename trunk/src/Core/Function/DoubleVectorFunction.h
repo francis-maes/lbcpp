@@ -11,7 +11,6 @@
 
 # include <lbcpp/Core/Function.h>
 # include <lbcpp/Data/DoubleVector.h>
-# include <lbcpp/Learning/BatchLearner.h>
 # include <lbcpp/Data/RandomVariable.h>
 
 namespace lbcpp
@@ -56,7 +55,9 @@ class DoubleVectorNormalizeFunction : public Function
 {
 public:
   DoubleVectorNormalizeFunction(bool useVariances = true, bool useMeans = false)
-    {setBatchLearner(doubleVectorNormalizeBatchLearner(useVariances, useMeans));}
+  {
+    //setBatchLearner(doubleVectorNormalizeBatchLearner(useVariances, useMeans));
+  }
 
   virtual size_t getNumRequiredInputs() const
     {return 1;}
@@ -102,7 +103,9 @@ class ConcatenatedDoubleVectorNormalizeFunction : public Function
 {
 public:
   ConcatenatedDoubleVectorNormalizeFunction()
-    {setBatchLearner(concatenatedDoubleVectorNormalizeBatchLearner());}
+  {
+    //setBatchLearner(concatenatedDoubleVectorNormalizeBatchLearner());
+  }
 
   virtual size_t getNumRequiredInputs() const
     {return 1;}

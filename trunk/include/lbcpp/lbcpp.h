@@ -70,10 +70,6 @@
 
 # include "FeatureGenerator/FeatureGenerator.h"
 
-# include "Learning/OnlineLearner.h"
-# include "Learning/BatchLearner.h"
-# include "Learning/Numerical.h"
-
 # include "DecisionProblem/DecisionProblem.h"
 # include "Optimizer/BanditPool.h"
 

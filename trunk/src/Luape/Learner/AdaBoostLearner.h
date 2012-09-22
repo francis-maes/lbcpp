@@ -10,7 +10,6 @@
 # define LBCPP_LUAPE_BATCH_LEARNER_ADA_BOOST_H_
 
 # include "WeightBoostingLearner.h"
-# include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
 
 namespace lbcpp
 {

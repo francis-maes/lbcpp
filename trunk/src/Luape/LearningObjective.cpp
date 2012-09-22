@@ -8,7 +8,6 @@
 #include "precompiled.h"
 #include <lbcpp/Luape/LearningObjective.h>
 #include <lbcpp/Luape/LuapeCache.h>
-#include <lbcpp/Learning/Numerical.h> // for lbcpp::convertSupervisionVariableToEnumValue
 #include "NodeBuilder/NodeBuilderTypeSearchSpace.h"
 #include "Function/SpecialLuapeFunctions.h" // for StumpLuapeFunction
 using namespace lbcpp;

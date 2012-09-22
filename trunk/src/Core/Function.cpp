@@ -8,7 +8,6 @@
 #include "precompiled.h"
 #include <lbcpp/Core/Function.h>
 #include <lbcpp/Core/Frame.h>
-#include <lbcpp/Learning/BatchLearner.h>
 #include <lbcpp/Function/Evaluator.h>
 #include <lbcpp/Lua/Lua.h>
 using namespace lbcpp;
@@ -403,7 +402,7 @@ TypePtr ProxyFunction::initializeFunction(ExecutionContext& context, const std::
   const VariableSignaturePtr& v = implementation->getOutputVariable();
   outputName = v->getName();
   outputShortName = v->getShortName();
-  setBatchLearner(proxyFunctionBatchLearner());
+ // setBatchLearner(proxyFunctionBatchLearner());
   return v->getType();
 }
 
@@ -419,5 +418,5 @@ Variable ProxyFunction::computeFunction(ExecutionContext& context, const Variabl
 UnaryHigherOrderFunction::UnaryHigherOrderFunction(FunctionPtr baseFunction)
   : baseFunction(baseFunction)
 {
-  setBatchLearner(unaryHigherOrderFunctionBatchLearner());
+  //setBatchLearner(unaryHigherOrderFunctionBatchLearner());
 }

@@ -9,7 +9,7 @@
 #include "Utilities.h"
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Core/XmlSerialisation.h>
-#include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
+//#include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
 using namespace lbcpp;
 
 /*

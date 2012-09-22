@@ -11,6 +11,7 @@
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Core/Container.h>
 #include <lbcpp/Data/RandomVariable.h>
+#include <lbcpp/Data/DoubleVector.h>
 #include <lbcpp/Function/Evaluator.h>
 using namespace lbcpp;
 
@@ -256,3 +257,51 @@ static bool printDifferencesRecursively(std::ostream& ostr, const Variable& vari
 bool Variable::printDifferencesRecursively(std::ostream& ostr, const Variable& otherVariable, const String& theseVariablesName) const
   {return ::printDifferencesRecursively(ostr, *this, otherVariable, theseVariablesName);}
 
+
+/*
+** Conversion stuff
+*/
+bool lbcpp::convertSupervisionVariableToBoolean(const Variable& supervision, bool& result)
+{
+  if (!supervision.exists())
+    return false;
+  if (supervision.isBoolean())
+  {
+    result = supervision.getBoolean();
+    return true;
+  }
+  if (supervision.getType() == probabilityType)
+  {
+    result = supervision.getDouble() > 0.5;
+    return true;
+  }
+  return false;
+}
+
+bool lbcpp::convertSupervisionVariableToEnumValue(const Variable& supervision, size_t& result)
+{
+  if (!supervision.exists())
+    return false;
+
+  if (supervision.isEnumeration())
+  {
+    result = (size_t)supervision.getInteger();
+    return true;
+  }
+
+  DoubleVectorPtr scores = supervision.dynamicCast<DoubleVector>();
+  if (scores)
+  {
+    // either probabilities or costs
+    int res = scores->getElementsType() == probabilityType ? scores->getIndexOfMaximumValue() : scores->getIndexOfMinimumValue();
+    if (res >= 0)
+    {
+      result = (size_t)res;
+      return true;
+    }
+    else
+      return false;
+  }
+
+  return false;
+}
