@@ -18,17 +18,7 @@ GENERATE_INTROSPECTION_CODE(Execution/ExecutionLibrary.xml ExecutionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Execution/Callback/ExecutionCallbackLibrary.xml ExecutionCallbackLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Execution/Context/ExecutionContextLibrary.xml ExecutionContextLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(Learning/LearningLibrary.xml LearningLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Learning/OnlineLearner/OnlineLearnerLibrary.xml OnlineLearnerLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Learning/BatchLearner/BatchLearnerLibrary.xml BatchLearnerLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Learning/Numerical/NumericalLearningLibrary.xml NumericalLearningLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Learning/Numerical/LibSVM/LibSVMLearningLibrary.xml LibSVMLearningLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Learning/Numerical/LibLinear/LibLinearLearningLibrary.xml LibLinearLearningLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Learning/Numerical/LaRank/LaRankLearningLibrary.xml LaRankLearningLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Learning/DecisionTree/DecisionTreeLibrary.xml DecisionTreeLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Learning/LossFunction/LearningLossFunctionLibrary.xml LearningLossFunctionLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Learning/NearestNeighbor/NearestNeighborLibrary.xml NearestNeighborLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Learning/LocalitySensitiveHashing/LocalitySensitiveHashingLibrary.xml LocalitySensitiveHashingLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(LossFunction/LossFunctionLibrary.xml LossFunctionLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(DecisionProblem/DecisionProblemLibrary.xml DecisionProblemLibrary.cpp)
 
@@ -216,39 +206,34 @@ SET(LBCPP_EXECUTION_CONTEXT_SOURCES
 
 #### Learning ####
 
-SET(LBCPP_LEARNING_SOURCES
-  ../include/lbcpp/Learning/LossFunction.h
-  Learning/LearningLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/LearningLibrary.cpp
-)
-
 SET(LBCPP_LEARNING_LOSS_FUNCTION_SOURCES
-  Learning/LossFunction/LossFunction.cpp
-  Learning/LossFunction/LearningLossFunctionLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/LearningLossFunctionLibrary.cpp
+  ../include/lbcpp/Learning/LossFunction.h
+  LossFunction/LossFunction.cpp
+  LossFunction/LossFunctionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/LossFunctionLibrary.cpp
 )
 
 SET(LBCPP_LEARNING_LOSS_FUNCTION_REGRESSION_SOURCES
-  Learning/LossFunction/SquareRegressionLossFunction.h
+  LossFunction/SquareRegressionLossFunction.h
 )
 
 SET(LBCPP_LEARNING_LOSS_FUNCTION_DISCRIMINATIVE_SOURCES
-  Learning/LossFunction/HingeDiscriminativeLossFunction.h
-  Learning/LossFunction/LogBinomialDiscriminativeLossFunction.h
-  Learning/LossFunction/ExponentialDiscriminativeLossFunction.h
+  LossFunction/HingeDiscriminativeLossFunction.h
+  LossFunction/LogBinomialDiscriminativeLossFunction.h
+  LossFunction/ExponentialDiscriminativeLossFunction.h
 )
 
 SET(LBCPP_LEARNING_LOSS_FUNCTION_MULTI_CLASS_SOURCES
-  Learning/LossFunction/OneAgainstAllMultiClassLossFunction.h
-  Learning/LossFunction/MostViolatedMultiClassLossFunction.h
-  Learning/LossFunction/LogBinomialMultiClassLossFunction.h
+  LossFunction/OneAgainstAllMultiClassLossFunction.h
+  LossFunction/MostViolatedMultiClassLossFunction.h
+  LossFunction/LogBinomialMultiClassLossFunction.h
 )
 
 SET(LBCPP_LEARNING_LOSS_FUNCTION_RANKING_SOURCES
-  Learning/LossFunction/AdditiveRankingLossFunction.h
-  Learning/LossFunction/AllPairsRankingLossFunction.h
-  Learning/LossFunction/MostViolatedPairRankingLossFunction.h
-  Learning/LossFunction/BestAgainstAllRankingLossFunction.h
+  LossFunction/AdditiveRankingLossFunction.h
+  LossFunction/AllPairsRankingLossFunction.h
+  LossFunction/MostViolatedPairRankingLossFunction.h
+  LossFunction/BestAgainstAllRankingLossFunction.h
 )
 
 #### Decision Problem ####
@@ -465,13 +450,12 @@ SET(LBCPP_SOURCES
     ${LBCPP_EXECUTION_CALLBACK_SOURCES}
     ${LBCPP_EXECUTION_CONTEXT_SOURCES}
   
-  # Learning
-  ${LBCPP_LEARNING_SOURCES}
-    ${LBCPP_LEARNING_LOSS_FUNCTION_SOURCES}
-      ${LBCPP_LEARNING_LOSS_FUNCTION_REGRESSION_SOURCES}
-      ${LBCPP_LEARNING_LOSS_FUNCTION_DISCRIMINATIVE_SOURCES}
-      ${LBCPP_LEARNING_LOSS_FUNCTION_MULTI_CLASS_SOURCES}
-      ${LBCPP_LEARNING_LOSS_FUNCTION_RANKING_SOURCES}
+  # Loss Function
+  ${LBCPP_LEARNING_LOSS_FUNCTION_SOURCES}
+    ${LBCPP_LEARNING_LOSS_FUNCTION_REGRESSION_SOURCES}
+    ${LBCPP_LEARNING_LOSS_FUNCTION_DISCRIMINATIVE_SOURCES}
+    ${LBCPP_LEARNING_LOSS_FUNCTION_MULTI_CLASS_SOURCES}
+    ${LBCPP_LEARNING_LOSS_FUNCTION_RANKING_SOURCES}
 
   # Decision Problem
   ${LBCPP_DECISION_PROBLEM_SOURCES}
@@ -521,27 +505,26 @@ SOURCE_SUB_GROUP(Execution Callback FILES ${LBCPP_EXECUTION_CALLBACK_SOURCES})
 SOURCE_SUB_GROUP(Execution Context FILES ${LBCPP_EXECUTION_CONTEXT_SOURCES})
 
 ## Learning
-SOURCE_GROUP(Learning FILES ${LBCPP_LEARNING_SOURCES})
-SOURCE_SUB_GROUP(Learning LossFunction FILES ${LBCPP_LEARNING_LOSS_FUNCTION_SOURCES})
-SOURCE_SUB_GROUP2(Learning LossFunction Regression FILES ${LBCPP_LEARNING_LOSS_FUNCTION_REGRESSION_SOURCES})
-SOURCE_SUB_GROUP2(Learning LossFunction Discriminative FILES ${LBCPP_LEARNING_LOSS_FUNCTION_DISCRIMINATIVE_SOURCES})
-SOURCE_SUB_GROUP2(Learning LossFunction MultiClass FILES ${LBCPP_LEARNING_LOSS_FUNCTION_MULTI_CLASS_SOURCES})
-SOURCE_SUB_GROUP2(Learning LossFunction Ranking FILES ${LBCPP_LEARNING_LOSS_FUNCTION_RANKING_SOURCES})
+SOURCE_SUB_GROUP(CleanMe LossFunction FILES ${LBCPP_LEARNING_LOSS_FUNCTION_SOURCES})
+SOURCE_SUB_GROUP2(CleanMe LossFunction Regression FILES ${LBCPP_LEARNING_LOSS_FUNCTION_REGRESSION_SOURCES})
+SOURCE_SUB_GROUP2(CleanMe LossFunction Discriminative FILES ${LBCPP_LEARNING_LOSS_FUNCTION_DISCRIMINATIVE_SOURCES})
+SOURCE_SUB_GROUP2(CleanMe LossFunction MultiClass FILES ${LBCPP_LEARNING_LOSS_FUNCTION_MULTI_CLASS_SOURCES})
+SOURCE_SUB_GROUP2(CleanMe LossFunction Ranking FILES ${LBCPP_LEARNING_LOSS_FUNCTION_RANKING_SOURCES})
 
 ## DecisionProblem
-SOURCE_GROUP(DecisionProblem FILES ${LBCPP_DECISION_PROBLEM_SOURCES})
+SOURCE_SUB_GROUP(CleanMe DecisionProblem FILES ${LBCPP_DECISION_PROBLEM_SOURCES})
 
 ## Optimizer
-SOURCE_GROUP(Optimizer FILES ${LBCPP_OPTIMIZER_SOURCES})
+SOURCE_SUB_GROUP(CleanMe Optimizer FILES ${LBCPP_OPTIMIZER_SOURCES})
 
 ## Luape
-SOURCE_GROUP(Luape FILES ${LBCPP_LUAPE_SOURCES})
-SOURCE_SUB_GROUP(Luape Function FILES ${LBCPP_LUAPE_FUNCTION_SOURCES})
-SOURCE_SUB_GROUP(Luape NodeBuilder FILES ${LBCPP_LUAPE_NODE_BUILDER_SOURCES})
-SOURCE_SUB_GROUP(Luape Learner FILES ${LBCPP_LUAPE_LEARNER_SOURCES})
-SOURCE_SUB_GROUP2(Luape Learner Boosting FILES ${LBCPP_LUAPE_LEARNER_BOOSTING_SOURCES})
-SOURCE_SUB_GROUP2(Luape Learner Weak FILES ${LBCPP_LUAPE_LEARNER_WEAK_SOURCES})
-SOURCE_SUB_GROUP2(Luape Learner Meta FILES ${LBCPP_LUAPE_LEARNER_META_SOURCES})
+SOURCE_SUB_GROUP(CleanMe Luape FILES ${LBCPP_LUAPE_SOURCES})
+SOURCE_SUB_GROUP2(CleanMe Luape Function FILES ${LBCPP_LUAPE_FUNCTION_SOURCES})
+SOURCE_SUB_GROUP2(CleanMe Luape NodeBuilder FILES ${LBCPP_LUAPE_NODE_BUILDER_SOURCES})
+SOURCE_SUB_GROUP2(CleanMe Luape Learner FILES ${LBCPP_LUAPE_LEARNER_SOURCES})
+SOURCE_SUB_GROUP3(CleanMe Luape Learner Boosting FILES ${LBCPP_LUAPE_LEARNER_BOOSTING_SOURCES})
+SOURCE_SUB_GROUP3(CleanMe Luape Learner Weak FILES ${LBCPP_LUAPE_LEARNER_WEAK_SOURCES})
+SOURCE_SUB_GROUP3(CleanMe Luape Learner Meta FILES ${LBCPP_LUAPE_LEARNER_META_SOURCES})
 
 ## Lua
 SOURCE_GROUP(Lua FILES ${LBCPP_LUA_SOURCES})
