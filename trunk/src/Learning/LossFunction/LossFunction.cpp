@@ -7,13 +7,12 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Learning/LossFunction.h>
-//#include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
 #include <algorithm>
 using namespace lbcpp;
 
 /*
 ** RegressionLossFunction
-*/
+*
 size_t RegressionLossFunction::getNumRequiredInputs() const
   {return 2;}
 
@@ -21,14 +20,14 @@ TypePtr RegressionLossFunction::getRequiredInputType(size_t index, size_t numInp
   {return doubleType;}
 
 String RegressionLossFunction::getOutputPostFix() const
-  {return T("Loss");}
+  {return T("Loss");}*/
 
 void RegressionLossFunction::computeScalarFunction(double input, const Variable* otherInputs, double* output, double* derivative) const
   {computeRegressionLoss(input, otherInputs[0].getDouble(), output, derivative);}
 
 /*
 ** DiscriminativeLossFunction
-*/
+*
 size_t DiscriminativeLossFunction::getNumRequiredInputs() const
   {return 2;}
 
@@ -37,7 +36,7 @@ TypePtr DiscriminativeLossFunction::getRequiredInputType(size_t index, size_t nu
 
 String DiscriminativeLossFunction::getOutputPostFix() const
   {return T("Loss");}
-
+  */
 void DiscriminativeLossFunction::computeScalarFunction(double input, const Variable* otherInputs, double* output, double* derivative) const
 {
   bool isPositive;
@@ -53,7 +52,7 @@ void DiscriminativeLossFunction::computeScalarFunction(double input, const Varia
 
 /*
 ** MultiClassLossFunction
-*/
+*
 size_t MultiClassLossFunction::getNumRequiredInputs() const
   {return 2;}
 
@@ -73,7 +72,7 @@ TypePtr MultiClassLossFunction::initializeFunction(ExecutionContext& context, co
   }
   return ScalarVectorFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
 }
-
+*/
 void MultiClassLossFunction::computeScalarVectorFunction(const DenseDoubleVectorPtr& scores, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
 {
   jassert(classes);
@@ -91,7 +90,7 @@ void MultiClassLossFunction::computeScalarVectorFunction(const DenseDoubleVector
 
 /*
 ** RankingLossFunction
-*/
+*
 size_t RankingLossFunction::getNumRequiredInputs() const
   {return 2;}
 
@@ -108,7 +107,7 @@ TypePtr RankingLossFunction::initializeFunction(ExecutionContext& context, const
   }
   return ScalarVectorFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
 }
-
+*/
 void RankingLossFunction::computeScalarVectorFunction(const DenseDoubleVectorPtr& scores, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
 {
   const DenseDoubleVectorPtr& costs = otherInputs[0].getObjectAndCast<DenseDoubleVector>();

@@ -3,6 +3,9 @@
 <library name="LearningLossFunction" directory="Learning/LossFunction">
   <include file="lbcpp/Learning/LossFunction.h"/>
 
+  <class name="ScalarFunction" base="Object" abstract="yes"/>
+  <class name="ScalarVectorFunction" base="Object" abstract="yes"/>
+
   <!-- Regression Loss Functions -->
   <class name="RegressionLossFunction" base="ScalarFunction" abstract="yes"/>
   
