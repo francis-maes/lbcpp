@@ -8,7 +8,6 @@
   <import name="Data"/>
   <import name="Function"/>
 
-  <import name="FeatureGenerator"/>
   <import name="DecisionProblem"/>
   <import name="Optimizer"/>
   <import name="Luape"/>

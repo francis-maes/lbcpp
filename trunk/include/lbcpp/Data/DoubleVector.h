@@ -319,66 +319,6 @@ private:
   bool ownValues;
 };
 
-class LazyDoubleVector : public DoubleVector
-{
-public:
-  LazyDoubleVector(ClassPtr thisClass, FeatureGeneratorPtr featureGenerator, const Variable* inputs);
-  LazyDoubleVector() {}
-
-  const FeatureGeneratorPtr& getFeatureGenerator() const
-    {return featureGenerator;}
- 
-  const std::vector<Variable>& getInputs() const
-    {return inputs;}
-
-  bool isComputed() const
-    {return computedVector;}
-
-  const DoubleVectorPtr& getComputedVector() const
-    {return computedVector;}
- 
-  // DoubleVector
-  virtual double entropy() const;
-  virtual size_t l0norm() const;
-  virtual double l1norm() const;
-  virtual double sumOfSquares() const;
-  virtual double getExtremumValue(bool lookForMaximum, size_t* index = NULL) const;
-  virtual void multiplyByScalar(double value);
-  virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const;
-  virtual void addWeightedTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const;
-  virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
-  virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
-  virtual void computeFeatures(FeatureGeneratorCallback& callback) const;
-
-  virtual double l2norm() const {return DoubleVector::l2norm();}
-
-  virtual SparseDoubleVectorPtr toSparseVector() const;
-
-  // Vector
-  virtual void clear();
-  virtual void reserve(size_t size);
-  virtual void resize(size_t size);
-  virtual void prepend(const Variable& value);
-  virtual void append(const Variable& value);
-  virtual void remove(size_t index);
-
-  // Container
-  virtual size_t getNumElements() const;
-  virtual Variable getElement(size_t index) const;
-  virtual void setElement(size_t index, const Variable& value);
-
-  lbcpp_UseDebuggingNewOperator
-
-private:
-  friend class LazyDoubleVectorClass;
-
-  FeatureGeneratorPtr featureGenerator;
-  std::vector<Variable> inputs;
-  DoubleVectorPtr computedVector;
-
-  void ensureIsComputed();
-};
-
 class CompositeDoubleVector : public DoubleVector
 {
 public:

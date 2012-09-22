@@ -94,11 +94,6 @@
     <parameter name="elementsType" type="Double"/>
   </template>
 
-  <template name="LazyDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">
-    <parameter name="elementsEnumeration" type="EnumValue"/>
-    <parameter name="elementsType" type="Double"/>
-  </template>
-
   <template name="CompositeDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">
     <parameter name="elementsEnumeration" type="EnumValue"/>
     <parameter name="elementsType" type="Double"/>

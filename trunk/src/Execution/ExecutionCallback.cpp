@@ -12,7 +12,6 @@
 #include "Callback/ExecutionNotifications.h"
 using namespace lbcpp;
 
-
 /*
 ** ExecutionCallback
 */

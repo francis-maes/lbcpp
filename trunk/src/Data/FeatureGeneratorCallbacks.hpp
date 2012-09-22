@@ -9,10 +9,20 @@
 #ifndef LBCPP_FEATURE_GENERATOR_CALLBACKS_HPP_H_
 # define LBCPP_FEATURE_GENERATOR_CALLBACKS_HPP_H_
 
-# include <lbcpp/FeatureGenerator/FeatureGenerator.h>
-
 namespace lbcpp
 {
+  
+class FeatureGeneratorCallback
+{
+public:
+  virtual ~FeatureGeneratorCallback() {}
+
+  virtual void sense(size_t index, double value) = 0;
+  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight) = 0;
+
+  virtual bool shouldStop() const
+    {return false;}
+};
 
 class FillSparseVectorFeatureGeneratorCallback : public FeatureGeneratorCallback
 {
@@ -28,9 +38,6 @@ public:
 
   virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
     {vector->appendTo(target, index, weight);}
-
-  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-    {featureGenerator->appendTo(inputs, target, index, weight);}
 
 private:
   SparseDoubleVectorPtr target;
@@ -48,9 +55,6 @@ public:
   virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
     {vector->addWeightedTo(target, index, weight);}
 
-  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-    {featureGenerator->addWeightedTo(inputs, target, index, weight);}
-
 private:
   DenseDoubleVectorPtr target;
 };
@@ -66,9 +70,6 @@ public:
   virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
     {if (weight) res += vector->l0norm();}
 
-  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-    {if (weight) res += featureGenerator->l0norm(inputs);}
-
   size_t res;
 };
 
@@ -82,9 +83,6 @@ public:
 
   virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
     {if (weight) res += fabs(weight) * vector->l1norm();}
-
-  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-    {if (weight) res += fabs(weight) * featureGenerator->l1norm(inputs);}
 
   double res;
 };
@@ -100,9 +98,6 @@ public:
   virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
     {if (weight) res += vector->entropy() * weight;}
 
-  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-    {if (weight) res += featureGenerator->entropy(inputs) * weight;}
-
   double res;
 };
 
@@ -116,9 +111,6 @@ public:
 
   virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
     {res += vector->sumOfSquares() * weight;}
-
-  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-    {res += featureGenerator->sumOfSquares(inputs) * weight;}
 
   double res;
 };
@@ -136,13 +128,6 @@ public:
   {
     size_t best;
     double value = vector->getExtremumValue(lookForMaximum, &best) * weight;
-    add(best, value);
-  }
-
-  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-  {
-    size_t best;
-    double value = featureGenerator->getExtremumValue(inputs, lookForMaximum, &best) * weight;
     add(best, value);
   }
 
@@ -174,9 +159,6 @@ public:
   virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
     {vector->appendTo(target, offset + index, weight * this->weight);}
 
-  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-    {featureGenerator->appendTo(inputs, target, offset + index, weight * this->weight);}
-
 protected:
   SparseDoubleVectorPtr target;
   size_t offset;
@@ -202,9 +184,6 @@ public:
   virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
     {vector->addWeightedTo(target, index + offset, weight * this->weight);}
 
-  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-    {featureGenerator->addWeightedTo(inputs, target, offset + index, weight * this->weight);}
-
 protected:
   SparseDoubleVectorPtr target;
   size_t offset;
@@ -224,9 +203,6 @@ public:
   virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
     {vector->addWeightedTo(target, index + offset, weight * this->weight);}
 
-  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-    {featureGenerator->addWeightedTo(inputs, target, offset + index, weight * this->weight);}
-
 protected:
   DenseDoubleVectorPtr target;
   size_t offset;
@@ -244,10 +220,7 @@ public:
 
   virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
     {res += weight * vector->dotProduct(target, index + offset);}
- 
-  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-    {res += weight * featureGenerator->dotProduct(inputs, target, index + offset);}
- 
+
   double res;
 
 protected:

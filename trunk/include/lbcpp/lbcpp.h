@@ -68,8 +68,6 @@
 # include "Function/StoppingCriterion.h"
 # include "Function/Evaluator.h"
 
-# include "FeatureGenerator/FeatureGenerator.h"
-
 # include "DecisionProblem/DecisionProblem.h"
 # include "Optimizer/BanditPool.h"
 

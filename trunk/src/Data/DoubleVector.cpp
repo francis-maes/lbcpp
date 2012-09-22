@@ -7,10 +7,9 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Data/DoubleVector.h>
-#include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 #include <lbcpp/Lua/Lua.h>
 #include "../Core/Object/SparseVectorHelper.h"
-#include "../FeatureGenerator/FeatureGeneratorCallbacks.hpp"
+#include "FeatureGeneratorCallbacks.hpp"
 using namespace lbcpp;
 
 ClassPtr lbcpp::simpleDenseDoubleVectorClass;
@@ -55,17 +54,6 @@ inline void computeFeatures(const CompositeDoubleVector& compositeVector, Callba
   for (size_t i = 0; i < n; ++i)
     callback.sense(compositeVector.getSubVectorOffset(i), compositeVector.getSubVector(i), 1.0);
 }
-
-template<class CallbackType>
-inline void computeFeatures(const LazyDoubleVector& lazyVector, CallbackType& callback)
-{
-  const DoubleVectorPtr& computed = lazyVector.getComputedVector();
-  if (computed)
-    callback.sense(0, computed, 1.0);
-  else
-    callback.sense(0, lazyVector.getFeatureGenerator(), &lazyVector.getInputs()[0], 1.0);
-}
-
 
 template<class VectorType>
 inline size_t defaultL0Norm(const VectorType& vector)
@@ -1124,122 +1112,6 @@ int DenseDoubleVector::__index(LuaState& state) const
   }
   state.pushNumber(values ? getValue(index - 1) : 0.0);
   return 1;
-}
-
-/*
-** LazyDoubleVector
-*/
-LazyDoubleVector::LazyDoubleVector(ClassPtr thisClass, FeatureGeneratorPtr featureGenerator, const Variable* inputs)
-  : DoubleVector(thisClass), featureGenerator(featureGenerator), inputs(featureGenerator->getNumInputs())
-{
-  for (size_t i = 0; i < this->inputs.size(); ++i)
-    this->inputs[i] = inputs[i];
-}
-
-// DoubleVector
-double LazyDoubleVector::entropy() const
-  {return defaultEntropy(*this);}
-
-size_t LazyDoubleVector::l0norm() const
-  {return defaultL0Norm(*this);}
-
-double LazyDoubleVector::l1norm() const
-  {return defaultL1Norm(*this);}
-
-double LazyDoubleVector::sumOfSquares() const
-  {return defaultSumOfSquares(*this);}
-
-double LazyDoubleVector::getExtremumValue(bool lookForMaximum, size_t* index) const
-  {return defaultGetExtremumValue(*this, lookForMaximum, index);}
-
-void LazyDoubleVector::multiplyByScalar(double scalar)
-  {jassert(false);}
-
-void LazyDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const
-{
-  if (computedVector)
-    computedVector->appendTo(sparseVector, offsetInSparseVector, weight);
-  else
-    featureGenerator->appendTo(&inputs[0], sparseVector, offsetInSparseVector, weight);
-}
-
-void LazyDoubleVector::addWeightedTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const
-{
-  if (computedVector)
-    computedVector->addWeightedTo(sparseVector, offsetInSparseVector, weight);
-  else
-    featureGenerator->addWeightedTo(&inputs[0], sparseVector, offsetInSparseVector, weight);
-}
-
-void LazyDoubleVector::addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const
-{
-  if (computedVector)
-    computedVector->addWeightedTo(denseVector, offsetInDenseVector, weight);
-  else
-    featureGenerator->addWeightedTo(&inputs[0], denseVector, offsetInDenseVector, weight);
-}
-
-double LazyDoubleVector::dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const
-{
-  if (computedVector)
-    return computedVector->dotProduct(denseVector, offsetInDenseVector);
-  else
-    return featureGenerator->dotProduct(&inputs[0], denseVector, offsetInDenseVector);
-}
-
-void LazyDoubleVector::computeFeatures(FeatureGeneratorCallback& callback) const
-{
-  if (computedVector)
-    callback.sense(0, computedVector, 1.f);
-  else
-    callback.sense(0, featureGenerator, &inputs[0], 1.f);
-}
-
-SparseDoubleVectorPtr LazyDoubleVector::toSparseVector() const
-{
-  const_cast<LazyDoubleVector* >(this)->ensureIsComputed();
-  return computedVector->toSparseVector();
-}
-
-// Vector
-void LazyDoubleVector::clear()
-  {jassert(false);}
-
-void LazyDoubleVector::reserve(size_t size)
-  {jassert(false);}
-
-void LazyDoubleVector::resize(size_t size)
-  {jassert(false);}
-
-void LazyDoubleVector::prepend(const Variable& value)
-  {jassert(false);}
-
-void LazyDoubleVector::append(const Variable& value)
-  {jassert(false);}
-
-void LazyDoubleVector::remove(size_t index)
-  {jassert(false);}
-
-void LazyDoubleVector::ensureIsComputed()
-{
-  if (!computedVector)
-    computedVector = featureGenerator->toComputedVector(&inputs[0]);
-}
-
-// Container
-size_t LazyDoubleVector::getNumElements() const
-  {return getElementsEnumeration()->getNumElements();}
-
-Variable LazyDoubleVector::getElement(size_t index) const
-{
-  const_cast<LazyDoubleVector* >(this)->ensureIsComputed();
-  return computedVector->getElement(index);
-}
-
-void LazyDoubleVector::setElement(size_t index, const Variable& value)
-{
-  // not allowed
-  jassert(false);
 }
 
 /*
