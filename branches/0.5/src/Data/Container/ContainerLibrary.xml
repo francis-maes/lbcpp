@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Container" directory="Data/Container">
+  <include file="lbcpp/Core/Vector.h"/>
+  <include file="lbcpp/Data/SymmetricMatrix.h"/>
+  
+  <!-- DecoratorContainer -->
+  <template name="DecoratorContainer" base="Container[elementsType]" abstract="yes">
+    <variable type="Container[Variable]" name="target"/>
+    <parameter name="elementsType"/>
+  </template>
+
+  <template name="ApplyFunctionContainer" base="DecoratorContainer[elementsType]">
+    <parameter name="elementsType"/>
+    <constructor arguments="ContainerPtr container, FunctionPtr function" parameters="function->getOutputType()"/>
+    <variable type="Function" name="function"/>
+  </template>
+
+  <template name="RangeContainer" base="DecoratorContainer[elementsType]">
+    <parameter name="elementsType"/>
+    <constructor arguments="ContainerPtr target, size_t begin, size_t end" parameters="target->getElementsType()"/>
+  </template>
+  
+  <template name="ExcludeRangeContainer" base="DecoratorContainer[elementsType]">
+    <parameter name="elementsType"/>
+    <constructor arguments="ContainerPtr target, size_t begin, size_t end" parameters="target->getElementsType()"/>
+  </template>
+  
+  <template name="DuplicatedContainer" base="DecoratorContainer[elementsType]">
+    <parameter name="elementsType"/>
+    <constructor arguments="ContainerPtr target, size_t count" parameters="target->getElementsType()"/>
+  </template>
+  
+  <template name="SubsetContainer" base="DecoratorContainer[elementsType]">
+    <parameter name="elementsType"/>
+    <constructor arguments="ContainerPtr target, const std::vector&lt;size_t&gt;&amp; indices" parameters="target->getElementsType()"/>
+  </template>
+
+  <!-- Accumulate Function -->
+  <template name="CumulativeScoreVector" base="Container[DenseDoubleVector[scoresEnumeration,Double]]">
+    <parameter name="scoresEnumeration" type="EnumValue"/>
+  </template>
+
+  <class name="AccumulateContainerFunctionImpl" base="Function" abstract="yes"/>
+  <class name="AccumulateEnumerationContainerFunction" base="AccumulateContainerFunctionImpl"/>
+  <class name="AccumulateDoubleContainerFunction" base="AccumulateContainerFunctionImpl"/>
+  <class name="AccumulateDoubleVectorContainerFunction" base="AccumulateContainerFunctionImpl"/>
+  <class name="AccumulateContainerFunction" base="ProxyFunction">
+    <constructor returnType="Function"/>
+  </class>
+
+  <!-- Local and Global Mean -->
+  <class name="AccumulatorGlobalMeanFunction" base="Function">
+    <constructor/>
+  </class>
+
+  <class name="AccumulatorLocalMeanFunction" base="Function">
+    <constructor arguments="size_t windowSize"/>
+    <variable type="PositiveInteger" name="windowSize"/>
+  </class>
+
+  <class name="AccumulatorWindowMeanFunction" base="Function">
+    <constructor/>
+  </class>
+
+  <!-- Segment Function -->
+  <template name="Segment" base="Object">
+    <parameter name="elementType"/>
+    <variable type="PositiveInteger" name="beginIndex" var="segment.beginIndex"/>
+    <variable type="PositiveInteger" name="endIndex" var="segment.endIndex"/>
+    <variable type="Variable" name="value" var="segment.value"/>
+  </template>
+
+  <template name="SegmentContainer" base="Container[elementsType]">
+    <parameter name="elementsType"/>
+  </template>
+
+  <class name="SegmentContainerFunction" base="Function">
+    <constructor/>
+  </class>
+  
+</library>

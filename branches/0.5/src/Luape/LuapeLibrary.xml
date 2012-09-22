@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Luape" directory="Luape">
+
+  <import name="LuapeFunction"/>
+  <import name="LuapeNodeBuilder"/>
+  <import name="LuapeLearner"/>
+  
+  <include file="lbcpp/Luape/LuapeFunction.h"/>
+  <include file="lbcpp/Luape/LuapeNode.h"/>
+  <include file="lbcpp/Luape/LuapeInference.h"/>
+  <include file="lbcpp/Luape/LuapeLearner.h"/>
+  <include file="lbcpp/Luape/LuapeNodeBuilder.h"/>
+  <include file="lbcpp/Luape/LuapeBatchLearner.h"/>
+    
+  <!-- Luape Function -->
+  <class name="LuapeFunction" abstract="yes"/>
+  <class name="HomogeneousUnaryLuapeFunction" base="LuapeFunction" abstract="yes"/>
+  <class name="HomogeneousBinaryLuapeFunction" base="LuapeFunction" abstract="yes"/>
+  
+  <!-- Nodes -->
+  <class name="LuapeNode" base="Object" abstract="yes">
+    <variable type="Type" name="type"/>
+    <!-- <variable type="PositiveInteger" name="allocationIndex"/> -->
+  </class>
+  <class name="LuapeInputNode" base="LuapeNode">
+    <variable type="String" name="name"/>
+    <variable type="PositiveInteger" name="inputIndex"/>
+  </class>
+  <class name="LuapeConstantNode" base="LuapeNode">
+    <variable type="Variable" name="value"/>
+  </class>
+  <class name="LuapeFunctionNode" base="LuapeNode">
+    <variable type="LuapeFunction" name="function"/>
+    <variable type="ObjectVector[LuapeNode]" name="arguments"/>
+  </class>
+  <class name="LuapeSequenceNode" base="LuapeNode" abstract="yes">
+    <variable type="ObjectVector[LuapeNode]" name="nodes"/>
+  </class>
+  <class name="LuapeScalarSumNode" base="LuapeSequenceNode">
+    <variable type="Boolean" name="convertToProbabilities"/>
+    <variable type="Boolean" name="computeAverage"/>
+  </class>
+  <class name="LuapeVectorSumNode" base="LuapeSequenceNode">
+    <variable type="Boolean" name="convertToProbabilities"/>
+  </class>
+  <class name="LuapeCreateSparseVectorNode" base="LuapeSequenceNode"/>
+  <class name="LuapeTestNode" base="LuapeNode">
+    <variable type="LuapeNode" name="conditionNode"/>
+    <variable type="LuapeNode" name="failureNode"/>
+    <variable type="LuapeNode" name="successNode"/>
+    <variable type="LuapeNode" name="missingNode"/>
+  </class>
+
+  <!-- Cache -->
+  <class name="LuapeUniverse" base="Object"/>
+
+
+  <!-- Inference -->
+  <class name="LuapeInference" base="Function" abstract="yes">
+<!--    <variable type="LuapeUniverse" name="universe"/>
+    <variable type="ObjectVector[LuapeInputNode]" name="inputs"/>
+    <variable type="ObjectVector[Function]" name="functions"/>
+    <variable type="LuapeNode" name="node"/> --> <!--TODO: split LuapeInference from LuapeProblem-->
+  </class>
+  <class name="LuapeBinaryClassifier" base="LuapeInference">
+    <constructor/>
+  </class>
+  <class name="LuapeClassifier" base="LuapeInference">
+    <constructor/>
+  </class>
+  <class name="LuapeRanker" base="LuapeInference">
+    <constructor/>
+  </class>
+  <class name="LuapeRegressor" base="LuapeInference">
+    <constructor/>
+  </class>
+
+  <!-- Node Builders -->
+  <class name="LuapeRPNSequence" base="Object">
+    <variable type="ObjectVector[Object]" name="sequence"/>
+  </class>
+  
+  <class name="LuapeNodeBuilder" base="Object" abstract="yes"/>
+  <class name="StochasticNodeBuilder" base="LuapeNodeBuilder" abstract="yes">
+    <variable type="PositiveInteger" name="numNodes"/>
+  </class>
+  <class name="SequentialNodeBuilder" base="StochasticNodeBuilder" abstract="yes">
+    <variable type="PositiveInteger" name="complexity"/>
+  </class>
+
+  <!-- Learning objectives -->
+  <class name="LearningObjective" base="Object" abstract="yes"/>
+  <class name="SupervisedLearningObjective" base="LearningObjective" abstract="yes"/>
+  <class name="RegressionLearningObjective" base="SupervisedLearningObjective"/>
+  <class name="BinaryClassificationLearningObjective" base="SupervisedLearningObjective"/>
+  <class name="ClassificationLearningObjective" base="SupervisedLearningObjective" abstract="yes"/>
+  <class name="InformationGainBinaryLearningObjective" base="BinaryClassificationLearningObjective">
+    <variable type="Boolean" name="normalize"/>
+  </class>
+  <class name="InformationGainLearningObjective" base="ClassificationLearningObjective">
+    <variable type="Boolean" name="normalize"/>
+  </class>
+
+  <!-- Learners -->
+  <class name="LuapeLearner" abstract="yes">
+    <variable type="Boolean" name="verbose"/>
+  </class>
+  <class name="NodeBuilderBasedLearner" base="LuapeLearner" abstract="yes">
+    <variable type="LuapeNodeBuilder" name="nodeBuilder"/>
+  </class>
+  <class name="IterativeLearner" base="LuapeLearner" abstract="yes">
+    <variable type="PositiveInteger" name="maxIterations"/>
+  </class>
+  <class name="DecoratorLearner" base="LuapeLearner" abstract="yes">
+    <variable type="LuapeLearner" name="decorated"/>
+  </class>
+
+  <!-- Wrapper to classical LBC++ learner -->
+  <class name="LuapeBatchLearner" base="BatchLearner">
+    <variable type="LuapeLearner" name="learner"/>
+  </class>
+  
+</library>

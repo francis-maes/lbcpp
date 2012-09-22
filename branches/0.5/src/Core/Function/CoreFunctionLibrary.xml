@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="CoreFunction" directory="Core/Function">
+  <include file="lbcpp/Core/Function.h"/>
+
+  <!-- Function -->
+  <class name="SimpleFunction" base="Function" abstract="yes"/>
+  <class name="SimpleUnaryFunction" base="SimpleFunction" abstract="yes"/>
+  <class name="SimpleBinaryFunction" base="SimpleFunction" abstract="yes"/>
+
+  <class name="ProxyFunction" base="Function" abstract="yes">
+    <variable type="Function" name="implementation"/>
+  </class>
+
+  <!-- Standard Functions -->
+  <class name="GetVariableFunction" base="Function">
+    <constructor arguments="const String&amp; variableName"/>
+    <constructor arguments="size_t variableIndex"/>
+    <variable type="PositiveInteger" name="variableIndex"/>
+    <!-- <variable type="String" name="variableName"/> -->
+  </class>
+  
+  <class name="SetVariableFunction" base="Function">
+    <constructor arguments="const String&amp; variableName"/>
+    <constructor arguments="size_t variableIndex"/>
+    <variable type="PositiveInteger" name="variableIndex"/>
+    <variable type="String" name="variableName"/>
+  </class>
+
+  <class name="GetElementFunction" base="Function">
+    <constructor/>
+  </class>
+
+  <class name="GetElementInVariableFunction" base="CompositeFunction">
+    <constructor arguments="const String&amp; variableName" returnType="Function"/>
+    <variable type="String" name="variableName"/>
+  </class>
+
+  <class name="CreateObjectFunction" base="Function">
+    <constructor arguments="ClassPtr objectClass"/>
+    <variable type="Class" name="objectClass"/>
+  </class>
+
+  <class name="ConvertToDoubleFunction" base="Function">
+    <constructor arguments="bool applyLogScale"/>
+    <variable type="Boolean" name="applyLogScale"/>
+  </class>
+  
+  <!-- Generate Vector Function -->
+  <class name="CreateVectorFunction" base="Function">
+    <constructor arguments="FunctionPtr elementGeneratorFunction, bool transmitIndexToGeneratorFunction"/>
+    <variable type="Function" name="elementGeneratorFunction"/>
+    <variable type="Boolean" name="transmitIndexToGeneratorFunction"/>
+  </class>
+
+  <!-- Generate Symmetric Matrix Function -->
+  <class name="CreateSymmetricMatrixFunction" base="Function">
+    <constructor arguments="FunctionPtr elementGeneratorFunction"/>
+    <variable type="Function" name="elementGeneratorFunction"/>
+  </class>
+
+  <!-- Map Function -->
+  <class name="MapContainerFunction" base="UnaryHigherOrderFunction">
+    <constructor arguments="const FunctionPtr&amp; baseFunction"/>
+  </class>
+
+  <class name="MapNContainerFunction" base="MapContainerFunction">
+    <constructor arguments="const FunctionPtr&amp; baseFunction" returnType="UnaryHigherOrderFunction"/>
+  </class>
+
+  <class name="MapMatrixFunction" base="UnaryHigherOrderFunction">
+    <constructor arguments="const FunctionPtr&amp; baseFunction"/>
+  </class>
+  
+  <class name="MapNMatrixFunction" base="MapMatrixFunction">
+    <constructor arguments="const FunctionPtr&amp; baseFunction" returnType="UnaryHigherOrderFunction"/>
+  </class>
+
+  <class name="MapSymmetricMatrixFunction" base="UnaryHigherOrderFunction">
+    <constructor arguments="const FunctionPtr&amp; baseFunction, size_t minimumDistanceFromDiagonal"/>
+    <variable type="PositiveInteger" name="minimumDistanceFromDiagonal"/>
+  </class>
+  
+  <class name="MapNSymmetricMatrixFunction" base="MapSymmetricMatrixFunction">
+    <constructor arguments="const FunctionPtr&amp; baseFunction, size_t minimumDistanceFromDiagonal" returnType="UnaryHigherOrderFunction"/>
+  </class>
+  
+  <class name="MapNFunction" base="ProxyFunction">
+    <constructor arguments="const FunctionPtr&amp; mapFunction"/>
+    <variable type="Function" name="mapFunction"/>
+  </class>
+
+  <!-- Loading functions -->
+  <class name="LoadFromFileFunction" base="Function">
+    <constructor arguments="TypePtr expectedType"/>
+    <variable type="Type" name="expectedType"/>
+  </class>
+
+  <class name="LoadFromFilePairFunction" base="Function">
+    <constructor arguments="TypePtr expectedType1, TypePtr expectedType2"/>
+    <variable type="Type" name="expectedType1"/>
+    <variable type="Type" name="expectedType2"/>
+  </class>
+
+  <!-- Compose Function -->
+  <class name="ComposeFunction" base="Function">
+    <constructor arguments="const FunctionPtr&amp; f, const FunctionPtr&amp; g"/>
+    <variable type="Function" name="f"/>
+    <variable type="Function" name="g"/>
+  </class>
+  
+  <class name="ConcatenateContainerFunction" base="Function">
+    <constructor/>
+  </class>
+  
+  <!-- Misc -->
+  <class name="SignedScalarToProbabilityFunction" base="SimpleUnaryFunction">
+    <constructor returnType="Function"/>
+  </class>
+
+  <!-- Double Vector Function -->
+  <class name="DoubleVectorEntropyFunction" base="Function">
+    <constructor/>
+  </class>
+
+  <class name="DoubleVectorNormalizeFunction" base="Function">
+    <constructor arguments="bool computeVariances, bool computeMeans" returnType="Function"/>
+    <variable type="GenericVector[Double]" name="variances"/>
+    <variable type="GenericVector[Double]" name="means"/>
+  </class>
+
+  <class name="ConcatenatedDoubleVectorNormalizeFunction" base="Function">
+    <constructor/>
+    <variable type="GenericVector[Double]" name="zFactors"/>
+  </class>
+
+</library>

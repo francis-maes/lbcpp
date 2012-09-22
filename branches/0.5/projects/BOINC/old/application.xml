@@ -1,0 +1,83 @@
+<application>
+  <!-- Francis: Here I do not include ".exe" into the worker name, since ".exe" is platform-specific -->
+  <worker name="BoincEvaluator" args="10 1"/>
+	
+	<!-- archive will be transmitted and unzipped once by boinc. -->
+	<!-- worker should not write into this directory, only read. -->
+	<!-- path where the archive has been unzipped is given to worker as first parameter by boinc. -->
+	<dependencies archive="BoincEvaluator.zip"/>
+	
+	<!-- description of the parameters that must be contained in input file of worker (input.xml) -->
+	<parameters>
+	
+		<!-- definition of some categories (types) -->
+		<categories>
+      
+      <!-- Francis: Since I have no aprioris here, I do not include the "prob" attribute 
+           The optimizer should thus start with an uniform probability distribution, 
+           i.e. prob = 0.2 for each value in this example -->
+			<category name="MultiClassInference">
+        <enum value="multiClassMaxent"/>
+        <enum value="multiClassLinearSVM"/>
+        <enum value="multiClassLinearSVMMostViolated"/>
+        <enum value="oneAgainstAllLinearSVM"/>
+        <enum value="oneAgainstAllLogisticRegression"/>
+			</category>
+
+      <category name="LearnerFrequency">
+        <enum value="never"/>
+        <enum value="perStep"/>
+        <enum value="perMiniBatch10"/>
+        <enum value="perMiniBatch100"/>
+        <enum value="perMiniBatch1000"/>
+        <enum value="perMiniBatch10000"/>
+        <enum value="perEpisode"/>
+        <enum value="perPass"/>
+      </category>
+
+      <category name="Boolean">
+        <enum value="yes"/>
+        <enum value="no"/>
+      </category>
+      
+		</categories>
+
+    <!-- MultiClass machine parameters -->
+    <param name="multiClassInference" type="MultiClassInference"/> <!-- Francis: Note that the name and the type have the same name... -->
+    <param name="randomizationFrequency" type="LearnerFrequency"/>
+    <param name="learningStepsFrequency" type="LearnerFrequency"/>
+    <param name="learningRate" type="numeric" min="-4" max="2" mean="1"/> <!-- Learning rate will be 10^{LearningRateValue} -->
+    <param name="learningRateDecrease" type="numeric" min="2" max="10"/> <!-- Learning rate decrease will be 10^{LearningRateDecrease}, No decrease if equal to 10  -->
+    <param name="regularizerFrequency" type="LearnerFrequency"/>
+    <param name="l1RegularizerWeight" type="numeric" min="-10" max="0"/> <!-- no regularizer if equal to -10 -->
+    <param name="l2RegularizerWeight" type="numeric" min="-10" max="0"/> <!-- no regularizer if equal to -10 -->
+    <param name="restoreBestParametersWhenFinished" type="Boolean"/>
+    
+    <!-- Features parameters -->
+    <!-- Francis: I want to use an integer parameter here. I suggest: -->
+    <param name="numIntervalsPerProbability" type="integer" min="1" max="10"/> <!-- no discretization if equals to 1 -->
+    <!-- Another syntax might be: 
+    <param name="NumIntervalsPerProbability" type="numeric" step="1" min="1" max="10"/>
+    -->
+    <param name="numIntervalsPerEntropy" type="integer" min="1" max="50"/> <!-- no discretization if equals to 1 -->
+    <param name="numIntervalsPerPositiveInteger" type="integer" min="1" max="50"/> <!-- no discretization if equals to 1 -->
+    
+    <!-- Features inclusion parameters -->
+    <param name="includeGlobalHistograms" type="Boolean"/>
+    <param name="includeLocalHistograms" type="Boolean"/>
+    <param name="includeLocalAAWindow" type="Boolean"/>
+    <param name="includeBoundsProximity" type="Boolean"/>
+    
+	</parameters>
+	
+	<!-- description of the scores given by the worker (evaluation of the model) -->
+	<scores>
+		<score name="testAccuracy"/>
+	</scores>
+	
+	<!-- statefile is the name of the checkpoint file used by the app, if any. -->
+	<!-- progressfile is the file in which the app will periodically write its fraction done (0 to 1). -->
+	<!-- these files must be saved in working directory. -->
+	<checkpoint statefile="state" progressfile="fractiondone"/>
+  
+</application>

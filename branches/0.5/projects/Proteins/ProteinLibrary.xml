@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Protein" dynamic="yes">
+
+  <import name="Geometry"/>
+  <import name="ProteinData"/>
+  <import name="ProteinPredictor"/>
+  <import name="ProteinEvaluator"/>
+  <import name="ProteinWorkUnit"/>
+  <import name="ProteinUserInterface" ifdef="LBCPP_USER_INTERFACE"/>
+  <import name="ProteinRosetta"/>
+  <import name="ProteinLuape"/>
+
+  <include file="Data/Protein.h"/>
+
+  <type name="AngstromDistance" base="Double">
+    <code>
+    virtual String toString(const VariableValue&amp; value) const
+      {return String(value.getDouble(), 2) + T(" A");}
+    </code>
+  </type>
+
+</library>

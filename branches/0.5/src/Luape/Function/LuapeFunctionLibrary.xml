@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="LuapeFunction" directory="Luape/Function">
+
+  <!-- Luape Functions - Booleans -->
+  <class name="BinaryBooleanLuapeFunction" base="HomogeneousBinaryLuapeFunction" abstract="yes"/>
+  <class name="AndBooleanLuapeFunction" base="BinaryBooleanLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="EqualBooleanLuapeFunction" base="BinaryBooleanLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+
+  <!-- Luape Functions - Integers -->
+  <class name="BinaryIntegerLuapeFunction" base="HomogeneousBinaryLuapeFunction" abstract="yes"/>
+  <class name="AddIntegerLuapeFunction" base="BinaryIntegerLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="SubIntegerLuapeFunction" base="BinaryIntegerLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="MulIntegerLuapeFunction" base="BinaryIntegerLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="DivIntegerLuapeFunction" base="BinaryIntegerLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+
+  <!-- Luape Functions - Doubles -->
+  <class name="UnaryDoubleLuapeFunction" base="HomogeneousBinaryLuapeFunction" abstract="yes"/>
+
+  <class name="OppositeDoubleLuapeFunction" base="UnaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="InverseDoubleLuapeFunction" base="UnaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="AbsDoubleLuapeFunction" base="UnaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="LogDoubleLuapeFunction" base="UnaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="ExpDoubleLuapeFunction" base="UnaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="SqrtDoubleLuapeFunction" base="UnaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="CosDoubleLuapeFunction" base="UnaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="SinDoubleLuapeFunction" base="UnaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+
+  <class name="NormalizerLuapeFunction" base="HomogeneousUnaryLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+
+  <class name="BinaryDoubleLuapeFunction" base="HomogeneousBinaryLuapeFunction" abstract="yes"/>
+  <class name="AddDoubleLuapeFunction" base="BinaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="SubDoubleLuapeFunction" base="BinaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="MulDoubleLuapeFunction" base="BinaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="DivDoubleLuapeFunction" base="BinaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="PowDoubleLuapeFunction" base="BinaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="MinDoubleLuapeFunction" base="BinaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="MaxDoubleLuapeFunction" base="BinaryDoubleLuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+  <class name="GreaterThanDoubleLuapeFunction" base="LuapeFunction">
+    <constructor returnType="LuapeFunction"/>
+  </class>
+
+  <!-- Luape Functions - Enumerations -->
+  <class name="EqualsConstantEnumLuapeFunction" base="LuapeFunction">
+    <constructor arguments="EnumerationPtr enumeration, size_t value"/>
+    <variable type="Enumeration" name="enumeration"/>
+    <variable type="PositiveInteger" name="value"/>
+  </class>
+
+  <!-- Luape Functions - Objects -->
+  <class name="UnaryObjectLuapeFunction" base="LuapeFunction" abstract="yes"/>
+  <class name="GetVariableLuapeFunction" base="UnaryObjectLuapeFunction">
+    <constructor arguments="ClassPtr inputClass, size_t variableIndex" returnType="LuapeFunction"/>
+    <constructor arguments="ClassPtr inputClass, const String&amp; variableName" returnType="LuapeFunction"/>
+    <variable type="Class" name="inputClass"/>
+    <variable type="PositiveInteger" name="variableIndex"/>
+  </class>
+  <class name="GetContainerLengthLuapeFunction" base="LuapeFunction">
+    <constructor/>
+  </class>
+
+  <!-- Luape Functions - DoubleVectors -->
+  <class name="GetDoubleVectorElementLuapeFunction" base="LuapeFunction">
+    <constructor arguments="EnumerationPtr enumeration, size_t index"/>
+    <variable type="Enumeration" name="enumeration"/>
+    <variable type="PositiveInteger" name="index"/>
+  </class>
+
+  <class name="ScalarVariableStatisticsPerception">
+    <variable type="Double" name="mean"/>
+    <variable type="Double" name="stddev"/>
+    <variable type="Double" name="min"/>
+    <variable type="Double" name="max"/>
+    <variable type="Double" name="sum"/>
+    <variable type="Double" name="l0norm"/>
+    <variable type="Double" name="l1norm"/>
+    <variable type="Double" name="l2norm"/>
+  </class>
+  <class name="ComputeDoubleVectorStatisticsLuapeFunction" base="LuapeFunction">
+    <constructor/>
+  </class>
+  
+  <class name="GetDoubleVectorExtremumsLuapeFunction" base="LuapeFunction">
+    <constructor arguments="EnumerationPtr enumeration" returnType="LuapeFunction"/>
+    <variable type="Enumeration" name="enumeration"/>
+  </class>
+
+  <!-- Luape Functions - Special -->
+  <class name="StumpLuapeFunction" base="LuapeFunction">
+    <constructor arguments="double threshold"/>
+    <variable type="Double" name="threshold"/>
+  </class>
+  
+  <!-- Luape Functions - Votes -->
+  <class name="VoteLuapeFunction" base="LuapeFunction" abstract="yes"/>
+  <class name="ScalarVoteLuapeFunction" base="VoteLuapeFunction">
+    <constructor arguments="double vote" returnType="LuapeFunction"/>
+    <variable type="Double" name="vote"/>
+  </class>
+  <class name="VectorVoteLuapeFunction" base="VoteLuapeFunction">
+    <constructor arguments="const DenseDoubleVectorPtr&amp; vote" returnType="LuapeFunction"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="vote"/>
+  </class>
+
+</library>

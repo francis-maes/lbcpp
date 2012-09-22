@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ContinuousSampler" directory="Sampler/Continuous">
+
+  <class name="GaussianSampler" base="ScalarContinuousSampler">
+    <constructor arguments="double mean, double stddev"/>
+    <variable type="Double" name="mean" shortName="m" description="Mean of the distribution"/>
+    <variable type="Double" name="stddev" shortName="s" description="Standard deviation of the distribution"/>
+  </class>
+
+  <class name="UniformScalarSampler" base="ScalarContinuousSampler">
+    <constructor arguments="double minValue, double maxValue"/>
+    <variable type="Double" name="minValue"/>
+    <variable type="Double" name="maxValue"/>
+  </class>
+  
+  <class name="MultiVariateGaussianSampler" base="ContinuousSampler">
+    <constructor arguments="const DoubleMatrixPtr&amp; initialMean, const DoubleMatrixPtr&amp; initialStdDev"/>
+    <variable type="PositiveInteger" name="numVariables"/>
+    <variable type="DoubleMatrix[Double]" name="means"/>
+    <variable type="DoubleMatrix[Double]" name="covariances"/>
+  </class>
+
+  <class name="ConditionalGaussianLossFunction" base="ScalarVectorFunction">
+    <constructor/>
+  </class>
+  <class name="ConditionalGaussianSampler" base="ScalarContinuousSampler">
+    <constructor/>
+    <variable type="NumericalLearnableFunction" name="multiLinearFunction"/>
+  </class>
+
+  <class name="ClamperSampler" base="CompositeSampler">
+    <constructor arguments="double minValue, double maxValue, const ScalarContinuousSamplerPtr&amp; sampler"/>
+    <variable type="Double" name="minValue"/>
+    <variable type="Double" name="maxValue"/>
+    <variable type="Double" name="mean"/>
+  </class>
+  
+</library>

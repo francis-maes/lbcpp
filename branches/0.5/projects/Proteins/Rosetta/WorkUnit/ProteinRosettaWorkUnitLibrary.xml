@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ProteinRosettaWorkUnit" directory="Rosetta/WorkUnit">
+  
+  <!-- General -->
+  <class name="DistributableWorkUnit" base="WorkUnit" abstract="yes"/>
+  
+  <class name="DistributeToClusterWorkUnit" base="WorkUnit">
+    <variable type="String" name="clusterLogin"/>
+    <variable type="PositiveInteger" name="memory"/>
+    <variable type="PositiveInteger" name="time"/>
+    <variable type="DistributableWorkUnit" name="distributable"/>
+    <variable type="String" name="localHostLogin"/>
+    <variable type="String" name="remoteHostName"/>
+    <variable type="PositiveInteger" name="remoteHostPort"/>
+  </class>
+  
+  <!-- Test -->
+  <class name="TestDumbWorkUnit" base="WorkUnit">
+    <variable type="PositiveInteger" name="j"/>
+  </class>
+  
+  <class name="TestDistribWorkUnit" base="DistributableWorkUnit">
+    <constructor arguments="size_t num"/>
+    <variable type="PositiveInteger" name="num"/>
+  </class>
+  
+  <!-- Proteins -->
+  <class name="UnfoldProteinsWorkUnit" base="WorkUnit">
+    <variable type="String" name="referenceDirectory" description="Directory where one can find the real proteins"/>
+    <variable type="String" name="outputDirectoryStructures" description="Directory where to store the intermediate structures"/>
+    <variable type="String" name="outputDirectoryMovers" description="Directory where to store the intermediate movers"/>
+    <variable type="String" name="outputPdb" description="Output directory for PDBs"/>
+    <variable type="Integer" name="numIterations" description="Maximum number of iterations performed by the defolder"/>
+    <variable type="Integer" name="maxPairs" description="Maximum number of pairs generated for a protein"/>
+    <variable type="Double" name="averageIncrease" description="Average increase needed to accept a new structure"/>
+  </class>
+  
+  <class name="TuningSAParametersWorkUnit" base="WorkUnit">
+    <variable type="String" name="inputDirectory" description="Directory where one can find the real proteins"/>
+    <variable type="String" name="referencesDirectory" description="Directory of the intermediate structures"/>
+    <variable type="String" name="moversDirectory" description="Directory of the associated movers"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+  
+  <class name="SingleProteinOptimizationWorkUnit" base="WorkUnit">
+    <variable type="PositiveInteger" name="id"/>
+    <variable type="Protein" name="inputProtein"/>
+    <variable type="String" name="referencesDirectory"/>
+    <variable type="String" name="moversDirectory"/>
+    <variable type="GeneralOptimizerParameters" name="parameters"/>
+    <variable type="PositiveInteger" name="repeat"/>
+  </class>
+  
+  <class name="ProteinOptimizationWorkUnit" base="DistributableWorkUnit">
+    <constructor arguments="String inputDirectory, String referencesDirectory, String moversDirectory, size_t numIterations, double initialTemperature, double finalTemperature, size_t numDecreasingSteps, size_t repeat"/>  
+    <variable type="String" name="inputDirectory"/>
+    <variable type="String" name="referencesDirectory"/>
+    <variable type="String" name="moversDirectory"/>
+    
+    <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="Double" name="initialTemperature"/>
+    <variable type="Double" name="finalTemperature"/>
+    <variable type="PositiveInteger" name="numDecreasingSteps"/>
+    
+    <variable type="PositiveInteger" name="repeat"/>
+  </class>
+  
+  <class name="EvaluateLikelihoodWorkUnit" base="WorkUnit">
+    <variable type="String" name="referencesDirectory"/>
+    <variable type="String" name="moversDirectory"/>
+    <variable type="Double" name="ratioTestSet"/>
+    <variable type="PositiveInteger" name="authorized"/>
+    <variable type="PositiveInteger" name="numSteps"/>
+    <variable type="PositiveInteger" name="repeat"/>
+  </class>
+  
+</library>

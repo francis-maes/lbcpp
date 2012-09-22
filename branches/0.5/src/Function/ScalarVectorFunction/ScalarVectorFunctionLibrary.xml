@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ScalarVectorFunction" directory="Function/ScalarVectorFunction">
+  <include file="lbcpp/Function/ScalarVectorFunction.h"/>
+
+  
+
+    <class name="ScalarVectorFunction" base="Function" abstract="yes"/>
+
+    <class name="BinarySumScalarVectorFunction" base="ScalarVectorFunction">
+      <constructor arguments="ScalarVectorFunctionPtr f1, ScalarVectorFunctionPtr f2"/>
+      <variable type="ScalarVectorFunction" name="f1"/>
+      <variable type="ScalarVectorFunction" name="f2"/>
+    </class>
+
+    <class name="MultiplyByScalarVectorFunction" base="ScalarVectorFunction">
+      <constructor arguments="ScalarVectorFunctionPtr function, double scalar"/>
+      <variable type="ScalarVectorFunction" name="function"/>
+      <variable type="Double" name="scalar"/>
+    </class>
+
+   
+</library>

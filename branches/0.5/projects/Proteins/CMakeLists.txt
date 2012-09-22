@@ -1,0 +1,368 @@
+INCLUDE_DIRECTORIES(
+  ${LBCpp_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+OPTION(LBCPP_PROTEIN_ROSETTA "Enable Rosetta Dependent Code" OFF)
+
+
+GENERATE_INTROSPECTION_CODE(Geometry/GeometryLibrary.xml GeometryLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Data/ProteinDataLibrary.xml ProteinDataLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Predictor/ProteinPredictorLibrary.xml ProteinPredictorLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Evaluator/ProteinEvaluatorLibrary.xml ProteinEvaluatorLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(WorkUnit/ProteinWorkUnitLibrary.xml ProteinWorkUnitLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Luape/ProteinLuapeLibrary.xml ProteinLuapeLibrary.cpp)
+
+IF(LBCPP_USER_INTERFACE)
+  GENERATE_INTROSPECTION_CODE(UserInterface/ProteinUserInterfaceLibrary.xml ProteinUserInterfaceLibrary.cpp)
+ENDIF(LBCPP_USER_INTERFACE)
+
+GENERATE_INTROSPECTION_CODE(Rosetta/ProteinRosettaLibrary.xml ProteinRosettaLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Rosetta/Data/ProteinRosettaDataLibrary.xml ProteinRosettaDataLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Rosetta/Data/Features/ProteinRosettaDataFeaturesLibrary.xml ProteinRosettaDataFeaturesLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Rosetta/Data/Mover/ProteinRosettaDataMoverLibrary.xml ProteinRosettaDataMoverLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Rosetta/Data/MoverSampler/ProteinRosettaDataMoverSamplerLibrary.xml ProteinRosettaDataMoverSamplerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Rosetta/ProteinOptimizer/ProteinRosettaOptimizerLibrary.xml ProteinRosettaOptimizerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Rosetta/ProteinOptimizer/StoppingCriterion/ProteinRosettaOptimizerStoppingCriterionLibrary.xml ProteinRosettaOptimizerStoppingCriterionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Rosetta/WorkUnit/ProteinRosettaWorkUnitLibrary.xml ProteinRosettaWorkUnitLibrary.cpp)
+
+GENERATE_INTROSPECTION_CODE(ProteinLibrary.xml ProteinLibrary.cpp)
+
+SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
+  Geometry/DihedralAngle.h
+  Geometry/Vector3.h
+  Geometry/Vector3.cpp
+  Geometry/Matrix3.h
+  Geometry/Matrix3.cpp  
+  Geometry/Matrix4.h
+  Geometry/Matrix4.cpp
+  Geometry/kdtree_lib.h
+  Geometry/kdtree_lib.c
+  Geometry/CartesianPositionVector.h
+  Geometry/CartesianPositionVector.cpp
+  Geometry/GeometryLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/GeometryLibrary.cpp
+)
+
+SET(LBCPP_PROTEIN_DATA_SOURCES
+  Data/AminoAcid.h
+  Data/AminoAcid.cpp
+  Data/SecondaryStructure.h
+  Data/Atom.h
+  Data/Atom.cpp
+  Data/Residue.h
+  Data/Residue.cpp
+  Data/TertiaryStructure.h
+  Data/TertiaryStructure.cpp
+  Data/Protein.h
+  Data/Protein.cpp
+  Data/ProteinFunctions.h
+  Data/ProteinDataLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinDataLibrary.cpp
+)
+
+
+SET(LBCPP_PROTEIN_DATA_FORMATS_SOURCES
+  Data/Formats/FASTAFileParser.h
+  Data/Formats/FASTAFileGenerator.h
+  Data/Formats/SPXFileParser.h
+  Data/Formats/PDBFileParser.h
+  Data/Formats/PDBFileParser.cpp
+  Data/Formats/PDBFileGenerator.h
+  Data/Formats/PDBFileGenerator.cpp
+  Data/Formats/CASPFileGenerator.h
+  Data/Formats/CASPFileGenerator.cpp
+  Data/Formats/OrderDisorderRegionCASPFileGenerator.h
+  Data/Formats/ResidueResidueDistanceCASPFileGenerator.h
+  Data/Formats/TertiaryStructureCASPFileGenerator.h
+  Data/Formats/PSSMFileParser.h
+  Data/Formats/DSSPFileParser.h
+)
+
+SET(LBCPP_PROTEIN_PREDICTOR_SOURCES
+  Predictor/ProteinPredictor.h
+  Predictor/ProteinPredictor.cpp
+  Predictor/ProteinPerception.h
+  Predictor/ProteinPredictorParameters.h
+  Predictor/DecoratorProteinPredictorParameters.h
+  Predictor/NumericalProteinPredictorParameters.h
+  Predictor/NumericalCysteinPredictorParameters.h
+  Predictor/Lin09PredictorParameters.h
+  Predictor/ConnectivityPatternClassifier.h
+  Predictor/LargeProteinPredictorParameters.h
+  Predictor/ProteinPredictorLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinPredictorLibrary.cpp
+)
+
+SET(LBCPP_PROTEIN_EVALUATOR_SOURCES
+  Evaluator/TertiaryStructureEvaluator.h
+  Evaluator/ContactMapEvaluator.h
+  Evaluator/DisulfideBondEvaluator.h
+  Evaluator/ExhaustiveDisulfidePatternFunction.h
+  Evaluator/GabowPatternFunction.h
+  Evaluator/KolmogorovPerfectMatchingFunction.h
+  Evaluator/ProteinEvaluator.h
+  Evaluator/QScoreEvaluator.h
+  Evaluator/QScoreEvaluator.cpp
+  Evaluator/ProteinEvaluatorLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinEvaluatorLibrary.cpp
+)
+
+SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
+  WorkUnit/CaspPDBtoValidPDBWorkUnit.cpp
+  WorkUnit/CaspPDBtoValidPDBWorkUnit.h
+  WorkUnit/CompileProteinsWorkUnit.cpp
+  WorkUnit/CompileProteinsWorkUnit.h
+  WorkUnit/ConvertPDBToProteinWorkUnit.cpp
+  WorkUnit/ConvertPDBToProteinWorkUnit.h
+  WorkUnit/ProteinInferenceEvaluator.cpp
+  WorkUnit/ProteinInferenceEvaluatorWorkUnit.cpp
+  WorkUnit/ProteinInferenceEvaluatorWorkUnit.h
+  WorkUnit/ProteinLearner.h
+  WorkUnit/ProteinLearner.cpp
+  WorkUnit/BricoBox.h
+  WorkUnit/BricoBox.cpp
+  WorkUnit/CysteinBox.h
+  WorkUnit/LargeBox.h
+  WorkUnit/BanditBox.h
+  WorkUnit/PerceptronWorkUnit.h
+  WorkUnit/ProteinStatisticsWorkUnit.h
+  WorkUnit/CB513AndRS126Box.h
+  WorkUnit/ESANN11.h
+  WorkUnit/StudentTestsBox.h
+  WorkUnit/PlosComputationalBiologyJournal.h
+  WorkUnit/ProteinWorkUnitLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinWorkUnitLibrary.cpp
+)
+
+SET(LBCPP_PROTEIN_LUAPE_SOURCES
+  Luape/ProteinResiduePerception.h
+  Luape/ProteinPerception.h
+  Luape/LuapeProteinPredictorParameters.h
+  Luape/ProteinLuapeSandBox.h
+  Luape/DSBFormulaSearchProblem.h
+  Luape/ProteinLuapeLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinLuapeLibrary.cpp
+)
+
+IF(LBCPP_USER_INTERFACE)
+  SET(LBCPP_PROTEIN_USER_INTERFACE_SOURCES
+    UserInterface/MultiSequenceComponent.h
+    UserInterface/MultiProtein1DComponent.h
+    UserInterface/MultiProtein2DComponent.h
+    UserInterface/MultiProteinComponent.h
+    UserInterface/ProteinUserInterfaceLibrary.xml
+    ${CMAKE_CURRENT_BINARY_DIR}/ProteinUserInterfaceLibrary.cpp
+  )
+ENDIF(LBCPP_USER_INTERFACE)
+
+SET(LBCPP_PROTEIN_BLOSSOMV_SOURCES
+  BlossomV/block.h
+  BlossomV/LCA.h
+  BlossomV/misc.cpp
+  BlossomV/PerfectMatching.h
+  BlossomV/PMduals.cpp
+  BlossomV/PMexpand.cpp
+  BlossomV/PMimplementation.h
+  BlossomV/PMinit.cpp
+  BlossomV/PMinterface.cpp
+  BlossomV/PMmain.cpp
+  BlossomV/PMrepair.cpp
+  BlossomV/PMshrink.cpp
+  BlossomV/PQ.h
+  BlossomV/timer.h
+  BlossomV/MinCost/MinCost.cpp
+  BlossomV/MinCost/MinCost.h
+)
+
+SET(LBCPP_PROTEIN_ROSETTA_SOURCES
+  Rosetta/RosettaProtein.h
+  Rosetta/RosettaTest.h
+  Rosetta/RosettaSandBox.h
+  Rosetta/RosettaUtils.h
+  Rosetta/RosettaUtils.cpp
+  Rosetta/RosettaWorkUnit.h
+  Rosetta/ProteinEDAOptimizer.h
+  Rosetta/ProteinRosettaLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaLibrary.cpp
+)
+
+SET(LBCPP_PROTEIN_ROSETTA_DATA_SOURCES
+  Rosetta/Data/Rosetta.h
+  Rosetta/Data/Rosetta.cpp
+  Rosetta/Data/Pose.h
+  Rosetta/Data/Pose.cpp
+  Rosetta/Data/ProteinRosettaDataLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaDataLibrary.cpp
+)
+
+SET(LBCPP_PROTEIN_ROSETTA_DATA_FEATURES_SOURCES
+  Rosetta/Data/Features/BlindPoseFeatureGenerator.h
+  Rosetta/Data/Features/PoseStaticFeatureGenerator.h
+  Rosetta/Data/Features/PoseDynamicFeatureGenerator.h
+  Rosetta/Data/Features/PoseFeatureGenerator.h
+  Rosetta/Data/Features/ProteinRosettaDataFeaturesLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaDataFeaturesLibrary.cpp
+)
+
+SET(LBCPP_PROTEIN_ROSETTA_DATA_MOVER_SOURCES
+  Rosetta/Data/Mover/PoseMover.h
+  Rosetta/Data/Mover/PhiPsiMover.h
+  Rosetta/Data/Mover/PhiPsiMover.cpp
+  Rosetta/Data/Mover/ShearMover.h
+  Rosetta/Data/Mover/ShearMover.cpp
+  Rosetta/Data/Mover/RigidBodyMover.h
+  Rosetta/Data/Mover/RigidBodyMover.cpp
+  Rosetta/Data/Mover/ProteinRosettaDataMoverLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaDataMoverLibrary.cpp
+)
+
+SET(LBCPP_PROTEIN_ROSETTA_DATA_MOVERSAMPLER_SOURCES
+  Rosetta/Data/MoverSampler/BlindPoseMoverSampler.h
+  Rosetta/Data/MoverSampler/BlindResidueSampler.h
+  Rosetta/Data/MoverSampler/BlindResiduePairSampler.h
+  Rosetta/Data/MoverSampler/ConditionalPoseMoverSampler.h
+  Rosetta/Data/MoverSampler/ProteinRosettaDataMoverSamplerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaDataMoverSamplerLibrary.cpp
+)
+  
+SET(LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES
+  Rosetta/ProteinOptimizer/GeneralOptimizer.h
+  Rosetta/ProteinOptimizer/ProteinOptimizer.h
+  Rosetta/ProteinOptimizer/SimulatedAnnealingOptimizer.h
+  Rosetta/ProteinOptimizer/SimulatedAnnealing.h
+  Rosetta/ProteinOptimizer/SequentialOptimizer.h
+  Rosetta/ProteinOptimizer/ProteinRosettaOptimizerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaOptimizerLibrary.cpp
+)
+
+SET(LBCPP_PROTEIN_ROSETTA_OPTIMIZER_STOPPINGCRITERION_SOURCES
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaOptimizerStoppingCriterionLibrary.cpp
+)
+
+SET(LBCPP_PROTEIN_ROSETTA_WORKUNIT_SOURCES
+  Rosetta/WorkUnit/EvaluateLikelihoodWorkUnit.h
+  Rosetta/WorkUnit/UnfoldProteinsWorkUnit.h
+  Rosetta/WorkUnit/TuningSAParametersWorkUnit.h
+  Rosetta/WorkUnit/SingleThreadProteinOptimizationWorkUnit.h
+  Rosetta/WorkUnit/ProteinOptimizationWorkUnit.h
+  Rosetta/WorkUnit/ProteinEDAOptimizationWorkUnit.h
+  Rosetta/WorkUnit/DistributableWorkUnit.h
+  Rosetta/WorkUnit/ExampleDistributableWorkUnit.h
+  Rosetta/WorkUnit/ProteinRosettaWorkUnitLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaWorkUnitLibrary.cpp
+)
+
+IF(LBCPP_PROTEIN_ROSETTA)
+  ADD_DEFINITIONS(-DLBCPP_PROTEIN_ROSETTA)
+
+  
+  IF (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    SET(ROSETTA_BUILD_TYPE "debug")
+  ELSE (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    SET(ROSETTA_BUILD_TYPE "release")
+  ENDIF (CMAKE_BUILD_TYPE STREQUAL "Debug")
+
+IF(WIN32)
+#  ADD_SUBDIRECTORY(Rosetta/rosetta)
+
+  include(FindBoost)
+  find_package(
+	  Boost
+	  1.36.0
+	  REQUIRED
+  )
+  #link_directories(${Boost_LIBRARY_DIRS})
+  include_directories(${Boost_INCLUDE_DIRS})
+  include_directories(Rosetta/rosetta)
+
+  SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES )
+ELSE(WIN32)
+
+  IF(APPLE)
+    
+    # Mac
+    INCLUDE_DIRECTORIES(
+      /Users/alex/Documents/docwork/lbcpp_work/rosetta3.2-src/rosetta_source/src
+      /Users/alex/Documents/docwork/lbcpp_work/rosetta3.2-src/rosetta_source/src/platform/macos
+      /Users/alex/Documents/docwork/lbcpp_work/rosetta3.2-src/rosetta_source/external/boost_1_38_0
+    )
+    
+    # SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/build/src/${ROSETTA_BUILD_TYPE}/macos/10.6/64/x86/gcc)
+    SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE /Users/alex/Documents/docwork/lbcpp_work/rosetta3.2-src/rosetta_source/build/src/${ROSETTA_BUILD_TYPE}/macos/11.3/64/x86/gcc)
+    SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE}/libcore.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE}/libutility.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE}/libnumeric.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE}/libObjexxFCL.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE}/libprotocols.dylib)
+    
+  ELSE(APPLE)
+
+    # Linux
+    INCLUDE_DIRECTORIES(
+      ${LBCpp_SOURCE_DIR}/rosetta3.2-src/rosetta_source/src
+      ${LBCpp_SOURCE_DIR}/rosetta3.2-src/rosetta_source/src/platform/linux
+    )
+    SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_LINUX ${LBCpp_SOURCE_DIR}/rosetta3.2-src/rosetta_source/build/src/release/linux/2.6/64/x86/gcc)
+    SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_LINUX}/libcore.so ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_LINUX}/libnumeric.so ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_LINUX}/libObjexxFCL.so ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_LINUX}/libprotocols.so)
+
+  ENDIF(APPLE)
+ENDIF(WIN32)
+
+ENDIF(LBCPP_PROTEIN_ROSETTA)
+
+
+SET(PROTEINS_CPP_SOURCES
+  ${LBCPP_PROTEIN_GEOMETRY_SOURCES}
+  ${LBCPP_PROTEIN_DATA_SOURCES}
+  ${LBCPP_PROTEIN_DATA_FORMATS_SOURCES}
+  ${LBCPP_PROTEIN_PERCEPTION_SOURCES}
+  ${LBCPP_PROTEIN_PREDICTOR_SOURCES}
+  ${LBCPP_PROTEIN_INFERENCE_SOURCES}
+  ${LBCPP_PROTEIN_EVALUATOR_SOURCES}
+  ${LBCPP_PROTEIN_WORK_UNIT_SOURCES}
+  ${LBCPP_PROTEIN_USER_INTERFACE_SOURCES}
+  ${LBCPP_PROTEIN_ROSETTA_SOURCES}
+    ${LBCPP_PROTEIN_ROSETTA_DATA_SOURCES}
+    ${LBCPP_PROTEIN_ROSETTA_DATA_FEATURES_SOURCES}
+    ${LBCPP_PROTEIN_ROSETTA_DATA_MOVER_SOURCES}
+    ${LBCPP_PROTEIN_ROSETTA_DATA_MOVERSAMPLER_SOURCES}
+    ${LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES}
+    ${LBCPP_PROTEIN_ROSETTA_OPTIMIZER_STOPPINGCRITERION_SOURCES}
+    ${LBCPP_PROTEIN_ROSETTA_WORKUNIT_SOURCES}
+  ${LBCPP_PROTEIN_BLOSSOMV_SOURCES}
+  ${LBCPP_PROTEIN_LUAPE_SOURCES}
+  
+  ProteinLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinLibrary.cpp
+)
+
+SET(PROTEINS_SOURCES
+  precompiled.h
+  precompiled.cpp
+  ${CRALGORITHMS_OUTPUT_FILES}
+  ${PROTEINS_CPP_SOURCES}
+)
+
+SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
+
+SOURCE_GROUP(Geometry FILES ${LBCPP_PROTEIN_GEOMETRY_SOURCES})
+
+SOURCE_GROUP(Data FILES ${LBCPP_PROTEIN_DATA_SOURCES})
+SOURCE_SUB_GROUP(Data Formats FILES ${LBCPP_PROTEIN_DATA_FORMATS_SOURCES})
+SOURCE_GROUP(Predictor FILES ${LBCPP_PROTEIN_PREDICTOR_SOURCES})
+SOURCE_GROUP(Evaluator FILES ${LBCPP_PROTEIN_EVALUATOR_SOURCES})
+SOURCE_GROUP(WorkUnit FILES ${LBCPP_PROTEIN_WORK_UNIT_SOURCES})
+SOURCE_GROUP(UserInterface FILES ${LBCPP_PROTEIN_USER_INTERFACE_SOURCES})
+SOURCE_GROUP(Rosetta FILES ${LBCPP_PROTEIN_ROSETTA_SOURCES})
+SOURCE_SUB_GROUP(Rosetta Data FILES ${LBCPP_PROTEIN_ROSETTA_DATA_SOURCES})
+SOURCE_SUB_GROUP(Rosetta DataFeatures FILES ${LBCPP_PROTEIN_ROSETTA_DATA_FEATURES_SOURCES})
+SOURCE_SUB_GROUP(Rosetta DataMover FILES ${LBCPP_PROTEIN_ROSETTA_DATA_MOVER_SOURCES})
+SOURCE_SUB_GROUP(Rosetta DataMoverSampler FILES ${LBCPP_PROTEIN_ROSETTA_DATA_MOVERSAMPLER_SOURCES})
+SOURCE_SUB_GROUP(Rosetta ProteinOptimizer FILES ${LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES})
+SOURCE_SUB_GROUP(Rosetta ProteinOptimizerStoppingCriterion FILES ${LBCPP_PROTEIN_ROSETTA_OPTIMIZER_STOPPINGCRITERION_SOURCES})
+SOURCE_SUB_GROUP(Rosetta WorkUnit FILES ${LBCPP_PROTEIN_ROSETTA_WORKUNIT_SOURCES})
+SOURCE_GROUP(BlossomV FILES ${LBCPP_PROTEIN_BLOSSOMV_SOURCES})
+SOURCE_GROUP(Luape FILES ${LBCPP_PROTEIN_LUAPE_SOURCES})
+
+GENERATE_LBCPP_PRECOMPILED(precompiled PROTEINS_SOURCES)
+
+ADD_LIBRARY(proteins${NAME_FILE_SUFFIX} SHARED ${PROTEINS_SOURCES})
+TARGET_LINK_LIBRARIES(proteins${NAME_FILE_SUFFIX} lbcpp-core${NAME_FILE_SUFFIX} ${LBCPP_PROTEIN_ROSETTA_LIBRARIES})

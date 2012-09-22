@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="SequentialDecisionGP" directory="GP">
+
+  <!-- GP Expr -->
+  <enumeration name="GPOperator">
+    <value name="add" shortName="+"/>
+    <value name="sub" shortName="-"/>
+    <value name="mul" shortName="*"/>
+    <value name="div" shortName="/"/>
+    <value name="min"/>
+    <value name="max"/>
+    <value name="pow"/>
+    <value name="lessThan"/>
+  </enumeration>
+
+  <enumeration name="GPPre">
+    <value name="identity"/>
+    <value name="opposite"/>
+    <value name="inverse"/>
+    <value name="sqrt"/>
+    <value name="log"/>
+    <value name="exp"/>
+    <value name="abs"/>
+  </enumeration>
+
+  <class name="GPExpression" base="Object" abstract="yes">
+    <function name="createFromString" lang="lua" static="yes"/>
+    <function name="compute" lang="lua"/>
+    <code>
+      virtual Variable createFromXml(XmlImporter&amp; importer) const
+        {return Variable(GPExpression::createFromString(importer.getContext(), importer.getAllSubText(), positiveIntegerEnumerationEnumeration));}
+
+      virtual Variable createFromString(ExecutionContext&amp; context, const String&amp; value) const
+        {return Variable(GPExpression::createFromString(context, value, positiveIntegerEnumerationEnumeration));}
+    </code>    
+  </class>
+
+  <class name="ConstantGPExpression" base="GPExpression">
+    <variable type="Double" name="value"/>
+    <variable type="Boolean" name="learnable"/>
+  </class>
+  <class name="VariableGPExpression" base="GPExpression" shortName="variable">
+    <variable type="Integer" name="index"/>
+    <variable type="Enumeration" name="enumeration"/>
+  </class>
+  <class name="UnaryGPExpression" base="GPExpression" shortName="unary">
+    <variable type="GPPre" name="pre" enumeration="yes"/>
+    <variable type="GPExpression" name="expr"/>
+  </class>
+  <class name="BinaryGPExpression" base="GPExpression" shortName="binary">
+    <variable type="GPExpression" name="left"/>
+    <variable type="GPOperator" name="op" enumeration="yes"/>
+    <variable type="GPExpression" name="right"/>
+  </class>
+
+  <class name="GPExpressionSamplingContext" base="Object">
+    <variable type="GPExpressionSamplingContext" name="parent"/>
+    <variable type="GPExprLabels" name="parentLabel"/>
+    <variable type="GPExprLabels" name="grandParentLabel"/>
+    <variable type="PositiveInteger" name="depth"/>
+  </class>
+
+  <enumeration name="GPExprLabels">
+    <value name="add"/>
+    <value name="sub"/>
+    <value name="mul"/>
+    <value name="div"/>
+    <value name="logarithm"/>
+    <value name="squareRoot"/>
+    <value name="inverse"/>
+    <value name="constant"/>
+    <value name="variable1"/>
+    <value name="variable2"/>
+    <value name="variable3"/>
+    <value name="variable4"/>
+  </enumeration>
+
+  <!-- GPExpression Sampler -->
+  <class name="GPExpressionSampler" base="CompositeSampler"/>
+
+  <!-- GPExpression Builder -->
+  <class name="GPExpressionBuilderAction" base="Object" abstract="yes"/>
+
+  <class name="VariableGPExpressionBuilderAction" base="GPExpressionBuilderAction" shortName="variable">
+    <variable type="Variable" name="index"/>
+  </class>
+  
+  <class name="UnaryGPExpressionBuilderAction" base="GPExpressionBuilderAction" shortName="unary">
+    <variable type="GPPre" name="op" enumeration="yes"/>
+    <variable type="PositiveInteger" name="index"/>
+  </class>
+
+  <class name="BinaryGPExpressionBuilderAction" base="GPExpressionBuilderAction" shortName="binary">
+    <variable type="GPOperator" name="op" enumeration="yes"/>
+    <variable type="PositiveInteger" name="left"/>
+    <variable type="PositiveInteger" name="right"/>
+  </class>
+  <class name="ConstantGPExpressionBuilderAction" base="GPExpressionBuilderAction">
+    <variable type="Double" name="value"/>
+    <variable type="Boolean" name="learnable"/>
+  </class>
+  <class name="FinalizeGPExpressionBuilderAction" base="GPExpressionBuilderAction"/>
+
+  <class name="GPExpressionBuilderState" base="DecisionProblemState" abstract="yes"/>
+
+  <class name="CompactGPExpressionBuilderState" base="GPExpressionBuilderState">
+    <variable type="GPExpression" name="expression"/>
+  </class>
+  
+  <class name="LargeGPExpressionBuilderState" base="GPExpressionBuilderState">
+    <variable type="ObjectVector[GPExpression]" name="expressions"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="expressionScores"/>
+  </class>
+  
+  <class name="RPNGPExpressionBuilderState" base="GPExpressionBuilderState">
+    <variable type="ObjectVector[GPExpression]" name="stack"/>
+    <variable type="PositiveInteger" name="currentSize"/>
+    <variable type="PositiveInteger" name="maxSize"/>
+    <variable type="Boolean" name="isFinal"/>
+  </class>  
+
+  <class name="GPExpressionBuilderProblem" base="DecisionProblem"/>
+
+  <!-- Score Object --> 
+  <class name="GPStructureScoreObject" base="ScoreObject">
+    <variable type="GPExpression" name="expression"/>
+    <variable type="Double" name="score"/>
+  </class>
+
+  <!-- Formulas -->
+  <class name="FormulaSearchProblem" base="Object" abstract="yes"/>
+
+  <class name="GenerateUniqueFormulas" base="WorkUnit">
+    <variable type="FormulaSearchProblem" name="problem"/>
+    <variable type="PositiveInteger" name="maxSize"/>
+    <variable type="PositiveInteger" name="numSamples"/>
+    <variable type="File" name="formulasFile"/>
+  </class>
+
+  <class name="PlayFormulasNTimes" base="WorkUnit">
+    <variable type="FormulaSearchProblem" name="problem"/>
+    <variable type="File" name="formulasFile"/>
+    <variable type="PositiveInteger" name="numEstimations"/>
+    <variable type="File" name="outputFile"/>
+  </class>
+
+  <class name="CompareBanditFormulaSearchPolicies" base="WorkUnit">
+    <variable type="FormulaSearchProblem" name="problem"/>
+    <variable type="File" name="formulasFile"/>
+    <variable type="PositiveInteger" name="numRuns"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="PositiveInteger" name="iterationsLength"/>
+  </class>
+
+  <class name="BanditFormulaSearch" base="WorkUnit">
+    <variable type="File" name="formulasFile"/>
+    <variable type="PositiveInteger" name="numTimeSteps"/>
+    <variable type="BanditProblemSampler" name="problemSampler"/>
+    <variable type="PositiveInteger" name="minHorizon"/>
+    <variable type="PositiveInteger" name="maxHorizon"/>
+    <variable type="File" name="outputDirectory"/>
+  </class>
+
+  <class name="EvaluateBanditFormulas" base="WorkUnit">
+    <variable type="File" name="formulasFile"/>
+    <variable type="BanditProblemSampler" name="problemSampler"/>
+    <variable type="PositiveInteger" name="horizon"/>
+    <variable type="Boolean" name="isSimpleRegret"/>
+  </class>
+
+  <!-- MultiArmed Bandit Formulas -->
+  <enumeration name="GPExpressionDiscreteBanditPolicyVariables">
+    <value name="rk"/>
+    <value name="sk"/>
+    <value name="tk"/>
+    <value name="t"/>
+  </enumeration>
+
+  <class name="RegretScoreObject" base="ScoreObject">
+    <variable type="Double" name="regret"/>
+    <variable type="Double" name="reward"/>
+  </class>
+
+
+  <class name="BanditProblemSampler" base="Sampler" abstract="yes"/>
+  <class name="Setup0BanditProblemSampler" base="BanditProblemSampler"/>
+  <class name="Setup1BanditProblemSampler" base="BanditProblemSampler"/>
+  <class name="Setup2BanditProblemSampler" base="BanditProblemSampler"/>
+  <class name="Setup3BanditProblemSampler" base="BanditProblemSampler"/>
+  <class name="Setup4BanditProblemSampler" base="BanditProblemSampler"/>
+
+  <class name="BanditFormulaObjective" base="SimpleUnaryFunction">
+    <variable type="Boolean" name="isSimpleRegret"/>
+    <variable type="BanditProblemSampler" name="problemSampler"/>
+    <variable type="PositiveInteger" name="horizon"/>
+  </class>
+  
+  <class name="BanditFormulaSearchProblem" base="FormulaSearchProblem" shortName="multiArmedBandits">
+    <variable type="Function" name="objective"/>
+    <variable type="PositiveInteger" name="numArmsInSampling"/>
+  </class>
+
+
+  <!-- Exploration Exploitation Challenge 3 Formula -->
+  <enumeration name="ExploChallengeFormulaVariables">
+    <value name="t"/>
+    <value name="rk"/>
+    <value name="tk"/>
+    <!-- <value name="prev"/> -->
+    <!-- <value name="i"/> -->
+  </enumeration>
+  <enumeration name="ExploChallengeFormulaObjectiveParameters">
+    <value name="probabilityOfNewArm"/>
+    <value name="numSelectedArms"/>
+    <value name="minLifeTime"/>
+    <value name="maxLifeTime"/>
+    <value name="minRewardExpectation"/>
+    <value name="maxRewardExpectation"/>
+    <value name="minRewardDecreaseRate"/>
+    <value name="maxRewardDecreaseRate"/>
+  </enumeration>
+  
+  <class name="ExploChallengeFormulaObjective" base="SimpleUnaryFunction">
+    <variable type="PositiveInteger" name="horizon"/>
+    <variable type="DenseDoubleVector[ExploChallengeFormulaObjectiveParameters,Double]" name="parameters"/>
+  </class>
+  <class name="ExploChallengeFormulaSearchProblem" base="FormulaSearchProblem" shortName="exploChallenge">
+    <variable type="Function" name="objective"/>
+  </class>
+  
+  <!-- MultiArmed Bandit NoParams Formula -->
+  <enumeration name="BanditNoParamVariables">
+    <value name="K"/>
+    <value name="T"/>
+    <value name="m"/>
+  </enumeration>
+  <class name="BanditNoParamObjective" base="SimpleUnaryFunction"/>
+  <class name="BanditNoParamSearchProblem" base="FormulaSearchProblem" shortName="banditNoParam">
+    <variable type="Function" name="objective"/>
+  </class>
+
+  <!-- Policy Search Policy -->
+  <class name="GPExpressionBasedPolicy" base="Policy">
+    <variable type="GPExpression" name="formula"/>
+    <variable type="Boolean" name="useNextState"/>
+  </class>
+
+  <class name="PolicyFormulaObjective" base="Function">
+    <variable type="DecisionProblem" name="problem"/>
+    <variable type="Boolean" name="useNextState"/>
+    <variable type="PositiveInteger" name="horizon"/>
+  </class>
+  
+  <class name="PolicyFormulaSearchProblem" base="FormulaSearchProblem" shortName="policy">
+    <variable type="Function" name="objective"/>
+  </class>
+
+  
+  <!-- Learning Rule Formulas -->
+  <enumeration name="LearningRuleFormulaVariables" shortName="gp">
+    <value name="parameter"/>
+    <value name="feature"/>
+    <value name="score"/>
+    <value name="epoch"/>
+  </enumeration>
+
+  <class name="LearningRuleFormulaObjective" base="Function" abstract="yes">
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+
+  <class name="FileLearningRuleFormulaObjective" base="LearningRuleFormulaObjective" shortName="fileBinaryClassificationObjective">
+    <variable type="File" name="trainFile"/>
+    <variable type="File" name="testFile"/>
+    <variable type="Double" name="validationSize"/>
+  </class>
+
+  <class name="SparseLearningRuleFormulaObjective" base="LearningRuleFormulaObjective" shortName="sparseBinaryClassificationObjective">
+    <variable type="PositiveInteger" name="numDimensions"/>
+    <variable type="PositiveInteger" name="numTrainExamples"/>
+    <variable type="PositiveInteger" name="numValidationExamples"/>
+    <variable type="Double" name="separatorSparsity"/>
+    <variable type="Double" name="examplesSparsity"/>
+  </class>
+
+  <class name="LearningRuleFormulaSearchProblem" base="FormulaSearchProblem" shortName="binaryClassification">
+    <variable type="LearningRuleFormulaObjective" name="objective"/>
+  </class>
+
+  <!-- SmallMDP Formula Search Problem -->
+  <class name="SmallMDPFormulaObjective" base="Function">
+    <variable type="Sampler" name="mdpSampler"/>
+    <variable type="Boolean" name="useModel"/>
+  </class>
+  <enumeration name="SmallMDPFormulaVariables" shortName="gp">
+    <value name="oldValue"/>
+    <value name="reward"/>
+    <value name="nextStateValue"/>
+    <value name="numObservations"/>
+  </enumeration>
+  <class name="SmallMDPFormulaSearchProblem" base="FormulaSearchProblem" shortName="smallMDP">
+    <variable type="Function" name="objective"/>
+  </class>
+
+  <!-- Formula Feature Generator -->
+  <class name="PathsFormulaFeatureGenerator" base="FeatureGenerator"/>
+  <class name="OrdersFormulaFeatureGenerator" base="FeatureGenerator">
+    <constructor arguments="const std::vector&lt; std::vector&lt;double&gt; &gt;&amp; inputs"/>
+  </class>
+
+  <!-- Formula Learn And Search -->
+  <class name="FormulaLearnAndSearch" base="WorkUnit">
+    <variable type="FormulaSearchProblem" name="problem"/>
+    <variable type="PositiveInteger" name="formulaInitialSize"/>
+    <variable type="PositiveInteger" name="numInitialIterations"/>
+    <variable type="PositiveInteger" name="creationFrequency"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="PositiveInteger" name="iterationsLength"/>
+    <variable type="Boolean" name="verbose"/>
+  </class>
+  
+</library>

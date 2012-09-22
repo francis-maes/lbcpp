@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="SequentialDecisionBandits" directory="Bandits">
+
+  <!-- Discrete Bandit Decision Problem -->
+  <class name="DiscreteBanditState" base="DecisionProblemState">
+    <variable type="ObjectVector[Sampler]" name="samplers"/>
+    <variable type="GenericVector[PositiveInteger]" name="availableActions"/>
+  </class>
+  <class name="DiscreteBanditDecisionProblem" base="DecisionProblem" abstract="yes">
+    <variable type="PositiveInteger" name="numBandits"/>
+  </class>
+
+  <class name="DiscreteBanditInitialStateSampler" base="CompositeSampler">
+    <variable type="PositiveInteger" name="numBandits"/>
+  </class>
+
+  <!-- Discrete Bandit Policies -->
+  <class name="BanditStatistics" base="Object"/>
+  <class name="DiscreteBanditPolicy" base="Object" abstract="yes"/>
+  <class name="IndexBasedDiscreteBanditPolicy" base="DiscreteBanditPolicy" abstract="yes"/>
+  <class name="OneParameterIndexBasedDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" abstract="yes">
+    <variable type="Double" name="C"/>
+  </class>
+  <class name="TwoParametersIndexBasedDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" abstract="yes">
+    <variable type="Double" name="alpha"/>
+    <variable type="Double" name="beta"/>
+  </class>
+
+  <class name="UniformDiscreteBanditPolicy" base="DiscreteBanditPolicy" shortName="uniform">
+    <constructor/>
+  </class>
+
+  <class name="GreedyDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="greedy">
+    <constructor/>
+  </class>
+  
+  <class name="UCB1TunedDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucb1Bernoulli">
+    <constructor/>
+  </class>
+
+  <class name="UCB1NormalDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucb1Normal">
+    <constructor/>
+  </class>
+   
+  <class name="UCB2DiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucb2">
+    <constructor arguments="double alpha"/>
+    <variable type="Double" name="alpha"/>
+  </class>
+
+
+  <class name="UCB1DiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="ucb1">
+    <constructor arguments="double C"/>
+  </class>
+
+  <class name="KLUCBDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="klUcb">
+    <constructor arguments="double c"/>
+  </class>
+
+  <class name="UCBVDiscreteBanditPolicy" base="TwoParametersIndexBasedDiscreteBanditPolicy" shortName="ucbv">
+    <constructor arguments="double c, double zeta"/>
+  </class>
+
+  <class name="OverExploitDiscreteBanditPolicy" base="TwoParametersIndexBasedDiscreteBanditPolicy" shortName="overExploit">
+    <constructor arguments="double alpha, double beta"/>
+  </class>
+  <class name="OverExploit2DiscreteBanditPolicy" base="TwoParametersIndexBasedDiscreteBanditPolicy" shortName="overExploit2">
+    <constructor arguments="double alpha, double beta"/>
+  </class>
+  <class name="ExploreExploitDiscreteBanditPolicy" base="TwoParametersIndexBasedDiscreteBanditPolicy" shortName="exploreExploit">
+    <constructor arguments="double alpha, double beta"/>
+  </class>
+
+  <class name="EpsilonGreedyDiscreteBanditPolicy" base="TwoParametersIndexBasedDiscreteBanditPolicy" shortName="epsilonGreedy">
+    <constructor arguments="double c, double d"/>
+  </class>
+  <class name="ThompsonSamplingDiscreteBanditPolicy" base="TwoParametersIndexBasedDiscreteBanditPolicy" shortName="thompsonSampling">
+    <constructor arguments="double alpha, double beta"/>
+  </class>
+  
+  <class name="PowerDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="power">
+    <constructor arguments="size_t maxPower, bool useSparseSampler"/>
+    
+    <variable type="PositiveInteger" name="maxPower"/>
+    <variable type="Enumeration" name="parametersEnumeration" generated="yes"/>
+    <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
+    <variable type="Boolean" name="useSparseSampler"/>
+  </class>
+
+  <class name="GPExpressionDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ultimate">
+    <constructor arguments="GPExpressionPtr indexFunction"/>
+    <variable type="GPExpression" name="indexFunction"/>
+  </class>
+
+  <!-- Discrete Bandit Experiment -->
+  <class name="EvaluateDiscreteBanditPolicyWorkUnit" base="WorkUnit">
+    <variable type="PositiveInteger" name="maxTimeStep"/>
+    <variable type="ObjectVector[DiscreteBanditState]" name="initialStates"/>
+    <variable type="DiscreteBanditPolicy" name="policy"/>
+    <variable type="PositiveInteger" name="numEstimationsPerBandit"/>
+    <variable type="Boolean" name="verbose"/>
+  </class>
+
+  <class name="EvaluateDiscreteBanditPolicyParameters" base="Function">
+    <variable type="DiscreteBanditPolicy" name="policy"/>
+    <variable type="PositiveInteger" name="maxTimeStep"/>
+    <variable type="ObjectVector[DiscreteBanditState]" name="initialStates"/>
+    <variable type="Boolean" name="verbose"/>
+  </class>
+  
+  <!-- Work Units -->
+  <class name="DiscreteBanditExperiment" base="WorkUnit">
+    <variable type="PositiveInteger" name="numBandits" shortName="k"/>
+    <variable type="PositiveInteger" name="numTrainingProblems" shortName="training"/>
+    <variable type="PositiveInteger" name="numTestingProblems" shortName="testing"/>
+    <variable type="PositiveInteger" name="maxTimeStep" shortName="H"/>
+  </class>
+    
+
+  <class name="Formula1IndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula1"/>
+  <class name="Formula2IndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula2"/>
+  <class name="Formula3IndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula3"/>
+  <class name="Formula4IndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula4"/>
+  <class name="Formula5IndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula5">
+    <variable type="Boolean" name="useSquareRoot"/>
+    <variable type="Boolean" name="useLogarithm"/>
+  </class>
+  <class name="Formula5TunedDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy">
+    <variable type="GPExpression" name="expression"/>
+    <variable type="PositiveInteger" name="horizon"/>
+  </class>  
+  <class name="Formula6IndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula6"/>
+  <class name="Formula7IndexBasedDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="formula7"/>
+
+  <class name="FindBanditsFormula" base="WorkUnit"> <!-- EWRL'12 -->
+    <variable type="PositiveInteger" name="problemIndex" shortName="p"/>
+    <variable type="PositiveInteger" name="maxTimeStep" shortName="N"/>
+    <variable type="PositiveInteger" name="numRunsPerEstimation" shortName="r"/>
+ </class>
+
+  <class name="PureOverExploitationDiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="pureOverExploitation"/>
+  <class name="FixedHorizonUCB1DiscreteBanditPolicy" base="OneParameterIndexBasedDiscreteBanditPolicy" shortName="fixedTUCB1">
+    <variable type="PositiveInteger" name="horizon"/>
+  </class>
+
+  <class name="CompareTunedBanditPoliciesExperiment" base="WorkUnit">
+    <variable type="PositiveInteger" name="numTrainingProblems"/>
+    <variable type="PositiveInteger" name="numTestingProblems"/>
+    <variable type="PositiveInteger" name="tuningPrecision"/>
+    <variable type="PositiveInteger" name="numArms"/>
+    <variable type="Boolean" name="verbose"/>
+  </class>
+  
+  <class name="TestThompsonSamplingWorkUnit" base="WorkUnit">
+    <variable type="PositiveInteger" name="K"/>
+    <variable type="Double" name="epsilon"/>
+  </class>
+
+  <!-- MCTS Work Unit -->
+  <class name="BanditsMCTSWorkUnit" base="WorkUnit">
+    <variable type="PositiveInteger" name="numIterations" shortName="N"/>
+    <variable type="PositiveInteger" name="maxDepth" shortName="D"/>
+ </class>
+  <class name="MCTSExpressionBuilderState" base="GPExpressionBuilderState">
+    <variable type="ObjectVector[GPExpression]" name="expressions"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="expressionScores"/>
+  </class>
+
+  
+</library>
+

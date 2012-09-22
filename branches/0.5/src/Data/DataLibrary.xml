@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Data" directory="Data">
+  <import name="Stream"/>
+  <import name="Container"/>
+  <import name="Matrix"/>
+
+  <include file="lbcpp/Data/RandomGenerator.h"/>
+  <include file="lbcpp/Data/RandomVariable.h"/>
+  <include file="lbcpp/Data/Cache.h"/>
+  <include file="lbcpp/Data/DoubleVector.h"/>
+  <include file="lbcpp/Data/Matrix.h"/>
+  <include file="lbcpp/Data/SymmetricMatrix.h"/>
+  <include file="lbcpp/Data/IndexSet.h"/>
+  <include file="lbcpp/Data/BinaryKey.h"/>
+  
+  <!-- Random Generator -->
+  <class name="RandomGenerator">
+    <function lang="lua" name="create" static="yes"/>
+    <function lang="lua" name="sample"/>
+  </class>
+  
+  <!-- Random Variable -->
+  <class name="ScalarVariableMean" base="NameableObject">
+    <code>
+      virtual bool isConvertibleToDouble() const
+        {return true;}
+      virtual double toDouble(const VariableValue&amp; value) const
+      {
+        ScalarVariableMeanPtr object = value.getObjectAndCast&lt;ScalarVariableMean&gt;();
+        return object ? object->getMean() : 0.0;
+      }
+    </code>
+
+    <variable type="Double" name="samplesSum"/>
+    <variable type="Double" name="samplesCount"/>
+
+    <function lang="lua" name="clear"/>
+    <function lang="lua" name="observe"/>
+    
+    <function lang="lua" name="getMean"/>
+    <function lang="lua" name="getSum"/>
+    <function lang="lua" name="getCount"/>
+  </class>
+  
+  <class name="ScalarVariableMeanAndVariance" base="ScalarVariableMean">
+    <variable type="Double" name="samplesSumOfSquares"/>
+    <function lang="lua" name="getStandardDeviation"/>
+    <function lang="lua" name="getVariance"/>
+  </class>
+  
+  <class name="ScalarVariableStatistics" base="ScalarVariableMeanAndVariance">
+    <variable type="Double" name="minimumValue"/>
+    <variable type="Double" name="maximumValue"/>
+    <function lang="lua" name="getMinimum"/>
+    <function lang="lua" name="getMaximum"/>
+  </class>
+
+  <class name="ScalarVariableRecentMean" base="NameableObject"/>
+  <class name="ScalarVariableRecentMeanAndVariance" base="ScalarVariableRecentMean"/>
+
+  <!-- Consumer -->
+  <class name="Consumer" base="Object" abstract="yes"/>
+  <class name="TextPrinter" base="Consumer" abstract="yes"/>
+  
+  <!-- Cache -->
+  <class name="Cache" base="Object" abstract="yes"/>
+  <class name="AverageValuesCache" base="Cache"/>
+
+  <!-- DoubleVector -->
+  <template name="DoubleVector" base="Vector[elementsType]" abstract="yes">
+    <parameter name="elementsEnumeration" type="EnumValue"/>
+    <parameter name="elementsType" type="Double"/>
+
+    <function lang="lua" name="add"/>
+    <function lang="lua" name="mul"/>
+    <function lang="lua" name="dot"/>
+    <function lang="lua" name="l0norm"/>
+    <function lang="lua" name="l1norm"/>
+    <function lang="lua" name="l2norm"/>
+    <function lang="lua" name="argmin"/>
+    <function lang="lua" name="argmax"/>
+  </template>
+
+  <template name="SparseDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">
+    <parameter name="elementsEnumeration" type="EnumValue"/>
+    <parameter name="elementsType" type="Double"/>
+    <function lang="lua" name="append"/>
+    <function lang="lua" name="increment"/>
+  </template>
+
+  <template name="DenseDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">
+    <parameter name="elementsEnumeration" type="EnumValue"/>
+    <parameter name="elementsType" type="Double"/>
+  </template>
+
+  <template name="LazyDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">
+    <parameter name="elementsEnumeration" type="EnumValue"/>
+    <parameter name="elementsType" type="Double"/>
+  </template>
+
+  <template name="CompositeDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">
+    <parameter name="elementsEnumeration" type="EnumValue"/>
+    <parameter name="elementsType" type="Double"/>
+  </template>
+
+  <!-- Matrix -->
+  <template name="Matrix" base="Container[elementsType]" abstract="yes">
+    <parameter name="elementsType" type="Variable"/>
+  </template>
+
+  <template name="ShortEnumerationMatrix" base="Matrix[elementsType]">
+    <parameter name="elementsType" type="EnumValue"/>
+  </template>
+
+  <template name="ObjectMatrix" base="Matrix[elementsType]">
+    <parameter name="elementsType" type="Object"/>
+  </template>
+
+  <template name="DoubleMatrix" base="Matrix[elementsType]">
+    <parameter name="elementsType" type="Double"/>
+  </template>
+
+  <!-- SymmetricMatrix -->
+  <template name="SymmetricMatrix" base="Matrix[elementsType]" abstract="yes">
+    <parameter name="elementsType" type="Variable"/>
+  </template>
+
+  <template name="DoubleSymmetricMatrix" base="SymmetricMatrix[elementsType]">
+    <parameter name="elementsType" type="Double"/>
+  </template>
+
+  <template name="CharSymmetricMatrix" base="SymmetricMatrix[elementsType]">
+    <parameter name="elementsType" type="Integer"/>
+  </template>
+
+  <template name="ObjectSymmetricMatrix" base="SymmetricMatrix[elementsType]">
+    <parameter name="elementsType" type="Variable"/>
+  </template>
+
+  <!-- <class name="SubsetSymmetricMatrix" base="SymmetricMatrix[Variable]"/> -->
+
+  <!-- IndexSet -->
+  <class name="IndexSet" base="Object">
+    <variable type="GenericVector[PositiveInteger]" name="v"/>
+  </class>
+  <class name="BinaryKey" base="Object"/>
+  
+</library>
