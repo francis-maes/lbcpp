@@ -101,7 +101,6 @@ public:
   static int sleep(LuaState& state);
   static int random(LuaState& state);
 
-  static int connect(LuaState& state);
   static int waitUntilAllWorkUnitsAreDone(LuaState& state);
 
   lbcpp_UseDebuggingNewOperator
@@ -127,25 +126,6 @@ extern ExecutionContextPtr multiThreadedExecutionContext(size_t numThreads, cons
 
 extern ExecutionContextPtr defaultConsoleExecutionContext(bool noMultiThreading = false);
 
-extern ExecutionContextPtr distributedExecutionContext(ExecutionContext& parentContext, const String& remoteHostName, size_t remotePort,
-                                                       const String& project, const String& from, const std::vector<String>& to,
-                                                       const ResourceEstimatorPtr& resourceEstimator, bool importTrace = false);
-
-extern ExecutionContextPtr distributedExecutionContext(ExecutionContext& parentContext, const String& remoteHostName, size_t remotePort,
-                                                       const String& project, const String& from, const String& to,
-                                                       const ResourceEstimatorPtr& resourceEstimator, bool importTrace = false);
-
-/* DistributedExecutionContext */
-class ResourceEstimator : public Object
-{
-public:
-  virtual size_t getRequiredMemoryInMb(const WorkUnitPtr& workUnit) const = 0;
-  virtual size_t getRequiredTimeInHours(const WorkUnitPtr& workUnit) const = 0;
-  virtual size_t getNumRequiredCpus(const WorkUnitPtr& workUnit) const = 0;
-};
-
-extern ClassPtr resourceEstimatorClass;
-
 class TimedScope
 {
 public:
@@ -157,9 +137,6 @@ private:
   String name;
   double startTime;
 };
-
-
-extern ResourceEstimatorPtr fixedResourceEstimator(size_t requiredCpus, size_t requiredMemory, size_t requiredTime);
 
 }; /* namespace lbcpp */
 

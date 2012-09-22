@@ -54,12 +54,6 @@
 # include "Data/BinaryKey.h"
 # include "Data/IndexSet.h"
 
-#ifdef LBCPP_NETWORKING
-# include "Network/NetworkClient.h"
-# include "Network/NetworkServer.h"
-# include "Network/NetworkMessage.h"
-#endif
-
 # include "Execution/ExecutionStack.h"
 # include "Execution/ExecutionContext.h"
 # include "Execution/ExecutionTrace.h"

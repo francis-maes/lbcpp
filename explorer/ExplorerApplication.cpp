@@ -187,9 +187,6 @@ public:
     startWorkUnitMenu,
     closeMenu,
 
-    connectManagerMenu,
-    disconnectManagerMenu,
-
     quitMenu,
 
     openClearRecentProjectMenu = 100,
@@ -225,10 +222,6 @@ public:
       menu.addItem(openDirectoryMenu, T("Open Directory"), hasCurrentProject);
       menu.addItem(startWorkUnitMenu, T("Start Work Unit"), hasCurrentProject);
       menu.addItem(closeMenu, T("Close"), hasCurrentProject && contentTabs->getCurrentTabIndex() >= 0);
-      menu.addSeparator();
-      bool isConnectedToManager = (hasCurrentProject && ExplorerProject::getCurrentProject()->isManagerConnected());
-      menu.addItem(connectManagerMenu, T("Connect to manager"), hasCurrentProject && !isConnectedToManager);
-      menu.addItem(disconnectManagerMenu, T("Disconnect from manager"), hasCurrentProject && isConnectedToManager);
       menu.addSeparator();
     
       menu.addItem(quitMenu, T("Quit"));
@@ -345,22 +338,12 @@ public:
       case startWorkUnitMenu:
         {
           WorkUnitPtr workUnit;
-          String targetGrid;
-          if (currentProject->startWorkUnit(defaultExecutionContext(), workUnit, targetGrid))
+          if (currentProject->startWorkUnit(defaultExecutionContext(), workUnit))
           {
-            if (targetGrid == String::empty) 
-            {
-              // local execution
-              ExecutionTracePtr trace(new ExecutionTrace(ExplorerProject::currentProject->workUnitContext->toString()));
-              Component* component = userInterfaceManager().createExecutionTraceInteractiveTreeView(context, trace, currentProject->workUnitContext);
-              contentTabs->addVariable(context, trace, workUnit->getClassName(), new VariableBrowser(trace, component));
-              currentProject->workUnitContext->pushWorkUnit(workUnit);
-            }
-            else
-            {
-              // distant execution
-              currentProject->sendWorkUnitToManager(context, workUnit, targetGrid);
-            }
+            ExecutionTracePtr trace(new ExecutionTrace(ExplorerProject::currentProject->workUnitContext->toString()));
+            Component* component = userInterfaceManager().createExecutionTraceInteractiveTreeView(context, trace, currentProject->workUnitContext);
+            contentTabs->addVariable(context, trace, workUnit->getClassName(), new VariableBrowser(trace, component));
+            currentProject->workUnitContext->pushWorkUnit(workUnit);
           }
           flushErrorAndWarningMessages(T("Start Work Unit"));
         }
@@ -368,37 +351,6 @@ public:
 
       case closeMenu:
         contentTabs->closeCurrentTab();
-        break;
-
-      
-      case connectManagerMenu:
-        {
-          String hostName = currentProject->getManagerHostName();
-          int port = currentProject->getManagerPort();
-          AlertWindow aw(T("Connect to Manager"), T("Enter the address of the Manager"), AlertWindow::QuestionIcon);
-          aw.addTextEditor(T("hostName"), hostName, T("Manager Host Name"));
-          aw.addTextEditor(T("port"), String((int)port), T("Manager Port"));
-          aw.addButton(T("Ok"), 1, juce::KeyPress::returnKey);
-          aw.addButton(T("Cancel"), 0, juce::KeyPress::escapeKey);
-          if (aw.runModalLoop() == 1)
-          {
-            hostName = aw.getTextEditorContents(T("hostName"));
-            String portString = aw.getTextEditorContents(T("port"));
-            if (!portString.containsOnly(T("0123456789")))
-              AlertWindow::showMessageBox(AlertWindow::WarningIcon, T("Invalid port"), T("Invalid port: ") + portString);
-            else
-            {
-              port = portString.getIntValue();
-              currentProject->connectToManager(context, hostName, port);
-              ExplorerConfiguration::save(context);
-            }
-          }
-        }
-        break;
-
-      case disconnectManagerMenu:
-        currentProject->disconnectFromManager(context);
-        ExplorerConfiguration::save(context);
         break;
 
       case quitMenu:

@@ -462,7 +462,7 @@ void WorkUnitArgumentComponent::changeListenerCallback(void* )
 class NewWorkUnitContentComponent : public Component, public juce::ComboBoxListener, public juce::ButtonListener
 {
 public:
-  NewWorkUnitContentComponent(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& workUnitParameters, String& targetGrid)
+  NewWorkUnitContentComponent(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& workUnitParameters)
     : context(context), argumentsSelector(NULL), recent(recent), workUnitName(workUnitName), workUnitParameters(workUnitParameters)
   {
     addAndMakeVisible(workUnitSelectorLabel = new Label(T("selector"), T("Work Unit")));
@@ -470,11 +470,6 @@ public:
     addAndMakeVisible(workUnitSelector = new WorkUnitSelectorComboxBox(recent, workUnitName));
     addAndMakeVisible(argumentsSelectorLabel = new Label(T("selector"), T("Arguments")));
     argumentsSelectorLabel->setFont(Font(18, Font::italic | Font::bold));
-
-    addAndMakeVisible(targetGridSelectorLabel = new Label(T("selector"), T("Target Grid")));
-    targetGridSelectorLabel->setFont(Font(18, Font::italic | Font::bold));
-    addAndMakeVisible(targetGridSelector = new TextEditor(T("toto")));
-    targetGridSelector->setText(targetGrid);
 
     addAndMakeVisible(okButton = new TextButton(T("OK")));
     okButton->addButtonListener(this);
@@ -485,9 +480,6 @@ public:
     if (workUnitSelector->getNumItems())
       workUnitSelector->setSelectedItemIndex(0);
   }
-
-  String getTargetGrid() const
-    {return targetGridSelector->getText().trim();}
 
   virtual ~NewWorkUnitContentComponent()
   {
@@ -540,11 +532,6 @@ public:
       argumentsSelector->setBounds(x, h, w, getHeight() - h - buttonsHeight - 5 * margin - comboBoxHeight - labelsHeight);
     h = getHeight() - 4 * margin - buttonsHeight - comboBoxHeight - labelsHeight;
     
-    targetGridSelectorLabel->setBounds(x, h, w, labelsHeight);
-    h += labelsHeight + margin;
-    targetGridSelector->setBounds(x, h, w, comboBoxHeight);
-    h += comboBoxHeight + margin;
-
     okButton->setBounds(getWidth() / 2 - buttonsWidth - margin, h, buttonsWidth, buttonsHeight);
     cancelButton->setBounds(getWidth() / 2 + margin, h, buttonsWidth, buttonsHeight);
   }
@@ -560,12 +547,8 @@ private:
   Label* argumentsSelectorLabel;
   WorkUnitArgumentsComponent* argumentsSelector;
 
-  Label* targetGridSelectorLabel;
-  TextEditor* targetGridSelector;
-
   TextButton* okButton;
   TextButton* cancelButton;
-
 
   RecentWorkUnitsConfigurationPtr recent;
   String& workUnitName;
@@ -578,19 +561,18 @@ private:
 /*
 ** NewWorkUnitDialogWindow
 */
-NewWorkUnitDialogWindow::NewWorkUnitDialogWindow(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, String& targetGrid)
+NewWorkUnitDialogWindow::NewWorkUnitDialogWindow(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments)
   : juce::DocumentWindow(T("New Work Unit"), Colour(250, 252, 255), DocumentWindow::allButtons, true), context(context)
 {
   setResizable(true, true);
   centreWithSize(800, 600);
-  setContentComponent(new NewWorkUnitContentComponent(context, recent, workUnitName, arguments, targetGrid));
+  setContentComponent(new NewWorkUnitContentComponent(context, recent, workUnitName, arguments));
 }
 
-bool NewWorkUnitDialogWindow::run(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, String& targetGrid)
+bool NewWorkUnitDialogWindow::run(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments)
 {
-  NewWorkUnitDialogWindow* window = new NewWorkUnitDialogWindow(context, recent, workUnitName, arguments, targetGrid);
+  NewWorkUnitDialogWindow* window = new NewWorkUnitDialogWindow(context, recent, workUnitName, arguments);
   const int result = window->runModalLoop();
-  targetGrid = ((NewWorkUnitContentComponent* )window->getContentComponent())->getTargetGrid();
   delete window;
   return result == 1;
 }
