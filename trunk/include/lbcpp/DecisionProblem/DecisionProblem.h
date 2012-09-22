@@ -11,7 +11,6 @@
 
 # include "../Core/Function.h"
 # include "../Data/RandomGenerator.h"
-# include "../Sampler/Sampler.h"
 
 namespace lbcpp
 {

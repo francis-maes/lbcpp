@@ -14,7 +14,7 @@
 
 namespace lbcpp
 {
-
+#if 0
 class OptimizerBasedSequentialWeakLearner : public LuapeLearner
 {
 public:
@@ -161,7 +161,7 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<OptimizerBasedSequentialWeakLearner> OptimizerBasedSequentialWeakLearnerPtr;
-
+#endif // 0
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_LUAPE_LEARNER_NESTED_MC_WEAK_H_
