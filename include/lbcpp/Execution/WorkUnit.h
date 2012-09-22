@@ -12,7 +12,6 @@
 # include "predeclarations.h"
 # include "../Core/Variable.h"
 # include "../Core/Vector.h"
-# include "../Core/Function.h"
 
 namespace lbcpp
 {
@@ -141,52 +140,6 @@ protected:
 
   virtual Variable run(ExecutionContext& context);
 };
-
-class FunctionWorkUnit : public WorkUnit
-{
-public:
-  FunctionWorkUnit(const FunctionPtr& function, const std::vector<Variable>& inputs, const String& description = String::empty, Variable* output = NULL, bool sendInputAsResult = false)
-    : function(function), inputs(inputs), description(description), output(output), sendInputAsResult(sendInputAsResult) {}
-  FunctionWorkUnit(const FunctionPtr& function, const Variable& input1, const String& description = String::empty, Variable* output = NULL, bool sendInputAsResult = false)
-    : function(function), inputs(1, input1), description(description), output(output), sendInputAsResult(sendInputAsResult) {}
-  FunctionWorkUnit(const FunctionPtr& function, const Variable& input1, const Variable& input2, const String& description = String::empty, Variable* output = NULL, bool sendInputAsResult = false)
-    : function(function), inputs(2), description(description), output(output), sendInputAsResult(sendInputAsResult)
-    {inputs[0] = input1; inputs[1] = input2;}
-  FunctionWorkUnit() : output(NULL) {}
-
-  virtual String toString() const
-    {return description;}
-
-  virtual Variable run(ExecutionContext& context);
-
-  const FunctionPtr& getFunction() const
-    {return function;}
-
-  const std::vector<Variable>& getInputs() const
-    {return inputs;}
-
-  Variable* getOutput() const
-    {return output;}
-
-  void setSendInputAsResultFlag(bool value = true)
-    {sendInputAsResult = value;}
-
-protected:
-  friend class FunctionWorkUnitClass;
-
-  FunctionPtr function;
-  std::vector<Variable> inputs;
-  String description;
-  Variable* output;
-  bool sendInputAsResult;
-};
-
-inline WorkUnitPtr functionWorkUnit(const FunctionPtr& function, const std::vector<Variable>& inputs,
-                                    const String& description = String::empty, Variable* output = NULL, bool sendInputAsResult = false)
-  {return new FunctionWorkUnit(function, inputs, description, output, sendInputAsResult);}
-
-typedef ReferenceCountedObjectPtr<FunctionWorkUnit> FunctionWorkUnitPtr;
-  
   
 }; /* namespace lbcpp */
 

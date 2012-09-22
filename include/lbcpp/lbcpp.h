@@ -39,9 +39,6 @@
 # include "Core/XmlSerialisation.h"
 # include "Core/DynamicObject.h"
 # include "Core/Vector.h"
-# include "Core/Frame.h"
-# include "Core/Function.h"
-# include "Core/CompositeFunction.h"
 
 # include "Data/Stream.h"
 # include "Data/Consumer.h"

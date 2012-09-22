@@ -58,14 +58,6 @@
     <constructor arguments="ExecutionContext&amp; context, const File&amp; mainDirectory, const File&amp; secondDirectory, const String&amp; wildCardPattern, bool searchFilesRecursively"/>
   </class>
 
-  <!-- Apply Function Modifier -->
-  <class name="ApplyFunctionStream" base="Stream">
-    <constructor arguments="ExecutionContext&amp; context, StreamPtr stream, FunctionPtr function"/>
-
-    <variable type="Stream" name="stream"/>
-    <variable type="Function" name="function"/>
-  </template>
-
   <!-- BuiltinTypeStream --> 
 <!--  <template name="BuiltinTypeStream" base="Stream" abstract="yes">
     <parameter name="elementsType"/>

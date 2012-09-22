@@ -203,19 +203,3 @@ Variable CompositeWorkUnit::run(ExecutionContext& context)
   }
   return results;
 }
-
-/*
-** FunctionWorkUnit
-*/
-Variable FunctionWorkUnit::run(ExecutionContext& context)
-{
-  if (sendInputAsResult)
-  {
-    for (size_t i = 0; i < inputs.size(); ++i)
-      context.resultCallback(T("input") + String((int)i + 1), inputs[i]);
-  }
-  Variable out = function->compute(context, inputs);
-  if (output)
-    *output = out;
-  return out;
-}

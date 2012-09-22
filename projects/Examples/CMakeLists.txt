@@ -12,7 +12,6 @@ SET(LBCPP_EXAMPLES_SOURCES
   MissingValuesExample.h
   SimpleIntrospectionExample.h
   WorkUnitExample.h
-  GeneticProgrammingExample.h
   RandomGeneratorExample.h
   ExamplesLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExamplesLibrary.cpp

@@ -43,11 +43,12 @@ Component* createComponentForObject(ExecutionContext& context, ObjectPtr object,
     TypePtr elementsType = container->computeElementsCommonBaseType();
     if (elementsType->inheritsFrom(fileType))
     {
-      ContainerPtr loadedContainer = container->apply(context, loadFromFileFunction(objectClass), Container::parallelApply);
+      /*ContainerPtr loadedContainer = container->apply(context, loadFromFileFunction(objectClass), Container::parallelApply);
       TypePtr loadedElementsType = loadedContainer->computeElementsCommonBaseType();
       if (loadedElementsType != objectClass)
         loadedContainer->setThisClass(containerClass(loadedElementsType));
-      return createComponentForObject(context, loadedContainer, explicitName);
+      return createComponentForObject(context, loadedContainer, explicitName);*/
+      return NULL;
     }
 
     if (elementsType->inheritsFrom(sumType(doubleType, integerType)))

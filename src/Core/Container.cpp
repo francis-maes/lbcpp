@@ -12,7 +12,6 @@
 #include <lbcpp/Core/Vector.h>
 #include <lbcpp/Core/Pair.h>
 #include <lbcpp/Data/SymmetricMatrix.h>
-#include <lbcpp/Core/Function.h>
 #include <lbcpp/Execution/WorkUnit.h>
 #include <lbcpp/Lua/Lua.h>
 #include <algorithm>
@@ -230,63 +229,7 @@ namespace lbcpp
   extern DecoratorContainerPtr excludeRangeContainer(ContainerPtr target, size_t begin, size_t end);
   extern DecoratorContainerPtr duplicatedContainer(ContainerPtr target, size_t count);
   extern DecoratorContainerPtr subsetContainer(ContainerPtr target, const std::vector<size_t>& indices);
-  extern DecoratorContainerPtr applyFunctionContainer(ContainerPtr container, FunctionPtr function);
 };
-
-class ApplyFunctionInContainerWorkUnit : public WorkUnit
-{
-public:
-  ApplyFunctionInContainerWorkUnit(ContainerPtr source, FunctionPtr function, ContainerPtr target, size_t index)
-    : description(T("Applying function")), source(source),
-      function(function), target(target), index(index), progressionUnit(function->getRequiredInputType(0, 1)->getName() + T("s")){}
-
-  virtual String toString() const
-    {return description;}
-
-  virtual String toShortString() const
-    {return description;}
-
-protected:
-  String description;
-  ContainerPtr source;
-  FunctionPtr function;
-  ContainerPtr target;
-  size_t index;
-  String progressionUnit;
-
-  virtual Variable run(ExecutionContext& context)
-    {target->setElement(index, function->compute(context, source->getElement(index))); return Variable();}
-};
-
-ContainerPtr Container::apply(ExecutionContext& context, FunctionPtr function, ApplyComputeMode computeMode, const String& workUnitName) const
-{
-  if (!function->initialize(context, getElementsType()))
-    return ContainerPtr();
-
-  if (computeMode == lazyApply)
-    return applyFunctionContainer(refCountedPointerFromThis(this), function);
-  else
-  {
-    size_t n = getNumElements();
-    VectorPtr res = vector(function->getOutputType(), n);
-    if (computeMode == sequentialApply)
-    {
-      for (size_t i = 0; i < n; ++i)
-        res->setElement(i, function->compute(context, getElement(i)));
-    }
-    else if (computeMode == parallelApply)
-    {
-      CompositeWorkUnitPtr workUnits(new CompositeWorkUnit(workUnitName.isEmpty() ? function->toString() : workUnitName, n));
-      for (size_t i = 0; i < n; ++i)
-        workUnits->setWorkUnit(i, new ApplyFunctionInContainerWorkUnit(refCountedPointerFromThis(this), function, res, i));
-      workUnits->setProgressionUnit(function->getOutputType()->getName() + T("s"));
-      context.run(workUnits, true);
-    }
-    else
-      jassert(false);
-    return res;
-  }
-}
 
 ContainerPtr Container::subset(const std::vector<size_t>& indices) const
   {return subsetContainer(refCountedPointerFromThis(this), indices);}

@@ -7,7 +7,6 @@ INCLUDE_DIRECTORIES(
 GENERATE_INTROSPECTION_CODE(LBCppLibrary.xml LBCppLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Core/Type/CoreTypeLibrary.xml CoreTypeLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Core/Function/CoreFunctionLibrary.xml CoreFunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Core/CoreLibrary.xml CoreLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Data/Stream/StreamLibrary.xml StreamLibrary.cpp)
@@ -80,12 +79,6 @@ SET(LBCPP_CORE_SOURCES
   Core/OrderedMap.cpp
   ../include/lbcpp/Core/DynamicObject.h
   Core/DynamicObject.cpp
-  ../include/lbcpp/Core/Function.h
-  Core/Function.cpp  
-  ../include/lbcpp/Core/Frame.h
-  Core/Frame.cpp
-  ../include/lbcpp/Core/CompositeFunction.h
-  Core/CompositeFunction.cpp  
   ../include/lbcpp/Core/XmlSerialisation.h
   Core/XmlSerialisation.cpp
   Core/CoreLibrary.xml
@@ -118,27 +111,6 @@ SET(LBCPP_CORE_OBJECT_SOURCES
   Core/Object/DenseDoubleObject.h
   Core/Object/DenseObjectObject.h
 )
-
-SET(LBCPP_CORE_FUNCTION_SOURCES
-  Core/Function/GetVariableFunction.h
-  Core/Function/SetVariableFunction.h
-  Core/Function/GetElementFunction.h
-  Core/Function/CreateObjectFunction.h
-  Core/Function/CreateVectorFunction.h
-  Core/Function/CreateSymmetricMatrixFunction.h
-  Core/Function/LoadFromFileFunction.h
-  Core/Function/MapContainerFunction.h
-  Core/Function/MapMatrixFunction.h
-  Core/Function/MapSymmetricMatrixFunction.h
-  Core/Function/ComposeFunction.h
-  Core/Function/ConvertToDoubleFunction.h
-  Core/Function/SignedScalarToProbabilityFunction.h
-  Core/Function/ConcatenateContainerFunction.h
-  Core/Function/DoubleVectorFunction.h
-  Core/Function/CoreFunctionLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/CoreFunctionLibrary.cpp
-)
-
 
 #### Data ####
 
@@ -174,13 +146,11 @@ SET(LBCPP_DATA_SOURCES
 SET(LBCPP_DATA_MATRIX_SOURCES
   Data/Matrix/Matrix.cpp
   Data/Matrix/UpperLowerSquareMatrix.h
-  Data/Matrix/SegmentMatrixFunction.h
   Data/Matrix/MatrixLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MatrixLibrary.cpp
 )
 
 SET(LBCPP_DATA_STREAM_SOURCES
-  Data/Stream/ApplyFunctionStream.h
   Data/Stream/DirectoryFileStream.h
   Data/Stream/DirectoryPairFileStream.h
   Data/Stream/LibSVMDataParser.h
@@ -194,16 +164,10 @@ SET(LBCPP_DATA_STREAM_SOURCES
 )
 
 SET(LBCPP_DATA_CONTAINER_SOURCES
-  Data/Container/ApplyFunctionContainer.h
   Data/Container/SubsetContainer.h
   Data/Container/DuplicatedContainer.h
   Data/Container/RangeContainer.h
   Data/Container/ExcludeRangeContainer.h
-  Data/Container/AccumulateContainerFunction.h
-  Data/Container/AccumulatorLocalMeanFunction.h
-  Data/Container/AccumulatorGlobalMeanFunction.h
-  Data/Container/AccumulatorWindowMeanFunction.h
-  Data/Container/SegmentContainerFunction.h
   Data/Container/ContainerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ContainerLibrary.cpp
 )
@@ -489,7 +453,6 @@ SET(LBCPP_SOURCES
     ${LBCPP_CORE_IMPL_HEADERS}
     ${LBCPP_CORE_TYPE_SOURCES}
     ${LBCPP_CORE_OBJECT_SOURCES}
-    ${LBCPP_CORE_FUNCTION_SOURCES}
 
   # Data
   ${LBCPP_DATA_SOURCES}
@@ -545,7 +508,6 @@ SOURCE_GROUP(Core FILES ${LBCPP_CORE_SOURCES})
 SOURCE_SUB_GROUP(Core impl FILES ${LBCPP_CORE_IMPL_HEADERS})
 SOURCE_SUB_GROUP(Core Type FILES ${LBCPP_CORE_TYPE_SOURCES})
 SOURCE_SUB_GROUP(Core Object FILES ${LBCPP_CORE_OBJECT_SOURCES})
-SOURCE_SUB_GROUP(Core Function FILES ${LBCPP_CORE_FUNCTION_SOURCES})
 
 ## Data
 SOURCE_GROUP(Data FILES ${LBCPP_DATA_SOURCES})

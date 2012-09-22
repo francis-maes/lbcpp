@@ -351,7 +351,7 @@ Variable LuapeClassifier::computeFunction(ExecutionContext& context, const Varia
 {
   // normalize activations to make a probability distribution
   DenseDoubleVectorPtr activations = computeActivations(context, inputs[0].getObject());
-  DenseDoubleVectorPtr res = new DenseDoubleVector((ClassPtr)getOutputType());
+  DenseDoubleVectorPtr res = new DenseDoubleVector(doubleVectorClass);
   double Z = activations->l1norm();
   if (Z)
   {
