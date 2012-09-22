@@ -17,8 +17,8 @@ namespace lbcpp
 class MOODomain;
 typedef ReferenceCountedObjectPtr<MOODomain> MOODomainPtr;
 
-class ContinuousMOODomain;
-typedef ReferenceCountedObjectPtr<ContinuousMOODomain> ContinuousMOODomainPtr;
+class ContinuousDomain;
+typedef ReferenceCountedObjectPtr<ContinuousDomain> ContinuousDomainPtr;
 
 class MOOFitnessLimits;
 typedef ReferenceCountedObjectPtr<MOOFitnessLimits> MOOFitnessLimitsPtr;

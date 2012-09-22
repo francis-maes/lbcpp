@@ -21,12 +21,12 @@ public:
     {return object;}
 };
 
-class ContinuousMOODomain : public MOODomain
+class ContinuousDomain : public MOODomain
 {
 public:
-  ContinuousMOODomain(const std::vector< std::pair<double, double> >& limits)
+  ContinuousDomain(const std::vector< std::pair<double, double> >& limits)
     : limits(limits) {}
-  ContinuousMOODomain() {}
+  ContinuousDomain() {}
 
   size_t getNumDimensions() const
     {return limits.size();}
@@ -46,16 +46,16 @@ public:
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
 protected:
-  friend class ContinuousMOODomainClass;
+  friend class ContinuousDomainClass;
 
   std::vector< std::pair<double, double> > limits;
 };
 
-class MOOFitnessLimits : public ContinuousMOODomain
+class MOOFitnessLimits : public ContinuousDomain
 {
 public:
   MOOFitnessLimits(const std::vector< std::pair<double, double> >& limits)
-    : ContinuousMOODomain(limits) {}
+    : ContinuousDomain(limits) {}
   MOOFitnessLimits() {}
 
   size_t getNumObjectives() const

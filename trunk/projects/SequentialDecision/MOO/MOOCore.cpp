@@ -12,9 +12,9 @@
 using namespace lbcpp;
 
 /*
-** ContinuousMOODomain
+** ContinuousDomain
 */
-DenseDoubleVectorPtr ContinuousMOODomain::sampleUniformly(RandomGeneratorPtr random) const
+DenseDoubleVectorPtr ContinuousDomain::sampleUniformly(RandomGeneratorPtr random) const
 {
   size_t n = limits.size();
   DenseDoubleVectorPtr res(new DenseDoubleVector(n, 0.0));
@@ -23,7 +23,7 @@ DenseDoubleVectorPtr ContinuousMOODomain::sampleUniformly(RandomGeneratorPtr ran
   return res;
 }
 
-ObjectPtr ContinuousMOODomain::projectIntoDomain(const ObjectPtr& object) const
+ObjectPtr ContinuousDomain::projectIntoDomain(const ObjectPtr& object) const
 {
   DenseDoubleVectorPtr solution = object.staticCast<DenseDoubleVector>();
   DenseDoubleVectorPtr res;
@@ -42,8 +42,8 @@ ObjectPtr ContinuousMOODomain::projectIntoDomain(const ObjectPtr& object) const
   return res ? res : object;
 }
 
-void ContinuousMOODomain::clone(ExecutionContext& context, const ObjectPtr& target) const
-  {target.staticCast<ContinuousMOODomain>()->limits = limits;}
+void ContinuousDomain::clone(ExecutionContext& context, const ObjectPtr& target) const
+  {target.staticCast<ContinuousDomain>()->limits = limits;}
 
 /*
 ** MOOFitnessLimits

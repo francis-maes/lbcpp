@@ -22,7 +22,7 @@ public:
 
   virtual void initialize(ExecutionContext& context, const MOODomainPtr& d)
   {
-    domain = d.staticCast<ContinuousMOODomain>();
+    domain = d.staticCast<ContinuousDomain>();
     jassert(domain);
     size_t n = domain->getNumDimensions();
   
@@ -148,7 +148,7 @@ protected:
   DenseDoubleVectorPtr mean;
   DenseDoubleVectorPtr stddev;
 
-  ContinuousMOODomainPtr domain;
+  ContinuousDomainPtr domain;
 
   size_t epoch;
   DenseDoubleVectorPtr initialStddev;

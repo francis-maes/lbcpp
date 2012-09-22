@@ -307,7 +307,7 @@ public:
   virtual double getProbabilityToSelectRight(Node* node) const = 0;
 
   virtual void initialize(ExecutionContext& context, const MOODomainPtr& d)
-    {domain = d.staticCast<ContinuousMOODomain>(); jassert(domain);}
+    {domain = d.staticCast<ContinuousDomain>(); jassert(domain);}
  
   virtual ObjectPtr sample(ExecutionContext& context) const
   {
@@ -341,7 +341,7 @@ protected:
   friend class MOTreeSamplerClass;
 
   MultiObjectiveRegressionTreePtr tree;
-  ContinuousMOODomainPtr domain;
+  ContinuousDomainPtr domain;
 
   DenseDoubleVectorPtr sampleUniformly(RandomGeneratorPtr random, const std::vector<std::pair<double, double> >& subDomain) const
   {
@@ -719,7 +719,7 @@ protected:
 
   std::vector<Sample> makeSamples(ExecutionContext& context, MOOProblemPtr problem, size_t count)
   {
-    ContinuousMOODomainPtr domain = problem->getObjectDomain().staticCast<ContinuousMOODomain>();
+    ContinuousDomainPtr domain = problem->getObjectDomain().staticCast<ContinuousDomain>();
     std::vector<Sample> res(count);
     for (size_t i = 0; i < count; ++i)
     {
@@ -748,7 +748,7 @@ protected:
   void testLearning1D(ExecutionContext& context)
   {
     MOOProblemPtr problem = new AckleyProblem(1);
-    ContinuousMOODomainPtr domain = problem->getObjectDomain().staticCast<ContinuousMOODomain>();
+    ContinuousDomainPtr domain = problem->getObjectDomain().staticCast<ContinuousDomain>();
 
     context.enterScope("problem");
     double xmin = domain->getLowerLimit(0);
@@ -798,7 +798,7 @@ protected:
     }
   }
 
-  void displayEpsilonGreedyHistogram(ExecutionContext& context, const String& name, ContinuousMOODomainPtr domain, MultiObjectiveRegressionTreePtr tree, double epsilon)
+  void displayEpsilonGreedyHistogram(ExecutionContext& context, const String& name, ContinuousDomainPtr domain, MultiObjectiveRegressionTreePtr tree, double epsilon)
   {
     context.enterScope(name);
     double xmin = domain->getLowerLimit(0);
@@ -826,7 +826,7 @@ protected:
     context.leaveScope();
   }
 
-  void displayTreePredictions(ExecutionContext& context, const String& name, ContinuousMOODomainPtr domain, MultiObjectiveRegressionTreePtr tree)
+  void displayTreePredictions(ExecutionContext& context, const String& name, ContinuousDomainPtr domain, MultiObjectiveRegressionTreePtr tree)
   {
     context.enterScope(name);
     double xmin = domain->getLowerLimit(0);

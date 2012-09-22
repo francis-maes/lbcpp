@@ -71,6 +71,7 @@ void LuapeInference::setRootNode(ExecutionContext& context, const LuapeNodePtr& 
     }
   }
 }
+
 void LuapeInference::clearRootNode(ExecutionContext& context)
   {if (node) setRootNode(context, LuapeNodePtr());}
 
