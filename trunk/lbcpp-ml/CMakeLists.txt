@@ -6,10 +6,63 @@ INCLUDE_DIRECTORIES(
 
 GENERATE_INTROSPECTION_CODE(LBCppMLLibrary.xml LBCppMLLibrary.cpp)
 
-SET(LBCPP_ML_SOURCES precompiled.h
+SET(LBCPP_ML_INCLUDES 
+  ../include/lbcpp-ml/predeclarations.h
+  ../include/lbcpp-ml/Domain.h
+  ../include/lbcpp-ml/Fitness.h
+  ../include/lbcpp-ml/Solution.h
+  ../include/lbcpp-ml/Comparator.h
+  ../include/lbcpp-ml/SolutionSet.h
+  ../include/lbcpp-ml/Problem.h
+  ../include/lbcpp-ml/Sampler.h
+  ../include/lbcpp-ml/Optimizer.h
+)
+
+SET(LBCPP_ML_OPTIMIZER_SOURCES
+  Optimizer/Optimizer.cpp
+  Optimizer/RandomOptimizer.h
+  Optimizer/NRPAOptimizer.h
+  Optimizer/CrossEntropyOptimizer.h
+  Optimizer/NestedCrossEntropyOptimizer.h
+  Optimizer/SharkMOOptimizers.h
+  Optimizer/MABMetaOptimizer.h
+)
+
+SET(LBCPP_ML_SAMPLER_SOURCES
+  Sampler/UniformContinuousSampler.h
+  Sampler/DiagonalGaussianSampler.h
+)
+
+SET(LBCPP_ML_COMPARATOR_SOURCES
+  Comparator/ObjectiveComparator.h
+  Comparator/LexicographicComparator.h
+  Comparator/DominanceComparator.h
+  Comparator/ParetoRankComparator.h
+)
+
+SET(LBCPP_ML_MAIN_SOURCES
+  SolutionSet.cpp
+  SolutionSetComponent.h
+  Domain.cpp
+  Fitness.cpp
+  Problem.cpp
+)
+
+SET(LBCPP_ML_SOURCES 
+  ${LBCPP_ML_INCLUDES}
+  ${LBCPP_ML_OPTIMIZER_SOURCES}
+  ${LBCPP_ML_SAMPLER_SOURCES}
+  ${LBCPP_ML_COMPARATOR_SOURCES}
+  ${LBCPP_ML_MAIN_SOURCES}
+  precompiled.h
   precompiled.cpp
-  )
+)
 GENERATE_LBCPP_PRECOMPILED(precompiled LBCPP_ML_SOURCES)
+
+SOURCE_GROUP(Include FILES ${LBCPP_ML_INCLUDES})
+SOURCE_GROUP(Optimizer FILES ${LBCPP_ML_OPTIMIZER_SOURCES})
+SOURCE_GROUP(Sampler FILES ${LBCPP_ML_SAMPLER_SOURCES})
+SOURCE_GROUP(Comparator FILES ${LBCPP_ML_COMPARATOR_SOURCES})
 
 IF (UNIX)
   ADD_LIBRARY(lbcpp-ml SHARED ${LBCPP_ML_SOURCES})
