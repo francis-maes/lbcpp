@@ -10,7 +10,7 @@
 # define LBCPP_USER_INTERFACE_COMPONENT_CONFUSION_MATRIX_H_
 
 # include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
-# include "../../Function/Evaluator/Utilities.h"
+# include <lbcpp/Data/BinaryConfusionMatrix.h>
 
 namespace lbcpp
 {
@@ -18,7 +18,7 @@ namespace lbcpp
 class ConfusionMatrixComponent : public juce::Component, public ComponentWithPreferedSize
 {
 public:
-  ConfusionMatrixComponent(BinaryClassificationConfusionMatrixPtr confusionMatrix, const String& name)
+  ConfusionMatrixComponent(BinaryConfusionMatrixPtr confusionMatrix, const String& name)
     : confusionMatrix(confusionMatrix)
   {}
 
@@ -93,7 +93,7 @@ public:
   }
 
 protected:
-  BinaryClassificationConfusionMatrixPtr confusionMatrix;
+  BinaryConfusionMatrixPtr confusionMatrix;
 };
 
 }; /* namespace lbcpp */

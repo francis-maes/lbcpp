@@ -13,7 +13,8 @@
   <include file="lbcpp/Data/SymmetricMatrix.h"/>
   <include file="lbcpp/Data/IndexSet.h"/>
   <include file="lbcpp/Data/BinaryKey.h"/>
-  
+  <include file="lbcpp/Data/BinaryConfusionMatrix.h"/>
+    
   <!-- Random Generator -->
   <class name="RandomGenerator">
     <function lang="lua" name="create" static="yes"/>
@@ -140,5 +141,13 @@
     <variable type="GenericVector[PositiveInteger]" name="v"/>
   </class>
   <class name="BinaryKey" base="Object"/>
+
+  <!-- Confusion Matrix -->
+  <class name="BinaryConfusionMatrix" base="ScoreObject">
+    <variable type="PositiveInteger" name="truePositive"/>
+    <variable type="PositiveInteger" name="falsePositive"/>
+    <variable type="PositiveInteger" name="falseNegative"/>
+    <variable type="PositiveInteger" name="trueNegative"/>
+  </class>
   
 </library>
