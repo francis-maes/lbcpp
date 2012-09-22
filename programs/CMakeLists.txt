@@ -4,5 +4,5 @@ INCLUDE_DIRECTORIES(
 )
 
 # RunWorkUnit
-ADD_EXECUTABLE(RunWorkUnit${NAME_FILE_SUFFIX} RunWorkUnit.cpp)
-TARGET_LINK_LIBRARIES(RunWorkUnit${NAME_FILE_SUFFIX} lbcpp-core${NAME_FILE_SUFFIX})
+ADD_EXECUTABLE(RunWorkUnit RunWorkUnit.cpp)
+TARGET_LINK_LIBRARIES(RunWorkUnit lbcpp-core)
