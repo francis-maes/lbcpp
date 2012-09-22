@@ -9,6 +9,7 @@
 #ifndef LBCPP_ML_SOLUTION_SET_COMPONENT_H_
 # define LBCPP_ML_SOLUTION_SET_COMPONENT_H_
 
+# include <lbcpp-ml/Comparator.h>
 # include <lbcpp-ml/SolutionSet.h>
 # include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
 # include <lbcpp/UserInterface/VariableSelector.h>

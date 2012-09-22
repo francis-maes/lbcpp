@@ -5,6 +5,8 @@
   <import name="Comparator"/>
   <import name="Sampler"/>
   <import name="Optimizer"/>
+  
+  <include file="lbcpp-ml/Problem.h"/>
 
   <!-- CORE -->
   <class name="MOODomain" abstract="yes"/>

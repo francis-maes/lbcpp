@@ -143,7 +143,7 @@
   <class name="BinaryKey" base="Object"/>
 
   <!-- Confusion Matrix -->
-  <class name="BinaryConfusionMatrix" base="ScoreObject">
+  <class name="BinaryConfusionMatrix" base="Object">
     <variable type="PositiveInteger" name="truePositive"/>
     <variable type="PositiveInteger" name="falsePositive"/>
     <variable type="PositiveInteger" name="falseNegative"/>
@@ -151,7 +151,7 @@
   </class>
 
   <!-- Iteration Function -->
-  <class name="IterationFunction" base="Function" abstract="yes"/>
+  <class name="IterationFunction" base="Object" abstract="yes"/>
 
   <class name="ConstantIterationFunction" base="IterationFunction" shortName="constant">
     <constructor arguments="double value"/>

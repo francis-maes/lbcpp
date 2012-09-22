@@ -5,14 +5,12 @@
   <!-- <import name="Core"/> -->
   <import name="Execution"/>
   <import name="Data"/>
+  <import name="UserInterfaceComponent" ifdef="LBCPP_USER_INTERFACE"/>
+  <import name="Lua"/>
 
+  <!-- Clean Me -->
   <import name="DecisionProblem"/>
-  <import name="Optimizer"/>
   <import name="LossFunction"/>
   <import name="Luape"/>
-  
-  <import name="UserInterfaceComponent" ifdef="LBCPP_USER_INTERFACE"/>
-  
-  <import name="Lua"/>
-  
+
 </library>

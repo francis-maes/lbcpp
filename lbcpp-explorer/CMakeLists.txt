@@ -86,4 +86,4 @@ ENDIF(APPLE)
 
 GENERATE_LBCPP_PRECOMPILED(precompiled LBCPP_EXPLORER_SOURCES)
 
-TARGET_LINK_LIBRARIES(lbcpp-explorer lbcpp-core)
+TARGET_LINK_LIBRARIES(lbcpp-explorer lbcpp-ml)
