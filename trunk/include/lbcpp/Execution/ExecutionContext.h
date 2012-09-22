@@ -115,9 +115,6 @@ protected:
 
 extern ClassPtr executionContextClass;
 
-class ResourceEstimator;
-typedef ReferenceCountedObjectPtr<ResourceEstimator> ResourceEstimatorPtr;
-
 extern ExecutionContext& defaultExecutionContext();
 extern void setDefaultExecutionContext(ExecutionContextPtr defaultContext);
 

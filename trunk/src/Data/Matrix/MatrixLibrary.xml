@@ -8,7 +8,7 @@
     <variable type="SymmetricMatrix[elementsType]" name="lowerPart"/>
     <variable type="SymmetricMatrix[elementsType]" name="upperPart"/>
   </template>
-  
+
   <!-- Segment Matrix -->
   <template name="MatrixRegion" base="Object">
     <parameter name="elementsType" type="Variable"/>
@@ -22,14 +22,5 @@
     <parameter name="elementsType" type="Variable"/>
     <variable type="ObjectVector[MatrixRegion[elementsType]]" name="regions"/>
   </template>
-  
-  <!-- FIXME : disable this if UI is disabled in CMake -->
-  <uicomponent name="SegmentedMatrixComponent" type="SegmentedMatrix[Variable]"/>
-
-  <class name="SegmentMatrixFunction" base="Function">
-    <constructor arguments="bool use8Connexity"/>
-    <variable type="Boolean" name="use8Connexity"/>
-  </class>
-  
 </library>
 

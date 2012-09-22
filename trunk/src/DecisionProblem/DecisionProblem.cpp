@@ -89,16 +89,21 @@ int DecisionProblemState::performTransition(LuaState& state)
 */
 ClassPtr DecisionProblem::getStateClass() const
 {
-  jassert(initialStateSampler);
+  /*jassert(initialStateSampler);
   if (!initialStateSampler->isInitialized())
     initialStateSampler->initialize(defaultExecutionContext(), randomGeneratorClass);
   return initialStateSampler->getOutputType();
+  */
+  jassertfalse;
+  return ClassPtr();
 }
 
 DecisionProblemStatePtr DecisionProblem::sampleInitialState(ExecutionContext& context) const
 {
-  Variable res = initialStateSampler->compute(context, context.getRandomGenerator());
-  return res.exists() ? res.getObjectAndCast<DecisionProblemState>() : DecisionProblemStatePtr();
+  //Variable res = initialStateSampler->compute(context, context.getRandomGenerator());
+  //return res.exists() ? res.getObjectAndCast<DecisionProblemState>() : DecisionProblemStatePtr();
+  jassertfalse;
+  return DecisionProblemStatePtr();
 }
 
 ContainerPtr DecisionProblem::sampleInitialStates(ExecutionContext& context, size_t count) const
@@ -122,7 +127,6 @@ void DecisionProblem::clone(ExecutionContext& context, const ObjectPtr& t) const
 {
   Object::clone(context, t);
   const DecisionProblemPtr& target = t.staticCast<DecisionProblem>();
-  target->initialStateSampler = initialStateSampler;
   target->discount = discount;
   target->horizon = horizon;
 }

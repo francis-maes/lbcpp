@@ -9,8 +9,8 @@
 #ifndef LBCPP_DECISION_PROBLEM_PROBLEM_H_
 # define LBCPP_DECISION_PROBLEM_PROBLEM_H_
 
-# include "../Core/Function.h"
 # include "../Data/RandomGenerator.h"
+# include "../Core/Vector.h"
 
 namespace lbcpp
 {
@@ -55,18 +55,14 @@ extern ClassPtr decisionProblemStateClass;
 class DecisionProblem : public Object
 {
 public:
-  DecisionProblem(const FunctionPtr& initialStateSampler, double discount, size_t horizon = 0)
-    : initialStateSampler(initialStateSampler), discount(discount), horizon(horizon)
-    {if (initialStateSampler) initialStateSampler->initialize(defaultExecutionContext(), randomGeneratorClass);}
+  DecisionProblem(double discount, size_t horizon = 0)
+    : discount(discount), horizon(horizon) {}
   DecisionProblem() {}
 
   /*
   ** Initial states
   */
   virtual ClassPtr getStateClass() const;
-
-  const FunctionPtr& getInitialStateSampler() const
-    {return initialStateSampler;}
 
   virtual DecisionProblemStatePtr sampleInitialState(ExecutionContext& context) const;
   virtual DecisionProblemStatePtr sampleAnyState(ExecutionContext& context) const
@@ -108,7 +104,6 @@ public:
 protected:
   friend class DecisionProblemClass;
 
-  FunctionPtr initialStateSampler;
   double discount;
   size_t horizon;
 };
@@ -116,25 +111,6 @@ protected:
 typedef ReferenceCountedObjectPtr<DecisionProblem> DecisionProblemPtr;
 
 extern ClassPtr decisionProblemClass;
-
-
-// State -> Container[Action]
-class GetAvailableActionsFunction : public SimpleUnaryFunction
-{
-public:
-  GetAvailableActionsFunction(TypePtr actionType = variableType)
-    : SimpleUnaryFunction(decisionProblemStateClass, containerClass(actionType), T("Actions")) {}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-  {
-    const DecisionProblemStatePtr& state = input.getObjectAndCast<DecisionProblemState>();
-    return state->getAvailableActions();
-  }
-
-  lbcpp_UseDebuggingNewOperator
-};
-
-extern FunctionPtr getAvailableActionsFunction(TypePtr actionType);
 
 }; /* namespace lbcpp */
 

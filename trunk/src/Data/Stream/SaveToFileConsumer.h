@@ -10,7 +10,6 @@
 # define LBCPP_DATA_CONSUMER_SAVE_TO_FILE_H_
 
 # include <lbcpp/Data/Consumer.h>
-# include <lbcpp/Core/Function.h>
 
 namespace lbcpp
 {

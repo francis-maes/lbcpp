@@ -16,9 +16,6 @@
     <variable type="Double" name="discount"/>
     <variable type="PositiveInteger" name="horizon"/> -->
   </class>
-  <class name="GetAvailableActionsFunction" base="Function">
-    <constructor arguments="TypePtr actionType"/>
-  </class>
 
   <!-- Policy -->
   <class name="Policy" base="Object" abstract="yes"/>

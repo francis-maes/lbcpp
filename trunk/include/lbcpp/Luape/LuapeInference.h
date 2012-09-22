@@ -12,12 +12,11 @@
 # include "LuapeNode.h"
 # include "LuapeUniverse.h"
 # include "LuapeCache.h"
-# include "../Core/Function.h"
 
 namespace lbcpp
 {
 
-class LuapeInference : public Function
+class LuapeInference : public Object
 {
 public:
   LuapeInference(LuapeUniversePtr universe = LuapeUniversePtr());

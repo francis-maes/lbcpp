@@ -7,7 +7,6 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Optimizer/BanditPool.h>
-#include <lbcpp/Core/Function.h>
 #include <lbcpp/Execution/WorkUnit.h>
 #include <algorithm>
 using namespace lbcpp;

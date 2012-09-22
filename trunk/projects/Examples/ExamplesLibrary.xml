@@ -21,22 +21,6 @@
   <class name="VerySimpleClass" base="Object"/>
   <class name="MissingValuesExample" base="WorkUnit"/>
 
-  <!-- Genetic Programming Example -->
-  <class name="AgAddFunction" base="SimpleBinaryFunction"/>
-  <class name="AgSubFunction" base="SimpleBinaryFunction"/>
-  <class name="AgMultiplyFunction" base="SimpleBinaryFunction"/>
-  <class name="AgDivideFunction" base="SimpleBinaryFunction"/>
-  
-  <class name="GeneticProgrammingExample" base="WorkUnit">
-    <variable type="PositiveInteger" name="numInputVariables"/>
-    <variable type="PositiveInteger" name="numData"/>
-    <variable type="PositiveInteger" name="numTrees"/>
-    <variable type="PositiveInteger" name="numGenerations"/>
-    <variable type="Double" name="probOfCrossOver"/>
-    <variable type="Double" name="probOfReproduction"/>
-    <variable type="Double" name="probOfMutation"/>
-  </class>
-  
   <!-- Random Generator Example -->
   <class name="RandomGeneratorExample" base="WorkUnit"/>
 

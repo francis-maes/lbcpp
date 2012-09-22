@@ -27,7 +27,6 @@
 # define LBCPP_VARIABLE_STREAM_H_
 
 # include "predeclarations.h"
-# include "../Core/Function.h"
 # include "DoubleVector.h"
 
 namespace lbcpp
@@ -118,20 +117,6 @@ public:
   ** @see Container
   */
   VectorPtr load(size_t maximumCount = 0, bool doProgression = true);
-
-  /**
-  ** Applies an Function to this stream.
-  **
-  ** This function creates a new stream derivated from this one.
-  ** Each time next() is called on this stream, a new element
-  ** is loaded from this one and @a function is applied on
-  ** this element.
-  **
-  ** @param function : function to apply on elements.
-  ** @return a new object stream instance referring to this one.
-  ** @see Function
-  */
-  StreamPtr apply(FunctionPtr function) const;
 
 protected:
   ExecutionContext& context;
