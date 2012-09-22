@@ -23,7 +23,6 @@ GENERATE_INTROSPECTION_CODE(Function/FunctionLibrary.xml FunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/ScalarFunction/ScalarFunctionLibrary.xml ScalarFunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/ScalarVectorFunction/ScalarVectorFunctionLibrary.xml ScalarVectorFunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/IterationFunction/IterationFunctionLibrary.xml IterationFunctionLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Function/Evaluator/EvaluatorLibrary.xml EvaluatorLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Learning/LearningLibrary.xml LearningLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/OnlineLearner/OnlineLearnerLibrary.xml OnlineLearnerLibrary.cpp)
@@ -168,6 +167,9 @@ SET(LBCPP_DATA_SOURCES
   ../include/lbcpp/Data/IndexSet.h
   Data/IndexSet.cpp
   ../include/lbcpp/Data/BinaryKey.h
+  ../include/lbcpp/Data/BinaryConfusionMatrix.h
+  Data/BinaryConfusionMatrix.cpp
+
   Data/DataLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DataLibrary.cpp
 )
@@ -260,8 +262,6 @@ SET(LBCPP_FUNCTION_SOURCES
   ../include/lbcpp/Function/ScalarVectorFunction.h
   Function/ScalarFunction.cpp
   ../include/lbcpp/Function/IterationFunction.h
-  ../include/lbcpp/Function/Evaluator.h
-  Function/Evaluator.cpp
   Function/FunctionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/FunctionLibrary.cpp
 )
@@ -289,23 +289,6 @@ SET(LBCPP_FUNCTION_ITERATION_SOURCES
   Function/IterationFunction/InvLinearIterationFunction.h
   Function/IterationFunction/IterationFunctionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/IterationFunctionLibrary.cpp
-)
-
-SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
-  Function/Evaluator/BinaryClassificationEvaluator.h
-  Function/Evaluator/ClassificationEvaluator.h
-  Function/Evaluator/RegressionEvaluator.h
-  Function/Evaluator/RankingEvaluator.h
-  Function/Evaluator/MultiLabelClassificationEvaluator.h
-  Function/Evaluator/DefaultSupervisedEvaluator.h
-  Function/Evaluator/SaveToDirectoryEvaluator.h
-  Function/Evaluator/Utilities.h
-  Function/Evaluator/Utilities.cpp
-  Function/Evaluator/ConcatenateScoreObjectFunction.h
-  Function/Evaluator/ContainerSupervisedEvaluator.h
-  Function/Evaluator/SymmetricMatrixSupervisedEvaluator.h
-  Function/Evaluator/EvaluatorLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/EvaluatorLibrary.cpp
 )
 
 #### Learning ####
@@ -506,7 +489,6 @@ IF(LBCPP_USER_INTERFACE)
     UserInterface/Component/ExecutionTraceTreeViewItem.cpp
     UserInterface/Component/ExecutionTraceTreeView.h
     UserInterface/Component/ExecutionTraceTreeView.cpp
-    UserInterface/Component/ROCScoreObjectComponent.h
     UserInterface/Component/ConfusionMatrixComponent.h
     UserInterface/Component/DoubleMatrixComponent.h
     UserInterface/Component/UserInterfaceComponentLibrary.xml
@@ -567,7 +549,6 @@ SET(LBCPP_SOURCES
     ${LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES}
     ${LBCPP_FUNCTION_ITERATION_SOURCES}
     ${LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES}
-    ${LBCPP_FUNCTION_EVALUATOR_SOURCES}
 
   # Learning
   ${LBCPP_LEARNING_SOURCES}
@@ -630,7 +611,6 @@ SOURCE_GROUP(Function FILES ${LBCPP_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(Function ScalarFunction FILES ${LBCPP_FUNCTION_SCALAR_SOURCES})
 SOURCE_SUB_GROUP(Function ScalarVectorFunction FILES ${LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES})
 SOURCE_SUB_GROUP(Function IterationFunction FILES ${LBCPP_FUNCTION_ITERATION_SOURCES})
-SOURCE_SUB_GROUP(Function Evaluator FILES ${LBCPP_FUNCTION_EVALUATOR_SOURCES})
 
 ## Learning
 SOURCE_GROUP(Learning FILES ${LBCPP_LEARNING_SOURCES})

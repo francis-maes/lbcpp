@@ -5,6 +5,5 @@
   <import name="ScalarFunction"/>
   <import name="ScalarVectorFunction"/>
   <import name="IterationFunction"/>
-  <import name="Evaluator"/>
 
 </library>

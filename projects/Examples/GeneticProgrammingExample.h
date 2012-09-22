@@ -1,6 +1,5 @@
 
 # include <lbcpp/Core/Function.h>
-# include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Data/RandomVariable.h>
 # include <lbcpp/Data/RandomGenerator.h>
 

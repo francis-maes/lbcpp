@@ -8,7 +8,6 @@
 #include "precompiled.h"
 #include "ContainerCurveEditor.h"
 #include <lbcpp/Data/RandomGenerator.h>
-#include <lbcpp/Function/Evaluator.h>
 #include "../Plot/TwoDimensionalPlotDrawable.h"
 using namespace lbcpp;
 

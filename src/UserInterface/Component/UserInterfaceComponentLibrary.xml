@@ -27,8 +27,7 @@
     <variable type="PositiveInteger" name="keyVariableIndex"/>
   </class>
 
-  <uicomponent name="ROCScoreObjectComponent" type="ROCScoreObject"/>
-  <uicomponent name="ConfusionMatrixComponent" type="BinaryClassificationConfusionMatrix"/>
+  <uicomponent name="ConfusionMatrixComponent" type="BinaryConfusionMatrix"/>
 
   <uicomponent name="DoubleMatrixComponent" type="DoubleMatrix[Double]"/>
   <uicomponent name="DoubleSymmetricMatrixComponent" type="DoubleSymmetricMatrix[Double]"/>

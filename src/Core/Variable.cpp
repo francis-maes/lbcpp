@@ -12,7 +12,6 @@
 #include <lbcpp/Core/Container.h>
 #include <lbcpp/Data/RandomVariable.h>
 #include <lbcpp/Data/DoubleVector.h>
-#include <lbcpp/Function/Evaluator.h>
 using namespace lbcpp;
 
 Variable Variable::pair(const Variable& variable1, const Variable& variable2)

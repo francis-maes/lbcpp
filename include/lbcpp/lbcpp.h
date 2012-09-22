@@ -64,7 +64,6 @@
 # include "Function/ScalarFunction.h"
 # include "Function/ScalarVectorFunction.h"
 # include "Function/IterationFunction.h"
-# include "Function/Evaluator.h"
 
 # include "DecisionProblem/DecisionProblem.h"
 # include "Optimizer/BanditPool.h"
