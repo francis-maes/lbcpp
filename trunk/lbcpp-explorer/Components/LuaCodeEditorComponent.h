@@ -17,7 +17,7 @@
 # include <lbcpp/Lua/Lua.h>
 # include "../../juce/juce_CodeEditorComponent.h"
 # include "../../juce/juce_LuaCodeTokeniser.h"
-# include "../explorer/ExplorerProject.h"
+# include "../lbcpp-explorer/ExplorerProject.h"
 
 class LuaCodeEditorComponent;
 class LuaCodeEditorStatusBar;

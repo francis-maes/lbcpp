@@ -7,7 +7,7 @@
                                `------------------------------------*/
 
 // This file is necessary for Visual Studio to support precompiled headers
-#include "../src/precompiled.h"
+#include "../lbcpp-core/precompiled.h"
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Core/Vector.h>
 #include <lbcpp/Data/DoubleVector.h>

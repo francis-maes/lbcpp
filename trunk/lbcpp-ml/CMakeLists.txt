@@ -1,0 +1,19 @@
+INCLUDE_DIRECTORIES(
+  ${LBCpp_SOURCE_DIR}/include
+  ${LBCpp_SOURCE_DIR}/shark/include
+  ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+GENERATE_INTROSPECTION_CODE(LBCppMLLibrary.xml LBCppMLLibrary.cpp)
+
+SET(LBCPP_ML_SOURCES precompiled.h
+  precompiled.cpp
+  )
+GENERATE_LBCPP_PRECOMPILED(precompiled LBCPP_ML_SOURCES)
+
+IF (UNIX)
+  ADD_LIBRARY(lbcpp-ml SHARED ${LBCPP_ML_SOURCES})
+ELSE (UNIX)
+  ADD_LIBRARY(lbcpp-ml ${LBCPP_ML_SOURCES})
+ENDIF (UNIX)
+TARGET_LINK_LIBRARIES(lbcpp-ml lbcpp-core)
