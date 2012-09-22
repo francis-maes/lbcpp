@@ -1,6 +1,4 @@
 
- * Wrap the JNI stuff
- 
 Luape-Other:
  * Go: rankboost + large-scale boosting
  * Go: support for polymorphism, neighborhood, regions
