@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="DiscreteSampler" directory="Sampler/Discrete">
+
+  <class name="BernoulliSampler" base="DiscreteSampler">
+    <constructor arguments="double probability, double minProbability, double maxProbability"/>
+    <variable type="Probability" name="probability"/>
+    <variable type="Probability" name="minProbability"/>
+    <variable type="Probability" name="maxProbability"/>
+  </class>
+
+  <class name="EnumerationSampler" base="DiscreteSampler">
+    <constructor arguments="const DenseDoubleVectorPtr&amp; probabilities"/>
+    <constructor arguments="EnumerationPtr enumeration"/>
+    <variable type="DenseDoubleVector[EnumValue, Probability]" name="probabilities" shortName="p" description="Probabilities of each discrete element"/>
+  </class>
+
+  <class name="DiscretizeSampler" base="DiscreteSampler">
+    <constructor arguments="const SamplerPtr&amp; sampler, int minValue, int maxValue"/>
+    <variable type="Sampler" name="sampler" description="Continuous sampler used to sample the values."/>
+    <variable type="Integer" name="minValue" description="Minimum value returned."/>
+    <variable type="Integer" name="maxValue" description="Maximum value returned."/>
+  </class>
+  
+  <class name="MaximumEntropySampler" base="DiscreteSampler">
+    <constructor arguments="TypePtr outputType"/>
+    <variable type="Function" name="predictor"/>
+  </class>
+
+</library>

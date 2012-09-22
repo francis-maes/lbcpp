@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="GenericFeatureGenerator" directory="FeatureGenerator/Generic">
+
+  <!-- Concatenate Feature Generator -->
+  <class name="ConcatenateDoubleFeatureGenerator" base="FeatureGenerator">
+    <constructor arguments="bool lazy"/>
+  </class>
+
+  <class name="ConcatenateDoubleVectorFeatureGenerator" base="FeatureGenerator">
+    <constructor arguments="bool lazy"/>
+  </class>
+  
+  <class name="ConcatenateMixedDoubleDoubleVectorFeatureGenerator" base="ConcatenateDoubleVectorFeatureGenerator">
+    <constructor arguments="bool lazy" returnType="FeatureGenerator"/>
+  </class>
+  
+  <class name="ConcatenateFeatureGenerator" base="ProxyFunction">
+    <constructor arguments="bool lazy" returnType="Function"/>
+    <variable type="Boolean" name="lazy"/>
+  </class>
+
+  <!-- Cartesian Product Feature Generator -->
+  <class name="CartesianProductFeatureGeneratorImpl" base="FeatureGenerator" abstract="yes"/>
+  <class name="SparseCartesianProductFeatureGenerator" base="CartesianProductFeatureGeneratorImpl">
+    <constructor arguments="bool lazy" returnType="FeatureGenerator"/>
+  </class>
+  <class name="DenseCartesianProductFeatureGenerator" base="CartesianProductFeatureGeneratorImpl">
+    <constructor arguments="bool lazy" returnType="FeatureGenerator"/>
+  </class>
+  <class name="CartesianProductFeatureGenerator" base="ProxyFunction">
+    <constructor arguments="bool lazy" returnType="Function"/>
+  </class>
+  
+  <!-- Window Feature Generator -->
+  <class name="ContainerWindowFeatureGenerator" base="FeatureGenerator" abstract="yes"/>
+
+  <class name="FixedContainerWindowFeatureGenerator" base="ContainerWindowFeatureGenerator">
+    <constructor arguments="size_t begin, size_t size" returnType="FeatureGenerator"/>
+    <variable type="PositiveInteger" name="begin"/>
+    <variable type="PositiveInteger" name="size"/>
+  </class>
+
+  <class name="CenteredContainerWindowFeatureGenerator" base="ContainerWindowFeatureGenerator">
+    <constructor arguments="size_t windowSize" returnType="FeatureGenerator"/>
+    <variable type="PositiveInteger" name="windowSize"/>
+  </class>
+  
+  <class name="MatrixWindowFeatureGenerator" base="FeatureGenerator">
+    <constructor arguments="size_t windowRows, size_t windowColumns"/>
+    <variable type="PositiveInteger" name="windowRows"/>
+    <variable type="PositiveInteger" name="windowColumns"/>
+  </class>
+
+  <!-- Dynamically Mapped Feature Generator -->
+  <class name="DynamicSubsetEnumeration" base="Enumeration" abstract="yes"/>
+  <class name="DynamicallyMappedFeatureGenerator" base="FeatureGenerator">
+    <constructor arguments="FeatureGeneratorPtr baseFeatureGenerator, size_t reservedSize, bool lazy"/>
+    <variable type="FeatureGenerator" name="baseFeatureGenerator"/>
+    <variable type="PositiveInteger" name="reservedSize"/>
+  </class>
+
+</library>

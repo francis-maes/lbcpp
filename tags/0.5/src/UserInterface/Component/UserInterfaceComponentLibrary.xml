@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="UserInterfaceComponent" directory="UserInterface/Component">
+
+  <include file="lbcpp/UserInterface/PieChartComponent.h"/>
+  <include file="lbcpp/UserInterface/HistogramComponent.h"/>
+
+  <class name="PlotAxis">
+    <variable type="Double" name="rangeMin"/>
+    <variable type="Double" name="rangeMax"/>
+    <variable type="Boolean" name="autoRange"/>
+    <variable type="Boolean" name="logScale"/>
+    <variable type="String" name="unit"/>
+    <variable type="String" name="label"/>
+  </class>
+
+  <class name="CurveVariableConfiguration">
+    <variable type="Boolean" name="selected"/>
+    <!--<variable type="Colour" name="colour"/> -->
+    <variable type="String" name="label"/>
+  </class>
+
+  <class name="ContainerCurveEditorConfiguration">
+    <variable type="PlotAxis" name="xAxis"/>
+    <variable type="PlotAxis" name="yAxis"/>
+    <variable type="ObjectVector[CurveVariableConfiguration]" name="variables"/>
+    <variable type="PositiveInteger" name="keyVariableIndex"/>
+  </class>
+
+  <uicomponent name="ROCScoreObjectComponent" type="ROCScoreObject"/>
+  <uicomponent name="ConfusionMatrixComponent" type="BinaryClassificationConfusionMatrix"/>
+
+  <uicomponent name="DoubleMatrixComponent" type="DoubleMatrix[Double]"/>
+  <uicomponent name="DoubleSymmetricMatrixComponent" type="DoubleSymmetricMatrix[Double]"/>
+
+  <class name="PieChartConfiguration" base="Object">
+    <variable type="String" name="description"/>
+    <variable type="GenericVector[Pair[String, Double]]" name="values"/>
+  </class>
+
+  <uicomponent name="PieChartComponent" type="PieChartConfiguration"/>
+
+  <class name="HistogramConfiguration" base="NameableObject">
+    <variable type="Double" name="stepSize"/>
+    <variable type="Double" name="minValue"/>
+    <variable type="Double" name="maxValue"/>
+    <variable type="Boolean" name="includeOutOfBound"/>
+    <variable type="GenericVector[Double]" name="values"/>
+  </class>
+  
+  <uicomponent name="HistogramComponent" type="HistogramConfiguration"/>
+</library>

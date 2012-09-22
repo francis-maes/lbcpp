@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Core" directory="Core">
+  <import name="CoreType" pre="yes"/>
+  <import name="CoreFunction"/>
+
+  <include file="lbcpp/Core/Pair.h"/>
+  <include file="lbcpp/Core/Vector.h"/>
+  <include file="lbcpp/Core/DynamicObject.h"/>
+  <include file="lbcpp/Core/Frame.h"/>
+  <include file="lbcpp/Core/CompositeFunction.h"/>
+  <include file="lbcpp/Learning/OnlineLearner.h"/>
+  <include file="lbcpp/Core/XmlSerialisation.h"/>
+
+  <class name="Library" base="Object" abstract="yes"/>
+  
+  <!-- Pair -->
+  <template name="Pair" base="Object">
+    <parameter name="firstType" type="Variable"/>
+    <parameter name="secondType" type="Variable"/>
+
+    <variable type="firstType" name="first"/>
+    <variable type="secondType" name="second"/>
+  </template>
+
+  <class name="PositiveIntegerPair">
+    <variable type="PositiveInteger" name="first"/>
+    <variable type="PositiveInteger" name="second"/>
+  </class>
+
+  <!-- Container -->
+  <template name="Container" base="Object" abstract="yes">
+    <parameter name="elementsType"/>
+  </template>
+  
+  <!-- Vector -->
+  <template name="Vector" base="Container[elementsType]" abstract="yes">
+    <parameter name="elementsType"/>
+    <function lang="lua" name="resize"/>
+    <function lang="lua" name="append"/>
+  </template>
+
+  <template name="GenericVector" base="Vector[elementsType]">
+    <parameter name="elementsType"/>
+    <constructor arguments="TypePtr elementsType, size_t initialSize" parameters="elementsType"/>
+  </template>
+
+  <template name="ObjectVector" base="Vector[elementsType]">
+    <parameter name="elementsType"/>
+    <constructor arguments="TypePtr elementsType, size_t initialSize" parameters="elementsType"/>
+  </template>
+
+  <class name="BooleanVector" base="Vector[Boolean]">
+    <constructor arguments="size_t initialSize"/>
+  </class>
+
+  <class name="VariableVector" base="Vector[Variable]">
+    <constructor arguments="size_t initialSize"/>
+  </class>
+
+  <class name="PositiveIntegerPairVector" base="Vector[PositiveIntegerPair]"/>
+
+  <!-- Map -->
+  <template name="Map" base="Object" abstract="yes">
+    <parameter name="keysType"/>
+    <parameter name="valuesType"/>
+  </template>
+  
+  <template name="OrderedMap" base="Map[keysType,valuesType]" abstract="yes">
+    <parameter name="keysType"/>
+    <parameter name="valuesType"/>
+  </template>
+
+  <!-- Dynamic Object -->
+  <class name="DynamicClass" base="DefaultClass" abstract="yes"/>
+
+  <template name="EnumBasedDoubleVector" metaclass="DynamicClass">
+    <parameter name="enumeration" type="EnumValue"/>
+    <parameter name="variablesType" type="Double"/>
+    <code>
+      virtual size_t getNumMemberVariables() const
+        {return getEnumeration()->getNumElements();}
+        
+      virtual VariableSignaturePtr getMemberVariable(size_t index) const
+        {return new VariableSignature(getVariablesType(), getEnumeration()->getElementName(index));}
+        
+      virtual void createObjectVariables()
+      {
+        EnumerationPtr enumeration = getEnumeration();
+        size_t n = enumeration->getNumElements();
+        TypePtr variablesType = getVariablesType();
+        for (size_t i = 0; i &lt; n; ++i)
+          addMemberVariable(defaultExecutionContext(), variablesType, enumeration->getElementName(i));
+      }
+       
+      EnumerationPtr getEnumeration() const
+      {
+        jassert(getNumTemplateArguments() == 2);
+        EnumerationPtr enumeration = getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();
+        jassert(enumeration);
+        return enumeration;
+      }
+         
+      TypePtr getVariablesType() const
+        {jassert(getNumTemplateArguments() == 2); return getTemplateArgument(1);}
+    </code>
+  </template>
+  
+  <template name="OneSubObjectPerInputVariable" base="Object" metaclass="DynamicClass">
+    <parameter name="inputClass" type="Object"/>
+    <parameter name="outputVariablesType" type="Variable"/>
+    <code>
+      virtual void createObjectVariables()
+      {
+        jassert(getNumTemplateArguments() == 2);
+        ClassPtr inputClass = getTemplateArgument(0).dynamicCast&lt;Class&gt;();
+        TypePtr outputVariablesType = getTemplateArgument(1);
+        jassert(inputClass);
+        size_t n = inputClass->getNumMemberVariables();
+        for (size_t i = 0; i &lt; n; ++i)
+          addMemberVariable(defaultExecutionContext(), outputVariablesType, inputClass->getMemberVariableName(i));
+      }
+    </code>
+  </template>
+
+  <template name="AddMissingToEnumeration" metaclass="Enumeration">
+    <parameter name="enumeration" type="EnumValue"/>
+    <code>
+      EnumerationPtr getEnumeration() const
+        {return getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();}
+ 
+      virtual size_t getNumElements() const
+        {return getEnumeration()-&gt;getNumElements() + 1;}
+
+      virtual EnumerationElementPtr getElement(size_t index) const
+      {
+        EnumerationPtr enumeration = getEnumeration();
+        if (index &lt; enumeration-&gt;getNumElements())
+          return enumeration->getElement(index);
+        else
+          return new EnumerationElement(T("missing"), T("_"), String::empty, T("Missing Value"));
+      }
+      </code>
+  </template>
+
+  <template name="AddEntropyToEnumeration" metaclass="Enumeration">
+    <parameter name="enumeration" type="EnumValue"/>
+    <code>
+      EnumerationPtr getEnumeration() const
+        {return getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();}
+ 
+      virtual size_t getNumElements() const
+        {return getEnumeration()-&gt;getNumElements() + 1;}
+
+      virtual EnumerationElementPtr getElement(size_t index) const
+      {
+        EnumerationPtr enumeration = getEnumeration();
+        if (index &lt; enumeration-&gt;getNumElements())
+          return enumeration->getElement(index);
+        else
+          return new EnumerationElement(T("entropy"), String::empty, String::empty, T("Entropy"));
+      }
+      </code>
+  </template>
+
+  <template name="VariablesEnumeration" metaclass="Enumeration">
+    <parameter name="class" type="Object"/>
+    <code>
+      ClassPtr getTargetClass() const
+        {return getTemplateArgument(0).dynamicCast&lt;Class&gt;();}
+ 
+      virtual size_t getNumElements() const
+        {return getTargetClass()-&gt;getNumMemberVariables();}
+
+      virtual EnumerationElementPtr getElement(size_t index) const
+      {
+        VariableSignaturePtr variable = getTargetClass()-&gt;getMemberVariable(index);
+        return new EnumerationElement(variable->getName(), String::empty, variable->getShortName(), variable->getDescription());
+      }
+    </code>
+  </template>
+  
+  <enumeration name="Singleton">
+    <value name="singleton" oneLetterCode="e"/>
+  </enumeration>
+  
+  <enumeration name="ExistOrMissing">
+    <value name="exist" oneLetterCode="e"/>
+    <value name="missing" oneLetterCode="m"/>
+  </enumeration>
+
+  <enumeration name="FalseOrTrue">
+    <value name="false" oneLetterCode="f"/>
+    <value name="true" oneLetterCode="t"/>
+  </enumeration>
+
+  <enumeration name="FalseTrueOrMissing">
+    <value name="false" oneLetterCode="f"/>
+    <value name="true" oneLetterCode="t"/>
+    <value name="missing" oneLetterCode="m"/>
+  </enumeration>
+  
+  <class name="PositiveIntegerEnumeration" metaclass="Enumeration">
+    <code>
+      virtual size_t getNumElements() const
+        {return 0;}
+      virtual EnumerationElementPtr getElement(size_t index) const
+        {String str((int)index); return new EnumerationElement(str, String::empty, str);}
+      virtual int findElementByName(const String&amp; name) const
+        {return name.getIntValue();}
+      virtual String toString(const VariableValue&amp; value) const
+        {return String(value.getInteger());}
+      virtual VariableValue getMissingValue() const
+        {return VariableValue(-1);}
+    </code>
+  </class>
+  
+  <template name="CartesianProductEnumeration" metaclass="Enumeration">
+    <parameter name="firstEnumeration" type="EnumValue"/>
+    <parameter name="secondEnumeration" type="EnumValue"/>
+    <code>
+      EnumerationPtr getFirstEnumeration() const
+        {return getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();}
+      
+      EnumerationPtr getSecondEnumeration() const
+        {return getTemplateArgument(1).dynamicCast&lt;Enumeration&gt;();}
+ 
+      virtual size_t getNumElements() const
+        {return getFirstEnumeration()-&gt;getNumElements() * getSecondEnumeration()-&gt;getNumElements();}
+
+      virtual EnumerationElementPtr getElement(size_t index) const
+      {
+        if (index &gt;= getNumElements())
+          return new EnumerationElement(T("missing"), T("_"), String::empty, T("Missing Value"));
+
+        EnumerationPtr firstEnumeration = getFirstEnumeration();
+        EnumerationPtr secondEnumeration = getSecondEnumeration();
+        size_t numSecondElements = secondEnumeration-&gt;getNumElements();
+        EnumerationElementPtr firstElement = firstEnumeration->getElement(index / numSecondElements);
+        EnumerationElementPtr secondElement = secondEnumeration->getElement(index % numSecondElements);
+
+        return new EnumerationElement(T("(") + firstElement-&gt;getName() + T(", ") + secondElement-&gt;getName() + T(")"),
+                                      String::empty,
+                                      firstElement-&gt;getShortName() + T("x") + secondElement-&gt;getShortName(),
+                                      T("Cartesian Product (") + firstElement-&gt;getDescription() +
+                                            T(", ") + secondElement-&gt;getDescription() + T(")"));
+      }
+      </code>
+  </template>
+
+  <!-- Function -->
+  <class name="Function" abstract="yes"/>
+  <class name="CompositeFunction" base="Function" abstract="yes"/>
+  <class name="MethodBasedCompositeFunction" base="CompositeFunction" abstract="yes"/>
+  <class name="UnaryHigherOrderFunction" base="Function" abstract="yes">
+    <variable type="Function" name="baseFunction"/>
+  </class>
+
+  <!-- Frame -->
+  <class name="FrameOperatorSignature" base="VariableSignature">
+    <variable type="Function" name="function"/>
+    <variable type="GenericVector[PositiveInteger]" name="inputs"/>
+  </class>
+
+  <class name="FrameClass" base="DefaultClass"/>
+
+  <!-- XmlElement -->
+  <class name="XmlElement" base="Object">
+    <variable type="String" name="tagName"/>
+    <variable type="ObjectVector[XmlElement]" name="childElements"/>
+    <variable type="ObjectVector[Pair[String, String]]" name="attributes"/>
+    <variable type="String" name="text"/>
+  </class>
+
+</library>

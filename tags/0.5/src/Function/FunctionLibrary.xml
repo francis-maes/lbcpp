@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Function" directory="Function">
+
+  <import name="ScalarFunction"/>
+  <import name="ScalarVectorFunction"/>
+  <import name="IterationFunction"/>
+  <import name="StoppingCriterion"/>
+  <import name="Predicate"/>
+  <import name="Evaluator"/>
+
+</library>

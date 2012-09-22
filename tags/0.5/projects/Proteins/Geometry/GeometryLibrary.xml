@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Geometry" directory="Geometry">
+  
+
+    <class name="Vector3">
+      <variable type="Double" name="x" var="value.x"/>
+      <variable type="Double" name="y" var="value.y"/>
+      <variable type="Double" name="z" var="value.z"/>
+    </class>
+
+    <class name="CartesianPositionVector" base="Vector[Vector3]"/>
+    
+    
+</library>

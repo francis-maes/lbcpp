@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="LearningLossFunction" directory="Learning/LossFunction">
+  <include file="lbcpp/Learning/LossFunction.h"/>
+
+  <!-- Regression Loss Functions -->
+  <class name="RegressionLossFunction" base="ScalarFunction" abstract="yes"/>
+  
+  <class name="SquareRegressionLossFunction" base="RegressionLossFunction">
+    <constructor/>
+  </class>
+
+  <!-- Discriminative Loss Functions -->
+  <class name="DiscriminativeLossFunction" base="ScalarFunction" abstract="yes"/>
+
+  <class name="HingeDiscriminativeLossFunction" base="DiscriminativeLossFunction" shortName="hinge">
+    <constructor arguments="double margin"/>
+  </class>
+  
+  <class name="LogBinomialDiscriminativeLossFunction" base="DiscriminativeLossFunction" shortName="logBinomial">
+    <constructor/>
+  </class>
+
+  <class name="ExponentialDiscriminativeLossFunction" base="DiscriminativeLossFunction" shortName="exp">
+    <constructor/>
+  </class>
+  
+  <!-- MultiClass Loss Functions -->
+  <class name="MultiClassLossFunction" base="ScalarVectorFunction" abstract="yes"/>
+
+  <class name="OneAgainstAllMultiClassLossFunction" base="MultiClassLossFunction" shortName="oneAgainstAllMultiClass">
+    <constructor arguments="DiscriminativeLossFunctionPtr binaryLossFunction"/>
+    <variable type="DiscriminativeLossFunction" name="binaryLoss"/>
+  </class>
+  
+  <class name="MostViolatedMultiClassLossFunction" base="MultiClassLossFunction" shortName="mostViolatedMultiClass">
+    <constructor arguments="DiscriminativeLossFunctionPtr binaryLossFunction"/>
+    <variable type="DiscriminativeLossFunction" name="binaryLoss"/>
+  </class>
+  
+  <class name="LogBinomialMultiClassLossFunction" base="MultiClassLossFunction" shortName="logBinomialMultiClass">
+    <constructor/>
+  </class>
+
+  <!-- Ranking Loss Functions -->
+  <class name="RankingLossFunction" base="ScalarVectorFunction" abstract="yes"/>
+
+  <class name="AdditiveRankingLossFunction" base="RankingLossFunction" abstract="yes">
+    <variable type="DiscriminativeLossFunction" name="baseLoss"/>
+  </class>
+
+  <class name="AllPairsRankingLossFunction" base="AdditiveRankingLossFunction" shortName="allPairs">
+    <constructor arguments="DiscriminativeLossFunctionPtr baseLoss" returnType="RankingLossFunction"/>
+  </class>
+
+  <class name="MostViolatedPairRankingLossFunction" base="AdditiveRankingLossFunction" shortName="mostViolatedPair">
+    <constructor arguments="DiscriminativeLossFunctionPtr baseLoss" returnType="RankingLossFunction"/>
+  </class>
+
+  <class name="BestAgainstAllRankingLossFunction" base="AdditiveRankingLossFunction" shortName="bestAgainstAll">
+    <constructor arguments="DiscriminativeLossFunctionPtr baseLoss" returnType="RankingLossFunction"/>
+  </class>
+  
+</library>

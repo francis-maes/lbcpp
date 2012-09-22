@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="NetworkWorkUnit" directory="Network/WorkUnit">
+
+  <!-- WorkUnit -->
+  <class name="ServerWorkUnit" base="WorkUnit">
+    <variable type="PositiveInteger" name="port" shortName="p" description="port"/>
+  </class>
+
+  <class name="GridWorkUnit" base="WorkUnit">
+    <variable type="String" name="clientType" shortName="c" description="Type of grid : local, sge"/>
+    <variable type="String" name="gridName" shortName="n"/>
+    <variable type="String" name="managerHostName" shortName="h"/>
+    <variable type="PositiveInteger" name="managerPort" shortName="p"/>
+  </class>
+</library>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="DecisionTree" directory="Learning/DecisionTree">
+
+  <!-- RTreeFunction -->
+  <class name="RTreeFunction" base="Function" abstract="yes">
+    <variable type="PositiveInteger" name="numTrees"/>
+    <variable type="PositiveInteger" name="numAttributeSamplesPerSplit"/>
+    <variable type="PositiveInteger" name="minimumSizeForSplitting"/>
+    <variable type="GenericVector[Double]" name="variableImportances"/>
+  </class>
+
+  <class name="ClassificationRTreeFunction" base="RTreeFunction"/>
+  <class name="RegressionRTreeFunction" base="RTreeFunction"/>
+  <class name="BinaryRTreeFunction" base="RTreeFunction"/>
+
+  <class name="RTreeBatchLearner" base="BatchLearner">
+    <constructor arguments="bool verbose"/>
+    <variable type="Boolean" name="verbose"/>
+  </class>
+  
+  <class name="ExtraTreeLearningMachine" base="ProxyFunction">
+    <constructor arguments="size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting, bool verbose, bool useLowMemory" returnType="Function"/>
+    <variable type="PositiveInteger" name="numTrees"/>
+    <variable type="PositiveInteger" name="numAttributeSamplesPerSplit"/>
+    <variable type="PositiveInteger" name="minimumSizeForSplitting"/>
+    <variable type="Boolean" name="verbose"/>
+    <variable type="Boolean" name="useLowMemory"/>
+  </class>
+
+  <class name="LowMemoryRTreeFunction" base="Function" abstract="yes">
+    <variable type="PositiveInteger" name="numTrees"/>
+    <variable type="PositiveInteger" name="numAttributeSamplesPerSplit"/>
+    <variable type="PositiveInteger" name="minimumSizeForSplitting"/>
+  </class>
+
+  <class name="LowMemoryRTreeBatchLearner" base="BatchLearner">
+    <constructor/>
+  </class>
+
+  <class name="RegressionLowMemoryRTreeFunction" base="LowMemoryRTreeFunction"/>
+  <class name="BinaryLowMemoryRTreeFunction" base="LowMemoryRTreeFunction"/>
+  <class name="ClassificationLowMemoryRTreeFunction" base="LowMemoryRTreeFunction"/>
+
+</library>

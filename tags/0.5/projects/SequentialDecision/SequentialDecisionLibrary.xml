@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="SequentialDecision" dynamic="yes">
+
+  <import name="SequentialDecisionCore"/>
+  <import name="SequentialDecisionProblem"/>
+  <import name="SequentialDecisionWorkUnit"/>
+  <import name="LuapeSandBox"/>
+  <import name="SmallMDP"/>
+  <import name="SequentialDecisionGo"/>
+  <import name="SequentialDecisionGP"/>
+  <import name="SequentialDecisionBandits"/>
+  <import name="MOO"/>
+  
+</library>

@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="SequentialDecisionWorkUnit" directory="WorkUnit">
+
+  <!-- LinearLearnableHeuristic -->
+  <class name="SearchTreeNodeIndexFeatureGenerator" base="FeatureGenerator"/>
+
+  <class name="HeuristicSearchTreeNodeFeaturesFunction" base="CompositeFunction"/>
+  <class name="GenericClosedSearchTreeNodeFeaturesFunction" base="CompositeFunction"/>
+  <class name="LinearLearnableSearchHeuristic" base="LearnableSearchHeuristic"/>
+
+  <class name="SequentialDecisionSandBox" base="WorkUnit">
+    <variable type="DecisionProblem" name="problem" shortName="p"/>
+    <variable type="RankingLossFunction" name="rankingLoss" shortName="l" description="E.g. mostViolatedPair(hinge), allPairs(logBinomial)"/>
+    <variable type="PositiveInteger" name="numInitialStates" shortName="n"/>
+    <variable type="PositiveInteger" name="maxSearchNodes" shortName="m"/>
+    <variable type="PositiveInteger" name="beamSize" shortName="b"/>
+    <variable type="PositiveInteger" name="maxLearningIterations" shortName="i"/>
+    <variable type="PositiveInteger" name="numPasses" shortName="N"/>
+  </class>
+  
+  <!-- HIV -->
+  <class name="WeightedRewardsFeatureGenerator" base="FeatureGenerator" shortName="weightedRewardsSearchNodeFeatures"/>
+  <class name="SimpleSearchNodeFeatureGenerator" base="CompositeFunction" shortName="simpleSearchNodeFeatures">
+    <variable type="Boolean" name="applyLog"/>
+    <variable type="Boolean" name="includeUnit"/>
+  </class>
+
+  <class name="HIVStateFeatures" base="CompositeFunction"/>
+  <class name="LPPStateFeatures" base="CompositeFunction"/>
+  
+  <class name="HIVSearchFeatures" base="CompositeFunction">
+    <variable type="Double" name="discount"/>
+    <variable type="Double" name="maxReward"/>
+    <variable type="Double" name="maxDepth"/>
+    <variable type="Function" name="stateFeatures"/>
+  </class>
+
+  <class name="HIVSearchHeuristic" base="LearnableSearchHeuristic">
+    <variable type="Function" name="featuresFunction"/>
+    <variable type="Enumeration" name="featuresEnumeration" generated="yes"/>
+    <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
+  </class>
+
+  <class name="HIVSandBox" base="WorkUnit">
+    <variable type="DecisionProblem" name="problem" shortName="dp"/>
+    <variable type="Function" name="featuresFunction" shortName="phi"/>
+    <variable type="PositiveInteger" name="minDepth" shortName="dmin"/>
+    <variable type="PositiveInteger" name="maxDepth" shortName="dmax"/>
+    <variable type="Boolean" name="depthIsBudget"/>
+    <variable type="Boolean" name="verboseTrajectories"/>
+    <variable type="Boolean" name="computeGeneralization"/>
+    
+    <variable type="PositiveInteger" name="iterations" shortName="i"/>
+    <variable type="PositiveInteger" name="populationSize" shortName="p"/>
+    <variable type="PositiveInteger" name="numBests" shortName="n"/>
+    <variable type="Boolean" name="reinjectBest"/>
+
+    <variable type="Boolean" name="baseHeuristics"/>
+    <variable type="Boolean" name="optimisticHeuristics"/>
+    <variable type="Boolean" name="learnedHeuristic"/>
+    <variable type="File" name="loadedHeuristics"/>
+  </class>
+
+  <class name="LookAHeadPolicy" base="Policy">
+    <variable type="Function" name="searchHeuristic"/>
+    <variable type="PositiveInteger" name="budget"/>
+  </class>
+
+  <enumeration name="HIVAction">
+    <value name="nodrugs"/>
+    <value name="drug1"/>
+    <value name="drug2"/>
+    <value name="bothdrugs"/>
+  </enumeration>
+
+  <class name="ComputeDecisionProblemSuccessorState" base="LuapeFunction"/>
+  <class name="ComputeDecisionProblemSuccessorStateFunctor" base="ComputeDecisionProblemSuccessorState">
+    <variable type="PositiveInteger" name="action"/>
+  </class>
+
+  <!-- Interpretable Policies -->
+  <class name="InterpretHIVPolicy" base="WorkUnit">
+    <variable type="PositiveInteger" name="numInitialStates"/>
+    <variable type="PositiveInteger" name="maxHorizon"/>
+    <variable type="PositiveInteger" name="rolloutLength"/>
+    <variable type="Probability" name="randomActionProbability"/>
+    <variable type="Double" name="discount"/>
+    <variable type="File" name="dataFile"/>
+  </class>
+
+  <class name="GreedyPolicy" base="Policy"> <!-- TODO: MOVE into core-->
+    <constructor/>
+  </class>
+
+  <class name="EvaluateInterpretablePolicies" base="WorkUnit">
+    <variable type="PositiveInteger" name="numTrajectories"/>
+  </class>
+
+
+  <!-- GP SandBox -->
+  <class name="GPSandBox" base="WorkUnit">
+    <variable type="Double" name="lambda"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="PositiveInteger" name="populationSize"/>
+    <variable type="PositiveInteger" name="numBests"/>
+  </class>
+
+  <!-- Bandit Based Optimization -->
+  <class name="BBOSupervisionInfo" base="Object">
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="neighborValues"/>
+    <variable type="Double" name="correctOutput"/>
+  </class>
+  
+  <class name="BBODatabase" base="Object" abstract="yes"/>
+  <class name="ScalarBBODatabase" base="BBODatabase"/>
+  <class name="ScalarBBORelationFeatureGenerator" base="FeatureGenerator"/>
+
+  <class name="NearestNeighborPredictor" base="Function" abstract="yes">
+    <variable type="BBODatabase" name="database"/>
+    <variable type="PositiveInteger" name="numNeighbors"/>
+  </class>
+
+  <class name="GaussianNearestNeighborPredictor" base="NearestNeighborPredictor">
+    <variable type="Double" name="width"/>
+  </class>
+
+  <class name="LearnableNearestNeighborPredictor" base="NearestNeighborPredictor">
+    <variable type="Function" name="relationFeatureGenerator"/>
+    <variable type="NumericalLearnableFunction" name="activationsPredictor"/>
+  </class>
+
+  <class name="BBOptimizationSandBox" base="WorkUnit"/>
+
+  <!-- Auto SGD -->
+  <class name="AutoSGDSandBox" base="WorkUnit">
+    <variable type="File" name="learningData"/>
+    <variable type="PositiveInteger" name="maxCount"/>
+    <variable type="PositiveInteger" name="numFolds"/>
+  </class>
+
+  <!-- Random Forest HOO -->
+  <class name="RFHOOOptimizerState" base="OptimizerState"/>
+
+  <class name="RFHOOOptimizer" base="Optimizer">
+    <variable type="PositiveInteger" name="numTrees"/>
+    <variable type="PositiveInteger" name="K"/>
+    <variable type="PositiveInteger" name="nMin"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="Double" name="nu"/>
+    <variable type="Double" name="rho"/>
+    <variable type="Double" name="C"/>
+  </class>
+
+  <class name="Simple1DTestFunction" base="Function"/>
+  
+  <class name="RFHOOO1DSandBox" base="WorkUnit">
+    <variable type="PositiveInteger" name="maxHorizon"/>
+    <variable type="PositiveInteger" name="K"/>
+    <variable type="PositiveInteger" name="nMin"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
+    <variable type="Double" name="nu"/>
+    <variable type="Double" name="rho"/>
+    <variable type="Double" name="C"/>
+  </class>
+  
+  <class name="RFHOOOSandBox" base="WorkUnit">
+    <variable type="PositiveInteger" name="dimension"/>
+    <variable type="PositiveInteger" name="maxHorizon"/>
+    <variable type="PositiveInteger" name="K"/>
+    <variable type="PositiveInteger" name="nMin"/>
+    <variable type="PositiveInteger" name="maxDepth"/>
+    <variable type="Double" name="nu"/>
+    <variable type="Double" name="rho"/>
+    <variable type="Double" name="C"/>
+  </class>
+
+  <!-- Luape EDA -->
+  <class name="EvaluateLuapePolicyFunction" base="Function" abstract="yes">
+    <variable type="PositiveInteger" name="horizon"/>
+  </class>
+  <class name="EvaluateHIVLuapePolicyFunction" base="EvaluateLuapePolicyFunction"/>
+  
+  <class name="LuapeEDASandBox" base="WorkUnit">
+    <variable type="PositiveInteger" name="complexity"/>
+    <variable type="PositiveInteger" name="populationSize"/>
+    <variable type="PositiveInteger" name="numBests"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+  
+  <!-- Explore Exploit challenge -->
+  <class name="ExploChallengeReverseSampler" base="IndependentDoubleVectorSampler"/>
+
+  <class name="ExploChallengeReverseObjective" base="Function">
+    <variable type="PositiveInteger" name="surrogateHorizon"/>
+  </class>
+
+  <class name="ExploChallengeSandBox" base="WorkUnit">
+    <variable type="PositiveInteger" name="surrogateHorizon"/>
+  </class>
+
+</library>

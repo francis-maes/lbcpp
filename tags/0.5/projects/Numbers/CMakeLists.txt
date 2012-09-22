@@ -1,0 +1,24 @@
+INCLUDE_DIRECTORIES(
+  ${LBCpp_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+GENERATE_INTROSPECTION_CODE(NumbersLibrary.xml NumbersLibrary.cpp)
+
+SET(LBCPP_NUMBERS_SOURCES
+  precompiled.h
+  precompiled.cpp
+  NumbersSandBox.h  
+  NumberPerceptions.h
+  PropertyFinder.h
+  NumbersLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/NumbersLibrary.cpp
+)
+
+GENERATE_LBCPP_PRECOMPILED(precompiled LBCPP_NUMBERS_SOURCES)
+
+ADD_LIBRARY(numbers${NAME_FILE_SUFFIX} SHARED ${LBCPP_NUMBERS_SOURCES})
+TARGET_LINK_LIBRARIES(numbers${NAME_FILE_SUFFIX} lbcpp-core${NAME_FILE_SUFFIX})
+
+

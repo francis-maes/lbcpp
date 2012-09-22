@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ProteinRosettaData" directory="Rosetta/Data">
+
+  <!-- import -->
+  <import name="ProteinRosettaDataMover"/>
+  <import name="ProteinRosettaDataMoverSampler"/>
+  <import name="ProteinRosettaDataFeatures"/>
+  
+  <!-- class -->
+  <class name="Rosetta" base="Object" />
+  
+  <class name="Pose" base="Object">
+    <variable type="Boolean" name="isEnergyFunctionInitialized"/>
+  </class>  
+  
+</library>

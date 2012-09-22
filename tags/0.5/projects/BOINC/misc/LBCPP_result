@@ -1,0 +1,44 @@
+<!-- BOINC result (output) template file -->
+<!-- Author : Arnaud Schoofs -->
+<file_info>
+    <name><OUTFILE_0/></name>
+    <generated_locally/>
+    <upload_when_present/>
+    <max_nbytes>5000000</max_nbytes>
+    <url><UPLOAD_URL/></url>
+</file_info>
+<file_info>
+    <name><OUTFILE_1/></name>
+    <generated_locally/>
+    <upload_when_present/>
+    <max_nbytes>5000000</max_nbytes>
+    <url><UPLOAD_URL/></url>
+</file_info>
+<file_info>
+    <name><OUTFILE_2/></name>
+    <generated_locally/>
+    <upload_when_present/>
+    <max_nbytes>5000000</max_nbytes>
+    <url><UPLOAD_URL/></url>
+</file_info>
+<result>
+    <file_ref>
+        <file_name><OUTFILE_0/></file_name>
+        <open_name>stdout.txt</open_name>
+        <copy_file/>
+        <no_validate>1</no_validate>
+        <optional>1</optional>
+    </file_ref>
+    <file_ref>
+        <file_name><OUTFILE_1/></file_name>
+        <open_name>output.trace</open_name>
+        <copy_file/>
+    </file_ref>
+    <file_ref>
+        <file_name><OUTFILE_2/></file_name>
+        <open_name>stderr.txt</open_name>
+        <copy_file/>
+        <no_validate>1</no_validate>
+        <optional>1</optional>
+    </file_ref>
+</result>
