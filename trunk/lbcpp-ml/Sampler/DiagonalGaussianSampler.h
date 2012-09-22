@@ -9,7 +9,8 @@
 #ifndef LBCPP_MOO_SAMPLER_DIAGONAL_GAUSSIAN_H_
 # define LBCPP_MOO_SAMPLER_DIAGONAL_GAUSSIAN_H_
 
-# include "MOOCore.h"
+# include <lbcpp-ml/Sampler.h>
+# include <lbcpp/Data/RandomVariable.h>
 
 namespace lbcpp
 {

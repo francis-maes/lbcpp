@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Optimizer" directory="Optimizer">
+
+  <class name="MOOOptimizer" abstract="yes"/>
+  <class name="IterativeOptimizer" base="MOOOptimizer" abstract="yes">
+    <variable type="PositiveInteger" name="numIterations"/>
+  </class>
+
+  <!-- Optimizers -->
+  <class name="RandomOptimizer" base="IterativeOptimizer">
+    <constructor arguments="MOOSamplerPtr sample, size_t numIterations"/>
+    <variable type="MOOSampler" name="sampler"/>
+  </class>
+
+  <class name="NRPAOptimizer" base="MOOOptimizer">
+    <variable type="MOOSampler" name="sampler"/>
+    <variable type="PositiveInteger" name="level"/>
+    <variable type="PositiveInteger" name="numIterationsPerLevel"/>
+  </class>
+
+  <!-- Population Based Optimizers -->
+  <class name="PopulationBasedMOOOptimizer" base="IterativeOptimizer" abstract="yes">
+    <variable type="PositiveInteger" name="populationSize"/>
+  </class>
+
+  <class name="CrossEntropyOptimizer" base="PopulationBasedMOOOptimizer">
+    <variable type="MOOSampler" name="sampler"/>
+    <variable type="PositiveInteger" name="numTrainingSamples"/>
+    <variable type="Boolean" name="elitist"/>
+    <variable type="MOOSolutionComparator" name="comparator"/>
+  </class>
+
+  <!--
+  <class name="NestedCrossEntropyOptimizer" base="CrossEntropyOptimizer">
+    <variable type="PositiveInteger" name="level"/>
+  </class>
+  -->
+
+  <class name="NSGA2MOOptimizer" base="PopulationBasedMOOOptimizer">
+    <variable type="Double" name="mutationDistributionIndex"/>
+    <variable type="Double" name="crossOverDistributionIndex"/>
+    <variable type="Double" name="crossOverProbability"/>
+  </class>
+
+  <class name="CMAESMOOptimizer" base="PopulationBasedMOOOptimizer">
+    <variable type="PositiveInteger" name="numOffsprings"/>
+  </class>
+
+  <!-- Meta Optimizers -->
+  <class name="MABMetaOptimizer" base="IterativeOptimizer">
+    <variable type="IterativeOptimizer" name="baseOptimizer"/>
+    <variable type="PositiveInteger" name="numInstances"/>
+    <variable type="Double" name="explorationCoefficient"/>
+  </class>
+  
+</library>

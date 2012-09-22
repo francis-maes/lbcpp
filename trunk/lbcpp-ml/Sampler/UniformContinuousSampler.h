@@ -9,7 +9,7 @@
 #ifndef LBCPP_MOO_SAMPLER_UNIFORM_CONTINUOUS_H_
 # define LBCPP_MOO_SAMPLER_UNIFORM_CONTINUOUS_H_
 
-# include "MOOCore.h"
+# include <lbcpp-ml/Sampler.h>
 
 namespace lbcpp
 {

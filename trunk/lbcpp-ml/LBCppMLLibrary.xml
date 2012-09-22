@@ -1,5 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <library name="LBCppML">
+
+  <import name="Comparator"/>
+  <import name="Sampler"/>
+  <import name="Optimizer"/>
+
+  <!-- CORE -->
+  <class name="MOODomain" abstract="yes"/>
+  <class name="ContinuousDomain" base="MOODomain">
+    <variable type="ObjectVector[Pair[Double,Double]]" name="limits"/>
+  </class>
+  <class name="MOOFitnessLimits" base="ContinuousDomain"/>
+
+  <class name="MOOFitness">
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="values"/>
+    <variable type="MOOFitnessLimits" name="limits"/>
+  </class>
+
+  <class name="MOOSolution">
+    <variable type="Object" name="object"/>
+    <variable type="MOOFitness" name="fitness"/>
+  </class>
+
+  <class name="MOOSolutionSet">
+    <variable type="MOOFitnessLimits" name="limits"/>
+    <variable type="ObjectVector[MOOSolution]" name="solutions"/>
+  </class>
+  <class name="MOOParetoFront" base="MOOSolutionSet"/>
+
+  <uicomponent name="MOOSolutionSetComponent" type="MOOSolutionSet"/>
+
+  <!-- Problems -->
+  <class name="MOOProblem" abstract="yes"/>
   
+  <class name="DecoratorMOOProblem" base="MOOProblem" abstract="yes">
+    <variable type="MOOProblem" name="problem"/>
+  </class>
+  <class name="MaxIterationsDecoratorProblem" base="DecoratorMOOProblem">
+    <variable type="PositiveInteger" name="maxNumEvaluations"/>
+  </class>
+  <class name="EvaluatorDecoratorProblem" base="MaxIterationsDecoratorProblem" abstract="yes">
+    <variable type="PositiveInteger" name="evaluationPeriod"/>
+  </class>
+  <class name="SingleObjectiveEvaluatorDecoratorProblem" base="EvaluatorDecoratorProblem"/>
+  <class name="HyperVolumeEvaluatorDecoratorProblem" base="EvaluatorDecoratorProblem"/>
+
+  <!--
+  <class name="MOOProblemFromSharkObjectiveFunction" base="MOOProblem" abstract="yes"/>
+
+  <class name="SingleObjectiveSharkMOProblem" base="MOOProblemFromSharkObjectiveFunction" abstract="yes"/>
+  <class name="AckleyProblem" base="SingleObjectiveSharkMOProblem"/>
+  <class name="GriewangkProblem" base="SingleObjectiveSharkMOProblem"/>
+  <class name="RastriginProblem" base="SingleObjectiveSharkMOProblem"/>
+  <class name="RosenbrockProblem" base="SingleObjectiveSharkMOProblem"/>
+  <class name="RosenbrockRotatedProblem" base="SingleObjectiveSharkMOProblem"/>
+
+  <class name="ZDTMOProblem" base="MOOProblemFromSharkObjectiveFunction" abstract="yes"/>
+  <class name="ZDT1MOProblem" base="ZDTMOProblem"/>
+  <class name="ZDT2MOProblem" base="ZDTMOProblem"/>
+  <class name="ZDT3MOProblem" base="ZDTMOProblem"/>
+  <class name="ZDT4MOProblem" base="ZDTMOProblem"/>
+  <class name="ZDT6MOProblem" base="ZDTMOProblem"/> -->
+
 </library>
