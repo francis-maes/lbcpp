@@ -19,11 +19,6 @@ IF(LBCPP_NETWORKING)
   GENERATE_INTROSPECTION_CODE(Network/NetworkLibrary.xml NetworkLibrary.cpp)
 ENDIF(LBCPP_NETWORKING)
 
-GENERATE_INTROSPECTION_CODE(Sampler/SamplerLibrary.xml SamplerLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Sampler/Continuous/ContinuousSamplerLibrary.xml ContinuousSamplerLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Sampler/Discrete/DiscreteSamplerLibrary.xml DiscreteSamplerLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Sampler/Composite/CompositeSamplerLibrary.xml CompositeSamplerLibrary.cpp)
-
 GENERATE_INTROSPECTION_CODE(Execution/ExecutionLibrary.xml ExecutionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Execution/Callback/ExecutionCallbackLibrary.xml ExecutionCallbackLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Execution/Context/ExecutionContextLibrary.xml ExecutionContextLibrary.cpp)
@@ -56,7 +51,6 @@ GENERATE_INTROSPECTION_CODE(Learning/LocalitySensitiveHashing/LocalitySensitiveH
 GENERATE_INTROSPECTION_CODE(DecisionProblem/DecisionProblemLibrary.xml DecisionProblemLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Optimizer/Optimizer/OptimizerOptimizerLibrary.xml OptimizerOptimizerLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Luape/LuapeLibrary.xml LuapeLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/NodeBuilder/LuapeNodeBuilderLibrary.xml LuapeNodeBuilderLibrary.cpp)
@@ -290,45 +284,6 @@ IF(LBCPP_NETWORKING)
   )
 
 ENDIF(LBCPP_NETWORKING)
-
-#### Sampler ####
-
-SET(LBCPP_SAMPLER_SOURCES
-  ../include/lbcpp/Sampler/Sampler.h
-  Sampler/Sampler.cpp
-  Sampler/SamplerLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/SamplerLibrary.cpp
-)
-
-SET(LBCPP_SAMPLER_DISCRETE_SOURCES
-  Sampler/Discrete/BernoulliSampler.h
-  Sampler/Discrete/EnumerationSampler.h
-  Sampler/Discrete/DiscretizeSampler.h
-  Sampler/Discrete/MaximumEntropySampler.h
-  Sampler/Discrete/DiscreteSamplerLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/DiscreteSamplerLibrary.cpp
-)
-
-SET(LBCPP_SAMPLER_CONTINUOUS_SOURCES
-  Sampler/Continuous/ClamperSampler.h
-  Sampler/Continuous/GaussianSampler.h
-  Sampler/Continuous/MultiVariateGaussianSampler.h
-  Sampler/Continuous/UniformScalarSampler.h
-  Sampler/Continuous/ConditionalGaussianSampler.h
-  Sampler/Continuous/ContinuousSamplerLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ContinuousSamplerLibrary.cpp
-)
-
-SET(LBCPP_SAMPLER_COMPOSITE_SOURCES
-  Sampler/Composite/ObjectCompositeSampler.h
-  Sampler/Composite/MixtureSampler.h
-  Sampler/Composite/RejectionSampler.h
-  Sampler/Composite/IndependentDoubleVectorSampler.h
-  Sampler/Composite/IndependentDoubleMatrixSampler.h
-  Sampler/Composite/ZeroOrScalarContinuousSampler.h
-  Sampler/Composite/CompositeSamplerLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/CompositeSamplerLibrary.cpp
-)
 
 #### Function ####
 
@@ -615,26 +570,10 @@ SET(LBCPP_DECISION_PROBLEM_SOURCES
 #### Optimizer ####
 
 SET(LBCPP_OPTIMIZER_SOURCES
-  ../include/lbcpp/Optimizer/Optimizer.h
-  ../include/lbcpp/Optimizer/OptimizerState.h
-  Optimizer/Optimizer.cpp
   ../include/lbcpp/Optimizer/BanditPool.h
   Optimizer/BanditPool.cpp
   Optimizer/OptimizerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OptimizerLibrary.cpp
-)
-
-SET(LBCPP_OPTIMIZER_OPTIMIZER_SOURCES
-  Optimizer/Optimizer/PopulationBasedOptimizer.h
-  Optimizer/Optimizer/EDAOptimizer.h
-  Optimizer/Optimizer/AsyncEDAOptimizer.h
-  Optimizer/Optimizer/BanditEDAOptimizer.h
-  Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h
-  Optimizer/Optimizer/BestFirstSearchOptimizer.h
-  Optimizer/Optimizer/CMAESOptimizer.h
-  Optimizer/Optimizer/HOOOptimizer.h
-  Optimizer/Optimizer/OptimizerOptimizerLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/OptimizerOptimizerLibrary.cpp
 )
 
 #### Luape ####
@@ -834,12 +773,6 @@ SET(LBCPP_SOURCES
   ${LBCPP_NETWORK_SOURCES}
     ${LBCPP_NETWORK_GRID_SOURCES}
   
-  # Sampler
-  ${LBCPP_SAMPLER_SOURCES}
-    ${LBCPP_SAMPLER_CONTINUOUS_SOURCES}
-    ${LBCPP_SAMPLER_DISCRETE_SOURCES}
-    ${LBCPP_SAMPLER_COMPOSITE_SOURCES}
-
   # Execution
   ${LBCPP_EXECUTION_SOURCES}
     ${LBCPP_EXECUTION_CALLBACK_SOURCES}
@@ -889,7 +822,6 @@ SET(LBCPP_SOURCES
  
   # Optimizer
   ${LBCPP_OPTIMIZER_SOURCES}
-    ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES}
  
   # Luape
   ${LBCPP_LUAPE_SOURCES}
@@ -931,12 +863,6 @@ SOURCE_SUB_GROUP(Data Matrix FILES ${LBCPP_DATA_MATRIX_SOURCES})
 ## Network
 SOURCE_GROUP(Network FILES ${LBCPP_NETWORK_SOURCES})
 SOURCE_SUB_GROUP(Network Grid FILES ${LBCPP_NETWORK_GRID_SOURCES})
-
-## Sampler
-SOURCE_GROUP(Sampler FILES ${LBCPP_SAMPLER_SOURCES})
-SOURCE_SUB_GROUP(Sampler Continuous FILES ${LBCPP_SAMPLER_CONTINUOUS_SOURCES})
-SOURCE_SUB_GROUP(Sampler Discrete FILES ${LBCPP_SAMPLER_DISCRETE_SOURCES})
-SOURCE_SUB_GROUP(Sampler Composite FILES ${LBCPP_SAMPLER_COMPOSITE_SOURCES})
     
 ## Execution
 SOURCE_GROUP(Execution FILES ${LBCPP_EXECUTION_SOURCES})
@@ -983,7 +909,6 @@ SOURCE_GROUP(DecisionProblem FILES ${LBCPP_DECISION_PROBLEM_SOURCES})
 
 ## Optimizer
 SOURCE_GROUP(Optimizer FILES ${LBCPP_OPTIMIZER_SOURCES})
-SOURCE_SUB_GROUP(Optimizer Optimizer FILES ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES})
 
 ## Luape
 SOURCE_GROUP(Luape FILES ${LBCPP_LUAPE_SOURCES})

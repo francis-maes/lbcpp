@@ -60,9 +60,6 @@
 # include "Network/NetworkMessage.h"
 #endif
 
-# include "Sampler/Sampler.h"
-
-
 # include "Execution/ExecutionStack.h"
 # include "Execution/ExecutionContext.h"
 # include "Execution/ExecutionTrace.h"
@@ -84,7 +81,6 @@
 # include "Learning/Numerical.h"
 
 # include "DecisionProblem/DecisionProblem.h"
-# include "Optimizer/Optimizer.h"
 # include "Optimizer/BanditPool.h"
 
 # include "Luape/LuapeFunction.h"
