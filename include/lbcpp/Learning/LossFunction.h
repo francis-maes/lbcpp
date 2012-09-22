@@ -9,11 +9,20 @@
 #ifndef LBCPP_LEARNING_LOSS_FUNCTION_H_
 # define LBCPP_LEARNING_LOSS_FUNCTION_H_
 
-# include "../Function/ScalarFunction.h"
-# include "../Function/ScalarVectorFunction.h"
+# include "../Data/DoubleVector.h"
 
 namespace lbcpp
 {
+
+class ScalarFunction : public Object
+{
+public:
+  virtual bool isDerivable() const = 0;
+
+  // if (output) *output = result
+  // if (derivative) *derivative = resultDerivative
+  virtual void computeScalarFunction(double input, const Variable* otherInputs, double* output, double* derivative) const = 0;
+};
 
 /*
 ** RegressionLossFunction
@@ -22,10 +31,10 @@ class RegressionLossFunction : public ScalarFunction
 {
 public:
   virtual void computeRegressionLoss(double input, double target, double* output, double* derivative) const = 0;
-
+  /*
   virtual size_t getNumRequiredInputs() const;
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
-  virtual String getOutputPostFix() const;
+  virtual String getOutputPostFix() const;*/
   virtual void computeScalarFunction(double input, const Variable* otherInputs, double* output, double* derivative) const;
 
   lbcpp_UseDebuggingNewOperator
@@ -43,9 +52,9 @@ class DiscriminativeLossFunction : public ScalarFunction
 public:
   virtual void computeDiscriminativeLoss(double score, double* output, double* derivative) const = 0;
 
-  virtual size_t getNumRequiredInputs() const;
+  /*virtual size_t getNumRequiredInputs() const;
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
-  virtual String getOutputPostFix() const;
+  virtual String getOutputPostFix() const;*/
   virtual void computeScalarFunction(double input, const Variable* otherInputs, double* output, double* derivative) const;
 
   lbcpp_UseDebuggingNewOperator
@@ -60,14 +69,24 @@ extern DiscriminativeLossFunctionPtr logBinomialDiscriminativeLossFunction();
 /*
 ** MultiClassLossFunction
 */
+class ScalarVectorFunction : public Object
+{
+public:
+  virtual bool isDerivable() const = 0;
+
+  // if (output) *output += result
+  // if (gradientTarget) *gradientTarget += resultGradinet * gradientWeight
+  virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const = 0;
+};
+
 class MultiClassLossFunction : public ScalarVectorFunction
 {
 public:
   virtual void computeMultiClassLoss(const DenseDoubleVectorPtr& scores, size_t correctClass, size_t numClasses, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const = 0;
 
-  virtual size_t getNumRequiredInputs() const;
+  /*virtual size_t getNumRequiredInputs() const;
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);*/
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const;
 
   lbcpp_UseDebuggingNewOperator
@@ -93,9 +112,9 @@ public:
   virtual void computeRankingLoss(const DenseDoubleVectorPtr& scores, const DenseDoubleVectorPtr& costs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const;
   virtual void computeRankingLoss(const std::vector<double>& scores, const std::vector<double>& costs, double* output, std::vector<double>* gradient) const;
 
-  virtual size_t getNumRequiredInputs() const;
+  /*virtual size_t getNumRequiredInputs() const;
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);*/
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const;
 
   // returns true if all costs are equal to 0 or equal to a shared positive constant

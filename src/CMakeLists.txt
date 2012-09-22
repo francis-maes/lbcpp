@@ -20,8 +20,6 @@ GENERATE_INTROSPECTION_CODE(Execution/Callback/ExecutionCallbackLibrary.xml Exec
 GENERATE_INTROSPECTION_CODE(Execution/Context/ExecutionContextLibrary.xml ExecutionContextLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Function/FunctionLibrary.xml FunctionLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Function/ScalarFunction/ScalarFunctionLibrary.xml ScalarFunctionLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Function/ScalarVectorFunction/ScalarVectorFunctionLibrary.xml ScalarVectorFunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/IterationFunction/IterationFunctionLibrary.xml IterationFunctionLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Learning/LearningLibrary.xml LearningLibrary.cpp)
@@ -258,32 +256,11 @@ SET(LBCPP_EXECUTION_CONTEXT_SOURCES
 
 SET(LBCPP_FUNCTION_SOURCES
   ../include/lbcpp/Function/predeclarations.h
-  ../include/lbcpp/Function/ScalarFunction.h
-  ../include/lbcpp/Function/ScalarVectorFunction.h
-  Function/ScalarFunction.cpp
   ../include/lbcpp/Function/IterationFunction.h
   Function/FunctionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/FunctionLibrary.cpp
 )
  
-SET(LBCPP_FUNCTION_SCALAR_SOURCES
-  Function/ScalarFunction/ComposeScalarFunction.h
-  Function/ScalarFunction/MultiplyByScalarFunction.h
-  Function/ScalarFunction/AbsFunction.h
-  Function/ScalarFunction/SquareFunction.h
-  Function/ScalarFunction/AddConstantScalarFunction.h
-  Function/ScalarFunction/AngleDifferenceFunction.h
-  Function/ScalarFunction/ScalarFunctionLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ScalarFunctionLibrary.cpp
-)
-
-SET(LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES
-  Function/ScalarVectorFunction/BinarySumScalarVectorFunction.h
-  Function/ScalarVectorFunction/MultiplyByScalarVectorFunction.h
-  Function/ScalarVectorFunction/ScalarVectorFunctionLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ScalarVectorFunctionLibrary.cpp
-)
-
 SET(LBCPP_FUNCTION_ITERATION_SOURCES
   Function/IterationFunction/ConstantIterationFunction.h
   Function/IterationFunction/InvLinearIterationFunction.h
@@ -545,8 +522,6 @@ SET(LBCPP_SOURCES
   
   # Function
   ${LBCPP_FUNCTION_SOURCES}
-    ${LBCPP_FUNCTION_SCALAR_SOURCES}
-    ${LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES}
     ${LBCPP_FUNCTION_ITERATION_SOURCES}
     ${LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES}
 
@@ -608,8 +583,6 @@ SOURCE_SUB_GROUP(Execution Context FILES ${LBCPP_EXECUTION_CONTEXT_SOURCES})
 
 ## Function
 SOURCE_GROUP(Function FILES ${LBCPP_FUNCTION_SOURCES})
-SOURCE_SUB_GROUP(Function ScalarFunction FILES ${LBCPP_FUNCTION_SCALAR_SOURCES})
-SOURCE_SUB_GROUP(Function ScalarVectorFunction FILES ${LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES})
 SOURCE_SUB_GROUP(Function IterationFunction FILES ${LBCPP_FUNCTION_ITERATION_SOURCES})
 
 ## Learning

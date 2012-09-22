@@ -61,8 +61,6 @@
 # include "Execution/WorkUnit.h"
 # include "Execution/TestUnit.h"
 
-# include "Function/ScalarFunction.h"
-# include "Function/ScalarVectorFunction.h"
 # include "Function/IterationFunction.h"
 
 # include "DecisionProblem/DecisionProblem.h"

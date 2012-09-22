@@ -13,6 +13,7 @@
 # include "LuapeNodeBuilder.h"
 # include "LearningObjective.h"
 # include "../Learning/LossFunction.h"
+# include "../Function/IterationFunction.h"
 
 namespace lbcpp
 {
