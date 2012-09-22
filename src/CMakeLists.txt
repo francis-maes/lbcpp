@@ -377,38 +377,9 @@ SET(LBCPP_FEATURE_GENERATOR_COMPOSITE_SOURCES
 #### Learning ####
 
 SET(LBCPP_LEARNING_SOURCES
-  ../include/lbcpp/Learning/LearnableFunction.h
-  ../include/lbcpp/Learning/OnlineLearner.h
-  ../include/lbcpp/Learning/BatchLearner.h
   ../include/lbcpp/Learning/LossFunction.h
-  ../include/lbcpp/Learning/Numerical.h
-  ../include/lbcpp/Learning/DecisionTree.h
-  ../include/lbcpp/Learning/NearestNeighbor.h
   Learning/LearningLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LearningLibrary.cpp
-)
-
-SET(LBCPP_LEARNING_ONLINE_LEARNER_SOURCES
-  Learning/OnlineLearner/StoppingCriterionOnlineLearner.h
-  Learning/OnlineLearner/RestoreBestParametersOnlineLearner.h
-  Learning/OnlineLearner/EvaluatorOnlineLearner.h
-  Learning/OnlineLearner/CompositeOnlineLearner.h
-  Learning/OnlineLearner/HierarchicalOnlineLearner.h
-  Learning/OnlineLearner/OnlineLearnerLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/OnlineLearnerLibrary.cpp
-)
-
-SET(LBCPP_LEARNING_BATCH_LEARNER_SOURCES
-  Learning/BatchLearner/BatchLearner.cpp
-  Learning/BatchLearner/ProxyFunctionBatchLearner.h
-  Learning/BatchLearner/StochasticBatchLearner.h
-  Learning/BatchLearner/CompositeFunctionBatchLearner.h
-  Learning/BatchLearner/UnaryHigherOrderFunctionBatchLearner.h
-  Learning/BatchLearner/FilterUnsupervisedExamplesBatchLearner.h
-  Learning/BatchLearner/BalanceBinaryExamplesBatchLearner.h
-  Learning/BatchLearner/DoubleVectorNormalizeBatchLearner.h
-  Learning/BatchLearner/BatchLearnerLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/BatchLearnerLibrary.cpp
 )
 
 SET(LBCPP_LEARNING_LOSS_FUNCTION_SOURCES
@@ -438,96 +409,6 @@ SET(LBCPP_LEARNING_LOSS_FUNCTION_RANKING_SOURCES
   Learning/LossFunction/AllPairsRankingLossFunction.h
   Learning/LossFunction/MostViolatedPairRankingLossFunction.h
   Learning/LossFunction/BestAgainstAllRankingLossFunction.h
-)
-
-SET(LBCPP_LEARNING_NUMERICAL_SOURCES
-  Learning/Numerical/Numerical.cpp
-  Learning/Numerical/LinearLearningMachine.h
-  Learning/Numerical/NumericalLearningLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningLibrary.cpp
-)
-
-SET(LBCPP_LEARNING_NUMERICAL_LEARNABLE_FUNCTION_SOURCES
-  Learning/Numerical/AddBiasLearnableFunction.h
-  Learning/Numerical/LinearLearnableFunction.h
-  Learning/Numerical/MultiLinearLearnableFunction.h
-  Learning/Numerical/RankingLearnableFunction.h
-  Learning/Numerical/FisherFilterLearnableFunction.h
-)
-
-SET(LBCPP_LEARNING_NUMERICAL_ONLINE_SOURCES
-  Learning/Numerical/GradientDescentOnlineLearner.h
-  Learning/Numerical/StochasticGDOnlineLearner.h
-  Learning/Numerical/PerEpisodeGDOnlineLearner.h
-)
-
-SET(LBCPP_LEARNING_NUMERICAL_BATCH_SOURCES
-  Learning/Numerical/AddBiasBatchLearner.h
-  Learning/Numerical/FisherFilterBatchLearner.h
-)
-
-SET(LBCPP_LEARNING_NUMERICAL_LIBSVM_SOURCES
-  Learning/Numerical/LibSVM/libsvm.h
-  Learning/Numerical/LibSVM/libsvm.cpp
-  Learning/Numerical/LibSVM/LibSVMLearningMachine.h
-  Learning/Numerical/LibSVM/LibSVMClassifier.h
-  Learning/Numerical/LibSVM/LibSVMBinaryClassifier.h
-  Learning/Numerical/LibSVM/LibSVMLearningLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/LibSVMLearningLibrary.cpp
-)
-
-SET(LBCPP_LEARNING_NUMERICAL_LIBLINEAR_SOURCES
-  Learning/Numerical/LibLinear/linear.h
-  Learning/Numerical/LibLinear/linear.cpp
-  Learning/Numerical/LibLinear/tron.h
-  Learning/Numerical/LibLinear/tron.cpp
-  Learning/Numerical/LibLinear/LibLinearLearningMachine.h
-  Learning/Numerical/LibLinear/LibLinearClassifier.h
-  Learning/Numerical/LibLinear/LibLinearBinaryClassifier.h
-  Learning/Numerical/LibLinear/LibLinearLearningLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/LibLinearLearningLibrary.cpp
-)
-
-SET(LBCPP_LEARNING_NUMERICAL_LARANK_SOURCES
-  Learning/Numerical/LaRank/kcache.h
-  Learning/Numerical/LaRank/kcache.cpp
-  Learning/Numerical/LaRank/LaRank.h
-  Learning/Numerical/LaRank/LaRank.cpp
-  Learning/Numerical/LaRank/messages.h
-  Learning/Numerical/LaRank/messages.cpp
-  Learning/Numerical/LaRank/vectors.h
-  Learning/Numerical/LaRank/vectors.cpp
-  Learning/Numerical/LaRank/wrapper.h
-  Learning/Numerical/LaRank/LaRankLearningMachine.h
-  Learning/Numerical/LaRank/LaRankClassifier.h
-  Learning/Numerical/LaRank/LaRankBinaryClassifier.h
-  Learning/Numerical/LaRank/LaRankLearningLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/LaRankLearningLibrary.cpp
-)
-
-SET(LBCPP_LEARNING_DECISION_TREE_SOURCES
-  Learning/DecisionTree/DecisionTree.cpp
-  Learning/DecisionTree/RTreeFunction.h
-  Learning/DecisionTree/RTreeFunction.cpp
-  Learning/DecisionTree/RTreeBatchLearner.h
-  Learning/DecisionTree/LowMemoryRTreeFunction.h
-  Learning/DecisionTree/DecisionTreeLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeLibrary.cpp
-)
-
-SET(LBCPP_LEARNING_NEAREST_NEIGHBOR_SOURCES
-  Learning/NearestNeighbor/NearestNeighborFunction.h
-  Learning/NearestNeighbor/StreamBasedNearestNeighbor.h
-  Learning/NearestNeighbor/NearestNeighborFunction.cpp
-  Learning/NearestNeighbor/NearestNeighborLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/NearestNeighborLibrary.cpp
-)
-
-SET(LBCPP_LEARNING_LOCALITY_SENSITIVE_HASHING_SOURCES
-  Learning/LocalitySensitiveHashing/LocalitySensitiveHashingFunction.h
-  Learning/LocalitySensitiveHashing/LocalitySensitiveHashingFunction.cpp
-  Learning/LocalitySensitiveHashing/LocalitySensitiveHashingLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/LocalitySensitiveHashingLibrary.cpp
 )
 
 #### Decision Problem ####
@@ -569,7 +450,6 @@ SET(LBCPP_LUAPE_SOURCES
   Luape/LearningObjective.cpp
   ../include/lbcpp/Luape/LuapeLearner.h
   Luape/LuapeLearner.cpp
-  ../include/lbcpp/Luape/LuapeBatchLearner.h
   Luape/LuapeLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeLibrary.cpp
 )
@@ -764,27 +644,11 @@ SET(LBCPP_SOURCES
 
   # Learning
   ${LBCPP_LEARNING_SOURCES}
-    ${LBCPP_LEARNING_ONLINE_LEARNER_SOURCES}
-    ${LBCPP_LEARNING_BATCH_LEARNER_SOURCES}
     ${LBCPP_LEARNING_LOSS_FUNCTION_SOURCES}
       ${LBCPP_LEARNING_LOSS_FUNCTION_REGRESSION_SOURCES}
       ${LBCPP_LEARNING_LOSS_FUNCTION_DISCRIMINATIVE_SOURCES}
       ${LBCPP_LEARNING_LOSS_FUNCTION_MULTI_CLASS_SOURCES}
       ${LBCPP_LEARNING_LOSS_FUNCTION_RANKING_SOURCES}
-
-    ${LBCPP_LEARNING_NUMERICAL_SOURCES}
-      ${LBCPP_LEARNING_NUMERICAL_LEARNABLE_FUNCTION_SOURCES}
-      ${LBCPP_LEARNING_NUMERICAL_ONLINE_SOURCES}
-      ${LBCPP_LEARNING_NUMERICAL_BATCH_SOURCES}
-      ${LBCPP_LEARNING_NUMERICAL_LIBSVM_SOURCES}
-      ${LBCPP_LEARNING_NUMERICAL_LIBLINEAR_SOURCES}
-      ${LBCPP_LEARNING_NUMERICAL_LARANK_SOURCES}
-    
-    ${LBCPP_LEARNING_DECISION_TREE_SOURCES}
-    
-    ${LBCPP_LEARNING_NEAREST_NEIGHBOR_SOURCES}
-
-    ${LBCPP_LEARNING_LOCALITY_SENSITIVE_HASHING_SOURCES}
 
   # Decision Problem
   ${LBCPP_DECISION_PROBLEM_SOURCES}
@@ -851,23 +715,11 @@ SOURCE_SUB_GROUP(FeatureGenerator Composite FILES ${LBCPP_FEATURE_GENERATOR_COMP
 
 ## Learning
 SOURCE_GROUP(Learning FILES ${LBCPP_LEARNING_SOURCES})
-SOURCE_SUB_GROUP(Learning OnlineLearner FILES ${LBCPP_LEARNING_ONLINE_LEARNER_SOURCES})
-SOURCE_SUB_GROUP(Learning BatchLearner FILES ${LBCPP_LEARNING_BATCH_LEARNER_SOURCES})
 SOURCE_SUB_GROUP(Learning LossFunction FILES ${LBCPP_LEARNING_LOSS_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP2(Learning LossFunction Regression FILES ${LBCPP_LEARNING_LOSS_FUNCTION_REGRESSION_SOURCES})
 SOURCE_SUB_GROUP2(Learning LossFunction Discriminative FILES ${LBCPP_LEARNING_LOSS_FUNCTION_DISCRIMINATIVE_SOURCES})
 SOURCE_SUB_GROUP2(Learning LossFunction MultiClass FILES ${LBCPP_LEARNING_LOSS_FUNCTION_MULTI_CLASS_SOURCES})
 SOURCE_SUB_GROUP2(Learning LossFunction Ranking FILES ${LBCPP_LEARNING_LOSS_FUNCTION_RANKING_SOURCES})
-SOURCE_SUB_GROUP(Learning Numerical FILES ${LBCPP_LEARNING_NUMERICAL_SOURCES})
-SOURCE_SUB_GROUP2(Learning Numerical LearnableFunction FILES ${LBCPP_LEARNING_NUMERICAL_LEARNABLE_FUNCTION_SOURCES})
-SOURCE_SUB_GROUP2(Learning Numerical OnlineLearner FILES ${LBCPP_LEARNING_NUMERICAL_ONLINE_SOURCES})
-SOURCE_SUB_GROUP2(Learning Numerical BatchLearner FILES ${LBCPP_LEARNING_NUMERICAL_BATCH_SOURCES})
-SOURCE_SUB_GROUP2(Learning Numerical LibSVM FILES ${LBCPP_LEARNING_NUMERICAL_LIBSVM_SOURCES})
-SOURCE_SUB_GROUP2(Learning Numerical LibLinear FILES ${LBCPP_LEARNING_NUMERICAL_LIBLINEAR_SOURCES})
-SOURCE_SUB_GROUP2(Learning Numerical LaRank FILES ${LBCPP_LEARNING_NUMERICAL_LARANK_SOURCES})
-SOURCE_SUB_GROUP(Learning DecisionTree FILES ${LBCPP_LEARNING_DECISION_TREE_SOURCES})
-SOURCE_SUB_GROUP(Learning NearestNeighbor FILES ${LBCPP_LEARNING_NEAREST_NEIGHBOR_SOURCES})
-SOURCE_SUB_GROUP(Learning LocalitySensitiveHashing FILES ${LBCPP_LEARNING_LOCALITY_SENSITIVE_HASHING_SOURCES})
 
 ## DecisionProblem
 SOURCE_GROUP(DecisionProblem FILES ${LBCPP_DECISION_PROBLEM_SOURCES})
@@ -894,8 +746,8 @@ SOURCE_SUB_GROUP(UserInterface Plot FILES ${LBCPP_USER_INTERFACE_PLOT_SOURCES})
 SOURCE_SUB_GROUP(UserInterface Data FILES ${LBCPP_USER_INTERFACE_DATA_FILES})
 
 IF (UNIX)
-  ADD_LIBRARY(lbcpp-core${NAME_FILE_SUFFIX} SHARED ${LBCPP_SOURCES})
+  ADD_LIBRARY(lbcpp-core SHARED ${LBCPP_SOURCES})
 ELSE (UNIX)
-  ADD_LIBRARY(lbcpp-core${NAME_FILE_SUFFIX} ${LBCPP_SOURCES})
+  ADD_LIBRARY(lbcpp-core ${LBCPP_SOURCES})
 ENDIF (UNIX)
-TARGET_LINK_LIBRARIES(lbcpp-core${NAME_FILE_SUFFIX} juce${NAME_FILE_SUFFIX} lua shark)
+TARGET_LINK_LIBRARIES(lbcpp-core juce lua shark)

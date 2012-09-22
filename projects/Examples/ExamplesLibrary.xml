@@ -2,11 +2,6 @@
 
 <library name="Examples" dynamic="yes">
 
-  <!-- Xor Regression Example -->
-  <class name="XorFeatureGenerator" base="FeatureGenerator"/>
-  <class name="LearnableXorFunction" base="CompositeFunction"/>
-  <class name="XorRegressionExample" base="WorkUnit"/>
-
   <!-- WorkUnit Example -->
   <class name="SubWorkUnitExample" base="WorkUnit"/>
   <class name="WorkUnitExample" base="WorkUnit"/>
@@ -28,22 +23,6 @@
 
   <!-- Feature Generators -->
   <class name="FeatureGeneratorsExample" base="WorkUnit"/>
-
-  <!-- Train/Test Learning Machine -->
-  <class name="LearningProblem" abstract="yes"/>
-
-  <class name="RegressionProblem" base="LearningProblem" shortName="regression"/>
-  <class name="BinaryClassificationProblem" base="LearningProblem" shortName="binaryProblem"/>
-  <class name="MultiClassClassificationProblem" base="LearningProblem" shortName="multiClass"/>
-  <class name="MultiLabelClassificationProblem" base="LearningProblem" shortName="multiLabel"/>
-  
-  <class name="TrainTestLearningMachine" base="WorkUnit">
-    <variable type="LearningProblem" name="learningProblem" shortName="t"/>
-    <variable type="Function" name="learningMachine" shortName="m"/>
-    <variable type="File" name="trainingFile" shortName="train"/>
-    <variable type="File" name="testingFile" shortName="test"/>
-    <variable type="PositiveInteger" name="maxExamples" shortName="max"/>
-  </class>
   
   <!-- Genetic Programming Example -->
   <class name="AgAddFunction" base="SimpleBinaryFunction"/>

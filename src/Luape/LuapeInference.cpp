@@ -7,8 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Luape/LuapeInference.h>
-#include <lbcpp/Luape/LuapeBatchLearner.h>
-#include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
+#include <lbcpp/Luape/LuapeLearner.h>
 #include "NodeBuilder/NodeBuilderTypeSearchSpace.h"
 #include "NodeBuilder/NodeBuilderDecisionProblem.h"
 using namespace lbcpp;
@@ -38,7 +37,7 @@ Variable LuapeInference::computeNode(ExecutionContext& context, const ObjectPtr&
 void LuapeInference::setLearner(const LuapeLearnerPtr& learner, bool verbose)
 {
   learner->setVerbose(verbose);
-  setBatchLearner(new LuapeBatchLearner(learner));
+  //setBatchLearner(new LuapeBatchLearner(learner));
 }
 
 LuapeNodePtr LuapeInference::getActiveVariable(size_t index) const

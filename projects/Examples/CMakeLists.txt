@@ -13,8 +13,6 @@ SET(LBCPP_EXAMPLES_SOURCES
   MissingValuesExample.h
   SimpleIntrospectionExample.h
   WorkUnitExample.h
-  XorRegressionExample.h
-  TrainTestLearningMachine.h
   GeneticProgrammingExample.h
   RandomGeneratorExample.h
   ExamplesLibrary.xml
@@ -23,6 +21,6 @@ SET(LBCPP_EXAMPLES_SOURCES
 
 GENERATE_LBCPP_PRECOMPILED(precompiled LBCPP_EXAMPLES_SOURCES)
 
-ADD_LIBRARY(lbcpp-examples${NAME_FILE_SUFFIX} SHARED ${LBCPP_EXAMPLES_SOURCES})
-TARGET_LINK_LIBRARIES(lbcpp-examples${NAME_FILE_SUFFIX} lbcpp-core${NAME_FILE_SUFFIX})
+ADD_LIBRARY(lbcpp-examples SHARED ${LBCPP_EXAMPLES_SOURCES})
+TARGET_LINK_LIBRARIES(lbcpp-examples lbcpp-core)
 

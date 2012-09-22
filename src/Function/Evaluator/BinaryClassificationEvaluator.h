@@ -10,7 +10,6 @@
 # define LBCPP_FUNCTION_EVALUATOR_BINARY_CLASSIFICATION_CONFUSION_H_
 
 # include <lbcpp/Function/Evaluator.h>
-# include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
 # include "Utilities.h"
 
 namespace lbcpp

@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Learning/LossFunction.h>
-#include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
+//#include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
 #include <algorithm>
 using namespace lbcpp;
 

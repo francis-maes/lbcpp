@@ -7,7 +7,6 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Core/CompositeFunction.h>
-#include <lbcpp/Learning/BatchLearner.h>
 using namespace lbcpp;
 
 /*
@@ -15,7 +14,7 @@ using namespace lbcpp;
 */
 CompositeFunction::CompositeFunction() : maxNumFunctionInputs(0)
 {
-  setBatchLearner(compositeFunctionBatchLearner());
+  //setBatchLearner(compositeFunctionBatchLearner());
 }
 
 TypePtr CompositeFunction::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
