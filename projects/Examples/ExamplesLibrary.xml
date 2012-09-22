@@ -21,9 +21,6 @@
   <class name="VerySimpleClass" base="Object"/>
   <class name="MissingValuesExample" base="WorkUnit"/>
 
-  <!-- Feature Generators -->
-  <class name="FeatureGeneratorsExample" base="WorkUnit"/>
-  
   <!-- Genetic Programming Example -->
   <class name="AgAddFunction" base="SimpleBinaryFunction"/>
   <class name="AgSubFunction" base="SimpleBinaryFunction"/>

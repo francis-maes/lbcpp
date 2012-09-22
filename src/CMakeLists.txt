@@ -27,11 +27,6 @@ GENERATE_INTROSPECTION_CODE(Function/StoppingCriterion/StoppingCriterionLibrary.
 GENERATE_INTROSPECTION_CODE(Function/Predicate/PredicateLibrary.xml PredicateLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/Evaluator/EvaluatorLibrary.xml EvaluatorLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(FeatureGenerator/FeatureGeneratorLibrary.xml FeatureGeneratorLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(FeatureGenerator/Generic/GenericFeatureGeneratorLibrary.xml GenericFeatureGeneratorLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(FeatureGenerator/Atomic/AtomicFeatureGeneratorLibrary.xml AtomicFeatureGeneratorLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(FeatureGenerator/Composite/CompositeFeatureGeneratorLibrary.xml CompositeFeatureGeneratorLibrary.cpp)
-
 GENERATE_INTROSPECTION_CODE(Learning/LearningLibrary.xml LearningLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/OnlineLearner/OnlineLearnerLibrary.xml OnlineLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/BatchLearner/BatchLearnerLibrary.xml BatchLearnerLibrary.cpp)
@@ -160,6 +155,7 @@ SET(LBCPP_DATA_SOURCES
   ../include/lbcpp/Data/Stream.h
   Data/Stream.cpp
   ../include/lbcpp/Data/DoubleVector.h
+  Data/FeatureGeneratorCallbacks.hpp
   Data/DoubleVector.cpp
   ../include/lbcpp/Data/Matrix.h
   ../include/lbcpp/Data/SymmetricMatrix.h
@@ -330,48 +326,6 @@ SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
   Function/Evaluator/SymmetricMatrixSupervisedEvaluator.h
   Function/Evaluator/EvaluatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/EvaluatorLibrary.cpp
-)
-
-#### FeatureGenerator ####
-
-GENERATE_INTROSPECTION_CODE(FeatureGenerator/Generic/GenericFeatureGeneratorLibrary.xml GenericFeatureGeneratorLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(FeatureGenerator/Atomic/AtomicFeatureGeneratorLibrary.xml AtomicFeatureGeneratorLibrary.cpp)
-
-SET(LBCPP_FEATURE_GENERATOR_SOURCES
-  ../include/lbcpp/FeatureGenerator/FeatureGenerator.h
-  FeatureGenerator/FeatureGeneratorCallbacks.hpp
-  FeatureGenerator/FeatureGenerator.cpp
-  FeatureGenerator/FeatureGeneratorLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/FeatureGeneratorLibrary.cpp
-)
-
-SET(LBCPP_FEATURE_GENERATOR_GENERIC_SOURCES
-  FeatureGenerator/Generic/ConcatenateFeatureGenerator.h
-  FeatureGenerator/Generic/ContainerWindowFeatureGenerator.h
-  FeatureGenerator/Generic/MatrixWindowFeatureGenerator.h
-  FeatureGenerator/Generic/CartesianProductFeatureGenerator.h
-  FeatureGenerator/Generic/DynamicallyMappedFeatureGenerator.h
-  FeatureGenerator/Generic/GenericFeatureGeneratorLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/GenericFeatureGeneratorLibrary.cpp
-)
-
-SET(LBCPP_FEATURE_GENERATOR_ATOMIC_SOURCES
-  FeatureGenerator/Atomic/BooleanFeatureGenerator.h
-  FeatureGenerator/Atomic/EnumerationFeatureGenerator.h
-  FeatureGenerator/Atomic/DoubleFeatureGenerator.h
-  FeatureGenerator/Atomic/IntegerFeatureGenerator.h
-  FeatureGenerator/Atomic/DiscretizedNumberFeatureGenerator.h
-  FeatureGenerator/Atomic/HardDiscretizedNumberFeatureGenerator.h
-  FeatureGenerator/Atomic/SoftDiscretizedNumberFeatureGenerator.h
-  FeatureGenerator/Atomic/SignedNumberFeatureGenerator.h
-  FeatureGenerator/Atomic/AtomicFeatureGeneratorLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/AtomicFeatureGeneratorLibrary.cpp
-)
-
-SET(LBCPP_FEATURE_GENERATOR_COMPOSITE_SOURCES
-  FeatureGenerator/Composite/EnumerationDistributionFeatureGenerator.h
-  FeatureGenerator/Composite/CompositeFeatureGeneratorLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/CompositeFeatureGeneratorLibrary.cpp
 )
 
 #### Learning ####
@@ -636,12 +590,6 @@ SET(LBCPP_SOURCES
     ${LBCPP_FUNCTION_PREDICATE_SOURCES}
     ${LBCPP_FUNCTION_EVALUATOR_SOURCES}
 
-  # FeatureGenerator
-  ${LBCPP_FEATURE_GENERATOR_SOURCES}
-    ${LBCPP_FEATURE_GENERATOR_GENERIC_SOURCES}
-    ${LBCPP_FEATURE_GENERATOR_ATOMIC_SOURCES}
-    ${LBCPP_FEATURE_GENERATOR_COMPOSITE_SOURCES}
-
   # Learning
   ${LBCPP_LEARNING_SOURCES}
     ${LBCPP_LEARNING_LOSS_FUNCTION_SOURCES}
@@ -706,12 +654,6 @@ SOURCE_SUB_GROUP(Function IterationFunction FILES ${LBCPP_FUNCTION_ITERATION_SOU
 SOURCE_SUB_GROUP(Function StoppingCriterion FILES ${LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES})
 SOURCE_SUB_GROUP(Function Predicate FILES ${LBCPP_FUNCTION_PREDICATE_SOURCES})
 SOURCE_SUB_GROUP(Function Evaluator FILES ${LBCPP_FUNCTION_EVALUATOR_SOURCES})
-
-## FeatureGenerator
-SOURCE_GROUP(FeatureGenerator FILES ${LBCPP_FEATURE_GENERATOR_SOURCES})
-SOURCE_SUB_GROUP(FeatureGenerator Generic FILES ${LBCPP_FEATURE_GENERATOR_GENERIC_SOURCES})
-SOURCE_SUB_GROUP(FeatureGenerator Atomic FILES ${LBCPP_FEATURE_GENERATOR_ATOMIC_SOURCES})
-SOURCE_SUB_GROUP(FeatureGenerator Composite FILES ${LBCPP_FEATURE_GENERATOR_COMPOSITE_SOURCES})
 
 ## Learning
 SOURCE_GROUP(Learning FILES ${LBCPP_LEARNING_SOURCES})
