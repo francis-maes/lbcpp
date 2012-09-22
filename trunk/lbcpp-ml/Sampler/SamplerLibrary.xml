@@ -3,9 +3,13 @@
 <library name="Sampler" directory="Sampler">
 
   <class name="MOOSampler" abstract="yes"/>
+
+  <class name="UniformContinuousSampler" base="MOOSampler">
+    <constructor/>
+  </class>
   
-  <class name="UniformContinuousSampler" base="MOOSampler"/>
   <class name="DiagonalGaussianSampler" base="MOOSampler">
+    <constructor/>
     <variable type="Double" name="learningRate"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="mean"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="stddev"/>

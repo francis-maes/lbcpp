@@ -27,6 +27,9 @@ public:
   virtual void reinforce(ExecutionContext& context, const ObjectPtr& object) = 0;
 };
 
+extern MOOSamplerPtr uniformContinuousSampler();
+extern MOOSamplerPtr diagonalGaussianSampler();
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_ML_SAMPLER_H_

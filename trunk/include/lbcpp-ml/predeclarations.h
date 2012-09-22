@@ -47,6 +47,9 @@ typedef ReferenceCountedObjectPtr<MOOOptimizer> MOOOptimizerPtr;
 class IterativeOptimizer;
 typedef ReferenceCountedObjectPtr<IterativeOptimizer> IterativeOptimizerPtr;
 
+class PopulationBasedMOOOptimizer;
+typedef ReferenceCountedObjectPtr<PopulationBasedMOOOptimizer> PopulationBasedMOOOptimizerPtr;
+
 class MOOSampler;
 typedef ReferenceCountedObjectPtr<MOOSampler> MOOSamplerPtr;
 

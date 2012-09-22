@@ -86,6 +86,10 @@ protected:
   size_t populationSize;
 };
 
+extern PopulationBasedMOOOptimizerPtr crossEntropyOptimizer(MOOSamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations = 0, bool elitist = false, MOOSolutionComparatorPtr comparator = MOOSolutionComparatorPtr());
+
+extern PopulationBasedMOOOptimizerPtr nsga2moOptimizer(size_t populationSize = 100, size_t numGenerations = 0, double mutationDistributionIndex = 20.0, double crossOverDistributionIndex = 20.0, double crossOverProbability = 0.9);
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_ML_OPTIMIZER_H_

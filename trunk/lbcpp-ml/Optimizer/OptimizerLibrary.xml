@@ -25,6 +25,7 @@
   </class>
 
   <class name="CrossEntropyOptimizer" base="PopulationBasedMOOOptimizer">
+    <constructor arguments="MOOSamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations, bool elitist, MOOSolutionComparatorPtr comparator"/>
     <variable type="MOOSampler" name="sampler"/>
     <variable type="PositiveInteger" name="numTrainingSamples"/>
     <variable type="Boolean" name="elitist"/>
@@ -38,6 +39,7 @@
   -->
 
   <class name="NSGA2MOOptimizer" base="PopulationBasedMOOOptimizer">
+    <constructor arguments="size_t populationSize, size_t numGenerations, double mutationDistributionIndex, double crossOverDistributionIndex, double crossOverProbability"/>
     <variable type="Double" name="mutationDistributionIndex"/>
     <variable type="Double" name="crossOverDistributionIndex"/>
     <variable type="Double" name="crossOverProbability"/>
