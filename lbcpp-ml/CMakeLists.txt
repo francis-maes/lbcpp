@@ -5,6 +5,9 @@ INCLUDE_DIRECTORIES(
 )
 
 GENERATE_INTROSPECTION_CODE(LBCppMLLibrary.xml LBCppMLLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Comparator/ComparatorLibrary.xml ComparatorLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Sampler/SamplerLibrary.xml SamplerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
 
 SET(LBCPP_ML_INCLUDES 
   ../include/lbcpp-ml/predeclarations.h
@@ -26,11 +29,15 @@ SET(LBCPP_ML_OPTIMIZER_SOURCES
   Optimizer/NestedCrossEntropyOptimizer.h
   Optimizer/SharkMOOptimizers.h
   Optimizer/MABMetaOptimizer.h
+  Optimizer/OptimizerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/OptimizerLibrary.cpp
 )
 
 SET(LBCPP_ML_SAMPLER_SOURCES
   Sampler/UniformContinuousSampler.h
   Sampler/DiagonalGaussianSampler.h
+  Sampler/SamplerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/SamplerLibrary.cpp
 )
 
 SET(LBCPP_ML_COMPARATOR_SOURCES
@@ -38,6 +45,8 @@ SET(LBCPP_ML_COMPARATOR_SOURCES
   Comparator/LexicographicComparator.h
   Comparator/DominanceComparator.h
   Comparator/ParetoRankComparator.h
+  Comparator/ComparatorLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ComparatorLibrary.cpp
 )
 
 SET(LBCPP_ML_MAIN_SOURCES

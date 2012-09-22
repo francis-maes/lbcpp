@@ -11,6 +11,8 @@
 
 # include <lbcpp-ml/Optimizer.h>
 # include <lbcpp-ml/Sampler.h>
+# include <lbcpp-ml/SolutionSet.h>
+# include <lbcpp-ml/Comparator.h>
 
 namespace lbcpp
 {

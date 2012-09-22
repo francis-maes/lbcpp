@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Sampler" directory="Sampler">
+
+  <class name="MOOSampler" abstract="yes"/>
+  
+  <class name="UniformContinuousSampler" base="MOOSampler"/>
+  <class name="DiagonalGaussianSampler" base="MOOSampler">
+    <variable type="Double" name="learningRate"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="mean"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="stddev"/>
+  </class>
+
+</library>

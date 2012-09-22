@@ -10,6 +10,7 @@
 # define LBCPP_ML_COMPARATOR_DOMINANCE_H_
 
 # include <lbcpp-ml/Comparator.h>
+# include <lbcpp-ml/SolutionSet.h>
 
 namespace lbcpp
 {
