@@ -1,1 +1,0 @@
-/data/PDB/SPX/AutoUpdate.sh

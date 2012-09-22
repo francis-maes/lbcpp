@@ -1,1 +1,0 @@
-/data/PDB/DISpro/other/selectChainFromPDB.py
