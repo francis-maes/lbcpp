@@ -1,1 +1,0 @@
-/data/PDB/UpdateDatabase.sh
