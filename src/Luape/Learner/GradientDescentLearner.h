@@ -10,7 +10,6 @@
 # define LBCPP_LUAPE_LEARNER_GRADIENT_DESCENT_H_
 
 # include <lbcpp/Luape/LuapeLearner.h>
-# include <lbcpp/Function/IterationFunction.h>
 # include <lbcpp/Learning/LossFunction.h>
 
 namespace lbcpp

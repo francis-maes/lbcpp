@@ -9,6 +9,8 @@
 #ifndef LBCPP_FEATURE_GENERATOR_CALLBACKS_HPP_H_
 # define LBCPP_FEATURE_GENERATOR_CALLBACKS_HPP_H_
 
+# include <lbcpp/Data/DoubleVector.h>
+
 namespace lbcpp
 {
   

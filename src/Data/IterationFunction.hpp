@@ -1,18 +1,32 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: InvLinearIterationFunction.h   | InvLinear Iteration Function    |
+| Filename: IterationFunction.hpp          | Iteration Functions             |
 | Author  : Francis Maes                   |                                 |
-| Started : 25/08/2010 22:16               |                                 |
+| Started : 22/09/2012 19:02               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_FUNCTION_ITERATION_INV_LINEAR_H_
-# define LBCPP_FUNCTION_ITERATION_INV_LINEAR_H_
+#ifndef LBCPP_DATA_ITERATION_CONSTANT_HPP
+# define LBCPP_DATA_ITERATION_CONSTANT_HPP
 
-# include <lbcpp/Function/IterationFunction.h>
+# include <lbcpp/Data/IterationFunction.h>
 
 namespace lbcpp
 {
+
+class ConstantIterationFunction : public IterationFunction
+{
+public:
+  ConstantIterationFunction(double value = 0.0) : value(value) {}
+  
+  virtual double computeIterationFunction(size_t iteration) const
+    {return value;}
+    
+private:
+  friend class ConstantIterationFunctionClass;
+
+  double value;
+};
 
 class InvLinearIterationFunction : public IterationFunction
 {
@@ -32,4 +46,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_FUNCTION_ITERATION_INV_LINEAR_H_
+#endif // !LBCPP_DATA_ITERATION_CONSTANT_HPP
