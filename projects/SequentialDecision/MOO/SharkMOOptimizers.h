@@ -25,7 +25,7 @@ public:
     : context(context), problem(problem)
   {
   	m_name = (const char* )problem->toShortString();
-    ContinuousMOODomainPtr domain = problem->getObjectDomain().staticCast<ContinuousMOODomain>();
+    ContinuousDomainPtr domain = problem->getObjectDomain().staticCast<ContinuousDomain>();
     m_dimension = domain->getNumDimensions();
     std::vector<double> lower(domain->getNumDimensions());
     std::vector<double> upper(domain->getNumDimensions());
@@ -69,7 +69,7 @@ protected:
 template<class SearchAlgorithmClass>
 static void sharkFillParetoFront(SearchAlgorithmClass& searchAlgorithm, MOOProblemPtr problem, MOOParetoFrontPtr front)
 {
-  ContinuousMOODomainPtr domain = problem->getObjectDomain().staticCast<ContinuousMOODomain>();
+  ContinuousDomainPtr domain = problem->getObjectDomain().staticCast<ContinuousDomain>();
   size_t n = domain->getNumDimensions();
   std::vector<double* > solutions;
   Array<double> fitnesses;

@@ -32,7 +32,7 @@ public:
         limits[i].first = box->lowerBound((unsigned int)i);
         limits[i].second = box->upperBound((unsigned int)i);
       }
-      domain = new ContinuousMOODomain(limits);
+      domain = new ContinuousDomain(limits);
     }
   }
 
@@ -79,7 +79,7 @@ public:
   }
 
 protected:
-  ContinuousMOODomainPtr domain;
+  ContinuousDomainPtr domain;
   MOOFitnessLimitsPtr limits;
   ObjectiveFunctionVS<double>* objective;
 
@@ -116,7 +116,7 @@ struct RosenbrockProblem : public SingleObjectiveSharkMOProblem
   RosenbrockProblem(size_t numDimensions = 30)
     : SingleObjectiveSharkMOProblem(new Rosenbrock((unsigned)numDimensions), 4000.0) 
   {
-    domain = new ContinuousMOODomain(std::vector< std::pair<double, double> >(numDimensions, std::make_pair(-2.0, 2.0)));
+    domain = new ContinuousDomain(std::vector< std::pair<double, double> >(numDimensions, std::make_pair(-2.0, 2.0)));
   }
 };
 
@@ -125,7 +125,7 @@ struct RosenbrockRotatedProblem : public SingleObjectiveSharkMOProblem
   RosenbrockRotatedProblem(size_t numDimensions = 30)
     : SingleObjectiveSharkMOProblem(new RosenbrockRotated((unsigned)numDimensions))
   {
-    domain = new ContinuousMOODomain(std::vector< std::pair<double, double> >(numDimensions, std::make_pair(-2.0, 2.0)));
+    domain = new ContinuousDomain(std::vector< std::pair<double, double> >(numDimensions, std::make_pair(-2.0, 2.0)));
   }
 };
 

@@ -18,7 +18,7 @@ class UniformContinuousSampler : public MOOSampler
 {
 public:
   virtual void initialize(ExecutionContext& context, const MOODomainPtr& domain)
-    {this->domain = domain.staticCast<ContinuousMOODomain>(); jassert(this->domain);}
+    {this->domain = domain.staticCast<ContinuousDomain>(); jassert(this->domain);}
 
   virtual ObjectPtr sample(ExecutionContext& context) const
     {return domain->sampleUniformly(context.getRandomGenerator());}
@@ -30,7 +30,7 @@ public:
     {jassertfalse;}
 
 protected:
-  ContinuousMOODomainPtr domain;
+  ContinuousDomainPtr domain;
 };
 
 }; /* namespace lbcpp */

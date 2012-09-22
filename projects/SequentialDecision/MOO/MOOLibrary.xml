@@ -4,10 +4,10 @@
 
   <!-- CORE -->
   <class name="MOODomain" abstract="yes"/>
-  <class name="ContinuousMOODomain" base="MOODomain">
+  <class name="ContinuousDomain" base="MOODomain">
     <variable type="ObjectVector[Pair[Double,Double]]" name="limits"/>
   </class>
-  <class name="MOOFitnessLimits" base="ContinuousMOODomain"/>
+  <class name="MOOFitnessLimits" base="ContinuousDomain"/>
 
   <class name="MOOFitness">
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="values"/>
@@ -178,6 +178,11 @@
 
   <!-- WorkUnits -->
   <class name="MOOSandBox" base="WorkUnit">
+    <variable type="PositiveInteger" name="numEvaluations"/>
+    <variable type="PositiveInteger" name="verbosity"/>
+  </class>
+
+  <class name="SymbRegSandBox" base="WorkUnit">
     <variable type="PositiveInteger" name="numEvaluations"/>
     <variable type="PositiveInteger" name="verbosity"/>
   </class>
