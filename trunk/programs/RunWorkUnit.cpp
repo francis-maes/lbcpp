@@ -228,9 +228,15 @@ int mainImpl(int argc, char** argv)
   return result;
 }
 
+namespace lbcpp
+{
+  extern LibraryPtr lbCppMLLibrary();
+};
+
 int main(int argc, char** argv)
 {
   lbcpp::initialize(argv[0]);
+  lbcpp::importLibrary(lbCppMLLibrary());
   int exitCode = mainImpl(argc, argv);
   lbcpp::deinitialize();
   return exitCode;

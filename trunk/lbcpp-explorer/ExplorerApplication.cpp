@@ -407,6 +407,7 @@ private:
 
 namespace lbcpp
 {
+  extern LibraryPtr lbCppMLLibrary();
   extern LibraryPtr explorerLibrary();
 };
 
@@ -426,6 +427,7 @@ public:
 #ifdef JUCE_MAC
     currentExecutableDirectory = currentExecutableDirectory.getChildFile("../../..");
 #endif // JUCE_MAC
+    lbcpp::importLibrary(lbCppMLLibrary());
     lbcpp::importLibrariesFromDirectory(currentExecutableDirectory);
     lbcpp::importLibrary(explorerLibrary());
     defaultExecutionContext().setProjectDirectory(currentExecutableDirectory);

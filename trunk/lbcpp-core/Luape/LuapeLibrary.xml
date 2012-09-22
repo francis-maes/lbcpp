@@ -56,7 +56,7 @@
 
 
   <!-- Inference -->
-  <class name="LuapeInference" base="Function" abstract="yes">
+  <class name="LuapeInference" base="Object" abstract="yes">
 <!--    <variable type="LuapeUniverse" name="universe"/>
     <variable type="ObjectVector[LuapeInputNode]" name="inputs"/>
     <variable type="ObjectVector[Function]" name="functions"/>
