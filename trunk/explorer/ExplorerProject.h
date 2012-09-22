@@ -11,7 +11,6 @@
 
 # include "ExplorerConfiguration.h"
 # include <lbcpp/Execution/WorkUnit.h>
-# include <lbcpp/Network/NetworkClient.h>
 
 namespace lbcpp
 {
@@ -131,29 +130,9 @@ public:
   const RecentWorkUnitsConfigurationPtr& getRecentWorkUnits() const
     {return recentWorkUnits;}
 
-  bool startWorkUnit(ExecutionContext& context, WorkUnitPtr& workUnit, String& targetGrid);
+  bool startWorkUnit(ExecutionContext& context, WorkUnitPtr& workUnit);
 
   ExecutionContextPtr workUnitContext;
-
-  /*
-  ** Manager
-  */
-  bool isManagerConnected() const
-    {return managerConnected;}
-
-  const String& getManagerHostName() const
-    {return managerHostName;}
-
-  int getManagerPort() const
-    {return managerPort;}
-
-  bool connectToManager(ExecutionContext& context, const String& hostName, int port);
-  void disconnectFromManager(ExecutionContext& context);
-
-  bool sendWorkUnitToManager(ExecutionContext& context, const WorkUnitPtr& workUnit, const String& grid, size_t requiredCpus = 1, size_t requiredMemory = 2, size_t requiredTime = 10);
-
-  const String& getRecentTargetGrid() const
-    {return recentTargetGrid;}
 
   lbcpp_UseDebuggingNewOperator
 
@@ -163,14 +142,6 @@ protected:
   File rootDirectory;
   File recentDirectory;
   RecentWorkUnitsConfigurationPtr recentWorkUnits;
-  String recentTargetGrid;
-
-  bool managerConnected;
-  String managerHostName;
-  int managerPort;
-
-  String thisNetworkNodeName;
-  ManagerNetworkClientPtr managerClient;
 };
 
 }; /* namespace lbcpp */

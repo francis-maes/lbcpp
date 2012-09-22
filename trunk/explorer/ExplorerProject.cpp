@@ -81,7 +81,7 @@ int RecentWorkUnitsConfiguration::findRecentWorkUnit(const String& workUnit) con
 /*
 ** ExplorerProject
 */
-ExplorerProject::ExplorerProject() : recentWorkUnits(new RecentWorkUnitsConfiguration()), managerConnected(false), managerHostName(T("localhost")), managerPort(1664)
+ExplorerProject::ExplorerProject() : recentWorkUnits(new RecentWorkUnitsConfiguration())
 {
   int numCpus = juce::SystemStats::getNumCpus();
   workUnitContext = multiThreadedExecutionContext(numCpus > 2 ? numCpus - 1 : numCpus);
@@ -134,10 +134,6 @@ ExplorerProjectPtr ExplorerProject::openProject(ExecutionContext& context, const
   }
   else
     res->setRootDirectory(rootDirectory);
-
-  // try to connect to manager if it was previously connected
-  if (res->isManagerConnected())
-    res->connectToManager(context, res->getManagerHostName(), res->getManagerPort());
   return res;
 }
 
@@ -149,17 +145,14 @@ void ExplorerProject::save(ExecutionContext& context)
 void ExplorerProject::close(ExecutionContext& context)
 {
   save(context);
-  disconnectFromManager(context);
 }
 
-bool ExplorerProject::startWorkUnit(ExecutionContext& context, WorkUnitPtr& workUnit, String& targetGrid)
+bool ExplorerProject::startWorkUnit(ExecutionContext& context, WorkUnitPtr& workUnit)
 {
   String workUnitName;
   String arguments;
-  targetGrid = recentTargetGrid;
-  if (!NewWorkUnitDialogWindow::run(context, recentWorkUnits, workUnitName, arguments, targetGrid))
+  if (!NewWorkUnitDialogWindow::run(context, recentWorkUnits, workUnitName, arguments))
     return false;
-  recentTargetGrid = targetGrid;
 
   recentWorkUnits->addRecent(workUnitName, arguments);
   save(context);
@@ -178,55 +171,5 @@ bool ExplorerProject::startWorkUnit(ExecutionContext& context, WorkUnitPtr& work
   if (!workUnit->parseArguments(context, arguments))
     return false;
 
-  return true;
-}
-
-bool ExplorerProject::connectToManager(ExecutionContext& context, const String& hostName, int port)
-{
-  managerHostName = hostName;
-  managerPort = port;
-  managerClient = new ManagerNetworkClient(context);
-  managerConnected = true;
-  //managerClient->setCallback(this);
-  if (!managerClient->startClient(managerHostName, managerPort))
-  {
-    managerClient = ManagerNetworkClientPtr();
-    context.errorCallback(T("ExplorerProject::connectToManager"), T("Could not connect to manager at ") + managerHostName + T(":") + String(managerPort));
-    return false;
-  }
-  context.informationCallback(managerHostName, T("Connected !"));
-
-  thisNetworkNodeName = T("lbcpp-explorer on ") + juce::SystemStats::getOperatingSystemName();
-  //managerInterface = forwarderManagerNetworkInterface(context, managerClient, thisNetworkNodeName);
-  //managerClient->sendVariable(ReferenceCountedObjectPtr<NetworkInterface>(managerInterface));
-  return true;
-}
-
-void ExplorerProject::disconnectFromManager(ExecutionContext& context)
-{
-  if (managerClient)
-  {
-    //managerClient->sendVariable(new CloseCommunicationNotification());
-    managerClient->stopClient();
-    managerClient = ManagerNetworkClientPtr();
-  }
-  managerConnected = false;
-}
-
-bool ExplorerProject::sendWorkUnitToManager(ExecutionContext& context, const WorkUnitPtr& workUnit, const String& grid, size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
-{
-  if (!managerClient)
-  {
-    context.errorCallback(T("Not connected to the manager"));
-    return false;
-  }
-  static size_t identifier = 0;
-  if (!managerClient->sendWorkUnit(identifier++, workUnit, getName(), thisNetworkNodeName, grid, requiredCpus, requiredMemory, requiredTime))
-  {
-    context.errorCallback(T("Error while sending work unit to manager"));
-    return false;
-  }
-  //request->setIdentifier(res);
-  //context.informationCallback(T("WorkUnitIdentifier: ") + request->getIdentifier());
   return true;
 }

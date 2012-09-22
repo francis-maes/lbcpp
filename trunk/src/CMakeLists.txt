@@ -15,10 +15,6 @@ GENERATE_INTROSPECTION_CODE(Data/Container/ContainerLibrary.xml ContainerLibrary
 GENERATE_INTROSPECTION_CODE(Data/Matrix/MatrixLibrary.xml MatrixLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Data/DataLibrary.xml DataLibrary.cpp)
 
-IF(LBCPP_NETWORKING)
-  GENERATE_INTROSPECTION_CODE(Network/NetworkLibrary.xml NetworkLibrary.cpp)
-ENDIF(LBCPP_NETWORKING)
-
 GENERATE_INTROSPECTION_CODE(Execution/ExecutionLibrary.xml ExecutionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Execution/Callback/ExecutionCallbackLibrary.xml ExecutionCallbackLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Execution/Context/ExecutionContextLibrary.xml ExecutionContextLibrary.cpp)
@@ -257,33 +253,10 @@ SET(LBCPP_EXECUTION_CONTEXT_SOURCES
   Execution/Context/SingleThreadedExecutionContext.h
   Execution/Context/SubExecutionContext.h
   Execution/Context/MultiThreadedExecutionContext.h
-  Execution/Context/DistributedExecutionContext.h
   Execution/Context/ExecutionContextLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExecutionContextLibrary.cpp
 )
 
-### Network ###
-IF(LBCPP_NETWORKING)
-  SET(LBCPP_NETWORK_SOURCES
-    ../include/lbcpp/Network/NetworkClient.h
-    Network/NetworkClient.cpp
-    ../include/lbcpp/Network/NetworkServer.h
-    Network/ManagerNetworkServer.cpp
-    ../include/lbcpp/Network/WorkUnitNetworkRequest.h
-    ../include/lbcpp/Network/NetworkMessage.h
-    ../include/lbcpp/Network/Manager.h
-    Network/NetworkWorkUnit.h
-    Network/NetworkLibrary.xml
-    ${CMAKE_CURRENT_BINARY_DIR}/NetworkLibrary.cpp
-  )
-  
-  SET(LBCPP_NETWORK_GRID_SOURCES
-    Network/Grid/LocalGridNetworkClient.cpp
-    Network/Grid/SGEGridNetworkClient.cpp
-    Network/Grid/BoincGridNetworkClient.cpp
-  )
-
-ENDIF(LBCPP_NETWORKING)
 
 #### Function ####
 
@@ -769,10 +742,6 @@ SET(LBCPP_SOURCES
     ${LBCPP_DATA_CONTAINER_SOURCES}
     ${LBCPP_DATA_MATRIX_SOURCES}
   
-  # Network
-  ${LBCPP_NETWORK_SOURCES}
-    ${LBCPP_NETWORK_GRID_SOURCES}
-  
   # Execution
   ${LBCPP_EXECUTION_SOURCES}
     ${LBCPP_EXECUTION_CALLBACK_SOURCES}
@@ -860,10 +829,6 @@ SOURCE_SUB_GROUP(Data Stream FILES ${LBCPP_DATA_STREAM_SOURCES})
 SOURCE_SUB_GROUP(Data Container FILES ${LBCPP_DATA_CONTAINER_SOURCES})
 SOURCE_SUB_GROUP(Data Matrix FILES ${LBCPP_DATA_MATRIX_SOURCES})
 
-## Network
-SOURCE_GROUP(Network FILES ${LBCPP_NETWORK_SOURCES})
-SOURCE_SUB_GROUP(Network Grid FILES ${LBCPP_NETWORK_GRID_SOURCES})
-    
 ## Execution
 SOURCE_GROUP(Execution FILES ${LBCPP_EXECUTION_SOURCES})
 SOURCE_SUB_GROUP(Execution Callback FILES ${LBCPP_EXECUTION_CALLBACK_SOURCES})

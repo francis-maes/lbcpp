@@ -6,7 +6,6 @@
   <import name="Execution"/>
 
   <import name="Data"/>
-  <import name="Network" ifdef="LBCPP_NETWORKING"/>
   <import name="Function"/>
 
   <import name="FeatureGenerator"/>
