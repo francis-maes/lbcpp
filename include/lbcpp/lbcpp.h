@@ -63,9 +63,7 @@
 
 # include "Function/ScalarFunction.h"
 # include "Function/ScalarVectorFunction.h"
-# include "Function/Predicate.h"
 # include "Function/IterationFunction.h"
-# include "Function/StoppingCriterion.h"
 # include "Function/Evaluator.h"
 
 # include "DecisionProblem/DecisionProblem.h"

@@ -23,8 +23,6 @@ GENERATE_INTROSPECTION_CODE(Function/FunctionLibrary.xml FunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/ScalarFunction/ScalarFunctionLibrary.xml ScalarFunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/ScalarVectorFunction/ScalarVectorFunctionLibrary.xml ScalarVectorFunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/IterationFunction/IterationFunctionLibrary.xml IterationFunctionLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Function/StoppingCriterion/StoppingCriterionLibrary.xml StoppingCriterionLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Function/Predicate/PredicateLibrary.xml PredicateLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/Evaluator/EvaluatorLibrary.xml EvaluatorLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Learning/LearningLibrary.xml LearningLibrary.cpp)
@@ -262,8 +260,6 @@ SET(LBCPP_FUNCTION_SOURCES
   ../include/lbcpp/Function/ScalarVectorFunction.h
   Function/ScalarFunction.cpp
   ../include/lbcpp/Function/IterationFunction.h
-  ../include/lbcpp/Function/StoppingCriterion.h
-  ../include/lbcpp/Function/Predicate.h
   ../include/lbcpp/Function/Evaluator.h
   Function/Evaluator.cpp
   Function/FunctionLibrary.xml
@@ -293,22 +289,6 @@ SET(LBCPP_FUNCTION_ITERATION_SOURCES
   Function/IterationFunction/InvLinearIterationFunction.h
   Function/IterationFunction/IterationFunctionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/IterationFunctionLibrary.cpp
-)
-
-SET(LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES
-  Function/StoppingCriterion/MaxIterationsStoppingCriterion.h
-  Function/StoppingCriterion/MaxIterationsWithoutImprovementStoppingCriterion.h
-  Function/StoppingCriterion/AverageImprovementStoppingCriterion.h
-  Function/StoppingCriterion/LogicalOrStoppingCriterion.h
-  Function/StoppingCriterion/StoppingCriterionLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/StoppingCriterionLibrary.cpp
-)
-
-SET(LBCPP_FUNCTION_PREDICATE_SOURCES
-  Function/Predicate/BinaryPredicate.h
-  Function/Predicate/UnaryComparisonPredicate.h
-  Function/Predicate/PredicateLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/PredicateLibrary.cpp
 )
 
 SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
@@ -587,7 +567,6 @@ SET(LBCPP_SOURCES
     ${LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES}
     ${LBCPP_FUNCTION_ITERATION_SOURCES}
     ${LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES}
-    ${LBCPP_FUNCTION_PREDICATE_SOURCES}
     ${LBCPP_FUNCTION_EVALUATOR_SOURCES}
 
   # Learning
@@ -651,8 +630,6 @@ SOURCE_GROUP(Function FILES ${LBCPP_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(Function ScalarFunction FILES ${LBCPP_FUNCTION_SCALAR_SOURCES})
 SOURCE_SUB_GROUP(Function ScalarVectorFunction FILES ${LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES})
 SOURCE_SUB_GROUP(Function IterationFunction FILES ${LBCPP_FUNCTION_ITERATION_SOURCES})
-SOURCE_SUB_GROUP(Function StoppingCriterion FILES ${LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES})
-SOURCE_SUB_GROUP(Function Predicate FILES ${LBCPP_FUNCTION_PREDICATE_SOURCES})
 SOURCE_SUB_GROUP(Function Evaluator FILES ${LBCPP_FUNCTION_EVALUATOR_SOURCES})
 
 ## Learning
