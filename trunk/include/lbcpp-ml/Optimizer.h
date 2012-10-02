@@ -14,10 +14,10 @@
 namespace lbcpp
 {
 
-class MOOOptimizer : public Object
+class Optimizer : public Object
 {
 public:
-  MOOOptimizer() : verbosity(verbosityQuiet) {}
+  Optimizer() : verbosity(verbosityQuiet) {}
   
   enum Verbosity
   {
@@ -27,36 +27,36 @@ public:
     verbosityAll
   };
 
-  MOOParetoFrontPtr optimize(ExecutionContext& context, MOOProblemPtr problem, Verbosity verbosity = verbosityQuiet);
+  ParetoFrontPtr optimize(ExecutionContext& context, ProblemPtr problem, Verbosity verbosity = verbosityQuiet);
 
-  virtual void configure(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr front, Verbosity verbosity = verbosityQuiet);
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, Verbosity verbosity = verbosityQuiet);
   virtual void optimize(ExecutionContext& context) = 0;
   virtual void clear(ExecutionContext& context);
   
-  MOOProblemPtr getProblem() const
+  ProblemPtr getProblem() const
     {return problem;}
 
-  MOOParetoFrontPtr getFront() const
+  ParetoFrontPtr getFront() const
     {return front;}
 
   double computeHyperVolume() const;
 
 protected:
-  typedef std::pair<ObjectPtr, MOOFitnessPtr> SolutionAndFitnessPair;
+  typedef std::pair<ObjectPtr, FitnessPtr> SolutionAndFitnessPair;
 
-  MOOProblemPtr problem;
-  MOOParetoFrontPtr front;
+  ProblemPtr problem;
+  ParetoFrontPtr front;
   Verbosity verbosity;
 
-  MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object);
-  MOOFitnessPtr evaluateAndSave(ExecutionContext& context, const ObjectPtr& object, MOOSolutionSetPtr solutions);
-  ObjectPtr sampleSolution(ExecutionContext& context, MOOSamplerPtr sampler);
-  MOOFitnessPtr sampleAndEvaluateSolution(ExecutionContext& context, MOOSamplerPtr sampler, MOOSolutionSetPtr solutions = MOOSolutionSetPtr());
-  MOOSolutionSetPtr sampleAndEvaluatePopulation(ExecutionContext& context, MOOSamplerPtr sampler, size_t populationSize);
-  void learnSampler(ExecutionContext& context, MOOSolutionSetPtr solutions, MOOSamplerPtr sampler);
+  FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object);
+  FitnessPtr evaluateAndSave(ExecutionContext& context, const ObjectPtr& object, SolutionSetPtr solutions);
+  ObjectPtr sampleSolution(ExecutionContext& context, SamplerPtr sampler);
+  FitnessPtr sampleAndEvaluateSolution(ExecutionContext& context, SamplerPtr sampler, SolutionSetPtr solutions = SolutionSetPtr());
+  SolutionSetPtr sampleAndEvaluatePopulation(ExecutionContext& context, SamplerPtr sampler, size_t populationSize);
+  void learnSampler(ExecutionContext& context, SolutionSetPtr solutions, SamplerPtr sampler);
 };
 
-class IterativeOptimizer : public MOOOptimizer
+class IterativeOptimizer : public Optimizer
 {
 public:
   IterativeOptimizer(size_t numIterations = 0)
@@ -72,23 +72,22 @@ protected:
   size_t numIterations;
 };
 
-extern IterativeOptimizerPtr randomOptimizer(MOOSamplerPtr sampler, size_t numIterations = 0);
+extern IterativeOptimizerPtr randomOptimizer(SamplerPtr sampler, size_t numIterations = 0);
 
-class PopulationBasedMOOOptimizer : public IterativeOptimizer
+class PopulationBasedOptimizer : public IterativeOptimizer
 {
 public:
-  PopulationBasedMOOOptimizer(size_t populationSize = 100, size_t numGenerations = 0)
+  PopulationBasedOptimizer(size_t populationSize = 100, size_t numGenerations = 0)
     : IterativeOptimizer(numGenerations), populationSize(populationSize) {}
 
 protected:
-  friend class PopulationBasedMOOOptimizerClass;
+  friend class PopulationBasedOptimizerClass;
 
   size_t populationSize;
 };
 
-extern PopulationBasedMOOOptimizerPtr crossEntropyOptimizer(MOOSamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations = 0, bool elitist = false, MOOSolutionComparatorPtr comparator = MOOSolutionComparatorPtr());
-
-extern PopulationBasedMOOOptimizerPtr nsga2moOptimizer(size_t populationSize = 100, size_t numGenerations = 0, double mutationDistributionIndex = 20.0, double crossOverDistributionIndex = 20.0, double crossOverProbability = 0.9);
+extern PopulationBasedOptimizerPtr crossEntropyOptimizer(SamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations = 0, bool elitist = false, SolutionComparatorPtr comparator = SolutionComparatorPtr());
+extern PopulationBasedOptimizerPtr nsga2moOptimizer(size_t populationSize = 100, size_t numGenerations = 0, double mutationDistributionIndex = 20.0, double crossOverDistributionIndex = 20.0, double crossOverProbability = 0.9);
 
 }; /* namespace lbcpp */
 

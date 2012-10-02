@@ -14,12 +14,12 @@
 namespace lbcpp
 {
 
-class MOOSolution : public Object
+class Solution : public Object
 {
 public:
-  MOOSolution(const ObjectPtr& object, const MOOFitnessPtr& fitness)
+  Solution(const ObjectPtr& object, const FitnessPtr& fitness)
     : object(object), fitness(fitness) {}
-  MOOSolution() {}
+  Solution() {}
 
   /*
   ** Object
@@ -30,17 +30,17 @@ public:
   /*
   ** Fitness
   */
-  const MOOFitnessPtr& getFitness() const
+  const FitnessPtr& getFitness() const
     {return fitness;}
 
-  const MOOFitnessLimitsPtr& getFitnessLimits() const
+  const FitnessLimitsPtr& getFitnessLimits() const
     {return fitness->getLimits();}
 
 protected:
-  friend class MOOSolutionClass;
+  friend class SolutionClass;
 
   ObjectPtr object;
-  MOOFitnessPtr fitness;
+  FitnessPtr fitness;
 };
 
 }; /* namespace lbcpp */

@@ -9,23 +9,23 @@
 #ifndef LBCPP_ML_COMPARATOR_LEXICOGRAPHIC_H_
 # define LBCPP_ML_COMPARATOR_LEXICOGRAPHIC_H_
 
-# include <lbcpp-ml/Comparator.h>
+# include <lbcpp-ml/SolutionComparator.h>
 # include <lbcpp-ml/SolutionSet.h>
 
 namespace lbcpp
 {
 
-class LexicographicComparator : public MOOSolutionComparator
+class LexicographicComparator : public SolutionComparator
 {
 public:
-  virtual void initialize(const MOOSolutionSetPtr& solutions)
+  virtual void initialize(const SolutionSetPtr& solutions)
     {this->solutions = solutions;}
 
   virtual int compare(size_t index1, size_t index2)
   {
-    MOOFitnessPtr fitness1 = solutions->getFitness(index1);
-    MOOFitnessPtr fitness2 = solutions->getFitness(index2);
-    MOOFitnessLimitsPtr limits = solutions->getFitnessLimits();
+    FitnessPtr fitness1 = solutions->getFitness(index1);
+    FitnessPtr fitness2 = solutions->getFitness(index2);
+    FitnessLimitsPtr limits = solutions->getFitnessLimits();
 
     for (size_t i = 0; i < limits->getNumObjectives(); ++i)
     {
@@ -41,7 +41,7 @@ public:
   }
 
 private:
-  MOOSolutionSetPtr solutions;
+  SolutionSetPtr solutions;
 };
 
 }; /* namespace lbcpp */

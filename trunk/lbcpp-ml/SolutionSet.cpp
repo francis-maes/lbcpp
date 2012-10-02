@@ -7,34 +7,34 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp-ml/SolutionSet.h>
-#include <lbcpp-ml/Comparator.h>
+#include <lbcpp-ml/SolutionComparator.h>
 #include <MOO-EALib/Hypervolume.h>
 #include <algorithm>
 using namespace lbcpp;
 
 /*
-** MOOSolutionSet
+** SolutionSet
 */
-MOOSolutionSet::MOOSolutionSet(MOOFitnessLimitsPtr limits, const std::vector<MOOSolutionPtr>& solutions, MOOSolutionComparatorPtr comparator)
+SolutionSet::SolutionSet(FitnessLimitsPtr limits, const std::vector<SolutionPtr>& solutions, SolutionComparatorPtr comparator)
   : limits(limits), solutions(solutions), comparator(comparator)
 {
 }
 
-MOOSolutionSet::MOOSolutionSet(MOOFitnessLimitsPtr limits)
+SolutionSet::SolutionSet(FitnessLimitsPtr limits)
   : limits(limits)
 {
 }
 
-void MOOSolutionSet::addSolution(const MOOSolutionPtr& solution)
+void SolutionSet::addSolution(const SolutionPtr& solution)
 {
   solutions.push_back(solution);
-  comparator = MOOSolutionComparatorPtr(); // mark as unsorted
+  comparator = SolutionComparatorPtr(); // mark as unsorted
 }
 
-void MOOSolutionSet::addSolution(const ObjectPtr& object, const MOOFitnessPtr& fitness)
-  {addSolution(new MOOSolution(object, fitness));}
+void SolutionSet::addSolution(const ObjectPtr& object, const FitnessPtr& fitness)
+  {addSolution(new Solution(object, fitness));}
 
-void MOOSolutionSet::addSolutions(const MOOSolutionSetPtr& otherSolutions)
+void SolutionSet::addSolutions(const SolutionSetPtr& otherSolutions)
 {
   jassert(otherSolutions);
   size_t offset = solutions.size();
@@ -42,10 +42,10 @@ void MOOSolutionSet::addSolutions(const MOOSolutionSetPtr& otherSolutions)
   solutions.resize(offset + n);
   for (size_t i = 0; i < n; ++i)
     solutions[i + offset] = otherSolutions->solutions[i];
-  comparator = MOOSolutionComparatorPtr(); // mark as unsorted
+  comparator = SolutionComparatorPtr(); // mark as unsorted
 }
 
-std::vector<ObjectPtr> MOOSolutionSet::getObjects() const
+std::vector<ObjectPtr> SolutionSet::getObjects() const
 {
   std::vector<ObjectPtr> res(solutions.size());
   for (size_t i = 0; i < res.size(); ++i)
@@ -55,16 +55,16 @@ std::vector<ObjectPtr> MOOSolutionSet::getObjects() const
 
 struct WrapSolutionComparator
 {
-  WrapSolutionComparator(const MOOSolutionComparatorPtr& comparator)
+  WrapSolutionComparator(const SolutionComparatorPtr& comparator)
     : comparator(comparator) {}
 
-  MOOSolutionComparatorPtr comparator;
+  SolutionComparatorPtr comparator;
 
   bool operator()(size_t a, size_t b) const
     {return comparator->compare(a, b) < 0;}
 };
 
-MOOSolutionSetPtr MOOSolutionSet::sort(const MOOSolutionComparatorPtr& comparator, std::vector<size_t>* mapping) const
+SolutionSetPtr SolutionSet::sort(const SolutionComparatorPtr& comparator, std::vector<size_t>* mapping) const
 {
   if (this->comparator == comparator)
     return refCountedPointerFromThis(this);
@@ -81,7 +81,7 @@ MOOSolutionSetPtr MOOSolutionSet::sort(const MOOSolutionComparatorPtr& comparato
   std::sort(mapping->begin(), mapping->end(), WrapSolutionComparator(comparator));
 
   // copy and re-order
-  MOOSolutionSetPtr res = new MOOSolutionSet(limits);
+  SolutionSetPtr res = new SolutionSet(limits);
   res->solutions.resize(n);
   for (size_t i = 0; i < n; ++i)
     res->solutions[i] = solutions[(*mapping)[i]];
@@ -89,7 +89,7 @@ MOOSolutionSetPtr MOOSolutionSet::sort(const MOOSolutionComparatorPtr& comparato
   return res;
 }
 
-int MOOSolutionSet::findBestSolution(const MOOSolutionComparatorPtr& comparator) const
+int SolutionSet::findBestSolution(const SolutionComparatorPtr& comparator) const
 {
   if (solutions.empty())
     return -1;
@@ -105,30 +105,30 @@ int MOOSolutionSet::findBestSolution(const MOOSolutionComparatorPtr& comparator)
   return (int)bestSolutionIndex;
 }
 
-MOOSolutionPtr MOOSolutionSet::getBestSolution(const MOOSolutionComparatorPtr& comparator) const
+SolutionPtr SolutionSet::getBestSolution(const SolutionComparatorPtr& comparator) const
 {
   int index = findBestSolution(comparator);
-  return index >= 0 ? solutions[index] : MOOSolutionPtr();
+  return index >= 0 ? solutions[index] : SolutionPtr();
 }
 
-MOOSolutionSetPtr MOOSolutionSet::selectNBests(const MOOSolutionComparatorPtr& comparator, size_t n) const
+SolutionSetPtr SolutionSet::selectNBests(const SolutionComparatorPtr& comparator, size_t n) const
 {
   if (n >= solutions.size())
     return refCountedPointerFromThis(this);
 
-  MOOSolutionSetPtr res = sort(comparator);
+  SolutionSetPtr res = sort(comparator);
   res->solutions.resize(n);
   return res;
 }
 
-MOOFitnessLimitsPtr MOOSolutionSet::getEmpiricalLimits() const
+FitnessLimitsPtr SolutionSet::getEmpiricalLimits() const
 {
   size_t n = limits->getNumDimensions();
   std::vector< std::pair<double, double> > res(n, std::make_pair(DBL_MAX, -DBL_MAX));
 
   for (size_t i = 0; i < solutions.size(); ++i)
   {
-    MOOFitnessPtr fitness = solutions[i]->getFitness();
+    FitnessPtr fitness = solutions[i]->getFitness();
     for (size_t j = 0; j < n; ++j)
     {
       double value = fitness->getValue(j);
@@ -138,10 +138,10 @@ MOOFitnessLimitsPtr MOOSolutionSet::getEmpiricalLimits() const
         res[j].second = value;
     }
   }
-  return new MOOFitnessLimits(res);
+  return new FitnessLimits(res);
 }
 
-bool MOOSolutionSet::strictlyDominates(const MOOFitnessPtr& fitness) const
+bool SolutionSet::strictlyDominates(const FitnessPtr& fitness) const
 {
   for (size_t i = 0; i < solutions.size(); ++i)
     if (solutions[i]->getFitness()->strictlyDominates(fitness))
@@ -149,16 +149,16 @@ bool MOOSolutionSet::strictlyDominates(const MOOFitnessPtr& fitness) const
   return false;
 }
 
-MOOParetoFrontPtr MOOSolutionSet::getParetoFront() const
+ParetoFrontPtr SolutionSet::getParetoFront() const
 {
-  std::vector<MOOSolutionPtr> res;
+  std::vector<SolutionPtr> res;
   for (size_t i = 0; i < solutions.size(); ++i)
     if (!strictlyDominates(solutions[i]->getFitness()))
       res.push_back(solutions[i]);
-  return new MOOParetoFront(limits, res, comparator);
+  return new ParetoFront(limits, res, comparator);
 }
 
-void MOOSolutionSet::computeParetoRanks(std::vector< std::pair<size_t, size_t> >& mapping, std::vector<size_t>& countPerRank) const
+void SolutionSet::computeParetoRanks(std::vector< std::pair<size_t, size_t> >& mapping, std::vector<size_t>& countPerRank) const
 {
   size_t n = solutions.size();
   if (!n)
@@ -170,7 +170,7 @@ void MOOSolutionSet::computeParetoRanks(std::vector< std::pair<size_t, size_t> >
   mapping.resize(n);
 
   std::vector<size_t> currentFrontIndices;
-  MOOSolutionComparatorPtr dom = dominanceComparator();
+  SolutionComparatorPtr dom = dominanceComparator();
   dom->initialize(refCountedPointerFromThis(this));
   for (size_t i = 0; i < n; ++i)
   {
@@ -227,7 +227,7 @@ void MOOSolutionSet::computeParetoRanks(std::vector< std::pair<size_t, size_t> >
 #endif // JUCE_DEBUG
 }
 
-std::vector<MOOParetoFrontPtr> MOOSolutionSet::nonDominatedSort(std::vector< std::pair<size_t, size_t> >* mapping) const
+std::vector<ParetoFrontPtr> SolutionSet::nonDominatedSort(std::vector< std::pair<size_t, size_t> >* mapping) const
 {
   std::vector< std::pair<size_t, size_t> > localMapping;
   if (!mapping)
@@ -235,10 +235,10 @@ std::vector<MOOParetoFrontPtr> MOOSolutionSet::nonDominatedSort(std::vector< std
   std::vector<size_t> countPerRank;
   computeParetoRanks(*mapping, countPerRank);
 
-  std::vector<MOOParetoFrontPtr> res(countPerRank.size());
+  std::vector<ParetoFrontPtr> res(countPerRank.size());
   for (size_t i = 0; i < res.size(); ++i)
   {
-    MOOParetoFrontPtr front = new MOOParetoFront(limits);
+    ParetoFrontPtr front = new ParetoFront(limits);
     front->solutions.reserve(countPerRank[i]);
     front->comparator = comparator;
     res[i] = front;
@@ -249,7 +249,7 @@ std::vector<MOOParetoFrontPtr> MOOSolutionSet::nonDominatedSort(std::vector< std
   return res;
 }
 
-void MOOSolutionSet::computeCrowdingDistances(std::vector<double>& res) const
+void SolutionSet::computeCrowdingDistances(std::vector<double>& res) const
 {
   size_t n = solutions.size();
 
@@ -268,7 +268,7 @@ void MOOSolutionSet::computeCrowdingDistances(std::vector<double>& res) const
   for (size_t i = 0; i < limits->getNumObjectives(); ++i)
   {
     std::vector<size_t> mapping;
-    MOOSolutionSetPtr ordered = sort(objectiveComparator(i), &mapping);
+    SolutionSetPtr ordered = sort(objectiveComparator(i), &mapping);
     double bestValue = ordered->getFitness(0)->getValue(i);
     double worstValue = ordered->getFitness(n - 1)->getValue(i);
     double invRange = 1.0 / (worstValue - bestValue);
@@ -279,34 +279,34 @@ void MOOSolutionSet::computeCrowdingDistances(std::vector<double>& res) const
   }
 }
 
-void MOOSolutionSet::clone(ExecutionContext& context, const ObjectPtr& t) const
+void SolutionSet::clone(ExecutionContext& context, const ObjectPtr& t) const
 {
-  const MOOSolutionSetPtr& target = t.staticCast<MOOSolutionSet>();
+  const SolutionSetPtr& target = t.staticCast<SolutionSet>();
   target->limits = limits;
   target->solutions = solutions;
   target->comparator = comparator;
 }
 
 /*
-** MOOParetoFront
+** ParetoFront
 */
-void MOOParetoFront::addSolutionAndUpdateFront(const ObjectPtr& object, const MOOFitnessPtr& fitness)
+void ParetoFront::addSolutionAndUpdateFront(const ObjectPtr& object, const FitnessPtr& fitness)
 {
-  std::vector<MOOSolutionPtr> newSolutions;
+  std::vector<SolutionPtr> newSolutions;
   newSolutions.reserve(solutions.size());
   for (size_t i = 0; i < solutions.size(); ++i)
   {
-    MOOFitnessPtr solutionFitness = solutions[i]->getFitness();
+    FitnessPtr solutionFitness = solutions[i]->getFitness();
     if (solutionFitness->strictlyDominates(fitness))
       return; // dominated
     if (!fitness->strictlyDominates(solutionFitness))
       newSolutions.push_back(solutions[i]);
   }
-  newSolutions.push_back(new MOOSolution(object, fitness));
+  newSolutions.push_back(new Solution(object, fitness));
   solutions.swap(newSolutions);
 }
 
-double MOOParetoFront::computeHyperVolume(const MOOFitnessPtr& referenceFitness) const
+double ParetoFront::computeHyperVolume(const FitnessPtr& referenceFitness) const
 {
   if (isEmpty())
     return 0.0;
@@ -325,7 +325,7 @@ double MOOParetoFront::computeHyperVolume(const MOOFitnessPtr& referenceFitness)
     size_t numPoints = 0;
     for (size_t i = 0; i < solutions.size(); ++i)
     {
-      MOOFitnessPtr fitness = solutions[i]->getFitness();
+      FitnessPtr fitness = solutions[i]->getFitness();
       if (!referenceFitness->isBetterForAtLeastOneObjectiveThan(fitness))
       {
         std::vector<double> val = fitness->getValuesToBeMinimized();

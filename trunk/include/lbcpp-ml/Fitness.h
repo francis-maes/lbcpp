@@ -14,12 +14,12 @@
 namespace lbcpp
 {
 
-class MOOFitnessLimits : public ContinuousDomain
+class FitnessLimits : public ContinuousDomain
 {
 public:
-  MOOFitnessLimits(const std::vector< std::pair<double, double> >& limits)
+  FitnessLimits(const std::vector< std::pair<double, double> >& limits)
     : ContinuousDomain(limits) {}
-  MOOFitnessLimits() {}
+  FitnessLimits() {}
 
   size_t getNumObjectives() const
     {return limits.size();}
@@ -30,19 +30,19 @@ public:
   bool shouldObjectiveBeMaximised(size_t objectiveIndex) const;
   double getObjectiveSign(size_t objectiveIndex) const; // 1 for maximisation and -1 for minimisation
 
-  MOOFitnessPtr getWorstPossibleFitness(bool useInfiniteValues = false) const;
-  MOOFitnessPtr getBestPossibleFitness(bool useInfiniteValues = false) const;
+  FitnessPtr getWorstPossibleFitness(bool useInfiniteValues = false) const;
+  FitnessPtr getBestPossibleFitness(bool useInfiniteValues = false) const;
 
   double computeUtopicHyperVolume() const;
 };
 
-class MOOFitness : public Object
+class Fitness : public Object
 {
 public:
-  MOOFitness(const std::vector<double>& values, const MOOFitnessLimitsPtr& limits);
-  MOOFitness() {}
+  Fitness(const std::vector<double>& values, const FitnessLimitsPtr& limits);
+  Fitness() {}
 
-  const MOOFitnessLimitsPtr& getLimits() const
+  const FitnessLimitsPtr& getLimits() const
     {return limits;}
 
   size_t getNumValues() const
@@ -56,20 +56,20 @@ public:
 
   std::vector<double> getValuesToBeMinimized() const;
 
-  bool dominates(const MOOFitnessPtr& other, bool strictly = false) const;
-  bool strictlyDominates(const MOOFitnessPtr& other) const;
-  bool isBetterForAtLeastOneObjectiveThan(const MOOFitnessPtr& other, bool strictly = true) const;
+  bool dominates(const FitnessPtr& other, bool strictly = false) const;
+  bool strictlyDominates(const FitnessPtr& other) const;
+  bool isBetterForAtLeastOneObjectiveThan(const FitnessPtr& other, bool strictly = true) const;
   
   virtual String toShortString() const;
   virtual int compare(const ObjectPtr& otherObject) const;
 
-  static MOOFitnessPtr makeWorstCombination(const MOOFitnessPtr& fitness1, const MOOFitnessPtr& fitness2);
+  static FitnessPtr makeWorstCombination(const FitnessPtr& fitness1, const FitnessPtr& fitness2);
 
 protected:
-  friend class MOOFitnessClass;
+  friend class FitnessClass;
 
   std::vector<double> values;
-  MOOFitnessLimitsPtr limits;
+  FitnessLimitsPtr limits;
 };
 
 }; /* namespace lbcpp */

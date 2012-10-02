@@ -18,14 +18,14 @@
 namespace lbcpp
 {
 
-class SharkObjectiveFunctionFromMOOProblem : public ObjectiveFunctionVS<double> 
+class SharkObjectiveFunctionFromProblem : public ObjectiveFunctionVS<double> 
 {
 public:
-  SharkObjectiveFunctionFromMOOProblem(ExecutionContext& context, MOOProblemPtr problem)
+  SharkObjectiveFunctionFromProblem(ExecutionContext& context, ProblemPtr problem)
     : context(context), problem(problem)
   {
   	m_name = (const char* )problem->toShortString();
-    ContinuousDomainPtr domain = problem->getObjectDomain().staticCast<ContinuousDomain>();
+    ContinuousDomainPtr domain = problem->getDomain().staticCast<ContinuousDomain>();
     m_dimension = domain->getNumDimensions();
     std::vector<double> lower(domain->getNumDimensions());
     std::vector<double> upper(domain->getNumDimensions());
@@ -36,7 +36,7 @@ public:
     }
     constrainthandler = new BoxConstraintHandler(lower, upper); 
   }
-  virtual ~SharkObjectiveFunctionFromMOOProblem()
+  virtual ~SharkObjectiveFunctionFromProblem()
     {delete constrainthandler;}
 
   virtual unsigned int objectives() const
@@ -46,7 +46,7 @@ public:
   {
     DenseDoubleVectorPtr solution = new DenseDoubleVector((size_t)m_dimension, 0.0);
     memcpy(solution->getValuePointer(0), point, sizeof (double) * m_dimension);
-    MOOFitnessPtr fitness = problem->evaluate(context, solution);
+    FitnessPtr fitness = problem->evaluate(context, solution);
     jassert(fitness);
     value = fitness->getValues();
 	  m_timesCalled++;
@@ -63,13 +63,13 @@ public:
 
 protected:
   ExecutionContext& context;
-  MOOProblemPtr problem;
+  ProblemPtr problem;
 };
 
 template<class SearchAlgorithmClass>
-static void sharkFillParetoFront(SearchAlgorithmClass& searchAlgorithm, MOOProblemPtr problem, MOOParetoFrontPtr front)
+static void sharkFillParetoFront(SearchAlgorithmClass& searchAlgorithm, ProblemPtr problem, ParetoFrontPtr front)
 {
-  ContinuousDomainPtr domain = problem->getObjectDomain().staticCast<ContinuousDomain>();
+  ContinuousDomainPtr domain = problem->getDomain().staticCast<ContinuousDomain>();
   size_t n = domain->getNumDimensions();
   std::vector<double* > solutions;
   Array<double> fitnesses;
@@ -82,20 +82,20 @@ static void sharkFillParetoFront(SearchAlgorithmClass& searchAlgorithm, MOOProbl
     std::vector<double> fitness(problem->getNumObjectives());
     for (size_t j = 0; j < fitness.size(); ++j)
       fitness[j] = fitnesses(i, j);
-    front->addSolutionAndUpdateFront(sol, new MOOFitness(fitness, problem->getFitnessLimits()));
+    front->addSolutionAndUpdateFront(sol, new Fitness(fitness, problem->getFitnessLimits()));
   }
 }
 
-class NSGA2MOOptimizer : public PopulationBasedMOOOptimizer
+class NSGA2MOOptimizer : public PopulationBasedOptimizer
 {
 public:
   NSGA2MOOptimizer(size_t populationSize = 100, size_t numGenerations = 0, double mutationDistributionIndex = 20.0, double crossOverDistributionIndex = 20.0, double crossOverProbability = 0.9)
-    : PopulationBasedMOOOptimizer(populationSize, numGenerations), mutationDistributionIndex(mutationDistributionIndex), crossOverDistributionIndex(crossOverDistributionIndex), crossOverProbability(crossOverProbability), objective(NULL), nsga2(NULL) {}
+    : PopulationBasedOptimizer(populationSize, numGenerations), mutationDistributionIndex(mutationDistributionIndex), crossOverDistributionIndex(crossOverDistributionIndex), crossOverProbability(crossOverProbability), objective(NULL), nsga2(NULL) {}
 
-  virtual void configure(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr front, Verbosity verbosity)
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, Verbosity verbosity)
   {
-    PopulationBasedMOOOptimizer::configure(context, problem, front, verbosity);
-    objective = new SharkObjectiveFunctionFromMOOProblem(context, problem);
+    PopulationBasedOptimizer::configure(context, problem, front, verbosity);
+    objective = new SharkObjectiveFunctionFromProblem(context, problem);
     nsga2 = new NSGA2Search();
   }
 
@@ -114,7 +114,7 @@ public:
     sharkFillParetoFront(*nsga2, problem, front);
     deleteAndZero(nsga2);
     deleteAndZero(objective);
-    PopulationBasedMOOOptimizer::clear(context);
+    PopulationBasedOptimizer::clear(context);
   }
 
 protected:
@@ -124,20 +124,20 @@ protected:
   double crossOverDistributionIndex;
   double crossOverProbability;
 
-  SharkObjectiveFunctionFromMOOProblem* objective;
+  SharkObjectiveFunctionFromProblem* objective;
   NSGA2Search* nsga2;
 };
 
-class CMAESMOOptimizer : public PopulationBasedMOOOptimizer
+class CMAESMOOptimizer : public PopulationBasedOptimizer
 {
 public:
   CMAESMOOptimizer(size_t populationSize = 100, size_t numOffsprings = 100, size_t numGenerations = 0)
-    : PopulationBasedMOOOptimizer(populationSize, numGenerations), numOffsprings(numOffsprings), objective(NULL), mocma(NULL) {}
+    : PopulationBasedOptimizer(populationSize, numGenerations), numOffsprings(numOffsprings), objective(NULL), mocma(NULL) {}
 
-  virtual void configure(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr front, Verbosity verbosity)
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, Verbosity verbosity)
   {
-    PopulationBasedMOOOptimizer::configure(context, problem, front, verbosity);
-    objective = new SharkObjectiveFunctionFromMOOProblem(context, problem);
+    PopulationBasedOptimizer::configure(context, problem, front, verbosity);
+    objective = new SharkObjectiveFunctionFromProblem(context, problem);
     mocma = new MOCMASearch();
   }
 
@@ -156,7 +156,7 @@ public:
     sharkFillParetoFront(*mocma, problem, front);
     deleteAndZero(mocma);
     deleteAndZero(objective);
-    PopulationBasedMOOOptimizer::clear(context);
+    PopulationBasedOptimizer::clear(context);
   }
 
 protected:
@@ -164,7 +164,7 @@ protected:
 
   size_t numOffsprings;
 
-  SharkObjectiveFunctionFromMOOProblem* objective;
+  SharkObjectiveFunctionFromProblem* objective;
   MOCMASearch* mocma;
 };
 

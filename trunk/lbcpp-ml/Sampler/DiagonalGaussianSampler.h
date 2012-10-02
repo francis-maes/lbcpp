@@ -15,13 +15,13 @@
 namespace lbcpp
 {
 
-class DiagonalGaussianSampler : public MOOSampler
+class DiagonalGaussianSampler : public Sampler
 {
 public:
   DiagonalGaussianSampler(double learningRate = 0.1)
     : learningRate(learningRate), epoch(0) {}
 
-  virtual void initialize(ExecutionContext& context, const MOODomainPtr& d)
+  virtual void initialize(ExecutionContext& context, const DomainPtr& d)
   {
     domain = d.staticCast<ContinuousDomain>();
     jassert(domain);

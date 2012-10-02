@@ -18,14 +18,14 @@ namespace lbcpp
 class RandomOptimizer : public IterativeOptimizer
 {
 public:
-  RandomOptimizer(MOOSamplerPtr sampler, size_t numIterations = 0)
+  RandomOptimizer(SamplerPtr sampler, size_t numIterations = 0)
     : IterativeOptimizer(numIterations), sampler(sampler) {}
   RandomOptimizer() {}
 
-  virtual void configure(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr front, Verbosity verbosity)
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, Verbosity verbosity)
   {
     IterativeOptimizer::configure(context, problem, front, verbosity);
-    sampler->initialize(context, problem->getObjectDomain());
+    sampler->initialize(context, problem->getDomain());
   }
 
   virtual bool iteration(ExecutionContext& context, size_t iter)
@@ -34,7 +34,7 @@ public:
 protected:
   friend class RandomOptimizerClass;
 
-  MOOSamplerPtr sampler;
+  SamplerPtr sampler;
 };
 
 }; /* namespace lbcpp */

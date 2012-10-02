@@ -10,9 +10,9 @@
 using namespace lbcpp;
 
 /*
-** MOOFitnessLimits
+** FitnessLimits
 */
-MOOFitnessPtr MOOFitnessLimits::getWorstPossibleFitness(bool useInfiniteValues) const
+FitnessPtr FitnessLimits::getWorstPossibleFitness(bool useInfiniteValues) const
 {
   std::vector<double> res(limits.size());
   if (useInfiniteValues)
@@ -21,10 +21,10 @@ MOOFitnessPtr MOOFitnessLimits::getWorstPossibleFitness(bool useInfiniteValues) 
   else
     for (size_t i = 0; i < res.size(); ++i)
       res[i] = limits[i].first;
-  return MOOFitnessPtr(new MOOFitness(res, refCountedPointerFromThis(this)));
+  return FitnessPtr(new Fitness(res, refCountedPointerFromThis(this)));
 }
 
-MOOFitnessPtr MOOFitnessLimits::getBestPossibleFitness(bool useInfiniteValues) const
+FitnessPtr FitnessLimits::getBestPossibleFitness(bool useInfiniteValues) const
 {
   std::vector<double> res(limits.size());
   if (useInfiniteValues)
@@ -33,10 +33,10 @@ MOOFitnessPtr MOOFitnessLimits::getBestPossibleFitness(bool useInfiniteValues) c
   else
     for (size_t i = 0; i < res.size(); ++i)
       res[i] = limits[i].second;
-  return MOOFitnessPtr(new MOOFitness(res, refCountedPointerFromThis(this)));
+  return FitnessPtr(new Fitness(res, refCountedPointerFromThis(this)));
 }
 
-double MOOFitnessLimits::computeUtopicHyperVolume() const
+double FitnessLimits::computeUtopicHyperVolume() const
 {
   double res = 1.0;
   for (size_t i = 0; i < limits.size(); ++i)
@@ -44,21 +44,21 @@ double MOOFitnessLimits::computeUtopicHyperVolume() const
   return res;
 }
 
-bool MOOFitnessLimits::shouldObjectiveBeMaximised(size_t objectiveIndex) const
+bool FitnessLimits::shouldObjectiveBeMaximised(size_t objectiveIndex) const
   {return limits[objectiveIndex].second > limits[objectiveIndex].first;}
 
-double MOOFitnessLimits::getObjectiveSign(size_t objectiveIndex) const
+double FitnessLimits::getObjectiveSign(size_t objectiveIndex) const
   {return shouldObjectiveBeMaximised(objectiveIndex) ? 1.0 : -1.0;}
 
 /*
-** MOOFitness
+** Fitness
 */
-MOOFitness::MOOFitness(const std::vector<double>& values, const MOOFitnessLimitsPtr& limits)
+Fitness::Fitness(const std::vector<double>& values, const FitnessLimitsPtr& limits)
   : values(values), limits(limits)
 {
 }
 
-bool MOOFitness::dominates(const MOOFitnessPtr& other, bool strictly) const
+bool Fitness::dominates(const FitnessPtr& other, bool strictly) const
 {
   jassert(other->limits == limits);
 
@@ -74,10 +74,10 @@ bool MOOFitness::dominates(const MOOFitnessPtr& other, bool strictly) const
   return !strictly || (numObjectivesForWhichThisIsBetter > 0);
 }
 
-bool MOOFitness::strictlyDominates(const MOOFitnessPtr& other) const
+bool Fitness::strictlyDominates(const FitnessPtr& other) const
   {return dominates(other, true);}
 
-bool MOOFitness::isBetterForAtLeastOneObjectiveThan(const MOOFitnessPtr& other, bool strictly) const
+bool Fitness::isBetterForAtLeastOneObjectiveThan(const FitnessPtr& other, bool strictly) const
 {
   jassert(other->limits == limits);
   for (size_t i = 0; i < values.size(); ++i)
@@ -89,7 +89,7 @@ bool MOOFitness::isBetterForAtLeastOneObjectiveThan(const MOOFitnessPtr& other, 
   return false;
 }
 
-MOOFitnessPtr MOOFitness::makeWorstCombination(const MOOFitnessPtr& fitness1, const MOOFitnessPtr& fitness2)
+FitnessPtr Fitness::makeWorstCombination(const FitnessPtr& fitness1, const FitnessPtr& fitness2)
 {
   jassert(fitness1->limits == fitness2->limits);
   size_t n = fitness1->values.size();
@@ -103,12 +103,12 @@ MOOFitnessPtr MOOFitness::makeWorstCombination(const MOOFitnessPtr& fitness1, co
     else
       res[i] = objective2;
   }
-  return new MOOFitness(res, fitness1->limits);
+  return new Fitness(res, fitness1->limits);
 }
 
-int MOOFitness::compare(const ObjectPtr& otherObject) const
+int Fitness::compare(const ObjectPtr& otherObject) const
 {
-  MOOFitnessPtr otherFitness = otherObject.dynamicCast<MOOFitness>();
+  FitnessPtr otherFitness = otherObject.dynamicCast<Fitness>();
   if (!otherFitness)
     return Object::compare(otherObject);
   if (limits != otherFitness->limits)
@@ -118,7 +118,7 @@ int MOOFitness::compare(const ObjectPtr& otherObject) const
   return 0;
 }
 
-String MOOFitness::toShortString() const
+String Fitness::toShortString() const
 {
   String res = "(";
   for (size_t i = 0; i < values.size(); ++i)
@@ -131,7 +131,7 @@ String MOOFitness::toShortString() const
   return res;
 }
 
-std::vector<double> MOOFitness::getValuesToBeMinimized() const
+std::vector<double> Fitness::getValuesToBeMinimized() const
 {
   std::vector<double> res = getValues();
   for (size_t i = 0; i < res.size(); ++i)

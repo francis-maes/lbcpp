@@ -36,11 +36,11 @@ public:
     return true;
   }
 
-  virtual void configure(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr front, Verbosity verbosity)
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, Verbosity verbosity)
   {
     IterativeOptimizer::configure(context, problem, front, verbosity);
 
-    MOOFitnessLimitsPtr limits = problem->getFitnessLimits();
+    FitnessLimitsPtr limits = problem->getFitnessLimits();
     pool = new BanditPool(new Objective(), explorationCoefficient);
     pool->reserveArms(numInstances);
     for (size_t i = 0; i < numInstances; ++i)

@@ -15,14 +15,14 @@
 namespace lbcpp
 {
 
-class MOODomain : public Object
+class Domain : public Object
 {
 public:
   virtual ObjectPtr projectIntoDomain(const ObjectPtr& object) const
     {return object;}
 };
 
-class ContinuousDomain : public MOODomain
+class ContinuousDomain : public Domain
 {
 public:
   ContinuousDomain(const std::vector< std::pair<double, double> >& limits)

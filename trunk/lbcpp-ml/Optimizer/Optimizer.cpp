@@ -12,25 +12,25 @@
 using namespace lbcpp;
 
 /*
-** MOOOptimizer
+** Optimizer
 */
-void MOOOptimizer::configure(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr front, Verbosity verbosity)
+void Optimizer::configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, Verbosity verbosity)
 {
   this->front = front;
   this->problem = problem;
   this->verbosity = verbosity;
 }
 
-void MOOOptimizer::clear(ExecutionContext& context)
+void Optimizer::clear(ExecutionContext& context)
 {
-  front = MOOParetoFrontPtr();
-  problem = MOOProblemPtr();
+  front = ParetoFrontPtr();
+  problem = ProblemPtr();
   verbosity = verbosityQuiet;
 }
 
-MOOParetoFrontPtr MOOOptimizer::optimize(ExecutionContext& context, MOOProblemPtr problem, Verbosity verbosity)
+ParetoFrontPtr Optimizer::optimize(ExecutionContext& context, ProblemPtr problem, Verbosity verbosity)
 {
-  MOOParetoFrontPtr res = new MOOParetoFront(problem->getFitnessLimits());
+  ParetoFrontPtr res = new ParetoFront(problem->getFitnessLimits());
   
   configure(context, problem, res, verbosity);
   optimize(context);
@@ -43,45 +43,45 @@ MOOParetoFrontPtr MOOOptimizer::optimize(ExecutionContext& context, MOOProblemPt
   return res;
 }
 
-double MOOOptimizer::computeHyperVolume() const
+double Optimizer::computeHyperVolume() const
   {return front->computeHyperVolume(problem->getFitnessLimits()->getWorstPossibleFitness());}
 
-MOOFitnessPtr MOOOptimizer::evaluate(ExecutionContext& context, const ObjectPtr& object)
+FitnessPtr Optimizer::evaluate(ExecutionContext& context, const ObjectPtr& object)
 {
   jassert(problem && front);
-  MOOFitnessPtr fitness = problem->evaluate(context, object);
+  FitnessPtr fitness = problem->evaluate(context, object);
   for (size_t i = 0; i < fitness->getNumValues(); ++i)
     jassert(isNumberValid(fitness->getValue(i)));
   front->addSolutionAndUpdateFront(object, fitness);
   return fitness;
 }
 
-MOOFitnessPtr MOOOptimizer::evaluateAndSave(ExecutionContext& context, const ObjectPtr& object, MOOSolutionSetPtr solutions)
+FitnessPtr Optimizer::evaluateAndSave(ExecutionContext& context, const ObjectPtr& object, SolutionSetPtr solutions)
 {
-  MOOFitnessPtr fitness = evaluate(context, object);
+  FitnessPtr fitness = evaluate(context, object);
   solutions->addSolution(object, fitness);
   return fitness;
 }
 
-ObjectPtr MOOOptimizer::sampleSolution(ExecutionContext& context, MOOSamplerPtr sampler)
-  {return problem->getObjectDomain()->projectIntoDomain(sampler->sample(context));}
+ObjectPtr Optimizer::sampleSolution(ExecutionContext& context, SamplerPtr sampler)
+  {return problem->getDomain()->projectIntoDomain(sampler->sample(context));}
  
-MOOFitnessPtr MOOOptimizer::sampleAndEvaluateSolution(ExecutionContext& context, MOOSamplerPtr sampler, MOOSolutionSetPtr population)
+FitnessPtr Optimizer::sampleAndEvaluateSolution(ExecutionContext& context, SamplerPtr sampler, SolutionSetPtr population)
 {
   ObjectPtr solution = sampleSolution(context, sampler); 
   return population ? evaluateAndSave(context, solution, population) : evaluate(context, solution);
 }
 
-MOOSolutionSetPtr MOOOptimizer::sampleAndEvaluatePopulation(ExecutionContext& context, MOOSamplerPtr sampler, size_t populationSize)
+SolutionSetPtr Optimizer::sampleAndEvaluatePopulation(ExecutionContext& context, SamplerPtr sampler, size_t populationSize)
 {
-  MOOSolutionSetPtr res = new MOOSolutionSet(problem->getFitnessLimits());
+  SolutionSetPtr res = new SolutionSet(problem->getFitnessLimits());
   for (size_t i = 0; i < populationSize; ++i)
     sampleAndEvaluateSolution(context, sampler, res);
   jassert(res->getNumSolutions() == populationSize);
   return res;
 }
 
-void MOOOptimizer::learnSampler(ExecutionContext& context, MOOSolutionSetPtr solutions, MOOSamplerPtr sampler)
+void Optimizer::learnSampler(ExecutionContext& context, SolutionSetPtr solutions, SamplerPtr sampler)
   {sampler->learn(context, solutions->getObjects());}
 
 /*

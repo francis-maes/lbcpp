@@ -14,10 +14,10 @@
 namespace lbcpp
 {
 
-class MOOSampler : public Object
+class Sampler : public Object
 {
 public:
-  virtual void initialize(ExecutionContext& context, const MOODomainPtr& domain) = 0;
+  virtual void initialize(ExecutionContext& context, const DomainPtr& domain) = 0;
 
   virtual ObjectPtr sample(ExecutionContext& context) const = 0;
   virtual bool isDegenerate() const // returns true if the sampler has became deterministic
@@ -27,8 +27,8 @@ public:
   virtual void reinforce(ExecutionContext& context, const ObjectPtr& object) = 0;
 };
 
-extern MOOSamplerPtr uniformContinuousSampler();
-extern MOOSamplerPtr diagonalGaussianSampler();
+extern SamplerPtr uniformContinuousSampler();
+extern SamplerPtr diagonalGaussianSampler();
 
 }; /* namespace lbcpp */
 

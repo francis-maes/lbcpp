@@ -14,12 +14,12 @@
 namespace lbcpp
 {
 
-class MOOSolutionSet : public Object
+class SolutionSet : public Object
 {
 public:
-  MOOSolutionSet(MOOFitnessLimitsPtr limits, const std::vector<MOOSolutionPtr>& solutions, MOOSolutionComparatorPtr comparator = MOOSolutionComparatorPtr());
-  MOOSolutionSet(MOOFitnessLimitsPtr limits);
-  MOOSolutionSet() {}
+  SolutionSet(FitnessLimitsPtr limits, const std::vector<SolutionPtr>& solutions, SolutionComparatorPtr comparator = SolutionComparatorPtr());
+  SolutionSet(FitnessLimitsPtr limits);
+  SolutionSet() {}
   
   /*
   ** Solution accessors
@@ -30,10 +30,10 @@ public:
   size_t getNumSolutions() const
     {return solutions.size();}
 
-  MOOSolutionPtr getSolution(size_t index) const
+  SolutionPtr getSolution(size_t index) const
     {jassert(index < solutions.size()); return solutions[index];}
 
-  MOOFitnessPtr getFitness(size_t index) const
+  FitnessPtr getFitness(size_t index) const
     {return getSolution(index)->getFitness();}
 
   std::vector<ObjectPtr> getObjects() const;
@@ -41,9 +41,9 @@ public:
   /*
   ** Solutions insertion
   */
-  void addSolution(const MOOSolutionPtr& solution);
-  void addSolution(const ObjectPtr& object, const MOOFitnessPtr& fitness);
-  void addSolutions(const MOOSolutionSetPtr& solutions);
+  void addSolution(const SolutionPtr& solution);
+  void addSolution(const ObjectPtr& object, const FitnessPtr& fitness);
+  void addSolutions(const SolutionSetPtr& solutions);
 
   /*
   ** Solutions comparison
@@ -51,27 +51,27 @@ public:
   bool isSorted() const
     {return comparator;}
 
-  MOOSolutionSetPtr sort(const MOOSolutionComparatorPtr& comparator, std::vector<size_t>* mapping = NULL) const; // sort from the most prefered solution to the least prefered one
+  SolutionSetPtr sort(const SolutionComparatorPtr& comparator, std::vector<size_t>* mapping = NULL) const; // sort from the most prefered solution to the least prefered one
 
-  int findBestSolution(const MOOSolutionComparatorPtr& comparator) const;
-  MOOSolutionPtr getBestSolution(const MOOSolutionComparatorPtr& comparator) const;
-  MOOSolutionSetPtr selectNBests(const MOOSolutionComparatorPtr& comparator, size_t n) const;
+  int findBestSolution(const SolutionComparatorPtr& comparator) const;
+  SolutionPtr getBestSolution(const SolutionComparatorPtr& comparator) const;
+  SolutionSetPtr selectNBests(const SolutionComparatorPtr& comparator, size_t n) const;
   
   void computeParetoRanks(std::vector< std::pair<size_t, size_t> >& mapping, std::vector<size_t>& countPerRank) const;
-  std::vector<MOOParetoFrontPtr> nonDominatedSort(std::vector< std::pair<size_t, size_t> >* mapping = NULL) const;
+  std::vector<ParetoFrontPtr> nonDominatedSort(std::vector< std::pair<size_t, size_t> >* mapping = NULL) const;
 
-  bool strictlyDominates(const MOOFitnessPtr& fitness) const;
-  MOOParetoFrontPtr getParetoFront() const;
+  bool strictlyDominates(const FitnessPtr& fitness) const;
+  ParetoFrontPtr getParetoFront() const;
 
   void computeCrowdingDistances(std::vector<double>& res) const;
 
   /*
   ** Fitness limits
   */
-  const MOOFitnessLimitsPtr& getFitnessLimits() const
+  const FitnessLimitsPtr& getFitnessLimits() const
     {return limits;}
 
-  MOOFitnessLimitsPtr getEmpiricalLimits() const;
+  FitnessLimitsPtr getEmpiricalLimits() const;
 
   size_t getNumObjectives() const
     {return limits->getNumObjectives();}
@@ -82,23 +82,23 @@ public:
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
 protected:
-  friend class MOOSolutionSetClass;
+  friend class SolutionSetClass;
 
-  MOOFitnessLimitsPtr limits;
-  std::vector<MOOSolutionPtr> solutions;
-  MOOSolutionComparatorPtr comparator;
+  FitnessLimitsPtr limits;
+  std::vector<SolutionPtr> solutions;
+  SolutionComparatorPtr comparator;
 };
 
-class MOOParetoFront : public MOOSolutionSet
+class ParetoFront : public SolutionSet
 {
 public:
-  MOOParetoFront(MOOFitnessLimitsPtr limits, const std::vector<MOOSolutionPtr>& solutions, MOOSolutionComparatorPtr comparator = MOOSolutionComparatorPtr())
-    : MOOSolutionSet(limits, solutions, comparator) {}
-  MOOParetoFront(MOOFitnessLimitsPtr limits) : MOOSolutionSet(limits) {}
-  MOOParetoFront() {}
+  ParetoFront(FitnessLimitsPtr limits, const std::vector<SolutionPtr>& solutions, SolutionComparatorPtr comparator = SolutionComparatorPtr())
+    : SolutionSet(limits, solutions, comparator) {}
+  ParetoFront(FitnessLimitsPtr limits) : SolutionSet(limits) {}
+  ParetoFront() {}
 
-  void addSolutionAndUpdateFront(const ObjectPtr& object, const MOOFitnessPtr& fitness);
-  double computeHyperVolume(const MOOFitnessPtr& referenceFitness) const;
+  void addSolutionAndUpdateFront(const ObjectPtr& object, const FitnessPtr& fitness);
+  double computeHyperVolume(const FitnessPtr& referenceFitness) const;
 };
 
 }; /* namespace lbcpp */

@@ -14,44 +14,44 @@
 namespace lbcpp
 {
 
-class MOODomain;
-typedef ReferenceCountedObjectPtr<MOODomain> MOODomainPtr;
+class Domain;
+typedef ReferenceCountedObjectPtr<Domain> DomainPtr;
 
 class ContinuousDomain;
 typedef ReferenceCountedObjectPtr<ContinuousDomain> ContinuousDomainPtr;
 
-class MOOFitnessLimits;
-typedef ReferenceCountedObjectPtr<MOOFitnessLimits> MOOFitnessLimitsPtr;
+class FitnessLimits;
+typedef ReferenceCountedObjectPtr<FitnessLimits> FitnessLimitsPtr;
 
-class MOOFitness;
-typedef ReferenceCountedObjectPtr<MOOFitness> MOOFitnessPtr;
+class Fitness;
+typedef ReferenceCountedObjectPtr<Fitness> FitnessPtr;
 
-class MOOSolution;
-typedef ReferenceCountedObjectPtr<MOOSolution> MOOSolutionPtr;
+class Solution;
+typedef ReferenceCountedObjectPtr<Solution> SolutionPtr;
 
-class MOOSolutionComparator;
-typedef ReferenceCountedObjectPtr<MOOSolutionComparator> MOOSolutionComparatorPtr;
+class SolutionComparator;
+typedef ReferenceCountedObjectPtr<SolutionComparator> SolutionComparatorPtr;
 
-class MOOProblem;
-typedef ReferenceCountedObjectPtr<MOOProblem> MOOProblemPtr;
+class Problem;
+typedef ReferenceCountedObjectPtr<Problem> ProblemPtr;
 
-class MOOSolutionSet;
-typedef ReferenceCountedObjectPtr<MOOSolutionSet> MOOSolutionSetPtr;
+class SolutionSet;
+typedef ReferenceCountedObjectPtr<SolutionSet> SolutionSetPtr;
 
-class MOOParetoFront;
-typedef ReferenceCountedObjectPtr<MOOParetoFront> MOOParetoFrontPtr;
+class ParetoFront;
+typedef ReferenceCountedObjectPtr<ParetoFront> ParetoFrontPtr;
 
-class MOOOptimizer;
-typedef ReferenceCountedObjectPtr<MOOOptimizer> MOOOptimizerPtr;
+class Optimizer;
+typedef ReferenceCountedObjectPtr<Optimizer> OptimizerPtr;
 
 class IterativeOptimizer;
 typedef ReferenceCountedObjectPtr<IterativeOptimizer> IterativeOptimizerPtr;
 
-class PopulationBasedMOOOptimizer;
-typedef ReferenceCountedObjectPtr<PopulationBasedMOOOptimizer> PopulationBasedMOOOptimizerPtr;
+class PopulationBasedOptimizer;
+typedef ReferenceCountedObjectPtr<PopulationBasedOptimizer> PopulationBasedOptimizerPtr;
 
-class MOOSampler;
-typedef ReferenceCountedObjectPtr<MOOSampler> MOOSamplerPtr;
+class Sampler;
+typedef ReferenceCountedObjectPtr<Sampler> SamplerPtr;
 
 }; /* namespace lbcpp */
 

@@ -9,26 +9,26 @@
 #ifndef LBCPP_ML_COMPARATOR_DOMINANCE_H_
 # define LBCPP_ML_COMPARATOR_DOMINANCE_H_
 
-# include <lbcpp-ml/Comparator.h>
+# include <lbcpp-ml/SolutionComparator.h>
 # include <lbcpp-ml/SolutionSet.h>
 
 namespace lbcpp
 {
 
-class DominanceComparator : public MOOSolutionComparator
+class DominanceComparator : public SolutionComparator
 {
 public:
-  virtual void initialize(const MOOSolutionSetPtr& solutions)
+  virtual void initialize(const SolutionSetPtr& solutions)
     {this->solutions = solutions;}
 
   virtual int compare(size_t index1, size_t index2)
   {
-    MOOFitnessPtr fitness1 = solutions->getFitness(index1);
-    MOOFitnessPtr fitness2 = solutions->getFitness(index2);
+    FitnessPtr fitness1 = solutions->getFitness(index1);
+    FitnessPtr fitness2 = solutions->getFitness(index2);
 
-    // TODO: optimized version to avoid two calls to MOOFitness::strictlyDominates()
+    // TODO: optimized version to avoid two calls to Fitness::strictlyDominates()
 
-    //MOOFitnessLimitsPtr limits = solution1->getFitnessLimits();
+    //FitnessLimitsPtr limits = solution1->getFitnessLimits();
     //jassert(limits == solution2->getFitnessLimits());
 
     if (fitness1->strictlyDominates(fitness2))
@@ -40,7 +40,7 @@ public:
   }
 
 private:
-  MOOSolutionSetPtr solutions;
+  SolutionSetPtr solutions;
 };
 
 }; /* namespace lbcpp */

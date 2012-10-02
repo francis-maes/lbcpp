@@ -43,7 +43,7 @@ protected:
   */
   void testSingleObjectiveOptimizers(ExecutionContext& context)
   {
-    std::vector<MOOProblemPtr> problems;
+    std::vector<ProblemPtr> problems;
     problems.push_back(new AckleyProblem());
     problems.push_back(new GriewangkProblem());
     problems.push_back(new RastriginProblem());
@@ -69,7 +69,7 @@ protected:
 
     for (size_t i = 0; i < problems.size(); ++i)
     {
-      MOOProblemPtr problem = problems[i];
+      ProblemPtr problem = problems[i];
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
       solveWithSingleObjectiveOptimizer(context, problem, randomOptimizer(uniformContinuousSampler(), numEvaluations));
@@ -100,7 +100,7 @@ protected:
     }
   }
 
-  double evaluateSingleObjectiveOptimizer(ExecutionContext& context, const std::vector<MOOProblemPtr>& problems, MOOOptimizerPtr optimizer, size_t numRuns = 5)
+  double evaluateSingleObjectiveOptimizer(ExecutionContext& context, const std::vector<ProblemPtr>& problems, OptimizerPtr optimizer, size_t numRuns = 5)
   {
     ScalarVariableMeanAndVariance stats;
     for (size_t i = 0; i < numRuns; ++i)
@@ -108,19 +108,19 @@ protected:
       {
         MaxIterationsDecoratorProblemPtr decorator(new MaxIterationsDecoratorProblem(problems[j], numEvaluations));
 
-        MOOParetoFrontPtr front = optimizer->optimize(context, decorator);
+        ParetoFrontPtr front = optimizer->optimize(context, decorator);
         jassert(!front->isEmpty());
         stats.push(front->getSolution(0)->getFitness()->getValue(0));
       }
     return stats.getMean();
   }
 
-  double solveWithSingleObjectiveOptimizer(ExecutionContext& context, MOOProblemPtr problem, MOOOptimizerPtr optimizer)
+  double solveWithSingleObjectiveOptimizer(ExecutionContext& context, ProblemPtr problem, OptimizerPtr optimizer)
   {
     SingleObjectiveEvaluatorDecoratorProblemPtr decorator(new SingleObjectiveEvaluatorDecoratorProblem(problem, numEvaluations, numEvaluations > 250 ? numEvaluations / 250 : 1));
 
     context.enterScope(optimizer->toShortString());
-    MOOParetoFrontPtr front = optimizer->optimize(context, decorator, (MOOOptimizer::Verbosity)verbosity);
+    ParetoFrontPtr front = optimizer->optimize(context, decorator, (Optimizer::Verbosity)verbosity);
     context.resultCallback("optimizer", optimizer);
     context.resultCallback("front", front);
     context.resultCallback("numEvaluations", decorator->getNumEvaluations());
@@ -155,7 +155,7 @@ protected:
   */
   void testBiObjectiveOptimizers(ExecutionContext& context)
   {
-    std::vector<MOOProblemPtr> problems;
+    std::vector<ProblemPtr> problems;
     problems.push_back(new ZDT1MOProblem());
     problems.push_back(new ZDT2MOProblem());
     problems.push_back(new ZDT3MOProblem());
@@ -164,7 +164,7 @@ protected:
 
     for (size_t i = 0; i < problems.size(); ++i)
     {
-      MOOProblemPtr problem = problems[i];
+      ProblemPtr problem = problems[i];
       context.enterScope(problem->toShortString());
       context.resultCallback("problem", problem);
       solveWithMultiObjectiveOptimizer(context, problem, randomOptimizer(uniformContinuousSampler(), numEvaluations));
@@ -193,12 +193,12 @@ protected:
     }
   }
 
-  void solveWithMultiObjectiveOptimizer(ExecutionContext& context, MOOProblemPtr problem, MOOOptimizerPtr optimizer)
+  void solveWithMultiObjectiveOptimizer(ExecutionContext& context, ProblemPtr problem, OptimizerPtr optimizer)
   {
     HyperVolumeEvaluatorDecoratorProblemPtr decorator(new HyperVolumeEvaluatorDecoratorProblem(problem, numEvaluations, numEvaluations > 250 ? numEvaluations / 250 : 1));
 
     context.enterScope(optimizer->toShortString());
-    MOOParetoFrontPtr front = optimizer->optimize(context, decorator, (MOOOptimizer::Verbosity)verbosity);
+    ParetoFrontPtr front = optimizer->optimize(context, decorator, (Optimizer::Verbosity)verbosity);
     context.resultCallback("optimizer", optimizer);
     context.resultCallback("numEvaluations", decorator->getNumEvaluations());
 
@@ -225,18 +225,18 @@ protected:
 
   void testSolutionSetComponent(ExecutionContext& context)
   {
-    MOOProblemPtr problem = new ZDT1MOProblem();
-    MOOSamplerPtr sampler = uniformContinuousSampler();
-    sampler->initialize(context, problem->getObjectDomain());
+    ProblemPtr problem = new ZDT1MOProblem();
+    SamplerPtr sampler = uniformContinuousSampler();
+    sampler->initialize(context, problem->getDomain());
 
-    MOOSolutionSetPtr solutions = new MOOSolutionSet(problem->getFitnessLimits());
+    SolutionSetPtr solutions = new SolutionSet(problem->getFitnessLimits());
     for (size_t i = 0; i < 100; ++i)
     {
       ObjectPtr object = sampler->sample(context);
-      MOOFitnessPtr fitness = problem->evaluate(context, object);
+      FitnessPtr fitness = problem->evaluate(context, object);
       solutions->addSolution(object, fitness);
     }
-    MOOParetoFrontPtr front = solutions->getParetoFront();
+    ParetoFrontPtr front = solutions->getParetoFront();
     context.resultCallback("solutions", solutions);
     context.resultCallback("front", front);
   }
