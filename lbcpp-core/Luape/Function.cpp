@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuapeFunction.cpp              | Luape Function                  |
+| Filename: Function.cpp                   | Function Base Class             |
 | Author  : Francis Maes                   |                                 |
 | Started : 01/12/2011 13:04               |                                 |
 `------------------------------------------/                                 |
@@ -7,12 +7,12 @@
                                `--------------------------------------------*/
 
 #include "precompiled.h"
-#include <lbcpp/Luape/LuapeFunction.h>
+#include <lbcpp/Luape/Function.h>
 #include <lbcpp/Luape/LuapeNode.h>
 #include <lbcpp/Luape/LuapeCache.h>
 using namespace lbcpp;
 
-String LuapeFunction::makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+String Function::makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
 {
   ClassPtr thisClass = getClass();
   String res = (thisClass->getShortName().isNotEmpty() ? thisClass->getShortName() : thisClass->getName()) + T("(");
@@ -25,7 +25,7 @@ String LuapeFunction::makeNodeName(const std::vector<LuapeNodePtr>& inputs) cons
   return res + T(")");
 }
 
-LuapeSampleVectorPtr LuapeFunction::compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
+LuapeSampleVectorPtr Function::compute(ExecutionContext& context, const std::vector<LuapeSampleVectorPtr>& inputs, TypePtr outputType) const
 {
   jassert(inputs.size() && inputs.size() == getNumInputs());
 
@@ -49,7 +49,7 @@ LuapeSampleVectorPtr LuapeFunction::compute(ExecutionContext& context, const std
   return new LuapeSampleVector(inputs[0]->getIndices(), res);
 }
 
-bool LuapeFunction::acceptInputsStack(const std::vector<LuapeNodePtr>& stack) const
+bool Function::acceptInputsStack(const std::vector<LuapeNodePtr>& stack) const
 {
   size_t n = getNumInputs();
   if (n > stack.size())

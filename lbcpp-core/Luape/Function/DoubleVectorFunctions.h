@@ -1,25 +1,25 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: DoubleVectorLuapeFunctions.h   | DoubleVector Luape Functions    |
+| Filename: DoubleVectorFunctions.h        | DoubleVector Functions          |
 | Author  : Francis Maes                   |                                 |
 | Started : 23/12/2011 12:06               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_FUNCTION_DOUBLE_VECTOR_H_
-# define LBCPP_LUAPE_FUNCTION_DOUBLE_VECTOR_H_
+#ifndef LBCPP_ML_FUNCTION_DOUBLE_VECTOR_H_
+# define LBCPP_ML_FUNCTION_DOUBLE_VECTOR_H_
 
-# include "ObjectLuapeFunctions.h"
+# include "ObjectFunctions.h"
 # include <lbcpp/Data/DoubleVector.h>
 
 namespace lbcpp
 {
 
-class GetDoubleVectorElementLuapeFunction : public UnaryObjectLuapeFunction<GetDoubleVectorElementLuapeFunction>
+class GetDoubleVectorElementFunction : public UnaryObjectFunction<GetDoubleVectorElementFunction>
 {
 public:
-  GetDoubleVectorElementLuapeFunction(EnumerationPtr enumeration = EnumerationPtr(), size_t index = 0)
-    : UnaryObjectLuapeFunction<GetDoubleVectorElementLuapeFunction>(doubleVectorClass()), enumeration(enumeration), index(index) {}
+  GetDoubleVectorElementFunction(EnumerationPtr enumeration = EnumerationPtr(), size_t index = 0)
+    : UnaryObjectFunction<GetDoubleVectorElementFunction>(doubleVectorClass()), enumeration(enumeration), index(index) {}
 
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
   {
@@ -79,7 +79,7 @@ public:
   }
 
 protected:
-  friend class GetDoubleVectorElementLuapeFunctionClass;
+  friend class GetDoubleVectorElementFunctionClass;
   EnumerationPtr enumeration;
   size_t index;
 
@@ -104,10 +104,10 @@ public:
 typedef ReferenceCountedObjectPtr<ScalarVariableStatisticsPerception> ScalarVariableStatisticsPerceptionPtr;
 extern ClassPtr scalarVariableStatisticsPerceptionClass;
 
-class ComputeDoubleVectorStatisticsLuapeFunction : public UnaryObjectLuapeFunction<ComputeDoubleVectorStatisticsLuapeFunction>
+class ComputeDoubleVectorStatisticsFunction : public UnaryObjectFunction<ComputeDoubleVectorStatisticsFunction>
 {
 public:
-  ComputeDoubleVectorStatisticsLuapeFunction() : UnaryObjectLuapeFunction<ComputeDoubleVectorStatisticsLuapeFunction>(doubleVectorClass()) {}
+  ComputeDoubleVectorStatisticsFunction() : UnaryObjectFunction<ComputeDoubleVectorStatisticsFunction>(doubleVectorClass()) {}
 
   virtual String toShortString() const
     {return "stats(.)";}
@@ -161,11 +161,11 @@ public:
   }
 };
 
-class GetDoubleVectorExtremumsLuapeFunction : public UnaryObjectLuapeFunction<GetDoubleVectorExtremumsLuapeFunction>
+class GetDoubleVectorExtremumsFunction : public UnaryObjectFunction<GetDoubleVectorExtremumsFunction>
 {
 public:
-  GetDoubleVectorExtremumsLuapeFunction(EnumerationPtr enumeration = EnumerationPtr())
-    : UnaryObjectLuapeFunction<GetDoubleVectorExtremumsLuapeFunction>(doubleVectorClass()), enumeration(enumeration) {}
+  GetDoubleVectorExtremumsFunction(EnumerationPtr enumeration = EnumerationPtr())
+    : UnaryObjectFunction<GetDoubleVectorExtremumsFunction>(doubleVectorClass()), enumeration(enumeration) {}
 
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
   {
@@ -218,7 +218,7 @@ public:
   }
 
 protected:
-  friend class GetDoubleVectorExtremumsLuapeFunctionClass;
+  friend class GetDoubleVectorExtremumsFunctionClass;
 
   EnumerationPtr enumeration;
   ClassPtr outputClass;
@@ -226,4 +226,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_FUNCTION_DOUBLE_VECTOR_H_
+#endif // !LBCPP_ML_FUNCTION_DOUBLE_VECTOR_H_

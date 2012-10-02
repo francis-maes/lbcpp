@@ -27,7 +27,7 @@ GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/LuapeLibrary.xml LuapeLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/NodeBuilder/LuapeNodeBuilderLibrary.xml LuapeNodeBuilderLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/Learner/LuapeLearnerLibrary.xml LuapeLearnerLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Luape/Function/LuapeFunctionLibrary.xml LuapeFunctionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Luape/Function/FunctionLibrary.xml FunctionLibrary.cpp)
 
 IF(LBCPP_USER_INTERFACE)
   GENERATE_INTROSPECTION_CODE(UserInterface/Component/UserInterfaceComponentLibrary.xml UserInterfaceComponentLibrary.cpp)
@@ -259,8 +259,8 @@ SET(LBCPP_OPTIMIZER_SOURCES
 
 SET(LBCPP_LUAPE_SOURCES
   ../include/lbcpp/Luape/predeclarations.h
-  ../include/lbcpp/Luape/LuapeFunction.h
-  Luape/LuapeFunction.cpp
+  ../include/lbcpp/Luape/Function.h
+  Luape/Function.cpp
   ../include/lbcpp/Luape/LuapeUniverse.h
   Luape/LuapeUniverse.cpp
   ../include/lbcpp/Luape/LuapeCache.h
@@ -280,16 +280,16 @@ SET(LBCPP_LUAPE_SOURCES
 )
 
 SET(LBCPP_LUAPE_FUNCTION_SOURCES
-  Luape/Function/BooleanLuapeFunctions.h
-  Luape/Function/IntegerLuapeFunctions.h
-  Luape/Function/DoubleLuapeFunctions.h
-  Luape/Function/EnumerationLuapeFunctions.h
-  Luape/Function/ObjectLuapeFunctions.h
-  Luape/Function/DoubleVectorLuapeFunctions.h
-  Luape/Function/SpecialLuapeFunctions.h
-  Luape/Function/VoteLuapeFunctions.h
-  Luape/Function/LuapeFunctionLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/LuapeFunctionLibrary.cpp
+  Luape/Function/BooleanFunctions.h
+  Luape/Function/IntegerFunctions.h
+  Luape/Function/DoubleFunctions.h
+  Luape/Function/EnumerationFunctions.h
+  Luape/Function/ObjectFunctions.h
+  Luape/Function/DoubleVectorFunctions.h
+  Luape/Function/SpecialFunctions.h
+  Luape/Function/VoteFunctions.h
+  Luape/Function/FunctionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/FunctionLibrary.cpp
 )
 
 SET(LBCPP_LUAPE_NODE_BUILDER_SOURCES

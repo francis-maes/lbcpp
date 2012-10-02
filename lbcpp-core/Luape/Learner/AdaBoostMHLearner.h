@@ -175,8 +175,8 @@ public:
     return res;
   }
   
-  virtual LuapeFunctionPtr makeVoteFunction(ExecutionContext& context, const LuapeInferencePtr& problem, const Variable& vote) const
-    {return vectorVoteLuapeFunction(vote.getObjectAndCast<DenseDoubleVector>());}
+  virtual FunctionPtr makeVoteFunction(ExecutionContext& context, const LuapeInferencePtr& problem, const Variable& vote) const
+    {return vectorVoteFunction(vote.getObjectAndCast<DenseDoubleVector>());}
 
 //  virtual bool shouldStop(double weakObjectiveValue) const
 //    {return weakObjectiveValue == 0.0;}

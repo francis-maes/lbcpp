@@ -1,26 +1,26 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: BooleanLuapeFunctions.h        | Boolean Luape Functions         |
+| Filename: BooleanFunctions.h             | Boolean Functions               |
 | Author  : Francis Maes                   |                                 |
 | Started : 13/12/2011 18:33               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_FUNCTION_BOOLEAN_H_
-# define LBCPP_LUAPE_FUNCTION_BOOLEAN_H_
+#ifndef LBCPP_ML_FUNCTION_BOOLEAN_H_
+# define LBCPP_ML_FUNCTION_BOOLEAN_H_
 
-# include <lbcpp/Luape/LuapeFunction.h>
+# include <lbcpp/Luape/Function.h>
 # include <lbcpp/Luape/LuapeNode.h>
 # include <lbcpp/Luape/LuapeCache.h> // for LuapeSampleVector
 
 namespace lbcpp
 {
 
-class BinaryBooleanLuapeFunction : public HomogeneousBinaryLuapeFunction
+class BinaryBooleanFunction : public HomogeneousBinaryFunction
 {
 public:
-  BinaryBooleanLuapeFunction()
-    : HomogeneousBinaryLuapeFunction(booleanType) {}
+  BinaryBooleanFunction()
+    : HomogeneousBinaryFunction(booleanType) {}
 
   virtual bool computeBoolean(bool first, bool second) const = 0;
 
@@ -59,7 +59,7 @@ public:
   }
 };
 
-class AndBooleanLuapeFunction : public BinaryBooleanLuapeFunction
+class AndBooleanFunction : public BinaryBooleanFunction
 {
 public:
   virtual String toShortString() const
@@ -72,7 +72,7 @@ public:
     {return first && second;}
 };
 
-class EqualBooleanLuapeFunction : public BinaryBooleanLuapeFunction
+class EqualBooleanFunction : public BinaryBooleanFunction
 {
 public:
   virtual String toShortString() const
@@ -87,4 +87,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_FUNCTION_BOOLEAN_H_
+#endif // !LBCPP_ML_FUNCTION_BOOLEAN_H_

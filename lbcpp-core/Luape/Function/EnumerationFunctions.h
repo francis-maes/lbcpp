@@ -1,24 +1,24 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: EnumerationLuapeFunctions.h    | Enumeration Luape Functions     |
+| Filename: EnumerationFunctions.h         | Enumeration Functions           |
 | Author  : Francis Maes                   |                                 |
 | Started : 13/12/2011 18:37               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_FUNCTION_ENUMERATION_H_
-# define LBCPP_LUAPE_FUNCTION_ENUMERATION_H_
+#ifndef LBCPP_ML_FUNCTION_ENUMERATION_H_
+# define LBCPP_ML_FUNCTION_ENUMERATION_H_
 
-# include <lbcpp/Luape/LuapeFunction.h>
+# include <lbcpp/Luape/Function.h>
 # include <lbcpp/Luape/LuapeNode.h>
 
 namespace lbcpp
 {
 
-class EqualsConstantEnumLuapeFunction : public LuapeFunction
+class EqualsConstantEnumFunction : public Function
 {
 public:
-  EqualsConstantEnumLuapeFunction(EnumerationPtr enumeration = EnumerationPtr(), size_t value = 0)
+  EqualsConstantEnumFunction(EnumerationPtr enumeration = EnumerationPtr(), size_t value = 0)
     : enumeration(enumeration), value(value) {}
 
   virtual String toShortString() const
@@ -63,7 +63,7 @@ public:
   }
 
 protected:
-  friend class EqualsConstantEnumLuapeFunctionClass;
+  friend class EqualsConstantEnumFunctionClass;
 
   EnumerationPtr enumeration;
   size_t value;
@@ -71,4 +71,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_FUNCTION_ENUMERATION_H_
+#endif // !LBCPP_ML_FUNCTION_ENUMERATION_H_

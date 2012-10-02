@@ -1,27 +1,27 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SpecialLuapeFunctions.h        | Special Luape Functions         |
+| Filename: SpecialFunctions.h             | Special Functions               |
 | Author  : Francis Maes                   |                                 |
 | Started : 13/12/2011 18:33               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_FUNCTION_SPECIAL_H_
-# define LBCPP_LUAPE_FUNCTION_SPECIAL_H_
+#ifndef LBCPP_ML_FUNCTION_SPECIAL_H_
+# define LBCPP_ML_FUNCTION_SPECIAL_H_
 
-# include <lbcpp/Luape/LuapeFunction.h>
+# include <lbcpp/Luape/Function.h>
 # include <lbcpp/Luape/LuapeNode.h>
 # include <lbcpp/Luape/LuapeCache.h> // for LuapeSampleVector
-# include "DoubleLuapeFunctions.h"
+# include "DoubleFunctions.h"
 # include <algorithm>
 
 namespace lbcpp
 {
 
-class StumpLuapeFunction : public LuapeFunction
+class StumpFunction : public Function
 {
 public:
-  StumpLuapeFunction(double threshold = 0.0) 
+  StumpFunction(double threshold = 0.0) 
     : threshold(threshold) {}
 
   virtual String toShortString() const
@@ -64,7 +64,7 @@ public:
       return new LuapeSampleVector(scalars->getIndices(), res);
     }
     else
-      return LuapeFunction::compute(context, inputs, outputType);
+      return Function::compute(context, inputs, outputType);
   }
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
@@ -102,14 +102,14 @@ public:
     {return threshold;}
 
 protected:
-  friend class StumpLuapeFunctionClass;
+  friend class StumpFunctionClass;
 
   double threshold;
 };
 
-typedef ReferenceCountedObjectPtr<StumpLuapeFunction> StumpLuapeFunctionPtr;
+typedef ReferenceCountedObjectPtr<StumpFunction> StumpFunctionPtr;
 
-class GreaterThanDoubleLuapeFunction : public LuapeFunction
+class GreaterThanDoubleFunction : public Function
 {
 public:
   virtual String toShortString() const
@@ -138,10 +138,10 @@ public:
     {return (Flags)allSameArgIrrelevantFlag;}
 };
 
-class NormalizerLuapeFunction : public UnaryDoubleLuapeFuntion
+class NormalizerFunction : public UnaryDoubleLuapeFuntion
 {
 public:
-  NormalizerLuapeFunction()
+  NormalizerFunction()
     {vectorClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, probabilityType);}
 
   virtual TypePtr initialize(const TypePtr* inputTypes)
@@ -209,4 +209,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_FUNCTION_SPECIAL_H_
+#endif // !LBCPP_ML_FUNCTION_SPECIAL_H_

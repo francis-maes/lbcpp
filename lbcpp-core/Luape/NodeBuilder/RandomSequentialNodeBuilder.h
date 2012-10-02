@@ -62,7 +62,7 @@ public:
 
     case 1: // apply
       {
-        const std::vector<std::pair<LuapeFunctionPtr, LuapeGraphBuilderTypeStatePtr> >& apply = typeState->getApplyActions();
+        const std::vector<std::pair<FunctionPtr, LuapeGraphBuilderTypeStatePtr> >& apply = typeState->getApplyActions();
         jassert(apply.size());
         if (apply.empty())
           return false;
@@ -158,7 +158,7 @@ public:
 
     case 1: // apply
       {
-        const std::vector<std::pair<LuapeFunctionPtr, LuapeGraphBuilderTypeStatePtr> >& apply = typeState->getApplyActions();
+        const std::vector<std::pair<FunctionPtr, LuapeGraphBuilderTypeStatePtr> >& apply = typeState->getApplyActions();
         jassert(apply.size());
         if (apply.empty())
           return false;

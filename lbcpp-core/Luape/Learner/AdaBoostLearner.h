@@ -46,8 +46,8 @@ public:
   virtual Variable negateVote(const Variable& vote) const
     {return -vote.getDouble();}
 
-  virtual LuapeFunctionPtr makeVoteFunction(ExecutionContext& context, const LuapeInferencePtr& problem, const Variable& vote) const
-    {return scalarVoteLuapeFunction(vote.getDouble());}
+  virtual FunctionPtr makeVoteFunction(ExecutionContext& context, const LuapeInferencePtr& problem, const Variable& vote) const
+    {return scalarVoteFunction(vote.getDouble());}
   
   virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, double& logLoss) const
   {

@@ -43,7 +43,7 @@ public:
       {
         LuapeSampleVectorPtr samples = problem->getTrainingCache()->getSamples(context, condition, subset);
         double threshold = samples->sampleElement(context.getRandomGenerator()).toDouble();
-        condition = new LuapeFunctionNode(stumpLuapeFunction(threshold), condition); // bypass universe
+        condition = new LuapeFunctionNode(stumpFunction(threshold), condition); // bypass universe
       }
 
       LuapeNodePtr testNode = new LuapeTestNode(condition,

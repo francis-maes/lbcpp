@@ -10,7 +10,7 @@
 # define LBCPP_LUAPE_UNIVERSE_H_
 
 # include "predeclarations.h"
-# include "LuapeFunction.h"
+# include "Function.h"
 # include "../Data/RandomVariable.h"
 
 namespace lbcpp
@@ -23,11 +23,11 @@ public:
 
   LuapeConstantNodePtr makeConstantNode(const Variable& constantValue);
 
-  LuapeNodePtr makeFunctionNode(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs);
-  LuapeNodePtr makeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& input);
-  LuapeNodePtr makeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& input1, const LuapeNodePtr& input2);
+  LuapeNodePtr makeLuapeFunctionNode(const FunctionPtr& function, const std::vector<LuapeNodePtr>& inputs);
+  LuapeNodePtr makeLuapeFunctionNode(const FunctionPtr& function, const LuapeNodePtr& input);
+  LuapeNodePtr makeLuapeFunctionNode(const FunctionPtr& function, const LuapeNodePtr& input1, const LuapeNodePtr& input2);
 
-  LuapeFunctionPtr makeFunction(ClassPtr functionClass, const std::vector<Variable>& arguments);
+  FunctionPtr makeFunction(ClassPtr functionClass, const std::vector<Variable>& arguments);
 
   void observeNodeComputingTime(const LuapeNodePtr& node, size_t numInstances, double timeInMilliseconds);
   double getExpectedComputingTime(const LuapeNodePtr& node) const; // in milliseconds
@@ -53,19 +53,19 @@ protected:
   friend class LuapeNodeUniverseClass;
 
   typedef std::pair<ClassPtr, std::vector<Variable> >  FunctionKey;
-  typedef std::map<FunctionKey, LuapeFunctionPtr> FunctionsMap;
+  typedef std::map<FunctionKey, FunctionPtr> FunctionsMap;
   FunctionsMap functions;
 
-  typedef std::pair<LuapeFunctionPtr, std::vector<LuapeNodePtr> > FunctionNodeKey;
-  typedef std::map<FunctionNodeKey, LuapeNodePtr> FunctionNodesMap;
-  FunctionNodesMap functionNodes;
+  typedef std::pair<FunctionPtr, std::vector<LuapeNodePtr> > LuapeFunctionNodeKey;
+  typedef std::map<LuapeFunctionNodeKey, LuapeNodePtr> LuapeFunctionNodesMap;
+  LuapeFunctionNodesMap functionNodes;
   size_t maxFunctionDepth;
   size_t maxObservedFunctionDepth;
 
   typedef std::map<Variable, LuapeConstantNodePtr> ConstantNodesMap;
   ConstantNodesMap constantNodes;
 
-  void cacheFunctionNode(const FunctionNodeKey& key, LuapeNodePtr node);
+  void cacheLuapeFunctionNode(const LuapeFunctionNodeKey& key, LuapeNodePtr node);
 
   // contain values for LuapeFunctionNode, LuapeTestNode, LuapeSequenceNode
   // keys for LuapeFunctionNode: (luapeFunctionNodeClass, luapeFunctionClass)

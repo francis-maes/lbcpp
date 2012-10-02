@@ -83,7 +83,7 @@ protected:
       double importance = node->getImportance();
       jassert(isNumberValid(importance));
       if (importance > 0)
-        if (!node.isInstanceOf<LuapeFunctionNode>() || node.staticCast<LuapeFunctionNode>()->getFunction()->getClassName() != T("StumpLuapeFunction"))
+        if (!node.isInstanceOf<LuapeFunctionNode>() || node.staticCast<LuapeFunctionNode>()->getFunction()->getClassName() != T("StumpFunction"))
           res[node] = importance;
       size_t n = node->getNumSubNodes();
       for (size_t i = 0; i < n; ++i)

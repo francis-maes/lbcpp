@@ -1,27 +1,27 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: VoteLuapeFunctions.h           | Voting Luape Functions          |
+| Filename: VoteFunctions.h                | Voting Functions                |
 | Author  : Francis Maes                   |                                 |
 | Started : 22/01/2012 21:06               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_FUNCTION_VOTE_H_
-# define LBCPP_LUAPE_FUNCTION_VOTE_H_
+#ifndef LBCPP_ML_FUNCTION_VOTE_H_
+# define LBCPP_ML_FUNCTION_VOTE_H_
 
-# include <lbcpp/Luape/LuapeFunction.h>
+# include <lbcpp/Luape/Function.h>
 # include <lbcpp/Luape/LuapeNode.h>
 # include <lbcpp/Luape/LuapeCache.h> // for LuapeSampleVector
 
 namespace lbcpp
 {
 
-class VoteLuapeFunction : public LuapeFunction
+class VoteFunction : public Function
 {
 public:
-  VoteLuapeFunction(TypePtr outputType)
+  VoteFunction(TypePtr outputType)
     : outputType(outputType) {}
-  VoteLuapeFunction() {}
+  VoteFunction() {}
 
   virtual size_t getNumInputs() const
     {return 1;}
@@ -77,11 +77,11 @@ protected:
   TypePtr outputType;
 };
 
-class ScalarVoteLuapeFunction : public VoteLuapeFunction
+class ScalarVoteFunction : public VoteFunction
 {
 public:
-  ScalarVoteLuapeFunction(double vote = 0.0)
-    : VoteLuapeFunction(doubleType), vote(vote) {}
+  ScalarVoteFunction(double vote = 0.0)
+    : VoteFunction(doubleType), vote(vote) {}
 
   virtual Variable computeVote(double input) const
     {return (input * 2 - 1) * vote;}
@@ -98,17 +98,17 @@ public:
     {return "vote(" + inputs[0]->toShortString() + ", " + Variable(vote).toShortString() + ")";}
 
 protected:
-  friend class ScalarVoteLuapeFunctionClass;
+  friend class ScalarVoteFunctionClass;
 
   double vote;
 };
 
-class VectorVoteLuapeFunction : public VoteLuapeFunction
+class VectorVoteFunction : public VoteFunction
 {
 public:
-  VectorVoteLuapeFunction(const DenseDoubleVectorPtr& vote)
-    : VoteLuapeFunction(vote->getClass()), vote(vote) {}
-  VectorVoteLuapeFunction() {}
+  VectorVoteFunction(const DenseDoubleVectorPtr& vote)
+    : VoteFunction(vote->getClass()), vote(vote) {}
+  VectorVoteFunction() {}
 
   virtual Variable computeVote(double input) const
   {
@@ -121,11 +121,11 @@ public:
     {return "vote(" + inputs[0]->toShortString() + ", " + vote->toShortString() + ")";}
 
 protected:
-  friend class VectorVoteLuapeFunctionClass;
+  friend class VectorVoteFunctionClass;
 
   DenseDoubleVectorPtr vote;
 };
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_FUNCTION_VOTE_H_
+#endif // !LBCPP_ML_FUNCTION_VOTE_H_

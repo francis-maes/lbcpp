@@ -1,26 +1,26 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: DoubleLuapeFunctions.h         | Double Luape Functions          |
+| Filename: DoubleFunctions.h              | Double Functions                |
 | Author  : Francis Maes                   |                                 |
 | Started : 13/12/2011 18:39               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_FUNCTION_DOUBLE_H_
-# define LBCPP_LUAPE_FUNCTION_DOUBLE_H_
+#ifndef LBCPP_ML_FUNCTION_DOUBLE_H_
+# define LBCPP_ML_FUNCTION_DOUBLE_H_
 
-# include <lbcpp/Luape/LuapeFunction.h>
+# include <lbcpp/Luape/Function.h>
 # include <lbcpp/Luape/LuapeNode.h>
 # include <lbcpp/Luape/LuapeCache.h> // for LuapeSampleVector
 
 namespace lbcpp
 {
 
-class UnaryDoubleLuapeFuntion : public HomogeneousUnaryLuapeFunction
+class UnaryDoubleLuapeFuntion : public HomogeneousUnaryFunction
 {
 public:
   UnaryDoubleLuapeFuntion()
-    : HomogeneousUnaryLuapeFunction(doubleType), vectorClass(simpleDenseDoubleVectorClass) {}
+    : HomogeneousUnaryFunction(doubleType), vectorClass(simpleDenseDoubleVectorClass) {}
 
   virtual double computeDouble(double value) const = 0;
 
@@ -50,7 +50,7 @@ protected:
   ClassPtr vectorClass;
 };
 
-class OppositeDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
+class OppositeDoubleFunction : public UnaryDoubleLuapeFuntion
 {
 public:
   virtual String toShortString() const
@@ -60,7 +60,7 @@ public:
     {return -value;}
 };
 
-class InverseDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
+class InverseDoubleFunction : public UnaryDoubleLuapeFuntion
 {
 public:
   virtual String toShortString() const
@@ -70,7 +70,7 @@ public:
     {return value ? 1.0 / value : doubleMissingValue;}
 };
 
-class AbsDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
+class AbsDoubleFunction : public UnaryDoubleLuapeFuntion
 {
 public:
   virtual String toShortString() const
@@ -80,7 +80,7 @@ public:
     {return fabs(value);}
 };
 
-class LogDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
+class LogDoubleFunction : public UnaryDoubleLuapeFuntion
 {
 public:
   virtual String toShortString() const
@@ -90,7 +90,7 @@ public:
     {return value <= 0.0 ? doubleMissingValue : log(value);}
 };
 
-class ExpDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
+class ExpDoubleFunction : public UnaryDoubleLuapeFuntion
 {
 public:
   virtual String toShortString() const
@@ -100,7 +100,7 @@ public:
     {return value >= 100 ? doubleMissingValue : exp(value);}
 };
 
-class SqrtDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
+class SqrtDoubleFunction : public UnaryDoubleLuapeFuntion
 {
 public:
   virtual String toShortString() const
@@ -110,7 +110,7 @@ public:
     {return value < 0.0 ? doubleMissingValue : sqrt(value);}
 };
 
-class CosDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
+class CosDoubleFunction : public UnaryDoubleLuapeFuntion
 {
 public:
   virtual String toShortString() const
@@ -120,7 +120,7 @@ public:
     {return cos(value);}
 };
 
-class SinDoubleLuapeFunction : public UnaryDoubleLuapeFuntion
+class SinDoubleFunction : public UnaryDoubleLuapeFuntion
 {
 public:
   virtual String toShortString() const
@@ -130,11 +130,11 @@ public:
     {return sin(value);}
 };
 
-class BinaryDoubleLuapeFunction : public HomogeneousBinaryLuapeFunction
+class BinaryDoubleFunction : public HomogeneousBinaryFunction
 {
 public:
-  BinaryDoubleLuapeFunction()
-    : HomogeneousBinaryLuapeFunction(doubleType) {}
+  BinaryDoubleFunction()
+    : HomogeneousBinaryFunction(doubleType) {}
 
   virtual double computeDouble(double first, double second) const = 0;
 
@@ -173,7 +173,7 @@ public:
     {return "(" + inputs[0]->toShortString() + " " + toShortString() + " " + inputs[1]->toShortString() + ")";}
 };
 
-class AddDoubleLuapeFunction : public BinaryDoubleLuapeFunction
+class AddDoubleFunction : public BinaryDoubleFunction
 {
 public:
   virtual String toShortString() const
@@ -186,7 +186,7 @@ public:
     {return (Flags)commutativeFlag;}
 };
 
-class SubDoubleLuapeFunction : public BinaryDoubleLuapeFunction
+class SubDoubleFunction : public BinaryDoubleFunction
 {
 public:
   virtual String toShortString() const
@@ -199,7 +199,7 @@ public:
     {return (Flags)allSameArgIrrelevantFlag;}
 };
 
-class MulDoubleLuapeFunction : public BinaryDoubleLuapeFunction
+class MulDoubleFunction : public BinaryDoubleFunction
 {
 public:
   virtual String toShortString() const
@@ -212,7 +212,7 @@ public:
     {return (Flags)commutativeFlag;}
 };
 
-class DivDoubleLuapeFunction : public BinaryDoubleLuapeFunction
+class DivDoubleFunction : public BinaryDoubleFunction
 {
 public:
   virtual String toShortString() const
@@ -225,7 +225,7 @@ public:
     {return (Flags)allSameArgIrrelevantFlag;}
 };
 
-class PowDoubleLuapeFunction : public BinaryDoubleLuapeFunction
+class PowDoubleFunction : public BinaryDoubleFunction
 {
 public:
   virtual String toShortString() const
@@ -235,7 +235,7 @@ public:
     {return first || second ? std::pow(first, second) : doubleMissingValue;}
 };
 
-class MinDoubleLuapeFunction : public BinaryDoubleLuapeFunction
+class MinDoubleFunction : public BinaryDoubleFunction
 {
 public:
   virtual String toShortString() const
@@ -251,7 +251,7 @@ public:
     {return (Flags)(allSameArgIrrelevantFlag | commutativeFlag);}
 };
 
-class MaxDoubleLuapeFunction : public BinaryDoubleLuapeFunction
+class MaxDoubleFunction : public BinaryDoubleFunction
 {
 public:
   virtual String toShortString() const
@@ -269,4 +269,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_FUNCTION_DOUBLE_H_
+#endif // !LBCPP_ML_FUNCTION_DOUBLE_H_

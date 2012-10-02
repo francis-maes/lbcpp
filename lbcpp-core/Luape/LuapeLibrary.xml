@@ -2,20 +2,20 @@
 
 <library name="Luape" directory="Luape">
 
-  <import name="LuapeFunction"/>
+  <import name="Function"/>
   <import name="LuapeNodeBuilder"/>
   <import name="LuapeLearner"/>
   
-  <include file="lbcpp/Luape/LuapeFunction.h"/>
+  <include file="lbcpp/Luape/Function.h"/>
   <include file="lbcpp/Luape/LuapeNode.h"/>
   <include file="lbcpp/Luape/LuapeInference.h"/>
   <include file="lbcpp/Luape/LuapeLearner.h"/>
   <include file="lbcpp/Luape/LuapeNodeBuilder.h"/>
     
   <!-- Luape Function -->
-  <class name="LuapeFunction" abstract="yes"/>
-  <class name="HomogeneousUnaryLuapeFunction" base="LuapeFunction" abstract="yes"/>
-  <class name="HomogeneousBinaryLuapeFunction" base="LuapeFunction" abstract="yes"/>
+  <class name="Function" abstract="yes"/>
+  <class name="HomogeneousUnaryFunction" base="Function" abstract="yes"/>
+  <class name="HomogeneousBinaryFunction" base="Function" abstract="yes"/>
   
   <!-- Nodes -->
   <class name="LuapeNode" base="Object" abstract="yes">
@@ -30,7 +30,7 @@
     <variable type="Variable" name="value"/>
   </class>
   <class name="LuapeFunctionNode" base="LuapeNode">
-    <variable type="LuapeFunction" name="function"/>
+    <variable type="Function" name="function"/>
     <variable type="ObjectVector[LuapeNode]" name="arguments"/>
   </class>
   <class name="LuapeSequenceNode" base="LuapeNode" abstract="yes">

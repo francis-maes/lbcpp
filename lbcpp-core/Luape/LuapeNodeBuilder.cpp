@@ -73,7 +73,7 @@ std::vector<TypePtr> LuapeRPNSequence::computeTypeState(const std::vector<TypePt
       state.push_back(action.staticCast<LuapeNode>()->getType());
     else
     {
-      const LuapeFunctionPtr& function = action.staticCast<LuapeFunction>();
+      const FunctionPtr& function = action.staticCast<Function>();
       jassert(state.size() >= function->getNumInputs());
       TypePtr outputType = function->initialize(&state[state.size() - function->getNumInputs()]);
       state.resize(state.size() - function->getNumInputs() + 1);
@@ -87,16 +87,16 @@ void LuapeRPNSequence::apply(const LuapeUniversePtr& universe, std::vector<Luape
 {
    if (element.isInstanceOf<LuapeNode>()) // push action
     stack.push_back(element.staticCast<LuapeNode>());
-  else if (element.isInstanceOf<LuapeFunction>()) // apply action
+  else if (element.isInstanceOf<Function>()) // apply action
   {
-    const LuapeFunctionPtr& function = element.staticCast<LuapeFunction>();
+    const FunctionPtr& function = element.staticCast<Function>();
     size_t numInputs = function->getNumInputs();
     jassert(stack.size() >= numInputs);
     std::vector<LuapeNodePtr> inputs(numInputs);
     for (size_t i = 0; i < numInputs; ++i)
       inputs[i] = stack[stack.size() - numInputs + i];
     stack.resize(stack.size() - numInputs + 1);
-    stack.back() = universe->makeFunctionNode(function, inputs);
+    stack.back() = universe->makeLuapeFunctionNode(function, inputs);
   }
   else
     jassert(false);
@@ -203,8 +203,8 @@ LuapeNodePtr SequentialNodeBuilder::sampleNode(ExecutionContext& context, const 
 
 bool SequentialNodeBuilder::isActionAvailable(ObjectPtr action, const std::vector<LuapeNodePtr>& stack)
 {
-  return !action || !action.isInstanceOf<LuapeFunction>() ||
-    action.staticCast<LuapeFunction>()->acceptInputsStack(stack);
+  return !action || !action.isInstanceOf<Function>() ||
+    action.staticCast<Function>()->acceptInputsStack(stack);
 }
 
 LuapeGraphBuilderTypeStatePtr SequentialNodeBuilder::getTypeState(size_t stepNumber, const std::vector<LuapeNodePtr>& stack) const
@@ -226,14 +226,14 @@ void SequentialNodeBuilder::executeAction(std::vector<LuapeNodePtr>& stack, cons
     else
     {
       // apply action
-      LuapeFunctionPtr function = action.staticCast<LuapeFunction>();
+      FunctionPtr function = action.staticCast<Function>();
       size_t n = function->getNumInputs();
       jassert(stack.size() >= n && n > 0);
       std::vector<LuapeNodePtr> inputs(n);
       for (size_t i = 0; i < n; ++i)
         inputs[i] = stack[stack.size() - n + i];
       stack.erase(stack.begin() + stack.size() - n, stack.end());
-      stack.push_back(universe->makeFunctionNode(function, inputs));
+      stack.push_back(universe->makeLuapeFunctionNode(function, inputs));
     }
   }
   else

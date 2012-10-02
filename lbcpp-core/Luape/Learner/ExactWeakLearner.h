@@ -90,7 +90,7 @@ public:
     double threshold = context.getRandomGenerator()->sampleDouble(minimumValue, maximumValue);
     //context.informationCallback(T("min = ") + String(minimumValue) + T(" max = ") + String(maximumValue) + T(" threshold = ") + String(threshold));
     
-    weakNode = new LuapeFunctionNode(stumpLuapeFunction(threshold), weakNode);
+    weakNode = new LuapeFunctionNode(stumpFunction(threshold), weakNode);
     return objective->compute(problem->getTrainingCache()->getSamples(context, weakNode, examples));
   }
 };

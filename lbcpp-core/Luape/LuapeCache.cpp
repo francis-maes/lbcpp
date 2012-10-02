@@ -309,7 +309,7 @@ bool LuapeSamplesCache::isCandidateForCaching(const LuapeNodePtr& node) const
   if (node.isInstanceOf<LuapeFunctionNode>())
   {
     const LuapeFunctionNodePtr& functionNode = node.staticCast<LuapeFunctionNode>();
-    return functionNode->getFunction()->getClassName() != T("StumpLuapeFunction");
+    return functionNode->getFunction()->getClassName() != T("StumpFunction");
   }
   else
     return false;

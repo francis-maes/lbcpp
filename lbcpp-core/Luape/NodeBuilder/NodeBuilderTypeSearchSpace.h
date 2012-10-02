@@ -87,7 +87,7 @@ public:
   bool hasApplyActions() const
     {return apply.size() > 0;}
 
-  bool hasApplyAction(const LuapeFunctionPtr& function) const
+  bool hasApplyAction(const FunctionPtr& function) const
   {
     for (size_t i = 0; i < apply.size(); ++i)
       if (apply[i].first == function)
@@ -95,7 +95,7 @@ public:
     return false;
   }
 
-  const std::vector<std::pair<LuapeFunctionPtr, LuapeGraphBuilderTypeStatePtr> >& getApplyActions() const
+  const std::vector<std::pair<FunctionPtr, LuapeGraphBuilderTypeStatePtr> >& getApplyActions() const
     {return apply;}
 
   bool hasYieldAction() const
@@ -114,7 +114,7 @@ private:
   size_t depth;
   std::vector<TypePtr> stack;
   std::vector<std::pair<TypePtr, LuapeGraphBuilderTypeStatePtr> > push;
-  std::vector<std::pair<LuapeFunctionPtr, LuapeGraphBuilderTypeStatePtr> > apply;
+  std::vector<std::pair<FunctionPtr, LuapeGraphBuilderTypeStatePtr> > apply;
   bool yieldable;
   size_t stateIndex;
   
@@ -133,7 +133,7 @@ private:
     push.push_back(std::make_pair(type, nextState));
   }
   
-  void setApplyTransition(const LuapeFunctionPtr& function, const LuapeGraphBuilderTypeStatePtr& nextState)
+  void setApplyTransition(const FunctionPtr& function, const LuapeGraphBuilderTypeStatePtr& nextState)
   {
     for (size_t i = 0; i < apply.size(); ++i)
       if (apply[i].first == function)
@@ -290,7 +290,7 @@ private:
 
     for (size_t i = 0; i < problem->getNumFunctions(); ++i)
     {
-      LuapeFunctionPtr function = problem->getFunction(i);
+      FunctionPtr function = problem->getFunction(i);
       if (acceptInputTypes(function, state->getStack()))
       {
         size_t numInputs = function->getNumInputs();
@@ -300,7 +300,7 @@ private:
         for (size_t i = 0; i < numInputs; ++i)
           inputTypes[i] = state->stack[state->getStackSize() - numInputs + i];
 
-        std::vector<LuapeFunctionPtr> functions;
+        std::vector<FunctionPtr> functions;
         enumerateFunctionVariables(problem->getUniverse(), function, inputTypes, tmp, 0, functions);
 
         for (size_t j = 0; j < functions.size(); ++j)
@@ -309,7 +309,7 @@ private:
     }
   }
 
-  void enumerateFunctionVariables(const LuapeUniversePtr& universe, const LuapeFunctionPtr& function, const std::vector<TypePtr>& inputTypes, std::vector<Variable>& variables, size_t variableIndex, std::vector<LuapeFunctionPtr>& res)
+  void enumerateFunctionVariables(const LuapeUniversePtr& universe, const FunctionPtr& function, const std::vector<TypePtr>& inputTypes, std::vector<Variable>& variables, size_t variableIndex, std::vector<FunctionPtr>& res)
   {
     if (variableIndex == variables.size())
       res.push_back(universe->makeFunction(function->getClass(), variables));
@@ -328,7 +328,7 @@ private:
     }
   }
 
-  void applyFunctionAndBuildSuccessor(const LuapeInferencePtr& problem, const LuapeGraphBuilderTypeStatePtr& state, const LuapeFunctionPtr& function, std::vector<TypePtr>& nodeTypes, size_t maxDepth)
+  void applyFunctionAndBuildSuccessor(const LuapeInferencePtr& problem, const LuapeGraphBuilderTypeStatePtr& state, const FunctionPtr& function, std::vector<TypePtr>& nodeTypes, size_t maxDepth)
   {
     // compute output type given input types
     size_t numInputs = function->getNumInputs();
@@ -352,7 +352,7 @@ private:
     buildSuccessors(problem, newState, nodeTypes, maxDepth);
   }
 
-  bool acceptInputTypes(const LuapeFunctionPtr& function, const std::vector<TypePtr>& stack) const
+  bool acceptInputTypes(const FunctionPtr& function, const std::vector<TypePtr>& stack) const
   {
     size_t numInputs = function->getNumInputs();
     if (numInputs > stack.size())
@@ -377,7 +377,7 @@ private:
       state->push.swap(remainingTransitions);
     }
     {
-      std::vector<std::pair<LuapeFunctionPtr, LuapeGraphBuilderTypeStatePtr> > remainingTransitions;
+      std::vector<std::pair<FunctionPtr, LuapeGraphBuilderTypeStatePtr> > remainingTransitions;
       for (size_t i = 0; i < state->apply.size(); ++i)
         if (!prune(state->apply[i].second))
           remainingTransitions.push_back(state->apply[i]);

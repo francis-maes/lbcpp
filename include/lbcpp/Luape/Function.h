@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuapeFunction.h                | Luape function                  |
+| Filename: Function.h                     | Function Base Class             |
 | Author  : Francis Maes                   |                                 |
 | Started : 18/11/2011 15:20               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_FUNCTION_H_
-# define LBCPP_LUAPE_FUNCTION_H_
+#ifndef LBCPP_ML_FUNCTION_H_
+# define LBCPP_ML_FUNCTION_H_
 
 # include "predeclarations.h"
 # include "../Core/Variable.h"
@@ -15,7 +15,7 @@
 namespace lbcpp
 {
 
-class LuapeFunction : public Object
+class Function : public Object
 {
 public:
   enum Flags
@@ -51,67 +51,67 @@ public:
   lbcpp_UseDebuggingNewOperator
 };
 
-typedef ReferenceCountedObjectPtr<LuapeFunction> LuapeFunctionPtr;
+typedef ReferenceCountedObjectPtr<Function> FunctionPtr;
 extern ClassPtr luapeFunctionClass;
 
 // Boolean
-extern LuapeFunctionPtr andBooleanLuapeFunction();
-extern LuapeFunctionPtr equalBooleanLuapeFunction();
+extern FunctionPtr andBooleanFunction();
+extern FunctionPtr equalBooleanFunction();
 
 // Integer
-extern LuapeFunctionPtr addIntegerLuapeFunction();
-extern LuapeFunctionPtr subIntegerLuapeFunction();
-extern LuapeFunctionPtr mulIntegerLuapeFunction();
-extern LuapeFunctionPtr divIntegerLuapeFunction();
+extern FunctionPtr addIntegerFunction();
+extern FunctionPtr subIntegerFunction();
+extern FunctionPtr mulIntegerFunction();
+extern FunctionPtr divIntegerFunction();
 
 // Double
-extern LuapeFunctionPtr oppositeDoubleLuapeFunction();
-extern LuapeFunctionPtr inverseDoubleLuapeFunction();
-extern LuapeFunctionPtr absDoubleLuapeFunction();
-extern LuapeFunctionPtr logDoubleLuapeFunction();
-extern LuapeFunctionPtr expDoubleLuapeFunction();
-extern LuapeFunctionPtr sqrtDoubleLuapeFunction();
-extern LuapeFunctionPtr cosDoubleLuapeFunction();
-extern LuapeFunctionPtr sinDoubleLuapeFunction();
+extern FunctionPtr oppositeDoubleFunction();
+extern FunctionPtr inverseDoubleFunction();
+extern FunctionPtr absDoubleFunction();
+extern FunctionPtr logDoubleFunction();
+extern FunctionPtr expDoubleFunction();
+extern FunctionPtr sqrtDoubleFunction();
+extern FunctionPtr cosDoubleFunction();
+extern FunctionPtr sinDoubleFunction();
 
-extern LuapeFunctionPtr addDoubleLuapeFunction();
-extern LuapeFunctionPtr subDoubleLuapeFunction();
-extern LuapeFunctionPtr mulDoubleLuapeFunction();
-extern LuapeFunctionPtr divDoubleLuapeFunction();
-extern LuapeFunctionPtr powDoubleLuapeFunction();
+extern FunctionPtr addDoubleFunction();
+extern FunctionPtr subDoubleFunction();
+extern FunctionPtr mulDoubleFunction();
+extern FunctionPtr divDoubleFunction();
+extern FunctionPtr powDoubleFunction();
 
-extern LuapeFunctionPtr minDoubleLuapeFunction();
-extern LuapeFunctionPtr maxDoubleLuapeFunction();
+extern FunctionPtr minDoubleFunction();
+extern FunctionPtr maxDoubleFunction();
 
 // Enumeration
-extern LuapeFunctionPtr equalsConstantEnumLuapeFunction(EnumerationPtr enumeration = EnumerationPtr(), size_t value = 0);
+extern FunctionPtr equalsConstantEnumFunction(EnumerationPtr enumeration = EnumerationPtr(), size_t value = 0);
 
 // Special
-extern LuapeFunctionPtr normalizerLuapeFunction();
-extern LuapeFunctionPtr stumpLuapeFunction(double threshold = 0.0);
-extern LuapeFunctionPtr greaterThanDoubleLuapeFunction();
+extern FunctionPtr normalizerFunction();
+extern FunctionPtr stumpFunction(double threshold = 0.0);
+extern FunctionPtr greaterThanDoubleFunction();
 
 // Object
-extern LuapeFunctionPtr getVariableLuapeFunction(ClassPtr inputClass = ClassPtr(), size_t variableIndex = 0);
-extern LuapeFunctionPtr getVariableLuapeFunction(ClassPtr inputClass, const String& variableName);
-extern LuapeFunctionPtr getContainerLengthLuapeFunction();
+extern FunctionPtr getVariableFunction(ClassPtr inputClass = ClassPtr(), size_t variableIndex = 0);
+extern FunctionPtr getVariableFunction(ClassPtr inputClass, const String& variableName);
+extern FunctionPtr getContainerLengthFunction();
 
 // DoubleVector
-extern LuapeFunctionPtr getDoubleVectorElementLuapeFunction(EnumerationPtr enumeration = EnumerationPtr(), size_t index = 0);
-extern LuapeFunctionPtr computeDoubleVectorStatisticsLuapeFunction();
-extern LuapeFunctionPtr getDoubleVectorExtremumsLuapeFunction(EnumerationPtr enumeration = EnumerationPtr());
+extern FunctionPtr getDoubleVectorElementFunction(EnumerationPtr enumeration = EnumerationPtr(), size_t index = 0);
+extern FunctionPtr computeDoubleVectorStatisticsFunction();
+extern FunctionPtr getDoubleVectorExtremumsFunction(EnumerationPtr enumeration = EnumerationPtr());
 
 // Voting
-extern LuapeFunctionPtr scalarVoteLuapeFunction(double vote);
-extern LuapeFunctionPtr vectorVoteLuapeFunction(const DenseDoubleVectorPtr& vote);
+extern FunctionPtr scalarVoteFunction(double vote);
+extern FunctionPtr vectorVoteFunction(const DenseDoubleVectorPtr& vote);
 
 /*
 ** Base classes
 */
-class HomogeneousUnaryLuapeFunction : public LuapeFunction
+class HomogeneousUnaryFunction : public Function
 {
 public:
-  HomogeneousUnaryLuapeFunction(TypePtr type = anyType)
+  HomogeneousUnaryFunction(TypePtr type = anyType)
     : type(type) {}
 
   virtual size_t getNumInputs() const
@@ -127,10 +127,10 @@ private:
   TypePtr type;
 };
 
-class HomogeneousBinaryLuapeFunction : public LuapeFunction
+class HomogeneousBinaryFunction : public Function
 {
 public:
-  HomogeneousBinaryLuapeFunction(TypePtr type = anyType)
+  HomogeneousBinaryFunction(TypePtr type = anyType)
     : type(type) {}
 
   virtual size_t getNumInputs() const
@@ -148,4 +148,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_FUNCTION_H_
+#endif // !LBCPP_ML_FUNCTION_H_

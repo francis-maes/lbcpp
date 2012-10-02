@@ -79,10 +79,10 @@ public:
     }
     if (typeState->hasApplyActions())
     {
-      const std::vector<std::pair<LuapeFunctionPtr, LuapeGraphBuilderTypeStatePtr> >& apply = typeState->getApplyActions();
+      const std::vector<std::pair<FunctionPtr, LuapeGraphBuilderTypeStatePtr> >& apply = typeState->getApplyActions();
       for (size_t i = 0; i < apply.size(); ++i)
       {
-        LuapeFunctionPtr function = apply[i].first;
+        FunctionPtr function = apply[i].first;
         if (function->acceptInputsStack(stack))
         {
           res->append(function);
