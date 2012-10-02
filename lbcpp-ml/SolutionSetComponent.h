@@ -9,7 +9,7 @@
 #ifndef LBCPP_ML_SOLUTION_SET_COMPONENT_H_
 # define LBCPP_ML_SOLUTION_SET_COMPONENT_H_
 
-# include <lbcpp-ml/Comparator.h>
+# include <lbcpp-ml/SolutionComparator.h>
 # include <lbcpp-ml/SolutionSet.h>
 # include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
 # include <lbcpp/UserInterface/VariableSelector.h>
@@ -18,20 +18,20 @@
 namespace lbcpp
 {
 
-class MOOSolutionSetDrawable : public TwoDimensionalPlotDrawable
+class SolutionSetDrawable : public TwoDimensionalPlotDrawable
 {
 public:
-  MOOSolutionSetDrawable(MOOSolutionSetPtr solutions) : solutions(solutions)
+  SolutionSetDrawable(SolutionSetPtr solutions) : solutions(solutions)
   {
-    MOOFitnessLimitsPtr fitnessLimits = solutions->getFitnessLimits();
-    MOOFitnessLimitsPtr empiricalLimits = solutions->getEmpiricalLimits();
+    FitnessLimitsPtr fitnessLimits = solutions->getFitnessLimits();
+    FitnessLimitsPtr empiricalLimits = solutions->getEmpiricalLimits();
     xAxis = makeAxis(fitnessLimits, empiricalLimits, 0);
     yAxis = makeAxis(fitnessLimits, empiricalLimits, 1);
     computeBounds();
   }
 
   virtual Drawable* createCopy() const
-    {return new MOOSolutionSetDrawable(solutions);}
+    {return new SolutionSetDrawable(solutions);}
 
   virtual PlotAxisPtr getXAxis() const
     {return xAxis;}
@@ -45,17 +45,17 @@ public:
     if (!areBoundsValid())
       return;
 
-    std::vector<MOOParetoFrontPtr> fronts = solutions->nonDominatedSort();
+    std::vector<ParetoFrontPtr> fronts = solutions->nonDominatedSort();
     for (size_t i = 0; i < fronts.size(); ++i)
     {
-      MOOParetoFrontPtr front = fronts[i];
+      ParetoFrontPtr front = fronts[i];
 
       g.setColour(juce::Colour(i / (float)fronts.size(), 0.5f, 1.f, (juce::uint8)255));
       for (size_t j = 0; j < front->getNumSolutions() - 1; ++j)
       {
         int x1, y1, x2, y2, x3, y3;
         getPixelPosition(front->getFitness(j), x1, y1, transform);
-        getPixelPosition(MOOFitness::makeWorstCombination(front->getFitness(j), front->getFitness(j + 1)), x2, y2, transform);
+        getPixelPosition(Fitness::makeWorstCombination(front->getFitness(j), front->getFitness(j + 1)), x2, y2, transform);
         getPixelPosition(front->getFitness(j + 1), x3, y3, transform);
         g.drawLine((float)x1, (float)y1, (float)x2, (float)y2);
         g.drawLine((float)x2, (float)y2, (float)x3, (float)y3);
@@ -64,7 +64,7 @@ public:
 
     for (size_t i = 0; i < solutions->getNumSolutions(); ++i)
     {
-      MOOFitnessPtr fitness = solutions->getFitness(i);
+      FitnessPtr fitness = solutions->getFitness(i);
       int x, y;
       getPixelPosition(fitness, x, y, transform);
       g.setColour(fitness == currentFitness ? juce::Colours::red : juce::Colours::black);
@@ -79,7 +79,7 @@ public:
 
     for (size_t i = 0; i < solutions->getNumSolutions(); ++i)
     {
-      MOOFitnessPtr fitness = solutions->getFitness(i);
+      FitnessPtr fitness = solutions->getFitness(i);
       int ox, oy;
       getPixelPosition(fitness, ox, oy, transform);
       double distance = sqrt((double)((x - ox) * (x - ox) + (y - oy) * (y - oy)));
@@ -94,18 +94,18 @@ public:
     return minDistance < hittestRadius ? res : -1;
   }
 
-  void setCurrentFitness(const MOOFitnessPtr& fitness)
+  void setCurrentFitness(const FitnessPtr& fitness)
     {currentFitness = fitness;}
 
-  const MOOFitnessPtr& getCurrentFitness() const
+  const FitnessPtr& getCurrentFitness() const
     {return currentFitness;}
 
 protected:
-  MOOSolutionSetPtr solutions;
+  SolutionSetPtr solutions;
   PlotAxisPtr xAxis, yAxis;
-  MOOFitnessPtr currentFitness;
+  FitnessPtr currentFitness;
 
-  void getPixelPosition(MOOFitnessPtr fitness, int& x, int& y, const juce::AffineTransform& transform) const
+  void getPixelPosition(FitnessPtr fitness, int& x, int& y, const juce::AffineTransform& transform) const
   {
     double dx = fitness->getValue(0);
     double dy = fitness->getValue(1);
@@ -132,7 +132,7 @@ protected:
       g.setPixel(x, y);
   }
 
-  PlotAxisPtr makeAxis(MOOFitnessLimitsPtr theoreticalLimits, MOOFitnessLimitsPtr empiricalLimits, size_t index)
+  PlotAxisPtr makeAxis(FitnessLimitsPtr theoreticalLimits, FitnessLimitsPtr empiricalLimits, size_t index)
   {
     /*
     double lower = theoreticalLimits->getLowerLimit(index);
@@ -156,17 +156,17 @@ protected:
   }
 };
 
-class MOOSolutionSetComponent : public juce::Component, public ComponentWithPreferedSize, public VariableSelector
+class SolutionSetComponent : public juce::Component, public ComponentWithPreferedSize, public VariableSelector
 {
 public:
-  MOOSolutionSetComponent(MOOSolutionSetPtr solutions, const String& name)
+  SolutionSetComponent(SolutionSetPtr solutions, const String& name)
     : solutions(solutions->sort(lexicographicComparator())), drawable(NULL), selectedIndex(-1)
   {
     setWantsKeyboardFocus(true);
     if (solutions->getNumObjectives() == 2)
-      drawable = new MOOSolutionSetDrawable(this->solutions);
+      drawable = new SolutionSetDrawable(this->solutions);
   }
-  virtual ~MOOSolutionSetComponent()
+  virtual ~SolutionSetComponent()
     {if (drawable) delete drawable;}
 
   virtual int getDefaultWidth() const
@@ -214,8 +214,8 @@ public:
   }
 
 protected:
-  MOOSolutionSetPtr solutions;
-  MOOSolutionSetDrawable* drawable;
+  SolutionSetPtr solutions;
+  SolutionSetDrawable* drawable;
   int selectedIndex;
 
   void paintText(juce::Graphics& g, const String& text)
@@ -254,7 +254,7 @@ protected:
 
     selectedIndex = index;
     if (drawable)
-      drawable->setCurrentFitness(selectedIndex >= 0 ? solutions->getFitness(selectedIndex) : MOOFitnessPtr());
+      drawable->setCurrentFitness(selectedIndex >= 0 ? solutions->getFitness(selectedIndex) : FitnessPtr());
     repaint();
   }
 

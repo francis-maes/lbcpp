@@ -15,17 +15,17 @@
 namespace lbcpp
 {
 
-class NRPAOptimizer : public MOOOptimizer
+class NRPAOptimizer : public Optimizer
 {
 public:
-  NRPAOptimizer(MOOSamplerPtr sampler, size_t level, size_t numIterationsPerLevel)
+  NRPAOptimizer(SamplerPtr sampler, size_t level, size_t numIterationsPerLevel)
     : sampler(sampler), level(level), numIterationsPerLevel(numIterationsPerLevel) {}
   NRPAOptimizer() : level(0), numIterationsPerLevel(0) {}
   
-  virtual void configure(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr front, Verbosity verbosity)
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, Verbosity verbosity)
   {
-    MOOOptimizer::configure(context, problem, front, verbosity);
-    sampler->initialize(context, problem->getObjectDomain());
+    Optimizer::configure(context, problem, front, verbosity);
+    sampler->initialize(context, problem->getDomain());
   }
 
   virtual void optimize(ExecutionContext& context)
@@ -34,11 +34,11 @@ public:
 protected:
   friend class NRPAOptimizerClass;
 
-  MOOSamplerPtr sampler;
+  SamplerPtr sampler;
   size_t level;
   size_t numIterationsPerLevel;
 
-  SolutionAndFitnessPair optimizeRecursively(ExecutionContext& context, MOOSamplerPtr sampler, size_t level)
+  SolutionAndFitnessPair optimizeRecursively(ExecutionContext& context, SamplerPtr sampler, size_t level)
   {
     if (problem->shouldStop())
       return SolutionAndFitnessPair();
@@ -50,10 +50,10 @@ protected:
     }
     else
     {
-      MOOFitnessPtr bestFitness = problem->getFitnessLimits()->getWorstPossibleFitness(true);
+      FitnessPtr bestFitness = problem->getFitnessLimits()->getWorstPossibleFitness(true);
       ObjectPtr bestSolution;
 
-      MOOSamplerPtr currentSampler = sampler->cloneAndCast<MOOSampler>();
+      SamplerPtr currentSampler = sampler->cloneAndCast<Sampler>();
       bool isTopLevel = (this->level == level);
       for (size_t i = 0; isTopLevel || i < numIterationsPerLevel; ++i)
       {

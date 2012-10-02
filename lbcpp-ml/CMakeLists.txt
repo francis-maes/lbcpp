@@ -14,8 +14,8 @@ SET(LBCPP_ML_INCLUDES
   ../include/lbcpp-ml/Domain.h
   ../include/lbcpp-ml/Fitness.h
   ../include/lbcpp-ml/Solution.h
-  ../include/lbcpp-ml/Comparator.h
   ../include/lbcpp-ml/SolutionSet.h
+  ../include/lbcpp-ml/SolutionComparator.h
   ../include/lbcpp-ml/Problem.h
   ../include/lbcpp-ml/Sampler.h
   ../include/lbcpp-ml/Optimizer.h

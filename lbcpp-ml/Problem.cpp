@@ -11,31 +11,31 @@
 using namespace lbcpp;
 
 /*
-** DecoratorMOOProblem
+** DecoratorProblem
 */
-DecoratorMOOProblem::DecoratorMOOProblem(MOOProblemPtr problem)
+DecoratorProblem::DecoratorProblem(ProblemPtr problem)
   : problem(problem) {}
 
-MOODomainPtr DecoratorMOOProblem::getObjectDomain() const
-  {return problem->getObjectDomain();}
+DomainPtr DecoratorProblem::getDomain() const
+  {return problem->getDomain();}
 
-MOOFitnessLimitsPtr DecoratorMOOProblem::getFitnessLimits() const
+FitnessLimitsPtr DecoratorProblem::getFitnessLimits() const
   {return problem->getFitnessLimits();}
 
-MOOFitnessPtr DecoratorMOOProblem::evaluate(ExecutionContext& context, const ObjectPtr& solution)
+FitnessPtr DecoratorProblem::evaluate(ExecutionContext& context, const ObjectPtr& solution)
   {return problem->evaluate(context, solution);}
 
-ObjectPtr DecoratorMOOProblem::proposeStartingSolution(ExecutionContext& context) const
+ObjectPtr DecoratorProblem::proposeStartingSolution(ExecutionContext& context) const
   {return problem->proposeStartingSolution(context);}
 
-bool DecoratorMOOProblem::shouldStop() const
+bool DecoratorProblem::shouldStop() const
   {return problem->shouldStop();}
 
 /*
 ** MaxIterationsDecoratorProblem
 */
-MaxIterationsDecoratorProblem::MaxIterationsDecoratorProblem(MOOProblemPtr problem, size_t maxNumEvaluations)
-  : DecoratorMOOProblem(problem), maxNumEvaluations(maxNumEvaluations), numEvaluations(0)
+MaxIterationsDecoratorProblem::MaxIterationsDecoratorProblem(ProblemPtr problem, size_t maxNumEvaluations)
+  : DecoratorProblem(problem), maxNumEvaluations(maxNumEvaluations), numEvaluations(0)
 {
 }
 
@@ -44,11 +44,11 @@ MaxIterationsDecoratorProblem::MaxIterationsDecoratorProblem()
 {
 }
 
-MOOFitnessPtr MaxIterationsDecoratorProblem::evaluate(ExecutionContext& context, const ObjectPtr& solution)
-  {jassert(numEvaluations < maxNumEvaluations); ++numEvaluations; return DecoratorMOOProblem::evaluate(context, solution);}
+FitnessPtr MaxIterationsDecoratorProblem::evaluate(ExecutionContext& context, const ObjectPtr& solution)
+  {jassert(numEvaluations < maxNumEvaluations); ++numEvaluations; return DecoratorProblem::evaluate(context, solution);}
 
 bool MaxIterationsDecoratorProblem::shouldStop() const
-  {return numEvaluations >= maxNumEvaluations || DecoratorMOOProblem::shouldStop();}
+  {return numEvaluations >= maxNumEvaluations || DecoratorProblem::shouldStop();}
 
 size_t MaxIterationsDecoratorProblem::getNumEvaluations() const
   {return numEvaluations;}
@@ -56,15 +56,15 @@ size_t MaxIterationsDecoratorProblem::getNumEvaluations() const
 /*
 ** EvaluatorDecoratorProblem
 */
-EvaluatorDecoratorProblem::EvaluatorDecoratorProblem(MOOProblemPtr problem, size_t maxNumEvaluations, size_t evaluationPeriod)
+EvaluatorDecoratorProblem::EvaluatorDecoratorProblem(ProblemPtr problem, size_t maxNumEvaluations, size_t evaluationPeriod)
   : MaxIterationsDecoratorProblem(problem, maxNumEvaluations), evaluationPeriod(evaluationPeriod) {}
 EvaluatorDecoratorProblem::EvaluatorDecoratorProblem() : evaluationPeriod(0) {}
 
-MOOFitnessPtr EvaluatorDecoratorProblem::evaluate(ExecutionContext& context, const ObjectPtr& solution)
+FitnessPtr EvaluatorDecoratorProblem::evaluate(ExecutionContext& context, const ObjectPtr& solution)
 {
   if (numEvaluations == 0)
     firstEvaluationTime = juce::Time::getMillisecondCounterHiRes() / 1000.0;
-  MOOFitnessPtr res = decoratedEvaluate(context, solution);
+  FitnessPtr res = decoratedEvaluate(context, solution);
   if ((numEvaluations % evaluationPeriod) == 0)
   {
     evaluate(context);
@@ -82,12 +82,12 @@ size_t EvaluatorDecoratorProblem::getEvaluationPeriod() const
 /*
 ** SingleObjectiveEvaluatorDecoratorProblem
 */
-SingleObjectiveEvaluatorDecoratorProblem::SingleObjectiveEvaluatorDecoratorProblem(MOOProblemPtr problem, size_t maxNumEvaluations, size_t evaluationPeriod)
+SingleObjectiveEvaluatorDecoratorProblem::SingleObjectiveEvaluatorDecoratorProblem(ProblemPtr problem, size_t maxNumEvaluations, size_t evaluationPeriod)
   : EvaluatorDecoratorProblem(problem, maxNumEvaluations, evaluationPeriod) {jassert(problem->getNumObjectives() == 1);}
  
-MOOFitnessPtr SingleObjectiveEvaluatorDecoratorProblem::decoratedEvaluate(ExecutionContext& context, const ObjectPtr& solution)
+FitnessPtr SingleObjectiveEvaluatorDecoratorProblem::decoratedEvaluate(ExecutionContext& context, const ObjectPtr& solution)
 {
-  MOOFitnessPtr res = MaxIterationsDecoratorProblem::evaluate(context, solution);
+  FitnessPtr res = MaxIterationsDecoratorProblem::evaluate(context, solution);
   if (!bestFitness || res->strictlyDominates(bestFitness))
     bestFitness = res;
   return res;
@@ -102,13 +102,13 @@ const std::vector<double>& SingleObjectiveEvaluatorDecoratorProblem::getScores()
 /*
 ** HyperVolumeEvaluatorDecoratorProblem
 */
-HyperVolumeEvaluatorDecoratorProblem::HyperVolumeEvaluatorDecoratorProblem(MOOProblemPtr problem, size_t maxNumEvaluations, size_t evaluationPeriod)
+HyperVolumeEvaluatorDecoratorProblem::HyperVolumeEvaluatorDecoratorProblem(ProblemPtr problem, size_t maxNumEvaluations, size_t evaluationPeriod)
   : EvaluatorDecoratorProblem(problem, maxNumEvaluations, evaluationPeriod)
-  {front = new MOOParetoFront(problem->getFitnessLimits());}
+  {front = new ParetoFront(problem->getFitnessLimits());}
 
-MOOFitnessPtr HyperVolumeEvaluatorDecoratorProblem::decoratedEvaluate(ExecutionContext& context, const ObjectPtr& object)
+FitnessPtr HyperVolumeEvaluatorDecoratorProblem::decoratedEvaluate(ExecutionContext& context, const ObjectPtr& object)
 {
-  MOOFitnessPtr res = MaxIterationsDecoratorProblem::evaluate(context, object);
+  FitnessPtr res = MaxIterationsDecoratorProblem::evaluate(context, object);
   front->addSolutionAndUpdateFront(object, res);
   return res;
 }

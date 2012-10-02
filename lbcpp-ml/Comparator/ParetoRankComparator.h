@@ -9,15 +9,15 @@
 #ifndef LBCPP_ML_COMPARATOR_PARETO_RANK_H_
 # define LBCPP_ML_COMPARATOR_PARETO_RANK_H_
 
-# include <lbcpp-ml/Comparator.h>
+# include <lbcpp-ml/SolutionComparator.h>
 
 namespace lbcpp
 {
 
-class ParetoRankAndCrowdingDistanceComparator : public MOOSolutionComparator
+class ParetoRankAndCrowdingDistanceComparator : public SolutionComparator
 {
 public:
-  virtual void initialize(const MOOSolutionSetPtr& solutions)
+  virtual void initialize(const SolutionSetPtr& solutions)
   {
     subFronts = solutions->nonDominatedSort(&mapping);
     crowdingDistances.resize(subFronts.size());
@@ -45,7 +45,7 @@ public:
 
 private:
   std::vector< std::pair<size_t, size_t> > mapping;
-  std::vector<MOOParetoFrontPtr> subFronts;
+  std::vector<ParetoFrontPtr> subFronts;
   std::vector<std::vector<double> > crowdingDistances;
 };
 

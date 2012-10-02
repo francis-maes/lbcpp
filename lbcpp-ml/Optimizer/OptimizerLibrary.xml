@@ -2,34 +2,34 @@
 
 <library name="Optimizer" directory="Optimizer">
 
-  <class name="MOOOptimizer" abstract="yes"/>
-  <class name="IterativeOptimizer" base="MOOOptimizer" abstract="yes">
+  <class name="Optimizer" abstract="yes"/>
+  <class name="IterativeOptimizer" base="Optimizer" abstract="yes">
     <variable type="PositiveInteger" name="numIterations"/>
   </class>
 
   <!-- Optimizers -->
   <class name="RandomOptimizer" base="IterativeOptimizer">
-    <constructor arguments="MOOSamplerPtr sample, size_t numIterations"/>
-    <variable type="MOOSampler" name="sampler"/>
+    <constructor arguments="SamplerPtr sample, size_t numIterations"/>
+    <variable type="Sampler" name="sampler"/>
   </class>
 
-  <class name="NRPAOptimizer" base="MOOOptimizer">
-    <variable type="MOOSampler" name="sampler"/>
+  <class name="NRPAOptimizer" base="Optimizer">
+    <variable type="Sampler" name="sampler"/>
     <variable type="PositiveInteger" name="level"/>
     <variable type="PositiveInteger" name="numIterationsPerLevel"/>
   </class>
 
   <!-- Population Based Optimizers -->
-  <class name="PopulationBasedMOOOptimizer" base="IterativeOptimizer" abstract="yes">
+  <class name="PopulationBasedOptimizer" base="IterativeOptimizer" abstract="yes">
     <variable type="PositiveInteger" name="populationSize"/>
   </class>
 
-  <class name="CrossEntropyOptimizer" base="PopulationBasedMOOOptimizer">
-    <constructor arguments="MOOSamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations, bool elitist, MOOSolutionComparatorPtr comparator"/>
-    <variable type="MOOSampler" name="sampler"/>
+  <class name="CrossEntropyOptimizer" base="PopulationBasedOptimizer">
+    <constructor arguments="SamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations, bool elitist, SolutionComparatorPtr comparator"/>
+    <variable type="Sampler" name="sampler"/>
     <variable type="PositiveInteger" name="numTrainingSamples"/>
     <variable type="Boolean" name="elitist"/>
-    <variable type="MOOSolutionComparator" name="comparator"/>
+    <variable type="SolutionComparator" name="comparator"/>
   </class>
 
   <!--
@@ -38,14 +38,14 @@
   </class>
   -->
 
-  <class name="NSGA2MOOptimizer" base="PopulationBasedMOOOptimizer">
+  <class name="NSGA2MOOptimizer" base="PopulationBasedOptimizer">
     <constructor arguments="size_t populationSize, size_t numGenerations, double mutationDistributionIndex, double crossOverDistributionIndex, double crossOverProbability"/>
     <variable type="Double" name="mutationDistributionIndex"/>
     <variable type="Double" name="crossOverDistributionIndex"/>
     <variable type="Double" name="crossOverProbability"/>
   </class>
 
-  <class name="CMAESMOOptimizer" base="PopulationBasedMOOOptimizer">
+  <class name="CMAESMOOptimizer" base="PopulationBasedOptimizer">
     <variable type="PositiveInteger" name="numOffsprings"/>
   </class>
 

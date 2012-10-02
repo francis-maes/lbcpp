@@ -17,10 +17,10 @@
 namespace lbcpp
 {
 
-class MOOProblemFromSharkObjectiveFunction : public MOOProblem
+class ProblemFromSharkObjectiveFunction : public Problem
 {
 public:
-  MOOProblemFromSharkObjectiveFunction(ObjectiveFunctionVS<double>* objective)
+  ProblemFromSharkObjectiveFunction(ObjectiveFunctionVS<double>* objective)
     : objective(objective)
   {
     const BoxConstraintHandler* box = static_cast<const BoxConstraintHandler*>(objective->getConstraintHandler());
@@ -36,30 +36,30 @@ public:
     }
   }
 
-  virtual ~MOOProblemFromSharkObjectiveFunction()
+  virtual ~ProblemFromSharkObjectiveFunction()
     {delete objective;}
 
-  virtual MOODomainPtr getObjectDomain() const
+  virtual DomainPtr getDomain() const
     {return domain;}
 
-  virtual MOOFitnessLimitsPtr getFitnessLimits() const
+  virtual FitnessLimitsPtr getFitnessLimits() const
   {
     if (!limits)
     {
       std::vector< std::pair<double, double> > v(objective->objectives(), std::make_pair(DBL_MAX, 0.0));
       adjustLimits(v);
-      const_cast<MOOProblemFromSharkObjectiveFunction* >(this)->limits = new MOOFitnessLimits(v);
+      const_cast<ProblemFromSharkObjectiveFunction* >(this)->limits = new FitnessLimits(v);
     }
     return limits;
   }
 
-  virtual MOOFitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution)
+  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& solution)
   {
     DenseDoubleVectorPtr vector = solution.staticCast<DenseDoubleVector>();
     jassert(vector);
     std::vector<double> res;
     objective->result(vector->getValues(), res);
-    return new MOOFitness(res, limits);
+    return new Fitness(res, limits);
   }
 
   virtual ObjectPtr proposeStartingSolution(ExecutionContext& context) const
@@ -72,7 +72,7 @@ public:
   virtual String toShortString() const
   {
     String res = getClassName();
-    int i = res.indexOf(T("MOOProblem"));
+    int i = res.indexOf(T("Problem"));
     if (i >= 0)
       res = res.substring(0, i);
     return res;
@@ -80,7 +80,7 @@ public:
 
 protected:
   ContinuousDomainPtr domain;
-  MOOFitnessLimitsPtr limits;
+  FitnessLimitsPtr limits;
   ObjectiveFunctionVS<double>* objective;
 
   virtual void adjustLimits(std::vector< std::pair<double, double> >& res) const {}
@@ -89,11 +89,11 @@ protected:
 /*
 ** Single-objective benchmark functions
 */
-class SingleObjectiveSharkMOProblem : public MOOProblemFromSharkObjectiveFunction
+class SingleObjectiveSharkMOProblem : public ProblemFromSharkObjectiveFunction
 {
 public:
   SingleObjectiveSharkMOProblem(ObjectiveFunctionVS<double>* objective, double max = 10.0)
-    : MOOProblemFromSharkObjectiveFunction(objective), max(max) {}
+    : ProblemFromSharkObjectiveFunction(objective), max(max) {}
   
   virtual void adjustLimits(std::vector< std::pair<double, double> >& res) const
     {res[0].first = max;}
@@ -133,11 +133,11 @@ struct RosenbrockRotatedProblem : public SingleObjectiveSharkMOProblem
 /*
 ** ZDT Bi-objective functions
 */
-class ZDTMOProblem : public MOOProblemFromSharkObjectiveFunction
+class ZDTMOProblem : public ProblemFromSharkObjectiveFunction
 {
 public:
   ZDTMOProblem(ObjectiveFunctionVS<double>* objective, double max1, double max2)
-    : MOOProblemFromSharkObjectiveFunction(objective), max1(10.0), max2(10.0) {} // TMP !!
+    : ProblemFromSharkObjectiveFunction(objective), max1(10.0), max2(10.0) {} // TMP !!
 
   virtual void adjustLimits(std::vector< std::pair<double, double> >& res) const
     {res[0].first = max1; res[1].first = max2;}

@@ -17,28 +17,28 @@ namespace lbcpp
 class NestedCrossEntropyOptimizer : public CrossEntropyOptimizer
 {
 public:
-  NestedCrossEntropyOptimizer(MOOSamplerPtr sampler, size_t level, size_t populationSize, size_t numTrainingSamples, size_t numGenerations = 10, bool elitist = true)
+  NestedCrossEntropyOptimizer(SamplerPtr sampler, size_t level, size_t populationSize, size_t numTrainingSamples, size_t numGenerations = 10, bool elitist = true)
     : CrossEntropyOptimizer(sampler, populationSize, numTrainingSamples, numGenerations, elitist), level(level) {}
   NestedCrossEntropyOptimizer() {}
  
   virtual void optimize(ExecutionContext& context)
   {
-    sampler->initialize(context, problem->getObjectDomain());
+    sampler->initialize(context, problem->getDomain());
     optimizeRecursively(context, sampler, level);
     context.resultCallback("sampler", sampler);
   }
 
-  MOOSolutionSetPtr optimizeRecursively(ExecutionContext& context, MOOSamplerPtr sampler, size_t level)
+  SolutionSetPtr optimizeRecursively(ExecutionContext& context, SamplerPtr sampler, size_t level)
   {
-    sampler->initialize(context, problem->getObjectDomain());
-    MOOSolutionSetPtr lastPopulation;
+    sampler->initialize(context, problem->getDomain());
+    SolutionSetPtr lastPopulation;
 
     bool isTopLevel = (level == this->level);
     for (size_t i = 0; (isTopLevel || i < numGenerations) && !problem->shouldStop(); ++i)
     {
       startGeneration(context, i, sampler);
 
-      MOOSolutionSetPtr population = new MOOSolutionSet(problem->getFitnessLimits());
+      SolutionSetPtr population = new SolutionSet(problem->getFitnessLimits());
       for (size_t j = 0; j < populationSize; ++j)
       {
         if (level == 0)
@@ -50,7 +50,7 @@ public:
         {
           if (verbosity >= verbosityAll)
             context.enterScope("Sub-optimize " + String((int)j+1));
-          MOOSolutionSetPtr subSolutions = optimizeRecursively(context, sampler, level - 1);
+          SolutionSetPtr subSolutions = optimizeRecursively(context, sampler, level - 1);
           if (subSolutions)
             population->addSolutions(subSolutions->getParetoFront());
           if (verbosity >= verbosityAll)
@@ -60,9 +60,9 @@ public:
       
       if (elitist && lastPopulation)
         population->addSolutions(lastPopulation);
-      MOOSolutionSetPtr selectedPopulation = select(population, numTrainingSamples);
+      SolutionSetPtr selectedPopulation = select(population, numTrainingSamples);
 
-      sampler = sampler->cloneAndCast<MOOSampler>();
+      sampler = sampler->cloneAndCast<Sampler>();
       learnSampler(context, selectedPopulation, sampler);
       
       lastPopulation = selectedPopulation;

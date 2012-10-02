@@ -9,37 +9,37 @@
   <include file="lbcpp-ml/Problem.h"/>
 
   <!-- CORE -->
-  <class name="MOODomain" abstract="yes"/>
-  <class name="ContinuousDomain" base="MOODomain">
+  <class name="Domain" abstract="yes"/>
+  <class name="ContinuousDomain" base="Domain">
     <variable type="ObjectVector[Pair[Double,Double]]" name="limits"/>
   </class>
-  <class name="MOOFitnessLimits" base="ContinuousDomain"/>
+  <class name="FitnessLimits" base="ContinuousDomain"/>
 
-  <class name="MOOFitness">
+  <class name="Fitness">
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="values"/>
-    <variable type="MOOFitnessLimits" name="limits"/>
+    <variable type="FitnessLimits" name="limits"/>
   </class>
 
-  <class name="MOOSolution">
+  <class name="Solution">
     <variable type="Object" name="object"/>
-    <variable type="MOOFitness" name="fitness"/>
+    <variable type="Fitness" name="fitness"/>
   </class>
 
-  <class name="MOOSolutionSet">
-    <variable type="MOOFitnessLimits" name="limits"/>
-    <variable type="ObjectVector[MOOSolution]" name="solutions"/>
+  <class name="SolutionSet">
+    <variable type="FitnessLimits" name="limits"/>
+    <variable type="ObjectVector[Solution]" name="solutions"/>
   </class>
-  <class name="MOOParetoFront" base="MOOSolutionSet"/>
+  <class name="ParetoFront" base="SolutionSet"/>
 
-  <uicomponent name="MOOSolutionSetComponent" type="MOOSolutionSet"/>
+  <uicomponent name="SolutionSetComponent" type="SolutionSet"/>
 
   <!-- Problems -->
-  <class name="MOOProblem" abstract="yes"/>
+  <class name="Problem" abstract="yes"/>
   
-  <class name="DecoratorMOOProblem" base="MOOProblem" abstract="yes">
-    <variable type="MOOProblem" name="problem"/>
+  <class name="DecoratorProblem" base="Problem" abstract="yes">
+    <variable type="Problem" name="problem"/>
   </class>
-  <class name="MaxIterationsDecoratorProblem" base="DecoratorMOOProblem">
+  <class name="MaxIterationsDecoratorProblem" base="DecoratorProblem">
     <variable type="PositiveInteger" name="maxNumEvaluations"/>
   </class>
   <class name="EvaluatorDecoratorProblem" base="MaxIterationsDecoratorProblem" abstract="yes">
@@ -49,16 +49,16 @@
   <class name="HyperVolumeEvaluatorDecoratorProblem" base="EvaluatorDecoratorProblem"/>
 
   <!--
-  <class name="MOOProblemFromSharkObjectiveFunction" base="MOOProblem" abstract="yes"/>
+  <class name="ProblemFromSharkObjectiveFunction" base="Problem" abstract="yes"/>
 
-  <class name="SingleObjectiveSharkMOProblem" base="MOOProblemFromSharkObjectiveFunction" abstract="yes"/>
+  <class name="SingleObjectiveSharkMOProblem" base="ProblemFromSharkObjectiveFunction" abstract="yes"/>
   <class name="AckleyProblem" base="SingleObjectiveSharkMOProblem"/>
   <class name="GriewangkProblem" base="SingleObjectiveSharkMOProblem"/>
   <class name="RastriginProblem" base="SingleObjectiveSharkMOProblem"/>
   <class name="RosenbrockProblem" base="SingleObjectiveSharkMOProblem"/>
   <class name="RosenbrockRotatedProblem" base="SingleObjectiveSharkMOProblem"/>
 
-  <class name="ZDTMOProblem" base="MOOProblemFromSharkObjectiveFunction" abstract="yes"/>
+  <class name="ZDTMOProblem" base="ProblemFromSharkObjectiveFunction" abstract="yes"/>
   <class name="ZDT1MOProblem" base="ZDTMOProblem"/>
   <class name="ZDT2MOProblem" base="ZDTMOProblem"/>
   <class name="ZDT3MOProblem" base="ZDTMOProblem"/>

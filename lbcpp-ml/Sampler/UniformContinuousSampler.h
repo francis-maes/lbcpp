@@ -14,10 +14,10 @@
 namespace lbcpp
 {
 
-class UniformContinuousSampler : public MOOSampler
+class UniformContinuousSampler : public Sampler
 {
 public:
-  virtual void initialize(ExecutionContext& context, const MOODomainPtr& domain)
+  virtual void initialize(ExecutionContext& context, const DomainPtr& domain)
     {this->domain = domain.staticCast<ContinuousDomain>(); jassert(this->domain);}
 
   virtual ObjectPtr sample(ExecutionContext& context) const

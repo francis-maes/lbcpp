@@ -2,13 +2,13 @@
 
 <library name="Sampler" directory="Sampler">
 
-  <class name="MOOSampler" abstract="yes"/>
+  <class name="Sampler" abstract="yes"/>
 
-  <class name="UniformContinuousSampler" base="MOOSampler">
+  <class name="UniformContinuousSampler" base="Sampler">
     <constructor/>
   </class>
   
-  <class name="DiagonalGaussianSampler" base="MOOSampler">
+  <class name="DiagonalGaussianSampler" base="Sampler">
     <constructor/>
     <variable type="Double" name="learningRate"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="mean"/>

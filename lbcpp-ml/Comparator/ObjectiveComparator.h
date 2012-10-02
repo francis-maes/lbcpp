@@ -9,18 +9,18 @@
 #ifndef LBCPP_ML_COMPARATOR_OBJECTIVE_H_
 # define LBCPP_ML_COMPARATOR_OBJECTIVE_H_
 
-# include <lbcpp-ml/Comparator.h>
+# include <lbcpp-ml/SolutionComparator.h>
 # include <lbcpp-ml/SolutionSet.h>
 
 namespace lbcpp
 {
 
-class ObjectiveComparator : public MOOSolutionComparator
+class ObjectiveComparator : public SolutionComparator
 {
 public:
   ObjectiveComparator(size_t index = (size_t)-1) : index(index) {}
 
-  virtual void initialize(const MOOSolutionSetPtr& solutions)
+  virtual void initialize(const SolutionSetPtr& solutions)
     {this->solutions = solutions;}
 
   virtual int compare(size_t index1, size_t index2)
@@ -37,7 +37,7 @@ protected:
   size_t index;
 
 private:
-  MOOSolutionSetPtr solutions;
+  SolutionSetPtr solutions;
 };
 
 }; /* namespace lbcpp */

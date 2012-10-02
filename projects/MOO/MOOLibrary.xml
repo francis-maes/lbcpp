@@ -2,16 +2,16 @@
 
 <library name="MOO" dynamic="yes">
 
-  <class name="MOOProblemFromSharkObjectiveFunction" base="MOOProblem" abstract="yes"/>
+  <class name="ProblemFromSharkObjectiveFunction" base="Problem" abstract="yes"/>
 
-  <class name="SingleObjectiveSharkMOProblem" base="MOOProblemFromSharkObjectiveFunction" abstract="yes"/>
+  <class name="SingleObjectiveSharkMOProblem" base="ProblemFromSharkObjectiveFunction" abstract="yes"/>
   <class name="AckleyProblem" base="SingleObjectiveSharkMOProblem"/>
   <class name="GriewangkProblem" base="SingleObjectiveSharkMOProblem"/>
   <class name="RastriginProblem" base="SingleObjectiveSharkMOProblem"/>
   <class name="RosenbrockProblem" base="SingleObjectiveSharkMOProblem"/>
   <class name="RosenbrockRotatedProblem" base="SingleObjectiveSharkMOProblem"/>
 
-  <class name="ZDTMOProblem" base="MOOProblemFromSharkObjectiveFunction" abstract="yes"/>
+  <class name="ZDTMOProblem" base="ProblemFromSharkObjectiveFunction" abstract="yes"/>
   <class name="ZDT1MOProblem" base="ZDTMOProblem"/>
   <class name="ZDT2MOProblem" base="ZDTMOProblem"/>
   <class name="ZDT3MOProblem" base="ZDTMOProblem"/>

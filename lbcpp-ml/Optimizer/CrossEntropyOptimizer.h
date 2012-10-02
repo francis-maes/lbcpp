@@ -12,37 +12,37 @@
 # include <lbcpp-ml/Optimizer.h>
 # include <lbcpp-ml/Sampler.h>
 # include <lbcpp-ml/SolutionSet.h>
-# include <lbcpp-ml/Comparator.h>
+# include <lbcpp-ml/SolutionComparator.h>
 
 namespace lbcpp
 {
 
-class CrossEntropyOptimizer : public PopulationBasedMOOOptimizer
+class CrossEntropyOptimizer : public PopulationBasedOptimizer
 {
 public:
-  CrossEntropyOptimizer(MOOSamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations = 0, bool elitist = false, MOOSolutionComparatorPtr comparator = MOOSolutionComparatorPtr())
-    : PopulationBasedMOOOptimizer(populationSize, numGenerations), sampler(sampler), numTrainingSamples(numTrainingSamples), elitist(elitist), comparator(comparator) {}
+  CrossEntropyOptimizer(SamplerPtr sampler, size_t populationSize, size_t numTrainingSamples, size_t numGenerations = 0, bool elitist = false, SolutionComparatorPtr comparator = SolutionComparatorPtr())
+    : PopulationBasedOptimizer(populationSize, numGenerations), sampler(sampler), numTrainingSamples(numTrainingSamples), elitist(elitist), comparator(comparator) {}
   CrossEntropyOptimizer() : elitist(false) {}
   
-  virtual void configure(ExecutionContext& context, MOOProblemPtr problem, MOOParetoFrontPtr front, Verbosity verbosity)
+  virtual void configure(ExecutionContext& context, ProblemPtr problem, ParetoFrontPtr front, Verbosity verbosity)
   {
     IterativeOptimizer::configure(context, problem, front, verbosity);
     currentSampler = this->sampler;
-    currentSampler->initialize(context, problem->getObjectDomain());
-    currentParents = MOOSolutionSetPtr();
+    currentSampler->initialize(context, problem->getDomain());
+    currentParents = SolutionSetPtr();
   }
 
   virtual bool iteration(ExecutionContext& context, size_t iter)
   {
     if (verbosity >= verbosityDetailed)
-      context.resultCallback("currentSampler", currentSampler->cloneAndCast<MOOSampler>());
+      context.resultCallback("currentSampler", currentSampler->cloneAndCast<Sampler>());
 
-    MOOSolutionSetPtr population = sampleAndEvaluatePopulation(context, currentSampler, populationSize);
+    SolutionSetPtr population = sampleAndEvaluatePopulation(context, currentSampler, populationSize);
     if (currentParents)
       population->addSolutions(currentParents);
-    MOOSolutionSetPtr selectedPopulation = select(population, numTrainingSamples);
+    SolutionSetPtr selectedPopulation = select(population, numTrainingSamples);
 
-    currentSampler = currentSampler->cloneAndCast<MOOSampler>();
+    currentSampler = currentSampler->cloneAndCast<Sampler>();
     learnSampler(context, selectedPopulation, currentSampler);
     
     if (elitist)
@@ -55,21 +55,21 @@ public:
   {
     if (verbosity >= verbosityProgressAndResult)
       context.resultCallback("sampler", currentSampler);
-    MOOOptimizer::clear(context);
+    Optimizer::clear(context);
   }
 
  protected:
   friend class CrossEntropyOptimizerClass;
 
-  MOOSamplerPtr sampler;
+  SamplerPtr sampler;
   size_t numTrainingSamples;
   bool elitist;
-  MOOSolutionComparatorPtr comparator;
+  SolutionComparatorPtr comparator;
 
-  MOOSamplerPtr currentSampler;
-  MOOSolutionSetPtr currentParents;
+  SamplerPtr currentSampler;
+  SolutionSetPtr currentParents;
 
-  MOOSolutionComparatorPtr createDefaultComparator() const
+  SolutionComparatorPtr createDefaultComparator() const
   {
     if (problem->getNumObjectives() == 1)
       return objectiveComparator(0);  // single-objective
@@ -77,7 +77,7 @@ public:
       return paretoRankAndCrowdingDistanceComparator(); // multi-objective
   }
   
-  MOOSolutionSetPtr select(const MOOSolutionSetPtr& population, size_t count) const
+  SolutionSetPtr select(const SolutionSetPtr& population, size_t count) const
     {return population->selectNBests(comparator ? comparator : createDefaultComparator(), count);}
 };
 
