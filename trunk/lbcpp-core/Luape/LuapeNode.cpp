@@ -119,13 +119,13 @@ LuapeSampleVectorPtr LuapeConstantNode::compute(ExecutionContext& context, const
 /*
 ** LuapeFunctionNode
 */
-LuapeFunctionNode::LuapeFunctionNode(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& arguments)
+LuapeFunctionNode::LuapeFunctionNode(const FunctionPtr& function, const std::vector<LuapeNodePtr>& arguments)
   : function(function), arguments(arguments)
 {
   initialize();
 }
 
-LuapeFunctionNode::LuapeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& argument1, const LuapeNodePtr& argument2)
+LuapeFunctionNode::LuapeFunctionNode(const FunctionPtr& function, const LuapeNodePtr& argument1, const LuapeNodePtr& argument2)
   : function(function), arguments(2)
 {
   arguments[0] = argument1;
@@ -133,7 +133,7 @@ LuapeFunctionNode::LuapeFunctionNode(const LuapeFunctionPtr& function, const Lua
   initialize();
 }
 
-LuapeFunctionNode::LuapeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& argument)
+LuapeFunctionNode::LuapeFunctionNode(const FunctionPtr& function, const LuapeNodePtr& argument)
   : function(function), arguments(1, argument)
 {
   initialize();

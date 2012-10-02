@@ -46,7 +46,7 @@ public:
     LuapeNodePtr node = weakNode;
     if (node.isInstanceOf<LuapeConstantNode>())
       return; // those node cannot be produced by this policy
-    if (node.isInstanceOf<LuapeFunctionNode>() && node.staticCast<LuapeFunctionNode>()->getFunction()->getClassName() == T("StumpLuapeFunction"))
+    if (node.isInstanceOf<LuapeFunctionNode>() && node.staticCast<LuapeFunctionNode>()->getFunction()->getClassName() == T("StumpFunction"))
       node = node.staticCast<LuapeFunctionNode>()->getArgument(0);
 
     std::vector<Trajectory> trajectories;
@@ -162,7 +162,7 @@ public:
     for (LuapeGraphBuilderTypeSearchSpace::StateMap::const_iterator it = typeSearchSpace->getStates().begin();
           it != typeSearchSpace->getStates().end(); ++it)
     {
-      const std::vector<std::pair<LuapeFunctionPtr, LuapeGraphBuilderTypeStatePtr> >& applyActions = it->second->getApplyActions();
+      const std::vector<std::pair<FunctionPtr, LuapeGraphBuilderTypeStatePtr> >& applyActions = it->second->getApplyActions();
       for (size_t i = 0; i < applyActions.size(); ++i)
         this->applyActions.addAction(applyActions[i].first);
     }
@@ -294,8 +294,8 @@ public:
       return typeState->hasYieldAction();
     if (action.isInstanceOf<LuapeNode>())
       return typeState->hasPushAction(action.staticCast<LuapeNode>()->getType());
-    if (action.isInstanceOf<LuapeFunction>())
-      return typeState->hasApplyAction(action.staticCast<LuapeFunction>());
+    if (action.isInstanceOf<Function>())
+      return typeState->hasApplyAction(action.staticCast<Function>());
     jassert(false);
     return false;
   }
@@ -346,7 +346,7 @@ public:
       yieldActions.addWeight(action, weakObjective * weight);
     else if (action.isInstanceOf<LuapeNode>())
       pushActions.addWeight(action, weakObjective * weight);
-    else if (action.isInstanceOf<LuapeFunction>())
+    else if (action.isInstanceOf<Function>())
       applyActions.addWeight(action, weakObjective * weight);
     else
       jassertfalse;

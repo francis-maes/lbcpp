@@ -31,13 +31,13 @@ LuapeConstantNodePtr LuapeUniverse::makeConstantNode(const Variable& constantVal
     return it->second;
 }
 
-LuapeFunctionPtr LuapeUniverse::makeFunction(ClassPtr functionClass, const std::vector<Variable>& arguments)
+FunctionPtr LuapeUniverse::makeFunction(ClassPtr functionClass, const std::vector<Variable>& arguments)
 {
   FunctionKey key(functionClass, arguments);
   FunctionsMap::const_iterator it = functions.find(key);
   if (it == functions.end())
   {
-    LuapeFunctionPtr function = LuapeFunction::create(functionClass);
+    FunctionPtr function = Function::create(functionClass);
     for (size_t i = 0; i < arguments.size(); ++i)
       function->setVariable(i, arguments[i]);
     functions[key] = function;
@@ -47,34 +47,34 @@ LuapeFunctionPtr LuapeUniverse::makeFunction(ClassPtr functionClass, const std::
     return it->second;
 }
 
-LuapeNodePtr LuapeUniverse::makeFunctionNode(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& inputs)
+LuapeNodePtr LuapeUniverse::makeLuapeFunctionNode(const FunctionPtr& function, const std::vector<LuapeNodePtr>& inputs)
 {
-  FunctionNodeKey key(function, inputs);
-  FunctionNodesMap::const_iterator it = functionNodes.find(key);
+  LuapeFunctionNodeKey key(function, inputs);
+  LuapeFunctionNodesMap::const_iterator it = functionNodes.find(key);
   if (it == functionNodes.end())
   {
     LuapeNodePtr res = canonizeNode(new LuapeFunctionNode(function, inputs));
-    cacheFunctionNode(key, res);
+    cacheLuapeFunctionNode(key, res);
     return res;
   }
   else
     return it->second;
 }
 
-LuapeNodePtr LuapeUniverse::makeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& input)
-  {return makeFunctionNode(function, std::vector<LuapeNodePtr>(1, input));}
+LuapeNodePtr LuapeUniverse::makeLuapeFunctionNode(const FunctionPtr& function, const LuapeNodePtr& input)
+  {return makeLuapeFunctionNode(function, std::vector<LuapeNodePtr>(1, input));}
 
-LuapeNodePtr LuapeUniverse::makeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& input1, const LuapeNodePtr& input2)
+LuapeNodePtr LuapeUniverse::makeLuapeFunctionNode(const FunctionPtr& function, const LuapeNodePtr& input1, const LuapeNodePtr& input2)
 {
   std::vector<LuapeNodePtr> inputs(2);
   inputs[0] = input1;
   inputs[1] = input2;
-  return makeFunctionNode(function, inputs);
+  return makeLuapeFunctionNode(function, inputs);
 }
 
-void LuapeUniverse::cacheFunctionNode(const FunctionNodeKey& key, LuapeNodePtr node)
+void LuapeUniverse::cacheLuapeFunctionNode(const LuapeFunctionNodeKey& key, LuapeNodePtr node)
 {
-  enum {maxNumCachedFunctionNodes = 1000000}; 
+  enum {maxNumCachedLuapeFunctionNodes = 1000000}; 
 
   size_t depth = node->getDepth();
   if (depth > maxObservedFunctionDepth)
@@ -83,13 +83,13 @@ void LuapeUniverse::cacheFunctionNode(const FunctionNodeKey& key, LuapeNodePtr n
 /*  {
     static int counter = 0;
     if (++counter % 1000 == 0)
-      std::cout << "depth = " << depth << " maxObserved: " << maxObservedFunctionDepth << " maxDepth: " << maxFunctionDepth << " count = " << functionNodes.size() << " / " << maxNumCachedFunctionNodes << std::endl;
+      std::cout << "depth = " << depth << " maxObserved: " << maxObservedFunctionDepth << " maxDepth: " << maxFunctionDepth << " count = " << functionNodes.size() << " / " << maxNumCachedLuapeFunctionNodes << std::endl;
   }*/
   if (depth >= maxFunctionDepth)
     return; // do not cache: too deep
 
   functionNodes[key] = node;
-  while (functionNodes.size() >= maxNumCachedFunctionNodes)
+  while (functionNodes.size() >= maxNumCachedLuapeFunctionNodes)
   {
     if (maxFunctionDepth == (size_t)-1)
       maxFunctionDepth = maxObservedFunctionDepth;
@@ -99,7 +99,7 @@ void LuapeUniverse::cacheFunctionNode(const FunctionNodeKey& key, LuapeNodePtr n
       --maxFunctionDepth;
     }
 
-    FunctionNodesMap::iterator it, nxt;
+    LuapeFunctionNodesMap::iterator it, nxt;
     for (it = functionNodes.begin(); it != functionNodes.end(); it = nxt)
     {
       nxt = it; ++nxt;
@@ -137,7 +137,7 @@ void LuapeUniverse::clearImportances()
 {
   for (ConstantNodesMap::const_iterator it = constantNodes.begin(); it != constantNodes.end(); ++it)
     clearImportances(it->second);
-  for (FunctionNodesMap::const_iterator it = functionNodes.begin(); it != functionNodes.end(); ++it)
+  for (LuapeFunctionNodesMap::const_iterator it = functionNodes.begin(); it != functionNodes.end(); ++it)
     clearImportances(it->second);
 }
 
@@ -145,7 +145,7 @@ void LuapeUniverse::getImportances(std::map<LuapeNodePtr, double>& res) const
 {
   for (ConstantNodesMap::const_iterator it = constantNodes.begin(); it != constantNodes.end(); ++it)
     getImportances(it->second, res);
-  for (FunctionNodesMap::const_iterator it = functionNodes.begin(); it != functionNodes.end(); ++it)
+  for (LuapeFunctionNodesMap::const_iterator it = functionNodes.begin(); it != functionNodes.end(); ++it)
     getImportances(it->second, res);
 }
 
@@ -156,7 +156,7 @@ void LuapeUniverse::getImportances(const LuapeNodePtr& node, std::map<LuapeNodeP
     double importance = node->getImportance();
     jassert(isNumberValid(importance));
     if (importance > 0)
-      if (!node.isInstanceOf<LuapeFunctionNode>() || node.staticCast<LuapeFunctionNode>()->getFunction()->getClassName() != T("StumpLuapeFunction"))
+      if (!node.isInstanceOf<LuapeFunctionNode>() || node.staticCast<LuapeFunctionNode>()->getFunction()->getClassName() != T("StumpFunction"))
         res[node] = importance;
     size_t n = node->getNumSubNodes();
     for (size_t i = 0; i < n; ++i)
@@ -242,10 +242,10 @@ bool LuapeNodeKeysMap::addNodeToCache(ExecutionContext& context, const LuapeNode
     {
       it2->second = node;
       context.informationCallback(T("Change computation of ") + previousNode->toShortString() + T(" into ") + node->toShortString());
-      LuapeFunctionNodePtr sourceFunctionNode = node.dynamicCast<LuapeFunctionNode>();
-      LuapeFunctionNodePtr targetFunctionNode = previousNode.dynamicCast<LuapeFunctionNode>();
-      if (sourceFunctionNode && targetFunctionNode)
-        sourceFunctionNode->clone(context, targetFunctionNode);
+      LuapeFunctionNodePtr sourceLuapeFunctionNode = node.dynamicCast<LuapeFunctionNode>();
+      LuapeFunctionNodePtr targetLuapeFunctionNode = previousNode.dynamicCast<LuapeFunctionNode>();
+      if (sourceLuapeFunctionNode && targetLuapeFunctionNode)
+        sourceLuapeFunctionNode->clone(context, targetLuapeFunctionNode);
       addSubNodesToCache(context, node);
     }
     nodeToKeys[node] = it2->first;

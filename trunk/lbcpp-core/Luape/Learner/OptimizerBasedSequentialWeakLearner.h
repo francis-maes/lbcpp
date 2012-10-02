@@ -153,7 +153,7 @@ protected:
       
       double threshold = context.getRandomGenerator()->sampleDouble(minimumValue, maximumValue);
       //context.informationCallback(T("min = ") + String(minimumValue) + T(" max = ") + String(maximumValue) + T(" threshold = ") + String(threshold));
-      return new LuapeFunctionNode(stumpLuapeFunction(threshold), node);
+      return new LuapeFunctionNode(stumpFunction(threshold), node);
     }
   };
 

@@ -25,7 +25,7 @@ public:
   virtual void updateSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const = 0;
   virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions) const = 0;
   virtual Variable negateVote(const Variable& vote) const = 0;
-  virtual LuapeFunctionPtr makeVoteFunction(ExecutionContext& context, const LuapeInferencePtr& problem, const Variable& vote) const = 0;
+  virtual FunctionPtr makeVoteFunction(ExecutionContext& context, const LuapeInferencePtr& problem, const Variable& vote) const = 0;
   
   virtual bool initialize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
@@ -69,8 +69,8 @@ public:
     }
     else
     {
-      LuapeFunctionPtr voteFunction = makeVoteFunction(context, problem, vote);
-      res = universe->makeFunctionNode(voteFunction, weakNode);
+      FunctionPtr voteFunction = makeVoteFunction(context, problem, vote);
+      res = universe->makeLuapeFunctionNode(voteFunction, weakNode);
     }
     if (verbose)
       context.informationCallback(res->toShortString());

@@ -68,10 +68,10 @@ public:
   size_t getNumFunctions() const
     {return functions.size();}
 
-  const LuapeFunctionPtr& getFunction(size_t index) const
+  const FunctionPtr& getFunction(size_t index) const
     {jassert(index < functions.size()); return functions[index];}
 
-  void addFunction(const LuapeFunctionPtr& function)
+  void addFunction(const FunctionPtr& function)
     {functions.push_back(function);}
 
   /*
@@ -150,7 +150,7 @@ protected:
   std::vector<LuapeInputNodePtr> inputs;
   LuapeInputNodePtr supervision;
   std::vector<LuapeConstantNodePtr> constants;
-  std::vector<LuapeFunctionPtr> functions;
+  std::vector<FunctionPtr> functions;
   std::set<TypePtr> targetTypes;
   std::set<LuapeNodePtr> activeVariables;
   LuapeNodePtr node;

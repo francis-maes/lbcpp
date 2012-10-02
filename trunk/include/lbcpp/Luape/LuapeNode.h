@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_NODE_H_
 # define LBCPP_LUAPE_NODE_H_
 
-# include "LuapeFunction.h"
+# include "Function.h"
 # include "../Data/IndexSet.h"
 
 namespace lbcpp
@@ -122,9 +122,9 @@ protected:
 class LuapeFunctionNode : public LuapeNode
 {
 public:
-  LuapeFunctionNode(const LuapeFunctionPtr& function, const std::vector<LuapeNodePtr>& arguments);
-  LuapeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& argument1, const LuapeNodePtr& argument2);
-  LuapeFunctionNode(const LuapeFunctionPtr& function, const LuapeNodePtr& argument);
+  LuapeFunctionNode(const FunctionPtr& function, const std::vector<LuapeNodePtr>& arguments);
+  LuapeFunctionNode(const FunctionPtr& function, const LuapeNodePtr& argument1, const LuapeNodePtr& argument2);
+  LuapeFunctionNode(const FunctionPtr& function, const LuapeNodePtr& argument);
   LuapeFunctionNode() {}
 
   virtual String toShortString() const;
@@ -138,7 +138,7 @@ public:
   virtual const LuapeNodePtr& getSubNode(size_t index) const
     {jassert(index < arguments.size()); return arguments[index];}
 
-  const LuapeFunctionPtr& getFunction() const
+  const FunctionPtr& getFunction() const
     {return function;}
 
   size_t getNumArguments() const
@@ -155,7 +155,7 @@ public:
 protected:
   friend class LuapeFunctionNodeClass;
 
-  LuapeFunctionPtr function;
+  FunctionPtr function;
   std::vector<LuapeNodePtr> arguments;
 
   void initialize();

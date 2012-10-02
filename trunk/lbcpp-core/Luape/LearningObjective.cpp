@@ -9,7 +9,7 @@
 #include <lbcpp/Luape/LearningObjective.h>
 #include <lbcpp/Luape/LuapeCache.h>
 #include "NodeBuilder/NodeBuilderTypeSearchSpace.h"
-#include "Function/SpecialLuapeFunctions.h" // for StumpLuapeFunction
+#include "Function/SpecialFunctions.h" // for StumpFunction
 using namespace lbcpp;
 
 /*
@@ -44,7 +44,7 @@ double LearningObjective::computeObjectiveWithEventualStump(ExecutionContext& co
     double res;
     SparseDoubleVectorPtr sortedDoubleValues = problem->getTrainingCache()->getSortedDoubleValues(context, weakNode, examples);
     double threshold = findBestThreshold(context, weakNode, examples, sortedDoubleValues, res, false);
-    weakNode = new LuapeFunctionNode(stumpLuapeFunction(threshold), weakNode);
+    weakNode = new LuapeFunctionNode(stumpFunction(threshold), weakNode);
     return res;
   }
 }

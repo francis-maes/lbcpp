@@ -1,15 +1,15 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ObjectLuapeFunctions.h         | Object Luape Functions          |
+| Filename: ObjectFunctions.h              | Object  Functions               |
 | Author  : Francis Maes                   |                                 |
 | Started : 13/12/2011 18:36               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_FUNCTION_OBJECT_H_
-# define LBCPP_LUAPE_FUNCTION_OBJECT_H_
+#ifndef LBCPP_ML_FUNCTION_OBJECT_H_
+# define LBCPP_ML_FUNCTION_OBJECT_H_
 
-# include <lbcpp/Luape/LuapeFunction.h>
+# include <lbcpp/Luape/Function.h>
 # include <lbcpp/Luape/LuapeNode.h>
 # include <lbcpp/Luape/LuapeCache.h> // for LuapeSampleVector
 
@@ -17,10 +17,10 @@ namespace lbcpp
 {
 
 template<class ExactType>
-class UnaryObjectLuapeFunction : public LuapeFunction
+class UnaryObjectFunction : public Function
 {
 public:
-  UnaryObjectLuapeFunction(ClassPtr inputClass = objectClass)
+  UnaryObjectFunction(ClassPtr inputClass = objectClass)
     : inputClass(inputClass) {}
 
   Variable computeObject(const ObjectPtr& object) const
@@ -102,13 +102,13 @@ protected:
     {return *(const ExactType* )this;}
 };
 
-class GetVariableLuapeFunction : public UnaryObjectLuapeFunction<GetVariableLuapeFunction>
+class GetVariableFunction : public UnaryObjectFunction<GetVariableFunction>
 {
 public:
-  GetVariableLuapeFunction(ClassPtr inputClass = ClassPtr(), size_t variableIndex = 0)
-    : UnaryObjectLuapeFunction<GetVariableLuapeFunction>(inputClass), inputClass(inputClass), variableIndex(variableIndex) {}
-  GetVariableLuapeFunction(ClassPtr inputClass, const String& variableName)
-    : UnaryObjectLuapeFunction<GetVariableLuapeFunction>(inputClass), inputClass(inputClass), variableIndex((size_t)inputClass->findMemberVariable(variableName))
+  GetVariableFunction(ClassPtr inputClass = ClassPtr(), size_t variableIndex = 0)
+    : UnaryObjectFunction<GetVariableFunction>(inputClass), inputClass(inputClass), variableIndex(variableIndex) {}
+  GetVariableFunction(ClassPtr inputClass, const String& variableName)
+    : UnaryObjectFunction<GetVariableFunction>(inputClass), inputClass(inputClass), variableIndex((size_t)inputClass->findMemberVariable(variableName))
   {
     jassert(variableIndex != (size_t)-1);
   }
@@ -162,7 +162,7 @@ public:
     {return variableIndex;}
 
 protected:
-  friend class GetVariableLuapeFunctionClass;
+  friend class GetVariableFunctionClass;
   ClassPtr inputClass;
   size_t variableIndex;
 
@@ -170,12 +170,12 @@ protected:
   TypePtr outputType;
 };
 
-typedef ReferenceCountedObjectPtr<GetVariableLuapeFunction> GetVariableLuapeFunctionPtr;
+typedef ReferenceCountedObjectPtr<GetVariableFunction> GetVariableFunctionPtr;
 
-class GetContainerLengthLuapeFunction : public UnaryObjectLuapeFunction<GetContainerLengthLuapeFunction>
+class GetContainerLengthFunction : public UnaryObjectFunction<GetContainerLengthFunction>
 {
 public:
-  GetContainerLengthLuapeFunction() : UnaryObjectLuapeFunction<GetContainerLengthLuapeFunction>(containerClass()) {}
+  GetContainerLengthFunction() : UnaryObjectFunction<GetContainerLengthFunction>(containerClass()) {}
 
   virtual String toShortString() const
     {return "length(.)";}
@@ -198,4 +198,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_FUNCTION_OBJECT_H_
+#endif // !LBCPP_ML_FUNCTION_OBJECT_H_

@@ -1,25 +1,25 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: IntegerLuapeFunctions.h        | Integer Luape Functions         |
+| Filename: IntegerFunctions.h             | Integer Functions               |
 | Author  : Francis Maes                   |                                 |
 | Started : 13/12/2011 18:36               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LUAPE_FUNCTION_INTEGER_H_
-# define LBCPP_LUAPE_FUNCTION_INTEGER_H_
+#ifndef LBCPP_ML_FUNCTION_INTEGER_H_
+# define LBCPP_ML_FUNCTION_INTEGER_H_
 
-# include <lbcpp/Luape/LuapeFunction.h>
+# include <lbcpp/Luape/Function.h>
 # include <lbcpp/Luape/LuapeNode.h>
 
 namespace lbcpp
 {
 
-class BinaryIntegerLuapeFunction : public HomogeneousBinaryLuapeFunction
+class BinaryIntegerFunction : public HomogeneousBinaryFunction
 {
 public:
-  BinaryIntegerLuapeFunction()
-    : HomogeneousBinaryLuapeFunction(integerType) {}
+  BinaryIntegerFunction()
+    : HomogeneousBinaryFunction(integerType) {}
 
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const
     {return type->inheritsFrom(integerType) && !type.isInstanceOf<Enumeration>();} // exclude enumerations
@@ -34,7 +34,7 @@ public:
   }
 };
 
-class AddIntegerLuapeFunction : public BinaryIntegerLuapeFunction
+class AddIntegerFunction : public BinaryIntegerFunction
 {
 public:
   virtual String toShortString() const
@@ -50,7 +50,7 @@ public:
     {return (Flags)commutativeFlag;}
 };
 
-class SubIntegerLuapeFunction : public BinaryIntegerLuapeFunction
+class SubIntegerFunction : public BinaryIntegerFunction
 {
 public:
   virtual String toShortString() const
@@ -66,7 +66,7 @@ public:
     {return (Flags)allSameArgIrrelevantFlag;}
 };
 
-class MulIntegerLuapeFunction : public BinaryIntegerLuapeFunction
+class MulIntegerFunction : public BinaryIntegerFunction
 {
 public:
   virtual String toShortString() const
@@ -82,7 +82,7 @@ public:
     {return (Flags)commutativeFlag;}
 };
 
-class DivIntegerLuapeFunction : public BinaryIntegerLuapeFunction
+class DivIntegerFunction : public BinaryIntegerFunction
 {
 public:
   virtual String toShortString() const
@@ -100,4 +100,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LUAPE_FUNCTION_INTEGER_H_
+#endif // !LBCPP_ML_FUNCTION_INTEGER_H_
