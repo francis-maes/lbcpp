@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Colo" dynamic="yes">
+  
+  <class name="ColoObject">
+    <variable type="GenericVector[PositiveInteger]" name="sequence"/>
+  </class>
+  <class name="ColoDomain" base="Domain"/>
+  <class name="ColoProblem" base="Problem">
+    <variable type="File" name="modelDirectory"/>
+  </class>
+  <class name="ColoSampler" base="Sampler">
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="probabilities"/>
+  </class>
+  <class name="ColoSampler2" base="Sampler">
+    <variable type="ObjectVector[DenseDoubleVector[PositiveIntegerEnumeration,Double]]" name="probabilities"/>
+  </class>
+
+  <class name="ColoSandBox" base="WorkUnit">
+    <variable type="File" name="javaDirectory"/>
+    <variable type="File" name="modelDirectory"/>
+    <variable type="PositiveInteger" name="numEvaluations"/>
+  </class>
+  
+</library>
