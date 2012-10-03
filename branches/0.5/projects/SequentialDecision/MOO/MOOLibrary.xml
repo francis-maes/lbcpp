@@ -135,27 +135,6 @@
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="stddev"/>
   </class>
 
-  <!-- Colo -->
-  <class name="ColoObject">
-    <variable type="GenericVector[PositiveInteger]" name="sequence"/>
-  </class>
-  <class name="ColoDomain" base="MOODomain"/>
-  <class name="ColoProblem" base="MOOProblem">
-    <variable type="File" name="modelDirectory"/>
-  </class>
-  <class name="ColoSampler" base="MOOSampler">
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="probabilities"/>
-  </class>
-  <class name="ColoSampler2" base="MOOSampler">
-    <variable type="ObjectVector[DenseDoubleVector[PositiveIntegerEnumeration,Double]]" name="probabilities"/>
-  </class>
-
-  <class name="ColoSandBox" base="WorkUnit">
-    <variable type="File" name="javaDirectory"/>
-    <variable type="File" name="modelDirectory"/>
-    <variable type="PositiveInteger" name="numEvaluations"/>
-  </class>
-
   <!-- MO Tree -->
   <class name="MultiObjectiveRegressionTree" base="Object"/>
 
