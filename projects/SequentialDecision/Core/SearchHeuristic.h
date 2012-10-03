@@ -15,7 +15,7 @@
 namespace lbcpp
 {
 
-class GreedySearchHeuristic : public SimpleSearchHeuristic
+class GreedySearchHeuristic : public SearchHeuristic
 {
 public:
   GreedySearchHeuristic(double discount = 1.0, double maxReward = 1.0)
@@ -34,7 +34,7 @@ protected:
   double maxReward;
 };
 
-class MaxReturnSearchHeuristic : public SimpleSearchHeuristic
+class MaxReturnSearchHeuristic : public SearchHeuristic
 {
 public:
   MaxReturnSearchHeuristic(double maxReturn = 1.0)
@@ -49,7 +49,7 @@ protected:
   double maxReturn;
 };
 
-class MinDepthSearchHeuristic : public SimpleSearchHeuristic
+class MinDepthSearchHeuristic : public SearchHeuristic
 {
 public:
   MinDepthSearchHeuristic(double maxDepth = 1.0, bool applyLogFunction = false)
@@ -68,7 +68,7 @@ protected:
   bool applyLogFunction;
 };
 
-class OptimisticPlanningSearchHeuristic : public SimpleSearchHeuristic
+class OptimisticPlanningSearchHeuristic : public SearchHeuristic
 {
 public:
   OptimisticPlanningSearchHeuristic(double discount = 0.9, double maxReward = 1.0)
@@ -88,7 +88,7 @@ private:
   double maxReward;
 };
 
-class LinearInterpolatedSearchHeuristic : public SimpleSearchHeuristic
+class LinearInterpolatedSearchHeuristic : public SearchHeuristic
 {
 public:
   LinearInterpolatedSearchHeuristic(FunctionPtr heuristic1, FunctionPtr heuristic2, double k)
@@ -113,16 +113,16 @@ public:
 protected:
   friend class LinearInterpolatedSearchHeuristicClass;
 
-  FunctionPtr heuristic1;
-  FunctionPtr heuristic2;
+  SearchHeuristicPtr heuristic1;
+  SearchHeuristicPtr heuristic2;
   double k;
 };
 
 // SearchNode -> Scalar
-class LearnableSearchHeuristic : public CompositeFunction
+class LearnableSearchHeuristic : public LearnableSearchHeuristic
 {
 public:
-  virtual void buildFunction(CompositeFunctionBuilder& builder)
+  /*virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
     size_t node = builder.addInput(searchTreeNodeClass(), T("node"));
     size_t perception = builder.addFunction(createPerceptionFunction(), node);
@@ -141,7 +141,7 @@ public:
     Variable res = CompositeFunction::computeFunction(context, inputs);
     return res.exists() ? res.getDouble() : 0.0;
   }
-
+  */
 protected:
   virtual FunctionPtr createPerceptionFunction() const = 0; // SearchNode -> Features
   virtual FunctionPtr createScoringFunction() const = 0;    // Features -> Score

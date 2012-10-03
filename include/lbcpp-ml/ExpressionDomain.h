@@ -12,6 +12,7 @@
 # include "Domain.h"
 # include "Expression.h"
 # include "ExpressionUniverse.h"
+# include <lbcpp/Luape/LuapeCache.h>
 
 namespace lbcpp
 {
@@ -19,8 +20,8 @@ namespace lbcpp
 class ExpressionDomain : public Domain
 {
 public:
-  ExpressionDomain(ExpressionUniversePtr universe, size_t maxNumSymbols)
-    : universe(universe), maxNumSymbols(maxNumSymbols)
+  ExpressionDomain(ExpressionUniversePtr universe = ExpressionUniversePtr())
+    : universe(universe)
   {
     if (!universe)
       this->universe = new ExpressionUniverse();
@@ -35,20 +36,23 @@ public:
   size_t getNumVariables() const
     {return variables.size();}
 
-  const VariableExpressionPtr& getVariable(size_t index) const
+  const VariableExpressionPtr& getDomainVariable(size_t index) const
     {jassert(index < variables.size()); return variables[index];}
   
   const std::vector<VariableExpressionPtr>& getVariables() const
     {return variables;}
 
-  void addVariable(const TypePtr& type, const String& name)
-    {size_t index = variables.size(); variables.push_back(new VariableExpression(type, name, index));}
+  VariableExpressionPtr addVariable(const TypePtr& type, const String& name)
+    {size_t index = variables.size(); VariableExpressionPtr res(new VariableExpression(type, name, index)); variables.push_back(res); return res;}
 
   /*
   ** Supervision variable
   */
   VariableExpressionPtr getSupervision() const
     {return supervision;}
+
+  VariableExpressionPtr createSupervision(const TypePtr& type, const String& name = "supervision")
+    {jassert(!supervision); supervision = new VariableExpression(type, name, variables.size()); return supervision;}
 
   /*
   ** Available Functions
@@ -90,6 +94,12 @@ public:
   void clearTargetTypes()
     {targetTypes.clear();}
 
+  /*
+  ** Cache
+  */
+  LuapeSamplesCachePtr createCache(size_t numSamples, size_t maxCacheSizeInMb = 512) const
+    {return new LuapeSamplesCache(universe, variables, numSamples, maxCacheSizeInMb);}
+
 #if 0
   /*
   ** Type search space
@@ -109,7 +119,6 @@ public:
 
 protected:
   ExpressionUniversePtr universe;
-  size_t maxNumSymbols;
   std::vector<VariableExpressionPtr> variables;
   VariableExpressionPtr supervision;
   std::vector<ConstantExpressionPtr> constants;

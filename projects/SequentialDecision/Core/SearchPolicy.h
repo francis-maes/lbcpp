@@ -100,13 +100,13 @@ public:
     return popBestCandidate();
   }
 
-  const FunctionPtr& getHeuristic() const
+  const SearchHeuristicPtr& getHeuristic() const
     {return heuristic;}
 
 protected:
   friend class BestFirstSearchPolicyClass;
 
-  FunctionPtr heuristic;
+  SearchHeuristicPtr heuristic;
   std::multimap<double, size_t> candidates;
 
   size_t popBestCandidate()

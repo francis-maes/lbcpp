@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="MCGP" dynamic="yes">
+
+  <class name="ExpressionProblem" base="Problem" abstract="yes"/>
+  <class name="F8SymbolicRegressionProblem" base="ExpressionProblem">
+    <variable type="PositiveInteger" name="functionIndex"/>
+  </class>
+
+  <class name="MCGPSandBox" base="WorkUnit">
+    <variable type="PositiveInteger" name="numEvaluations"/>
+    <variable type="PositiveInteger" name="verbosity"/>
+  </class>
+  
+</library>
