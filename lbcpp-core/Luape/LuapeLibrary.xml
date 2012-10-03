@@ -2,58 +2,14 @@
 
 <library name="Luape" directory="Luape">
 
-  <import name="Function"/>
   <import name="ExpressionBuilder"/>
   <import name="LuapeLearner"/>
   
-  <include file="lbcpp/Luape/Function.h"/>
-  <include file="lbcpp/Luape/Expression.h"/>
+  <include file="lbcpp-ml/Function.h"/>
+  <include file="lbcpp-ml/Expression.h"/>
   <include file="lbcpp/Luape/LuapeInference.h"/>
   <include file="lbcpp/Luape/LuapeLearner.h"/>
   <include file="lbcpp/Luape/ExpressionBuilder.h"/>
-    
-  <!-- Luape Function -->
-  <class name="Function" abstract="yes"/>
-  <class name="HomogeneousUnaryFunction" base="Function" abstract="yes"/>
-  <class name="HomogeneousBinaryFunction" base="Function" abstract="yes"/>
-  
-  <!-- Nodes -->
-  <class name="Expression" base="Object" abstract="yes">
-    <variable type="Type" name="type"/>
-    <!-- <variable type="PositiveInteger" name="allocationIndex"/> -->
-  </class>
-  <class name="VariableExpression" base="Expression">
-    <variable type="String" name="name"/>
-    <variable type="PositiveInteger" name="inputIndex"/>
-  </class>
-  <class name="ConstantExpression" base="Expression">
-    <variable type="Variable" name="value"/>
-  </class>
-  <class name="FunctionExpression" base="Expression">
-    <variable type="Function" name="function"/>
-    <variable type="ObjectVector[Expression]" name="arguments"/>
-  </class>
-  <class name="SequenceExpression" base="Expression" abstract="yes">
-    <variable type="ObjectVector[Expression]" name="nodes"/>
-  </class>
-  <class name="ScalarSumExpression" base="SequenceExpression">
-    <variable type="Boolean" name="convertToProbabilities"/>
-    <variable type="Boolean" name="computeAverage"/>
-  </class>
-  <class name="VectorSumExpression" base="SequenceExpression">
-    <variable type="Boolean" name="convertToProbabilities"/>
-  </class>
-  <class name="CreateSparseVectorExpression" base="SequenceExpression"/>
-  <class name="TestExpression" base="Expression">
-    <variable type="Expression" name="conditionNode"/>
-    <variable type="Expression" name="failureNode"/>
-    <variable type="Expression" name="successNode"/>
-    <variable type="Expression" name="missingNode"/>
-  </class>
-
-  <!-- Cache -->
-  <class name="ExpressionUniverse" base="Object"/>
-
 
   <!-- Inference -->
   <class name="LuapeInference" base="Object" abstract="yes">

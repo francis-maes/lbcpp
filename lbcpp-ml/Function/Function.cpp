@@ -7,8 +7,8 @@
                                `--------------------------------------------*/
 
 #include "precompiled.h"
-#include <lbcpp/Luape/Function.h>
-#include <lbcpp/Luape/Expression.h>
+#include <lbcpp-ml/Function.h>
+#include <lbcpp-ml/Expression.h>
 #include <lbcpp/Luape/LuapeCache.h>
 using namespace lbcpp;
 

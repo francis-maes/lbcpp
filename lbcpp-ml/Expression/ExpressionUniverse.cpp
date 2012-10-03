@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ExpressionUniverse.cpp              | Luape Universe                  |
+| Filename: ExpressionUniverse.cpp         | Expression Universe             |
 | Author  : Francis Maes                   |                                 |
 | Started : 19/12/2011 12:35               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp/Luape/ExpressionUniverse.h>
-#include <lbcpp/Luape/Expression.h>
+#include <lbcpp-ml/ExpressionUniverse.h>
+#include <lbcpp-ml/Expression.h>
 using namespace lbcpp;
 
 ExpressionUniverse::ExpressionUniverse() : maxFunctionDepth((size_t)-1), maxObservedFunctionDepth(0)

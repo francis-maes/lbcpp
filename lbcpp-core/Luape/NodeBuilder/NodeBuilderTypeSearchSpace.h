@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_NODE_BUILDER_TYPE_SEARCH_SPACE_H_
 # define LBCPP_LUAPE_NODE_BUILDER_TYPE_SEARCH_SPACE_H_
 
-# include <lbcpp/Luape/Expression.h>
+# include <lbcpp-ml/Expression.h>
 # include <lbcpp/Luape/LuapeInference.h>
 # include <lbcpp/Luape/ExpressionBuilder.h>
 

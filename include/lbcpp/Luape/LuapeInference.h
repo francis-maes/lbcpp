@@ -9,8 +9,9 @@
 #ifndef LBCPP_LUAPE_INFERENCE_H_
 # define LBCPP_LUAPE_INFERENCE_H_
 
-# include "Expression.h"
-# include "ExpressionUniverse.h"
+# include "predeclarations.h"
+# include <lbcpp-ml/Expression.h>
+# include <lbcpp-ml/ExpressionUniverse.h>
 # include "LuapeCache.h"
 
 namespace lbcpp
