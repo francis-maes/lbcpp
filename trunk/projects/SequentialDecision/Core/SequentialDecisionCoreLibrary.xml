@@ -43,33 +43,33 @@
   </class>
   
   <!-- Search Heuristic -->
-  <class name="GreedySearchHeuristic" base="Function" shortName="greedy">
+  <class name="GreedySearchHeuristic" base="SearchHeuristic" shortName="greedy">
     <constructor arguments="double discount, double maxReward"/>
     <variable type="Double" name="discount"/>
     <variable type="Double" name="maxReward"/>
   </class>
-  <class name="MaxReturnSearchHeuristic" base="Function" shortName="maxReturn">
+  <class name="MaxReturnSearchHeuristic" base="SearchHeuristic" shortName="maxReturn">
     <constructor arguments="double maxReturn"/>
     <variable type="Double" name="maxReturn"/>
   </class>
-  <class name="MinDepthSearchHeuristic" base="Function" shortName="minDepth">
+  <class name="MinDepthSearchHeuristic" base="SearchHeuristic" shortName="minDepth">
     <constructor arguments="double maxDepth, bool applyLogFunction"/>
     <variable type="Double" name="maxDepth"/>
     <variable type="Boolean" name="applyLogFunction"/>
   </class>
-  <class name="OptimisticPlanningSearchHeuristic" base="Function" shortName="optimistic">
+  <class name="OptimisticPlanningSearchHeuristic" base="SearchHeuristic" shortName="optimistic">
     <constructor arguments="double discount, double maxReward"/>
     <variable type="Double" name="discount"/>
     <variable type="Double" name="maxReward"/>
   </class>
-  <class name="LinearInterpolatedSearchHeuristic" base="Function" shortName="lerp">
-    <constructor arguments="FunctionPtr heuristic1, FunctionPtr heuristic2, double k"/>
-    <variable type="Function" name="heuristic1"/>
-    <variable type="Function" name="heuristic2"/>
+  <class name="LinearInterpolatedSearchHeuristic" base="SearchHeuristic" shortName="lerp">
+    <constructor arguments="SearchHeuristicPtr heuristic1, SearchHeuristicPtr heuristic2, double k"/>
+    <variable type="SearchHeuristic" name="heuristic1"/>
+    <variable type="SearchHeuristic" name="heuristic2"/>
     <variable type="Double" name="k"/>
   </class>
   
-  <class name="LearnableSearchHeuristic" base="CompositeFunction" abstract="yes"/>
+  <class name="LearnableSearchHeuristic" base="SearchHeuristic" abstract="yes"/>
 
   <!-- SearchFunction -->
   <class name="SearchFunction" base="Function">

@@ -41,6 +41,9 @@ public:
   const std::vector< std::pair<double, double> >& getLimits() const
     {return limits;}
 
+  void setLimits(size_t dimension, double lowest, double highest)
+    {jassert(dimension < limits.size()); limits[dimension] = std::make_pair(lowest, highest);}
+
   DenseDoubleVectorPtr sampleUniformly(RandomGeneratorPtr random) const;
   virtual ObjectPtr projectIntoDomain(const ObjectPtr& object) const;
 

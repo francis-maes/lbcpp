@@ -74,6 +74,9 @@ typedef ReferenceCountedObjectPtr<VectorSumExpression> VectorSumExpressionPtr;
 class CreateSparseVectorExpression;
 typedef ReferenceCountedObjectPtr<CreateSparseVectorExpression> CreateSparseVectorExpressionPtr;
 
+class ExpressionDomain;
+typedef ReferenceCountedObjectPtr<ExpressionDomain> ExpressionDomainPtr;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_ML_PREDECLARATIONS_H_

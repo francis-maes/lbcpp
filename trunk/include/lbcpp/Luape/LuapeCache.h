@@ -206,7 +206,7 @@ public:
   /*
   ** Construction
   */
-  LuapeSamplesCache(ExpressionUniversePtr universe, const std::vector<VariableExpressionPtr>& inputs, size_t size, size_t maxCacheSizeInMb = 1024);
+  LuapeSamplesCache(ExpressionUniversePtr universe, const std::vector<VariableExpressionPtr>& variables, size_t numSamples, size_t maxCacheSizeInMb = 1024);
   LuapeSamplesCache() : maxCacheSize(0), actualCacheSize(0) {}
 
   void setInputObject(const std::vector<VariableExpressionPtr>& inputs, size_t index, const ObjectPtr& object);

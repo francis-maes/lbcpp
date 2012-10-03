@@ -14,25 +14,22 @@
 namespace lbcpp
 {
 
-/*
-** SearchHeuristic
-*/
-class SimpleSearchHeuristic : public SimpleUnaryFunction
+class SearchHeuristic : public Object
 {
 public:
-  SimpleSearchHeuristic() : SimpleUnaryFunction(searchTreeNodeClass(), doubleType) {}
-
   virtual double computeHeuristic(const SearchTreeNodePtr& node) const = 0;
 
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {return computeHeuristic(input.getObjectAndCast<SearchTreeNode>());}
+  Variable compute(ExecutionContext& context, const SearchTreeNodePtr& node) const
+    {return computeHeuristic(node);}
 };
 
-FunctionPtr greedySearchHeuristic(double discount = 1.0, double maxReward = 1.0);
-FunctionPtr maxReturnSearchHeuristic(double maxReturn = 1.0);
-FunctionPtr minDepthSearchHeuristic(double maxDepth = 1.0, bool applyLogFunction = false);
-FunctionPtr optimisticPlanningSearchHeuristic(double discount, double maxReward = 1.0);
-FunctionPtr linearInterpolatedSearchHeuristic(FunctionPtr heuristic1, FunctionPtr heuristic2, double k);
+typedef ReferenceCountedObjectPtr<SearchHeuristic> SearchHeuristicPtr;
+
+SearchHeuristicPtr greedySearchHeuristic(double discount = 1.0, double maxReward = 1.0);
+SearchHeuristicPtr maxReturnSearchHeuristic(double maxReturn = 1.0);
+SearchHeuristicPtr minDepthSearchHeuristic(double maxDepth = 1.0, bool applyLogFunction = false);
+SearchHeuristicPtr optimisticPlanningSearchHeuristic(double discount, double maxReward = 1.0);
+SearchHeuristicPtr linearInterpolatedSearchHeuristic(SearchHeuristicPtr heuristic1, SearchHeuristicPtr heuristic2, double k);
 
 /*
 ** SearchTree
