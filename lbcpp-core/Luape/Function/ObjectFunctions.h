@@ -10,7 +10,7 @@
 # define LBCPP_ML_FUNCTION_OBJECT_H_
 
 # include <lbcpp/Luape/Function.h>
-# include <lbcpp/Luape/LuapeNode.h>
+# include <lbcpp/Luape/Expression.h>
 # include <lbcpp/Luape/LuapeCache.h> // for LuapeSampleVector
 
 namespace lbcpp
@@ -123,7 +123,7 @@ public:
     return outputType;
   }
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
   {
     jassert(inputs.size() == 1);
     VariableSignaturePtr member = inputClass->getMemberVariable(variableIndex);
@@ -183,7 +183,7 @@ public:
   virtual TypePtr initialize(const TypePtr* inputTypes)
     {return positiveIntegerType;}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {jassert(inputs.size() == 1); return "length(" + inputs[0]->toShortString() + ")";}
 
   Variable computeObject(const ObjectPtr& object) const

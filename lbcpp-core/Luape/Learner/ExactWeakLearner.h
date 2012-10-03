@@ -17,24 +17,24 @@ namespace lbcpp
 class ExactWeakLearner : public NodeBuilderBasedLearner
 {
 public:
-  ExactWeakLearner(LuapeNodeBuilderPtr nodeBuilder)
+  ExactWeakLearner(ExpressionBuilderPtr nodeBuilder)
     : NodeBuilderBasedLearner(nodeBuilder) {}
   ExactWeakLearner() {}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     // make weak nodes
-    std::vector<LuapeNodePtr> weakNodes;
+    std::vector<ExpressionPtr> weakNodes;
     nodeBuilder->buildNodes(context, problem, 0, weakNodes);
     if (!weakNodes.size())
-      return LuapeNodePtr();
+      return ExpressionPtr();
 
     // evaluate each weak node
-    std::vector<LuapeNodePtr> bestWeakNodes;
+    std::vector<ExpressionPtr> bestWeakNodes;
     bestObjectiveValue = -DBL_MAX;
     for (size_t i = 0; i < weakNodes.size(); ++i)
     {
-      LuapeNodePtr weakNode = weakNodes[i];
+      ExpressionPtr weakNode = weakNodes[i];
       double objectiveValue = computeObjective(context, problem, examples, weakNode); // side effect on weakNode
       if (objectiveValue >= bestObjectiveValue)
       {
@@ -47,14 +47,14 @@ public:
       }
     }
     if (bestWeakNodes.empty())
-      return LuapeNodePtr();
+      return ExpressionPtr();
     if (bestWeakNodes.size() == 1)
       return bestWeakNodes[0];
     else
       return bestWeakNodes[context.getRandomGenerator()->sampleSize(bestWeakNodes.size())];
   }
 
-  virtual double computeObjective(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, LuapeNodePtr& weakNode)
+  virtual double computeObjective(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, ExpressionPtr& weakNode)
     {return objective->computeObjectiveWithEventualStump(context, problem, weakNode, examples);}
 };
 
@@ -62,11 +62,11 @@ public:
 class RandomSplitWeakLearner : public ExactWeakLearner
 {
 public:
-  RandomSplitWeakLearner(LuapeNodeBuilderPtr nodeBuilder)
+  RandomSplitWeakLearner(ExpressionBuilderPtr nodeBuilder)
     : ExactWeakLearner(nodeBuilder) {}
   RandomSplitWeakLearner() {}
 
-  virtual double computeObjective(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, LuapeNodePtr& weakNode)
+  virtual double computeObjective(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, ExpressionPtr& weakNode)
   {
     LuapeSampleVectorPtr samples = problem->getTrainingCache()->getSamples(context, weakNode, examples);
     if (samples->getElementsType() == booleanType)
@@ -90,7 +90,7 @@ public:
     double threshold = context.getRandomGenerator()->sampleDouble(minimumValue, maximumValue);
     //context.informationCallback(T("min = ") + String(minimumValue) + T(" max = ") + String(maximumValue) + T(" threshold = ") + String(threshold));
     
-    weakNode = new LuapeFunctionNode(stumpFunction(threshold), weakNode);
+    weakNode = new FunctionExpression(stumpFunction(threshold), weakNode);
     return objective->compute(problem->getTrainingCache()->getSamples(context, weakNode, examples));
   }
 };

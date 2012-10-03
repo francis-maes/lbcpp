@@ -1,29 +1,29 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuapeUniverse.cpp              | Luape Universe                  |
+| Filename: ExpressionUniverse.cpp              | Luape Universe                  |
 | Author  : Francis Maes                   |                                 |
 | Started : 19/12/2011 12:35               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include <lbcpp/Luape/LuapeUniverse.h>
-#include <lbcpp/Luape/LuapeNode.h>
+#include <lbcpp/Luape/ExpressionUniverse.h>
+#include <lbcpp/Luape/Expression.h>
 using namespace lbcpp;
 
-LuapeUniverse::LuapeUniverse() : maxFunctionDepth((size_t)-1), maxObservedFunctionDepth(0)
+ExpressionUniverse::ExpressionUniverse() : maxFunctionDepth((size_t)-1), maxObservedFunctionDepth(0)
 {
 }
 
-LuapeConstantNodePtr LuapeUniverse::makeConstantNode(const Variable& constantValue)
+ConstantExpressionPtr ExpressionUniverse::makeConstantNode(const Variable& constantValue)
 {
   if (constantValue.exists())
-    return new LuapeConstantNode(constantValue);
+    return new ConstantExpression(constantValue);
 
   // cache only "missing value" nodes for each type
   ConstantNodesMap::const_iterator it = constantNodes.find(constantValue);
   if (it == constantNodes.end())
   {
-    LuapeConstantNodePtr res = new LuapeConstantNode(constantValue);
+    ConstantExpressionPtr res = new ConstantExpression(constantValue);
     constantNodes[constantValue] = res;
     return res;
   }
@@ -31,7 +31,7 @@ LuapeConstantNodePtr LuapeUniverse::makeConstantNode(const Variable& constantVal
     return it->second;
 }
 
-FunctionPtr LuapeUniverse::makeFunction(ClassPtr functionClass, const std::vector<Variable>& arguments)
+FunctionPtr ExpressionUniverse::makeFunction(ClassPtr functionClass, const std::vector<Variable>& arguments)
 {
   FunctionKey key(functionClass, arguments);
   FunctionsMap::const_iterator it = functions.find(key);
@@ -47,34 +47,34 @@ FunctionPtr LuapeUniverse::makeFunction(ClassPtr functionClass, const std::vecto
     return it->second;
 }
 
-LuapeNodePtr LuapeUniverse::makeLuapeFunctionNode(const FunctionPtr& function, const std::vector<LuapeNodePtr>& inputs)
+ExpressionPtr ExpressionUniverse::makeFunctionExpression(const FunctionPtr& function, const std::vector<ExpressionPtr>& inputs)
 {
-  LuapeFunctionNodeKey key(function, inputs);
-  LuapeFunctionNodesMap::const_iterator it = functionNodes.find(key);
+  FunctionExpressionKey key(function, inputs);
+  FunctionExpressionsMap::const_iterator it = functionNodes.find(key);
   if (it == functionNodes.end())
   {
-    LuapeNodePtr res = canonizeNode(new LuapeFunctionNode(function, inputs));
-    cacheLuapeFunctionNode(key, res);
+    ExpressionPtr res = canonizeNode(new FunctionExpression(function, inputs));
+    cacheFunctionExpression(key, res);
     return res;
   }
   else
     return it->second;
 }
 
-LuapeNodePtr LuapeUniverse::makeLuapeFunctionNode(const FunctionPtr& function, const LuapeNodePtr& input)
-  {return makeLuapeFunctionNode(function, std::vector<LuapeNodePtr>(1, input));}
+ExpressionPtr ExpressionUniverse::makeFunctionExpression(const FunctionPtr& function, const ExpressionPtr& input)
+  {return makeFunctionExpression(function, std::vector<ExpressionPtr>(1, input));}
 
-LuapeNodePtr LuapeUniverse::makeLuapeFunctionNode(const FunctionPtr& function, const LuapeNodePtr& input1, const LuapeNodePtr& input2)
+ExpressionPtr ExpressionUniverse::makeFunctionExpression(const FunctionPtr& function, const ExpressionPtr& input1, const ExpressionPtr& input2)
 {
-  std::vector<LuapeNodePtr> inputs(2);
+  std::vector<ExpressionPtr> inputs(2);
   inputs[0] = input1;
   inputs[1] = input2;
-  return makeLuapeFunctionNode(function, inputs);
+  return makeFunctionExpression(function, inputs);
 }
 
-void LuapeUniverse::cacheLuapeFunctionNode(const LuapeFunctionNodeKey& key, LuapeNodePtr node)
+void ExpressionUniverse::cacheFunctionExpression(const FunctionExpressionKey& key, ExpressionPtr node)
 {
-  enum {maxNumCachedLuapeFunctionNodes = 1000000}; 
+  enum {maxNumCachedFunctionExpressions = 1000000}; 
 
   size_t depth = node->getDepth();
   if (depth > maxObservedFunctionDepth)
@@ -83,13 +83,13 @@ void LuapeUniverse::cacheLuapeFunctionNode(const LuapeFunctionNodeKey& key, Luap
 /*  {
     static int counter = 0;
     if (++counter % 1000 == 0)
-      std::cout << "depth = " << depth << " maxObserved: " << maxObservedFunctionDepth << " maxDepth: " << maxFunctionDepth << " count = " << functionNodes.size() << " / " << maxNumCachedLuapeFunctionNodes << std::endl;
+      std::cout << "depth = " << depth << " maxObserved: " << maxObservedFunctionDepth << " maxDepth: " << maxFunctionDepth << " count = " << functionNodes.size() << " / " << maxNumCachedFunctionExpressions << std::endl;
   }*/
   if (depth >= maxFunctionDepth)
     return; // do not cache: too deep
 
   functionNodes[key] = node;
-  while (functionNodes.size() >= maxNumCachedLuapeFunctionNodes)
+  while (functionNodes.size() >= maxNumCachedFunctionExpressions)
   {
     if (maxFunctionDepth == (size_t)-1)
       maxFunctionDepth = maxObservedFunctionDepth;
@@ -99,7 +99,7 @@ void LuapeUniverse::cacheLuapeFunctionNode(const LuapeFunctionNodeKey& key, Luap
       --maxFunctionDepth;
     }
 
-    LuapeFunctionNodesMap::iterator it, nxt;
+    FunctionExpressionsMap::iterator it, nxt;
     for (it = functionNodes.begin(); it != functionNodes.end(); it = nxt)
     {
       nxt = it; ++nxt;
@@ -110,14 +110,14 @@ void LuapeUniverse::cacheLuapeFunctionNode(const LuapeFunctionNodeKey& key, Luap
   }
 }
 
-void LuapeUniverse::observeNodeComputingTime(const LuapeNodePtr& node, size_t numInstances, double timeInMilliseconds)
+void ExpressionUniverse::observeNodeComputingTime(const ExpressionPtr& node, size_t numInstances, double timeInMilliseconds)
 {
   nodesComputingTimeStatistics[makeNodeStatisticsKey(node)].push(timeInMilliseconds / (double)numInstances, (double)numInstances);
 }
 
-double LuapeUniverse::getExpectedComputingTime(const LuapeNodePtr& node) const // in milliseconds
+double ExpressionUniverse::getExpectedComputingTime(const ExpressionPtr& node) const // in milliseconds
 {
-  if (node.isInstanceOf<LuapeInputNode>() || node.isInstanceOf<LuapeConstantNode>())
+  if (node.isInstanceOf<VariableExpression>() || node.isInstanceOf<ConstantExpression>())
     return 0.0;
   std::map<std::pair<ClassPtr, ClassPtr>, ScalarVariableStatistics>::const_iterator it 
     = nodesComputingTimeStatistics.find(makeNodeStatisticsKey(node));
@@ -125,38 +125,38 @@ double LuapeUniverse::getExpectedComputingTime(const LuapeNodePtr& node) const /
   return it->second.getMean();
 }
 
-std::pair<ClassPtr, ClassPtr> LuapeUniverse::makeNodeStatisticsKey(const LuapeNodePtr& node) 
+std::pair<ClassPtr, ClassPtr> ExpressionUniverse::makeNodeStatisticsKey(const ExpressionPtr& node) 
 {
-  if (node.isInstanceOf<LuapeFunctionNode>())
-    return std::make_pair(luapeFunctionNodeClass, node.staticCast<LuapeFunctionNode>()->getFunction()->getClass());
+  if (node.isInstanceOf<FunctionExpression>())
+    return std::make_pair(functionExpressionClass, node.staticCast<FunctionExpression>()->getFunction()->getClass());
   else
     return std::make_pair(node->getClass(), ClassPtr());
 }
 
-void LuapeUniverse::clearImportances()
+void ExpressionUniverse::clearImportances()
 {
   for (ConstantNodesMap::const_iterator it = constantNodes.begin(); it != constantNodes.end(); ++it)
     clearImportances(it->second);
-  for (LuapeFunctionNodesMap::const_iterator it = functionNodes.begin(); it != functionNodes.end(); ++it)
+  for (FunctionExpressionsMap::const_iterator it = functionNodes.begin(); it != functionNodes.end(); ++it)
     clearImportances(it->second);
 }
 
-void LuapeUniverse::getImportances(std::map<LuapeNodePtr, double>& res) const
+void ExpressionUniverse::getImportances(std::map<ExpressionPtr, double>& res) const
 {
   for (ConstantNodesMap::const_iterator it = constantNodes.begin(); it != constantNodes.end(); ++it)
     getImportances(it->second, res);
-  for (LuapeFunctionNodesMap::const_iterator it = functionNodes.begin(); it != functionNodes.end(); ++it)
+  for (FunctionExpressionsMap::const_iterator it = functionNodes.begin(); it != functionNodes.end(); ++it)
     getImportances(it->second, res);
 }
 
-void LuapeUniverse::getImportances(const LuapeNodePtr& node, std::map<LuapeNodePtr, double>& res)
+void ExpressionUniverse::getImportances(const ExpressionPtr& node, std::map<ExpressionPtr, double>& res)
 {
   if (node && res.find(node) == res.end())
   {
     double importance = node->getImportance();
     jassert(isNumberValid(importance));
     if (importance > 0)
-      if (!node.isInstanceOf<LuapeFunctionNode>() || node.staticCast<LuapeFunctionNode>()->getFunction()->getClassName() != T("StumpFunction"))
+      if (!node.isInstanceOf<FunctionExpression>() || node.staticCast<FunctionExpression>()->getFunction()->getClassName() != T("StumpFunction"))
         res[node] = importance;
     size_t n = node->getNumSubNodes();
     for (size_t i = 0; i < n; ++i)
@@ -164,7 +164,7 @@ void LuapeUniverse::getImportances(const LuapeNodePtr& node, std::map<LuapeNodeP
   }
 }
 
-void LuapeUniverse::clearImportances(const LuapeNodePtr& node)
+void ExpressionUniverse::clearImportances(const ExpressionPtr& node)
 {
   if (!node)
     return;
@@ -174,14 +174,14 @@ void LuapeUniverse::clearImportances(const LuapeNodePtr& node)
     clearImportances(node->getSubNode(i));
 }
 
-void LuapeUniverse::displayMostImportantNodes(ExecutionContext& context, const std::map<LuapeNodePtr, double>& importances)
+void ExpressionUniverse::displayMostImportantNodes(ExecutionContext& context, const std::map<ExpressionPtr, double>& importances)
 {
   // create probabilities and nodes vectors
   double Z = 0.0;
   std::vector<double> probabilities(importances.size());
-  std::vector<LuapeNodePtr> nodes(importances.size());
+  std::vector<ExpressionPtr> nodes(importances.size());
   size_t index = 0;
-  for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it, ++index)
+  for (std::map<ExpressionPtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it, ++index)
   {
     Z += it->second;
     probabilities[index] = it->second;
@@ -189,15 +189,15 @@ void LuapeUniverse::displayMostImportantNodes(ExecutionContext& context, const s
   }
 
   // display most important nodes
-  std::multimap<double, LuapeNodePtr> nodeImportanceMap;
-  for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it)
+  std::multimap<double, ExpressionPtr> nodeImportanceMap;
+  for (std::map<ExpressionPtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it)
     nodeImportanceMap.insert(std::make_pair(it->second, it->first));
   size_t i = 0;
-  for (std::multimap<double, LuapeNodePtr>::reverse_iterator it = nodeImportanceMap.rbegin(); it != nodeImportanceMap.rend() && i < 20; ++it, ++i)
+  for (std::multimap<double, ExpressionPtr>::reverse_iterator it = nodeImportanceMap.rbegin(); it != nodeImportanceMap.rend() && i < 20; ++it, ++i)
   {
     if (it->first <= 0.0)
       break;
-    const LuapeNodePtr& node = it->second;
+    const ExpressionPtr& node = it->second;
     context.informationCallback(T("# ") + String((int)i + 1) + T(": ") + node->toShortString() + T(" [") + String(it->first * 100.0 / Z, 2) + T("%]"));
   }
 }
@@ -205,16 +205,16 @@ void LuapeUniverse::displayMostImportantNodes(ExecutionContext& context, const s
 
 #if 0
 /*
-** LuapeNodeKeysMap
+** ExpressionKeysMap
 */
-void LuapeNodeKeysMap::clear()
+void ExpressionKeysMap::clear()
 {
   keyToNodes.clear();
   nodeToKeys.clear();
 }
 
 // return true if it is a new node
-bool LuapeNodeKeysMap::addNodeToCache(ExecutionContext& context, const LuapeNodePtr& node)
+bool ExpressionKeysMap::addNodeToCache(ExecutionContext& context, const ExpressionPtr& node)
 {
   NodeToKeyMap::const_iterator it = nodeToKeys.find(node);
   if (it != nodeToKeys.end())
@@ -237,15 +237,15 @@ bool LuapeNodeKeysMap::addNodeToCache(ExecutionContext& context, const LuapeNode
   {
     // existing node equivalence class
     //  see if new node is better than previous one to represent the class
-    LuapeNodePtr previousNode = it2->second;
+    ExpressionPtr previousNode = it2->second;
     if (node->getDepth() < previousNode->getDepth())
     {
       it2->second = node;
       context.informationCallback(T("Change computation of ") + previousNode->toShortString() + T(" into ") + node->toShortString());
-      LuapeFunctionNodePtr sourceLuapeFunctionNode = node.dynamicCast<LuapeFunctionNode>();
-      LuapeFunctionNodePtr targetLuapeFunctionNode = previousNode.dynamicCast<LuapeFunctionNode>();
-      if (sourceLuapeFunctionNode && targetLuapeFunctionNode)
-        sourceLuapeFunctionNode->clone(context, targetLuapeFunctionNode);
+      FunctionExpressionPtr sourceFunctionExpression = node.dynamicCast<FunctionExpression>();
+      FunctionExpressionPtr targetFunctionExpression = previousNode.dynamicCast<FunctionExpression>();
+      if (sourceFunctionExpression && targetFunctionExpression)
+        sourceFunctionExpression->clone(context, targetFunctionExpression);
       addSubNodesToCache(context, node);
     }
     nodeToKeys[node] = it2->first;
@@ -253,18 +253,18 @@ bool LuapeNodeKeysMap::addNodeToCache(ExecutionContext& context, const LuapeNode
   }
 }
 
-void LuapeNodeKeysMap::addSubNodesToCache(ExecutionContext& context, const LuapeNodePtr& node)
+void ExpressionKeysMap::addSubNodesToCache(ExecutionContext& context, const ExpressionPtr& node)
 {
-  LuapeFunctionNodePtr functionNode = node.dynamicCast<LuapeFunctionNode>();
+  FunctionExpressionPtr functionNode = node.dynamicCast<FunctionExpression>();
   if (functionNode)
   {
-    std::vector<LuapeNodePtr> arguments = functionNode->getArguments();
+    std::vector<ExpressionPtr> arguments = functionNode->getArguments();
     for (size_t i = 0; i < arguments.size(); ++i)
       addNodeToCache(context, arguments[i]);
   }
 }
 
-bool LuapeNodeKeysMap::isNodeKeyNew(const LuapeNodePtr& node) const
+bool ExpressionKeysMap::isNodeKeyNew(const ExpressionPtr& node) const
 {
   BinaryKeyPtr key = node->getCache()->makeKeyFromSamples();
   return keyToNodes.find(key) == keyToNodes.end();
@@ -272,7 +272,7 @@ bool LuapeNodeKeysMap::isNodeKeyNew(const LuapeNodePtr& node) const
 #endif // 0
 
 #if 0
-BinaryKeyPtr LuapeNodeCache::makeKeyFromSamples(bool useTrainingSamples) const
+BinaryKeyPtr ExpressionCache::makeKeyFromSamples(bool useTrainingSamples) const
 {
   ContainerPtr samples = getSamples(useTrainingSamples);
   size_t n = samples->getNumElements();
@@ -323,7 +323,7 @@ BinaryKeyPtr LuapeNodeCache::makeKeyFromSamples(bool useTrainingSamples) const
   return BinaryKeyPtr();
 }
 
-String LuapeNodeCache::toShortString() const
+String ExpressionCache::toShortString() const
 {
   size_t n = trainingSamples ? trainingSamples->getNumElements() : 0;
   if (n == 0)

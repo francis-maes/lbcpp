@@ -114,31 +114,31 @@ private:
 
 extern ClassPtr selectMCAlgorithmLuapeFunctionClass;
 
-class MCAlgorithmsUniverse : public LuapeUniverse
+class MCAlgorithmsUniverse : public ExpressionUniverse
 {
 public:
-  size_t getNumIterations(const LuapeNodePtr& node) const
+  size_t getNumIterations(const ExpressionPtr& node) const
   {
-    if (!node.isInstanceOf<LuapeFunctionNode>())
+    if (!node.isInstanceOf<FunctionExpression>())
       return 0;
-    const LuapeFunctionNodePtr& functionNode = node.staticCast<LuapeFunctionNode>();
+    const FunctionExpressionPtr& functionNode = node.staticCast<FunctionExpression>();
     const LuapeFunctionPtr& function = functionNode->getFunction();
     return function.isInstanceOf<IterateMCAlgorithmLuapeFunction>() ? (size_t)function->getVariable(0).getInteger() : 0;
   }
 
-  bool isSelect(const LuapeNodePtr& node) const
+  bool isSelect(const ExpressionPtr& node) const
   {
-    return node.isInstanceOf<LuapeFunctionNode>() && 
-      node.staticCast<LuapeFunctionNode>()->getFunction().isInstanceOf<SelectMCAlgorithmLuapeFunction>();
+    return node.isInstanceOf<FunctionExpression>() && 
+      node.staticCast<FunctionExpression>()->getFunction().isInstanceOf<SelectMCAlgorithmLuapeFunction>();
   }
 
-  virtual LuapeNodePtr canonizeNode(const LuapeNodePtr& node)
+  virtual ExpressionPtr canonizeNode(const ExpressionPtr& node)
   {
     // select(pi1, select(pi2, X)) ==> select(pi1, X)
     if (isSelect(node) && isSelect(node->getSubNode(0)))
     {
-      LuapeFunctionPtr function = node.staticCast<LuapeFunctionNode>()->getFunction();
-      LuapeNodePtr argument = node->getSubNode(0)->getSubNode(0);
+      LuapeFunctionPtr function = node.staticCast<FunctionExpression>()->getFunction();
+      ExpressionPtr argument = node->getSubNode(0)->getSubNode(0);
       return makeFunctionNode(function, argument);
     }
 
@@ -150,7 +150,7 @@ public:
       if (numIterations2 > 0)
       {
         LuapeFunctionPtr function = makeFunction(iterateMCAlgorithmLuapeFunctionClass, std::vector<Variable>(1, numIterations * numIterations2));
-        LuapeNodePtr argument = node->getSubNode(0)->getSubNode(0);
+        ExpressionPtr argument = node->getSubNode(0)->getSubNode(0);
         return makeFunctionNode(function, argument);
       }
     }
@@ -170,13 +170,13 @@ public:
   {
     ++numEvaluations;
     /*
-    LuapeNodeBuilderStatePtr builder = finalState.staticCast<LuapeNodeBuilderState>();
+    ExpressionBuilderStatePtr builder = finalState.staticCast<ExpressionBuilderState>();
     if (builder->getStackSize() != 1)
       return -DBL_MAX;
-    LuapeNodePtr node = builder->getStackElement(0);
+    ExpressionPtr node = builder->getStackElement(0);
     if (useCache)
     {
-      std::map<LuapeNodePtr, double>::iterator it = cache.find(node);
+      std::map<ExpressionPtr, double>::iterator it = cache.find(node);
       if (it != cache.end())
       {
         ++numCachedEvaluations;
@@ -228,7 +228,7 @@ protected:
   bool useCache;
   size_t numEvaluations;
   size_t numCachedEvaluations;
-//  std::map<LuapeNodePtr, double> cache;
+//  std::map<ExpressionPtr, double> cache;
 
   double bestScoreSoFar;
   size_t nextCurvePoint;
@@ -413,13 +413,13 @@ protected:
     problem->addFunction(new SelectMCAlgorithmLuapeFunction());
     problem->addTargetType(mcAlgorithmClass);
 
-    std::vector<LuapeNodePtr> nodes;
+    std::vector<ExpressionPtr> nodes;
     problem->enumerateNodesExhaustively(context, maxAlgorithmSize + 1, nodes, true);
 
-    std::set<LuapeNodePtr> uniqueNodes;
+    std::set<ExpressionPtr> uniqueNodes;
     for (size_t i = 0; i < nodes.size(); ++i)
     {
-      LuapeNodePtr node = nodes[i];
+      ExpressionPtr node = nodes[i];
       MCAlgorithmPtr algorithm = node->compute(context).getObjectAndCast<MCAlgorithm>();
       if (!algorithm.isInstanceOf<IterateMCAlgorithm>())
         uniqueNodes.insert(node);
@@ -427,9 +427,9 @@ protected:
 
     pool->reserveArms(uniqueNodes.size());
     size_t count = 0;
-    for (std::set<LuapeNodePtr>::const_iterator it = uniqueNodes.begin(); it != uniqueNodes.end(); ++it)
+    for (std::set<ExpressionPtr>::const_iterator it = uniqueNodes.begin(); it != uniqueNodes.end(); ++it)
     {
-      LuapeNodePtr node = *it;
+      ExpressionPtr node = *it;
       MCAlgorithmPtr algorithm = node->compute(context).getObject()->cloneAndCast<MCAlgorithm>(); // clone for multi-thread safety
       ++count;
       if (count < 20)

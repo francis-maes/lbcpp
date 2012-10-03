@@ -10,7 +10,7 @@
 # define LBCPP_ML_FUNCTION_DOUBLE_H_
 
 # include <lbcpp/Luape/Function.h>
-# include <lbcpp/Luape/LuapeNode.h>
+# include <lbcpp/Luape/Expression.h>
 # include <lbcpp/Luape/LuapeCache.h> // for LuapeSampleVector
 
 namespace lbcpp
@@ -43,7 +43,7 @@ public:
     return new LuapeSampleVector(inputs->getIndices(), res);
   }
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return toShortString() + "(" + inputs[0]->toShortString() + ")";}
 
 protected:
@@ -169,7 +169,7 @@ public:
     return new LuapeSampleVector(inputs[0]->getIndices(), res);
   }
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " " + toShortString() + " " + inputs[1]->toShortString() + ")";}
 };
 
@@ -241,7 +241,7 @@ public:
   virtual String toShortString() const
     {return "min";}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "min(" + inputs[0]->toShortString() + ", " + inputs[1]->toShortString() + ")";}
 
   virtual double computeDouble(double first, double second) const
@@ -257,7 +257,7 @@ public:
   virtual String toShortString() const
     {return "max";}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "max(" + inputs[0]->toShortString() + ", " + inputs[1]->toShortString() + ")";}
 
   virtual double computeDouble(double first, double second) const

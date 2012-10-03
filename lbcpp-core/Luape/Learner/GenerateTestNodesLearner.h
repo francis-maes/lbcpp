@@ -17,39 +17,39 @@ namespace lbcpp
 class GenerateTestNodesLearner : public LuapeLearner
 {
 public:
-  GenerateTestNodesLearner(LuapeNodeBuilderPtr nodeBuilder)
+  GenerateTestNodesLearner(ExpressionBuilderPtr nodeBuilder)
     : nodeBuilder(nodeBuilder) {}
   GenerateTestNodesLearner() {}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
-    std::vector<LuapeNodePtr> weakNodes;
+    std::vector<ExpressionPtr> weakNodes;
     nodeBuilder->buildNodes(context, problem, 100, weakNodes);
     if (!weakNodes.size())
     {
       context.errorCallback(T("No weak nodes"));
-      return LuapeNodePtr();
+      return ExpressionPtr();
     }
 
-    const LuapeSequenceNodePtr& sequenceNode = node.staticCast<LuapeSequenceNode>();
+    const SequenceExpressionPtr& sequenceNode = node.staticCast<SequenceExpression>();
     sequenceNode->reserveNodes(sequenceNode->getNumSubNodes() + weakNodes.size());
 
     IndexSetPtr subset = examples->size() > 100 ? examples->sampleSubset(context.getRandomGenerator(), 100) : examples;
 
     for (size_t i = 0; i < weakNodes.size(); ++i)
     {
-      LuapeNodePtr condition = weakNodes[i];
+      ExpressionPtr condition = weakNodes[i];
       if (condition->getType() != booleanType)
       {
         LuapeSampleVectorPtr samples = problem->getTrainingCache()->getSamples(context, condition, subset);
         double threshold = samples->sampleElement(context.getRandomGenerator()).toDouble();
-        condition = new LuapeFunctionNode(stumpFunction(threshold), condition); // bypass universe
+        condition = new FunctionExpression(stumpFunction(threshold), condition); // bypass universe
       }
 
-      LuapeNodePtr testNode = new LuapeTestNode(condition,
-            new LuapeConstantNode(Variable::create(sequenceNode->getType())),
-            new LuapeConstantNode(Variable::create(sequenceNode->getType())),
-            new LuapeConstantNode(Variable::create(sequenceNode->getType())));
+      ExpressionPtr testNode = new TestExpression(condition,
+            new ConstantExpression(Variable::create(sequenceNode->getType())),
+            new ConstantExpression(Variable::create(sequenceNode->getType())),
+            new ConstantExpression(Variable::create(sequenceNode->getType())));
       sequenceNode->pushNode(context, testNode);
     }
     context.informationCallback(T("Num features: ") + String((int)sequenceNode->getNumSubNodes()));
@@ -59,7 +59,7 @@ public:
 protected:
   friend class GenerateTestNodesLearnerClass;
 
-  LuapeNodeBuilderPtr nodeBuilder;
+  ExpressionBuilderPtr nodeBuilder;
 };
 
 }; /* namespace lbcpp */

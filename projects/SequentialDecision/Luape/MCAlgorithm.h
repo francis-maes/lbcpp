@@ -374,8 +374,8 @@ public:
     for (SinglePlayerMCTSNodePtr ptr = leaf; ptr != root; ptr = ptr->getParentNode())
       bestActions.insert(bestActions.begin(), ptr->getLastAction());
 
-/*    size_t initialDepth = initialState.staticCast<LuapeNodeBuilderState>()->getCurrentStep();
-    size_t leafDepth = leaf->getState().staticCast<LuapeNodeBuilderState>()->getCurrentStep();
+/*    size_t initialDepth = initialState.staticCast<ExpressionBuilderState>()->getCurrentStep();
+    size_t leafDepth = leaf->getState().staticCast<ExpressionBuilderState>()->getCurrentStep();
     jassert(leafDepth - initialDepth == bestActions.size());*/
 
     DecisionProblemStatePtr bestFinalState;

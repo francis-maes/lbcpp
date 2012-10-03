@@ -10,7 +10,7 @@
 # define LBCPP_ML_FUNCTION_BOOLEAN_H_
 
 # include <lbcpp/Luape/Function.h>
-# include <lbcpp/Luape/LuapeNode.h>
+# include <lbcpp/Luape/Expression.h>
 # include <lbcpp/Luape/LuapeCache.h> // for LuapeSampleVector
 
 namespace lbcpp
@@ -65,7 +65,7 @@ public:
   virtual String toShortString() const
     {return "&&";}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return inputs[0]->toShortString() + " && " + inputs[1]->toShortString();}
 
   virtual bool computeBoolean(bool first, bool second) const
@@ -78,7 +78,7 @@ public:
   virtual String toShortString() const
     {return "==";}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return inputs[0]->toShortString() + " == " + inputs[1]->toShortString();}
 
   virtual bool computeBoolean(bool first, bool second) const

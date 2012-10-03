@@ -30,7 +30,7 @@ double LearningObjective::compute(const LuapeSampleVectorPtr& predictions)
   return computeObjective();
 }
 
-double LearningObjective::computeObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeNodePtr& weakNode, const IndexSetPtr& examples)
+double LearningObjective::computeObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, ExpressionPtr& weakNode, const IndexSetPtr& examples)
 {
   jassert(examples->size());
   if (weakNode->getType() == booleanType)
@@ -44,12 +44,12 @@ double LearningObjective::computeObjectiveWithEventualStump(ExecutionContext& co
     double res;
     SparseDoubleVectorPtr sortedDoubleValues = problem->getTrainingCache()->getSortedDoubleValues(context, weakNode, examples);
     double threshold = findBestThreshold(context, weakNode, examples, sortedDoubleValues, res, false);
-    weakNode = new LuapeFunctionNode(stumpFunction(threshold), weakNode);
+    weakNode = new FunctionExpression(stumpFunction(threshold), weakNode);
     return res;
   }
 }
 
-double LearningObjective::findBestThreshold(ExecutionContext& context, const LuapeNodePtr& numberNode, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose)
+double LearningObjective::findBestThreshold(ExecutionContext& context, const ExpressionPtr& numberNode, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose)
 {
   setPredictions(LuapeSampleVector::createConstant(indices, Variable(false, booleanType)));
   ensureIsUpToDate();

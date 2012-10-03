@@ -21,25 +21,25 @@ public:
     : baseLearner(baseLearner), ensembleSize(ensembleSize) {}
   EnsembleLearner() : ensembleSize(0) {}
 
-  virtual LuapeNodePtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
+  virtual ExpressionPtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
   {
     if (problem.isInstanceOf<LuapeClassifier>())
-      return new LuapeVectorSumNode(problem.staticCast<LuapeClassifier>()->getLabels(), false);
+      return new VectorSumExpression(problem.staticCast<LuapeClassifier>()->getLabels(), false);
     else if (problem.isInstanceOf<LuapeBinaryClassifier>())
-      return new LuapeScalarSumNode(true, true);
+      return new ScalarSumExpression(true, true);
     else
     {
       jassert(false); // not implemented yet
-      return LuapeNodePtr();
+      return ExpressionPtr();
     }
   }
 
   virtual IndexSetPtr getSubSamples(ExecutionContext& context, size_t modelIndex, const IndexSetPtr& examples) const
     {return examples;}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
-    const LuapeSequenceNodePtr& sequenceNode = node.staticCast<LuapeSequenceNode>();
+    const SequenceExpressionPtr& sequenceNode = node.staticCast<SequenceExpression>();
     sequenceNode->clearNodes();
     sequenceNode->reserveNodes(ensembleSize);
     //bool ok = true;
@@ -52,14 +52,14 @@ public:
         context.enterScope(T("Iteration ") + String((int)i));
         context.resultCallback(T("iteration"), i);
       }
-      LuapeNodePtr baseModel = subLearn(context, baseLearner, LuapeNodePtr(), problem, getSubSamples(context, i, examples));
+      ExpressionPtr baseModel = subLearn(context, baseLearner, ExpressionPtr(), problem, getSubSamples(context, i, examples));
       if (baseModel)
       {
         sequenceNode->pushNode(context, baseModel, problem->getSamplesCaches());
-        //sequenceNode->setNode(i, LuapeNodePtr()); // TMP: save memory !
+        //sequenceNode->setNode(i, ExpressionPtr()); // TMP: save memory !
       }
       else
-        return LuapeNodePtr();
+        return ExpressionPtr();
 
       if (verbose)
       {

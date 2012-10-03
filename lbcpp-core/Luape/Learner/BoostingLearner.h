@@ -24,7 +24,7 @@ public:
     : IterativeLearner(objective, maxIterations), weakLearner(weakLearner), treeDepth(treeDepth) {}
   BoostingLearner() : treeDepth(0) {}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual bool initialize(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     if (!IterativeLearner::initialize(context, node, problem, examples))
       return false;
@@ -32,11 +32,11 @@ public:
     return true;
   }
 
-  virtual void contributionAdded(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& contribution) {}
+  virtual void contributionAdded(ExecutionContext& context, const LuapeInferencePtr& problem, const ExpressionPtr& contribution) {}
 
-  virtual bool doLearningIteration(ExecutionContext& context, LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
+  virtual bool doLearningIteration(ExecutionContext& context, ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
-    LuapeNodePtr contribution;
+    ExpressionPtr contribution;
    
     // do weak learning
     {
@@ -49,7 +49,7 @@ public:
       TimedScope _(context, "add into node", verbose);
       if (contribution)
       {
-        node.staticCast<LuapeSequenceNode>()->pushNode(context, contribution, problem->getSamplesCaches());
+        node.staticCast<SequenceExpression>()->pushNode(context, contribution, problem->getSamplesCaches());
         contributionAdded(context, problem, contribution);
       }
     }
@@ -80,46 +80,46 @@ protected:
   LuapeLearnerPtr weakLearner;
   size_t treeDepth;
 
-  LuapeNodePtr learnContribution(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, size_t depth)
+  ExpressionPtr learnContribution(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, size_t depth)
   {
     if (examples->size() < 2)
-      return LuapeNodePtr();
+      return ExpressionPtr();
     double weakObjective;
-    LuapeNodePtr weakNode = subLearn(context, weakLearner, LuapeNodePtr(), problem, examples, &weakObjective);
+    ExpressionPtr weakNode = subLearn(context, weakLearner, ExpressionPtr(), problem, examples, &weakObjective);
     if (!weakNode)
     {
       if (depth == 1)
         context.errorCallback(T("Failed to find a weak learner"));
-      return LuapeNodePtr();
+      return ExpressionPtr();
     }
     context.resultCallback(T("edge"), weakObjective);
     weakNode->addImportance(weakObjective);
-    LuapeNodePtr contribution = turnWeakNodeIntoContribution(context, weakNode, problem, examples, weakObjective);
-    if (depth == treeDepth || weakNode.isInstanceOf<LuapeConstantNode>())
+    ExpressionPtr contribution = turnWeakNodeIntoContribution(context, weakNode, problem, examples, weakObjective);
+    if (depth == treeDepth || weakNode.isInstanceOf<ConstantExpression>())
       return contribution;
 
 
-    LuapeTestNodePtr testNode = contribution.dynamicCast<LuapeTestNode>();
+    TestExpressionPtr testNode = contribution.dynamicCast<TestExpression>();
     if (!testNode)
-      testNode = new LuapeTestNode(contribution.staticCast<LuapeFunctionNode>()->getSubNode(0), contribution->getType()); // extract weak predictor from vote
+      testNode = new TestExpression(contribution.staticCast<FunctionExpression>()->getSubNode(0), contribution->getType()); // extract weak predictor from vote
 
     LuapeSampleVectorPtr testValues = problem->getTrainingCache()->getSamples(context, weakNode, examples);
     IndexSetPtr failureExamples, successExamples, missingExamples;
     testNode->dispatchIndices(testValues, failureExamples, successExamples, missingExamples);
 
-    LuapeNodePtr failureNode = learnContribution(context, problem, failureExamples, depth + 1);
+    ExpressionPtr failureNode = learnContribution(context, problem, failureExamples, depth + 1);
     if (failureNode)
       testNode->setFailure(failureNode);
-    LuapeNodePtr successNode = learnContribution(context, problem, successExamples, depth + 1);
+    ExpressionPtr successNode = learnContribution(context, problem, successExamples, depth + 1);
     if (successNode)
       testNode->setSuccess(successNode);
-    LuapeNodePtr missingNode = learnContribution(context, problem, missingExamples, depth + 1);
+    ExpressionPtr missingNode = learnContribution(context, problem, missingExamples, depth + 1);
     if (missingNode)
       testNode->setMissing(missingNode);
     return testNode;
   }
 
-  virtual LuapeNodePtr turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double weakObjective) const = 0;
+  virtual ExpressionPtr turnWeakNodeIntoContribution(ExecutionContext& context, const ExpressionPtr& weakNode, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double weakObjective) const = 0;
 };
 
 }; /* namespace lbcpp */

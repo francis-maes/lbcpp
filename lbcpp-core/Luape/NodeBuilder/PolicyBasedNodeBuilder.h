@@ -130,10 +130,10 @@ public:
     : StochasticNodeBuilder(numNodes), policy(policy), complexity(complexity) {}
   PolicyBasedNodeBuilder() : complexity(0) {}
 
-  virtual LuapeNodePtr sampleNode(ExecutionContext& context, const LuapeInferencePtr& function)
+  virtual ExpressionPtr sampleNode(ExecutionContext& context, const LuapeInferencePtr& function)
   {
     LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = function->getSearchSpace(context, complexity);
-    LuapeNodeBuilderStatePtr builder = new LuapeNodeBuilderState(function, typeSearchSpace);
+    ExpressionBuilderStatePtr builder = new ExpressionBuilderState(function, typeSearchSpace);
 
     bool noMoreActions = false;
     //String episode = "";
@@ -164,7 +164,7 @@ public:
       builder->performTransition(context, action, reward);
       policy->observeTransition(context, action, reward, builder);
     }
-    LuapeNodePtr node;
+    ExpressionPtr node;
     if (builder->getStackSize() == 1)
     {
       node = builder->getStackElement(0);
@@ -175,7 +175,7 @@ public:
   }
 
 #if 0
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
+  virtual ExpressionPtr learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& examples, bool verbose, double& weakObjective)
   {
     static const bool computeOptimalLearner = false;
     jassert(examples.size());
@@ -183,22 +183,22 @@ public:
     const LuapeInferencePtr& function = structureLearner->getFunction();
 
     double optimalWeakObjective = -DBL_MAX;
-    LuapeNodePtr optimalWeakLearner;
+    ExpressionPtr optimalWeakLearner;
     if (computeOptimalLearner)
     {
       context.enterScope(T("Computing optimal weak learner"));
-      findOptimalWeakLearner(context, structureLearner, new LuapeNodeBuilderState(function, typeSearchSpace), examples, optimalWeakObjective, optimalWeakLearner);
+      findOptimalWeakLearner(context, structureLearner, new ExpressionBuilderState(function, typeSearchSpace), examples, optimalWeakObjective, optimalWeakLearner);
       context.leaveScope(optimalWeakObjective);
     }
 
     context.enterScope(T("Weak Learning"));
     weakObjective = -DBL_MAX;
-    LuapeNodePtr bestWeakLearner;
+    ExpressionPtr bestWeakLearner;
     policy->startEpisodes(context);
     for (size_t i = 0; i < budget; ++i)
     {
       double reward;
-      LuapeNodePtr weakNode = sampleTrajectory(context, structureLearner, reward, examples);
+      ExpressionPtr weakNode = sampleTrajectory(context, structureLearner, reward, examples);
       if (weakNode && reward > weakObjective)
         bestWeakLearner = weakNode, weakObjective = reward;
       context.progressCallback(new ProgressionState(i+1, budget, T("Trajectories")));
@@ -336,8 +336,8 @@ public:
 
   SparseDoubleVectorPtr makeFeatures(ExecutionContext& context, const DecisionProblemStatePtr& s, const Variable& a) const
   {
-    const LuapeNodeBuilderStatePtr& state = s.staticCast<LuapeNodeBuilderState>();
-    const LuapeNodeBuilderActionPtr& action = a.getObjectAndCast<LuapeNodeBuilderAction>();
+    const ExpressionBuilderStatePtr& state = s.staticCast<ExpressionBuilderState>();
+    const ExpressionBuilderActionPtr& action = a.getObjectAndCast<ExpressionBuilderAction>();
 
     SparseDoubleVectorPtr res(new SparseDoubleVector(features, doubleType));
 
@@ -345,7 +345,7 @@ public:
     predicates.push_back("step=" + String((int)state->getCurrentStep()));
     predicates.push_back("stacksize=" + String((int)state->getStackSize()));
 
-    LuapeNodePtr nodeToAdd = action->getNodeToAdd();
+    ExpressionPtr nodeToAdd = action->getNodeToAdd();
     if (action->isNewNode())
     {
       if (nodeToAdd.isInstanceOf<LuapeYieldNode>())
@@ -354,7 +354,7 @@ public:
       }
       else
       {
-        LuapeFunctionNodePtr functionNode = nodeToAdd.staticCast<LuapeFunctionNode>();
+        FunctionExpressionPtr functionNode = nodeToAdd.staticCast<FunctionExpression>();
 
         predicates.push_back("kind=apply");
         predicates.push_back("fun=" + functionNode->getFunction()->getClassName());

@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuapeEDASandBox.h              | An EDA for LuapeNodes           |
+| Filename: LuapeEDASandBox.h              | An EDA for Expressions           |
 | Author  : Francis Maes                   |                                 |
 | Started : 19/01/2012 18:38               |                                 |
 `------------------------------------------/                                 |
@@ -196,7 +196,7 @@ public:
 
   struct PopulationComparator
   {
-    static size_t size(const LuapeNodePtr& node)
+    static size_t size(const ExpressionPtr& node)
     {
       size_t res = 1;
       for (size_t i = 0; i < node->getNumSubNodes(); ++i)
@@ -204,7 +204,7 @@ public:
       return res;
     }
 
-    bool operator() (const std::pair<LuapeNodePtr, double>& left, const std::pair<LuapeNodePtr, double>& right) const
+    bool operator() (const std::pair<ExpressionPtr, double>& left, const std::pair<ExpressionPtr, double>& right) const
     {
       if (left.second != right.second)
         return left.second > right.second;
@@ -251,20 +251,20 @@ public:
     regressor->addFunction(new ComputeDecisionProblemSuccessorState(decisionProblem));
     regressor->addFunction(new ComputeDecisionProblemSuccessorStateFunctor(decisionProblem));
 
-    std::vector< std::pair<LuapeNodePtr, double> > population;
-    std::set<LuapeNodePtr> processedNodes;
+    std::vector< std::pair<ExpressionPtr, double> > population;
+    std::set<ExpressionPtr> processedNodes;
 
-    LuapeNodeBuilderPtr nodeBuilder = biasedRandomSequentialNodeBuilder(populationSize / 4, complexity, 1e-12); // epsilon
+    ExpressionBuilderPtr nodeBuilder = biasedRandomSequentialNodeBuilder(populationSize / 4, complexity, 1e-12); // epsilon
     for (size_t i = 0; i < numIterations; ++i)
     {
       context.enterScope(T("Iteration ") + String((int)i));
       context.resultCallback("iteration", i);
      
       context.enterScope(T("Generating candidates"));
-      std::vector<LuapeNodePtr> candidates;
+      std::vector<ExpressionPtr> candidates;
       for (size_t trial = 0; trial < 100 && candidates.size() < populationSize; ++trial)
       {
-        std::vector<LuapeNodePtr> c;
+        std::vector<ExpressionPtr> c;
         nodeBuilder->buildNodes(context, regressor, 0, c);
         for (size_t i = 0; i < c.size(); ++i)
           if (processedNodes.find(c[i]) == processedNodes.end())
@@ -283,14 +283,14 @@ public:
       size_t numEvaluated = 0;
       for (size_t j = 0; j < candidates.size(); ++j)
       {
-        LuapeNodePtr candidate = candidates[j];
+        ExpressionPtr candidate = candidates[j];
         regressor->setRootNode(context, candidate);
         double score = objective->compute(context, regressor).getDouble();
         population.push_back(std::make_pair(candidate, score));
         context.progressCallback(new ProgressionState(j+1, candidates.size(), T("Candidates")));
         ++numEvaluated;
       }
-      regressor->setRootNode(context, LuapeNodePtr());
+      regressor->setRootNode(context, ExpressionPtr());
       context.leaveScope(numEvaluated);
 
       context.enterScope(T("Updating population"));
@@ -324,7 +324,7 @@ public:
 
       regressor->setRootNode(context, population.front().first);
       objective->illustratePolicy(context, regressor);
-      regressor->setRootNode(context, LuapeNodePtr());
+      regressor->setRootNode(context, ExpressionPtr());
 
       context.leaveScope(population.front().second);
     }

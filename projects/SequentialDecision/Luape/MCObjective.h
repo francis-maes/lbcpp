@@ -33,11 +33,11 @@ public:
   LuapeMCObjective(LuapeInferencePtr problem = LuapeInferencePtr())
     : problem(problem) {}
 
-  virtual double evaluate(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& formula) = 0;
+  virtual double evaluate(ExecutionContext& context, const LuapeInferencePtr& problem, const ExpressionPtr& formula) = 0;
 
   virtual double evaluate(ExecutionContext& context, DecisionProblemStatePtr finalState)
   {
-    LuapeNodeBuilderStatePtr builder = finalState.staticCast<LuapeNodeBuilderState>();
+    ExpressionBuilderStatePtr builder = finalState.staticCast<ExpressionBuilderState>();
     if (builder->getStackSize() != 1)
       return -DBL_MAX;
     return evaluate(context, problem, builder->getStackElement(0));
@@ -59,7 +59,7 @@ public:
   virtual void getObjectiveRange(double& worst, double& best) const
     {worst = -worstError; best = 0.0;}
 
-  virtual double evaluate(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& formula)
+  virtual double evaluate(ExecutionContext& context, const LuapeInferencePtr& problem, const ExpressionPtr& formula)
   {
     DenseDoubleVectorPtr supervisions = problem->getTrainingSupervisions();
     LuapeSampleVectorPtr predictions = problem->getTrainingCache()->getSamples(context, formula);

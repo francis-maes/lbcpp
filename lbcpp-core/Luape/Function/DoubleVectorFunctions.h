@@ -38,7 +38,7 @@ public:
   virtual String toShortString() const
     {return T(".") + enumeration->getElementName(index);}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return inputs[0]->toShortString() + "." + enumeration->getElementName(index);}
 
   Variable computeObject(const ObjectPtr& input) const
@@ -115,7 +115,7 @@ public:
   virtual TypePtr initialize(const TypePtr* inputTypes)
     {return scalarVariableStatisticsPerceptionClass;}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {jassert(inputs.size() == 1); return "stats(" + inputs[0]->toShortString() + ")";}
 
   Variable computeObject(const ObjectPtr& object) const
@@ -186,7 +186,7 @@ public:
   virtual String toShortString() const
     {return T("extremums(.)");}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return T("extremums(") + inputs[0]->toShortString() + T(")");}
 
   Variable computeObject(const ObjectPtr& input) const

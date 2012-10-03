@@ -78,27 +78,27 @@
 
   <!-- Structure Generation -->
   <class name="GenerateTestNodesLearner" base="LuapeLearner">
-    <constructor arguments="LuapeNodeBuilderPtr nodeBuilder"/>
-    <variable type="LuapeNodeBuilder" name="nodeBuilder"/>
+    <constructor arguments="ExpressionBuilderPtr nodeBuilder"/>
+    <variable type="ExpressionBuilder" name="nodeBuilder"/>
   </class>
 
   <!-- Weak Learners -->
   <class name="ExactWeakLearner" base="NodeBuilderBasedLearner">
-    <constructor arguments="LuapeNodeBuilderPtr nodeBuilder"/>
+    <constructor arguments="ExpressionBuilderPtr nodeBuilder"/>
   </class>
   
   <class name="RandomSplitWeakLearner" base="ExactWeakLearner">
-    <constructor arguments="LuapeNodeBuilderPtr nodeBuilder" returnType="NodeBuilderBasedLearner"/>
+    <constructor arguments="ExpressionBuilderPtr nodeBuilder" returnType="NodeBuilderBasedLearner"/>
   </class>
   
   <class name="LaminatingWeakLearner" base="NodeBuilderBasedLearner">
-    <constructor arguments="LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating"/>
+    <constructor arguments="ExpressionBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating"/>
     <variable type="Double" name="relativeBudget"/>
     <variable type="PositiveInteger" name="minExamplesForLaminating"/>
   </class>
 
   <class name="BanditBasedWeakLearner" base="NodeBuilderBasedLearner">
-    <constructor arguments="LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize"/>
+    <constructor arguments="ExpressionBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize"/>
     <variable type="Double" name="relativeBudget"/>
     <variable type="Double" name="miniBatchRelativeSize"/>
   </class>

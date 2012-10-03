@@ -25,10 +25,10 @@ public:
 
   typedef std::vector<ObjectPtr> Trajectory;
 
-  virtual void observeStateActionReward(ExecutionContext& context, size_t stepNumber, const std::vector<LuapeNodePtr>& stack, const ObjectPtr& object, double weakObjective, double weight) = 0;
+  virtual void observeStateActionReward(ExecutionContext& context, size_t stepNumber, const std::vector<ExpressionPtr>& stack, const ObjectPtr& object, double weakObjective, double weight) = 0;
   
   // FIXME: this function is never called !!!
-  void observeBestWeakNode(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& weakNode, const IndexSetPtr& examples, double weakObjective)
+  void observeBestWeakNode(ExecutionContext& context, const LuapeInferencePtr& problem, const ExpressionPtr& weakNode, const IndexSetPtr& examples, double weakObjective)
   {
     if (weakObjective == -DBL_MAX)
       return;
@@ -43,11 +43,11 @@ public:
     if (objectiveStats->getStandardDeviation() == 0.0)
       return;*/
 
-    LuapeNodePtr node = weakNode;
-    if (node.isInstanceOf<LuapeConstantNode>())
+    ExpressionPtr node = weakNode;
+    if (node.isInstanceOf<ConstantExpression>())
       return; // those node cannot be produced by this policy
-    if (node.isInstanceOf<LuapeFunctionNode>() && node.staticCast<LuapeFunctionNode>()->getFunction()->getClassName() == T("StumpFunction"))
-      node = node.staticCast<LuapeFunctionNode>()->getArgument(0);
+    if (node.isInstanceOf<FunctionExpression>() && node.staticCast<FunctionExpression>()->getFunction()->getClassName() == T("StumpFunction"))
+      node = node.staticCast<FunctionExpression>()->getArgument(0);
 
     std::vector<Trajectory> trajectories;
     getAllTrajectoriesToBuild(node, complexity - 1, trajectories);
@@ -57,7 +57,7 @@ public:
     for (size_t i = 0; i < trajectories.size(); ++i)
     {
       //context.informationCallback("Start of trajectory " + String((int)i));
-      std::vector<LuapeNodePtr> stack;
+      std::vector<ExpressionPtr> stack;
       const Trajectory& trajectory = trajectories[i];
       jassert(trajectory.size() <= complexity - 1);
       String str;
@@ -79,15 +79,15 @@ protected:
   bool useVariableRelevancies;
   bool useExtendedVariables;
 
-  void getAllTrajectoriesToBuild(const LuapeNodePtr& target, size_t budget, std::vector<Trajectory>& res)
+  void getAllTrajectoriesToBuild(const ExpressionPtr& target, size_t budget, std::vector<Trajectory>& res)
   {
     if (!budget)
       return;
 
-    if (target.isInstanceOf<LuapeInputNode>() || useExtendedVariables)
+    if (target.isInstanceOf<VariableExpression>() || useExtendedVariables)
       res.push_back(Trajectory(1, target)); // single-step trajectory
 
-    LuapeFunctionNodePtr functionNode = target.dynamicCast<LuapeFunctionNode>();
+    FunctionExpressionPtr functionNode = target.dynamicCast<FunctionExpression>();
     if (functionNode)
     {
       size_t n = functionNode->getNumArguments();
@@ -96,7 +96,7 @@ protected:
 
       if (n == 1)
       {
-        LuapeNodePtr argument = functionNode->getArgument(0);
+        ExpressionPtr argument = functionNode->getArgument(0);
         std::vector<Trajectory> trajectories;
         getAllTrajectoriesToBuild(argument, budget - n, trajectories);
         res.reserve(res.size() + trajectories.size());
@@ -109,8 +109,8 @@ protected:
       }
       else if (n == 2)
       {
-        LuapeNodePtr argument1 = functionNode->getArgument(0);
-        LuapeNodePtr argument2 = functionNode->getArgument(1);
+        ExpressionPtr argument1 = functionNode->getArgument(0);
+        ExpressionPtr argument2 = functionNode->getArgument(1);
 
         std::vector<Trajectory> trajectories1, trajectories2;
         getAllTrajectoriesToBuild(argument1, budget - n, trajectories1);
@@ -171,7 +171,7 @@ public:
     yieldActions.addAction(ObjectPtr());
   }
  
-  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<LuapeNodePtr>& res)
+  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
   {
     jassert(false); // initialize should only be called once
     initialize(context, function);
@@ -292,8 +292,8 @@ public:
   {
     if (action == ObjectPtr())
       return typeState->hasYieldAction();
-    if (action.isInstanceOf<LuapeNode>())
-      return typeState->hasPushAction(action.staticCast<LuapeNode>()->getType());
+    if (action.isInstanceOf<Expression>())
+      return typeState->hasPushAction(action.staticCast<Expression>()->getType());
     if (action.isInstanceOf<Function>())
       return typeState->hasApplyAction(action.staticCast<Function>());
     jassert(false);
@@ -340,11 +340,11 @@ public:
     return false;
   }
 
-  virtual void observeStateActionReward(ExecutionContext& context, size_t stepNumber, const std::vector<LuapeNodePtr>& stack, const ObjectPtr& action, double weakObjective, double weight)
+  virtual void observeStateActionReward(ExecutionContext& context, size_t stepNumber, const std::vector<ExpressionPtr>& stack, const ObjectPtr& action, double weakObjective, double weight)
   {
     if (action == ObjectPtr())
       yieldActions.addWeight(action, weakObjective * weight);
-    else if (action.isInstanceOf<LuapeNode>())
+    else if (action.isInstanceOf<Expression>())
       pushActions.addWeight(action, weakObjective * weight);
     else if (action.isInstanceOf<Function>())
       applyActions.addWeight(action, weakObjective * weight);

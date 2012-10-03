@@ -21,8 +21,8 @@ public:
     : WeightBoostingLearner(new BinaryClassificationLearningObjective(), weakLearner, maxIterations, treeDepth) {}
   AdaBoostLearner() {}
 
-  virtual LuapeNodePtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
-    {return new LuapeScalarSumNode(false, false);}
+  virtual ExpressionPtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
+    {return new ScalarSumExpression(false, false);}
 
 //  virtual bool shouldStop(double accuracy) const
 //    {return accuracy == 0.0 || accuracy == 1.0;}
@@ -79,7 +79,7 @@ public:
     return res;
   }
 
-  virtual void updateSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const
+  virtual void updateSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, const ExpressionPtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const
   {
     LuapeSampleVectorPtr predictions = problem->getTrainingCache()->getSamples(context, contribution);
     DenseDoubleVectorPtr supervisions = problem->getTrainingSupervisions().staticCast<DenseDoubleVector>();

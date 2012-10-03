@@ -25,7 +25,7 @@ GENERATE_INTROSPECTION_CODE(DecisionProblem/DecisionProblemLibrary.xml DecisionP
 GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Luape/LuapeLibrary.xml LuapeLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Luape/NodeBuilder/LuapeNodeBuilderLibrary.xml LuapeNodeBuilderLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Luape/NodeBuilder/ExpressionBuilderLibrary.xml ExpressionBuilderLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/Learner/LuapeLearnerLibrary.xml LuapeLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/Function/FunctionLibrary.xml FunctionLibrary.cpp)
 
@@ -261,16 +261,16 @@ SET(LBCPP_LUAPE_SOURCES
   ../include/lbcpp/Luape/predeclarations.h
   ../include/lbcpp/Luape/Function.h
   Luape/Function.cpp
-  ../include/lbcpp/Luape/LuapeUniverse.h
-  Luape/LuapeUniverse.cpp
+  ../include/lbcpp/Luape/ExpressionUniverse.h
+  Luape/ExpressionUniverse.cpp
   ../include/lbcpp/Luape/LuapeCache.h
   Luape/LuapeCache.cpp
-  ../include/lbcpp/Luape/LuapeNode.h
-  Luape/LuapeNode.cpp
+  ../include/lbcpp/Luape/Expression.h
+  Luape/Expression.cpp
   ../include/lbcpp/Luape/LuapeInference.h
   Luape/LuapeInference.cpp
-  ../include/lbcpp/Luape/LuapeNodeBuilder.h
-  Luape/LuapeNodeBuilder.cpp
+  ../include/lbcpp/Luape/ExpressionBuilder.h
+  Luape/ExpressionBuilder.cpp
   ../include/lbcpp/Luape/LearningObjective.h
   Luape/LearningObjective.cpp
   ../include/lbcpp/Luape/LuapeLearner.h
@@ -302,8 +302,8 @@ SET(LBCPP_LUAPE_NODE_BUILDER_SOURCES
   Luape/NodeBuilder/PolicyBasedNodeBuilder.h
   Luape/NodeBuilder/RandomSequentialNodeBuilder.h
   Luape/NodeBuilder/AdaptativeSamplingNodeBuilder.h  
-  Luape/NodeBuilder/LuapeNodeBuilderLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/LuapeNodeBuilderLibrary.cpp
+  Luape/NodeBuilder/ExpressionBuilderLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ExpressionBuilderLibrary.cpp
 )
 
 SET(LBCPP_LUAPE_LEARNER_SOURCES

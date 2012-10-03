@@ -35,12 +35,12 @@ public:
   virtual bool doAcceptInputType(size_t index, const TypePtr& type) const = 0; 
   virtual TypePtr initialize(const TypePtr* inputTypes) = 0; // returns the output type
 
-  virtual bool acceptInputsStack(const std::vector<LuapeNodePtr>& stack) const;
+  virtual bool acceptInputsStack(const std::vector<ExpressionPtr>& stack) const;
 
   virtual String toShortString() const
     {return getClassName();}
     
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const;
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const;
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
     {jassert(getNumVariables() == 0); return ContainerPtr();}

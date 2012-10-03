@@ -34,7 +34,7 @@ public:
   virtual TypePtr initialize(const TypePtr* inputTypes)
     {return probabilityType;}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return T("softstump(") + inputs[0]->toShortString() + " >= " + String(threshold) + T(", ") + String(gamma) + T(")");}
 
   double compute(double x) const
@@ -83,14 +83,14 @@ public:
     : DecoratorLearner(stumpLearner), gamma(gamma) {}
   SoftStumpWeakLearner() : gamma(0.0) {}
 
-  LuapeFunctionNodePtr makeSoftStump(ExecutionContext& context, const LuapeFunctionNodePtr& stumpNode, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  FunctionExpressionPtr makeSoftStump(ExecutionContext& context, const FunctionExpressionPtr& stumpNode, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
-    LuapeNodePtr argument = stumpNode->getSubNode(0);
+    ExpressionPtr argument = stumpNode->getSubNode(0);
     double threshold = stumpNode->getFunction().staticCast<StumpLuapeFunction>()->getThreshold();
 
     SparseDoubleVectorPtr samples = problem->getTrainingCache()->getSortedDoubleValues(context, argument, examples);
     if (!samples || !samples->getNumValues())
-      return LuapeFunctionNodePtr();
+      return FunctionExpressionPtr();
 
 
     bestObjectiveValue = -DBL_MAX;
@@ -104,13 +104,13 @@ public:
 
 /*    double gamma = this->gamma / (maximumValue - minimumValue);
     LuapeFunctionPtr softStumpFunction = new SoftStumpLuapeFunction(threshold, gamma);
-    LuapeFunctionNodePtr softStump = new LuapeFunctionNode(softStumpFunction, argument);
+    FunctionExpressionPtr softStump = new FunctionExpression(softStumpFunction, argument);
     LuapeSampleVectorPtr predictions = softStump->compute(context, problem->getTrainingCache(), examples);
     bestObjectiveValue = objective->compute(predictions);
     context.resultCallback(T("softStumpObjective"), bestObjectiveValue);
     return softStump;*/
 
-    LuapeFunctionNodePtr res;
+    FunctionExpressionPtr res;
     if (verbose)
     {
       context.enterScope(T("Making soft stump"));
@@ -139,7 +139,7 @@ public:
       }
 
       LuapeFunctionPtr softStumpFunction = new SoftStumpLuapeFunction(threshold, gamma);//, a, b);
-      LuapeFunctionNodePtr softStump = new LuapeFunctionNode(softStumpFunction, argument);
+      FunctionExpressionPtr softStump = new FunctionExpression(softStumpFunction, argument);
 
       LuapeSampleVectorPtr predictions = softStump->compute(context, problem->getTrainingCache(), examples);
       double objectiveValue = objective->compute(predictions);
@@ -176,10 +176,10 @@ public:
       return res;
   }
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
-    LuapeNodePtr res = DecoratorLearner::learn(context, node, problem, examples);
-    LuapeFunctionNodePtr functionNode = res.dynamicCast<LuapeFunctionNode>();
+    ExpressionPtr res = DecoratorLearner::learn(context, node, problem, examples);
+    FunctionExpressionPtr functionNode = res.dynamicCast<FunctionExpression>();
     if (functionNode && functionNode->getFunction().isInstanceOf<StumpLuapeFunction>())
     {
       return makeSoftStump(context, functionNode, problem, examples);

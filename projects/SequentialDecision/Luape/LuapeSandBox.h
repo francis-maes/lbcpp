@@ -80,7 +80,7 @@ public:
     else
       maxNumWeakNodes = numVariables;
 
-    LuapeNodeBuilderPtr nodeBuilder;
+    ExpressionBuilderPtr nodeBuilder;
     if (complexity == 0)
       nodeBuilder = inputsNodeBuilder();
     else
@@ -90,7 +90,7 @@ public:
       //nodeBuilder = policyBasedNodeBuilder(randomPolicy(), maxNumWeakNodes, complexity);
 
  // -> constant for boosting ->
-    nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
+    nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new ConstantExpression(true)), nodeBuilder);
 
     LuapeLearnerPtr weakLearner;
     if (laminating)
@@ -262,11 +262,11 @@ bool LuapeGraph::saveToGraphML(ExecutionContext& context, const File& file) cons
   size_t yieldIndex = 0;
   for (size_t i = 0; i < nodes.size(); ++i)
   {
-    const LuapeNodePtr& node = nodes[i];
+    const ExpressionPtr& node = nodes[i];
     String id = "node" + String((int)i);
     String text;
-    LuapeInputNodePtr inputNode = node.dynamicCast<LuapeInputNode>();
-    LuapeFunctionNodePtr functionNode = node.dynamicCast<LuapeFunctionNode>();
+    VariableExpressionPtr inputNode = node.dynamicCast<VariableExpression>();
+    FunctionExpressionPtr functionNode = node.dynamicCast<FunctionExpression>();
     LuapeYieldNodePtr yieldNode = node.dynamicCast<LuapeYieldNode>();
     jassert(inputNode || functionNode || yieldNode);
     

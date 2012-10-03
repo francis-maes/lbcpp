@@ -222,19 +222,19 @@ public:
     : IterativeLearner(baseLearner->getObjective(), numIterations), baseLearner(baseLearner), numActiveVariables(numActiveVariables), targetLearner(targetLearner) {}
   RelevanceDrivenFeatureGenerationLearner() {}
 
-  virtual LuapeNodePtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
+  virtual ExpressionPtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
     {return baseLearner->createInitialNode(context, problem);}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual bool initialize(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
     {return IterativeLearner::initialize(context, node, problem, examples);}
 
-  virtual bool doLearningIteration(ExecutionContext& context, LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
+  virtual bool doLearningIteration(ExecutionContext& context, ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
     if (verbose)
     {
      /* for (size_t i = 0; i < problem->getNumActiveVariables(); ++i)
       {
-        LuapeNodePtr activeVariable = problem->getActiveVariable(i);
+        ExpressionPtr activeVariable = problem->getActiveVariable(i);
         context.informationCallback(T("Active variable: ") + activeVariable->toShortString());
       }*/
 
@@ -255,30 +255,30 @@ public:
       evaluatePredictions(context, problem, trainingScore, validationScore);
   
     // retrieve node importances
-    std::map<LuapeNodePtr, double> importances;
-    LuapeUniverse::getImportances(problem->getRootNode(), importances);
+    std::map<ExpressionPtr, double> importances;
+    ExpressionUniverse::getImportances(problem->getRootNode(), importances);
    // if (verbose)
-   //   LuapeUniverse::displayMostImportantNodes(context, importances);
+   //   ExpressionUniverse::displayMostImportantNodes(context, importances);
 
     // sort nodes by importance
-    std::multimap<double, LuapeNodePtr> nodeImportanceMap;
-    for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it)
-      if (!it->first.isInstanceOf<LuapeInputNode>())
+    std::multimap<double, ExpressionPtr> nodeImportanceMap;
+    for (std::map<ExpressionPtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it)
+      if (!it->first.isInstanceOf<VariableExpression>())
         nodeImportanceMap.insert(std::make_pair(it->second, it->first));
     
     // create new set of active variables
     problem->clearActiveVariables();
-    for (std::multimap<double, LuapeNodePtr>::reverse_iterator it = nodeImportanceMap.rbegin(); it != nodeImportanceMap.rend(); ++it)
+    for (std::multimap<double, ExpressionPtr>::reverse_iterator it = nodeImportanceMap.rbegin(); it != nodeImportanceMap.rend(); ++it)
     {
       problem->addActiveVariable(it->second);
       if (problem->getNumActiveVariables() >= numActiveVariables)
         break;
     }
-    LuapeUniverse::clearImportances(problem->getRootNode());
+    ExpressionUniverse::clearImportances(problem->getRootNode());
     return node;
   }
   
-  virtual bool finalize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual bool finalize(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     bestObjectiveValue = baseLearner->getBestObjectiveValue();
     return IterativeLearner::finalize(context, node, problem, examples);
@@ -536,7 +536,7 @@ protected:
     }
     else
     {
-      LuapeNodeBuilderPtr nodeBuilder = useRandomSubspaces ? (LuapeNodeBuilderPtr)randomSequentialNodeBuilder(budget, 2) : (LuapeNodeBuilderPtr)inputsNodeBuilder();
+      ExpressionBuilderPtr nodeBuilder = useRandomSubspaces ? (ExpressionBuilderPtr)randomSequentialNodeBuilder(budget, 2) : (ExpressionBuilderPtr)inputsNodeBuilder();
       conditionLearner = useRandomSplits ? (LuapeLearnerPtr)randomSplitWeakLearner(nodeBuilder) : (LuapeLearnerPtr)exactWeakLearner(nodeBuilder);
     }
     conditionLearner->setVerbose(verbose);
@@ -886,11 +886,11 @@ public:
     ***** Monte Carlo n-variables 
     ****/
 
-    //LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(numVariables, 2);
+    //ExpressionBuilderPtr nodeBuilder = randomSequentialNodeBuilder(numVariables, 2);
 
 #if 0
-    LuapeNodeBuilderPtr nodeBuilder = inputsNodeBuilder();
-    nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
+    ExpressionBuilderPtr nodeBuilder = inputsNodeBuilder();
+    nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new ConstantExpression(true)), nodeBuilder);
     //conditionLearner = laminatingWeakLearner(nodeBuilder, (double)numVariables, 10);
     conditionLearner = exactWeakLearner(nodeBuilder);
     conditionLearner->setVerbose(verbose);
@@ -903,8 +903,8 @@ public:
     for (size_t complexity = 4; complexity <= 8; complexity += 2)
     {
       String str = (complexity == 2 ? T("1 variable") : String((int)complexity / 2) + T(" variables"));
-      LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder(numVariables, complexity);
-      nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
+      ExpressionBuilderPtr nodeBuilder = randomSequentialNodeBuilder(numVariables, complexity);
+      nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new ConstantExpression(true)), nodeBuilder);
 
       //conditionLearner = laminatingWeakLearner(nodeBuilder, (double)numVariables, 10);
       conditionLearner = exactWeakLearner(nodeBuilder);
@@ -938,8 +938,8 @@ public:
         context.enterScope(T("Budget = ") + String(budget));
         context.resultCallback(T("budget"), budget);
         //context.resultCallback(T("initialImportance"), initialImportance);
-        LuapeNodeBuilderPtr nodeBuilder = randomSequentialNodeBuilder((size_t)(budget * numVariables + 0.5), complexity);
-        nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
+        ExpressionBuilderPtr nodeBuilder = randomSequentialNodeBuilder((size_t)(budget * numVariables + 0.5), complexity);
+        nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new ConstantExpression(true)), nodeBuilder);
         //conditionLearner = laminatingWeakLearner(nodeBuilder, (double)numVariables, 10);
         conditionLearner = exactWeakLearner(nodeBuilder);
         conditionLearner->setVerbose(verbose);

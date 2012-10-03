@@ -17,28 +17,28 @@
 namespace lbcpp
 {
 
-class LuapeNodeSearchProblem : public LuapeInference
+class ExpressionSearchProblem : public LuapeInference
 {
 public:
   virtual bool initializeProblem(ExecutionContext& context) = 0;
 
   virtual size_t getNumInstances() const {return 0;} // 0 stands for infinity
   virtual void getObjectiveRange(double& worst, double& best) const = 0;
-  virtual double computeObjective(ExecutionContext& context, const LuapeNodePtr& node, size_t instanceIndex) = 0;
+  virtual double computeObjective(ExecutionContext& context, const ExpressionPtr& node, size_t instanceIndex) = 0;
 
-  virtual BinaryKeyPtr makeBinaryKey(ExecutionContext& context, const LuapeNodePtr& node) const = 0;
+  virtual BinaryKeyPtr makeBinaryKey(ExecutionContext& context, const ExpressionPtr& node) const = 0;
 };
 
-typedef ReferenceCountedObjectPtr<LuapeNodeSearchProblem> LuapeNodeSearchProblemPtr;
+typedef ReferenceCountedObjectPtr<ExpressionSearchProblem> ExpressionSearchProblemPtr;
 
-class LuapeNodeEquivalenceClass : public Object
+class ExpressionEquivalenceClass : public Object
 {
 public:
-  LuapeNodeEquivalenceClass(const LuapeNodePtr& node)
+  ExpressionEquivalenceClass(const ExpressionPtr& node)
     {add(node);}
-  LuapeNodeEquivalenceClass() {}
+  ExpressionEquivalenceClass() {}
 
-  void add(LuapeNodePtr node)
+  void add(ExpressionPtr node)
   {
     if (elements.insert(node).second)
     {
@@ -54,23 +54,23 @@ public:
   const LuapeRPNSequencePtr& getSequence(size_t index) const
     {jassert(index < sequences.size()); return sequences[index];}
 
-  const LuapeNodePtr& getRepresentent() const
+  const ExpressionPtr& getRepresentent() const
     {return representent;}
 
-  const std::set<LuapeNodePtr>& getElements() const
+  const std::set<ExpressionPtr>& getElements() const
     {return elements;}
 
   virtual String toShortString() const
     {return T("[") + representent->toShortString() + T("]");}
 
 protected:
-  friend class LuapeNodeEquivalenceClassClass;
+  friend class ExpressionEquivalenceClassClass;
 
-  std::set<LuapeNodePtr> elements;
+  std::set<ExpressionPtr> elements;
   std::vector<LuapeRPNSequencePtr> sequences;
-  LuapeNodePtr representent;
+  ExpressionPtr representent;
 
-  bool isSmallerThan(const LuapeNodePtr& a, const LuapeNodePtr& b) const
+  bool isSmallerThan(const ExpressionPtr& a, const ExpressionPtr& b) const
   {
     size_t na = a->getTreeSize();
     size_t nb = b->getTreeSize();
@@ -81,31 +81,31 @@ protected:
     if (ta != tb)
       return ta < tb;
     if (ta == 0)
-      return a.staticCast<LuapeConstantNode>()->getValue() < b.staticCast<LuapeConstantNode>()->getValue();
+      return a.staticCast<ConstantExpression>()->getValue() < b.staticCast<ConstantExpression>()->getValue();
     return a->toShortString() < b->toShortString();
   }
 
-  int getNodeType(const LuapeNodePtr& node) const
+  int getNodeType(const ExpressionPtr& node) const
   {
-    if (node.isInstanceOf<LuapeConstantNode>())
+    if (node.isInstanceOf<ConstantExpression>())
       return 0;
-    else if (node.isInstanceOf<LuapeInputNode>())
+    else if (node.isInstanceOf<VariableExpression>())
       return 1;
     else
       return 2;
   }
 };
 
-typedef ReferenceCountedObjectPtr<LuapeNodeEquivalenceClass> LuapeNodeEquivalenceClassPtr;
+typedef ReferenceCountedObjectPtr<ExpressionEquivalenceClass> ExpressionEquivalenceClassPtr;
 
-class LuapeNodeEquivalenceClasses : public Object
+class ExpressionEquivalenceClasses : public Object
 {
 public:
-  void add(ExecutionContext& context, const std::vector<LuapeNodePtr>& nodes, LuapeNodeSearchProblemPtr problem, bool verbose = false, BanditPoolPtr pool = BanditPoolPtr())
+  void add(ExecutionContext& context, const std::vector<ExpressionPtr>& nodes, ExpressionSearchProblemPtr problem, bool verbose = false, BanditPoolPtr pool = BanditPoolPtr())
   {
     for (size_t i = 0; i < nodes.size(); ++i)
     {
-      LuapeNodePtr node = nodes[i];
+      ExpressionPtr node = nodes[i];
       add(context, node, problem->makeBinaryKey(context, node), verbose, pool);
     }
     if (verbose)
@@ -115,14 +115,14 @@ public:
     }
   }
 
-  void add(ExecutionContext& context, LuapeNodePtr node, BinaryKeyPtr key, bool verbose = false, BanditPoolPtr pool = BanditPoolPtr())
+  void add(ExecutionContext& context, ExpressionPtr node, BinaryKeyPtr key, bool verbose = false, BanditPoolPtr pool = BanditPoolPtr())
   {
     if (key)
     {
       Map::const_iterator it = m.find(key);
       if (it == m.end())
       {
-        LuapeNodeEquivalenceClassPtr equivalenceClass = new LuapeNodeEquivalenceClass(node);
+        ExpressionEquivalenceClassPtr equivalenceClass = new ExpressionEquivalenceClass(node);
         m[key] = equivalenceClass;
         if (pool)
           pool->createArm(equivalenceClass);
@@ -136,7 +136,7 @@ public:
     else
     {
       if (!invalids)
-        invalids = new LuapeNodeEquivalenceClass(node);
+        invalids = new ExpressionEquivalenceClass(node);
       else
         invalids->add(node);
     }
@@ -155,13 +155,13 @@ public:
   }
 
 protected:
-  typedef std::map<BinaryKeyPtr, LuapeNodeEquivalenceClassPtr, ObjectComparator> Map; // todo: hash_map
+  typedef std::map<BinaryKeyPtr, ExpressionEquivalenceClassPtr, ObjectComparator> Map; // todo: hash_map
   Map m;
 
-  LuapeNodeEquivalenceClassPtr invalids;
+  ExpressionEquivalenceClassPtr invalids;
 };
 
-typedef ReferenceCountedObjectPtr<LuapeNodeEquivalenceClasses> LuapeNodeEquivalenceClassesPtr;
+typedef ReferenceCountedObjectPtr<ExpressionEquivalenceClasses> ExpressionEquivalenceClassesPtr;
 
 //////////////////////////////////////////////////////////
 
@@ -182,7 +182,7 @@ public:
     if (!problem->initializeProblem(context))
       return false;
 
-    LuapeNodeEquivalenceClassesPtr equivalenceClasses = new LuapeNodeEquivalenceClasses();
+    ExpressionEquivalenceClassesPtr equivalenceClasses = new ExpressionEquivalenceClasses();
     BanditPoolPtr pool = new BanditPool(new ObjectiveWrapper(problem), explorationCoefficient, false, useMultiThreading); 
 
     //LuapeRPNSequencePtr subSequence = new LuapeRPNSequence();
@@ -200,17 +200,17 @@ public:
 protected:
   friend class LuapeFormulaDiscoverySandBoxClass;
 
-  LuapeNodeSearchProblemPtr problem;
+  ExpressionSearchProblemPtr problem;
   size_t complexity;
   double explorationCoefficient;
   size_t numIterations;
   size_t numStepsPerIteration;
   bool useMultiThreading;
 
-  bool doIteration(ExecutionContext& context, LuapeNodeEquivalenceClassesPtr equivalenceClasses, BanditPoolPtr pool)
+  bool doIteration(ExecutionContext& context, ExpressionEquivalenceClassesPtr equivalenceClasses, BanditPoolPtr pool)
   {
     context.enterScope(T("Enumerating candidates"));
-    std::vector<LuapeNodePtr> candidates;     
+    std::vector<ExpressionPtr> candidates;     
     problem->enumerateNodesExhaustively(context, complexity, candidates, true);
     context.leaveScope(candidates.size());
     context.resultCallback(T("numCandidates"), candidates.size());
@@ -243,22 +243,22 @@ protected:
     }
 
     size_t bestArm = pool->sampleArmWithHighestReward(context);
-    String bestEquivalenceClass = pool->getArmParameter(bestArm).getObjectAndCast<LuapeNodeEquivalenceClass>()->toShortString();
+    String bestEquivalenceClass = pool->getArmParameter(bestArm).getObjectAndCast<ExpressionEquivalenceClass>()->toShortString();
     context.resultCallback(T("bestArm"), bestEquivalenceClass);
     context.resultCallback(T("bestArmScore"), pool->getArmMeanObjective(bestArm));
     context.resultCallback(T("bestArmPlayedCount"), pool->getArmPlayedCount(bestArm));
     
     context.enterScope(T("Most important nodes"));
-    std::multimap<double, LuapeNodePtr> nodesByImportance;
+    std::multimap<double, ExpressionPtr> nodesByImportance;
     getMostImportantNodes(context, equivalenceClasses, pool, nodesByImportance);
     context.leaveScope();
 
-    const std::set<LuapeNodePtr>& actives = problem->getActiveVariables();
+    const std::set<ExpressionPtr>& actives = problem->getActiveVariables();
 
-    for (std::multimap<double, LuapeNodePtr>::reverse_iterator it = nodesByImportance.rbegin(); it != nodesByImportance.rend(); ++it)
+    for (std::multimap<double, ExpressionPtr>::reverse_iterator it = nodesByImportance.rbegin(); it != nodesByImportance.rend(); ++it)
     {
-      LuapeNodePtr node = it->second;
-      if (!node.isInstanceOf<LuapeInputNode>() && !node.isInstanceOf<LuapeConstantNode>() && actives.find(node) == actives.end())
+      ExpressionPtr node = it->second;
+      if (!node.isInstanceOf<VariableExpression>() && !node.isInstanceOf<ConstantExpression>() && actives.find(node) == actives.end())
       {
         context.informationCallback(T("New Active Variable: ") + node->toShortString());
         context.resultCallback(T("newActiveVariable"), node->toShortString());
@@ -289,10 +289,10 @@ protected:
 #endif // 0
   }
 
-  void getMostImportantNodes(ExecutionContext& context, LuapeNodeEquivalenceClassesPtr equivalenceClasses, BanditPoolPtr pool, std::multimap<double, LuapeNodePtr>& res)
+  void getMostImportantNodes(ExecutionContext& context, ExpressionEquivalenceClassesPtr equivalenceClasses, BanditPoolPtr pool, std::multimap<double, ExpressionPtr>& res)
   {
     // clear importances
-    LuapeUniversePtr universe = problem->getUniverse();
+    ExpressionUniversePtr universe = problem->getUniverse();
     universe->clearImportances();
 
     // add importances
@@ -300,22 +300,22 @@ protected:
     pool->getArmsOrder(order);
     for (size_t i = 0; i < order.size() && i < 10; ++i)
     {
-      LuapeNodeEquivalenceClassPtr equivalenceClass = pool->getArmParameter(order[i].first).getObjectAndCast<LuapeNodeEquivalenceClass>();
+      ExpressionEquivalenceClassPtr equivalenceClass = pool->getArmParameter(order[i].first).getObjectAndCast<ExpressionEquivalenceClass>();
       size_t treeSize = equivalenceClass->getRepresentent()->getTreeSize();
 
-      const std::set<LuapeNodePtr>& nodes = equivalenceClass->getElements();
+      const std::set<ExpressionPtr>& nodes = equivalenceClass->getElements();
       double reward = -order[i].second;
-      for (std::set<LuapeNodePtr>::const_iterator it = nodes.begin(); it != nodes.end(); ++it)
+      for (std::set<ExpressionPtr>::const_iterator it = nodes.begin(); it != nodes.end(); ++it)
         if ((*it)->getTreeSize() == treeSize)
           (*it)->addImportance(reward);
     }
 
     // display
-    std::map<LuapeNodePtr, double> importances;
+    std::map<ExpressionPtr, double> importances;
     universe->getImportances(importances);
-    LuapeUniverse::displayMostImportantNodes(context, importances);
+    ExpressionUniverse::displayMostImportantNodes(context, importances);
 
-    for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it)
+    for (std::map<ExpressionPtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it)
       res.insert(std::make_pair(it->second, it->first));
   }
 
@@ -329,7 +329,7 @@ protected:
     
     for (size_t i = 0; i < order.size() && candidates.size() != 1; ++i)
     {
-      LuapeNodeEquivalenceClassPtr equivalenceClass = pool->getArmParameter(order[i].first).getObjectAndCast<LuapeNodeEquivalenceClass>();
+      ExpressionEquivalenceClassPtr equivalenceClass = pool->getArmParameter(order[i].first).getObjectAndCast<ExpressionEquivalenceClass>();
       std::set<ObjectPtr> candidateActions = getCandidateActions(equivalenceClass, subSequence);
       /*String info = equivalenceClass->toShortString() + T(" => ");
       for (std::set<ObjectPtr>::const_iterator it = candidateActions.begin(); it != candidateActions.end(); ++it)
@@ -374,7 +374,7 @@ protected:
     return *it;
   }
 
-  std::set<ObjectPtr> getCandidateActions(LuapeNodeEquivalenceClassPtr equivalenceClass, const LuapeRPNSequencePtr& subSequence)
+  std::set<ObjectPtr> getCandidateActions(ExpressionEquivalenceClassPtr equivalenceClass, const LuapeRPNSequencePtr& subSequence)
   {
     size_t n = equivalenceClass->getNumElements();
     std::set<ObjectPtr> res;
@@ -390,9 +390,9 @@ protected:
 
   struct ObjectiveWrapper : public BanditPoolObjective
   {
-    ObjectiveWrapper(LuapeNodeSearchProblemPtr problem) : problem(problem) {}
+    ObjectiveWrapper(ExpressionSearchProblemPtr problem) : problem(problem) {}
 
-    LuapeNodeSearchProblemPtr problem;
+    ExpressionSearchProblemPtr problem;
 
     virtual size_t getNumInstances() const
       {return problem->getNumInstances();}
@@ -402,7 +402,7 @@ protected:
  
     virtual double computeObjective(ExecutionContext& context, const Variable& parameter, size_t instanceIndex)
     {
-      LuapeNodeEquivalenceClassPtr equivalenceClass = parameter.getObjectAndCast<LuapeNodeEquivalenceClass>();
+      ExpressionEquivalenceClassPtr equivalenceClass = parameter.getObjectAndCast<ExpressionEquivalenceClass>();
       return problem->computeObjective(context, equivalenceClass->getRepresentent(), instanceIndex);
     }
   };

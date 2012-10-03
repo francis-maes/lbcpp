@@ -13,10 +13,10 @@ using namespace lbcpp;
 /*
 ** LuapeLearner
 */
-LuapeNodePtr LuapeLearner::learn(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+ExpressionPtr LuapeLearner::learn(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
 {
   // create initial node
-  LuapeNodePtr node = problem->getRootNode();
+  ExpressionPtr node = problem->getRootNode();
   if (!node)
     node = createInitialNode(context, problem);
   if (node)
@@ -26,7 +26,7 @@ LuapeNodePtr LuapeLearner::learn(ExecutionContext& context, const LuapeInference
   IndexSetPtr indices = examples ? examples : problem->getTrainingCache()->getAllIndices();
   node = learn(context, node, problem, indices);
   if (!node)
-    return LuapeNodePtr();
+    return ExpressionPtr();
   problem->setRootNode(context, node);
   return node;
 }
@@ -46,18 +46,18 @@ void LuapeLearner::evaluatePredictions(ExecutionContext& context, const LuapeInf
     validationScore = 0.0;
 }
 
-LuapeNodePtr LuapeLearner::subLearn(ExecutionContext& context, const LuapeLearnerPtr& subLearner, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double* objectiveValue) const
+ExpressionPtr LuapeLearner::subLearn(ExecutionContext& context, const LuapeLearnerPtr& subLearner, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double* objectiveValue) const
 {
   if (!examples->size())
-    return LuapeNodePtr();
+    return ExpressionPtr();
   if (verbose)
     context.enterScope(T("Learning with ") + String((int)examples->size()) + T(" examples"));
-  LuapeNodePtr weakNode = subLearner->learn(context, node, problem, examples);
+  ExpressionPtr weakNode = subLearner->learn(context, node, problem, examples);
   double score = subLearner->getBestObjectiveValue();
   if (verbose)
     context.leaveScope(score);
   if (!weakNode || score == -DBL_MAX)
-    return LuapeNodePtr();
+    return ExpressionPtr();
   if (objectiveValue)
     *objectiveValue = score;
   return weakNode;
@@ -96,9 +96,9 @@ void IterativeLearner::setPlotFile(ExecutionContext& context, const File& plotFi
     context.warningCallback(T("Could not create file ") + plotFile.getFullPathName());
 }
 
-LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+ExpressionPtr IterativeLearner::learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
 {
-  LuapeNodePtr res = node;
+  ExpressionPtr res = node;
   if (verbose)
   {
     context.enterScope(T("Learning"));
@@ -117,9 +117,9 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
   }
 
   if (!initialize(context, res, problem, examples))
-    return LuapeNodePtr();
+    return ExpressionPtr();
 
-  LuapeUniversePtr universe = problem->getUniverse();
+  ExpressionUniversePtr universe = problem->getUniverse();
 
   ScalarVariableMean lastIterationsValidationScore;
   double bestValidationScore = DBL_MAX;
@@ -169,9 +169,9 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
       if (i % 10 == 9)
       {
         context.enterScope(T("Most important nodes"));
-        std::map<LuapeNodePtr, double> importances;
-        LuapeUniverse::getImportances(problem->getRootNode(), importances);
-        LuapeUniverse::displayMostImportantNodes(context, importances);
+        std::map<ExpressionPtr, double> importances;
+        ExpressionUniverse::getImportances(problem->getRootNode(), importances);
+        ExpressionUniverse::displayMostImportantNodes(context, importances);
         context.leaveScope();
       }
     }
@@ -181,9 +181,9 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
     context.leaveScope();
 
     context.enterScope(T("Most important nodes"));
-    std::map<LuapeNodePtr, double> importances;
-    LuapeUniverse::getImportances(problem->getRootNode(), importances);
-    LuapeUniverse::displayMostImportantNodes(context, importances);
+    std::map<ExpressionPtr, double> importances;
+    ExpressionUniverse::getImportances(problem->getRootNode(), importances);
+    ExpressionUniverse::displayMostImportantNodes(context, importances);
     context.leaveScope();
 
     context.informationCallback(T("Best evaluation: ") + String(bestValidationScore * 100.0, 3) + T("%"));
@@ -199,7 +199,7 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
   }
     
   if (!finalize(context, res, problem, examples))
-    return LuapeNodePtr();
+    return ExpressionPtr();
 
   //Object::displayObjectAllocationInfo(std::cerr);
   //context.resultCallback("votes", function->getVotes());
@@ -209,7 +209,7 @@ LuapeNodePtr IterativeLearner::learn(ExecutionContext& context, const LuapeNodeP
 /*
 ** NodeBuilderBasedLearner
 */
-NodeBuilderBasedLearner::NodeBuilderBasedLearner(LuapeNodeBuilderPtr nodeBuilder)
+NodeBuilderBasedLearner::NodeBuilderBasedLearner(ExpressionBuilderPtr nodeBuilder)
   : nodeBuilder(nodeBuilder)
 {
 }
@@ -218,7 +218,7 @@ void NodeBuilderBasedLearner::clone(ExecutionContext& context, const ObjectPtr& 
 {
   LuapeLearner::clone(context, target);
   if (nodeBuilder)
-    target.staticCast<NodeBuilderBasedLearner>()->nodeBuilder = nodeBuilder->cloneAndCast<LuapeNodeBuilder>(context);
+    target.staticCast<NodeBuilderBasedLearner>()->nodeBuilder = nodeBuilder->cloneAndCast<ExpressionBuilder>(context);
 }
 
 /*
@@ -229,15 +229,15 @@ DecoratorLearner::DecoratorLearner(LuapeLearnerPtr decorated)
 {
 }
 
-LuapeNodePtr DecoratorLearner::createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
+ExpressionPtr DecoratorLearner::createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
   {return decorated->createInitialNode(context, problem);}
 
-LuapeNodePtr DecoratorLearner::learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+ExpressionPtr DecoratorLearner::learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
 {
   if (!decorated->getObjective())
     decorated->setObjective(objective);
   decorated->setVerbose(verbose);
-  LuapeNodePtr res = decorated->learn(context, node, problem, examples);
+  ExpressionPtr res = decorated->learn(context, node, problem, examples);
   bestObjectiveValue = decorated->getBestObjectiveValue();
   return res;
 }

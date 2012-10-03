@@ -25,17 +25,17 @@ public:
   size_t getNumArms() const
     {return arms.size();}
 
-  const LuapeNodePtr& getArmNode(size_t index) const
+  const ExpressionPtr& getArmNode(size_t index) const
     {jassert(index < arms.size()); return arms[index].node;}
 
-  void setArmNode(size_t index, const LuapeNodePtr& node)
+  void setArmNode(size_t index, const ExpressionPtr& node)
     {jassert(index < arms.size()); arms[index].node = node;}
 
-  LuapeNodeCachePtr getArmCache(size_t index) const
+  ExpressionCachePtr getArmCache(size_t index) const
     {jassert(index < arms.size()); return arms[index].getCache();}
 
   void initialize(ExecutionContext& context, const LuapeInferencePtr& function);
-  void executeArm(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode);
+  void executeArm(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const ExpressionPtr& newNode);
 
   void playArmWithHighestIndex(ExecutionContext& context, const BoostingLearnerPtr& graphLearner, const IndexSetPtr& examples);
 
@@ -44,7 +44,7 @@ public:
   void displayInformation(ExecutionContext& context);
   void clearSamples(bool clearTrainingSamples = true, bool clearValidationSamples = true);
 
-  size_t createArm(ExecutionContext& context, const LuapeNodePtr& node);
+  size_t createArm(ExecutionContext& context, const ExpressionPtr& node);
   void destroyArm(ExecutionContext& context, size_t index);
 
 protected:
@@ -53,7 +53,7 @@ protected:
 
   struct Arm
   {
-    Arm(LuapeNodePtr node = LuapeNodePtr())
+    Arm(ExpressionPtr node = ExpressionPtr())
       : playedCount(0), rewardSum(0.0), node(node) {}
 
     size_t playedCount;
@@ -62,10 +62,10 @@ protected:
     void reset()
       {playedCount = 0; rewardSum = 0.0;}
 
-    LuapeNodePtr node;
+    ExpressionPtr node;
 
-    //LuapeNodeCachePtr getCache() const
-    //  {return node ? node->getCache() : LuapeNodeCachePtr();}
+    //ExpressionCachePtr getCache() const
+    //  {return node ? node->getCache() : ExpressionCachePtr();}
 
     double getIndexScore() const
       {return playedCount ? (rewardSum + 2.0) / (double)playedCount : DBL_MAX;}
@@ -113,14 +113,14 @@ public:
     return true;
   }
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& examples)
+  virtual ExpressionPtr learn(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, const IndexSetPtr& examples)
   {
     // FIXME: example subsets is not implemented
 
     if (pool->getNumArms() == 0)
     {
       context.errorCallback(T("No arms"));
-      return LuapeNodePtr();
+      return ExpressionPtr();
     }
     
     // play arms
@@ -138,7 +138,7 @@ public:
     if (armIndex == (size_t)-1)
     {
       context.errorCallback(T("Could not select best arm"));
-      return LuapeNodePtr();
+      return ExpressionPtr();
     }
 
     return pool->getArmNode(armIndex);
@@ -146,7 +146,7 @@ public:
   
   // FIXME: broken
   /*
-  virtual void update(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, LuapeNodePtr weakLearner)
+  virtual void update(ExecutionContext& context, const LuapeLearnerPtr& structureLearner, ExpressionPtr weakLearner)
   {
     pool->executeArm(context, structureLearner->getProblem(), structureLearner->getGraph(), weakLearner);
     context.resultCallback(T("numArms"), pool->getNumArms());

@@ -22,12 +22,12 @@ public:
   WeightBoostingLearner() {}
 
   virtual DenseDoubleVectorPtr computeSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, double& logLoss) const = 0;
-  virtual void updateSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const = 0;
+  virtual void updateSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, const ExpressionPtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const = 0;
   virtual Variable computeVote(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions) const = 0;
   virtual Variable negateVote(const Variable& vote) const = 0;
   virtual FunctionPtr makeVoteFunction(ExecutionContext& context, const LuapeInferencePtr& problem, const Variable& vote) const = 0;
   
-  virtual bool initialize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual bool initialize(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     if (!BoostingLearner::initialize(context, node, problem, examples))
       return false;
@@ -35,31 +35,31 @@ public:
     return true;
   }
 
-  virtual void contributionAdded(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& contribution)
+  virtual void contributionAdded(ExecutionContext& context, const LuapeInferencePtr& problem, const ExpressionPtr& contribution)
     {updateSampleWeights(context, problem, contribution, objective.staticCast<SupervisedLearningObjective>()->getWeights(), logLoss);}
 
-  virtual bool doLearningIteration(ExecutionContext& context, LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
+  virtual bool doLearningIteration(ExecutionContext& context, ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
     context.resultCallback(T("logLoss"), logLoss);
     context.resultCallback(T("loss"), pow(10.0, logLoss));
     return BoostingLearner::doLearningIteration(context, node, problem, examples, trainingScore, validationScore);
   }
 
-  virtual LuapeNodePtr turnWeakNodeIntoContribution(ExecutionContext& context, const LuapeNodePtr& weakNode, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double weakObjective) const
+  virtual ExpressionPtr turnWeakNodeIntoContribution(ExecutionContext& context, const ExpressionPtr& weakNode, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double weakObjective) const
   {
-    const LuapeUniversePtr& universe = problem->getUniverse();
+    const ExpressionUniversePtr& universe = problem->getUniverse();
 
     jassert(weakNode);
     LuapeSampleVectorPtr weakPredictions = problem->getTrainingCache()->getSamples(context, weakNode, examples);
     Variable vote = computeVote(context, problem, weakPredictions);
     if (!vote.exists())
-      return LuapeNodePtr();
+      return ExpressionPtr();
 
-    LuapeNodePtr res;
+    ExpressionPtr res;
     jassert(weakNode->getType() == booleanType || weakNode->getType() == probabilityType);
-    if (weakNode.isInstanceOf<LuapeConstantNode>())
+    if (weakNode.isInstanceOf<ConstantExpression>())
     {
-      LuapeConstantNodePtr constantNode = weakNode.staticCast<LuapeConstantNode>();
+      ConstantExpressionPtr constantNode = weakNode.staticCast<ConstantExpression>();
       Variable constantValue = constantNode->getValue();
       jassert(constantValue.isBoolean() && constantValue.exists());
       if (constantValue.getBoolean())
@@ -70,7 +70,7 @@ public:
     else
     {
       FunctionPtr voteFunction = makeVoteFunction(context, problem, vote);
-      res = universe->makeLuapeFunctionNode(voteFunction, weakNode);
+      res = universe->makeFunctionExpression(voteFunction, weakNode);
     }
     if (verbose)
       context.informationCallback(res->toShortString());

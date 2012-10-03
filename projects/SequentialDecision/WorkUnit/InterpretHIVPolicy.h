@@ -118,7 +118,7 @@ public:
     return outputClass;
   }
     
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return T("succ(") + inputs[0]->toShortString() + T(", ") + inputs[1]->toShortString() + T(")");}
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
@@ -151,7 +151,7 @@ public:
   virtual size_t getNumInputs() const
     {return 1;}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return T("succ(") + inputs[0]->toShortString() + T(", ") + String((int)action) + T(")");}
 
   virtual ContainerPtr getVariableCandidateValues(size_t index, const std::vector<TypePtr>& inputTypes) const
@@ -554,8 +554,8 @@ protected:
         //classifier->addFunction(new ComputeDecisionProblemSuccessorStateFunctor(decisionProblem));
         classifier->setSamples(context, examples.staticCast<ObjectVector>()->getObjects());
         classifier->getTrainingCache()->setMaxSizeInMegaBytes(512);
-        LuapeNodeBuilderPtr nodeBuilder = exhaustiveSequentialNodeBuilder(complexity);
-        nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new LuapeConstantNode(true)), nodeBuilder);
+        ExpressionBuilderPtr nodeBuilder = exhaustiveSequentialNodeBuilder(complexity);
+        nodeBuilder = compositeNodeBuilder(singletonNodeBuilder(new ConstantExpression(true)), nodeBuilder);
         
         LuapeLearnerPtr learner = optimizerBasedSequentialWeakLearner(new NestedMonteCarloOptimizer(3, 1), complexity);
         
@@ -567,7 +567,7 @@ protected:
         learner->setObjective(objective);
         learner = treeLearner(objective, learner, 2, treeDepth);
       
-        LuapeNodePtr node = learner->learn(context, LuapeNodePtr(), classifier, classifier->getTrainingCache()->getAllIndices());
+        ExpressionPtr node = learner->learn(context, ExpressionPtr(), classifier, classifier->getTrainingCache()->getAllIndices());
         classifier->setRootNode(context, node);
         double error = classifier->evaluatePredictions(context, classifier->getTrainingPredictions(), classifier->getTrainingSupervisions());
         double policyReturn = 0.0;

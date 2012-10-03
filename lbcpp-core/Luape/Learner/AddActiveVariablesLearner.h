@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_LEARNER_ADD_ACTIVE_VARIABLES_H_
 # define LBCPP_LUAPE_LEARNER_ADD_ACTIVE_VARIABLES_H_
 
-# include <lbcpp/Luape/LuapeNodeBuilder.h>
+# include <lbcpp/Luape/ExpressionBuilder.h>
 
 namespace lbcpp
 {
@@ -21,24 +21,24 @@ public:
     : DecoratorLearner(decorated), numActiveVariables(numActiveVariables), deterministic(deterministic) {}
   AddActiveVariablesLearner() : numActiveVariables(0), deterministic(false) {}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
-    std::map<LuapeNodePtr, double> importances;
+    std::map<ExpressionPtr, double> importances;
     getImportances(problem->getRootNode(), importances);
     
     problem->clearActiveVariables();
 
     if (deterministic)
     {
-      std::multimap<double, LuapeNodePtr> nodeImportanceMap;
-      for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it)
+      std::multimap<double, ExpressionPtr> nodeImportanceMap;
+      for (std::map<ExpressionPtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it)
         nodeImportanceMap.insert(std::make_pair(it->second, it->first));
-      std::multimap<double, LuapeNodePtr>::reverse_iterator it = nodeImportanceMap.rbegin();
+      std::multimap<double, ExpressionPtr>::reverse_iterator it = nodeImportanceMap.rbegin();
 
       while (problem->getNumActiveVariables() < numActiveVariables && it != nodeImportanceMap.rend())
       {
-        LuapeNodePtr node = it->second;
-        if (!node.isInstanceOf<LuapeInputNode>())
+        ExpressionPtr node = it->second;
+        if (!node.isInstanceOf<VariableExpression>())
           addActiveVariable(context, problem, node, it->first);
         ++it;
       }
@@ -47,9 +47,9 @@ public:
     {
       double Z = 0.0;
       std::vector<double> probabilities(importances.size());
-      std::vector<LuapeNodePtr> nodes(importances.size());
+      std::vector<ExpressionPtr> nodes(importances.size());
       size_t index = 0;
-      for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it, ++index)
+      for (std::map<ExpressionPtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it, ++index)
       {
         Z += it->second;
         probabilities[index] = it->second;
@@ -60,8 +60,8 @@ public:
       {
         jassert(isNumberValid(Z));
         size_t index = context.getRandomGenerator()->sampleWithProbabilities(probabilities, Z);
-        LuapeNodePtr node = nodes[index];
-        if (!node.isInstanceOf<LuapeInputNode>())
+        ExpressionPtr node = nodes[index];
+        if (!node.isInstanceOf<VariableExpression>())
           addActiveVariable(context, problem, node, probabilities[index]);
         Z -= probabilities[index];
         probabilities[index] = 0.0;
@@ -76,14 +76,14 @@ protected:
   size_t numActiveVariables;
   bool deterministic;
   
-  void getImportances(const LuapeNodePtr& node, std::map<LuapeNodePtr, double>& res) const
+  void getImportances(const ExpressionPtr& node, std::map<ExpressionPtr, double>& res) const
   {
     if (node && res.find(node) == res.end())
     {
       double importance = node->getImportance();
       jassert(isNumberValid(importance));
       if (importance > 0)
-        if (!node.isInstanceOf<LuapeFunctionNode>() || node.staticCast<LuapeFunctionNode>()->getFunction()->getClassName() != T("StumpFunction"))
+        if (!node.isInstanceOf<FunctionExpression>() || node.staticCast<FunctionExpression>()->getFunction()->getClassName() != T("StumpFunction"))
           res[node] = importance;
       size_t n = node->getNumSubNodes();
       for (size_t i = 0; i < n; ++i)
@@ -91,7 +91,7 @@ protected:
     }
   }
 
-  void addActiveVariable(ExecutionContext& context, const LuapeInferencePtr& function, const LuapeNodePtr& variable, double importance)
+  void addActiveVariable(ExecutionContext& context, const LuapeInferencePtr& function, const ExpressionPtr& variable, double importance)
   {
     function->addActiveVariable(variable);
     if (verbose)

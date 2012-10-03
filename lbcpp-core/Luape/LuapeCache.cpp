@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Luape/LuapeCache.h>
-#include <lbcpp/Luape/LuapeNode.h>
+#include <lbcpp/Luape/Expression.h>
 #include <lbcpp/Core/DynamicObject.h>
 #include <algorithm>
 using namespace lbcpp;
@@ -15,7 +15,7 @@ using namespace lbcpp;
 /*
 ** LuapeInstanceCache
 */
-void LuapeInstanceCache::setInputObject(const std::vector<LuapeInputNodePtr>& inputs, const ObjectPtr& object)
+void LuapeInstanceCache::setInputObject(const std::vector<VariableExpressionPtr>& inputs, const ObjectPtr& object)
 {
   ContainerPtr container = object.dynamicCast<Container>();
   if (container)
@@ -40,13 +40,13 @@ void LuapeInstanceCache::setInputObject(const std::vector<LuapeInputNodePtr>& in
   }
 }
 
-void LuapeInstanceCache::set(const LuapeNodePtr& node, const Variable& value)
+void LuapeInstanceCache::set(const ExpressionPtr& node, const Variable& value)
 {
   jassert(m.find(node) == m.end());
   m[node] = value;
 }
 
-Variable LuapeInstanceCache::compute(ExecutionContext& context, const LuapeNodePtr& node)
+Variable LuapeInstanceCache::compute(ExecutionContext& context, const ExpressionPtr& node)
 {
   NodeToValueMap::const_iterator it = m.find(node);
   if (it == m.end())
@@ -100,7 +100,7 @@ LuapeSampleVectorPtr LuapeSampleVector::createCached(IndexSetPtr indices, const 
 /*
 ** LuapeSamplesCache
 */
-LuapeSamplesCache::LuapeSamplesCache(LuapeUniversePtr universe, const std::vector<LuapeInputNodePtr>& inputs, size_t size, size_t maxCacheSizeInMb)
+LuapeSamplesCache::LuapeSamplesCache(ExpressionUniversePtr universe, const std::vector<VariableExpressionPtr>& inputs, size_t size, size_t maxCacheSizeInMb)
   : universe(universe), inputNodes(inputs), maxCacheSize(maxCacheSizeInMb * 1024 * 1024), actualCacheSize(0), minNumRequestsToBeCached(0), allIndices(new IndexSet(0, size)), cachingEnabled(true)
 {
   ensureActualSizeIsCorrect();
@@ -113,7 +113,7 @@ LuapeSamplesCache::LuapeSamplesCache(LuapeUniversePtr universe, const std::vecto
   ensureActualSizeIsCorrect();
 }
 
-void LuapeSamplesCache::setInputObject(const std::vector<LuapeInputNodePtr>& inputs, size_t index, const ObjectPtr& object)
+void LuapeSamplesCache::setInputObject(const std::vector<VariableExpressionPtr>& inputs, size_t index, const ObjectPtr& object)
 {
   if (inputs.size() == 1 && object->getClass()->inheritsFrom(inputs[0]->getType()))
   {
@@ -164,7 +164,7 @@ size_t LuapeSamplesCache::NodeCache::getSizeInBytes(bool recursively) const
 size_t LuapeSamplesCache::getCacheSizeInBytes() const
   {return actualCacheSize;}
 
-void LuapeSamplesCache::cacheNode(ExecutionContext& context, const LuapeNodePtr& node, const VectorPtr& values, const String& reason, bool isRemoveable)
+void LuapeSamplesCache::cacheNode(ExecutionContext& context, const ExpressionPtr& node, const VectorPtr& values, const String& reason, bool isRemoveable)
 {
   NodeCache& nodeCache = getOrCreateNodeCache(node);
   actualCacheSize -= nodeCache.getSizeInBytes(true);
@@ -172,7 +172,7 @@ void LuapeSamplesCache::cacheNode(ExecutionContext& context, const LuapeNodePtr&
   nodeCache.samples = values ? values : node->compute(context, refCountedPointerFromThis(this), allIndices)->getVector();
   if (!isRemoveable)
     nodeCache.numRequests = -1;
-  jassert(nodeCache.samples || node.isInstanceOf<LuapeConstantNode>());
+  jassert(nodeCache.samples || node.isInstanceOf<ConstantExpression>());
 
   size_t sizeInBytes = nodeCache.getSizeInBytes(true);
   actualCacheSize += sizeInBytes;
@@ -181,7 +181,7 @@ void LuapeSamplesCache::cacheNode(ExecutionContext& context, const LuapeNodePtr&
   ensureSizeInLowerThanMaxSize(context);
 }
 
-void LuapeSamplesCache::recacheNode(ExecutionContext& context, const LuapeNodePtr& node, const VectorPtr& values)
+void LuapeSamplesCache::recacheNode(ExecutionContext& context, const ExpressionPtr& node, const VectorPtr& values)
 {
   ensureActualSizeIsCorrect();
 
@@ -221,7 +221,7 @@ void LuapeSamplesCache::ensureSizeInLowerThanMaxSize(ExecutionContext& context)
   }
 }
 
-void LuapeSamplesCache::uncacheNode(ExecutionContext& context, const LuapeNodePtr& node)
+void LuapeSamplesCache::uncacheNode(ExecutionContext& context, const ExpressionPtr& node)
 {
   NodeCache& nodeCache = m[node];
   if (nodeCache.samples)
@@ -240,7 +240,7 @@ void LuapeSamplesCache::uncacheNode(ExecutionContext& context, const LuapeNodePt
 
 void LuapeSamplesCache::uncacheNodes(ExecutionContext& context, size_t count)
 {
-  std::multimap<juce::int64, LuapeNodePtr> sortedNodes;
+  std::multimap<juce::int64, ExpressionPtr> sortedNodes;
   for (NodeCacheMap::const_iterator it = m.begin(); it != m.end(); ++it)
     if (it->second.numRequests >= 0 && it->second.samples)
     {
@@ -259,7 +259,7 @@ void LuapeSamplesCache::uncacheNodes(ExecutionContext& context, size_t count)
   {
     minNumRequestsToBeCached = sortedNodes.rbegin()->first * 2;
     //std::cout << "New threshold: " << minNumRequestsToBeCached << std::endl;
-    for (std::multimap<juce::int64, LuapeNodePtr>::const_iterator it = sortedNodes.begin(); it != sortedNodes.end(); ++it)
+    for (std::multimap<juce::int64, ExpressionPtr>::const_iterator it = sortedNodes.begin(); it != sortedNodes.end(); ++it)
       uncacheNode(context, it->second);
   }
 }
@@ -271,27 +271,27 @@ void LuapeSamplesCache::clearCache(ExecutionContext& context)
       uncacheNode(context, it->first);
 }
 
-bool LuapeSamplesCache::isNodeCached(const LuapeNodePtr& node) const
+bool LuapeSamplesCache::isNodeCached(const ExpressionPtr& node) const
 {
   NodeCacheMap::const_iterator it = m.find(node);
   return it != m.end() && it->second.samples;
 }
 
-bool LuapeSamplesCache::isNodeDefinitivelyCached(const LuapeNodePtr& node) const
+bool LuapeSamplesCache::isNodeDefinitivelyCached(const ExpressionPtr& node) const
 {
   jassert(node);
   NodeCacheMap::const_iterator it = m.find(node);
-  return node.isInstanceOf<LuapeConstantNode>() || (it != m.end() && it->second.samples && it->second.numRequests < 0);
+  return node.isInstanceOf<ConstantExpression>() || (it != m.end() && it->second.samples && it->second.numRequests < 0);
 }
 
-VectorPtr LuapeSamplesCache::getNodeCache(const LuapeNodePtr& node) const
+VectorPtr LuapeSamplesCache::getNodeCache(const ExpressionPtr& node) const
 {
   jassert(node);
   NodeCacheMap::const_iterator it = m.find(node);
   return it == m.end() ? VectorPtr() : it->second.samples;
 }
 
-LuapeSamplesCache::NodeCache& LuapeSamplesCache::getOrCreateNodeCache(const LuapeNodePtr& node)
+LuapeSamplesCache::NodeCache& LuapeSamplesCache::getOrCreateNodeCache(const ExpressionPtr& node)
 {
   NodeCacheMap::iterator it = m.find(node);
   if (it == m.end())
@@ -304,18 +304,18 @@ LuapeSamplesCache::NodeCache& LuapeSamplesCache::getOrCreateNodeCache(const Luap
     return it->second;
 }
 
-bool LuapeSamplesCache::isCandidateForCaching(const LuapeNodePtr& node) const
+bool LuapeSamplesCache::isCandidateForCaching(const ExpressionPtr& node) const
 {
-  if (node.isInstanceOf<LuapeFunctionNode>())
+  if (node.isInstanceOf<FunctionExpression>())
   {
-    const LuapeFunctionNodePtr& functionNode = node.staticCast<LuapeFunctionNode>();
+    const FunctionExpressionPtr& functionNode = node.staticCast<FunctionExpression>();
     return functionNode->getFunction()->getClassName() != T("StumpFunction");
   }
   else
     return false;
 }
 
-LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& examples)
+LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, const ExpressionPtr& node, const IndexSetPtr& examples)
 {
   jassert(node);
   IndexSetPtr indices = examples ? examples : allIndices;
@@ -367,7 +367,7 @@ LuapeSampleVectorPtr LuapeSamplesCache::getSamples(ExecutionContext& context, co
   return res;
 }
 
-SparseDoubleVectorPtr LuapeSamplesCache::getSortedDoubleValues(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& examples)
+SparseDoubleVectorPtr LuapeSamplesCache::getSortedDoubleValues(ExecutionContext& context, const ExpressionPtr& node, const IndexSetPtr& examples)
 {
   ensureActualSizeIsCorrect();
   IndexSetPtr indices = examples ? examples : allIndices;
@@ -462,10 +462,10 @@ SparseDoubleVectorPtr LuapeSamplesCache::computeSortedDoubleValuesSubset(const S
   return res;
 }
 
-void LuapeSamplesCache::observeNodeComputingTime(const LuapeNodePtr& node, size_t numInstances, double timeInMilliseconds)
+void LuapeSamplesCache::observeNodeComputingTime(const ExpressionPtr& node, size_t numInstances, double timeInMilliseconds)
   {universe->observeNodeComputingTime(node, numInstances, timeInMilliseconds);}
 
-bool LuapeSamplesCache::checkCacheIsCorrect(ExecutionContext& context, const LuapeNodePtr& node, bool recursively)
+bool LuapeSamplesCache::checkCacheIsCorrect(ExecutionContext& context, const ExpressionPtr& node, bool recursively)
 {
   if (recursively)
   {
@@ -545,14 +545,14 @@ void LuapeSamplesCache::displayCacheInformation(ExecutionContext& context)
   /*
   ** Infos by Node type
   */
-  std::map<LuapeUniverse::NodeTypeKey, NodeTypeCacheInformation> infoByKey;
+  std::map<ExpressionUniverse::NodeTypeKey, NodeTypeCacheInformation> infoByKey;
   for (NodeCacheMap::const_iterator it = m.begin(); it != m.end(); ++it)
   {
-    LuapeUniverse::NodeTypeKey key = LuapeUniverse::makeNodeStatisticsKey(it->first);
+    ExpressionUniverse::NodeTypeKey key = ExpressionUniverse::makeNodeStatisticsKey(it->first);
     infoByKey[key].observe(it->second);
   }
 
-  for (std::map<LuapeUniverse::NodeTypeKey, NodeTypeCacheInformation>::const_iterator it = infoByKey.begin();
+  for (std::map<ExpressionUniverse::NodeTypeKey, NodeTypeCacheInformation>::const_iterator it = infoByKey.begin();
         it != infoByKey.end(); ++it)
   {
     String info = it->first.second ? it->first.second->getName() : it->first.first->getName();
@@ -566,9 +566,9 @@ void LuapeSamplesCache::displayCacheInformation(ExecutionContext& context)
   /*
   ** Infos by node
   */
-  std::multimap<double, LuapeNodePtr> cachedNodes;
-  std::multimap<double, LuapeNodePtr> uncachedNodes;
-  std::vector<LuapeNodePtr> nonRemoveableNodes;
+  std::multimap<double, ExpressionPtr> cachedNodes;
+  std::multimap<double, ExpressionPtr> uncachedNodes;
+  std::vector<ExpressionPtr> nonRemoveableNodes;
   //double worstScore = DBL_MAX;
 
   size_t nonRemoveableSize = 0;
@@ -606,17 +606,17 @@ void LuapeSamplesCache::displayCacheInformation(ExecutionContext& context)
   //  context.informationCallback(T("Non removeable: ") + nonRemoveableNodes[i]->toShortString());
 
   i = 0;
-  for (std::multimap<double, LuapeNodePtr>::const_reverse_iterator it = cachedNodes.rbegin(); it != cachedNodes.rend() && i < 5; ++it, ++i)
+  for (std::multimap<double, ExpressionPtr>::const_reverse_iterator it = cachedNodes.rbegin(); it != cachedNodes.rend() && i < 5; ++it, ++i)
     context.informationCallback(T("Best cached: ") + it->second->toShortString() + T(" [") + String(it->first / 1000000.0) + T(" M]"));
   i = 0;
-  for (std::multimap<double, LuapeNodePtr>::const_iterator it = cachedNodes.begin(); it != cachedNodes.end() && i < 5; ++it, ++i)
+  for (std::multimap<double, ExpressionPtr>::const_iterator it = cachedNodes.begin(); it != cachedNodes.end() && i < 5; ++it, ++i)
     context.informationCallback(T("Worst cached: ") + it->second->toShortString() + T(" [") + String(it->first / 1000000.0) + T(" M]"));
   i = 0;
 
-  for (std::multimap<double, LuapeNodePtr>::const_reverse_iterator it = uncachedNodes.rbegin(); it != uncachedNodes.rend() && i < 5; ++it, ++i)
+  for (std::multimap<double, ExpressionPtr>::const_reverse_iterator it = uncachedNodes.rbegin(); it != uncachedNodes.rend() && i < 5; ++it, ++i)
     context.informationCallback(T("Best uncached: ") + it->second->toShortString() + T(" [") + String(it->first / 1000000.0) + T(" M]"));
   i = 0;
-  for (std::multimap<double, LuapeNodePtr>::const_iterator it = uncachedNodes.begin(); it != uncachedNodes.end() && i < 5; ++it, ++i)
+  for (std::multimap<double, ExpressionPtr>::const_iterator it = uncachedNodes.begin(); it != uncachedNodes.end() && i < 5; ++it, ++i)
     context.informationCallback(T("Worst uncached: ") + it->second->toShortString() + T(" [") + String(it->first / 1000000.0) + T(" M]"));
 #endif // JUCE_MAC
 }

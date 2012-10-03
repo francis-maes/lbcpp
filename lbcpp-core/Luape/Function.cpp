@@ -8,11 +8,11 @@
 
 #include "precompiled.h"
 #include <lbcpp/Luape/Function.h>
-#include <lbcpp/Luape/LuapeNode.h>
+#include <lbcpp/Luape/Expression.h>
 #include <lbcpp/Luape/LuapeCache.h>
 using namespace lbcpp;
 
-String Function::makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+String Function::makeNodeName(const std::vector<ExpressionPtr>& inputs) const
 {
   ClassPtr thisClass = getClass();
   String res = (thisClass->getShortName().isNotEmpty() ? thisClass->getShortName() : thisClass->getName()) + T("(");
@@ -49,7 +49,7 @@ LuapeSampleVectorPtr Function::compute(ExecutionContext& context, const std::vec
   return new LuapeSampleVector(inputs[0]->getIndices(), res);
 }
 
-bool Function::acceptInputsStack(const std::vector<LuapeNodePtr>& stack) const
+bool Function::acceptInputsStack(const std::vector<ExpressionPtr>& stack) const
 {
   size_t n = getNumInputs();
   if (n > stack.size())
@@ -65,10 +65,10 @@ bool Function::acceptInputsStack(const std::vector<LuapeNodePtr>& stack) const
   {
     if (hasFlags(commutativeFlag))
     {
-      LuapeNodePtr node = stack[stackFirstIndex];
+      ExpressionPtr node = stack[stackFirstIndex];
       for (size_t i = 1; i < n; ++i)
       {
-        LuapeNodePtr newNode = stack[stackFirstIndex + i];
+        ExpressionPtr newNode = stack[stackFirstIndex + i];
         if (newNode->getAllocationIndex() < node->getAllocationIndex())
           return false;
         node = newNode;

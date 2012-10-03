@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuapeNode.cpp                  | Luape Graph Node                |
+| Filename: Expression.cpp                 | Expression classes              |
 | Author  : Francis Maes                   |                                 |
 | Started : 18/11/2011 15:11               |                                 |
 `------------------------------------------/                                 |
@@ -7,29 +7,29 @@
                                `--------------------------------------------*/
 
 #include "precompiled.h"
-#include <lbcpp/Luape/LuapeNode.h>
+#include <lbcpp/Luape/Expression.h>
 #include <lbcpp/Luape/LuapeCache.h>
 #include <algorithm>
 using namespace lbcpp;
 
 /*
-** LuapeNode
+** Expression
 */
-static size_t makeLuapeNodeAllocationIndex()
+static size_t makeExpressionAllocationIndex()
 {
   static size_t res = 0;
   return res++; // warning: not safe for multi-threading ...
 }
 
-LuapeNode::LuapeNode(const TypePtr& type)
-  : type(type), allocationIndex(makeLuapeNodeAllocationIndex()), importance(0.0)
+Expression::Expression(const TypePtr& type)
+  : type(type), allocationIndex(makeExpressionAllocationIndex()), importance(0.0)
 {
 }
 
-Variable LuapeNode::compute(ExecutionContext& context) const
+Variable Expression::compute(ExecutionContext& context) const
     {return compute(context, new LuapeInstanceCache());}
 
-void LuapeNode::addImportance(double delta)
+void Expression::addImportance(double delta)
 {
   jassert(isNumberValid(delta));
   importance += delta;
@@ -38,12 +38,12 @@ void LuapeNode::addImportance(double delta)
     getSubNode(i)->addImportance(delta);
 }
 
-size_t LuapeNode::getDepth() const
+size_t Expression::getDepth() const
 {
   size_t res = 0;
   for (size_t i = 0; i < getNumSubNodes(); ++i)
   {
-    LuapeNodePtr subNode = getSubNode(i);
+    ExpressionPtr subNode = getSubNode(i);
     if (subNode)
     {
       size_t d = subNode->getDepth();
@@ -54,12 +54,12 @@ size_t LuapeNode::getDepth() const
   return res + 1;
 }
 
-size_t LuapeNode::getTreeSize() const
+size_t Expression::getTreeSize() const
 {
   size_t res = 1;
   for (size_t i = 0; i < getNumSubNodes(); ++i)
   {
-    LuapeNodePtr subNode = getSubNode(i);
+    ExpressionPtr subNode = getSubNode(i);
     if (subNode)
       res += subNode->getTreeSize();
   }
@@ -67,65 +67,65 @@ size_t LuapeNode::getTreeSize() const
 }
 
 /*
-** LuapeInputNode
+** VariableExpression
 */
-LuapeInputNode::LuapeInputNode(const TypePtr& type, const String& name, size_t inputIndex)
-  : LuapeNode(type), name(name), inputIndex(inputIndex)
+VariableExpression::VariableExpression(const TypePtr& type, const String& name, size_t inputIndex)
+  : Expression(type), name(name), inputIndex(inputIndex)
 {
 }
 
-LuapeInputNode::LuapeInputNode() : inputIndex(0)
+VariableExpression::VariableExpression() : inputIndex(0)
 {
 }
 
-String LuapeInputNode::toShortString() const
+String VariableExpression::toShortString() const
   {return name;}
 
-Variable LuapeInputNode::compute(ExecutionContext& context, const Variable* inputs) const
+Variable VariableExpression::compute(ExecutionContext& context, const Variable* inputs) const
   {return inputs[inputIndex];}
 
-Variable LuapeInputNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
+Variable VariableExpression::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
 {
   jassert(false); // the value should already have been cached
   return Variable();
 }
 
-LuapeSampleVectorPtr LuapeInputNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
+LuapeSampleVectorPtr VariableExpression::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
 {
   jassert(false); // the value should already have been cached
   return LuapeSampleVectorPtr();
 }
 
 /*
-** LuapeConstantNode
+** ConstantExpression
 */
-LuapeConstantNode::LuapeConstantNode(const Variable& value)
-  : LuapeNode(value.getType()), value(value)
+ConstantExpression::ConstantExpression(const Variable& value)
+  : Expression(value.getType()), value(value)
 {
 }
 
-String LuapeConstantNode::toShortString() const
+String ConstantExpression::toShortString() const
   {return value.toShortString();}
 
-Variable LuapeConstantNode::compute(ExecutionContext& context, const Variable* inputs) const
+Variable ConstantExpression::compute(ExecutionContext& context, const Variable* inputs) const
   {return value;}
 
-Variable LuapeConstantNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
+Variable ConstantExpression::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
   {return value;}
 
-LuapeSampleVectorPtr LuapeConstantNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
+LuapeSampleVectorPtr ConstantExpression::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
   {return LuapeSampleVector::createConstant(indices, value);}
 
 /*
-** LuapeFunctionNode
+** FunctionExpression
 */
-LuapeFunctionNode::LuapeFunctionNode(const FunctionPtr& function, const std::vector<LuapeNodePtr>& arguments)
+FunctionExpression::FunctionExpression(const FunctionPtr& function, const std::vector<ExpressionPtr>& arguments)
   : function(function), arguments(arguments)
 {
   initialize();
 }
 
-LuapeFunctionNode::LuapeFunctionNode(const FunctionPtr& function, const LuapeNodePtr& argument1, const LuapeNodePtr& argument2)
+FunctionExpression::FunctionExpression(const FunctionPtr& function, const ExpressionPtr& argument1, const ExpressionPtr& argument2)
   : function(function), arguments(2)
 {
   arguments[0] = argument1;
@@ -133,16 +133,16 @@ LuapeFunctionNode::LuapeFunctionNode(const FunctionPtr& function, const LuapeNod
   initialize();
 }
 
-LuapeFunctionNode::LuapeFunctionNode(const FunctionPtr& function, const LuapeNodePtr& argument)
+FunctionExpression::FunctionExpression(const FunctionPtr& function, const ExpressionPtr& argument)
   : function(function), arguments(1, argument)
 {
   initialize();
 }
 
-String LuapeFunctionNode::toShortString() const
+String FunctionExpression::toShortString() const
   {return function->makeNodeName(arguments);}
 
-void LuapeFunctionNode::initialize()
+void FunctionExpression::initialize()
 {
   size_t numInputs = function->getNumInputs();
   jassert(arguments.size() == numInputs);
@@ -158,7 +158,7 @@ void LuapeFunctionNode::initialize()
   delete [] inputTypes;
 }
 
-Variable LuapeFunctionNode::compute(ExecutionContext& context, const Variable* inputs) const
+Variable FunctionExpression::compute(ExecutionContext& context, const Variable* inputs) const
 {
   size_t n = arguments.size();
   if (n == 0)
@@ -184,7 +184,7 @@ Variable LuapeFunctionNode::compute(ExecutionContext& context, const Variable* i
   }
 }
 
-Variable LuapeFunctionNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
+Variable FunctionExpression::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
 {
   std::vector<Variable> inputValues(arguments.size());
   for (size_t i = 0; i < arguments.size(); ++i)
@@ -192,7 +192,7 @@ Variable LuapeFunctionNode::compute(ExecutionContext& context, const LuapeInstan
   return function->compute(context, &inputValues[0]);
 }
 
-LuapeSampleVectorPtr LuapeFunctionNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
+LuapeSampleVectorPtr FunctionExpression::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
 {
   std::vector<LuapeSampleVectorPtr> inputs(arguments.size());
   for (size_t i = 0; i < inputs.size(); ++i)
@@ -206,22 +206,22 @@ LuapeSampleVectorPtr LuapeFunctionNode::compute(ExecutionContext& context, const
 }
 
 /*
-** LuapeTestNode
+** TestExpression
 */
-LuapeTestNode::LuapeTestNode(const LuapeNodePtr& conditionNode, const LuapeNodePtr& failureNode, const LuapeNodePtr& successNode, const LuapeNodePtr& missingNode)
-  : LuapeNode(successNode->getType()), conditionNode(conditionNode), failureNode(failureNode), successNode(successNode), missingNode(missingNode)
+TestExpression::TestExpression(const ExpressionPtr& conditionNode, const ExpressionPtr& failureNode, const ExpressionPtr& successNode, const ExpressionPtr& missingNode)
+  : Expression(successNode->getType()), conditionNode(conditionNode), failureNode(failureNode), successNode(successNode), missingNode(missingNode)
 {
 }
 
-LuapeTestNode::LuapeTestNode(const LuapeNodePtr& conditionNode, TypePtr outputType)
-  : LuapeNode(outputType), conditionNode(conditionNode)
+TestExpression::TestExpression(const ExpressionPtr& conditionNode, TypePtr outputType)
+  : Expression(outputType), conditionNode(conditionNode)
 {
 }
 
-size_t LuapeTestNode::getNumSubNodes() const
+size_t TestExpression::getNumSubNodes() const
   {return 4;}
   
-const LuapeNodePtr& LuapeTestNode::getSubNode(size_t index) const
+const ExpressionPtr& TestExpression::getSubNode(size_t index) const
 {
   switch (index)
   {
@@ -234,31 +234,31 @@ const LuapeNodePtr& LuapeTestNode::getSubNode(size_t index) const
   return conditionNode;
 }
 
-String LuapeTestNode::toShortString() const
+String TestExpression::toShortString() const
 {
   String res = "(" + conditionNode->toShortString() + " ? " + 
     (successNode ? successNode->toShortString() : T("NULL")) + T(" : ") + 
     (failureNode ? failureNode->toShortString() : T("NULL"));
-  if (missingNode && missingNode.isInstanceOf<LuapeConstantNode>() && missingNode.staticCast<LuapeConstantNode>()->getValue().exists())
+  if (missingNode && missingNode.isInstanceOf<ConstantExpression>() && missingNode.staticCast<ConstantExpression>()->getValue().exists())
     res += T(" : ") + missingNode->toShortString();
   return res + T(")");
 }
 
-Variable LuapeTestNode::compute(ExecutionContext& context, const Variable* inputs) const
+Variable TestExpression::compute(ExecutionContext& context, const Variable* inputs) const
 {
   Variable condition = conditionNode->compute(context, inputs);
-  LuapeNodePtr subNode = (condition.isMissingValue() ? missingNode : (condition.getBoolean() ? successNode : failureNode));
+  ExpressionPtr subNode = (condition.isMissingValue() ? missingNode : (condition.getBoolean() ? successNode : failureNode));
   return subNode ? subNode->compute(context, inputs) : Variable::missingValue(type);
 }
 
-Variable LuapeTestNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
+Variable TestExpression::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
 {
   Variable condition = conditionNode->compute(context, cache);
-  LuapeNodePtr subNode = (condition.isMissingValue() ? missingNode : (condition.getBoolean() ? successNode : failureNode));
+  ExpressionPtr subNode = (condition.isMissingValue() ? missingNode : (condition.getBoolean() ? successNode : failureNode));
   return subNode ? subNode->compute(context, cache) : Variable::missingValue(type);
 }
 
-void LuapeTestNode::dispatchIndices(const LuapeSampleVectorPtr& conditionValues, IndexSetPtr& failureIndices, IndexSetPtr& successIndices, IndexSetPtr& missingIndices)
+void TestExpression::dispatchIndices(const LuapeSampleVectorPtr& conditionValues, IndexSetPtr& failureIndices, IndexSetPtr& successIndices, IndexSetPtr& missingIndices)
 {
   failureIndices = new IndexSet();
   failureIndices->reserve(conditionValues->size() / 4);
@@ -277,7 +277,7 @@ void LuapeTestNode::dispatchIndices(const LuapeSampleVectorPtr& conditionValues,
   }
 }
 
-LuapeSampleVectorPtr LuapeTestNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
+LuapeSampleVectorPtr TestExpression::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
 {
   jassert(indices->size());
   LuapeSampleVectorPtr conditions = cache->getSamples(context, conditionNode, indices);
@@ -286,12 +286,12 @@ LuapeSampleVectorPtr LuapeTestNode::compute(ExecutionContext& context, const Lua
   double startTime;
   VectorPtr resultVector;
 
-  if (successNode.isInstanceOf<LuapeConstantNode>() && failureNode.isInstanceOf<LuapeConstantNode>() && missingNode.isInstanceOf<LuapeConstantNode>())
+  if (successNode.isInstanceOf<ConstantExpression>() && failureNode.isInstanceOf<ConstantExpression>() && missingNode.isInstanceOf<ConstantExpression>())
   {
     Variable v[3];
-    v[0] = failureNode.staticCast<LuapeConstantNode>()->getValue();
-    v[1] = successNode.staticCast<LuapeConstantNode>()->getValue();
-    v[2] = missingNode.staticCast<LuapeConstantNode>()->getValue();
+    v[0] = failureNode.staticCast<ConstantExpression>()->getValue();
+    v[1] = successNode.staticCast<ConstantExpression>()->getValue();
+    v[2] = missingNode.staticCast<ConstantExpression>()->getValue();
     startTime = Time::getMillisecondCounterHiRes();
 
     if (v[0].isDouble() && v[1].isDouble() && v[2].isDouble())
@@ -393,18 +393,18 @@ LuapeSampleVectorPtr LuapeTestNode::compute(ExecutionContext& context, const Lua
   return new LuapeSampleVector(indices, resultVector);
 }
 
-LuapeSampleVectorPtr LuapeTestNode::getSubSamples(ExecutionContext& context, const LuapeNodePtr& subNode, const LuapeSamplesCachePtr& cache, const IndexSetPtr& subIndices) const
+LuapeSampleVectorPtr TestExpression::getSubSamples(ExecutionContext& context, const ExpressionPtr& subNode, const LuapeSamplesCachePtr& cache, const IndexSetPtr& subIndices) const
   {return subNode ? cache->getSamples(context, subNode, subIndices) : LuapeSampleVector::createConstant(subIndices, Variable::missingValue(type));}
 
 /*
-** LuapeSequenceNode
+** SequenceExpression
 */
-LuapeSequenceNode::LuapeSequenceNode(TypePtr type, const std::vector<LuapeNodePtr>& nodes)
-  : LuapeNode(type), nodes(nodes)
+SequenceExpression::SequenceExpression(TypePtr type, const std::vector<ExpressionPtr>& nodes)
+  : Expression(type), nodes(nodes)
 {
 }
 
-String LuapeSequenceNode::toShortString() const
+String SequenceExpression::toShortString() const
 {
   String res = getClass()->getShortName() + "\n";
   for (size_t i = 0; i < nodes.size(); ++i)
@@ -412,7 +412,7 @@ String LuapeSequenceNode::toShortString() const
   return res;
 }
 
-LuapeSampleVectorPtr LuapeSequenceNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
+LuapeSampleVectorPtr SequenceExpression::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
 {
   std::vector<LuapeSampleVectorPtr> nodeValues(nodes.size());
   for (size_t i = 0; i < nodeValues.size(); ++i)
@@ -428,7 +428,7 @@ LuapeSampleVectorPtr LuapeSequenceNode::compute(ExecutionContext& context, const
   return new LuapeSampleVector(indices, outputs);
 }
 
-void LuapeSequenceNode::pushNode(ExecutionContext& context, const LuapeNodePtr& node, const std::vector<LuapeSamplesCachePtr>& cachesToUpdate)
+void SequenceExpression::pushNode(ExecutionContext& context, const ExpressionPtr& node, const std::vector<LuapeSamplesCachePtr>& cachesToUpdate)
 {
   size_t index = nodes.size();
   jassert(node);
@@ -446,20 +446,20 @@ void LuapeSequenceNode::pushNode(ExecutionContext& context, const LuapeNodePtr& 
 }
 
 /*
-** LuapeScalarSumNode
+** ScalarSumExpression
 */
-LuapeScalarSumNode::LuapeScalarSumNode(const std::vector<LuapeNodePtr>& nodes, bool convertToProbabilities, bool computeAverage)
-  : LuapeSequenceNode(convertToProbabilities ? probabilityType : doubleType, nodes),
+ScalarSumExpression::ScalarSumExpression(const std::vector<ExpressionPtr>& nodes, bool convertToProbabilities, bool computeAverage)
+  : SequenceExpression(convertToProbabilities ? probabilityType : doubleType, nodes),
   convertToProbabilities(convertToProbabilities), computeAverage(computeAverage)
 {
 }
 
-LuapeScalarSumNode::LuapeScalarSumNode(bool convertToProbabilities, bool computeAverage) 
-  : LuapeSequenceNode(convertToProbabilities ? probabilityType : doubleType), convertToProbabilities(convertToProbabilities), computeAverage(computeAverage)
+ScalarSumExpression::ScalarSumExpression(bool convertToProbabilities, bool computeAverage) 
+  : SequenceExpression(convertToProbabilities ? probabilityType : doubleType), convertToProbabilities(convertToProbabilities), computeAverage(computeAverage)
 {
 }
 
-Variable LuapeScalarSumNode::compute(ExecutionContext& context, const Variable* inputs) const
+Variable ScalarSumExpression::compute(ExecutionContext& context, const Variable* inputs) const
 {
   double res = 0.0;
   for (size_t i = 0; i < nodes.size(); ++i)
@@ -469,7 +469,7 @@ Variable LuapeScalarSumNode::compute(ExecutionContext& context, const Variable* 
   return Variable(res, type);
 }
 
-Variable LuapeScalarSumNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
+Variable ScalarSumExpression::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
 {
   double res = 0.0;
   for (size_t i = 0; i < nodes.size(); ++i)
@@ -479,10 +479,10 @@ Variable LuapeScalarSumNode::compute(ExecutionContext& context, const LuapeInsta
   return Variable(res, type);
 }
 
-VectorPtr LuapeScalarSumNode::createEmptyOutputs(size_t numSamples) const
+VectorPtr ScalarSumExpression::createEmptyOutputs(size_t numSamples) const
   {return new DenseDoubleVector(positiveIntegerEnumerationEnumeration, type, numSamples, 0.0);}
 
-void LuapeScalarSumNode::updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const
+void ScalarSumExpression::updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const
 {
   const DenseDoubleVectorPtr& a = outputs.staticCast<DenseDoubleVector>();
   double* dest = a->getValuePointer(0);
@@ -499,14 +499,14 @@ void LuapeScalarSumNode::updateOutputs(const VectorPtr& outputs, const LuapeSamp
 }
 
 /*
-** LuapeVectorSumNode
+** VectorSumExpression
 */
-LuapeVectorSumNode::LuapeVectorSumNode(EnumerationPtr enumeration, bool convertToProbabilities) 
-  : LuapeSequenceNode(denseDoubleVectorClass(enumeration, doubleType)), convertToProbabilities(convertToProbabilities)
+VectorSumExpression::VectorSumExpression(EnumerationPtr enumeration, bool convertToProbabilities) 
+  : SequenceExpression(denseDoubleVectorClass(enumeration, doubleType)), convertToProbabilities(convertToProbabilities)
 {
 }
 
-Variable LuapeVectorSumNode::compute(ExecutionContext& context, const Variable* inputs) const
+Variable VectorSumExpression::compute(ExecutionContext& context, const Variable* inputs) const
 {
   ClassPtr doubleVectorClass = type;
   DenseDoubleVectorPtr res = new DenseDoubleVector(doubleVectorClass);
@@ -519,7 +519,7 @@ Variable LuapeVectorSumNode::compute(ExecutionContext& context, const Variable* 
   return convertToProbabilities ? convertToProbabilitiesUsingSigmoid(res) : res;
 }
 
-Variable LuapeVectorSumNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
+Variable VectorSumExpression::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
 {
   ClassPtr doubleVectorClass = type;
   DenseDoubleVectorPtr res = new DenseDoubleVector(doubleVectorClass);
@@ -532,9 +532,9 @@ Variable LuapeVectorSumNode::compute(ExecutionContext& context, const LuapeInsta
   return convertToProbabilities ? convertToProbabilitiesUsingSigmoid(res) : res;
 }
 
-LuapeSampleVectorPtr LuapeVectorSumNode::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
+LuapeSampleVectorPtr VectorSumExpression::compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const
 {
-  LuapeSampleVectorPtr res = LuapeSequenceNode::compute(context, cache, indices);
+  LuapeSampleVectorPtr res = SequenceExpression::compute(context, cache, indices);
   if (convertToProbabilities)
   {
     //jassert(false); // FIXME
@@ -544,7 +544,7 @@ LuapeSampleVectorPtr LuapeVectorSumNode::compute(ExecutionContext& context, cons
   return res;
 }
 
-VectorPtr LuapeVectorSumNode::createEmptyOutputs(size_t numSamples) const
+VectorPtr VectorSumExpression::createEmptyOutputs(size_t numSamples) const
 {
   ClassPtr doubleVectorClass = type;
   ObjectVectorPtr res = new ObjectVector(doubleVectorClass, numSamples);
@@ -553,7 +553,7 @@ VectorPtr LuapeVectorSumNode::createEmptyOutputs(size_t numSamples) const
   return res;
 }
  
-void LuapeVectorSumNode::updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const
+void VectorSumExpression::updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const
 {
   const ObjectVectorPtr& a = outputs.staticCast<ObjectVector>();
   jassert(newNodeValues->size() == a->getNumElements());
@@ -574,7 +574,7 @@ void LuapeVectorSumNode::updateOutputs(const VectorPtr& outputs, const LuapeSamp
   }
 }
 
-DenseDoubleVectorPtr LuapeVectorSumNode::convertToProbabilitiesUsingSigmoid(const DenseDoubleVectorPtr& activations) const
+DenseDoubleVectorPtr VectorSumExpression::convertToProbabilitiesUsingSigmoid(const DenseDoubleVectorPtr& activations) const
 {
   DenseDoubleVectorPtr probabilities = new DenseDoubleVector(DoubleVector::getElementsEnumeration(type), probabilityType);
   size_t n = activations->getNumElements();
@@ -591,15 +591,15 @@ DenseDoubleVectorPtr LuapeVectorSumNode::convertToProbabilitiesUsingSigmoid(cons
 }
 
 /*
-** LuapeCreateSparseVectorNode
+** CreateSparseVectorExpression
 */
-LuapeCreateSparseVectorNode::LuapeCreateSparseVectorNode(const std::vector<LuapeNodePtr>& nodes)
-  : LuapeSequenceNode(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType), nodes) {}
+CreateSparseVectorExpression::CreateSparseVectorExpression(const std::vector<ExpressionPtr>& nodes)
+  : SequenceExpression(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType), nodes) {}
 
-LuapeCreateSparseVectorNode::LuapeCreateSparseVectorNode()
-  : LuapeSequenceNode(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType)) {}
+CreateSparseVectorExpression::CreateSparseVectorExpression()
+  : SequenceExpression(sparseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType)) {}
 
-Variable LuapeCreateSparseVectorNode::compute(ExecutionContext& context, const Variable* inputs) const
+Variable CreateSparseVectorExpression::compute(ExecutionContext& context, const Variable* inputs) const
 {
   SparseDoubleVectorPtr res = new SparseDoubleVector((ClassPtr)getType());
   for (size_t i = 0; i < nodes.size(); ++i)
@@ -611,7 +611,7 @@ Variable LuapeCreateSparseVectorNode::compute(ExecutionContext& context, const V
   return res;
 }
 
-Variable LuapeCreateSparseVectorNode::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
+Variable CreateSparseVectorExpression::compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const
 {
   SparseDoubleVectorPtr res = new SparseDoubleVector((ClassPtr)getType());
   for (size_t i = 0; i < nodes.size(); ++i)
@@ -623,7 +623,7 @@ Variable LuapeCreateSparseVectorNode::compute(ExecutionContext& context, const L
   return res;
 }
 
-VectorPtr LuapeCreateSparseVectorNode::createEmptyOutputs(size_t numSamples) const
+VectorPtr CreateSparseVectorExpression::createEmptyOutputs(size_t numSamples) const
 {
   ClassPtr sparseVectorClass = type;
   ObjectVectorPtr res = new ObjectVector(sparseVectorClass, numSamples);
@@ -632,7 +632,7 @@ VectorPtr LuapeCreateSparseVectorNode::createEmptyOutputs(size_t numSamples) con
   return res;
 }
 
-void LuapeCreateSparseVectorNode::updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const
+void CreateSparseVectorExpression::updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const
 { 
   const ObjectVectorPtr& a = outputs.staticCast<ObjectVector>();
   jassert(newNodeValues->size() == a->getNumElements());

@@ -10,7 +10,7 @@
 # define LBCPP_ML_FUNCTION_SPECIAL_H_
 
 # include <lbcpp/Luape/Function.h>
-# include <lbcpp/Luape/LuapeNode.h>
+# include <lbcpp/Luape/Expression.h>
 # include <lbcpp/Luape/LuapeCache.h> // for LuapeSampleVector
 # include "DoubleFunctions.h"
 # include <algorithm>
@@ -36,7 +36,7 @@ public:
   virtual TypePtr initialize(const TypePtr* inputTypes)
     {return booleanType;}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return inputs[0]->toShortString() + " >= " + String(threshold);}
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
@@ -72,7 +72,7 @@ public:
     /*
     DenseDoubleVectorPtr res = new DenseDoubleVector(0, 0.0);
 
-    LuapeNodeCachePtr cache = inputs[0]->getCache();
+    ExpressionCachePtr cache = inputs[0]->getCache();
     jassert(cache->isConvertibleToDouble());
     
     const std::vector< std::pair<size_t, double> >& sortedDoubleValues = cache->getSortedDoubleValues();
@@ -124,7 +124,7 @@ public:
   virtual TypePtr initialize(const TypePtr* inputTypes)
     {return booleanType;}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return inputs[0]->toShortString() + T(" > ") + inputs[1]->toShortString();}
   
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
@@ -150,7 +150,7 @@ public:
   void initialize(const DenseDoubleVectorPtr& inputValues, size_t numPercentiles = 10)
     {computePercentiles(inputValues, numPercentiles, percentiles);}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "normalize(" + inputs[0]->toShortString() + ")";}
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const
