@@ -10,7 +10,7 @@
 # define LBCPP_ML_FUNCTION_ENUMERATION_H_
 
 # include <lbcpp/Luape/Function.h>
-# include <lbcpp/Luape/LuapeNode.h>
+# include <lbcpp/Luape/Expression.h>
 
 namespace lbcpp
 {
@@ -33,7 +33,7 @@ public:
   virtual TypePtr initialize(const TypePtr* inputTypes)
     {return booleanType;}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return inputs[0]->toShortString() + T(" == ") + Variable(value, enumeration).toShortString();}
   
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const

@@ -165,8 +165,8 @@ public:
     : WeightBoostingLearner(objective, weakLearner, maxIterations, treeDepth) {}
   AdaBoostMHLearner() {}
 
-  virtual LuapeNodePtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
-    {return new LuapeVectorSumNode(problem.staticCast<LuapeClassifier>()->getLabels(), true);}
+  virtual ExpressionPtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
+    {return new VectorSumExpression(problem.staticCast<LuapeClassifier>()->getLabels(), true);}
 
   virtual Variable negateVote(const Variable& vote) const
   {
@@ -220,7 +220,7 @@ public:
     return res;
   }
 
-  virtual void updateSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const
+  virtual void updateSampleWeights(ExecutionContext& context, const LuapeInferencePtr& problem, const ExpressionPtr& contribution, const DenseDoubleVectorPtr& weights, double& logLoss) const
   {
     LuapeSampleVectorPtr predictions = problem->getTrainingCache()->getSamples(context, contribution);
 

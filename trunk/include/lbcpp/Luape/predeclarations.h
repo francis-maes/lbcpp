@@ -14,26 +14,26 @@
 namespace lbcpp
 {
 
-class LuapeNode;
-typedef ReferenceCountedObjectPtr<LuapeNode> LuapeNodePtr;
+class Expression;
+typedef ReferenceCountedObjectPtr<Expression> ExpressionPtr;
 
-class LuapeInputNode;
-typedef ReferenceCountedObjectPtr<LuapeInputNode> LuapeInputNodePtr;
+class VariableExpression;
+typedef ReferenceCountedObjectPtr<VariableExpression> VariableExpressionPtr;
 
-class LuapeConstantNode;
-typedef ReferenceCountedObjectPtr<LuapeConstantNode> LuapeConstantNodePtr;
+class ConstantExpression;
+typedef ReferenceCountedObjectPtr<ConstantExpression> ConstantExpressionPtr;
 
-class LuapeFunctionNode;
-typedef ReferenceCountedObjectPtr<LuapeFunctionNode> LuapeFunctionNodePtr;
+class FunctionExpression;
+typedef ReferenceCountedObjectPtr<FunctionExpression> FunctionExpressionPtr;
 
-class LuapeTestNode;
-typedef ReferenceCountedObjectPtr<LuapeTestNode> LuapeTestNodePtr;
+class TestExpression;
+typedef ReferenceCountedObjectPtr<TestExpression> TestExpressionPtr;
 
-class LuapeVectorSumNode;
-typedef ReferenceCountedObjectPtr<LuapeVectorSumNode> LuapeVectorSumNodePtr;
+class VectorSumExpression;
+typedef ReferenceCountedObjectPtr<VectorSumExpression> VectorSumExpressionPtr;
 
-class LuapeCreateSparseVectorNode;
-typedef ReferenceCountedObjectPtr<LuapeCreateSparseVectorNode> LuapeCreateSparseVectorNodePtr;
+class CreateSparseVectorExpression;
+typedef ReferenceCountedObjectPtr<CreateSparseVectorExpression> CreateSparseVectorExpressionPtr;
 
 class LuapeSampleVector;
 typedef ReferenceCountedObjectPtr<LuapeSampleVector> LuapeSampleVectorPtr;

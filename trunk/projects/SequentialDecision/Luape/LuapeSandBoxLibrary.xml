@@ -144,15 +144,15 @@
   </class>
 
   <!-- Luape Node Search --> 
-  <class name="LuapeNodeSearchProblem" base="LuapeInference" abstract="yes"/>
+  <class name="ExpressionSearchProblem" base="LuapeInference" abstract="yes"/>
 
-  <class name="LuapeNodeEquivalenceClass" base="Object">
+  <class name="ExpressionEquivalenceClass" base="Object">
     <variable type="ObjectVector[LuapeRPNSequence]" name="elements"/>
-    <variable type="LuapeNode" name="representent"/>
+    <variable type="Expression" name="representent"/>
   </class>
 
   <class name="LuapeFormulaDiscoverySandBox" base="WorkUnit">
-    <variable type="LuapeNodeSearchProblem" name="problem"/>
+    <variable type="ExpressionSearchProblem" name="problem"/>
     <variable type="PositiveInteger" name="complexity"/>
     <variable type="Double" name="explorationCoefficient"/>
     <variable type="PositiveInteger" name="numIterations"/>
@@ -161,13 +161,13 @@
   </class>
   
   <!-- Luape Search Problem : Bandit Formula -->
-  <class name="LuapeBanditFormulaSearchProblem" base="LuapeNodeSearchProblem">
+  <class name="LuapeBanditFormulaSearchProblem" base="ExpressionSearchProblem">
     <variable type="BanditProblemSampler" name="problemSampler"/>
     <variable type="PositiveInteger" name="horizon"/>
   </class>
 
   <!-- Luape Search Problem : Learning Formula 1 (Iterative scheme for linear learning with dense continuous features) -->
-  <class name="LuapeLearningFormulaSearchProblem" base="LuapeNodeSearchProblem">
+  <class name="LuapeLearningFormulaSearchProblem" base="ExpressionSearchProblem">
     <variable type="File" name="dataFile"/>
     <variable type="PositiveInteger" name="maxExamples"/>
     <variable type="PositiveInteger" name="numTrainingExamples"/>
@@ -176,7 +176,7 @@
   <class name="LearningFormulaDiscoverySandBox" base="WorkUnit"/>
 
   <!-- Luape Search Problem : Learning Formula 2 (Search for the form of a binary classifier with dense continuous features) -->
-  <class name="BinaryClassificationFormulaSearchProblem" base="LuapeNodeSearchProblem" abstract="yes">
+  <class name="BinaryClassificationFormulaSearchProblem" base="ExpressionSearchProblem" abstract="yes">
     <variable type="File" name="dataFile"/>
     <variable type="PositiveInteger" name="numExamples"/>
   </class>

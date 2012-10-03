@@ -15,11 +15,11 @@ namespace lbcpp
 {
 
 #if 0
-class LuapeProductNode : public LuapeNode
+class LuapeProductNode : public Expression
 {
 public:
   LuapeProductNode(const String& name, size_t numBaseNodes)
-    : LuapeNode(booleanType, name), baseNodes(numBaseNodes) {}
+    : Expression(booleanType, name), baseNodes(numBaseNodes) {}
   LuapeProductNode() {}
 
   virtual Variable compute(ExecutionContext& context, const std::vector<Variable>& state, LuapeGraphCallbackPtr callback) const
@@ -50,7 +50,7 @@ public:
     String res(T("Product("));
     for (size_t i = 0; i < baseNodes.size(); ++i)
     {
-      LuapeNodePtr baseNode = baseNodes[i];
+      ExpressionPtr baseNode = baseNodes[i];
       if (baseNode)
         res += baseNode->toShortString();
       else
@@ -65,19 +65,19 @@ public:
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
   {
     target.staticCast<LuapeProductNode>()->baseNodes = baseNodes;
-    LuapeNode::clone(context, target);
+    Expression::clone(context, target);
   }
 
-  LuapeNodePtr getBaseNode(size_t index) const
+  ExpressionPtr getBaseNode(size_t index) const
     {jassert(index < baseNodes.size()); return baseNodes[index];}
 
-  void setBaseNode(size_t index, const LuapeNodePtr& node)
+  void setBaseNode(size_t index, const ExpressionPtr& node)
     {jassert(index < baseNodes.size()); baseNodes[index] = node;}
   
 protected:
-  std::vector<LuapeNodePtr> baseNodes;
+  std::vector<ExpressionPtr> baseNodes;
   
-  void computeCache(LuapeNodeCachePtr cache, bool isTrainingSamples)
+  void computeCache(ExpressionCachePtr cache, bool isTrainingSamples)
   {
     size_t n = baseNodes[0]->getCache()->getNumSamples(isTrainingSamples);
     jassert(n);
@@ -87,7 +87,7 @@ protected:
       bool result = true;
       for (size_t j = 0; j < baseNodes.size(); ++j)
       {
-        LuapeNodePtr baseNode = baseNodes[j];
+        ExpressionPtr baseNode = baseNodes[j];
         bool base = !baseNode || baseNode->getCache()->getSample(isTrainingSamples, i).getBoolean();
         result = (result == base);
       }
@@ -178,7 +178,7 @@ public:
     return res;
   }
   
-  virtual std::vector<LuapeNodePtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeInferencePtr& function,
+  virtual std::vector<ExpressionPtr> learn(ExecutionContext& context, const BoostingLuapeLearnerPtr& batchLearner, const LuapeInferencePtr& function,
                                           const ContainerPtr& supervisions, const DenseDoubleVectorPtr& weights) const
   {
     std::vector<BooleanVectorPtr> predictions(numBaseClassifiers, createInitialPredictions(function));
@@ -200,18 +200,18 @@ public:
       
       // compute base learner
       ContainerPtr virtualSupervisions = computeVirtualSupervision(voteProduct, predictionsProduct, votes[index], predictions[index], supervisions);
-      std::vector<LuapeNodePtr> weak = baseLearner->learn(context, batchLearner, function, virtualSupervisions, weights);
+      std::vector<ExpressionPtr> weak = baseLearner->learn(context, batchLearner, function, virtualSupervisions, weights);
       jassert(weak.size() == 1);
       context.resultCallback("baseNode", weak[0]);
       
       // update predictions
       //weak[0]->initialize(context, function->getGraph()->getCache());
-      LuapeNodeCachePtr weakCache = weak[0]->getCache();
+      ExpressionCachePtr weakCache = weak[0]->getCache();
       predictions[index] = weakCache->getTrainingSamples().staticCast<BooleanVector>();
       predictionsProduct = computePredictionsProduct(predictions);
       
       // update votes
-      LuapeNodePtr baseNodeBackup = res->getBaseNode(index);
+      ExpressionPtr baseNodeBackup = res->getBaseNode(index);
       res->setBaseNode(index, weak[0]);
       LearningObjectivePtr edgeCalculator = batchLearner->createWeakObjective(problem);
       edgeCalculator->initialize(function, predictions[index], virtualSupervisions, weights);
@@ -239,7 +239,7 @@ public:
       }
     }
   
-    return std::vector<LuapeNodePtr>(1, res);
+    return std::vector<ExpressionPtr>(1, res);
   }
 
 protected:

@@ -18,14 +18,14 @@ namespace lbcpp
 class ExpressionDomain : public MOODomain
 {
 public:
-  ExpressionDomain(LuapeUniversePtr universe, size_t maxNumSymbols)
+  ExpressionDomain(ExpressionUniversePtr universe, size_t maxNumSymbols)
     : universe(universe), maxNumSymbols(maxNumSymbols)
   {
     if (!universe)
-      this->universe = new LuapeUniverse();
+      this->universe = new ExpressionUniverse();
   }
   
-  const LuapeUniversePtr& getUniverse() const
+  const ExpressionUniversePtr& getUniverse() const
     {return universe;}
 
   /*
@@ -34,19 +34,19 @@ public:
   size_t getNumInputs() const
     {return inputs.size();}
 
-  const LuapeInputNodePtr& getInput(size_t index) const
+  const VariableExpressionPtr& getInput(size_t index) const
     {jassert(index < inputs.size()); return inputs[index];}
   
-  const std::vector<LuapeInputNodePtr>& getInputs() const
+  const std::vector<VariableExpressionPtr>& getInputs() const
     {return inputs;}
 
   void addInput(const TypePtr& type, const String& name)
-    {size_t index = inputs.size(); inputs.push_back(new LuapeInputNode(type, name, index));}
+    {size_t index = inputs.size(); inputs.push_back(new VariableExpression(type, name, index));}
 
   /*
   ** Supervision variable
   */
-  LuapeInputNodePtr getSupervision() const
+  VariableExpressionPtr getSupervision() const
     {return supervision;}
 
   /*
@@ -67,11 +67,11 @@ public:
   size_t getNumConstants() const
     {return constants.size();}
 
-  const LuapeConstantNodePtr& getConstant(size_t index) const
+  const ConstantExpressionPtr& getConstant(size_t index) const
     {jassert(index < constants.size()); return constants[index];}
 
   void addConstant(const Variable& value)
-    {constants.push_back(new LuapeConstantNode(value));}
+    {constants.push_back(new ConstantExpression(value));}
 
   /*
   ** Accepted target types
@@ -105,11 +105,11 @@ public:
   }
 
 protected:
-  LuapeUniversePtr universe;
+  ExpressionUniversePtr universe;
   size_t maxNumSymbols;
-  std::vector<LuapeInputNodePtr> inputs;
-  LuapeInputNodePtr supervision;
-  std::vector<LuapeConstantNodePtr> constants;
+  std::vector<VariableExpressionPtr> inputs;
+  VariableExpressionPtr supervision;
+  std::vector<ConstantExpressionPtr> constants;
   std::vector<LuapeFunctionPtr> functions;
   std::set<TypePtr> targetTypes;
   LuapeSamplesCachePtr trainingCache;

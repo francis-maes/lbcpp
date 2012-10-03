@@ -3,14 +3,14 @@
 <library name="Luape" directory="Luape">
 
   <import name="Function"/>
-  <import name="LuapeNodeBuilder"/>
+  <import name="ExpressionBuilder"/>
   <import name="LuapeLearner"/>
   
   <include file="lbcpp/Luape/Function.h"/>
-  <include file="lbcpp/Luape/LuapeNode.h"/>
+  <include file="lbcpp/Luape/Expression.h"/>
   <include file="lbcpp/Luape/LuapeInference.h"/>
   <include file="lbcpp/Luape/LuapeLearner.h"/>
-  <include file="lbcpp/Luape/LuapeNodeBuilder.h"/>
+  <include file="lbcpp/Luape/ExpressionBuilder.h"/>
     
   <!-- Luape Function -->
   <class name="Function" abstract="yes"/>
@@ -18,49 +18,49 @@
   <class name="HomogeneousBinaryFunction" base="Function" abstract="yes"/>
   
   <!-- Nodes -->
-  <class name="LuapeNode" base="Object" abstract="yes">
+  <class name="Expression" base="Object" abstract="yes">
     <variable type="Type" name="type"/>
     <!-- <variable type="PositiveInteger" name="allocationIndex"/> -->
   </class>
-  <class name="LuapeInputNode" base="LuapeNode">
+  <class name="VariableExpression" base="Expression">
     <variable type="String" name="name"/>
     <variable type="PositiveInteger" name="inputIndex"/>
   </class>
-  <class name="LuapeConstantNode" base="LuapeNode">
+  <class name="ConstantExpression" base="Expression">
     <variable type="Variable" name="value"/>
   </class>
-  <class name="LuapeFunctionNode" base="LuapeNode">
+  <class name="FunctionExpression" base="Expression">
     <variable type="Function" name="function"/>
-    <variable type="ObjectVector[LuapeNode]" name="arguments"/>
+    <variable type="ObjectVector[Expression]" name="arguments"/>
   </class>
-  <class name="LuapeSequenceNode" base="LuapeNode" abstract="yes">
-    <variable type="ObjectVector[LuapeNode]" name="nodes"/>
+  <class name="SequenceExpression" base="Expression" abstract="yes">
+    <variable type="ObjectVector[Expression]" name="nodes"/>
   </class>
-  <class name="LuapeScalarSumNode" base="LuapeSequenceNode">
+  <class name="ScalarSumExpression" base="SequenceExpression">
     <variable type="Boolean" name="convertToProbabilities"/>
     <variable type="Boolean" name="computeAverage"/>
   </class>
-  <class name="LuapeVectorSumNode" base="LuapeSequenceNode">
+  <class name="VectorSumExpression" base="SequenceExpression">
     <variable type="Boolean" name="convertToProbabilities"/>
   </class>
-  <class name="LuapeCreateSparseVectorNode" base="LuapeSequenceNode"/>
-  <class name="LuapeTestNode" base="LuapeNode">
-    <variable type="LuapeNode" name="conditionNode"/>
-    <variable type="LuapeNode" name="failureNode"/>
-    <variable type="LuapeNode" name="successNode"/>
-    <variable type="LuapeNode" name="missingNode"/>
+  <class name="CreateSparseVectorExpression" base="SequenceExpression"/>
+  <class name="TestExpression" base="Expression">
+    <variable type="Expression" name="conditionNode"/>
+    <variable type="Expression" name="failureNode"/>
+    <variable type="Expression" name="successNode"/>
+    <variable type="Expression" name="missingNode"/>
   </class>
 
   <!-- Cache -->
-  <class name="LuapeUniverse" base="Object"/>
+  <class name="ExpressionUniverse" base="Object"/>
 
 
   <!-- Inference -->
   <class name="LuapeInference" base="Object" abstract="yes">
-<!--    <variable type="LuapeUniverse" name="universe"/>
-    <variable type="ObjectVector[LuapeInputNode]" name="inputs"/>
+<!--    <variable type="ExpressionUniverse" name="universe"/>
+    <variable type="ObjectVector[VariableExpression]" name="inputs"/>
     <variable type="ObjectVector[Function]" name="functions"/>
-    <variable type="LuapeNode" name="node"/> --> <!--TODO: split LuapeInference from LuapeProblem-->
+    <variable type="Expression" name="node"/> --> <!--TODO: split LuapeInference from LuapeProblem-->
   </class>
   <class name="LuapeBinaryClassifier" base="LuapeInference">
     <constructor/>
@@ -80,8 +80,8 @@
     <variable type="ObjectVector[Object]" name="sequence"/>
   </class>
   
-  <class name="LuapeNodeBuilder" base="Object" abstract="yes"/>
-  <class name="StochasticNodeBuilder" base="LuapeNodeBuilder" abstract="yes">
+  <class name="ExpressionBuilder" base="Object" abstract="yes"/>
+  <class name="StochasticNodeBuilder" base="ExpressionBuilder" abstract="yes">
     <variable type="PositiveInteger" name="numNodes"/>
   </class>
   <class name="SequentialNodeBuilder" base="StochasticNodeBuilder" abstract="yes">
@@ -106,7 +106,7 @@
     <variable type="Boolean" name="verbose"/>
   </class>
   <class name="NodeBuilderBasedLearner" base="LuapeLearner" abstract="yes">
-    <variable type="LuapeNodeBuilder" name="nodeBuilder"/>
+    <variable type="ExpressionBuilder" name="nodeBuilder"/>
   </class>
   <class name="IterativeLearner" base="LuapeLearner" abstract="yes">
     <variable type="PositiveInteger" name="maxIterations"/>

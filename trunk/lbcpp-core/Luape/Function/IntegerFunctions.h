@@ -10,7 +10,7 @@
 # define LBCPP_ML_FUNCTION_INTEGER_H_
 
 # include <lbcpp/Luape/Function.h>
-# include <lbcpp/Luape/LuapeNode.h>
+# include <lbcpp/Luape/Expression.h>
 
 namespace lbcpp
 {
@@ -40,7 +40,7 @@ public:
   virtual String toShortString() const
     {return "+";}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " + " + inputs[1]->toShortString() + ")";}
 
   virtual int computeInteger(int first, int second) const
@@ -56,7 +56,7 @@ public:
   virtual String toShortString() const
     {return "-";}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " - " + inputs[1]->toShortString() + ")";}
 
   virtual int computeInteger(int first, int second) const
@@ -72,7 +72,7 @@ public:
   virtual String toShortString() const
     {return "*";}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " x " + inputs[1]->toShortString() + ")";}
 
   virtual int computeInteger(int first, int second) const
@@ -88,7 +88,7 @@ public:
   virtual String toShortString() const
     {return "/";}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "(" + inputs[0]->toShortString() + " / " + inputs[1]->toShortString() + ")";}
 
   virtual int computeInteger(int first, int second) const

@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuapeNodeBuilder.h             | Node Builder base classes       |
+| Filename: ExpressionBuilder.h             | Node Builder base classes       |
 | Author  : Francis Maes                   |                                 |
 | Started : 03/01/2012 17:28               |                                 |
 `------------------------------------------/                                 |
@@ -9,8 +9,8 @@
 #ifndef LBCPP_LUAPE_NODE_BUILDER_H_
 # define LBCPP_LUAPE_NODE_BUILDER_H_
 
-# include "LuapeNode.h"
-# include "LuapeUniverse.h"
+# include "Expression.h"
+# include "ExpressionUniverse.h"
 # include <lbcpp/DecisionProblem/Policy.h>
 
 namespace lbcpp
@@ -25,12 +25,12 @@ public:
   LuapeRPNSequence(const std::vector<ObjectPtr>& sequence);
   LuapeRPNSequence() {}
 
-  static LuapeRPNSequencePtr fromNode(const LuapeNodePtr& node);
-  LuapeNodePtr toNode(const LuapeUniversePtr& universe) const;
+  static LuapeRPNSequencePtr fromNode(const ExpressionPtr& node);
+  ExpressionPtr toNode(const ExpressionUniversePtr& universe) const;
 
-  static void apply(const LuapeUniversePtr& universe, std::vector<LuapeNodePtr>& stack, const ObjectPtr& element);
+  static void apply(const ExpressionUniversePtr& universe, std::vector<ExpressionPtr>& stack, const ObjectPtr& element);
 
-  void appendNode(const LuapeNodePtr& node);
+  void appendNode(const ExpressionPtr& node);
   void append(const ObjectPtr& action)
     {sequence.push_back(action);}
 
@@ -52,28 +52,28 @@ private:
   std::vector<ObjectPtr> sequence;
 };
 
-class LuapeNodeBuilder : public Object
+class ExpressionBuilder : public Object
 {
 public:
-  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<LuapeNodePtr>& res) = 0;
+  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<ExpressionPtr>& res) = 0;
 };
 
-typedef ReferenceCountedObjectPtr<LuapeNodeBuilder> LuapeNodeBuilderPtr;
+typedef ReferenceCountedObjectPtr<ExpressionBuilder> ExpressionBuilderPtr;
 
-extern LuapeNodeBuilderPtr inputsNodeBuilder();
-extern LuapeNodeBuilderPtr singletonNodeBuilder(const LuapeNodePtr& node);
-extern LuapeNodeBuilderPtr compositeNodeBuilder(const std::vector<LuapeNodeBuilderPtr>& builders);
-extern LuapeNodeBuilderPtr compositeNodeBuilder(LuapeNodeBuilderPtr builder1, LuapeNodeBuilderPtr builder2);
-extern LuapeNodeBuilderPtr exhaustiveSequentialNodeBuilder(size_t complexity);
+extern ExpressionBuilderPtr inputsNodeBuilder();
+extern ExpressionBuilderPtr singletonNodeBuilder(const ExpressionPtr& node);
+extern ExpressionBuilderPtr compositeNodeBuilder(const std::vector<ExpressionBuilderPtr>& builders);
+extern ExpressionBuilderPtr compositeNodeBuilder(ExpressionBuilderPtr builder1, ExpressionBuilderPtr builder2);
+extern ExpressionBuilderPtr exhaustiveSequentialNodeBuilder(size_t complexity);
 
-class StochasticNodeBuilder : public LuapeNodeBuilder
+class StochasticNodeBuilder : public ExpressionBuilder
 {
 public:
   StochasticNodeBuilder(size_t numNodes = 0);
 
-  virtual LuapeNodePtr sampleNode(ExecutionContext& context, const LuapeInferencePtr& function) = 0;
+  virtual ExpressionPtr sampleNode(ExecutionContext& context, const LuapeInferencePtr& function) = 0;
 
-  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<LuapeNodePtr>& res);
+  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<ExpressionPtr>& res);
 
 protected:
   friend class StochasticNodeBuilderClass;
@@ -97,7 +97,7 @@ public:
 
   virtual bool sampleAction(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeGraphBuilderTypeStatePtr typeState, ObjectPtr& res) const = 0;
 
-  virtual LuapeNodePtr sampleNode(ExecutionContext& context, const LuapeInferencePtr& problem);
+  virtual ExpressionPtr sampleNode(ExecutionContext& context, const LuapeInferencePtr& problem);
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
@@ -108,12 +108,12 @@ protected:
 
   size_t complexity;
 
-  LuapeUniversePtr universe;
+  ExpressionUniversePtr universe;
   LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
 
-  static bool isActionAvailable(ObjectPtr action, const std::vector<LuapeNodePtr>& stack);
-  LuapeGraphBuilderTypeStatePtr getTypeState(size_t stepNumber, const std::vector<LuapeNodePtr>& stack) const;
-  void executeAction(std::vector<LuapeNodePtr>& stack, const ObjectPtr& action) const;
+  static bool isActionAvailable(ObjectPtr action, const std::vector<ExpressionPtr>& stack);
+  LuapeGraphBuilderTypeStatePtr getTypeState(size_t stepNumber, const std::vector<ExpressionPtr>& stack) const;
+  void executeAction(std::vector<ExpressionPtr>& stack, const ObjectPtr& action) const;
 };
 
 

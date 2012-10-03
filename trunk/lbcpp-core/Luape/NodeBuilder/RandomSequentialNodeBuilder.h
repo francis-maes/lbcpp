@@ -10,7 +10,7 @@
 # define LBCPP_LUAPE_NODE_BUILDER_RANDOM_SEQUENTIAL_H_
 
 # include "NodeBuilderTypeSearchSpace.h"
-# include <lbcpp/Luape/LuapeNodeBuilder.h>
+# include <lbcpp/Luape/ExpressionBuilder.h>
 
 namespace lbcpp
 {
@@ -48,8 +48,8 @@ public:
         for (size_t trial = 0; trial < numTrials; ++trial)
         {
           size_t variableIndex = random->sampleSize(numVariables);
-          LuapeNodePtr variable = variableIndex < problem->getNumInputs()
-            ? (LuapeNodePtr)problem->getInput(variableIndex)
+          ExpressionPtr variable = variableIndex < problem->getNumInputs()
+            ? (ExpressionPtr)problem->getInput(variableIndex)
             : problem->getActiveVariable(variableIndex - problem->getNumInputs());
           if (typeState->hasPushAction(variable->getType()))
           {
@@ -86,18 +86,18 @@ public:
     : SequentialNodeBuilder(numNodes, complexity), initialImportance(initialImportance), counter((size_t)-1) {}
   BiasedRandomSequentialNodeBuilder() : counter((size_t)-1) {}
 
-  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<LuapeNodePtr>& res)
+  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
   {
     if (!function->getRootNode() || function->getRootNode()->getNumSubNodes() != counter)
     {
       if (function->getRootNode())
         counter = function->getRootNode()->getNumSubNodes();
 
-      std::map<LuapeNodePtr, double> importances;
+      std::map<ExpressionPtr, double> importances;
       for (size_t i = 0; i < function->getNumInputs(); ++i)
         importances[function->getInput(i)] = function->getInput(i)->getImportance();
       if (function->getRootNode())
-        LuapeUniverse::getImportances(function->getRootNode(), importances);
+        ExpressionUniverse::getImportances(function->getRootNode(), importances);
       else
         function->getUniverse()->getImportances(importances);
    
@@ -105,17 +105,17 @@ public:
       probabilities.resize(importances.size());
       nodes.resize(importances.size());
       size_t index = 0;
-      for (std::map<LuapeNodePtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it, ++index)
+      for (std::map<ExpressionPtr, double>::const_iterator it = importances.begin(); it != importances.end(); ++it, ++index)
       {
         double p = it->second;
-        if (it->first.isInstanceOf<LuapeInputNode>())
+        if (it->first.isInstanceOf<VariableExpression>())
           p += initialImportance;
         Z += p;
         probabilities[index] = p;
         nodes[index] = it->first;
       }
 
-      //LuapeUniverse::displayMostImportantNodes(context, importances);
+      //ExpressionUniverse::displayMostImportantNodes(context, importances);
     }
     
     SequentialNodeBuilder::buildNodes(context, function, maxCount, res);
@@ -146,7 +146,7 @@ public:
         for (size_t trial = 0; trial < numTrials; ++trial)
         {
           size_t nodeIndex = random->sampleWithProbabilities(this->probabilities, this->Z);
-          LuapeNodePtr node = this->nodes[nodeIndex];
+          ExpressionPtr node = this->nodes[nodeIndex];
           if (typeState->hasPushAction(node->getType()))
           {
             res = node;
@@ -182,7 +182,7 @@ protected:
 
   double Z;
   std::vector<double> probabilities;
-  std::vector<LuapeNodePtr> nodes;
+  std::vector<ExpressionPtr> nodes;
 };
 
 }; /* namespace lbcpp */

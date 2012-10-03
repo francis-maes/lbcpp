@@ -16,7 +16,7 @@
 namespace lbcpp
 {
 
-class BinaryClassificationFormulaSearchProblem : public LuapeNodeSearchProblem
+class BinaryClassificationFormulaSearchProblem : public ExpressionSearchProblem
 {
 public:
   BinaryClassificationFormulaSearchProblem(const File& dataFile = File())
@@ -118,7 +118,7 @@ public:
   virtual void getObjectiveRange(double& worst, double& best) const
     {worst = 0.0; best = 1.0;}
 
-  virtual double computeObjective(ExecutionContext& context, const LuapeNodePtr& node, size_t instanceIndex)
+  virtual double computeObjective(ExecutionContext& context, const ExpressionPtr& node, size_t instanceIndex)
   {
     // get train/test split
     Dataset& dataset = datasets[instanceIndex % datasets.size()];
@@ -161,7 +161,7 @@ public:
     return numCorrect / (double)numTestExamples;
   } 
 
-  bool useNode(const LuapeNodePtr& node, const LuapeNodePtr& subNode) const
+  bool useNode(const ExpressionPtr& node, const ExpressionPtr& subNode) const
   {
     if (node == subNode)
       return true;
@@ -172,7 +172,7 @@ public:
     return false;
   }
 
-  virtual BinaryKeyPtr makeBinaryKey(ExecutionContext& context, const LuapeNodePtr& node) const
+  virtual BinaryKeyPtr makeBinaryKey(ExecutionContext& context, const ExpressionPtr& node) const
   {
     if (!useNode(node, getInput(1)))
       return BinaryKeyPtr();
@@ -356,11 +356,11 @@ public:
     std::vector<Variable> v(2);
     v[0] = simpleContinuousFeatureInformationClass;
     v[1] = Variable(0, positiveIntegerType);
-    LuapeNodePtr all = universe->makeFunctionNode(universe->makeFunction(getVariableLuapeFunctionClass, v), getInput(0));
+    ExpressionPtr all = universe->makeFunctionNode(universe->makeFunction(getVariableLuapeFunctionClass, v), getInput(0));
     v[1] = Variable(1, positiveIntegerType);
-    LuapeNodePtr pos = universe->makeFunctionNode(universe->makeFunction(getVariableLuapeFunctionClass, v), getInput(0));
+    ExpressionPtr pos = universe->makeFunctionNode(universe->makeFunction(getVariableLuapeFunctionClass, v), getInput(0));
     v[1] = Variable(2, positiveIntegerType);
-    LuapeNodePtr neg = universe->makeFunctionNode(universe->makeFunction(getVariableLuapeFunctionClass, v), getInput(0));
+    ExpressionPtr neg = universe->makeFunctionNode(universe->makeFunction(getVariableLuapeFunctionClass, v), getInput(0));
 
     addActiveVariable(all);
     addActiveVariable(pos);
@@ -376,10 +376,10 @@ public:
     addFunction(new EmpiricalContinuousDistributionMedianFunction());
    
     v.clear();
-    LuapeNodePtr mu = universe->makeFunctionNode(universe->makeFunction(empiricalContinuousDistributionMeanFunctionClass, v), all);
-    LuapeNodePtr stddev = universe->makeFunctionNode(universe->makeFunction(empiricalContinuousDistributionStandardDeviationFunctionClass, v), all);
-    LuapeNodePtr muPos = universe->makeFunctionNode(universe->makeFunction(empiricalContinuousDistributionMeanFunctionClass, v), pos);
-    LuapeNodePtr muNeg = universe->makeFunctionNode(universe->makeFunction(empiricalContinuousDistributionMeanFunctionClass, v), neg);
+    ExpressionPtr mu = universe->makeFunctionNode(universe->makeFunction(empiricalContinuousDistributionMeanFunctionClass, v), all);
+    ExpressionPtr stddev = universe->makeFunctionNode(universe->makeFunction(empiricalContinuousDistributionStandardDeviationFunctionClass, v), all);
+    ExpressionPtr muPos = universe->makeFunctionNode(universe->makeFunction(empiricalContinuousDistributionMeanFunctionClass, v), pos);
+    ExpressionPtr muNeg = universe->makeFunctionNode(universe->makeFunction(empiricalContinuousDistributionMeanFunctionClass, v), neg);
 
     addActiveVariable(mu);
     addActiveVariable(muPos);
@@ -391,7 +391,7 @@ public:
     addActiveVariable(universe->makeFunctionNode(
       universe->makeFunction(subDoubleLuapeFunctionClass, std::vector<Variable>()),
       muPos, mu));  // i.muPos - i.mu
-    LuapeNodePtr fMinusMu = universe->makeFunctionNode(
+    ExpressionPtr fMinusMu = universe->makeFunctionNode(
       universe->makeFunction(subDoubleLuapeFunctionClass, std::vector<Variable>()),
       getInput(1), mu);
     addActiveVariable(fMinusMu); // f - i.mu

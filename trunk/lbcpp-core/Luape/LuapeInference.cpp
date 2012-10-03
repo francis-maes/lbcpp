@@ -15,11 +15,11 @@ using namespace lbcpp;
 /*
 ** LuapeInference
 */
-LuapeInference::LuapeInference(LuapeUniversePtr universe)
+LuapeInference::LuapeInference(ExpressionUniversePtr universe)
   : universe(universe)
 {
   if (!universe)
-    this->universe = new LuapeUniverse();
+    this->universe = new ExpressionUniverse();
 }
 
 Variable LuapeInference::computeFunction(ExecutionContext& context, const Variable* inputs) const
@@ -40,16 +40,16 @@ void LuapeInference::setLearner(const LuapeLearnerPtr& learner, bool verbose)
   //setBatchLearner(new LuapeBatchLearner(learner));
 }
 
-LuapeNodePtr LuapeInference::getActiveVariable(size_t index) const
+ExpressionPtr LuapeInference::getActiveVariable(size_t index) const
 {
   jassert(index < activeVariables.size());
-  std::set<LuapeNodePtr>::const_iterator it = activeVariables.begin();
+  std::set<ExpressionPtr>::const_iterator it = activeVariables.begin();
   for (size_t i = 0; i < index; ++i)
     ++it;
   return *it;
 }
 
-void LuapeInference::setRootNode(ExecutionContext& context, const LuapeNodePtr& node)
+void LuapeInference::setRootNode(ExecutionContext& context, const ExpressionPtr& node)
 {
   if (node != this->node)
   {
@@ -72,7 +72,7 @@ void LuapeInference::setRootNode(ExecutionContext& context, const LuapeNodePtr& 
 }
 
 void LuapeInference::clearRootNode(ExecutionContext& context)
-  {if (node) setRootNode(context, LuapeNodePtr());}
+  {if (node) setRootNode(context, ExpressionPtr());}
 
 bool LuapeInference::isTargetTypeAccepted(TypePtr type)
 {
@@ -111,11 +111,11 @@ LuapeGraphBuilderTypeSearchSpacePtr LuapeInference::createTypeSearchSpace(Execut
   return res;
 }
 
-static void enumerateExhaustively(ExecutionContext& context, LuapeNodeBuilderStatePtr state, std::vector<LuapeNodePtr>& res, bool verbose)
+static void enumerateExhaustively(ExecutionContext& context, ExpressionBuilderStatePtr state, std::vector<ExpressionPtr>& res, bool verbose)
 {
   if (state->isFinalState() && state->getStackSize() == 1)
   {
-    LuapeNodePtr node = state->getStackElement(0);
+    ExpressionPtr node = state->getStackElement(0);
     res.push_back(node);
     //if (verbose)
     //  context.informationCallback(node->toShortString());
@@ -136,7 +136,7 @@ static void enumerateExhaustively(ExecutionContext& context, LuapeNodeBuilderSta
   }
 }
 
-void LuapeInference::enumerateNodesExhaustively(ExecutionContext& context, size_t complexity, std::vector<LuapeNodePtr>& res, bool verbose, const LuapeRPNSequencePtr& subSequence) const
+void LuapeInference::enumerateNodesExhaustively(ExecutionContext& context, size_t complexity, std::vector<ExpressionPtr>& res, bool verbose, const LuapeRPNSequencePtr& subSequence) const
 {
   LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
   if (subSequence)
@@ -144,7 +144,7 @@ void LuapeInference::enumerateNodesExhaustively(ExecutionContext& context, size_
   else
     typeSearchSpace = getSearchSpace(context, complexity, verbose); // use cached version
 
-  LuapeNodeBuilderStatePtr state = new LuapeNodeBuilderState(refCountedPointerFromThis(this), typeSearchSpace, subSequence);
+  ExpressionBuilderStatePtr state = new ExpressionBuilderState(refCountedPointerFromThis(this), typeSearchSpace, subSequence);
   enumerateExhaustively(context, state, res, verbose);
 }
 
@@ -168,7 +168,7 @@ LuapeSamplesCachePtr LuapeInference::createSamplesCache(ExecutionContext& contex
 
 void LuapeInference::setSamples(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
 {
-  supervision = new LuapeInputNode(trainingData[0]->getVariableType(1), T("supervision"), inputs.size());
+  supervision = new VariableExpression(trainingData[0]->getVariableType(1), T("supervision"), inputs.size());
   trainingCache = createSamplesCache(context, trainingData);
   if (validationData.size())
     validationCache = createSamplesCache(context, validationData);
@@ -466,7 +466,7 @@ LuapeSamplesCachePtr LuapeRanker::createSamplesCache(ExecutionContext& context, 
 
 void LuapeRanker::setSamples(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
 {
-  supervision = new LuapeInputNode(trainingData[0]->getVariableType(1), T("supervision"), inputs.size());
+  supervision = new VariableExpression(trainingData[0]->getVariableType(1), T("supervision"), inputs.size());
   trainingCache = createSamplesCache(context, trainingData, trainingExampleSizes);
   trainingCache->cacheNode(context, node, VectorPtr(), "Prediction node", false);
   if (validationData.size())

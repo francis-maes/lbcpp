@@ -25,11 +25,11 @@ public:
 
   virtual double evaluate(ExecutionContext& context, DecisionProblemStatePtr finalState)
   {
-    LuapeNodeBuilderStatePtr builder = finalState.staticCast<LuapeNodeBuilderState>();
+    ExpressionBuilderStatePtr builder = finalState.staticCast<ExpressionBuilderState>();
     if (builder->getStackSize() != 1)
       return -DBL_MAX;
-    LuapeNodePtr node = builder->getStackElement(0);
-    std::map<LuapeNodePtr, double>::iterator it = cache.find(node);
+    ExpressionPtr node = builder->getStackElement(0);
+    std::map<ExpressionPtr, double>::iterator it = cache.find(node);
     if (it != cache.end())
     {
       ++numCachedEvaluations;
@@ -52,7 +52,7 @@ protected:
   size_t budget;
   size_t numEvaluations;
   size_t numCachedEvaluations;
-  std::map<LuapeNodePtr, double> cache;
+  std::map<ExpressionPtr, double> cache;
 };
 
 class MCOptimizer : public Optimizer

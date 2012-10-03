@@ -22,13 +22,13 @@ public:
     : optimizer(optimizer), complexity(complexity), useRandomSplit(useRandomSplit), totalNumCalls(0), totalNumUniqueCalls(0) {}
   OptimizerBasedSequentialWeakLearner() : complexity(0), totalNumCalls(0), totalNumUniqueCalls(0) {}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = problem->getSearchSpace(context, complexity, verbose);
     ObjectivePtr objective = new Objective(refCountedPointerFromThis(this), problem, examples, useRandomSplit);
     OptimizationProblemPtr optimizationProblem = new OptimizationProblem(objective);
     optimizationProblem->setMaximisationProblem(true);
-    optimizationProblem->setInitialState(new LuapeNodeBuilderState(problem, typeSearchSpace));
+    optimizationProblem->setInitialState(new ExpressionBuilderState(problem, typeSearchSpace));
 
     OptimizerStatePtr state = optimizer->optimize(context, optimizationProblem);
 
@@ -41,9 +41,9 @@ public:
     totalNumCalls += objective->getNumCalls();
     totalNumUniqueCalls += objective->getNumUniqueCalls();
 
-    LuapeNodeBuilderStatePtr finalState = state->getBestSolution().getObjectAndCast<LuapeNodeBuilderState>();
+    ExpressionBuilderStatePtr finalState = state->getBestSolution().getObjectAndCast<ExpressionBuilderState>();
     if (!finalState || finalState->getStackSize() != 1)
-      return LuapeNodePtr();
+      return ExpressionPtr();
 
     bestObjectiveValue = state->getBestScore();
     return finalState->getStackElement(0);
@@ -86,14 +86,14 @@ protected:
 
       ++pthis.numCalls;
 
-      const LuapeNodeBuilderStatePtr& builder = input.getObjectAndCast<LuapeNodeBuilderState>();
+      const ExpressionBuilderStatePtr& builder = input.getObjectAndCast<ExpressionBuilderState>();
       if (builder->getStackSize() != 1)
       {
         ++pthis.numInvalidCalls;
         return -DBL_MAX;
       }
 
-      LuapeNodePtr node = builder->getStackElement(0);
+      ExpressionPtr node = builder->getStackElement(0);
       CacheMap::const_iterator it = cache.find(node);
       double res;
       if (it != cache.end())
@@ -129,14 +129,14 @@ protected:
     IndexSetPtr examples;
     bool useRandomSplit;
 
-    typedef std::map<LuapeNodePtr, std::pair<LuapeNodePtr, double> > CacheMap;
+    typedef std::map<ExpressionPtr, std::pair<ExpressionPtr, double> > CacheMap;
     CacheMap cache; // node -> (booleanized node, score)
 
     size_t numCalls;
     size_t numInvalidCalls;
     size_t numUniqueCalls;
     
-    LuapeNodePtr makeRandomSplit(ExecutionContext& context, LuapeNodePtr node) const
+    ExpressionPtr makeRandomSplit(ExecutionContext& context, ExpressionPtr node) const
     {
       LuapeSampleVectorPtr samples = problem->getTrainingCache()->getSamples(context, node, examples);
       double minimumValue = DBL_MAX;
@@ -153,7 +153,7 @@ protected:
       
       double threshold = context.getRandomGenerator()->sampleDouble(minimumValue, maximumValue);
       //context.informationCallback(T("min = ") + String(minimumValue) + T(" max = ") + String(maximumValue) + T(" threshold = ") + String(threshold));
-      return new LuapeFunctionNode(stumpFunction(threshold), node);
+      return new FunctionExpression(stumpFunction(threshold), node);
     }
   };
 

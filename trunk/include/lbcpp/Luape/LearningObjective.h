@@ -31,16 +31,16 @@ public:
   virtual void flipPrediction(size_t index) = 0; // flip from negative prediction to positive prediction
   virtual double computeObjective() = 0;
 
-  // LuapeFunctionNodePtr computeBestStump(const IndexSetPtr& indices, const LuapeNodePtr& numberNode, double& score) (== findBestThreshold)
-  // LuapeConstantNodePtr computeBestConstant(const IndexSetPtr& indices, double& score)  (== computeVote)
+  // FunctionExpressionPtr computeBestStump(const IndexSetPtr& indices, const ExpressionPtr& numberNode, double& score) (== findBestThreshold)
+  // ConstantExpressionPtr computeBestConstant(const IndexSetPtr& indices, double& score)  (== computeVote)
 
   virtual Variable computeVote(const IndexSetPtr& indices) = 0;
 
   // these three functions have side effects on the currently stored predictions
   double compute(const LuapeSampleVectorPtr& predictions);
 
-  double computeObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeNodePtr& weakNode, const IndexSetPtr& examples);
-  double findBestThreshold(ExecutionContext& context, const LuapeNodePtr& numberNode, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose = false);
+  double computeObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, ExpressionPtr& weakNode, const IndexSetPtr& examples);
+  double findBestThreshold(ExecutionContext& context, const ExpressionPtr& numberNode, const IndexSetPtr& indices, const SparseDoubleVectorPtr& sortedDoubleValues, double& bestScore, bool verbose = false);
 
   void ensureIsUpToDate();
   void invalidate()

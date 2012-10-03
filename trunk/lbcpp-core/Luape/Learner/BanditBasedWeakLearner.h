@@ -19,17 +19,17 @@ namespace lbcpp
 class BanditBasedWeakLearner : public NodeBuilderBasedLearner
 {
 public:
-  BanditBasedWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize)
+  BanditBasedWeakLearner(ExpressionBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize)
     : NodeBuilderBasedLearner(nodeBuilder), relativeBudget(relativeBudget), miniBatchRelativeSize(miniBatchRelativeSize)  {}
   BanditBasedWeakLearner() {}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     // make initial weak learners
-    std::vector<LuapeNodePtr> weakNodes;
+    std::vector<ExpressionPtr> weakNodes;
     nodeBuilder->buildNodes(context, problem, 0, weakNodes);
     if (!weakNodes.size())
-      return LuapeNodePtr();
+      return ExpressionPtr();
 
     // reset current-episode information
     BanditsQueue banditsQueue;
@@ -58,7 +58,7 @@ public:
       banditsQueue.pop();
 
       // retrieve arm info and evaluate weak node
-      LuapeNodePtr weakNode = weakNodes[armIndex];
+      ExpressionPtr weakNode = weakNodes[armIndex];
       ArmInfo& arm = arms[weakNode];
       size_t subsetIndex = (size_t)arm.episodeStats.getCount();
       IndexSetPtr subset = getSubset(context, examples, subsetIndex, miniBatchSize, subsets);
@@ -75,12 +75,12 @@ public:
     }
 
     // finalize
-    LuapeNodePtr bestWeakNode;
+    ExpressionPtr bestWeakNode;
     double bestWeakObjective = -DBL_MAX;
-    std::multimap<double, LuapeNodePtr> sortedNodes;
+    std::multimap<double, ExpressionPtr> sortedNodes;
     for (size_t i = 0; i < weakNodes.size(); ++i)
     {
-      const LuapeNodePtr& weakNode = weakNodes[i];
+      const ExpressionPtr& weakNode = weakNodes[i];
       ArmInfo& arm = arms[weakNodes[i]];
       double empiricalWeakObjective = arm.episodeStats.getMean();
       arm.previousEpisodesScore += arm.episodeStats.getCount();
@@ -95,7 +95,7 @@ public:
     {
 #ifndef JUCE_MAC    
       size_t index = 0;
-      for (std::multimap<double, LuapeNodePtr>::const_reverse_iterator it = sortedNodes.rbegin(); it != sortedNodes.rend() && index < 10; ++it, ++index)
+      for (std::multimap<double, ExpressionPtr>::const_reverse_iterator it = sortedNodes.rbegin(); it != sortedNodes.rend() && index < 10; ++it, ++index)
         context.informationCallback(T("[") + String(it->first) + T("]: ") + it->second->toShortString() + T(" (tk = ") + String(arms[it->second].episodeStats.getCount()) + T(")"));
 #endif
     }
@@ -147,7 +147,7 @@ protected:
     double previousEpisodesScore;
   };
 
-  typedef std::map<LuapeNodePtr, ArmInfo> ArmMap;
+  typedef std::map<ExpressionPtr, ArmInfo> ArmMap;
   ArmMap arms;
 
   double getArmScore(const ArmInfo& arm) const

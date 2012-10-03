@@ -22,24 +22,24 @@ public:
     : IterativeLearner(objective, maxIterations), learningRate(learningRate) {}
   GradientDescentLearner() {}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual bool initialize(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
-    LuapeSequenceNodePtr rootNode = node.staticCast<LuapeSequenceNode>();
-    featureFunction = new LuapeCreateSparseVectorNode(rootNode->getNodes());
+    SequenceExpressionPtr rootNode = node.staticCast<SequenceExpression>();
+    featureFunction = new CreateSparseVectorExpression(rootNode->getNodes());
     parameters = vector(rootNode->getType(), 0);
     parameters->reserve(featureFunction->getNumSubNodes() * 3);
     transformIntoFeatureFunction(featureFunction, parameters, rootNode->getType());
     return true;
   }
 
-  virtual bool finalize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual bool finalize(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     context.enterScope(T("Finalizing"));
     transformIntoOriginalForm(featureFunction, parameters, parameters->getElementsType());
-    LuapeSequenceNodePtr rootNode = node.staticCast<LuapeSequenceNode>();
+    SequenceExpressionPtr rootNode = node.staticCast<SequenceExpression>();
     rootNode->setNodes(featureFunction->getNodes());
     parameters = VectorPtr();
-    featureFunction = LuapeCreateSparseVectorNodePtr();
+    featureFunction = CreateSparseVectorExpressionPtr();
     context.leaveScope();
     return true;
   }
@@ -49,7 +49,7 @@ protected:
 
   IterationFunctionPtr learningRate;
 
-  LuapeCreateSparseVectorNodePtr featureFunction;
+  CreateSparseVectorExpressionPtr featureFunction;
   VectorPtr parameters;
 
   DenseDoubleVectorPtr computeMultiClassActivation(const SparseDoubleVectorPtr& features) const
@@ -73,9 +73,9 @@ protected:
     return res;
   }
 
-  void transformIntoFeatureFunction(LuapeNodePtr node, VectorPtr parameters, TypePtr parametersType)
+  void transformIntoFeatureFunction(ExpressionPtr node, VectorPtr parameters, TypePtr parametersType)
   {
-    LuapeConstantNodePtr constant = node.dynamicCast<LuapeConstantNode>();
+    ConstantExpressionPtr constant = node.dynamicCast<ConstantExpression>();
     if (constant && constant->getType() == parametersType)
     {
       const Variable& value = constant->getValue();
@@ -89,7 +89,7 @@ protected:
         constant->setValue(Variable::missingValue(positiveIntegerType));
     }
 
-    LuapeTestNodePtr test = node.dynamicCast<LuapeTestNode>();
+    TestExpressionPtr test = node.dynamicCast<TestExpression>();
     if (test)
       test->setType(positiveIntegerType);
 
@@ -98,9 +98,9 @@ protected:
       transformIntoFeatureFunction(node->getSubNode(i), parameters, parametersType);
   }
 
-  void transformIntoOriginalForm(LuapeNodePtr node, const VectorPtr& parameters, TypePtr parametersType)
+  void transformIntoOriginalForm(ExpressionPtr node, const VectorPtr& parameters, TypePtr parametersType)
   {
-    LuapeConstantNodePtr constant = node.dynamicCast<LuapeConstantNode>();
+    ConstantExpressionPtr constant = node.dynamicCast<ConstantExpression>();
     if (constant && constant->getType() == positiveIntegerType)
     {
       const Variable& value = constant->getValue();
@@ -110,7 +110,7 @@ protected:
         constant->setValue(Variable::missingValue(parametersType));
     }
 
-    LuapeTestNodePtr test = node.dynamicCast<LuapeTestNode>();
+    TestExpressionPtr test = node.dynamicCast<TestExpression>();
     if (test)
       test->setType(parametersType);
 
@@ -127,7 +127,7 @@ public:
     : GradientDescentLearner(discreteAdaBoostMHLearningObjective(), learningRate, maxIterations), lossFunction(lossFunction) {}
   ClassifierSGDLearner() {}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual bool initialize(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     if (!GradientDescentLearner::initialize(context, node, problem, examples))
       return false;
@@ -149,11 +149,11 @@ public:
     return true;
   }
   
-  virtual bool doLearningIteration(ExecutionContext& context, LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
+  virtual bool doLearningIteration(ExecutionContext& context, ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
     static const double learningRate = 0.1;
 
-    const LuapeVectorSumNodePtr& sumNode = node.staticCast<LuapeVectorSumNode>();
+    const VectorSumExpressionPtr& sumNode = node.staticCast<VectorSumExpression>();
     ClassPtr doubleVectorClass = sumNode->getType();
     EnumerationPtr labels = DoubleVector::getElementsEnumeration(doubleVectorClass);
     size_t numLabels = labels->getNumElements();

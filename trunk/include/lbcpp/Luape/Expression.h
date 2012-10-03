@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LuapeNode.h                    | Luape Graph Node                |
+| Filename: Expression.h                   | Expression classes              |
 | Author  : Francis Maes                   |                                 |
 | Started : 18/11/2011 15:11               |                                 |
 `------------------------------------------/                                 |
@@ -15,10 +15,10 @@
 namespace lbcpp
 {
 
-class LuapeNode : public Object
+class Expression : public Object
 {
 public:
-  LuapeNode(const TypePtr& type = nilType);
+  Expression(const TypePtr& type = nilType);
 
   const TypePtr& getType() const
     {return type;}
@@ -35,8 +35,8 @@ public:
   virtual size_t getNumSubNodes() const
     {return 0;}
     
-  virtual const LuapeNodePtr& getSubNode(size_t index) const
-    {jassert(false); static LuapeNodePtr empty; return empty;} 
+  virtual const ExpressionPtr& getSubNode(size_t index) const
+    {jassert(false); static ExpressionPtr empty; return empty;} 
 
   size_t getAllocationIndex() const
     {return allocationIndex;}
@@ -56,23 +56,23 @@ public:
 
 protected:
   friend class LuapeGraph;
-  friend class LuapeNodeClass;
+  friend class ExpressionClass;
 
   TypePtr type;
   size_t allocationIndex;
   double importance;
 };
 
-extern ClassPtr luapeNodeClass;
+extern ClassPtr expressionClass;
 
 /*
 ** Input
 */
-class LuapeInputNode : public LuapeNode
+class VariableExpression : public Expression
 {
 public:
-  LuapeInputNode(const TypePtr& type, const String& name, size_t inputIndex);
-  LuapeInputNode();
+  VariableExpression(const TypePtr& type, const String& name, size_t inputIndex);
+  VariableExpression();
 
   virtual String toShortString() const;
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
@@ -82,7 +82,7 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  friend class LuapeInputNodeClass;
+  friend class VariableExpressionClass;
 
   String name;
   size_t inputIndex;
@@ -91,11 +91,11 @@ protected:
 /*
 ** Constant
 */
-class LuapeConstantNode : public LuapeNode
+class ConstantExpression : public Expression
 {
 public:
-  LuapeConstantNode(const Variable& value);
-  LuapeConstantNode() {}
+  ConstantExpression(const Variable& value);
+  ConstantExpression() {}
 
   virtual String toShortString() const;
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
@@ -111,7 +111,7 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  friend class LuapeConstantNodeClass;
+  friend class ConstantExpressionClass;
 
   Variable value;
 };
@@ -119,13 +119,13 @@ protected:
 /*
 ** Function
 */
-class LuapeFunctionNode : public LuapeNode
+class FunctionExpression : public Expression
 {
 public:
-  LuapeFunctionNode(const FunctionPtr& function, const std::vector<LuapeNodePtr>& arguments);
-  LuapeFunctionNode(const FunctionPtr& function, const LuapeNodePtr& argument1, const LuapeNodePtr& argument2);
-  LuapeFunctionNode(const FunctionPtr& function, const LuapeNodePtr& argument);
-  LuapeFunctionNode() {}
+  FunctionExpression(const FunctionPtr& function, const std::vector<ExpressionPtr>& arguments);
+  FunctionExpression(const FunctionPtr& function, const ExpressionPtr& argument1, const ExpressionPtr& argument2);
+  FunctionExpression(const FunctionPtr& function, const ExpressionPtr& argument);
+  FunctionExpression() {}
 
   virtual String toShortString() const;
 
@@ -135,7 +135,7 @@ public:
 
   virtual size_t getNumSubNodes() const
     {return arguments.size();}
-  virtual const LuapeNodePtr& getSubNode(size_t index) const
+  virtual const ExpressionPtr& getSubNode(size_t index) const
     {jassert(index < arguments.size()); return arguments[index];}
 
   const FunctionPtr& getFunction() const
@@ -144,34 +144,34 @@ public:
   size_t getNumArguments() const
     {return arguments.size();}
 
-  const LuapeNodePtr& getArgument(size_t index) const
+  const ExpressionPtr& getArgument(size_t index) const
     {jassert(index < arguments.size()); return arguments[index];}
 
-  const std::vector<LuapeNodePtr>& getArguments() const
+  const std::vector<ExpressionPtr>& getArguments() const
     {return arguments;}
 
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  friend class LuapeFunctionNodeClass;
+  friend class FunctionExpressionClass;
 
   FunctionPtr function;
-  std::vector<LuapeNodePtr> arguments;
+  std::vector<ExpressionPtr> arguments;
 
   void initialize();
 };
 
-extern ClassPtr luapeFunctionNodeClass;
+extern ClassPtr functionExpressionClass;
 
 /*
 ** Test
 */
-class LuapeTestNode : public LuapeNode
+class TestExpression : public Expression
 {
 public:
-  LuapeTestNode(const LuapeNodePtr& conditionNode, const LuapeNodePtr& failureNode, const LuapeNodePtr& successNode, const LuapeNodePtr& missingNode);
-  LuapeTestNode(const LuapeNodePtr& conditionNode, TypePtr outputType);
-  LuapeTestNode() {}
+  TestExpression(const ExpressionPtr& conditionNode, const ExpressionPtr& failureNode, const ExpressionPtr& successNode, const ExpressionPtr& missingNode);
+  TestExpression(const ExpressionPtr& conditionNode, TypePtr outputType);
+  TestExpression() {}
 
   virtual String toShortString() const;
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
@@ -179,53 +179,53 @@ public:
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const;
 
   virtual size_t getNumSubNodes() const;
-  virtual const LuapeNodePtr& getSubNode(size_t index) const;
+  virtual const ExpressionPtr& getSubNode(size_t index) const;
 
   static void dispatchIndices(const LuapeSampleVectorPtr& conditionValues, IndexSetPtr& failureIndices, IndexSetPtr& successIndices, IndexSetPtr& missingIndices);
 
-  const LuapeNodePtr& getCondition() const
+  const ExpressionPtr& getCondition() const
     {return conditionNode;}
 
-  const LuapeNodePtr& getFailure() const
+  const ExpressionPtr& getFailure() const
     {return failureNode;}
 
-  void setFailure(const LuapeNodePtr& node)
+  void setFailure(const ExpressionPtr& node)
     {failureNode = node;}
 
-  const LuapeNodePtr& getSuccess() const
+  const ExpressionPtr& getSuccess() const
     {return successNode;}
 
-  void setSuccess(const LuapeNodePtr& node)
+  void setSuccess(const ExpressionPtr& node)
     {successNode = node;}
 
-  const LuapeNodePtr& getMissing() const
+  const ExpressionPtr& getMissing() const
     {return missingNode;}
 
-  void setMissing(const LuapeNodePtr& node)
+  void setMissing(const ExpressionPtr& node)
     {missingNode = node;}
 
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  friend class LuapeTestNodeClass;
+  friend class TestExpressionClass;
 
-  LuapeNodePtr conditionNode;
-  LuapeNodePtr failureNode;
-  LuapeNodePtr successNode;
-  LuapeNodePtr missingNode;
+  ExpressionPtr conditionNode;
+  ExpressionPtr failureNode;
+  ExpressionPtr successNode;
+  ExpressionPtr missingNode;
 
-  LuapeSampleVectorPtr getSubSamples(ExecutionContext& context, const LuapeNodePtr& subNode, const LuapeSamplesCachePtr& cache, const IndexSetPtr& subIndices) const;
+  LuapeSampleVectorPtr getSubSamples(ExecutionContext& context, const ExpressionPtr& subNode, const LuapeSamplesCachePtr& cache, const IndexSetPtr& subIndices) const;
 };
 
 /*
 ** Sequence
 */
-class LuapeSequenceNode : public LuapeNode
+class SequenceExpression : public Expression
 {
 public:
-  LuapeSequenceNode(TypePtr type, const std::vector<LuapeNodePtr>& nodes);
-  LuapeSequenceNode(TypePtr type) : LuapeNode(type) {}
-  LuapeSequenceNode() {}
+  SequenceExpression(TypePtr type, const std::vector<ExpressionPtr>& nodes);
+  SequenceExpression(TypePtr type) : Expression(type) {}
+  SequenceExpression() {}
 
   virtual String toShortString() const;
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const;
@@ -233,10 +233,10 @@ public:
   virtual size_t getNumSubNodes() const
     {return nodes.size();}
     
-  virtual const LuapeNodePtr& getSubNode(size_t index) const
+  virtual const ExpressionPtr& getSubNode(size_t index) const
     {return nodes[index];}
   
-  void pushNode(ExecutionContext& context, const LuapeNodePtr& node, const std::vector<LuapeSamplesCachePtr>& cachesToUpdate = std::vector<LuapeSamplesCachePtr>());
+  void pushNode(ExecutionContext& context, const ExpressionPtr& node, const std::vector<LuapeSamplesCachePtr>& cachesToUpdate = std::vector<LuapeSamplesCachePtr>());
 
   void clearNodes()
     {nodes.clear();}
@@ -244,40 +244,40 @@ public:
   void reserveNodes(size_t size)
     {nodes.reserve(size);}
 
-  const std::vector<LuapeNodePtr>& getNodes() const
+  const std::vector<ExpressionPtr>& getNodes() const
     {return nodes;}
 
-  void setNodes(const std::vector<LuapeNodePtr>& nodes)
+  void setNodes(const std::vector<ExpressionPtr>& nodes)
     {this->nodes = nodes;}
 
-  void setNode(size_t index, const LuapeNodePtr& node)
+  void setNode(size_t index, const ExpressionPtr& node)
     {jassert(index < nodes.size()); nodes[index] = node;}
 
 protected:
-  friend class LuapeSequenceNodeClass;
+  friend class SequenceExpressionClass;
 
-  std::vector<LuapeNodePtr> nodes;
+  std::vector<ExpressionPtr> nodes;
 
   virtual VectorPtr createEmptyOutputs(size_t numSamples) const = 0;
   virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const = 0;
 };
 
-typedef ReferenceCountedObjectPtr<LuapeSequenceNode> LuapeSequenceNodePtr;
+typedef ReferenceCountedObjectPtr<SequenceExpression> SequenceExpressionPtr;
 
 /*
 ** Sum
 */
-class LuapeScalarSumNode : public LuapeSequenceNode
+class ScalarSumExpression : public SequenceExpression
 {
 public:
-  LuapeScalarSumNode(const std::vector<LuapeNodePtr>& nodes, bool convertToProbabilities, bool computeAverage);
-  LuapeScalarSumNode(bool convertToProbabilities = false, bool computeAverage = true);
+  ScalarSumExpression(const std::vector<ExpressionPtr>& nodes, bool convertToProbabilities, bool computeAverage);
+  ScalarSumExpression(bool convertToProbabilities = false, bool computeAverage = true);
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
 
 protected:
-  friend class LuapeScalarSumNodeClass;
+  friend class ScalarSumExpressionClass;
 
   bool convertToProbabilities;
   bool computeAverage;
@@ -286,18 +286,18 @@ protected:
   virtual void updateOutputs(const VectorPtr& outputs, const LuapeSampleVectorPtr& newNodeValues, size_t newNodeIndex) const;
 };
 
-class LuapeVectorSumNode : public LuapeSequenceNode
+class VectorSumExpression : public SequenceExpression
 {
 public:
-  LuapeVectorSumNode(EnumerationPtr enumeration, bool convertToProbabilities);
-  LuapeVectorSumNode() {}
+  VectorSumExpression(EnumerationPtr enumeration, bool convertToProbabilities);
+  VectorSumExpression() {}
 
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;
   virtual LuapeSampleVectorPtr compute(ExecutionContext& context, const LuapeSamplesCachePtr& cache, const IndexSetPtr& indices) const;
 
 protected:
-  friend class LuapeVectorSumNodeClass;
+  friend class VectorSumExpressionClass;
 
   bool convertToProbabilities;
 
@@ -307,11 +307,11 @@ protected:
   DenseDoubleVectorPtr convertToProbabilitiesUsingSigmoid(const DenseDoubleVectorPtr& activations) const;
 };
 
-class LuapeCreateSparseVectorNode : public LuapeSequenceNode
+class CreateSparseVectorExpression : public SequenceExpression
 {
 public:
-  LuapeCreateSparseVectorNode(const std::vector<LuapeNodePtr>& nodes);
-  LuapeCreateSparseVectorNode();
+  CreateSparseVectorExpression(const std::vector<ExpressionPtr>& nodes);
+  CreateSparseVectorExpression();
     
   virtual Variable compute(ExecutionContext& context, const Variable* inputs) const;
   virtual Variable compute(ExecutionContext& context, const LuapeInstanceCachePtr& cache) const;

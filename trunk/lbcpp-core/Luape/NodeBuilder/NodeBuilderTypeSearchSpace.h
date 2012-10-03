@@ -9,9 +9,9 @@
 #ifndef LBCPP_LUAPE_NODE_BUILDER_TYPE_SEARCH_SPACE_H_
 # define LBCPP_LUAPE_NODE_BUILDER_TYPE_SEARCH_SPACE_H_
 
-# include <lbcpp/Luape/LuapeNode.h>
+# include <lbcpp/Luape/Expression.h>
 # include <lbcpp/Luape/LuapeInference.h>
-# include <lbcpp/Luape/LuapeNodeBuilder.h>
+# include <lbcpp/Luape/ExpressionBuilder.h>
 
 namespace lbcpp
 {
@@ -309,7 +309,7 @@ private:
     }
   }
 
-  void enumerateFunctionVariables(const LuapeUniversePtr& universe, const FunctionPtr& function, const std::vector<TypePtr>& inputTypes, std::vector<Variable>& variables, size_t variableIndex, std::vector<FunctionPtr>& res)
+  void enumerateFunctionVariables(const ExpressionUniversePtr& universe, const FunctionPtr& function, const std::vector<TypePtr>& inputTypes, std::vector<Variable>& variables, size_t variableIndex, std::vector<FunctionPtr>& res)
   {
     if (variableIndex == variables.size())
       res.push_back(universe->makeFunction(function->getClass(), variables));

@@ -15,7 +15,7 @@
 namespace lbcpp
 {
 
-class LuapeLearningFormulaSearchProblem : public LuapeNodeSearchProblem
+class LuapeLearningFormulaSearchProblem : public ExpressionSearchProblem
 {
 public:
   LuapeLearningFormulaSearchProblem(const File& dataFile = File(), size_t maxExamples = 0, size_t numTrainingExamples = 0, bool isMultiPass = false)
@@ -164,7 +164,7 @@ public:
   };
 
 
-  DenseDoubleVectorPtr computeParameters(ExecutionContext& context, LuapeSamplesCachePtr samples, const LuapeNodePtr& node)
+  DenseDoubleVectorPtr computeParameters(ExecutionContext& context, LuapeSamplesCachePtr samples, const ExpressionPtr& node)
   {
     // compute parameters using formula
     DenseDoubleVectorPtr parameters = samples->getSamples(context, node)->getVector().staticCast<DenseDoubleVector>();
@@ -178,7 +178,7 @@ public:
     return parameters;
   }
 
-  virtual double computeObjective(ExecutionContext& context, const LuapeNodePtr& node, size_t instanceIndex)
+  virtual double computeObjective(ExecutionContext& context, const ExpressionPtr& node, size_t instanceIndex)
   {
     // get train/test split
     Dataset& dataset = datasets[instanceIndex % datasets.size()];
@@ -258,9 +258,9 @@ public:
     return numCorrect / (double)n;
   }
 
-  bool useVariables(const LuapeNodePtr& node) const
+  bool useVariables(const ExpressionPtr& node) const
   {
-    if (node.isInstanceOf<LuapeInputNode>())
+    if (node.isInstanceOf<VariableExpression>())
       return true;
     size_t n = node->getNumSubNodes();
     for (size_t i = 0; i < n; ++i)
@@ -269,7 +269,7 @@ public:
     return false;
   }
 
-  virtual BinaryKeyPtr makeBinaryKey(ExecutionContext& context, const LuapeNodePtr& node) const
+  virtual BinaryKeyPtr makeBinaryKey(ExecutionContext& context, const ExpressionPtr& node) const
   {
     if (!useVariables(node))
       return BinaryKeyPtr();
@@ -513,15 +513,15 @@ class LearningFormulaDiscoverySandBox : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
-    LuapeNodeSearchProblemPtr problem = new LuapeLearningFormulaSearchProblem(context.getFile("libsvmdata"), 0, 0, true);
+    ExpressionSearchProblemPtr problem = new LuapeLearningFormulaSearchProblem(context.getFile("libsvmdata"), 0, 0, true);
     if (!problem->initializeProblem(context))
       return false;
 
-    LuapeUniversePtr universe = problem->getUniverse();
+    ExpressionUniversePtr universe = problem->getUniverse();
 /*
     for (size_t i = 0; i < problem->getNumInputs(); ++i)
     {
-      LuapeNodePtr node = problem->getInput(i);
+      ExpressionPtr node = problem->getInput(i);
       context.informationCallback(T("Score of ") + node->toShortString() + T(": ") + String(evaluate(context, problem, node)));
     }*/
 
@@ -529,18 +529,18 @@ public:
     for (double C = -5.0; C <= 5.0; C += 0.2)
     {
       context.enterScope(T("C = ") + String(C));
-      LuapeNodePtr node = new LuapeFunctionNode(addDoubleLuapeFunction(), problem->getInput(5), 
-        new LuapeFunctionNode(mulDoubleLuapeFunction(), new LuapeConstantNode(pow(10.0, C)), problem->getInput(11)));
-        //new LuapeFunctionNode(mulDoubleLuapeFunction(), problem->getInput(9), 
-        //  new LuapeFunctionNode(subDoubleLuapeFunction(), new LuapeConstantNode(1.0), problem->getInput(6)))));
+      ExpressionPtr node = new FunctionExpression(addDoubleLuapeFunction(), problem->getInput(5), 
+        new FunctionExpression(mulDoubleLuapeFunction(), new ConstantExpression(pow(10.0, C)), problem->getInput(11)));
+        //new FunctionExpression(mulDoubleLuapeFunction(), problem->getInput(9), 
+        //  new FunctionExpression(subDoubleLuapeFunction(), new ConstantExpression(1.0), problem->getInput(6)))));
       context.resultCallback(T("C"), C);
       context.resultCallback(T("score"), evaluate(context, problem, node));
 /*
       for (double P = 1.0 / 32.0; P <= 1.0; P *= 2.0)
       {
-        LuapeNodePtr node = new LuapeFunctionNode(addDoubleLuapeFunction(), problem->getInput(3), 
-          new LuapeFunctionNode(mulDoubleLuapeFunction(), new LuapeConstantNode(C / P), 
-            new LuapeFunctionNode(powDoubleLuapeFunction(), problem->getInput(4), new LuapeConstantNode(P))));
+        ExpressionPtr node = new FunctionExpression(addDoubleLuapeFunction(), problem->getInput(3), 
+          new FunctionExpression(mulDoubleLuapeFunction(), new ConstantExpression(C / P), 
+            new FunctionExpression(powDoubleLuapeFunction(), problem->getInput(4), new ConstantExpression(P))));
         context.resultCallback(T("scoreP=") + String(P), evaluate(context, problem, node));
       }
 */
@@ -549,7 +549,7 @@ public:
     return true;
   }
 
-  double evaluate(ExecutionContext& context, LuapeNodeSearchProblemPtr problem, const LuapeNodePtr& node)
+  double evaluate(ExecutionContext& context, ExpressionSearchProblemPtr problem, const ExpressionPtr& node)
   {
     static const size_t precision = 100;
     double res = 0.0;

@@ -10,7 +10,7 @@
 # define LBCPP_LUAPE_LEARNER_H_
 
 # include "LuapeInference.h"
-# include "LuapeNodeBuilder.h"
+# include "ExpressionBuilder.h"
 # include "LearningObjective.h"
 # include "../Learning/LossFunction.h"
 # include "../Data/IterationFunction.h"
@@ -24,12 +24,12 @@ public:
   LuapeLearner(const LearningObjectivePtr& objective = LearningObjectivePtr())
     : objective(objective), verbose(false), bestObjectiveValue(-DBL_MAX) {}
 
-  virtual LuapeNodePtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
-    {return LuapeNodePtr();}
+  virtual ExpressionPtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
+    {return ExpressionPtr();}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples) = 0;
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples) = 0;
 
-  LuapeNodePtr learn(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples = IndexSetPtr());
+  ExpressionPtr learn(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples = IndexSetPtr());
 
   void setObjective(const LearningObjectivePtr& objective)
     {this->objective = objective;}
@@ -57,7 +57,7 @@ protected:
 
   void evaluatePredictions(ExecutionContext& context, const LuapeInferencePtr& problem, double& trainingScore, double& validationScore);
 
-  LuapeNodePtr subLearn(ExecutionContext& context, const LuapeLearnerPtr& subLearner, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double* objectiveValue = NULL) const;
+  ExpressionPtr subLearn(ExecutionContext& context, const LuapeLearnerPtr& subLearner, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double* objectiveValue = NULL) const;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeLearner> LuapeLearnerPtr;
@@ -70,15 +70,15 @@ public:
 
   void setPlotFile(ExecutionContext& context, const File& plotFile);
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples);
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples);
   
   OutputStream* getPlotOutputStream() const
     {return plotOutputStream;}
 
-  virtual bool initialize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual bool initialize(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
     {if (objective) objective->initialize(problem); return true;}
-  virtual bool doLearningIteration(ExecutionContext& context, LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore) = 0;
-  virtual bool finalize(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual bool doLearningIteration(ExecutionContext& context, ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore) = 0;
+  virtual bool finalize(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
     {return true;}
 
 protected:
@@ -92,18 +92,18 @@ protected:
 class NodeBuilderBasedLearner : public LuapeLearner
 {
 public:
-  NodeBuilderBasedLearner(LuapeNodeBuilderPtr nodeBuilder);
+  NodeBuilderBasedLearner(ExpressionBuilderPtr nodeBuilder);
   NodeBuilderBasedLearner() {}
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
-  const LuapeNodeBuilderPtr& getNodeBuilder() const
+  const ExpressionBuilderPtr& getNodeBuilder() const
     {return nodeBuilder;}
 
 protected:
   friend class NodeBuilderBasedLearnerClass;
 
-  LuapeNodeBuilderPtr nodeBuilder;
+  ExpressionBuilderPtr nodeBuilder;
 };
 
 
@@ -112,8 +112,8 @@ class DecoratorLearner : public LuapeLearner
 public:
   DecoratorLearner(LuapeLearnerPtr decorated = LuapeLearnerPtr());
 
-  virtual LuapeNodePtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem);
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples);
+  virtual ExpressionPtr createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem);
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples);
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
 protected:
@@ -142,13 +142,13 @@ extern LuapeLearnerPtr treeLearner(LearningObjectivePtr weakObjective, LuapeLear
 extern DecoratorLearnerPtr addActiveVariablesLearner(LuapeLearnerPtr decorated, size_t numActiveVariables, bool deterministic);
 
 // misc
-extern LuapeLearnerPtr generateTestNodesLearner(LuapeNodeBuilderPtr nodeBuilder);
+extern LuapeLearnerPtr generateTestNodesLearner(ExpressionBuilderPtr nodeBuilder);
 
 // weak learners
-extern NodeBuilderBasedLearnerPtr exactWeakLearner(LuapeNodeBuilderPtr nodeBuilder);
-extern NodeBuilderBasedLearnerPtr randomSplitWeakLearner(LuapeNodeBuilderPtr nodeBuilder);
-extern NodeBuilderBasedLearnerPtr laminatingWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating = 5);
-extern NodeBuilderBasedLearnerPtr banditBasedWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize = 0.01);
+extern NodeBuilderBasedLearnerPtr exactWeakLearner(ExpressionBuilderPtr nodeBuilder);
+extern NodeBuilderBasedLearnerPtr randomSplitWeakLearner(ExpressionBuilderPtr nodeBuilder);
+extern NodeBuilderBasedLearnerPtr laminatingWeakLearner(ExpressionBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating = 5);
+extern NodeBuilderBasedLearnerPtr banditBasedWeakLearner(ExpressionBuilderPtr nodeBuilder, double relativeBudget, double miniBatchRelativeSize = 0.01);
 //extern LuapeLearnerPtr optimizerBasedSequentialWeakLearner(OptimizerPtr optimizer, size_t complexity, bool useRandomSplit = false);
 
 }; /* namespace lbcpp */

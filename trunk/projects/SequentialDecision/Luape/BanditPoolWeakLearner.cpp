@@ -17,17 +17,17 @@ class LuapeGraphBuilderEnumerator
 {
 public:
   LuapeGraphBuilderEnumerator(LuapeGraphBuilderBanditPoolPtr pool, size_t maxDepth)
-    : pool(pool), maxDepth(maxDepth), nodeKeys(new LuapeNodeKeysMap()) {}
+    : pool(pool), maxDepth(maxDepth), nodeKeys(new ExpressionKeysMap()) {}
   virtual ~LuapeGraphBuilderEnumerator() {}
 
-  void updateArms(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode)
+  void updateArms(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const ExpressionPtr& newNode)
   {
     nodeKeys->clear();
    
     // fill map with keys of already existing nodes
     for (size_t i = 0; i < graph->getNumNodes(); ++i)
     {
-      LuapeNodePtr node = graph->getNode(i);
+      ExpressionPtr node = graph->getNode(i);
       if (!node.isInstanceOf<LuapeYieldNode>())
         nodeKeys->addNodeToCache(context, node);
     }
@@ -35,7 +35,7 @@ public:
     // fill map with existing arms
     for (size_t i = 0; i < pool->getNumArms(); ++i)
     {
-      LuapeNodePtr node = pool->getArmNode(i);
+      ExpressionPtr node = pool->getArmNode(i);
       if (node)
         nodeKeys->addNodeToCache(context, node);
     }
@@ -43,21 +43,21 @@ public:
     enumerateNewArms(context, problem, graph, newNode);
   }
 
-  void enumerateNewArms(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode)
+  void enumerateNewArms(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const ExpressionPtr& newNode)
   {
-    LuapeNodeBuilderStatePtr builder = new LuapeNodeBuilderState(graph->cloneAndCast<LuapeGraph>(), new LuapeGraphBuilderTypeSearchSpace(problem, maxDepth));
-    //builder->performTransition(context, LuapeNodeBuilderAction::push(newNode));
+    ExpressionBuilderStatePtr builder = new ExpressionBuilderState(graph->cloneAndCast<LuapeGraph>(), new LuapeGraphBuilderTypeSearchSpace(problem, maxDepth));
+    //builder->performTransition(context, ExpressionBuilderAction::push(newNode));
     enumerateNewArmsRecursively(context, builder);
   }
 
-  void enumerateNewArmsRecursively(ExecutionContext& context, const LuapeNodeBuilderStatePtr& state)
+  void enumerateNewArmsRecursively(ExecutionContext& context, const ExpressionBuilderStatePtr& state)
   {
     if (state->isFinalState())
     {
       LuapeYieldNodePtr yieldNode = state->getGraph()->getLastNode().dynamicCast<LuapeYieldNode>();
       if (yieldNode)
       {
-        LuapeNodePtr node = yieldNode->getArgument();
+        ExpressionPtr node = yieldNode->getArgument();
         if (nodeKeys->addNodeToCache(context, node))
           pool->createArm(context, node);
       }
@@ -83,7 +83,7 @@ protected:
   LuapeGraphBuilderBanditPoolPtr pool;
   size_t maxDepth;
 
-  LuapeNodeKeysMapPtr nodeKeys;
+  ExpressionKeysMapPtr nodeKeys;
 };
 
 /*
@@ -105,7 +105,7 @@ void LuapeGraphBuilderBanditPool::initialize(ExecutionContext& context, const Lu
   context.leaveScope();*/
 }
 
-void LuapeGraphBuilderBanditPool::executeArm(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const LuapeNodePtr& newNode)
+void LuapeGraphBuilderBanditPool::executeArm(ExecutionContext& context, const LuapeProblemPtr& problem, const LuapeGraphPtr& graph, const ExpressionPtr& newNode)
 {
   LuapeGraphBuilderEnumerator enumerator(this, maxDepth);
   context.enterScope(T("Update arms"));
@@ -125,7 +125,7 @@ void LuapeGraphBuilderBanditPool::playArmWithHighestIndex(ExecutionContext& cont
     
     Arm& arm = arms[armIndex];
     ++arm.playedCount;
-    LuapeNodePtr node = arms[armIndex].node;
+    ExpressionPtr node = arms[armIndex].node;
     jassert(false); // FIXME
     //arm.rewardSum += computeWeakObjectiveWithEventualStump(context, graphLearner, node, examples);
     banditsQueue.push(std::make_pair(armIndex, arm.getIndexScore()));
@@ -196,7 +196,7 @@ void LuapeGraphBuilderBanditPool::createBanditsQueue()
       banditsQueue.push(std::make_pair(i, arms[i].getIndexScore()));
 }
 
-size_t LuapeGraphBuilderBanditPool::createArm(ExecutionContext& context, const LuapeNodePtr& node)
+size_t LuapeGraphBuilderBanditPool::createArm(ExecutionContext& context, const ExpressionPtr& node)
 {
   context.informationCallback(T("Create Arm ") + node->toShortString());
   jassert(node);

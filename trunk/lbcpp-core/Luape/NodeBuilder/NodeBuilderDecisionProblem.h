@@ -15,10 +15,10 @@
 namespace lbcpp
 {
 
-class LuapeNodeBuilderState : public DecisionProblemState
+class ExpressionBuilderState : public DecisionProblemState
 {
 public:
-  LuapeNodeBuilderState(const LuapeInferencePtr& function, LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace, const LuapeRPNSequencePtr& subSequence = LuapeRPNSequencePtr())
+  ExpressionBuilderState(const LuapeInferencePtr& function, LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace, const LuapeRPNSequencePtr& subSequence = LuapeRPNSequencePtr())
     : function(function), typeSearchSpace(typeSearchSpace), typeState(typeSearchSpace->getInitialState()), numSteps(0), isAborted(false), isYielded(false)
   {
     if (subSequence)
@@ -27,7 +27,7 @@ public:
         LuapeRPNSequence::apply(function->getUniverse(), stack, subSequence->getElement(i));
     }
   }
-  LuapeNodeBuilderState() : numSteps(0), isAborted(false), isYielded(false) {}
+  ExpressionBuilderState() : numSteps(0), isAborted(false), isYielded(false) {}
 
   virtual String toShortString() const
   {
@@ -60,7 +60,7 @@ public:
       return ContainerPtr();
 
     ObjectVectorPtr res = new ObjectVector(objectClass, 0);
-    const_cast<LuapeNodeBuilderState* >(this)->availableActions = res;
+    const_cast<ExpressionBuilderState* >(this)->availableActions = res;
 
     if (typeState->hasPushActions())
     {
@@ -73,8 +73,8 @@ public:
         addPushActionIfAvailable(res, function->getInput(i));
 
       // active variables
-      const std::set<LuapeNodePtr>& activeVariables = function->getActiveVariables();
-      for (std::set<LuapeNodePtr>::const_iterator it = activeVariables.begin(); it != activeVariables.end(); ++it)
+      const std::set<ExpressionPtr>& activeVariables = function->getActiveVariables();
+      for (std::set<ExpressionPtr>::const_iterator it = activeVariables.begin(); it != activeVariables.end(); ++it)
         addPushActionIfAvailable(res, *it);
     }
     if (typeState->hasApplyActions())
@@ -87,11 +87,11 @@ public:
         {
           res->append(function);
           /*size_t numInputs = function->getNumInputs();
-          std::vector<LuapeNodePtr> inputs(numInputs);
+          std::vector<ExpressionPtr> inputs(numInputs);
           for (size_t i = 0; i < numInputs; ++i)
             inputs[i] = stack[stack.size() - numInputs + i];
 
-          LuapeNodeBuilderActionPtr action = LuapeNodeBuilderAction::apply(this->function->getUniverse(), function, inputs);
+          ExpressionBuilderActionPtr action = ExpressionBuilderAction::apply(this->function->getUniverse(), function, inputs);
           // if (!action->isUseless(graph)) // useless == the created node already exists in the graph
             res->append(action);*/
         }
@@ -105,10 +105,10 @@ public:
 
   struct Backup : public Object
   {
-    Backup(const std::vector<LuapeNodePtr>& stack)
+    Backup(const std::vector<ExpressionPtr>& stack)
       : stack(stack) {}
 
-    std::vector<LuapeNodePtr> stack;
+    std::vector<ExpressionPtr> stack;
   };
 
   virtual void performTransition(ExecutionContext& context, const Variable& a, double& reward, Variable* stateBackup = NULL)
@@ -153,24 +153,24 @@ public:
   size_t getStackSize() const
     {return stack.size();}
 
-  const LuapeNodePtr& getStackElement(size_t index) const
+  const ExpressionPtr& getStackElement(size_t index) const
     {jassert(index < stack.size()); return stack[index];}
 
-  void setStackElement(size_t index, const LuapeNodePtr& node)
+  void setStackElement(size_t index, const ExpressionPtr& node)
     {jassert(index < stack.size()); stack[index] = node;}
 
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  friend class LuapeNodeBuilderStateClass;
+  friend class ExpressionBuilderStateClass;
 
   LuapeInferencePtr function;
   LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
   LuapeGraphBuilderTypeStatePtr typeState;
   ContainerPtr availableActions;
-  //LuapeNodeKeysMapPtr nodeKeys;
+  //ExpressionKeysMapPtr nodeKeys;
 
-  std::vector<LuapeNodePtr> stack;
+  std::vector<ExpressionPtr> stack;
   size_t numSteps;
   bool isAborted;
   bool isYielded;
@@ -184,14 +184,14 @@ protected:
     jassert(typeState);
   }
 
-  void addPushActionIfAvailable(const ObjectVectorPtr& availableActions, const LuapeNodePtr& node) const
+  void addPushActionIfAvailable(const ObjectVectorPtr& availableActions, const ExpressionPtr& node) const
   {
     if (typeState->hasPushAction(node->getType()))
       availableActions->append(node);
   }
 };
 
-typedef ReferenceCountedObjectPtr<LuapeNodeBuilderState> LuapeNodeBuilderStatePtr;
+typedef ReferenceCountedObjectPtr<ExpressionBuilderState> ExpressionBuilderStatePtr;
 extern ClassPtr luapeNodeBuilderStateClass;
 
 }; /* namespace lbcpp */

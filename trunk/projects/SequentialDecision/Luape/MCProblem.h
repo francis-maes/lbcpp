@@ -77,7 +77,7 @@ public:
 			{
 				LuapeRegressorPtr problem = createInstance(context, i + 1);
 				LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = problem->getSearchSpace(context, maxDepth);
-				DecisionProblemStatePtr initialState(new LuapeNodeBuilderState(problem, typeSearchSpace));
+				DecisionProblemStatePtr initialState(new ExpressionBuilderState(problem, typeSearchSpace));
 				instances[i] = std::make_pair(problem, initialState);
 			}
 		}
@@ -178,7 +178,7 @@ public:
 		Objective(LuapeRegressorPtr regressor)
 		  : LuapeMCObjective(regressor) {}
 
-	  virtual double evaluate(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeNodePtr& formula)
+	  virtual double evaluate(ExecutionContext& context, const LuapeInferencePtr& problem, const ExpressionPtr& formula)
 	  {
 		  size_t primeCounter = 1;
 		  bool isvalid = true;
@@ -231,7 +231,7 @@ public:
   	  {worst = 0.0; best = 100.0;}
 
 	  // evaluateFormula() is a utility function to evaluate the formula given an integer input
-	  double evaluateFormula(ExecutionContext& context, const LuapeNodePtr& formula, int input) const
+	  double evaluateFormula(ExecutionContext& context, const ExpressionPtr& formula, int input) const
 	  {
 		  Variable in((double)input);
 		  double res = formula->compute(context, &in).getDouble();
@@ -285,7 +285,7 @@ public:
 		  regressor->addFunction(divDoubleLuapeFunction());
     }
 	  LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = regressor->getSearchSpace(context, maxDepth);
-	  DecisionProblemStatePtr initialState(new LuapeNodeBuilderState(regressor, typeSearchSpace));
+	  DecisionProblemStatePtr initialState(new ExpressionBuilderState(regressor, typeSearchSpace));
 	  return std::make_pair(initialState, new Objective(regressor));
   }
 

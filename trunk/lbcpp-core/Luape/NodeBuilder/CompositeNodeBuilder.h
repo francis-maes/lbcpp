@@ -9,21 +9,21 @@
 #ifndef LBCPP_LUAPE_NODE_BUILDER_COMPOSITE_H_
 # define LBCPP_LUAPE_NODE_BUILDER_COMPOSITE_H_
 
-# include <lbcpp/Luape/LuapeNodeBuilder.h>
+# include <lbcpp/Luape/ExpressionBuilder.h>
 
 namespace lbcpp
 {
 
-class CompositeNodeBuilder : public LuapeNodeBuilder
+class CompositeNodeBuilder : public ExpressionBuilder
 {
 public:
-  CompositeNodeBuilder(const std::vector<LuapeNodeBuilderPtr>& builders)
+  CompositeNodeBuilder(const std::vector<ExpressionBuilderPtr>& builders)
     : builders(builders) {}
-  CompositeNodeBuilder(LuapeNodeBuilderPtr builder1, LuapeNodeBuilderPtr builder2)
+  CompositeNodeBuilder(ExpressionBuilderPtr builder1, ExpressionBuilderPtr builder2)
     : builders(2) {builders[0] = builder1; builders[1] = builder2;}
   CompositeNodeBuilder() {}
  
-  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<LuapeNodePtr>& res)
+  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
   {
     for (size_t i = 0; i < builders.size(); ++i)
     {
@@ -38,13 +38,13 @@ public:
     const ReferenceCountedObjectPtr<CompositeNodeBuilder>& target = t.staticCast<CompositeNodeBuilder>();
     target->builders.resize(builders.size());
     for (size_t i = 0; i < builders.size(); ++i)
-      target->builders[i] = builders[i]->cloneAndCast<LuapeNodeBuilder>(context);
+      target->builders[i] = builders[i]->cloneAndCast<ExpressionBuilder>(context);
   }
 
 protected:
   friend class CompositeNodeBuilderClass;
 
-  std::vector<LuapeNodeBuilderPtr> builders;
+  std::vector<ExpressionBuilderPtr> builders;
 };
 
 }; /* namespace lbcpp */

@@ -9,26 +9,26 @@
 #ifndef LBCPP_LUAPE_NODE_BUILDER_INPUTS_H_
 # define LBCPP_LUAPE_NODE_BUILDER_INPUTS_H_
 
-# include <lbcpp/Luape/LuapeNodeBuilder.h>
+# include <lbcpp/Luape/ExpressionBuilder.h>
 
 namespace lbcpp
 {
 
-class InputsNodeBuilder : public LuapeNodeBuilder
+class InputsNodeBuilder : public ExpressionBuilder
 {
 public:
-  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<LuapeNodePtr>& res)
+  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
   {
     res.reserve(function->getNumInputs() + function->getNumActiveVariables());
     for (size_t i = 0; i < function->getNumInputs(); ++i)
     {
-      LuapeNodePtr node = function->getInput(i);
+      ExpressionPtr node = function->getInput(i);
       if (node->getType()->isConvertibleToDouble())
         res.push_back(node);
     }
     for (size_t i = 0; i < function->getNumActiveVariables(); ++i)
     {
-      LuapeNodePtr node = function->getActiveVariable(i);
+      ExpressionPtr node = function->getActiveVariable(i);
       if (node->getType()->isConvertibleToDouble())
         res.push_back(node);
     }

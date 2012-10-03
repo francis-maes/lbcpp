@@ -96,7 +96,7 @@ public:
   virtual TypePtr initialize(const TypePtr* inputTypes)
     {return doubleType;}
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return inputs[0]->toShortString() + T(".") + toShortString();}
 
   virtual double compute(const EmpiricalContinuousDistributionPtr& distribution) const = 0;

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<library name="LuapeNodeBuilder" directory="Luape/NodeBuilder">
-  <include file="lbcpp/Luape/LuapeNodeBuilder.h"/>
+<library name="ExpressionBuilder" directory="Luape/NodeBuilder">
+  <include file="lbcpp/Luape/ExpressionBuilder.h"/>
 
 
   <!-- Builder Type Search Space -->
@@ -12,36 +12,36 @@
   <class name="LuapeGraphBuilderTypeSearchSpace"/>
 
   <!-- Builder Decision Problem -->
-  <class name="LuapeNodeBuilderState" base="DecisionProblemState">
+  <class name="ExpressionBuilderState" base="DecisionProblemState">
     <variable type="LuapeInference" name="function"/>
     <variable type="LuapeGraphBuilderTypeSearchSpace" name="typeSearchSpace"/>
     <variable type="LuapeGraphBuilderTypeState" name="typeState"/>
     <variable type="ObjectVector[Object]" name="availableActions"/>
-    <variable type="ObjectVector[LuapeNode]" name="stack"/>
+    <variable type="ObjectVector[Expression]" name="stack"/>
     <variable type="PositiveInteger" name="numSteps"/>
     <variable type="Boolean" name="isAborted"/>
     <variable type="Boolean" name="isYielded"/>
   </class>
 
   <!-- Generic Node Builders -->
-  <class name="CompositeNodeBuilder" base="LuapeNodeBuilder">
-    <constructor arguments="const std::vector&lt;LuapeNodeBuilderPtr&gt;&amp; builders"/>
-    <constructor arguments="LuapeNodeBuilderPtr builder1, LuapeNodeBuilderPtr builder2"/>
-    <variable type="ObjectVector[LuapeNodeBuilder]" name="builders"/>
+  <class name="CompositeNodeBuilder" base="ExpressionBuilder">
+    <constructor arguments="const std::vector&lt;ExpressionBuilderPtr&gt;&amp; builders"/>
+    <constructor arguments="ExpressionBuilderPtr builder1, ExpressionBuilderPtr builder2"/>
+    <variable type="ObjectVector[ExpressionBuilder]" name="builders"/>
   </class>
   
-  <class name="SingletonNodeBuilder" base="LuapeNodeBuilder">
-    <constructor arguments="const LuapeNodePtr&amp; node"/>
-    <variable type="LuapeNode" name="node"/>
+  <class name="SingletonNodeBuilder" base="ExpressionBuilder">
+    <constructor arguments="const ExpressionPtr&amp; node"/>
+    <variable type="Expression" name="node"/>
   </class>
   
   <!-- Input Variables Node Builder -->
-  <class name="InputsNodeBuilder" base="LuapeNodeBuilder">
+  <class name="InputsNodeBuilder" base="ExpressionBuilder">
     <constructor/>
   </class>
 
   <!-- Node Builders based on the NodeBuilderDecisionProblem -->
-  <class name="ExhaustiveSequentialNodeBuilder" base="LuapeNodeBuilder">
+  <class name="ExhaustiveSequentialNodeBuilder" base="ExpressionBuilder">
     <constructor arguments="size_t complexity"/>
     <variable type="PositiveInteger" name="complexity"/>
   </class>

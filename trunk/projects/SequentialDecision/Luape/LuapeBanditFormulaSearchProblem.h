@@ -14,7 +14,7 @@
 namespace lbcpp
 {
 
-class LuapeBanditFormulaSearchProblem : public LuapeNodeSearchProblem
+class LuapeBanditFormulaSearchProblem : public ExpressionSearchProblem
 {
 public:
   LuapeBanditFormulaSearchProblem(BanditProblemSamplerPtr problemSampler, size_t horizon)
@@ -58,7 +58,7 @@ public:
   virtual void getObjectiveRange(double& worst, double& best) const
     {worst = (double)horizon; best = 0.0;}
 
-  virtual double computeObjective(ExecutionContext& context, const LuapeNodePtr& node, size_t instanceIndex)
+  virtual double computeObjective(ExecutionContext& context, const ExpressionPtr& node, size_t instanceIndex)
   {
     const std::vector<SamplerPtr>& arms = getProblem(context, instanceIndex);
     std::vector<double> expectedRewards(arms.size());
@@ -86,7 +86,7 @@ public:
     return horizon * bestRewardExpectation - sumOfRewards;
   }
 
-  virtual BinaryKeyPtr makeBinaryKey(ExecutionContext& context, const LuapeNodePtr& node) const
+  virtual BinaryKeyPtr makeBinaryKey(ExecutionContext& context, const ExpressionPtr& node) const
   {
     LuapeSampleVectorPtr samples = samplesCache->getSamples(context, node);
     if (!samples)
@@ -172,11 +172,11 @@ private:
 
   struct Policy : public IndexBasedDiscreteBanditPolicy
   {
-    Policy(LuapeInferencePtr problem, LuapeNodePtr formula)
+    Policy(LuapeInferencePtr problem, ExpressionPtr formula)
       : problem(problem), formula(formula) {}
 
     LuapeInferencePtr problem;
-    LuapeNodePtr formula;
+    ExpressionPtr formula;
 
     virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
     {

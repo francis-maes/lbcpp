@@ -14,20 +14,20 @@
 namespace lbcpp
 {
 
-class ExhaustiveSequentialNodeBuilder : public LuapeNodeBuilder
+class ExhaustiveSequentialNodeBuilder : public ExpressionBuilder
 {
 public:
   ExhaustiveSequentialNodeBuilder(size_t complexity = 0)
     : complexity(complexity) {}
 
-  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<LuapeNodePtr>& res)
+  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
   {
     // FIXME: see why this do not work in release
     enumerateCandidates(context, function, res);
-   /* std::set<LuapeNodePtr> activeVariables = structureLearner->getFunction()->getActiveVariables();
+   /* std::set<ExpressionPtr> activeVariables = structureLearner->getFunction()->getActiveVariables();
     if (cachedActiveVariables != activeVariables || cachedCandidates.empty())
     {
-      std::vector<LuapeNodePtr>& c = const_cast<ExhaustiveWeakLearner* >(this)->cachedCandidates;
+      std::vector<ExpressionPtr>& c = const_cast<ExhaustiveWeakLearner* >(this)->cachedCandidates;
       c.clear();
       enumerateCandidates(context, structureLearner, c);
       const_cast<ExhaustiveWeakLearner* >(this)->cachedActiveVariables = activeVariables;
@@ -43,24 +43,24 @@ protected:
 
   size_t complexity;
 
-  //std::set<LuapeNodePtr> cachedActiveVariables;
-  //std::vector<LuapeNodePtr> cachedCandidates;
+  //std::set<ExpressionPtr> cachedActiveVariables;
+  //std::vector<ExpressionPtr> cachedCandidates;
 
-  void enumerateCandidates(ExecutionContext& context, const LuapeInferencePtr& function, std::vector<LuapeNodePtr>& candidates) const
+  void enumerateCandidates(ExecutionContext& context, const LuapeInferencePtr& function, std::vector<ExpressionPtr>& candidates) const
   {
     LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = function->getSearchSpace(context, complexity, true);
-    LuapeNodeBuilderStatePtr builder = new LuapeNodeBuilderState(function, typeSearchSpace);
-    std::set<LuapeNodePtr> weakNodes;
+    ExpressionBuilderStatePtr builder = new ExpressionBuilderState(function, typeSearchSpace);
+    std::set<ExpressionPtr> weakNodes;
     enumerateWeakNodes(context, builder, weakNodes);
     candidates.reserve(candidates.size() + weakNodes.size());
-    for (std::set<LuapeNodePtr>::const_iterator it = weakNodes.begin(); it != weakNodes.end(); ++it)
+    for (std::set<ExpressionPtr>::const_iterator it = weakNodes.begin(); it != weakNodes.end(); ++it)
     {
       //context.informationCallback((*it)->toShortString());
       candidates.push_back(*it);
     }
   }
 
-  void enumerateWeakNodes(ExecutionContext& context, const LuapeNodeBuilderStatePtr& state, std::set<LuapeNodePtr>& res) const
+  void enumerateWeakNodes(ExecutionContext& context, const ExpressionBuilderStatePtr& state, std::set<ExpressionPtr>& res) const
   {
     if (state->isFinalState())
     {

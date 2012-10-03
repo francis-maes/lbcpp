@@ -23,10 +23,10 @@ public:
     : learners(2) {learners[0] = learner1; learners[1] = learner2;}
   CompositeLearner() {}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     // default behavior is sequential
-    LuapeNodePtr res = node;
+    ExpressionPtr res = node;
     //bool ok = true;
     for (size_t i = 0; i < learners.size(); ++i)
     {

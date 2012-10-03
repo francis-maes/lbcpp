@@ -18,21 +18,21 @@ namespace lbcpp
 class LaminatingWeakLearner : public NodeBuilderBasedLearner
 {
 public:
-  LaminatingWeakLearner(LuapeNodeBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating)
+  LaminatingWeakLearner(ExpressionBuilderPtr nodeBuilder, double relativeBudget, size_t minExamplesForLaminating)
     : NodeBuilderBasedLearner(nodeBuilder), relativeBudget(relativeBudget), minExamplesForLaminating(minExamplesForLaminating)  {}
   LaminatingWeakLearner() {}
 
-  virtual LuapeNodePtr learn(ExecutionContext& context, const LuapeNodePtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
   {
     // make initial weak learners
-    std::vector<LuapeNodePtr> weakNodes;
+    std::vector<ExpressionPtr> weakNodes;
     if (verbose)
       context.enterScope("Generating variables");
     nodeBuilder->buildNodes(context, problem, 0, weakNodes);
     if (verbose)
       context.leaveScope(weakNodes.size());
     if (!weakNodes.size())
-      return LuapeNodePtr();
+      return ExpressionPtr();
 
     size_t W0, N0;
     double totalBudget = relativeBudget * problem->getTrainingCache()->getNumSamples();
@@ -41,7 +41,7 @@ public:
     {
       if (verbose)
         context.leaveScope(false);
-      return LuapeNodePtr();
+      return ExpressionPtr();
     }
     jassert(N0 <= examples->size() && W0 <= weakNodes.size());
 
@@ -54,7 +54,7 @@ public:
       examplesSubset = examples->sampleSubset(context.getRandomGenerator(), N0);
 
     // create initial weak learners subset
-    std::vector<std::pair<LuapeNodePtr, double> > weakNodesByScore(W0);
+    std::vector<std::pair<ExpressionPtr, double> > weakNodesByScore(W0);
     std::vector<size_t> order;
     if (W0 < weakNodes.size())
       context.getRandomGenerator()->sampleOrder(weakNodes.size(), order);
@@ -74,7 +74,7 @@ public:
       // evaluate weak nodes
       for (size_t i = 0; i < numWeakLearners; ++i)
       {
-        LuapeNodePtr weakNode = weakNodesByScore[i].first;
+        ExpressionPtr weakNode = weakNodesByScore[i].first;
         double objectiveValue = objective->computeObjectiveWithEventualStump(context, problem, weakNode, examplesSubset); // side effect on weakNode (that we do not keep)
         weakNodesByScore[i].second = objectiveValue;
       }
@@ -110,7 +110,7 @@ public:
       else
         examplesSubset = examples->sampleSubset(context.getRandomGenerator(), numExamples);
     }
-    LuapeNodePtr weakNode = weakNodesByScore[0].first;
+    ExpressionPtr weakNode = weakNodesByScore[0].first;
     bestObjectiveValue = objective->computeObjectiveWithEventualStump(context, problem, weakNode, examples); // side effect on weakNode
     if (verbose)
       context.informationCallback(T("Effective budget: ") + String((int)effectiveBudget) + T(" / ") + String(totalBudget) + T(" normalized = ") + String((double)effectiveBudget / totalBudget));
@@ -125,7 +125,7 @@ protected:
 
   struct SortDoubleValuesOperator
   {
-    bool operator()(const std::pair<LuapeNodePtr, double>& a, const std::pair<LuapeNodePtr, double>& b) const
+    bool operator()(const std::pair<ExpressionPtr, double>& a, const std::pair<ExpressionPtr, double>& b) const
       {return a.second == b.second ? a.first < b.first : a.second > b.second;} // decreasing sort
   };
 

@@ -10,7 +10,7 @@
 # define LBCPP_ML_FUNCTION_VOTE_H_
 
 # include <lbcpp/Luape/Function.h>
-# include <lbcpp/Luape/LuapeNode.h>
+# include <lbcpp/Luape/Expression.h>
 # include <lbcpp/Luape/LuapeCache.h> // for LuapeSampleVector
 
 namespace lbcpp
@@ -94,7 +94,7 @@ public:
       return 0.0;
   }
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "vote(" + inputs[0]->toShortString() + ", " + Variable(vote).toShortString() + ")";}
 
 protected:
@@ -117,7 +117,7 @@ public:
     return res;
   }
 
-  virtual String makeNodeName(const std::vector<LuapeNodePtr>& inputs) const
+  virtual String makeNodeName(const std::vector<ExpressionPtr>& inputs) const
     {return "vote(" + inputs[0]->toShortString() + ", " + vote->toShortString() + ")";}
 
 protected:

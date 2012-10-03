@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_CACHE_H_
 # define LBCPP_LUAPE_CACHE_H_
 
-# include "LuapeUniverse.h"
+# include "ExpressionUniverse.h"
 # include "../Core/Vector.h"
 # include "../Data/DoubleVector.h"
 # include "../Data/IndexSet.h"
@@ -23,12 +23,12 @@ namespace lbcpp
 class LuapeInstanceCache : public Object
 {
 public:
-  void setInputObject(const std::vector<LuapeInputNodePtr>& inputs, const ObjectPtr& object);
-  void set(const LuapeNodePtr& node, const Variable& value);
-  Variable compute(ExecutionContext& context, const LuapeNodePtr& node);
+  void setInputObject(const std::vector<VariableExpressionPtr>& inputs, const ObjectPtr& object);
+  void set(const ExpressionPtr& node, const Variable& value);
+  Variable compute(ExecutionContext& context, const ExpressionPtr& node);
 
 protected:
-  typedef std::map<LuapeNodePtr, Variable> NodeToValueMap;
+  typedef std::map<ExpressionPtr, Variable> NodeToValueMap;
   NodeToValueMap m;
 };
 
@@ -206,25 +206,25 @@ public:
   /*
   ** Construction
   */
-  LuapeSamplesCache(LuapeUniversePtr universe, const std::vector<LuapeInputNodePtr>& inputs, size_t size, size_t maxCacheSizeInMb = 1024);
+  LuapeSamplesCache(ExpressionUniversePtr universe, const std::vector<VariableExpressionPtr>& inputs, size_t size, size_t maxCacheSizeInMb = 1024);
   LuapeSamplesCache() : maxCacheSize(0), actualCacheSize(0) {}
 
-  void setInputObject(const std::vector<LuapeInputNodePtr>& inputs, size_t index, const ObjectPtr& object);
+  void setInputObject(const std::vector<VariableExpressionPtr>& inputs, size_t index, const ObjectPtr& object);
 
 
   /*
   ** Cache methods
   */
-  void cacheNode(ExecutionContext& context, const LuapeNodePtr& node, const VectorPtr& values = VectorPtr(), const String& reason = String::empty, bool isRemoveable = true);
-  void uncacheNode(ExecutionContext& context, const LuapeNodePtr& node);
+  void cacheNode(ExecutionContext& context, const ExpressionPtr& node, const VectorPtr& values = VectorPtr(), const String& reason = String::empty, bool isRemoveable = true);
+  void uncacheNode(ExecutionContext& context, const ExpressionPtr& node);
   void uncacheNodes(ExecutionContext& context, size_t count);
-  void recacheNode(ExecutionContext& context, const LuapeNodePtr& node, const VectorPtr& values = VectorPtr());
+  void recacheNode(ExecutionContext& context, const ExpressionPtr& node, const VectorPtr& values = VectorPtr());
   void ensureSizeInLowerThanMaxSize(ExecutionContext& context);
   void clearCache(ExecutionContext& context);
 
-  bool isNodeCached(const LuapeNodePtr& node) const;
-  bool isNodeDefinitivelyCached(const LuapeNodePtr& node) const;
-  VectorPtr getNodeCache(const LuapeNodePtr& node) const;
+  bool isNodeCached(const ExpressionPtr& node) const;
+  bool isNodeDefinitivelyCached(const ExpressionPtr& node) const;
+  VectorPtr getNodeCache(const ExpressionPtr& node) const;
 
   size_t getNumberOfCachedNodes() const
     {return m.size();}
@@ -241,7 +241,7 @@ public:
   void recomputeCacheSize();
 
   void displayCacheInformation(ExecutionContext& context);
-  bool checkCacheIsCorrect(ExecutionContext& context, const LuapeNodePtr& node, bool recursively);
+  bool checkCacheIsCorrect(ExecutionContext& context, const ExpressionPtr& node, bool recursively);
 
   void disableCaching()
     {cachingEnabled = false;}
@@ -252,8 +252,8 @@ public:
   /*
   ** Compute operation (use all indices by default)
   */
-  LuapeSampleVectorPtr getSamples(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices = IndexSetPtr());
-  SparseDoubleVectorPtr getSortedDoubleValues(ExecutionContext& context, const LuapeNodePtr& node, const IndexSetPtr& indices = IndexSetPtr());
+  LuapeSampleVectorPtr getSamples(ExecutionContext& context, const ExpressionPtr& node, const IndexSetPtr& indices = IndexSetPtr());
+  SparseDoubleVectorPtr getSortedDoubleValues(ExecutionContext& context, const ExpressionPtr& node, const IndexSetPtr& indices = IndexSetPtr());
 
   /*
   ** Misc
@@ -261,7 +261,7 @@ public:
   const IndexSetPtr& getAllIndices() const
     {return allIndices;}
 
-  void observeNodeComputingTime(const LuapeNodePtr& node, size_t numInstances, double timeInMilliseconds);
+  void observeNodeComputingTime(const ExpressionPtr& node, size_t numInstances, double timeInMilliseconds);
 
   /*
   ** Internal
@@ -281,12 +281,12 @@ public:
   void ensureActualSizeIsCorrect() const;
 
 protected:
-  LuapeUniversePtr universe;
+  ExpressionUniversePtr universe;
 
-  typedef std::map<LuapeNodePtr, NodeCache> NodeCacheMap;
+  typedef std::map<ExpressionPtr, NodeCache> NodeCacheMap;
   NodeCacheMap m;
 
-  std::vector<LuapeInputNodePtr> inputNodes;
+  std::vector<VariableExpressionPtr> inputNodes;
   std::vector<VectorPtr> inputCaches;
   size_t maxCacheSize; // in bytes
   size_t actualCacheSize; // in bytes
@@ -297,8 +297,8 @@ protected:
 
   SparseDoubleVectorPtr computeSortedDoubleValuesSubset(const SparseDoubleVectorPtr& allValues, const IndexSetPtr& indices) const;
   SparseDoubleVectorPtr computeSortedDoubleValuesFromSamples(const LuapeSampleVectorPtr& samples) const;
-  NodeCache& getOrCreateNodeCache(const LuapeNodePtr& node);
-  bool isCandidateForCaching(const LuapeNodePtr& node) const;
+  NodeCache& getOrCreateNodeCache(const ExpressionPtr& node);
+  bool isCandidateForCaching(const ExpressionPtr& node) const;
 };
 
 typedef ReferenceCountedObjectPtr<LuapeSamplesCache> LuapeSamplesCachePtr;
