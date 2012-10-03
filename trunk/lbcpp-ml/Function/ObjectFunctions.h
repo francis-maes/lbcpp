@@ -9,8 +9,8 @@
 #ifndef LBCPP_ML_FUNCTION_OBJECT_H_
 # define LBCPP_ML_FUNCTION_OBJECT_H_
 
-# include <lbcpp/Luape/Function.h>
-# include <lbcpp/Luape/Expression.h>
+# include <lbcpp-ml/Function.h>
+# include <lbcpp-ml/Expression.h>
 # include <lbcpp/Luape/LuapeCache.h> // for LuapeSampleVector
 
 namespace lbcpp

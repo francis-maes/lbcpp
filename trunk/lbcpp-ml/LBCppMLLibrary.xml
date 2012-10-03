@@ -5,6 +5,8 @@
   <import name="Comparator"/>
   <import name="Sampler"/>
   <import name="Optimizer"/>
+  <import name="Function"/>
+  <import name="Expression"/>
   
   <include file="lbcpp-ml/Problem.h"/>
 
@@ -47,22 +49,5 @@
   </class>
   <class name="SingleObjectiveEvaluatorDecoratorProblem" base="EvaluatorDecoratorProblem"/>
   <class name="HyperVolumeEvaluatorDecoratorProblem" base="EvaluatorDecoratorProblem"/>
-
-  <!--
-  <class name="ProblemFromSharkObjectiveFunction" base="Problem" abstract="yes"/>
-
-  <class name="SingleObjectiveSharkMOProblem" base="ProblemFromSharkObjectiveFunction" abstract="yes"/>
-  <class name="AckleyProblem" base="SingleObjectiveSharkMOProblem"/>
-  <class name="GriewangkProblem" base="SingleObjectiveSharkMOProblem"/>
-  <class name="RastriginProblem" base="SingleObjectiveSharkMOProblem"/>
-  <class name="RosenbrockProblem" base="SingleObjectiveSharkMOProblem"/>
-  <class name="RosenbrockRotatedProblem" base="SingleObjectiveSharkMOProblem"/>
-
-  <class name="ZDTMOProblem" base="ProblemFromSharkObjectiveFunction" abstract="yes"/>
-  <class name="ZDT1MOProblem" base="ZDTMOProblem"/>
-  <class name="ZDT2MOProblem" base="ZDTMOProblem"/>
-  <class name="ZDT3MOProblem" base="ZDTMOProblem"/>
-  <class name="ZDT4MOProblem" base="ZDTMOProblem"/>
-  <class name="ZDT6MOProblem" base="ZDTMOProblem"/> -->
 
 </library>

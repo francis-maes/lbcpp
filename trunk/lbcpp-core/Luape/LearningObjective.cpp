@@ -9,7 +9,7 @@
 #include <lbcpp/Luape/LearningObjective.h>
 #include <lbcpp/Luape/LuapeCache.h>
 #include "NodeBuilder/NodeBuilderTypeSearchSpace.h"
-#include "Function/SpecialFunctions.h" // for StumpFunction
+#include "../../lbcpp-ml/Function/SpecialFunctions.h" // for StumpFunction
 using namespace lbcpp;
 
 /*

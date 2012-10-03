@@ -27,7 +27,6 @@ GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/LuapeLibrary.xml LuapeLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/NodeBuilder/ExpressionBuilderLibrary.xml ExpressionBuilderLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Luape/Learner/LuapeLearnerLibrary.xml LuapeLearnerLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Luape/Function/FunctionLibrary.xml FunctionLibrary.cpp)
 
 IF(LBCPP_USER_INTERFACE)
   GENERATE_INTROSPECTION_CODE(UserInterface/Component/UserInterfaceComponentLibrary.xml UserInterfaceComponentLibrary.cpp)
@@ -259,14 +258,8 @@ SET(LBCPP_OPTIMIZER_SOURCES
 
 SET(LBCPP_LUAPE_SOURCES
   ../include/lbcpp/Luape/predeclarations.h
-  ../include/lbcpp/Luape/Function.h
-  Luape/Function.cpp
-  ../include/lbcpp/Luape/ExpressionUniverse.h
-  Luape/ExpressionUniverse.cpp
   ../include/lbcpp/Luape/LuapeCache.h
   Luape/LuapeCache.cpp
-  ../include/lbcpp/Luape/Expression.h
-  Luape/Expression.cpp
   ../include/lbcpp/Luape/LuapeInference.h
   Luape/LuapeInference.cpp
   ../include/lbcpp/Luape/ExpressionBuilder.h
@@ -277,19 +270,6 @@ SET(LBCPP_LUAPE_SOURCES
   Luape/LuapeLearner.cpp
   Luape/LuapeLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LuapeLibrary.cpp
-)
-
-SET(LBCPP_LUAPE_FUNCTION_SOURCES
-  Luape/Function/BooleanFunctions.h
-  Luape/Function/IntegerFunctions.h
-  Luape/Function/DoubleFunctions.h
-  Luape/Function/EnumerationFunctions.h
-  Luape/Function/ObjectFunctions.h
-  Luape/Function/DoubleVectorFunctions.h
-  Luape/Function/SpecialFunctions.h
-  Luape/Function/VoteFunctions.h
-  Luape/Function/FunctionLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/FunctionLibrary.cpp
 )
 
 SET(LBCPP_LUAPE_NODE_BUILDER_SOURCES
@@ -465,9 +445,8 @@ SET(LBCPP_SOURCES
  
   # Luape
   ${LBCPP_LUAPE_SOURCES}
-    ${LBCPP_LUAPE_FUNCTION_SOURCES}
     ${LBCPP_LUAPE_NODE_BUILDER_SOURCES}
-	  ${LBCPP_LUAPE_LEARNER_SOURCES}
+    ${LBCPP_LUAPE_LEARNER_SOURCES}
       ${LBCPP_LUAPE_LEARNER_BOOSTING_SOURCES}
       ${LBCPP_LUAPE_LEARNER_WEAK_SOURCES}
       ${LBCPP_LUAPE_LEARNER_META_SOURCES}	  
@@ -519,7 +498,6 @@ SOURCE_SUB_GROUP(CleanMe Optimizer FILES ${LBCPP_OPTIMIZER_SOURCES})
 
 ## Luape
 SOURCE_SUB_GROUP(CleanMe Luape FILES ${LBCPP_LUAPE_SOURCES})
-SOURCE_SUB_GROUP2(CleanMe Luape Function FILES ${LBCPP_LUAPE_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP2(CleanMe Luape NodeBuilder FILES ${LBCPP_LUAPE_NODE_BUILDER_SOURCES})
 SOURCE_SUB_GROUP2(CleanMe Luape Learner FILES ${LBCPP_LUAPE_LEARNER_SOURCES})
 SOURCE_SUB_GROUP3(CleanMe Luape Learner Boosting FILES ${LBCPP_LUAPE_LEARNER_BOOSTING_SOURCES})

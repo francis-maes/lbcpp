@@ -14,27 +14,6 @@
 namespace lbcpp
 {
 
-class Expression;
-typedef ReferenceCountedObjectPtr<Expression> ExpressionPtr;
-
-class VariableExpression;
-typedef ReferenceCountedObjectPtr<VariableExpression> VariableExpressionPtr;
-
-class ConstantExpression;
-typedef ReferenceCountedObjectPtr<ConstantExpression> ConstantExpressionPtr;
-
-class FunctionExpression;
-typedef ReferenceCountedObjectPtr<FunctionExpression> FunctionExpressionPtr;
-
-class TestExpression;
-typedef ReferenceCountedObjectPtr<TestExpression> TestExpressionPtr;
-
-class VectorSumExpression;
-typedef ReferenceCountedObjectPtr<VectorSumExpression> VectorSumExpressionPtr;
-
-class CreateSparseVectorExpression;
-typedef ReferenceCountedObjectPtr<CreateSparseVectorExpression> CreateSparseVectorExpressionPtr;
-
 class LuapeSampleVector;
 typedef ReferenceCountedObjectPtr<LuapeSampleVector> LuapeSampleVectorPtr;
 

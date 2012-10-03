@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Luape/LuapeCache.h>
-#include <lbcpp/Luape/Expression.h>
+#include <lbcpp-ml/Expression.h>
 #include <lbcpp/Core/DynamicObject.h>
 #include <algorithm>
 using namespace lbcpp;

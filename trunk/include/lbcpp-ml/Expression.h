@@ -10,10 +10,15 @@
 # define LBCPP_LUAPE_NODE_H_
 
 # include "Function.h"
-# include "../Data/IndexSet.h"
+# include <lbcpp/Data/IndexSet.h>
 
 namespace lbcpp
 {
+
+class LuapeInstanceCache;
+typedef ReferenceCountedObjectPtr<LuapeInstanceCache> LuapeInstanceCachePtr;
+class LuapeSamplesCache;
+typedef ReferenceCountedObjectPtr<LuapeSamplesCache> LuapeSamplesCachePtr;
 
 class Expression : public Object
 {

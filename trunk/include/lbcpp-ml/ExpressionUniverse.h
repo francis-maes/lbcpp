@@ -11,7 +11,8 @@
 
 # include "predeclarations.h"
 # include "Function.h"
-# include "../Data/RandomVariable.h"
+# include "Expression.h"
+# include <lbcpp/Data/RandomVariable.h>
 
 namespace lbcpp
 {

@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<library name="Function" directory="Luape/Function">
+<library name="Function" directory="Function">
 
-  <!-- Luape Functions - Booleans -->
+  <!-- Base classes -->
+  <class name="Function" abstract="yes"/>
+  <class name="HomogeneousUnaryFunction" base="Function" abstract="yes"/>
+  <class name="HomogeneousBinaryFunction" base="Function" abstract="yes"/>
+
+  <!-- Boolean Functions -->
   <class name="BinaryBooleanFunction" base="HomogeneousBinaryFunction" abstract="yes"/>
   <class name="AndBooleanFunction" base="BinaryBooleanFunction">
     <constructor returnType="Function"/>
@@ -11,7 +16,7 @@
     <constructor returnType="Function"/>
   </class>
 
-  <!-- Luape Functions - Integers -->
+  <!-- Integer Functions -->
   <class name="BinaryIntegerFunction" base="HomogeneousBinaryFunction" abstract="yes"/>
   <class name="AddIntegerFunction" base="BinaryIntegerFunction">
     <constructor returnType="Function"/>
@@ -26,7 +31,7 @@
     <constructor returnType="Function"/>
   </class>
 
-  <!-- Luape Functions - Doubles -->
+  <!-- Double Functions -->
   <class name="UnaryDoubleFunction" base="HomogeneousBinaryFunction" abstract="yes"/>
 
   <class name="OppositeDoubleFunction" base="UnaryDoubleFunction">
@@ -84,14 +89,14 @@
     <constructor returnType="Function"/>
   </class>
 
-  <!-- Luape Functions - Enumerations -->
+  <!-- Enumeration Functions -->
   <class name="EqualsConstantEnumFunction" base="Function">
     <constructor arguments="EnumerationPtr enumeration, size_t value"/>
     <variable type="Enumeration" name="enumeration"/>
     <variable type="PositiveInteger" name="value"/>
   </class>
 
-  <!-- Luape Functions - Objects -->
+  <!-- Object Functions -->
   <class name="UnaryObjectFunction" base="Function" abstract="yes"/>
   <class name="GetVariableFunction" base="UnaryObjectFunction">
     <constructor arguments="ClassPtr inputClass, size_t variableIndex" returnType="Function"/>
@@ -103,7 +108,7 @@
     <constructor/>
   </class>
 
-  <!-- Luape Functions - DoubleVectors -->
+  <!-- DoubleVector Functions -->
   <class name="GetDoubleVectorElementFunction" base="Function">
     <constructor arguments="EnumerationPtr enumeration, size_t index"/>
     <variable type="Enumeration" name="enumeration"/>
@@ -129,13 +134,13 @@
     <variable type="Enumeration" name="enumeration"/>
   </class>
 
-  <!-- Luape Functions - Special -->
+  <!-- Special Functions -->
   <class name="StumpFunction" base="Function">
     <constructor arguments="double threshold"/>
     <variable type="Double" name="threshold"/>
   </class>
   
-  <!-- Luape Functions - Votes -->
+  <!-- Vote Functions -->
   <class name="VoteFunction" base="Function" abstract="yes"/>
   <class name="ScalarVoteFunction" base="VoteFunction">
     <constructor arguments="double vote" returnType="Function"/>

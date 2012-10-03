@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Expression" directory="Expression">
+
+  <include file="lbcpp-ml/Expression.h"/>
+  <include file="lbcpp-ml/ExpressionUniverse.h"/>
+    
+ 
+  <!-- Nodes -->
+  <class name="Expression" base="Object" abstract="yes">
+    <variable type="Type" name="type"/>
+    <!-- <variable type="PositiveInteger" name="allocationIndex"/> -->
+  </class>
+  <class name="VariableExpression" base="Expression">
+    <variable type="String" name="name"/>
+    <variable type="PositiveInteger" name="inputIndex"/>
+  </class>
+  <class name="ConstantExpression" base="Expression">
+    <variable type="Variable" name="value"/>
+  </class>
+  <class name="FunctionExpression" base="Expression">
+    <variable type="Function" name="function"/>
+    <variable type="ObjectVector[Expression]" name="arguments"/>
+  </class>
+  <class name="SequenceExpression" base="Expression" abstract="yes">
+    <variable type="ObjectVector[Expression]" name="nodes"/>
+  </class>
+  <class name="ScalarSumExpression" base="SequenceExpression">
+    <variable type="Boolean" name="convertToProbabilities"/>
+    <variable type="Boolean" name="computeAverage"/>
+  </class>
+  <class name="VectorSumExpression" base="SequenceExpression">
+    <variable type="Boolean" name="convertToProbabilities"/>
+  </class>
+  <class name="CreateSparseVectorExpression" base="SequenceExpression"/>
+  <class name="TestExpression" base="Expression">
+    <variable type="Expression" name="conditionNode"/>
+    <variable type="Expression" name="failureNode"/>
+    <variable type="Expression" name="successNode"/>
+    <variable type="Expression" name="missingNode"/>
+  </class>
+
+  <!-- Universe -->
+  <class name="ExpressionUniverse" base="Object"/>
+  
+</library>

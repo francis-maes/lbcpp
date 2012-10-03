@@ -8,6 +8,8 @@ GENERATE_INTROSPECTION_CODE(LBCppMLLibrary.xml LBCppMLLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Comparator/ComparatorLibrary.xml ComparatorLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Sampler/SamplerLibrary.xml SamplerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Function/FunctionLibrary.xml FunctionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Expression/ExpressionLibrary.xml ExpressionLibrary.cpp)
 
 SET(LBCPP_ML_INCLUDES 
   ../include/lbcpp-ml/predeclarations.h
@@ -19,6 +21,9 @@ SET(LBCPP_ML_INCLUDES
   ../include/lbcpp-ml/Problem.h
   ../include/lbcpp-ml/Sampler.h
   ../include/lbcpp-ml/Optimizer.h
+  ../include/lbcpp-ml/Function.h
+  ../include/lbcpp-ml/Expression.h
+  ../include/lbcpp-ml/ExpressionUniverse.h
 )
 
 SET(LBCPP_ML_OPTIMIZER_SOURCES
@@ -49,6 +54,27 @@ SET(LBCPP_ML_COMPARATOR_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/ComparatorLibrary.cpp
 )
 
+SET(LBCPP_ML_FUNCTION_SOURCES
+  Function/BooleanFunctions.h
+  Function/IntegerFunctions.h
+  Function/DoubleFunctions.h
+  Function/EnumerationFunctions.h
+  Function/ObjectFunctions.h
+  Function/DoubleVectorFunctions.h
+  Function/SpecialFunctions.h
+  Function/VoteFunctions.h
+  Function/Function.cpp
+  Function/FunctionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/FunctionLibrary.cpp
+)
+
+SET(LBCPP_ML_EXPRESSION_SOURCES
+  Expression/ExpressionUniverse.cpp
+  Expression/Expression.cpp
+  Expression/ExpressionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ExpressionLibrary.cpp
+)
+
 SET(LBCPP_ML_TOPLEVEL_SOURCES
   SolutionSet.cpp
   SolutionSetComponent.h
@@ -69,6 +95,8 @@ SET(LBCPP_ML_SOURCES
   ${LBCPP_ML_OPTIMIZER_SOURCES}
   ${LBCPP_ML_SAMPLER_SOURCES}
   ${LBCPP_ML_COMPARATOR_SOURCES}
+  ${LBCPP_ML_FUNCTION_SOURCES}
+  ${LBCPP_ML_EXPRESSION_SOURCES}
   ${LBCPP_ML_TOPLEVEL_SOURCES}
   ${LBCPP_ML_MAIN_SOURCES}
 )
@@ -78,6 +106,8 @@ SOURCE_GROUP(Include FILES ${LBCPP_ML_INCLUDES})
 SOURCE_GROUP(Optimizer FILES ${LBCPP_ML_OPTIMIZER_SOURCES})
 SOURCE_GROUP(Sampler FILES ${LBCPP_ML_SAMPLER_SOURCES})
 SOURCE_GROUP(Comparator FILES ${LBCPP_ML_COMPARATOR_SOURCES})
+SOURCE_GROUP(Function FILES ${LBCPP_ML_FUNCTION_SOURCES})
+SOURCE_GROUP(Expression FILES ${LBCPP_ML_EXPRESSION_SOURCES})
 SOURCE_GROUP(Main FILES ${LBCPP_ML_MAIN_SOURCES})
 
 IF (UNIX)

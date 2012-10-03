@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ExpressionBuilder.h             | Node Builder base classes       |
+| Filename: ExpressionBuilder.h            | Node Builder base classes       |
 | Author  : Francis Maes                   |                                 |
 | Started : 03/01/2012 17:28               |                                 |
 `------------------------------------------/                                 |
@@ -9,8 +9,9 @@
 #ifndef LBCPP_LUAPE_NODE_BUILDER_H_
 # define LBCPP_LUAPE_NODE_BUILDER_H_
 
-# include "Expression.h"
-# include "ExpressionUniverse.h"
+# include "predeclarations.h"
+# include <lbcpp-ml/Expression.h>
+# include <lbcpp-ml/ExpressionUniverse.h>
 # include <lbcpp/DecisionProblem/Policy.h>
 
 namespace lbcpp

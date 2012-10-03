@@ -10,10 +10,14 @@
 # define LBCPP_ML_FUNCTION_H_
 
 # include "predeclarations.h"
-# include "../Core/Variable.h"
+# include <lbcpp/Core/Variable.h>
+# include <lbcpp/Core/Vector.h>
 
 namespace lbcpp
 {
+
+class LuapeSampleVector;
+typedef ReferenceCountedObjectPtr<LuapeSampleVector> LuapeSampleVectorPtr;
 
 class Function : public Object
 {
