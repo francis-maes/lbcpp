@@ -22,9 +22,9 @@ public:
     : optimizer(optimizer), complexity(complexity), useRandomSplit(useRandomSplit), totalNumCalls(0), totalNumUniqueCalls(0) {}
   OptimizerBasedSequentialWeakLearner() : complexity(0), totalNumCalls(0), totalNumUniqueCalls(0) {}
 
-  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples)
   {
-    LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = problem->getSearchSpace(context, complexity, verbose);
+    ExpressionRPNTypeSpacePtr typeSearchSpace = problem->getSearchSpace(context, complexity, verbose);
     ObjectivePtr objective = new Objective(refCountedPointerFromThis(this), problem, examples, useRandomSplit);
     OptimizationProblemPtr optimizationProblem = new OptimizationProblem(objective);
     optimizationProblem->setMaximisationProblem(true);
@@ -73,7 +73,7 @@ protected:
   struct Objective : public SimpleUnaryFunction
   {
     Objective(LuapeLearnerPtr weakLearner,
-              LuapeInferencePtr problem,
+              ExpressionDomainPtr problem,
               const IndexSetPtr& examples,
               bool useRandomSplit)
        : SimpleUnaryFunction(luapeNodeBuilderStateClass, doubleType),
@@ -125,7 +125,7 @@ protected:
 
   private:
     LuapeLearnerPtr weakLearner;
-    LuapeInferencePtr problem;
+    ExpressionDomainPtr problem;
     IndexSetPtr examples;
     bool useRandomSplit;
 

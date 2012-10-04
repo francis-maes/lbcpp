@@ -130,9 +130,9 @@ public:
     : StochasticNodeBuilder(numNodes), policy(policy), complexity(complexity) {}
   PolicyBasedNodeBuilder() : complexity(0) {}
 
-  virtual ExpressionPtr sampleNode(ExecutionContext& context, const LuapeInferencePtr& function)
+  virtual ExpressionPtr sampleNode(ExecutionContext& context, const ExpressionDomainPtr& function)
   {
-    LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = function->getSearchSpace(context, complexity);
+    ExpressionRPNTypeSpacePtr typeSearchSpace = function->getSearchSpace(context, complexity);
     ExpressionBuilderStatePtr builder = new ExpressionBuilderState(function, typeSearchSpace);
 
     bool noMoreActions = false;
@@ -180,7 +180,7 @@ public:
     static const bool computeOptimalLearner = false;
     jassert(examples.size());
 
-    const LuapeInferencePtr& function = structureLearner->getFunction();
+    const ExpressionDomainPtr& function = structureLearner->getFunction();
 
     double optimalWeakObjective = -DBL_MAX;
     ExpressionPtr optimalWeakLearner;

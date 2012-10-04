@@ -23,7 +23,7 @@ public:
     : learners(2) {learners[0] = learner1; learners[1] = learner2;}
   CompositeLearner() {}
 
-  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples)
   {
     // default behavior is sequential
     ExpressionPtr res = node;

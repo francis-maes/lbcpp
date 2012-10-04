@@ -8,7 +8,8 @@
 #include "precompiled.h"
 #include <lbcpp/Luape/LearningObjective.h>
 #include <lbcpp/Luape/LuapeCache.h>
-#include "NodeBuilder/NodeBuilderTypeSearchSpace.h"
+#include <lbcpp/Luape/LuapeInference.h>
+#include <lbcpp-ml/ExpressionRPN.h>
 #include "../../lbcpp-ml/Function/SpecialFunctions.h" // for StumpFunction
 using namespace lbcpp;
 
@@ -30,7 +31,7 @@ double LearningObjective::compute(const LuapeSampleVectorPtr& predictions)
   return computeObjective();
 }
 
-double LearningObjective::computeObjectiveWithEventualStump(ExecutionContext& context, const LuapeInferencePtr& problem, ExpressionPtr& weakNode, const IndexSetPtr& examples)
+double LearningObjective::computeObjectiveWithEventualStump(ExecutionContext& context, const ExpressionDomainPtr& problem, ExpressionPtr& weakNode, const IndexSetPtr& examples)
 {
   jassert(examples->size());
   if (weakNode->getType() == booleanType)
@@ -241,7 +242,7 @@ double BinaryClassificationLearningObjective::computeObjective()
 /*
 ** ClassificationLearningObjective
 */
-void ClassificationLearningObjective::initialize(const LuapeInferencePtr& problem)
+void ClassificationLearningObjective::initialize(const ExpressionDomainPtr& problem)
 {
   doubleVectorClass = problem.staticCast<LuapeClassifier>()->getDoubleVectorClass();
   labels = DoubleVector::getElementsEnumeration(doubleVectorClass);
@@ -255,7 +256,7 @@ void ClassificationLearningObjective::initialize(const LuapeInferencePtr& proble
 InformationGainBinaryLearningObjective::InformationGainBinaryLearningObjective(bool normalize)
   : normalize(normalize) {}
 
-void InformationGainBinaryLearningObjective::initialize(const LuapeInferencePtr& problem)
+void InformationGainBinaryLearningObjective::initialize(const ExpressionDomainPtr& problem)
 {
   static const TypePtr denseVectorClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
   BinaryClassificationLearningObjective::initialize(problem);
@@ -353,7 +354,7 @@ Variable InformationGainBinaryLearningObjective::computeVote(const IndexSetPtr& 
 InformationGainLearningObjective::InformationGainLearningObjective(bool normalize)
   : normalize(normalize) {}
 
-void InformationGainLearningObjective::initialize(const LuapeInferencePtr& problem)
+void InformationGainLearningObjective::initialize(const ExpressionDomainPtr& problem)
 {
   ClassificationLearningObjective::initialize(problem);
   splitWeights = new DenseDoubleVector(3, 0.0); // prediction probabilities

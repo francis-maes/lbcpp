@@ -4,18 +4,11 @@
   <include file="lbcpp/Luape/ExpressionBuilder.h"/>
 
 
-  <!-- Builder Type Search Space -->
-  <class name="LuapeGraphBuilderTypeState">
-    <variable type="PositiveInteger" name="depth"/>
-    <variable type="ObjectVector[Type]" name="stack"/>
-  </class>
-  <class name="LuapeGraphBuilderTypeSearchSpace"/>
-
   <!-- Builder Decision Problem -->
   <class name="ExpressionBuilderState" base="DecisionProblemState">
-    <variable type="LuapeInference" name="function"/>
-    <variable type="LuapeGraphBuilderTypeSearchSpace" name="typeSearchSpace"/>
-    <variable type="LuapeGraphBuilderTypeState" name="typeState"/>
+    <variable type="ExpressionDomain" name="function"/>
+    <variable type="ExpressionRPNTypeSpace" name="typeSearchSpace"/>
+    <variable type="ExpressionExpressionRPNTypeState" name="typeState"/>
     <variable type="ObjectVector[Object]" name="availableActions"/>
     <variable type="ObjectVector[Expression]" name="stack"/>
     <variable type="PositiveInteger" name="numSteps"/>

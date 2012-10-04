@@ -274,7 +274,6 @@ SET(LBCPP_LUAPE_SOURCES
 
 SET(LBCPP_LUAPE_NODE_BUILDER_SOURCES
   Luape/NodeBuilder/NodeBuilderDecisionProblem.h
-  Luape/NodeBuilder/NodeBuilderTypeSearchSpace.h
   Luape/NodeBuilder/SingletonNodeBuilder.h
   Luape/NodeBuilder/CompositeNodeBuilder.h
   Luape/NodeBuilder/InputsNodeBuilder.h

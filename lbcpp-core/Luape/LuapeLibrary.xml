@@ -12,27 +12,21 @@
   <include file="lbcpp/Luape/ExpressionBuilder.h"/>
 
   <!-- Inference -->
-  <class name="LuapeInference" base="Object" abstract="yes">
-<!--    <variable type="ExpressionUniverse" name="universe"/>
-    <variable type="ObjectVector[VariableExpression]" name="inputs"/>
-    <variable type="ObjectVector[Function]" name="functions"/>
-    <variable type="Expression" name="node"/> --> <!--TODO: split LuapeInference from LuapeProblem-->
-  </class>
-  <class name="LuapeBinaryClassifier" base="LuapeInference">
+  <class name="LuapeBinaryClassifier" base="ExpressionDomain">
     <constructor/>
   </class>
-  <class name="LuapeClassifier" base="LuapeInference">
+  <class name="LuapeClassifier" base="ExpressionDomain">
     <constructor/>
   </class>
-  <class name="LuapeRanker" base="LuapeInference">
+  <class name="LuapeRanker" base="ExpressionDomain">
     <constructor/>
   </class>
-  <class name="LuapeRegressor" base="LuapeInference">
+  <class name="LuapeRegressor" base="ExpressionDomain">
     <constructor/>
   </class>
 
   <!-- Node Builders -->
-  <class name="LuapeRPNSequence" base="Object">
+  <class name="ExpressionRPNSequence" base="Object">
     <variable type="ObjectVector[Object]" name="sequence"/>
   </class>
   

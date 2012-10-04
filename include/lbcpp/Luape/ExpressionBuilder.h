@@ -12,51 +12,16 @@
 # include "predeclarations.h"
 # include <lbcpp-ml/Expression.h>
 # include <lbcpp-ml/ExpressionUniverse.h>
+# include <lbcpp-ml/ExpressionRPN.h>
 # include <lbcpp/DecisionProblem/Policy.h>
 
 namespace lbcpp
 {
 
-class LuapeRPNSequence;
-typedef ReferenceCountedObjectPtr<LuapeRPNSequence> LuapeRPNSequencePtr;
-
-class LuapeRPNSequence : public Object
-{
-public:
-  LuapeRPNSequence(const std::vector<ObjectPtr>& sequence);
-  LuapeRPNSequence() {}
-
-  static LuapeRPNSequencePtr fromNode(const ExpressionPtr& node);
-  ExpressionPtr toNode(const ExpressionUniversePtr& universe) const;
-
-  static void apply(const ExpressionUniversePtr& universe, std::vector<ExpressionPtr>& stack, const ObjectPtr& element);
-
-  void appendNode(const ExpressionPtr& node);
-  void append(const ObjectPtr& action)
-    {sequence.push_back(action);}
-
-  size_t getLength() const
-    {return sequence.size();}
-
-  const ObjectPtr& getElement(size_t index) const
-    {jassert(index < sequence.size()); return sequence[index];}
-
-  bool startsWith(const LuapeRPNSequencePtr& start) const;
-
-  virtual String toShortString() const;
-
-  std::vector<TypePtr> computeTypeState(const std::vector<TypePtr>& initialState = std::vector<TypePtr>()) const;
-
-private:
-  friend class LuapeRPNSequenceClass;
-
-  std::vector<ObjectPtr> sequence;
-};
-
 class ExpressionBuilder : public Object
 {
 public:
-  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<ExpressionPtr>& res) = 0;
+  virtual void buildNodes(ExecutionContext& context, const ExpressionDomainPtr& function, size_t maxCount, std::vector<ExpressionPtr>& res) = 0;
 };
 
 typedef ReferenceCountedObjectPtr<ExpressionBuilder> ExpressionBuilderPtr;
@@ -72,9 +37,9 @@ class StochasticNodeBuilder : public ExpressionBuilder
 public:
   StochasticNodeBuilder(size_t numNodes = 0);
 
-  virtual ExpressionPtr sampleNode(ExecutionContext& context, const LuapeInferencePtr& function) = 0;
+  virtual ExpressionPtr sampleNode(ExecutionContext& context, const ExpressionDomainPtr& function) = 0;
 
-  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<ExpressionPtr>& res);
+  virtual void buildNodes(ExecutionContext& context, const ExpressionDomainPtr& function, size_t maxCount, std::vector<ExpressionPtr>& res);
 
 protected:
   friend class StochasticNodeBuilderClass;
@@ -96,9 +61,9 @@ public:
   SequentialNodeBuilder(size_t numNodes, size_t complexity);
   SequentialNodeBuilder() {}
 
-  virtual bool sampleAction(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeGraphBuilderTypeStatePtr typeState, ObjectPtr& res) const = 0;
+  virtual bool sampleAction(ExecutionContext& context, const ExpressionDomainPtr& problem, ExpressionRPNTypeStatePtr typeState, ObjectPtr& res) const = 0;
 
-  virtual ExpressionPtr sampleNode(ExecutionContext& context, const LuapeInferencePtr& problem);
+  virtual ExpressionPtr sampleNode(ExecutionContext& context, const ExpressionDomainPtr& problem);
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
@@ -110,10 +75,10 @@ protected:
   size_t complexity;
 
   ExpressionUniversePtr universe;
-  LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
+  ExpressionRPNTypeSpacePtr typeSearchSpace;
 
   static bool isActionAvailable(ObjectPtr action, const std::vector<ExpressionPtr>& stack);
-  LuapeGraphBuilderTypeStatePtr getTypeState(size_t stepNumber, const std::vector<ExpressionPtr>& stack) const;
+  ExpressionRPNTypeStatePtr getTypeState(size_t stepNumber, const std::vector<ExpressionPtr>& stack) const;
   void executeAction(std::vector<ExpressionPtr>& stack, const ObjectPtr& action) const;
 };
 

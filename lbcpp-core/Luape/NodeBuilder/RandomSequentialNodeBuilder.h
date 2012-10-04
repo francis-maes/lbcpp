@@ -9,7 +9,6 @@
 #ifndef LBCPP_LUAPE_NODE_BUILDER_RANDOM_SEQUENTIAL_H_
 # define LBCPP_LUAPE_NODE_BUILDER_RANDOM_SEQUENTIAL_H_
 
-# include "NodeBuilderTypeSearchSpace.h"
 # include <lbcpp/Luape/ExpressionBuilder.h>
 
 namespace lbcpp
@@ -22,7 +21,7 @@ public:
     : SequentialNodeBuilder(numNodes, complexity) {}
   RandomSequentialNodeBuilder() {}
 
-  virtual bool sampleAction(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeGraphBuilderTypeStatePtr typeState, ObjectPtr& res) const
+  virtual bool sampleAction(ExecutionContext& context, const ExpressionDomainPtr& problem, ExpressionRPNTypeStatePtr typeState, ObjectPtr& res) const
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
     if (!typeState)
@@ -62,7 +61,7 @@ public:
 
     case 1: // apply
       {
-        const std::vector<std::pair<FunctionPtr, LuapeGraphBuilderTypeStatePtr> >& apply = typeState->getApplyActions();
+        const std::vector<std::pair<FunctionPtr, ExpressionRPNTypeStatePtr> >& apply = typeState->getApplyActions();
         jassert(apply.size());
         if (apply.empty())
           return false;
@@ -86,7 +85,7 @@ public:
     : SequentialNodeBuilder(numNodes, complexity), initialImportance(initialImportance), counter((size_t)-1) {}
   BiasedRandomSequentialNodeBuilder() : counter((size_t)-1) {}
 
-  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
+  virtual void buildNodes(ExecutionContext& context, const ExpressionDomainPtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
   {
     if (!function->getRootNode() || function->getRootNode()->getNumSubNodes() != counter)
     {
@@ -121,7 +120,7 @@ public:
     SequentialNodeBuilder::buildNodes(context, function, maxCount, res);
   }
 
-  virtual bool sampleAction(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeGraphBuilderTypeStatePtr typeState, ObjectPtr& res) const
+  virtual bool sampleAction(ExecutionContext& context, const ExpressionDomainPtr& problem, ExpressionRPNTypeStatePtr typeState, ObjectPtr& res) const
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
     if (!typeState)
@@ -158,7 +157,7 @@ public:
 
     case 1: // apply
       {
-        const std::vector<std::pair<FunctionPtr, LuapeGraphBuilderTypeStatePtr> >& apply = typeState->getApplyActions();
+        const std::vector<std::pair<FunctionPtr, ExpressionRPNTypeStatePtr> >& apply = typeState->getApplyActions();
         jassert(apply.size());
         if (apply.empty())
           return false;

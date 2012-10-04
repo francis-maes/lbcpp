@@ -21,9 +21,9 @@ public:
     : BoostingLearner(new RegressionLearningObjective(), weakLearner, maxIterations, treeDepth), learningRate(learningRate) {}
   GradientBoostingLearner() : learningRate(0.0) {}
 
-  virtual void computeLoss(const LuapeInferencePtr& problem, const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const = 0;
+  virtual void computeLoss(const ExpressionDomainPtr& problem, const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const = 0;
 
-  virtual bool doLearningIteration(ExecutionContext& context, ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
+  virtual bool doLearningIteration(ExecutionContext& context, ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
     {
       TimedScope _(context, "compute residuals");
@@ -40,7 +40,7 @@ public:
     return BoostingLearner::doLearningIteration(context, node, problem, examples, trainingScore, validationScore);
   }
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& failureVote, Variable& successVote, Variable& missingVote) const
+  virtual bool computeVotes(ExecutionContext& context, const ExpressionDomainPtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& failureVote, Variable& successVote, Variable& missingVote) const
   {
     SequenceExpressionPtr sequence = problem->getRootNode().staticCast<SequenceExpression>();
     VectorPtr predictions = problem->getTrainingPredictions();
@@ -83,7 +83,7 @@ public:
     return true;
   }
 
-  virtual ExpressionPtr turnWeakNodeIntoContribution(ExecutionContext& context, const ExpressionPtr& weakNode, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double weakObjective) const
+  virtual ExpressionPtr turnWeakNodeIntoContribution(ExecutionContext& context, const ExpressionPtr& weakNode, const ExpressionDomainPtr& problem, const IndexSetPtr& examples, double weakObjective) const
   {
     const ExpressionUniversePtr& universe = problem->getUniverse();
 
@@ -127,7 +127,7 @@ public:
     : GradientBoostingLearner(weakLearner, maxIterations, learningRate, treeDepth) {}
   L2BoostingLearner() {}
 
-  virtual void computeLoss(const LuapeInferencePtr& problem, const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const
+  virtual void computeLoss(const ExpressionDomainPtr& problem, const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const
   { 
     if (lossValue)
       *lossValue = 0.0;
@@ -153,7 +153,7 @@ public:
       (*lossGradient)->multiplyByScalar(-1.0);
   }
 
-  virtual bool computeVotes(ExecutionContext& context, const LuapeInferencePtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& failureVote, Variable& successVote, Variable& missingVote) const
+  virtual bool computeVotes(ExecutionContext& context, const ExpressionDomainPtr& problem, const LuapeSampleVectorPtr& weakPredictions, Variable& failureVote, Variable& successVote, Variable& missingVote) const
   {
     RegressionLearningObjectivePtr objective = this->objective.staticCast<RegressionLearningObjective>();
     objective->setPredictions(weakPredictions);
@@ -171,7 +171,7 @@ public:
     : GradientBoostingLearner(weakLearner, maxIterations, learningRate, treeDepth), rankingLoss(rankingLoss) {}
   RankingGradientBoostingLearner() {}
 
-  virtual void computeLoss(const LuapeInferencePtr& problem, const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const
+  virtual void computeLoss(const ExpressionDomainPtr& problem, const DenseDoubleVectorPtr& predictions, double* lossValue, DenseDoubleVectorPtr* lossGradient) const
   {
     if (lossValue)
       *lossValue = 0.0;

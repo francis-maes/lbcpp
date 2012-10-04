@@ -3,6 +3,7 @@
 <library name="Expression" directory="Expression">
 
   <include file="lbcpp-ml/Expression.h"/>
+  <include file="lbcpp-ml/ExpressionDomain.h"/>
   <include file="lbcpp-ml/ExpressionUniverse.h"/>
     
  
@@ -42,5 +43,15 @@
 
   <!-- Universe -->
   <class name="ExpressionUniverse" base="Object"/>
-  
+
+  <class name="ExpressionDomain" base="Domain"/>
+
+
+  <!-- Builder Type Search Space -->
+  <class name="ExpressionRPNTypeState">
+    <variable type="PositiveInteger" name="depth"/>
+    <variable type="ObjectVector[Type]" name="stack"/>
+  </class>
+  <class name="ExpressionRPNTypeSpace"/>
+
 </library>
