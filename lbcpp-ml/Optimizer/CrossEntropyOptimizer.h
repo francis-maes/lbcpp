@@ -48,7 +48,7 @@ public:
     if (elitist)
       currentParents = selectedPopulation;
 
-    return !currentSampler->isDegenerate();
+    return !currentSampler->isDeterministic();
   }
 
   virtual void clear(ExecutionContext& context)

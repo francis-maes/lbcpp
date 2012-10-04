@@ -20,11 +20,14 @@ public:
   virtual void initialize(ExecutionContext& context, const DomainPtr& domain) = 0;
 
   virtual ObjectPtr sample(ExecutionContext& context) const = 0;
-  virtual bool isDegenerate() const // returns true if the sampler has became deterministic
+  virtual bool isDeterministic() const // returns true if the sampler has became deterministic
     {return false;}
 
-  virtual void learn(ExecutionContext& context, const std::vector<ObjectPtr>& objects) = 0;
-  virtual void reinforce(ExecutionContext& context, const ObjectPtr& object) = 0;
+  virtual void learn(ExecutionContext& context, const std::vector<ObjectPtr>& objects)
+    {jassertfalse;}
+
+  virtual void reinforce(ExecutionContext& context, const ObjectPtr& object)
+    {jassertfalse;}
 };
 
 extern SamplerPtr uniformContinuousSampler();
