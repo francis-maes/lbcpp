@@ -20,7 +20,7 @@ public:
   ExhaustiveSequentialNodeBuilder(size_t complexity = 0)
     : complexity(complexity) {}
 
-  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
+  virtual void buildNodes(ExecutionContext& context, const ExpressionDomainPtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
   {
     // FIXME: see why this do not work in release
     enumerateCandidates(context, function, res);
@@ -46,9 +46,9 @@ protected:
   //std::set<ExpressionPtr> cachedActiveVariables;
   //std::vector<ExpressionPtr> cachedCandidates;
 
-  void enumerateCandidates(ExecutionContext& context, const LuapeInferencePtr& function, std::vector<ExpressionPtr>& candidates) const
+  void enumerateCandidates(ExecutionContext& context, const ExpressionDomainPtr& function, std::vector<ExpressionPtr>& candidates) const
   {
-    LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace = function->getSearchSpace(context, complexity, true);
+    ExpressionRPNTypeSpacePtr typeSearchSpace = function->getSearchSpace(context, complexity, true);
     ExpressionBuilderStatePtr builder = new ExpressionBuilderState(function, typeSearchSpace);
     std::set<ExpressionPtr> weakNodes;
     enumerateWeakNodes(context, builder, weakNodes);

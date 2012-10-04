@@ -21,7 +21,7 @@ public:
     : DecoratorLearner(decorated), numActiveVariables(numActiveVariables), deterministic(deterministic) {}
   AddActiveVariablesLearner() : numActiveVariables(0), deterministic(false) {}
 
-  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual ExpressionPtr learn(ExecutionContext& context, const ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples)
   {
     std::map<ExpressionPtr, double> importances;
     getImportances(problem->getRootNode(), importances);
@@ -91,7 +91,7 @@ protected:
     }
   }
 
-  void addActiveVariable(ExecutionContext& context, const LuapeInferencePtr& function, const ExpressionPtr& variable, double importance)
+  void addActiveVariable(ExecutionContext& context, const ExpressionDomainPtr& function, const ExpressionPtr& variable, double importance)
   {
     function->addActiveVariable(variable);
     if (verbose)

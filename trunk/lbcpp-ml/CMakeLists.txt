@@ -24,6 +24,7 @@ SET(LBCPP_ML_INCLUDES
   ../include/lbcpp-ml/Function.h
   ../include/lbcpp-ml/Expression.h
   ../include/lbcpp-ml/ExpressionUniverse.h
+  ../include/lbcpp-ml/ExpressionRPN.h
   ../include/lbcpp-ml/ExpressionDomain.h
 )
 
@@ -72,6 +73,8 @@ SET(LBCPP_ML_FUNCTION_SOURCES
 SET(LBCPP_ML_EXPRESSION_SOURCES
   Expression/ExpressionUniverse.cpp
   Expression/Expression.cpp
+  Expression/ExpressionDomain.cpp
+  Expression/ExpressionRPN.cpp
   Expression/ExpressionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExpressionLibrary.cpp
 )

@@ -77,6 +77,15 @@ typedef ReferenceCountedObjectPtr<CreateSparseVectorExpression> CreateSparseVect
 class ExpressionDomain;
 typedef ReferenceCountedObjectPtr<ExpressionDomain> ExpressionDomainPtr;
 
+class ExpressionRPNSequence;
+typedef ReferenceCountedObjectPtr<ExpressionRPNSequence> ExpressionRPNSequencePtr;
+
+class ExpressionRPNTypeState;
+typedef ReferenceCountedObjectPtr<ExpressionRPNTypeState> ExpressionRPNTypeStatePtr;
+
+class ExpressionRPNTypeSpace;
+typedef ReferenceCountedObjectPtr<ExpressionRPNTypeSpace> ExpressionRPNTypeSpacePtr;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_ML_PREDECLARATIONS_H_

@@ -24,7 +24,7 @@ public:
     : IterativeLearner(objective, maxIterations), weakLearner(weakLearner), treeDepth(treeDepth) {}
   BoostingLearner() : treeDepth(0) {}
 
-  virtual bool initialize(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+  virtual bool initialize(ExecutionContext& context, const ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples)
   {
     if (!IterativeLearner::initialize(context, node, problem, examples))
       return false;
@@ -32,9 +32,9 @@ public:
     return true;
   }
 
-  virtual void contributionAdded(ExecutionContext& context, const LuapeInferencePtr& problem, const ExpressionPtr& contribution) {}
+  virtual void contributionAdded(ExecutionContext& context, const ExpressionDomainPtr& problem, const ExpressionPtr& contribution) {}
 
-  virtual bool doLearningIteration(ExecutionContext& context, ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
+  virtual bool doLearningIteration(ExecutionContext& context, ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples, double& trainingScore, double& validationScore)
   {
     ExpressionPtr contribution;
    
@@ -80,7 +80,7 @@ protected:
   LuapeLearnerPtr weakLearner;
   size_t treeDepth;
 
-  ExpressionPtr learnContribution(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples, size_t depth)
+  ExpressionPtr learnContribution(ExecutionContext& context, const ExpressionDomainPtr& problem, const IndexSetPtr& examples, size_t depth)
   {
     if (examples->size() < 2)
       return ExpressionPtr();
@@ -119,7 +119,7 @@ protected:
     return testNode;
   }
 
-  virtual ExpressionPtr turnWeakNodeIntoContribution(ExecutionContext& context, const ExpressionPtr& weakNode, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double weakObjective) const = 0;
+  virtual ExpressionPtr turnWeakNodeIntoContribution(ExecutionContext& context, const ExpressionPtr& weakNode, const ExpressionDomainPtr& problem, const IndexSetPtr& examples, double weakObjective) const = 0;
 };
 
 }; /* namespace lbcpp */

@@ -7,109 +7,8 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Luape/ExpressionBuilder.h>
-#include <lbcpp/Luape/LuapeInference.h>
-#include "NodeBuilder/NodeBuilderTypeSearchSpace.h"
+#include <lbcpp-ml/ExpressionDomain.h>
 using namespace lbcpp;
-
-/*
-** LuapeRPNSequence
-*/
-LuapeRPNSequence::LuapeRPNSequence(const std::vector<ObjectPtr>& sequence)
-  : sequence(sequence) {}
-
-String LuapeRPNSequence::toShortString() const
-{
-  String res;
-  for (size_t i = 0; i < sequence.size(); ++i)
-  {
-    res += sequence[i]->toShortString();
-    if (i < sequence.size() - 1)
-      res += " ";
-  }
-  return res;
-}
-
-LuapeRPNSequencePtr LuapeRPNSequence::fromNode(const ExpressionPtr& node)
-{
-  LuapeRPNSequencePtr res = new LuapeRPNSequence();
-  res->appendNode(node);
-  return res;
-}
-
-void LuapeRPNSequence::appendNode(const ExpressionPtr& node)
-{
-  if (node.isInstanceOf<VariableExpression>() || node.isInstanceOf<ConstantExpression>())
-    append(node);
-  else if (node.isInstanceOf<FunctionExpression>())
-  {
-    const FunctionExpressionPtr& functionNode = node.staticCast<FunctionExpression>();
-    size_t n = functionNode->getNumArguments();
-    for (size_t i = 0; i < n; ++i)
-      appendNode(functionNode->getArgument(i));
-    append(functionNode->getFunction());
-  }
-  else
-    jassert(false);
-}
-
-bool LuapeRPNSequence::startsWith(const LuapeRPNSequencePtr& start) const
-{
-  size_t n = start->sequence.size();
-  if (sequence.size() < n)
-    return false;
-  for (size_t i = 0; i < n; ++i)
-    if (sequence[i] != start->sequence[i])
-      return false;
-  return true;
-}
-
-std::vector<TypePtr> LuapeRPNSequence::computeTypeState(const std::vector<TypePtr>& initialState) const
-{
-  std::vector<TypePtr> state(initialState);
-  for (size_t i = 0; i < sequence.size(); ++i)
-  {
-    ObjectPtr action = sequence[i];
-    if (action.isInstanceOf<Expression>())
-      state.push_back(action.staticCast<Expression>()->getType());
-    else
-    {
-      const FunctionPtr& function = action.staticCast<Function>();
-      jassert(state.size() >= function->getNumInputs());
-      TypePtr outputType = function->initialize(&state[state.size() - function->getNumInputs()]);
-      state.resize(state.size() - function->getNumInputs() + 1);
-      state.back() = outputType;
-    }
-  }
-  return state;
-}
-
-void LuapeRPNSequence::apply(const ExpressionUniversePtr& universe, std::vector<ExpressionPtr>& stack, const ObjectPtr& element)
-{
-   if (element.isInstanceOf<Expression>()) // push action
-    stack.push_back(element.staticCast<Expression>());
-  else if (element.isInstanceOf<Function>()) // apply action
-  {
-    const FunctionPtr& function = element.staticCast<Function>();
-    size_t numInputs = function->getNumInputs();
-    jassert(stack.size() >= numInputs);
-    std::vector<ExpressionPtr> inputs(numInputs);
-    for (size_t i = 0; i < numInputs; ++i)
-      inputs[i] = stack[stack.size() - numInputs + i];
-    stack.resize(stack.size() - numInputs + 1);
-    stack.back() = universe->makeFunctionExpression(function, inputs);
-  }
-  else
-    jassert(false);
-}
-
-ExpressionPtr LuapeRPNSequence::toNode(const ExpressionUniversePtr& universe) const
-{
-  std::vector<ExpressionPtr> stack;
-  for (size_t i = 0; i < sequence.size(); ++i)
-    apply(universe, stack, sequence[i]);
-  jassert(stack.size() == 1);
-  return stack[0];
-}
 
 /*
 ** StochasticNodeBuilder
@@ -119,7 +18,7 @@ StochasticNodeBuilder::StochasticNodeBuilder(size_t numNodes)
 {
 }
 
-void StochasticNodeBuilder::buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
+void StochasticNodeBuilder::buildNodes(ExecutionContext& context, const ExpressionDomainPtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
 {
   size_t numTrialsAllowed = 5 * numNodes;
   
@@ -161,7 +60,7 @@ void SequentialNodeBuilder::clone(ExecutionContext& context, const ObjectPtr& ta
   StochasticNodeBuilder::clone(context, target);
 }
 
-ExpressionPtr SequentialNodeBuilder::sampleNode(ExecutionContext& context, const LuapeInferencePtr& problem)
+ExpressionPtr SequentialNodeBuilder::sampleNode(ExecutionContext& context, const ExpressionDomainPtr& problem)
 {
   RandomGeneratorPtr random = context.getRandomGenerator();
   universe = problem->getUniverse();
@@ -169,12 +68,12 @@ ExpressionPtr SequentialNodeBuilder::sampleNode(ExecutionContext& context, const
   jassert(typeSearchSpace);
 
   std::vector<ExpressionPtr> stack;
-  LuapeGraphBuilderTypeStatePtr typeState;
+  ExpressionRPNTypeStatePtr typeState;
 
   for (size_t i = 0; i < complexity; ++i)
   {
     // Retrieve type-state index
-    LuapeGraphBuilderTypeStatePtr typeState = getTypeState(i, stack);
+    ExpressionRPNTypeStatePtr typeState = getTypeState(i, stack);
     jassert(typeState);
 
     // Sample action
@@ -207,7 +106,7 @@ bool SequentialNodeBuilder::isActionAvailable(ObjectPtr action, const std::vecto
     action.staticCast<Function>()->acceptInputsStack(stack);
 }
 
-LuapeGraphBuilderTypeStatePtr SequentialNodeBuilder::getTypeState(size_t stepNumber, const std::vector<ExpressionPtr>& stack) const
+ExpressionRPNTypeStatePtr SequentialNodeBuilder::getTypeState(size_t stepNumber, const std::vector<ExpressionPtr>& stack) const
 {
   jassert(typeSearchSpace);
   std::vector<TypePtr> typeStack(stack.size());

@@ -12,6 +12,7 @@
 # include "Domain.h"
 # include "Expression.h"
 # include "ExpressionUniverse.h"
+# include "ExpressionRPN.h"
 # include <lbcpp/Luape/LuapeCache.h>
 
 namespace lbcpp
@@ -20,30 +21,41 @@ namespace lbcpp
 class ExpressionDomain : public Domain
 {
 public:
-  ExpressionDomain(ExpressionUniversePtr universe = ExpressionUniversePtr())
-    : universe(universe)
-  {
-    if (!universe)
-      this->universe = new ExpressionUniverse();
-  }
-  
+  ExpressionDomain(ExpressionUniversePtr universe = ExpressionUniversePtr());
+
   const ExpressionUniversePtr& getUniverse() const
     {return universe;}
 
   /*
-  ** Variables
+  ** Inputs
   */
-  size_t getNumVariables() const
-    {return variables.size();}
+  size_t getNumInputs() const
+    {return inputs.size();}
 
-  const VariableExpressionPtr& getDomainVariable(size_t index) const
-    {jassert(index < variables.size()); return variables[index];}
+  const VariableExpressionPtr& getInput(size_t index) const
+    {jassert(index < inputs.size()); return inputs[index];}
   
-  const std::vector<VariableExpressionPtr>& getVariables() const
-    {return variables;}
+  const std::vector<VariableExpressionPtr>& getInputs() const
+    {return inputs;}
 
-  VariableExpressionPtr addVariable(const TypePtr& type, const String& name)
-    {size_t index = variables.size(); VariableExpressionPtr res(new VariableExpression(type, name, index)); variables.push_back(res); return res;}
+  VariableExpressionPtr addInput(const TypePtr& type, const String& name);
+
+  /*
+  ** Active variables
+  */
+  size_t getNumActiveVariables() const
+    {return activeVariables.size();}
+
+  ExpressionPtr getActiveVariable(size_t index) const;
+
+  const std::set<ExpressionPtr>& getActiveVariables() const
+    {return activeVariables;}
+
+  void addActiveVariable(const ExpressionPtr& node)
+    {activeVariables.insert(node);}
+
+  void clearActiveVariables()
+    {activeVariables.clear();}
 
   /*
   ** Supervision variable
@@ -51,8 +63,7 @@ public:
   VariableExpressionPtr getSupervision() const
     {return supervision;}
 
-  VariableExpressionPtr createSupervision(const TypePtr& type, const String& name = "supervision")
-    {jassert(!supervision); supervision = new VariableExpression(type, name, variables.size()); return supervision;}
+  VariableExpressionPtr createSupervision(const TypePtr& type, const String& name);
 
   /*
   ** Available Functions
@@ -81,54 +92,76 @@ public:
   /*
   ** Accepted target types
   */
-  bool isTargetTypeAccepted(TypePtr type)
-  {
-    for (std::set<TypePtr>::const_iterator it = targetTypes.begin(); it != targetTypes.end(); ++it)
-      if (type->inheritsFrom(*it))
-        return true;
-    return false;
-  }
-
+  bool isTargetTypeAccepted(TypePtr type);
   void addTargetType(TypePtr type)
     {targetTypes.insert(type);}
   void clearTargetTypes()
     {targetTypes.clear();}
 
   /*
-  ** Cache
+  ** Search space
   */
-  LuapeSamplesCachePtr createCache(size_t numSamples, size_t maxCacheSizeInMb = 512) const
-    {return new LuapeSamplesCache(universe, variables, numSamples, maxCacheSizeInMb);}
+  ExpressionRPNTypeSpacePtr getSearchSpace(ExecutionContext& context, size_t complexity, bool verbose = false) const; // cached with initialState = vector<TypePtr>()
 
-#if 0
+  ExpressionRPNTypeSpacePtr createTypeSearchSpace(ExecutionContext& context, const std::vector<TypePtr>& initialState, size_t complexity, bool verbose) const;
+  void enumerateNodesExhaustively(ExecutionContext& context, size_t complexity, std::vector<ExpressionPtr>& res, bool verbose = false, const ExpressionRPNSequencePtr& subSequence = ExpressionRPNSequencePtr()) const;
+
   /*
-  ** Type search space
+  ** Samples cache
   */
-  LuapeGraphBuilderTypeSearchSpacePtr getTypeSearchSpace() const
-  {
-    /*if (!typeSearchSpace)
-    {
-      LuapeGraphBuilderTypeSearchSpacePtr res = new LuapeGraphBuilderTypeSearchSpace(refCountedPointerFromThis(this), initialState, complexity);
-      res->pruneStates(context, verbose);
-      res->assignStateIndices(context);
-      const_cast<ExpressionDomain* >(res)->typeSearchSpace = typeSearchSpace;
-    }*/
-    return typeSearchSpace;
-  }
-#endif // 0
+  virtual void setSamples(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData = std::vector<ObjectPtr>());
+
+  const LuapeSamplesCachePtr& getTrainingCache() const
+    {return trainingCache;}
+
+  const LuapeSamplesCachePtr& getValidationCache() const
+    {return validationCache;}
+
+  std::vector<LuapeSamplesCachePtr> getSamplesCaches() const;
+
+  VectorPtr getTrainingPredictions() const;
+  VectorPtr getTrainingSupervisions() const;
+  VectorPtr getValidationPredictions() const;
+  VectorPtr getValidationSupervisions() const;
+
+  LuapeSamplesCachePtr createCache(size_t size, size_t maxCacheSizeInMb = 512) const;
+
+  /*
+  ** Deprecated
+  */
+  const ExpressionPtr& getRootNode() const
+    {return node;}
+  void setRootNode(ExecutionContext& context, const ExpressionPtr& node);
+  void clearRootNode(ExecutionContext& context);
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
+  virtual double evaluatePredictions(ExecutionContext& context, const VectorPtr& predictions, const VectorPtr& supervisions) const
+    {jassert(false); return 0.0;}
+//void setLearner(const LuapeLearnerPtr& learner, bool verbose = false);
 
 protected:
+  friend class ExpressionDomainClass;
+
   ExpressionUniversePtr universe;
-  std::vector<VariableExpressionPtr> variables;
+  std::vector<VariableExpressionPtr> inputs;
   VariableExpressionPtr supervision;
   std::vector<ConstantExpressionPtr> constants;
   std::vector<FunctionPtr> functions;
   std::set<TypePtr> targetTypes;
+  std::set<ExpressionPtr> activeVariables;
+  ExpressionPtr node;
   LuapeSamplesCachePtr trainingCache;
   LuapeSamplesCachePtr validationCache;
 
-  //LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
+  CriticalSection typeSearchSpacesLock;
+  std::vector<ExpressionRPNTypeSpacePtr> typeSearchSpaces;
+
+  Variable computeNode(ExecutionContext& context, const ObjectPtr& inputs) const;
+
+  LuapeSamplesCachePtr createSamplesCache(ExecutionContext& context, const std::vector<ObjectPtr>& data) const;
 };
+
+typedef ReferenceCountedObjectPtr<ExpressionDomain> ExpressionDomainPtr;
+extern ClassPtr expressionDomainClass;
 
 }; /* namespace lbcpp */
 

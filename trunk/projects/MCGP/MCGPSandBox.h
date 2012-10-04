@@ -259,6 +259,14 @@ private:
 class TupleDomain : public Domain
 {
 public:
+  TupleDomain(const DomainPtr& domain1, const DomainPtr& domain2, const DomainPtr& domain3)
+    : elements(3)
+  {
+    elements[0] = domain1;
+    elements[1] = domain2;
+    elements[2] = domain3;
+  }
+
   TupleDomain(const DomainPtr& domain1, const DomainPtr& domain2)
     : elements(2)
   {
@@ -389,19 +397,25 @@ public:
 
   DomainPtr makeSymbolicRegressionDomain() const
   {
-    static const String functions[] = {"Log", "Exp", "Sin", "Cos", "Add", "Sub", "Mul", "Div"};
-    VariantDomainPtr functionDomain = new VariantDomain();
-    for (size_t i = 0; i < sizeof (functions) / sizeof (String); ++i)
-      functionDomain->addConstructor(functions[i]);
+    // type expr = X | Constant of double | Log of expr | Exp of expr ... | Div of expr * expr
 
     VariantDomainPtr res = new VariantDomain();
-    res->addConstructor("Variable", new IntegerDomain());
+    res->addConstructor("X");
     res->addConstructor("Constant", new DoubleDomain());
-    res->addConstructor("Function", functionDomain);
+    res->addConstructor("Log", res);
+    res->addConstructor("Exp", res);
+    res->addConstructor("Sin", res);
+    res->addConstructor("Cos", res);
+    res->addConstructor("Add", new TupleDomain(res, res));
+    res->addConstructor("Sub", new TupleDomain(res, res));
+    res->addConstructor("Mul", new TupleDomain(res, res));
+    res->addConstructor("Div", new TupleDomain(res, res));
     return res;
   }
 };
 
+// x + log(1.0)
+// X 1.0 Constant Log Add EOF
 
 class ExpressionProblem : public Problem
 {
@@ -437,7 +451,7 @@ public:
     : functionIndex(functionIndex)
   {
     // domain
-		input = domain->addVariable(doubleType, "x");
+		input = domain->addInput(doubleType, "x");
 
 		domain->addConstant(1.0);
 
@@ -467,7 +481,7 @@ public:
 			double x = lowerLimit + (upperLimit - lowerLimit) * i / (numSamples - 1.0);// random->sampleDouble(lowerLimit, upperLimit);
       double y = computeFunction(x);
 
-      cache->setInputObject(domain->getVariables(), i, new DenseDoubleVector(1, x));
+      cache->setInputObject(domain->getInputs(), i, new DenseDoubleVector(1, x));
 			supervisionValues->setValue(i, y);
 		}
     cache->cacheNode(defaultExecutionContext(), output, supervisionValues, T("Supervision"), false);
@@ -576,7 +590,7 @@ protected:
 
   ExpressionDomainPtr domain;
 
-  bool sampleAction(ExecutionContext& context, LuapeGraphBuilderTypeStatePtr typeState, ObjectPtr& res) const
+  bool sampleAction(ExecutionContext& context, ExpressionRPNTypeStatePtr typeState, ObjectPtr& res) const
   {
     RandomGeneratorPtr random = context.getRandomGenerator();
     if (!typeState)
@@ -616,7 +630,7 @@ protected:
 
     case 1: // apply
       {
-        const std::vector<std::pair<FunctionPtr, LuapeGraphBuilderTypeStatePtr> >& apply = typeState->getApplyActions();
+        const std::vector<std::pair<FunctionPtr, ExpressionRPNTypeStatePtr> >& apply = typeState->getApplyActions();
         jassert(apply.size());
         if (apply.empty())
           return false;

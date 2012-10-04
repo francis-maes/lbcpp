@@ -13,7 +13,7 @@ using namespace lbcpp;
 /*
 ** LuapeLearner
 */
-ExpressionPtr LuapeLearner::learn(ExecutionContext& context, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+ExpressionPtr LuapeLearner::learn(ExecutionContext& context, const ExpressionDomainPtr& problem, const IndexSetPtr& examples)
 {
   // create initial node
   ExpressionPtr node = problem->getRootNode();
@@ -31,7 +31,7 @@ ExpressionPtr LuapeLearner::learn(ExecutionContext& context, const LuapeInferenc
   return node;
 }
 
-void LuapeLearner::evaluatePredictions(ExecutionContext& context, const LuapeInferencePtr& problem, double& trainingScore, double& validationScore)
+void LuapeLearner::evaluatePredictions(ExecutionContext& context, const ExpressionDomainPtr& problem, double& trainingScore, double& validationScore)
 {
   TimedScope _(context, "evaluate", verbose);
   trainingScore = problem->evaluatePredictions(context, problem->getTrainingPredictions(), problem->getTrainingSupervisions());
@@ -46,7 +46,7 @@ void LuapeLearner::evaluatePredictions(ExecutionContext& context, const LuapeInf
     validationScore = 0.0;
 }
 
-ExpressionPtr LuapeLearner::subLearn(ExecutionContext& context, const LuapeLearnerPtr& subLearner, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples, double* objectiveValue) const
+ExpressionPtr LuapeLearner::subLearn(ExecutionContext& context, const LuapeLearnerPtr& subLearner, const ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples, double* objectiveValue) const
 {
   if (!examples->size())
     return ExpressionPtr();
@@ -96,7 +96,7 @@ void IterativeLearner::setPlotFile(ExecutionContext& context, const File& plotFi
     context.warningCallback(T("Could not create file ") + plotFile.getFullPathName());
 }
 
-ExpressionPtr IterativeLearner::learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+ExpressionPtr IterativeLearner::learn(ExecutionContext& context, const ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples)
 {
   ExpressionPtr res = node;
   if (verbose)
@@ -229,10 +229,10 @@ DecoratorLearner::DecoratorLearner(LuapeLearnerPtr decorated)
 {
 }
 
-ExpressionPtr DecoratorLearner::createInitialNode(ExecutionContext& context, const LuapeInferencePtr& problem)
+ExpressionPtr DecoratorLearner::createInitialNode(ExecutionContext& context, const ExpressionDomainPtr& problem)
   {return decorated->createInitialNode(context, problem);}
 
-ExpressionPtr DecoratorLearner::learn(ExecutionContext& context, const ExpressionPtr& node, const LuapeInferencePtr& problem, const IndexSetPtr& examples)
+ExpressionPtr DecoratorLearner::learn(ExecutionContext& context, const ExpressionPtr& node, const ExpressionDomainPtr& problem, const IndexSetPtr& examples)
 {
   if (!decorated->getObjective())
     decorated->setObjective(objective);

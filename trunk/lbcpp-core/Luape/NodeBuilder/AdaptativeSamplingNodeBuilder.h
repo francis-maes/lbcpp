@@ -28,7 +28,7 @@ public:
   virtual void observeStateActionReward(ExecutionContext& context, size_t stepNumber, const std::vector<ExpressionPtr>& stack, const ObjectPtr& object, double weakObjective, double weight) = 0;
   
   // FIXME: this function is never called !!!
-  void observeBestWeakNode(ExecutionContext& context, const LuapeInferencePtr& problem, const ExpressionPtr& weakNode, const IndexSetPtr& examples, double weakObjective)
+  void observeBestWeakNode(ExecutionContext& context, const ExpressionDomainPtr& problem, const ExpressionPtr& weakNode, const IndexSetPtr& examples, double weakObjective)
   {
     if (weakObjective == -DBL_MAX)
       return;
@@ -153,16 +153,16 @@ public:
     : AdaptativeSequentialNodeBuilder(numWeakNodes, maxSteps, useVariableRelevancies, useExtendedVariables), temperature(5.0) {}
   AdaptativeSamplingNodeBuilder() : temperature(0.0) {}
   
-  void initialize(ExecutionContext& context, const LuapeInferencePtr& function)
+  void initialize(ExecutionContext& context, const ExpressionDomainPtr& function)
   {
     for (size_t i = 0; i < function->getNumInputs(); ++i)
       pushActions.addAction(function->getInput(i));
     pushActions.normalizeProbabilities();
 
-    for (LuapeGraphBuilderTypeSearchSpace::StateMap::const_iterator it = typeSearchSpace->getStates().begin();
+    for (ExpressionRPNTypeSpace::StateMap::const_iterator it = typeSearchSpace->getStates().begin();
           it != typeSearchSpace->getStates().end(); ++it)
     {
-      const std::vector<std::pair<FunctionPtr, LuapeGraphBuilderTypeStatePtr> >& applyActions = it->second->getApplyActions();
+      const std::vector<std::pair<FunctionPtr, ExpressionRPNTypeStatePtr> >& applyActions = it->second->getApplyActions();
       for (size_t i = 0; i < applyActions.size(); ++i)
         this->applyActions.addAction(applyActions[i].first);
     }
@@ -171,7 +171,7 @@ public:
     yieldActions.addAction(ObjectPtr());
   }
  
-  virtual void buildNodes(ExecutionContext& context, const LuapeInferencePtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
+  virtual void buildNodes(ExecutionContext& context, const ExpressionDomainPtr& function, size_t maxCount, std::vector<ExpressionPtr>& res)
   {
     jassert(false); // initialize should only be called once
     initialize(context, function);
@@ -288,7 +288,7 @@ public:
   ActionsInfo applyActions;
   ActionsInfo yieldActions; // contains a single action
 
-  bool isActionAvailable(LuapeGraphBuilderTypeStatePtr typeState, ObjectPtr action) const
+  bool isActionAvailable(ExpressionRPNTypeStatePtr typeState, ObjectPtr action) const
   {
     if (action == ObjectPtr())
       return typeState->hasYieldAction();
@@ -300,7 +300,7 @@ public:
     return false;
   }
 
-  virtual bool sampleAction(ExecutionContext& context, const LuapeInferencePtr& problem, LuapeGraphBuilderTypeStatePtr typeState, ObjectPtr& res) const
+  virtual bool sampleAction(ExecutionContext& context, const ExpressionDomainPtr& problem, ExpressionRPNTypeStatePtr typeState, ObjectPtr& res) const
   {
     std::vector<double> probabilities(3, 0.0);
     double Z = 0.0;

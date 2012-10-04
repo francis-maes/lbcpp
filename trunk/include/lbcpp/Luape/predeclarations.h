@@ -23,8 +23,8 @@ typedef ReferenceCountedObjectPtr<LuapeInstanceCache> LuapeInstanceCachePtr;
 class LuapeSamplesCache;
 typedef ReferenceCountedObjectPtr<LuapeSamplesCache> LuapeSamplesCachePtr;
 
-class LuapeInference;
-typedef ReferenceCountedObjectPtr<LuapeInference> LuapeInferencePtr;
+class ExpressionDomain;
+typedef ReferenceCountedObjectPtr<ExpressionDomain> ExpressionDomainPtr;
 
 class LuapeLearner;
 typedef ReferenceCountedObjectPtr<LuapeLearner> LuapeLearnerPtr;
@@ -44,14 +44,14 @@ typedef ReferenceCountedObjectPtr<BoostingLearner> BoostingLearnerPtr;
 class LearningObjective;
 typedef ReferenceCountedObjectPtr<LearningObjective> LearningObjectivePtr;
 
-class LuapeRPNSequence;
-typedef ReferenceCountedObjectPtr<LuapeRPNSequence> LuapeRPNSequencePtr;
+class ExpressionRPNSequence;
+typedef ReferenceCountedObjectPtr<ExpressionRPNSequence> ExpressionRPNSequencePtr;
 
-class LuapeGraphBuilderTypeState;
-typedef ReferenceCountedObjectPtr<LuapeGraphBuilderTypeState> LuapeGraphBuilderTypeStatePtr;
+class ExpressionRPNTypeState;
+typedef ReferenceCountedObjectPtr<ExpressionRPNTypeState> ExpressionRPNTypeStatePtr;
 
-class LuapeGraphBuilderTypeSearchSpace;
-typedef ReferenceCountedObjectPtr<LuapeGraphBuilderTypeSearchSpace> LuapeGraphBuilderTypeSearchSpacePtr;
+class ExpressionRPNTypeSpace;
+typedef ReferenceCountedObjectPtr<ExpressionRPNTypeSpace> ExpressionRPNTypeSpacePtr;
 
 }; /* namespace lbcpp */
 

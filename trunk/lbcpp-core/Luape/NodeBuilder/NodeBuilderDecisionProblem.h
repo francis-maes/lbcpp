@@ -9,7 +9,7 @@
 #ifndef LBCPP_LUAPE_NODE_BUILDER_DECISION_PROBLEM_H_
 # define LBCPP_LUAPE_NODE_BUILDER_DECISION_PROBLEM_H_
 
-# include "NodeBuilderTypeSearchSpace.h"
+# include <lbcpp-ml/ExpressionDomain.h>
 # include <lbcpp/DecisionProblem/DecisionProblem.h>
 
 namespace lbcpp
@@ -18,13 +18,13 @@ namespace lbcpp
 class ExpressionBuilderState : public DecisionProblemState
 {
 public:
-  ExpressionBuilderState(const LuapeInferencePtr& function, LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace, const LuapeRPNSequencePtr& subSequence = LuapeRPNSequencePtr())
+  ExpressionBuilderState(const ExpressionDomainPtr& function, ExpressionRPNTypeSpacePtr typeSearchSpace, const ExpressionRPNSequencePtr& subSequence = ExpressionRPNSequencePtr())
     : function(function), typeSearchSpace(typeSearchSpace), typeState(typeSearchSpace->getInitialState()), numSteps(0), isAborted(false), isYielded(false)
   {
     if (subSequence)
     {
       for (size_t i = 0; i < subSequence->getLength(); ++i)
-        LuapeRPNSequence::apply(function->getUniverse(), stack, subSequence->getElement(i));
+        ExpressionRPNSequence::apply(function->getUniverse(), stack, subSequence->getElement(i));
     }
   }
   ExpressionBuilderState() : numSteps(0), isAborted(false), isYielded(false) {}
@@ -79,7 +79,7 @@ public:
     }
     if (typeState->hasApplyActions())
     {
-      const std::vector<std::pair<FunctionPtr, LuapeGraphBuilderTypeStatePtr> >& apply = typeState->getApplyActions();
+      const std::vector<std::pair<FunctionPtr, ExpressionRPNTypeStatePtr> >& apply = typeState->getApplyActions();
       for (size_t i = 0; i < apply.size(); ++i)
       {
         FunctionPtr function = apply[i].first;
@@ -117,7 +117,7 @@ public:
     if (stateBackup)
       *stateBackup = Variable(new Backup(stack), objectClass);
     if (action)
-      LuapeRPNSequence::apply(function->getUniverse(), stack, action);
+      ExpressionRPNSequence::apply(function->getUniverse(), stack, action);
 
     reward = 0.0;
     ++numSteps;
@@ -125,7 +125,7 @@ public:
     if (action == ObjectPtr()) // yield
     {
       isYielded = true;
-      typeState = LuapeGraphBuilderTypeStatePtr();
+      typeState = ExpressionRPNTypeStatePtr();
     }
     else
       updateTypeState();
@@ -144,7 +144,7 @@ public:
   virtual bool isFinalState() const
     {return isAborted || isYielded || !typeState || !typeState->hasAnyAction();}
 
-  LuapeInferencePtr getFunction() const
+  ExpressionDomainPtr getFunction() const
     {return function;}
 
   size_t getCurrentStep() const
@@ -164,9 +164,9 @@ public:
 protected:
   friend class ExpressionBuilderStateClass;
 
-  LuapeInferencePtr function;
-  LuapeGraphBuilderTypeSearchSpacePtr typeSearchSpace;
-  LuapeGraphBuilderTypeStatePtr typeState;
+  ExpressionDomainPtr function;
+  ExpressionRPNTypeSpacePtr typeSearchSpace;
+  ExpressionRPNTypeStatePtr typeState;
   ContainerPtr availableActions;
   //ExpressionKeysMapPtr nodeKeys;
 
