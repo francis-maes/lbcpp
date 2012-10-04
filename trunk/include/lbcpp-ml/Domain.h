@@ -18,6 +18,9 @@ namespace lbcpp
 class Domain : public Object
 {
 public:
+  virtual SamplerPtr createDefaultSampler() const
+    {return SamplerPtr();}
+
   virtual ObjectPtr projectIntoDomain(const ObjectPtr& object) const
     {return object;}
 };

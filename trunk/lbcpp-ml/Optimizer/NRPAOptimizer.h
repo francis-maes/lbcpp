@@ -67,7 +67,7 @@ protected:
         if (bestSolution)
         {
           currentSampler->reinforce(context, bestSolution);
-          if (currentSampler->isDegenerate())
+          if (currentSampler->isDeterministic())
             break;
         }
 

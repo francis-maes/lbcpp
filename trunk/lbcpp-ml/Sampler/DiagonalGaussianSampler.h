@@ -128,7 +128,7 @@ public:
     ++epoch;
   }
   
-  virtual bool isDegenerate() const
+  virtual bool isDeterministic() const
     {return stddev->l2norm() < 1e-12;}
     
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
