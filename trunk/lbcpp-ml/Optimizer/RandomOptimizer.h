@@ -29,7 +29,16 @@ public:
   }
 
   virtual bool iteration(ExecutionContext& context, size_t iter)
-    {sampleAndEvaluateSolution(context, sampler); return true;}
+  {
+    ObjectPtr object = sampleSolution(context, sampler); 
+    FitnessPtr fitness = evaluate(context, object);
+    if (verbosity >= Optimizer::verbosityDetailed)
+    {
+      context.resultCallback("object", object);
+      context.resultCallback("fitness", fitness);
+    }
+    return true;
+  }
 
 protected:
   friend class RandomOptimizerClass;

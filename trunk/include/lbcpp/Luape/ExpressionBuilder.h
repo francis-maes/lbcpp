@@ -21,7 +21,7 @@ namespace lbcpp
 class ExpressionBuilder : public Object
 {
 public:
-  virtual void buildNodes(ExecutionContext& context, const ExpressionDomainPtr& function, size_t maxCount, std::vector<ExpressionPtr>& res) = 0;
+  virtual void buildNodes(ExecutionContext& context, const ExpressionDomainPtr& domain, size_t maxCount, std::vector<ExpressionPtr>& res) = 0;
 };
 
 typedef ReferenceCountedObjectPtr<ExpressionBuilder> ExpressionBuilderPtr;
@@ -37,9 +37,9 @@ class StochasticNodeBuilder : public ExpressionBuilder
 public:
   StochasticNodeBuilder(size_t numNodes = 0);
 
-  virtual ExpressionPtr sampleNode(ExecutionContext& context, const ExpressionDomainPtr& function) = 0;
+  virtual ExpressionPtr sampleNode(ExecutionContext& context, const ExpressionDomainPtr& domain) = 0;
 
-  virtual void buildNodes(ExecutionContext& context, const ExpressionDomainPtr& function, size_t maxCount, std::vector<ExpressionPtr>& res);
+  virtual void buildNodes(ExecutionContext& context, const ExpressionDomainPtr& domain, size_t maxCount, std::vector<ExpressionPtr>& res);
 
 protected:
   friend class StochasticNodeBuilderClass;

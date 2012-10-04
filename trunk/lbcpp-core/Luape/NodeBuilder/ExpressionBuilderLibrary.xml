@@ -3,8 +3,8 @@
 <library name="ExpressionBuilder" directory="Luape/NodeBuilder">
   <include file="lbcpp/Luape/ExpressionBuilder.h"/>
 
-
-  <!-- Builder Decision Problem -->
+  
+  <!-- Builder Decision Problem 
   <class name="ExpressionBuilderState" base="DecisionProblemState">
     <variable type="ExpressionDomain" name="function"/>
     <variable type="ExpressionRPNTypeSpace" name="typeSearchSpace"/>
@@ -15,7 +15,7 @@
     <variable type="Boolean" name="isAborted"/>
     <variable type="Boolean" name="isYielded"/>
   </class>
-
+-->
   <!-- Generic Node Builders -->
   <class name="CompositeNodeBuilder" base="ExpressionBuilder">
     <constructor arguments="const std::vector&lt;ExpressionBuilderPtr&gt;&amp; builders"/>

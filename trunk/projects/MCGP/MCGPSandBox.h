@@ -17,6 +17,7 @@
 # include <lbcpp-ml/Sampler.h>
 # include <lbcpp-ml/SolutionSet.h>
 # include <lbcpp-ml/ExpressionDomain.h>
+# include <lbcpp-ml/ExpressionSampler.h>
 
 # include <climits>
 
@@ -426,7 +427,7 @@ public:
 
     std::vector< std::pair<double, double> > limits(2);
     limits[0] = std::make_pair(-DBL_MAX, DBL_MAX);
-    limits[1] = std::make_pair(0, DBL_MAX); // expression size
+    limits[1] = std::make_pair(DBL_MAX, 0); // expression size: should be minimized
     this->limits = new FitnessLimits(limits);
   }
 
@@ -450,6 +451,7 @@ public:
   F8SymbolicRegressionProblem(size_t functionIndex = 0)
     : functionIndex(functionIndex)
   {
+    jassert(functionIndex >= 1 && functionIndex <= 8);
     // domain
 		input = domain->addInput(doubleType, "x");
 
@@ -468,7 +470,7 @@ public:
     output = domain->createSupervision(doubleType, "y");
     
     // fitness limits
-    limits->setLimits(0, 0.0, getWorstError());
+    limits->setLimits(0, getWorstError(), 0.0); // absolute error: should be minimized
 
     // data
     const size_t numSamples = 20;
@@ -563,91 +565,6 @@ protected:
 	}
 };
 
-#if 0
-class RandomExpressionSampler : public Sampler
-{
-public:
-  RandomExpressionSampler(size_t expressionSize)
-    : expressionSize(expressionSize) {}
-
-  virtual void initialize(ExecutionContext& context, const DomainPtr& domain)
-  {
-    this->domain = domain.staticCast<ExpressionDomain>();
-  }
-
-  virtual ObjectPtr sample(ExecutionContext& context) const
-  {
-  }
-
-  virtual void learn(ExecutionContext& context, const std::vector<ObjectPtr>& objects)
-    {jassertfalse;}
-
-  virtual void reinforce(ExecutionContext& context, const ObjectPtr& object)
-    {jassertfalse;}
-
-protected:
-  size_t expressionSize;
-
-  ExpressionDomainPtr domain;
-
-  bool sampleAction(ExecutionContext& context, ExpressionRPNTypeStatePtr typeState, ObjectPtr& res) const
-  {
-    RandomGeneratorPtr random = context.getRandomGenerator();
-    if (!typeState)
-      return false;
-
-    std::vector<double> probabilities(3, 0.0);
-    double Z = 0.0;
-    if (typeState->hasPushActions())
-      probabilities[0] = 1.0, ++Z;
-    if (typeState->hasApplyActions())
-      probabilities[1] = 1.0, ++Z;
-    if (typeState->hasYieldAction())
-      probabilities[2] = 1.0, ++Z;
-    jassert(Z > 0.0);
-    size_t actionKind = random->sampleWithProbabilities(probabilities, Z);
-
-    switch (actionKind)
-    {
-    case 0: // push
-      {
-        static const size_t numTrials = 10;
-        size_t numVariables = problem->getNumInputs() + problem->getNumActiveVariables();
-        for (size_t trial = 0; trial < numTrials; ++trial)
-        {
-          size_t variableIndex = random->sampleSize(numVariables);
-          ExpressionPtr variable = variableIndex < problem->getNumInputs()
-            ? (ExpressionPtr)problem->getInput(variableIndex)
-            : problem->getActiveVariable(variableIndex - problem->getNumInputs());
-          if (typeState->hasPushAction(variable->getType()))
-          {
-            res = variable;
-            return true;
-          }
-        }
-        return false;
-      }
-
-    case 1: // apply
-      {
-        const std::vector<std::pair<FunctionPtr, ExpressionRPNTypeStatePtr> >& apply = typeState->getApplyActions();
-        jassert(apply.size());
-        if (apply.empty())
-          return false;
-        res = apply[random->sampleSize(apply.size())].first;
-        return true;
-      }
-
-    case 2: // yield
-      res = ObjectPtr();
-      return true;
-    };
-
-    return false;
-  }
-};
-#endif // 0
-
 class MCGPSandBox : public WorkUnit
 {
 public:
@@ -655,8 +572,8 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    ProblemPtr problem = new F8SymbolicRegressionProblem(0);
-    SamplerPtr sampler; // FIXME
+    ProblemPtr problem = new F8SymbolicRegressionProblem(1);
+    SamplerPtr sampler = new RandomRPNExpressionSampler(10);
     OptimizerPtr optimizer = randomOptimizer(sampler, numEvaluations);
     ParetoFrontPtr pareto = optimizer->optimize(context, problem, (Optimizer::Verbosity)verbosity);
     context.resultCallback("pareto", pareto);

@@ -26,6 +26,7 @@ SET(LBCPP_ML_INCLUDES
   ../include/lbcpp-ml/ExpressionUniverse.h
   ../include/lbcpp-ml/ExpressionRPN.h
   ../include/lbcpp-ml/ExpressionDomain.h
+  ../include/lbcpp-ml/ExpressionSampler.h
 )
 
 SET(LBCPP_ML_OPTIMIZER_SOURCES
