@@ -2,8 +2,8 @@
 
 <library name="Luape" directory="Luape">
 
-  <import name="ExpressionBuilder"/>
-  <import name="LuapeLearner"/>
+  <!-- <import name="ExpressionBuilder"/>
+  <import name="LuapeLearner"/> -->
   
   <include file="lbcpp-ml/Function.h"/>
   <include file="lbcpp-ml/Expression.h"/>
@@ -11,7 +11,7 @@
   <include file="lbcpp/Luape/LuapeLearner.h"/>
   <include file="lbcpp/Luape/ExpressionBuilder.h"/>
 
-  <!-- Inference -->
+  <!-- Inference 
   <class name="LuapeBinaryClassifier" base="ExpressionDomain">
     <constructor/>
   </class>
@@ -23,12 +23,10 @@
   </class>
   <class name="LuapeRegressor" base="ExpressionDomain">
     <constructor/>
-  </class>
+  </class>-->
 
   <!-- Node Builders -->
-  <class name="ExpressionRPNSequence" base="Object">
-    <variable type="ObjectVector[Object]" name="sequence"/>
-  </class>
+
   
   <class name="ExpressionBuilder" base="Object" abstract="yes"/>
   <class name="StochasticNodeBuilder" base="ExpressionBuilder" abstract="yes">

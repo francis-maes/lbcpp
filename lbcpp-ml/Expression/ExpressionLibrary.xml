@@ -47,7 +47,11 @@
   <class name="ExpressionDomain" base="Domain"/>
 
 
-  <!-- Builder Type Search Space -->
+  <!-- Expression RPN -->
+  <class name="ExpressionRPNSequence" base="Object">
+    <variable type="ObjectVector[Object]" name="sequence"/>
+  </class>
+  
   <class name="ExpressionRPNTypeState">
     <variable type="PositiveInteger" name="depth"/>
     <variable type="ObjectVector[Type]" name="stack"/>

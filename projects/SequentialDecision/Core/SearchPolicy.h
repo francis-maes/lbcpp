@@ -76,7 +76,7 @@ public:
 class BestFirstSearchPolicy : public SearchPolicy
 {
 public:
-  BestFirstSearchPolicy(FunctionPtr heuristic = FunctionPtr())
+  BestFirstSearchPolicy(SearchHeuristicPtr heuristic = SearchHeuristicPtr())
     : heuristic(heuristic) {}
 
   virtual void candidateAdded(ExecutionContext& context, const SearchTreePtr& searchTree, size_t nodeIndex)

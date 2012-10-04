@@ -7,6 +7,13 @@
     <variable type="PositiveInteger" name="functionIndex"/>
   </class>
 
+
+  <class name="ExpressionSampler" base="Sampler" abstract="yes"/>
+  <class name="RPNExpressionSampler" base="ExpressionSampler" abstract="yes">
+    <variable type="PositiveInteger" name="expressionSize"/>
+  </class>
+  <class name="RandomRPNExpressionSampler" base="RPNExpressionSampler"/>
+
   <class name="MCGPSandBox" base="WorkUnit">
     <variable type="PositiveInteger" name="numEvaluations"/>
     <variable type="PositiveInteger" name="verbosity"/>
