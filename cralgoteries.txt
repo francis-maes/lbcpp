@@ -1,5 +1,5 @@
 ok NRPA-Morpion: See why it takes so much memory
-* Wrap LBFGSOptimizer
+ok Wrap LBFGSOptimizer
 * LogLinearActionCodeLearningProblem: Compute Gradient
 * Finish CE-Morpion
 -

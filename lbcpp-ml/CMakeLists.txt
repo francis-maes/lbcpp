@@ -38,6 +38,8 @@ SET(LBCPP_ML_OPTIMIZER_SOURCES
   Optimizer/NestedCrossEntropyOptimizer.h
   Optimizer/SharkMOOptimizers.h
   Optimizer/MABMetaOptimizer.h
+  Optimizer/LBFGSOptimizer.h
+  Optimizer/LBFGSOptimizer.cpp
   Optimizer/OptimizerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OptimizerLibrary.cpp
 )

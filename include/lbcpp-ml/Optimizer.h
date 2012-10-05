@@ -75,6 +75,7 @@ protected:
 };
 
 extern IterativeOptimizerPtr randomOptimizer(SamplerPtr sampler, size_t numIterations = 0);
+extern IterativeOptimizerPtr lbfgsOptimizer();
 
 class PopulationBasedOptimizer : public IterativeOptimizer
 {
