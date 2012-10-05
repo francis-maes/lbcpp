@@ -21,6 +21,7 @@ SET(LBCPP_ML_INCLUDES
   ../include/lbcpp-ml/Problem.h
   ../include/lbcpp-ml/Sampler.h
   ../include/lbcpp-ml/Optimizer.h
+  ../include/lbcpp-ml/Search.h
   ../include/lbcpp-ml/Function.h
   ../include/lbcpp-ml/Expression.h
   ../include/lbcpp-ml/ExpressionUniverse.h
@@ -44,6 +45,7 @@ SET(LBCPP_ML_OPTIMIZER_SOURCES
 SET(LBCPP_ML_SAMPLER_SOURCES
   Sampler/UniformContinuousSampler.h
   Sampler/DiagonalGaussianSampler.h
+  Sampler/LogLinearActionCodeSearchSampler.h
   Sampler/SamplerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SamplerLibrary.cpp
 )

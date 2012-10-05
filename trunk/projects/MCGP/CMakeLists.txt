@@ -8,6 +8,7 @@ GENERATE_INTROSPECTION_CODE(MCGPLibrary.xml MCGPLibrary.cpp)
 SET(LBCPP_MCGP_SOURCES
   precompiled.h
   precompiled.cpp
+  TestDomain.h
   MCGPSandBox.h
   MCGPLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MCGPLibrary.cpp
