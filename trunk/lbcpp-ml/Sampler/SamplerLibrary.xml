@@ -17,6 +17,7 @@
 
   <class name="SearchSampler" base="Sampler" abstract="yes"/>
   <class name="LogLinearActionCodeSearchSampler" base="SearchSampler">
+    <constructor arguments="double learningRate"/>
     <variable type="Double" name="learningRate"/>
   </class>
 

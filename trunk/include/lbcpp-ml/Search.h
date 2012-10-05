@@ -15,24 +15,6 @@
 namespace lbcpp
 {
 
-// todo: ranger
-class FiniteDomain : public Domain
-{
-public:
-  size_t getNumElements() const
-    {return elements.size();}
-
-  const ObjectPtr& getElement(size_t index) const
-    {jassert(index < elements.size()); return elements[index];}
-
-private:
-  std::vector<ObjectPtr> elements;
-};
-
-typedef ReferenceCountedObjectPtr<FiniteDomain> FiniteDomainPtr;
-
-///////////
-
 class SearchState : public Object
 {
 public:
@@ -48,6 +30,27 @@ public:
 };
 
 typedef ReferenceCountedObjectPtr<SearchState> SearchStatePtr;
+
+class SearchTrajectory : public Object
+{
+public:
+  void append(const ObjectPtr& action)
+    {actions.push_back(action);}
+
+  size_t getNumActions() const
+    {return actions.size();}
+
+  void setFinalState(const SearchStatePtr& finalState)
+    {this->finalState = finalState;}
+
+protected:
+  friend class SearchTrajectoryClass;
+
+  std::vector<ObjectPtr> actions;
+  SearchStatePtr finalState;
+};
+
+typedef ReferenceCountedObjectPtr<SearchTrajectory> SearchTrajectoryPtr;
 
 class SearchDomain : public Domain
 {
