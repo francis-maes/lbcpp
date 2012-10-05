@@ -127,7 +127,7 @@ public:
     return res;
   }
 
-  virtual DomainPtr getActionsDomain() const
+  virtual DomainPtr getActionDomain() const
     {return availableActions;}
 
 	virtual void performTransition(ExecutionContext& context, const ObjectPtr& ac, Variable* stateBackup = NULL)
@@ -179,16 +179,6 @@ public:
 
 	virtual bool isFinalState() const
 	  {return availableActions->getNumElements() == 0;}
-
-  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
-  {
-    const MorpionStatePtr& target = t.staticCast<MorpionState>();
-    target->crossLength = crossLength;
-    target->isDisjoint = isDisjoint;
-    target->board = board;
-    target->history = history;
-    target->availableActions = availableActions;
-  }
 
   size_t getCrossLength() const
     {return crossLength;}
@@ -242,6 +232,34 @@ public:
       addLineOnBoard(history[i]);
     updateAvailableActions();    
     return true;
+  }
+  
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    const MorpionStatePtr& target = t.staticCast<MorpionState>();
+    target->crossLength = crossLength;
+    target->isDisjoint = isDisjoint;
+    target->board = board;
+    target->history = history;
+    target->availableActions = availableActions;
+  }
+
+  virtual int compare(const ObjectPtr& otherObject) const
+  {
+    const MorpionStatePtr& other = otherObject.staticCast<MorpionState>();
+    if (crossLength != other->crossLength)
+      return (int)crossLength - (int)other->crossLength;
+    if (isDisjoint != other->isDisjoint)
+      return isDisjoint ? 1 : -1;
+    if (history.size() != other->history.size())
+      return (int)history.size() - (int)other->history.size();
+    for (size_t i = 0; i < history.size(); ++i)
+    {
+      int cmp = history[i]->compare(other->history[i]);
+      if (cmp != 0)
+        return cmp;
+    }
+    return 0;
   }
 
 protected:
@@ -595,7 +613,7 @@ public:
 
   virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
   {
-    size_t numLines = object.staticCast<SearchTrajectory>()->getNumActions();
+    size_t numLines = object.staticCast<SearchTrajectory>()->getLength();
     return new Fitness(std::vector<double>(1, (double)numLines), limits);
   }
 

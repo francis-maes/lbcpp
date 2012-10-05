@@ -14,6 +14,7 @@
   </class>
 
   <class name="NRPAOptimizer" base="Optimizer">
+    <constructor arguments="SamplerPtr sampler, size_t level, size_t numIterationsPerLevel"/>
     <variable type="Sampler" name="sampler"/>
     <variable type="PositiveInteger" name="level"/>
     <variable type="PositiveInteger" name="numIterationsPerLevel"/>

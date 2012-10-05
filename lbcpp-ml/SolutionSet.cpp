@@ -299,6 +299,9 @@ void ParetoFront::addSolutionAndUpdateFront(const ObjectPtr& object, const Fitne
     FitnessPtr solutionFitness = solutions[i]->getFitness();
     if (solutionFitness->strictlyDominates(fitness))
       return; // dominated
+    if (solutions[i]->getObject()->compare(object) == 0 ||  // already in the front
+        solutions[i]->getFitness()->compare(fitness) == 0)  // already a solution that has the same fitness  (this test may become flagable in the future)
+      return; 
     if (!fitness->strictlyDominates(solutionFitness))
       newSolutions.push_back(solutions[i]);
   }

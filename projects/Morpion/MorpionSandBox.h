@@ -24,11 +24,17 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    ProblemPtr problem = new MorpionProblem(5, true);
-    SamplerPtr sampler = logLinearActionCodeSearchSampler();
-    OptimizerPtr optimizer = randomOptimizer(sampler, numEvaluations);
-    ParetoFrontPtr pareto = optimizer->optimize(context, problem, (Optimizer::Verbosity)verbosity);
-    context.resultCallback("pareto", pareto);
+    ProblemPtr problem = new MorpionProblem(4, true);
+    
+    /*testOptimizer(context, randomOptimizer(logLinearActionCodeSearchSampler(), numEvaluations), problem);
+    testOptimizer(context, crossEntropyOptimizer(logLinearActionCodeSearchSampler(), 100, 30, numEvaluations / 100, false), problem);
+    testOptimizer(context, crossEntropyOptimizer(logLinearActionCodeSearchSampler(), 100, 30, numEvaluations / 100, true), problem);
+    testOptimizer(context, nrpaOptimizer(logLinearActionCodeSearchSampler(), 1, 100), problem);
+    testOptimizer(context, nrpaOptimizer(logLinearActionCodeSearchSampler(), 2, 100), problem);*/
+    testOptimizer(context, nrpaOptimizer(logLinearActionCodeSearchSampler(), 3, 100), problem);
+
+    // todo: cross-entropy with logLinearActionCodeSearchSampler
+
     return true;
   }
 
@@ -37,6 +43,18 @@ protected:
 
   size_t numEvaluations;
   size_t verbosity;
+
+  void testOptimizer(ExecutionContext& context, OptimizerPtr optimizer, ProblemPtr problem)
+  {
+    context.enterScope(optimizer->toShortString());
+
+    MaxIterationsDecoratorProblemPtr decorator(new MaxIterationsDecoratorProblem(problem, numEvaluations));
+
+    ParetoFrontPtr pareto = optimizer->optimize(context, decorator, (Optimizer::Verbosity)verbosity);
+    context.resultCallback("pareto", pareto);
+
+    context.leaveScope(pareto->getSolution(0)->getFitness()->getValue(0));
+  }
 };
 
 }; /* namespace lbcpp */
