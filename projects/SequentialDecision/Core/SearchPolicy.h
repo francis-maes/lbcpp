@@ -126,7 +126,7 @@ typedef ReferenceCountedObjectPtr<BestFirstSearchPolicy> BestFirstSearchPolicyPt
 class BeamSearchPolicy : public BestFirstSearchPolicy
 {
 public:
-  BeamSearchPolicy(FunctionPtr heuristic, size_t beamSize)
+  BeamSearchPolicy(SearchHeuristicPtr heuristic, size_t beamSize)
     : BestFirstSearchPolicy(heuristic), beamSize(beamSize) {}
   BeamSearchPolicy() : beamSize(0) {}
 
