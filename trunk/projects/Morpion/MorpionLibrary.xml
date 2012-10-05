@@ -2,28 +2,27 @@
 
 <library name="Morpion" dynamic="yes">
 
+  <class name="MorpionState" base="SearchState">
+    <variable type="PositiveInteger" name="crossLength"/>
+    <variable type="Boolean" name="isDisjoint"/>
+  </class>
+  <uicomponent name="MorpionStateComponent" type="MorpionState"/>
+
   <class name="MorpionAction">
     <variable type="PositiveInteger" name="requestedIndexInLine"/>
     <variable type="PositiveInteger" name="indexInLine"/>
   </class>
 
-  <class name="MorpionState" base="SearchState">
+  <class name="MorpionDomain" base="SearchDomain">
     <variable type="PositiveInteger" name="crossLength"/>
     <variable type="Boolean" name="isDisjoint"/>
   </class>
   
-  <class name="MorpionDomain" base="SearchDomain" shortName="morpion">
+  <class name="MorpionProblem" base="Problem" shortName="morpion">
     <variable type="PositiveInteger" name="crossLength"/>
     <variable type="Boolean" name="isDisjoint"/>
   </class>
-  
-  <class name="MorpionProblem" base="Problem">
-    <variable type="PositiveInteger" name="crossLength"/>
-    <variable type="Boolean" name="isDisjoint"/>
-  </class>
-  
-  <uicomponent name="MorpionStateComponent" type="MorpionState"/>
-  
+    
   <class name="MorpionSandBox" base="WorkUnit">
     <variable type="PositiveInteger" name="numEvaluations"/>
     <variable type="PositiveInteger" name="verbosity"/>

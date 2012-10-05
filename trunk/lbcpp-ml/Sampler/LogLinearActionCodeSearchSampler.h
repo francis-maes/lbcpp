@@ -11,39 +11,220 @@
 
 # include <lbcpp-ml/Search.h>
 
+# include <lbcpp-ml/Problem.h> // tmp
+
 namespace lbcpp
 {
+  
+class ContinuousProblem : public Problem
+{
+public:
+  ContinuousProblem()
+  {
+  }
+
+  virtual DomainPtr getDomain() const
+    {return domain;}
+
+  virtual FitnessLimitsPtr getFitnessLimits() const
+    {return limits;}
+
+protected:
+  ContinuousDomainPtr domain;
+  FitnessLimitsPtr limits;
+};
+
+class ContinuousDerivableProblem : public ContinuousProblem
+{
+public:
+  virtual void evaluate(ExecutionContext& context, const DenseDoubleVectorPtr& parameters, size_t objectiveNumber, double* value, DoubleVectorPtr* gradient) = 0;
+
+  virtual FitnessPtr evaluate(ExecutionContext& context, const ObjectPtr& object)
+  {
+    DenseDoubleVectorPtr parameters = object.staticCast<DenseDoubleVector>();
+
+    std::vector<double> values(limits->getNumObjectives());
+    for (size_t i = 0; i < values.size(); ++i)
+      evaluate(context, parameters, i, &values[i], NULL);
+    return new Fitness(values, limits);
+  }
+};
+
+typedef ReferenceCountedObjectPtr<ContinuousDerivableProblem> ContinuousDerivableProblemPtr;
+
+class LogLinearActionCodeLearningProblem : public ContinuousDerivableProblem
+{
+public:
+  // FIXME: initialize domain and fitness limits
+
+  struct Example
+  {
+    std::vector<size_t> availableActions;
+    std::map<size_t, size_t> countsPerAction;
+  };
+
+  LogLinearActionCodeLearningProblem(const std::vector<Example>& examples, double regularizer)
+    : examples(examples), regularizer(regularizer) {}
+
+  static double getParameter(const DenseDoubleVectorPtr& parameters, size_t index)
+    {return parameters && index < parameters->getNumValues() ? parameters->getValue(index) : 0.0;}
+
+  virtual void evaluate(ExecutionContext& context, const DenseDoubleVectorPtr& parameters, size_t objectiveNumber, double* value, DoubleVectorPtr* gradient)
+  {
+    jassert(objectiveNumber == 0);
+    jassert(!value || *value == 0.0);
+
+    size_t totalNumExamples = 0;
+    for (size_t i = 0; i < examples.size(); ++i)
+    {
+      const Example& example = examples[i];
+
+      size_t totalCount = 0;
+      for (std::map<size_t, size_t>::const_iterator it = example.countsPerAction.begin(); it != example.countsPerAction.end(); ++it)
+      {
+        if (value)
+          *value -= getParameter(parameters, it->first) * it->second;
+        totalCount += it->second;
+      }
+      totalNumExamples += totalCount;
+
+      DenseDoubleVectorPtr activations = new DenseDoubleVector(example.availableActions.size(), 0.0);
+      for (size_t j = 0; j < example.availableActions.size(); ++j)
+        activations->setValue(j, getParameter(parameters, example.availableActions[j]));
+      double logSumExp = activations->computeLogSumOfExponentials();
+
+      if (value)
+        *value += totalCount * logSumExp;
+    }
+
+    if (value)
+    {
+      *value /= (double)totalNumExamples;
+      *value += regularizer * parameters->l2norm();
+    }
+
+    // todo: minimize sum_examples (-sum_selectedActions (actionSelectedCount * theta[selectedAction])
+    //                              +sum_selectedActions (actionSelectedCount) * log sum_i exp(theta[example.availableAction[i])) / num_examples
+    //                + regularizer
+
+  }
+
+protected:
+  std::vector<Example> examples;
+  double regularizer;
+};
 
 class LogLinearActionCodeSearchSampler : public SearchSampler
 {
 public:
   LogLinearActionCodeSearchSampler(double learningRate = 1.0)
-    : learningRate(learningRate) {}
+    : learningRate(learningRate), deterministic(false) {}
 
   virtual ObjectPtr sample(ExecutionContext& context) const
   {
     SearchTrajectoryPtr res(new SearchTrajectory());
     SearchStatePtr state = domain->createInitialState();
+    bool det = true;
     while (!state->isFinalState())
     {
-      ObjectPtr action = sampleAction(context, state);
-      res->append(action);
+      ObjectPtr action = sampleAction(context, state, det);
+      res->append(state->cloneAndCast<SearchState>(), action);
       state->performTransition(context, action);
     }
     res->setFinalState(state);
+    const_cast<LogLinearActionCodeSearchSampler* >(this)->deterministic = det;
     return res;
   }
 
   virtual bool isDeterministic() const // returns true if the sampler has became deterministic
-    {return false;}
+    {return deterministic;}
+
+  typedef LogLinearActionCodeLearningProblem::Example Example;
 
   virtual void learn(ExecutionContext& context, const std::vector<ObjectPtr>& objects)
-    {jassertfalse;} // FIXME
+  {
+    std::vector<size_t> indices(objects.size());
+    for (size_t i = 0; i < indices.size(); ++i)
+      indices[i] = i;
+    
+    std::vector<Example> dataset;
+    makeDatasetRecursively(*(const std::vector<SearchTrajectoryPtr>* )&objects, indices, 0, dataset);
+
+    ContinuousDerivableProblemPtr learningProblem = new LogLinearActionCodeLearningProblem(dataset, 0.1);
+    // todo: optimize with lbfgs
+  }
+
+  void makeDatasetRecursively(const std::vector<SearchTrajectoryPtr>& trajectories, const std::vector<size_t>& indices, size_t step, std::vector<Example>& res)
+  {
+    if (step == trajectories[indices[0]]->getLength())
+      return;
+
+    jassert(indices.size());
+    SearchStatePtr state = trajectories[indices[0]]->getState(step);
+    DiscreteDomainPtr actionDomain = state->getActionDomain().staticCast<DiscreteDomain>();
+
+    typedef std::map<size_t, std::vector<size_t> > DispatchMap; // action code -> trajectory indices
+    
+    Example example;
+    example.availableActions.resize(actionDomain->getNumElements());
+    for (size_t i = 0; i < example.availableActions.size(); ++i)
+      example.availableActions[i] = domain->getActionCode(state, actionDomain->getElement(i));
+
+    DispatchMap m;
+    for (size_t i = 0; i < indices.size(); ++i)
+    {
+      ObjectPtr action = trajectories[indices[i]]->getAction(step);
+      size_t actionCode = domain->getActionCode(state, action);
+      m[actionCode].push_back(indices[i]);
+    }
+    for (DispatchMap::const_iterator it = m.begin(); it != m.end(); ++it)
+    {
+      example.countsPerAction[it->first] = it->second.size();
+      makeDatasetRecursively(trajectories, it->second, step + 1, res);
+    }
+    res.push_back(example);
+  }
 
   virtual void reinforce(ExecutionContext& context, const ObjectPtr& object)
   {
     SearchTrajectoryPtr trajectory = object.staticCast<SearchTrajectory>();
-    jassertfalse; // FIXME
+    
+    SparseDoubleVectorPtr gradient = new SparseDoubleVector();
+    size_t n = trajectory->getLength();
+    for (size_t i = 0; i < n; ++i)
+    {
+      SearchStatePtr state = trajectory->getState(i);
+      ObjectPtr action = trajectory->getAction(i);
+      DiscreteDomainPtr actionDomain = state->getActionDomain();
+
+      size_t code = domain->getActionCode(state, action);
+      gradient->incrementValue(code, 1.0);
+
+      size_t numActions = actionDomain->getNumElements();
+      std::vector< std::pair<size_t, double> > codesAndProbabilities(numActions);
+      double Z = 0.0;
+      for (size_t j = 0; j < numActions; ++j)
+      {
+        size_t code = domain->getActionCode(state, actionDomain->getElement(j));
+        double probability = exp(getParameter(code));
+        codesAndProbabilities[j] = std::make_pair(code, probability);
+        Z += probability;
+      }
+      for (size_t j = 0; j < numActions; ++j)
+        gradient->incrementValue(codesAndProbabilities[j].first, -codesAndProbabilities[j].second / Z);
+    }
+
+    if (!parameters)
+      parameters = new DenseDoubleVector(0, 0.0);
+    gradient->addWeightedTo(parameters, 0, learningRate);
+  }
+  
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    const ReferenceCountedObjectPtr<LogLinearActionCodeSearchSampler>& target = t.staticCast<LogLinearActionCodeSearchSampler>();
+    target->domain = domain;
+    target->learningRate = learningRate;
+    target->parameters = parameters ? parameters->cloneAndCast<DenseDoubleVector>() : DenseDoubleVectorPtr();
   }
 
 protected:
@@ -52,24 +233,30 @@ protected:
   double learningRate;
 
   DenseDoubleVectorPtr parameters;
+  bool deterministic;
 
   double getParameter(size_t index) const
     {return parameters && parameters->getNumValues() > index ? parameters->getValue(index) : 0.0;}
 
-  ObjectPtr sampleAction(ExecutionContext& context, SearchStatePtr state) const
+  ObjectPtr sampleAction(ExecutionContext& context, SearchStatePtr state, bool& isDeterministic) const
   {
-    DiscreteDomainPtr actionDomain = state->getActionsDomain().staticCast<DiscreteDomain>();
+    DiscreteDomainPtr actionDomain = state->getActionDomain().staticCast<DiscreteDomain>();
     size_t n = actionDomain->getNumElements();
     
     std::vector<double> probabilities(n, 0.0);
     double Z = 0.0;
+    double highestProbability = 0.0;
     for (size_t i = 0; i < n; ++i)
     {
       size_t code = domain->getActionCode(state, actionDomain->getElement(i));
       double p = exp(getParameter(code));
       probabilities[i] = p;
+      highestProbability = juce::jmax(p, highestProbability);
       Z += p;
     }
+
+    if (highestProbability < Z * (1 - 1e-9))
+      isDeterministic = false;
 
     size_t index = context.getRandomGenerator()->sampleWithProbabilities(probabilities, Z);
     return actionDomain->getElement(index);

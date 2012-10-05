@@ -56,6 +56,8 @@ protected:
   void learnSampler(ExecutionContext& context, SolutionSetPtr solutions, SamplerPtr sampler);
 };
 
+extern OptimizerPtr nrpaOptimizer(SamplerPtr sampler, size_t level, size_t numIterationsPerLevel);
+
 class IterativeOptimizer : public Optimizer
 {
 public:

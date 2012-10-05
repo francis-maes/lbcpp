@@ -18,7 +18,7 @@ namespace lbcpp
 class SearchState : public Object
 {
 public:
-  virtual DomainPtr getActionsDomain() const = 0;
+  virtual DomainPtr getActionDomain() const = 0;
 
   virtual void performTransition(ExecutionContext& context, const ObjectPtr& action, Variable* stateBackup = NULL) = 0;
   virtual void undoTransition(ExecutionContext& context, const Variable& stateBackup)
@@ -31,26 +31,40 @@ public:
 
 typedef ReferenceCountedObjectPtr<SearchState> SearchStatePtr;
 
+class SearchTrajectory;
+typedef ReferenceCountedObjectPtr<SearchTrajectory> SearchTrajectoryPtr;
+
 class SearchTrajectory : public Object
 {
 public:
-  void append(const ObjectPtr& action)
-    {actions.push_back(action);}
+  void append(const SearchStatePtr& state, const ObjectPtr& action)
+    {states.push_back(state); actions.push_back(action);}
 
-  size_t getNumActions() const
+  size_t getLength() const
     {return actions.size();}
+
+  SearchStatePtr getState(size_t index) const
+    {jassert(index < actions.size()); return states[index];}
+
+  ObjectPtr getAction(size_t index) const
+    {jassert(index < actions.size()); return actions[index];}
 
   void setFinalState(const SearchStatePtr& finalState)
     {this->finalState = finalState;}
 
+  SearchStatePtr getFinalState() const
+    {return finalState;}
+    
+  virtual int compare(const ObjectPtr& otherObject) const
+    {return finalState->compare(otherObject.staticCast<SearchTrajectory>()->finalState);}
+
 protected:
   friend class SearchTrajectoryClass;
 
+  std::vector<SearchStatePtr> states;
   std::vector<ObjectPtr> actions;
   SearchStatePtr finalState;
 };
-
-typedef ReferenceCountedObjectPtr<SearchTrajectory> SearchTrajectoryPtr;
 
 class SearchDomain : public Domain
 {
